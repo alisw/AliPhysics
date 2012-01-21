@@ -519,7 +519,7 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     // if track matching was recalculated
     if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
       dR = 2000., dZ = 2000.;
-      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
+      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
     }
         
     if(cluster->IsPHOS()) {

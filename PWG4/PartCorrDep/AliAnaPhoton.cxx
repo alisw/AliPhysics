@@ -88,7 +88,10 @@ AliAnaPhoton::AliAnaPhoton() :
     fhEmbedPi0ELambda0FullSignal(0),    fhEmbedPi0ELambda0MostlySignal(0),    
     fhEmbedPi0ELambda0MostlyBkg(0),     fhEmbedPi0ELambda0FullBkg(0),
     fhTrackMatchedDEta(0x0),            fhTrackMatchedDPhi(0x0),              fhTrackMatchedDEtaDPhi(0x0),
-    fhTrackMatchedDEtaNoCut(0x0),       fhTrackMatchedDPhiNoCut(0x0),         fhTrackMatchedDEtaDPhiNoCut(0x0)
+    fhTrackMatchedDEtaNoCut(0x0),       fhTrackMatchedDPhiNoCut(0x0),         fhTrackMatchedDEtaDPhiNoCut(0x0),
+    fhdEdx(0),                          fhEOverP(0),                         
+    fhdEdxNoCut(0),                     fhEOverPNoCut(0),                     
+    fhTrackMatchedMCParticle(0),        fhTrackMatchedMCParticleNoCut(0)                    
 {
   //default ctor
   
@@ -193,7 +196,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
 
     if(calo->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
       dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dR,dZ);
+      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dZ,dR);
     }    
     
     if(fhTrackMatchedDEtaNoCut && TMath::Abs(dR) < 999){
@@ -201,7 +204,57 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
       fhTrackMatchedDPhiNoCut->Fill(calo->E(),dR);
       if(calo->E() > 0.5) fhTrackMatchedDEtaDPhiNoCut->Fill(dZ,dR);
     }
-  }
+    
+    // Check dEdx and E/p of matched clusters
+    
+    if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+    {
+      AliVTrack *track = 0;
+      if(!strcmp("AliESDCaloCluster",Form("%s",calo->ClassName()))){
+        Int_t iESDtrack = calo->GetTrackMatchedIndex();
+        if(iESDtrack<0) printf("AliAnaPhoton::ClusterSelected - Wrong track index\n");
+        AliVEvent * event = GetReader()->GetInputEvent();
+        track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
+      }
+      else {
+        track = dynamic_cast<AliVTrack*>(calo->GetTrackMatched(0));
+      }
+      
+      if(track) {
+        
+        Float_t dEdx = track->GetTPCsignal();
+        fhdEdxNoCut->Fill(calo->E(), dEdx);
+        
+        Float_t eOverp = calo->E()/track->P();
+        fhEOverPNoCut->Fill(calo->E(),  eOverp);
+      }
+      
+      if(IsDataMC()){
+        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), 0);
+        if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  ){
+          
+          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 2.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 0.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 1.5 );
+          else                                                                                 fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 3.5 );
+          
+        }
+        else{
+          
+          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 6.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 4.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 5.5 );
+          else                                                                                 fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 7.5 );
+          
+        }
+        
+      } // MC 
+      
+    } // residuals window
+    
+  }// Fill track matching histograms
   
   if(fRejectTrackMatch){
     if(IsTrackMatched(calo,GetReader()->GetInputEvent())) {
@@ -996,6 +1049,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();          
   Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
   
+  Int_t   ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         
+  Float_t dedxmax     = GetHistogramRanges()->GetHistodEdxMax();         
+  Float_t dedxmin     = GetHistogramRanges()->GetHistodEdxMin();
+  Int_t   nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       
+  Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();       
+  Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
   
   TString cut[] = {"Open","Reader","E","Time","NCells","Fidutial","Matching","Bad","PID"};
   for (Int_t i = 0; i < 9 ;  i++) 
@@ -1180,21 +1239,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if(fFillTMHisto){
     fhTrackMatchedDEta  = new TH2F
-    ("TrackMatchedDEta",
+    ("hTrackMatchedDEta",
      "d#eta of cluster-track vs cluster energy",
      nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
     fhTrackMatchedDEta->SetYTitle("d#eta");
     fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
     
     fhTrackMatchedDPhi  = new TH2F
-    ("TrackMatchedDPhi",
+    ("hTrackMatchedDPhi",
      "d#phi of cluster-track vs cluster energy",
      nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
     fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
     fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
     
     fhTrackMatchedDEtaDPhi  = new TH2F
-    ("TrackMatchedDEtaDPhi",
+    ("hTrackMatchedDEtaDPhi",
      "d#eta vs d#phi of cluster-track vs cluster energy",
      nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
     fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
@@ -1205,21 +1264,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhTrackMatchedDEtaDPhi) ;    
     
     fhTrackMatchedDEtaNoCut  = new TH2F
-    ("TrackMatchedDEtaNoCut",
+    ("hTrackMatchedDEtaNoCut",
      "d#eta of cluster-track vs cluster energy, no photon cuts",
      nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
     fhTrackMatchedDEtaNoCut->SetYTitle("d#eta");
     fhTrackMatchedDEtaNoCut->SetXTitle("E_{cluster} (GeV)");
     
     fhTrackMatchedDPhiNoCut  = new TH2F
-    ("TrackMatchedDPhiNoCut",
+    ("hTrackMatchedDPhiNoCut",
      "d#phi of cluster-track vs cluster energy, no photon cuts",
      nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
     fhTrackMatchedDPhiNoCut->SetYTitle("d#phi (rad)");
     fhTrackMatchedDPhiNoCut->SetXTitle("E_{cluster} (GeV)");
     
     fhTrackMatchedDEtaDPhiNoCut  = new TH2F
-    ("TrackMatchedDEtaDPhiNoCut",
+    ("hTrackMatchedDEtaDPhiNoCut",
      "d#eta vs d#phi of cluster-track vs cluster energy, no photon cuts",
      nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
     fhTrackMatchedDEtaDPhiNoCut->SetYTitle("d#phi (rad)");
@@ -1228,6 +1287,65 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhTrackMatchedDEtaNoCut) ; 
     outputContainer->Add(fhTrackMatchedDPhiNoCut) ;
     outputContainer->Add(fhTrackMatchedDEtaDPhiNoCut) ;
+    
+    fhdEdx  = new TH2F ("hdEdx","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
+    fhdEdx->SetXTitle("E (GeV)");
+    fhdEdx->SetYTitle("<dE/dx>");
+    outputContainer->Add(fhdEdx);  
+
+    fhEOverP  = new TH2F ("hEOverP","matched track E/p vs cluster E ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+    fhEOverP->SetXTitle("E (GeV)");
+    fhEOverP->SetYTitle("E/p");
+    outputContainer->Add(fhEOverP);  
+    
+    fhdEdxNoCut  = new TH2F ("hdEdxNoCut","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
+    fhdEdxNoCut->SetXTitle("E (GeV)");
+    fhdEdxNoCut->SetYTitle("<dE/dx>");
+    outputContainer->Add(fhdEdxNoCut);  
+    
+    fhEOverPNoCut  = new TH2F ("hEOverPNoCut","matched track E/p vs cluster E ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+    fhEOverPNoCut->SetXTitle("E (GeV)");
+    fhEOverPNoCut->SetYTitle("E/p");
+    outputContainer->Add(fhEOverPNoCut);  
+
+    if(IsDataMC())
+    {
+      fhTrackMatchedMCParticle  = new TH2F
+      ("hTrackMatchedMCParticle",
+       "Origin of particle vs energy",
+       nptbins,ptmin,ptmax,8,0,8); 
+      fhTrackMatchedMCParticle->SetXTitle("E (GeV)");   
+      //fhTrackMatchedMCParticle->SetYTitle("Particle type");
+      
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+      
+      outputContainer->Add(fhTrackMatchedMCParticle);            
+      
+      fhTrackMatchedMCParticleNoCut  = new TH2F
+      ("hTrackMatchedMCParticleNoCut",
+       "Origin of particle vs energy",
+       nptbins,ptmin,ptmax,8,0,8); 
+      fhTrackMatchedMCParticleNoCut->SetXTitle("E (GeV)");   
+      //fhTrackMatchedMCParticleNoCut->SetYTitle("Particle type");
+      
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+      
+      outputContainer->Add(fhTrackMatchedMCParticleNoCut);         
+    }
   }  
   
   
@@ -1736,7 +1854,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       if(calo->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
         dR = 2000., dZ = 2000.;
-        GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dR,dZ);
+        GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dZ,dR);
       }    
       
       if(TMath::Abs(dR) < 999){
@@ -1744,7 +1862,58 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         fhTrackMatchedDPhi->Fill(calo->E(),dR);
         if(calo->E() > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
       }
-    }
+      
+      // Check dEdx and E/p of matched clusters
+      
+      if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+      {
+        AliVTrack *track = 0;
+        if(!strcmp("AliESDCaloCluster",Form("%s",calo->ClassName()))){
+          Int_t iESDtrack = calo->GetTrackMatchedIndex();
+          if(iESDtrack<0) printf("AliAnaPhoton::MakeAnalysisFillAOD - Wrong track index\n");
+          AliVEvent * event = GetReader()->GetInputEvent();
+          track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
+        }
+        else {
+          track = dynamic_cast<AliVTrack*>(calo->GetTrackMatched(0));
+        }
+        
+        if(track) {
+          
+          Float_t dEdx = track->GetTPCsignal();
+          fhdEdx->Fill(calo->E(), dEdx);
+          
+          Float_t eOverp = calo->E()/track->P();
+          fhEOverP->Fill(calo->E(),  eOverp);
+          
+        }
+        
+        if(IsDataMC()){
+          Int_t tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), 0);
+          if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  ){
+            
+            if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                       GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(calo->E(), 2.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(calo->E(), 0.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(calo->E(), 1.5 );
+            else                                                                                 fhTrackMatchedMCParticle->Fill(calo->E(), 3.5 );
+            
+          }
+          else{
+            
+            if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                       GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(calo->E(), 6.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(calo->E(), 4.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(calo->E(), 5.5 );
+            else                                                                                 fhTrackMatchedMCParticle->Fill(calo->E(), 7.5 );
+            
+          }        
+          
+        } // MC
+        
+      } // residual window
+      
+    } // Fill Track matching histo
     
     //--------------------------------------------------------------------------------------
     //Play with the MC stack if available
