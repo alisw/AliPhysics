@@ -77,22 +77,30 @@ TEpos::~TEpos() {
 
 TEpos& TEpos::operator=(const TEpos& epos) {
   //operator=
-	if (this != &epos) {
-	    if (!fIdConverter) fIdConverter = new AliGenEposIsajetToPdgConverter();
-	    fLaproj = epos.fLaproj;
-	    fMaproj = epos.fMaproj;
-	    fLatarg = epos.fLatarg;
-	    fMatarg = epos.fMatarg;
-	    fBminim = epos.fBminim;
-	    fBmaxim = epos.fBmaxim;
-	    fPhimin = epos.fPhimin;
-	    fPhimax = epos.fPhimax;
-	    fEcms   = epos.fEcms;
-	    fSplitting = epos.fSplitting;
-//	    fNoDecays = epos.fNoDecays;
-//	    fExtraInputLines = epos.dExtraInputLines;
-	}
-	return *this;
+  if (this != &epos) {
+    if (fIdConverter) {
+      fIdConverter = new AliGenEposIsajetToPdgConverter(*epos.fIdConverter);
+    } else{
+      fIdConverter = 0;
+    }
+    fLaproj = epos.fLaproj;
+    fMaproj = epos.fMaproj;
+    fLatarg = epos.fLatarg;
+    fMatarg = epos.fMatarg;
+    fBminim = epos.fBminim;
+    fBmaxim = epos.fBmaxim;
+    fPhimin = epos.fPhimin;
+    fPhimax = epos.fPhimax;
+    fEcms   = epos.fEcms;
+    fSplitting = epos.fSplitting;
+    for(UInt_t i = 0; i < epos.fNoDecays.size(); ++i) {
+      fNoDecays.push_back(epos.fNoDecays[i]);
+    }
+    for(UInt_t i = 0; i < epos.fExtraInputLines.size(); ++i) {
+      fExtraInputLines.push_back(epos.fExtraInputLines[i]);
+    }
+  }
+  return *this;
 }
 
 void TEpos::Initialize() {
