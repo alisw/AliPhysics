@@ -42,8 +42,16 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(11,iPtBin)] : 1.e6);}
+  UInt_t GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const;
 
-
+  
+  enum TrackPIDBit{kTPCPionLess2,kTPCPionMore2Less3,kTPCPionMore3,
+                   kTPCKaonLess2,kTPCKaonMore2Less3,kTPCKaonMore3,
+                   kTPCProtonLess2,kTPCProtonMore2Less3,kTPCProtonMore3,
+                   kTOFPionLess2,kTOFPionMore2Less3,kTOFPionMore3,
+                   kTOFKaonLess2,kTOFKaonMore2Less3,kTOFKaonMore3,
+                   kTOFProtonLess2,kTOFProtonMore2Less3,kTOFProtonMore3};
+                   
   enum EDsPid {kConservative, kStrong};
   void SetPidOption(Int_t opt){
     fPidOption=opt;
