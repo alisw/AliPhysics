@@ -612,6 +612,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       else                                                                                mcindex = kmcHadron;
       
       //GetMCAnalysisUtils()->PrintMCTag(tag);
+      //printf("\t MC index Assigned %d \n",mcindex);
       
       fhNLocMax[mcindex]->Fill(en,nMax);
       for(Int_t imax = 0; imax < nMax; imax++)
@@ -743,7 +744,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       else if(nMax==2) {
         fhMassNLocMax2[mcindex]->Fill(en,mass);
         if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[mcindex]->Fill(en,l0);
-        else if(mass < fMassPi0Max && mass > fMassPi0Min)fhM02Pi0LocMax2[mcindex]->Fill(en,l0);
+        else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[mcindex]->Fill(en,l0);
         else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax2[mcindex]->Fill(en,l0);        
       }
       else if(nMax >2) {
