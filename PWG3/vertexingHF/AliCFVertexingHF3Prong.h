@@ -42,6 +42,8 @@ class AliCFVertexingHF3Prong : public AliCFVertexingHF{
   Bool_t SetRecoCandidateParam(AliAODRecoDecayHF *recoCand);
   virtual void SetDecay3Prong(Int_t decay){fDecay=decay;}
  
+  void SetGeneratedDsOption(Int_t opt) {fGenDsOption=opt;}
+  Int_t GetGeneratedDsOption() const {return fGenDsOption;}
   
  protected:
   
@@ -52,8 +54,9 @@ class AliCFVertexingHF3Prong : public AliCFVertexingHF{
   AliCFVertexingHF3Prong& operator= (const AliCFVertexingHF3Prong& other);
   
   Int_t fDecay;   // decay mode id
+  Int_t fGenDsOption;  // 0(default) --> count all Ds->KKpi, 1 --> count Ds->phipi 2--> count Ds->K0*K
 
-  ClassDef(AliCFVertexingHF3Prong, 1);
+  ClassDef(AliCFVertexingHF3Prong, 2);
   
 };
 
