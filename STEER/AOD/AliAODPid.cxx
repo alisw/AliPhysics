@@ -108,13 +108,14 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     fTPCmomentum = pid.fTPCmomentum;
 
 
-    if(pid.fTRDnSlices <= 0|| (fTRDnSlices != pid.fTRDnSlices)) {
+    if(fTRDnSlices != pid.fTRDnSlices) {
       // only delete if number changed or is 0
       delete [] fTRDslices;
       fTRDslices = 0;
+      fTRDnSlices = pid.fTRDnSlices;
       if(pid.fTRDnSlices > 0) fTRDslices = new Double32_t[fTRDnSlices];
     }
-    fTRDnSlices=pid.fTRDnSlices;
+
     memcpy(fTRDslices, pid.fTRDslices, fTRDnSlices*sizeof(Double32_t));
 
     fTRDntls = pid.fTRDntls;
