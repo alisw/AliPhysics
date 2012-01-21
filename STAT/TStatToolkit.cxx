@@ -97,7 +97,7 @@ void TStatToolkit::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
   }
   
   Double_t norm = 1./Double_t(hh);
-  Double_t norm2 = 1./Double_t(hh-1);
+  Double_t norm2 = (hh-1)>0 ? 1./Double_t(hh-1):1;
   for (Int_t i=hh; i<nvectors; i++){
     Double_t cmean  = sumx*norm;
     Double_t csigma = (sumx2 - hh*cmean*cmean)*norm2;
@@ -771,7 +771,8 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) return new TString("An ERROR has occured during fitting!");
-   Double_t **values = new Double_t*[dim+1] ; 
+   Double_t **values = new Double_t*[dim+1] ;
+   for (Int_t i=0; i<dim+1; i++) values[i]=NULL; 
    //
    entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) {
@@ -868,6 +869,7 @@ TString* TStatToolkit::FitPlaneConstrain(TTree *tree, const char* drawCommand, c
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) return new TString("An ERROR has occured during fitting!");
    Double_t **values = new Double_t*[dim+1] ; 
+   for (Int_t i=0; i<dim+1; i++) values[i]=NULL; 
    //
    entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) {
@@ -972,6 +974,7 @@ TString* TStatToolkit::FitPlaneFixed(TTree *tree, const char* drawCommand, const
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) return new TString("An ERROR has occured during fitting!");
    Double_t **values = new Double_t*[dim+1] ; 
+   for (Int_t i=0; i<dim+1; i++) values[i]=NULL; 
    //
    entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) {
