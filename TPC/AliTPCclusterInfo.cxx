@@ -119,7 +119,8 @@ AliTPCclusterInfo::AliTPCclusterInfo(Float_t *matrix, Int_t nbins, Float_t* grap
 AliTPCclusterInfo& AliTPCclusterInfo::operator=(const AliTPCclusterInfo& info){
   //
   // assignment operator
-  //
+  // 
+  if (this == &info) return (*this);
   if (this != &info) {
     new (this) AliTPCclusterInfo(info);
   }

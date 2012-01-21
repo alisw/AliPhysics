@@ -104,7 +104,13 @@ AliTPCCalROC & AliTPCCalROC::operator =(const AliTPCCalROC & param)
   // assignment operator - dummy
   //
   if (this == &param) return (*this);
-  fData=param.fData;
+  fSector       = param.fSector;
+  fNChannels    =  AliTPCROC::Instance()->GetNChannels(fSector);
+  fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
+  fkIndexes     =  AliTPCROC::Instance()->GetRowIndexes(fSector);
+  //
+  fData         = new Float_t[fNChannels];
+  for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = param.fData[idata];
   return (*this);
 }
 
