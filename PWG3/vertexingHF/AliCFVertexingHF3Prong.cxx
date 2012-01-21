@@ -42,7 +42,8 @@ ClassImp(AliCFVertexingHF3Prong)
 //_________________________________________
 AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(Int_t decay):
 AliCFVertexingHF(),
-  fDecay(decay)
+  fDecay(decay),
+  fGenDsOption(3)
  {
   // 
   SetNProngs(3);
@@ -58,8 +59,8 @@ AliCFVertexingHF(),
 //_________________________________________
 AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t originDselection, Int_t decay):
   AliCFVertexingHF(mcArray, originDselection),
-  fDecay(decay)
- 
+  fDecay(decay),
+  fGenDsOption(3)
 {
   //
   SetNProngs(3);
@@ -135,6 +136,13 @@ Bool_t AliCFVertexingHF3Prong::SetRecoCandidateParam(AliAODRecoDecayHF *recoCand
   if (!fmcPartCandidate){
     AliDebug(3,"No part candidate");
     return bSignAssoc;
+  }
+
+  if(fDecay==kDstoKKpi && fGenDsOption!=3){
+    if(!CheckMCChannelDecay()){
+      AliDebug(3,"Ds not from the selected resonant channel");
+      return bSignAssoc;
+    }
   }
 
   bSignAssoc = kTRUE;
@@ -505,6 +513,11 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
 	daughter[nDauFound]=pdgCode;
 	nDauFound++;
       }else{
+	if(fDecay==kDstoKKpi && fGenDsOption!=3){
+	  Int_t pdgCodeRes=TMath::Abs(part->GetPdgCode());
+	  if(fGenDsOption==1 && pdgCodeRes!=333) return checkCD;
+	  else if(fGenDsOption==2 && pdgCodeRes!=313) return checkCD;
+	}
 	Int_t nDauRes=part->GetNDaughters();
 	if(nDauRes!=2) return checkCD;
 	Int_t labelFirstDauRes = part->GetDaughter(0); 	

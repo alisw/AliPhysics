@@ -105,6 +105,9 @@ class AliCFVertexingHF : public TObject {
 	virtual void SetEtaAccCut(Float_t* etaAccCut);
 	virtual void SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut);
 	virtual void SetAccCut();
+	virtual void SetGeneratedDsOption(Int_t /*opt*/){
+	  AliError("Method implemented in derived class");
+	}
 
 	void SetFakeSelection(Int_t fakeSel){fFakeSelection = fakeSel;}
 	Int_t GetFakeSelection(){return fFakeSelection;}
