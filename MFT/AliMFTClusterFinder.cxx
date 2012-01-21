@@ -64,7 +64,7 @@ AliMFTClusterFinder::~AliMFTClusterFinder() {
 
 //====================================================================================================================================================
 
-void AliMFTClusterFinder::Init(Char_t *nameGeomFile) {
+void AliMFTClusterFinder::Init(const Char_t *nameGeomFile) {
 
   fSegmentation = new AliMFTSegmentation(nameGeomFile);
   fNPlanes = fSegmentation -> GetNPlanes();

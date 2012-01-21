@@ -124,7 +124,7 @@ void AliEMCALTriggerBoard::ZeroRegion()
 }
 
 //_______________
-void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t type, Int_t thres, Int_t time)
+void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t /*type*/, Int_t thres, Int_t time)
 {
 	// Sliding window
 	

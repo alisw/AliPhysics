@@ -81,7 +81,7 @@ Int_t AliHLTITStracker::Clusters2Tracks(AliESDEvent *event) {
       try {
         t=new AliHLTITStrack(*esd);
       } catch (const Char_t *msg) {
-        Warning("Clusters2Tracks",msg);
+        Warning("Clusters2Tracks","%s\n",msg);
         delete t;
         continue;
       }

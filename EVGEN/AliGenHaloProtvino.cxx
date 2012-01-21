@@ -139,6 +139,7 @@ void AliGenHaloProtvino::Init()
     const Float_t kFlux         = 1.e11 / 25.e-9; // protons/s
     Float_t pFlux[5] = {0.2, 0.2, 0.3, 0.3, 1.0};
 
+    Int_t ncols = 0;
     if (fRunPeriod < 5) {
 //
 //  Ring 1   
@@ -146,7 +147,9 @@ void AliGenHaloProtvino::Init()
 
 	for (i = 0; i < fGPASize; i++)
 	{
-	    fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    ncols = fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    if (ncols<0) break;
+
 	    fG1[i] = p[fRunPeriod];
 	    
 	    if (i > 0) {
@@ -160,7 +163,9 @@ void AliGenHaloProtvino::Init()
 //
 	for (i = 0; i < fGPASize; i++)
 	{
-	    fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    ncols = fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    if (ncols<0) break;
+
 	    fG2[i] = p[fRunPeriod];
 	    if (i > 0) {
 		fZ2[i] = fZ2[i-1] + z;
@@ -180,7 +185,9 @@ void AliGenHaloProtvino::Init()
     } else {
 	for (i = 0; i < fGPASize; i++) 
 	{
-	    fscanf(file, "%f %e %e %e %e %e", &z, &p[0], &p[1], &p[2], &p[3], &p[4]);
+	    ncols = fscanf(file, "%f %e %e %e %e %e", &z, &p[0], &p[1], &p[2], &p[3], &p[4]);
+	    if (ncols<0) break;
+
 	    z /= 1000.;
 	    fG1[i] = p[4] * kCrossSection * kFlux;             // 1/m/s
 	    // 1/3 of nominal intensity at startup

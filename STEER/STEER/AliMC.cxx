@@ -854,7 +854,7 @@ void AliMC::ReadTransPar()
       return;
     }
     // Read the end of line
-    fscanf(lun,"%*c");
+    iret=fscanf(lun,"%*c");
     if(!iret) continue;
     if(line[0]=='*') continue;
     // Read the numbers
