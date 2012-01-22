@@ -733,14 +733,14 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
     
     TH3F * his3 = 0;
     his3 = (TH3F*)fRMSY->At(padSize);
-    if (his3) his3->Fill(250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(angley), TMath::Sqrt(cluster0->GetSigmaY2()) );
+    if (his3) his3->Fill(250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(angley), TMath::Sqrt(TMath::Abs(cluster0->GetSigmaY2()) ));
     his3 = (TH3F*)fRMSZ->At(padSize);
-    if (his3) his3->Fill( 250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(anglez), TMath::Sqrt(cluster0->GetSigmaZ2()) );
+    if (his3) his3->Fill( 250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(anglez), TMath::Sqrt(TMath::Abs(cluster0->GetSigmaZ2()) ));
     
     his3 = (TH3F*)fArrayQRMSY->At(GetBin(cluster0->GetMax(), padSize));
-    if (his3) his3->Fill( 250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(angley), TMath::Sqrt(cluster0->GetSigmaY2()) );
+    if (his3) his3->Fill( 250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(angley), TMath::Sqrt(TMath::Abs(cluster0->GetSigmaY2()) ));
     his3 = (TH3F*)fArrayQRMSZ->At(GetBin(cluster0->GetMax(), padSize));
-    if (his3) his3->Fill( 250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(anglez), TMath::Sqrt(cluster0->GetSigmaZ2()) );
+    if (his3) his3->Fill( 250 - TMath::Abs(cluster0->GetZ()), TMath::Abs(anglez), TMath::Sqrt(TMath::Abs(cluster0->GetSigmaZ2()) ));
     
     
     his3 = (TH3F*)fResolY->At(padSize);
@@ -1251,7 +1251,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
          // loop over arrayQDZList, get TObjArray, get object at position i, cast it into TH3F
-         if (!objarray) continue;
          hist = (TH3F*)(objarray->At(i));
          histList->Add(hist);
       }
@@ -1272,7 +1271,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
          // loop over arrayQDZList, get TObjArray, get object at position i, cast it into TH3F
-         if (!objarray) continue;
          hist = (TH3F*)(objarray->At(i));
          histList->Add(hist);
       }
@@ -1287,7 +1285,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
          // loop over arrayQDZList, get TObjArray, get object at position i, cast it into TH3F
-         if (!objarray) continue;
          hist = (TH3F*)(objarray->At(i));
          histList->Add(hist);
       }
@@ -1317,7 +1314,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
          // loop over arrayQDZList, get TObjArray, get object at position i, cast it into TH3F
-         if (!objarray) continue;
          hist = (TH3F*)(objarray->At(i));
          histList->Add(hist);
       }
