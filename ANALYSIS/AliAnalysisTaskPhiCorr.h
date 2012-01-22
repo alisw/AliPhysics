@@ -1,4 +1,3 @@
-// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include");
 #ifndef ALIANALYSISTASKPHICORR_cxx
 #define ALIANALYSISTASKPHICORR_cxx
 /*
