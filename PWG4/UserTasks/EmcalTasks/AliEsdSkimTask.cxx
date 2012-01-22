@@ -9,22 +9,29 @@
 #include <TFile.h>
 #include <TTree.h>
 #include "AliAnalysisManager.h"
+#include "AliCentrality.h"
+#include "AliEventplane.h"
 #include "AliESDEvent.h"
+#include "AliESDFMD.h"
 #include "AliESDtrackCuts.h"
+#include "AliEsdTrackExt.h"
 #include "AliMultiplicity.h"
 
 //_________________________________________________________________________________________________
 AliEsdSkimTask::AliEsdSkimTask(const char *opt) :
   AliAnalysisTaskSE(opt), fEvent(0), fTree(0), fCuts(0),
   fDoZDC(1), fDoV0(1), fDoT0(1), fDoTPCv(1), fDoSPDv(1), fDoPriv(1),
-  fDoEmCs(1), fDoPCs(1), fDoEmT(1), fDoPT(1), fDoTracks(1), fDoMult(1),
-  fDoTof(1), fDoPileup(1), fDoClus(1), fEmcNames(""), 
-  fDoMiniTracks(0), fTracks("Tracks"), fPhosClusOnly(0)
+  fDoEmCs(1), fDoPCs(1), fDoEmT(1), fDoPT(1), fDoTracks(1), fDoFmd(1),
+  fDoMult(1), fDoTof(1), fDoPileup(1), fDoClus(1), fEmcNames(""), 
+  fDoMiniTracks(0), fTracks("Tracks"), fPhosClusOnly(0), fDoSaveBytes(1),
+  fDoCent(1), fDoRP(1)
 {
   // Constructor.
 
   if (!opt)
     return;
+
+  fBranchNames = "ESD:AliESDHeader.,AliESDRun.";
 
   DefineOutput(1, TTree::Class());
 }
@@ -45,79 +52,122 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
   TList* objsin  = esdin->GetList();
   TList* objsout = fEvent->GetList();
 
-  AliESDHeader *header = dynamic_cast<AliESDHeader*>(objsin->FindObject("AliESDHeader"));
+  AliESDHeader *header = dynamic_cast<AliESDHeader*>(objsout->FindObject("AliESDHeader"));
   if (header) {
     am->LoadBranch("AliESDHeader.");
     *header = *esdin->GetHeader();
   }
-  AliESDRun *run = dynamic_cast<AliESDRun*>(objsin->FindObject("AliESDRun"));
+  AliESDRun *run = dynamic_cast<AliESDRun*>(objsout->FindObject("AliESDRun"));
   if (run) {
     am->LoadBranch("AliESDRun.");
     *run = *esdin->GetESDRun();
   }
-  AliESDZDC *zdc = dynamic_cast<AliESDZDC*>(objsin->FindObject("AliESDZDC"));
+  AliCentrality *cent = dynamic_cast<AliCentrality*>(objsout->FindObject("Cent"));
+  if (cent) {
+    cent->Reset();
+    AliCentrality *centin = esdin->GetCentrality();
+    cent->SetQuality(centin->GetQuality());
+    cent->SetCentralityV0M(centin->GetCentralityPercentileUnchecked("V0M"));
+    cent->SetCentralityFMD(centin->GetCentralityPercentileUnchecked("FMD"));
+    cent->SetCentralityTRK(centin->GetCentralityPercentileUnchecked("TRK"));
+    cent->SetCentralityTKL(centin->GetCentralityPercentileUnchecked("TKL"));
+    cent->SetCentralityCL0(centin->GetCentralityPercentileUnchecked("CL0"));
+    cent->SetCentralityCL1(centin->GetCentralityPercentileUnchecked("CL1"));
+    cent->SetCentralityV0MvsFMD(centin->GetCentralityPercentileUnchecked("V0MvsFMD"));
+    cent->SetCentralityTKLvsV0M(centin->GetCentralityPercentileUnchecked("TKLvsV0M"));
+    cent->SetCentralityZEMvsZDC(centin->GetCentralityPercentileUnchecked("ZEMvsZDC"));
+  }
+  AliEventplane *ep = dynamic_cast<AliEventplane*>(objsout->FindObject("EP"));
+  if (ep) {
+    ep->Reset();
+    AliEventplane *epin = esdin->GetEventplane();
+    if (!fDoSaveBytes) {
+      *ep = *epin;
+    } else {
+      if (epin->GetQVector()) {
+        ep->SetQVector(new TVector2(*epin->GetQVector()));
+        ep->SetEventplaneQ(epin->GetEventplane("Q"));
+        ep->SetQsub(new TVector2(*epin->GetQsub1()),new TVector2(*epin->GetQsub2()));
+        ep->SetQsubRes(epin->GetQsubRes());
+      }
+    }
+  }
+  AliESDZDC *zdc = dynamic_cast<AliESDZDC*>(objsout->FindObject("AliESDZDC"));
   if (zdc) {
     am->LoadBranch("AliESDZDC.");
     *zdc = *esdin->GetESDZDC();
   }
-  AliESDVZERO *v0 = dynamic_cast<AliESDVZERO*>(objsin->FindObject("AliESDVZERO"));
+  AliESDVZERO *v0 = dynamic_cast<AliESDVZERO*>(objsout->FindObject("AliESDVZERO"));
   if (v0) {
     am->LoadBranch("AliESDVZERO.");
     *v0 = *esdin->GetVZEROData();
   }
-  AliESDTZERO *t0 = dynamic_cast<AliESDTZERO*>(objsin->FindObject("AliESDTZERO"));
+  AliESDTZERO *t0 = dynamic_cast<AliESDTZERO*>(objsout->FindObject("AliESDTZERO"));
   if (t0) {
     am->LoadBranch("AliESDTZERO.");
     *t0 = *esdin->GetESDTZERO();
   }
-  AliESDVertex *tpcv = dynamic_cast<AliESDVertex*>(objsin->FindObject("TPCVertex"));
+  AliESDVertex *tpcv = dynamic_cast<AliESDVertex*>(objsout->FindObject("TPCVertex"));
   if (tpcv) {
     am->LoadBranch("TPCVertex.");
     *tpcv = *esdin->GetPrimaryVertexTPC();
   }
-  AliESDVertex *spdv = dynamic_cast<AliESDVertex*>(objsin->FindObject("SPDVertex"));
+  AliESDVertex *spdv = dynamic_cast<AliESDVertex*>(objsout->FindObject("SPDVertex"));
   if (spdv) {
     am->LoadBranch("SPDVertex.");
     *spdv = *esdin->GetPrimaryVertexSPD();
   }
-  AliESDVertex *priv = dynamic_cast<AliESDVertex*>(objsin->FindObject("PrimaryVertex"));
+  AliESDVertex *priv = dynamic_cast<AliESDVertex*>(objsout->FindObject("PrimaryVertex"));
   if (priv) {
     am->LoadBranch("PrimaryVertex.");
     *priv = *esdin->GetPrimaryVertexTracks();
   }
-  AliESDCaloCells *ecells = dynamic_cast<AliESDCaloCells*>(objsin->FindObject("EMCALCells"));
+  AliESDCaloCells *ecells = dynamic_cast<AliESDCaloCells*>(objsout->FindObject("EMCALCells"));
   if (ecells) {
     am->LoadBranch("EMCALCells.");
     *ecells = *esdin->GetEMCALCells();
   }
-  AliESDCaloCells *pcells = dynamic_cast<AliESDCaloCells*>(objsin->FindObject("PHOSCells"));
+  AliESDCaloCells *pcells = dynamic_cast<AliESDCaloCells*>(objsout->FindObject("PHOSCells"));
   if (pcells) {
     am->LoadBranch("PHOSCells.");
     *pcells = *esdin->GetPHOSCells();
   }
-  AliESDCaloTrigger *etrig = dynamic_cast<AliESDCaloTrigger*>(objsin->FindObject("EMCALTrigger"));
+  AliESDCaloTrigger *etrig = dynamic_cast<AliESDCaloTrigger*>(objsout->FindObject("EMCALTrigger"));
   if (etrig) {
     am->LoadBranch("EMCALTrigger.");
     *etrig = *esdin->GetCaloTrigger("EMCAL");
   }
-  AliESDCaloTrigger *ptrig = dynamic_cast<AliESDCaloTrigger*>(objsin->FindObject("PHOSTrigger"));
+  AliESDCaloTrigger *ptrig = dynamic_cast<AliESDCaloTrigger*>(objsout->FindObject("PHOSTrigger"));
   if (ptrig) {
     am->LoadBranch("PHOSTrigger.");
     *ptrig = *esdin->GetCaloTrigger("PHOS");
   }
-
-  AliMultiplicity *mult = dynamic_cast<AliMultiplicity*>(objsin->FindObject("AliMultiplicity"));
+  AliESDFMD *fmd = dynamic_cast<AliESDFMD*>(objsout->FindObject("AliESDFMD"));
+  if (fmd) {
+    am->LoadBranch("AliESDFMD.");
+    if (!fDoSaveBytes) {
+      *fmd = *esdin->GetFMDData();
+    }
+  }
+  AliMultiplicity *mult = dynamic_cast<AliMultiplicity*>(objsout->FindObject("AliMultiplicity"));
   if (mult) {
     am->LoadBranch("AliMultiplicity.");
-    *mult = *esdin->GetMultiplicity();
+    if (!fDoSaveBytes) {
+      *mult = *esdin->GetMultiplicity();
+    } else {
+      const AliMultiplicity *multin = esdin->GetMultiplicity();;
+      mult->SetFiredChips(0, multin->GetNumberOfFiredChips(0));
+      mult->SetFiredChips(1, multin->GetNumberOfFiredChips(1));
+      for (Int_t i=0; i<6; ++i) 
+        mult->SetITSClusters(i,mult->GetNumberOfITSClusters(i));
+    }
   }
-
-  AliTOFHeader *tofh = dynamic_cast<AliTOFHeader*>(objsin->FindObject("AliTOFHeader"));
+  AliTOFHeader *tofh = dynamic_cast<AliTOFHeader*>(objsout->FindObject("AliTOFHeader"));
   if (tofh) {
     am->LoadBranch("AliTOFHeader.");
     *tofh = *esdin->GetTOFHeader();
   }
-  TClonesArray *spup = dynamic_cast<TClonesArray*>(objsin->FindObject("SPDPileupVertices"));
+  TClonesArray *spup = dynamic_cast<TClonesArray*>(objsout->FindObject("SPDPileupVertices"));
   if (spup) {
     am->LoadBranch("SPDPileupVertices");
     Int_t N = esdin->GetNumberOfPileupVerticesSPD();
@@ -127,7 +177,7 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
         fEvent->AddPileupVertexSPD(vtx);
     }
   }
-  TClonesArray *tpup = dynamic_cast<TClonesArray*>(objsin->FindObject("TrkPileupVertices"));
+  TClonesArray *tpup = dynamic_cast<TClonesArray*>(objsout->FindObject("TrkPileupVertices"));
   if (tpup) {
     am->LoadBranch("TrkPileupVertices");
     Int_t N = esdin->GetNumberOfPileupVerticesTracks();
@@ -137,9 +187,9 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
         fEvent->AddPileupVertexTracks(vtx);
     }
   }
-  TClonesArray *clus = dynamic_cast<TClonesArray*>(objsin->FindObject("CaloClusters"));
+  TClonesArray *clus = dynamic_cast<TClonesArray*>(objsout->FindObject("CaloClusters"));
   if (clus) {
-    am->LoadBranch("");
+    am->LoadBranch("CaloClusters");
     Int_t N = esdin->GetNumberOfCaloClusters();
     for (Int_t i=0; i<N; ++i) {
       AliESDCaloCluster *c = esdin->GetCaloCluster(i);
@@ -156,8 +206,15 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
       if (cname.Length()<=0)
         continue;
       TClonesArray *arrin  = dynamic_cast<TClonesArray*>(objsin->FindObject(cname));
+      if (!arrin) {
+        AliFatal(Form("Can not find input clusters with name %s", cname.Data()));
+        return;
+      }
       TClonesArray *arrout = dynamic_cast<TClonesArray*>(objsout->FindObject(cname));
-      //AliFatal(Form("Can not find tracks with name %s", fTracks.Data()));
+      if (!arrout) {
+        AliFatal(Form("Can not find output clusters with name %s", cname.Data()));
+        return;
+      }
       arrout->Delete();
       const Int_t N = arrin->GetEntries();
       for (Int_t iC=0, nC=0; iC<N; ++iC) {
@@ -171,73 +228,33 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
   }
   if (fDoTracks) {
     am->LoadBranch("Tracks");
-    TClonesArray *tracks = dynamic_cast<TClonesArray*>(objsin->FindObject(fTracks));
-    if (!tracks) {
+    TClonesArray *tracksin = dynamic_cast<TClonesArray*>(objsin->FindObject(fTracks));
+    if (!tracksin) {
       AliFatal(Form("Can not find tracks with name %s", fTracks.Data()));
       return;
     }
-    const Int_t Ntracks = tracks->GetEntries();
+    TClonesArray *tracksout = dynamic_cast<TClonesArray*>(objsout->FindObject("Tracks"));
+    if (!tracksout) {
+      AliFatal(Form("Can not find tracks with name %s", "Tracks"));
+      return;
+    }
+    const Int_t Ntracks = tracksin->GetEntries();
     Int_t nacc = 0;
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-      AliESDtrack *track = dynamic_cast<AliESDtrack*>(tracks->At(iTracks));
+      AliESDtrack *track = dynamic_cast<AliESDtrack*>(tracksin->At(iTracks));
       if (!track)
         continue;
       if (fCuts) {
         if (!fCuts->IsSelected(track))
           continue;
       }
+      AliEsdTrackExt *newtrack = new ((*tracksout)[nacc]) AliEsdTrackExt(*track);
       if (fDoMiniTracks) {
-        class AliEsdMiniTrack : public AliESDtrack
-        {
-          public: 
-            AliEsdMiniTrack(const AliESDtrack &t) : AliESDtrack(t) {}
-            void MakeMiniESDtrack() { 
-              delete fCp;       fCp       = 0;
-              delete fIp;       fIp       = 0;
-              delete fTPCInner; fTPCInner = 0;
-              delete fOp;       fOp       = 0;
-              delete fHMPIDp;   fHMPIDp   = 0;
-              for (Int_t i=0; i<3;i++) fKinkIndexes[i] = 0;
-              for (Int_t i=0; i<3;i++) fV0Indexes[i] = 0;
-              fTRDchi2   = 0;        
-              fTRDncls   = 0;       
-              fTRDncls0  = 0;       
-              fTRDsignal = 0;      
-              for (Int_t i=0;i<kTRDnPlanes;i++) {
-                fTRDTimBin[i]  = 0;
-              }
-              for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
-              fTRDLabel      = 0;       
-              fTRDQuality    = -1;
-              fTRDntracklets = 0;
-              if(fTRDnSlices)
-                delete[] fTRDslices;
-              fTRDslices     = 0;
-              fTRDnSlices    = 0;
-              fTRDBudget     = -1;
-              fHMPIDchi2     = 0;     
-              fHMPIDqn       = 0;     
-              fHMPIDcluIdx   = -1;     
-              fHMPIDsignal   = 0;     
-              for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
-              fHMPIDtrkTheta = 0;     
-              fHMPIDtrkPhi   = 0;      
-              fHMPIDtrkX     = 0;     
-              fHMPIDtrkY     = 0;      
-              fHMPIDmipX     = fCacheNCrossedRows;
-              fHMPIDmipY     = fCacheChi2TPCConstrainedVsGlobal;
-            }
-        };
-
-        AliEsdMiniTrack *newtrack = new AliEsdMiniTrack(*track);
-        newtrack->MakeMiniESDtrack();
-        if (track->GetEMCALcluster()==-123) {
-          newtrack->SetEMCALcluster(track->GetEMCALcluster());
-          newtrack->SetTRDQuality(track->GetTRDQuality());
-          newtrack->SetTRDBudget(track->GetTRDBudget());
-        }
-        track = newtrack;
+        newtrack->MakeMiniTrack();
+      } else {
+        newtrack->DeleteParams();
       }
+      newtrack->SetID(nacc);
       fEvent->AddTrack(track);
       ++nacc;
     }
@@ -256,6 +273,16 @@ void AliEsdSkimTask::UserCreateOutputObjects()
   fEvent = new AliESDEvent;
   fEvent->AddObject(new AliESDHeader());
   fEvent->AddObject(new AliESDRun());
+  if (fDoCent) {
+    AliCentrality *cent = new AliCentrality;
+    cent->SetName("Cent");
+    fEvent->AddObject(cent);
+  }
+  if (fDoRP) {
+    AliEventplane *ep = new AliEventplane;
+    ep->SetName("EP");
+    fEvent->AddObject(ep);
+  }
   if (fDoZDC) 
     fEvent->AddObject(new AliESDZDC());
   if (fDoV0)
@@ -293,6 +320,10 @@ void AliEsdSkimTask::UserCreateOutputObjects()
     ptrig->SetName("PHOSTrigger");
     fEvent->AddObject(ptrig);
   }
+  if (fDoFmd) {
+    AliESDFMD *fmd = new AliESDFMD;
+    fEvent->AddObject(fmd);
+  }
   if (fDoMult) {
     fEvent->AddObject(new AliMultiplicity());
   }
@@ -301,7 +332,7 @@ void AliEsdSkimTask::UserCreateOutputObjects()
     arr1->SetName("SPDPileupVertices");
     fEvent->AddObject(arr1);
     TClonesArray *arr2 = new TClonesArray("AliESDVertex",0);
-    arr2->SetName("TPCPileupVertices");
+    arr2->SetName("TrkPileupVertices");
     fEvent->AddObject(arr2);
   }
   if (fDoTof) { 
@@ -325,14 +356,21 @@ void AliEsdSkimTask::UserCreateOutputObjects()
     delete namearr;
   }
   if (fDoTracks) {
-    TClonesArray *arr = new TClonesArray("AliESDtrack",0);
-    arr->SetName("Tracks");
+    TClonesArray *arr = 0;
+    if (fDoMiniTracks) {
+      arr = new TClonesArray("AliEsdTrackExt",0);
+      arr->SetName("Tracks");
+    } else {
+      arr = new TClonesArray("AliESDtrackExt",0);
+      arr->SetName("Tracks");
+    }
     fEvent->AddObject(arr);
   }
   fEvent->GetStdContent();
   fEvent->WriteToTree(fTree);
   fTree->GetUserInfo()->Add(fEvent);
   TFile *file = OpenFile(1);
+  file->SetCompressionLevel(2);
   fTree->SetDirectory(file);
   fTree->SetAutoFlush(-1024*1024*1024);
   fTree->SetAutoSave(-1024*1024*1024);
