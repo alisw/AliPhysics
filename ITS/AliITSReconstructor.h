@@ -40,7 +40,6 @@ public:
 			       AliESDEvent* esd) const
   {FillESD((TTree*)NULL, clustersTree, esd);}
   virtual void Terminate() const {AliITSRecPointContainer::Destroy();}
-  void ResetRecPoints() {fDetTypeRec->ResetRecPoints();}
 
   static const AliITSRecoParam* GetRecoParam() { return dynamic_cast<const AliITSRecoParam*>(AliReconstructor::GetRecoParam(0)); }
 

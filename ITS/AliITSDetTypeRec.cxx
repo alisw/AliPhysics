@@ -106,7 +106,6 @@ fFastOrFiredMap(1200){
   fNMod[0] = fgkDefaultNModulesSPD;
   fNMod[1] = fgkDefaultNModulesSDD;
   fNMod[2] = fgkDefaultNModulesSSD;
-  fRecPoints = new TClonesArray("AliITSRecPoint",3000);
   fNRecPoints = 0;
   
   
@@ -155,18 +154,15 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
   if(fReconstruction){
     fReconstruction->Delete();
     delete fReconstruction;
-    fReconstruction = 0;
   }
   if(fSegmentation){
     fSegmentation->Delete();
     delete fSegmentation;
-    fSegmentation = 0;
   }
   if(fCalibration){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       fCalibration->Delete();
       delete fCalibration;
-      fCalibration = 0;
       if(fRespSDD) delete fRespSDD;
       if(fDDLMapSDD) delete fDDLMapSDD;
    }
@@ -174,39 +170,33 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
   if(fSSDCalibration){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       delete fSSDCalibration;
-      fSSDCalibration = NULL;
     }
   }
    if(fSPDDead){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       fSPDDead->Delete();
       delete fSPDDead;
-      fSPDDead = 0;
     }
   } 
      if(fSPDSparseDead){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       fSPDSparseDead->Delete();
       delete fSPDSparseDead;
-      fSPDSparseDead = 0;
     }
   } 
   if(fTriggerConditions){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       fTriggerConditions->Delete();
       delete fTriggerConditions;
-      fTriggerConditions = 0;
     }
   } 
   if(fDigits){
     fDigits->Delete();
     delete fDigits;
-    fDigits=0;
   }
   if(fRecPoints){
     fRecPoints->Delete();
     delete fRecPoints;
-    fRecPoints=0;
   }
   delete [] fNMod;
   
@@ -865,7 +855,6 @@ void AliITSDetTypeRec::AddRecPoint(const AliITSRecPoint &r){
     //      none.
     // Return:
     //      none.
-
     TClonesArray &lrecp = *fRecPoints;
     new(lrecp[fNRecPoints++]) AliITSRecPoint(r);
 }
@@ -1054,7 +1043,7 @@ void AliITSDetTypeRec::ReadOldSSDNoise(const TObjArray *array,
   const Int_t fgkSSDPSIDESTRIPSPERMODULE = 768;
 
   Int_t gNMod = array->GetEntries();
-  cout<<"Converting old calibration object for noise..."<<endl;
+  AliInfo("Converting old calibration object for noise...\n");
 
   //NOISE
   Double_t noise = 0.0;
@@ -1075,7 +1064,7 @@ void AliITSDetTypeRec::ReadOldSSDBadChannels(const TObjArray *array,
 					     AliITSBadChannelsSSDv2 *badChannelsSSD) {
   //Reads the old SSD calibration object and converts it to the new format
   Int_t gNMod = array->GetEntries();
-  cout<<"Converting old calibration object for bad channels..."<<endl;
+  AliInfo("Converting old calibration object for bad channels...");
   for (Int_t iModule = 0; iModule < gNMod; iModule++) {
     //for (Int_t iModule = 0; iModule < 1; iModule++) {
     AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (array->At(iModule));
@@ -1100,7 +1089,7 @@ void AliITSDetTypeRec::ReadOldSSDGain(const TObjArray *array,
   //Reads the old SSD calibration object and converts it to the new format
 
   Int_t gNMod = array->GetEntries();
-  cout<<"Converting old calibration object for gain..."<<endl;
+  AliInfo("Converting old calibration object for gain...\n");
 
   //GAIN
   for (Int_t iModule = 0; iModule < gNMod; iModule++) {

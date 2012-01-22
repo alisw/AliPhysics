@@ -87,9 +87,6 @@ class AliITSDetTypeRec : public TObject {
     void MakeBranchR(TTree *treeR,Option_t *opt=" ");
     void SetTreeAddressR(TTree* const treeR);
     void AddRecPoint(const AliITSRecPoint &p);
-    void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
-    // Return pointer to rec points 
-    TClonesArray  *RecPoints() const  {return fRecPoints;}
     void MakeBranchRF(TTree *treeR){MakeBranchR(treeR,"Fast");}
     void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det, Int_t optCluFind=0);
     void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
@@ -120,6 +117,7 @@ class AliITSDetTypeRec : public TObject {
     virtual Bool_t GetCalibrationSPD(Bool_t cacheStatus);
     virtual Bool_t GetCalibrationSDD(Bool_t cacheStatus);
     virtual Bool_t GetCalibrationSSD(Bool_t cacheStatus);
+    void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
 
     //    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
     static const Int_t fgkNdettypes;          // number of det. types
