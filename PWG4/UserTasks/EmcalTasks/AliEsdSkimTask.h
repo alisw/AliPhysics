@@ -4,6 +4,7 @@
 // $Id$
 
 #include "AliPhysicsSelectionTask.h"
+#include "AliESDtrack.h"
 
 class TTree;
 class AliESDEvent;
@@ -19,12 +20,14 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   void SetDoClus(Bool_t b)         { fDoClus       = b; }
   void SetDoEmC(Bool_t b)          { fDoEmCs       = b; }
   void SetDoEmT(Bool_t b)          { fDoEmT        = b; }
+  void SetDoFmd(Bool_t b)          { fDoFmd        = b; }
   void SetDoMiniTracks(Bool_t b)   { fDoMiniTracks = b; }
   void SetDoMult(Bool_t b)         { fDoMult       = b; }
   void SetDoPhC(Bool_t b)          { fDoPCs        = b; }
   void SetDoPhT(Bool_t b)          { fDoPT         = b; }
   void SetDoPileup(Bool_t b)       { fDoPileup     = b; }
   void SetDoPriV(Bool_t b)         { fDoPriv       = b; }
+  void SetDoSaveBytes(Bool_t b)    { fDoSaveBytes  = b; }
   void SetDoSpdV(Bool_t b)         { fDoSPDv       = b; }
   void SetDoT0(Bool_t b)           { fDoT0         = b; }
   void SetDoTof(Bool_t b)          { fDoTof        = b; }
@@ -51,6 +54,7 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fDoEmT;        // do emcal trigger
   Bool_t           fDoPT;         // do phos trigger
   Bool_t           fDoTracks;     // do tracks
+  Bool_t           fDoFmd;        // do fmd
   Bool_t           fDoMult;       // do mult
   Bool_t           fDoTof;        // do TOF
   Bool_t           fDoPileup;     // do pileup
@@ -59,11 +63,14 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fDoMiniTracks; // strip down tracks
   TString          fTracks;       // name of tracks (e.g. tracks propagated to EMCAL surface)
   Bool_t           fPhosClusOnly; // if true then only store PHOS clusters
+  Bool_t           fDoSaveBytes;  // if true then trim down some of the stored objects (mult, fmd)
+  Bool_t           fDoCent;       // do centrality
+  Bool_t           fDoRP;         // do reaction plane
 
  private:
   AliEsdSkimTask(const AliEsdSkimTask&);            // not implemented
   AliEsdSkimTask &operator=(const AliEsdSkimTask&); // not implemented
 
- ClassDef(AliEsdSkimTask, 2); // Esd trimming and skimming task
+ ClassDef(AliEsdSkimTask, 3); // Esd trimming and skimming task
 };
 #endif
