@@ -91,7 +91,7 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     AliESDtrack *eTrack = static_cast<AliESDtrack*>(fTracks->At(i));
     if (!eTrack)
       continue;
-    eTrack->SetEMCALcluster(AliVTrack::kEMCALNoMatch);
+    eTrack->ResetStatus(AliVTrack::kEMCALmatch);
     if(eTrack->Pt()<fMinPtCut) 
       continue;
     Double_t phi = eTrack->Phi()*TMath::RadToDeg();
@@ -112,9 +112,9 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
                                                             phiout);
     if (!ret)
       continue;
-    eTrack->SetEMCALcluster(-123); //indicate that we have eta/phi on calo surface
-    eTrack->SetTRDQuality(etaout); //store eta
-    eTrack->SetTRDBudget(phiout);  //store phi
+    if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
+      continue;
     eTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
+    eTrack->SetStatus(AliVTrack::kEMCALmatch);
   }
 }
