@@ -79,9 +79,10 @@ TEpos& TEpos::operator=(const TEpos& epos) {
   //operator=
   if (this != &epos) {
     if (fIdConverter) {
-      fIdConverter = new AliGenEposIsajetToPdgConverter(*epos.fIdConverter);
+	delete fIdConverter;
+	fIdConverter = new AliGenEposIsajetToPdgConverter(*epos.fIdConverter);
     } else{
-      fIdConverter = 0;
+	fIdConverter = 0;
     }
     fLaproj = epos.fLaproj;
     fMaproj = epos.fMaproj;
