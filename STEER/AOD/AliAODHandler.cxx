@@ -120,13 +120,9 @@ AliAODHandler::~AliAODHandler()
   
   delete fAODEvent;
 
-  if (fFileA)
-  {
-    // is already handled in TerminateIO
-    fFileA->Close();
-    delete fFileA;
-  }
+  if (fFileA) fFileA->Close();
 
+  delete fFileA;
   delete fTreeA;
   delete fExtensions;
   delete fFilters;
