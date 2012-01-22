@@ -31,6 +31,7 @@
 #pragma link C++ class AliEmcalSetupTask+;
 #pragma link C++ class AliEmcalTrackPropagatorTask+;
 #pragma link C++ class AliEsdSkimTask+;
+#pragma link C++ class AliEsdTrackExt+;
 #pragma link C++ class AliStaHeader+;
 #pragma link C++ class AliStaCluster+;
 #pragma link C++ class AliStaVertex+;
