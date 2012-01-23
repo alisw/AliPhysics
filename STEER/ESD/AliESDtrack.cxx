@@ -739,9 +739,8 @@ AliESDtrack::~AliESDtrack(){
   delete fOp;
   delete fHMPIDp;
   delete fCp; 
-  if (fFriendTrack) delete fFriendTrack;
-  if (fTPCdEdxInfo) delete fTPCdEdxInfo;
-  fFriendTrack=NULL;
+  delete fFriendTrack;
+  delete fTPCdEdxInfo;
   if(fTRDnSlices)
     delete[] fTRDslices;
 
@@ -766,7 +765,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   }
   else{
     // no track param delete the old one
-    if(fCp)delete fCp;
+    delete fCp;
     fCp = 0;
   }
 
@@ -777,7 +776,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   }
   else{
     // no track param delete the old one
-    if(fIp)delete fIp;
+    delete fIp;
     fIp = 0;
   }
 
@@ -789,7 +788,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   }
   else{
     // no track param delete the old one
-    if(fTPCInner)delete fTPCInner;
+    delete fTPCInner;
     fTPCInner = 0;
   }
 
@@ -805,7 +804,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   }
   else{
     // no track param delete the old one
-    if(fOp)delete fOp;
+    delete fOp;
     fOp = 0;
   }
 
@@ -817,7 +816,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   }
   else{
     // no track param delete the old one
-    if(fHMPIDp)delete fHMPIDp;
+    delete fHMPIDp;
     fHMPIDp = 0;
   }
 
