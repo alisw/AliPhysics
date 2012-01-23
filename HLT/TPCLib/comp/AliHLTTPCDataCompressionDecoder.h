@@ -126,6 +126,9 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, const
   }
 
   iResult=ReadRemainingClustersCompressed(c, fpDataInflaterPartition, nCount, specification, formatVersion);
+  if (iResult<0) {
+    HLTError("cluster decoding of block 0x%08x failed, error %d", specification, iResult);
+  }
 
   return iResult;
 }
@@ -141,8 +144,16 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   if ((iResult= InitPartitionClusterDecoding(specification))<0)
     return iResult;
 
-  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
-  AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+  int slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
+  int partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+  if (slice<0 || slice>=AliHLTTPCTransform::GetNSlice()) {
+    HLTError("invalid slice %d decoded from specification 0x%08x", slice, specification);
+    return -EINVAL;
+  }
+  if (partition<0 || partition>=AliHLTTPCTransform::GetNumberOfPatches()) {
+    HLTError("invalid partition %d decoded from specification 0x%08x", partition, specification);
+    return -EINVAL;
+  }
   // the compressed format stores the difference of the local row number in
   // the partition to the row of the last cluster
   // add the first row in the partition to get global row number
@@ -533,6 +544,9 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
     int iResult=ReadRemainingClustersCompressed(c, pData, dataSize, specification);
     if (iResult>=0 && fVerbosity>0) {
       HLTInfo("extracted %d cluster(s) from block 0x%08x", iResult, specification);
+    }
+    if (iResult<0) {
+      HLTError("cluster decoding of block 0x%08x failed, error %d", specification, iResult);
     }
     return iResult;
   }
