@@ -49,7 +49,7 @@ set ( SRCS
     SPECTRA/AliAnalysisCentralCutEvtESD.cxx 
     SPECTRA/AliAnalysisCentralExtrapolate.cxx 
     SPECTRA/AliAnalysisTaskCentral.cxx 
-    SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx 
+#    SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx 
     SPECTRA/AliITSsadEdxFitter.cxx 
     SPECTRA/Fit/AliBWTools.cxx 
     SPECTRA/Fit/AliBWFunc.cxx 
