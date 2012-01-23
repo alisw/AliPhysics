@@ -15,7 +15,7 @@ void AnalysisTrainCreateMixedDimuons(Char_t *nameTagDir = ".",
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so"); 
   gSystem->Load("libCORRFW.so"); 
-  gSystem->Load("libPWG3muon.so"); 
+  gSystem->Load("libPWGmuon.so"); 
 
   AliMultiEventInputHandler *inputHandler  = new AliMultiEventInputHandler(bufferSize);
 

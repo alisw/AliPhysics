@@ -31,7 +31,7 @@ void runAnalysisTaskPtMothFromPtDaug(TH1F* histPtDaug=0x0,
   else{
   gSystem->Load("libANALYSIS.so"); 
   gSystem->Load("libANALYSISalice.so");	 	  
-  gSystem->Load("libPWG3base.so");
+  gSystem->Load("libPWGHFbase.so");
   }
   // Set AliPtMothFromPtDaugh object 
   AliPtMothFromPtDaugh *ptExtr = new AliPtMothFromPtDaugh();

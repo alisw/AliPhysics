@@ -329,7 +329,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetAnalysisSource("AliDStarJets.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3base.so libPWG3vertexingHF.so");
+   plugin->SetAdditionalLibs("libPWGHFbase.so libPWGvertexingHF.so");
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");

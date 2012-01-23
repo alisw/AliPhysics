@@ -50,7 +50,7 @@ AliAnalysisAlien *CreateAlienHandler(Bool_t isProof){
   alienplugin->SetAliROOTVersion(aliroot_version);
   alienplugin->SetROOTVersion(root_version);
   alienplugin->SetAPIVersion(api_version);
-  alienplugin->SetAdditionalLibs("libPWG3hfe.so");
+  alienplugin->SetAdditionalLibs("libPWGHFhfe.so");
   alienplugin->SetDefaultOutputs(kTRUE);
   if(isProof){
     // proof mode
@@ -165,7 +165,7 @@ void runAlien(TString data, TString mode = "test", Bool_t MC = kFALSE){
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG3hfe");
+  gSystem->Load("libPWGhfe");
   
   // Create Analysis Manager
   AliAnalysisManager *runAnalysis = new AliAnalysisManager("Heavy Flavour Electron Analysis");

@@ -7,7 +7,7 @@ void MakeD2eSpectra(){
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG0base.so");
-  gSystem->Load("/alidata10/alice_u/minjung/032.heavy/hfe/bg4conv/util/hfe/libPWG3hfeDevel.so");
+  gSystem->Load("libPWGHFhfe.so");
 
   setGeneralStyle();
 

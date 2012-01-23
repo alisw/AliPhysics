@@ -23,8 +23,8 @@
 //  - libMUONbase.so
 //  - libMUONrec.so
 //  - libCORRFW.so
-//  - libPWG3base.so
-//  - libPWG3muondep.so
+//  - libPWGHFbase.so
+//  - libPWGmuondep.so
 //
 // It also needs to load magnetic field, mapping, geometry (+alignment), and reconstruction parameters from the OCDB
 //

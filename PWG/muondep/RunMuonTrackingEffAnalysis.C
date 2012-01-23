@@ -37,7 +37,7 @@ void RunMuonTrackingEffAnalysis (Bool_t alien = false,
     gSystem->Load("libANALYSISalice.so");
  
 //  setupPar(pwg3ParFile);
-    gSystem->Load("libPWG3muon.so");
+    gSystem->Load("libPWGmuon.so");
 
     char macro[1024];
     sprintf(macro,"%s++",macroFileName);

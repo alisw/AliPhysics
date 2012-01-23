@@ -86,7 +86,7 @@ AliAnalysisAlien* CreateAlienHandler()
   plugin->SetRunMode("terminate");
 
   // Declare all libraries
-  plugin->SetAdditionalLibs("libCORRFW.so libPWG3base.so libPWG3muon.so");
+  plugin->SetAdditionalLibs("libCORRFW.so libPWGHFbase.so libPWGmuon.so");
 
   plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so libProofPlayer.so");
 
@@ -110,7 +110,7 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE)
   gSystem->Load("libPhysics");
   gSystem->Load("libProof");
 
-  TString libsList = "libANALYSIS.so libOADB.so libANALYSISalice.so libCORRFW.so libPWG3base.so libPWG3muon.so";
+  TString libsList = "libANALYSIS.so libOADB.so libANALYSISalice.so libCORRFW.so libPWGHFbase.so libPWGmuon.so";
 
   TObjArray* libsArray = libsList.Tokenize(" ");
   libsArray->SetOwner();

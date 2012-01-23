@@ -4,23 +4,21 @@ void SETUP()
     CheckLoadLibrary("libTree");
     CheckLoadLibrary("libGeom");
     CheckLoadLibrary("libVMC");
-    CheckLoadLibrary("libMinuit");
 
     // Load the ESD library
     CheckLoadLibrary("libANALYSIS");
     CheckLoadLibrary("libSTEERBase");
     CheckLoadLibrary("libESD");
     CheckLoadLibrary("libAOD");
-    CheckLoadLibrary("libCORRFW");
     CheckLoadLibrary("libANALYSISalice");
-    CheckLoadLibrary("libPWG3base");
-    CheckLoadLibrary("libPWG3vertexingHF");
+    CheckLoadLibrary("libPWGmuon");
+
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWG3vertexingHF/vertexingHF");
+   gROOT->ProcessLine(".include PWGmuon/muon");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG3vertexingHF_INCLUDE", "PWG3vertexingHF/vertexingHF");
+   gSystem->Setenv("PWGmuon_INCLUDE", "PWGmuon/muon");
 }
 
 Int_t CheckLoadLibrary(const char* library)

@@ -19,7 +19,7 @@ void AnalysisTrainMuonLocal(char* filein = "AliESDs.root",
     gSystem->Load("libGeom.so");
     gSystem->Load("libVMC.so");
     gSystem->Load("libPhysics.so");
-    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWG3muon.so");  // for aliroot based analysis
+    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWGmuon.so");  // for aliroot based analysis
 
     // Par files for a par based analysis 
     // SetupPar("STEERBase");

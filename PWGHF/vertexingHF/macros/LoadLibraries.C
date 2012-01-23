@@ -12,9 +12,9 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
   gSystem->Load("libOADB.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG3base.so");
-  gSystem->Load("libPWG3vertexingHF.so");
-  //gSystem->Load("libPWG3muon.so");
+  gSystem->Load("libPWGHFbase.so");
+  gSystem->Load("libPWGHFvertexingHF.so");
+  //gSystem->Load("libPWGmuon.so");
  
 
   if(useParFiles) {

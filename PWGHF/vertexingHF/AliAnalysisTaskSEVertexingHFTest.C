@@ -15,7 +15,7 @@ void AliAnalysisTaskSEVertexingHFTest()
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
   LoadLibraries(useParFiles);
-  gSystem->Load("libPWG3muon");
+  gSystem->Load("libPWGmuon");
   TChain *chain = 0;
 
   if(mode=="local") {

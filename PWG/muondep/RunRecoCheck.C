@@ -13,7 +13,7 @@ void RunRecoCheck(Bool_t local = kFALSE) {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
 
-  gSystem->Load("libPWG3muondep.so");
+  gSystem->Load("libPWGmuondep.so");
 
   TChain* chain = new TChain("esdTree");
 

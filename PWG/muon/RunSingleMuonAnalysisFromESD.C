@@ -25,7 +25,7 @@ void RunSingleMuonAnalysisFromESD(Bool_t local = kFALSE) {
   gSystem->Load("libSTEERBase");
   gSystem->Load("libAOD");
   gSystem->Load("libESD");
-  gSystem->Load("libPWG3muon.so");
+  gSystem->Load("libPWGmuon.so");
 
   TChain* chain = new TChain("esdTree");
 

@@ -236,7 +236,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
     if (iESDfilter && !iAODanalysis) {
       gSystem->Load("libCORRFW.so");
-      gSystem->Load("libPWG3muon.so");
+      gSystem->Load("libPWGmuon.so");
 
       gROOT->LoadMacro(Form("%s/ANALYSIS/macros/AddTaskESDFilter.C",gSystem->ExpandPathName("${ALICE_ROOT}")));
       //      gROOT->LoadMacro("AddTaskESDfilter.C");

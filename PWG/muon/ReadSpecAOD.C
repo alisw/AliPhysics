@@ -28,7 +28,7 @@ void ReadSpecAOD(const char *fileName = "AliMuonAOD.root") {
     gSystem->Load("libSTEERBase");
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");			
-    gSystem->Load("libPWG3base.so");
+    gSystem->Load("libPWGHFbase.so");
 
 
 

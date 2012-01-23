@@ -56,7 +56,7 @@ void AnalysisTrigChEff(Int_t mode=kMlocal)
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG3muon.so");
+  gSystem->Load("libPWGmuon.so");
 
   //
   // Connect to alien

@@ -23,7 +23,7 @@ void runPIDqa(const char *treelist = 0x0, Bool_t hasMC = kTRUE, Int_t nFiles = 5
     SetupPar("Util");
   }
   //SetupPar("HFE");
-  gSystem->Load("libPWG3hfeDevel.so");
+  gSystem->Load("libPWGHFhfe.so");
   AliLog::SetClassDebugLevel("AliHFEV0pid", 0);
   AliLog::SetClassDebugLevel("AliHFEpidQA", 0);
   //  gROOT->LoadMacro("AliAnalysisTaskHFE.cxx++");

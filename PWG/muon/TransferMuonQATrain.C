@@ -8,7 +8,7 @@
 //  - libANALYSIS.so
 //  - libANALYSISalice.so
 //  - libCORRFW.so
-//  - libPWG3muon.so
+//  - libPWGmuon.so
 //
 //  TString includePath = "-I${ALICE_ROOT}/PWG3/base/ ";  gSystem->SetIncludePath(includePath.Data());
 
@@ -61,8 +61,8 @@ Bool_t TransferMuonQATrain_v4(const char* baseDir, const char * trainName, const
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG3base");
-  gSystem->Load("libPWG3muon");
+  gSystem->Load("libPWGHFbase");
+  gSystem->Load("libPWGmuon");
 #endif
   
   TString sbaseDir = baseDir;

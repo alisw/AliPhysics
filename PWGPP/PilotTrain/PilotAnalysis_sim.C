@@ -142,9 +142,9 @@ void LoadLibraries()
      gSystem->Load("libPWG4PartCorrDep");
   }  
   if(doMUONTrig || doAOD) {
-     gSystem->Load("libPWG3base");
-     gSystem->Load("libPWG3muon");
-     gSystem->Load("libPWG3muondep");
+     gSystem->Load("libPWGHFbase");
+     gSystem->Load("libPWGmuon");
+     gSystem->Load("libPWGmuondep");
   }   
 }
 
@@ -353,7 +353,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    
    plugin->SetAdditionalLibs("libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWGPP.so libPWG2.so \
                               libPWG2forward.so libEMCALUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
-                              libPWG3base.so libPWG3muon.so libPWG3muondep.so");
+                              libPWGHFbase.so libPWGmuon.so libPWGmuondep.so");
      
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)

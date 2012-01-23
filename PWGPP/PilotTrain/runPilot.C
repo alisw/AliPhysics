@@ -11,8 +11,8 @@ void runPilot() {
   gSystem->Load("libPWG0selectors.so");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWG2.so");
-  gSystem->Load("libPWG3muon.so");
-  gSystem->Load("libPWG3muondep.so");
+  gSystem->Load("libPWGmuon.so");
+  gSystem->Load("libPWGmuondep.so");
   gSystem->Load("libPWG2forward.so");
   gSystem->Load("libPWG4PartCorrBase.so");
   gSystem->Load("libPWG4PartCorrDep.so");

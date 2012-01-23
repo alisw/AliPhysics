@@ -54,7 +54,7 @@ if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     exit 4
 fi
 
-loadLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWG3base.so\");"
+loadLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWGHFbase.so\");"
 
 function mergePerRun()
 {
@@ -78,7 +78,7 @@ function mergeRuns()
     outFilename=$2
     aliroot -b <<EOF &> logMergeAll.txt
 ${loadLibs}
-gSystem->Load("libANALYSIS.so");gSystem->Load("libOADB.so");gSystem->Load("libANALYSISalice.so");gSystem->Load("libCORRFW.so");gSystem->Load("libPWG3base.so");
+gSystem->Load("libANALYSIS.so");gSystem->Load("libOADB.so");gSystem->Load("libANALYSISalice.so");gSystem->Load("libCORRFW.so");gSystem->Load("libPWGHFbase.so");
 .x $qaMacroDir/mergeGridFiles.C+("${outFilename}","${fileListName}","");
 .q
 EOF

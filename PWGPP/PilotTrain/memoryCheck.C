@@ -20,9 +20,9 @@ void memoryCheck()
    gSystem->Load("libEMCALUtils.so");
    gSystem->Load("libPWG4PartCorrBase.so");
    gSystem->Load("libPWG4PartCorrDep.so");
-   gSystem->Load("libPWG3base.so");
-   gSystem->Load("libPWG3muon.so");
-   gSystem->Load("libPWG3muondep.so");
+   gSystem->Load("libPWGHFbase.so");
+   gSystem->Load("libPWGmuon.so");
+   gSystem->Load("libPWGmuondep.so");
    TFile *f = new TFile("QA/syswatch.root");
    if (!f) return;
    TTree *t = (TTree*)f->Get("syswatch");

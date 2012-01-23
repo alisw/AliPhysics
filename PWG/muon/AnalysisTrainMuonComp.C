@@ -24,7 +24,7 @@ void AnalysisTrainMuonComp(){
   gSystem->Load("libANALYSISalice.so");
   // Analysis-specific packages
   SetupPar("PWG3muon");      
-  gSystem->Load("libPWG3muon.so");
+  gSystem->Load("libPWGmuon.so");
   
   gROOT->LoadMacro("AliAnalysisTaskAODvsESD.cxx+");  
 

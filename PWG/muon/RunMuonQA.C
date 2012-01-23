@@ -8,7 +8,7 @@
 //  - libANALYSIS.so
 //  - libANALYSISalice.so
 //  - libCORRFW.so
-//  - libPWG3muon.so
+//  - libPWGmuon.so
 //
 // The macro reads ESDs and store outputs in standard output file (AnalysisResults.root)
 //
@@ -41,7 +41,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kT
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG3muon");
+  gSystem->Load("libPWGmuon");
   
   // Create input chain
   TChain* chain = CreateChain(inputFileName);
