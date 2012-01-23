@@ -109,6 +109,7 @@ AliTPCCalROC & AliTPCCalROC::operator =(const AliTPCCalROC & param)
   fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
   fkIndexes     =  AliTPCROC::Instance()->GetRowIndexes(fSector);
   //
+  if (fData) delete [] fData;
   fData         = new Float_t[fNChannels];
   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = param.fData[idata];
   return (*this);

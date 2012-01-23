@@ -121,9 +121,16 @@ AliTPCclusterInfo& AliTPCclusterInfo::operator=(const AliTPCclusterInfo& info){
   // assignment operator
   // 
   if (this == &info) return (*this);
-  if (this != &info) {
-    new (this) AliTPCclusterInfo(info);
+  for (Int_t i=0; i<25;i++){
+    fMatrix[i] = info.fMatrix[i]; 
   }
+  if (info.fGraph) {
+    if (fGraph) delete []fGraph;
+    fGraph = new Float_t[fNBins];
+    for (Int_t i=0;i<fNBins; i++){
+      fGraph[i] = info.fGraph[i];
+    }
+  }  
   return *this;
 }
 
