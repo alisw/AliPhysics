@@ -8,6 +8,7 @@ class AliTPCdEdxInfo : public TObject
 public:
   AliTPCdEdxInfo();
   AliTPCdEdxInfo(const AliTPCdEdxInfo& source);
+  AliTPCdEdxInfo& operator=(const AliTPCdEdxInfo& source);
   //
   void     GetTPCSignalRegionInfo(Double32_t signal[4], Char_t ncl[3], Char_t nrows[3]) const;
   void     SetTPCSignalRegionInfo(Double32_t signal[4], Char_t ncl[3], Char_t nrows[3]);
