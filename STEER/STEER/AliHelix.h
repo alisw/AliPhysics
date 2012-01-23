@@ -55,6 +55,8 @@ public:
  public:
   Double_t fHelix[9];    //helix parameters
  private:  
+  AliHelix &operator=(const AliHelix&helix);
+
   ClassDef(AliHelix,1)    // AliHelix
 };
 

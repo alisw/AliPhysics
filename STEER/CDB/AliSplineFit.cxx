@@ -136,7 +136,6 @@ AliSplineFit& AliSplineFit::operator=(const AliSplineFit& source){
 
 // use copy constructor (without reassigning memory) to copy values
 
-  new (this) AliSplineFit(source);
 
   return *this;
 }
