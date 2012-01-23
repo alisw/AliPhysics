@@ -15,7 +15,7 @@ void RunAnalysisAODVertexingHF()
   //
 
 
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -I$ALICE_ROOT/PWG2/FLOW/AliFlowCommon -I$ALICE_ROOT/PWG2/FLOW/AliFlowTasks -g"); 
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG2/FLOW/AliFlowCommon -I$ALICE_ROOT/PWG2/FLOW/AliFlowTasks -g"); 
   //
   TString trainName = "D2H";
   TString analysisMode = "grid"; // "local", "grid", or "proof"
@@ -26,7 +26,7 @@ void RunAnalysisAODVertexingHF()
   TString pluginmode="full";
   Bool_t saveProofToAlien=kFALSE;
   TString proofOutdir = "";
-  TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/macros/";
+  TString loadMacroPath="$ALICE_ROOT/PWGHF/vertexingHF/macros/";
   //TString loadMacroPath="./"; // this is normally needed for CAF
   //
 
@@ -77,10 +77,10 @@ void RunAnalysisAODVertexingHF()
     if(!useParFiles) {
       gProof->UploadPackage("AF-v4-17");
       gProof->EnablePackage("AF-v4-17");
-      // --- Enable the PWG3vertexingHF Package
-      parFile="PWG3vertexingHF.par"; parFile.Prepend(parDir.Data());
+      // --- Enable the PWGHFvertexingHF Package
+      parFile="PWGHFvertexingHF.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
-      gProof->EnablePackage("PWG3vertexingHF");
+      gProof->EnablePackage("PWGHFvertexingHF");
     } else {
       // --- Enable the STEERBase Package
       parFile="STEERBase.par"; parFile.Prepend(parDir.Data());
@@ -106,18 +106,14 @@ void RunAnalysisAODVertexingHF()
       parFile="CORRFW.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
       gProof->EnablePackage("CORRFW");
-      // --- Enable the PWG3base Package
-      parFile="PWG3base.par"; parFile.Prepend(parDir.Data());
+      // --- Enable the PWGHFbase Package
+      parFile="PWGHFbase.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
-      gProof->EnablePackage("PWG3base");
-      // --- Enable the PWG3vertexingHF Package
-      parFile="PWG3vertexingHF.par"; parFile.Prepend(parDir.Data());
+      gProof->EnablePackage("PWGHFbase");
+      // --- Enable the PWGHFvertexingHF Package
+      parFile="PWGHFvertexingHF.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
-      gProof->EnablePackage("PWG3vertexingHF");
-      // --- Enable the PWG3muon Package
-      parFile="PWG3muon.par"; parFile.Prepend(parDir.Data());
-      gProof->UploadPackage(parFile.Data());
-      gProof->EnablePackage("PWG3muon");
+      gProof->EnablePackage("PWGHFvertexingHF");
     }
     gProof->ShowEnabledPackages(); // show a list of enabled packages
   }
@@ -285,7 +281,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetROOTVersion();
    plugin->SetAliROOTVersion();
 
-   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddGoodRuns.C");
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddGoodRuns.C");
 
    // Declare input data to be processed.
    //************************************************
@@ -329,7 +325,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetAnalysisSource("AliDStarJets.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWGHFbase.so libPWGvertexingHF.so");
+   plugin->SetAdditionalLibs("libPWGHFbase.so libPWGHFvertexingHF.so");
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
@@ -339,10 +335,10 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("OADB.par");
      plugin->EnablePackage("ANALYSISalice.par");
      plugin->EnablePackage("CORRFW.par");
-     plugin->EnablePackage("PWG3base.par");
-     plugin->EnablePackage("PWG3vertexingHF.par");
+     plugin->EnablePackage("PWGHFbase.par");
+     plugin->EnablePackage("PWGHFvertexingHF.par");
    }
-   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -g");
+   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -g");
 
    plugin->SetDefaultOutputs(kTRUE);
    // merging via jdl
