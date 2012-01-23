@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG3base                                                      #
+# Package File for PWGmuondep                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -26,15 +26,19 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   
-    base/AliQuarkoniaAcceptance.cxx 
-    base/AliQuarkoniaEfficiency.cxx 
+set ( SRCS 
+    muondep/AliAnalysisTaskMuonTrackingEff.cxx 
+    muondep/AliAnalysisTaskRecoCheck.cxx 
+    muondep/AliAnalysisTaskESDMCLabelAddition.cxx 
+    muondep/AliAnalysisTaskMuonResolution.cxx 
+    muondep/AliAnalysisTaskPileup.cxx 
+    muondep/AliAnalysisTaskMuonFakes.cxx 
+    muondep/AliAnalysisTaskMuonRefit.cxx 
+    muondep/AliAnalysisTaskMuonPerformance.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
+set ( DHDR  PWGmuondepLinkDef.h )
 
-set ( DHDR  PWG3baseLinkDef.h)
-
-set ( EINCLUDE  PWG3/base STEER/STEERBase)
+set ( EINCLUDE  MUON MUON/mapping PWG/muondep STEER/STEER STEER/STEERBase)
