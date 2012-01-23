@@ -123,6 +123,10 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
     fNdf  = res.fNdf;
     fMinNPoints = res.fMinNPoints;
     fIsOwner = kFALSE;
+
+    fAlignObj = res.fAlignObj;
+    fVolArray = res.fVolArray;
+    fTrackArray = res.fTrackArray;
     
     memcpy(fBFixed,res.fBFixed,sizeof(Bool_t)*6);
     memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
