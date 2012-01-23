@@ -315,7 +315,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
 
-    
+   
+
+
    // Make the analysis manager and connect event handlers
    AliAnalysisManager *mgr  = new AliAnalysisManager("PWG4Train", "pwg4 mini train");
    if (kCommonOutputFileName.Length()>0)mgr->SetCommonFileName(kCommonOutputFileName.Data());
@@ -331,6 +333,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      return;
    }   
 
+   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/ConfigLegoTrainPWGJE.C");
+   ConfigLegoTrainPWGJE(1013);
    // Create input handler (input container created automatically)
    if (iAODanalysis) {
    // AOD input handler
@@ -350,6 +354,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //      if(iPWG4PtQATPC&& !kTrainName.Contains("pass5"))esdHandler->SetActiveBranches("ESDfriend");
 
    }
+
+
 
    // Monte Carlo handler
    if (kUseMC && !iAODanalysis) {
