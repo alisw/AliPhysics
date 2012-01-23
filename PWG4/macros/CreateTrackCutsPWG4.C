@@ -239,6 +239,7 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
     bStdCutsDefined = kTRUE;
 
     trackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
+    trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetMinNClustersTPC(70);
 
     trackCuts->SetEtaRange(-0.9,0.9);
