@@ -405,10 +405,10 @@ AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
     
     fPrimaryVertex = aParticle.fPrimaryVertex;
     fSecondaryVertex = aParticle.fSecondaryVertex;
-    if (fHiddenInfo) delete fHiddenInfo;
-    if(aParticle.fHiddenInfo){
-      fHiddenInfo= aParticle.fHiddenInfo->Clone();
-    }
+//     if (fHiddenInfo) delete fHiddenInfo;
+//     if(aParticle.fHiddenInfo){
+//       fHiddenInfo= aParticle.fHiddenInfo->Clone();
+//     }
     
     //   fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
     //   fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
