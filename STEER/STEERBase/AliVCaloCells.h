@@ -19,12 +19,13 @@ class AliVCaloCells : public TNamed
  public:
 
   enum VCells_t {kUndef = -1, 
-		   kPHOSCell, 
-		   kEMCALCell};
+                 kPHOSCell, 
+                 kEMCALCell};
 
   AliVCaloCells() : TNamed() {;}
   AliVCaloCells(const char* name, const char* title) : TNamed(name, title) {;}
   AliVCaloCells(const AliVCaloCells& cells) : TNamed(cells.GetName(), cells.GetTitle()) {;}
+  AliVCaloCells & operator=(const AliVCaloCells& cells ) ;
   virtual ~AliVCaloCells(){;}
   void Clear(const Option_t*) {;}
   
@@ -48,7 +49,7 @@ class AliVCaloCells : public TNamed
   virtual Double_t GetTime(Short_t pos)       const     = 0;
   virtual Short_t  GetCellNumber(Short_t pos) const     = 0;
   
-  virtual void     Copy(TObject &obj)         const     = 0;
+  virtual void           Copy(TObject &obj)        const = 0;
   virtual AliVCaloCells* CopyCaloCells(Bool_t all) const = 0;
 
   ClassDef(AliVCaloCells, 0);

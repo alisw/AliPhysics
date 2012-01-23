@@ -26,3 +26,17 @@
 
 ClassImp(AliVCaloCells)
 
+AliVCaloCells& AliVCaloCells::operator=(const AliVCaloCells& vcells)
+{ 
+  //Assignment operator
+
+  if (this!=&vcells) 
+  { 
+    TNamed::operator=(vcells); 
+  }
+  
+  return *this; 
+
+}
+
+
