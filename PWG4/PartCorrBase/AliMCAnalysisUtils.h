@@ -55,9 +55,8 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckOrigin(const Int_t label, const AliCaloTrackReader * reader, const Int_t input) ;
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin(const Int_t *label, const Int_t nlabels, const AliCaloTrackReader * reader, const Int_t input) ;
-  
-  Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack) ; // ESD
+  Int_t   CheckOrigin       (const Int_t *label,  const Int_t nlabels, const AliCaloTrackReader * reader, const Int_t input) ;
+  Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack)                ; // ESD
   Int_t   CheckOriginInAOD  (const Int_t *labels, const Int_t nlabels, const TClonesArray* mcparticles) ; // AOD
   
   void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag); // ESD
