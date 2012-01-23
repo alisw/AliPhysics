@@ -1,6 +1,6 @@
 # -*- mode: Makefile -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG4UserTask                                                  #
+# Package File for PWGGAUserTask                                                  #
 # Author : Yuri Kharlov					                         #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,30 +27,24 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
- UserTasks/PHOS_pp_pi0/AliCaloPhoton.cxx
- UserTasks/PHOS_pp_pi0/AliAnalysisTaskPi0.cxx
- UserTasks/PHOS_embedding/AliPHOSEmbedding.cxx
- UserTasks/PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
- UserTasks/PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
- UserTasks/PHOS_PbPbQA/AliAnalysisTaskPHOSPbPbQA.cxx
- UserTasks/CaloCellQA/AliCaloCellsQA.cxx
- UserTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
- UserTasks/EmcalTasks/AliAnalysisTaskEMCALClusterizeFast.cxx
- UserTasks/EmcalTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
- UserTasks/EmcalTasks/AliAnalysisTaskEMCALTriggerQA.cxx
- UserTasks/EmcalTasks/AliEmcalEsdTpcTrackTask.cxx
- UserTasks/EmcalTasks/AliEmcalPhysicsSelection.cxx
- UserTasks/EmcalTasks/AliEmcalPhysicsSelectionTask.cxx
- UserTasks/EmcalTasks/AliEmcalSetupTask.cxx
- UserTasks/EmcalTasks/AliEmcalTrackPropagatorTask.cxx
- UserTasks/EmcalTasks/AliEsdSkimTask.cxx
- UserTasks/EmcalTasks/AliEsdTrackExt.cxx
+ EMCALTasks/AliAnalysisTaskEMCALClusterizeFast.cxx
+ EMCALTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
+ EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
+ EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
+ EMCALTasks/AliEmcalPhysicsSelection.cxx
+ EMCALTasks/AliEmcalPhysicsSelectionTask.cxx
+ EMCALTasks/AliEmcalSetupTask.cxx
+ EMCALTasks/AliEmcalTrackPropagatorTask.cxx
+ EMCALTasks/AliEsdSkimTask.cxx
+ EMCALTasks/AliEsdTrackExt.cxx
+ EMCALTasks/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
+ EMCALTasks/AliAnalysisTaskEMCALClusterize.cxx 
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4UserTasksLinkDef.h)
+set ( DHDR  PWGGAEMCALTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWG4/UserTasks/PHOS_pp_pi0 PWG4/UserTasks/CaloCellQA PWG4/UserTasks/EmcalTasks EMCAL PHOS STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGGA/EMCALTasks EMCAL STEER/ESD STEER/STEERBase)

@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG4PartCorrBase                                              #
+# Package File for PWGGACaloTrackCorrelations                                               #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,29 +27,28 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    PartCorrBase/AliNeutralMesonSelection.cxx 
-    PartCorrBase/AliFiducialCut.cxx 
-    PartCorrBase/AliCaloPID.cxx 
-    PartCorrBase/AliMCAnalysisUtils.cxx 
-    PartCorrBase/AliIsolationCut.cxx 
-    PartCorrBase/AliAnaScale.cxx 
-    PartCorrBase/AliCaloTrackReader.cxx 
-    PartCorrBase/AliCaloTrackESDReader.cxx 
-    PartCorrBase/AliCaloTrackAODReader.cxx 
-    PartCorrBase/AliCaloTrackMCReader.cxx 
-    PartCorrBase/AliCalorimeterUtils.cxx 
-    PartCorrBase/AliAnalysisTaskCounter.cxx 
-    PartCorrBase/AliAnaCaloTrackCorrMaker.cxx
-    PartCorrBase/AliAnaCaloTrackCorrBaseClass.cxx
-    PartCorrBase/AliAnalysisTaskCaloTrackCorrelation.cxx
-    PartCorrBase/AliAnalysisTaskCaloTrackCorrelationM.cxx
-    PartCorrBase/AliHistogramRanges.cxx
+    CaloTrackCorrelations/AliAnaParticleIsolation.cxx 
+    CaloTrackCorrelations/AliAnaParticlePartonCorrelation.cxx 
+    CaloTrackCorrelations/AliAnaParticleHadronCorrelation.cxx 
+    CaloTrackCorrelations/AliAnaParticleJetFinderCorrelation.cxx 
+    CaloTrackCorrelations/AliAnaParticleJetLeadingConeCorrelation.cxx 
+    CaloTrackCorrelations/AliAnaPhoton.cxx 
+    CaloTrackCorrelations/AliAnaElectron.cxx
+    CaloTrackCorrelations/AliAnaPi0.cxx 
+    CaloTrackCorrelations/AliAnaPi0EbE.cxx 
+    CaloTrackCorrelations/AliAnaChargedParticles.cxx 
+    CaloTrackCorrelations/AliAnaCalorimeterQA.cxx 
+    CaloTrackCorrelations/AliAnaShowerParameter.cxx 
+    CaloTrackCorrelations/AliAnalysisTaskTaggedPhotons.cxx 
+    CaloTrackCorrelations/AliAnaOmegaToPi0Gamma.cxx 
+    CaloTrackCorrelations/AliAnaPhotonConvInCalo.cxx 
+    CaloTrackCorrelations/AliAnaInsideClusterInvariantMass.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4PartCorrBaseLinkDef.h)
-
-set ( EINCLUDE PWG4/PartCorrBase EMCAL STEER/AOD STEER/ESD STEER/STEERBase)
+set ( DHDR  PWGGACaloTrackCorrelationsLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
+
+set ( EINCLUDE  ANALYSIS EMCAL PHOS PWG/CaloTrackCorrBase PWGGA/CaloTrackCorrelations STEER/AOD STEER/STEERBase)

@@ -4,22 +4,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-// PHOS_pp_pi0
-#pragma link C++ class AliCaloPhoton+;
-#pragma link C++ class AliAnalysisTaskPi0+;
-
-// PHOS_embedding
-#pragma link C++ class AliPHOSEmbedding+;
-#pragma link C++ class AliAnalysisTaskPi0Efficiency+;
-#pragma link C++ class AliAnalysisTaskPi0DiffEfficiency+;
-
-// PHOS_PbPbQA
-#pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;
-
-// CaloCellQA
-#pragma link C++ class AliCaloCellsQA+;
-#pragma link C++ class AliAnalysisTaskCaloCellsQA+;
-
 // EmcalTasks
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
@@ -37,5 +21,7 @@
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaPart+;
+#pragma link C++ class AliAnalysisTaskEMCALPi0CalibSelection+;
+#pragma link C++ class AliAnalysisTaskEMCALClusterize+;
 
 #endif

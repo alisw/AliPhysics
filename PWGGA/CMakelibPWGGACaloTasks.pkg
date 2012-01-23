@@ -1,6 +1,6 @@
-# -*- mode: CMake -*-
+# -*- mode: Makefile -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG4PartCorrDep                                               #
+# Package File for PWGGACaloTasks                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -26,29 +26,14 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  
-    PartCorrDep/AliAnaParticleIsolation.cxx 
-    PartCorrDep/AliAnaParticlePartonCorrelation.cxx 
-    PartCorrDep/AliAnaParticleHadronCorrelation.cxx 
-    PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx 
-    PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx 
-    PartCorrDep/AliAnaPhoton.cxx 
-    PartCorrDep/AliAnaElectron.cxx
-    PartCorrDep/AliAnaPi0.cxx 
-    PartCorrDep/AliAnaPi0EbE.cxx 
-    PartCorrDep/AliAnaChargedParticles.cxx 
-    PartCorrDep/AliAnaCalorimeterQA.cxx 
-    PartCorrDep/AliAnaShowerParameter.cxx 
-    PartCorrDep/AliAnalysisTaskTaggedPhotons.cxx 
-    PartCorrDep/AliAnaOmegaToPi0Gamma.cxx 
-    PartCorrDep/AliAnaPhotonConvInCalo.cxx 
-    PartCorrDep/AliAnaInsideClusterInvariantMass.cxx
-    )
+set ( SRCS 
+ CaloTasks/AliAnalysisTaskCaloFilter.cxx 
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4PartCorrDepLinkDef.h)
+set ( DHDR  PWGGACaloTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  ANALYSIS EMCAL PHOS PWG4/PartCorrBase PWG4/PartCorrDep STEER/AOD STEER/STEERBase)
+set ( EINCLUDE  PWGGA/CaloTasks EMCAL PHOS STEER/STEER STEER/AOD STEER/CDB STEER/STEERBase)
