@@ -238,7 +238,8 @@ public:
   void    SetTPCFitMap(const TBits &amap) {fTPCFitMap = amap;}
   void    SetTPCClusterMap(const TBits &amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits &amap) {fTPCSharedMap = amap;}
-  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Int_t bitType=0 ) const;
+  Float_t GetTPCClusterDensity(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Int_t bitType=0 ) const;
   Float_t GetTPCCrossedRows() const;
   
   void    SetTRDpid(const Double_t *p);

@@ -33,6 +33,8 @@
 #include "AliLog.h"
 #include "AliESDv0.h"
 #include "AliESDV0Params.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 ClassImp(AliESDv0)
 
@@ -749,10 +751,82 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
   return (TMath::Sqrt(mass));
   */
   if(p1>4 || p2>4) return -1;
-  Double_t e12   = kpmass[p1]*kpmass[p1]+fPmom[0]*fPmom[0]+fPmom[1]*fPmom[1]+fPmom[2]*fPmom[2];
-  Double_t e22   = kpmass[p2]*kpmass[p2]+fNmom[0]*fNmom[0]+fNmom[1]*fNmom[1]+fNmom[2]*fNmom[2];
+  const AliExternalTrackParam *paramP = GetParamP();
+  const AliExternalTrackParam *paramN = GetParamN();
+  if (paramP->GetParameter()[4]<0){
+    paramP=GetParamN();
+    paramN=GetParamP();
+  }
+  Double_t pmom[3]={0}, nmom[3]={0};
+  paramP->GetPxPyPz(pmom);
+  paramN->GetPxPyPz(nmom);
+  Double_t e12   = kpmass[p1]*kpmass[p1]+pmom[0]*pmom[0]+pmom[1]*pmom[1]+pmom[2]*pmom[2];
+  Double_t e22   = kpmass[p2]*kpmass[p2]+nmom[0]*nmom[0]+nmom[1]*nmom[1]+nmom[2]*nmom[2];
   Double_t cmass = TMath::Sqrt(TMath::Max(kpmass[p1]*kpmass[p1]+kpmass[p2]*kpmass[p2]
-					  +2.*(TMath::Sqrt(e12*e22)-fPmom[0]*fNmom[0]-fPmom[1]*fNmom[1]-fPmom[2]*fNmom[2]),0.));
+					  +2.*(TMath::Sqrt(e12*e22)-pmom[0]*nmom[0]-pmom[1]*nmom[1]-pmom[2]*nmom[2]),0.));
   return cmass;
 			       
+}
+
+
+
+Double_t AliESDv0::GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const{
+  //
+  // type:
+  //   0 - return mass
+  //   1 - return err mass
+  //   2 - return chi2
+  // 
+  const Int_t spdg[5]={kPositron,kMuonPlus,kPiPlus, kKPlus, kProton};
+  const AliExternalTrackParam *paramP = GetParamP();
+  const AliExternalTrackParam *paramN = GetParamN();
+  if (paramP->GetSign()<0){
+    paramP=GetParamN();
+    paramN=GetParamP();
+  }
+  AliKFParticle kfp1(  *(paramP), spdg[p1] *TMath::Sign(1,p1) );
+  AliKFParticle kfp2( *(paramN), spdg[p2] *TMath::Sign(1,p2) );
+  AliKFParticle *V0KF = new AliKFParticle;
+  *(V0KF)+=kfp1;
+  *(V0KF)+=kfp2;
+  if (type==0) return V0KF->GetMass();
+  if (type==1) return V0KF->GetErrMass();
+  if (type==2) return V0KF->GetChi2();
+  return 0;
+}
+
+
+Double_t AliESDv0::GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt) const{
+  //
+  // type
+  //   0 - return mass
+  //   1 - return err mass
+  //   2 - return chi2
+  //   d1pt - 1/pt shift
+  //   s1pt - scaling of 1/pt
+  // Important function to benchmark the pt resolution, and to find out systematic distortion
+  //
+  const Int_t spdg[5]={kPositron,kMuonPlus,kPiPlus, kKPlus, kProton};
+  const AliExternalTrackParam *paramP = GetParamP();
+  const AliExternalTrackParam *paramN = GetParamN();
+  if (paramP->GetSign()<0){
+    paramP=GetParamP();
+    paramN=GetParamN();
+  }
+  Double_t *pparam1 = (Double_t*)paramP->GetParameter();
+  Double_t *pparam2 = (Double_t*)paramN->GetParameter();
+  pparam1[4]+=d1pt;
+  pparam2[4]+=d1pt;
+  pparam1[4]*=(1+s1pt);
+  pparam2[4]*=(1+s1pt);
+  //
+  AliKFParticle kfp1( *paramP, spdg[p1] *TMath::Sign(1,p1) );
+  AliKFParticle kfp2( *paramN, spdg[p2] *TMath::Sign(1,p2) );
+  AliKFParticle *V0KF = new AliKFParticle;
+  *(V0KF)+=kfp1;
+  *(V0KF)+=kfp2;
+  if (type==0) return V0KF->GetMass();
+  if (type==1) return V0KF->GetErrMass();
+  if (type==2) return V0KF->GetChi2();
+  return 0;
 }

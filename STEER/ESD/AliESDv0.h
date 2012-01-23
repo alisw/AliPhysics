@@ -55,7 +55,7 @@ public:
   virtual Short_t  Charge() const { return 0; }
   virtual Int_t    GetLabel() const { return -1; }  // temporary
   virtual const Double_t *PID() const { return 0; } // return PID object ? (to be discussed!)
-
+  
   // Then extend the AliVParticle functions
   Double_t E(Int_t pdg) const;
   Double_t Y(Int_t pdg) const;
@@ -139,8 +139,9 @@ public:
   
   //virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
-    
-
+  Double_t GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const;
+  Double_t GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt) const;
+  //
 protected:
   AliExternalTrackParam fParamN;  // external parameters of negative particle
   AliExternalTrackParam fParamP;  // external parameters of positive particle

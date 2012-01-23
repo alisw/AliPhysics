@@ -241,7 +241,7 @@ class AliAODTrack : public AliVTrack {
 
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   const TBits& GetTPCFitMap() const {return fTPCFitMap;}
-  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Int_t /*type*/=0) const;
   
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}

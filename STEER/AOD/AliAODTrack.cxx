@@ -575,30 +575,35 @@ Bool_t AliAODTrack::GetPxPyPz(Double_t p[3]) const
   return kTRUE;
 }
 
-//______________________________________________________________________________
-Float_t AliAODTrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
+
+//_______________________________________________________________________
+Float_t AliAODTrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1, Int_t bitType ) const
 {
   //
-  // TPC cluster information
+  // TPC cluster information 
   // type 0: get fraction of found/findable clusters with neighbourhood definition
   //      1: findable clusters with neighbourhood definition
   //      2: found clusters
-  //
+  // bitType:
+  //      0 - all cluster used
+  //      1 - clusters  used for the kalman update
   // definition of findable clusters:
   //            a cluster is defined as findable if there is another cluster
   //           within +- nNeighbours pad rows. The idea is to overcome threshold
   //           effects with a very simple algorithm.
   //
-  
-  if (type==2) return fTPCClusterMap.CountBits();
+
   
   Int_t found=0;
   Int_t findable=0;
   Int_t last=-nNeighbours;
+  const TBits & clusterMap = (bitType%2==0) ? fTPCClusterMap : fTPCFitMap;
   
-  for (Int_t i=row0; i<row1; ++i){
+  Int_t upperBound=clusterMap.GetNbits();
+  if (upperBound>row1) upperBound=row1;
+  for (Int_t i=row0; i<upperBound; ++i){
     //look to current row
-    if (fTPCClusterMap[i]) {
+    if (clusterMap[i]) {
       last=i;
       ++found;
       ++findable;
@@ -611,24 +616,26 @@ Float_t AliAODTrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
     }
     //look to nNeighbours after
     for (Int_t j=i+1; j<i+1+nNeighbours; ++j){
-      if (fTPCClusterMap[j]){
+      if (clusterMap[j]){
         ++findable;
         break;
       }
     }
   }
+  if (type==2) return found;
   if (type==1) return findable;
   
   if (type==0){
     Float_t fraction=0;
-    if (findable>0)
+    if (findable>0) 
       fraction=(Float_t)found/(Float_t)findable;
-    else
+    else 
       fraction=0;
     return fraction;
-  }
+  }  
   return 0;  // undefined type - default value
 }
+
 
 //______________________________________________________________________________
 Double_t  AliAODTrack::GetTRDslice(Int_t plane, Int_t slice) const {
