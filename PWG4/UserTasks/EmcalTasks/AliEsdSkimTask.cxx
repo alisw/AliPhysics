@@ -216,10 +216,15 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
         return;
       }
       arrout->Delete();
+      Double_t emin=0.1;
+      if (cname.Contains("FEE"))
+        emin = 1;
       const Int_t N = arrin->GetEntries();
       for (Int_t iC=0, nC=0; iC<N; ++iC) {
         AliESDCaloCluster *c = dynamic_cast<AliESDCaloCluster*>(arrin->At(iC));
         if (!c)
+          continue;
+        if (c->E()<emin)
           continue;
         new ((*arrout)[nC++]) AliESDCaloCluster(*c);
       }
