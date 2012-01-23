@@ -56,13 +56,19 @@ TTherminator::TTherminator():
   fPartDB = new ParticleDB();
 }
 TTherminator::TTherminator(const TTherminator & therm) :
-  TGenerator(therm),
-  fCalka(new Integrator(*therm.fCalka)),
-  fEvent(new Event(*therm.fEvent)),
-  fPartDB(new ParticleDB())
+  TGenerator(therm), 
+  fCalka(0),
+  fEvent(0),
+  fPartDB(0)
 {
   // Copy constructor
   //  fPartDB = new ParticleDB();
+  if (fCalka) delete fCalka;
+  fCalka = new Integrator(*therm.fCalka);
+  if (fEvent) delete fEvent;
+  fEvent = new Event(*therm.fEvent);
+  if (fPartDB) delete fPartDB;
+  fPartDB = new ParticleDB();
 }
 TTherminator& TTherminator::operator=(const TTherminator & therm)
 {
