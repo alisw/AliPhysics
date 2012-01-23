@@ -11,8 +11,8 @@
 // A class to calculate the multiplicity in @f$(x,y)@f$ bins
 // using Poisson statistics. 
 //
-// The input is assumed to be binned in @f$(x,y)@f$ as described by
-// the 2D histogram passwd to the Reset member function.
+// The input is assumed to be binned in @f$(x,y)@f$ with the number of channels
+// input to the Reset member function.
 //
 // The data is grouped in to regions as defined by the parameters
 // fXLumping and fYLumping.  The total number of cells and number of
@@ -86,7 +86,7 @@ AliPoissonCalculator::AliPoissonCalculator(const AliPoissonCalculator& o)
     fCorr(0)
 {
   Init();
-  Reset(o.fBasic);
+//  Reset();
 }
 
 //____________________________________________________________________
@@ -117,7 +117,7 @@ AliPoissonCalculator::operator=(const AliPoissonCalculator& o)
   fYLumping = o.fYLumping;
   CleanUp();
   Init();
-  Reset(o.fBasic);
+ // Reset();
   return *this;
 }
 
@@ -206,29 +206,29 @@ AliPoissonCalculator::SetLumping(UShort_t nx, UShort_t ny)
 
 //____________________________________________________________________
 void
-AliPoissonCalculator::Reset(const TH2D* base)
+AliPoissonCalculator::Reset(UShort_t xChannels, UShort_t yChannels)
 {
   // 
   // Reset histogram 
   // 
   
-  if (!base) return;
   if (fBasic && fTotal && fEmpty) {
     fBasic->Reset();
     fTotal->Reset();
     fEmpty->Reset();
     return;
   }
-  Int_t    nXF   = base->GetNbinsX();
+  Int_t    nXF   = xChannels;
   Int_t    nX    = nXF / fXLumping;
-  Double_t xMin  = base->GetXaxis()->GetXmin();
-  Double_t xMax  = base->GetXaxis()->GetXmax();
-  Int_t    nYF   = base->GetNbinsY();
+  Double_t xMin  = -0.5;
+  Double_t xMax  = nXF - 0.5;
+  Int_t    nYF   = yChannels;
   Int_t    nY    = nYF / fYLumping;
-  Double_t yMin  = base->GetYaxis()->GetXmin();
-  Double_t yMax  = base->GetYaxis()->GetXmax();
-  
-  fBasic = static_cast<TH2D*>(base->Clone("basic"));
+  Double_t yMin  = -0.5;
+  Double_t yMax  = nYF - 0.5;
+
+  fBasic = new TH2D("basic", "basic number of hits",
+		    nX, xMin, xMax, nY, yMin, yMax);
   fBasic->SetTitle("Basic number of hits");
   fBasic->SetDirectory(0);
   fBasic->Sumw2();
