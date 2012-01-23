@@ -31,7 +31,7 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libANALYSIScalib");
     gSystem->Load("libCORRFW");
-    gSystem->Load("libPWG3muon");
+    gSystem->Load("libPWGmuon");
     gROOT->LoadMacro("ConfigCalibTrain.C");
     gROOT->LoadMacro("AddTaskCopyESD.C");
     gROOT->LoadMacro("AddTaskFilterFriend.C");

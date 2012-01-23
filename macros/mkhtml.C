@@ -48,11 +48,11 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libPWG2spectra.so");
     gSystem->Load("libPWG2unicor.so");
 
-    gSystem->Load("libPWG3base.so");
-    gSystem->Load("libPWG3hfe.so");
-    gSystem->Load("libPWG3muondep.so");
-    gSystem->Load("libPWG3muon.so");
-    gSystem->Load("libPWG3vertexingHF.so");
+    gSystem->Load("libPWGHFbase.so");
+    gSystem->Load("libPWGHFhfe.so");
+    gSystem->Load("libPWGmuondep.so");
+    gSystem->Load("libPWGmuon.so");
+    gSystem->Load("libPWGHFvertexingHF.so");
 
     gSystem->Load("libJETAN.so");
     gSystem->Load("libPWG4CaloCalib.so");

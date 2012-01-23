@@ -12,8 +12,8 @@ void runCentralitySelection(const char *mode="local")
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");   
   gSystem->Load("libCORRFW");   
-  gSystem->Load("libPWG3base");   
-  gSystem->Load("libPWG3muon");   
+  gSystem->Load("libPWGHFbase");   
+  gSystem->Load("libPWGmuon");   
   // Use AliRoot includes to compile our task
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
 

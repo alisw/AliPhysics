@@ -69,8 +69,8 @@ AliEveHFList* aod_HF()
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
-    gSystem->Load("libPWG3base");
-    gSystem->Load("libPWG3vertexingHF");
+    gSystem->Load("libPWGHFbase");
+    gSystem->Load("libPWGHFvertexingHF");
   */
 
   // load MC particles

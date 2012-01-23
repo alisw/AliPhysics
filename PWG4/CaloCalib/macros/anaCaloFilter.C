@@ -175,8 +175,8 @@ void  LoadLibraries(const anaModes mode) {
     /*
       //     gSystem->Load("libPWG4omega3pi.so");
       //     gSystem->Load("libCORRFW.so");
-      //     gSystem->Load("libPWG3base.so");
-      //     gSystem->Load("libPWG3muon.so");
+      //     gSystem->Load("libPWGCFbase.so");
+      //     gSystem->Load("libPWGmuon.so");
  */
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot

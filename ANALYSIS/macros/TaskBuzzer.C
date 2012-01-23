@@ -252,9 +252,9 @@ void LoadLibraries()
   gSystem->Load("libEMCALUtils");
   gSystem->Load("libPWG4PartCorrBase");
   gSystem->Load("libPWG4PartCorrDep");
-  gSystem->Load("libPWG3base");
-  gSystem->Load("libPWG3muon");
-  gSystem->Load("libPWG3muondep");
+  gSystem->Load("libPWGHFbase");
+  gSystem->Load("libPWGmuon");
+  gSystem->Load("libPWGmuondep");
 // fast xrootd reading enabled
    printf("!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!");
    gEnv->SetValue("XNet.ConnectTimeout",10);
