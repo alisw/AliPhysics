@@ -108,5 +108,6 @@
 #pragma link C++ class  TTreeSRedirector+;
 
 #pragma link C++ class AliVMFT+;
+#pragma link C++ class AliCounterCollection+;
 
 #endif

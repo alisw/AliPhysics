@@ -29,9 +29,6 @@
 set ( SRCS   
     base/AliQuarkoniaAcceptance.cxx 
     base/AliQuarkoniaEfficiency.cxx 
-    base/AliAnalysisTaskPtMothFromPtDaugh.cxx 
-    base/AliPtMothFromPtDaugh.cxx 
-    base/AliCounterCollection.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
