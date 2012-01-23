@@ -372,15 +372,22 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Double_t *binsChi2C=new Double_t[fgkNChi2CBins+1];
   for(Int_t i=0; i<=fgkNChi2CBins; i++) binsChi2C[i] = (Double_t)i * (Double_t)i;
 
-  Int_t fgkNRel1PtUncertaintyBins=50;
   Float_t fgkRel1PtUncertaintyMin = 0.;
   Float_t fgkRel1PtUncertaintyMax = 1.;
-  if(fTrackType!=0 && fTrackType!=3) {
-    fgkNRel1PtUncertaintyBins = 50;
-    fgkRel1PtUncertaintyMax = 1.; 
-  }
+  Float_t binEdgeRel1PtUncertainty1= 0.3;
+  Int_t fgkNRel1PtUncertaintyBins1 = 45;
+  Float_t binWidthRel1PtUncertainty1 = (binEdgeRel1PtUncertainty1-fgkRel1PtUncertaintyMin)/((Float_t)fgkNRel1PtUncertaintyBins1);
+  Int_t fgkNRel1PtUncertaintyBins2 = 35;
+  Float_t binWidthRel1PtUncertainty2 = (fgkRel1PtUncertaintyMax-binEdgeRel1PtUncertainty1)/((Float_t)fgkNRel1PtUncertaintyBins2);
+  Int_t fgkNRel1PtUncertaintyBins = fgkNRel1PtUncertaintyBins1 + fgkNRel1PtUncertaintyBins2;
+  
   Double_t *binsRel1PtUncertainty=new Double_t[fgkNRel1PtUncertaintyBins+1];
-  for(Int_t i=0; i<=fgkNRel1PtUncertaintyBins; i++) binsRel1PtUncertainty[i]=(Double_t)fgkRel1PtUncertaintyMin + (fgkRel1PtUncertaintyMax-fgkRel1PtUncertaintyMin)/fgkNRel1PtUncertaintyBins*(Double_t)i ;
+  for(Int_t i=0; i<=fgkNRel1PtUncertaintyBins; i++) {
+    if(i<=fgkNRel1PtUncertaintyBins1)
+      binsRel1PtUncertainty[i]=(Double_t)fgkRel1PtUncertaintyMin + (Double_t)binWidthRel1PtUncertainty1*(Double_t)i ;
+    if(i<=fgkNRel1PtUncertaintyBins && i>fgkNRel1PtUncertaintyBins1)
+      binsRel1PtUncertainty[i]=(Double_t)binEdgeRel1PtUncertainty1 + (Double_t)binWidthRel1PtUncertainty2*(Double_t)(i-fgkNRel1PtUncertaintyBins1);
+  }
 
   Int_t fgkNUncertainty1PtBins = 30;
   Float_t fgkUncertainty1PtMin = 0.;
