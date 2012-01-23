@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG3hfe                                                       #
+# Package File for PWGHFhfe                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -82,6 +82,6 @@ set (SRCS
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-set ( DHDR  PWG3hfeLinkDef.h)
+set ( DHDR  PWGHFhfeLinkDef.h)
 
-set ( EINCLUDE  PWG3/base PWG3/hfe TPC CORRFW STEER/STEERBase)
+set ( EINCLUDE  PWGHF/hfe TPC CORRFW STEER/STEERBase)

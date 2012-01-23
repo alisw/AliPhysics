@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG3muondep                                                   #
+# Package File for PWGmuon                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,18 +27,48 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
-    muondep/AliAnalysisTaskMuonTrackingEff.cxx 
-    muondep/AliAnalysisTaskRecoCheck.cxx 
-    muondep/AliAnalysisTaskESDMCLabelAddition.cxx 
-    muondep/AliAnalysisTaskMuonResolution.cxx 
-    muondep/AliAnalysisTaskPileup.cxx 
-    muondep/AliAnalysisTaskMuonFakes.cxx 
-    muondep/AliAnalysisTaskMuonRefit.cxx 
-    muondep/AliAnalysisTaskMuonPerformance.cxx 
+    muon/AliAnalysisMuMu.cxx 
+    muon/AliAnalysisMuMuFromESD.cxx 
+    muon/AliAnalysisMuMuFromAOD.cxx 
+    muon/AliHistogramCollection.cxx 
+    muon/AliAnalysisTaskESDMuonFilter.cxx 
+    muon/AliAnalysisTaskMuonAODfromGeneral.cxx 
+    muon/AliAnalysisTaskFromStandardToMuonAOD.cxx 
+    muon/AliAnalysisTaskSingleMu.cxx 
+    muon/AliAnalysisTaskLUT.cxx 
+    muon/AliAnalysisTaskTrigChEff.cxx 
+    muon/AliAnalysisTaskLinkToMC.cxx 
+    muon/AliAODEventInfo.cxx 
+    muon/AliESDMuonTrackCuts.cxx 
+    muon/AliAnalysisTaskSingleMuESD.cxx 
+    muon/AliCFMuonResTask1.cxx 
+    muon/AliCFMuonSingleTask1.cxx 
+    muon/AliEventPoolMuon.cxx 
+    muon/AliAnalysisTaskCreateMixedDimuons.cxx 
+    muon/AliAnalysisTaskMuonAODCreation.cxx 
+    muon/AliAnalysisTaskMuonDistributions.cxx 
+    muon/AliMuonInfoStoreRD.cxx 
+    muon/AliDimuInfoStoreRD.cxx 
+    muon/AliMuonInfoStoreMC.cxx 
+    muon/AliDimuInfoStoreMC.cxx 
+    muon/AliMuonsHFHeader.cxx 
+    muon/AliAnalysisTaskSEMuonsHF.cxx 
+    muon/AliAnalysisTaskDimuonCFContainerBuilder.cxx 
+    muon/AliAnalysisTaskMuonTreeBuilder.cxx 
+    muon/AliAnalysisTaskMuonQA.cxx 
+    muon/AliAODMuonReplicator.cxx 
+    muon/AliAnalysisTaskMuonCollisionMultiplicity.cxx 
+    muon/AliCFMuonResUpsilon.cxx 
+    muon/AliMuonTrackCuts.cxx 
+    muon/AliMuonPairCuts.cxx 
+    muon/AliMergeableCollection.cxx 
+    muon/AliVAnalysisMuon.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG3muondepLinkDef.h )
+string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  MUON MUON/mapping PWG3/base PWG3/muondep STEER/STEER STEER/STEERBase)
+set ( DHDR  PWGmuonLinkDef.h)
+
+set ( EINCLUDE  PWG/muon ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase)

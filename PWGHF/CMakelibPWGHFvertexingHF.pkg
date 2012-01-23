@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG3vertexingHF                                               #
+# Package File for PWGHFvertexingHF                                               #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -77,6 +77,6 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG3vertexingHFLinkDef.h)
+set ( DHDR  PWGHFvertexingHFLinkDef.h)
 
-set ( EINCLUDE   PWG3/base PWG3/vertexingHF CORRFW STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE   PWGHF/vertexingHF CORRFW STEER/AOD STEER/ESD STEER/STEERBase)
