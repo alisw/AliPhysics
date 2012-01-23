@@ -2719,7 +2719,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     volCylGasFr->SetLineColor(kPurple);
 
     // The optical fibers bundle on the cone as a Tube
-    Double_t optLength = shCable->GetX(5) - shCable->GetX(0) + kYtoHalfStave;
+    Double_t optLength = shCable->GetX(5) - shCable->GetX(0) + kYtoHalfStave -0.85;
     TGeoTube *shOptFibs = new TGeoTube(0., 0.5*kOptFibDiamet, 0.5*optLength);
 
     TGeoVolume *volOptFibs = new TGeoVolume("ITSSPDOpticalFibersOnCone",
@@ -2814,7 +2814,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
       container[0]->AddNode(volCollTube, 1, trCollTube);
     }
         
-    Double_t dxPatch = 2.9;
+    Double_t dxPatch = 2.75;
     Double_t dzPatch = 2.8;
     TGeoCombiTrans *tr2 = new TGeoCombiTrans(1.7*ext2Length - dxPatch, 0.0, dzPatch, rot2);
     container[3]->AddNode(volPatch, 0, tr2);

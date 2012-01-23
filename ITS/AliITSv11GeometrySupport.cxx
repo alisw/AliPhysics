@@ -160,6 +160,15 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   TGeoXtru *centralomegashape = new TGeoXtru(2);
 
   CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
+  // Temporary fix for awkward extrusions seen only with Root v5.32
+  yomega[ 1] += 0.0001;
+  yomega[ 2] += 0.0001;
+  yomega[ 5] += 0.0001;
+  yomega[ 6] += 0.0001;
+  xomega[15] -= 0.0001;
+  xomega[16] -= 0.0001;
+  yomega[28] -= 0.0001;
+  yomega[29] -= 0.0001;
 
   centralomegashape->DefinePolygon(48,xomega,yomega);
   centralomegashape->DefineSection(0,-kHalfLengthCentral);
@@ -207,6 +216,14 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   TGeoXtru *endcapomegashape = new TGeoXtru(2);
 
   CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
+  // Temporary fix for awkward extrusions seen only with Root v5.32
+  yomega[19] -= 0.0001;
+  yomega[20] -= 0.0001;
+  yomega[31] -= 0.0001;
+  yomega[42] += 0.0001;
+  yomega[43] += 0.0001;
+  yomega[46] += 0.0001;
+  yomega[47] += 0.0001;
 
   endcapomegashape->DefinePolygon(48,xomega,yomega);
   endcapomegashape->DefineSection(0,-kHalfLengthEndCap);
@@ -4305,6 +4322,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 // Updated:      10 Jun 2010  Mario Sitta  Freon inside cooling pipes
 // Updated:      08 Sep 2010  Mario Sitta
 // Updated:      14 Sep 2010  Mario Sitta  Cables prolonged till cone
+// Updated:      20 Dec 2011  Mario Sitta  Composite vol to avoid new overlap
 //
 // Technical data are taken from AutoCAD drawings and other (oral)
 // information given by D.Elia
@@ -4338,6 +4356,8 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   const Double_t kCoaxCableSectCu     =    6.024 *fgkmm;// Computed
   const Double_t kCoaxCableHighMeg    =    5.695 *fgkmm;// Computed
 
+  const Double_t kCablesYtrans        =    2.500 *fgkmm;// Avoid ovlps
+
   // Overall position and rotation of the C-Side Cable Trays
   const Double_t kTraySideCRPos       =   45.300 *fgkcm;
   const Double_t kTraySideCZPos       = -102.400 *fgkcm;
@@ -4358,6 +4378,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
   // The Cable Tray lower face: a Xtru
   TGeoXtru *sideCHorFace = new TGeoXtru(2);
+  sideCHorFace->SetName("ITSsuppSPDTraySideCHor");
 
   xprof[0] = 0.;
   yprof[0] = 0.;
@@ -4454,6 +4475,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
   // The internal wall: a Xtru
   TGeoXtru *intWall = new TGeoXtru(2);
+  intWall->SetName("ITSsuppSPDTraySideCWall");
 
   xprof[0] = sideCHorFace->GetX(5);
   yprof[0] = sideCHorFace->GetY(5);
@@ -4519,11 +4541,11 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   xprof[0] = -kTrayCCablesZLenOut;
   yprof[0] = xprof[0]/TanD(kTrayCCablesOutRot);
   xprof[1] = sideCMidFace->GetX(5);
-  yprof[1] = sideCMidFace->GetY(5);
+  yprof[1] = sideCMidFace->GetY(5) + kCablesYtrans;
   xprof[2] = sideCMidFace->GetX(4);
-  yprof[2] = sideCMidFace->GetY(4);
+  yprof[2] = sideCMidFace->GetY(4) + kCablesYtrans;
   xprof[3] = sideCMidFace->GetX(3);
-  yprof[3] = sideCMidFace->GetY(3);
+  yprof[3] = sideCMidFace->GetY(3) + kCablesYtrans;
   xprof[4] = xprof[3] - kOpticalFibersSect*SinD(kTrayCFoldAngle);
   yprof[4] = yprof[3] + kOpticalFibersSect*CosD(kTrayCFoldAngle);
   InsidePoint(xprof[1], yprof[1], xprof[2], yprof[2], xprof[3], yprof[3],
@@ -4543,11 +4565,11 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   xprof[0] = -kTrayCCablesZLenOut;
   yprof[0] = xprof[0]/TanD(kTrayCCablesOutRot);
   xprof[1] = sideCMidFace->GetX(5);
-  yprof[1] = sideCMidFace->GetY(5);
+  yprof[1] = sideCMidFace->GetY(5) + kCablesYtrans;
   xprof[2] = sideCMidFace->GetX(4);
-  yprof[2] = sideCMidFace->GetY(4);
+  yprof[2] = sideCMidFace->GetY(4) + kCablesYtrans;
   xprof[3] = sideCMidFace->GetX(3);
-  yprof[3] = sideCMidFace->GetY(3);
+  yprof[3] = sideCMidFace->GetY(3) + kCablesYtrans;
   xprof[4] = xprof[3] - kLowVoltCableSectCu*SinD(kTrayCFoldAngle);
   yprof[4] = yprof[3] + kLowVoltCableSectCu*CosD(kTrayCFoldAngle);
   InsidePoint(xprof[1], yprof[1], xprof[2], yprof[2], xprof[3], yprof[3],
@@ -4590,11 +4612,11 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   xprof[0] = -kTrayCCablesZLenOut;
   yprof[0] = xprof[0]/TanD(kTrayCCablesOutRot);
   xprof[1] = sideCMidFace->GetX(5);
-  yprof[1] = sideCMidFace->GetY(5);
+  yprof[1] = sideCMidFace->GetY(5) + kCablesYtrans;
   xprof[2] = sideCMidFace->GetX(4);
-  yprof[2] = sideCMidFace->GetY(4);
+  yprof[2] = sideCMidFace->GetY(4) + kCablesYtrans;
   xprof[3] = sideCMidFace->GetX(3);
-  yprof[3] = sideCMidFace->GetY(3);
+  yprof[3] = sideCMidFace->GetY(3) + kCablesYtrans;
   xprof[4] = xprof[3] - kHiVoltCableSectCu*SinD(kTrayCFoldAngle);
   yprof[4] = yprof[3] + kHiVoltCableSectCu*CosD(kTrayCFoldAngle);
   InsidePoint(xprof[1], yprof[1], xprof[2], yprof[2], xprof[3], yprof[3],
@@ -4637,11 +4659,11 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   xprof[0] = -kTrayCCablesZLenOut;
   yprof[0] = xprof[0]/TanD(kTrayCCablesOutRot);
   xprof[1] = sideCMidFace->GetX(5);
-  yprof[1] = sideCMidFace->GetY(5);
+  yprof[1] = sideCMidFace->GetY(5) + kCablesYtrans;
   xprof[2] = sideCMidFace->GetX(4);
-  yprof[2] = sideCMidFace->GetY(4);
+  yprof[2] = sideCMidFace->GetY(4) + kCablesYtrans;
   xprof[3] = sideCMidFace->GetX(3);
-  yprof[3] = sideCMidFace->GetY(3);
+  yprof[3] = sideCMidFace->GetY(3) + kCablesYtrans;
   xprof[4] = xprof[3] - kCoaxCableSectCu*SinD(kTrayCFoldAngle);
   yprof[4] = yprof[3] + kCoaxCableSectCu*CosD(kTrayCFoldAngle);
   InsidePoint(xprof[1], yprof[1], xprof[2], yprof[2], xprof[3], yprof[3],
@@ -4678,6 +4700,11 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   coaxCablesMeg->DefineSection(0, 0);
   coaxCablesMeg->DefineSection(1, kCoaxCableSectCu);
 
+  // To avoid a newly discovered overlap,
+  // transform the two overlapping volumes into a Composite Shape
+  TGeoCompositeShape *trayIntern =
+    new TGeoCompositeShape("ITSSPDInternalTrayC",
+			   "ITSsuppSPDTraySideCHor+ITSsuppSPDTraySideCWall");
 
   // We have all shapes: now create the real volumes
   TGeoMedium *medAl   = mgr->GetMedium("ITS_ALUMINUM$");
@@ -4688,14 +4715,14 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   TGeoMedium *medPUR  = mgr->GetMedium("ITS_POLYURETHANE$");
   TGeoMedium *medMeg  = mgr->GetMedium("ITS_MEGOLON$");
 
-  TGeoVolume *traySideCHorFace  = new TGeoVolume("ITSsuppSPDTraySideCHor",
-						 sideCHorFace, medAl);
+  TGeoVolume *traySideCIntern  = new TGeoVolume("ITSsuppSPDTraySideCInternal",
+						trayIntern, medAl);
 
-  traySideCHorFace->SetVisibility(kTRUE);
-  traySideCHorFace->SetLineColor(6); // Purple
-  traySideCHorFace->SetLineWidth(1);
-  traySideCHorFace->SetFillColor(traySideCHorFace->GetLineColor());
-  traySideCHorFace->SetFillStyle(4000); // 0% transparent
+  traySideCIntern->SetVisibility(kTRUE);
+  traySideCIntern->SetLineColor(6); // Purple
+  traySideCIntern->SetLineWidth(1);
+  traySideCIntern->SetFillColor(traySideCIntern->GetLineColor());
+  traySideCIntern->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *traySideCMidFace  = new TGeoVolume("ITSsuppSPDTraySideCMid",
 						 sideCMidFace, medAl);
@@ -4732,15 +4759,6 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   traySideCLongCover->SetLineWidth(1);
   traySideCLongCover->SetFillColor(traySideCLongCover->GetLineColor());
   traySideCLongCover->SetFillStyle(4000); // 0% transparent
-
-  TGeoVolume *traySideCIntWall  = new TGeoVolume("ITSsuppSPDTraySideCWall",
-						 intWall, medAl);
-
-  traySideCIntWall->SetVisibility(kTRUE);
-  traySideCIntWall->SetLineColor(6); // Purple
-  traySideCIntWall->SetLineWidth(1);
-  traySideCIntWall->SetFillColor(traySideCIntWall->GetLineColor());
-  traySideCIntWall->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *traySideCHorTube = new TGeoVolume("ITSsuppSPDTraySideCHorTube",
 						horTube, medIn);
@@ -4861,7 +4879,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
 
   // Now build up the trays
-  cableTrayC->AddNode(traySideCHorFace,1,0);
+  cableTrayC->AddNode(traySideCIntern,1,0);
 
   cableTrayC->AddNode(traySideCMidFace,1,0);
 
@@ -4878,8 +4896,6 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 		      new TGeoTranslation( xloc, yloc, 0));
 
   cableTrayC->AddNode(traySideCLongCover,1,0);
-
-  cableTrayC->AddNode(traySideCIntWall,1,0);
 
   traySideCHorTube->AddNode(traySideCHorFreon, 1, 0);
   traySideCIncTube->AddNode(traySideCIncFreon, 1, 0);
@@ -5892,7 +5908,7 @@ void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
   const Double_t kSideCInputCablesPOLYAX =    0.1098;
 
   const Double_t kSideCOutputCablesX0    =   27.40    *fgkcm;
-  const Double_t kSideCOutputCablesWide  =    8.30    *fgkcm;
+  const Double_t kSideCOutputCablesWide  =    8.50    *fgkcm;
   const Double_t kSideCOutputCablesHigh  =    1.18    *fgkcm;
   const Double_t kSideCOutputCablesCu    =    0.6775;
   const Double_t kSideCOutputCablesPlast =    0.1613;
@@ -7129,6 +7145,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
   const Double_t kCablePlasticHeight     =   11.50 *fgkmm;// 1150 mm^2
   const Double_t kCoolingWaterHeight     =    2.65 *fgkmm;//  265 mm^2
   const Double_t kPoliUrethaneHeight     =    4.62 *fgkmm;//  462 mm^2
+  const Double_t kCablesYtrans           =    2.50 *fgkmm;// Avoid ovlps
 
   // Overall position and rotation of the C-Side Cable Trays
   const Double_t kTraySideCRPos          =   45.30    *fgkcm;
@@ -7153,11 +7170,11 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
   // Copper lies on the lower plate: get position of its points
   TGeoXtru *lowerplate = (TGeoXtru*)(mgr->GetVolume("ITSsuppTraySideCLower")->GetShape());
   xprof[0] = lowerplate->GetX(5);
-  yprof[0] = lowerplate->GetY(5);
+  yprof[0] = lowerplate->GetY(5) + kCablesYtrans;
   xprof[1] = lowerplate->GetX(4);
-  yprof[1] = lowerplate->GetY(4);
+  yprof[1] = lowerplate->GetY(4) + kCablesYtrans;
   xprof[2] = lowerplate->GetX(3);
-  yprof[2] = lowerplate->GetY(3);
+  yprof[2] = lowerplate->GetY(3) + kCablesYtrans;
   xprof[3] = xprof[2] - kCopperHeight*SinD(kSideCFoldAngle);
   yprof[3] = yprof[2] + kCopperHeight*CosD(kSideCFoldAngle);
   InsidePoint(xprof[0], yprof[0], xprof[1], yprof[1], xprof[2], yprof[2],

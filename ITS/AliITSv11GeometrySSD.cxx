@@ -494,7 +494,7 @@ const Double_t AliITSv11GeometrySSD::fgkEndCapSupportMiddleRadius[2] = {377.0*fg
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLowRadius[2] = {375.0*fgkmm,435.0*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportHighWidth = 20.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLowWidth[2] = {3.0*fgkmm,3.0*fgkmm};
-const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay5ITSPosition = 625.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay5ITSPosition = 624.9*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay5Position = 2.5*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay6ITSPosition = 635.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay6Position = 2.5*fgkmm;
@@ -1253,6 +1253,7 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
             new TGeoTranslation(0.0,(1-i)*(fgkEndLadderMountingBlockPosition[i]
                         +  0.5*fgkSSDMountingBlockWidth),
                         -  0.5*fgkCarbonFiberLowerSupportHeight);
+  fendladderlowersupptrans[0]->SetDz(-0.5*fgkCarbonFiberLowerSupportHeight-fgkSSDTolerance);
   fendladderlowersupptrans[2] = new TGeoTranslation(0.0,
 									 fgkCarbonFiberLowerSupportVolumePosition[1]
 								+    fgkCarbonFiberLowerSupportVolumePosition[0],
@@ -1929,9 +1930,9 @@ TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberJunction(Double_t width){
 						  fgkCarbonFiberJunctionEdge[0]
 			*			  TMath::Sin(fgkCarbonFiberJunctionAngle[0]
 			*			  TMath::DegToRad()));
-  vertex[4] = new TVector3(fgkCarbonFiberJunctionLength,
+  vertex[4] = new TVector3(fgkCarbonFiberJunctionLength-fgkSSDTolerance,
 						   fgkCarbonFiberJunctionEdge[1]);
-  vertex[5] = new TVector3(fgkCarbonFiberJunctionLength); 
+  vertex[5] = new TVector3(fgkCarbonFiberJunctionLength-fgkSSDTolerance); 
   vertex[1] = GetReflection(vertex[5],reflectionparam);	
   vertex[2] = GetReflection(vertex[4],reflectionparam);	
   Double_t xvertexpoints[6], yvertexpoints[6];
@@ -2259,12 +2260,12 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
     xmothervertex[i][2] = 0.5*(fgkSSDSensorLength-ssdstiffenerseparation); //0.5*fgkSSDStiffenerWidth;
     ymothervertex[i][2] = -0.5*fgkSSDStiffenerHeight-fgkSSDChipHeight -fgkSSDChipCablesHeight[i+2];
     xmothervertex[i][3] = xmothervertex[i][2];
-    ymothervertex[i][3] = ymothervertex[i][2]+fgkSSDChipCablesHeight[0]+fgkSSDChipCablesHeight[1];
+    ymothervertex[i][3] = ymothervertex[i][2]+fgkSSDChipCablesHeight[0]+fgkSSDChipCablesHeight[1]+fgkSSDTolerance;
 
     xmothervertex[i][4] = xmothervertex[i][2]-0.4;  
     ymothervertex[i][4] = ymothervertex[i][3];
     xmothervertex[i][5] = xmothervertex[i][4];
-    ymothervertex[i][5] = ymothervertex[i][4]+2*ssdchipcablesradius[i];
+    ymothervertex[i][5] = ymothervertex[i][4]+2*ssdchipcablesradius[i]-fgkSSDTolerance;
 
     xmothervertex[i][6] = 0.5*fgkSSDStiffenerWidth+ssdchipcablesradius[i]+0.3*fgkmm;
     ymothervertex[i][6] = ymothervertex[i][5];
@@ -3004,11 +3005,11 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
   xmothervertex[6]  = xvertex[5]+fgkSSDMountingBlockLength[2];
   ymothervertex[6]  = ymothervertex[5];
   xmothervertex[7]  = xmothervertex[6];
-  ymothervertex[7]  = ymothervertex[4];
+  ymothervertex[7]  = ymothervertex[4] - fgkSSDTolerance;
   xmothervertex[8]  = xmothervertex[7]
 					+ 0.5*(fgkSSDMountingBlockLength[1]
 					-	   fgkSSDMountingBlockLength[2]);
-  ymothervertex[8]  = ymothervertex[4];
+  ymothervertex[8]  = ymothervertex[7];
   xmothervertex[9]  = xmothervertex[8];
   ymothervertex[9]  = ymothervertex[2];
   xmothervertex[10] = xvertex[0]+fgkSSDMountingBlockLength[0];
@@ -3445,9 +3446,9 @@ void AliITSv11GeometrySSD::GetSSDChipCables(TGeoVolume *&cableL, TGeoVolume *&ca
   xmothervertex[3] = xvertexpoints[0][3+nedges];
   ymothervertex[3] = yvertexpoints[0][3+nedges];
   xmothervertex[4] = xvertexpoints[0][3+2*nedges];
-  ymothervertex[4] = yvertexpoints[0][3+2*nedges];
+  ymothervertex[4] = yvertexpoints[0][3+2*nedges]+fgkSSDTolerance;
   xmothervertex[5] = xvertexpoints[0][4+2*nedges];
-  ymothervertex[5] = yvertexpoints[0][4+2*nedges];
+  ymothervertex[5] = yvertexpoints[0][4+2*nedges]+fgkSSDTolerance;
   xmothervertex[6] = xvertexpoints[1][5+2*nedges];
   ymothervertex[6] = yvertexpoints[1][5+2*nedges];
   xmothervertex[7] = xvertexpoints[0][1];
@@ -7720,7 +7721,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   Double_t ssdcablepatchpanel3BB26radiusmin[2];
   Double_t ssdcablepatchpanel3BB26radiusmax[2];
   Double_t ssdcablepatchpanel3RB26zsection[2];
-  ssdcablepatchpanel3BB26radiusmin[0] = ssdcableslay5pconrmin[3]-0.5*fgkSSDPatchPanelHeight+2.8;
+  ssdcablepatchpanel3BB26radiusmin[0] = ssdcableslay5pconrmin[3]-0.5*fgkSSDPatchPanelHeight+2.8+0.003;//Avoid small overlap with SPDshieldring;
   ssdcablepatchpanel3BB26radiusmax[0] = ssdcablepatchpanel3BB26radiusmin[0]
 									  + fgkSSDCablesLay5RightSideHeight
 									  + fgkSSDCablesLay6RightSideHeight+0.5*fgkSSDPatchPanelHeight;

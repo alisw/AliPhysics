@@ -2382,6 +2382,8 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     ccToSensPoliVol->SetLineColor(fColorPolyhamide);
 
     TGeoXtru* ccToSensAlSh = new TGeoXtru(2);
+    xcc[6] += 0.001;
+    ycc[7] -= 0.001;
     ccToSensAlSh->DefinePolygon(8, xcc, ycc);
     ccToSensAlSh->DefineSection(0, 0.);
     ccToSensAlSh->DefineSection(1, fgkHybAlCCThick);
