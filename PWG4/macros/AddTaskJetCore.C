@@ -2,7 +2,7 @@
 
 AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt_t filterMask = 272 , Float_t ptTrackMin = 0.15,  Int_t eventClassMin = 0, Int_t eventClassMax = 4){
 
-   Printf("adding task jet core\n");
+   Printf("adding task jet response\n");
 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if(!mgr){
@@ -15,7 +15,7 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
    }
 
      
-   //jetsin bRec1 branch have larger radius than those in bRec2  
+  
 
   TString typeRec(bRec1);
   TString typeGen(bRec2);
@@ -35,18 +35,9 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
  
    
    task->SetJetPtMin(0.);   
-   
-   //task->SetRadioFrac(0.2);   //radius of the concentric cone
-                                //within which you sum up the pT of
-                                //the tracks to compute the core fraction
-                                //in method3. It is also the maxium distance
-                                //between jet axis in method2. Default is 0.2 
-
-   //task->SetMinDist(0.1);     //minimum distance between jets to be 
-                                //concentric in method1. Default is 0.1
+   task->SetAngStructCloseTracks(1);
 
  
-   task->SetBackgroundBranch("jeteventbackground_clustersAOD_KT04_B0_Filter00272_Cut00150_Skip00"); 
 
    mgr->AddTask(task);
 
