@@ -56,17 +56,17 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   // Pure virtual methods to be implemented bu users //
   /////////////////////////////////////////////////////
   
-  virtual void InitMergeableOutputs() = 0;
-  // In this method you have to create the mergeable objects that will be then used
+  virtual void MyUserCreateOutputObjects() = 0;
+  // In this method you have to create your own output as well as
+  // the mergeable objects that will be then used
   // in the counter collection.
-  // To do so, create your histogram and add it to outputPrototypeList:
+  // To do so, create your object and add it to the collection through:
   //    TH1* histo = new TH1F();
-  //    GetOutputPrototypeList()->Add(histo);
+  //    AddObjectToCollection(histo, index)
   
   virtual void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality) = 0;
   // This method is called at each event.
   // In this method you can fill the histograms or the CF container that you have created
-  
   
   /////////////////////
   // Utility methods //
@@ -85,9 +85,9 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   Int_t RecoTrackMother(AliVParticle* mcParticle);
   
   // Methods for mergeable object collections
-  TObjArray* GetOutputPrototypeList();
+  Bool_t AddObjectToCollection(TObject* object, Int_t index = -1);
   TObject* GetMergeableObject(TString physSel, TString trigClassName, TString centrality, TString objectName);
-  TObject* GetSum(TString physSel, TString trigClassNames, TString objectPattern, TString centrality = "all");
+  TObject* GetSum(TString physSel, TString trigClassNames, TString centrality, TString objectPattern);
   
   // A useful constant
   Double_t MuonMass2() const;
@@ -97,9 +97,9 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   Int_t GetTrigClassPtCutLevel(TString trigClassName);
   
   enum {
-    kPhysSel,     ///< Physics selected events
-    kNonPhysSel,  ///< Events non-passing selection
-    kNselections  ///< Number of selections
+    kPhysSelPass,    ///< Physics selected events
+    kPhysSelReject,  ///< Events non-passing selection
+    kNselections     ///< Number of selections
   };
   
   enum {
@@ -118,10 +118,10 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   AliESDEvent* fESDEvent;      //!< ESD event, not owner
   AliAODEvent* fAODEvent;      //!< AOD event, not owner
   TObjArray* fTerminateOptions; ///< Terminate options
-  TObjArray* fChargeKeys;      //!< Muon charge keys
-  TObjArray* fSrcKeys;         //!< MC sources names
-  TObjArray* fPhysSelKeys;     //!< Physics selection names
-  TList* fTriggerClasses;      //!< List of trigger classes
+  TObjArray* fChargeKeys;      ///< Muon charge keys
+  TObjArray* fSrcKeys;         ///< MC sources names
+  TObjArray* fPhysSelKeys;     ///< Physics selection names
+  TList* fTriggerClasses;      ///< List of trigger classes
   TAxis* fCentralityClasses;   ///< Centrality classes
   
   AliCounterCollection* fEventCounters;  //!< event counters
