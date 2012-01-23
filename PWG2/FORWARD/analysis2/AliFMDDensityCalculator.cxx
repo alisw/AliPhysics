@@ -318,7 +318,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	return false;
       }
       // rh->fPoisson.SetObject(d,r,vtxbin,cent);
-      rh->fPoisson.Reset(h);
+      rh->fPoisson.Reset(nt, ns);
       // rh->ResetPoissonHistos(h, fEtaLumping, fPhiLumping);
       
       for (UShort_t s=0; s<ns; s++) { 

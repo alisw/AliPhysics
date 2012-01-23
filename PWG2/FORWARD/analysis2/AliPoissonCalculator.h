@@ -13,7 +13,7 @@ class TBrowser;
  * described by the 2D histogram passwd to the Reset member function.  
  *
  * The data is grouped in to regions as defined by the parameters
- * fEtaLumping and fPhiLumping.  The total number of cells and number
+ * fXLumping and fYLumping.  The total number of cells and number
  * of empty cells is then calculate in each region.  The mean
  * multiplicity over the region is then determined as 
  *
@@ -103,9 +103,10 @@ public:
   /** 
    * Reset the cache histogram 
    * 
-   * @param base Basic histogram 
+   * @param xChannels number of channels in x 
+   * @param yChannels number of channels in y 
    */
-  void Reset(const TH2D* base);
+  void Reset(UShort_t xChannels, UShort_t yChannels);
   /** 
    * Fill in an observation 
    * 
