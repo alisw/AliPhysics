@@ -80,18 +80,23 @@ AliAnaPhoton::AliAnaPhoton() :
     fhDispLam1LowE(0),            fhDispLam1HighE(0),
 
     // MC histograms
-    fhMCPhotonELambda0NoOverlap(0),     fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
+    fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
     //Embedding
     fhEmbeddedSignalFractionEnergy(0),     
-    fhEmbedPhotonELambda0FullSignal(0), fhEmbedPhotonELambda0MostlySignal(0),  
-    fhEmbedPhotonELambda0MostlyBkg(0),  fhEmbedPhotonELambda0FullBkg(0),       
-    fhEmbedPi0ELambda0FullSignal(0),    fhEmbedPi0ELambda0MostlySignal(0),    
-    fhEmbedPi0ELambda0MostlyBkg(0),     fhEmbedPi0ELambda0FullBkg(0),
-    fhTrackMatchedDEta(0x0),            fhTrackMatchedDPhi(0x0),              fhTrackMatchedDEtaDPhi(0x0),
-    fhTrackMatchedDEtaNoCut(0x0),       fhTrackMatchedDPhiNoCut(0x0),         fhTrackMatchedDEtaDPhiNoCut(0x0),
-    fhdEdx(0),                          fhEOverP(0),                         
-    fhdEdxNoCut(0),                     fhEOverPNoCut(0),                     
-    fhTrackMatchedMCParticle(0),        fhTrackMatchedMCParticleNoCut(0)                    
+    fhEmbedPhotonELambda0FullSignal(0),   fhEmbedPhotonELambda0MostlySignal(0),  
+    fhEmbedPhotonELambda0MostlyBkg(0),    fhEmbedPhotonELambda0FullBkg(0),       
+    fhEmbedPi0ELambda0FullSignal(0),      fhEmbedPi0ELambda0MostlySignal(0),    
+    fhEmbedPi0ELambda0MostlyBkg(0),       fhEmbedPi0ELambda0FullBkg(0),
+    // Track matching
+    fhTrackMatchedDEta(0x0),              fhTrackMatchedDPhi(0x0),              fhTrackMatchedDEtaDPhi(0x0),
+    fhTrackMatchedDEtaNoCut(0x0),         fhTrackMatchedDPhiNoCut(0x0),         fhTrackMatchedDEtaDPhiNoCut(0x0),              
+    fhTrackMatchedDEtaMCOverlap(0),       fhTrackMatchedDPhiMCOverlap(0),
+    fhTrackMatchedDEtaMCNoOverlap(0),     fhTrackMatchedDPhiMCNoOverlap(0),
+    fhTrackMatchedDEtaMCOverlapConv(0),   fhTrackMatchedDPhiMCOverlapConv(0),
+    fhTrackMatchedDEtaMCNoOverlapConv(0), fhTrackMatchedDPhiMCNoOverlapConv(0),
+    fhTrackMatchedMCParticle(0),          fhTrackMatchedMCParticleNoCut(0),   
+    fhdEdx(0),                            fhEOverP(0),                         
+    fhdEdxNoCut(0),                       fhEOverPNoCut(0)
 {
   //default ctor
   
@@ -239,6 +244,22 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
           else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 1.5 );
           else                                                                                 fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 3.5 );
           
+          // Check if several particles contributed to cluster
+          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) || 
+             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)){
+            if(calo->GetNLabels()==1)
+            {
+              fhTrackMatchedDEtaMCNoOverlap->Fill(calo->E(),dZ);
+              fhTrackMatchedDPhiMCNoOverlap->Fill(calo->E(),dR);
+            }
+            else 
+            {
+              fhTrackMatchedDEtaMCOverlap->Fill(calo->E(),dZ);
+              fhTrackMatchedDPhiMCOverlap->Fill(calo->E(),dR);
+            }
+
+          }// Check overlaps
+          
         }
         else{
           
@@ -247,6 +268,22 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
           else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 4.5 );
           else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 5.5 );
           else                                                                                 fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 7.5 );
+          
+          // Check if several particles contributed to cluster
+          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) || 
+             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)){
+            if(calo->GetNLabels() < 3)
+            {
+              fhTrackMatchedDEtaMCNoOverlapConv->Fill(calo->E(),dZ);
+              fhTrackMatchedDPhiMCNoOverlapConv->Fill(calo->E(),dR);
+            }
+            else 
+            {
+              fhTrackMatchedDEtaMCOverlapConv->Fill(calo->E(),dZ);
+              fhTrackMatchedDPhiMCOverlapConv->Fill(calo->E(),dR);
+            }
+            
+          }// Check overlaps          
           
         }
         
@@ -704,7 +741,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   //Fill cluster Shower Shape histograms
   
   if(!fFillSSHistograms || GetMixedEvent()) return;
-  
+
   Float_t energy  = cluster->E();
   Int_t   ncells  = cluster->GetNCells();
   Float_t lambda0 = cluster->GetM02();
@@ -758,7 +795,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   }
   
   if(IsDataMC()){
-    
+
     AliVCaloCells* cells = 0;
     if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
     else                        cells = GetPHOSCells();
@@ -778,7 +815,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
       //Fraction of total energy due to the embedded signal
       fraction/=clusterE;
       
-      if(GetDebug() > 1 ) printf("AliAnaPhoton::FillShowerShapeHistogram() - Energy fraction of embedded signal %2.3f, Energy %2.3f\n",fraction, clusterE);
+      if(GetDebug() > 1 ) 
+        printf("AliAnaPhoton::FillShowerShapeHistogram() - Energy fraction of embedded signal %2.3f, Energy %2.3f\n",fraction, clusterE);
       
       fhEmbeddedSignalFractionEnergy->Fill(clusterE,fraction);
       
@@ -800,7 +838,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
       fhMCEDispersion[kmcssPhoton] ->Fill(energy, disp);
       fhMCNCellsE[kmcssPhoton]     ->Fill(energy, ncells);
       fhMCMaxCellDiffClusterE[kmcssPhoton]->Fill(energy,maxCellFraction);
-      
+            
       if     (energy < 2.){
         fhMCLambda0vsClusterMaxCellDiffE0[kmcssPhoton]->Fill(lambda0, maxCellFraction);
         fhMCNCellsvsClusterMaxCellDiffE0[kmcssPhoton] ->Fill(ncells,  maxCellFraction);
@@ -817,7 +855,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
       if(!GetReader()->IsEmbeddedClusterSelectionOn()){
         //Check particle overlaps in cluster
         
-        //Compare the primary depositing more energy with the rest, if no photon/electron as comon ancestor (conversions), count as other particle
+        // Compare the primary depositing more energy with the rest, 
+        // if no photon/electron as comon ancestor (conversions), count as other particle
         Int_t ancPDG = 0, ancStatus = -1;
         TLorentzVector momentum; TVector3 prodVertex;
         Int_t ancLabel = 0;
@@ -826,6 +865,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
           ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetReader(),ancPDG,ancStatus,momentum,prodVertex);
           if(ancPDG!=22 && TMath::Abs(ancPDG)!=11) noverlaps++;
         }
+        //printf("N overlaps %d \n",noverlaps);
         
         if(noverlaps == 1){
           fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0);
@@ -1310,6 +1350,76 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
     if(IsDataMC())
     {
+      
+      fhTrackMatchedDEtaMCNoOverlap  = new TH2F
+      ("hTrackMatchedDEtaMCNoOverlap",
+       "d#eta of cluster-track vs cluster energy, no other MC particles overlap",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaMCNoOverlap->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCNoOverlap->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiMCNoOverlap  = new TH2F
+      ("hTrackMatchedDPhiMCNoOverlap",
+       "d#phi of cluster-track vs cluster energy, no other MC particles overlap",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiMCNoOverlap->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCNoOverlap->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap) ;
+      
+      fhTrackMatchedDEtaMCOverlap  = new TH2F
+      ("hTrackMatchedDEtaMCOverlap",
+       "d#eta of cluster-track vs cluster energy, several MC particles overlap",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaMCOverlap->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCOverlap->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiMCOverlap  = new TH2F
+      ("hTrackMatchedDPhiMCOverlap",
+       "d#phi of cluster-track vs cluster energy, several MC particles overlap",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiMCOverlap->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCOverlap->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaMCOverlap) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCOverlap) ;
+      
+      
+      fhTrackMatchedDEtaMCNoOverlapConv  = new TH2F
+      ("hTrackMatchedDEtaMCNoOverlapConv",
+       "d#eta of cluster-track vs cluster energym no other MC particles overlap appart from conversions",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaMCNoOverlapConv->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCNoOverlapConv->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiMCNoOverlapConv  = new TH2F
+      ("hTrackMatchedDPhiMCNoOverlapConv",
+       "d#phi of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiMCNoOverlapConv->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCNoOverlapConv->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaMCNoOverlapConv) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCNoOverlapConv) ;
+      
+      fhTrackMatchedDEtaMCOverlapConv  = new TH2F
+      ("hTrackMatchedDEtaMCOverlapConv",
+       "d#eta of cluster-track vs cluster energy, several MC particles overlap appart from conversion",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaMCOverlapConv->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCOverlapConv->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiMCOverlapConv  = new TH2F
+      ("hTrackMatchedDPhiMCOverlapConv",
+       "d#phi of cluster-track vs cluster energy, several MC particles overlap appart from conversion",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiMCOverlapConv->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCOverlapConv->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaMCOverlapConv) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCOverlapConv) ;
+      
       fhTrackMatchedMCParticle  = new TH2F
       ("hTrackMatchedMCParticle",
        "Origin of particle vs energy",
@@ -1344,7 +1454,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
       fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
       
-      outputContainer->Add(fhTrackMatchedMCParticleNoCut);         
+      outputContainer->Add(fhTrackMatchedMCParticleNoCut);       
+      
     }
   }  
   
@@ -1808,10 +1919,27 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //printf("DistBad %f Bit %d\n",distBad, aodph.DistToBad());
     
     //--------------------------------------------------------------------------------------
+    // Play with the MC stack if available
+    //--------------------------------------------------------------------------------------
+    
+    //Check origin of the candidates
+    Int_t tag = -1;
+    
+    if(IsDataMC()){
+      
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex());
+      aodph.SetTag(tag);
+      
+      if(GetDebug() > 0)
+        printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
+    }//Work with stack also   
+        
+    
+    //--------------------------------------------------------------------------------------
     //Fill some shower shape histograms before PID is applied
     //--------------------------------------------------------------------------------------
     
-    FillShowerShapeHistograms(calo,aodph.GetTag());
+    FillShowerShapeHistograms(calo,tag);
     
     //-------------------------------------
     //PID selection or bit setting
@@ -1831,6 +1959,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if(aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton) continue ;			
       
     }
+    
     //...............................................
     // Data, PID check off
     else{
@@ -1889,7 +2018,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         }
         
         if(IsDataMC()){
-          Int_t tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), 0);
           if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  ){
             
             if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
@@ -1914,18 +2042,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       } // residual window
       
     } // Fill Track matching histo
-    
-    //--------------------------------------------------------------------------------------
-    //Play with the MC stack if available
-    //--------------------------------------------------------------------------------------
-    
-    //Check origin of the candidates
-    if(IsDataMC()){
-      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex()));
-
-      if(GetDebug() > 0)
-        printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
-    }//Work with stack also   
     
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
