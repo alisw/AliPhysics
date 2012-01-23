@@ -36,6 +36,11 @@ public:
 		{
 		return (AliHLTUInt8_t)( (spec & 0xFF000000) >> 24 );
 		}
+	static Int_t GetSingleSliceNr( const AliHLTComponentBlockData& block )
+		{
+		return GetSingleSliceNr(block.fSpecification);
+		}
+	static Int_t GetSingleSliceNr( ULong_t spec );
 	static AliHLTUInt8_t GetMinPatchNr( const AliHLTComponentBlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x000000FF) );
@@ -52,7 +57,11 @@ public:
 		{
 		return (AliHLTUInt8_t)( (spec & 0x0000FF00) >> 8 );
 		}
-	
+	static Int_t GetSinglePatchNr( const AliHLTComponentBlockData& block )
+		{
+		return GetSinglePatchNr(block.fSpecification);
+		}
+	static Int_t GetSinglePatchNr( ULong_t spec );
 	static AliHLTUInt32_t EncodeDataSpecification( AliHLTUInt8_t minSliceNr, 
 						AliHLTUInt8_t maxSliceNr,
 						AliHLTUInt8_t minPatchNr,

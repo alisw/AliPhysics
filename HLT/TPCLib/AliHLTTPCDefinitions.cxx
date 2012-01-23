@@ -24,7 +24,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliHLTTPCDefinitions.h"
-
+#include "AliHLTTPCTransform.h"
+#include <cerrno>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDefinitions)
@@ -204,3 +205,26 @@ bool AliHLTTPCDefinitions::DDLIdToSlicePatch(AliHLTInt32_t ddlid, AliHLTUInt8_t&
 	return true;
 }
     
+Int_t AliHLTTPCDefinitions::GetSingleSliceNr( ULong_t spec )
+{
+  // get the slice number provided that spec encodes a single slice
+  // return -EINVAL if encoded min and max slice differ
+  // return -ERANGE if slice number out of range
+  AliHLTUInt8_t min=GetMinSliceNr(spec);
+  AliHLTUInt8_t max=GetMaxSliceNr(spec);
+  if (min!=max) return -EINVAL;
+  if (max>=AliHLTTPCTransform::GetNSlice()) return -ERANGE;
+  return min;
+}
+
+Int_t AliHLTTPCDefinitions::GetSinglePatchNr( ULong_t spec )
+{
+  // get the patch number provided that spec encodes a single patch
+  // return -EINVAL if encoded min and max patch differ
+  // return -ERANGE if patch number out of range
+  AliHLTUInt8_t min=GetMinPatchNr(spec);
+  AliHLTUInt8_t max=GetMaxPatchNr(spec);
+  if (min!=max) return -EINVAL;
+  if (max>=AliHLTTPCTransform::GetNumberOfPatches()) return -ERANGE;
+  return min;
+}
