@@ -11,7 +11,7 @@ void LoadLibraries(){
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libANALYSIScalib");
     gSystem->Load("libCORRFW");
-    gSystem->Load("libPWG3muon");
+    gSystem->Load("libPWGmuon");
     //
     // detector libraries
     //    

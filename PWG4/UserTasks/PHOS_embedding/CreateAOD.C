@@ -15,8 +15,8 @@ void CreateAOD()
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG3base.so");
-  gSystem->Load("libPWG3muon.so");
+  gSystem->Load("libPWGHFbase.so");
+  gSystem->Load("libPWGmuon.so");
   gSystem->Load("libTENDER.so");
 //gSystem->Load("libTENDERSupplies.so"); 
 

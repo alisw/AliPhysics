@@ -8,7 +8,7 @@
 //  - libANALYSIS.so
 //  - libANALYSISalice.so
 //  - libCORRFW.so
-//  - libPWG3muon.so
+//  - libPWGmuon.so
 //
 // TString includePath = "-I${ALICE_ROOT}/PWG3/base/ ";  gSystem->SetIncludePath(includePath.Data());
 //
@@ -88,8 +88,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG3base");
-  gSystem->Load("libPWG3muon");
+  gSystem->Load("libPWGHFbase");
+  gSystem->Load("libPWGmuon");
 #endif
   
   // Cosmetics and configuration

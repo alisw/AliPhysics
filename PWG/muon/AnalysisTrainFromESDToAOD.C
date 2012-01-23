@@ -56,8 +56,8 @@ void AnalysisTrainFromESDToAOD(const char *analysisMode = "GRID", Bool_t usePLUG
     //=====================================================================
     if (iESDfilter) {
        if(!strcmp(analysisMode, "LOCAL")){
-         gSystem->Load("libPWG3base.so");
-         gSystem->Load("libPWG3muon.so");
+         gSystem->Load("libPWGHFbase.so");
+         gSystem->Load("libPWGmuon.so");
        } 
        else if(!strcmp(analysisMode, "GRID"))LoadAnalysisLibraries(analysisMode);
      }

@@ -179,9 +179,9 @@ void LoadLibraries()
      gSystem->Load("libPWG4PartCorrDep");
   }  
   if(doMUON || doMUONTrig) {
-     gSystem->Load("libPWG3base");
-     gSystem->Load("libPWG3muon");
-     gSystem->Load("libPWG3muondep");
+     gSystem->Load("libPWGHFbase");
+     gSystem->Load("libPWGmuon");
+     gSystem->Load("libPWGmuondep");
   }
   if (doFMD) {
      gSystem->Load("libPWG2forward2");
@@ -527,7 +527,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    
    plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWGPP.so \
                               libEMCALUtils.so libPHOSUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
-                              libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG2forward2.so");
+                              libPWGHFbase.so libPWGmuon.so libPWGmuondep.so libPWG2forward2.so");
      
 // Declare the output file names separated by blancs.
    plugin->SetDefaultOutputs();

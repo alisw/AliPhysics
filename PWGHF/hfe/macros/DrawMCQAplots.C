@@ -11,7 +11,7 @@ void DrawMCQAplots(Int_t imode){
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG0base.so");
-  gSystem->Load("../libPWG3hfeDevel.so");
+  gSystem->Load("libPWGHFhfe.so");
 
   // put input file name
   //char filename[]="./HFEtask.root";

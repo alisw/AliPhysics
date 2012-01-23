@@ -61,9 +61,9 @@ void testOutputSize(const char *filename="QA/QAresults.root")
    gSystem->Load("libEMCALUtils.so");
    gSystem->Load("libPWG4PartCorrBase.so");
    gSystem->Load("libPWG4PartCorrDep.so");
-   gSystem->Load("libPWG3base.so");
-   gSystem->Load("libPWG3muon.so");
-   gSystem->Load("libPWG3muondep.so");
+   gSystem->Load("libPWGHFbase.so");
+   gSystem->Load("libPWGmuon.so");
+   gSystem->Load("libPWGmuondep.so");
    gSystem->Unlink("syswatch.log");
    AliSysInfo::AddStamp("Start", 0, 0);
  

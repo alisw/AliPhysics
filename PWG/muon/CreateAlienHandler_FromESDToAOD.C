@@ -58,7 +58,7 @@ AliAnalysisGrid* CreateAlienHandler_FromESDToAOD()
 // Add all extra files (task .cxx/.h/.C) here.
 // (AddTaskTagCreation.C can be removed from SetAdditionalLibs, if available in the grid aliroot version)
 //=====================================================================
-   plugin->SetAdditionalLibs("libPWG3base.so libPWG3muon.so AddTaskTagCreation.C");
+   plugin->SetAdditionalLibs("libPWGHFbase.so libPWGmuon.so AddTaskTagCreation.C");
 
 // Declare the output file names separated by blancs.
 //=====================================================================

@@ -9,7 +9,7 @@ void RunMuonAODfromGeneral(char* filein = "../FromESDToGenAOD/AliAOD.root", char
     gSystem->Load("libSTEERBase");
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");			
-    gSystem->Load("libPWG3base.so");
+    gSystem->Load("libPWGHFbase.so");
              
     // Input AOD file
     TChain* chain = new TChain("aodTree");

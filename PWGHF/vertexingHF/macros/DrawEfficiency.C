@@ -39,8 +39,8 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 	gSystem->Load("libANALYSIS.so");
 	gSystem->Load("libANALYSISalice.so");
 	gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW.so") ;
-	gSystem->Load("libPWG3base.so");
-	gSystem->Load("libPWG3vertexingHF.so");
+	gSystem->Load("libPWGHFbase.so");
+	gSystem->Load("libPWGHFvertexingHF.so");
 		
 	Int_t mcAcc_over_mcLimAcc = 0x001;
 	Int_t recPPR_over_mcAcc = 0x002;

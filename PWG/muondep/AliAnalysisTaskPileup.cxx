@@ -44,7 +44,7 @@
 //   (hopefully it will be changed in the future)
 //   Hence the following libraries need to be included (in addition to
 //   the standard analysis ones):
-//   libRAWDatabase.so libCDB.so libSTEER.so libPWG3base.so
+//   libRAWDatabase.so libCDB.so libSTEER.so libPWGHFbase.so
 //-------------------------------------------------------------------------
 
 #include <Riostream.h>

@@ -23,9 +23,9 @@ gSystem->Load("libAOD.so");
 gSystem->Load("libANALYSIS.so");
 gSystem->Load("libANALYSISalice.so");
 gSystem->Load("libCORRFW.so");
-gSystem->Load("libPWG3base.so");
-gSystem->Load("libPWG3vertexingHF.so");
-gSystem->Load("libPWG3muon.so");
+gSystem->Load("libPWGHFbase.so");
+gSystem->Load("libPWGHFvertexingHF.so");
+gSystem->Load("libPWGmuon.so");
 
   AliRDHFCutsD0toKpipipi* RDHFCharm4Prong=new AliRDHFCutsD0toKpipipi();
   RDHFCharm4Prong->SetName("Charm4ProngCuts");
@@ -156,9 +156,9 @@ gSystem->Load("libAOD.so");
 gSystem->Load("libANALYSIS.so");
 gSystem->Load("libANALYSISalice.so");
 gSystem->Load("libCORRFW.so");
-gSystem->Load("libPWG3base.so");
-gSystem->Load("libPWG3vertexingHF.so");
-gSystem->Load("libPWG3muon.so");
+gSystem->Load("libPWGHFbase.so");
+gSystem->Load("libPWGHFvertexingHF.so");
+gSystem->Load("libPWGmuon.so");
 
   AliRDHFCutsD0toKpipipi* RDHFCharm4Prong=new AliRDHFCutsD0toKpipipi();
   RDHFCharm4Prong->SetName("loosercuts");

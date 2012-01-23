@@ -23,7 +23,7 @@ void AnalysisTrainFromStandardToMuonAODLocal(char* filein= "AliAODs.root",
     gSystem->Load("libVMC.so");
     gSystem->Load("libPhysics.so");
     gSystem->Load("libSTEER.so");              // for aliroot based analysis
-    gSystem->Load("libPWG3muon.so");  // for aliroot based analysis
+    gSystem->Load("libPWGmuon.so");  // for aliroot based analysis
 
     // Load par files, if the analysis is par based
     // SetupPar("STEERBase");
