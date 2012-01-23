@@ -479,8 +479,11 @@ void Parser::ReadInput()
 	  
 	  tLBrackert = strchr(str,'[');
 	  tFirstComma = strchr(str,',');
+	  if (!tFirstComma) exit(0);
 	  tSecondComma = strchr(tFirstComma+1,',');
+	  if (!tSecondComma) exit(0);
 	  tThirdComma = strchr(tSecondComma+1,',');
+	  if (!tThirdComma) exit(0);
 	  tFourthComma = strchr(tThirdComma+1,',');
 	  tRBracket = strchr(tThirdComma,']');
 
