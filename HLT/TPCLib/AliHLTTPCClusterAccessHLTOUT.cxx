@@ -277,7 +277,10 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 					    reinterpret_cast<AliHLTUInt8_t*>(desc.fPtr),
 					    desc.fSize,
 					    desc.fSpecification);
-      if (iResult>0) nExtractedClusters+=iResult;
+      if (iResult>=0) nExtractedClusters+=iResult;
+      else {
+	AliFatal(Form("processing of cluster block 0x%08x failed with error code %d", desc.fSpecification, iResult));
+      }
       unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
       if (index>=bHavePartitionData.size()) bHavePartitionData.resize(index, false);
       if (bHavePartitionData[index]) {
