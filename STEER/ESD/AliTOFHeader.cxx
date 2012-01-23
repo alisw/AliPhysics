@@ -38,9 +38,9 @@ AliTOFHeader::AliTOFHeader() :
   fDefaultEventTimeValue(0.),
   fDefaultEventTimeRes(0.),
   fNbins(0),
-  fEventTimeValues(new TArrayF(1)),
-  fEventTimeRes(new TArrayF(1)),
-  fNvalues(new TArrayI(1)),
+  fEventTimeValues(0),
+  fEventTimeRes(0),
+  fNvalues(0),
   fTOFtimeResolution(0.),
   fT0spread(0.)
 {
@@ -141,10 +141,6 @@ void AliTOFHeader::Copy(TObject &obj) const {
 //--------------------------------------------------------------------------
 AliTOFHeader::~AliTOFHeader()
 {
-
-  fEventTimeValues->Reset();
-  fEventTimeRes->Reset();
-  fNvalues->Reset();
 
   delete fEventTimeValues;
   delete fEventTimeRes;
