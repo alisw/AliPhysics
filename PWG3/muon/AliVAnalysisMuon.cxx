@@ -105,20 +105,24 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
-  fTriggerClasses(0x0),
+  fTriggerClasses(new THashList()),
   fCentralityClasses(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
-  fSelectedTrigPattern(0x0),
-  fRejectedTrigPattern(0x0),
-  fSelectedTrigLevel(0x0),
+  fSelectedTrigPattern(new TObjArray()),
+  fRejectedTrigPattern(new TObjArray()),
+  fSelectedTrigLevel(new TObjArray()),
   fOutputPrototypeList(0x0)
 {
   //
   /// Constructor.
   //
+  
+  fTriggerClasses->SetOwner();
   InitKeys();
+  SetTrigClassPatterns();
+  SetCentralityClasses();
 
   DefineOutput(1, TObjArray::Class());
 }
@@ -134,21 +138,25 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
-  fTriggerClasses(0x0),
+  fTriggerClasses(new THashList()),
   fCentralityClasses(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
-  fSelectedTrigPattern(0x0),
-  fRejectedTrigPattern(0x0),
-  fSelectedTrigLevel(0x0),
+  fSelectedTrigPattern(new TObjArray()),
+  fRejectedTrigPattern(new TObjArray()),
+  fSelectedTrigLevel(new TObjArray()),
   fOutputPrototypeList(0x0)
 {
   //
   /// Constructor.
   //
+  
+  fTriggerClasses->SetOwner();
   InitKeys();
-
+  SetTrigClassPatterns();
+  SetCentralityClasses();
+  
   DefineOutput(1, TObjArray::Class());
 }
 
@@ -164,21 +172,24 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pair
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
-  fTriggerClasses(0x0),
+  fTriggerClasses(new THashList()),
   fCentralityClasses(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
-  fSelectedTrigPattern(0x0),
-  fRejectedTrigPattern(0x0),
-  fSelectedTrigLevel(0x0),
+  fSelectedTrigPattern(new TObjArray()),
+  fRejectedTrigPattern(new TObjArray()),
+  fSelectedTrigLevel(new TObjArray()),
   fOutputPrototypeList(0x0)
 {
   //
   /// Constructor.
   //
+  fTriggerClasses->SetOwner();
   InitKeys();
-
+  SetTrigClassPatterns();
+  SetCentralityClasses();
+    
   DefineOutput(1, TObjArray::Class());
 }
 
@@ -214,21 +225,12 @@ void AliVAnalysisMuon::FinishTaskOutput()
   //
   /// Remove empty histograms to reduce the number of histos to be merged
   //
-  TString objectName = "";
-//  for ( Int_t iobj=0; iobj<fOutputPrototypeList->GetEntries(); ++iobj ) {
-//    objectName = fOutputPrototypeList->At(iobj)->GetName();
-//    for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); ++itrig ) {
-//      for ( Int_t icent=1; icent<=fCentralityClasses->GetNbins(); ++icent ) {
-//        TObject* objPhysSel = fMergeableCollection->GetObject(fPhysSelKeys->At(kPhysSel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent), objectName);
-//        if ( ! objPhysSel ) continue;
-//        TObject* objAll = GetMergeableObject(fPhysSelKeys->At(kAllSel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent), objectName);
-//        AliMergeableCollection::MergeObject(objAll, objPhysSel);
-//      } // loop on centrality
-//    } // loop on trigger classes
-//  } // loop on object type
+
 
   fMergeableCollection->PruneEmptyObjects();
-   
+
+  TString objectName = "";
+  
   // Add stat. info from physics selection
   // (usefull when running on AODs)
   if ( fInputHandler ) {
@@ -265,23 +267,13 @@ void AliVAnalysisMuon::UserCreateOutputObjects()
   /// Create output objects
   //
   AliInfo(Form("   CreateOutputObjects of task %s\n", GetName()));
-
+  
   fOutputList = new TObjArray();
   fOutputList->SetOwner();
 
-  if ( ! fPhysSelKeys ) InitKeys();
-  if ( ! fTriggerClasses ) {
-    fTriggerClasses = new THashList();
-    fTriggerClasses->SetOwner();
-  }
-  
-  // initialize object lists
-  InitMergeableOutputs();
-  
-  if ( ! fCentralityClasses ) SetCentralityClasses();
-
   fEventCounters = new AliCounterCollection("eventCounters");
 
+  if ( ! fCentralityClasses ) SetCentralityClasses();
   TString centralityClasses = "";
   for ( Int_t icent=1; icent<=fCentralityClasses->GetNbins(); ++icent ) {
     if ( ! centralityClasses.IsNull() ) centralityClasses += "/";
@@ -291,14 +283,14 @@ void AliVAnalysisMuon::UserCreateOutputObjects()
   fEventCounters->AddRubric("trigger", 100);
   fEventCounters->AddRubric("centrality", centralityClasses);
   fEventCounters->Init();
-  fOutputList->Add(fEventCounters);  
+  fOutputList->Add(fEventCounters);
  
   fMergeableCollection = new AliMergeableCollection("outputObjects");
-  fOutputList->AddLast(fMergeableCollection);
-
-  if ( ! fSelectedTrigPattern && ! fRejectedTrigPattern ) SetTrigClassPatterns();
+  fOutputList->Add(fMergeableCollection);
 
   PostData(1, fOutputList);
+  
+  MyUserCreateOutputObjects();
 }
 
 
@@ -319,7 +311,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
     return;
   }
 
-  Int_t physSel = ( fInputHandler->IsEventSelected() & AliVEvent::kAny ) ? kPhysSel : kNonPhysSel;
+  Int_t physSel = ( fInputHandler->IsEventSelected() & AliVEvent::kAny ) ? kPhysSelPass : kPhysSelReject;
 
   //
   // Global event info
@@ -338,7 +330,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
   Int_t centralityBin = fCentralityClasses->FindBin(centrality);
   TString centralityBinLabel = fCentralityClasses->GetBinLabel(centralityBin);
 
-  TString selKey = ( physSel == kPhysSel ) ? "yes" : "no";
+  TString selKey = ( physSel == kPhysSelPass ) ? "yes" : "no";
   for ( Int_t itrig=0; itrig<selectTrigClasses->GetEntries(); ++itrig ) {
     TString trigName = selectTrigClasses->At(itrig)->GetName();
     fEventCounters->Count(Form("trigger:%s/selected:%s/centrality:%s", trigName.Data(), selKey.Data(), centralityBinLabel.Data()));
@@ -360,11 +352,7 @@ void AliVAnalysisMuon::Terminate(Option_t *)
   //
   
   if ( gROOT->IsBatch() ) return;
-  
-  if ( ! fPhysSelKeys ) InitKeys();
-  InitMergeableOutputs();
-  if ( ! fCentralityClasses ) SetCentralityClasses();
-  
+    
   fOutputList = dynamic_cast<TObjArray*>(GetOutputData(1));
   if ( ! fOutputList ) return;
   fEventCounters = static_cast<AliCounterCollection*>(fOutputList->FindObject("eventCounters"));
@@ -549,18 +537,24 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
 }
 
 //________________________________________________________________________
-TObjArray* AliVAnalysisMuon::GetOutputPrototypeList()
+Bool_t AliVAnalysisMuon::AddObjectToCollection(TObject* object, Int_t index)
 {
   //
-  /// Get base list of mergeable objects
-  /// (create it if necessary)
+  /// Add object to collection
   //
   
   if ( ! fOutputPrototypeList ) {
     fOutputPrototypeList = new TObjArray();
     fOutputPrototypeList->SetOwner();
   }
-  return fOutputPrototypeList;
+  if ( fOutputPrototypeList->FindObject(object->GetName() ) ) {
+    AliWarning(Form("Object with name %s already in the list", object->GetName()));
+    return kFALSE;
+  }
+  if ( index < 0 ) fOutputPrototypeList->Add(object);
+  else fOutputPrototypeList->AddAtAndExpand(object, index);
+  
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -583,7 +577,7 @@ TObject* AliVAnalysisMuon::GetMergeableObject(TString physSel, TString trigClass
 }
 
 //________________________________________________________________________
-TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TString objectPattern, TString centrality)
+TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TString centrality, TString objectPattern)
 {
   //
   /// Sum objects
@@ -591,6 +585,8 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
   /// - centrality must be in the form minValue_maxValue
   /// - objectPattern must be in the form match1&match2&match3,match4
   ///   meaning that the object name must contain match1 and match2 and either one of match3 and match4
+  
+  if ( ! fMergeableCollection ) return 0x0;
   
   // Get centrality range
   Int_t firstCentrality = 1;
@@ -622,10 +618,33 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
     objPatternMatrix.AddAt(subKeyList, ikey);
   }
   delete objPatternList;
+  
+
+  TObjArray objectNameInCollection;
+  objectNameInCollection.SetOwner();
+  TObjArray* physSelList = physSel.Tokenize(",");
+  TObjArray* trigClassList = trigClassNames.Tokenize(",");
+  TObjArray* centralityList = sumCentralityString.Tokenize(",");
+  for ( Int_t isel=0; isel<physSelList->GetEntries(); isel++ ) {
+    for ( Int_t itrig = 0; itrig<trigClassList->GetEntries(); itrig++ ) {
+      for ( Int_t icent=0; icent<centralityList->GetEntries(); icent++ ) {
+        TString currId = Form("/%s/%s/%s/", physSelList->At(isel)->GetName(), trigClassList->At(itrig)->GetName(),centralityList->At(icent)->GetName());
+        TList* objNameList = fMergeableCollection->CreateListOfObjectNames(currId.Data());
+        for ( Int_t iobj=0; iobj<objNameList->GetEntries(); iobj++ ) {
+          TString objName = objNameList->At(iobj)->GetName();
+          if ( ! objectNameInCollection.FindObject(objName.Data()) ) objectNameInCollection.Add(new TObjString(objName.Data()));
+        }
+        delete objNameList;
+      }
+    }
+  }
+  delete physSelList;
+  delete trigClassList;
+  delete centralityList;
 
   TString matchingObjectNames = "";
-  for ( Int_t iobj=0; iobj<fOutputPrototypeList->GetEntries(); iobj++ ) {
-    TString objName = fOutputPrototypeList->At(iobj)->GetName();
+  for ( Int_t iobj=0; iobj<objectNameInCollection.GetEntries(); iobj++ ) {
+    TString objName = objectNameInCollection.At(iobj)->GetName();
     Bool_t matchAnd = kTRUE;
     for ( Int_t ikey=0; ikey<objPatternMatrix.GetEntries(); ikey++ ) {
       TObjArray*  subKeyList = (TObjArray*)objPatternMatrix.At(ikey);
@@ -650,66 +669,9 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
   TString idPattern = Form("/%s/%s/%s/%s", physSel.Data(), trigClassNames.Data(), sumCentralityString.Data(), matchingObjectNames.Data());
   idPattern.ReplaceAll(" ","");
   
+  AliDebug(1,Form("Sum pattern %s", idPattern.Data()));
+  
   return fMergeableCollection->GetSum(idPattern.Data());
-//  
-//  TObjArray* trigArray = trigClassNames.Tokenize(" ");
-//  trigArray->SetOwner();
-//  
-//  objectPattern.ReplaceAll(" / ","/");
-//  TObjArray* objectPatternStrings = objectPattern.Tokenize("/");
-//  objectPatternStrings->SetOwner();
-//  
-//  TObject* obj = 0x0;
-//  TString objName = "", currName = "";
-//  TIter nextObject(fOutputPrototypeList);
-//  TObject* currObject = 0x0;
-//  while ( ( currObject = nextObject() ) ) {
-//    objName = currObject->GetName();
-//    Bool_t matchPattern = kTRUE;
-//    for ( Int_t ipatt=0; ipatt<objectPatternStrings->GetEntries(); ++ipatt ) {
-//      TObjArray* objectSubPattern = ((TObjString*)objectPatternStrings->At(ipatt))->GetString().Tokenize(" ");
-//      objectSubPattern->SetOwner();
-//      Bool_t matchSubPattern = kFALSE;
-//      for ( Int_t isubpatt=0; isubpatt<objectSubPattern->GetEntries(); ++isubpatt ) {
-//        if ( objName.Contains(objectSubPattern->At(isubpatt)->GetName() ) ) {
-//          matchSubPattern = kTRUE;
-//          break;
-//        }
-//      } // loop on sub pattern
-//      delete objectSubPattern;
-//      if ( ! matchSubPattern ) {
-//        matchPattern = kFALSE;
-//        break;
-//      }
-//    }
-//    if ( ! matchPattern ) continue;
-//    
-//    for ( Int_t itrig=0; itrig<trigArray->GetEntries(); ++itrig ) {
-//      for ( Int_t icent=firstCentrality; icent<=lastCentrality; ++icent ) {
-//        currName = objName;
-//        TObject* auxObj = fMergeableCollection->GetObject(physSel.Data(),trigArray->At(itrig)->GetName(),fCentralityClasses->GetBinLabel(icent),objName.Data());
-//        if ( ! auxObj ) continue;
-//        if ( ! obj ) {
-//          TString currCentrRange = Form("%g_%g", fCentralityClasses->GetBinLowEdge(firstCentrality), fCentralityClasses->GetBinUpEdge(lastCentrality));
-//          currName.ReplaceAll(fCentralityClasses->GetBinLabel(icent), currCentrRange.Data());
-//          currName += "_" + currCentrRange + "_" + physSel;
-//          obj = (TObject*)auxObj->Clone(currName.Data());
-//          if ( obj->IsA()->InheritsFrom(TH1::Class()) ) ((TH1*)obj)->SetTitle(currName.Data());
-//        }
-//        else {
-//          AliMergeableCollection::MergeObject(obj,auxObj);
-//        }
-//        AliDebug(1,Form("Add object %s %s %s %s", physSel.Data(),trigArray->At(itrig)->GetName(),fCentralityClasses->GetBinLabel(icent),objName.Data()));
-//      } // loop on centrality
-//    } // loop on trigger class
-//  } // loop on objects
-//  
-//  delete trigArray;
-//  delete objectPatternStrings;
-//  
-//  if ( obj ) AliDebug(1,Form("To object %s\n", obj->GetName()));
-//  
-//  return obj;
 }
 
 //___________________________________________________________________________
@@ -794,15 +756,12 @@ void AliVAnalysisMuon::SetTrigClassPatterns(TString pattern)
   ///         please be sure that each pattern matches only 1 trigger class, or triggers will be mixed up
   ///         when merging different chuncks.
 
-  delete fSelectedTrigPattern;
-  fSelectedTrigPattern = new TObjArray();
   fSelectedTrigPattern->SetOwner();
-  delete fRejectedTrigPattern;
-  fRejectedTrigPattern = new TObjArray();
+  if ( fSelectedTrigPattern->GetEntries() > 0 ) fSelectedTrigPattern->Delete();
   fRejectedTrigPattern->SetOwner();
-  delete fSelectedTrigLevel;
-  fSelectedTrigLevel = new TObjArray();
-  fSelectedTrigLevel->SetOwner();  
+  if ( fRejectedTrigPattern->GetEntries() > 0 ) fRejectedTrigPattern->Delete();
+  fSelectedTrigLevel->SetOwner();
+  if ( fSelectedTrigLevel->GetEntries() > 0 ) fSelectedTrigLevel->Delete();
 
   pattern.ReplaceAll("  "," ");
   pattern.ReplaceAll("! ","!");
