@@ -59,6 +59,7 @@ AliPHOSTriggerRawDigiProducer::AliPHOSTriggerRawDigiProducer(AliRawReader *rawRe
 AliPHOSTriggerRawDigiProducer::~AliPHOSTriggerRawDigiProducer()
 {
   delete fRawStream;
+  delete fTriggerReader;
 }
 
 void AliPHOSTriggerRawDigiProducer::ProcessEvent(TClonesArray* tdigits)
