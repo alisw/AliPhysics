@@ -58,7 +58,7 @@ void AliEmcalEsdTpcTrackTask::UserCreateOutputObjects()
   fTracks->SetName(fTracksName);
 
   if (!fEsdTrackCuts) {
-    AliInfo("No track cuts given, creating default cuts");
+    AliInfo("No track cuts given, creating default (standard only TPC) cuts");
     fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdTrackCuts->SetPtRange(0.15,1e3);
   }
@@ -85,7 +85,7 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
   if (!(InputEvent()->FindListObject(fTracksName)))
     InputEvent()->AddObject(fTracks);
 
-  if (!fHybridTrackCuts) { // contrain TPC tracks to SPD vertex 
+  if (!fHybridTrackCuts) { // contrain TPC tracks to SPD vertex if fDoSpdVtxCon==kTRUE
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
     am->LoadBranch("Tracks");
