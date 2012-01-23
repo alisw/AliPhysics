@@ -26,7 +26,7 @@ void SetStyle(AliDielectronSignalBase *sig, const char* nameAdd);
 void DrawSpectra(AliDielectronSignalBase *sig, const char* cname, TH1  *hEventStat=0x0, Float_t fNevSel=1., Bool_t save=kTRUE);
 Float_t FitMCshape(AliDielectronSignalBase *sig);
 
-const char *mcLineShapeFile="$ALICE_ROOT/PWG3/dielectron/macros/mcMinv_LHC10f7a.root";
+const char *mcLineShapeFile="$ALICE_ROOT/PWGDQ/dielectron/macros/mcMinv_LHC10f7a.root";
  
 //_______________________________________
 void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t save=kTRUE, Bool_t DoPt=kTRUE )

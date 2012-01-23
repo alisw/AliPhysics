@@ -273,5 +273,5 @@ void LoadLib(){
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG3dielectron.so");
+  gSystem->Load("libPWGDQdielectron.so");
  }

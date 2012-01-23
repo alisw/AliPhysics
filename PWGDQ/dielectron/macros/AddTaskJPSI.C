@@ -13,8 +13,8 @@ AliAnalysisTask *AddTaskJPSI(Bool_t hasMC_aod = kFALSE){
   //Do we have an MC handler?
   Bool_t hasMC=(mgr->GetMCtruthEventHandler()!=0x0);
   
-  TString configFile("$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeData.C");
-  if (hasMC) configFile="$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeEff.C";
+  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi2eeData.C");
+  if (hasMC) configFile="$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi2eeEff.C";
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //create task and add it to the manager
@@ -48,7 +48,7 @@ AliAnalysisTask *AddTaskJPSI(Bool_t hasMC_aod = kFALSE){
   //----------------------
   
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWG3_dielectron";
+  containerName += ":PWGDQ_dielectron";
     
   //create output container
   

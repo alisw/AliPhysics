@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG3dielectron                                                #
+# Package File for PWGDQdielectron                                                #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -62,6 +62,6 @@ set ( SRCS
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-set ( DHDR  PWG3dielectronLinkDef.h)
+set ( DHDR  PWGDQdielectronLinkDef.h)
 
-set ( EINCLUDE  PWG3/dielectron STEER CORRFW STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGDQ/dielectron STEER CORRFW STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)

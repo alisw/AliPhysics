@@ -17,13 +17,13 @@ void SETUP()
   CheckLoadLibrary("libAOD");
   CheckLoadLibrary("libANALYSISalice");
   CheckLoadLibrary("libCORRFW");
-  CheckLoadLibrary("libPWG3dielectron");
+  CheckLoadLibrary("libPWGDQdielectron");
   
   // Set the include paths
-  gROOT->ProcessLine(".include PWG3dielectron/dielectron");
+  gROOT->ProcessLine(".include PWGDQdielectron/dielectron");
     
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG3dielectron_INCLUDE", "PWG3dielectron");
+  gSystem->Setenv("PWGDQdielectron_INCLUDE", "PWGDQdielectron");
 }
 
 

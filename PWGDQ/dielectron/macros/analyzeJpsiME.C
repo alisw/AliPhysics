@@ -11,8 +11,8 @@ void analyzeJpsiME(TString tag="./"){
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG3dielectron.so");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG3/dielectron/ -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/CORRFW");
+  gSystem->Load("libPWGDQdielectron.so");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron/ -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/CORRFW");
 
   //_____________Load Macro_____________________________
   gROOT->LoadMacro("ConfigJpsi2eeData.C");    // user Config file
