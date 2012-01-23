@@ -828,7 +828,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		  TParticle *motherParticle = motherTrack->Particle();
 		  if(motherParticle) {
 		    Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
-		    if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+		    //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+		    if(pdgCodeOfMother == 113) {
 		      kExcludeParticle = kTRUE;
 		    }
 		  }
