@@ -254,6 +254,7 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
     bStdCutsDefined = kTRUE;
 
     trackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
+    trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetMinNClustersTPC(0);
     trackCuts->SetMinNCrossedRowsTPC(120);
     trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off  
