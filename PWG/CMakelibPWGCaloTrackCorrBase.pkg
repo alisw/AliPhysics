@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG4omega3pi                                                  #
+# Package File for PWGCaloTrackCorrBase                                              #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -26,12 +26,30 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx)
+set ( SRCS  
+    CaloTrackCorrBase/AliNeutralMesonSelection.cxx 
+    CaloTrackCorrBase/AliFiducialCut.cxx 
+    CaloTrackCorrBase/AliCaloPID.cxx 
+    CaloTrackCorrBase/AliMCAnalysisUtils.cxx 
+    CaloTrackCorrBase/AliIsolationCut.cxx 
+    CaloTrackCorrBase/AliAnaScale.cxx 
+    CaloTrackCorrBase/AliCaloTrackReader.cxx 
+    CaloTrackCorrBase/AliCaloTrackESDReader.cxx 
+    CaloTrackCorrBase/AliCaloTrackAODReader.cxx 
+    CaloTrackCorrBase/AliCaloTrackMCReader.cxx 
+    CaloTrackCorrBase/AliCalorimeterUtils.cxx 
+    CaloTrackCorrBase/AliAnalysisTaskCounter.cxx 
+    CaloTrackCorrBase/AliAnaCaloTrackCorrMaker.cxx
+    CaloTrackCorrBase/AliAnaCaloTrackCorrBaseClass.cxx
+    CaloTrackCorrBase/AliAnalysisTaskCaloTrackCorrelation.cxx
+    CaloTrackCorrBase/AliAnalysisTaskCaloTrackCorrelationM.cxx
+    CaloTrackCorrBase/AliHistogramRanges.cxx
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4omega3piLinkDef.h)
+set ( DHDR  PWGCaloTrackCorrBaseLinkDef.h)
+
+set ( EINCLUDE PWG/CaloTrackCorrBase EMCAL STEER/AOD STEER/ESD STEER/STEERBase)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
-
-set ( EINCLUDE  ANALYSIS PWG4/omega3pi PHOS STEER/STEERBase)
