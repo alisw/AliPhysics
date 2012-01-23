@@ -110,6 +110,22 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fTPCaloneTrackCuts(0)
 {
   // Default constructor
+    fV0Cuts[0] =  33.   ;   // max allowed chi2
+    fV0Cuts[1] =   0.1  ;   // min allowed impact parameter for the 1st daughter
+    fV0Cuts[2] =   0.1  ;   // min allowed impact parameter for the 2nd daughter
+    fV0Cuts[3] =   1.   ;   // max allowed DCA between the daughter tracks
+    fV0Cuts[4] =    .998;   // min allowed cosine of V0's pointing angle
+    fV0Cuts[5] =   0.9  ;   // min radius of the fiducial volume
+    fV0Cuts[6] = 100.   ;   // max radius of the fiducial volume
+
+    fCascadeCuts[0] =  33.   ; // max allowed chi2 (same as PDC07)
+    fCascadeCuts[1] =   0.05 ; // min allowed V0 impact parameter
+    fCascadeCuts[2] =   0.008; // "window" around the Lambda mass
+    fCascadeCuts[3] =   0.03 ; // min allowed bachelor's impact parameter
+    fCascadeCuts[4] =   0.3  ; // max allowed DCA between the V0 and the bachelor
+    fCascadeCuts[5] =   0.999; // min allowed cosine of the cascade pointing angle
+    fCascadeCuts[6] =   0.9  ; // min radius of the fiducial volume
+    fCascadeCuts[7] = 100.   ; // max radius of the fiducial volume
 }
 
 //______________________________________________________________________________
