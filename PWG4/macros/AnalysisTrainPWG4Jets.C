@@ -83,7 +83,9 @@ Bool_t      kIsPbPb             = kFALSE;  // Pb+Pb
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets, 3 wrtie both
-Int_t       iJETSUBTRACT        = 1;      // Jet background subtration
+Int_t       iJETANReader       = 0;      // Jet analysis (PWG4) // DEV
+Int_t       iJETANFinder       = 0;      // Jet analysis (PWG4) // DEV
+Int_t       iJETSUBTRACT        = 0;      // Jet background subtration
 TList       kJetListSpectrum;             // list of jets contains TObjString of possible jet finder names
 TExMap      kJetMapSpectrum;             // Maps the jet finder pairs to be used in the spectrum task second number negative no pair other wise (j1+1) + (1000 * (j2+1)) +10000 * (j3+1)
 TExMap      kJetBackMapSpectrum;             // Maps the jet finder pairs with the background branch used, just for countint of trackrefs
@@ -106,6 +108,7 @@ TString     kJetSubtractMask1 = "B0";
 TString     kJetSubtractMask2 = "B%d";
 Int_t       iDIJETAN           = 1;
 Int_t       iJETANLib          = 1;
+Int_t       iJETANdevLib       = 0;
 Int_t       iPWGPPQASym         = 0;      // Eva's QA task compiled on the fly...
 Int_t       iPWG4FastEmbedding = 0;      // Generate non-standard AOD for embedding
 Int_t       iPWG4JetTasks      = 0;      // all jet tasks flag for lib laoding
@@ -256,6 +259,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (useTender)   printf("=  Using tender                                                =\n");
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
+   if (iJETANReader)       printf("=  Jet analysis Reader (DEV)                              =\n");
+   if (iJETANFinder)       printf("=  Jet analysis Finder (DEV)                              =\n");
    printf("==================================================================\n");
 
    char *printMask = ":: %20s  %10d\n";
@@ -570,6 +575,51 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
 
+   // Jet analysis DEV
+   if (iJETANReader) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetsReader.C");
+      AliAnalysisTaskJetsReader *taskjets = 0;
+      
+      if(iJETANReader&1) {
+      AliAnalysisDataContainer* cont_jet1 = AddJetExchangeContainer("jets_1");
+      taskjets = AddTaskJetsReader(cont_jet1,kHighPtFilterMask);
+      } 
+      
+    if(iJETANReader&2) {
+      AliAnalysisDataContainer* cont_jet1 = AddJetExchangeContainer("jets_1");
+      taskjets = AddTaskJetsReader(cont_jet1,"AOD",kHighPtFilterMask,0.15); 
+   
+      
+      AliAnalysisDataContainer* cont_jet2 = AddJetExchangeContainer("jets_2");
+      taskjets = AddTaskJetsReader(cont_jet2,"AOD", kHighPtFilterMask,1.);
+      
+     }
+
+      taskjets->GetJetReader()->GetReaderHeader()->SetIsHighMult(kIsPbPb); 
+    
+     
+  if ( !taskjets ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetsReader cannot run for this train conditions - EXCLUDED");
+
+   }
+
+   if (iJETANFinder && iJETANReader) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetsFinder.C");
+      AliAnalysisTaskJetsFinder *taskjetsFinder = 0;
+      
+      if(iJETANFinder&1) {
+      taskjetsFinder = AddTaskJetsFinder(cont_jet1);
+      }
+ 
+     if(iJETANFinder&2) {
+      taskjetsFinder = AddTaskJetsFinder(cont_jet1,"UA1",0.4,0);     // UA1 no bkg subtraction (reader: jet_1)
+      taskjetsFinder = AddTaskJetsFinder(cont_jet1,"FASTJET",0.4,1); // FASTJET B1             (reader: jet_1)
+     
+      taskjetsFinder = AddTaskJetsFinder(cont_jet2,"FASTJET",0.4,0); // FASTJET B0             (reader: jet_2)
+     }
+
+ if ( !taskjetsFinder || !taskjets ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetsFinder cannot run for this train conditions - EXCLUDED"); 
+
+   }
 
    if (iPWG4FastEmbedding && iJETAN) {
      AliAnalysisTaskJets *taskEmbJets = AddTaskJets("AODextra", "FASTJET", 0.4, kHighPtFilterMask);
@@ -1529,9 +1579,11 @@ void CheckModuleFlags(const char *mode) {
          ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "Physics Selection disabled in analysis on AOD's");
       iPhysicsSelection   = 0;
       if (!iAODhandler) {
-         if (iJETAN) 
+         if (iJETAN || iJETANReader || iJETANFinder) 
             ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
          iJETAN = 0;
+         iJETANReader=0;
+	 iJETANFinder=0;
          iDIJETAN = 0;
       }
       // Disable tasks that do not work yet on AOD data
@@ -1579,14 +1631,14 @@ void CheckModuleFlags(const char *mode) {
        if( iPWG4CorrectionsUE)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 CorrectionsUE disabled in analysis without MC");
        iPWG4CorrectionsUE = 0;
      }
-     if (iJETAN){
-       iESDfilter=1;
+     if (iJETAN || iJETANReader || iJETANFinder){
+       iESDfilter=0;
      }
       if (!iESDfilter){
 	kUseKinefilter = kFALSE;
 	kUseMuonfilter = kFALSE;
       }
-      if(!iJETAN){
+      if(!iJETAN ||iJETANReader || iJETANFinder){
 	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iPWG4QGSep = iDIJETAN = 0;
       }
    }
@@ -1595,8 +1647,9 @@ void CheckModuleFlags(const char *mode) {
    iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
 
 
-   iEMCUtilLibs = iPWG4JetTasks||iPWG4PartCorrLibs||iPWG4JCORRAN||iPWG4GammaConvLib||iJETAN;
-   iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
+   iEMCUtilLibs = iPWG4JetTasks||iPWG4PartCorrLibs||iPWG4JCORRAN||iPWG4GammaConvLib||iJETAN||iJETANReader||iJETANFinder;
+   iJETANLib = (iPWG4JetTasks||iJETAN||iDIJETAN) && !(iJETANReader||iJETANFinder) ;
+   iJETANdevLib = (iPWG4JetTasks||iJETANReader||iJETANFinder||iDIJETAN) && !iJETAN ;
 
    if (iESDfilter) {iAODhandler=1;}
    if (kUseKinefilter && !kUseMC) kUseKinefilter = kFALSE;
@@ -1805,8 +1858,37 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      }
      if (!LoadLibrary("FASTJETAN", mode, kTRUE)) return kFALSE;
    }
+
+   // JETANdev
+   if (iJETANdevLib) {
+     // this part needs some rework in case we do not need the fastjed finders for processing
+     if(iEMCUtilLibs){
+       if (!LoadLibrary("EMCALUtils", mode, kTRUE) &&
+	   !LoadLibrary("PHOSUtils", mode, kTRUE)) return kFALSE;
+     }
+     if (!LoadLibrary("JETANdev", mode, kTRUE)) return kFALSE;
+     if (!strcmp(mode, "PROOF")){
+     if (!LoadLibrary("FASTJET", mode, kTRUE)) return kFALSE;  
+     }
+     if(!kUsePAR){ 
+       if (!LoadLibrary("CGAL", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("fastjet", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("siscone", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("SISConePlugin", mode, kTRUE)) return kFALSE;
+     }
+     else{
+       // par files plus FASTJET needs some extra work... need to change
+       // the loading sequence in the auto generated .C file
+       if (!LoadLibrary("libCGAL.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libfastjet.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libsiscone.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libSISConePlugin.so", mode, kTRUE)) return kFALSE;
+     }
+     if (!LoadLibrary("FASTJETANdev", mode, kTRUE)) return kFALSE;
+   }
+
    if(iPWG4JetTasks){
-     if (!LoadLibrary("PWG4Base", mode, kTRUE)) return kFALSE;
+     if (!LoadLibrary("PWGBase", mode, kTRUE)) return kFALSE;
      if (!LoadLibrary("PWG4JetTasks", mode, kTRUE)) return kFALSE;
    }
 
