@@ -106,7 +106,7 @@ class AliBalance : public TObject {
   void SetHistNnn(Int_t iAnalysisType, TH2D *gHist) { 
     fHistNN[iAnalysisType] = gHist;}
 
-  TH1D *GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax);
+  TH1D *GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow = -1);
   void PrintResults(Int_t iAnalysisType, TH1D *gHist);
 
  private:
