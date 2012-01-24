@@ -9,6 +9,13 @@
 #include "AliESDEvent.h"
 
 //_________________________________________________________________________________________________
+AliEsdTrackExt::AliEsdTrackExt() 
+  : AliESDtrack(), fEmcEta(-10), fEmcPhi(-10), fNCrossedRows(-10), fChi2TPCConstrainedVsGlobal(-10)
+{
+  // Default constructor.
+}
+
+//_________________________________________________________________________________________________
 AliEsdTrackExt::AliEsdTrackExt(const AliESDtrack &t)
   : AliESDtrack(t), fEmcEta(-10), fEmcPhi(-10), fNCrossedRows(-10), fChi2TPCConstrainedVsGlobal(-10)
 {
@@ -55,13 +62,20 @@ void AliEsdTrackExt::DeleteParams()
 }
 
 //_________________________________________________________________________________________________
-void AliEsdTrackExt::MakeMiniTrack(Bool_t dall, Bool_t dtrp, Bool_t dmap, Bool_t dits, 
-                                   Bool_t dtpc, Bool_t dtrd, Bool_t dtof, Bool_t dhmp)
+void AliEsdTrackExt::MakeMiniTrack(Bool_t dall, Bool_t dcon, Bool_t dtrp, Bool_t dmap, 
+                                   Bool_t dits, Bool_t dtpc, Bool_t dtrd, Bool_t dtof, 
+                                   Bool_t dhmp)
 { 
   // Make mini track depending on what should be reset.
 
+  if (fCp && !dcon) 
+    fCp->ResetCovariance(1);
+
   if (dtrp) {
-    delete fCp;          fCp          = 0;
+    if (dcon) {
+      delete fCp;
+      fCp = 0;
+    }
     delete fIp;          fIp          = 0;
     delete fTPCInner;    fTPCInner    = 0;
     delete fOp;          fOp          = 0;
@@ -83,8 +97,8 @@ void AliEsdTrackExt::MakeMiniTrack(Bool_t dall, Bool_t dtrp, Bool_t dmap, Bool_t
       fITSClusterMap = 0;
       fITSSharedMap  = 0;
       fITSsignal     = 0;     
-      fITSLabel      = 0;  
     }     
+    fITSLabel      = 0;  
     for (Int_t i=0;i<4;++i) fITSdEdxSamples[i] = 0.;
     for (Int_t i=0;i<AliPID::kSPECIES;++i) fITSr[i] = 0; 
     for (Int_t i=0;i<12;++i) fITSModule[i] = -1;
@@ -105,14 +119,14 @@ void AliEsdTrackExt::MakeMiniTrack(Bool_t dall, Bool_t dtrp, Bool_t dmap, Bool_t
       fTPCsignal     = 0;
       fTPCsignalS    = 0;
       fTPCsignalN    = 0;
-      fTPCLabel      = 0;
-      fdTPC          = 0;
-      fzTPC          = 0;
-      fCddTPC        = 0;
-      fCdzTPC        = 0;
-      fCzzTPC        = 0;
-      fCchi2TPC      = 0;
     }
+    fTPCLabel      = 0;
+    fdTPC          = 0;
+    fzTPC          = 0;
+    fCddTPC        = 0;
+    fCdzTPC        = 0;
+    fCzzTPC        = 0;
+    fCchi2TPC      = 0;
     for (Int_t i=0;i<AliPID::kSPECIES;++i) fTPCr[i] = 0; 
     for (Int_t i=0;i<4;++i) fTPCPoints[i] = 0;
     for (Int_t i=0; i<3;++i) fKinkIndexes[i] = 0;

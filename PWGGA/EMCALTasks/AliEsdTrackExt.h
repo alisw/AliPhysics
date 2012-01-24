@@ -7,13 +7,15 @@
 
 class AliEsdTrackExt : public AliESDtrack {
  public: 
-  AliEsdTrackExt() : AliESDtrack(), fEmcEta(-10), fEmcPhi(-10), fNCrossedRows(-10), fChi2TPCConstrainedVsGlobal(-10) {;}
+  AliEsdTrackExt();
   AliEsdTrackExt(const AliESDtrack &t);
+
   void        DeleteParams();
   Double_t    GetEmcEta() const { return fEmcEta; }
   Double_t    GetEmcPhi() const { return fEmcPhi; }
-  void        MakeMiniTrack(Bool_t dall=0, Bool_t dtrp=1, Bool_t dmap=1, Bool_t dits=1, 
-                            Bool_t dtpc=1, Bool_t dtrd=1, Bool_t dtof=1, Bool_t dhmp=1);
+  void        MakeMiniTrack(Bool_t dall=0, Bool_t dcon=1, Bool_t dtrp=1, Bool_t dmap=1, 
+                            Bool_t dits=1, Bool_t dtpc=1, Bool_t dtrd=1, Bool_t dtof=1, 
+                            Bool_t dhmp=1);
   void        Setup();
  protected: 
    Double32_t fEmcEta;                      //[0,0,16]  
