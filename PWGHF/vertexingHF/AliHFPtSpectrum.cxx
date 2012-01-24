@@ -606,11 +606,11 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   fhSigmaCorrDataSyst = new TH1D("fhSigmaCorrDataSyst","data syst uncertainties on the corrected sigma",nbins,limits);
   if (fPbPbElossHypothesis && fFeedDownOption==1) {
     fhSigmaCorrRcb = new TH2D("fhSigmaCorrRcb","corrected sigma vs Rcb Eloss hypothesis; p_{T} [GeV/c] ; Rcb Eloss hypothesis ; #sigma",nbins,limits,800,0.,4.);
-    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rcb:fc:Yield:Sigma");
+    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rcb:fc:Yield:Sigma:SigmaStatUnc");
   }
   if (fPbPbElossHypothesis && fFeedDownOption==2) {
     fhSigmaCorrRcb = new TH2D("fhSigmaCorrRcb","corrected sigma vs Rb Eloss hypothesis; p_{T} [GeV/c] ; Rb Eloss hypothesis ; #sigma",nbins,limits,800,0.,4.);
-    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rb:fc:Yield:Sigma");
+    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rb:fc:Yield:Sigma:SigmaStatUnc");
   }
   // and the output TGraphAsymmErrors
   if (fAsymUncertainties){
@@ -717,12 +717,17 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
 	Double_t sigmaRcbvalue = (fhDirectEffpt->GetBinContent(ibin) && fhDirectEffpt->GetBinContent(ibin)!=0.) ? 
 	  ( yieldRcbvalue / ( deltaY * branchingRatioC * fLuminosity[0] * fTrigEfficiency[0] * fhDirectEffpt->GetBinContent(ibin) ) )
 	  : 0. ;
+	// Sigma statistical uncertainty:
+	//   delta_sigma = sigma * sqrt ( (delta_spectra/spectra)^2 ) = sigma * ( delta_spectra / (spectra-corr * binwidth) )
+	Double_t sigmaRcbvalueStatUnc = (sigmaRcbvalue!=0.) ? 
+	  sigmaRcbvalue * ( fhRECpt->GetBinError(ibin) / ( yieldRcbvalue * fhRECpt->GetBinWidth(ibin) ) )  : 0. ;
+
 	fhSigmaCorrRcb->Fill( fhSigmaCorr->GetBinCenter(ibin) , rval, sigmaRcbvalue );
 	// 	if(ibin==3) 
 	// 	  cout << " pt "<< fhRECpt->GetBinCenter(ibin) <<" bin "<< ibin<<" rval="<<rval<<", rbin="<<rbin<<" fc-value="<< fhFcRcb->GetBinContent(ibin,rbin) <<", yield-fcRbvalue="<<yieldRcbvalue<<", sigma-fcRbvalue="<<sigmaRcbvalue<<endl;
 	fnSigma->Fill(fhRECpt->GetBinCenter(ibin), fhRECpt->GetBinContent(ibin),
 		      rval, fhFcRcb->GetBinContent(ibin,rbin),
-		      yieldRcbvalue, sigmaRcbvalue );
+		      yieldRcbvalue, sigmaRcbvalue, sigmaRcbvalueStatUnc );
       }
     }
     //
