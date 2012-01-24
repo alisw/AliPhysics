@@ -37,6 +37,8 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   void SetDoZdc(Bool_t b)          { fDoZDC        = b; }
   void SetEmcNames(const char *n)  { fEmcNames     = n; }
   void SetPhosClusOnly(Bool_t b)   { fPhosClusOnly = b; }
+  void SetRemoveCP(Bool_t b)       { fRemoveCP     = b; }
+  void SetResetCov(Bool_t b)       { fResetCov     = b; }
   void SetTracks(const char *n)    { fTracks       = n; }
 
  protected:
@@ -66,6 +68,8 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fDoSaveBytes;  // if true then trim down some of the stored objects (mult, fmd)
   Bool_t           fDoCent;       // do centrality
   Bool_t           fDoRP;         // do reaction plane
+  Bool_t           fRemoveCP;     // if false then keep constrained parameters (only reset covariance)
+  Bool_t           fResetCov;     // if true reset covariance matrix of track
 
  private:
   AliEsdSkimTask(const AliEsdSkimTask&);            // not implemented

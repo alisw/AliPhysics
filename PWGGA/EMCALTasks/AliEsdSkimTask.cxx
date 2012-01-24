@@ -24,7 +24,7 @@ AliEsdSkimTask::AliEsdSkimTask(const char *opt) :
   fDoEmCs(1), fDoPCs(1), fDoEmT(1), fDoPT(1), fDoTracks(1), fDoFmd(1),
   fDoMult(1), fDoTof(1), fDoPileup(1), fDoClus(1), fEmcNames(""), 
   fDoMiniTracks(0), fTracks("Tracks"), fPhosClusOnly(0), fDoSaveBytes(1),
-  fDoCent(1), fDoRP(1)
+  fDoCent(1), fDoRP(1), fRemoveCP(0), fResetCov(1)
 {
   // Constructor.
 
@@ -255,7 +255,9 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
       }
       AliEsdTrackExt *newtrack = new ((*tracksout)[nacc]) AliEsdTrackExt(*track);
       if (fDoMiniTracks) {
-        newtrack->MakeMiniTrack();
+        newtrack->MakeMiniTrack(0,fRemoveCP);
+        if (fResetCov)
+          newtrack->ResetCovariance(1);
       } else {
         newtrack->DeleteParams();
       }
