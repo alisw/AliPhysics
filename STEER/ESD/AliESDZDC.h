@@ -75,21 +75,27 @@ public:
 
   Int_t GetZDCTDCData(Int_t i, Int_t j) const {return fZDCTDCData[i][j];}
   Float_t GetZDCTDCCorrected(Int_t i, Int_t j) const 
-  	  {if(AliESDZDC::kCorrectedTDCFilled) return fZDCTDCCorrected[i][j];
-	   else return 0.;}
+  {
+    if(AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[i][j]!=0)) return fZDCTDCCorrected[i][j];
+	   else return 0.;
+  }
   
   Float_t GetZNTDCSum(Int_t ihit) const 
-  {if(ihit<4 && AliESDZDC::kCorrectedTDCFilled) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
-   else return 0.;}
+  {
+    if(ihit<4 && AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
+    else return 0.;
+  }
   Float_t GetZNTDCDiff(Int_t ihit) const 
-          {if(ihit<4 && AliESDZDC::kCorrectedTDCFilled) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
-           else return 0.;}
+  {
+    if(ihit<4 && AliESDZDC::kCorrectedTDCFilled &&  (fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
+    else return 0.;
+  }
   
   virtual Float_t GetZDCTimeSum() const 
-          {if(AliESDZDC::kCorrectedTDCFilled) return (Float_t) (fZDCTDCCorrected[10][0]+fZDCTDCCorrected[12][0]);
+          {if(AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[10][0]!=0) && (fZDCTDCData[12][0]!=0)) return (Float_t) (fZDCTDCCorrected[10][0]+fZDCTDCCorrected[12][0]);
            else return 0.;}
   virtual Float_t GetZDCTimeDiff() const 
-          {if(AliESDZDC::kCorrectedTDCFilled) return (Float_t) (fZDCTDCCorrected[12][0]-fZDCTDCCorrected[10][0]);
+          {if(AliESDZDC::kCorrectedTDCFilled &&  (fZDCTDCData[10][0]!=0) && (fZDCTDCData[12][0]!=0)) return (Float_t) (fZDCTDCCorrected[12][0]-fZDCTDCCorrected[10][0]);
            else return 0.;}
   
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
