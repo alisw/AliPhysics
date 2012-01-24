@@ -4543,7 +4543,7 @@ void  AliAnalysisTaskGammaConversion::ProcessHadronicInteraction(AliESDEvent *ev
 	//1. Calculate total dEdx for primary and secondary tracks
 	//   and count primaries and secondaries
 	Int_t *rejectTrack = new Int_t[ntracks];
-	Float_t *trackUsedInVtx = new Float_t[ntracks];
+	Float_t trackUsedInVtx[ntracks];
 	
 	for (Int_t ii=0; ii<ntracks; ii++){
 		trackUsedInVtx[ii] = 0.;
