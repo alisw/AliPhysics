@@ -41,7 +41,8 @@ enum {kGaus=0, kDoubleGaus};
 // Common variables: to be configured by the user
 const Int_t nPtBins=6;
 Double_t ptlims[nPtBins+1]={2.,3.,4.,5.,6.,8.,12.};
-Int_t rebin[nPtBins+1]={2,4,4,4,4,4,4};
+Int_t rebin[nPtBins]={2,4,4,4,4,4};
+Int_t firstUsedBin[nPtBins]={-1,-1,-1,-1,-1,-1}; // -1 uses all bins, >=1 to set the lower bin to be accepted from original histo
 
 //const Int_t nPtBins=7;//6;
 //Double_t ptlims[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.};
@@ -67,6 +68,7 @@ Int_t nevents[nsamples]={1.18860695e+08 /*LHC10dnewTPCpid*/,9.0374946e+07 /*LHC1
 
 Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass);
 Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass);
+TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
 
 
 
@@ -78,7 +80,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
 	       ){
   //
 
-  gInterpreter->ExecuteMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
+  gInterpreter->ExecuteMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
   gStyle->SetOptTitle(0);
 
   TObjArray* listFiles=new TObjArray();
@@ -128,11 +130,11 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   TH1D* hSigma=new TH1D("hSigma","hSigma",nPtBins,ptlims);
 
 
-  Int_t nMassBins=hmass[1]->GetNbinsX();
-  Double_t hmin=hmass[1]->GetBinLowEdge(3);
-  Double_t hmax=hmass[1]->GetBinLowEdge(nMassBins-2)+hmass[1]->GetBinWidth(nMassBins-2);
-  Float_t minBinSum=hmass[1]->FindBin(massD-massRangeForCounting);
-  Float_t maxBinSum=hmass[1]->FindBin(massD+massRangeForCounting);
+  Int_t nMassBins=hmass[0]->GetNbinsX();
+  Double_t hmin=hmass[0]->GetBinLowEdge(3);
+  Double_t hmax=hmass[0]->GetBinLowEdge(nMassBins-2)+hmass[0]->GetBinWidth(nMassBins-2);
+  Float_t minBinSum=hmass[0]->FindBin(massD-massRangeForCounting);
+  Float_t maxBinSum=hmass[0]->FindBin(massD+massRangeForCounting);
   Int_t iPad=1;
 
   TF1* funBckStore1=0x0;
@@ -157,7 +159,10 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   for(Int_t iBin=0; iBin<nPtBins; iBin++){
     c1->cd(iPad++);
     Int_t origNbins=hmass[iBin]->GetNbinsX();
-    fitter[iBin]=new AliHFMassFitter(hmass[iBin],hmin, hmax,rebin[iBin],typeb,types);
+    TH1F* hRebinned=RebinHisto(hmass[iBin],rebin[iBin],firstUsedBin[iBin]);
+    hmin=hRebinned->GetBinLowEdge(2);
+    hmax=hRebinned->GetBinLowEdge(hRebinned->GetNbinsX());
+    fitter[iBin]=new AliHFMassFitter(hRebinned,hmin, hmax,1,typeb,types);
     rebin[iBin]=origNbins/fitter[iBin]->GetBinN();
     fitter[iBin]->SetReflectionSigmaFactor(factor4refl);
     fitter[iBin]->SetInitialGaussianMean(massD);
@@ -701,4 +706,44 @@ void CompareFitTypes(TString* paths, TString* legtext,Int_t ncmp=3,TString* file
   cDiffS->Write();
   cChi2->Write();
   fout->Close();
+}
+
+
+TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse){
+  // Rebin histogram, from bin firstUse to lastUse
+  // Use all bins if firstUse=-1
+
+  Int_t nBinOrig=hOrig->GetNbinsX();
+  Int_t firstBinOrig=1;
+  Int_t lastBinOrig=nBinOrig;
+  Int_t nBinOrigUsed=nBinOrig;
+  Int_t nBinFinal=nBinOrig/reb;
+  if(firstUse>=1){ 
+    firstBinOrig=firstUse;
+    nBinFinal=(nBinOrig-firstUse+1)/reb;
+    nBinOrigUsed=nBinFinal*reb;
+    lastBinOrig=firstBinOrig+nBinOrigUsed-1;
+  }else{
+    Int_t exc=nBinOrigUsed%reb;
+    if(exc!=0){
+      nBinOrigUsed-=exc;
+      firstBinOrig+=exc/2;
+      lastBinOrig=firstBinOrig+nBinOrigUsed-1;
+    }
+  }
+
+  printf("Rebin from %d bins to %d bins -- Used bins=%d in range %d-%d\n",nBinOrig,nBinFinal,nBinOrigUsed,firstBinOrig,lastBinOrig);
+  Float_t lowLim=hOrig->GetXaxis()->GetBinLowEdge(firstBinOrig);
+  Float_t hiLim=hOrig->GetXaxis()->GetBinUpEdge(lastBinOrig);
+  TH1F* hRebin=new TH1F(Form("%s-rebin",hOrig->GetName()),hOrig->GetTitle(),nBinFinal,lowLim,hiLim);
+  Int_t lastSummed=firstBinOrig-1;
+  for(Int_t iBin=1;iBin<=nBinFinal; iBin++){
+    Float_t sum=0.;
+    for(Int_t iOrigBin=0;iOrigBin<reb;iOrigBin++){
+      sum+=hOrig->GetBinContent(lastSummed+1);
+      lastSummed++;
+    }
+    hRebin->SetBinContent(iBin,sum);
+  }
+  return hRebin;
 }
