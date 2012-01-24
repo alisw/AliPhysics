@@ -132,6 +132,12 @@ Bool_t AliCDBManager::InitFromSnapshot(const char* snapshotFileName, Bool_t over
 // to the entries map and the ids to the ids list taking them from
 // the map and the list found in the input file
 
+// if the manager is locked it cannot initialize from a snapshot
+    if(fLock) {
+	AliError("Being locked I cannot initialize from the snapshot!");
+	return kFALSE;
+    }	
+
     // open the file
     TString snapshotFile(snapshotFileName);
     if(snapshotFile.BeginsWith("alien://")){
