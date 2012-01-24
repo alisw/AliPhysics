@@ -205,8 +205,8 @@ void AliESDCaloTrigger::GetPosition(Int_t& col, Int_t& row) const
 	//
 	if (fCurrent == -1) return;
 	
-	col = fColumn[fCurrent];
-	row =    fRow[fCurrent];
+	col = fColumn?fColumn[fCurrent]:0;
+	row =    fRow?fRow[fCurrent]:0;
 }
 
 //_______________
@@ -215,7 +215,7 @@ void AliESDCaloTrigger::GetAmplitude(Float_t& amp) const
 	//
 	if (fCurrent == -1) return;
 
-	amp = fAmplitude[fCurrent];
+	amp = fAmplitude?fAmplitude[fCurrent]:0;
 }
 
 //_______________
@@ -224,7 +224,7 @@ void AliESDCaloTrigger::GetTime(Float_t& time) const
 	//
 	if (fCurrent == -1) return;
 
-	time = fTime[fCurrent];
+	time = fTime?fTime[fCurrent]:0;
 }
 
 //_______________
@@ -233,7 +233,7 @@ void AliESDCaloTrigger::GetL1TimeSum(Int_t& amp) const
 	//	
 	if (fCurrent == -1) return;
 
-	amp = fL1TimeSum[fCurrent];
+	amp = fL1TimeSum?fL1TimeSum[fCurrent]:0;
 }
 
 //_______________
@@ -242,7 +242,7 @@ void AliESDCaloTrigger::GetNL0Times(Int_t& ntimes) const
 	//
 	if (fCurrent == -1) return;
 
-	ntimes = fNL0Times[fCurrent];
+	ntimes = fNL0Times?fNL0Times[fCurrent]:0;
 }
 
 //_______________
@@ -251,7 +251,7 @@ void AliESDCaloTrigger::GetTriggerBits(Int_t& bits) const
 	//
 	if (fCurrent == -1) return;
 
-	bits = fTriggerBits[fCurrent];
+	bits = fTriggerBits?fTriggerBits[fCurrent]:0;
 }
 
 //_______________
@@ -259,8 +259,10 @@ void AliESDCaloTrigger::GetL0Times(Int_t times[]) const
 {
 	//
 	if (fCurrent == -1) return;
-
-	for (Int_t i = 0; i < fNL0Times[fCurrent]; i++) times[i] = fL0Times->At(10 * fCurrent + i);
+	
+	if (fNL0Times && fL0Times) {
+	  for (Int_t i = 0; i < fNL0Times[fCurrent]; i++) times[i] = fL0Times->At(10 * fCurrent + i);
+	}
 }
 
 //_______________
@@ -268,6 +270,14 @@ void AliESDCaloTrigger::Print(const Option_t* /*opt*/) const
 {
 	//
 	if (fCurrent == -1) return;
+	if (!fColumn) return;
+	if (!fRow) return;
+	if (!fAmplitude) return;
+	if (!fTime) return;
+	if (!fNL0Times) return;
+	if (!fL0Times) return;
+	if (!fL1TimeSum) return;
+	if (!fTriggerBits) return;
 
 	printf("============\n");
 	printf("--L0:\n");
