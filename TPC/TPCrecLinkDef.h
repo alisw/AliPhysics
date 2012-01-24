@@ -51,5 +51,9 @@
 #pragma link C++ class AliTPCclusterKr+;
 #pragma link C++ class AliTPCclustererKr+;
 
+#pragma link C++ class AliTPCCosmicUtils+;
+#pragma link C++ class AliTPCCosmicTrackfit+;
+#pragma link C++ class AliCosmicTracker+;
+
 #endif
 

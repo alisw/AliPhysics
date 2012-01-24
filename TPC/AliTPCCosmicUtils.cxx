@@ -18,7 +18,7 @@
 //
 // detailed description can be found inside individual function
 //
-// grep "exitreport" in output log to check abnormal termination
+// grep "error" in output log to check abnormal termination
 //
 //
 //  Xianguo Lu 
@@ -33,15 +33,108 @@
 #include <TTreeStream.h>
 #include <TVector3.h>
 
+#include "AliAnalysisManager.h"
+#include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliESDtrack.h"
 #include "AliESDfriendTrack.h"
+#include "AliESDInputHandler.h"
 #include "AliTPCseed.h"
 #include "AliTrackerBase.h"
 #include "AliTrackPointArray.h"
 
 #include "AliTPCCosmicUtils.h"
 
-Double_t AliTPCCosmicUtils::Point2LineDist(const TVector3 p0, const TVector3 l1, const TVector3 l2)
+Int_t AliTPCCosmicUtils::GetBField(const AliESDEvent *esd)
+{
+  //
+  //get b-field in unit of kg, expect 1, 2, 5kg only
+  //
+  const Double_t dm = esd->GetMagneticField();
+  
+  Int_t mag = -999;
+  if(dm>0)
+    mag = (Int_t) (dm+0.5);
+  else
+    mag = (Int_t) (dm-0.5);
+
+  if(TMath::Abs(mag)!=1 && TMath::Abs(mag)!=2 && TMath::Abs(mag)!=5){
+    printf("error AliTPCCosmicUtils::GetB strange Bfield! %f %d\n", dm, mag); exit(1);
+  }
+
+  return mag;
+}
+
+Int_t AliTPCCosmicUtils::GetTrigger(const AliESDEvent *esd)
+{
+  //
+  //get cosmic trigger
+  //
+  const TString strig = esd->GetFiredTriggerClasses();
+  Int_t btrig = 0;
+
+  if( strig.Contains("C0OB0"))
+    btrig += k0OB0;
+  if( strig.Contains("C0OB1"))
+    btrig += k0OB1;
+  if( strig.Contains("C0HWU"))
+    btrig += k0HWU;
+  if( strig.Contains("CTRDCO2"))
+    btrig += kTRDCO2;
+  if( strig.Contains("AMU"))
+    btrig += kAMU;
+  if( strig.Contains("SCO"))
+    btrig += kSCO;
+
+  return btrig;
+}
+
+Bool_t AliTPCCosmicUtils::GetESD(AliESDEvent *& esdevent, AliESDfriend *& esdfriend)
+{
+  //
+  //get esdevent and esdfriend
+  //
+
+  esdevent = 0x0;
+  esdfriend = 0x0;
+
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if(esdH){  
+    esdevent = esdH->GetEvent();
+  }
+
+  if(!esdevent){
+    printf("AliAnalysisTaskdEdxCosmic::GetESD error No ESD Event\n");
+    return kFALSE;
+  }
+  
+  esdH->SetActiveBranches("ESDfriend*");
+  esdfriend = (AliESDfriend *)esdevent->FindListObject("AliESDfriend");
+
+  if(!esdfriend){
+    printf("AliAnalysisTaskdEdxCosmic::GetESD error No ESD friend\n");
+    return kFALSE;
+  }
+
+  esdevent->SetESDfriend(esdfriend);
+
+  return kTRUE;
+}
+
+
+Double_t AliTPCCosmicUtils::GetMinPhi(const AliExternalTrackParam *params[])
+{
+  //
+  //minimum phi angle of the two tracks, 0: horizontal
+  //
+  const Double_t fsp[] = {TMath::Abs(TMath::Sin(params[0]->Phi())), 
+                          TMath::Abs(TMath::Sin(params[1]->Phi()))};
+  const Double_t minphi = TMath::ASin(TMath::Min(fsp[0], fsp[1])) * TMath::RadToDeg();
+
+  return minphi;
+}
+
+Double_t AliTPCCosmicUtils::Point2LineDist(const TVector3 p0, const TVector3 l1, const TVector3 l2, TVector3 *vtx)
 {
   //
   //return distance of p0 to line (l2-l1)
@@ -50,9 +143,21 @@ Double_t AliTPCCosmicUtils::Point2LineDist(const TVector3 p0, const TVector3 l1,
   const TVector3 va = p0 - l1;
   const TVector3 vb = l2 - l1;
 
-  const TVector3 dd = va.Cross(vb);
+  //calculate vtx position
+  const Double_t ca = va.Dot(vb)/vb.Mag();
+  const TVector3 imp = l1 + vb.Unit()*ca;
 
+  if(vtx){
+    (*vtx) = imp;
+  }
+
+  /* equivalent to imp.Mag()
+  //calculate distance
+  const TVector3 dd = va.Cross(vb);
   return dd.Mag()/vb.Mag();
+  */
+
+  return imp.Mag();
 }
 
 Double_t AliTPCCosmicUtils::AngleInRange(Double_t phi)
@@ -195,7 +300,7 @@ void AliTPCCosmicUtils::DrawSeeds(const AliTPCseed * seeds[], const TString tag,
       continue;
 
     Int_t ncl = 0;
-    for(Int_t irow=0; irow<fgkNRow; irow++){
+    for(Int_t irow=0; irow<NRow(); irow++){
       const AliTPCclusterMI * cls = seeds[itrk]->GetClusterPointer(irow);
       if(!cls)
         continue;
@@ -265,10 +370,10 @@ AliTPCseed * AliTPCCosmicUtils::GetTPCseed(const AliESDtrack *esdtrack)
 
   AliESDfriendTrack * friendtrk = (AliESDfriendTrack *) esdtrack->GetFriendTrack();
   if(!friendtrk){
-    printf("exitreport AliTPCCosmicUtils::GetTPCseed no friend track!\n");
-    exit(1);
+    //printf("AliTPCCosmicUtils::GetTPCseed no friend track!\n"); exit(1);
+    return 0x0;
   }
-    
+
   TObject *calibObject=0x0;
   AliTPCseed *tseed = 0x0;
   for(Int_t l=0; (calibObject=friendtrk->GetCalibObject(l)); l++) {
@@ -285,7 +390,7 @@ AliExternalTrackParam *AliTPCCosmicUtils::MakeSeed(const AliTPCseed *tseed)
   //make seed for propagation of TrackParam, using np = 3 outer clusters (separated by deltancls clusters) in TPCseed
   //
 
-  const Int_t rowstart = fgkNRow-1;
+  const Int_t rowstart = NRow()-1;
   const Int_t rowstop = 0;  
   const Int_t drow = -1;
 
@@ -300,7 +405,7 @@ AliExternalTrackParam *AliTPCCosmicUtils::MakeSeed(const AliTPCseed *tseed)
   //---
   Int_t npos = 0;
   Int_t icl = 0;
-  const Int_t deltancls = fgkNclsMin/2-1;
+  const Int_t deltancls = NclsMin()/2-1;
   Int_t oldcl = -deltancls;
 
   for(Int_t irow=rowstart; drow*irow<=drow*rowstop; irow+=drow){
@@ -402,7 +507,7 @@ void AliTPCCosmicUtils::SingleFit(AliExternalTrackParam * trackInOld, AliExterna
   //nmiss is from the 2 FitKernel of the last iteration
   //nfit, pchi2 is from the last FitKernel of the last iteration
 
-  Int_t rowouter = fgkNRow-1-rowstartshift;
+  Int_t rowouter = NRow()-1-rowstartshift;
 
   //so that when reversed, the same rows are read! important!!!
   Int_t rowinner = rowouter - rowouter/rowstep * rowstep;
@@ -412,7 +517,7 @@ void AliTPCCosmicUtils::SingleFit(AliExternalTrackParam * trackInOld, AliExterna
   TVector3 dpos;
   lfit = 0;
 
-  for(Int_t ii=0; ii<fgkNiter; ii++){
+  for(Int_t ii=0; ii<Niter(); ii++){
     nmiss = 0;
 
     gposStart.SetXYZ(-999,-999,-999);
@@ -432,14 +537,14 @@ void AliTPCCosmicUtils::SingleFit(AliExternalTrackParam * trackInOld, AliExterna
     gposStart.SetXYZ(-999,-999,-999);
     ksite = -999;
     trackOut = trackIn;
-    FitKernel(&trackOut, tseed, rowinner, rowouter,  rowstep, xmin, xmax, outde, ksite, nfit, nmiss, pchi2, gposStart, gposStop, (ii==fgkNiter-1 ? debugstreamer : 0x0), kTRUE);
+    FitKernel(&trackOut, tseed, rowinner, rowouter,  rowstep, xmin, xmax, outde, ksite, nfit, nmiss, pchi2, gposStart, gposStop, (ii==Niter()-1 ? debugstreamer : 0x0), kTRUE);
     //PrintTrackParam(90020+ii, &trackOut);
 
     dpos = gposStart-gposStop;
     lfit += dpos.Pt();
   }
 
-  lfit /= 2.*fgkNiter;
+  lfit /= 2.*Niter();
 
   if(trackInOld)
     (*trackInOld)  = trackIn;
@@ -464,7 +569,7 @@ void AliTPCCosmicUtils::CombinedFit(AliExternalTrackParam *trackPars[],  const A
   AliExternalTrackParam trackLow = *(trackPars[1]);
   AliExternalTrackParam trackUp;
 
-  for(Int_t ii=0; ii<fgkNiter; ii++){
+  for(Int_t ii=0; ii<Niter(); ii++){
     lfit = 0;
     vtxD = 0;
     vtxZ = 0;
@@ -479,7 +584,7 @@ void AliTPCCosmicUtils::CombinedFit(AliExternalTrackParam *trackPars[],  const A
     
     //upper->lower
     trackLow = trackUp;    
-    SubCombined(&trackLow, seeds, 0, 1, rowstartshift, rowstep, xmin, xmax, lowde, nfit, nmiss, pchi2, tmpl, tmpd, tmpz, (ii==fgkNiter-1? debugstreamer : 0x0));
+    SubCombined(&trackLow, seeds, 0, 1, rowstartshift, rowstep, xmin, xmax, lowde, nfit, nmiss, pchi2, tmpl, tmpd, tmpz, (ii==Niter()-1? debugstreamer : 0x0));
     lfit += tmpl;
     vtxD += tmpd;
     vtxZ += tmpz;
@@ -515,7 +620,7 @@ void AliTPCCosmicUtils::SubCombined(AliExternalTrackParam *trackPar, const AliTP
   vtxZ = -1e10;
 
   //always nrow -> 1 -> nrow
-  Int_t rowstart= fgkNRow-1-rowstartshift;
+  Int_t rowstart= NRow()-1-rowstartshift;
 
   //so that when reversed, the same rows are read! important!!!
   Int_t rowstop = rowstart - rowstart/rowstep * rowstep;
@@ -540,7 +645,7 @@ void AliTPCCosmicUtils::SubCombined(AliExternalTrackParam *trackPar, const AliTP
       const Double_t maxStep = 1;
       const Bool_t rotateTo = kFALSE;
       const Double_t maxSnp = 0.8;
-      if(AliTrackerBase::PropagateTrackToBxByBz(&vertex, 0, fgkMass, maxStep, rotateTo, maxSnp, eloss)){
+      if(AliTrackerBase::PropagateTrackToBxByBz(&vertex, 0, Mass(), maxStep, rotateTo, maxSnp, (Int_t)eloss)){
         vtxD = TMath::Abs(vertex.GetParameter()[0]);
         vtxZ = vertex.GetParameter()[1];
       }
@@ -570,7 +675,7 @@ void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCs
 
     AliTPCclusterMI *cl=tseed->GetClusterPointer(irow);
     if (!cl) continue;
-    if (cl->GetX()< fgkXMin) continue;
+    if (cl->GetX()< XMin()) continue;
 
     //cut on cluster X (i.e. r) to specify leverarm
     if(cl->GetX()< xmin){
@@ -614,7 +719,7 @@ void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCs
     const Double_t maxSnp = 0.8;
 
     //eloss critical only for combine fit!!!
-    const Bool_t kpro = AliTrackerBase::PropagateTrackToBxByBz(&tmppar, xTogo, fgkMass, maxStep, rotateTo, maxSnp, eloss);
+    const Bool_t kpro = AliTrackerBase::PropagateTrackToBxByBz(&tmppar, xTogo, Mass(), maxStep, rotateTo, maxSnp, (Int_t)eloss);
     if(!kpro){
       nmiss++;
       continue;
@@ -658,7 +763,6 @@ void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCs
 
   //to make sure rowstart and rowstop are the actual ending
   if(checkstop != rowstop){
-    printf("exitreport AliTPCCosmicUtils::FitKernel wrong rowstart, stop, drow!! %d %d %d\n", rowstart, rowstop, drow);
-    exit(1);
+    printf("AliTPCCosmicUtils::FitKernel error wrong rowstart, stop, drow!! %d %d %d\n", rowstart, rowstop, drow); exit(1);
   }
 }

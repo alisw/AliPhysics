@@ -117,16 +117,19 @@ AliCosmicTracker::AliCosmicTracker(const Int_t dlev, const TString tag):
   fUserCut(0x0)
   , fStreamer(0x0), fDebugLevel(dlev)
   , fESDEvent(0x0)
-  , fCombinedTrackfit(0x0)
+  , fCosmicTrackfit(0x0)
   , fTrackStack(0x0)
-  , fCombRefPt(-999)
-  , fChi2PerCluster(-999)
-  , fImpactD(-999)
-  , fImpactZ(-999)
-  , fIsReuse(kFALSE)
-  , fFindableRatio(-999)
+  , fTrack0()
+  , fTrack1()
+  , fRawVtx(-999,-999,-999)
+  , fRawDCA(-999)
   , fdPhi(-999)
+  , fCutdPhi(-999)
   , fdTheta(-999)
+  , fCutdTheta(-999)
+  , fErrFlagESDtrackCut(-999)
+  , fErrFlagIsPair(-999)
+  , fErrFlagCosmicTrackfit(-999)
 {
   //
   //constructor
@@ -135,7 +138,7 @@ AliCosmicTracker::AliCosmicTracker(const Int_t dlev, const TString tag):
   if(fDebugLevel & 1)
     fStreamer = new TTreeSRedirector(Form("CosmicTracker_%s.root", tag.Data()));
 
-  fCombinedTrackfit = new AliTPCCosmicTrackfit(0, "AliCosmicTracker");
+  fCosmicTrackfit = new AliTPCCosmicTrackfit(0, "AliCosmicTracker");
   fTrackStack = new TClonesArray("AliESDCosmicTrack",100);
  
   for(Int_t ii=0; ii<5; ii++){
@@ -165,7 +168,7 @@ AliCosmicTracker::~AliCosmicTracker()
   //destructor
   //
   delete fStreamer;
-  delete fCombinedTrackfit;
+  delete fCosmicTrackfit;
   delete fTrackStack;
 }
 
@@ -174,7 +177,6 @@ void AliCosmicTracker::SetESDEvent(AliESDEvent *esd)
   //
   //set esd event
   //
-
   fESDEvent = esd;
   fTrackStack->Clear();
 }
@@ -195,9 +197,14 @@ Int_t AliCosmicTracker::Process(const TString tag, const Bool_t kprint)
   Double_t findabler0 = -999;
   Double_t findabler1 = -999;
 
+  fErrFlagESDtrackCut = 0;
+  fErrFlagIsPair = 0;
+  fErrFlagCosmicTrackfit = 0;
+
   for(Int_t itrk=0; itrk<ntrk; itrk++){
-    if(!ESDtrackCut(fESDEvent->GetTrack(itrk), findabler0))
+    if(!ESDtrackCut(fESDEvent->GetTrack(itrk), findabler0)){
       continue;
+    }
 
     for(Int_t jtrk=itrk+1; jtrk<ntrk; jtrk++){
       if(!ESDtrackCut(fESDEvent->GetTrack(jtrk), findabler1))
@@ -206,28 +213,31 @@ Int_t AliCosmicTracker::Process(const TString tag, const Bool_t kprint)
       AliESDtrack * trk0 = fESDEvent->GetTrack(itrk);
       AliESDtrack * trk1 = fESDEvent->GetTrack(jtrk);
       if( IsPair(trk0, trk1) ){
-        if( fCombinedTrackfit->CombineESDtracks(trk0, trk1)  ){
-          fCombTrackUp = *(fCombinedTrackfit->GetTrackParamUp());
-          fCombTrackLow = *(fCombinedTrackfit->GetTrackParamLow());
+        const Bool_t kfit = fCosmicTrackfit->CombineESDtracks(trk0, trk1);
+        fErrFlagCosmicTrackfit = fCosmicTrackfit->GetStatus();
 
-          fCombRefPt = fCombinedTrackfit->GetTrackParamLow()->Pt();
-          fChi2PerCluster = fCombinedTrackfit->GetChi2PerCluster();
+        if(kfit){
+          fRawVtx = fCosmicTrackfit->ImpactParameter3D();
+          fRawDCA = fCosmicTrackfit->ImpactParameter2D().Mag();
 
-          fImpactD = fCombinedTrackfit->GetImpactD();
-          fImpactZ = fCombinedTrackfit->GetImpactZ();
+          const Int_t ncls              = fCosmicTrackfit->GetFitNcls();
+          const Double_t leverarm       = fCosmicTrackfit->GetFitLeverArm();
+          const Double_t chi2percluster = fCosmicTrackfit->GetChi2PerCluster();
+          const Double_t impactD        = fCosmicTrackfit->GetImpactD();
+          const Double_t impactZ        = fCosmicTrackfit->GetImpactZ();
 
-          fFindableRatio = TMath::Min(findabler0, findabler1);
+          const Double_t findableratio  = TMath::Min(findabler0, findabler1);
 
           trkcounter[itrk]++;
           trkcounter[jtrk]++;
+          const Bool_t isreuse          = (trkcounter[itrk]>1 || trkcounter[jtrk]>1);
 
-          fIsReuse = (trkcounter[itrk]>1 || trkcounter[jtrk]>1);
-          if(fDebugLevel & 1)
-            WriteStreamer(ntrk);
+          const TVector3 icU = fCosmicTrackfit->GetInnerClusterUp();
+          const TVector3 icD = fCosmicTrackfit->GetInnerClusterLow();
 
           Int_t idup = itrk;
           Int_t idlow = jtrk;
-          if(fCombinedTrackfit->IsSwap()){
+          if(fCosmicTrackfit->IsSwap()){
             const Int_t idtmp = idup;
             idup = idlow;
             idlow = idtmp;
@@ -239,28 +249,32 @@ Int_t AliCosmicTracker::Process(const TString tag, const Bool_t kprint)
 
           if(
              (fDebugLevel & 4) && 
-             ( (fIsReuse && ntrk<=4) || kprint )
+             ( (isreuse && ntrk<=4) || kprint )
              ){
             AliESDtrack * trks[]={fESDEvent->GetTrack(idup), fESDEvent->GetTrack(idlow)};
             AliTPCCosmicUtils::DrawTracks(trks, Form("reuse_%03d_%03d_%03d_%s", ntrk, itrk, jtrk, tag.Data()));
           }
           if(
              (fDebugLevel & 8) &&
-             fImpactD > 200
+             impactD > 160 && findableratio < 0.56
              ){
             AliESDtrack * trks[]={fESDEvent->GetTrack(idup), fESDEvent->GetTrack(idlow)};
-            AliTPCCosmicUtils::DrawTracks(trks, Form("largevtd_%.f_%03d_%03d_%03d_%s", fImpactD, ntrk, itrk, jtrk, tag.Data()));
+            AliTPCCosmicUtils::DrawTracks(trks, Form("largevtd_%.f_%.f_%03d_%03d_%03d_%s", impactD, findableratio, ntrk, itrk, jtrk, tag.Data()));
           }
 
-          AliESDCosmicTrack costrk(idup, idlow, fCombinedTrackfit->GetTrackParamUp(), fCombinedTrackfit->GetTrackParamLow(), &fTrack0, &fTrack1, fCombinedTrackfit->GetFitNcls(), fCombinedTrackfit->GetFitLeverArm(), fCombinedTrackfit->GetChi2PerCluster(), fCombinedTrackfit->GetImpactD(), fCombinedTrackfit->GetImpactZ(), fIsReuse, fFindableRatio);
+          AliESDCosmicTrack costrk(idup, idlow, fCosmicTrackfit->GetTrackParamUp(), fCosmicTrackfit->GetTrackParamLow(), &fTrack0, &fTrack1, ncls, leverarm, chi2percluster, impactD, impactZ, isreuse, findableratio, icU, icD);
           new((*fTrackStack)[npair]) AliESDCosmicTrack(costrk);
           npair++;
+
+          if(fDebugLevel & 1)
+            WriteStreamer(ntrk, &costrk);
+
         }
         else{
           if(fDebugLevel & 16){
             if(ntrk==2){
               AliESDtrack * trks[]={trk0, trk1};
-              AliTPCCosmicUtils::DrawTracks(trks, Form("failCombinedFit_%02d_%03d_%03d_%03d_%s", fCombinedTrackfit->GetStatus(), ntrk, itrk, jtrk, tag.Data()));
+              AliTPCCosmicUtils::DrawTracks(trks, Form("failCosmicFit_%02d_%03d_%03d_%03d_%s", fCosmicTrackfit->GetStatus(), ntrk, itrk, jtrk, tag.Data()));
             }
           }
         }
@@ -284,8 +298,6 @@ Bool_t AliCosmicTracker::IsPair(AliESDtrack * trk0, AliESDtrack * trk1)
   //
   //check whether the two tracks come from one cosmic ray
   //
-
-  fErrFlagIsPair = 0;
 
   //dphi + pi should = 0
   fdPhi   = AliTPCCosmicUtils::AngleInRange(trk0->Phi()   - trk1->Phi()   + TMath::Pi());
@@ -368,7 +380,7 @@ Bool_t AliCosmicTracker::IsPair(AliESDtrack * trk0, AliESDtrack * trk1)
   }
 
   for(Int_t ii=0; ii<2; ii++){
-    if(!AliTrackerBase::PropagateTrackToBxByBz(&(tmptrk[ii]), xTogo, AliTPCCosmicUtils::fgkMass, maxStep, rotateTo, maxSnp, eloss[ii])){
+    if(!AliTrackerBase::PropagateTrackToBxByBz(&(tmptrk[ii]), xTogo, AliTPCCosmicUtils::Mass(), maxStep, rotateTo, maxSnp, (Int_t)(eloss[ii]))){
       fErrFlagIsPair = 7;
       return kFALSE;
     }
@@ -435,38 +447,63 @@ Bool_t AliCosmicTracker::ESDtrackCut(AliESDtrack * trk, Double_t &findabler)
   //
 
   if(fUserCut){
-    if(!fUserCut(trk))
+    if(!fUserCut(trk)){
+      fErrFlagESDtrackCut = 1;
       return kFALSE;
+    }
   }
 
   //reject kink
-  if(trk->GetKinkIndex(0)>0)
+  if(trk->GetKinkIndex(0)>0){
+    fErrFlagESDtrackCut = 2;
     return kFALSE;
+  }
 
   //require refit
-  if(!trk->IsOn(AliESDtrack::kTPCrefit))
+  if(!trk->IsOn(AliESDtrack::kTPCrefit)){
+    fErrFlagESDtrackCut = 3;
     return kFALSE;
+  }
 
   // due to drift velocity calibration, a track crossing Z=0 may be reconstructed as 2 ESD tracks, so two pairs are formed, each with one part of this track. Solution: cut on findable ratio (require > 0.5) to remove split tracks due to drift velocity calibration systematics on different sides
   //there is some remaining with isreuse = true, user should cut on findable ratio according to the fraction of isreuse
   findabler = -999;
-  if(!trk->GetTPCNclsF())
+  if(!trk->GetTPCNclsF()){
+    fErrFlagESDtrackCut = 4;
     return kFALSE;
+  }
 
   findabler = (Double_t)trk->GetTPCNcls()/(Double_t) trk->GetTPCNclsF();
 
-  if(findabler < fgkCutFindable ){
+  if(findabler < CutFindable() ){
+    fErrFlagESDtrackCut = 5;
+    return kFALSE;
+  }
+
+  //cut on # TPC ncls on each ESDtrack
+  if(trk->GetTPCncls()<AliTPCCosmicUtils::NclsMin()){
+    fErrFlagESDtrackCut = 6;
     return kFALSE;
   }
 
   //require ESDfriends
-  if(!AliTPCCosmicUtils::GetTPCseed(trk))
+  if(!AliTPCCosmicUtils::GetTPCseed(trk)){
+    fErrFlagESDtrackCut = 7;
     return kFALSE;
+  }
 
   return kTRUE;
 }
 
-void AliCosmicTracker::WriteStreamer(Int_t ntrk)
+Int_t AliCosmicTracker::GetErrFlag() const
+{
+  //
+  //return the error status in process
+  //
+  return fErrFlagESDtrackCut + fErrFlagIsPair*100 + fErrFlagCosmicTrackfit*10000;
+}
+
+void AliCosmicTracker::WriteStreamer(Int_t ntrk, AliESDCosmicTrack *costrk)
 {
   //
   //output to streamer
@@ -474,16 +511,12 @@ void AliCosmicTracker::WriteStreamer(Int_t ntrk)
 
   (*fStreamer)<<"CosmicTracker_Streamer"<<
     "ntrk="<<ntrk<<
-    "combup="<<&fCombTrackUp<<
-    "comblow="<<&fCombTrackLow<<
-    "track0="<<&fTrack0<<
-    "track1="<<&fTrack1<<
-    "vtxd="<<fImpactD<<
-    "vtxz="<<fImpactZ<<
-    "isreuse="<<fIsReuse<<
-    "findabler="<<fFindableRatio<<
-    "pt="<<fCombRefPt<<
-    "chi2="<<fChi2PerCluster<<
+
+    "costrk="<<costrk<<
+
+    "rawvtx="<<&fRawVtx<<
+    "rawdca="<<fRawDCA<<
+
     "dphi="<<fdPhi<<
     "dtheta="<<fdTheta<<
     "pull0="<<fPull[0]<<
@@ -498,3 +531,30 @@ void AliCosmicTracker::WriteStreamer(Int_t ntrk)
     "delta4="<<fDelta[4]<<
     "\n";
 }
+
+TClonesArray *AliCosmicTracker::FindCosmic(AliESDEvent *event, const Bool_t kadd)
+{
+  //
+  //do cosmic combined trackfit
+  //
+
+  AliCosmicTracker cosmicTracker;
+  cosmicTracker.SetESDEvent(event);
+  const Int_t npair = cosmicTracker.Process();
+  const TClonesArray *arr = cosmicTracker.GetTrackStack();
+
+  TClonesArray *stackCosmic = 0x0;
+  if(kadd){
+    for(Int_t ip=0; ip<npair; ip++){
+      const AliESDCosmicTrack * esdcos = (AliESDCosmicTrack*) arr->At(ip);
+      event->AddCosmicTrack(esdcos);
+    }
+    printf("AliCosmicTracker::FindCosmic: event %d: Number of cosmic pairs by AliCosmicTracker %d out of %d tracks, err %d\n", event->GetEventNumberInFile(), npair, event->GetNumberOfTracks(), cosmicTracker.GetErrFlag());
+  }
+  else{
+    stackCosmic = new TClonesArray(*arr);
+  }
+
+  return stackCosmic;
+}
+

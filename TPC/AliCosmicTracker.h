@@ -24,14 +24,16 @@
 #ifndef ALICOSMICTRACKER_H
 #define ALICOSMICTRACKER_H
 
-class TTreeSRedirector;
+class AliESDCosmicTrack;
 class AliTPCCosmicTrackfit;
+
+class AliESDEvent;
 
 class AliCosmicTracker
 {
  public:
 
-  typedef Bool_t (*CutFunc)(AliESDtrack *trk);
+  typedef Bool_t (*CutFunc)(const AliESDtrack *trk);
 
   AliCosmicTracker(const Int_t dlev=0, const TString tag="test"); 
   ~AliCosmicTracker();
@@ -41,6 +43,8 @@ class AliCosmicTracker
   TClonesArray * GetTrackStack() const {return fTrackStack;}
 
   TTreeSRedirector * GetStreamer() const {return fStreamer;}
+  Int_t GetDebugLevel() const {return fDebugLevel;}
+  Int_t GetErrFlag() const;
 
   void SetCutPull(     const Int_t ii, const Double_t cut){ fCutPull[ii] = cut;}
   void SetCutDelta(    const Int_t ii, const Double_t cut){ fCutDelta[ii] = cut;}
@@ -50,35 +54,32 @@ class AliCosmicTracker
 
   void SetUserESDtrackCut(CutFunc func){fUserCut = func;}
 
+  static TClonesArray *FindCosmic(AliESDEvent *event, const Bool_t kadd);
+
  private:
   AliCosmicTracker(const AliCosmicTracker &p);
   AliCosmicTracker & operator=(const AliCosmicTracker &p);
 
+  static Double_t CutFindable(){return 0.5;}          //cut on findable ratio of TPC cluster; DCA-anormlay is caused by laser!! should check trigger!!
+
   Bool_t ESDtrackCut(AliESDtrack * trk, Double_t &findabler);
 
   Bool_t IsPair(AliESDtrack* trk0, AliESDtrack*trk1);
-  void WriteStreamer(Int_t ntrk);
+  void WriteStreamer(Int_t ntrk, AliESDCosmicTrack *costrk);
 
   CutFunc fUserCut;                               //user ESDtrack function
   TTreeSRedirector *fStreamer;                   //debug streamer
   Int_t fDebugLevel;                             //debug level
 
   AliESDEvent *fESDEvent;                        //esd
-  AliTPCCosmicTrackfit *fCombinedTrackfit;     //combinedtrackfit
+  AliTPCCosmicTrackfit *fCosmicTrackfit;          //cosmictrackfit
   TClonesArray *fTrackStack;                     //storing cosmic ray
 
-  AliExternalTrackParam fCombTrackUp;            //upper track param from combined track fit
-  AliExternalTrackParam fCombTrackLow;          //lower track param from combined track fit
   AliExternalTrackParam fTrack0;                //upper track param estimated at x=0 from IsPair
   AliExternalTrackParam fTrack1;                //lower track param estimated at x=0 from IsPair
 
-  Double_t fCombRefPt;                           //pt of the ray at lower-outer TPC by combined fit
-  Double_t fChi2PerCluster;                      //chi2/ncls of the fit
-  Double_t fImpactD;                                  //2d impact parameter
-  Double_t fImpactZ;                                   //z of impact parameter
-  Bool_t fIsReuse;                                     //if one the the tracks in the pair is already used in previous pair
-  Double_t fFindableRatio;                      //min of TPC ncls/nfindablecls of the two tracks
-
+  TVector3 fRawVtx;                             //raw vertex position calculated only from upper and lower inner most TPC cluster
+  Double_t fRawDCA;                              //raw DCA (2d) calculated only from upper and lower inner most TPC cluster 
   Double_t fdPhi;                                //phi0-phi1-pi of the EDS tracks
   Double_t fCutdPhi;                           //cut
 
@@ -91,9 +92,9 @@ class AliCosmicTracker
   Double_t fDelta[5];                             //delta of the two ESD tracks at x=0
   Double_t fCutDelta[5];                          //delta cut
 
-  Int_t fErrFlagIsPair;                            //error status in IsPair
-
-  static const Double_t fgkCutFindable = 0.5;            //cut on findable ratio of TPC cluster
+  Int_t fErrFlagESDtrackCut;                       //error status in ESDtrackCut()
+  Int_t fErrFlagIsPair;                            //error status in IsPair()
+  Int_t fErrFlagCosmicTrackfit;                    //error status in fCosmicTrackfit
 };
 
 #endif

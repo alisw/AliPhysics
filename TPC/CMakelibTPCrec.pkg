@@ -55,6 +55,9 @@ set ( SRCS
     AliTPCclustererKr.cxx 
     AliTPCclusterKr.cxx 
     AliTPCvtpr.cxx
+    AliTPCCosmicUtils.cxx   
+    AliTPCCosmicTrackfit.cxx
+    AliCosmicTracker.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

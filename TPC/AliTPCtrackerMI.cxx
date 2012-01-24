@@ -145,6 +145,7 @@
 #include "AliDCSSensorArray.h"
 #include "AliDCSSensor.h"
 #include "AliDAQ.h"
+#include "AliCosmicTracker.h"
 
 //
 
@@ -2796,6 +2797,9 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   //FindKinks(fSeeds,event);
   if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(2,fSeeds);
   Info("RefitInward","Number of refitted tracks %d",ntracks);
+
+  AliCosmicTracker::FindCosmic(event, kTRUE);
+
   return 0;
 }
 

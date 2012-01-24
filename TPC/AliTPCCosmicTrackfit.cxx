@@ -14,7 +14,7 @@
  **************************************************************************/
 //
 //-------------------------------------------------------
-//          Implementation of the TPC combined trackfit
+//          Implementation of the TPC cosmic trackfit
 //
 //   Origin:  Xianguo Lu lu@physi.uni-heidelberg.de  Xianguo.Lu@cern.ch
 //
@@ -34,7 +34,7 @@
 //===========================================================================================
 // 
 // Interface/Implementation:
-// This class provide the functionality to combined two ESD tracks and perform the trackfit using all related track points.
+// This class provide the functionality to combine two ESD tracks and perform the trackfit using all related track points.
 // Input: AliESDtrack's (or AliTPCseed's, expert use)
 // Output: the trackparams from the combined fit are stored as data member of this class, and they can be accessed via getter or copy.
 //
@@ -78,14 +78,14 @@
 //===========================================================================================
 // Usage
 /*
-  fCombinedTrackfit = new AliTPCCosmicTrackfit(debuglevel, "anystring");
+  fCosmicTrackfit = new AliTPCCosmicTrackfit(debuglevel, "anystring");
 
   //order not important; will be internally ordered (potinters modified due to &) such that track0 is the upper one
   //kfit = kTRUE: good fit, kFALSE: bad fit
-  const Bool_t kfit = fCombinedTrackfit->CombineESDtracks(esdtrack0, esdtrack1);
+  const Bool_t kfit = fCosmicTrackfit->CombineESDtracks(esdtrack0, esdtrack1);
 
   //status = 0 for good fit (i.e. kfit=kTRUE), non-0 for bad fit (i.e. kfit=kFALSE), see "enum CombineStatus" definition in header file
-  const Int_t status = fCombinedTrackfit->GetStatus(); 
+  const Int_t status = fCosmicTrackfit->GetStatus(); 
 */
 //===========================================================================================
 // Efficiency
@@ -93,11 +93,11 @@
 // for 2011 Feb. cosmic data nch=2 events, the kfit and status look like:
 /*
 kfit,status (  0,   1):   16337 /  443901 =   3.680%          //kFailGetTPCseeds
-kfit,status (  0,   2):    3692 /  443901 =   0.832%          //not both tracks have ncl > AliTPCCosmicUtils::fgkNclsMin
+kfit,status (  0,   2):    3692 /  443901 =   0.832%          //not both tracks have ncl > AliTPCCosmicUtils::NclsMin()
 kfit,status (  0,   3):    6527 /  443901 =   1.470%          //clusters in two tracks should be clearly separated in y, i.e. lowest cluster of upper track higher than highest cluster of lower track; otherwise fail 
-kfit,status (  0,   4):    7033 /  443901 =   1.584%          //fLeverArm<fgkCutLeverArm
+kfit,status (  0,   4):    7033 /  443901 =   1.584%          //fLeverArm<CutLeverArm()
 kfit,status (  0,   6):    4398 /  443901 =   0.991%          //fail in propagation of at least one cluster
-kfit,status (  0,   7):     508 /  443901 =   0.114%          //chi2/nfit > fgkMaxChi2
+kfit,status (  0,   7):     508 /  443901 =   0.114%          //chi2/nfit > MaxChi2()
 kfit,status (  0,   8):      52 /  443901 =   0.012%          //fail in geting impact parameters
 kfit,status (  1,   0):  405354 /  443901 =  91.316%          //i.e. 91% of nch=2 events are successfully fitted.
 */
@@ -132,17 +132,22 @@ AliTPCCosmicTrackfit::AliTPCCosmicTrackfit(const Int_t dlev, const TString tag):
   fStreamer(0x0), fDebugLevel(dlev)
   , fSeedUp(0x0), fSeedLow(0x0), fTrackparUp(0x0), fTrackparLow(0x0), fIniTrackparUp(0x0), fIniTrackparLow(0x0)
   , fStatus(-999)
+  , fKswap(0)
+  , fInnerClusterUp(-999,-999,-999)
+  , fInnerClusterLow(-999,-999,-999)
   , fLeverArm(-999)
   , fFitNcls(-999), fMissNcls(-999), fPreChi2(-999), fFitLeverArm(-999), fImpactD(-999), fImpactZ(-999)
+  , fRowStartShift(-999)
+  , fRowStep(-999)
+  , fXMin(-999)
+  , fXMax(-999)
 {
   //
   //Constructor
   //
-  fInnerClusterUp.SetXYZ(-999,-999,-999);
-  fInnerClusterLow.SetXYZ(-999,-999,-999);
 
   if(fDebugLevel>0)
-    fStreamer = new TTreeSRedirector(Form("CombinedTrackfit_%s.root", tag.Data()));
+    fStreamer = new TTreeSRedirector(Form("CosmicTrackfit_%s.root", tag.Data()));
 
   SetRow(0,1);
   SetX(-1e10, 1e10);
@@ -254,8 +259,7 @@ void AliTPCCosmicTrackfit::Print() const
   printf("Status %2d NclsU %3d NclsD %3d ZinnerU %7.2f ZinnerD %7.2f LeverArm %7.2f\n", fStatus, fSeedUp->GetNumberOfClusters(), fSeedLow->GetNumberOfClusters(), fInnerClusterUp.Z(), fInnerClusterLow.Z(), fLeverArm);
 }
 
-/*
-Double_t AliTPCCosmicTrackfit::ImpactParameter2D() const
+TVector3 AliTPCCosmicTrackfit::ImpactParameter2D() const
 {
   //
   //calculate the 2D-impactparameter from (0,0)
@@ -265,10 +269,12 @@ Double_t AliTPCCosmicTrackfit::ImpactParameter2D() const
   const TVector3 l1(fInnerClusterUp.X(),  fInnerClusterUp.Y(),  0);
   const TVector3 l2(fInnerClusterLow.X(), fInnerClusterLow.Y(), 0);
 
-  return AliTPCCosmicUtils::Point2LineDist(p0, l1, l2);
+  TVector3 vtx;
+  AliTPCCosmicUtils::Point2LineDist(p0, l1, l2, &vtx);
+  return vtx;
 }
 
-Double_t AliTPCCosmicTrackfit::ImpactParameter3D() const
+TVector3 AliTPCCosmicTrackfit::ImpactParameter3D() const
 {
   //
   //calculate the 3D-impactparameter from (0,0,0)
@@ -278,9 +284,24 @@ Double_t AliTPCCosmicTrackfit::ImpactParameter3D() const
   const TVector3 l1(fInnerClusterUp);
   const TVector3 l2(fInnerClusterLow);
 
-  return AliTPCCosmicUtils::Point2LineDist(p0, l1, l2);
+  TVector3 vtx;
+  AliTPCCosmicUtils::Point2LineDist(p0, l1, l2, &vtx);
+
+  //==========================
+  /*
+  printf("testing... \n");
+  TVector3 tmpv = ImpactParameter2D();
+  if(fabs(tmpv.Mag()-vtx.Pt())>1e-6){
+    printf("strange!!! %e %e %e\n", tmpv.Mag(), vtx.Pt(), fabs(tmpv.Mag()-vtx.Pt()));
+    vtx.Print();
+    tmpv.Print();
+    fInnerClusterUp.Print();
+    fInnerClusterLow.Print();
+  }
+  */
+  //==========================
+  return vtx;
 }
-*/
 
 Double_t AliTPCCosmicTrackfit::MinPhi() const
 {
@@ -365,7 +386,7 @@ void AliTPCCosmicTrackfit::Update()
   }
 
   fPreChi2 /= fFitNcls;
-  if(fPreChi2>fgkMaxChi2){
+  if(fPreChi2>MaxChi2()){
     fStatus = kFailChi2;
     return;
   }
@@ -405,7 +426,7 @@ Bool_t AliTPCCosmicTrackfit::CheckLeverArm()
   //On the other hand, short lever arm from two tracks mostly means they are fake pairs.
   //lever arm extents over one quadrant, e.g. (0,250)-(250,0): 250*sqrt(2)~350
   //
-  if(fLeverArm<fgkCutLeverArm){
+  if(fLeverArm<CutLeverArm()){
     fStatus = kFailLeverArm;
     return kFALSE;
   }
@@ -430,7 +451,7 @@ Bool_t AliTPCCosmicTrackfit::AnaSeeds()
   }
   
   for(Int_t itrk=0; itrk<2; itrk++){
-    for(Int_t irow=0; irow<AliTPCCosmicUtils::fgkNRow; irow++){
+    for(Int_t irow=0; irow<AliTPCCosmicUtils::NRow(); irow++){
       const AliTPCclusterMI * cls = (*seeds[itrk])->GetClusterPointer(irow);
       if(!cls)
         continue;
@@ -500,7 +521,7 @@ Bool_t AliTPCCosmicTrackfit::CheckNcls()
   //
   //check number of clusters in TPCseed, for too small number MakeSeed will fail
   //
-  if( fSeedUp->GetNumberOfClusters()<AliTPCCosmicUtils::fgkNclsMin || fSeedLow->GetNumberOfClusters()<AliTPCCosmicUtils::fgkNclsMin ){
+  if( fSeedUp->GetNumberOfClusters()<AliTPCCosmicUtils::NclsMin() || fSeedLow->GetNumberOfClusters()<AliTPCCosmicUtils::NclsMin() ){
     fStatus = kFailNclsMin;
     return kFALSE;
   }

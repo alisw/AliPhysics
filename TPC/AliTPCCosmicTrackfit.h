@@ -28,10 +28,12 @@ const Double_t _TPCINR  =  84.8;
 const Double_t _TPCOUR  =  246.6;
 */
 
-#ifndef ALITPCCOMBINEDTRACKFIT_H
-#define ALITPCCOMBINEDTRACKFIT_H
+#ifndef ALITPCCOSMICTRACKFIT_H
+#define ALITPCCOSMICTRACKFIT_H
 
-class TTreeSRedirector;
+#ifndef TVECTOR3_H
+#include "TVector3.h"
+#endif
 
 class AliTPCCosmicTrackfit
 {
@@ -60,10 +62,10 @@ class AliTPCCosmicTrackfit
   Double_t GetLeverArm()const {return fLeverArm;}
   TVector3 GetInnerClusterUp()const {return fInnerClusterUp;}
   TVector3 GetInnerClusterLow()const {return fInnerClusterLow;}
-  /*
-  Double_t ImpactParameter2D() const;
-  Double_t ImpactParameter3D() const;
-  */
+
+  TVector3 ImpactParameter2D() const;
+  TVector3 ImpactParameter3D() const;
+
   Double_t MinPhi()const;
 
   const AliExternalTrackParam * GetTrackParamUp() const {return fTrackparUp;}
@@ -95,6 +97,9 @@ class AliTPCCosmicTrackfit
   
   AliTPCCosmicTrackfit(const AliTPCCosmicTrackfit & p);
   AliTPCCosmicTrackfit & operator=(const AliTPCCosmicTrackfit & p);
+
+  static Double_t CutLeverArm(){ return 350;}  //minimum lever arm 350 ~ 250 * sqrt(2)
+  static Double_t MaxChi2(){ return 10;}       //max. chi2/ncls
 
   void IniCombineESDtracks();
   Bool_t GetTPCseeds(const AliESDtrack *trk0,  const AliESDtrack *trk1);
@@ -133,8 +138,6 @@ class AliTPCCosmicTrackfit
   Int_t fRowStep;                              //row step
   Double_t fXMin;                              //cluster X min
   Double_t fXMax;                              //cluster X max
-  static const Double_t fgkCutLeverArm = 350;  //minimum lever arm 350 ~ 250 * sqrt(2)
-  static const Double_t fgkMaxChi2 = 10;       //max. chi2/ncls
 };
 
 #endif
