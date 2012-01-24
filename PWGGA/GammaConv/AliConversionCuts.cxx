@@ -138,8 +138,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) : AliAn
     fMinPhotonAsymmetry(0.),
     fIsHeavyIon(kFALSE),
     fMaxVertexZ(10),
-    fUseCentrality(kFALSE),
-    fUseCentralityBin(kFALSE),
+    fUseCentrality(0),
+    fUseCentralityBin(0),
     fUseCorrectedTPCClsInfo(kFALSE),
     fUseTOFpid(kFALSE),
     fAlphaMinCutMeson(0),
@@ -209,12 +209,13 @@ void AliConversionCuts::InitCutHistograms(){
     // IsPhotonSelected
 
     hCutIndex=new TH1F("IsPhotonSelected","IsPhotonSelected",10,-0.5,9.5);
-    hCutIndex->GetXaxis()->SetBinLabel(1,"in");
-    hCutIndex->GetXaxis()->SetBinLabel(2,"no tracks");
-    hCutIndex->GetXaxis()->SetBinLabel(3,"dEdx");
-    hCutIndex->GetXaxis()->SetBinLabel(4,"Track cuts");
-    hCutIndex->GetXaxis()->SetBinLabel(5,"PhotonCuts");
-    hCutIndex->GetXaxis()->SetBinLabel(6,"out");
+    hCutIndex->GetXaxis()->SetBinLabel(kPhotonIn+1,"in");
+    hCutIndex->GetXaxis()->SetBinLabel(kOnFly+1,"onfly");
+    hCutIndex->GetXaxis()->SetBinLabel(kNoTracks+1,"no tracks");
+    hCutIndex->GetXaxis()->SetBinLabel(kdEdxCuts+1,"dEdx");
+    hCutIndex->GetXaxis()->SetBinLabel(kTrackCuts+1,"Track cuts");
+    hCutIndex->GetXaxis()->SetBinLabel(kPhotonCuts+1,"PhotonCuts");
+    hCutIndex->GetXaxis()->SetBinLabel(kPhotonOut+1,"out");
     fHistograms->Add(hCutIndex);
 
     // Track Cuts
@@ -455,6 +456,10 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
     if(hPhotonCuts)hPhotonCuts->Fill(cutIndex);
     cutIndex++;
 
+    // Fill Histos before Cuts
+    if(hInvMassbefore)hInvMassbefore->Fill(photon->GetPhotonMass());
+    if(hArmenterosbefore)hArmenterosbefore->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
+
     // Gamma selection based on QT from Armenteros
     if(fDoQtGammaSelection == kTRUE){
 	if(!ArmenterosQtCut(photon)){
@@ -516,6 +521,12 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
 
     cutIndex++; //9
     if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //9
+
+    // Histos after Cuts
+    if(hInvMassafter)hInvMassafter->Fill(photon->GetPhotonMass());
+    if(hArmenterosafter)hArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
+
+
     return kTRUE;
 
 }
@@ -555,61 +566,43 @@ Bool_t AliConversionCuts::CorrectedTPCClusterCut(AliConversionPhotonBase *photon
     return kTRUE;
 }
 
-
 ///________________________________________________________________________
-Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliVEvent * event,Bool_t DoOnlyPhotonCuts) {
+Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliVEvent * event)
+{
     //Selection of Reconstructed Photons
 
-   Int_t cutIndex=0;
-   if(hCutIndex)hCutIndex->Fill(cutIndex);
-   cutIndex++;
+    FillPhotonCutIndex(kPhotonIn);
 
-   // Fill Histos before Cuts
-  if(hInvMassbefore)hInvMassbefore->Fill(photon->GetPhotonMass());
-  if(hArmenterosbefore)hArmenterosbefore->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
+    // Get Tracks
+    AliVTrack * negTrack = GetTrack(event, photon->GetTrackLabelNegative());
+    AliVTrack * posTrack = GetTrack(event, photon->GetTrackLabelPositive());
 
-  //Track cuts, if
-  if(!DoOnlyPhotonCuts){
-      // Get Tracks
-      AliVTrack * negTrack = GetTrack(event, photon->GetTrackLabelNegative());
-      AliVTrack * posTrack = GetTrack(event, photon->GetTrackLabelPositive());
+    if(!negTrack || !posTrack) {
+	FillPhotonCutIndex(kNoTracks);
+	return kFALSE;
+    }
 
-      if(!negTrack || !posTrack) {
-	  if(hCutIndex)hCutIndex->Fill(cutIndex);
-	  return kFALSE;
-      }
-      cutIndex++; //1
+    // dEdx Cuts
+    if(!dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
+	FillPhotonCutIndex(kdEdxCuts);
+	return kFALSE;
+    }
 
-      // dEdx Cuts
-      if(!dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
-	  if(hCutIndex)hCutIndex->Fill(cutIndex);
-	  return kFALSE;
-      }
-      cutIndex++;
+    // Track Cuts
+    if(!TracksAreSelected(negTrack, posTrack)){
+	FillPhotonCutIndex(kTrackCuts);
+	return kFALSE;
+    }
 
-      // Track Cuts
-      if(!TracksAreSelected(negTrack, posTrack)){
-	  if(hCutIndex)hCutIndex->Fill(cutIndex);//4
-	  return kFALSE;
-      }
-      cutIndex++;
-  }
-  else{cutIndex+=3;}
+    // Photon Cuts
+    if(!PhotonCuts(photon,event)){
+	FillPhotonCutIndex(kPhotonCuts);
+	return kFALSE;
+    }
 
-  // Photon Cuts
-  if(!PhotonCuts(photon,event)){
-      if(hCutIndex)hCutIndex->Fill(cutIndex);
-      return kFALSE;
-  }
-  cutIndex++;
-
-
-  // Photon passed cuts
-  if(hCutIndex)hCutIndex->Fill(cutIndex);
-  if(hInvMassafter)hInvMassafter->Fill(photon->GetPhotonMass());
-  if(hArmenterosafter)hArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
-
-  return kTRUE;
+    // Photon passed cuts
+    FillPhotonCutIndex(kPhotonOut);
+    return kTRUE;
 }
 
 ///________________________________________________________________________
@@ -645,7 +638,7 @@ Bool_t AliConversionCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsS
     cutIndex++;
 
     // Opening Angle Cut
-    fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
+    //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
     if(pi0->GetOpeningAngle()<fOpeningAngle){
 	if(hist)hist->Fill(cutIndex);
 	return kFALSE;
@@ -1166,12 +1159,6 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
 
   cout << "Updating cut  " << fgkCutNames[cutID] << " (" << cutID << ") to " << value << endl;
 
-  if(cutID >= kNCuts) {
-	cout << "Error:: Cut id "<<  cutID << " outside range of kNCuts " << kNCuts << endl;
-	return kFALSE;
-  }
-
-
 
   switch (cutID) {
   case kgoodId:
@@ -1399,7 +1386,9 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
 	return kFALSE;
   }
 
+  cout << "Error:: Cut id " << cutID << " not recognized "<< endl;
   return kFALSE;
+
 
 
 
@@ -2297,19 +2286,24 @@ Bool_t AliConversionCuts::SetTRDElectronCut(Int_t TRDElectronCut)
     switch(TRDElectronCut){
     case 0:
 	fDoTRDPID=kFALSE;
+	break;
     case 1:
 	fDoTRDPID=kTRUE;
 	fPIDTRDEfficiency=0.1;
+	break;
     case 8:
 	fDoTRDPID=kTRUE;
 	fPIDTRDEfficiency=0.8;
+	break;
     case 9:
 	fDoTRDPID=kTRUE;
 	fPIDTRDEfficiency=0.9;
+	break;
     default:
         cout<<"Warning: TRDElectronCut not defined "<<TRDElectronCut<<endl;
 	return kFALSE;
     }
+
     return kTRUE;
 }
 ///________________________________________________________________________

@@ -13,6 +13,7 @@
 #include "AliAODTrack.h"
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
+#include "TH1F.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -76,6 +77,17 @@ class AliConversionCuts : public AliAnalysisCuts {
 	kNCuts
   };
 
+  enum photonCuts {
+      kPhotonIn=0,
+      kOnFly,
+      kNoTracks,
+      kTrackCuts,
+      kdEdxCuts,
+      kPhotonCuts,
+      kPhotonOut
+  };
+
+
   Bool_t SetCutIds(TString cutString); 
   Int_t fCuts[kNCuts];
   Bool_t SetCut(cutIds cutID, Int_t cut);
@@ -100,7 +112,7 @@ class AliConversionCuts : public AliAnalysisCuts {
 
   // Cut Selection
   Bool_t EventIsSelected(AliVEvent *fInputEvent);
-  Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event,Bool_t DoOnlyPhotonCuts=kFALSE);
+  Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
   Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack);
   Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
   Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
@@ -118,6 +130,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   void InitCutHistograms();
   void SetFillCutHistograms(){if(!fHistograms){InitCutHistograms();};}
   TList *GetCutHistograms(){return fHistograms;}
+  void FillPhotonCutIndex(Int_t photoncut){if(hCutIndex)hCutIndex->Fill(photoncut);}
 
   AliVTrack * GetTrack(AliVEvent * event, Int_t label) const;
 
@@ -245,8 +258,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   Double_t fMinPhotonAsymmetry;  // Asymmetry Cut
   Bool_t fIsHeavyIon;               // flag for heavy ion
   Double_t fMaxVertexZ;    // max z offset of vertex
-  Bool_t fUseCentrality;  // centrality selection
-  Bool_t fUseCentralityBin; // centrality selection with individual bins
+  Int_t fUseCentrality;  // centrality selection
+  Int_t fUseCentralityBin; // centrality selection with individual bins
   Bool_t fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
   Bool_t fUseTOFpid; // flag to use tof pid
   Double_t fAlphaMinCutMeson; // min value for meson alpha cut
