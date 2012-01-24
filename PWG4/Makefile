@@ -41,6 +41,10 @@ ifneq ($(CORRFW_INCLUDE),)
   ALICEINC += -I../$(CORRFW_INCLUDE)
 endif
 
+ifneq ($(PWGBase_INCLUDE),)
+  ALICEINC += -I../$(PWGBase_INCLUDE)
+endif
+
 ifneq ($(PHOSUtils_INCLUDE),)
   ALICEINC += -I../$(PHOSUtils_INCLUDE)
   CXXFLAGS+=-D__PHOSUTIL__
@@ -82,6 +86,10 @@ endif
 
 ifneq ($(JETAN_INCLUDE),)
   ALICEINC += -I../$(JETAN_INCLUDE)
+endif
+
+ifneq ($(JETANDEV_INCLUDE),)
+  ALICEINC += -I../$(JETANDEV_INCLUDE)
 endif
 
 ifneq ($(PWG4JCORRAN_INCLUDE),)
@@ -145,7 +153,7 @@ endif
 	$(CXX) $(PACKCXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS) *.so G__$(PACKAGE).*
+	@rm -f $(OBJS_PWG4) *.so G__$(PACKAGE).*
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionaries ..." $(ALICEINC)

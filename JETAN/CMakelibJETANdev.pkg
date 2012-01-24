@@ -1,0 +1,49 @@
+#--------------------------------------------------------------------------------#
+# Package File for JETAN                                                         #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS DEV/AliJetHeader.cxx DEV/AliJetFinder.cxx  DEV/AliJetReaderHeader.cxx DEV/AliJetReader.cxx DEV/AliUA1JetHeaderV1.cxx DEV/AliUA1JetFinder.cxx DEV/AliCdfJetFinder.cxx  DEV/AliCdfJetHeader.cxx DEV/AliAnalysisTaskJetsReader.cxx  DEV/AliAnalysisTaskJetsFinder.cxx DEV/AliDAJetFinder.cxx DEV/AliDAJetHeader.cxx DEV/AliJetKineReaderHeader.cxx DEV/AliJetHistos.cxx DEV/AliAnalysisTaskDiJets.cxx DEV/AliEventShape.cxx DEV/AliKMeansClustering.cxx DEV/AliAnalysisTaskKMeans.cxx DEV/AliAnalysisTaskFastEmbedding.cxx DEV/AliJetBkg.cxx DEV/AliJetCalTrk.cxx DEV/AliJetFillCalTrkTrack.cxx DEV/AliJetFillCalTrkTrackMC.cxx DEV/AliJetFillCalTrkEvent.cxx )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  JETANdevLinkDef.h)
+
+set(FASTJET_ROOT $ENV{FASTJET_ROOT})
+
+if(FASTJET_ROOT)
+  set ( EDEFINE -isystem${FASTJET_ROOT}/include)
+else()
+  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
+endif(FASTJET_ROOT)
+
+set ( EINCLUDE  ANALYSIS  OADB)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -L${ROOTLIBDIR} -lEG -lGeom)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")
+

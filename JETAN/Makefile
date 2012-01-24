@@ -8,6 +8,9 @@ DHDR     = $(PACKAGE)LinkDef.h
 
 
 ALICEINC      = -I.
+ifneq ($(findstring dev,$(PACKAGE)),)
+ ALICEINC     += -I./DEV
+endif
 
 ### define include dir for local case and par case
 ifneq ($(OADB_INCLUDE),)
@@ -16,26 +19,45 @@ endif
 ifneq ($(EMCALUtils_INCLUDE),)
    ALICEINC += -I../$(EMCALUtils_INCLUDE)
 endif
-ifneq ($(JETAN_INCLUDE),)
+ifneq ($(JETANDEV_INCLUDE),)
   ifneq ($(FASTJET_ROOT),)
    ALICEINC += -I$(FASTJET_ROOT)/include
   else
    ALICEINC += -I$(ALICE_ROOT)/JETAN/fastjet
   endif
 endif
+ifneq ($(JETAN_INCLUDE),)
+ ifeq ($(findstring dev,$(PACKAGE)),)
+  ifneq ($(FASTJET_ROOT),)
+   ALICEINC += -I$(FASTJET_ROOT)/include
+  else
+   ALICEINC += -I$(ALICE_ROOT)/JETAN/fastjet
+  endif
+ endif
+endif
+
 ifneq ($(ESD_INCLUDE),)
    ALICEINC += -I../$(ESD_INCLUDE)
    ALICEINC += -I../$(AOD_INCLUDE)
    ALICEINC += -I../$(STEERBase_INCLUDE)
    ALICEINC += -I../$(ANALYSIS_INCLUDE)
    ALICEINC += -I../$(ANALYSISalice_INCLUDE)
-   ifneq ($(JETAN_INCLUDE),)	
+   ifneq ($(JETANDEV_INCLUDE),)	
+     ALICEINC += -I../$(JETANDEV_INCLUDE)
+   endif
+   ifneq ($(JETAN_INCLUDE),)
+    ifeq ($(findstring dev,$(PACKAGE)),)
      ALICEINC += -I../$(JETAN_INCLUDE)
+    endif
    endif
  else
     ifneq ($(ALICE_ROOT),)
+      ifneq ($(findstring dev,$(PACKAGE)),)
+       ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/JETAN/DEV -I$(ALICE_ROOT)/ANALYSIS
+      else
        ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/JETAN -I$(ALICE_ROOT)/ANALYSIS
      endif
+    endif
 endif
 
 CXXFLAGS     += $(ALICEINC) -g
