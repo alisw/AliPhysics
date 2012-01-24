@@ -406,7 +406,6 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	// Execute analysis for current event
 
 	//	Load the esdpid from the esdhandler if exists (tender was applied) otherwise set the Bethe Bloch parameters
-	Int_t eventQuality=-1;
 
 	AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 	AliESDInputHandler *esdHandler=0x0;
@@ -428,6 +427,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	if(fAODGamma) fAODGamma->Clear();
 	
 
+	Int_t eventQuality=-1;
 	if (fMCEvent ) {
 		// To avoid crashes due to unzip errors. Sometimes the trees are not there.
 
@@ -1023,14 +1023,18 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 		//	for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
 		TParticle* particle = (TParticle *)fStack->Particle(iTracks);
 
+                if (!particle) {
+                   //print warning here
+                   continue;
+                }
 
 
-		if (!particle) {
-			//print warning here
-			continue;
-		}
-				
-
+                if(fV0Reader->GetExcludeBackgroundEventForGammaCorrection()){
+                   Bool_t isFromBGEvent = kFALSE;
+                   isFromBGEvent = fV0Reader->IsParticleFromBGEvent(iTracks);
+                   if(isFromBGEvent) continue;
+                }
+                
 
 		
 		///////////////////////Begin Chic Analysis/////////////////////////////
@@ -1227,7 +1231,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 				fHistograms->FillHistogram("MC_DecayAllGamma_Pt", particle->Pt()); // All
 				switch(fStack->Particle(particle->GetMother(0))->GetPdgCode()){
 					case 111: // Pi0
-						fHistograms->FillHistogram("MC_DecayPi0Gamma_Pt", particle->Pt());
+                                           	fHistograms->FillHistogram("MC_DecayPi0Gamma_Pt", particle->Pt());
 						break;
 					case 113: // Rho0
 						fHistograms->FillHistogram("MC_DecayRho0Gamma_Pt", particle->Pt());
@@ -1251,8 +1255,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 			}
 			
 			fHistograms->FillHistogram("MC_allGamma_Energy", particle->Energy());
-			fHistograms->FillHistogram("MC_allGamma_Pt", particle->Pt());
-			fHistograms->FillHistogram("MC_allGamma_Eta", particle->Eta());
+                        fHistograms->FillHistogram("MC_allGamma_Pt", particle->Pt());
+                        fHistograms->FillHistogram("MC_allGamma_Eta", particle->Eta());
 			fHistograms->FillHistogram("MC_allGamma_Phi", tmpPhi);
 			fHistograms->FillHistogram("MC_allGamma_Rapid", rapidity);
 					
@@ -1345,8 +1349,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 				fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructable);	// reconstructable gamma	
 			}
 			fHistograms->FillHistogram("MC_ConvGamma_Energy", particle->Energy());
-			fHistograms->FillHistogram("MC_ConvGamma_Pt", particle->Pt());
-			// Move down, in the if that mother exists
+                        fHistograms->FillHistogram("MC_ConvGamma_Pt", particle->Pt());
+                        // Move down, in the if that mother exists
 			//			if(fStack->Particle(particle->GetMother(0))->GetPdgCode() == 221)
 			//			fHistograms->FillHistogram("MC_ConvEtaGamma_Pt", particle->Pt());
 			fHistograms->FillHistogram("MC_ConvGamma_Eta", particle->Eta());
@@ -1800,7 +1804,6 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
 		}
 
 
-
 		if( !((fV0Reader->GetNegativeESDTrack())->GetStatus() & AliESDtrack::kTPCrefit) || 
 				!((fV0Reader->GetPositiveESDTrack())->GetStatus() & AliESDtrack::kTPCrefit) ){
 			continue;
@@ -1872,7 +1875,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
 			if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){ // id 5 is conversion
 				continue;
 			}
-			
+		
 			if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){				
 				fHistograms->FillHistogram("ESD_NoCutConvGamma_Pt", fV0Reader->GetMotherCandidatePt());
                                 if(negativeMC->GetMother(0) <= fStack->GetNprimary()){
