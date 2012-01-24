@@ -6,10 +6,25 @@ class AliAnalysisGrid;
 class AliAnalysisTaskBF;
 class AliBalance;
 
+//Centrality stuff
+Int_t binfirst = 0;  //where do we start numbering bins
+Int_t binlast = 8;  //where do we stop numbering bins
+const Int_t numberOfCentralityBins = 9;
+Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
+Float_t impactParameterArray[numberOfCentralityBins+1] = {0.0,3.79,5.30,7.41,9.04,10.40,11.61,12.68,13.67,14.63}; // in fm (impact parametger taken from the MC header)
+
+//Acceptance parameterization
+Bool_t kUseAcceptance = kTRUE;
+const char *acceptanceFilename = "efficiencyALICE.root";
+TF1 *fParameterization[numberOfCentralityBins];
+
+//Analyze a particle
+Int_t gPdgCode = -1;
+
 //________________________________________________________________________//
-void runBalanceFunctionInpp(Int_t mode = mLocal, 
-			    Int_t type = mAOD,
-			    Bool_t DATA = kFALSE) {
+void runBalanceFunctionMC(Int_t mode = mLocal, 
+			  Int_t type = mMC,
+			  Bool_t DATA = kFALSE) {
   // Time:
   TStopwatch timer;
   timer.Start();
@@ -31,7 +46,8 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
   // Load needed libraries:
   LoadLibraries(mode);
   
- // Create and configure the AliEn plug-in:
+
+  // Create and configure the AliEn plug-in:
   if(mode == mGrid || mode == mGridPAR) {
     gROOT->LoadMacro("CreateAlienHandler.C");
     AliAnalysisGrid *alienHandler = CreateAlienHandler(runListFileName);  
@@ -47,20 +63,10 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
     else if(type == mMC)
       chain = new TChain("TE");
 
-    TString filename;
-    for(Int_t i = 1; i < 20; i++) {
-      filename = "/data/alice2/pchrist/pp/LHC10c/0.9TeV/Data/";
-      filename += "Set"; filename += i; 
-      if((type == mESD)||(type == mMCESD))  
-	filename += "/AliESDs.root";
-      else if(type == mAOD)
-	filename += "/AliAOD.root";
-      else if(type == mMC)
-     	filename += "/galice.root";
-
-      chain->Add(filename.Data());
-    }
+    TString filename = "galice.root";
+    chain->Add(filename.Data());
   }
+
   //Proof
   if(mode == mPROOF) {
     gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
@@ -73,7 +79,7 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
     
   // input handler (ESD or AOD)
   AliVEventHandler* inputH = NULL;
-  if((type == mESD)||(type == mMCESD))  
+  if((type == mESD)||(type == mMCESD)||(type == mMC))  
     inputH = new AliESDInputHandler();
   else if(type == mAOD)
     inputH = new AliAODInputHandler();
@@ -87,14 +93,45 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
     mgr->SetMCtruthEventHandler(mchandler);
   }   
 
-  if(type != mAOD){
+  if(mAOD){
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+
+    // Add physics selection task (NOT needed for AODs)
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(DATA);
+  }
+
+  //Setup the parameterization
+  if(kUseAcceptance) {
+    TFile *gParamFile = TFile::Open(acceptanceFilename);
+    if((!gParamFile) || (!gParamFile->IsOpen())) {
+      Printf("File %s not found!!!",acceptanceFilename);
+      return;
+    }
+
+    TString gParamName;
+    for(Int_t iCentrality = 0; iCentrality < numberOfCentralityBins; iCentrality++) {
+      gParamName = "gParamCentrality"; gParamName += iCentrality;
+      fParameterization[iCentrality] = dynamic_cast<TF1 *>(gParamFile->Get(gParamName.Data()));
+    }
   }
 
   //Add the BF task (all centralities)
-  gROOT->LoadMacro("AddTaskBalanceFunctionInpp.C"); 
-  AddTaskBalanceFunctionInpp();
+  gROOT->LoadMacro("AddTaskBalanceMCCentralityTrain.C"); 
+  for (Int_t i=binfirst; i<binlast+1; i++) {
+    Float_t lowCentralityBinEdge = centralityArray[i];
+    Float_t highCentralityBinEdge = centralityArray[i+1];
+    Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
+    AddTaskBalanceMCCentralityTrain(lowCentralityBinEdge,
+				    highCentralityBinEdge,
+				    impactParameterArray[i],
+				    impactParameterArray[i+1],
+				    kTRUE,
+				    10.,0.3,1.5,-0.8,0.8,
+				    fParameterization[i],
+				    gPdgCode);
+  }
 
   // enable debug printouts
   mgr->SetDebugLevel(2);
@@ -109,7 +146,7 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
     mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   else if(mode == mGrid || mode == mGridPAR) 
     mgr->StartAnalysis("grid");
-
+  
   // Print real and CPU time used for analysis:  
   timer.Stop();
   timer.Print();
@@ -139,7 +176,7 @@ void LoadLibraries(const analysisModes mode) {
     gSystem->Load("libAOD.so");
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libPWG2ebye.so");
+    gSystem->Load("libPWGCFebye.so");
     // Use AliRoot includes to compile our task
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
   }
@@ -153,7 +190,7 @@ void LoadLibraries(const analysisModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-    SetupPar("PWG2ebye");
+    SetupPar("PWGCFebye");
 }
   
   //---------------------------------------------------------
@@ -221,3 +258,4 @@ void SetupPar(char* pararchivename) {
   printf("Current dir: %s\n", ocwd.Data());
 
 } // end of void SetupPar(char* pararchivename) 
+

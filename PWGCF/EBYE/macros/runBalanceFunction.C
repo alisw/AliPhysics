@@ -59,7 +59,7 @@ void runBalanceFunction(
     gSystem->Load("libAOD.so");
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libPWG2ebye.so");
+    gSystem->Load("libPWGCFebye.so");
 
     // additional
 
@@ -372,7 +372,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskn
     // Declare all libraries (other than the default ones for the framework. These will be
     // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
     //plugin->AddIncludePath("-I.");
-    //plugin->SetAdditionalLibs("libPWG2ebye.so");
+    //plugin->SetAdditionalLibs("libPWGCFebye.so");
     plugin->SetAdditionalLibs("AliBalance.cxx AliBalance.h AliAnalysisTaskBF.cxx AliAnalysisTaskBF.h");
 
      // Declare the output file names separated by blancs.

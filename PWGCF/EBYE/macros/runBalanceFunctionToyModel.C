@@ -63,7 +63,7 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10,
   gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG2ebye.so");
+  gSystem->Load("libPWGCFebye.so");
   
   //configure the bf objects
   gROOT->LoadMacro("configBalanceFunctionAnalysis.C");
