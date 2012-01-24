@@ -211,7 +211,7 @@ void AliHFEbayesPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
     AliError("No PID response available");
     return;
   }
-  contentSignal[4] = pidResponseTOF ? pidResponseTOF->NumberOfSigmasTOF(track->GetRecTrack(), AliPID::kElectron): -10.;
+  contentSignal[4] = pidResponseTOF->NumberOfSigmasTOF(track->GetRecTrack(), AliPID::kElectron);
 
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   const AliPIDResponse *pidResponse = tpcpid ? tpcpid->GetPIDResponse() : NULL;
@@ -219,7 +219,7 @@ void AliHFEbayesPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
     AliError("No PID response available");
     return;
   }
-  contentSignal[3] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : -10.;
+  contentSignal[3] = pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron);
 
   AliHFEpidTRD *trdpid = dynamic_cast<AliHFEpidTRD *>(fQAmanager->GetDetectorPID(AliHFEpid::kTRDpid));
   contentSignal[5] = trdpid ? trdpid->GetElectronLikelihood(static_cast<const AliVTrack*>(track->GetRecTrack()), anatype) : -10;
