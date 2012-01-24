@@ -16,7 +16,7 @@ void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResul
   gSystem->Load("libProofPlayer.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG2ebye.so");
+  gSystem->Load("libPWGCFebye.so");
 
   //Draw BF              
   drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,centEst,extraString);
@@ -47,7 +47,7 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
   }
 
   // get the BF output directory
-  TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWG2EbyE.outputBalanceFunctionAnalysis"));
+  TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWGCFEbyE.outputBalanceFunctionAnalysis"));
   if(!dir) {
     Printf("Output directory not found!!!");
     break;
@@ -291,12 +291,12 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
 	// create the BF object
 	bfs[a]  = new AliBalance();
 
-	fHistPS[a] = (TH2D*)list->FindObject(Form("fHistP%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
-	fHistNS[a] = (TH2D*)list->FindObject(Form("fHistN%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
-	fHistPPS[a] = (TH2D*)list->FindObject(Form("fHistPP%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
-	fHistPNS[a] = (TH2D*)list->FindObject(Form("fHistPN%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
-	fHistNPS[a] = (TH2D*)list->FindObject(Form("fHistNP%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
-	fHistNNS[a] = (TH2D*)list->FindObject(Form("fHistNN%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistPS[a] = (TH2D*)list->FindObject(Form("fHistP%s_shuffle%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNS[a] = (TH2D*)list->FindObject(Form("fHistN%s_shuffle%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistPPS[a] = (TH2D*)list->FindObject(Form("fHistPP%s_shuffle%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistPNS[a] = (TH2D*)list->FindObject(Form("fHistPN%s_shuffle%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNPS[a] = (TH2D*)list->FindObject(Form("fHistNP%s_shuffle%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNNS[a] = (TH2D*)list->FindObject(Form("fHistNN%s_shuffle%s",gBFAnalysisType[a].Data(),centEst.Data()));
 
 	// rebin histograms (be careful with divider!)
 	fHistPS[a]->RebinY(fRebin);
@@ -487,7 +487,7 @@ void mergeOutput(const char* outputDir) {
     alienUrl += "#AnalysisResults.root";
     Printf("Opening file: %s",alienUrl.Data());
     TFile *file = TFile::Open(alienUrl.Data());
-    dirSubJob = dynamic_cast<TDirectoryFile *>(file->Get("PWG2EbyE.outputBalanceFunctionAnalysis.root"));
+    dirSubJob = dynamic_cast<TDirectoryFile *>(file->Get("PWGCFEbyE.outputBalanceFunctionAnalysis.root"));
 
     //merge BF
     AliBalance *bfSubJob = dynamic_cast<AliBalance *>(dirSubJob->Get("AliBalance"));
@@ -507,7 +507,7 @@ void mergeOutput(const char* outputDir) {
   TString outputFile = "AnalysisResults.Merged.root";
   TFile *foutput = TFile::Open(outputFile.Data(),"recreate");
   TDirectoryFile *dirOutput = new TDirectoryFile();
-  dirOutput->SetName("PWG2EbyE.outputBalanceFunctionAnalysis.root");
+  dirOutput->SetName("PWGCFEbyE.outputBalanceFunctionAnalysis.root");
   //dirOutput->cd();
   dirOutput->Add(bf);
   TList *list = new TList();

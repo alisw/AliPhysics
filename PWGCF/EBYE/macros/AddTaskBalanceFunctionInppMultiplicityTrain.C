@@ -29,7 +29,7 @@ AliAnalysisTaskBF *AddTaskBalanceFunctionInppMultiplicityTrain(Int_t nMultMin = 
     return NULL;
   }
   TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/EBYE/macros/configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf  = 0;  // Balance Function object
   AliBalance *bfs = 0;  // shuffled Balance function object
 

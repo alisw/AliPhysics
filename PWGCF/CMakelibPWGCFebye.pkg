@@ -27,9 +27,9 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS   
-    EBYE/AliAnalysisTaskToyModel.cxx 
-    EBYE/AliAnalysisTaskBF.cxx 
-    EBYE/AliBalance.cxx 
+    EBYE/BalanceFunctions/AliAnalysisTaskToyModel.cxx 
+    EBYE/BalanceFunctions/AliAnalysisTaskBF.cxx 
+    EBYE/BalanceFunctions/AliBalance.cxx 
     EBYE/LRC/AliLRCBase.cxx
     EBYE/LRC/AliAnalysisTaskLRC.cxx 
     EBYE/LRC/AliLRCAnalysis.cxx 
@@ -45,8 +45,8 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR PWG2ebyeLinkDef.h)
+set ( DHDR PWGCFebyeLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/EBYE PWG2/EBYE/LRC PWG2/EBYE/Fluctuations STEER/STEERBase)
+set ( EINCLUDE  PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations STEER/STEERBase)

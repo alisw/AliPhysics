@@ -15,7 +15,7 @@ AliAnalysisTaskBF *AddTaskBalanceFunction() {
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/EBYE/macros/configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf = 0;
   if (type=="ESD") bf = GetBalanceFunctionObject("ESD");
   else if (type=="AOD") bf = GetBalanceFunctionObject("AOD");
@@ -37,7 +37,7 @@ AliAnalysisTaskBF *AddTaskBalanceFunction() {
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  outputFileName += ":PWG2EbyE.outputBalanceFunctionAnalysis.root";
+  outputFileName += ":PWGCFEbyE.outputBalanceFunctionAnalysis.root";
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer("bfOutput", AliBalance::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer("listQA", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());

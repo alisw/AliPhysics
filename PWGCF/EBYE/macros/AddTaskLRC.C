@@ -1,5 +1,5 @@
 
-AliAnalysisTaskLRC *AddTaskLRC(Bool_t RunKine=kFALSE, TString OutputRootFolder=":PWG2LRC")
+AliAnalysisTaskLRC *AddTaskLRC(Bool_t RunKine=kFALSE, TString OutputRootFolder=":PWGCFLRC")
 {
 // This macro adds AliAnalysisTaskLRC to existing AnalysisManager
 // RunKine paramiter switch task to kinematics analysis 
@@ -42,7 +42,7 @@ AliAnalysisTaskLRC *AddTaskLRC(Bool_t RunKine=kFALSE, TString OutputRootFolder="
 	taskLRC->SetMaxPtLimit(1.5);
 	taskLRC->SetMinPtLimit(0.3);
 	mgr->AddTask(taskLRC);
-	configureLRCtaskOutput(taskLRC,":PWG2LRC");
+	configureLRCtaskOutput(taskLRC,":PWGCFLRC");
 
 return taskLRC;
 }

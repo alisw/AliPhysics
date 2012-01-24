@@ -142,7 +142,7 @@ if(AddPhiWindows)
 }
 
 //===========================================================================
-void configureLRCtaskOutput(AliAnalysisTaskLRC* taskLRC,TString OutputRootFolder=":PWG2LRC")
+void configureLRCtaskOutput(AliAnalysisTaskLRC* taskLRC,TString OutputRootFolder=":PWGCFLRC")
 {
 if(!taskLRC){return ;}
 AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

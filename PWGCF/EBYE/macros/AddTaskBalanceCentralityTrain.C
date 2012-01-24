@@ -77,7 +77,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 
   // for local changed BF configuration
   //gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/EBYE/macros/configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf  = 0;  // Balance Function object
   AliBalance *bfs = 0;  // shuffled Balance function object
 
@@ -147,7 +147,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  outputFileName += ":PWG2EbyE.outputBalanceFunctionAnalysis";
+  outputFileName += ":PWGCFEbyE.outputBalanceFunctionAnalysis";
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunShuffling) AliAnalysisDataContainer *coutBFS= mgr->CreateContainer(Form("listBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());

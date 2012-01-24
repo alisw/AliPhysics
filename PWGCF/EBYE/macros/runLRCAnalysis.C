@@ -9,7 +9,7 @@ runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml",Bool_t
 // This macro needs AliRoot-v4-17 or later 
 // and macro AddTaskLRC.C in workdir
 
-// For PROOF run PARS(ANALYSISalice.par  ANALYSIS.par  AOD.par  ESD.par  PWG2ebye.par  
+// For PROOF run PARS(ANALYSISalice.par  ANALYSIS.par  AOD.par  ESD.par  PWGCFebye.par  
 // STEERBase.par ) are to be in workdir.
 
 
@@ -45,7 +45,7 @@ void LoadAnalysisLibs(Bool_t LoadTaskLocal=kFALSE)
   gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  if(!LoadTaskLocal)gSystem->Load("libPWG2ebye.so");
+  if(!LoadTaskLocal)gSystem->Load("libPWGCFebye.so");
 
   
   //___________Compile analysis task using AClic____________//

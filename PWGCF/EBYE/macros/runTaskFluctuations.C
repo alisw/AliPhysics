@@ -142,9 +142,9 @@ void LoadLibraries(const anaModes mode) {
     // Use AliRoot includes to compile our task                                   
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
     if(mode==mLocal || mode==mGrid)
-      gSystem->Load("libPWG2ebye");
+      gSystem->Load("libPWGCFebye");
     if(mode==mGridPAR)
-      SetupPar("PWG2ebye");
+      SetupPar("PWGCFebye");
   }
   
   else if (mode == mLocalPAR) {
@@ -156,7 +156,7 @@ void LoadLibraries(const anaModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-    SetupPar("PWG2ebye");
+    SetupPar("PWGCFebye");
 }
   
   //---------------------------------------------------------
@@ -179,7 +179,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->ClearPackage("AOD.par");
     //gProof->ClearPackage("ANALYSIS.par");
     //gProof->ClearPackage("ANALYSISalice.par");    
-    //gProof->ClearPackage("PWG2ebye");
+    //gProof->ClearPackage("PWGCFebye");
     
     // Upload the Packages
     //gProof->UploadPackage("STEERBase.par");
@@ -188,7 +188,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->UploadPackage("ANALYSIS.par"); 
     //gProof->UploadPackage("ANALYSISalice.par");
     //gProof->UploadPackage("CORRFW.par");
-    //gProof->UploadPackage("PWG2ebye");
+    //gProof->UploadPackage("PWGCFebye");
 
     // Enable the Packages 
     //gProof->EnablePackage("STEERBase");
@@ -196,7 +196,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->EnablePackage("AOD");
     //gProof->EnablePackage("ANALYSIS");
     //gProof->EnablePackage("ANALYSISalice");
-    //gProof->EnablePackage("PWG2ebye");
+    //gProof->EnablePackage("PWGCFebye");
 
     // Show enables Packages
     //gProof->ShowEnabledPackages();
