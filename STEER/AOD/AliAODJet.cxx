@@ -147,8 +147,10 @@ AliAODJet& AliAODJet::operator=(const AliAODJet& jet)
   return *this;
 }
 
-void AliAODJet::Print(Option_t* /*option*/) const 
+void AliAODJet::Print(Option_t* option) const
 {
+
+ if (!option) {
   // Print information of all data members
   printf("Jet 4-vector:\n");
   printf("     E  = %13.3f\n", E() );
@@ -162,6 +164,11 @@ void AliAODJet::Print(Option_t* /*option*/) const
   printf("Effective Area: \n");
   printf("Charged:  %13.3f\n", EffectiveAreaCharged());
   printf("Neutral:  %13.3f\n", EffectiveAreaNeutral());
+ }
+ else {
+  printf("Jet %s, Eta: %13.3f, Phi: %13.3f, Pt: %13.3f\n",option,Eta(),Phi(),Pt());
+ }
+
 }
 
 void  AliAODJet::SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e){

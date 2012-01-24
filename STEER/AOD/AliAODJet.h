@@ -91,7 +91,7 @@ class AliAODJet : public AliVParticle {
 
     
     TLorentzVector*    MomentumVector()         const {return fMomentum;}
-    virtual void       Print(Option_t* /*option*/) const;
+    virtual void       Print(Option_t* option) const;
     
 // Dummy  
     virtual Short_t Charge()      const { return 0;}
@@ -120,7 +120,7 @@ class AliAODJet : public AliVParticle {
     TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,10);
+    ClassDef(AliAODJet,11);
 
 };
 
