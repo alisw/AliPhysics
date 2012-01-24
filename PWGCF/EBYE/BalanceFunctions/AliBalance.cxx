@@ -701,9 +701,15 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
 }
  
 //____________________________________________________________________//
-TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax) {
+TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow) {
   //Returns the BF histogram, extracted from the 6 TH2D objects 
   //(private members) of the AliBalance class.
+  //
+  // Acceptance correction: 
+  // - only for analysis type = kEta
+  // - only if etaWindow > 0 (default = -1.)
+  // - calculated as proposed by STAR 
+  //
   TString gAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
   TString histName = "gHistBalanceFunctionHistogram";
   histName += gAnalysisType[iAnalysisType];
@@ -773,6 +779,17 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     hTemp2->Scale(1./hTemp6->GetEntries());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5/fP2Step[iAnalysisType]);
+  }
+
+  // do the acceptance correction (only for Eta and etaWindow > 0)
+  if(iAnalysisType == kEta && etaWindow > 0){
+    for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
+      
+      Double_t notCorrected = gHistBalanceFunctionHistogram->GetBinContent(iBin+1);
+      Double_t corrected    = notCorrected / (1 - (gHistBalanceFunctionHistogram->GetBinCenter(iBin+1))/ etaWindow );
+      gHistBalanceFunctionHistogram->SetBinContent(iBin+1, corrected);
+      
+    }
   }
   
   PrintResults(iAnalysisType,gHistBalanceFunctionHistogram);
