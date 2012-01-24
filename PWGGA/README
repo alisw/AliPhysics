@@ -16,11 +16,11 @@ libPWGGACaloTasks.so
 Dependencies and responsible person (with commit rights)
 --------------------------------------------------------
 
-CaloTrackCorrelations (former PartCorrDep) depends on PWG/CaloTrackCorrBase (former PartCorr)
-Responsible: Gustavo Balbastre
+CaloTrackCorrelations (former PartCorrDep) depends on PWG/CaloTrackCorrBase (former PartCorrBase)
+Responsible: Gustavo Conesa 
 
 EMCALTasks: holds code re the EMCAL
-Responsible: Gustavo Balbastre and Constantin Loizides
+Responsible: Gustavo Conesa and Constantin Loizides
 
 GammaConv: holds code re Conversions depends on CORRFW
 Responsible: XXX
