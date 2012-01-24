@@ -2197,7 +2197,7 @@ void AliTPCCalibViewerGUI::DoDumpToFile() {
    new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fi);
    if (fi.fFilename && strlen(fi.fFilename)) {
       fPreprocessor->DumpToFile(fi.fFilename);
-      Info("DumpToFile", Form("New CalibTree has been writen to file '%s'", fi.fFilename));
+      Info("DumpToFile","New CalibTree has been writen to file '%s'", fi.fFilename);
    }
 }
 

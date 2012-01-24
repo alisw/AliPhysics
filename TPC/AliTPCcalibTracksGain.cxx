@@ -867,8 +867,7 @@ Bool_t AliTPCcalibTracksGain::GetParameters(UInt_t segment, UInt_t padType, UInt
     fitter->GetParameters(fitParam);
     return kTRUE;
   }else{
-    Error("AliTPCcalibTracksGain::GetParameters",
-	  Form("Fitter%d_%d_%d not availble", segment, padType, fitType));
+    Error("AliTPCcalibTracksGain::GetParameters","Fitter%d_%d_%d not available", segment, padType, fitType);
     return kFALSE;
   }
   return kFALSE;
