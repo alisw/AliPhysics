@@ -1,4 +1,4 @@
-// provided by Gamma Conversion Group, PWG4, Kathrin Koch, kkoch@physi.uni-heidelberg.de and Friederike Bock, fbock@physi.uni-heidelberg.de
+// provided by Gamma Conversion Group, PWGGA, Kathrin Koch, kkoch@physi.uni-heidelberg.de and Friederike Bock, fbock@physi.uni-heidelberg.de
 
 #include <Riostream.h>
 #include <fstream>
@@ -70,12 +70,12 @@ void  Plot_Mapping_Histos_Events(const char *input1 = "myOutput", const char *se
 
 	// choice of dateset
 	if(cutsel != ""){
-		char *GammaDirectory = Form("PWG4_GammaConversion_%s",  cutsel);
+		char *GammaDirectory = Form("PWGGA_GammaConversion_%s",  cutsel);
 		cout << GammaDirectory << endl;
 		char *GammaList = Form("histogramsAliGammaConversion_%s", cutsel);
 		cout << GammaList << endl;
 	}else{
-		char *GammaDirectory = "PWG4_GammaConversion";
+		char *GammaDirectory = "PWGGA_GammaConversion";
 		cout << GammaDirectory << endl;
 		char *GammaList = "histogramsAliGammaConversion";
 		cout << GammaList << endl;
@@ -91,13 +91,13 @@ void  Plot_Mapping_Histos_Events(const char *input1 = "myOutput", const char *se
 	            EtaRange->SetLineWidth(6);	
 
 //------------------------------- Reading FILES	----------------------------------------------------------------------
-	 TDirectory *fPWG4GammaConversion_input1 = new TDirectory(); // definition of first folder / list	
+	 TDirectory *fPWGGAGammaConversion_input1 = new TDirectory(); // definition of first folder / list	
 	 TList *fHistosGammaConversion_input1 = new TList(); // definition of first folder / list
 	 TList *fESDContainer_input1 = new TList();  // definition of following folder / list
 	 TList *fMappingContainer_input1 = new TList();
 
-	fPWG4GammaConversion_input1 = (TDirectory*)f1.Get(GammaDirectory); 
-	fHistosGammaConversion_input1 = (TList*)fPWG4GammaConversion_input1->Get(GammaList); 
+	fPWGGAGammaConversion_input1 = (TDirectory*)f1.Get(GammaDirectory); 
+	fHistosGammaConversion_input1 = (TList*)fPWGGAGammaConversion_input1->Get(GammaList); 
 	fMappingContainer_input1 = (TList*)fHistosGammaConversion_input1->FindObject("Mapping histograms"); 
 	fESDContainer_input1 = (TList*)fHistosGammaConversion_input1->FindObject("ESD histograms"); 
 	
@@ -232,13 +232,13 @@ void  Plot_Mapping_Histos_Events(const char *input1 = "myOutput", const char *se
 		
 		input2 = new TFile(Form("%s%s",path, secondinput));	
 
-		 TDirectory *fPWG4GammaConversion_input2 = new TDirectory(); // definition of first folder / list	
+		 TDirectory *fPWGGAGammaConversion_input2 = new TDirectory(); // definition of first folder / list	
 		 TList *fHistosGammaConversion_input2 = new TList(); // definition of first folder / list
 		 TList *fMappingContainer_input2 = new TList();  // definition of following folder / list
 		 TList *fESDContainer_input2 = new TList();  // definition of following folder / list
 		 
-		fPWG4GammaConversion_input2 = (TDirectory*)input2->Get(GammaDirectory); 
-		fHistosGammaConversion_input2 = (TList*)fPWG4GammaConversion_input2->Get(GammaList); 
+		fPWGGAGammaConversion_input2 = (TDirectory*)input2->Get(GammaDirectory); 
+		fHistosGammaConversion_input2 = (TList*)fPWGGAGammaConversion_input2->Get(GammaList); 
 		fMappingContainer_input2 = (TList*)fHistosGammaConversion_input2->FindObject("Mapping histograms");
 		fESDContainer_input2 = (TList*)fHistosGammaConversion_input2->FindObject("ESD histograms"); 
 

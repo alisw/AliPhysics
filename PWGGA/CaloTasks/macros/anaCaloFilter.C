@@ -170,14 +170,8 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libCORRFW.so");
     gSystem->Load("libPHOSUtils.so"); 
     gSystem->Load("libEMCALUtils.so");
-    gSystem->Load("libPWG4CaloCalib.so");
+    gSystem->Load("libPWGGACaloTasks.so");
        
-    /*
-      //     gSystem->Load("libPWG4omega3pi.so");
-      //     gSystem->Load("libCORRFW.so");
-      //     gSystem->Load("libPWGCFbase.so");
-      //     gSystem->Load("libPWGmuon.so");
- */
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
@@ -191,7 +185,7 @@ void  LoadLibraries(const anaModes mode) {
 	   SetupPar("EMCALUtils");
 	   //Create Geometry
 	   TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
-	   SetupPar("PWG4CaloCalib");
+	   SetupPar("PWGGACaloTasks");
 */
   }
 
@@ -209,9 +203,7 @@ void  LoadLibraries(const anaModes mode) {
     //    gProof->ClearPackage("ESD");
     //    gProof->ClearPackage("AOD");
     //    gProof->ClearPackage("ANALYSIS");   
-    //    gProof->ClearPackage("PWG4PartCorrBase");
-    //    gProof->ClearPackage("PWG4PartCorrDep");
-    
+     
     // Enable the STEERBase Package
     gProof->UploadPackage("STEERBase.par");
     gProof->EnablePackage("STEERBase");
@@ -227,11 +219,6 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the PHOS geometry Package
     //gProof->UploadPackage("PHOSUtils.par");
     //gProof->EnablePackage("PHOSUtils");
-    // Enable PartCorr analysis
-    gProof->UploadPackage("PWG4PartCorrBase.par");
-    gProof->EnablePackage("PWG4PartCorrBase");
-    gProof->UploadPackage("PWG4PartCorrDep.par");
-    gProof->EnablePackage("PWG4PartCorrDep");    
     gProof->ShowEnabledPackages();
   }  
   

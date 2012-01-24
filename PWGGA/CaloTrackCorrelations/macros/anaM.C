@@ -110,16 +110,16 @@ void anaM()
     //correlation analysis
     gROOT->LoadMacro("AddTaskCaloTrackCorrM.C");
     
-    AliAnalysisTaskParticleCorrelationM *taskEMCAL = AddTaskCaloTrackCorrM(kInputData,"EMCAL",kFALSE);
+    AliAnalysisTaskCaloTrackCorrelationM *taskEMCAL = AddTaskCaloTrackCorrM(kInputData,"EMCAL",kFALSE);
 
     mgr->AddTask(taskEMCAL);
     
-    AliAnalysisTaskParticleCorrelationM *taskPHOS  = AddTaskCaloTrackCorrM(kInputData,"PHOS", kFALSE);
+    AliAnalysisTaskCaloTrackCorrelationM *taskPHOS  = AddTaskCaloTrackCorrM(kInputData,"PHOS", kFALSE);
 
     mgr->AddTask(taskPHOS);
     
     //gROOT->LoadMacro("AddTaskChargeCorr.C");
-    AliAnalysisTaskParticleCorrelationM *taskCharge  = AddTaskCaloTrackCorrM(kInputData, "CTS",kFALSE);
+    AliAnalysisTaskCaloTrackCorrelationM *taskCharge  = AddTaskCaloTrackCorrM(kInputData, "CTS",kFALSE);
 //    if(!kMC)
 //      taskCharge->SelectCollisionCandidates();
     mgr->AddTask(taskCharge);
@@ -158,8 +158,8 @@ void  LoadLibraries() {
     SetupPar("PHOSUtils");
     SetupPar("EMCALUtils");
     
-    SetupPar("PWG4CaloTrackCorrBase");
-    SetupPar("PWG4CaloTrackCorrDep");
+    SetupPar("PWGCaloTrackCorrBase");
+    SetupPar("PWGGACaloTrackCorrelations");
   }
   else{
     //--------------------------------------------------------
@@ -173,8 +173,8 @@ void  LoadLibraries() {
     gSystem->Load("libANALYSISalice");
 	  gSystem->Load("libPHOSUtils");
 	  gSystem->Load("libEMCALUtils");
-    gSystem->Load("libPWG4CaloTrackCorrBase");
-    gSystem->Load("libPWG4CaloTrackCorrDep");
+    gSystem->Load("libPWGCaloTrackCorrBase");
+    gSystem->Load("libPWGGACaloTrackCorrelations");
   }
   
 }

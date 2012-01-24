@@ -9,7 +9,7 @@ void AnaTask(const char* dataset="minbias_LHC09a4_81040_81050.xml")
     //load analysis framework
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice"); //AliAnalysisTaskSE
-    gSystem->Load("libPWG4Omega3pi");
+    gSystem->Load("libPWGGAPHOSTasks");
     gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS");
 
     // A task can be compiled dynamically with AClic

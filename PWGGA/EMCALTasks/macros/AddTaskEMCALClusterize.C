@@ -116,7 +116,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   TGeoHMatrix* matrix[10];
   AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
   
-  gROOT->LoadMacro("ConfigureEMCALRecoUtils.C"); // $ALICE_ROOT/PWG4/CaloCalib/macros
+  gROOT->LoadMacro("ConfigureEMCALRecoUtils.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros
   ConfigureEMCALRecoUtils(
                           reco,
                           bMC, 

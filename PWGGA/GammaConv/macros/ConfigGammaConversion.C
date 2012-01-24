@@ -915,8 +915,8 @@ TString kGCoutputFileName = "histogramsGammaConversion";
 TString kGCoutputFileAppendix = "";
 TString kGCdataList = "";
 Bool_t kGCwriteNtuple = kFALSE;
-// WE DOO NOT NEED TO CHANGE THIS (kGCusePWG4PartCorr) ANYMORE SINCE IT IS TAKEN CARE OF AUTOMATICALLY NOW
-Bool_t kGCusePWG4PartCorr = kTRUE;
+// WE DOO NOT NEED TO CHANGE THIS (kGCusePWGGACaloTrackCorrelations) ANYMORE SINCE IT IS TAKEN CARE OF AUTOMATICALLY NOW
+Bool_t kGCusePWGGACaloTrackCorrelations = kTRUE;
 
 /** Flag to enable running on train  */
 Bool_t kGCrunOnTrain = kFALSE;
@@ -1183,21 +1183,21 @@ Bool_t scanArguments(TString arguments){
 }
 
 void SetVersionLibrary(){
-  // Check if the file $ALICE_ROOT/PWG4/GammaConv/AliAnalysisTaskGammaConversion.cxx exists.
-  // If yes, we set kGCusePWG4PartCorr to false since we have a newer version
-  // If no, kGCusePWG4PartCorr is true.
+  // Check if the file $ALICE_ROOT/PWGGA/GammaConv/AliAnalysisTaskGammaConversion.cxx exists.
+  // If yes, we set kGCusePWGGACaloTrackCorrelations to false since we have a newer version
+  // If no, kGCusePWGGACaloTrackCorrelations is true.
 	
   TString file = gSystem->Getenv("ALICE_ROOT");
-  file+="/PWG4/PartCorr/AliAnalysisTaskGammaConversion.cxx";
+  file+="/PWGGA/PartCorr/AliAnalysisTaskGammaConversion.cxx";
 	
   ifstream stream;
   stream.open(file.Data());
 	
   if(!stream){
-    kGCusePWG4PartCorr=kFALSE;
+    kGCusePWGGACaloTrackCorrelations=kFALSE;
   }
   else{
-    kGCusePWG4PartCorr=kTRUE;
+    kGCusePWGGACaloTrackCorrelations=kTRUE;
   }
   stream.close();
 }
@@ -1212,7 +1212,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     break;
   }
   	
-  SetVersionLibrary(); // checks if PWG4GammaConv or PWG4PartCorr is used
+  SetVersionLibrary(); // checks if PWGGAGammaConv or PWGGACaloTrackCorrelations is used
 	
   if(cin_esd == NULL && kGCrunOnTrain == kTRUE){
     cout<<"Error: kGCrunOnTrain flag is set to true but the input AliAnalysisDataContainer is NULL"<<endl;
@@ -1379,7 +1379,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   // Declare Common Input Tchain
   AliAnalysisDataContainer *cinput1 = NULL;
   
-  if(kGCusePWG4PartCorr){
+  if(kGCusePWGGACaloTrackCorrelations){
   
     if(kGCrunOnTrain == kFALSE){
       cinput1 = mgr->CreateContainer("GammaConvChain",TChain::Class(),AliAnalysisManager::kInputContainer);
@@ -1394,7 +1394,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   }
 	
   // Common Output Tree in common ??????default?????? output file
-  // CKB kGCusePWG4PartCorr and writestandard are not mutually exclusive?
+  // CKB kGCusePWGGACaloTrackCorrelations and writestandard are not mutually exclusive?
   AliAnalysisDataContainer *coutput1 = NULL;
 
   if(kGCWriteAOD) {
@@ -1417,8 +1417,8 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   cout<<"Analyis cut selection ID is: "<<kGCAnalysisCutSelectionId.Data()<<endl;
-  //  outputfile += Form(":PWG4_GammaConversion_%s",kGCAnalysisCutSelectionId.Data());
-  outputfile += Form(":PWG4_GammaConversion");
+  //  outputfile += Form(":PWGGA_GammaConversion_%s",kGCAnalysisCutSelectionId.Data());
+  outputfile += Form(":PWGGA_GammaConversion");
 
 //   if(kGCrunNeutralMeson==kTRUE) outputfile +="1";  else outputfile +="0";
 
@@ -1693,7 +1693,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 
   if( kGCrunDalitz ){
    
-   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskGammaConvDalitz.C");
+   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/macros/AddTaskGammaConvDalitz.C");
    AddTaskGammaConvDalitz( v0Reader, kGCcalculateBackground, kGCRunStandalone );
 
   }
@@ -1742,7 +1742,7 @@ void LoadLibraries() {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG4GammaConv.so");
+  gSystem->Load("libPWGGAGammaConv.so");
   
   //  gSystem->ChangeDirectory(pwd.Data());
   
@@ -1802,11 +1802,11 @@ void build() {
   gSystem->Load("libCORRFW.so");
 	
   ////
-  //Setting up PWG4GammaConv.par//
+  //Setting up PWGGAGammaConv.par//
   ////
-  cout<<"compiling PWG4GammaConv"<<endl;
-  setupPar("PWG4GammaConv");
-  gSystem->Load("libPWG4GammaConv.so");
+  cout<<"compiling PWGGAGammaConv"<<endl;
+  setupPar("PWGGAGammaConv");
+  gSystem->Load("libPWGGAGammaConv.so");
   
   gSystem->ChangeDirectory(pwd.Data());
 }

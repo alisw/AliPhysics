@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-****** 	provided by Gamma Conversion Group, PWG4, 														*****
+****** 	provided by Gamma Conversion Group, PWGGA, 														*****
 ******		Friederike Bock, friederike.bock@cern.ch													*****
 *****************************************************************************************************************************
 *** This macro can be used to observe the effects of the different cuts used in the GammaConversion analysis, it can 	*****
@@ -55,12 +55,12 @@ void  Cuts_Events_new(const char *data = "myOutput", const char *MCfile = "",con
 	char *StandardYAxis = "#gamma/ event scaled by multiplicity";
 
 	if(cutsel != ""){
-		char *GammaDirectory = Form("PWG4_GammaConversion_%s",  cutsel);
+		char *GammaDirectory = Form("PWGGA_GammaConversion_%s",  cutsel);
 		cout << GammaDirectory << endl;
 		char *GammaList = Form("histogramsAliGammaConversion_%s", cutsel);
 		cout << GammaList << endl;
 	}else{
-		char *GammaDirectory = "PWG4_GammaConversion";
+		char *GammaDirectory = "PWGGA_GammaConversion";
 		cout << GammaDirectory << endl;
 		char *GammaList = "histogramsAliGammaConversion";
 		cout << GammaList << endl;
@@ -76,13 +76,13 @@ void  Cuts_Events_new(const char *data = "myOutput", const char *MCfile = "",con
 	Char_t filename_data[200] = (Form("%s%s",path,data));	
 	TFile f(filename_data);  
 
-	 TDirectory *fPWG4GammaConversion_data = new TDirectory(); // definition of first folder / list	
+	 TDirectory *fPWGGAGammaConversion_data = new TDirectory(); // definition of first folder / list	
 	 TList *fHistosGammaConversion_data = new TList(); // definition of first folder / list
 	 TList *fESDContainer_data = new TList();  // definition of following folder / list
 	 TList *fMappingContainer_data = new TList();	 
 
-	 if(!(fPWG4GammaConversion_data = (TDirectory*)f.Get(GammaDirectory))) cout <<"PWG4GammConversion TList NOT loaded correctly"<<endl; 
-	 if(!(fHistosGammaConversion_data = (TList*)fPWG4GammaConversion_data->Get(GammaList))) cout<<"histogramsAliGammaConversion NOT loaded correctly!"<<endl; 
+	 if(!(fPWGGAGammaConversion_data = (TDirectory*)f.Get(GammaDirectory))) cout <<"PWGGAGammConversion TList NOT loaded correctly"<<endl; 
+	 if(!(fHistosGammaConversion_data = (TList*)fPWGGAGammaConversion_data->Get(GammaList))) cout<<"histogramsAliGammaConversion NOT loaded correctly!"<<endl; 
 	 if(!(fESDContainer_data = (TList*)fHistosGammaConversion_data->FindObject("ESD histograms"))) cout<<"ESD histograms NOT loaded correctly!"<<endl; 
  	fMappingContainer_data = (TList*)fHistosGammaConversion_data->FindObject("Mapping histograms"); 
 	if(MC1){
@@ -313,13 +313,13 @@ void  Cuts_Events_new(const char *data = "myOutput", const char *MCfile = "",con
 		
 		
 		// for new versions
-		 TDirectory *fPWG4GammaConversion_montecarlo = new TDirectory(); // definition of first folder / list	
+		 TDirectory *fPWGGAGammaConversion_montecarlo = new TDirectory(); // definition of first folder / list	
 		 TList *fHistosGammaConversion_montecarlo = new TList(); // definition of first folder / list
 		 TList *fESDContainer_montecarlo = new TList();  // definition of following folder / list
 		 TList *fMappingContainer_montecarlo = new TList();  // definition of following folder / list
 
-		 if(!(fPWG4GammaConversion_montecarlo = (TDirectory*)montecarlo->Get(GammaDirectory))) cout <<"PWG4GammConversion TList NOT loaded correctly"<<endl; 
-		 if(!(fHistosGammaConversion_montecarlo = (TList*)fPWG4GammaConversion_montecarlo->Get(GammaList))) cout<<"histogramsAliGammaConversion NOT loaded correctly!"<<endl; 
+		 if(!(fPWGGAGammaConversion_montecarlo = (TDirectory*)montecarlo->Get(GammaDirectory))) cout <<"PWGGAGammConversion TList NOT loaded correctly"<<endl; 
+		 if(!(fHistosGammaConversion_montecarlo = (TList*)fPWGGAGammaConversion_montecarlo->Get(GammaList))) cout<<"histogramsAliGammaConversion NOT loaded correctly!"<<endl; 
 		 if(!(fESDContainer_montecarlo = (TList*)fHistosGammaConversion_montecarlo->FindObject("ESD histograms"))) cout<<"ESD histograms NOT loaded correctly!"<<endl; 
 		fMappingContainer_montecarlo = (TList*)fHistosGammaConversion_montecarlo->FindObject("Mapping histograms");
 

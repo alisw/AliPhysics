@@ -43,7 +43,7 @@ void Extract_Pi0_Characteristics(const char *cutSelection="", const char *inputR
   if(makeMappingPlots==kTRUE){
     outputFile = new TFile(Form("%sPi0Characteristics.root",outputDir),"UPDATE");
   }
-  TDirectory *pwg4dir =(TDirectory*)f.Get(Form("PWG4_GammaConversion_%s",cutSelection));
+  TDirectory *pwg4dir =(TDirectory*)f.Get(Form("PWGGA_GammaConversion_%s",cutSelection));
   TList *fHistosGammaConversion = (TList*)pwg4dir->Get(Form("histogramsAliGammaConversion_%s",cutSelection));
   TList *fESDContainer = (TList*)fHistosGammaConversion->FindObject("ESD histograms");
   TList *fMCContainer = (TList*)fHistosGammaConversion->FindObject("MC histograms");

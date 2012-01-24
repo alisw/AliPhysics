@@ -49,7 +49,7 @@ if [ -f $OutputDirectory/$DatFilenameBase.dat ]; then
 fi
 
 
-root -b -q $ALICE_ROOT/PWG4/GammaConv/macros/MakeCutLog.C\(\"$RootFile\"\,\"$InputDirectory\"\,\"$OutputDirectory\"\)
+root -b -q $ALICE_ROOT/PWGGA/GammaConv/macros/MakeCutLog.C\(\"$RootFile\"\,\"$InputDirectory\"\,\"$OutputDirectory\"\)
 
 # Read the different cuts form the Cut selection log file
 exec<"$OutputDirectory/CutSelection.log"
@@ -57,12 +57,12 @@ exec<"$OutputDirectory/CutSelection.log"
 while read cutSelection
 do
     echo CutSelection is $cutSelection;
-    root -b -q $ALICE_ROOT/PWG4/GammaConv/macros/Extract_IntegratedPi0Yield.C\(\"$cutSelection\"\,\"$RootFile\"\,\"$InputDirectory\"\,\"$OutputDirectory\"\"\);
+    root -b -q $ALICE_ROOT/PWGGA/GammaConv/macros/Extract_IntegratedPi0Yield.C\(\"$cutSelection\"\,\"$RootFile\"\,\"$InputDirectory\"\,\"$OutputDirectory\"\"\);
     
-    root -b -q $ALICE_ROOT/PWG4/GammaConv/macros/Extract_Pi0_Characteristics.C\(\"$cutSelection\"\,\"$RootFile\"\,\"$InputDirectory\"\,\"$OutputDirectory\"\);
+    root -b -q $ALICE_ROOT/PWGGA/GammaConv/macros/Extract_Pi0_Characteristics.C\(\"$cutSelection\"\,\"$RootFile\"\,\"$InputDirectory\"\,\"$OutputDirectory\"\);
 
 done
 
-    root -b -q $ALICE_ROOT/PWG4/GammaConv/macros/Plot_IntegratedPi0Yield.C\(\"$DatFilenameBase\"\,\"$OutputDirectory\"\,\"$Suffix\"\)
+    root -b -q $ALICE_ROOT/PWGGA/GammaConv/macros/Plot_IntegratedPi0Yield.C\(\"$DatFilenameBase\"\,\"$OutputDirectory\"\,\"$Suffix\"\)
 
-    root -b -q $ALICE_ROOT/PWG4/GammaConv/macros/Plot_Pi0_Characteristics.C
+    root -b -q $ALICE_ROOT/PWGGA/GammaConv/macros/Plot_Pi0_Characteristics.C

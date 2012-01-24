@@ -1,5 +1,5 @@
 /***********************************************************************************************
-*** provided by Gamma Conversion Group, PWG4, 									******
+*** provided by Gamma Conversion Group, PWGGA, 									******
 ***	    Friederike Bock, fbock@physi.uni-heidelberg.de ***							******
 ************************************************************************************************/
 
