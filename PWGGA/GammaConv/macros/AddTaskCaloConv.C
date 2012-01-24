@@ -55,9 +55,9 @@ AliAnalysisTaskCaloConv * AddTaskCaloConv(){
   mgr->ConnectInput(task, 0, cinput);
 
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("CaloConv", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PWG4_CaloConv",outputfile.Data()));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("CaloConv", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PWGGA_CaloConv",outputfile.Data()));
   mgr->ConnectOutput(task, 1, coutput);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("CFCaloConv", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PWG4_CFCaloConv",outputfile.Data()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("CFCaloConv", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PWGGA_CFCaloConv",outputfile.Data()));
   mgr->ConnectOutput(task, 2, coutput2);
 
   return task ;

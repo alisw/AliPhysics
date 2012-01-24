@@ -1,4 +1,4 @@
-// provided by Gamma Conversion Group, $ALICE_ROOT/PWG4/GammaConv ;https://twiki.cern.ch/twiki/bin/view/ALICE/PWG4GammaConversion
+// provided by Gamma Conversion Group, $ALICE_ROOT/PWGGA/GammaConv ;https://twiki.cern.ch/twiki/bin/view/ALICE/PWG4GammaConversion
 
 #include <stdlib.h>
 #include <iostream>
@@ -390,9 +390,9 @@ void ExtractSignal(TString meson, TString file, TString cutSelection, TString su
 	TFile f(file.Data());
 	fCutSelection = cutSelection;
 
-	TDirectory *pwg4dir =(TDirectory*)f.Get(Form("PWG4_GammaConversion_%s",fCutSelection.Data()));
+	TDirectory *pwg4dir =(TDirectory*)f.Get(Form("PWGGA_GammaConversion_%s",fCutSelection.Data()));
 	if(pwg4dir == NULL){
-		cout<<Form("ERROR: PWG4_GammaConversion_%s",fCutSelection.Data())<<" is not found in the file"<<endl;
+		cout<<Form("ERROR: PWGGA_GammaConversion_%s",fCutSelection.Data())<<" is not found in the file"<<endl;
 		return;
 	}
 	TList *fHistosGammaConversion = (TList*)pwg4dir->Get(Form("histogramsAliGammaConversion_%s",fCutSelection.Data()));

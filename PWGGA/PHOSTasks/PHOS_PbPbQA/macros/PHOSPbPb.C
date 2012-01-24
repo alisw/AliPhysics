@@ -9,7 +9,7 @@ void PHOSPbPbQA(const char* dataset="collection.xml")
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice"); //AliAnalysisTaskSE
 
-  gSystem->Load("libPWG4UserTasks.so");
+  gSystem->Load("libPWGGAPHOSTasks.so");
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS");
 

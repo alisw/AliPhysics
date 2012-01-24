@@ -26,7 +26,7 @@ AliAnalysisTaskOmegaPi0PiPi* AddTaskomega3pi()
 
 
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("omega3pi", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PWG4_omega3pi",outputfile.Data()));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("omega3pi", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PWGGA_omega3pi",outputfile.Data()));
   
   // Connect input/output
   mgr->ConnectInput(omegaTask, 0, cinput);

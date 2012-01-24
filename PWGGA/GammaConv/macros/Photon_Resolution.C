@@ -1,5 +1,5 @@
 /***********************************************************************************************
-*** provided by Gamma Conversion Group, PWG4, 									******
+*** provided by Gamma Conversion Group, PWGGA, 									******
 ***	    Friederike Bock, fbock@physi.uni-heidelberg.de ***							******
 ************************************************************************************************
 ************************************************************************************************
@@ -74,12 +74,12 @@ void  Photon_Resolution(const char *MCfile = "", const char *cutsel = "",const c
 	Char_t filename_MC[100] = (Form("%s%s",path,MCfile));
 
 	if(cutsel != ""){
-		char *GammaDirectory = Form("PWG4_GammaConversion_%s",  cutsel);
+		char *GammaDirectory = Form("PWGGA_GammaConversion_%s",  cutsel);
 		cout << GammaDirectory << endl;
 		char *GammaList = Form("histogramsAliGammaConversion_%s", cutsel);
 		cout << GammaList << endl;
 	}else{
-		char *GammaDirectory = "PWG4_GammaConversion";
+		char *GammaDirectory = "PWGGA_GammaConversion";
 		cout << GammaDirectory << endl;
 		char *GammaList = "histogramsAliGammaConversion";
 		cout << GammaList << endl;
@@ -92,12 +92,12 @@ void  Photon_Resolution(const char *MCfile = "", const char *cutsel = "",const c
 	TFile f(filename_MC);  
 	
 	//************************** Container Loading ********************************************************************
-	TDirectory *fPWG4GammaConversion_montecarlo = new TDirectory(); 
+	TDirectory *fPWGGAGammaConversion_montecarlo = new TDirectory(); 
 	TList *fHistosGammaConversion_montecarlo = new TList(); 
 	TList *fResolutionContainer_montecarlo = new TList();  
      TList *fESDContainer_montecarlo = new TList();
-	if(!(fPWG4GammaConversion_montecarlo = (TDirectory*)f.Get(GammaDirectory))) cout <<"PWG4GammConversion TList NOT loaded correctly"<<endl; 
-	if(!(fHistosGammaConversion_montecarlo = (TList*)fPWG4GammaConversion_montecarlo->Get(GammaList))) cout<<"histogramsAliGammaConversion NOT loaded correctly!"<<endl; 
+	if(!(fPWGGAGammaConversion_montecarlo = (TDirectory*)f.Get(GammaDirectory))) cout <<"PWGGAGammConversion TList NOT loaded correctly"<<endl; 
+	if(!(fHistosGammaConversion_montecarlo = (TList*)fPWGGAGammaConversion_montecarlo->Get(GammaList))) cout<<"histogramsAliGammaConversion NOT loaded correctly!"<<endl; 
 	if(fResolutionContainer_montecarlo = (TList*)fHistosGammaConversion_montecarlo->FindObject("Resolution histograms")) cout<<"list loaded correctly!"<<endl; 
 	if(!(fESDContainer_montecarlo = (TList*)fHistosGammaConversion_montecarlo->FindObject("ESD histograms"))) cout<<"ESD histograms NOT loaded correctly!"<<endl; 
 	TH1F * ESD_ConvGamma_Pt=fESDContainer_montecarlo->FindObject("ESD_ConvGamma_Pt");

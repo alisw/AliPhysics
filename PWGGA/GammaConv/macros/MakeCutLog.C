@@ -1,4 +1,4 @@
-// provided by Gamma Conversion Group, PWG4, Kathrin Koch, kkoch@physi.uni-heidelberg.de
+// provided by Gamma Conversion Group, PWGGA, Kathrin Koch, kkoch@physi.uni-heidelberg.de
 
 #include <Riostream>
 #include <fstream>
@@ -22,13 +22,13 @@ void MakeCutLog(const char *inputRootFile = "AnalysisResults",const char *path =
 
     TObject * o = f.Get(directories->At(entFile)->GetName()); // get the object in the base directory
 
-    if(TString(o->IsA()->GetName())=="TDirectoryFile"){ // means that this is a directory (PWG4......)
+    if(TString(o->IsA()->GetName())=="TDirectoryFile"){ // means that this is a directory (PWGGA......)
       
       TDirectory *pwg4dir =(TDirectory*)o;
  
       TString baseDirName = pwg4dir->GetName();
       
-      TString reconstructionFlagString = ""; // this is for new scheme where also the flags are coded in numbers in the PWG4.... name
+      TString reconstructionFlagString = ""; // this is for new scheme where also the flags are coded in numbers in the PWGGA.... name
 
       if(baseDirName.Length()>31){
 	reconstructionFlagString = baseDirName(baseDirName.Index("GammaConversion_")+16,8);

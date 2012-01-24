@@ -1,4 +1,4 @@
-// provided by Gamma Conversion Group, PWG4, Kathrin Koch, kkoch@physi.uni-heidelberg.de
+// provided by Gamma Conversion Group, PWGGA, Kathrin Koch, kkoch@physi.uni-heidelberg.de
 
 #include <fstream>
 #include <Riostream.h>
@@ -44,7 +44,7 @@ void Extract_IntegratedPi0Yield(const char* cutSelection="", const char *inputRo
   c_mass->SetFillColor(0);
 
       
-  TDirectory *pwg4dir =(TDirectory*)f.Get(Form("PWG4_GammaConversion_%s",cutSelection));
+  TDirectory *pwg4dir =(TDirectory*)f.Get(Form("PWGGA_GammaConversion_%s",cutSelection));
   TList *fHistosGammaConversion = (TList*)pwg4dir->Get(Form("histogramsAliGammaConversion_%s",cutSelection));
   TList *fESDContainer = (TList*)fHistosGammaConversion->FindObject("ESD histograms");
   TList *fMCContainer = (TList*)fHistosGammaConversion->FindObject("MC histograms");

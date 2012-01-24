@@ -214,7 +214,7 @@ void ana(Int_t mode=mGRID)
   if(kInputData=="ESD"){
     printf("* Configure photon conversion analysis in macro \n");
     TString arguments = "-run-on-train -use-own-xyz  -force-aod -mc-off ";
-    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/ConfigGammaConversion.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/GammaConv/macros/ConfigGammaConversion.C");
     AliAnalysisTaskGammaConversion * taskGammaConversion = 
     ConfigGammaConversion(arguments,mgr->GetCommonInputContainer());
     taskGammaConversion->SelectCollisionCandidates();
@@ -230,8 +230,8 @@ void ana(Int_t mode=mGRID)
   
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
-  gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_ROOT/PWG4/macros
-  gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWG4/CaloCalib/macros  
+  gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros
+  gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros  
   
   
   // ------
@@ -351,7 +351,7 @@ void  LoadLibraries(Int_t mode)
   if (mode == mPROOF) {
     //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
     gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
-    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWG4PartCorrBase:PWG4PartCorrDep:PWG4CaloCalib");
+    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGGAEMCALTasks");
     
     //  TProof* proof = TProof::Open("ccaplmaster",Form("workers=%s",nPROOFWorkers.Data()));
     
@@ -366,9 +366,9 @@ void  LoadLibraries(Int_t mode)
     //     //proof->UploadPackage("JETAN");
     //     proof->UploadPackage("PHOSUtils");
     //     proof->UploadPackage("EMCALUtils");
-    //     proof->UploadPackage("PWG4PartCorrBase");
-    //     proof->UploadPackage("PWG4PartCorrDep");
-    //     proof->UploadPackage("PWG4CaloCalib");
+    //     proof->UploadPackage("PWGCaloTrackBase");
+    //     proof->UploadPackage("PWGGACaloTrackCorrelations");
+    //     proof->UploadPackage("PWGGAEMCALTasks");
     
     //     proof->EnablePackage("STEERBase");
     //     proof->EnablePackage("ESD");
@@ -380,9 +380,9 @@ void  LoadLibraries(Int_t mode)
     //     //proof->EnablePackage("JETAN");
     //     proof->EnablePackage("PHOSUtils");
     //     proof->EnablePackage("EMCALUtils");
-    //     proof->EnablePackage("PWG4PartCorrBase");
-    //     proof->EnablePackage("PWG4PartCorrDep");
-    //     proof->EnablePackage("PWG4CaloCalib");
+    //     proof->EnablePackage("PWGCaloTrackBase");
+    //     proof->EnablePackage("PWGGACaloTrackCorrelations");
+    //     proof->EnablePackage("PWGGAEMCALTasks");
     return;
   }  
   
@@ -429,20 +429,20 @@ void  LoadLibraries(Int_t mode)
   
   gSystem->Load("libPHOSUtils");
   gSystem->Load("libEMCALUtils");
-  gSystem->Load("libPWG4PartCorrBase");
-  gSystem->Load("libPWG4PartCorrDep");
-  gSystem->Load("libPWG4CaloCalib");
-  //SetupPar("PWG4PartCorrBase");
-  //SetupPar("PWG4PartCorrDep");
-  //SetupPar("PWG4CaloCalib");
+  gSystem->Load("libPWGCaloTrackBase");
+  gSystem->Load("libPWGGACaloCorrelations");
+  gSystem->Load("libPWGGAEMCALTasks");
+  //SetupPar("PWGCaloTrackBase");
+  //SetupPar("PWGGACaloCorrelations");
+  //SetupPar("PWGGAEMCALTasks");
   
   //gSystem->Load("libJETAN");
   //gSystem->Load("FASTJETAN");
-  //gSystem->Load("PWG4JetTasks");
+  //gSystem->Load("PWGJE");
 
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG4GammaConv.so"); 
-  //SetupPar("PWG4GammaConv"); 
+  gSystem->Load("libPWGGAGammaConv.so"); 
+  //SetupPar("PWGGAGammaConv"); 
   
   // needed for plugin?
   gSystem->AddIncludePath("-I$ALICE_ROOT");

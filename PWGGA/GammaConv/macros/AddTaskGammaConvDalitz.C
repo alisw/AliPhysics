@@ -106,7 +106,7 @@ AliAnalysisTaskGammaConvDalitz* AddTaskGammaConvDalitz(
 
     // Connect I/O to the task
     TString outputfile = AliAnalysisManager::GetCommonFileName();
-    outputfile += ":PWG4_GammaConversion";
+    outputfile += ":PWGGA_GammaConversion";
     outputfile += Form("_%s",kGCAnalysisCutSelectionId.Data());
     AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histogramsAliGammaConversionDalitz", TList::Class(),AliAnalysisManager::kOutputContainer, outputfile);
     mgr->ConnectInput ( dalitzTask, 0, mgr->GetCommonInputContainer() );
