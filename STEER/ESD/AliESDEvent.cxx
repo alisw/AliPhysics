@@ -69,6 +69,7 @@
 #include "AliESDACORDE.h"
 #include "AliESDHLTDecision.h"
 #include "AliCentrality.h"
+#include "AliESDCosmicTrack.h"
 #ifdef MFT_UPGRADE
 #include "AliESDMFT.h"
 #endif
@@ -109,8 +110,9 @@ ClassImp(AliESDEvent)
 							"PHOSCells",
 							"AliRawDataErrorLogs",
 							"AliESDACORDE",
-							"AliTOFHeader"
-	                        #ifdef MFT_UPGRADE
+							"AliTOFHeader",
+                                                        "CosmicTracks"
+                              #ifdef MFT_UPGRADE
 //	                        , "AliESDMFT"
 							#endif
   };
@@ -145,6 +147,7 @@ AliESDEvent::AliESDEvent():
   fKinks(0),
   fCaloClusters(0),
   fEMCALCells(0), fPHOSCells(0),
+  fCosmicTracks(0),
   fErrorLogs(0),
   fESDOld(0),
   fESDFriendOld(0),
@@ -190,6 +193,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fCaloClusters(new TClonesArray(*esd.fCaloClusters)),
   fEMCALCells(new AliESDCaloCells(*esd.fEMCALCells)),
   fPHOSCells(new AliESDCaloCells(*esd.fPHOSCells)),
+  fCosmicTracks(new TClonesArray(*esd.fCosmicTracks)),
   fErrorLogs(new TClonesArray(*esd.fErrorLogs)),
   fESDOld(esd.fESDOld ? new AliESD(*esd.fESDOld) : 0),
   fESDFriendOld(esd.fESDFriendOld ? new AliESDfriend(*esd.fESDFriendOld) : 0),
@@ -233,6 +237,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fCaloClusters);
   AddObject(fEMCALCells);
   AddObject(fPHOSCells);
+  AddObject(fCosmicTracks);
   AddObject(fErrorLogs);
   AddObject(fESDACORDE);
   AddObject(fTOFHeader);
@@ -506,6 +511,7 @@ void AliESDEvent::ResetStdContent()
   if(fCaloClusters)fCaloClusters->Delete();
   if(fPHOSCells)fPHOSCells->DeleteContainer();
   if(fEMCALCells)fEMCALCells->DeleteContainer();
+  if(fCosmicTracks)fCosmicTracks->Delete();
   if(fErrorLogs) fErrorLogs->Delete();
 
   // don't reset fconnected fConnected and the list
@@ -568,6 +574,7 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
   printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
   printf("                 VZERO     %s\n", (fESDVZERO ? "yes" : "no"));
+  if (fCosmicTracks) printf("                 Cosmics   %d\n",  GetNumberOfCosmicTracks());
   #ifdef MFT_UPGRADE
   //printf("                 MFT     %s\n", (fESDMFT ? "yes" : "no"));
   #endif
@@ -1018,6 +1025,12 @@ void AliESDEvent::AddCascade(const AliESDcascade *c)
   new(fc[fCascades->GetEntriesFast()]) AliESDcascade(*c);
 }
 
+void AliESDEvent::AddCosmicTrack(const AliESDCosmicTrack *t) 
+{
+  TClonesArray &ft = *fCosmicTracks;
+  new(ft[fCosmicTracks->GetEntriesFast()]) AliESDCosmicTrack(*t);
+} 
+
 
 Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) 
 {
@@ -1225,6 +1238,7 @@ void AliESDEvent::GetStdContent()
   fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
   fESDACORDE = (AliESDACORDE*)fESDObjects->FindObject(fgkESDListName[kESDACORDE]);
   fTOFHeader = (AliTOFHeader*)fESDObjects->FindObject(fgkESDListName[kTOFHeader]);
+  fCosmicTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCosmicTracks]);
   #ifdef MFT_UPGRADE
  // fESDMFT = (AliESDMFT*)fESDObjects->FindObject(fgkESDListName[kESDMFT]);
   #endif
@@ -1289,6 +1303,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliRawDataErrorLog",0));
   AddObject(new AliESDACORDE()); 
   AddObject(new AliTOFHeader());
+  AddObject(new TClonesArray("AliESDCosmicTrack",0));
   #ifdef MFT_UPGRADE
   //AddObject(new AliESDMFT());
   #endif

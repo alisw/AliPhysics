@@ -67,6 +67,7 @@ class AliEventplane;
 class TRefArray;
 class AliESDACORDE;
 class AliESDHLTDecision;
+class AliESDCosmicTrack;
 
 class TList;
 class TString;
@@ -105,6 +106,7 @@ public:
 		       kErrorLogs,
                        kESDACORDE,
 		       kTOFHeader,
+                       kCosmicTracks,
 		       kESDListN
 	           #ifdef MFT_UPGRADE
 	//           , kESDMFT
@@ -414,6 +416,13 @@ public:
 	  else
 		  return fPHOSTrigger;
   }
+
+  AliESDCosmicTrack *GetCosmicTrack(Int_t i) const {
+    return fCosmicTracks ? (AliESDCosmicTrack*) fCosmicTracks->UncheckedAt(i) : 0;
+  }
+  const TClonesArray * GetCosmicTracks() const{ return fCosmicTracks;}
+
+  void  AddCosmicTrack(const AliESDCosmicTrack *t);
 	
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
     return (AliRawDataErrorLog *)(fErrorLogs?fErrorLogs->UncheckedAt(i):0x0);
@@ -441,7 +450,8 @@ public:
   Int_t GetNumberOfV0s()      const {return fV0s?fV0s->GetEntriesFast():0;}
   Int_t GetNumberOfCascades() const {return fCascades?fCascades->GetEntriesFast():0;}
   Int_t GetNumberOfKinks() const {return fKinks?fKinks->GetEntriesFast():0;}
-  
+
+  Int_t GetNumberOfCosmicTracks() const {return fCosmicTracks ? fCosmicTracks->GetEntriesFast():0;}  
   Int_t GetEMCALClusters(TRefArray *clusters) const;
   Int_t GetPHOSClusters(TRefArray *clusters) const;
   Int_t GetNumberOfCaloClusters() const {return fCaloClusters?fCaloClusters->GetEntriesFast():0;}
@@ -513,6 +523,7 @@ protected:
   TClonesArray *fCaloClusters;     //! Calorimeter clusters for PHOS/EMCAL
   AliESDCaloCells *fEMCALCells;     //! EMCAL cell info
   AliESDCaloCells *fPHOSCells;     //! PHOS cell info
+  TClonesArray *fCosmicTracks;     //! Tracks created by cosmics finder
   TClonesArray *fErrorLogs;        //! Raw-data reading error messages
  
 
