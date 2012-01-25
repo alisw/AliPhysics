@@ -305,7 +305,7 @@ class AliV0Reader : public TObject {
         /*
          * GetNumberOfPrimariesFromHijingAndPythia
          */
-        Int_t GetNumberOfHijingPlusPythiaPrimeries();
+        Int_t GetNumberOfHijingPlusPythiaPrimeries(Int_t excludeHeaderType);
         Int_t GetPrimeriesFromHijingAndPythia(){return fNumberOfPrimerisFromHijingAndPythia;}
 	/*
          * Get the DCA between the two tracks
@@ -856,11 +856,11 @@ class AliV0Reader : public TObject {
 	/*
          * Excludes BG Events in HI Simulations e.g. in LHC10b_bis
          */
-	void SetExcludeBackgroundEventForGammaCorrection(Bool_t flag){fExcludeBackgroundEventForGammaCorrection=flag;}
+	void SetExcludeBackgroundEventForGammaCorrection(Int_t flag){fExcludeBackgroundEventForGammaCorrection=flag;}
 	/*
          * Excludes BG Events in HI Simulations e.g. in LHC10b_bis
          */
-	Bool_t GetExcludeBackgroundEventForGammaCorrection(){return fExcludeBackgroundEventForGammaCorrection;}
+        Int_t GetExcludeBackgroundEventForGammaCorrection(){return fExcludeBackgroundEventForGammaCorrection;}
 
 
 // 	Bool_t GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]); 
@@ -1084,7 +1084,7 @@ class AliV0Reader : public TObject {
 		Int_t    fdoESDQtCut; // flag for ESD based Qt cut
 		Double_t fMinPPhotonAsymmetryCut;
 		Double_t fMinPhotonAsymmetry;
-                Bool_t fExcludeBackgroundEventForGammaCorrection; // flag for excluding Gamma from BGEvent for
+                Int_t fExcludeBackgroundEventForGammaCorrection; // flag for excluding Gamma from BGEvent for
                 Int_t fNumberOfPrimerisFromHijingAndPythia; //Number Of Primaries from Hijing and Pythia for PbPb
 		ClassDef(AliV0Reader,22) // RRnewTOF
 };

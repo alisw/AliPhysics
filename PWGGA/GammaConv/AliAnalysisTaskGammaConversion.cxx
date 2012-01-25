@@ -427,34 +427,12 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	if(fAODGamma) fAODGamma->Clear();
 	
 
-	Int_t eventQuality=-1;
+	///Make sure MC event is complete if present
 	if (fMCEvent ) {
-		// To avoid crashes due to unzip errors. Sometimes the trees are not there.
-
-		AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-		if (!mcHandler){ 
-			AliError("Could not retrive MC event handler!"); 
-
-			eventQuality=0;
-			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		}
-		if (!mcHandler->InitOk() ){
-			eventQuality=0;
-			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		}
-		if (!mcHandler->TreeK() ){
-			eventQuality=0;
-			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		}
-		if (!mcHandler->TreeTR() ) {
-			eventQuality=0;
-			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		}
-
-		if (eventQuality > -1) {
-		  PostAODEvent();
-		  return;
-		}
+	  if( !CheckMCEvent() ) {
+		PostAODEvent();
+		return;
+	  }
 	}
 	
 
@@ -613,6 +591,38 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	PostData(2, fCFManager->GetParticleContainer());	// for CF
 }
 
+Bool_t AliAnalysisTaskGammaConversion::CheckMCEvent() {
+  // To avoid crashes due to unzip errors. Sometimes the trees are not there.
+
+  Int_t eventQuality=-1;
+  AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!mcHandler){ 
+	AliError("Could not retrive MC event handler!"); 
+	eventQuality=0;
+	fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	return kFALSE;
+  }
+
+  if (!mcHandler->InitOk() ){
+	eventQuality=0;
+	fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	return kFALSE;
+  }
+
+  if (!mcHandler->TreeK() ){
+	eventQuality=0;
+	fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	return kFALSE;
+  }
+
+  if (!mcHandler->TreeTR() ) {
+	eventQuality=0;
+	fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	return kFALSE;
+  }
+
+	return kTRUE;
+}
 
 Bool_t AliAnalysisTaskGammaConversion::DoEventSelection() {
 
@@ -5142,81 +5152,85 @@ Bool_t AliAnalysisTaskGammaConversion::CheckV0(Int_t index, AliESDEvent *event){
 	// check if given track is V0 candidata
 	// if looper return kTRUE
 	// 
+  if(index || event)
 	return kFALSE;
-	Int_t ntracks=event->GetNumberOfTracks();
-	Int_t index1=-1;
-	const Double_t kSigmaMass=0.001;
-	const Int_t kChi2Cut=10;
-	//
-	AliESDtrack * track0 = event->GetTrack(index);
-	AliExternalTrackParam pL(*track0);
-	AliKFParticle part0El(*track0, 11);  //assuming  mass e
-	AliKFParticle part0Pi(*track0, 211);  //assuming  mass pion
-	AliKFParticle part0P(*track0, 2212);  //assuming  mass proton
-	if (track0->Charge()*part0El.Q()<0) {
-		part0El.Q()*=-1;  // change sign if opposite
-		part0Pi.Q()*=-1;  // change sign if opposite
-		part0P.Q()*=-1;   // change sign if opposite
-	}
-	Bool_t isGamma=0;
-	Bool_t isK0=0;
-	Bool_t isLambda=0;
-	Bool_t isLambdaBar=0;
+  else 
+	return kFALSE;
 	
-	for (Int_t itrack1=0; itrack1<ntracks; itrack1++){
-		if (itrack1==index) continue;
-		AliESDtrack *track1=event->GetTrack(itrack1);
-		if (!track1) continue;
-		if (track1->Charge()*track0->Charge()>0) continue;
-		AliKFParticle part1El(*track1, 11);  //assuming  mass e
-		AliKFParticle part1Pi(*track1, 211);  //assuming  mass pion
-		AliKFParticle part1P(*track1, 2212);  //assuming  mass proton
-		if (track1->Charge()*part1El.Q()<0) {
-			part1El.Q()*=-1;  // change sign if opposite
-			part1Pi.Q()*=-1;  // change sign if opposite
-			part1P.Q()*=-1;   // change sign if opposite
-		}
-		//
-		AliKFVertex vertexG;  // gamma conversion candidate
-		vertexG+=part0El;
-		vertexG+=part1El;
-		AliKFVertex vertexGC;  // gamma conversion candidate
-		vertexGC+=part0El;
-		vertexGC+=part1El;
-		vertexGC.SetMassConstraint(0,kSigmaMass);
-		AliKFVertex vertexK0;  // K0s candidate
-		vertexK0+=part0Pi;
-		vertexK0+=part1Pi;
-		AliKFVertex vertexK0C;  // K0s candidate
-		vertexK0C+=part0Pi;
-		vertexK0C+=part1Pi;
-		vertexK0C.SetMassConstraint(0.497614,kSigmaMass);
-		AliKFVertex vertexLambda;  // Lambda candidate
-		vertexLambda+=part0Pi;
-		vertexLambda+=part1P;
-		AliKFVertex vertexLambdaC;  // Lambda candidate
-		vertexLambdaC+=part0Pi;
-		vertexLambdaC+=part1Pi;
-		vertexLambdaC.SetMassConstraint(1.115683,kSigmaMass);
-		AliKFVertex vertexLambdaB;  // Lambda candidate
-		vertexLambdaB+=part0Pi;
-		vertexLambdaB+=part1P;
-		AliKFVertex vertexLambdaBC;  // LambdaBar candidate
-		vertexLambdaBC+=part0Pi;
-		vertexLambdaBC+=part1Pi;
-		vertexLambdaBC.SetMassConstraint(1.115683,kSigmaMass);
+	// Int_t ntracks=event->GetNumberOfTracks();
+	// Int_t index1=-1;
+	// const Double_t kSigmaMass=0.001;
+	// const Int_t kChi2Cut=10;
+	// //
+	// AliESDtrack * track0 = event->GetTrack(index);
+	// AliExternalTrackParam pL(*track0);
+	// AliKFParticle part0El(*track0, 11);  //assuming  mass e
+	// AliKFParticle part0Pi(*track0, 211);  //assuming  mass pion
+	// AliKFParticle part0P(*track0, 2212);  //assuming  mass proton
+	// if (track0->Charge()*part0El.Q()<0) {
+	// 	part0El.Q()*=-1;  // change sign if opposite
+	// 	part0Pi.Q()*=-1;  // change sign if opposite
+	// 	part0P.Q()*=-1;   // change sign if opposite
+	// }
+	// Bool_t isGamma=0;
+	// Bool_t isK0=0;
+	// Bool_t isLambda=0;
+	// Bool_t isLambdaBar=0;
+	
+	// for (Int_t itrack1=0; itrack1<ntracks; itrack1++){
+	// 	if (itrack1==index) continue;
+	// 	AliESDtrack *track1=event->GetTrack(itrack1);
+	// 	if (!track1) continue;
+	// 	if (track1->Charge()*track0->Charge()>0) continue;
+	// 	AliKFParticle part1El(*track1, 11);  //assuming  mass e
+	// 	AliKFParticle part1Pi(*track1, 211);  //assuming  mass pion
+	// 	AliKFParticle part1P(*track1, 2212);  //assuming  mass proton
+	// 	if (track1->Charge()*part1El.Q()<0) {
+	// 		part1El.Q()*=-1;  // change sign if opposite
+	// 		part1Pi.Q()*=-1;  // change sign if opposite
+	// 		part1P.Q()*=-1;   // change sign if opposite
+	// 	}
+	// 	//
+	// 	AliKFVertex vertexG;  // gamma conversion candidate
+	// 	vertexG+=part0El;
+	// 	vertexG+=part1El;
+	// 	AliKFVertex vertexGC;  // gamma conversion candidate
+	// 	vertexGC+=part0El;
+	// 	vertexGC+=part1El;
+	// 	vertexGC.SetMassConstraint(0,kSigmaMass);
+	// 	AliKFVertex vertexK0;  // K0s candidate
+	// 	vertexK0+=part0Pi;
+	// 	vertexK0+=part1Pi;
+	// 	AliKFVertex vertexK0C;  // K0s candidate
+	// 	vertexK0C+=part0Pi;
+	// 	vertexK0C+=part1Pi;
+	// 	vertexK0C.SetMassConstraint(0.497614,kSigmaMass);
+	// 	AliKFVertex vertexLambda;  // Lambda candidate
+	// 	vertexLambda+=part0Pi;
+	// 	vertexLambda+=part1P;
+	// 	AliKFVertex vertexLambdaC;  // Lambda candidate
+	// 	vertexLambdaC+=part0Pi;
+	// 	vertexLambdaC+=part1Pi;
+	// 	vertexLambdaC.SetMassConstraint(1.115683,kSigmaMass);
+	// 	AliKFVertex vertexLambdaB;  // Lambda candidate
+	// 	vertexLambdaB+=part0Pi;
+	// 	vertexLambdaB+=part1P;
+	// 	AliKFVertex vertexLambdaBC;  // LambdaBar candidate
+	// 	vertexLambdaBC+=part0Pi;
+	// 	vertexLambdaBC+=part1Pi;
+	// 	vertexLambdaBC.SetMassConstraint(1.115683,kSigmaMass);
 		
-		if (vertexGC.GetChi2()<kChi2Cut && vertexG.GetMass()<0.06)      isGamma=kTRUE;
-		if (vertexK0C.GetChi2()<kChi2Cut&&TMath::Abs(vertexK0.GetMass()-0.5)<0.06)  isK0=kTRUE;
-		if (vertexLambdaC.GetChi2()<kChi2Cut&&TMath::Abs(vertexLambda.GetMass()-1.1)<0.06)  isLambda=kTRUE;
-		if (vertexLambdaBC.GetChi2()<kChi2Cut&&TMath::Abs(vertexLambdaB.GetMass()-1.1)<0.06)  isLambdaBar=kTRUE;
-		if (isGamma||isK0||isLambda||isLambdaBar) {
-			index1=index;
-			break;
-		}
-	}
-	if (index1>0) return kTRUE;
-	return kFALSE;
+	// 	if (vertexGC.GetChi2()<kChi2Cut && vertexG.GetMass()<0.06)      isGamma=kTRUE;
+	// 	if (vertexK0C.GetChi2()<kChi2Cut&&TMath::Abs(vertexK0.GetMass()-0.5)<0.06)  isK0=kTRUE;
+	// 	if (vertexLambdaC.GetChi2()<kChi2Cut&&TMath::Abs(vertexLambda.GetMass()-1.1)<0.06)  isLambda=kTRUE;
+	// 	if (vertexLambdaBC.GetChi2()<kChi2Cut&&TMath::Abs(vertexLambdaB.GetMass()-1.1)<0.06)  isLambdaBar=kTRUE;
+	// 	if (isGamma||isK0||isLambda||isLambdaBar) {
+	// 		index1=index;
+	// 		break;
+	// 	}
+	// }
+	// if (index1>0) return kTRUE;
+	// return kFALSE;
 }
 
 

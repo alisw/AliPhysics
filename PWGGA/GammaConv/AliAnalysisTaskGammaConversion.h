@@ -71,6 +71,7 @@ public:
 	void ProcessGammasForNeutralMesonAnalysis();
 	void ProcessGammasForOmegaMesonAnalysis();
     Bool_t DoEventSelection();
+    Bool_t CheckMCEvent();
   //  void ProcessConvPHOSGammasForNeutralMesonAnalysis();
 	//  void RecalculateV0ForGamma();
 	// for CF
