@@ -71,7 +71,7 @@ public :
   Bool_t IsHptGenerator() const {return fHptGenerator;}
 
   // draw all histograms from the folder
-  void PrintHisto(Bool_t logz = kTRUE, Char_t * outFileName = "PerformanceQAHisto.ps"); 
+  void PrintHisto(Bool_t logz = kTRUE, const Char_t * outFileName = "PerformanceQAHisto.ps"); 
 
   // create log axis 
   Double_t *CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax); 

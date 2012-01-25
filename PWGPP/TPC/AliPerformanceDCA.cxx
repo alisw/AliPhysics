@@ -77,7 +77,7 @@ AliPerformanceDCA::AliPerformanceDCA():
 }
 
 //_____________________________________________________________________________
-AliPerformanceDCA::AliPerformanceDCA(Char_t* name="AliPerformanceDCA", Char_t* title="AliPerformanceDCA",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
+AliPerformanceDCA::AliPerformanceDCA(const Char_t* name="AliPerformanceDCA", const Char_t* title="AliPerformanceDCA",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
   AliPerformanceObject(name,title),
 
   // DCA histograms

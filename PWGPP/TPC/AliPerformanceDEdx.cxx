@@ -87,7 +87,7 @@ AliPerformanceDEdx::AliPerformanceDEdx():
 }
 
 //_____________________________________________________________________________
-AliPerformanceDEdx::AliPerformanceDEdx(Char_t* name="AliPerformanceDEdx", Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
+AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
   AliPerformanceObject(name,title),
 
   // dEdx 

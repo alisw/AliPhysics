@@ -28,7 +28,7 @@ class TNamed;
 class AliPerformanceDCA : public AliPerformanceObject {
 public :
   AliPerformanceDCA(); 
-  AliPerformanceDCA(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
+  AliPerformanceDCA(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
   ~AliPerformanceDCA();
 
   // Init data members

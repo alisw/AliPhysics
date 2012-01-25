@@ -42,10 +42,10 @@ class AliAlignmentDataFilterITS : public AliAnalysisTaskSE
   void SetDownsamplelowpt(Bool_t set=kTRUE) {fDownsamplelowpt=set;}
   void SetGeometryFileName(TString name="geometry.root") {fGeometryFileName=name;}
   void SetITSRecoParam(AliITSRecoParam *rp) {fITSRecoParam=rp;}
-  static Int_t WriteTrackPointsInIdealGeom(Char_t *fin="AliTrackPoints.root", 
-					   Char_t *fout="AliTrackPoints_IdGeom.root",
-					   Char_t *fmis="Run0_999999999_v3_s0.root",
-					   Char_t *fgeo="geometry.root",
+  static Int_t WriteTrackPointsInIdealGeom(const Char_t *fin="AliTrackPoints.root", 
+					   const Char_t *fout="AliTrackPoints_IdGeom.root",
+					   const Char_t *fmis="Run0_999999999_v3_s0.root",
+					   const Char_t *fgeo="geometry.root",
 					   Bool_t prn=0);
 
  private:

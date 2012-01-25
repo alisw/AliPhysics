@@ -31,7 +31,7 @@ class AliRecInfoCuts;
 class AliPerformanceTPC : public AliPerformanceObject {
 public :
   //AliPerformanceTPC(); 
-  AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE);
+  AliPerformanceTPC(const Char_t* name="AliPerformanceTPC", const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE);
 
   virtual ~AliPerformanceTPC();
 

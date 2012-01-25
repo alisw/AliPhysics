@@ -99,7 +99,7 @@ AliPerformanceTPC::AliPerformanceTPC():
 */
 
 //_____________________________________________________________________________
-AliPerformanceTPC::AliPerformanceTPC(Char_t* name, Char_t* title,Int_t analysisMode,Bool_t hptGenerator, Int_t run, Bool_t highMult):
+AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int_t analysisMode,Bool_t hptGenerator, Int_t run, Bool_t highMult):
   AliPerformanceObject(name,title,run,highMult),
   fTPCClustHisto(0),
   fTPCEventHisto(0),

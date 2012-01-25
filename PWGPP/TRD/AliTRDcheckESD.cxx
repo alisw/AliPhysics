@@ -2069,17 +2069,12 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance
 }
 
 //__________________________________________________________________________________________________
-void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* trendValues, const Char_t* triggerName, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
+void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, const Char_t* /*triggerName*/, Bool_t /*useIsolatedBC*/, Bool_t /*cutTOFbc*/) {
   //
   // Make the centrality summary figure from the CF container 
   // 
   if(!fMatchingPtCF) return;
   AliCFContainer* cf = 0x0;    
-  triggerName = triggerName;
-  useIsolatedBC = useIsolatedBC;
-  cutTOFbc = cutTOFbc;
-  
-  trendValues = trendValues;
   
   TLatex* lat=new TLatex();
   lat->SetTextSize(0.06);
@@ -2259,15 +2254,12 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* trendValues, const Char_t* 
 
 
 //_________________________________________________________________
-void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char_t* triggerName, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
+void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char_t* /*triggerName*/, Bool_t /*useIsolatedBC*/, Bool_t /*cutTOFbc*/) {
   //
   //  Plot tracking summary
   //
   if(!fMatchingPhiEtaCF || !fMatchingPtCF || !fCentralityCF || !fBunchCrossingsCF) return;
   AliCFContainer* cf = 0x0;  
-  triggerName = triggerName;
-  useIsolatedBC = useIsolatedBC;
-  cutTOFbc = cutTOFbc;
   
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.06);
@@ -2625,16 +2617,13 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
 
 
 //_________________________________________________________________
-void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* triggerName, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
+void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /*triggerName*/, Bool_t /*useIsolatedBC*/, Bool_t /*cutTOFbc*/) {
   //
   // Centrality summary
   //
   if(!fQtotCF || !fPulseHeightCF || !fCentralityCF) return;
   
   AliCFContainer* cf = 0x0;
-  triggerName = triggerName;
-  useIsolatedBC = useIsolatedBC;
-  cutTOFbc = cutTOFbc;  
   
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.07);
@@ -2751,11 +2740,9 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* t
 
 
 //_________________________________________________________________
-Bool_t AliTRDcheckESD::PlotCentSummary(Double_t* trendValues) {
+Bool_t AliTRDcheckESD::PlotCentSummary(Double_t* /*trendValues*/) {
 
   Bool_t isGoodForSaving=kFALSE;
-  
-  trendValues = trendValues;
   
   TLatex* lat=new TLatex();
   lat->SetTextSize(0.06);
