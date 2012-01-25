@@ -97,7 +97,9 @@ AliAODMCParticle::AliAODMCParticle(const AliAODMCParticle& mcPart) :
 
 AliAODMCParticle& AliAODMCParticle::operator=(const AliAODMCParticle& mcPart)
 { 
-
+  //
+  // assignment operator
+  //
   if (this!=&mcPart) { 
     AliVParticle::operator=(mcPart);
     fPdgCode    = mcPart.fPdgCode;
@@ -122,6 +124,9 @@ AliAODMCParticle& AliAODMCParticle::operator=(const AliAODMCParticle& mcPart)
 
 Double_t AliAODMCParticle::M()         const
 {
+  //
+  // return the mass 
+  //
     TParticlePDG* pdg =  TDatabasePDG::Instance()->GetParticle(fPdgCode);
     if (pdg) {
 	return (pdg->Mass());
@@ -133,6 +138,9 @@ Double_t AliAODMCParticle::M()         const
 
 Short_t AliAODMCParticle::Charge()     const
 {
+  //
+  // return tha charge
+  //
     TParticlePDG* pdg =  TDatabasePDG::Instance()->GetParticle(fPdgCode);
     if (pdg) {
 	return (Short_t (pdg->Charge()));

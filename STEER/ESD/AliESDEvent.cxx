@@ -312,21 +312,21 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
     else if(its->InheritsFrom("TClonesArray")){
       // Create or expand the tclonesarray pointers
       // so we can directly copy to the object
-      TClonesArray *its_tca = (TClonesArray*)its;
-      TClonesArray *mine_tca = (TClonesArray*)mine;
+      TClonesArray *itstca = (TClonesArray*)its;
+      TClonesArray *minetca = (TClonesArray*)mine;
 
       // this leaves the capacity of the TClonesArray the same
       // except for a factor of 2 increase when size > capacity
       // does not release any memory occupied by the tca
-      mine_tca->ExpandCreate(its_tca->GetEntriesFast());
-      for(int i = 0;i < its_tca->GetEntriesFast();++i){
+      minetca->ExpandCreate(itstca->GetEntriesFast());
+      for(int i = 0;i < itstca->GetEntriesFast();++i){
 	// copy 
-	TObject *mine_tca_obj = mine_tca->At(i);
-	TObject *its_tca_obj = its_tca->At(i);
+	TObject *minetcaobj = minetca->At(i);
+	TObject *itstcaobj = itstca->At(i);
 	// no need to delete first
 	// pointers within the class should be handled by Copy()...
 	// Can there be Empty slots?
-	its_tca_obj->Copy(*mine_tca_obj);
+	itstcaobj->Copy(*minetcaobj);
       }
     }
     else{
@@ -428,6 +428,9 @@ void AliESDEvent::Reset()
 }
 
 Bool_t AliESDEvent::ResetWithPlacementNew(TObject *pObject){
+  //
+  // funtion to reset using the already allocated space
+  //
   Long_t dtoronly = TObject::GetDtorOnly();
   TClass *pClass = TClass::GetClass(pObject->ClassName()); 
   TObject::SetDtorOnly(pObject);
@@ -1047,7 +1050,7 @@ void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) const {
   new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
 }
 
-void AliESDEvent::SetZDCData(AliESDZDC * obj)
+void AliESDEvent::SetZDCData(const AliESDZDC * obj)
 { 
   // use already allocated space
   if(fESDZDC)
@@ -1143,14 +1146,14 @@ void AliESDEvent::SetFMDData(AliESDFMD * obj)
   }
 }
 
-void AliESDEvent::SetVZEROData(AliESDVZERO * obj)
+void AliESDEvent::SetVZEROData(const AliESDVZERO * obj)
 { 
   // use already allocated space
   if(fESDVZERO)
     *fESDVZERO = *obj;
 }
 
-void AliESDEvent::SetTZEROData(AliESDTZERO * obj)
+void AliESDEvent::SetTZEROData(const AliESDTZERO * obj)
 { 
   // use already allocated space
   if(fESDTZERO)

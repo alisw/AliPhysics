@@ -1,5 +1,5 @@
-#ifndef AliAODMCParticle_H
-#define AliAODMCParticle_H
+#ifndef AliAODMCPARTICLE_H
+#define AliAODMCPARTICLE_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -82,12 +82,9 @@ class AliAODMCParticle: public AliVParticle {
 
     // for the status we use the upper 16 bits/2 bytes of the flag word
     void SetStatus(Int_t status){
-      // a TParticle can have a negative stuts, catch this here and do nothing
-      if(status<0)return;
-      // reset the upper bins keep the lower bins
-      fFlag &= 0xffff;
-      // bit shift by 16
-      fFlag |= (((UInt_t)status)<<16);
+      if(status<0)return; // a TParticle can have a negative stuts, catch this here and do nothing
+      fFlag &= 0xffff;   // reset the upper bins keep the lower bins
+      fFlag |= (((UInt_t)status)<<16); // bit shift by 16
     }
     UInt_t GetStatus() const {
       // bit shift by 16

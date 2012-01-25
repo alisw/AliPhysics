@@ -204,7 +204,7 @@ public:
   AliESDZDC*    GetESDZDC()  const {return fESDZDC;}
   AliESDZDC*    GetZDCData() const {return fESDZDC;}
 
-  void SetZDCData(AliESDZDC * obj);
+  void SetZDCData(const AliESDZDC * obj);
 
   // Delegated methods for fESDZDC
   Double_t GetZDCN1Energy() const {return fESDZDC?fESDZDC->GetZDCN1Energy():0;}
@@ -229,7 +229,7 @@ public:
 
   // TZERO CKB: put this in the header?
   const AliESDTZERO*    GetESDTZERO() const {return fESDTZERO;}
-  void SetTZEROData(AliESDTZERO * obj);
+  void SetTZEROData(const AliESDTZERO * obj);
  // delegetated methods for fESDTZERO
 
   Double32_t GetT0zVertex() const {return fESDTZERO?fESDTZERO->GetT0zVertex():0;}
@@ -250,7 +250,7 @@ public:
 
   // VZERO 
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
-  void SetVZEROData(AliESDVZERO * obj);
+  void SetVZEROData(const AliESDVZERO * obj);
 	
   #ifdef MFT_UPGRADE
   // MFT 

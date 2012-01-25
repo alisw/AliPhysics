@@ -45,9 +45,11 @@ AliESDRun::AliESDRun() :
   fBeamType(""),
   fTriggerClasses(kNTriggerClasses),
   fDetInDAQ(0),
-  fDetInReco(0)
-  
+  fDetInReco(0)  
 {
+  //
+  // default ctor
+  //
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fBeamParticle[0] = fBeamParticle[1] = 0;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
@@ -78,7 +80,9 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
   fDetInDAQ(0),
   fDetInReco(0)
 { 
+  //
   // Copy constructor
+  //
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
   for (Int_t i=0; i<2; i++) fBeamParticle[i] = esd.fBeamParticle[i];

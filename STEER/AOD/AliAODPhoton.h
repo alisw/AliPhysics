@@ -1,5 +1,5 @@
-#ifndef AliAODPhoton_H
-#define AliAODPhoton_H
+#ifndef AliAODPHOTON_H
+#define AliAODPHOTON_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

@@ -1,5 +1,5 @@
-#ifndef AliAODPid_H
-#define AliAODPid_H
+#ifndef AliAODPID_H
+#define AliAODPID_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
