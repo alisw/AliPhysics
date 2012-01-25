@@ -1,3 +1,7 @@
+//
+// Helper Class that contains a lot of 
+// usefull static functions jet matchin pythia access etc.
+//
 #ifndef  ALIANALYSISHELPERJETTASKS_H
 #define  ALIANALYSISHELPERJETTASKS_H
 #include "TObject.h"
@@ -11,13 +15,6 @@ class TArrayF;
 class AliGenPythiaEventHeader;
 class TVector3;
 class AliGenEventHeader;
-
-
-//
-// Helper Class that contains a lot of 
-// usefull static functions jet matchin pythia access etc.
-//
-
 
 class AliAnalysisHelperJetTasks : public TObject {
  public:
@@ -51,7 +48,7 @@ class AliAnalysisHelperJetTasks : public TObject {
 
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(const AliMCEvent *mcEvent);
   static void PrintStack(AliMCEvent *mcEvent,Int_t iFirst = 0,Int_t iLast = 0,Int_t iMaxPrint = 10);
-  static void GetClosestJets(AliAODJet *genJets,
+  static void GetClosestJets(const AliAODJet *genJets,
 			     const Int_t &kGenJets,
 			     const AliAODJet *recJets,
 			     const Int_t &kRecJets,

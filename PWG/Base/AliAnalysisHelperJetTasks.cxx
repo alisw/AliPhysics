@@ -122,7 +122,7 @@ void AliAnalysisHelperJetTasks::PrintStack(AliMCEvent *mcEvent,Int_t iFirst,Int_
 
 
 
-void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &kGenJets,
+void AliAnalysisHelperJetTasks::GetClosestJets(const AliAODJet *genJets,const Int_t &kGenJets,
 					       const AliAODJet *recJets,const Int_t &kRecJets,
 					       Int_t *iGenIndex,Int_t *iRecIndex,
 					       Int_t iDebug,Float_t maxDist){
@@ -1344,11 +1344,14 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerFired(const AliVEvent* aEv, Trigger t
 
 Int_t AliAnalysisHelperJetTasks::GetPhiBin(Double_t phi,Int_t fNRPBins)
 {
-    Int_t phibin=-1;
-    if(!(TMath::Abs(phi)<=2*TMath::Pi()))return -1;
-    Double_t phiwrtrp=TMath::ACos(TMath::Abs(TMath::Cos(phi)));
-    phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
-    return phibin;
+  //
+  // Method to get phi bin o reaction plane
+  //
+  Int_t phibin=-1;
+  if(!(TMath::Abs(phi)<=2*TMath::Pi()))return -1;
+  Double_t phiwrtrp=TMath::ACos(TMath::Abs(TMath::Cos(phi)));
+  phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
+  return phibin;
 }
 
 Double_t  AliAnalysisHelperJetTasks::ReactionPlane(Bool_t bSet,Double_t fNew){
