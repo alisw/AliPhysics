@@ -11,7 +11,6 @@
 #include  "AliAnalysisTaskSE.h"
 #include  "TObjString.h"
 #include  "TString.h"
-#include  "TObjArray.h"
 
 
 ////////////////
@@ -30,7 +29,7 @@ class TH3F;
 class TProfile;
 class TRandom3;
 class TRefArray;
-
+class TObjArray;
 
 class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
 {
@@ -47,7 +46,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     virtual Bool_t Notify();
 
     // Task specific methods...
-    virtual void   AddJetBranch(const char* c){fJBArray->Add(new TObjString(c));}
+    virtual void   AddJetBranch(const char* c); 
     virtual void   SetSubtractionMethod(Int_t i){fSubtraction = i;}
     virtual Int_t  GetSubtractionMethod(){return fSubtraction;}
     virtual void   SetKeepJets(Bool_t b = kTRUE){fKeepJets = b;}

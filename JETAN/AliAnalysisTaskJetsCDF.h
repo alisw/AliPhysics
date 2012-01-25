@@ -1,3 +1,6 @@
+//
+// CDF jet finding
+//
 #ifndef ALIANALYSISTASKJETSCDF_H
 #define ALIANALYSISTASKJETSCDF_H
 

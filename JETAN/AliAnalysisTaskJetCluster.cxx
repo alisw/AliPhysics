@@ -69,6 +69,9 @@
 ClassImp(AliAnalysisTaskJetCluster)
 
 AliAnalysisTaskJetCluster::~AliAnalysisTaskJetCluster(){
+  //
+  // Destructor
+  //
   delete fRef;
   delete fRandom;
 
@@ -186,6 +189,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fh2TracksLeadingJetPhiPtWRan(0x0),
   fHistList(0x0)  
 {
+  //
+  // Constructor
+  //
+
   for(int i = 0;i<3;i++){
     fh1BiARandomCones[i] = 0;
     fh1BiARandomConesRan[i] = 0;
@@ -300,6 +307,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh2TracksLeadingJetPhiPtWRan(0x0),
   fHistList(0x0)
 {
+  //
+  // named ctor
+  //
   for(int i = 0;i<3;i++){
     fh1BiARandomCones[i] = 0;
     fh1BiARandomConesRan[i] = 0;
@@ -1350,13 +1360,18 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
 void AliAnalysisTaskJetCluster::Terminate(Option_t */*option*/)
 {
-// Terminate analysis
-//
-    if (fDebug > 1) printf("AnalysisJetCluster: Terminate() \n");
+  //
+  // Terminate analysis
+  //
+  if (fDebug > 1) printf("AnalysisJetCluster: Terminate() \n");
 }
 
 
 Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
+
+  //
+  // get list of tracks/particles for different types
+  //
 
   if(fDebug>2)Printf("%s:%d Selecting tracks with %d",(char*)__FILE__,__LINE__,type);
 
