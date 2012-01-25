@@ -1,6 +1,17 @@
 #ifndef ALIANALYSISTASKJETCORE_H
 #define ALIANALYSISTASKJETCORE_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+// **************************************
+// This task computes several jet observables like 
+// the fraction of energy in inner and outer coronnas,
+// the distance from track to jet axis and a 
+// correlation strength distribution of particles inside jets.    
+// Author: lcunquei@cern.ch
+// *******************************************
+
 class TH1F;
 class TH2F;
 class TH3F;
@@ -120,102 +131,102 @@ private:
    TH2F  *fh2JetSelection;                    //! jet selection statistic, with 
      
 
-   TH2F      *fh2JetCoreMethod1C10;            //energy fraction in the jet core for
-   TH2F      *fh2JetCoreMethod2C10;            //different centralities and 3 methods 
-   TH2F      *fh2JetCoreMethod3C10;
-   TH2F      *fh2JetCoreMethod1C20;
-   TH2F      *fh2JetCoreMethod2C20;
-   TH2F      *fh2JetCoreMethod3C20;
-   TH2F      *fh2JetCoreMethod1C30;
-   TH2F      *fh2JetCoreMethod2C30;
-   TH2F      *fh2JetCoreMethod3C30;
-   TH2F      *fh2JetCoreMethod1C60;
-   TH2F      *fh2JetCoreMethod2C60;
-   TH2F      *fh2JetCoreMethod3C60;
-   TH2F      *fh2SumPtInC10;                 //energy fraction in external coronas
-   TH2F      *fh2SumPtInC20;
-   TH2F      *fh2SumPtInC30;
-   TH2F      *fh2SumPtInC60;
-   TH2F      *fh2SumPtOutC10;
-   TH2F      *fh2SumPtOutC10b;   
-   TH2F      *fh2SumPtOutC20;
-   TH2F      *fh2SumPtOutC30;
-   TH2F      *fh2SumPtOutC60;
-   TH2F      *fh2SumPtInC10bkg;        //energy fraction in external coronas expected
-   TH2F      *fh2SumPtInC20bkg;        //only from background
-   TH2F      *fh2SumPtInC30bkg;
-   TH2F      *fh2SumPtInC60bkg;
-   TH2F      *fh2SumPtOutC10bkg;
-   TH2F      *fh2SumPtOutC20bkg;
-   TH2F      *fh2SumPtOutC30bkg;
-   TH2F      *fh2SumPtOutC60bkg;
+   TH2F      *fh2JetCoreMethod1C10;          //Energy fraction in the core C10 method 1
+   TH2F      *fh2JetCoreMethod2C10;          //Energy fraction in the core C10 method 2
+   TH2F      *fh2JetCoreMethod3C10;          //Energy fraction in the core C10 method 3
+   TH2F      *fh2JetCoreMethod1C20;          //Energy fraction in the core C20 method 1 
+   TH2F      *fh2JetCoreMethod2C20;          //Energy fraction in the core C20 method 2
+   TH2F      *fh2JetCoreMethod3C20;          //Energy fraction in the core C20 method 3
+   TH2F      *fh2JetCoreMethod1C30;          //Energy fraction in the core C30 method 1
+   TH2F      *fh2JetCoreMethod2C30;          //Energy fraction in the core C30 method 2
+   TH2F      *fh2JetCoreMethod3C30;          //Energy fraction in the core C30 method 3
+   TH2F      *fh2JetCoreMethod1C60;          //Energy fraction in the core C60 method 1
+   TH2F      *fh2JetCoreMethod2C60;          //Energy fraction in the core C60 method 2
+   TH2F      *fh2JetCoreMethod3C60;          //Energy fraction in the core C60 method 3
+   TH2F      *fh2SumPtInC10;                  //energy fraction in inner corona C10
+   TH2F      *fh2SumPtInC20;                  //energy fraction in inner corona C20 
+   TH2F      *fh2SumPtInC30;                  //energy fraction in inner corona C30
+   TH2F      *fh2SumPtInC60;                  //energy fraction in inner corona C60
+   TH2F      *fh2SumPtOutC10;                 //energy fraction in outer corona C10
+   TH2F      *fh2SumPtOutC10b;                //energy fraction in outer corona C10b
+   TH2F      *fh2SumPtOutC20;                 //energy fraction in outer corona C20 
+   TH2F      *fh2SumPtOutC30;                 //energy fraction in outer corona C30
+   TH2F      *fh2SumPtOutC60;                 //energy fraction in outer corona C60
+   TH2F      *fh2SumPtInC10bkg;        //expected from background inner C10
+   TH2F      *fh2SumPtInC20bkg;        //expected from background inner C20
+   TH2F      *fh2SumPtInC30bkg;        //expected from background inner C30
+   TH2F      *fh2SumPtInC60bkg;        //expected from background inner C60
+   TH2F      *fh2SumPtOutC10bkg;       //expected from background outer C10
+   TH2F      *fh2SumPtOutC20bkg;       //expected from background outer C10
+   TH2F      *fh2SumPtOutC30bkg;       //expected from background outer C10
+   TH2F      *fh2SumPtOutC60bkg;       //expected from background outer C10
 
   
    
-     TH2F*      fh2DeltaRC10pt1;            //Jet track R distance in 3 high jet pT bins
-     TH2F*      fh2DeltaRC20pt1;            //for different centralities. 
-     TH2F*      fh2DeltaRC30pt1;
-     TH2F*      fh2DeltaRC60pt1;
-     TH2F*      fh2DeltaRC10pt2;
-     TH2F*      fh2DeltaRC20pt2;
-     TH2F*      fh2DeltaRC30pt2;
-     TH2F*      fh2DeltaRC60pt2;
-     TH2F*      fh2DeltaRC10pt3;
-     TH2F*      fh2DeltaRC20pt3;
-     TH2F*      fh2DeltaRC30pt3;
-     TH2F*      fh2DeltaRC60pt3;
-     TH2F*      fh2DeltaRC10pt4;
-     TH2F*      fh2DeltaRC20pt4;
-     TH2F*      fh2DeltaRC30pt4;
-     TH2F*      fh2DeltaRC60pt4;
-     TH2F*      fh2DeltaEtaC10pt1;             //The same but eta distance
-     TH2F*      fh2DeltaEtaC20pt1;
-     TH2F*      fh2DeltaEtaC30pt1;
-     TH2F*      fh2DeltaEtaC60pt1;
-     TH2F*      fh2DeltaEtaC10pt2;
-     TH2F*      fh2DeltaEtaC20pt2;
-     TH2F*      fh2DeltaEtaC30pt2;
-     TH2F*      fh2DeltaEtaC60pt2;
-     TH2F*      fh2DeltaEtaC10pt3;
-     TH2F*      fh2DeltaEtaC20pt3;
-     TH2F*      fh2DeltaEtaC30pt3;
-     TH2F*      fh2DeltaEtaC60pt3;
-     TH2F*      fh2DeltaEtaC10pt4;
-     TH2F*      fh2DeltaEtaC20pt4;
-     TH2F*      fh2DeltaEtaC30pt4;
-     TH2F*      fh2DeltaEtaC60pt4;
-     TH2F*      fh2DeltaPhiC10pt1;             //The same but phi distance
-     TH2F*      fh2DeltaPhiC20pt1;
-     TH2F*      fh2DeltaPhiC30pt1;
-     TH2F*      fh2DeltaPhiC60pt1;
-     TH2F*      fh2DeltaPhiC10pt2;
-     TH2F*      fh2DeltaPhiC20pt2;
-     TH2F*      fh2DeltaPhiC30pt2;
-     TH2F*      fh2DeltaPhiC60pt2;
-     TH2F*      fh2DeltaPhiC10pt3;
-     TH2F*      fh2DeltaPhiC20pt3;
-     TH2F*      fh2DeltaPhiC30pt3;
-     TH2F*      fh2DeltaPhiC60pt3;
-     TH2F*      fh2DeltaPhiC10pt4;
-     TH2F*      fh2DeltaPhiC20pt4;
-     TH2F*      fh2DeltaPhiC30pt4;
-     TH2F*      fh2DeltaPhiC60pt4;
-     TH2F*      fh2AngStructpt1C10;           //Average two particle correlation function
-     TH2F*      fh2AngStructpt2C10; 
-     TH2F*      fh2AngStructpt3C10;
-     TH2F*      fh2AngStructpt4C10;     
-     TH2F*      fh2AngStructpt1C20;
-     TH2F*      fh2AngStructpt2C20;
-     TH2F*      fh2AngStructpt3C20;
-     TH2F*      fh2AngStructpt4C20;     
-     TH2F*      fh2AngStructpt1C30;
-     TH2F*      fh2AngStructpt2C30;
-     TH2F*      fh2AngStructpt3C30;
-     TH2F*      fh2AngStructpt4C30;     
-     TH2F*      fh2AngStructpt1C60;
-     TH2F*      fh2AngStructpt2C60;
-     TH2F*      fh2AngStructpt3C60;
-     TH2F*      fh2AngStructpt4C60;     
+     TH2F*      fh2DeltaRC10pt1;            //Jet track R distance:C10 pt1
+     TH2F*      fh2DeltaRC20pt1;            //C20 pt1 
+     TH2F*      fh2DeltaRC30pt1;            //C30 pt1
+     TH2F*      fh2DeltaRC60pt1;            //C60 pt1
+     TH2F*      fh2DeltaRC10pt2;            //C10 pt2   
+     TH2F*      fh2DeltaRC20pt2;            //C20 pt2
+     TH2F*      fh2DeltaRC30pt2;            //C30 pt2
+     TH2F*      fh2DeltaRC60pt2;            //C60 pt2 
+     TH2F*      fh2DeltaRC10pt3;            //C10 pt3
+     TH2F*      fh2DeltaRC20pt3;            //C20 pt3
+     TH2F*      fh2DeltaRC30pt3;            //C30 pt3
+     TH2F*      fh2DeltaRC60pt3;            //C60 pt3
+     TH2F*      fh2DeltaRC10pt4;            //C10 pt4
+     TH2F*      fh2DeltaRC20pt4;            //C20 pt4
+     TH2F*      fh2DeltaRC30pt4;            //C30 pt4
+     TH2F*      fh2DeltaRC60pt4;            //C60 pt4 
+     TH2F*      fh2DeltaEtaC10pt1;          //The same but eta distance:C10 pt1
+     TH2F*      fh2DeltaEtaC20pt1;          //C20 pt1
+     TH2F*      fh2DeltaEtaC30pt1;          //C30 pt1
+     TH2F*      fh2DeltaEtaC60pt1;          //C60 pt1
+     TH2F*      fh2DeltaEtaC10pt2;          //C10 pt2  
+     TH2F*      fh2DeltaEtaC20pt2;          //C20 pt2
+     TH2F*      fh2DeltaEtaC30pt2;          //C30 pt2
+     TH2F*      fh2DeltaEtaC60pt2;          //C60 pt2
+     TH2F*      fh2DeltaEtaC10pt3;          //C10 pt3
+     TH2F*      fh2DeltaEtaC20pt3;          //C20 pt3
+     TH2F*      fh2DeltaEtaC30pt3;          //C30 pt3
+     TH2F*      fh2DeltaEtaC60pt3;          //C60 pt3
+     TH2F*      fh2DeltaEtaC10pt4;          //C10 pt4
+     TH2F*      fh2DeltaEtaC20pt4;          //C20 pt4
+     TH2F*      fh2DeltaEtaC30pt4;          //C30 pt4
+     TH2F*      fh2DeltaEtaC60pt4;          //C60 pt4
+     TH2F*      fh2DeltaPhiC10pt1;          //The same but phi distance:C10 pt1
+     TH2F*      fh2DeltaPhiC20pt1;          //C20 pt1
+     TH2F*      fh2DeltaPhiC30pt1;          //C30 pt1
+     TH2F*      fh2DeltaPhiC60pt1;          //C60 pt1
+     TH2F*      fh2DeltaPhiC10pt2;          //C10 pt2
+     TH2F*      fh2DeltaPhiC20pt2;          //C20 pt2 
+     TH2F*      fh2DeltaPhiC30pt2;          //C30 pt2
+     TH2F*      fh2DeltaPhiC60pt2;          //C60 pt2 
+     TH2F*      fh2DeltaPhiC10pt3;          //C10 pt3
+     TH2F*      fh2DeltaPhiC20pt3;          //C20 pt3
+     TH2F*      fh2DeltaPhiC30pt3;          //C30 pt3
+     TH2F*      fh2DeltaPhiC60pt3;          //C60 pt3
+     TH2F*      fh2DeltaPhiC10pt4;          //C10 pt4
+     TH2F*      fh2DeltaPhiC20pt4;          //C20 pt4
+     TH2F*      fh2DeltaPhiC30pt4;          //C30 pt4
+     TH2F*      fh2DeltaPhiC60pt4;          //C60 pt4
+     TH2F*      fh2AngStructpt1C10;         //Average two particle correlation function:C10 pt1
+     TH2F*      fh2AngStructpt2C10;         //C10 pt2
+     TH2F*      fh2AngStructpt3C10;         //C10 pt3
+     TH2F*      fh2AngStructpt4C10;         //C10 pt4
+     TH2F*      fh2AngStructpt1C20;         //C20 pt1
+     TH2F*      fh2AngStructpt2C20;         //C20 pt2
+     TH2F*      fh2AngStructpt3C20;         //C20 pt3 
+     TH2F*      fh2AngStructpt4C20;         //C20 pt4
+     TH2F*      fh2AngStructpt1C30;         //C30 pt1
+     TH2F*      fh2AngStructpt2C30;         //C30 pt2
+     TH2F*      fh2AngStructpt3C30;         //C30 pt3
+     TH2F*      fh2AngStructpt4C30;         //C30 pt4
+     TH2F*      fh2AngStructpt1C60;         //C60 pt1
+     TH2F*      fh2AngStructpt2C60;         //C60 pt2
+     TH2F*      fh2AngStructpt3C60;         //C60 pt3
+     TH2F*      fh2AngStructpt4C60;         //C60 pt4
 
 
 

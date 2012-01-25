@@ -979,7 +979,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   Int_t nJetTracks = 0;
 
   AliAODTrack jetTrack[kTracks];
-  Double_t * cv = new Double_t[21];
+  Double_t cv[21];
   TMath::Sort(nRecSel, eRec, idxRec);
   for (Int_t rj = 0; rj < nRecSel; rj++)
     {
