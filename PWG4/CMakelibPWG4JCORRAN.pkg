@@ -42,7 +42,6 @@ set ( SRCS
     JCORRAN/AliJRunHeader.cxx 
     JCORRAN/AliJCORRANSetup.cxx 
     JCORRAN/AliJCORRANTask.cxx 
-    JCORRAN/AliAnalysisTaskDiHadron.cxx 
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
