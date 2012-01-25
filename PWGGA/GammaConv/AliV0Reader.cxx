@@ -362,9 +362,9 @@ void AliV0Reader::Initialize(){
 	//	if(fMCTruth){
 	if(fMCEvent){
 		fMCStack = fMCEvent->Stack();
-		if(fMCStack == NULL){
-			//print warning here
-		}
+		// if(fMCStack == NULL){
+		// 	//print warning here
+		// }
 		// Better parameters for MonteCarlo from A. Kalweit 2010/01/8
 //		 fESDpid->GetTPCResponse().SetBetheBlochParameters( 2.15898e+00/50.,
 // 							1.75295e+01,
