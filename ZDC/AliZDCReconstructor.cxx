@@ -1343,8 +1343,8 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
     fESDZDC->SetZDCScaler(counts);
   }    
   
-  Int_t tdcValues[32][4]; 
-  Float_t tdcCorrected[32][4];
+  Int_t tdcValues[32][4] = {{0,}}; 
+  Float_t tdcCorrected[32][4] = {{0.,}};
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
       tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
