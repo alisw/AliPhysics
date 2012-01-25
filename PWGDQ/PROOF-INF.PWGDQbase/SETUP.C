@@ -11,14 +11,14 @@ void SETUP()
     CheckLoadLibrary("libESD");
     CheckLoadLibrary("libAOD");
     CheckLoadLibrary("libANALYSISalice");
-    CheckLoadLibrary("libPWG3base");
+    CheckLoadLibrary("libPWGDQbase");
 
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWG3base/base");
+   gROOT->ProcessLine(".include PWGDQbase/base");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG3base_INCLUDE", "PWG3base/base");
+   gSystem->Setenv("PWGDQbase_INCLUDE", "PWGDQbase/base");
 }
 
 Int_t CheckLoadLibrary(const char* library)
