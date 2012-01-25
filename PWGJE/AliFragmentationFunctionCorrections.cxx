@@ -1415,29 +1415,17 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     if(type == kFlagPt)      hist = fCorrFF[fNCorrectionLevels-2]->GetTrackPt(i); // level -2: before unfolding, level -1: unfolded
     else if(type == kFlagZ)  hist = fCorrFF[fNCorrectionLevels-2]->GetZ(i);       // level -2: before unfolding, level -1: unfolded
     else if(type == kFlagXi) hist = fCorrFF[fNCorrectionLevels-2]->GetXi(i);      // level -2: before unfolding, level -1: unfolded
-    else{ 
-      Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
-      return;
-    }
 
     THnSparse* hnResponse = 0;
     if(type == kFlagPt) hnResponse = fhnResponsePt[i];
     else if(type == kFlagZ)  hnResponse = fhnResponseZ[i];
     else if(type == kFlagXi) hnResponse = fhnResponseXi[i];
-    else{ 
-      Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
-      return;
-    }
 
 
     TH1F* hPrior = 0;
     if(type == kFlagPt && fh1FFTrackPtPrior[i]  && ((TString(fh1FFTrackPtPrior[i]->GetName())).Length() > 0) ) hPrior = fh1FFTrackPtPrior[i];
-    else if(type == kFlagZ  && fh1FFZPrior[i]        && ((TString(fh1FFZPrior[i]->GetName())).Length() > 0)       ) hPrior = fh1FFZPrior[i];
-    else if(type == kFlagXi && fh1FFXiPrior[i]       && ((TString(fh1FFXiPrior[i]->GetName())).Length() > 0)      ) hPrior = fh1FFXiPrior[i];
-    else{ 
-      Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
-      return;
-    }
+    else if(type == kFlagZ  && fh1FFZPrior[i]   && ((TString(fh1FFZPrior[i]->GetName())).Length() > 0)       ) hPrior = fh1FFZPrior[i];
+    else if(type == kFlagXi && fh1FFXiPrior[i]  && ((TString(fh1FFXiPrior[i]->GetName())).Length() > 0)      ) hPrior = fh1FFXiPrior[i];
 
 
     TString histNameTHn = hist->GetName();
@@ -3603,7 +3591,7 @@ void AliFragmentationFunctionCorrections::RebinHisto(const Int_t jetPtSlice, con
   
 
   TH1F* hist = 0;
-  if(type == kFlagPt)       hist = fCorrFF[fNCorrectionLevels-1]->GetTrackPt(jetPtSlice); 
+  if(type == kFlagPt)            hist = fCorrFF[fNCorrectionLevels-1]->GetTrackPt(jetPtSlice); 
   else if(type == kFlagZ)        hist = fCorrFF[fNCorrectionLevels-1]->GetZ(jetPtSlice);       
   else if(type == kFlagXi)       hist = fCorrFF[fNCorrectionLevels-1]->GetXi(jetPtSlice);      
   else if(type == kFlagSinglePt) hist = fCorrSinglePt[fNCorrectionLevelsSinglePt-1]->GetTrackPt(0); 
@@ -3663,15 +3651,8 @@ void AliFragmentationFunctionCorrections::WriteJetSpecResponse(TString strInfile
     }
   }  
   
-  THnSparse* hn6ResponseJetPt;
-
-  if(list){
-    hn6ResponseJetPt = (THnSparse*) list->FindObject("fhnCorrelation");
-  }
-  else{
-    hn6ResponseJetPt = (THnSparse*) list->FindObject("fhnCorrelation");
-  }
-
+  THnSparse* hn6ResponseJetPt  = (THnSparse*) list->FindObject("fhnCorrelation");
+ 
   Int_t axis6RecJetPt = 0;
   Int_t axis6GenJetPt = 3;
 

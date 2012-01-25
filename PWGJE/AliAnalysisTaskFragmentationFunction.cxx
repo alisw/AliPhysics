@@ -3742,12 +3742,12 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	if(!aodtr) continue;
 	if(!primVtx) continue; 
 	
-	Double_t Bfield = fAOD->GetMagneticField();
+	Double_t bfield = fAOD->GetMagneticField();
 	Double_t dz[2];
 	Double_t cov[3];
 	
 	AliAODTrack tmp(*aodtr); 
-	tmp.PropagateToDCA(primVtx, Bfield, 5., dz, cov);
+	tmp.PropagateToDCA(primVtx, bfield, 5., dz, cov);
 	
 	Double_t dcaXY = dz[0];
 	Double_t dcaZ  = dz[1];
@@ -5098,21 +5098,21 @@ void  AliAnalysisTaskFragmentationFunction::FillJetTrackHistosRecGen(TObject* hi
     if(dynamic_cast<AliFragFuncHistos*>(histGen) || dynamic_cast<AliFragFuncHistos*>(histRec)){ // histGen can be NULL for secondaries -> ||
       
       // after checking can afford normal cast
-      AliFragFuncHistos* FFhistGen =  (AliFragFuncHistos*) (histGen); 
-      AliFragFuncHistos* FFhistRec =  (AliFragFuncHistos*) (histRec); 
+      AliFragFuncHistos* ffhistGen =  (AliFragFuncHistos*) (histGen); 
+      AliFragFuncHistos* ffhistRec =  (AliFragFuncHistos*) (histRec); 
 
-      if(FFhistGen){
-	if(useRecJetPt) FFhistGen->FillFF( ptGen, jetPtRec, incrementJetPtGenFF );
-	else            FFhistGen->FillFF( ptGen, jetPtGen, incrementJetPtGenFF );
+      if(ffhistGen){
+	if(useRecJetPt) ffhistGen->FillFF( ptGen, jetPtRec, incrementJetPtGenFF );
+	else            ffhistGen->FillFF( ptGen, jetPtGen, incrementJetPtGenFF );
 	
 	incrementJetPtGenFF = kFALSE;
       }
 
       
-      if(FFhistRec && isRec){
+      if(ffhistRec && isRec){
 	
-	if(useRecJetPt) FFhistRec->FillFF( ptGen, jetPtRec, incrementJetPtRecFF );
-	else            FFhistRec->FillFF( ptGen, jetPtGen, incrementJetPtRecFF );
+	if(useRecJetPt) ffhistRec->FillFF( ptGen, jetPtRec, incrementJetPtRecFF );
+	else            ffhistRec->FillFF( ptGen, jetPtGen, incrementJetPtRecFF );
 	
 	incrementJetPtRecFF = kFALSE;
       }
@@ -5314,7 +5314,7 @@ void AliAnalysisTaskFragmentationFunction::FillJetTrackResponse(THnSparse* hnRes
 }
 
 // _____________________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius,Double_t& sumPt)
+void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius,Double_t& sumPt)
 {
   // List of tracks in cone perpendicular to the jet azimuthal direction
 
@@ -5357,7 +5357,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxis(Float_t alp
 }
 
 // ________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxisWindow(Float_t alpha, TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius,Double_t& sumPt,Double_t &normFactor)
+void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxisWindow(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius,Double_t& sumPt,Double_t &normFactor)
 {
   // List of tracks in cone perpendicular to the jet azimuthal direction
 
