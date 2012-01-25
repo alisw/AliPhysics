@@ -23,7 +23,7 @@
 // =============================================================================
 //== general setup variables
 TString     kTrainName         = "testAnalysis"; // *CHANGE ME* (no blancs or special characters)
-TString     kJobTag            = "PWG4 Jet Tasks analysis train configured"; // *CHANGE ME*
+TString     kJobTag            = "PWGJE Jet Tasks analysis train configured"; // *CHANGE ME*
 
 // Usage of par files ONLY in grid mode and ONLY if the code is not available
 // in the deployed AliRoot versions. Par file search path: local dir, if not there $ALICE_ROOT.
@@ -47,8 +47,8 @@ UInt_t      iPhysicsSelectionFlag = 1; // set by pyshics selection and passed to
 Bool_t      useTender           = kFALSE; // use tender wagon 
 Bool_t      kUseKinefilter     = kFALSE; // use Kinematics filter
 Bool_t      kUseMuonfilter     = kFALSE; // use Kinematics filter
-TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
-TString     kCaloQAOutputFileName = "PWG4_CaloQAOutput.root";
+TString     kCommonOutputFileName = "PWGJE_JetTasksOutput.root";
+TString     kCaloQAOutputFileName = "PWGJE_CaloQAOutput.root";
 
 
 //== general process variables
@@ -82,9 +82,9 @@ Bool_t      kIsPbPb             = kFALSE;  // Pb+Pb
 
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
-Int_t       iJETAN             = 1;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets, 3 wrtie both
-Int_t       iJETANReader       = 0;      // Jet analysis (PWG4) // DEV
-Int_t       iJETANFinder       = 0;      // Jet analysis (PWG4) // DEV
+Int_t       iJETAN             = 1;      // Jet analysis  // 1 write standard 2 write non-standard jets, 3 wrtie both
+Int_t       iJETANReader       = 0;      // Jet analysis  // DEV
+Int_t       iJETANFinder       = 0;      // Jet analysis  // DEV
 Int_t       iJETSUBTRACT        = 0;      // Jet background subtration
 TList       kJetListSpectrum;             // list of jets contains TObjString of possible jet finder names
 TExMap      kJetMapSpectrum;             // Maps the jet finder pairs to be used in the spectrum task second number negative no pair other wise (j1+1) + (1000 * (j2+1)) +10000 * (j3+1)
@@ -1817,7 +1817,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 
    if(iPWG4JetTasks){
      if (!LoadLibrary("PWGBase", mode, kTRUE)) return kFALSE;
-     if (!LoadLibrary("PWG4JetTasks", mode, kTRUE)) return kFALSE;
+     if (!LoadLibrary("PWGJE", mode, kTRUE)) return kFALSE;
    }
 
    if(iPWGPPQASym){
