@@ -25,6 +25,7 @@
 #include <TH2F.h>
 #include <THnSparse.h>
 #include <TSystem.h>
+#include <TObjArray.h>
 #include <TInterpreter.h>
 #include <TList.h>
 #include <TLorentzVector.h>
@@ -44,6 +45,9 @@
 ClassImp(AliAnalysisTaskJetBackgroundSubtract)
 
 AliAnalysisTaskJetBackgroundSubtract::~AliAnalysisTaskJetBackgroundSubtract(){
+  // 
+  // destructor
+  //
   delete fJBArray;
   delete fOutJetArrayList;
   delete fInJetArrayList;
@@ -54,7 +58,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract():
   fAODOut(0x0),
   fAODIn(0x0),  
   fAODExtension(0x0),
-  fJBArray(new TObjArray()),
+  fJBArray(0),
   fBackgroundBranch(""),
   fNonStdFile(""),
   fReplaceString1("B0"),
@@ -82,7 +86,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
   fAODOut(0x0),
   fAODIn(0x0),  
   fAODExtension(0x0),
-  fJBArray(new TObjArray()),
+  fJBArray(0),
   fBackgroundBranch(""),
   fNonStdFile(""),
   fReplaceString1("B0"),
@@ -109,6 +113,8 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
 Bool_t AliAnalysisTaskJetBackgroundSubtract::Notify()
 {
   //
+  // exec with every new file
+  //
   fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
 
   ResetOutJets();
@@ -118,7 +124,7 @@ Bool_t AliAnalysisTaskJetBackgroundSubtract::Notify()
   fInJetArrayList->Clear();
   fOutJetArrayList->Clear();
 
-  for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
+  for(int iJB = 0;iJB<(fJBArray?fJBArray->GetEntries():0);iJB++){
     TObjString *ostr = (TObjString*)fJBArray->At(iJB);
  
   
@@ -201,7 +207,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   if(!fInJetArrayList)fInJetArrayList =new TList();
   if(!fOutJetArrayList)fOutJetArrayList =new TList();
 
-  for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
+  for(int iJB = 0;iJB<(fJBArray?fJBArray->GetEntries():0);iJB++){
     TObjString *ostr = (TObjString*)fJBArray->At(iJB);
     TString newName(ostr->GetString().Data());
     if(!newName.Contains(fReplaceString1.Data())){
@@ -241,7 +247,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   const Double_t xminDelta[nSparseBinsDelta] = {-120.5,   0,   0,   0};
   const Double_t xmaxDelta[nSparseBinsDelta] = { 120.5, 1.0, 100,5000};
  
-  for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
+  for(int iJB = 0;iJB<(fJBArray?fJBArray->GetEntries():0);iJB++){
     TObjString *ostr = (TObjString*)fJBArray->At(iJB);
     TString oldName(ostr->GetString().Data()); 
     TString newName(ostr->GetString().Data()); 
@@ -301,7 +307,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
 
   if(fBackgroundBranch.Length()==0)
     AliError(Form("%s:%d No BackgroundBranch defined",(char*)__FILE__,__LINE__));
-  if(fJBArray->GetEntries()==0)
+  if((fJBArray?fJBArray->GetEntries():0)==0)
     AliError(Form("%s:%d No Jet Branches defined defined",(char*)__FILE__,__LINE__));
 }
 
@@ -315,10 +321,13 @@ void AliAnalysisTaskJetBackgroundSubtract::Init()
 
 void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 {
+  //
+  // Execute for every selected event
+  //
 
   if (fDebug > 1) printf("AnalysisTaskJetBackgroundSubtract::UserExec() \n");
   ResetOutJets();
-  if(fBackgroundBranch.Length()==0||fJBArray->GetEntries()==0){
+  if(fBackgroundBranch.Length()==0||(fJBArray?fJBArray->GetEntries():0)==0){
     if(fDebug)Printf("%s:%d No background subtraction done",(char*)__FILE__,__LINE__);
     PostData(1,fHistList);
   }
@@ -613,10 +622,14 @@ Bool_t AliAnalysisTaskJetBackgroundSubtract::RescaleJet4vector(AliAODJet *jet,TL
 
 Double_t AliAnalysisTaskJetBackgroundSubtract::RecalcRho(TClonesArray* bkgClusters,Double_t meanarea){
   
+  //
+  // recalc rhoo
+  // 
+
   Double_t ptarea=0.;
   Int_t count=0;
   Double_t rho=0.; 
-  const Double_t Rlimit2=0.8*0.8;  //2*jet radius.
+  const Double_t rLimit2=0.8*0.8;  //2*jet radius.
   TClonesArray* jarray=0;
   
   for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
@@ -638,7 +651,7 @@ Double_t AliAnalysisTaskJetBackgroundSubtract::RecalcRho(TClonesArray* bkgCluste
 	(first->Phi()-clus->Phi())*(first->Phi()-clus->Phi());
       Double_t distance2= (second->Eta()-clus->Eta())*(second->Eta()-clus->Eta())+
 	(second->Phi()-clus->Phi())*(second->Phi()-clus->Phi());
-      if((distance1<Rlimit2)||(distance2<Rlimit2)) continue;    
+      if((distance1<rLimit2)||(distance2<rLimit2)) continue;    
       ptarea=ptarea+clus->Pt()/clus->EffectiveAreaCharged(); 
       count=count+1;}
     if(count!=0) rho=ptarea/count; 
@@ -646,12 +659,16 @@ Double_t AliAnalysisTaskJetBackgroundSubtract::RecalcRho(TClonesArray* bkgCluste
   return rho;
 }
 
-   Double_t AliAnalysisTaskJetBackgroundSubtract::RhoRC(TClonesArray* bkgClustersRC){
+Double_t AliAnalysisTaskJetBackgroundSubtract::RhoRC(TClonesArray* bkgClustersRC){
+
+  // 
+  // calc rho from random cones
+  //
   
        Double_t ptarea=0.;
        Int_t count=0;
        Double_t rho=0.; 
-       const Double_t Rlimit2=0.8*0.8;  //2*jet radius.
+       const Double_t rLimit2=0.8*0.8;  //2*jet radius.
        TClonesArray* jarray=0;
         for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
 	  TObjString *ostr = (TObjString*)fInJetArrayList->At(iJB);
@@ -672,7 +689,7 @@ Double_t AliAnalysisTaskJetBackgroundSubtract::RecalcRho(TClonesArray* bkgCluste
 	     (first->Phi()-clus->Phi())*(first->Phi()-clus->Phi());
 	   Double_t distance2= (second->Eta()-clus->Eta())*(second->Eta()-clus->Eta())+
 	     (second->Phi()-clus->Phi())*(second->Phi()-clus->Phi());
-	   if((distance1<Rlimit2)||(distance2<Rlimit2)) continue;    
+	   if((distance1<rLimit2)||(distance2<rLimit2)) continue;    
 	   ptarea=ptarea+clus->Pt()/clus->EffectiveAreaCharged(); 
 	   count=count+1;}
          if(count!=0) rho=ptarea/count;  }
@@ -688,6 +705,10 @@ Double_t AliAnalysisTaskJetBackgroundSubtract::RecalcRho(TClonesArray* bkgCluste
 
 
 void AliAnalysisTaskJetBackgroundSubtract::ResetOutJets(){
+  //
+  // Reset the output jets
+  //
+
   if(!fOutJetArrayList)return;
   for(int iJB = 0;iJB<fOutJetArrayList->GetEntries();iJB++){
     TClonesArray* jarray = (TClonesArray*)fOutJetArrayList->At(iJB);
@@ -697,6 +718,11 @@ void AliAnalysisTaskJetBackgroundSubtract::ResetOutJets(){
 
 
 void AliAnalysisTaskJetBackgroundSubtract::PrintAODContents(){
+
+  //
+  // guess from the name what this function does
+  //
+
   if(fAODIn){
     Printf("%s:%d >>>>>> Input",(char*)__FILE__,__LINE__);
     fAODIn->Print();
@@ -712,6 +738,10 @@ void AliAnalysisTaskJetBackgroundSubtract::PrintAODContents(){
 }
 
 Int_t AliAnalysisTaskJetBackgroundSubtract::MultFromJetRefs(TClonesArray* jets){
+  //
+  // calculate multiplicty based on jet references
+  //
+
   if(!jets)return 0;
 
   Int_t refMult = 0;
@@ -724,4 +754,9 @@ Int_t AliAnalysisTaskJetBackgroundSubtract::MultFromJetRefs(TClonesArray* jets){
   }
   return refMult;
 
+}
+
+void  AliAnalysisTaskJetBackgroundSubtract::AddJetBranch(const char* c){
+  if(!fJBArray)fJBArray = new TObjArray();
+  fJBArray->Add(new TObjString(c));
 }

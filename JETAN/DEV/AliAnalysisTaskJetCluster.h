@@ -158,14 +158,14 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     
 
     // Fast jet
-    Double_t fRparam;
+    Double_t fRparam;                  // fastjet distance parameter
     fastjet::JetAlgorithm fAlgorithm; //fastjet::kt_algorithm
     fastjet::Strategy fStrategy;  //= fastjet::Best;
     fastjet::RecombinationScheme fRecombScheme; // = fastjet::BIpt_scheme;
-    fastjet::AreaType fAreaType; 
-    Double_t fGhostArea;
-    Int_t fActiveAreaRepeats;
-    Double_t fGhostEtamax;
+    fastjet::AreaType fAreaType;  // fastjet area type
+    Double_t fGhostArea;          // fasjet ghost area
+    Int_t fActiveAreaRepeats;     // fast jet active area repeats
+    Double_t fGhostEtamax;        // fast jet ghost area
 
     TClonesArray  *fTCAJetsOut; //! TCA of output jets
     TClonesArray  *fTCAJetsOutRan; //! TCA of output jets in randomized event

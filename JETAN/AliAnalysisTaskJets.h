@@ -1,3 +1,6 @@
+//
+// Taks for jet finding in ALICE 
+//
 #ifndef ALIANALYSISTASKJETS_H
 #define ALIANALYSISTASKJETS_H
  
