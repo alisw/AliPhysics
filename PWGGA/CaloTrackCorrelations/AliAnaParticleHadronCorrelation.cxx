@@ -773,27 +773,15 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   Double_t ptTrig      = fMinTriggerPt ;
   fLeadingTriggerIndex = -1 ;
   Int_t    naod        = GetInputAODBranch()->GetEntriesFast() ;
-  for(Int_t iaod = 0; iaod < naod ; iaod++){
+  for(Int_t iaod = 0; iaod < naod ; iaod++)
+  {
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
-    //vertex cut in case of mixing
-    if (GetMixedEvent()) {
-      Int_t evt=-1;
-      Int_t id =-1;
-      if     (particle->GetCaloLabel(0)  >= 0 ){
-        id=particle->GetCaloLabel(0); 
-        if(id >= 0 )evt= GetMixedEvent()-> EventIndexForCaloCluster(id) ;
-      }
-      else if(particle->GetTrackLabel(0) >= 0 ){
-        id=particle->GetTrackLabel(0);
-        if(id >= 0 )evt= GetMixedEvent()->EventIndex(id) ;
-      }
-      else continue;
-      
-      if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut()) 
-        return ;
-    }
-    
+    // Vertex cut in case of mixing
+    Int_t check = CheckMixedEventVertex(particle->GetCaloLabel(0), particle->GetTrackLabel(0));
+    if(check ==  0) continue;
+    if(check == -1) return;
+        
     // find the leading particles with highest momentum
     if (particle->Pt() > ptTrig) {
       ptTrig               = particle->Pt() ;
@@ -848,28 +836,18 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   
   //Loop on stored AOD particles, find leading
   Double_t ptTrig    = fMinTriggerPt;
-  if(fLeadingTriggerIndex < 0){//Search leading if not done before
+  if(fLeadingTriggerIndex < 0)
+  {
+    //Search leading if not done before
     Int_t    naod      = GetInputAODBranch()->GetEntriesFast() ;
     for(Int_t iaod = 0; iaod < naod ; iaod++){	 //loop on input trigger AOD file 
       AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-      //vertex cut in case of mixing
-      if (GetMixedEvent()) {
-        Int_t evt=-1;
-        Int_t id =-1;
-        if     (particle->GetCaloLabel(0)  >= 0 ){
-          id=particle->GetCaloLabel(0); 
-          if(id >= 0 )evt= GetMixedEvent()-> EventIndexForCaloCluster(id) ;
-        }
-        else if(particle->GetTrackLabel(0) >= 0 ){
-          id=particle->GetTrackLabel(0);
-          if(id >= 0 )evt= GetMixedEvent()->EventIndex(id) ;
-        }
-        else continue;
-        
-        if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut()) 
-          return ;
-      }
-            
+
+      // Vertex cut in case of mixing
+      Int_t check = CheckMixedEventVertex(particle->GetCaloLabel(0), particle->GetTrackLabel(0));
+      if(check ==  0) continue;
+      if(check == -1) return;
+      
       //check if the particle is isolated or if we want to take the isolation into account
       if(OnlyIsolated() && !particle->IsIsolated()) continue;
       
@@ -937,7 +915,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   Double_t v[3]      = {0,0,0}; //vertex ;
   GetReader()->GetVertex(v);
   
-  if (GetMixedEvent()) {
+  if (GetMixedEvent()) 
+  {
     evtIndex11 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(0)) ;
     evtIndex12 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(1)) ;    
     evtIndex13 = GetMixedEvent()->EventIndex(aodParticle->GetTrackLabel(0)) ;
@@ -1043,7 +1022,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
     
     //Only for mixed event
     Int_t evtIndex2 = 0 ; 
-    if (GetMixedEvent()) {
+    if (GetMixedEvent()) 
+    {
       evtIndex2 = GetMixedEvent()->EventIndex(track->GetID()) ;
       if (evtIndex11 == evtIndex2 || evtIndex12 == evtIndex2 || evtIndex13 == evtIndex2 ) // photon and track from different events
         continue ; 
@@ -1239,7 +1219,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   
   Int_t evtIndex11 = 0 ; 
   Int_t evtIndex12 = 0 ; 
-  if (GetMixedEvent()) {
+  if (GetMixedEvent()) 
+  {
     evtIndex11 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(0)) ;
     evtIndex12 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(1)) ;    
   }  
@@ -1322,7 +1303,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
     
     Int_t evtIndex2 = 0 ; 
     Int_t evtIndex3 = 0 ; 
-    if (GetMixedEvent()) {
+    if (GetMixedEvent()) 
+    {
       evtIndex2 = GetMixedEvent()->EventIndexForCaloCluster(pi0->GetCaloLabel(0)) ;
       evtIndex3 = GetMixedEvent()->EventIndexForCaloCluster(pi0->GetCaloLabel(1)) ;
       

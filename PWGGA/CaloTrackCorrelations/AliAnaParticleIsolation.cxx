@@ -797,22 +797,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
       continue ; //trigger should not come from underlying event
     
     //vertex cut in case of mixing
-    if (GetMixedEvent()) {
-      Int_t evt=-1;
-      Int_t id =-1;
-      if     (aodinput->GetCaloLabel(0)  >= 0 ){
-        id=aodinput->GetCaloLabel(0); 
-        if(id >= 0 )evt= GetMixedEvent()-> EventIndexForCaloCluster(id) ;
-      }
-      else if(aodinput->GetTrackLabel(0) >= 0 ){
-        id=aodinput->GetTrackLabel(0);
-        if(id >= 0 )evt= GetMixedEvent()->EventIndex(id) ;
-      }
-      else continue;
-      
-      if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut()) 
-        return ;
-    }
+    Int_t check = CheckMixedEventVertex(aodinput->GetCaloLabel(0), aodinput->GetTrackLabel(0));
+    if(check ==  0) continue;
+    if(check == -1) return;
     
     //find the leading particles with highest momentum
     if ((aodinput->Pt())>ptLeading) {

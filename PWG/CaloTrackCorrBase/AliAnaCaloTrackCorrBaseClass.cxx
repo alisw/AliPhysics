@@ -110,6 +110,35 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
   
 }	
 
+//_______________________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(const Int_t caloLabel, 
+                                                          const Int_t trackLabel)
+{
+  // Check vertex in mixed events
+  
+  if (!GetMixedEvent()) return 1; // Not mixed event continue normal processing
+  
+  Int_t evt = -1;
+  
+  if     (caloLabel  >= 0 )
+  {
+    evt = GetMixedEvent()->EventIndexForCaloCluster(caloLabel) ;
+  }
+  else if(trackLabel >= 0 )
+  {
+    evt = GetMixedEvent()->EventIndex(trackLabel) ;
+  }
+  else  
+    return 0; // go to next entry in the particle list
+  
+  if(evt == -1) 
+    return 0 ; // to content coverity
+  
+  if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut())  return -1; // Vertex out of range process next event
+  
+  return 1 ; // continue processing normally
+  
+}
 
 //________________________________________________________________
 void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() 

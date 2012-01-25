@@ -177,7 +177,8 @@ public:
   virtual void           SetNMaxEvMix(Int_t n=20)                { fNmaxMixEv = n ;} //maximal number of events for mixing
   virtual void           SetMultiplicity(Int_t multimin, Int_t multimax) {fMinMulti = multimin ; fMaxMulti = multimax ; }
   
-  //Mixed event
+  //Mixed event  
+  virtual Int_t           CheckMixedEventVertex(const Int_t caloLabel, const Int_t trackLabel) ;
   virtual AliMixedEvent * GetMixedEvent()                        { return GetReader()->GetMixedEvent()  ; } 
   virtual Int_t           GetNMixedEvent()                 const { return GetReader()->GetNMixedEvent() ; } 
   
