@@ -775,7 +775,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
       if((oldmeanvdrift > 0.0) && (oldmeanexb < 70.0))  {
 	//printf("Correction factor %f\n",vdriftoverall);
 	calDetVdrift->Multiply(vdriftoverall/oldmeanvdrift);
-	calDetLorentz->Multiply(exboverall/oldmeanexb);
+	if(TMath::Abs(oldmeanexb) > 0.0001) calDetLorentz->Multiply(exboverall/oldmeanexb);
 	//printf("newmean %f\n",calDetVdrift->CalcMean(kFALSE));
 	TH1F *coefDriftLinear  = calDetVdrift->MakeHisto1DAsFunctionOfDet();
 	TH1F *coefLorentzAngle = calDetLorentz->MakeHisto1DAsFunctionOfDet();
