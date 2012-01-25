@@ -496,14 +496,19 @@ void AliMUONAlignment::AddConstraints(const Bool_t *lChOnOff, const Bool_t *lVar
       }
     }
   }
-  lMeanY /= lNDetElem;
-  lSigmaY /= lNDetElem;
-  lSigmaY = TMath::Sqrt(lSigmaY-lMeanY*lMeanY);
-  lMeanZ /= lNDetElem;
-  lSigmaZ /= lNDetElem;
-  lSigmaZ = TMath::Sqrt(lSigmaZ-lMeanZ*lMeanZ);
-  AliInfo(Form("Used %i DetElem, MeanZ= %f , SigmaZ= %f", lNDetElem,lMeanZ,lSigmaZ));
-
+  if (lNDetElem) {
+    lMeanY /= lNDetElem;
+    lSigmaY /= lNDetElem;
+    lSigmaY = TMath::Sqrt(lSigmaY-lMeanY*lMeanY);
+    lMeanZ /= lNDetElem;
+    lSigmaZ /= lNDetElem;
+    lSigmaZ = TMath::Sqrt(lSigmaZ-lMeanZ*lMeanZ);
+     AliInfo(Form("Used %i DetElem, MeanZ= %f , SigmaZ= %f", lNDetElem,lMeanZ,lSigmaZ));
+  } else {
+    AliError("No detection elements to constrain!!!");
+    return;    
+  }
+		
   for (Int_t i = 0; i < fgNDetElem; i++){
     Int_t iCh=0;
     for (iCh=1; iCh<=fgNCh; iCh++){
