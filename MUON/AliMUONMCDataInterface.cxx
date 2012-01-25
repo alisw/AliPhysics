@@ -101,10 +101,6 @@ fIterator(0x0)
 AliMUONMCDataInterface::~AliMUONMCDataInterface()
 {
   /// dtor
-  if ( fLoader ) 
-  {
-    delete fLoader->GetRunLoader();
-  }
   --fgInstanceCounter;
 }
 

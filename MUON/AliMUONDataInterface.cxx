@@ -110,10 +110,6 @@ AliMUONDataInterface::~AliMUONDataInterface()
 {
   /// dtor
   ResetStores();
-  if ( fLoader != 0x0 ) 
-  {
-    delete fLoader->GetRunLoader();
-  }
   --fgInstanceCounter;  
 }
 
@@ -575,7 +571,7 @@ AliMUONDataInterface::Open(const char* filename)
   }
   else {
     Int_t runNumber = runLoader->GetHeader()->GetRun();
-    AliCDBManager::Instance()->SetRun(runNumber);
+    AliCDBManager::Instance()->SetRun(runNumber>=0 ? runNumber : 1);
   }  
   runLoader->UnloadHeader(); 
 
