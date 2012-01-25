@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG4totEt                                                     #
+# Package File for PWGLFtotEt                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -49,8 +49,8 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4totEtLinkDef.h)
+set ( DHDR  PWGLFtotEtLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS PWG0 PWG4/totEt STEER/STEERBase)
+set ( EINCLUDE ANALYSIS PWG0 PWGLF/totEt STEER/STEERBase)
