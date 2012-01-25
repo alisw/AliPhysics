@@ -33,7 +33,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   virtual ~AliAnaParticleHadronCorrelation() {;} //virtual dtor
   
   // General methods
-  
+    
   TObjString * GetAnalysisCuts();
   
   TList      * GetCreateOutputObjects();
@@ -224,7 +224,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;//cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,9)
+  ClassDef(AliAnaParticleHadronCorrelation,10)
 } ;
  
 
