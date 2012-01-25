@@ -2,16 +2,16 @@ void SETUP()
 {
 
    // Load the JET-Tasks library
-   gSystem->Load("libPWG4JetTasks");
+   gSystem->Load("libPWGJE");
 
 
    gSystem->AddIncludePath("-I$ROOTSYS/include -IJETAN");
    gROOT->ProcessLine(".include JETAN");
 
    // Set the Include paths
-   gSystem->AddIncludePath("-IPWG4JetTasks");
-   gROOT->ProcessLine(".include PWG4JetTasks/JetTasks");
+   gSystem->AddIncludePath("-IPWGJE");
+   gROOT->ProcessLine(".include PWGJE/");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG4JetTasks_INCLUDE", "PWG4JetTasks");
+   gSystem->Setenv("PWGJE_INCLUDE", "PWGJE");
 }
