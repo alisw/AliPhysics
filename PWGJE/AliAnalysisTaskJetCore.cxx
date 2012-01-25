@@ -1,3 +1,28 @@
+// ******************************************
+// This task computes several jet observables like 
+// the fraction of energy in inner and outer coronnas,
+// the distance from track to jet axis and a 
+// correlation strength distribution of particles inside jets.    
+// Author: lcunquei@cern.ch
+// *******************************************
+
+
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -689,7 +714,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    // }
 
    
-   fHistEvtSelection->Fill(0); // accepted events  
+   fHistEvtSelection->Fill(0); 
+   // accepted events  
    // -- end event selection --
   
    // get background
@@ -888,7 +914,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt4->Fill(part->Pt(),deltaEta);
               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC60pt4->Fill(part->Pt(),deltaPhi);}}
                  
-     } //end of track loop
+     } 
+     //end of track loop
      Double_t coronain=rho*TMath::Pi()*(1.-0.8*0.8);
      Double_t coronaout=rho*TMath::Pi()*(0.6*0.6-0.4*0.4);
      if(centValue<10.){  
@@ -955,7 +982,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
       AliAODTrack* part2;
           for(Int_t it=0; it<nTracksGenJet; ++it){
              part1 = (AliAODTrack*)(genTrackList->At(it));
-           for(Int_t itu=it+1; itu<nTracksGenJet; ++itu){
+           for(Int_t itu=0; itu<nTracksGenJet; ++itu){
              part2 = (AliAODTrack*)(genTrackList->At(itu));
            Double_t ptm=part1->Pt();
            Double_t ptn=part2->Pt();	
