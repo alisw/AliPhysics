@@ -548,7 +548,7 @@ void AliAnalysisTaskFastEmbedding::Init()
 //__________________________________________________________________________
 Bool_t AliAnalysisTaskFastEmbedding::UserNotify()
 {
-
+   // User defined Notify(), called once
    if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::UserNotify()");
 
    // get total nb of events in tree (of this subjob)
@@ -564,6 +564,7 @@ Bool_t AliAnalysisTaskFastEmbedding::UserNotify()
 //__________________________________________________________________________
 void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 {
+   // Analysis, called once per event
    if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::UserExec()");
 
    if(!fAODout){
@@ -962,6 +963,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 //__________________________________________________________________________
 void AliAnalysisTaskFastEmbedding::Terminate(Option_t *)
 {
+   // terminate
    if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::Terminate()");
 
    if(fAODfile && fAODfile->IsOpen())
@@ -972,6 +974,8 @@ void AliAnalysisTaskFastEmbedding::Terminate(Option_t *)
 //__________________________________________________________________________
 Int_t AliAnalysisTaskFastEmbedding::GetJobID()
 {
+   // gives back the alien subjob id, if available, else -1
+
    Int_t id=-1;
 
    const char* env = gSystem->Getenv("ALIEN_PROC_ID"); // GRID
@@ -989,8 +993,9 @@ Int_t AliAnalysisTaskFastEmbedding::GetJobID()
 }
 
 //__________________________________________________________________________
-
-Int_t AliAnalysisTaskFastEmbedding::SelectAODfile(){
+Int_t AliAnalysisTaskFastEmbedding::SelectAODfile()
+{
+   // select an AOD file from fAODPathArray
 
    Int_t nFiles = fAODPathArray->GetEntries();
 
@@ -999,6 +1004,7 @@ Int_t AliAnalysisTaskFastEmbedding::SelectAODfile(){
    Float_t tmpProp = -1.;
    Int_t pendingEvents = fInputEntries-Entry();
    //Printf("input entries %d, entry %d, pending events %d", fInputEntries, (Int_t)Entry(), pendingEvents);
+   if(fAODEntriesArray){
    while(rndm->Rndm()>tmpProp){
       n = rndm->Integer(nFiles);
       fAODEntries = fAODEntriesArray->At(n);
@@ -1006,6 +1012,11 @@ Int_t AliAnalysisTaskFastEmbedding::SelectAODfile(){
       tmpProp = fAODEntriesMax ? (Float_t)tmpEntries/fAODEntriesMax : 1.;
    }
    fAODEntry = (Int_t)(rndm->Uniform(fAODEntries));
+   } else {
+      AliWarning("Number of entries in extra AODs not set!");
+      n = rndm->Integer(nFiles);
+      fAODEntry = 0;
+   }
 
    AliInfo(Form("Select AOD file %d", n));
    TObjString *objStr = (TObjString*) fAODPathArray->At(n);
@@ -1019,14 +1030,15 @@ Int_t AliAnalysisTaskFastEmbedding::SelectAODfile(){
 }
 
 //__________________________________________________________________________
-
-Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial){
+Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial)
+{
+   // select and open an AOD file from fAODPathArray
 
    if(fAODPathArray) fFileId = SelectAODfile();
    if(fFileId<0) return -1;
 
    TDirectory *owd = gDirectory;
-   if (fAODfile) fAODfile->Close();
+   if (fAODfile && fAODfile->IsOpen()) fAODfile->Close();
    fAODfile = TFile::Open(fAODPath.Data(),"TIMEOUT=180");
    owd->cd();
    if(!fAODfile){
@@ -1108,6 +1120,8 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial){
 //____________________________________________________________________________
 Float_t AliAnalysisTaskFastEmbedding::GetPtHard(Bool_t bSet, Float_t newValue){
 
+   // static stored, available for other tasks in train
+
    static Float_t ptHard = -1.;
    if(bSet) ptHard = newValue;
 
@@ -1116,6 +1130,8 @@ Float_t AliAnalysisTaskFastEmbedding::GetPtHard(Bool_t bSet, Float_t newValue){
 
 //____________________________________________________________________________
 Int_t AliAnalysisTaskFastEmbedding::GetPtHardBin(Double_t ptHard){
+
+   // returns pt hard bin (for LHC10e14, LHC11a1x, LHC11a2x simulations)
 
    const Int_t nBins = 10;
    Double_t binLimits[nBins] = { 5., 11., 21., 36., 57., 84., 117., 156., 200., 249. }; // lower limits
