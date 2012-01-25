@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG3base                                                      #
+# Package File for PWGDQbase                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -35,6 +35,6 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( DHDR  PWG3baseLinkDef.h)
+set ( DHDR  PWGDQbaseLinkDef.h)
 
-set ( EINCLUDE  PWG3/base STEER/STEERBase)
+set ( EINCLUDE  PWGDQ/base STEER/STEERBase)
