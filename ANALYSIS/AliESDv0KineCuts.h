@@ -133,7 +133,7 @@ class AliESDv0KineCuts : public TObject{
   Bool_t CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN) const;
   Bool_t CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id) const;
 
-  Bool_t V0CutsCommon(AliESDv0 * const v0) const;
+  Bool_t V0CutsCommon(const AliESDv0 * const v0) const;
   Bool_t SingleTrackCuts(AliESDv0 * const v0) const;
   void   Armenteros(AliESDv0* const v0, Float_t val[2]) const;
   Bool_t CheckSigns(AliESDv0* const v0) const;

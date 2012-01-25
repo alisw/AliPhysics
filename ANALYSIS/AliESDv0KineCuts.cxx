@@ -663,7 +663,7 @@ Bool_t  AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pd
   return kTRUE;
 }
 //____________________________________________________________________
-Bool_t  AliESDv0KineCuts::V0CutsCommon(AliESDv0 * const v0) const 
+Bool_t  AliESDv0KineCuts::V0CutsCommon(const AliESDv0 * const v0) const 
 {
   //
   // V0 cuts common to all V0s
@@ -972,23 +972,22 @@ void  AliESDv0KineCuts::SetEvent(AliVEvent* const event){
   //
   // direct setter of ESD event
   //
-  if(event)
-    fEvent = static_cast<AliESDEvent*>(event);
+
+  fEvent = dynamic_cast<AliESDEvent*>(event);
   if(!fEvent){
     AliErrorClass("Invalid input event pointer");
     return;
   }
-
-if (fUseExternalVertex) return;
-else{
-	if(fPrimaryVertex && fDeleteVertex){
-		delete 	fPrimaryVertex;
-		fPrimaryVertex=0x0;
-		}
-	fPrimaryVertex = new AliKFVertex(*(event->GetPrimaryVertex()));
-	fDeleteVertex=kTRUE;
-}
-
+  
+  if (fUseExternalVertex) return;
+  else{
+    if(fPrimaryVertex && fDeleteVertex){
+      delete 	fPrimaryVertex;
+      fPrimaryVertex=0x0;
+      }
+    fPrimaryVertex = new AliKFVertex(*(fEvent->GetPrimaryVertex()));
+    fDeleteVertex=kTRUE;
+  }
 }
 
 
