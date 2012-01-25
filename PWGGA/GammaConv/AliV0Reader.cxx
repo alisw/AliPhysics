@@ -168,7 +168,7 @@ AliV0Reader::AliV0Reader() :
 	fdoESDQtCut(0),
 	fMinPPhotonAsymmetryCut(100.),
 	fMinPhotonAsymmetry(0.),
-        fExcludeBackgroundEventForGammaCorrection(0.),
+        fExcludeBackgroundEventForGammaCorrection(0),
         fNumberOfPrimerisFromHijingAndPythia(0)
 {
 	//fESDpid = new AliESDpid;	
@@ -486,7 +486,7 @@ void AliV0Reader::Initialize(){
 	}
         
         if(fDoMC && fExcludeBackgroundEventForGammaCorrection){
-           fNumberOfPrimerisFromHijingAndPythia = GetNumberOfHijingPlusPythiaPrimeries();
+           fNumberOfPrimerisFromHijingAndPythia = GetNumberOfHijingPlusPythiaPrimeries(fExcludeBackgroundEventForGammaCorrection);
         }
 }
 
@@ -2455,7 +2455,7 @@ Double_t AliV0Reader::GetPsiPair(AliESDv0* v0)
   return psiPair; 
 }
 
-Int_t AliV0Reader::GetNumberOfHijingPlusPythiaPrimeries(){
+Int_t AliV0Reader::GetNumberOfHijingPlusPythiaPrimeries(Int_t excludeHeaderType){
    
    // Calculate NPrimaries for LHC11a10b_*
 
@@ -2467,12 +2467,14 @@ Int_t AliV0Reader::GetNumberOfHijingPlusPythiaPrimeries(){
       for(Int_t i = 0; i<genHeaders->GetEntries();i++){
          gh = (AliGenEventHeader*)genHeaders->At(i);
          TString GeneratorName = gh->GetName();
-         //  cout<<i<<"   "<<GeneratorName<<"   "<<gh->NProduced()<<endl;
+        
          if(GeneratorName.CompareTo("Hijing") == 0){
             nproduced = nproduced + gh->NProduced();
+            //            cout<<i<<"   "<<GeneratorName<<"   "<<gh->NProduced()<<endl;
          }
-         else if(GeneratorName.CompareTo("Pythia") == 0){
+         else if(GeneratorName.CompareTo("Pythia") == 0 && excludeHeaderType == 1){
             nproduced = nproduced + gh->NProduced();
+            //            cout<<i<<"   "<<GeneratorName<<"   "<<gh->NProduced()<<endl;
          }
       }
    }
@@ -2492,13 +2494,14 @@ Bool_t AliV0Reader::IsParticleFromBGEvent(Int_t index){
   
    if(index == -1) return kFALSE;
    if(index > fNumberOfPrimerisFromHijingAndPythia && index < fMCStack->GetNprimary()){
+      //      cout<<fMCEvent->IsFromBGEvent(index)<<endl;
       // cout<<index<<"   "<<fNumberOfPrimerisFromHijingAndPythia<<endl;
       return kTRUE;
    }
    //  else cout<<"Passt Noch "<<index<<"   "<<fNumberOfPrimerisFromHijingAndPythia<<endl;
    // cout<<fMCEvent->IsFromBGEvent(index)<<endl;
    TParticle *BGParticle = fMCStack->Particle(index);
-   if(BGParticle->GetMother(0) > -1)  return kFALSE;
+   if(BGParticle->GetMother(0) > -1) return kFALSE;
    Int_t indexMother = fMCStack->Particle(index)->GetMother(0);
    particleFromBG = IsParticleFromBGEvent(indexMother);
    
