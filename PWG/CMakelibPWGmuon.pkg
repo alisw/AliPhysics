@@ -36,7 +36,6 @@ set ( SRCS
     muon/AliAnalysisTaskFromStandardToMuonAOD.cxx 
     muon/AliAnalysisTaskSingleMu.cxx 
     muon/AliAnalysisTaskLUT.cxx 
-    muon/AliAnalysisTaskTrigChEff.cxx 
     muon/AliAnalysisTaskLinkToMC.cxx 
     muon/AliAODEventInfo.cxx 
     muon/AliESDMuonTrackCuts.cxx 
@@ -55,7 +54,6 @@ set ( SRCS
     muon/AliAnalysisTaskSEMuonsHF.cxx 
     muon/AliAnalysisTaskDimuonCFContainerBuilder.cxx 
     muon/AliAnalysisTaskMuonTreeBuilder.cxx 
-    muon/AliAnalysisTaskMuonQA.cxx 
     muon/AliAODMuonReplicator.cxx 
     muon/AliAnalysisTaskMuonCollisionMultiplicity.cxx 
     muon/AliCFMuonResUpsilon.cxx 

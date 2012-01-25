@@ -27,14 +27,9 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
-    muondep/AliAnalysisTaskMuonTrackingEff.cxx 
-    muondep/AliAnalysisTaskRecoCheck.cxx 
     muondep/AliAnalysisTaskESDMCLabelAddition.cxx 
-    muondep/AliAnalysisTaskMuonResolution.cxx 
     muondep/AliAnalysisTaskPileup.cxx 
-    muondep/AliAnalysisTaskMuonFakes.cxx 
     muondep/AliAnalysisTaskMuonRefit.cxx 
-    muondep/AliAnalysisTaskMuonPerformance.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

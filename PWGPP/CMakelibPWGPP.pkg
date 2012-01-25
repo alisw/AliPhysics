@@ -42,6 +42,8 @@ file ( GLOB SRCS12 "Centrality/*.cxx" )
 file ( GLOB SRCS13 "ZDC/*.cxx" )
 file ( GLOB SRCS14 "T0/*.cxx" )
 file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
+file ( GLOB SRCS16 "MUON/dep/*.cxx" )
+file ( GLOB SRCS17 "MUON/lite/*.cxx" )
 
 list ( APPEND SRCS 
   ${SRCS1} 
@@ -59,13 +61,17 @@ list ( APPEND SRCS
   ${SRCS13} 
   ${SRCS14}
   ${SRCS15}
+  ${SRCS16}
+  ${SRCS17}
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGPPLinkDef.h)
 
-set ( EINCLUDE  
+set ( EINCLUDE
+  MUON
+  MUON/mapping
   TPC 
   ITS 
   TRD 
@@ -88,7 +94,7 @@ set ( EINCLUDE
   PWGPP/ZDC 
   PWGPP/T0 
   PWGPP/VZERO 
-  PWG4/PartCorrBase
+  PWGPP/MUON/dep 
   STEER/STEER 
   STEER/AOD 
   STEER/CDB 

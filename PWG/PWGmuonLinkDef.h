@@ -13,7 +13,6 @@
 #pragma link C++ class AliAODMuonReplicator+;
 #pragma link C++ class AliAnalysisNonMuonTrackCuts+;
 #pragma link C++ class AliAnalysisNonPrimaryVertices+;
-#pragma link C++ class AliAnalysisTaskTrigChEff+;
 #pragma link C++ class AliESDMuonTrackCuts+;
 #pragma link C++ class AliAnalysisTaskSingleMuESD+;
 #pragma link C++ class AliAnalysisTaskLinkToMC+;
@@ -31,7 +30,6 @@
 #pragma link C++ class AliAnalysisTaskSEMuonsHF+;
 #pragma link C++ class AliAnalysisTaskDimuonCFContainerBuilder+;
 #pragma link C++ class AliAnalysisTaskMuonTreeBuilder+;
-#pragma link C++ class AliAnalysisTaskMuonQA+;
 #pragma link C++ class AliHistogramCollection+;
 #pragma link C++ class AliHistogramCollectionIterator+;
 #pragma link C++ class AliAnalysisTaskMuonCollisionMultiplicity+;
