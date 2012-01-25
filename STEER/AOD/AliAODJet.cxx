@@ -199,7 +199,7 @@ void  AliAODJet::SetPtEtaPhiM(Double_t pt, Double_t eta, Double_t phi, Double_t 
 
 
 
-Double_t AliAODJet::DeltaR(const AliVParticle* part){
+Double_t AliAODJet::DeltaR(const AliVParticle* part) const {
 
   // Helper function to calculate the distance between two jets
   // or a jet and particle

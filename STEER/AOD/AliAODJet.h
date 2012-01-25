@@ -87,7 +87,7 @@ class AliAODJet : public AliVParticle {
 
     virtual Double_t   ErrorEffectiveAreaCharged()   const { return  fEffectiveAreaError[0];}
     virtual Double_t   ErrorEffectiveAreaNeutral()   const { return  fEffectiveAreaError[1];}
-    virtual Double_t   DeltaR(const AliVParticle* part);
+    virtual Double_t   DeltaR(const AliVParticle* part) const;
 
     
     TLorentzVector*    MomentumVector()         const {return fMomentum;}
