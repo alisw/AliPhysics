@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG4JetTasks                                                  #
+# Package File for PWGJE                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,36 +27,36 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    JetTasks/AliAnalysisTaskUE.cxx 
-    JetTasks/AliHistogramsUE.cxx 
-    JetTasks/AliAnalyseUE.cxx 
-    JetTasks/AliAnalysisTaskJetSpectrum.cxx 
-    JetTasks/AliAnalysisTaskJetSpectrum2.cxx 
-    JetTasks/AliAnalysisTaskJetServices.cxx 
-    JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx 
-    JetTasks/AliJetSpectrumUnfolding.cxx 
-    JetTasks/AliAnalysisTaskJFSystematics.cxx 
-    JetTasks/AliAnalysisTaskJetCorrections.cxx 
-    JetTasks/AliAnalysisTaskThreeJets.cxx 
-    JetTasks/AliPWG4HighPtQATPConly.cxx 
-    JetTasks/AliPWG4HighPtQAMC.cxx 
-    JetTasks/AliPWG4HighPtSpectra.cxx 
-    JetTasks/AliPWG4CosmicCandidates.cxx 
-    JetTasks/AliAnalysisTaskJetChem.cxx 
-    JetTasks/AliAnalysisTaskFragmentationFunction.cxx
-    JetTasks/AliFragmentationFunctionCorrections.cxx
-    JetTasks/AliAnalysisTaskQGSep.cxx     
-    JetTasks/AliAnalysisTaskJetCore.cxx 	
-    JetTasks/AliAnalysisTaskJetsTM.cxx 
-    JetTasks/AliAnalysisTaskJetResponse.cxx 
-    JetTasks/AliPWG4HighPtTrackQA.cxx 
-    JetTasks/AliAnalysisTaskJetResponseV2.cxx 
+    AliAnalysisTaskUE.cxx 
+    AliHistogramsUE.cxx 
+    AliAnalyseUE.cxx 
+    AliAnalysisTaskJetSpectrum.cxx 
+    AliAnalysisTaskJetSpectrum2.cxx 
+    AliAnalysisTaskJetServices.cxx 
+    AliAnalysisTaskPWG4PidDetEx.cxx 
+    AliJetSpectrumUnfolding.cxx 
+    AliAnalysisTaskJFSystematics.cxx 
+    AliAnalysisTaskJetCorrections.cxx 
+    AliAnalysisTaskThreeJets.cxx 
+    AliPWG4HighPtQATPConly.cxx 
+    AliPWG4HighPtQAMC.cxx 
+    AliPWG4HighPtSpectra.cxx 
+    AliPWG4CosmicCandidates.cxx 
+    AliAnalysisTaskJetChem.cxx 
+    AliAnalysisTaskFragmentationFunction.cxx
+    AliFragmentationFunctionCorrections.cxx
+    AliAnalysisTaskQGSep.cxx     
+    AliAnalysisTaskJetCore.cxx 	
+    AliAnalysisTaskJetsTM.cxx 
+    AliAnalysisTaskJetResponse.cxx 
+    AliPWG4HighPtTrackQA.cxx 
+    AliAnalysisTaskJetResponseV2.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4JetTasksLinkDef.h)
+set ( DHDR  PWGJELinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS JETAN CORRFW PWG4/JetTasks PWG/Base PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS JETAN CORRFW PWGJE PWG/Base PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
