@@ -29,7 +29,7 @@ class AliMCInfoCuts;
 class AliPerformanceDEdx : public AliPerformanceObject {
 public :
   AliPerformanceDEdx(); 
-  AliPerformanceDEdx(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
+  AliPerformanceDEdx(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
   ~AliPerformanceDEdx();
 
   // Init data members

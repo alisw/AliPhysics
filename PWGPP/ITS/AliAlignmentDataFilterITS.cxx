@@ -977,10 +977,10 @@ const AliITSRecoParam *AliAlignmentDataFilterITS::GetRecoParam() const
   } else return NULL;
 }
 //--------------------------------------------------------------------------------
-Int_t AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom(Char_t *fin, 
-							     Char_t *fout,
-							     Char_t *fmis,
-							     Char_t *fgeo,
+Int_t AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom(const Char_t *fin, 
+							     const Char_t *fout,
+							     const Char_t *fmis,
+							     const Char_t *fgeo,
 							     Bool_t prn)
 {
   //

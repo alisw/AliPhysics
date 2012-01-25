@@ -80,7 +80,7 @@ AliPerformanceObject::~AliPerformanceObject(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceObject::PrintHisto(Bool_t logz, Char_t * outFileName) {
+void AliPerformanceObject::PrintHisto(Bool_t logz, const Char_t * outFileName) {
   // draw all histograms from the folder 
   // and store them in the output *.ps file
  
