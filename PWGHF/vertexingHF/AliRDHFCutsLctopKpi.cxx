@@ -99,8 +99,8 @@ fCutsStrategy(kStandard)
 //--------------------------------------------------------------------------
 AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   AliRDHFCuts(source),
-  fPidObjprot(new AliAODPidHF(*(source.fPidObjprot))),
-  fPidObjpion(new AliAODPidHF(*(source.fPidObjpion))),
+  fPidObjprot(0x0),
+  fPidObjpion(0x0),
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
   fPIDStrategy(source.fPIDStrategy),
   fCutsStrategy(source.fCutsStrategy)
@@ -108,6 +108,10 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   //
   // Copy constructor
   //
+  if (source.fPidObjprot) fPidObjprot = new AliAODPidHF(*(source.fPidObjprot));
+  else fPidObjprot = new AliAODPidHF();
+  if (source.fPidObjpion) fPidObjpion = new AliAODPidHF(*(source.fPidObjpion));
+  else fPidObjpion = new AliAODPidHF();
   memcpy(fPIDThreshold,source.fPIDThreshold,AliPID::kSPECIES*sizeof(Double_t));
 }
 //--------------------------------------------------------------------------
