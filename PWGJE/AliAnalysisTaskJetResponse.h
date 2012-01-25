@@ -1,6 +1,16 @@
 #ifndef ALIANALYSISTASKJETRESPONSE_H
 #define ALIANALYSISTASKJETRESPONSE_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+//
+// task compares jets in two branches,
+// written for analysis of jet embedding in HI events
+//
+// newer class: AliAnalysisTaskJetResponseV2
+//
+
 class TH1F;
 class TH2F;
 class TH3F;

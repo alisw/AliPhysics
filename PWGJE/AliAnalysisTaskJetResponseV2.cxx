@@ -1,3 +1,24 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//
+// task compares jets in two branches,
+// written for analysis of jet embedding in HI events
+//
+
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -716,6 +737,7 @@ void AliAnalysisTaskJetResponseV2::Terminate(const Option_t *)
 
 Int_t AliAnalysisTaskJetResponseV2::GetNInputTracks()
 {
+   // number of tracks in the event, obtained via jet finder
 
    Int_t nInputTracks = 0;
 
@@ -751,6 +773,8 @@ Int_t AliAnalysisTaskJetResponseV2::GetNInputTracks()
 
 THnSparse* AliAnalysisTaskJetResponseV2::NewTHnSparseF(const char* name, UInt_t entries, UInt_t opt)
 {
+   // generate new THnSparseF, axes are defined in GetDimParams()
+
    Int_t count = 0;
    UInt_t tmp = entries;
    while(tmp!=0){
@@ -784,6 +808,7 @@ THnSparse* AliAnalysisTaskJetResponseV2::NewTHnSparseF(const char* name, UInt_t 
 
 void AliAnalysisTaskJetResponseV2::GetDimParams(Int_t iEntry, Bool_t hr, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
 {
+   // stores label and binning of axis for THnSparse
 
    const Double_t pi = TMath::Pi();
    
@@ -1064,6 +1089,8 @@ void AliAnalysisTaskJetResponseV2::GetDimParams(Int_t iEntry, Bool_t hr, TString
 //____________________________________________________________________________
 Int_t AliAnalysisTaskJetResponseV2::GetPtHardBin(Double_t ptHard){
 
+   // returns pt hard bin (for LHC10e14, LHC11a1x, LHC11a2x simulations)
+
    const Int_t nBins = 10;
    Double_t binLimits[nBins] = { 5., 11., 21., 36., 57., 84., 117., 156., 200., 249. }; // lower limits
    
@@ -1077,6 +1104,8 @@ Int_t AliAnalysisTaskJetResponseV2::GetPtHardBin(Double_t ptHard){
 
 //____________________________________________________________________________
 Double_t AliAnalysisTaskJetResponseV2::GetPt(AliAODJet *j, Int_t mode=0){
+
+   // returns jet pt, also negative pt after background subtraction if available
 
    Double_t pt = 0.;
 

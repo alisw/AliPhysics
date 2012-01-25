@@ -1,6 +1,14 @@
 #ifndef ALIANALYSISTASKJETRESPONSEV2_H
 #define ALIANALYSISTASKJETRESPONSEV2_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+//
+// task compares jets in two branches,
+// written for analysis of jet embedding in HI events
+//
+
 class TH1F;
 class TH2F;
 class TH3F;
@@ -87,7 +95,7 @@ private:
    TString fJetBranchName[2]; //  name of jet branches to compare
    TList *fListJets[2];       //! jet lists
 
-   TString fBackgroundBranch;
+   TString fBackgroundBranch;  // branch of external background
 
    // event selection
    Bool_t fIsPbPb;         // is Pb-Pb (fast embedding) or p-p (detector response)
