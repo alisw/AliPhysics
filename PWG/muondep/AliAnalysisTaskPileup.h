@@ -19,6 +19,7 @@ class TObjArray;
 class TString;
 class TArrayI;
 class AliCounterCollection;
+class TAxis;
 
 #ifdef READOCDB
 class AliTriggerRunScalers;
