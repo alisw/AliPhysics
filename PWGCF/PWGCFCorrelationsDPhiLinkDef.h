@@ -9,5 +9,6 @@
 #pragma link C++ class AliPhiCorrelationsQATask+;
 #pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskMinijet+;
+#pragma link C++ class AliAnalysisTaskDiHadron+;
 
 #endif
