@@ -2,7 +2,7 @@ int runCreatePhysicsSelection()
 {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libPWG4totEt");
+  gSystem->Load("libPWGLFtotEt");
   gInterpreter->GenerateDictionary("std::map<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;map")  ;
   gInterpreter->GenerateDictionary("std::pair<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;utility");
   
