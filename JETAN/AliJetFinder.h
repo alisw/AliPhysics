@@ -17,14 +17,13 @@
 
 #include <TObject.h>
 #include "AliAODJet.h"
+#include "AliJetHeader.h"
+#include "AliJetReader.h"
+#include "AliAODJetEventBackground.h"
 
 class TChain;
 class TTree;
-class AliAODJet;
 class AliAODEvent;
-class AliAODJetEventBackground;
-class AliJetHeader;
-class AliJetReader;
 class AliJetReaderHeader;
 
 class AliJetFinder : public TObject 
