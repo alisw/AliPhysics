@@ -32,6 +32,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TProfile.h>
+#include <TF1.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
@@ -72,17 +73,22 @@ AliAnalysisTaskJetCluster::~AliAnalysisTaskJetCluster(){
   //
   // Destructor
   //
+
   delete fRef;
   delete fRandom;
 
   if(fTCAJetsOut)fTCAJetsOut->Delete();
   delete fTCAJetsOut;
+  
   if(fTCAJetsOutRan)fTCAJetsOutRan->Delete();
   delete fTCAJetsOutRan;
+  
   if(fTCARandomConesOut)fTCARandomConesOut->Delete();
   delete fTCARandomConesOut;
+  
   if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
   delete fTCARandomConesOutRan;
+  
   if(fAODJetBackgroundOut)fAODJetBackgroundOut->Reset();
   delete fAODJetBackgroundOut;
 }
@@ -119,6 +125,17 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fNonStdBranch(""),
   fBackgroundBranch(""),
   fNonStdFile(""),
+  fMomResH1(0x0),
+  fMomResH2(0x0),
+  fMomResH3(0x0),
+  fMomResH1Fit(0x0),
+  fMomResH2Fit(0x0),
+  fMomResH3Fit(0x0),
+  fhEffH1(0x0),
+  fhEffH2(0x0),
+  fhEffH3(0x0),
+  fUseTrMomentumSmearing(kFALSE),
+  fUseDiceEfficiency(kFALSE),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -187,6 +204,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fh2PtNchNRan(0x0),
   fh2TracksLeadingJetPhiPtRan(0x0),
   fh2TracksLeadingJetPhiPtWRan(0x0),
+  fh2PtGenPtSmeared(0x0),
+  fp1Efficiency(0x0),
+  fp1PtResolution(0x0),
   fHistList(0x0)  
 {
   //
@@ -237,6 +257,17 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fNonStdBranch(""),
   fBackgroundBranch(""),
   fNonStdFile(""),
+  fMomResH1(0x0),
+  fMomResH2(0x0),
+  fMomResH3(0x0),
+  fMomResH1Fit(0x0),
+  fMomResH2Fit(0x0),
+  fMomResH3Fit(0x0),
+  fhEffH1(0x0),
+  fhEffH2(0x0),
+  fhEffH3(0x0),
+  fUseTrMomentumSmearing(kFALSE),
+  fUseDiceEfficiency(kFALSE),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -305,11 +336,15 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh2PtNchNRan(0x0),
   fh2TracksLeadingJetPhiPtRan(0x0),
   fh2TracksLeadingJetPhiPtWRan(0x0),
+  fh2PtGenPtSmeared(0x0),
+  fp1Efficiency(0x0),
+  fp1PtResolution(0x0),
   fHistList(0x0)
 {
   //
   // named ctor
   //
+
   for(int i = 0;i<3;i++){
     fh1BiARandomCones[i] = 0;
     fh1BiARandomConesRan[i] = 0;
@@ -363,10 +398,12 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	fTCAJetsOut->SetName(fNonStdBranch.Data());
 	AddAODBranch("TClonesArray",&fTCAJetsOut,fNonStdFile.Data());
       }
-   
+
       if(fJetTypes&kJetRan){
 	fTCAJetsOutRan = new TClonesArray("AliAODJet", 0);
 	fTCAJetsOutRan->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
+	if(fUseDiceEfficiency || fUseTrMomentumSmearing)
+	  fTCAJetsOutRan->SetName(Form("%s_%sDetector%d%d",fNonStdBranch.Data(),"random",fUseTrMomentumSmearing,fUseDiceEfficiency));
 	AddAODBranch("TClonesArray",&fTCAJetsOutRan,fNonStdFile.Data());
       }
 
@@ -374,12 +411,17 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
 	  fAODJetBackgroundOut = new AliAODJetEventBackground();
 	  fAODJetBackgroundOut->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
+	  if(fUseDiceEfficiency || fUseTrMomentumSmearing)
+	    fAODJetBackgroundOut->SetName(Form("%s_%sDetector%d%d",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data(),fUseTrMomentumSmearing,fUseDiceEfficiency));
+
 	  AddAODBranch("AliAODJetEventBackground",&fAODJetBackgroundOut,fNonStdFile.Data());  
 	}
       }
       // create the branch for the random cones with the same R 
       TString cName = Form("%sRandomConeSkip%02d",fNonStdBranch.Data(),fNSkipLeadingCone);
-  
+      if(fUseDiceEfficiency || fUseTrMomentumSmearing)
+	cName = Form("%sDetector%d%d_RandomConeSkip%02d",fNonStdBranch.Data(),fUseTrMomentumSmearing,fUseDiceEfficiency,fNSkipLeadingCone);
+
       if(fNRandomCones>0){
 	if(fJetTypes&kRC){
 	  if(!AODEvent()->FindListObject(cName.Data())){
@@ -408,6 +450,8 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
       }
     }
+
+  //  FitMomentumResolution();
 
 
   if(!fHistList)fHistList = new TList();
@@ -554,6 +598,15 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   fh2TracksLeadingJetPhiPtWRan = new TH2F("fh2TracksLeadingJetPhiPtWRan","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
 				       nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
+  //Detector level effects histos
+  fh2PtGenPtSmeared = new TH2F("fh2PtGenPtSmeared","fh2PtGenPtSmeared",nBinPt,binLimitsPt,nBinPt,binLimitsPt);
+
+  fp1Efficiency = new TProfile("fp1Efficiency","fp1Efficiency",nBinPt,binLimitsPt);
+  fp1PtResolution = new TProfile("fp1PtResolution","fp1PtResolution",nBinPt,binLimitsPt);
+
+  fHistList->Add(fh2PtGenPtSmeared);
+  fHistList->Add(fp1Efficiency);
+  fHistList->Add(fp1PtResolution);
 
   if(fNRandomCones>0&&fUseBackgroundCalc){
     for(int i = 0;i<3;i++){
@@ -658,6 +711,8 @@ void AliAnalysisTaskJetCluster::Init()
 
   if (fDebug > 1) printf("AnalysisTaskJetCluster::Init() \n");
 
+  FitMomentumResolution();
+
 }
 
 void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
@@ -687,7 +742,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       Printf("%s:%d AODEvent not found in Input Manager %d",(char*)__FILE__,__LINE__,fUseAODTrackInput);
       return;
     }
-    // fethc the header
+    // fetch the header
   }
   else{
     //  assume that the AOD is in the general output...
@@ -700,6 +755,10 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fESD = dynamic_cast<AliESDEvent*> (InputEvent());
     }
   }
+
+  //Check if information is provided detector level effects
+  if(!fMomResH1 || !fMomResH2 || !fMomResH3) fUseTrMomentumSmearing = kFALSE;
+  if(!fhEffH1 || !fhEffH2 || !fhEffH3)       fUseDiceEfficiency = kFALSE;
   
   Bool_t selectEvent =  false;
   Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
@@ -781,11 +840,118 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   AliAODJet vTmpRan(1,0,0,1);
   for(int i = 0; i < recParticles.GetEntries(); i++){
     AliVParticle *vp = (AliVParticle*)recParticles.At(i);
+
     // Carefull energy is not well determined in real data, should not matter for p_T scheme?
     // we take total momentum here
-    fastjet::PseudoJet jInp(vp->Px(),vp->Py(),vp->Pz(),vp->P());
-    jInp.set_user_index(i);
-    inputParticlesRec.push_back(jInp);
+
+    if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) {
+      //Add particles to fastjet in case we are not running toy model
+      fastjet::PseudoJet jInp(vp->Px(),vp->Py(),vp->Pz(),vp->P());
+      jInp.set_user_index(i);
+      inputParticlesRec.push_back(jInp);
+    }
+    else if(fUseDiceEfficiency) {
+
+      // Dice to decide if particle is kept or not - toy  model for efficiency
+      //
+      Double_t rnd = fRandom->Uniform(1.);
+      Double_t pT = vp->Pt();
+      Double_t eff[3] = {0.};
+      Double_t pTtmp = pT;
+      if(pT>10.) pTtmp = 10.;
+      Double_t eff1 = fhEffH1->GetBinContent(fhEffH1->FindBin(pTtmp));
+      Double_t eff2 = fhEffH2->GetBinContent(fhEffH2->FindBin(pTtmp));
+      Double_t eff3 = fhEffH3->GetBinContent(fhEffH3->FindBin(pTtmp));
+      Int_t cat[3] = {0};
+      //Sort efficiencies from large to small
+      if(eff1>eff2 && eff1>eff3) { 
+	eff[0] = eff1; 
+	cat[0] = 1;
+	if(eff2>eff3) {
+	  eff[1] = eff2;
+	  eff[2] = eff3; 
+	  cat[1] = 2;
+	  cat[2] = 3;
+	} else {
+	  eff[1] = eff3;
+	  eff[2] = eff2; 
+	  cat[1] = 3;
+	  cat[2] = 2;
+	}
+      }
+      else if(eff2>eff1 && eff2>eff3) {
+	eff[0] = eff2;
+	cat[0] = 2;
+	if(eff1>eff3) {
+	  eff[1] = eff1;
+	  eff[2] = eff3; 
+	  cat[1] = 1;
+	  cat[2] = 3;
+	} else {
+	  eff[1] = eff3;
+	  eff[2] = eff1; 
+	  cat[1] = 3;
+	  cat[2] = 1;
+	}
+      }
+      else if(eff3>eff1 && eff3>eff2) {
+	eff[0] = eff3;
+	cat[0] = 3;
+	if(eff1>eff2) {
+	  eff[1] = eff1;
+	  eff[2] = eff2; 
+	  cat[1] = 1;
+	  cat[2] = 2;
+	} else {
+	  eff[1] = eff2;
+	  eff[2] = eff1; 
+	  cat[1] = 2;
+	  cat[2] = 1;
+	}
+      }
+      
+      Double_t sumEff = eff[0]+eff[1]+eff[2];
+      fp1Efficiency->Fill(vp->Pt(),sumEff);
+      if(rnd>sumEff) continue;
+
+      if(fUseTrMomentumSmearing) {
+	//Smear momentum of generated particle
+	Double_t smear = 1.;
+	//Select hybrid track category
+	if(rnd<=eff[2]) 
+	  smear = GetMomentumSmearing(cat[2],pT);
+	else if(rnd<=(eff[2]+eff[1])) 
+	  smear = GetMomentumSmearing(cat[1],pT);
+	else 
+	  smear = GetMomentumSmearing(cat[0],pT);
+
+	fp1PtResolution->Fill(vp->Pt(),smear);
+
+	Double_t sigma = vp->Pt()*smear;
+	Double_t pTrec = fRandom->Gaus(vp->Pt(),sigma);
+	
+	Double_t phi   = vp->Phi();
+	Double_t theta = 2.*TMath::ATan(TMath::Exp(-1.*(vp->Eta())));
+	Double_t pX    = pTrec * TMath::Cos(phi);
+	Double_t pY    = pTrec * TMath::Sin(phi);
+	Double_t pZ    = pTrec/TMath::Tan(theta);
+	Double_t p=TMath::Sqrt(pTrec*pTrec+pZ*pZ);
+
+	fh2PtGenPtSmeared->Fill(vp->Pt(),pTrec);
+
+	fastjet::PseudoJet jInp(pX,pY,pZ,p);
+	jInp.set_user_index(i);
+	inputParticlesRec.push_back(jInp);
+
+      }
+      else {
+	fastjet::PseudoJet jInp(vp->Px(),vp->Py(),vp->Pz(),vp->P());
+	jInp.set_user_index(i);
+	inputParticlesRec.push_back(jInp);
+
+      }
+
+    }
 
     // the randomized input changes eta and phi, but keeps the p_T
     if(i>=fNSkipLeadingRan){// eventually skip the leading particles
@@ -810,9 +976,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     if(fTCAJetsOut){
       if(i == 0){
 	fRef->Delete(); // make sure to delete before placement new...
-	new(fRef) TRefArray(TProcessID::GetProcessWithUID(vp));
+	if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) {
+	  new(fRef) TRefArray(TProcessID::GetProcessWithUID(vp)); //TRefArray does not work with toy model ...
+	} 
       }
-      fRef->Add(vp);
+      if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) fRef->Add(vp);  //TRefArray does not work with toy model ...
     }
   }// recparticles
 
@@ -888,8 +1056,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     Float_t pTback = 0;
     if(externalBackground){
       // carefull has to be filled in a task before
-      // todo, ReArrange to the botom
-      pTback = externalBackground->GetBackground(1)*leadingJet.EffectiveAreaCharged();
+      // todo, ReArrange to the botom 
+     pTback = externalBackground->GetBackground(1)*leadingJet.EffectiveAreaCharged();
     }
     pt = leadingJet.Pt() - pTback;
     // correlation of leading jet with tracks
@@ -953,9 +1121,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
    
       for(unsigned int ic = 0; ic < constituents.size();ic++){
 	AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
+	if(!part) continue;
+	
 	fh1PtJetConstRec->Fill(part->Pt());
 	if(aodOutJet){
-	  aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
+	  if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
 	  if(part->Pt()>fMaxTrackPtInJet)aodOutJet->SetTrigger(AliAODJet::kHighTrackPtTriggered);
 	}
 	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
@@ -1363,7 +1533,12 @@ void AliAnalysisTaskJetCluster::Terminate(Option_t */*option*/)
   //
   // Terminate analysis
   //
-  if (fDebug > 1) printf("AnalysisJetCluster: Terminate() \n");
+    if (fDebug > 1) printf("AnalysisJetCluster: Terminate() \n");
+
+    if(fMomResH1Fit) delete fMomResH1Fit;
+    if(fMomResH2Fit) delete fMomResH2Fit;
+    if(fMomResH3Fit) delete fMomResH3Fit;
+    
 }
 
 
@@ -1487,6 +1662,90 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
   }// AODMCparticle
   list->Sort();
   return iCount;
+}
+
+void AliAnalysisTaskJetCluster::SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3) {
+
+  //
+  // set mom res profiles
+  //
+
+  fMomResH1 = (TProfile*)p1->Clone("fMomResH1");
+  fMomResH2 = (TProfile*)p2->Clone("fMomResH2");
+  fMomResH3 = (TProfile*)p3->Clone("fMomResH3");
+}
+
+void AliAnalysisTaskJetCluster:: SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3) {
+  //
+  // set tracking efficiency histos
+  //
+
+  fhEffH1 = (TH1*)h1->Clone("fhEffH1");
+  fhEffH2 = (TH1*)h2->Clone("fhEffH2");
+  fhEffH3 = (TH1*)h3->Clone("fhEffH3");
+}
+
+Double_t AliAnalysisTaskJetCluster::GetMomentumSmearing(Int_t cat, Double_t pt) {
+
+  //
+  // Get smearing on generated momentum
+  //
+
+  //printf("GetMomentumSmearing for cat %d and pt = %f \n",cat,pt);
+
+  TProfile *fMomRes = 0x0;
+  if(cat==1) fMomRes = (TProfile*)fMomResH1->Clone("fMomRes");
+  if(cat==2) fMomRes = (TProfile*)fMomResH2->Clone("fMomRes");
+  if(cat==3) fMomRes = (TProfile*)fMomResH3->Clone("fMomRes");
+
+  if(!fMomRes) {
+    return 0.;
+  }
+
+
+  Double_t smear = 0.;
+
+  if(pt>20.) {
+    if(cat==1 && fMomResH1Fit) smear = fMomResH1Fit->Eval(pt);
+    if(cat==2 && fMomResH2Fit) smear = fMomResH2Fit->Eval(pt);
+    if(cat==3 && fMomResH3Fit) smear = fMomResH3Fit->Eval(pt);
+  }
+  else {
+
+    Int_t bin = fMomRes->FindBin(pt);
+
+    smear = fRandom->Gaus(fMomRes->GetBinContent(bin),fMomRes->GetBinError(bin));
+
+  }
+
+  if(fMomRes) delete fMomRes;
+  
+  return smear;
+}
+
+void AliAnalysisTaskJetCluster::FitMomentumResolution() {
+  //
+  // Fit linear function on momentum resolution at high pT
+  //
+
+  if(!fMomResH1Fit && fMomResH1) {
+    fMomResH1Fit = new TF1("fMomResH1Fit","[0]+[1]*x",0.,200.);
+    fMomResH1->Fit(fMomResH1Fit,"LL V0","",5.,30.);
+    fMomResH1Fit ->SetRange(5.,100.);
+  }
+
+  if(!fMomResH2Fit && fMomResH2) {
+    fMomResH2Fit = new TF1("fMomResH2Fit","[0]+[1]*x",0.,200.);
+    fMomResH2->Fit(fMomResH2Fit,"LL V0","",5.,30.);
+    fMomResH2Fit ->SetRange(5.,100.);
+  }
+
+  if(!fMomResH3Fit && fMomResH3) {
+    fMomResH3Fit = new TF1("fMomResH3Fit","[0]+[1]*x",0.,200.);
+    fMomResH3->Fit(fMomResH3Fit,"LL V0","",5.,30.);
+    fMomResH3Fit ->SetRange(5.,100.);
+  }
+
 }
 
 /*
