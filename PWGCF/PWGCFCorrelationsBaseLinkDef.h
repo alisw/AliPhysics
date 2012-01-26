@@ -6,7 +6,6 @@
 
 #pragma link C++ class AliUEHist+;
 #pragma link C++ class AliUEHistograms+;
-#pragma link C++ class AliTHn+;
 #pragma link C++ class AliAnalyseLeadingTrackUE+;
 
 #endif
