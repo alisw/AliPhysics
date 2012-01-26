@@ -42,7 +42,7 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
    mgr->AddTask(task);
 
 
-   AliAnalysisDataContainer *coutputJetCore = mgr->CreateContainer(Form("pwg4jetcore_%s_%s",bRec1,bRec2), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_jetcore_%s_%s",AliAnalysisManager::GetCommonFileName(),bRec1,bRec2));
+   AliAnalysisDataContainer *coutputJetCore = mgr->CreateContainer(Form("pwgjejetcore_%s_%s",bRec1,bRec2), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_jetcore_%s_%s",AliAnalysisManager::GetCommonFileName(),bRec1,bRec2));
 
 
 

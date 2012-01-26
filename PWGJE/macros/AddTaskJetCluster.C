@@ -74,66 +74,66 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
     cAdd += Form("_Cut%05d",(int)(1000.*kPtTrackCut));
     cAdd += Form("_Skip%02d",nSkip);
     Printf("%s %E",cAdd.Data(),kPtTrackCut);
-    AliAnalysisTaskJetCluster* pwg4clus = new  AliAnalysisTaskJetCluster(Form("JetCluster%s_%s%s",bRec,jf,cAdd.Data()));
+    AliAnalysisTaskJetCluster* clus = new  AliAnalysisTaskJetCluster(Form("JetCluster%s_%s%s",bRec,jf,cAdd.Data()));
       
    // or a config file
-   // pwg4clus->SetAnalysisType(AliAnalysisTaskJetCluster::kAnaMC);
-   // if(iAODanalysis)pwg4clus->SetAODInput(kTRUE);
-   // pwg4clus->SetDebugLevel(11); 
-   pwg4clus->SetFilterMask(filterMask); 
-   //   pwg4clus->SetUseGlobalSelection(kTRUE); 
-   pwg4clus->SetVtxCuts(kVertexWindow,1);
+   // clus->SetAnalysisType(AliAnalysisTaskJetCluster::kAnaMC);
+   // if(iAODanalysis)clus->SetAODInput(kTRUE);
+   // clus->SetDebugLevel(11); 
+   clus->SetFilterMask(filterMask); 
+   //   clus->SetUseGlobalSelection(kTRUE); 
+   clus->SetVtxCuts(kVertexWindow,1);
    if(type == "AOD"){
      // Assume all jet are produced already
-     pwg4clus->SetAODTrackInput(kTRUE);
-     pwg4clus->SetAODMCInput(kTRUE);
+     clus->SetAODTrackInput(kTRUE);
+     clus->SetAODMCInput(kTRUE);
    }
 
    if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
-     pwg4clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
-     pwg4clus->SetTrackPtCut(kPtTrackCut);
-     pwg4clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
+     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackEtaWindow(kTrackEtaWindow);
    }
    else if (typeRec.Contains("AODMC2")){
-     pwg4clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCCharged);
-     pwg4clus->SetTrackPtCut(kPtTrackCut);
-     pwg4clus->SetTrackEtaWindow(5);
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCCharged);
+     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackEtaWindow(5);
    }
    else if (typeRec.Contains("AODMC")){
-     pwg4clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCAll);
-     pwg4clus->SetTrackPtCut(kPtTrackCut);
-     pwg4clus->SetTrackEtaWindow(5);
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCAll);
+     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackEtaWindow(5);
    }
    else if (typeRec.Contains("AODextraonly")) {
-     pwg4clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextraonly);
-     pwg4clus->SetTrackPtCut(kPtTrackCut);
-     pwg4clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextraonly);
+     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackEtaWindow(kTrackEtaWindow);
    }
    else if (typeRec.Contains("AODextra")) {
      cout << "AliAnalysisTaskJetCluster::kTrackAODextra: " << AliAnalysisTaskJetCluster::kTrackAODextra << endl;
-     pwg4clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextra);
-     pwg4clus->SetTrackPtCut(kPtTrackCut);
-     pwg4clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextra);
+     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackEtaWindow(kTrackEtaWindow);
    }
    else if (typeRec.Contains("AOD")) {
-     pwg4clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAOD);
-     pwg4clus->SetTrackPtCut(kPtTrackCut);
-     pwg4clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAOD);
+     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackEtaWindow(kTrackEtaWindow);
    }
 
-   pwg4clus->SetRparam(radius);
-   pwg4clus->SetGhostArea(0.005);
-   pwg4clus->SetGhostEtamax(kTrackEtaWindow);
+   clus->SetRparam(radius);
+   clus->SetGhostArea(0.005);
+   clus->SetGhostEtamax(kTrackEtaWindow);
 
    switch (jf) {
    case "ANTIKT":
-     pwg4clus->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
+     clus->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
      break;
    case "CA":
-     pwg4clus->SetAlgorithm(1); // CA from fastjet/JetDefinition.hh
+     clus->SetAlgorithm(1); // CA from fastjet/JetDefinition.hh
      break;
    case "KT":
-     pwg4clus->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
+     clus->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
      break;
    default:
      ::Error("AddTaskJetCluster", "Wrong jet finder selected\n");
@@ -142,26 +142,26 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
 
    
    if(kWriteAOD){
-     if(outputFile.Length())pwg4clus->SetJetOutputFile(outputFile);
-     pwg4clus->SetJetOutputBranch(Form("clusters%s_%s%s",bRec,jf,cAdd.Data()));
-     pwg4clus->SetJetOutputMinPt(0); // store only jets / clusters above a certain threshold
+     if(outputFile.Length())clus->SetJetOutputFile(outputFile);
+     clus->SetJetOutputBranch(Form("clusters%s_%s%s",bRec,jf,cAdd.Data()));
+     clus->SetJetOutputMinPt(0); // store only jets / clusters above a certain threshold
    }
 
-   pwg4clus->SetNSkipLeadingRan(nSkip);
-   pwg4clus->SetNSkipLeadingCone(nSkipCone);
+   clus->SetNSkipLeadingRan(nSkip);
+   clus->SetNSkipLeadingCone(nSkipCone);
 
-   if(iPhysicsSelectionFlag)pwg4clus->SelectCollisionCandidates(iPhysicsSelectionFlag);
+   if(iPhysicsSelectionFlag)clus->SelectCollisionCandidates(iPhysicsSelectionFlag);
 
-   mgr->AddTask(pwg4clus);
+   mgr->AddTask(clus);
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwg4cluster_%s_%s_%s%s",bRec,bGen,jf,cAdd.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_cluster_%s_%s_%s%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen,jf,cAdd.Data()));
+   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("cluster_%s_%s_%s%s",bRec,bGen,jf,cAdd.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_cluster_%s_%s_%s%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen,jf,cAdd.Data()));
 
-   mgr->ConnectInput  (pwg4clus, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput (pwg4clus, 0, mgr->GetCommonOutputContainer());
-   mgr->ConnectOutput (pwg4clus,  1, coutput1_Spec );
+   mgr->ConnectInput  (clus, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput (clus, 0, mgr->GetCommonOutputContainer());
+   mgr->ConnectOutput (clus,  1, coutput1_Spec );
    
-   return pwg4clus;
+   return clus;
 }

@@ -73,8 +73,8 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    // Create the task and configure it.
    //===========================================================================
 
-   AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl));
-   if(iCl)pwg4spec->SetEventClass(iCl);
+   AliAnalysisTaskJetSpectrum2* jetspec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl));
+   if(iCl)jetspec->SetEventClass(iCl);
 
    // add the filter mask for non default jets branches
    TString cAdd("");
@@ -82,78 +82,78 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
    
 
-   pwg4spec->SetBranchGen(bGen); 
-   //  if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
+   jetspec->SetBranchGen(bGen); 
+   //  if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))jetspec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
 
-   pwg4spec->SetBranchRec(bRec); 
-   // if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     pwg4spec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
+   jetspec->SetBranchRec(bRec); 
+   // if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     jetspec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
 
 
-   pwg4spec->SetFilterMask(filterMask); 
-   pwg4spec->SetUseGlobalSelection(kTRUE); 
-   pwg4spec->SetMinJetPt(5.);
-   pwg4spec->SetJetEtaWindow(0.4);
+   jetspec->SetFilterMask(filterMask); 
+   jetspec->SetUseGlobalSelection(kTRUE); 
+   jetspec->SetMinJetPt(5.);
+   jetspec->SetJetEtaWindow(0.4);
 
 
 
    if(type == "AOD"){
      // Assume all jets are not yet produced 
-     //     pwg4spec->SetAODJetInput(kTRUE);
-     pwg4spec->SetAODTrackInput(kTRUE);
-     pwg4spec->SetAODMCInput(kTRUE);
+     //     jetspec->SetAODJetInput(kTRUE);
+     jetspec->SetAODTrackInput(kTRUE);
+     jetspec->SetAODMCInput(kTRUE);
    }
    else{
      if(mgr->GetMCtruthEventHandler()){
-       pwg4spec-> SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMCESD);
+       jetspec-> SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMCESD);
      }
    }
 
    if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
-     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCChargedAcceptance);
+     jetspec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCChargedAcceptance);
    }
    else if (typeRec.Contains("AODMC2")){
-     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
+     jetspec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
    }
    else if (typeRec.Contains("AODMC")){
-     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
+     jetspec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
    }
    else { // catch akk use AOD
-     pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAOD);
+     jetspec->SetTrackTypeRec(AliAnalysisTaskJetSpectrum2::kTrackAOD);
    }
 
    if(typeGen.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCChargedAcceptance);
+     jetspec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCChargedAcceptance);
    }
    else if (typeGen.Contains("AODMC2")){
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
+     jetspec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCCharged);
    }
    else if (typeGen.Contains("AODMC")){
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
+     jetspec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAODMCAll);
    }
    else if (typeGen.Length()>0){ // catch all use AOD
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAOD);
+     jetspec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAOD);
    }
 
-   if(iPhysicsSelectionFlag)pwg4spec->SelectCollisionCandidates(iPhysicsSelectionFlag);
-   if(iEventSelectionMask)pwg4spec->SetEventSelectionMask(iEventSelectionMask);
+   if(iPhysicsSelectionFlag)jetspec->SelectCollisionCandidates(iPhysicsSelectionFlag);
+   if(iEventSelectionMask)jetspec->SetEventSelectionMask(iEventSelectionMask);
 
-   //   pwg4spec->SetDebugLevel(10);
+   //   jetspec->SetDebugLevel(10);
 
 
    // to fetch the AOD from the AOD extension ouput 
-   if(strlen(nonStdFile))pwg4spec->SetNonStdFile(nonStdFile);
-   mgr->AddTask(pwg4spec);
+   if(strlen(nonStdFile))jetspec->SetNonStdFile(nonStdFile);
+   mgr->AddTask(jetspec);
      
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwg4spec2_%s_%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec2_%s_%s_%010d_Class%02d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl));
+   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl));
 
-   mgr->ConnectInput  (pwg4spec, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput (pwg4spec, 0, mgr->GetCommonOutputContainer());
-   mgr->ConnectOutput (pwg4spec,  1, coutput1_Spec );
+   mgr->ConnectInput  (jetspec, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput (jetspec, 0, mgr->GetCommonOutputContainer());
+   mgr->ConnectOutput (jetspec,  1, coutput1_Spec );
    
-   return pwg4spec;
+   return jetspec;
 }
 
 void SetAODInput(AliAnalysisTaskJetSpectrum2 *taskJetSpectrum){

@@ -55,7 +55,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
    // ## create the output containers ##
    AliAnalysisDataContainer *coutputFastEmbedding = mgr->CreateContainer(
    "fastembedding", TList::Class(), AliAnalysisManager::kOutputContainer,
-   Form("%s:PWG4_FastEmbedding", AliAnalysisManager::GetCommonFileName()));
+   Form("%s:PWGJE_FastEmbedding", AliAnalysisManager::GetCommonFileName()));
 
    mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());

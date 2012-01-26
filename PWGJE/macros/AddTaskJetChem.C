@@ -78,12 +78,12 @@ AliAnalysisTaskJetChem *AddTask(const char* recJetsBranch,Int_t eventClass, Int_
    if(K0type ==  AliAnalysisTaskJetChem::kOffldEdx)  strK0type = "OffldEdx";
    if(K0type ==  AliAnalysisTaskJetChem::kOfflPrim)  strK0type = "OfflPrim";
    
-   TString listName(Form("PWG4_JetChem_%s_%s_cl%d",branchRecJets.Data(),strK0type.Data(),eventClass));
+   TString listName(Form("PWGJE_JetChem_%s_%s_cl%d",branchRecJets.Data(),strK0type.Data(),eventClass));
 		    
    AliAnalysisDataContainer *coutput_FragFunc = mgr->CreateContainer(listName, 
 								     TList::Class(),
 								     AliAnalysisManager::kOutputContainer,
-								     Form("%s:PWG4_JetChem",AliAnalysisManager::GetCommonFileName()));
+								     Form("%s:PWGJE_JetChem",AliAnalysisManager::GetCommonFileName()));
    
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 1, coutput_FragFunc);

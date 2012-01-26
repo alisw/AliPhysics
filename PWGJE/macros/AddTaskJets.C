@@ -171,7 +171,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
 								  cAdd.Data()), 
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer, 
-							     Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
+							     Form("%s:PWGJE_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
 								  c_jr.Data(),
 								  c_jf.Data(),
 								  cAdd.Data()));
