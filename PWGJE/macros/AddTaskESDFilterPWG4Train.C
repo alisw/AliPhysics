@@ -1,7 +1,7 @@
 
 
 Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdFilter);
-Bool_t AddTrackCutsDefault(AliAnalysisTaskESDfilter* esdFilter);
+Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t enableTPCOnlyAODTracks = kTRUE;
 
 
@@ -93,11 +93,12 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterPWG4Train(Bool_t useKineFilter=kTRUE,
    Bool_t bSuccess = false;
    TString runPeriod = AliAnalysisManager::GetGlobalStr("kJetRunPeriod",bSuccess);
 
-   if(bSuccess&&runPeriod.Contains("LHC10h")){
-     AddTrackCutsLHC10h(esdfilter);
+   if(bSuccess&&runPeriod.Contains("LHC11h")){
+     AddTrackCutsLHC11h(esdfilter);
    }
    else{
-     AddTrackCutsDefault(esdfilter);
+     Printf("%s%d: Creating Default track cuts 10h",(char*)__FILE__,__LINE__);
+     AddTrackCutsLHC10h(esdfilter);
    }
 
    esdfilter->SetV0Filter(v0Filter);
@@ -228,10 +229,10 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   
 }
 
-Bool_t AddTrackCutsDefault(AliAnalysisTaskESDfilter* esdfilter){
+Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
 
 
-  Printf("%s%d: Creating Track Cuts Default",(char*)__FILE__,__LINE__);
+  Printf("%s%d: Creating Track Cuts LHC11h",(char*)__FILE__,__LINE__);
 
   // Cuts on primary tracks
    AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
