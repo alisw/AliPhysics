@@ -794,19 +794,21 @@ void AliVAnalysisMuon::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
   //
   /// Set centrality classes
   //
+  Double_t* bins = centralityBins;
+  Int_t nbins = nCentralityBins;
   if ( ! centralityBins ) {
     Double_t defaultCentralityBins[] = {-5., 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 100., 105.};
-    centralityBins = defaultCentralityBins;
-    nCentralityBins = sizeof(defaultCentralityBins)/sizeof(defaultCentralityBins[0])-1;
+    bins = defaultCentralityBins;
+    nbins = sizeof(defaultCentralityBins)/sizeof(defaultCentralityBins[0])-1;
   }
 
-  delete fCentralityClasses;
-  fCentralityClasses = new TAxis(nCentralityBins, centralityBins);
+  if ( fCentralityClasses ) delete fCentralityClasses;
+  fCentralityClasses = new TAxis(nbins, bins);
   TString currClass = "";
   for ( Int_t ibin=1; ibin<=fCentralityClasses->GetNbins(); ++ibin ){
     currClass = Form("%.0f_%.0f",fCentralityClasses->GetBinLowEdge(ibin),fCentralityClasses->GetBinUpEdge(ibin));
     fCentralityClasses->SetBinLabel(ibin, currClass.Data());
-  }  
+  }
 }
 
 //________________________________________________________________________
