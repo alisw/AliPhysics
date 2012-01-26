@@ -15,9 +15,8 @@
 
 #include "AliJetCalTrk.h"
 #include "AliAODJet.h"
-
-class AliJetHeader;
-class AliAODJetEventBackground;
+#include "AliJetHeader.h"
+#include "AliAODJetEventBackground.h"
 class AliAODEvent;
 
 class AliJetFinder : public TObject 
