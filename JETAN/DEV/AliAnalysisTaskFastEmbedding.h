@@ -60,9 +60,9 @@ public:
    void SetJetBranch(TString name) {fJetBranch = name;}
 
    void SetEmbedMode(Int_t m) {fEmbedMode = m;}
-   Int_t GetEmbedMode() {return fEmbedMode;} 
+   Int_t GetEmbedMode() const {return fEmbedMode;} 
    void SetEvtSelecMode(Int_t s) {fEvtSelecMode = s;}
-   Int_t GetEvtSelecMode() {return fEvtSelecMode;}
+   Int_t GetEvtSelecMode() const {return fEvtSelecMode;}
 
    void SetEvtSelJetPtRange(Float_t minPt, Float_t maxPt) {fEvtSelMinJetPt = minPt; fEvtSelMaxJetPt = maxPt;}
    void SetEvtSelJetEtaRange(Float_t minEta, Float_t maxEta) {fEvtSelMinJetEta = minEta; fEvtSelMaxJetEta = maxEta;}
@@ -127,8 +127,8 @@ private:
    Int_t fAODEntry; // entry of extra AOD
    Int_t fCountEvents; // count processed events in this file
 
-   Int_t fEmbedMode;
-   Int_t fEvtSelecMode;
+   Int_t fEmbedMode;     // embedding mode: kAODFull=0, kAODJetTracks=1, kAODJet4Mom=2, kToyTracks=3
+   Int_t fEvtSelecMode;  // event selection criterion: kEventsAll=0, kEventsJetPt=1
 
    // event selection from AOD
    Float_t fEvtSelMinJetPt;       // minimum pt of the leading jet
@@ -190,7 +190,7 @@ private:
    Int_t OpenAODfile(Int_t trial = 0);
 
 
-   ClassDef(AliAnalysisTaskFastEmbedding, 5);
+   ClassDef(AliAnalysisTaskFastEmbedding, 6);
 };
 
 #endif
