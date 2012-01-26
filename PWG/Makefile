@@ -33,49 +33,6 @@ ifneq ($(EventMixing_INCLUDE),)
   ALICEINC += -I../$(EventMixing_INCLUDE)
 endif
 
-ifneq ($(CORRFW_INCLUDE),)
-  ALICEINC += -I../$(CORRFW_INCLUDE)
-endif
-
-ifneq ($(PWGBase_INCLUDE),)
-  ALICEINC += -I../$(PWGBase_INCLUDE)
-endif
-
-ifneq ($(PHOSUtils_INCLUDE),)
-  ALICEINC += -I../$(PHOSUtils_INCLUDE)
-  CXXFLAGS+=-D__PHOSUTIL__
-endif
-
-ifneq ($(EMCALUtils_INCLUDE),)
-  ALICEINC += -I../$(EMCALUtils_INCLUDE)
-  CXXFLAGS+=-D__EMCALUTIL__
-endif
-
-ifneq ($(EMCALbase_INCLUDE),)
-  ALICEINC += -I../$(EMCALbase_INCLUDE)
-endif
-
-ifneq ($(EMCALsim_INCLUDE),)
-  ALICEINC += -I../$(EMCALsim_INCLUDE)
-endif
-
-ifneq ($(EMCALrec_INCLUDE),)
-  ALICEINC += -I../$(EMCALrec_INCLUDE)
-endif
-
-ifneq ($(PWGCaloTrackCorrBase_INCLUDE),)
-  ALICEINC += -I../$(PWGCaloTrackCorrBase_INCLUDE)
-endif
-
-ifneq ($(PWG4PartCorrDep_INCLUDE),)
- ALICEINC += -I../$(PWGCaloTrackCorrBase_INCLUDE)
- ALICEINC += -I../$(PWGGACaloTrackCorrelations_INCLUDE)
-endif
-
-ifneq ($(PWGGACaloTrackCorrelations_INCLUDE),)
-  ALICEINC += -I../$(PWG4GammaConv_INCLUDE)
-endif
-
 ifneq ($(JETAN_INCLUDE),)
   ALICEINC += -I../$(JETAN_INCLUDE)
 endif
@@ -84,8 +41,8 @@ ifneq ($(JETANDEV_INCLUDE),)
   ALICEINC += -I../$(JETANDEV_INCLUDE)
 endif
 
-ifneq ($(PWG4JCORRAN_INCLUDE),)
-  ALICEINC += -I../$(PWG4JCORRAN_INCLUDE)
+ifneq ($(CORRFW_INCLUDE),)
+  ALICEINC += -I../$(CORRFW_INCLUDE)
 endif
 
 # only if no par file was loaded before
@@ -93,10 +50,6 @@ endif
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
     ALICEINC += -I$(ALICE_ROOT)/ANALYSIS
-    ALICEINC += -I$(ALICE_ROOT)/PHOS
-    ALICEINC += -I$(ALICE_ROOT)/EMCAL
-    ALICEINC += -I$(ALICE_ROOT)/JETAN
-    ALICEINC += -I$(ALICE_ROOT)/PWG/CaloTrackCorrBase
   endif
 #endif
 
@@ -106,14 +59,14 @@ SRCS = $(wildcard *.cxx)
 HDRS = $(SRCS:.cxx=.h)
 DHDR = $(PACKAGE)LinkDef.h
 
-DHDR_PWGJE := $(DHDR)
-HDRS_PWGJE := $(HDRS)
-SRCS_PWGJE := $(SRCS) G__$(PACKAGE).cxx
-OBJS_PWGJE := $(SRCS_PWGJE:.cxx=.o)
+DHDR_PWG := $(DHDR)
+HDRS_PWG := $(HDRS)
+SRCS_PWG := $(SRCS) G__$(PACKAGE).cxx
+OBJS_PWG := $(SRCS_PWG:.cxx=.o)
 
 PARFILE       = $(PACKAGE).par
 
-lib$(PACKAGE).so: $(OBJS_PWGJE)
+lib$(PACKAGE).so: $(OBJS_PWG)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(PLATFORM),macosx)
@@ -145,7 +98,7 @@ endif
 	$(CXX) $(PACKCXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS_PWGJE) *.so G__$(PACKAGE).*
+	@rm -f $(OBJS_PWG) *.so G__$(PACKAGE).*
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionaries ..." $(ALICEINC)
