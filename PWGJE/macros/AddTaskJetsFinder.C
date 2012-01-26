@@ -181,7 +181,7 @@ AliAnalysisTaskJetsFinder *AddTaskJetsFinder(AliAnalysisDataContainer* contname,
   if (! cin_jet_cont) { ::Error("AddTaskJetFinder", "This task needs an Exchange container"); return NULL;}
 
   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cAdd.Data()), TList::Class(),
-							    AliAnalysisManager::kOutputContainer, Form("%s:PWG4_jethist_%s_%s%s",
+							    AliAnalysisManager::kOutputContainer, Form("%s:PWGJE_jethist_%s_%s%s",
                                                             AliAnalysisManager::GetCommonFileName(),c_jr.Data(),c_jf.Data(),cAdd.Data()));
   
   // Create ONLY the output containers for the data produced by the task.

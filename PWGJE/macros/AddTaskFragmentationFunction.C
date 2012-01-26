@@ -305,7 +305,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
       Form("fracfunc_%s_%s_%s_%s_cl%d", branchRecJets.Data(), branchGenJets.Data(), typeTracks.Data(), typeJets.Data(), eventClass),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:PWG4_FragmentationFunction_%s_%s_%s_%s_cl%d", 
+      Form("%s:PWGJE_FragmentationFunction_%s_%s_%s_%s_cl%d", 
          AliAnalysisManager::GetCommonFileName(), branchRecJets.Data(), branchGenJets. Data(), typeTracks.Data(), typeJets.Data(), eventClass));
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());

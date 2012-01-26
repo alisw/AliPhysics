@@ -224,7 +224,7 @@ class AliAnalysisAlien;
 class AliAnalysisManager;
 
 //______________________________________________________________________________
-void AnalysisTrainPWG4Jets(const char *analysis_mode="local", 
+void AnalysisTrainPWGJets(const char *analysis_mode="local", 
 			   const char *plugin_mode="",
 			   const char *config_file="",Int_t iOffset = 0,Int_t iTotal = 0)
 {

@@ -56,7 +56,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   // Creates HighPtSpectra analysis task and adds it to the analysis manager.
   
   //Load common track cut class
-  gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
 
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -173,42 +173,42 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   //Set track cuts for global tracks
   if(trackType==0 && cuts==0) {
     // tight global tracks - RAA analysis
-    trackCuts = CreateTrackCutsPWG4(1000);
+    trackCuts = CreateTrackCutsPWGJE(1000);
   }
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis
-    trackCuts = CreateTrackCutsPWG4(10001006);
+    trackCuts = CreateTrackCutsPWGJE(10001006);
   }
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWG4(10011006);
+    trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==0) {
     // no requirements on SPD and ITSrefit failed
-    trackCuts = CreateTrackCutsPWG4(10041006);   //no ITSrefit requirement
-    trackCutsReject = CreateTrackCutsPWG4(1006); //ITSrefit requirement
+    trackCuts = CreateTrackCutsPWGJE(10041006);   //no ITSrefit requirement
+    trackCutsReject = CreateTrackCutsPWGJE(1006); //ITSrefit requirement
     trackCutsReject->SetEtaRange(etamin,etamax);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWG4(10011006);
+    trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==2) {
     // no requirements on SPD and ITSrefit failed
-    trackCuts = CreateTrackCutsPWG4(10041006);       //no ITSrefit requirement filter 256
-    trackCutsReject = CreateTrackCutsPWG4(10001006); //ITSrefit requirement filter 16
+    trackCuts = CreateTrackCutsPWGJE(10041006);       //no ITSrefit requirement filter 256
+    trackCutsReject = CreateTrackCutsPWGJE(10001006); //ITSrefit requirement filter 16
     trackCutsReject->SetEtaRange(etamin,etamax);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
 
   if(trackType==1 && cuts==0) {
     //Set track cuts for TPConly tracks
-    trackCuts = CreateTrackCutsPWG4(2001);
+    trackCuts = CreateTrackCutsPWGJE(2001);
   }
   if(trackType==2 && cuts==0) {
      //	      Set track cuts for TPConly constrained tracks
-    trackCuts = CreateTrackCutsPWG4(2001);
+    trackCuts = CreateTrackCutsPWGJE(2001);
   }
   trackCuts->SetEtaRange(etamin,etamax);
   trackCuts->SetPtRange(0.15, 1e10);

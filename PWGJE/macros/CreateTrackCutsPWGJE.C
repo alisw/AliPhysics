@@ -1,7 +1,7 @@
-AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
+AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
 
   //
-  // Macro to create track cuts for PWG4 Jet analysis
+  // Macro to create track cuts for PWG Jet analysis
   // User can select a specific set by indicating cutMode
   // cutMode has 8 digits: first 4 digits additional cuts, last 4 digits standard cuts
   //                       additional cuts are variations of standard cuts (used for hybrid track selection and QA)
