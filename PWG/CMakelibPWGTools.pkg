@@ -27,13 +27,14 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    Base/AliAnalysisHelperJetTasks.cxx 
+    Tools/AliAnalysisHelperJetTasks.cxx 
+    Tools/AliTHn.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWGBaseLinkDef.h)
+set ( DHDR  PWGToolsLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE PWG/Base ANALYSIS CORRFW STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE PWG/Tools ANALYSIS CORRFW STEER/AOD STEER/ESD STEER/STEERBase)

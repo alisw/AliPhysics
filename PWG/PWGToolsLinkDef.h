@@ -5,5 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisHelperJetTasks+;
+#pragma link C++ class AliTHn+;
 
 #endif

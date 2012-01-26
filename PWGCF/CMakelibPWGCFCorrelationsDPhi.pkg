@@ -40,4 +40,4 @@ set ( DHDR  PWGCFCorrelationsDPhiLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/Base PWGCF/Correlations/DPhi PWG/Base STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/Base PWGCF/Correlations/DPhi PWG/Tools STEER/AOD STEER/ESD STEER/STEERBase)
