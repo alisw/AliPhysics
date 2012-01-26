@@ -144,6 +144,9 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fProfPtPtSigma1Pt(0x0),
   fHistList(0)
 {
+  //
+  // Constructor
+  //
   SetNVariables(25);
 
   fPtBinEdges[0][0] = 10.;
@@ -263,6 +266,9 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
 
 //________________________________________________________________________
 void AliPWG4HighPtTrackQA::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth) {
+  //
+  // Set variable bin sizes for pT axis in histos
+  //
 
   if(region<3) {
     fPtBinEdges[region][0] = ptmax;
@@ -858,7 +864,7 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd){
 }
 
 //________________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliAODEvent *aod){
+Int_t AliPWG4HighPtTrackQA::CalculateCentrality(const AliAODEvent *aod){
   //
   // Get centrality from AOD
   //
@@ -872,7 +878,7 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliAODEvent *aod){
 }
 
 //________________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) {
+Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const {
   //
   // Get centrality class
   //
@@ -1196,7 +1202,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
 //________________________________________________________________________
 void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
-
+  //
+  // Do QA on AOD input
+  //
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent);
   if(!aod)return;
   AliExternalTrackParam *exParam = new  AliExternalTrackParam();
@@ -1267,6 +1275,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
 
 //________________________________________________________________________
 void AliPWG4HighPtTrackQA::FillHistograms() {
+  //
+  // Fill all QA histograms
+  //
 
   fPtSel->Fill(fVariables->At(0));
   fPtPhi->Fill(fVariables->At(0),fVariables->At(1));
@@ -1442,7 +1453,7 @@ Bool_t AliPWG4HighPtTrackQA::Notify()
 }
 
 //________________________________________________________________________
-AliGenPythiaEventHeader*  AliPWG4HighPtTrackQA::GetPythiaEventHeader(AliMCEvent *mcEvent){
+AliGenPythiaEventHeader*  AliPWG4HighPtTrackQA::GetPythiaEventHeader(const AliMCEvent *mcEvent){
   
   if(!mcEvent)return 0;
   AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
@@ -1472,7 +1483,7 @@ AliGenPythiaEventHeader*  AliPWG4HighPtTrackQA::GetPythiaEventHeader(AliMCEvent 
 }
 
 //_______________________________________________________________________
-Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
+Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
 {
   //MV: copied from AliESDtrack since method is not available in AliAODTrack
 
@@ -1530,7 +1541,7 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbour
 }
 
 //_______________________________________________________________________
-Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfoFitMap(AliESDtrack *tr,Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
+Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfoFitMap(const AliESDtrack *tr,Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
 {
   //
   // TPC cluster information from fit map
@@ -1586,7 +1597,7 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfoFitMap(AliESDtrack *tr,Int_t nNei
 }
 
 //_______________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliESDtrack *track) {
+Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliESDtrack *track) const {
   //
   // returns distance between 1st and last hit in TPC
   // distance given in number of padrows
@@ -1609,7 +1620,7 @@ Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliESDtrack *track) {
 }
 
 //_______________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliAODTrack *track) {
+Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliAODTrack *track) const {
   //
   // returns distance between 1st and last hit in TPC
   // distance given in number of padrows

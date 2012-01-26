@@ -34,6 +34,7 @@ class TProfile;
 class TRandom3;
 class TRefArray;
 class TClonesArray;
+class TF1;
 
 class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 {
@@ -79,6 +80,14 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
     virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
 
+    //Setters for detector level effects
+    virtual void SetSmearResolution(Bool_t b){fUseTrMomentumSmearing = b;} 
+    virtual void SetDiceEfficiency(Bool_t b){fUseDiceEfficiency = b;} 
+    virtual void SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3);
+    virtual void SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3);
+
+    Double_t GetMomentumSmearing(Int_t cat, Double_t pt);
+    void FitMomentumResolution();
 
 
     // for Fast Jet
@@ -133,7 +142,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t        fEventSelection;        // use the event selection of this task, otherwise analyse all
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fFilterType;            // filter type 0 = all, 1 = ITSTPC, 2 = TPC
-    UInt_t        fJetTypes;              // 1<<0 regular jets, 1<<1 << randomized event 1<<2 random cones 1<<3 random cones randomiuzed evetn
+    UInt_t        fJetTypes;              // 1<<0 regular jets, 1<<1 << randomized event 1<<2 random cones 1<<3 random cones randomiuzed event
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
     Int_t         fNSkipLeadingRan;       // number of leading tracks to be skipped in the randomized event
@@ -154,8 +163,21 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     // output configurartion
     TString       fNonStdBranch;      // the name of the non-std branch name, if empty no branch is filled
     TString       fBackgroundBranch;  // name of the branch used for background subtraction
-    TString       fNonStdFile;        // The optional name of the output file the non-std brnach is written to
-    
+    TString       fNonStdFile;        // The optional name of the output file the non-std branch is written to
+
+    //Detector level effects
+    TProfile *fMomResH1; // Momentum resolution from TrackQA Hybrid Category 1
+    TProfile *fMomResH2; // Momentum resolution from TrackQA Hybrid Category 2
+    TProfile *fMomResH3; // Momentum resolution from TrackQA Hybrid Category 3
+    TF1 *fMomResH1Fit; //fit
+    TF1 *fMomResH2Fit; //fit
+    TF1 *fMomResH3Fit; //fit
+
+    TH1      *fhEffH1;        // Efficiency for Spectra Hybrid Category 1
+    TH1      *fhEffH2;        // Efficiency for Spectra Hybrid Category 2
+    TH1      *fhEffH3;        // Efficiency for Spectra Hybrid Category 3
+    Bool_t    fUseTrMomentumSmearing;     // Apply momentum smearing on track level
+    Bool_t    fUseDiceEfficiency;         // Apply efficiency on track level by dicing
 
     // Fast jet
     Double_t fRparam;                  // fastjet distance parameter
@@ -167,9 +189,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Int_t fActiveAreaRepeats;     // fast jet active area repeats
     Double_t fGhostEtamax;        // fast jet ghost area
 
-    TClonesArray  *fTCAJetsOut; //! TCA of output jets
-    TClonesArray  *fTCAJetsOutRan; //! TCA of output jets in randomized event
-    TClonesArray  *fTCARandomConesOut; //! TCA of output jets in randomized event
+    TClonesArray  *fTCAJetsOut;           //! TCA of output jets
+    TClonesArray  *fTCAJetsOutRan;        //! TCA of output jets in randomized event
+    TClonesArray  *fTCARandomConesOut;    //! TCA of output jets in randomized event
     TClonesArray  *fTCARandomConesOutRan; //! TCA of output jets in randomized event
     AliAODJetEventBackground *fAODJetBackgroundOut; //! jet background to be written out
 
@@ -242,6 +264,11 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2JetsLeadingPhiPtWC[kMaxCent];      //! jet correlation with leading jet
     TH2F*         fh2TracksLeadingJetPhiPtC[kMaxCent]; //! track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWC[kMaxCent]; //! track correlation with leading Jet
+
+    //Histos for detector level effects from toy model
+    TH2F *fh2PtGenPtSmeared;     //! Control histo smeared momentum
+    TProfile *fp1Efficiency;     //! Control profile efficiency
+    TProfile *fp1PtResolution;   //! Control profile for pT resolution
 
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    

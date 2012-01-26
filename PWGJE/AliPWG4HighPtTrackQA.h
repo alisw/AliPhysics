@@ -61,8 +61,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   Bool_t SelectEvent();              //decides if event is used for analysis
   Int_t CalculateCentrality(AliVEvent *ev);
   Int_t CalculateCentrality(AliESDEvent *esd);
-  Int_t CalculateCentrality(AliAODEvent *aod);
-  Int_t GetCentralityClass(Float_t cent=-1.);
+  Int_t CalculateCentrality(const AliAODEvent *aod);
+  Int_t GetCentralityClass(Float_t cent=-1.) const;
   void DoAnalysisESD();
   void DoAnalysisAOD();
   void FillHistograms();
@@ -83,14 +83,14 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void SetNVariables(Int_t nv) {fNVariables = nv;}
 
   Float_t GetPtMax()           {return fPtMax;}
-  Float_t GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
-  Float_t GetTPCClusterInfoFitMap(AliESDtrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
-  Int_t   GetTrackLengthTPC(AliESDtrack *track);
-  Int_t   GetTrackLengthTPC(AliAODTrack *track);
+  Float_t GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Float_t GetTPCClusterInfoFitMap(const AliESDtrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Int_t   GetTrackLengthTPC(const AliESDtrack *track) const;
+  Int_t   GetTrackLengthTPC(const AliAODTrack *track) const;
   Float_t GetGoldenChi2(AliESDtrack *origtrack);
   Float_t GetGGCChi2(AliESDtrack *origtrack);
 
-  static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
+  static AliGenPythiaEventHeader*  GetPythiaEventHeader(const AliMCEvent *mcEvent);
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
 
  protected:
