@@ -761,10 +761,10 @@ TList* AliAnalysisTaskMuonQA::BuildListOfAllTriggerCases(TString& FiredTriggerCl
   // add case any
   list->AddLast(new TObjString("trigger:any"));
   
-  TObjString* trigClasseName = 0x0;
   TObjArray *obj = FiredTriggerClasses.Tokenize(" ");
   if ( obj ){
     TIter nextTrigger(obj);
+    TObjString* trigClasseName;
     while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
 			
       //AliInfo(Form("trigger name %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
@@ -773,7 +773,6 @@ TList* AliAnalysisTaskMuonQA::BuildListOfAllTriggerCases(TString& FiredTriggerCl
       list->AddLast(new TObjString(Form("trigger:%s",trigClasseName->GetName())));
     }
     delete obj;
-    if(trigClasseName) delete trigClasseName;
   }
   
   // add case other if no specific trigger was found

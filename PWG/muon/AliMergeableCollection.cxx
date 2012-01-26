@@ -678,7 +678,7 @@ Int_t
 AliMergeableCollection::NumberOfObjects() const
 {
   /// Get the number of objects we hold
-  TIter next(CreateIterator(this));
+  TIter next(CreateIterator());
   Int_t count(0);
   while ( next() ) ++count;
   return count;
