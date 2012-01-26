@@ -25,6 +25,7 @@ class AliMUONClusterStoreV2 : public AliMUONVClusterStore
   
 public:
   AliMUONClusterStoreV2();
+  AliMUONClusterStoreV2(TRootIOCtor* dummy);
   AliMUONClusterStoreV2(const AliMUONClusterStoreV2& store);
   AliMUONClusterStoreV2& operator=(const AliMUONClusterStoreV2& store);  
   virtual ~AliMUONClusterStoreV2();

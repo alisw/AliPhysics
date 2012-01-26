@@ -28,6 +28,7 @@
 
 #include <TClonesArray.h>
 #include <TTree.h>
+#include "AliLog.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTreeManager.h"
 
@@ -37,9 +38,17 @@ ClassImp(AliMUONTrackStoreV1)
 
 //_____________________________________________________________________________
 AliMUONTrackStoreV1::AliMUONTrackStoreV1() : AliMUONVTrackStore(),
- fTracks(new TClonesArray("AliMUONTrack",10))
+ fTracks(0x0)
 {
    /// Ctor
+  CreateTracks();
+}
+
+//_____________________________________________________________________________
+AliMUONTrackStoreV1::AliMUONTrackStoreV1(TRootIOCtor* /*dummy*/) : AliMUONVTrackStore(),
+fTracks(0x0)
+{
+  /// Ctor
 }
 
 //_____________________________________________________________________________
@@ -54,6 +63,9 @@ AliMUONTrack*
 AliMUONTrackStoreV1::Add(const AliMUONTrack& track)
 {
   /// Add a track
+  
+  if (!fTracks) CreateTracks();
+
   return new((*fTracks)[fTracks->GetLast()+1]) AliMUONTrack(track);
 }
 
@@ -73,6 +85,7 @@ AliMUONTrackStoreV1::Connect(TTree& tree, Bool_t alone) const
 {
   /// Connect this store to the tree
   AliMUONTreeManager tman;
+  
   Bool_t ok;
   
   if ( tree.GetBranch("MUONTrack") )
@@ -93,7 +106,8 @@ TIterator*
 AliMUONTrackStoreV1::CreateIterator() const
 {
   /// Create an iterator to loop over tracks
-  return fTracks->MakeIterator();
+  if ( fTracks ) return fTracks->MakeIterator();
+  return 0x0;
 }
 
 //_____________________________________________________________________________
@@ -101,7 +115,22 @@ void
 AliMUONTrackStoreV1::Clear(Option_t*)
 {
   /// Reset
-  fTracks->Clear("C");
+  if (fTracks) fTracks->Clear("C");
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTrackStoreV1::CreateTracks()
+{
+  /// Allocate track container
+  if (fTracks) 
+  {
+    AliError("Cannot allocate again fTracks as it is there already !");
+  }
+  else
+  {
+    fTracks = new TClonesArray("AliMUONTrack",10);
+  }
 }
 
 //_____________________________________________________________________________
@@ -109,5 +138,6 @@ Int_t
 AliMUONTrackStoreV1::GetSize() const
 {
   /// Return the number of tracks we hold
-  return fTracks->GetLast()+1;
+  if ( fTracks ) return fTracks->GetLast()+1;
+  return 0;
 }

@@ -20,6 +20,7 @@ class AliMUONRegHeader : public TObject{
  
 public:
    AliMUONRegHeader();
+  AliMUONRegHeader(TRootIOCtor* dummy);
    AliMUONRegHeader(const AliMUONRegHeader& event);
    AliMUONRegHeader& operator=(const AliMUONRegHeader& event);
 

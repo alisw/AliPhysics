@@ -45,6 +45,28 @@ ClassImp(AliMUONDarcHeader)
  const UInt_t AliMUONDarcHeader::fgkDarcDefaultType   = 6;
 
 //___________________________________________
+AliMUONDarcHeader::AliMUONDarcHeader(TRootIOCtor* /*dummy*/)
+:  TObject(),
+fWord(0),
+fGlobalOutput(0),
+fGlobalL0(0), 
+fGlobalClk(0),
+fGlobalHold(0),      
+fGlobalSpare(0),     
+fDarcL0R(0),
+fDarcL1P(0),
+fDarcL1S(0),
+fDarcL2A(0),
+fDarcL2R(0),
+fDarcClk(0),
+fDarcHold(0),
+fDarcSpare(0),
+fRegHeaderArray(0x0)
+{
+  /// ctor
+}
+
+//___________________________________________
 AliMUONDarcHeader::AliMUONDarcHeader()
   :  TObject(),
      fWord(0),

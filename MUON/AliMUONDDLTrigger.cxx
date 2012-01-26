@@ -35,6 +35,15 @@
 ClassImp(AliMUONDDLTrigger)
 /// \endcond
 
+
+//___________________________________________
+AliMUONDDLTrigger::AliMUONDDLTrigger(TRootIOCtor* /*dummy*/)
+:  TObject(),
+fDarcHeader(0x0)
+{
+  ///ctor
+}
+
 //___________________________________________
 AliMUONDDLTrigger::AliMUONDDLTrigger()
   :  TObject(),

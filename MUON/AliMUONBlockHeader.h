@@ -20,6 +20,7 @@ class AliMUONBlockHeader : public TObject {
 
 public:
    AliMUONBlockHeader();
+   AliMUONBlockHeader(TRootIOCtor* dummy);
    AliMUONBlockHeader(const AliMUONBlockHeader &event);
    AliMUONBlockHeader& operator=(const AliMUONBlockHeader &event);
 

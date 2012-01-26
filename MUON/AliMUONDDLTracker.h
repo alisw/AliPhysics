@@ -22,6 +22,7 @@ class AliMUONDDLTracker : public TObject {
 
 public:
    AliMUONDDLTracker();
+   AliMUONDDLTracker(TRootIOCtor* dummy);
    virtual ~AliMUONDDLTracker();
  
    void    AddBusPatch(const AliMUONBusStruct& busPatch, Int_t iBlock, Int_t iDsp);

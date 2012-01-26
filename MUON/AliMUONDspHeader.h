@@ -20,6 +20,7 @@ class AliMUONDspHeader : public TObject {
 
 public:
    AliMUONDspHeader();
+  AliMUONDspHeader(TRootIOCtor* dummy);
    AliMUONDspHeader(const AliMUONDspHeader& event);
    AliMUONDspHeader& operator=(const AliMUONDspHeader& event);
 

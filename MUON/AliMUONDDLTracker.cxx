@@ -34,6 +34,16 @@ ClassImp(AliMUONDDLTracker)
 /// \endcond
 
 //___________________________________________
+AliMUONDDLTracker::AliMUONDDLTracker(TRootIOCtor* /*dummy*/)
+:  TObject(),
+fBlkHeaderArray(0x0)
+{
+  ///
+  ///ctor
+  ///
+}
+
+//___________________________________________
 AliMUONDDLTracker::AliMUONDDLTracker()
   :  TObject(),
      fBlkHeaderArray(new TClonesArray("AliMUONBlockHeader", 2))

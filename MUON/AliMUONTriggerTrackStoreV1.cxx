@@ -37,6 +37,14 @@ ClassImp(AliMUONTriggerTrackStoreV1)
 /// \endcond
 
 //_____________________________________________________________________________
+AliMUONTriggerTrackStoreV1::AliMUONTriggerTrackStoreV1(TRootIOCtor* /*dummy*/) : AliMUONVTriggerTrackStore(),
+fTracks(0x0)
+{
+  /// ctor
+  fTracks->SetOwner(kTRUE);
+}
+
+//_____________________________________________________________________________
 AliMUONTriggerTrackStoreV1::AliMUONTriggerTrackStoreV1() : AliMUONVTriggerTrackStore(),
  fTracks(new TClonesArray("AliMUONTriggerTrack",10))
 {

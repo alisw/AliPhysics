@@ -20,6 +20,7 @@ class AliMUONDarcHeader : public TObject {
  
 public:
    AliMUONDarcHeader();
+   AliMUONDarcHeader(TRootIOCtor* dummy);
    AliMUONDarcHeader(const AliMUONDarcHeader& event);
    AliMUONDarcHeader& operator=(const AliMUONDarcHeader& event);
 

@@ -22,6 +22,7 @@ class AliMUONTriggerTrackStoreV1 : public AliMUONVTriggerTrackStore
 {
 public:
   AliMUONTriggerTrackStoreV1();
+  AliMUONTriggerTrackStoreV1(TRootIOCtor* dummy);
   virtual ~AliMUONTriggerTrackStoreV1();
   
   using AliMUONVTriggerTrackStore::Add;

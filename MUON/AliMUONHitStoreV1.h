@@ -22,6 +22,7 @@ class AliMUONHitStoreV1 : public AliMUONVHitStore
 {
 public:
   AliMUONHitStoreV1();
+  AliMUONHitStoreV1(TRootIOCtor* /*dummy*/);
   virtual ~AliMUONHitStoreV1();
   
   using AliMUONVHitStore::Add;

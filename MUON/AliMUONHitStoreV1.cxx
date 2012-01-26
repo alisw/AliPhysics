@@ -35,6 +35,13 @@ ClassImp(AliMUONHitStoreV1)
 /// \endcond
 
 //_____________________________________________________________________________
+AliMUONHitStoreV1::AliMUONHitStoreV1(TRootIOCtor* /*dummy*/) : AliMUONVHitStore(),
+fHits(0x0)
+{
+  /// default ctor from file
+}
+
+//_____________________________________________________________________________
 AliMUONHitStoreV1::AliMUONHitStoreV1() : AliMUONVHitStore(),
  fHits(new TClonesArray("AliMUONHit",10))
 {

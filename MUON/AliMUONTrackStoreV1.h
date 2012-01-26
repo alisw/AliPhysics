@@ -22,6 +22,7 @@ class AliMUONTrackStoreV1 : public AliMUONVTrackStore
 {
 public:
   AliMUONTrackStoreV1();
+  AliMUONTrackStoreV1(TRootIOCtor* dummy);
   virtual ~AliMUONTrackStoreV1();
   
   using AliMUONVTrackStore::Add;
@@ -48,6 +49,8 @@ public:
 private:
     /// Return the tracks array
     TClonesArray* Tracks() const { return fTracks; }
+  
+    void CreateTracks(); 
   
     /// Return the address of the tracks array
     TClonesArray** TracksPtr() const { return const_cast<TClonesArray**>(&fTracks); }

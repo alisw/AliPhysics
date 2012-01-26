@@ -37,6 +37,13 @@ ClassImp(AliMUONPainterPadStore)
 ///\endcond
 
 //_____________________________________________________________________________
+AliMUONPainterPadStore::AliMUONPainterPadStore(TRootIOCtor* /*dummy*/) : TObject(),
+fPadStore(0x0)
+{
+  /// ctor
+}
+
+//_____________________________________________________________________________
 AliMUONPainterPadStore::AliMUONPainterPadStore() : TObject(),
   fPadStore(new AliMUON2DMap(kTRUE))
 {

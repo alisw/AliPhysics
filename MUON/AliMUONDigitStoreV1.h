@@ -23,6 +23,7 @@ class AliMUONDigitStoreV1 : public AliMUONVDigitStore
 {
 public:
   AliMUONDigitStoreV1();
+  AliMUONDigitStoreV1(TRootIOCtor* dummy);
   AliMUONDigitStoreV1(const AliMUONDigitStoreV1& rhs);
   AliMUONDigitStoreV1& operator=(const AliMUONDigitStoreV1& rhs);  
   virtual ~AliMUONDigitStoreV1();

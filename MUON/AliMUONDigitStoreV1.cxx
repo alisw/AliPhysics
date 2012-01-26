@@ -57,6 +57,15 @@ namespace
 }
 
 //_____________________________________________________________________________
+AliMUONDigitStoreV1::AliMUONDigitStoreV1(TRootIOCtor* /*dummy*/)
+: AliMUONVDigitStore(), 
+fDigits(0x0),
+fChamberDigits(0x0)
+{
+  /// ctor
+}
+
+//_____________________________________________________________________________
 AliMUONDigitStoreV1::AliMUONDigitStoreV1()
 : AliMUONVDigitStore(), 
 fDigits(new TObjArray(AliMpConstants::NofChambers())),

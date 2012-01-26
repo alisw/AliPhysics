@@ -45,6 +45,16 @@ ClassImp(AliMUONClusterStoreV2)
 /// \endcond
 
 //_____________________________________________________________________________
+AliMUONClusterStoreV2::AliMUONClusterStoreV2(TRootIOCtor* /*dummy*/)
+: AliMUONVClusterStore(), 
+fClusters(0x0),
+fMap(0x0),
+fMapped(kFALSE)
+{
+  /// Dummy IO ctor that does not allocate memory
+}
+
+//_____________________________________________________________________________
 AliMUONClusterStoreV2::AliMUONClusterStoreV2() 
 : AliMUONVClusterStore(), 
   fClusters(new TClonesArray("AliMUONRawClusterV2",100)),
@@ -91,14 +101,17 @@ AliMUONClusterStoreV2::~AliMUONClusterStoreV2()
 void AliMUONClusterStoreV2::Clear(Option_t*)
 {
   /// Clear the internal cluster array AND the index
-  fClusters->Clear("C");
-  if (fMap) {
-    Int_t nChamber = AliMpConstants::NofTrackingChambers();
-    for (Int_t chamber=0; chamber<nChamber; chamber++) {
-      AliMpExMap *map = static_cast<AliMpExMap *>(fMap->UncheckedAt(chamber));
-      map->Clear("C");
+  if ( fClusters ) 
+  {
+    fClusters->Clear("C");
+    if (fMap) {
+      Int_t nChamber = AliMpConstants::NofTrackingChambers();
+      for (Int_t chamber=0; chamber<nChamber; chamber++) {
+        AliMpExMap *map = static_cast<AliMpExMap *>(fMap->UncheckedAt(chamber));
+        map->Clear("C");
+      }
+      fMapped = kFALSE;
     }
-    fMapped = kFALSE;
   }
 }
 

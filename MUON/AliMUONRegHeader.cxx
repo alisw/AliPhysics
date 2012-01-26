@@ -40,6 +40,20 @@ ClassImp(AliMUONRegHeader)
  const UInt_t AliMUONRegHeader::fgkErrorWord    = 0xCAFEDEAD;
 
 //___________________________________________
+AliMUONRegHeader::AliMUONRegHeader(TRootIOCtor* /*dummy*/)
+:  TObject(),
+fDarcWord(0),
+fWord(0),
+fMask(0),
+fL0(0),
+fClk(0),
+fHold(0),
+fLocalArray(0x0)
+{
+  /// ctor
+}
+
+//___________________________________________
 AliMUONRegHeader::AliMUONRegHeader()
   :  TObject(),
      fDarcWord(0),

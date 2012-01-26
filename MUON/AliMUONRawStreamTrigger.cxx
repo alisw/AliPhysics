@@ -52,6 +52,27 @@ ClassImp(AliMUONRawStreamTrigger)
 const Int_t AliMUONRawStreamTrigger::fgkMaxDDL = 2;
 
 //___________________________________________
+AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(TRootIOCtor* /*dummy*/)
+:   AliMUONVRawStreamTrigger(),
+fPayload(0x0),
+fCurrentDDL(0x0),
+fCurrentDDLIndex(fgkMaxDDL),
+fCurrentDarcHeader(0x0),
+fCurrentRegHeader(0x0),
+fCurrentRegHeaderIndex(0),
+fCurrentLocalStruct(0x0),
+fCurrentLocalStructIndex(0),
+fLocalStructRead(kFALSE),
+fDDL(0),
+fNextDDL(kFALSE)
+{
+  ///
+  /// create an object to read MUON raw digits
+  /// Default ctor with no mem allocation for I/O
+  ///
+}
+
+//___________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
 :   AliMUONVRawStreamTrigger(),
     fPayload(new AliMUONPayloadTrigger()),

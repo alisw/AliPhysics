@@ -25,6 +25,7 @@ class AliMUONLocalStruct;
 class AliMUONRawStreamTrigger: public AliMUONVRawStreamTrigger {
   public :
     AliMUONRawStreamTrigger();
+    AliMUONRawStreamTrigger(TRootIOCtor* dummy);
     AliMUONRawStreamTrigger(AliRawReader* rawReader);
     virtual ~AliMUONRawStreamTrigger();
 

@@ -24,6 +24,7 @@ class AliMUONBlockHeader;
 class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
   public :
     AliMUONRawStreamTracker();
+    AliMUONRawStreamTracker(TRootIOCtor* dummy);
     AliMUONRawStreamTracker(AliRawReader* rawReader);
     virtual ~AliMUONRawStreamTracker();
 

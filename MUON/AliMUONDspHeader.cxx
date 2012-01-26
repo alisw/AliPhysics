@@ -39,6 +39,27 @@ ClassImp(AliMUONDspHeader)
   const UInt_t AliMUONDspHeader::fgkDefaultPaddingWord = 0xBEEFFACE;
 
 //___________________________________________
+AliMUONDspHeader::AliMUONDspHeader(TRootIOCtor* /*dummy*/)
+:  TObject(),
+fDataKey(0),
+fTotalLength(0),
+fLength(0),
+fDspId(0),
+fBlkL1ATrigger(0),
+fMiniEventId(0),
+fL1ATrigger(0),
+fL1RTrigger(0),
+fPaddingWord(0),
+fErrorWord(0),
+fBusPatchArray(0x0)
+{
+  ///
+  ///ctor
+  ///
+  
+}
+
+//___________________________________________
 AliMUONDspHeader::AliMUONDspHeader()
   :  TObject(),
      fDataKey(0),

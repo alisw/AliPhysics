@@ -38,6 +38,26 @@ ClassImp(AliMUONBlockHeader)
 const Int_t  AliMUONBlockHeader::fgkHeaderLength   = 8;
 const UInt_t AliMUONBlockHeader::fgkDefaultDataKey = 0xFC0000FC;
 const UInt_t AliMUONBlockHeader::fgkDdlDataKey     = 0xD000000D;
+
+//___________________________________________
+AliMUONBlockHeader::AliMUONBlockHeader(TRootIOCtor* /*dummy*/)
+:  TObject(),
+fDataKey(0),
+fTotalLength(0),
+fLength(0),
+fDspId(0),
+fL0Trigger(0),
+fMiniEventId(0),
+fEventId1(0),
+fEventId2(0),
+fDspHeaderArray(0x0)
+{
+  ///
+  /// ctor
+  ///
+  
+}
+
 //___________________________________________
 AliMUONBlockHeader::AliMUONBlockHeader()
   :  TObject(),

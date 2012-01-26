@@ -644,28 +644,29 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 	  if (localBoard->IsNotified()) {// if notified board 
 	    AliMUONLocalTrigger* locTrg = triggerStore.FindLocal(localBoardId);
 
-	    locCard = locTrg->LoCircuit();
-	    locDec  = locTrg->GetLoDecision();
-	    trigY   = locTrg->LoTrigY();
-	    posY    = locTrg->LoStripY();
-	    posX    = locTrg->LoStripX();
-	    devX    = locTrg->LoDev();
-	    sdevX   = locTrg->LoSdev();
-		  
-	    AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
-			    locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));  
-	    //packing word
-	    word = 0;
-	    LocalWordPacking(word, (UInt_t)iLoc, (UInt_t)locDec, (UInt_t)trigY, (UInt_t)posY, 
-			     (UInt_t)posX, (UInt_t)sdevX, (UInt_t)devX);
-
-	    buffer[index++] = (locTrg->GetX1Pattern() | (locTrg->GetX2Pattern() << 16));
-	    buffer[index++] = (locTrg->GetX3Pattern() | (locTrg->GetX4Pattern() << 16));
-	    buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
-	    buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
-	    buffer[index++] = (Int_t)word; // data word
-		      
-		
+      if (locTrg)
+      {
+        locCard = locTrg->LoCircuit();
+        locDec  = locTrg->GetLoDecision();
+        trigY   = locTrg->LoTrigY();
+        posY    = locTrg->LoStripY();
+        posX    = locTrg->LoStripX();
+        devX    = locTrg->LoDev();
+        sdevX   = locTrg->LoSdev();
+        
+        AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
+                        locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));  
+        //packing word
+        word = 0;
+        LocalWordPacking(word, (UInt_t)iLoc, (UInt_t)locDec, (UInt_t)trigY, (UInt_t)posY, 
+                         (UInt_t)posX, (UInt_t)sdevX, (UInt_t)devX);
+        
+        buffer[index++] = (locTrg->GetX1Pattern() | (locTrg->GetX2Pattern() << 16));
+        buffer[index++] = (locTrg->GetX3Pattern() | (locTrg->GetX4Pattern() << 16));
+        buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
+        buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
+        buffer[index++] = (Int_t)word; // data word
+      }
 	  }
 	  // fill copy card X-Y inputs from the notified cards 
 	  if (localBoard->GetInputXfrom() && localBoard->GetInputYfrom()) 
@@ -679,11 +680,14 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 	    Int_t localFromId = localBoard->GetInputXfrom();
 	    AliMUONLocalTrigger* locTrgfrom  = triggerStore.FindLocal(localFromId);
 
-	    buffer[index++] = 0; // copy only X3-4 & Y1-4
-	    buffer[index++] = (locTrgfrom->GetX3Pattern() | (locTrgfrom->GetX4Pattern() << 16));
-	    buffer[index++] = (locTrgfrom->GetY1Pattern() | (locTrgfrom->GetY2Pattern() << 16));
-	    buffer[index++] = (locTrgfrom->GetY3Pattern() | (locTrgfrom->GetY4Pattern() << 16));
-	    buffer[index++] = word;
+      if ( locTrgfrom ) 
+      {
+        buffer[index++] = 0; // copy only X3-4 & Y1-4
+        buffer[index++] = (locTrgfrom->GetX3Pattern() | (locTrgfrom->GetX4Pattern() << 16));
+        buffer[index++] = (locTrgfrom->GetY1Pattern() | (locTrgfrom->GetY2Pattern() << 16));
+        buffer[index++] = (locTrgfrom->GetY3Pattern() | (locTrgfrom->GetY4Pattern() << 16));
+        buffer[index++] = word;
+      }
 	  }
 
 	} else { 

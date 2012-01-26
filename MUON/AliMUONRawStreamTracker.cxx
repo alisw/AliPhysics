@@ -50,6 +50,28 @@
 ClassImp(AliMUONRawStreamTracker)
 /// \endcond
 
+
+//___________________________________________
+AliMUONRawStreamTracker::AliMUONRawStreamTracker(TRootIOCtor* /*dummy*/)
+: AliMUONVRawStreamTracker(),
+fPayload(0x0),
+fCurrentDDL(0),
+fCurrentDDLIndex(fgkMaxDDL),
+fCurrentBlockHeader(0),
+fCurrentBlockHeaderIndex(0),
+fCurrentDspHeader(0),
+fCurrentDspHeaderIndex(0),
+fCurrentBusStruct(0),
+fCurrentBusStructIndex(0),
+fCurrentDataIndex(0),
+fDDL(0)
+{
+  ///
+  /// create an object to read MUON raw digits
+  /// Default ctor with no memory allocation for I/O
+  ///
+}
+
 //___________________________________________
 AliMUONRawStreamTracker::AliMUONRawStreamTracker()
  : AliMUONVRawStreamTracker(),

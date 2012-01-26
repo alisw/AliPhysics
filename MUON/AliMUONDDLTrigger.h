@@ -21,6 +21,7 @@ class AliMUONDDLTrigger : public TObject {
  
 public:
    AliMUONDDLTrigger();
+   AliMUONDDLTrigger(TRootIOCtor* dummy);
    virtual ~AliMUONDDLTrigger();
 
 

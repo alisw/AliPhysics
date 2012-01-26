@@ -25,6 +25,7 @@ class AliMUONPainterPadStore : public TObject
 {
 public:
   AliMUONPainterPadStore();
+  AliMUONPainterPadStore(TRootIOCtor* dummy);
   virtual ~AliMUONPainterPadStore();
 
   Int_t FindPadID(const TArrayI& pads, Double_t x, Double_t y) const;
