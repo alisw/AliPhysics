@@ -37,8 +37,8 @@ ifneq ($(CORRFW_INCLUDE),)
   ALICEINC += -I../$(CORRFW_INCLUDE)
 endif
 
-ifneq ($(PWGBase_INCLUDE),)
-  ALICEINC += -I../$(PWGBase_INCLUDE)
+ifneq ($(PWGTools_INCLUDE),)
+  ALICEINC += -I../$(PWGTools_INCLUDE)
 endif
 
 ifneq ($(PHOSUtils_INCLUDE),)
