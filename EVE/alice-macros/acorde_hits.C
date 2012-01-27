@@ -6,6 +6,16 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TTree.h>
+#include <TString.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+
+#include <EveBase/AliEveEventManager.h>
+#include <STEER/STEER/AliRunLoader.h>
+#endif
 
 TEvePointSet*
 acorde_hits(const char  *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
@@ -24,7 +34,7 @@ acorde_hits(const char  *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
 
   if(points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE)
   {
-    Warning("acorde_hits", Form("No hits match '%s'", selection));
+    Warning("acorde_hits", "No hits match '%s'", selection);
     delete points;
     return 0;
   }

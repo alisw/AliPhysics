@@ -6,8 +6,19 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
+#include <TEveUtil.h>
 
-#include <vector> // bypass a cint problem in root-5.20
+#include <RAW/AliRawReader.h>
+#include <EveBase/AliEveEventManager.h>
+#include <EveDet/AliEveITSDigitsInfo.h>
+
+void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
+                            Bool_t check_empty    = kTRUE,
+                            Bool_t scaled_modules = kFALSE);
+
+#endif
 
 // Load ITS raw-data.
 // Argument mode is a bitwise or determining which layers to import:

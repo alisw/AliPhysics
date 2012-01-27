@@ -6,6 +6,38 @@
 
 // Author: Pawel Debski 2010
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <fstream>
+
+#include <TColor.h>
+#include <TCanvas.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TString.h>
+#include <TGFileDialog.h>
+#include <TGShutter.h>
+#include <TGTab.h>
+#include <TGLOverlayButton.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TPRegexp.h>
+#include <TRandom.h>
+#include <TEveGValuators.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveEventManager.h>
+#include <TEveWindowManager.h>
+#include <TEveViewer.h>
+#include <TEveScene.h>
+#include <TEveTrackPropagator.h>
+
+#include <EveBase/AliEveEventManager.h>
+#include <EveBase/AliEveMultiView.h>
+#include <EveBase/AliEveTrack.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <STEER/ESD/AliESDEvent.h>
+#endif
+
 #include <TGButton.h>
 #include <TGComboBox.h>
 #include <TEveBrowser.h>
@@ -17,7 +49,7 @@
 #include <TGComboBox.h>
 #include <TLatex.h>
 #include <TGSlider.h>
-#include "TGDoubleSlider.h"
+#include <TGDoubleSlider.h>
 #include <TEvePointSet.h>
 
 class SetCutsWindow : public TGMainFrame {
@@ -63,6 +95,7 @@ protected:
    TGLOverlayButton *gOverlayButtonRPhi;
    TGLOverlayButton *gOverlayButtonRhoZ;
    Bool_t gDrawHistograms[12];
+   TGHorizontal3DLine *separator;
    
 public:
    SetCutsWindow();
@@ -83,6 +116,7 @@ public:
    void SaveAllViews();
    void Save3DView();
    void SaveRPhiView();
+   void SaveRhoZView();
    void DrawPtHisto();
    void DrawEtaHisto();
    void DrawPhiHisto();
@@ -102,6 +136,9 @@ public:
    void SetStandardCuts();
    void AddMomentumVectors();
    void SetCuts();
+   void SetValues();
+   void SaveMacro();
+   void LoadMacro();
    void CloseTab();
    void Macro1();
    void Macro2();
@@ -142,18 +179,13 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    TGLabel *label = 0;
    TGHorizontalFrame *hframe = 0;
    TGHorizontalFrame *hframeMerge = 0;
-   TGHorizontalFrame *hframe1 = 0;
-   TGHorizontalFrame *hframe2 = 0;
-   TGVerticalFrame *vframe = 0;
-
+   
    gOverlayButton3D = 0;
    gOverlayButtonRPhi = 0;
    gOverlayButtonRhoZ = 0;
 
    for(Int_t i = 0; i < 12; i++)
       gDrawHistograms[i] = kFALSE;
-
-   TEveBrowser *browser = gEve->GetBrowser();
 
    TGShutter *mainShutter = new TGShutter(this, kSunkenFrame);
 
@@ -1282,7 +1314,7 @@ void SetCutsWindow::MultSliderCallBack()
 
 void SetCutsWindow::ClsNECallBack()
 {
-M
+
    Double_t entry;
 
    entry = gClsRangeNE->GetNumber();
@@ -2170,41 +2202,48 @@ void SetCutsWindow::DrawHistos()
 
    TCanvas* pad1 = 0;
    TCanvas* pad2 = 0;
+   
+   TH1D* histPt	  = 0;
+   TH1D* histEta  = 0;
+   TH1D* histPhi  = 0;
+   TH2D* histPhiPt= 0;
+   TH2D* histPtY  = 0;
+   TH2D* histEtaPhi=0;
 
    if(gDrawHistograms[0])
    {
          nHistos1++;
-         TH1D* histPt = new TH1D("Pt\nSingle Event", "AliEve Pt histogram", 100, 0.0, 5.0);
+         histPt = new TH1D("Pt\nSingle Event", "AliEve Pt histogram", 100, 0.0, 5.0);
    }
 
    if(gDrawHistograms[1])
    {
          nHistos1++;
-         TH1D* histEta = new TH1D("#eta\nSingle Event", "AliEve #eta histogram", 100, -1.5, 1.5);
+         histEta = new TH1D("#eta\nSingle Event", "AliEve #eta histogram", 100, -1.5, 1.5);
    }
 
    if(gDrawHistograms[2])
    {
          nHistos1++;
-         TH1D* histPhi = new TH1D("#phi\nSingle Event", "AliEve #phi histogram", 100, 0.0, 2*TMath::Pi());
+         histPhi = new TH1D("#phi\nSingle Event", "AliEve #phi histogram", 100, 0.0, 2*TMath::Pi());
    }
 
    if(gDrawHistograms[3])
    {
          nHistos2++;
-         TH2D* histPhiPt = new TH2D("#phi-Pt\nSingle Event", "AliEve #phi-Pt histogram", 100, 0.0, 2*TMath::Pi(), 100, 0.0, 5.0);
+         histPhiPt = new TH2D("#phi-Pt\nSingle Event", "AliEve #phi-Pt histogram", 100, 0.0, 2*TMath::Pi(), 100, 0.0, 5.0);
    }
 
    if(gDrawHistograms[4])
    {
          nHistos2++;
-         TH2D* histPtY = new TH2D("Pt-Y\nSingle Event", "AliEve Pt-y histogram", 100, 0.0, 5.0, 100, -1.5, 1.5);
+         histPtY = new TH2D("Pt-Y\nSingle Event", "AliEve Pt-y histogram", 100, 0.0, 5.0, 100, -1.5, 1.5);
    }
 
    if(gDrawHistograms[5])
    {
          nHistos2++;
-         TH2D* histEtaPhi = new TH2D("#eta-#phi\nSingle Event", "AliEve #eta-#phi histogram", 100, -1.5, 1.5, 100, 0.0, 2*TMath::Pi());
+         histEtaPhi = new TH2D("#eta-#phi\nSingle Event", "AliEve #eta-#phi histogram", 100, -1.5, 1.5, 100, 0.0, 2*TMath::Pi());
    }
 
    AliESDEvent* esd = AliEveEventManager::AssertESD();
@@ -2354,6 +2393,14 @@ void SetCutsWindow::DrawHistosAll()
 
    TCanvas* pad1 = 0;
    TCanvas* pad2 = 0;
+   
+   TH1D* histPt   = 0;
+   TH1D* histEta  = 0;
+   TH1D* histPhi  = 0;
+   TH2D* histPhiPt= 0;
+   TH2D* histPtY  = 0;
+   TH2D* histEtaPhi=0;
+   
 //   TCanvas* pad3 = 0;
 
 //   TH1D* histMult = new TH1D("Multiplicity\n", "AliEve Multiplicity histogram", 1000, 0.0, 1000.0);
@@ -2362,37 +2409,37 @@ void SetCutsWindow::DrawHistosAll()
    if(gDrawHistograms[6])
    {
          nHistos1++;
-         TH1D* histPt = new TH1D("Pt\n", "AliEve Pt histogram", 1000, 0.0, 1000.0);
+         histPt = new TH1D("Pt\n", "AliEve Pt histogram", 1000, 0.0, 1000.0);
    }
 
    if(gDrawHistograms[7])
    {
          nHistos1++;
-         TH1D* histEta = new TH1D("#eta\nAll Events", "AliEve #eta histogram", 100, -1.5, 1.5);
+         histEta = new TH1D("#eta\nAll Events", "AliEve #eta histogram", 100, -1.5, 1.5);
    }
 
    if(gDrawHistograms[8])
    {
          nHistos1++;
-         TH1D* histPhi = new TH1D("#phi\nAll Events", "AliEve #phi histogram", 100, 0.0, 2*TMath::Pi());
+         histPhi = new TH1D("#phi\nAll Events", "AliEve #phi histogram", 100, 0.0, 2*TMath::Pi());
    }
 
    if(gDrawHistograms[9])
    {
          nHistos2++;
-         TH2D* histPhiPt = new TH2D("#phi-Pt\nAll Events", "AliEve #phi-Pt histogram", 100, 0.0, 2*TMath::Pi(), 100, 0.0, 5.0);
+         histPhiPt = new TH2D("#phi-Pt\nAll Events", "AliEve #phi-Pt histogram", 100, 0.0, 2*TMath::Pi(), 100, 0.0, 5.0);
    }
 
    if(gDrawHistograms[10])
    {
          nHistos2++;
-         TH2D* histPtY = new TH2D("Pt-Y\nAll Events", "AliEve Pt-y histogram", 100, 0.0, 5.0, 100, -1.5, 1.5);
+         histPtY = new TH2D("Pt-Y\nAll Events", "AliEve Pt-y histogram", 100, 0.0, 5.0, 100, -1.5, 1.5);
    }
 
    if(gDrawHistograms[11])
    {
          nHistos2++;
-         TH2D* histEtaPhi = new TH2D("#eta-#phi\nAll Events", "AliEve #eta-#phi histogram", 100, 1.5, 1.5, 100, 0.0, 2*TMath::Pi());
+         histEtaPhi = new TH2D("#eta-#phi\nAll Events", "AliEve #eta-#phi histogram", 100, 1.5, 1.5, 100, 0.0, 2*TMath::Pi());
    }
 
    Int_t nEvents = AliEveEventManager::GetMaster()->GetMaxEventId();
@@ -2583,8 +2630,9 @@ Int_t SetCutsWindow::GetTrackColorByMomentum(Double_t momentum, Int_t size)
 
 
    Double_t step = 1.0/size;
+   Int_t i=0;
 
-   for(Int_t i = 0; i < size; i++)
+   for(i = 0; i < size; i++)
    {
 
       switch(gTrackColorScale->GetSelected())
@@ -2613,7 +2661,7 @@ Int_t SetCutsWindow::GetTrackColorByMomentum(Double_t momentum, Int_t size)
 
    }
 
-   return i-1;
+   return (i-1);
 
 }
 
@@ -2698,8 +2746,8 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
    if(gEve->GetEventScene()->FirstChild()->FindChild("Momentum Vectors"))
       gEve->GetEventScene()->FirstChild()->FindChild("Momentum Vectors")->Destroy();
 
-   TString str1 = 0;
-   TString str2 = 0;
+   TString str1;
+   TString str2;
 
    TEveElement::List_i i = gEve->GetEventScene()->FirstChild()->BeginChildren();
    TEveElement::List_i j = gEve->GetEventScene()->FirstChild()->EndChildren();
@@ -3269,9 +3317,10 @@ kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, k
 
 void SetCutsWindow::SetCuts()
 {
-
-   TString str1 = 0;
-   TString str2 = 0;
+   TEvePointSet *pointset=0;
+  
+   TString str1;
+   TString str2;
 
    Int_t posTrackColor= gPosColorList->GetSelected();
    Int_t negTrackColor= gNegColorList->GetSelected();
@@ -3280,7 +3329,7 @@ void SetCutsWindow::SetCuts()
    TEveElement::List_i j = gEve->GetEventScene()->FirstChild()->EndChildren();
    TEveElement::List_i k;
 
-   Double_t x1, y1, z1, x2, y2, z2;
+   Double_t x1, y1, z1;
 
    for(k = i; k != j; k++)
    {

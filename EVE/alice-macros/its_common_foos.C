@@ -6,6 +6,16 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TString.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+
+#include <EveDet/AliEveITSModule.h>
+#include <EveDet/AliEveITSDigitsInfo.h>
+#include <EveDet/AliEveITSScaledModule.h>
+#endif
+
 
 void its_common_foos()
 {}

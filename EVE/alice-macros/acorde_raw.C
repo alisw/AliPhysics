@@ -6,6 +6,21 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TTree.h>
+#include <TString.h>
+#include <TGeoManager.h>
+#include <TGeoPhysicalNode.h>
+#include <TGeoMatrix.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveTrans.h>
+#include <TEveGeoShape.h>
+
+#include <EveBase/AliEveEventManager.h>
+#include <RAW/AliRawReader.h>
+#include <ACORDE/AliACORDERawStream.h>
+#endif
 
 TString acorde_module_path(Int_t module);
 

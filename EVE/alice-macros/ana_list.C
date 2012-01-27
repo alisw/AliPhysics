@@ -25,7 +25,12 @@
 // - When you have finished adding the desired objects, click the button "stop"
 // Use the list analyser "as usual" (see class documentation)
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveManager.h>
 
+#include <TRD/AliTRDarrayADC.h>
+#include <EveDet/AliEveListAnalyser.h>
+#endif
 
 void ana_list(TEveElement *cont = 0)
 {

@@ -5,21 +5,24 @@
 // For more information please see "ana_list.C" or have a look at the class documentation.
 
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TGLViewer.h>
 #include <TEveManager.h>
-#include <EveBase/AliEveEventManager.h>
-#include "TRD/AliTRDarrayADC.h"
-#include <EveDet/AliEveListAnalyser.h>
+#include <TEveTrackPropagator.h>
 
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
-#include "TRD/AliTRDReconstructor.h"
-#include "TRD/AliTRDtrackV1.h"
-#include "EVE/EveBase/AliEveKink.h"
+#include <TRD/AliTRDarrayADC.h>
+#include <TRD/AliTRDReconstructor.h>
+#include <TRD/AliTRDtrackV1.h>
+#include <STEER/ESD/AliESDkink.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDfriend.h>
+#include <EVE/EveDet/AliEveTRDData.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveKink.h>
+#include <EVE/EveDet/AliEveListAnalyser.h>
 #endif
 
-void esd_kink_init_rectrackMother(TEveRecTrack& rt, AliExternalTrackParam* tp)
+void esd_kink_init_rectrackMother(TEveRecTrack& rt, const AliExternalTrackParam* tp)
 {
   Double_t pbuf[3], vbuf[3];
 
@@ -30,7 +33,7 @@ void esd_kink_init_rectrackMother(TEveRecTrack& rt, AliExternalTrackParam* tp)
   rt.fBeta = 1; // ep/TMath::Sqrt(ep*ep + mc*mc);
 }
 
-void esd_kink_init_rectrackDaughter(TEveRecTrack& rt, AliExternalTrackParam* tp, TEveVector* svt,TEveVector* spt)
+void esd_kink_init_rectrackDaughter(TEveRecTrack& rt, const AliExternalTrackParam* tp, TEveVector* svt,TEveVector* spt)
 {
   rt.fSign = tp->GetSign();
   rt.fV.Set(*svt);
@@ -53,7 +56,7 @@ AliEveKink* esd_make_kink(TEveTrackPropagator* rnrStyleMoth,TEveTrackPropagator*
   const TVector3 r1(kink->GetPosition());
   rcKink.fVKink.Set(r1);
   
-  for (Int_t j=0; j<3; ++j) rckink.fKinkAngle[j]=kink->GetAngle(j);
+  for (Int_t j=0; j<3; ++j) rcKink.fKinkAngle[j]=kink->GetAngle(j);
   
   Double_t r[3], r2[3];
 

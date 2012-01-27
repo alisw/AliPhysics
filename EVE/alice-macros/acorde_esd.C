@@ -4,6 +4,19 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TString.h>
+#include <TGeoManager.h>
+#include <TGeoPhysicalNode.h>
+#include <TEveTrans.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveGeoShape.h>
+
+#include <EveBase/AliEveEventManager.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDACORDE.h>
+#endif
 
 TString acorde_module_path(Int_t module);
 
@@ -19,7 +32,7 @@ void acorde_esd()
   // From Mario RC:
 
   AliEveEventManager::AssertGeometry();
-  AliESDEvent* fESD = new AliESDEvent();
+  //AliESDEvent* fESD = new AliESDEvent();
   AliESDACORDE *acordeESD = AliEveEventManager::AssertESD()->GetACORDEData();
 
 
