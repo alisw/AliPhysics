@@ -39,4 +39,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  FASTJETANdevLinkDef.h)
 
-set ( EINCLUDE JETAN/DEV JETAN/fastjet ANALYSIS STEER/AOD STEER/STEERBase )
+set ( EINCLUDE JETAN/fastjet ANALYSIS STEER/AOD STEER/STEERBase )
