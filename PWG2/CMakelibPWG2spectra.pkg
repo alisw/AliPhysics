@@ -43,18 +43,18 @@ set ( SRCS
     SPECTRA/AliProtonAbsorptionCorrection.cxx 
     SPECTRA/AliProtonSpectraCorrection.cxx 
     SPECTRA/AliProtonCorrectionAnalysisTask.cxx 
-    SPECTRA/AliAnalysisCentralCutMC.cxx 
-    SPECTRA/AliAnalysisCentralCutESD.cxx 
-    SPECTRA/AliAnalysisCentralCutEvtMC.cxx 
-    SPECTRA/AliAnalysisCentralCutEvtESD.cxx 
-    SPECTRA/AliAnalysisCentralExtrapolate.cxx 
-    SPECTRA/AliAnalysisTaskCentral.cxx 
+#    SPECTRA/AliAnalysisCentralCutMC.cxx 
+#    SPECTRA/AliAnalysisCentralCutESD.cxx 
+#    SPECTRA/AliAnalysisCentralCutEvtMC.cxx 
+#    SPECTRA/AliAnalysisCentralCutEvtESD.cxx 
+#    SPECTRA/AliAnalysisCentralExtrapolate.cxx 
+#    SPECTRA/AliAnalysisTaskCentral.cxx 
 #    SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx 
     SPECTRA/AliITSsadEdxFitter.cxx 
     SPECTRA/Fit/AliBWTools.cxx 
     SPECTRA/Fit/AliBWFunc.cxx 
     SPECTRA/Fit/AliLatexTable.cxx 
-    SPECTRA/AliAnalysisChargedHadronSpectraITSTruncatedMeanTask.cxx 
+#    SPECTRA/AliAnalysisChargedHadronSpectraITSTruncatedMeanTask.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
