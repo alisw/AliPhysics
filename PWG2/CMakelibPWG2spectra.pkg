@@ -27,22 +27,22 @@
 #-----------------------------------------------------------------------#
 
 set ( SRCS  
-    SPECTRA/AliProtonAnalysisBase.cxx 
-    SPECTRA/AliProtonAnalysis.cxx 
-    SPECTRA/AliProtonQAAnalysis.cxx 
-    SPECTRA/AliAnalysisTaskProtons.cxx 
-    SPECTRA/AliAnalysisTaskProtonsQA.cxx 
+#    SPECTRA/AliProtonAnalysisBase.cxx 
+#    SPECTRA/AliProtonAnalysis.cxx 
+#    SPECTRA/AliProtonQAAnalysis.cxx 
+#    SPECTRA/AliAnalysisTaskProtons.cxx 
+#    SPECTRA/AliAnalysisTaskProtonsQA.cxx 
     SPECTRA/AliAnalysisTaskChargedHadronSpectra.cxx 
     SPECTRA/AliAnalysisTaskCheckV0.cxx 
     SPECTRA/AliAnalysisTaskCheckCascade.cxx 
     SPECTRA/AliAnalysisTaskCheckPerformanceCascade.cxx 
     SPECTRA/AliAnalysisTaskStrange.cxx 
     SPECTRA/AliAnalysisTaskPerformanceStrange.cxx 
-    SPECTRA/AliProtonFeedDownAnalysisTask.cxx 
-    SPECTRA/AliProtonFeedDownAnalysis.cxx 
-    SPECTRA/AliProtonAbsorptionCorrection.cxx 
-    SPECTRA/AliProtonSpectraCorrection.cxx 
-    SPECTRA/AliProtonCorrectionAnalysisTask.cxx 
+#    SPECTRA/AliProtonFeedDownAnalysisTask.cxx 
+#    SPECTRA/AliProtonFeedDownAnalysis.cxx 
+#    SPECTRA/AliProtonAbsorptionCorrection.cxx 
+#    SPECTRA/AliProtonSpectraCorrection.cxx 
+#    SPECTRA/AliProtonCorrectionAnalysisTask.cxx 
 #    SPECTRA/AliAnalysisCentralCutMC.cxx 
 #    SPECTRA/AliAnalysisCentralCutESD.cxx 
 #    SPECTRA/AliAnalysisCentralCutEvtMC.cxx 
@@ -50,7 +50,7 @@ set ( SRCS
 #    SPECTRA/AliAnalysisCentralExtrapolate.cxx 
 #    SPECTRA/AliAnalysisTaskCentral.cxx 
 #    SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx 
-    SPECTRA/AliITSsadEdxFitter.cxx 
+#    SPECTRA/AliITSsadEdxFitter.cxx 
     SPECTRA/Fit/AliBWTools.cxx 
     SPECTRA/Fit/AliBWFunc.cxx 
     SPECTRA/Fit/AliLatexTable.cxx 
