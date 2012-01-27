@@ -416,7 +416,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   if(fFillNtuple>0){
     OpenFile(4); // 4 is the slot number of the ntuple
     
-    fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:PointingAngle:DecLeng:VxRec:VyRec:VzRec:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:InvMassK0starKKpi:InvMassK0starpiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK"); 
+    fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:P0:P1:P2:PidTrackBit0:PidTrackBit1:PidTrackBit2:PointingAngle:PointingAngleXY:DecLeng:DecLengXY:NorDecLeng:NorDecLengXY:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:InvMassK0starKKpi:InvMassK0starpiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK:centrality"); 
     
   }
   
@@ -476,9 +476,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   if(fAnalysisCuts->IsEventRejectedDueToPileupSPD())fHistNEvents->Fill(6);
   if(fAnalysisCuts->IsEventRejectedDueToCentrality())fHistNEvents->Fill(7);
   
-  
-  
+  Float_t centrality=fAnalysisCuts->GetCentrality(aod);
+  //Int_t runNumber=aod->GetRunNumber();
+
   if(!isEvSel)return;
+  
+    
+
   
   fHistNEvents->Fill(1);
 
@@ -710,43 +714,60 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
    
     }
     
-    Float_t tmp[28];
+    Float_t tmp[36];
     if(fFillNtuple>0){
       
       if ((fFillNtuple==1 && (isPhiKKpi || isPhipiKK)) || (fFillNtuple==2 && (isK0starKKpi || isK0starpiKK)) || (fFillNtuple==3 && (isKKpi || ispiKK))){
 	
-	tmp[0]=Float_t(labDs);
-	tmp[1]=Float_t(retCodeAnalysisCuts);
-	tmp[2]=Float_t(pdgCode0);  
-	tmp[3]=d->PtProng(0);
-	tmp[4]=d->PtProng(1);
-	tmp[5]=d->PtProng(2);
-	tmp[6]=d->Pt();
-	tmp[7]=d->CosPointingAngle();
-	tmp[8]=d->DecayLength();
-	tmp[9]=d->Xv();
-	tmp[10]=d->Yv();
-	tmp[11]=d->Zv();
-	tmp[12]=d->InvMassDsKKpi();
-	tmp[13]=d->InvMassDspiKK();
-	tmp[14]=d->GetSigmaVert();
-	tmp[15]=d->Getd0Prong(0);
-	tmp[16]=d->Getd0Prong(1);
-	tmp[17]=d->Getd0Prong(2);
-	tmp[18]=d->GetDCA();
-	tmp[19]=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-	tmp[20]=d->InvMass2Prongs(0,1,321,321);
-	tmp[21]=d->InvMass2Prongs(1,2,321,321);
-	tmp[22]=d->InvMass2Prongs(1,2,321,211);
-	tmp[23]=d->InvMass2Prongs(0,1,211,321);
-	tmp[24]=d->CosPiDsLabFrameKKpi();	   
-	tmp[25]=d->CosPiDsLabFramepiKK();	
-	tmp[26]=d->CosPiKPhiRFrameKKpi();	   
-	tmp[27]=d->CosPiKPhiRFramepiKK();	
+        AliAODTrack *track0=(AliAODTrack*)d->GetDaughter(0);
+        AliAODTrack *track1=(AliAODTrack*)d->GetDaughter(1);
+        AliAODTrack *track2=(AliAODTrack*)d->GetDaughter(2);
+    
+        UInt_t BitMapPIDTrack0=fAnalysisCuts->GetPIDTrackTPCTOFBitMap(track0);
+        UInt_t BitMapPIDTrack1=fAnalysisCuts->GetPIDTrackTPCTOFBitMap(track1);
+        UInt_t BitMapPIDTrack2=fAnalysisCuts->GetPIDTrackTPCTOFBitMap(track2);
+   
+	    tmp[0]=Float_t(labDs);
+	    tmp[1]=Float_t(retCodeAnalysisCuts);
+	    tmp[2]=Float_t(pdgCode0);  
+	    tmp[3]=d->PtProng(0);
+	    tmp[4]=d->PtProng(1);
+	    tmp[5]=d->PtProng(2);
+	    tmp[6]=d->Pt();
+	    tmp[7]=d->PProng(0);
+	    tmp[8]=d->PProng(1);
+	    tmp[9]=d->PProng(2);
+	    tmp[10]=Int_t(BitMapPIDTrack0);
+	    tmp[11]=Int_t(BitMapPIDTrack1);
+	    tmp[12]=Int_t(BitMapPIDTrack2);
+	    tmp[13]=d->CosPointingAngle();
+	    tmp[14]=d->CosPointingAngleXY();
+	    tmp[15]=d->DecayLength();
+	    tmp[16]=d->DecayLengthXY();
+	    tmp[17]=d->NormalizedDecayLength();
+	    tmp[18]=d->NormalizedDecayLengthXY();
+	    tmp[19]=d->InvMassDsKKpi();
+	    tmp[20]=d->InvMassDspiKK();
+	    tmp[21]=d->GetSigmaVert();
+	    tmp[22]=d->Getd0Prong(0);
+	    tmp[23]=d->Getd0Prong(1);
+	    tmp[24]=d->Getd0Prong(2);
+	    tmp[25]=d->GetDCA();
+	    tmp[26]=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+	    tmp[27]=d->InvMass2Prongs(0,1,321,321);
+	    tmp[28]=d->InvMass2Prongs(1,2,321,321);
+	    tmp[29]=d->InvMass2Prongs(1,2,321,211);
+	    tmp[30]=d->InvMass2Prongs(0,1,211,321);
+	    tmp[31]=d->CosPiDsLabFrameKKpi();	   
+	    tmp[32]=d->CosPiDsLabFramepiKK();	
+	    tmp[33]=d->CosPiKPhiRFrameKKpi();	   
+	    tmp[34]=d->CosPiKPhiRFramepiKK();	
+	    tmp[35]=(Float_t)(centrality);
+	
 	
  	
-	fNtupleDs->Fill(tmp);
-	PostData(4,fNtupleDs);
+	    fNtupleDs->Fill(tmp);
+	    PostData(4,fNtupleDs);
       }  
     }
     
