@@ -20,6 +20,7 @@ class AliMuonTrackCuts : public AliAnalysisCuts
     kMuMatchLpt = BIT(4),
     kMuMatchHpt = BIT(5),
     kMuTrackChiSquare = BIT(6),
+    kMuSharpPtCut = BIT(7)
   };
 
   AliMuonTrackCuts();
@@ -62,6 +63,9 @@ class AliMuonTrackCuts : public AliAnalysisCuts
     kChi2NormCut,     ///< Cut on the normalized chi2 of track
     kRelPResolution,  ///< Relative momentum resolution
     kSlopeResolution, ///< Slope resolution
+    kSharpPtApt,      ///< Sharp tracker pt cut for Apt
+    kSharpPtLpt,      ///< Sharp tracker pt cut for Lpt
+    kSharpPtHpt,      ///< Sharp tracker pt cut for Hpt
     kNParameters      ///< Total number of parameters
   };
 
@@ -85,6 +89,9 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   
   void SetSlopeResolution ( Double_t slopeResolution );
   Double_t GetSlopeResolution () const;
+  
+  void SetSharpPtCut ( Int_t trigPtCut, Double_t ptCutValue );
+  Double_t GetSharpPtCut ( Int_t trigPtCut, Bool_t warn = kTRUE ) const;
 
   Bool_t StreamParameters ( Int_t runNumber, Int_t maxRun );
 

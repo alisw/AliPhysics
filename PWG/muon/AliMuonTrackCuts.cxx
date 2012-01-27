@@ -29,6 +29,7 @@
 #include "AliVParticle.h"
 #include "AliESDMuonTrack.h"
 #include "AliAODTrack.h"
+#include "AliAnalysisManager.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMuonTrackCuts) // Class implementation in ROOT context
@@ -129,7 +130,7 @@ Bool_t AliMuonTrackCuts::StreamParameters( Int_t runNumber,  Int_t runMax )
     }
   }
 
-  TString filename = "$ALICE_ROOT/OADB/PWG3/MuonTrackCuts.root";
+  TString filename = Form("%s/PWG3/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
   if ( fIsMC ) filename.ReplaceAll(".root", "_MC.root");
 
   TString parNames[kNParameters];
@@ -143,6 +144,9 @@ Bool_t AliMuonTrackCuts::StreamParameters( Int_t runNumber,  Int_t runMax )
   parNames[kNSigmaPdcaCut]  = "NSigmaPdcaCut";
   parNames[kChi2NormCut]    = "Chi2NormCut";
   parNames[kRelPResolution] = "RelPResolution";
+  parNames[kSharpPtApt]     = "SharpPtApt";
+  parNames[kSharpPtLpt]     = "SharpPtLpt";
+  parNames[kSharpPtHpt]     = "SharpPtHpt";
 
   TObjArray* paramList = 0x0;
 
@@ -264,6 +268,8 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
   if ( matchTrig >= 1 ) selectionMask |= kMuMatchApt;
   if ( matchTrig >= 2 ) selectionMask |= kMuMatchLpt;
   if ( matchTrig >= 3 ) selectionMask |= kMuMatchHpt;
+  
+  if ( track->Pt() >= GetSharpPtCut( matchTrig-1, kFALSE ) ) selectionMask |= kMuSharpPtCut;
 
   Double_t chi2norm = ( fIsESD ) ? ((AliESDMuonTrack*)track)->GetNormalizedChi2() : ((AliAODTrack*)track)->Chi2perNDF();
   if ( chi2norm < GetChi2NormCut() ) selectionMask |= kMuTrackChiSquare;
@@ -479,6 +485,42 @@ Double_t AliMuonTrackCuts::GetSlopeResolution () const
 }
 
 //________________________________________________________________________
+void AliMuonTrackCuts::SetSharpPtCut ( Int_t trigPtCut, Double_t ptCutValue )
+{
+  /// Set sharp tracker cut matching the trigger level
+  /// trigPtCut can be 0 (Apt), 1 (Lpt) or 2 (Hpt)
+  Int_t ipar = -1;
+  switch ( trigPtCut ) {
+    case 0:
+      ipar = kSharpPtApt;
+      break;
+    case 1:
+      ipar = kSharpPtLpt;
+      break;
+    case 2:
+      ipar = kSharpPtHpt;
+      break;
+    default:
+      AliError("Allowed values for trigPtCut are 0 (Apt), 1 (Lpt), 2 (Hpt)");
+      return;
+  }
+  SetParameter(ipar,ptCutValue);
+}
+
+//________________________________________________________________________
+Double_t AliMuonTrackCuts::GetSharpPtCut ( Int_t trigPtCut, Bool_t warn ) const
+{
+  /// Get sharp tracker cut matching the trigger level
+  /// trigPtCut can be 0 (Apt), 1 (Lpt) or 2 (Hpt)
+  if ( trigPtCut < 0 || trigPtCut > 2 ) {
+    if ( warn ) AliError("Allowed values for trigPtCut are 0 (Apt), 1 (Lpt), 2 (Hpt)");
+    return 0.;
+  }
+  Int_t ipar = kSharpPtApt + trigPtCut;
+  return fParameters[ipar];
+}
+
+//________________________________________________________________________
 void AliMuonTrackCuts::SetDefaultFilterMask ()
 {
   /// Standard cuts for single muon
@@ -505,6 +547,7 @@ void AliMuonTrackCuts::Print(Option_t* option) const
     if ( filterMask & kMuMatchLpt ) printf("  match Lpt\n");
     if ( filterMask & kMuMatchHpt ) printf("  match Hpt\n");
     if ( filterMask & kMuTrackChiSquare ) printf("  Chi2 cut on track\n");
+    if ( filterMask & kMuSharpPtCut ) printf("  sharp tracker pt cut matching trig. pt cut\n");
     printf(" ******************** \n");
   }
   if ( sopt.Contains("param") ) {
@@ -516,6 +559,7 @@ void AliMuonTrackCuts::Print(Option_t* option) const
     printf("  Cut on track chi2/NDF: %g\n", fParameters[kChi2NormCut]);
     printf("  Momentum resolution: %g\n", fParameters[kRelPResolution]);
     printf("  Slope resolution: %g\n", fParameters[kSlopeResolution]);
+    printf("  Sharp pt cut: %g (Apt)  %g (Lpt)  %g (Hpt)\n", fParameters[kSharpPtApt], fParameters[kSharpPtLpt], fParameters[kSharpPtHpt]);
     printf(" ********************************\n");
   }
 }
