@@ -150,8 +150,12 @@ void esd_zdc()
 
 
   // Centroids
+  /*
   TEveStraightLineSet *ls = 0;
 
+    This part has to be fixed: the getters now depend on the beam type: pp or PbPb,
+    and in case of PbPb we also habe to provide the beam. Peter
+ 
   Double32_t *cNA = esd->GetZNACentroid();
   ls = zdc_make_cross("ZNA Centroid", "ZNA",
                       cNA[0], cNA[1],  g_zdc_dist * g_zdc_scale,
@@ -163,6 +167,7 @@ void esd_zdc()
                       cNC[0], cNC[1], -g_zdc_dist * g_zdc_scale,
                       g_zdc_cross, g_zdc_cross, g_zdc_cross);
   l->AddElement(ls);
+  */
 
   // End - refresh screen
   gEve->Redraw3D();
