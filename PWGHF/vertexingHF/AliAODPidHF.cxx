@@ -932,7 +932,7 @@ Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sig
 
 Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &sigma) const{
 
-  if(!CheckStatus(track,"TOF")) return -1.;
+  if(!CheckStatus(track,"TOF")) return -1;
  
   Double_t time[AliPID::kSPECIESN];
   Double_t sigmaTOFPid[AliPID::kSPECIES];
