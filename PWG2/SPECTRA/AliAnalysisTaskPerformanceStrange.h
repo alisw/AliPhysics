@@ -14,6 +14,7 @@ class TString;
 class TList;
 class TH1F;
 class TH2F;
+class AliPhysicsSelection;
 
 #include "AliAnalysisTaskSE.h"
 
