@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------
 
 #include <TObject.h>
+#include <time.h>
 
 class AliStack;
 class AliGenEventHeader;

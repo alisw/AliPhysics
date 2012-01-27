@@ -17,6 +17,7 @@
 #include <TObjArray.h>
 #include "AliQAv1.h"
 #include "AliQAManager.h"
+#include <time.h>
 
 class AliCDBId;
 class AliCDBParam;
