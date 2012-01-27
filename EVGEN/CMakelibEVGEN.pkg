@@ -33,6 +33,7 @@ set ( SRCS
   AliGenFixed.cxx 
   AliGenCocktail.cxx 
   AliGenCocktailAfterBurner.cxx 
+  AliGenPairFlat.cxx
   AliGenLib.cxx 
   AliGenMUONlib.cxx 
   AliGenHMPIDlib.cxx 

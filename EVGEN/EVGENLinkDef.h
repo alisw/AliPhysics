@@ -19,6 +19,7 @@
 #pragma link C++ class  AliGenThetaSlice+;
 #pragma link C++ class  AliGenParam+;
 #pragma link C++ class  AliGenCocktail+;
+#pragma link C++ class  AliGenPairFlat+;
 #pragma link C++ class  AliGenMUONCocktail+;
 #pragma link C++ class  AliGenMUONCocktailpp+;
 #pragma link C++ class  AliGenEMCocktail+;
