@@ -52,8 +52,6 @@
 #pragma link C++ class  AliRecoInputHandler+;
 #pragma link C++ class  AliVertexGenFile+;
 #pragma link C++ class  AliVertexer+;
-#pragma link C++ class  AliV0vertexer+;
-#pragma link C++ class  AliCascadeVertexer+;
 
 #pragma link C++ class AliTriggerDetector+;
 #pragma link C++ class AliCentralTrigger+;

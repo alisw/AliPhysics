@@ -67,6 +67,8 @@ set ( SRCS
     ESD/AliTriggerConfiguration.cxx 
     ESD/AliExpression.cxx
     ESD/AliESDCosmicTrack.cxx
+    ESD/AliV0vertexer.cxx 
+    ESD/AliCascadeVertexer.cxx 
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")

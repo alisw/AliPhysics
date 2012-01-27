@@ -33,8 +33,6 @@ set ( SRCS
     STEER/AliMergeCombi.cxx 
     STEER/AliGausCorr.cxx 
     STEER/AliVertexer.cxx 
-    STEER/AliV0vertexer.cxx 
-    STEER/AliCascadeVertexer.cxx 
     STEER/AliMC.cxx 
     STEER/AliSimulation.cxx 
     STEER/AliReconstruction.cxx 
