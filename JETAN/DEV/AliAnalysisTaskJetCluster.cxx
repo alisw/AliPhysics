@@ -1057,7 +1057,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     if(externalBackground){
       // carefull has to be filled in a task before
       // todo, ReArrange to the botom 
-     pTback = externalBackground->GetBackground(1)*leadingJet.EffectiveAreaCharged();
+     pTback = externalBackground->GetBackground(2)*leadingJet.EffectiveAreaCharged();
     }
     pt = leadingJet.Pt() - pTback;
     // correlation of leading jet with tracks
