@@ -57,4 +57,4 @@ set ( DHDR PWG2flowTasksLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/FLOW/AliFlowCommon PWG2/FLOW/AliFlowTasks STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  TOF PWG2/FLOW/AliFlowCommon PWG2/FLOW/AliFlowTasks STEER/ESD STEER/STEERBase)
