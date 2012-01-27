@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG2resonances                                                #
+# Package File for PWGLFresonances                                                #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -85,8 +85,8 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR PWG2resonancesLinkDef.h)
+set ( DHDR PWGLFresonancesLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PYTHIA6 PWG2/RESONANCES CORRFW ANALYSIS/EventMixing STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PYTHIA6 PWGLF/RESONANCES CORRFW ANALYSIS/EventMixing STEER/AOD STEER/ESD STEER/STEERBase)
