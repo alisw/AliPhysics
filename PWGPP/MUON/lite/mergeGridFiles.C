@@ -160,7 +160,7 @@ void ReadListFromFile(TString filename, TString& fileList, TString addPrefix)
 
 
 //___________________________________________________
-void completeProd(TString runListName="runList.txt", TString prodDir = "", TString baseDir="/alice/data/2010/LHC10h", TString outTaskFilename="QAresults.root", Int_t nFilesPerStep = 50, TString dirsToMerge = "MUON_QA MUON.TriggerEfficiencyMap", Bool_t mergeFast = kFALSE, Bool_t overwriteExisting = kFALSE)
+void completeProd(TString runListName="runList.txt", TString prodDir = "", TString baseDir="/alice/data/2010/LHC10h", TString outTaskFilename="QAresults.root", Int_t nFilesPerStep = 50, TString dirsToMerge = "MUON_QA MTR_ChamberEffMap", Bool_t mergeFast = kFALSE, Bool_t overwriteExisting = kFALSE)
 {
   TString outFilename = "completeFileList.txt";
 

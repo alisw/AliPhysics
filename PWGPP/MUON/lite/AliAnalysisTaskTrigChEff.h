@@ -3,47 +3,42 @@
 
 /* $Id$ */ 
 
-/// \ingroup "PWG3muon"
-/// \class AliAnalysisTaskTrigChEff
-/// \brief Analysis task for trigger chamber efficiency determination
-///
-//  Author Diego Stocco
+//
+// Class for trigger chamber efficiency calculations
+// and tests
+//
+// Author: Diego Stocco
+//
 
-#include "AliAnalysisTaskSE.h"
+#include "AliVAnalysisMuon.h"
 
+class AliMuonTrackCuts;
+class AliVParticle;
 class TList;
+class TObjArray;
+class TString;
 
-class AliAnalysisTaskTrigChEff : public AliAnalysisTaskSE {
+class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
  public:
   AliAnalysisTaskTrigChEff();
-  AliAnalysisTaskTrigChEff(const char *name);
+  AliAnalysisTaskTrigChEff(const char *name, const AliMuonTrackCuts& cuts);
   virtual ~AliAnalysisTaskTrigChEff();
 
-  virtual void   UserCreateOutputObjects();
-  virtual void   UserExec(Option_t *option);
-  virtual void   Terminate(Option_t *);
+  void Terminate(Option_t *option);
+  void FinishTaskOutput();
+
+  void MyUserCreateOutputObjects();
+  void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
+
+  TList* GetEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection);
 
   /// Use ghost tracks in calculations
   void SetUseGhostTracks(Bool_t useGhosts = kTRUE) { fUseGhosts = useGhosts; }
 
-protected:
-  void ResetHistos();
+ private:
 
-private:
-  /// Not implemented
-  AliAnalysisTaskTrigChEff(const AliAnalysisTaskTrigChEff& rhs);
-  /// Not implemented
-  AliAnalysisTaskTrigChEff& operator = (const AliAnalysisTaskTrigChEff& rhs);
-    
-  Bool_t fUseGhosts; ///< Flag to use also the trigger tracks not matching the tracker in eff. calculation
-
-  TList*  fList; //!<TList output object
-
-  enum {
-    kNcathodes = 2,  ///< Number of cathodes
-    kNchambers = 4,  ///< Number of chambers
-    kNslats    = 18 ///< Number of slats
-  };
+  AliAnalysisTaskTrigChEff(const AliAnalysisTaskTrigChEff&);
+  AliAnalysisTaskTrigChEff& operator=(const AliAnalysisTaskTrigChEff&);
 
   enum {
     kBendingEff,     ///< Bending plane fired
@@ -57,14 +52,30 @@ private:
     kHchamberEff,    ///< Counts per cathode histogram index
     kHslatEff,       ///< Counts per slat histogram index
     kHboardEff,      ///< Counts per board histogram index
-    kHcheckBoard    ///< Check rejected tracks per board
+    kHcheckBoard,    ///< Check rejected tracks per board
+    kNhistoTypes     ///< Check rejected tracks per board
   };
-  
-  Int_t GetHistoIndex(Int_t histoType, Int_t countType=-1, 
-		      Int_t chamber=-1);
 
-  ClassDef(AliAnalysisTaskTrigChEff, 1); // Trigger chamber efficiency analysis
+  enum {
+    kNoSelCutApt,   ///< Track matching Apt not passing selection cuts
+    kMatchApt,      ///< Match All Pt
+    kMatchLpt,      ///< Match Low Pt
+    kMatchHpt,      ///< Match High Pt
+    kNtrackSel      ///< Total number of selection types
+  };
+
+  TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t imatch);
+  Bool_t FillEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection, TList* outList = 0x0);
+  void InitLocalKeys();
+ 
+  TObjArray* fTrackSelKeys;  ///< Selection names
+  TObjArray* fCountTypeKeys; ///< Count type keys
+  TObjArray* fHistoTypeKeys; ///< Base histogram name
+
+  Bool_t fUseGhosts; ///< Flag to use also the trigger tracks not matching the tracker in eff. calculation
+  TList*  fList;     //!<TList output object
+
+  ClassDef(AliAnalysisTaskTrigChEff, 2); // Trigger chamber efficiencies
 };
 
 #endif
-

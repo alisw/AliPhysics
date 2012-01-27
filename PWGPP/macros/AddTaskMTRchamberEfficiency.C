@@ -1,4 +1,18 @@
-AliAnalysisTaskTrigChEff *AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE) 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TString.h"
+#include "TObjArray.h"
+
+#include "AliLog.h"
+#include "AliVEventHandler.h"
+
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+
+#include "AliMuonTrackCuts.h"
+#include "AliAnalysisTaskTrigChEff.h"
+#endif
+
+AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE, Bool_t isMC = kFALSE)
 {
   //
   // Task for the determination of the MUON trigger chamber efficiency
@@ -6,36 +20,42 @@ AliAnalysisTaskTrigChEff *AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE)
   // stocco@subatech.in2p3.fr
   //
 
-
-  // Get the pointer to the existing analysis manager via the static access method.
-  //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskMTRchamberEfficiency", "No analysis manager to connect to.");
     return NULL;
-  }   
+  }
 
-  // Check the analysis type using the event handlers connected to the analysis manager.
-  //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AliAnalysisTaskTrigChEff", "This task requires an input event handler");
+  TString type = mgr->GetInputEventHandler()->GetDataType();
+  if (!type.Contains("ESD") && !type.Contains("AOD")) {
+    ::Error("AddTaskMTRchamberEfficiency", "AliAnalysisTaskTrigChEff task needs the manager to have an ESD or AOD input handler.");
     return NULL;
   }
 
-  // Create the task
-  AliAnalysisTaskTrigChEff* taskTrigChEff = new AliAnalysisTaskTrigChEff("TriggerChamberEfficiency");
+  // Create cuts
+  AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("StdMuonTrackCuts", "StdMuonTrackCuts", type.Contains("ESD"));
+  muonTrackCuts->SetFilterMask ( AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca | AliMuonTrackCuts::kMuMatchApt );
+
+  // Create task
+  AliAnalysisTaskTrigChEff* taskTrigChEff = new AliAnalysisTaskTrigChEff("TriggerChamberEfficiency", *muonTrackCuts);
   taskTrigChEff->SetUseGhostTracks(useGhosts);
-  // Add to the manager
+  if ( isMC ) taskTrigChEff->SetTrigClassPatterns("ANY");
+  else taskTrigChEff->SetTrigClassPatterns("ANY CINT CMU !CMUP CMBAC CPBI !-ACE- !-AC- !-E- !WU !EGA !EJE");
   mgr->AddTask(taskTrigChEff);
 
-  //
-  // Create containers for input/output
-  AliAnalysisDataContainer *cOutputTrigChEff = mgr->CreateContainer("triggerChamberEff", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:MUON.TriggerEfficiencyMap", mgr->GetCommonFileName()));
+  // Create container
+  TString currName = "";
+  TString outputfile = mgr->GetCommonFileName();
+  if ( ! outputfile.IsNull() ) outputfile += ":MTR_ChamberEffMap";
+  else outputfile = "TestTrigChEffAnalysis.root";
 
-  // Attach input
-  mgr->ConnectInput(taskTrigChEff,0,mgr->GetCommonInputContainer());
-  // Attach output
-  mgr->ConnectOutput(taskTrigChEff,1,cOutputTrigChEff);
-  
-  return taskTrigChEff;
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("testMTRChamberEff",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("triggerChamberEff", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
+
+   // Connect containers
+   mgr->ConnectInput  (taskTrigChEff,  0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput (taskTrigChEff,  1, coutput1);
+   mgr->ConnectOutput (taskTrigChEff,  2, coutput2);
+
+   return taskTrigChEff;
 }
