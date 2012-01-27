@@ -3730,6 +3730,10 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksRec->At(it));
 	if(part)fQATrackHistosRec->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
       }
+      for(Int_t it=0; it<nRecPartCuts; ++it){
+	AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksRecCuts->At(it));
+	if(part)fQATrackHistosRecCuts->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt() );
+      }      
       for(Int_t it=0; it<nGenPart; ++it){
 	AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksGen->At(it));
 	if(part)fQATrackHistosGen->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
