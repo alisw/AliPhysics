@@ -21,7 +21,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TVector3;
-class THnSparse;
+#include "THnSparse.h"
  
 class AliESDpid;
 class AliESDEvent;
