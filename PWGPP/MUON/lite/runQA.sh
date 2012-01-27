@@ -65,7 +65,7 @@ function mergePerRun()
     alienBaseDir="$3"
     aliroot -b <<EOF &> $mergeLog
 .L $qaMacroDir/mergeGridFiles.C+
-completeProd("${runListName}","${prodDir}","${alienBaseDir}","${outTaskName}",50,"MUON_QA MUON.TriggerEfficiencyMap",${mergeFast});
+completeProd("${runListName}","${prodDir}","${alienBaseDir}","${outTaskName}",50,"MUON_QA MTR_ChamberEffMap",${mergeFast});
 .q
 EOF
 }

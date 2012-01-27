@@ -20,7 +20,7 @@ const char *module_name[NMODS] = {"SPD_Performance",
                                   "PWGPPdEdxSSDQA",
                                   "ITS_Performance",
                                   "TRD_Performance",
-                                  "MUON.TriggerEfficiencyMap",
+                                  "MTR_ChamberEffMap",
                                   "PWG2forwardDnDeta",
                                   "ImpParRes_Performance",
                                   "MUON_QA"
@@ -38,7 +38,7 @@ void SetFolder(const char *task_name)
    if (!strcmp(task_name, "PWGPPdEdxSSDQA")) folder = "SSDdEdxQA";
    if (!strcmp(task_name, "ITS_Performance")) folder = "cOutputITS";
    if (!strcmp(task_name, "TRD_Performance")) folder = "checkESD infoGen checkDET TRDefficiency TRDresolution checkPID";
-   if (!strcmp(task_name, "MUON.TriggerEfficiencyMap")) folder = "triggerChamberEff";
+   if (!strcmp(task_name, "MTR_ChamberEffMap")) folder = "testMTRChamberEff triggerChamberEff";
    if (!strcmp(task_name, "PWG2forwardDnDeta")) folder = "BackgroundCorrected";
    if (!strcmp(task_name, "ImpParRes_Performance")) folder = "coutputd0ITSpureSARec coutputd0ITSpureSASkip coutputd0allPointRec coutputd0allPointSkip coutputd0partPointRec coutputd0partPointSkip coutputd0onepointSPDRec coutputd0onepointSPDSkip coutputd0postvTracRec coutputd0postvTracSkip coutputd0negtvTracRec coutputd0negtvTracSkip coutputd0pullAllpointRec coutputd0pullAllpointSkip coutputd0onlyRefitRec coutputd0onlyRefitSkip coutputd0sinThetaRec coutputd0sinThetaSkip coutputd0allPointTrue coutputd0postvTracTrue coutputd0negtvTracTrue coutputd0pullAllpointTrue coutputd0phiAllpointSkip coutputd0phiPostvtracSkip coutputd0phiNegtvtracSkip coutputd0clusterTypeSPD01Skip coutputd0clusterTypeSPD02Skip coutputd0clusterTypeSPD03Skip coutputd0clusterTypeSPD11Skip coutputd0clusterTypeSPD12Skip coutputd0clusterTypeSPD13Skip coutputd0PID coutputd0Pt coutputNentries coutputEstimVtx";
    if (!strcmp(task_name, "MUON_QA")) folder = "general1 expert general2";
