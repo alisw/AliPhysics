@@ -1598,10 +1598,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
 	continue;
       }
 
-    if(esdevent)
-      {
-	esdTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
-      }
+//    if(esdevent)
+//      {
+//	esdTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
+//      }
 
     if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad())
       {
