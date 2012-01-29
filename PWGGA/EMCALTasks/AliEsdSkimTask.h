@@ -10,6 +10,24 @@ class TTree;
 class AliESDEvent;
 class AliESDtrackCuts;
 
+class AliCaloCell : public TObject
+{
+ public:
+  AliCaloCell(Short_t num=0, Double_t amp=0., Double_t time=0) :
+    TObject(), fNum(num), fAmp(amp), fTime(time*1e9), fMcFr(0) {;}
+
+  Bool_t     IsSortable()                const { return kTRUE; }
+    //Int_t      Compare(const TObject* obj) const;
+
+ public:
+  Short_t    fNum;     //         cell number/id
+  Double32_t fAmp;     //[0,0,16] cell amplitude
+  Double32_t fTime;    //[0,0,16] cell time
+  Double32_t fMcFr;    //[0,1,10] fraction of MC energy (fMcAmp=fMcFr*fAmp)
+
+  ClassDef(AliCaloCell,1) // Calo cell class
+};
+
 class AliEsdSkimTask : public AliAnalysisTaskSE {
  public:
   AliEsdSkimTask(const char *opt=0);
@@ -25,6 +43,7 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   void SetDoMult(Bool_t b)         { fDoMult       = b; }
   void SetDoPhC(Bool_t b)          { fDoPCs        = b; }
   void SetDoPhT(Bool_t b)          { fDoPT         = b; }
+  void SetDoPicoTracks(Bool_t b)   { fDoPicoTracks = b; }
   void SetDoPileup(Bool_t b)       { fDoPileup     = b; }
   void SetDoPriV(Bool_t b)         { fDoPriv       = b; }
   void SetDoSaveBytes(Bool_t b)    { fDoSaveBytes  = b; }
@@ -70,6 +89,7 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fDoRP;         // do reaction plane
   Bool_t           fRemoveCP;     // if false then keep constrained parameters (only reset covariance)
   Bool_t           fResetCov;     // if true reset covariance matrix of track
+  Bool_t           fDoPicoTracks; // if true then do pico tracks
 
  private:
   AliEsdSkimTask(const AliEsdSkimTask&);            // not implemented
