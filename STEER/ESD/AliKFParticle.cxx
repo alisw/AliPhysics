@@ -386,34 +386,34 @@ Double_t AliKFParticle::GetPseudoProperDecayTime( const AliKFParticle &pV, const
     const Double_t f4 = -f0;
     const Double_t f5 = -f1;
 
-    const Double_t& C00 =    GetCovariance(0,0);
-    const Double_t& C10 =    GetCovariance(0,1);
-    const Double_t& C11 =    GetCovariance(1,1);
-    const Double_t& C20 =    GetCovariance(3,0);
-    const Double_t& C21 =    GetCovariance(3,1);
-    const Double_t& C22 =    GetCovariance(3,3);
-    const Double_t& C30 =    GetCovariance(4,0);
-    const Double_t& C31 =    GetCovariance(4,1);
-    const Double_t& C32 =    GetCovariance(4,3);
-    const Double_t& C33 =    GetCovariance(4,4);
-    const Double_t& C44 = pV.GetCovariance(0,0);
-    const Double_t& C54 = pV.GetCovariance(1,0);
-    const Double_t& C55 = pV.GetCovariance(1,1);
+    const Double_t& mC00 =    GetCovariance(0,0);
+    const Double_t& mC10 =    GetCovariance(0,1);
+    const Double_t& mC11 =    GetCovariance(1,1);
+    const Double_t& mC20 =    GetCovariance(3,0);
+    const Double_t& mC21 =    GetCovariance(3,1);
+    const Double_t& mC22 =    GetCovariance(3,3);
+    const Double_t& mC30 =    GetCovariance(4,0);
+    const Double_t& mC31 =    GetCovariance(4,1);
+    const Double_t& mC32 =    GetCovariance(4,3);
+    const Double_t& mC33 =    GetCovariance(4,4);
+    const Double_t& mC44 = pV.GetCovariance(0,0);
+    const Double_t& mC54 = pV.GetCovariance(1,0);
+    const Double_t& mC55 = pV.GetCovariance(1,1);
 
     *timeErr2 =
-      f5*C55*f5 +
-      f5*C54*f4 +
-      f4*C44*f4 +
-      f3*C33*f3 +
-      f3*C32*f2 +
-      f3*C31*f1 +
-      f3*C30*f0 +
-      f2*C22*f2 +
-      f2*C21*f1 +
-      f2*C20*f0 +
-      f1*C11*f1 +
-      f1*C10*f0 +
-      f0*C00*f0;
+      f5*mC55*f5 +
+      f5*mC54*f4 +
+      f4*mC44*f4 +
+      f3*mC33*f3 +
+      f3*mC32*f2 +
+      f3*mC31*f1 +
+      f3*mC30*f0 +
+      f2*mC22*f2 +
+      f2*mC21*f1 +
+      f2*mC20*f0 +
+      f1*mC11*f1 +
+      f1*mC10*f0 +
+      f0*mC00*f0;
   }
   return ( dx*Px() + dy*Py() )*mipt2;
 }

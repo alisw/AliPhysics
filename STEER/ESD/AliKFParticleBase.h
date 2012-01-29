@@ -287,7 +287,7 @@ class AliKFParticleBase :public TObject {
   void GetMeasurement( const Double_t XYZ[], Double_t m[], Double_t V[] ) const ;
 
   //* Mass constraint function. is needed for the nonlinear mass constraint and a fit with mass constraint
-  void SetMassConstraint( Double_t *mP, Double_t *mC, Double_t J[7][7], Double_t Mass );
+  void SetMassConstraint( Double_t *mP, Double_t *mC, Double_t mJ[7][7], Double_t mass );
 
   Double_t fP[8];  //* Main particle parameters {X,Y,Z,Px,Py,Pz,E,S[=DecayLength/P]}
   Double_t fC[36]; //* Low-triangle covariance matrix of fP
@@ -305,11 +305,10 @@ class AliKFParticleBase :public TObject {
 
   Bool_t fIsLinearized;   //* Flag shows that the guess is present
 
-  //* Determines the method for the particle construction. 
+  Int_t fConstructMethod; //* Determines the method for the particle construction. 
   //* 0 - Energy considered as an independent veriable, fitted independently from momentum, without any constraints on mass
   //* 1 - Energy considered as a dependent variable, calculated from the momentum and mass hypothesis
   //* 2 - Energy considered as an independent variable, fitted independently from momentum, with constraints on mass of daughter particle
-  Int_t fConstructMethod;
 
   Double_t SumDaughterMass;  //* sum of the daughter particles masses
   Double_t fMassHypo;  //* sum of the daughter particles masses

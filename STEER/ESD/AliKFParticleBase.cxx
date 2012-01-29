@@ -631,8 +631,8 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
       for( Int_t i=0; i<36; i++ ) mV[i] = Daughter.fC[i];
     }
 
-    double Mass_mf2 = m[6]*m[6] - (m[3]*m[3] + m[4]*m[4] + m[5]*m[5]);
-    double Mass_rf2 = fP[6]*fP[6] - (fP[3]*fP[3] + fP[4]*fP[4] + fP[5]*fP[5]);
+    double massMf2 = m[6]*m[6] - (m[3]*m[3] + m[4]*m[4] + m[5]*m[5]);
+    double massRf2 = fP[6]*fP[6] - (fP[3]*fP[3] + fP[4]*fP[4] + fP[5]*fP[5]);
 
     //*
 
@@ -693,7 +693,7 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
       continue;
     }
 
-   //* find mf and Vf - optimum value of the measurement and its covariance matrix
+   //* find mf and mVf - optimum value of the measurement and its covariance matrix
     //* mVHt = V*H'
     Double_t mVHt0[6], mVHt1[6], mVHt2[6];
 
@@ -719,37 +719,37 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
     for(Int_t i=0;i<6;++i) 
       mf[i] = mf[i] - km0[i]*zeta[0] - km1[i]*zeta[1] - km2[i]*zeta[2];
 
-    Double_t E_mf = TMath::Sqrt( Mass_mf2 + (mf[3]*mf[3] + mf[4]*mf[4] + mf[5]*mf[5]) );
+    Double_t energyMf = TMath::Sqrt( massMf2 + (mf[3]*mf[3] + mf[4]*mf[4] + mf[5]*mf[5]) );
 
-    Double_t Vf[28];
+    Double_t mVf[28];
     for(Int_t iC=0; iC<28; iC++)
-      Vf[iC] = mV[iC];
+      mVf[iC] = mV[iC];
 
-    //* hmf = d(E_mf)/d(mf)
+    //* hmf = d(energyMf)/d(mf)
     Double_t hmf[7];
-    if( TMath::Abs(E_mf) < 1.e-10) hmf[3] = 0; else hmf[3] = mf[3]/E_mf;
-    if( TMath::Abs(E_mf) < 1.e-10) hmf[4] = 0; else hmf[4] = mf[4]/E_mf;
-    if( TMath::Abs(E_mf) < 1.e-10) hmf[5] = 0; else hmf[5] = mf[5]/E_mf;
-//    if( TMath::Abs(E_mf) < 1.e-10) hmf[6] = 0; else hmf[6] = mf[6]/E_mf;
+    if( TMath::Abs(energyMf) < 1.e-10) hmf[3] = 0; else hmf[3] = mf[3]/energyMf;
+    if( TMath::Abs(energyMf) < 1.e-10) hmf[4] = 0; else hmf[4] = mf[4]/energyMf;
+    if( TMath::Abs(energyMf) < 1.e-10) hmf[5] = 0; else hmf[5] = mf[5]/energyMf;
+//    if( TMath::Abs(energyMf) < 1.e-10) hmf[6] = 0; else hmf[6] = mf[6]/energyMf;
     hmf[6] = 0;
 
     for(Int_t i=0, k=0;i<6;++i){
       for(Int_t j=0;j<=i;++j,++k){
-        Vf[k] = Vf[k] - (km0[i]*mVHt0[j] + km1[i]*mVHt1[j] + km2[i]*mVHt2[j] );
+        mVf[k] = mVf[k] - (km0[i]*mVHt0[j] + km1[i]*mVHt1[j] + km2[i]*mVHt2[j] );
       }
     }
-    Double_t Vf24 = Vf[24], Vf25 = Vf[25], Vf26 = Vf[26];
-    Vf[21] = Vf[6 ]*hmf[3] + Vf[10]*hmf[4] + Vf[15]*hmf[5] + Vf[21]*hmf[6];
-    Vf[22] = Vf[7 ]*hmf[3] + Vf[11]*hmf[4] + Vf[16]*hmf[5] + Vf[22]*hmf[6];
-    Vf[23] = Vf[8 ]*hmf[3] + Vf[12]*hmf[4] + Vf[17]*hmf[5] + Vf[23]*hmf[6];
-    Vf[24] = Vf[9 ]*hmf[3] + Vf[13]*hmf[4] + Vf[18]*hmf[5] + Vf[24]*hmf[6];
-    Vf[25] = Vf[13]*hmf[3] + Vf[14]*hmf[4] + Vf[19]*hmf[5] + Vf[25]*hmf[6];
-    Vf[26] = Vf[18]*hmf[3] + Vf[19]*hmf[4] + Vf[20]*hmf[5] + Vf[26]*hmf[6];
-    Vf[27] = Vf[24]*hmf[3] + Vf[25]*hmf[4] + Vf[26]*hmf[5] + (Vf24*hmf[3] + Vf25*hmf[4] + Vf26*hmf[5] + Vf[27]*hmf[6])*hmf[6]; //here Vf[] are already modified
+    Double_t mVf24 = mVf[24], mVf25 = mVf[25], mVf26 = mVf[26];
+    mVf[21] = mVf[6 ]*hmf[3] + mVf[10]*hmf[4] + mVf[15]*hmf[5] + mVf[21]*hmf[6];
+    mVf[22] = mVf[7 ]*hmf[3] + mVf[11]*hmf[4] + mVf[16]*hmf[5] + mVf[22]*hmf[6];
+    mVf[23] = mVf[8 ]*hmf[3] + mVf[12]*hmf[4] + mVf[17]*hmf[5] + mVf[23]*hmf[6];
+    mVf[24] = mVf[9 ]*hmf[3] + mVf[13]*hmf[4] + mVf[18]*hmf[5] + mVf[24]*hmf[6];
+    mVf[25] = mVf[13]*hmf[3] + mVf[14]*hmf[4] + mVf[19]*hmf[5] + mVf[25]*hmf[6];
+    mVf[26] = mVf[18]*hmf[3] + mVf[19]*hmf[4] + mVf[20]*hmf[5] + mVf[26]*hmf[6];
+    mVf[27] = mVf[24]*hmf[3] + mVf[25]*hmf[4] + mVf[26]*hmf[5] + (mVf24*hmf[3] + mVf25*hmf[4] + mVf26*hmf[5] + mVf[27]*hmf[6])*hmf[6]; //here mVf[] are already modified
 
-    mf[6] = E_mf;
+    mf[6] = energyMf;
 
-    //* find rf and Cf - optimum value of the measurement and its covariance matrix
+    //* find rf and mCf - optimum value of the measurement and its covariance matrix
 
     //* mCCHt = C*H'
     Double_t mCCHt0[6], mCCHt1[6], mCCHt2[6];
@@ -775,65 +775,65 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
     for(Int_t i=0;i<6;++i) 
       rf[i] = rf[i] + krf0[i]*zeta[0] + krf1[i]*zeta[1] + krf2[i]*zeta[2];
 
-    Double_t E_rf = TMath::Sqrt( Mass_rf2 + (rf[3]*rf[3] + rf[4]*rf[4] + rf[5]*rf[5]) );
+    Double_t energyRf = TMath::Sqrt( massRf2 + (rf[3]*rf[3] + rf[4]*rf[4] + rf[5]*rf[5]) );
 
-    Double_t Cf[28];
+    Double_t mCf[28];
     for(Int_t iC=0; iC<28; iC++)
-      Cf[iC] = ffC[iC];
+      mCf[iC] = ffC[iC];
     //* hrf = d(Erf)/d(rf)
     Double_t hrf[7];
-    if( TMath::Abs(E_rf) < 1.e-10) hrf[3] = 0; else hrf[3] = rf[3]/E_rf;
-    if( TMath::Abs(E_rf) < 1.e-10) hrf[4] = 0; else hrf[4] = rf[4]/E_rf;
-    if( TMath::Abs(E_rf) < 1.e-10) hrf[5] = 0; else hrf[5] = rf[5]/E_rf;
-//    if( TMath::Abs(E_rf) < 1.e-10) hrf[6] = 0; else hrf[6] = rf[6]/E_rf;
+    if( TMath::Abs(energyRf) < 1.e-10) hrf[3] = 0; else hrf[3] = rf[3]/energyRf;
+    if( TMath::Abs(energyRf) < 1.e-10) hrf[4] = 0; else hrf[4] = rf[4]/energyRf;
+    if( TMath::Abs(energyRf) < 1.e-10) hrf[5] = 0; else hrf[5] = rf[5]/energyRf;
+//    if( TMath::Abs(energyRf) < 1.e-10) hrf[6] = 0; else hrf[6] = rf[6]/energyRf;
     hrf[6] = 0;
 
     for(Int_t i=0, k=0;i<6;++i){
       for(Int_t j=0;j<=i;++j,++k){
-        Cf[k] = Cf[k] - (krf0[i]*mCCHt0[j] + krf1[i]*mCCHt1[j] + krf2[i]*mCCHt2[j] );
+        mCf[k] = mCf[k] - (krf0[i]*mCCHt0[j] + krf1[i]*mCCHt1[j] + krf2[i]*mCCHt2[j] );
       }
     }
-    Double_t Cf24 = Cf[24], Cf25 = Cf[25], Cf26 = Cf[26];
-    Cf[21] = Cf[6 ]*hrf[3] + Cf[10]*hrf[4] + Cf[15]*hrf[5] + Cf[21]*hrf[6];
-    Cf[22] = Cf[7 ]*hrf[3] + Cf[11]*hrf[4] + Cf[16]*hrf[5] + Cf[22]*hrf[6];
-    Cf[23] = Cf[8 ]*hrf[3] + Cf[12]*hrf[4] + Cf[17]*hrf[5] + Cf[23]*hrf[6];
-    Cf[24] = Cf[9 ]*hrf[3] + Cf[13]*hrf[4] + Cf[18]*hrf[5] + Cf[24]*hrf[6];
-    Cf[25] = Cf[13]*hrf[3] + Cf[14]*hrf[4] + Cf[19]*hrf[5] + Cf[25]*hrf[6];
-    Cf[26] = Cf[18]*hrf[3] + Cf[19]*hrf[4] + Cf[20]*hrf[5] + Cf[26]*hrf[6];
-    Cf[27] = Cf[24]*hrf[3] + Cf[25]*hrf[4] + Cf[26]*hrf[5] + (Cf24*hrf[3] + Cf25*hrf[4] + Cf26*hrf[5] + Cf[27]*hrf[6])*hrf[6]; //here Cf[] are already modified
+    Double_t mCf24 = mCf[24], mCf25 = mCf[25], mCf26 = mCf[26];
+    mCf[21] = mCf[6 ]*hrf[3] + mCf[10]*hrf[4] + mCf[15]*hrf[5] + mCf[21]*hrf[6];
+    mCf[22] = mCf[7 ]*hrf[3] + mCf[11]*hrf[4] + mCf[16]*hrf[5] + mCf[22]*hrf[6];
+    mCf[23] = mCf[8 ]*hrf[3] + mCf[12]*hrf[4] + mCf[17]*hrf[5] + mCf[23]*hrf[6];
+    mCf[24] = mCf[9 ]*hrf[3] + mCf[13]*hrf[4] + mCf[18]*hrf[5] + mCf[24]*hrf[6];
+    mCf[25] = mCf[13]*hrf[3] + mCf[14]*hrf[4] + mCf[19]*hrf[5] + mCf[25]*hrf[6];
+    mCf[26] = mCf[18]*hrf[3] + mCf[19]*hrf[4] + mCf[20]*hrf[5] + mCf[26]*hrf[6];
+    mCf[27] = mCf[24]*hrf[3] + mCf[25]*hrf[4] + mCf[26]*hrf[5] + (mCf24*hrf[3] + mCf25*hrf[4] + mCf26*hrf[5] + mCf[27]*hrf[6])*hrf[6]; //here mCf[] are already modified
 
     for(Int_t iC=21; iC<28; iC++)
     {
-      ffC[iC] = Cf[iC];
-      mV[iC]  = Vf[iC];
+      ffC[iC] = mCf[iC];
+      mV[iC]  = mVf[iC];
     }
 
-    fP[6] = E_rf + E_mf;
-    rf[6] = E_rf;
+    fP[6] = energyRf + energyMf;
+    rf[6] = energyRf;
 
     //Double_t Dvv[3][3]; do not need this
-    Double_t Dvp[3][3];
-    Double_t Dpv[3][3];
-    Double_t Dpp[3][3];
-    Double_t De[7];
+    Double_t mDvp[3][3];
+    Double_t mDpv[3][3];
+    Double_t mDpp[3][3];
+    Double_t mDe[7];
 
     for(int i=0; i<3; i++)
     {
       for(int j=0; j<3; j++)
       {
-        Dvp[i][j] = km0[i+3]*mCCHt0[j] + km1[i+3]*mCCHt1[j] + km2[i+3]*mCCHt2[j];
-        Dpv[i][j] = km0[i]*mCCHt0[j+3] + km1[i]*mCCHt1[j+3] + km2[i]*mCCHt2[j+3];
-        Dpp[i][j] = km0[i+3]*mCCHt0[j+3] + km1[i+3]*mCCHt1[j+3] + km2[i+3]*mCCHt2[j+3];
+        mDvp[i][j] = km0[i+3]*mCCHt0[j] + km1[i+3]*mCCHt1[j] + km2[i+3]*mCCHt2[j];
+        mDpv[i][j] = km0[i]*mCCHt0[j+3] + km1[i]*mCCHt1[j+3] + km2[i]*mCCHt2[j+3];
+        mDpp[i][j] = km0[i+3]*mCCHt0[j+3] + km1[i+3]*mCCHt1[j+3] + km2[i+3]*mCCHt2[j+3];
       }
     }
 
-    De[0] = hmf[3]*Dvp[0][0] + hmf[4]*Dvp[1][0] + hmf[5]*Dvp[2][0];
-    De[1] = hmf[3]*Dvp[0][1] + hmf[4]*Dvp[1][1] + hmf[5]*Dvp[2][1];
-    De[2] = hmf[3]*Dvp[0][2] + hmf[4]*Dvp[1][2] + hmf[5]*Dvp[2][2];
-    De[3] = hmf[3]*Dpp[0][0] + hmf[4]*Dpp[1][0] + hmf[5]*Dpp[2][0];
-    De[4] = hmf[3]*Dpp[0][1] + hmf[4]*Dpp[1][1] + hmf[5]*Dpp[2][1];
-    De[5] = hmf[3]*Dpp[0][2] + hmf[4]*Dpp[1][2] + hmf[5]*Dpp[2][2];
-    De[6] = 2*(De[3]*hrf[3] + De[4]*hrf[4] + De[5]*hrf[5]);
+    mDe[0] = hmf[3]*mDvp[0][0] + hmf[4]*mDvp[1][0] + hmf[5]*mDvp[2][0];
+    mDe[1] = hmf[3]*mDvp[0][1] + hmf[4]*mDvp[1][1] + hmf[5]*mDvp[2][1];
+    mDe[2] = hmf[3]*mDvp[0][2] + hmf[4]*mDvp[1][2] + hmf[5]*mDvp[2][2];
+    mDe[3] = hmf[3]*mDpp[0][0] + hmf[4]*mDpp[1][0] + hmf[5]*mDpp[2][0];
+    mDe[4] = hmf[3]*mDpp[0][1] + hmf[4]*mDpp[1][1] + hmf[5]*mDpp[2][1];
+    mDe[5] = hmf[3]*mDpp[0][2] + hmf[4]*mDpp[1][2] + hmf[5]*mDpp[2][2];
+    mDe[6] = 2*(mDe[3]*hrf[3] + mDe[4]*hrf[4] + mDe[5]*hrf[5]);
 
     // last itearation -> update the particle
 
@@ -854,13 +854,13 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
     ffC[26] += mV[26];
     ffC[27] += mV[27];
 
-    ffC[21] += De[0];
-    ffC[22] += De[1];
-    ffC[23] += De[2];
-    ffC[24] += De[3];
-    ffC[25] += De[4];
-    ffC[26] += De[5];
-    ffC[27] += De[6];
+    ffC[21] += mDe[0];
+    ffC[22] += mDe[1];
+    ffC[23] += mDe[2];
+    ffC[24] += mDe[3];
+    ffC[25] += mDe[4];
+    ffC[26] += mDe[5];
+    ffC[27] += mDe[6];
 
    //* New estimation of the vertex position r += K*zeta
 
@@ -1042,21 +1042,21 @@ void AliKFParticleBase::AddDaughterWithEnergyFitMC( const AliKFParticleBase &Dau
       }
     }
 
-    Double_t Df[7][7];
+    Double_t mDf[7][7];
 
     for(Int_t i=0;i<7;++i){
       for(Int_t j=0;j<7;++j){
-	Df[i][j] = (km0[i]*mCHt0[j] + km1[i]*mCHt1[j] + km2[i]*mCHt2[j] );
+	mDf[i][j] = (km0[i]*mCHt0[j] + km1[i]*mCHt1[j] + km2[i]*mCHt2[j] );
       }
     }
 
-    Double_t J1[7][7], J2[7][7];
+    Double_t mJ1[7][7], mJ2[7][7];
     for(Int_t iPar1=0; iPar1<7; iPar1++)
     {
       for(Int_t iPar2=0; iPar2<7; iPar2++)
       {
-        J1[iPar1][iPar2] = 0;
-        J2[iPar1][iPar2] = 0;
+        mJ1[iPar1][iPar2] = 0;
+        mJ2[iPar1][iPar2] = 0;
       }
     }
 
@@ -1066,31 +1066,31 @@ void AliKFParticleBase::AddDaughterWithEnergyFitMC( const AliKFParticleBase &Dau
     if(mMassDaughter > 0) mMassDaughter = TMath::Sqrt(mMassDaughter);
 
     if( fMassHypo > -0.5)
-      SetMassConstraint(ffP,ffC,J1,fMassHypo);
+      SetMassConstraint(ffP,ffC,mJ1,fMassHypo);
     else if((mMassParticle < SumDaughterMass) || (ffP[6]<0) )
-      SetMassConstraint(ffP,ffC,J1,SumDaughterMass);
+      SetMassConstraint(ffP,ffC,mJ1,SumDaughterMass);
 
     if(Daughter.fMassHypo > -0.5)
-      SetMassConstraint(m,mV,J2,Daughter.fMassHypo);
+      SetMassConstraint(m,mV,mJ2,Daughter.fMassHypo);
     else if((mMassDaughter < Daughter.SumDaughterMass) || (m[6] < 0) )
-      SetMassConstraint(m,mV,J2,Daughter.SumDaughterMass);
+      SetMassConstraint(m,mV,mJ2,Daughter.SumDaughterMass);
 
-    Double_t DJ[7][7];
+    Double_t mDJ[7][7];
 
     for(Int_t i=0; i<7; i++) {
       for(Int_t j=0; j<7; j++) {
-        DJ[i][j] = 0;
+        mDJ[i][j] = 0;
         for(Int_t k=0; k<7; k++) {
-          DJ[i][j] += Df[i][k]*J1[j][k];
+          mDJ[i][j] += mDf[i][k]*mJ1[j][k];
         }
       }
     }
 
     for(Int_t i=0; i<7; ++i){
       for(Int_t j=0; j<7; ++j){
-        Df[i][j]=0;
+        mDf[i][j]=0;
         for(Int_t l=0; l<7; l++){
-          Df[i][j] += J2[i][l]*DJ[l][j];
+          mDf[i][j] += mJ2[i][l]*mDJ[l][j];
         }
       }
     }
@@ -1113,15 +1113,15 @@ void AliKFParticleBase::AddDaughterWithEnergyFitMC( const AliKFParticleBase &Dau
     ffC[26] += mV[26];
     ffC[27] += mV[27];
 
-    ffC[6 ] += Df[3][0]; ffC[7 ] += Df[3][1]; ffC[8 ] += Df[3][2];
-    ffC[10] += Df[4][0]; ffC[11] += Df[4][1]; ffC[12] += Df[4][2];
-    ffC[15] += Df[5][0]; ffC[16] += Df[5][1]; ffC[17] += Df[5][2];
-    ffC[21] += Df[6][0]; ffC[22] += Df[6][1]; ffC[23] += Df[6][2];
+    ffC[6 ] += mDf[3][0]; ffC[7 ] += mDf[3][1]; ffC[8 ] += mDf[3][2];
+    ffC[10] += mDf[4][0]; ffC[11] += mDf[4][1]; ffC[12] += mDf[4][2];
+    ffC[15] += mDf[5][0]; ffC[16] += mDf[5][1]; ffC[17] += mDf[5][2];
+    ffC[21] += mDf[6][0]; ffC[22] += mDf[6][1]; ffC[23] += mDf[6][2];
 
-    ffC[9 ] += Df[3][3] + Df[3][3];
-    ffC[13] += Df[4][3] + Df[3][4]; ffC[14] += Df[4][4] + Df[4][4];
-    ffC[18] += Df[5][3] + Df[3][5]; ffC[19] += Df[5][4] + Df[4][5]; ffC[20] += Df[5][5] + Df[5][5];
-    ffC[24] += Df[6][3] + Df[3][6]; ffC[25] += Df[6][4] + Df[4][6]; ffC[26] += Df[6][5] + Df[5][6]; ffC[27] += Df[6][6] + Df[6][6];
+    ffC[9 ] += mDf[3][3] + mDf[3][3];
+    ffC[13] += mDf[4][3] + mDf[3][4]; ffC[14] += mDf[4][4] + mDf[4][4];
+    ffC[18] += mDf[5][3] + mDf[3][5]; ffC[19] += mDf[5][4] + mDf[4][5]; ffC[20] += mDf[5][5] + mDf[5][5];
+    ffC[24] += mDf[6][3] + mDf[3][6]; ffC[25] += mDf[6][4] + mDf[4][6]; ffC[26] += mDf[6][5] + mDf[5][6]; ffC[27] += mDf[6][6] + mDf[6][6];
 
    //* New estimation of the vertex position r += K*zeta
 
@@ -1297,51 +1297,53 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
   fSFromDecay = 0;
 }
 
-void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t J[7][7], Double_t Mass )
+void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t mJ[7][7], Double_t mass )
 {
-  const Double_t E2 = mP[6]*mP[6], p2 = mP[3]*mP[3]+mP[4]*mP[4]+mP[5]*mP[5], M2 = Mass*Mass;
+  //* Set nonlinear mass constraint (Mass) on the state vector mP with a covariance matrix mC.
+  
+  const Double_t energy2 = mP[6]*mP[6], p2 = mP[3]*mP[3]+mP[4]*mP[4]+mP[5]*mP[5], mass2 = mass*mass;
 
-  const Double_t a = E2 - p2 + 2.*M2;
-  const Double_t b = -2.*(E2 + p2);
-  const Double_t c = E2 - p2 - M2;
+  const Double_t a = energy2 - p2 + 2.*mass2;
+  const Double_t b = -2.*(energy2 + p2);
+  const Double_t c = energy2 - p2 - mass2;
 
-  Double_t Lambda = 0;
-  if(TMath::Abs(b) > 1.e-10) Lambda = -c / b;
+  Double_t lambda = 0;
+  if(TMath::Abs(b) > 1.e-10) lambda = -c / b;
 
-  Double_t D = 4.*E2*p2 - M2*(E2-p2-2.*M2);
-  if(D>=0 && TMath::Abs(a) > 1.e-10) Lambda = (E2 + p2 - sqrt(D))/a;
+  Double_t d = 4.*energy2*p2 - mass2*(energy2-p2-2.*mass2);
+  if(d>=0 && TMath::Abs(a) > 1.e-10) lambda = (energy2 + p2 - sqrt(d))/a;
 
-  if(mP[6] < 0) //If energy < 0 we need a Lambda < 0
-    Lambda = -1000000.; //Empirical, a better solution should be found
+  if(mP[6] < 0) //If energy < 0 we need a lambda < 0
+    lambda = -1000000.; //Empirical, a better solution should be found
 
   Int_t iIter=0;
   for(iIter=0; iIter<100; iIter++)
   {
-    Double_t Lambda2 = Lambda*Lambda;
-    Double_t Lambda4 = Lambda2*Lambda2;
+    Double_t lambda2 = lambda*lambda;
+    Double_t lambda4 = lambda2*lambda2;
 
-    Double_t Lambda0 = Lambda;
+    Double_t lambda0 = lambda;
 
-    Double_t f  = -M2 * Lambda4 + a*Lambda2 + b*Lambda + c;
-    Double_t df = -4.*M2 * Lambda2*Lambda + 2.*a*Lambda + b;
+    Double_t f  = -mass2 * lambda4 + a*lambda2 + b*lambda + c;
+    Double_t df = -4.*mass2 * lambda2*lambda + 2.*a*lambda + b;
     if(TMath::Abs(df) < 1.e-10) break;
-    Lambda -= f/df;
-    if(TMath::Abs(Lambda0 - Lambda) < 1.e-8) break;
+    lambda -= f/df;
+    if(TMath::Abs(lambda0 - lambda) < 1.e-8) break;
   }
 
-  const Double_t LPi = 1./(1. + Lambda);
-  const Double_t LMi = 1./(1. - Lambda);
-  const Double_t LP2i = LPi*LPi;
-  const Double_t LM2i = LMi*LMi;
+  const Double_t lpi = 1./(1. + lambda);
+  const Double_t lmi = 1./(1. - lambda);
+  const Double_t lp2i = lpi*lpi;
+  const Double_t lm2i = lmi*lmi;
 
-  Double_t Lambda2 = Lambda*Lambda;
+  Double_t lambda2 = lambda*lambda;
 
-  Double_t dfl  = -4.*M2 * Lambda2*Lambda + 2.*a*Lambda + b;
+  Double_t dfl  = -4.*mass2 * lambda2*lambda + 2.*a*lambda + b;
   Double_t dfx[7] = {0};//,0,0,0};
-  dfx[0] = -2.*(1. + Lambda)*(1. + Lambda)*mP[3];
-  dfx[1] = -2.*(1. + Lambda)*(1. + Lambda)*mP[4];
-  dfx[2] = -2.*(1. + Lambda)*(1. + Lambda)*mP[5];
-  dfx[3] = 2.*(1. - Lambda)*(1. - Lambda)*mP[6];
+  dfx[0] = -2.*(1. + lambda)*(1. + lambda)*mP[3];
+  dfx[1] = -2.*(1. + lambda)*(1. + lambda)*mP[4];
+  dfx[2] = -2.*(1. + lambda)*(1. + lambda)*mP[5];
+  dfx[3] = 2.*(1. - lambda)*(1. - lambda)*mP[6];
   Double_t dlx[4] = {1,1,1,1};
   if(TMath::Abs(dfl) > 1.e-10 )
   {
@@ -1349,30 +1351,30 @@ void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t 
       dlx[i] = -dfx[i] / dfl;
   }
 
-  Double_t dxx[4] = {mP[3]*LM2i, mP[4]*LM2i, mP[5]*LM2i, -mP[6]*LP2i};
+  Double_t dxx[4] = {mP[3]*lm2i, mP[4]*lm2i, mP[5]*lm2i, -mP[6]*lp2i};
 
   for(Int_t i=0; i<7; i++)
     for(Int_t j=0; j<7; j++)
-      J[i][j]=0;
-  J[0][0] = 1.;
-  J[1][1] = 1.;
-  J[2][2] = 1.;
+      mJ[i][j]=0;
+  mJ[0][0] = 1.;
+  mJ[1][1] = 1.;
+  mJ[2][2] = 1.;
 
   for(Int_t i=3; i<7; i++)
     for(Int_t j=3; j<7; j++)
-      J[i][j] = dlx[j-3]*dxx[i-3];
+      mJ[i][j] = dlx[j-3]*dxx[i-3];
 
   for(Int_t i=3; i<6; i++)
-    J[i][i] += LMi;
-  J[6][6] += LPi;
+    mJ[i][i] += lmi;
+  mJ[6][6] += lpi;
 
-  Double_t CJ[7][7];
+  Double_t mCJ[7][7];
 
   for(Int_t i=0; i<7; i++) {
     for(Int_t j=0; j<7; j++) {
-      CJ[i][j] = 0;
+      mCJ[i][j] = 0;
       for(Int_t k=0; k<7; k++) {
-        CJ[i][j] += mC[IJ(i,k)]*J[j][k];
+        mCJ[i][j] += mC[IJ(i,k)]*mJ[j][k];
       }
     }
   }
@@ -1381,23 +1383,25 @@ void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t 
     for(Int_t j=0; j<=i; ++j){
       mC[IJ(i,j)]=0;
       for(Int_t l=0; l<7; l++){
-        mC[IJ(i,j)] += J[i][l]*CJ[l][j];
+        mC[IJ(i,j)] += mJ[i][l]*mCJ[l][j];
       }
     }
   }
 
-  mP[3] *= LMi;
-  mP[4] *= LMi;
-  mP[5] *= LMi;
-  mP[6] *= LPi;
+  mP[3] *= lmi;
+  mP[4] *= lmi;
+  mP[5] *= lmi;
+  mP[6] *= lpi;
 }
 
-void AliKFParticleBase::SetNonlinearMassConstraint( Double_t Mass )
+void AliKFParticleBase::SetNonlinearMassConstraint( Double_t mass )
 {
-  Double_t J[7][7];
-  SetMassConstraint( fP, fC, J, Mass );
-  fMassHypo = Mass;
-  SumDaughterMass = Mass;
+  //* Set nonlinear mass constraint (mass)
+
+  Double_t mJ[7][7];
+  SetMassConstraint( fP, fC, mJ, mass );
+  fMassHypo = mass;
+  SumDaughterMass = mass;
 }
 
 void AliKFParticleBase::SetMassConstraint( Double_t Mass, Double_t SigmaMass )
