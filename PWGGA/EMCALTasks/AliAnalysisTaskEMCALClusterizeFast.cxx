@@ -136,7 +136,6 @@ AliAnalysisTaskEMCALClusterizeFast::~AliAnalysisTaskEMCALClusterizeFast()
 {
   // Destructor.
 
-  //delete fDigitsArr; 
   delete fClusterizer;
   delete fUnfolder;   
   delete fRecoUtils;
