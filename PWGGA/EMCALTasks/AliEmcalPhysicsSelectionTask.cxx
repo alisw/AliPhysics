@@ -1,4 +1,9 @@
-/* $Id$ */
+// $Id$
+//
+// Physics selection task.
+//
+//
+
 
 #include <TFile.h>
 #include <TH1F.h>
