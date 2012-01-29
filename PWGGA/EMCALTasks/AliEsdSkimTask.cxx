@@ -165,28 +165,11 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
     am->LoadBranch("PrimaryVertex.");
     *priv = *esdin->GetPrimaryVertexTracks();
   }
-#if 1
   AliESDCaloCells *ecells = dynamic_cast<AliESDCaloCells*>(objsout->FindObject("EMCALCells"));
   if (ecells) {
     am->LoadBranch("EMCALCells.");
     *ecells = *esdin->GetEMCALCells();
   }
-#else
-  TClonesArray *ecells = dynamic_cast<TClonesArray*>(objsout->FindObject("EMCALCells"));
-  if (ecells) {
-    am->LoadBranch("EMCALCells.");
-    AliESDCaloCells *ein = esdin->GetEMCALCells();
-    ecells->Clear();
-    for(Int_t i=0;i<ein->GetNumberOfCells();++i) {
-      Short_t  cellNumber = 0;
-      Double_t amplitude  = 0; 
-      Double_t time       = 0;
-      ein->GetCell(i, cellNumber, amplitude, time);
-      new ((*ecells)[i]) AliCaloCell(cellNumber, amplitude, time);
-    }
-  }
-#endif
-
   AliESDCaloCells *pcells = dynamic_cast<AliESDCaloCells*>(objsout->FindObject("PHOSCells"));
   if (pcells) {
     am->LoadBranch("PHOSCells.");
@@ -394,9 +377,6 @@ void AliEsdSkimTask::UserCreateOutputObjects()
   }
   if (fDoEmCs) {
     fEvent->AddObject(new AliESDCaloCells("EMCALCells","EMCALCells"));
-    //TClonesArray *arr = new TClonesArray("AliCaloCell",0);
-    //arr->SetName("EMCALCells");
-    //fEvent->AddObject(arr);
   }
   if (fDoPCs) {
     fEvent->AddObject(new AliESDCaloCells("PHOSCells","PHOSCells"));
