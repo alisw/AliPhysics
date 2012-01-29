@@ -48,12 +48,16 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
     
   void           FillWeightHistograms(AliVCluster *clus);
     
+  void           HasPairSameMCMother(AliAODPWG4Particle * photon1, 
+                                     AliAODPWG4Particle * photon2, 
+                                     Int_t & label, Int_t & tag);
+  
   void           MakeInvMassInCalorimeter() ;
   
   void           MakeInvMassInCalorimeterAndCTS() ;
   
   void           MakeShowerShapeIdentification() ;
-  
+    
   void           RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
       
   //Setters Getters
@@ -135,6 +139,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH1F         * fhPtMC;                   //! Number of identified pi0, coming from pi0/eta
   TH2F         * fhPhiMC;                  //! Phi of identified pi0, coming from pi0/eta
   TH2F         * fhEtaMC;                  //! eta of identified pi0, coming from pi0/eta
+
+  TH2F         * fhMassPairMCPi0;          //! pair mass, origin is same pi0
+  TH2F         * fhMassPairMCEta;          //! pair mass, origin is same eta
+  TH2F         * fhAnglePairMCPi0;         //! pair opening angle, origin is same pi0
+  TH2F         * fhAnglePairMCEta;         //! pair opening angle, origin is same eta
   
   // Weight studies
   
@@ -150,13 +159,14 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhTrackMatchedDPhi     ;  //! Phi distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDEtaDPhi ;  //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   TH2F         * fhdEdx  ;                 //! matched track dEdx vs cluster E 
-  TH2F         * fhEOverP;                 //! matched track E cluster over P track vs cluster E, after dEdx cut 
+  TH2F         * fhEOverP;                 //! matched track E cluster over P track vs cluster E
   TH2F         * fhTrackMatchedMCParticle; //! Trace origin of matched particle
-  
+  TH2F         * fhEOverPNoTRD;                 //! matched track E cluster over P track vs cluster E, not behind TRD 
+
   AliAnaPi0EbE(              const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,11)
+  ClassDef(AliAnaPi0EbE,12)
 } ;
 
 

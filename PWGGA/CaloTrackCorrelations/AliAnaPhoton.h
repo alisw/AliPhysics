@@ -141,6 +141,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLam0ETRD;                      //! cluster lambda0 vs  E, SM covered by TRD
   TH2F * fhLam1ETRD;                      //! cluster lambda1 vs  E, SM covered by TRD 
 
+  TH2F * fhDispETM;                       //! cluster dispersion vs E, cut on Track Matching residual
+  TH2F * fhLam0ETM;                       //! cluster lambda0 vs  E, cut on Track Matching residual
+  TH2F * fhLam1ETM;                       //! cluster lambda1 vs  E, cut on Track Matching residual  
+  
+  TH2F * fhDispETMTRD;                    //! cluster dispersion vs E, SM covered by TRD, cut on Track Matching residual
+  TH2F * fhLam0ETMTRD;                    //! cluster lambda0 vs  E, SM covered by TRD, cut on Track Matching residual
+  TH2F * fhLam1ETMTRD;                    //! cluster lambda1 vs  E, SM covered by TRD, cut on Track Matching residual 
+  
+  
   TH2F * fhNCellsLam0LowE;                //! number of cells in cluster vs lambda0
   TH2F * fhNCellsLam1LowE;                //! number of cells in cluster vs lambda1
   TH2F * fhNCellsDispLowE;                //! number of cells in cluster vs dispersion
@@ -221,15 +230,17 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTrackMatchedDPhiNoCut      ;         //! Phi distance between track and cluster vs cluster E
   TH2F * fhTrackMatchedDEtaDPhiNoCut  ;         //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   
+  TH2F * fhTrackMatchedDEtaTRD        ;         //! Eta distance between track and cluster vs cluster E, after photon cuts, behind TRD
+  TH2F * fhTrackMatchedDPhiTRD        ;         //! Phi distance between track and cluster vs cluster E, after photon cuts, behind TRD
+  TH2F * fhTrackMatchedDEtaTRDNoCut   ;         //! Eta distance between track and cluster vs cluster E, behind TRD
+  TH2F * fhTrackMatchedDPhiTRDNoCut   ;         //! Phi distance between track and cluster vs cluster E, behind TRD
+  
   TH2F * fhTrackMatchedDEtaMCOverlap  ;         //! Eta distance between track and cluster vs cluster E, several particle overlap
   TH2F * fhTrackMatchedDPhiMCOverlap  ;         //! Phi distance between track and cluster vs cluster E, several particle overlap
   TH2F * fhTrackMatchedDEtaMCNoOverlap;         //! Eta distance between track and cluster vs cluster E, not other particle overlap
   TH2F * fhTrackMatchedDPhiMCNoOverlap;         //! Phi distance between track and cluster vs cluster E, not other particle overlap
-  TH2F * fhTrackMatchedDEtaMCOverlapConv  ;     //! Eta distance between track and cluster vs cluster E, several particle overlap including conversion
-  TH2F * fhTrackMatchedDPhiMCOverlapConv  ;     //! Phi distance between track and cluster vs cluster E, several particle overlap including conversion
-  TH2F * fhTrackMatchedDEtaMCNoOverlapConv;     //! Eta distance between track and cluster vs cluster E, not other particle overlap, apart from conversion
-  TH2F * fhTrackMatchedDPhiMCNoOverlapConv;     //! Phi distance between track and cluster vs cluster E, not other particle overlap, apart from conversion
-
+  TH2F * fhTrackMatchedDEtaMCConversion;        //! Eta distance between track and cluster vs cluster E, originated in conversion
+  TH2F * fhTrackMatchedDPhiMCConversion;        //! Phi distance between track and cluster vs cluster E, originated in conversion
   
   TH2F * fhTrackMatchedMCParticle;              //! Trace origin of matched particle
   TH2F * fhTrackMatchedMCParticleNoCut;         //! Trace origin of matched particle
@@ -237,11 +248,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEOverP;                              //! matched track E cluster over P track vs cluster E, after dEdx cut, after photon cuts 
   TH2F * fhdEdxNoCut;                           //! matched track dEdx vs cluster E, after photon cuts 
   TH2F * fhEOverPNoCut;                         //! matched track E cluster over P track vs cluster E, after dEdx cut 
+  TH2F * fhEOverPTRD;                           //! matched track E cluster over P track vs cluster E, after dEdx cut, after photon cuts, behind TRD 
+  TH2F * fhEOverPTRDNoCut;                      //! matched track E cluster over P track vs cluster E, after dEdx cut, behind TRD 
 
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,21)
+  ClassDef(AliAnaPhoton,22)
 
 } ;
  
