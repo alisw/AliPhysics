@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
+/* $Id$ */
 
 //_________________________________________________________________________
 // This analysis provides a new list of clusters to be used in other analysis
