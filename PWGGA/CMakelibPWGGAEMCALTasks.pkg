@@ -27,7 +27,9 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
+ EMCALTasks/AliAnalysisTaskEMCALClusterize.cxx 
  EMCALTasks/AliAnalysisTaskEMCALClusterizeFast.cxx
+ EMCALTasks/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
  EMCALTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
  EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
  EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
@@ -37,8 +39,8 @@ set ( SRCS
  EMCALTasks/AliEmcalTrackPropagatorTask.cxx
  EMCALTasks/AliEsdSkimTask.cxx
  EMCALTasks/AliEsdTrackExt.cxx
- EMCALTasks/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
- EMCALTasks/AliAnalysisTaskEMCALClusterize.cxx 
+ EMCALTasks/AliPicoTrack.cxx
+ EMCALTasks/AliStaObjects.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
