@@ -61,6 +61,7 @@ AliTriggerScalersRecordESD& AliTriggerScalersRecordESD:: operator=(const AliTrig
 if(&rec == this) return *this;
 ((TObject *)this)->operator=(rec);
 fTimestamp=rec.fTimestamp;
+fScalers.Delete();
 for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
     if (rec.fScalers[i]) fScalers.Add(rec.fScalers[i]->Clone());
   }

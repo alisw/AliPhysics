@@ -143,18 +143,20 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
     for (int ib=2;ib--;) for (int it=2;it--;) fMeanBeamInt[ib][it] = esd.fMeanBeamInt[ib][it];
 
     for(Int_t m=0; m<kNPHOSMatrix; m++){
+      delete fPHOSMatrix[m];
       if(esd.fPHOSMatrix[m])
 	fPHOSMatrix[m]=new TGeoHMatrix(*(esd.fPHOSMatrix[m])) ;
       else
 	fPHOSMatrix[m]=0;
     }
 	  
-	for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
-	  if(esd.fEMCALMatrix[sm])
-		  fEMCALMatrix[sm]=new TGeoHMatrix(*(esd.fEMCALMatrix[sm])) ;
-	  else
-		  fEMCALMatrix[sm]=0;
-	}
+    for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
+      delete fEMCALMatrix[sm];
+      if(esd.fEMCALMatrix[sm])
+        fEMCALMatrix[sm]=new TGeoHMatrix(*(esd.fEMCALMatrix[sm])) ;
+      else
+        fEMCALMatrix[sm]=0;
+    }
   } 
   for (Int_t i=0; i<kT0spreadSize;i++) fT0spread[i]=esd.fT0spread[i];
   for (Int_t it=0; it<8; it++) fCaloTriggerType[it]=esd.fCaloTriggerType[it];

@@ -111,8 +111,11 @@ AliTOFHeader &AliTOFHeader::operator=(const AliTOFHeader &source){
     fDefaultEventTimeValue=source.fDefaultEventTimeValue;
     fDefaultEventTimeRes=source.fDefaultEventTimeRes;
     fNbins=source.fNbins;
+    delete fEventTimeValues;
     fEventTimeValues=new TArrayF(fNbins);
+    delete fEventTimeRes;
     fEventTimeRes=new TArrayF(fNbins);
+    delete fNvalues;
     fNvalues=new TArrayI(fNbins);
     fTOFtimeResolution=source.fTOFtimeResolution;
     fT0spread=source.fT0spread;

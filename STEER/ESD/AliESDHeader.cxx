@@ -90,8 +90,6 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fIRBufferArray()
 {
   // copy constructor
-  SetName(header.fName);
-  SetTitle(header.fTitle);
   for(Int_t i = 0; i<kNMaxIR ; i++) {
     if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
     else fIRArray[i]=0;
@@ -127,6 +125,7 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fTriggerScalers = header.fTriggerScalers;
     fTriggerScalersDeltaEvent = header.fTriggerScalersDeltaEvent;
     fTriggerScalersDeltaRun = header.fTriggerScalersDeltaRun;
+    delete fCTPConfig;
     fCTPConfig = header.fCTPConfig;
 
     fTriggerInputsNames.Clear();
@@ -135,11 +134,10 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
       if (str) fTriggerInputsNames.AddAt(new TNamed(*str),i);
     }
     for(Int_t i = 0; i<kNMaxIR ; i++) {
+      delete fIRArray[i];
        if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
        else fIRArray[i]=0;
     }
-    SetName(header.fName);
-    SetTitle(header.fTitle);
 
     fIRBufferArray.Delete();
     for(Int_t i = 0; i < (header.fIRBufferArray).GetEntries(); ++i) {
