@@ -179,7 +179,6 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
   if (etrig) {
     am->LoadBranch("EMCALTrigger.");
     *etrig = *esdin->GetCaloTrigger("EMCAL");
-    etrig->Print("");
   }
   AliESDCaloTrigger *ptrig = dynamic_cast<AliESDCaloTrigger*>(objsout->FindObject("PHOSTrigger"));
   if (ptrig) {
@@ -435,7 +434,7 @@ void AliEsdSkimTask::UserCreateOutputObjects()
       arr = new TClonesArray("AliEsdTrackExt",0);
       arr->SetName("Tracks");
     } else {
-      arr = new TClonesArray("AliESDtrackExt",0);
+      arr = new TClonesArray("AliEsdTrackExt",0);
       arr->SetName("Tracks");
     }
     fEvent->AddObject(arr);
