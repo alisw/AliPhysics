@@ -10,24 +10,6 @@ class TTree;
 class AliESDEvent;
 class AliESDtrackCuts;
 
-class AliCaloCell : public TObject
-{
- public:
-  AliCaloCell(Short_t num=0, Double_t amp=0., Double_t time=0) :
-    TObject(), fNum(num), fAmp(amp), fTime(time*1e9), fMcFr(0) {;}
-
-  Bool_t     IsSortable()                const { return kTRUE; }
-    //Int_t      Compare(const TObject* obj) const;
-
- public:
-  Short_t    fNum;     //         cell number/id
-  Double32_t fAmp;     //[0,0,16] cell amplitude
-  Double32_t fTime;    //[0,0,16] cell time
-  Double32_t fMcFr;    //[0,1,10] fraction of MC energy (fMcAmp=fMcFr*fAmp)
-
-  ClassDef(AliCaloCell,1) // Calo cell class
-};
-
 class AliEsdSkimTask : public AliAnalysisTaskSE {
  public:
   AliEsdSkimTask(const char *opt=0);
