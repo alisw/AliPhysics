@@ -39,7 +39,8 @@
 
 #include <TMath.h>
 #include <TNamed.h>
-#include "AliCheb3D.h"
+#include <TObjArray.h>
+class AliCheb3D;
 
 class TSystem;
 class TArrayF;

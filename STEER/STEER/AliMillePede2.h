@@ -29,7 +29,7 @@ class AliMillePede2: public TObject
 {
  public:
   //
-  enum {gkFailed,gkInvert,gkNoInversion};    // used global matrix solution methods
+  enum {kFailed,kInvert,kNoInversion};    // used global matrix solution methods
   //
   AliMillePede2();
   AliMillePede2(const AliMillePede2& src);
@@ -122,8 +122,8 @@ class AliMillePede2: public TObject
 
   //
   // constraints
-  void                 SetGlobalConstraint(double *dergb, double val, double sigma=0);
-  void                 SetGlobalConstraint(const int *indgb,double *dergb, int ngb, double val, double sigma=0);
+  void                 SetGlobalConstraint(const double *dergb, double val, double sigma=0);
+  void                 SetGlobalConstraint(const int *indgb, const double *dergb, int ngb, double val, double sigma=0);
   //
   // processing of the local measurement
   void                 SetRecordRun(Int_t run);

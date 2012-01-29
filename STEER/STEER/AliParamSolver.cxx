@@ -1,3 +1,15 @@
+/* ----------------------------------------------------------------------------------------
+   Class to solve a set of N linearized parametric equations of the type
+   Eq(k): sum_i=0^n { g_i G_ik }  + t_k T_k = res_k
+   whith n "global" parameters gi and one "local" parameter (per equation) t_k.
+   Each measured points provides 3 measured coordinates, with proper covariance matrix.
+
+   Used for Newton-Raphson iteration step in solution of non-linear parametric equations
+   F(g,t_k) - res_k = 0, with G_ik = dF(g,t_k)/dg_i and T_k = dF(g,t_k)/dt_k
+   Solution is obtained by elimination of local parameters via large (n+N) matrix partitioning 
+
+   Author: ruben.shahoyan@cern.ch
+-------------------------------------------------------------------------------------------*/ 
 #include "AliParamSolver.h"
 #include "AliSymMatrix.h"
 #include "AliLog.h"
@@ -23,7 +35,7 @@ AliParamSolver::AliParamSolver(Int_t maxglo,Int_t locbuff)
 }
 
 //______________________________________________________________________________________
-AliParamSolver::AliParamSolver(AliParamSolver& src)
+AliParamSolver::AliParamSolver(const AliParamSolver& src)
   : TObject(src),fMatrix(0),fSolGlo(0),fSolLoc(0),fMaxGlobal(src.fMaxGlobal),fNGlobal(src.fNGlobal),
     fNPoints(0),fMaxPoints(0),fRHSGlo(0),fRHSLoc(0),fMatGamma(0),fMatG(0),fCovDGl(0)
 { 
@@ -83,6 +95,7 @@ AliParamSolver::~AliParamSolver()
 //______________________________________________________________________________________
 Bool_t AliParamSolver::SolveGlobals(Bool_t obtainCov)
 {
+  // solve against global vars.
   if (fNPoints<fNGlobal/3) {
     AliError(Form("Number of points: %d is not enough for %d globals",fNPoints,fNGlobal));
     return kFALSE;
@@ -102,6 +115,7 @@ Bool_t AliParamSolver::SolveGlobals(Bool_t obtainCov)
 //______________________________________________________________________________________
 Bool_t AliParamSolver::SolveLocals()
 {
+  // solve for locals
   const double kTiny = 1e-16;
   if (TestBit(kBitLocSol)) return kTRUE;
   if (!TestBit(kBitGloSol)) {
@@ -122,6 +136,7 @@ Bool_t AliParamSolver::SolveLocals()
 //______________________________________________________________________________________
 AliSymMatrix* AliParamSolver::GetCovMatrix()
 {
+  // obtain cov.mat
   if (!TestBit(kBitGloSol)) {
     AliError("Cannot obtain Cov.Matrix before SolveGlobals is called");
     return 0;
@@ -138,6 +153,7 @@ AliSymMatrix* AliParamSolver::GetCovMatrix()
 //______________________________________________________________________________________
 Bool_t AliParamSolver::Solve(Bool_t obtainCov)
 {
+  // solve all
   return (SolveGlobals(obtainCov) && SolveLocals()) ? kTRUE : kFALSE; 
 }
 
@@ -277,6 +293,7 @@ void AliParamSolver::ExpandStorage(Int_t newSize)
 //______________________________________________________________________________________
 void AliParamSolver::Clear(Option_t*)
 {
+  // reset all
   fNPoints = 0;
   fMatrix->Reset();
   for (int i=fNGlobal;i--;) fRHSGlo[i] = 0;
@@ -286,12 +303,14 @@ void AliParamSolver::Clear(Option_t*)
 //______________________________________________________________________________________
 void AliParamSolver::Print(Option_t*) const
 {
+  // print itself
   AliInfo(Form("Solver with %d globals for %d points",fNGlobal,fNPoints));
 }
 
 //______________________________________________________________________________________
 void AliParamSolver::SetNGlobal(Int_t n) 
 {
+  // set N global params
   if (n>fMaxGlobal) {
     AliError(Form("Maximum number of globals was set to %d",fMaxGlobal));
     return;
@@ -303,6 +322,7 @@ void AliParamSolver::SetNGlobal(Int_t n)
 //______________________________________________________________________________________
 void AliParamSolver::SetMaxGlobal(Int_t n) 
 {
+  // set limit on N glob.
   if (n>0 && n==fMaxGlobal) return;
   fMaxGlobal = n;
   fNGlobal = n;

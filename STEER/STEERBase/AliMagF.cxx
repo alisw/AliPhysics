@@ -544,6 +544,7 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
 //_____________________________________________________________________________
 const char*  AliMagF::GetBeamTypeText() const
 {
+  // beam type in text form
   const char *beamNA  = "No Beam";
   const char *beamPP  = "p-p";
   const char *beamPbPb= "A-A";

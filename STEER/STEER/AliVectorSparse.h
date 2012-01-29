@@ -43,7 +43,7 @@ class AliVectorSparse : public TObject {
   Double_t &GetLastElem()                                      {return fElems[fNElems-1];}
   //
  protected:
-  Int_t            fNElems;   // 
+  Int_t            fNElems;   // Number of elements
   UShort_t*        fIndex;    // Index of stored elems
   Double_t*        fElems;    // pointer on elements
   //

@@ -96,14 +96,14 @@ const Char_t* AliLHCData::fgkDCSColJaws[] = {
 
 //___________________________________________________________________
 AliLHCData::AliLHCData(const TMap* dcsMap, double tmin, double tmax)
-  : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fFile2Process(0),fMap2Process(0)
+  : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fkFile2Process(0),fkMap2Process(0)
 {
   FillData(dcsMap,tmin,tmax);
 }
 
 //___________________________________________________________________
 AliLHCData::AliLHCData(const Char_t* dcsFile, double tmin, double tmax)
-  : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fFile2Process(dcsFile),fMap2Process(0)
+  : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fkFile2Process(dcsFile),fkMap2Process(0)
 {
   FillData(dcsFile,tmin,tmax);
 }
@@ -113,7 +113,7 @@ Bool_t AliLHCData::FillData(const TMap*   dcsMap,double tmin, double tmax)
 {
   // process DCS map and fill all fields. 
   Clear();
-  fMap2Process = dcsMap;
+  fkMap2Process = dcsMap;
   FillData(tmin,tmax);
   return kTRUE;
 }
@@ -123,7 +123,7 @@ Bool_t AliLHCData::FillData(const Char_t* dcsFile,double tmin, double tmax)
 {
   // process DCS file and fill all fields. 
   Clear();
-  fFile2Process = dcsFile;
+  fkFile2Process = dcsFile;
   FillData(tmin,tmax);
   return kTRUE;
 }
@@ -143,7 +143,7 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
   int iFirst=0,iLast=0;
   TObjArray* arr = GetDCSEntry(fgkDCSNames[kFillNum],iFirst,iLast,fTMin,fTMax);
   if (arr) SetFillNumber( ExtractInt( (AliDCSArray*)arr->At(iFirst), 0) );
-  if (fFile2Process) delete arr; // array was created on demand
+  if (fkFile2Process) delete arr; // array was created on demand
   //
   for (int ibm=0;ibm<2;ibm++) {
     //
@@ -228,10 +228,10 @@ TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,int &last,double t
   entry = -1;
   last = -2;
   TObjArray* arr;
-  if (fMap2Process) arr = (TObjArray*)fMap2Process->GetValue(key);
-  else if (fFile2Process) {
+  if (fkMap2Process) arr = (TObjArray*)fkMap2Process->GetValue(key);
+  else if (fkFile2Process) {
     AliLHCReader rd;
-    arr = rd.ReadSingleLHCDP(fFile2Process,key);
+    arr = rd.ReadSingleLHCDP(fkFile2Process,key);
   }
   else {
     AliError("Neither DCS map nor DCS filename are set");
@@ -240,7 +240,7 @@ TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,int &last,double t
   //
   if (!arr || !arr->GetEntriesFast()) { 
     AliWarning(Form("No data for %s",key)); 
-    if (fMap2Process) delete arr; // created on demand
+    if (fkMap2Process) delete arr; // created on demand
     return 0;
   }
   int ntot = arr->GetEntriesFast();
@@ -262,7 +262,7 @@ TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,int &last,double t
     str += " : ";
     str += AliLHCDipValD::TimeAsString(tmax);
     AliWarning(Form("All entries for %s are outside the requested range:\n%s",key,str.Data()));
-    if (fMap2Process) delete arr; // created on demand
+    if (fkMap2Process) delete arr; // created on demand
     return 0;
   }
   if (entry>0) entry--;
@@ -381,7 +381,7 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
     // if (last) break;
   }
   //
-  if (fFile2Process) {
+  if (fkFile2Process) {
     delete arr;
     delete arrE;
   }
@@ -424,7 +424,7 @@ Int_t AliLHCData::FillBunchConfig(int refs[2],const char* rec)
     prevRecI = curValI;
   }
   //
-  if (fFile2Process) delete arr;
+  if (fkFile2Process) delete arr;
   return refs[kNStor];
 }
  
@@ -458,7 +458,7 @@ Int_t AliLHCData::FillAcqMode(int refs[2],const char* rec)
     prevRecI = curValI;
   }
   //
-  if (fFile2Process) delete arr;
+  if (fkFile2Process) delete arr;
   return refs[kNStor];
 }
  
@@ -491,7 +491,7 @@ Int_t AliLHCData::FillStringRecord(int refs[2],const char* rec)
     fData.Add(curValS);
     refs[kNStor]++;
   }
-  if (fFile2Process) delete arr;
+  if (fkFile2Process) delete arr;
   return refs[kNStor];
 }
 
@@ -543,7 +543,7 @@ Int_t AliLHCData::FillBunchInfo(int refs[2],const char* rec, int ibm, Bool_t inR
     fData.Add(curValF);
     refs[kNStor]++;
   }
-  if (fFile2Process) delete arr;
+  if (fkFile2Process) delete arr;
   return refs[kNStor];
   //
 }
@@ -633,7 +633,7 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
     fData.Add(curValF);
     refs[kNStor]++;
   }
-  if (fFile2Process) {
+  if (fkFile2Process) {
     delete arr;
     delete arrE;
   }
@@ -841,8 +841,8 @@ void AliLHCData::Clear(const Option_t *)
   fFillNumber = 0;
   fTMin = 0;
   fTMax = 1e10;
-  fFile2Process = 0;
-  fMap2Process  = 0;
+  fkFile2Process = 0;
+  fkMap2Process  = 0;
   //
   for (int i=2;i--;) {
     fRCInjScheme[i] = 0;

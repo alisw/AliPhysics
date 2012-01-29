@@ -786,12 +786,12 @@ Double_t AliESDv0::GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const{
   }
   AliKFParticle kfp1(  *(paramP), spdg[p1] *TMath::Sign(1,p1) );
   AliKFParticle kfp2( *(paramN), spdg[p2] *TMath::Sign(1,p2) );
-  AliKFParticle *V0KF = new AliKFParticle;
-  *(V0KF)+=kfp1;
-  *(V0KF)+=kfp2;
-  if (type==0) return V0KF->GetMass();
-  if (type==1) return V0KF->GetErrMass();
-  if (type==2) return V0KF->GetChi2();
+  AliKFParticle *v0KF = new AliKFParticle;
+  *(v0KF)+=kfp1;
+  *(v0KF)+=kfp2;
+  if (type==0) return v0KF->GetMass();
+  if (type==1) return v0KF->GetErrMass();
+  if (type==2) return v0KF->GetChi2();
   return 0;
 }
 
@@ -822,11 +822,11 @@ Double_t AliESDv0::GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1p
   //
   AliKFParticle kfp1( *paramP, spdg[p1] *TMath::Sign(1,p1) );
   AliKFParticle kfp2( *paramN, spdg[p2] *TMath::Sign(1,p2) );
-  AliKFParticle *V0KF = new AliKFParticle;
-  *(V0KF)+=kfp1;
-  *(V0KF)+=kfp2;
-  if (type==0) return V0KF->GetMass();
-  if (type==1) return V0KF->GetErrMass();
-  if (type==2) return V0KF->GetChi2();
+  AliKFParticle *v0KF = new AliKFParticle;
+  *(v0KF)+=kfp1;
+  *(v0KF)+=kfp2;
+  if (type==0) return v0KF->GetMass();
+  if (type==1) return v0KF->GetErrMass();
+  if (type==2) return v0KF->GetChi2();
   return 0;
 }

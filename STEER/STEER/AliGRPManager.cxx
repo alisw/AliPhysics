@@ -232,7 +232,7 @@ AliRunInfo* AliGRPManager::GetRunInfo()
 }
 
 //_____________________________________________________________________________
-void AliGRPManager::SetGRPEntry(AliGRPObject* source)
+void AliGRPManager::SetGRPEntry(const AliGRPObject* source)
 {
   // Create a GRP entry from the extrnaly provide GRP object
   // To be used by HLT to create an online GRP instance

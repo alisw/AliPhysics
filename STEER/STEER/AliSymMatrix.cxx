@@ -349,7 +349,7 @@ Bool_t AliSymMatrix::SolveChol(Double_t *brhs, Double_t *bsol,Bool_t invert)
 }
 
 //___________________________________________________________
-Bool_t AliSymMatrix::SolveChol(TVectorD &brhs, TVectorD &bsol,Bool_t invert) 
+Bool_t AliSymMatrix::SolveChol(const TVectorD &brhs, TVectorD &bsol,Bool_t invert) 
 {
   bsol = brhs;
   return SolveChol(bsol,invert);

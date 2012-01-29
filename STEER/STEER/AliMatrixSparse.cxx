@@ -6,6 +6,8 @@
 /*                                                                                            */ 
 /* Author: ruben.shahoyan@cern.ch                                                             */
 /*                                                                                            */ 
+/*                                                                                            */ 
+/*                                                                                            */ 
 /**********************************************************************************************/
 
 //___________________________________________________________
@@ -15,6 +17,7 @@ ClassImp(AliMatrixSparse)
 AliMatrixSparse::AliMatrixSparse(Int_t sz)
 : AliMatrixSq(),fVecs(0)
 {
+  // constructor
   fNcols=fNrows=sz;
   //
   fVecs = new AliVectorSparse*[sz];
@@ -25,6 +28,7 @@ AliMatrixSparse::AliMatrixSparse(Int_t sz)
 AliMatrixSparse::AliMatrixSparse(const AliMatrixSparse& src)
   : AliMatrixSq(src),fVecs(0)
 {
+  // copy c-tor
   fVecs = new AliVectorSparse*[src.GetSize()];
   for (int i=GetSize();i--;) fVecs[i] = new AliVectorSparse( *src.GetRow(i));
 }
@@ -32,6 +36,7 @@ AliMatrixSparse::AliMatrixSparse(const AliMatrixSparse& src)
 //___________________________________________________________
 AliVectorSparse* AliMatrixSparse::GetRowAdd(Int_t ir)
 {
+  // get row, add if needed
   if (ir>=fNrows) {
     AliVectorSparse** arrv = new AliVectorSparse*[ir+1];
     for (int i=GetSize();i--;) arrv[i] = fVecs[i];
@@ -47,6 +52,7 @@ AliVectorSparse* AliMatrixSparse::GetRowAdd(Int_t ir)
 //___________________________________________________________
 AliMatrixSparse& AliMatrixSparse::operator=(const AliMatrixSparse& src)
 {
+  // assignment op-r
   if (this == &src) return *this;
   AliMatrixSq::operator=(src);
 
@@ -62,6 +68,7 @@ AliMatrixSparse& AliMatrixSparse::operator=(const AliMatrixSparse& src)
 //___________________________________________________________
 void AliMatrixSparse::Clear(Option_t*) 
 {
+  // clear
   for (int i=fNrows;i--;) delete GetRow(i);
   delete [] fVecs;
   fNcols = fNrows = 0;
@@ -70,6 +77,7 @@ void AliMatrixSparse::Clear(Option_t*)
 //___________________________________________________________
 void AliMatrixSparse::Print(Option_t* opt)  const
 {
+  // print itself
   printf("Sparse Matrix of size %d x %d %s\n",fNrows,fNcols,IsSymmetric() ? " (Symmetric)":"");
   for (int i=0;i<fNrows;i++) {
     AliVectorSparse* row = GetRow(i);
@@ -116,10 +124,10 @@ void AliMatrixSparse::MultiplyByVec(const Double_t* vecIn, Double_t* vecOut) con
 //___________________________________________________________
 void AliMatrixSparse::SortIndices(Bool_t valuesToo)
 {
+  // sort columns in increasing order. Used to fix the matrix after ILUk decompostion
   TStopwatch sw; 
   sw.Start();
   printf("AliMatrixSparse:sort>>\n");
-  // sort columns in increasing order. Used to fix the matrix after ILUk decompostion
   for (int i=GetSize();i--;) GetRow(i)->SortIndices(valuesToo);
   sw.Stop();
   sw.Print();

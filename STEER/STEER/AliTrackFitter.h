@@ -4,6 +4,10 @@
 /*************************************************************************
  * AliTrackFitter: base class for the fast track fitters                 *
  *                                                                       *
+ * Supposed to be used for alignment framework                           *
+ * More information is available in 
+ * http://agenda.cern.ch/askArchive.php?base=agenda&categ=a057717&id=a057717s1t6/transparencies  
+ * Author: C.Cheskov                                                     *
  *                                                                       *
  *                                                                       *
  *************************************************************************/

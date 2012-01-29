@@ -36,6 +36,7 @@ AliVectorSparse::AliVectorSparse()
 AliVectorSparse::AliVectorSparse(const AliVectorSparse& src)
   : TObject(src),fNElems(src.fNElems),fIndex(0),fElems(0)
 {
+  // copy c-tor
   fIndex = new UShort_t[fNElems];
   fElems = new Double_t[fNElems];
   memcpy(fIndex,src.fIndex,fNElems*sizeof(UShort_t));
@@ -45,6 +46,7 @@ AliVectorSparse::AliVectorSparse(const AliVectorSparse& src)
 //___________________________________________________________
 void AliVectorSparse::Clear(Option_t*)
 {
+  // clear all
   delete[] fIndex; fIndex = 0;
   delete[] fElems; fElems = 0;
   fNElems = 0;
@@ -53,6 +55,7 @@ void AliVectorSparse::Clear(Option_t*)
 //___________________________________________________________
 AliVectorSparse& AliVectorSparse::operator=(const AliVectorSparse& src)
 {
+  // assignment op-tor
   if (&src==this) return *this;
   Clear();
   TObject::operator=(src);
@@ -131,6 +134,7 @@ Double_t& AliVectorSparse::FindIndexAdd(Int_t ind)
 //__________________________________________________________
 void AliVectorSparse::ReSize(Int_t sz,Bool_t copy)
 {
+  // change the size
   if (sz<1) {Clear(); return;}
     // need to insert a new element
   UShort_t *arrI = new UShort_t[sz];
@@ -164,6 +168,7 @@ void AliVectorSparse::SortIndices(Bool_t valuesToo)
 //__________________________________________________________
 void AliVectorSparse::Print(Option_t* opt)  const
 {
+  // print itself
   TString sopt = opt; sopt.ToLower();
   int ndig = sopt.Atoi();
   if (ndig<=1) ndig = 2;

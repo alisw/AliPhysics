@@ -30,6 +30,7 @@ fSize(0),fNGroups(0),fRunID(0),fGroupID(0),fIndex(0),fValue(0),fWeight(1) {SetUn
 AliMillePedeRecord::AliMillePedeRecord(const AliMillePedeRecord& src) : 
   TObject(src),fSize(src.fSize),fNGroups(src.fNGroups),fRunID(src.fRunID),fGroupID(0),fIndex(0),fValue(0),fWeight(src.fWeight)
 {
+  // copy ct-r
   fIndex = new Int_t[GetDtBufferSize()];
   memcpy(fIndex,src.fIndex,fSize*sizeof(Int_t));
   fValue = new Double_t[GetDtBufferSize()];
@@ -40,7 +41,8 @@ AliMillePedeRecord::AliMillePedeRecord(const AliMillePedeRecord& src) :
 
 //_____________________________________________________________________________________________
 AliMillePedeRecord& AliMillePedeRecord::operator=(const AliMillePedeRecord& rhs)
-{
+{ 
+  // assignment op-r
   if (this!=&rhs) {
     Reset();
     for (int i=0;i<rhs.GetSize();i++) {
@@ -62,6 +64,7 @@ AliMillePedeRecord::~AliMillePedeRecord() {delete[] fIndex; delete[] fValue; del
 //_____________________________________________________________________________________________
 void AliMillePedeRecord::Reset()
 {
+  // reset all
   fSize = 0;
   for (int i=fNGroups;i--;) fGroupID[i] = 0;
   fNGroups = 0;
@@ -72,6 +75,7 @@ void AliMillePedeRecord::Reset()
 //_____________________________________________________________________________________________
 void AliMillePedeRecord::Print(const Option_t *) const
 {
+  // print itself
   if (!fSize) {AliInfo("No data"); return;}
   int cnt=0,point=0;
   //  

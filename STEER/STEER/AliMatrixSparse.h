@@ -57,6 +57,7 @@ class AliMatrixSparse : public AliMatrixSq
 //___________________________________________________
 inline void AliMatrixSparse::MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const 
 {
+  // multiplication
   MultiplyByVec((Double_t*)vecIn.GetMatrixArray(),(Double_t*)vecOut.GetMatrixArray());
 }
 
@@ -92,6 +93,7 @@ inline Double_t& AliMatrixSparse::operator()(Int_t row,Int_t col)
 //___________________________________________________
 inline Double_t AliMatrixSparse::DiagElem(Int_t row) const
 {
+  // get diag elem
   AliVectorSparse* rowv = GetRow(row);
   if (!rowv) return 0;
   if (IsSymmetric()) return (rowv->GetNElems()>0 && rowv->GetLastIndex()==row) ? rowv->GetLastElem() : 0.;
@@ -102,6 +104,7 @@ inline Double_t AliMatrixSparse::DiagElem(Int_t row) const
 //___________________________________________________
 inline Double_t &AliMatrixSparse::DiagElem(Int_t row)
 {
+  // get diag elem
   AliVectorSparse* rowv = GetRowAdd(row);
   if (row>=fNcols) fNcols = row+1;
   if (IsSymmetric()) {

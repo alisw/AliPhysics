@@ -1,7 +1,10 @@
 #ifndef ALIMATRIXSQ_H
 #define ALIMATRIXSQ_H
+
 /**********************************************************************************************/
-/* Abstract class for matrix used for millepede2 operation.                                   */
+/*                                                                                            */ 
+/* Abstract class for matrix used for                                                         */
+/* millepede2 operation.                                                                      */
 /* Author: ruben.shahoyan@cern.ch                                                             */
 /*                                                                                            */ 
 /**********************************************************************************************/

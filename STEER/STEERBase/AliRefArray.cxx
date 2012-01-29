@@ -28,6 +28,7 @@ AliRefArray::AliRefArray() : fNElems(0),fRefSize(0),fElems(0),fRefInd(0),fRefBuf
 AliRefArray::AliRefArray(UInt_t nelem,UInt_t depth) : 
   TObject(),fNElems(nelem),fRefSize(depth),fElems(0),fRefInd(0),fRefBuff(0)
 {
+  // constructor
   fNElems = nelem;
   // create array with nelem initial referres
   if (fNElems<1) fNElems = 1;

@@ -26,7 +26,7 @@ class AliParamSolver: public TObject
 
   AliParamSolver();
   AliParamSolver(Int_t maxglo,Int_t locsize=16);
-  AliParamSolver(AliParamSolver& src);
+  AliParamSolver(const AliParamSolver& src);
   AliParamSolver& operator=(const AliParamSolver& src);
   ~AliParamSolver();
   //

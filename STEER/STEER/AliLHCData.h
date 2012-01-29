@@ -63,7 +63,7 @@ class AliLHCData : public TObject
   //le
  public:
   //
- AliLHCData() : fTMin(0),fTMax(1e10),fFillNumber(0),fData(0),fFile2Process(0),fMap2Process(0) {Clear();}
+ AliLHCData() : fTMin(0),fTMax(1e10),fFillNumber(0),fData(0),fkFile2Process(0),fkMap2Process(0) {Clear();}
   AliLHCData(const TMap*   dcsMap,  double tmin=0, double tmax=1.e10);
   AliLHCData(const Char_t* dcsFile, double tmin=0, double tmax=1.e10);
   virtual ~AliLHCData() {}
@@ -176,7 +176,7 @@ class AliLHCData : public TObject
   Int_t                 ExtractInt(AliDCSArray* dcsArray,Int_t el)    const;
   Double_t              ExtractDouble(AliDCSArray* dcsArray,Int_t el) const;
   TString&              ExtractString(AliDCSArray* dcsArray)          const;
- AliLHCData(const AliLHCData& src) : TObject(src),fTMin(0),fTMax(0),fFillNumber(0),fData(0),fFile2Process(0),fMap2Process(0) { /*dummy*/ }
+ AliLHCData(const AliLHCData& src) : TObject(src),fTMin(0),fTMax(0),fFillNumber(0),fData(0),fkFile2Process(0),fkMap2Process(0) { /*dummy*/ }
   AliLHCData& operator=(const AliLHCData& ) { /*dummy*/ return *this;}
   Int_t                 TimeDifference(double v1,double v2,double tol=0.9) const;
   Bool_t                IzZero(double val, double tol=1e-16)         const {return TMath::Abs(val)<tol;}
@@ -224,8 +224,8 @@ class AliLHCData : public TObject
   //
  private:
   // non-persistent objects used at the filling time
-  const Char_t*   fFile2Process;                      //! name of DCS file
-  const TMap*     fMap2Process;                       //! DCS map to process 
+  const Char_t*   fkFile2Process;                      //! name of DCS file
+  const TMap*     fkMap2Process;                       //! DCS map to process 
 
   ClassDef(AliLHCData,1)
 };

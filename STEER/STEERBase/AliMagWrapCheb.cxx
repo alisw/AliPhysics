@@ -18,6 +18,7 @@
 #include <TSystem.h>
 #include <TArrayF.h>
 #include <TArrayI.h>
+#include <AliCheb3D.h>
 
 ClassImp(AliMagWrapCheb)
 
@@ -715,6 +716,7 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
 //__________________________________________________________________________________________
 void AliMagWrapCheb::BuildTableSol()
 {
+  // build lookup table
   BuildTable(fNParamsSol,fParamsSol,
 	     fNZSegSol,fNPSegSol,fNRSegSol,
 	     fMinZSol,fMaxZSol, 
@@ -727,6 +729,7 @@ void AliMagWrapCheb::BuildTableSol()
 //__________________________________________________________________________________________
 void AliMagWrapCheb::BuildTableDip()
 {
+  // build lookup table
   BuildTable(fNParamsDip,fParamsDip,
 	     fNZSegDip,fNYSegDip,fNXSegDip,
 	     fMinZDip,fMaxZDip, 
@@ -739,6 +742,7 @@ void AliMagWrapCheb::BuildTableDip()
 //__________________________________________________________________________________________
 void AliMagWrapCheb::BuildTableTPCInt()
 {
+  // build lookup table
   BuildTable(fNParamsTPC,fParamsTPC,
 	     fNZSegTPC,fNPSegTPC,fNRSegTPC,
 	     fMinZTPC,fMaxZTPC, 
@@ -751,6 +755,7 @@ void AliMagWrapCheb::BuildTableTPCInt()
 //__________________________________________________________________________________________
 void AliMagWrapCheb::BuildTableTPCRatInt()
 {
+  // build lookup table
   BuildTable(fNParamsTPCRat,fParamsTPCRat,
 	     fNZSegTPCRat,fNPSegTPCRat,fNRSegTPCRat,
 	     fMinZTPCRat,fMaxZTPCRat, 

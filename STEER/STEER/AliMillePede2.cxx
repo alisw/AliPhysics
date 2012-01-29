@@ -1,6 +1,8 @@
 /**********************************************************************************************/
 /* General class for alignment with large number of degrees of freedom                        */
 /* Based on the original milliped2 by Volker Blobel                                           */
+/* and AliMillepede class by Javier                                                           */ 
+/* Allows operations with large sparse matrices                                               */ 
 /* http://www.desy.de/~blobel/mptalks.html                                                    */
 /*                                                                                            */ 
 /* Author: ruben.shahoyan@cern.ch                                                             */
@@ -57,7 +59,7 @@ AliMillePede2::AliMillePede2()
   fNLocFits(0),
   fNLocFitsRejected(0),
   fNGloFix(0),
-  fGloSolveStatus(gkFailed),
+  fGloSolveStatus(kFailed),
 //
   fChi2CutFactor(1.),
   fChi2CutRef(1.),
@@ -126,6 +128,7 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
 //_____________________________________________________________________________________________
 AliMillePede2::~AliMillePede2() 
 {
+  // destructor
   CloseDataRecStorage();
   CloseConsRecStorage();
   //
@@ -155,7 +158,7 @@ AliMillePede2::~AliMillePede2()
 //_____________________________________________________________________________________________
 Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, double lResCutInit)
 {
-  //
+  // init all
   if (nLoc>0)        fNLocPar = nLoc;
   if (nGlo>0)        fNGloPar = nGlo;
   if (lResCutInit>0) fResCutInit = lResCutInit; 
@@ -212,6 +215,7 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
 //_____________________________________________________________________________________________
 Bool_t AliMillePede2::ImposeDataRecFile(const char* fname)
 {
+  // set filename for records
   CloseDataRecStorage();
   SetDataRecFName(fname);
   return InitDataRecStorage(kTRUE); // open in read mode
@@ -220,6 +224,7 @@ Bool_t AliMillePede2::ImposeDataRecFile(const char* fname)
 //_____________________________________________________________________________________________
 Bool_t AliMillePede2::ImposeConsRecFile(const char* fname)
 {
+  // set filename for constraints
   CloseConsRecStorage();
   SetConsRecFName(fname);
   return InitConsRecStorage(kTRUE); // open in read mode
@@ -311,6 +316,7 @@ Bool_t AliMillePede2::InitConsRecStorage(Bool_t read)
 //_____________________________________________________________________________________________
 void AliMillePede2::CloseDataRecStorage()
 {
+  // close records file
   if (fTreeData) {
     if (fDataRecFile && fDataRecFile->IsWritable()) {
       fDataRecFile->cd();
@@ -331,6 +337,7 @@ void AliMillePede2::CloseDataRecStorage()
 //_____________________________________________________________________________________________
 void AliMillePede2::CloseConsRecStorage()
 {
+  // close constraints file
   if (fTreeConstr) {
     if (fConsRecFile->IsWritable()) {
       fConsRecFile->cd();
@@ -366,6 +373,7 @@ Bool_t AliMillePede2::ReadNextRecordConstraint()
 //_____________________________________________________________________________________________
 void AliMillePede2::SetRecordWeight(double wgh)
 {
+  // assign weight
   if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
   fRecord->SetWeight(wgh);
 }
@@ -373,6 +381,7 @@ void AliMillePede2::SetRecordWeight(double wgh)
 //_____________________________________________________________________________________________
 void AliMillePede2::SetRecordRun(Int_t run)
 {
+  // assign run
   if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
   fRecord->SetRunID(run);
 }
@@ -380,6 +389,7 @@ void AliMillePede2::SetRecordRun(Int_t run)
 //_____________________________________________________________________________________________
 void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas, double lSigma)
 {
+  // assing derivs of loc.eq.
   if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
   //
   // write data of single measurement
@@ -431,7 +441,7 @@ void AliMillePede2::SetLocalEquation(int *indgb, double *dergb, int ngb, int *in
 
 
 //_____________________________________________________________________________________________
-void AliMillePede2::SetGlobalConstraint(double *dergb, double val, double sigma)
+void AliMillePede2::SetGlobalConstraint(const double *dergb, double val, double sigma)
 {	
   // Define a constraint equation.
   if (!fConsRecFile || !fConsRecFile->IsWritable()) InitConsRecStorage(); // create a buffer to store the data
@@ -448,7 +458,7 @@ void AliMillePede2::SetGlobalConstraint(double *dergb, double val, double sigma)
 }
 
 //_____________________________________________________________________________________________
-void AliMillePede2::SetGlobalConstraint(const int *indgb, double *dergb, int ngb, double val,double sigma)
+void AliMillePede2::SetGlobalConstraint(const int *indgb, const double *dergb, int ngb, double val,double sigma)
 {	
   // Define a constraint equation.
   if (!fConsRecFile || !fConsRecFile->IsWritable()) InitConsRecStorage(); // create a buffer to store the data
@@ -762,7 +772,7 @@ Int_t AliMillePede2::GlobalFit(Double_t *par, Double_t *error, Double_t *pull)
   //
   if (par) for (int i=fNGloPar;i--;) par[i] = fInitPar[i]+fDeltaPar[i]; 
   //
-  if (fGloSolveStatus==gkInvert) { // errors on params are available
+  if (fGloSolveStatus==kInvert) { // errors on params are available
     if (error) for (int i=fNGloPar;i--;) error[i] = fProcPnt[i]>0 ? TMath::Sqrt(TMath::Abs(fMatCGlo->QueryDiag(i))) : 0.;
     if (pull)  for (int i=fNGloPar;i--;) pull[i]  = fProcPnt[i]>0 && (fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QueryDiag(i))>0. && fSigmaPar[i]>0 
 					   ? fDeltaPar[i]/TMath::Sqrt(fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QueryDiag(i)) : 0;
@@ -779,7 +789,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   AliInfo(Form("Global Fit Iteration#%2d (Local Fit Chi^2 cut factor: %.2f)",fIter,fChi2CutFactor));
   //
   if (!fNGloPar || !fTreeData) {
-    AliInfo("No data was stored, aborting iteration");
+    AliInfo("No data was stored, stopping iteration");
     return 0;
   }
   TStopwatch sw,sws; 
@@ -1012,8 +1022,8 @@ Int_t AliMillePede2::GlobalFitIteration()
   printf("Solve %d |",fIter); sws.Print();
   //
   sw.Stop();
-  AliInfo(Form("Iteration#%2d %s. CPU time: %.1f",fIter,fGloSolveStatus==gkFailed ? "Failed":"Converged",sw.CpuTime()));
-  if (fGloSolveStatus==gkFailed) return 0;
+  AliInfo(Form("Iteration#%2d %s. CPU time: %.1f",fIter,fGloSolveStatus==kFailed ? "Failed":"Converged",sw.CpuTime()));
+  if (fGloSolveStatus==kFailed) return 0;
   //
   for (int i=fNGloPar;i--;) fDeltaPar[i] += fVecBGlo[i];    // Update global parameters values (for iterations)
   //
@@ -1037,18 +1047,18 @@ Int_t AliMillePede2::SolveGlobalMatEq()
   if (!fgIsMatGloSparse) {
     //
     if (fNLagrangeConstraints==0) { // pos-def systems are faster to solve by Cholesky
-      if ( ((AliSymMatrix*)fMatCGlo)->SolveChol(fVecBGlo, fgInvChol) ) return fgInvChol ? gkInvert:gkNoInversion;
+      if ( ((AliSymMatrix*)fMatCGlo)->SolveChol(fVecBGlo, fgInvChol) ) return fgInvChol ? kInvert:kNoInversion;
       else AliInfo("Solution of Global Dense System by Cholesky failed, trying Gaussian Elimiation");
     }
     //
-    if (((AliSymMatrix*)fMatCGlo)->SolveSpmInv(fVecBGlo, kTRUE)) return gkInvert;
+    if (((AliSymMatrix*)fMatCGlo)->SolveSpmInv(fVecBGlo, kTRUE)) return kInvert;
     else AliInfo("Solution of Global Dense System by Gaussian Elimination failed, trying iterative methods");
   }
   // try to solve by minres
   TVectorD sol(fNGloSize);
   //
   AliMinResSolve *slv = new AliMinResSolve(fMatCGlo,fVecBGlo);
-  if (!slv) return gkFailed;
+  if (!slv) return kFailed;
   //
   Bool_t res = kFALSE;
   if      (fgIterSol == AliMinResSolve::kSolMinRes) 
@@ -1063,7 +1073,7 @@ Int_t AliMillePede2::SolveGlobalMatEq()
     int defout = dup(1);
     if (defout<0) {
       AliInfo("Failed on dup");
-      return gkFailed;
+      return kFailed;
     }
     int slvDump = open(faildump, O_RDWR|O_CREAT, 0666);
     if (slvDump>=0) {
@@ -1082,10 +1092,10 @@ Int_t AliMillePede2::SolveGlobalMatEq()
     }
     else AliInfo("Failed on file open for matrix dumping");
     close(defout);
-    return gkFailed;
+    return kFailed;
   }
   for (int i=fNGloSize;i--;) fVecBGlo[i] = sol[i];
-  return gkNoInversion;
+  return kNoInversion;
   //
 }
 
@@ -1140,7 +1150,7 @@ Int_t AliMillePede2::SetIterations(double lChi2CutFac)
 Double_t AliMillePede2::GetParError(int iPar) const
 {
   // return error for parameter iPar
-  if (fGloSolveStatus==gkInvert) {
+  if (fGloSolveStatus==kInvert) {
     double res = fMatCGlo->QueryDiag(iPar);
     if (res>=0) return TMath::Sqrt(res);
   } 
@@ -1166,7 +1176,7 @@ Int_t AliMillePede2::PrintGlobalParameters() const
     lGlobalCor = 0.0;
     //		
     double dg;
-    if (fGloSolveStatus==gkInvert && TMath::Abs( (dg=fMatCGlo->QueryDiag(i)) *fDiagCGlo[i]) > 0) {    
+    if (fGloSolveStatus==kInvert && TMath::Abs( (dg=fMatCGlo->QueryDiag(i)) *fDiagCGlo[i]) > 0) {    
       lGlobalCor = TMath::Sqrt(TMath::Abs(1.0-1.0/(dg*fDiagCGlo[i])));
       AliInfo(Form("%d\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %6d",
 		   i,fInitPar[i],fInitPar[i]+fDeltaPar[i],fDeltaPar[i],fVecBGlo[i],lError,lGlobalCor,fProcPnt[i]));

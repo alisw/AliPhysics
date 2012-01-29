@@ -1,6 +1,14 @@
 #ifndef ALIRECTMATRIX_H
 #define ALIRECTMATRIX_H
 
+/*********************************************************************************/
+/*                                                                               */ 
+/* Class for rectangular matrix used for                                         */
+/* millepede2 operation.                                                         */
+/* Author: ruben.shahoyan@cern.ch                                                */
+/*                                                                               */ 
+/*********************************************************************************/
+
 #include "TObject.h"
 class TString;
 
@@ -23,7 +31,7 @@ class AliRectMatrix : public TObject {
   Double_t*     operator()(Int_t row)                 const {return GetRow(row);}
   Double_t*     GetRow(Int_t row)                     const {return fRows[row];}
   //
-  void          Reset();
+  void          Reset() const;
   //
   virtual void  Print(Option_t* option="")           const;
   //

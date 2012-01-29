@@ -1,3 +1,13 @@
+/*********************************************************************************/
+/*                                                                               */ 
+/* Class for rectangular matrix used for                                         */
+/* millepede2 operation.                                                         */
+/* May be sparse or dense.                                                       */ 
+/* -----------------------                                                       */ 
+/* Author: ruben.shahoyan@cern.ch                                                */
+/*                                                                               */ 
+/*********************************************************************************/
+
 #include "AliRectMatrix.h"
 #include <TString.h>
 //
@@ -14,7 +24,7 @@ AliRectMatrix::AliRectMatrix()
 AliRectMatrix::AliRectMatrix(Int_t nrow,Int_t ncol)
   : fNRows(nrow),fNCols(ncol),fRows(0)
 {
-  //
+  // c-tor
   fRows = new Double_t*[fNRows];
   for (int i=fNRows;i--;) {
     fRows[i] = new Double_t[fNCols];
@@ -27,6 +37,7 @@ AliRectMatrix::AliRectMatrix(Int_t nrow,Int_t ncol)
 AliRectMatrix::AliRectMatrix(const AliRectMatrix &src)
   : TObject(src),fNRows(src.fNRows), fNCols(src.fNCols), fRows(0)
 {
+  // copy c-tor
   fRows = new Double_t*[fNRows];
   for (int i=fNRows;i--;) {
     fRows[i] = new Double_t[fNCols];
@@ -37,6 +48,7 @@ AliRectMatrix::AliRectMatrix(const AliRectMatrix &src)
 //___________________________________________________________
 AliRectMatrix::~AliRectMatrix()
 {
+  // dest-tor
   if (fNRows) for (int i=fNRows;i--;) delete[] fRows[i];
   delete[] fRows;
 }
@@ -44,7 +56,7 @@ AliRectMatrix::~AliRectMatrix()
 //___________________________________________________________
 AliRectMatrix& AliRectMatrix::operator=(const AliRectMatrix& src)
 {
-  //
+  // assignment op-r
   if (&src == this) return *this;
   if (fNRows) for (int i=fNRows;i--;) delete[] fRows[i];
   delete[] fRows;
@@ -62,6 +74,7 @@ AliRectMatrix& AliRectMatrix::operator=(const AliRectMatrix& src)
 //___________________________________________________________
 void AliRectMatrix::Print(Option_t* option) const
 {
+  // print itself
   printf("Rectangular Matrix:  %d rows %d columns\n",fNRows,fNCols);
   TString opt = option; opt.ToLower();
   if (opt.IsNull()) return;
@@ -73,8 +86,9 @@ void AliRectMatrix::Print(Option_t* option) const
 
 
 //___________________________________________________________
-void AliRectMatrix::Reset()
+void AliRectMatrix::Reset() const
 {
+  // reset all
   for (int i=fNRows;i--;) {
     double *row = GetRow(i); 
     for (int j=fNCols;j--;)  row[j] = 0.;

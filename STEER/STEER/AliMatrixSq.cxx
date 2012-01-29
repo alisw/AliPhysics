@@ -1,6 +1,11 @@
 /**********************************************************************************************/
-/* Abstract class for matrix used for millepede2 operation.                                   */
+/*                                                                                            */ 
+/* Abstract class for matrix used for                                                         */
+/* millepede2 operation.                                                                      */
+/* Works for expandable square matrices                                                       */ 
+/* of arbitrary dimension                                                                     */
 /* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
 /*                                                                                            */ 
 /**********************************************************************************************/
 

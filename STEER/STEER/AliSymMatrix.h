@@ -74,7 +74,7 @@ class AliSymMatrix : public AliMatrixSq {
   Bool_t              SolveChol(Double_t *brhs, Bool_t invert=kFALSE);
   Bool_t              SolveChol(Double_t *brhs, Double_t *bsol,Bool_t invert=kFALSE);
   Bool_t              SolveChol(TVectorD &brhs, Bool_t invert=kFALSE);
-  Bool_t              SolveChol(TVectorD &brhs, TVectorD& bsol,Bool_t invert=kFALSE);
+  Bool_t              SolveChol(const TVectorD &brhs, TVectorD& bsol,Bool_t invert=kFALSE);
   //
   int                 SolveSpmInv(double *vecB, Bool_t stabilize=kTRUE);
 

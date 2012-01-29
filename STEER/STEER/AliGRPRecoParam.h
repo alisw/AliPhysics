@@ -37,20 +37,8 @@ class AliGRPRecoParam : public AliDetectorRecoParam
     { SetVertexerTracksCuts(1,ncuts,cuts); return; }
   void  SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]);
   void  SetVertexerCascadeCuts(Int_t ncuts,Double_t cuts[8]);
-  void  SetVertexerTracksTPCClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut){
-    if(use) fVertexerTracksTPCclusterize=1.;
-    else fVertexerTracksTPCclusterize=0.;
-    fVertexerTracksTPCclusterdz=dzcut;
-    fVertexerTracksTPCclusternsigmaz=nsigmazcut;
-  }
-  void  SetVertexerTracksITSClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut){
-    if(use) fVertexerTracksITSclusterize=1.;
-    else fVertexerTracksITSclusterize=0.;
-    fVertexerTracksITSclusterdz=dzcut;
-    fVertexerTracksITSclusternsigmaz=nsigmazcut;
-  }
-
-
+  void  SetVertexerTracksTPCClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut);
+  void  SetVertexerTracksITSClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut);
   Bool_t GetVertexerTracksConstraintITS() const { return fVertexerTracksConstraintITS; }
   Bool_t GetVertexerTracksConstraintTPC() const { return fVertexerTracksConstraintTPC; }
   Int_t GetVertexerTracksNCuts() const { return fVertexerTracksNCuts; }
@@ -156,5 +144,24 @@ class AliGRPRecoParam : public AliDetectorRecoParam
 
   ClassDef(AliGRPRecoParam,7) // global reco parameters
 };
+
+inline void  AliGRPRecoParam::SetVertexerTracksTPCClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut)
+{
+  // set TPC tracks clustering settings
+  if(use) fVertexerTracksTPCclusterize=1.;
+  else fVertexerTracksTPCclusterize=0.;
+  fVertexerTracksTPCclusterdz=dzcut;
+  fVertexerTracksTPCclusternsigmaz=nsigmazcut;
+}
+
+inline  void  AliGRPRecoParam::SetVertexerTracksITSClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut)
+{
+  // set ITS tracks clustering settings
+  if(use) fVertexerTracksITSclusterize=1.;
+  else fVertexerTracksITSclusterize=0.;
+  fVertexerTracksITSclusterdz=dzcut;
+  fVertexerTracksITSclusternsigmaz=nsigmazcut;
+}
+
 
 #endif
