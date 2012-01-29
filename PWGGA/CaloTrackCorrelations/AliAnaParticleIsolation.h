@@ -32,67 +32,70 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   // Main general methods
     
-  TObjString * GetAnalysisCuts();
   
-  TList      * GetCreateOutputObjects();
+  TObjString * GetAnalysisCuts() ;
   
-  void         InitParameters();
+  TList      * GetCreateOutputObjects() ;
+  
+  void         InitParameters() ;
   
   void         MakeAnalysisFillAOD()  ;
   
   void         MakeAnalysisFillHistograms() ; 
   
-  void         Print(const Option_t * opt)const;
+  void         Print( const Option_t * opt ) const ;
  
   //Analysis specific methods 
-    
-  void         MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelation * ph); 
+  
+  void         FillTrackMatchingShowerShapeControlHistograms( const Int_t clusterID, const Int_t mcTag ) ;
+  
+  void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph ) ; 
   
   // Analysis Setters and Getters
   
-  TString GetCalorimeter()                const { return fCalorimeter     ; }
-  Int_t   GetNCones()                     const { return fNCones          ; }
-  Int_t   GetNPtThresFrac()               const { return fNPtThresFrac    ; }
-  Float_t GetConeSizes(Int_t i)           const { return fConeSizes[i]    ; }
-  Float_t GetPtThresholds(Int_t i)        const { return fPtThresholds[i] ; }
-  Float_t GetPtFractions(Int_t i)         const { return fPtFractions[i]  ; }
+  TString      GetCalorimeter()                const { return fCalorimeter       ; }
+  Int_t        GetNCones()                     const { return fNCones            ; }
+  Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
+  Float_t      GetConeSizes(Int_t i)           const { return fConeSizes[i]      ; }
+  Float_t      GetPtThresholds(Int_t i)        const { return fPtThresholds[i]   ; }
+  Float_t      GetPtFractions(Int_t i)         const { return fPtFractions[i]    ; }
   
-  void    SetCalorimeter(TString & det)         { fCalorimeter     = det  ; }
-  void    SetNCones(Int_t ncs)                  { fNCones          = ncs  ; }
-  void    SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt  ; }
-  void    SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r    ; }
-  void    SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt   ; }
-  void    SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt   ; } 
+  void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
+  void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
+  void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
+  void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
+  void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
+  void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
   
-  Bool_t  IsReIsolationOn()               const { return fReMakeIC        ; }
-  void    SwitchOnReIsolation()                 { fReMakeIC      = kTRUE  ; }
-  void    SwitchOffReIsolation()                { fReMakeIC      = kFALSE ; }
+  Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
+  void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
+  void         SwitchOffReIsolation()                { fReMakeIC      = kFALSE   ; }
   
-  Bool_t  IsSeveralIsolationOn()          const { return fMakeSeveralIC   ; }
-  void    SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE  ; }
-  void    SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE ; }
+  Bool_t       IsSeveralIsolationOn()          const { return fMakeSeveralIC     ; }
+  void         SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE    ; }
+  void         SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE   ; }
 
-  void    SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE  ; }
-  void    SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE ; }
+  void         SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE    ; }
+  void         SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE   ; }
   
-  void    SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE  ; }
-  void    SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE ; }
+  void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
+  void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
   //Histogrammes setters and getters
   
-  virtual void SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n){
-    fHistoNPtSumBins = n ; fHistoPtSumMax = max ; fHistoPtSumMin = min ;    }
+  void         SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n)       {
+    fHistoNPtSumBins = n ;    fHistoPtSumMax = max ;    fHistoPtSumMin = min ;     }
   
-  Int_t        GetHistoNPtSumBins()       const { return fHistoNPtSumBins ; }
-  Float_t      GetHistoPtSumMin()         const { return fHistoPtSumMin   ; }
-  Float_t      GetHistoPtSumMax()         const { return fHistoPtSumMax   ; }
+  Int_t        GetHistoNPtSumBins()            const { return fHistoNPtSumBins   ; }
+  Float_t      GetHistoPtSumMin()              const { return fHistoPtSumMin     ; }
+  Float_t      GetHistoPtSumMax()              const { return fHistoPtSumMax     ; }
   
-  virtual void SetHistoPtInConeRangeAndNBins(Float_t min, Float_t max, Int_t n)   {
-    fHistoNPtInConeBins = n ; fHistoPtInConeMax = max ; fHistoPtInConeMin = min ; }
+  void         SetHistoPtInConeRangeAndNBins(Float_t min, Float_t max, Int_t n)    {
+    fHistoNPtInConeBins = n ; fHistoPtInConeMax = max ; fHistoPtInConeMin = min  ; }
   
-  Int_t        GetHistoNPtInConeBins()    const { return fHistoNPtInConeBins; }
-  Float_t      GetHistoPtInConeMin()      const { return fHistoPtInConeMin  ; }
-  Float_t      GetHistoPtInConeMax()      const { return fHistoPtInConeMax  ; }
+  Int_t        GetHistoNPtInConeBins()         const { return fHistoNPtInConeBins; }
+  Float_t      GetHistoPtInConeMin()           const { return fHistoPtInConeMin  ; }
+  Float_t      GetHistoPtInConeMax()           const { return fHistoPtInConeMax  ; }
   
  private:
   
@@ -195,7 +198,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Shower Shape histograms
   TH2F *   fhELambda0;                            //! Shower shape of isolated photons
   TH2F *   fhELambda1;                            //! Shower shape of isolated photons
-
+  TH2F *   fhELambda0TRD;                         //! Shower shape of isolated photons, SM behind TRD
+  TH2F *   fhELambda1TRD;                         //! Shower shape of isolated photons, SM behind TRD
+  
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
   Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
@@ -207,7 +212,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,8)
+  ClassDef(AliAnaParticleIsolation,9)
 } ;
 
 
