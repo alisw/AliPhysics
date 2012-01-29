@@ -25,11 +25,10 @@ class TH1I;
 class AliAnaCaloTrackCorrMaker : public TObject {
 
  public: 
+  
   AliAnaCaloTrackCorrMaker() ;          // default ctor
   virtual ~AliAnaCaloTrackCorrMaker() ; // virtual dtor
   AliAnaCaloTrackCorrMaker(const AliAnaCaloTrackCorrMaker & maker) ; // cpy ctor
-
- public:
 	
   void    AddAnalysis(TObject* ana, Int_t n) ;
 
@@ -72,23 +71,24 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   //General Data members
   
-  TList * fOutputContainer ;   //! Output histograms container
-  TList * fAnalysisContainer ; // List with analysis pointers
-  Bool_t  fMakeHisto ;         // If true makes final analysis with histograms as output
-  Bool_t  fMakeAOD ;           // If true makes analysis generating AODs
-  Int_t   fAnaDebug;           // Debugging info.
-	
   AliCaloTrackReader  *  fReader ;     //  Pointer to reader 
   AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
-
-  TList * fCuts ;	           //! List with analysis cuts
-
-  TH1I  * fhNEvents;         //! Number of events counter histogram
-  TH1I  * fhTrackMult;       //! Number of tracks per event histogram
+  
+  TList * fOutputContainer ;   //! Output histograms container
+  TList * fAnalysisContainer ; //  List with analysis pointers
+  Bool_t  fMakeHisto ;         //  If true makes final analysis with histograms as output
+  Bool_t  fMakeAOD ;           //  If true makes analysis generating AODs
+  Int_t   fAnaDebug;           //  Debugging info.
+  TList * fCuts ;	             //! List with analysis cuts
+  
+  // Control histograms
+  TH1I  * fhNEvents;           //! Number of events counter histogram
+  TH1I  * fhTrackMult;         //! Number of tracks per event histogram
+  TH1F  * fhCentrality;        //! Histogram with centrality bins
 
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,8)
+  ClassDef(AliAnaCaloTrackCorrMaker,9)
 } ;
  
 
