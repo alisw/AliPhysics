@@ -125,21 +125,17 @@ Bool_t AliMUONTrackReconstructor::MakeTrackCandidates(AliMUONVClusterStore& clus
 	  fNRecTracks--;
 	} else if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
 	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks));
-	  delete segments;
 	  return kFALSE;
 	}
       } else {
 	if ((fNRecTracks + segments->GetEntriesFast() - iseg - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
 	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks + segments->GetEntriesFast() - iseg - 1));
-	  delete segments;
 	  return kFALSE;
 	}
       }
       
     }
     
-    // delete the array of segments
-    delete segments;
   }
   
   // Keep all different tracks or only the best ones as required
@@ -210,14 +206,11 @@ Bool_t AliMUONTrackReconstructor::MakeMoreTrackCandidates(AliMUONVClusterStore& 
 	// abort tracking if there are too many candidates
 	if ((fNRecTracks + segments->GetEntriesFast() - iSegment - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
 	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
-	  delete segments;
 	  return kFALSE;
 	}
 	
       }
       
-      // delete the array of segments
-      delete segments;
     }
   }
   

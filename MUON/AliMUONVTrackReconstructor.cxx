@@ -280,8 +280,7 @@ Bool_t AliMUONVTrackReconstructor::IsAcceptable(AliMUONTrackParam &trackParam)
 TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliMUONVClusterStore& clusterStore, Int_t ch1, Int_t ch2)
 {
   /// To make the list of segments from the list of clusters in the 2 given chambers.
-  /// Return a new TClonesArray of segments.
-  /// It is the responsibility of the user to delete it afterward.
+  /// Return a TClonesArray of new segments (segments made in a previous call of this function are removed).
   AliDebug(1,Form("Enter MakeSegmentsBetweenChambers (1..) %d-%d", ch1+1, ch2+1));
   AliCodeTimerAuto("",0);
   
@@ -305,7 +304,8 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
   TIter nextInCh2(clusterStore.CreateChamberIterator(ch2,ch2));
   
   // list of segments
-  TClonesArray *segments = new TClonesArray("AliMUONObjectPair", 100);
+  static TClonesArray *segments = new TClonesArray("AliMUONObjectPair", 100);
+  segments->Clear("C");
   
   // Loop over clusters in the first chamber of the station
   while ( ( cluster1 = static_cast<AliMUONVCluster*>(nextInCh1()) ) ) {

@@ -1586,14 +1586,13 @@ void AliMUONTrackerQADataMakerRec::MakeESDs(AliESDEvent* esd)
   AliCodeTimerAuto(Form("%s",AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(Master()->GetEventSpecie()))),0);
    
   // load ESD event in the interface
-  AliMUONESDInterface esdInterface;
-  if (GetRecoParam()) AliMUONESDInterface::ResetTracker(GetRecoParam(), kFALSE);
-  else AliError("Unable to get recoParam: use default ones for residual calculation");
-  esdInterface.LoadEvent(*esd);
+  if (!AliMUONESDInterface::GetTracker()) {
+    if (GetRecoParam()) AliMUONESDInterface::ResetTracker(GetRecoParam(), kFALSE);
+    else AliError("Unable to get recoParam: use default ones for residual calculation");
+  }
   
-  FillESDsData(AliMUONQAIndices::kESDnTracks,esdInterface.GetNTracks());
   
-  Int_t nTrackMatchTrig = 0;
+  Int_t nTrkTracks = 0, nTrackMatchTrig = 0;
   
   // loop over tracks
   Int_t nTracks = (Int_t) esd->GetNumberOfMuonTracks(); 
@@ -1602,23 +1601,25 @@ void AliMUONTrackerQADataMakerRec::MakeESDs(AliESDEvent* esd)
     // get the ESD track and skip "ghosts"
     AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
     if (!esdTrack->ContainTrackerData()) continue;
+    nTrkTracks++;
     
     // get corresponding MUON track
-    AliMUONTrack* track = esdInterface.FindTrack(esdTrack->GetUniqueID());
+    AliMUONTrack track;
+    AliMUONESDInterface::ESDToMUON(*esdTrack, track);
     
     if (esdTrack->ContainTriggerData()) nTrackMatchTrig++;
     
     FillESDsData(AliMUONQAIndices::kESDMomentum,esdTrack->P());
     FillESDsData(AliMUONQAIndices::kESDPt,esdTrack->Pt());
     FillESDsData(AliMUONQAIndices::kESDRapidity,esdTrack->Y());
-    FillESDsData(AliMUONQAIndices::kESDChi2,track->GetNormalizedChi2());
-    FillESDsData(AliMUONQAIndices::kESDProbChi2,TMath::Prob(track->GetGlobalChi2(),track->GetNDF()));
+    FillESDsData(AliMUONQAIndices::kESDChi2,track.GetNormalizedChi2());
+    FillESDsData(AliMUONQAIndices::kESDProbChi2,TMath::Prob(track.GetGlobalChi2(),track.GetNDF()));
     FillESDsData(AliMUONQAIndices::kESDThetaX,esdTrack->GetThetaXUncorrected() / TMath::Pi() * 180.);
     FillESDsData(AliMUONQAIndices::kESDThetaY,esdTrack->GetThetaYUncorrected() / TMath::Pi() * 180.);
-    FillESDsData(AliMUONQAIndices::kESDnClustersPerTrack,track->GetNClusters());
+    FillESDsData(AliMUONQAIndices::kESDnClustersPerTrack,track.GetNClusters());
     
     // loop over clusters
-    AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->First());
+    AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->First());
     while (trackParam) {
       
       AliMUONVCluster* cluster = trackParam->GetClusterPtr();
@@ -1660,12 +1661,13 @@ void AliMUONTrackerQADataMakerRec::MakeESDs(AliESDEvent* esd)
       FillESDsData(AliMUONQAIndices::kESDSumLocalChi2YPerDE,deID, localChi2Y);
       FillESDsData(AliMUONQAIndices::kESDSumLocalChi2PerDE,deID, localChi2);
       
-      trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->After(trackParam));
+      trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->After(trackParam));
       
     }
     
   }
 
+  FillESDsData(AliMUONQAIndices::kESDnTracks,nTrkTracks);
   FillESDsData(AliMUONQAIndices::kESDMatchTrig,nTrackMatchTrig);
   //
 }
