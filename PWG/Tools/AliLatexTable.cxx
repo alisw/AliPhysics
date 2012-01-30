@@ -6,16 +6,17 @@
 // than print the table as Latex source code (to be pasted on a paper)
 // or ASCII.
 //
-// The basic idea is that you add columns one after the other with the
-// SetNextCol method and than you insert this row. The SetNextCol
-// method comes in different flavours to alow the insertion of
-// different type of values (numbers with or without errors,
-// strings...).
+// The basic idea is that you have a stack of rows. You add columns
+// one after the other with the SetNextCol method and than you insert
+// this row. The SetNextCol method comes in different flavours to alow
+// the insertion of different type of values (numbers with or without
+// errors, strings...). Errors are rounded and written in scientific
+// notation with the desired accuracy.
 //
 // TODO:
 // 1. Make the class drawable
 // 2. Implement vertical lines in ascii print
-// 3. Print output in HTML format
+// 3. Improve output in HTML format
 //
 // Author: Michele Floris, CERN
 // ------------------------------------------------------------------

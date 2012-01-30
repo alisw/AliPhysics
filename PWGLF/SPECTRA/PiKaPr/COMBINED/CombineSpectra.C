@@ -2,8 +2,8 @@
 #include <iostream>
 #include "TH1F.h"
 #include "TGraphErrors.h"
-#include "AliBWFunc.h"
-#include "AliBWTools.h"
+#include "AliPWGFunc.h"
+#include "AliPWGHistoTools.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TDatabasePDG.h"
@@ -233,9 +233,9 @@ void FitCombined() {
   gStyle->SetOptStat(0);
 
   // Draw combined & Fit
-  AliBWFunc * fm = new AliBWFunc;
-  fm->SetVarType(AliBWFunc::kdNdpt);
-  if (convertToMT) fm->SetVarType(AliBWFunc::kOneOverMtdNdmt);
+  AliPWGFunc * fm = new AliPWGFunc;
+  fm->SetVarType(AliPWGFunc::kdNdpt);
+  if (convertToMT) fm->SetVarType(AliPWGFunc::kOneOverMtdNdmt);
 
   // table to print results
   AliLatexTable table(10,"c|ccccccccc");
@@ -346,9 +346,9 @@ void FitCombined() {
       TH1F * hsyst     = new TH1F(*htemplate);
       TH1F * hsyststat = 0;
       hsyst->SetFillColor(kGray);
-      AliBWTools::GetValueAndError(hsyst,hSpectra[iCombInStudy][ipart][icharge],hSystError[iCombInStudy][ipart][icharge],kTRUE);
+      AliPWGHistoTools::GetValueAndError(hsyst,hSpectra[iCombInStudy][ipart][icharge],hSystError[iCombInStudy][ipart][icharge],kTRUE);
       hsyststat= new TH1F(*hsyst);
-      AliBWTools::GetHistoCombinedErrors(hsyststat,hSpectra[iCombInStudy][ipart][icharge]); // combine syst and stat
+      AliPWGHistoTools::GetHistoCombinedErrors(hsyststat,hSpectra[iCombInStudy][ipart][icharge]); // combine syst and stat
       hsyststat->SetFillColor(kGray);
 
       TH1F * hToFit = 0;
@@ -364,16 +364,16 @@ void FitCombined() {
 	  TH1F * hsyst2     = new TH1F(*htemplate);
 	  TH1F * hsyststat2 = 0;
 	  hsyst2->SetFillColor(kGray);
-	  AliBWTools::GetValueAndError(hsyst2,hSpectra[iCombInStudy][ipart][1],hSystError[iCombInStudy][ipart][1],kTRUE);
+	  AliPWGHistoTools::GetValueAndError(hsyst2,hSpectra[iCombInStudy][ipart][1],hSystError[iCombInStudy][ipart][1],kTRUE);
 	  hsyststat2= new TH1F(*hsyst2);
-	  AliBWTools::GetHistoCombinedErrors(hsyststat2,hSpectra[iCombInStudy][ipart][1]); // combine syst and stat
+	  AliPWGHistoTools::GetHistoCombinedErrors(hsyststat2,hSpectra[iCombInStudy][ipart][1]); // combine syst and stat
 	  hToFit->Add(hsyststat2);
 	}
       }
 
       
 
-      if(!AliBWTools::Fit(hToFit,func,fitmin,fitmax)) {
+      if(!AliPWGHistoTools::Fit(hToFit,func,fitmin,fitmax)) {
 	cout << " FIT ERROR " << endl;
 	return;      
       }
@@ -425,7 +425,7 @@ void FitCombined() {
 
       Double_t yieldTools, yieldETools;
       Double_t partialYields[3],partialYieldsErrors[3]; 
-      AliBWTools::GetYield(hToFit, func, yieldTools, yieldETools, 
+      AliPWGHistoTools::GetYield(hToFit, func, yieldTools, yieldETools, 
 			   0, 100, partialYields,partialYieldsErrors);
       Double_t tslope   = func->GetParameter(2);
       Double_t tslopeE  = func->GetParError(2);	
@@ -437,8 +437,8 @@ void FitCombined() {
       table.SetNextCol(tslope,tslopeE,-4);
       table.SetNextCol(func->GetParameter(1),func->GetParError(1),-2); 
       table.SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF())); 
-      Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hToFit);
-      //Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[kITS][ipart][icharge]);
+      Float_t lowestPoint = AliPWGHistoTools::GetLowestNotEmptyBinEdge(hToFit);
+      //Float_t lowestPoint = AliPWGHistoTools::GetLowestNotEmptyBinEdge(hSpectra[kITS][ipart][icharge]);
       Float_t yieldAbove  = func->Integral(lowestPoint,100);
       table.SetNextCol(lowestPoint,-2);
       table.SetNextCol((1 - yieldAbove/yield)*100,-1);
@@ -446,11 +446,11 @@ void FitCombined() {
       Double_t meanDF, meanDFe; // Mean from data + fit 
       Float_t mean2, mean2e;
       if (fitFuncID < kFitPhojet) {
-	AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
-	AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
+	AliPWGHistoTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+	AliPWGHistoTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
       }
-      //      AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
-      AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
+      //      AliPWGHistoTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
+      AliPWGHistoTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
       table.SetNextCol(mean,   meane  ,-4);
       table.SetNextCol(meanDF, meanDFe,-4);
       
@@ -605,20 +605,20 @@ void LoadSpectra() {
   // TOF: systematics
   // Load TOF systematic errors:
   f = new TFile ("./Files/systMatchingPos.root");
-  AliBWTools::AddHisto(hSystError[kTOF][kPion][kPos]  ,(TH1*)gDirectory->Get("hErrPionMatch")  );
-  AliBWTools::AddHisto(hSystError[kTOF][kProton][kPos],(TH1*)gDirectory->Get("hErrProtonMatch"));
-  AliBWTools::AddHisto(hSystError[kTOF][kKaon][kPos]  ,(TH1*)gDirectory->Get("hErrKaonMatch")  );
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kPion][kPos]  ,(TH1*)gDirectory->Get("hErrPionMatch")  );
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kProton][kPos],(TH1*)gDirectory->Get("hErrProtonMatch"));
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kKaon][kPos]  ,(TH1*)gDirectory->Get("hErrKaonMatch")  );
   f = new TFile ("./Files/systMatchingNeg.root");
-  AliBWTools::AddHisto(hSystError[kTOF][kPion]  [kNeg],(TH1*)gDirectory->Get("hErrPionMatch"));
-  AliBWTools::AddHisto(hSystError[kTOF][kProton][kNeg],(TH1*)gDirectory->Get("hErrProtonMatch"));
-  AliBWTools::AddHisto(hSystError[kTOF][kKaon]  [kNeg],(TH1*)gDirectory->Get("hErrKaonMatch"));  
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kPion]  [kNeg],(TH1*)gDirectory->Get("hErrPionMatch"));
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kProton][kNeg],(TH1*)gDirectory->Get("hErrProtonMatch"));
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kKaon]  [kNeg],(TH1*)gDirectory->Get("hErrKaonMatch"));  
   f = new TFile ("./Files/systPIDall.root");
-  AliBWTools::AddHisto(hSystError[kTOF][kPion]  [kPos],(TH1*)gDirectory->Get("hpiCorr"));
-  AliBWTools::AddHisto(hSystError[kTOF][kProton][kPos],(TH1*)gDirectory->Get("hpCorr"));
-  AliBWTools::AddHisto(hSystError[kTOF][kKaon]  [kPos],(TH1*)gDirectory->Get("hkCorr"));  
-  AliBWTools::AddHisto(hSystError[kTOF][kPion]  [kNeg],(TH1*)gDirectory->Get("hpiCorr"));
-  AliBWTools::AddHisto(hSystError[kTOF][kProton][kNeg],(TH1*)gDirectory->Get("hpCorr"));
-  AliBWTools::AddHisto(hSystError[kTOF][kKaon]  [kNeg],(TH1*)gDirectory->Get("hkCorr"));  
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kPion]  [kPos],(TH1*)gDirectory->Get("hpiCorr"));
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kProton][kPos],(TH1*)gDirectory->Get("hpCorr"));
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kKaon]  [kPos],(TH1*)gDirectory->Get("hkCorr"));  
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kPion]  [kNeg],(TH1*)gDirectory->Get("hpiCorr"));
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kProton][kNeg],(TH1*)gDirectory->Get("hpCorr"));
+  AliPWGHistoTools::AddHisto(hSystError[kTOF][kKaon]  [kNeg],(TH1*)gDirectory->Get("hkCorr"));  
   
   
   // ITS SA 
@@ -698,7 +698,7 @@ void LoadSpectra() {
   f = TFile::Open("./Files/ITSsa-systematics-20101014.root");
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-	AliBWTools::AddHisto(hSystError[kITS][ipart][icharge], (TH1*) gDirectory->Get(Form("hSystTot%s%s",chargeFlag[icharge],partFlag[ipart]))); // Using total error
+	AliPWGHistoTools::AddHisto(hSystError[kITS][ipart][icharge], (TH1*) gDirectory->Get(Form("hSystTot%s%s",chargeFlag[icharge],partFlag[ipart]))); // Using total error
       }
     }
 
@@ -716,26 +716,26 @@ void LoadSpectra() {
   // Systematics
   f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtonssys29102010.root");
   list = (TList*) gDirectory->Get("output");
-  hSystError[kITSTPC][kPion]  [kPos]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("Pions"));
-  hSystError[kITSTPC][kKaon]  [kPos]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("Kaons"));
-  hSystError[kITSTPC][kProton][kPos]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("Protons"));
-  hSystError[kITSTPC][kPion]  [kNeg]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("AntiPions"));
-  hSystError[kITSTPC][kKaon]  [kNeg]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("AntiKaons"));
-  hSystError[kITSTPC][kProton][kNeg]= (TH1F*) AliBWTools::GetRelativeError((TH1*) list->FindObject("AntiProtons"));
+  hSystError[kITSTPC][kPion]  [kPos]= (TH1F*) AliPWGHistoTools::GetRelativeError((TH1*) list->FindObject("Pions"));
+  hSystError[kITSTPC][kKaon]  [kPos]= (TH1F*) AliPWGHistoTools::GetRelativeError((TH1*) list->FindObject("Kaons"));
+  hSystError[kITSTPC][kProton][kPos]= (TH1F*) AliPWGHistoTools::GetRelativeError((TH1*) list->FindObject("Protons"));
+  hSystError[kITSTPC][kPion]  [kNeg]= (TH1F*) AliPWGHistoTools::GetRelativeError((TH1*) list->FindObject("AntiPions"));
+  hSystError[kITSTPC][kKaon]  [kNeg]= (TH1F*) AliPWGHistoTools::GetRelativeError((TH1*) list->FindObject("AntiKaons"));
+  hSystError[kITSTPC][kProton][kNeg]= (TH1F*) AliPWGHistoTools::GetRelativeError((TH1*) list->FindObject("AntiProtons"));
 
 
 
   // TPC
   f = new TFile("./Files/protonSpectra_20100615.root");
-  hSpectra[kTPC][kProton][kPos]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("protonPosClassic"),htemplate);
-  hSpectra[kTPC][kProton][kNeg]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("protonNegClassic"),htemplate);
+  hSpectra[kTPC][kProton][kPos]= AliPWGHistoTools::GetHistoFromGraph((TGraphErrors*)f->Get("protonPosClassic"),htemplate);
+  hSpectra[kTPC][kProton][kNeg]= AliPWGHistoTools::GetHistoFromGraph((TGraphErrors*)f->Get("protonNegClassic"),htemplate);
   f = new TFile("./Files/pionSpectra_20100615.root");
-  hSpectra[kTPC][kPion][kPos]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("pionPosClassic"),htemplate);
-  hSpectra[kTPC][kPion][kNeg]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("pionNegClassic"),htemplate);
+  hSpectra[kTPC][kPion][kPos]= AliPWGHistoTools::GetHistoFromGraph((TGraphErrors*)f->Get("pionPosClassic"),htemplate);
+  hSpectra[kTPC][kPion][kNeg]= AliPWGHistoTools::GetHistoFromGraph((TGraphErrors*)f->Get("pionNegClassic"),htemplate);
   //  f = new TFile("./Files/kaonSpectra_20100615.root");
   f = new TFile("./Files/kaonsTPCcorr_2010_08_31.root");
-  hSpectra[kTPC][kKaon][kPos]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("kaonPosClassic"),htemplate);
-  hSpectra[kTPC][kKaon][kNeg]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("kaonNegClassic"),htemplate);
+  hSpectra[kTPC][kKaon][kPos]= AliPWGHistoTools::GetHistoFromGraph((TGraphErrors*)f->Get("kaonPosClassic"),htemplate);
+  hSpectra[kTPC][kKaon][kNeg]= AliPWGHistoTools::GetHistoFromGraph((TGraphErrors*)f->Get("kaonNegClassic"),htemplate);
 
   // Clean UP TPC spectra, removing unwanted points
   cout << "Cleaning Up TPC spectra" << endl;
@@ -763,18 +763,18 @@ void LoadSpectra() {
   // Load TPC systematics
   cout << "WARNING: TPC SYST FOR NEGATIVES TO BE CORRECTED" << endl;
   f = TFile ::Open("./Files/pionsSystSum.root");
-  AliBWTools::AddHisto(hSystError[kTPC][kPion][kPos],(TH1*) gDirectory->Get("pionsSyst"));
-  AliBWTools::AddHisto(hSystError[kTPC][kPion][kNeg],(TH1*) gDirectory->Get("pionsSyst"));
+  AliPWGHistoTools::AddHisto(hSystError[kTPC][kPion][kPos],(TH1*) gDirectory->Get("pionsSyst"));
+  AliPWGHistoTools::AddHisto(hSystError[kTPC][kPion][kNeg],(TH1*) gDirectory->Get("pionsSyst"));
   f = TFile ::Open("./Files/kaonsSystSum.root");
-  AliBWTools::AddHisto(hSystError[kTPC][kKaon][kPos],(TH1*) gDirectory->Get("kaonsSyst"));
-  AliBWTools::AddHisto(hSystError[kTPC][kKaon][kNeg],(TH1*) gDirectory->Get("kaonsSyst"));
+  AliPWGHistoTools::AddHisto(hSystError[kTPC][kKaon][kPos],(TH1*) gDirectory->Get("kaonsSyst"));
+  AliPWGHistoTools::AddHisto(hSystError[kTPC][kKaon][kNeg],(TH1*) gDirectory->Get("kaonsSyst"));
   f = TFile ::Open("./Files/ProtonsSystSum.root");
-  AliBWTools::AddHisto(hSystError[kTPC][kProton][kPos],(TH1*) gDirectory->Get("ProtonsSyst"));
-  AliBWTools::AddHisto(hSystError[kTPC][kProton][kNeg],(TH1*) gDirectory->Get("ProtonsSyst"));
+  AliPWGHistoTools::AddHisto(hSystError[kTPC][kProton][kPos],(TH1*) gDirectory->Get("ProtonsSyst"));
+  AliPWGHistoTools::AddHisto(hSystError[kTPC][kProton][kNeg],(TH1*) gDirectory->Get("ProtonsSyst"));
     
   // K0s
   f = new TFile ("./Files/PtSpectraCorrectedK0sOff_20100803.root");
-  //  hSpectra[kK0][kKaon][kPos] = (TH1F*) AliBWTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get("hSpectraOff")); 
+  //  hSpectra[kK0][kKaon][kPos] = (TH1F*) AliPWGHistoTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get("hSpectraOff")); 
   hSpectra[kK0][kKaon][kPos] = (TH1F*) gDirectory->Get("hSpectraOff"); 
   //  hSpectra[kK0][kKaon][kPos]->Scale(2*TMath::Pi());
   //  hSpectra[kK0][kKaon][kPos]->Scale(1./272463);
@@ -925,7 +925,7 @@ void LoadSpectra() {
 	    Float_t minPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(1);
 	    //	    hCorrFluka[icharge]->Draw();
 	    TH1D * htmpFluka=hCorrFluka[icharge]->ProjectionY();
-	    Float_t maxPtCorrection = AliBWTools::GetHighestNotEmptyBinEdge(htmpFluka);//->GetYaxis()->GetBinLowEdge(hCorrFluka[icharge]->GetNbinsY()+1);
+	    Float_t maxPtCorrection = AliPWGHistoTools::GetHighestNotEmptyBinEdge(htmpFluka);//->GetYaxis()->GetBinLowEdge(hCorrFluka[icharge]->GetNbinsY()+1);
 	    if (pt < minPtCorrection) pt = minPtCorrection+0.0001;
 	    if (pt > maxPtCorrection) pt = maxPtCorrection-0.0001;
 	    Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
@@ -967,8 +967,8 @@ void LoadSpectra() {
 	  hSpectra[idet][ipart][icharge]->SetXTitle("p_{t} (GeV/c)");
 	  hSpectra[idet][ipart][icharge]->SetYTitle("1/N_{ev} dN/dp_{t} (GeV/c)^{-1}");
 	  if (convertToMT) {
-	    TH1F * htmp = (TH1F*) AliBWTools::GetOneOverPtdNdPt(hSpectra[idet][ipart][icharge]);
-	    hSpectra[idet][ipart][icharge] = (TH1F*)AliBWTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
+	    TH1F * htmp = (TH1F*) AliPWGHistoTools::GetOneOverPtdNdPt(hSpectra[idet][ipart][icharge]);
+	    hSpectra[idet][ipart][icharge] = (TH1F*)AliPWGHistoTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
 	    hSpectra[idet][ipart][icharge]->SetXTitle("m_{t} (GeV)");
 	    hSpectra[idet][ipart][icharge]->SetYTitle("1/N_{ev} 1/m_{t} dN/dp_{t} (GeV)^{-1}");
 	  }
@@ -1019,16 +1019,16 @@ void LoadSpectra() {
       TH1F * htemplLocal = htemplate; // If we are converting to 1/mt dNdmt we need to convert the template as well...
       
       if (convertToMT) {
-	TH1F * htmp = (TH1F*) AliBWTools::GetOneOverPtdNdPt(htemplate);
-	htemplLocal = (TH1F*)AliBWTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
+	TH1F * htmp = (TH1F*) AliPWGHistoTools::GetOneOverPtdNdPt(htemplate);
+	htemplLocal = (TH1F*)AliPWGHistoTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
 
       }
-      hSpectra[kCombTOFTPC][ipart][icharge] = AliBWTools::CombineHistos(hSpectra[kTOF][ipart][icharge],
+      hSpectra[kCombTOFTPC][ipart][icharge] = AliPWGHistoTools::CombineHistos(hSpectra[kTOF][ipart][icharge],
 									hSpectra[kTPC][ipart][icharge],
 									htemplLocal,1.);;
 
       hSpectra[kCombAll][ipart][icharge]   = 
-	AliBWTools::Combine3HistosWithErrors(hSpectra[kITS][ipart][icharge],  // Histos to combine
+	AliPWGHistoTools::Combine3HistosWithErrors(hSpectra[kITS][ipart][icharge],  // Histos to combine
 					     hSpectra[kTPC][ipart][icharge],
 					     hSpectra[kTOF][ipart][icharge],
 					     hSystError[kITS][ipart][icharge], // Errors (weights) used for the average
@@ -1045,8 +1045,8 @@ void LoadSpectra() {
 					     1 // weights histos contain error in bin content
 					     );
 //       if (convertToMT) {
-// 	TH1F * htmp = (TH1F*) AliBWTools::GetOneOverPtdNdPt(hSpectra[kCombTOFTPC][ipart][icharge]);
-// 	hSpectra[kCombTOFTPC][ipart][icharge] = (TH1F*)AliBWTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
+// 	TH1F * htmp = (TH1F*) AliPWGHistoTools::GetOneOverPtdNdPt(hSpectra[kCombTOFTPC][ipart][icharge]);
+// 	hSpectra[kCombTOFTPC][ipart][icharge] = (TH1F*)AliPWGHistoTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
 // 	hSpectra[kCombTOFTPC][ipart][icharge]->SetXTitle("m_{t} (GeV)");
 // 	hSpectra[kCombTOFTPC][ipart][icharge]->SetYTitle("1/N_{ev} 1/m_{t} dN/dp_{t} (GeV)^{-1}");
 //       }
@@ -1111,8 +1111,8 @@ void LoadMC() {
 	  hSpectraMC[itune][ipart][icharge]->SetLineStyle   (mcLineStyle[itune] );
 	  hSpectraMC[itune][ipart][icharge]->SetMarkerStyle (1);
 	  if (convertToMT) {
-	    TH1F * htmp = (TH1F*)AliBWTools::GetOneOverPtdNdPt(hSpectraMC[itune][ipart][icharge]);
-	    hSpectraMC[itune][ipart][icharge] = (TH1F*)AliBWTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
+	    TH1F * htmp = (TH1F*)AliPWGHistoTools::GetOneOverPtdNdPt(hSpectraMC[itune][ipart][icharge]);
+	    hSpectraMC[itune][ipart][icharge] = (TH1F*)AliPWGHistoTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
 	    hSpectraMC[itune][ipart][icharge]->SetXTitle("m_{t} (GeV)");
 	    hSpectraMC[itune][ipart][icharge]->SetYTitle("1/N_{ev} 1/m_{t} dN/dp_{t} (GeV)^{-1}");
 	  }
@@ -1151,7 +1151,7 @@ void GetITSResiduals() {
 //       gSystem->Sleep(1000);
       TF1* f = (TF1*)   hSpectra[kCombTOFTPC][ipart][icharge]->GetListOfFunctions()->At(0);
       TH1F * hres1, *hres2;
-      AliBWTools::GetResiduals(hSpectra[kITS][ipart][icharge], f, &hres1, &hres2);
+      AliPWGHistoTools::GetResiduals(hSpectra[kITS][ipart][icharge], f, &hres1, &hres2);
 
       TCanvas * c1 = new TCanvas(TString(partFlag[ipart])+"_"+chargeFlag[icharge],TString(partFlag[ipart])+"_"+chargeFlag[icharge]);
       c1->SetLogy();
@@ -1173,7 +1173,7 @@ void GetITSResiduals() {
       hres2->SetMaximum(1);
       hres2->Draw();
       hres2->GetYaxis()->SetTitleOffset(1.2);
-      Float_t x = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[kCombTOFTPC][ipart][icharge]);
+      Float_t x = AliPWGHistoTools::GetLowestNotEmptyBinEdge(hSpectra[kCombTOFTPC][ipart][icharge]);
       TLine * line = new TLine(x,-1,x,1);
       line->SetLineStyle(kDashed);
       line->Draw("same");
@@ -1234,7 +1234,7 @@ void DrawWithModels() {
 	if(sumCharge)	hSpectraMC[itune][ipart][icharge]->Add(hSpectraMC[itune][ipart][kNeg]); // Draw pos+neg;    
 	l->AddEntry(hSpectraMC[itune][ipart][icharge],mcTuneName[itune]);
 	hSpectraMC[itune][ipart][icharge]->SetLineWidth(2);    
-	AliBWTools::GetGraphFromHisto(hSpectraMC[itune][ipart][icharge])->Draw("CX");
+	AliPWGHistoTools::GetGraphFromHisto(hSpectraMC[itune][ipart][icharge])->Draw("CX");
       }
       l->Draw("same");
      
@@ -1262,18 +1262,18 @@ void DrawWithModels() {
       hemptyr->GetYaxis()->SetNdivisions(5);
       hemptyr->Draw("");
 
-      AliBWFunc fm;
+      AliPWGFunc fm;
       for(Int_t itune = 0; itune < kNTunes; itune++){      
 	TF1* f = fm.GetHistoFunc(hSpectraMC[itune][ipart][icharge], TString("f")+mcTuneName[itune]);
 
 	//	l->AddEntry(hSpectraMC[itune][ipart][icharge],mcTuneName[itune]);
-	TH1F* hRatio = AliBWTools::DivideHistoByFunc(hSpectra[iCombInStudy][ipart][icharge],f);
+	TH1F* hRatio = AliPWGHistoTools::DivideHistoByFunc(hSpectra[iCombInStudy][ipart][icharge],f);
 	hRatio->SetLineStyle(hSpectraMC[itune][ipart][icharge]->GetLineStyle());
 	hRatio->SetLineColor(hSpectraMC[itune][ipart][icharge]->GetLineColor());
 	hRatio->SetLineWidth(hSpectraMC[itune][ipart][icharge]->GetLineWidth());
 	hRatio->SetMarkerStyle(0);
 	hRatio->Draw("same");
-	//	AliBWTools::GetGraphFromHisto(hRatio)->Draw("CX");
+	//	AliPWGHistoTools::GetGraphFromHisto(hRatio)->Draw("CX");
       }
 
 
@@ -1389,7 +1389,7 @@ void DrawAllAndKaons() {
  	hSpectra[idet][ipart][icharge]->SetMarkerStyle(marker[idet]);
 	TH1F * hsyst = new TH1F(*hSpectra[idet][ipart][icharge]);
 	hsyst->Reset();
-	AliBWTools::GetValueAndError(hsyst, hSpectra[idet][ipart][icharge],hSystError[idet][ipart][icharge],kTRUE);
+	AliPWGHistoTools::GetValueAndError(hsyst, hSpectra[idet][ipart][icharge],hSystError[idet][ipart][icharge],kTRUE);
 	//	hSpectra[idet][ipart][icharge]->Draw("same");
 	hsyst->Draw("same");
 	hSpectraSystError[idet][ipart][icharge] = hsyst;
@@ -1662,7 +1662,7 @@ void DrawWithJacek() {
   gJacek->GetHistogram()->SetYTitle("d^{2}N/dp_{t}d#eta (GeV^{-1})");
   hsum->Draw("same");
 
-  TGraphErrors * gRatio = AliBWTools::DivideGraphByHisto(gJacek,hsum);  
+  TGraphErrors * gRatio = AliPWGHistoTools::DivideGraphByHisto(gJacek,hsum);  
   new TCanvas();
   gRatio->Draw("AP");
 
@@ -1717,17 +1717,17 @@ void DrawRatioToStar() {
 
   c1->cd();
   TGraphErrors * g ;
-  g = AliBWTools::DivideGraphByHisto(gStar[0],hSpectra[iCombInStudy][kPion][kNeg],1);
+  g = AliPWGHistoTools::DivideGraphByHisto(gStar[0],hSpectra[iCombInStudy][kPion][kNeg],1);
   g->SetMarkerStyle(kFullCircle);
   g->SetMarkerColor(kBlack);
   g->Draw("p");
   leg->AddEntry(g,"#pi^{-}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[2],hSpectra[iCombInStudy][kKaon][kNeg],1);
+  g = AliPWGHistoTools::DivideGraphByHisto(gStar[2],hSpectra[iCombInStudy][kKaon][kNeg],1);
   g->SetMarkerStyle(kOpenCircle);
   g->SetMarkerColor(kRed);
   g->Draw("p");
   leg->AddEntry(g,"K^{-}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[4],hSpectra[iCombInStudy][kProton][kNeg],1);
+  g = AliPWGHistoTools::DivideGraphByHisto(gStar[4],hSpectra[iCombInStudy][kProton][kNeg],1);
   g->SetMarkerStyle(kOpenSquare);
   g->SetMarkerColor(kBlue);
   g->Draw("p");
@@ -1760,17 +1760,17 @@ void DrawRatioToStar() {
 
   c2->cd();
  //  TGraphErrors * g ;
-  g = AliBWTools::DivideGraphByHisto(gStar[1],hSpectra[iCombInStudy][kPion][kPos],1);
+  g = AliPWGHistoTools::DivideGraphByHisto(gStar[1],hSpectra[iCombInStudy][kPion][kPos],1);
   g->SetMarkerStyle(kFullCircle);
   g->SetMarkerColor(kBlack);
   g->Draw("p");
   leg->AddEntry(g,"#pi^{+}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[3],hSpectra[iCombInStudy][kKaon][kPos],1);
+  g = AliPWGHistoTools::DivideGraphByHisto(gStar[3],hSpectra[iCombInStudy][kKaon][kPos],1);
   g->SetMarkerStyle(kOpenCircle);
   g->SetMarkerColor(kRed);
   g->Draw("p");
   leg->AddEntry(g,"K^{+}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[5],hSpectra[iCombInStudy][kProton][kPos],1);
+  g = AliPWGHistoTools::DivideGraphByHisto(gStar[5],hSpectra[iCombInStudy][kProton][kPos],1);
   g->SetMarkerStyle(kOpenSquare);
   g->SetMarkerColor(kBlue);
   g->Draw("p");
@@ -1834,16 +1834,16 @@ void DrawRatios() {
   // Get ratio of syst errors
   // FIXME: commented combined error
   TH1F * hKPiRatioSyst = new TH1F(*htemplate);;
-  AliBWTools::GetValueAndError(hKPiRatioSyst,hSpectra[iCombInStudy][kKaon][kPos],hSystError[iCombInStudy][kKaon][kPos],kTRUE);
-  //  AliBWTools::GetHistoCombinedErrors(hKPiRatioSyst,hSpectra[iCombInStudy][kKaon][kPos]);
-  AliBWTools::GetValueAndError(htmp,hSpectra[iCombInStudy][kKaon][kNeg],hSystError[iCombInStudy][kKaon][kNeg],kTRUE);
-  // //  AliBWTools::GetHistoCombinedErrors(htmp,hSpectra[iCombInStudy][kKaon][kNeg]);
+  AliPWGHistoTools::GetValueAndError(hKPiRatioSyst,hSpectra[iCombInStudy][kKaon][kPos],hSystError[iCombInStudy][kKaon][kPos],kTRUE);
+  //  AliPWGHistoTools::GetHistoCombinedErrors(hKPiRatioSyst,hSpectra[iCombInStudy][kKaon][kPos]);
+  AliPWGHistoTools::GetValueAndError(htmp,hSpectra[iCombInStudy][kKaon][kNeg],hSystError[iCombInStudy][kKaon][kNeg],kTRUE);
+  // //  AliPWGHistoTools::GetHistoCombinedErrors(htmp,hSpectra[iCombInStudy][kKaon][kNeg]);
   hKPiRatioSyst->Add(htmp);
-  AliBWTools::GetValueAndError(htmp,hSpectra[iCombInStudy][kPion][kNeg],hSystError[iCombInStudy][kPion][kNeg],kTRUE);
-  //  AliBWTools::GetHistoCombinedErrors(htmp,hSpectra[iCombInStudy][kPion][kNeg]);
+  AliPWGHistoTools::GetValueAndError(htmp,hSpectra[iCombInStudy][kPion][kNeg],hSystError[iCombInStudy][kPion][kNeg],kTRUE);
+  //  AliPWGHistoTools::GetHistoCombinedErrors(htmp,hSpectra[iCombInStudy][kPion][kNeg]);
   TH1F * htmp2 = new TH1F(*htemplate);
-  AliBWTools::GetValueAndError(htmp2,hSpectra[iCombInStudy][kPion][kPos],hSystError[iCombInStudy][kPion][kPos],kTRUE);
-  //  AliBWTools::GetHistoCombinedErrors(htmp2,hSpectra[iCombInStudy][kPion][kPos]);
+  AliPWGHistoTools::GetValueAndError(htmp2,hSpectra[iCombInStudy][kPion][kPos],hSystError[iCombInStudy][kPion][kPos],kTRUE);
+  //  AliPWGHistoTools::GetHistoCombinedErrors(htmp2,hSpectra[iCombInStudy][kPion][kPos]);
   htmp->Add(htmp2);
   hKPiRatioSyst->Divide(htmp);
   hKPiRatioSyst->SetYTitle("(K^{+}+K^{-})/(#pi^{+}+#pi^{-})");
@@ -1895,7 +1895,7 @@ void DrawRatios() {
   hPPiRatioPhenix->Add((TH1F*) fPhenix->Get("PbarPHNX"));
   htmp = (TH1F*) fPhenix->Get("PiPlusPHNX");
   htmp->Add((TH1F*) fPhenix->Get("PiMinusPHNX"));
-  hPPiRatioPhenix = AliBWTools::DivideHistosDifferentBins(hPPiRatioPhenix,htmp);
+  hPPiRatioPhenix = AliPWGHistoTools::DivideHistosDifferentBins(hPPiRatioPhenix,htmp);
   hPPiRatioPhenix->SetMarkerStyle(24);
   hPPiRatioPhenix->SetBinContent(14,0);
   hPPiRatioPhenix->SetBinError(14,0);
@@ -1905,8 +1905,8 @@ void DrawRatios() {
   //  hempty->SetYTitle("");
 
   // tmp: overlay levi fits
-  AliBWFunc * fm2 = new AliBWFunc;
-  fm2->SetVarType(AliBWFunc::kdNdpt);
+  AliPWGFunc * fm2 = new AliPWGFunc;
+  fm2->SetVarType(AliPWGFunc::kdNdpt);
   TF1 * fLevi[kNPart]  [kNCharge];
   fLevi[kPion]  [kPos] = fm2->GetLevi (mass[0], 0.1243, 7.614785, 1.524167, "fLeviPiPlus");
   fLevi[kKaon]  [kPos] = fm2->GetLevi (mass[1], 0.1625, 5.869318, 0.186361, "fLeviKPlus");
@@ -1948,8 +1948,8 @@ void DrawRatios() {
   TFile * f = TFile::Open("./Files/ITSsa-systematics-20101014.root");
   TH1F * hsystRatio = (TH1F*) f->Get("hSystRatioKpi");
   TH1F * hsyst = new TH1F(*htemplate);
-  AliBWTools::GetValueAndError(hsyst,hKPiRatio,hsystRatio,1);
-  //  AliBWTools::GetHistoCombinedErrors(hsyst,hKPiRatio);
+  AliPWGHistoTools::GetValueAndError(hsyst,hKPiRatio,hsystRatio,1);
+  //  AliPWGHistoTools::GetHistoCombinedErrors(hsyst,hKPiRatio);
   //  hsyst->Draw("samee1");
   // END TMP
   hKPiRatio->SetMaximum(0.62);  
@@ -2053,13 +2053,13 @@ void DrawWithSyst() {
 	
 	TString opt = ipart ? "" : "same";
 	TH1F * hsyst = new TH1F(*htemplate);
-	AliBWTools::GetValueAndError(hsyst,hSpectra[idet][ipart][icharge],hSystError[idet][ipart][icharge],kTRUE);
+	AliPWGHistoTools::GetValueAndError(hsyst,hSpectra[idet][ipart][icharge],hSystError[idet][ipart][icharge],kTRUE);
 	hsyst->SetFillColor(kGray);
 	hsyst->Draw("e5,same");
 	hSpectra[idet][ipart][icharge]->Draw("same");
 	// Do not draw syst error outside of spectra range
-	Float_t lowEdge = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[idet][ipart][icharge]);
-	Float_t hiEdge  = AliBWTools::GetHighestNotEmptyBinEdge(hSpectra[idet][ipart][icharge]);
+	Float_t lowEdge = AliPWGHistoTools::GetLowestNotEmptyBinEdge(hSpectra[idet][ipart][icharge]);
+	Float_t hiEdge  = AliPWGHistoTools::GetHighestNotEmptyBinEdge(hSpectra[idet][ipart][icharge]);
 	Int_t lowBin = hSystError[idet][ipart][icharge]->FindBin(lowEdge);
 	Int_t hiBin = hSystError[idet][ipart][icharge]->FindBin(hiEdge);
 	Int_t nbin = 	hSystError[idet][ipart][icharge]->GetNbinsX();
@@ -2072,7 +2072,7 @@ void DrawWithSyst() {
 	  hSystError[idet][ipart][icharge]->SetBinError(ibin,0);	  
 	}
 	// Draw relative syst error, convert to graph to avoid vertical bars at the edges (empty bins in histo)
-	AliBWTools::GetGraphFromHisto(hSystError[idet][ipart][icharge])->Draw("LX");
+	AliPWGHistoTools::GetGraphFromHisto(hSystError[idet][ipart][icharge])->Draw("LX");
 
 				     
 

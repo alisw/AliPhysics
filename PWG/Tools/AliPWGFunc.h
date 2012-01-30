@@ -1,15 +1,9 @@
 //----------------------------------------------------------------------
-//                              AliBWFunc
+//                              AliPWGFunc
 //
 // This class implements several function useful to fit pt spectra,
 // including but not limited to blast wave models.
 //
-// It can return the same functional for as a function of different
-// variables: dNdpt vs pt, 1/pt dNdpt vs pt, 1/mt dNdmt vs mt. 
-//
-// Before getting the function you need, you have to chose the
-// variable you want to use calling AliBWFunc::SetVarType with one of
-// the elements of the VarType_t enum.
 //
 // Author: M. Floris, CERN
 //----------------------------------------------------------------------
@@ -28,15 +22,15 @@ class TGraph;
 
 
 
-class AliBWFunc : public TObject {
+class AliPWGFunc : public TObject {
 
 
 public:
   // define the variables used for the function
   typedef enum {kdNdpt,kOneOverPtdNdpt,kOneOverMtdNdmt,kdNdmt,kOneOverMtdNdmtMinusM} VarType_t;
 
-  AliBWFunc();
-  ~AliBWFunc();
+  AliPWGFunc();
+  ~AliPWGFunc();
 
   // Boltzmann-Gibbs Blast Wave
   TF1 * GetBGBW(Double_t mass, Double_t beta, Double_t T, Double_t n,
@@ -187,7 +181,8 @@ protected:
 
   // UA1 parametrization
   static Double_t StaticUA1Func(const double * x, const double* p);
-  
+  static Double_t StaticUA1FuncOneOverPt(const double * x, const double* p) ;
+
 
 private:
 
@@ -196,11 +191,11 @@ private:
   Width_t fLineWidth;  // Line width
   VarType_t fVarType;  // Variable types (e.g. dNdpt vs pt, 1/mt dNdmt vs mt...) 
   
-  AliBWFunc(const AliBWFunc&);            // not implemented
-  AliBWFunc& operator=(const AliBWFunc&); // not implemented
+  AliPWGFunc(const AliPWGFunc&);            // not implemented
+  AliPWGFunc& operator=(const AliPWGFunc&); // not implemented
 
 
-  ClassDef(AliBWFunc, 1)
+  ClassDef(AliPWGFunc, 1)
 
 
 };

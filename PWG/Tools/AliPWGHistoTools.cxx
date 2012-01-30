@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------
-//                     AliBWTools
+//                     AliPWGHistoTools
 // 
 // This class provides some tools which can be useful in the analsis
 // of spectra, to fit or transform histograms. See the comments of the
@@ -8,7 +8,7 @@
 // Author: M. Floris (CERN)
 // ----------------------------------------------------------------------
 
-#include "AliBWTools.h"
+#include "AliPWGHistoTools.h"
 #include "TH1D.h"
 #include "TF1.h"
 #include "TH1.h"
@@ -22,19 +22,19 @@
 using namespace std;
 
 
-ClassImp(AliBWTools)
+ClassImp(AliPWGHistoTools)
 
-TF1 * AliBWTools::fdNdptForETCalc = 0;
+TF1 * AliPWGHistoTools::fdNdptForETCalc = 0;
 
-AliBWTools::AliBWTools() {
+AliPWGHistoTools::AliPWGHistoTools() {
   // ctor
 }
 
-AliBWTools::~AliBWTools(){
+AliPWGHistoTools::~AliPWGHistoTools(){
   // dtor
 }
 
-TH1 * AliBWTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
+TH1 * AliPWGHistoTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
   // convert the x axis from pt to mt. Assumes you have 1/pt dNdpt in the histo you start with
 
   Int_t nbins = hpt->GetNbinsX();
@@ -67,7 +67,7 @@ TH1 * AliBWTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
 
 }
 
-TH1 * AliBWTools::GetdNdptFromdNdmt(const TH1 * hmt, Double_t mass) {
+TH1 * AliPWGHistoTools::GetdNdptFromdNdmt(const TH1 * hmt, Double_t mass) {
   // convert the x axis from mt to pt. Assumes you have 1/mt dNdmt in the histo you start with
 
   Int_t nbins = hmt->GetNbinsX();
@@ -102,7 +102,7 @@ TH1 * AliBWTools::GetdNdptFromdNdmt(const TH1 * hmt, Double_t mass) {
 }
 
 
-TH1 * AliBWTools::GetdNdPtFromOneOverPt(const TH1 * h1Pt) {
+TH1 * AliPWGHistoTools::GetdNdPtFromOneOverPt(const TH1 * h1Pt) {
 
   // convert an histo from 1/pt dNdpt to dNdpt, using the pt at the center of the bin
 
@@ -142,7 +142,7 @@ TH1 * AliBWTools::GetdNdPtFromOneOverPt(const TH1 * h1Pt) {
 
 
 
-TH1 * AliBWTools::GetOneOverPtdNdPt(const TH1 * hPt) {
+TH1 * AliPWGHistoTools::GetOneOverPtdNdPt(const TH1 * hPt) {
 
   // convert an histo from dNdpt to 1/pt dNdpt, using the pt at the center of the bin
 
@@ -179,7 +179,7 @@ TH1 * AliBWTools::GetOneOverPtdNdPt(const TH1 * hPt) {
 }
 
 
-TGraphErrors * AliBWTools::GetGraphFromHisto(const TH1F * h, Bool_t binWidth) {
+TGraphErrors * AliPWGHistoTools::GetGraphFromHisto(const TH1F * h, Bool_t binWidth) {
   // Convert a histo to a graph
   // if binWidth is true ex is set to the bin width of the histos, otherwise it is set to zero
   Int_t nbin = h->GetNbinsX();
@@ -208,7 +208,7 @@ TGraphErrors * AliBWTools::GetGraphFromHisto(const TH1F * h, Bool_t binWidth) {
 
 }
 
-TH1F * AliBWTools::GetHistoFromGraph(const TGraphErrors * g, const TH1F* hTemplate) {
+TH1F * AliPWGHistoTools::GetHistoFromGraph(const TGraphErrors * g, const TH1F* hTemplate) {
 
   // convert a graph to histo with the binning of hTemplate.
   // Warning: the template should be chosen
@@ -222,7 +222,9 @@ TH1F * AliBWTools::GetHistoFromGraph(const TGraphErrors * g, const TH1F* hTempla
   for(Int_t ipoint = 0; ipoint < npoint; ipoint++){
     Float_t x  = g->GetX() [ipoint];
     Float_t y  = g->GetY() [ipoint];
-    Float_t ey = g->GetEY()[ipoint];
+    Float_t ey = 0;
+    if(g->InheritsFrom("TGraphErrors"))
+       ey = g->GetEY()[ipoint];
     Int_t bin = h->FindBin(x);
     //    cout << "bin: "<< bin << " -> " << x << ", "<< y <<", " << ey << endl;
     
@@ -238,7 +240,7 @@ TH1F * AliBWTools::GetHistoFromGraph(const TGraphErrors * g, const TH1F* hTempla
   return h;
 }
 
-TGraphErrors * AliBWTools::ConcatenateGraphs(const TGraphErrors * g1,const TGraphErrors * g2){
+TGraphErrors * AliPWGHistoTools::ConcatenateGraphs(const TGraphErrors * g1,const TGraphErrors * g2){
 
   // concatenates two graphs
 
@@ -265,7 +267,7 @@ TGraphErrors * AliBWTools::ConcatenateGraphs(const TGraphErrors * g1,const TGrap
 }
 
 
-TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  const TH1* h3, 
+TH1F * AliPWGHistoTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  const TH1* h3, 
 					    TH1 * he1,  TH1 * he2,  TH1 * he3, 
 					    const TH1* htemplate, Int_t statFrom, 
 					    Float_t renorm1, Float_t renorm2, Float_t renorm3,
@@ -298,10 +300,10 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
   else if (statFrom == 1) hStatError = h2; 
   else if (statFrom == 2) hStatError = h3; 
   else {
-    Printf("AliBWTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
+    Printf("AliPWGHistoTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
     return NULL;
   }
-  Printf("AliBWTools::Combine3HistosWithErrors: improve error on combined");
+  Printf("AliPWGHistoTools::Combine3HistosWithErrors: improve error on combined");
   // Loop over all bins and take weighted mean of all points
   Int_t nBinComb = hcomb->GetNbinsX();
   for(Int_t ibin = 1; ibin <= nBinComb; ibin++){
@@ -313,7 +315,7 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
     if (statFrom == 0)      ibinError = ibin1; 
     else if (statFrom == 1) ibinError = ibin2; 
     else if (statFrom == 2) ibinError = ibin3; 
-    else Printf("AliBWTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
+    else Printf("AliPWGHistoTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
 
 
     Double_t y[3];
@@ -381,13 +383,13 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
 }
 
 
-void AliBWTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapolation, Double_t &mean, Double_t &error, Float_t min, Float_t max){
+void AliPWGHistoTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapolation, Double_t &mean, Double_t &error, Float_t min, Float_t max){
   // Computes the mean of the combined data and extrapolation in a
   // given range, use data where they are available and the function
   // where data are not available
   // ERROR from DATA ONLY is returned in this version! 
   //
-  Printf("AliBWTools::GetMeanDataAndExtrapolation: WARNING from data only");
+  Printf("AliPWGHistoTools::GetMeanDataAndExtrapolation: WARNING from data only");
   Float_t minData    = GetLowestNotEmptyBinEdge (hData);
   Int_t minDataBin   = GetLowestNotEmptyBin     (hData);
   Float_t maxData    = GetHighestNotEmptyBinEdge(hData);
@@ -426,7 +428,7 @@ void AliBWTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapola
 
 }
 
-TH1F * AliBWTools::CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate, Float_t renorm1){
+TH1F * AliPWGHistoTools::CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate, Float_t renorm1){
   // Combine two histos. This assumes the histos have the same binning
   // in the overlapping region. It computes the arithmetic mean in the
   // overlapping region and assigns as an error the relative error
@@ -476,7 +478,7 @@ TH1F * AliBWTools::CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate,
 }
 
 
-void AliBWTools::GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw) {
+void AliPWGHistoTools::GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw) {
 
   // Computes the baycentre in each bin and the xlw as defined in NIMA
   // 355 - 541 using f. Returs 2 graphs with the same y content of h
@@ -533,7 +535,7 @@ void AliBWTools::GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErro
 }
 
 
-Float_t AliBWTools::GetMean(TH1F * h, Float_t min, Float_t max, Float_t * error) {
+Float_t AliPWGHistoTools::GetMean(TH1F * h, Float_t min, Float_t max, Float_t * error) {
 
   // Get the mean of histo in a range; root is not reliable in sub
   // ranges with variable binning.  
@@ -556,7 +558,7 @@ Float_t AliBWTools::GetMean(TH1F * h, Float_t min, Float_t max, Float_t * error)
 
 }
 
-void AliBWTools::GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
+void AliPWGHistoTools::GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
 
   // Get the mean of function in a range; If normPar is >= 0, it means
   // that the function is defined such that par[normPar] is its
@@ -568,7 +570,7 @@ void AliBWTools::GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min,
 
 }
 
-void AliBWTools::GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
+void AliPWGHistoTools::GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
 
   // Get the mean2 of function in a range;  If normPar is >= 0, it means
   // that the function is defined such that par[normPar] is its
@@ -581,7 +583,7 @@ void AliBWTools::GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_
 
 }
 
-void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
+void AliPWGHistoTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
 
   // returns the integral of a function derived from func by prefixing some operation.
   // the derived function MUST have the same parameter in the same order
@@ -598,8 +600,8 @@ void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean,
   // - this version assumes that func is defined using a
   //   TFormula. Generalize to the case of a C++ function
 
-  if (normPar<0) Printf("AliBWTools::GetMoment: Warning: If normalization is required, the error may bot be correct");
-  if (!strcmp(func->GetExpFormula(),"")) Printf("AliBWTools::GetMoment: Warning: Empty formula in the base function");
+  if (normPar<0) Printf("AliPWGHistoTools::GetMoment: Warning: If normalization is required, the error may bot be correct");
+  if (!strcmp(func->GetExpFormula(),"")) Printf("AliPWGHistoTools::GetMoment: Warning: Empty formula in the base function");
   Int_t npar = func->GetNpar();
 
   // Definition changes according to the value of normPar
@@ -651,7 +653,7 @@ void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean,
 
 
 
-Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) { 
+Bool_t AliPWGHistoTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) { 
   
   // Fits h1 with func, preforms several checks on the quality of the
   // fit and tries to improve it. If the fit is not good enough, it
@@ -690,7 +692,7 @@ Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) {
  
 
   if( gMinuit->fLimset ) {
-    Printf("ERROR: AliBWTools: Parameters at limits");
+    Printf("ERROR: AliPWGHistoTools: Parameters at limits");
     return kFALSE;
   } 
 
@@ -703,7 +705,7 @@ Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) {
       TString(gMinuit->fCstatu) != "SUCCESSFUL"  &&
       TString(gMinuit->fCstatu) != "CONVERGED "  ) {
     if(fitStat < 3 && gMinuit->fCstatu != "UNCHANGED ") {
-      Printf("WARNING: AliBWTools: Cannot properly compute errors");
+      Printf("WARNING: AliPWGHistoTools: Cannot properly compute errors");
       if (fitStat == 0) Printf(" not calculated at all");
       if (fitStat == 1) Printf(" approximation only, not accurate");
       if (fitStat == 2) Printf(" full matrix, but forced positive-definite");
@@ -711,13 +713,13 @@ Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) {
 
     if (edm > 1e6) {
 
-      Printf("WARNING: AliBWTools: Huge EDM  (%f): Fit probably failed!", edm);
+      Printf("WARNING: AliPWGHistoTools: Huge EDM  (%f): Fit probably failed!", edm);
     }
     if (fitResult != 0) {
-      Printf("WARNING: AliBWTools: Fit Result (%d)", fitResult);
+      Printf("WARNING: AliPWGHistoTools: Fit Result (%d)", fitResult);
     }
       
-    Printf ("AliBWTools: Trying Again with Strategy = 2");
+    Printf ("AliPWGHistoTools: Trying Again with Strategy = 2");
 
     gMinuit->Command("SET STRATEGY 2"); // more effort
     fitResult = 0;
@@ -730,7 +732,7 @@ Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) {
     fitStat = fitter->GetStats(amin, edm, errdef, nvpar, nparx);  
 
     if(fitStat < 3 && gMinuit->fCstatu != "UNCHANGED ") {
-      Printf("ERROR: AliBWTools: Cannot properly compute errors");
+      Printf("ERROR: AliPWGHistoTools: Cannot properly compute errors");
       if (fitStat == 0) Printf(" not calculated at all");
       if (fitStat == 1) Printf(" approximation only, not accurate");
       if (fitStat == 2) Printf(" full matrix, but forced positive-definite");
@@ -739,12 +741,12 @@ Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) {
     }
 
     if (edm > 1e6) {
-      Printf("ERROR: AliBWTools: Huge EDM  (%f): Fit probably failed!", edm);
+      Printf("ERROR: AliPWGHistoTools: Huge EDM  (%f): Fit probably failed!", edm);
 
       return kFALSE;
     }
     if (fitResult != 0) {
-      Printf("ERROR: AliBWTools: Fit Result (%d)", fitResult);
+      Printf("ERROR: AliPWGHistoTools: Fit Result (%d)", fitResult);
 
       return kFALSE;
     }
@@ -759,7 +761,7 @@ Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) {
   
 }
 
-Int_t AliBWTools::GetLowestNotEmptyBin(const TH1*h) {
+Int_t AliPWGHistoTools::GetLowestNotEmptyBin(const TH1*h) {
 
   // Return the index of the lowest non empty bin in the histo h
 
@@ -772,7 +774,7 @@ Int_t AliBWTools::GetLowestNotEmptyBin(const TH1*h) {
 
 }
 
-Int_t AliBWTools::GetHighestNotEmptyBin(const TH1*h) {
+Int_t AliPWGHistoTools::GetHighestNotEmptyBin(const TH1*h) {
 
   // Return the index of the highest non empty bin in the histo h
 
@@ -785,7 +787,7 @@ Int_t AliBWTools::GetHighestNotEmptyBin(const TH1*h) {
 
 }
 
-void AliBWTools::GetResiduals(const TGraphErrors * gdata, const TF1 * func, TH1F ** hres, TGraphErrors ** gres) {
+void AliPWGHistoTools::GetResiduals(const TGraphErrors * gdata, const TF1 * func, TH1F ** hres, TGraphErrors ** gres) {
 
   // Returns a graph of residuals vs point and the res/err distribution
 
@@ -819,16 +821,16 @@ void AliBWTools::GetResiduals(const TGraphErrors * gdata, const TF1 * func, TH1F
 
 }
 
-void AliBWTools::GetResiduals(const TH1F* hdata, const TF1 * func, TH1F ** hres, TH1F ** hresVsBin) {
+void AliPWGHistoTools::GetResiduals(const TH1F* hdata, const TF1 * func, TH1F ** hres, TH1F ** hresVsBin) {
 
   // Returns an histo of residuals bin by bin and the res/err distribution
 
   if (!func) {
-    Printf("AliBWTools::GetResiduals: No function provided");
+    Printf("AliPWGHistoTools::GetResiduals: No function provided");
     return;
   }
   if (!hdata) {
-    Printf("AliBWTools::GetResiduals: No data provided");
+    Printf("AliPWGHistoTools::GetResiduals: No data provided");
     return;
   }
 
@@ -860,7 +862,7 @@ void AliBWTools::GetResiduals(const TH1F* hdata, const TF1 * func, TH1F ** hres,
 
 }
 
-void AliBWTools::GetYield(TH1* h,  TF1 * f, Double_t &yield, Double_t &yieldError, Float_t min, Float_t max,
+void AliPWGHistoTools::GetYield(TH1* h,  TF1 * f, Double_t &yield, Double_t &yieldError, Float_t min, Float_t max,
 			  Double_t *partialYields, Double_t *partialYieldsErrors){
 
   // Returns the yield extracted from the data in the histo where
@@ -904,7 +906,7 @@ void AliBWTools::GetYield(TH1* h,  TF1 * f, Double_t &yield, Double_t &yieldErro
 
 }
 
-TGraphErrors * AliBWTools::DivideGraphByFunc(const TGraphErrors * g, const TF1 * f, Bool_t invert){ 
+TGraphErrors * AliPWGHistoTools::DivideGraphByFunc(const TGraphErrors * g, const TF1 * f, Bool_t invert){ 
 
   // Divides g/f. If invert == true => f/g
 
@@ -924,7 +926,7 @@ TGraphErrors * AliBWTools::DivideGraphByFunc(const TGraphErrors * g, const TF1 *
 
 }
 
-TGraphErrors * AliBWTools::Divide2Graphs(const TGraphErrors * g1, const TGraphErrors * g2){ 
+TGraphErrors * AliPWGHistoTools::Divide2Graphs(const TGraphErrors * g1, const TGraphErrors * g2){ 
 
   // Divides g1/g2, looks for point with very close centers
   Int_t ipoint=0;
@@ -937,10 +939,13 @@ TGraphErrors * AliBWTools::Divide2Graphs(const TGraphErrors * g1, const TGraphEr
       Double_t x2 = g2->GetX()[ipoint2];
       if((TMath::Abs(x1-x2)/(x1+x2)*2)<0.01) {
 	Double_t ratio   = g2->GetY()[ipoint2]  ? g1->GetY()[ipoint1]/g2->GetY()[ipoint2] : 0;
-	Double_t eratio  = g2->GetY()[ipoint2]  ? 
-	  TMath::Sqrt(g1->GetEY()[ipoint1]*g1->GetEY()[ipoint1]/g1->GetY()[ipoint1]/g1->GetY()[ipoint1] + 
-		      g2->GetEY()[ipoint2]/g2->GetY()[ipoint2]/g2->GetY()[ipoint2] ) * ratio
-	  : 0;
+	Double_t eratio  = 0;
+	if(g1->InheritsFrom("TGraphErrors") && g2->InheritsFrom("TGraphErrors")) {
+	  eratio = g2->GetY()[ipoint2]  ? 
+	    TMath::Sqrt(g1->GetEY()[ipoint1]*g1->GetEY()[ipoint1]/g1->GetY()[ipoint1]/g1->GetY()[ipoint1] + 
+			g2->GetEY()[ipoint2]/g2->GetY()[ipoint2]/g2->GetY()[ipoint2] ) * ratio
+	    : 0;
+	}
 	gRatio->SetPoint     (ipoint, x1, ratio);
 	gRatio->SetPointError(ipoint, 0, eratio);
 	ipoint++;
@@ -956,8 +961,43 @@ TGraphErrors * AliBWTools::Divide2Graphs(const TGraphErrors * g1, const TGraphEr
   return gRatio;
 
 }
+TGraphErrors * AliPWGHistoTools::Add2Graphs(const TGraphErrors * g1, const TGraphErrors * g2){ 
 
-TGraphErrors * AliBWTools::DivideGraphByHisto(const TGraphErrors * g, TH1 * h, Bool_t invert){ 
+  // Sums g1/g2, looks for point with very close centers
+  Int_t ipoint=0;
+  TGraphErrors * gSum = new TGraphErrors();
+  Int_t npoint1 = g1->GetN();
+  Int_t npoint2 = g2->GetN();
+  for(Int_t ipoint1 = 0; ipoint1 < npoint1; ipoint1++){
+    Double_t x1 = g1->GetX()[ipoint1];
+    for(Int_t ipoint2 = 0; ipoint2 < npoint2; ipoint2++){
+      Double_t x2 = g2->GetX()[ipoint2];
+      if((TMath::Abs(x1-x2)/(x1+x2)*2)<0.01) {
+	Double_t sum   = g1->GetY()[ipoint1]+g2->GetY()[ipoint2];
+	Double_t esum  = 0;
+	if(g1->InheritsFrom("TGraphErrors") && g2->InheritsFrom("TGraphErrors")) {
+	  esum = 
+	    TMath::Sqrt(g1->GetEY()[ipoint1]*g1->GetEY()[ipoint1] + 
+			g2->GetEY()[ipoint2]*g2->GetEY()[ipoint2] ) ;
+	    
+	}
+	gSum->SetPoint     (ipoint, x1, sum);
+	gSum->SetPointError(ipoint, 0, esum);
+	ipoint++;
+	cout << ipoint << " [" << x1 << "] " <<  g1->GetY()[ipoint1] << "+" << g2->GetY()[ipoint2] << " = " << sum <<"+-"<<esum<< endl;
+	
+    //    cout << x << " " << g->GetY()[ipoint] << " " << f->Eval(x) << endl;
+      }
+    
+    }
+  }
+  gSum->SetMarkerStyle(20);
+  //gSum->Print();
+  return gSum;
+
+}
+
+TGraphErrors * AliPWGHistoTools::DivideGraphByHisto(const TGraphErrors * g, TH1 * h, Bool_t invert){ 
 
   // Divides g/h. If invert == true => h/g
 
@@ -1001,7 +1041,7 @@ TGraphErrors * AliBWTools::DivideGraphByHisto(const TGraphErrors * g, TH1 * h, B
 
 }
 
-TH1F * AliBWTools::DivideHistoByFunc(TH1F * h, TF1 * f, Bool_t invert){ 
+TH1F * AliPWGHistoTools::DivideHistoByFunc(TH1F * h, TF1 * f, Bool_t invert){ 
 
   // Divides h/f. If invert == true => f/g
   // Performs the integral of f on the bin range to perform the ratio
@@ -1033,7 +1073,7 @@ TH1F * AliBWTools::DivideHistoByFunc(TH1F * h, TF1 * f, Bool_t invert){
 
 }
 
-void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr){
+void AliPWGHistoTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr){
 
   // Performs the weighted mean of npoints numbers in x with errors in xerr
 
@@ -1068,7 +1108,7 @@ void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *
   
 }
 
-TH1 * AliBWTools::GetRelativeError(TH1 * h){
+TH1 * AliPWGHistoTools::GetRelativeError(TH1 * h){
   // Returns an histogram with the same binning as h, filled with the relative error bin by bin
   TH1 * hrel = (TH1*) h->Clone(TString(h->GetName())+"_rel");
   hrel->Reset();
@@ -1082,7 +1122,7 @@ TH1 * AliBWTools::GetRelativeError(TH1 * h){
 }
 
 
-void AliBWTools::GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) {
+void AliPWGHistoTools::GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) {
   
   // Put into source, bin-by-bin, the values from hvalue and the
   // errors from content from herror. 
@@ -1090,7 +1130,7 @@ void AliBWTools::GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * h
   // Set isPercentError to kTRUE if the error is given in % 
 
   if(hdest == NULL){ 
-    Printf("AliBWTools::GetValueAndError Errror: hdest is null");
+    Printf("AliPWGHistoTools::GetValueAndError Errror: hdest is null");
     return;
   }
 
@@ -1117,7 +1157,7 @@ void AliBWTools::GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * h
       }
     }
     // if (!foundValue){
-    //   Printf("AliBWTools::GetValueAndError: Error: cannot find matching value source bin for destination %d",iBinDest);
+    //   Printf("AliPWGHistoTools::GetValueAndError: Error: cannot find matching value source bin for destination %d",iBinDest);
     // }
 
     // Error
@@ -1135,14 +1175,14 @@ void AliBWTools::GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * h
       }      
     }
     // if (!foundError ){
-    //   Printf("AliBWTools::GetValueAndError: Error: cannot find matching error source bin for destination %d",iBinDest);
+    //   Printf("AliPWGHistoTools::GetValueAndError: Error: cannot find matching error source bin for destination %d",iBinDest);
     // }
   }
   
 
 }
 
-void AliBWTools::AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins) {
+void AliPWGHistoTools::AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins) {
 
   // Adds hsource to hdest bin by bin, even if they have a different
   // binning If getMirrorBins is true, it takes the negative bins
@@ -1194,7 +1234,7 @@ void AliBWTools::AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins)
 
 }
 
-void AliBWTools::GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) {
+void AliPWGHistoTools::GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) {
 
   // Combine the errors of hdest with the errors of h1, summing in
   // quadrature. Results are put in hdest. Histograms are assumed to
@@ -1210,7 +1250,7 @@ void AliBWTools::GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) {
   
 }
 
-TH1F * AliBWTools::DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2) {
+TH1F * AliPWGHistoTools::DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2) {
   // Divides 2 histos even if they have a different binning. Finds
   // overlapping bins and divides them
   
@@ -1248,7 +1288,7 @@ TH1F * AliBWTools::DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2) {
   return hRatio;
 }
 
-Double_t AliBWTools::DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Int_t binz1, Int_t binz2, Double_t & error ,
+Double_t AliPWGHistoTools::DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Int_t binz1, Int_t binz2, Double_t & error ,
 				Option_t *option, Bool_t doError) 
 {
    // function to compute integral and optionally the error  between the limits
@@ -1307,7 +1347,7 @@ Double_t AliBWTools::DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, I
    return integral;
 }
 
-Double_t AliBWTools::dMtdptFunction(Double_t *x, Double_t *p) {
+Double_t AliPWGHistoTools::dMtdptFunction(Double_t *x, Double_t *p) {
 
   // Computes the dmt/dptdeta function using the dN/dpt function
   // This is a protected function used internally by GetdMtdy to integrate dN/dpt function using mt as a weight
@@ -1317,7 +1357,7 @@ Double_t AliBWTools::dMtdptFunction(Double_t *x, Double_t *p) {
   Double_t mt = TMath::Sqrt(pt*pt + mass*mass);
   Double_t jacobian = pt/mt;
   if(!fdNdptForETCalc){
-    Printf("AliBWTools::dMtdptFunction: ERROR: fdNdptForETCalc not defined");
+    Printf("AliPWGHistoTools::dMtdptFunction: ERROR: fdNdptForETCalc not defined");
     return 0;
   }
   Double_t dNdpt = fdNdptForETCalc->Eval(pt);
@@ -1325,7 +1365,7 @@ Double_t AliBWTools::dMtdptFunction(Double_t *x, Double_t *p) {
   
 }
 
-Double_t AliBWTools::GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t mass) {
+Double_t AliPWGHistoTools::GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t mass) {
   // Computes dMtdEta integrating dN/dptdy with the proper weights and jacobian.
   Printf("WARNING ALIBWTOOLS::GetdMtdEta: ONLY USING FUNCTION FOR THE TIME BEING, hData");
   if(!hData) {
