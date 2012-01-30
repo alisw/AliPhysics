@@ -23,6 +23,7 @@ class AliMUONTriggerGUIboard : public TObject
 public:
 
   AliMUONTriggerGUIboard();
+  AliMUONTriggerGUIboard(TRootIOCtor* ioCtor);
   virtual ~AliMUONTriggerGUIboard();
 
   /// get the standard name of this board

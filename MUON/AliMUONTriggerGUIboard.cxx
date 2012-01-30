@@ -107,6 +107,33 @@ AliMUONTriggerGUIboard::AliMUONTriggerGUIboard()
 }
 
 //__________________________________________________________________________
+AliMUONTriggerGUIboard::AliMUONTriggerGUIboard(TRootIOCtor* /*ioCtor*/) 
+  : TObject(),
+    fName(0),
+    fCrateName(0),
+    fID(-1),
+    fStatus(0),
+    fPosition(0),
+    fYOver(0),
+    fXSix(0),
+    fXSiy1(0),
+    fXSiy2(0),
+    fYSix1(0),
+    fYSix2(0),
+    fYSiy(0),
+    fDetElemId(0),
+    fIdCircuit(-1),
+    fIsOpen(0),
+    fNPadsX(),
+    fNPadsY(),
+    fPadsX(),
+    fPadsY()
+{
+  /// board standard constructor
+
+}
+
+//__________________________________________________________________________
 AliMUONTriggerGUIboard::~AliMUONTriggerGUIboard() 
 {
   /// board destructor
