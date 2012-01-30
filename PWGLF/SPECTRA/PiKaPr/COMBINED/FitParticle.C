@@ -1,8 +1,8 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>
 
-#include "AliBWTools.h"
-#include "AliBWFunc.h"
+#include "AliPWGHistoTools.h"
+#include "AliPWGFunc.h"
 #include "AliLatexTable.h"
 #include "TF1.h"
 #include "TFile.h"
@@ -21,7 +21,7 @@ using namespace std;
 
 enum {kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave, kFitBoseEinstein, kFitFermiDirac};
 
-void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliBWFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0) {
+void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliPWGFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0) {
 
   // Generic Macro to fit any particle using the PWG2/SPECTRA/Fit macros
   //
@@ -40,7 +40,9 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   //   divided).
   // - fitFunc: id of the function, levi is the default
   //   valide options: kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave
-  // - varType: the variable used in the pt spectrum (see AliBWFunc.h)
+  // - varType: the variable used in the pt spectrum (see AliPWGFunc.h)
+
+  // Author: Michele Floris, CERN
 
   // load stuff
   gSystem->Load("libTree.so");
@@ -56,9 +58,9 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
 
 
   // get histo and draw
-  AliBWFunc * fm = new AliBWFunc;
-  fm->SetVarType(AliBWFunc::VarType_t(vartype));
-  //  fm->SetVarType(AliBWFunc::VarType_t(0));//FIXME
+  AliPWGFunc * fm = new AliPWGFunc;
+  fm->SetVarType(AliPWGFunc::VarType_t(vartype));
+  //  fm->SetVarType(AliPWGFunc::VarType_t(0));//FIXME
   //  cout << "Warning: hacked vartype" << endl;
   
   if (!TDatabasePDG::Instance()->GetParticle(partName)) {
@@ -152,14 +154,14 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   }
   h->Sumw2();
   if (scaleHisto > 0) h->Scale(scaleHisto, "width");
-//   TH1 * h = AliBWTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get(histo)); // FIXME
+//   TH1 * h = AliPWGHistoTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get(histo)); // FIXME
 //   cout << "WARNING SCALING2PI" << endl;
 //   h->Scale(2*TMath::Pi());//Fixme
 
    h->Fit(func); // FIXME
    gMinuit->Command("SET STRATEGY 2"); // FIXME
 
-  if (!AliBWTools::Fit(h,func,min,max)) {
+  if (!AliPWGHistoTools::Fit(h,func,min,max)) {
     cout << "Fitting error!" << endl;
     //    return;    
   }
@@ -179,7 +181,7 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
 
   Double_t yield=0,yieldE=0;
   cout << "Y" << endl;
-  AliBWTools::GetYield(h,func,yield,yieldE);  
+  AliPWGHistoTools::GetYield(h,func,yield,yieldE);  
   cout << "YE" << endl;
   TLatex * l = new TLatex(2,(h->GetMaximum()+h->GetMinimum())/2,Form("%3.3f #pm %3.3f (%s)", yield,yieldE, func->GetName()));
   l->Draw();
@@ -210,7 +212,7 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   }
   //  table->SetNextCol(func->GetParameter(1),func->GetParError(1),-4);
   table->SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF()));
-  Float_t lowestPoint = TMath::Max(AliBWTools::GetLowestNotEmptyBinEdge(h),min);
+  Float_t lowestPoint = TMath::Max(AliPWGHistoTools::GetLowestNotEmptyBinEdge(h),min);
   //  Float_t yieldAbove  = func->Integral(lowestPoint,100);
   Float_t yieldBelow  = func->Integral(0,lowestPoint);
   table->SetNextCol(lowestPoint,-3);
@@ -220,8 +222,8 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
 
   // Float_t mean=0, meane=0;
   // Float_t mean2=0, mean2e=0;
-  // AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
-  // AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
+  // AliPWGHistoTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+  // AliPWGHistoTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
   // table->SetNextCol(mean,  meane ,-4);
   // table->SetNextCol(mean2, mean2e,-4);
   //			 fMean2->IntegralError(0,100)/func->Integral(0,100),-7);

@@ -29,6 +29,9 @@
 set ( SRCS  
     Tools/AliAnalysisHelperJetTasks.cxx 
     Tools/AliTHn.cxx 
+    Tools/AliPWGHistoTools.cxx
+    Tools/AliPWGFunc.cxx
+    Tools/AliLatexTable.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

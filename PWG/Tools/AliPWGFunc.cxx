@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//                              AliBWFunc
+//                              AliPWGFunc
 //
 // This class implements several function useful to fit pt spectra,
 // including but not limited to blast wave models.
@@ -8,15 +8,17 @@
 // variables: dNdpt vs pt, 1/pt dNdpt vs pt, 1/mt dNdmt vs mt. 
 //
 // Before getting the function you need, you have to chose the
-// variable you want to use calling AliBWFunc::SetVarType with one of
+// variable you want to use calling AliPWGFunc::SetVarType with one of
 // the elements of the VarType_t enum.
+//
+// TODO: code cleaup, make the naming convention of function more transparent
 //
 // Warning: not all variables are implemented for all the functions.
 //
 // Author: M. Floris, CERN
 //----------------------------------------------------------------------
 
-#include "AliBWFunc.h"
+#include "AliPWGFunc.h"
 #include "TMath.h"
 #include "TF1.h"
 #include "TF3.h"
@@ -24,14 +26,14 @@
 #include "TSpline.h"
 #include "AliLog.h"
 
-ClassImp(AliBWFunc)
+ClassImp(AliPWGFunc)
 
-AliBWFunc::AliBWFunc () : fLastFunc(0),  fLineWidth(1), fVarType(kdNdpt) {
+AliPWGFunc::AliPWGFunc () : fLastFunc(0),  fLineWidth(1), fVarType(kdNdpt) {
 
   // ctor
   fLineWidth = 1;
 }
-AliBWFunc::~AliBWFunc(){
+AliPWGFunc::~AliPWGFunc(){
   
   // dtor
   if (fLastFunc) delete fLastFunc;
@@ -39,7 +41,7 @@ AliBWFunc::~AliBWFunc(){
 }
 
 
-TF1 * AliBWFunc::GetHistoFunc(TH1 * h, const char * name) {
+TF1 * AliPWGFunc::GetHistoFunc(TH1 * h, const char * name) {
 
   // Regardless of the variable type, this returns a function made
   // from the histo * a multiplicative normalization.
@@ -55,7 +57,7 @@ TF1 * AliBWFunc::GetHistoFunc(TH1 * h, const char * name) {
 
 
 }
-TF1 * AliBWFunc::GetGraphFunc(TGraph * g, const char * name) {
+TF1 * AliPWGFunc::GetGraphFunc(TGraph * g, const char * name) {
 
   // Regardless of the variable type, this returns a function made
   // from the graph * a multiplicative normalization.
@@ -72,7 +74,7 @@ TF1 * AliBWFunc::GetGraphFunc(TGraph * g, const char * name) {
 }
 
 
-TF1 * AliBWFunc::GetBGBW(Double_t mass, Double_t beta, Double_t T,
+TF1 * AliPWGFunc::GetBGBW(Double_t mass, Double_t beta, Double_t T,
 			 Double_t n, Double_t norm, const char * name){
 
   // Boltzmann-Gibbs blast wave
@@ -96,7 +98,7 @@ TF1 * AliBWFunc::GetBGBW(Double_t mass, Double_t beta, Double_t T,
 }
   
 
-TF1 * AliBWFunc::GetBoltzmann(Double_t mass, Double_t T, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetBoltzmann(Double_t mass, Double_t T, Double_t norm, const char * name){
   // Boltzmann
   switch (fVarType) {
   case kdNdpt:
@@ -116,7 +118,7 @@ TF1 * AliBWFunc::GetBoltzmann(Double_t mass, Double_t T, Double_t norm, const ch
 }
 
 
-TF1 * AliBWFunc::GetTsallisBW(Double_t mass, Double_t beta, Double_t T, Double_t q,
+TF1 * AliPWGFunc::GetTsallisBW(Double_t mass, Double_t beta, Double_t T, Double_t q,
 			      Double_t norm, Double_t ymax, const char * name){
 
   // Tsallis blast wave
@@ -139,7 +141,7 @@ TF1 * AliBWFunc::GetTsallisBW(Double_t mass, Double_t beta, Double_t T, Double_t
 }
 
 
-TF1 * AliBWFunc::GetMTExp(Double_t mass, Double_t T, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetMTExp(Double_t mass, Double_t T, Double_t norm, const char * name){
 
   // Simple exponential in 1/mt*MT
   switch (fVarType) {
@@ -162,7 +164,7 @@ TF1 * AliBWFunc::GetMTExp(Double_t mass, Double_t T, Double_t norm, const char *
 }
 
 
-TF1 * AliBWFunc::GetBoseEinstein(Double_t mass, Double_t T, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetBoseEinstein(Double_t mass, Double_t T, Double_t norm, const char * name){
 
   // Bose einstein
   switch (fVarType) {
@@ -184,7 +186,7 @@ TF1 * AliBWFunc::GetBoseEinstein(Double_t mass, Double_t T, Double_t norm, const
 
 }
 
-TF1 * AliBWFunc::GetFermiDirac(Double_t mass, Double_t T, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetFermiDirac(Double_t mass, Double_t T, Double_t norm, const char * name){
 
   // Simple exponential in 1/mt*MT
   switch (fVarType) {
@@ -207,7 +209,7 @@ TF1 * AliBWFunc::GetFermiDirac(Double_t mass, Double_t T, Double_t norm, const c
 }
 
 
-TF1 * AliBWFunc::GetPTExp(Double_t T, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetPTExp(Double_t T, Double_t norm, const char * name){
 
   // Simple exponential in 1/mt*MT
   switch (fVarType) {
@@ -230,7 +232,7 @@ TF1 * AliBWFunc::GetPTExp(Double_t T, Double_t norm, const char * name){
 }
 
 
-TF1 * AliBWFunc::GetLevi(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetLevi(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name){
   // Levi function (aka Tsallis)
   switch (fVarType) {
   case kdNdpt:
@@ -257,7 +259,7 @@ TF1 * AliBWFunc::GetLevi(Double_t mass, Double_t T, Double_t n, Double_t norm, c
 
 }
 
-TF1 * AliBWFunc::GetPowerLaw(Double_t pt0, Double_t n, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetPowerLaw(Double_t pt0, Double_t n, Double_t norm, const char * name){
   // power law Nuclear Physics B, Vol. 335, No. 2. (7 May 1990), pp. 261-287.
   // This is sometimes also called Hagedorn or modified Hagedorn
 
@@ -281,7 +283,7 @@ TF1 * AliBWFunc::GetPowerLaw(Double_t pt0, Double_t n, Double_t norm, const char
 
 }
 
-TF1 * AliBWFunc::GetUA1(Double_t mass, Double_t p0star, Double_t pt0, Double_t n, Double_t T, Double_t norm, const char * name) {
+TF1 * AliPWGFunc::GetUA1(Double_t mass, Double_t p0star, Double_t pt0, Double_t n, Double_t T, Double_t norm, const char * name) {
   // UA1 parametrization Nuclear Physics B, Vol. 335, No. 2. (7 May 1990), pp. 261-287.
 
   switch (fVarType) {
@@ -305,7 +307,22 @@ TF1 * AliBWFunc::GetUA1(Double_t mass, Double_t p0star, Double_t pt0, Double_t n
 
     break;
   case kOneOverPtdNdpt:
-    AliFatal("Not Implemented");
+    fLastFunc = new TF1 (name, StaticUA1FuncOneOverPt, 0.0, 10, 6);
+    fLastFunc->FixParameter(0,mass);
+    fLastFunc->SetParameter(1,p0star);
+    fLastFunc->SetParameter(2,pt0);
+    fLastFunc->SetParameter(3,n);
+    fLastFunc->SetParameter(4,T);
+    fLastFunc->SetParameter(5,norm);
+    fLastFunc->SetParLimits(1,0.01,1);
+    fLastFunc->SetParLimits(2,0.01,100);
+    fLastFunc->SetParLimits(3,0.01,100);
+    fLastFunc->SetParLimits(4,0.01,100);
+    fLastFunc->SetParNames("mass","p0star","pt0","n","T","norm");
+    fLastFunc->SetNpx(5000);
+    fLastFunc->SetLineWidth(fLineWidth);
+    return fLastFunc;
+
     break;
   case kOneOverMtdNdmt:
     AliFatal("Not Implemented");
@@ -325,7 +342,7 @@ TF1 * AliBWFunc::GetUA1(Double_t mass, Double_t p0star, Double_t pt0, Double_t n
 
 // Backend (private functions and support functions for numerical integration)
 
-Double_t AliBWFunc::StaticHistoFunc(const double * x, const double* p){
+Double_t AliPWGFunc::StaticHistoFunc(const double * x, const double* p){
 
   // provides a function interpolating a histo with a spline; 
   // using double to store a pointer... This is a bad hack. To be replaced
@@ -349,7 +366,7 @@ Double_t AliBWFunc::StaticHistoFunc(const double * x, const double* p){
   }
   else if(h->InheritsFrom("TGraph")) spl= new TSpline3("fGraph",(TGraph*)h);
   else {
-    Printf("AliBWFunc::StaticHistoFunc: Unsupported type");
+    Printf("AliPWGFunc::StaticHistoFunc: Unsupported type");
     return 0;
   }
     //  }
@@ -360,7 +377,7 @@ Double_t AliBWFunc::StaticHistoFunc(const double * x, const double* p){
   
 }
 
-Double_t AliBWFunc::StaticUA1Func(const double * x, const double* p) {
+Double_t AliPWGFunc::StaticUA1Func(const double * x, const double* p) {
   
 
   // "mass","p0star","pt0","n","T","norm"
@@ -373,7 +390,7 @@ Double_t AliBWFunc::StaticUA1Func(const double * x, const double* p) {
   
   Double_t xx = x[0];
 
-  static AliBWFunc * self = new AliBWFunc;
+  static AliPWGFunc * self = new AliPWGFunc;
   static TF1 * fPLaw   = self->GetPowerLawdNdptTimesPt(pt0, n, norm, "fLocalPLawUA1");
   static TF1 * fPMTExp = self->GetMTExpdNdptTimesPt   (mass, temp, norm, "fLocalMTexpUA1");
 
@@ -386,7 +403,43 @@ Double_t AliBWFunc::StaticUA1Func(const double * x, const double* p) {
   
   
   if (TMath::Abs(fPMTExp->Eval(p0star) - fPLaw->Eval(p0star)) > 0.0001 ) {
-    Printf("AliBWFunc::StaticUA1Func - Wrong norm") ; 
+    Printf("AliPWGFunc::StaticUA1Func - Wrong norm") ; 
+    Printf(" p0* %f  NMT: %f  N: %f  PL: %f  MT: %f", p0star, normMT, norm, fPLaw->Eval(p0star), fPMTExp->Eval(p0star));
+  }
+
+  if (xx > p0star)  return fPLaw->Eval(xx);
+  return fPMTExp->Eval(xx);    
+  
+  
+
+}
+Double_t AliPWGFunc::StaticUA1FuncOneOverPt(const double * x, const double* p) {
+  // UA1 func
+
+  // "mass","p0star","pt0","n","T","norm"
+  Double_t mass   = p[0];
+  Double_t p0star = p[1];
+  Double_t pt0    = p[2];
+  Double_t n      = p[3];
+  Double_t temp   = p[4];
+  Double_t norm   = p[5];
+  
+  Double_t xx = x[0];
+
+  static AliPWGFunc * self = new AliPWGFunc;
+  static TF1 * fPLaw   = self->GetPowerLawdNdpt(pt0, n, norm, "fLocalPLawUA1");
+  static TF1 * fPMTExp = self->GetMTExpdNdpt   (mass, temp, norm, "fLocalMTexpUA1");
+
+  fPLaw->SetParameters(norm,pt0,n);
+  fPMTExp->SetParameters(1,temp);
+  
+
+  Double_t normMT =fPMTExp->Eval(p0star) >0 ? fPLaw->Eval(p0star) / fPMTExp->Eval(p0star) *  fPMTExp->GetParameter(0) : 1;
+  fPMTExp->SetParameter(0,normMT);
+  
+  
+  if (TMath::Abs(fPMTExp->Eval(p0star) - fPLaw->Eval(p0star)) > 0.0001 ) {
+    Printf("AliPWGFunc::StaticUA1Func - Wrong norm") ; 
     Printf(" p0* %f  NMT: %f  N: %f  PL: %f  MT: %f", p0star, normMT, norm, fPLaw->Eval(p0star), fPMTExp->Eval(p0star));
   }
 
@@ -398,7 +451,7 @@ Double_t AliBWFunc::StaticUA1Func(const double * x, const double* p) {
 }
 
 
-Double_t AliBWFunc::IntegrandBG(const double * x, const double* p){
+Double_t AliPWGFunc::IntegrandBG(const double * x, const double* p){
   // integrand for boltzman-gibbs blast wave
      // x[0] -> r (radius)
      // p[0] -> mass
@@ -435,7 +488,7 @@ Double_t AliBWFunc::IntegrandBG(const double * x, const double* p){
 
 
 
-Double_t AliBWFunc::StaticBGdNdPt(const double * x, const double* p) {
+Double_t AliPWGFunc::StaticBGdNdPt(const double * x, const double* p) {
 
   // implementation of BGBW (1/pt dNdpt)
 
@@ -459,13 +512,13 @@ Double_t AliBWFunc::StaticBGdNdPt(const double * x, const double* p) {
 
 }
 
-Double_t AliBWFunc::StaticBGdNdPtTimesPt(const double * x, const double* p) {
+Double_t AliPWGFunc::StaticBGdNdPtTimesPt(const double * x, const double* p) {
   // BGBW dNdpt implementation
   return x[0]*StaticBGdNdPt(x,p);
 }
 
 
-TF1 * AliBWFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t temp,
+TF1 * AliPWGFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t temp,
 			      Double_t n, Double_t norm, const char * name){
   
   // BGBW 1/pt dNdpt
@@ -483,7 +536,7 @@ TF1 * AliBWFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t temp,
 //_____________________________________________________________________
 // Tsallis
 
-Double_t AliBWFunc::IntegrandTsallis(const double * x, const double* p){
+Double_t AliPWGFunc::IntegrandTsallis(const double * x, const double* p){
 
   // integrand for numerical integration (tsallis)
 
@@ -517,7 +570,7 @@ Double_t AliBWFunc::IntegrandTsallis(const double * x, const double* p){
 
 
 
-Double_t AliBWFunc::StaticTsallisdNdPt(const double * x, const double* p) {
+Double_t AliPWGFunc::StaticTsallisdNdPt(const double * x, const double* p) {
 
   // tsallis BW implementation 1/pt dNdpt
 
@@ -548,14 +601,14 @@ Double_t AliBWFunc::StaticTsallisdNdPt(const double * x, const double* p) {
 
 }
 
-Double_t AliBWFunc::StaticTsallisdNdPtTimesPt(const double * x, const double* p) {
+Double_t AliPWGFunc::StaticTsallisdNdPtTimesPt(const double * x, const double* p) {
 
   // tsallis BW , implementatio of dNdpt
   return x[0]*StaticTsallisdNdPt(x,p);
 
 }
 
-TF1 * AliBWFunc::GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t temp, Double_t q,
+TF1 * AliPWGFunc::GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t temp, Double_t q,
 				   Double_t norm, Double_t ymax,const char * name){
   
 
@@ -574,7 +627,7 @@ TF1 * AliBWFunc::GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t temp, 
 
 // Times Pt funcs
 // Boltzmann-Gibbs Blast Wave
-TF1 * AliBWFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp, Double_t n,
+TF1 * AliPWGFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp, Double_t n,
 				     Double_t norm, const char * name){
 
   // BGBW, dNdpt
@@ -591,7 +644,7 @@ TF1 * AliBWFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp
 
 
 
-TF1 * AliBWFunc::GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp, Double_t q,
+TF1 * AliPWGFunc::GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp, Double_t q,
 					  Double_t norm, Double_t ymax, const char * name){
 
 // Tsallis blast wave, dNdpt
@@ -607,7 +660,7 @@ TF1 * AliBWFunc::GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t
 
 
 
-TF1 * AliBWFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
 
   // Simple exponential in 1/mt*MT, as a function of dNdpt
   char formula[500];
@@ -622,7 +675,7 @@ TF1 * AliBWFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t temp, Double_t nor
 
 }
 
-TF1 * AliBWFunc::GetBoseEinsteindNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetBoseEinsteindNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
 
   // Bose einstein distribution as a function of dNdpt
   char formula[500];
@@ -637,7 +690,7 @@ TF1 * AliBWFunc::GetBoseEinsteindNdptTimesPt(Double_t mass, Double_t temp, Doubl
 
 }
 
-TF1 * AliBWFunc::GetFermiDiracdNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetFermiDiracdNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
 
   // Bose einstein distribution as a function of dNdpt
   char formula[500];
@@ -654,7 +707,7 @@ TF1 * AliBWFunc::GetFermiDiracdNdptTimesPt(Double_t mass, Double_t temp, Double_
 
 
 
-TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetPTExpdNdptTimesPt(Double_t temp, Double_t norm, const char * name){
 
   // Simple exponential in 1/pt*dNdpT, as a function of dNdpt
   char formula[500];
@@ -670,7 +723,7 @@ TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t temp, Double_t norm, const char *
 }
 
 
-TF1 * AliBWFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // Boltzmann (exp in 1/mt*dNdmT times mt) as a function of dNdpt
  char formula[500];
  snprintf(formula,500,"[0]*x*sqrt(x**2+%f**2)*exp(-sqrt(x**2+%f**2)/[1])", mass,mass);
@@ -686,7 +739,7 @@ TF1 * AliBWFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t temp, Double_t
 
 
 // Tsallis (no BW, a la CMS)
-// TF1 * AliBWFunc::GetTsallisdNdptTimesPt(Double_t mass, Double_t T, Double_t q, Double_t norm, const char * name){
+// TF1 * AliPWGFunc::GetTsallisdNdptTimesPt(Double_t mass, Double_t T, Double_t q, Double_t norm, const char * name){
 
 //   char formula[500];
 //   //  sprintf(formula,"[0]*x*pow((1+(([2]-1)/[1])*(sqrt(x**2+%f**2)-%f)),(-1/([2]-1)))", mass, mass); //CMS
@@ -703,7 +756,7 @@ TF1 * AliBWFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t temp, Double_t
 // }
 
 
-TF1 * AliBWFunc::GetLevidNdptTimesPt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetLevidNdptTimesPt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
 
   // Levi function, dNdpt
   char formula[500];
@@ -721,7 +774,7 @@ TF1 * AliBWFunc::GetLevidNdptTimesPt(Double_t mass, Double_t temp, Double_t n, D
 
 }
 
-TF1 * AliBWFunc::GetPowerLawdNdptTimesPt(Double_t pt0, Double_t n, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetPowerLawdNdptTimesPt(Double_t pt0, Double_t n, Double_t norm, const char * name){
 
   // PowerLaw function, dNdpt
   char formula[500];
@@ -738,7 +791,7 @@ TF1 * AliBWFunc::GetPowerLawdNdptTimesPt(Double_t pt0, Double_t n, Double_t norm
 
 }
 
-TF1 * AliBWFunc::GetPowerLawdNdpt(Double_t pt0, Double_t n, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetPowerLawdNdpt(Double_t pt0, Double_t n, Double_t norm, const char * name){
 
   // PowerLaw function, 1/pt dNdpt
   char formula[500];
@@ -755,7 +808,7 @@ TF1 * AliBWFunc::GetPowerLawdNdpt(Double_t pt0, Double_t n, Double_t norm, const
 }
 
 
-TF1 * AliBWFunc::GetLevidNdpt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetLevidNdpt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
 
   // Levi function, dNdpt
   char formula[500];
@@ -772,7 +825,7 @@ TF1 * AliBWFunc::GetLevidNdpt(Double_t mass, Double_t temp, Double_t n, Double_t
 
 }
 
-TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name, VarType_t var){
+TF1 * AliPWGFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name, VarType_t var){
 
   // Levi function, 1/mt dNdmt
   char formula[500];
@@ -800,7 +853,7 @@ TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t
 
 
 // Test Function
-Double_t AliBWFunc::IntegrandTest(const double * x, const double* p){
+Double_t AliPWGFunc::IntegrandTest(const double * x, const double* p){
 
   // test function
 
@@ -816,7 +869,7 @@ Double_t AliBWFunc::IntegrandTest(const double * x, const double* p){
 
 }
 
-Double_t AliBWFunc::StaticTest(const double * x, const double* p) {
+Double_t AliPWGFunc::StaticTest(const double * x, const double* p) {
 
   // test function
 
@@ -841,7 +894,7 @@ Double_t AliBWFunc::StaticTest(const double * x, const double* p) {
 
 }
 
-TF1 * AliBWFunc::GetTestFunc(Double_t mass, Double_t temp, Double_t norm, Double_t ymax, const char * name){
+TF1 * AliPWGFunc::GetTestFunc(Double_t mass, Double_t temp, Double_t norm, Double_t ymax, const char * name){
   
   // test function
   
@@ -857,7 +910,7 @@ TF1 * AliBWFunc::GetTestFunc(Double_t mass, Double_t temp, Double_t norm, Double
 //___________________________________________________________
 
 
-TF1 * AliBWFunc::GetMTExpdNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetMTExpdNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // Simple exp in 1/mt dNdmt, as a function of dNdpt
   // mt scaling
   char formula[500];
@@ -870,7 +923,7 @@ TF1 * AliBWFunc::GetMTExpdNdpt(Double_t mass, Double_t temp, Double_t norm, cons
   return fLastFunc;
 }
 
-TF1 * AliBWFunc::GetBoseEinsteindNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetBoseEinsteindNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // bose einstein
   char formula[500];
   snprintf(formula,500,"[0]*1./(exp(sqrt(x**2+%f**2)/[1])-1)", mass);
@@ -882,7 +935,7 @@ TF1 * AliBWFunc::GetBoseEinsteindNdpt(Double_t mass, Double_t temp, Double_t nor
   return fLastFunc;
 }
 
-TF1 * AliBWFunc::GetFermiDiracdNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+TF1 * AliPWGFunc::GetFermiDiracdNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // bose einstein
   char formula[500];
   snprintf(formula,500,"[0]*1./(exp(sqrt(x**2+%f**2)/[1])+1)", mass);
@@ -896,7 +949,7 @@ TF1 * AliBWFunc::GetFermiDiracdNdpt(Double_t mass, Double_t temp, Double_t norm,
 
 
 // // Simple tsallis (a la CMS)
-// TF1 * AliBWFunc::GetTsallisdNdpt(Double_t mass, Double_t temp, Double_t q, Double_t norm, const char * name){
+// TF1 * AliPWGFunc::GetTsallisdNdpt(Double_t mass, Double_t temp, Double_t q, Double_t norm, const char * name){
   
 //   char formula[500];
 //   sprintf(formula,"[0]*sqrt(x**2+%f**2)*pow((1+(([2]-1)/[1])*(sqrt(x**2+%f**2))),(-1/([2]-1)))", mass,mass); 

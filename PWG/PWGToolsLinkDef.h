@@ -6,5 +6,8 @@
 
 #pragma link C++ class AliAnalysisHelperJetTasks+;
 #pragma link C++ class AliTHn+;
+#pragma link C++ class AliPWGHistoTools+;
+#pragma link C++ class AliPWGFunc+;
+
 
 #endif
