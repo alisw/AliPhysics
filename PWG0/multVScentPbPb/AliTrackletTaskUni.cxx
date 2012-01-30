@@ -57,7 +57,7 @@
 #include "../ITS/AliITSRecPoint.h"
 #include "../ITS/AliITSgeomTGeo.h"
 #include "../ITS/AliITSMultReconstructor.h" 
-
+#include "../ITS/AliITSsegmentationSPD.h"
 #include "AliLog.h"
 
 #include "AliPhysicsSelection.h"
@@ -228,7 +228,7 @@ AliTrackletTaskUni::AliTrackletTaskUni(const char *name)
   fRPTree(0),
   fRPTreeMix(0),
   fStack(0),
-  fMCEvent(0),
+  fMCevent(0),
   fDontMerge(kFALSE)    
   /*
   ,
@@ -260,10 +260,9 @@ AliTrackletTaskUni::~AliTrackletTaskUni()
   // Destructor
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
     printf("Deleteing output\n");
     delete fOutput;
-    fOutput = 0;
   }
   //
   delete fMultReco;
@@ -285,7 +284,7 @@ AliTrackletTaskUni::~AliTrackletTaskUni()
 //________________________________________________________________________
 void AliTrackletTaskUni::UserCreateOutputObjects() 
 {
-  //
+  // create output
 
   if (fDontMerge) {
     OpenFile(1);
@@ -372,6 +371,7 @@ void AliTrackletTaskUni::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliTrackletTaskUni::RegisterStat() 
 {
+  // account conditions
   static Bool_t done = kFALSE;
   if (done) return;
   TH1* hstat;
@@ -526,15 +526,15 @@ void AliTrackletTaskUni::UserExec(Option_t *)
   //  multESD->Print();
   //
   AliMCEventHandler* eventHandler = 0;
-  fMCEvent = 0;
+  fMCevent = 0;
   fStack = 0;
   //
   if (fUseMC) {
     eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
     if (!eventHandler) { printf("ERROR: Could not retrieve MC event handler\n"); return; }
-    fMCEvent = eventHandler->MCEvent();
-    if (!fMCEvent) { printf("ERROR: Could not retrieve MC event\n"); return; }
-    fStack = fMCEvent->Stack();
+    fMCevent = eventHandler->MCEvent();
+    if (!fMCevent) { printf("ERROR: Could not retrieve MC event\n"); return; }
+    fStack = fMCevent->Stack();
     if (!fStack) { printf("Stack not available\n"); return; }
   }
   //
@@ -637,6 +637,7 @@ void AliTrackletTaskUni::UserExec(Option_t *)
 //________________________________________________________________________
 void AliTrackletTaskUni::Terminate(Option_t *) 
 {
+  // print itself
   Printf("Terminating...");
   RegisterStat();
   //  AliAnalysisTaskSE::Terminate();
@@ -1003,7 +1004,7 @@ void AliTrackletTaskUni::FillHistos(Int_t type, const AliMultiplicity* mlt)
   AliGenHijingEventHeader* pyHeader = 0;
   //
   if (fUseMC) {
-    pyHeader = (AliGenHijingEventHeader*) fMCEvent->GenEventHeader();//header->GenEventHeader();
+    pyHeader = (AliGenHijingEventHeader*) fMCevent->GenEventHeader();//header->GenEventHeader();
     pyHeader->PrimaryVertex(vtxMC);
   }
   //---------------------------------------- CHECK ------------------------------<<<
@@ -1071,14 +1072,14 @@ void AliTrackletTaskUni::FillHistos(Int_t type, const AliMultiplicity* mlt)
 void AliTrackletTaskUni::FillMCPrimaries(TH2F* hetaz)
 {
   // fill all MC primaries Zv vs Eta
-  if (!fStack || !fMCEvent) return;
+  if (!fStack || !fMCevent) return;
 
   //---------------------------------------- CHECK ------------------------------>>>
   TArrayF vtxMC;
   AliGenHijingEventHeader* pyHeader = 0;
   //
   if (fUseMC) {
-    pyHeader = (AliGenHijingEventHeader*) fMCEvent->GenEventHeader();//header->GenEventHeader();
+    pyHeader = (AliGenHijingEventHeader*) fMCevent->GenEventHeader();//header->GenEventHeader();
     pyHeader->PrimaryVertex(vtxMC);
   }
   //---------------------------------------- CHECK ------------------------------<<<
@@ -1088,7 +1089,7 @@ void AliTrackletTaskUni::FillMCPrimaries(TH2F* hetaz)
   int ntr = fStack->GetNtrack();
   for (int itr=ntr;itr--;) {
     if (!fStack->IsPhysicalPrimary(itr)) continue;
-    AliMCParticle *part  = (AliMCParticle*)fMCEvent->GetTrack(itr);
+    AliMCParticle *part  = (AliMCParticle*)fMCevent->GetTrack(itr);
     if (!part->Charge()) continue;
     //
     //---------------------------------------- CHECK ------------------------------>>>
