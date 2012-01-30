@@ -78,7 +78,10 @@ AliMUONVQADataMakerRec(master),
 fDigitMaker(new AliMUONDigitMaker(kFALSE)),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
-fDigitStore(0x0)
+fDigitStore(0x0),
+fDigitStoreFromRaw(0x0),
+fTriggerStoreFromRaw(0x0),
+fTriggerStoreReprocessRaw(0x0)
 {
     /// ctor
 }
@@ -89,9 +92,12 @@ AliMUONTriggerQADataMakerRec::~AliMUONTriggerQADataMakerRec()
 {
     /// dtor
   delete fDigitMaker;
-  delete fDigitStore;
   delete fTriggerProcessor;
   delete fCalibrationData;
+  delete fDigitStore;
+  delete fDigitStoreFromRaw;
+  delete fTriggerStoreFromRaw;
+  delete fTriggerStoreReprocessRaw;
 }
 
 //____________________________________________________________________________ 
@@ -200,6 +206,10 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   // RS: Since there is no sense in cloning trigger scalers per trigger, I am (for the moment) forbidding their cloning
 
   AliCodeTimerAuto("",0);
+  
+  fDigitStoreFromRaw = new AliMUONDigitStoreV2R();
+  fTriggerStoreFromRaw = new AliMUONTriggerStoreV1();
+  fTriggerStoreReprocessRaw = new AliMUONTriggerStoreV1();
   
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
@@ -565,11 +575,9 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     //}
     //}
 
-    AliMUONDigitStoreV2R digitStore;
-    
-    AliMUONTriggerStoreV1 recoTriggerStore;
-
-    AliMUONTriggerStoreV1 inputTriggerStore;
+  fDigitStoreFromRaw->Clear();
+  fTriggerStoreFromRaw->Clear();
+  fTriggerStoreReprocessRaw->Clear();
 
     AliMUONGlobalTrigger inputGlobalTrigger;
 
@@ -691,14 +699,14 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 	  AliMUONLocalTrigger inputLocalTrigger;
 	  inputLocalTrigger.SetLocalStruct(loCircuit, *localStruct);
-	  inputTriggerStore.Add(inputLocalTrigger);
+	  fTriggerStoreFromRaw->Add(inputLocalTrigger);
 
 	  countNotifiedBoards++;  
 
 	  TArrayS xyPattern[2];	  
 	  localStruct->GetXPattern(xyPattern[0]);
 	  localStruct->GetYPattern(xyPattern[1]);
-	  fDigitMaker->TriggerDigits(loCircuit, xyPattern, digitStore);
+	  fDigitMaker->TriggerDigits(loCircuit, xyPattern, *fDigitStoreFromRaw);
 
 	  //Get electronic Decisions from data
 
@@ -802,10 +810,10 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
     }
 
-  TriggerElectronics()->Digits2Trigger(digitStore,recoTriggerStore);
+  TriggerElectronics()->Digits2Trigger(*fDigitStoreFromRaw,*fTriggerStoreReprocessRaw);
 
   AliMUONGlobalTrigger* recoGlobalTriggerFromLocal;
-  recoGlobalTriggerFromLocal = recoTriggerStore.Global();
+  recoGlobalTriggerFromLocal = fTriggerStoreReprocessRaw->Global();
 
   //Reconstruct Global decision from Global inputs
   UChar_t recoResp = RawTriggerInGlobal2OutGlobal(globalInput);
@@ -813,7 +821,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   recoGlobalTriggerFromGlobal.SetFromGlobalResponse(recoResp);
 
   // Compare data and reconstructed decisions and fill histos
-  RawTriggerMatchOutLocal(inputTriggerStore, recoTriggerStore);
+  RawTriggerMatchOutLocal();
   //Fill ratio 44/34 histos
   for ( Int_t itc=-1; itc<AliQADataMakerRec::GetNEventTrigClasses(); ++itc ) FillRatio4434Histos(fgkUpdateRatio4434, itc, kFALSE);
   //RawTriggerMatchOutLocalInRegional(); // Not tested, hardware read-out doesn't work
@@ -1193,8 +1201,7 @@ UChar_t AliMUONTriggerQADataMakerRec::RawTriggerInGlobal2OutGlobal(UInt_t global
 }
 
 //____________________________________________________________________________ 
-void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(const AliMUONVTriggerStore& inputTriggerStore,
-							   const AliMUONVTriggerStore& recoTriggerStore)
+void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
 {
   //
   /// Match data and reconstructed Local Trigger decision
@@ -1208,7 +1215,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(const AliMUONVTrigger
 
   // First search for YCopy errors.
   Int_t loCircuit = -1;
-  TIter next(recoTriggerStore.CreateLocalIterator());
+  TIter next(fTriggerStoreReprocessRaw->CreateLocalIterator());
   AliMUONLocalTrigger* recoLocalTrigger, *inputLocalTrigger;
   while ( ( recoLocalTrigger = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {  
@@ -1217,7 +1224,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(const AliMUONVTrigger
 
     FillRawsData(AliMUONQAIndices::kTriggerErrorLocalYCopyTest,loCircuit);
   
-    inputLocalTrigger = inputTriggerStore.FindLocal(loCircuit);
+    inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
 
     Int_t recoTrigPattern[4]  = {recoLocalTrigger->GetY1Pattern(), recoLocalTrigger->GetY2Pattern(), recoLocalTrigger->GetY3Pattern(), recoLocalTrigger->GetY4Pattern()};
     Int_t inputTrigPattern[4] = {inputLocalTrigger->GetY1Pattern(), inputLocalTrigger->GetY2Pattern(), inputLocalTrigger->GetY3Pattern(), inputLocalTrigger->GetY4Pattern()};
@@ -1264,10 +1271,10 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(const AliMUONVTrigger
       if ( is44 ) FillRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec,loCircuit);
 
       if ( is44 && ! is34 )
-	AliWarning("Event satisfies the 4/4 conditions but not the 3/4");
+	AliWarning(Form("Local board %i satisfies the 4/4 conditions but not the 3/4", loCircuit));
     }
     
-    inputLocalTrigger = inputTriggerStore.FindLocal(loCircuit);
+    inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
 
     if ( recoLocalTrigger->LoStripX() != inputLocalTrigger->LoStripX() ) {
       FillRawsData(AliMUONQAIndices::kTriggerErrorLocalXPos,loCircuit);

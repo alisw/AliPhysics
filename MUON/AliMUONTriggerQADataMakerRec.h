@@ -62,7 +62,7 @@ private:
   TObjArray* GetDCSValues(Int_t iMeas, Int_t detElemId,
 			  TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer);
   UChar_t RawTriggerInGlobal2OutGlobal(UInt_t globalInput[4]);
-  void RawTriggerMatchOutLocal(const AliMUONVTriggerStore& inputTriggerStore, const AliMUONVTriggerStore& recoTriggerStore);
+  void RawTriggerMatchOutLocal();
   //void RawTriggerMatchOutLocalInRegional();
   void RawTriggerMatchOutGlobal(AliMUONGlobalTrigger& inputLocalTrigger,
 				AliMUONGlobalTrigger& recoGlobalTrigger,
@@ -86,8 +86,11 @@ private:
   AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks
   AliMUONTriggerElectronics* fTriggerProcessor; //!< trigger processore to re-compute response
   AliMUONVDigitStore* fDigitStore; //!< pointer to digits store
+  AliMUONVDigitStore* fDigitStoreFromRaw; //!< pointer to digit store from RAW data
+  AliMUONVTriggerStore* fTriggerStoreFromRaw; //!< pointer to trigger store from input RAW data
+  AliMUONVTriggerStore* fTriggerStoreReprocessRaw; //!< pointer to trigger store from re-computed RAW data
   
-  ClassDef(AliMUONTriggerQADataMakerRec,1)  // MUON Quality assurance data maker
+  ClassDef(AliMUONTriggerQADataMakerRec,2)  // MUON Quality assurance data maker
 
 };
 
