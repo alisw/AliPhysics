@@ -23,6 +23,7 @@ class AliQAThresholds: public TObject {
  public:
 
   AliQAThresholds(Int_t detId);
+  AliQAThresholds() : TObject(), fThresholds(), fDetectorId(-1){};
   virtual ~AliQAThresholds();
 
   Int_t GetDetectorId();
