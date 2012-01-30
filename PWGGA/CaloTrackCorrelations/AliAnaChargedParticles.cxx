@@ -107,15 +107,13 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   outputContainer->Add(fhEtaPos);
   
   fhEtaPhiPos  = new TH2F ("hEtaPhiPositive","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
-  fhEtaPhiPos->SetXTitle("p_{T}^{h^{+}} (GeV/c)");
-  fhEtaPhiPos->SetYTitle("#eta ");
-  fhEtaPhiPos->SetZTitle("#phi (rad)");  
+  fhEtaPhiPos->SetXTitle("#eta ");
+  fhEtaPhiPos->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiPos);
   
   fhEtaPhiNeg  = new TH2F ("hEtaPhiNegative","eta vs phi of negative charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
-  fhEtaPhiNeg->SetXTitle("p_{T}^{h^{-}} (GeV/c)");
-  fhEtaPhiNeg->SetYTitle("#eta ");
-  fhEtaPhiNeg->SetZTitle("#phi (rad)");  
+  fhEtaPhiNeg->SetXTitle("#eta ");
+  fhEtaPhiNeg->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiNeg);
   
   if(IsDataMC()){

@@ -60,6 +60,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
   
+  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, const Int_t cut);
+  
+  void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
+  void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
+
   
   // Analysis parameters setters getters
   
@@ -82,8 +87,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
-  void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
-  void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
 	  
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > 14) fNOriginHistograms = 14; }
@@ -223,38 +226,29 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbedPi0ELambda0FullBkg ;            //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
   
   // Track Matching
-  TH2F * fhTrackMatchedDEta           ;         //! Eta distance between track and cluster vs cluster E, after photon cuts
-  TH2F * fhTrackMatchedDPhi           ;         //! Phi distance between track and cluster vs cluster E, after photon cuts
-  TH2F * fhTrackMatchedDEtaDPhi       ;         //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after photon cuts
-  TH2F * fhTrackMatchedDEtaNoCut      ;         //! Eta distance between track and cluster vs cluster E
-  TH2F * fhTrackMatchedDPhiNoCut      ;         //! Phi distance between track and cluster vs cluster E
-  TH2F * fhTrackMatchedDEtaDPhiNoCut  ;         //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F * fhTrackMatchedDEta[2]           ;      //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F * fhTrackMatchedDPhi[2]           ;      //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhi[2]       ;      //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before photon cuts
   
-  TH2F * fhTrackMatchedDEtaTRD        ;         //! Eta distance between track and cluster vs cluster E, after photon cuts, behind TRD
-  TH2F * fhTrackMatchedDPhiTRD        ;         //! Phi distance between track and cluster vs cluster E, after photon cuts, behind TRD
-  TH2F * fhTrackMatchedDEtaTRDNoCut   ;         //! Eta distance between track and cluster vs cluster E, behind TRD
-  TH2F * fhTrackMatchedDPhiTRDNoCut   ;         //! Phi distance between track and cluster vs cluster E, behind TRD
+  TH2F * fhTrackMatchedDEtaTRD[2]        ;      //! Eta distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
+  TH2F * fhTrackMatchedDPhiTRD[2]        ;      //! Phi distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   
-  TH2F * fhTrackMatchedDEtaMCOverlap  ;         //! Eta distance between track and cluster vs cluster E, several particle overlap
-  TH2F * fhTrackMatchedDPhiMCOverlap  ;         //! Phi distance between track and cluster vs cluster E, several particle overlap
-  TH2F * fhTrackMatchedDEtaMCNoOverlap;         //! Eta distance between track and cluster vs cluster E, not other particle overlap
-  TH2F * fhTrackMatchedDPhiMCNoOverlap;         //! Phi distance between track and cluster vs cluster E, not other particle overlap
-  TH2F * fhTrackMatchedDEtaMCConversion;        //! Eta distance between track and cluster vs cluster E, originated in conversion
-  TH2F * fhTrackMatchedDPhiMCConversion;        //! Phi distance between track and cluster vs cluster E, originated in conversion
+  TH2F * fhTrackMatchedDEtaMCOverlap[2]  ;      //! Eta distance between track and cluster vs cluster E, several particle overlap, after and before photon cuts 
+  TH2F * fhTrackMatchedDPhiMCOverlap[2]  ;      //! Phi distance between track and cluster vs cluster E, several particle overlap, after and before photon cuts 
+  TH2F * fhTrackMatchedDEtaMCNoOverlap[2];      //! Eta distance between track and cluster vs cluster E, not other particle overlap, after and before photon cuts 
+  TH2F * fhTrackMatchedDPhiMCNoOverlap[2];      //! Phi distance between track and cluster vs cluster E, not other particle overlap, after and before photon cuts 
+  TH2F * fhTrackMatchedDEtaMCConversion[2];     //! Eta distance between track and cluster vs cluster E, originated in conversion, after and before photon cuts 
+  TH2F * fhTrackMatchedDPhiMCConversion[2];     //! Phi distance between track and cluster vs cluster E, originated in conversion, after and before photon cuts 
   
-  TH2F * fhTrackMatchedMCParticle;              //! Trace origin of matched particle
-  TH2F * fhTrackMatchedMCParticleNoCut;         //! Trace origin of matched particle
-  TH2F * fhdEdx;                                //! matched track dEdx vs cluster E, after photon cuts 
-  TH2F * fhEOverP;                              //! matched track E cluster over P track vs cluster E, after dEdx cut, after photon cuts 
-  TH2F * fhdEdxNoCut;                           //! matched track dEdx vs cluster E, after photon cuts 
-  TH2F * fhEOverPNoCut;                         //! matched track E cluster over P track vs cluster E, after dEdx cut 
-  TH2F * fhEOverPTRD;                           //! matched track E cluster over P track vs cluster E, after dEdx cut, after photon cuts, behind TRD 
-  TH2F * fhEOverPTRDNoCut;                      //! matched track E cluster over P track vs cluster E, after dEdx cut, behind TRD 
+  TH2F * fhTrackMatchedMCParticle[2];           //! Trace origin of matched particle
+  TH2F * fhdEdx[2];                             //! matched track dEdx vs cluster E, after and before photon cuts 
+  TH2F * fhEOverP[2];                           //! matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts 
+  TH2F * fhEOverPTRD[2];                        //! matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD 
 
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,22)
+  ClassDef(AliAnaPhoton,23)
 
 } ;
  
