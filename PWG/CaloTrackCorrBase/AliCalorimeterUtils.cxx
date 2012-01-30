@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class utility for Calorimeter specific selection methods                ///
@@ -330,6 +329,60 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVClu
   clusterFraction = (eTot-eMax)/eTot; //Do not use cluster energy in case it was corrected for non linearity.
   
   return absId;
+  
+}
+
+//__________________________________________________________________________
+AliVTrack * AliCalorimeterUtils::GetMatchedTrack(const AliVCluster* cluster, 
+                                                 const AliVEvent* event, 
+                                                 const Int_t index) const
+{
+  // Get the matched track given its index, usually just the first match
+  // Since it is different for ESDs and AODs here it is a wrap method to do it
+  
+  AliVTrack *track = 0;
+  
+  // EMCAL case only when matching is recalculated
+  if(cluster->IsEMCAL() && IsRecalculationOfClusterTrackMatchingOn())
+  {
+    Int_t trackIndex = fEMCALRecoUtils->GetMatchedTrackIndex(cluster->GetID());
+    //printf("track index %d, cluster ID %d \n ",trackIndex,cluster->GetID());
+    
+    if(trackIndex < 0 )
+    { 
+      printf("AliCalorimeterUtils::GetMatchedTrack() - Wrong track index %d, from recalculation\n", trackIndex);
+    }
+    else 
+    {
+      track = dynamic_cast<AliVTrack*> (event->GetTrack(trackIndex));
+    }
+
+    return track ;
+    
+  }   
+  
+  // Normal case, get info from ESD or AOD
+  // ESDs
+  if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
+  {
+    Int_t iESDtrack = cluster->GetTrackMatchedIndex();
+    
+    if(iESDtrack < 0 )
+    { 
+      printf("AliCalorimeterUtils::GetMatchedTrack() - Wrong track index %d\n", index);
+      return 0x0;
+    }
+    
+    track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
+    
+  }
+  else // AODs
+  {
+    if(cluster->GetNTracksMatched() > 0 )
+      track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(index));
+  }
+  
+  return track ;
   
 }
 

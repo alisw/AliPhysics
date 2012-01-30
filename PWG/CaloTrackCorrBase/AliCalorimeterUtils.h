@@ -2,7 +2,6 @@
 #define ALICALORIMETERUTILS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class utility for Calorimeter specific selection methods                ///
@@ -22,6 +21,7 @@ class TArrayF;
 
 //--- ANALYSIS system ---
 class AliVEvent;
+class AliVTrack;
 class AliAODPWG4Particle;
 class AliVCluster;
 class AliVCaloCells;
@@ -189,7 +189,11 @@ class AliCalorimeterUtils : public TObject {
   
   void          RecalculateClusterPID(AliVCluster* clu)    { fEMCALRecoUtils->RecalculateClusterPID(clu)              ; }
 
-  //Track matching recalculation
+  // *** Track Matching ***
+  
+  AliVTrack *   GetMatchedTrack(const AliVCluster * cluster, const AliVEvent * event, const Int_t index = 0) const ;
+  
+  // Recalculation
   void          RecalculateClusterTrackMatching(AliVEvent * event, TObjArray* clusterArray = 0x0) ;
     
   void          GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ) {
@@ -248,7 +252,7 @@ class AliCalorimeterUtils : public TObject {
   AliCalorimeterUtils(const AliCalorimeterUtils & g) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & g) ;//cpy assignment
   
-  ClassDef(AliCalorimeterUtils,7)
+  ClassDef(AliCalorimeterUtils,8)
 } ;
 
 
