@@ -14,7 +14,7 @@
 **************************************************************************/
 
 ///////////////////////////////////////////////////////////////////////////
-// Class AliTrackletTaskMulti                                            //
+// Class AliTrackletTaskMultipp                                            //
 // Analysis task to produce data and MC histos needed for tracklets      //
 // dNdEta extraction in multiple bins in one go                          //
 // Author:  ruben.shahoyan@cern.ch                                       //
@@ -63,27 +63,28 @@
 #include "../ITS/AliITSRecPoint.h"
 #include "../ITS/AliITSgeomTGeo.h"
 #include "../ITS/AliITSMultReconstructor.h" 
+#include "../ITS/AliITSsegmentationSPD.h"
 
 #include "AliLog.h"
 
 #include "AliPhysicsSelection.h"
-#include "AliTrackletTaskMulti.h"
+#include "AliTrackletTaskMultipp.h"
 #include "AliITSMultRecBg.h"
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliESDtrackCuts.h"
 
-ClassImp(AliTrackletTaskMulti)
+ClassImp(AliTrackletTaskMultipp)
 
 // centrality percentile (inverted: 100% - most central)
-const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,100};//{0,5,10,20,30};
-//const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,5,10,20,30,40};
+const Float_t  AliTrackletTaskMultipp::fgkCentPerc[] = {0,100};//{0,5,10,20,30};
+//const Float_t  AliTrackletTaskMultipp::fgkCentPerc[] = {0,5,10,20,30,40};
   //{0,10,20,30,40,50,60,70,80,90,95,101};
 
-const char* AliTrackletTaskMulti::fgCentSelName[] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZENvsZDC"};
+const char* AliTrackletTaskMultipp::fgkCentSelName[] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZENvsZDC"};
 
-const char*  AliTrackletTaskMulti::fgkPDGNames[] = {
+const char*  AliTrackletTaskMultipp::fgkPDGNames[] = {
 "#pi^{+}",
 "p",
 "K^{+}",
@@ -134,7 +135,7 @@ const char*  AliTrackletTaskMulti::fgkPDGNames[] = {
 "Others"
 };
 
-const int AliTrackletTaskMulti::fgkPDGCodes[] = {
+const int AliTrackletTaskMultipp::fgkPDGCodes[] = {
   211,
  2212, 
   321, 
@@ -187,11 +188,11 @@ const int AliTrackletTaskMulti::fgkPDGCodes[] = {
 
 //________________________________________________________________________
 /*//Default constructor
-AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
+AliTrackletTaskMultipp::AliTrackletTaskMultipp(const char *name)
   : AliAnalysisTaskSE(name),
 */  
 //________________________________________________________________________
-AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name) 
+AliTrackletTaskMultipp::AliTrackletTaskMultipp(const char *name) 
   : AliAnalysisTaskSE(name), 
 //
   fOutput(0), 
@@ -243,7 +244,7 @@ AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
   fRPTree(0),
   fRPTreeMix(0),
   fStack(0),
-  fMCEvent(0),
+  fMCevent(0),
   //
   fNPart(0),
   fNBColl(0),
@@ -268,15 +269,14 @@ AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
 }
 
 //________________________________________________________________________
-AliTrackletTaskMulti::~AliTrackletTaskMulti()
+AliTrackletTaskMultipp::~AliTrackletTaskMultipp()
 {
   // Destructor
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
     printf("Deleteing output\n");
     delete fOutput;
-    fOutput = 0;
   }
   //
   delete fMultReco;
@@ -296,9 +296,9 @@ AliTrackletTaskMulti::~AliTrackletTaskMulti()
 }
 
 //________________________________________________________________________
-void AliTrackletTaskMulti::UserCreateOutputObjects() 
+void AliTrackletTaskMultipp::UserCreateOutputObjects() 
 {
-  //
+  //  create output
   fOutput = new TList();
   fOutput->SetOwner(); 
   //
@@ -367,13 +367,13 @@ void AliTrackletTaskMulti::UserCreateOutputObjects()
     printf("Wrong centrality type %d\n",fUseCentralityVar);
     exit(1);
   }
-  AliInfo(Form("Centrality type selected: %s\n",fgCentSelName[fUseCentralityVar]));
+  AliInfo(Form("Centrality type selected: %s\n",fgkCentSelName[fUseCentralityVar]));
   PostData(1, fOutput);
   //
 }
 
 //________________________________________________________________________
-void AliTrackletTaskMulti::UserExec(Option_t *) 
+void AliTrackletTaskMultipp::UserExec(Option_t *) 
 {
   // Main loop
   //
@@ -443,7 +443,7 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   }
   ((TH2*)fHistosCustom->UncheckedAt(kHZDCZEMNoSel))->Fill(zemEnergy,zdcEnergy);
   //
-  Float_t centPercentile = centrality->GetCentralityPercentileUnchecked(fgCentSelName[fUseCentralityVar]);
+  Float_t centPercentile = centrality->GetCentralityPercentileUnchecked(fgkCentSelName[fUseCentralityVar]);
 
   // temporary >>>>>>>>>>>>>>>>>>>>>>>>
   if (fUseCentralityVar==kCentZEMvsZDC) {
@@ -474,15 +474,15 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   ((TH1*)fHistosCustom->UncheckedAt(kHStatCent))->Fill(centPercentile);
   //
   AliMCEventHandler* eventHandler = 0;
-  fMCEvent = 0;
+  fMCevent = 0;
   fStack = 0;
   //
   if (fUseMC) {
     eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
     if (!eventHandler) { printf("ERROR: Could not retrieve MC event handler\n"); return; }
-    fMCEvent = eventHandler->MCEvent();
-    if (!fMCEvent) { printf("ERROR: Could not retrieve MC event\n"); return; }
-    fStack = fMCEvent->Stack();
+    fMCevent = eventHandler->MCEvent();
+    if (!fMCevent) { printf("ERROR: Could not retrieve MC event\n"); return; }
+    fStack = fMCevent->Stack();
     if (!fStack) { printf("Stack not available\n"); return; }
   }
   //
@@ -497,7 +497,7 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   fNPart  = 0;
   fNBColl = 0;
   if (fUseMC) {
-    mcGenH = fMCEvent->GenEventHeader();
+    mcGenH = fMCevent->GenEventHeader();
     if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
       AliGenHijingEventHeader* hHijing = (AliGenHijingEventHeader*)mcGenH;
       fNPart  = (hHijing->ProjectileParticipants()+hHijing->TargetParticipants())/2.;
@@ -601,8 +601,9 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliTrackletTaskMulti::Terminate(Option_t *) 
+void AliTrackletTaskMultipp::Terminate(Option_t *) 
 {
+  // finish processing
   Printf("Terminating...");
   TH1* hstat;
   TList *lst = dynamic_cast<TList*>(GetOutputData(1));
@@ -640,7 +641,7 @@ void AliTrackletTaskMulti::Terminate(Option_t *)
 
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::InitMultReco()
+void AliTrackletTaskMultipp::InitMultReco()
 {
   // create mult reconstructor
   if (fMultReco) delete fMultReco;
@@ -659,7 +660,7 @@ void AliTrackletTaskMulti::InitMultReco()
 }
 
 //_________________________________________________________________________
-TObjArray* AliTrackletTaskMulti::BookCustomHistos()
+TObjArray* AliTrackletTaskMultipp::BookCustomHistos()
 {
   // book custom histos, not related to specific tracklet type
   TObjArray* histos = new TObjArray();
@@ -674,7 +675,7 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   hstat->GetXaxis()->SetBinLabel(kOneUnit,"ScaleMerge");
   hstat->GetXaxis()->SetBinLabel(kNWorkers,"Workers");
   //
-  hstat->GetXaxis()->SetBinLabel(kCentVar,  fgCentSelName[fUseCentralityVar]);
+  hstat->GetXaxis()->SetBinLabel(kCentVar,  fgkCentSelName[fUseCentralityVar]);
   hstat->GetXaxis()->SetBinLabel(kDPhi,  "#Delta#varphi");
   hstat->GetXaxis()->SetBinLabel(kDTht,  "#Delta#theta");
   hstat->GetXaxis()->SetBinLabel(kNStd,  "N.std");
@@ -912,7 +913,7 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
 }
 
 //_________________________________________________________________________
-TObjArray* AliTrackletTaskMulti::BookHistosSet(const char* pref, UInt_t selHistos) 
+TObjArray* AliTrackletTaskMultipp::BookHistosSet(const char* pref, UInt_t selHistos) 
 {
   // book standard set of histos attaching the pref in front of the name/title
   //
@@ -991,7 +992,7 @@ TObjArray* AliTrackletTaskMulti::BookHistosSet(const char* pref, UInt_t selHisto
 }
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::AddHisto(TObjArray* histos, TObject* h, Int_t at)
+void AliTrackletTaskMultipp::AddHisto(TObjArray* histos, TObject* h, Int_t at)
 {
   // add single histo to the set
   if (at>=0) histos->AddAtAndExpand(h,at);
@@ -1000,7 +1001,7 @@ void AliTrackletTaskMulti::AddHisto(TObjArray* histos, TObject* h, Int_t at)
 }
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
+void AliTrackletTaskMultipp::FillHistos(Int_t type, const AliMultiplicity* mlt)
 {
   // fill histos of given type
   if (!mlt) return;
@@ -1019,7 +1020,7 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
   AliGenHijingEventHeader* pyHeader = 0;
   //
   if (fUseMC) {
-    pyHeader = (AliGenHijingEventHeader*) fMCEvent->GenEventHeader();//header->GenEventHeader();
+    pyHeader = (AliGenHijingEventHeader*) fMCevent->GenEventHeader();//header->GenEventHeader();
     pyHeader->PrimaryVertex(vtxMC);
   }
   //---------------------------------------- CHECK ------------------------------<<<
@@ -1112,17 +1113,17 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
 }
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::FillMCPrimaries()
+void AliTrackletTaskMultipp::FillMCPrimaries()
 {
   // fill all MC primaries Zv vs Eta
-  if (!fStack || !fMCEvent) return;
+  if (!fStack || !fMCevent) return;
 
   //---------------------------------------- CHECK ------------------------------>>>
   TArrayF vtxMC;
   AliGenHijingEventHeader* pyHeader = 0;
   //
   if (fUseMC) {
-    pyHeader = (AliGenHijingEventHeader*) fMCEvent->GenEventHeader();//header->GenEventHeader();
+    pyHeader = (AliGenHijingEventHeader*) fMCevent->GenEventHeader();//header->GenEventHeader();
     pyHeader->PrimaryVertex(vtxMC);
   }
   //---------------------------------------- CHECK ------------------------------<<<
@@ -1132,7 +1133,7 @@ void AliTrackletTaskMulti::FillMCPrimaries()
   int nprim = 0;
   for (int itr=ntr;itr--;) {
     if (!fStack->IsPhysicalPrimary(itr)) continue;
-    AliMCParticle *part  = (AliMCParticle*)fMCEvent->GetTrack(itr);
+    AliMCParticle *part  = (AliMCParticle*)fMCevent->GetTrack(itr);
     if (!part->Charge()) continue;
     //
     //---------------------------------------- CHECK ------------------------------>>>
@@ -1167,7 +1168,7 @@ void AliTrackletTaskMulti::FillMCPrimaries()
 }
 
 //_________________________________________________________________________
- void AliTrackletTaskMulti::FillHistosSet(TObjArray* histos, double eta,
+ void AliTrackletTaskMultipp::FillHistosSet(TObjArray* histos, double eta,
 					  //double /*phi*/,double /*theta*/,
 					  double dphi,double dtheta,double dThetaX,
 					  double dist) 
@@ -1195,7 +1196,7 @@ void AliTrackletTaskMulti::FillMCPrimaries()
 }
  
 //__________________________________________________________________
-void AliTrackletTaskMulti::FillSpecies(Int_t primsec, Int_t id)
+void AliTrackletTaskMultipp::FillSpecies(Int_t primsec, Int_t id)
 {
   // fill PDGcode 
   TH1 *hPart=0,*hParent=0;
@@ -1228,7 +1229,7 @@ void AliTrackletTaskMulti::FillSpecies(Int_t primsec, Int_t id)
 }
 
 //_________________________________________________________________________
-Int_t AliTrackletTaskMulti::GetCentralityBin(Float_t perc) const
+Int_t AliTrackletTaskMultipp::GetCentralityBin(Float_t perc) const
 {
   // calculate centrality bin
   for (int i=0;i<fNCentBins;i++) if (perc>=fgkCentPerc[i] && perc<=fgkCentPerc[i+1]) return i;
@@ -1236,7 +1237,7 @@ Int_t AliTrackletTaskMulti::GetCentralityBin(Float_t perc) const
 }
 
 //_________________________________________________________________________
-Int_t AliTrackletTaskMulti::GetPdgBin(Int_t pdgCode)
+Int_t AliTrackletTaskMultipp::GetPdgBin(Int_t pdgCode)
 {
   // return my pdg bin
   int ncodes = sizeof(fgkPDGCodes)/sizeof(int);
@@ -1250,7 +1251,7 @@ Int_t AliTrackletTaskMulti::GetPdgBin(Int_t pdgCode)
 }
 
 //_________________________________________________________________________
-Bool_t AliTrackletTaskMulti::HaveCommonParent(const float* clLabs0,const float* clLabs1)
+Bool_t AliTrackletTaskMultipp::HaveCommonParent(const float* clLabs0,const float* clLabs1)
 {
   // do 2 clusters have common parrent
   const int kMaxPar = 50;
@@ -1286,7 +1287,7 @@ Bool_t AliTrackletTaskMulti::HaveCommonParent(const float* clLabs0,const float* 
 
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::CheckReconstructables()
+void AliTrackletTaskMultipp::CheckReconstructables()
 {
   // fill reconstructable tracklets hitsos
   static TArrayI trInd;
@@ -1421,7 +1422,7 @@ void AliTrackletTaskMulti::CheckReconstructables()
 }
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::FillClusterInfo()
+void AliTrackletTaskMultipp::FillClusterInfo()
 {
   // fill info on clusters associated to good tracklets
   if (!fMultReco) return;
@@ -1451,7 +1452,7 @@ void AliTrackletTaskMulti::FillClusterInfo()
 }
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::FillClusterInfoFromMult(const AliMultiplicity* mlt, double zVertex)
+void AliTrackletTaskMultipp::FillClusterInfoFromMult(const AliMultiplicity* mlt, double zVertex)
 {
   // fill info on clusters taking them from Multiplicity object
   const double kRSPD1 = 3.9;
@@ -1478,7 +1479,7 @@ void AliTrackletTaskMulti::FillClusterInfoFromMult(const AliMultiplicity* mlt, d
 }
 
 //_________________________________________________________________________
-void AliTrackletTaskMulti::FillClusterAutoCorrelationFromMult(const AliMultiplicity* mlt, double zVertex)
+void AliTrackletTaskMultipp::FillClusterAutoCorrelationFromMult(const AliMultiplicity* mlt, double zVertex)
 {
   // fill mutual distance between SPD1 clusters
   const double kRSPD1 = 3.9;

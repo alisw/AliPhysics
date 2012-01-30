@@ -1,6 +1,13 @@
 #ifndef ALIITSMULTRECBG_H
 #define ALIITSMULTRECBG_H
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Class for generating combinatorial backgroung                             //
+// for the SPD tracklets                                                     //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 class TH2F;
 class TTree;
 #include <TArrayF.h>
@@ -34,6 +41,7 @@ class AliITSMultRecBg : public AliITSMultReconstructor
  protected:
   virtual void CreateMultiplicityObject();
   //
+  AliITSMultRecBg(const AliTracker &AliITSMultRecBg);
   //     Injection stuff
   void    GenInjBgSample(TTree* treeRP, Float_t *vtx);
   Bool_t  PrepareInjBgGenerator(Float_t *vtx);
@@ -45,14 +53,17 @@ class AliITSMultRecBg : public AliITSMultReconstructor
   Int_t   SearchInjTracklet(const Float_t *vtx);
   Int_t   GetPixelBitC(int stave, int chip,  int col, int row) const {return row+((col+((chip+stave*20)<<5))<<8);} // row + (col+ (chip + stave*20)*32)*256;
   Int_t   GetPixelBitL(int stave, int ladder,int col, int row) const {return row+((col+(ladder+(stave<<2))*32*5)<<8);} // row + (col + (ladder + stave*4)*32*5)*256
-  void    ExtractPixelL(int id, int &stave, int &ladder, int &col, int &row);
+  void    ExtractPixelL(int id, int &stave, int &ladder, int &col, int &row) const;
 
+
+ private: 
+  AliITSMultRecBg& operator=(const AliITSMultRecBg& src);
 
  protected:
   enum {kInjFakeLabel=-999};
   enum {kInjMaxNY=10, kInjMaxNZ=8};
   //
-  Int_t fRecType;
+  Int_t fRecType;                            // what to generate: normal reco, injection etc.
   //
   // method specific members
   //
@@ -82,8 +93,9 @@ class AliITSMultRecBg : public AliITSMultReconstructor
 };
 
 
-inline void AliITSMultRecBg::ExtractPixelL(int id, int &stave, int &ladder, int &col, int &row) 
+inline void AliITSMultRecBg::ExtractPixelL(int id, int &stave, int &ladder, int &col, int &row) const
 {
+  // get sensor data
   enum {kNRow=256,kNCol=32*5,kNLadd=4};
   row = id%kNRow;
   id /= kNRow;

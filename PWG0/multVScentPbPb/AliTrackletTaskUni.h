@@ -17,8 +17,7 @@ class TNtuple;
 
 class AliMCParticle;
 class AliITSMultRecBg;
-
-#include "../ITS/AliITSsegmentationSPD.h"
+class AliITSsegmentationSPD;
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h" 
 
@@ -174,8 +173,8 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
   Bool_t       fDoRotation;                // do rotation
   Bool_t       fDoMixing;                  // do mixing
   //
-  Bool_t       fUseMC; 
-  Bool_t       fCheckReconstructables;
+  Bool_t       fUseMC;                     // flag of MC processing
+  Bool_t       fCheckReconstructables;     // request check
   //
   TObjArray*   fHistosTrData;              //! all tracklets in data
   TObjArray*   fHistosTrInj;               //! injected
@@ -217,7 +216,7 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
   TTree*       fRPTree;                    //! tree of recpoints
   TTree*       fRPTreeMix;                 //! tree of recpoints for mixing
   AliStack*    fStack;                     //! MC stack
-  AliMCEvent*  fMCEvent;                   //! MC Event
+  AliMCEvent*  fMCevent;                   //! MC Event
   Float_t      fESDVtx[3];                 //  ESD vertex
   //
   /*

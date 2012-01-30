@@ -1,5 +1,5 @@
-#ifndef ALIGLOBVAR_H
-#define ALIGLOBVAR_H
+#ifndef ALITASKGLOBVAR_H
+#define ALITASKGLOBVAR_H
 
 ///////////////////////////////////////////////////////////////////////////
 // Analysis task to extract global variables to the tree                 //
@@ -8,37 +8,8 @@
 class AliESDEvent;
 class TList;
 class AliESDtrackCuts;
+class AliTriggerAnalysis;
 #include "AliAnalysisTaskSE.h"
-#include "AliTriggerAnalysis.h" 
-
-class AliTaskGlobVar : public AliAnalysisTaskSE {
-  //
- public:
-  AliTaskGlobVar(const char *name = "AliTaskGlobVar");
-  virtual ~AliTaskGlobVar(); 
-  virtual void  UserCreateOutputObjects();
-  virtual void  UserExec(Option_t *option);
-  virtual void  Terminate(Option_t *);
-  //
-  void    SetUseMC(Bool_t mc=kTRUE)                                   {fUseMC = mc;}
-  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc) const;
-  Bool_t  ZDCTimeTrigger(const AliESDEvent *aEsd) const;
-  AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode, Bool_t fieldOn=kTRUE);
-  //
- protected:
-  Bool_t       fUseMC;                    // do we use MC info
-  TList*       fOutput;                   // output list send on output slot 1 
-  //
-  TTree*       fOutTree;                   // output tree
-  AliESDtrackCuts* fTrackCuts;             //! optional track cuts
-  AliESDtrackCuts* fTrackCuts1;            //! optional track cuts
-  //
- private:    
-  AliTaskGlobVar(const AliTaskGlobVar&); // not implemented
-  AliTaskGlobVar& operator=(const AliTaskGlobVar&); // not implemented 
-  
-  ClassDef(AliTaskGlobVar, 1);  
-};
 
 
 typedef struct {
@@ -72,5 +43,37 @@ typedef struct {
   Short_t mcNPart;
   Short_t mcNBColl;
 } GloVars_t;
+
+
+class AliTaskGlobVar : public AliAnalysisTaskSE {
+  //
+ public:
+  AliTaskGlobVar(const char *name = "AliTaskGlobVar");
+  virtual ~AliTaskGlobVar(); 
+  virtual void  UserCreateOutputObjects();
+  virtual void  UserExec(Option_t *option);
+  virtual void  Terminate(Option_t *);
+  //
+  void    SetUseMC(Bool_t mc=kTRUE)                                   {fUseMC = mc;}
+  Float_t GetCorrV0(const AliESDEvent* esd, float &v0CorrResc) const;
+  Bool_t  ZDCTimeTrigger(const AliESDEvent *aEsd) const;
+  AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode, Bool_t fieldOn=kTRUE);
+  //
+ protected:
+  Bool_t       fUseMC;                    // do we use MC info
+  TList*       fOutput;                   // output list send on output slot 1 
+  //
+  TTree*       fOutTree;                   // output tree
+  AliESDtrackCuts* fTrackCuts;             //! optional track cuts
+  AliESDtrackCuts* fTrackCuts1;            //! optional track cuts
+  //
+  GloVars_t fGlobVars;                     // data container
+ private:    
+  AliTaskGlobVar(const AliTaskGlobVar&); // not implemented
+  AliTaskGlobVar& operator=(const AliTaskGlobVar&); // not implemented 
+  
+  ClassDef(AliTaskGlobVar, 1);  
+};
+
 
 #endif

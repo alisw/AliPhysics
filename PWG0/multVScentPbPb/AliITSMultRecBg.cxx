@@ -8,6 +8,16 @@
 #include <TBits.h>
 #include <TClonesArray.h>
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Class for generating combinatorial backgroung                             //
+// for the SPD tracklets                                                     //
+//                                                                           //
+// Modes for "insertion", "rotation" and "mixing" are supported              //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+
 ClassImp(AliITSMultRecBg)
 
 //_________________________________________________________________
@@ -27,6 +37,35 @@ AliITSMultRecBg::AliITSMultRecBg()
   //
 {
   // constructor
+  fCreateClustersCopy = kTRUE;
+  for (int i=0;i<2;i++) {
+    fAssociations[i] = 0;
+    fInjSPDOcc[i]    = 0;
+    fInjSPDPatt[i]   = 0;
+    fInjNTrials[i]   = 0;
+    fInjNSuccess[i]  = 0;    
+    for (int s=4;s--;) fInjModuleClStart[i][s] = fInjModuleClN[i][s] = 0;
+  }
+  //
+}
+
+//_________________________________________________________________
+AliITSMultRecBg::AliITSMultRecBg(const AliTracker &AliITSMultRecBg) 
+: fRecType(kData),
+  fInjLr(0),
+  fInjStave(0),
+  fInjModule(0),
+  fInjModInStave(0),
+  fInjX(0),
+  fInjZ(0),
+  fInjHitsN(0),
+  fInjScale(1),
+  fInjCurrTrial(0),
+  fInjCluster(),
+  fInjBuffer(2*kTrNPar)
+  //
+{
+  // dummy copy c-tor
   fCreateClustersCopy = kTRUE;
   for (int i=0;i<2;i++) {
     fAssociations[i] = 0;
