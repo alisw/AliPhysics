@@ -931,17 +931,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //PID selection via dEdx
     //-------------------------------------
     
-    AliVTrack *track = 0;
-    if(!strcmp("AliESDCaloCluster",Form("%s",calo->ClassName()))){
-      Int_t iESDtrack = calo->GetTrackMatchedIndex();
-      if(iESDtrack<0) printf("AliAnaElectron::MakeAnalysisFillAOD() - Wrong track index\n");
-      AliVEvent * event = GetReader()->GetInputEvent();
-      track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
-    }
-    else {
-      track = dynamic_cast<AliVTrack*>(calo->GetTrackMatched(0));
-    }
-    
+    AliVTrack *track = GetCaloUtils()->GetMatchedTrack(calo, GetReader()->GetInputEvent());
+
     if(!track) {
       printf("AliAnaElectron::MakeAnalysisFillAOD() - Null track");
       continue;

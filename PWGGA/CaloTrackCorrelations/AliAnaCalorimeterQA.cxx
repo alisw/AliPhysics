@@ -1225,15 +1225,7 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
     
   //Study the track and matched cluster if track exists.
     
-  AliVTrack * track = 0x0;
-  if(!strcmp("AliESDCaloCluster",Form("%s",clus->ClassName())))
-  { 
-    track = dynamic_cast<AliVTrack*> (GetReader()->GetInputEvent()->GetTrack(clus->GetTrackMatchedIndex())); 
-  }
-  else //AOD
-  {
-    track = dynamic_cast<AliVTrack*> (clus->GetTrackMatched(0)); 
-  }
+  AliVTrack *track = GetCaloUtils()->GetMatchedTrack(clus, GetReader()->GetInputEvent());
   
   if(!track) return ;
 

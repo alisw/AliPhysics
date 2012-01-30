@@ -88,24 +88,13 @@ AliAnaPhoton::AliAnaPhoton() :
     fhEmbedPhotonELambda0FullSignal(0),   fhEmbedPhotonELambda0MostlySignal(0),  
     fhEmbedPhotonELambda0MostlyBkg(0),    fhEmbedPhotonELambda0FullBkg(0),       
     fhEmbedPi0ELambda0FullSignal(0),      fhEmbedPi0ELambda0MostlySignal(0),    
-    fhEmbedPi0ELambda0MostlyBkg(0),       fhEmbedPi0ELambda0FullBkg(0),
+    fhEmbedPi0ELambda0MostlyBkg(0),       fhEmbedPi0ELambda0FullBkg(0)
 
-    // Track matching
-    fhTrackMatchedDEta(0x0),              fhTrackMatchedDPhi(0x0),              fhTrackMatchedDEtaDPhi(0x0),
-    fhTrackMatchedDEtaNoCut(0x0),         fhTrackMatchedDPhiNoCut(0x0),         fhTrackMatchedDEtaDPhiNoCut(0x0),   
-    fhTrackMatchedDEtaTRD(0x0),           fhTrackMatchedDPhiTRD(0x0),              
-    fhTrackMatchedDEtaTRDNoCut(0x0),      fhTrackMatchedDPhiTRDNoCut(0x0),          
-    fhTrackMatchedDEtaMCOverlap(0),       fhTrackMatchedDPhiMCOverlap(0),
-    fhTrackMatchedDEtaMCNoOverlap(0),     fhTrackMatchedDPhiMCNoOverlap(0),
-    fhTrackMatchedDEtaMCConversion(0),    fhTrackMatchedDPhiMCConversion(0),
-    fhTrackMatchedMCParticle(0),          fhTrackMatchedMCParticleNoCut(0),   
-    fhdEdx(0),                            fhEOverP(0),                         
-    fhdEdxNoCut(0),                       fhEOverPNoCut(0),
-    fhEOverPTRD(0),                       fhEOverPTRDNoCut(0)
-{
+ {
   //default ctor
   
-  for(Int_t i = 0; i < 14; i++){
+  for(Int_t i = 0; i < 14; i++)
+  {
     fhMCPt     [i] = 0;
     fhMCE      [i] = 0;
     fhMCPhi    [i] = 0;
@@ -114,10 +103,10 @@ AliAnaPhoton::AliAnaPhoton() :
     fhMCDeltaPt[i] = 0;
     fhMC2E     [i] = 0;              
     fhMC2Pt    [i] = 0;
-    
   }
   
-  for(Int_t i = 0; i < 7; i++){
+  for(Int_t i = 0; i < 7; i++)
+  {
     fhPtPrimMC [i] = 0;
     fhEPrimMC  [i] = 0;
     fhPhiPrimMC[i] = 0;
@@ -129,7 +118,8 @@ AliAnaPhoton::AliAnaPhoton() :
     fhYPrimMCAcc  [i] = 0;
   }  
   
-  for(Int_t i = 0; i < 6; i++){
+  for(Int_t i = 0; i < 6; i++)
+  {
     fhMCELambda0    [i]                  = 0;
     fhMCELambda1    [i]                  = 0;
     fhMCEDispersion [i]                  = 0;
@@ -145,6 +135,19 @@ AliAnaPhoton::AliAnaPhoton() :
   
   for(Int_t i = 0; i < 5; i++) fhClusterCuts[i] = 0;
   
+   // Track matching residuals
+   for(Int_t i = 0; i < 2; i++)
+   {
+     fhTrackMatchedDEta[i] = 0;                fhTrackMatchedDPhi[i] = 0;         fhTrackMatchedDEtaDPhi[i] = 0;   
+     fhTrackMatchedDEtaTRD[i] = 0;             fhTrackMatchedDPhiTRD[i] = 0;          
+     fhTrackMatchedDEtaMCOverlap[i] = 0;       fhTrackMatchedDPhiMCOverlap[i] = 0;
+     fhTrackMatchedDEtaMCNoOverlap[i] = 0;     fhTrackMatchedDPhiMCNoOverlap[i] = 0;
+     fhTrackMatchedDEtaMCConversion[i] = 0;    fhTrackMatchedDPhiMCConversion[i] = 0;
+     fhTrackMatchedMCParticle[i] = 0;          fhTrackMatchedMCParticle[i] = 0;   
+     fhdEdx[i] = 0;                            fhEOverP[i] = 0;
+     fhEOverPTRD[i] = 0;
+   }
+   
   //Initialize parameters
   InitParameters();
 
@@ -199,115 +202,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   //.......................................
   //Skip matched clusters with tracks
   
-  if(fFillTMHisto)
-  {
-    Float_t dZ  = calo->GetTrackDz();
-    Float_t dR  = calo->GetTrackDx();
-
-    if(calo->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
-      dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dZ,dR);
-    }    
-    
-    if(fhTrackMatchedDEtaNoCut && TMath::Abs(dR) < 999)
-    {
-      fhTrackMatchedDEtaNoCut->Fill(calo->E(),dZ);
-      fhTrackMatchedDPhiNoCut->Fill(calo->E(),dR);
-      
-      if(calo->E() > 0.5) fhTrackMatchedDEtaDPhiNoCut->Fill(dZ,dR);
-      
-      if(fCalorimeter=="EMCAL" && GetModuleNumber(calo) > 5)
-      {
-        fhTrackMatchedDEtaTRDNoCut->Fill(calo->E(),dZ);
-        fhTrackMatchedDPhiTRDNoCut->Fill(calo->E(),dR);
-      }
-      
-    }
-    
-    // Check dEdx and E/p of matched clusters
-    
-    if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
-    {
-      AliVTrack *track = 0;
-      if(!strcmp("AliESDCaloCluster",Form("%s",calo->ClassName()))){
-        Int_t iESDtrack = calo->GetTrackMatchedIndex();
-        if(iESDtrack<0) printf("AliAnaPhoton::ClusterSelected - Wrong track index\n");
-        AliVEvent * event = GetReader()->GetInputEvent();
-        track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
-      }
-      else {
-        track = dynamic_cast<AliVTrack*>(calo->GetTrackMatched(0));
-      }
-      
-      if(track) 
-      {
-        
-        Float_t dEdx   = track->GetTPCsignal();
-        Float_t eOverp = calo->E()/track->P();
-
-        fhdEdxNoCut  ->Fill(calo->E(), dEdx);
-        fhEOverPNoCut->Fill(calo->E(), eOverp);
-        
-        if(fCalorimeter=="EMCAL" && GetModuleNumber(calo) > 5)
-        {
-          fhEOverPTRDNoCut->Fill(calo->E(), eOverp);
-        }
-        
-      }
-      
-      if(IsDataMC()){
-        
-        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), 0);
-        
-        if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  ){
-          
-          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 2.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 0.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 1.5 );
-          else                                                                                 fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 3.5 );
-          
-          // Check if several particles contributed to cluster and discard overlapped mesons
-          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) || 
-             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)){
-            if(calo->GetNLabels()==1)
-            {
-              fhTrackMatchedDEtaMCNoOverlap->Fill(calo->E(),dZ);
-              fhTrackMatchedDPhiMCNoOverlap->Fill(calo->E(),dR);
-            }
-            else 
-            {
-              fhTrackMatchedDEtaMCOverlap->Fill(calo->E(),dZ);
-              fhTrackMatchedDPhiMCOverlap->Fill(calo->E(),dR);
-            }
-
-          }// Check overlaps
-          
-        }
-        else{
-          
-          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 6.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 4.5 );
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 5.5 );
-          else                                                                                 fhTrackMatchedMCParticleNoCut->Fill(calo->E(), 7.5 );
-          
-          // Check if several particles contributed to cluster
-          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) || 
-             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)){
-
-              fhTrackMatchedDEtaMCConversion->Fill(calo->E(),dZ);
-              fhTrackMatchedDPhiMCConversion->Fill(calo->E(),dR);
-                 
-          }// Check overlaps          
-          
-        }
-        
-      } // MC 
-      
-    } // residuals window
-    
-  }// Fill track matching histograms
+  // Fill matching residual histograms before PID cuts
+  if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,0);
   
   if(fRejectTrackMatch){
     if(IsTrackMatched(calo,GetReader()->GetInputEvent())) {
@@ -1076,7 +972,121 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   
 }
 
-//________________________________________________________________________
+//__________________________________________________________________________
+void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster, 
+                                                       const Int_t cut)
+{
+  // If selected, fill histograms with residuals of matched clusters, help to define track matching cut
+  // Residual filled for different cuts 0 (No cut), after 1 PID cut
+    
+  Float_t dZ = cluster->GetTrackDz();
+  Float_t dR = cluster->GetTrackDx();
+  
+  if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+  {
+    dR = 2000., dZ = 2000.;
+    GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+  }   
+    
+  if(fhTrackMatchedDEta[cut] && TMath::Abs(dR) < 999)
+  {
+    fhTrackMatchedDEta[cut]->Fill(cluster->E(),dZ);
+    fhTrackMatchedDPhi[cut]->Fill(cluster->E(),dR);
+    
+    if(cluster->E() > 0.5) fhTrackMatchedDEtaDPhi[cut]->Fill(dZ,dR);
+    
+    Int_t nSMod = GetModuleNumber(cluster);
+    
+    if(fCalorimeter=="EMCAL" &&  nSMod > 5)
+    {
+      fhTrackMatchedDEtaTRD[cut]->Fill(cluster->E(),dZ);
+      fhTrackMatchedDPhiTRD[cut]->Fill(cluster->E(),dR);
+    }
+    
+    // Check dEdx and E/p of matched clusters
+    
+    if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+    {      
+      
+      AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
+      
+      if(track) 
+      {
+        
+        Float_t dEdx   = track->GetTPCsignal();
+        Float_t eOverp = cluster->E()/track->P();
+        
+        fhdEdx[cut]  ->Fill(cluster->E(), dEdx);
+        fhEOverP[cut]->Fill(cluster->E(), eOverp);
+        
+        if(fCalorimeter=="EMCAL" && nSMod > 5)
+          fhEOverPTRD[cut]->Fill(cluster->E(), eOverp);
+        
+        
+      }
+      else
+          printf("AliAnaPhoton::FillTrackMatchingResidualHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
+      
+      
+      
+      if(IsDataMC())
+      {
+        
+        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(),GetReader(), 0);
+        
+        if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
+        {
+          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 2.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 0.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 1.5 );
+          else                                                                                 fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 3.5 );
+          
+          // Check if several particles contributed to cluster and discard overlapped mesons
+          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) || 
+             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)){
+            if(cluster->GetNLabels()==1)
+            {
+              fhTrackMatchedDEtaMCNoOverlap[cut]->Fill(cluster->E(),dZ);
+              fhTrackMatchedDPhiMCNoOverlap[cut]->Fill(cluster->E(),dR);
+            }
+            else 
+            {
+              fhTrackMatchedDEtaMCOverlap[cut]->Fill(cluster->E(),dZ);
+              fhTrackMatchedDPhiMCOverlap[cut]->Fill(cluster->E(),dR);
+            }
+            
+          }// Check overlaps
+          
+        }
+        else
+        {
+          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 6.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 4.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 5.5 );
+          else                                                                                 fhTrackMatchedMCParticle[cut]->Fill(cluster->E(), 7.5 );
+          
+          // Check if several particles contributed to cluster
+          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) || 
+             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)){
+            
+            fhTrackMatchedDEtaMCConversion[cut]->Fill(cluster->E(),dZ);
+            fhTrackMatchedDPhiMCConversion[cut]->Fill(cluster->E(),dR);
+            
+          }// Check overlaps          
+          
+        }
+        
+      } // MC 
+      
+    } // residuals window
+    
+  } // Small residual
+  
+}
+
+//___________________________________________
 TObjString *  AliAnaPhoton::GetAnalysisCuts()
 {  	
   //Save parameters used for analysis
@@ -1358,216 +1368,273 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if(fFillTMHisto)
   {
-    fhTrackMatchedDEta  = new TH2F
-    ("hTrackMatchedDEta",
-     "d#eta of cluster-track vs cluster energy",
-     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-    fhTrackMatchedDEta->SetYTitle("d#eta");
-    fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
-    
-    fhTrackMatchedDPhi  = new TH2F
-    ("hTrackMatchedDPhi",
-     "d#phi of cluster-track vs cluster energy",
-     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-    fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
-    
-    fhTrackMatchedDEtaDPhi  = new TH2F
-    ("hTrackMatchedDEtaDPhi",
-     "d#eta vs d#phi of cluster-track vs cluster energy",
-     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
-    fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");   
-    
-    outputContainer->Add(fhTrackMatchedDEta) ; 
-    outputContainer->Add(fhTrackMatchedDPhi) ;
-    outputContainer->Add(fhTrackMatchedDEtaDPhi) ;    
         
-    fhTrackMatchedDEtaNoCut  = new TH2F
+    fhTrackMatchedDEta[0]  = new TH2F
     ("hTrackMatchedDEtaNoCut",
      "d#eta of cluster-track vs cluster energy, no photon cuts",
      nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-    fhTrackMatchedDEtaNoCut->SetYTitle("d#eta");
-    fhTrackMatchedDEtaNoCut->SetXTitle("E_{cluster} (GeV)");
+    fhTrackMatchedDEta[0]->SetYTitle("d#eta");
+    fhTrackMatchedDEta[0]->SetXTitle("E_{cluster} (GeV)");
     
-    fhTrackMatchedDPhiNoCut  = new TH2F
+    fhTrackMatchedDPhi[0]  = new TH2F
     ("hTrackMatchedDPhiNoCut",
      "d#phi of cluster-track vs cluster energy, no photon cuts",
      nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-    fhTrackMatchedDPhiNoCut->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDPhiNoCut->SetXTitle("E_{cluster} (GeV)");
+    fhTrackMatchedDPhi[0]->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhi[0]->SetXTitle("E_{cluster} (GeV)");
     
-    fhTrackMatchedDEtaDPhiNoCut  = new TH2F
+    fhTrackMatchedDEtaDPhi[0]  = new TH2F
     ("hTrackMatchedDEtaDPhiNoCut",
      "d#eta vs d#phi of cluster-track vs cluster energy, no photon cuts",
      nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
-    fhTrackMatchedDEtaDPhiNoCut->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDEtaDPhiNoCut->SetXTitle("d#eta");   
+    fhTrackMatchedDEtaDPhi[0]->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhi[0]->SetXTitle("d#eta");   
+        
+    fhdEdx[0]  = new TH2F ("hdEdxNoCut","matched track <dE/dx> vs cluster E, no photon cuts ", 
+                           nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
+    fhdEdx[0]->SetXTitle("E (GeV)");
+    fhdEdx[0]->SetYTitle("<dE/dx>");
     
-    outputContainer->Add(fhTrackMatchedDEtaNoCut) ; 
-    outputContainer->Add(fhTrackMatchedDPhiNoCut) ;
-    outputContainer->Add(fhTrackMatchedDEtaDPhiNoCut) ;
+    fhEOverP[0]  = new TH2F ("hEOverPNoCut","matched track E/p vs cluster E, no photon cuts ", 
+                             nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+    fhEOverP[0]->SetXTitle("E (GeV)");
+    fhEOverP[0]->SetYTitle("E/p");
     
-    fhdEdx  = new TH2F ("hdEdx","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
-    fhdEdx->SetXTitle("E (GeV)");
-    fhdEdx->SetYTitle("<dE/dx>");
-    outputContainer->Add(fhdEdx);  
+    outputContainer->Add(fhTrackMatchedDEta[0]) ; 
+    outputContainer->Add(fhTrackMatchedDPhi[0]) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhi[0]) ;
+    outputContainer->Add(fhdEdx[0]);  
+    outputContainer->Add(fhEOverP[0]);  
 
-    fhEOverP  = new TH2F ("hEOverP","matched track E/p vs cluster E ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
-    fhEOverP->SetXTitle("E (GeV)");
-    fhEOverP->SetYTitle("E/p");
-    outputContainer->Add(fhEOverP);  
+    fhTrackMatchedDEta[1]  = new TH2F
+    ("hTrackMatchedDEta",
+     "d#eta of cluster-track vs cluster energy, no photon cuts",
+     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+    fhTrackMatchedDEta[1]->SetYTitle("d#eta");
+    fhTrackMatchedDEta[1]->SetXTitle("E_{cluster} (GeV)");
     
-    fhdEdxNoCut  = new TH2F ("hdEdxNoCut","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
-    fhdEdxNoCut->SetXTitle("E (GeV)");
-    fhdEdxNoCut->SetYTitle("<dE/dx>");
-    outputContainer->Add(fhdEdxNoCut);  
+    fhTrackMatchedDPhi[1]  = new TH2F
+    ("hTrackMatchedDPhi",
+     "d#phi of cluster-track vs cluster energy, no photon cuts",
+     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDPhi[1]->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhi[1]->SetXTitle("E_{cluster} (GeV)");
     
-    fhEOverPNoCut  = new TH2F ("hEOverPNoCut","matched track E/p vs cluster E ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
-    fhEOverPNoCut->SetXTitle("E (GeV)");
-    fhEOverPNoCut->SetYTitle("E/p");
-    outputContainer->Add(fhEOverPNoCut);  
-
+    fhTrackMatchedDEtaDPhi[1]  = new TH2F
+    ("hTrackMatchedDEtaDPhi",
+     "d#eta vs d#phi of cluster-track vs cluster energy, no photon cuts",
+     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDEtaDPhi[1]->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhi[1]->SetXTitle("d#eta");   
+    
+    fhdEdx[1]  = new TH2F ("hdEdx","matched track <dE/dx> vs cluster E ", 
+                           nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
+    fhdEdx[1]->SetXTitle("E (GeV)");
+    fhdEdx[1]->SetYTitle("<dE/dx>");
+    
+    fhEOverP[1]  = new TH2F ("hEOverP","matched track E/p vs cluster E ", 
+                             nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+    fhEOverP[1]->SetXTitle("E (GeV)");
+    fhEOverP[1]->SetYTitle("E/p");
+    
+    outputContainer->Add(fhTrackMatchedDEta[1]) ; 
+    outputContainer->Add(fhTrackMatchedDPhi[1]) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhi[1]) ;
+    outputContainer->Add(fhdEdx[1]);  
+    outputContainer->Add(fhEOverP[1]);      
+    
     if(fCalorimeter=="EMCAL")
     {
-      fhTrackMatchedDEtaTRD  = new TH2F
-      ("hTrackMatchedDEtaTRD",
-       "d#eta of cluster-track vs cluster energy, SM behind TRD",
-       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-      fhTrackMatchedDEtaTRD->SetYTitle("d#eta");
-      fhTrackMatchedDEtaTRD->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiTRD  = new TH2F
-      ("hTrackMatchedDPhiTRD",
-       "d#phi of cluster-track vs cluster energy, SM behing TRD",
-       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-      fhTrackMatchedDPhiTRD->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiTRD->SetXTitle("E_{cluster} (GeV)");
-      
-      outputContainer->Add(fhTrackMatchedDEtaTRD) ; 
-      outputContainer->Add(fhTrackMatchedDPhiTRD) ;
-      
-      
-      fhTrackMatchedDEtaTRDNoCut  = new TH2F
+      fhTrackMatchedDEtaTRD[0]  = new TH2F
       ("hTrackMatchedDEtaTRDNoCut",
        "d#eta of cluster-track vs cluster energy, SM behind TRD, no photon cuts",
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-      fhTrackMatchedDEtaTRDNoCut->SetYTitle("d#eta");
-      fhTrackMatchedDEtaTRDNoCut->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaTRD[0]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaTRD[0]->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiTRDNoCut  = new TH2F
+      fhTrackMatchedDPhiTRD[0]  = new TH2F
       ("hTrackMatchedDPhiTRDNoCut",
        "d#phi of cluster-track vs cluster energy, SM behing TRD, no photon cuts",
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-      fhTrackMatchedDPhiTRDNoCut->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiTRDNoCut->SetXTitle("E_{cluster} (GeV)");
-      
-      outputContainer->Add(fhTrackMatchedDEtaTRDNoCut) ; 
-      outputContainer->Add(fhTrackMatchedDPhiTRDNoCut) ;
+      fhTrackMatchedDPhiTRD[0]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiTRD[0]->SetXTitle("E_{cluster} (GeV)");
             
-      fhEOverPTRD  = new TH2F ("hEOverPTRD","matched track E/p vs cluster E ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
-      fhEOverPTRD->SetXTitle("E (GeV)");
-      fhEOverPTRD->SetYTitle("E/p");
-            
-      fhEOverPTRDNoCut  = new TH2F ("hEOverPTRDNoCut","matched track E/p vs cluster E, behind TRD ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
-      fhEOverPTRDNoCut->SetXTitle("E (GeV)");
-      fhEOverPTRDNoCut->SetYTitle("E/p");
+      fhEOverPTRD[0]  = new TH2F ("hEOverPTRDNoCut","matched track E/p vs cluster E, behind TRD, no photon cuts ", 
+                                  nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+      fhEOverPTRD[0]->SetXTitle("E (GeV)");
+      fhEOverPTRD[0]->SetYTitle("E/p");
       
-      outputContainer->Add(fhEOverPTRD     );  
-      outputContainer->Add(fhEOverPTRDNoCut);  
+      outputContainer->Add(fhTrackMatchedDEtaTRD[0]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiTRD[0]) ;
+      outputContainer->Add(fhEOverPTRD[0]);  
+      
+      fhTrackMatchedDEtaTRD[1]  = new TH2F
+      ("hTrackMatchedDEtaTRD",
+       "d#eta of cluster-track vs cluster energy, SM behind TRD",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaTRD[1]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaTRD[1]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiTRD[1]  = new TH2F
+      ("hTrackMatchedDPhiTRD",
+       "d#phi of cluster-track vs cluster energy, SM behing TRD",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiTRD[1]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiTRD[1]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhEOverPTRD[1]  = new TH2F ("hEOverPTRD","matched track E/p vs cluster E, behind TRD ", 
+                                  nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+      fhEOverPTRD[1]->SetXTitle("E (GeV)");
+      fhEOverPTRD[1]->SetYTitle("E/p");
+      
+      outputContainer->Add(fhTrackMatchedDEtaTRD[1]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiTRD[1]) ;
+      outputContainer->Add(fhEOverPTRD[1]);  
       
     }
     
     if(IsDataMC())
     {
       
-      fhTrackMatchedDEtaMCNoOverlap  = new TH2F
+      fhTrackMatchedDEtaMCNoOverlap[0]  = new TH2F
+      ("hTrackMatchedDEtaMCNoOverlapNoCut",
+       "d#eta of cluster-track vs cluster energy, no other MC particles overlap",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaMCNoOverlap[0]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCNoOverlap[0]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiMCNoOverlap[0]  = new TH2F
+      ("hTrackMatchedDPhiMCNoOverlapNoCut",
+       "d#phi of cluster-track vs cluster energy, no other MC particles overlap",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiMCNoOverlap[0]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCNoOverlap[0]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap[0]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap[0]) ;
+      
+      fhTrackMatchedDEtaMCNoOverlap[1]  = new TH2F
       ("hTrackMatchedDEtaMCNoOverlap",
        "d#eta of cluster-track vs cluster energy, no other MC particles overlap",
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-      fhTrackMatchedDEtaMCNoOverlap->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCNoOverlap->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaMCNoOverlap[1]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCNoOverlap[1]->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiMCNoOverlap  = new TH2F
+      fhTrackMatchedDPhiMCNoOverlap[1]  = new TH2F
       ("hTrackMatchedDPhiMCNoOverlap",
        "d#phi of cluster-track vs cluster energy, no other MC particles overlap",
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-      fhTrackMatchedDPhiMCNoOverlap->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCNoOverlap->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhiMCNoOverlap[1]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCNoOverlap[1]->SetXTitle("E_{cluster} (GeV)");
       
-      outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap) ; 
-      outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap) ;
+      outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap[1]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap[1]) ;
       
-      fhTrackMatchedDEtaMCOverlap  = new TH2F
+      fhTrackMatchedDEtaMCOverlap[0]  = new TH2F
+      ("hTrackMatchedDEtaMCOverlapNoCut",
+       "d#eta of cluster-track vs cluster energy, several MC particles overlap",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaMCOverlap[0]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCOverlap[0]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiMCOverlap[0]  = new TH2F
+      ("hTrackMatchedDPhiMCOverlapNoCut",
+       "d#phi of cluster-track vs cluster energy, several MC particles overlap",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiMCOverlap[0]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCOverlap[0]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaMCOverlap[0]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCOverlap[0]) ;
+      
+      fhTrackMatchedDEtaMCOverlap[1]  = new TH2F
       ("hTrackMatchedDEtaMCOverlap",
        "d#eta of cluster-track vs cluster energy, several MC particles overlap",
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-      fhTrackMatchedDEtaMCOverlap->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCOverlap->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaMCOverlap[1]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCOverlap[1]->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiMCOverlap  = new TH2F
+      fhTrackMatchedDPhiMCOverlap[1]  = new TH2F
       ("hTrackMatchedDPhiMCOverlap",
        "d#phi of cluster-track vs cluster energy, several MC particles overlap",
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-      fhTrackMatchedDPhiMCOverlap->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCOverlap->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhiMCOverlap[1]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCOverlap[1]->SetXTitle("E_{cluster} (GeV)");
       
-      outputContainer->Add(fhTrackMatchedDEtaMCOverlap) ; 
-      outputContainer->Add(fhTrackMatchedDPhiMCOverlap) ;
+      outputContainer->Add(fhTrackMatchedDEtaMCOverlap[1]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCOverlap[1]) ;      
       
-      
-      fhTrackMatchedDEtaMCConversion  = new TH2F
-      ("hTrackMatchedDEtaMCConversion",
-       "d#eta of cluster-track vs cluster energym no other MC particles overlap appart from conversions",
+      fhTrackMatchedDEtaMCConversion[0]  = new TH2F
+      ("hTrackMatchedDEtaMCConversionNoCut",
+       "d#eta of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-      fhTrackMatchedDEtaMCConversion->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCConversion->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaMCConversion[0]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCConversion[0]->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiMCConversion  = new TH2F
+      fhTrackMatchedDPhiMCConversion[0]  = new TH2F
+      ("hTrackMatchedDPhiMCConversionNoCut",
+       "d#phi of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhiMCConversion[0]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCConversion[0]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaMCConversion[0]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCConversion[0]) ;
+       
+      
+      fhTrackMatchedDEtaMCConversion[1]  = new TH2F
+      ("hTrackMatchedDEtaMCConversion",
+       "d#eta of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEtaMCConversion[1]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaMCConversion[1]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiMCConversion[1]  = new TH2F
       ("hTrackMatchedDPhiMCConversion",
        "d#phi of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-      fhTrackMatchedDPhiMCConversion->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCConversion->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhiMCConversion[1]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiMCConversion[1]->SetXTitle("E_{cluster} (GeV)");
       
-      outputContainer->Add(fhTrackMatchedDEtaMCConversion) ; 
-      outputContainer->Add(fhTrackMatchedDPhiMCConversion) ;
+      outputContainer->Add(fhTrackMatchedDEtaMCConversion[1]) ; 
+      outputContainer->Add(fhTrackMatchedDPhiMCConversion[1]) ;
       
-      fhTrackMatchedMCParticle  = new TH2F
-      ("hTrackMatchedMCParticle",
-       "Origin of particle vs energy",
-       nptbins,ptmin,ptmax,8,0,8); 
-      fhTrackMatchedMCParticle->SetXTitle("E (GeV)");   
-      //fhTrackMatchedMCParticle->SetYTitle("Particle type");
       
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(1 ,"Photon");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(2 ,"Electron");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(4 ,"Rest");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
-      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
-      
-      outputContainer->Add(fhTrackMatchedMCParticle);            
-      
-      fhTrackMatchedMCParticleNoCut  = new TH2F
+      fhTrackMatchedMCParticle[0]  = new TH2F
       ("hTrackMatchedMCParticleNoCut",
        "Origin of particle vs energy",
        nptbins,ptmin,ptmax,8,0,8); 
-      fhTrackMatchedMCParticleNoCut->SetXTitle("E (GeV)");   
-      //fhTrackMatchedMCParticleNoCut->SetYTitle("Particle type");
+      fhTrackMatchedMCParticle[0]->SetXTitle("E (GeV)");   
+      //fhTrackMatchedMCParticle[0]->SetYTitle("Particle type");
       
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(1 ,"Photon");
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(2 ,"Electron");
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(4 ,"Rest");
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
-      fhTrackMatchedMCParticleNoCut->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
       
-      outputContainer->Add(fhTrackMatchedMCParticleNoCut);       
+      fhTrackMatchedMCParticle[1]  = new TH2F
+      ("hTrackMatchedMCParticle",
+       "Origin of particle vs energy",
+       nptbins,ptmin,ptmax,8,0,8); 
+      fhTrackMatchedMCParticle[1]->SetXTitle("E (GeV)");   
+      //fhTrackMatchedMCParticle[1]->SetYTitle("Particle type");
+      
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");      
+      
+      outputContainer->Add(fhTrackMatchedMCParticle[0]);            
+      outputContainer->Add(fhTrackMatchedMCParticle[1]);       
       
     }
   }  
@@ -2089,84 +2156,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     fhClusterCuts[8]->Fill(calo->E());
     
     // Matching after cuts
-    if(fFillTMHisto)
-    {
-      Float_t dZ  = calo->GetTrackDz();
-      Float_t dR  = calo->GetTrackDx();
-      
-      if(calo->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
-        dR = 2000., dZ = 2000.;
-        GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dZ,dR);
-      }    
-      
-      if(TMath::Abs(dR) < 999){
-        fhTrackMatchedDEta->Fill(calo->E(),dZ);
-        fhTrackMatchedDPhi->Fill(calo->E(),dR);
-        
-        if(calo->E() > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
-        
-        if(fCalorimeter=="EMCAL" && GetModuleNumber(calo) > 5)
-        {
-          fhTrackMatchedDEtaTRD->Fill(calo->E(),dZ);
-          fhTrackMatchedDPhiTRD->Fill(calo->E(),dR);
-        }        
-      }
-      
-      // Check dEdx and E/p of matched clusters
-      
-      if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
-      {
-        AliVTrack *track = 0;
-        if(!strcmp("AliESDCaloCluster",Form("%s",calo->ClassName()))){
-          Int_t iESDtrack = calo->GetTrackMatchedIndex();
-          if(iESDtrack<0) printf("AliAnaPhoton::MakeAnalysisFillAOD - Wrong track index\n");
-          AliVEvent * event = GetReader()->GetInputEvent();
-          track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
-        }
-        else {
-          track = dynamic_cast<AliVTrack*>(calo->GetTrackMatched(0));
-        }
-        
-        if(track) {
-          
-          Float_t dEdx   = track->GetTPCsignal();
-          Float_t eOverp = calo->E()/track->P() ;
-
-          fhdEdx  ->Fill(calo->E(), dEdx  );
-          fhEOverP->Fill(calo->E(), eOverp);
-          
-          if(fCalorimeter=="EMCAL" && GetModuleNumber(calo) > 5)
-          {
-            fhEOverPTRD->Fill(calo->E(), eOverp);
-          }
-          
-        }
-        
-        if(IsDataMC()){
-          if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  ){
-            
-            if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
-                       GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(calo->E(), 2.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(calo->E(), 0.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(calo->E(), 1.5 );
-            else                                                                                 fhTrackMatchedMCParticle->Fill(calo->E(), 3.5 );
-            
-          }
-          else{
-            
-            if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
-                       GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(calo->E(), 6.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(calo->E(), 4.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(calo->E(), 5.5 );
-            else                                                                                 fhTrackMatchedMCParticle->Fill(calo->E(), 7.5 );
-            
-          }        
-          
-        } // MC
-        
-      } // residual window
-      
-    } // Fill Track matching histo
+    if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,1);
     
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);

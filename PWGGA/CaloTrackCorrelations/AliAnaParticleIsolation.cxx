@@ -191,18 +191,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
       
       if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
       {
-        AliVTrack *track = 0;
-        if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
-        {
-          Int_t iESDtrack = cluster->GetTrackMatchedIndex();
-          if(iESDtrack<0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms - Wrong track index\n");
-          AliVEvent * event = GetReader()->GetInputEvent();
-          track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
-        }
-        else 
-        {
-          track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(0));
-        }
+
+        AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
         
         if(track) 
         {
@@ -212,6 +202,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
           Float_t eOverp = cluster->E()/track->P();
           fhEOverP->Fill(cluster->E(),  eOverp);
         }
+        //else 
+        //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
+
         
         if(IsDataMC()){
           
