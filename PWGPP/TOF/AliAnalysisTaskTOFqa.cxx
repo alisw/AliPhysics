@@ -1254,10 +1254,10 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       
     ((TH1F*)fHlist->FindObject("hESDprimaryTrackP"))->Fill(mom); 
     ((TH1F*)fHlist->FindObject("hESDprimaryTrackPt"))->Fill(pT); 
-    if (pT>=0.5)
+    if (pT>=0.5) {
       ((TH1F*)fHlist->FindObject("hTOFprimaryESDeta"))->Fill(eta);
-    ((TH1F*)fHlist->FindObject("hTOFprimaryESDphi"))->Fill(phi);
-    
+      ((TH1F*)fHlist->FindObject("hTOFprimaryESDphi"))->Fill(phi);
+    }
      //evaluate sign  
      if (fEnableAdvancedCheck){
        if (track->GetSign()>0){
