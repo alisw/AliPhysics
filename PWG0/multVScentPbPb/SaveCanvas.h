@@ -1,3 +1,12 @@
+/**************************************************************/
+/*                                                            */
+/* Set of methods to manipulate with canvas                   */
+/* its elements etc.                                          */
+/* Author:                                                    */
+/* ruben.shahoyan@cern.ch                                     */
+/*                                                            */
+/**************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TCanvas.h>
 #include <TString.h>

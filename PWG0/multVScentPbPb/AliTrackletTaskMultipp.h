@@ -1,8 +1,8 @@
-#ifndef ALITRACKLETTASKMULTI_H
-#define ALITRACKLETTASKMULTI_H
+#ifndef ALITRACKLETTASKMULTIPP_H
+#define ALITRACKLETTASKMULTIPP_H
 
 ///////////////////////////////////////////////////////////////////////////
-// Class AliTrackletTaskMulti                                            //
+// Class AliTrackletTaskMultipp                                            //
 // Analysis task to produce data and MC histos needed for tracklets      //
 // dNdEta extraction in multiple bins in one go                          //
 // Author:  ruben.shahoyan@cern.ch                                       //
@@ -18,13 +18,12 @@ class TNtuple;
 class AliMCParticle;
 class AliITSMultRecBg;
 class AliESDTrackCuts;
-
-#include "../ITS/AliITSsegmentationSPD.h"
+class AliITSsegmentationSPD;
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h" 
 #include <TMath.h>
 
-class AliTrackletTaskMulti : public AliAnalysisTaskSE {
+class AliTrackletTaskMultipp : public AliAnalysisTaskSE {
  public:
   enum {kData,kBgInj,kBgRot,kBgMix,kMC};
   enum {kCentV0M,kCentFMD,kCentTRK,kCentTKL,kCentCL0,kCentCL1,kCentV0MvsFMD,kCentTKLvsV0,kCentZEMvsZDC,kNCentTypes}; // what is used to define centrality
@@ -127,8 +126,8 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   };
 
   //
-  AliTrackletTaskMulti(const char *name = "AliTrackletTaskMulti");
-  virtual ~AliTrackletTaskMulti(); 
+  AliTrackletTaskMultipp(const char *name = "AliTrackletTaskMultipp");
+  virtual ~AliTrackletTaskMultipp(); 
   
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
@@ -196,8 +195,8 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   Bool_t       fDoRotation;                // do rotation
   Bool_t       fDoMixing;                  // do mixing
   //
-  Bool_t       fUseMC; 
-  Bool_t       fCheckReconstructables;
+  Bool_t       fUseMC;                     // flag of MC processing
+  Bool_t       fCheckReconstructables;     // request check
   //
   TObjArray*   fHistosTrData;              //! all tracklets in data
   TObjArray*   fHistosTrInj;               //! injected
@@ -240,7 +239,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   TTree*       fRPTree;                    //! tree of recpoints
   TTree*       fRPTreeMix;                 //! tree of recpoints for mixing
   AliStack*    fStack;                     //! MC stack
-  AliMCEvent*  fMCEvent;                   //! MC Event
+  AliMCEvent*  fMCevent;                   //! MC Event
   Float_t      fESDVtx[3];                 //  ESD vertex
   //
   Float_t fNPart;                          // number of participant pairs from MC
@@ -251,15 +250,15 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   //
   static const Float_t fgkCentPerc[];               //! centrality in percentiles
   //
-  static const char*  fgCentSelName[];              //!centrality types
+  static const char*  fgkCentSelName[];             //!centrality types
   static const char*  fgkPDGNames[];                //!pdg names
   static const Int_t  fgkPDGCodes[];                //!pdg codes
   //
  private:    
-  AliTrackletTaskMulti(const AliTrackletTaskMulti&); // not implemented
-  AliTrackletTaskMulti& operator=(const AliTrackletTaskMulti&); // not implemented 
+  AliTrackletTaskMultipp(const AliTrackletTaskMultipp&); // not implemented
+  AliTrackletTaskMultipp& operator=(const AliTrackletTaskMultipp&); // not implemented 
   
-  ClassDef(AliTrackletTaskMulti, 1);  
+  ClassDef(AliTrackletTaskMultipp, 1);  
 };
 
 

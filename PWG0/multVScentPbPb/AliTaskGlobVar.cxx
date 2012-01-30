@@ -42,12 +42,11 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
+#include "AliTriggerAnalysis.h" 
 
 
 ClassImp(AliTaskGlobVar)
 
-
-GloVars_t globVars;
 
 //________________________________________________________________________
 AliTaskGlobVar::AliTaskGlobVar(const char *name) 
@@ -57,7 +56,8 @@ AliTaskGlobVar::AliTaskGlobVar(const char *name)
     fOutput(0), 
     fOutTree(0),
     fTrackCuts(0),
-    fTrackCuts1(0)
+  fTrackCuts1(0),
+  fGlobVars()
 {
   // Constructor
   DefineOutput(1, TList::Class());
@@ -73,7 +73,6 @@ AliTaskGlobVar::~AliTaskGlobVar()
   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
     printf("Deleteing output\n");
     delete fOutput;
-    fOutput = 0;
   }
   //
 }
@@ -81,16 +80,16 @@ AliTaskGlobVar::~AliTaskGlobVar()
 //________________________________________________________________________
 void AliTaskGlobVar::UserCreateOutputObjects() 
 {
-  //
+  // create ouptut
   fOutput = new TList();
   fOutput->SetOwner(); 
   //
   fOutTree = new TTree("globTree","globTree");
-  fOutTree->Branch("g",&globVars,"runID/I:timeStamp/i:zdcNA/F:zdcPA/F:zdcNC/F:zdcPC/F:zem1/F:zem2/F:zvSPD/F:zvTPC/F:chunk/S:flags/S"
+  fOutTree->Branch("g",&fGlobVars,"runID/I:timeStamp/i:zdcNA/F:zdcPA/F:zdcNC/F:zdcPC/F:zem1/F:zem2/F:zvSPD/F:zvTPC/F:chunk/S:flags/S"
 		   ":spd1/S:spd2/S:ncontSPDV/S:ncontTPCV/S:nTrTPC/S:nTrTPCITS/S:nTracklets/S:v0A/S:v0C/S:v0Corr/S", 16777216);
 
   if (fUseMC) {
-    fOutTree->Branch("gmc",&globVars.mcZV,"mcZV/F:mcdNdEta/S:mcNPart/S:mcNBColl/S", 16777216);
+    fOutTree->Branch("gmc",&fGlobVars.mcZV,"mcZV/F:mcdNdEta/S:mcNPart/S:mcNBColl/S", 16777216);
   }
   fOutput->Add(fOutTree);
   //
@@ -128,45 +127,45 @@ void AliTaskGlobVar::UserExec(Option_t *)
   //  if (vtxESDTPC->GetNContributors()<1) return;
   //  if (vtxESDTPC->GetNContributors()<(-10.+0.25*multESD->GetNumberOfITSClusters(0))) return;
   //
-  globVars.runID = esd->GetRunNumber();
+  fGlobVars.runID = esd->GetRunNumber();
   TString rid = "";
-  rid +=  globVars.runID;
+  rid +=  fGlobVars.runID;
   TString flname        = hand->GetTree()->GetCurrentFile()->GetName();
-  globVars.chunk        = 0;
+  fGlobVars.chunk        = 0;
   int id = 0;
   while ( (id=flname.Index(rid))>=0 ) flname = flname.Data()+id+rid.Length();
   id = flname.First('.');
   if (id>=0) {
     flname = flname.Data() + id+1;
-    globVars.chunk = (Short_t)flname.Atoi();
+    fGlobVars.chunk = (Short_t)flname.Atoi();
   }
-  //  printf("%d %s\n",globVars.chunk,hand->GetTree()->GetCurrentFile()->GetName());
+  //  printf("%d %s\n",fGlobVars.chunk,hand->GetTree()->GetCurrentFile()->GetName());
   //
-  globVars.timeStamp    = esd->GetTimeStamp();
-  globVars.timeStamp    = esd->GetTimeStamp();
-  globVars.zvSPD        = vtxESD->GetZ(); 
-  globVars.zvTPC        = vtxESDTPC->GetZ(); 
-  globVars.ncontSPDV = (Short_t)vtxESD->GetNContributors();
-  globVars.ncontTPCV = (Short_t)vtxESDTPC->GetNContributors();
-  //  globVars.nTrTPC     = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
-  globVars.nTrTPC       = fTrackCuts  ? (Short_t)fTrackCuts->CountAcceptedTracks(esd):-1;
-  globVars.nTrTPCITS    = fTrackCuts1 ? (Short_t)fTrackCuts1->CountAcceptedTracks(esd):-1;
-  globVars.nTracklets = multESD->GetNumberOfTracklets();
+  fGlobVars.timeStamp    = esd->GetTimeStamp();
+  fGlobVars.timeStamp    = esd->GetTimeStamp();
+  fGlobVars.zvSPD        = vtxESD->GetZ(); 
+  fGlobVars.zvTPC        = vtxESDTPC->GetZ(); 
+  fGlobVars.ncontSPDV = (Short_t)vtxESD->GetNContributors();
+  fGlobVars.ncontTPCV = (Short_t)vtxESDTPC->GetNContributors();
+  //  fGlobVars.nTrTPC     = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
+  fGlobVars.nTrTPC       = fTrackCuts  ? (Short_t)fTrackCuts->CountAcceptedTracks(esd):-1;
+  fGlobVars.nTrTPCITS    = fTrackCuts1 ? (Short_t)fTrackCuts1->CountAcceptedTracks(esd):-1;
+  fGlobVars.nTracklets = multESD->GetNumberOfTracklets();
   //
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   if (esdV0) {
-    globVars.v0A = (Short_t)esdV0->GetMTotV0A();
-    globVars.v0C = (Short_t)esdV0->GetMTotV0C();
+    fGlobVars.v0A = (Short_t)esdV0->GetMTotV0A();
+    fGlobVars.v0C = (Short_t)esdV0->GetMTotV0C();
   }
-  else globVars.v0A = globVars.v0C = 0;
+  else fGlobVars.v0A = fGlobVars.v0C = 0;
   //
-  globVars.spd1 = (Short_t)multESD->GetNumberOfITSClusters(0);
-  globVars.spd2 = (Short_t)multESD->GetNumberOfITSClusters(1);
+  fGlobVars.spd1 = (Short_t)multESD->GetNumberOfITSClusters(0);
+  fGlobVars.spd2 = (Short_t)multESD->GetNumberOfITSClusters(1);
   //
   float v0Corr,v0CorrR;
   v0Corr = GetCorrV0(esd,v0CorrR);
-  globVars.v0Corr = (Short_t)v0Corr;
-  //  globVars.v0CorrResc = (Short_t)v0CorrR;
+  fGlobVars.v0Corr = (Short_t)v0Corr;
+  //  fGlobVars.v0CorrResc = (Short_t)v0CorrR;
 
   //---------------------------------------------
   AliESDZDC *esdZDC = esd->GetESDZDC();
@@ -180,28 +179,28 @@ void AliTaskGlobVar::UserExec(Option_t *)
       }
     }
   }
-  globVars.flags = 0;
-  if ( tdc[12] ) globVars.flags |= GloVars_t::kTDCNA; //  Bool_t zdcNA = tdc[12];
-  if ( tdc[10] ) globVars.flags |= GloVars_t::kTDCNC; //  Bool_t zdcNC = tdc[10];
-  if ( tdc[13] ) globVars.flags |= GloVars_t::kTDCPA; //  Bool_t zdcPA = tdc[13];
-  if ( tdc[11] ) globVars.flags |= GloVars_t::kTDCPC; //  Bool_t zdcPC = tdc[11];
-  if ( vtxOK   ) globVars.flags |= GloVars_t::kSPDVTXOK;
+  fGlobVars.flags = 0;
+  if ( tdc[12] ) fGlobVars.flags |= GloVars_t::kTDCNA; //  Bool_t zdcNA = tdc[12];
+  if ( tdc[10] ) fGlobVars.flags |= GloVars_t::kTDCNC; //  Bool_t zdcNC = tdc[10];
+  if ( tdc[13] ) fGlobVars.flags |= GloVars_t::kTDCPA; //  Bool_t zdcPA = tdc[13];
+  if ( tdc[11] ) fGlobVars.flags |= GloVars_t::kTDCPC; //  Bool_t zdcPC = tdc[11];
+  if ( vtxOK   ) fGlobVars.flags |= GloVars_t::kSPDVTXOK;
   //
-  globVars.zdcNC = (Float_t) (esdZDC->GetZDCN1Energy()) /8.;
-  globVars.zdcPC = (Float_t) (esdZDC->GetZDCP1Energy()) /8.;
-  globVars.zdcNA = (Float_t) (esdZDC->GetZDCN2Energy()) /8.;
-  globVars.zdcPA = (Float_t) (esdZDC->GetZDCP2Energy()) /8.;
-  globVars.zem1  = (Float_t) (esdZDC->GetZDCEMEnergy(0)) /8.;
-  globVars.zem2  = (Float_t) (esdZDC->GetZDCEMEnergy(1)) /8.;
+  fGlobVars.zdcNC = (Float_t) (esdZDC->GetZDCN1Energy()) /8.;
+  fGlobVars.zdcPC = (Float_t) (esdZDC->GetZDCP1Energy()) /8.;
+  fGlobVars.zdcNA = (Float_t) (esdZDC->GetZDCN2Energy()) /8.;
+  fGlobVars.zdcPA = (Float_t) (esdZDC->GetZDCP2Energy()) /8.;
+  fGlobVars.zem1  = (Float_t) (esdZDC->GetZDCEMEnergy(0)) /8.;
+  fGlobVars.zem2  = (Float_t) (esdZDC->GetZDCEMEnergy(1)) /8.;
   //-----------------------------------------------
   //
   // ---------------------- MC ONLY -------------------------------
   AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
   AliStack*    stack=0;
   AliMCEvent*  mcEvent=0;
-  globVars.mcdNdEta = 0;
-  globVars.mcNPart  = 0;
-  globVars.mcNBColl = 0;
+  fGlobVars.mcdNdEta = 0;
+  fGlobVars.mcNPart  = 0;
+  fGlobVars.mcNBColl = 0;
   if (fUseMC && eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
     int ntr = stack->GetNtrack();
     for (int itr=ntr;itr--;) {
@@ -210,25 +209,25 @@ void AliTaskGlobVar::UserExec(Option_t *)
       if (!part || !part->Charge()) continue;
       Float_t eta = part->Eta();
       if (TMath::Abs(eta)>0.5) continue;
-      globVars.mcdNdEta++;
+      fGlobVars.mcdNdEta++;
     }
     //
     AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
     if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
       AliGenHijingEventHeader* hHijing = (AliGenHijingEventHeader*)mcGenH;
-      globVars.mcNPart  = (hHijing->ProjectileParticipants()+hHijing->TargetParticipants())/2.;
-      globVars.mcNBColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
+      fGlobVars.mcNPart  = (hHijing->ProjectileParticipants()+hHijing->TargetParticipants())/2.;
+      fGlobVars.mcNBColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
     }
     else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
       AliGenDPMjetEventHeader* hDpmJet = (AliGenDPMjetEventHeader*)mcGenH;
-      globVars.mcNPart  = (hDpmJet->ProjectileParticipants()+hDpmJet->TargetParticipants())/2.;
-      globVars.mcNBColl = hDpmJet->NN()+hDpmJet->NNw()+hDpmJet->NwN()+hDpmJet->NwNw();
+      fGlobVars.mcNPart  = (hDpmJet->ProjectileParticipants()+hDpmJet->TargetParticipants())/2.;
+      fGlobVars.mcNBColl = hDpmJet->NN()+hDpmJet->NNw()+hDpmJet->NwN()+hDpmJet->NwNw();
     }
     else {} // unknown generator
     //
     TArrayF vtxMC;
     mcGenH->PrimaryVertex(vtxMC);
-    globVars.mcZV = vtxMC[2];
+    fGlobVars.mcZV = vtxMC[2];
   }
   //
   fOutTree->Fill();
@@ -237,6 +236,7 @@ void AliTaskGlobVar::UserExec(Option_t *)
 //________________________________________________________________________
 void AliTaskGlobVar::Terminate(Option_t *) 
 {
+  // print itself
   Printf("Terminating...");
   //  AliAnalysisTaskSE::Terminate();
 }
