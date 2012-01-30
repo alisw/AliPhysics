@@ -204,11 +204,13 @@ Bool_t AliCTPRawStream::Next()
 	  orbit |= data[iword];
 	  orbit |= ((data[iword+1] & 0xF) << 8);
 	  iword += 4;
+	  AliDebug(1,Form("Orbit=0x%x\n",orbit));
 	  continue;
 	}
       }
       UShort_t bc = data[iword];
-      bc |= ((data[iword] & 0xF) << 8);
+      bc |= ((data[iword+1] & 0xF) << 8);
+      AliDebug(1,Form("BC=0x%x\n",bc));
       if (bc == 0xFFF) {
 	incomplete = kTRUE;
       }
