@@ -330,7 +330,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig
     case 3: HelixVertexFinder();          break;
     case 4: VertexFinder(1);              break;
     case 5: VertexFinder(0);              break;
-    default: printf("Wrong algorithm\n"); break;  
+    default: {AliFatal(Form("Wrong seeder algorithm %d",fAlgoIter0));} break;  
     }
     fDCAcut = cutsave;
     if(fVert.GetNContributors()>0) {
@@ -384,7 +384,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig
         case kVertexFinder1             : VertexFinder(1);              break;
         case kVertexFinder0             : VertexFinder(0);              break;
 	case kMultiVertexer             : FindVerticesMV(); multiMode = kTRUE; break;
-        default: printf("Wrong algorithm"); break;  
+        default: {AliFatal(Form("Wrong vertexer algorithm %d",fAlgo));} break;  
 	}
       }
       AliDebug(1," Vertex finding completed");
