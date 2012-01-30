@@ -1,6 +1,6 @@
 # -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
-# Package File for PWG0base                                                      #
+# Package File for PWGUDbase                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,19 +27,19 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
-    dNdEta/dNdEtaAnalysis.cxx 
-    dNdEta/AlidNdEtaCorrection.cxx 
-    AliCorrectionMatrix.cxx 
-    AliCorrectionMatrix2D.cxx 
-    AliCorrectionMatrix3D.cxx 
-    AliCorrection.cxx 
-    AliPWG0Helper.cxx 
-    multiplicity/AliMultiplicityCorrection.cxx 
-    genLevelSimulation/AliAnalysisTaskdNdetaMC.cxx 
+    base/dNdEtaAnalysis.cxx 
+    base/AlidNdEtaCorrection.cxx 
+    base/AliCorrectionMatrix.cxx 
+    base/AliCorrectionMatrix2D.cxx 
+    base/AliCorrectionMatrix3D.cxx 
+    base/AliCorrection.cxx 
+    base/AliPWG0Helper.cxx 
+    base/AliMultiplicityCorrection.cxx 
+    base/AliAnalysisTaskdNdetaMC.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG0baseLinkDef.h)
+set ( DHDR  PWGUDbaseLinkDef.h)
 
-set ( EINCLUDE  PWG0/dNdEta PWG0/multiplicity PWG0/genLevelSimulation STEER/AOD STEER/STEERBase ANALYSIS)
+set ( EINCLUDE  PWGUD/base STEER/AOD STEER/STEERBase ANALYSIS)
