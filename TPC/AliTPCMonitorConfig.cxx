@@ -155,56 +155,54 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
 AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& config)
 {
   // assignement operator
-  if(this!=&config){ 
-    ((TNamed *)this)->operator=(config);
-    fFormat=config.fFormat;
-    fSector=config.fSector;
-    fSectorLast=config.fSectorLast;
-    fSectorLastDisplayed=config.fSectorLastDisplayed;
-    fSectorArr= new Int_t[36];
-    fFileLast= config.fFileLast;
-    fFileLastSet=config.fFileLastSet;
-    fFileCurrent=config.fFileCurrent;
-    fEventNext=config.fEventNext;
-    fEventNextID=config.fEventNextID;
-    fEventProcessed=config.fEventProcessed;
-    fRangeMaxAdcMin=config.fRangeMaxAdcMin;
-    fRangeMaxAdcMax=config.fRangeMaxAdcMax;
-    fRangeBaseMin=config.fRangeBaseMin;
-    fRangeBaseMax=config.fRangeBaseMax;
-    fRangeSumMin=config.fRangeSumMin;
-    fRangeSumMax=config.fRangeSumMax;
-    fCanvasXSize=config.fCanvasXSize;
-    fCanvasYSize=config.fCanvasYSize;
-    fCanvasXSpace=config.fCanvasXSpace;
-    fCanvasYSpace=config.fCanvasYSpace;
-    fCanvasXOffset=config.fCanvasXOffset;
-    fCanvasMainSize=config.fCanvasMainSize;
-    fMainXSize=config.fMainXSize;
-    fMainYSize=config.fMainYSize;
-    fBorderXSize=config.fBorderXSize;
-    fBorderYSize=config.fBorderYSize;
-    fButtonXSize=config.fButtonXSize;
-    fButtonYSize=config.fButtonYSize;
-    fButtonFirstX1=config.fButtonFirstX1;
-    fButtonFirstX2=config.fButtonFirstX2;
-    fButtonFirstY=config.fButtonFirstY;
-    fWrite10Bit=config.fWrite10Bit;
-    fComponents= new Float_t[10];
-    fSamplingFreq=config.fSamplingFreq;
-    fPedestals=config.fPedestals;
-    fNumOfChannels=config.fNumOfChannels;
-    fTimeBins=config.fTimeBins;
-    fMaxHwAddr=config.fMaxHwAddr;
-    fFitPulse=config.fFitPulse; 
-    fProcOneSector=config.fProcOneSector;
+  if(this == &config) return *this;
+  
+  TNamed::operator=(config);
+  fFormat=config.fFormat;
+  fSector=config.fSector;
+  fSectorLast=config.fSectorLast;
+  fSectorLastDisplayed=config.fSectorLastDisplayed;
+  if (!fSectorArr) fSectorArr= new Int_t[36];
+  fFileLast= config.fFileLast;
+  fFileLastSet=config.fFileLastSet;
+  fFileCurrent=config.fFileCurrent;
+  fEventNext=config.fEventNext;
+  fEventNextID=config.fEventNextID;
+  fEventProcessed=config.fEventProcessed;
+  fRangeMaxAdcMin=config.fRangeMaxAdcMin;
+  fRangeMaxAdcMax=config.fRangeMaxAdcMax;
+  fRangeBaseMin=config.fRangeBaseMin;
+  fRangeBaseMax=config.fRangeBaseMax;
+  fRangeSumMin=config.fRangeSumMin;
+  fRangeSumMax=config.fRangeSumMax;
+  fCanvasXSize=config.fCanvasXSize;
+  fCanvasYSize=config.fCanvasYSize;
+  fCanvasXSpace=config.fCanvasXSpace;
+  fCanvasYSpace=config.fCanvasYSpace;
+  fCanvasXOffset=config.fCanvasXOffset;
+  fCanvasMainSize=config.fCanvasMainSize;
+  fMainXSize=config.fMainXSize;
+  fMainYSize=config.fMainYSize;
+  fBorderXSize=config.fBorderXSize;
+  fBorderYSize=config.fBorderYSize;
+  fButtonXSize=config.fButtonXSize;
+  fButtonYSize=config.fButtonYSize;
+  fButtonFirstX1=config.fButtonFirstX1;
+  fButtonFirstX2=config.fButtonFirstX2;
+  fButtonFirstY=config.fButtonFirstY;
+  fWrite10Bit=config.fWrite10Bit;
+  if (!fComponents) fComponents= new Float_t[10];
+  fSamplingFreq=config.fSamplingFreq;
+  fPedestals=config.fPedestals;
+  fNumOfChannels=config.fNumOfChannels;
+  fTimeBins=config.fTimeBins;
+  fMaxHwAddr=config.fMaxHwAddr;
+  fFitPulse=config.fFitPulse;
+  fProcOneSector=config.fProcOneSector;
 
+  for(Int_t i =0; i<36; i++) { fSectorArr[i]  = 0;}
+  for(Int_t i =0; i<10;i++)  { fComponents[i] = 0.;}
     
-    for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
-    for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
-    
-      
-  }
   return *this;
 }
 

@@ -279,27 +279,30 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
 
   if (!in->is_open()) return;
 
-//   int numLines = 0;
-//   while ( std::getline(*in, std::string()) )
-//     ++numLines;
-//  in->seekg(0,ios::beg);
+  int numLines = 0;
+  std::string line;
+  while ( std::getline(*in, line) )
+    ++numLines;
+ in->seekg(0,ios::beg);
   
 //   *in >> readcarry;
 //   version = atoi(readcarry);
   *in >> version;
-//   --numLines;
+  --numLines;
 //   *in >> readcarry;
 //   fnumofChannels = atoi(readcarry);
   *in >> fnumofChannels;
-//   --numLines;
+  --numLines;
   
 //   *in >> readcarry;
 //   fmaxHWAdress = atoi(readcarry);
   *in >> fmaxHWAdress;
   fsizeofArray = fmaxHWAdress;
-//   --numLines;
-  
-//   fnumofChannels=TMath::Min(fnumofChannels,numLines);
+  --numLines;
+
+  //consistency check
+  fnumofChannels=TMath::Abs(fnumofChannels);
+  fnumofChannels=TMath::Min(fnumofChannels,numLines);
   
   Short_t *fmappingEmptyRow = new Short_t[11];
   for(Int_t i = 0; i < 11 ; i++) {
