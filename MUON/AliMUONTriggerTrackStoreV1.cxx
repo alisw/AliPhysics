@@ -41,7 +41,6 @@ AliMUONTriggerTrackStoreV1::AliMUONTriggerTrackStoreV1(TRootIOCtor* /*dummy*/) :
 fTracks(0x0)
 {
   /// ctor
-  fTracks->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
