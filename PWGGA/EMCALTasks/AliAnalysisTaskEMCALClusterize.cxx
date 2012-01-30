@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id$ */
 
 //_________________________________________________________________________
 // This analysis provides a new list of clusters to be used in other analysis
@@ -96,9 +95,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
     fCellMatchdPhi[j]    = -999;
   }  
   
-  fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
-  fClusterArr      = new TObjArray(100);
-  fCaloClusterArr  = new TObjArray(1000);
+  fDigitsArr       = new TClonesArray("AliEMCALDigit",12000);
+  fClusterArr      = new TObjArray(10000);
+  fCaloClusterArr  = new TObjArray(10000);
   fRecParam        = new AliEMCALRecParam;
   fBranchNames     = "ESD:AliESDHeader.,EMCALCells.";
   fRecoUtils       = new AliEMCALRecoUtils();
@@ -136,9 +135,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
     fCellMatchdEta[j]    = -999;
     fCellMatchdPhi[j]    = -999;
   }
-  fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
-  fClusterArr      = new TObjArray(100);
-  fCaloClusterArr  = new TObjArray(100);
+  fDigitsArr       = new TClonesArray("AliEMCALDigit",12000);
+  fClusterArr      = new TObjArray(10000);
+  fCaloClusterArr  = new TObjArray(10000);
   fRecParam        = new AliEMCALRecParam;
   fBranchNames     = "ESD:AliESDHeader.,EMCALCells.";
   fRecoUtils       = new AliEMCALRecoUtils();
