@@ -31,7 +31,7 @@
 
 #include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
-#include "multiplicity/AliMultiplicityCorrection.h"
+#include "AliMultiplicityCorrection.h"
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
 #include "AliPhysicsSelection.h"

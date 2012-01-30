@@ -37,7 +37,7 @@
 #include "AliPWG0Helper.h"
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
-#include "dNdEta/dNdEtaAnalysis.h"
+#include "dNdEtaAnalysis.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
 

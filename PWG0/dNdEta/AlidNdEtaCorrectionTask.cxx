@@ -29,8 +29,8 @@
 
 #include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
-#include "dNdEta/dNdEtaAnalysis.h"
-#include "dNdEta/AlidNdEtaCorrection.h"
+#include "dNdEtaAnalysis.h"
+#include "AlidNdEtaCorrection.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
 
