@@ -114,6 +114,8 @@ void AliMUONPolygon::Copy(TObject& obj) const
 {
   /// Copy this to obj
   
+  TObject::Copy(obj);
+
   AliMUONPolygon& rhs = static_cast<AliMUONPolygon&>(obj);
 
   Double_t* x(0x0);
