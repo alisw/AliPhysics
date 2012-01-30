@@ -28,8 +28,8 @@
 //#pragma link C++ class AliAnalysisTaskCentral+;
 //#pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 //#pragma link C++ class AliITSsadEdxFitter+;
-#pragma link C++ class AliBWTools+;
-#pragma link C++ class AliBWFunc+;
-#pragma link C++ class AliLatexTable+;
+//#pragma link C++ class AliBWTools+;
+//#pragma link C++ class AliBWFunc+;
+//#pragma link C++ class AliLatexTable+;
 //#pragma link C++ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask+;
 #endif
