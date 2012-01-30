@@ -36,7 +36,7 @@ public:
 
   void LoadDigits(TTree* tree);
   void LoadRecPoints(TTree* tree);
-  void LoadRecPointsFromESD(Char_t *fileName);
+  void LoadRecPointsFromESD(const Char_t *fileName);
   void LoadHits(TTree* tree);
   void LoadRaw(TString fileName);
 
