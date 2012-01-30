@@ -38,4 +38,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG0selectorsLinkDef.h)
 
-set ( EINCLUDE  TPC RAW ITS PWG0/dNdEta PWG0/highMultiplicity PWG0/multiplicity PWG0/esdTrackCuts PWG0/trigger PWG0/dNdPt PWG0/eventStats ANALYSIS STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  TPC RAW ITS PWGUD/base PWG0/dNdEta PWG0/highMultiplicity PWG0/multiplicity PWG0/esdTrackCuts PWG0/trigger PWG0/dNdPt PWG0/eventStats ANALYSIS STEER/ESD STEER/STEERBase)
