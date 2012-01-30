@@ -7,14 +7,14 @@ void SETUP()
    // Load the ESD library
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libESD");
-  CheckLoadLibrary("libPWG0base");
+  CheckLoadLibrary("libPWGUDbase");
 
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWG0base");
+   gROOT->ProcessLine(".include PWGUDbase");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG0base_INCLUDE", "PWG0base");
+   gSystem->Setenv("PWGUDbase_INCLUDE", "PWGUDbase");
 }
 
 Int_t CheckLoadLibrary(const char* library)
