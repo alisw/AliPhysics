@@ -167,34 +167,27 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
   //
   fNGloSize = fNGloPar;
   //
-  try {
-    //
-    if (fgIsMatGloSparse) {fMatCGlo = new AliMatrixSparse(fNGloPar); fMatCGlo->SetSymmetric(kTRUE);}
-    else                   fMatCGlo = new AliSymMatrix(fNGloPar);
-    //
-    fFillIndex    = new Int_t[fNGloPar];
-    fFillValue    = new Double_t[fNGloPar];
-    //
-    fMatCLoc      = new AliSymMatrix(fNLocPar);
-    fMatCGloLoc   = new AliRectMatrix(fNGloPar,fNLocPar);
-    //
-    fParamGrID    = new Int_t[fNGloPar];
-    fProcPnt      = new Int_t[fNGloPar];
-    fVecBLoc      = new Double_t[fNLocPar];
-    fDiagCGlo     = new Double_t[fNGloPar];
-    //
-    fInitPar      = new Double_t[fNGloPar];
-    fDeltaPar     = new Double_t[fNGloPar];
-    fSigmaPar     = new Double_t[fNGloPar];
-    fIsLinear     = new Bool_t[fNGloPar];
-    //
-    fGlo2CGlo     = new Int_t[fNGloPar];
-    fCGlo2Glo     = new Int_t[fNGloPar];
-  }
-  catch(bad_alloc&) {
-    AliInfo(Form("Failed to allocate the memory for %d global and %d local parameters",fNGloPar,fNLocPar));
-    return 0;
-  }
+  if (fgIsMatGloSparse) {fMatCGlo = new AliMatrixSparse(fNGloPar); fMatCGlo->SetSymmetric(kTRUE);}
+  else                   fMatCGlo = new AliSymMatrix(fNGloPar);
+  //
+  fFillIndex    = new Int_t[fNGloPar];
+  fFillValue    = new Double_t[fNGloPar];
+  //
+  fMatCLoc      = new AliSymMatrix(fNLocPar);
+  fMatCGloLoc   = new AliRectMatrix(fNGloPar,fNLocPar);
+  //
+  fParamGrID    = new Int_t[fNGloPar];
+  fProcPnt      = new Int_t[fNGloPar];
+  fVecBLoc      = new Double_t[fNLocPar];
+  fDiagCGlo     = new Double_t[fNGloPar];
+  //
+  fInitPar      = new Double_t[fNGloPar];
+  fDeltaPar     = new Double_t[fNGloPar];
+  fSigmaPar     = new Double_t[fNGloPar];
+  fIsLinear     = new Bool_t[fNGloPar];
+  //
+  fGlo2CGlo     = new Int_t[fNGloPar];
+  fCGlo2Glo     = new Int_t[fNGloPar];
   //
   memset(fVecBLoc   ,0,fNLocPar*sizeof(Double_t));
   memset(fDiagCGlo  ,0,fNGloPar*sizeof(Double_t));

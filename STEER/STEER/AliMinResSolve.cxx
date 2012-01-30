@@ -551,20 +551,13 @@ void AliMinResSolve::ApplyPrecon(const double* vecRHS, double* vecOut) const
 Bool_t AliMinResSolve::InitAuxMinRes()
 {
   // init auxiliary space for minres
-  try {
-    fPVecY   = new double[fSize];   
-    fPVecR1  = new double[fSize];   
-    fPVecR2  = new double[fSize];   
-    fPVecV   = new double[fSize];   
-    fPVecW   = new double[fSize];   
-    fPVecW1  = new double[fSize];   
-    fPVecW2  = new double[fSize];   
-  }
-  catch(bad_alloc&) {
-    AliInfo(Form("Failed to allocate the memory for auxialiary arrays for %d equations",fSize));
-    ClearAux();
-    return kFALSE;
-  }
+  fPVecY   = new double[fSize];   
+  fPVecR1  = new double[fSize];   
+  fPVecR2  = new double[fSize];   
+  fPVecV   = new double[fSize];   
+  fPVecW   = new double[fSize];   
+  fPVecW1  = new double[fSize];   
+  fPVecW2  = new double[fSize];   
   //
   for (int i=fSize;i--;) fPVecY[i]=fPVecR1[i]=fPVecR2[i]=fPVecV[i]=fPVecW[i]=fPVecW1[i]=fPVecW2[i]=0.0;
   //
@@ -576,25 +569,18 @@ Bool_t AliMinResSolve::InitAuxMinRes()
 Bool_t AliMinResSolve::InitAuxFGMRES(int nkrylov)
 {
   // init auxiliary space for fgmres
-  try {
-    fPvv     = new double*[nkrylov+1];
-    fPvz     = new double*[nkrylov];
-    for (int i=0; i<=nkrylov; i++) fPvv[i] = new double[fSize];
-    fPhh     = new double*[nkrylov];
-    for (int i=0; i<nkrylov; i++) {
-      fPhh[i] = new double[i+2];
-      fPvz[i]  = new double[fSize];
-    }
-    //
-    fPVecR1  = new double[nkrylov];   
-    fPVecR2  = new double[nkrylov];   
-    fPVecV   = new double[nkrylov+1];
+  fPvv     = new double*[nkrylov+1];
+  fPvz     = new double*[nkrylov];
+  for (int i=0; i<=nkrylov; i++) fPvv[i] = new double[fSize];
+  fPhh     = new double*[nkrylov];
+  for (int i=0; i<nkrylov; i++) {
+    fPhh[i] = new double[i+2];
+    fPvz[i]  = new double[fSize];
   }
-  catch(bad_alloc&) {
-    AliInfo(Form("Failed to allocate the memory for auxialiary arrays for %d equations",fSize));
-    ClearAux();
-    return kFALSE;
-  }
+  //
+  fPVecR1  = new double[nkrylov];   
+  fPVecR2  = new double[nkrylov];   
+  fPVecV   = new double[nkrylov+1];
   //
   return kTRUE;
 }
@@ -863,22 +849,10 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
   UChar_t **ulvl=0,*levls=0;
   UShort_t *jbuf=0;
   Int_t    *iw=0;
-  try {
-    ulvl = new UChar_t*[fSize];      // stores lev-fils for U part of ILU factorization
-    levls = new UChar_t[fSize];
-    jbuf = new UShort_t[fSize];
-    iw = new Int_t[fSize];
-  }
-  //
-  catch(bad_alloc&) {
-    AliInfo("Failed to allocate the memory in AliMinResSolve::PreconILUKsymb");
-    if (ulvl) delete[] ulvl;
-    if (levls) delete[] levls;
-    if (jbuf) delete[] jbuf;
-    if (iw) delete[] iw;
-    ClearAux();
-    return -1;
-  }
+  ulvl = new UChar_t*[fSize];      // stores lev-fils for U part of ILU factorization
+  levls = new UChar_t[fSize];
+  jbuf = new UShort_t[fSize];
+  iw = new Int_t[fSize];
   //
   for(int j=fSize; j--;) iw[j] = -1;           // initialize iw 
   for(int i=0; i<fSize; i++) {
@@ -998,22 +972,10 @@ Int_t  AliMinResSolve::PreconILUKsymbDense(Int_t lofM)
   UChar_t **ulvl=0,*levls=0;
   UShort_t *jbuf=0;
   Int_t    *iw=0;
-  try {
-    ulvl = new UChar_t*[fSize];      // stores lev-fils for U part of ILU factorization
-    levls = new UChar_t[fSize];
-    jbuf = new UShort_t[fSize];
-    iw = new Int_t[fSize];
-  }
-  //
-  catch(bad_alloc&) {
-    AliInfo("Failed to allocate the memory in AliMinResSolve::PreconILUKsymb");
-    if (ulvl) delete[] ulvl;
-    if (levls) delete[] levls;
-    if (jbuf) delete[] jbuf;
-    if (iw) delete[] iw;
-    ClearAux();
-    return -1;
-  }
+  ulvl = new UChar_t*[fSize];      // stores lev-fils for U part of ILU factorization
+  levls = new UChar_t[fSize];
+  jbuf = new UShort_t[fSize];
+  iw = new Int_t[fSize];
   //
   for(int j=fSize; j--;) iw[j] = -1;           // initialize iw 
   for(int i=0; i<fSize; i++) {

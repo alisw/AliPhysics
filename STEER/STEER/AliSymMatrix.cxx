@@ -207,13 +207,7 @@ AliSymMatrix* AliSymMatrix::DecomposeChol()
   //
   if (!fgBuffer || fgBuffer->GetSizeUsed()!=GetSizeUsed()) {
     delete fgBuffer; 
-    try {
-      fgBuffer = new AliSymMatrix(*this);
-    }
-    catch(bad_alloc&) {
-      AliInfo("Failed to allocate memory for Choleski decompostions");
-      return 0;
-    }
+    fgBuffer = new AliSymMatrix(*this);
   }
   else (*fgBuffer) = *this;
   //
@@ -478,13 +472,7 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
   //  
   if (!fgBuffer || fgBuffer->GetSizeUsed()!=GetSizeUsed()) {
     delete fgBuffer; 
-    try {
-      fgBuffer = new AliSymMatrix(*this);
-    }
-    catch(bad_alloc&) {
-      AliError("Failed to allocate memory for matrix inversion buffer");
-      return 0;
-    }
+    fgBuffer = new AliSymMatrix(*this);
   }
   else (*fgBuffer) = *this;
   //
