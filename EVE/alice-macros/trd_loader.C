@@ -15,6 +15,16 @@
 // Author:
 // Alex Bercuci (A.Bercuci@gsi.de)
 //
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TString.h>
+#include <TSystem.h>
+#include <TEveManager.h>
+#include <TEveTreeTools.h>
+
+#include <EVE/EveDet/AliEveTRDLoader.h>
+#endif
+
 AliEveTRDLoader* trd_loader(Int_t event=0)
 {
   // init single file loader

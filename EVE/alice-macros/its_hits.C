@@ -7,6 +7,17 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TTree.h>
+#include <TEvePointSet.h>
+#include <TEveElement.h>
+#include <TEveManager.h>
+#include <TEveTreeTools.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EveBase/AliEveEventManager.h>
+#endif
+
 TEvePointSet*
 its_hits(const char *varexp    = "fX:fY:fZ",
 	 const char *selection = "",
@@ -24,7 +35,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   ps.Select();
 
   if(points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
-    Warning("its_hits", Form("No hits match '%s'", selection));
+    Warning("its_hits", "No hits match '%s'", selection);
     delete points;
     return 0;
   }

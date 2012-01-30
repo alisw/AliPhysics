@@ -1,3 +1,8 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <STEER/ESD/AliESDEvent.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 void vzero_dump()
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();

@@ -6,8 +6,34 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TEveVSDStructs.h>
+#include <TEveTrackPropagator.h>
+#include <TEvePointSet.h>
+#include <TEveManager.h>
 
+#include <STEER/STEERBase/AliExternalTrackParam.h>
+#include <STEER/STEERBase/AliVVertex.h>
+#include <STEER/AOD/AliAODVertex.h>
+#include <STEER/AOD/AliAODEvent.h>
+#include <STEER/AOD/AliAODTrack.h>
+#include <STEER/AOD/AliAODMCParticle.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <PWG3/vertexingHF/AliAODRecoDecayHF.h>
+#include <PWG3/vertexingHF/AliAODRecoDecayHF2Prong.h>
+
+#include <EVE/EveBase/AliEveHF.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+
+#include <PWG3/vertexingHF/macros/LoadLibraries.C>
+
+#else
 class AliAODRecoDecayHF;
+#endif
 
 void aod_hf_init_rectrack(TEveRecTrack& rt, AliExternalTrackParam* tp)
 {
@@ -59,7 +85,7 @@ AliEveHF* aod_make_HF(TEveTrackPropagator* rnrStyle, AliAODVertex* primAODVtx,
 AliEveHFList* aod_HF()
 {
   Bool_t useParFiles=kFALSE;
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
   LoadLibraries(useParFiles);
 
   AliAODEvent* aod = AliEveEventManager::AssertAOD();
@@ -69,8 +95,8 @@ AliEveHFList* aod_HF()
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
-    gSystem->Load("libPWGHFbase");
-    gSystem->Load("libPWGHFvertexingHF");
+    gSystem->Load("libPWG3base");
+    gSystem->Load("libPWG3vertexingHF");
   */
 
   // load MC particles
@@ -78,7 +104,7 @@ AliEveHFList* aod_HF()
     (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
   if (!mcArray) {
     printf("MC particles branch not found!\n");
-    return;
+    return 0;
   }
 
   AliAODVertex* primVtx_aod = (AliAODVertex*) aod->GetPrimaryVertex();
@@ -113,8 +139,8 @@ AliEveHFList* aod_HF()
     //Int_t labD0 = rd->MatchToMC(421,mcArray);
     //if(labD0<0) continue;
 
-    AliAODTrack *negAODTr = rd->GetDaughter(0);
-    AliAODTrack *posAODTr = rd->GetDaughter(1);
+    AliAODTrack *negAODTr = dynamic_cast<AliAODTrack *>(rd->GetDaughter(0));
+    AliAODTrack *posAODTr = dynamic_cast<AliAODTrack *>(rd->GetDaughter(1));
 
     AliVVertex  *secv = rd->GetSecondaryVtx();
 

@@ -1,31 +1,54 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TFile.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveGeoShape.h>
+#include <TEveGeoShapeExtract.h>
+
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveMultiView.h>
+#endif
+
 void geom_gentle_default(Bool_t register_as_global=kTRUE)
 {
-
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
-  TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
-  TEveGeoShape* gsre1 = TEveGeoShape::ImportShapeExtract(gse);
-  f.Close();
-
-  if (register_as_global)
+  TEveGeoShape* gsre1;
+  TEveGeoShape* gsre2;
+  TEveGeoShape* gsre3;
+  
+  // Geometry 3D
   {
-    gEve->AddGlobalElement(gsre1);
+    TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
+    TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
+    gsre1 = TEveGeoShape::ImportShapeExtract(gse);
+    f.Close();
+
+    if (register_as_global)
+    {
+      gEve->AddGlobalElement(gsre1);
+    }
   }
-
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rphi_geo.root");
-  TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
-  TEveGeoShape* gsre2 = TEveGeoShape::ImportShapeExtract(gse);
-  f.Close();
-
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rhoz_geo.root");
-  TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
-  TEveGeoShape* gsre3 = TEveGeoShape::ImportShapeExtract(gse);
-  f.Close();
-
+  
+  // Geometry rphi
+  {
+    TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rphi_geo.root");
+    TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
+    gsre2 = TEveGeoShape::ImportShapeExtract(gse);
+    f.Close();
+  }
+  
+  // Geometry rhoz
+  {
+    TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rhoz_geo.root");
+    TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
+    gsre3 = TEveGeoShape::ImportShapeExtract(gse);
+    f.Close();
+  }
+  
   TEveElement* top = gEve->GetCurrentEvent();
 
   AliEveMultiView *mv = AliEveMultiView::Instance();
-
-  mv->InitGeomGentle(gsre1, gsre2, gsre3);
+  
+  mv->InitGeomGentle(gsre1, gsre2, gsre3, 0);
 
   gEve->FullRedraw3D(kTRUE, kTRUE);
 

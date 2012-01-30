@@ -16,10 +16,7 @@
 #include <EveBase/AliEveEventManager.h>
 #include <EveDet/AliEveITSDigitsInfo.h>
 
-
-void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
-                            Bool_t check_empty    = kTRUE,
-                            Bool_t scaled_modules = kFALSE);
+#include "its_common_foos.C"
 
 #endif
 

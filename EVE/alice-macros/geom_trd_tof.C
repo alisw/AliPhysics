@@ -7,11 +7,21 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoManager.h>
+#include <TGeoNode.h>
+#include <TEveManager.h>
+#include <TEveGeoNode.h>
+#endif
+
 void geom_trd_tof()
 {
   gGeoManager = gEve->GetDefaultGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("B077_1");
+
+	if(!node)
+		return;
 
   TEveGeoTopNode* its_re = new TEveGeoTopNode(gGeoManager, node);
   gEve->AddGlobalElement(its_re);

@@ -5,6 +5,14 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TFile.h>
+#include <TGLViewer.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveGeoShape.h>
+#include <TEveGeoShapeExtract.h>
+#endif
 
 /// \ingroup evemacros
 /// \file geom_gentle_muon.C

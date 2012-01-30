@@ -1,3 +1,24 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TBranch.h>
+#include <TGeoMatrix.h>
+#include <TTree.h>
+#include <TStyle.h>
+#include <TEveElement.h>
+#include <TEveFrameBox.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
+#include <TEveRGBAPalette.h>
+#include <TEveTrans.h>
+#include <TEveQuadSet.h>
+
+#include <HMPID/AliHMPIDDigit.h>
+#include <HMPID/AliHMPIDv3.h>
+#include <STEER/STEER/AliCluster3D.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 void hmpid_digits()
 {
   const Char_t *name[]={ "HMPID0", "HMPID1", "HMPID2", "HMPID3",
@@ -7,7 +28,7 @@ void hmpid_digits()
   rl->LoadDigits("HMPID");
 
   TTree *dTree = rl->GetTreeD("HMPID", kFALSE);
-  if (!dTree) return 0;
+  if (!dTree) return;
 
   TEveElementList* list = new TEveElementList("HMPID Digits");
   gEve->AddElement(list);

@@ -1,12 +1,29 @@
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TCanvas.h>
 #include <TGButton.h>
 #include <TGButtonGroup.h>
+#include <TFile.h>
 #include <TGLabel.h>
 #include <TGNumberEntry.h>
 #include <TG3DLine.h>
 #include <TApplication.h>
 #include <TGComboBox.h>
 #include <TLatex.h>
+#include <TTree.h>
+#include <TEveUtil.h>
 
+#include <STEER/CDB/AliCDBManager.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDfriendTrack.h>
+#include <STEER/STEER/AliGeomManager.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+
+/* Not sure which ConfigCalibTrain.C macro ? 
+ * From ANALYSIS or from PWGPP?
+ */
+#include "ANALYSIS/macros/ConfigCalibTrain.C" 
+#endif
 
 class ButtonWindow : public TGMainFrame {
 
@@ -54,9 +71,7 @@ ButtonWindow::ButtonWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizont
    TGLabel *label1 = 0;
    TGLabel *label2 = 0;
    TGLabel *label3 = 0;
-   TGLabel *label4 = 0;
-   TGLabel *label5 = 0;
-   TGLabel *label6 = 0;
+  
    TGHorizontal3DLine *separator = 0;
 
    TGGroupFrame *margins = new TGGroupFrame(controls, "Residuals Drawing Options");
@@ -323,7 +338,7 @@ ButtonWindow::ButtonWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizont
 void ButtonWindow::DrawResiduals()
 {
 
-      TString selection1, selection2, selection3, selection4, selection5 selection6, selection7, selection8, selection9, selection10;
+      TString selection1, selection2, selection3, selection4, selection5, selection6, selection7, selection8, selection9, selection10;
 
       switch(option1->GetSelected())
       {
@@ -514,47 +529,44 @@ void ButtonWindow::DrawResiduals()
         drawSelectionMerged2 = customDrawSelection->GetText();
 
 
-      cout << cutSelectionMerged << endl;
-      cout << "abs(ESDfriend.fTracks[].fTPCOut.fP[4])<0.5" <<endl;
-
-      cout << drawSelectionMerged1 << endl;
-      cout << "track[].fP[0]:track[].fX" << endl;
-
-      cout << drawSelectionMerged2 << endl;
-      cout << "abs(track[].fP[0])<20" << endl;
-
-      cout << "nEntries: " << nEntries->GetNumber() << endl;
-      cout << "firstEntry: " << firstEntry->GetNumber() << endl;
-
-
+      Info("make_residuals::DrawResiduals", "%s abs(ESDfriend.fTracks[].fTPCOut.fP[4])<0.5", cutSelectionMerged.Data());
+      Info("make_residuals::DrawResiduals", "%s track[].fP[0]:track[].fX", drawSelectionMerged1.Data());
+      Info("make_residuals::DrawResiduals", "%s abs(track[].fP[0])<20", drawSelectionMerged2.Data());
+      Info("make_residuals::DrawResiduals", "nEntries: %f", nEntries->GetNumber());
+      Info("make_residuals::DrawResiduals", "firstEntry: %f", firstEntry->GetNumber());
+      
       TEveUtil::LoadMacro("ConfigCalibTrain.C");
 
       AliESDEvent *esd = AliEveEventManager::AssertESD();
 
       ConfigCalibTrain(esd->GetRunNumber());
 
+      /* OBSOLETE CODE - No function members defined
+       * 
       AliESDfriendTrack::MakeDebugStreamer(kTRUE);
 
       TTreeSRedirector *pcstreamRes = AliESDfriendTrack::GetDebugStreamer();
-
+      */
+      
       TFile fRes("AliESDfriends.root");
 
       TTree *treeRes = (TTree*)fRes.Get("esdFriendTree");     
 
       TCanvas* cnv = new TCanvas();
-
+      
+      
       treeRes->Draw("ESDfriend.fTracks[].MakeResidualGraph(1)",cutSelectionMerged," ",nEntries->GetNumber(),firstEntry->GetNumber());
 //      treeRes->Draw("ESDfriend.fTracks[].MakeResidualGraph(1)","abs(ESDfriend.fTracks[].fTPCOut.fP[4])<0.5"," ",nEntries,firstEntry);
 
-      delete pcstreamRes;
+      //delete pcstreamRes;
+
+      /*  OBSOLETE CODE -dump not defined
 
       TFile fRes("residual.root");
 
       dump.Draw(drawSelectionMerged1,drawSelectionMerged2);
-
+      */
 //      dump.Draw("track[].fP[0]:track[].fX","abs(track[].fP[0])<20");
-
-
 
 }
 

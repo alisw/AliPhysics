@@ -18,22 +18,11 @@
 /// \author P. Pillot, L. Aphecetche; Subatech
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
-#include "AliMUONClusterStoreV2.h"
-#include "AliMUONRawClusterV2.h"
-#include "AliMUONVCluster.h"
-#include "AliMUONConstants.h"
-#include "AliMUONRecoParam.h"
-#include "AliMUONCDB.h"
-
-#include "AliRunLoader.h"
-#include "AliStack.h"
-#include "AliTrackReference.h"
-
-#include "EveBase/AliEveMagField.h"
-#include "EveBase/AliEveTrack.h"
-#include "EveBase/AliEveEventManager.h"
-
+#include <TClonesArray.h>
+#include <TTree.h>
+#include <TParticle.h>
+#include <TMath.h>
+#include <TROOT.h>
 #include <TEveManager.h>
 #include <TEveUtil.h>
 #include <TEveTrack.h>
@@ -41,12 +30,18 @@
 #include <TEveVSDStructs.h>
 #include <TEveTrackPropagator.h>
 
-#include <TClonesArray.h>
-#include <TTree.h>
-#include <TParticle.h>
-#include <TMath.h>
-#include <TROOT.h>
-
+#include <MUON/AliMUONClusterStoreV2.h>
+#include <MUON/AliMUONRawClusterV2.h>
+#include <MUON/AliMUONVCluster.h>
+#include <MUON/AliMUONConstants.h>
+#include <MUON/AliMUONRecoParam.h>
+#include <MUON/AliMUONCDB.h>
+#include <STEER/STEERBase/AliStack.h>
+#include <STEER/STEERBase/AliTrackReference.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveMagField.h>
+#include <EVE/EveBase/AliEveTrack.h>
+#include <EVE/EveBase/AliEveEventManager.h>
 #endif
 
 //______________________________________________________________________________

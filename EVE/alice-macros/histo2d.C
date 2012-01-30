@@ -6,12 +6,38 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGLViewer.h>
+#include <TGLWidget.h>
+#include <TH2.h>
+#include <TMath.h>
+#include <TTree.h>
+#include <TEveBrowser.h>
+#include <TEveCalo.h>
+#include <TEveCaloData.h>
+#include <TEveCaloLegoOverlay.h>
+#include <TEveLegoEventHandler.h>
+#include <TEveManager.h>
+#include <TEveScene.h>
+#include <TEveTrans.h>
+#include <TEveViewer.h>
+#include <TEveWindow.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveMultiView.h>
+#endif
+
 double pi = TMath::Pi();
 TEveViewer *g_histo2d_v   = 0;
 TEveScene  *g_histo2d_s   = 0;
 TEveScene  *g_histo2d_s2  = 0;
 TEveCaloLegoOverlay* g_histo2d_lego_overlay = 0;
 
+Double_t GetPhi(Double_t phi);
+TEveCaloLego* CreateHistoLego(TEveCaloData* data);
+TEveCalo3D* Create3DView(TEveCaloData* data);
+AliEveMultiView* CreateProjections(TEveCaloData* data, TEveCalo3D *calo3d);
 
 TEveCaloDataHist* histo2d()
 { 
@@ -23,8 +49,7 @@ TEveCaloDataHist* histo2d()
    TH2F *histopos = new TH2F("histopos","Histo 2d positive",100,-1.5,1.5,80,-pi,pi);
    TH2F *histoneg = new TH2F("histoneg","Histo 2d negative",100,-1.5,1.5,80,-pi,pi);
 
-   cout<<"Event: "<<AliEveEventManager::GetMaster()->GetEventId()
-       <<", Number of tracks: "<<esd->GetNumberOfTracks()<<endl;
+   Info("histo2d", "Event: %d, Number of tracks: %d\n", AliEveEventManager::GetMaster()->GetEventId(), esd->GetNumberOfTracks() );
 
    // Getting current tracks, filling histograms 
    for ( int n = 0; n < esd->GetNumberOfTracks(); ++n ) {    

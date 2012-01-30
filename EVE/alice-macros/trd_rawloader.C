@@ -16,6 +16,15 @@
 // Alex Bercuci (A.Bercuci@gsi.de)
 // Minjug Kweon (minjung@physi.uni-heidelberg.de)
 //
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveManager.h>
+
+#include <EVE/EveDet/AliEveTRDLoader.h>
+#include <EVE/EveDet/AliEveTRDLoaderImp.h>
+#endif
+
+
 AliEveTRDLoader* trd_rawloader(Char_t *file)
 {
   Int_t fSuperModule = 0; // -1 for all

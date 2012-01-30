@@ -6,10 +6,17 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveElement.h>
+
+#include <EVE/EveBase/AliEveBeamsInfo.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 AliEveBeamsInfo* beams_info(){
 
   AliEveEventManager *mng = AliEveEventManager::GetMaster();
-  AliEveBeamsInfo *beamsinfo = mng->FindGlobal("BeamsInfo");
+  AliEveBeamsInfo *beamsinfo = dynamic_cast<AliEveBeamsInfo *>(mng->FindGlobal("BeamsInfo"));
 
   if ( beamsinfo == 0) {
      beamsinfo = new AliEveBeamsInfo();

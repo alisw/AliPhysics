@@ -29,7 +29,7 @@
 #include <TEveManager.h>
 
 #include <TRD/AliTRDarrayADC.h>
-#include <EveDet/AliEveListAnalyser.h>
+#include <EVE/EveDet/AliEveListAnalyser.h>
 #endif
 
 void ana_list(TEveElement *cont = 0)

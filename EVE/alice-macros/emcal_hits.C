@@ -6,6 +6,18 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TTree.h>
+#include <TString.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+#include <TEveTreeTools.h>
+
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <STEER/STEER/AliRunLoader.h>
+
+#endif
 
 TEvePointSet*
 emcal_hits(const char *varexp    = "fX:fY:fZ",
@@ -23,7 +35,7 @@ emcal_hits(const char *varexp    = "fX:fY:fZ",
   ps.Select();
 
   if (points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
-    Warning("emcal_hits", Form("No hits match '%s'", selection));
+    Warning("emcal_hits", "No hits match '%s'",selection);
     delete points;
     return 0;
   }

@@ -7,6 +7,15 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TFile.h>
+#include <TGLViewer.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveGeoShape.h>
+#include <TEveGeoShapeExtract.h>
+#endif
+
 TEveGeoShape* geom_gentle_trd()
 {
   TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_trd.root");

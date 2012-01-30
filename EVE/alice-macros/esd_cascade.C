@@ -6,8 +6,21 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TMath.h>
+#include <TEveManager.h>
+#include <TEveVSDStructs.h>
+#include <TEveTrackPropagator.h>
 
-void esd_cascade_init_rectrack(TEveRecTrack& rt, AliExternalTrackParam* tp)
+#include <STEER/STEERBase/AliExternalTrackParam.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDcascade.h>
+#include <STEER/ESD/AliESDVertex.h>
+#include <EVE/EveBase/AliEveCascade.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
+void esd_cascade_init_rectrack(TEveRecTrack& rt, const AliExternalTrackParam* tp)
 {
   Double_t      pbuf[3], vbuf[3];
 

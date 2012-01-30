@@ -7,6 +7,25 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TGeoManager.h>
+#include <TMath.h>
+#include <TStyle.h>
+#include <TTree.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+#include <TEveQuadSet.h>
+#include <TEveTrans.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <VZERO/AliVZEROdigit.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
+
 //   fV0CHeight1  =  2.5; // height of cell 1
 //   fV0CHeight2  =  4.4; // height of cell 2
 //   fV0CHeight3  =  7.4; // height of cell 3

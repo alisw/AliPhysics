@@ -7,6 +7,19 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
+#include <TTree.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTPCData.h>
+#include <EVE/EveDet/AliEveTPCSector2D.h>
+#include <EVE/EveDet/AliEveTPCSector3D.h>
+#endif
+
 void tpc_digits(Int_t mode=1)
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();

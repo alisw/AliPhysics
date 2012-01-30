@@ -11,20 +11,24 @@
 // Author:
 // Alex Bercuci (A.Bercuci@gsi.de)
 // 
-#ifdef __CINT__
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoManager.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+
+#include <STEER/STEER/AliCluster.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <TRD/AliTRDarrayADC.h>
+#include <TRD/AliTRDcluster.h>
+#include <TRD/AliTRDgeometry.h>
+#include <TRD/AliTRDdigitsManager.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTRDModuleImp.h>
+#else
 class TEvePointSet;
 class TEveElement;
-#else
-#include <TEveManager.h>
-#include <TEvePointSet.h>
-#include <EveBase/AliEveEventManager.h>
-#include <EveDet/AliEveTRDModuleImp.h>
-
-#include "AliRunLoader.h"
-#include "AliCluster.h"
-#include "TRD/AliTRDcluster.h"
-#include "TRD/AliTRDgeometry.h"
-#include "TRD/AliTRDdigitsManager.h"
 #endif
 
 TEveElementList* trd_digits(Int_t sector = -1, TEveElement *cont = 0)
@@ -83,6 +87,6 @@ TEveElementList* trd_digits(Int_t sector = -1, TEveElement *cont = 0)
   gEve->AddElement(list, cont);
   gEve->Redraw3D();
 
-  Info("trd_digits", Form("TRD chambers with data for current selection %d.", jdet));
+  Info("trd_digits", "TRD chambers with data for current selection %d.", jdet);
   return list;
 }

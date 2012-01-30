@@ -1,3 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEvePointSet.h>
+
+#include <STEER/STEERBase/AliPID.h>
+#include <TRD/AliTRDhit.h>
+#include <TRD/AliTRDarrayADC.h>
+#include <TRD/AliTRDcluster.h>
+#include <TRD/AliTRDtrackV1.h>
+#include <TRD/AliTRDReconstructor.h>
+#include <TRD/AliTRDrecoParam.h>
+#include <TRD/AliTRDseedV1.h>
+#include <EVE/EveDet/AliEveTRDData.h>
+#endif
+
 //
 // How to access the basic TRD data structures when a 
 // pointer to an Eve opject is available. One can get a 
@@ -28,6 +48,9 @@ void analyseHits(AliEveTRDHits *hits = 0x0)
   }
 }
 
+/* Obsolete code
+ * 
+ * 
 //_______________________________________________________
 void analyseDigits(AliEveTRDDigits *digits = 0x0)
 {
@@ -53,6 +76,7 @@ void analyseDigits(AliEveTRDDigits *digits = 0x0)
     }
   data->Compress(1);
 }
+*/
 
 //_______________________________________________________
 void analyseClusters(TEvePointSet *points = 0x0)

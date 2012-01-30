@@ -7,6 +7,13 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoManager.h>
+#include <TGeoNode.h>
+#include <TEveManager.h>
+#include <TEveGeoNode.h>
+#endif
+
 void geom_emcal()
 {
   gGeoManager = gEve->GetDefaultGeometry();

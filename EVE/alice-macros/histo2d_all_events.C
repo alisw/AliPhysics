@@ -6,6 +6,29 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGLViewer.h>
+#include <TGLWidget.h>
+#include <TH2.h>
+#include <TMath.h>
+#include <TTree.h>
+#include <TEveBrowser.h>
+#include <TEveCalo.h>
+#include <TEveCaloData.h>
+#include <TEveCaloLegoOverlay.h>
+#include <TEveLegoEventHandler.h>
+#include <TEveManager.h>
+#include <TEveProjectionManager.h>
+#include <TEveProjectionAxes.h>
+#include <TEveScene.h>
+#include <TEveTrans.h>
+#include <TEveViewer.h>
+#include <TEveWindow.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 double pi = TMath::Pi();
 TEveViewer *g_histo2d_all_events_v0 = 0;
 TEveViewer *g_histo2d_all_events_v1 = 0;
@@ -18,6 +41,10 @@ TEveScene  *g_histo2d_all_events_s3 = 0;
 TEveCaloLegoOverlay* g_histo2d_all_events_lego_overlay = 0;
 TEveWindowSlot* g_histo2d_all_events_slot = 0;
 
+Double_t GetPhi(Double_t phi);
+TEveCaloLego* CreateHistoLego(TEveCaloData* data, TEveWindowSlot* slot);
+TEveCalo3D* Create3DView(TEveCaloData* data, TEveWindowSlot* slot);
+void CreateProjections(TEveCaloData* data, TEveCalo3D *calo3d, TEveWindowSlot* slot1, TEveWindowSlot* slot2);
 
 TEveCaloDataHist* histo2d_all_events()
 {
@@ -25,7 +52,7 @@ TEveCaloDataHist* histo2d_all_events()
    TEveCaloDataHist* data_t;
    
    if ( g_histo2d_all_events_slot == 0 ) {
-      cout<<"Filling histogram..."<<endl;
+      Info("histo2d_all_events", "Filling histogram...");
    
       // Access to esdTree
       AliESDEvent* esd = AliEveEventManager::AssertESD();
@@ -91,7 +118,7 @@ TEveCaloDataHist* histo2d_all_events()
 
       gEve->Redraw3D(kTRUE);
 
-      cout<<"Filling histogram... Finished"<<endl;
+      Info("histo2d_all_events", "...Finished");
    }
 
    return data_t;

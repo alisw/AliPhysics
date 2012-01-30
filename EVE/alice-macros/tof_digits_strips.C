@@ -7,11 +7,26 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TTree.h>
+#include <TStyle.h>
+#include <TGeoManager.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <TOF/AliTOFGeometry.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTOFDigitsInfo.h>
+#include <EVE/EveDet/AliEveTOFStrip.h>
+#endif
+
 void tof_digits_strips(Int_t selectedSector=-1)
 {
   TClonesArray *array = 0x0;
 
-  Int_t nDigitsInVolume[3] = {-1, -1, -1};
+ // Int_t nDigitsInVolume[3] = {-1, -1, -1};
   Int_t nStrips=19;
   TGeoManager *localGeoManager = gEve->GetGeometry("./geometry.root");//  gGeoManager = gEve->GetDefaultGeometry();
 

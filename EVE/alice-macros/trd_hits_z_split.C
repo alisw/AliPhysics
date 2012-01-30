@@ -7,6 +7,18 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TString.h>
+#include <TTree.h>
+#include <TEvePointSet.h>
+#include <TEveElement.h>
+#include <TEveManager.h>
+#include <TEveTreeTools.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 void trd_hits_z_split(const char *varexp    = "fX:fY:fZ:fZ",
 		      const char *selection = "")
 {

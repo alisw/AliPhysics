@@ -6,6 +6,17 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TMath.h>
+#include <TVector3.h>
+#include <TEvePointSet.h>
+#include <TEveManager.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <STEER/ESD/AliESDkink.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
 
 void esd_kink_fill_pointset(TEvePointSet* ps)
 {

@@ -7,9 +7,17 @@
 // Macro to visualise rootified raw-data from VZERO.
 //
 
-class AliRawReader;
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
+#include <TEveManager.h>
 
+#include <RAW/AliRawReader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveVZEROModule.h>
+#else
+class AliRawReader;
 class AliEveVZEROModule;
+#endif
 
 void vzero_raw()
 {

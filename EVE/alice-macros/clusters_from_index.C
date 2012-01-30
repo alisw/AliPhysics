@@ -6,6 +6,16 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliTrackPointArray.h>
+#include <EveBase/AliEveEventManager.h>
+#include <EveBase/AliEveMultiView.h>
+#endif
 
 TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
 {
@@ -28,8 +38,8 @@ TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
   const AliTrackPointArray* pArr = at->GetTrackPointArray();
   if (pArr == 0) {
     Warning("clusters_from_index", "TrackPointArray not stored with ESD track.");
-    continue;
   }
+  
   Int_t np =  pArr->GetNPoints();
   const Float_t* x = pArr->GetX();
   const Float_t* y = pArr->GetY();
@@ -42,7 +52,7 @@ TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
 
 
   if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
-    Warning("clusters_from_index", Form("No clusters for index '%d'", index));
+    Warning("clusters_from_index", "No clusters for index '%d'", index);
     delete clusters;
     return 0;
   }

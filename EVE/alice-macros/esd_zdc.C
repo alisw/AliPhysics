@@ -1,3 +1,19 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoManager.h>
+#include <TGeoShape.h>
+#include <TGeoMatrix.h>
+#include <TStyle.h>
+#include <TEveRGBAPalette.h>
+#include <TEveGeoShape.h>
+#include <TEveStraightLineSet.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDZDC.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 TEveRGBAPalette *g_zdc_palette = 0;
 Float_t          g_zdc_scale   = 0.1;
 Float_t          g_zdc_dist    = 11695;
@@ -67,9 +83,8 @@ void esd_zdc()
   gEve->AddElement(l);
 
   TEveElementList *c  = 0;
-  TEveGeoShape    *s  = 0;
-  Double_t        *te = 0;
-  Text_t          *tb = 0;
+  const Double_t  *te = 0;
+  const Text_t    *tb = 0;
 
   // ZNC geometry ------------------------------------
   tb = "ZNC";
@@ -153,16 +168,13 @@ void esd_zdc()
   /*
   TEveStraightLineSet *ls = 0;
 
-    This part has to be fixed: the getters now depend on the beam type: pp or PbPb,
-    and in case of PbPb we also habe to provide the beam. Peter
- 
-  Double32_t *cNA = esd->GetZNACentroid();
+  const Double32_t *cNA = esd->GetZNACentroid();
   ls = zdc_make_cross("ZNA Centroid", "ZNA",
                       cNA[0], cNA[1],  g_zdc_dist * g_zdc_scale,
                       g_zdc_cross, g_zdc_cross, g_zdc_cross);
   l->AddElement(ls);
 
-  Double32_t *cNC = esd->GetZNCCentroid();
+  const Double32_t *cNC = esd->GetZNCCentroid();
   ls = zdc_make_cross("ZNA Centroid", "ZNA",
                       cNC[0], cNC[1], -g_zdc_dist * g_zdc_scale,
                       g_zdc_cross, g_zdc_cross, g_zdc_cross);

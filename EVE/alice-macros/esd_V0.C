@@ -7,7 +7,23 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-void esd_v0_init_rectrack(TEveRecTrack& rt, AliExternalTrackParam* tp)
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveVSDStructs.h>
+#include <TEveTrackPropagator.h>
+#include <TEveManager.h>
+
+#include <STEER/STEERBase/AliExternalTrackParam.h>
+#include <STEER/STEERBase/AliPID.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDVertex.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <STEER/ESD/AliESDv0.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveV0.h>
+#endif
+
+
+void esd_v0_init_rectrack(TEveRecTrack& rt, const AliExternalTrackParam* tp)
 {
   Double_t      pbuf[3], vbuf[3];
 
@@ -158,19 +174,3 @@ AliEveV0List* esd_V0(Bool_t onFly=kFALSE)
 
   return cont;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

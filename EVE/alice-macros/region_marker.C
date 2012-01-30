@@ -6,6 +6,13 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TPolyMarker3D.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveUtil.h>
+#endif
+
 
 void region_marker(Float_t a=10, Float_t b=10, Float_t c=20,
 		   Float_t x=0, Float_t y=0, Float_t z=0)

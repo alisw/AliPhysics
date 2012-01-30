@@ -5,6 +5,15 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveManager.h>
+#include <TEvePointSet.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDcascade.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
 
 void esd_cascade_fill_pointset(TEvePointSet* ps)
 {

@@ -7,6 +7,18 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TString.h>
+#include <TTree.h>
+#include <TEvePointSet.h>
+#include <TEveElement.h>
+#include <TEveManager.h>
+#include <TEveTreeTools.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 TEvePointSet*
 tpc_hits(const char  *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ",
 	 const char  *selection = "TPC2.fArray.fR>80",
@@ -27,7 +39,7 @@ tpc_hits(const char  *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ
   ps.Select();
 
   if (points->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
-    Warning("tpc_hits", Form("No hits match '%s'", selection));
+    Warning("tpc_hits", "No hits match '%s'", selection);
     delete points;
     return 0;
   }
@@ -39,8 +51,6 @@ tpc_hits(const char  *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);
   points->SetMarkerColor(3);
-
-
 
   gEve->AddElement(points, cont);
   gEve->Redraw3D();

@@ -7,18 +7,20 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifdef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TObjArray.h>
+#include <TTree.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+
+#include <STEER/STEER/AliCluster.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <TRD/AliTRDcluster.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#else
 class TEvePointSet;
 class TEveElement;
-#else
-#include <TEveManager.h>
-#include <TEvePointSet.h>
-#include <TTree.h>
-#include <EveBase/AliEveEventManager.h>
-
-#include "AliRunLoader.h"
-#include "AliCluster.h"
-#include "TRD/AliTRDcluster.h"
 #endif
 
 TEvePointSet* trd_clusters(TEveElement *cont = 0)

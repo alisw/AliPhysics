@@ -1,14 +1,14 @@
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TGLViewer.h>
 #include <TEveManager.h>
-#include <EveBase/AliEveEventManager.h>
-#include "TRD/AliTRDarrayADC.h"
-#include <EveDet/AliEveTRDTrackList.h>
 
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
-#include "TRD/AliTRDReconstructor.h"
-#include "TRD/AliTRDtrackV1.h"
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDfriend.h>
+#include <TRD/AliTRDarrayADC.h>
+#include <TRD/AliTRDReconstructor.h>
+#include <TRD/AliTRDtrackV1.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTRDTrackList.h>
 #endif
 
 void trd_tracks(TEveElement *cont = 0)
@@ -33,7 +33,7 @@ void trd_tracks(TEveElement *cont = 0)
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++){
     AliESDtrack* esdTrack(esd->GetTrack(n));
     if(!esdTrack) continue;
-    AliESDfriendTrack *friendTrack(esdTrack->GetFriendTrack());
+    AliESDfriendTrack *friendTrack = new AliESDfriendTrack(*(esdTrack->GetFriendTrack()));
     if(!friendTrack) continue;
     //Info("trd_tracks", Form("Track[%3d] esd[%p] friend[%p]", n, (void*)esdTrack, (void*)friendTrack));
 

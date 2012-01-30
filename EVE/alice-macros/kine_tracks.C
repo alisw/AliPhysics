@@ -16,22 +16,18 @@
 /// \author Matevz Tadel & Alja Mrak-Tadel: 2006, 2007 
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
 #include <TParticle.h>
 #include <TParticlePDG.h>
-
 #include <TEveManager.h>
 #include <TEveTrackPropagator.h>
 
-#include <EveBase/AliEveEventManager.h>
-#include <EveBase/AliEveMagField.h>
-#include <EveBase/AliEveTrack.h>
-#include <EveBase/AliEveKineTools.h>
-
-#include <AliRunLoader.h>
-#include <AliStack.h>
-#include <AliMagF.h>
-
+#include <STEER/STEERBase/AliMagF.h>
+#include <STEER/STEERBase/AliStack.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveMagField.h>
+#include <EVE/EveBase/AliEveTrack.h>
+#include <EVE/EveBase/AliEveKineTools.h>
 #endif
 
 // Use magnetic-field as retrieved from GRP.

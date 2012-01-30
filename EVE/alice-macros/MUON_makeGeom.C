@@ -10,10 +10,17 @@
 /// \file MUON_makeGeom.C
 ///
 /// \author B. Vulpescu, LPC
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoManager.h>
 
+#include <MUON/mapping/AliMpCDB.h>
+#include <STEER/STEER/AliRun.h>
+#endif
+
+void MUON_makeGeom()
 {
   AliMpCDB::LoadMpSegmentation2(); 
-  gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+  gAlice->SetConfigFunction("$ALICE_ROOT/MUON/Config.C");
   //gAlice->Init("Config.C");
 
   gGeoManager->Export("geometry.root");

@@ -8,25 +8,20 @@
  **************************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
 #include <TGLViewer.h>
 #include <TGLCameraOverlay.h>
-
 #include <TEveManager.h>
 #include <TEveBrowser.h>
 #include <TEveViewer.h>
 #include <TEveScene.h>
 #include <TEvePointSet.h>
 
-#include <EveBase/AliEveEventManager.h>
-
-#include <AliESDEvent.h>
-#include <AliESDVertex.h>
-
-#include <AliRunLoader.h>
-#include <AliCluster.h>
+#include <STEER/STEER/AliCluster.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDVertex.h>
+#include <STEER/STEER/AliRunLoader.h>
 #include <TPC/AliTPCClustersRow.h>
-
+#include <EVE/EveBase/AliEveEventManager.h>
 #endif
 
 TEveViewer *gVPTPCView   = 0;

@@ -17,21 +17,16 @@
 ///
 /// \author P. Pillot, L. Aphecetche; Subatech
 
-#ifndef __CINT__
-
-#include "AliMUONVCluster.h"
-#include "AliMUONVClusterStore.h"
-
-#include "AliRunLoader.h"
-
-#include "EveBase/AliEveEventManager.h"
-
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TTree.h>
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 
-#include <TTree.h>
-#include <Riostream.h>
-
+#include <MUON/AliMUONVCluster.h>
+#include <MUON/AliMUONVClusterStore.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
 #endif
 class TIter;
 class TEvePointSet;

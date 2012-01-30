@@ -7,6 +7,10 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 void event_next()
 {
   if (AliEveEventManager::GetMaster() == 0) {

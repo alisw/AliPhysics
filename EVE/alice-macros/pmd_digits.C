@@ -6,6 +6,24 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TTree.h>
+#include <TStyle.h>
+#include <TString.h>
+#include <TEveElement.h>
+#include <TEveFrameBox.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
+#include <TEveRGBAPalette.h>
+#include <TEveTrans.h>
+
+#include <HMPID/AliHMPIDDigit.h>
+#include <HMPID/AliHMPIDv3.h>
+#include <STEER/STEER/AliCluster3D.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEvePMDModule.h>
+#endif
 
 void pmd_digits(Int_t mode = 0)
 {

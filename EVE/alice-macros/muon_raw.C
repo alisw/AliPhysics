@@ -18,24 +18,18 @@
 /// \author P. Pillot, L. Aphecetche; Subatech
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
-#include "AliMUONDigitMaker.h"
-#include "AliMUONDigitStoreV2R.h"
-
-#include "AliMpCDB.h"
-
-#include "AliRawReader.h"
-
-#include "EveBase/AliEveEventManager.h"
-
+#include <TStyle.h>
+#include <Riostream.h>
+#include <TROOT.h>
 #include <TEveManager.h>
 #include <TEveUtil.h>
 #include <TEveQuadSet.h>
 
-#include <TStyle.h>
-#include <Riostream.h>
-#include <TROOT.h>
-
+#include <MUON/AliMUONDigitMaker.h>
+#include <MUON/AliMUONDigitStoreV2R.h>
+#include <MUON/mapping/AliMpCDB.h>
+#include <RAW/AliRawReader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
 #endif
 
 void muon_raw()

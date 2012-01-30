@@ -14,6 +14,20 @@
 //* about the suitability of this software for any purpose. It is          *
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TObject.h>
+#include <TClass.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TEveTrack.h>
+#include <TEveUtil.h>
+#include <TEveManager.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+
+#include "esd_tracks.C"
+#endif
 
 /**
  * Display ESD Tracks from the HLTesdTree in AliEVE.

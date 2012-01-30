@@ -7,6 +7,24 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TGLViewer.h>
+#include <TStyle.h>
+#include <TEveBrowser.h>
+#include <TEveManager.h>
+#include <TEveViewer.h>
+#include <TEveWindow.h>
+#include <TEveScene.h>
+#include <TEveTreeTools.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <STEER/AOD/AliAODEvent.h>
+#include <STEER/AOD/AliAODTrack.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveJetPlane.h>
+#endif
+
 TEveViewer *gJPView   = 0;
 TEveScene  *gJPScene  = 0;
 
@@ -40,7 +58,7 @@ AliEveJetPlane* jetplane()
 
   TClonesArray* jets = aod->GetJets();
   Int_t njets = jets->GetEntries();
-  printf("Event: %5d Number of jets: %5d \n", iev, njets);
+  Info("jetplane", "Event: %5d Number of jets: %5d \n", iev, njets);
 
   for (Int_t ij = 0; ij < njets; ij++)
   {
@@ -52,7 +70,7 @@ AliEveJetPlane* jetplane()
 
   TClonesArray* tracks = aod->GetTracks();
   Int_t ntracks = tracks->GetEntries();
-  printf("Event: %5d Number of tracks: %5d \n", iev, ntracks);
+  Info("jetplane", "Event: %5d Number of tracks: %5d \n", iev, ntracks);
 
   for (Int_t ij = 0; ij < ntracks; ij++)
   {

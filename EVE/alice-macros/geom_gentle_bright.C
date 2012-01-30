@@ -1,9 +1,25 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TFile.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveGeoShape.h>
+#include <TEveGeoShapeExtract.h>
+
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveMultiView.h>
+#endif
+
+
 void geom_gentle_bright(Bool_t register_as_global=kTRUE)
 {
-
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
+  TEveGeoShape *gsre1;
+  TEveGeoShape *gsre2;
+  TEveGeoShape *gsre3;
+  
+  
+{ TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
-  TEveGeoShape* gsre1 = TEveGeoShape::ImportShapeExtract(gse);
+  gsre1 = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
 
   if (register_as_global)
@@ -17,7 +33,7 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   TEveElement::List_i i = gsre1->BeginChildren();
 
 //ITS
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
   TEveElement::List_i j = lvl1->BeginChildren();
@@ -42,11 +58,11 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   its3->SetRnrSelf(kTRUE);
   its3->SetMainColor(kYellow);
 //  its3->SetMainTransparency(60);
-
+  }
 //TPC
 
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
   TEveElement::List_i j = lvl1->BeginChildren();
@@ -82,11 +98,12 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
 //  tpc3->SetMainColor(1);
 //  tpc3->SetMainTransparency(70);
   m++;
-
+  }
+  
 //TRD+TOF
 
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
   TEveElement::List_i j = lvl1->BeginChildren();
@@ -101,11 +118,11 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   tof1->SetRnrSelf(kTRUE);
   tof1->SetMainColor(kMagenta+3);
 //  tof1->SetMainTransparency(80);
-
+  }
 //PHOS
 
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -116,11 +133,11 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainColor(kRed);
 //      lvl2->SetMainTransparency(20);
     }
-
+  }
 //HMPID
 
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -131,19 +148,21 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainColor(kBlue);
 //      lvl2->SetMainTransparency(20);
     }
+  }
+}
 
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rphi_geo.root");
+{ TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rphi_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
-  TEveGeoShape* gsre2 = TEveGeoShape::ImportShapeExtract(gse);
+  gsre2 = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
 
   // Fix visibility, color and transparency
 
   gsre2->SetRnrSelf(kFALSE);
   TEveElement::List_i i = gsre2->BeginChildren();
-
+  
 //ITS
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
   TEveElement::List_i j = lvl1->BeginChildren();
@@ -169,11 +188,11 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   its3->SetRnrSelf(kTRUE);
   its3->SetMainColor(1);
   its3->SetMainTransparency(80);
-
+  }
 //TPC
 
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -184,12 +203,12 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainColor(1);
       lvl2->SetMainTransparency(80);
     }
-
+  }
 //PHOS
 
   i++;
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -201,11 +220,11 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainTransparency(80);
 
     }
-
+  }
 //HMPID
 
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -216,19 +235,21 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainColor(1);
       lvl2->SetMainTransparency(80);
     }
+  }
+}
 
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rhoz_geo.root");
+{ TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rhoz_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
-  TEveGeoShape* gsre3 = TEveGeoShape::ImportShapeExtract(gse);
+  gsre3 = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
 
   // Fix visibility, color and transparency
 
   gsre3->SetRnrSelf(kFALSE);
   TEveElement::List_i i = gsre3->BeginChildren();
-
+  
 //ITS
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
   TEveElement::List_i j = lvl1->BeginChildren();
@@ -250,11 +271,11 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   TEveGeoShape* its3 = (TEveGeoShape*) *k;
   its3->SetRnrSelf(kTRUE);
   its3->SetMainColor(1);
-
+  }
 //TPC
 
   i++;
-
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -266,12 +287,12 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainTransparency(80);
 
     }
-
+  }
 //PHOS
 
   i++;
   i++;
- 
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -282,11 +303,12 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainColor(1);
       lvl2->SetMainTransparency(80);
     }
-
+  }
 //HMPID
 
   i++;
 
+  {
   TEveGeoShape* lvl1 = (TEveGeoShape*) *i;
   lvl1->SetRnrSelf(kFALSE);
 
@@ -297,15 +319,15 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
       lvl2->SetMainColor(1);
       lvl2->SetMainTransparency(80);
     }
-
-
+  }
+}
 //fix all the viewers
 
   TEveElement* top = gEve->GetCurrentEvent();
 
   AliEveMultiView *mv = AliEveMultiView::Instance();
 
-  mv->InitGeomGentle(gsre1, gsre2, gsre3);
+  mv->InitGeomGentle(gsre1, gsre2, gsre3, 0);
 
   gEve->FullRedraw3D(kTRUE, kTRUE);
 

@@ -1,3 +1,11 @@
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
+#include <TEveManager.h>
+
+#include <EVE/EveDet/AliEveFMDLoader.h>
+#endif
+
 void fmd_esd()
 {
   gStyle->SetPalette(1);

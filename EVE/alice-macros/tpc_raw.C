@@ -7,6 +7,23 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
+#include <TTree.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+#include <TEveTreeTools.h>
+
+#include <RAW/AliRawReader.h>
+#include <RAW/AliAltroRawStreamV3.h>
+#include <TPC/AliTPCRawStreamV3.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTPCData.h>
+#include <EVE/EveDet/AliEveTPCSector2D.h>
+#include <EVE/EveDet/AliEveTPCSector3D.h>
+#endif
+
 // Macro to visualise rootified raw-data from TPC.
 //
 // Use tpc_raw(Int_t mode) in order to run it
@@ -39,6 +56,9 @@ void tpc_raw(Int_t mode = 3)
   TEveElementList* sec3d = new TEveElementList("TPC 3D");
   gEve->AddElement(sec3d);
 
+  AliEveTPCSector2D *s;
+  AliEveTPCSector3D *t;
+  
   for (Int_t i=0; i<=35; ++i) {
     if (mode & 1) {
       s = new AliEveTPCSector2D(Form("2D sector %d",i));

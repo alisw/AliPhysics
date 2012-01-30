@@ -7,6 +7,10 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 /// \ingroup evemacros
 /// \file event_goto.C
 

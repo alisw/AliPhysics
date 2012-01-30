@@ -1,21 +1,23 @@
-#ifndef __CINT__
-#include "TEveManager.h"
-#include "TEveLine.h"
-#include "TEveStraightLineSet.h"
-#include "TClonesArray.h"
-#include "EveBase/AliEveEventManager.h"
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TParticlePDG.h>
+#include <TEveLine.h>
+#include <TEveStraightLineSet.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
 
-#include "AliRunLoader.h"
-#include "AliLoader.h"
-#include "AliDataLoader.h"
-#include "AliTreeLoader.h"
-#include "TRD/AliTRDarrayADC.h"
-#include "EveDet/AliEveTRDData.h"
-#include "TRD/AliTRDtrackletWord.h"
-#include "TRD/AliTRDtrackletMCM.h"
-#include "TRD/AliTRDtrackGTU.h"
-#include "TRD/AliTRDtrackletGTU.h"
-#include "TParticlePDG.h"
+#include <STEER/STEER/AliRunLoader.h>
+#include <STEER/STEER/AliLoader.h>
+#include <STEER/STEER/AliDataLoader.h>
+#include <STEER/STEER/AliTreeLoader.h>
+#include <TRD/AliTRDarrayADC.h>
+#include <TRD/AliTRDgeometry.h>
+#include <TRD/AliTRDtrackletWord.h>
+#include <TRD/AliTRDtrackletMCM.h>
+#include <TRD/AliTRDtrackGTU.h>
+#include <TRD/AliTRDtrackletGTU.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTRDData.h>
 #endif
 
 TEveElementList *

@@ -7,6 +7,19 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
+#include <TTree.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
+#include <TEveTreeTools.h>
+#include <TEvePointSet.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveFMDLoader.h>
+#endif
+
 TEvePointSet*
 fmd_hits2(const char *varexp    = "fX:fY:fZ",
 	  const char *selection = "")

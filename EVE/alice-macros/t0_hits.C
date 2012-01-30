@@ -7,6 +7,18 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TTree.h>
+#include <TEvePointSet.h>
+#include <TEveElement.h>
+#include <TEveManager.h>
+#include <TEveTreeTools.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EveBase/AliEveEventManager.h>
+#endif
+
 TEvePointSet*
 t0_hits(const char *varexp    = "T0.fX:T0.fY:T0.fZ",
 	const char *selection = "")

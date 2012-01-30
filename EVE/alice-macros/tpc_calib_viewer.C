@@ -6,6 +6,16 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGLayout.h>
+#include <TGFrame.h>
+#include <TEveManager.h>
+#include <TEveBrowser.h>
+
+#include <TPC/AliTPCCalibViewerGUI.h>
+#endif
+
 void tpc_calib_viewer(const char* file="CalibTree.root")
 {
    TEveBrowser* b = gEve->GetBrowser();

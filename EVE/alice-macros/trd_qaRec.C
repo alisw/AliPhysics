@@ -1,3 +1,22 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TBranch.h>
+#include <TFile.h>
+#include <TSystem.h>
+#include <TTree.h>
+#include <TROOT.h>
+#include <TEveManager.h>
+
+#include <PWGPP/TRD/info/AliTRDtrackInfo.h>
+#include <STEER/CDB/AliCDBManager.h>
+#include <TRD/AliTRDarrayADC.h>
+#include <TRD/AliTRDReconstructor.h>
+#include <TRD/AliTRDrecoParam.h>
+#include <TRD/AliTRDtrackV1.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTRDTrackList.h>
+#include <EVE/EveDet/AliEveTRDData.h>
+#endif
+
 void trd_qaRec()
 {
   gSystem->Load("libANALYSIS.so");

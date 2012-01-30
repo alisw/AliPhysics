@@ -6,6 +6,16 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TString.h>
+#include <TTree.h>
+#include <TEvePointSet.h>
+#include <TEveManager.h>
+#include <TEveTreeTools.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
 
 TEvePointSet*
 vzero_hits(const char *varexp    = "fX:fY:fZ",

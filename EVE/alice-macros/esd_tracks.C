@@ -8,21 +8,14 @@
  **************************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TMath.h>
 #include <TGListTree.h>
-
 #include <TEveVSDStructs.h>
 #include <TEveManager.h>
 #include <TEveTrackPropagator.h>
-
-#include <EveBase/AliEveTrack.h>
-#include <EveBase/AliEveTrackCounter.h>
-#include <EveBase/AliEveMagField.h>
-#include <EveBase/AliEveEventManager.h>
 
 #include <AliESDEvent.h>
 #include <AliESDfriend.h>
@@ -30,9 +23,11 @@
 #include <AliESDtrack.h>
 #include <AliESDfriendTrack.h>
 #include <AliExternalTrackParam.h>
-
 #include <AliPWG0Helper.h>
-
+#include <EveBase/AliEveTrack.h>
+#include <EveBase/AliEveTrackCounter.h>
+#include <EveBase/AliEveMagField.h>
+#include <EveBase/AliEveEventManager.h>
 #endif
 
 

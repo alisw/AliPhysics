@@ -6,8 +6,18 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGLViewer.h>
+#include <TTree.h>
+#include <TStyle.h>
+#include <TEveManager.h>
+#include <TEveTreeTools.h>
 
-#include <vector> // bypass a cint problem in root-5.20
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveITSModuleStepper.h>
+#include <EVE/EveDet/AliEveITSDigitsInfo.h>
+#endif
 
 class AliEveITSModuleStepper;
 
@@ -32,6 +42,11 @@ void its_module_stepper(Int_t det = 0)
 
   TGLViewer* v = gEve->GetDefaultGLViewer();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-  TGLCameraMarkupStyle* mup = v->GetCameraMarkup();
-  if(mup) mup->SetShow(kFALSE);
+  
+  /*
+   * Disabling obsolete code
+   * 
+   */
+  //TGLCameraMarkupStyle* mup = v->GetCameraMarkup();
+  //if(mup) mup->SetShow(kFALSE);
 }

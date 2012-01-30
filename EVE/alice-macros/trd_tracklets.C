@@ -1,19 +1,19 @@
-#ifdef __CINT__
-class TEveLine;
-#else
-#include <TEveManager.h>
-#include "TEveLine.h"
-#include "TClonesArray.h"
-#include <EveBase/AliEveEventManager.h>
 
-#include "AliRunLoader.h"
-#include "AliLoader.h"
-#include "AliDataLoader.h"
-#include "AliTreeLoader.h"
-#include "TRD/AliTRDarrayADC.h"
-#include "EveDet/AliEveTRDData.h"
-#include "TRD/AliTRDtrackletWord.h"
-#include "TRD/AliTRDtrackletMCM.h"
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TEveLine.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <STEER/STEER/AliLoader.h>
+#include <STEER/STEER/AliDataLoader.h>
+#include <STEER/STEER/AliTreeLoader.h>
+#include <TRD/AliTRDarrayADC.h>
+#include <TRD/AliTRDtrackletWord.h>
+#include <TRD/AliTRDtrackletMCM.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTRDData.h>
 #endif
 
 TEveElementList *trd_tracklets()

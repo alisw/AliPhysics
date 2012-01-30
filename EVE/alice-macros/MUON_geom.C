@@ -12,6 +12,14 @@
 ///
 /// \author B. Vulpescu, LPC
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoManager.h>
+#include <TGeoNode.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveGeoNode.h>
+#endif
+
 void MUON_geom()
 {
   gGeoManager = gEve->GetGeometry("geometry.root");
@@ -37,6 +45,6 @@ void MUON_geom()
 
   gEve->Redraw3D();
 
-  printf("MUON_geom.C done\n");
+  Info("MUON_geom.C", "Done");
 
 }

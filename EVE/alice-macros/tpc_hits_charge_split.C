@@ -7,6 +7,16 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TTree.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
+#include <TEveTreeTools.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 void tpc_hits_charge_split(const char *varexp    =
 			"TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ"
 			":log(TPC2.fArray.fCharge)",

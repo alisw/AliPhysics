@@ -6,8 +6,23 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TVector3.h>
+#include <TEveVector.h>
+#include <TEveTrackPropagator.h>
+#include <TEveVSDStructs.h>
+#include <TEveManager.h>
 
-void esd_kink_init_rectrackMother(TEveRecTrack& rt, AliExternalTrackParam* tp)
+#include <STEER/STEERBase/AliExternalTrackParam.h>
+#include <STEER/STEERBase/AliPID.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <STEER/ESD/AliESDkink.h>
+#include <EVE/EveBase/AliEveKink.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
+void esd_kink_init_rectrackMother(TEveRecTrack& rt, const AliExternalTrackParam* tp)
 {
   Double_t pbuf[3], vbuf[3];
 
@@ -18,7 +33,7 @@ void esd_kink_init_rectrackMother(TEveRecTrack& rt, AliExternalTrackParam* tp)
   rt.fBeta = 1; // ep/TMath::Sqrt(ep*ep + mc*mc);
 }
 
-void esd_kink_init_rectrackDaughter(TEveRecTrack& rt, AliExternalTrackParam* tp, TEveVector* svt,TEveVector* spt)
+void esd_kink_init_rectrackDaughter(TEveRecTrack& rt, const AliExternalTrackParam* tp, TEveVector* svt,TEveVector* spt)
 {
   rt.fSign = tp->GetSign();
   rt.fV.Set(*svt);
@@ -41,7 +56,7 @@ AliEveKink* esd_make_kink(TEveTrackPropagator* rnrStyleMoth,TEveTrackPropagator*
   const TVector3 r1(kink->GetPosition());
   rcKink.fVKink.Set(r1);
   
-  for (Int_t j=0; j<3; ++j) rckink.fKinkAngle[j]=kink->GetAngle(j);
+  for (Int_t j=0; j<3; ++j) rcKink.fKinkAngle[j]=kink->GetAngle(j);
   
   Double_t r[3], r2[3];
 

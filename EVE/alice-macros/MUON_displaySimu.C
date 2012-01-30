@@ -12,14 +12,45 @@
 ///
 /// \author B. Vulpescu, LPC
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <Rtypes.h>
+#include <TTree.h>
+#include <TStyle.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveTrack.h>
+
+#include <MUON/mapping/AliMpSegmentation.h>
+#include <MUON/mapping/AliMpDDLStore.h>
+#include <MUON/mapping/AliMpCDB.h>
+#include <MUON/AliMUONRecoCheck.h>
+#include <MUON/AliMUONTrack.h>
+#include <MUON/AliMUONTrackExtrap.h>
+#include <MUON/AliMUONVTrackStore.h>
+#include <STEER/STEERBase/AliStack.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDMuonTrack.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveMUONData.h>
+#include <EVE/EveDet/AliEveMUONChamber.h>
+#include <EVE/EveDet/AliEveMUONTrack.h>
+#else
 class AliEveMUONData;
 class AliEveEventManager;
+#endif
 
 AliEveMUONData     *g_muon_data       = 0;
 
 Int_t  g_currentEvent = -1;
 Bool_t g_fromRaw      = kFALSE;
 
+void MUON_ESD_tracks();
+void MUON_Ref_tracks();
+void MUON_MC_tracks();
 
 void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t clustersFromESD = kTRUE)
 {
@@ -201,13 +232,10 @@ void MUON_Ref_tracks()
 //______________________________________________________________________________
 void MUON_MC_tracks()
 {
-  Double_t RADDEG = 180.0/TMath::Pi();
-
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
 
-  Int_t nPrimary = stack->GetNprimary();
   Int_t nTracks  = stack->GetNtrack();
 
   TEveTrackList* lt = new TEveTrackList("MC-Tracks");
@@ -216,7 +244,6 @@ void MUON_MC_tracks()
 
   gEve->AddElement(lt);
 
-  Int_t pdgCode;
   TParticle *part;
   TEveRecTrack rt;
 

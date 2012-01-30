@@ -6,6 +6,21 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TMath.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveTrack.h>
+#include <TEveTrackPropagator.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDVertex.h>
+#include <STEER/ESD/AliMultiplicity.h>
+#include <STEER/STEERBase/AliMagF.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveTracklet.h>
+#include <EVE/EveBase/AliEveTrackCounter.h>
+#endif
 
 TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=2,
 				   Float_t dPhiWindow=0.080, Float_t dThetaWindow=0.025, 
@@ -14,8 +29,8 @@ TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=2,
   // radius - cylindrical radius to which the tracklets should be extrapolated
 
   AliESDEvent     *esd = AliEveEventManager::AssertESD();
-  AliESDVertex    *pv  = esd->GetPrimaryVertexSPD();
-  AliMultiplicity *mul = esd->GetMultiplicity();
+  const AliESDVertex    *pv  = esd->GetPrimaryVertexSPD();
+  const AliMultiplicity *mul = esd->GetMultiplicity();
 
   AliMagF *field = AliEveEventManager::AssertMagField();
 

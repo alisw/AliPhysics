@@ -12,6 +12,30 @@
 ///
 /// \author B. Vulpescu, LPC
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <Rtypes.h>
+#include <TTree.h>
+#include <TStyle.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEveTrack.h>
+
+#include <MUON/mapping/AliMpSegmentation.h>
+#include <MUON/mapping/AliMpDDLStore.h>
+#include <MUON/mapping/AliMpCDB.h>
+#include <MUON/AliMUONTrackExtrap.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDMuonTrack.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveMUONData.h>
+#include <EVE/EveDet/AliEveMUONChamber.h>
+#include <EVE/EveDet/AliEveMUONTrack.h>
+#endif
+
 class AliEveMUONData;
 class AliEveEventManager;
 
@@ -19,6 +43,8 @@ AliEveMUONData     *g_muon_data       = 0;
 
 Int_t  g_currentEvent = -1;
 Bool_t g_fromRaw      = kFALSE;
+
+void MUON_ESD_tracks();
 
 void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t clustersFromESD = kTRUE)
 {
@@ -131,7 +157,7 @@ void MUON_ESD_tracks()
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   // TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
-  AliEveMUONTrackList* lt = new TEveTrackList("ESD-Tracks");
+  AliEveMUONTrackList* lt = new AliEveMUONTrackList("ESD-Tracks");
   lt->SetMainColor(6);
   //lt->SetMUON();
 

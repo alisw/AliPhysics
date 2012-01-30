@@ -6,25 +6,41 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TMarker.h>
+#include <TEveManager.h>
+#include <TEveCompound.h>
+#include <TEveTrack.h>
+#include <TEveTrackPropagator.h>
+#include <TEveUtil.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDVertex.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveTrack.h>
+
+#include "esd_tracks.C"
+#endif
 
 TEveTrackList* primary_vertex_tracks()
 {
   TEveUtil::LoadMacro("esd_tracks.C");
   AliESDEvent   *esd = AliEveEventManager::AssertESD();
-  AliESDVertex *pv  = esd->GetPrimaryVertex();
+  const AliESDVertex *pv  = esd->GetPrimaryVertex();
 
   TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex");
   cont->SetMainColor(7);
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
   rnrStyle->fRnrFV = kTRUE;
-  rnrStyle->fFVAtt->SetMarkerColor(2);
+  rnrStyle->fFVAtt.SetMarkerColor(2);
   gEve->AddElement(cont);
 
   for (Int_t n=0; n<pv->GetNIndices(); n++)
   {
     AliESDtrack* at = esd->GetTrack(pv->GetIndices()[n]);
-    AliEveTrack* track = esd_make_track(rnrStyle, n, at, at);
+    AliEveTrack* track = esd_make_track(at, cont);
     track->SetLineWidth(4);
     track->SetLineColor(cont->GetMainColor());
     track->SetLineStyle(7);

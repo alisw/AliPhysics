@@ -6,6 +6,17 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <STEER/ESD/AliTrackPointArray.h>
+#include <EveBase/AliEveEventManager.h>
+#include <EveBase/AliEveMultiView.h>
+#endif
 
 TEvePointSet* clusters_from_label(Int_t label=0, TEveElement* cont=0)
 {
@@ -36,7 +47,7 @@ TEvePointSet* clusters_from_label(Int_t label=0, TEveElement* cont=0)
   }
 
   if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
-    Warning("clusters_from_label", Form("No clusters match label '%d'", label));
+    Warning("clusters_from_label", "No clusters match label '%d'", label);
     delete clusters;
     return 0;
   }

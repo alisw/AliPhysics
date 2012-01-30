@@ -20,12 +20,34 @@
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
 //************************************************************************
-
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
+#include <TGeoManager.h>
+#include <TGeoNode.h>
+#include <TGeoMatrix.h>
 #include <TMath.h>
+#include <TString.h>
+#include <TTree.h>
+#include <TStyle.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
 
+#include <EMCAL/AliEMCAL.h>
+#include <EMCAL/AliEMCALLoader.h>
+#include <STEER/ESD/AliESDEvent.h>
+#include <STEER/ESD/AliESDtrack.h>
+#include <STEER/ESD/AliTrackPointArray.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveBase/AliEveMultiView.h>
+#include <EVE/EveDet/AliEveEMCALData.h>
+#include <EVE/EveDet/AliEveEMCALSModule.h>
 
+#else
 class AliEveEMCALData;
+#endif
+
 AliEveEMCALData     *emcal_data       = 0;
 
 void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0, 

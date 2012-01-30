@@ -6,12 +6,25 @@
 
 // Author: Pawel Debski 2010
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TPolyMarker3D.h>
+#include <TString.h>
+#include <TEveLine.h>
+#include <TEveManager.h>
+#include <TEveEventManager.h>
+#include <TEveElement.h>
+#include <TEveUtil.h>
+
+#include <STEER/ESD/AliESDtrack.h>
+#include <EVE/EveBase/AliEveTrack.h>
+#include <EVE/EveBase/AliEveMultiView.h>
+#endif
 
 void set_momentum_vectors()
 {
 
-   TString str1 = 0;
-   TString str2 = 0;
+   TString str1;
+   TString str2;
 
    Bool_t draw = kFALSE;
 

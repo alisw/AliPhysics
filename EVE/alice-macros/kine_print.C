@@ -9,9 +9,14 @@
 
 // Import tracks from kinematics-tree / particle-stack.
 // Preliminary/minimal solution.
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TParticle.h>
+#include <TParticlePDG.h>
 
-#include "TParticlePDG.h"
-
+#include <STEER/STEERBase/AliStack.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
 void
 kine_print(Double_t min_pt = 0, Double_t min_p = 0)
 {
@@ -20,7 +25,7 @@ kine_print(Double_t min_pt = 0, Double_t min_p = 0)
   AliStack* stack = rl->Stack();
   if (!stack) {
     Error("kine_tracks.C", "can not get kinematics.");
-    return 0;
+    return;
   }
 
   printf("\n");

@@ -7,7 +7,19 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-void hits_from_label(Int_t label=0, TEveElement* cont)
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveUtil.h>
+#include <TEvePointSet.h>
+#include <TEveElement.h>
+#include <TEveManager.h>
+
+#include "its_hits.C"
+#include "tof_hits.C"
+#include "tpc_hits.C"
+#include "trd_hits.C"
+#endif
+
+void hits_from_label(Int_t label=0, TEveElement* cont=0)
 {
   TEveUtil::LoadMacro("its_hits.C");
 

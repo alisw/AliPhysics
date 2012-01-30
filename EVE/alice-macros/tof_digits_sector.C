@@ -7,6 +7,20 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TTree.h>
+#include <TStyle.h>
+#include <TGeoManager.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+
+#include <STEER/STEER/AliRunLoader.h>
+#include <TOF/AliTOFGeometry.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTOFDigitsInfo.h>
+#include <EVE/EveDet/AliEveTOFSector.h>
+#endif
+
 void tof_digits_sector(Int_t sector=0)
 {
   
@@ -23,13 +37,13 @@ void tof_digits_sector(Int_t sector=0)
 
   di->SetTree(dt);
 
-  AliTOFGeometry* g = di->GetTOFgeometry();
+  //AliTOFGeometry* g = di->GetTOFgeometry();
 
   gStyle->SetPalette(1, 0);
   gEve->DisableRedraw();
 
-  Char_t sectorName[100];
-  Char_t sectorTitle[200];
+  //Char_t sectorName[100];
+  //Char_t sectorTitle[200];
 
   TEveElementList* ll = new TEveElementList("TOF");
   ll->SetTitle("TOF detector");

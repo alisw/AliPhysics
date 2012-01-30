@@ -7,6 +7,12 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoManager.h>
+#include <TEveManager.h>
+#include <TEveGeoNode.h>
+#endif
+
 void geom_its()
 {
   gGeoManager = gEve->GetDefaultGeometry();
@@ -33,7 +39,7 @@ void geom_its_sdd()
 {
   gGeoManager = gEve->GetDefaultGeometry();
 
-  TEveGeoTopNode *its_re;
+  //TEveGeoTopNode *its_re;
   TGeoNode       *n1, *n2;
 
   n1 = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
@@ -51,7 +57,7 @@ void geom_its_ssd()
 {
   gGeoManager = gEve->GetDefaultGeometry();
 
-  TEveGeoTopNode *its_re;
+  //TEveGeoTopNode *its_re;
   TGeoNode       *n1, *n2;
 
   n1 = gGeoManager->GetTopVolume()->FindNode("ITSV_1");

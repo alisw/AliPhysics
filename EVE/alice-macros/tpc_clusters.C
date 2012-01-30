@@ -7,24 +7,20 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifdef __CINT__
-
-class TEveElement;
-class TEvePointSet;
-
-#else
-
-#include <TEveManager.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TColor.h>
-#include <TEvePointSet.h>
-#include <EveBase/AliEveEventManager.h>
 #include <TTree.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
 
-#include <AliRunLoader.h>
-#include <AliCluster.h>
+#include <STEER/STEER/AliCluster.h>
+#include <STEER/STEER/AliRunLoader.h>
 #include <TPC/AliTPCClustersRow.h>
 #include <TPC/AliTPCclusterMI.h>
-
+#include <EVE/EveBase/AliEveEventManager.h>
+#else
+class TEveElement;
+class TEvePointSet;
 #endif
 
 TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)

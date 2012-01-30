@@ -7,6 +7,20 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TObjArray.h>
+#include <TBranch.h>
+#include <TTree.h>
+#include <TString.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+
+#include <STEER/STEER/AliCluster.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EveBase/AliEveEventManager.h>
+#endif
+
 TEvePointSet* phos_clusters(TEveElement* cont=0)
 {
   AliEveEventManager::AssertGeometry();

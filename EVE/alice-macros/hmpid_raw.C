@@ -1,3 +1,20 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TGeoMatrix.h>
+#include <TStyle.h>
+#include <TEveElement.h>
+#include <TEveFrameBox.h>
+#include <TEveManager.h>
+#include <TEveRGBAPalette.h>
+#include <TEveTrans.h>
+#include <TEveQuadSet.h>
+
+#include <HMPID/AliHMPIDDigit.h>
+#include <HMPID/AliHMPIDv3.h>
+#include <HMPID/AliHMPIDRawStream.h>
+#include <RAW/AliRawReader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#endif
+
 void hmpid_raw()
 {
   const Char_t *name[] = { "HMPID0", "HMPID1", "HMPID2", "HMPID3",

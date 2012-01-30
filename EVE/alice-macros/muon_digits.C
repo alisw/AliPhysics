@@ -18,27 +18,21 @@
 /// \author P. Pillot, L. Aphecetche; Subatech
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONVDigit.h"
-#include "AliMUONVDigitStore.h"
-
-#include "AliMpPad.h"
-#include "AliMpSegmentation.h"
-#include "AliMpVSegmentation.h"
-#include "AliMpCDB.h"
-
-#include "AliRunLoader.h"
-
-#include "EveBase/AliEveEventManager.h"
-
+#include <Riostream.h>
+#include <TTree.h>
+#include <TStyle.h>
 #include <TEveManager.h>
 #include <TEveQuadSet.h>
 
-#include <TTree.h>
-#include <TStyle.h>
-#include <Riostream.h>
-
+#include <MUON/AliMUONGeometryTransformer.h>
+#include <MUON/AliMUONVDigit.h>
+#include <MUON/AliMUONVDigitStore.h>
+#include <MUON/mapping/AliMpPad.h>
+#include <MUON/mapping/AliMpSegmentation.h>
+#include <MUON/mapping/AliMpVSegmentation.h>
+#include <MUON/mapping/AliMpCDB.h>
+#include <STEER/STEER/AliRunLoader.h>
+#include <EVE/EveBase/AliEveEventManager.h>
 #endif
 
 //______________________________________________________________________________

@@ -1,3 +1,22 @@
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TClonesArray.h>
+#include <TStyle.h>
+#include <TGeoManager.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+
+#include <TOF/AliTOFGeometry.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEveTOFDigitsInfo.h>
+#include <EVE/EveDet/AliEveTOFSector.h>
+#endif
+
 void tof_raw(Int_t newDecoder = 2)
 {
   AliRawReader *rawReader = AliEveEventManager::AssertRawReader();

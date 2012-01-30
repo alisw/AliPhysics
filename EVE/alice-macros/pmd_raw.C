@@ -7,6 +7,22 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 // ---------------------------------------------------------------------- //
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TObjArray.h>
+#include <TString.h>
+#include <TStyle.h>
+#include <TEveManager.h>
+#include <TEveElement.h>
+#include <TEvePointSet.h>
+
+#include <PMD/AliPMDRawStream.h>
+#include <RAW/AliRawReaderRoot.h>
+#include <STEER/STEER/AliCluster.h>
+#include <EVE/EveBase/AliEveEventManager.h>
+#include <EVE/EveDet/AliEvePMDModule.h>
+#endif
+
 void pmd_raw(Int_t mode = 0)
 {
   gStyle->SetPalette(1, 0);
@@ -89,13 +105,13 @@ void pmd_raw(Int_t mode = 0)
 
       Int_t iddl = -1;
 
-      while ((iddl = stream.DdlData(&pmdddlcont)) >=0) {
+      while ((iddl = stream.DdlData(pmdddlcont)) >=0) {
 	  if (iddl >= istartDDL && iddl < iendDDL){
 	      sddl = bsddl;
 	      sddl += iddl;
 	      TEveElementList* lddl = new TEveElementList(sddl.Data());
 	      //  l->SetMainColor(3);
-	      gEve->AddElement(ddl, lplane);
+	      gEve->AddElement(lddl, lplane);
 	      
 	      modnumber = iddl*6;
 	      
