@@ -1641,9 +1641,15 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       if (TMath::Abs(angle-t.GetAlpha())>0.001){
 	Double_t rotation = angle-t.GetAlpha();
 	t.SetRelativeSector(relativesector);
-	if (!t.Rotate(rotation)) return 0; 	
+	if (!t.Rotate(rotation)) {
+          t.SetClusterIndex(nr, t.GetClusterIndex(nr) | 0x8000);
+          return 0;
+        }	
       }
-      if (!t.PropagateTo(x)) return 0;
+      if (!t.PropagateTo(x)) {
+        t.SetClusterIndex(nr, t.GetClusterIndex(nr) | 0x8000);
+        return 0;
+      }
       //
       t.SetCurrentCluster(cl); 
       t.SetRow(nr);

@@ -1424,7 +1424,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   Int_t imin=158, imax=0;
   for (Int_t i=0;i<160;i++) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c) continue;
+    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue; 
     if (sector<0) sector = c->GetDetector();
     if (c->GetX()<xmin) xmin=c->GetX();
     if (c->GetX()>xmax) xmax=c->GetX();
@@ -1453,7 +1453,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   //
   for (Int_t i=imin; i<=imax; i++){
     AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c) continue;
+    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue; 
     //    if (RejectCluster(c,track)) continue;
     sector = (c->GetDetector()%18);
     if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
@@ -1473,7 +1473,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   //
   for (Int_t i=imax; i>=imin; i--){
     AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c) continue;
+    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue;
     //if (RejectCluster(c,track)) continue;
     sector = (c->GetDetector()%18);
     if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
@@ -1493,7 +1493,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   //
   for (Int_t i=imin; i<=imax; i++){
     AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c) continue;
+    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue; 
     sector = (c->GetDetector()%18);
     if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
       //continue;
@@ -1700,6 +1700,15 @@ Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, I
   if(type==2)
     return ncl+nclBelowThr;
   return 0;
+}
+//_______________________________________________________________________
+Int_t AliTPCseed::GetNumberOfClustersIndices() {
+  Int_t ncls = 0;
+  for (int i=0; i < 160; i++) {
+    if ((fIndex[i] & 0x8000) == 0)
+      ncls++;
+  }
+  return ncls;
 }
 
 //_______________________________________________________________________

@@ -148,6 +148,7 @@ class AliTPCseed : public AliTPCtrack {
   Float_t GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1);
   void    SetPoolID(Int_t id) {fPoolID = id;}
   Int_t   GetPoolID()  const {return fPoolID;}
+  Int_t   GetNumberOfClustersIndices();  // Should be in AliTPCtrack
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
