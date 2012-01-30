@@ -64,6 +64,12 @@ fDarcSpare(0),
 fRegHeaderArray(0x0)
 {
   /// ctor
+  for (Int_t i = 0; i < 4; i++)
+    fGlobalInput[i] = 0;
+  
+  for (Int_t i = 0; i < 6; i++)
+    fGlobalScaler[i] = 0;
+  
 }
 
 //___________________________________________
@@ -90,7 +96,7 @@ AliMUONDarcHeader::AliMUONDarcHeader()
 
 {
   /// ctor
-  
+   
   for (Int_t i = 0; i < 4; i++)
     fGlobalInput[i] = 0;
 

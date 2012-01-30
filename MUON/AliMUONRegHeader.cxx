@@ -51,6 +51,10 @@ fHold(0),
 fLocalArray(0x0)
 {
   /// ctor
+  fInput[0] = fInput[1] = 0;
+  
+  for (Int_t i = 0; i < 8; i++)
+    fScaler[i] = 0;  
 }
 
 //___________________________________________
