@@ -7747,9 +7747,15 @@ void AliTPCtrackerMI::MarkSeedFree(TObject *sd)
 {
   // account that this seed is "deleted" 
   AliTPCseed* seed = dynamic_cast<AliTPCseed*>(sd);
-  if (!sd) {AliError(Form("Freeing of non-AliTPCseed %p from the pool is requested",sd)); return;}
+  if (!sd) {
+    AliError(Form("Freeing of non-AliTPCseed %p from the pool is requested",sd)); 
+    return;
+  }
   int id = seed->GetPoolID();
-  if (id<0) {AliError(Form("Freeing of seed %p NOT from the pool is requested",sd)); return;}
+  if (id<0) {
+    AliError(Form("Freeing of seed %p NOT from the pool is requested",sd)); 
+    return;
+  }
   //  AliInfo(Form("%d %p",id, seed));
   fSeedsPool->RemoveAt(id);
   if (fFreeSeedsID.GetSize()<=fNFreeSeeds) fFreeSeedsID.Set( 2*fNFreeSeeds + 100 );
