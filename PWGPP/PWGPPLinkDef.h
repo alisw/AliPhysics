@@ -140,14 +140,4 @@
 #pragma link C++ class  AliAnalysisTaskGlobalQA+;
 #pragma link C++ class  AliGlobalFBFqa+;
 
-// MUON/dep
-#pragma link C++ class AliAnalysisTaskMuonTrackingEff+;
-#pragma link C++ class AliAnalysisTaskMuonResolution+;
-#pragma link C++ class AliAnalysisTaskMuonFakes+;
-#pragma link C++ class AliAnalysisTaskMuonPerformance+;
-
-// MUON/lite
-#pragma link C++ class AliAnalysisTaskTrigChEff+;
-#pragma link C++ class AliAnalysisTaskMuonQA+;
-
 #endif

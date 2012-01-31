@@ -39,7 +39,6 @@
 #include "AliESDVZERO.h"
 
 // ANALYSIS includes
-#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskMuonQA.h"

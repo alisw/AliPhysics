@@ -15,6 +15,7 @@ class TObjArray;
 class TH1;
 class TH2;
 class TGraphAsymmErrors;
+class TGraphErrors;
 class TCanvas;
 class AliMUONRecoParam;
 class AliCFContainer;
