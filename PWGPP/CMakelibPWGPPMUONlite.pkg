@@ -1,7 +1,7 @@
 # -*- mode: CMake -*-
 
 #--------------------------------------------------------------------------------#
-# Package File for PWGPP                                                          #
+# Package File for PWGPPMUONlite                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,70 +27,22 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-file ( GLOB SRCS1 "*.cxx" )
-file ( GLOB SRCS2 "global/*.cxx" )
-file ( GLOB SRCS3 "cosmic/*.cxx" )
-file ( GLOB SRCS4 "tender/*.cxx" )
-file ( GLOB SRCS5 "HMPID/*.cxx" )
-file ( GLOB SRCS6 "ITS/*.cxx" )
-file ( GLOB SRCS7 "TRD/*.cxx" )
-file ( GLOB SRCS8 "TPC/*.cxx" )
-file ( GLOB SRCS9 "TOF/*.cxx" )
-file ( GLOB SRCS10 "TRD/info/*.cxx" )
-file ( GLOB SRCS11 "background/*.cxx" )
-file ( GLOB SRCS12 "Centrality/*.cxx" )
-file ( GLOB SRCS13 "ZDC/*.cxx" )
-file ( GLOB SRCS14 "T0/*.cxx" )
-file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
+file ( GLOB SRCS17 "MUON/lite/*.cxx" )
 
 list ( APPEND SRCS 
-  ${SRCS1} 
-  ${SRCS2} 
-  ${SRCS3} 
-  ${SRCS4} 
-  ${SRCS5} 
-  ${SRCS6} 
-  ${SRCS7} 
-  ${SRCS8} 
-  ${SRCS9} 
-  ${SRCS10} 
-  ${SRCS11} 
-  ${SRCS12} 
-  ${SRCS13} 
-  ${SRCS14}
-  ${SRCS15}
+  ${SRCS17}
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWGPPLinkDef.h)
+set ( DHDR  PWGPPMUONliteLinkDef.h)
 
 set ( EINCLUDE
-  TPC 
-  ITS 
-  TRD 
-  TOF 
-  TRD/Cal 
-  ANALYSIS/Tender 
-  ANALYSIS 
-  PWGPP/comparison 
-  PWGPP/cosmic 
-  PWGPP/global 
-  PWGPP/tender 
-  PWGPP/ITS 
-  PWGPP/TPC 
-  PWGPP/TOF 
-  PWGPP/TRD 
-  PWGPP/TRD/info 
-  PWGPP/background 
-  PWGPP/Centrality 
-  HMPID 
-  PWGPP/ZDC 
-  PWGPP/T0 
-  PWGPP/VZERO 
-  STEER/STEER 
-  STEER/AOD 
-  STEER/CDB 
+  MUON
+  PWGPP/MUON/lite
+  ANALYSIS
+  ANALYSISalice
+  STEER/AOD
   STEER/ESD
   STEER/STEERBase
   )

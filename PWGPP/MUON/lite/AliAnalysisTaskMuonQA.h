@@ -10,6 +10,8 @@
 /// \brief Quality assurance of MUON ESDs
 //Author: Philippe Pillot - SUBATECH Nantes
 
+#include "AliAnalysisTaskSE.h"
+
 class TMap;
 class TList;
 class TObjArray;
