@@ -1,0 +1,78 @@
+\chapter{A Quick Start}
+\label{quickstart}
+The \textit{ALICE flow package}\footnote{\texttt{http://alisoft.cern.ch/viewvc/trunk/PWG2/FLOW/?root=AliRoot .}} 
+contains most known flow analysis methods.  In this chapter we give a few examples how to setup an
+analysis for the most common cases. The chapters that follow provide more detailed information on the structure of the code 
+and settings of the various flow methods. 
+This write-up is however not a complete listing of the methods, for this the reader is referred to the header files.
+ 
+\section{On the fly}
+The macro \texttt{Documentation/examples/runFlowOnTheFlyExample.C} 
+ is a basic example of how the flow package works. 
+In this section we explain the main pieces of that macro.
+
+\begin{enumerate}
+\item
+To use the flow code the flow library needs to be loaded. In  \textit{AliRoot}:\\
+\texttt{gSystem->Load("libPWGflowBase");}\\
+In  \textit{root} additional libraries need to be loaded: \\
+\texttt{gSystem->Load("libGeom");}\\
+\texttt{gSystem->Load("libVMC");}\\
+\texttt{gSystem->Load("libXMLIO");}\\
+\texttt{gSystem->Load("libPhysics");}\\
+\texttt{gSystem->Load("libPWGflowBase");}\\
+\item
+We need to instantiate the flow analysis methods which we want to use. In this example we will
+instantiate two methods: the first  which calculates the flow versus the reaction plane of the Monte Carlo, which is our reference value (see section \ref{MC}), 
+and second the so called Q-cumulant method (see section \ref{qvc}).
+\texttt{AliFlowAnalysisWithMCEventPlane *mcep} \\
+\texttt{= new AliFlowAnalysisWithMCEventPlane();}\\
+\texttt{AliFlowAnalysisWithQCumulants *qc}\\
+ \texttt{ = new AliFlowAnalysisWithQCumulants();}\\
+ \item
+ Each of the methods needs to initialize (e.g. to define the histograms): \\
+ \texttt{mcep->Init(); }
+\texttt{qc->Init();}\\
+\item
+To define the particles we are going to use as Reference Particles (RP's, particles 
+used for the {\bf Q} vector) and the Particles Of Interest (POI's, the particles of which 
+we calculate the differential flow) we have to define two trackcut objects:\\
+\texttt{AliFlowTrackSimpleCuts *cutsRP = new AliFlowTrackSimpleCuts();}\\
+\texttt{AliFlowTrackSimpleCuts *cutsPOI = new AliFlowTrackSimpleCuts();}\\
+\texttt{cutsPOI->SetPtMin(0.2);}\\
+\texttt{cutsPOI->SetPtMax(2.0);}\\
+\item
+Now we are ready to start the analysis.  
+For a quick start we make an event on the fly, tag the reference particles and particles of interest  and pass it to the two flow methods. \\
+\texttt{for(Int\textunderscore t i=0; i<nEvts; i++) \{}\\
+\texttt{      // make an event with mult particles }\\
+\texttt{      AliFlowEventSimple* event = new AliFlowEventSimple(mult,AliFlowEventSimple::kGenerate);}\\
+\texttt{      // modify the tracks adding the flow value v2}\\
+\texttt{       event->AddV2(v2);}\\
+\texttt{      // select the particles for the reference flow}\\
+\texttt{      event->TagRP(cutsRP);}\\
+\texttt{      // select the particles for differential flow}\\
+\texttt{      event->TagPOI(cutsPOI);}\\
+\texttt{      // do flow analysis with various methods:}\\
+\texttt{      mcep->Make(event);}\\
+\texttt{      qc->Make(event);}\\
+\texttt{    \} // end of for(Int\textunderscore t i=0;i<nEvts;i++)}\\
+\item
+To fill the histograms which contain the final results we have to call Finish for each method:\\
+\texttt{ mcep->Finish(); }  \texttt{ qc->Finish(); }\\
+\item
+This concludes the analysis and now we can write the results into a file:\\
+\texttt{ TFile *outputFile = new TFile("AnalysisResults.root","RECREATE");}\\
+\texttt{ mcep->WriteHistograms();}\\
+\texttt{ qc->WriteHistograms();}\\
+
+\section{What is in the output file?}
+Now we have written the results into a file, but what is in there?
+
+\section{Reading events from file}
+The macro \texttt{Documentation/examples/runFlowReaderExample.C} is an example how to setup a flow analysis if the events are already generated and
+for example are stored in ntuples.
+ 
+\section{A simple flow analysis in ALICE using Tasks}
+The macro \texttt{Documentation/examples/runFlowTaskExample.C} is an example how to setup a flow analysis using the full ALICE Analysis Framework.
+\end{enumerate}
