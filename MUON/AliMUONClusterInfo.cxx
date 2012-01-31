@@ -65,6 +65,37 @@ AliMUONClusterInfo::AliMUONClusterInfo()
 }
 
 //_____________________________________________________________________________
+AliMUONClusterInfo::AliMUONClusterInfo(TRootIOCtor* /*rio*/)
+: TObject(),
+fRunId(0),
+fEventId(0),
+fZ(0.),
+fClusterId(0),
+fClusterX(0.),
+fClusterY(0.),
+fClusterXErr(0.),
+fClusterYErr(0.),
+fClusterChi2(0.),
+fClusterCharge(0.),
+fTrackId(0),
+fTrackX(0.),
+fTrackY(0.),
+fTrackThetaX(0.),
+fTrackThetaY(0.),
+fTrackP(0.),
+fTrackXErr(0.),
+fTrackYErr(0.),
+fTrackChi2(0.),
+fTrackCharge(0),
+fTrackNHits(0),
+fTrackChamberHitMap(0),
+fNPads(0),
+fPads(0x0)
+{
+  /// I/O constructor
+}
+
+//_____________________________________________________________________________
 AliMUONClusterInfo::AliMUONClusterInfo (const AliMUONClusterInfo& clusterInfo)
 : TObject(clusterInfo),
   fRunId(clusterInfo.fRunId),

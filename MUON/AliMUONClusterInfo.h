@@ -19,6 +19,7 @@
 class AliMUONClusterInfo : public TObject {
 public:
   AliMUONClusterInfo(); // Constructor
+  AliMUONClusterInfo(TRootIOCtor* /*rio*/); // IO constructor
   virtual ~AliMUONClusterInfo(); //< Destructor
   AliMUONClusterInfo(const AliMUONClusterInfo& cluster);
   AliMUONClusterInfo& operator=(const AliMUONClusterInfo& cluster);
