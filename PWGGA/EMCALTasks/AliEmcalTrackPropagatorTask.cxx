@@ -18,7 +18,7 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask() :
   fRecoUtils(0),
   fTracksName(),
   fDist(430),
-  fMinPtCut(0.5),
+  fMinPtCut(0.35),
   fEsdEv(0),
   fTracks(0)
 {
@@ -31,7 +31,7 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask(const char *name) :
   fRecoUtils(0),
   fTracksName("TpcSpdVertexConstrainedTracks"),
   fDist(430),
-  fMinPtCut(0.5),
+  fMinPtCut(0.35),
   fEsdEv(0),
   fTracks(0)
 {
@@ -95,6 +95,8 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     if(eTrack->Pt()<fMinPtCut) 
       continue;
     Double_t phi = eTrack->Phi()*TMath::RadToDeg();
+    if (TMath::Abs(eTrack->Eta())>0.8 || phi <= 20 || phi >= 240) 
+      continue;
     if (TMath::Abs(eTrack->Eta())>0.8 || phi <= 20 || phi >= 240) 
       continue;
     AliExternalTrackParam *trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetInnerParam());
