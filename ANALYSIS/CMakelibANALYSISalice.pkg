@@ -50,6 +50,7 @@ set ( SRCS
     AliCollisionNormalizationTask.cxx 
     AliCentralitySelectionTask.cxx 
     AliEPSelectionTask.cxx 
+    AliVZEROEPSelectionTask.cxx 
     AliAnalysisTaskStat.cxx 
     AliMultiInputEventHandler.cxx 
     AliESDv0KineCuts.cxx 
