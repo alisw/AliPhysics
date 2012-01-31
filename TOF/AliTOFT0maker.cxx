@@ -522,6 +522,8 @@ void     AliTOFT0maker::WriteInESD(AliESDEvent *esd){
   
     esd->SetTOFHeader(tofHeader);
 
+    delete tofHeader;
+
     AliDebug(1,Form("resTOF=%f T0spread=%f t0Gen=%f t0resGen=%f",fTimeResolution,fT0width,t0Gen,t0ResGen));
     AliDebug(1,Form("%d ",nt0));
     for (Int_t ii=0; ii<nt0; ii++)
