@@ -232,7 +232,6 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	  return;
 	} 
       }
-      lstF->Add(fText->Clone()) ;
       //
       //now check the ratio histogram
       Double_t binContent = 0. ;  
@@ -248,6 +247,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       rv = NGoodTower/nTot ; 
       printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
       if(fText){
+	lstF->Add(fText->Clone()) ;
         fText->Clear() ; 
         
         fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
