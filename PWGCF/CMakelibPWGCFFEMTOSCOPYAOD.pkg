@@ -40,8 +40,8 @@ set ( EXPORT )
 
 set ( EINCLUDE  PYTHIA6 PWGCF/FEMTOSCOPYAOD STEER/AOD STEER/STEERBase)
 
-install (FILES centraltrain/AnalysisTrainPWGCF.C 
-         DESTINATION PWGCF/centraltrain)
+#install (FILES centraltrain/AnalysisTrainPWGCF.C 
+#         DESTINATION PWGCF/centraltrain)
 
 #
 # EOF
