@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="D0toKpiCuts.root",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/){
+AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="D0toKpiCuts.root",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname=""){
   //
   // Test macro for the AliAnalysisTaskSE for HF mesons quality assurance
   //Author: C.Bianchin chiara.bianchin@pd.infn.it
@@ -24,6 +24,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",inname="input",suffix="",cutsobjname="",centr="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_QA";
+  filename += finDirname.Data();
 
   switch (ch){
   case 0:
@@ -111,6 +112,14 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out5name+=centr;
   out6name+=centr;
   out7name+=centr;
+  inname+= finDirname.Data();
+  out1name+= finDirname.Data();
+  out2name+= finDirname.Data();
+  out3name+= finDirname.Data();
+  out4name+= finDirname.Data();
+  out5name+= finDirname.Data();
+  out6name+= finDirname.Data();
+  out7name+= finDirname.Data();
 
  
   AliAnalysisTaskSEHFQA* taskQA=new AliAnalysisTaskSEHFQA(Form("QA%s",suffix.Data()),ch,analysiscuts);
