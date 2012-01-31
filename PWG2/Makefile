@@ -45,18 +45,6 @@ ifneq ($(PWG2femtoscopyUser_INCLUDE),)
      endif
 endif
 
-ifneq ($(PWG2flowCommon_INCLUDE),)
-  ALICEINC += -I../$(PWG2flowCommon_INCLUDE)
-endif
-
-ifneq ($(PWG2flowTasks_INCLUDE),)
-  ALICEINC += -I../$(PWG2flowTasks_INCLUDE)
- else
-    ifneq ($(ALICE_ROOT),)
-       ALICEINC += -I$(ALICE_ROOT)/PWG2/FLOW/AliFlowCommon
-     endif
-endif
-
 ifneq ($(PWG2resonances_INCLUDE),)
   ALICEINC += -I../$(PWG2resonances_INCLUDE)
  else
