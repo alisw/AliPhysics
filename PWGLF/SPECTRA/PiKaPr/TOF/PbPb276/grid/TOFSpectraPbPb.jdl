@@ -1,0 +1,43 @@
+Executable = "/alice/cern.ch/user/r/rpreghen/bin/starter.sh";
+Validationcommand = "/alice/cern.ch/user/r/rpreghen/bin/validation.sh";
+Arguments = "bash TOFSpectraPbPb.sh $2";
+
+Requirements = ( other.Type == "machine" );
+
+Packages = {
+	 "VO_ALICE@AliRoot::v5-02-16-AN",
+	 "VO_ALICE@ROOT::v5-30-03-1",
+	 "APISCONFIG::V1.1x"
+};
+
+JDLVariables = {
+        "Packages",
+        "OutputDir"
+};
+
+Type = "Job";
+User = "rpreghen";
+Jobtag = { "comment: TOFSpectraPbPb jdl" };
+TTL = 72000;
+Price = 1;
+Workdirectorysize = { "4000MB" };
+
+SplitMaxInputFileNumber = "250";
+Split = "se";
+
+InputDataListFormat = "xml-single";
+InputDataList = "wn.xml";
+InputDataCollection = {
+	"LF:$HOME/xml/$1.xml,nodownload"
+};
+
+InputFile = {
+	"LF:/alice/cern.ch/user/r/rpreghen/TOFSpectraPbPb/TOFSpectraPbPb.sh",
+	"LF:/alice/cern.ch/user/r/rpreghen/TOFSpectraPbPb/TOFSpectraPbPb.tgz"
+};
+
+OutputArchive = {
+	"log_archive.zip:wn.xml,stdout,stderr,*.log@disk=1",
+	"root_archive.zip:*.root@disk=1"
+};
+OutputDir = "$HOME/TOFSpectraPbPb/out/$1/#alien_counter_03i#";
