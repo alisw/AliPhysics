@@ -1,6 +1,6 @@
 # -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
-# Package File for PWG0FP                                                        #
+# Package File for PWGUDFP                                                        #
 # Author : Andras Agocs, Johny Jose (johny.jose@cern.ch)                         #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -33,6 +33,6 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG0FPLinkDef.h)
+set ( DHDR  PWGUDFPLinkDef.h)
 
-set ( EINCLUDE  PWG0/FirstPhysics STEER/STEERBase)
+set ( EINCLUDE  PWGUD/FirstPhysics STEER/STEERBase)
