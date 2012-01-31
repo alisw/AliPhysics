@@ -53,7 +53,7 @@ protected:
   Float_t fAlpha;		// Polarization factor
   Int_t   fDebug;   		// debug level
 
-  Bool_t Decay(TLorentzVector mother, TLorentzVector &dau1, TLorentzVector &dau2 , TF1 fPol);
+  Bool_t Decay(TLorentzVector& mother, TLorentzVector &dau1, TLorentzVector &dau2 , TF1* fPol);
 
   ClassDef(AliGenPairFlat,1) // Flat random pair generator
 };

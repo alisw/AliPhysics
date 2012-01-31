@@ -194,7 +194,7 @@ void AliGenPairFlat::Init()
 //_____________________________________________________________________________
 
 
-Bool_t AliGenPairFlat::Decay(TLorentzVector mother, TLorentzVector &dau1, TLorentzVector &dau2, TF1* polfactor)
+Bool_t AliGenPairFlat::Decay(TLorentzVector& mother, TLorentzVector &dau1, TLorentzVector &dau2, TF1* polfactor)
 {
 	//
 	// decay procedure

@@ -244,7 +244,7 @@ void AliEveMUONData::LoadRecPoints(TTree* tree)
 }
 
 //______________________________________________________________________________
-void AliEveMUONData::LoadRecPointsFromESD(Char_t *fileName)
+void AliEveMUONData::LoadRecPointsFromESD(const Char_t *fileName)
 {
   //
   // load reconstructed points stored in AliESDs.root
