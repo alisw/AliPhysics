@@ -88,11 +88,9 @@ void AliTriggerPFProtection::Print( const Option_t* ) const
   cout << "  Interaction:                   " << fINT.Data() << endl;
   cout << "  Na1: " << fNa1 << " Na2: " << fNa2 << " Ta: " << fTa << endl;
   cout << "  Nb1: " << fNb1 << " Nb2: " << fNb2 << " Tb: " << fTb << endl;
-  if(1){
-    cout << "PFdef: " << hex;
-    for(Int_t i=0;i<12;i++)cout << " 0x" << fPFdef[i];
-    cout << dec << endl;
-  }
+  cout << "PFdef: " << hex;
+  for(Int_t i=0;i<12;i++)cout << " 0x" << fPFdef[i];
+  cout << dec << endl;
 }
 
 //_____________________________________________________________________________
