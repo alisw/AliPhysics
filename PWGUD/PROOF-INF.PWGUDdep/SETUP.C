@@ -1,6 +1,6 @@
 void SETUP()
 {
-   // we assume PWG0base (and thus ESD) already loaded
+   // we assume PWGUDbase (and thus ESD) already loaded
    CheckLoadLibrary("libMinuit");
 
    // this package depends on STEER
@@ -18,10 +18,10 @@ void SETUP()
    CheckLoadLibrary("libEGPythia6");
    CheckLoadLibrary("libAliPythia6");
 
-   CheckLoadLibrary("libPWG0dep");
+   CheckLoadLibrary("libPWGUDdep");
 
    // Set the Include paths
-   gROOT->ProcessLine(".include PWG0dep");
+   gROOT->ProcessLine(".include PWGUDdep");
 }
 
 Int_t CheckLoadLibrary(const char* library)
