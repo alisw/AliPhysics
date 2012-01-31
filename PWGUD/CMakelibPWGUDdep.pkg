@@ -1,6 +1,6 @@
 # -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
-# Package File for PWG0dep                                                       #
+# Package File for PWGUDdep                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -46,6 +46,6 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG0depLinkDef.h)
+set ( DHDR  PWGUDdepLinkDef.h)
 
 set ( EINCLUDE  PWGUD/base TPC STEER/STEER STEER/ESD STEER/STEERBase)
