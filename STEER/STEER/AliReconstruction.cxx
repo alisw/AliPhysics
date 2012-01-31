@@ -1599,7 +1599,7 @@ void AliReconstruction::Begin(TTree *)
   AliSysInfo::AddStamp("InitRecoParams");
 
   if(toCDBSnapshot)
-      AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data());
+      AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data(),kFALSE);
   AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
   AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
 

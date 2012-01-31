@@ -769,7 +769,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 	  snapshotFileOut = snapshotFile;
       else 
 	  snapshotFileOut="OCDB.root"; 
-      AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data()); 
+      AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data(),kFALSE); 
   }
 
   // Cleanup of CDB manager: cache and active storages!

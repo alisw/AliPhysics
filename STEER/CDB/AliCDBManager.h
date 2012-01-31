@@ -14,6 +14,7 @@
 #include <TList.h>
 #include <TMap.h>
 #include <TSystem.h>
+#include <TFile.h>
 
 class AliCDBEntry;
 class AliCDBId;
@@ -76,6 +77,7 @@ class AliCDBManager: public TObject {
 				Int_t version = -1, Int_t subVersion = -1);
 	AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1);
+	AliCDBEntry* GetEntryFromSnapshot(const char* path);
 
 	const char* GetURI(const char* path);				 
 				 
@@ -128,7 +130,9 @@ class AliCDBManager: public TObject {
 	void Init();
 	void InitFromCache(TMap *entryCache, Int_t run);
 	Bool_t InitFromSnapshot(const char* snapshotFileName, Bool_t overwrite=kTRUE);
-	void DumpToSnapshotFile(const char* snapshotFileName);
+	Bool_t SetSnapshotMode(const char* snapshotFileName="OCDB.root");
+	void UnsetSnapshotMode() {fSnapshotMode=kFALSE;}
+	void DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys);
   
 protected:
 
@@ -176,6 +180,11 @@ protected:
 	Int_t fRun;			//! The run number
 	Bool_t fCache;			//! The cache flag
 	Bool_t fLock; 	//! Lock flag, if ON default storage and run number cannot be reset
+
+        Bool_t fSnapshotMode;           //! flag saying if we are in snapshot mode
+	//TMap* fSnapshotCache;    	//! pointer to the cache of objects in the snapshot
+	//TList* fSnapshotIdsList;        //! pointer to the list of the object Id's in the snapshot
+	TFile *fSnapshotFile;
 
 	Bool_t fRaw;   // flag to say whether we are in the raw case
 	Int_t fStartRunLHCPeriod; // 1st run of the LHC period set

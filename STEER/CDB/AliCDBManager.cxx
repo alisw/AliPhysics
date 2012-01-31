@@ -101,7 +101,7 @@ void AliCDBManager::InitFromCache(TMap *entryCache, Int_t run) {
 }
 
 //_____________________________________________________________________________
-void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName){
+void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys){
 // 
 // dump the entries map and the ids list to
 // the output file
@@ -118,8 +118,25 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName){
 
     f->cd();                                                                                           
 
-    f->WriteObject(&fEntryCache,"CDBentriesMap");
-    f->WriteObject(fIds,"CDBidsList");
+    if(singleKeys){
+	f->WriteObject(&fEntryCache,"CDBentriesMap");
+	f->WriteObject(fIds,"CDBidsList");
+    }else{
+	// We write the entries one by one named by their calibration path
+	/*
+	fEntryCache.Write("CDBentriesMap");
+	fIds->Write("CDBidsList");
+	*/
+	TIter iter(fEntryCache.GetTable());
+	TPair* pair = 0;
+	while((pair = dynamic_cast<TPair*> (iter.Next()))){
+	    TObjString *os = dynamic_cast<TObjString*>(pair->Key());
+	    TString path = os->GetString();
+	    AliCDBEntry *entry = dynamic_cast<AliCDBEntry*>(pair->Value());
+	    path.ReplaceAll("/","*");
+	    entry->Write(path.Data());
+	}
+    }
     f->Close();
     delete f;
 
@@ -280,6 +297,10 @@ AliCDBManager::AliCDBManager():
   fRun(-1),
   fCache(kTRUE),
   fLock(kFALSE),
+  fSnapshotMode(kFALSE),
+  fSnapshotFile(0),
+//  fSnapshotCache(0),
+//  fSnapshotIdsList(0),
   fRaw(kFALSE),
   fStartRunLHCPeriod(-1),
   fEndRunLHCPeriod(-1),
@@ -312,6 +333,12 @@ AliCDBManager::~AliCDBManager() {
 	delete fCondParam;
 	delete fRefParam;
 	delete fShortLived; fShortLived = 0x0;
+	//fSnapshotCache = 0;
+	//fSnapshotIdsList = 0;
+	if(fSnapshotMode){
+	    fSnapshotFile->Close();
+	    fSnapshotFile = 0;
+	}
 }
 
 //_____________________________________________________________________________
@@ -813,27 +840,40 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
   	// first look into map of cached objects
   	if(fCache && query.GetFirstRun() == fRun)
 		entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
-
   	if(entry) {
 		AliDebug(2, Form("Object %s retrieved from cache !!",query.GetPath().Data()));
 		return entry;
 	}
 
+  	// if snapshot flag is set, try getting from the snapshot
+  	if(fSnapshotMode && query.GetFirstRun() == fRun)
+	    // entry = (AliCDBEntry*) fSnapshotCache->GetValue(query.GetPath()); // not possible,
+	    // all the map would be charged in memory from the snapshot anyway.
+	    entry = GetEntryFromSnapshot(query.GetPath());
+  	if(entry) {
+		AliDebug(2, Form("Object %s retrieved from the snapshot !!",query.GetPath().Data()));
+		if(query.GetFirstRun() == fRun) // no need to check fCache, fSnapshotMode not possible otherwise
+		    CacheEntry(query.GetPath(), entry);
+
+		if(!fIds->Contains(&entry->GetId()))
+		    fIds->Add(entry->GetId().Clone());
+
+		return entry;
+	}
+
+	// Entry is not in cache (and, in case we are in snapshot mode, not in the snapshot either)
+	// => retrieve it from the storage and cache it!!
 	if(!fDefaultStorage) {
 		AliError("No storage set!");
 		return NULL;
 	}
-	// Entry is not in cache -> retrieve it from CDB and cache it!!
 	AliCDBStorage *aStorage=0;
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
-//	Bool_t usedDefStorage=kTRUE;
 
 	if(aPar) {
 		aStorage=GetStorage(aPar);
 		TString str = aPar->GetURI();
 		AliDebug(2,Form("Looking into storage: %s",str.Data()));
-//		usedDefStorage=kFALSE;
-
 	} else {
 		aStorage=GetDefaultStorage();
 		AliDebug(2,"Looking into default storage");
@@ -851,6 +891,81 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 
 
   	return entry;
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBManager::GetEntryFromSnapshot(const char* path) {
+    // get the entry from the open snapshot file
+
+    TString sPath(path);
+    sPath.ReplaceAll("/","*");
+    AliCDBEntry *entry = dynamic_cast<AliCDBEntry*>(fSnapshotFile->Get(sPath.Data()));
+    if(!entry){
+	AliDebug(2,Form("Cannot get a CDB entry for \"%s\" from snapshot file",path));
+	return 0;
+    }
+
+    return entry;
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBManager::SetSnapshotMode(const char* snapshotFileName) {
+// set the manager in snapshot mode
+    
+    if(!fCache){
+	AliError("Cannot set the CDB manage in snapshot mode if the cache is not active!");
+	return kFALSE;
+    }
+
+    fSnapshotMode = kTRUE;
+
+    //open snapshot file
+    TString snapshotFile(snapshotFileName);
+    if(snapshotFile.BeginsWith("alien://")){
+	if(!gGrid) {
+	    TGrid::Connect("alien://","");
+	    if(!gGrid) {
+		AliError("Connection to alien failed!");
+		return kFALSE;
+	    }
+	}
+    }
+
+    fSnapshotFile = TFile::Open(snapshotFileName);
+    if (!fSnapshotFile || fSnapshotFile->IsZombie()){
+	AliError(Form("Cannot open file %s",snapshotFileName));
+	return kFALSE;
+    }
+
+    /*
+    // retrieve pointer to entries' map from snapshot file
+    TIter next(fSnapshotFile->GetListOfKeys());
+    TKey *key;
+    while ((key = (TKey*)next())) {
+	if (strcmp(key->GetClassName(),"TMap") != 0) continue;
+	fSnapshotCache = (TMap*)key->ReadObj();
+	break;
+    }
+    if (!fSnapshotCache || fSnapshotCache->GetEntries()==0){
+	AliError("Cannot get valid map of CDB entries from snapshot file");
+	return kFALSE;
+    }
+
+    // retrieve pointer to ids' list from snapshot file
+    TIter nextKey(fSnapshotFile->GetListOfKeys());
+    TKey *keyN;
+    while ((keyN = (TKey*)nextKey())) {
+	if (strcmp(keyN->GetClassName(),"TList") != 0) continue;
+	fSnapshotIdsList = (TList*)keyN->ReadObj();
+	break;
+    }
+    if (!fSnapshotIdsList || fSnapshotIdsList->GetEntries()==0){
+	AliError("Cannot get valid list of CDB entries from snapshot file");
+	return kFALSE;
+    }
+    */
+    return kTRUE;
 
 }
 

@@ -82,6 +82,7 @@ public:
   void SetDefaultStorage(const char* uri);
   void SetSpecificStorage(const char* calibType, const char* uri);
   void SetFromCDBSnapshot(const char* snapshotFileName) {fFromCDBSnapshot = kTRUE; fSnapshotFileName=snapshotFileName;}
+  void SetSnapshotMode(const char* snapshotFileName) {AliCDBManager::Instance()->SetSnapshotMode(snapshotFileName);}
   void UnSetFromCDBSnapshot() {fFromCDBSnapshot = kFALSE;}
 
   virtual Bool_t Run(Int_t nEvents = 0);
