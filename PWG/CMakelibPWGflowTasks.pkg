@@ -1,0 +1,60 @@
+# -*- mode: CMake -*-
+#--------------------------------------------------------------------------------#
+# Package File for PWGflowTasks                                                  #
+# Author : Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)                         #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  
+    FLOW/Tasks/AliFlowEventSimpleMaker.cxx 
+    FLOW/Tasks/AliFlowEvent.cxx 
+    FLOW/Tasks/AliFlowEventCuts.cxx 
+    FLOW/Tasks/AliFlowTrack.cxx 
+    FLOW/Tasks/AliFlowCandidateTrack.cxx 
+    FLOW/Tasks/AliFlowTrackCuts.cxx 
+    FLOW/Tasks/AliAnalysisTaskScalarProduct.cxx 
+    FLOW/Tasks/AliAnalysisTaskMCEventPlane.cxx 
+    FLOW/Tasks/AliAnalysisTaskLYZEventPlane.cxx 
+    FLOW/Tasks/AliAnalysisTaskCumulants.cxx 
+    FLOW/Tasks/AliAnalysisTaskQCumulants.cxx 
+    FLOW/Tasks/AliAnalysisTaskLeeYangZeros.cxx 
+    FLOW/Tasks/AliAnalysisTaskFittingQDistribution.cxx 
+    FLOW/Tasks/AliAnalysisTaskFlowEvent.cxx 
+    FLOW/Tasks/AliAnalysisTaskFlowK0Candidates.cxx 
+    FLOW/Tasks/AliAnalysisTaskFlowEventforRP.cxx 
+    FLOW/Tasks/AliAnalysisTaskMixedHarmonics.cxx 
+    FLOW/Tasks/AliAnalysisTaskNestedLoops.cxx 
+    FLOW/Tasks/AliAnalysisTaskQAflow.cxx 
+    FLOW/Tasks/AliAnalysisTaskPIDflowQA.cxx 
+    FLOW/Tasks/AliAnalysisTaskQAPmdflow.cxx 
+    FLOW/Tasks/AliFlowBayesianPID.cxx
+    )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR PWGflowTasksLinkDef.h)
+
+set ( EXPORT )
+
+set ( EINCLUDE TOF PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase)
