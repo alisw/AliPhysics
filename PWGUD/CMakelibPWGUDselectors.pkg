@@ -1,6 +1,6 @@
 # -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
-# Package File for PWG0selectors                                                 #
+# Package File for PWGUDselectors                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,14 +27,14 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    dNdEta/AlidNdEtaTask.cxx 
-    dNdEta/AlidNdEtaCorrectionTask.cxx 
-    multiplicity/AliMultiplicityTask.cxx 
-    trigger/AliTriggerTask.cxx 
-    eventStats/AliEventStatsTask.cxx)
+    selectors/dNdEta/AlidNdEtaTask.cxx 
+    selectors/dNdEta/AlidNdEtaCorrectionTask.cxx 
+    selectors/multiplicity/AliMultiplicityTask.cxx 
+    selectors/trigger/AliTriggerTask.cxx 
+    selectors/eventStats/AliEventStatsTask.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG0selectorsLinkDef.h)
+set ( DHDR  PWGUDselectorsLinkDef.h)
 
-set ( EINCLUDE  TPC RAW ITS PWGUD/base PWG0/dNdEta PWG0/multiplicity PWG0/trigger PWG0/dNdPt PWG0/eventStats ANALYSIS STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  TPC RAW ITS PWGUD/base PWGUD/selectors/dNdEta PWGUD/selectors/multiplicity PWGUD/selectors/trigger PWGUD/selectors/dNdPt PWGUD/selectors/eventStats ANALYSIS STEER/ESD STEER/STEERBase)
