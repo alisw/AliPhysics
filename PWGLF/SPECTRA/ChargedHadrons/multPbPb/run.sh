@@ -45,19 +45,22 @@ Available options:
                                Modes [default=$runmode]:
                                   0 local
                                   1 caf    
-                                  2 grid    
+                                  2 grid    (remeber to set run list)
+                                  3 prooflite
   -c <data,mc>                 Run the correction data and MC are names of the folders. 
                                ./output/ is added automatically in front of the folder names
   -s                           Run the trigger study task (by default it runs the multiplicity analysis)
  Proof settings
   -w nworkers                  Set the number of worker nodes (0 == 1 worker per node)
-  -n <nev>                     Number of events to be analized 
+  -n <nev>                     Number of events to be analized
+ Grid Settings
+  -u <runs>                    Runs to be processed in the data folder
  Misc
   -d <dataset>                 Dataset or data collection (according to run mode) [default=$dataset]
                                 - local mode: a single ESD file, an xml collection of files on 
                                   grid or a text file with a ESD per line
                                 - caf mode: a dataset
-                                - grid mode: a directory on alien
+                                - grid mode: a directory on alien (don't forget the run list)
   -h                           This help
  Options specific to the multiplicity analysis
   -l                           Run over all centrality bins
@@ -68,6 +71,8 @@ Available options:
                                 - ITSsa:    Use ITSsa tracks
                                 - TPC:      Use TPC only tracks
                                 - NOMCKINE: Skip MC kinematics (runs way faster)
+                                - NoElectrons: apply cuts to reject electrons in the rec sample, 
+                                  exclude electrons by PDG code in the MC sample
                                 * == can be used in trigger studies task
   -t <option>                  Command line option for root [defaul=$ropt]
   -m                           Use this to run on Monte Carlo
@@ -109,7 +114,7 @@ ENDOFGUIDE
 
 }
 
-while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:lp:" opt; do
+while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:lp:u:" opt; do
   case $opt in
     r)
       run=yes
@@ -117,7 +122,10 @@ while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:lp:" opt; do
       ;;      
     l)
       useSingleBin=kFALSE
-      ;;      
+      ;;
+    u) 
+      runList=$OPTARG
+      ;;
     y)
       useTrackCentralityCut=1
       trackMin=${OPTARG%%,*}
@@ -220,7 +228,7 @@ if [ "$run" = "yes" ]
 	then
 	root $ropt runTriggerStudy.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$ntrackletsTrigger,$rejectBGV0Trigger,\"$option\",$workers\)
     else
-	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",$useTrackCentralityCut,$trackMin,$trackMax,\"$option\",\"$customSuffix\",$workers,$useSingleBin\)
+	root $ropt run.C\(\"$dataset\",$nev,$offset,$debug,$runmode,$isMC,$centrBin,\"$centrEstimator\",$useTrackCentralityCut,$trackMin,$trackMax,\"$option\",\"$customSuffix\",$workers,$useSingleBin,\"$runList\"\)
     fi
 fi
 

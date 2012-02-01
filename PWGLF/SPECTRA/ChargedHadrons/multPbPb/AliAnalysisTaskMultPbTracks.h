@@ -38,6 +38,8 @@ public:
   void SetIsMC(Bool_t flag=kTRUE) { fIsMC = flag;}
   AliAnalysisMultPbTrackHistoManager * GetHistoManager() { return fHistoManager;}
   Bool_t IsPhysicalPrimaryAndTransportBit(Int_t ipart) ;
+  Bool_t IsElectron(AliESDtrack *  esdTrack);
+  void RejectElectrons(Bool_t rejElectron) { fRejectElectrons = rejElectron;}
   void SetOfflineTrigger(UInt_t mask) { fOfflineTrigger = mask; }
 
   virtual void   UserCreateOutputObjects();
@@ -62,7 +64,7 @@ private:
   Bool_t fIsTPCOnly; // if you only want to use TPC tracks
   AliTriggerAnalysis * fTriggerAnalysis; // for offline triggers
   AliPIDResponse *fPIDResponse;     //! PID response object
-
+  Bool_t fRejectElectrons; // reject electrons
 
   AliAnalysisTaskMultPbTracks& operator=(const AliAnalysisTaskMultPbTracks& task);
   

@@ -6,9 +6,11 @@
 #include "TROOT.h"
 #include "TMCProcess.h"
 #include "AliMCParticle.h"
-
+#include "TMap.h"
 #include <iostream>
 #include "TH2D.h"
+#include "TDatabasePDG.h"
+#include "TParameter.h"
 
 using namespace std;
 
@@ -22,12 +24,12 @@ const char * AliAnalysisMultPbTrackHistoManager::kHistoPrefix[]     = { "hGen", 
 const char * AliAnalysisMultPbTrackHistoManager::kSpeciesName[]     = { "pi+", "K+", "p", "l+",  "pi-", "K-", "barp", "l-", "Others"};
 
 
-AliAnalysisMultPbTrackHistoManager::AliAnalysisMultPbTrackHistoManager() : AliHistoListWrapper(), fHNameSuffix(""){ 
+AliAnalysisMultPbTrackHistoManager::AliAnalysisMultPbTrackHistoManager() : AliHistoListWrapper(), fHNameSuffix(""), fParticleSpecies(0){ 
   // standard ctor
 
 }
 
-AliAnalysisMultPbTrackHistoManager::AliAnalysisMultPbTrackHistoManager(const char * name, const char * title): AliHistoListWrapper(name,title), fHNameSuffix("")  {
+AliAnalysisMultPbTrackHistoManager::AliAnalysisMultPbTrackHistoManager(const char * name, const char * title): AliHistoListWrapper(name,title), fHNameSuffix(""), fParticleSpecies(0)  {
   //named ctor
 };
 
@@ -40,6 +42,26 @@ AliAnalysisMultPbTrackHistoManager::~AliAnalysisMultPbTrackHistoManager() {
   // dtor
 
 }
+
+TH2D * AliAnalysisMultPbTrackHistoManager::GetHistoElectronCutQA() {
+  // Get a p vs dE/dx plot, to check the histos we are rejecting
+  TString name = "histoElectronCutQA";
+
+  TH2D * h = (TH2D*) GetHisto(name);
+  
+  if (!h) {
+    AliInfo(Form("Booking %s", (name+fHNameSuffix).Data()));    
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    h = new TH2D (name+fHNameSuffix, name+fHNameSuffix, 100, 0, 3, 50, 0, 200);
+    fList->Add(h);
+    TH1::AddDirectory(oldStatus);
+
+  }
+
+  return h;
+}
+
 
 TH3D * AliAnalysisMultPbTrackHistoManager::GetHistoPtEtaVz(Histo_t id, Int_t particle) {
   // Returns a 3D histo of Pt/eta/vtx. It it does not exist, books it.
@@ -489,9 +511,8 @@ TH3D * AliAnalysisMultPbTrackHistoManager::BookHistoPtEtaVz(const char * name, c
   h->SetZTitle("V_{z}^{tracks} (cm)");
   h->Sumw2();
   
-  fList->Add(h);
-
   TH1::AddDirectory(oldStatus);
+  fList->Add(h);
   return h;
 }
 
@@ -620,6 +641,22 @@ Int_t AliAnalysisMultPbTrackHistoManager::GetLocalParticleID(AliMCParticle * par
 }
 
 
+void AliAnalysisMultPbTrackHistoManager::FillSpeciesMap(Int_t pdgCode) {
+
+  // Fills map of species vs ID
+  if(!fParticleSpecies) fParticleSpecies = new TMap;
+  
+  TObjString * key = new TObjString(Form("%s",TDatabasePDG::Instance()->GetParticle(pdgCode)->GetName()));
+  TParameter<Long64_t>* count = dynamic_cast<TParameter<Long64_t>*> (fParticleSpecies->GetValue(key));
+  if (!count)
+  {
+    count = new TParameter<Long64_t>(key->String().Data(), 0);
+    fParticleSpecies->Add(key, count);
+  }
+  count->SetVal(count->GetVal() + 1);
+
+}
+
  
 Long64_t AliAnalysisMultPbTrackHistoManager::Merge(TCollection* list)
 {
@@ -630,10 +667,8 @@ Long64_t AliAnalysisMultPbTrackHistoManager::Merge(TCollection* list)
   // the same order. We thus also have to sort the list (sorting is
   // done by name in TList).
 
-  //  AliInfo("Merging");
-
+  AliInfo("Merging");
   if (!list)
-    return 0;
 
   if (list->IsEmpty())
     return 1;
@@ -647,12 +682,56 @@ Long64_t AliAnalysisMultPbTrackHistoManager::Merge(TCollection* list)
   Int_t count = 0;
 
   while ((obj = iter->Next())) {
+    cout << "1" << endl;
+    //    AliHistoListWrapper* entry = dynamic_cast<AliHistoListWrapper*> (obj);
+    AliAnalysisMultPbTrackHistoManager* entry = dynamic_cast<AliAnalysisMultPbTrackHistoManager*> (obj);
+    cout << "2 " << endl;
+    if (entry == 0) 
+      continue;
+    cout << "3 " << entry->GetName() << endl;
+
+    // Merge map fParticleSpecies        
+    if(!entry->fParticleSpecies){
+      AliInfo("Cannot get fParticleSpecies");
+      continue;
+    }
+    TIterator* iter2 = entry->fParticleSpecies->MakeIterator();
+    TObjString* obj2 = 0;
+    cout << "4" << endl;
+    while ((obj2 = dynamic_cast<TObjString*> (iter2->Next())))
+    {
+      cout << "5" << endl;
+      TParameter<Long64_t>* param2 = static_cast<TParameter<Long64_t>*> (entry->fParticleSpecies->GetValue(obj2));
+      
+      TParameter<Long64_t>* param1 = dynamic_cast<TParameter<Long64_t>*> (fParticleSpecies->GetValue(obj2));
+      cout << " - (other)" << param2->GetName() << " " << param2->GetVal();
+      if (param1)
+      {
+	cout << " (this) " << param1->GetName() << " " << param1->GetVal() << endl;
+        param1->SetVal(param1->GetVal() + param2->GetVal());
+      }
+      else
+      {
+	cout << "" << endl;	
+        param1 = dynamic_cast<TParameter<Long64_t>*> (param2->Clone());
+        fParticleSpecies->Add(new TObjString(obj2->String()), param1);
+      }
+    }    
+    delete iter2;
+
+  }
+
+  // merge histograms
+  // We need a separate loop as this one could be restarted if needed.
+  iter->Reset();
+  while ((obj = iter->Next())) {
+    AliAnalysisMultPbTrackHistoManager* entry = dynamic_cast<AliAnalysisMultPbTrackHistoManager*> (obj);
+    if (entry == 0) 
+      continue;
+
     Bool_t foundDiffinThisIterStep = kFALSE;
 
     //    Printf("%d - %s",count, obj->GetName());
-    AliHistoListWrapper* entry = dynamic_cast<AliHistoListWrapper*> (obj);
-    if (entry == 0) 
-      continue;
 
     TList * hlist = entry->GetList();
 
@@ -757,6 +836,8 @@ Long64_t AliAnalysisMultPbTrackHistoManager::Merge(TCollection* list)
   fList->Merge(&collections);
   
   delete iter;
+
+  AliInfo("Merged");
 
   return count+1;
 }

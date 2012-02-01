@@ -8,6 +8,7 @@ class TH3D;
 class TH1D;
 class TH1I;
 class AliMCParticle;
+class TMap;
 
 //#define WEIGHTED_DCA
 #define TRANSVERSE_DCA
@@ -64,11 +65,16 @@ public:
   TH1D * GetHistoPtEvent(Histo_t id);
   TH1D * GetHistoMeanPt (Histo_t id);
 
+  TH2D * GetHistoElectronCutQA();
+
+  TMap * GetParticleSpecies(){return fParticleSpecies;}
 
   // Misch utils
   void ScaleHistos (Double_t nev, Option_t * option="");
   Int_t GetLocalParticleID(AliMCParticle * part);
   void FillParticleID(Histo_t id, AliMCParticle * part) { GetHistoSpecies(id)->Fill(GetLocalParticleID(part));}
+  void FillSpeciesMap(Int_t pdgCode);
+
 
   // Histo bookers
   TH3D * BookHistoPtEtaVz(const char * name, const char * title);
@@ -79,7 +85,7 @@ public:
   // 
   TH1 * GetHisto(const char * name);
 
-  virtual void Print(Option_t* option = "") const {fList->Print();}
+  virtual void Print(Option_t* option = "") const {fList->Print(option);}
 
 
   Long64_t Merge(TCollection* list); // need to override this because of the mean pts
@@ -92,10 +98,12 @@ private:
   static const char * kHistoPrefix[];   // prefix for histo names // FIXME: remove the others and keep only this 
   static const char * kSpeciesName[];   // Particle species
   TString fHNameSuffix; // Suffix added to all histo names. Useful if you have in the same session e.g. MC and data.
+  
+  TMap * fParticleSpecies;// Map assiciating PDG code to number of particles in the physical primary sample.
 
   AliAnalysisMultPbTrackHistoManager& operator=(const AliAnalysisMultPbTrackHistoManager& task);
   
-  ClassDef(AliAnalysisMultPbTrackHistoManager, 3)
+  ClassDef(AliAnalysisMultPbTrackHistoManager, 4)
 
 
 };

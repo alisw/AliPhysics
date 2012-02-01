@@ -30,7 +30,7 @@ ClassImp(AliAnalysisTaskMultPbTracks)
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 : AliAnalysisTaskSE("TaskMultPbTracks"),
-  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0), fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0)
+  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0), fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
 {
   // constructor
 
@@ -44,7 +44,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 }
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0)
+    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
 {
   //
   // Standard constructur which should be used
@@ -60,7 +60,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 }
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
 {
   //copy ctor
   fESD = obj.fESD ;
@@ -109,6 +109,11 @@ void AliAnalysisTaskMultPbTracks::UserCreateOutputObjects()
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
+
+  PostData(1,fHistoManager);
+  PostData(2,fTrackCuts);
+  PostData(3,fCentrSelector);
+
 
 }
 
@@ -201,8 +206,14 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	// We don't care about neutrals and non-physical primaries
 	if(mcPart->Charge() == 0) continue;
 
-	//check if current particle is a physical primary
+	// If we are cutting away electrons, also exclude them here:
+	if(fRejectElectrons) 
+	  if (TMath::Abs(mcPart->PdgCode())==11) continue;
+
+	//check if current particle is a physical primary and fill map of physical primaries
 	if(!IsPhysicalPrimaryAndTransportBit(ipart)) continue;
+	fHistoManager->FillSpeciesMap(mcPart->PdgCode());
+
 	if(TMath::Abs(mcPart->Zv()-zvGen)>1e-6) {
 	  // This cures a bug in Hijing
 	  // A little hack here: I put those in the underflow bin of the process type to keep track of them
@@ -297,19 +308,17 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     Bool_t accepted = fTrackCuts->AcceptTrack(esdTrack);
     Bool_t acceptedNoDCA = fTrackCutsNoDCA->AcceptTrack(esdTrack);
 
-    // accepted = accepted && ((fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron) > 2) ||
-    // 			    (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion    ) < 1) || 
-    // 			    (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton  ) < 1) || 
-    // 			    (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon    ) < 1) 
-    // 			    //			    (esdTrack->P() > 1.2)
-    // 			    );//FIXME SKIP ELECTRONS below p = 1.2 gev, make configurable. Keep particles if they are in the crossing
+    //fHistoManager->GetHistoElectronCutQA()->Fill(esdTrack->Pt(), esdTrack->GetTPCsignal()); FIXME: temporary hack
 
-    // acceptedNoDCA = acceptedNoDCA && ((fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron) > 2) ||
-    // 				      (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion    ) < 1) || 
-    // 				      (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton  ) < 1) || 
-    // 				      (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon    ) < 1) 
-    // 				      //				      (esdTrack->P() > 1.2)
-    // 				      );//FIXME SKIP ELECTRONS below p = 1.2 gev, make configurable. Keep particles if they are in the crossing
+    if(fRejectElectrons && acceptedNoDCA) { // don't check this for tracks to be anyways rejected
+      Bool_t isEl = IsElectron(esdTrack);
+      if(isEl) {
+	//	cout << " --> FOUND!" << endl;	
+	fHistoManager->GetHistoElectronCutQA()->Fill(esdTrack->Pt(), esdTrack->GetTPCsignal());
+      }
+      accepted = accepted && !isEl;
+      acceptedNoDCA = acceptedNoDCA && !isEl;
+    }
 
     if(accepted) acceptedTracks++;
 
@@ -391,7 +400,9 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 		partCode == AliAnalysisMultPbTrackHistoManager::kPartKPlus   || 
 		partCode == AliAnalysisMultPbTrackHistoManager::kPartKMinus  ||
 		partCode == AliAnalysisMultPbTrackHistoManager::kPartP       || 
-		partCode == AliAnalysisMultPbTrackHistoManager::kPartPBar  
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartPBar    ||
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartLPlus   || 
+		partCode == AliAnalysisMultPbTrackHistoManager::kPartKMinus 
 		)
 	      fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoRecPrim, partCode);
 	  }
@@ -479,6 +490,25 @@ Bool_t AliAnalysisTaskMultPbTracks::IsPhysicalPrimaryAndTransportBit(Int_t ipart
 
   return kTRUE;
 
+}
+
+Bool_t AliAnalysisTaskMultPbTracks::IsElectron(AliESDtrack * esdTrack) {
+  Bool_t isElectron = kFALSE;
+    // ((fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron) < 2 ) &&
+    //  (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion    ) > 1 ) && 
+    //  (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton  ) > 1 ) && 
+    //  (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon    ) > 1 ) 
+    //  );//FIXME SKIP ELECTRONS below p = 1.2 gev, make configurable. Keep particles if they are in the crossing
+
+  // cout << " - TPC: " << fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron) << ", TOF: " << fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron);
+  // printf("[%f,%f,%d]\n", esdTrack->Pt(), esdTrack->Eta(), esdTrack->GetTPCclusters(0));  
+  // if (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron) <0){
+
+    
+  // } 
+  isElectron = (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron)) < 2) && (TMath::Abs(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron) < 3));
+
+  return isElectron;
 }
 
 // void AliAnalysisTaskEvil::PrintProcInfo()
