@@ -61,6 +61,10 @@ AliPHOSTRURawReader* AliPHOSTriggerRawReader::GetTRU(Int_t mod, Int_t truRow, In
 {
   // Get TRU Raw Reader.
 
+  if (mod<0 || mod>=kNMods) return 0x0;
+  if (truRow<0 || truRow>=kNTRURows) return 0x0;
+  if (branch<0 || branch>=kNBranches) return 0x0;
+
   if( ! fTRUs[mod][truRow][branch] )
     fTRUs[mod][truRow][branch] = new AliPHOSTRURawReader();
   return fTRUs[mod][truRow][branch];
@@ -93,7 +97,8 @@ void AliPHOSTriggerRawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
     Int_t rcuRow = rawStream->GetRow();
     Int_t branch = 1 - rawStream->GetBranch(); // !!! Found this to be necessary, -Henrik Qvigstad <henrik.qvigstad@cern.ch>
     
-    GetTRU(module, rcuRow, branch)->ReadFromStream(rawStream);
+    AliPHOSTRURawReader* reader = GetTRU(module, rcuRow, branch);
+    if (reader) reader->ReadFromStream(rawStream);
   } // end while 
 }
 
