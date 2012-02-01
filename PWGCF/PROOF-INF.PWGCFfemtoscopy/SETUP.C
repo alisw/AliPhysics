@@ -1,11 +1,11 @@
 void SETUP() {
-  CheckLoadLibrary("libPWG2ebye");
+  CheckLoadLibrary("libPWGCFfemtoscopy");
 
   // Set the include paths
-  gROOT->ProcessLine(".include PWG2ebye/EBYE");
+  gROOT->ProcessLine(".include PWGCFfemtoscopy/FEMTOSCOPY/AliFemto");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG2ebye_INCLUDE", "PWG2ebye");
+  gSystem->Setenv("PWGCFfemtoscopy_INCLUDE", "PWGCFfemtoscopy/FEMTOSCOPY/AliFemto");
 }
 
 Int_t CheckLoadLibrary(const char* library) {
