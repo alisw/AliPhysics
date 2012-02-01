@@ -27,18 +27,18 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    UNICOR/AliAnalysisTaskUnicor.cxx 
-    UNICOR/AliUnicorAnalCorrel.cxx 
-    UNICOR/AliUnicorAnal.cxx 
-    UNICOR/AliUnicorAnalGlobal.cxx 
-    UNICOR/AliUnicorAnalHighpt.cxx 
-    UNICOR/AliUnicorAnalPtfluc.cxx 
-    UNICOR/AliUnicorAnalSingle.cxx 
-    UNICOR/AliUnicorEventAliceESD.cxx 
-    UNICOR/AliUnicorEvent.cxx 
-    UNICOR/AliUnicorHN.cxx 
-    UNICOR/AliUnicorPair.cxx 
-    UNICOR/AliUnicorCoulomb.cxx 
+    FEMTOSCOPY/UNICOR/AliAnalysisTaskUnicor.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorAnalCorrel.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorAnal.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorAnalGlobal.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorAnalHighpt.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorAnalPtfluc.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorAnalSingle.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorEventAliceESD.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorEvent.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorHN.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorPair.cxx 
+    FEMTOSCOPY/UNICOR/AliUnicorCoulomb.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -47,4 +47,4 @@ set ( DHDR  PWGCFunicorLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGCF/UNICOR ANALYSIS STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGCF/FEMTOSCOPY/UNICOR ANALYSIS STEER/ESD STEER/STEERBase)
