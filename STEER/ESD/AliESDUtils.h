@@ -20,6 +20,7 @@
 #include "Rtypes.h"
 #endif
 class AliESDEvent;
+class AliVertexerTracks;
 
 namespace AliESDUtils {
 
@@ -29,6 +30,7 @@ namespace AliESDUtils {
 
   Float_t GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr = NULL, Float_t *v0multChCorrResc = NULL);
   Float_t GetCorrSPD2(Float_t spd2raw,Float_t zv);
+  Bool_t  RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo=6);
 }  
 
 #endif

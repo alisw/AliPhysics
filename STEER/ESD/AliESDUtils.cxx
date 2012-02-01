@@ -28,6 +28,7 @@
 
 #include "AliESDEvent.h"
 #include "AliESDVZERO.h"
+#include "AliVertexerTracks.h"
 
 //______________________________________________________________________________
 Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr, Float_t *v0multChCorrResc)
@@ -150,3 +151,62 @@ Float_t AliESDUtils::GetCorrSPD2(Float_t spd2raw,Float_t zv)
   Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
   return corr>0 ? spd2raw/corr : -1;
 }  
+
+//______________________________________________________________________________
+Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo)
+{
+  // Refit ESD VertexTracks and redo tracks->RelateToVertex
+  // Default vertexin algorithm is 6 (multivertexer). To use old vertexed, use algo=1
+  //
+  static AliVertexerTracks* vtFinder = 0;
+  static int currRun = 0;
+  static double bkgauss = 0; 
+  const Bool_t kVtxConstr = kTRUE;
+  //
+  if (!vtFinder) { // create vertexer
+    vtFinder = new AliVertexerTracks(esdEv->GetMagneticField());
+    printf("Initialized vertexer (algo=%d) for  VertexTracks refit with field %f kG\n",
+	   algo, esdEv->GetMagneticField());
+    //
+    vtFinder->SetITSMode();
+    vtFinder->SetConstraintOff();
+    const int kNCuts=21;
+    double VTCuts[kNCuts] = 
+      {1.00e-01,1.00e-01,5.00e-01,3.00e+00,1.00e+00,3.00e+00,1.00e+02,
+       1.00e+03,3.00e+00,3.00e+01,6.00e+00,4.00e+00,7.00e+00,1.00e+03,
+       5.00e+00,5.00e-02,1.00e-03,2.00e+00,1.00e+01,1.00e+00,5.00e+01};
+    VTCuts[10] = algo;
+    vtFinder->SetCuts((double*)VTCuts,kNCuts);
+  }
+  //
+  if (currRun!=esdEv->GetRunNumber() && kVtxConstr) { // update diamond for this run
+    double pos[3]={esdEv->GetDiamondX(),esdEv->GetDiamondY(),0};    
+    Float_t diamondcovxy[3]={0};
+    esdEv->GetDiamondCovXY(diamondcovxy);
+    Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,7.*7.};
+    AliESDVertex initVertex(pos,cov,1.,1);
+    vtFinder->SetVtxStart(&initVertex);
+    bkgauss = esdEv->GetMagneticField();
+    vtFinder->SetFieldkG(bkgauss);
+    currRun = esdEv->GetRunNumber();
+    printf("Imposed Vtx constraint for run %d\n",currRun);
+    initVertex.Print();
+  }
+  //
+  // reset old vertex info
+  if (esdEv->GetPileupVerticesTracks()) esdEv->GetPileupVerticesTracks()->Clear();
+  ((AliESDVertex*)esdEv->GetPrimaryVertexTracks())->SetNContributors(-1);
+  //
+  AliESDVertex *pvtx=vtFinder->FindPrimaryVertex(esdEv);
+  if (pvtx && pvtx->GetStatus()) {
+    esdEv->SetPrimaryVertexTracks(pvtx);
+    for (Int_t i=esdEv->GetNumberOfTracks(); i--;) {
+      AliESDtrack *t = esdEv->GetTrack(i);
+      Double_t x[3]; t->GetXYZ(x);
+      t->RelateToVertex(pvtx, bkgauss, kVeryBig);
+    }
+  }
+  else return kFALSE;
+  //
+  return kTRUE;
+}
