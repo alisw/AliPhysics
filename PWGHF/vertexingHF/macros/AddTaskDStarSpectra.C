@@ -42,7 +42,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   Bool_t stdcuts=kFALSE;
 
-  TFile* filecuts=new TFile("DStartoKpipiCuts.root");
+  TFile* filecuts=TFile::Open("DStartoKpipiCuts.root");
 
   if(!filecuts->IsOpen()){
 

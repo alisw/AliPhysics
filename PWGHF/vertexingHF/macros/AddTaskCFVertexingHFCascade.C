@@ -49,7 +49,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 		return 0x0;
 	}
 
-	TFile* fileCuts = new TFile(cutFile);
+	TFile* fileCuts = TFile::Open(cutFile);
 	AliRDHFCutsDStartoKpipi *cutsD0toKpi = (AliRDHFCutsDStartoKpipi*)fileCuts->Get("DStartoKpipiCuts");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true

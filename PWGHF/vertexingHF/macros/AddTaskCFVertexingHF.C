@@ -80,7 +80,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		return 0x0;
 	}
 
-	TFile* fileCuts = new TFile(cutFile);
+	TFile* fileCuts = TFile::Open(cutFile);
 	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCutsStandard");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true

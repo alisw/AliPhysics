@@ -20,7 +20,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   }
 
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts=new TFile(filename.Data());
+  TFile* filecuts=TFile::Open(filename.Data());
   if(!filecuts->IsOpen()){
     cout<<"Input file not found: using standard cuts"<<endl;
     stdcuts=kTRUE;
