@@ -796,8 +796,9 @@ void AliVAnalysisMuon::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
   //
   Double_t* bins = centralityBins;
   Int_t nbins = nCentralityBins;
+  
+  Double_t defaultCentralityBins[] = {-5., 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 100., 105.};
   if ( ! centralityBins ) {
-    Double_t defaultCentralityBins[] = {-5., 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 100., 105.};
     bins = defaultCentralityBins;
     nbins = sizeof(defaultCentralityBins)/sizeof(defaultCentralityBins[0])-1;
   }
