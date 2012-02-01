@@ -230,7 +230,7 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fEMCALGeoMatrixSet;     //  Check if the transformation matrix is set for EMCAL
   Bool_t             fPHOSGeoMatrixSet ;     //  Check if the transformation matrix is set for PHOS
   Bool_t             fLoadEMCALMatrices;     //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
-  TGeoHMatrix *      fEMCALMatrix[10];       //  Geometry matrices with alignments
+  TGeoHMatrix *      fEMCALMatrix[12];       //  Geometry matrices with alignments
   Bool_t             fLoadPHOSMatrices;      //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
   TGeoHMatrix *      fPHOSMatrix[5];         //  Geometry matrices with alignments
   Bool_t             fRemoveBadChannels;     //  Check the channel status provided and remove clusters with bad channels
@@ -249,10 +249,10 @@ class AliCalorimeterUtils : public TObject {
   Float_t            fCutEta;                //  dEta cut on matching (EMCAL)
   Float_t            fCutPhi;                //  dPhi cut on matching (EMCAL)
   
-  AliCalorimeterUtils(const AliCalorimeterUtils & g) ; // cpy ctor
-  AliCalorimeterUtils & operator = (const AliCalorimeterUtils & g) ;//cpy assignment
+  AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
+  AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,8)
+  ClassDef(AliCalorimeterUtils,9)
 } ;
 
 
