@@ -45,7 +45,8 @@ ClassImp(AliCalorimeterUtils)
 //____________________________________________
   AliCalorimeterUtils::AliCalorimeterUtils() : 
     TObject(), fDebug(0), 
-    fEMCALGeoName("EMCAL_COMPLETEV1"),fPHOSGeoName("PHOSgeo"), 
+    fEMCALGeoName("EMCAL_COMPLETE12SMV1"),
+    fPHOSGeoName ("PHOSgeo"), 
     fEMCALGeo(0x0),                   fPHOSGeo(0x0), 
     fEMCALGeoMatrixSet(kFALSE),       fPHOSGeoMatrixSet(kFALSE), 
     fLoadEMCALMatrices(kFALSE),       fLoadPHOSMatrices(kFALSE),
@@ -63,8 +64,8 @@ ClassImp(AliCalorimeterUtils)
   
   //Initialize parameters
   InitParameters();
-  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
-  for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
+  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix [i] = 0 ;
   
 }
 
