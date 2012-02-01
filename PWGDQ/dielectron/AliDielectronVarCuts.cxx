@@ -69,6 +69,7 @@ AliDielectronVarCuts::AliDielectronVarCuts(const char* name, const char* title) 
     fActiveCuts[i]=0;
     fCutMin[i]=0;
     fCutMax[i]=0;
+    fCutExclude[i]=kFALSE;
   }
 }
 
