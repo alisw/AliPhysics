@@ -3,7 +3,7 @@
 // 2. Run with many centrality bins at once
 #include <string.h>
 
-enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID};
+enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID, kMyRunModeProofLite};
 
 TList * listToLoad = new TList();
 
@@ -11,7 +11,7 @@ TChain * GetAnalysisChain(const char * incollection);
 
 void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, 
 	 Int_t centrBin = 0, const char * centrEstimator = "VOM", Int_t useOtherCentralityCut = 0, Int_t trackMin=0, Int_t trackMax=10000, 
-	 const char* option = "",TString customSuffix = "", Int_t workers = -1, Bool_t useSingleBin=kTRUE)
+	 const char* option = "",TString customSuffix = "", Int_t workers = -1, Bool_t useSingleBin=kTRUE, const char * runList = 0)
 {
   // runMode:
   //
@@ -39,72 +39,6 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   }
 
 
-  // If we are running on grid, we need the alien handler
-  if (runMode == kMyRunModeGRID) {
-    // Create and configure the alien handler plugin
-    gROOT->LoadMacro("CreateAlienHandler.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandler(data, listToLoad, "full", isMC);  
-    if (!alienHandler) {
-      cout << "Cannot create alien handler" << endl;    
-      exit(1);
-    }
-    mgr->SetGridHandler(alienHandler);  
-  }
-
-
-
-  // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  physicsSelectionTask = AddTaskPhysicsSelection(isMC);
-
-  //PID
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  AddTaskPIDResponse(isMC); 
-
-
-  // Centrality
-  AliCentralitySelectionTask *taskCentr = new AliCentralitySelectionTask("CentralitySelection");
-  const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root";
-  const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root";
-  if(isMC) taskCentr-> SetMCInput();
-  taskCentr->SetPass(2);
-
-  // const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_LHC10g2a_100.root";
-  // const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/AliCentralityByFunction_LHC10g2a_100.root";
-  // const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_GLAU.root";
-  // const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root";
-  
-  // taskCentr->SetPercentileFile (file1);
-  // taskCentr->SetPercentileFile2(file2);
-  //FIXME: include back centrality estimator
-  mgr->AddTask(taskCentr);
-  mgr->ConnectInput (taskCentr,0, mgr->GetCommonInputContainer());
-
-  // Create my own centrality selector
-  AliAnalysisMultPbCentralitySelector * centrSelector = new AliAnalysisMultPbCentralitySelector();
-  centrSelector->SetIsMC(isMC);
-  centrSelector->SetCentrTaskFiles(file1,file2); // for bookkeping only
-  centrSelector->SetCentralityBin(centrBin);
-  if (!useSingleBin) centrSelector->SetCentralityBin(0); // FIXME: ok?
-  centrSelector->SetCentralityEstimator(centrEstimator);
-
-  
-  if(useOtherCentralityCut == 1){
-    cout << "Setting centrality by MULT" << endl;
-    centrSelector->SetUseMultRange();
-    centrSelector->SetMultRange(trackMin,trackMax);
-  }
-  if(useOtherCentralityCut == 2){
-    cout << "Setting centrality by V0" << endl;
-    
-    centrSelector->SetUseV0Range();
-    centrSelector->SetMultRange(trackMin,trackMax);
-  }
-  if(useOtherCentralityCut == 3){
-    cout << "Setting centrality by SPD outer" << endl;    
-    centrSelector->SetUseSPDOuterRange();
-    centrSelector->SetMultRange(trackMin,trackMax);
-  }
 
   // Parse option strings
   TString optionStr(option);
@@ -128,7 +62,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     delete cuts;
     //    cuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
     cout << ">>>> USING DCA cut" << endl;
-    cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);  
+    cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();  
+    cuts->SetMaxChi2TPCConstrainedGlobal(); // remove golden cut
     pathsuffix+="_DCAcut";
   }
 
@@ -146,6 +81,10 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     pathsuffix+="_TPC";
   }
 
+  if(optionStr.Contains("NoElectrons")) pathsuffix +="_NoElectrons";
+
+
+
   Bool_t useMCKinematics = isMC;
   if (optionStr.Contains("NOMCKIN")) {
     cout << ">>>> Ignoring MC kinematics" << endl;
@@ -153,9 +92,69 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     pathsuffix+="_NOMCKIN";
   }
   
-  AliLog::SetClassDebugLevel("AliESDtrackCuts", AliLog::kDebug);// FIXME
-  cuts->DefineHistograms();
-  
+  // If we are running on grid, we need the alien handler
+  if (runMode == kMyRunModeGRID) {
+    // Create and configure the alien handler plugin
+    gROOT->LoadMacro("CreateAlienHandler.C");
+    AliAnalysisGrid *alienHandler = CreateAlienHandler(data, runList, pathsuffix.Data(), listToLoad, "full", isMC);  // full
+    if (!alienHandler) {
+      cout << "Cannot create alien handler" << endl;    
+      exit(1);
+    }
+    mgr->SetGridHandler(alienHandler);  
+  }
+
+
+
+  // Add tasks
+  // physics selection
+  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  physicsSelectionTask = AddTaskPhysicsSelection(isMC);
+
+  //PID
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AddTaskPIDResponse(isMC); 
+
+  // // PID QA:
+  // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+  // AddTaskPIDqa();
+
+
+  // Centrality
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
+  // OBSOLETE
+  const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityBy1D.root";
+  const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root";
+  // END of OBSOLETE
+  if(isMC) taskCentr-> SetMCInput();
+  taskCentr->SetPass(2);
+
+  // Create my own centrality selector
+  AliAnalysisMultPbCentralitySelector * centrSelector = new AliAnalysisMultPbCentralitySelector();
+  centrSelector->SetIsMC(isMC);
+  centrSelector->SetCentrTaskFiles(file1,file2); // for bookkeping only
+  centrSelector->SetCentralityBin(centrBin);
+  if (!useSingleBin) centrSelector->SetCentralityBin(0); // FIXME: ok?
+  centrSelector->SetCentralityEstimator(centrEstimator);
+
+  if(useOtherCentralityCut == 1){
+    cout << "Setting centrality by MULT" << endl;
+    centrSelector->SetUseMultRange();
+    centrSelector->SetMultRange(trackMin,trackMax);
+  }
+  if(useOtherCentralityCut == 2){
+    cout << "Setting centrality by V0" << endl;
+    
+    centrSelector->SetUseV0Range();
+    centrSelector->SetMultRange(trackMin,trackMax);
+  }
+  if(useOtherCentralityCut == 3){
+    cout << "Setting centrality by SPD outer" << endl;    
+    centrSelector->SetUseSPDOuterRange();
+    centrSelector->SetMultRange(trackMin,trackMax);
+  }
+
   // load my task
   if (useSingleBin) {
     gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
@@ -163,6 +162,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     task->SetIsMC(useMCKinematics);
     task->SetOfflineTrigger(AliVEvent::kMB);
     if(optionStr.Contains("TPC")) task->SetTPCOnly();
+    if(optionStr.Contains("NoElectrons")) task->RejectElectrons(kTRUE);
     if(useMCKinematics) task->GetHistoManager()->SetSuffix("MC");
     if(customSuffix!=""){
       cout << "Setting custom suffix: " << customSuffix << endl;    
@@ -183,6 +183,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
       tasks[icentr]->SetIsMC(useMCKinematics);
       tasks[icentr]->SetOfflineTrigger(AliVEvent::kMB);
       if(optionStr.Contains("TPC")) tasks[icentr]->SetTPCOnly();
+      if(optionStr.Contains("NoElectrons")) task[icentr]->RejectElectrons(kTRUE);
       if(useMCKinematics) tasks[icentr]->GetHistoManager()->SetSuffix("MC");
       if(customSuffix!=""){
 	cout << "Setting custom suffix: " << customSuffix+long(icentr) << endl;    
@@ -199,9 +200,13 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     // If running in local mode, create chain of ESD files
     cout << "RUNNING LOCAL, CHAIN" << endl;    
     TChain * chain = GetAnalysisChain(data);
-    //    chain->Print();
+    chain->Print();
     mgr->StartAnalysis("local",chain,nev);
-  } else if (runMode == kMyRunModeCAF) {
+  } else if (runMode == kMyRunModeProofLite) {
+    TChain * chain = GetAnalysisChain(data);
+    mgr->StartAnalysis("proof",chain,nev);
+  } 
+  else if (runMode == kMyRunModeCAF) {
     mgr->StartAnalysis("proof",TString(data)+"#esdTree",nev);
   } else if (runMode == kMyRunModeGRID) {
     mgr->StartAnalysis("grid");
@@ -283,11 +288,14 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   // Loads libs and par files + custom task and classes
 
   // Custom stuff to be loaded
-  listToLoad->Add(new TObjString("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx+"));
-  listToLoad->Add(new TObjString("$ALICE_ROOT/PWGPP/background/AliHistoListWrapper.cxx+"));
-  listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+"));
-  listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbCentralitySelector.cxx+"));
-  listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+"));
+  //  listToLoad->Add(new TObjString("$ALICE_ROOT/ANALYSIS/AliCentralitySelectionTask.cxx+"));
+  listToLoad->Add(new TObjString("/Users/mfloris/Work/AliSoft/AliRoot-trunk/PWGPP/background/AliHistoListWrapper.cxx+")); // FIXME
+  listToLoad->Add(new TObjString("AliAnalysisMultPbTrackHistoManager.cxx+"));
+  listToLoad->Add(new TObjString("AliAnalysisMultPbCentralitySelector.cxx+"));
+  listToLoad->Add(new TObjString("AliAnalysisTaskMultPbTracks.cxx+"));
+  // listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+"));
+  // listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbCentralitySelector.cxx+"));
+  // listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+"));
 
 
   if (runMode == kMyRunModeCAF)
@@ -295,18 +303,20 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
       cout << "Init in CAF mode" << endl;
     
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-30-03-1");
+      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("current");
       TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "1x");
       //      TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
 
-      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-28-00f");
-      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("5.28/00f");
-      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-33-AN");
+      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-28-00f");
+      gProof->EnablePackage("VO_ALICE@AliRoot::v5-02-12-AN");
       gSystem->Load("libCore.so");  
       gSystem->Load("libTree.so");
       gSystem->Load("libGeom.so");
       gSystem->Load("libVMC.so");
       gSystem->Load("libPhysics.so");
+      gSystem->Load("libMinuit");
       gSystem->Load("libSTEERBase");
       gSystem->Load("libESD");
       gSystem->Load("libAOD");
@@ -329,8 +339,24 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
       // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSISalice");
       // gProof->UploadPackage("$ALICE_ROOT/obj/PWG0base");
       // gProof->EnablePackage("$ALICE_ROOT/obj/PWG0base");
-      gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
-      gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWGPP/background"));
+      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/include"));
+      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
+      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+    }
+  else if (runMode == kMyRunModeProofLite)
+    {
+      cout << "Init in CAF mode" << endl;
+    
+      gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+      TProof * p = TProof::Open("");
+      //      TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
+      //      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
+
+      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-28-00f");
+      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("5.28/00f");
+      gProof->UploadPackage("$ALICE_ROOT/ANALYSIS/macros/AliRootProofLite.par");
+      gProof->EnablePackage("AliRootProofLite");
+
     }
   else
     {
@@ -340,6 +366,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
       gSystem->Load("libGeom.so");
       gSystem->Load("libVMC.so");
       gSystem->Load("libPhysics.so");
+      gSystem->Load("libMinuit");
       gSystem->Load("libSTEERBase");
       gSystem->Load("libESD");
       gSystem->Load("libAOD");
@@ -368,7 +395,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   while (name = (TObjString *)iter->Next()) {
     gSystem->ExpandPathName(name->String());
     cout << name->String().Data();
-    if (runMode == kMyRunModeCAF) {
+    if (runMode == kMyRunModeCAF || runMode == kMyRunModeProofLite) {
       gProof->Load(name->String()+(debug?"+g":""));   
     } else {
       gROOT->LoadMacro(name->String()+(debug?"+g":""));   
