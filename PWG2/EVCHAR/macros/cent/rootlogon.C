@@ -3,6 +3,7 @@
   gSystem->Load("libTree.so");
   gSystem->Load("libGui.so");
   gSystem->Load("libVMC.so");
+  gSystem->Load("libPhysics.so");
   gSystem->Load("libSTEERBase.so");
   gSystem->Load("libESD.so");
   gSystem->Load("libAOD.so"); 
@@ -14,7 +15,6 @@
   gSystem->Load("libProof.so");
   gSystem->Load("libRAWDatabase.so");
   gSystem->Load("libSTEER.so");
-  gSystem->Load("libPhysics.so");
   gSystem->Load("libEVGEN.so");
   gSystem->Load("libFASTSIM.so");
   if (1) {
