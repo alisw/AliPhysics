@@ -145,12 +145,12 @@ void AliPerformanceMatch::Init(){
    binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
 
 
-  Double_t yMin = -0.02, yMax = 0.02;
-  Double_t zMin = -12.0, zMax = 12.0;
-  if(GetAnalysisMode() == 0 || GetAnalysisMode() == 1) { 
-    yMin = -100.; yMax = 100.; 
-    zMin = -100.; zMax = 100.; 
-  }
+  // Double_t yMin = -0.02, yMax = 0.02;
+  // Double_t zMin = -12.0, zMax = 12.0;
+  // if(GetAnalysisMode() == 0 || GetAnalysisMode() == 1) { 
+  //   yMin = -100.; yMax = 100.; 
+  //   zMin = -100.; zMax = 100.; 
+  // }
 
   //
   //init ITS TPC Mactching
@@ -241,6 +241,8 @@ void AliPerformanceMatch::Init(){
   
    // save merge status in object
   fMergeTHnSparseObj = fgMergeTHnSparse;
+
+  delete [] binsPt;
 
 }
 
