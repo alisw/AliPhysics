@@ -71,14 +71,16 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   am->LoadBranch("AliESDHeader.");
 
   Int_t runno = fEsdEv->GetRunNumber();
-  Bool_t is2010 = kTRUE;
+  TString geoname("EMCAL_FIRSTYEARV1");
+  Int_t year = 2010;
   if (runno>139517) {
-    is2010 = kFALSE;
+    year = 2011;
+    geoname = "EMCAL_COMPLETEV1";
+  } if (runno>170593) {
+    year = 2012;
+    geoname = "EMCAL_COMPLETE12SM";
   }
 
-  TString geoname("EMCAL_FIRSTYEARV1");
-  if (!is2010)
-    geoname = "EMCAL_COMPLETEV1";
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
   if (!geom) {
     AliFatal(Form("Can not create geometry: %s",geoname.Data()));
@@ -95,11 +97,7 @@ void AliEmcalSetupTask::UserExec(Option_t *)
 
   TGeoManager *geo = AliGeomManager::GetGeometry();
   if (!geo) {
-    TString fname(Form("%s/geometry_2010.root", fGeoPath.Data()));
-    if (!is2010)
-      fname = Form("%s/geometry_2011.root", fGeoPath.Data());
-    if (gSystem->AccessPathName(fname)!=0)
-      fname = Form("%s/geometry.root", fGeoPath.Data());
+    TString fname(gSystem->ExpandPathName(Form("%s/geometry_%d.root", fGeoPath.Data(), year)));
     if (gSystem->AccessPathName(fname)==0) {
       AliInfo(Form("Loading geometry from %s", fname.Data()));
       AliGeomManager::LoadGeometry(fname);
