@@ -1267,7 +1267,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
     // get the DCA to the vertex:
     esdTrack->GetImpactParameters(dDCA,cDCA);
 
-    esdTrack->GetConstrainedPxPyPz(p);
+    if (!esdTrack->GetConstrainedPxPyPz(p)) continue;
 
 
     Float_t pT = exParamGC->Pt();
