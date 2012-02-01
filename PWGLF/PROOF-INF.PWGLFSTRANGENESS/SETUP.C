@@ -1,11 +1,11 @@
 void SETUP() {
-  CheckLoadLibrary("libPWG2spectra");
+  CheckLoadLibrary("libPWGLFSTRANGENESS");
 
   // Set the include paths
-  gROOT->ProcessLine(".include PWG2spectra/SPECTRA");
+  gROOT->ProcessLine(".include PWGLFSTRANGENESS/STRANGENESS");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG2spectra_INCLUDE", "PWG2spectra");
+  gSystem->Setenv("PWGLFSTRANGENESS_INCLUDE", "PWGLFSTRANGENESS");
 }
 
 Int_t CheckLoadLibrary(const char* library) {
