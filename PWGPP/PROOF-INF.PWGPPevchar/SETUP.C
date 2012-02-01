@@ -1,11 +1,11 @@
 void SETUP() {
-  CheckLoadLibrary("libPWG2evchar");
+  CheckLoadLibrary("libPWGPPevchar");
 
   // Set the include paths
-  gROOT->ProcessLine(".include PWG2evchar/EVCHAR");
+  gROOT->ProcessLine(".include PWGPPevchar/EVCHAR");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG2evchar_INCLUDE", "PWG2evchar");
+  gSystem->Setenv("PWGPPevchar_INCLUDE", "PWGPPevchar");
 }
 
 Int_t CheckLoadLibrary(const char* library) {

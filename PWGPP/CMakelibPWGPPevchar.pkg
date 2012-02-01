@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG2evchar                                                    #
+# Package File for PWGPPevchar                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -36,8 +36,8 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR PWG2evcharLinkDef.h)
+set ( DHDR PWGPPevcharLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/EVCHAR STEER/STEER STEER/STEERBase)
+set ( EINCLUDE  PWGPP/EVCHAR STEER/STEER STEER/STEERBase)
