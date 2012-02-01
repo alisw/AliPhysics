@@ -258,7 +258,7 @@ void AliTRDseedV1::Init(const AliRieman *rieman)
 
 
 //____________________________________________________________
-Bool_t AliTRDseedV1::Init(AliTRDtrackV1 *track)
+Bool_t AliTRDseedV1::Init(const AliTRDtrackV1 *track)
 {
 // Initialize this tracklet using the track information
 //
@@ -584,12 +584,12 @@ Float_t AliTRDseedV1::GetQperTB(Int_t tb) const
   //
   // Charge of the clusters at timebin
   //
-  Float_t Q = 0;
+  Float_t q = 0;
   if(fClusters[tb] /*&& fClusters[tb]->IsInChamber()*/)
-    Q += TMath::Abs(fClusters[tb]->GetQ());
+    q += TMath::Abs(fClusters[tb]->GetQ());
   if(fClusters[tb+kNtb] /*&& fClusters[tb+kNtb]->IsInChamber()*/)
-    Q += TMath::Abs(fClusters[tb+kNtb]->GetQ());
-  return Q/TMath::Sqrt(1. + fYref[1]*fYref[1] + fZref[1]*fZref[1]);
+    q += TMath::Abs(fClusters[tb+kNtb]->GetQ());
+  return q/TMath::Sqrt(1. + fYref[1]*fYref[1] + fZref[1]*fZref[1]);
 }
 
 //____________________________________________________________________

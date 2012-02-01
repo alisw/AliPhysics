@@ -77,7 +77,7 @@ TLinearFitter* AliTRDtrackerV1::fgTiltedRieman = NULL;
 TLinearFitter* AliTRDtrackerV1::fgTiltedRiemanConstrained = NULL;
 
 //____________________________________________________________________
-AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec) 
+AliTRDtrackerV1::AliTRDtrackerV1(const AliTRDReconstructor *rec) 
   :AliTracker()
   ,fkReconstructor(NULL)
   ,fkRecoParam(NULL)
@@ -2112,7 +2112,7 @@ Bool_t AliTRDtrackerV1::AdjustSector(AliTRDtrackV1 *const track)
 
 
 //____________________________________________________________________
-AliTRDseedV1* AliTRDtrackerV1::GetTracklet(AliTRDtrackV1 *const track, Int_t p, Int_t &idx)
+AliTRDseedV1* AliTRDtrackerV1::GetTracklet(const AliTRDtrackV1 *const track, Int_t p, Int_t &idx)
 {
   // Find tracklet for TRD track <track>
   // Parameters
@@ -4090,7 +4090,7 @@ Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::Eval(){
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackerV1::AliTRDtrackFitterRieman::UpdateFitters(AliTRDseedV1 * const tracklet){
+void AliTRDtrackerV1::AliTRDtrackFitterRieman::UpdateFitters(const AliTRDseedV1 * const tracklet){
   //
   // Does the transformations and updates the fitters
   // The following transformation is applied

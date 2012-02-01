@@ -93,7 +93,7 @@ public:
   Bool_t    CookPID();
   Bool_t    Fit(UChar_t opt=0);
   Bool_t    FitRobust(Bool_t ChgPlus=kTRUE);
-  Bool_t    Init(AliTRDtrackV1 *track);
+  Bool_t    Init(const AliTRDtrackV1 *track);
   void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
   Bool_t    IsCalibrated() const     { return TestBit(kCalib);}

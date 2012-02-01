@@ -73,7 +73,7 @@ public:
     ,kSolid
     ,kGas
   };
-  AliTRDtrackerV1(AliTRDReconstructor *rec = NULL);
+  AliTRDtrackerV1(const AliTRDReconstructor *rec = NULL);
   virtual ~AliTRDtrackerV1();
   
   //temporary
@@ -166,7 +166,7 @@ public:
     private:
       AliTRDtrackFitterRieman(const AliTRDtrackFitterRieman &);
       AliTRDtrackFitterRieman &operator=(const AliTRDtrackFitterRieman &);
-      void UpdateFitters(AliTRDseedV1 * const tracklet);
+      void UpdateFitters(const AliTRDseedV1 * const tracklet);
       Bool_t CheckAcceptable(Double_t offset, Double_t slope);
       Double_t CalculateReferenceX();
 
@@ -189,7 +189,7 @@ protected:
   static Float_t CalculateChi2Z(const AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref);
   Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
   Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray * const esdTrackList);
-  AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *const trk, Int_t plane, Int_t &idx);
+  AliTRDseedV1*  GetTracklet(const AliTRDtrackV1 *const trk, Int_t plane, Int_t &idx);
   Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
   Float_t        GetR4Layer(Int_t ly) const { return fR[ly];}
   Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * const sseed, const Int_t * const ipar);
