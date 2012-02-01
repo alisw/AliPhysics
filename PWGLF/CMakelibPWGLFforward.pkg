@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG2forward                                                   #
+# Package File for PWGLFforward                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -48,4 +48,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( EINCLUDE  ANALYSIS FMD STEER/ESD STEER/STEERBase)
 
-set ( DHDR  PWG2forwardLinkDef.h)
+set ( DHDR  PWGLFforwardLinkDef.h)
