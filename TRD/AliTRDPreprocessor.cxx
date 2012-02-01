@@ -99,14 +99,8 @@ AliTRDPreprocessor::~AliTRDPreprocessor()
   // Destructor
   //
 
-  if (fCalDCSObjSOR != NULL) {
-    delete fCalDCSObjSOR;
-    fCalDCSObjSOR =0;
-  }
-  if (fCalDCSObjEOR != NULL) {
-    delete fCalDCSObjEOR;
-    fCalDCSObjEOR =0;
-  }
+  if (fCalDCSObjSOR ) delete fCalDCSObjSOR;
+  if (fCalDCSObjEOR ) delete fCalDCSObjEOR;
 
 }
 //______________________________________________________________________________________________
@@ -137,8 +131,8 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   Log(Form("runtype %s\n",runType.Data()));
   
   // always process the configuration data
-  Int_t DCSConfigReturn = ProcessDCSConfigData();
-  if(DCSConfigReturn) return DCSConfigReturn; 
+  Int_t dCSConfigReturn = ProcessDCSConfigData();
+  if(dCSConfigReturn) return dCSConfigReturn; 
 
   if (runType=="PEDESTAL"){
     if(ExtractPedestals()) return 1;
@@ -612,7 +606,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 }
 
 //__________________________________________________________________
-Bool_t AliTRDPreprocessor::AreThereDataPedestal(AliTRDCalSingleChamberStatus * const calROCStatus
+Bool_t AliTRDPreprocessor::AreThereDataPedestal(const AliTRDCalSingleChamberStatus * const calROCStatus
                                               , Bool_t second)
 {
 

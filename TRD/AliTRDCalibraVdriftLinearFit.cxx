@@ -472,6 +472,10 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray2()
 //_________Helper function__________________________________________________
 TGraphErrors* AliTRDCalibraVdriftLinearFit::DrawMS(const TH2 *const h2, Int_t &nEntries)
 {
+  //
+  // Debug function
+  //
+
   TF1 fg("fg", "gaus", -10., 30.);
   TGraphErrors *gp = new TGraphErrors();
 

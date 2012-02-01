@@ -105,7 +105,6 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Bool_t ParticleGood(int i) const;
 
   AliESDEvent  *fESD;                            //! ESD object
-  AliESDfriend *fESDfriend;                      //! ESD friend
   const AliESDtrack *fkEsdTrack;                  //! ESD track
   AliESDfriendTrack *fFriendTrack;               //! ESD friend track
   TObject *fCalibObject;                         //! calibration objects attached to the ESD friend
@@ -201,7 +200,6 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
 
   Int_t       fMaxEvent;                         // max events
   Int_t       fCounter;                          // max events
-  Int_t       fDebug;                            // fDebug
 
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 

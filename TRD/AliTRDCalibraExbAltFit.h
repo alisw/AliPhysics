@@ -61,8 +61,8 @@ private:
   TObjArray       fFitterEArray;      // Array of result errors from  fitters for the detectors
 
   Bool_t          fRobustFit;         // Robust fit
-  TTreeSRedirector *fDebugStreamer;
-  Short_t         fDebugLevel;
+  TTreeSRedirector *fDebugStreamer;   // debug stream
+  Short_t         fDebugLevel;        // debug level
 
   
   ClassDef(AliTRDCalibraExbAltFit,2)  // Online ExB Calibration

@@ -901,11 +901,11 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   //
   
   // set up AliTRDCalibChamberStatus
-  AliTRDCalibChamberStatus *ChamberStatus = new AliTRDCalibChamberStatus();
-  ChamberStatus->SetSparseI(fSparse);
-  ChamberStatus->AnalyseHisto(fMinStatsChamberStatus, fMinSingleStatsChamberStatus);
+  AliTRDCalibChamberStatus *chamberStatus = new AliTRDCalibChamberStatus();
+  chamberStatus->SetSparseI(fSparse);
+  chamberStatus->AnalyseHisto(fMinStatsChamberStatus, fMinSingleStatsChamberStatus);
   // get AliTRDCalChamberStatus
-  AliTRDCalChamberStatus *CalChamberStatus = ChamberStatus->GetCalChamberStatus();
+  AliTRDCalChamberStatus *calChamberStatus = chamberStatus->GetCalChamberStatus();
 
   // get calibration objects
   AliTRDCalDet *calDetGain   = (AliTRDCalDet *) fCalibObjects->At(kGain);
@@ -913,7 +913,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   AliTRDCalDet *calDetExB    = (AliTRDCalDet *) fCalibObjects->At(kLorentzLinear);
 
   // Check
-  if((!calDetGain) || (!calDetVDrift) || (!fCH2d) || (!calDetExB) || (!CalChamberStatus)) return kFALSE;
+  if((!calDetGain) || (!calDetVDrift) || (!fCH2d) || (!calDetExB) || (!calChamberStatus)) return kFALSE;
 
   // Gain
   Double_t gainmean   = calDetGain->GetMean();
@@ -950,7 +950,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
     Double_t exb = calDetExB->GetValue(idet);
 
 
-    if( (entries<50 && !CalChamberStatus->IsNoData(idet))  ||
+    if( (entries<50 && !calChamberStatus->IsNoData(idet))  ||
         TMath::Abs(gainmean-gain) > (fRMSBadCalibratedGain*gainrms)          ||
         TMath::Abs(vdriftmean-vdrift) > (fRMSBadCalibratedVdrift*vdriftrms)    ||
         TMath::Abs(exbmean-exb) > (fRMSBadCalibratedExB*exbrms) ) {
@@ -960,7 +960,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
       //printf(" vdriftmean %f and vdrift %f, vdriftrms %f \n",vdriftmean,vdrift,vdriftrms);
       //printf(" exbmean %f and exb %f, exbrms %f \n",exbmean,exb,exbrms);
       
-      CalChamberStatus->SetStatus(idet,AliTRDCalChamberStatus::kBadCalibrated);
+      calChamberStatus->SetStatus(idet,AliTRDCalChamberStatus::kBadCalibrated);
       //counter++;
     }
 
@@ -974,9 +974,9 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
     Int_t smbadcalib = 0;
     for(Int_t det = 0; det < 30; det++){
       Int_t detector = sm*30+det;
-      if(CalChamberStatus->IsNoData(detector)) smnodata++;
+      if(calChamberStatus->IsNoData(detector)) smnodata++;
       else {
-	if(CalChamberStatus->IsBadCalibrated(detector)) smbadcalib++;
+	if(calChamberStatus->IsBadCalibrated(detector)) smbadcalib++;
       }
     }
     fNoData[sm]  = smnodata;
@@ -989,17 +989,17 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   //     Int_t counter = 0;
   //     for(Int_t det = 0; det < 30; det++){
   //       Int_t detector = sm*30+det;
-  //       if(CalChamberStatus->IsBadCalibrated(detector)) counter++;
+  //       if(calChamberStatus->IsBadCalibrated(detector)) counter++;
   //     }
   //     if(counter >= 20) {
   //       for(Int_t det = 0; det < 30; det++){
   // 	Int_t detector = sm*30+det;
-  // 	CalChamberStatus->SetStatus(detector,AliTRDCalChamberStatus::kGood);
+  // 	calChamberStatus->SetStatus(detector,AliTRDCalChamberStatus::kGood);
   //       }
   //     }
   //  }
 
-   fCalibObjects->AddAt(CalChamberStatus,kChamberStatus);
+   fCalibObjects->AddAt(calChamberStatus,kChamberStatus);
    return kTRUE;
 
  }

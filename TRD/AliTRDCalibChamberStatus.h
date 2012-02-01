@@ -38,14 +38,14 @@ public:
 
   AliTRDCalibChamberStatus& operator = (const  AliTRDCalibChamberStatus &source);
 
-  void ProcessTrack(AliTRDtrackV1 * trdTrack);
+  void ProcessTrack(const AliTRDtrackV1 * trdTrack);
   void ProcessEvent(AliRawReader    *rawReader, Int_t nevents_physics);
     
   void Init();
   void AnalyseHisto(Int_t limit=200, Double_t chamberlimit=0.05);
-  void CheckEORStatus(AliTRDCalDCSv2 *calDCS);
+  void CheckEORStatus(const AliTRDCalDCSv2 *calDCS);
 
-  void Add(AliTRDCalibChamberStatus *calibChamberStatus);
+  void Add(const AliTRDCalibChamberStatus *calibChamberStatus);
 
   Int_t GetNumberEventNotEmpty() const { return fCounterEventNotEmpty; };
   
@@ -66,7 +66,7 @@ public:
 
   // Plot
   TH2D *PlotSparseI(Int_t sm, Int_t side);    // Plot fStatus for sm 
-  TH2F *MakeHisto2DSmPlEORStatus(AliTRDCalDCSv2 *calDCS, Int_t sm, Int_t pl);
+  TH2F *MakeHisto2DSmPlEORStatus(const AliTRDCalDCSv2 *calDCS, Int_t sm, Int_t pl);
   TCanvas *PlotHistos2DSmEORStatus(AliTRDCalDCSv2 *calDCS,Int_t sm, const Char_t *name);
 
   // Debug
@@ -88,7 +88,7 @@ public:
   THnSparseI *fHnSparseDebug;     //  THnSparse for half chambers satuts
   THnSparseI *fHnSparseMCM;       //  THnSparse for DCS MCM status
 
-  TCanvas *fC1;
+  TCanvas *fC1;                    // Canvas to plot
 
   Short_t     fDebugLevel;                   // Flag for debugging
 

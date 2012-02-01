@@ -266,7 +266,7 @@ void AliTRDCalibChamberStatus::Init()
 
 }
 //_____________________________________________________________________
-void AliTRDCalibChamberStatus::ProcessTrack(AliTRDtrackV1 * trdTrack)
+void AliTRDCalibChamberStatus::ProcessTrack(const AliTRDtrackV1 * trdTrack)
 {
   //
   // Track Processing to get half chamber status
@@ -482,7 +482,7 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit, Double_t chamberlimit) 
 
 }
 //_____________________________________________________________________
-void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCSv2 *calDCS) /*FOLD00*/
+void AliTRDCalibChamberStatus::CheckEORStatus(const AliTRDCalDCSv2 *calDCS) /*FOLD00*/
 {
   //
   //  Correct the AliTRDCalChamberStatus according to the AliTRDCalDCSv2
@@ -557,8 +557,8 @@ void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCSv2 *calDCS) /*FOLD00*/
     //---------------------------------------
     // Change the status according to DCS
     //---------------------------------------
-    Int_t StatusData = fCalChamberStatus->GetStatus(det);
-    switch(StatusData) 
+    Int_t statusData = fCalChamberStatus->GetStatus(det);
+    switch(statusData) 
       {
       case 1: 
 	if(stateA==0 && stateB==0) fCalChamberStatus->SetStatus(det,2); // completely masked from DCS
@@ -588,7 +588,7 @@ void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCSv2 *calDCS) /*FOLD00*/
 }
 
 //_____________________________________________________________________________________
-void AliTRDCalibChamberStatus::Add(AliTRDCalibChamberStatus *calibChamberStatus) /*FOLD00*/
+void AliTRDCalibChamberStatus::Add(const AliTRDCalibChamberStatus *calibChamberStatus) /*FOLD00*/
 {
     //
     //  Add the THnSparseI of this calibChamberStatus
@@ -654,7 +654,7 @@ TH2D* AliTRDCalibChamberStatus::PlotSparseI(Int_t sm,Int_t side)
 
 }
 //_____________________________________________________________________
-TH2F *AliTRDCalibChamberStatus::MakeHisto2DSmPlEORStatus(AliTRDCalDCSv2 *calDCS, Int_t sm, Int_t pl) /*FOLD00*/
+TH2F *AliTRDCalibChamberStatus::MakeHisto2DSmPlEORStatus(const AliTRDCalDCSv2 *calDCS, Int_t sm, Int_t pl) /*FOLD00*/
 {
   //
   //  Plot globale state of the HalfChamberMerger (HCM)

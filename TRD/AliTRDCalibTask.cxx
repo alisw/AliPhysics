@@ -87,7 +87,6 @@ ClassImp(AliTRDCalibTask)
 //________________________________________________________________________
   AliTRDCalibTask::AliTRDCalibTask(const char *name) 
     : AliAnalysisTaskSE(name), fESD(0),
-      fESDfriend(0),
       fkEsdTrack(0),
       fFriendTrack(0),
       fCalibObject(0),
@@ -165,8 +164,7 @@ ClassImp(AliTRDCalibTask)
       fSubVersionExBUsed(-1),
       fCalDetGain(0x0),
       fMaxEvent(0),
-      fCounter(0),
-      fDebug(0)
+      fCounter(0)
 {
   //
   // Default constructor
@@ -180,6 +178,7 @@ ClassImp(AliTRDCalibTask)
   fNrphi[1] = 0;
   fNrphi[2] = 0;
 
+  
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -1326,7 +1325,7 @@ Bool_t AliTRDCalibTask::SetVersionSubversion(){
   // Load Chamber Gain factors into the Tender supply
   //
   
-  printf("SetVersionSubversion\n");
+  //printf("SetVersionSubversion\n");
 
   //find previous entry from the UserInfo
   TTree *tree=((TChain*)GetInputData(0))->GetTree();

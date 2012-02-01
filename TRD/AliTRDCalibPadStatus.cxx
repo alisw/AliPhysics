@@ -655,7 +655,7 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
 
 	  // bridge if previous pad found something
 	  if(!pb) {
-	    if((meanprevious == mean) && (rmsprevious == rms) && (mean > 0.0001)) {
+	    if((TMath::Abs(meanprevious-mean)<0.000001) && (TMath::Abs(rmsprevious-rms)<0.000001) && (mean > 0.0001)) {
 	      //printf("mean previous %f, mean %f, rms %f, rmsprevious %f, col %d\n",meanprevious,mean,rms,rmsprevious,icol);
 	      calROC->SetStatus(icol -1 ,irow, AliTRDCalPadStatus::kPadBridgedRight);
 	      calROC->SetStatus(icol ,irow, AliTRDCalPadStatus::kPadBridgedLeft);
