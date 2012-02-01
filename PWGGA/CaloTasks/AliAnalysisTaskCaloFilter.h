@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliAnalysisTaskCaloFilter.h  $ */
-
 //////////////////////////////////////////////////////////
 // Filter the ESDCaloClusters and ESDCaloCells of EMCAL,
 // PHOS or both, creating the corresponing AODCaloClusters
@@ -30,13 +28,9 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   AliAnalysisTaskCaloFilter();
   AliAnalysisTaskCaloFilter(const char* name);
   virtual ~AliAnalysisTaskCaloFilter() ;
-  
-private:
-  AliAnalysisTaskCaloFilter(const AliAnalysisTaskCaloFilter&);
-  AliAnalysisTaskCaloFilter& operator=(const AliAnalysisTaskCaloFilter&);
-  
-public:
+    
   //General analysis frame methods
+  
   virtual void   UserCreateOutputObjects();
   virtual void   Init();
   virtual void   LocalInit() { Init() ; }
@@ -44,22 +38,27 @@ public:
   virtual void   Terminate(Option_t *option);
       
   //Geometry methods
+  
   void SetEMCALGeometryName(TString name)                  { fEMCALGeoName = name        ; }
   TString EMCALGeometryName()                       const  { return fEMCALGeoName        ; }
+  
   void SwitchOnLoadOwnEMCALGeometryMatrices()              { fLoadEMCALMatrices = kTRUE  ; }
   void SwitchOffLoadOwnEMCALGeometryMatrices()             { fLoadEMCALMatrices = kFALSE ; }
   void SetEMCALGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i]    = m      ; }
+  
   //void SwitchOnLoadOwnPHOSGeometryMatrices()               { fLoadPHOSMatrices = kTRUE  ; }
   //void SwitchOffLoadOwnPHOSGeometryMatrices()              { fLoadPHOSMatrices = kFALSE ; }
   //void SetPHOSGeometryMatrixInSM(TGeoHMatrix* m, Int_t i)  { fPHOSMatrix[i]    = m      ; }
   
   //Task settings
+  
   void    FillAODFile(Bool_t yesno)               { fFillAODFile = yesno    ; }
+  
   enum    caloFilter {kBoth = 0, kEMCAL = 1, kPHOS=2};
   void    SetCaloFilter(Int_t calo)               { fCaloFilter = calo      ; }
   TString GetCaloFilter()                  const  { return fCaloFilter      ; }  
   
-  void SetEMCALRecoUtils(AliEMCALRecoUtils * ru)  { fEMCALRecoUtils = ru    ; }
+  void   SetEMCALRecoUtils(AliEMCALRecoUtils* ru) { fEMCALRecoUtils = ru    ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()   const  { return fEMCALRecoUtils  ; }
 
   void    SwitchOnClusterCorrection()             { fCorrect = kTRUE        ; }
@@ -67,10 +66,13 @@ public:
   
   //Event selection
   AliESDtrackCuts* GetTrackCuts()          const  { return fESDtrackCuts    ; }
-  void    SetTrackCuts(AliESDtrackCuts * cuts)    { fESDtrackCuts = cuts    ; }		  
+  void    SetTrackCuts(AliESDtrackCuts * cuts)    { //if (fESDtrackCuts) delete fESDtrackCuts ;
+                                                    fESDtrackCuts = cuts    ; }		
+  
   Float_t GetTrackMultiplicityEtaCut()     const  { return fTrackMultEtaCut ; }
   void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta  ; }		
-  virtual Bool_t CheckForPrimaryVertex();
+  
+  Bool_t  CheckForPrimaryVertex();
 
   void    PrintInfo();
   
@@ -79,8 +81,10 @@ public:
 private:
   
   //TList* fCuts ;      //! List with analysis cuts
+  
   Int_t               fCaloFilter;        // Calorimeter to filter
   Int_t               fCorrect;           // Recalibrate or recalculate different cluster parameters
+  
   //EMCAL specific
   AliEMCALGeometry  * fEMCALGeo;          //! EMCAL geometry
   TString             fEMCALGeoName;      // Name of geometry to use.
@@ -92,7 +96,7 @@ private:
   
   //Geometry
   Bool_t              fLoadEMCALMatrices; // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
-  TGeoHMatrix       * fEMCALMatrix[10];   // Geometry matrices with alignments
+  TGeoHMatrix       * fEMCALMatrix[12];   // Geometry matrices with alignments
   //Bool_t            fLoadPHOSMatrices;  // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
   //TGeoHMatrix *     fPHOSMatrix[5];     // Geometry matrices with alignments
   Bool_t              fGeoMatrixSet;      // Set geometry matrices only once, for the first event.   
@@ -102,7 +106,11 @@ private:
   TString             fConfigName;        // Name of analysis configuration file
   Bool_t              fFillAODFile;       // Fill the output AOD file with clusters 
   
-  ClassDef(AliAnalysisTaskCaloFilter, 6); // Analysis task for standard ESD filtering
+  AliAnalysisTaskCaloFilter(           const AliAnalysisTaskCaloFilter&);
+  AliAnalysisTaskCaloFilter& operator=(const AliAnalysisTaskCaloFilter&);
+  
+  ClassDef(AliAnalysisTaskCaloFilter, 7); // Analysis task for standard ESD filtering
+  
 };
 
 #endif

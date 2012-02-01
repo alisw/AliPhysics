@@ -108,7 +108,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   //Geometry  
   AliEMCALGeometry      *fGeom;                    // EMCAL geometry
   TString                fGeomName;                // Name of geometry to use.
-  TGeoHMatrix           *fGeomMatrix[10];          // Geometry matrices with alignments
+  TGeoHMatrix           *fGeomMatrix[12];          // Geometry matrices with alignments
   Bool_t                 fGeomMatrixSet;           // Set geometry matrices only once, for the first event.         
   Bool_t                 fLoadGeomMatrices;        // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
 
@@ -161,7 +161,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   TString                fImportGeometryFilePath;  // path fo geometry.root file
 
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 17);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 18);
 
 };
 
