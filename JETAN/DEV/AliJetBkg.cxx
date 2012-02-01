@@ -215,7 +215,8 @@ void AliJetBkg::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&etbgTota
       count=count+1;
     }
   }
-  sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
+  if (count>0)
+    sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
 
 }
 
