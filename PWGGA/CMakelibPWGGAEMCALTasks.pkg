@@ -32,6 +32,7 @@ set ( SRCS
  EMCALTasks/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
  EMCALTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
  EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
+ EMCALTasks/AliAnalysisTaskESDfilterEMCALEventSelect.cxx
  EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
  EMCALTasks/AliEmcalPhysicsSelection.cxx
  EMCALTasks/AliEmcalPhysicsSelectionTask.cxx

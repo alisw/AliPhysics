@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliAnalysisTaskCaloFilter.cxx $ */
-
 //////////////////////////////////////////////////////////
 // Filter the ESDCaloClusters and ESDCaloCells of EMCAL,
 // PHOS or both, creating the corresponing AODCaloClusters
@@ -65,7 +63,7 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
 {
   // Default constructor
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
   //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
 
   DefineOutput(1, TNtuple::Class());
@@ -84,7 +82,7 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
 {
   // Constructor
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
   //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
 
   DefineOutput(1, TNtuple::Class());
@@ -122,7 +120,7 @@ void AliAnalysisTaskCaloFilter::Init()
     fCorrect           = filter->fCorrect;
     fTrackMultEtaCut   = filter->fTrackMultEtaCut;
     fESDtrackCuts      = filter->fESDtrackCuts;
-    for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = filter->fEMCALMatrix[i] ;
+    for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = filter->fEMCALMatrix[i] ;
   }
 } 
 

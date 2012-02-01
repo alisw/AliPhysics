@@ -53,8 +53,9 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   printf(" ---- Clusterize RUN >%d< ---- \n",run);
   
-  if(run > 140000)  clusterize->SetGeometryName("EMCAL_COMPLETEV1");
-  else              clusterize->SetGeometryName("EMCAL_FIRSTYEARV1");
+  if     (run > 140000)  clusterize->SetGeometryName("EMCAL_COMPLETEV1");
+  else if(run > 171000)  clusterize->SetGeometryName("EMCAL_COMPLETE12SMV1");
+  else                   clusterize->SetGeometryName("EMCAL_FIRSTYEARV1");
 
   AliEMCALRecParam * params = clusterize->GetRecParam();
 
@@ -113,7 +114,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
 
   } // unfold
   
-  TGeoHMatrix* matrix[10];
+  TGeoHMatrix* matrix[12];
   AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
   
   gROOT->LoadMacro("ConfigureEMCALRecoUtils.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros
@@ -130,7 +131,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   clusterize->SetImportGeometryFromFile(kTRUE); // import geometry.root file
   
-  for (Int_t mod=0;mod<10;mod++)
+  for (Int_t mod=0;mod<12;mod++)
   {
     //((TGeoHMatrix*) mobj->At(mod))->Print();
     clusterize->SetGeometryMatrixInSM(matrix[mod],mod);

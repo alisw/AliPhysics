@@ -2,7 +2,7 @@
 void ConfigureEMCALRecoUtils(
                              AliEMCALRecoUtils* reco,
                              Bool_t  bMC   = kFALSE,
-                             TGeoHMatrix* matrix[10],
+                             TGeoHMatrix* matrix[12],
                              TString path  = "",
                              Int_t   run   = 0, 
                              TString pass  = "pass2",
@@ -32,8 +32,9 @@ void ConfigureEMCALRecoUtils(
   // Instantiate EMCAL geometry for the first time
   
   AliEMCALGeometry*   geom = 0; 
-  if   (run < 140000) geom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
-  else                geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+  if     (run < 140000) geom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
+  else if(run < 171000) geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+  else                  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1");
 
   Int_t nSM = geom->GetNumberOfSuperModules();
 
@@ -99,7 +100,7 @@ void ConfigureEMCALRecoUtils(
     }else printf("AliEMCALRecoUtils ---Do NOT recalibrate 3\n");
     
     //TFile * f = new TFile("RecalibrationFactors.root","read");
-    //for(Int_t i =0; i< 10; i++)  reco->SetEMCALChannelRecalibrationFactors( i, (TH2F*) f->Get(Form("EMCALRecalFactors_SM%d",i)));									 
+    //for(Int_t i =0; i< 12; i++)  reco->SetEMCALChannelRecalibrationFactors( i, (TH2F*) f->Get(Form("EMCALRecalFactors_SM%d",i)));									 
     // //  reco->SwitchOnTimeDepCorrection();
     // //  //char cmd[200] ; 
     // //  //sprintf(cmd, ".!tar xvfz CorrectionFiles.tgz") ; 

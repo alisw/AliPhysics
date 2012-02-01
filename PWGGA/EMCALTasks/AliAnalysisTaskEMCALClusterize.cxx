@@ -86,8 +86,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 {
   //ctor
-  for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
-  for(Int_t j = 0; j < 24*48*11; j++)  {
+  for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
+  for(Int_t j = 0; j < 24*48*11; j++)  
+  {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
     fCellTime[j]         =  0.;    
@@ -127,8 +128,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 {
   // Constructor
-  for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
-  for(Int_t j = 0; j < 24*48*11; j++)  {
+  for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
+  for(Int_t j = 0; j < 24*48*11; j++)  
+  {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
     fCellTime[j]         =  0.; 
@@ -681,7 +683,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fMaxEvent         = clus->fMaxEvent;
     fDoTrackMatching  = clus->fDoTrackMatching;
     fOutputAODBranchName = clus->fOutputAODBranchName;
-    for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
+    for(Int_t i = 0; i < 12; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
     
   }
   

@@ -35,7 +35,7 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", B
         reco->SwitchOnBadChannelsRemoval();
         printf("*** EMCAL trigger QA: REMOVE bad cells \n");
         
-        for (Int_t i=0; i<10; ++i) {
+        for (Int_t i=0; i<12; ++i) {
           TH2I *hbm = reco->GetEMCALChannelStatusMap(i);
           if (hbm)
             delete hbm;
