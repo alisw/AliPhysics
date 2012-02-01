@@ -69,6 +69,7 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385()
      fUseITSSA(kTRUE),
      fMaxITSband(3.0),
      fTPCpLimit(0.35),
+     fTPCpar(),
      fMinTPCband(3.0),
      fMaxTPCband(5.0),
      fESDpid(0x0),
@@ -82,6 +83,7 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385()
      fMinTOF(-2.5),
      fMaxTOF(3.5),
      fLastRun(-1),
+     fOkTrack(),
      fAnalysisType("ESD"), fCollidingSystems(0), fDataType("REAL"), fListHistCascade(0), 
      fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), 
      fNtuple1(0), fNtuple2(0), fNtuple3(0), fNtuple4(0)
@@ -112,6 +114,7 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385(const char *name)
      fUseITSSA(kTRUE),
      fMaxITSband(3.0),
      fTPCpLimit(0.35),
+     fTPCpar(),
      fMinTPCband(3.0),
      fMaxTPCband(5.0),
      fESDpid(0x0),
@@ -125,6 +128,7 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385(const char *name)
      fMinTOF(-2.5),
      fMaxTOF(3.5),
      fLastRun(-1),
+     fOkTrack(),
      fAnalysisType("ESD"), fCollidingSystems(0), fDataType("REAL"), fListHistCascade(0), 
      fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), 
      fNtuple1(0), fNtuple2(0), fNtuple3(0), fNtuple4(0)
