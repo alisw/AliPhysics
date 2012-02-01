@@ -28,7 +28,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv3.h"
 #include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11Hybrid.h"
+#include "ITS/AliITSv11.h"
 #include "ITS/UPGRADE/AliITSvUpgrade.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
@@ -274,7 +274,7 @@ void Config()
 	ITS->DefineLayerTurbo(2,14.9, 22.2, 12, 8, 4.8, 10);
 	ITS->DefineLayer(3,23.8, 29.7, 16, 8);
       }
-      else AliITS *ITS = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+      else AliITS *ITS = new AliITSv11("ITS","ITS v11");
     
     }
 

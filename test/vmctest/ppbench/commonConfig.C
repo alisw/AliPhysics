@@ -166,7 +166,7 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   {
       //=================== ITS parameters ============================
 
-      AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+      AliITS *ITS  = new AliITSv11("ITS","ITS v11");
   }
 
   if (iTPC)
