@@ -7,15 +7,16 @@
 //  June 30 2008
 //
 
-#include "AliEveEMCALSModuleData.h"
-
 #include <TGeoBBox.h>
+
+
+#include "AliEMCALGeometry.h"
+#include "AliEveEMCALSModuleData.h"
 
 class Riostream;
 class TClonesArray;
 class TGeoNode;
 class TGeoMatrix;
-class AliEMCALGeometry;
 class TVector2;
 class AliEveEventManager;
 

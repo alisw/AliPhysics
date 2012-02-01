@@ -4,18 +4,18 @@
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
 
-#include "AliEveEMCALSModule.h"
+#include <iostream>
+#include <vector>
 
-//#include <vector>
-
+#include <TString.h>
 #include <TEveFrameBox.h>
 #include <TEveQuadSet.h>
 #include <TEvePointSet.h>
 #include <TEveRGBAPalette.h>
 
+#include "AliEveEMCALSModule.h"
 
 class Riostream;
-//class vector;
 class TEveTrans;
 class TEveElement;
 class TClonesArray;
@@ -222,9 +222,9 @@ void AliEveEMCALSModule::UpdateQuads()
   // Update hit/digit/cluster representation.
   //
 
-  vector< vector<Double_t> > bufferDigit;
-  vector< vector<Double_t> > bufferCluster;
-  vector< vector<Float_t> > bufferHit;
+  std::vector< std::vector<Double_t> > bufferDigit;
+  std::vector< std::vector<Double_t> > bufferCluster;
+  std::vector< std::vector<Float_t> > bufferHit;
   Int_t nDigits, nClusters, nHits, oldSize;
   Float_t hitX, hitY, hitZ;
   Int_t smId = fEMCALSModuleData->GetSmId();
@@ -270,7 +270,7 @@ void AliEveEMCALSModule::UpdateQuads()
     if(!bufferDigit.empty())
       {
 	nDigits = fEMCALSModuleData->GetNDigits();
-	if(fDebug>1) cout << "nDigits: " << nDigits << endl;
+    if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nDigits: %d", nDigits );
 	// loop over digits
 	for (Int_t id = 0; id < nDigits; id++) {
 	  //	  Int_t iid = (Int_t)bufferDigit[id][0];
@@ -286,7 +286,7 @@ void AliEveEMCALSModule::UpdateQuads()
 	  fQuadSet->QuadValue(amp);
 	} // end digits loop
       }
-    else { if (fDebug) printf("There is no digits in SM %d \n", smId); }
+    else { if (fDebug) Info("AliEveEMCALSModule::UpdateQuads", "There is no digits in SM %d \n", smId); }
 
     // hits --------------------------
     bufferHit = fEMCALSModuleData->GetHitBuffer();
@@ -294,7 +294,7 @@ void AliEveEMCALSModule::UpdateQuads()
       {
 	char form[1000];
 	nHits = fEMCALSModuleData->GetNHits();
-	if(fDebug>1) cout << "nHits: " << nHits << endl;
+    if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nHits: %d", nHits);
 	oldSize = fPointSet->GrowFor(nHits);
 	// Loop over hits
 	for (Int_t ih = 0; ih < nHits; ih++) {
@@ -328,15 +328,15 @@ void AliEveEMCALSModule::UpdateQuads()
     if(!bufferCluster.empty())
       {
 	nClusters = fEMCALSModuleData->GetNClusters();
-	if(fDebug>1) cout << "nClusters: " << nClusters << endl;
+    if(fDebug>1) Info("AliEveEMCALSModule::UpdateQuads", "nClusters: %d", nClusters );
 	// loop over clusters
 	for (Int_t id = 0; id < nClusters; id++) {
 	  if(fDebug>1) {
-	    cout << "bufferCluster[" << id << "][0]: " << bufferCluster[id][0] << endl;
-	    cout << "bufferCluster[" << id << "][1]: " << bufferCluster[id][1] << endl;
-	    cout << "bufferCluster[" << id << "][2]: " << bufferCluster[id][2] << endl;
-	    cout << "bufferCluster[" << id << "][3]: " << bufferCluster[id][3] << endl;
-	    cout << "bufferCluster[" << id << "][4]: " << bufferCluster[id][4] << endl;
+        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][0]: %f", id, bufferCluster[id][0] );
+        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][1]: %f", id, bufferCluster[id][1] );
+        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][2]: %f", id, bufferCluster[id][2] );
+        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][3]: %f", id, bufferCluster[id][3] );
+        Info("AliEveEMCALSModule::UpdateQuads", "bufferCluster[%d][4]: %f", id, bufferCluster[id][4] );
 	  }
 	  //	  Int_t isupMod = (Int_t)bufferCluster[id][0];
 	  Double_t iamp = bufferCluster[id][1];
@@ -352,7 +352,7 @@ void AliEveEMCALSModule::UpdateQuads()
 
 	} // end clusters loop
       }
-    else { if (fDebug) printf("There is no clusters in SM %d \n", smId); }
+    else { if (fDebug) Info("AliEveEMCALSModule::UpdateQuads", "There is no clusters in SM %d \n", smId); }
 
 }
 

@@ -19,6 +19,7 @@
 #include <TLorentzVector.h>
 
 #include "AliRunLoader.h"
+#include "AliEMCAL.h"
 #include "AliEMCALLoader.h"
 #include "AliESDVertex.h"
 #include "AliEMCALHit.h"

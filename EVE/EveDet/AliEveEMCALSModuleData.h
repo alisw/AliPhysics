@@ -8,6 +8,8 @@
 #ifndef ALIEVEEMCALSMODULEDATA_H
 #define ALIEVEEMCALSMODULEDATA_H
 
+#include <vector>
+
 #include "AliEveEMCALData.h"
 
 class TClonesArray;

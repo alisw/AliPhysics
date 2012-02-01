@@ -13,16 +13,17 @@
 #include <TEveRGBAPalette.h>
 #include <TEveTrans.h>
 #include <TEveQuadSet.h> 
+#include <TEvePointSet.h>
+
 #include "AliESDEvent.h"
 #include "AliRun.h"
-#include "AliEMCAL.h"
-#include "TEvePointSet.h"
 
 class Riostream;
 class map;
 class TTree;
 class AliRun;
 class AliRunLoader;
+class AliEMCAL;
 class AliEMCALLoader;
 class AliEMCALGeometry;
 class AliEveEMCALSModuleData;

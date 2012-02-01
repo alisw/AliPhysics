@@ -20,6 +20,7 @@
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
 //************************************************************************
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TGeoManager.h>
@@ -43,7 +44,6 @@
 #include <EVE/EveBase/AliEveMultiView.h>
 #include <EVE/EveDet/AliEveEMCALData.h>
 #include <EVE/EveDet/AliEveEMCALSModule.h>
-
 #else
 class AliEveEMCALData;
 #endif
