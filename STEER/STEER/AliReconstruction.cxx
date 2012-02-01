@@ -780,6 +780,11 @@ void AliReconstruction::InitCDB()
 }
 
 //_____________________________________________________________________________
+void AliReconstruction::SetCDBSnapshotMode(const char* snapshotFileName) {
+    AliCDBManager::Instance()->SetSnapshotMode(snapshotFileName);
+}
+
+//_____________________________________________________________________________
 void AliReconstruction::SetDefaultStorage(const char* uri) {
 // Store the desired default CDB storage location
 // Activate it later within the Run() method
