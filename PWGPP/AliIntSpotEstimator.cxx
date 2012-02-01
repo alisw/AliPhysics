@@ -22,7 +22,11 @@ AliIntSpotEstimator::AliIntSpotEstimator(const char* name,Double_t outcut,Int_t 
 					 Int_t ntrBins,Int_t ntMn,Int_t ntMx,
 					 Int_t nPBins,Double_t pmn,Double_t pmx,Bool_t ntuple) 
 : TNamed(name,""),
-  fEvProc(0),fIPCenterStat(0),fMinTracksForIP(ntrIP>2?ntrIP:2),fOutlierCut(outcut),fEstimIP(0),
+  fEvProc(0),fIPCenterStat(0),fMinTracksForIP(ntrIP>2?ntrIP:2),fOutlierCut(outcut),
+  fIPCenIni(),
+  fIPCenter(),
+  fIPCen2(),
+  fEstimIP(0),
   fEstimVtx(0),fEstimTrc(0),fHVtxXY(0),fNtuple(0),fVertexer(0),fTracks(0)
 {
   InitEstimators(nPhiBins,nestb,estmin,estmax,ntrBins,ntMn,ntMx,nPBins,pmn,pmx,ntuple);
@@ -32,6 +36,9 @@ AliIntSpotEstimator::AliIntSpotEstimator(const char* name,Double_t outcut,Int_t 
 AliIntSpotEstimator::AliIntSpotEstimator(Bool_t initDef) 
   : TNamed("IPEstimator",""),
     fEvProc(0),fIPCenterStat(0),fMinTracksForIP(2),fOutlierCut(1e-4),
+    fIPCenIni(),
+    fIPCenter(),
+    fIPCen2(),    
     fEstimIP(0),fEstimVtx(0),fEstimTrc(0),fHVtxXY(0),fNtuple(0),fVertexer(0),fTracks(0)
 {
   if (initDef) InitEstimators();
