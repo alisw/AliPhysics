@@ -6,4 +6,4 @@
 #touch libPWG2femtoscopy.pkg
 #touch libPWG2femtoscopyUser.pkg
 
-make libPWG2forward.so
+make libPWGLFforward2.so

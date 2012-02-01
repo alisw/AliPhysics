@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #------------------------------------------------------------------------#
-# Package File for PWG2forward2                                          #
+# Package File for PWGLFforward2                                          #
 # Author : Christian Holm Christensen (cholm@nbi.dk)                     #
 # Variables Defined :                                                    #
 #                                                                        #
@@ -74,7 +74,7 @@ set ( SRCS
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
 
-set ( EINCLUDE  ANALYSIS PWG2/FORWARD/analysis2 PWG0 STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  ANALYSIS PWGLF/FORWARD/analysis2 PWG0 STEER/ESD STEER/STEERBase)
 
 set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
              FORWARD/analysis2/AliAODCentralMult.h 
@@ -82,7 +82,7 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h)
 
-set ( DHDR  PWG2forward2LinkDef.h)
+set ( DHDR  PWGLFforward2LinkDef.h)
 
 # --------------------------------------------------------------------
 # Extra targets 
@@ -102,10 +102,10 @@ add_custom_command( OUTPUT FORWARD/doc/html/index.html
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    DEPENDS ${SRCS} ${HDRS} )
 
-add_custom_target( PWG2forward-doc DEPENDS FORWARD/doc/doc.pdf )
-add_custom_target( PWG2forward-doxy DEPENDS FORWARD/doc/html/index.html )
+add_custom_target( PWGLFforward-doc DEPENDS FORWARD/doc/doc.pdf )
+add_custom_target( PWGLFforward-doxy DEPENDS FORWARD/doc/html/index.html )
 
-add_custom_target( install-PWG2forward2.par 
+add_custom_target( install-PWGLFforward2.par 
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${CMAKE_INSTALL_PREFIX}
   COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par installed in ${CMAKE_INSTALL_PREFIX}"
   DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par)
@@ -115,7 +115,7 @@ add_custom_target( install-PWG2forward2.par
 #
 # Install scripts 
 install ( DIRECTORY FORWARD/analysis2/scripts 
-	  DESTINATION PWG2/FORWARD/analysis2 
+	  DESTINATION PWGLF/FORWARD/analysis2 
 	  USE_SOURCE_PERMISSIONS
 	  PATTERN "*~"    EXCLUDE
 	  PATTERN ".svn"  EXCLUDE
@@ -124,7 +124,7 @@ install ( DIRECTORY FORWARD/analysis2/scripts
 
 # install QA scripts 
 install ( DIRECTORY FORWARD/analysis2/qa
-	  DESTINATION PWG2/FORWARD/analysis2 
+	  DESTINATION PWGLF/FORWARD/analysis2 
 	  USE_SOURCE_PERMISSIONS
 	  PATTERN "*~"    EXCLUDE
 	  PATTERN ".svn"  EXCLUDE
@@ -133,7 +133,7 @@ install ( DIRECTORY FORWARD/analysis2/qa
 
 # install correction scripts 
 install ( DIRECTORY FORWARD/analysis2/corrs
-	  DESTINATION PWG2/FORWARD/analysis2 
+	  DESTINATION PWGLF/FORWARD/analysis2 
 	  PATTERN "*~"    EXCLUDE
 	  PATTERN ".svn"  EXCLUDE
 	  PATTERN "*.d"   EXCLUDE 
@@ -141,7 +141,7 @@ install ( DIRECTORY FORWARD/analysis2/corrs
 
 # install trains 
 install ( DIRECTORY FORWARD/analysis2/trains 
-	  DESTINATION PWG2/FORWARD/analysis2 
+	  DESTINATION PWGLF/FORWARD/analysis2 
 	  PATTERN "*~"   EXCLUDE
 	  PATTERN ".svn" EXCLUDE
 	  PATTERN "*.d"  EXCLUDE 
@@ -169,7 +169,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/MakeForwardQA.C
 		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C
-           DESTINATION PWG2/FORWARD/analysis2 )
+           DESTINATION PWGLF/FORWARD/analysis2 )
 
 # Install corrections 
 install ( DIRECTORY FORWARD/corrections/DoubleHit
@@ -181,13 +181,13 @@ install ( DIRECTORY FORWARD/corrections/DoubleHit
 		    FORWARD/corrections/Normalization
 		    FORWARD/corrections/CentralAcceptance
 		    FORWARD/corrections/CentralSecMap
-          DESTINATION PWG2/FORWARD/corrections 
+          DESTINATION PWGLF/FORWARD/corrections 
 	  PATTERN "*~"   EXCLUDE
 	  PATTERN ".svn" EXCLUDE)
 
 # Install shell script 
 install ( FILES FORWARD/analysis2/Run.sh 
-	  DESTINATION PWG2/FORWARD/analysis2 
+	  DESTINATION PWGLF/FORWARD/analysis2 
 	  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
                       GROUP_EXECUTE GROUP_READ
 		      WORLD_EXECUTE WORLD_READ )
