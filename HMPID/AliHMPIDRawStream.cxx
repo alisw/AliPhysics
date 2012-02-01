@@ -213,7 +213,9 @@ Bool_t AliHMPIDRawStream::Next()
   fPosition = 0;
   Bool_t status=kFALSE;
   fRawDataSize=0;        
-  fDDLNumber = ddlArray[fRawReader->GetDDLID()];
+  fDDLNumber = -1;
+  if (fRawReader->GetDDLID()>=0)
+    fDDLNumber = ddlArray[fRawReader->GetDDLID()];
   
   if(fDDLNumber<0) {
     AliWarning(Form("fDDLNumber not a acceptable value %i",fDDLNumber));

@@ -283,7 +283,7 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     if (! isHmpInRawData ) return;                                              // if HMP is not in the event then skip it
     
     AliHMPIDRawStream stream(rawReader);
-    Int_t ddlOcc[14]={0};  
+    //    Int_t ddlOcc[14]={0};  
     Int_t isHMPin=0;
     UInt_t word; Int_t Nddl, r, d, a;
     Int_t numPadsInDdl;
@@ -306,7 +306,7 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
            }
 	   
 	   numPadsInDdl= stream.GetNPads();
-           ddlOcc[ddl] = numPadsInDdl;
+	   //           ddlOcc[ddl] = numPadsInDdl;
            FillRawsData(14+14+42+42+6,ddl+1,numPadsInDdl/11520.0*100.0);
             
 	   //___ loop on pads from raw data from a ddl

@@ -331,7 +331,7 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
   Int_t  cntRdig=0,cntLdig=0;
   
   UInt_t posLmarker,posRmarker;
-  Int_t digcnt=0;
+  //  Int_t digcnt=0;
 
   Int_t isDigThere[14][25][11][48];
   
@@ -359,7 +359,7 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
     ddlR->WriteBuffer((char*)&header,sizeof(header));            //will be rewritten later when total size of DDL is known
     
     UInt_t w32=0;                 //32 bits data word 
-    digcnt=0;
+    //    digcnt=0;
     
     //added frimware control words
     Write5FirmwareWords(ddlL);  cntL+=5;
