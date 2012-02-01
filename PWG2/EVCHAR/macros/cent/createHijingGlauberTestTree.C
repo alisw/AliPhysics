@@ -12,6 +12,7 @@
 #include <TDatabasePDG.h>
 #include <TRandom3.h>
 #include <TChain.h>
+#include <TFolder.h>
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
