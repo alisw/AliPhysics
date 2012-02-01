@@ -670,6 +670,7 @@ void AliTPCclustererMI::Digits2Clusters()
     fParam->Dump();
     fRecoParam->Dump();
   }
+  fRowDig = NULL;
 
   //-----------------------------------------------------------------
   // Use HLT clusters
