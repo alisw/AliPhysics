@@ -10,8 +10,8 @@ void SETUP() {
   CheckLoadLibrary("libANALYSISalice");
   CheckLoadLibrary("libPWGCFunicor");
 
-  gROOT->ProcessLine(".include PWGCFunicor/UNICOR");
-  gSystem->Setenv("PWGCFunicor_INCLUDE", "PWGCFunicor/UNICOR");
+  gROOT->ProcessLine(".include PWGCFunicor/FEMTOSCOPY/UNICOR");
+  gSystem->Setenv("PWGCFunicor_INCLUDE", "PWGCFunicor/FEMTOSCOPY/UNICOR");
 }
 //=============================================================================
 Int_t CheckLoadLibrary(const char* library) {
