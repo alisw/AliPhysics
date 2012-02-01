@@ -876,6 +876,10 @@ void AliCdfJetFinder::AnalizeJets()
 	}
     }
 
+  delete [] dphipartljet;
+  delete [] zpartljet;
+  delete [] idxpartLJ;
+
 }
 
 //______________________________________________________________________________
