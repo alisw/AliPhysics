@@ -36,16 +36,26 @@ public:
   virtual ~AliMuonForwardTrackPair() {}
 
   void SetTrack(Int_t iTrack, AliMuonForwardTrack *track);
-  AliMuonForwardTrack* GetTrack(Int_t iTrack) { if (iTrack==0 || iTrack==1) return (AliMuonForwardTrack*) fMuonForwardTracks->At(iTrack); else return NULL; }
+  AliMuonForwardTrack* GetTrack(Int_t iTrack) { 
+    if (iTrack==0 || iTrack==1) return (AliMuonForwardTrack*) fMuonForwardTracks->At(iTrack); 
+    else return NULL; 
+  }
+
+  void SetKinemMC();
 
   Double_t GetWeightedOffset(Double_t x, Double_t y, Double_t z);
   Double_t GetMass(Double_t z, Int_t nClusters=-1);
   Double_t GetMassWithoutMFT(Double_t x, Double_t y, Double_t z, Int_t nClusters=-1);
-  Double_t GetMassMC();
+  Double_t GetMassMC()     { return fKinemMC.M(); }
+  Double_t GetRapidityMC() { return fKinemMC.Rapidity(); }
+  Double_t GetPtMC()       { return fKinemMC.Pt(); }
+
+  Bool_t IsResonance();
 
 protected:
 
   TClonesArray *fMuonForwardTracks;
+  TLorentzVector fKinemMC;
 
   ClassDef(AliMuonForwardTrackPair,1)
     

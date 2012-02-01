@@ -47,6 +47,7 @@
 #include "AliMFTCluster.h"
 #include "AliMFT.h"
 #include "AliMFTSegmentation.h"
+#include "AliMFTConstants.h"
 
 #include "AliMuonForwardTrackFinder.h"
 
@@ -58,6 +59,8 @@
 // Contact author: antonio.uras@cern.ch
 //
 //====================================================================================================================================================
+
+const Double_t AliMuonForwardTrackFinder::fRadLengthSi = AliMFTConstants::fRadLengthSi;
 
 ClassImp(AliMuonForwardTrackFinder)
 
@@ -97,16 +100,15 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fHistDistanceGoodClusterFromTrackMinusDistanceBestClusterFromTrackAtLastPlane(0),
   fHistDistanceGoodClusterFromTrackAtLastPlane(0),
 
-  fNtuFinalCandidates1(0),
-  fNtuFinalBestCandidates1(0),
-  fNtuFinalCandidates2(0),
-  fNtuFinalBestCandidates2(0),
+  fNtuFinalCandidates(0),
+  fNtuFinalBestCandidates(0),
 
   fCanvas(0),
 
   fTxtMuonHistory(0), 
   fTxtTrackGoodClusters(0), 
-  fTxtTrackFinalChi2(0), 
+  fTxtTrackFinalChi2(0),
+  fTxtTrackMomentum(0),
   fTxtFinalCandidates(0), 
   fTxtDummy(0),
   fTxtAllClust(0), 
@@ -118,7 +120,8 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fMrkClustMC(0), 
   fMrkClustOfTrack(0),
 
-  fCountRealTracksAnalyzed(0), 
+  fCountRealTracksAnalyzed(0),
+  fMaxNTracksToBeAnalyzed(99999999),
   fCountRealTracksWithRefMC(0), 
   fCountRealTracksWithRefMC_andTrigger(0),
   fCountRealTracksWithRefMC_andTrigger_andGoodPt(0),
@@ -136,6 +139,7 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fMFTClusterTree(0),
   fMuonTrackReco(0),
   fCurrentTrack(0),
+  fFinalBestCandidate(0),
   fIsCurrentMuonTrackable(0),
   fCandidateTracks(0),
   fTrackStore(0),
@@ -145,6 +149,7 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fMFT(0),
   fSegmentation(0),
   fOutputTreeFile(0),
+  fOutputQAFile(0),
   fOutputEventTree(0),
   fMuonForwardTracks(0),
   fMatchingMode(-1),
@@ -156,7 +161,7 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
 
   // Default constructor
 
-  for (Int_t iPlane=0; iPlane<fMaxNPlanesMFT; iPlane++) {
+  for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) {
 
     fHistNTracksAfterExtrapolation[iPlane] = 0;
     fHistChi2Cluster_GoodCluster[iPlane] = 0;
@@ -168,14 +173,14 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
     fHistChi2Cluster_GoodCluster[iPlane] = 0;
     fHistChi2Cluster_BadCluster[iPlane]  = 0;
     
-    fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] = 0;
-    fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane] = 0;
+    fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] = 0;
+    fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane] = 0;
     
     fZPlane[iPlane] = 0.;
     fRPlaneMax[iPlane] = 0.;
     fRPlaneMin[iPlane] = 0.;
     
-    for (Int_t i=0; i<4; i++) fGrMFTPlane[iPlane][i] = 0;
+    for (Int_t i=0; i<4; i++) fGrMFTPlane[i][iPlane] = 0;
     fCircleExt[iPlane] = 0;
     fCircleInt[iPlane] = 0;
     
@@ -199,10 +204,45 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fMFTClusterTree = 0;
   fCandidateTracks = 0;
 
-  fOutputTreeFile = new TFile("MuonGlobalTracks.root", "recreate");
+  fOutputTreeFile    = new TFile("MuonGlobalTracks.root", "recreate");
   fOutputEventTree   = new TTree("AliMuonForwardTracks", "Tree of AliMuonForwardTracks");
   fMuonForwardTracks = new TClonesArray("AliMuonForwardTrack");
   fOutputEventTree   -> Branch("tracks", &fMuonForwardTracks);
+
+}
+
+//=====================================================================================================
+
+AliMuonForwardTrackFinder::~AliMuonForwardTrackFinder() {
+
+  delete *fMFTClusterArray;
+  delete *fMFTClusterArrayFront;
+  delete *fMFTClusterArrayBack;
+
+  delete fIsPlaneMandatory;
+
+  delete fZPlane;
+  delete fRPlaneMax;
+  delete fRPlaneMin;
+
+  delete *fHistNTracksAfterExtrapolation;
+  delete *fHistResearchRadius;
+  delete *fHistChi2Cluster_GoodCluster;
+  delete *fHistChi2Cluster_BadCluster;
+
+  delete *fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons;
+  delete *fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons;
+
+  for (Int_t i=0; i<4; i++) delete  *fGrMFTPlane[i];
+  delete *fCircleExt;
+  delete *fCircleInt;
+
+  delete *fTxtTrackChi2;
+
+  delete fNClustersGlobalTrack;
+  delete fNDFGlobalTrack;
+
+  delete fIsGoodClusterInPlane;
 
 }
 
@@ -214,19 +254,19 @@ void AliMuonForwardTrackFinder::Init(Int_t nRun,
 				     Int_t nEventsToAnalyze) {
   
   if (fRunLoader) {
-    printf("WARNING: run already initialized!!\n");
+    AliInfo("WARNING: run already initialized!!\n");
   }
 
   SetRun(nRun);
   SetReadDir(readDir);
   SetOutDir(outDir);
 
-  printf("input  dir = %s\n", fReadDir.Data());
-  printf("output dir = %s\n", fOutDir.Data());
+  AliInfo(Form("input  dir = %s\n", fReadDir.Data()));
+  AliInfo(Form("output dir = %s\n", fOutDir.Data()));
 
   // -------------------------- initializing files...
 
-  printf("initializing files for run %d...\n", fRun);
+  AliInfo(Form("initializing files for run %d...\n", fRun));
 
   Char_t geoFileName[300];
   Char_t esdFileName[300];
@@ -242,19 +282,19 @@ void AliMuonForwardTrackFinder::Init(Int_t nRun,
   if (!gGeoManager) {
     TGeoManager::Import(geoFileName);
     if (!gGeoManager) {
-      printf("getting geometry from file %s failed", geoFileName);
+      AliError(Form("getting geometry from file %s failed", geoFileName));
       return;
     }
   }
   
   fFileESD = new TFile(esdFileName);
   if (!fFileESD || !fFileESD->IsOpen()) return;
-  else printf("file %s successfully opened\n", fFileESD->GetName());
+  else AliInfo(Form("file %s successfully opened\n", fFileESD->GetName()));
   
   fMuonRecoCheck = new AliMUONRecoCheck(esdFileName, Form("%s/generated/", fReadDir.Data()));       // Utility class to check reconstruction
   fFile_gAlice = new TFile(gAliceName);
   if (!fFile_gAlice || !fFile_gAlice->IsOpen()) return;
-  else printf("file %s successfully opened\n", fFile_gAlice->GetName());
+  else AliInfo(Form("file %s successfully opened\n", fFile_gAlice->GetName()));
   
   fRunLoader = AliRunLoader::Open(gAliceName);
   gAlice = fRunLoader->GetAliRun();
@@ -279,29 +319,28 @@ void AliMuonForwardTrackFinder::Init(Int_t nRun,
   
   fMFTClusterTree = fMFTLoader->TreeR();
 
-
   Int_t nEventsInFile = fMuonRecoCheck->NumberOfEvents();
   if (!nEventsInFile) {
-    printf("no events available!!!\n");
+    AliError("no events available!!!\n");
     return;
   }
   if (nEventsInFile<nEventsToAnalyze || nEventsToAnalyze<0) fNEventsToAnalyze = nEventsInFile;
   else fNEventsToAnalyze = nEventsToAnalyze;
 
-  fCandidateTracks = new TClonesArray("AliMuonForwardTrack",200000);
+  fCandidateTracks = new TClonesArray("AliMuonForwardTrack",50000);
 
   // -------------------------- initializing histograms...
 
-  printf("\ninitializing histograms...\n");
+  AliInfo("\ninitializing histograms...\n");
   BookHistos();
   SetTitleHistos();
-  printf("... done!\n\n");
+  AliInfo("... done!\n\n");
 
   // -------------------------- initializing graphics...
 
-  printf("initializing graphics...\n");
+  AliInfo("initializing graphics...\n");
   BookPlanes();
-  printf("... done!\n\n");
+  AliInfo("... done!\n\n");
 
   SetSigmaSpectrometerCut(4.0);
   SetSigmaClusterCut(4.5);
@@ -325,7 +364,7 @@ Bool_t AliMuonForwardTrackFinder::LoadNextEvent() {
 
   fCountRealTracksAnalyzedOfEvent = 0;
   
-  printf(" **** analyzing event # %d  \n", fEv);
+  AliInfo(Form(" **** analyzing event # %d  \n", fEv));
   
   fTrackStore    = fMuonRecoCheck->ReconstructedTracks(fEv);
   fTrackRefStore = fMuonRecoCheck->ReconstructibleTracks(fEv);
@@ -333,7 +372,7 @@ Bool_t AliMuonForwardTrackFinder::LoadNextEvent() {
   fRunLoader->GetEvent(fEv);
   if (!fMFTLoader->TreeR()->GetEvent()) return kFALSE;
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    printf("plane %02d: nClusters = %d\n", iPlane, (fMFT->GetRecPointsList(iPlane))->GetEntries());
+    AliDebug(1, Form("plane %02d: nClusters = %d\n", iPlane, (fMFT->GetRecPointsList(iPlane))->GetEntries()));
     fMFTClusterArray[iPlane] = fMFT->GetRecPointsList(iPlane);
   }
   SeparateFrontBackClusters();
@@ -357,13 +396,19 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   // load next muon track from the reconstructed event
 
+  if (fCountRealTracksAnalyzed>fMaxNTracksToBeAnalyzed) return kFALSE;
+
   if (!fCountRealTracksAnalyzed) if (!LoadNextEvent()) return kFALSE;
+  if (fCountRealTracksAnalyzed==fMaxNTracksToBeAnalyzed) {
+    fCountRealTracksAnalyzed++;
+    if (!LoadNextEvent()) return kFALSE;
+  }
 
   while ( !(fMuonTrackReco = static_cast<AliMUONTrack*>(fNextTrack->Next())) ) if (!LoadNextEvent()) return kFALSE;
 
-  printf("**************************************************************************************\n");
-  printf("***************************   MUON TRACK %3d   ***************************************\n", fCountRealTracksAnalyzedOfEvent);
-  printf("**************************************************************************************\n");
+  AliDebug(1, "**************************************************************************************\n");
+  AliDebug(1, Form("***************************   MUON TRACK %3d   ***************************************\n", fCountRealTracksAnalyzedOfEvent));
+  AliDebug(1, "**************************************************************************************\n");
 
   fCountRealTracksAnalyzed++;
 
@@ -398,14 +443,12 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   CheckCurrentMuonTrackable();
 
-  PrintParticleHistory();
-  
   if (fMuonTrackReco->GetMatchTrigger()) fCountRealTracksWithRefMC_andTrigger++;
   
   // the track we are going to build, starting from fMuonTrackReco and adding the MFT clusters
   AliMuonForwardTrack *track = new ((*fCandidateTracks)[0]) AliMuonForwardTrack();
   track -> SetMUONTrack(fMuonTrackReco);
-  if (fLabelMC>=0) track -> SetMCTrackRef(fStack->Particle(fLabelMC));
+  if (fLabelMC>=0 && fStack->Particle(fLabelMC)) track -> SetMCTrackRef(fStack->Particle(fLabelMC));
   track -> SetMCLabel(fMuonTrackReco->GetMCLabel());
   track -> SetMatchTrigger(fMuonTrackReco->GetMatchTrigger());
   
@@ -415,6 +458,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   Double_t thetaSpectrometer = TMath::ATan(ptSpectrometer/param->Pz());
   if (thetaSpectrometer<0.) thetaSpectrometer += TMath::Pi();
   Double_t etaSpectrometer = -1.*TMath::Log(TMath::Tan(0.5*thetaSpectrometer));
+  //  fOutputQAFile->cd();
   fHistPtSpectrometer -> Fill(ptSpectrometer);
   
   // if the transverse momentum in the Muon Spectrometer is smaller than the threshold, skip to the next track
@@ -426,6 +470,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   Double_t xEndOfAbsorber = trackParamEndOfAbsorber.GetNonBendingCoor();
   Double_t yEndOfAbsorber = trackParamEndOfAbsorber.GetBendingCoor();
   Double_t rAbsorber      = TMath::Sqrt(xEndOfAbsorber*xEndOfAbsorber + yEndOfAbsorber*yEndOfAbsorber);
+  //  fOutputQAFile->cd();
   fHistRadiusEndOfAbsorber -> Fill(rAbsorber);
   
   // if the radial distance of the track at the end of the absorber is smaller than a radius corresponding to 
@@ -454,13 +499,16 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 	}
       }
       fCandidateTracks->Compress();
-      if (fIsCurrentMuonTrackable) fHistNTracksAfterExtrapolation[iPlane] -> Fill(fCandidateTracks->GetEntriesFast());
+      if (fIsCurrentMuonTrackable) {
+	//	fOutputQAFile->cd();
+	fHistNTracksAfterExtrapolation[iPlane] -> Fill(fCandidateTracks->GetEntriesFast());
+      }
     }
 
-    else if (fMatchingMode==kIdealMatching) {
+    else if (fMatchingMode==kIdealMatching && fIsCurrentMuonTrackable) {
       fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(0);
-      printf("plane %02d: fCandidateTracks->GetEntriesFast() = %d   fCandidateTracks->UncheckedAt(0) = %p   fCurrentTrack = %p\n", 
-	     iPlane, fCandidateTracks->GetEntriesFast(), fCandidateTracks->UncheckedAt(0), fCurrentTrack);
+      AliDebug(2, Form("plane %02d: fCandidateTracks->GetEntriesFast() = %d   fCandidateTracks->UncheckedAt(0) = %p   fCurrentTrack = %p\n", 
+		       iPlane, fCandidateTracks->GetEntriesFast(), fCandidateTracks->UncheckedAt(0), fCurrentTrack));
       AttachGoodClusterInPlane(iPlane);
     }
 
@@ -468,19 +516,53 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   
   // -------------------------- END OF THE CYCLE OVER THE MFT PLANES --------------------------------------------
   
+  AliDebug(1, "Finished cycle over planes");
+
+  Double_t momentum = ptSpectrometer * TMath::CosH(etaSpectrometer);
+  fTxtTrackMomentum = new TLatex(0.10, 0.70, Form("P_{spectro} = %3.1f GeV/c", momentum));
+
   if (fMatchingMode==kIdealMatching) {
-    printf("Adding track to output tree...\n");
+    AliDebug(1, "Adding track to output tree...\n");
+    fFinalBestCandidate = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(0);
     AliMuonForwardTrack *newTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(0);
-    new ((*fMuonForwardTracks)[fMuonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);  // AU
-    printf("...track added!\n");
+    new ((*fMuonForwardTracks)[fMuonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);
+    AliDebug(1, "...track added!\n");
     fCandidateTracks->Clear();
     fCountRealTracksAnalyzedOfEvent++;
+    fCountRealTracksAnalyzedWithFinalCandidates++;
+    PrintParticleHistory();
+    FillPlanesWithTrackHistory();
+
+    Double_t chi2AtPlane[fNMaxPlanes] = {0};
+    Int_t nGoodClusters = 0;
+    Int_t nMFTClusters  = fFinalBestCandidate->GetNMFTClusters();
+//     Int_t nMUONClusters = fFinalBestCandidate->GetNMUONClusters();
+    Int_t plane = 0;
+    for (Int_t iCluster=0; iCluster<nMFTClusters; iCluster++) {
+      while (!fFinalBestCandidate->PlaneExists(plane)) plane++;
+      AliMFTCluster *localCluster = fFinalBestCandidate->GetMFTCluster(iCluster);
+      chi2AtPlane[plane] = localCluster->GetLocalChi2();
+      if (IsCorrectMatch(localCluster)) nGoodClusters++;
+//       Int_t nClustersGlobalTrack = nMUONClusters + (nMFTClusters-iCluster);        // Muon Spectrometer clusters + clusters in the Vertex Telescope
+//       Int_t ndfGlobalTrack = GetNDF(nClustersGlobalTrack);
+//       chi2AtPlane[plane] /= Double_t(ndfGlobalTrack);
+      plane++;
+    }
+    for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+      fTxtTrackChi2[iPlane] = new TLatex(0.55*fRPlaneMax[fNPlanesMFT-1], 
+					 0.90*fRPlaneMax[fNPlanesMFT-1], 
+					 Form("#chi^{2} = %3.1f", chi2AtPlane[iPlane]));
+    }
+    fTxtTrackFinalChi2 = new TLatex(0.20, 0.44, Form("#chi^{2}_{final} = %3.1f", chi2AtPlane[0]));
+
+    if (fDrawOption) DrawPlanes();
     return 5;
   }
-
+  
   // If we have several final tracks, we must find the best candidate:
 
   Int_t nFinalTracks = fCandidateTracks->GetEntriesFast();
+  AliDebug(1, Form("nFinalTracks = %d", nFinalTracks));
 
   if (nFinalTracks) fCountRealTracksAnalyzedWithFinalCandidates++;
   
@@ -488,8 +570,12 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   Bool_t bestCandidateExists       = kFALSE;
   Int_t nGoodClustersBestCandidate = 0;
   Int_t idBestCandidate            = 0;
-  Double_t chi2HistoryForBestCandidate[fMaxNPlanesMFT]={0};    // chi2 on each plane, for the best candidate
-  for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) chi2HistoryForBestCandidate[iPlane] = -1.;
+  Double_t chi2HistoryForBestCandidate[fNMaxPlanes] = {0};  // chi2 on each plane, for the best candidate
+  Double_t nClustersPerPlane[fNMaxPlanes] = {0};
+  for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    chi2HistoryForBestCandidate[iPlane] = -1.;
+    nClustersPerPlane[iPlane] = fMFTClusterArray[iPlane] -> GetEntries();
+  }
   
   fTxtFinalCandidates = new TLatex(0.10, 0.78, Form("N_{FinalCandidates} = %d", nFinalTracks));
   
@@ -500,61 +586,64 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
     
     AliMuonForwardTrack *finalTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iTrack);
     
-    Double_t chi2AtPlane[fMaxNPlanesMFT]={0};
+    Double_t chi2AtPlane[fNMaxPlanes] = {0};
     Int_t nGoodClusters = 0;
     Int_t nMFTClusters  = finalTrack->GetNMFTClusters();
-    Int_t nMUONClusters = finalTrack->GetNMUONClusters();
+//     Int_t nMUONClusters = finalTrack->GetNMUONClusters();
 
     Int_t plane = 0;
     for (Int_t iCluster=0; iCluster<nMFTClusters; iCluster++) {
       while (!finalTrack->PlaneExists(plane)) plane++;
       AliMFTCluster *localCluster = finalTrack->GetMFTCluster(iCluster);
-      chi2AtPlane[plane++] = localCluster->GetTrackChi2();
+      chi2AtPlane[plane] = localCluster->GetLocalChi2();
       if (IsCorrectMatch(localCluster)) nGoodClusters++;
-      Int_t nClustersGlobalTrack = nMUONClusters + (nMFTClusters-iCluster);        // Muon Spectrometer clusters + clusters in the Vertex Telescope
-      Int_t ndfGlobalTrack = GetNDF(nClustersGlobalTrack);
-      chi2AtPlane[plane] /= Double_t(ndfGlobalTrack);
+//       Int_t nClustersGlobalTrack = nMUONClusters + (nMFTClusters-iCluster);        // Muon Spectrometer clusters + clusters in the Vertex Telescope
+//       Int_t ndfGlobalTrack = GetNDF(nClustersGlobalTrack);
+//       chi2AtPlane[plane] /= Double_t(ndfGlobalTrack);
+      plane++;
     }
     
-    if (fIsCurrentMuonTrackable) fHistNGoodClustersForFinalTracks -> Fill(nGoodClusters);
+    if (fIsCurrentMuonTrackable) {
+      //      fOutputQAFile->cd();
+      fHistNGoodClustersForFinalTracks -> Fill(nGoodClusters);
+    }
 
-    fNtuFinalCandidates1 -> Fill(Double_t(fRun),
-				 Double_t(fEv),
-				 Double_t(fCountRealTracksAnalyzedOfEvent),
-				 Double_t(nFinalTracks),
-				 Double_t(nClustersMC),
-				 Double_t(nGoodClusters),
-				 ptSpectrometer,
-				 thetaSpectrometer,
-				 etaSpectrometer);
+    //    fOutputQAFile->cd();
 
-    fNtuFinalCandidates2 -> Fill(chi2AtPlane[0],
-				 chi2AtPlane[1],
-				 chi2AtPlane[2],
-				 chi2AtPlane[3],
-				 chi2AtPlane[4],
-				 chi2AtPlane[5],
-				 chi2AtPlane[6],
-				 chi2AtPlane[7],
-				 chi2AtPlane[8],
-				 chi2AtPlane[9],
-				 chi2AtPlane[10],
-				 chi2AtPlane[11],
-				 chi2AtPlane[12],
-				 chi2AtPlane[13],
-				 chi2AtPlane[14]);
+    Float_t finalCandidatesInfo[] = {Double_t(fRun),
+				     Double_t(fEv),
+				     Double_t(fCountRealTracksAnalyzedOfEvent),
+				     Double_t(nFinalTracks),
+				     Double_t(nClustersMC),
+				     Double_t(nGoodClusters),
+				     ptSpectrometer,
+				     thetaSpectrometer,
+				     etaSpectrometer, 
+				     chi2AtPlane[0],
+				     chi2AtPlane[1],
+				     chi2AtPlane[2],
+				     chi2AtPlane[3],
+				     chi2AtPlane[4],
+				     chi2AtPlane[5],
+				     chi2AtPlane[6],
+				     chi2AtPlane[7],
+				     chi2AtPlane[8]};
     
+    fNtuFinalCandidates -> Fill(finalCandidatesInfo);
+
     // now comparing the tracks with various criteria, in order to find the best one
     
     Double_t theVariable = 0.;
+//     theVariable = chi2AtPlane[0];
     for (Int_t iCluster=0; iCluster<nMFTClusters; iCluster++) theVariable += chi2AtPlane[iCluster];
     theVariable /= Double_t(nMFTClusters);
+    
       
     if (theVariable<theVariable_Best || theVariable_Best<0.) {
       nGoodClustersBestCandidate = nGoodClusters;
       for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) chi2HistoryForBestCandidate[iPlane] = chi2AtPlane[iPlane];
       theVariable_Best = theVariable;
-      fTxtTrackFinalChi2 = new TLatex(0.20, 0.52, Form("#chi^{2}_{final} = %3.1f", chi2HistoryForBestCandidate[0]));
+      fTxtTrackFinalChi2 = new TLatex(0.20, 0.44, Form("#chi^{2}_{final} = %3.1f", chi2HistoryForBestCandidate[0]));
       for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
 	fTxtTrackChi2[iPlane] = new TLatex(0.55*fRPlaneMax[fNPlanesMFT-1], 
 					   0.90*fRPlaneMax[fNPlanesMFT-1], 
@@ -567,45 +656,56 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
     // ----------------------------------------------------------
 
   }
-  
+
   if (nFinalTracks) {
-    FillPlanesWithTrackHistory((AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(idBestCandidate));
+    fFinalBestCandidate = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(idBestCandidate);
+    AliInfo(Form("fFinalBestCandidate->GetNMFTClusters() = %d\n",  fFinalBestCandidate->GetNMFTClusters()));
+    PrintParticleHistory();
+    FillPlanesWithTrackHistory();
     AliMuonForwardTrack *newTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(idBestCandidate);
-    new ((*fMuonForwardTracks)[fMuonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);   // AU
-    fNtuFinalBestCandidates1 -> Fill(Double_t(fRun),
-				     Double_t(fEv),
-				     Double_t(fCountRealTracksAnalyzedOfEvent),
-				     Double_t(nFinalTracks),
-				     Double_t(nClustersMC),
-				     Double_t(nGoodClustersBestCandidate),
-				     ptSpectrometer,
-				     thetaSpectrometer,
-				     etaSpectrometer);
-
-    fNtuFinalBestCandidates2 -> Fill(chi2HistoryForBestCandidate[0],
-				     chi2HistoryForBestCandidate[1],
-				     chi2HistoryForBestCandidate[2],
-				     chi2HistoryForBestCandidate[3],
-				     chi2HistoryForBestCandidate[4],
-				     chi2HistoryForBestCandidate[5],
-				     chi2HistoryForBestCandidate[6],
-				     chi2HistoryForBestCandidate[7],
-				     chi2HistoryForBestCandidate[8],
-				     chi2HistoryForBestCandidate[9],
-				     chi2HistoryForBestCandidate[10],
-				     chi2HistoryForBestCandidate[11],
-				     chi2HistoryForBestCandidate[12],
-				     chi2HistoryForBestCandidate[13],
-				     chi2HistoryForBestCandidate[14]);
-
+    newTrack -> SetNWrongClustersMC(newTrack->GetNMFTClusters() - nGoodClustersBestCandidate);
+    new ((*fMuonForwardTracks)[fMuonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);
   }
+
+  //  fOutputQAFile->cd();
+  
+  Float_t finalBestCandidatesInfo[] = {Double_t(fRun),
+				       Double_t(fEv),
+				       Double_t(fCountRealTracksAnalyzedOfEvent),
+				       Double_t(nFinalTracks),
+				       Double_t(nClustersMC),
+				       Double_t(nGoodClustersBestCandidate),
+				       ptSpectrometer,
+				       thetaSpectrometer,
+				       etaSpectrometer,
+				       chi2HistoryForBestCandidate[0],
+				       chi2HistoryForBestCandidate[1],
+				       chi2HistoryForBestCandidate[2],
+				       chi2HistoryForBestCandidate[3],
+				       chi2HistoryForBestCandidate[4],
+				       chi2HistoryForBestCandidate[5],
+				       chi2HistoryForBestCandidate[6],
+				       chi2HistoryForBestCandidate[7],
+				       chi2HistoryForBestCandidate[8],
+				       nClustersPerPlane[0],
+				       nClustersPerPlane[1],
+				       nClustersPerPlane[2],
+				       nClustersPerPlane[3],
+				       nClustersPerPlane[4],
+				       nClustersPerPlane[5],
+				       nClustersPerPlane[6],
+				       nClustersPerPlane[7],
+				       nClustersPerPlane[8]};
+  
+  fNtuFinalBestCandidates -> Fill(finalBestCandidatesInfo);
   
   if (fDrawOption && bestCandidateExists) {
-    fTxtTrackGoodClusters = new TLatex(0.20, 0.59, Form("N_{GoodClusters} = %d", nGoodClustersBestCandidate));
+    fTxtTrackGoodClusters = new TLatex(0.20, 0.51, Form("N_{GoodClusters} = %d", nGoodClustersBestCandidate));
     DrawPlanes();
   }
 
   if (fIsCurrentMuonTrackable) {
+    //    fOutputQAFile->cd();
     if (nGoodClustersBestCandidate==5) fHistPtMuonTrackWithGoodMatch -> Fill(ptSpectrometer);
     else                               fHistPtMuonTrackWithBadMatch  -> Fill(ptSpectrometer);
   }
@@ -613,6 +713,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   // -------------------------------------------------------------------------------------------
 
   fCandidateTracks->Clear();
+  fFinalBestCandidate = NULL;
   
   fCountRealTracksAnalyzedOfEvent++;
 
@@ -624,7 +725,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
 void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) { 
   
-  printf(">>>> executing AliMuonForwardTrackFinder::FindClusterInPlane(%d)\n", planeId);
+  AliDebug(2, Form(">>>> executing AliMuonForwardTrackFinder::FindClusterInPlane(%d)\n", planeId));
 
   // !!!!!!!!! coordinates and errors on the interaction vertex should be taken from the event itself (ITS) if available
 
@@ -650,13 +751,13 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     currentParamForResearchFront = currentParamFront;
     currentParamForResearchBack  = currentParamBack;
     AliMUONTrackExtrap::AddMCSEffect(&currentParamFront,           (fSegmentation->GetPlane(planeId+1)->GetEquivalentSilicon()+
-								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeFront())/radLengthSi,-1.);
+								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeFront())/fRadLengthSi,-1.);
     AliMUONTrackExtrap::AddMCSEffect(&currentParamForResearchFront,(fSegmentation->GetPlane(planeId+1)->GetEquivalentSilicon()+
-								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeFront())/radLengthSi,-1.);
+								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeFront())/fRadLengthSi,-1.);
     AliMUONTrackExtrap::AddMCSEffect(&currentParamBack,            (fSegmentation->GetPlane(planeId+1)->GetEquivalentSilicon()+
-								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeBack())/radLengthSi,-1.);
+								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeBack())/fRadLengthSi,-1.);
     AliMUONTrackExtrap::AddMCSEffect(&currentParamForResearchBack, (fSegmentation->GetPlane(planeId+1)->GetEquivalentSilicon()+
-								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeBack())/radLengthSi,-1.);
+								    fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeBack())/fRadLengthSi,-1.);
   }
   // for all planes: extrapolation to the Z of the plane
   AliMUONTrackExtrap::ExtrapToZCov(&currentParamFront,            -1.*fSegmentation->GetPlane(planeId)->GetZCenterActiveFront());   
@@ -681,7 +782,10 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
   if (planeId==fNPlanesMFT-1 && 0.5*(researchRadiusFront+researchRadiusBack)<fMinResearchRadiusAtLastPlane) {
     corrFact = fMinResearchRadiusAtLastPlane/(0.5*(researchRadiusFront+researchRadiusBack));
   }
-  if (fIsCurrentMuonTrackable) fHistResearchRadius[planeId] -> Fill(corrFact*0.5*(researchRadiusFront+researchRadiusBack));
+  if (fIsCurrentMuonTrackable) {
+    //    fOutputQAFile->cd();
+    fHistResearchRadius[planeId] -> Fill(0.5*(researchRadiusFront+researchRadiusBack));
+  }
 
   Double_t position_X_Front = currentParamForResearchFront.GetNonBendingCoor();
   Double_t position_Y_Front = currentParamForResearchFront.GetBendingCoor();
@@ -697,7 +801,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
   // Analyizing the clusters: FRONT ACTIVE ELEMENTS
   
   Int_t nClustersFront = fMFTClusterArrayFront[planeId]->GetEntries();
-  printf("There are %3d clusters in plane %02d FRONT\n", nClustersFront, planeId);
+  AliDebug(2, Form("There are %3d clusters in plane %02d FRONT\n", nClustersFront, planeId));
   
   for (Int_t iCluster=0; iCluster<nClustersFront; iCluster++) {
 
@@ -719,34 +823,38 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     }
 
     if (fIsCurrentMuonTrackable) {
+      //      fOutputQAFile->cd();
       if (IsCorrectMatch(cluster)) fHistChi2Cluster_GoodCluster[planeId]->Fill(chi2/2.);     //  chi2/ndf
       else                         fHistChi2Cluster_BadCluster[planeId] ->Fill(chi2/2.);     //  chi2/ndf
     }
 
     if (isGoodChi2) {
-      printf("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut);
+      AliDebug(3, Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
       newTrack->AddTrackParamAtMFTCluster(currentParamFront, *cluster);    // creating new track param and attaching the cluster
+      AliDebug(1, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
+		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
       newTrack->SetPlaneExists(planeId);
-      printf("current muon is trackable: %d\n", fIsCurrentMuonTrackable);
+      AliDebug(2, Form("current muon is trackable: %d\n", fIsCurrentMuonTrackable));
       if (fIsCurrentMuonTrackable) {
 	Double_t newGlobalChi2 = ((AliMUONTrackParam*) newTrack->GetTrackParamAtCluster()->First())->GetTrackChi2();
-	printf("new chi2 = %f (= %f)\n", newGlobalChi2, newTrack->GetMFTCluster(0)->GetTrackChi2());
+	AliDebug(2, Form("new chi2 = %f (= %f)\n", newGlobalChi2, newTrack->GetMFTCluster(0)->GetTrackChi2()));
 	Int_t nClustersGlobalTrack = newTrack->GetNMUONClusters() + newTrack->GetNMFTClusters();        // Muon Spectrometer clusters + clusters in the Vertex Telescope
 	Int_t ndfGlobalTrack = GetNDF(nClustersGlobalTrack);
-	if (IsCorrectMatch(cluster)) fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[planeId]->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
-	else                         fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[planeId] ->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
+	//	fOutputQAFile->cd();
+	if (IsCorrectMatch(cluster)) fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[planeId]->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
+	else                         fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[planeId] ->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
       }
-      fGrMFTPlane[planeId][kClustersGoodChi2] -> SetPoint(fGrMFTPlane[planeId][kClustersGoodChi2]->GetN(), cluster->GetX(), cluster->GetY());
+      fGrMFTPlane[kClustersGoodChi2][planeId] -> SetPoint(fGrMFTPlane[kClustersGoodChi2][planeId]->GetN(), cluster->GetX(), cluster->GetY());
     }
-    else printf("discarding cluster: chi2=%f (cut = %f)\n", chi2, chi2cut);
+    else AliDebug(3, Form("discarding cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
 
   }
 
   // Analyizing the clusters: BACK ACTIVE ELEMENTS
   
   Int_t nClustersBack = fMFTClusterArrayBack[planeId]->GetEntries();
-  printf("There are %3d clusters in plane %02d BACK\n", nClustersBack, planeId);
+  AliDebug(2, Form("There are %3d clusters in plane %02d BACK\n", nClustersBack, planeId));
   
   for (Int_t iCluster=0; iCluster<nClustersBack; iCluster++) {
 
@@ -768,27 +876,31 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     }
 
     if (fIsCurrentMuonTrackable) {
+      //      fOutputQAFile->cd();
       if (IsCorrectMatch(cluster)) fHistChi2Cluster_GoodCluster[planeId]->Fill(chi2/2.);     //  chi2/ndf
       else                         fHistChi2Cluster_BadCluster[planeId] ->Fill(chi2/2.);     //  chi2/ndf
     }
 
     if (isGoodChi2) {
-      printf("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut);
+      AliDebug(3,Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
       newTrack->AddTrackParamAtMFTCluster(currentParamBack, *cluster);    // creating new track param and attaching the cluster
+      AliDebug(1, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
+		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
       newTrack->SetPlaneExists(planeId);
-      printf("current muon is trackable: %d\n", fIsCurrentMuonTrackable);
+      AliDebug(2, Form("current muon is trackable: %d\n", fIsCurrentMuonTrackable));
       if (fIsCurrentMuonTrackable) {
 	Double_t newGlobalChi2 = ((AliMUONTrackParam*) newTrack->GetTrackParamAtCluster()->First())->GetTrackChi2();
-	printf("new chi2 = %f (= %f)\n", newGlobalChi2, newTrack->GetMFTCluster(0)->GetTrackChi2());
+	AliDebug(2, Form("new chi2 = %f (= %f)\n", newGlobalChi2, newTrack->GetMFTCluster(0)->GetTrackChi2()));
 	Int_t nClustersGlobalTrack = newTrack->GetNMUONClusters() + newTrack->GetNMFTClusters();        // Muon Spectrometer clusters + clusters in the Vertex Telescope
 	Int_t ndfGlobalTrack = GetNDF(nClustersGlobalTrack);
-	if (IsCorrectMatch(cluster)) fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[planeId]->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
-	else                         fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[planeId] ->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
+	//	fOutputQAFile->cd();
+	if (IsCorrectMatch(cluster)) fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[planeId]->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
+	else                         fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[planeId] ->Fill(newGlobalChi2/Double_t(ndfGlobalTrack));
       }
-      fGrMFTPlane[planeId][kClustersGoodChi2] -> SetPoint(fGrMFTPlane[planeId][kClustersGoodChi2]->GetN(), cluster->GetX(), cluster->GetY());
+      fGrMFTPlane[kClustersGoodChi2][planeId] -> SetPoint(fGrMFTPlane[kClustersGoodChi2][planeId]->GetN(), cluster->GetX(), cluster->GetY());
     }
-    else printf("discarding cluster: chi2=%f (cut = %f)\n", chi2, chi2cut);
+    else AliDebug(3,Form("discarding cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
 
   }
 
@@ -796,6 +908,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
 
   if (planeId == fNPlanesMFT-1) {
     if (fIsCurrentMuonTrackable && fDistanceFromGoodClusterAndTrackAtLastPlane>0.) {
+      //      fOutputQAFile->cd();
       fHistDistanceGoodClusterFromTrackMinusDistanceBestClusterFromTrackAtLastPlane -> Fill(TMath::Abs(fDistanceFromBestClusterAndTrackAtLastPlane-
 												       fDistanceFromGoodClusterAndTrackAtLastPlane));
       fHistDistanceGoodClusterFromTrackAtLastPlane -> Fill(fDistanceFromGoodClusterAndTrackAtLastPlane);
@@ -808,7 +921,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
 
 void AliMuonForwardTrackFinder::AttachGoodClusterInPlane(Int_t planeId) { 
   
-  printf(">>>> executing AliMuonForwardTrackFinder::AttachGoodClusterInPlane(%d)\n", planeId);
+  AliDebug(1, Form(">>>> executing AliMuonForwardTrackFinder::AttachGoodClusterInPlane(%d)\n", planeId));
 
   AliMUONTrackParam currentParamFront, currentParamBack;
 
@@ -819,13 +932,13 @@ void AliMuonForwardTrackFinder::AttachGoodClusterInPlane(Int_t planeId) {
     AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamBack,  0.); 
   }
   else {          // MFT planes others than the last one: mult. scattering correction because of the upstream MFT planes is performed
-    printf("fCurrentTrack = %p\n", fCurrentTrack);
+    AliDebug(2, Form("fCurrentTrack = %p\n", fCurrentTrack));
     currentParamFront = (*((AliMUONTrackParam*)(fCurrentTrack->GetTrackParamAtCluster()->First())));
     currentParamBack  = (*((AliMUONTrackParam*)(fCurrentTrack->GetTrackParamAtCluster()->First())));
     AliMUONTrackExtrap::AddMCSEffect(&currentParamFront, (fSegmentation->GetPlane(planeId+1)->GetEquivalentSilicon()+
-							  fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeFront())/radLengthSi,-1.);
+							  fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeFront())/fRadLengthSi,-1.);
     AliMUONTrackExtrap::AddMCSEffect(&currentParamBack,  (fSegmentation->GetPlane(planeId+1)->GetEquivalentSilicon()+
-							  fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeBack())/radLengthSi,-1.);
+							  fSegmentation->GetPlane(planeId)->GetEquivalentSiliconBeforeBack())/fRadLengthSi,-1.);
   }
   // for all planes: linear extrapolation to the Z of the plane
   AliMUONTrackExtrap::ExtrapToZCov(&currentParamFront, -1.*fSegmentation->GetPlane(planeId)->GetZCenterActiveFront());   
@@ -837,10 +950,10 @@ void AliMuonForwardTrackFinder::AttachGoodClusterInPlane(Int_t planeId) {
 
   Int_t nClustersFront = fMFTClusterArrayFront[planeId]->GetEntries();
   
-  printf("nClustersFront = %d\n", nClustersFront);
+  AliDebug(1, Form("nClustersFront = %d\n", nClustersFront));
   for (Int_t iCluster=0; iCluster<nClustersFront; iCluster++) {
     AliMFTCluster *cluster = (AliMFTCluster*) fMFTClusterArrayFront[planeId]->UncheckedAt(iCluster);
-    printf("checking cluster %02d of %02d: cluter=%p, fCurrentTrack=%p\n", iCluster, nClustersFront, cluster, fCurrentTrack);
+    AliDebug(2, Form("checking cluster %02d of %02d: cluter=%p, fCurrentTrack=%p\n", iCluster, nClustersFront, cluster, fCurrentTrack));
     if (IsCorrectMatch(cluster)) {
       fCurrentTrack->AddTrackParamAtMFTCluster(currentParamFront, *cluster);  // creating new track param and attaching the cluster
       fCurrentTrack->SetPlaneExists(planeId);
@@ -855,10 +968,10 @@ void AliMuonForwardTrackFinder::AttachGoodClusterInPlane(Int_t planeId) {
 
   Int_t nClustersBack = fMFTClusterArrayBack[planeId]->GetEntries();
   
-  printf("nClustersBack = %d\n", nClustersBack);
+  AliDebug(1, Form("nClustersBack = %d\n", nClustersBack));
   for (Int_t iCluster=0; iCluster<nClustersBack; iCluster++) {
     AliMFTCluster *cluster = (AliMFTCluster*) fMFTClusterArrayBack[planeId]->UncheckedAt(iCluster);
-    printf("checking cluster %02d of %02d: cluter=%p, fCurrentTrack=%p\n", iCluster, nClustersBack, cluster, fCurrentTrack);
+    AliDebug(2,Form("checking cluster %02d of %02d: cluter=%p, fCurrentTrack=%p\n", iCluster, nClustersBack, cluster, fCurrentTrack));
     if (IsCorrectMatch(cluster)) {
       fCurrentTrack->AddTrackParamAtMFTCluster(currentParamBack, *cluster);  // creating new track param and attaching the cluster
       fCurrentTrack->SetPlaneExists(planeId);
@@ -894,30 +1007,25 @@ void AliMuonForwardTrackFinder::CheckCurrentMuonTrackable() {
 
 //==========================================================================================================================================
 
-void AliMuonForwardTrackFinder::FillPlanesWithTrackHistory(AliMuonForwardTrack *track) { 
+void AliMuonForwardTrackFinder::FillPlanesWithTrackHistory() { 
   
-  // recover track parameters on each planes and look for the corresponding clusters
+  // Fill planes with the clusters
 
+  Int_t cluster = 0;
+  AliDebug(2, Form("fFinalBestCandidate->GetNMFTClusters() = %d\n",  fFinalBestCandidate->GetNMFTClusters()));
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    
-    AliMFTCluster *trackCluster = (AliMFTCluster *) track->GetMFTCluster(iPlane);
-
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> SetPoint(fGrMFTPlane[iPlane][kClusterOfTrack]->GetN(), trackCluster->GetX(), trackCluster->GetY());
-    
-    Int_t nClusters = fMFTClusterArray[iPlane]->GetEntriesFast();
-    
-    for (Int_t iCluster=0; iCluster<nClusters; iCluster++) {
-      
-      AliMFTCluster *cluster = (AliMFTCluster*) fMFTClusterArray[iPlane]->UncheckedAt(iCluster); 
-
-      fGrMFTPlane[iPlane][kAllClusters] -> SetPoint(fGrMFTPlane[iPlane][kAllClusters]->GetN(), cluster->GetX(), cluster->GetY());
-      
-      if (IsCorrectMatch(cluster)) {
-	fGrMFTPlane[iPlane][kClusterCorrectMC] -> SetPoint(fGrMFTPlane[iPlane][kClusterCorrectMC]->GetN(), cluster->GetX(), cluster->GetY());
-      }
-
+    if (fFinalBestCandidate->PlaneExists(iPlane)) {
+      AliMFTCluster *trackCluster = fFinalBestCandidate->GetMFTCluster(cluster++);
+      fGrMFTPlane[kClusterOfTrack][iPlane] -> SetPoint(fGrMFTPlane[kClusterOfTrack][iPlane]->GetN(), trackCluster->GetX(), trackCluster->GetY());
     }
-
+    Int_t nClusters = fMFTClusterArray[iPlane]->GetEntriesFast();
+    for (Int_t iCluster=0; iCluster<nClusters; iCluster++) {
+      AliMFTCluster *myCluster = (AliMFTCluster*) fMFTClusterArray[iPlane]->UncheckedAt(iCluster); 
+      fGrMFTPlane[kAllClusters][iPlane] -> SetPoint(fGrMFTPlane[kAllClusters][iPlane]->GetN(), myCluster->GetX(), myCluster->GetY());
+      if (IsCorrectMatch(myCluster)) {
+	fGrMFTPlane[kClusterCorrectMC][iPlane] -> SetPoint(fGrMFTPlane[kClusterCorrectMC][iPlane]->GetN(), myCluster->GetX(), myCluster->GetY());
+      }
+    }
   }
 
 }
@@ -937,7 +1045,7 @@ Bool_t AliMuonForwardTrackFinder::IsCorrectMatch(AliMFTCluster *cluster) {
     }
   }
 
-  printf("returning %d\n", result);
+  AliDebug(2,Form("returning %d\n", result));
 
   return result;
 
@@ -954,13 +1062,13 @@ Double_t AliMuonForwardTrackFinder::TryOneCluster(const AliMUONTrackParam &track
   // Set differences between trackParam and cluster in the bending and non bending directions
   Double_t dX = cluster->GetX() - trackParam.GetNonBendingCoor();
   Double_t dY = cluster->GetY() - trackParam.GetBendingCoor();
-  printf("dX = %f, dY = %f\n", dX, dY);
+  AliDebug(3,Form("dX = %f, dY = %f\n", dX, dY));
   
   // Calculate errors and covariances
   const TMatrixD& kParamCov = trackParam.GetCovariances();
   Double_t sigmaX2 = kParamCov(0,0) + cluster->GetErrX2();
   Double_t sigmaY2 = kParamCov(2,2) + cluster->GetErrY2();
-  printf("dX2 = %f, dY2 = %f\n", sigmaX2, sigmaY2);
+  AliDebug(3, Form("dX2 = %f, dY2 = %f\n", sigmaX2, sigmaY2));
   Double_t covXY   = kParamCov(0,2);
   Double_t det     = sigmaX2 * sigmaY2 - covXY * covXY;
   
@@ -1004,9 +1112,9 @@ Int_t AliMuonForwardTrackFinder::GetNDF(Int_t nClusters) {
 //============================================================================================================================================
 
 void AliMuonForwardTrackFinder::BookHistos() {
-  
+
   const Int_t nMaxNewTracks[]  = {150,     200,   250, 600, 1000};
-  const Double_t radiusPlane[] = {0.001, 0.010, 0.100, 5.0,  5.0};
+  const Double_t radiusPlane[] = {0.010, 0.010, 0.050, 0.5,  1.5};
 
   fHistPtSpectrometer = new TH1D("hPtSpectrometer", "p_{T} as given by the Muon Spectrometer", 200, 0, 20.); 
 
@@ -1042,14 +1150,14 @@ void AliMuonForwardTrackFinder::BookHistos() {
 						   Form("#chi^{2}_{clust} for Bad clusters in MFT plane %02d", iPlane),
 						   100, 0., 15.);
 
-    fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] = new TH1D(Form("fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons_pl%02d", iPlane),
-									   Form("#chi^{2}/ndf at plane %d for GOOD candidates of trackable muons",iPlane),
-									   100, 0., 15.);
-
-    fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane] = new TH1D(Form("fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons_pl%02d", iPlane),
-									   Form("#chi^{2}/ndf at plane %d for BAD candidates of trackable muons",iPlane),
-									   100, 0., 15.);
-
+    fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] = new TH1D(Form("fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons_pl%02d", iPlane),
+										 Form("#chi^{2}/ndf at plane %d for GOOD candidates of trackable muons",iPlane),
+										 100, 0., 15.);
+    
+    fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane] = new TH1D(Form("fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons_pl%02d", iPlane),
+										Form("#chi^{2}/ndf at plane %d for BAD candidates of trackable muons",iPlane),
+										100, 0., 15.);
+    
   }
   
   //------------------------------------------
@@ -1071,18 +1179,14 @@ void AliMuonForwardTrackFinder::BookHistos() {
     fHistChi2Cluster_GoodCluster[iPlane]        -> Sumw2();
     fHistChi2Cluster_BadCluster[iPlane]         -> Sumw2();
 
-    fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] -> Sumw2();
-    fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane]  -> Sumw2();
+    fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] -> Sumw2();
+    fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane]  -> Sumw2();
     
   }
 
-  fNtuFinalCandidates1     = new TNtuple("ntuFinalCandidates1",     "Final Candidates (ALL)", "run:event:muonTrack:nFinalCandidates:nClustersMC:nGoodClusters:ptSpectrometer:thetaSpectrometer:etaSpectrometer");
+  fNtuFinalCandidates     = new TNtuple("ntuFinalCandidates",     "Final Candidates (ALL)", "run:event:muonTrack:nFinalCandidates:nClustersMC:nGoodClusters:ptSpectrometer:thetaSpectrometer:etaSpectrometer:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8");
 
-  fNtuFinalBestCandidates1 = new TNtuple("ntuFinalBestCandidates1", "Final Best Candidates",  "run:event:muonTrack:nFinalCandidates:nClustersMC:nGoodClusters:ptSpectrometer:thetaSpectrometer:etaSpectrometer");
-
-  fNtuFinalCandidates2     = new TNtuple("ntuFinalCandidates2",     "Final Candidates (ALL)", "chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8:chi2AtPlane9:chi2AtPlane10:chi2AtPlane11:chi2AtPlane12:chi2AtPlane13:chi2AtPlane14");
-
-  fNtuFinalBestCandidates2 = new TNtuple("ntuFinalBestCandidates2", "Final Best Candidates",  "chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8:chi2AtPlane9:chi2AtPlane10:chi2AtPlane11:chi2AtPlane12:chi2AtPlane13:chi2AtPlane14");
+  fNtuFinalBestCandidates = new TNtuple("ntuFinalBestCandidates", "Final Best Candidates",  "run:event:muonTrack:nFinalCandidates:nClustersMC:nGoodClusters:ptSpectrometer:thetaSpectrometer:etaSpectrometer:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8:nClustersAtPlane0:nClustersAtPlane1:nClustersAtPlane2:nClustersAtPlane3:nClustersAtPlane4:nClustersAtPlane5:nClustersAtPlane6:nClustersAtPlane7:nClustersAtPlane8");
 
 }
 
@@ -1108,8 +1212,8 @@ void AliMuonForwardTrackFinder::SetTitleHistos() {
     fHistChi2Cluster_GoodCluster[iPlane]         -> SetXTitle("#chi^{2}/ndf");
     fHistChi2Cluster_BadCluster[iPlane]          -> SetXTitle("#chi^{2}/ndf");
 
-    fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] -> SetXTitle("#chi^{2}/ndf");
-    fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane]  -> SetXTitle("#chi^{2}/ndf");
+    fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] -> SetXTitle("#chi^{2}/ndf");
+    fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane]  -> SetXTitle("#chi^{2}/ndf");
     
   }
 
@@ -1120,41 +1224,41 @@ void AliMuonForwardTrackFinder::SetTitleHistos() {
 void AliMuonForwardTrackFinder::BookPlanes() {
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    fGrMFTPlane[iPlane][kAllClusters] = new TGraph();
-    fGrMFTPlane[iPlane][kAllClusters] -> SetName(Form("fGrMFTPlane_%02d_AllClusters",iPlane));
-    fGrMFTPlane[iPlane][kAllClusters] -> SetMarkerStyle(20);
-    //    fGrMFTPlane[iPlane][kAllClusters] -> SetMarkerSize(0.5);
-    //    fGrMFTPlane[iPlane][kAllClusters] -> SetMarkerSize(0.3);
-    fGrMFTPlane[iPlane][kAllClusters] -> SetMarkerSize(0.2);
+    fGrMFTPlane[kAllClusters][iPlane] = new TGraph();
+    fGrMFTPlane[kAllClusters][iPlane] -> SetName(Form("fGrMFTPlane_%02d_AllClusters",iPlane));
+    fGrMFTPlane[kAllClusters][iPlane] -> SetMarkerStyle(20);
+    //    fGrMFTPlane[kAllClusters][iPlane] -> SetMarkerSize(0.5);
+    //    fGrMFTPlane[kAllClusters][iPlane] -> SetMarkerSize(0.3);
+    fGrMFTPlane[kAllClusters][iPlane] -> SetMarkerSize(0.2);
   }
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    fGrMFTPlane[iPlane][kClustersGoodChi2] = new TGraph();
-    fGrMFTPlane[iPlane][kClustersGoodChi2] -> SetName(Form("fGrMFTPlane_%02d_ClustersGoodChi2",iPlane));
-    fGrMFTPlane[iPlane][kClustersGoodChi2] -> SetMarkerStyle(20);
-    //    fGrMFTPlane[iPlane][kClustersGoodChi2] -> SetMarkerSize(0.8);
-    //    fGrMFTPlane[iPlane][kClustersGoodChi2] -> SetMarkerSize(0.4);
-    fGrMFTPlane[iPlane][kClustersGoodChi2] -> SetMarkerSize(0.3);
-    fGrMFTPlane[iPlane][kClustersGoodChi2] -> SetMarkerColor(kBlue);
+    fGrMFTPlane[kClustersGoodChi2][iPlane] = new TGraph();
+    fGrMFTPlane[kClustersGoodChi2][iPlane] -> SetName(Form("fGrMFTPlane_%02d_ClustersGoodChi2",iPlane));
+    fGrMFTPlane[kClustersGoodChi2][iPlane] -> SetMarkerStyle(20);
+    //    fGrMFTPlane[kClustersGoodChi2][iPlane] -> SetMarkerSize(0.8);
+    //    fGrMFTPlane[kClustersGoodChi2][iPlane] -> SetMarkerSize(0.4);
+    fGrMFTPlane[kClustersGoodChi2][iPlane] -> SetMarkerSize(0.3);
+    fGrMFTPlane[kClustersGoodChi2][iPlane] -> SetMarkerColor(kBlue);
   }
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    fGrMFTPlane[iPlane][kClusterOfTrack] = new TGraph();
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> SetName(Form("fGrMFTPlane_%02d_ClustersOfTrack",iPlane));
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> SetMarkerStyle(25);
-    //    fGrMFTPlane[iPlane][kClusterOfTrack] -> SetMarkerSize(1.2);
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> SetMarkerSize(0.9);
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> SetMarkerColor(kRed);
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> SetTitle(Form("Plane %d (%3.1f cm)", iPlane, fZPlane[iPlane]));
+    fGrMFTPlane[kClusterOfTrack][iPlane] = new TGraph();
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> SetName(Form("fGrMFTPlane_%02d_ClustersOfTrack",iPlane));
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> SetMarkerStyle(25);
+    //    fGrMFTPlane[kClusterOfTrack][iPlane] -> SetMarkerSize(1.2);
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> SetMarkerSize(0.9);
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> SetMarkerColor(kRed);
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> SetTitle(Form("Plane %d (%3.1f cm)", iPlane, fZPlane[iPlane]));
   }
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    fGrMFTPlane[iPlane][kClusterCorrectMC] = new TGraph();
-    fGrMFTPlane[iPlane][kClusterCorrectMC] -> SetName(Form("fGrMFTPlane_%02d_ClustersCorrectMC",iPlane));
-    fGrMFTPlane[iPlane][kClusterCorrectMC] -> SetMarkerStyle(20);
-    //    fGrMFTPlane[iPlane][kClusterCorrectMC] -> SetMarkerSize(0.8);
-    fGrMFTPlane[iPlane][kClusterCorrectMC] -> SetMarkerSize(0.5);
-    fGrMFTPlane[iPlane][kClusterCorrectMC] -> SetMarkerColor(kGreen);
+    fGrMFTPlane[kClusterCorrectMC][iPlane] = new TGraph();
+    fGrMFTPlane[kClusterCorrectMC][iPlane] -> SetName(Form("fGrMFTPlane_%02d_ClustersCorrectMC",iPlane));
+    fGrMFTPlane[kClusterCorrectMC][iPlane] -> SetMarkerStyle(20);
+    //    fGrMFTPlane[kClusterCorrectMC][iPlane] -> SetMarkerSize(0.8);
+    fGrMFTPlane[kClusterCorrectMC][iPlane] -> SetMarkerSize(0.5);
+    fGrMFTPlane[kClusterCorrectMC][iPlane] -> SetMarkerColor(kGreen);
   }
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
@@ -1162,7 +1266,7 @@ void AliMuonForwardTrackFinder::BookPlanes() {
     fCircleInt[iPlane] = new TEllipse(0., 0., fRPlaneMin[iPlane], fRPlaneMin[iPlane]);
   }
   
-  fTxtDummy = new TLatex(0.10, 0.67, "Best Candidate:");
+  fTxtDummy = new TLatex(0.10, 0.59, "Best Candidate:");
 
   //---------------------------------------------------
 
@@ -1201,8 +1305,8 @@ void AliMuonForwardTrackFinder::ResetPlanes() {
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
     for (Int_t iGr=0; iGr<4; iGr++) {
-      Int_t nOldClusters = fGrMFTPlane[iPlane][iGr]->GetN();
-      for (Int_t iPoint=nOldClusters-1; iPoint>=0; iPoint--) fGrMFTPlane[iPlane][iGr]->RemovePoint(iPoint);
+      Int_t nOldClusters = fGrMFTPlane[iGr][iPlane]->GetN();
+      for (Int_t iPoint=nOldClusters-1; iPoint>=0; iPoint--) fGrMFTPlane[iGr][iPlane]->RemovePoint(iPoint);
     }
   }
 
@@ -1212,38 +1316,66 @@ void AliMuonForwardTrackFinder::ResetPlanes() {
 
 void AliMuonForwardTrackFinder::PrintParticleHistory() {
 
+  AliDebug(1, "Entering");
+
   TString history = "";
   
-  TParticle *part = fStack->Particle(fLabelMC);
-  
-  if (part->GetFirstMother() != -1) {
-    TParticle *partMother = fStack->Particle(part->GetFirstMother());
-    if (partMother->GetFirstMother() != -1) history += "...  #rightarrow ";
+  TParticle *part = 0;
+  if (fLabelMC>=0) part = fStack->Particle(fLabelMC);
+
+  AliDebug(1, Form("fStack->Particle(fLabelMC) = %p", part));
+
+  if (part) {
+    if (part->GetFirstMother() != -1) {
+      TParticle *partMother = fStack->Particle(part->GetFirstMother());
+      AliDebug(1, Form("fStack->Particle(part->GetFirstMother() = %p", partMother));
+      if (partMother) {
+	Char_t newName[100];
+	if (partMother->GetFirstMother() != -1) history += "...  #rightarrow ";
+	PDGNameConverter(partMother->GetName(), newName);
+	history += Form("%s #rightarrow ", newName);
+      }
+    }
     Char_t newName[100];
-    PDGNameConverter(partMother->GetName(), newName);
-    history += Form("%s #rightarrow ", newName);
+    PDGNameConverter(part->GetName(), newName);
+    history += Form("%s  at  z = %5.1f cm", newName, part->Vz());
+    //  printf("%s", history.Data());
   }
-  Char_t newName[100];
-  PDGNameConverter(part->GetName(), newName);
-  history += Form("%s  at  z = %5.1f cm", newName, part->Vz());
-  
-  //  printf("%s", history.Data());
-  
+  else history += "NO AVAILABLE HISTORY";
+
   fTxtMuonHistory = new TLatex(0.10, 0.86, history.Data());
+
+  // Filling particle history in the fFinalBestCandidate
+
+  if (part) {
+    for (Int_t iParent=0; iParent<AliMuonForwardTrack::fgkNParentsMax; iParent++) {
+      if (part->GetFirstMother() == -1) break;
+      if (!(fStack->Particle(part->GetFirstMother()))) break;
+      AliDebug(1, Form("fStack->Particle(part->GetFirstMother() = %p", fStack->Particle(part->GetFirstMother())));
+      fFinalBestCandidate->SetParentMCLabel(iParent, part->GetFirstMother());
+      fFinalBestCandidate->SetParentPDGCode(iParent, fStack->Particle(part->GetFirstMother())->GetPdgCode());
+      part = fStack->Particle(part->GetFirstMother());
+    }
+  }
   
 }
 
 //===========================================================================================================================================
 
-Bool_t AliMuonForwardTrackFinder::IsMother(const Char_t *nameMother) {
+Bool_t AliMuonForwardTrackFinder::IsMother(Char_t *nameMother) {
   
   Bool_t result = kFALSE;
   
-  TParticle *part = fStack->Particle(fLabelMC);
+  TParticle *part = 0;
+  if (fLabelMC>=0) part = fStack->Particle(fLabelMC);
   
-  if (part->GetFirstMother() != -1) {
-    TParticle *partMother = fStack->Particle(part->GetFirstMother());
-    if (!strcmp(partMother->GetName(), nameMother)) result=kTRUE;
+  if (part) {
+    if (part->GetFirstMother() != -1) {
+      TParticle *partMother = fStack->Particle(part->GetFirstMother());
+      if (partMother) {
+	if (!strcmp(partMother->GetName(), nameMother)) result=kTRUE;
+      }
+    }
   }
 
   return result;
@@ -1263,19 +1395,19 @@ void AliMuonForwardTrackFinder::DrawPlanes() {
     
     fCanvas->cd(fNPlanesMFT-iPlane+1);
     
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> GetXaxis() -> SetLimits(-1.1*fRPlaneMax[fNPlanesMFT-1], +1.1*fRPlaneMax[fNPlanesMFT-1]);
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> GetYaxis() -> SetRangeUser(-1.1*fRPlaneMax[fNPlanesMFT-1], +1.1*fRPlaneMax[fNPlanesMFT-1]);
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> GetXaxis() -> SetTitle("X  [cm]");
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> GetYaxis() -> SetTitle("Y  [cm]");
-    fGrMFTPlane[iPlane][kClusterOfTrack] -> Draw("ap");
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> GetXaxis() -> SetLimits(-1.1*fRPlaneMax[fNPlanesMFT-1], +1.1*fRPlaneMax[fNPlanesMFT-1]);
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> GetYaxis() -> SetRangeUser(-1.1*fRPlaneMax[fNPlanesMFT-1], +1.1*fRPlaneMax[fNPlanesMFT-1]);
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> GetXaxis() -> SetTitle("X  [cm]");
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> GetYaxis() -> SetTitle("Y  [cm]");
+    fGrMFTPlane[kClusterOfTrack][iPlane] -> Draw("ap");
 
     fCircleExt[iPlane] -> Draw("same");
     fCircleInt[iPlane] -> Draw("same");
     
-    if (fGrMFTPlane[iPlane][kAllClusters]->GetN())       fGrMFTPlane[iPlane][kAllClusters]      -> Draw("psame");
-    if (fGrMFTPlane[iPlane][kClustersGoodChi2]->GetN())  fGrMFTPlane[iPlane][kClustersGoodChi2] -> Draw("psame");
-    if (fGrMFTPlane[iPlane][kClusterOfTrack]->GetN())    fGrMFTPlane[iPlane][kClusterOfTrack]   -> Draw("psame");
-    if (fGrMFTPlane[iPlane][kClusterCorrectMC]->GetN())  fGrMFTPlane[iPlane][kClusterCorrectMC] -> Draw("psame");
+    if (fGrMFTPlane[kAllClusters][iPlane]->GetN())       fGrMFTPlane[kAllClusters][iPlane]      -> Draw("psame");
+    if (fGrMFTPlane[kClustersGoodChi2][iPlane]->GetN())  fGrMFTPlane[kClustersGoodChi2][iPlane] -> Draw("psame");
+    if (fGrMFTPlane[kClusterOfTrack][iPlane]->GetN())    fGrMFTPlane[kClusterOfTrack][iPlane]   -> Draw("psame");
+    if (fGrMFTPlane[kClusterCorrectMC][iPlane]->GetN())  fGrMFTPlane[kClusterCorrectMC][iPlane] -> Draw("psame");
 
     fTxtTrackChi2[iPlane] -> Draw("same");
 
@@ -1284,9 +1416,10 @@ void AliMuonForwardTrackFinder::DrawPlanes() {
   fCanvas -> cd(1);
   fTxtMuonHistory       -> Draw();
   fTxtDummy             -> Draw("same");
-  fTxtTrackGoodClusters -> Draw("same");
+  if (fMatchingMode==kRealMatching) fTxtTrackGoodClusters -> Draw("same");
   fTxtTrackFinalChi2    -> Draw("same");
-  fTxtFinalCandidates   -> Draw("same");
+  fTxtTrackMomentum     -> Draw("same");
+  if (fMatchingMode==kRealMatching) fTxtFinalCandidates   -> Draw("same");
 
   fMrkAllClust      -> Draw("same");
   fMrkClustGoodChi2 -> Draw("same");
@@ -1315,15 +1448,20 @@ void AliMuonForwardTrackFinder::DrawPlanes() {
 
 void AliMuonForwardTrackFinder::Terminate() {
   
-  printf("\n");
-  printf("---------------------------------------------------------------------------------------------------------------\n");
-  printf("%8d  tracks analyzed\n",                                                     fCountRealTracksAnalyzed);
-  printf("%8d  tracks with MC ref\n",                                                  fCountRealTracksWithRefMC);
-  printf("%8d  tracks with MC ref & trigger match\n",                                  fCountRealTracksWithRefMC_andTrigger);
-  printf("%8d  tracks analyzed with final candidates\n",                               fCountRealTracksAnalyzedWithFinalCandidates);
-//   printf("%8d  tracks with MC ref & trigger match & pt>%3.1f GeV/c\n",                 fCountRealTracksWithRefMC_andTrigger_andGoodPt, fLowPtCut);
-//   printf("%8d  tracks with MC ref & trigger match & pt>%3.1f GeV/c & correct R_abs\n", fCountRealTracksWithRefMC_andTrigger_andGoodPt_andGoodTheta, fLowPtCut);
-  printf("---------------------------------------------------------------------------------------------------------------\n");
+  AliInfo("");
+  AliInfo("---------------------------------------------------------------------------------------------------------------");
+  AliInfo(Form("%8d  tracks analyzed",                                                     fCountRealTracksAnalyzed));
+  AliInfo(Form("%8d  tracks with MC ref",                                                  fCountRealTracksWithRefMC));
+  AliInfo(Form("%8d  tracks with MC ref & trigger match",                                  fCountRealTracksWithRefMC_andTrigger));
+  if (fMatchingMode==kRealMatching) {
+    AliInfo(Form("%8d  tracks analyzed with final candidates",                             fCountRealTracksAnalyzedWithFinalCandidates));
+  }
+  else {
+    AliInfo(Form("%8d  tracks matched with their MC clusters",                             fCountRealTracksAnalyzedWithFinalCandidates));
+  }
+//   printf("%8d  tracks with MC ref & trigger match & pt>%3.1f GeV/c",                 fCountRealTracksWithRefMC_andTrigger_andGoodPt, fLowPtCut);
+//   printf("%8d  tracks with MC ref & trigger match & pt>%3.1f GeV/c & correct R_abs", fCountRealTracksWithRefMC_andTrigger_andGoodPt_andGoodTheta, fLowPtCut);
+  AliInfo("---------------------------------------------------------------------------------------------------------------");
 
   WriteOutputTree();
   WriteHistos();
@@ -1339,8 +1477,9 @@ void AliMuonForwardTrackFinder::FillOutputTree() {
   AliDebug(1, Form("Filling output tree %p with %p having %d entries whose 1st entry is %p", 
 		   fOutputEventTree, fMuonForwardTracks, fMuonForwardTracks->GetEntries(), fMuonForwardTracks->At(0)));
   
+  //  fOutputTreeFile->cd();
   fOutputEventTree->Fill();
-  AliDebug(1, Form("\n\nFilled Tree: nEvents = %d!!!!\n\n", Int_t(fOutputEventTree->GetEntries())));
+  AliDebug(1, Form("\nFilled Tree: nEvents = %d!!!!\n", Int_t(fOutputEventTree->GetEntries())));
 
 }
 
@@ -1361,7 +1500,8 @@ void AliMuonForwardTrackFinder::WriteOutputTree() {
 
 void AliMuonForwardTrackFinder::WriteHistos() {
 
-  TFile *fileOut = new TFile(Form("%s/MuonGlobalTracking.QA.run%d.root", fOutDir.Data(), fRun), "recreate");
+  fOutputQAFile = new TFile(Form("MuonGlobalTracking.QA.run%d.root", fRun), "recreate");
+  fOutputQAFile -> cd();
 
   fHistPtSpectrometer              -> Write();
   fHistPtMuonTrackWithGoodMatch    -> Write();
@@ -1380,17 +1520,15 @@ void AliMuonForwardTrackFinder::WriteHistos() {
     fHistChi2Cluster_GoodCluster[iPlane]   -> Write();
     fHistChi2Cluster_BadCluster[iPlane]    -> Write();
     
-    fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] -> Write();
-    fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane]  -> Write();
+    fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[iPlane] -> Write();
+    fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[iPlane]  -> Write();
 
   }
 
-  fNtuFinalCandidates1     -> Write();
-  fNtuFinalBestCandidates1 -> Write();
-  fNtuFinalCandidates2     -> Write();
-  fNtuFinalBestCandidates2 -> Write();
+  fNtuFinalCandidates     -> Write();
+  fNtuFinalBestCandidates -> Write();
 
-  fileOut -> Close();
+  fOutputQAFile -> Close();
 
 }
 

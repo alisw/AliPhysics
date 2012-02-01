@@ -11,6 +11,7 @@
 #include "AliMFTSegmentation.h"
 #include "TFile.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "AliLog.h"
 #include "TString.h"
 
@@ -41,12 +42,11 @@ private:
 
 protected:
 
-  static const Int_t fMaxNPlanesMFT = 20;
+  static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;
 
-  TH1D *fHistNClustersPerEvent[fMaxNPlanesMFT], *fHistNPixelsPerCluster[fMaxNPlanesMFT];
-  TH1D *fHistClusterSizeX[fMaxNPlanesMFT], *fHistClusterSizeY[fMaxNPlanesMFT];
-
-  TClonesArray *fMFTClusterArray[fMaxNPlanesMFT];
+  TH1D *fHistNClustersPerEvent[fNMaxPlanes], *fHistNPixelsPerCluster[fNMaxPlanes];
+  TH1D *fHistClusterSizeX[fNMaxPlanes], *fHistClusterSizeY[fNMaxPlanes];
+  TH2D *fClusterScatterPlotXY[fNMaxPlanes];
 
   AliLoader *fMFTLoader;
   AliRunLoader *fRunLoader;

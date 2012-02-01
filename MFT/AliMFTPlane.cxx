@@ -24,7 +24,6 @@
 #include "TNamed.h"
 #include "THnSparse.h"
 #include "TClonesArray.h"
-#include "AliMFTPlane.h"
 #include "TAxis.h"
 #include "TPave.h"
 #include "TCanvas.h"
@@ -32,6 +31,14 @@
 #include "TEllipse.h"
 #include "TMath.h"
 #include "AliLog.h"
+#include "AliMFTConstants.h"
+#include "AliMFTPlane.h"
+
+const Double_t AliMFTPlane::fRadiusMin           = AliMFTConstants::fRadiusMin;
+const Double_t AliMFTPlane::fActiveSuperposition = AliMFTConstants::fActiveSuperposition;
+const Double_t AliMFTPlane::fHeightActive        = AliMFTConstants::fHeightActive;
+const Double_t AliMFTPlane::fHeightReadout       = AliMFTConstants::fHeightReadout;
+const Double_t AliMFTPlane::fSupportExtMargin    = AliMFTConstants::fSupportExtMargin;
 
 ClassImp(AliMFTPlane)
 
@@ -39,7 +46,7 @@ ClassImp(AliMFTPlane)
 
 AliMFTPlane::AliMFTPlane():
   TNamed(),
-  fPlaneNumber(0),
+  fPlaneNumber(-1),
   fZCenter(0), 
   fRMinSupport(0), 
   fRMax(0),
@@ -58,12 +65,6 @@ AliMFTPlane::AliMFTPlane():
   fReadoutElements(0),
   fSupportElements(0)
 {
-
-  fPlaneNumber = -1;
-
-  fActiveElements  = new TClonesArray("THnSparseC");
-  fReadoutElements = new TClonesArray("THnSparseC");
-  fSupportElements = new TClonesArray("THnSparseC");
 
   // default constructor
 
@@ -73,7 +74,7 @@ AliMFTPlane::AliMFTPlane():
 
 AliMFTPlane::AliMFTPlane(const Char_t *name, const Char_t *title):
   TNamed(name, title),
-  fPlaneNumber(0),
+  fPlaneNumber(-1),
   fZCenter(0), 
   fRMinSupport(0), 
   fRMax(0),
@@ -88,18 +89,12 @@ AliMFTPlane::AliMFTPlane(const Char_t *name, const Char_t *title):
   fEquivalentSilicon(0),
   fEquivalentSiliconBeforeFront(0),
   fEquivalentSiliconBeforeBack(0),
-  fActiveElements(0),
-  fReadoutElements(0),
-  fSupportElements(0)
+  fActiveElements(new TClonesArray("THnSparseC")),
+  fReadoutElements(new TClonesArray("THnSparseC")),
+  fSupportElements(new TClonesArray("THnSparseC"))
 {
 
-  fPlaneNumber = -1;
-
-  fActiveElements  = new TClonesArray("THnSparseC");
-  fReadoutElements = new TClonesArray("THnSparseC");
-  fSupportElements = new TClonesArray("THnSparseC");
-
-  // default constructor
+  // constructor
 
 }
 
@@ -122,12 +117,16 @@ AliMFTPlane::AliMFTPlane(const AliMFTPlane& plane):
   fEquivalentSilicon(plane.fEquivalentSilicon),
   fEquivalentSiliconBeforeFront(plane.fEquivalentSiliconBeforeFront),
   fEquivalentSiliconBeforeBack(plane.fEquivalentSiliconBeforeBack),
-  fActiveElements(plane.fActiveElements),
-  fReadoutElements(plane.fReadoutElements),
-  fSupportElements(plane.fSupportElements)
+  fActiveElements(new TClonesArray("THnSparseC")),
+  fReadoutElements(new TClonesArray("THnSparseC")),
+  fSupportElements(new TClonesArray("THnSparseC"))
 {
 
   // copy constructor
+
+  *fActiveElements  = *plane.fActiveElements;
+  *fReadoutElements = *plane.fReadoutElements;
+  *fSupportElements = *plane.fSupportElements;
   
 }
 
@@ -138,35 +137,33 @@ AliMFTPlane& AliMFTPlane::operator=(const AliMFTPlane& plane) {
   // Assignment operator
 
   // check assignement to self
-  if (this == &plane) return *this;
+  if (this != &plane) {
 
-  // base class assignement
-  TNamed::operator=(plane);
-  
-  // clear memory
-  Clear();
-
-  fPlaneNumber                  = plane.fPlaneNumber;
-  fZCenter                      = plane.fZCenter; 
-  fRMinSupport                  = plane.fRMinSupport; 
-  fRMax                         = plane.fRMax;
-  fRMaxSupport                  = plane.fRMaxSupport;
-  fPixelSizeX                   = plane.fPixelSizeX;
-  fPixelSizeY                   = plane.fPixelSizeY; 
-  fThicknessActive              = plane.fThicknessActive; 
-  fThicknessSupport             = plane.fThicknessSupport; 
-  fThicknessReadout             = plane.fThicknessReadout;
-  fZCenterActiveFront           = plane.fZCenterActiveFront;
-  fZCenterActiveBack            = plane.fZCenterActiveBack;
-  fEquivalentSilicon            = plane.fEquivalentSilicon;
-  fEquivalentSiliconBeforeFront = plane.fEquivalentSiliconBeforeFront;
-  fEquivalentSiliconBeforeBack  = plane.fEquivalentSiliconBeforeBack;
-  fActiveElements               = plane.fActiveElements;
-  fReadoutElements              = plane.fReadoutElements;
-  fSupportElements              = plane.fSupportElements;
+    // base class assignement
+    TNamed::operator=(plane);
+    
+    fPlaneNumber                  = plane.fPlaneNumber;
+    fZCenter                      = plane.fZCenter; 
+    fRMinSupport                  = plane.fRMinSupport; 
+    fRMax                         = plane.fRMax;
+    fRMaxSupport                  = plane.fRMaxSupport;
+    fPixelSizeX                   = plane.fPixelSizeX;
+    fPixelSizeY                   = plane.fPixelSizeY; 
+    fThicknessActive              = plane.fThicknessActive; 
+    fThicknessSupport             = plane.fThicknessSupport; 
+    fThicknessReadout             = plane.fThicknessReadout;
+    fZCenterActiveFront           = plane.fZCenterActiveFront;
+    fZCenterActiveBack            = plane.fZCenterActiveBack;
+    fEquivalentSilicon            = plane.fEquivalentSilicon;
+    fEquivalentSiliconBeforeFront = plane.fEquivalentSiliconBeforeFront;
+    fEquivalentSiliconBeforeBack  = plane.fEquivalentSiliconBeforeBack;
+    *fActiveElements              = *plane.fActiveElements;
+    *fReadoutElements             = *plane.fReadoutElements;
+    *fSupportElements             = *plane.fSupportElements;
+  }
 
   return *this;
-
+  
 }
 
 //====================================================================================================================================================
@@ -206,7 +203,7 @@ Bool_t AliMFTPlane::Init(Int_t    planeNumber,
   fRMax = fRMinSupport + (fHeightActive-fActiveSuperposition) * 
     (Int_t((fRMax-fRMinSupport-fHeightActive)/(fHeightActive-fActiveSuperposition))+1) + fHeightActive;
   
-  fRMaxSupport = TMath::Sqrt(fHeightActive*(rMax-fHeightActive) + fRMax*fRMax) + fSupportExtMargin;
+  fRMaxSupport = TMath::Sqrt(fHeightActive*(2.*rMax-fHeightActive) + fRMax*fRMax) + fSupportExtMargin;
  
   return kTRUE;
  
@@ -397,7 +394,7 @@ THnSparseC* AliMFTPlane::GetSupportElement(Int_t id) {
 
 //====================================================================================================================================================
 
-void AliMFTPlane::DrawPlane(Char_t *opt) {
+void AliMFTPlane::DrawPlane(Option_t *opt) {
 
   // ------------------- "FRONT" option ------------------
 
@@ -415,7 +412,7 @@ void AliMFTPlane::DrawPlane(Char_t *opt) {
     h->SetYTitle("y [cm]");
     h->Draw();
 
-    printf("Created hist\n");
+    AliInfo("Created hist");
 
     TEllipse *supportExt = new TEllipse(0.0, 0.0, fRMaxSupport, fRMaxSupport);
     TEllipse *supportInt = new TEllipse(0.0, 0.0, fRMinSupport, fRMinSupport);
