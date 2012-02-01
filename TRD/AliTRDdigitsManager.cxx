@@ -629,7 +629,7 @@ AliTRDarrayDictionary *AliTRDdigitsManager::GetDictionary(Int_t det
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit * const digit) const
+Int_t AliTRDdigitsManager::GetTrack(Int_t track, const AliTRDdigit * const digit) const
 {
   // 
   // Returns the MC-track numbers from the dictionary for a given digit

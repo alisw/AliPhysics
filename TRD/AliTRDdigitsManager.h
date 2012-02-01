@@ -69,7 +69,7 @@ class AliTRDdigitsManager : public TObject {
   void                        RemoveIndexes(Int_t det);
   void                        ClearIndexes(Int_t det);
   
-  Int_t                       GetTrack(Int_t track, AliTRDdigit * const digit) const;
+  Int_t                       GetTrack(Int_t track, const AliTRDdigit * const digit) const;
   Short_t                     GetDigitAmp(Int_t row, Int_t col, Int_t time, Int_t det) const;
   UChar_t                     GetPadStatus(Int_t row, Int_t col, Int_t time, Int_t det) const;
 

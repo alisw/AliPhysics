@@ -36,8 +36,8 @@ public:
 
   AliTRDcluster();
   AliTRDcluster(Int_t det, UChar_t col, UChar_t row, UChar_t time, const Short_t *sig, UShort_t volid);
-  AliTRDcluster(Int_t det, Float_t q, Float_t *pos, Float_t *sig
-	      , Int_t *tracks, Char_t npads, Short_t * const signals
+  AliTRDcluster(Int_t det, Float_t q, const Float_t *pos, const Float_t *sig
+	      , const Int_t *tracks, Char_t npads, Short_t * const signals
 	      , UChar_t col, UChar_t row, UChar_t time
 	      , Char_t timebin, Float_t center, UShort_t volid);
   AliTRDcluster(const AliTRDtrackletWord *const tracklet, Int_t det, UShort_t volid);

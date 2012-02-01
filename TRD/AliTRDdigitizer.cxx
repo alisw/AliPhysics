@@ -192,36 +192,23 @@ AliTRDdigitizer::~AliTRDdigitizer()
   // AliTRDdigitizer destructor
   //
 
-  if (fDigitsManager) {
-    delete fDigitsManager;
-    fDigitsManager      = 0;
-  }
+  delete fDigitsManager;
+  fDigitsManager      = 0;
 
-  if (fSDigitsManager) {
-    // s-digitsmanager will be deleted via list
-    fSDigitsManager     = 0;
-  }
+  // s-digitsmanager will be deleted via list
+  fSDigitsManager     = 0;
+  fSDigitsManagerList->Delete();
+  delete fSDigitsManagerList;
+  fSDigitsManagerList = 0;
 
-  if (fSDigitsManagerList) {
-    fSDigitsManagerList->Delete();
-    delete fSDigitsManagerList;
-    fSDigitsManagerList = 0;
-  }
+  delete [] fMasks;
+  fMasks       = 0;
 
-  if (fMasks) {
-    delete [] fMasks;
-    fMasks       = 0;
-  }
+  delete fMcmSim;
+  fMcmSim = 0;
 
-  if (fMcmSim) {
-    delete fMcmSim;
-    fMcmSim = 0;
-  }
-
-  if (fGeo) {
-    delete fGeo;
-    fGeo = 0;
-  }
+  delete fGeo;
+  fGeo = 0;
 
 }
 

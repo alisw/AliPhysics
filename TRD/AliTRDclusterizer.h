@@ -13,7 +13,6 @@
 
 #include <TNamed.h>
 
-#include "AliTRDrawStream.h"
 #include "AliTRDgeometry.h"
 
 class TFile;
@@ -26,6 +25,7 @@ class AliRawReader;
 class AliTRD;
 class AliTRDcluster;
 
+class AliTRDrawStream;
 class AliTRDarrayADC;
 class AliTRDarraySignal;
 class AliTRDdigitsManager;
@@ -136,55 +136,54 @@ protected:
 
   virtual void     AddClusterToArray(AliTRDcluster* cluster);
 
+  const AliTRDReconstructor *fReconstructor;     //! reconstructor
+  AliRunLoader        *fRunLoader;                //! Run Loader
+  TTree               *fClusterTree;              //! Tree with the cluster
+  TClonesArray        *fRecPoints;                //! Array of clusters
+  TClonesArray        *fTracklets;                //! Array of online tracklets
+  TClonesArray        *fTracks;                   //! Array of GTU tracks
+
+  TTree               *fTrackletTree;             //! Tree for tracklets
+
+  AliTRDdigitsManager *fDigitsManager;            //! TRD digits manager
+
+  UInt_t              **fTrackletContainer;       //! tracklet container
+					          // legacy code to avoid breakint AliHLTTRDClusterizer
+					          // but it's useless
+
+  Int_t                fRawVersion;               //  Expected raw version of the data - default is 2
+
+  AliTRDtransform     *fTransform;                //! Transforms the reconstructed space points
+
+  AliTRDarrayADC      *fDigits;                   // Array holding the digits
+  AliTRDSignalIndex   *fIndexes;                  // Array holding the indexes to the digits
+  Short_t              fMaxThresh;                // Threshold value for the maximum
+  Short_t              fMaxThreshTest;            // Threshold value for the maximum to test agains
+  Short_t              fSigThresh;                // Threshold value for the digit signal
+  Float_t              fMinMaxCutSigma;           // Threshold value for the maximum (cut noise)
+  Float_t              fMinLeftRightCutSigma;     // Threshold value for the sum pad (cut noise)
+  Int_t                fLayer;                    // Current layer of the detector
+  Int_t                fDet;                      // Current detecor
+  UShort_t             fVolid;                    // Volume ID
+  Int_t                fColMax;                   // Number of Colums in one detector
+  Int_t                fTimeTotal;                // Number of time bins
+  AliTRDCalROC        *fCalGainFactorROC;         // Calibration object with pad wise values for the gain factors
+  Float_t              fCalGainFactorDetValue;    // Calibration value for chamber wise noise
+  AliTRDCalROC        *fCalNoiseROC;              // Calibration object with pad wise values for the noise
+  Float_t              fCalNoiseDetValue;         // Calibration value for chamber wise noise
+  AliTRDCalSingleChamberStatus *fCalPadStatusROC; // Calibration object with the pad status
+  AliTRDCalOnlineGainTableROC *fCalOnGainROC;     // Calibration table of online gain factors
+  Int_t                fClusterROC;               // The index to the first cluster of a given ROC
+  Int_t                firstClusterROC;           // The number of cluster in a given ROC
+  Int_t                fNoOfClusters;             // Number of Clusters already processed and still owned by the clusterizer
+  Int_t                fBaseline;                 // Baseline of the ADC values
+  AliTRDrawStream     *fRawStream;                // Raw data streamer
+  UInt_t               fTrgFlags[AliTRDgeometry::kNsector]; // trigger flags
+
 private:
   inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
 
-protected:
-  const AliTRDReconstructor *fReconstructor; //! reconstructor
-  AliRunLoader        *fRunLoader;           //! Run Loader
-  TTree               *fClusterTree;         //! Tree with the cluster
-  TClonesArray        *fRecPoints;           //! Array of clusters
-  TClonesArray        *fTracklets;           //! Array of online tracklets
-  TClonesArray        *fTracks;              //! Array of GTU tracks
-
-  TTree               *fTrackletTree;        //! Tree for tracklets
-
-  AliTRDdigitsManager *fDigitsManager;       //! TRD digits manager
-
-  UInt_t              **fTrackletContainer;  //! tracklet container
-					     // legacy code to avoid breakint AliHLTTRDClusterizer
-					     // but it's useless
-
-  Int_t                fRawVersion;          //  Expected raw version of the data - default is 2
-
-  AliTRDtransform     *fTransform;           //! Transforms the reconstructed space points
-
-  AliTRDarrayADC      *fDigits;               // Array holding the digits
-  AliTRDSignalIndex   *fIndexes;              // Array holding the indexes to the digits
-  Short_t              fMaxThresh;            // Threshold value for the maximum
-  Short_t              fMaxThreshTest;        // Threshold value for the maximum to test agains
-  Short_t              fSigThresh;            // Threshold value for the digit signal
-  Float_t              fMinMaxCutSigma;       // Threshold value for the maximum (cut noise)
-  Float_t              fMinLeftRightCutSigma; // Threshold value for the sum pad (cut noise)
-  Int_t                fLayer;                // Current layer of the detector
-  Int_t                fDet;                  // Current detecor
-  UShort_t             fVolid;                // Volume ID
-  Int_t                fColMax;               // Number of Colums in one detector
-  Int_t                fTimeTotal;            // Number of time bins
-  AliTRDCalROC        *fCalGainFactorROC;     // Calibration object with pad wise values for the gain factors
-  Float_t              fCalGainFactorDetValue;// Calibration value for chamber wise noise
-  AliTRDCalROC        *fCalNoiseROC;          // Calibration object with pad wise values for the noise
-  Float_t              fCalNoiseDetValue;     // Calibration value for chamber wise noise
-  AliTRDCalSingleChamberStatus *fCalPadStatusROC; // Calibration object with the pad status
-  AliTRDCalOnlineGainTableROC *fCalOnGainROC; // Calibration table of online gain factors
-  Int_t                fClusterROC;           // The index to the first cluster of a given ROC
-  Int_t                firstClusterROC;       // The number of cluster in a given ROC
-  Int_t                fNoOfClusters;         // Number of Clusters already processed and still owned by the clusterizer
-  Int_t                fBaseline;             // Baseline of the ADC values
-  AliTRDrawStream     *fRawStream;            // Raw data streamer
-  UInt_t               fTrgFlags[AliTRDgeometry::kNsector]; // trigger flags
-
-  ClassDef(AliTRDclusterizer,6)               //  TRD clusterfinder
+  ClassDef(AliTRDclusterizer,6)                   //  TRD clusterfinder
 
 };
 

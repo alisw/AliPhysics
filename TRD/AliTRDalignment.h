@@ -52,8 +52,8 @@ class AliTRDalignment : public TObject {
 
   // simple getters (for other getters see below)
 
-  void GetSm(int sm, double * const a)               {for (int i = 0; i < 6; i++) a[i] = fSm[sm][i];}
-  void GetCh(int ch, double * const a)               {for (int i = 0; i < 6; i++) a[i] = fCh[ch][i];}
+  void GetSm(int sm, double * const a) const         {for (int i = 0; i < 6; i++) a[i] = fSm[sm][i];}
+  void GetCh(int ch, double * const a) const         {for (int i = 0; i < 6; i++) a[i] = fCh[ch][i];}
   
   // dumping on screen
 

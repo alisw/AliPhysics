@@ -100,11 +100,8 @@ AliTRDarraySignal::~AliTRDarraySignal()
   // AliTRDarraySignal destructor
   //
 
-  if (fSignal)   
-    {
-      delete [] fSignal;
-      fSignal=0;  
-    }
+  delete [] fSignal;
+  fSignal=0;  
 
 }
 

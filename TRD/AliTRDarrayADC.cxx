@@ -100,11 +100,8 @@ AliTRDarrayADC::~AliTRDarrayADC()
   // AliTRDarrayADC destructor
   //
 
-  if(fADC)
-    {
-      delete [] fADC;
-      fADC=0;
-    }
+  delete [] fADC;
+  fADC=0;
 
 }
 

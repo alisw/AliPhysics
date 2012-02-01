@@ -106,11 +106,8 @@ AliTRDarrayDictionary::~AliTRDarrayDictionary()
   //   AliTRDarrayDictionary destructor
   //
 
-  if(fDictionary)
-    {
-      delete [] fDictionary;
-      fDictionary=0;
-    }
+  delete [] fDictionary;
+  fDictionary=0;
 
 }
 

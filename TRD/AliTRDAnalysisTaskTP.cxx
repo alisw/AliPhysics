@@ -69,9 +69,12 @@ AliTRDAnalysisTaskTP::AliTRDAnalysisTaskTP()
   fArray(0x0),
   fFile(0x0)
 {
-  // default constructor
+  //
+  // Default constructor
+  //
 
 }
+
 //____________________________________________________________
 AliTRDAnalysisTaskTP::AliTRDAnalysisTaskTP(const char *name) :
   AliAnalysisTaskSE(name),
@@ -87,23 +90,35 @@ AliTRDAnalysisTaskTP::AliTRDAnalysisTaskTP(const char *name) :
   fArray(0x0),
   fFile(0x0)
 {
+  //
   // Constructor
+  //
+
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TObjArray::Class());
 
 }
+
 //____________________________________________________________
-AliTRDAnalysisTaskTP::~AliTRDAnalysisTaskTP() {
+AliTRDAnalysisTaskTP::~AliTRDAnalysisTaskTP() 
+{
+  //
   // destructor
+  //
 
 }
+
 //____________________________________________________________
-void AliTRDAnalysisTaskTP::UserCreateOutputObjects() {
+void AliTRDAnalysisTaskTP::UserCreateOutputObjects() 
+{
+  //
+  // Create the output objects
+  //
 
   AliAlignObjParams alobj;  // initialize align obj.  
   TString option = GetOption();
 
-if (!fArrHists) fArrHists=new TObjArray;
+  if (!fArrHists) fArrHists=new TObjArray;
 
   fModpop = new TH2D("modpop","modpop",90,-0.5,89.5,30,-0.5,29.5);
   fModpop->SetXTitle("module nr");
@@ -115,8 +130,13 @@ if (!fArrHists) fArrHists=new TObjArray;
   fTree->Branch("SP","AliTrackPointArray", &fArray);
 
 }
+
 //____________________________________________________________
-void AliTRDAnalysisTaskTP::UserExec(Option_t *) {
+void AliTRDAnalysisTaskTP::UserExec(Option_t *) 
+{
+  //
+  // Exec function
+  //
 
   //AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
   fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
@@ -262,11 +282,14 @@ void AliTRDAnalysisTaskTP::UserExec(Option_t *) {
   PostData(1,fTree);
   PostData(2,fArrHists);
 }
+
 //____________________________________________________________
-void AliTRDAnalysisTaskTP::Terminate(Option_t */*option*/) {
+void AliTRDAnalysisTaskTP::Terminate(Option_t */*option*/) 
+{
   //
   // Terminate
   //
+
 }
 
 
