@@ -479,7 +479,9 @@ void AliTRDmcmSim::Draw(Option_t* const option)
       Float_t padWidth = 0.635 + 0.03 * (fDetector % 6);
       Float_t offset   = padWidth/256. * ((((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) - ((18*4*2 - 18*2 - 3) << 7)); // revert adding offset in FitTracklet
       Int_t   ndrift   = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos) >> 5;
-      Float_t slope    = trkl->GetdY() * 140e-4 / ndrift;
+      Float_t slope    = 0;
+      if (ndrift)
+	slope = trkl->GetdY() * 140e-4 / ndrift;
 
       Int_t t0 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS, fDetector, fRobPos, fMcmPos);
       Int_t t1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE, fDetector, fRobPos, fMcmPos);
@@ -2405,12 +2407,14 @@ void AliTRDmcmSim::PrintPidLutHuman()
    std::cout << "nBinsQ0: " << nBinsQ0 << std::endl;
    std::cout << "LUT table length: " << fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength) << std::endl;
 
-   for(UInt_t addr=AliTRDtrapConfig::fgkDmemAddrLUTStart; addr< addrEnd; addr++) {
-      result = fTrapConfig->GetDmemUnsigned(addr);
-      std::cout << addr << " # x: " << ((addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)%((nBinsQ0)/4))*4 << ", y: " <<(addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)/(nBinsQ0/4)
-		<< "  #  " <<((result>>0)&0xFF)
-		<< " | "  << ((result>>8)&0xFF)
-		<< " | "  << ((result>>16)&0xFF)
-		<< " | "  << ((result>>24)&0xFF) << std::endl;
+   if (nBinsQ0>0) {
+     for(UInt_t addr=AliTRDtrapConfig::fgkDmemAddrLUTStart; addr< addrEnd; addr++) {
+       result = fTrapConfig->GetDmemUnsigned(addr);
+       std::cout << addr << " # x: " << ((addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)%((nBinsQ0)/4))*4 << ", y: " <<(addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)/(nBinsQ0/4)
+		 << "  #  " <<((result>>0)&0xFF)
+		 << " | "  << ((result>>8)&0xFF)
+		 << " | "  << ((result>>16)&0xFF)
+		 << " | "  << ((result>>24)&0xFF) << std::endl;
+     }
    }
 }

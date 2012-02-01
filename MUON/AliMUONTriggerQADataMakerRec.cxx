@@ -776,7 +776,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       } // iReg
 
       Float_t readoutErrors[AliMUONQAIndices::kNtrigStructErrorBins] = {
-	((Float_t)rawStreamTrig.GetLocalEoWErrors())/((Float_t)countAllBoards),
+	countAllBoards>0?((Float_t)rawStreamTrig.GetLocalEoWErrors())/((Float_t)countAllBoards):0,
 	((Float_t)rawStreamTrig.GetRegEoWErrors())/16.,
 	((Float_t)rawStreamTrig.GetGlobalEoWErrors())/6.,
 	((Float_t)rawStreamTrig.GetDarcEoWErrors())/2.

@@ -266,7 +266,8 @@ AliMpDCSNamer::DCS2DE(Int_t chId, Int_t side, Int_t dcsNumber) const
     }
     else if ( side == 1 ) // right -> Inside
     {
-      de = (13 + dcsNumber) % nofDE;
+      if (nofDE>0)
+	de = (13 + dcsNumber) % nofDE;
     }
   }
   
@@ -358,7 +359,8 @@ AliMpDCSNamer::DetElemId2DCS(Int_t detElemId, Int_t& side, Int_t &chId) const
       }
       else {
 	side = 1;
-	dcsNumber = (5 + dcsNumber) % nofDE;
+	if (nofDE>0)
+	  dcsNumber = (5 + dcsNumber) % nofDE;
       }
       AliDebug(10, Form("detElemId %i  -> MT%i_side%i_L%i", detElemId, chId, side, dcsNumber));
     }

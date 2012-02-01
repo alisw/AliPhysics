@@ -963,7 +963,8 @@ Bool_t AliTRDgtuTMU::CalculatePID(AliTRDtrackGTU *track)
       pidSum += trk->GetPID();
       nTracklets++;
     }
-    track->SetPID(pidSum/nTracklets);
+    if (nTracklets>0)
+      track->SetPID(pidSum/nTracklets);
 
     return kTRUE;
   }

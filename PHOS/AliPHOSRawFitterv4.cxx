@@ -241,7 +241,9 @@ Bool_t AliPHOSRawFitterv4::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     return kTRUE;
   }
   Double_t c1 = (np*sxy - sx*sy)/det;  //slope
-  Double_t c0 = (sy-c1*sx)/np; //offset
+  Double_t c0 = 0;
+  if (np>0)
+    c0 = (sy-c1*sx)/np; //offset
   if(c1 == 0){
     return kTRUE;
   }
