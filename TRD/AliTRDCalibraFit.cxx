@@ -6131,8 +6131,8 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean, Double_t nentries)
   fCurrentCoef[0]  = 0.0;
   fCurrentCoefE    = 0.0;
 
-  Double_t chisqr;
-  Int_t    ndf;
+  Double_t chisqr = 0.0;
+  Int_t    ndf = 0;
   TF1 *fitsnr = LanGauFit(projch,&fr[0],&sv[0]
                                 ,&pllo[0],&plhi[0]
                                 ,&fp[0],&fpe[0]
@@ -6228,8 +6228,8 @@ void AliTRDCalibraFit::FitBisCHEx(TH1* projch, Double_t mean, Double_t nentries)
   fCurrentCoef[0]  = 0.0;
   fCurrentCoefE    = 0.0;
 
-  Double_t chisqr;
-  Int_t    ndf;
+  Double_t chisqr = 0.0;
+  Int_t    ndf = 0;
   
   TF1 *fitsnr = 0x0;
   
