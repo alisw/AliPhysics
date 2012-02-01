@@ -75,7 +75,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 		return 0x0;
 	}
 
-	TFile* fileCuts = new TFile(cutFile);
+	TFile* fileCuts = TFile::Open(cutFile);
 	AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true

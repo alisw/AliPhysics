@@ -125,7 +125,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
 
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts=new TFile(finname.Data());
+  TFile* filecuts=TFile::Open(finname.Data());
   if(!filecuts->IsOpen()){
     cout<<"Input file not found: using std cut object"<<endl;
     stdcuts=kTRUE;

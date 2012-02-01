@@ -17,7 +17,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
   }
 
 
-  TFile* filecuts=new TFile(filename.Data());
+  TFile* filecuts=TFile::Open(filename.Data());
   if(!filecuts->IsOpen()){
     cout<<"Error: Input file not found!"<<endl;
     return 0;
