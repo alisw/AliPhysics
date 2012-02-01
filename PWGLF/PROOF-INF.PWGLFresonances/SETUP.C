@@ -2,13 +2,13 @@ void SETUP()
 {
 
    gSystem->SetDynamicPath(Form("%s:%s", gSystem->pwd(), gSystem->GetDynamicPath()));
-   CheckLoadLibrary("libPWG2resonances");
+   CheckLoadLibrary("libPWGLFresonances");
 
-   gROOT->ProcessLine(".include PWG2resonances");
-   gROOT->ProcessLine(".include PWG2resonances/RESONANCES");
+   gROOT->ProcessLine(".include PWGLFresonances");
+   gROOT->ProcessLine(".include PWGLFresonances/RESONANCES");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG2resonances_INCLUDE", "PWG2resonances/RESONANCES");
+   gSystem->Setenv("PWGLFresonances_INCLUDE", "PWGLFresonances/RESONANCES");
 }
 
 Int_t CheckLoadLibrary(const char* library)
