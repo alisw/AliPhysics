@@ -310,11 +310,19 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(const Int_t absID, const Int_t bc,
   if(absID < 0 || absID >= 24*48*geom->GetNumberOfSuperModules()) return kFALSE;
   
   Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-  geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta); 
+  
+  if(!geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)) 
+  {
+    // cell absID does not exist
+    amp=0; time = 1.e9;
+    return kFALSE; 
+  }
+  
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
   
   // Do not include bad channels found in analysis,
-  if( IsBadChannelsRemovalSwitchedOn() && GetEMCALChannelStatus(imod, ieta, iphi)) {
+  if( IsBadChannelsRemovalSwitchedOn() && GetEMCALChannelStatus(imod, ieta, iphi)) 
+  {
     return kFALSE;
   }
   
@@ -877,12 +885,12 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  fEMCALRecalibrationFactors = new TObjArray(10);
-  for (int i = 0; i < 10; i++) 
+  fEMCALRecalibrationFactors = new TObjArray(12);
+  for (int i = 0; i < 12; i++) 
     fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),
                                              Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
   //Init the histograms with 1
-  for (Int_t sm = 0; sm < 10; sm++) {
+  for (Int_t sm = 0; sm < 12; sm++) {
     for (Int_t i = 0; i < 48; i++) {
       for (Int_t j = 0; j < 24; j++) {
         SetEMCALChannelRecalibrationFactor(sm,i,j,1.);
@@ -909,10 +917,10 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
   for (int i = 0; i < 4; i++) 
     fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
                                                  Form("hAllTimeAvBC%d",i),  
-                                                 48*24*10,0.,48*24*10)          );
+                                                 48*24*12,0.,48*24*12)          );
   //Init the histograms with 1
   for (Int_t bc = 0; bc < 4; bc++) {
-    for (Int_t i = 0; i < 48*24*10; i++) 
+    for (Int_t i = 0; i < 48*24*12; i++) 
       SetEMCALChannelTimeRecalibrationFactor(bc,i,0.);
   }
   
@@ -932,9 +940,9 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  fEMCALBadChannelMap = new TObjArray(10);
+  fEMCALBadChannelMap = new TObjArray(12);
   //TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 12; i++) {
     fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
   }
   
