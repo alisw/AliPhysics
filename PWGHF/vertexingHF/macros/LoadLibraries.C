@@ -1,3 +1,5 @@
+Int_t setupPar(const char* pararchivename);
+
 void LoadLibraries(Bool_t useParFiles=kFALSE) {
 
   gSystem->Load("libTree.so");
