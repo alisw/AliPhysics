@@ -69,7 +69,7 @@ void AliAnaConvCorrPhotonJet::CreateHistograms() {
 
 void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesArray * const photons, const  TClonesArray *const pions ) const{
   //See header file for documetation
-  Int_t trackIDs[4];
+  Int_t trackIDs[4]={0};
 
   for(Int_t i = 0; i < photons->GetEntriesFast(); i++) {
     AliAODConversionParticle * photon = dynamic_cast<AliAODConversionParticle*>(photons->At(i));
