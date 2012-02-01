@@ -187,9 +187,9 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
   Int_t irow = -1;
   Int_t icol = -1;
 
-  Int_t blHeaderWord[8];
-  Int_t dspHeaderWord[10];
-  Int_t pbusHeaderWord[4];
+  Int_t blHeaderWord[8]={0};
+  Int_t dspHeaderWord[10]={0};
+  Int_t pbusHeaderWord[4]={0};
 
   Int_t blRawDataLength  = 0;
   Int_t dspRawDataLength = 0;
