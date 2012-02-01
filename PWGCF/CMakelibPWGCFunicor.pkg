@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG2unicor                                                    #
+# Package File for PWGCFunicor                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -43,8 +43,8 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG2unicorLinkDef.h)
+set ( DHDR  PWGCFunicorLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/UNICOR ANALYSIS STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGCF/UNICOR ANALYSIS STEER/ESD STEER/STEERBase)

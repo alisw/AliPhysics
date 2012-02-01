@@ -8,10 +8,10 @@ void SETUP() {
   CheckLoadLibrary("libESD.so");
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libANALYSISalice");
-  CheckLoadLibrary("libPWG2unicor");
+  CheckLoadLibrary("libPWGCFunicor");
 
-  gROOT->ProcessLine(".include PWG2unicor/UNICOR");
-  gSystem->Setenv("PWG2unicor_INCLUDE", "PWG2unicor/UNICOR");
+  gROOT->ProcessLine(".include PWGCFunicor/UNICOR");
+  gSystem->Setenv("PWGCFunicor_INCLUDE", "PWGCFunicor/UNICOR");
 }
 //=============================================================================
 Int_t CheckLoadLibrary(const char* library) {
