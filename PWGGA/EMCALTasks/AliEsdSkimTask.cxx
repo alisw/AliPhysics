@@ -15,9 +15,10 @@
 #include "AliESDtrackCuts.h"
 #include "AliEsdTrackExt.h"
 #include "AliEventplane.h"
+#include "AliInputEventHandler.h"
 #include "AliMultiplicity.h"
-#include "AliVEventHandler.h"
 #include "AliPicoTrack.h"
+#include "AliVEventHandler.h"
 
 //_________________________________________________________________________________________________
 AliEsdSkimTask::AliEsdSkimTask(const char *opt) :
@@ -89,6 +90,7 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
           header->SetActiveTriggerInputs(name,i+48);
       }
     }
+    header->SetUniqueID(((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected());
     if (am->GetInputEventHandler()) {
       TTree *tree = am->GetInputEventHandler()->GetTree();
       if (tree) {
