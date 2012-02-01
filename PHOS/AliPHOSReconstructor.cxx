@@ -617,7 +617,7 @@ void AliPHOSReconstructor::readTRUParameters(AliPHOSTriggerParameters* parameter
 	  {
 	    Int_t ped[112];
 	    
-	    char ch_s[35];
+	    char ch_s[36];
 	    char *ch_s_p = ch_s;
 	    //Int_t nlines = 0;
 	    
