@@ -27,46 +27,28 @@
 #-----------------------------------------------------------------------#
 
 set ( SRCS  
-#    SPECTRA/AliProtonAnalysisBase.cxx 
-#    SPECTRA/AliProtonAnalysis.cxx 
-#    SPECTRA/AliProtonQAAnalysis.cxx 
-#    SPECTRA/AliAnalysisTaskProtons.cxx 
-#    SPECTRA/AliAnalysisTaskProtonsQA.cxx 
-#    SPECTRA/AliAnalysisTaskChargedHadronSpectra.cxx 
-    SPECTRA/AliAnalysisTaskCheckV0.cxx 
-    SPECTRA/AliAnalysisTaskCheckCascade.cxx 
-    SPECTRA/AliAnalysisTaskCheckPerformanceCascade.cxx 
-    SPECTRA/AliAnalysisTaskStrange.cxx 
-    SPECTRA/AliAnalysisTaskPerformanceStrange.cxx 
-#    SPECTRA/AliProtonFeedDownAnalysisTask.cxx 
-#    SPECTRA/AliProtonFeedDownAnalysis.cxx 
-#    SPECTRA/AliProtonAbsorptionCorrection.cxx 
-#    SPECTRA/AliProtonSpectraCorrection.cxx 
-#    SPECTRA/AliProtonCorrectionAnalysisTask.cxx 
-#    SPECTRA/AliAnalysisCentralCutMC.cxx 
-#    SPECTRA/AliAnalysisCentralCutESD.cxx 
-#    SPECTRA/AliAnalysisCentralCutEvtMC.cxx 
-#    SPECTRA/AliAnalysisCentralCutEvtESD.cxx 
-#    SPECTRA/AliAnalysisCentralExtrapolate.cxx 
-#    SPECTRA/AliAnalysisTaskCentral.cxx 
-#    SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx 
-#    SPECTRA/AliITSsadEdxFitter.cxx 
-#    SPECTRA/Fit/AliBWTools.cxx 
-#    SPECTRA/Fit/AliBWFunc.cxx 
-#    SPECTRA/Fit/AliLatexTable.cxx 
-#    SPECTRA/AliAnalysisChargedHadronSpectraITSTruncatedMeanTask.cxx 
-    )
+  STRANGENESS/AliAnalysisTaskCheckCascade.cxx
+  STRANGENESS/AliAnalysisTaskCheckCascadePbPb.cxx
+  STRANGENESS/AliAnalysisTaskCheckPerformanceCascade.cxx
+  STRANGENESS/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx
+  STRANGENESS/LambdaK0PbPb/AliAnalysisCentralitySelector.cxx
+  STRANGENESS/LambdaK0PbPb/AliAnalysisTaskCTauPbPb.cxx
+  STRANGENESS/LambdaK0PbPb/AliAnalysisTaskCTauPbPbaod.cxx
+  STRANGENESS/LambdaK0PbPb/AliAnalysisTaskLukeAOD.cxx
+  STRANGENESS/LambdaK0PbPb/AliAnalysisTaskLukeV0.cxx
+  STRANGENESS/LambdaK0PbPb/AliAnalysisTaskPerformanceStrange.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR PWG2spectraLinkDef.h)
+set ( DHDR PWGLFSTRANGENESSLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/SPECTRA PWG2/SPECTRA/Fit STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGLF/STRANGENESS PWGLF/STRANGENESS/LambdaK0PbPb STEER/ESD STEER/STEERBase)
 
-install (DIRECTORY SPECTRA/macros
-         DESTINATION PWG2/SPECTRA 
+install (DIRECTORY PWGLF/STRANGENESS/macros
+         DESTINATION PWGLF/STRANGENESS 
          PATTERN .svn EXCLUDE)
 #
 # EOF
