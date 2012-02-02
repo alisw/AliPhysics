@@ -210,10 +210,10 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
                                                )
 {
   //Bad cluster histograms
-  if(clus->E() > 5) 
-    printf("AliAnaCalorimeterQA::BadClusterHistograms() - Event %d - Calorimeter %s \n \t  E %f, n cells %d, max cell absId %d, maxCellFrac %f\n",
-           GetReader()->GetEventNumber(), fCalorimeter.Data(), 
-           clus->E(),clus->GetNCells(),absIdMax,maxCellFraction);
+  
+  //  printf("AliAnaCalorimeterQA::BadClusterHistograms() - Event %d - Calorimeter %s \n \t  E %f, n cells %d, max cell absId %d, maxCellFrac %f\n",
+  //         GetReader()->GetEventNumber(), fCalorimeter.Data(), 
+  //         clus->E(),clus->GetNCells(),absIdMax,maxCellFraction);
     
   fhBadClusterEnergy     ->Fill(clus->E());
   Double_t tof = clus->GetTOF()*1.e9;
