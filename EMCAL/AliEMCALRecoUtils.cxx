@@ -44,7 +44,6 @@
 #include "AliVCaloCells.h"
 #include "AliLog.h"
 #include "AliPID.h"
-#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"

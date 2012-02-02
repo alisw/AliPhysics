@@ -27,7 +27,7 @@ class TH2F;
 class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
-class AliESDEvent;
+#include "AliESDEvent.h"
 #include "AliLog.h"
 
 // EMCAL includes
