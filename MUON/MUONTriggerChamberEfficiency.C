@@ -16,9 +16,14 @@
 /* $Id$ */
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "Riostream.h"
+
 // ROOT includes
 #include "TGrid.h"
 #include "TString.h"
+#include "TFile.h"
+#include "TH1.h"
 
 // MUON includes
 #include "AliMUONCDB.h"
@@ -27,7 +32,6 @@
 #include "AliMUONTriggerChamberEfficiency.h"
 #include "AliCDBManager.h"
 #include "AliCDBRunRange.h"
-#include "Riostream.h"
 
 #endif
 
@@ -77,7 +81,7 @@ void MUONTriggerChamberEfficiency(TString inputFile = "./MUON.TriggerEfficiencyM
 }
 
 //____________________________________________________________
-void ShowOCDBmap(Int_t runNumber = 0, TString specificCDB="", TString ocdbPath = "local://$ALICE_ROOT/OCDB")
+void ShowOCDBmap(Int_t runNumber = 0, TString specificCDB="", TString ocdbPath = "local://$ALICE_ROOT/OCDB", TString runType="Full")
 {
 /// \param runNumber (default 0)
 ///     run number
@@ -88,13 +92,105 @@ void ShowOCDBmap(Int_t runNumber = 0, TString specificCDB="", TString ocdbPath =
   if ( ocdbPath.BeginsWith("alien://") || ocdbPath.BeginsWith("raw://"))
     TGrid::Connect("alien://");
 
-  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath.Data());
+  if (!ocdbPath.CompareTo("MC"))
+    AliCDBManager::Instance()->SetDefaultStorage(ocdbPath.Data(),runType.Data());
+  else
+    AliCDBManager::Instance()->SetDefaultStorage(ocdbPath.Data());
+  
   if ( !specificCDB.IsNull() )
     AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/TriggerEfficiency", specificCDB.Data());
   AliCDBManager::Instance()->SetRun(runNumber);
   AliMUONCalibrationData calib(runNumber);
 
   AliMUONTriggerChamberEfficiency* trigChEff = new AliMUONTriggerChamberEfficiency(calib.TriggerEfficiency());
-  trigChEff->DisplayEfficiency();
+  trigChEff->DisplayEfficiency(kFALSE,kFALSE);
 }
 
+
+//____________________________________________________________
+void FillHisto(TH1* histo, Int_t nevents)
+{
+  /// Fill histogram with global value
+  for ( Int_t ibin=1; ibin<=histo->GetXaxis()->GetNbins(); ++ibin ) {
+    Double_t binCenter = histo->GetXaxis()->GetBinCenter(ibin);
+    for ( Int_t ievent=0; ievent<nevents; ++ievent ) {
+      histo->Fill(binCenter);
+    }
+  }
+}
+
+//____________________________________________________________
+void BuildDefaultMap(TString outFilename="/tmp/defTrigChEff.root", Double_t globalValue = 1., Int_t nevents = 100000)
+{
+  /// Build default map (all boards with the same chosen value)
+  
+  // Create histograms
+  enum { kBendingEff, kNonBendingEff, kBothPlanesEff, kAllTracks, kNcounts};
+  TString countTypeName[kNcounts] = {"bendPlane", "nonBendPlane","bothPlanes", "allTracks"};
+
+  const Char_t* yAxisTitle = "counts";
+
+  const Int_t kNboards = 234; //AliMpConstants::NofLocalBoards();
+  const Int_t kFirstTrigCh = 11;//AliMpConstants::NofTrackingChambers()+1;
+  const Int_t kNchambers = 4;
+  const Int_t kNslats = 18;
+
+  Int_t chamberBins = kNchambers;
+  Float_t chamberLow = kFirstTrigCh-0.5, chamberHigh = kFirstTrigCh+kNchambers-0.5;
+  const Char_t* chamberName = "chamber";
+
+  Int_t slatBins = kNslats;
+  Float_t slatLow = 0-0.5, slatHigh = kNslats-0.5;
+  const Char_t* slatName = "slat";
+
+  Int_t boardBins = kNboards;
+  Float_t boardLow = 1-0.5, boardHigh = kNboards+1.-0.5;
+  const Char_t* boardName = "board";
+
+  TString baseName, histoName, histoTitle;
+  TList* histoList = new TList();
+  histoList->SetOwner();
+  
+  TH1F* histo;
+
+  for(Int_t icount=0; icount<kNcounts; icount++){
+    histoName = Form("%sCountChamber", countTypeName[icount].Data());
+    histo = new TH1F(histoName, histoName,
+                     chamberBins, chamberLow, chamberHigh);
+    histo->GetXaxis()->SetTitle(chamberName);
+    histo->GetYaxis()->SetTitle(yAxisTitle);
+    Double_t nfills = ( icount == kAllTracks ) ? nevents : globalValue * (Double_t)nevents;
+    FillHisto(histo, (Int_t)nfills);
+    histoList->AddLast(histo);
+  } // loop on counts
+
+  for(Int_t icount=0; icount<kNcounts; icount++){
+    for(Int_t ch=0; ch<kNchambers; ch++){
+      histoName = Form("%sCountSlatCh%i", countTypeName[icount].Data(), kFirstTrigCh+ch);
+      histo = new TH1F(histoName, histoName,
+                       slatBins, slatLow, slatHigh);
+      histo->GetXaxis()->SetTitle(slatName);
+      histo->GetYaxis()->SetTitle(yAxisTitle);
+      Double_t nfills = ( icount == kAllTracks ) ? nevents : globalValue * (Double_t)nevents;
+      FillHisto(histo, (Int_t)nfills);
+      histoList->AddLast(histo);
+    } // loop on chamber
+  } // loop on counts
+
+  for(Int_t icount=0; icount<kNcounts; icount++){
+    for(Int_t ch=0; ch<kNchambers; ch++){
+      histoName = Form("%sCountBoardCh%i", countTypeName[icount].Data(), kFirstTrigCh+ch);
+      histo = new TH1F(histoName, histoName,
+                       boardBins, boardLow, boardHigh);
+      histo->GetXaxis()->SetTitle(boardName);
+      histo->GetYaxis()->SetTitle(yAxisTitle);
+      Double_t nfills = ( icount == kAllTracks ) ? nevents : globalValue * (Double_t)nevents;
+      FillHisto(histo, (Int_t)nfills);
+      histoList->AddLast(histo);
+    } // loop on chamber
+  } // loop on counts
+
+  TFile* outFile = TFile::Open(outFilename,"create");
+  histoList->Write("triggerChamberEff",TObject::kSingleKey);
+  outFile->Close();
+}

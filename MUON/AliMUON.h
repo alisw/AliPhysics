@@ -113,7 +113,7 @@ class AliMUON : public  AliDetector
 	{ fTriggerCoinc44 = trigCoinc44; }
     virtual Int_t GetTriggerCoinc44() const;
                  /// Set trigger chamber efficiency by cells
-    virtual void SetTriggerEffCells(Bool_t trigEffCells = false)
+    virtual void SetTriggerEffCells(Bool_t trigEffCells = true)
 	{ fTriggerEffCells = trigEffCells; }
     virtual Bool_t GetTriggerEffCells() const;
                  /// Set off generation of noisy digits
