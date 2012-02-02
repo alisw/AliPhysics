@@ -69,9 +69,15 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
-  if(year==2010) cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
-  else           cu->SetEMCALGeometryName("EMCAL_COMPLETEV1"); 
-
+  if     (year==2010) cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
+  else if(year==2011) cu->SetEMCALGeometryName("EMCAL_COMPLETEV1"); 
+  else                cu->SetEMCALGeometryName("EMCAL_COMPLETE12SMV1"); 
+  
+  AliEMCALRecoUtils* reco = cu->GetEMCALRecoUtils();
+  reco->SwitchOnRejectExoticCell() ; // reject exotic cells, fill different histograms for exotic clusters and good clusters
+  reco->SetExoticCellDiffTimeCut(10000); // Open  
+  reco->SetExoticCellFractionCut(0.95);  // 1-Ecross/Ecell > 0.95 -> out
+  reco->SetExoticCellMinAmplitudeCut(0.75); // 750 MeV    
   
   cu->SetDebug(-1);
   if(kPrintSettings) cu->Print("");	
@@ -88,44 +94,55 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   emcalQA->SwitchOnCorrelation();
   emcalQA->SwitchOffFillAllTH3Histogram();
   emcalQA->SwitchOffFillAllPositionHistogram();
+  emcalQA->SwitchOffFillAllPositionHistogram2();
+  emcalQA->SwitchOnStudyBadClusters();
 
   //Set Histrograms bins and ranges
-  emcalQA->SetHistoPtRangeAndNBins(0, 100, 200) ;
-  emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
+  emcalQA->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 100, 200) ;
+  emcalQA->GetHistogramRanges()->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
+  emcalQA->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
   
-  if(year==2010){  
+  if     (year==2010)
+  {  
     emcalQA->SetNumberOfModules(4); 
-    emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 200) ;
-    emcalQA->SetHistoXRangeAndNBins(-230,90,120);
-    emcalQA->SetHistoYRangeAndNBins(370,450,40);
+    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 200) ;
+    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-230,90,120);
+    emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(370,450,40);
   }
-  else{            
+  else if(year==2011)
+  {            
     emcalQA->SetNumberOfModules(10); 
-    emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 200) ;
-    emcalQA->SetHistoXRangeAndNBins(-600,90,200);
-    emcalQA->SetHistoYRangeAndNBins(100,450,100);
+    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 191*TMath::DegToRad(), 200) ;
+    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-600,90,200);
+    emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(100,450,100);
+  }
+  else 
+  {
+    emcalQA->SetNumberOfModules(12); 
+    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 200) ; // revise
+    emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-700,90,200); // revise
+    emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(50,450,100);  // revise     
   }
   
-  emcalQA->SetHistoMassRangeAndNBins(0., 1, 400) ;
-  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
-  emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
-  emcalQA->SetHistodEdxRangeAndNBins(0.,200.,200);
-  emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
-  emcalQA->SetHistoTimeRangeAndNBins(300.,900,300);
-  emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
-  emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  emcalQA->SetHistoNClusterCellRangeAndNBins(0,500,500);
-  emcalQA->SetHistoZRangeAndNBins(-400,400,200);
-  emcalQA->SetHistoRRangeAndNBins(400,450,25);
-  emcalQA->SetHistoV0SignalRangeAndNBins(0,5000,500);
-  emcalQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
-  emcalQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
+  emcalQA->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 1, 400) ;
+  emcalQA->GetHistogramRanges()->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
+  emcalQA->GetHistogramRanges()->SetHistoPOverERangeAndNBins(0,10.,100);
+  emcalQA->GetHistogramRanges()->SetHistodEdxRangeAndNBins(0.,200.,200);
+  emcalQA->GetHistogramRanges()->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
+  emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins(300.,900,300);
+  emcalQA->GetHistogramRanges()->SetHistoRatioRangeAndNBins(0.,2.,100);
+  emcalQA->GetHistogramRanges()->SetHistoVertexDistRangeAndNBins(0.,500.,500);
+  emcalQA->GetHistogramRanges()->SetHistoNClusterCellRangeAndNBins(0,500,500);
+  emcalQA->GetHistogramRanges()->SetHistoZRangeAndNBins(-400,400,200);
+  emcalQA->GetHistogramRanges()->SetHistoRRangeAndNBins(400,450,25);
+  emcalQA->GetHistogramRanges()->SetHistoV0SignalRangeAndNBins(0,5000,500);
+  emcalQA->GetHistogramRanges()->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
+  emcalQA->GetHistogramRanges()->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
 	
   if(kPrintSettings) emcalQA->Print("");	
   
   // #### Configure Maker ####
-  AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
+  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
   maker->SetReader(reader);//pointer to reader
   maker->SetCaloUtils(cu); //pointer to calorimeter utils
   maker->AddAnalysis(emcalQA,0);

@@ -137,7 +137,7 @@ void ana(Int_t mode=mLocal)
     mgr->ConnectOutput (counterINT, 1, coutputINT);
     
     
-    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
     AliAnalysisTaskCaloTrackCorrelation *taskQAEMC = AddTaskCalorimeterQA(kInputData,2011,kFALSE,kMC,"","kEMC7");
     taskQAEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
     AliAnalysisTaskCaloTrackCorrelation *taskQAINT = AddTaskCalorimeterQA(kInputData,2011,kFALSE,kMC,"","kINT7");
