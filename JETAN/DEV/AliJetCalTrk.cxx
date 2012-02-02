@@ -102,6 +102,7 @@ void AliJetCalTrkTrack::Clear(Option_t* /*option*/)
 void AliJetCalTrkTrack::Print(const Option_t* option)
 {
   cout << "Track: " << option << ", Pt: " << GetPt() << ", Eta: " << GetEta() << ", Phi: " << GetPhi() << endl;
+  if (!option) TObject::Print();
 }
 
 //...........................................................................
