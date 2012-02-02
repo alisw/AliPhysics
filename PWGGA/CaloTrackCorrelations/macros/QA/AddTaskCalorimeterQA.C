@@ -2,12 +2,12 @@
 // Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
 //                
 //
-AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, 
-                                                         Int_t year = 2011, 
-                                                         Bool_t kPrintSettings = kFALSE,
-                                                         Bool_t kSimulation = kFALSE,
-                                                         TString outputFile = "", 
-                                                         const char *suffix="default")
+AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data, 
+                                                          Int_t year = 2011, 
+                                                          Bool_t kPrintSettings = kFALSE,
+                                                          Bool_t kSimulation = kFALSE,
+                                                          TString outputFile = "", 
+                                                          const char *suffix="default")
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
   
@@ -140,7 +140,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data,
   
   // Create task
   //===========================================================================
-  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("CalorimeterPerformance_%s",suffix));
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("CalorimeterPerformance_%s",suffix));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetAnalysisMaker(maker);	
