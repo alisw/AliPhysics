@@ -189,6 +189,8 @@ static Bool_t AcceptTrack(const AliESDtrack *t) {
   if (findable <= 0) return kFALSE;
   if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
 
+  if (TMath::Abs(t->Eta()) > 0.8) return kFALSE;
+
   return kTRUE;   
 }
 
