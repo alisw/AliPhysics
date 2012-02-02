@@ -11,7 +11,7 @@ AliAnalysisTaskSELambdac *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool
 
   Bool_t stdcuts=kFALSE;
   TFile* filecuts=TFile::Open(finname.Data());
-  if(!filecuts->IsOpen()){
+  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
    cout<<"Input file not found: using std cut object"<<endl;
    stdcuts=kTRUE;
   }

@@ -12,7 +12,7 @@ AliAnalysisTaskSEDStarJets *AddTaskDStarJets(Bool_t theMCon=kTRUE)
   } 
 
   TFile* filecuts=TFile::Open("DStartoKpipiCuts.root");
-  if(!filecuts->IsOpen()){
+  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
     cout<<"Input file not found: exit"<<endl;
     return;
   }

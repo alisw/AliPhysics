@@ -22,8 +22,8 @@ AliAnalysisTaskSESelectHF4Prong *AddTaskSelectHF4Prong()
   mgr->SetOutputEventHandler(aodHandler);
  
   //Cuts loading
-    TFile* filecuts=TFile::Open("Charm4ProngCutsDef.root");
-  if(!filecuts->IsOpen()){
+  TFile* filecuts=TFile::Open("Charm4ProngCutsDef.root");
+  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
     cout<<"Input file not found: exit"<<endl;
     return;
   }

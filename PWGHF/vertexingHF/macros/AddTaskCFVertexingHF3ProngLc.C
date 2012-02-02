@@ -82,6 +82,11 @@ AliCFContainer *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4Lctop
 	}
 	
 	TFile* fileCuts = TFile::Open(cutFile);
+	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
+	  AliError("Wrong cut file");
+	  return 0x0;
+	}
+
 	AliRDHFCutsLctopKpi *cutsLctopKpi = (AliRDHFCutsLctopKpi*)fileCuts->Get("LctopKpiProdCuts");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
