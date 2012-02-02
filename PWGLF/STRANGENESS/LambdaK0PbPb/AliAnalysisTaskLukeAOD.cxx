@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliAnalysisTaskLukeAOD.cxx 46301 2011-01-06 14:25:27Z agheata $ */
+/* $Id: AliAnalysisTaskExAOD.cxx 46301 2011-01-06 14:25:27Z agheata $ */
 
-/* AliAnalysisTaskLukeAOD.cxx
+/* AliAnalysisTaskExAOD.cxx
  *
  * Template task producing a P_t spectrum and pseudorapidity distribution.
  *
@@ -23,9 +23,9 @@
  *
  * Based on tutorial example from offline pages
  * Edited by Arvinder Palaha
- * Edited by Luke Hanratty for AODs
+ * Edited by Luke Hanratty for AODS
  */
-#include "AliAnalysisTaskLukeAOD.h"
+#include "AliAnalysisTaskExAOD.h"
 
 #include "Riostream.h"
 #include "TChain.h"
@@ -62,10 +62,10 @@
 
 
 
-ClassImp(AliAnalysisTaskLukeAOD)
+ClassImp(AliAnalysisTaskExAOD)
 
 //________________________________________________________________________
-AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD() // All data members should be initialised here
+AliAnalysisTaskExAOD::AliAnalysisTaskExAOD() // All data members should be initialised here
 :AliAnalysisTaskSE(),
 fOutput(0),
 fPIDResponse(0),
@@ -224,7 +224,7 @@ fHistMcRapAFoundK0Pt(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD(const char *name) // All data members should be initialised here
+AliAnalysisTaskExAOD::AliAnalysisTaskExAOD(const char *name) // All data members should be initialised here
 :AliAnalysisTaskSE(name),
 fOutput(0),
 fPIDResponse(0),
@@ -387,7 +387,7 @@ fHistMcRapAFoundK0Pt(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskLukeAOD::~AliAnalysisTaskLukeAOD()
+AliAnalysisTaskExAOD::~AliAnalysisTaskExAOD()
 {
     // Destructor. Clean-up the output list, but not the histograms that are put inside
     // (the list is owner and will clean-up these histograms). Protect in PROOF case.
@@ -397,7 +397,7 @@ AliAnalysisTaskLukeAOD::~AliAnalysisTaskLukeAOD()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
+void AliAnalysisTaskExAOD::UserCreateOutputObjects()
 {
     // Create histograms
     // Called once (on the worker node)
@@ -728,29 +728,27 @@ void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-//this function used to reject daughter tracks
+
 static Bool_t AcceptTrack(const AliAODTrack *t, double cutMinNClustersTPC, double cutRatio) 
 {
 	if (!t->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
 	//if (t->GetKinkIndex(0)>0) return kFALSE;
 	
-	Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);		// number of crossed rows
+	Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
 	if (nCrossedRowsTPC < cutMinNClustersTPC) return kFALSE;
-	Int_t findable=t->GetTPCNclsF();							// number of findable clusters
+	Int_t findable=t->GetTPCNclsF();
 	if (findable <= 0) return kFALSE;
-	if (nCrossedRowsTPC/findable < cutRatio) return kFALSE;		//ratio of the above
+	if (nCrossedRowsTPC/findable < cutRatio) return kFALSE;
 	
 	return kTRUE;
 }
 
 //________________________________________________________________________
-// this function used to reject v0s on non-particle-specific conditions
 static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, double cutCosPa, double cutNImpact, double cutDCA, double cutEta, double cutMinNClustersTPC, double cutRatio) 
 {
 	
 	if (v1->GetOnFlyStatus()) return kFALSE;
 	
-	//check that positive & negative daughters are the right way round, and categorise accordingly
 	int nnum = 1, pnum = 0;	
 	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughter(nnum);
 	if(ntracktest->Charge() > 0){nnum = 0; pnum = 1;}	
@@ -761,7 +759,6 @@ static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, doubl
 	const AliAODTrack *ptrack1=(AliAODTrack *)v1->GetDaughter(pnum);
 	if (!AcceptTrack(ptrack1, cutMinNClustersTPC, cutRatio)) return kFALSE;
 	
-	// check impact parameter of each track to the primary vertex
 	Float_t impact=v1->DcaNegToPrimVertex();
 	if (TMath::Abs(impact)<0.1) return kFALSE;
 	if (TMath::Abs(impact)<cutNImpact && cutNImpact != -999) return kFALSE;
@@ -769,15 +766,12 @@ static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, doubl
 	if (TMath::Abs(impact)<0.1) return kFALSE;
 	if (TMath::Abs(impact)<cutNImpact && cutNImpact != -999) return kFALSE;
 	
-	// check DCA between daughters
 	Double_t dca=v1->DcaV0Daughters();
 	if (TMath::Abs(dca)>cutDCA && cutDCA != -999) return kFALSE;
 	
-	// check cosine of pointing angle of the v0
 	Double_t cpa=v1->CosPointingAngle(aod->GetPrimaryVertex());
 	if (cpa<cutCosPa && cutCosPa != -999) return kFALSE;
 	
-	// check eta of the daughter tracks
 	Double_t etaN = v1->PseudoRapNeg();
 	Double_t etaP = v1->PseudoRapPos();
 	if ((TMath::Abs(etaN)>cutEta || TMath::Abs(etaP)>cutEta) && cutEta != -999) return kFALSE;
@@ -786,10 +780,9 @@ static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, doubl
 }
 
 //________________________________________________________________________
-//this function used to reject v0s on particle-specific conditions
 static Bool_t AcceptV0_particle(const AliAODv0 *v1, int type,  double cutcTau, double cutRapidity, Double_t decayL) 
 {
-	// define cTau (particle dependent) then check it
+	
 	Double_t cTau = 0;
 	if(type == 1)
 	{cTau = decayL*(v1->MassLambda())/(v1->P());}
@@ -800,7 +793,6 @@ static Bool_t AcceptV0_particle(const AliAODv0 *v1, int type,  double cutcTau, d
 	
 	if (cTau < cutcTau && cTau != -999 ) return kFALSE;
 	
-	// define rapidity then check it
 	Double_t rap = 0;
 	if(type == 1 || type == 2)
 	{rap = v1->RapLambda();}
@@ -812,11 +804,10 @@ static Bool_t AcceptV0_particle(const AliAODv0 *v1, int type,  double cutcTau, d
 }
 
 //________________________________________________________________________
-// this function used to further restrict v0s with low pt (less than 2 GeV/c)
-static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int type, double cutBetheBloch, Double_t decayL) 
+static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int type, double cutBetheBloch, Double_t decayL, bool isMonteCarlo) 
 {
 	
-	// calculate and check cTau
+	
 	Double_t cTau = 0;
 	if(type == 1)
 	{cTau = decayL*(v1->MassLambda())/(v1->P());}
@@ -827,7 +818,6 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 	
 	if (cTau > 30 && (type ==1 || type ==2) && TMath::Sqrt(v1->Pt2V0()) < 1) return kFALSE;
 	
-	// check PID of particles in TPC
 	int nnum = 1, pnum = 0;
 	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughter(nnum);
 	if(ntracktest->Charge() > 0){nnum = 0; pnum = 1;}	
@@ -845,10 +835,10 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 	{
 		if(type == 1)
 		{nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 ) return kFALSE;}
+			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
 		if(type == 0 || type == 2)
 		{nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kPion);
-			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 ) return kFALSE;}
+			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
 		
 	}
 	
@@ -856,10 +846,10 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 	{
 		if(type == 2)
 		{nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0) return kFALSE;}
+			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
 		if(type == 0 || type == 1)
 		{nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kPion);
-			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0) return kFALSE;}
+			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
 		
 	}
 	
@@ -868,7 +858,7 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 
 
 //________________________________________________________________________
-void AliAnalysisTaskLukeAOD::UserExec(Option_t *) 
+void AliAnalysisTaskExAOD::UserExec(Option_t *) 
 {
     // Main loop
     // Called for each event
@@ -878,10 +868,11 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	// parameters used for most cuts, to minimise editing
 	double cutCosPa(0.998), cutcTau(2);
 	double cutNImpact(-999), cutDCA(0.4);
-	double cutBetheBloch(3);
+	double cutBetheBloch(3); // NOTE - BB cut only applies to data, must be accounted for when constructing corrected yields
 	double cutMinNClustersTPC(70), cutRatio(0.8);
-	double isMonteCarlo(true);
-	double cutEta(-999), cutRapidity(0.5);
+	bool isMonteCarlo(true); 
+	int isMCtype(1);    //1 = Pure Hijing only, 0 = Anything, -1 = Injected only
+	double cutEta(0.8), cutRapidity(0.5);
 	
     // Create pointer to reconstructed event
 	AliAODEvent *aod=(AliAODEvent *)InputEvent();	
@@ -892,7 +883,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		return;
 	}
 	
-	// Physics selection now done in run macro not here
+	
 	//Bool_t isSelected = (maskIsSelected && AliVEvent::kMB);
 	/*if (!isSelected) 
 	 {
@@ -901,14 +892,14 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	 return;
 	 }*/
 	
-	// find centrality of event & fill histogram
 	AliCentrality* centrality = aod->GetCentrality();
 	Double_t centPercentile = centrality->GetCentralityPercentile("V0M");
 	fHistCentrality->Fill(centPercentile);
 	
 	/********MC Loop************************************/
 	
-	// this loop used to analyse generated MC tracks.
+	int isInjected = -1;
+	
 	if(isMonteCarlo) 
 	{
 		
@@ -924,7 +915,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 			
 			AliAODMCHeader *mcHdr=(AliAODMCHeader*)list->FindObject(AliAODMCHeader::StdBranchName());
 			
-			// get mc primary vertex, restrict to z < 10 cm
 			Double_t mcXv=0., mcYv=0., mcZv=0.;
 			mcXv=mcHdr->GetVtxX(); mcYv=mcHdr->GetVtxY(); mcZv=mcHdr->GetVtxZ();
 			if (TMath::Abs(mcZv) > 10.)
@@ -932,7 +922,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 				fHistLog->Fill(76);
 			}  
 			else{
-				// histogram of Z vertex used in local macros to count Nbins
 				fHistMCZVertex->Fill(mcZv);
 				
 				if(centPercentile >= 0.0001 && centPercentile <= 5.0)
@@ -956,6 +945,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 				for(int iMCtrack = 0; iMCtrack<ntrk0; iMCtrack++)
 					
 				{	
+					
 					//booleans to check if track is La, Lb, K0 and primary
 					bool lambdaMC = false;
 					bool antilambdaMC = false;
@@ -963,6 +953,16 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 					bool isprimaryMC = false;
 					
 					AliAODMCParticle *mcPart =(AliAODMCParticle*)stack->UncheckedAt(iMCtrack);
+					
+					if ((mcPart->GetStatus() == 21) || (mcPart->GetPdgCode() == 443 && mcPart->GetMother() == -1)) 
+					{
+						isInjected = iMCtrack;
+					}
+					
+					if(isInjected >= 0 && isMCtype == 1)
+					{continue;}
+					if(isInjected < 0 && isMCtype == -1)
+					{continue;}
 					
 					Int_t code=mcPart->GetPdgCode();
 					if (code != kK0Short && code != kLambda0 && code != kLambda0Bar ) 
@@ -988,9 +988,9 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 					if(motherLabel >= 0)
 					{motherType = mcMother->GetPdgCode();}
 					
-					// this block of code is used to include primary Sigma decays as primary lambda/antilambda
+					// this block of code is used to include primary Sigma0 decays as primary lambda/antilambda
 					bool sigma0MC = false;
-					if(motherType == 3212 || motherType == -3212 || motherType == 3322 || motherType == -3322 || motherType == 3312 || motherType == -3312)
+					if(motherType == 3212 || motherType == -3212)// || motherType == 3322 || motherType == -3322 || motherType == 3312 || motherType == -3312)
 					{
 						if(mcMother->IsPhysicalPrimary())
 						{sigma0MC = true;}
@@ -1122,7 +1122,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		return;
 	}
 	
-	// find primary vertex, make sure z < 10 cm
 	Double_t zv=vtx->GetZ(), xv=vtx->GetX(), yv=vtx->GetY();
 	
 	if (TMath::Abs(zv) > 10.)
@@ -1133,7 +1132,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	
 	fHistZVertex->Fill(zv);
 	
-	// z-vertex histograms used to count n events in local macros
 	if(centPercentile >= 0.0001 && centPercentile <= 5.0)
 	{fHistZVertexCent0005->Fill(zv);}
 	if(centPercentile > 5.0 && centPercentile <= 10.0)
@@ -1165,12 +1163,10 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
             continue; 
 		}
 		
-		// booleans to select v0s as valid candidates
 		Bool_t lambdaCandidate = kTRUE; 
 		Bool_t antilambdaCandidate = kTRUE; 
 		Bool_t k0Candidate = kTRUE; 
 		
-		//only accept particles which could plausibly fall in the mass window
 		if (v0->MassLambda() < 1.08 || v0->MassLambda() > 1.2)
 		{lambdaCandidate = kFALSE;}
         if (v0->MassAntiLambda() < 1.08 || v0->MassAntiLambda() > 1.2)
@@ -1178,11 +1174,9 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
         if (v0->MassK0Short() < 0.414 || v0->MassK0Short() > 0.582)
 		{k0Candidate = kFALSE;}
 		
-		//reject v0s which are not candidates for any of the 3 particles
 		if(lambdaCandidate == kFALSE && antilambdaCandidate == kFALSE && k0Candidate == kFALSE)
 		{continue;}
 		
-		//calculate basic parameters
 		Double_t cosPA=v0->CosPointingAngle(aod->GetPrimaryVertex());
 		Double_t xyz[3]; 
 		v0->GetSecondaryVtx(xyz);
@@ -1190,14 +1184,12 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		Double_t dca=v0->DcaV0Daughters();
 		Double_t eta=v0->PseudoRapV0();
 		
-		// reject v0s which fail general selection criteria
 		if(!AcceptV0_general(v0,aod,cutCosPa,cutNImpact,cutDCA,cutEta,cutMinNClustersTPC, cutRatio))
 		{ 
 			fHistLog->Fill(86);
 			continue; 
 		}
 		
-		//generate positive & negative daughter, the right way round
 		int nnum = 1, pnum = 0;
 		const AliAODTrack *ntracktest=(AliAODTrack *)v0->GetDaughter(nnum);
 		if(ntracktest->Charge() > 0){nnum = 0; pnum = 1;}	
@@ -1216,11 +1208,21 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		{ 
 			fHistLog->Fill(45);
 		}
-		// create PID object
 		const AliAODPid *pid_p1=ptrack1->GetDetPid();
 		const AliAODPid *pid_n1=ntrack1->GetDetPid();
-
-		//reject as candidates v0s which fail selection as a particular particle. 0=k0, 1=La, 2=Lb
+		
+		
+		/*if(peterCuts)
+		{
+			const AliAODTrack *ptrack1=(AliAODTrack *)v0->GetDaughter(0);
+			if(ntrack1->Pt() < 0.160 || ptrack1->Pt() < 0.160) continue;
+			
+			Double_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
+			Double_t radius = TMath::Sqrt(r2);
+			if(radius <= 0.9 || radius >= 100) continue;
+			
+		}*/
+		
 		if(!AcceptV0_particle(v0,1,cutcTau, cutRapidity, decayL))
 		{ lambdaCandidate = kFALSE; }
 		if(!AcceptV0_particle(v0,2,cutcTau, cutRapidity, decayL))
@@ -1228,29 +1230,28 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		if(!AcceptV0_particle(v0,0,cutcTau, cutRapidity, decayL))
 		{ k0Candidate = kFALSE; }
 		
-		//reject as candidates v0s of low momentum which fail selction as a particular particle
 		if(TMath::Sqrt(v0->Pt2V0())<2)
 		{
-			if(!AcceptV0_lowpt(v0,fPIDResponse,1,cutBetheBloch,decayL))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,1,cutBetheBloch,decayL,isMonteCarlo))
 			{ lambdaCandidate = kFALSE; }
-			if(!AcceptV0_lowpt(v0,fPIDResponse,2,cutBetheBloch,decayL))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,2,cutBetheBloch,decayL,isMonteCarlo))
 			{ antilambdaCandidate = kFALSE; }
-			if(!AcceptV0_lowpt(v0,fPIDResponse,0,cutBetheBloch,decayL))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,0,cutBetheBloch,decayL,isMonteCarlo))
 			{ k0Candidate = kFALSE; }
 		}
 		
-		//discard v0s which are note candidates for any of the three particles
 		if(lambdaCandidate == kFALSE && antilambdaCandidate == kFALSE && k0Candidate == kFALSE)
 		{continue;}
 		
+		fHistLog->Fill(7);
+        fHistPt->Fill(TMath::Sqrt(v0->Pt2V0()));
+        fHistEta->Fill(v0->PseudoRapV0());
+		
 		bool feeddown = false;
 		
-		//MC loop to select only primary lambda, antilambda and K0s
 		if(isMonteCarlo)
 		{
-			//this boolean is used to reject particles which don't get through stack check or have nothing associated with the v0
 			bool passedTests = false;
-			
 			TList *list = aod->GetList();
 			TClonesArray *stack = 0x0;
 			stack = (TClonesArray*)list->FindObject(AliAODMCParticle::StdBranchName());
@@ -1261,8 +1262,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 			}
 			else
 			
-			{	
-				//find particle associated with negative track, work backwards to v0
+			{
 				Int_t negAssLabel = TMath::Abs(ntrack1->GetLabel());
 				if(negAssLabel>=0 && negAssLabel < stack->GetEntriesFast())
 				{
@@ -1272,6 +1272,14 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 				{
 					AliAODMCParticle *mcv0 = (AliAODMCParticle *)stack->UncheckedAt(v0Label);
 					passedTests = true;
+					
+					if ((v0Label >= isInjected && isInjected >= 0 && isMCtype == 1) || (v0Label < isInjected && isInjected >= 0 && isMCtype == -1)) 
+					{
+						lambdaCandidate = false;
+						k0Candidate = false;
+						antilambdaCandidate = false;
+					}
+					
 						if(mcv0->GetPdgCode() != kLambda0)
 						{
 							lambdaCandidate = false;
@@ -1289,7 +1297,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 					Int_t motherType = -1;
 					bool sigma0MC2 = false;
 					
-					// need to check mother to include sigma decays with the primary lambdas
 					if(motherLabel >= 0 && v0Label < stack->GetEntriesFast() )
 					{
 						AliAODMCParticle *mcMother = (AliAODMCParticle *)stack->UncheckedAt(motherLabel);
@@ -1297,13 +1304,17 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 					
 					// this block of code is used to include primary Sigma0 decays as primary lambda/antilambda
 					
+						if ((motherLabel >= isInjected && isInjected >= 0 && isMCtype == 1) || (motherLabel < isInjected && isInjected >= 0 && isMCtype == -1)) 
+						{
+							lambdaCandidate = false;
+							k0Candidate = false;
+							antilambdaCandidate = false;
+						}
 						if(motherType == 3212 || motherType == -3212)
 						{
 							if(mcMother->IsPhysicalPrimary())
 							{sigma0MC2 = true;}
 						}
-						
-						//this block checks to see if the lambda came from a Xi - useful for crosschecks
 						if(motherType == 3322 || motherType == -3322 || motherType == 3312 || motherType == -3312 )
 						{
 							if(mcMother->IsPhysicalPrimary())
@@ -1311,7 +1322,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 						}
 					}
 					
-					//discard particles which aren't primary, or from sigma/xi decays
 					if(!sigma0MC2 && !mcv0->IsPhysicalPrimary() && !feeddown)
 					{
 						lambdaCandidate = false;
@@ -1322,7 +1332,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 				}
 			}
 			
-			//discard particles which didn't pass the stack or v0 check
 			if(passedTests == false)
 			{
 				lambdaCandidate = false;
@@ -1332,14 +1341,6 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		
 		}
 		
-		//discard v0s which are note candidates for any of the three particles
-		if(lambdaCandidate == kFALSE && antilambdaCandidate == kFALSE && k0Candidate == kFALSE)
-		{continue;}
-		
-		// fill some generic histograms
-		fHistLog->Fill(7);
-        fHistPt->Fill(TMath::Sqrt(v0->Pt2V0()));
-        fHistEta->Fill(v0->PseudoRapV0());
 		
 		
 		if(lambdaCandidate)
@@ -1487,7 +1488,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		}
     }
 	
-	/********End of Track loop for reconstructed event*****************************/
+	/********End of V0 loop for reconstructed event*****************************/
 	
 	
 	
@@ -1500,7 +1501,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisTaskLukeAOD::Terminate(Option_t *) 
+void AliAnalysisTaskExAOD::Terminate(Option_t *) 
 {
     // Draw result to screen, or perform fitting, normalizations
     // Called once at the end of the query
@@ -1522,7 +1523,7 @@ void AliAnalysisTaskLukeAOD::Terminate(Option_t *)
     // NEW HISTO should be retrieved from the TList container in the above way,
     // so it is available to draw on a canvas such as below
 	
-    TCanvas *c = new TCanvas("AliAnalysisTaskLukeAOD","P_{T} & #eta",10,10,1020,510);
+    TCanvas *c = new TCanvas("AliAnalysisTaskExAOD","P_{T} & #eta",10,10,1020,510);
     c->Divide(2,1);
     c->cd(1)->SetLogy();
     fHistPt->DrawCopy("E");
