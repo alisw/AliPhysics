@@ -143,6 +143,7 @@ void AliJetFillCalTrkTrack::Exec(Option_t* const /*option*/)
         if((fVEvt->InheritsFrom("AliAODEvent"))){
           // AOD case ....
           AliAODTrack *trAOD = dynamic_cast<AliAODTrack*> (tr);
+          if(!trAOD) continue;
        	  Bool_t bGood = false;
 	  if(filterType == 0)bGood = true;
 	  else if(filterType == 1)bGood = trAOD->IsHybridTPCConstrainedGlobal();

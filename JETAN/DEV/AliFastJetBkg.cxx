@@ -87,7 +87,7 @@ void AliFastJetBkg::BkgFastJetb(Double_t& rho,Double_t& sigma,
   // Bkg estimation
    
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader; 
-  Bool_t debug  = header->GetDebug();     // debug option 
+  Int_t debug  = header->GetDebug();     // debug option
   if(debug>0) cout<<"===============  AliFastJetBkg::BkgFastJetb()  =========== "<<endl;
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
   
@@ -109,7 +109,7 @@ void AliFastJetBkg::BkgFastJetWoHardest(Double_t& rho,Double_t& sigma,
   // Bkg estimation without hardest jet
 
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader; 
-  Bool_t debug  = header->GetDebug();     // debug option 
+  Int_t debug  = header->GetDebug();     // debug option
   if(debug) cout<<"===============  AliFastJetBkg::BkgWoHardest()  =========== "<<endl;
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
   
@@ -131,7 +131,7 @@ void AliFastJetBkg::CalcRhob(Double_t& median,Double_t&
   // calculate rho using the fastjet method
 
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
 
   fastjet::Strategy strategy = header->GetStrategy();
   fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
@@ -197,7 +197,7 @@ void AliFastJetBkg::CalcRhoWoHardest(Double_t& median,Double_t&
   // calculate rho (without the hardest jet) using the fastjet method
 
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
 
   fastjet::Strategy strategy = header->GetStrategy();
   fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
@@ -263,7 +263,7 @@ Float_t AliFastJetBkg::BkgFastJet()
   // Return background  
  
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
 
   if(debug>0) cout<<"===============  AliFastJetBkg::BkgFastJet()  =========== "<<endl;
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
@@ -283,7 +283,7 @@ Float_t AliFastJetBkg::BkgChargedFastJet()
   // Background for charged jets
   
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
 
   if(debug>0) cout<<"===============  AliFastJetBkg::BkgChargedFastJet()  =========== "<<endl;
 
@@ -306,7 +306,7 @@ Float_t AliFastJetBkg::BkgStat()
   // background subtraction using statistical method
  
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
 
   if(debug>0) cout<<"==============AliFastJetBkg::BkgStat()============="<<endl;
   //TO BE IMPLEMENTED 
@@ -325,7 +325,7 @@ Float_t AliFastJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
   // two largest jets with the given R from the estimation of new rho. 
 
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
 
   if(debug>0) cout<<"==============AliFastJetBkg::SubtractFastJetBackgCone()============="<<endl;
 
@@ -450,7 +450,7 @@ Double_t AliFastJetBkg::CalcRho(vector<fastjet::PseudoJet> inputParticles,Double
   // calculate rho using the fastjet method
 
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
 
   fastjet::Strategy strategy = header->GetStrategy();
   fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
