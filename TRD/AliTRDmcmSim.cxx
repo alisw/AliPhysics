@@ -498,7 +498,7 @@ void AliTRDmcmSim::Draw(Option_t* const option)
   }
 }
 
-void AliTRDmcmSim::SetData( Int_t adc, Int_t* const data )
+void AliTRDmcmSim::SetData( Int_t adc, const Int_t* const data )
 {
   //
   // Store ADC data into array of raw data
@@ -591,7 +591,7 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
   }
 }
 
-void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsManager * const digitsManager)
+void AliTRDmcmSim::SetDataByPad(const AliTRDarrayADC* const adcArray, AliTRDdigitsManager * const digitsManager)
 {
   // Set the ADC data from an AliTRDarrayADC
   // (by pad, to be used during initial reading in simulation)

@@ -38,7 +38,7 @@ class AliTRDtrapConfigHandler : public TObject {
   void  ConfigureNTimebins(Int_t det);                          // timebins in the drift region
   void  ConfigurePIDcorr(Int_t det);                            // Calculate the mcm individual correction factors for the PID
 
-  Double_t Square(Double_t val) { return val*val; };          // returns the square of a given number
+  Double_t Square(Double_t val) const { return val*val; };          // returns the square of a given number
 
   AliTRDtrapConfigHandler(const AliTRDtrapConfigHandler &h);             // not implemented
   AliTRDtrapConfigHandler &operator=(const AliTRDtrapConfigHandler &h);  // not implemented

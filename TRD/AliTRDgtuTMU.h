@@ -43,7 +43,7 @@ class AliTRDgtuTMU : public TObject {
   Bool_t RunTrackReconstruction(TList* ListOfTracks);
 
   Bool_t CalculateTrackParams(AliTRDtrackGTU *track);
-  Bool_t Uniquifier(TList* inlist, TList *outlist);
+  Bool_t Uniquifier(const TList* inlist, TList *outlist);
   Bool_t CalculatePID(AliTRDtrackGTU *track);
 
 protected:

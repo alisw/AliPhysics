@@ -44,11 +44,11 @@ class AliTRDmcmSim : public TObject {
 	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) const { return (fADCF[iadc][timebin] >> 2); }
 	  // Get filtered ADC data
 
-          void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array
+          void      SetData(Int_t iadc, const Int_t* const adc);           // Set ADC data with array
           void      SetData(Int_t iadc, Int_t it, Int_t adc); // Set ADC data
 	  void      SetData(AliTRDarrayADC * const adcArray,
 			    AliTRDdigitsManager * const digitsManager = 0x0);         // Set ADC data from adcArray
-	  void      SetDataByPad(AliTRDarrayADC *const adcArray,
+	  void      SetDataByPad(const AliTRDarrayADC *const adcArray,
 				 AliTRDdigitsManager * const digitsManager = 0x0);    // Set ADC data from adcArray
           void      SetDataPedestal(Int_t iadc);              // Fill ADC data with pedestal values
 
@@ -72,7 +72,7 @@ class AliTRDmcmSim : public TObject {
 
 	  void      WriteData(AliTRDarrayADC *digits);
 	  Bool_t    StoreTracklets();                          // Stores tracklets via runloader
-	  TString   GetTrklBranchName() { return fTrklBranchName; }
+	  TString   GetTrklBranchName() const { return fTrklBranchName; }
 	  void      SetTrklBranchName(TString name) { fTrklBranchName = name; }
 
 	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize, UInt_t iEv = 0 ) const; // Produce raw data stream - Real data format

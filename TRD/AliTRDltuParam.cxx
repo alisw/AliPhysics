@@ -42,12 +42,12 @@ AliTRDltuParam::AliTRDltuParam() :
   fTiltCorr(kFALSE),
   fPidGainCorr(kFALSE)
 {
-
+  // default constructor
 }
 
 AliTRDltuParam::~AliTRDltuParam()
 {
-
+  // destructor
 }
 
 Int_t AliTRDltuParam::GetDyCorrection(Int_t det, Int_t rob, Int_t mcm) const
@@ -111,6 +111,9 @@ void AliTRDltuParam::GetDyRange(Int_t det, Int_t rob, Int_t mcm, Int_t ch,
 
 Float_t AliTRDltuParam::GetElongation(Int_t det, Int_t rob, Int_t mcm, Int_t ch) const
 {
+  // calculate the ratio of the distance to the primary vertex and the
+  // distance in x-direction for the given ADC channel
+
   Int_t layer = det % 6;
 
   Float_t elongation = TMath::Abs(GetDist(det, rob, mcm, ch) / fgX[layer]);
@@ -125,6 +128,8 @@ Float_t AliTRDltuParam::GetElongation(Int_t det, Int_t rob, Int_t mcm, Int_t ch)
 void AliTRDltuParam::GetCorrectionFactors(Int_t det, Int_t rob, Int_t mcm, Int_t ch,
 					  UInt_t &cor0, UInt_t &cor1, Float_t gain) const
 {
+  // calculate the gain correction factors for the given ADC channel
+
   if (fPidGainCorr==kFALSE)
     gain=1;
 
@@ -140,17 +145,23 @@ void AliTRDltuParam::GetCorrectionFactors(Int_t det, Int_t rob, Int_t mcm, Int_t
 
 Int_t AliTRDltuParam::GetNtimebins() const
 {
+  // return the number of timebins used
+
   return fNtimebins;
 }
 
 Float_t AliTRDltuParam::GetX(Int_t det, Int_t /* rob */, Int_t /* mcm */) const
 {
+  // return the distance to the beam axis in x-direction
+
   Int_t layer = det%6;
   return fgX[layer];
 }
 
 Float_t AliTRDltuParam::GetLocalY(Int_t det, Int_t rob, Int_t mcm, Int_t ch) const
 {
+  // get local y-position (r-phi) w.r.t. the chamber centre
+
   Int_t layer = det%6;
   // calculate the pad position as in the TRAP
   Float_t ypos = (-4 + 1 + (rob&0x1) * 4 + (mcm&0x3)) * 18 - ch - 0.5; // y position in bins of pad widths
@@ -159,6 +170,8 @@ Float_t AliTRDltuParam::GetLocalY(Int_t det, Int_t rob, Int_t mcm, Int_t ch) con
 
 Float_t AliTRDltuParam::GetLocalZ(Int_t det, Int_t rob, Int_t mcm) const
 {
+  // get local z-position w.r.t. to the chamber boundary
+
   Int_t stack = (det%30) / 6;
   Int_t layer = det % 6;
   Int_t row   = (rob/2) * 4 + mcm/4;
@@ -183,17 +196,23 @@ Float_t AliTRDltuParam::GetLocalZ(Int_t det, Int_t rob, Int_t mcm) const
 
 Float_t AliTRDltuParam::GetPerp(Int_t det, Int_t rob, Int_t mcm, Int_t ch) const
 {
+  // get transverse distance to the beam axis
+
   return TMath::Sqrt(GetLocalY(det, rob, mcm, ch)*GetLocalY(det, rob, mcm, ch) +
 		     GetX(det, rob, mcm)*GetX(det, rob, mcm) );
 }
 
 Float_t AliTRDltuParam::GetPhi(Int_t det, Int_t rob, Int_t mcm, Int_t ch) const
 {
+  // calculate the azimuthal angle for the given ADC channel
+
   return TMath::ATan2(GetLocalY(det, rob, mcm, ch), GetX(det, rob, mcm));
 }
 
 Float_t AliTRDltuParam::GetDist(Int_t det, Int_t rob, Int_t mcm, Int_t ch) const
 {
+  // calculate the distance from the origin for the given ADC channel
+
   return TMath::Sqrt(GetLocalY(det, rob, mcm, ch)*GetLocalY(det, rob, mcm, ch) +
 		     GetX(det, rob, mcm)*GetX(det, rob, mcm) +
 		     GetLocalZ(det, rob, mcm)*GetLocalZ(det, rob, mcm) );

@@ -47,6 +47,8 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord) :
   fResiduals(0x0),
   fClsCharges(0x0)
 {
+  // constructor
+
     fGeo = new AliTRDgeometry();
     fLabel[0] = -1;
     fLabel[1] = -1;
@@ -72,6 +74,8 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
   fResiduals(0x0),
   fClsCharges(0x0)
 {
+  // constructor
+
     fGeo = new AliTRDgeometry();
     fLabel[0] = -1;
     fLabel[1] = -1;
@@ -97,6 +101,8 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob,
   fResiduals(0x0),
   fClsCharges(0x0)
 {
+  // constructor
+
     fGeo = new AliTRDgeometry();
     fLabel[0] = -1;
     fLabel[1] = -1;
@@ -122,6 +128,8 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
   fResiduals(0x0),
   fClsCharges(0x0)
 {
+  // copy constructor
+
     fGeo = new AliTRDgeometry();
     fResiduals = new Float_t[fNClusters];
     fClsCharges = new Float_t[fNClusters];
@@ -136,6 +144,8 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
 
 AliTRDtrackletMCM::~AliTRDtrackletMCM()
 {
+  // destructor
+
   delete [] fResiduals;
   delete [] fClsCharges;
     delete fGeo;
@@ -164,6 +174,8 @@ Int_t AliTRDtrackletMCM::GetdY() const
 
 void AliTRDtrackletMCM::SetLabel(Int_t label[])
 {
+  // set the labels (up to 3)
+
   fLabel[0] = label[0];
   fLabel[1] = label[1];
   fLabel[2] = label[2];

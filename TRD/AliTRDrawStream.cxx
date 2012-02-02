@@ -1090,7 +1090,7 @@ Int_t AliTRDrawStream::ReadStackHeader(Int_t stack)
   AliDebug(1, DumpRaw(Form("stack %i header", stack), fPayloadCurr, fCurrStackHeaderSize[stack]));
 
   if (fPayloadCurr - fPayloadStart >= fPayloadSize - (Int_t) fCurrStackHeaderSize[stack]) {
-    EquipmentError(kStackHeaderInvalid, "Stack index header %i aborted", stack);
+    EquipmentError(kStackHeaderInvalid, "Stack index header %i incomplete", stack);
     // dumping stack header
     AliError(DumpRaw(Form("stack %i header", stack), fPayloadCurr, fCurrStackHeaderSize[stack]));
 
@@ -2152,7 +2152,7 @@ Bool_t AliTRDrawStream::DumpingMCM(Int_t det, Int_t rob, Int_t mcm)  const
   return kFALSE;
 }
 
-TString AliTRDrawStream::DumpRaw(TString title, UInt_t *start, Int_t length, UInt_t endmarker)
+TString AliTRDrawStream::DumpRaw(TString title, const UInt_t *start, Int_t length, UInt_t endmarker)
 {
   // dump raw data
 

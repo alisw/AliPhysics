@@ -1015,7 +1015,7 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
 }
 
 
-Bool_t AliTRDgtuTMU::Uniquifier(TList *inlist, TList *outlist)
+Bool_t AliTRDgtuTMU::Uniquifier(const TList *inlist, TList *outlist)
 {
   // remove multiple occurences of the same track
 

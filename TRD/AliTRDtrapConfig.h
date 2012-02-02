@@ -500,9 +500,9 @@ class AliTRDtrapConfig : public TObject
   Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data);
 
   // DMEM addresses
-  static const Int_t fgkDmemAddrLUTcor0       = 0xC02A;
-  static const Int_t fgkDmemAddrLUTcor1       = 0xC028;
-  static const Int_t fgkDmemAddrLUTnbins      = 0xC029;
+  static const Int_t fgkDmemAddrLUTcor0       = 0xC02A; // address for correction factor 0
+  static const Int_t fgkDmemAddrLUTcor1       = 0xC028; // address for correction factor 1
+  static const Int_t fgkDmemAddrLUTnbins      = 0xC029; // address for number of timebins
 
   static const Int_t fgkDmemAddrLUTStart      = 0xC100; // LUT start address
   static const Int_t fgkDmemAddrLUTEnd        = 0xC3FF; // maximum possible end address for the LUT table
@@ -557,8 +557,8 @@ class AliTRDtrapConfig : public TObject
   UInt_t* fDmem[fgkDmemWords]; // DMEM storage
   Int_t fDmemDepth[fgkDmemWords]; // memory space indicator for fDmem
 
-  static const Int_t fgkDmemSizeEmpty=0;
-  static const   Int_t fgkDmemSizeUniform = 1;
+  static const Int_t fgkDmemSizeEmpty=0; // size if no value stored
+  static const   Int_t fgkDmemSizeUniform = 1; // size for global values
   static const   Int_t fgkDmemSizeSmIndividual = 30*8*16;   // storage for each MCM within one supermodule
   static const   Int_t fgkDmemSizeTotalIndividual = 540*6*8*16;  // one individual value for each and every MCM in the TRD
   static const   Int_t fgkDmemSizeSmRocIndividual = 540; // one individual value for each chamber in TRD

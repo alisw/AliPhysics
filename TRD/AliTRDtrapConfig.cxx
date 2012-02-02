@@ -555,6 +555,8 @@ AliTRDtrapConfig* AliTRDtrapConfig::Instance()
 
 AliTRDtrapConfig::~AliTRDtrapConfig()
 {
+  // destructor
+
   for(Int_t iAddr = 0; iAddr < fgkDmemWords; iAddr++) {
      if(iAddr == fgkDmemAddrDeflCorr - fgkDmemStartAddress)
 	delete [] fDmem[iAddr];
@@ -621,6 +623,8 @@ void AliTRDtrapConfig::ResetRegs()
 
 void AliTRDtrapConfig::ResetDmem()
 {
+  // reset the data memory
+
      for(Int_t iAddr = 0; iAddr < fgkDmemWords; iAddr++) {
 	if(fDmemDepth[iAddr] == 0)
 	   continue;
@@ -935,6 +939,9 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob,
 
 UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr) const
 {
+  // get the content of the data memory at the given address
+  // (only if the value is the same for all MCMs)
+
    addr = addr - fgkDmemStartAddress;
    if(addr < 0 || addr >=  fgkDmemWords) {
       AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
@@ -952,6 +959,9 @@ UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr) const
 
 UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const
 {
+  // get the content of the data memory at the given address
+  // for a given MCM
+
    addr = addr - fgkDmemStartAddress;
    Int_t roc = det%30;
    Int_t loc;
@@ -1290,11 +1300,15 @@ AliTRDtrapConfig::TrapReg_t AliTRDtrapConfig::GetRegByAddress(Int_t address) con
 
 void AliTRDtrapConfig::PrintMemDatx(ostream &os, Int_t addr) const
 {
+  // print the content of the data memory as datx
+
    PrintMemDatx(os, addr, 0, 0, 127);
 }
 
 void AliTRDtrapConfig::PrintMemDatx(ostream &os, Int_t addr, Int_t det, Int_t rob, Int_t mcm) const
 {
+  // print the content of the data memory as datx
+
    if(addr < fgkDmemStartAddress || addr >= fgkDmemStartAddress+fgkDmemWords) {
       AliError(Form("Invalid DMEM address 0x%08x!", addr));
       return;
@@ -1305,12 +1319,16 @@ void AliTRDtrapConfig::PrintMemDatx(ostream &os, Int_t addr, Int_t det, Int_t ro
 
 void AliTRDtrapConfig::PrintMemDatx(ostream &os, TrapReg_t reg) const
 {
+  // print the content of the data memory as datx
+
    PrintMemDatx(os, reg, 0, 0, 127);
 }
 
 
 void AliTRDtrapConfig::PrintMemDatx(ostream &os, TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm) const
 {
+  // print the content of the data memory as datx
+
    if(reg>= kLastReg) {
       AliError(Form("Invalid register %i!", reg));
       return;
@@ -1321,6 +1339,8 @@ void AliTRDtrapConfig::PrintMemDatx(ostream &os, TrapReg_t reg, Int_t det, Int_t
 
 void AliTRDtrapConfig::PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t rob, Int_t mcm) const
 {
+  // print the value at the given address as datx
+
    os << std::setw(5) << 10
       << std::setw(8) << addr
       << std::setw(12) << data;

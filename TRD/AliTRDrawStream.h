@@ -11,12 +11,11 @@
 #ifndef ALITRDRAWSTREAM_H
 #define ALITRDRAWSTREAM_H
 
-#include "TObject.h"
-#include "TClonesArray.h"
 #include "TTree.h"
-
 #include "AliLog.h"
+#include "TClonesArray.h"
 
+class TObject;
 class TObjArray;
 class TString;
 class TBranch;
@@ -172,7 +171,7 @@ class AliTRDrawStream : public TObject
   Bool_t IsDumping() const { return (fNDumpMCMs > 0); }
   Bool_t DumpingMCM(Int_t det, Int_t rob, Int_t mcm) const;
 
-  TString DumpRaw(TString title, UInt_t *start, Int_t length, UInt_t endmarker = 0xffffffff);
+  TString DumpRaw(TString title, const UInt_t *start, Int_t length, UInt_t endmarker = 0xffffffff);
   TString DumpMcmHeader(TString title, UInt_t word);
   TString DumpAdcMask(TString title, UInt_t word);
 

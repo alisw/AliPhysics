@@ -36,16 +36,20 @@
 
 AliTRDTriggerL0::AliTRDTriggerL0()
 {
+  // constructor
+
   SetName("TRD");
 }
 
 AliTRDTriggerL0::~AliTRDTriggerL0()
 {
-
+  // destructor
 }
 
 void AliTRDTriggerL0::CreateInputs()
 {
+  // create the L0 inputs which are provided by the TRD
+
   if (fInputs.GetEntriesFast() > 0)
     return;
 
@@ -56,6 +60,7 @@ void AliTRDTriggerL0::CreateInputs()
 
 void AliTRDTriggerL0::Trigger()
 {
+  // do the actual trigger calculation
 
   AliRunLoader *runLoader = AliRunLoader::Instance();
   if (!runLoader)
