@@ -231,7 +231,7 @@ void ana(Int_t mode=mGRID)
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
   gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros
-  gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros  
   
   
   // ------
@@ -429,11 +429,11 @@ void  LoadLibraries(Int_t mode)
   
   gSystem->Load("libPHOSUtils");
   gSystem->Load("libEMCALUtils");
-  gSystem->Load("libPWGCaloTrackBase");
-  gSystem->Load("libPWGGACaloCorrelations");
+  gSystem->Load("libPWGCaloTrackCorrBase");
+  gSystem->Load("libPWGGACaloTrackCorrelations");
   gSystem->Load("libPWGGAEMCALTasks");
-  //SetupPar("PWGCaloTrackBase");
-  //SetupPar("PWGGACaloCorrelations");
+  //SetupPar("PWGCaloTrackCorrBase");
+  //SetupPar("PWGGACaloTrackCorrelations");
   //SetupPar("PWGGAEMCALTasks");
   
   //gSystem->Load("libJETAN");

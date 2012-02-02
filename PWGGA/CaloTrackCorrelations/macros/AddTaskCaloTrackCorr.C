@@ -26,7 +26,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(
                                                     const TString clustersArray = "V1" 
                                                     )
 {
-  // Creates a PartCorr task, configures it and adds it to the analysis manager.
+  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
   kPrint         = printSettings;
   kSimulation    = simulation;
@@ -220,8 +220,8 @@ AliCaloTrackReader * ConfigureReader()
   // Tracks
   reader->SwitchOnCTS();
   if(kInputDataType=="ESD"){
-    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C"); 
-    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWG4(10041004);   //no ITSrefit
+    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C"); 
+    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);   //no ITSrefit
     reader->SetTrackCuts(esdTrackCuts);
   }
   else if(kInputDataType=="AOD"){
@@ -332,7 +332,7 @@ AliCalorimeterUtils* ConfigureCaloUtils()
     cu->SwitchOnRecalibration();      // Check the reader if it is taken into account during filtering
     
     TGeoHMatrix* matrix[12];
-    gROOT->LoadMacro("ConfigureEMCALRecoUtils.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
     ConfigureEMCALRecoUtils(
                             recou,
                             kSimulation, 
