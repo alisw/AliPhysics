@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelationM *AddTaskCaloTrackCorrM(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE)
+AliAnalysisTaskCaloTrackCorrelationM *AddTaskCaloTrackCorrM(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE)
 {
   // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
@@ -486,8 +486,8 @@ AliAnalysisTaskParticleCorrelationM *AddTaskCaloTrackCorrM(TString data, TString
   
   // Create task
   //===========================================================================
- // AliAnalysisTaskParticleCorrelationM * task = new AliAnalysisTaskParticleCorrelationM(Form("CaloTrackCorr%s",calorimeter.Data()));
-  AliAnalysisTaskParticleCorrelationM * task = new AliAnalysisTaskParticleCorrelationM("CaloTrackCorr");
+ // AliAnalysisTaskCaloTrackCorrelationM * task = new AliAnalysisTaskCaloTrackCorrelationM(Form("CaloTrackCorr%s",calorimeter.Data()));
+  AliAnalysisTaskCaloTrackCorrelationM * task = new AliAnalysisTaskCaloTrackCorrelationM("CaloTrackCorr");
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetAnalysisMaker(maker);

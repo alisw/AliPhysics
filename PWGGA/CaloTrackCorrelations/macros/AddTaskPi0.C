@@ -1,6 +1,6 @@
-AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, 
-                                               Bool_t outputAOD=kFALSE, TString outputfile = "", Int_t year = 2010,TString col = "pp",
-                                               Bool_t withQA = kFALSE)
+AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, 
+                                                Bool_t outputAOD=kFALSE, TString outputfile = "", Int_t year = 2010,TString col = "pp",
+                                                Bool_t withQA = kFALSE)
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
   
@@ -332,7 +332,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   
   // Create task
   //===========================================================================
-  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("PartCorr%s",calorimeter.Data()));
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("PartCorr%s",calorimeter.Data()));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetBranches("ESD:AliESDRun.,AliESDHeader"); //just a trick to get Constantin's analysis to work

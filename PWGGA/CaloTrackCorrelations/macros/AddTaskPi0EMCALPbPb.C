@@ -1,16 +1,16 @@
 
-AliAnalysisTaskParticleCorrelation *AddTaskPi0EMCALPbPb(
-                                                    const TString data          = "AOD",
-                                                    const TString calorimeter   = "EMCAL", 
-                                                    const Bool_t  printSettings = kFALSE,
-                                                    const Bool_t  simulation    = kFALSE,
-                                                    const Bool_t  outputAOD     = kFALSE, 
-                                                    const TString outputfile    = "",
-                                                    const Int_t   year          = 2011,
-                                                    const TString col           = "PbPb",
-                                                    const TString trig          = "",
-                                                    const TString clustersArray = "" 
-                                                    )
+AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0EMCALPbPb(
+                                                         const TString data          = "AOD",
+                                                         const TString calorimeter   = "EMCAL", 
+                                                         const Bool_t  printSettings = kFALSE,
+                                                         const Bool_t  simulation    = kFALSE,
+                                                         const Bool_t  outputAOD     = kFALSE, 
+                                                         const TString outputfile    = "",
+                                                         const Int_t   year          = 2011,
+                                                         const TString col           = "PbPb",
+                                                         const TString trig          = "",
+                                                         const TString clustersArray = "" 
+                                                        )
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
     
@@ -64,7 +64,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0EMCALPbPb(
   
   // Create task
   
-  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("PartCorr%s_Trig%s_Cl%s",calorimeter.Data(),trig.Data(),clustersArray.Data()));
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("PartCorr%s_Trig%s_Cl%s",calorimeter.Data(),trig.Data(),clustersArray.Data()));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetBranches("ESD:AliESDRun.,AliESDHeader"); //just a trick to get Constantin's analysis to work
