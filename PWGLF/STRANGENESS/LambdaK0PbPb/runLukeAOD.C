@@ -1,6 +1,6 @@
 // run.C
 //
-// Template run macro for AliAnalysisTaskExAOD.cxx/.h with example layout of
+// Template run macro for AliAnalysisTaskLukeAOD.cxx/.h with example layout of
 // physics selections and options, in macro and task.
 //
 // Author: Arvinder Palaha
@@ -83,8 +83,8 @@ void runExAOD(
 	*/
 	
     // create task
-    gROOT->LoadMacro("AliAnalysisTaskExAOD.cxx++g");
-    AliAnalysisTaskSE* task = new AliAnalysisTaskExAOD(taskname);
+    gROOT->LoadMacro("AliAnalysisTaskLukeAOD.cxx++g");
+    AliAnalysisTaskSE* task = new AliAnalysisTaskLukeAOD(taskname);
     task->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
 	mgr->AddTask(task);
     
@@ -158,11 +158,11 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
 
     // Declare the analysis source files names separated by blancs. To be compiled runtime
     // using ACLiC on the worker nodes.
-    plugin->SetAnalysisSource("AliAnalysisTaskExAOD.cxx");
+    plugin->SetAnalysisSource("AliAnalysisTaskLukeAOD.cxx");
 
     // Declare all libraries (other than the default ones for the framework. These will be
     // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-    plugin->SetAdditionalLibs("AliAnalysisTaskExAOD.h AliAnalysisTaskExAOD.cxx");
+    plugin->SetAdditionalLibs("AliAnalysisTaskLukeAOD.h AliAnalysisTaskLukeAOD.cxx");
 
     // Declare the output file names separated by blancs.
     // (can be like: file.root or file.root@ALICE::Niham::File)
