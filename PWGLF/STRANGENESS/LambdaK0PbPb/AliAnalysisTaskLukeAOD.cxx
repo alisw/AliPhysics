@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliAnalysisTaskExAOD.cxx 46301 2011-01-06 14:25:27Z agheata $ */
+/* $Id: AliAnalysisTaskLukeAOD.cxx 46301 2011-01-06 14:25:27Z agheata $ */
 
-/* AliAnalysisTaskExAOD.cxx
+/* AliAnalysisTaskLukeAOD.cxx
  *
  * Template task producing a P_t spectrum and pseudorapidity distribution.
  *
@@ -25,7 +25,7 @@
  * Edited by Arvinder Palaha
  * Edited by Luke Hanratty for AODS
  */
-#include "AliAnalysisTaskExAOD.h"
+#include "AliAnalysisTaskLukeAOD.h"
 
 #include "Riostream.h"
 #include "TChain.h"
@@ -62,10 +62,10 @@
 
 
 
-ClassImp(AliAnalysisTaskExAOD)
+ClassImp(AliAnalysisTaskLukeAOD)
 
 //________________________________________________________________________
-AliAnalysisTaskExAOD::AliAnalysisTaskExAOD() // All data members should be initialised here
+AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD() // All data members should be initialised here
 :AliAnalysisTaskSE(),
 fOutput(0),
 fPIDResponse(0),
@@ -224,7 +224,7 @@ fHistMcRapAFoundK0Pt(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskExAOD::AliAnalysisTaskExAOD(const char *name) // All data members should be initialised here
+AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD(const char *name) // All data members should be initialised here
 :AliAnalysisTaskSE(name),
 fOutput(0),
 fPIDResponse(0),
@@ -387,7 +387,7 @@ fHistMcRapAFoundK0Pt(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskExAOD::~AliAnalysisTaskExAOD()
+AliAnalysisTaskLukeAOD::~AliAnalysisTaskLukeAOD()
 {
     // Destructor. Clean-up the output list, but not the histograms that are put inside
     // (the list is owner and will clean-up these histograms). Protect in PROOF case.
@@ -397,7 +397,7 @@ AliAnalysisTaskExAOD::~AliAnalysisTaskExAOD()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskExAOD::UserCreateOutputObjects()
+void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 {
     // Create histograms
     // Called once (on the worker node)
@@ -858,7 +858,7 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 
 
 //________________________________________________________________________
-void AliAnalysisTaskExAOD::UserExec(Option_t *) 
+void AliAnalysisTaskLukeAOD::UserExec(Option_t *) 
 {
     // Main loop
     // Called for each event
@@ -1501,7 +1501,7 @@ void AliAnalysisTaskExAOD::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisTaskExAOD::Terminate(Option_t *) 
+void AliAnalysisTaskLukeAOD::Terminate(Option_t *) 
 {
     // Draw result to screen, or perform fitting, normalizations
     // Called once at the end of the query
@@ -1523,7 +1523,7 @@ void AliAnalysisTaskExAOD::Terminate(Option_t *)
     // NEW HISTO should be retrieved from the TList container in the above way,
     // so it is available to draw on a canvas such as below
 	
-    TCanvas *c = new TCanvas("AliAnalysisTaskExAOD","P_{T} & #eta",10,10,1020,510);
+    TCanvas *c = new TCanvas("AliAnalysisTaskLukeAOD","P_{T} & #eta",10,10,1020,510);
     c->Divide(2,1);
     c->cd(1)->SetLogy();
     fHistPt->DrawCopy("E");

@@ -1,8 +1,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliAnalysisTaskExAOD.h 45956 2010-12-10 12:55:37Z agheata $ */
-/* AliAnalysisTaskExAOD.h
+/* $Id: AliAnalysisTaskLukeAOD.h 45956 2010-12-10 12:55:37Z agheata $ */
+/* AliAnalysisTaskLukeAOD.h
  *
  * Template task producing a P_t spectrum and pseudorapidity distribution.
  * Includes explanations of physics and primary track selections
@@ -11,8 +11,8 @@
  * Edited by Arvinder Palaha
  * Edited by Luke Hanratty for AODs
  */
-#ifndef ALIANALYSISTASKEXAOD_H
-#define ALIANALYSISTASKEXAOD_H
+#ifndef ALIANALYSISTASKLUKEAOD_H
+#define ALIANALYSISTASKLUKEAOD_H
 
 class TH1F;
 class TH2F;
@@ -23,11 +23,11 @@ class AliPIDResponse;
 #include "AliAnalysisTaskSE.h"
 #endif
 
-class AliAnalysisTaskExAOD : public AliAnalysisTaskSE {
+class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
  public:
-    AliAnalysisTaskExAOD();
-    AliAnalysisTaskExAOD(const char *name);
-    virtual ~AliAnalysisTaskExAOD();
+    AliAnalysisTaskLukeAOD();
+    AliAnalysisTaskLukeAOD(const char *name);
+    virtual ~AliAnalysisTaskLukeAOD();
     
     virtual void     UserCreateOutputObjects();
     virtual void     UserExec(Option_t *option);
@@ -194,10 +194,10 @@ class AliAnalysisTaskExAOD : public AliAnalysisTaskSE {
 	
     // NEW HISTO to be declared here
     
-    AliAnalysisTaskExAOD(const AliAnalysisTaskExAOD&); // not implemented
-    AliAnalysisTaskExAOD& operator=(const AliAnalysisTaskExAOD&); // not implemented
+    AliAnalysisTaskLukeAOD(const AliAnalysisTaskLukeAOD&); // not implemented
+    AliAnalysisTaskLukeAOD& operator=(const AliAnalysisTaskLukeAOD&); // not implemented
     
-    ClassDef(AliAnalysisTaskExAOD, 1); // example of analysis
+    ClassDef(AliAnalysisTaskLukeAOD, 1); // example of analysis
 };
 
 #endif
