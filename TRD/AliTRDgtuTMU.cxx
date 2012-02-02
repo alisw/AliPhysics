@@ -963,8 +963,11 @@ Bool_t AliTRDgtuTMU::CalculatePID(AliTRDtrackGTU *track)
       pidSum += trk->GetPID();
       nTracklets++;
     }
+
     if (nTracklets>0)
       track->SetPID(pidSum/nTracklets);
+    else
+      AliError("Track without contributing tracklets, no PID assigned");
 
     return kTRUE;
   }

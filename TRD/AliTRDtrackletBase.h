@@ -29,6 +29,8 @@ class AliTRDtrackletBase : public TObject {
     AliTRDtrackletBase(const AliTRDtrackletBase &o) : TObject(o) {}
     virtual ~AliTRDtrackletBase() {}
 
+    AliTRDtrackletBase& operator=(const AliTRDtrackletBase &o) { TObject::operator=(o); return *this; }
+
     virtual Bool_t   CookPID() = 0;
 
     virtual Int_t    GetDetector() const = 0 ;
