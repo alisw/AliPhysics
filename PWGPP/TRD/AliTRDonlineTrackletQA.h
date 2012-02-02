@@ -1,3 +1,6 @@
+// AliTRDonlineTrackletQA implements the standard QA for the TRD
+// on-line tracklets.
+
 #ifndef ALITRDONLINETRACKLETQA_H
 #define ALITRDONLINETRACKLETQA_H
 
@@ -32,7 +35,7 @@ class AliTRDonlineTrackletQA : public AliAnalysisTask
 
   void PlotESD(AliTRDtrackletWord *trkl);
 
-  Int_t GetTrackletsForMC(Int_t label, Int_t idx[]);
+  Int_t GetTrackletsForMC(Int_t label, Int_t idx[]) const;
 
  protected:
   AliESDEvent *fESD;                    //! current ESD event
