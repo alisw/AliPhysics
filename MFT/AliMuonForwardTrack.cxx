@@ -31,6 +31,7 @@
 #include "TMatrixD.h"
 #include "TParticle.h"
 #include "AliMuonForwardTrack.h"
+#include "AliMFTConstants.h"
 
 ClassImp(AliMuonForwardTrack)
 
@@ -40,11 +41,17 @@ AliMuonForwardTrack::AliMuonForwardTrack():
   AliMUONTrack(),
   fMUONTrack(0),
   fMCTrackRef(0),
-  fMFTClusters(0)
+  fMFTClusters(0),
+  fNWrongClustersMC(-1)
 {
 
   // default constructor
-  for (Int_t iPlane=0; iPlane<fMaxNPlanesMFT; iPlane++) fPlaneExists[iPlane] = kFALSE;
+  
+  for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) fPlaneExists[iPlane] = kFALSE;
+  for (Int_t iParent=0; iParent<fgkNParentsMax; iParent++) {
+    fParentMCLabel[iParent] = -1;
+    fParentPDGCode[iParent] =  0;
+  }
   fMFTClusters = new TClonesArray("AliMFTCluster");
 
 }
@@ -55,11 +62,16 @@ AliMuonForwardTrack::AliMuonForwardTrack(AliMUONTrack *MUONTrack):
   AliMUONTrack(),
   fMUONTrack(0),
   fMCTrackRef(0),
-  fMFTClusters(0)
+  fMFTClusters(0),
+  fNWrongClustersMC(-1)
 {
 
   SetMUONTrack(MUONTrack);
-  for (Int_t iPlane=0; iPlane<fMaxNPlanesMFT; iPlane++) fPlaneExists[iPlane] = kFALSE;
+  for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) fPlaneExists[iPlane] = kFALSE;
+  for (Int_t iParent=0; iParent<fgkNParentsMax; iParent++) {
+    fParentMCLabel[iParent] = -1;
+    fParentPDGCode[iParent] =  0;
+  }
   fMFTClusters = new TClonesArray("AliMFTCluster");
 
 }
@@ -68,13 +80,21 @@ AliMuonForwardTrack::AliMuonForwardTrack(AliMUONTrack *MUONTrack):
 
 AliMuonForwardTrack::AliMuonForwardTrack(const AliMuonForwardTrack& track): 
   AliMUONTrack(track),
-  fMUONTrack(track.fMUONTrack),
-  fMCTrackRef(track.fMCTrackRef),
-  fMFTClusters(track.fMFTClusters)
+  fMUONTrack(0x0),
+  fMCTrackRef(0x0),
+  fMFTClusters(0x0),
+  fNWrongClustersMC(track.fNWrongClustersMC)
 {
 
   // copy constructor
-  for (Int_t iPlane=0; iPlane<fMaxNPlanesMFT; iPlane++) fPlaneExists[iPlane] = (track.fPlaneExists)[iPlane];
+  fMUONTrack        = new AliMUONTrack(*(track.fMUONTrack));
+  if (track.fMCTrackRef) fMCTrackRef = new TParticle(*(track.fMCTrackRef));
+  fMFTClusters      = new TClonesArray(*(track.fMFTClusters));
+  for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) fPlaneExists[iPlane] = (track.fPlaneExists)[iPlane];
+  for (Int_t iParent=0; iParent<fgkNParentsMax; iParent++) {
+    fParentMCLabel[iParent] = (track.fParentMCLabel)[iParent];
+    fParentPDGCode[iParent] = (track.fParentPDGCode)[iParent];
+  }
   
 }
 
@@ -93,11 +113,16 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
   // clear memory
   Clear();
   
-  fMUONTrack    = track.fMUONTrack;
-  fMCTrackRef   = track.fMCTrackRef;
-  fMFTClusters  = track.fMFTClusters;
+  fMUONTrack        = new AliMUONTrack(*(track.fMUONTrack));
+  if (track.fMCTrackRef) fMCTrackRef = new TParticle(*(track.fMCTrackRef));
+  fMFTClusters      = new TClonesArray(*(track.fMFTClusters));
+  fNWrongClustersMC = track.fNWrongClustersMC;
 
-  for (Int_t iPlane=0; iPlane<fMaxNPlanesMFT; iPlane++) fPlaneExists[iPlane] = (track.fPlaneExists)[iPlane];
+  for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) fPlaneExists[iPlane] = (track.fPlaneExists)[iPlane];
+  for (Int_t iParent=0; iParent<fgkNParentsMax; iParent++) {
+    fParentMCLabel[iParent] = (track.fParentMCLabel)[iParent];
+    fParentPDGCode[iParent] = (track.fParentPDGCode)[iParent];
+  }
   
   return *this;
 
@@ -113,6 +138,7 @@ void AliMuonForwardTrack::SetMUONTrack(AliMUONTrack *MUONTrack) {
   }
 
   fMUONTrack = MUONTrack;
+  SetGlobalChi2(fMUONTrack->GetGlobalChi2());
   
 }
 
@@ -133,8 +159,8 @@ void AliMuonForwardTrack::SetMCTrackRef(TParticle *MCTrackRef) {
 
 void AliMuonForwardTrack::AddTrackParamAtMFTCluster(AliMUONTrackParam &trackParam, AliMFTCluster &mftCluster) {
 
-  AliDebug(1, Form("fMFTClusters=%p has %d entries", fMFTClusters, fMFTClusters->GetEntries()));
-  Int_t iMFTCluster = fMFTClusters->GetEntries();
+  AliDebug(1, Form("Before adding: this->fMFTClusters=%p has %d entries", this->fMFTClusters, this->fMFTClusters->GetEntries()));
+  Int_t iMFTCluster = this->fMFTClusters->GetEntries();
   AliDebug(1, Form("mftCluster->GetX() = %f  mftCluster->GetY() = %f  mftCluster->GetErrX() = %f  cmftCluster->GetErrY() = %f", 
 	   mftCluster.GetX(), mftCluster.GetY(), mftCluster.GetErrX(), mftCluster.GetErrY()));
   AliMUONVCluster *muonCluster = (AliMUONVCluster*) mftCluster.CreateMUONCluster();
@@ -142,15 +168,18 @@ void AliMuonForwardTrack::AddTrackParamAtMFTCluster(AliMUONTrackParam &trackPara
   trackParam.SetUniqueID(iMFTCluster);    // we profit of this slot to store the reference to the corresponding MFTCluster
   AliDebug(1, Form("Now adding muonCluster %p and trackParam %p",muonCluster, &trackParam));
   AddTrackParamAtCluster(trackParam, *muonCluster, kTRUE);
-  AliDebug(1, Form("GetTrackParamAtCluster() = %p  has %d entries",GetTrackParamAtCluster(), GetTrackParamAtCluster()->GetEntries()));
   // we pass the parameters this->GetTrackParamAtCluster()->First() to the Kalman Filter algorithm: they will be updated!!
   Double_t chi2Kalman = RunKalmanFilter(*(AliMUONTrackParam*)(GetTrackParamAtCluster()->First()));
+  AliDebug(1, Form("Adding Kalman chi2 = %f to global chi2 = %f", chi2Kalman, GetGlobalChi2()));
   Double_t newGlobalChi2 = GetGlobalChi2() + chi2Kalman;
   mftCluster.SetLocalChi2(chi2Kalman);
   mftCluster.SetTrackChi2(newGlobalChi2);
-  new ((*fMFTClusters)[iMFTCluster]) AliMFTCluster(mftCluster);
+  new ((*(this->fMFTClusters))[iMFTCluster]) AliMFTCluster(mftCluster);
+  AliDebug(1, Form("GetTrackParamAtCluster() = %p  has %d entries while this->fMFTClusters=%p has %d entries",
+		   GetTrackParamAtCluster(), GetTrackParamAtCluster()->GetEntries(), this->fMFTClusters, this->fMFTClusters->GetEntries()));
   AliDebug(1, Form("muonCluster->GetZ() = %f, trackParam->GetZ() = %f",muonCluster->GetZ(), trackParam.GetZ()));
   SetGlobalChi2(newGlobalChi2);
+  AliDebug(1, Form("New global chi2 = %f", GetGlobalChi2()));
   ((AliMUONTrackParam*) GetTrackParamAtCluster()->First())->SetTrackChi2(newGlobalChi2);
   for (Int_t iPar=0; iPar<GetTrackParamAtCluster()->GetEntries(); iPar++) {
     AliDebug(1, Form("GetTrackParamAtCluster()->At(%d)->GetClusterPtr() = %p",
@@ -210,12 +239,12 @@ AliMUONVCluster* AliMuonForwardTrack::GetMUONCluster(Int_t iMUONCluster) {
 AliMFTCluster* AliMuonForwardTrack::GetMFTCluster(Int_t iMFTCluster) {
 
   if (iMFTCluster<0 || iMFTCluster>=GetNMFTClusters()) {
-    AliError("Invalid MFT cluster index. NULL pointer will be returned");
+    AliError(Form("Invalid MFT cluster index (%d). GetNMFTClusters()=%d. NULL pointer will be returned", iMFTCluster, GetNMFTClusters()));
     return NULL;
   }
 
   AliMUONTrackParam *trackParam = GetTrackParamAtMFTCluster(iMFTCluster);
-  AliMFTCluster *mftCluster = (AliMFTCluster*) fMFTClusters->At(trackParam->GetUniqueID());
+  AliMFTCluster *mftCluster = (AliMFTCluster*) this->fMFTClusters->At(trackParam->GetUniqueID());
 
   return mftCluster;
 

@@ -37,11 +37,7 @@ AliMFTSegmentation::AliMFTSegmentation():
   fMFTPlanes(0)
 { 
 
-  // TO BE CHECKED
-  
   // default constructor
-
-  fMFTPlanes = new TClonesArray("AliMFTPlane", fNMaxPlanes);
 
 }
 
@@ -49,10 +45,10 @@ AliMFTSegmentation::AliMFTSegmentation():
 
 AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile): 
   TObject(),
-  fMFTPlanes(0)
+  fMFTPlanes(new TClonesArray("AliMFTPlane", fNMaxPlanes))
 { 
 
-  fMFTPlanes = new TClonesArray("AliMFTPlane", fNMaxPlanes);
+  // constructor
 
   Float_t zCenter, rMin, rMax, pixelSizeX, pixelSizeY, thicknessActive, thicknessSupport, thicknessReadout;
   Float_t equivalentSilicon, equivalentSiliconBeforeFront, equivalentSiliconBeforeBack;
@@ -102,7 +98,7 @@ AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile):
 
 //====================================================================================================================================================
 
-THnSparseC* AliMFTSegmentation::GetDetElem(Int_t detElemID) {
+THnSparseC* AliMFTSegmentation::GetDetElem(Int_t detElemID) const {
       
   // Find det elem
 

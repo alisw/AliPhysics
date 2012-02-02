@@ -1,5 +1,5 @@
-/**************************************************************************
- * Copyright(c) 2004-2006, ALICE Experiment at CERN, All rights reserved. *
+ /**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -15,54 +15,31 @@
 
 //====================================================================================================================================================
 //
-//      Digit description for the ALICE Muon Forward Tracker
+//      Constants for the Muon Forward Tracker
 //
 //      Contact author: antonio.uras@cern.ch
 //
 //====================================================================================================================================================
 
-#include "AliDigit.h"
+#include "TClass.h"
 #include "AliMFTConstants.h"
-#include "AliMFTDigit.h"
 
-const Double_t AliMFTDigit::fElossPerElectron = AliMFTConstants::fElossPerElectron;
+ClassImp(AliMFTConstants)
 
-ClassImp(AliMFTDigit)
+const Double_t AliMFTConstants::fCutForAvailableDigits = 5.;
+const Double_t AliMFTConstants::fCutForAttachingDigits = 1.;
 
-//====================================================================================================================================================
+const Double_t AliMFTConstants::fElossPerElectron = 3.62e-09;
 
-AliMFTDigit::AliMFTDigit():
-  AliDigit(),
-  fNMCTracks(0),
-  fPixelX(-1),
-  fPixelY(-1),
-  fPixelZ(0),
-  fPixelCenterX(0),
-  fPixelCenterY(0),  
-  fPixelCenterZ(0),  
-  fPixelWidthX(0),
-  fPixelWidthY(0),  
-  fPixelWidthZ(0),  
-  fPlane(-1),
-  fDetElemID(-1),
-  fEloss(0),
-  fNElectrons(0)
-{
+const Double_t AliMFTConstants::fRadiusMin = 2.225;
 
-  // default cosntructor
+const Double_t AliMFTConstants::fActiveSuperposition = 0.05;
+                                 
+const Double_t AliMFTConstants::fHeightActive = 0.5;
+const Double_t AliMFTConstants::fHeightReadout = 0.3;
 
-  for (Int_t iTrack=0; iTrack<fNMaxMCTracksPerDigit; iTrack++) fMCLabel[iTrack] = -1;
+const Double_t AliMFTConstants::fSupportExtMargin = fHeightReadout + 0.3;
 
-}
+const Double_t AliMFTConstants::fRadLengthSi = 9.37;
 
 //====================================================================================================================================================
-
-void  AliMFTDigit::AddMCLabel(Int_t label) { 
-
-  if (fNMCTracks<0 || fNMCTracks>=fNMaxMCTracksPerDigit) return; 
-  fMCLabel[fNMCTracks++] = label;
-
-}
-
-//====================================================================================================================================================
-

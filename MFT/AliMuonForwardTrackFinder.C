@@ -1,11 +1,14 @@
 //================================================================================================================================
 
 void AliMuonForwardTrackFinder(Int_t run=0,
+			       Int_t matching=0,
 			       const Char_t *readDir= ".",
 			       const Char_t *outDir = ".",
 			       Int_t nEventsToAnalyze = -1) {
   
   //  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
+
+  // AliLog::SetClassDebugLevel("AliMuonForwardTrackFinder", 1);
 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -24,7 +27,7 @@ void AliMuonForwardTrackFinder(Int_t run=0,
   //  finder -> SetLowPtCut(0.5);
   finder -> SetExtrapOriginTransvError(0.05);   // To be imposed if the gen. vertex is fixed in (0,0,0)
   finder -> SetGaussianBlurZVert(5.0);          // To be imposed if the gen. vertex is fixed in (0,0,0) 
-  finder -> SetMatchingMode(0);                 // 0 -> real matching   1 -> ideal matching
+  finder -> SetMatchingMode(matching);          // 0 -> real matching   1 -> ideal matching
   finder -> SetMinResearchRadiusAtLastPlane(0.5);
 
   while (finder->LoadNextTrack()) continue;

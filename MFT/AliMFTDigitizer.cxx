@@ -50,7 +50,7 @@ AliMFTDigitizer::AliMFTDigitizer():
 
 //====================================================================================================================================================
 
-AliMFTDigitizer::AliMFTDigitizer(AliDigitizationInput *digInp) :
+AliMFTDigitizer::AliMFTDigitizer(AliDigitizationInput *digInp):
   AliDigitizer(digInp),
   fNPlanes(0),
   fSegmentation(0)
@@ -65,7 +65,7 @@ void AliMFTDigitizer::Digitize(Option_t*) {
   // This method is responsible for merging sdigits to a list of digits
 
   AliDebug(1, "************************************************************************");
-  AliDebug(1, "************************ AliMFTDigitizer::Exec *************************");
+  AliDebug(1, "************************ AliMFTDigitizer::Digitize *********************");
   AliDebug(1, "************************************************************************");
   
   if (!fSegmentation) {
