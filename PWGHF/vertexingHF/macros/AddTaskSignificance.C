@@ -15,7 +15,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   }
 
   TFile* filecuts=TFile::Open(filename.Data());
-  if(!filecuts->IsOpen()){
+  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
     cout<<"Input file not found: exit"<<endl;
     return;
   }

@@ -126,7 +126,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 
   Bool_t stdcuts=kFALSE;
   TFile* filecuts=TFile::Open(finname.Data());
-  if(!filecuts->IsOpen()){
+  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
     cout<<"Input file not found: using std cut object"<<endl;
     stdcuts=kTRUE;
   }

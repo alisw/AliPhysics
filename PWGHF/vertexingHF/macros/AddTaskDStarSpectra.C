@@ -44,7 +44,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   TFile* filecuts=TFile::Open("DStartoKpipiCuts.root");
 
-  if(!filecuts->IsOpen()){
+  if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
 
     cout<<"Input file not found: exit"<<endl;
 

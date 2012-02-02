@@ -51,6 +51,10 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	
 	TFile* fileCuts = TFile::Open(cutFile);
+	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
+	  AliError("Wrong cut file");
+	  return 0x0;
+	}
 	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCutsStandard");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true

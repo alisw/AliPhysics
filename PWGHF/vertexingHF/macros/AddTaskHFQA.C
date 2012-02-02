@@ -11,7 +11,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   Bool_t stdcuts=kFALSE;
   TFile* filecuts=TFile::Open(filecutsname.Data());
-  if(!filecuts->IsOpen()){
+  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
     cout<<"Input file not found: using std cut object"<<endl;
     stdcuts=kTRUE;
   }
