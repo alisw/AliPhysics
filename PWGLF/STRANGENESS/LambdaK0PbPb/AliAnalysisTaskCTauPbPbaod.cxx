@@ -297,9 +297,9 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
 
      mcXv=mcHdr->GetVtxX(); mcYv=mcHdr->GetVtxY(); mcZv=mcHdr->GetVtxZ();
 
-     Int_t ntrk=stack->GetEntriesFast(), ntrk0=ntrk;
-     while (ntrk--) {
-       AliAODMCParticle *p0=(AliAODMCParticle*)stack->UncheckedAt(ntrk);
+     Int_t ntrk1=stack->GetEntriesFast(), ntrk0=ntrk1;
+     while (ntrk1--) {
+       AliAODMCParticle *p0=(AliAODMCParticle*)stack->UncheckedAt(ntrk1);
        Int_t code=p0->GetPdgCode();
        if (code != kK0Short)
 	 if (code != kLambda0) continue;
@@ -320,14 +320,14 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
        if (TMath::Abs(p0->Y())>yMax) continue;
     
        Double_t x=p0->Xv(), y=p0->Yv(), z=p0->Zv();
-       Double_t dx=mcXv-x, dy=mcYv-y, dz=mcZv-z;
-       Double_t l=TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+       Double_t dxmc=mcXv-x, dymc=mcYv-y, dzmc=mcZv-z;
+       Double_t l=TMath::Sqrt(dxmc*dxmc + dymc*dymc + dzmc*dzmc);
 
        if (l > 0.01) continue; // secondary V0
 
        x=part->Xv(); y=part->Yv();
-       dx=mcXv-x; dy=mcYv-y;
-       Double_t lt=TMath::Sqrt(dx*dx + dy*dy);
+       dxmc=mcXv-x; dymc=mcYv-y;
+       Double_t lt=TMath::Sqrt(dxmc*dxmc + dymc*dymc);
 
        if (code == kK0Short) {
           fK0sMC->Fill(pt,lt);
@@ -339,10 +339,10 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
   }
 
 
-  Int_t ntrk=aod->GetNumberOfTracks();
+  Int_t ntrk2=aod->GetNumberOfTracks();
   Int_t mult=0;
   Double_t nsig;
-  for (Int_t i=0; i<ntrk; i++) {
+  for (Int_t i=0; i<ntrk2; i++) {
     AliAODTrack *t=aod->GetTrack(i);
     if (t->IsMuonTrack()) continue;
     if (!t->IsOn(AliAODTrack::kTPCrefit)) continue;
@@ -381,8 +381,8 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
       const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
 
       Double_t xyz[3]; v0->GetSecondaryVtx(xyz);
-      Double_t dx=xyz[0]-xv, dy=xyz[1]-yv;
-      Double_t lt=TMath::Sqrt(dx*dx + dy*dy);
+      Double_t dxv=xyz[0]-xv, dyv=xyz[1]-yv;
+      Double_t lt=TMath::Sqrt(dxv*dxv + dyv*dyv);
 
       Double_t pt=TMath::Sqrt(v0->Pt2V0());
 
@@ -426,11 +426,11 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
 	 if (p0->Pt()<pMin) goto noas;
 	 if (TMath::Abs(p0->Y())>yMax ) goto noas;
 
-         Double_t dz=mcZv - p0->Zv(), dy=mcYv - p0->Yv(), dx=mcXv - p0->Xv();
-         Double_t l = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+         Double_t dz0=mcZv - p0->Zv(),dy0=mcYv - p0->Yv(),dx0=mcXv - p0->Xv();
+         Double_t l = TMath::Sqrt(dx0*dx0 + dy0*dy0 + dz0*dz0);
 
-         dx = mcXv - pp->Xv(); dy = mcYv - pp->Yv();
-         Double_t ltAs=TMath::Sqrt(dx*dx + dy*dy);
+         dx0 = mcXv - pp->Xv(); dy0 = mcYv - pp->Yv();
+         Double_t ltAs=TMath::Sqrt(dx0*dx0 + dy0*dy0);
          Double_t ptAs=p0->Pt();
 
 	 if (l > 0.01) { // Secondary V0
