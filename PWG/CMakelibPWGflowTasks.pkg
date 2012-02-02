@@ -49,6 +49,7 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskPIDflowQA.cxx 
     FLOW/Tasks/AliAnalysisTaskQAPmdflow.cxx 
     FLOW/Tasks/AliFlowBayesianPID.cxx
+    FLOW/Tasks/AliAnalysisTaskPhiFlow.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

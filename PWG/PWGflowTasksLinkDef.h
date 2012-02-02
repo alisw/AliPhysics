@@ -27,5 +27,7 @@
 #pragma link C++ class AliAnalysisTaskPIDflowQA+;
 #pragma link C++ class AliAnalysisTaskQAPmdflow+;
 #pragma link C++ class AliFlowBayesianPID+;
+#pragma link C++ class AliAnalysisTaskPhiFlow+;
 
 #endif
+
