@@ -149,11 +149,13 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
   
   delete fEMCALRecoUtils;
   delete fRecParam;
-  delete fClusterizer;
   delete fUnfolder;
-  if (fDigitsArr){
+  if (!fClusterizer) {
     fDigitsArr->Clear("C");
     delete fDigitsArr; 
+  } else {
+    delete fClusterizer;
+    fDigitsArr = 0;
   }
 }
 
@@ -295,7 +297,8 @@ void AliEMCALTenderSupply::ProcessEvent()
     UpdateCells();
     if (fDoUpdateOnly)
       return;
-    fReClusterize  = kTRUE;
+    if (!fReCalibCluster||!fRecalDistToBadChannels||!fRecalClusPos)
+      fReClusterize  = kTRUE;
   }
 
   // Reclusterize
@@ -354,14 +357,7 @@ void AliEMCALTenderSupply::ProcessEvent()
 
   // Track matching
   if (!TGeoGlobalMagField::Instance()->GetField()) {
-    const AliESDRun *erun = event->GetESDRun();
-    AliMagF *field = AliMagF::CreateFieldMap(erun->GetCurrentL3(),
-                                             erun->GetCurrentDip(),
-                                             AliMagF::kConvLHC,
-                                             kFALSE,
-                                             erun->GetBeamEnergy(),
-                                             erun->GetBeamType());
-    TGeoGlobalMagField::Instance()->SetField(field);
+    event->InitMagneticField();
   }
   
   fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo);
@@ -634,6 +630,9 @@ void AliEMCALTenderSupply::UpdateCells()
 //_____________________________________________________
 void AliEMCALTenderSupply::InitRecParam()
 {
+  // Initalize the reconstructor parameters
+  // Depending on the data type, different type of clusterizer
+  
   if (fDebugLevel>0) 
     AliInfo("Initialize the recParam");
 

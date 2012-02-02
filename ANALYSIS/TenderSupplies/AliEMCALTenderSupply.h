@@ -41,14 +41,14 @@ public:
   virtual void Init();
   virtual void ProcessEvent();
   
-  void     SetEMCALGeometryName(TString name)             { fEMCALGeoName = name             ;}
+  void     SetEMCALGeometryName(const char *name)         { fEMCALGeoName = name             ;}
   TString  EMCALGeometryName()                      const { return fEMCALGeoName             ;}
 
   void     SetDebugLevel(Int_t level)                     { fDebugLevel=level                ;}
 
   void     SetBasePath(const Char_t *basePath)            { fBasePath = basePath             ;}
  
-  void     SetConfigFileName(TString name)                { fConfigName = name               ;}
+  void     SetConfigFileName(const char *name)            { fConfigName = name               ;}
 
   void     SetNonLinearityFunction(Int_t fun)             { fNonLinearFunc = fun             ;}
   Int_t    GetNonLinearityFunction() const                { return fNonLinearFunc            ;}
