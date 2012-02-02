@@ -1,3 +1,10 @@
+// AliTRDonlineTrackletQA implements the standard QA for the TRD
+// on-line tracklets. It reads the tracklets provided by
+// AliTRDonlineTrackletFilter and analyses them. The QA can be run
+// on tracklets from simulation or from real data. In addition it is
+// possible to compare the tracklets from real data to re-simulation
+// based on the ADC data.
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
@@ -677,7 +684,7 @@ void AliTRDonlineTrackletQA::PlotESD(AliTRDtrackletWord *trkl)
 }
 
 
-Int_t AliTRDonlineTrackletQA::GetTrackletsForMC(Int_t /* label */, Int_t /*idx*/ [])
+Int_t AliTRDonlineTrackletQA::GetTrackletsForMC(Int_t /* label */, Int_t /*idx*/ []) const
 {
   // get tracklets for MC label
   // not implemented

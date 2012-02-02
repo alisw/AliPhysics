@@ -1,3 +1,6 @@
+// AliTRDonlineTrackletFilter implements an analysis task which makes
+// the TRD on-line tracklets accessible for other analysis tasks.
+
 #ifndef ALITRDONLINETRACKLETFILTER
 #define ALITRDONLINETRACKLETFILTER
 
@@ -48,7 +51,7 @@ class AliTRDonlineTrackletFilter : public AliAnalysisTask
   // ----- internal use -----
   AliTRDgeometry       *fGeo; //! TRD geometry
 
-  Int_t fNevent;
+  Int_t fNevent; // current event number
 
   TString fPath; //!
   TFile *fTrackletFile; //!

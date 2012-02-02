@@ -1,3 +1,10 @@
+// AliTRDonlineTrackletFilter implements an analysis task which reads
+// the tracklets from the TRD.Tracklets.root file and makes them
+// available to other analysis tasks. This allows to access the full
+// tracklet information without repeating the techncicalities in each
+// analysis task. The tracklets are made available in an exchange
+// container on the output slot 1.
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
@@ -64,6 +71,8 @@ AliTRDonlineTrackletFilter::~AliTRDonlineTrackletFilter()
 
 void AliTRDonlineTrackletFilter::ConnectInputData(const Option_t */* option */)
 {
+  // connect all the input handlers to access the data
+
   fInputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (fInputHandler)
     fInputEvent = fInputHandler->GetEvent();
@@ -75,6 +84,9 @@ void AliTRDonlineTrackletFilter::ConnectInputData(const Option_t */* option */)
 
 void AliTRDonlineTrackletFilter::CreateOutputObjects()
 {
+  // create the output objects used to make the tracklets available to
+  // other tasks
+
   OpenFile(1); 
   
   fTrackletTree = new TTree("tracklets", "on-line tracklets");
@@ -84,6 +96,8 @@ void AliTRDonlineTrackletFilter::CreateOutputObjects()
 
 Bool_t AliTRDonlineTrackletFilter::Notify()
 {
+  // we use notify to figure out which TRD.Tracklets.root file we have
+  // to use for accessing the tracklets
 
   TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
 
