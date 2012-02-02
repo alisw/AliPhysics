@@ -1,23 +1,23 @@
 // run.C
 //
-// Template run macro for AliAnalysisTaskLukeAOD.cxx/.h with example layout of
+// Template run macro for AliAnalysisTaskExAOD.cxx/.h with example layout of
 // physics selections and options, in macro and task.
 //
 // Author: Arvinder Palaha
-// Edited by Luke Hanratty for AODSLukeAOD
+// Edited by Luke Hanratty for AODSExAOD
 //
 class AliAnalysisGrid;
 
 //______________________________________________________________________________
-void runLukeAOD(
+void runExAOD(
          const char* runtype = "proof", // local, proof or grid
          const char *gridmode = "full", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate"). Full & Test work for proof
          const bool bMCtruth = 1, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
          const bool bMCphyssel = 1, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
          const Long64_t nentries = 1000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
          const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
-         const char *proofdataset = "/alice/sim/LHC11a10b_bis_000138534_AOD064", //"/alice/sim/LHC11a10a_000138795_AOD048", //"/alice/data/LHC10h_000139507_p2_AOD049", //"/alice/data/LHC10e_000130375_p2", //"/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
-         const char *proofcluster = "hanratty@kiaf.sdfarm.kr", //"alice-caf.cern.ch", //"hanratty@skaf.saske.sk", //"alice-caf.cern.ch", // which proof cluster to use in proof mode
+         const char *proofdataset = "/alice/sim/LHC11a10a_000138662_AOD048", //"/alice/sim/LHC11a10a_000138795_AOD048", //"/alice/data/LHC10h_000139507_p2_AOD049", //"/alice/data/LHC10e_000130375_p2", //"/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
+         const char *proofcluster = "hanratty@alice-caf.cern.ch", //"alice-caf.cern.ch", //"hanratty@skaf.saske.sk", //"alice-caf.cern.ch", // which proof cluster to use in proof mode
          const char *taskname = "AOD_AllCent_1" // sets name of grid generated macros
          )
 {
@@ -83,8 +83,8 @@ void runLukeAOD(
 	*/
 	
     // create task
-    gROOT->LoadMacro("AliAnalysisTaskLukeAOD.cxx++g");
-    AliAnalysisTaskSE* task = new AliAnalysisTaskLukeAOD(taskname);
+    gROOT->LoadMacro("AliAnalysisTaskExAOD.cxx++g");
+    AliAnalysisTaskSE* task = new AliAnalysisTaskExAOD(taskname);
     task->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
 	mgr->AddTask(task);
     
@@ -120,7 +120,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     // Set versions of used packages
     plugin->SetAPIVersion("V1.1X");
     plugin->SetROOTVersion("v5-30-03");
-    plugin->SetAliROOTVersion("v5-02-11-AN");
+    plugin->SetAliROOTVersion("v5-02-16-AN");
 
     // Declare input data to be processed.
 
@@ -158,11 +158,11 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
 
     // Declare the analysis source files names separated by blancs. To be compiled runtime
     // using ACLiC on the worker nodes.
-    plugin->SetAnalysisSource("AliAnalysisTaskLukeAOD.cxx");
+    plugin->SetAnalysisSource("AliAnalysisTaskExAOD.cxx");
 
     // Declare all libraries (other than the default ones for the framework. These will be
     // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-    plugin->SetAdditionalLibs("AliAnalysisTaskLukeAOD.h AliAnalysisTaskLukeAOD.cxx");
+    plugin->SetAdditionalLibs("AliAnalysisTaskExAOD.h AliAnalysisTaskExAOD.cxx");
 
     // Declare the output file names separated by blancs.
     // (can be like: file.root or file.root@ALICE::Niham::File)
