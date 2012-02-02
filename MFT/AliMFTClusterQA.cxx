@@ -8,7 +8,6 @@
 #include "AliMFTSegmentation.h"
 #include "TFile.h"
 #include "TH1D.h"
-#include "TH2D.h"
 #include "AliLog.h"
 #include "TString.h"
 
@@ -41,12 +40,11 @@ AliMFTClusterQA::AliMFTClusterQA():
   
   // default constructor
 
-  for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) {
+  for (Int_t iPlane=0; iPlane<fMaxNPlanesMFT; iPlane++) {
     fHistNClustersPerEvent[iPlane] = 0;
     fHistNPixelsPerCluster[iPlane] = 0;
     fHistClusterSizeX[iPlane] = 0; 
     fHistClusterSizeY[iPlane] = 0;
-    fClusterScatterPlotXY[iPlane] = 0;
   }
 
 }
@@ -89,14 +87,12 @@ Bool_t AliMFTClusterQA::LoadNextEvent() {
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
     Int_t nClusters = fMFT->GetRecPointsList(iPlane)->GetEntries();
     fHistNClustersPerEvent[iPlane] -> Fill(nClusters);
-    fClusterScatterPlotXY[iPlane]  -> Fill(0., 0.);    // "scaler" bin
     AliDebug(1,Form("nClusters = %5d", nClusters));
     for (Int_t iCluster=0; iCluster<nClusters; iCluster++) {
       AliMFTCluster *cluster = (AliMFTCluster*) (fMFT->GetRecPointsList(iPlane))->At(iCluster);
       fHistNPixelsPerCluster[iPlane] -> Fill(cluster->GetSize());
       fHistClusterSizeX[iPlane]      -> Fill(cluster->GetErrX()*1.e4);   // converted in microns
       fHistClusterSizeY[iPlane]      -> Fill(cluster->GetErrY()*1.e4);   // converted in microns
-      fClusterScatterPlotXY[iPlane]  -> Fill(cluster->GetX(), cluster->GetY());
     }
   }
 
@@ -137,15 +133,6 @@ void AliMFTClusterQA::BookHistos() {
     fHistNPixelsPerCluster[iPlane] -> Sumw2();
     fHistClusterSizeX[iPlane]      -> Sumw2();
     fHistClusterSizeY[iPlane]      -> Sumw2();
-
-    //------------------------------------------------------------
-
-    Int_t rMax = Int_t(10.*(fMFT->GetSegmentation()->GetPlane(iPlane)->GetRMaxSupport()));
-    fClusterScatterPlotXY[iPlane] = new TH2D(Form("fClusterScatterPlotXY_Pl%02d",iPlane),
-					     Form("Cluster scatter plot (Plane%02d)",iPlane),
-					     2*rMax+1, (-rMax-0.5)/10., (rMax+0.5)/10., 2*rMax+1, (-rMax-0.5)/10., (rMax+0.5)/10.);
-    
-    fClusterScatterPlotXY[iPlane] -> Sumw2();
     
   }
   
@@ -164,7 +151,6 @@ void AliMFTClusterQA::Terminate() {
     fHistNPixelsPerCluster[iPlane] -> Write();
     fHistClusterSizeX[iPlane]      -> Write();
     fHistClusterSizeY[iPlane]      -> Write();
-    fClusterScatterPlotXY[iPlane]  -> Write();
   }
 
   fFileOut -> Close();

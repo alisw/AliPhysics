@@ -22,10 +22,7 @@
 //====================================================================================================================================================
 
 #include "AliDigit.h"
-#include "AliMFTConstants.h"
 #include "AliMFTDigit.h"
-
-const Double_t AliMFTDigit::fElossPerElectron = AliMFTConstants::fElossPerElectron;
 
 ClassImp(AliMFTDigit)
 
@@ -51,18 +48,8 @@ AliMFTDigit::AliMFTDigit():
 
   // default cosntructor
 
-  for (Int_t iTrack=0; iTrack<fNMaxMCTracksPerDigit; iTrack++) fMCLabel[iTrack] = -1;
+  for (Int_t iTr=0; iTr<fNMaxMCTracks; iTr++) fMCLabel[iTr] = -1; 
 
 }
 
 //====================================================================================================================================================
-
-void  AliMFTDigit::AddMCLabel(Int_t label) { 
-
-  if (fNMCTracks<0 || fNMCTracks>=fNMaxMCTracksPerDigit) return; 
-  fMCLabel[fNMCTracks++] = label;
-
-}
-
-//====================================================================================================================================================
-

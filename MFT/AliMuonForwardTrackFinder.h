@@ -48,7 +48,6 @@
 #include "AliMFTCluster.h"
 #include "AliMFT.h"
 #include "AliMFTSegmentation.h"
-#include "AliMFTConstants.h"
 
 //====================================================================================================================================================
 //
@@ -67,7 +66,7 @@ public:
 
   AliMuonForwardTrackFinder();
   
-  virtual ~AliMuonForwardTrackFinder();
+  virtual ~AliMuonForwardTrackFinder() {;}
   
   enum {kAllClusters, kClustersGoodChi2, kClusterOfTrack, kClusterCorrectMC};
 
@@ -116,11 +115,11 @@ public:
   void SetNPlanesMFT(Int_t nPlanesMFT) { fNPlanesMFT = nPlanesMFT; }
   void SeparateFrontBackClusters();
   void SetNMaxMissingMFTClusters(Int_t nMaxMissingMFTClusters) { fNMaxMissingMFTClusters = nMaxMissingMFTClusters; }
-  void SetMandatoryPlane(Int_t iPlane) { if (0<=iPlane && iPlane<AliMFTConstants::fNMaxPlanes) fIsPlaneMandatory[iPlane] = kTRUE; }
+  void SetMandatoryPlane(Int_t iPlane) { if (0<=iPlane && iPlane<fMaxNPlanesMFT) fIsPlaneMandatory[iPlane] = kTRUE; }
 
   void FindClusterInPlane(Int_t planeId);
   void AttachGoodClusterInPlane(Int_t planeId);
-  void FillPlanesWithTrackHistory();
+  void FillPlanesWithTrackHistory(AliMuonForwardTrack *track);
   Double_t TryOneCluster(const AliMUONTrackParam &trackParam, AliMFTCluster *cluster);
   void BookHistos();
   void SetTitleHistos();
@@ -130,7 +129,7 @@ public:
 
   Bool_t IsCorrectMatch(AliMFTCluster *cluster);
   void CheckCurrentMuonTrackable();
-  Bool_t IsMother(Char_t *nameMother);
+  Bool_t IsMother(const Char_t *nameMother);
 
   void SetMatchingMode(Int_t matchingMode) { fMatchingMode = matchingMode; }
   void SetMinResearchRadiusAtLastPlane(Double_t minResearchRadius) { fMinResearchRadiusAtLastPlane = minResearchRadius; }
@@ -141,8 +140,6 @@ public:
   Bool_t InitGRP();
   Bool_t SetRunNumber();
 
-  void SetMaxNTracksToBeAnalyzed(Int_t nTracks) { fMaxNTracksToBeAnalyzed = nTracks; }
-
 private:
 
   AliMuonForwardTrackFinder(const AliMuonForwardTrackFinder& obj);
@@ -150,9 +147,9 @@ private:
 
 protected:
 
-  static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;        // max number of MFT planes
-  static const Double_t fRadLengthSi;
-
+  static const Int_t fMaxNPlanesMFT = 20;
+  static const Double_t radLengthSi = 9.37;  // expressed in cm
+  
   Int_t fRun; 
   Int_t fNEventsToAnalyze;           // events to analyze
   Double_t fSigmaClusterCut;         // to select the clusters in the MFT planes which are compatible with the extrapolated muon track
@@ -168,49 +165,46 @@ protected:
   Double_t fDistanceFromGoodClusterAndTrackAtLastPlane;
   Double_t fDistanceFromBestClusterAndTrackAtLastPlane;
 
-  TClonesArray *fMFTClusterArray[fNMaxPlanes];         //! array of clusters for the planes of the MFT
-  TClonesArray *fMFTClusterArrayFront[fNMaxPlanes];    //! array of front clusters for the planes of the MFT
-  TClonesArray *fMFTClusterArrayBack[fNMaxPlanes];     //! array of back clusters for the planes of the MFT
+  TClonesArray *fMFTClusterArray[fMaxNPlanesMFT];         // array of clusters for the planes of the MFT
+  TClonesArray *fMFTClusterArrayFront[fMaxNPlanesMFT];    // array of front clusters for the planes of the MFT
+  TClonesArray *fMFTClusterArrayBack[fMaxNPlanesMFT];     // array of back clusters for the planes of the MFT
 
   Double_t fRAbsorberCut;  // in cm, corresponds to the radial position of a 3 degrees track at the end of the absorber (-503 cm)
   Double_t fLowPtCut;      // in GeV/c, the lower limit for the pt of a track in the muon spectrometer
   Int_t fNPlanesMFT;              // number of planes of the Vertex Telescope (Muon Internal Tracker) -> This should be taken from the new version of  AliVZERO2
   Int_t fNPlanesMFTAnalyzed;
   Int_t fNMaxMissingMFTClusters;  // max. number of MFT clusters which can be missed in the global fit procedure
-  Bool_t fIsPlaneMandatory[fNMaxPlanes];      // specifies which MFT planes cannot be missed in the global fit procedure
+  Bool_t fIsPlaneMandatory[fMaxNPlanesMFT];    // specifies which MFT planes cannot be missed in the global fit procedure
 
   Int_t fEv;               // current event being analyzed
   Int_t fLabelMC;          // MC label of the muon track reconstructed in the spectrometer
 
   Bool_t fIsClusterCompatible[10];       // here the clusters in the Muon Spectrometer are concerned
 
-  Double_t fZPlane[fNMaxPlanes];        // z-position of the MFT planes (center of the support)
-  Double_t fRPlaneMax[fNMaxPlanes];     // max radius of the MFT planes (the support)
-  Double_t fRPlaneMin[fNMaxPlanes];     // min radius of the MFT planes (the support)
+  Double_t fZPlane[fMaxNPlanesMFT];        // z-position of the MFT planes (center of the support)
+  Double_t fRPlaneMax[fMaxNPlanesMFT];     // max radius of the MFT planes (the support)
+  Double_t fRPlaneMin[fMaxNPlanesMFT];     // min radius of the MFT planes (the support)
 
-  TH1D *fHistPtSpectrometer, *fHistPtMuonTrackWithGoodMatch, *fHistPtMuonTrackWithBadMatch;     //
-  TH1D *fHistRadiusEndOfAbsorber, *fHistNTracksAfterExtrapolation[fNMaxPlanes];		        //
-  TH1D *fHistNGoodClustersForFinalTracks, *fHistResearchRadius[fNMaxPlanes];			//
-  TH1D *fHistDistanceGoodClusterFromTrackMinusDistanceBestClusterFromTrackAtLastPlane;		//
-  TH1D *fHistDistanceGoodClusterFromTrackAtLastPlane;						//
-  TH1D *fHistChi2Cluster_GoodCluster[fNMaxPlanes], *fHistChi2Cluster_BadCluster[fNMaxPlanes];   //
-  TH1D *fHistGlobalChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[fNMaxPlanes];		        //
-  TH1D *fHistGlobalChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[fNMaxPlanes];                  //
+  TH1D *fHistPtSpectrometer, *fHistPtMuonTrackWithGoodMatch, *fHistPtMuonTrackWithBadMatch;
+  TH1D *fHistRadiusEndOfAbsorber, *fHistNTracksAfterExtrapolation[fMaxNPlanesMFT];
+  TH1D *fHistNGoodClustersForFinalTracks, *fHistResearchRadius[fMaxNPlanesMFT];
+  TH1D *fHistDistanceGoodClusterFromTrackMinusDistanceBestClusterFromTrackAtLastPlane;
+  TH1D *fHistDistanceGoodClusterFromTrackAtLastPlane;
+  TH1D *fHistChi2Cluster_GoodCluster[fMaxNPlanesMFT], *fHistChi2Cluster_BadCluster[fMaxNPlanesMFT];
+  TH1D *fHistChi2AtPlaneFor_GOOD_CandidatesOfTrackableMuons[fMaxNPlanesMFT], *fHistChi2AtPlaneFor_BAD_CandidatesOfTrackableMuons[fMaxNPlanesMFT];
 
-  TNtuple *fNtuFinalCandidates;
-  TNtuple *fNtuFinalBestCandidates;
+  TNtuple *fNtuFinalCandidates1, *fNtuFinalBestCandidates1;
+  TNtuple *fNtuFinalCandidates2, *fNtuFinalBestCandidates2;
 
-  TGraph *fGrMFTPlane[4][20];             //!
-  TEllipse *fCircleExt[fNMaxPlanes], *fCircleInt[fNMaxPlanes];  //!
-  TCanvas *fCanvas;                       //!
+  TGraph *fGrMFTPlane[fMaxNPlanesMFT][4];
+  TEllipse *fCircleExt[fMaxNPlanesMFT], *fCircleInt[fMaxNPlanesMFT];
+  TCanvas *fCanvas;
 
-  TLatex  *fTxtMuonHistory, *fTxtTrackGoodClusters, *fTxtTrackChi2[fNMaxPlanes];      //!
-  TLatex  *fTxtTrackFinalChi2, *fTxtTrackMomentum, *fTxtFinalCandidates, *fTxtDummy;  //!
-  TLatex  *fTxtAllClust, *fTxtClustGoodChi2, *fTxtClustMC, *fTxtClustOfTrack; 	      //!
-  TMarker *fMrkAllClust, *fMrkClustGoodChi2, *fMrkClustMC, *fMrkClustOfTrack;         //!
- 
-  Int_t fCountRealTracksAnalyzed;
-  Int_t fMaxNTracksToBeAnalyzed;
+  TLatex  *fTxtMuonHistory, *fTxtTrackGoodClusters, *fTxtTrackChi2[fMaxNPlanesMFT], *fTxtTrackFinalChi2, *fTxtFinalCandidates, *fTxtDummy;
+  TLatex  *fTxtAllClust, *fTxtClustGoodChi2, *fTxtClustMC, *fTxtClustOfTrack; 
+  TMarker *fMrkAllClust, *fMrkClustGoodChi2, *fMrkClustMC, *fMrkClustOfTrack;
+
+  Int_t fCountRealTracksAnalyzed; 
   Int_t fCountRealTracksWithRefMC; 
   Int_t fCountRealTracksWithRefMC_andTrigger;
   Int_t fCountRealTracksWithRefMC_andTrigger_andGoodPt;
@@ -218,46 +212,45 @@ protected:
   Int_t fCountRealTracksAnalyzedOfEvent;
   Int_t fCountRealTracksAnalyzedWithFinalCandidates;
 
-  Int_t fNClustersGlobalTrack[fNMaxPlanes], fNDFGlobalTrack[fNMaxPlanes];
+  Int_t fNClustersGlobalTrack[fMaxNPlanesMFT], fNDFGlobalTrack[fMaxNPlanesMFT];
   
-  TFile *fFileCluster;   //!
-  TFile *fFileESD;       //!
-  TFile *fFile_gAlice;   //!
+  TFile *fFileCluster;
+  TFile *fFileESD;
+  TFile *fFile_gAlice;
 
-  AliRunLoader *fRunLoader;           //!
-  AliLoader *fMFTLoader;              //!
-  AliMUONRecoCheck *fMuonRecoCheck;   //!
+  AliRunLoader *fRunLoader;
+  AliLoader *fMFTLoader;
+  AliMUONRecoCheck *fMuonRecoCheck;
 
-  TTree *fMFTClusterTree;  //!
+  TTree *fMFTClusterTree;
 
-  AliMUONTrack *fMuonTrackReco;                 //! muon track being analyzed
-  AliMuonForwardTrack *fCurrentTrack;           //! muon extrapolated track being tested
-  AliMuonForwardTrack *fFinalBestCandidate;     //! best final candidate (if any)
+  AliMUONTrack *fMuonTrackReco;           // muon track being analyzed
+  AliMuonForwardTrack *fCurrentTrack;     // muon extrapolated track being tested
   Bool_t fIsCurrentMuonTrackable;
-  Bool_t fIsGoodClusterInPlane[fNMaxPlanes];
+  Bool_t fIsGoodClusterInPlane[fMaxNPlanesMFT];
 
-  TClonesArray *fCandidateTracks;   //! array of track we are going to build (starting from fMuonTrackReco)
+  TClonesArray *fCandidateTracks;   // array of track we are going to build (starting from fMuonTrackReco)
 
-  AliMUONVTrackStore *fTrackStore;      //! list of reconstructed MUON tracks 
-  AliMUONVTrackStore *fTrackRefStore;   //! list of reconstructible MUON tracks
+  AliMUONVTrackStore *fTrackStore;      // list of reconstructed MUON tracks 
+  AliMUONVTrackStore *fTrackRefStore;   // list of reconstructible MUON tracks
   
   TIterator *fNextTrack;   //! Iterator for reading the MUON tracks
   
-  AliStack *fStack;  //!
+  AliStack *fStack;
 
-  AliMFT *fMFT;                        //!
-  AliMFTSegmentation *fSegmentation;   //!
+  AliMFT *fMFT;
+  AliMFTSegmentation *fSegmentation;
 
-  TFile *fOutputTreeFile, *fOutputQAFile;   //
-  TTree *fOutputEventTree;                  //!
+  TFile *fOutputTreeFile;
+  TTree *fOutputEventTree;
 
-  TClonesArray *fMuonForwardTracks;       //! array of AliMuonForwardTrack
+  TClonesArray *fMuonForwardTracks;       // array of AliMuonForwardTrack
 
   Int_t fMatchingMode;
   Double_t fMinResearchRadiusAtLastPlane;
 
-  AliGRPObject *fGRPData;              //! Data from the GRP/GRP/Data CDB folder
-  AliRunInfo *fRunInfo;                //!
+  AliGRPObject *fGRPData;              // Data from the GRP/GRP/Data CDB folder
+  AliRunInfo *fRunInfo;
 
   ClassDef(AliMuonForwardTrackFinder, 1); 
 

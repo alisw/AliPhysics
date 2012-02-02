@@ -48,9 +48,9 @@ public:
   
   Bool_t CreateStructure();
 
-  Int_t GetNActiveElements()  const { return fActiveElements->GetEntries();  }
-  Int_t GetNReadoutElements() const { return fReadoutElements->GetEntries(); }
-  Int_t GetNSupportElements() const { return fSupportElements->GetEntries(); }
+  Int_t GetNActiveElements()  { return fActiveElements->GetEntries();  }
+  Int_t GetNReadoutElements() { return fReadoutElements->GetEntries(); }
+  Int_t GetNSupportElements() { return fSupportElements->GetEntries(); }
 
   TClonesArray* GetActiveElements()  { return fActiveElements;  }
   TClonesArray* GetReadoutElements() { return fReadoutElements; }
@@ -60,37 +60,37 @@ public:
   THnSparseC* GetReadoutElement(Int_t id);
   THnSparseC* GetSupportElement(Int_t id);
 
-  Bool_t IsFront(THnSparseC *element) const { return (element->GetAxis(2)->GetXmin() < fZCenter); }
+  Bool_t IsFront(THnSparseC *element) { return (element->GetAxis(2)->GetXmin() < fZCenter); }
 
-  void DrawPlane(Option_t *opt="");
+  void DrawPlane(Char_t *opt="");
 
-  Double_t GetRMinSupport() const { return fRMinSupport; }
-  Double_t GetRMaxSupport() const { return fRMaxSupport; }
+  Double_t GetRMinSupport() { return fRMinSupport; }
+  Double_t GetRMaxSupport() { return fRMaxSupport; }
   Double_t GetThicknessSupport() { return GetSupportElement(0)->GetAxis(2)->GetXmax() - GetSupportElement(0)->GetAxis(2)->GetXmin(); }
   
-  Double_t GetZCenter()            const { return fZCenter; }
-  Double_t GetZCenterActiveFront() const { return fZCenterActiveFront; }
-  Double_t GetZCenterActiveBack()  const { return fZCenterActiveBack; }
+  Double_t GetZCenter() { return fZCenter; }
+  Double_t GetZCenterActiveFront() { return fZCenterActiveFront; }
+  Double_t GetZCenterActiveBack()  { return fZCenterActiveBack; }
 
   void SetEquivalentSilicon(Double_t equivalentSilicon)                       { fEquivalentSilicon            = equivalentSilicon; }
   void SetEquivalentSiliconBeforeFront(Double_t equivalentSiliconBeforeFront) { fEquivalentSiliconBeforeFront = equivalentSiliconBeforeFront; }
   void SetEquivalentSiliconBeforeBack(Double_t equivalentSiliconBeforeBack)   { fEquivalentSiliconBeforeBack  = equivalentSiliconBeforeBack; }
-  Double_t GetEquivalentSilicon()            const { return fEquivalentSilicon; }
-  Double_t GetEquivalentSiliconBeforeFront() const { return fEquivalentSiliconBeforeFront; }
-  Double_t GetEquivalentSiliconBeforeBack()  const { return fEquivalentSiliconBeforeBack; }
+  Double_t GetEquivalentSilicon()            { return fEquivalentSilicon; }
+  Double_t GetEquivalentSiliconBeforeFront() { return fEquivalentSiliconBeforeFront; }
+  Double_t GetEquivalentSiliconBeforeBack()  { return fEquivalentSiliconBeforeBack; }
   
 private:
 
   // measures in cm
 
-  static const Double_t fRadiusMin;            // minimum radial distance of the MFT sensors. To be carefully coordinated with fActiveSuperposition
+  static const Double_t fRadiusMin = 2.225;           // minimum radial distance of the MFT sensors. To be carefully coordinated with fActiveSuperposition
 
-  static const Double_t fActiveSuperposition;  // superposition between the active elements tasselling the MFT planes, for having a 
-                                               // full acceptance coverage even in case of 10 degrees inclined tracks
-  static const Double_t fHeightActive;         // height of the active elements
-  static const Double_t fHeightReadout;        // height of the readout elements attached to the active ones
+  static const Double_t fActiveSuperposition = 0.05;  // superposition between the active elements tasselling the MFT planes, for having a 
+                                                      // full acceptance coverage even in case of 10 degrees inclined tracks
+  static const Double_t fHeightActive = 0.5;          // height of the active elements
+  static const Double_t fHeightReadout = 0.3;         // height of the readout elements attached to the active ones
 
-  static const Double_t fSupportExtMargin;     // minimum border size between the end of the support plane and the sensors: fHeightReadout + 0.3
+  static const Double_t fSupportExtMargin = 0.3 + 0.3;    // minimum border size between the end of the support plane and the sensors: fHeightReadout + 0.3
 
   Int_t fPlaneNumber;
 

@@ -6,7 +6,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  AliMFTConstants+;
 #pragma link C++ class  AliMFTPlane+;
 #pragma link C++ class  AliMFTSegmentation+;
 #pragma link C++ class  AliMFTDigit+;

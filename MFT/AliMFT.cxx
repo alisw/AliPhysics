@@ -63,7 +63,7 @@ AliMFT::AliMFT():
   fChargeDispersion(0),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(0),
-  fDensitySupportOverSi(0.1)
+  fDensitySiOverSupport(10)
 {
 
   // default constructor
@@ -86,7 +86,7 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title):
   fChargeDispersion(0),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(0),
-  fDensitySupportOverSi(0.1)
+  fDensitySiOverSupport(10)
 {
 
   fNameGeomFile = "AliMFTGeometry.root";
@@ -113,7 +113,7 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title, Char_t *nameGeomFile):
   fChargeDispersion(0),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(0),
-  fDensitySupportOverSi(0.1)
+  fDensitySiOverSupport(10)
 {
 
   fNameGeomFile = nameGeomFile;
@@ -175,7 +175,7 @@ void AliMFT::CreateMaterials() {
   AliMaterial(++matId, "Readout", aSi,   zSi,    dSi,    radSi,  absSi  );  
   AliMedium(kReadout,  "Readout", matId, unsens, isxfld, sxmgmx, tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
 
-  AliMaterial(++matId, "Support", aSi,   zSi,    dSi*fDensitySupportOverSi, radSi/fDensitySupportOverSi, absSi/fDensitySupportOverSi);  
+  AliMaterial(++matId, "Support", aSi,   zSi,    dSi/fDensitySiOverSupport, fDensitySiOverSupport*radSi, fDensitySiOverSupport*absSi);  
   AliMedium(kSupport,  "Support", matId, unsens, isxfld,  sxmgmx,    tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
     
   AliInfo("End MFT materials");
@@ -204,8 +204,6 @@ void AliMFT::CreateGeometry() {
 void AliMFT::StepManager() {
 
   // Full Step Manager
-
-  AliDebug(2, Form("Entering StepManager: gMC->CurrentVolName() = %s", gMC->CurrentVolName()));
 
   if (!fSegmentation) AliFatal("No segmentation available");    // DO WE HAVE A SEGMENTATION???
 
@@ -249,8 +247,8 @@ void AliMFT::StepManager() {
   gMC->TrackPosition(position);
   gMC->TrackMomentum(momentum);
 
-  AliDebug(1, Form("AliMFT::StepManager()->%s Hit #%06d (x=%f, y=%f, z=%f) belongs to track %02d\n", 
-		   gMC->CurrentVolName(), fNhits, position.X(), position.Y(), position.Z(), gAlice->GetMCApp()->GetCurrentTrackNumber())); 
+  AliDebug(1, Form("AliMFT::StepManager()->%s Hit #%06d (z=%f) belongs to track %02d\n", 
+		   gMC->CurrentVolName(), fNhits, position.Z(), gAlice->GetMCApp()->GetCurrentTrackNumber())); 
 
   hit.SetPosition(position);
   hit.SetTOF(gMC->TrackTime());
@@ -311,8 +309,6 @@ TGeoVolumeAssembly* AliMFT::CreateVol() {
 						    plane->GetRMaxSupport(),
 						    0.5*(plane->GetSupportElement(0)->GetAxis(2)->GetXmax() - 
 							 plane->GetSupportElement(0)->GetAxis(2)->GetXmin()) );
-    AliDebug(2, Form("Created vol %s", supportElem->GetName()));
-    supportElem->SetLineColor(kCyan-9);
     vol -> AddNode(supportElem, 0, new TGeoTranslation(origin[0], origin[1], origin[2]));
 
     AliDebug(1, "support elements created!");
@@ -332,8 +328,6 @@ TGeoVolumeAssembly* AliMFT::CreateVol() {
       for (Int_t iSlice=0; iSlice<fNSlices; iSlice++) {
 	origin[2] = -0.5*(plane->GetActiveElement(iActive)->GetAxis(2)->GetXmin() + 2*dz*(iSlice+1) + plane->GetActiveElement(iActive)->GetAxis(2)->GetXmin() + 2*dz*(iSlice) );
 	TGeoVolume *activeElem = gGeoManager->MakeBox(Form("MFT_plane%02d_active%03d_slice%02d", iPlane, iActive, iSlice), silicon, dx, dy, dz);
-	AliDebug(2, Form("Created vol %s", activeElem->GetName()));
-	activeElem->SetLineColor(kGreen);
 	vol -> AddNode(activeElem, 0, new TGeoTranslation(origin[0], origin[1], origin[2]));
       }
 
@@ -354,8 +348,6 @@ TGeoVolumeAssembly* AliMFT::CreateVol() {
       origin[2] = -0.5*(plane->GetReadoutElement(iReadout)->GetAxis(2)->GetXmax() + plane->GetReadoutElement(iReadout)->GetAxis(2)->GetXmin());
 
       TGeoVolume *readoutElem = gGeoManager->MakeBox(Form("MFT_plane%02d_readout%03d", iPlane, iReadout), readout, dx, dy, dz);
-      AliDebug(2, Form("Created vol %s", readoutElem->GetName()));
-      readoutElem->SetLineColor(kRed);
       vol -> AddNode(readoutElem, 0, new TGeoTranslation(origin[0], origin[1], origin[2]));
       
     }

@@ -43,6 +43,8 @@ private:
   AliMFTReconstructor(const AliMFTReconstructor&);              // Not implemented
   AliMFTReconstructor &operator=(const AliMFTReconstructor&);   // Not implemented
 
+  static const Int_t fNMaxDigitPerPlane = 10000;
+
   TObjArray  *fDigits;     
   Int_t      fNPlanes;
 

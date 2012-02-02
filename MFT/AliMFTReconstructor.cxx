@@ -66,7 +66,7 @@ void AliMFTReconstructor::Init() {
 
   fDigits = new TObjArray(fNPlanes);
   fDigits->SetOwner(kTRUE);
-  for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) fDigits->AddAt(new TClonesArray("AliMFTDigit"),iPlane);
+  for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) fDigits->AddAt(new TClonesArray("AliMFTDigit",fNMaxDigitPerPlane),iPlane);
 
   AliInfo("    ************* Using the MFT reconstructor! ****** ");
 

@@ -10,10 +10,10 @@ void SetMFTGeometry() {
 
   const Int_t nPlanes = 5;
   
-  const Float_t zCenter[nPlanes]          = {  -50.0,   -58.0,   -66.0,   -72.0,   -76.0 };   // expressed in cm
+  const Float_t zCenter[nPlanes]          = {  -50.0,   -58.0,   -66.0,   -74.0,   -82.0 };   // expressed in cm
 				          
-  const Float_t rMin[nPlanes]             = {   2.20,    2.60,    3.00,    3.30,    3.60 };   // expressed in cm  
-  const Float_t rMax[nPlanes]             = {   9.70,   11.00,   12.40,   13.40,   14.00 };   // expressed in cm
+  const Float_t rMin[nPlanes]             = {   2.00,    2.31,    2.66,    3.01,    3.36 };   // expressed in cm  
+  const Float_t rMax[nPlanes]             = {   9.70,   11.11,   12.52,   13.93,   15.34 };   // expressed in cm
 				          
   const Float_t pixelSizeX[nPlanes]       = { 20.e-4,  20.e-4,  20.e-4,  20.e-4,  20.e-4 };   // expressed in cm
   const Float_t pixelSizeY[nPlanes]       = { 20.e-4,  20.e-4,  20.e-4,  20.e-4,  20.e-4 };   // expressed in cm

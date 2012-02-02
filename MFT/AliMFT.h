@@ -24,6 +24,7 @@
 #include "AliDetector.h"
 #include "AliMC.h"
 #include "AliMagF.h"
+#include "AliMFT.h"
 #include "AliMFTHit.h"
 #include "AliMFTDigit.h"
 #include "AliMFTCluster.h"
@@ -33,7 +34,6 @@
 #include "AliMFTPlane.h"
 #include "TString.h"
 #include "TObjArray.h"
-#include "AliMFTConstants.h"
 
 //====================================================================================================================================================
 
@@ -64,20 +64,20 @@ public:
   void CreateDigits();
   void CreateRecPoints();
 
-  TObjArray*    GetSDigitsList()            const { return fSDigitsPerPlane; }     // get sdigits list for all planes
-  TClonesArray* GetSDigitsList(Int_t plane) const { return fSDigitsPerPlane ? (TClonesArray*) fSDigitsPerPlane->At(plane):0; } 
+  TObjArray*    GetSDigitsList()            const { return fSDigitsPerPlane; }                                                  // get sdigits list for all planes
+  TClonesArray* GetSDigitsList(Int_t plane) const { return fSDigitsPerPlane ? (TClonesArray*) fSDigitsPerPlane->At(plane):0; }  // get sdigits list for a plane
 
-  TObjArray*    GetDigitsList()            const{return fDigitsPerPlane;}          // get digits list for all layers
-  TClonesArray* GetDigitsList(Int_t plane) const{return fDigitsPerPlane ? (TClonesArray*) fDigitsPerPlane->At(plane):0; }
+  TObjArray*    GetDigitsList()            const{return fDigitsPerPlane;}                                                   // get digits list for all layers
+  TClonesArray* GetDigitsList(Int_t plane) const{return fDigitsPerPlane ? (TClonesArray*) fDigitsPerPlane->At(plane):0; }   // get digits list for a plane
 
-  TObjArray*    GetRecPointsList()            const{return fRecPointsPerPlane;}    // get cluster list for all layers
-  TClonesArray* GetRecPointsList(Int_t plane) const{return fRecPointsPerPlane ? (TClonesArray*) fRecPointsPerPlane->At(plane):0; }
+  TObjArray*    GetRecPointsList()            const{return fRecPointsPerPlane;}                                                      // get digits list for all layers
+  TClonesArray* GetRecPointsList(Int_t plane) const{return fRecPointsPerPlane ? (TClonesArray*) fRecPointsPerPlane->At(plane):0; }   // get digits list for a plane
 
   void ResetSDigits()   { if(fSDigitsPerPlane)   for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fSDigitsPerPlane  ->At(iPlane))->Clear(); }   // reset sdigits list  
   void ResetDigits()    { if(fDigitsPerPlane)    for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fDigitsPerPlane   ->At(iPlane))->Clear(); }   // reset digits list
   void ResetRecPoints() { if(fRecPointsPerPlane) for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fRecPointsPerPlane->At(iPlane))->Clear(); }   // reset recPoints list
   
-  AliDigitizer* CreateDigitizer(AliDigitizationInput *digInp) const { return new AliMFTDigitizer(digInp); }
+  AliDigitizer* CreateDigitizer(AliDigitizationInput *digInp) const { return new AliMFTDigitizer(digInp); }   // from AliModule invoked from AliSimulation::RunDigitization()
   
   AliMFTSegmentation* GetSegmentation() const { return fSegmentation; }
 
@@ -99,11 +99,11 @@ public:
   Int_t GetNStepForChargeDispersion() { return fNStepForChargeDispersion; }
   Double_t GetSingleStepForChargeDispersion() { return fSingleStepForChargeDispersion; }
 
-  void SetDensitySupportOverSi(Double_t density) { if (density>1e-6) fDensitySupportOverSi=density; else fDensitySupportOverSi=1e-6; }
+  void SetDensitySiOverSupport(Double_t density) { fDensitySiOverSupport = density; }
 
 protected:
 
-  static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;        // max number of MFT planes
+  static const Int_t fNMaxPlanes = 20;        // max number of MFT planes
 
   Int_t fVersion;
 
@@ -123,7 +123,7 @@ protected:
   Double_t fSingleStepForChargeDispersion;
   Int_t fNStepForChargeDispersion;
 
-  Double_t fDensitySupportOverSi;
+  Double_t fDensitySiOverSupport;
   
 private:
 

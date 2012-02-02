@@ -38,8 +38,7 @@ ClassImp(AliMuonForwardTrackPair)
 
 AliMuonForwardTrackPair::AliMuonForwardTrackPair():
   TObject(),
-  fMuonForwardTracks(0),
-  fKinemMC(0,0,0,0)
+  fMuonForwardTracks(0)
 {
 
   // default constructor
@@ -52,8 +51,7 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair():
 
 AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, AliMuonForwardTrack *track1):
   TObject(),
-  fMuonForwardTracks(0),
-  fKinemMC(0,0,0,0)
+  fMuonForwardTracks(0)
 {
 
   fMuonForwardTracks = new TClonesArray("AliMuonForwardTrack", 2);
@@ -61,16 +59,13 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, Al
   new ((*fMuonForwardTracks)[0]) AliMuonForwardTrack(*track0);
   new ((*fMuonForwardTracks)[1]) AliMuonForwardTrack(*track1);
 
-  SetKinemMC();
-
 }
 
 //====================================================================================================================================================
 
 AliMuonForwardTrackPair::AliMuonForwardTrackPair(const AliMuonForwardTrackPair& trackPair): 
   TObject(trackPair),
-  fMuonForwardTracks(trackPair.fMuonForwardTracks),
-  fKinemMC(trackPair.fKinemMC)
+  fMuonForwardTracks(trackPair.fMuonForwardTracks)
 {
 
   // copy constructor
@@ -140,20 +135,10 @@ Double_t AliMuonForwardTrackPair::GetMass(Double_t z, Int_t nClusters) {
   AliMUONTrackParam *param0 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMFTCluster(idCluster[0]);
   AliMUONTrackParam *param1 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMFTCluster(idCluster[1]);
 
-  AliDebug(2, Form("MFT before extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
-		   param0->Px(), param0->Py(), param0->Pz(), 
-		   param1->Px(), param1->Py(), param1->Pz()));
-
   if (TMath::Abs(z)<1e6) {
-    AliDebug(2, Form("Extrapolating 1st muon from z = %f to z = %f", param0->GetZ(), z));
     AliMUONTrackExtrap::ExtrapToZCov(param0, z);
-    AliDebug(2, Form("Extrapolating 2nd muon from z = %f to z = %f", param1->GetZ(), z));
     AliMUONTrackExtrap::ExtrapToZCov(param1, z);
   }
-
-  AliDebug(2, Form("MFT after extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
-		   param0->Px(), param0->Py(), param0->Pz(), 
-		   param1->Px(), param1->Py(), param1->Pz()));
 
   momentum[0] = (param0->P());
   momentum[1] = (param1->P());
@@ -164,9 +149,14 @@ Double_t AliMuonForwardTrackPair::GetMass(Double_t z, Int_t nClusters) {
 
   dimu.SetE(TMath::Sqrt(mMu*mMu + momentum[0]*momentum[0]) + TMath::Sqrt(mMu*mMu + momentum[1]*momentum[1]));
 
-  dimu.SetPx(param0->Px() + param1->Px());
-  dimu.SetPy(param0->Py() + param1->Py());
-  dimu.SetPz(param0->Pz() + param1->Pz());
+  dimu.SetPx(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMFTCluster(idCluster[0])->Px()+
+	     ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMFTCluster(idCluster[1])->Px());
+
+  dimu.SetPy(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMFTCluster(idCluster[0])->Py()+
+	     ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMFTCluster(idCluster[1])->Py());
+
+  dimu.SetPz(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMFTCluster(idCluster[0])->Pz()+
+	     ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMFTCluster(idCluster[1])->Pz());
 
   return dimu.M();
 
@@ -187,18 +177,8 @@ Double_t AliMuonForwardTrackPair::GetMassWithoutMFT(Double_t x, Double_t y, Doub
   AliMUONTrackParam *param0 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMUONCluster(idCluster[0]);
   AliMUONTrackParam *param1 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMUONCluster(idCluster[1]);
 
-  AliDebug(2, Form("MUON before extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
-		   param0->Px(), param0->Py(), param0->Pz(), 
-		   param1->Px(), param1->Py(), param1->Pz()));
-
-  AliDebug(2, Form("Extrapolating 1st muon from z = %f to z = %f", param0->GetZ(), z));
   AliMUONTrackExtrap::ExtrapToVertex(param0, x, y, z, 0., 0.);   // this should reproduce what is done in AliMUONESDInterface::MUONToESD(...) 
-  AliDebug(2, Form("Extrapolating 2nd muon from z = %f to z = %f", param1->GetZ(), z));
   AliMUONTrackExtrap::ExtrapToVertex(param1, x, y, z, 0., 0.);   // this should reproduce what is done in AliMUONESDInterface::MUONToESD(...) 
-
-  AliDebug(2, Form("MUON after extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
-		   param0->Px(), param0->Py(), param0->Pz(), 
-		   param1->Px(), param1->Py(), param1->Pz()));
 
   Double_t momentum[2] = {0}; 
 
@@ -221,58 +201,32 @@ Double_t AliMuonForwardTrackPair::GetMassWithoutMFT(Double_t x, Double_t y, Doub
 
 //====================================================================================================================================================
 
-void AliMuonForwardTrackPair::SetKinemMC() {
+Double_t AliMuonForwardTrackPair::GetMassMC() {
 
-  AliDebug(2, Form("MC: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
-		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Px(),
-		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Py(),
-		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Pz(),
-		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Px(),
-		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Py(),
-		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Pz()));
+  TLorentzVector dimu;
 
-  fKinemMC.SetE(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Energy() +
-		((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Energy());
-  
-  fKinemMC.SetPx(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Px() +
-		 ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Px());
-  
-  fKinemMC.SetPy(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Py() +
-		 ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Py());
-  
-  fKinemMC.SetPz(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Pz() +
-		 ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Pz());
+  dimu.SetE(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Energy() +
+	    ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Energy());
+
+  dimu.SetPx(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Px() +
+	     ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Px());
+
+  dimu.SetPy(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Py() +
+	     ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Py());
+
+  dimu.SetPz(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Pz() +
+	     ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Pz());
+
+  return dimu.M();
 
 }
 
 //====================================================================================================================================================
 
-Bool_t AliMuonForwardTrackPair::IsResonance() {
 
-  Bool_t result = kFALSE;
 
-  Int_t labelMC[2] = {0};
-  Int_t codePDG[2] = {0};
-  
-  for (Int_t iTrack=0; iTrack<2; iTrack++) {
-    labelMC[iTrack] = ((AliMuonForwardTrack*) fMuonForwardTracks->At(iTrack))->GetParentMCLabel(0);
-    codePDG[iTrack] = ((AliMuonForwardTrack*) fMuonForwardTracks->At(iTrack))->GetParentPDGCode(0);
-  }
 
-  AliDebug(1, Form("Muons' mothers: (%d, %d)", labelMC[0], labelMC[1]));
 
-  if (labelMC[0]==labelMC[1] && codePDG[0]==codePDG[1] && (codePDG[0]==   113 ||
-							   codePDG[0]==   223 ||
-							   codePDG[0]==   333 ||
-							   codePDG[0]==   443 ||
-							   codePDG[0]==100443 ||
-							   codePDG[0]==   553 ||
-							   codePDG[0]==100553 ) ) result = kTRUE;
 
-  if (result) AliDebug(1, Form("Pair is a resonance %d", codePDG[0]));
 
-  return result; 
 
-}
-
-//====================================================================================================================================================

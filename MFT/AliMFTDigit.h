@@ -13,7 +13,6 @@
 //====================================================================================================================================================
 
 #include "AliDigit.h"
-#include "AliMFTConstants.h"
 
 //====================================================================================================================================================
 
@@ -22,6 +21,7 @@ class AliMFTDigit: public AliDigit {
 public:
 
   AliMFTDigit();
+//   AliMFTDigit(const AliMFTDigit &d);
 
   virtual ~AliMFTDigit() {}
 
@@ -42,10 +42,9 @@ public:
   }
   void SetEloss(Double_t sig) { fEloss = sig; fNElectrons = fEloss/fElossPerElectron; }
 
-  void  AddMCLabel(Int_t label); 
-
+  void  AddMCLabel(Int_t label) { if (fNMCTracks>=fNMaxMCTracks) return; else fMCLabel[fNMCTracks++]=label; }
   Int_t GetNMCTracks() const { return fNMCTracks; }
-  Int_t GetMCLabel(Int_t track) const { if (track<fNMCTracks && track>=0 && fNMCTracks>0) return fMCLabel[track]; else return -1; }
+  Int_t GetMCLabel(Int_t track) const { if (track<fNMCTracks && track>=0) return fMCLabel[track]; else return -1; }
 
   Double_t  GetEloss()         const { return fEloss; }
   Double_t  GetNElectrons()    const { return fNElectrons; }
@@ -63,9 +62,9 @@ public:
     
 protected:
     
-  static const Double_t fElossPerElectron;
-  static const Int_t fNMaxMCTracksPerDigit = AliMFTConstants::fNMaxMCTracksPerDigit;
-  
+  static const Double_t fElossPerElectron = 3.62e-09;
+  static const Int_t fNMaxMCTracks = 10;
+
   Int_t fNMCTracks;
 
   Int_t fPixelX;
@@ -82,7 +81,7 @@ protected:
   Double_t fEloss;       // total signal as Eloss in the medium
   Double_t fNElectrons; 
   
-  Int_t fMCLabel[fNMaxMCTracksPerDigit];
+  Int_t fMCLabel[fNMaxMCTracks];
 
   ClassDef(AliMFTDigit,3)
 
@@ -91,3 +90,6 @@ protected:
 //====================================================================================================================================================
 
 #endif
+
+
+

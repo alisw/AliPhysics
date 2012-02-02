@@ -20,7 +20,6 @@
 #include "AliMFTSegmentation.h"
 #include "TTree.h"
 #include "TMath.h"
-#include "AliMFTConstants.h"
 
 //====================================================================================================================================================
 
@@ -31,7 +30,7 @@ public:
   AliMFTClusterFinder();
   ~AliMFTClusterFinder();
 
-  void Init(Char_t *nameGeomFile);
+  void Init(const Char_t *nameGeomFile);
   
   void MakeClusterBranch(TTree *treeCluster);
   void SetClusterTreeAddress(TTree *treeCluster);
@@ -40,19 +39,18 @@ public:
   void DigitsToClusters(const TObjArray *pDigitList);
 
   void StartEvent();
+  void BuildNewCluster(Int_t plane);
+  Bool_t IsCurrentDigitCompatible();
 
 private:
  
-  static const Int_t fNMaxDigitsPerCluster = AliMFTConstants::fNMaxDigitsPerCluster;
-  static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;
-  static const Double_t fCutForAvailableDigits;
-  static const Double_t fCutForAttachingDigits;
+  static const Int_t fNMaxDigitsPerCluster = 10;
+  static const Int_t fNMaxPlanes = 20;
 
   TClonesArray *fClustersPerPlane[fNMaxPlanes];    // ![fNPlanes] list of clusters [per plane]
 
   TClonesArray *fDigitsInCluster;
-  AliMFTDigit *fCurrentDigit;
-  AliMFTCluster *fCurrentCluster;
+  AliMFTDigit *fCurrentDig;
 
   AliMFTSegmentation *fSegmentation;
 

@@ -29,12 +29,7 @@
 #include "AliMFTSegmentation.h"
 #include "TTree.h"
 #include "TMath.h"
-#include "AliMFTConstants.h"
 #include "AliMFTClusterFinder.h"
-
-const Double_t AliMFTClusterFinder::fCutForAvailableDigits = AliMFTConstants::fCutForAvailableDigits;
-const Double_t AliMFTClusterFinder::fCutForAttachingDigits = AliMFTConstants::fCutForAttachingDigits;
-
 
 ClassImp(AliMFTClusterFinder)
 
@@ -43,8 +38,7 @@ ClassImp(AliMFTClusterFinder)
 AliMFTClusterFinder::AliMFTClusterFinder() : 
   TObject(),
   fDigitsInCluster(0),
-  fCurrentDigit(0),
-  fCurrentCluster(0),
+  fCurrentDig(0),
   fSegmentation(0),
   fNPlanes(0)
 {
@@ -70,7 +64,7 @@ AliMFTClusterFinder::~AliMFTClusterFinder() {
 
 //====================================================================================================================================================
 
-void AliMFTClusterFinder::Init(Char_t *nameGeomFile) {
+void AliMFTClusterFinder::Init(const Char_t *nameGeomFile) {
 
   fSegmentation = new AliMFTSegmentation(nameGeomFile);
   fNPlanes = fSegmentation -> GetNPlanes();
@@ -103,66 +97,119 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
   AliDebug(1, Form("nPlanes = %d", fNPlanes));
 
   StartEvent(); 
-  Bool_t isDigAvailableForNewCluster = kTRUE;
   
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
 
     AliDebug(1, Form("Plane %02d", iPlane));
 
     TClonesArray *myDigitList = (TClonesArray*) pDigitList->At(iPlane);
+    //    myDigitList->Sort();
 
     AliDebug(1, Form("myDigitList->GetEntries() = %d", myDigitList->GetEntries()));
 
-    Int_t cycleOverDigits = 0;
-    Double_t myCutForAvailableDigits = fCutForAvailableDigits;
-    
     while (myDigitList->GetEntries()) {
 
-      for (Int_t iDig=0; iDig<myDigitList->GetEntries(); iDig++) {
+      fDigitsInCluster->Clear();
+      
+      Bool_t clusterUpdated=kTRUE;
 
-	AliDebug(1, Form("Check %d: Digit %5d of %5d", cycleOverDigits, iDig, myDigitList->GetEntries()));
+      //---------------------------------------------------------------------------------------------------------
 
-	fCurrentDigit = (AliMFTDigit*) myDigitList->At(iDig);
-	isDigAvailableForNewCluster = kTRUE;
+      while (clusterUpdated) {    // repeat the loop on the digits until no new compatible digit is found
 
-	for (Int_t iCluster=0; iCluster<fClustersPerPlane[iPlane]->GetEntries(); iCluster++) {
-	  fCurrentCluster = (AliMFTCluster*) fClustersPerPlane[iPlane]->At(iCluster);
-	  AliDebug(2, Form("Distance between cluster and digit = %f",fCurrentCluster->GetDistanceFromPixel(fCurrentDigit))); 
-	  if (fCurrentCluster->GetDistanceFromPixel(fCurrentDigit) < fCutForAttachingDigits) { 
-	    fCurrentCluster->AddPixel(fCurrentDigit); 
-	    myDigitList->Remove(fCurrentDigit);
-	    myDigitList->Compress();
-	    iDig--;
-	    isDigAvailableForNewCluster = kFALSE;
-	    break; 
+	clusterUpdated = kFALSE;
+
+	for (Int_t iDig=0; iDig<myDigitList->GetEntries(); iDig++) {
+	  fCurrentDig = (AliMFTDigit*) myDigitList->At(iDig);
+	  if (fDigitsInCluster->GetEntries()<fNMaxDigitsPerCluster) {
+	    if (fDigitsInCluster->GetEntries()==0) {
+	      new ((*fDigitsInCluster)[fDigitsInCluster->GetEntries()]) AliMFTDigit(*fCurrentDig);
+	      myDigitList->Remove(fCurrentDig);
+	      clusterUpdated = kTRUE;
+	    }
+	    else if (IsCurrentDigitCompatible()) {
+	      new ((*fDigitsInCluster)[fDigitsInCluster->GetEntries()]) AliMFTDigit(*fCurrentDig);
+	      myDigitList->Remove(fCurrentDig);
+	      clusterUpdated = kTRUE;
+	    }
 	  }
-	  if (fCurrentCluster->GetDistanceFromPixel(fCurrentDigit) < myCutForAvailableDigits) isDigAvailableForNewCluster=kFALSE;
 	}
+	
+	if (clusterUpdated) myDigitList->Compress();
 
-	if (isDigAvailableForNewCluster) {
-	  AliMFTCluster *newCluster = new AliMFTCluster();
-	  newCluster->AddPixel(fCurrentDigit);
-	  myDigitList->Remove(fCurrentDigit);
-	  myDigitList->Compress();
-	  iDig--;
-	  new ((*fClustersPerPlane[iPlane])[fClustersPerPlane[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
-	}
+      }
 
-      }   // end of cycle over the digits
+      //---------------------------------------------------------------------------------------------------------
 
-      if (cycleOverDigits) myCutForAvailableDigits -= 0.5;
-      cycleOverDigits++;
+      AliDebug(1, "Building new cluster");
 
-    }   // no more digits to check in current plane!
+      BuildNewCluster(iPlane);  // here the new cluster is built
 
-    for (Int_t iCluster=0; iCluster<fClustersPerPlane[iPlane]->GetEntries(); iCluster++) {
-      fCurrentCluster = (AliMFTCluster*) fClustersPerPlane[iPlane]->At(iCluster);
-      fCurrentCluster -> TerminateCluster();
     }
 
-    AliDebug(1, Form("Found %d clusters in plane %02d", fClustersPerPlane[iPlane]->GetEntries(), iPlane));
+  }
 
-  }  // end of cycle over the planes
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTClusterFinder::IsCurrentDigitCompatible() {
+
+  // where it is decided if the current digit (fCurrentDig) is compatible with the current digits array (fDigitsInCluster)
+
+  for (Int_t iDigit=0; iDigit<fDigitsInCluster->GetEntries(); iDigit++) {
+    AliMFTDigit *tmpDig = (AliMFTDigit*) fDigitsInCluster->At(iDigit);
+    Int_t distX = TMath::Abs(tmpDig->GetPixelX() - fCurrentDig->GetPixelX());
+    Int_t distY = TMath::Abs(tmpDig->GetPixelY() - fCurrentDig->GetPixelY());
+    if (distX<=1 &&  distY<=1) return kTRUE;
+  }
+
+  return kFALSE;
+    
+}
+
+//====================================================================================================================================================
+
+void AliMFTClusterFinder::BuildNewCluster(Int_t plane) {
+
+  // where a new cluster is built, starting from the array of compatible digits (fDigitsInCluster)
+
+  AliDebug(1, Form("Starting cluster building from %d digits", fDigitsInCluster->GetEntries()));
+
+  AliMFTCluster *newCluster = new AliMFTCluster();
+
+  Double_t xCenters[fNMaxDigitsPerCluster] = {0};
+  Double_t yCenters[fNMaxDigitsPerCluster] = {0};
+  Double_t nElectrons = 0.;
+
+  for (Int_t iDigit=0; iDigit<fDigitsInCluster->GetEntries(); iDigit++) {
+    AliMFTDigit *tmpDig = (AliMFTDigit*) fDigitsInCluster->At(iDigit);
+    xCenters[iDigit] = tmpDig->GetPixelCenterX();
+    yCenters[iDigit] = tmpDig->GetPixelCenterY();
+    nElectrons      += tmpDig->GetNElectrons();
+    for (Int_t iTrack=0; iTrack<tmpDig->GetNMCTracks(); iTrack++) newCluster->AddMCLabel(tmpDig->GetMCLabel(iTrack));
+  }
+
+  newCluster -> SetX(TMath::Mean(fDigitsInCluster->GetEntries(), xCenters));
+  newCluster -> SetY(TMath::Mean(fDigitsInCluster->GetEntries(), yCenters));
+  newCluster -> SetZ(((AliMFTDigit*) fDigitsInCluster->At(0))->GetPixelCenterZ());
+
+  Double_t minErrX = ((AliMFTDigit*) fDigitsInCluster->At(0))->GetPixelWidthX() / TMath::Sqrt(12.);
+  Double_t minErrY = ((AliMFTDigit*) fDigitsInCluster->At(0))->GetPixelWidthY() / TMath::Sqrt(12.);
+  Double_t minErrZ = ((AliMFTDigit*) fDigitsInCluster->At(0))->GetPixelWidthZ() / TMath::Sqrt(12.);
+  newCluster -> SetErrX( TMath::Max(TMath::RMS(fDigitsInCluster->GetEntries(), xCenters), minErrX) );
+  newCluster -> SetErrY( TMath::Max(TMath::RMS(fDigitsInCluster->GetEntries(), yCenters), minErrY) );
+  newCluster -> SetErrZ( minErrZ );
+    
+  newCluster -> SetNElectrons(nElectrons);
+  newCluster -> SetPlane(plane);
+
+  newCluster -> SetSize(fDigitsInCluster->GetEntries());
+
+  AliDebug(1, Form("Adding cluster #%02d to tree (%f, %f, %f)", 
+		   fClustersPerPlane[plane]->GetEntries(), newCluster->GetX(), newCluster->GetY(), newCluster->GetZ()));
+
+  new ((*fClustersPerPlane[plane])[fClustersPerPlane[plane]->GetEntries()]) AliMFTCluster(*newCluster);
 
 }
 
