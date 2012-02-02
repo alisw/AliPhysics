@@ -368,7 +368,7 @@ void AliHFSystErr::InitDplustoKpipi2010pp() {
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",24,0,24);
-  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.04); // 4% PDG2010
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
@@ -491,7 +491,7 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.04); // 4% PDG2010
+  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
@@ -517,11 +517,12 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
   for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.05); // 5%
 
-  // MC dN/dpt  (copied from D0 : will update later)
+  // MC dN/dpt  (2/2/2012)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
   for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.);
-  fMCPtShape->SetBinContent(1,0.03);
-  fMCPtShape->SetBinContent(2,0.03);
+  for(Int_t iBin=7; iBin<=8; iBin++) fMCPtShape->SetBinContent(iBin,0.01);
+  for(Int_t iBin=9; iBin<=12; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
+  for(Int_t iBin=13; iBin<=16; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
 
 
   // particle-antiparticle
@@ -550,7 +551,7 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.04); // 4% PDG2010
+  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.021); // 2.1% 
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
@@ -580,11 +581,12 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
   fPIDEff->SetBinContent(3,0.13); // 13%
  
 
-  // MC dN/dpt  (copied from D0 : will update later)
+  // MC dN/dpt  (2/2/2012)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
   for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
-  fMCPtShape->SetBinContent(1,0.03);
-  fMCPtShape->SetBinContent(2,0.03);
+  for(Int_t iBin=4; iBin<=8; iBin++) fMCPtShape->SetBinContent(iBin,0.01);
+  for(Int_t iBin=9; iBin<=12; iBin++) fMCPtShape->SetBinContent(iBin,0.03);
+  for(Int_t iBin=13; iBin<=16; iBin++) fMCPtShape->SetBinContent(iBin,0.03);
 
 
   // particle-antiparticle
@@ -613,7 +615,7 @@ void AliHFSystErr::InitDplustoKpipi2010ppLowEn() {
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.021); // 4% PDG2010
+  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
