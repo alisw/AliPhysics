@@ -1456,16 +1456,18 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     THnSparse* hnUnfolded 
       = Unfold(hnHist,hnResponse,hnFlatEfficiency,nIter,useCorrelatedErrors,hnPrior);  
      
-    TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
-    hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+    TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0);
+    if (hist)
+      hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
     
     if(type == kFlagPt) fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hUnfolded,0,0);
     if(type == kFlagZ)  fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,0,hUnfolded,0);
     if(type == kFlagXi) fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,0,0,hUnfolded);
 
     // backfolding: apply response matrix to unfolded spectrum
-    TH1F* hBackFolded = ApplyResponse(hUnfolded,hnResponse); 
-    hBackFolded->SetNameTitle(histNameBackFolded,hist->GetTitle());
+    TH1F* hBackFolded = ApplyResponse(hUnfolded,hnResponse);
+    if (hist)
+      hBackFolded->SetNameTitle(histNameBackFolded,hist->GetTitle());
 
     if(type == kFlagPt) fh1FFTrackPtBackFolded[i] = hBackFolded;
     if(type == kFlagZ)  fh1FFZBackFolded[i]       = hBackFolded;
@@ -1474,7 +1476,8 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     // ratio unfolded to original histo 
     TH1F* hRatioUnfolded = (TH1F*) hUnfolded->Clone(histNameRatioFolded);
     hRatioUnfolded->Reset();
-    hRatioUnfolded->Divide(hUnfolded,hist,1,1,"B");
+    if (hist)
+      hRatioUnfolded->Divide(hUnfolded,hist,1,1,"B");
 
     if(type == kFlagPt) fh1FFRatioTrackPtFolded[i] = hRatioUnfolded;
     if(type == kFlagZ)  fh1FFRatioZFolded[i]       = hRatioUnfolded;
