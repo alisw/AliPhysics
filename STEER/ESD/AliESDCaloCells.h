@@ -86,7 +86,6 @@ Double_t AliESDCaloCells::GetCellAmplitude(Short_t cellNumber)
   if (pos>=0 && pos < fNCells && fCellNumber[pos] == cellNumber ) {
     return fAmplitude[pos];
   } else {
-    Warning("GetCellAmplitude","Wrong cell array index %d", pos);
     return 0.;
   }
 }
@@ -102,8 +101,7 @@ Double_t AliESDCaloCells::GetCellTime(Short_t cellNumber)
   if (pos>=0 && pos < fNCells && fCellNumber[pos] == cellNumber) {
     return fTime[pos];
   } else {
-    Warning("GetCellTime","Wrong cell array index %d", pos);
-    return 0.;
+    return -1.;
   }
 }
 
