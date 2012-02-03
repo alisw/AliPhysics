@@ -257,6 +257,33 @@ static Bool_t AcceptCascade(const AliESDcascade *cs, const AliESDEvent *esd) {
   return kTRUE;
 }
 
+static Bool_t AcceptPID(const AliPIDResponse *pidResponse, 
+			const AliESDtrack *ptrack, AliStack *stack) {
+
+  Bool_t isProton=kTRUE;
+
+  if (stack) {
+    // MC PID
+    Int_t ntrk=stack->GetNtrack();
+    Int_t plab=TMath::Abs(ptrack->GetLabel());
+    if (plab>=0)
+      if (plab<ntrk) {
+         TParticle *pp=stack->Particle(plab);
+         if (pp->GetPdgCode() != kProton) isProton=kFALSE;
+      }
+  } else {
+    // Real PID
+    const AliExternalTrackParam *par=ptrack->GetInnerParam();
+    if (par)
+    if (par->GetP()<1.) {
+       Double_t nsig=pidResponse->NumberOfSigmasTPC(ptrack,AliPID::kProton);
+       if (TMath::Abs(nsig) > 3.) isProton=kFALSE;
+    }
+  }
+  
+  return isProton; 
+}
+
 void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
 {
 
@@ -355,7 +382,6 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
 
   Int_t ntrk=esd->GetNumberOfTracks();
   Int_t mult=0;
-  Double_t nsig;
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=esd->GetTrack(i);
     if (!t->IsOn(AliESDtrack::kTPCrefit)) continue;
@@ -371,7 +397,7 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
     Double_t dedx=t->GetTPCsignal()/47.;
     fdEdx->Fill(p,dedx,1);
 
-    nsig=pidResponse->NumberOfSigmasTPC(t,AliPID::kProton);
+    Double_t nsig=pidResponse->NumberOfSigmasTPC(t,AliPID::kProton);
     if (TMath::Abs(nsig) < 3.) fdEdxPid->Fill(p,dedx,1);
 
   }
@@ -398,20 +424,22 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
       Bool_t ctK=kTRUE; if (0.4977*lt/pt > 3*2.68) ctK=kFALSE;
       Bool_t ctL=kTRUE; if (1.1157*lt/pt > 3*7.89) ctL=kFALSE;
 
+      Bool_t isProton=AcceptPID(pidResponse, ptrack, stack);
+
       //+++++++ MC
       if (stack) {
          Int_t ntrk=stack->GetNtrack();
 
          Int_t nlab=TMath::Abs(ntrack->GetLabel());
-         Int_t plab=TMath::Abs(ptrack->GetLabel());
-
          if (nlab<0) goto noas;      
          if (nlab>=ntrk) goto noas;      
+         TParticle *np=stack->Particle(nlab);
+
+         Int_t plab=TMath::Abs(ptrack->GetLabel());
          if (plab<0) goto noas;      
          if (plab>=ntrk) goto noas;      
-
-         TParticle *np=stack->Particle(nlab);
          TParticle *pp=stack->Particle(plab);
+
          Int_t i0=pp->GetFirstMother();
          //if (np->GetFirstMother() != i0) goto noas;
 
@@ -490,12 +518,8 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
       }
       
       if (ctL)
+      if (isProton)
       if (TMath::Abs(v0->RapLambda())<yMax) {
-         Double_t p=ptrack->GetInnerParam()->GetP();
-         if (p<1.) {
-            nsig=pidResponse->NumberOfSigmasTPC(ptrack,AliPID::kProton);
-            if (TMath::Abs(nsig) > 3.) continue;
-	 }
          v0->ChangeMassHypothesis(kLambda0);
 
          mass=v0->GetEffMass();
@@ -537,15 +561,14 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
 
       Double_t pt=cs->Pt();
 
+      Int_t pidx=TMath::Abs(v0->GetPindex());
+      AliESDtrack *ptrack=esd->GetTrack(pidx);
+
+      Bool_t isProton=AcceptPID(pidResponse, ptrack, stack);
+
       Int_t charge=cs->Charge();      
+      if (isProton)
       if (charge < 0) {         
-         Int_t pidx=TMath::Abs(v0->GetPindex());
-         AliESDtrack *ptrack=esd->GetTrack(pidx);
-         Double_t p=ptrack->GetInnerParam()->GetP();
-         if (p<1.) {
-            nsig=pidResponse->NumberOfSigmasTPC(ptrack,AliPID::kProton);
-            if (TMath::Abs(nsig) > 3.) continue;
-	 }
          cs->ChangeMassHypothesis(kine0,kXiMinus);
          Double_t mass=cs->GetEffMassXi();
 	 pt=cs->Pt();       
