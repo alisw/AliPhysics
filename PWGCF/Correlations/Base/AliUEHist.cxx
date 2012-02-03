@@ -795,9 +795,11 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   }
 
   Int_t totalEvents = eventSameAll->Integral();
-  Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
-  if (totalEvents > 0)
-    totalTracks->Scale(1.0 / totalEvents);
+  if (totalTracks) {
+    Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
+    if (totalEvents > 0)
+      totalTracks->Scale(1.0 / totalEvents);
+  }
   
   delete trackSameAll;
   delete trackMixedAll;
@@ -903,9 +905,11 @@ TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHi
 
   if (useVertexBins)
     totalEvents = vertexAxis->GetNbins();
-  Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
-  if (totalEvents > 0)
-    totalTracks->Scale(1.0 / totalEvents);
+  if (totalTracks) {
+    Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
+    if (totalEvents > 0)
+      totalTracks->Scale(1.0 / totalEvents);
+  }
   
   return totalTracks;
 }
