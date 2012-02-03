@@ -675,30 +675,71 @@ UInt_t AliRDHFCutsDstoKKpi::GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const{
   Int_t oksigmaTOFProtonHyp=fPidHF->GetnSigmaTOF(track,4,sigmaTOFProtonHyp);
   
   if (oksigmaTPCPionHyp && sigmaTPCPionHyp>0.){
-    if (sigmaTPCPionHyp<2.) bitmap+=1<<kTPCPionLess2;
-    else { if (sigmaTPCPionHyp<3.) bitmap+=1<<kTPCPionMore2Less3; else bitmap+=1<<kTPCPionMore3;}
+    if (sigmaTPCPionHyp<1.) bitmap+=1<<kTPCPionLess1;
+    else{
+      if (sigmaTPCPionHyp<2.) bitmap+=1<<kTPCPionMore1Less2;
+      else { 
+        if (sigmaTPCPionHyp<3.) bitmap+=1<<kTPCPionMore2Less3; 
+        else bitmap+=1<<kTPCPionMore3;
+      }
+    }
   }
-   if (oksigmaTPCKaonHyp && sigmaTPCKaonHyp>0.){
-    if (sigmaTPCKaonHyp<2.) bitmap+=1<<kTPCKaonLess2;
-    else { if (sigmaTPCKaonHyp<3.) bitmap+=1<<kTPCKaonMore2Less3; else bitmap+=1<<kTPCKaonMore3;}
+  
+  if (oksigmaTPCKaonHyp && sigmaTPCKaonHyp>0.){
+    if (sigmaTPCKaonHyp<1.) bitmap+=1<<kTPCKaonLess1;
+    else{
+      if (sigmaTPCKaonHyp<2.) bitmap+=1<<kTPCKaonMore1Less2;
+      else { 
+        if (sigmaTPCKaonHyp<3.) bitmap+=1<<kTPCKaonMore2Less3; 
+        else bitmap+=1<<kTPCKaonMore3;
+      }
+    }
   }
-   if (oksigmaTPCProtonHyp && sigmaTPCProtonHyp>0.){
-    if (sigmaTPCProtonHyp<2.) bitmap+=1<<kTPCProtonLess2;
-    else { if (sigmaTPCProtonHyp<3.) bitmap+=1<<kTPCProtonMore2Less3; else bitmap+=1<<kTPCProtonMore3;}
+  
+  if (oksigmaTPCProtonHyp && sigmaTPCProtonHyp>0.){
+    if (sigmaTPCProtonHyp<1.) bitmap+=1<<kTPCProtonLess1;
+    else{
+      if (sigmaTPCProtonHyp<2.) bitmap+=1<<kTPCProtonMore1Less2;
+      else { 
+        if (sigmaTPCProtonHyp<3.) bitmap+=1<<kTPCProtonMore2Less3; 
+        else bitmap+=1<<kTPCProtonMore3;
+      }
+    }
   }
   
   if (oksigmaTOFPionHyp && sigmaTOFPionHyp>0.){
-    if (sigmaTOFPionHyp<2.) bitmap+=1<<kTOFPionLess2;
-    else { if (sigmaTOFPionHyp<3.) bitmap+=1<<kTOFPionMore2Less3; else bitmap+=1<<kTOFPionMore3;}
+    if (sigmaTOFPionHyp<1.) bitmap+=1<<kTOFPionLess1;
+    else{
+      if (sigmaTOFPionHyp<2.) bitmap+=1<<kTOFPionMore1Less2;
+      else { 
+        if (sigmaTOFPionHyp<3.) bitmap+=1<<kTOFPionMore2Less3; 
+        else bitmap+=1<<kTOFPionMore3;
+      }
+    }
   }
-   if (oksigmaTOFKaonHyp && sigmaTOFKaonHyp>0.){
-    if (sigmaTOFKaonHyp<2.) bitmap+=1<<kTOFKaonLess2;
-    else { if (sigmaTOFKaonHyp<3.) bitmap+=1<<kTOFKaonMore2Less3; else bitmap+=1<<kTOFKaonMore3;}
+  
+  if (oksigmaTOFKaonHyp && sigmaTOFKaonHyp>0.){
+    if (sigmaTOFKaonHyp<1.) bitmap+=1<<kTOFKaonLess1;
+    else{
+      if (sigmaTOFKaonHyp<2.) bitmap+=1<<kTOFKaonMore1Less2;
+      else { 
+        if (sigmaTOFKaonHyp<3.) bitmap+=1<<kTOFKaonMore2Less3; 
+        else bitmap+=1<<kTOFKaonMore3;
+      }
+    }
   }
-   if (oksigmaTOFProtonHyp && sigmaTOFProtonHyp>0.){
-    if (sigmaTOFProtonHyp<2.) bitmap+=1<<kTOFProtonLess2;
-    else { if (sigmaTOFProtonHyp<3.) bitmap+=1<<kTOFProtonMore2Less3; else bitmap+=1<<kTOFProtonMore3;}
+  
+  if (oksigmaTOFProtonHyp && sigmaTOFProtonHyp>0.){
+    if (sigmaTOFProtonHyp<1.) bitmap+=1<<kTOFProtonLess1;
+    else{
+      if (sigmaTOFProtonHyp<2.) bitmap+=1<<kTOFProtonMore1Less2;
+      else { 
+        if (sigmaTOFProtonHyp<3.) bitmap+=1<<kTOFProtonMore2Less3; 
+        else bitmap+=1<<kTOFProtonMore3;
+      }
+    }
   }
+  
   
   
   return bitmap;

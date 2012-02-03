@@ -45,13 +45,14 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   UInt_t GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const;
 
   
-  enum TrackPIDBit{kTPCPionLess2,kTPCPionMore2Less3,kTPCPionMore3,
-                   kTPCKaonLess2,kTPCKaonMore2Less3,kTPCKaonMore3,
-                   kTPCProtonLess2,kTPCProtonMore2Less3,kTPCProtonMore3,
-                   kTOFPionLess2,kTOFPionMore2Less3,kTOFPionMore3,
-                   kTOFKaonLess2,kTOFKaonMore2Less3,kTOFKaonMore3,
-                   kTOFProtonLess2,kTOFProtonMore2Less3,kTOFProtonMore3};
-                   
+  enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
+                   kTPCKaonLess1,kTPCKaonMore1Less2,kTPCKaonMore2Less3,kTPCKaonMore3,
+                   kTPCProtonLess1,kTPCProtonMore1Less2,kTPCProtonMore2Less3,kTPCProtonMore3,
+                   kTOFPionLess1,kTOFPionMore1Less2,kTOFPionMore2Less3,kTOFPionMore3,
+                   kTOFKaonLess1,kTOFKaonMore1Less2,kTOFKaonMore2Less3,kTOFKaonMore3,
+                   kTOFProtonLess1,kTOFProtonMore1Less2,kTOFProtonMore2Less3,kTOFProtonMore3};
+                
+                 
   enum EDsPid {kConservative, kStrong};
   void SetPidOption(Int_t opt){
     fPidOption=opt;
