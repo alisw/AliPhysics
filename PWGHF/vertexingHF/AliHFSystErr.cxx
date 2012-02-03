@@ -933,6 +933,89 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb4080() {
 }
 
 //--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2010PbPb010CentScan(){
+  // define errors for RAA vs. centrality
+  InitD0toKpi2010PbPb020();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2010PbPb1020CentScan(){
+  // define errors for RAA vs. centrality
+  InitD0toKpi2010PbPb020();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2010PbPb2040CentScan(){
+  // define errors for RAA vs. centrality
+  InitD0toKpi2010PbPb020();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2010PbPb4060CentScan(){
+  // define errors for RAA vs. centrality
+  InitD0toKpi2010PbPb4080();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2010PbPb6080CentScan(){
+  // define errors for RAA vs. centrality
+  InitD0toKpi2010PbPb4080();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2010PbPb010CentScan(){
+  // define errors for RAA vs. centrality
+  InitDplustoKpipi2010PbPb020();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2010PbPb1020CentScan(){
+  // define errors for RAA vs. centrality
+  InitDplustoKpipi2010PbPb020();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2010PbPb2040CentScan(){
+  // define errors for RAA vs. centrality
+  InitDplustoKpipi2010PbPb020();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2010PbPb4060CentScan(){
+  // define errors for RAA vs. centrality
+  InitDplustoKpipi2010PbPb4080();
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2010PbPb6080CentScan(){
+  // define errors for RAA vs. centrality
+  InitDplustoKpipi2010PbPb4080();
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2010PbPb010CentScan(){
+  // define errors for RAA vs. centrality
+  InitDstartoD0pi2010PbPb020();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.16); 
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2010PbPb1020CentScan(){
+  // define errors for RAA vs. centrality
+  InitDstartoD0pi2010PbPb020();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.05); 
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2010PbPb2040CentScan(){
+  // define errors for RAA vs. centrality
+  InitDstartoD0pi2010PbPb2040();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.10); 
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2010PbPb4060CentScan(){
+  // define errors for RAA vs. centrality
+  InitDstartoD0pi2010PbPb4080();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.10); 
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2010PbPb6080CentScan(){
+  // define errors for RAA vs. centrality
+  InitDstartoD0pi2010PbPb4080();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.10); 
+}
+
+
+//--------------------------------------------------------------------------
 Double_t AliHFSystErr::GetCutsEffErr(Double_t pt) const {
   // 
   // Get error
