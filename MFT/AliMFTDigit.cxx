@@ -29,6 +29,7 @@ const Double_t AliMFTDigit::fElossPerElectron = AliMFTConstants::fElossPerElectr
 
 ClassImp(AliMFTDigit)
 
+
 //====================================================================================================================================================
 
 AliMFTDigit::AliMFTDigit():
