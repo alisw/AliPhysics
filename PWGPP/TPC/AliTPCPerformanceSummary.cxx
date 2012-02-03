@@ -539,9 +539,11 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     his3D->GetYaxis()->SetRangeUser(0,1);
     his3D->GetZaxis()->SetRangeUser(0.35,8);
     his2D  = dynamic_cast<TH2*>(his3D->Project3D("xz"));
-    his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
+    if (his2D)
+      his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
     width =  dynamic_cast<TH1*>(arrayWidth.At(2));
-    nXbins = width->GetNbinsX();
+    if (width)
+      nXbins = width->GetNbinsX();
     for(Int_t i=2; i<nXbins; i++){
       x = width->GetBinCenter(i);
       if(x!=0)
@@ -568,9 +570,11 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     //get his2D in C Side
     his3D->GetYaxis()->SetRangeUser(-1,-0.001);
     his2D  = dynamic_cast<TH2*>(his3D->Project3D("xz"));
-    his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
+    if (his2D)
+      his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
     width =  dynamic_cast<TH1*>(arrayWidth.At(2));
-    nXbins = width->GetNbinsX();
+    if (width)
+      nXbins = width->GetNbinsX();
     for(Int_t i=2; i<nXbins; i++){
       x = width->GetBinCenter(i);
       if(x!=0)
