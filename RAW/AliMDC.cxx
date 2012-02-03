@@ -510,7 +510,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
   if (fRawDB) Close();
 
   if (Open(mode,NULL,maxFileSize,fs1,fs2) < 0) {
-    close(fd);
+    if (fd>-1) close(fd);
     return 1;
   }
   // Process input stream
@@ -548,7 +548,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
       Error("Run", "AliMDC was compiled without event builder support");
       delete fRawDB;
       fRawDB = NULL;
-      close(fd);
+      if (fd>-1) close(fd);
       return 1;
 #endif
 
@@ -568,7 +568,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	    Error("Run", "error reading base header");
 	    Close();
 	    delete[] event;
-	    close(fd);
+	    if (fd>-1) close(fd);
 	    return 1;
 	  }
 	}
@@ -597,7 +597,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	  Close();
 	  delete[] event;
 	  delete hdr;
-	  close(fd);
+	  if (fd>-1) close(fd);
 	  return 1;
 	}
       }
@@ -617,7 +617,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	Close();
 	delete[] event;
 	delete hdr;
-	close(fd);
+	if (fd>-1) close(fd);
 	return 1;
       }
     }
@@ -648,7 +648,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	  Close();
 	  if (inputFile) delete[] event;
 	  delete hdr;
-	  close(fd);
+	  if (fd>-1) close(fd);
 	  return 1;
 	}
 
@@ -701,7 +701,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 #endif
   } else {
     // Close input source
-    close(fd);
+    if (fd>-1) close(fd);
     delete [] event;
   }
 
