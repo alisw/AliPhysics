@@ -809,17 +809,29 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb020() {
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
   for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.10); // 10%
+  fCutsEff->SetBinContent(4,0.15);
+  fCutsEff->SetBinContent(5,0.15);
+  fCutsEff->SetBinContent(6,0.15);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
   for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05); // 3%
  
 
-  // MC dN/dpt  (copied from D0 : will update later)
+  // MC dN/dpt  (from study on D* pt shape)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.);
-  fMCPtShape->SetBinContent(1,0.03);
-  fMCPtShape->SetBinContent(2,0.03);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.045);
+  fMCPtShape->SetBinContent(4,0.025);
+  fMCPtShape->SetBinContent(5,0.025);
+  fMCPtShape->SetBinContent(6,0.025);
+  fMCPtShape->SetBinContent(7,0.04);
+  fMCPtShape->SetBinContent(8,0.04);
+  fMCPtShape->SetBinContent(9,0.03);
+  fMCPtShape->SetBinContent(10,0.03);
+  fMCPtShape->SetBinContent(11,0.03);
+  fMCPtShape->SetBinContent(12,0.03);
+  
+  
 
   return;
 
@@ -924,10 +936,15 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb4080() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.);
-  fMCPtShape->SetBinContent(1,0.03);
-  fMCPtShape->SetBinContent(2,0.03);
-
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+  fMCPtShape->SetBinContent(2,0.05);
+  fMCPtShape->SetBinContent(3,0.05);
+  fMCPtShape->SetBinContent(4,0.05);
+  fMCPtShape->SetBinContent(5,0.04);
+  fMCPtShape->SetBinContent(6,0.02);
+  fMCPtShape->SetBinContent(7,0.04);
+  fMCPtShape->SetBinContent(8,0.04);
+ 
   return;
 
 }
