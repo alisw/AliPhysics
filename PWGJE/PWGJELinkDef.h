@@ -36,6 +36,6 @@
 #pragma link C++ class AliAnalysisTaskJetCore+;
 #pragma link C++ class AliAnalysisTaskQGSep+;
 #pragma link C++ class AliAnalysisTaskJetResponse+;
-#pragma link C++ class AliAnalysisTaskJetResponseV2;
-
+#pragma link C++ class AliAnalysisTaskJetResponseV2+;
+#pragma link C++ class AliAnalysisTaskPartonDisc+;
 #endif

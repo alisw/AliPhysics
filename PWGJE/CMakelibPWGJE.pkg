@@ -50,7 +50,8 @@ set ( SRCS
     AliAnalysisTaskJetsTM.cxx 
     AliAnalysisTaskJetResponse.cxx 
     AliPWG4HighPtTrackQA.cxx 
-    AliAnalysisTaskJetResponseV2.cxx 
+    AliAnalysisTaskJetResponseV2.cxx
+    AliAnalysisTaskPartonDisc.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
