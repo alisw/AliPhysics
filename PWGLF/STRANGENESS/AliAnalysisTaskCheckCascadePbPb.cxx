@@ -158,6 +158,9 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
     fCFContCascadePIDOmegaMinus(0),
     fCFContCascadePIDOmegaPlus(0),
     fCFContCascadeCuts(0),
+  fAlephParameters(),
+  fV0Sels(),
+  fCascSels(),
     
 //    fHnSpAngularCorrXiMinus(0), fHnSpAngularCorrXiPlus(0), 
 //    fHnSpAngularCorrOmegaMinus(0), fHnSpAngularCorrOmegaPlus(0),
@@ -247,6 +250,9 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
     fCFContCascadePIDOmegaMinus(0),
     fCFContCascadePIDOmegaPlus(0),
     fCFContCascadeCuts(0),
+  fAlephParameters(),
+  fV0Sels(),
+  fCascSels(),
     
 //    fHnSpAngularCorrXiMinus(0), fHnSpAngularCorrXiPlus(0), 
 //    fHnSpAngularCorrOmegaMinus(0), fHnSpAngularCorrOmegaPlus(0),

@@ -81,7 +81,9 @@ ClassImp(AliAnalysisTaskPerformanceStrange)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
-: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0),fPIDResponse(0), 
+: AliAnalysisTaskSE(), 
+  fCuts(),
+  fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0),fPIDResponse(0), 
 
   fHistMCPrimaryVertexX(0),
   fHistMCPrimaryVertexY(0),
@@ -368,7 +370,9 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),fPIDResponse(0),
+  : AliAnalysisTaskSE(name),
+    fCuts(),
+    fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),fPIDResponse(0),
 
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
@@ -1984,7 +1988,6 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   
     // Best Primary Vertex:  
     const AliESDVertex *myBestPrimaryVertex = ((AliESDEvent*)fESD)->GetPrimaryVertex();
-    myBestPrimaryVertex = ((AliESDEvent*)fESD)->GetPrimaryVertex();
     if (!myBestPrimaryVertex) return;
     if (!myBestPrimaryVertex->GetStatus()) return;
     fHistNumberEvents->Fill(3.5);
@@ -2054,6 +2057,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   //***********************
   // AliKF Primary Vertex
 
+  if (myPrimaryVertex) {
   AliKFVertex primaryVtxKF( *myPrimaryVertex );
   AliKFParticle::SetField(lMagneticField);
 
@@ -2176,9 +2180,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	negAPKF = new AliKFParticle( *(v0->GetParamP()) ,-2212);
 
       }
-
-      lLabelTrackPos = (UInt_t)TMath::Abs(myTrackPos->GetLabel());
-      lLabelTrackNeg = (UInt_t)TMath::Abs(myTrackNeg->GetLabel());
+      
+      if (myTrackPos)
+	lLabelTrackPos = (UInt_t)TMath::Abs(myTrackPos->GetLabel());
+      if (myTrackNeg)
+	lLabelTrackNeg = (UInt_t)TMath::Abs(myTrackNeg->GetLabel());
 
       // Daughters Pt and P:
       lPtPos = TMath::Sqrt(lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1]);
@@ -2188,9 +2194,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       lPNeg = TMath::Sqrt(lMomNeg[0]*lMomNeg[0] + lMomNeg[1]*lMomNeg[1] + lMomNeg[2]*lMomNeg[2]);
 
       // Inner Wall parameter:
-      const AliExternalTrackParam *myInnerWallTrackPos = myTrackPos->GetInnerParam(); 
+      const AliExternalTrackParam *myInnerWallTrackPos = 0x0;
+      if (myTrackPos) myInnerWallTrackPos = myTrackPos->GetInnerParam(); 
       if(myInnerWallTrackPos) lMomInnerWallPos = myInnerWallTrackPos->GetP(); 
-      const AliExternalTrackParam *myInnerWallTrackNeg = myTrackNeg->GetInnerParam(); 
+      const AliExternalTrackParam *myInnerWallTrackNeg = 0x0;
+      if (myTrackNeg) myInnerWallTrackNeg = myTrackNeg->GetInnerParam(); 
       if(myInnerWallTrackNeg) lMomInnerWallNeg = myInnerWallTrackNeg->GetP(); 
 	      
       // DCA between daughter and Primary Vertex:
@@ -2546,8 +2554,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     if ((LambdaPID==1 && V0momentum <=1) || (V0momentum>1) ||  !(fUsePID.Contains("withPID"))){  
       if ((TMath::Abs(lRapK0s) < lCutRap) && lOnFlyStatus==0) {
-      fHistTPCsignalPt->Fill(V0momentum,myTrackPos->GetTPCsignal());
-      // fHistTPCsignalPt->Fill(V0momentum,myTrackNeg->GetTPCsignal());
+	if (myTrackPos)
+	  fHistTPCsignalPt->Fill(V0momentum,myTrackPos->GetTPCsignal());
+	// if (myTrackNeg)
+	// fHistTPCsignalPt->Fill(V0momentum,myTrackNeg->GetTPCsignal());
       }
     }
 
@@ -2965,6 +2975,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   } // end V0 loop
 
   //  if (primaryVtxKF) delete primaryVtxKF;primaryVtxKF=NULL ;
+  } // Protection in case myPrimaryVertex is 0x0
 
 
   fHistV0Multiplicity->Fill(nv0s);
