@@ -41,6 +41,20 @@ AliPHOSTriggerRawDigit::AliPHOSTriggerRawDigit(const AliPHOSTriggerRawDigit & td
   fAmp = tdigit.fAmp;
 }
 
+AliPHOSTriggerRawDigit& AliPHOSTriggerRawDigit::operator=(const AliPHOSTriggerRawDigit & tdigit)
+{
+  if (&tdigit != this) {
+    AliDigitNew::operator=(tdigit);
+    fMod = tdigit.fMod;
+    fXIdx = tdigit.fXIdx;
+    fZIdx = tdigit.fZIdx;
+    fTRURow = tdigit.fTRURow;
+    fBranch = tdigit.fBranch; 
+  }
+
+  return *this;
+}
+
 void AliPHOSTriggerRawDigit::GetModXZ(Int_t& mod, Int_t& modX, Int_t& modZ)
 {
   //Return 4x4 region bottom left cell position.

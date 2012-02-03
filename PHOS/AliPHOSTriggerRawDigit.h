@@ -13,6 +13,7 @@ class AliPHOSTriggerRawDigit : public AliDigitNew
   AliPHOSTriggerRawDigit();
   AliPHOSTriggerRawDigit(Int_t module, Int_t xIdx, Int_t zIdx, Int_t TRURow, Int_t branch, Int_t amp);
   AliPHOSTriggerRawDigit(const AliPHOSTriggerRawDigit & tdigit);
+  AliPHOSTriggerRawDigit& operator=(const AliPHOSTriggerRawDigit & tdigit);
   virtual ~AliPHOSTriggerRawDigit() {}
 
   void Get4x4Position(Int_t& module, Int_t& xIdx, Int_t& zIdx, Int_t& TRURow, Int_t& branch) 
