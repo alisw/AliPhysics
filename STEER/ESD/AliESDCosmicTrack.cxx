@@ -102,6 +102,7 @@ AliESDCosmicTrack &AliESDCosmicTrack::operator=(const AliESDCosmicTrack & costrk
   //
   // assignment operator
   //
+  if(&costrk == this) return *this;
   AliExternalTrackParam::operator=(costrk);
   fLowerTrackParam = new AliExternalTrackParam(*costrk.fLowerTrackParam);
   fX0UpperTrackParam = new AliExternalTrackParam(*costrk.fX0UpperTrackParam);
