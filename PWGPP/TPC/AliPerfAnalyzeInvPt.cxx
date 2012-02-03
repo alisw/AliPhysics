@@ -140,6 +140,8 @@ Double_t AliPerfAnalyzeInvPt::InvGaussRejP(Double_t *x, const Double_t *par)
 //_____________________________________________________________________________________________________________________________________________
 AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
    TNamed("AliPerfAnalyzeInvPt","AliPerfAnalyzeInvPt"),
+   fThetaBins(),
+   fPhiBins(),
    fNThetaBins(0), 
    fNPhiBins(0),
    fRange(0),
@@ -147,6 +149,8 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
    fFitGaus(0) ,
    fDoRebin(0),
    fRebin(0),
+   fHistFitTheta(),
+   fHistFitPhi(),
    //histograms,graphs and functions
    fHistH2InvPtTheta(0),
    fHistH2InvPtPhi(0), 
@@ -178,6 +182,8 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
 //_____________________________________________________________________________________________________________________________________________
 AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(const Char_t* name="AliAnalyzeInvPt",const Char_t* title="AliAnalyzeInvPt"):
    TNamed(name, title),
+   fThetaBins(),
+   fPhiBins(),
    fNThetaBins(0), 
    fNPhiBins(0),
    fRange(0),
@@ -185,6 +191,8 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(const Char_t* name="AliAnalyzeInvPt",co
    fFitGaus(0) ,
    fDoRebin(0),
    fRebin(0),
+   fHistFitTheta(),
+   fHistFitPhi(),
    //histograms,graphs and functions
    fHistH2InvPtTheta(0),
    fHistH2InvPtPhi(0), 
