@@ -39,6 +39,7 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliMultiplicity.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliVParticle.h"
@@ -52,7 +53,6 @@
 #include "AliHFEV0cuts.h"
 #include "AliHFEtrdPIDqa.h"
 
-
 ClassImp(AliHFEpidQA)
 
   //__________________________________________
@@ -65,7 +65,9 @@ ClassImp(AliHFEpidQA)
     fOutput(NULL), 
     fESDpid(NULL),
     fNNref(NULL),
-    fTRDTotalChargeInSlice0(kFALSE)
+    fTRDTotalChargeInSlice0(kFALSE),
+    fIsPbPb(kFALSE),
+    fIsppMultiBin(kFALSE)
 {
   //
   // Default constructor
@@ -86,7 +88,9 @@ AliHFEpidQA::AliHFEpidQA(const AliHFEpidQA &ref):
   fOutput(NULL), 
   fESDpid(NULL),
   fNNref(NULL),
-  fTRDTotalChargeInSlice0(ref.fTRDTotalChargeInSlice0)
+  fTRDTotalChargeInSlice0(ref.fTRDTotalChargeInSlice0),
+  fIsPbPb(kFALSE),
+  fIsppMultiBin(kFALSE)
 {
   //
   // Copy constructor
@@ -373,6 +377,10 @@ void AliHFEpidQA::Process(){
 
   // Now we can do studies on the PID itself
   // For TRD use the TRD PID QA object
+  Int_t centrality=-1;
+  if(fIsPbPb) centrality=GetCentrality(fEvent);
+  if(fIsppMultiBin) centrality=GetMultiplicityITS(fEvent);
+  fTRDpidQA->SetCentralityBin(centrality);
   fTRDpidQA->ProcessTracks(cleanElectrons, AliPID::kElectron);
   fTRDpidQA->ProcessTracks(pionsK0, AliPID::kPion);
   fTRDpidQA->ProcessTracks(pionsL, AliPID::kPion);
@@ -1271,6 +1279,63 @@ Int_t AliHFEpidQA::TRDmomBin(Double_t p) const {
 
 
 }
-//__________________________________________________________________________
 
+//___________________________________________________
+Int_t AliHFEpidQA::GetCentrality(AliVEvent*  const fInputEvent){
+  //
+  // Recover the centrality of the event from ESD or AOD
+  //
+    Int_t bin = -1;
+
+    if(fIsPbPb)
+    {
+	// Centrality
+	AliCentrality *centrality = fInputEvent->GetCentrality();
+	Float_t fCentralityFtemp = -1;
+	fCentralityFtemp = centrality->GetCentralityPercentile("V0M");
+	Float_t centralityLimits[12] = {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.};
+	for(Int_t ibin = 0; ibin < 11; ibin++){
+	    if(fCentralityFtemp >= centralityLimits[ibin] && fCentralityFtemp < centralityLimits[ibin+1]){
+		bin = ibin;
+		break;
+	    }
+	}
+    }
+    AliDebug(2, Form("Centrality class %d\n", bin));
+
+
+    return bin;
+ 
+}
+
+//___________________________________________________
+Int_t AliHFEpidQA::GetMultiplicityITS(AliVEvent*  const fInputEvent)
+{
+  //
+  // Definition of the Multiplicity according to the JPSI group (F. Kramer)
+  //
+  Int_t nTracklets = 0;
+  Int_t nAcc = 0;
+  Double_t etaRange = 1.6;
+  Int_t bin = -1;
+
+  nTracklets = ((AliESDEvent*) fInputEvent)->GetMultiplicity()->GetNumberOfTracklets();
+  for (Int_t nn = 0; nn < nTracklets; nn++) {
+      Double_t eta = ((AliESDEvent*)fInputEvent)->GetMultiplicity()->GetEta(nn);
+      if (TMath::Abs(eta) < etaRange) nAcc++;
+  }
+
+  Int_t itsMultiplicity = nAcc;
+
+  Int_t multiplicityLimits[8] = {0, 1, 9, 17, 25, 36, 60, 500};
+  for(Int_t ibin = 0; ibin < 7; ibin++){
+      if(itsMultiplicity >= multiplicityLimits[ibin] && itsMultiplicity < multiplicityLimits[ibin + 1]){
+	  bin = ibin;
+        break;
+      }
+  }
+
+  return bin;
+
+}
 

@@ -21,11 +21,12 @@
 
 #include <Rtypes.h>
 
+class AliVTrack;
 class AliVParticle;
 
 class AliHFEpidObject{
   public:
-    enum AnalysisType_t { 
+    enum AnalysisType_t{ 
       kESDanalysis,
       kAODanalysis
     };
@@ -48,7 +49,7 @@ class AliHFEpidObject{
     AliHFEpidObject &operator=(const AliHFEpidObject &ref);
     ~AliHFEpidObject(){};
 
-    void SetRecTrack(const AliVParticle * recTrack) {fkRecTrack = recTrack; }
+    void SetRecTrack(const AliVTrack * recTrack) {fkRecTrack = recTrack; }
     void SetMCTrack(const AliVParticle * mcTrack);
     void SetAnalysisType(AnalysisType_t type) { fAnalysisType = type; }
     void SetAbInitioPID(Int_t abInitioPID) { fAbInitioPID = abInitioPID; }
@@ -56,7 +57,7 @@ class AliHFEpidObject{
     void SetPbPb() { fIsPbPb = kTRUE; }
     void SetPP() { fIsPbPb = kFALSE; }
 
-    const AliVParticle *GetRecTrack() const { return fkRecTrack; }
+    const AliVTrack *GetRecTrack() const { return fkRecTrack; }
     Int_t GetAbInitioPID() const { return fAbInitioPID; }
     Int_t GetCentrality() const { return fCentrality; }
     Bool_t IsAODanalysis() const { return fAnalysisType == static_cast<UChar_t>(kAODanalysis); }
@@ -64,7 +65,7 @@ class AliHFEpidObject{
     Bool_t IsPbPb() const { return fIsPbPb; }
 
   private:
-    const AliVParticle *fkRecTrack;     // Reconstructed track
+    const AliVTrack *fkRecTrack;        // Reconstructed track
     UChar_t fAnalysisType;              // Analysis Mode (ESD or AOD)
     Int_t fAbInitioPID;                 // AbInitio PID
     Int_t fCentrality;                  // Centrality Information

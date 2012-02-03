@@ -79,6 +79,15 @@ class AliHFEpidQA : public TObject{
     
     AliHFEtrdPIDqa *GetTRDQA() const { return fTRDpidQA; }
 
+    Int_t GetCentrality(AliVEvent*  const fInputEvent);
+    Int_t GetMultiplicityITS(AliVEvent*  const fInputEvent);
+    void SetPbPb() { fIsPbPb = kTRUE; };
+    void SetPP() { fIsPbPb = kFALSE; };
+    void SetPPMultiBin() { fIsppMultiBin = kFALSE; };
+    Bool_t IsPbPb() const { return fIsPbPb; };
+    Bool_t IsPP() const { return !fIsPbPb; };
+    Bool_t IsPPMultiBin() const { return fIsppMultiBin; };
+
   protected:
     enum{
       kV0pidQA = BIT(14),
@@ -109,6 +118,9 @@ class AliHFEpidQA : public TObject{
     Double_t TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Double_t *likelihood);
     Int_t TRDmomBin(Double_t p) const;
 
+
+
+
  protected:
     Int_t GetMaxPID(const Double_t *pidProbs) const;
     Int_t GetPDG(Int_t index);
@@ -125,7 +137,10 @@ class AliHFEpidQA : public TObject{
     TFile             *fNNref;        // reference file for NN pid 
     TMultiLayerPerceptron *fNet[11];  //  reference networks
     Bool_t fTRDTotalChargeInSlice0;     // Fix for Foreward/Backward compatibility
-  
+
+    Bool_t             fIsPbPb;        // Analysis Type: pp or PbPb
+    Bool_t             fIsppMultiBin;  // pp multiplicity bin analysis
+
   ClassDef(AliHFEpidQA, 1)            // PID QA tool
 };
 #endif

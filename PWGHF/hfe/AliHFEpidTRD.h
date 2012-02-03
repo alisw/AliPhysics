@@ -72,6 +72,11 @@ class AliHFEpidTRD : public AliHFEpidBase{
     void SetRenormalizeElPi(Bool_t doRenorm = kTRUE) { if(doRenorm) SetBit(kTRDrenormalize, kTRUE); else SetBit(kTRDrenormalize, kFALSE);}
     void SetElectronEfficiency(Double_t electronEfficiency) { fElectronEfficiency = electronEfficiency; }
     void SetNTracklets(Int_t nTracklets) { fNTracklets = nTracklets; }
+    void SetCutNTracklets(Int_t nTracklets, Bool_t exact = kTRUE) { 
+           fCutNTracklets = nTracklets;
+           if(exact) SetBit(kExactTrackletCut, kTRUE); 
+           else SetBit(kExactTrackletCut, kFALSE);
+    }
     void SetMinP(Double_t p) { fMinP = p; }
     void CalculateTRDSignals(Bool_t docalc) { SetBit(kTRDsignals, docalc); } 
 
@@ -87,7 +92,8 @@ class AliHFEpidTRD : public AliHFEpidBase{
       kTRDsignals = BIT(16),
       kThresholdsInitialized = BIT(17),
       kTRDrenormalize = BIT(18),
-      kSelectCutOnTheFly = BIT(19)
+      kSelectCutOnTheFly = BIT(19),
+      kExactTrackletCut = BIT(20)
     };
     void Copy(TObject &ref) const;
     Bool_t InitParamsFromOADB(Int_t run);
@@ -97,6 +103,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     AliOADBContainer *fOADBThresholds;                      // OADBContainer with thresholds
     Double_t fMinP;                                         // Minimum momentum above which TRD PID is applied
     Int_t    fNTracklets;                                   // Select cut for the number of tracklets
+    Int_t    fCutNTracklets;                                // Cut track based on the number of tracklets
     Int_t    fRunNumber;                                    // Run number
     Double_t fElectronEfficiency;                           // Cut on electron efficiency
     Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation

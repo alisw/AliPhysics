@@ -325,6 +325,7 @@ Double_t AliHFEvarManager::GetValue(AliVParticle *track, UInt_t code, Float_t ce
         else if(fSignal->IsNonHFElectron(track)) value = 3;
 	      else value = 4;
       }
+      AliDebug(2, Form("source: %f", value));
       break;
     }
     case kSpecies:  value = aprioriPID; break; 
@@ -519,14 +520,21 @@ AliHFEvarManager::AliHFEvariable& AliHFEvarManager::AliHFEvariable::operator=(co
   
   if(&ref != this){
     TNamed::operator=(ref);
+    if(ref.fBinning){
+      if(fNBins != ref.fNBins){
+        // Resize array with binning when necessary
+        if(fBinning) delete fBinning;
+        fBinning = new Double_t[ref.fNBins + 1];
+      }
+      memcpy(fBinning, ref.fBinning, sizeof(Double_t) * (ref.fNBins + 1));
+    } else {
+      if(fBinning) delete fBinning;
+      fBinning = NULL;
+    }
     fCode = ref.fCode;
     fNBins = ref.fNBins;
     fMax = ref.fMax;
     fMin = ref.fMin;
-    if(ref.fBinning){
-      fBinning = new Double_t[ref.fNBins + 1];
-      memcpy(fBinning, ref.fBinning, sizeof(Double_t) * (ref.fNBins + 1));
-    } else fBinning = NULL;
     fIsLogarithmic = ref.fIsLogarithmic;
   }
   return *this;
