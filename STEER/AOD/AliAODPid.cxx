@@ -116,7 +116,8 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
       if(pid.fTRDnSlices > 0) fTRDslices = new Double32_t[fTRDnSlices];
     }
 
-    memcpy(fTRDslices, pid.fTRDslices, fTRDnSlices*sizeof(Double32_t));
+    if (fTRDslices && pid.fTRDslices)
+      memcpy(fTRDslices, pid.fTRDslices, fTRDnSlices*sizeof(Double32_t));
 
     fTRDntls = pid.fTRDntls;
     for(Int_t i = 0; i < 6; i++){ 
