@@ -740,6 +740,11 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
     // ***** V0 info    
     AliESDVZERO* esdV0 = esd->GetVZEROData();
+    if (!esdV0)
+      {
+	AliError("AliESDVZERO not available");
+	return;
+      }
     multV0A=esdV0->GetMTotV0A();
     multV0C=esdV0->GetMTotV0C();
     v0Corr = multV0A+multV0C;
@@ -752,6 +757,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     if (!esdT0)
       {
 	AliError("AliESDTZERO not available");
+	return;
       }
     Int_t trig=esdT0->GetT0Trig();
     Bool_t kT0BB = kFALSE;    
