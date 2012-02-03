@@ -360,11 +360,13 @@ void AliPerformanceMatch::ProcessTPCConstrain(AliStack* /*const stack*/, AliESDE
   //isOK = TPCinner->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
 
   AliExternalTrackParam * TPCinnerC = new AliExternalTrackParam(*TPCinner);
-  isOK = TPCinnerC->ConstrainToVertex(vtxESD, b);
+  if (TPCinnerC) {
+    isOK = TPCinnerC->ConstrainToVertex(vtxESD, b);
 
-  // transform to the track reference frame 
-  isOK = TPCinnerC->Rotate(esdTrack->GetAlpha());
-  isOK = TPCinnerC->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
+    // transform to the track reference frame 
+    isOK = TPCinnerC->Rotate(esdTrack->GetAlpha());
+    isOK = TPCinnerC->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
+  }
   if(!isOK) return;
 
   Double_t sigmaPhi=0,deltaPhi=0,pullPhi=0;
