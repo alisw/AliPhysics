@@ -38,11 +38,18 @@ AliAnalysisTaskDimuonCFContainerBuilder::AliAnalysisTaskDimuonCFContainerBuilder
   fNevt(0),
   fBeamEnergy(3500.),
   fOutput(0x0),
+  fChi2Track(),
+  fChi2MatchTrig(),
+  fPtSingMuCut(),
+  fThetaSingMuCut(),
+  fzPrimVertexSPD(),
   fCutOnzVtxSPD(kFALSE),
   fNContributors(),
   fCutOnNContributors(kFALSE),
   fTrigClassMuon(""),
   fTrigClassInteraction(""),
+  fTrigClassMuonSide(),
+  fTrigClassInteractionSide(),
   fDistinguishTrigClass(kFALSE)
 {
   
@@ -75,11 +82,18 @@ AliAnalysisTaskDimuonCFContainerBuilder::AliAnalysisTaskDimuonCFContainerBuilder
   fNevt(0),
   fBeamEnergy(3500.),
   fOutput(0x0),
+  fChi2Track(),
+  fChi2MatchTrig(),
+  fPtSingMuCut(),
+  fThetaSingMuCut(),
+  fzPrimVertexSPD(),
   fCutOnzVtxSPD(kFALSE),
   fNContributors(),
   fCutOnNContributors(kFALSE),
   fTrigClassMuon(""),
   fTrigClassInteraction(""),
+  fTrigClassMuonSide(),
+  fTrigClassInteractionSide(),
   fDistinguishTrigClass(kFALSE)
 {
   //
