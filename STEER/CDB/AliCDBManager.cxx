@@ -131,8 +131,10 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
 	TPair* pair = 0;
 	while((pair = dynamic_cast<TPair*> (iter.Next()))){
 	    TObjString *os = dynamic_cast<TObjString*>(pair->Key());
+	    if (!os) continue;
 	    TString path = os->GetString();
 	    AliCDBEntry *entry = dynamic_cast<AliCDBEntry*>(pair->Value());
+	    if (!entry) continue;
 	    path.ReplaceAll("/","*");
 	    entry->Write(path.Data());
 	}
