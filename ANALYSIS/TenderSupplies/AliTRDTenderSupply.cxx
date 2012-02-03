@@ -466,7 +466,10 @@ void AliTRDTenderSupply::ApplyRunByRunCorrection(AliESDtrack *const track) {
   //
 
   TVectorD *corrfactor = dynamic_cast<TVectorD *>(fRunByRunCorrection->GetObject(fTender->GetRun()));
-  if(!corrfactor) AliDebug(2, "Couldn't derive gain correction factor from OADB");
+  if(!corrfactor) {
+    AliDebug(2, "Couldn't derive gain correction factor from OADB");
+    return;
+  }
   else AliDebug(2, Form("Gain factor from OADB %f", (*corrfactor)[0]));
   Double_t slice = 0;
   for(Int_t ily = 0; ily < kNPlanes; ily++){
