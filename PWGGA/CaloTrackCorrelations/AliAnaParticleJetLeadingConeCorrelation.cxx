@@ -1410,9 +1410,10 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
   
 } 
 
-//____________________________________________________________________________
-void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorrelation *particle, const TLorentzVector  pLeading)
-  const {
+//_______________________________________________________________________________________________
+void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorrelation *particle, 
+                                                         const TLorentzVector  pLeading)
+{
   //Fill the jet with the particles around the leading particle with 
   //R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and 
   //fill aod with found information 
