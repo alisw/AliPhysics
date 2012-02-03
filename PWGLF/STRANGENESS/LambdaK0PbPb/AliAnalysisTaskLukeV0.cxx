@@ -96,6 +96,7 @@ AliAnalysisTaskLukeV0::AliAnalysisTaskLukeV0() // All data members should be ini
 	fHistMLaPt(0), 
 	fHistMLbPt(0), 
 	fHistPtArm(0), 
+        fHistPtV0Z(0),
 	fHistRZ(0), 
 	fHistXZ(0), 
 	fHistYZ(0) // The last in the above list should not have a comma after it
@@ -146,7 +147,8 @@ AliAnalysisTaskLukeV0::AliAnalysisTaskLukeV0(const char *name) // All data membe
 	fHistMK0Pt(0), 
 	fHistMLaPt(0), 
 	fHistMLbPt(0), 
-	fHistPtArm(0), 
+	fHistPtArm(0),
+        fHistPtV0Z(0),
 	fHistRZ(0), 
 	fHistXZ(0), 
 	fHistYZ(0) // The last in the above list should not have a comma after it
@@ -339,7 +341,7 @@ void AliAnalysisTaskLukeV0::UserExec(Option_t *)
 		if (!mcEvent) 
 			{ 
 				Printf("ERROR: Could not retrieve MC event"); 
-				//return; 
+				return; 
 			}
 		else
 			{
@@ -373,7 +375,8 @@ void AliAnalysisTaskLukeV0::UserExec(Option_t *)
 			bool isprimaryMC = false;
 			
 			AliMCParticle *mcPart = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
-			
+			if (!mcPart) continue;
+
 			if(mcPart->PdgCode() == kLambda0)
 			{
 				lambdaMC = true;
@@ -394,7 +397,7 @@ void AliAnalysisTaskLukeV0::UserExec(Option_t *)
 			Int_t motherLabel = mcPart->GetMother();
 			AliMCParticle *mcMother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(motherLabel));
 			double motherType = -1;
-			if(motherLabel >= 0)
+			if(motherLabel >= 0 && mcMother)
 			{motherType = mcMother->PdgCode();}
 			
 			// this block of code is used to include primary Sigma0 decays as primary lambda/antilambda
@@ -840,6 +843,7 @@ void AliAnalysisTaskLukeV0::UserExec(Option_t *)
 			if(realParticle == true)
 			{
 				AliMCParticle *mcPart2 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(negParticleMotherLabel));
+				if (mcPart2) {
 
 				if(mcPart2->PdgCode() != kLambda0)
 					{mcLambdaCandidate = false;}
@@ -861,6 +865,7 @@ void AliAnalysisTaskLukeV0::UserExec(Option_t *)
 					fHistMcV0MK0Pt->Fill(v0->Pt(),v0->GetEffMass(2,2));
 				}
 				}
+			}
 
 			if(mcLambdaCandidate && lambdaCandidate)
 			{

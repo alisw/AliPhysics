@@ -69,6 +69,7 @@ AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD() // All data members should be i
 :AliAnalysisTaskSE(),
 fOutput(0),
 fPIDResponse(0),
+maskIsSelected(0),
 
 fHistPt(0), 
 fHistEta(0),
@@ -228,6 +229,7 @@ AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD(const char *name) // All data mem
 :AliAnalysisTaskSE(name),
 fOutput(0),
 fPIDResponse(0),
+maskIsSelected(0),
 
 fHistPt(0), 
 fHistEta(0),
