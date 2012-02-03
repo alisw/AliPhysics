@@ -115,7 +115,7 @@ public:
   
   void MakeAnalysisFillAOD();
   void MakeAnalysisFillHistograms();   
-  void MakeAODJet(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector pLeading) const ; 
+  void MakeAODJet(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector pLeading) ; 
   void MakeJetFromAOD(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector pLeading, 
 		      TLorentzVector & jet, TLorentzVector & bkg) const ; 
   
