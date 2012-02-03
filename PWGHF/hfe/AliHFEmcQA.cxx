@@ -60,7 +60,6 @@ ClassImp(AliHFEmcQA)
         // Default constructor
   for(Int_t mom = 0; mom < 9; mom++){
     fhD[mom] = NULL;
-    fhDLogbin[mom] = NULL;
   }
   for(Int_t mom = 0; mom < 50; mom++){
     fHeavyQuark[mom] = NULL;
@@ -88,7 +87,6 @@ TObject(p)
         // Copy constructor
   for(Int_t mom = 0; mom < 9; mom++){
     fhD[mom] = NULL;
-    fhDLogbin[mom] = NULL;
   }
   for(Int_t mom = 0; mom < 50; mom++){
     fHeavyQuark[mom] = NULL;
@@ -159,36 +157,36 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   CreateHistograms(AliHFEmcQA::kBeauty,2,"mcqa_unitY_");        // create histograms for beauty
   CreateHistograms(AliHFEmcQA::kOthers,2,"mcqa_unitY_");        // create histograms for beauty
  
-// check D spectra
-  TString kDspecies[9];
-  kDspecies[0]="411";
-  kDspecies[1]="421";
-  kDspecies[2]="431";
-  kDspecies[3]="4122";
-  kDspecies[4]="4132";
-  kDspecies[5]="4232";
-  kDspecies[6]="4332";
-  kDspecies[7]="413";
-  kDspecies[8]="423";
+// prepare 2D(pt vs Y) histogram for D spectra, we consider following 9 particles
+  const Int_t nbspecies = 9;
+  TString kDspecies[nbspecies];
+  kDspecies[0]="411";   //D+
+  kDspecies[1]="421";   //D0
+  kDspecies[2]="431";   //Ds+
+  kDspecies[3]="4122";  //Lambdac+
+  kDspecies[4]="4132";  //Ksic0
+  kDspecies[5]="4232";  //Ksic+
+  kDspecies[6]="4332";  //OmegaC0
+  kDspecies[7]="413";   //D*(2010)+
+  kDspecies[8]="423";   //D*(2007)0
 
   const Double_t kPtbound[2] = {0.1, 20.}; //bin taken for considering inclusive e analysis binning
   Int_t iBin[2];
-  iBin[0] = 44; // bins in pt
-  iBin[1] = 23; // bins in pt
+  iBin[0] = 44; // bins in pt for log binning
+  iBin[1] = 23; // bins in pt for pi0 measurement binning
   Double_t* binEdges[1];
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
   // bin size is chosen to consider ALICE D measurement
-  Double_t xbins[15]={0,0.5,1.0,2.0,3.0,4.0,5.0,6.0,8.0,12,16,20,30,40,50};
-  Double_t ybins[10]={-7.5,-1.0,-0.9,-0.8,-0.5,0.5,0.8,0.9,1.0,7.5};
+  const Int_t nptbins = 15;
+  const Int_t nybins = 9;
+  Double_t xbins[nptbins+1]={0,0.5,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,12,16,24,32,40,50}; //pt binning for the final 7 TeV D measurement 
+  Double_t ybins[nybins+1]={-7.5,-1.0,-0.9,-0.8,-0.5,0.5,0.8,0.9,1.0,7.5}; // y binning
   TString hname;
-  for (Int_t iDmeson=0; iDmeson<9; iDmeson++){
+  for (Int_t iDmeson=0; iDmeson<nbspecies; iDmeson++){
      hname = "Dmeson"+kDspecies[iDmeson];
-     fhD[iDmeson] = new TH2F(hname,hname+";p_{T} (GeV/c)",14,xbins,9,ybins);
-     hname = "DmesonLogbin"+kDspecies[iDmeson];
-     fhDLogbin[iDmeson] = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+     fhD[iDmeson] = new TH2F(hname,hname+";p_{T} (GeV/c)",nptbins,xbins,nybins,ybins);
      if(fQAhistos) fQAhistos->Add(fhD[iDmeson]);
-     if(fQAhistos) fQAhistos->Add(fhDLogbin[iDmeson]);
   }
 
   const Double_t kPtRange[24] = {0.,0.3,0.4,0.5,0.6,0.8,1.,1.2,1.4,1.6,1.8,2.,2.2,2.4,2.6,2.8,3.,3.5,4.,5.,6.,7.,20.,30.}; // to cope with Ana's bin
@@ -269,14 +267,19 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   }
 
   const Double_t kPtbound[2] = {0.1, 20.}; //bin taken for considering inclusive e analysis binning
-  Int_t iBin[1];
+  const Int_t nptbinning1 = 35;
+  Int_t iBin[2];
   iBin[0] = 44; // bins in pt
+  iBin[1] = nptbinning1; // bins in pt
   Double_t* binEdges[1];
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
+  // new binning for final electron analysis
+  const Double_t kPtbinning1[nptbinning1+1] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
 
-  Double_t xcorrbin[501];
-  for (int icorrbin = 0; icorrbin< 501; icorrbin++){
+  const Int_t ndptbins = 500;
+  Double_t xcorrbin[ndptbins+1];
+  for (int icorrbin = 0; icorrbin< ndptbins+1; icorrbin++){
     xcorrbin[icorrbin]=icorrbin*0.1;
   }
 
@@ -300,7 +303,8 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
      hname = hnopt+"PdgCode_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fPdgCode = new TH1F(hname,hname,20001,-10000.5,10000.5);
      hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[1],kPtbinning1); // new binning
+     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]); // old log binning
      //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",60,0.,30.); // mj to compare with FONLL
      //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",60,0.25,30.25); // mj to compare with FONLL
      hname = hnopt+"Y_"+kqTypeLabel[iqType];
@@ -317,20 +321,21 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
     hname = hnopt+"ProcessID_"+kqTypeLabel[kQuark];
     fHistComm[iq][icut].fProcessID = new TH1F(hname,hname,21,-10.5,10.5);
   }
+  hname = hnopt+"PtCorr_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+  //fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[0],binEdges[0]);
+  hname = hnopt+"PtCorrDp_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+  //fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[0],binEdges[0]);
+  hname = hnopt+"PtCorrD0_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+  //fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[0],binEdges[0]);
+  hname = hnopt+"PtCorrDrest_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+  //fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[0],binEdges[0]);
+  
   hname = hnopt+"ePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",200,0,20,100,0,1);
-  hname = hnopt+"PtCorr_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
-  //fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
-  hname = hnopt+"PtCorrDp_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
-  //fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
-  hname = hnopt+"PtCorrD0_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
-  //fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
-  hname = hnopt+"PtCorrDrest_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
-  //fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"DePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,20,100,0,1);
   hname = hnopt+"eDistance_"+kqTypeLabel[kQuark];
@@ -351,21 +356,21 @@ void AliHFEmcQA::Init()
 
   fNparents = 7;
 
-  fParentSelect[0][0] =  411;  
-  fParentSelect[0][1] =  421;
-  fParentSelect[0][2] =  431;
-  fParentSelect[0][3] = 4122;
-  fParentSelect[0][4] = 4132;
-  fParentSelect[0][5] = 4232;
-  fParentSelect[0][6] = 4332;
+  fParentSelect[0][0] =  411; //D+  
+  fParentSelect[0][1] =  421; //D0
+  fParentSelect[0][2] =  431; //Ds+
+  fParentSelect[0][3] = 4122; //Lambdac+
+  fParentSelect[0][4] = 4132; //Ksic0
+  fParentSelect[0][5] = 4232; //Ksic+
+  fParentSelect[0][6] = 4332; //OmegaC0
 
-  fParentSelect[1][0] =  511;
-  fParentSelect[1][1] =  521;
-  fParentSelect[1][2] =  531;
-  fParentSelect[1][3] = 5122;
-  fParentSelect[1][4] = 5132;
-  fParentSelect[1][5] = 5232;
-  fParentSelect[1][6] = 5332;
+  fParentSelect[1][0] =  511; //B0
+  fParentSelect[1][1] =  521; //B+
+  fParentSelect[1][2] =  531; //Bs0
+  fParentSelect[1][3] = 5122; //Lambdab0
+  fParentSelect[1][4] = 5132; //Ksib-
+  fParentSelect[1][5] = 5232; //Ksib0
+  fParentSelect[1][6] = 5332; //Omegab-
 
 }
 
@@ -772,18 +777,15 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
 
               if(iq==0) {
                fhD[i]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
-               if(TMath::Abs(AliHFEtools::GetRapidity(partCopy))<0.5) fhDLogbin[i]->Fill(partCopy->Pt());
               }
             }
          }
 	 // I also want to store D* info to compare with D* measurement 
 	 if (abs(pdgcodeCopy)==413 && iq==0) { //D*+
                fhD[7]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
-               if(TMath::Abs(AliHFEtools::GetRapidity(partCopy))<0.5) fhDLogbin[7]->Fill(partCopy->Pt());
 	 }
 	 if (abs(pdgcodeCopy)==423 && iq==0) { //D*0
                fhD[8]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
-               if(TMath::Abs(AliHFEtools::GetRapidity(partCopy))<0.5) fhDLogbin[8]->Fill(partCopy->Pt());
 	 }
     } // end of if
 }
@@ -1357,7 +1359,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
   Int_t maPdgcode = partMother->GetPdgCode();
 
    // if the mother is charmed hadron  
-   if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+   if ( (int(abs(maPdgcode)/100.)%10) == kCharm || (int(abs(maPdgcode)/1000.)%10) == kCharm ) {
 
      for (Int_t i=0; i<fNparents; i++){
         if (abs(maPdgcode)==fParentSelect[0][i]){
@@ -1394,7 +1396,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
         partMother = grandMa;
      } // end of iteration 
    } // end of if
-   else if ( int(abs(maPdgcode)/100.) == kBeauty || int(abs(maPdgcode)/1000.) == kBeauty ) {
+   else if ( (int(abs(maPdgcode)/100.)%10) == kBeauty || (int(abs(maPdgcode)/1000.)%10) == kBeauty ) {
      for (Int_t i=0; i<fNparents; i++){
         if (abs(maPdgcode)==fParentSelect[1][i]){
           origin = kDirectBeauty;
@@ -1461,8 +1463,9 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
      origin = kRho0;
      return origin;
    } // end of if
-   else origin = kElse;
-
+   else{ 
+    origin = kElse;
+   }
    return origin;
 }
 //__________________________________________

@@ -49,6 +49,7 @@ AliHFEpidTRD::AliHFEpidTRD() :
   , fOADBThresholds(NULL)
   , fMinP(0.5)
   , fNTracklets(6)
+  , fCutNTracklets(0)
   , fRunNumber(0)
   , fElectronEfficiency(0.90)
   , fTotalChargeInSlice0(kFALSE)
@@ -65,6 +66,7 @@ AliHFEpidTRD::AliHFEpidTRD(const char* name) :
   , fOADBThresholds(NULL)
   , fMinP(0.5)
   , fNTracklets(6)
+  , fCutNTracklets(0)
   , fRunNumber(0)
   , fElectronEfficiency(0.91)
   , fTotalChargeInSlice0(kFALSE)
@@ -81,6 +83,7 @@ AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
   , fOADBThresholds(NULL)
   , fMinP(ref.fMinP)
   , fNTracklets(ref.fNTracklets)
+  , fCutNTracklets(ref.fCutNTracklets)
   , fRunNumber(ref.fRunNumber)
   , fElectronEfficiency(ref.fElectronEfficiency)
   , fTotalChargeInSlice0(ref.fTotalChargeInSlice0)
@@ -112,6 +115,7 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   
   target.fMinP = fMinP;
   target.fNTracklets = fNTracklets;
+  target.fCutNTracklets = fCutNTracklets;
   target.fRunNumber = fRunNumber;
   target.fTotalChargeInSlice0 = fTotalChargeInSlice0;
   target.fElectronEfficiency = fElectronEfficiency;
@@ -160,6 +164,7 @@ Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
     return 0;
   }
 
+
 /*
   const AliESDtrack *esdt = dynamic_cast<const AliESDtrack *>(track->GetRecTrack());
   printf("checking IdentifiedAsElectronTRD, number of Tracklets: %d\n", esdt->GetTRDntrackletsPID());
@@ -174,10 +179,24 @@ Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   }
 
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kBeforePID); 
-  Double_t electronLike = GetElectronLikelihood(static_cast<const AliVTrack *>(track->GetRecTrack()), anatype);
+
+  if(fCutNTracklets > 0){
+    AliDebug(1, Form("Number of tracklets cut applied: %d\n", fCutNTracklets));
+    Int_t ntracklets = track->GetRecTrack() ? track->GetRecTrack()->GetTRDntrackletsPID() : 0;
+    if(TestBit(kExactTrackletCut)){
+      AliDebug(1, Form("Exact cut applied: %d tracklets found\n", ntracklets));
+      if(ntracklets != fCutNTracklets) return 0;
+    } else {
+      AliDebug(1, Form("Greater Equal cut applied: %d tracklets found\n", ntracklets));
+      if(ntracklets < fCutNTracklets) return 0;
+    }
+  }
+  AliDebug(1,"Track selected\n");
+
+  Double_t electronLike = GetElectronLikelihood(track->GetRecTrack(), anatype);
   Double_t threshold;
   if(TestBit(kSelectCutOnTheFly)){ 
-    threshold = GetTRDthresholds(p, (static_cast<const AliVTrack *>(track->GetRecTrack()))->GetTRDntrackletsPID());
+    threshold = GetTRDthresholds(p, track->GetRecTrack()->GetTRDntrackletsPID());
   } else {
     threshold = GetTRDthresholds(p);
   }
@@ -197,14 +216,17 @@ Double_t AliHFEpidTRD::GetTRDthresholds(Double_t p, UInt_t nTracklets) const {
   // Determine threshold based on the number of tracklets on the fly, electron efficiency not modified
   // 
   Double_t threshParams[4];
+  AliDebug(1, Form("Select cut for %d tracklets\n", nTracklets));
   // Get threshold paramters for the given number of tracklets from OADB container
   AliHFEOADBThresholdsTRD *thresholds = dynamic_cast<AliHFEOADBThresholdsTRD *>(fOADBThresholds->GetObject(fRunNumber));
   if(!thresholds){
     AliDebug(1, Form("Thresholds for run %d not in the OADB", fRunNumber));
     return 0.;
   }
-  if(!thresholds->GetThresholdParameters(nTracklets, fElectronEfficiency, threshParams)) return 0.;
-
+  if(!thresholds->GetThresholdParameters(nTracklets, fElectronEfficiency, threshParams)){
+    AliDebug(1, "loading thresholds failed\n");
+    return 0.;
+  }
   Double_t threshold = 1. - threshParams[0] - threshParams[1] * p - threshParams[2] * TMath::Exp(-threshParams[3] * p);
   return TMath::Max(TMath::Min(threshold, 0.99), 0.2); // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
 }

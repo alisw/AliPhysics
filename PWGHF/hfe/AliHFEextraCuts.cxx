@@ -47,7 +47,7 @@
 
 ClassImp(AliHFEextraCuts)
 
-const Int_t AliHFEextraCuts::fgkNQAhistos = 7;
+const Int_t AliHFEextraCuts::fgkNQAhistos = 8;
 
 //______________________________________________________
 AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
@@ -56,6 +56,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fCutCorrelation(0),
   fRequirements(0),
   fMinNClustersTPC(0),
+  fMinNClustersTPCPID(0),
   fClusterRatioTPC(0.),
   fMinTrackletsTRD(0),
   fTRDtrackletsExact(0),
@@ -81,6 +82,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fCutCorrelation(c.fCutCorrelation),
   fRequirements(c.fRequirements),
   fMinNClustersTPC(c.fMinNClustersTPC),
+  fMinNClustersTPCPID(c.fMinNClustersTPCPID),
   fClusterRatioTPC(c.fClusterRatioTPC),
   fMinTrackletsTRD(c.fMinTrackletsTRD),
   fTRDtrackletsExact(c.fTRDtrackletsExact),
@@ -117,6 +119,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fRequirements = c.fRequirements;
     fClusterRatioTPC = c.fClusterRatioTPC;
     fMinNClustersTPC = c.fMinNClustersTPC;
+    fMinNClustersTPCPID = c.fMinNClustersTPCPID;
     fMinTrackletsTRD = c.fMinTrackletsTRD;
     fTRDtrackletsExact = c.fTRDtrackletsExact;
     fPixelITS = c.fPixelITS;
@@ -198,6 +201,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     GetHFEImpactParameters(track, hfeimpactR, hfeimpactnsigmaR);
   }
   UInt_t nclsTPC = GetTPCncls(track);
+  UInt_t nclsTPCPID = GetTPCnclusdEdx(track);
   // printf("Check TPC findable clusters: %d, found Clusters: %d\n", track->GetTPCNclsF(), track->GetTPCNcls());
   Float_t fractionSharedClustersTPC = GetTPCsharedClustersRatio(track);
   Double_t ratioTPC = GetTPCclusterRatio(track);
@@ -209,7 +213,8 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   Bool_t statusL0 = CheckITSstatus(status1);
   Bool_t statusL1 = CheckITSstatus(status2);
   if(TESTBIT(fRequirements, kTPCfractionShared)) {
-    if(TMath::Abs(fractionSharedClustersTPC) >= fFractionTPCShared) SETBIT(survivedCut, kTPCfractionShared);    
+    // cut on max fraction of shared TPC clusters
+    if(TMath::Abs(fractionSharedClustersTPC) < fFractionTPCShared) SETBIT(survivedCut, kTPCfractionShared);    
   }
   if(TESTBIT(fRequirements, kMinImpactParamR)){
     // cut on min. Impact Parameter in Radial direction
@@ -248,9 +253,15 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     // cut on minimum number of TRD tracklets
     AliDebug(1, Form("Min TRD cut: [%d|%d], Require exact number [%s]\n", fMinTrackletsTRD, trdTracklets, fTRDtrackletsExact ? "Yes" : "No"));
     if(fTRDtrackletsExact){
-      if(trdTracklets == fMinTrackletsTRD) SETBIT(survivedCut, kMinTrackletsTRD);
+      if(trdTracklets == fMinTrackletsTRD) {
+        SETBIT(survivedCut, kMinTrackletsTRD);
+        AliDebug(1, "Track Selected");
+      }
     }else{
-      if(trdTracklets >= fMinTrackletsTRD) SETBIT(survivedCut, kMinTrackletsTRD);
+      if(trdTracklets >= fMinTrackletsTRD){ 
+        SETBIT(survivedCut, kMinTrackletsTRD);
+        AliDebug(1, "Track Selected");
+      }
       //printf("Min number of tracklets %d\n",fMinTrackletsTRD);
     }
   }
@@ -258,6 +269,10 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     // cut on minimum number of TRD tracklets
     AliDebug(1, Form("Min TPC cut: [%d|%d]\n", fMinNClustersTPC, nclsTPC));
     if(nclsTPC >= fMinNClustersTPC) SETBIT(survivedCut, kMinNClustersTPC);
+  }
+  if(TESTBIT(fRequirements, kMinNClustersTPCPID)){
+    AliDebug(1, Form("Min TPC PID cut: [%d|%d]\n", fMinNClustersTPCPID, nclsTPCPID));
+    if(nclsTPCPID >= fMinNClustersTPCPID) SETBIT(survivedCut, kMinNClustersTPCPID);
   }
   if(TESTBIT(fRequirements, kPixelITS)){
     // cut on ITS pixel layers
@@ -619,7 +634,7 @@ Float_t AliHFEextraCuts::GetTPCsharedClustersRatio(AliVTrack *track){
       Float_t nClustersTPC = esdtrack->GetTPCclusters(0);
       Int_t nClustersTPCShared = esdtrack->GetTPCnclsS();
       if (nClustersTPC!=0) {
-	fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
+	       fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
       }
     }
   }

@@ -52,6 +52,14 @@ class AliAnalysisTaskHFEpidQA : public AliAnalysisTaskSE{
 
     void SetNNref(TFile *f) { fNNref = f; };
 
+    void SetQAPbPb() { fIsQAPbPb = kTRUE; };
+    void SetQAPP() { fIsQAPbPb = kFALSE; };
+    void SetQAPPMultiBin() { fIsQAppMultiBin = kFALSE; };
+    Bool_t IsQAPbPb() const { return fIsQAPbPb; };
+    Bool_t IsQAPP() const { return !fIsQAPbPb; };
+    Bool_t IsQAPPMultiBin() const { return fIsQAppMultiBin; };
+
+
   private:
     enum{
       kV0pidQA = BIT(22),
@@ -64,6 +72,8 @@ class AliAnalysisTaskHFEpidQA : public AliAnalysisTaskSE{
     TH1 *fEvents;           //! Number of Events
     TFile  *fNNref;         //  reference file for NN
     Bool_t fTRDTotalChargeInSlice0;   // Fix for Foreware/Backward compatibility
+    Bool_t             fIsQAPbPb;        // Analysis Type: pp or PbPb
+    Bool_t             fIsQAppMultiBin;  // pp multiplicity bin analysis
 
     ClassDef(AliAnalysisTaskHFEpidQA, 1)
 };

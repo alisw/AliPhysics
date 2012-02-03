@@ -39,8 +39,8 @@ class AliHFEOADBThresholdsTRD : public TNamed{
       public:
         AliHFEthresholdParamsTRD();
         AliHFEthresholdParamsTRD(Int_t nTracklets, Double_t eff, Double_t *params = NULL);
-        AliHFEthresholdParamsTRD(const AliHFEthresholdParamsTRD &);
-        AliHFEthresholdParamsTRD &operator=(const AliHFEthresholdParamsTRD &);
+        AliHFEthresholdParamsTRD(const AliHFEthresholdParamsTRD &ref);
+        AliHFEthresholdParamsTRD &operator=(const AliHFEthresholdParamsTRD &ref);
         virtual ~AliHFEthresholdParamsTRD() {}
         
         Int_t GetNTracklets() const { return fNTracklets; }

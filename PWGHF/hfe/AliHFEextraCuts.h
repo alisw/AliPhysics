@@ -30,7 +30,7 @@ class AliVEvent;
 class AliVParticle;
 class AliVTrack;
 
-class AliHFEextraCuts : public AliCFCutBase{
+class AliHFEextraCuts: public AliCFCutBase{
   public:
     typedef enum{
       kFirst = 0,
@@ -69,6 +69,7 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut);
     inline void SetMinTrackletsTRD(Int_t minTracklets, Bool_t exact = kFALSE);
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
+    void SetMinNClustersTPCPID(Int_t minclusters) { SETBIT(fRequirements, kMinNClustersTPCPID); fMinNClustersTPCPID = minclusters; }
     void SetTOFPID(Bool_t tofPid) { tofPid ? SETBIT(fRequirements, kTOFPID) : CLRBIT(fRequirements, kTOFPID); }
     void SetTOFMISMATCH(Bool_t tofMismatch) { tofMismatch ? SETBIT(fRequirements, kTOFmismatch) : CLRBIT(fRequirements, kTOFmismatch); }
     void SetTPCPIDCleanUp(Bool_t tpcPIDCleanUp) { tpcPIDCleanUp ? SETBIT(fRequirements, kTPCPIDCleanUp) : CLRBIT(fRequirements, kTPCPIDCleanUp); }
@@ -116,13 +117,14 @@ class AliHFEextraCuts : public AliCFCutBase{
       kMinHFEImpactParamR = 7,
       kMinHFEImpactParamNsigmaR = 8,
       kMinNClustersTPC = 9,
-      kTPCfractionShared = 10,
-      kTOFPID = 11,
-      kTOFmismatch = 12,
-      kTPCPIDCleanUp = 13,
-      kEMCALmatch = 14,
-      kMaxImpactParameterRpar = 15,
-      kNcuts = 16
+      kMinNClustersTPCPID = 10,
+      kTPCfractionShared = 11,
+      kTOFPID = 12,
+      kTOFmismatch = 13,
+      kTPCPIDCleanUp = 14,
+      kEMCALmatch = 15,
+      kMaxImpactParameterRpar = 16,
+      kNcuts = 17
     } Cut_t;
     enum{
       //
@@ -138,6 +140,7 @@ class AliHFEextraCuts : public AliCFCutBase{
     Float_t fImpactParamCut[4];		    // Impact Parmameter Cut
     Float_t fIPcutParam[4];		        // Parmameter of impact parameter cut parametrization
     UInt_t fMinNClustersTPC;          // Minimum TPC clusters cut
+    UInt_t fMinNClustersTPCPID;       // Minimum TPC PID clusters cut
     Float_t fClusterRatioTPC;		      // Ratio of findable vs. found clusters in TPC
     UChar_t fMinTrackletsTRD;		      // Min. Number of Tracklets inside TRD
     Bool_t  fTRDtrackletsExact;       // Require exact number of tracklets

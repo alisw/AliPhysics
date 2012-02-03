@@ -41,7 +41,7 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     ~AliHFEtaggedTrackAnalysis();
     
     void InitContainer();
-    void ProcessTrack(AliVParticle *track, Int_t abinitioPID);
+    void ProcessTrack(AliVTrack *track, Int_t abinitioPID);
         
     AliHFEcontainer *GetContainer() const { return fContainer; }
     AliHFEpidQAmanager *GetPIDqa() const { return fPIDqa; }

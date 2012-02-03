@@ -198,8 +198,8 @@ Double_t AliHFEpidEMCAL::CalEopCutMax(const AliVParticle *const track, Int_t fla
 
   if(flageop<0.5)
     { //<--- new para for updated non-liniarity
-     double meanP[3] = {1.056,1.169,0.1339}; 
-     double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
+     double meanP[3] = {1.02902,1.22293,1.67287e-01}; 
+     double sigP[3] = {5.36355e-02,-3.25999e-02,4.42442e-01}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
      maxCut = mean+3.0*sig; 
@@ -226,11 +226,13 @@ Double_t AliHFEpidEMCAL::CalEopCutMim(const AliVParticle *const track, Int_t fla
   if(flageop<0.5) // real
      { 
       //printf("real"); 
-     double meanP[3] = {1.056,1.169,0.1339}; 
-     double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
+     //double meanP[3] = {1.056,1.169,0.1339}; 
+     //double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
+     double meanP[3] = {1.02902,1.22293,1.67287e-01}; 
+     double sigP[3] = {5.36355e-02,-3.25999e-02,4.42442e-01}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
-     mimCut = mean-2.0*sig;
+     mimCut = mean+0.0*sig;
     }
    else // MC
     { 
@@ -239,7 +241,7 @@ Double_t AliHFEpidEMCAL::CalEopCutMim(const AliVParticle *const track, Int_t fla
      double sigP[3] = {4.11e-02,1.588e-01,2.664e-01}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
-     mimCut = mean-2.0*sig;
+     mimCut = mean+0.0*sig;
     }
      return mimCut;
 }

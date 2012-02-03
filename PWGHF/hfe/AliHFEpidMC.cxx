@@ -66,5 +66,5 @@ Int_t AliHFEpidMC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *
   // Functionality implemented in the base class
   // (necessary for PID QA)
   //
-  return AliHFEtools::GetPdg(track->GetRecTrack());
+  return track->GetAbInitioPID();
 }
