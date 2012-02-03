@@ -385,6 +385,10 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(fGeomName);
   AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!esdevent) {
+    AliError("Cannot get the ESD event");
+    return;
+  } 
 
   // tracks array for track/cluster matching
   TClonesArray *tarr = 0;
