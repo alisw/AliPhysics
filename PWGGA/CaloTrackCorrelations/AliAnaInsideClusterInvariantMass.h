@@ -27,7 +27,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass() ; // default ctor
   virtual ~AliAnaInsideClusterInvariantMass() { ; } //virtual dtor
 
-  Bool_t       AreNeighbours(const Int_t absId1, const Int_t absId2) const ;  
   
   TObjString * GetAnalysisCuts();
   
@@ -35,23 +34,14 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   TLorentzVector GetCellMomentum(const Int_t absId, Float_t energy, AliVCaloCells* cells) ;
   
-  Int_t        GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
-                                      Int_t *absIdList,     Float_t *maxEList)  ;
-  
   void         Init();
   
   void         InitParameters();
      
   void         MakeAnalysisFillHistograms() ; 
-
-  void         RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
       
   void         SetCalorimeter(TString & det)     { fCalorimeter   = det  ; }
-  
-  void         SetLocalMaximaCutE(Float_t cut)   { fLocMaxCutE     = cut ; }
-  
-  void         SetLocalMaximaCutEDiff(Float_t c) { fLocMaxCutEDiff = c   ; }
-  
+    
   void         SetM02Cut(Float_t cut)            { fM02Cut         = cut ; }
 
   void         SetMinNCells(Int_t cut)           { fMinNCells      = cut ; }
@@ -76,8 +66,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString      fCalorimeter ;       // Calorimeter where the gamma is searched
-  Float_t      fLocMaxCutE;         // Local maxima cut must have more than this energy
-  Float_t      fLocMaxCutEDiff;     // Local maxima cut, when aggregating cells, next can be a bit higher
   Float_t      fM02Cut    ;         // Study clusters with l0 larger than cut
   Int_t        fMinNCells ;         // Study clusters with ncells larger than cut
   Float_t      fMassEtaMin;         // Min Eta mass
@@ -121,7 +109,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,4)
+  ClassDef(AliAnaInsideClusterInvariantMass,5)
   
 } ;
 

@@ -81,11 +81,7 @@ public:
   void         MCHistograms();  
   
   void         MCHistograms(const TLorentzVector mom, const Int_t pdg);
-  
-  void         RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
-  
-  void         RecalibrateCellTime     (Double_t & time, const Int_t absId);
-  
+    
   void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells);
 
   // Setters and Getters

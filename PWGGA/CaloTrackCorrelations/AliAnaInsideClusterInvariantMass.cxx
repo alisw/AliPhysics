@@ -56,7 +56,6 @@ ClassImp(AliAnaInsideClusterInvariantMass)
 AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() : 
   AliAnaCaloTrackCorrBaseClass(),  
   fCalorimeter(""), 
-  fLocMaxCutE(0),   fLocMaxCutEDiff(0),
   fM02Cut(0),       fMinNCells(0),  
   fMassEtaMin(0),   fMassEtaMax(0),
   fMassPi0Min(0),   fMassPi0Max(0),
@@ -108,9 +107,9 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   
   snprintf(onePar,buffersize,"Calorimeter: %s\n",        fCalorimeter.Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fLocMaxCutE =%2.2f \n",    fLocMaxCutE) ;
+  snprintf(onePar,buffersize,"fLocMaxCutE =%2.2f \n",    GetCaloUtils()->GetLocalMaximaCutE()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fLocMaxCutEDiff =%2.2f \n",fLocMaxCutEDiff) ;
+  snprintf(onePar,buffersize,"fLocMaxCutEDiff =%2.2f \n",GetCaloUtils()->GetLocalMaximaCutEDiff()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fM02Cut =%2.2f \n",        fM02Cut) ;
   parList+=onePar ;
@@ -127,41 +126,6 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   
 }
 
-//____________________________________________________________________________________________________
-Bool_t AliAnaInsideClusterInvariantMass::AreNeighbours( const Int_t absId1, const Int_t absId2 ) const
-{
-  // Tells if (true) or not (false) two digits are neighbours
-  // A neighbour is defined as being two digits which share a corner
-	
-  Bool_t areNeighbours = kFALSE ;
-  Int_t nSupMod =0, nModule =0, nIphi =0, nIeta =0;
-  Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0;
-  Int_t relid1[2],  relid2[2] ;
-  Int_t rowdiff=0,  coldiff=0;
-  
-  areNeighbours = kFALSE ;
-  
-  GetEMCALGeometry()->GetCellIndex(absId1, nSupMod,nModule,nIphi,nIeta);
-  GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, relid1[0],relid1[1]);
-  
-  GetEMCALGeometry()->GetCellIndex(absId2, nSupMod1,nModule1,nIphi1,nIeta1);
-  GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(nSupMod1,nModule1,nIphi1,nIeta1, relid2[0],relid2[1]);
-  
-  // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
-  // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
-  if(nSupMod1!=nSupMod){ 
-    if(nSupMod1%2) relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;
-    else           relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;
-  }
-	
-  rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
-  coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
-  
-  if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
-    areNeighbours = kTRUE ;
-  
-  return areNeighbours;
-}
 
 //_____________________________________________________________________________________
 TLorentzVector AliAnaInsideClusterInvariantMass::GetCellMomentum(const Int_t absId,
@@ -186,7 +150,7 @@ TLorentzVector AliAnaInsideClusterInvariantMass::GetCellMomentum(const Int_t abs
   if(en <=0 )
   {
     en = cells->GetCellAmplitude(absId);
-    RecalibrateCellAmplitude(en,absId);  
+    GetCaloUtils()->RecalibrateCellAmplitude(en,fCalorimeter,absId);  
   }
   
   TLorentzVector cellMom ;   
@@ -386,99 +350,6 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   
 }
 
-//________________________________________________________________________________________________________
-Int_t AliAnaInsideClusterInvariantMass::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
-                                                               Int_t *absIdList,     Float_t *maxEList) 
-{
-  // Find local maxima in cluster
-      
-  Int_t iDigitN = 0 ;
-  Int_t iDigit  = 0 ;
-  Int_t absId1 = -1 ;
-  Int_t absId2 = -1 ;
-  const Int_t nCells = cluster->GetNCells();
-  
-  //printf("cluster : ncells %d \n",nCells);
-  for(iDigit = 0; iDigit < nCells ; iDigit++){
-    absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit]  ; 
-   /* 
-    Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-    RecalibrateCellAmplitude(en,absIdList[iDigit]);  
-    Int_t icol = -1, irow = -1, iRCU = -1;
-    Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList[iDigit], fCalorimeter, icol, irow, iRCU) ;
-
-    printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
-    */ 
-  }
-  
-  
-  for(iDigit = 0 ; iDigit < nCells; iDigit++) {   
-    if(absIdList[iDigit]>=0) {
-      
-      absId1 = absIdList[iDigit] ;
-      //printf("%d : absID111 %d, %s\n",iDigit, absId1,fCalorimeter.Data());
-
-      Float_t en1 = cells->GetCellAmplitude(absId1);
-      RecalibrateCellAmplitude(en1,absId1);  
-      
-      for(iDigitN = 0; iDigitN < nCells; iDigitN++) {	
-        
-        absId2 = absIdList[iDigitN] ;
-        
-        if(absId2==-1) continue;
-        
-        //printf("\t %d : absID222 %d, %s\n",iDigitN, absId2,fCalorimeter.Data());
-
-        Float_t en2 = cells->GetCellAmplitude(absId2);
-        RecalibrateCellAmplitude(en2,absId2);
-        
-        if ( AreNeighbours(absId1, absId2) ) {
-          
-          if (en1 > en2 ) {    
-            absIdList[iDigitN] = -1 ;
-            //printf("\t \t indexN %d not local max\n",iDigitN);
-            // but may be digit too is not local max ?
-            if(en1 < en2 + fLocMaxCutEDiff) {
-              //printf("\t \t index %d not local max cause locMaxCut\n",iDigit);
-              absIdList[iDigit] = -1 ;
-            }
-          }
-          else {
-            absIdList[iDigit] = -1 ;
-            //printf("\t \t index %d not local max\n",iDigitN);
-            // but may be digitN too is not local max ?
-            if(en1 > en2 - fLocMaxCutEDiff) 
-            {
-              absIdList[iDigitN] = -1 ; 
-              //printf("\t \t indexN %d not local max cause locMaxCut\n",iDigit);
-            }
-          } 
-        } // if Areneighbours
-      } // while digitN
-    } // slot not empty
-  } // while digit
-  
-  iDigitN = 0 ;
-  for(iDigit = 0; iDigit < nCells; iDigit++) { 
-    if(absIdList[iDigit]>=0 ){
-      absIdList[iDigitN] = absIdList[iDigit] ;
-      Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-      RecalibrateCellAmplitude(en,absIdList[iDigit]);  
-      if(en < fLocMaxCutE) continue; // Maxima only with seed energy at least
-      maxEList[iDigitN] = en ;
-      //printf("Local max %d, id %d, en %f\n", iDigit,absIdList[iDigitN],en);
-      iDigitN++ ; 
-    }
-  }
-  
-  //printf("N maxima %d \n",iDigitN);
-  //for(Int_t imax = 0; imax < iDigitN; imax++) printf("imax %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
-  
-  return iDigitN ;
-  
-}
-
-
 //___________________________________________
 void AliAnaInsideClusterInvariantMass::Init()
 { 
@@ -521,9 +392,6 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   fMassConMin  = 0.0;
   fMassConMax  = 0.05;
   
-  fLocMaxCutE      = 0.1 ;
-  fLocMaxCutEDiff  = 0.0 ;
-
 }
 
 
@@ -566,14 +434,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     Int_t    absId1    = -1; Int_t absId2 = -1;
     Int_t   *absIdList = new Int_t  [nc]; 
     Float_t *maxEList  = new Float_t[nc]; 
-    Int_t    nMax      = GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ;
+    Int_t    nMax      = GetCaloUtils()->GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ;
     
     if (nMax <= 0) {
       printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found!\n");
       /*
       for(Int_t iDigit  = 0; iDigit < cluster->GetNCells(); iDigit++ ) {
         Float_t ec = cells->GetCellAmplitude(cluster->GetCellsAbsId()[iDigit]);
-        RecalibrateCellAmplitude(ec,cluster->GetCellsAbsId()[iDigit]);
+        GetCaloUtils()->RecalibrateCellAmplitude(ec,fCalorimeter,cluster->GetCellsAbsId()[iDigit]);
         printf("iDigit %d, absId %d, Ecell %f\n",iDigit,cluster->GetCellsAbsId()[iDigit], ec);
       }
       */
@@ -660,7 +528,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         Int_t absId = cluster->GetCellsAbsId()[iDigit];
         if( absId == absId1 ) continue ; 
         Float_t endig = cells->GetCellAmplitude(absId);
-        RecalibrateCellAmplitude(endig,absId); 
+        GetCaloUtils()->RecalibrateCellAmplitude(endig,fCalorimeter,absId); 
         if(endig > enmax) {
           enmax  = endig ;
           absId2 = absId ;
@@ -775,8 +643,8 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print("");
   printf("Calorimeter     =     %s\n",  fCalorimeter.Data()) ;
-  printf("Loc. Max. E > %2.2f\n",       fLocMaxCutE);
-  printf("Loc. Max. E Diff > %2.2f\n",  fLocMaxCutEDiff);
+  printf("Loc. Max. E > %2.2f\n",       GetCaloUtils()->GetLocalMaximaCutE());
+  printf("Loc. Max. E Diff > %2.2f\n",  GetCaloUtils()->GetLocalMaximaCutEDiff());
   printf("lambda_0^2 >  %2.1f \n",      fM02Cut);
   printf("pi0 : %2.2f<m<%2.2f \n",      fMassPi0Min,fMassPi0Max);
   printf("eta : %2.2f<m<%2.2f \n",      fMassEtaMin,fMassEtaMax);
@@ -786,23 +654,7 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   
 } 
 
-//____________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::RecalibrateCellAmplitude(Float_t & amp, const Int_t id)
-{
-  //Recaculate cell energy if recalibration factor
-  
-  Int_t icol     = -1; Int_t irow     = -1; Int_t iRCU     = -1;
-  Int_t nModule  = GetModuleNumberCellIndexes(id,fCalorimeter, icol, irow, iRCU);
-  
-  if (GetCaloUtils()->IsRecalibrationOn()) {
-    if(fCalorimeter == "PHOS") {
-      amp *= GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
-    }
-    else		                   {
-      amp *= GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
-    }
-  }
-}
+
 
 //________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int_t absId2,
@@ -836,7 +688,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 
     sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList[iDigit], fCalorimeter, icol, irow, iRCU) ;
     Float_t ec = cells->GetCellAmplitude(absIdList[iDigit]);
-    RecalibrateCellAmplitude(ec,absIdList[iDigit]);
+    GetCaloUtils()->RecalibrateCellAmplitude(ec,fCalorimeter, absIdList[iDigit]);
     eCluster+=ec;
     
 /*    hClusterMap->Fill(icol,irow,ec); */
@@ -849,7 +701,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
   absIdList1[0] = absId1;
   
   Float_t ecell1 = cells->GetCellAmplitude(absId1);
-  RecalibrateCellAmplitude(ecell1,absId1);
+  GetCaloUtils()->RecalibrateCellAmplitude(ecell1, fCalorimeter, absId1);
   e1 =  ecell1;  
   
   Int_t ncells2 = 1;
@@ -857,7 +709,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
   absIdList2[0] = absId2;
   
   Float_t ecell2 = cells->GetCellAmplitude(absId2);
-  RecalibrateCellAmplitude(ecell2,absId2);
+  GetCaloUtils()->RecalibrateCellAmplitude(ecell2, fCalorimeter, absId2);
   e2 =  ecell2;  
   
   /*
@@ -879,22 +731,22 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
     if(absId==absId1 || absId==absId2 || absId < 0) continue;
     
     Float_t ecell = cells->GetCellAmplitude(absId);
-    RecalibrateCellAmplitude(ecell,absId);
+    GetCaloUtils()->RecalibrateCellAmplitude(ecell, fCalorimeter, absId);
     
-     if(AreNeighbours( absId1,absId )){ 
+    if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId )){ 
        absIdList1[ncells1++]= absId;
     
-       if(AreNeighbours( absId2,absId )) 
+       if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absId )) 
          e1 += ecell*shareFraction1;
        else 
          e1 += ecell;
 
      } // neigbour to cell1
     
-    if(AreNeighbours( absId2,absId )){ 
+    if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absId )){ 
       absIdList2[ncells2++]= absId;
      
-      if(AreNeighbours( absId1,absId )) 
+      if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId )) 
         e2 += ecell*shareFraction2;
       else 
         e2 += ecell;
@@ -914,7 +766,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
     
     sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList1[iDigit], fCalorimeter, icol, irow, iRCU) ;
     
-    if( AreNeighbours( absId2,absIdList1[iDigit]) )
+    if( GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absIdList1[iDigit]) )
       hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit])*shareFraction1);
     else 
       hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit]));
@@ -928,7 +780,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
     printf(" %d ",absIdList2[iDigit]);
 
     sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList2[iDigit], fCalorimeter, icol, irow, iRCU) ;
-    if( AreNeighbours( absId1,absIdList2[iDigit]) )
+    if( GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absIdList2[iDigit]) )
       hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit])*shareFraction2);
     else
       hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit]));
@@ -998,7 +850,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //    
 //    //sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList[iDigit], fCalorimeter, icol, irow, iRCU) ;
 //    //ec = cells->GetCellAmplitude(absIdList[iDigit]);
-//    //RecalibrateCellAmplitude(ec,absIdList[iDigit]);
+//    //GetCaloUtils()->RecalibrateCellAmplitude(ec,fCalorimeter, absIdList[iDigit]);
 //    //hClusterMap->Fill(icol,irow,ec);
 //    
 //    //printf("iDigit %d, absId %d, Ecell %f\n",iDigit,absIdList[iDigit], cells->GetCellAmplitude(absIdList[iDigit]));
@@ -1017,12 +869,12 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //  //Int_t icol1 = -1, irow1 = -1, icol2 = -1, irow2 = -1;
 //  //sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId1, fCalorimeter, icol1, irow1, iRCU) ;
 //  Float_t ec1 = cells->GetCellAmplitude(absId1);
-//  RecalibrateCellAmplitude(ec1,absId1);
+//  GetCaloUtils()->RecalibrateCellAmplitude(ec1,fCalorimeter, absId1);
 //  //hClusterLocMax2->Fill(icol1,irow1,ec1);
 //  
 //  //sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId2, fCalorimeter, icol2, irow2, iRCU) ;
 //  Float_t ec2 = cells->GetCellAmplitude(absId2);
-//  RecalibrateCellAmplitude(ec2,absId2);
+//  GetCaloUtils()->RecalibrateCellAmplitude(ec2,fCalorimeter, absId2);
 //  //hClusterLocMax2->Fill(icol2,irow2,ec2);
 //
 //  Int_t absIdtmp = 0;
@@ -1042,7 +894,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //  for(Int_t iDigit1 = 1; iDigit1 < ncells; iDigit1++) absIdList1[iDigit1] = -1;
 //  
 //  Float_t ecell1 = cells->GetCellAmplitude(absId1);
-//  RecalibrateCellAmplitude(ecell1,absId1);
+//  GetCaloUtils()->RecalibrateCellAmplitude(ecell1,fCalorimeter, absId1);
 //  e1 =  ecell1;  
 //  
 //  //Int_t icolNew = -1, irowNew = -1, iRCUNew = -1;
@@ -1057,7 +909,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //    //printf("\t absId %d added \n",absId1New);
 //    
 //    Float_t e1New = cells->GetCellAmplitude(absId1New);
-//    RecalibrateCellAmplitude(e1New,absId1New);
+//    GetCaloUtils()->RecalibrateCellAmplitude(e1New,fCalorimeter, absId1New);
 //
 //    //sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId1New, fCalorimeter, icolNew, irowNew, iRCUNew) ;
 //    
@@ -1067,16 +919,16 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //      if(absId!=absId1New && absId!=absId2 && absId>=0)
 //      {
 //        Float_t en = cells->GetCellAmplitude(absId);
-//        RecalibrateCellAmplitude(en,absId);
+//        GetCaloUtils()->RecalibrateCellAmplitude(en,fCalorimeter, absId);
 //        //printf("\t \t iDig %d, absId %d, absIdNew %d, en %f, enNew %f\n",iDigit,absId, absId1New,en, e1New);
 //        //sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId, fCalorimeter, jcol, jrow, jRCU) ;
 //        //printf("\t \t \t (col,row) New  (%d,%d), check (%d,%d) \n",icolNew, irowNew,jcol,jrow);
-//        if(AreNeighbours( absId1New,absId )){ 
+//        if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId1New,absId )){ 
 //          //printf("\t \t \t neighbours\n");
-//          if(e1New > en-fLocMaxCutEDiff){
+//          if(e1New > en-GetCaloUtils()->GetLocalMaximaCutEDiff()){
 //            absIdList1[ncells1++] = absId; 
 //            
-//            if((absId1New==absId1 && AreNeighbours( absId1,absId ) && AreNeighbours( absId2,absId ))) {
+//            if((absId1New==absId1 && GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId ) && GetCaloUtils()->AreNeighbours( absId2,absId ))) {
 //              e1+=en/2;
 //            }
 //            else {
@@ -1100,7 +952,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //  for(Int_t iDigit2 = 1; iDigit2 < ncells; iDigit2++) absIdList2[iDigit2] = -1;
 //  
 //  Float_t ecell2 = cells->GetCellAmplitude(absId2);
-//  RecalibrateCellAmplitude(ecell2,absId2);
+//  GetCaloUtils()->RecalibrateCellAmplitude(ecell2,fCalorimeter, absId2);
 //  e2 =  ecell2;  
 //    
 //  added = kTRUE;
@@ -1112,7 +964,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //    //printf("\t absId %d added \n",absId2New);
 //    
 //    Float_t e2New = cells->GetCellAmplitude(absId2New);
-//    RecalibrateCellAmplitude(e2New,absId2New);
+//    GetCaloUtils()->RecalibrateCellAmplitude(e2New,fCalorimeter,absId2New);
 //    //sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId2New, fCalorimeter, icolNew, irowNew, iRCU) ;
 //
 //    for(Int_t iDigit = 0; iDigit < ncells ; iDigit++)
@@ -1121,16 +973,16 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
 //      if(absId!=absId2New && absId>=0)
 //      {
 //        Float_t en = cells->GetCellAmplitude(absId);
-//        RecalibrateCellAmplitude(en,absId);
+//        GetCaloUtils()->RecalibrateCellAmplitude(en,fCalorimeter, absId);
 //        //printf("\t \t iDig %d, absId %d, absIdNew %d, en %f, enNew %f\n",iDigit,absId, absId2New,en, e2New);
 //        //sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId, fCalorimeter, jcol, jrow, jRCU) ;
 //        //printf("\t \t \t (col,row) New  (%d,%d), check (%d,%d) \n",icolNew, irowNew,jcol,jrow);        
-//        if(AreNeighbours( absId2New,absId )){ 
+//        if(GetCaloUtils()->AreNeighbours( fCalorimeter, absId2New,absId )){ 
 //          //printf("\t \t \t neighbours\n");
-//          if(e2New > en-fLocMaxCutEDiff){
+//          if(e2New > en-GetCaloUtils()->GetLocalMaximaCutEDiff()){
 //            absIdList2[ncells2++] = absId; 
 //            absIdList [iDigit]    = -1; 
-//            if(absId2New==absId2 && AreNeighbours( absId1,absId ) && AreNeighbours( absId2,absId )){
+//            if(absId2New==absId2 && GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId ) && GetCaloUtils()->AreNeighbours( fCalorimeter,absId2,absId )){
 //              e2+=en/2;
 //            }
 //            else {

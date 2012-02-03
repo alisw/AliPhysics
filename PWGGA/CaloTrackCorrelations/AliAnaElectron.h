@@ -62,9 +62,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
-  
-  void         RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
-  
+    
   void         WeightHistograms(AliVCluster *clus);
   
   void         SwitchOnFillWeightHistograms()         { fFillWeightHistograms = kTRUE  ; }

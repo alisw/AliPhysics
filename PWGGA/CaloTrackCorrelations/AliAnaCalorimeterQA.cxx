@@ -255,10 +255,11 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
       fhBadClusterMaxCellCloseCellRatio->Fill(clus->E(),frac);
       fhBadClusterMaxCellCloseCellDiff ->Fill(clus->E(),cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId));
       
-      if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+      if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+      {
         Double_t time  = cells->GetCellTime(absId);
-        RecalibrateCellTime(time,absId);
-        
+        GetCaloUtils()->RecalibrateCellTime(time, fCalorimeter, absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+
         Float_t diff = (tmax-time*1e9);
         fhBadCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff);
         
@@ -285,7 +286,7 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
     
     //Recalibrate cell energy if needed
     amp = cells->GetCellAmplitude(id);
-    RecalibrateCellAmplitude(amp,id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
     
     energy    += amp;
     
@@ -311,9 +312,9 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
     time = cells->GetCellTime(id);
     
     //Recalibrate energy and time
-    RecalibrateCellAmplitude(amp, id);    
-    RecalibrateCellTime     (time,id);
-    
+    GetCaloUtils()->RecalibrateCellAmplitude(amp , fCalorimeter, id);    
+    GetCaloUtils()->RecalibrateCellTime     (time, fCalorimeter, id, GetReader()->GetInputEvent()->GetBunchCrossNumber());
+
     w      = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(cells->GetCellAmplitude(id),energy);
     aTime += time*1e9;
     wTime += time*1e9 * w;
@@ -381,10 +382,10 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       id      = cells->GetCellNumber(iCell);
       
       // Amplitude recalibration if set
-      RecalibrateCellAmplitude(amp,id);
+      GetCaloUtils()->RecalibrateCellAmplitude(amp,  fCalorimeter, id);
       
       // Time recalibration if set
-      RecalibrateCellTime(time,id);
+      GetCaloUtils()->RecalibrateCellTime     (time, fCalorimeter, id, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
       
       //Transform time to ns
       time *= 1.0e9;
@@ -711,8 +712,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *c
       fhClusterMaxCellDiffWeightedTime     ->Fill(clus->E(),tmax-timeAverages[1]);
     }
     
-    for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-      
+    for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
+    {
       Int_t absId  = clus->GetCellsAbsId()[ipos];             
       if(absId == absIdMax) continue;
       
@@ -720,10 +721,10 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *c
       fhClusterMaxCellCloseCellRatio->Fill(clus->E(),frac);
       fhClusterMaxCellCloseCellDiff ->Fill(clus->E(),cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId));
       
-      if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-        
+      if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+      {
         Double_t time  = cells->GetCellTime(absId);
-        RecalibrateCellTime(time,absId);
+        GetCaloUtils()->RecalibrateCellTime(time, fCalorimeter, absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
         
         Float_t diff = (tmax-time*1.0e9);
         fhCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff);
@@ -862,7 +863,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     //Get time of max cell
     Double_t tmax  = cells->GetCellTime(absIdMax);
-    RecalibrateCellTime(tmax,absIdMax);
+    GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tmax*=1.e9;
     
     // Fill histograms related to single cluster 
@@ -875,7 +876,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     fhClusterMaxCellDiffNoCut->Fill(clus->E(),maxCellFraction);
     
     Float_t ampMax = cells->GetCellAmplitude(absIdMax);
-    RecalibrateCellAmplitude(ampMax,absIdMax);
+    GetCaloUtils()->RecalibrateCellAmplitude(ampMax,fCalorimeter, absIdMax);
     Float_t eCrossFrac = 1-GetECross(absIdMax,cells)/ampMax;
     
     //Check bad clusters if requested and rejection was not on
@@ -2509,36 +2510,36 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
     
     //Recalibrate cell energy if needed
     //Float_t  ecell = cells->GetCellAmplitude(absID);
-    //RecalibrateCellAmplitude(ecell,absID);
+    //GetCaloUtils()->RecalibrateCellAmplitude(ecell,fCalorimeter, absID);
     Double_t tcell = cells->GetCellTime(absID);
-    RecalibrateCellTime(tcell,absID);
+    GetCaloUtils()->RecalibrateCellTime(tcell, fCalorimeter, absID,GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     
     Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
     Double_t tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
     
     if(absID1 >0 ){
       ecell1 = cells->GetCellAmplitude(absID1);
-      RecalibrateCellAmplitude(ecell1,absID1);
+      GetCaloUtils()->RecalibrateCellAmplitude(ecell1, fCalorimeter, absID1);
       tcell1 = cells->GetCellTime(absID1);
-      RecalibrateCellTime(tcell1,absID1);
+      GetCaloUtils()->RecalibrateCellTime     (tcell1, fCalorimeter, absID1,GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
     if(absID2 >0 ){
       ecell2 = cells->GetCellAmplitude(absID2);
-      RecalibrateCellAmplitude(ecell2,absID2);
+      GetCaloUtils()->RecalibrateCellAmplitude(ecell2, fCalorimeter, absID2);
       tcell2 = cells->GetCellTime(absID2);
-      RecalibrateCellTime(tcell2,absID2);
+      GetCaloUtils()->RecalibrateCellTime     (tcell2, fCalorimeter, absID2, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
     if(absID3 >0 ){
       ecell3 = cells->GetCellAmplitude(absID3);
-      RecalibrateCellAmplitude(ecell3,absID3);
+      GetCaloUtils()->RecalibrateCellAmplitude(ecell3, fCalorimeter, absID3);
       tcell3 = cells->GetCellTime(absID3);
-      RecalibrateCellTime(tcell3,absID3);
+      GetCaloUtils()->RecalibrateCellTime     (tcell3, fCalorimeter, absID3, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
     if(absID4 >0 ){
       ecell4 = cells->GetCellAmplitude(absID4);
-      RecalibrateCellAmplitude(ecell4,absID4);
+      GetCaloUtils()->RecalibrateCellAmplitude(ecell4, fCalorimeter, absID4);
       tcell4 = cells->GetCellTime(absID4);
-      RecalibrateCellTime(tcell4,absID4);
+      GetCaloUtils()->RecalibrateCellTime     (tcell4, fCalorimeter, absID4, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
     
     if(TMath::Abs(tcell-tcell1)*1.e9 > 50) ecell1 = 0 ;
@@ -2673,7 +2674,7 @@ Bool_t AliAnaCalorimeterQA::IsGoodCluster(const Int_t absIdMax, AliVCaloCells* c
   else // PHOS
   {
     Float_t ampMax = cells->GetCellAmplitude(absIdMax);
-    RecalibrateCellAmplitude(ampMax,absIdMax);
+    GetCaloUtils()->RecalibrateCellAmplitude(ampMax, fCalorimeter, absIdMax);
     if(1-GetECross(absIdMax,cells)/ampMax > 0.95) return kFALSE;
     else                                          return kTRUE;
   }
@@ -2696,35 +2697,6 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   printf("PHOS Min Amplitude    : %2.1f GeV/c\n", fPHOSCellAmpMin) ;
   
 } 
-
-//____________________________________________________________________________
-void AliAnaCalorimeterQA::RecalibrateCellTime(Double_t & time, const Int_t id)
-{
-  // Recalculate time if time recalibration available 
-  
-  if(fCalorimeter == "EMCAL" && GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) {
-    GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(id,GetReader()->GetInputEvent()->GetBunchCrossNumber(),time);
-  }
-  
-}
-
-//___________________________________________________________________________________
-void AliAnaCalorimeterQA::RecalibrateCellAmplitude(Float_t & amp, const Int_t id)
-{
-  //Recaculate cell energy if recalibration factor
-  
-  Int_t icol     = -1; Int_t irow     = -1; Int_t iRCU     = -1;
-  Int_t nModule  = GetModuleNumberCellIndexes(id,fCalorimeter, icol, irow, iRCU);
-  
-  if (GetCaloUtils()->IsRecalibrationOn()) {
-    if(fCalorimeter == "PHOS") {
-      amp *= GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
-    }
-    else		                   {
-      amp *= GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
-    }
-  }
-}
 
 //_____________________________________________________
 void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms() 
@@ -2898,7 +2870,7 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
     
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
-    RecalibrateCellAmplitude(amp,id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp, fCalorimeter, id);
     
     energy    += amp;
     
@@ -2921,7 +2893,7 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
     
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
-    RecalibrateCellAmplitude(amp,id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp, fCalorimeter, id);
     
     fhECellClusterRatio   ->Fill(energy,amp/energy);
     fhECellClusterLogRatio->Fill(energy,TMath::Log(amp/energy));

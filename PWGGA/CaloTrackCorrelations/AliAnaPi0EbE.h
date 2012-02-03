@@ -57,9 +57,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           MakeInvMassInCalorimeterAndCTS() ;
   
   void           MakeShowerShapeIdentification() ;
-    
-  void           RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
-      
+          
   //Setters Getters
   
   //Analysis types

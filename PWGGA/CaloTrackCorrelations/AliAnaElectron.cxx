@@ -1279,24 +1279,6 @@ void AliAnaElectron::Print(const Option_t * opt) const
 	
 } 
 
-//__________________________________________________________________________
-void AliAnaElectron::RecalibrateCellAmplitude(Float_t & amp, const Int_t id)
-{
-  //Recaculate cell energy if recalibration factor
-  
-  Int_t icol     = -1; Int_t irow     = -1; Int_t iRCU     = -1;
-  Int_t nModule  = GetModuleNumberCellIndexes(id,fCalorimeter, icol, irow, iRCU);
-  
-  if (GetCaloUtils()->IsRecalibrationOn()) {
-    if(fCalorimeter == "PHOS") {
-      amp *= GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
-    }
-    else		                   {
-      amp *= GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
-    }
-  }
-}
-
 //______________________________________________________
 void AliAnaElectron::WeightHistograms(AliVCluster *clus)
 {
@@ -1317,7 +1299,7 @@ void AliAnaElectron::WeightHistograms(AliVCluster *clus)
     
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
-    RecalibrateCellAmplitude(amp,id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
     
     energy    += amp;
     
@@ -1341,7 +1323,7 @@ void AliAnaElectron::WeightHistograms(AliVCluster *clus)
     
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
-    RecalibrateCellAmplitude(amp,id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp, fCalorimeter, id);
 
     //printf("energy %f, amp %f, rat %f, lograt %f\n",energy,amp,amp/energy,TMath::Log(amp/energy));
     fhECellClusterRatio   ->Fill(energy,amp/energy);
