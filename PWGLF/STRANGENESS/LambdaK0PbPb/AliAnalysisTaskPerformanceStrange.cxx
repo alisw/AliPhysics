@@ -1971,8 +1971,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   // Primary Vertex cuts &
   // Magnetic field and Quality tracks cuts 
 
-  Double_t  lPrimaryVtxPosition[3];
-  Double_t  lPrimaryVtxCov[6];
+  Double_t  lPrimaryVtxPosition[3]={0};
+  Double_t  lPrimaryVtxCov[6]={0};
   Double_t  lPrimaryVtxChi2 = 999;
   Double_t  lResPrimaryVtxX = 999;
   Double_t  lResPrimaryVtxY = 999;
