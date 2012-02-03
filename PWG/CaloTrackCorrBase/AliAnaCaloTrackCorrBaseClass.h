@@ -246,8 +246,8 @@ public:
   
   //Calorimeter specific access methods and calculations
     
-  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) const {
-   return fCaloPID->IsTrackMatched(cluster, fCaloUtils, event) ; } 
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) {
+   return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event) ; } 
   
   virtual Int_t          GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
 	  return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
