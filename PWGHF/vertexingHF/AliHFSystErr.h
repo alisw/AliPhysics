@@ -66,6 +66,24 @@ class AliHFSystErr : public TNamed
   // Function to initialize the variables/histograms
   void Init(Int_t decay);
 
+  void InitD0toKpi2010PbPb010CentScan();
+  void InitD0toKpi2010PbPb1020CentScan();
+  void InitD0toKpi2010PbPb2040CentScan();
+  void InitD0toKpi2010PbPb4060CentScan();
+  void InitD0toKpi2010PbPb6080CentScan();
+
+  void InitDplustoKpipi2010PbPb010CentScan();
+  void InitDplustoKpipi2010PbPb1020CentScan();
+  void InitDplustoKpipi2010PbPb2040CentScan();
+  void InitDplustoKpipi2010PbPb4060CentScan();
+  void InitDplustoKpipi2010PbPb6080CentScan();
+
+  void InitDstartoD0pi2010PbPb010CentScan();
+  void InitDstartoD0pi2010PbPb1020CentScan();
+  void InitDstartoD0pi2010PbPb2040CentScan();
+  void InitDstartoD0pi2010PbPb4060CentScan();
+  void InitDstartoD0pi2010PbPb6080CentScan();
+
  private:
 
   AliHFSystErr(const AliHFSystErr& source);
@@ -84,9 +102,10 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2010PbPb4080();
   void InitDstartoD0pi2010PbPb4080();
 
+
   void InitD0toKpi2010ppLowEn();
   void InitDplustoKpipi2010ppLowEn();
- void InitDstartoD0pi2010ppLowEn();
+  void InitDstartoD0pi2010ppLowEn();
 
  void InitDstartoD0pi2010PbPb2040();
 
