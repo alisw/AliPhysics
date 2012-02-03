@@ -25,7 +25,7 @@ Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
 Int_t       iJETANdelta        = 1;      // Jet delta AODs
 Int_t       iPWGHFvertexing     = 1;      // Vertexing HF task (PWG3)
 Int_t       iPWGDQJPSIfilter    = 1;      // JPSI filtering (PWG3)
-Int_t       iPWGHFd2h           = 0;      // D0->2 hadrons (PWG3)
+Int_t       iPWGHFd2h           = 1;      // D0->2 hadrons (PWG3)
 
 // ### Configuration macros used for each module
 //==============================================================================
