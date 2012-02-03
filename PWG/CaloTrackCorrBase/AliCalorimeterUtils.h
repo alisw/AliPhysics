@@ -43,6 +43,19 @@ class AliCalorimeterUtils : public TObject {
 	
   //virtual void Init();
 	
+  // Cluster contents
+  
+  Bool_t        AreNeighbours(const TString calo, const Int_t absId1, const Int_t absId2) const ;  
+
+  Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
+                                       Int_t *absIdList,     Float_t *maxEList)  ;
+  
+  Float_t       GetLocalMaximaCutE()                 const { return fLocMaxCutE           ; }
+  void          SetLocalMaximaCutE(Float_t cut)            { fLocMaxCutE     = cut        ; }
+  
+  Float_t       GetLocalMaximaCutEDiff()             const { return fLocMaxCutEDiff       ; }
+  void          SetLocalMaximaCutEDiff(Float_t c)          { fLocMaxCutEDiff = c          ; }
+  
   Int_t         GetMaxEnergyCell(AliVCaloCells* cells, const AliVCluster* clu, Float_t & fraction) const ;
   
   //Calorimeters Geometry Methods
@@ -166,6 +179,8 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(map)        ; }
   void          SetPHOSChannelRecalibrationFactors (TObjArray *map)      { fPHOSRecalibrationFactors  = map;}
 
+  void          RecalibrateCellTime     (Double_t & time, const TString calo, const Int_t absId, const Int_t bunchCrossNumber);
+  void          RecalibrateCellAmplitude(Float_t  & amp,  const TString calo, const Int_t absId);
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
 
   //EMCAL specific utils for the moment
@@ -248,11 +263,13 @@ class AliCalorimeterUtils : public TObject {
   Float_t            fCutZ;                  //  dZ cut on matching (EMCAL/PHOS)
   Float_t            fCutEta;                //  dEta cut on matching (EMCAL)
   Float_t            fCutPhi;                //  dPhi cut on matching (EMCAL)
+  Float_t            fLocMaxCutE;            //  Local maxima cut must have more than this energy
+  Float_t            fLocMaxCutEDiff;        //  Local maxima cut, when aggregating cells, next can be a bit higher
   
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,9)
+  ClassDef(AliCalorimeterUtils,10)
 } ;
 
 
