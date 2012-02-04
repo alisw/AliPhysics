@@ -1065,7 +1065,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //Get the event, do some checks and settings
   CheckAndGetEvent() ;
   
-  if (!fEvent) {
+  if (!fEvent) 
+  {
     if(DebugLevel() > 0 ) printf("AliAnalysisTaksEMCALClusterize::UserExec() - Skip Event %d", (Int_t) Entry());
     return ;
   }
@@ -1082,18 +1083,24 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   else             ClusterizeCells() ;
   
   //Recalculate track-matching for the new clusters
-  if(fDoTrackMatching) fRecoUtils->FindMatches(fEvent,fCaloClusterArr,fGeom);
-  
+  if(fDoTrackMatching) 
+  {
+    fRecoUtils->FindMatches(fEvent,fCaloClusterArr,fGeom);
+  }
   //Put the new clusters in the AOD list
   
   Int_t kNumberOfCaloClusters   = fCaloClusterArr->GetEntriesFast();
   for(Int_t i = 0; i < kNumberOfCaloClusters; i++){
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
     
+    newCluster->SetID(i);
+
     //Add matched track
-    if(fDoTrackMatching){
+    if(fDoTrackMatching)
+    {
       Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
-      if(trackIndex >= 0){
+      if(trackIndex >= 0)
+      {
         newCluster->AddTrackMatched(fEvent->GetTrack(trackIndex));
         if(DebugLevel() > 1) 
           printf("AliAnalysisTaksEMCALClusterize::UserExec() - Matched Track index %d to new cluster %d \n",trackIndex,i);
@@ -1104,7 +1111,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       newCluster->SetTrackDistance(dR,dZ);
       
     }
-    else {// Assign previously assigned matched track in reco, very very rough
+    else 
+    {// Assign previously assigned matched track in reco, very very rough
       Int_t absId0 = newCluster->GetCellsAbsId()[0]; // Assign match of first cell in cluster
       newCluster->SetTrackDistance(fCellMatchdPhi[absId0],fCellMatchdEta[absId0]);
     }
@@ -1117,7 +1125,6 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     if(fRecoUtils->IsBadChannelsRemovalSwitchedOn())
       fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
 
-    newCluster->SetID(i);
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
         
     if(DebugLevel() > 1 )    
