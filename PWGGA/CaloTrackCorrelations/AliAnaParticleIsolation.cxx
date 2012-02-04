@@ -77,11 +77,17 @@ ClassImp(AliAnaParticleIsolation)
     fhPtNoIsoPi0Decay(0),             fhPtNoIsoEtaDecay(0),            fhPtNoIsoOtherDecay(0),
     fhPtNoIsoPrompt(0),               fhPtIsoMCPhoton(0),              fhPtNoIsoMCPhoton(0),
     fhPtNoIsoConversion(0),           fhPtNoIsoFragmentation(0),       fhPtNoIsoUnknown(0),
+    // Cluster control histograms
     fhTrackMatchedDEta(0x0),          fhTrackMatchedDPhi(0x0),         fhTrackMatchedDEtaDPhi(0x0),
     fhdEdx(0),                        fhEOverP(0),                     fhTrackMatchedMCParticle(0),
     fhELambda0(0),                    fhELambda1(0), 
-    fhELambda0TRD(0),                 fhELambda1TRD(0), 
-    //Histograms settings
+    fhELambda0TRD(0),                 fhELambda1TRD(0),
+    // Number of local maxima in cluster
+    fhNLocMax(0),
+    fhELambda0LocMax1(0),             fhELambda1LocMax1(0),
+    fhELambda0LocMax2(0),             fhELambda1LocMax2(0),
+    fhELambda0LocMaxN(0),             fhELambda1LocMaxN(0),
+    // Histograms settings
     fHistoNPtSumBins(0),              fHistoPtSumMax(0.),              fHistoPtSumMin(0.),
     fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInConeMin(0.)
 {
@@ -137,6 +143,7 @@ ClassImp(AliAnaParticleIsolation)
 //________________________________________________________________________________________________
 void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
                                                                             const Int_t clusterID,
+                                                                            const Int_t nMaxima,
                                                                             const Int_t mcTag
                                                                             )
 {
@@ -165,6 +172,12 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
         fhELambda0TRD   ->Fill(energy, cluster->GetM02() );  
         fhELambda1TRD   ->Fill(energy, cluster->GetM20() );  
       }
+      
+      fhNLocMax->Fill(energy,nMaxima);
+      if     (nMaxima==1) { fhELambda0LocMax1->Fill(energy,cluster->GetM02()); fhELambda1LocMax1->Fill(energy,cluster->GetM20()); }
+      else if(nMaxima==2) { fhELambda0LocMax2->Fill(energy,cluster->GetM02()); fhELambda1LocMax2->Fill(energy,cluster->GetM20()); }
+      else                { fhELambda0LocMaxN->Fill(energy,cluster->GetM02()); fhELambda1LocMaxN->Fill(energy,cluster->GetM20()); }
+      
     } // SS histo fill        
     
     
@@ -424,6 +437,49 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhELambda1TRD->SetXTitle("E (GeV)");
         outputContainer->Add(fhELambda1TRD) ;       
       }
+      
+      fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
+                                     nptbins,ptmin,ptmax,10,0,10); 
+      fhNLocMax ->SetYTitle("N maxima");
+      fhNLocMax ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhNLocMax) ;       
+      
+      fhELambda0LocMax1  = new TH2F
+      ("hELambda0LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0LocMax1->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0LocMax1->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0LocMax1) ; 
+      
+      fhELambda1LocMax1  = new TH2F
+      ("hELambda1LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda1LocMax1->SetYTitle("#lambda_{1}^{2}");
+      fhELambda1LocMax1->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda1LocMax1) ; 
+      
+      fhELambda0LocMax2  = new TH2F
+      ("hELambda0LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0LocMax2->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0LocMax2->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0LocMax2) ; 
+      
+      fhELambda1LocMax2  = new TH2F
+      ("hELambda1LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda1LocMax2->SetYTitle("#lambda_{1}^{2}");
+      fhELambda1LocMax2->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda1LocMax2) ; 
+      
+      fhELambda0LocMaxN  = new TH2F
+      ("hELambda0LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0LocMaxN->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0LocMaxN->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0LocMaxN) ; 
+      
+      fhELambda1LocMaxN  = new TH2F
+      ("hELambda1LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda1LocMaxN->SetYTitle("#lambda_{1}^{2}");
+      fhELambda1LocMaxN->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda1LocMaxN) ; 
+      
     }
     
     fhConeSumPt  = new TH2F
@@ -1094,7 +1150,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {    
       if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED, fill histograms\n", iaod);
      
-      FillTrackMatchingShowerShapeControlHistograms(clID, mcTag);
+      FillTrackMatchingShowerShapeControlHistograms(clID,aod->GetFiducialArea(),mcTag);
       
       fhEIso      ->Fill(energy);
       fhPtIso     ->Fill(pt);

@@ -44,7 +44,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
-  void           FillSelectedClusterHistograms(AliVCluster* cluster, const Int_t tag);
+  void           FillSelectedClusterHistograms(AliVCluster* cluster, 
+                                               const Int_t nLocMax,
+                                               const Int_t tag);
     
   void           FillWeightHistograms(AliVCluster *clus);
     
@@ -121,7 +123,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhENCells;                //! E vs N cells in selected cluster
   TH2F         * fhETime;                  //! E vs Time of selected cluster 
   TH2F         * fhEPairDiffTime;          //! E vs Pair of clusters time difference vs E
-
+  
   //MC histograms
   
   TH2F         * fhEMCLambda0[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
@@ -156,15 +158,25 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhTrackMatchedDEta     ;  //! Eta distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDPhi     ;  //! Phi distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDEtaDPhi ;  //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F         * fhTrackMatchedMCParticle; //! Trace origin of matched particle
   TH2F         * fhdEdx  ;                 //! matched track dEdx vs cluster E 
   TH2F         * fhEOverP;                 //! matched track E cluster over P track vs cluster E
-  TH2F         * fhTrackMatchedMCParticle; //! Trace origin of matched particle
   TH2F         * fhEOverPNoTRD;                 //! matched track E cluster over P track vs cluster E, not behind TRD 
+
+  // Local maxima
+  TH2F         * fhNLocMax;                //! number of maxima in selected clusters
+  TH2F         * fhELambda0LocMax1 ;       //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
+  TH2F         * fhELambda1LocMax1 ;       //! E vs lambda1 of selected cluster, 1 local maxima in cluster 
+  TH2F         * fhELambda0LocMax2 ;       //! E vs lambda0 of selected cluster, 2 local maxima in cluster 
+  TH2F         * fhELambda1LocMax2 ;       //! E vs lambda1 of selected cluster, 2 local maxima in cluster
+  TH2F         * fhELambda0LocMaxN ;       //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
+  TH2F         * fhELambda1LocMaxN ;       //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
+  TH2F         * fhMassPairLocMax[6];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
 
   AliAnaPi0EbE(              const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,12)
+  ClassDef(AliAnaPi0EbE,13)
 } ;
 
 

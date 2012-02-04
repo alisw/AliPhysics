@@ -61,7 +61,8 @@ AliAnaPhoton::AliAnaPhoton() :
     fNOriginHistograms(8),        fNPrimaryHistograms(4),
 
     // Histograms
-    fhNCellsE(0),                 fhMaxCellDiffClusterE(0),     fhTimeE(0), // Control histograms
+    fhNCellsE(0),                 fhCellsE(0),   // Control histograms            
+    fhMaxCellDiffClusterE(0),     fhTimeE(0),    // Control histograms
     fhEPhoton(0),                 fhPtPhoton(0),  
     fhPhiPhoton(0),               fhEtaPhoton(0), 
     fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
@@ -1164,6 +1165,11 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhNCellsE->SetYTitle("# of cells in cluster");
   outputContainer->Add(fhNCellsE);    
   
+  fhCellsE  = new TH2F ("hCellsE","energy of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nptbins*2,ptmin,ptmax); 
+  fhCellsE->SetXTitle("E_{cluster} (GeV)");
+  fhCellsE->SetYTitle("E_{cell} (GeV)");
+  outputContainer->Add(fhCellsE);    
+  
   fhTimeE  = new TH2F ("hTimeE","time of cluster vs E of clusters", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
   fhTimeE->SetXTitle("E (GeV)");
   fhTimeE->SetYTitle("time (ns)");
@@ -2158,6 +2164,19 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Matching after cuts
     if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,1);
     
+    // Add number of local maxima to AOD, method name in AOD to be FIXED
+    AliVCaloCells* cells    = 0;
+    if(fCalorimeter == "EMCAL") cells    = GetEMCALCells();
+    else                        cells    = GetPHOSCells();
+    const Int_t   nc = calo->GetNCells();
+    Int_t   *absIdList = new Int_t  [nc]; 
+    Float_t *maxEList  = new Float_t[nc]; 
+    
+    aodph.SetFiducialArea(GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells, absIdList, maxEList));
+    
+    delete [] absIdList;
+    delete [] maxEList;
+
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
@@ -2256,13 +2275,19 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     
     Int_t iclus = -1;
     AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus); 
-    if(cluster){
+    if(cluster)
+    {
       absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
       
       // Control histograms
       fhMaxCellDiffClusterE->Fill(ph->E(),maxCellFraction);
       fhNCellsE            ->Fill(ph->E(),cluster->GetNCells());
       fhTimeE              ->Fill(ph->E(),cluster->GetTOF()*1.e9);
+      if(cells)
+      {
+      for(Int_t icell = 0; icell <  cluster->GetNCells(); icell++)
+        fhCellsE->Fill(ph->E(),cells->GetCellAmplitude(cluster->GetCellsAbsId()[icell]));
+      }
     }
     
     //.......................................
