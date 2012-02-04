@@ -81,7 +81,7 @@ public:
   //Is particle isolated
   Bool_t IsIsolated( const AliAODConversionPhoton * const particle, const TClonesArray * const tracks, Bool_t &leading);
   Bool_t IsIsolated( AliAODConversionPhoton * const particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading );
-  Bool_t IsLeading(const AliAODConversionParticle * particle, const TObjArray * tracks, const Int_t * tIDs) const;
+  Int_t IsLeading(const AliAODConversionParticle * particle, const TObjArray * tracks, const Int_t * tIDs) const;
 
   //Is eta - phi distance smaller than conesize ?
   Bool_t IsInCone(Float_t dEta, Float_t dPhi, const Float_t coneSize) const {

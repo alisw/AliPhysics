@@ -60,11 +60,14 @@ AliAnaConvCorrPion::~AliAnaConvCorrPion() {
   //destructor
 }
 
+//________________________________________________________________________________
 void AliAnaConvCorrPion::InitMassAxis() {
   Double_t mbins[7] = {0.1, 0.11, 0.12, 0.15, 0.16, 0.18, 0.2};
   fAxisM.Set(6, mbins);
   fAxisM.SetNameTitle("InvMass", "invariant mass");
-  GetAxisList().AddAt(&fAxisM, 4);
+  GetAxisList().AddAt(&fAxisM, 5);
+  GetTrackAxisList().AddAt(&fAxisM, 5);
+  GetTrigAxisList().AddAt(&fAxisM, 4);
 }
 
 ///________________________________________________________________________________

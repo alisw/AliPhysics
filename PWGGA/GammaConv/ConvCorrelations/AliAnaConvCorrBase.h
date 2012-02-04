@@ -63,15 +63,21 @@ public:
 
   void PrintStatistics();
 
-  void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Bool_t isolated);
+  void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Int_t isolated);
   virtual void FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t leading);
 
-  TAxis& GetAxistPt()  { return fAxistPt;   }
-  TAxis& GetAxiscPt()  { return fAxiscPt;   }
-  TAxis& GetAxisdEta() { return fAxisdEta;  }
-  TAxis& GetAxisdPhi() { return fAxisdPhi;  }
-  TList& GetAxisList() { return fAxesList;  }
+  TAxis& GetAxistPt()       { return fAxistPt;   }
+  TAxis& GetAxiscPt()       { return fAxiscPt;   }
+  TAxis& GetAxisdEta()      { return fAxisdEta;  }
+  TAxis& GetAxisdPhi()      { return fAxisdPhi;  }
+  TAxis& GetAxisIso()       { return fAxisIso;   }
 
+  TAxis& GetAxisMEEta()     { return fAxisMEEta; }
+  TAxis& GetAxisMEPhi()     { return fAxisMEPhi; }
+
+  TList& GetAxisList()      { return fAxesList;  }
+  TList& GetTrackAxisList() { return fTrackAxisList; }
+  TList& GetTrigAxisList()  { return fTrigAxisList; }
 
 
 protected:
@@ -90,20 +96,28 @@ private:
   //TString fName; //name of analysis
   TList * fHistograms; //List of histograms
   TList fAxesList;  //List over axes to be used in sparse
+  TList fTrigAxisList; //list
+  TList fTrackAxisList; //list
 
   TAxis fAxistPt; //Pt axis
   TAxis fAxiscPt; //correlated particle pt axis
   TAxis fAxisdEta; //delta eta axis
   TAxis fAxisdPhi; //delta phi axis
+  TAxis fAxisIso; //Isolated particle axis
   
-  THnSparseF * fSparse; //Sparse
+  TAxis fAxisMEEta ; //Eta axis for ME
+  TAxis fAxisMEPhi ; //Phi axis for ME
+
+  THnSparseF * fCorrSparse; // Sparse for corr
+  THnSparseF * fTrigSparse; // ME Sparse
+  THnSparseF * fTrackSparse; //Track Sparse
 
   //Default constructor prohibited
   AliAnaConvCorrBase(); //not implemented
   AliAnaConvCorrBase(const AliAnaConvCorrBase&); // not implemented
   AliAnaConvCorrBase& operator=(const AliAnaConvCorrBase&); // not implemented
 
-  ClassDef(AliAnaConvCorrBase, 4); // example of analysis
+  ClassDef(AliAnaConvCorrBase, 5); // example of analysis
 
 };
 

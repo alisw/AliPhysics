@@ -39,19 +39,27 @@ ClassImp(AliAnaConvCorrBase)
 //________________________________________________________________________
 AliAnaConvCorrBase::AliAnaConvCorrBase(TString name, TString title = "title") : TNamed(name, title),
   fHistograms(NULL),
-  fAxesList(NULL), 
+  fAxesList(), 
+  fTrigAxisList(), 
+  fTrackAxisList(),
   fAxistPt(),
   fAxiscPt(), 
   fAxisdEta(), 
   fAxisdPhi(),
-  fSparse(NULL)
+  fAxisIso(), 
+  fAxisMEEta(), 
+  fAxisMEPhi(),
+  fCorrSparse(NULL),
+  fTrigSparse(NULL),
+  fTrackSparse(NULL)
 {
   //Constructor
 
   SetUpDefaultBins();
   
   fAxesList.SetOwner(kTRUE);
-
+  fTrackAxisList.SetOwner(kTRUE);
+  fTrigAxisList.SetOwner(kTRUE);
 
 }
 
@@ -61,7 +69,7 @@ AliAnaConvCorrBase::~AliAnaConvCorrBase() {
   ///destructor
 }
 
-
+//________________________________________________________________________________
 void AliAnaConvCorrBase::CreateHistograms() {
   CreateBaseHistograms();
 }
@@ -72,24 +80,47 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   Double_t ptbins[19] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
   fAxisdEta.Set(160, -1.6, 1.6);
   fAxisdEta.SetNameTitle("dEta", "delta eta");
-  fAxesList.AddAt(&fAxisdEta, 0);
 
   fAxisdPhi.Set(64, -TMath::PiOver2(), 3*TMath::PiOver2());
   fAxisdPhi.SetNameTitle("dPhi", "delta Phi");
-  fAxesList.AddAt(&fAxisdPhi, 1);
 
   fAxistPt.Set(18, ptbins);
   fAxistPt.SetNameTitle("tPt", "trigger Pt");
-  fAxesList.AddAt(&fAxistPt, 2);
 
   fAxiscPt.Set(18, ptbins);
   fAxiscPt.SetNameTitle("cPt", "track Pt");
+
+  fAxisIso.Set(3, -0.5, 2.5);
+  fAxisIso.SetNameTitle("iso", "isolation");
+
+  fAxesList.AddAt(&fAxisdEta, 0);
+  fAxesList.AddAt(&fAxisdPhi, 1);
+  fAxesList.AddAt(&fAxistPt, 2);
   fAxesList.AddAt(&fAxiscPt, 3);
+  fAxesList.AddAt(&fAxisIso, 4);
+
+  fAxisMEEta.Set(160, -0.8, 0.8);
+  fAxisMEEta.SetNameTitle("eta", "eta");
+  
+  fAxisMEPhi.Set(64, 0, TMath::TwoPi());
+  fAxisMEPhi.SetNameTitle("phi", "phi");
+
+  fTrackAxisList.AddAt(&fAxisMEEta, 0);
+  fTrackAxisList.AddAt(&fAxisMEPhi, 1);
+  fTrackAxisList.AddAt(&fAxistPt, 2);
+  fTrackAxisList.AddAt(&fAxiscPt, 3);
+  fTrackAxisList.AddAt(&fAxisIso, 4);
+
+  fTrigAxisList.AddAt(&fAxisMEEta, 0);
+  fTrigAxisList.AddAt(&fAxisMEPhi, 1);
+  fTrigAxisList.AddAt(&fAxistPt, 2);
+  fTrigAxisList.AddAt(&fAxisIso, 3);
 
   for(int iIso = 0; iIso < 2; iIso++) {
     fHNTriggers[iIso] = NULL;
   }
 }
+
 
 //________________________________________________________________________
 void AliAnaConvCorrBase::CreateBaseHistograms() {
@@ -98,7 +129,7 @@ void AliAnaConvCorrBase::CreateBaseHistograms() {
   cout << "Creating histograms for "<< GetName() << endl;
 
   fHistograms = new TList();
-  fHistograms->SetOwner(kFALSE);
+  fHistograms->SetOwner(kTRUE);
   fHistograms->SetName(fName);
 
   for(int iIso = 0; iIso < 2; iIso++) {
@@ -111,8 +142,14 @@ void AliAnaConvCorrBase::CreateBaseHistograms() {
   
   }
 
-  fSparse = CreateSparse(GetName(), GetTitle(), &fAxesList);
-  fHistograms->Add(fSparse);
+  fCorrSparse = CreateSparse(GetName(), GetTitle(), &fAxesList);
+  fHistograms->Add(fCorrSparse);
+
+  fTrackSparse = CreateSparse(Form("%s_%s", GetName(), "METrack"), Form("%s %s", GetTitle(), "ME Tracks"), &fTrackAxisList);
+  fHistograms->Add(fTrackSparse);
+
+  fTrigSparse = CreateSparse(Form("%s_%s", GetName(), "METrig"), Form("%s %s", GetTitle(), "ME Triggers"), &fTrigAxisList);
+  fHistograms->Add(fTrigSparse);
 
 }
 
@@ -121,7 +158,7 @@ THnSparseF * AliAnaConvCorrBase::CreateSparse(TString nameString, TString titleS
   //Create sparse
   const Int_t dim = axesList->GetSize();
   
-  cout << "dimesion: " << dim << endl;
+  cout << nameString << " " << titleString << " " <<   "    dimesion: " << dim << endl;
 
   TAxis * axes[dim];
   Int_t   bins[dim];
@@ -200,14 +237,16 @@ void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * pa
 
 
 //________________________________________________________________
-void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, Int_t const tIDs[4], Bool_t isolated /*= kFALSE*/) {
+void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, Int_t const tIDs[4], Int_t isolated = 0) {
   //Correlate particle with tracks
 
   FillTriggerCounters(particle, isolated);
 
- Int_t nDim = fAxesList.GetSize();
+  Int_t nDim = fAxesList.GetSize();
   Double_t dphivalues[nDim];
-  
+  Double_t trackValues[nDim];
+  Double_t trigValues[nDim - 1];
+
   for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
 	AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));
 	Int_t tid = track->GetID();
@@ -216,12 +255,32 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
 	  continue;
 	}
 	
-	dphivalues[1] = GetDPhi(particle->Phi() - track->Phi());
 	dphivalues[0] = particle->Eta() - track->Eta();
+	dphivalues[1] = GetDPhi(particle->Phi() - track->Phi());
 	dphivalues[2] = particle->Pt();
 	dphivalues[3] = track->Pt();
-	if(nDim > 4) dphivalues[4] = particle->M();
-	fSparse->Fill(dphivalues);
+	dphivalues[4] = isolated;
+
+	trackValues[0] = track->Eta();
+	trackValues[1] = track->Phi();
+	trackValues[2] = particle->Pt();
+	trackValues[3] = track->Pt();
+	trackValues[4] = isolated;
+
+	trigValues[0] = particle->Eta();
+	trigValues[1] = particle->Phi();
+	trigValues[2] = particle->Pt();
+	trigValues[4] = isolated;
+
+	if(nDim > 4) {
+	  dphivalues[5] = particle->M();
+	  trackValues[5] = particle->M();
+	  trigValues[4] = particle->M();
+	}
+	
+	fCorrSparse->Fill(dphivalues);
+	fTrackSparse->Fill(trackValues);
+	fTrigSparse->Fill(trigValues);
   }
 }
 

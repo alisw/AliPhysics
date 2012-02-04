@@ -42,7 +42,8 @@ public:
   AliAnalysisFilter& GetDielTrackFilter()   { return fDielTrackFilter;   }
   AliAnalysisFilter& GetDielPi0Filter()     { return fDielPi0Filter;     }
 
-  TAxis& GetAxisPt()   { return fAxisPt;   }
+  TAxis& GetAxistPt()   { return fAxistPt;   }
+  TAxis& GetAxiscPt()   { return fAxiscPt;   }
   TAxis& GetAxisEta()  { return fAxisEta;  }
   TAxis& GetAxisPhi()  { return fAxisPhi;  }
   TAxis& GetAxisZ()    { return fAxisZ;    }
@@ -102,7 +103,8 @@ private:
 
   TString fDeltaAODBranchName; //comment
 
-  TAxis fAxisPt; //comment
+  TAxis fAxistPt; //comment
+  TAxis fAxiscPt; //comment
   TAxis fAxisEta; //comment
   TAxis fAxisPhi; //comment
   TAxis fAxisCent; //comment
