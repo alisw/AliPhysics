@@ -96,7 +96,7 @@ private:
     Int_t                  fNEvent;             //! Number of events
     Int_t                  fEvent;              //! Current event
     TString               *fPathName;           //! Input file path 
-    const Char_t          *fExtension;          //! File name extension 
+    const Char_t          *fkExtension;         //! File name extension 
     Int_t                  fFileNumber;         //! Input file number
     Int_t                  fEventsPerFile;      //! Number of events per file
     Bool_t                 fReadTR;             // determines if TR shall be read

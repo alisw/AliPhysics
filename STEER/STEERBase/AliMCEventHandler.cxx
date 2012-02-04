@@ -60,7 +60,7 @@ AliMCEventHandler::AliMCEventHandler() :
     fNEvent(-1),
     fEvent(-1),
     fPathName(new TString("./")),
-    fExtension(""),
+    fkExtension(""),
     fFileNumber(0),
     fEventsPerFile(0),
     fReadTR(kTRUE),
@@ -92,7 +92,7 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fNEvent(-1),
     fEvent(-1),
     fPathName(new TString("./")),
-    fExtension(""),
+    fkExtension(""),
     fFileNumber(0),
     fEventsPerFile(0),
     fReadTR(kTRUE),
@@ -138,7 +138,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     fNEvent = fTreeE->GetEntries();
     //
     // Tree K
-    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fExtension));
+    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fkExtension));
     if (!fFileK) {
 	AliError(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName->Data()));
 	fInitOk = kFALSE;
@@ -149,7 +149,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     //
     // Tree TR
     if (fReadTR) {
-	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
+	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fkExtension));
 	if (!fFileTR) {
 	    AliError(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
 	    fInitOk = kFALSE;
@@ -236,25 +236,25 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
 {
     // Open file i
     if (i > 0) {
-	fExtension = Form("%d", i);
+	fkExtension = Form("%d", i);
     } else {
-	fExtension = "";
+	fkExtension = "";
     }
     
     
     delete fFileK;
-    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fExtension));
+    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fkExtension));
     if (!fFileK) {
-	AliError(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
+	AliError(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
 	fInitOk = kFALSE;
 	return kFALSE;
     }
     
     if (fReadTR) {
 	delete fFileTR;
-	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
+	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fkExtension));
 	if (!fFileTR) {
-	    AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
+	    AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
 	    fInitOk = kFALSE;
 	    return kFALSE;
 	}
@@ -474,7 +474,7 @@ void AliMCEventHandler::ResetIO()
     if (fFileE)  {delete fFileE;  fFileE  = 0;}
     if (fFileK)  {delete fFileK;  fFileK  = 0;}
     if (fFileTR) {delete fFileTR; fFileTR = 0;}
-    fExtension="";
+    fkExtension="";
     fInitOk = kFALSE;
 
     if (fSubsidiaryHandlers) {
