@@ -51,16 +51,16 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	              
     fFillWeightHistograms(kFALSE), fFillTMHisto(0),
     fInputAODGammaConvName(""),
-    //Histograms
+    // Histograms
     fhPt(0),                       fhE(0),                    
     fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
     fhPtDecay(0),                  fhEDecay(0),  
-    //Shower shape histos
+    // Shower shape histos
     fhEDispersion(0),              fhELambda0(0),                fhELambda1(0), 
     fhELambda0NoTRD(0),            fhELambda0FracMaxCellCut(0),  
     fhEFracMaxCell(0),             fhEFracMaxCellNoTRD(0),            
-    fhENCells(0),                  fhETime(0),                   fhEPairDiffTime(0),    
-    //MC histos
+    fhENCells(0),                  fhETime(0),                   fhEPairDiffTime(0),  
+    // MC histos
     fhPtMCNo(0),                   fhPhiMCNo(0),                 fhEtaMCNo(0), 
     fhPtMC(0),                     fhPhiMC(0),                   fhEtaMC(0),
     fhMassPairMCPi0(0),            fhMassPairMCEta(0),
@@ -69,8 +69,13 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhECellClusterRatio(0),        fhECellClusterLogRatio(0),                 
     fhEMaxCellClusterRatio(0),     fhEMaxCellClusterLogRatio(0),
     fhTrackMatchedDEta(0),         fhTrackMatchedDPhi(0),        fhTrackMatchedDEtaDPhi(0),
-    fhdEdx(0),                     fhEOverP(0),                  fhTrackMatchedMCParticle(0), 
-    fhEOverPNoTRD(0)                
+    fhTrackMatchedMCParticle(0),   fhdEdx(0),                     
+    fhEOverP(0),                   fhEOverPNoTRD(0),                
+    // Number of local maxima in cluster
+    fhNLocMax(0),
+    fhELambda0LocMax1(0),          fhELambda1LocMax1(0),
+    fhELambda0LocMax2(0),          fhELambda1LocMax2(0),
+    fhELambda0LocMaxN(0),          fhELambda1LocMaxN(0)
 {
   //default ctor
   
@@ -81,6 +86,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhEMCFracMaxCell[i] = 0;
     fhEMCLambda1[i]     = 0;
     fhEMCDispersion[i]  = 0;
+    fhMassPairLocMax[i] = 0;
   }
   
   //Weight studies
@@ -95,8 +101,10 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
 }
 
 //_____________________________________________________________________________________
-void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int_t tag){
-  
+void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, 
+                                                 const Int_t nMaxima,
+                                                 const Int_t tag)
+{
   // Fill shower shape, timing and other histograms for selected clusters from decay
   
   Float_t e    = cluster->E();
@@ -121,6 +129,11 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int
   fhELambda0   ->Fill(e, l0  );  
   fhELambda1   ->Fill(e, l1  );  
   
+  fhNLocMax->Fill(e,nMaxima);
+  if     (nMaxima==1) { fhELambda0LocMax1->Fill(e,l0); fhELambda1LocMax1->Fill(e,l1); }
+  else if(nMaxima==2) { fhELambda0LocMax2->Fill(e,l0); fhELambda1LocMax2->Fill(e,l1); }
+  else                { fhELambda0LocMaxN->Fill(e,l0); fhELambda1LocMaxN->Fill(e,l1); }
+
   if(fCalorimeter=="EMCAL" && nSM < 6) 
   {
     fhELambda0NoTRD->Fill(e, l0  );
@@ -581,6 +594,49 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhEFracMaxCell->SetXTitle("E (GeV)");
     outputContainer->Add(fhEFracMaxCell) ; 
 
+    fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
+                         nptbins,ptmin,ptmax,10,0,10); 
+    fhNLocMax ->SetYTitle("N maxima");
+    fhNLocMax ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhNLocMax) ;  
+    
+    fhELambda0LocMax1  = new TH2F
+    ("hELambda0LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda0LocMax1->SetYTitle("#lambda_{0}^{2}");
+    fhELambda0LocMax1->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda0LocMax1) ; 
+    
+    fhELambda1LocMax1  = new TH2F
+    ("hELambda1LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda1LocMax1->SetYTitle("#lambda_{1}^{2}");
+    fhELambda1LocMax1->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda1LocMax1) ; 
+    
+    fhELambda0LocMax2  = new TH2F
+    ("hELambda0LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda0LocMax2->SetYTitle("#lambda_{0}^{2}");
+    fhELambda0LocMax2->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda0LocMax2) ; 
+    
+    fhELambda1LocMax2  = new TH2F
+    ("hELambda1LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda1LocMax2->SetYTitle("#lambda_{1}^{2}");
+    fhELambda1LocMax2->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda1LocMax2) ; 
+
+    fhELambda0LocMaxN  = new TH2F
+    ("hELambda0LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda0LocMaxN->SetYTitle("#lambda_{0}^{2}");
+    fhELambda0LocMaxN->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda0LocMaxN) ; 
+    
+    fhELambda1LocMaxN  = new TH2F
+    ("hELambda1LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda1LocMaxN->SetYTitle("#lambda_{1}^{2}");
+    fhELambda1LocMaxN->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda1LocMaxN) ; 
+    
+    
     if(fCalorimeter=="EMCAL"){
       fhELambda0NoTRD  = new TH2F
       ("hELambda0NoTRD","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, not behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
@@ -612,6 +668,25 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhEPairDiffTime->SetXTitle("E_{pair} (GeV)");
     fhEPairDiffTime->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhEPairDiffTime);
+    
+    TString combiName [] = {"1LocMax","2LocMax","NLocMax","1LocMax2LocMax","1LocMaxNLocMax","2LocMaxNLocMax"};
+    TString combiTitle[] = {"1 Local Maxima in both clusters","2 Local Maxima in both clusters","more than 2 Local Maxima in both clusters",
+      "1 Local Maxima paired with 2 Local Maxima","1 Local Maxima paired with more than 2 Local Maxima",
+      "2 Local Maxima paired with more than 2 Local Maxima"};
+
+    for (Int_t i = 0; i < 6 ; i++) 
+    {
+
+      if (fAnaType == kIMCaloTracks && i > 2 ) continue ; 
+
+      fhMassPairLocMax[i]  = new TH2F
+      (Form("MassPairLocMax%s",combiName[i].Data()),
+       Form("Mass for decay #gamma pair vs E_{pair}, origin #pi^{0}, %s", combiTitle[i].Data()),
+       nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+      fhMassPairLocMax[i]->SetYTitle("Mass (MeV/c^{2})");
+      fhMassPairLocMax[i]->SetXTitle("E_{pair} (GeV)");
+      outputContainer->Add(fhMassPairLocMax[i]) ; 
+    }
   }
   
   if(fFillTMHisto)
@@ -782,14 +857,14 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhMassPairMCPi0  = new TH2F
       ("MassPairMCPi0",
        "Mass for decay #gamma pair vs E_{pair}, origin #pi^{0}",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-      fhMassPairMCPi0->SetYTitle("#alpha (rad)");
+      fhMassPairMCPi0->SetYTitle("Mass (MeV/c^{2})");
       fhMassPairMCPi0->SetXTitle("E_{pair} (GeV)");
       outputContainer->Add(fhMassPairMCPi0) ; 
 
       fhMassPairMCEta  = new TH2F
       ("MassPairMCEta",
        "Mass for decay #gamma pair vs E_{pair}, origin #eta",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-      fhMassPairMCEta->SetYTitle("#alpha (rad)");
+      fhMassPairMCEta->SetYTitle("Mass (MeV/c^{2})");
       fhMassPairMCEta->SetXTitle("E_{pair} (GeV)");
       outputContainer->Add(fhMassPairMCEta) ; 
 
@@ -1000,6 +1075,28 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       //Play with the MC stack if available
       if(IsDataMC()) HasPairSameMCMother(photon1, photon2, label, tag) ;
 
+      // Check the invariant mass for different selection on the local maxima
+      // Name of AOD method TO BE FIXED
+      Int_t nMaxima1 = photon1->GetFiducialArea();
+      Int_t nMaxima2 = photon2->GetFiducialArea();
+      
+      Double_t mass  = (mom1+mom2).M();
+      Double_t epair = (mom1+mom2).E();
+      
+      if(nMaxima1==nMaxima2)
+      {
+        if     (nMaxima1==1) fhMassPairLocMax[0]->Fill(epair,mass);
+        else if(nMaxima1==2) fhMassPairLocMax[1]->Fill(epair,mass);
+        else                 fhMassPairLocMax[2]->Fill(epair,mass);
+      }
+      else if(nMaxima1==1 || nMaxima2==1)
+      {
+        if  (nMaxima1==2 || nMaxima2==2) fhMassPairLocMax[3]->Fill(epair,mass);
+        else                             fhMassPairLocMax[4]->Fill(epair,mass);       
+      }
+      else  
+        fhMassPairLocMax[5]->Fill(epair,mass);
+      
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
       {
@@ -1007,9 +1104,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
         
         //Fill some histograms about shower shape
-        if(clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
-          FillSelectedClusterHistograms(cluster1, photon1->GetTag());
-          FillSelectedClusterHistograms(cluster2, photon2->GetTag());
+        if(clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+        {
+          FillSelectedClusterHistograms(cluster1, nMaxima1, photon1->GetTag());
+          FillSelectedClusterHistograms(cluster2, nMaxima2, photon2->GetTag());
         }
         
         // Tag both photons as decay
@@ -1116,6 +1214,14 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       
       mom2 = *(photon2->Momentum());
       
+      Double_t mass  = (mom1+mom2).M();
+      Double_t epair = (mom1+mom2).E();
+      
+      Int_t nMaxima = photon1->GetFiducialArea();
+      if     (nMaxima==1) fhMassPairLocMax[0]->Fill(epair,mass);
+      else if(nMaxima==2) fhMassPairLocMax[1]->Fill(epair,mass);
+      else                fhMassPairLocMax[2]->Fill(epair,mass);
+      
       //Play with the MC stack if available
       if(IsDataMC())
       {
@@ -1133,7 +1239,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         //Fill some histograms about shower shape
         if(cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
         {
-          FillSelectedClusterHistograms(cluster, photon1->GetTag());
+          FillSelectedClusterHistograms(cluster, nMaxima, photon1->GetTag());
         }        
         
         // Tag both photons as decay
