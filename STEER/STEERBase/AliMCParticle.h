@@ -1,5 +1,5 @@
-#ifndef AliMCParticle_H
-#define AliMCParticle_H
+#ifndef ALIMCPARTICLE_H
+#define ALIMCPARTICLE_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
