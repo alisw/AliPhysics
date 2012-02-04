@@ -197,16 +197,29 @@ Bool_t AliAnaConvIsolation::IsLeading(AliAODConversionParticle * particle, const
 }
 
 ///________________________________________________________________________
-Bool_t AliAnaConvIsolation::IsLeading(const AliAODConversionParticle * particle, const TObjArray * tracks, const Int_t tIDs[4]) const {
+Int_t AliAnaConvIsolation::IsLeading(const AliAODConversionParticle * particle, const TObjArray * tracks, const Int_t tIDs[4]) const {
+
+  Bool_t leadingEvent = kTRUE;
+
   //Is there a higher pt particle within cone ?
   Float_t tPt = particle->Pt();
   for(int it = 0; it < tracks->GetEntriesFast(); it++) {
     AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(it));
 	Int_t tid = track->GetID();
 	if(tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3]) continue;
-	if(track->Pt() > tPt && IsInCone(particle->Eta() - track->Eta(), particle->Phi() - track->Phi(), 0.8)) return kFALSE;
+	if(track->Pt() > tPt) {
+	  if(IsInCone(particle->Eta() - track->Eta(), particle->Phi() - track->Phi(), 0.8)) return 0;
+	  leadingEvent = kFALSE;  
+	}
+  }	
+
+  if(leadingEvent) {
+	return 2;
+  }  else {
+	return 1;
   }
-  return kTRUE;
+
+  return 0;
 }
 
 //_________________________________________________________________________
