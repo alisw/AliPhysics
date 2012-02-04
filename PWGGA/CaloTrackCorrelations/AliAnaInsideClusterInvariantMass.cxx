@@ -762,19 +762,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
     if     (nMax==1) 
     { 
-      Int_t icol1 = -1, irow1 = -1, iRCU1 = -1;
-      Int_t icol2 = -1, irow2 = -1, iRCU2 = -1;
-      Int_t sm1 = GetCaloUtils()->GetModuleNumberCellIndexes(absId1, fCalorimeter, icol1, irow1, iRCU1) ;
-      Int_t sm2 = GetCaloUtils()->GetModuleNumberCellIndexes(absId2, fCalorimeter, icol2, irow2, iRCU2) ;
-      Float_t en1 = cluster1->E();
-      Float_t en2 = cluster2->E();
-
-     printf("Angle %f, E %f, E1 %f, E2 %f, ecell1 %f, ecell2 %f, Asym %f, Fcell1 %f, Fcell 2 %f, SM1 %d, SM2 %d, icol1 %d, icol2 %d, irow1 %d, irow2 %d \n  ",
-             angle,en,en1,en2,
-             cells->GetCellAmplitude(absId1),cells->GetCellAmplitude(absId2), 
-             TMath::Abs(en1-en2)/(en1+en2),cells->GetCellAmplitude(absId1)/en, cells->GetCellAmplitude(absId2)/en,
-             sm1,sm2,icol1,icol2,irow1,irow2);
-      
       fhAnglePairLocMax1[matched]->Fill(en,angle);
       if( en > 5 )       
         fhAnglePairMassLocMax1[matched]->Fill(mass,angle);
