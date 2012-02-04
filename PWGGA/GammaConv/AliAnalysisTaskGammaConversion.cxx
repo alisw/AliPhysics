@@ -300,7 +300,7 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
 
 	//Delete AODs
 	if (fAODGamma) {
-		fAODGamma->Clear();
+		fAODGamma->Delete();
 		delete fAODGamma;
 	}
 	fAODGamma = NULL;
@@ -424,7 +424,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 		}
 	} 
 
-	if(fAODGamma) fAODGamma->Clear();
+	if(fAODGamma) fAODGamma->Delete();
 	
 
 	///Make sure MC event is complete if present
