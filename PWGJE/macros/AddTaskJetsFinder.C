@@ -15,6 +15,18 @@ AliAnalysisTaskJetsFinder *AddTaskJetsFinder(AliAnalysisDataContainer* contname,
 Int_t AddTaskJetsFinderDelta(AliAnalysisDataContainer* contname,char *nonStdFile = "",Bool_t kUseAODMC = kTRUE,UInt_t runFlag = 1|4|32|128|256);     
 AliAnalysisTaskJetsFinder *AddTaskJetsFinder(AliAnalysisDataContainer* contname);
 
+AliAnalysisTaskJetsFinder *AddTaskJetsFinder(const char* contname,Char_t *jf = "", Float_t radius = 0.4,Int_t iBack = 0) // LEGO trains
+{
+  AliAnalysisDataContainer* cont = ((AliAnalysisDataContainer*)AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject(contname));
+
+  if (jf != "") {
+    return AddTaskJetsFinder(cont,jf,radius,iBack); 
+  } else {
+    return AddTaskJetsFinder(cont);
+  }
+
+}
+
 AliAnalysisTaskJetsFinder *AddTaskJetsFinder(AliAnalysisDataContainer* contname){
   // Reads the standard input "jets" branch in the AOD
   // UA1 as standard chosen, since it is the most robust and simple JF
