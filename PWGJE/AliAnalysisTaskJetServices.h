@@ -26,6 +26,7 @@ class AliTriggerAnalysis;
 
 class TList;
 class TClonesArray;
+class TObjArray;
 class TChain;
 class TH1F;
 class TH2F;
@@ -85,6 +86,9 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetV0Centroids(TProfile *xa,TProfile *ya,
 			       TProfile *xc,TProfile *yc);
 
+    virtual void SetNTrigger(Int_t n);
+    virtual void SetTrigger(Int_t i,UInt_t it,const char* c = "");
+
 
     Bool_t   CalculateReactionPlaneAngleVZERO(AliAODEvent *aod);
     Int_t   GetListOfTracks(TList *list);
@@ -121,7 +125,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     UInt_t        fEventCutInfoESD;   // event selection info of what is cutted after physics selection
     UInt_t        fFilterMask;         // filter bit for slecected tracks
     Int_t         fRPMethod;           // method for subevent calculation
-    Int_t         fCollisionType;           // type of collisions
+    Int_t         fCollisionType;      // type of collisions
+    Int_t         fNTrigger;           // Number of different triggers
     Float_t       fAvgTrials;          // Average number of trials
     Float_t       fVtxXMean;           // mean x for cuts
     Float_t       fVtxYMean;           // mean y for cuts
@@ -133,15 +138,17 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Float_t       fMaxCosmicAngle;     // Max deviation from pi (angle between two tracks) in case of cosmic candidate
     Float_t       fRunRange[2];        // only important for real data for 
     Float_t       fCentrality;         // ! centrality
-    Float_t       fTrackRecEtaWindow;     // eta window for rec tracks
-    Float_t       fMinTrackPt;            // limits the track p_T 
-    Float_t       fRPAngle;               // ! RP angle of the reaction plane
-    Float_t       fPsiVZEROA;              // ! RP angle from vzeroa
-    Float_t       fPsiVZEROC;              // ! RP angle from vzeroc
+    Float_t       fTrackRecEtaWindow;  // eta window for rec tracks
+    Float_t       fMinTrackPt;         // limits the track p_T 
+    Float_t       fRPAngle;            // ! RP angle of the reaction plane
+    Float_t       fPsiVZEROA;          // ! RP angle from vzeroa
+    Float_t       fPsiVZEROC;          // ! RP angle from vzeroc
+    UInt_t        *fTriggerBit  ;      //[fNTrigger]
 
     TRandom3      *fRandomizer;        // ! randomizer
 
     TString       fNonStdFile;         // outputName for replication
+    TString       *fTriggerName;  //[fNTrigger] array of trigger names
     TProfile*     fh1Xsec;             //! pythia cross section and trials
     TH1F*         fh1Trials;           //! trials are added
     TH1F*         fh1PtHard;           //! Pt har of the event...       
@@ -150,7 +157,10 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH1F*         fh1EventCutInfoESD;  //! Masks that satisfy fSelectionInfo
     TH1F*         fh1CentralityESD;    //! centrality 
     TH1F*         fh1Centrality;       //! centrality 
+    TH1F*         fh1ReducedTrigger;   //! reduced trigger count 
     TH1F*         fh1RP;               //! RP distribution
+    TH2F*         fh2CentralityTriggerESD;    //! centrality 
+    TH2F*         fh2CentralityTrigger;       //! centrality 
     TH2F*         fh2TriggerCount;     //! number of fire triggers in each case
     TH2F*         fh2ESDTriggerCount;  //! number of fire triggers in each case
     TH2F*         fh2TriggerVtx;       //! vtx. position vs. trigger decision
@@ -182,7 +192,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     static AliAODHeader*    fgAODHeader;        //! Header for replication
     static AliAODVZERO*    fgAODVZERO;        //! vzero for replication
     static TClonesArray*  fgAODVertices;        //! primary vertex for replication
-    ClassDef(AliAnalysisTaskJetServices,14)
+    ClassDef(AliAnalysisTaskJetServices,15)
 };
  
 #endif
