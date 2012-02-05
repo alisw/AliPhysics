@@ -978,26 +978,37 @@ void AliHFSystErr::InitD0toKpi2010PbPb6080CentScan(){
 void AliHFSystErr::InitDplustoKpipi2010PbPb010CentScan(){
   // define errors for RAA vs. centrality
   InitDplustoKpipi2010PbPb020();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.18);
+  for(Int_t i=7;i<=12;i++)fMCPtShape->SetBinContent(i,0.09);
+
 }
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb1020CentScan(){
   // define errors for RAA vs. centrality
   InitDplustoKpipi2010PbPb020();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.23);
+  for(Int_t i=7;i<=12;i++)fMCPtShape->SetBinContent(i,0.08);
 }
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb2040CentScan(){
   // define errors for RAA vs. centrality
   InitDplustoKpipi2010PbPb020();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=7;i<=12;i++)fMCPtShape->SetBinContent(i,0.095);
 }
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb4060CentScan(){
   // define errors for RAA vs. centrality
   InitDplustoKpipi2010PbPb4080();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=7;i<=12;i++)fMCPtShape->SetBinContent(i,0.08);
 }
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb6080CentScan(){
   // define errors for RAA vs. centrality
   InitDplustoKpipi2010PbPb4080();
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.15);
+  for(Int_t i=7;i<=12;i++)fMCPtShape->SetBinContent(i,0.07);
 }
 
 //--------------------------------------------------------------------------
