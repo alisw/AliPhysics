@@ -3970,6 +3970,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	  
 	  AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+	  if(!trackVP)continue;
 	  TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 	  
 	  Float_t jetPt   = jet->Pt();
