@@ -66,9 +66,9 @@ AliTOFArray& AliTOFArray::operator=(const AliTOFArray & source) {
 
 	if (this != &source){
 		this->fSize= source.fSize;
-		fArray = new TArrayF*[fSize];
+		//fArray = new TArrayF*[fSize];
 		for (Int_t ich = 0; ich<fSize; ich ++){
-			fArray[ich] = new TArrayF();
+			//fArray[ich] = new TArrayF();
 			fArray[ich]->Set(source.fArray[ich]->GetSize());
 			for (Int_t j = 0; j < fArray[ich]->GetSize(); j++){
 				fArray[ich]->AddAt(fArray[ich]->GetAt(j),j);
