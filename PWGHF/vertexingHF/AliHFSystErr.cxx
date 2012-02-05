@@ -210,7 +210,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb020() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.08);//0.05+0.005*(Float_t)i);
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.10);// Jacek, 5% per track
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
@@ -266,7 +266,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.08);//0.5*(0.05+0.005*(Float_t)i));
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.10); // Jacek, 5% per track
 
 
   // Raw yield extraction
@@ -500,7 +500,7 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track) //i,0.075+0.005*(Float_t)i); 
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
@@ -560,7 +560,7 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track)
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
 
 
   // Raw yield extraction
@@ -795,7 +795,7 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb020() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);;
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track)i,0.075+0.005*(Float_t)i); 
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
 
 
   // Raw yield extraction
@@ -856,7 +856,7 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb2040() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);;
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.12); // 3% (1% per track)
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
 
 
   // Raw yield extraction
@@ -901,7 +901,7 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb4080() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);;
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.12);//0.5*(0.075+0.005*(Float_t)i));
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
 
 
   // Raw yield extraction
