@@ -202,7 +202,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb020() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
@@ -259,7 +259,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.07); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
@@ -493,7 +493,7 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
@@ -553,7 +553,7 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.07); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
@@ -788,7 +788,7 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb020() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -894,7 +894,7 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb4080() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.07); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",24,0,24);
