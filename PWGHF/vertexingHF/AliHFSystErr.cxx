@@ -238,6 +238,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb020() {
   for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.01);
   fMCPtShape->SetBinContent(3,0.04);
   fMCPtShape->SetBinContent(4,0.02);
+  for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,0.03); 
 
 //   // particle-antiparticle
 //   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
