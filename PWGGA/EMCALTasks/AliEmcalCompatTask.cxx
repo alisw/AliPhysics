@@ -65,8 +65,8 @@ void AliEmcalCompatTask::UserExec(Option_t *)
     return;
 
   if (fDoCent) {
-    am->LoadBranch("Cent");
-    AliCentrality *centin = dynamic_cast<AliCentrality*>(esdEv->FindListObject("Cent"));
+    am->LoadBranch("Centrality.");
+    AliCentrality *centin = dynamic_cast<AliCentrality*>(esdEv->FindListObject("Centrality"));
     AliCentrality *centout = esdEv->GetCentrality();
     if (centout->GetQuality()==999) {
       centout->SetQuality(centin->GetQuality());
@@ -83,10 +83,10 @@ void AliEmcalCompatTask::UserExec(Option_t *)
   }
 
   if (fDoEp) {
-    am->LoadBranch("EP");
-    AliEventplane *epin  = dynamic_cast<AliEventplane*>(esdEv->FindListObject("EP"));
+    am->LoadBranch("Eventplane.");
+    AliEventplane *epin  = dynamic_cast<AliEventplane*>(esdEv->FindListObject("Eventplane"));
     AliEventplane *epout = esdEv->GetEventplane();
-    if (epout->GetQVector()==0) {
+    if ((epout->GetQVector()==0)&&(epin->GetQVector()!=0)) {
       epout->SetQVector(new TVector2(*epin->GetQVector()));
       epout->SetEventplaneQ(epin->GetEventplane("Q"));
       epout->SetQsub(new TVector2(*epin->GetQsub1()),new TVector2(*epin->GetQsub2()));
