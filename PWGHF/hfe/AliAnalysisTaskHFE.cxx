@@ -993,17 +993,23 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // Temporary histogram for chi2/ITS cluster
     if(IsPbPb()) {
             TBits shared = track->GetTPCSharedMap();
-          Int_t sharebit=0;
+	    Int_t sharebit=0;
             if(shared.CountBits() >= 2) sharebit=1;
 
+	    Double_t itschi2percluster = 0.0;
+	    if(track->GetNcls(0) > 0) itschi2percluster = track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0));
+
             Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
-            fCentralityF,track->GetTPCsignalN(), sharebit,
-            track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0))};
+				   fCentralityF,track->GetTPCsignalN(), sharebit, itschi2percluster};
             fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
     else{
-            Double_t itsChi2[3] = {track->Pt(), fCentralityF, track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0))};
-            fQACollection->Fill("fChi2perITScluster", itsChi2);
+      
+      Double_t itschi2percluster = 0.0;
+      if(track->GetNcls(0) > 0) itschi2percluster = track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0));
+
+      Double_t itsChi2[3] = {track->Pt(), fCentralityF, itschi2percluster};
+      fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
 
     // Fill Histogram for Hadronic Background
@@ -1355,7 +1361,7 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
   signalContainer[2] = track->Phi();
   signalContainer[3] = track->Charge()/3;
 
- Double_t vertex[3]; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
+  Double_t vertex[3] = {0.,0.,0.}; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
   if(IsESDanalysis()){
     AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(track);
     if(mctrack){
