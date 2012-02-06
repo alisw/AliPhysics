@@ -1482,8 +1482,22 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
 		
 	if (calo == "PHOS") 
 	{
-		AliLog::Message(AliLog::kError, "PHOS ESD filter not yet implemented", MODULENAME(), "ConvertCaloTrigger", FUNCTIONNAME(), __FILE__, __LINE__);
-		return;
+	  AliAODCaloTrigger &aodTrigger = *(AODEvent()->GetCaloTrigger(calo));
+	  AliESDCaloTrigger &esdTrigger = *(esd.GetCaloTrigger(calo));
+
+	  aodTrigger.Allocate(esdTrigger.GetEntries());
+	  esdTrigger.Reset();
+
+	  Float_t a;
+	  Int_t tmod,tabsId;
+
+	  while (esdTrigger.Next()) {
+	    esdTrigger.GetPosition(tmod,tabsId);
+	    esdTrigger.GetAmplitude(a);
+	    aodTrigger.Add(tmod,tabsId,a,0.,(Int_t*)NULL,0,0,0);
+	  }
+
+	  return;
 	}
 			
 	AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()); 
