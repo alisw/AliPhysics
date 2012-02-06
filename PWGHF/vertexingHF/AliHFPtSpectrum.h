@@ -29,6 +29,8 @@
 #include "TNamed.h"
 #include "TMath.h"
 
+#include "AliLog.h"
+
 class TH1;
 class TH2;
 class TNtuple;
@@ -71,6 +73,13 @@ class AliHFPtSpectrum: public TNamed
   void SetFeedDownCalculationOption(Int_t option){ fFeedDownOption = option; }
   // Set if the calculation has to consider asymmetric uncertaInt_ties or not
   void SetComputeAsymmetricUncertainties(Bool_t flag){ fAsymUncertainties = flag; }
+  // Set if the yield is for particle plus anti-particle or not
+  void SetIsParticlePlusAntiParticleYield(Bool_t flag){
+    if (flag) { fParticleAntiParticle = 2; AliInfo(" Setting for particle + anti-particle yields"); }
+    else { fParticleAntiParticle = 1; AliInfo(" Setting for only (anti)particle yields, not the sum of both"); }
+  }
+  //
+  void SetfIsStatUncEff(Bool_t flag){ fIsStatUncEff = flag; }
   // Set if the calculation has to consider Ratio(c/b eloss) hypothesis 
   void SetComputeElossHypothesis(Bool_t flag){ fPbPbElossHypothesis = flag; }
   // Set the luminosity and its uncertainty
@@ -224,6 +233,8 @@ class AliHFPtSpectrum: public TNamed
   TH1D * RebinTheoreticalSpectra(TH1D *hTheory, const char *name);
   // Function to estimate the efficiency in the data-reconstructed spectra binning
   TH1D * EstimateEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco, const char *name);
+  // Reset stat unc on the efficiencies
+  void ResetStatUncEff();
 
 
   //
@@ -273,12 +284,15 @@ class AliHFPtSpectrum: public TNamed
   TGraphAsymmErrors * fgSigmaCorrExtreme;       // Extreme corrected cross-section as TGraphAsymmErrors (syst from feed-down)
   TGraphAsymmErrors * fgSigmaCorrConservative;  // Conservative corrected cross-section as TGraphAsymmErrors  (syst from feed-down)
   //
-  TNtuple *fnSigma;     // Ntuple of the calculation vs the Ratio(c/b eloss)
+  TNtuple *fnSigma;          // Ntuple of the calculation vs the Ratio(c/b eloss)
+  TNtuple *fnHypothesis;     // Ntuple of the calculation vs the Ratio(c/b eloss)
 
   //
   Int_t fFeedDownOption;            // feed-down correction flag: 0=none, 1=fc, 2=Nb 
   Bool_t fAsymUncertainties;        // flag: asymmetric uncertainties are (1) or not (0) considered
   Bool_t fPbPbElossHypothesis;      // flag: whether to do estimates vs Ratio(c/b eloss) hypothesis
+  Bool_t fIsStatUncEff;             // flag : consider (1) or not (0) the stat unc on the efficiencies
+  Int_t fParticleAntiParticle;      // 1: only one sign, 2: yield is for particle+anti-particle
 
   //
   TH1D *fhStatUncEffcSigma;       // Uncertainty on the cross-section due to the prompt efficiency statistical uncertainty
@@ -286,7 +300,7 @@ class AliHFPtSpectrum: public TNamed
   TH1D *fhStatUncEffcFD;          // Uncertainty on the feed-down correction due to the prompt efficiency statistical uncertainty
   TH1D *fhStatUncEffbFD;          // Uncertainty on the feed-down correction due to the feed-down efficiency statistical uncertainty
 
-  ClassDef(AliHFPtSpectrum,2) // Class for Heavy Flavor spectra corrections
+  ClassDef(AliHFPtSpectrum,3) // Class for Heavy Flavor spectra corrections
 };
 
 #endif
