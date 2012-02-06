@@ -25,8 +25,11 @@
 #include <iostream>
 #include "TH1D.h"
 #include "TInterpreter.h"
+#include "AliBWFunc.h"
+#include "TDatabasePDG.h"
 
 using namespace std;
+
 
 
 class MyMainFrame : public TGMainFrame {
@@ -47,6 +50,8 @@ private:
   AliOADBPWG2Spectra   *fOADBSpectra; // spectra OADB
   AliOADBContainer     *fOADBContainer; // OADB container
    
+  Double_t fMass[3]; //masses
+  AliBWFunc * fFuncMan; // functions
   static const char * fkContainers[];
   static const Int_t fkNContainers ;
   static const char * fkCentrTags[];
@@ -58,6 +63,7 @@ public:
   void DoExit();
   void DoDraw();
   void DoRatio();
+  void DoFit();
   void DoLegend();
   void DoLoad();
   void DoClear();
@@ -71,8 +77,8 @@ public:
 
 const char * MyMainFrame::fkContainers[] = {"Corrected", "Raw"};
 const Int_t MyMainFrame::fkNContainers = 2;
-const char * MyMainFrame::fkCentrTags[] = {"MB", "Ntracks", "SPD2"};
-const Int_t MyMainFrame::fkNCentrTags = 3;
+const char * MyMainFrame::fkCentrTags[] = {"V0M", "MB", "Ntracks", "SPD2"};
+const Int_t MyMainFrame::fkNCentrTags = 4;
 
 void MyMainFrame::DoSelectedDetector(Int_t id) {
   // Change the analysis type based on the detector
@@ -83,6 +89,21 @@ void MyMainFrame::DoSelectedDetector(Int_t id) {
   else {
     fComboPID->Select(AliOADBPWG2Spectra::kGaussFit);
   }
+
+}
+
+void MyMainFrame::DoFit()
+{
+  // print to file
+  static TF1 * func = 0;
+  if(func) delete func;
+  func = fFuncMan->GetLevi(fMass[fComboParticle->GetSelected()], 0.12, 7, 1.5);  
+  TCanvas *c1 = fEcan->GetCanvas();
+  TH1D * h = (TH1D*) c1->GetListOfPrimitives()->At(c1->GetListOfPrimitives()->GetEntries()-1);
+  h->Fit(func,"","same");
+  c1->Update();
+  c1->Modified();
+  c1->Update(); 
 
 }
 
@@ -112,6 +133,7 @@ void MyMainFrame::DoLoad()
   TString fileName = AliOADBPWG2Spectra::GetOADBPWG2SpectraFileName();
   TFile * f = new TFile (fileName);
   fOADBContainer = (AliOADBContainer*) f->Get(fkContainers[fComboContainer->GetSelected()]);
+  if(!fOADBContainer) return;
   f->Close();
   fOADBSpectra = (AliOADBPWG2Spectra*) fOADBContainer->GetObject(atoi(fRunNumber->GetText() ));
   if(!fOADBSpectra) fOADBContainer->List();
@@ -323,7 +345,6 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) :
    fComboCentr->Select(0);
 
    // Text fields
-   fRunNumber; // run number 
    fTextCentrBin = new TGTextEntry (vframeButtons, "1");
    fTextCentrBin->Resize(120,20);
    vframeButtons->AddFrame(fTextCentrBin, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));   
@@ -350,6 +371,9 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) :
    TGTextButton *print = new TGTextButton(vframeButtons, "&Print");
    print->Connect("Clicked()", "MyMainFrame", this, "DoPrint()");
    vframeButtons->AddFrame(print, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+   TGTextButton *fit = new TGTextButton(vframeButtons, "&Fit");
+   fit->Connect("Clicked()", "MyMainFrame", this, "DoFit()");
+   vframeButtons->AddFrame(fit, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
    TGTextButton *exit = new TGTextButton(vframeButtons, "&Exit ");
    exit->Connect("Pressed()", "MyMainFrame", this, "DoExit()");
    vframeButtons->AddFrame(exit, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
@@ -370,6 +394,15 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) :
 
    // Map main frame
    MapWindow();
+
+   // Misc init
+   fMass[AliOADBPWG2Spectra::kPion]   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+   fMass[AliOADBPWG2Spectra::kKaon]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
+   fMass[AliOADBPWG2Spectra::kProton] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
+
+   fFuncMan = new AliBWFunc;
+   fFuncMan->SetVarType(AliBWFunc::kdNdpt);
+
 }
 
 
