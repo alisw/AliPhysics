@@ -83,7 +83,8 @@ AliGenAmpt::AliGenAmpt()
     fStringB(0.9),
     fEventTime(0.),
     fHeader(new AliGenAmptEventHeader("Ampt")),
-    fDecay(kTRUE)
+    fDecay(kTRUE),
+    fRotating(kFALSE)
 {
   // Constructor
   fEnergyCMS = 2760.;
@@ -137,7 +138,8 @@ AliGenAmpt::AliGenAmpt(Int_t npart)
     fStringB(0.9),
     fEventTime(0.),
     fHeader(new AliGenAmptEventHeader("Ampt")),
-    fDecay(kTRUE)
+    fDecay(kTRUE),
+    fRotating(kFALSE)
 {
   // Default PbPb collisions at 2.76 TeV
 
@@ -228,6 +230,9 @@ void AliGenAmpt::Init()
   fAmpt->Initialize();
   if (fEvaluate) 
     EvaluateCrossSections();
+
+  fAmpt->SetReactionPlaneAngle(0.0);
+  fRotating=kFALSE;
 }
 
 void AliGenAmpt::Generate()
@@ -264,6 +269,13 @@ void AliGenAmpt::Generate()
   Float_t sign = (fRandomPz && (Rndm() < 0.5))? -1. : 1.;
 
   while(1) {
+
+    // Generate random reaction plane angle if requested
+    if( fRotating ) {     
+      TRandom *r=AliAmptRndm::GetAmptRandom();
+      fAmpt->SetReactionPlaneAngle(TMath::TwoPi()*r->Rndm());
+    }
+
     // Generate one event
     Int_t fpemask = gSystem->GetFPEMask();
     gSystem->SetFPEMask(0);
@@ -271,6 +283,8 @@ void AliGenAmpt::Generate()
     gSystem->SetFPEMask(fpemask);
     fTrials++;
     fNprimaries = 0;
+
+
     fAmpt->ImportParticles(&fParticles,"All");
     Int_t np = fParticles.GetEntriesFast();
     if (np == 0 ) 
@@ -670,7 +684,8 @@ void AliGenAmpt::MakeHeader()
                         fAmpt->GetN11());
   fHeader->SetSpectators(fProjectileSpecn, fProjectileSpecp,
                         fTargetSpecn,fTargetSpecp);
-  fHeader->SetReactionPlaneAngle(fAmpt->GetHINT1(20));
+  //fHeader->SetReactionPlaneAngle(fAmpt->GetHINT1(20));
+  fHeader->SetReactionPlaneAngle(fAmpt->GetReactionPlaneAngle());
   //printf("Impact Parameter %13.3f \n", fAmpt->GetHINT1(19));
 
   // 4-momentum vectors of the triggered jets.

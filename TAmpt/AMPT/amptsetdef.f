@@ -68,7 +68,7 @@ c     quark coalescence radii in momentum and space for string melting:
       dpcoal   = 1d6		! dpcoal in GeV
       drcoal   = 1d6		! drcoal in fm
 c     flag: read in HIJING random # seed at runtime(1) or from input.ampt(D=0):
-      ihjsed   = 0		! ihjsed: take HIJING seed from below (D=0)or at runtime(11)
+      ihjsed   = 11		! ihjsed: take HIJING seed from below (D=0)or at runtime(11)
 c     2 seeds for random number generators in HIJING/hadron cascade and ZPC:
       nseed    = 53153511	! random seed for HIJING
       iseedp   = 8		! random seed for parton cascade

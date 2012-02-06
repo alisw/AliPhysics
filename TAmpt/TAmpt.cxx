@@ -77,7 +77,8 @@ TAmpt::TAmpt()
     fIat(208),
     fIzt(82),
     fBmin(0.),
-    fBmax(5.)
+    fBmax(5.),
+    fPsi(0.)
 {
   // Default constructor 
   amptsetdef();
@@ -98,7 +99,8 @@ TAmpt::TAmpt(Double_t efrm, const char *frame="CMS",
     fIat(iat),
     fIzt(izt),
     fBmin(bmin),
-    fBmax(bmax)
+    fBmax(bmax),
+    fPsi(0.)
 {
   // TAmpt constructor: 
   // Note that there may be only one functional TAmpt object
@@ -136,6 +138,13 @@ TObjArray* TAmpt::ImportParticles(Option_t */*option*/)
     //Double_t vy = HBT.xlast[i][1]*1e-12;//mm
     //Double_t vz = HBT.xlast[i][2]*1e-12;//mm
     //Double_t vt = HBT.xlast[i][3]*1e-12;//mm/c
+
+    // Rotate xy components of vectors to new reaction plane:
+    Double_t pxp=TMath::Cos(fPsi)*px - TMath::Sin(fPsi)*py;
+    Double_t pyp=TMath::Sin(fPsi)*px + TMath::Cos(fPsi)*py;
+    Double_t vxp=TMath::Cos(fPsi)*vx - TMath::Sin(fPsi)*vy;
+    Double_t vyp=TMath::Sin(fPsi)*vx + TMath::Cos(fPsi)*vy;
+
     Int_t pdg   = invflv(HBT.lblast[i]);
     TParticle *p = new TParticle(pdg,
                                  status,
@@ -143,12 +152,12 @@ TObjArray* TAmpt::ImportParticles(Option_t */*option*/)
                                  -1,
                                  -1,
                                  -1,
-                                 px,
-                                 py,
+                                 pxp,
+                                 pyp,
                                  pz,
                                  TMath::Sqrt(ma*ma+px*px+py*py+pz*pz),
-                                 vx,
-                                 vy,
+                                 vxp,
+                                 vyp,
                                  vz,
                                  vt);
     if((px==0)&&(py==0)) {
@@ -184,14 +193,21 @@ Int_t TAmpt::ImportParticles(TClonesArray *particles, Option_t */*option*/)
     Double_t py = HBT.plast[i][1];//GeV/c
     Double_t pz = HBT.plast[i][2];//GeV/c
     Double_t ma = HBT.plast[i][3];//GeV/c/c
-//    Double_t vx = 0;//HBT.xlast[i][0]*1e-12;//mm
-//    Double_t vy = 0;//HBT.xlast[i][1]*1e-12;//mm
-//    Double_t vz = 0;//HBT.xlast[i][2]*1e-12;//mm
-//    Double_t vt = 0;//HBT.xlast[i][3]*1e-12;//mm/c
-    Double_t vx = HBT.xlast[i][0]*1e-12;//mm
-    Double_t vy = HBT.xlast[i][1]*1e-12;//mm
-    Double_t vz = HBT.xlast[i][2]*1e-12;//mm
-    Double_t vt = HBT.xlast[i][3]*1e-12;//mm/c
+    Double_t vx = 0;//HBT.xlast[i][0]*1e-12;//mm
+    Double_t vy = 0;//HBT.xlast[i][1]*1e-12;//mm
+    Double_t vz = 0;//HBT.xlast[i][2]*1e-12;//mm
+    Double_t vt = 0;//HBT.xlast[i][3]*1e-12;//mm/c
+    //Double_t vx = HBT.xlast[i][0]*1e-12;//mm
+    //Double_t vy = HBT.xlast[i][1]*1e-12;//mm
+    //Double_t vz = HBT.xlast[i][2]*1e-12;//mm
+    //Double_t vt = HBT.xlast[i][3]*1e-12;//mm/c
+
+    // Rotate xy components of vectors to new reaction plane:
+    Double_t pxp=TMath::Cos(fPsi)*px - TMath::Sin(fPsi)*py;
+    Double_t pyp=TMath::Sin(fPsi)*px + TMath::Cos(fPsi)*py;
+    Double_t vxp=TMath::Cos(fPsi)*vx - TMath::Sin(fPsi)*vy;
+    Double_t vyp=TMath::Sin(fPsi)*vx + TMath::Cos(fPsi)*vy;
+
     Int_t pdg  = invflv(HBT.lblast[i]);
     //printf("i %d pdg %d px %f py %f pz %f vx %f vy %f vz %f vt %f\n", i, pdg, px, py, pz, vx, vy, vz, vt);
     new(particlesR[i]) TParticle(pdg,
@@ -200,12 +216,12 @@ Int_t TAmpt::ImportParticles(TClonesArray *particles, Option_t */*option*/)
                                  -1,
                                  -1,
                                  -1,
-                                 px,
-                                 py,
+                                 pxp,
+                                 pyp,
                                  pz,
                                  TMath::Sqrt(ma*ma+px*px+py*py+pz*pz),
-                                 vx,
-                                 vy,
+                                 vxp,
+                                 vyp,
                                  vz,
                                  vt);
     if((px==0)&&(py==0)){
@@ -235,6 +251,11 @@ Int_t TAmpt::ImportNucleons(TClonesArray *nucleons, Option_t */*option*/)
     Double_t x = HJCRDN.yp[i][0] + 0.5*GetBB();
     Double_t y = HJCRDN.yp[i][1];
     Double_t z = HJCRDN.yp[i][2];
+
+    // Rotate xy components of vectors to new reaction plane:
+    Double_t xp=TMath::Cos(fPsi)*x - TMath::Sin(fPsi)*y;
+    Double_t yp=TMath::Sin(fPsi)*x + TMath::Cos(fPsi)*y;
+
     Int_t    p = HSTRNG.nfp[3][i];
     Int_t    s = HSTRNG.nfp[4][i];
     new(nucleonsR[i]) TParticle(p,
@@ -247,8 +268,8 @@ Int_t TAmpt::ImportNucleons(TClonesArray *nucleons, Option_t */*option*/)
                                  0,
                                  0,
                                  0,
-                                 x,
-                                 y,
+                                 xp,
+                                 yp,
                                  z,
                                  0);
     nucleonsR[i]->SetUniqueID(1);
@@ -258,6 +279,11 @@ Int_t TAmpt::ImportNucleons(TClonesArray *nucleons, Option_t */*option*/)
     Double_t x = HJCRDN.yt[i][0] - 0.5*HPARNT.hint1[18];
     Double_t y = HJCRDN.yt[i][1];
     Double_t z = HJCRDN.yt[i][2];
+
+    // Rotate xy components of vectors to new reaction plane:
+    Double_t xp=TMath::Cos(fPsi)*x - TMath::Sin(fPsi)*y;
+    Double_t yp=TMath::Sin(fPsi)*x + TMath::Cos(fPsi)*y;
+
     Int_t    p = HSTRNG.nft[3][i];
     Int_t    s = HSTRNG.nft[4][i];
     new(nucleonsR[nA+i]) TParticle(p,
@@ -270,8 +296,8 @@ Int_t TAmpt::ImportNucleons(TClonesArray *nucleons, Option_t */*option*/)
                                    0,
                                    0,
                                    0,
-                                   x,
-                                   y,
+                                   xp,
+                                   yp,
                                    z,
                                    0);
     nucleonsR[nA+i]->SetUniqueID(-1);

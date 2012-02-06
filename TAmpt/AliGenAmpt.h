@@ -88,6 +88,7 @@ class AliGenAmpt : public AliGenMC
     virtual TGraph* BinaryCollisions() {return fDnDb;}
     virtual Bool_t  CheckTrigger();
     virtual Bool_t  IsThisAKnownParticle(TParticle *thisGuy);
+    virtual void    SetRandomReactionPlane(Bool_t on=kTRUE){fRotating=on;};
 
   protected:
     Bool_t      SelectFlavor(Int_t pid);
@@ -139,6 +140,8 @@ class AliGenAmpt : public AliGenMC
     Float_t                  fEventTime;       // The event time
     AliGenHijingEventHeader *fHeader;          // header
     Bool_t                   fDecay;           // decay "long-lived" particles
+    Bool_t                   fRotating;        // Random reaction plane on/off
+ 
 
   private:
     AliGenAmpt(const AliGenAmpt &Ampt);

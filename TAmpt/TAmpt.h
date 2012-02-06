@@ -138,6 +138,8 @@ public:
   virtual void        SetXmu(Float_t m);
   virtual void        SetAlpha(Float_t alpha);
   virtual void        SetStringFrag(Float_t a, Float_t b);
+  virtual void        SetReactionPlaneAngle(Double_t psi){fPsi=psi;};  // Set reaction plane angle
+  virtual Double_t    GetReactionPlaneAngle(){return fPsi;};           // Get reaction plane angle
 
 protected:
   Double_t     fEfrm;     // Energy in the centre of mass (CMS) or lab-frame (LAB)
@@ -150,7 +152,7 @@ protected:
   Int_t        fIzt;      // Charge number of target
   Double_t     fBmin;     // Minimum impact parameter
   Double_t     fBmax;     // Maximum impact parameter
- 
-  ClassDef(TAmpt,2)  //Interface to Ampt Event Generator
+  Double_t     fPsi;      // Reaction plane angle
+  ClassDef(TAmpt,3)  //Interface to Ampt Event Generator
 };
 #endif
