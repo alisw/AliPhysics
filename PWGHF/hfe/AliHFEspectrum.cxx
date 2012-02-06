@@ -824,8 +824,10 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
       alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
       alltogetherCorrection->Write();
       //
-      unnormalizedRawSpectrum->SetName("beautyAfterIP");
-      unnormalizedRawSpectrum->Write();
+      if(unnormalizedRawSpectrum) {
+	unnormalizedRawSpectrum->SetName("beautyAfterIP");
+	unnormalizedRawSpectrum->Write();
+      }
       
       if(gNormalizedRawSpectrum){
         gNormalizedRawSpectrum->SetName("normalizedBeautyAfterIP");
@@ -1270,9 +1272,9 @@ AliCFDataGrid* AliHFEspectrum::GetConversionBackground(){
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("ConversionBgGrid","ConversionBgGrid",*backgroundContainer,stepbackground);
   //backgroundGrid->Scale(evtnorm);
   //workaround for statistical errors: "Scale" method does not work for our errors, since Sumw2 is not defined for AliCFContainer
-  Int_t *nBin=new Int_t[1];
+  Int_t nBin[1];
   
-  Int_t* bins=new Int_t[1];
+  Int_t bins[1];
   bins[0]=fConversionEff->GetNbinsX();
   
   for(Long_t iBin=1; iBin<= bins[0];iBin++){
@@ -1282,7 +1284,7 @@ AliCFDataGrid* AliHFEspectrum::GetConversionBackground(){
   }
   //end of workaround for statistical errors
   
-  AliCFDataGrid *weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,bins);
+  AliCFDataGrid *weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,&bins[0]);
   weightedConversionContainer->SetGrid(GetPIDxIPEff(2));
   backgroundGrid->Multiply(weightedConversionContainer,1.0);
   
@@ -1321,9 +1323,9 @@ AliCFDataGrid* AliHFEspectrum::GetNonHFEBackground(){
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("NonHFEBgGrid","NonHFEBgGrid",*backgroundContainer,stepbackground);
   //backgroundGrid->Scale(evtnorm);
   //workaround for statistical errors: "Scale" method does not work for our errors, since Sumw2 is not defined for AliCFContainer
-  Int_t *nBin=new Int_t[1];
+  Int_t nBin[1];
   
-  Int_t* bins=new Int_t[1];
+  Int_t bins[1];
   bins[0]=fConversionEff->GetNbinsX();
   
   for(Long_t iBin=1; iBin<= bins[0];iBin++){
@@ -1333,7 +1335,7 @@ AliCFDataGrid* AliHFEspectrum::GetNonHFEBackground(){
   }
   //end of workaround for statistical errors
   
-  AliCFDataGrid *weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,bins);
+  AliCFDataGrid *weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,&bins[0]);
   weightedNonHFEContainer->SetGrid(GetPIDxIPEff(3));
   backgroundGrid->Multiply(weightedNonHFEContainer,1.0);
 
