@@ -158,7 +158,7 @@ void AliAnalysisTaskPHOSPbPbQA::UserExec(Option_t *)
   AliCentrality *centrality = event->GetCentrality(); 
   fCentrality=centrality->GetCentralityPercentile("V0M");
 
-  if( fCentrality <= 0. ){
+  if( fCentrality < 0. ){
     PostData(1, fOutputContainer);
     return;
   }
