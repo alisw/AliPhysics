@@ -59,7 +59,8 @@ fPartAntipart(0),
 fRunNumber(10),
 fCollisionType(0),
 fCentralityClass("0100"),
-fIsLowEnergy(false)
+fIsLowEnergy(false),
+fIsCentScan(false)
 {
   //
   // Default Constructor
@@ -103,7 +104,12 @@ void AliHFSystErr::Init(Int_t decay){
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
       else InitD0toKpi2010pp();
     } else if (fCollisionType==1) {
-      if (fCentralityClass=="020") InitD0toKpi2010PbPb020();
+      if (fCentralityClass=="010") InitD0toKpi2010PbPb010CentScan();
+      else if (fCentralityClass=="1020") InitD0toKpi2010PbPb1020CentScan();
+      else if (fCentralityClass=="020") InitD0toKpi2010PbPb020();
+      else if (fCentralityClass=="2040") InitD0toKpi2010PbPb2040CentScan();
+      else if (fCentralityClass=="4060") InitD0toKpi2010PbPb4060CentScan();
+      else if (fCentralityClass=="6080") InitD0toKpi2010PbPb6080CentScan();
       else if (fCentralityClass=="4080") InitD0toKpi2010PbPb4080();
       else AliError("Not yet implemented");
     }
@@ -114,7 +120,12 @@ void AliHFSystErr::Init(Int_t decay){
       if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
       else InitDplustoKpipi2010pp();
     } else if (fCollisionType==1) {
-      if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
+      if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
+      else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
+      else if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
+      else if (fCentralityClass=="2040") InitDplustoKpipi2010PbPb2040CentScan();
+      else if (fCentralityClass=="4060") InitDplustoKpipi2010PbPb4060CentScan();
+      else if (fCentralityClass=="6080") InitDplustoKpipi2010PbPb6080CentScan();
       else if (fCentralityClass=="4080") InitDplustoKpipi2010PbPb4080();
       else AliError("Not yet implemented");
     }
@@ -124,10 +135,15 @@ void AliHFSystErr::Init(Int_t decay){
       if(fIsLowEnergy)  InitDstartoD0pi2010ppLowEn();
       else InitDstartoD0pi2010pp();
     }else if (fCollisionType==1) {
-      if (fCentralityClass=="020")  InitDstartoD0pi2010PbPb020();
-      if (fCentralityClass=="2040") InitDstartoD0pi2010PbPb2040();
-      if (fCentralityClass=="4080") InitDstartoD0pi2010PbPb4080();
-      if (fCentralityClass!="4080" && fCentralityClass!="2040" && fCentralityClass!="020")  AliError("Not yet implemented");
+      if (fCentralityClass=="010") InitDstartoD0pi2010PbPb010CentScan();
+      else if (fCentralityClass=="1020") InitDstartoD0pi2010PbPb1020CentScan();
+      else if (fCentralityClass=="020") InitDstartoD0pi2010PbPb020();
+      else if (fCentralityClass=="2040" && fIsCentScan) InitDstartoD0pi2010PbPb2040CentScan();
+      else if (fCentralityClass=="2040") InitDstartoD0pi2010PbPb2040();
+      else if (fCentralityClass=="4060") InitDstartoD0pi2010PbPb4060CentScan();
+      else if (fCentralityClass=="6080") InitDstartoD0pi2010PbPb6080CentScan();
+      else if (fCentralityClass=="4080") InitDstartoD0pi2010PbPb4080();
+      else AliError("Not yet implemented");
     }
     break;
   case 4: // D+s->KKpi
