@@ -319,11 +319,15 @@ void AliGenCorrHF::Generate()
   TDatabasePDG *pDataBase = TDatabasePDG::Instance();
 
   // Calculating vertex position per event
-  for (i=0;i<2;i++){
-    for (j=0;j<3;j++) origin0[i][j]=fOrigin[j];
-    if (fVertexSmear==kPerEvent) {
-      Vertex();
+  if (fVertexSmear==kPerEvent) {
+    Vertex();
+    for (i=0;i<2;i++){
       for (j=0;j<3;j++) origin0[i][j]=fVertex[j];
+    }
+  }
+  else {
+    for (i=0;i<2;i++){
+      for (j=0;j<3;j++) origin0[i][j]=fOrigin[j];
     }
   }
   
