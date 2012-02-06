@@ -1,3 +1,6 @@
+Bool_t ConfigWithFlagsJetSpectrum2();
+AliAnalysisTaskJetSpectrum2 *jetspec = 0;
+
 AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* nonStdFile="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Int_t iCl = 0);
 
 
@@ -73,7 +76,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    // Create the task and configure it.
    //===========================================================================
 
-   AliAnalysisTaskJetSpectrum2* jetspec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl));
+   jetspec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl));
    if(iCl)jetspec->SetEventClass(iCl);
 
    // add the filter mask for non default jets branches
@@ -87,12 +90,6 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
    jetspec->SetBranchRec(bRec); 
    // if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     jetspec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
-
-
-   jetspec->SetFilterMask(filterMask); 
-   jetspec->SetUseGlobalSelection(kTRUE); 
-   jetspec->SetMinJetPt(5.);
-   jetspec->SetJetEtaWindow(0.4);
 
 
 
@@ -134,11 +131,13 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
      jetspec->SetTrackTypeGen(AliAnalysisTaskJetSpectrum2::kTrackAOD);
    }
 
-   if(iPhysicsSelectionFlag)jetspec->SelectCollisionCandidates(iPhysicsSelectionFlag);
    if(iEventSelectionMask)jetspec->SetEventSelectionMask(iEventSelectionMask);
 
    //   jetspec->SetDebugLevel(10);
+   if(!ConfigWithFlagsJetSpectrum2())return 0;
 
+   jetspec->SetUseGlobalSelection(kTRUE); 
+   jetspec->SetMinJetPt(-1.);//keep all jets 
 
    // to fetch the AOD from the AOD extension ouput 
    if(strlen(nonStdFile))jetspec->SetNonStdFile(nonStdFile);
@@ -160,4 +159,49 @@ void SetAODInput(AliAnalysisTaskJetSpectrum2 *taskJetSpectrum){
   taskJetSpectrum->SetAODJetInput(kTRUE);
   taskJetSpectrum->SetAODTrackInput(kTRUE);
   // taskJetSpectrum->SetUseGlobalSelection(kFALSE);
+}
+
+Bool_t ConfigWithFlagsJetSpectrum2(){
+    
+  Bool_t bGood1 = kFALSE;
+  Bool_t bGood2 = kFALSE;
+
+  
+  Int_t nTrigger = AliAnalysisManager::GetGlobalInt("kNTrigger",bGood1);
+  
+  if(bGood1){
+    jetspec->SetNTrigger(nTrigger);
+    for(int it = 0;it < nTrigger;it++){
+      jetspec->SetTrigger(it,
+			  AliAnalysisManager::GetGlobalInt(Form("kTriggerBit%d",it),bGood1),
+			  AliAnalysisManager::GetGlobalStr(Form("kTriggerName%d",it),bGood2));
+    }
+   }
+   else {
+     Printf("%s%d: kNTrigger not defined",(char*)__FILE__,__LINE__); return kFALSE; 
+   }
+
+     
+   AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",bGood1);if(bGood1){
+     jetspec->SelectCollisionCandidates(AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",bGood1));
+   }
+   else {Printf("%s%d: kPhysicsSelectionFlag not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+
+
+   AliAnalysisManager::GetGlobalStr("kDeltaAODJetName",bGood1);if(bGood1)jetspec->SetNonStdFile(AliAnalysisManager::GetGlobalStr("kDeltaAODJetName",bGood1));
+   else {Printf("%s%d: kDeltaAODJetName not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+
+   AliAnalysisManager::GetGlobalDbl("kTrackEtaWindow",bGood1);if(bGood1)jetspec->SetTrackEtaWindow(AliAnalysisManager::GetGlobalDbl("kTrackEtaWindow",bGood1));
+   else {Printf("%s%d: kTrackEtaWindow not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+
+   AliAnalysisManager::GetGlobalDbl("kJetEtaWindow",bGood1);if(bGood1)jetspec->SetJetEtaWindow(AliAnalysisManager::GetGlobalDbl("kJetEtaWindow",bGood1));
+   else {Printf("%s%d: kJetEtaWindow not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+
+   
+   AliAnalysisManager::GetGlobalInt("kHighPtFilterMask",bGood1);if(bGood1)jetspec->SetFilterMask(AliAnalysisManager::GetGlobalInt("kHighPtFilterMask",bGood1));
+   else {Printf("%s%d: kHighPtFilterMask not defined",(char*)__FILE__,__LINE__); return kFALSE; }   
+   
+   return kTRUE;
+
+
 }

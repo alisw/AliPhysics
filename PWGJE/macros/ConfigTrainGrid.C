@@ -18,6 +18,7 @@
     502 = LHC10d 7000 GeV Real pass2
     801 = LHC10h Pb+Pb real
     802 = LHC10h Pb+Pb real pass2
+    812 = LHC11h pass 2
    1012 = LHC10a12 0.9 GeV MC Pythiy D6T  
    1014 = LHC10a14 0.9 GeV MC ojet D6T  
    2001 = LHC10b1 7 TeV Phojet with real OCDB
@@ -33,14 +34,14 @@
   */
   Bool_t debugConfig =false;
   Bool_t ckbConfig = false;
-  Bool_t productionConfig = false; // make this true for productions mode
+  Bool_t productionConfig = true; // make this true for productions mode, no par files ets 
   Int_t  iVersion = 1; // this is the train version for one datapass
 
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
   //  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "111018b";
-  Int_t bRun = 5014; Int_t bExtra = 0;  char* cDate = "120104a";
+  Int_t bRun = 812; Int_t bExtra = 0;  char* cDate = "120202a";
   //  Int_t bRun = 8102; Int_t bExtra = 1;  char* cDate = "110725a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
@@ -109,7 +110,6 @@
   iJETAN = 3;
   iDIJETAN = 1; // only run on one JetFinder for the moment
   iPWGPPQASym = 0; // excluded since also on QA train         
-  iPWG4TmpSourceSara = 0; 
   iPWG4JetServices = 1; 
   iPWG4Fragmentation = 0; 
   iPWG4JetSpectrum = 7; 
@@ -121,29 +121,19 @@
   iPWG4PtQATPC      = 3;
   iPWG4PtTrackQA    = 1;
   iPWG4Cosmics      = 0; 
-  iPWG4JetChem      = 1;
-  iPWG4QGSep  = 1;
-  iPWG4Minijet  = 1;
+  iPWG4JetChem      = 0;
+  iPWG4QGSep  = 0;
+  iPWG4Minijet  = 0;
   iPWG4ThreeJets    = 0; // tmp off mem leak
   iPWG4KMeans       = 1; // Off no feedback 
   iPWG4Cluster      = 5;
-  iPWG4Tagged       = 1; 
-  iPWG4PartCorr     = 1;
-  iPWG4CaloQA       = 1;
-  iPWG4JetCorr      = 0; 
-  iPWG4JCORRAN      = 0;  // TMP OFF: Writes a Tree
-  iPWG4GammaConv    = 1; // TMP OFF for merging
-  iPWG4CaloConv    = 0;  // 25.08. off: Output size 450MB in memory 03.09 crashes
-  iPWG4omega3pi     = 1; //
   kDeltaAODJetName   = ""; // for OTF we do not need to write a delta/saves some extension gymnastics in the tasks       
-  kDeltaAODPartCorrName = "";
   kPluginExecutableCommand = "cat wn.xml; root -b -q "; // dump the file list to stdout for debugging
   kPluginAliRootVersion    = ""; 
   kGridRunsPerMaster = 1; // To have the separate configs for eacj run in separate dirs
 
   if(bRun<100){ // private MC
     iPWGPPQASym = 0;
-    iPWG4TmpSourceSara = 0;
     iPWG4JetChem = 0;
     iPWG4UE = 0;
     iPWG4Cluster      = 0;
@@ -153,13 +143,6 @@
     iPWG4Cosmics      = 0; // tmp on
     iPWG4ThreeJets    = 0; 
     iPWG4KMeans       = 0;
-    iPWG4PartCorr     = 0;
-    iPWG4CaloQA       = 0; 
-    iPWG4CaloConv     = 0; 
-    iPWG4Tagged    = 0; 
-    iPWG4JetCorr      = 0;     
-    iPWG4GammaConv    = 0; 
-    iPWG4omega3pi      = 0;     
     kUseKinefilter         = kTRUE;
     kIsMC                  = kTRUE;  
     kUseTR                 = kTRUE; 
@@ -413,8 +396,6 @@
     iPWG4JetChem      = 0;
     iPWG4QGSep  = 0;
     iPWG4Minijet  = 0;
-    iPWG4PartCorr     = 0;
-    iPWG4GammaConv    = 0; 
 
     // running as light a possible 
 
@@ -457,12 +438,6 @@
     // swtich off most tasks for Pb+Pb
     iDIJETAN = 0; // only run on one JetFinder for the moment
     iPWG4Fragmentation = 0; 
-    iPWG4LeadingUE = 0; 
-    iPWG4JetChem      = 0;
-    iPWG4QGSep  = 0;
-    iPWG4Minijet  = 0;
-    iPWG4PartCorr     = 0;
-    iPWG4GammaConv    = 0; 
 
     // running as light a possible 
 
@@ -527,8 +502,6 @@
       iPWG4JetChem      = 0;
       iPWG4QGSep  = 0;
       iPWG4Minijet  = 0;
-      iPWG4PartCorr     = 0;
-      iPWG4GammaConv    = 0; 
       
       // running as light a possible 
       
@@ -792,6 +765,96 @@
     //    gROOT->LoadMacro("cleanXML.C");
     // cleanXML();
   }
+  else if (bRun == 812){
+    iRunFlag = 1108;
+    kGridRunRange[0]       =  0;  // 0 is a bad number :(, needs a manual commit in alien...
+    kGridRunRange[1]       =  -1; // 
+    kGridDatadir           = "/alice/data/2011/LHC11h_2/"; 
+    kGridDataSet           = "LHC11h_2"; 
+    kGridExtraAliendirLevel  = Form("/%s",cDate);kGridOutdir = "output";
+    kGridRunPattern        = "%09d"; 
+    kUseKinefilter         = kFALSE;
+    kIsMC                  = kFALSE;  // is real! 
+    kUseMC                 = kFALSE; 
+    kUseAODMC              = kFALSE; 
+
+    if(iVersion==1){
+    // switch off tasks with no feedback...
+      iPWG4ThreeJets    = 0; // tmp off mem leak
+      iPWG4KMeans       = 0;  // OFF no FEEDBACK
+      iPWG4Tagged       = 0; // OFF crashes on MC 
+      iPWG4CaloQA       = 0; // OFF not needed on MC   
+      iPWG4JetCorr      = 0; 
+      iPWG4JCORRAN      = 0;  // TMP OFF: Writes a Tree
+      iPWG4omega3pi     = 0; // OFF no feedback
+      
+      // swtich off most tasks for Pb+Pb
+      iDIJETAN = 0; // only run on one JetFinder for the moment
+      iPWG4LeadingUE = 0; 
+      iPWG4JetChem      = 0;
+      iPWG4QGSep  = 0;
+      iPWG4Minijet  = 0;
+      
+      // running as light a possible 
+      
+      iPWG4PtQAMC     = 0;  // 
+      iPWG4PtQATPC   = 0;  // 
+      iPWG4PtSpectra   = 0;  //  
+      iPWG4PtTrackQA    = 0; // currently not needed 08.09.2011
+      iPWG4JetSpectrum = 1; 
+      iPWG4JetServices  = 1; // !!!!!!!!!!! 
+      iPWG4Cluster      = 1;// not 5....
+      kHighPtFilterMask = 1<<4|1<<8; // Global tracks with SPD requirment global constraitn for the rest
+      iPWG4Fragmentation = 1;
+    //
+    }// version1
+
+
+	
+	// anti kT 150 MeV
+	kJetMapSpectrum.Add(25,12);
+	kJetBackMapSpectrum.Add(25,5);
+	kJetBackMapSpectrum.Add(12,5);
+
+	// anti kT R  = 0.2
+	kJetMapSpectrum.Add(28,16);
+	kJetBackMapSpectrum.Add(28,5);      
+	kJetBackMapSpectrum.Add(16,5);
+
+	// anti kT 2 GeV
+	kJetMapSpectrum.Add(31,15);
+	kJetBackMapSpectrum.Add(31,8);      
+	kJetBackMapSpectrum.Add(15,8);
+
+	
+	// random cones
+	kJetMapSpectrum.Add(9,10);
+	kJetBackMapSpectrum.Add(10,5);
+	kJetBackMapSpectrum.Add(9,5);
+	
+	kJetMapSpectrum.Add(13,14);
+	kJetBackMapSpectrum.Add(14,5);
+	kJetBackMapSpectrum.Add(13,5);
+
+
+    // CLEAN XML FILES LOCALLY AND ON ALIEN WHEN STARTING A NEW PASS!
+    kGridPassPattern       = "pass2";    // reset for AODs below
+
+    kGridLocalRunList      = "fp_lhc11h_pass2.txt";    
+    kTrainName  = Form("p4t_11h_pass2_%s",cDate);
+    if (kPluginMode.Contains("merge")){
+      //      kGridLocalRunList      = "fp_lhc10h_pass2b.txt";    
+      kGridLocalRunList      = "out_merge_100_1.txt";    
+    }
+    if (kPluginMode.Contains("merge")){
+      kSaveAOD = 0; // 
+    }
+    kGridRunsPerMaster = 1; // Physcicsselection does not support more than on run per job
+    // stich of tasks not from PWG4JetTasks
+    //    gROOT->LoadMacro("cleanXML.C");
+    // cleanXML();
+  }
+
   else if (bRun == 1012){
     kGridRunRange[0]       =  0;  // 0 is a bad number :(, needs a manual commit in alien...
     kGridRunRange[1]       =  -1; // 
@@ -887,7 +950,6 @@
     kGridRunsPerMaster     = 1; // Physcicsselection does not support more than on run per job
     kGridFilesPerJob       = 100; // only few events in a sim file
     // stich of tasks not from PWG4JetTasks
-    iPWG4TmpSourceSara = 0; 
     iPWG4UE = 0; //
     iPWG4ThreeJets    = 0; // tmp off mem leak
     iPWG4KMeans       = 0;  // OFF no FEEDBACK
@@ -909,7 +971,6 @@
     kGridLocalRunList      = "fp_lhc10e14.txt";   kTrainName  = Form("pwg4train_LHC10e14_%s",cDate);
     kGridPassPattern       = "";
 
-    iPWG4TmpSourceSara = 0; 
     iPWG4UE = 0; // off not needed on Jet+Jet
     iPWG4LeadingUE = 0; // off not needed on Jet +Jet
     iPWG4CorrectionsUE = 0; // off not needed on Jet +Jet
@@ -936,12 +997,7 @@
       
       // swtich off most tasks for Pb+Pb
       iDIJETAN = 0; // only run on one JetFinder for the moment
-      iPWG4LeadingUE = 0; 
-      iPWG4JetChem      = 0;
-      iPWG4QGSep  = 0;
-      iPWG4Minijet  = 0;
-      iPWG4PartCorr     = 0;
-      iPWG4GammaConv    = 0; 
+
       
       // running as light a possible 
       
@@ -988,17 +1044,7 @@
     iPWG4JetCorr      = 0; 
     iPWG4JCORRAN      = 0;  // TMP OFF: Writes a Tree
     iPWG4omega3pi     = 0; // OFF no feedback
-    iPWG4TmpSourceSara = 0; 
-    iPWG4UE = 0; //
-    iPWG4ThreeJets    = 0; // tmp off mem leak
-    iPWG4KMeans       = 0;  // OFF no FEEDBACK
-    iPWG4Tagged       = 0; // OFF crashes on MC 
-    iPWG4CaloQA       = 0; // OFF not needed on MC   
-    iPWG4JetCorr      = 0; 
-    iPWG4JCORRAN      = 0;  // TMP OFF: Writes a Tree
-    iPWG4CaloConv    = 0;  // 25.08. off: Output size 03.09 crashes 
-    iPWG4PartCorr    = 0;  // OFF cjecked back with Gustavo
-    iPWG4omega3pi     = 0; // OFF no feedback
+
     // CLEAN XML FILES LOCALLY AND ON ALIEN WHEN STARTING A NEW PASS!
     kGridPassPattern       = "";    kGridLocalRunList      = "fp_lhc10f6.txt";    kTrainName  = Form("pwg4train_LHC10f6_%s",cDate);
     kGridRunsPerMaster = 1; // Physcicsselection does not support more than on run per job
@@ -1037,8 +1083,6 @@
     iPWG4JetChem      = 0;
     iPWG4QGSep  = 0;
     iPWG4Minijet  = 0;
-    iPWG4PartCorr     = 0;
-    iPWG4GammaConv    = 0; 
 
     // running as light a possible 
 
@@ -1093,8 +1137,6 @@
     iPWG4JetChem      = 0;
     iPWG4QGSep  = 0;
     iPWG4Minijet  = 0;
-    iPWG4PartCorr     = 0;
-    iPWG4GammaConv    = 0; 
 
     // running as light a possible 
     iJETSUBTRACT = 0; // no subtraction
@@ -1143,7 +1185,6 @@
     // switch off all but my analyses
     iPWG4KMeans     = 0;
     iPWGPPQASym = 0;
-    iPWG4TmpSourceSara = 0;
     iPWG4UE = 0;
     iPWG4PtQAMC        = 0;
     iPWG4PtSpectra     = 0;
@@ -1151,15 +1192,7 @@
     iPWG4ThreeJets        = 0;
     iPWG4KMeans     = 0;
     iPWG4Tagged    = 0; 
-    iPWG4PartCorr     = 0;
-    iPWG4CaloQA     = 0;
-    iPWG4CaloConv     = 0; 
-    iPWG4JetCorr      = 0;     
-    iPWG4GammaConv    = 0; 
-    iPWG4JetChem = 0; // tmp on
-    iPWG4omega3pi      = 0;     
     kDeltaAODJetName   = ""; // for OTF we do not need to write a delta/saves some extension gymnastics in the tasks       
-    kDeltaAODPartCorrName = "";
     kUseDebug = kFALSE;
     kPluginAliRootVersion    = ""; 
     kGridFilesPerJob       = 60;
@@ -1186,7 +1219,8 @@
       //      kPluginExecutableCommand = "source ~/setup_root.txt; alienroot -b -q";      
       kPluginExecutableCommand = "root -b -q";      
       //      kPluginExecutableCommand = "valgrind --tool=memcheck --error-limit=no --max-stackframe=3060888 --suppressions=$ROOTSYS/etc/valgrind-root.supp --leak-check=full --num-callers=15 --log-file=valgrind_memcheck.log root.exe -b -q";
-      kPluginExecutableCommand = "export ALICE_ROOT=./ROOTFILES/;" + kPluginExecutableCommand; 
+      //      kPluginExecutableCommand = "export ALICE_ROOT=./ROOTFILES/;" + kPluginExecutableCommand; 
+      kPluginExecutableCommand = kPluginExecutableCommand; 
       kUseSysInfo = 1;
       kUseDebug = kTRUE;
       if(bRun==802){
@@ -1224,7 +1258,8 @@
     }
   }
   if(kPluginAliRootVersion.Length()==0){
-    kPluginExecutableCommand = "export ALICE_ROOT=./ROOTFILES/;" + kPluginExecutableCommand; 
+    //    kPluginExecutableCommand = "export ALICE_ROOT=./ROOTFILES/;" + kPluginExecutableCommand; 
+    kPluginExecutableCommand = kPluginExecutableCommand; 
   } 
 
   if (kPluginMode.Contains("merge")){
