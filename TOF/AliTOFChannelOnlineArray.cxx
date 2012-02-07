@@ -72,6 +72,7 @@ AliTOFChannelOnlineArray &AliTOFChannelOnlineArray::operator=(const AliTOFChanne
   
   TObject::operator=(source);
   fSize= source.fSize;
+  delete [] fArray;
   fArray = new Float_t[fSize];
   memcpy(fArray,source.fArray,sizeof(Float_t)*fSize);
 
