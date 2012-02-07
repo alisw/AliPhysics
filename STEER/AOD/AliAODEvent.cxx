@@ -419,7 +419,8 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 			   )
 {
   // deletes content of standard arrays and resets size 
-  
+  // The line below added to avoid very costly and un-needed TROOT::RecursiveRemove (A.G.)
+  gROOT->SetMustClean(kFALSE);  
   if (fTracks) {
     fTracks->Delete();
     if (trkArrSize > fTracks->GetSize()) 
