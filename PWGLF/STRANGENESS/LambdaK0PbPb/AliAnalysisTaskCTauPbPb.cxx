@@ -380,9 +380,9 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
   }
 
 
-  Int_t ntrk=esd->GetNumberOfTracks();
+  Int_t ntrk1=esd->GetNumberOfTracks();
   Int_t mult=0;
-  for (Int_t i=0; i<ntrk; i++) {
+  for (Int_t i=0; i<ntrk1; i++) {
     AliESDtrack *t=esd->GetTrack(i);
     if (!t->IsOn(AliESDtrack::kTPCrefit)) continue;
     Float_t xy,z0;
@@ -416,8 +416,8 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
       AliESDtrack *ptrack=esd->GetTrack(pidx);
 
       Double_t x,y,z; v0->GetXYZ(x,y,z);
-      Double_t dx=x-xv, dy=y-yv;
-      Double_t lt=TMath::Sqrt(dx*dx + dy*dy);
+      Double_t dx1=x-xv, dy1=y-yv;
+      Double_t lt=TMath::Sqrt(dx1*dx1 + dy1*dy1);
 
       Double_t pt=v0->Pt();
 
