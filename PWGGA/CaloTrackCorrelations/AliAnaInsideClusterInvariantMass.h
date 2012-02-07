@@ -42,15 +42,17 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
      
   void         MakeAnalysisFillHistograms() ; 
       
-  void         SetCalorimeter(TString & det)     { fCalorimeter   = det  ; }
+  void         Print(const Option_t * opt) const;
+
+  void         SetCalorimeter(TString & det)             { fCalorimeter = det ; }
     
-  void         SetM02Cut(Float_t cut)            { fM02Cut         = cut ; }
+  void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
 
-  void         SetMinNCells(Int_t cut)           { fMinNCells      = cut ; }
-
-  void         SetPi0MassRange(Float_t min, Float_t max) { fMassPi0Min = min ; fMassPi0Max = max ; }
-  void         SetEtaMassRange(Float_t min, Float_t max) { fMassEtaMin = min ; fMassEtaMax = max ; }
-  void         SetConMassRange(Float_t min, Float_t max) { fMassConMin = min ; fMassConMax = max ; }
+  void         SetMinNCells(Int_t cut)                   { fMinNCells   = cut ; }
+  
+  void         SetPi0MassRange(Float_t min, Float_t max) { fMassPi0Min  = min ; fMassPi0Max = max ; }
+  void         SetEtaMassRange(Float_t min, Float_t max) { fMassEtaMin  = min ; fMassEtaMax = max ; }
+  void         SetConMassRange(Float_t min, Float_t max) { fMassConMin  = min ; fMassConMax = max ; }
   
   void         SplitEnergy(const Int_t absId1, const Int_t absId2, 
                            AliVCluster *cluster, 
@@ -59,10 +61,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                            AliAODCaloCluster *cluster1, 
                            AliAODCaloCluster *cluster2, 
                            const Int_t nMax//, Int_t *absIdList, Float_t *maxEList,
-);
+                           );
   
-  void         Print(const Option_t * opt) const;
+  void         SwitchOnClusterPlot()                     { fPlotCluster = kTRUE  ; }
+  void         SwitchOffClusterPlot()                    { fPlotCluster = kFALSE ; }
 
+  
   //For histograms
   enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  
                  kmcEta    = 4, kmcElectron   = 5, kmcHadron = 6 };
@@ -70,7 +74,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString      fCalorimeter ;          // Calorimeter where the gamma is searched
-  Float_t      fM02Cut    ;            // Study clusters with l0 larger than cut
+  Float_t      fM02MaxCut    ;         // Study clusters with l0 smaller than cut
+  Float_t      fM02MinCut    ;         // Study clusters with l0 larger than cut
   Int_t        fMinNCells ;            // Study clusters with ncells larger than cut
   Float_t      fMassEtaMin;            // Min Eta mass
   Float_t      fMassEtaMax;            // Max Eta mass  
@@ -78,6 +83,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fMassPi0Max;            // Min Pi0 mass
   Float_t      fMassConMin;            // Min Conversions mass
   Float_t      fMassConMax;            // Min Conversions mass
+  Bool_t       fPlotCluster;           // Plot cluster
   
   //Histograms
   
@@ -86,6 +92,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassNLocMaxN[7][2]  ; //! Mass of >2 cells local maxima vs E, 1-6 for different MC particle types
 
   TH2F       * fhNLocMax      [7][2] ; //! Number of maxima in cluster vs E, 1-6 for different MC particle types
+  TH2F       * fhNLocMaxNLabel[7][2] ; //! Number of maxima in cluster vs nLabels, E > 5, 1-6 for different MC particle types
   TH2F       * fhNLocMaxEMax  [7][2] ; //! Number of maxima in cluster vs E of each maxima, 1-6 for different MC particle types
   TH2F       * fhNLocMaxEFrac [7][2] ; //! Number of maxima in cluster vs fraction of cluster E of each maxima, 1-6 for different MC particle types
   TH2F       * fhNLocMaxM02Cut[7][2] ; //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
@@ -128,7 +135,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,6)
+  ClassDef(AliAnaInsideClusterInvariantMass,8)
   
 } ;
 

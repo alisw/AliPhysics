@@ -689,7 +689,6 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   {
     Float_t dZ  = cluster->GetTrackDz();
     Float_t dR  = cluster->GetTrackDx();
-    
     if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
       dR = 2000., dZ = 2000.;
       GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
@@ -2016,10 +2015,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0; 
-  if(fCalorimeter == "PHOS")
-    pl = GetPHOSClusters();
+  AliVCaloCells* cells    = 0;  
+  if      (fCalorimeter == "PHOS" )
+  {
+    pl    = GetPHOSClusters();
+    cells = GetPHOSCells();
+  }
   else if (fCalorimeter == "EMCAL")
-    pl = GetEMCALClusters();
+  {
+    pl    = GetEMCALClusters();
+    cells = GetEMCALCells();
+  }
   
   if(!pl) {
     Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
@@ -2165,17 +2171,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,1);
     
     // Add number of local maxima to AOD, method name in AOD to be FIXED
-    AliVCaloCells* cells    = 0;
-    if(fCalorimeter == "EMCAL") cells    = GetEMCALCells();
-    else                        cells    = GetPHOSCells();
-    const Int_t   nc = calo->GetNCells();
-    Int_t   *absIdList = new Int_t  [nc]; 
-    Float_t *maxEList  = new Float_t[nc]; 
     
-    aodph.SetFiducialArea(GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells, absIdList, maxEList));
+    aodph.SetFiducialArea(GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells));
     
-    delete [] absIdList;
-    delete [] maxEList;
 
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
