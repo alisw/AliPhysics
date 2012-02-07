@@ -27,6 +27,7 @@ class AliMUONPedestal : public TObject
 {
   public:
     AliMUONPedestal();
+    AliMUONPedestal(TRootIOCtor* dummy);
     virtual ~AliMUONPedestal();
     
     /// return the number of current events

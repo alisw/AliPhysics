@@ -74,6 +74,32 @@ fPrefixDA()
 }
 
 //______________________________________________________________________________
+AliMUONPedestal::AliMUONPedestal(TRootIOCtor* /*dummy*/)
+: TObject(),
+//fN(0),
+fNCurrentEvents(0),
+fNEvthreshold(0),
+fSorting(0),
+fNEvents(0),
+fRunNumber(0),
+fNChannel(0),
+fNManu(0),
+fNManuConfig(0),
+fConfig(1),
+fErrorBuspatchTable(0),
+fManuBuspatchTable(0),
+fManuBPoutofconfigTable(0),
+fDate(0),
+fFilcout(0),
+fHistoFileName(),
+fPedestalStore(0),
+fIndex(-1),
+fPrefixDA()
+{
+/// Root IO constructor
+}
+
+//______________________________________________________________________________
 AliMUONPedestal::~AliMUONPedestal()
 {
 /// Destructor
