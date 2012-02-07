@@ -18,6 +18,7 @@
 // Authors:
 //   Markus Fasel <M.Fasel@gsi.de>
 //
+//
 #include <TBits.h>
 #include <TString.h>
 
@@ -108,7 +109,11 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     AliError("No Handler");
   }
   if(!pid){
-    AliError("No PID response\n");
+    AliError("No PID response");
+    return;
+  }
+  if(!fInputEvent) {
+    AliError("No Input event");
     return;
   }
   
@@ -146,7 +151,10 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
 
   // Get centrality
   Float_t centrality = -1.;
-  TString beamtype = (dynamic_cast<AliESDEvent *>(fInputEvent))->GetESDRun()->GetBeamType();
+  AliESDEvent *event = (dynamic_cast<AliESDEvent *>(fInputEvent));
+  if(!event) return;
+  TString beamtype = event->GetBeamType();
+  //printf("Beam type %s\n",(const char*)beamtype);
   if(!beamtype.CompareTo("Pb-Pb") || !beamtype.CompareTo("A-A")){
     // Heavy ion run
     AliDebug(1, "Heavy-Ion event\n");
