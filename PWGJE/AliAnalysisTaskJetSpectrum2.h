@@ -231,7 +231,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 18) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 18); // Analysis task for standard jet analysis
 };
  
 #endif

@@ -19,6 +19,7 @@ class TProfile;
 class AliAODEvent;
 class AliMCEvent;
 class AliAODJet;
+class AliAODTrack;
 class AliAODMCParticle;
 class AliAODVertex;
 
