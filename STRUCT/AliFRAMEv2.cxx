@@ -848,7 +848,7 @@ void AliFRAMEv2::CreateGeometry()
   tr1->RegisterYourself();
   TGeoTranslation *tr2 = new TGeoTranslation("trnsl2",0, 0, +14.525/2 );
   tr2->RegisterYourself();
-  TGeoCompositeShape *Btofcs =new TGeoCompositeShape("Btofcs","(BTOFA:trnsl1)+(BTOFB:trnsl2)");
+  TGeoCompositeShape *btofcs =new TGeoCompositeShape("Btofcs","(BTOFA:trnsl1)+(BTOFB:trnsl2)");
 
 
   for (i = 0; i < 18; i++) {
@@ -856,7 +856,7 @@ void AliFRAMEv2::CreateGeometry()
     snprintf(nameCh, 16, "BTOF%d",i);
     char nameMo[16];
     snprintf(nameMo, 16, "BSEGMO%d",i);
-    TGeoVolume* btf = new TGeoVolume(nameCh, Btofcs, gGeoManager->GetMedium("FRAME_Air"));
+    TGeoVolume* btf = new TGeoVolume(nameCh, btofcs, gGeoManager->GetMedium("FRAME_Air"));
     btf->SetName(nameCh); 
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., 43.525, 0, "ONLY"); 
