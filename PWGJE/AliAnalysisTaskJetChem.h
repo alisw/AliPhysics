@@ -17,6 +17,7 @@
 /* $Id$ */
 
 #include "AliAnalysisTaskFragmentationFunction.h"
+#include "AliPID.h"
 
 class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 

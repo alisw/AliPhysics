@@ -12,6 +12,7 @@
 
 class AliESDEvent;
 class AliAODEvent;
+class AliAODJet;
 class AliAODExtension;
 class TList;
 class TH1F;

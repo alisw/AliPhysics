@@ -13,6 +13,7 @@
 // *******************************************
 
 class TH1F;
+class TH1I;
 class TH2F;
 class TH3F;
 class THnSparse;
