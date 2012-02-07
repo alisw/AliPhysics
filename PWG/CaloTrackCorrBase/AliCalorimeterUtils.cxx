@@ -567,6 +567,24 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 }
 
 //___________________________________________________________________________________________
+Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells) 
+{
+  // Find local maxima in cluster
+  
+  const Int_t   nc = cluster->GetNCells();
+  Int_t   *absIdList = new Int_t  [nc]; 
+  Float_t *maxEList  = new Float_t[nc]; 
+  
+  Int_t nMax = GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList);
+  
+  delete [] absIdList;
+  delete [] maxEList;
+  
+  return nMax;
+  
+}
+
+//___________________________________________________________________________________________
 Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
                                                   Int_t *absIdList,     Float_t *maxEList) 
 {

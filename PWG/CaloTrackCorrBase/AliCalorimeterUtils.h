@@ -47,6 +47,8 @@ class AliCalorimeterUtils : public TObject {
   
   Bool_t        AreNeighbours(const TString calo, const Int_t absId1, const Int_t absId2) const ;  
 
+  Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells)  ;
+  
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
                                        Int_t *absIdList,     Float_t *maxEList)  ;
   
@@ -269,7 +271,7 @@ class AliCalorimeterUtils : public TObject {
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,10)
+  ClassDef(AliCalorimeterUtils,11)
 } ;
 
 
