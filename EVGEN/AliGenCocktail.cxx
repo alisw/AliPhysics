@@ -41,7 +41,7 @@ AliGenCocktail::AliGenCocktail()
     :AliGenerator(), 
      fNGenerators(0),
      fTotalRate(0.),
-     fRandom(kFALSE),
+     fSRandom(kFALSE),
      fUsePerEventRate(kFALSE),
      fProb(0),
      fEntries(0),
@@ -107,7 +107,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
      fNGenerators++;
      flnk1 = 0;
      flnk2 = 0;
-     fRandom  = kFALSE;
+     fSRandom  = kFALSE;
      fHeader  = 0;
 }
 
@@ -125,7 +125,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 
     next.Reset();
 
-    if (fRandom) {
+    if (fSRandom) {
 	fProb.Set(fNGenerators);
 	next.Reset();
 	Float_t sum = 0.;
@@ -181,7 +181,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
     eventVertex.Set(3);
     for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
 
-    if (!fRandom) {
+    if (!fSRandom) {
 	//
 	// Loop over generators and generate events
 	Int_t igen   = 0;
@@ -238,7 +238,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	  entry->SetLast(partArray->GetEntriesFast());
 	  preventry = entry;
 	}
-    } else if (fRandom) {
+    } else if (fSRandom) {
 	//
 	// Select a generator randomly
 	//
