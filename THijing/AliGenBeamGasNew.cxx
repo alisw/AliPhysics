@@ -84,7 +84,7 @@ void AliGenBeamGasNew::Init()
 
   fVertexSmear = kPerEvent;
   fVertexSource = kInternal;
-  fRandom = kTRUE;
+  fSRandom = kTRUE;
 
   // Adding default underlying event in case none was specified
   // p-O-collision at 7 TeV (fixed target)
@@ -121,7 +121,7 @@ void AliGenBeamGasNew::Init()
   
   next.Reset();
   
-  if (fRandom) {
+  if (fSRandom) {
     fProb.Set(fNGenerators);
     next.Reset();
     Float_t sum = 0.;
