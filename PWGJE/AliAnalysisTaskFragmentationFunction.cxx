@@ -3838,11 +3838,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	}
 	
 	if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
-
-	std::cout<<" here, isBadJet "<<isBadJet<<std::endl;
 	
 	if(isBadJet) continue; 
-
 
 	if(ptFractionEmbedded>=fCutFractionPtEmbedded){ // if no embedding: ptFraction = cutFraction = 0
 	  
@@ -4953,8 +4950,6 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
   sumPt = 0;
   isBadMaxPt = kFALSE;
 
-  std::cout<<" enter GetJetTracksPointing, maxPt "<<maxPt<<std::endl;
-
   Double_t jetMom[3];
   jet->PxPyPz(jetMom);
   TVector3 jet3mom(jetMom);
@@ -4979,9 +4974,6 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
       if(maxPt>0 && track->Pt()>maxPt) std::cout<<" found bad jet, track pt "<<track->Pt()<<" max Pt "<<maxPt<<std::endl;
     }
   }
-
-  std::cout<<" leave GetJetTracksPointing, maxPt "<<maxPt<<" isBadMaxPt "<<isBadMaxPt<<std::endl;
-
 
   outputlist->Sort();
 }
