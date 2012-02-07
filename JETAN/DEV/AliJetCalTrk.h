@@ -113,7 +113,7 @@ class AliJetCalTrkEvent : public TObject
   Int_t                  GetNCalTrkTracks() const {return fNJetCalTrkTrack;}
 
   void                   Clear(Option_t* option = ""); 
-  void                   Print(const Option_t* /*option*/) const;
+  void                   Print(const Option_t* = "") const;
   
  private:
   AliJetCalTrkEvent& operator = (const AliJetCalTrkEvent& rhs);

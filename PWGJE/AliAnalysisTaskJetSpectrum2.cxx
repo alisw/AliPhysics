@@ -841,7 +841,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   fMultGen = genMult1;
   if(fMultGen<=0)fMultGen = genMult2;
 
-  Double_t var0[2] = {0,};
+  Double_t var0[3] = {0,};
   var0[0] = fCentrality;
   var0[1] = fMultRec;
   for(int it=0;it<fNTrigger;it++){
@@ -901,7 +901,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   Int_t ij0 = -1;
   Int_t ij1 = -1;
 
-  Double_t var1[6] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area
+  Double_t var1[7] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area
   var1[2] = fCentrality; 
   var1[3] = refMult;
 
