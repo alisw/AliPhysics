@@ -290,7 +290,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetFFMode();           // default: ffMode = 1
    task->SetDJMode(0);          // default: djMode = 1
    task->SetEffMode(0);         // default: effMode = 1
-   task->SetPhiCorrMode(0);     // default: phiCorrMode = 1
+   task->SetPhiCorrMode(1);     // default: phiCorrMode = 1
    task->SetHighPtThreshold();  // default: pt > 5 Gev
    task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
 
