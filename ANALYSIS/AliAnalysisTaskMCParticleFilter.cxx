@@ -164,7 +164,7 @@ AliAnalysisTaskMCParticleFilter& AliAnalysisTaskMCParticleFilter::operator=(cons
 void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 {
   // Create the output container
-  PostData(1,fHistList);
+  
 
     if (OutputTree()&&fTrackFilterMother) 
 	OutputTree()->GetUserInfo()->Add(fTrackFilterMother);
@@ -212,17 +212,19 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
     h1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
     fHistList->Add(h1Trials);
 
+    PostData(1,fHistList);
     
 }
 
 //____________________________________________________________________
 void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 {
-// Execute analysis for current event
-//
-
-// Fill AOD tracks from Kinematic stack
-    
+  // Execute analysis for current event
+  //
+  
+  // Fill AOD tracks from Kinematic stack
+  PostData(1,fHistList);
+  
   // get AliAOD Event 
   AliAODEvent* aod = AODEvent();
   if (!aod) {
@@ -403,7 +405,6 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
 
   aodH->StoreMCParticles();
-  PostData(1,fHistList);
 
   return;
 }
