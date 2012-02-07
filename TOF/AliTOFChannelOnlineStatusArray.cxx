@@ -81,12 +81,11 @@ AliTOFChannelOnlineStatusArray &AliTOFChannelOnlineStatusArray::operator=(const 
 
   TObject::operator=(source);
   fSize= source.fSize;
-  //fArray = new UChar_t[fSize];
-  //fLatencyWindow = new Int_t[fSize];
-  for (Int_t ich = 0; ich<fSize; ich ++){
-	  fArray[ich] = source.fArray[ich];
-	  fLatencyWindow[ich] = source.fLatencyWindow[ich];
-  }
+  fArray = new UChar_t[fSize];
+  fLatencyWindow = new Int_t[fSize];
+  memcpy(fArray,source.fArray,sizeof(UChar_t)*fSize);
+  memcpy(fLatencyWindow,source.fLatencyWindow,sizeof(Int_t)*fSize);
+
   return *this;
 }
 //________________________________________________________________
