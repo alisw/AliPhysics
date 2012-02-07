@@ -13,6 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 //
+//
 // The analysis task:
 // Filling an AliCFContainer with the quantities pt, eta and phi
 // for tracks which survivied the particle cuts (MC resp. ESD tracks)
@@ -997,7 +998,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
             if(shared.CountBits() >= 2) sharebit=1;
 
 	    Double_t itschi2percluster = 0.0;
-	    if(track->GetNcls(0) > 0) itschi2percluster = track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0));
+	    Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
+	    if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
 
             Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
 				   fCentralityF,track->GetTPCsignalN(), sharebit, itschi2percluster};
@@ -1006,7 +1008,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
     else{
       
       Double_t itschi2percluster = 0.0;
-      if(track->GetNcls(0) > 0) itschi2percluster = track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0));
+      Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
+      if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
 
       Double_t itsChi2[3] = {track->Pt(), fCentralityF, itschi2percluster};
       fQACollection->Fill("fChi2perITScluster", itsChi2);
