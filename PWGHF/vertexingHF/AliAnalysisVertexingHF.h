@@ -14,8 +14,11 @@
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
+#include <TList.h>
 
-class TList;
+#include "AliAnalysisFilter.h"
+#include "AliESDtrackCuts.h"
+
 class AliESDVertex;
 class AliAODRecoDecay;
 class AliAODRecoDecayHF;
@@ -102,8 +105,20 @@ class AliAnalysisVertexingHF : public TNamed {
     { fRecoPrimVtxSkippingTrks=kFALSE; fRmTrksFromPrimVtx=kFALSE;}
   void SetRmTrksFromPrimVtx() 
     {fRmTrksFromPrimVtx=kTRUE; fRecoPrimVtxSkippingTrks=kFALSE; }
-  void SetTrackFilter(AliAnalysisFilter* trackF) { fTrackFilter = trackF; }
-  void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) { fTrackFilterSoftPi = trackF; }
+  void SetTrackFilter(AliAnalysisFilter* trackF) {
+    // switch off the TOF selection that cannot be applied with AODTracks 
+    TList *l = (TList*)trackF->GetCuts();
+    AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
+    if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
+    fTrackFilter = trackF; 
+  }
+  void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) { 
+    // switch off the TOF selection that cannot be applied with AODTracks 
+    TList *l = (TList*)trackF->GetCuts();
+    AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
+    if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
+    fTrackFilterSoftPi = trackF; 
+  }
   AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter; }
   AliAnalysisFilter* GetTrackFilterSoftPi() const { return fTrackFilterSoftPi; }
   void SetCutsD0toKpi(AliRDHFCutsD0toKpi* cuts) { fCutsD0toKpi = cuts; }

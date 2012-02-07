@@ -417,6 +417,8 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   //
   if(!cuts) return kTRUE;
 
+  if(cuts->GetFlagCutTOFdistance()) cuts->SetFlagCutTOFdistance(kFALSE);
+
   Bool_t retval=kTRUE;
 
   // convert to ESD track here
