@@ -1,0 +1,9 @@
+This code is used to make dielectrons
+
+SINGLE
+-------
+Makes the selection for electron candidates
+
+PAIR
+-----
+Combines the electrons into pairs
