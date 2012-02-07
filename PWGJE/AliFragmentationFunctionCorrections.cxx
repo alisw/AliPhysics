@@ -1459,10 +1459,6 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     if(type == kFlagPt)      hnResponse = fhnResponsePt[i];
     else if(type == kFlagZ)  hnResponse = fhnResponseZ[i];
     else if(type == kFlagXi) hnResponse = fhnResponseXi[i];
-    else{ 
-      Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
-      return;
-    }
 
     TH1F* hPrior = 0;
     if(type == kFlagPt && fh1FFTrackPtPrior[i]  && ((TString(fh1FFTrackPtPrior[i]->GetName())).Length() > 0) ) hPrior = fh1FFTrackPtPrior[i];
@@ -3688,14 +3684,14 @@ void AliFragmentationFunctionCorrections::WriteJetSpecResponse(TString strInfile
 
   TList* list = 0;
 
-  if(strlist && strlist.Length()){
-    
+  if(strlist && strlist.Length()){ 
     if(!(list = (TList*) gDirectory->Get(strlist))){ 
       Printf("%s:%d -- error retrieving list %s from directory %s", (char*)__FILE__,__LINE__,strlist.Data(),strdir.Data());
       return;
     }
   }  
-  
+  if(list == 0)return; // catch strlist.Lenght() == 0;
+   
   THnSparse* hn6ResponseJetPt  = (THnSparse*) list->FindObject("fhnCorrelation");
  
   Int_t axis6RecJetPt = 0;
