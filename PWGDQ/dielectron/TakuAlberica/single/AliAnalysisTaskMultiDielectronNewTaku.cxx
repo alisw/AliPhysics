@@ -295,9 +295,9 @@ void AliAnalysisTaskMultiDielectronNewTaku::UserCreateOutputObjects()
   fTOFnSigmaElecvsPt = new TH2D("fTOFnSigmaElecvsPt","TOF nsigma for electron", 400, 0, 20, 2000, -10, 10);
   tQAElectron->Add(fTOFnSigmaElecvsPt);
 
-  fTPCcrossedRowsvsPt = new TH2D("fTTPCcrossedRowsvsPt","TPC crossed rows", 400, 0, 20, 1000,0,1000);
+  fTPCcrossedRowsvsPt = new TH2D("fTTPCcrossedRowsvsPt","TPC crossed rows", 400, 0, 20, 160,0,160);
   tQAElectron->Add(fTPCcrossedRowsvsPt);
-  fTPCchi2vsPt = new TH2D("fTTPCchi2RowsvsPt","TPC chi2", 400, 0, 20, 1000,0,100);
+  fTPCchi2vsPt = new TH2D("fTTPCchi2RowsvsPt","TPC chi2", 400, 0, 20, 1000,0,200);
   tQAElectron->Add(fTPCchi2vsPt);
 
 
