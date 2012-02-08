@@ -446,6 +446,14 @@ class AliHLTOUT {
 
   /**
    * Get buffer of the selected data block.
+   * Buffer has to be released using ReleaseDataBuffer
+   * @param [out] desc  block data descriptor
+   */
+  int GetDataBuffer(AliHLTComponentBlockData& desc);
+
+  /**
+   * Get buffer of the selected data block.
+   * Buffer has to be released using ReleaseDataBuffer
    * @param [out] pBuffer buffer of the selected data block
    * @param [out] size    size of the selected data block
    */

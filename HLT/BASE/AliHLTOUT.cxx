@@ -54,16 +54,16 @@ AliHLTOUT::AliHLTOUT()
   , fObjectBufferSize(0)
   , fCurrentEventId(kAliHLTVoidEventID)
 {
+  // constructor
+  // 
+  // The control class for HLTOUT data
   // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // author Matthias Richter
 }
 
 AliHLTOUT::~AliHLTOUT()
 {
-  // see header file for class documentation
+  // destructor
   if (CheckStatusFlag(kIsSubCollection)) {
     fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "~AliHLTOUT" , __FILE__ , __LINE__ , "severe internal error: collection has not been released, potential crash due to invalid pointer");
   }
@@ -96,7 +96,7 @@ int AliHLTOUT::Init()
 
 int AliHLTOUT::GetNofDataBlocks()
 {
-  // see header file for class documentation
+  // get number of data blocks
   return fBlockDescList.size();
 }
 
@@ -104,7 +104,8 @@ int AliHLTOUT::SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t s
 				    AliHLTModuleAgent::AliHLTOUTHandlerType handlerType,
 				    bool skipProcessed)
 {
-  // see header file for class documentation
+  // select the first data block according to data type, specification and
+  // handler type
   fCurrent=0;
   fSearchDataType=dt;
   fSearchSpecification=spec;
@@ -116,7 +117,8 @@ int AliHLTOUT::SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t s
 
 int AliHLTOUT::SelectNextDataBlock()
 {
-  // see header file for class documentation
+  // select next data block according to selection criteria specified
+  // for SelectFirstDataBlock
   if (fCurrent>=fBlockDescList.size()) return -ENOENT;
   fCurrent++;
   return FindAndSelectDataBlock();
@@ -124,7 +126,8 @@ int AliHLTOUT::SelectNextDataBlock()
 
 int AliHLTOUT::FindAndSelectDataBlock()
 {
-  // see header file for class documentation
+  // Select data block according to data type and specification, internal function
+  // invoked by SelectFirstDataBlock/SelectNextDataBlock
   if (CheckStatusFlag(kLocked)) return -EPERM;
   int iResult=-ENOENT;
   while (fCurrent<fBlockDescList.size() && iResult==-ENOENT) {
@@ -159,7 +162,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
 
 int AliHLTOUT::GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32_t& spec)
 {
-  // see header file for class documentation
+  // fill data type and specification
   int iResult=-ENOENT;
   if (fCurrent<fBlockDescList.size()) {
     iResult=0;
@@ -171,13 +174,13 @@ int AliHLTOUT::GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32
 
 const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::GetDataBlockHandlerDesc()
 {
-  // see header file for class documentation
+  // Get handler descriptor of the selected data block.
   return FindHandlerDesc(fCurrent);
 }
 
 AliHLTModuleAgent::AliHLTOUTHandlerType AliHLTOUT::GetDataBlockHandlerType()
 {
-  // see header file for class documentation
+  // Get handler type of the selected data block.
   AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=FindHandlerDesc(fCurrent);
   AliHLTModuleAgent::AliHLTOUTHandlerType type=desc;
   return type;
@@ -185,20 +188,37 @@ AliHLTModuleAgent::AliHLTOUTHandlerType AliHLTOUT::GetDataBlockHandlerType()
 
 AliHLTUInt32_t AliHLTOUT::GetDataBlockIndex()
 {
-  // see header file for class documentation
+  // Get the index of the current data block.
   if (fCurrent>=fBlockDescList.size()) return AliHLTOUTInvalidIndex;
   return fBlockDescList[fCurrent].GetIndex();
 }
 
+int AliHLTOUT::GetDataBuffer(AliHLTComponentBlockData& desc)
+{
+  // fill block data descriptor and select the current data buffer
+  // buffer has to be released using ReleaseDataBuffer
+  int iResult=-ENOENT;
+  if (fCurrent<fBlockDescList.size()) {
+    AliHLTComponent::FillBlockData(desc);
+    if ((iResult=fBlockDescList[fCurrent].GetDataBuffer(fpBuffer, desc.fSize))>=0) {
+      desc.fPtr=const_cast<void*>(reinterpret_cast<const void*>(fpBuffer));
+      desc.fDataType=fBlockDescList[fCurrent];
+      desc.fSpecification=fBlockDescList[fCurrent];
+    }
+  }
+  return iResult;
+}
+
 int AliHLTOUT::GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size)
 {
-  // see header file for class documentation
+  // select and return the current data buffer
+  // buffer has to be released using ReleaseDataBuffer
   int iResult=-ENOENT;
   pBuffer=NULL;
   size=0;
   if (fCurrent<fBlockDescList.size()) {
-    if ((iResult=fBlockDescList[fCurrent].GetDataBuffer(pBuffer, size))>=0) {
-      fpBuffer=pBuffer;
+    if ((iResult=fBlockDescList[fCurrent].GetDataBuffer(fpBuffer, size))>=0) {
+      pBuffer=fpBuffer;
     }
   }
   return iResult;  
@@ -206,7 +226,7 @@ int AliHLTOUT::GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size
 
 int AliHLTOUT::ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer)
 {
-  // see header file for class documentation
+  // release data buffer, previously returned by GetDataBuffer
   int iResult=0;
   if (pBuffer==fpBuffer) {
     fpBuffer=NULL;
@@ -218,7 +238,7 @@ int AliHLTOUT::ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer)
 
 AliHLTModuleAgent* AliHLTOUT::GetAgent()
 {
-  // see header file for class documentation
+  // get module agent of the selected data block
   AliHLTModuleAgent* pAgent=NULL;
   pAgent=FindHandlerDesc(fCurrent);
   return pAgent;
@@ -226,7 +246,7 @@ AliHLTModuleAgent* AliHLTOUT::GetAgent()
 
 AliHLTOUTHandler* AliHLTOUT::GetHandler()
 {
-  // see header file for class documentation
+  // get HLTOUT handler of the selected data block
   AliHLTOUTHandler* pHandler=NULL;
   pHandler=FindHandlerDesc(fCurrent);
   return pHandler;
@@ -234,14 +254,14 @@ AliHLTOUTHandler* AliHLTOUT::GetHandler()
 
 int AliHLTOUT::WriteESD(const AliHLTUInt8_t* /*pBuffer*/, AliHLTUInt32_t /*size*/, AliHLTComponentDataType /*dt*/, AliESDEvent* /*tgtesd*/) const
 {
-  // see header file for class documentation
+  // default function, child must overload
   fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "WriteESD" , __FILE__ , __LINE__ , "method not implemented in base class");
   return -ENOSYS;
 }
 
 int AliHLTOUT::AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc)
 {
-  // see header file for class documentation
+  // add new block descriptor
   if (!CheckStatusFlag(kCollecting)) return -EPERM;
   int iResult=0;
   fBlockDescList.push_back(desc);
@@ -250,7 +270,8 @@ int AliHLTOUT::AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc)
 
 AliHLTOUT::AliHLTOUTByteOrder AliHLTOUT::CheckByteOrder()
 {
-  // see header file for class documentation
+  // check the byte order of the current data block
+  // NOTE: this functionality has not been tested and development was hardly finished
   if (fCurrent<fBlockDescList.size()) {
     SetStatusFlag(kByteOrderChecked);
     AliHLTOUT::AliHLTOUTByteOrder order=CheckBlockByteOrder(fBlockDescList[fCurrent].GetIndex());
@@ -261,7 +282,8 @@ AliHLTOUT::AliHLTOUTByteOrder AliHLTOUT::CheckByteOrder()
 
 int AliHLTOUT::CheckAlignment(AliHLTOUT::AliHLTOUTDataType type)
 {
-  // see header file for class documentation
+  // check alignment of the current data block
+  // NOTE: this functionality has not been tested and development was hardly finished
   if (fCurrent<fBlockDescList.size()) {
     SetStatusFlag(kAlignmentChecked);
     int alignment=CheckBlockAlignment(fBlockDescList[fCurrent].GetIndex(), type);
@@ -272,7 +294,7 @@ int AliHLTOUT::CheckAlignment(AliHLTOUT::AliHLTOUTDataType type)
 
 int AliHLTOUT::InitHandlers()
 {
-  // see header file for class documentation
+  // init handlers for all registered blocks
   int iResult=0;
   AliHLTOUTIndexList remnants;
   int iCount=0;
@@ -339,7 +361,7 @@ int AliHLTOUT::InitHandlers()
 
 int AliHLTOUT::InsertHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTOUTHandlerListEntry &entry)
 {
-  // see header file for class documentation
+  // insert handler into list, called from child implementations
   int iResult=0;
   AliHLTOUTHandlerListEntryVector::iterator element=list.begin();
   for (; element!=list.end();
@@ -356,7 +378,7 @@ int AliHLTOUT::InsertHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLT
 
 int AliHLTOUT::FillHandlerList(AliHLTOUTHandlerListEntryVector& list, AliHLTModuleAgent::AliHLTOUTHandlerType handlerType)
 {
-  // see header file for class documentation
+  // fill a list according to specified handler type
   int iResult=0;
   for (iResult=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec, handlerType);
        iResult>=0;
@@ -383,7 +405,7 @@ int AliHLTOUT::FillHandlerList(AliHLTOUTHandlerListEntryVector& list, AliHLTModu
 
 int AliHLTOUT::RemoveEmptyDuplicateHandlers(AliHLTOUTHandlerListEntryVector& list)
 {
-  // see header file for class documentation
+  // remove empty handlers from list
   int iResult=0;
   AliHLTOUTHandlerListEntryVector::iterator element=list.begin();
   while (element!=list.end()) {
@@ -407,7 +429,7 @@ int AliHLTOUT::RemoveEmptyDuplicateHandlers(AliHLTOUTHandlerListEntryVector& lis
 
 int AliHLTOUT::FindHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTModuleAgent::AliHLTOUTHandlerDesc desc)
 {
-  // see header file for class documentation
+  // find handler according to descriptor
   for (int i=0; i<(int)list.size(); i++) {
     if (list[i]==desc) return i;
   }
@@ -416,7 +438,7 @@ int AliHLTOUT::FindHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTMo
 
 int AliHLTOUT::InvalidateBlocks(AliHLTOUTHandlerListEntryVector& list)
 {
-  // see header file for class documentation
+  // invalidate all handlers in a list
   for (AliHLTOUTHandlerListEntryVector::iterator element=list.begin();
 	 element!=list.end();
 	 element++) {
@@ -427,7 +449,7 @@ int AliHLTOUT::InvalidateBlocks(AliHLTOUTHandlerListEntryVector& list)
 
 const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
 {
-  // see header file for class documentation
+  // get handler description
   if (blockIndex<fBlockDescList.size()) {
     return fBlockDescList[blockIndex].GetHandlerDesc();
   }
@@ -441,7 +463,7 @@ AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry()
   fpAgent(NULL),
   fBlocks()
 {
-  // see header file for class documentation
+  // default constructor
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry(AliHLTOUTHandler* pHandler, 
@@ -454,7 +476,7 @@ AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry(AliHLTOUTHandler
   fpAgent(pAgent),
   fBlocks()
 {
-  // see header file for class documentation
+  // constructor
   *fpHandlerDesc=handlerDesc;
   fBlocks.push_back(index);
 }
@@ -466,21 +488,21 @@ AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry(const AliHLTOUTH
   fpAgent(src.fpAgent),
   fBlocks()
 {
-  // see header file for class documentation
+  // copy constructor
   *fpHandlerDesc=*src.fpHandlerDesc;
   fBlocks.assign(src.fBlocks.begin(), src.fBlocks.end());
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry::~AliHLTOUTHandlerListEntry()
 {
-  // see header file for class documentation
+  // destructor
   if (fpHandlerDesc) delete fpHandlerDesc;
   fpHandlerDesc=NULL;
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::operator=(const AliHLTOUTHandlerListEntry& src)
 {
-  // see header file for class documentation
+  // assignment operator
   if (this==&src) return *this;  
   fpHandler=src.fpHandler;
   if (src.fpHandlerDesc)
@@ -492,13 +514,13 @@ AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::oper
 
 AliHLTUInt32_t AliHLTOUT::AliHLTOUTHandlerListEntry::operator[](int i) const
 {
-  // see header file for class documentation
+  // access operator
   return (int)fBlocks.size()>i?fBlocks[i]:AliHLTOUTInvalidIndex;
 }
 
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTOUTHandlerListEntry& entry) const
 {
-  // see header file for class documentation
+  // comparison operator
   if (entry.fpHandler!=fpHandler || fpHandler==NULL) return false;
   assert(entry.fpAgent==fpAgent);
   if (entry.fpAgent!=fpAgent) return false;
@@ -507,21 +529,21 @@ bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTOUTHandlerList
 
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTModuleAgent::AliHLTOUTHandlerType handlerType) const
 {
-  // see header file for class documentation
+  // comparison operator
   if (!fpHandlerDesc) return false;
   return *fpHandlerDesc==handlerType;
 }
 
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTModuleAgent::AliHLTOUTHandlerDesc desc) const
 {
-  // see header file for class documentation
+  // comparison operator
   if (!fpHandlerDesc) return false;
   return *fpHandlerDesc==desc;
 }
 
 void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTOUT::AliHLTOUTHandlerListEntry &desc)
 {
-  // see header file for class documentation
+  // add block index, a handler can serve multiple blocks
   AliHLTOUTIndexList::iterator element;
   for (element=desc.fBlocks.begin(); element!=desc.fBlocks.end(); element++) {
     AddIndex(*element);
@@ -530,13 +552,13 @@ void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTOUT::AliHLTOUTHandlerL
 
 void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index)
 {
-  // see header file for class documentation
+  // add block index, a handler can serve multiple blocks
   fBlocks.push_back(index);
 }
 
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::HasIndex(AliHLTUInt32_t index) const
 {
-  // see header file for class documentation
+  // check if handler serves the specified block
   AliHLTOUTIndexList::iterator element;
   for (unsigned int i=0; i<fBlocks.size(); i++) {
     if (fBlocks[i]==index) return true;
@@ -548,7 +570,7 @@ const AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::AliHLTOUTHandlerListEntry:
 
 AliHLTUInt64_t AliHLTOUT::ByteSwap64(AliHLTUInt64_t src)
 {
-  // see header file for class documentation
+  // swap a 64 bit number
   return ((src & 0xFFULL) << 56) | 
     ((src & 0xFF00ULL) << 40) | 
     ((src & 0xFF0000ULL) << 24) | 
@@ -561,7 +583,7 @@ AliHLTUInt64_t AliHLTOUT::ByteSwap64(AliHLTUInt64_t src)
 
 AliHLTUInt32_t AliHLTOUT::ByteSwap32(AliHLTUInt32_t src)
 {
-  // see header file for class documentation
+  // swap a 32 bit number
   return ((src & 0xFFULL) << 24) | 
     ((src & 0xFF00ULL) << 8) | 
     ((src & 0xFF0000ULL) >> 8) | 
@@ -570,7 +592,7 @@ AliHLTUInt32_t AliHLTOUT::ByteSwap32(AliHLTUInt32_t src)
 
 AliHLTOUT* AliHLTOUT::New(AliRawReader* pRawReader)
 {
-  // see header file for class documentation
+  // transparently create HLTOUT implementation for AliRawReader
   AliHLTOUT* instance=AliHLTMisc::LoadInstance((AliHLTOUT*)0, "AliHLTOUTRawReader", "libHLTrec.so");
   if (instance) {
     instance->SetParam(pRawReader);
@@ -580,7 +602,7 @@ AliHLTOUT* AliHLTOUT::New(AliRawReader* pRawReader)
 
 AliHLTOUT* AliHLTOUT::New(TTree* pDigitTree, int event)
 {
-  // see header file for class documentation
+  // transparently create HLTOUT implementation for digit tree
   AliHLTOUT* instance=AliHLTMisc::LoadInstance((AliHLTOUT*)0, "AliHLTOUTDigitReader", "libHLTrec.so");
   if (instance) {
     instance->SetParam(pDigitTree, event);
@@ -590,7 +612,7 @@ AliHLTOUT* AliHLTOUT::New(TTree* pDigitTree, int event)
 
 AliHLTOUT* AliHLTOUT::New(const char* filename, int event)
 {
-  // see header file for class documentation
+  // transparently create HLTOUT implementation for raw file
   AliHLTOUT* instance=AliHLTMisc::LoadInstance((AliHLTOUT*)0, "AliHLTOUTDigitReader", "libHLTrec.so");
   if (instance) {
     instance->SetParam(filename, event);
@@ -600,12 +622,13 @@ AliHLTOUT* AliHLTOUT::New(const char* filename, int event)
 
 void AliHLTOUT::Delete(AliHLTOUT* pInstance)
 {
-  // see header file for class documentation
+  // delete the HLTOUT instance
+  // check if the library is still there in order to have the
+  // destructor available
+
   if (!pInstance) return;
   if (pInstance==fgGlobalInstance) return;
 
-  // check if the library is still there in order to have the
-  // destructor available
   TClass* pCl1=TClass::GetClass("AliHLTOUTRawReader");
   TClass* pCl2=TClass::GetClass("AliHLTOUTDigitReader");
   if (!pCl1 && !pCl2) {
@@ -652,7 +675,7 @@ void AliHLTOUT::SetParam(const char* /*filename*/, int /*event*/)
 
 int AliHLTOUT::SelectDataBlock()
 {
-  // see header file for class documentation
+  // mark the current data block for processing
   int iResult=0;
   if (fCurrent>=fBlockDescList.size()) return 0;
   fBlockDescList[fCurrent].Select(true);
@@ -662,7 +685,7 @@ int AliHLTOUT::SelectDataBlock()
 
 int AliHLTOUT::SelectDataBlocks(const AliHLTOUTHandlerListEntry* pHandlerEntry)
 {
-  // see header file for class documentation
+  // mark all data blocks served by specified handler for processing
   int iResult=0;
   if (!pHandlerEntry) return 0;
 
@@ -698,21 +721,22 @@ int AliHLTOUT::SelectDataBlocks(const AliHLTOUTHandlerListEntry* pHandlerEntry)
 
 int AliHLTOUT::EnableBlockSelection()
 {
-  // see header file for class documentation
+  // enable block selection, in this mode only the blocks marked for
+  // processing can be accessed
   SetStatusFlag(kBlockSelection);
   return 0;
 }
 
 int AliHLTOUT::DisableBlockSelection()
 {
-  // see header file for class documentation
+  // disable block selection
   ClearStatusFlag(kBlockSelection);
   return 0;
 }
 
 int AliHLTOUT::ResetBlockSelection()
 {
-  // see header file for class documentation
+  // reset the 'selected' flag for all blocks
   for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
        block!=fBlockDescList.end();
        block++) {
@@ -723,7 +747,7 @@ int AliHLTOUT::ResetBlockSelection()
 
 int AliHLTOUT::MarkDataBlockProcessed()
 {
-  // see header file for class documentation
+  // mark the current data block as 'processed'
   int iResult=0;
   if (fCurrent>=fBlockDescList.size()) return 0;
   fBlockDescList[fCurrent].MarkProcessed();
@@ -732,7 +756,7 @@ int AliHLTOUT::MarkDataBlockProcessed()
 
 int AliHLTOUT::MarkDataBlocksProcessed(const AliHLTOUTHandlerListEntry* pHandlerDesc)
 {
-  // see header file for class documentation
+  // mark all data blocks served by handler as processed
   int iResult=0;
   if (!pHandlerDesc) return 0;
 
@@ -749,7 +773,8 @@ int AliHLTOUT::MarkDataBlocksProcessed(const AliHLTOUTHandlerListEntry* pHandler
 
 int AliHLTOUT::AddSubCollection(AliHLTOUT* pCollection)
 {
-  // see header file for class documentation
+  // add a sub-collection to the HLTOUT instance
+  // all blocks of the sub-collection are accessed transparently through the master instance
   int iResult=0;
   if (!pCollection) return 0;
 
@@ -779,7 +804,7 @@ int AliHLTOUT::AddSubCollection(AliHLTOUT* pCollection)
 
 int AliHLTOUT::ReleaseSubCollection(AliHLTOUT* pCollection)
 {
-  // see header file for class documentation
+  // release a sub-collection
   int iResult=0;
   if (!pCollection) return 0;
 
@@ -798,7 +823,8 @@ int AliHLTOUT::ReleaseSubCollection(AliHLTOUT* pCollection)
 
 int AliHLTOUT::Reset()
 {
-  // see header file for class documentation
+  // reset HLTOUT instance
+  // clears all blocks and handler descriptions
   int iResult=0;
   AliHLTOUTPVector subCollections;
   AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
@@ -848,7 +874,7 @@ const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTBlockDescriptor:
 
 TObject* AliHLTOUT::GetDataObject()
 {
-  // see header file for class documentation
+  // check if the current block encodes a ROOT object and expand it
   if (fpDataObject) {
     fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "GetDataObject" , __FILE__ , __LINE__ , "data object has not been released, potential memory leak");
     ReleaseDataBuffer(fpObjectBuffer);
@@ -868,7 +894,7 @@ TObject* AliHLTOUT::GetDataObject()
 
 int AliHLTOUT::ReleaseDataObject(TObject* pObject)
 {
-  // see header file for class documentation
+  // release a ROOT object previously expanded from the currentr data block
   if (!pObject) return -EINVAL;
   if (pObject!=fpDataObject) {
     fLog.LoggingVarargs(kHLTLogError, "AliHLTOUT", "GetDataObject" , __FILE__ , __LINE__ , "attempt to release wrong data object %p, expected %p", pObject, fpDataObject);
@@ -886,7 +912,7 @@ int AliHLTOUT::ReleaseDataObject(TObject* pObject)
 
 void AliHLTOUT::SetEventId(AliHLTUInt64_t id)
 {
-  // see header file for class documentation
+  // set event id
   if (fCurrentEventId!=kAliHLTVoidEventID && fCurrentEventId!=id) {
     fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "SetEventId" , __FILE__ , __LINE__ , "event id was already set to 0x%llx, setting now to 0x%llx", fCurrentEventId, id);
   }
