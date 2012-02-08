@@ -15,7 +15,7 @@ void RunAnalysisAODVertexingHF()
   //
 
 
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG2/FLOW/AliFlowCommon -I$ALICE_ROOT/PWG2/FLOW/AliFlowTasks -g"); 
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG/FLOW/Case -I$ALICE_ROOT/PWG/FLOW/Tasks -g"); 
   //
   TString trainName = "D2H";
   TString analysisMode = "grid"; // "local", "grid", or "proof"
@@ -189,7 +189,7 @@ void RunAnalysisAODVertexingHF()
   /*  taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
-  */ 
+    */  
     taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
@@ -198,7 +198,7 @@ void RunAnalysisAODVertexingHF()
     taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
-  
+
     taskName="AddTaskDs.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEDs *dsTask = AddTaskDs();
@@ -280,13 +280,14 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetAPIVersion("V1.1x");
    plugin->SetROOTVersion();
    plugin->SetAliROOTVersion();
-
+   plugin->SetNtestFiles(1);
    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddGoodRuns.C");
 
    // Declare input data to be processed.
    //************************************************
    // Set data search pattern for DATA
-   //************************************************   
+   //************************************************  
+   //Method 1: To create automatically xml through plugin  
    plugin->SetGridDataDir("/alice/data/2010/LHC10d"); // specify LHC period
    plugin->SetDataPattern("pass2/AOD018/*AliAOD.root"); // specify reco pass and AOD set
    plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
@@ -298,7 +299,13 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //totruns += AddGoodRuns(plugin,"LHC10c"); // specify LHC period
    totruns += AddGoodRuns(plugin,"LHC10d"); // specify LHC period
    plugin->SetNrunsPerMaster(totruns);
-   
+
+   // Method 2: Declare existing data files (e.g xml collections)
+
+   //plugin->AddDataFile("/alice/cern.ch/user/r/rbala/000168068_000170593.xml");
+   //  plugin->SetDataPattern("*AliAOD.root");
+   //  plugin->SetFriendChainName("./AliAOD.VertexingHF.root"); 
+
    //************************************************
    // Set data search pattern for MONTECARLO
    //************************************************
@@ -318,6 +325,8 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
    plugin->SetGridWorkingDir("myHFanalysis");
+   // Name of executable
+   plugin->SetExecutable("myHFanalysis");
    // Declare alien output directory. Relative to working directory.
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
    // Declare the analysis source files names separated by blancs. To be compiled runtime
