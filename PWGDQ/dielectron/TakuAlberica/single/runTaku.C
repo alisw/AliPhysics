@@ -1,6 +1,6 @@
 //char *gridMode="";
 char *gridMode = "full"; // "" for local
-char *workingDir = "takuv2c123456_2012_TEST";
+char *workingDir = "taku_LHC11h_2012_rev1";
 TString commonOutputFileName = Form("Results%s",workingDir);
 
 class AliAnalysisAlien;
