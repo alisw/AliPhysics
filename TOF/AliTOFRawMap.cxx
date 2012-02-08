@@ -111,14 +111,7 @@ AliTOFRawMap & AliTOFRawMap::operator=(const AliTOFRawMap & rawMap)
   fNtdc=rawMap.fNtdc;
   fNtdcChannel=rawMap.fNtdcChannel;
 
-  fRawData=rawMap.fRawData; // coverity: to be solved
-
-  /*
-  fRawData = new TClonesArray("AliTOFrawData");
-  for (Int_t ii=0; ii<rawMap.fRawMap->GetEntriesFast(); ii++)
-    fRawMap->AddLast(rawMap.fRawMap->UncheckedAt(ii));
-  */
-  //fRawData = TClonesArray(&rawMap.fRawMap);
+  *fRawData=*rawMap.fRawData; // coverity: to be solved
 
   fMaxIndex=fNtrm*fNtrmChain*fNtdc*fNtdcChannel;
   fRawMap = new Int_t[fMaxIndex];

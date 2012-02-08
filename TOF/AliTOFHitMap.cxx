@@ -223,13 +223,7 @@ AliTOFHitMap & AliTOFHitMap::operator = (const AliTOFHitMap & hitMap)
   fNpx=hitMap.fNpx;
   fNpz=hitMap.fNpz;
 
-  fSDigits=hitMap.fSDigits; // coverity: to be solved
-  /*
-  fSDigits = new TClonesArray("AliTOFSDigit");
-  for (Int_t ii=0; ii<hitMap.fSDigits->GetEntriesFast(); ii++)
-    fSDigits->AddLast(hitMap.fSDigits->UncheckedAt(ii));
-  */
-  //fSDigits = TClonesArray(&hitMap.fSDigits);
+  *fSDigits=*hitMap.fSDigits;
 
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
   fHitMap = new Int_t[fMaxIndex];

@@ -171,7 +171,7 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap *dcsAliasMap)
 
   if (!dcsAliasMap){
     Log("No DCS map found: TOF exiting from Shuttle");
-    if (fData){
+    if (fData) {
 	    delete fData;
 	    fData = 0;
     }
@@ -179,13 +179,18 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap *dcsAliasMap)
   }
   else {
 
+    if (!fData) {
+	Log("No DCSdata map initialized: TOF exiting from Shuttle");
+	return 0;// return error Code for DCS data map not initialized
+    }
+
     fData->SetFDRFlag(fFDRFlag);
   
     // The processing of the DCS input data is forwarded to AliTOFDataDCS
     resultDCSMap=fData->ProcessData(*dcsAliasMap);
     if(!resultDCSMap){
       Log("Some problems occurred while processing DCS data, TOF exiting from Shuttle");
-      if (fData){
+      if (fData) {
 	      delete fData;
 	      fData = 0;
       }
@@ -246,10 +251,15 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
   }
   else {
 
+    if (!fHVLVmaps) {
+	Log("No HVLVdata map initialized: TOF exiting from Shuttle");
+	return 200;// return error Code for HVLV data map not initialized
+    }
+
     fHVLVmaps->SetFDRFlag(fFDRFlag);
   
     // The processing of the DCS input data is forwarded to AliTOFDataDCS
-    //if (0) { // AdC
+ 
     resultDCSMap = fHVLVmaps->ProcessData(*dcsAliasMap);
     if (!resultDCSMap) {
       Log("Some problems occurred while processing DCS data, TOF exiting from Shuttle");
@@ -335,7 +345,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
       */
 
     }
-    //} // AdC
+
   }
 
 
