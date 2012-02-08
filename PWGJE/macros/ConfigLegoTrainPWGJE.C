@@ -37,7 +37,7 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
 
 
     AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral);    
-    AliAnalysisManager::SetGlobalInt("kNTrigger",4);    
+    AliAnalysisManager::SetGlobalInt("kNTrigger",1);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit1",AliVEvent::kMB);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit2",AliVEvent::kCentral);    
