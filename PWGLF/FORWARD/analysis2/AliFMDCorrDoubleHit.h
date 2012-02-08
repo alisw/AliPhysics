@@ -11,7 +11,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_corr
+ * @ingroup pwglf_forward_corr
  * 
  */
 #include <TObject.h>
@@ -35,7 +35,7 @@ class TH1D;
  *
  * These are generated from Monte-Carlo truth information. 
  *
- * @ingroup pwg2_forward_corr
+ * @ingroup pwglf_forward_corr
  * 
  */
 class AliFMDCorrDoubleHit : public TObject 

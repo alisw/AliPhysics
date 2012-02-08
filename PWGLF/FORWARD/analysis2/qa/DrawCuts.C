@@ -5,7 +5,7 @@
  * 
  * @brief  Draw the cuts used in the analysis
  * 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  * 
  */
 /** 
@@ -13,7 +13,7 @@
  * 
  * @param filename Input file name 
  *
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawCuts(const char* filename="forward.root")

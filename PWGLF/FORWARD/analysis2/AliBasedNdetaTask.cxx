@@ -709,7 +709,7 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
     return; 
   }
   
-  TFile* fin = TFile::Open(Form("$ALICE_ROOT/PWG2/FORWARD/corrections/"
+  TFile* fin = TFile::Open(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/"
 				"Normalization/normalizationHists_%s_%s.root",
 				type.Data(),snn.Data()));
   if(!fin) {

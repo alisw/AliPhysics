@@ -3,14 +3,14 @@
  * 
  * Scripts to draw energy loss fits from correction object file 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 /** 
  * Clear canvas 
  * 
  * @param c Canvas to clear 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 ClearCanvas(TCanvas* c)
@@ -25,9 +25,9 @@ ClearCanvas(TCanvas* c)
 void
 LoadLibraries()
 {
-  const char* test = gSystem->GetLibraries("PWG2forward2","D",false);
+  const char* test = gSystem->GetLibraries("PWGLFforward2","D",false);
   if (test && test[0] != '\0') return;
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 }
 
 /** 
@@ -46,7 +46,7 @@ LoadLibraries()
  * @param option    Drawing options 
  * @param tracklets Tracklets flag
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 DrawCorrCentralSecMap2(const char* fname, const char* option="colz", bool tracklets=true)

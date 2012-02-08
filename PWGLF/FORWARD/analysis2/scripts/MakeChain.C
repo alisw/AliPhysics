@@ -5,7 +5,7 @@
  * 
  * @brief  Script to generate a chain of files 
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 /** 
  * Check if a path points to a file 
@@ -14,7 +14,7 @@
  * 
  * @return True if the path points to a regular file 
  *
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 Bool_t
 IsFile(const char* path)
@@ -66,7 +66,7 @@ TestFile(const TString& name, const char* pattern=0)
  * @param pattern    Pattern that the file name must contain
  * @param recursive  Whether to scan recursively 
  *
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 void
 ScanDirectory(TSystemDirectory* dir, TChain* chain, 
@@ -144,7 +144,7 @@ ScanInputList(TChain* chain, const TString& path, const char* treeName=0)
  * 
  * @return Pointer to newly create chain, or null
  *
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 TChain*
 MakeChain(const char* what, const char* datadir, bool recursive=false)

@@ -5,7 +5,7 @@
  * @param min 
  * @param max 
  *
- * @ingroup pwg2_forward_scripts_tests
+ * @ingroup pwglf_forward_scripts_tests
  */
 void
 MakeIntegerAxis(Int_t& nBins, Double_t& min, Double_t& max)
@@ -25,12 +25,12 @@ MakeIntegerAxis(Int_t& nBins, Double_t& min, Double_t& max)
  * @param o 
  * @param useWeights 
  *
- * @ingroup pwg2_forward_scripts_tests
+ * @ingroup pwglf_forward_scripts_tests
  */
 void
 TestPoisson(Double_t o=.3, bool useWeights=false, bool correct=true)
 {
-  const char* load = "$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C";
+  const char* load = "$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C";
   gROOT->Macro(load);
   gROOT->GetInterpreter()->UnloadFile(gSystem->ExpandPathName(load));
   

@@ -1,7 +1,7 @@
 /**
- * @defgroup pwg2_forward_trains Trains
+ * @defgroup pwglf_forward_trains Trains
  * 
- * @ingroup pwg2_forward
+ * @ingroup pwglf_forward
  */
 /**
  * @file   TrainSetup.C
@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  * 
  */
 
@@ -117,7 +117,7 @@ class AliAnalysisManager;
  *
  * @verbatim 
  * > aliroot 
- * Root> gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+ * Root> gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
  * Root>                          "$ALICE_ROOT/ANALYSIS/macros",
  * Root> 			  gROOT->GetMacroPath()));
  * Root> gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
@@ -128,7 +128,7 @@ class AliAnalysisManager;
  * @endverbatim 
  * 
  * 
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  * 
  */
 struct TrainSetup
@@ -1795,7 +1795,7 @@ protected:
 void
 BuildTrainSetup()
 {
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
 			   "$ALICE_ROOT/ANALYSIS/macros",
 			   gROOT->GetMacroPath()));
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include");

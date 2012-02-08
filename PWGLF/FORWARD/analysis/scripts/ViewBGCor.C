@@ -4,7 +4,7 @@ ViewBGCor(const char* filename)
   // gSystem->Load("libANALYSIS");
   // gSystem->Load("libANALYSISalice");
   // gSystem->Load("libPWG0base");
-  // gSystem->Load("libPWG2forward");
+  // gSystem->Load("libPWGLFforward");
 
 
   TFile* file = TFile::Open(filename, "READ");

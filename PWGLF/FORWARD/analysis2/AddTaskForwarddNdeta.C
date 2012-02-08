@@ -7,7 +7,7 @@
  *        @f$\eta@f$ region
  * 
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
  * Create the Forward @f$ dN/d\eta@f$ analysis task 
@@ -22,7 +22,7 @@
  * 
  * @return Newly created and configured task
  *
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_dndeta
  */
 AliAnalysisTask*
 AddTaskForwarddNdeta(const char* trig     = "INEL", 
@@ -34,7 +34,7 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
 		     const char* mcanalysisfilename = "none")
 {
   // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
 
   // --- Analysis manager --------------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();

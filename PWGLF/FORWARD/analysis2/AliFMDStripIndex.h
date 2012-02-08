@@ -22,7 +22,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_mc
+ * @ingroup pwglf_forward_mc
  */
 
 // Struct to encode a strip address into one integer
@@ -39,7 +39,7 @@
  * Functions to encode/decode strip address from User ID in a
  * track-reference
  * 
- * @ingroup pwg2_forward_mc 
+ * @ingroup pwglf_forward_mc 
  */
 class AliFMDStripIndex
 {

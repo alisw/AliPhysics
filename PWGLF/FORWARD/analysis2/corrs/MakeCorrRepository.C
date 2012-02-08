@@ -2,7 +2,7 @@
  * 
  * 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 MakeCorrRepository()

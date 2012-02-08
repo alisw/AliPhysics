@@ -5,7 +5,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  * 
  */
 /**
@@ -15,7 +15,7 @@
  * directory up-front in your ROOT macro path, and edit it to suit your
  * needs.
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 void
 ForwardAODConfig(AliForwardMultiplicityBase* task)

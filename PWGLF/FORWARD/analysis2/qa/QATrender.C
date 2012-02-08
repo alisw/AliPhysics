@@ -5,7 +5,7 @@
  * 
  * @brief  Class to make the QA trending tree
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 #ifndef __CINT__
 # include <TFile.h>
@@ -52,7 +52,7 @@ class TVirtualPad;
 /** 
  * Class to make the QA trending tree
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct QATrender : public QABase
 {

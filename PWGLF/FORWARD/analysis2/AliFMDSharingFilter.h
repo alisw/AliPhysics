@@ -14,7 +14,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include <TNamed.h>
 #include <TH2.h>
@@ -49,8 +49,8 @@ class AliFMDFloatMap;
  *      hit strips for each vertex bin (if enabled - see Init method)
  * 
  *
- * @ingroup pwg2_forward_algo 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo 
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDSharingFilter : public TNamed
 {

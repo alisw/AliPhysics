@@ -2,7 +2,7 @@
 /**
  * Analysis train to do energy loss fits
  * 
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  */
 class MakeFMDELossTrain : public TrainSetup
 {
@@ -76,10 +76,10 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_eloss.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWG2forward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------

@@ -11,7 +11,7 @@ max_rotate=10
 prog=aliroot
 
 # Input (data and scripts)
-ana=$ALICE_ROOT/PWG2/FORWARD/analysis2
+ana=$ALICE_ROOT/PWGLF/FORWARD/analysis2
 esddir="."
 nev=-1
 
@@ -42,7 +42,7 @@ output1=forward.root
 output2=forward_dndeta.root
 outputs1="${output1} AliAOD.root event_stat.root EventStat_temp.root"
 outputs2="${output2}"
-gdb_script=$ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds
+gdb_script=$ALICE_ROOT/PWGLF/FORWARD/analysis2/gdb_cmds
 name=`date +analysis%Y%m%d_%H%M`
 pass2dir=./
 

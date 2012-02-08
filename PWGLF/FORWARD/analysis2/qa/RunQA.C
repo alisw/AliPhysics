@@ -5,7 +5,7 @@
  * 
  * @brief  Script to run the QATrender and QAPlotter in one go
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 /** 
  * Scan directory (and possibly sub-directories) for trending files
@@ -17,7 +17,7 @@
  * @return true on success
  * 
  * @deprecated Use the RunFileQA and RunFinalQA instead. 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 Bool_t ScanDirectory(TSystemDirectory* dir, TList* list, 
 		     bool recursive=false)
@@ -113,7 +113,7 @@ Bool_t ScanDirectory(TSystemDirectory* dir, TList* list,
  * 
  * @return List of files 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 TList*
 GetListOfFiles(const char* input=".")
@@ -170,16 +170,16 @@ GetListOfFiles(const char* input=".")
  * @param what  (expert) Flag of what to do 
  * @param max   (expert) Maximum number of files to process. 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 void
 RunQA(const char* input=".", Bool_t keep=true, Int_t runNo=-1,
       UShort_t what=0x3)
 {
-  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
-			   "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
+  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
+			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:%s",
 			   gROOT->GetMacroPath()));
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/PWG2/FORWARD/analysis2/qa");
+  gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2/qa");
   gSystem->Load("libGpad");
   gSystem->Load("libTree");
 

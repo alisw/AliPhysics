@@ -2,7 +2,7 @@ void SubmitSharingEffCorrection(const Char_t* filename="fmdana.root", Bool_t sto
 
   gSystem->Load("libANALYSIS"); 
   gSystem->Load("libANALYSISalice"); 
-  gSystem->Load("libPWG2forward"); 
+  gSystem->Load("libPWGLFforward"); 
   
   gStyle->SetTextFont(132);
   gStyle->SetLabelFont(132,"X");

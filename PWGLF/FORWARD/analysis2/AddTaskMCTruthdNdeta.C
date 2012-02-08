@@ -7,7 +7,7 @@
  *        @f$\eta@f$ region
  * 
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
  * Create the MCTruth @f$ dN/d\eta@f$ analysis task 
@@ -21,7 +21,7 @@
  * 
  * @return Newly created and configured task
  *
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_dndeta
  */
 AliAnalysisTask*
 AddTaskMCTruthdNdeta(const char* trig     = "INEL", 
@@ -32,7 +32,7 @@ AddTaskMCTruthdNdeta(const char* trig     = "INEL",
 		     Bool_t      cutEdges = false)
 {
   // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();

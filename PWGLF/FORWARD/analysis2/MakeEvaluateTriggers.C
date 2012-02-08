@@ -810,11 +810,11 @@ void MakeEvaluateTriggers(const char* esddir,
 			  Int_t       proof      = 0)
 {
   // --- Libraries to load -------------------------------------------
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
   if (proof> 0) { 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadPars.C");
     if (!LoadPars(proof)) { 
       Error("MakeAOD", "Failed to load PARs");
       return;
@@ -822,13 +822,13 @@ void MakeEvaluateTriggers(const char* esddir,
   }
   
   // --- Our data chain ----------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeChain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/MakeChain.C");
   TChain* chain = MakeChain("ESD", esddir,true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
   
   // --- Set the macro path ------------------------------------------
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
 			   "$ALICE_ROOT/ANALYSIS/macros",
 			   gROOT->GetMacroPath()));
 
@@ -862,10 +862,10 @@ void MakeEvaluateTriggers(const char* esddir,
 #endif
 
   // --- compile our code --------------------------------------------
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/PWG2/FORWARD/analysis2 "
+  gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2 "
 			  "-I${ALICE_ROOT}/ANALYSIS "
 			  "-I${ALICE_ROOT}/include -DBUILD=1");
-  gROOT->LoadMacro("${ALICE_ROOT}/PWG2/FORWARD/analysis2/MakeEvaluateTriggers.C++g");
+  gROOT->LoadMacro("${ALICE_ROOT}/PWGLF/FORWARD/analysis2/MakeEvaluateTriggers.C++g");
   
   // --- Make our object ---------------------------------------------
   EvaluateTrigger* task = new EvaluateTrigger("triggers");

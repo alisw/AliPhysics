@@ -1,7 +1,7 @@
 /** 
- * Load the libraries of PWG2/FORWARD/analsysis2
+ * Load the libraries of PWGLF/FORWARD/analsysis2
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 void
 LoadLibs()
@@ -11,7 +11,7 @@ LoadLibs()
   gROOT->LoadClass("AliESDEvent",          "libESD");
   gROOT->LoadClass("AliAnalysisManager",   "libANALYSIS");
   gROOT->LoadClass("AliAnalysisTaskSE",    "libANALYSISalice");
-  gROOT->LoadClass("AliAODForwardMult",    "libPWG2forward2");
+  gROOT->LoadClass("AliAODForwardMult",    "libPWGLFforward2");
 }
 //
 // EOF

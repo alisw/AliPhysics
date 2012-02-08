@@ -3,7 +3,7 @@ void SubmitFMDCorrections(const Char_t* filename, Bool_t store, Float_t energy, 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");
-  gSystem->Load("libPWG2forward");
+  gSystem->Load("libPWGLFforward");
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   

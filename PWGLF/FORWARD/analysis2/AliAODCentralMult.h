@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  * 
  */
 #include <TObject.h>
@@ -32,8 +32,8 @@ class TBrowser;
  * histogram and summing the event histograms in that histogram.  One
  * should of course also do proper book-keeping of the accepted event.
  *
- * @ingroup pwg2_forward
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward
+ * @ingroup pwglf_forward_aod
  */
 class AliAODCentralMult : public TObject
 {

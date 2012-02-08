@@ -3,7 +3,7 @@ TestTaskIO(bool read=false)
 {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG2forward.so");
+  gSystem->Load("libPWGLFforward.so");
 
   TFile* file = TFile::Open("task.root", (read ? "READ" : "RECREATE"));
 
