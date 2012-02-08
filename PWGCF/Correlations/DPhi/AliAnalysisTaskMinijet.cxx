@@ -810,7 +810,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDRecMcProp( vector<Float_t> &ptArray,  
     }
 
     //count tracks, if available, use mc particle properties
-    if(vtrack->GetLabel()<0){
+    if(vtrack->GetLabel()<=0){
       if (TMath::Abs(track->Eta())<fEtaCut && track->Pt()>fPtMin && track->Pt()<fPtMax){
 	ptArray.push_back(track->Pt());
 	etaArray.push_back(track->Eta());
@@ -1063,7 +1063,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Fl
 
     //use only tracks from primaries
     if(fAnalysePrimOnly){
-      if(vtrack->GetLabel()<0)continue;
+      if(vtrack->GetLabel()<=0)continue;
       if(!(static_cast<AliAODMCParticle*>(mcArray->At(vtrack->GetLabel()))->IsPhysicalPrimary()))continue;
     }
     
@@ -1157,7 +1157,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
    
     //use only tracks from primaries
     if(fAnalysePrimOnly){
-      if(vtrack->GetLabel()<0)continue;
+      if(vtrack->GetLabel()<=0)continue;
       if(!(static_cast<AliAODMCParticle*>(mcArray->At(vtrack->GetLabel()))->IsPhysicalPrimary()))continue;
     }
 
@@ -1167,7 +1167,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
       nAcceptedTracks++;
 
       //save track properties in vector
-      if(vtrack->GetLabel()<0){ //fake tracks before "label<0", but crash in AOD079 // what is the meaning of label 0
+      if(vtrack->GetLabel()<=0){ //fake tracks before "label<0", but crash in AOD079 // what is the meaning of label 0
 	// 	Printf("Fake track");
 	// 	continue;
 	ptArray.push_back(track->Pt());
