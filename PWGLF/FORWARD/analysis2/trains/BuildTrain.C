@@ -31,6 +31,7 @@ BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
   
   // --- Setup include path ------------------------------------------
   gSystem->AddIncludePath(Form("-I%s", fwd2Path));
+  gSystem->AddIncludePath(Form("-I%s/trains", fwd2Path));
   gSystem->AddIncludePath(Form("-I%s", aliPath));
   gSystem->AddIncludePath(Form("-I%s/include", aliPath));
 

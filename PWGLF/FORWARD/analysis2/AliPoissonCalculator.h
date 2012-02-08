@@ -4,6 +4,7 @@
 class TH2D;
 class TH1D;
 class TBrowser;
+class TAxis;
 
 /** 
  * A class to calculate the multiplicity in @f$(\eta,\varphi)@f$ bins
@@ -44,7 +45,7 @@ public:
    * 
    */
   AliPoissonCalculator(const char*/*, UShort_t d, Char_t r*/);
-  /** 
+  /**
    * Copy constructor
    * 
    * @param o Object to copy from
@@ -88,6 +89,13 @@ public:
    * @param yLumping If larger than 0, set the phi lumping to this
    */
   void Init(Int_t xLumping=-1, Int_t yLumping=-1);
+  
+  /** 
+   * Initialize this object.  
+   * 
+   * Also book the cache histograms 
+   */
+  void Define(const TAxis& xaxis, const TAxis& yaxis);
   /** 
    * Make output stuff for the passed list
    * 
@@ -103,10 +111,9 @@ public:
   /** 
    * Reset the cache histogram 
    * 
-   * @param xChannels number of channels in x 
-   * @param yChannels number of channels in y 
+   * @param base Base histogram 
    */
-  void Reset(UShort_t xChannels, UShort_t yChannels);
+  void Reset(const TH2D* base);
   /** 
    * Fill in an observation 
    * 
@@ -198,6 +205,16 @@ public:
   Int_t GetReducedYBin(Double_t y) const;
 
 protected:
+  /** 
+   * check that the lumping parameter makes sense  
+   * 
+   * @param which   Which axis
+   * @param nBins   Number of bins
+   * @param lumping Lumping 
+   * 
+   * @return The new value of the lumping 
+   */
+  Int_t CheckLumping(char which, Int_t nBins, Int_t lumping) const;
   /** 
    * Clean up allocated space 
    * 
