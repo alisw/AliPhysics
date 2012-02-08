@@ -1,5 +1,5 @@
 AliAnalysisTaskJetServices* serv = 0;
-Bool_t ConfigWithFlags();
+Bool_t ConfigWithFlagsJetServices();
 AliAnalysisTaskJetServices *AddTaskJetServices()
 {
    // Get the pointer to the existing analysis manager via the static access method.
@@ -35,7 +35,7 @@ AliAnalysisTaskJetServices *AddTaskJetServices()
    Bool_t bGood2 = false;
 
 
-   if(!ConfigWithFlags())return 0;
+   if(!ConfigWithFlagsJetServices())return 0;
    serv->SetUsePhysicsSelection(kTRUE);
      
    // Create ONLY the output containers for the data produced by the task.
@@ -50,7 +50,7 @@ AliAnalysisTaskJetServices *AddTaskJetServices()
    return serv;
 }
 
-Bool_t ConfigWithFlags(){
+Bool_t ConfigWithFlagsJetServices(){
     
   Bool_t bGood1 = kFALSE;
   Bool_t bGood2 = kFALSE;
