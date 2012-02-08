@@ -169,38 +169,35 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   emcbranch->SetAddress(&fgEMCRecPoints);
   emcbranch->GetEntry(0);
-
-
-  // Trigger
-
-  TBranch *tbranch = digitsTree->GetBranch("TPHOS");
-  if (!tbranch) { 
-    AliError("can't get the branch with the PHOS trigger digits !");
-    return;
-  }
-
-  tbranch->SetAddress(&fgTriggerDigits);
-  tbranch->GetEntry(0);
-
-  AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("PHOS");
   
-  if (trgESD) {
-    trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
-
-    for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++) {
-      AliPHOSTriggerRawDigit* tdig = (AliPHOSTriggerRawDigit*)fgTriggerDigits->At(i);
-
-      Int_t mod,modX,modZ;
-      tdig->GetModXZ(mod,modX,modZ);
-
-      const Int_t relId[4] = {5-mod,0,modX+1,modZ+1};
-      Int_t absId;
+  
+  // Trigger
+  
+  TBranch *tbranch = digitsTree->GetBranch("TPHOS");
+  if (tbranch) { 
+    
+    tbranch->SetAddress(&fgTriggerDigits);
+    tbranch->GetEntry(0);
+    
+    AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("PHOS");
+    
+    if (trgESD) {
+      trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
       
-      fGeom->RelToAbsNumbering(relId,absId);
-      trgESD->Add(mod,absId,tdig->GetAmp(),0.,(Int_t*)NULL,0,0,0);
-    }
+      for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++) {
+	AliPHOSTriggerRawDigit* tdig = (AliPHOSTriggerRawDigit*)fgTriggerDigits->At(i);
+	
+	Int_t mod,modX,modZ;
+	tdig->GetModXZ(mod,modX,modZ);
+	
+	const Int_t relId[4] = {5-mod,0,modX+1,modZ+1};
+	Int_t absId;
+	
+	fGeom->RelToAbsNumbering(relId,absId);
+	trgESD->Add(mod,absId,tdig->GetAmp(),0.,(Int_t*)NULL,0,0,0);
+      }
+    }  
   }
- 
   
 //   //#########Calculate trigger and set trigger info###########
 
