@@ -120,6 +120,13 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     fhAnglePairMassLocMaxN[i] = 0;
   }
   
+  for(Int_t i = 0; i < 4; i++)
+  {
+    fhMassM02NLocMax1Ebin[i] = 0 ;
+    fhMassM02NLocMax2Ebin[i] = 0 ;
+    fhMassM02NLocMaxNEbin[i] = 0 ;
+  }
+  
   InitParameters();
   
 }
@@ -420,8 +427,33 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       
     } // matched, not matched
     
+    
   } // MC particle list
  
+  for(Int_t i = 0; i < 4; i++)
+  {  
+    fhMassM02NLocMax1Ebin[i]  = new TH2F(Form("hMassM02NLocMax1Ebin%d",i),
+                                        Form("Invariant mass of 2 highest energy cells #lambda_{0}^{2}, E bin %d",i),
+                                        ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassM02NLocMax1Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassM02NLocMax1Ebin[i]->SetXTitle("#lambda_{0}^{2}");
+    outputContainer->Add(fhMassM02NLocMax1Ebin[i]) ;   
+    
+    fhMassM02NLocMax2Ebin[i]  = new TH2F(Form("hMassM02NLocMax2Ebin%d",i),
+                                        Form("Invariant mass of 2 local maxima cells #lambda_{0}^{2}, E bin %d",i),
+                                        ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassM02NLocMax2Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassM02NLocMax2Ebin[i]->SetXTitle("#lambda_{0}^{2}");
+    outputContainer->Add(fhMassM02NLocMax2Ebin[i]) ;   
+    
+    fhMassM02NLocMaxNEbin[i]  = new TH2F(Form("hMassM02NLocMaxNEbin%d",i),
+                                        Form("Invariant mass of N>2 local maxima cells vs #lambda_{0}^{2}, E bin %d",i),
+                                        ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassM02NLocMaxNEbin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassM02NLocMaxNEbin[i]->SetXTitle("#lambda_{0}^{2}");
+    outputContainer->Add(fhMassM02NLocMaxNEbin[i]) ;   
+  }  
+  
   for(Int_t i = 0; i < n; i++)
   {  
     fhTrackMatchedDEtaLocMax1[i]  = new TH2F
@@ -813,6 +845,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassM02NLocMax1[0]  [matched]->Fill(l0,  mass ); 
       }
       
+      if(en > 6  && en <= 10) fhMassM02NLocMax1Ebin[0]->Fill(l0,  mass ); 
+      if(en > 10 && en <= 15) fhMassM02NLocMax1Ebin[1]->Fill(l0,  mass ); 
+      if(en > 15 && en <= 20) fhMassM02NLocMax1Ebin[2]->Fill(l0,  mass ); 
+      if(en > 20)             fhMassM02NLocMax1Ebin[3]->Fill(l0,  mass ); 
+
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax1[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax1[0][matched]->Fill(en,l0);
       else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax1[0][matched]->Fill(en,l0);
@@ -829,6 +866,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
       }
       
+      if(en > 6  && en <= 10) fhMassM02NLocMax2Ebin[0]->Fill(l0,  mass ); 
+      if(en > 10 && en <= 15) fhMassM02NLocMax2Ebin[1]->Fill(l0,  mass ); 
+      if(en > 15 && en <= 20) fhMassM02NLocMax2Ebin[2]->Fill(l0,  mass ); 
+      if(en > 20)             fhMassM02NLocMax2Ebin[3]->Fill(l0,  mass );       
+      
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[0][matched]->Fill(en,l0);
       else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax2[0][matched]->Fill(en,l0);        
@@ -843,6 +885,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhAnglePairMassLocMaxN[matched]->Fill(mass,angle);
         fhMassM02NLocMaxN[0]  [matched]->Fill(l0  ,mass );
       }
+      
+      if(en > 6  && en <= 10) fhMassM02NLocMaxNEbin[0]->Fill(l0,  mass ); 
+      if(en > 10 && en <= 15) fhMassM02NLocMaxNEbin[1]->Fill(l0,  mass ); 
+      if(en > 15 && en <= 20) fhMassM02NLocMaxNEbin[2]->Fill(l0,  mass ); 
+      if(en > 20)             fhMassM02NLocMaxNEbin[3]->Fill(l0,  mass );       
       
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMaxN[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMaxN[0][matched]->Fill(en,l0);
