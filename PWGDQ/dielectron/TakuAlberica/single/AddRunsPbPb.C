@@ -35,7 +35,7 @@ void AddRunsPbPb(AliAnalysisAlien* plugin,bool onAOD=false) {
   // for(int ir=0; ir!=41; ++ir){
   //     plugin->AddRunNumber( FieldMM[ir] );
   //   }
-  for(int ir=0; ir!=46; ++ir){
+  for(int ir=0; ir!=45; ++ir){
     plugin->AddRunNumber( FieldPP[ir] );
   }
   
