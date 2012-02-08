@@ -7,9 +7,6 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TList.h>
-#include <ANALYSIS/AliAnalysisManager.h>
-#include <ANALYSIS/AliMultiInputEventHandler.h>
-#include <STEER/AOD/AliAODHandler.h>
 #include <TStopwatch.h>
 #endif
 
@@ -20,7 +17,7 @@ Bool_t RunALICE(TString anSrc = "grid",
                 Long64_t nEvents = 1e10,
                 Long64_t nSkip = 0,
                 TString dsName="",
-                TString alirsnliteManagers ="",
+                TString alirsnliteManagers ="AddAMRsn",
                 Bool_t useMultiHandler=kTRUE,
                 TString alirsnlitesrc ="$ALICE_ROOT",
                 TString alirsnlitetasks =""
@@ -90,6 +87,8 @@ Int_t LoadLibsBase(TString alirsnlitesrc) {
 
    gSystem->AddIncludePath(Form("-I\"%s/include\"", gSystem->ExpandPathName(alirsnlitesrc.Data())));
    gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName(alirsnlitesrc.Data())));
+
+   return 0;
 }
 
 Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE,Bool_t useMultiHandler=kTRUE) {
@@ -124,6 +123,8 @@ Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE
       aodHandler->SetOutputFileName("AliAOD.root");
       mgr->SetOutputEventHandler(aodHandler);
    }
+
+   return kTRUE;
 
 }
 

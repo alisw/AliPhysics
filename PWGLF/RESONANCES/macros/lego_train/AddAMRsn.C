@@ -34,11 +34,14 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    if (eventMixinPar) { AliAnalysisAlien::SetupPar("EventMixing"); myAdditionalLibs += " EventMixing.par"; }
    else { gSystem->Load("libEventMixing.so"); myAdditionalLibs += " libEventMixing.so"; }
 
-   if (rsnPar) { AliAnalysisAlien::SetupPar("PWG2resonances"); myAdditionalLibs += " PWG2resonances.par"; }
-   else { gSystem->Load("libPWG2resonances.so"); myAdditionalLibs += " libPWG2resonances.so"; }
-
+   TString rsnLibName = "PWGLFresonances";
+   if (gSystem->Getenv("ALICE_ROOT")) {
+      TString alirootVersion = gSystem->GetFromPipe("aliroot --version | awk '{print $3}'");
+      if (alirootVersion<"v5-02-19-AN" && alirootVersion.CompareTo("trunk")) rsnLibName = "PWG2resonances";
+      if (rsnPar) { AliAnalysisAlien::SetupPar(rsnLibName.Data()); myAdditionalLibs += Form(" %s.par",rsnLibName.Data()); }
+      else { gSystem->Load(Form("lib%s.so",rsnLibName.Data())); myAdditionalLibs += Form(" lib%s.so",rsnLibName.Data()); }
+   }
    analysisPlugin->SetAdditionalLibs(myAdditionalLibs.Data());
-
 
    AliMultiInputEventHandler *multiInputHandler = mgr->GetInputEventHandler();
    AliRsnInputHandler *rsnIH=0;

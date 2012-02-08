@@ -35,6 +35,7 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
    axisIM     ->SetBins(300, 0.9, 1.2);
+//   axisIM     ->SetBins(1000, 0.9, 1.9);
    axisPt     ->SetBins(120, 0.0, 12.0);
 
    // output: 2D histogram of inv. mass vs. pt
@@ -56,6 +57,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Bool_t valid;
    Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
    Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
+   Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
@@ -63,6 +65,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    /* IM resolution    */ Int_t resID  = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMassDiff, kTRUE);
    /* transv. momentum */ Int_t ptID   = taskRsnMini->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = taskRsnMini->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+   /* eta              */ Int_t etaID = taskRsnMini->CreateValue(AliRsnMiniValue::kEta, kFALSE);
 
 
    // use an array for more compact writing, which are different on mixing and charges
@@ -81,7 +84,9 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    if (isFullOutput) outputType = "SPARSE";
 
    Int_t nIM   = 300; Double_t minIM   = 0.9, maxIM =  1.2;
-   Int_t nPt   = 100; Double_t minPt   = 0.0, maxPt = 10.0;
+   Int_t nEta   = 200; Double_t minEta   = -1.0, maxEta =  1.0;
+//   Int_t nIM   = 1000; Double_t minIM   = 0.9, maxIM =  1.9;
+   Int_t nPt   = 120; Double_t minPt   = 0.0, maxPt = 12.0;
    Int_t nCent = 100; Double_t minCent = 0.0, maxCent = 100.0;
    Int_t nRes  = 200; Double_t maxRes  = 0.01;
 
@@ -114,8 +119,10 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       if (isFullOutput) {
          // axis Y: transverse momentum
          out->AddAxis(ptID, nPt, minPt, maxPt);
+
+         out->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
-         out->AddAxis(centID, nCent, minCent, maxCent);
+         if (!isPP) out->AddAxis(centID, nCent, minCent, maxCent);
       }
    }
 
@@ -139,8 +146,9 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       if (isFullOutput) {
          // axis Y: transverse momentum
          outRes->AddAxis(ptID, nPt, minPt, maxPt);
+         outRes->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
-         outRes->AddAxis(centID, nCent, minCent, maxCent);
+         if (!isPP) outRes->AddAxis(centID, nCent, minCent, maxCent);
       }
    }
 
@@ -163,8 +171,9 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       if (isFullOutput) {
          // axis Y: transverse momentum
          outMC->AddAxis(ptID, nPt, minPt, maxPt);
+         outMC->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
-         outMC->AddAxis(centID, nCent, minCent, maxCent);
+         if (!isPP) outMC->AddAxis(centID, nCent, minCent, maxCent);
       }
    }
 

@@ -1,10 +1,11 @@
 #ifndef __CINT__
 #include <Riostream.h>
+#include <TGrid.h>
+#include <TGridResult.h>
 #endif
 void RsnGridPlugin() {
 
    Bool_t valid = kTRUE;
-   Int_t idRsnTrain = AliAnalysisManager::GetGlobalInt("rsnTrainID",valid);
    TString dsConfig = AliAnalysisManager::GetGlobalStr("rsnTrainDSConfig",valid);
 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -13,18 +14,34 @@ void RsnGridPlugin() {
    AliAnalysisAlien *plugin = (AliAnalysisAlien *) mgr->GetGridHandler();
    if (!plugin) { Printf("Error[RsnGridPlugin] : plugin is null !!!"); return; }
 
+   // getting latest train id
    TString rsnTrainName = gSystem->BaseName(dsConfig.Data());
-   rsnTrainName.ReplaceAll(".txt",Form("/%03d",idRsnTrain));
+   rsnTrainName.ReplaceAll(".txt","");
 
-   plugin->SetGridWorkingDir(Form("RsnTrain/%s",rsnTrainName.Data()));
+   if (!gGrid) TGrid::Connect("alien://");
+   if (!gGrid) return;
+   TGridResult *r = gGrid->Query(Form("%s/RsnTrain/%s",gGrid->GetHomeDirectory(),rsnTrainName.Data()),"*/analysis.root");
+   TString s = r->GetKey(r->GetSize()-1,"lfn");
+   s.ReplaceAll("/analysis.root","");
+   s = gSystem->BaseName(s);
+   Int_t idRsnTrain = s.Atoi()+1;
+   rsnTrainName.Append(Form("/%03d",idRsnTrain));
+
+   TString rsnTrainWkDir = Form("RsnTrain/%s",rsnTrainName.Data());
+   Info("RsnGridPlugin()",Form("RSN Train directory : %s%s",gGrid->GetHomeDirectory(),rsnTrainWkDir.Data()));
+
+   plugin->SetGridWorkingDir(rsnTrainWkDir.Data());
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
 
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-30-03-1");
+   
+   TString rootver = AliAnalysisManager::GetGlobalStr("rsnLegoTrainROOTversion",valid);
+   plugin->SetROOTVersion(rootver.Data());
 
-   TString alirootVersion="v5-02-16-AN";
-   alirootVersion = gSystem->GetFromPipe("aliroot --version | awk '{print $3}'");
-
+   TString alirootVersion = AliAnalysisManager::GetGlobalStr("rsnLegoTrainAliROOTversion",valid);
+   if (alirootVersion.IsNull()) {
+      if (gSystem->Getenv("ALICE_ROOT")) alirootVersion = gSystem->GetFromPipe("aliroot --version | awk '{print $3}'");
+   }
    plugin->SetAliROOTVersion(alirootVersion.Data());
 
    plugin->SetExecutableCommand("aliroot -b -q");
@@ -38,6 +55,7 @@ void RsnGridPlugin() {
    plugin->SetSplitMode("se");
    plugin->SetNtestFiles(2);
    plugin->SetMergeViaJDL();
+   plugin->SetOverwriteMode(kFALSE);
    //    plugin->SetKeepLogs(kTRUE);
 
    RsnSetData(plugin,dsConfig,1000);

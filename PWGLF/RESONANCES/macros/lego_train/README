@@ -4,4 +4,4 @@ root 'RunALICE.C("proof","test","aod","",1e10,0,"my_local_data.txt","AddAMRsn")'
 
 root 'RunALICE.C("local","full","aod","",1e10,0,"my_local_data.txt","AddAMRsn")'
 
-root 'RunALICE.C("proof","full","aod","",1e10,0,"datasets/LHC11a_p3_SSD_AOD072.txt","AddAMRsn")'
+root 'RunALICE.C("proof","full","aod","",1e10,0,"datasets-proof/LHC11a_p3_SSD_AOD072.txt","AddAMRsn")'

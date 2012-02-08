@@ -20,8 +20,8 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
 
    Printf("AddRsnDaughterCutsPhi2010 Option : %s",opt.Data());
 
-   AliRsnCutKaonForPhi2010 *cut = new AliRsnCutKaonForPhi2010("cutKaonPhi2010");
-   if (!opt.CompareTo("qualityonly")) cut->SetMode(AliRsnCutKaonForPhi2010::kQuality);
+   AliRsnCutKaonForPhi2010 *cut = new AliRsnCutKaonForPhi2010("cutKaonPhi2010",3.0,3.0,0.8);
+   if (opt.Contains("qualityonly")) cut->SetMode(AliRsnCutKaonForPhi2010::kQuality);
 
    if (opt.Contains("tpconly")) {
       cut->SetMode(AliRsnCutKaonForPhi2010::kOnlyTPC);
