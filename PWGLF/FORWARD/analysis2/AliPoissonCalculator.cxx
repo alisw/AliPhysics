@@ -6,13 +6,14 @@
 #include <TMath.h>
 #include <TList.h>
 #include <iostream>
+#include <TAxis.h>
 
 // 
 // A class to calculate the multiplicity in @f$(x,y)@f$ bins
 // using Poisson statistics. 
 //
-// The input is assumed to be binned in @f$(x,y)@f$ with the number of channels
-// input to the Reset member function.
+// The input is assumed to be binned in @f$(x,y)@f$ as described by
+// the 2D histogram passwd to the Reset member function.
 //
 // The data is grouped in to regions as defined by the parameters
 // fXLumping and fYLumping.  The total number of cells and number of
@@ -37,6 +38,18 @@
 // 
 //
 
+namespace {
+  const char* kBasicN = "basic";
+  const char* kEmptyN = "empty";
+  const char* kTotalN = "total";
+  const char* kBasicT = "Basic number of hits";
+  const char* kEmptyT = "Empty number of bins/region";
+  const char* kTotalT = "Total number of bins/region";
+}
+
+
+
+
 //____________________________________________________________________
 AliPoissonCalculator::AliPoissonCalculator()
   : TNamed(),
@@ -56,7 +69,7 @@ AliPoissonCalculator::AliPoissonCalculator()
 }
 
 //____________________________________________________________________
-AliPoissonCalculator::AliPoissonCalculator(const char*/*, UShort_t d, Char_t r*/)
+AliPoissonCalculator::AliPoissonCalculator(const char*)
   : TNamed("poissonCalculator", "Calculate N_ch using Poisson stat"),
     fXLumping(32), 
     fYLumping(4), 
@@ -86,7 +99,7 @@ AliPoissonCalculator::AliPoissonCalculator(const AliPoissonCalculator& o)
     fCorr(0)
 {
   Init();
-//  Reset();
+  Reset(o.fBasic);
 }
 
 //____________________________________________________________________
@@ -117,7 +130,7 @@ AliPoissonCalculator::operator=(const AliPoissonCalculator& o)
   fYLumping = o.fYLumping;
   CleanUp();
   Init();
- // Reset();
+  Reset(o.fBasic);
   return *this;
 }
 
@@ -134,11 +147,38 @@ AliPoissonCalculator::Init(Int_t xLumping, Int_t yLumping)
   //Create diagnostics if void
   if (fEmptyVsTotal) return;
   
-  MakeOutput();
-  
-  
+  MakeOutput();  
 }
- //____________________________________________________________________
+//____________________________________________________________________
+void
+AliPoissonCalculator::Define(const TAxis& xaxis, const TAxis& yaxis)
+{
+  // 
+  // Initialize 
+  // 
+  const Double_t* xBins = xaxis.GetXbins()->GetArray();
+  const Double_t* yBins = yaxis.GetXbins()->GetArray();
+  Int_t           nX    = xaxis.GetNbins();
+  Int_t           nY    = yaxis.GetNbins();
+  Double_t        lX    = xaxis.GetXmin();
+  Double_t        hX    = xaxis.GetXmax();
+  Double_t        lY    = yaxis.GetXmin();
+  Double_t        hY    = yaxis.GetXmax();
+  
+  if (xBins) { 
+    if (yBins) fBasic = new TH2D(kBasicN, kBasicT, nX, xBins, nY, yBins);
+    else       fBasic = new TH2D(kBasicN, kBasicT, nX, xBins, nY, lY, hY);
+  }
+  else { 
+    if (yBins) fBasic = new TH2D(kBasicN, kBasicT, nX, lX, hX, nY, yBins);
+    else       fBasic = new TH2D(kBasicN, kBasicT, nX, lX, hX, nY, lY, hY);
+  }
+  fBasic->SetXTitle(xaxis.GetTitle());
+  fBasic->SetYTitle(yaxis.GetTitle());
+
+  Reset(fBasic);
+}
+//____________________________________________________________________
 void AliPoissonCalculator::MakeOutput() {
 
   Int_t n = fXLumping * fYLumping + 1;
@@ -205,43 +245,63 @@ AliPoissonCalculator::SetLumping(UShort_t nx, UShort_t ny)
 }
 
 //____________________________________________________________________
+Int_t
+AliPoissonCalculator::CheckLumping(char which, Int_t nBins, Int_t lumping) const
+{
+  if ((nBins % lumping) == 0) return lumping;
+  Int_t l = lumping;
+  do { 
+    l--;
+  } while (l > 0 && ((nBins % l) != 0));
+  Warning("CheckLumping", "%c lumping %d is not a divisor of %d, set to %d", 
+	  which, lumping, nBins, l);
+  return l;
+}
+
+//____________________________________________________________________
 void
-AliPoissonCalculator::Reset(UShort_t xChannels, UShort_t yChannels)
+AliPoissonCalculator::Reset(const TH2D* base)
 {
   // 
   // Reset histogram 
   // 
-  
   if (fBasic && fTotal && fEmpty) {
     fBasic->Reset();
     fTotal->Reset();
     fEmpty->Reset();
     return;
   }
-  Int_t    nXF   = xChannels;
-  Int_t    nX    = nXF / fXLumping;
-  Double_t xMin  = -0.5;
-  Double_t xMax  = nXF - 0.5;
-  Int_t    nYF   = yChannels;
+
+  if (!base) return;
+
+  Int_t    nXF   = base->GetNbinsX();
+  Double_t xMin  = base->GetXaxis()->GetXmin();
+  Double_t xMax  = base->GetXaxis()->GetXmax();
+  Int_t    nYF   = base->GetNbinsY();
+  Double_t yMin  = base->GetYaxis()->GetXmin();
+  Double_t yMax  = base->GetYaxis()->GetXmax();
+
+  fXLumping = CheckLumping('X', nXF, fXLumping);
+  fYLumping = CheckLumping('Y', nYF, fYLumping);
+  
   Int_t    nY    = nYF / fYLumping;
-  Double_t yMin  = -0.5;
-  Double_t yMax  = nYF - 0.5;
+  Int_t    nX    = nXF / fXLumping;
 
-  fBasic = new TH2D("basic", "basic number of hits",
-		    nX, xMin, xMax, nY, yMin, yMax);
-  fBasic->SetTitle("Basic number of hits");
-  fBasic->SetDirectory(0);
-  fBasic->Sumw2();
+  if (fBasic != base) { 
+    fBasic = static_cast<TH2D*>(base->Clone(kBasicN));
+    fBasic->SetTitle(kBasicT);
+    fBasic->SetDirectory(0);
+    fBasic->Sumw2();
+  }
 
-  fTotal = new TH2D("total", "Total number of bins/region",
-		    nX, xMin, xMax, nY, yMin, yMax);
+  fTotal = new TH2D(kTotalN, kTotalT, nX, xMin, xMax, nY, yMin, yMax);
   fTotal->SetDirectory(0);
   fTotal->SetXTitle(fBasic->GetXaxis()->GetTitle());
   fTotal->SetYTitle(fBasic->GetYaxis()->GetTitle());
   fTotal->Sumw2();
     
-  fEmpty = static_cast<TH2D*>(fTotal->Clone("empty"));
-  fEmpty->SetTitle("Empty number of bins/region");
+  fEmpty = static_cast<TH2D*>(fTotal->Clone(kEmptyN));
+  fEmpty->SetTitle(kEmptyT);
   fEmpty->SetDirectory(0);
   // fEmpty->Sumw2();
 }

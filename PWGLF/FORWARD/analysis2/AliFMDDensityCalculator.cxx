@@ -318,7 +318,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	return false;
       }
       // rh->fPoisson.SetObject(d,r,vtxbin,cent);
-      rh->fPoisson.Reset(nt, ns);
+      rh->fPoisson.Reset(0);
       // rh->ResetPoissonHistos(h, fEtaLumping, fPhiLumping);
       
       for (UShort_t s=0; s<ns; s++) { 
@@ -367,8 +367,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       if ( fUsePoisson) h->Reset();
       
       TH2D* poisson = rh->fPoisson.Result();
-      for (Int_t t=0; t <= poisson->GetNbinsX(); t++) { 
-	for (Int_t s=0; s<= poisson->GetNbinsY(); s++) { 
+      for (Int_t t=0; t < poisson->GetNbinsX(); t++) { 
+	for (Int_t s=0; s < poisson->GetNbinsY(); s++) { 
 	  
 	  Double_t poissonV = poisson->GetBinContent(t+1,s+1);
 	  Double_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
@@ -825,9 +825,6 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
     o->fPoisson.SetLumping(fEtaLumping, fPhiLumping);
-    o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
-    o->fPoisson.GetMean()->SetFillColor(o->Color());
-    o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
     o->Output(d);
   }
 }
@@ -1093,9 +1090,21 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   d->Add(fDensity);
   d->Add(fELossVsPoisson);
   fPoisson.Output(d);
+  fPoisson.GetOccupancy()->SetFillColor(Color());
+  fPoisson.GetMean()->SetFillColor(Color());
+  fPoisson.GetOccupancy()->SetFillColor(Color());
   d->Add(fELoss);
   d->Add(fELossUsed);
-  
+
+  Bool_t inner = (fRing == 'I' || fRing == 'i');
+  Int_t nStr = inner ? 512 : 256;
+  Int_t nSec = inner ?  20 :  40;
+  TAxis x(nStr, -.5, nStr-.5);
+  TAxis y(nSec, -.5, nSec-.5);
+  x.SetTitle("strip");
+  y.SetTitle("sector");
+  fPoisson.Define(x, y);
+
   TParameter<double>* cut = new TParameter<double>("cut", fMultCut);
   d->Add(cut);
 }
