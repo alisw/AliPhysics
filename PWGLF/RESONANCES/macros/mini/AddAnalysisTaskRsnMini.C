@@ -15,6 +15,9 @@
 Bool_t usePhi   = 1;
 Bool_t useKStar = 1;
 
+ //set to kTRUE if using data AOD049 - needed to enable centrality patch
+Bool_t isAOD049 = 0;
+
 AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMini
 (
    Bool_t      isMC,
@@ -32,6 +35,9 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMini
 
    // create the task and connect with physics selection
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask("RSN", isMC);
+   if (isAOD049 && !isMC && !isPP){
+     task->SetUseCentralityPatch(kTRUE);
+   }
    mgr->AddTask(task);
    
    // settings

@@ -21,7 +21,7 @@ void runPluginProof
    const char *outName     = "proof.root",
    const char *macroPath   = ".",
    const char *testFile    = "file-collections/ESD_LHC10d1.txt",
-   const char *addLibs     = "libEventMixing.so PWG2resonances.par",
+   const char *addLibs     = "libEventMixing.so PWGLFresonances.par",
    const char *addPars     = ""
 )
 {
@@ -60,7 +60,7 @@ void runPluginProof
    PluginSetup::addPar  = addPars;
    
    // additional modalities
-   PluginSetup::aliVersion = "v4-21-26-AN";
+   PluginSetup::aliVersion = "v5-02-19-AN";
    
    // create the plugin (need to know if we want tender)
    if (!PluginSetup::CreatePlugin()) return;
