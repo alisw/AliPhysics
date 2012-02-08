@@ -130,7 +130,7 @@ void AliRsnValue::SetBins(Double_t min, Double_t max, Double_t step)
 //
 
    Double_t dblNbins = TMath::Abs(max - min) / step;
-   Int_t    intNbins = ((Int_t)dblNbins) + 1;
+   Int_t    intNbins = (Int_t) (dblNbins + 0.5);
 
    SetBins(intNbins, min, max);
 }
