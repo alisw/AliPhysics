@@ -84,8 +84,8 @@ void runPlugin
    PluginSetup::addPar  = addPars;
    
    // additional modalities
-   PluginSetup::rootVersion = "v5-28-00d";
-   PluginSetup::aliVersion = "v4-21-25-AN";
+   PluginSetup::rootVersion = "v5-30-06-1";
+   PluginSetup::aliVersion = "v5-02-19-AN";
    
    // create the plugin (need to know if we want tender)
    if (!PluginSetup::CreatePlugin()) return;
