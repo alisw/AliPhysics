@@ -27,7 +27,7 @@ public:
     virtual void Generate();
     virtual void SetPmax(Float_t pmax = 10.) {fPmax = pmax;}
     virtual void SetNominalCmsEnergy(Float_t energy = 14000.) {fCMS = energy;}
-    virtual void SetTarget(Float_t a=208, Float_t z=82) {fATarget = a; fZTarget = z;}
+    virtual void SetTarget(Int_t a = 208, Int_t z = 82) {fATarget = a; fZTarget = z;}
     virtual void SetTarget(TString s, Int_t a, Int_t z) {AliGenerator::SetTarget(s, a, z);}
     virtual void SetProtonDirection(Float_t dir = 1.);
     virtual void SetCharge(Int_t c = 1) {fCharge = c;}
@@ -57,8 +57,6 @@ public:
     Float_t  fMomentum;        // Target nucleus momentum
     Float_t  fBeta;            // Target nucleus beta
     Float_t  fPmax;            // Maximum slow nucleon momentum
-    Float_t  fATarget;         // Target nucleus mass number
-    Float_t  fZTarget;         // Target nucleus charge number
     Int_t    fCharge;          // Slow nucleon charge
     Float_t  fProtonDirection; // Direction of the proton
     Float_t  fTemperatureG;    // Source Temperature for gray nucleons

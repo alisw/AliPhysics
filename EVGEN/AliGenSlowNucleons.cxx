@@ -44,8 +44,6 @@ AliGenSlowNucleons::AliGenSlowNucleons()
      fMomentum(0.),
      fBeta(0.),
      fPmax (0.),
-     fATarget (0.),
-     fZTarget (0.),
      fCharge(0),
      fProtonDirection(1.),
      fTemperatureG(0.), 
@@ -74,8 +72,6 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
      fMomentum(0.),
      fBeta(0.),
      fPmax (10.),
-     fATarget (208.),
-     fZTarget (82.),
      fCharge(1),
      fProtonDirection(1.),
      fTemperatureG(0.04), 
@@ -118,7 +114,7 @@ void AliGenSlowNucleons::Init()
   // Initialization
   //
     Float_t kMass  = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
-    fMomentum = fCMS/2. * fZTarget / fATarget;
+    fMomentum = fCMS/2. * Float_t(fZTarget) / Float_t(fATarget);
     fBeta     = fMomentum / TMath::Sqrt(kMass * kMass + fMomentum * fMomentum);
     if (fDebug) {
 	fDebugHist1 = new TH2F("DebugHist1", "nu vs N_slow", 100, 0., 100., 20, 0., 20.);

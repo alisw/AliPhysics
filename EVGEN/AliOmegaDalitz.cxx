@@ -249,7 +249,7 @@ Int_t AliOmegaDalitz::ImportParticles(TClonesArray *particles)
 
 void AliOmegaDalitz::
 Rot(Double_t pin[3], Double_t pout[3], Double_t costheta, Double_t sintheta,
-    Double_t cosphi, Double_t sinphi)
+    Double_t cosphi, Double_t sinphi) const
 {
 // Perform rotation
   pout[0] = pin[0]*costheta*cosphi-pin[1]*sinphi+pin[2]*sintheta*cosphi;

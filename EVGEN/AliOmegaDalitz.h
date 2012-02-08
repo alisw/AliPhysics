@@ -40,17 +40,19 @@ class AliOmegaDalitz : public AliDecayer
     virtual void    Decay(TClonesArray* array);
     virtual const   TLorentzVector* Products() const {return fProducts;}
     virtual void    Copy(TObject&) const;
- private:
-    virtual void    Rot(Double_t pin[3], Double_t pout[3],
-			Double_t costheta, Double_t sintheta,
-			Double_t cosphi, Double_t sinphi);
-    AliOmegaDalitz(const AliOmegaDalitz &dalitz);
-    AliOmegaDalitz & operator=(const AliOmegaDalitz & rhs);
     
  protected:
     TH1F*           fEPMass;       // Histogram for electron pair mass
     TH1F*           fMPMass;       // Histogram for muon pair mass
     TLorentzVector  fProducts[3];  // Decay products
+
+ private:
+    virtual void    Rot(Double_t pin[3], Double_t pout[3],
+			Double_t costheta, Double_t sintheta,
+			Double_t cosphi, Double_t sinphi) const;
+    AliOmegaDalitz(const AliOmegaDalitz &dalitz);
+    AliOmegaDalitz & operator=(const AliOmegaDalitz & rhs);
+    
     ClassDef(AliOmegaDalitz, 1) // AliDecayer implementation for omega Dalitz
 };
 
