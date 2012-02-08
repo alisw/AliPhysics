@@ -84,6 +84,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
   Float_t GetTrueImpactParameter(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const;
+  Float_t GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const;
 
   enum {kMaxPtBins=20};
 
