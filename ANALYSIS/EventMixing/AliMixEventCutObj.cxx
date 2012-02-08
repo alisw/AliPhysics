@@ -13,6 +13,7 @@
 #include "AliAODEvent.h"
 #include "AliMultiplicity.h"
 #include "AliAODVertex.h"
+#include "AliEventplane.h"
 
 #include "AliMixEventCutObj.h"
 
@@ -193,11 +194,21 @@ Double_t AliMixEventCutObj::GetValue(AliESDEvent *ev)
          else AliFatal("esd->GetMultiplicity() is null");
          break;
       case kCentrality:
+      {
          AliCentrality *c = ev->GetCentrality();
          if (!c) AliFatal("esd->GetCentrality() is null");
          if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
          return c->GetCentralityPercentile(fCutOpt.Data());
-
+      }
+      case kEventPlane:
+      {
+         AliEventplane *evtPlane = new AliEventplane();
+         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
+         if (!fCutOpt.IsDigit()) AliFatal("fCutOpt is not a digit string");
+         Double_t val = evtPlane->GetEventplane("V0",ev,fCutOpt.Atoi());
+         delete evtPlane;
+         return val;
+      }
    }
 
    AliFatal("Mixing Cut TYPE is not supported for ESD");
@@ -225,10 +236,21 @@ Double_t AliMixEventCutObj::GetValue(AliAODEvent *ev)
       case kNumberV0s:
          return ev->GetNumberOfV0s();
       case kCentrality:
+      {
          AliCentrality *c = ev->GetCentrality();
-         if (!c) AliFatal("aod->GetCentrality() is null");
+         if (!c) AliFatal("esd->GetCentrality() is null");
          if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
          return c->GetCentralityPercentile(fCutOpt.Data());
+      }
+      case kEventPlane:
+      {
+         AliEventplane *evtPlane = new AliEventplane();
+         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
+         if (!fCutOpt.IsDigit()) AliFatal("fCutOpt is not a digit string");
+         Double_t val = evtPlane->GetEventplane("V0",ev,fCutOpt.Atoi());
+         delete evtPlane;
+         return val;
+      }
    }
 
    AliFatal("Mixing Cut TYPE is not supported for AOD");
@@ -254,6 +276,8 @@ const char *AliMixEventCutObj::GetCutName(Int_t index) const
          return "NumberTracklets";
       case kCentrality:
          return Form("kCentrality[%s]", fCutOpt.Data());
+      case kEventPlane:
+         return Form("EventPlane[%s]", fCutOpt.Data());
    }
    return "";
 }

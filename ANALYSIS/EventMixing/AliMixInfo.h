@@ -33,7 +33,7 @@ public:
 
    void Add(AliMixInfo *mi);
 
-   void SetOutputList(TList * const list) { fHistogramList = list; }
+   void SetOutputList(TList *const list) { fHistogramList = list; }
    void CreateHistogram(EInfoHistorgramType type, Int_t nbins, Int_t min, Int_t max);
    void FillHistogram(AliMixInfo::EInfoHistorgramType type, Int_t value);
    const char *GetNameHistogramByType(Int_t index) const;
@@ -44,7 +44,7 @@ public:
    AliMixEventPool *GetEventPool(const char *name);
 
 
-   static void DynamicExec(AliMixInfo*const mixInfo);
+   static void DynamicExec(AliMixInfo *const mixInfo);
 private:
 
    TList     *fHistogramList;  // histogram list

@@ -21,7 +21,7 @@ class AliMixEventPool : public TNamed {
 public:
    AliMixEventPool(const char *name = "mixEventPool", const char *title = "Mix event pool");
    AliMixEventPool(const AliMixEventPool &obj);
-   AliMixEventPool &operator= (const AliMixEventPool& obj);
+   AliMixEventPool &operator= (const AliMixEventPool &obj);
    virtual ~AliMixEventPool();
 
    // prints object info

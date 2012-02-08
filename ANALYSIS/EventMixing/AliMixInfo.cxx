@@ -144,7 +144,7 @@ void AliMixInfo::Print(Option_t *option) const
    }
 }
 //_________________________________________________________________________________________________
-void AliMixInfo::Draw(Option_t* option)
+void AliMixInfo::Draw(Option_t *option)
 {
    //
    // Drwas mixi info canvas
@@ -161,7 +161,7 @@ void AliMixInfo::Draw(Option_t* option)
 //     TVirtualPad *upperPad1 = gPad->cd(2);
 //     upperPad1->Divide(1,2);
 //     upperPad1->cd(1);
-   TPavesText*text = new TPavesText(0.05, 0.05, 0.95, 0.95, 1);
+   TPavesText *text = new TPavesText(0.05, 0.05, 0.95, 0.95, 1);
    text->SetName("mixInfoText");
    text->AddText("Help:");
    text->AddText("Move over histogram to see mix info for different bins");

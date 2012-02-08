@@ -98,7 +98,7 @@ private:
 
    void                    UserExecMixAllTasks(Long64_t entryCounter, Int_t idEntryList, Long64_t entryMainReal, Long64_t entryMixReal, Int_t numMixed);
 
-   AliMixInputEventHandler(const AliMixInputEventHandler& handler);
+   AliMixInputEventHandler(const AliMixInputEventHandler &handler);
    AliMixInputEventHandler &operator=(const AliMixInputEventHandler &handler);
 
    ClassDef(AliMixInputEventHandler, 3)

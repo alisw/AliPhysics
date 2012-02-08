@@ -505,12 +505,12 @@ void AliMixInputEventHandler::UserExecMixAllTasks(Long64_t entryCounter, Int_t i
    AliAnalysisTaskSE *mixTask = 0;
    TObjArrayIter next(mgr->GetTasks());
    while ((mixTask = dynamic_cast<AliAnalysisTaskSE *>(next()))) {
-         AliDebug(AliLog::kDebug, Form("%s %lld %d [%lld,%lld] %d", mixTask->GetName(), entryCounter, numMixed, entryMainReal, entryMixReal, idEntryList));
-         fCurrentEntry = entryCounter;
-         fCurrentEntryMain = entryMainReal;
-         fCurrentEntryMix = entryMixReal;
-         fCurrentBinIndex = idEntryList;
-         if (entryMixReal >= 0) mixTask->UserExecMix("");
+      AliDebug(AliLog::kDebug, Form("%s %lld %d [%lld,%lld] %d", mixTask->GetName(), entryCounter, numMixed, entryMainReal, entryMixReal, idEntryList));
+      fCurrentEntry = entryCounter;
+      fCurrentEntryMain = entryMainReal;
+      fCurrentEntryMix = entryMixReal;
+      fCurrentBinIndex = idEntryList;
+      if (entryMixReal >= 0) mixTask->UserExecMix("");
    }
 }
 

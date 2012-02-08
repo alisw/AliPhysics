@@ -47,7 +47,7 @@ AliMixEventPool::AliMixEventPool(const AliMixEventPool &obj) : TNamed(obj),
 }
 
 //_________________________________________________________________________________________________
-AliMixEventPool& AliMixEventPool::operator=(const AliMixEventPool& obj)
+AliMixEventPool &AliMixEventPool::operator=(const AliMixEventPool &obj)
 {
    //
    // Assigned operator

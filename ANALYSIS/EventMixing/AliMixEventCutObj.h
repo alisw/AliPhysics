@@ -19,15 +19,15 @@ class AliAODEvent;
 class AliESDEvent;
 class AliMixEventCutObj : public TObject {
 public:
-   enum EEPAxis_t {kMultiplicity = 0, kZVertex = 1, kNumberV0s = 2, kNumberTracklets = 3, kCentrality = 4, kAllEventAxis = 5};
+   enum EEPAxis_t {kMultiplicity = 0, kZVertex = 1, kNumberV0s = 2, kNumberTracklets = 3, kCentrality = 4, kEventPlane = 5, kAllEventAxis = 6};
 
-   AliMixEventCutObj(AliMixEventCutObj::EEPAxis_t type = kMultiplicity, Float_t min = 0.0, Float_t max = 0.0, Float_t step = 1.0, const char* opt = "");
+   AliMixEventCutObj(AliMixEventCutObj::EEPAxis_t type = kMultiplicity, Float_t min = 0.0, Float_t max = 0.0, Float_t step = 1.0, const char *opt = "");
    AliMixEventCutObj(const AliMixEventCutObj &obj);
    AliMixEventCutObj &operator=(const AliMixEventCutObj &obj);
 
    virtual void Print(const Option_t *) const;
    void PrintCurrentInterval();
-   void PrintValues(AliVEvent *main, AliVEvent* mix);
+   void PrintValues(AliVEvent *main, AliVEvent *mix);
    void Reset();
    void AddStep();
 
