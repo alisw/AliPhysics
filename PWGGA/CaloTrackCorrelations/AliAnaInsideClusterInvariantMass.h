@@ -87,10 +87,14 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   //Histograms
   
-  TH2F       * fhMassNLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max, 1-6 for different MC particle types 
+  TH2F       * fhMassNLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
   TH2F       * fhMassNLocMax2[7][2]  ; //! Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
   TH2F       * fhMassNLocMaxN[7][2]  ; //! Mass of >2 cells local maxima vs E, 1-6 for different MC particle types
 
+  TH2F       * fhMassM02NLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 7 GeV, 1-6 for different MC particle types 
+  TH2F       * fhMassM02NLocMax2[7][2]  ; //! Mass of 2 cells local maxima, vs M02, for E > 7 GeV,  1-6 for different MC particle types
+  TH2F       * fhMassM02NLocMaxN[7][2]  ; //! Mass of >2 cells local maxima, vs M02, for E > 7 GeV, 1-6 for different MC particle types  
+  
   TH2F       * fhNLocMax      [7][2] ; //! Number of maxima in cluster vs E, 1-6 for different MC particle types
   TH2F       * fhNLocMaxNLabel[7][2] ; //! Number of maxima in cluster vs nLabels, E > 5, 1-6 for different MC particle types
   TH2F       * fhNLocMaxEMax  [7][2] ; //! Number of maxima in cluster vs E of each maxima, 1-6 for different MC particle types
@@ -121,9 +125,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAnglePairLocMax2[2] ; //! pair opening angle vs E
   TH2F       * fhAnglePairLocMaxN[2] ; //! pair opening angle vs E
   
-  TH2F       * fhAnglePairMassLocMax1[2] ; //! pair opening angle vs Mass for E > 5 GeV
-  TH2F       * fhAnglePairMassLocMax2[2] ; //! pair opening angle vs Mass for E > 5 GeV
-  TH2F       * fhAnglePairMassLocMaxN[2] ; //! pair opening angle vs Mass for E > 5 GeV
+  TH2F       * fhAnglePairMassLocMax1[2] ; //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhAnglePairMassLocMax2[2] ; //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhAnglePairMassLocMaxN[2] ; //! pair opening angle vs Mass for E > 7 GeV
   
   TH2F       * fhTrackMatchedDEtaLocMax1[7] ; //! Eta distance between track and cluster vs cluster E, 1 local maximum
   TH2F       * fhTrackMatchedDPhiLocMax1[7] ; //! Phi distance between track and cluster vs cluster E, 1 local maximum
@@ -135,7 +139,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,8)
+  ClassDef(AliAnaInsideClusterInvariantMass,9)
   
 } ;
 

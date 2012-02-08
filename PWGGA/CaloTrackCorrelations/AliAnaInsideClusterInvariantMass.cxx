@@ -95,6 +95,10 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhM02EtaLocMaxN[i][j] = 0;
       fhM02ConLocMaxN[i][j] = 0;
       
+      fhMassM02NLocMax1[i][j]= 0;
+      fhMassM02NLocMax2[i][j]= 0;
+      fhMassM02NLocMaxN[i][j]= 0;      
+      
     }
     
     fhTrackMatchedDEtaLocMax1[i] = 0; 
@@ -224,25 +228,46 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     {  
       
       fhMassNLocMax1[i][j]  = new TH2F(Form("hMassNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                       Form("Invariant mass of 2 highest energy cells %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                       Form("Invariant mass of 2 highest energy cells vs E, %s %s",ptype[i].Data(),sMatched[j].Data()),
                                        nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhMassNLocMax1[i][j]->SetYTitle("M (GeV/c^{2})");
       fhMassNLocMax1[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassNLocMax1[i][j]) ;   
       
       fhMassNLocMax2[i][j]  = new TH2F(Form("hMassNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                       Form("Invariant mass of 2 local maxima cells %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                       Form("Invariant mass of 2 local maxima cells vs E,%s %s",ptype[i].Data(),sMatched[j].Data()),
                                        nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhMassNLocMax2[i][j]->SetYTitle("M (GeV/c^{2})");
       fhMassNLocMax2[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassNLocMax2[i][j]) ;   
       
       fhMassNLocMaxN[i][j]  = new TH2F(Form("hMassNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                       Form("Invariant mass of N>2 local maxima cells %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                       Form("Invariant mass of N>2 local maxima cells vs E, %s %s",ptype[i].Data(),sMatched[j].Data()),
                                        nptbins,ptmin,ptmax,mbins,mmin,mmax); 
       fhMassNLocMaxN[i][j]->SetYTitle("M (GeV/c^{2})");
       fhMassNLocMaxN[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassNLocMaxN[i][j]) ;   
+      
+      fhMassM02NLocMax1[i][j]  = new TH2F(Form("hMassM02NLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                          Form("Invariant mass of 2 highest energy cells #lambda_{0}^{2}, E > 7 GeV,%s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassM02NLocMax1[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassM02NLocMax1[i][j]->SetXTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhMassM02NLocMax1[i][j]) ;   
+      
+      fhMassM02NLocMax2[i][j]  = new TH2F(Form("hMassM02NLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                          Form("Invariant mass of 2 local maxima cells #lambda_{0}^{2}, E > 7 GeV, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassM02NLocMax2[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassM02NLocMax2[i][j]->SetXTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhMassM02NLocMax2[i][j]) ;   
+      
+      fhMassM02NLocMaxN[i][j]  = new TH2F(Form("hMassM02NLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                          Form("Invariant mass of N>2 local maxima cells vs #lambda_{0}^{2}, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassM02NLocMaxN[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassM02NLocMaxN[i][j]->SetXTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhMassM02NLocMaxN[i][j]) ;   
       
       
       fhNLocMax[i][j]     = new TH2F(Form("hNLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
@@ -477,21 +502,21 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     outputContainer->Add(fhAnglePairLocMaxN[j]) ;   
     
     fhAnglePairMassLocMax1[j]  = new TH2F(Form("hAnglePairMassLocMax1%s",sMatched[j].Data()),
-                                          Form("Opening angle of 2 highest energy cells vs Mass for E > 5 GeV, %s",sMatched[j].Data()),
+                                          Form("Opening angle of 2 highest energy cells vs Mass for E > 7 GeV, %s",sMatched[j].Data()),
                                           mbins,mmin,mmax,200,0,0.2); 
     fhAnglePairMassLocMax1[j]->SetXTitle("M (GeV/c^{2})");
     fhAnglePairMassLocMax1[j]->SetYTitle("#alpha (rad)");
     outputContainer->Add(fhAnglePairMassLocMax1[j]) ;   
     
     fhAnglePairMassLocMax2[j]  = new TH2F(Form("hAnglePairMassLocMax2%s",sMatched[j].Data()),
-                                          Form("Opening angle of 2 local maxima cells vs Mass for E > 5 GeV, %s",sMatched[j].Data()),
+                                          Form("Opening angle of 2 local maxima cells vs Mass for E > 7 GeV, %s",sMatched[j].Data()),
                                           mbins,mmin,mmax,200,0,0.2); 
     fhAnglePairMassLocMax2[j]->SetXTitle("M (GeV/c^{2})");
     fhAnglePairMassLocMax2[j]->SetYTitle("#alpha (rad)");
     outputContainer->Add(fhAnglePairMassLocMax2[j]) ;   
     
     fhAnglePairMassLocMaxN[j]  = new TH2F(Form("hAnglePairMassLocMaxN%s",sMatched[j].Data()),
-                                          Form("Opening angle of N>2 local maxima cells vs Mass for E > 5 GeV, %s",sMatched[j].Data()),
+                                          Form("Opening angle of N>2 local maxima cells vs Mass for E > 7 GeV, %s",sMatched[j].Data()),
                                           mbins,mmin,mmax,200,0,0.2); 
     fhAnglePairMassLocMaxN[j]->SetXTitle("M (GeV/c^{2})");
     fhAnglePairMassLocMaxN[j]->SetYTitle("#alpha (rad)");
@@ -780,10 +805,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if     (nMax==1) 
     { 
       fhAnglePairLocMax1[matched]->Fill(en,angle);
-      if( en > 5 )       
+      fhMassNLocMax1[0][matched] ->Fill(en,mass ); 
+
+      if( en > 7 ) 
+      {      
         fhAnglePairMassLocMax1[matched]->Fill(mass,angle);
+        fhMassM02NLocMax1[0]  [matched]->Fill(l0,  mass ); 
+      }
       
-      fhMassNLocMax1[0][matched]->Fill(en,mass); 
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax1[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax1[0][matched]->Fill(en,l0);
       else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax1[0][matched]->Fill(en,l0);
@@ -791,10 +820,15 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     else if(nMax==2) 
     {
       fhAnglePairLocMax2[matched]->Fill(en,angle);
-      if( en > 5 )       
+      fhMassNLocMax2[0] [matched]->Fill(en,mass );
+
+      if( en > 7 )
+      {
         fhAnglePairMassLocMax2[matched]->Fill(mass,angle);
+        fhMassM02NLocMax2[0][matched]  ->Fill(l0,  mass ); 
+
+      }
       
-      fhMassNLocMax2[0][matched]->Fill(en,mass);
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[0][matched]->Fill(en,l0);
       else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax2[0][matched]->Fill(en,l0);        
@@ -802,10 +836,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     else if(nMax >2) 
     {
       fhAnglePairLocMaxN[matched]->Fill(en,angle);
-      if( en > 5 )       
+      fhMassNLocMaxN[0] [matched]->Fill(en,mass );
+
+      if( en > 7 ) 
+      {      
         fhAnglePairMassLocMaxN[matched]->Fill(mass,angle);
+        fhMassM02NLocMaxN[0]  [matched]->Fill(l0  ,mass );
+      }
       
-      fhMassNLocMaxN[0][matched]->Fill(en,mass);
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMaxN[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMaxN[0][matched]->Fill(en,l0);
       else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMaxN[0][matched]->Fill(en,l0);
@@ -816,18 +854,23 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if     (nMax==1) 
       { 
         fhMassNLocMax1[mcindex][matched]->Fill(en,mass); 
+        if( en > 7 )  fhMassM02NLocMax1[mcindex][matched]->Fill(l0,  mass ); 
         if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax1[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax1[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax1[mcindex][matched]->Fill(en,l0);
       }  
-      else if(nMax==2) {
+      else if(nMax==2) 
+      {
         fhMassNLocMax2[mcindex][matched]->Fill(en,mass);
+        if( en > 7 )  fhMassM02NLocMax2[mcindex][matched]->Fill(l0,  mass ); 
         if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax2[mcindex][matched]->Fill(en,l0);        
       }
-      else if(nMax >2) {
+      else if(nMax >2) 
+      {
         fhMassNLocMaxN[mcindex][matched]->Fill(en,mass);
+        if( en > 7 )  fhMassM02NLocMaxN[mcindex][matched]->Fill(l0,  mass ); 
         if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMaxN[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMaxN[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMaxN[mcindex][matched]->Fill(en,l0);
