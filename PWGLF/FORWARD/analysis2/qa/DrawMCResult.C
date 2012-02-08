@@ -7,7 +7,7 @@
  * 
  * 
  * @deprecated Use DrawSteps.C instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 /** 
  * 
@@ -19,7 +19,7 @@
  * @return Stack, or null
  *
  * @deprecated Use DrawSteps.C instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 THStack*
 GetStack(const TList& forward,  const char* sub, const char* name)
@@ -44,7 +44,7 @@ GetStack(const TList& forward,  const char* sub, const char* name)
  * @return Pointer to histogram
  *
  * @deprecated Use DrawSteps.C instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 TH1* 
 Rebin(TH1* h, Int_t rebin)
@@ -64,7 +64,7 @@ Rebin(TH1* h, Int_t rebin)
  * @return Newly allocated histogram containg ratio
  *
  * @deprecated Use DrawSteps.C instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 TH1*
 Ratio(const TH1* h1, const TH1* h2)
@@ -90,7 +90,7 @@ Ratio(const TH1* h1, const TH1* h2)
  * @return How many histograms in the return stack
  *
  * @deprecated Use DrawSteps.C instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 Int_t 
 Ratio(THStack* r, const THStack* h1, const THStack* h2)
@@ -119,7 +119,7 @@ Ratio(THStack* r, const THStack* h1, const THStack* h2)
  * @param ratios    Whether to show ratios
  *
  * @deprecated Use DrawSteps.C instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawMCResult(const char* filename="forward.root", Int_t rebin=1,

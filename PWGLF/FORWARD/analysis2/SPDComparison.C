@@ -61,7 +61,7 @@
  * @f$\eta@f$ range.  One can add (possibly overlapping) @f$\eta@f$
  * ranges by calling the member function AddBin 
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 class SPDComparisonTask : public AliAnalysisTaskSE
 {
@@ -452,10 +452,10 @@ void
 SPDComparison(const char* esddir, Int_t nEvents=-1)
 {
   // --- Libraries to load -------------------------------------------
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Our data chain ----------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeChain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/MakeChain.C");
   TChain* chain = MakeChain("ESD", esddir, true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
@@ -469,7 +469,7 @@ SPDComparison(const char* esddir, Int_t nEvents=-1)
   mgr->SetInputEventHandler(inputHandler);      
    
   // --- compile our code --------------------------------------------
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/PWG2/FORWARD/analysis2 "
+  gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2 "
                           "-I${ALICE_ROOT}/ANALYSIS "
                           "-I${ALICE_ROOT}/include -DBUILD=1");
   gROOT->LoadMacro("./SPDComparison.C++g");

@@ -31,9 +31,9 @@ class AliStack;
  *    - Incident angle vs number of track references
  *    - Incident angle vs number of strips/cluster
  *
- * @ingroup pwg2_forward_algo
- * @ingroup pwg2_forward_mc
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo
+ * @ingroup pwglf_forward_mc
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDMCTrackDensity : public TNamed
 {

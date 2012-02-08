@@ -12,7 +12,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include <AliAnalysisTaskSE.h>
 class AliFMDEventInspector;
@@ -29,7 +29,7 @@ class TTree;
 class TAxis;
 
 /** 
- * @mainpage ALICE PWG2 Forward Multiplcity Analysis 
+ * @mainpage ALICE PWGLF Forward Multiplcity Analysis 
  * 
  * This is the analysis code for analysis of the Forward data. 
  * 
@@ -87,26 +87,26 @@ class TAxis;
  * @endverbatim
  */
 /** 
- * @defgroup pwg2_forward PWG2 Forward analysis
+ * @defgroup pwglf_forward PWGLF Forward analysis
  *
  * Code to do the multiplicity analysis in the forward psuedo-rapidity
  * regions
  *
  */
 /** 
- * @defgroup pwg2_forward_tasks Tasks
+ * @defgroup pwglf_forward_tasks Tasks
  *
  * Code to do the multiplicity analysis in the forward psuedo-rapidity
  * regions
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwglf_forward 
  */
 /** 
- * @defgroup pwg2_forward_topical Topical
+ * @defgroup pwglf_forward_topical Topical
  */
 /** 
- * @defgroup pwg2_forward_aod AOD
- * @ingroup pwg2_forward_topical
+ * @defgroup pwglf_forward_aod AOD
+ * @ingroup pwglf_forward_topical
  */
 /** 
  * Base class for classes that calculate the multiplicity in the
@@ -122,8 +122,8 @@ class TAxis;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_forward_tasks
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_tasks
+ * @ingroup pwglf_forward_aod
  * 
  */
 class AliForwardMultiplicityBase : public AliAnalysisTaskSE

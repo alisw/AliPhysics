@@ -11,7 +11,7 @@
  * @param script Script to compile
  * @param option Compile option 
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 Bool_t
 Compile(const char* script, Option_t* option="g")
@@ -22,15 +22,15 @@ Compile(const char* script, Option_t* option="g")
   }
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG2forward2.so");
+  gSystem->Load("libPWGLFforward2.so");
   TString macroPath(gROOT->GetMacroPath());
-  macroPath.Append(":${ALICE_ROOT}/PWG2/FORWARD/analysis2");
-  macroPath.Append(":${ALICE_ROOT}/PWG2/FORWARD/analysis2/scripts");
+  macroPath.Append(":${ALICE_ROOT}/PWGLF/FORWARD/analysis2");
+  macroPath.Append(":${ALICE_ROOT}/PWGLF/FORWARD/analysis2/scripts");
   gROOT->SetMacroPath(macroPath.Data());
   gSystem->SetIncludePath("-I`root-config --incdir` "
 			  "-I${ALICE_ROOT} " 
 			  "-I${ALICE_ROOT}/include " 
-			  "-I${ALICE_ROOT}/PWG2/FORWARD/analysis2 ");
+			  "-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2 ");
   Long_t ret = gROOT->ProcessLine(Form(".L %s+%s", script, option));
   return ret == 0;
 }

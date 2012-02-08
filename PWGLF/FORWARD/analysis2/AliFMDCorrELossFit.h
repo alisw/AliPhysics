@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_eloss
  * 
  */
 #include <TObject.h>
@@ -20,17 +20,17 @@ class TF1;
 class TBrowser;
 
 /** 
- * @defgroup pwg2_forward_corr Corrections 
+ * @defgroup pwglf_forward_corr Corrections 
  * 
- * @ingroup pwg2_forward
+ * @ingroup pwglf_forward
  */
 /** 
  * Object holding the Energy loss fit 'correction'
  * 
  * These are generated from Monte-Carlo or real ESDs. 
  *
- * @ingroup pwg2_forward_corr
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_corr
+ * @ingroup pwglf_forward_eloss
  */
 class AliFMDCorrELossFit : public TObject 
 {
@@ -38,7 +38,7 @@ public:
   /** 
    * POD structure to hold data from fits 
    * 
-   * @ingroup pwg2_forward_corr
+   * @ingroup pwglf_forward_corr
    */
   struct ELossFit : public TObject 
   {

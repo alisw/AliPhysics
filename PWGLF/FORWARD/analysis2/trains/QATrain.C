@@ -6,7 +6,7 @@
 /**
  * Analysis train to do energy loss fits
  * 
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  */
 class QATrain : public TrainSetup
 {
@@ -322,7 +322,7 @@ protected:
   void CreateFMD(EMode mode, Bool_t par)
   {
     // FMD QA (Christian Holm Christiansen)
-    LoadLibrary("PWG2forward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", mode, par, true);
     Bool_t mc = AliAnalysisManager::GetAnalysisManager()
       ->GetMCtruthEventHandler() != 0;
     gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)", mc, (fFlags & kCentrality)));

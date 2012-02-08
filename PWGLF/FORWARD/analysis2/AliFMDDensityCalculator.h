@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include <TNamed.h>
 #include <TList.h>
@@ -41,8 +41,8 @@ class AliFMDCorrELossFit;
  *   - AliFMDDoubleHitCorrection 
  *   - AliFMDDeadCorrection 
  *
- * @ingroup pwg2_forward_algo
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDDensityCalculator : public TNamed
 {

@@ -5,7 +5,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 //____________________________________________________________________
 /** 
@@ -17,7 +17,7 @@
  * 
  * @return true on success
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 Bool_t ScanDirectory(TSystemDirectory* dir, 
 		     TList* list, 
@@ -107,7 +107,7 @@ Bool_t ScanDirectory(TSystemDirectory* dir,
  * 
  * @return List of files 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 TList*
 GetListOfFiles(const char* input=".")
@@ -133,16 +133,16 @@ GetListOfFiles(const char* input=".")
  * 
  * @param dir 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 void 
 RunFinalQA(const char* dir)
 {
    int ret = 0;
-   gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
-			    "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
+   gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
+			    "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:%s",
 			    gROOT->GetMacroPath()));
-   gSystem->AddIncludePath("-I${ALICE_ROOT}/PWG2/FORWARD/analysis2/qa");
+   gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2/qa");
    gSystem->Load("libGpad");
    gSystem->Load("libTree");
 

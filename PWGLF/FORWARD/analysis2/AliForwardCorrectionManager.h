@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include <TObject.h>
 #include "AliFMDCorrSecondaryMap.h"
@@ -31,8 +31,8 @@ class AliFMDCorrAcceptance;
  * that the singleton pointer is correctly set on reading in an object
  * of this type.
  * 
- * @ingroup pwg2_forward_corr 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_corr 
+ * @ingroup pwglf_forward_aod
  */
 class AliForwardCorrectionManager : public TObject
 {

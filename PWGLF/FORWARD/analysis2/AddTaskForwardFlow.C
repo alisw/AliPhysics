@@ -6,11 +6,11 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
- * @defgroup pwg2_forward_flow Flow 
- * @ingroup pwg2_forward_topical
+ * @defgroup pwglf_forward_flow Flow 
+ * @ingroup pwglf_forward_topical
  */
 /** 
  * Add Flow task to train 
@@ -22,7 +22,7 @@
  * @param addFType 
  * @param addFOrder 
  *
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_flow
  */
 void AddTaskForwardFlow(TString type = "", 
                         Int_t etabins = 48,

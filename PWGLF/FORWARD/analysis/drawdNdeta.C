@@ -11,7 +11,7 @@ void drawdNdeta(const Char_t* filename="fmdana.root",
   gSystem->Load("libANALYSISalice"); 
   gSystem->Load("libPWG0base"); 
   gSystem->Load("libPWG0dep"); 
-  gSystem->Load("libPWG2forward"); 
+  gSystem->Load("libPWGLFforward"); 
   gStyle->SetTextFont(132);
   gStyle->SetLabelFont(132,"X");
   gStyle->SetLabelFont(132,"Y"); 

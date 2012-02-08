@@ -5,7 +5,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwglf_forward_scripts_makers
  * 
  */
 /**
@@ -21,7 +21,7 @@
  * @par Outputs: 
  * - 
  *
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_flow
  */
 void MakeFlow(TString data      = "", 
 	      Int_t   nevents   = 0, 
@@ -36,11 +36,11 @@ void MakeFlow(TString data      = "",
   Bool_t proof = kFALSE;
 
   // --- Load libs ---------------------------------------------------
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
   if (proof> 0) { 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadPars.C");
     if (!LoadPars(proof)) { 
       AliError("MakeFlow", "Failed to load PARs");
       return;
@@ -48,7 +48,7 @@ void MakeFlow(TString data      = "",
   }
 
   // --- Set the macro path ------------------------------------------
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
 			   "$ALICE_ROOT/ANALYSIS/macros",
 			   gROOT->GetMacroPath()));
 

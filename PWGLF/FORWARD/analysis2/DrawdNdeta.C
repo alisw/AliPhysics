@@ -11,7 +11,7 @@
  * The script is <i>very</i> long - sigh - the joy of drawing
  * things nicely in ROOT
  * 
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_dndeta
  */
 #include <TH1.h>
 #include <TColor.h>
@@ -43,8 +43,8 @@ Double_t myFunc(Double_t* xp, Double_t* pp);
 /**
  * Class to draw dN/deta results 
  * 
- * @ingroup pwg2_forward_tasks_dndeta
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_tasks_dndeta
+ * @ingroup pwglf_forward_dndeta
  */
 struct dNdetaDrawer 
 {
@@ -284,7 +284,7 @@ struct dNdetaDrawer
     // --- Get information on the run --------------------------------
     FetchInformation(forward);
     // --- Set the macro pathand load other data script --------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
     gROOT->LoadMacro("OtherData.C");
 
@@ -2062,7 +2062,7 @@ Usage()
  * @param vzMin     Least @f$ v_z@f$
  * @param vzMax     Largest @f$ v_z@f$
  *
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_dndeta
  */
 void
 DrawdNdeta(const char* filename="forward_dndeta.root", 

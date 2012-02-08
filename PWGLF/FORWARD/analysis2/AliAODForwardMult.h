@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  * 
  */
 #include <TObject.h>
@@ -96,8 +96,8 @@ class TH1I;
  * The histogram can be used as input for other kinds of analysis too, 
  * like flow, event-plane, centrality, and so on. 
  *
- * @ingroup pwg2_forward 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward 
+ * @ingroup pwglf_forward_aod
  */
 class AliAODForwardMult : public TObject
 {

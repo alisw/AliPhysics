@@ -11,15 +11,15 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_flow
  */
 #include "AliAnalysisTaskSE.h"
 #include "AliForwardFlowUtil.h"
 class AliAODEvent;
 
  /**
- * @defgroup pwg2_forward_tasks_flow Flow tasks 
- * @ingroup pwg2_forward_tasks
+ * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ * @ingroup pwglf_forward_tasks
  */
 /**
  * Calculate the flow in the forward regions using the Q cumulants method
@@ -30,8 +30,8 @@ class AliAODEvent;
  * Outputs:
  *   - AnalysisResults.root
  *
- * @ingroup pwg2_forward_tasks_flow
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_tasks_flow
+ * @ingroup pwglf_forward_flow
  *
  * @todo Add centrality stuff
  *

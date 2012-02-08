@@ -5,7 +5,7 @@
  * @param r 
  * 
  * @return 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 Color_t Color(UShort_t d, Char_t r ) const 
 { 
@@ -20,14 +20,14 @@ Color_t Color(UShort_t d, Char_t r ) const
  * @param field     Magnetic field 
  * @param path      File path 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 RunCopyCentralSecMap(UShort_t sys, UShort_t cms, Short_t field, 
 		     const Char_t* path=0)
 {
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
-  gSystem->Load("libPWG2forward.so");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gSystem->Load("libPWGLFforward.so");
 
   AliFMDAnaParameters* p = AliFMDAnaParameters::Instance();
   p->SetEnergy(Float_t(cms));

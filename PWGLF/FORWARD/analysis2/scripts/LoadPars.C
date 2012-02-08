@@ -1,7 +1,7 @@
 /** 
  * Set-up for a PROOF analysis job.   Make TProof object and load pars. 
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 Bool_t
 LoadPars(Int_t nWorkers=4)
@@ -9,7 +9,7 @@ LoadPars(Int_t nWorkers=4)
   const char* option = nWorkers <= 0 ? "" : Form("workers=%d", nWorkers);
   TProof::Open(option);
   const char* pkgs[] = { "STEERBase", "ESD", "AOD", "ANALYSIS", 
-			 "ANALYSISalice", "PWG2forward2", 0};
+			 "ANALYSISalice", "PWGLFforward2", 0};
   const char** pkg = pkgs;
   Bool_t ret = true;
   while (*pkg) { 

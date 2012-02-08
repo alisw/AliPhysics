@@ -13,7 +13,7 @@ last="unknown"
 lock=
 
 
-export PATH=$PATH:$ALICE_ROOT/PWG2/FORWARD/analysis2/qa:../scripts
+export PATH=$PATH:$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa:../scripts
 
 # --- Handle exit ----------------------------------------------------
 handle_exit()
@@ -227,7 +227,7 @@ what=3
 if test $notr -gt 0 ; then let what=$what^0x2 ; fi
 if test $norn -gt 0 ; then let what=$what^0x1 ; fi
 
-scr=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunQA.C
+scr=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/RunQA.C
 mess "Running root -l -b -q ${scr}\(\".\",1,-1,$what\)"
 
 enable_trap
@@ -253,8 +253,8 @@ chmod g+rw  index.html
 chmod g+rw .  > /dev/null 2>&1
 
 style= 
-if test -f $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/style.css ; then 
-    style=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/style.css
+if test -f $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css ; then 
+    style=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css
 elif test -f $savdir/style.css ; then 
     style=$savdir/style.css 
 fi 

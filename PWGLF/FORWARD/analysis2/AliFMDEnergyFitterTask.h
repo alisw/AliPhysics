@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_eloss
  * 
  */
 #include <AliAnalysisTaskSE.h>
@@ -38,8 +38,8 @@ class TTree;
  * @par Corrections used 
  *   - None
  * 
- * @ingroup pwg2_forward_tasks
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_tasks
+ * @ingroup pwglf_forward_eloss
  * 
  */
 class AliFMDEnergyFitterTask : public AliAnalysisTaskSE

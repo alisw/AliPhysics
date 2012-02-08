@@ -538,8 +538,8 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
 }
 //====================================================================
 AliCentralMultiplicityTask::Manager::Manager() :
-  fAcceptancePath("$ALICE_ROOT/PWG2/FORWARD/corrections/CentralAcceptance"),
-  fSecMapPath("$ALICE_ROOT/PWG2/FORWARD/corrections/CentralSecMap"),
+  fAcceptancePath("$ALICE_ROOT/PWGLF/FORWARD/corrections/CentralAcceptance"),
+  fSecMapPath("$ALICE_ROOT/PWGLF/FORWARD/corrections/CentralSecMap"),
   fAcceptance(),
   fSecmap(),
   fAcceptanceName("centralacceptance"),
@@ -785,7 +785,7 @@ AliCentralMultiplicityTask::Manager::WriteFile(UShort_t what,
     AliInfoGeneral("Manager",
 		   Form("%s should be copied to %s\n"
 			"Do for example\n\t"
-			"aliroot $ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/"
+			"aliroot $ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/"
 			"MoveCorrections.C\\(%d\\)\nor\n\t"
 			"cp %s %s/", 
 			ofName.Data(),dName.Data(), 

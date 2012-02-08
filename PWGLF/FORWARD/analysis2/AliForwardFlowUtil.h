@@ -12,7 +12,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_flow
  */
 #include "TNamed.h"
 class AliAODForwardMult;
@@ -25,8 +25,8 @@ class TGraph;
  * Class used to handle the input from AODs and put it into histograms
  * the Forward Flow tasks can run on.
  *
- * @ingroup pwg2_forward_tasks_flow
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_tasks_flow
+ * @ingroup pwglf_forward_flow
  */
 class AliForwardFlowUtil : public TNamed
 {
