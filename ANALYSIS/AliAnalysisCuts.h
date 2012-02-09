@@ -20,7 +20,8 @@ class AliAnalysisCuts : public AliVCuts
  public:
     AliAnalysisCuts();
     AliAnalysisCuts(const char* name, const char* title);
-    AliAnalysisCuts(const AliAnalysisCuts& obj);  
+    AliAnalysisCuts(const AliAnalysisCuts& obj);
+    AliAnalysisCuts& operator=(const AliAnalysisCuts& obj);
     virtual ~AliAnalysisCuts() {;}
     virtual Bool_t IsSelected(TObject* /* obj  */ )  {return kFALSE;}
     virtual Bool_t IsSelected(TList*   /* list */ ) = 0;

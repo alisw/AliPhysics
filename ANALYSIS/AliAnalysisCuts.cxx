@@ -44,3 +44,15 @@ AliAnalysisCuts::AliAnalysisCuts(const AliAnalysisCuts& obj):
     AliVCuts(obj), fFilterMask(obj.fFilterMask), fSelected(obj.fSelected)
 {
 }
+
+AliAnalysisCuts& AliAnalysisCuts::operator=(const AliAnalysisCuts& obj)
+{
+  // Assignment operator
+  if ( this != &obj ) { 
+    AliVCuts::operator=(obj);
+    fFilterMask = obj.fFilterMask;
+    fSelected = obj.fSelected;
+  }
+  return *this;
+}
+
