@@ -172,15 +172,16 @@ TVector2* AliEventplane::GetQVector()
 Double_t AliEventplane::GetEventplane(const char *x, const AliVEvent *event, Int_t harmonic) const
 {
   TString method = x;
+  Double_t qx = 0, qy = 0;
   if(method.CompareTo("Q")==0)      return fEventplaneQ;
-  else if(method.CompareTo("V0A")==0) return CalculateVZEROEventPlane(event, 4, 7, harmonic);
-  else if(method.CompareTo("V0C")==0) return CalculateVZEROEventPlane(event, 0, 3, harmonic);
-  else if(method.CompareTo("V0")==0)  return CalculateVZEROEventPlane(event, 0, 7, harmonic);
+  else if(method.CompareTo("V0A")==0) return CalculateVZEROEventPlane(event, 4, 7, harmonic, qx, qy);
+  else if(method.CompareTo("V0C")==0) return CalculateVZEROEventPlane(event, 0, 3, harmonic, qx, qy);
+  else if(method.CompareTo("V0")==0)  return CalculateVZEROEventPlane(event, 0, 7, harmonic, qx, qy);
 
   return -1000.;
 }
 
-Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t firstRing, Int_t lastRing, Int_t harmonic) const
+Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t firstRing, Int_t lastRing, Int_t harmonic, Double_t &qxTot, Double_t &qyTot) const
 {
   if(!event) {
     AliError("No Event received");
@@ -196,7 +197,7 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
     return -1000.;
   }
 
-  Double_t qxTot=0., qyTot=0.;
+  qxTot=qyTot=0.;
   Double_t qx, qy;
   Double_t totMult = 0.;
   for(Int_t ring = firstRing; ring <=lastRing; ++ring) {

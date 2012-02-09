@@ -52,7 +52,7 @@ class AliEventplane : public TNamed
   TVector2* GetQsub2();
   Double_t  GetQsubRes();
   Bool_t    IsEventInEventplaneClass(Double_t a, Double_t b, const char *method);
-  Double_t  CalculateVZEROEventPlane(const AliVEvent *event, Int_t firstRing, Int_t lastRing, Int_t harmonic) const;
+  Double_t  CalculateVZEROEventPlane(const AliVEvent *event, Int_t firstRing, Int_t lastRing, Int_t harmonic, Double_t &qxTot, Double_t &qyTot) const;
   void      SetVZEROEPParams(Int_t ring,
 			     Double_t meanX2, Double_t meanY2,
 			     Double_t aPlus, Double_t aMinus,
