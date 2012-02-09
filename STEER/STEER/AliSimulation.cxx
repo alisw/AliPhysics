@@ -1845,7 +1845,7 @@ Bool_t AliSimulation::IsSelected(TString detName, TString& detectors) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* esdFileName, Int_t N) 
+Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* esdFileName, Int_t N) 
 {
 //
 // Steering routine  to convert raw data in directory rawDirectory/ to fake SDigits. 
@@ -1922,14 +1922,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     //
     // Create the RawReader
     TString fileName(rawDirectory);
-    AliRawReader* rawReader = 0x0;
-    if (fileName.EndsWith("/")) {
-      rawReader = new AliRawReaderFile(fileName);
-    } else if (fileName.EndsWith(".root")) {
-      rawReader = new AliRawReaderRoot(fileName);
-    } else if (!fileName.IsNull()) {
-      rawReader = new AliRawReaderDate(fileName);
-    }
+    AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
     if (!rawReader) return (kFALSE);
     
 //     if (!fEquipIdMap.IsNull() && fRawReader)
@@ -1966,7 +1959,8 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 	//
 	//  If ESD information available obtain reconstructed vertex and store in header.
 	if (treeESD) {
-	    treeESD->GetEvent(nev);
+		AliInfo(Form("Selected event %d correspond to event %d ins raw and esd",nev,rawReader->GetEventIndex()));
+	    treeESD->GetEvent(rawReader->GetEventIndex());
 	    const AliESDVertex* esdVertex = esd->GetPrimaryVertex();
 	    Double_t position[3];
 	    esdVertex->GetXYZ(position);
@@ -1995,7 +1989,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     runLoader->WriteHeader("OVERWRITE");
     runLoader->WriteRunLoader();
 
-    return kTRUE;
+    return nev;
 }
 
 //_____________________________________________________________________________

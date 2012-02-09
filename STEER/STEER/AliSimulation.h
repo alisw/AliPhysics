@@ -106,7 +106,7 @@ public:
 				       const char* rootFileName = "");
   virtual Bool_t ConvertDateToRoot(const char* dateFileName = "raw.date",
 				   const char* rootFileName = "raw.root");
-  virtual Bool_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "", Int_t N=-1);
+  virtual Int_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "", Int_t N=-1);
 
   // Sets the name of the file from which the geometry is loaded
   virtual void SetGeometryFile(const Char_t* filename) {fGeometryFile=filename;}
