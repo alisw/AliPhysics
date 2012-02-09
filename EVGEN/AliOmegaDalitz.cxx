@@ -49,7 +49,8 @@ ClassImp(AliOmegaDalitz)
 AliOmegaDalitz::AliOmegaDalitz():
 	AliDecayer(),
         fEPMass(0),
-	fMPMass(0)
+	fMPMass(0),
+	fInit(0)
 {
     // Constructor
 }
@@ -130,6 +131,11 @@ void AliOmegaDalitz::Decay(Int_t idlepton, TLorentzVector* pparent)
 //
 //-----------------------------------------------------------------------------
 
+    if (!fInit) {
+	Init();
+	fInit=1;
+    }
+    
   Double_t pmass, lmass, omass, lpmass;
   Double_t e1, p1, e3, p3;
   Double_t betaSquare, lambda;
@@ -315,7 +321,8 @@ void AliOmegaDalitz::Copy(TObject&) const
 AliOmegaDalitz::AliOmegaDalitz(const AliOmegaDalitz &dalitz)
   : AliDecayer(),
     fEPMass(0),
-    fMPMass(0)
+    fMPMass(0),
+    fInit(0)
 {
   // Copy constructor
   dalitz.Copy(*this);

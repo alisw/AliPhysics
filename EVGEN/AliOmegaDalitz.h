@@ -45,7 +45,8 @@ class AliOmegaDalitz : public AliDecayer
     TH1F*           fEPMass;       // Histogram for electron pair mass
     TH1F*           fMPMass;       // Histogram for muon pair mass
     TLorentzVector  fProducts[3];  // Decay products
-
+    Bool_t          fInit;         // Initialized
+    
  private:
     virtual void    Rot(Double_t pin[3], Double_t pout[3],
 			Double_t costheta, Double_t sintheta,
