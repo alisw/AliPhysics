@@ -24,14 +24,16 @@ ClassImp(AliAnaVZEROEPFlatenning)
 AliAnaVZEROEPFlatenning::AliAnaVZEROEPFlatenning() 
   : AliAnalysisTaskSE("AliAnaVZEROEPFlatenning"), fESD(0), fOutputList(0),
   fMBTrigName("CPBI"),
-  fUsePhysSel(kFALSE)
+  fUsePhysSel(kFALSE),
+  fPsiAC(NULL),
+  fPsiACOrg(NULL)
 {
   // Default constructor
   // Init pointers
   for(Int_t i = 0; i < 8; ++i) fX2[i] = fY2[i] = fX2Y2[i] = fCos8Psi[i] = NULL;
   for(Int_t i = 0; i < 8; ++i) fX2In[i] = fY2In[i] = fX2Y2In[i] = fCos8PsiIn[i] = NULL;
   for(Int_t i = 0; i < 8; ++i) fPsiRingRawCentr[i] = fPsiRingFlatCentr[i] = fPsiRingFlatFinalCentr[i] = NULL;
-
+  for(Int_t i = 0; i < 8; ++i) fC2[i] = fS2[i] = fC4[i] = fS4[i] = NULL;
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -44,14 +46,16 @@ AliAnaVZEROEPFlatenning::AliAnaVZEROEPFlatenning()
 AliAnaVZEROEPFlatenning::AliAnaVZEROEPFlatenning(const char *name) 
   : AliAnalysisTaskSE(name), fESD(0), fOutputList(0),
   fMBTrigName("CPBI"),
-  fUsePhysSel(kFALSE)
+  fUsePhysSel(kFALSE),
+  fPsiAC(NULL),
+  fPsiACOrg(NULL)
 {
   // Constructor
   // Init pointers
   for(Int_t i = 0; i < 8; ++i) fX2[i] = fY2[i] = fX2Y2[i] = fCos8Psi[i] = NULL;
   for(Int_t i = 0; i < 8; ++i) fX2In[i] = fY2In[i] = fX2Y2In[i] = fCos8PsiIn[i] = NULL;
   for(Int_t i = 0; i < 8; ++i) fPsiRingRawCentr[i] = fPsiRingFlatCentr[i] = fPsiRingFlatFinalCentr[i] = NULL;
-
+  for(Int_t i = 0; i < 8; ++i) fC2[i] = fS2[i] = fC4[i] = fS4[i] = NULL;
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -112,6 +116,22 @@ void AliAnaVZEROEPFlatenning::UserCreateOutputObjects()
     fOutputList->Add(fPsiRingFlatFinalCentr[i]);
   }
 
+  for(Int_t i = 0; i < 8; ++i) {
+    fC2[i] = new TProfile(Form("fC2_%d",i),"",21,0,105,"s");
+    fOutputList->Add(fC2[i]);
+    fS2[i] = new TProfile(Form("fS2_%d",i),"",21,0,105,"s");
+    fOutputList->Add(fS2[i]);
+    fC4[i] = new TProfile(Form("fC4_%d",i),"",21,0,105,"s");
+    fOutputList->Add(fC4[i]);
+    fS4[i] = new TProfile(Form("fS4_%d",i),"",21,0,105,"s");
+    fOutputList->Add(fS4[i]);
+  }
+
+  fPsiAC = new TH2F("fPsiAC","",100,-TMath::Pi()/2,TMath::Pi()/2,100,-TMath::Pi()/2,TMath::Pi()/2);
+  fOutputList->Add(fPsiAC);
+  fPsiACOrg = new TH2F("fPsiACOrg","",100,-TMath::Pi()/2,TMath::Pi()/2,100,-TMath::Pi()/2,TMath::Pi()/2);
+  fOutputList->Add(fPsiACOrg);
+
   PostData(1, fOutputList);
 }
 
@@ -168,18 +188,22 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
   if (TMath::Abs(tPrimaryVtxPosition[2]) > 10.0) goodEvent = kFALSE;
 
   if (goodEvent) {
+    Double_t qxTierce[8],qyTierce[8];
     for(Int_t iring = 0; iring < 8; ++iring) {
+      qxTierce[iring] = qyTierce[iring] = 0.;
       Double_t c2 = 0;
       Double_t s2 = 0;
-      Double_t c4 = 0;
-      Double_t s4 = 0;
       Double_t totMult = 0;
       for(Int_t iCh = iring*8; iCh < (iring+1)*8; ++iCh) {
 	Double_t phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
 	c2 += fESD->GetVZEROEqMultiplicity(iCh)*TMath::Cos(2.*phi);
 	s2 += fESD->GetVZEROEqMultiplicity(iCh)*TMath::Sin(2.*phi);
-	c4 += fESD->GetVZEROEqMultiplicity(iCh)*TMath::Cos(4.*phi);
-	s4 += fESD->GetVZEROEqMultiplicity(iCh);
+	if (fESD->GetVZEROEqMultiplicity(iCh) > 1e-6) {
+	  fC2[iring]->Fill(spdPercentile,TMath::Cos(2.*phi),fESD->GetVZEROEqMultiplicity(iCh));
+	  fS2[iring]->Fill(spdPercentile,TMath::Sin(2.*phi),fESD->GetVZEROEqMultiplicity(iCh));
+	  fC4[iring]->Fill(spdPercentile,TMath::Cos(4.*phi),fESD->GetVZEROEqMultiplicity(iCh));
+	  fS4[iring]->Fill(spdPercentile,TMath::Sin(4.*phi),fESD->GetVZEROEqMultiplicity(iCh));
+	}
 	totMult += fESD->GetVZEROEqMultiplicity(iCh);
       }
       if (totMult < 1e-6) continue;
@@ -188,9 +212,10 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
       fY2[iring]->Fill(spdPercentile,s2);
       fX2Y2[iring]->Fill(spdPercentile,c2*s2);
 
-      Double_t psiRingRaw = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD,iring,iring,2);
+      Double_t qxOut = 0, qyOut = 0;
+      Double_t psiRingRaw = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD,iring,iring,2,qxOut,qyOut);
       fPsiRingRawCentr[iring]->Fill(spdPercentile,psiRingRaw);
-      Double_t psiRingFlat2 = CalculateVZEROEventPlane(fESD,iring,spdPercentile);
+      Double_t psiRingFlat2 = CalculateVZEROEventPlane(fESD,iring,spdPercentile,qxTierce[iring],qyTierce[iring]);
       fPsiRingFlatCentr[iring]->Fill(spdPercentile,psiRingFlat2);
       fCos8Psi[iring]->Fill(spdPercentile, 2./4.*TMath::Cos(2.*4.*psiRingFlat2));
       Int_t ibin = fCos8PsiIn[iring]->FindBin(spdPercentile);
@@ -199,6 +224,17 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
       if (psiRingFlatFinal <-TMath::Pi()/2) psiRingFlatFinal += TMath::Pi();
       fPsiRingFlatFinalCentr[iring]->Fill(spdPercentile,psiRingFlatFinal);
     }
+    Double_t qxA = qxTierce[4] + qxTierce[5] + qxTierce[6] + qxTierce[7];
+    Double_t qyA = qyTierce[4] + qyTierce[5] + qyTierce[6] + qyTierce[7];
+    Double_t qxC = qxTierce[0] + qxTierce[1] + qxTierce[2] + qxTierce[3];
+    Double_t qyC = qyTierce[0] + qyTierce[1] + qyTierce[2] + qyTierce[3];
+    Double_t psiA = TMath::ATan2(qyA,qxA)/2.;
+    Double_t psiC = TMath::ATan2(qyC,qxC)/2.;
+
+    fPsiAC->Fill(psiA,psiC);
+    Double_t psiAOrg = fESD->GetEventplane()->GetEventplane("V0A",fESD,2);
+    Double_t psiCOrg = fESD->GetEventplane()->GetEventplane("V0C",fESD,2);
+    fPsiACOrg->Fill(psiAOrg,psiCOrg);
   }
 
   PostData(1, fOutputList);
@@ -217,11 +253,12 @@ void AliAnaVZEROEPFlatenning::Terminate(Option_t *)
   }
 }
 
-Double_t AliAnaVZEROEPFlatenning::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t ring, Float_t centrality) const
+Double_t AliAnaVZEROEPFlatenning::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t ring, Float_t centrality, Double_t &qxTierce, Double_t &qyTierce) const
 {
   // Calculate the VZERO event plane
   // taking into account the recentering/twist and rescaling
   // of the cumulants
+  qxTierce = qyTierce = 0.;
   if(!event) {
     AliError("No Event received");
     return -1000.;
@@ -269,8 +306,8 @@ Double_t AliAnaVZEROEPFlatenning::CalculateVZEROEventPlane(const AliVEvent *  ev
   Double_t qxSeconde = trans[0][0]*qxPrime + trans[0][1]*qyPrime;
   Double_t qySeconde = trans[1][0]*qxPrime + trans[1][1]*qyPrime;
   // Rescaling
-  Double_t qxTierce = qxSeconde/aPlus;
-  Double_t qyTierce = qySeconde/aMinus;
+  qxTierce = qxSeconde/aPlus;
+  qyTierce = qySeconde/aMinus;
 
   return (TMath::ATan2(qyTierce,qxTierce)/2.);
 }
