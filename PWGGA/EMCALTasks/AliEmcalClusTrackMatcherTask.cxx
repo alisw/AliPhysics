@@ -17,6 +17,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) :
   fCaloName("CaloClusters")
 {
   // Standard constructor.
+
   if (!name)
     return;
   SetName(name);
@@ -33,7 +34,6 @@ AliEmcalClusTrackMatcherTask::~AliEmcalClusTrackMatcherTask()
 void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
 {
   // Create user objects.
-
 }
 
 //________________________________________________________________________
@@ -42,6 +42,8 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
   // Main loop, called for each event.
 
   TList *l = InputEvent()->GetList();
+  if (!l) 
+    return;
 
   TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
   if (!tracks) {
