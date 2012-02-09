@@ -582,7 +582,7 @@ eta2y(Double_t pt, Double_t mass, Double_t eta){
 }
 
 TH1 *
-Convert_dNdy_1over2pipt_dNdeta(TH1 *hin, Double_t mass, Double_t y = 0.5)
+Convert_dNdy_1over2pipt_dNdeta(TH1 *hin, Double_t mass, Double_t eta = 0.8)
 {
 
   TH1 *hout = hin->Clone("hout");
@@ -590,11 +590,31 @@ Convert_dNdy_1over2pipt_dNdeta(TH1 *hin, Double_t mass, Double_t y = 0.5)
   Double_t pt, mt, conv, val, vale;
   for (Int_t ibin = 0; ibin < hin->GetNbinsX(); ibin++) {
     pt = hin->GetBinCenter(ibin + 1);
-    conv = y / y2eta(pt, mass, y);
+    conv = eta2y(pt, mass, eta) / eta;
     val = hin->GetBinContent(ibin + 1);
     vale = hin->GetBinError(ibin + 1);
     val /= (2. * TMath::Pi() * pt);
     vale /= (2. * TMath::Pi() * pt);
+    val *= conv;
+    vale *= conv;
+    hout->SetBinContent(ibin + 1, val);
+    hout->SetBinError(ibin + 1, vale);
+  }
+  return hout;
+}
+
+TH1 *
+Convert_dNdy_dNdeta(TH1 *hin, Double_t mass, Double_t eta = 0.8)
+{
+
+  TH1 *hout = hin->Clone("hout");
+  hout->Reset();
+  Double_t pt, mt, conv, val, vale;
+  for (Int_t ibin = 0; ibin < hin->GetNbinsX(); ibin++) {
+    pt = hin->GetBinCenter(ibin + 1);
+    conv = eta2y(pt, mass, eta) / eta;
+    val = hin->GetBinContent(ibin + 1);
+    vale = hin->GetBinError(ibin + 1);
     val *= conv;
     vale *= conv;
     hout->SetBinContent(ibin + 1, val);
@@ -622,6 +642,37 @@ SummedId_1over2pipt_dNdeta(const Char_t *filename, Int_t icent)
 	return NULL;
       }
       heta[ipart][icharge] = Convert_dNdy_1over2pipt_dNdeta(hy[ipart][icharge], AliPID::ParticleMass(ipart));
+    }
+
+  /* sum */
+  TH1D *hsum = heta[2][0]->Clone("hsum");
+  hsum->Reset();
+  for (Int_t ipart = 2; ipart < AliPID::kSPECIES; ipart++)
+    for (Int_t icharge = 0; icharge < 2; icharge++)
+      hsum->Add(heta[ipart][icharge]);
+
+  return hsum;
+}
+
+TH1 *
+SummedId_dNdeta(const Char_t *filename, Int_t icent)
+{
+
+  const Char_t *chargeName[2] = {
+    "plus", "minus"
+  };
+
+  TFile *filein = TFile::Open(filename);
+  TH1 *hy[AliPID::kSPECIES][2];
+  TH1 *heta[AliPID::kSPECIES][2];
+  for (Int_t ipart = 2; ipart < AliPID::kSPECIES; ipart++)
+    for (Int_t icharge = 0; icharge < 2; icharge++) {
+      hy[ipart][icharge] = (TH1 *)filein->Get(Form("cent%d_%s_%s", icent, AliPID::ParticleName(ipart), chargeName[icharge]));
+      if (!hy[ipart][icharge]) {
+	printf("cannot find cent%d_%s_%s\n", icent, AliPID::ParticleName(ipart), chargeName[icharge]);
+	return NULL;
+      }
+      heta[ipart][icharge] = Convert_dNdy_dNdeta(hy[ipart][icharge], AliPID::ParticleMass(ipart));
     }
 
   /* sum */
