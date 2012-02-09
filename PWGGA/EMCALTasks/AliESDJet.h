@@ -3,7 +3,7 @@
 #ifndef AliESDJet_H
 #define AliESDJet_H
 
-class AliESDJet { // consider inheriting from AliVParticle as AliAODJet does
+class AliESDJet: public AliVTrack { 
  public:
   AliESDJet();
   ~AliESDJet() {;}
@@ -14,3 +14,4 @@ class AliESDJet { // consider inheriting from AliVParticle as AliAODJet does
 
   ClassDef(AliESDJet, 1) // ESD jet class
 };
+#endif
