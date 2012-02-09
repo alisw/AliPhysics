@@ -1,14 +1,11 @@
 // $Id$
 
 #include "AliEmcalClusTrackMatcherTask.h"
-//#include <TClonesArray.h>
-//#include <TParticle.h>
-//#include "AliAODJet.h"
-//#include "AliAnalysisManager.h"
-//#include "AliESDtrack.h"
-//#include "AliESDtrackCuts.h"
-//#include "AliBambooFJWrapper.h"
-//#include "AliESDCaloCluster.h"
+#include <TClonesArray.h>
+#include <TString.h>
+#include "AliESDCaloCluster.h"
+#include "AliESDtrack.h"
+#include "AliPicoTrack.h"
 
 ClassImp(AliEmcalClusTrackMatcherTask)
 
@@ -23,7 +20,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) :
   if (!name)
     return;
   SetName(name);
-//  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,CaloClusters,Tracks";
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,CaloClusters,Tracks";
 }
 
 //________________________________________________________________________
@@ -44,36 +41,74 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
 {
   // Main loop, called for each event.
 
-#if 0
-  // add jets to event if not yet there
-  if (!(InputEvent()->FindListObject(fJetsName)))
-    InputEvent()->AddObject(fJets);
-
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  TClonesArray *tracks = 0;
-  TClonesArray *clus   = 0;
   TList *l = InputEvent()->GetList();
-  if ((fType==0)||(fType==1)) {
-    if (fPrimTracksName == "Tracks")
-      am->LoadBranch("Tracks");
-    tracks = dynamic_cast<TClonesArray*>(l->FindObject(fPrimTracksName));
-    if (!tracks) {
-      AliError(Form("Pointer to tracks %s == 0", fPrimTracksName.Data() ));
-      return;
-    }
+
+  TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
+  if (!tracks) {
+    AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
+    return;
   }
-  if ((fType==0)||(fType==2)) {
-    if (fCaloName == "CaloClusters")
-      am->LoadBranch("CaloClusters");
-    clus = dynamic_cast<TClonesArray*>(l->FindObject(fCaloName));
-    if (!clus) {
-      AliError(Form("Pointer to clus %s == 0", fCaloName.Data() ));
-      return;
-    }
-    if (!(InputEvent()->FindListObject(Form("%s_neutrals",fJetsName.Data()))))
-      InputEvent()->AddObject(fNeutrals);
+
+  TClonesArray *clus = dynamic_cast<TClonesArray*>(l->FindObject(fCaloName));
+  if (!clus) {
+    AliError(Form("Pointer to clus %s == 0", fCaloName.Data() ));
+    return;
   }
-#endif
+
+  const Int_t Ntrks = tracks->GetEntries();
+  const Int_t Ncls  = clus->GetEntries();
+  for(Int_t i=0; i < Ncls; ++i) {
+    AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
+    if (!c)
+      continue;
+    c->SetEmcCpvDistance(-1);
+    c->SetTrackDistance(999,999);
+    Double_t dEtaMin  = 1e9;
+    Double_t dPhiMin  = 1e9;
+    Int_t    imin     = -1;
+    for(Int_t t = 0; t<Ntrks; ++t) {
+      AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+      Double_t etadiff=999;
+      Double_t phidiff=999;
+      AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
+      Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
+      if(dR > 25) 
+        continue;
+      if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
+        dEtaMin = etadiff;
+        dPhiMin = phidiff;
+        imin = t;
+      }
+    }
+    c->SetEmcCpvDistance(imin);
+    c->SetTrackDistance(dPhiMin, dEtaMin);
+  }
+
+  for(Int_t t = 0; t<Ntrks; ++t) {
+    AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+    if (!track)
+      continue;
+    Double_t dEtaMin  = 1e9;
+    Double_t dPhiMin  = 1e9;
+    Int_t    imin     = -1;
+    for(Int_t i=0; i < Ncls; ++i) {
+      AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
+      if (!c)
+        continue;
+      Double_t etadiff=999;
+      Double_t phidiff=999;
+      AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
+      Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
+      if(dR > 25) 
+        continue;
+      if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
+        dEtaMin = etadiff;
+        dPhiMin = phidiff;
+        imin = t;
+      }
+    }
+    track->SetEMCALcluster(imin);
+  }
 }
 
 //________________________________________________________________________

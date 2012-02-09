@@ -21,8 +21,6 @@ class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskSE {
   void         SetTracksName(const char *n)      { fTracksName = n; }
 
  protected:
-  void FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius);
-
   TString      fTracksName;         // name of track collection (if "" use branch)
   TString      fCaloName;           // name of calo collection
 
