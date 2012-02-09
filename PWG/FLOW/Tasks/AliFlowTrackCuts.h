@@ -140,6 +140,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t GetBeta(const AliESDtrack* t);
   Float_t Getdedx(const AliESDtrack* t) const;
   Float_t GetBayesianProb() const {return fProbBayes;};
+  AliFlowBayesianPID* GetBayesianResponse() const {return  fBayesianResponse;}
 
   void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
