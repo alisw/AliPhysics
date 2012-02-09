@@ -60,7 +60,9 @@ void AliEmcalCompatTask::UserExec(Option_t *)
   am->LoadBranch("AliESDRun.");
 
   AliESDHeader *header = esdEv->GetHeader();
-  TString title(header->GetTitle());
+  TString title;
+  if (header)
+    title = header->GetTitle();
   if (title.Length()==0)
     return;
 
@@ -68,7 +70,7 @@ void AliEmcalCompatTask::UserExec(Option_t *)
     am->LoadBranch("Centrality.");
     AliCentrality *centin = dynamic_cast<AliCentrality*>(esdEv->FindListObject("Centrality"));
     AliCentrality *centout = esdEv->GetCentrality();
-    if (centout->GetQuality()==999) {
+    if (centin&&centout&&centout->GetQuality()==999) {
       centout->SetQuality(centin->GetQuality());
       centout->SetCentralityV0M(centin->GetCentralityPercentileUnchecked("V0M"));
       centout->SetCentralityFMD(centin->GetCentralityPercentileUnchecked("FMD"));
@@ -86,7 +88,7 @@ void AliEmcalCompatTask::UserExec(Option_t *)
     am->LoadBranch("Eventplane.");
     AliEventplane *epin  = dynamic_cast<AliEventplane*>(esdEv->FindListObject("Eventplane"));
     AliEventplane *epout = esdEv->GetEventplane();
-    if ((epout->GetQVector()==0)&&(epin->GetQVector()!=0)) {
+    if (epin&&epout&&(epout->GetQVector()==0)&&(epin->GetQVector()!=0)) {
       epout->SetQVector(new TVector2(*epin->GetQVector()));
       epout->SetEventplaneQ(epin->GetEventplane("Q"));
       epout->SetQsub(new TVector2(*epin->GetQsub1()),new TVector2(*epin->GetQsub2()));
@@ -95,10 +97,10 @@ void AliEmcalCompatTask::UserExec(Option_t *)
   }
 
   TTree *tree = am->GetTree();
-  if (tree->GetBranch("PicoTracks"))
+  if (tree&&tree->GetBranch("PicoTracks"))
     am->LoadBranch("PicoTracks");
 
-  if (tree->GetBranch("Tracks")) {
+  if (tree&&tree->GetBranch("Tracks")) {
     am->LoadBranch("Tracks");
     TClonesArray *ts = dynamic_cast<TClonesArray*>(esdEv->FindListObject("Tracks"));
     if (ts) {
