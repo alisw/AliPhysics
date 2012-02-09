@@ -2423,52 +2423,61 @@ Bool_t AliFlowTrackCuts::PassesNucleiSelection(const AliESDtrack* track)
   Bool_t select=kFALSE;
 
   //if (!track) continue; 
-  
+
   if (!track->GetInnerParam()) 
     return kFALSE;    //break;
-  
+
   const AliExternalTrackParam* tpcTrack = track->GetInnerParam();
-   
+
   Double_t ptotTPC = tpcTrack->GetP();
   Double_t sigTPC = track->GetTPCsignal();
   Double_t dEdxBBA = 0.;
   Double_t dSigma = 0.; 
 
   switch (fParticleID)
-    {
+  {
     case AliPID::kDeuteron:
       //pid=10;
       dEdxBBA = AliExternalTrackParam::BetheBlochAleph(ptotTPC/1.8756,
-						       4.60e+00,
-						       8.9684e+00,
-						       1.640e-05,
-						       2.35e+00,
-						       2.35e+00);
+          4.60e+00,
+          8.9684e+00,
+          1.640e-05,
+          2.35e+00,
+          2.35e+00);
       dSigma = (sigTPC -  dEdxBBA)/dEdxBBA;
-      
+
       if( ptotTPC<=1.1 && (dSigma < (0.5 - (0.1818*ptotTPC)) ) && (dSigma > ( (0.218*ptotTPC - 0.4) ) )  )
-	{select=kTRUE;}
+      {select=kTRUE;}
       break;
-      
+
     case AliPID::kTriton:
       //pid=11;
       select=kFALSE;
       break;
-      
+
     case AliPID::kHe3:
       //pid=12;
-      select=kFALSE;
+      // ----- Pass 2 -------
+      dEdxBBA = 4.0 * AliExternalTrackParam::BetheBlochAleph( (2.*ptotTPC)/2.8084,
+          1.74962,
+          27.4992,
+          4.00313e-15,
+          2.42485,
+          8.31768);
+      dSigma = (sigTPC -  dEdxBBA)/dEdxBBA;
+      if(ptotTPC<=5.0 && (dSigma >= (-0.03968*ptotTPC - 0.1)) && (dSigma <= (0.31 - 0.0217*ptotTPC)))
+      {select=kTRUE;}
       break;
-      
+
     case AliPID::kAlpha:
       //pid=13;
       select=kFALSE;
       break;
-      
+
     default:
       return kFALSE;
-    }       
-  
+  }       
+
   return select;
 }
 // end part added by Natasha
