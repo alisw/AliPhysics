@@ -228,8 +228,13 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
       // Rescaling
       Double_t qxTierce = qxSeconde/fAPlus[ring];
       Double_t qyTierce = qySeconde/fAMinus[ring];
-      qxTot += qxTierce;
-      qyTot += qyTierce;
+      // 4th Fourier momenta in order to flatten the EP within a sector
+      Double_t psi = TMath::ATan2(qyTierce,qxTierce)/harmonic;
+      Double_t deltaPsi = (fCos8Psi[ring]*TMath::Sin(2.*4.*psi))/2.;
+      Double_t qxQuarte = qxTierce*TMath::Cos(2.*deltaPsi) - qyTierce*TMath::Sin(2.*deltaPsi);
+      Double_t qyQuarte = qxTierce*TMath::Sin(2.*deltaPsi) + qyTierce*TMath::Cos(2.*deltaPsi);
+      qxTot += qxQuarte;
+      qyTot += qyQuarte;
     }
     else {
       qxTot += qx;
@@ -240,15 +245,7 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
   // In case of no hits return an invalid event-plane angle
   if (totMult<1e-6) return -999;
 
-  // 4th Fourier momenta in order to flatten the EP within a sector
-  Double_t psi = TMath::ATan2(qyTot,qxTot)/harmonic;
-  if ((harmonic == 2) && (firstRing == lastRing)) {
-    psi += (fCos8Psi[firstRing]*TMath::Sin(2.*4.*psi))/2.;
-    if (psi > TMath::Pi()/2) psi -= TMath::Pi();
-    if (psi <-TMath::Pi()/2) psi += TMath::Pi();
-  }
-
-  return psi;
+  return (TMath::ATan2(qyTot,qxTot)/harmonic);
 }
 
 void AliEventplane::SetVZEROEPParams(Int_t ring,
