@@ -339,7 +339,6 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
       const Int_t Ntracks = tracksin->GetEntries();
       for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
         AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(tracksin->At(iTracks));
-        cout << iTracks << endl;
         if (!track)
           continue;
         new ((*tracksout)[nacc]) AliPicoTrack(*track);
