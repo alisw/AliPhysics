@@ -36,9 +36,9 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
     AliAnalysisManager::SetGlobalStr("kDeltaAODJetName","");
 
 
-    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|kEMCEJE);    
+    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kEMCEJE);    
     AliAnalysisManager::SetGlobalInt("kNTrigger",5);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|kEMCEJE);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kEMCEJE);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit1",AliVEvent::kMB);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit2",AliVEvent::kCentral);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit3",AliVEvent::kSemiCentral);
