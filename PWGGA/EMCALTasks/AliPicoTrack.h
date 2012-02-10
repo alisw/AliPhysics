@@ -17,7 +17,7 @@ class AliPicoTrack: public AliVTrack {
   AliPicoTrack &operator=(const AliPicoTrack &pc);
 
   Double_t Px()                        const { return fPt*TMath::Cos(fPhi);  }
-  Double_t Py()                        const { return fPt*TMath::Cos(fPhi);  }
+  Double_t Py()                        const { return fPt*TMath::Sin(fPhi);  }
   Double_t Pz()                        const { return fPt*TMath::SinH(fEta); }
   Double_t Pt()                        const { return fPt;                   }
   Double_t P()                         const { return fPt*TMath::CosH(fEta); }
