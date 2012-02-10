@@ -107,15 +107,15 @@ Bool_t AliCalorimeterUtils::AreNeighbours(const TString calo,
   
   Int_t rowdiff =  0, coldiff =  0;
   
-  Int_t nSupMod1 = GetModuleNumberCellIndexes(absId1, calo, irow1, icol1, iRCU1); 
-  Int_t nSupMod2 = GetModuleNumberCellIndexes(absId2, calo, irow2, icol2, iRCU2); 
+  Int_t nSupMod1 = GetModuleNumberCellIndexes(absId1, calo, icol1, irow1, iRCU1); 
+  Int_t nSupMod2 = GetModuleNumberCellIndexes(absId2, calo, icol2, irow2, iRCU2); 
   
   if(calo=="EMCAL" && nSupMod1!=nSupMod2)
   {
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
     // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
     if(nSupMod1%2) icol1+=AliEMCALGeoParams::fgkEMCALCols;
-    else           icol2+=AliEMCALGeoParams::fgkEMCALCols;
+    else           icol2+=AliEMCALGeoParams::fgkEMCALCols;    
 	}
   
   rowdiff = TMath::Abs( irow1 - irow2 ) ;  
@@ -589,7 +589,7 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
                                                   Int_t *absIdList,     Float_t *maxEList) 
 {
   // Find local maxima in cluster
-  
+
   Int_t iDigitN = 0 ;
   Int_t iDigit  = 0 ;
   Int_t absId1 = -1 ;
@@ -600,68 +600,75 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
   if(!cluster->IsEMCAL()) calorimeter = "PHOS";
   
   //printf("cluster : ncells %d \n",nCells);
-  for(iDigit = 0; iDigit < nCells ; iDigit++){
+  for(iDigit = 0; iDigit < nCells ; iDigit++)
+  {
     absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit]  ; 
-    /* 
-     Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-     RecalibrateCellAmplitude(en,calo,absIdList[iDigit]);  
-     Int_t icol = -1, irow = -1, iRCU = -1;
-     Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
-     
-     printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
-     */ 
+     //Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+     //RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
+     //Int_t icol = -1, irow = -1, iRCU = -1;
+     //Int_t sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
+     //printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
   }
   
-  
-  for(iDigit = 0 ; iDigit < nCells; iDigit++) {   
-    if(absIdList[iDigit]>=0) {
-      
-      absId1 = absIdList[iDigit] ;
-      //printf("%d : absID111 %d, %s\n",iDigit, absId1,calorimeter.Data());
+  for(iDigit = 0 ; iDigit < nCells; iDigit++) 
+  {   
+    if(absIdList[iDigit]>=0) 
+    {
+      absId1 = cluster->GetCellsAbsId()[iDigit];
       
       Float_t en1 = cells->GetCellAmplitude(absId1);
       RecalibrateCellAmplitude(en1,calorimeter,absId1);  
+              
+      //printf("%d : absIDi %d, E %f\n",iDigit, absId1,en1);
       
-      for(iDigitN = 0; iDigitN < nCells; iDigitN++) {	
+      for(iDigitN = 0; iDigitN < nCells; iDigitN++) 
+      {	
+        absId2 = cluster->GetCellsAbsId()[iDigitN] ;
         
-        absId2 = absIdList[iDigitN] ;
+        if(absId2==-1 || absId2==absId1) continue;
         
-        if(absId2==-1) continue;
-        
-        //printf("\t %d : absID222 %d, %s\n",iDigitN, absId2,calorimeter.Data());
+        //printf("\t %d : absIDj %d\n",iDigitN, absId2);
         
         Float_t en2 = cells->GetCellAmplitude(absId2);
         RecalibrateCellAmplitude(en2,calorimeter,absId2);
+                
+        //printf("\t %d : absIDj %d, E %f\n",iDigitN, absId2,en2);
         
-        if ( AreNeighbours(calorimeter, absId1, absId2) ) {
-          
-          if (en1 > en2 ) {    
+        if ( AreNeighbours(calorimeter, absId1, absId2) ) 
+        {
+          // printf("\t \t Neighbours \n");
+          if (en1 > en2 ) 
+          {    
             absIdList[iDigitN] = -1 ;
             //printf("\t \t indexN %d not local max\n",iDigitN);
             // but may be digit too is not local max ?
             if(en1 < en2 + fLocMaxCutEDiff) {
-              //printf("\t \t index %d not local max cause locMaxCut\n",iDigit);
+              //printf("\t \t index %d not local max cause locMaxCutEDiff\n",iDigit);
               absIdList[iDigit] = -1 ;
             }
           }
-          else {
+          else 
+          {
             absIdList[iDigit] = -1 ;
             //printf("\t \t index %d not local max\n",iDigitN);
             // but may be digitN too is not local max ?
             if(en1 > en2 - fLocMaxCutEDiff) 
             {
               absIdList[iDigitN] = -1 ; 
-              //printf("\t \t indexN %d not local max cause locMaxCut\n",iDigit);
+              //printf("\t \t indexN %d not local max cause locMaxCutEDiff\n",iDigit);
             }
           } 
-        } // if Areneighbours
+        } // if Are neighbours
+        //else printf("\t \t NOT Neighbours \n");
       } // while digitN
     } // slot not empty
   } // while digit
   
   iDigitN = 0 ;
-  for(iDigit = 0; iDigit < nCells; iDigit++) { 
-    if(absIdList[iDigit]>=0 ){
+  for(iDigit = 0; iDigit < nCells; iDigit++) 
+  { 
+    if(absIdList[iDigit]>=0 )
+    {
       absIdList[iDigitN] = absIdList[iDigit] ;
       Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
       RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
@@ -672,7 +679,7 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
     }
   }
   
-  //printf("N maxima %d \n",iDigitN);
+  //printf("**********N maxima %d \n",iDigitN);
   //for(Int_t imax = 0; imax < iDigitN; imax++) printf("imax %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
   
   return iDigitN ;
@@ -825,9 +832,9 @@ Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,
   
 }
 
-//____________________________________________________________________________________
+//__________________________________________________________________________________________
 void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp,
-                                                   const TString calo, const Int_t id)
+                                                   const TString calo, const Int_t id) const
 {
   //Recaculate cell energy if recalibration factor
   
@@ -847,10 +854,10 @@ void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp,
   }
 }
 
-//___________________________________________________________________________
+//_________________________________________________________________________________
 void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, 
                                               const TString calo, 
-                                              const Int_t id, const Int_t bc)
+                                              const Int_t id, const Int_t bc) const
 {
   // Recalculate time if time recalibration available for EMCAL
   // not ready for PHOS

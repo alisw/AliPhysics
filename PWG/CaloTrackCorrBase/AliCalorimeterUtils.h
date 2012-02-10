@@ -181,8 +181,8 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(map)        ; }
   void          SetPHOSChannelRecalibrationFactors (TObjArray *map)      { fPHOSRecalibrationFactors  = map;}
 
-  void          RecalibrateCellTime     (Double_t & time, const TString calo, const Int_t absId, const Int_t bunchCrossNumber);
-  void          RecalibrateCellAmplitude(Float_t  & amp,  const TString calo, const Int_t absId);
+  void          RecalibrateCellTime     (Double_t & time, const TString calo, const Int_t absId, const Int_t bunchCrossNumber) const ;
+  void          RecalibrateCellAmplitude(Float_t  & amp,  const TString calo, const Int_t absId) const ;
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
 
   //EMCAL specific utils for the moment
