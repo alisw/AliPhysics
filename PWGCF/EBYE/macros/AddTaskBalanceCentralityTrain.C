@@ -7,6 +7,15 @@
 //Bool_t gRunShuffling = kFALSE;
 //Bool_t gRunShuffling = kTRUE;
 //=============================================//
+
+//PID config
+Bool_t kUseNSigmaPID = kFALSE;
+Double_t nSigmaMax = 3.0;
+Bool_t kUseBayesianPID = kTRUE;
+Double_t gMinAcceptedProbability = 0.7;
+kDetectorUsedForPID pidMethod = AliAnalysisTaskBF::kTPCTOF;
+kParticleOfInterest particleOfInterest = AliAnalysisTaskBF::kPion;
+
 //_________________________________________________________//
 AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t centrMax=100.,
@@ -21,6 +30,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t etaMax=0.8,
 						 Double_t maxTPCchi2 = -1, 
 						 Int_t minNClustersTPC = -1,
+						 Bool_t kUsePID = kFALSE,
 						 Int_t AODfilterBit = 128,
 						 TString fileNameBase="AnalysisResults") {
 
@@ -108,7 +118,14 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   if(analysisType == "ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
     taskBF->SetAnalysisCutObject(trackCuts);
-    
+    if(kUsePID) {
+      if(kUseBayesianPID)
+	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
+      else if(kUseNSigmaPID)
+	taskBF->SetUseNSigmaPID(nSigmaMax);
+      taskBF->SetParticleOfInterest(particleOfInterest);
+      taskBF->SetDetectorUsedForPID(pidMethod);
+    }
   }
   else if(analysisType == "AOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
