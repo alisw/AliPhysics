@@ -180,18 +180,16 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
 }
 #else
 //________________________________________________________________________
-AliEsdJetTask::AliEsdJetTask(const char *name) : 
+AliEsdJetTask::AliEsdJetTask(const char */*name*/) : 
   AliAnalysisTaskSE("AliEsdJetTask"),
-  fPrimTrCuts(0),
-  fPrimTracksName("Tracks"),
-  fJetsName("Jets"),
+  fTracksName("Tracks"),
   fCaloName("CaloClusters"),
+  fJetsName("Jets"),
   fAlgo(1),
   fRadius(0.4),
   fType(0),
   fHadCorr(0),
-  fJets(0),
-  fNeutrals(0)
+  fJets(0)
 {
   // Standard constructor.
   AliFatal("Compiled without FASTJET package. Task cannot be used!");
