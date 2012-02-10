@@ -13,6 +13,7 @@
 #include <TH1D.h>
 #include <TH1F.h>
 #include <TH2F.h>
+class AliLog;
 
 // --- AliRoot header files ---
 #include <AliVCaloCells.h>
