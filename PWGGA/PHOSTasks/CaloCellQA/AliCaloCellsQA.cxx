@@ -79,6 +79,7 @@
 #include <TLorentzVector.h>
 
 // --- AliRoot header files ---
+#include <AliLog.h>
 #include <AliEMCALGeometry.h>
 #include <AliPHOSGeometry.h>
 #include <AliCaloCellsQA.h>
