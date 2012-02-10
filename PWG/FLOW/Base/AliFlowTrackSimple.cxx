@@ -39,6 +39,7 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   fPhi(0),
   fTrackWeight(1.),
   fCharge(0),
+  fMass(-1),
   fFlowBits(0),
   fSubEventBits(0),
   fID(-1)
@@ -47,13 +48,14 @@ AliFlowTrackSimple::AliFlowTrackSimple():
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge):
+AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge, Double_t mass):
   TObject(),
   fEta(eta),
   fPt(pt),
   fPhi(phi),
   fTrackWeight(weight),
   fCharge(charge),
+  fMass(mass),
   fFlowBits(0),
   fSubEventBits(0),
   fID(-1)
@@ -69,6 +71,7 @@ AliFlowTrackSimple::AliFlowTrackSimple( TParticle* p ):
   fPhi(p->Phi()),
   fTrackWeight(1.),
   fCharge(0),
+  fMass(-1),
   fFlowBits(0),
   fSubEventBits(0),
   fID(-1)
@@ -76,6 +79,7 @@ AliFlowTrackSimple::AliFlowTrackSimple( TParticle* p ):
   //ctor
   TParticlePDG* ppdg = p->GetPDG();
   fCharge = TMath::Nint(ppdg->Charge()/3.0);
+  fMass = ppdg->Mass();
 }
 
 //-----------------------------------------------------------------------
@@ -88,6 +92,7 @@ void AliFlowTrackSimple::Set(TParticle* p)
   fTrackWeight = 1.;
   TParticlePDG* ppdg = p->GetPDG();
   fCharge = TMath::Nint(ppdg->Charge()/3.0);
+  fMass = ppdg->Mass();
 }
 
 //-----------------------------------------------------------------------
@@ -98,6 +103,7 @@ AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
   fPhi(aTrack.fPhi),
   fTrackWeight(aTrack.fTrackWeight),
   fCharge(aTrack.fCharge),
+  fMass(aTrack.fMass),
   fFlowBits(aTrack.fFlowBits),
   fSubEventBits(aTrack.fSubEventBits),
   fID(aTrack.fID)
@@ -122,6 +128,7 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
   fPhi = aTrack.fPhi;
   fTrackWeight = aTrack.fTrackWeight;
   fCharge = aTrack.fCharge;
+  fMass = aTrack.fMass;
   fFlowBits = aTrack.fFlowBits;
   fSubEventBits = aTrack.fSubEventBits;
   fID = aTrack.fID;
@@ -369,6 +376,7 @@ void AliFlowTrackSimple::Clear(Option_t*)
   fPhi=0.0;
   fTrackWeight=1.0;
   fCharge=0;
+  fMass=-1;
   fFlowBits.ResetAllBits();
   fSubEventBits.ResetAllBits();
   fID=-1;

@@ -33,6 +33,8 @@ class AliFlowTrackSimpleCuts : public TNamed {
   void SetPhiMin(Double_t min)  {this->fPhiMin = min; fCutPhi=kTRUE; }
   void SetPID(Int_t pid)        {this->fPID = pid; fCutPID=kTRUE; }
   void SetCharge(Int_t c)       {this->fCharge = c; fCutCharge=kTRUE; }
+  void SetMassMax(Double_t max) {this->fMassMax = max; fCutMass=kTRUE; }
+  void SetMassMin(Double_t min) {this->fMassMin = min; fCutMass=kTRUE; }
   
   //getters
   Double_t GetPtMax() const     {return this->fPtMax; }
@@ -43,6 +45,8 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Double_t GetPhiMin() const    {return this->fPhiMin; }
   Int_t    GetPID() const       {return this->fPID; }
   Int_t    GetCharge() const    {return this->fCharge; }
+  Double_t GetMassMax() const   {return this->fMassMax; }
+  Double_t GetMassMin() const   {return this->fMassMin; }
   
   //simple method to check if the simple track passes the simple cuts:
   Bool_t PassesCuts(const AliFlowTrackSimple *track) const;
@@ -64,8 +68,11 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Int_t    fPID;    //pid
   Bool_t   fCutCharge; //cut on charge?
   Int_t    fCharge;    //charge
+  Bool_t   fCutMass; // cut on mass?
+  Double_t fMassMax; //max mass
+  Double_t fMassMin; //min mass
 
-  ClassDef(AliFlowTrackSimpleCuts,1)
+  ClassDef(AliFlowTrackSimpleCuts,2)
 };
 
 #endif

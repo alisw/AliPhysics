@@ -45,6 +45,17 @@ ifneq ($(CORRFW_INCLUDE),)
   ALICEINC += -I../$(CORRFW_INCLUDE)
 endif
 
+ifneq ($(PWGflowBase_INCLUDE),)
+  ALICEINC += -I../$(PWGflowBase_INCLUDE)
+endif
+
+#needed by flowTasks
+ALICEINC += -I$(ALICE_ROOT)/TOF
+
+ifneq ($(PWGflowTasks_INCLUDE),)
+  ALICEINC += -I../$(PWGflowTasks_INCLUDE)
+endif
+
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)

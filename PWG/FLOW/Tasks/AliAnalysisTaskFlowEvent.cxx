@@ -315,7 +315,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     fFlowEvent->Fill( fCutsRP, fCutsPOI );
     //fFlowEvent = new AliFlowEvent( fCutsRP, fCutsPOI );
 
-    if (myESD)
+    //    if (myESD)
       fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent()));
     if (mcEvent && mcEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(mcEvent);
   }
@@ -534,7 +534,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   //QA
   if (fQAon)
   {
-    TH1* h1 = static_cast<TH1*>(fQAList->At(3));
+    TH1* h1 = static_cast<TH1*>(fQAList->FindObject("event plane angle"));
     h1->Fill(fFlowEvent->GetMCReactionPlaneAngle());
   }
 

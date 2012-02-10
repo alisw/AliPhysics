@@ -25,7 +25,6 @@ ClassImp(AliFlowCandidateTrack)
 
 AliFlowCandidateTrack::AliFlowCandidateTrack():
     AliFlowTrack(),
-    fMass(0),
     fNDaughters(0)
 {
   // ctor
@@ -37,7 +36,6 @@ AliFlowCandidateTrack::AliFlowCandidateTrack():
 
 AliFlowCandidateTrack::AliFlowCandidateTrack(const AliFlowCandidateTrack& aTrack):
   AliFlowTrack(aTrack),
-  fMass(aTrack.fMass),
   fNDaughters(aTrack.fNDaughters)
 {
   // ctor
@@ -53,7 +51,6 @@ AliFlowCandidateTrack&  AliFlowCandidateTrack::operator=(const AliFlowCandidateT
   if (this == &aTrack) return *this; //handles self assignment
 
   AliFlowTrack::operator=(aTrack);
-  fMass = aTrack.fMass;
   fNDaughters = aTrack.fNDaughters;
   for(int i=0; i!=5; ++i) {
     fDaughter[i] = aTrack.fDaughter[i];

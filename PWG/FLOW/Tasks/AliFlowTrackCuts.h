@@ -205,7 +205,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesESDcuts(AliESDtrack* track);
-  Bool_t PassesAODcuts(const AliAODTrack* track);
+  Bool_t PassesAODcuts(const AliAODTrack* track, Bool_t passFid=kTRUE);
   Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
   Bool_t PassesV0cuts(Int_t id);
   Bool_t PassesCuts(const AliFlowTrackSimple* track);
