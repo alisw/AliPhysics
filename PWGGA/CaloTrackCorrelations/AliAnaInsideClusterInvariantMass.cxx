@@ -737,20 +737,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     }  
     
     //---------------------------------------------------------------------
-    // From here only if M02 is large, fill histograms or split the cluster
-    //---------------------------------------------------------------------
-
-    if( l0 < fM02MinCut || l0 > fM02MaxCut ) 
-    {
-      delete [] absIdList ;
-      delete [] maxEList  ;
-      continue;    
-    }
-        
-    fhNLocMaxM02Cut[0][matched]->Fill(en,nMax);
-    if(IsDataMC()) fhNLocMaxM02Cut[mcindex][matched]->Fill(en,nMax);
-    
-    //---------------------------------------------------------------------
     // Get the 2 max indeces and do inv mass
     //---------------------------------------------------------------------
 
@@ -836,20 +822,75 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
     if     (nMax==1) 
     { 
-      fhAnglePairLocMax1[matched]->Fill(en,angle);
-      fhMassNLocMax1[0][matched] ->Fill(en,mass ); 
-
       if( en > 7 ) 
       {      
-        fhAnglePairMassLocMax1[matched]->Fill(mass,angle);
         fhMassM02NLocMax1[0]  [matched]->Fill(l0,  mass ); 
       }
       
-      if(en > 6  && en <= 10) fhMassM02NLocMax1Ebin[0]->Fill(l0,  mass ); 
-      if(en > 10 && en <= 15) fhMassM02NLocMax1Ebin[1]->Fill(l0,  mass ); 
-      if(en > 15 && en <= 20) fhMassM02NLocMax1Ebin[2]->Fill(l0,  mass ); 
-      if(en > 20)             fhMassM02NLocMax1Ebin[3]->Fill(l0,  mass ); 
-
+      if(!matched)
+      {
+        if(en > 6  && en <= 10) fhMassM02NLocMax1Ebin[0]->Fill(l0,  mass ); 
+        if(en > 10 && en <= 15) fhMassM02NLocMax1Ebin[1]->Fill(l0,  mass ); 
+        if(en > 15 && en <= 20) fhMassM02NLocMax1Ebin[2]->Fill(l0,  mass ); 
+        if(en > 20)             fhMassM02NLocMax1Ebin[3]->Fill(l0,  mass ); 
+      }
+    }  
+    else if(nMax==2) 
+    {
+      if( en > 7 )
+      {
+        fhMassM02NLocMax2[0][matched]  ->Fill(l0,  mass ); 
+      }
+      
+      if(!matched)
+      {
+        if(en > 6  && en <= 10) fhMassM02NLocMax2Ebin[0]->Fill(l0,  mass ); 
+        if(en > 10 && en <= 15) fhMassM02NLocMax2Ebin[1]->Fill(l0,  mass ); 
+        if(en > 15 && en <= 20) fhMassM02NLocMax2Ebin[2]->Fill(l0,  mass ); 
+        if(en > 20)             fhMassM02NLocMax2Ebin[3]->Fill(l0,  mass );       
+      }
+    }
+    else if(nMax >2) 
+    {
+      if( en > 7 ) 
+      {      
+        fhMassM02NLocMaxN[0]  [matched]->Fill(l0  ,mass );
+      }
+      
+      if(!matched)
+      {
+        if(en > 6  && en <= 10) fhMassM02NLocMaxNEbin[0]->Fill(l0,  mass ); 
+        if(en > 10 && en <= 15) fhMassM02NLocMaxNEbin[1]->Fill(l0,  mass ); 
+        if(en > 15 && en <= 20) fhMassM02NLocMaxNEbin[2]->Fill(l0,  mass ); 
+        if(en > 20)             fhMassM02NLocMaxNEbin[3]->Fill(l0,  mass );
+      }
+    }
+    
+    
+    //---------------------------------------------------------------------
+    // From here only if M02 is large but not too large, fill histograms 
+    //---------------------------------------------------------------------
+    
+    if( l0 < fM02MinCut || l0 > fM02MaxCut ) 
+    {
+      delete [] absIdList ;
+      delete [] maxEList  ;
+      continue;    
+    }
+    
+    fhNLocMaxM02Cut[0][matched]->Fill(en,nMax);
+    if(IsDataMC()) fhNLocMaxM02Cut[mcindex][matched]->Fill(en,nMax);
+    
+    if     (nMax==1) 
+    { 
+      fhAnglePairLocMax1[matched]->Fill(en,angle);
+      fhMassNLocMax1[0][matched] ->Fill(en,mass ); 
+      
+      if( en > 7 ) 
+      {      
+        fhAnglePairMassLocMax1[matched]->Fill(mass,angle);
+      }
+      
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax1[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax1[0][matched]->Fill(en,l0);
       else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax1[0][matched]->Fill(en,l0);
@@ -858,18 +899,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     {
       fhAnglePairLocMax2[matched]->Fill(en,angle);
       fhMassNLocMax2[0] [matched]->Fill(en,mass );
-
+      
       if( en > 7 )
       {
-        fhAnglePairMassLocMax2[matched]->Fill(mass,angle);
-        fhMassM02NLocMax2[0][matched]  ->Fill(l0,  mass ); 
-
+        fhAnglePairMassLocMax2[matched]->Fill(mass,angle);        
       }
-      
-      if(en > 6  && en <= 10) fhMassM02NLocMax2Ebin[0]->Fill(l0,  mass ); 
-      if(en > 10 && en <= 15) fhMassM02NLocMax2Ebin[1]->Fill(l0,  mass ); 
-      if(en > 15 && en <= 20) fhMassM02NLocMax2Ebin[2]->Fill(l0,  mass ); 
-      if(en > 20)             fhMassM02NLocMax2Ebin[3]->Fill(l0,  mass );       
       
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[0][matched]->Fill(en,l0);
@@ -879,29 +913,23 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     {
       fhAnglePairLocMaxN[matched]->Fill(en,angle);
       fhMassNLocMaxN[0] [matched]->Fill(en,mass );
-
+      
       if( en > 7 ) 
       {      
         fhAnglePairMassLocMaxN[matched]->Fill(mass,angle);
-        fhMassM02NLocMaxN[0]  [matched]->Fill(l0  ,mass );
       }
-      
-      if(en > 6  && en <= 10) fhMassM02NLocMaxNEbin[0]->Fill(l0,  mass ); 
-      if(en > 10 && en <= 15) fhMassM02NLocMaxNEbin[1]->Fill(l0,  mass ); 
-      if(en > 15 && en <= 20) fhMassM02NLocMaxNEbin[2]->Fill(l0,  mass ); 
-      if(en > 20)             fhMassM02NLocMaxNEbin[3]->Fill(l0,  mass );       
       
       if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMaxN[0][matched]->Fill(en,l0);
       else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMaxN[0][matched]->Fill(en,l0);
       else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMaxN[0][matched]->Fill(en,l0);
     }
     
+    
     if(IsDataMC()){
             
       if     (nMax==1) 
       { 
         fhMassNLocMax1[mcindex][matched]->Fill(en,mass); 
-        if( en > 7 )  fhMassM02NLocMax1[mcindex][matched]->Fill(l0,  mass ); 
         if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax1[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax1[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax1[mcindex][matched]->Fill(en,l0);
@@ -909,7 +937,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       else if(nMax==2) 
       {
         fhMassNLocMax2[mcindex][matched]->Fill(en,mass);
-        if( en > 7 )  fhMassM02NLocMax2[mcindex][matched]->Fill(l0,  mass ); 
         if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax2[mcindex][matched]->Fill(en,l0);        
@@ -917,7 +944,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       else if(nMax >2) 
       {
         fhMassNLocMaxN[mcindex][matched]->Fill(en,mass);
-        if( en > 7 )  fhMassM02NLocMaxN[mcindex][matched]->Fill(l0,  mass ); 
         if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMaxN[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMaxN[mcindex][matched]->Fill(en,l0);
         else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMaxN[mcindex][matched]->Fill(en,l0);
