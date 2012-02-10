@@ -25,6 +25,8 @@ Float_t ptMax[numberOfSyst]  = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,5.0,10.0,10.0,1.5,1.
 Float_t etaMin[numberOfSyst] = {-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-1.0,-0.6,-0.4}; // eta cuts
 Float_t etaMax[numberOfSyst] = {0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.0,0.6,0.4};   // eta cuts
 
+Bool_t kUsePID = kFALSE;
+
 //______________________________________________________________________________
 void runBalanceFunction(
          const char* runtype = "local", // local, proof or grid
@@ -153,11 +155,16 @@ void runBalanceFunction(
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(bMCphyssel);
 
+      //Add the PID response
+      if(kUsePID) {
+	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+	AddTaskPIDResponse(bMCphyssel); 
+      }
     }
 
     //Add the BF task (all centralities)
     gROOT->LoadMacro("AddTaskBalanceCentralityTrain.C"); 
-    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,0,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1);
+    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,0,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID);
     
     // enable debug printouts
     //mgr->SetDebugLevel(2);
