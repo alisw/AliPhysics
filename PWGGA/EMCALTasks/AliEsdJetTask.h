@@ -18,7 +18,7 @@ class AliEsdJetTask : public AliAnalysisTaskSE {
   void         Terminate(Option_t *option);
 
   void         SetAlgo(Int_t a)                      { fAlgo       = a; }
-  void         SetCaloName(const char *n)            { fCaloName   = n; }
+  void         SetClusName(const char *n)            { fCaloName   = n; }
   void         SetHadCorr(Double_t c)                { fHadCorr    = c; }
   void         SetJetsName(const char *n)            { fJetsName   = n; }
   void         SetTracksName(const char *n)          { fTracksName = n; }
@@ -28,8 +28,8 @@ class AliEsdJetTask : public AliAnalysisTaskSE {
  protected:
   void FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius);
 
-  TString                fTracksName;             // name of track collection (if "" use branch)
-  TString                fCaloName;               // name of calo collection
+  TString                fTracksName;             // name of track collection
+  TString                fCaloName;               // name of calo cluster collection
   TString                fJetsName;               // name of jet collection
   Int_t                  fAlgo;                   // algo (0==kt, 1==antikt)
   Double_t               fRadius;                 // jet radius
