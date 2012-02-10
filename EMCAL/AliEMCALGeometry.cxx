@@ -40,7 +40,7 @@
 //                the sizes updated with last information from production
 //                drawing (end of October 2010). 
 //      
-//   EMCAL_COMPLETEV1: Same fixes as FIRSTYEAR and 10 SM instead of 10+2 half SM, for 2011 runs
+//   EMCAL_COMPLETEV1: Same fixes as FIRSTYEAR and 10 SM instead of 10 + 2 one_third SM, for 2011 runs
 //
 //   EMCAL_COMPLETE12SMV1: contains 12 SM for runs from year 2012 and on
 //
@@ -106,6 +106,7 @@
 //#include <Riostream.h>
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALShishKebabTrd1Module.h"
 
@@ -460,8 +461,10 @@ Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, 
   // 0 <= nIeta   < fNETAdiv
   // 0 <= absid   < fNCells
   static Int_t id=0; // have to change from 0 to fNCells-1
-  if(fKey110DEG == 1 && nSupMod >= 10) { // 110 degree case; last two supermodules
+  if(fKey110DEG == 1 && nSupMod >= 10 && !fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules halfsupermodules 
     id  = fNCellsInSupMod*10 + (fNCellsInSupMod/2)*(nSupMod-10);
+  } else if(fKey110DEG == 1 && nSupMod >= 10 && fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules 1/3 supermodules 
+    id  = fNCellsInSupMod*10 + (fNCellsInSupMod/3)*(nSupMod-10);
   } else {
     id  = fNCellsInSupMod*nSupMod;
   }
@@ -549,9 +552,13 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
     phi    = TVector2::Phi_0_2pi(phi);
     phiLoc = phi - fPhiCentersOfSM[nSupMod/2];
     nphi   = fPhiCentersOfCells.GetSize();
-    if(nSupMod>=10) {
-      phiLoc = phi - 190.*TMath::DegToRad();
+    if(nSupMod>=10 && !fGeoName.Contains("12SMV1")) {
+      phiLoc = phi - 190.*TMath::DegToRad(); // half-size case... the reference for the loc  is still 190 deg..?
       nphi  /= 2;
+    }
+    if(nSupMod>=10 && fGeoName.Contains("12SMV1")) {
+     // in the one_third case the variable fPhiCentersOfSM behaves like for the full_module.
+      nphi  /= 3;
     }
 
     dmin   = TMath::Abs(fPhiCentersOfCells[0]-phiLoc);
@@ -579,18 +586,11 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
       }
     }
     AliDebug(2,Form(" ieta %i : dmin %f (eta=%f) : nSupMod %i ", ieta, dmin, eta, nSupMod));
-
-    if(eta<0) iphi = (nphi-1) - iphi;
-	  
-	//patch for mapping following alice convention  
-	if(nSupMod%2 == 0)		  
-		  ieta = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
-	else {
-		if(nSupMod<10) 
-				iphi = (fCentersOfCellsPhiDir.GetSize()-1)  -iphi;// 23-iphi, revert the ordering on C side in order to keep convention.
-		else 
-				iphi = (fCentersOfCellsPhiDir.GetSize()/2-1)-iphi;// 11-iphi, revert the ordering on C side in order to keep convention.
-	}
+     
+   //patch for mapping following alice convention  
+   if(nSupMod%2 == 0)		  
+      ieta = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
+   
   
     absId = GetAbsCellIdFromCellIndexes(nSupMod, iphi, ieta);
 
@@ -625,10 +625,13 @@ Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nModule,
   if(!CheckAbsCellId(absId)) return kFALSE;
 
   sm10 = fNCellsInSupMod*10;
-  if(fKey110DEG == 1 && absId >= sm10) { // 110 degree case; last two supermodules  
+  if(fKey110DEG == 1 && absId >= sm10 && !fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules are halfsupermodules 
     nSupMod = (absId-sm10) / (fNCellsInSupMod/2) + 10;
     tmp     = (absId-sm10) % (fNCellsInSupMod/2);
-  } else {
+  } else if(fKey110DEG == 1 && absId >= sm10 && fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules are 1/3 supermodules 
+    nSupMod = (absId-sm10) / (fNCellsInSupMod/3) + 10;
+    tmp     = (absId-sm10) % (fNCellsInSupMod/3);
+  } else { 
     nSupMod = absId / fNCellsInSupMod;
     tmp     = absId % fNCellsInSupMod;
   }
@@ -662,8 +665,9 @@ void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModul
   // iphim - have to change from 0 to nphi-1 (fNPhi-1 or fNPhi/2-1)
   static Int_t nphi=-1;
 
-  if(fKey110DEG == 1 && nSupMod>=10) nphi = fNPhi/2;
-  else                               nphi = fNPhi;
+  if(fKey110DEG == 1 && nSupMod>=10 && !fGeoName.Contains("12SMV1") )      nphi = fNPhi/2; // halfSM
+  else if(fKey110DEG == 1 && nSupMod>=10 && fGeoName.Contains("12SMV1") )  nphi = fNPhi/3; // 1/3 SM
+  else                                                               nphi = fNPhi;   // full SM
 
   ietam = nModule/nphi;
   iphim = nModule%nphi;
@@ -714,8 +718,15 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   // xr,yr,zr - x,y,z coordinates of cell with absId inside SM 
 
   // Shift index taking into account the difference between standard SM 
-  // and SM of half size in phi direction
-  const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  // and SM of half (or one third) size in phi direction
+ 
+   Int_t workaround; // a small trick to be able to define the const variable kphiIndexShift
+   //if half, two parts, 1/4 wide, should be remove. In case of one_third SM, the two parts to be removed are 1/3 each
+   if(fKey110DEG == 1 && !fGeoName.Contains("12SMV1")) workaround=4; // half SM case
+   else workaround=3; // one third of SM case 
+   const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/workaround; 
+   const Int_t kphiRangeSmallSM = fCentersOfCellsPhiDir.GetSize()-2*kphiIndexShift;  
+      
   static Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
@@ -738,7 +749,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
 	  
   } else {
 		if(nSupMod%2 != 0) 
-			iphi2 = (fCentersOfCellsPhiDir.GetSize()/2-1)-iphi;// 11-iphi, revert the ordering on C side in order to keep convention.
+			iphi2 = (kphiRangeSmallSM-1)-iphi;// 11-iphi [1/2SM] or 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
 		yr = fCentersOfCellsPhiDir.At(iphi2 + kphiIndexShift);
   }
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
@@ -790,8 +801,15 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
   // xr,yr,zr - x,y,z coordinates of cell with absId inside SM 
   
   // Shift index taking into account the difference between standard SM 
-  // and SM of half size in phi direction
-  const  Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  // and SM of half (or one third) size in phi direction
+   
+   Int_t workaround; // a small trick to be able to define the const variable kphiIndexShift
+   //if half, two parts, 1/4 wide, should be remove. In case of one_third SM, the two parts to be removed are 1/3 each
+   if(fKey110DEG == 1 && !fGeoName.Contains("12SMV1")) workaround=4; // half SM case
+   else workaround=3; // one third of SM case 
+   const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/workaround; 
+   const Int_t kphiRangeSmallSM = fCentersOfCellsPhiDir.GetSize()-2*kphiIndexShift; 
+   
   static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
   static Int_t iphim=-1, ietam=-1;
   static AliEMCALShishKebabTrd1Module *mod = 0;
@@ -821,9 +839,9 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
     yr = fCentersOfCellsPhiDir.At(iphi2);
     
   } else {
-    if(nSupMod%2 != 0) 
-      iphi2 = (fCentersOfCellsPhiDir.GetSize()/2-1)-iphi;// 11-iphi, revert the ordering on C side in order to keep convention.
-    yr = fCentersOfCellsPhiDir.At(iphi2 + kphiIndexShift);
+		if(nSupMod%2 != 0) 
+			iphi2 = (kphiRangeSmallSM-1)-iphi;// 11-iphi [1/2SM] or 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
+		yr = fCentersOfCellsPhiDir.At(iphi2 + kphiIndexShift);
   }
   
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
@@ -1539,23 +1557,28 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const 
     }  
   }//external matrices
   
-	if(gGeoManager){
+   if(gGeoManager){
     const Int_t buffersize = 255;
-		char path[buffersize] ;
-		snprintf(path,buffersize,"/ALIC_1/XEN1_1/SMOD_%d",smod+1) ;
-		//TString volpath = "ALIC_1/XEN1_1/SMOD_";
-	    //volpath += smod+1;
+      char path[buffersize] ;
+      snprintf(path,buffersize,"/ALIC_1/XEN1_1/SMOD_%d",smod+1) ;
+      //TString volpath = "ALIC_1/XEN1_1/SMOD_";
+       //volpath += smod+1;
 
-		if(fKey110DEG && smod >= 10){
-			  snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM10_%d",smod-10+1) ;
-			//volpath = "ALIC_1/XEN1_1/SM10_";
-			//volpath += smod-10+1;
-		}
-		if (!gGeoManager->cd(path)){
-			AliFatal(Form("Geo manager can not find path %s!\n",path));
-		}
-		return gGeoManager->GetCurrentMatrix();
-	}
+      if(fKey110DEG && smod >= 10 && !fGeoName.Contains("12SMV1") ){
+         snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM10_%d",smod-10+1) ;
+         //volpath = "ALIC_1/XEN1_1/SM10_";
+         //volpath += smod-10+1;
+      }
+      if(fKey110DEG && smod >= 10 && fGeoName.Contains("12SMV1") ){
+         snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM3rd_%d",smod-10+1) ;
+         //volpath = "ALIC_1/XEN1_1/SM10_";
+         //volpath += smod-10+1;
+      }
+      if (!gGeoManager->cd(path)){
+         AliFatal(Form("Geo manager can not find path %s!\n",path));
+      }
+      return gGeoManager->GetCurrentMatrix();
+      }
 
 	return 0 ;
 }

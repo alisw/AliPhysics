@@ -224,8 +224,9 @@ void AliEMCALv0::CreateShishKebabGeometry()
 
   CreateEmod("SMOD","EMOD"); // 18-may-05
 
-  if(g->GetKey110DEG()) CreateEmod("SM10","EMOD"); // Nov 1,2006 
-
+  if(g->GetKey110DEG() && !gn.Contains("12SMV1")) { CreateEmod("SM10","EMOD");} // Nov 1,2006 1/2 SM
+  if(g->GetKey110DEG() && gn.Contains("12SMV1")) { CreateEmod("SM3rd","EMOD");  }  // Feb 1,2012 1/3 SM
+    
   // Sensitive SC  (2x2 tiles)
   double parSCM0[5]={0,0,0,0}, *dummy = 0, parTRAP[11];
 
@@ -389,13 +390,21 @@ void AliEMCALv0::CreateSmod(const char* mother)
 		  fIdTmedArr[kIdAIR], par[0],par[1],par[2]));
   fSmodPar0 = par[0]; 
   fSmodPar2 = par[2];
-  if(g->GetKey110DEG()) { // 12-oct-05
+  if(g->GetKey110DEG() && !gn.Contains("12SMV1") ) { // 12-oct-05
     par1C = par[1];
     par[1] /= 2.;
     gMC->Gsvolu("SM10", "BOX", fIdTmedArr[kIdAIR], par, 3);
     AliDebug(2,Form(" Super module with name \"SM10\" was created too par[1] = %f\n", par[1]));
     par[1] = par1C;
   }
+   if(g->GetKey110DEG() && gn.Contains("12SMV1")) { // 1-feb-12, one third (installed in 2012) case
+    par1C = par[1];
+    par[1] /= 3.;
+    gMC->Gsvolu("SM3rd", "BOX", fIdTmedArr[kIdAIR], par, 3);
+    AliDebug(2,Form(" Super module with name \"SM3rd\" was created too par[1] = %f\n", par[1]));
+    par[1] = par1C;
+   }
+  
   // Steel plate
   if(g->GetSteelFrontThickness() > 0.0) { // 28-mar-05
     par[0] = g->GetSteelFrontThickness()/2.;
@@ -418,8 +427,13 @@ void AliEMCALv0::CreateSmod(const char* mother)
       nr++;
     } else { // TRD1 
       TString smName("SMOD"); // 12-oct-05
-      if(i==5 && g->GetKey110DEG()) {
+      if(i==5 && g->GetKey110DEG() && !gn.Contains("12SMV1")) {
         smName = "SM10";
+        nrsmod = nr;
+        nr     = 0;
+      }
+      if(i==5 && g->GetKey110DEG() && gn.Contains("12SMV1")) {
+        smName = "SM3rd";
         nrsmod = nr;
         nr     = 0;
       }
@@ -431,9 +445,13 @@ void AliEMCALv0::CreateSmod(const char* mother)
       xpos = rpos * TMath::Cos(phiRad);
       ypos = rpos * TMath::Sin(phiRad);
       zpos = fSmodPar2; // 21-sep-04
-      if(i==5 && g->GetKey110DEG()) {
+      if(i==5 && g->GetKey110DEG() && !gn.Contains("12SMV1") ) {
         xpos += (par1C/2. * TMath::Sin(phiRad)); 
         ypos -= (par1C/2. * TMath::Cos(phiRad)); 
+      }
+      if(i==5 && g->GetKey110DEG() && gn.Contains("12SMV1") ) {
+        xpos += (2.*par1C/3. * TMath::Sin(phiRad)); 
+        ypos -= (2.*par1C/3. * TMath::Cos(phiRad)); 
       }
       
       // 1th module in z-direction;
@@ -491,29 +509,34 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
       zpos = mod->GetPosZ() - fSmodPar2;
       
       int iyMax = g->GetNPhi();
-      if(strcmp(mother,"SMOD") && g->GetKey110DEG()) {
-	iyMax /= 2;
+      if(strcmp(mother,"SMOD") && g->GetKey110DEG() && !gn.Contains("12SMV1")  ) {
+         iyMax /= 2;
+      }
+       if(strcmp(mother,"SMOD") && g->GetKey110DEG() && gn.Contains("12SMV1")  ) {
+         iyMax /= 3;
       }
       for(int iy=0; iy<iyMax; iy++) { // flat in phi
-	ypos = g->GetPhiModuleSize()*(2*iy+1 - iyMax)/2.;
-	gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
-	//printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f fIdRotm %i\n", nr, xpos, ypos, zpos, fIdRotm);
-	AliDebug(3,Form("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1));
+         ypos = g->GetPhiModuleSize()*(2*iy+1 - iyMax)/2.;
+         gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+         //
+         //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f fIdRotm %i\n", nr, xpos, ypos, zpos, fIdRotm);
+         AliDebug(3,Form("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1));
       }
       //PH          printf("\n");
     } else { //WSUC
       if(iz==0) AliMatrix(fIdRotm, 0.,0., 90.,0., 90.,90.); // (x')z; y'(x); z'(y)
       else      AliMatrix(fIdRotm, 90-angle,270., 90.0,0.0, angle,90.);
       phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
-      printf(" %2i | angle -phiOK | %6.3f - %6.3f = %6.3f(eta %5.3f)\n", 
-	     iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
+      //printf(" %2i | angle -phiOK | %6.3f - %6.3f = %6.3f(eta %5.3f)\n",
+      //iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
       zpos = mod->GetPosZ()      - fSmodPar2;
       ypos = mod->GetPosXfromR() - fSmodPar1;
-      printf(" zpos %7.2f ypos %7.2f fIdRotm %i\n xpos ", zpos, xpos, fIdRotm);
-      for(int ix=0; ix<g->GetNPhi(); ix++) { // flat in phi
-	xpos = g->GetPhiModuleSize()*(2*ix+1 - g->GetNPhi())/2.;
-	gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
-	printf(" %7.2f ", xpos);
+      //printf(" zpos %7.2f ypos %7.2f fIdRotm %i\n xpos ", zpos, xpos, fIdRotm);
+      for(int ix=0; ix<g->GetNPhi(); ix++) 
+      { // flat in phi
+         xpos = g->GetPhiModuleSize()*(2*ix+1 - g->GetNPhi())/2.;
+         gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+         printf(" %7.2f ", xpos);
       }
       printf("\n");
     }
@@ -990,10 +1013,19 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
     symname = "EMCAL/FullSupermodule";
     symname += (smodnum+1);
 
-    if(GetGeometry()->GetKey110DEG() && smodnum>=10) {
+    if(GetGeometry()->GetKey110DEG() && smodnum>=10 && !( ( GetGeometry()->GetEMCGeometry()->GetGeoName()).Contains("12SMV1")) )
+    {
       volpath = "ALIC_1/XEN1_1/SM10_";
       volpath += (smodnum-10+1);
       symname = "EMCAL/HalfSupermodule";    
+      symname += (smodnum-10+1);
+    }
+    
+    if(GetGeometry()->GetKey110DEG() && smodnum>=10 && ( ( GetGeometry()->GetEMCGeometry()->GetGeoName()).Contains("12SMV1")) )
+    {
+      volpath = "ALIC_1/XEN1_1/SM3rd_";
+      volpath += (smodnum-10+1);
+      symname = "EMCAL/OneThrdSupermodule";    
       symname += (smodnum-10+1);
     }
 
@@ -1009,9 +1041,20 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
     xpos = rpos * TMath::Cos(phiRad);
     ypos = rpos * TMath::Sin(phiRad);
     zpos = pars[2];
-    if(GetGeometry()->GetKey110DEG() && smodnum >= 10) {
-      xpos += (pars[1]/2. * TMath::Sin(phiRad));
+    if(GetGeometry()->GetKey110DEG() && smodnum >= 10 && !( ( GetGeometry()->GetEMCGeometry()->GetGeoName()).Contains("12SMV1")))
+    {
+       AliDebug(3, Form("  fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f : smodnum %i \n", 
+		         fIdRotm, phi, phiRad, xpos, ypos, zpos, smodnum));
+      xpos += (pars[1]/2. * TMath::Sin(phiRad));  //  half SM!
       ypos -= (pars[1]/2. * TMath::Cos(phiRad));
+    }
+    
+    if(GetGeometry()->GetKey110DEG() && smodnum >= 10 && ( ( GetGeometry()->GetEMCGeometry()->GetGeoName()).Contains("12SMV1")))
+    {
+       AliDebug(3, Form("  fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f : smodnum %i \n", 
+		         fIdRotm, phi, phiRad, xpos, ypos, zpos, smodnum));
+      xpos += (pars[1]/3. * TMath::Sin(phiRad));  // one_third SM !
+      ypos -= (pars[1]/3. * TMath::Cos(phiRad));
     }
 
     TGeoHMatrix *matTtoL;

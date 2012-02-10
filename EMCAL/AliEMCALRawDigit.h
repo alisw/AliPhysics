@@ -45,11 +45,11 @@ protected:
 	AliEMCALRawDigit(const AliEMCALRawDigit &cd);            // Not implemented
 	AliEMCALRawDigit &operator=(const AliEMCALRawDigit &cd); // Not implemented
 
-	Int_t   fId;            //Absolute id
-	Int_t   fNSamples;      //Number of time samples
-	Int_t*  fSamples;	    //[fNSamples]
-	Float_t fAmplitude;
-	Float_t fTime;
+	Int_t   fId;            // Absolute id
+	Int_t   fNSamples;      // Number of time samples
+	Int_t*  fSamples;	      //[fNSamples]
+	Float_t fAmplitude;     // digit amplitude
+	Float_t fTime;          // digit time 
 	
 	ClassDef(AliEMCALRawDigit,1)   // Digit in EMCAL 
 };

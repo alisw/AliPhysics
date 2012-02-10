@@ -72,7 +72,8 @@ void AliEMCALRawDigit::Clear(Option_t *)
 //____________________________________________________________________________
 Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
 {
-	//
+	// returns the time and amplitude of a given time sample and if the sample was ok
+  
 	if (iSample > fNSamples || iSample < 0) return kFALSE;
 	
 	amp     =  fSamples[iSample] & 0xFFF;
@@ -84,7 +85,8 @@ Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_
 //____________________________________________________________________________
 void AliEMCALRawDigit::SetTimeSamples(const Int_t timeSamples[], const Int_t nSamples) 
 {
-	//
+  // Sets the time samples
+  
 	if (fSamples) 
 	{
 		AliDebug(1,"Samples already filled: delete first!");
@@ -100,7 +102,8 @@ void AliEMCALRawDigit::SetTimeSamples(const Int_t timeSamples[], const Int_t nSa
 //____________________________________________________________________________
 Bool_t AliEMCALRawDigit::GetMaximum(Int_t& amplitude, Int_t& time) const
 {
-	//
+	// Checks the maximum amplitude in the time sample
+  
 	if (!fNSamples)
 	{
 		AliDebug(1,"Digit has no time sample");
@@ -149,7 +152,8 @@ Int_t AliEMCALRawDigit::Compare(const TObject * obj) const
 //____________________________________________________________________________
 void AliEMCALRawDigit::Print(const Option_t* /*opt*/) const
 {
-	//
+	// print
+  
 	printf("===\n| Digit id: %4d / %d Time Samples: \n",fId,fNSamples);
 	for (Int_t i=0; i < fNSamples; i++) 
 	{

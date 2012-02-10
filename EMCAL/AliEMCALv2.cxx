@@ -221,6 +221,7 @@ void AliEMCALv2::StepManager(void){
         gMC->CurrentVolOffID(1, yNumber);
         gMC->CurrentVolOffID(0, xNumber); // really x number now
         if(strcmp(gMC->CurrentVolOffName(4),"SM10")==0) supModuleNumber += 10; // 13-oct-05
+        if(strcmp(gMC->CurrentVolOffName(4),"SM3rd")==0) supModuleNumber += 10; // 1-feb-12
 	// Nov 10,2006
         if(strcmp(gMC->CurrentVolOffName(0),vn) != 0) { // 3X3 case
           if     (strcmp(gMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
@@ -251,7 +252,8 @@ void AliEMCALv2::StepManager(void){
 	ieta = ((fGeometry->GetCentersOfCellsEtaDir()).GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
       }
       else {  
-	if(smNumber >= 10) smType = 2 ; //half supermodule
+	if(smNumber >= 10 && strcmp(gMC->CurrentVolOffName(4),"SM10")==0) smType = 2 ; //half supermodule. previous design/idea
+	if(smNumber >= 10 && strcmp(gMC->CurrentVolOffName(4),"SM3rd")==0) smType = 3 ; //one third (installed in 2012) supermodule
 	iphi= ((fGeometry->GetCentersOfCellsPhiDir()).GetSize()/smType-1)-iphi;//23-iphi, revert the ordering on C side in order to keep convention.
       }
       

@@ -370,7 +370,8 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   fNCellsInModule = fNPHIdiv*fNETAdiv;
   fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
   fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
-  if(GetKey110DEG()) fNCells -= fNCellsInSupMod;
+  if(GetKey110DEG() && !fGeoName.Contains("12SMV1")) fNCells -= fNCellsInSupMod; // SM 10 and 11 are 1/2 size on phi
+  if(GetKey110DEG() && fGeoName.Contains("12SMV1") ) fNCells -=2*(2 * fNCellsInSupMod / 3); // SM 10 and 11 are 1/3 size on phi
 
   fNPhiSuperModule = fNumberOfSuperModules/2;
   if(fNPhiSuperModule < 1) fNPhiSuperModule = 1;
@@ -416,8 +417,8 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
     }
   }
   if(fNumberOfSuperModules > 10) {
-    fPhiBoundariesOfSM[11] = 190.*TMath::DegToRad();
-    fPhiBoundariesOfSM[10] = fPhiBoundariesOfSM[11] - TMath::ATan2((fParSM[1]) , fIPDistance);
+    fPhiBoundariesOfSM[10] =  fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*5; // in the ideal case the phi-gap is constant
+    fPhiBoundariesOfSM[11] =  fPhiBoundariesOfSM[10] + 2.*TMath::ATan2((fParSM[1])/3., fIPDistance); // one_third SMs
     fPhiCentersOfSM[5]     = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
   }
 
@@ -475,7 +476,8 @@ void AliEMCALEMCGeometry::PrintGeometry()
 	 fParSM[0],fParSM[1],fParSM[2]);
   printf(" fPhiGapForSM  %7.4f cm (%7.4f <- phi size in degree)\n",  
 	 fPhiGapForSM, TMath::ATan2(fPhiGapForSM,fIPDistance)*TMath::RadToDeg());
-  if(GetKey110DEG()) printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
+  if(GetKey110DEG() && !fGeoName.Contains("12SMV1") ) printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
+  if(GetKey110DEG() && fGeoName.Contains("12SMV1")) printf(" Last two modules have size 6.6 degree in  phi (180<phi<186.6)\n");
   printf(" phi SM boundaries \n"); 
   for(int i=0; i<fPhiBoundariesOfSM.GetSize()/2.; i++) {
     printf(" %i : %7.5f(%7.2f) -> %7.5f(%7.2f) : center %7.5f(%7.2f) \n", i, 

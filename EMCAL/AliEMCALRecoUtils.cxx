@@ -44,6 +44,7 @@
 #include "AliVCaloCells.h"
 #include "AliLog.h"
 #include "AliPID.h"
+#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
@@ -339,8 +340,10 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(const Int_t absID, const Int_t bc,
   return kTRUE;
 }
 
-//_______________________________________________________________
-Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells* cells) 
+//_____________________________________________________________________________
+Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom, 
+                                                  const AliVCluster* cluster, 
+                                                  AliVCaloCells* cells) 
 {
 	// Given the list of AbsId of the cluster, get the maximum cell and 
 	// check if there are fNCellsFromBorder from the calorimeter border
@@ -375,9 +378,12 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCl
   if(iSM < 10){
     if(iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
   }
-  else{
-    if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; 
-  }
+  else if (iSM >=10 && ( ( geom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) {
+      if(iphi >= fNCellsFromEMCALBorder && iphi < 8-fNCellsFromEMCALBorder) okrow =kTRUE; //1/3 sm case
+   }
+   else {
+      if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; // half SM case
+   }
   
   //Check columns/eta
   if(!fNoEMCALBorderAtEta0){
@@ -408,8 +414,10 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCl
 }	
 
 
-//_________________________________________________________________________________________________________
-Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom, const UShort_t* cellList, const Int_t nCells)
+//_______________________________________________________________________________
+Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom, 
+                                                    const UShort_t* cellList, 
+                                                    const Int_t nCells)
 {
   // Check that in the cluster cells, there is no bad channel of those stored 
   // in fEMCALBadChannelMap or fPHOSBadChannelMap
@@ -437,7 +445,7 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
   return kFALSE;
 }
 
-//_______________________________________________________________________
+//_____________________________________________________________________________________________
 Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, const Int_t bc)
 {
   // Look to cell neighbourhood and reject if it seems exotic
@@ -503,8 +511,10 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
   return kFALSE;
 }
 
-//_________________________________________________
-Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster, AliVCaloCells *cells, const Int_t bc) 
+//___________________________________________________________________
+Bool_t AliEMCALRecoUtils::IsExoticCluster(const AliVCluster *cluster, 
+                                          AliVCaloCells *cells, 
+                                          const Int_t bc) 
 {
   // Check if the cluster highest energy tower is exotic
   
@@ -524,7 +534,7 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster, AliVCaloCells *c
   return IsExoticCell(absId,cells,bc);
 }
 
-//__________________________________________________
+//_______________________________________________________________________
 Float_t AliEMCALRecoUtils::SmearClusterEnergy(const AliVCluster* cluster) 
 {
   //In case of MC analysis, smear energy to match resolution/calibration in real data
@@ -546,7 +556,7 @@ Float_t AliEMCALRecoUtils::SmearClusterEnergy(const AliVCluster* cluster)
   return rdmEnergy;
 }
 
-//__________________________________________________
+//____________________________________________________________________________
 Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
 {
   // Correct cluster energy from non linearity functions
@@ -686,8 +696,10 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
   }
 }
 
-//__________________________________________________
-Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle, const Int_t iSM) const 
+//_________________________________________________________
+Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, 
+                                     const Int_t iParticle, 
+                                     const Int_t iSM) const 
 {
   //Calculate shower depth for a given cluster energy and particle type
 
@@ -738,11 +750,11 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle
 void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom, 
                                          AliVCaloCells* cells, 
                                          const AliVCluster* clu, 
-                                         Int_t & absId,  
-                                         Int_t& iSupMod, 
-                                         Int_t& ieta, 
-                                         Int_t& iphi, 
-                                         Bool_t &shared)
+                                         Int_t  & absId,  
+                                         Int_t  & iSupMod, 
+                                         Int_t  & ieta, 
+                                         Int_t  & iphi, 
+                                         Bool_t & shared)
 {
   //For a given CaloCluster gets the absId of the cell 
   //with maximum energy deposit.
@@ -903,7 +915,7 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors()
   TH1::AddDirectory(oldStatus);		
 }
 
-//________________________________________________________________
+//_________________________________________________________
 void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
 {
   //Init EMCAL recalibration factors
@@ -930,7 +942,7 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
   TH1::AddDirectory(oldStatus);		
 }
 
-//________________________________________________________________
+//____________________________________________________
 void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
 {
   //Init EMCAL bad channels map
@@ -1054,8 +1066,9 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   }
 }
 
-//________________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
+//_____________________________________________________________
+void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
+                                         const Int_t bc)
 {
   // Recalibrate the cells time and energy, considering the recalibration map and the energy 
   // of the cells that compose the cluster.
@@ -1102,8 +1115,10 @@ void AliEMCALRecoUtils::RecalibrateCellTime(const Int_t absId, const Int_t bc, D
   }
 }
   
-//__________________________________________________
-void AliEMCALRecoUtils::RecalculateClusterPosition(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu)
+//______________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom, 
+                                                   AliVCaloCells* cells, 
+                                                   AliVCluster* clu)
 {
   //For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
   
@@ -1117,8 +1132,10 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(AliEMCALGeometry *geom, AliVC
   else   AliDebug(2,"Algorithm to recalculate position not selected, do nothing.");
 }  
 
-//__________________________________________________
-void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu)
+//_____________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, 
+                                                                  AliVCaloCells* cells, 
+                                                                  AliVCluster* clu)
 {
   // For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
   // The algorithm is a copy of what is done in AliEMCALRecPoint
@@ -1194,8 +1211,10 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(AliEMCALGeomet
   clu->SetPosition(newPos);
 }  
 
-//__________________________________________________
-void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu)
+//____________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALGeometry *geom, 
+                                                                 AliVCaloCells* cells, 
+                                                                 AliVCluster* clu)
 {
   // For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
   // The algorithm works with the tower indeces, averages the indeces and from them it calculates the global position
@@ -1263,8 +1282,10 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(AliEMCALGeometr
   clu->SetPosition(xyzNew);
 }
 
-//____________________________________________________________________________
-void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster)
+//___________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeometry * geom, 
+                                                               AliVCaloCells* cells, 
+                                                               AliVCluster * cluster)
 {           
   //re-evaluate distance to bad channel with updated bad map
   
@@ -1338,7 +1359,7 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
   cluster->SetDistanceToBadChannel(minDist);
 }
 
-//____________________________________________________________________________
+//__________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPID(AliVCluster * cluster)
 {           
   //re-evaluate identification parameters with bayesian
@@ -1357,8 +1378,10 @@ void AliEMCALRecoUtils::RecalculateClusterPID(AliVCluster * cluster)
   cluster->SetPID(pidlist);
 }
 
-//____________________________________________________________________________
-void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster)
+//____________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, 
+                                                                AliVCaloCells* cells, 
+                                                                AliVCluster * cluster)
 {
   // Calculates new center of gravity in the local EMCAL-module coordinates 
   // and tranfers into global ALICE coordinates
@@ -1491,7 +1514,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(AliEMCALGeometry
 }
 
 //____________________________________________________________________________
-void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  AliEMCALGeometry *geom)
+void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
+                                    TObjArray * clusterArr,  
+                                    const AliEMCALGeometry *geom)
 {
   //This function should be called before the cluster loop
   //Before call this function, please recalculate the cluster positions
@@ -1655,7 +1680,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
 }
 
 //________________________________________________________________________________
-Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi)
+Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track, 
+                                                   const AliVEvent *event, 
+                                                   const AliEMCALGeometry *geom, 
+                                                   Float_t &dEta, Float_t &dPhi)
 {
   //
   // This function returns the index of matched cluster to input track
@@ -1686,8 +1714,11 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(AliESDtrack *track, AliVEvent
   return index;
 }
 
-//________________________________________________________________________________
-Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, AliExternalTrackParam *trkParam, TObjArray * clusterArr, Float_t &dEta, Float_t &dPhi)
+//________________________________________________________________________________________
+Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, 
+                                                         AliExternalTrackParam *trkParam, 
+                                                         TObjArray * clusterArr, 
+                                                         Float_t &dEta, Float_t &dPhi)
 {
   dEta=-999, dPhi=-999;
   Float_t dRMax = fCutR, dEtaMax=fCutEta, dPhiMax=fCutPhi;
@@ -1745,9 +1776,9 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(AliExternalTrackParam *
 
 //------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
-                                                         Double_t emcalR,
-                                                         Double_t mass, 
-                                                         Double_t step, 
+                                                         const Double_t emcalR,
+                                                         const Double_t mass, 
+                                                         const Double_t step, 
                                                          Float_t &eta, 
                                                          Float_t &phi)
 {
@@ -1801,8 +1832,8 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkP
 //----------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, 
                                                     AliVCluster *cluster, 
-                                                    Double_t mass, 
-                                                    Double_t step, 
+                                                    const Double_t mass, 
+                                                    const Double_t step, 
                                                     Float_t &tmpEta, 
                                                     Float_t &tmpPhi)
 {
@@ -1832,8 +1863,9 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkPa
   return ExtrapolateTrackToCluster(trkParam, cluster, fMass, fStepCluster, tmpEta, tmpPhi);
 }
 
-//_______________________________________________________________________________________
-void AliEMCALRecoUtils::GetMatchedResiduals(Int_t clsIndex, Float_t &dEta, Float_t &dPhi)
+//_______________________________________________________________________
+void AliEMCALRecoUtils::GetMatchedResiduals(const Int_t clsIndex, 
+                                            Float_t &dEta, Float_t &dPhi)
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
   //Get the residuals dEta and dPhi for this cluster to the closest track
@@ -1958,8 +1990,9 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
   return pos;
 }
 
-//___________________________________________________________________________________
-Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, 
+//__________________________________________________________________________
+Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster, 
+                                        const AliEMCALGeometry *geom, 
                                         AliVCaloCells* cells,const Int_t bc)
 {
   // check if the cluster survives some quality cut

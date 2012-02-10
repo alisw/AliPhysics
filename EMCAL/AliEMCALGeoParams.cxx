@@ -13,10 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
-
 //_________________________________________________________________________
-///*--
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // class for holding various EMCAL basic parameters
@@ -29,5 +26,7 @@
 // This empty cxx file is just added to get the class/numbers into
 // the Utils library    
 //                                                                           //
+// Author: David Silvermyr (ORNL)
+//
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -28,7 +28,7 @@ class TParticle ;
 #include "AliEMCALEMCGeometry.h"
 #include "AliEMCALGeoParams.h"
 class AliEMCALShishKebabTrd1Module;
-#include "AliLog.h" // CV 
+class AliLog;
 
 class AliEMCALGeometry : public TNamed {
 
@@ -201,7 +201,8 @@ public:
   Int_t   GetSuperModuleNumber(Int_t absId)  const;
   Int_t   GetNumberOfModuleInPhiDirection(Int_t nSupMod)  const
   { 
-    if(fKey110DEG == 1 && nSupMod>=10) return fNPhi/2;
+    if(fKey110DEG == 1 && nSupMod>=10 && !fGeoName.Contains("12SMV1")) return fNPhi/2;
+    else if(fKey110DEG == 1 && nSupMod>=10 && fGeoName.Contains("12SMV1")) return fNPhi/3;
     else                               return fNPhi;
   } 
   // From cell indexes to abs cell id

@@ -644,7 +644,8 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
   TGeoHMatrix * m = 0x0;
   for(Int_t sm = 0; sm < fGeom->GetNumberOfSuperModules(); sm++){
     snprintf(path,bufsize,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
-    if(sm >= 10) snprintf(path,bufsize,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
+    if(sm >= 10 && !((fGeom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) snprintf(path,bufsize,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
+    if(sm >= 10 &&  ((fGeom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) snprintf(path,bufsize,"/ALIC_1/XEN1_1/SM3rd_%d",sm-10+1) ;
     
     if (gGeoManager->CheckPath(path)){
       gGeoManager->cd(path);

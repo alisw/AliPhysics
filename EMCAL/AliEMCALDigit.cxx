@@ -36,6 +36,7 @@
 
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
+#include "AliLog.h" 
 
 ClassImp(AliEMCALDigit)
 

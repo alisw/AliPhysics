@@ -3,10 +3,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliEMCALGeoParams.h $ */
-
 //////////////////////////////////////////////////////////
 // class for holding various parameters; 
+//
+// Author: David Silvermyr (ORNL)
+//
 //////////////////////////////////////////////////////////
 
 class AliEMCALGeoParams
@@ -14,32 +15,32 @@ class AliEMCALGeoParams
 public:
 
   // general geometry info
-  static const int fgkEMCALModules = 12; // number of modules for EMCAL
-  static const int fgkEMCALRows = 24; // number of rows per module for EMCAL
-  static const int fgkEMCALCols = 48; // number of columns per module for EMCAL
+  static const int fgkEMCALModules     = 12;   // number of modules for EMCAL
+  static const int fgkEMCALRows        = 24;   // number of rows per module for EMCAL
+  static const int fgkEMCALCols        = 48;   // number of columns per module for EMCAL
 
-  static const int fgkEMCALLEDRefs = 24; // number of LEDs (reference/monitors) per module for EMCAL; one per StripModule
-  static const int fgkEMCALTempSensors = 8; // number Temperature sensors per module for EMCAL
+  static const int fgkEMCALLEDRefs     = 24;   // number of LEDs (reference/monitors) per module for EMCAL; one per StripModule
+  static const int fgkEMCALTempSensors = 8;    // number Temperature sensors per module for EMCAL
 
   Int_t GetStripModule(Int_t iSM, Int_t iCol) const
     // Strip 0 is the one closest to the FEE crates; different for A (iColumn/2) and C sides
     { return ( (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2 ); }
 
   // also a few readout related variables:
-  static const int fgkLastAltroDDL = 43; // 0..23 (i.e. 24) for EMCAL; 24..43 (i.e. 20) allocated for DCAL 
-  static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
-  static const int fgkOverflowCut = 950; // saturation starts around here; also exist as private constant in AliEMCALRawUtils, should probably be replaced
-  static const int fgkSampleMin = 0; // lowest possible sample value 
+  static const int fgkLastAltroDDL     = 43;   // 0..23 (i.e. 24) for EMCAL; 24..43 (i.e. 20) allocated for DCAL 
+  static const int fgkSampleMax        = 1023; // highest possible sample value (10-bit = 0x3ff)
+  static const int fgkOverflowCut      = 950;  // saturation starts around here; also exist as private constant in AliEMCALRawUtils, should probably be replaced
+  static const int fgkSampleMin        = 0;    // lowest possible sample value 
 
   // TRU numbers
-  static const int fgkEMCALTRUsPerSM = 3; // number of TRU's in a SuperModule
-  static const int fgkEMCAL2x2PerTRU = 96; // number of 2x2's in a TRU
-  static const int fgkEMCALTRURows   = 4;
-  static const int fgkEMCALTRUCols   = 24;
+  static const int fgkEMCALTRUsPerSM   = 3;    // number of TRU's in a SuperModule
+  static const int fgkEMCAL2x2PerTRU   = 96;   // number of 2x2's in a TRU
+  static const int fgkEMCALTRURows     = 4;    // number of TRU rows
+  static const int fgkEMCALTRUCols     = 24;   // number of TRY cols
 
   //STU numbers
-  static const int fgkEMCALSTUCols = 48; // STU columns
-  static const int fgkEMCALSTURows = 64; // STU rows
+  static const int fgkEMCALSTUCols     = 48;   // STU columns
+  static const int fgkEMCALSTURows     = 64;   // STU rows
   
   // RAW/AliCaloAltroMapping provides the correspondence information between
   // an electronics HWAddress (Branch<<1 | FEC<<7 | ALTRO<<4 | Channel) 
@@ -48,19 +49,19 @@ public:
   // into the other FEE indices, we provide the needed simple methods here 
   // with arguments (within an RCU)
   Int_t GetHWAddress(Int_t iBranch, Int_t iFEC, Int_t iALTRO, Int_t iChannel) const
-  { return ( (iBranch<<11) | (iFEC<<7) | (iALTRO<<4) | iChannel ); }; // 
+  { return ( (iBranch<<11) | (iFEC<<7) | (iALTRO<<4) | iChannel ); } // 
   // and for converting back to the individual indices
-  Int_t GetBranch(Int_t iHW) const { return ( (iHW>>11) & 0x1 ); }; // 
-  Int_t GetFEC(Int_t iHW) const { return ( (iHW>>7) & 0xf ); }; // 
-  Int_t GetAltro(Int_t iHW) const { return ( (iHW>>4) & 0x7 ); }; // 
-  Int_t GetChannel(Int_t iHW) const { return ( iHW & 0xf ); }; // 
+  Int_t GetBranch(Int_t iHW)  const { return ( (iHW>>11) & 0x1 ) ; } // 
+  Int_t GetFEC(Int_t iHW)     const { return ( (iHW>>7) & 0xf )  ; } // 
+  Int_t GetAltro(Int_t iHW)   const { return ( (iHW>>4) & 0x7 )  ; } // 
+  Int_t GetChannel(Int_t iHW) const { return ( iHW & 0xf )       ; } // 
 
   // We can also encode a very similar CSP address
   Int_t GetCSPAddress(Int_t iBranch, Int_t iFEC, Int_t iCSP) const
   { return ( (iBranch<<11) | (iFEC<<7) | iCSP ); }; // 
   // and for converting back to the individual indices
   // Branch and FEC methods would just be the same as above
-  Int_t GetCSPFromAddress(Int_t i) const { return ( i & 0x1f ); }; // 
+  Int_t GetCSPFromAddress(Int_t i) const { return ( i & 0x1f )   ; } // 
 
   /* // Below is some placeholder info that can later be added
      // in AliEMCALGeometry, together with the Get methods just above 

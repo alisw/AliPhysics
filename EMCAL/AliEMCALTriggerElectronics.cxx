@@ -218,8 +218,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		{
 			AliEMCALTriggerTRU* iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
 			
-			TIter Next(&iTRU->Patches());
-			while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)Next())
+			TIter next(&iTRU->Patches());
+			while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)next())
 			{
 				p->Position(px, py);
 			
@@ -377,8 +377,8 @@ void AliEMCALTriggerElectronics::Reset()
 {
 	// Reset
 	
-	TIter NextTRU(fTRU);
-	while ( AliEMCALTriggerTRU *TRU = (AliEMCALTriggerTRU*)NextTRU() ) TRU->Reset();
+	TIter nextTRU(fTRU);
+	while ( AliEMCALTriggerTRU *TRU = (AliEMCALTriggerTRU*)nextTRU() ) TRU->Reset();
 	
 	fSTU->Reset();
 }

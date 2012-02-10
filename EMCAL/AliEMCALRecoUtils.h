@@ -27,7 +27,7 @@ class TH2F;
 class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
-#include "AliESDEvent.h"
+class AliESDEvent;
 #include "AliLog.h"
 
 // EMCAL includes
@@ -60,9 +60,9 @@ public:
   //Position recalculation
   //-----------------------------------------------------
 
-  void     RecalculateClusterPosition               (AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
-  void     RecalculateClusterPositionFromTowerIndex (AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
-  void     RecalculateClusterPositionFromTowerGlobal(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
+  void     RecalculateClusterPosition               (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
+  void     RecalculateClusterPositionFromTowerIndex (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
+  void     RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   
   Float_t  GetCellWeight(const Float_t eCell, const Float_t eCluster) const { return TMath::Max( 0., fW0 + TMath::Log( eCell / eCluster )) ; }
   
@@ -193,7 +193,9 @@ public:
   // Modules fiducial region, remove clusters in borders
   //-----------------------------------------------------
 
-  Bool_t   CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells* cells) ;
+  Bool_t   CheckCellFiducialRegion(const AliEMCALGeometry* geom, 
+                                   const AliVCluster* cluster, 
+                                   AliVCaloCells* cells) ;
   void     SetNumberOfCellsFromEMCALBorder(const Int_t n){ fNCellsFromEMCALBorder = n      ; }
   Int_t    GetNumberOfCellsFromEMCALBorder()      const  { return fNCellsFromEMCALBorder   ; }
     
@@ -235,8 +237,8 @@ public:
   // Recalculate other cluster parameters
   //-----------------------------------------------------
 
-  void     RecalculateClusterDistanceToBadChannel (AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
-  void     RecalculateClusterShowerShapeParameters(AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
+  void     RecalculateClusterDistanceToBadChannel (const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
+  void     RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void     RecalculateClusterPID(AliVCluster * cluster);
 
   AliEMCALPIDUtils * GetPIDUtils() { return fPIDUtils;}
@@ -246,29 +248,34 @@ public:
   // Track matching
   //----------------------------------------------------
 
-  void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, AliEMCALGeometry *geom=0x0);
-  Int_t    FindMatchedClusterInEvent(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
-  Int_t    FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, AliExternalTrackParam *trkParam, TObjArray * clusterArr, Float_t &dEta, Float_t &dPhi);
+  void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, const AliEMCALGeometry *geom=0x0);
+  Int_t    FindMatchedClusterInEvent(const AliESDtrack *track, const AliVEvent *event, 
+                                     const AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
+  Int_t    FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, AliExternalTrackParam *trkParam, 
+                                          TObjArray * clusterArr, Float_t &dEta, Float_t &dPhi);
   
-  static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, 
-                                               Double_t mass, Double_t step, Float_t &eta, Float_t &phi);
+  static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
+                                               const Double_t emcalR, const Double_t mass, const Double_t step, 
+                                               Float_t &eta, Float_t &phi);
   static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, const Float_t *clsPos, 
-                                           Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
+                                           const Double_t mass, const Double_t step, 
+                                           Float_t &tmpEta, Float_t &tmpPhi);
   static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, 
-                                           Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
+                                           const Double_t mass, const Double_t step,
+                                           Float_t &tmpEta, Float_t &tmpPhi);
   Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, 
                                            Float_t &tmpEta, Float_t &tmpPhi);
 
-  UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
-  UInt_t   FindMatchedPosForTrack(Int_t trkIndex)   const;
+  UInt_t   FindMatchedPosForCluster(const Int_t clsIndex) const;
+  UInt_t   FindMatchedPosForTrack  (const Int_t trkIndex) const;
   
-  void     GetMatchedResiduals(Int_t clsIndex, Float_t &dEta, Float_t &dPhi);
-  void     GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta, Float_t &dPhi);
+  void     GetMatchedResiduals       (const Int_t clsIndex, Float_t &dEta, Float_t &dPhi);
+  void     GetMatchedClusterResiduals(const Int_t trkIndex, Float_t &dEta, Float_t &dPhi);
   Int_t    GetMatchedTrackIndex(Int_t clsIndex);
   Int_t    GetMatchedClusterIndex(Int_t trkIndex);
   
-  Bool_t   IsClusterMatched(Int_t clsIndex)         const;
-  Bool_t   IsTrackMatched(Int_t trkIndex)           const;
+  Bool_t   IsClusterMatched(const Int_t clsIndex)         const;
+  Bool_t   IsTrackMatched  (const Int_t trkIndex)         const;
 
   void     SetClusterMatchedToTrack (const AliESDEvent *event);
   
@@ -306,14 +313,15 @@ public:
   void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
   void     SetExoticCellMinAmplitudeCut(Float_t ma)   { fExoticCellMinAmplitude = ma   ; }
   
-  Bool_t   IsExoticCluster(AliVCluster *cluster, AliVCaloCells* cells, const Int_t bc=0) ;
+  Bool_t   IsExoticCluster(const AliVCluster *cluster, AliVCaloCells* cells, const Int_t bc=0) ;
   void     SwitchOnRejectExoticCluster()              { fRejectExoticCluster = kTRUE   ;
                                                         fRejectExoticCells   = kTRUE   ; }
   void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster = kFALSE  ; }
   Bool_t   IsRejectExoticCluster()              const { return fRejectExoticCluster    ; }
   
   //Cluster cut
-  Bool_t   IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells, const Int_t bc =-1);
+  Bool_t   IsGoodCluster(AliVCluster *cluster, const AliEMCALGeometry *geom, 
+                         AliVCaloCells* cells, const Int_t bc =-1);
 
   //Track Cuts 
   Bool_t   IsAccepted(AliESDtrack *track);
