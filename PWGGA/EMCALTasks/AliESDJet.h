@@ -12,9 +12,7 @@ class AliESDJet : public AliVParticle
  public:
   AliESDJet() : AliVParticle(), fPt(0), fEta(0), fPhi(0), fM(0), fNEF(0), fArea(0), 
                 fNch(0), fNn(0), fMaxCPt(0), fMaxNPt(0) {;}
-  AliESDJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
-    AliVParticle(), fPt(pt), fEta(eta), fPhi(phi), fM(m), fNEF(0), fArea(0), 
-    fNch(0), fNn(0), fMaxCPt(0), fMaxNPt(0) {;}
+  AliESDJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
   AliESDJet(Double_t px, Double_t py, Double_t pz);
   AliESDJet(const AliESDJet &jet); 
   AliESDJet& operator=(const AliESDJet &jet);
@@ -40,9 +38,13 @@ class AliESDJet : public AliVParticle
   Int_t       GetLabel()                   const { return -1;      }
   Int_t       PdgCode()                    const { return 0;       }
   const Double_t *PID()                    const { return 0;       }
-  UShort_t    N()                          const { return fNch+fNn;}
   void        GetMom(TLorentzVector &vec)  const;
   void        Print(Option_t* option = "") const;
+  Double_t    Area()                       const { return fArea;   }
+  Double_t    NEF()                        const { return fNEF;    }
+  UShort_t    N()                          const { return fNch+fNn;}
+  void        SetArea(Double_t a)                { fArea = a;  }
+  void        SetNEF(Double_t nef)               { fNEF = nef; }
 
  protected:
   Double32_t  fPt;           //[0,0,12]   pt 
