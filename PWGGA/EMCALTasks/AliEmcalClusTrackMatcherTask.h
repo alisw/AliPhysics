@@ -17,12 +17,16 @@ class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskSE {
   void         UserExec(Option_t *option);
   void         Terminate(Option_t *option);
 
-  void         SetCaloName(const char *n)        { fCaloName   = n; }
-  void         SetTracksName(const char *n)      { fTracksName = n; }
+  void         SetDoClusTrackMatching(Bool_t b) { fDoClusTrack = b; }
+  void         SetDoTrackClusMatching(Bool_t b) { fDoTrackClus = b; }
+  void         SetClusName(const char *n)       { fCaloName    = n; }
+  void         SetTracksName(const char *n)     { fTracksName  = n; }
 
  protected:
-  TString      fTracksName;         // name of track collection (if "" use branch)
-  TString      fCaloName;           // name of calo collection
+  TString      fTracksName;         // name of track collection
+  TString      fCaloName;           // name of calo cluster collection
+  Bool_t       fDoClusTrack;        // match clusters to tracks (one -> many)
+  Bool_t       fDoTrackClus;        // match tracks to clusters (one -> many) 
 
  private:
   AliEmcalClusTrackMatcherTask(const AliEmcalClusTrackMatcherTask&);            // not implemented

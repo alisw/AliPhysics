@@ -9,12 +9,13 @@
 
 ClassImp(AliEmcalClusTrackMatcherTask)
 
-
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) : 
   AliAnalysisTaskSE("AliEmcalClusTrackMatcherTask"),
   fTracksName("Tracks"),
-  fCaloName("CaloClusters")
+  fCaloName("CaloClusters"),
+  fDoClusTrack(1),
+  fDoTrackClus(0)
 {
   // Standard constructor.
 
@@ -59,57 +60,62 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
 
   const Int_t Ntrks = tracks->GetEntries();
   const Int_t Ncls  = clus->GetEntries();
-  for(Int_t i=0; i < Ncls; ++i) {
-    AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
-    if (!c)
-      continue;
-    c->SetEmcCpvDistance(-1);
-    c->SetTrackDistance(999,999);
-    Double_t dEtaMin  = 1e9;
-    Double_t dPhiMin  = 1e9;
-    Int_t    imin     = -1;
-    for(Int_t t = 0; t<Ntrks; ++t) {
-      AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
-      Double_t etadiff=999;
-      Double_t phidiff=999;
-      AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
-      Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-      if(dR > 25) 
-        continue;
-      if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
-        dEtaMin = etadiff;
-        dPhiMin = phidiff;
-        imin = t;
-      }
-    }
-    c->SetEmcCpvDistance(imin);
-    c->SetTrackDistance(dPhiMin, dEtaMin);
-  }
 
-  for(Int_t t = 0; t<Ntrks; ++t) {
-    AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
-    if (!track)
-      continue;
-    Double_t dEtaMin  = 1e9;
-    Double_t dPhiMin  = 1e9;
-    Int_t    imin     = -1;
+  if (fDoClusTrack) {
     for(Int_t i=0; i < Ncls; ++i) {
       AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
       if (!c)
         continue;
-      Double_t etadiff=999;
-      Double_t phidiff=999;
-      AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
-      Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-      if(dR > 25) 
-        continue;
-      if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
-        dEtaMin = etadiff;
-        dPhiMin = phidiff;
-        imin = t;
+      c->SetEmcCpvDistance(-1);
+      c->SetTrackDistance(999,999);
+      Double_t dEtaMin  = 1e9;
+      Double_t dPhiMin  = 1e9;
+      Int_t    imin     = -1;
+      for(Int_t t = 0; t<Ntrks; ++t) {
+        AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+        Double_t etadiff=999;
+        Double_t phidiff=999;
+        AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
+        Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
+        if(dR > 25) 
+          continue;
+        if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
+          dEtaMin = etadiff;
+          dPhiMin = phidiff;
+          imin = t;
+        }
       }
+      c->SetEmcCpvDistance(imin);
+      c->SetTrackDistance(dPhiMin, dEtaMin);
     }
-    track->SetEMCALcluster(imin);
+  }
+
+  if (fDoTrackClus) {
+    for(Int_t t = 0; t<Ntrks; ++t) {
+      AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+      if (!track)
+        continue;
+      Double_t dEtaMin  = 1e9;
+      Double_t dPhiMin  = 1e9;
+      Int_t    imin     = -1;
+      for(Int_t i=0; i < Ncls; ++i) {
+        AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
+        if (!c)
+          continue;
+        Double_t etadiff=999;
+        Double_t phidiff=999;
+        AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
+        Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
+        if(dR > 25) 
+          continue;
+        if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
+          dEtaMin = etadiff;
+          dPhiMin = phidiff;
+          imin = t;
+        }
+      }
+      track->SetEMCALcluster(imin);
+    }
   }
 }
 
