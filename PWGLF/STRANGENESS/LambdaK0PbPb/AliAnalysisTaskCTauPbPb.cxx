@@ -31,7 +31,7 @@ extern TROOT *gROOT;
 
 ClassImp(AliAnalysisTaskCTauPbPb)
 
-static Int_t    nbins=102;  // number of bins
+static Int_t    nbins=100;  // number of bins
 static Double_t lMin=0.0, lMax=100.;
 static Double_t pMin=0.0, pMax=10.;
 static Double_t yMax=0.5;
