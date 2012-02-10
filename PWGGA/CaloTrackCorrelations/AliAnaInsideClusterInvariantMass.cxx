@@ -825,6 +825,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if( en > 7 ) 
       {      
         fhMassM02NLocMax1[0]  [matched]->Fill(l0,  mass ); 
+        if(IsDataMC()) 
+          fhMassM02NLocMax1[mcindex][matched]->Fill(l0,  mass ); 
       }
       
       if(!matched)
@@ -840,6 +842,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if( en > 7 )
       {
         fhMassM02NLocMax2[0][matched]  ->Fill(l0,  mass ); 
+        if(IsDataMC()) 
+          fhMassM02NLocMax2[mcindex][matched]->Fill(l0,  mass ); 
       }
       
       if(!matched)
@@ -855,6 +859,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if( en > 7 ) 
       {      
         fhMassM02NLocMaxN[0]  [matched]->Fill(l0  ,mass );
+        if(IsDataMC()) 
+          fhMassM02NLocMaxN[mcindex][matched]->Fill(l0,  mass ); 
       }
       
       if(!matched)
