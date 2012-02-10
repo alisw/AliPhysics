@@ -16,6 +16,9 @@
 // PHOS_PbPbQA
 #pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;
 
+// PHOS_TriggerQA
+#pragma link C++ class AliAnalysisTaskPHOSTriggerQA+;
+
 // CaloCellQA
 #pragma link C++ class AliCaloCellsQA+;
 #pragma link C++ class AliAnalysisTaskCaloCellsQA+;
