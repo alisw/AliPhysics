@@ -42,6 +42,7 @@ public:
   Double_t Phi() const;
   Double_t Weight() const; 
   Int_t Charge() const;
+  Double_t Mass() const;
   Int_t PID() const {return 0;}
   
   Bool_t InRPSelection() const; 
@@ -54,6 +55,7 @@ public:
   void SetPhi(Double_t phi);
   void SetWeight(Double_t weight);
   void SetCharge(Int_t charge);
+  void SetMass(Double_t mass);
   void SetForRPSelection(Bool_t b=kTRUE); 
   void SetForPOISelection(Bool_t b=kTRUE); 
   void TagRP(Bool_t b=kTRUE) {SetForRPSelection(b);} 
@@ -121,17 +123,18 @@ public:
   Int_t GetID() const {return fID;}
 
  private:
-  AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge);
+  AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge, Double_t mass=-1);
   Double_t fEta;         // eta
   Double_t fPt;          // pt
   Double_t fPhi;         // phi
   Double_t fTrackWeight; // weight
   Int_t fCharge;         //charge
+  Double_t fMass;        // mass
   TBits    fFlowBits;    // bits to set if track is selected
   TBits    fSubEventBits;// bits to set if track is selected for a subevent
   Int_t    fID;          // Unique track ID, point back to the ESD track
 
-  ClassDef(AliFlowTrackSimple,1)                 // macro for rootcint
+  ClassDef(AliFlowTrackSimple,2)                 // macro for rootcint
 
 };
 
@@ -146,6 +149,8 @@ inline Double_t AliFlowTrackSimple::Weight() const {
   return this->fTrackWeight; }
 inline Int_t AliFlowTrackSimple::Charge() const { 
   return this->fCharge; }
+inline Double_t AliFlowTrackSimple::Mass() const { 
+  return this->fMass; }
 //TBits
 inline Bool_t AliFlowTrackSimple::InRPSelection() const { 
   return this->fFlowBits.TestBitNumber(kRP); }
@@ -165,6 +170,8 @@ inline void AliFlowTrackSimple::SetWeight(Double_t val) {
   fTrackWeight = val; }
 inline void AliFlowTrackSimple::SetCharge(Int_t val) {
   fCharge = val; }
+inline void AliFlowTrackSimple::SetMass(Double_t val) {
+  fMass = val; }
 //TBits
 inline void AliFlowTrackSimple::SetForRPSelection(Bool_t val) {
   fFlowBits.SetBitNumber(kRP,val); }

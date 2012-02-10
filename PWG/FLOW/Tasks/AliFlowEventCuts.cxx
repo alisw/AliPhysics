@@ -31,6 +31,8 @@
 #include "AliVVertex.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliAODHeader.h"
 #include "AliCentrality.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
@@ -274,6 +276,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   Int_t ncontrib = pvtx->GetNContributors();
   Bool_t pass=kTRUE;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
   Int_t multTPC = 0;
   Int_t multGlobal = 0; 
   if (fQA)
@@ -367,6 +370,27 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
       pass=kFALSE;
     }
   }
+
+  // Handles AOD event
+  if(aodevent) {
+    if (fCutCentralityPercentile) {
+      AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
+      if (fUseCentralityUnchecked) {
+	if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+						       fCentralityPercentileMax,
+						       CentrMethName(fCentralityPercentileMethod) )) {
+	  pass = kFALSE;
+	}
+      } else {
+	if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+					      fCentralityPercentileMax,
+					      CentrMethName(fCentralityPercentileMethod) )) {
+	  pass = kFALSE;
+	}
+      }
+    }
+  }
+
   if (fCutMeanPt)
   {
     Float_t meanpt=0.0;
