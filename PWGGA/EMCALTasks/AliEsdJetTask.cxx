@@ -154,10 +154,11 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
   for(UInt_t ij=0, jetCount=0; ij<jets_incl.size(); ++ij) {
     if (jets_incl[ij].perp()<1) 
       continue;
-#if 0
-    AliAODJet *jet = new ((*fJets)[jetCount]) 
-      AliAODJet(jets_incl[ij].px(), jets_incl[ij].py(), jets_incl[ij].pz(), jets_incl[ij].E());
-    jet->SetEffArea(fjw.GetJetArea(ij),0);
+    //cout << jets_incl[ij].perp() << " " << jets_incl[ij].eta() << " " << jets_incl[ij].phi() << " " <<  jets_incl[ij].m() << endl;
+    AliESDJet *jet = new ((*fJets)[jetCount]) 
+      AliESDJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
+    jet->SetArea(fjw.GetJetArea(ij));
+#if 0 /*tobedone*/
     jet->GetRefTracks()->Clear();
     vector<fastjet::PseudoJet> constituents = fjw.GetJetConstituents(ij);
     Double_t neutralE = 0;
