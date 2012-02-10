@@ -22,6 +22,20 @@ AliESDJet::AliESDJet(Double_t px, Double_t py, Double_t pz)
 }
 
 //_________________________________________________________________________________________________
+AliESDJet::AliESDJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
+  AliVParticle(), 
+  fPt(pt), fEta(eta), fPhi(phi), 
+  fM(m), fNEF(0), fArea(0), 
+  fNch(0), fNn(0), 
+  fMaxCPt(0), fMaxNPt(0) 
+{
+  // Constructor.
+
+ if (fPhi<0.) 
+   fPhi += 2. * TMath::Pi();
+}
+
+//_________________________________________________________________________________________________
 AliESDJet::AliESDJet(const AliESDJet &jet) :
   AliVParticle(jet),
   fPt(jet.fPt), fEta(jet.fEta), fPhi(jet.fPhi), 
