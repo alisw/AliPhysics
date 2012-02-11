@@ -1094,7 +1094,7 @@ Int_t AliCentralitySelectionTask::SetupRun(const AliESDEvent* const esd)
   fV0MScaleFactor    = centOADB->V0MScaleFactor();
   fSPDScaleFactor    = centOADB->SPDScaleFactor();
   fTPCScaleFactor    = centOADB->TPCScaleFactor();
-  fV0MScaleFactorMC  = centOADB->V0MScaleFactor();
+  fV0MScaleFactorMC  = centOADB->V0MScaleFactorMC();
 
   // outliers parameters
   fV0MSPDOutlierPar0 = centOADB->V0MSPDOutlierPar0();      
