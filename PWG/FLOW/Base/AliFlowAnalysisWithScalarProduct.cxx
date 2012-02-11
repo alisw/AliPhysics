@@ -512,9 +512,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   printf("AliFlowAnalysisWithScalarProduct::Finish()\n");
   
   // access harmonic:
-  fApplyCorrectionForNUA = fHistProConfig->GetBinContent(1);
-  fNormalizationType = fHistProConfig->GetBinContent(2);
-  fHarmonic = fHistProConfig->GetBinContent(4);
+  fApplyCorrectionForNUA = (Int_t)(fHistProConfig->GetBinContent(1));
+  fNormalizationType = (Int_t)(fHistProConfig->GetBinContent(2));
+  fHarmonic = (Int_t)(fHistProConfig->GetBinContent(4));
   
   printf("*************************************\n");
   printf("*************************************\n");
