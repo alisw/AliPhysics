@@ -589,7 +589,7 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
                                                   Int_t *absIdList,     Float_t *maxEList) 
 {
   // Find local maxima in cluster
-
+  
   Int_t iDigitN = 0 ;
   Int_t iDigit  = 0 ;
   Int_t absId1 = -1 ;
@@ -600,14 +600,22 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
   if(!cluster->IsEMCAL()) calorimeter = "PHOS";
   
   //printf("cluster : ncells %d \n",nCells);
+  
+  Float_t emax  = 0;
+  Int_t   idmax =-1;
   for(iDigit = 0; iDigit < nCells ; iDigit++)
   {
     absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit]  ; 
-     //Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-     //RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
-     //Int_t icol = -1, irow = -1, iRCU = -1;
-     //Int_t sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
-     //printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
+    Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+    RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
+    if( en > emax )
+    {
+      emax  = en ;
+      idmax = absIdList[iDigit] ;
+    }
+    //Int_t icol = -1, irow = -1, iRCU = -1;
+    //Int_t sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
+    //printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
   }
   
   for(iDigit = 0 ; iDigit < nCells; iDigit++) 
@@ -618,7 +626,7 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
       
       Float_t en1 = cells->GetCellAmplitude(absId1);
       RecalibrateCellAmplitude(en1,calorimeter,absId1);  
-              
+      
       //printf("%d : absIDi %d, E %f\n",iDigit, absId1,en1);
       
       for(iDigitN = 0; iDigitN < nCells; iDigitN++) 
@@ -631,7 +639,7 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
         
         Float_t en2 = cells->GetCellAmplitude(absId2);
         RecalibrateCellAmplitude(en2,calorimeter,absId2);
-                
+        
         //printf("\t %d : absIDj %d, E %f\n",iDigitN, absId2,en2);
         
         if ( AreNeighbours(calorimeter, absId1, absId2) ) 
@@ -679,8 +687,26 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
     }
   }
   
-  //printf("**********N maxima %d \n",iDigitN);
-  //for(Int_t imax = 0; imax < iDigitN; imax++) printf("imax %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
+  if(iDigitN == 0)
+  {
+    if(fDebug > 0) 
+      printf("AliCalorimeterUtils::GetNumberOfLocalMaxima() - No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f\n",
+             idmax,emax,cluster->E());
+    iDigitN      = 1     ;
+    maxEList[0]  = emax  ;
+    absIdList[0] = idmax ; 
+  }
+  
+  if(fDebug > 0) 
+  {    
+    printf("AliCalorimeterUtils::GetNumberOfLocalMaxima() - In cluster E %2.2f, M02 %2.2f, M20 %2.2f, N maxima %d \n", 
+           cluster->E(),cluster->GetM02(),cluster->GetM20(), iDigitN);
+  
+    if(fDebug > 1) for(Int_t imax = 0; imax < iDigitN; imax++) 
+    {
+      printf(" \t i %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
+    }
+  }
   
   return iDigitN ;
   
