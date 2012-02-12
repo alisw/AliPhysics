@@ -453,15 +453,15 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      Double_t nSigma = 0.;
 		      //Decide what detector configuration we want to use
 		      switch(fPidDetectorConfig) {
-		      case AliPIDResponse::kDetTPC:
+		      case kTPCpid:
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
 			nSigma = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest);
 			break;
-		      case AliPIDResponse::kDetTOF:
+		      case kTOFpid:
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
 			nSigma = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest);
 			break;
-		      case AliPIDResponse::AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC:
+		      case kTPCTOF:
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
 			break;
 		      default:
@@ -507,14 +507,16 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      fHistNSigmaTPCvsPtbeforePID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
 		      //end of QA-before pid
 		      
-		      //Make the decision based on the n-sigma
-		      if(fUsePIDnSigma) {
-			if(nSigma > fPIDNSigma) continue;}
-		      
-		      //Make the decision based on the bayesian
-		      else if(fUsePIDPropabilities) {
-			if(fParticleOfInterest != TMath::LocMax(AliPID::kSPECIES,prob)) continue;
-			if (prob[fParticleOfInterest]< fMinAcceptedPIDProbability) continue;      
+		      if (detUsed != 0) {
+			//Make the decision based on the n-sigma
+			if(fUsePIDnSigma) {
+			  if(nSigma > fPIDNSigma) continue;}
+			
+			//Make the decision based on the bayesian
+			else if(fUsePIDPropabilities) {
+			  if(fParticleOfInterest != TMath::LocMax(AliPID::kSPECIES,prob)) continue;
+			  if (prob[fParticleOfInterest]< fMinAcceptedPIDProbability) continue;      
+			}
 		      }
 		      
 		      //Fill QA after the PID
