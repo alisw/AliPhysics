@@ -57,7 +57,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   AliAnaCaloTrackCorrBaseClass(),  
   fCalorimeter(""), 
   fM02MaxCut(0),    fM02MinCut(0),       
-  fMinNCells(0),  
+  fMinNCells(0),    fMinBadDist(0),
   fMassEtaMin(0),   fMassEtaMax(0),
   fMassPi0Min(0),   fMassPi0Max(0),
   fMassConMin(0),   fMassConMax(0),
@@ -151,6 +151,8 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   snprintf(onePar,buffersize,"%2.2f< M02 < %2.2f \n",    fM02MinCut, fM02MaxCut) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fMinNCells =%d \n",        fMinNCells) ;
+  parList+=onePar ;    
+  snprintf(onePar,buffersize,"fMinBadDist =%1.1f \n",     fMinBadDist) ;
   parList+=onePar ;  
   snprintf(onePar,buffersize,"pi0 : %2.1f < m <%2.1f\n", fMassPi0Min,fMassPi0Max);
   parList+=onePar ;
@@ -594,6 +596,7 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   fM02MaxCut   = 10 ;
   
   fMinNCells   = 4 ;
+  fMinBadDist  = 2 ;
   
   fMassEtaMin  = 0.4;
   fMassEtaMax  = 0.6;
@@ -616,11 +619,13 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   AliVCaloCells* cells = 0x0;
 
   //Select the Calorimeter of the photon
-  if(fCalorimeter == "PHOS"){
+  if(fCalorimeter == "PHOS")
+  {
     pl    = GetPHOSClusters();
     cells = GetPHOSCells();
   }
-  else if (fCalorimeter == "EMCAL"){
+  else if (fCalorimeter == "EMCAL")
+  {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
   }
@@ -632,17 +637,22 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   
 	if(fCalorimeter == "PHOS") return; // Not implemented for PHOS yet
 
-  for(Int_t icluster = 0; icluster < pl->GetEntriesFast(); icluster++){
+  for(Int_t icluster = 0; icluster < pl->GetEntriesFast(); icluster++)
+  {
     AliVCluster * cluster = (AliVCluster*) (pl->At(icluster));	
 
     // Study clusters with large shape parameter
     Float_t en = cluster->E();
     Float_t l0 = cluster->GetM02();
     Int_t   nc = cluster->GetNCells();
+    Float_t bd = cluster->GetDistanceToBadChannel() ; 
 
-    //If too small or big E or low number of cells, skip it
-    if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells) continue ; 
-  
+    //If too small or big E or low number of cells, or close to a bad channel skip it
+    if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells || bd < fMinBadDist) continue ; 
+    
+    //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
+    //       en,GetMinEnergy(), GetMaxEnergy(), nc, fMinNCells, bd, fMinBadDist);
+    
     Int_t    absId1    = -1; Int_t absId2 = -1;
     Int_t   *absIdList = new Int_t  [nc]; 
     Float_t *maxEList  = new Float_t[nc]; 
