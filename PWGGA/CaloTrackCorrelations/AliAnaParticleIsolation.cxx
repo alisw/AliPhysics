@@ -151,6 +151,12 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
   
   if(!fFillTMHisto &&  !fFillSSHisto) return;
   
+  if(clusterID < 0 ) 
+  {
+    printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(), ID of cluster = %d, not possible! ", clusterID);
+    return;
+  }
+  
   Int_t iclus = -1;
   TObjArray* clusters = 0x0;
   if     (fCalorimeter == "EMCAL") clusters = GetEMCALClusters();
@@ -992,7 +998,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     if(check == -1) return;
     
     //find the leading particles with highest momentum
-    if ((aodinput->Pt())>ptLeading) 
+    if ( aodinput->Pt() > ptLeading ) 
     {
       ptLeading = aodinput->Pt() ;
       idLeading = iaod ;
@@ -1007,7 +1013,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   
   AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(idLeading));
   aodinput->SetLeadingParticle(kTRUE);
-    
+  
+  // Check isolation only of clusters in fiducial region
+  if(IsFiducialCutOn())
+  {
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodinput->Momentum(),fCalorimeter) ;
+    if(! in ) return ;
+  }
+  
   //After cuts, study isolation
   n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
   GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,
@@ -1049,6 +1062,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     if(!aod->IsLeadingParticle()) continue; // Try to isolate only leading cluster or track
     
+    // Check isolation only of clusters in fiducial region
+    if(IsFiducialCutOn())
+    {
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(*aod->Momentum(),fCalorimeter) ;
+      if(! in ) continue ;
+    }
+    
     Bool_t  isolation  = aod->IsIsolated(); 
     Bool_t  decay      = aod->IsTagged();
     Float_t energy     = aod->E();
@@ -1080,7 +1100,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhConeSumPt->Fill(pt,coneptsum);    
       if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
     }
-    // --- -------------------------------------------- ----
+    // ---------------------------------------------------
     
     //Fill pt distribution of particles in cone
     //Tracks
