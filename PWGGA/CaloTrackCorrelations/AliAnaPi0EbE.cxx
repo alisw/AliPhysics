@@ -49,7 +49,7 @@ ClassImp(AliAnaPi0EbE)
 AliAnaPi0EbE::AliAnaPi0EbE() : 
     AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),            fCalorimeter(""),
     fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	              
-    fFillWeightHistograms(kFALSE), fFillTMHisto(0),
+    fFillWeightHistograms(kFALSE), fFillTMHisto(0),              fFillSelectClHisto(0),
     fInputAODGammaConvName(""),
     // Histograms
     fhPt(0),                       fhE(0),                    
@@ -561,7 +561,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   ////////
   
-  if(fAnaType == kIMCalo || fAnaType == kIMCaloTracks )
+  if( fFillSelectClHisto && (fAnaType == kIMCalo || fAnaType == kIMCaloTracks) )
   {
     
     fhEDispersion  = new TH2F
@@ -637,7 +637,8 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     outputContainer->Add(fhELambda1LocMaxN) ; 
     
     
-    if(fCalorimeter=="EMCAL"){
+    if(fCalorimeter=="EMCAL")
+    {
       fhELambda0NoTRD  = new TH2F
       ("hELambda0NoTRD","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, not behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhELambda0NoTRD->SetYTitle("#lambda_{0}^{2}");
@@ -663,7 +664,8 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
   }// Invariant mass analysis in calorimeters and calorimeter + conversion photons
   
-  if(fAnaType == kIMCalo){
+  if(fAnaType == kIMCalo)
+  {
     fhEPairDiffTime = new TH2F("hEPairDiffTime","cluster pair time difference vs E",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
     fhEPairDiffTime->SetXTitle("E_{pair} (GeV)");
     fhEPairDiffTime->SetYTitle("#Delta t (ns)");
@@ -1104,7 +1106,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
         
         //Fill some histograms about shower shape
-        if(clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+        if(fFillSelectClHisto && clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
         {
           FillSelectedClusterHistograms(cluster1, nMaxima1, photon1->GetTag());
           FillSelectedClusterHistograms(cluster2, nMaxima2, photon2->GetTag());
@@ -1237,7 +1239,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
         
         //Fill some histograms about shower shape
-        if(cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+        if(fFillSelectClHisto && cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
         {
           FillSelectedClusterHistograms(cluster, nMaxima, photon1->GetTag());
         }        

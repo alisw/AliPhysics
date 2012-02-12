@@ -82,6 +82,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOnTMHistoFill()                       { fFillTMHisto          = kTRUE  ; }
   void           SwitchOffTMHistoFill()                      { fFillTMHisto          = kFALSE ; }
 
+  void           SwitchOnSelectedClusterHistoFill()          { fFillSelectClHisto    = kTRUE  ; }
+  void           SwitchOffSelectedClusterHistoFill()         { fFillSelectClHisto    = kFALSE ; }
+  
   //For histograms
   enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
                    kmcEta    = 3, kmcElectron   = 4, kmcHadron = 5 };
@@ -98,6 +101,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
+  Bool_t         fFillSelectClHisto;       // Fill selected cluster histograms
 
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
@@ -176,7 +180,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,13)
+  ClassDef(AliAnaPi0EbE,14)
 } ;
 
 
