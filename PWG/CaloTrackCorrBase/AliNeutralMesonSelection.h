@@ -2,7 +2,6 @@
 #define ALINEUTRALMESONSELECTION_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliNeutralMesonSelection.h 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 // Class that contains methods to select candidate pairs to neutral meson 
@@ -156,7 +155,7 @@ class AliNeutralMesonSelection : public TObject {
   Float_t  fHistoIMMax ;                  // Maximum value of Invariant Mass histogram range
   Float_t  fHistoIMMin ;                  // Minimum value of Invariant Mass histogram range  
   
-  AliNeutralMesonSelection(const AliNeutralMesonSelection & g) ;               // cpy ctor
+  AliNeutralMesonSelection(              const AliNeutralMesonSelection & g) ; // cpy ctor
   AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ; // cpy assignment
   
   ClassDef(AliNeutralMesonSelection,6)

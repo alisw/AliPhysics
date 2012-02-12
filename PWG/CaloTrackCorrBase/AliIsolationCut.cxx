@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class containing methods for the isolation cut. 
@@ -53,7 +52,6 @@ fSumPtThreshold(0.),
 fPtFraction(0.), 
 fICMethod(0),
 fPartInCone(0)
-
 {
   //default ctor
   
@@ -109,10 +107,10 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
                                         const Bool_t bFillAOD, 
                                         AliAODPWG4ParticleCorrelation  *pCandidate, 
                                         const TString & aodArrayRefName,
-                                        Int_t & n, 
-                                        Int_t & nfrac, 
-                                        Float_t &coneptsum,  
-                                        Bool_t  &isolated) const
+                                        Int_t   & n, 
+                                        Int_t   & nfrac, 
+                                        Float_t & coneptsum,  
+                                        Bool_t  & isolated) const
 {  
   //Search in cone around a candidate particle if it is isolated 
   Float_t phiC  = pCandidate->Phi() ;
@@ -136,32 +134,42 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
   Int_t nclusterrefs = 0;
   
   //Check charged particles in cone.
-  if(plCTS && (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged)){
+  if(plCTS && 
+     (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged))
+  {
     TVector3 p3;
-    for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ ){
+    for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
+    {
+      
       AliAODTrack* track = (AliAODTrack *)(plCTS->At(ipr)) ; 
+      
       //Do not count the candidate (pion, conversion photon) or the daughters of the candidate
-      if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) 
-         || track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3) 
-         ) continue ;
+      if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) || 
+         track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
+      
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       pt   = p3.Pt();
       eta  = p3.Eta();
       phi  = p3.Phi() ;
       if(phi<0) phi+=TMath::TwoPi();
       
-      //only loop the particle at the same side of candidate
+      // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
-      //if at the same side has particle larger than candidate, then candidate can not be the leading, skip such events
-      if(pt > ptC){
+
+      // If at the same side has particle larger than candidate, 
+      // then candidate can not be the leading, skip such events
+      if(pt > ptC)
+      {
         n         = -1;
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
-        if(bFillAOD && reftracks) {
+        if(bFillAOD && reftracks) 
+        {
           reftracks->Clear(); 
           delete reftracks;
         }
+        
         return ;
       }
       
@@ -169,10 +177,13 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
 
       rad = Radius(etaC, phiC, eta, phi);
       
-      if(rad < fConeSize){
-        if(bFillAOD) {
+      if(rad < fConeSize)
+      {
+        if(bFillAOD)
+        {
           ntrackrefs++;
-          if(ntrackrefs == 1){
+          if(ntrackrefs == 1)
+          {
             reftracks = new TObjArray(0);
             //reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
             TString tempo(aodArrayRefName)  ; 
@@ -182,31 +193,35 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
           }
           reftracks->Add(track);
         }
+        
         //printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
         coneptsum+=pt;
         if(pt > fPtThreshold )    n++;
         if(pt > fPtFraction*ptC ) nfrac++;  
+        
       } // Inside cone
     }// charged particle loop
   }//Tracks
   
   //Check neutral particles in cone.  
-  if(plNe && (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged)){
-	  
-    
+  if(plNe && 
+     (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
+  {
     TLorentzVector mom ;
-    for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ ){
+    
+    for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
+    {
       AliVCluster * calo = (AliVCluster *)(plNe->At(ipr)) ;
       
       //Get the index where the cluster comes, to retrieve the corresponding vertex
       Int_t evtIndex = 0 ; 
-      if (reader->GetMixedEvent()) {
+      if (reader->GetMixedEvent()) 
         evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
-      }
+      
       
       //Do not count the candidate (photon or pi0) or the daughters of the candidate
       if(calo->GetID() == pCandidate->GetCaloLabel(0) || 
-         calo->GetID() == pCandidate->GetCaloLabel(1)) continue ;      
+         calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;      
       
       //Skip matched clusters with tracks
       if( pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
@@ -218,22 +233,29 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       eta  = mom.Eta();
       phi  = mom.Phi() ;
       if(phi<0) phi+=TMath::TwoPi();
-      //only loop the particle at the same side of candidate
       
-      //if at the same side has particle larger than candidate, then candidate can not be the leading, skip such events
+      // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
       
-      if(pt > ptC){
+      // If at the same side has particle larger than candidate, 
+      // then candidate can not be the leading, skip such events
+      if(pt > ptC)
+      {
         n         = -1;
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
-        if(bFillAOD){
-          if(reftracks){  
+        
+        if(bFillAOD)
+        {
+          if(reftracks)
+          {  
             reftracks  ->Clear();
             delete reftracks;
           }
-          if(refclusters){
+          
+          if(refclusters)
+          {
             refclusters->Clear(); 
             delete refclusters;
           }
@@ -245,10 +267,13 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
 
       rad = Radius(etaC, phiC, eta, phi);
       
-      if(rad < fConeSize){
-        if(bFillAOD) {
+      if(rad < fConeSize)
+      {
+        if(bFillAOD) 
+        {
           nclusterrefs++;
-          if(nclusterrefs==1){
+          if(nclusterrefs==1)
+          {
             refclusters = new TObjArray(0);
             //refclusters->SetName(Form("Clusters%s",aodArrayRefName.Data()));
             TString tempo(aodArrayRefName)  ; 
@@ -258,39 +283,51 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
           }
           refclusters->Add(calo);
         }
+        
         //printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
         coneptsum+=pt;
-        if(pt > fPtThreshold )     n++;
+        if(pt > fPtThreshold )   n++;
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-        if(fPtFraction*ptC<fPtThreshold) {
+        if(fPtFraction*ptC<fPtThreshold)
+        {
           if(pt>fPtThreshold)    nfrac++ ;
         }
-        else {
+        else 
+        {
           if(pt>fPtFraction*ptC) nfrac++; 
         }
+        
       }//in cone
+      
     }// neutral particle loop
+  
   }//neutrals
   
   //printf("Isolation Cut: in cone with: pT>pTthres %d, pT > pTfrac*pTcandidate %d \n",n,nfrac);
   
   //Add reference arrays to AOD when filling AODs only
-  if(bFillAOD) {
+  if(bFillAOD) 
+  {
     if(refclusters)	pCandidate->AddObjArray(refclusters);
     if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
-  //Check isolation, depending on method.
-  if( fICMethod == kPtThresIC){
+  
+  //Check isolation, depending on selected isolation criteria
+  if( fICMethod == kPtThresIC)
+  {
     if(n==0) isolated = kTRUE ;
   }
-  else if( fICMethod == kSumPtIC){
+  else if( fICMethod == kSumPtIC)
+  {
     if(coneptsum < fSumPtThreshold)
       isolated  =  kTRUE ;
   }
-  else if( fICMethod == kPtFracIC){
+  else if( fICMethod == kPtFracIC)
+  {
     if(nfrac==0) isolated = kTRUE ;
   }
-  else if( fICMethod == kSumPtFracIC){
+  else if( fICMethod == kSumPtFracIC)
+  {
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
     if(fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
     if(fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
