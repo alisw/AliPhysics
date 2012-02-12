@@ -1121,10 +1121,9 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     //for(Int_t icell=0; icell < newCluster->GetNCells(); icell++ ) printf(" %d,", newCluster->GetCellsAbsId() [icell] );
     //printf("\n");
 
-    //In case of new bad channels, recalculate distance to bad channels
-    if(fRecoUtils->IsBadChannelsRemovalSwitchedOn())
-      fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
-
+    // Calculate distance to bad channel for new cluster. Make sure you give the list of bad channels.
+    fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
+    
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
         
     if(DebugLevel() > 1 )    
