@@ -49,6 +49,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
 
   void         SetMinNCells(Int_t cut)                   { fMinNCells   = cut ; }
+
+  void         SetMinBadChannelDistance(Float_t cut)     { fMinBadDist  = cut ; }
   
   void         SetPi0MassRange(Float_t min, Float_t max) { fMassPi0Min  = min ; fMassPi0Max = max ; }
   void         SetEtaMassRange(Float_t min, Float_t max) { fMassEtaMin  = min ; fMassEtaMax = max ; }
@@ -77,6 +79,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fM02MaxCut    ;         // Study clusters with l0 smaller than cut
   Float_t      fM02MinCut    ;         // Study clusters with l0 larger than cut
   Int_t        fMinNCells ;            // Study clusters with ncells larger than cut
+  Float_t      fMinBadDist ;           // Minimal distance to bad channel to accept cluster
   Float_t      fMassEtaMin;            // Min Eta mass
   Float_t      fMassEtaMax;            // Max Eta mass  
   Float_t      fMassPi0Min;            // Min Pi0 mass
@@ -143,7 +146,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,9)
+  ClassDef(AliAnaInsideClusterInvariantMass,10)
   
 } ;
 
