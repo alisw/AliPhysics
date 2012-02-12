@@ -177,7 +177,8 @@ TLorentzVector AliAnaInsideClusterInvariantMass::GetCellMomentum(const Int_t abs
   Double_t cellpos[] = {0, 0, 0};
   GetEMCALGeometry()->GetGlobal(absId, cellpos);
   
-  if(GetVertex(0)){//calculate direction from vertex
+  if(GetVertex(0))
+  {//calculate direction from vertex
     cellpos[0]-=GetVertex(0)[0];
     cellpos[1]-=GetVertex(0)[1];
     cellpos[2]-=GetVertex(0)[2];  
@@ -677,12 +678,12 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     }
     
     fhNLocMax[0][matched]->Fill(en,nMax);
+    
     for(Int_t imax = 0; imax < nMax; imax++)
     {
       fhNLocMaxEMax [0][matched]->Fill(maxEList[imax]   ,nMax);
       fhNLocMaxEFrac[0][matched]->Fill(maxEList[imax]/en,nMax);
     }
-    
     
     if     ( nMax == 1  ) { fhM02NLocMax1[0][matched]->Fill(en,l0) ; fhNCellNLocMax1[0][matched]->Fill(en,nc) ; }
     else if( nMax == 2  ) { fhM02NLocMax2[0][matched]->Fill(en,l0) ; fhNCellNLocMax2[0][matched]->Fill(en,nc) ; }
@@ -724,15 +725,17 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       
       //GetMCAnalysisUtils()->PrintMCTag(tag);
       //printf("\t MC index Assigned %d \n",mcindex);
-      fhNLocMaxNLabel[0]      [matched]->Fill(en,nMax);
+      fhNLocMaxNLabel[0]      [matched]->Fill(cluster->GetNLabels(),nMax);
       fhNLocMaxNLabel[mcindex][matched]->Fill(cluster->GetNLabels(),nMax);
 
       fhNLocMax[mcindex][matched]->Fill(en,nMax);
+      
       for(Int_t imax = 0; imax < nMax; imax++)
       {
         fhNLocMaxEMax [mcindex][matched]->Fill(maxEList[imax]   ,nMax);
         fhNLocMaxEFrac[mcindex][matched]->Fill(maxEList[imax]/en,nMax);
       }
+      
       if     (nMax == 1 ) { fhM02NLocMax1[mcindex][matched]->Fill(en,l0) ; fhNCellNLocMax1[mcindex][matched]->Fill(en,nc) ; }
       else if(nMax == 2 ) { fhM02NLocMax2[mcindex][matched]->Fill(en,l0) ; fhNCellNLocMax2[mcindex][matched]->Fill(en,nc) ; }
       else if(nMax >= 3 ) { fhM02NLocMaxN[mcindex][matched]->Fill(en,l0) ; fhNCellNLocMaxN[mcindex][matched]->Fill(en,nc) ; }
@@ -750,7 +753,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     // Get the 2 max indeces and do inv mass
     //---------------------------------------------------------------------
 
-    if     ( nMax == 2 ) {
+    if     ( nMax == 2 ) 
+    {
       absId1 = absIdList[0];
       absId2 = absIdList[1];
     }
@@ -762,25 +766,30 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       //Find second highest energy cell
 
       Float_t enmax = 0 ;
-      for(Int_t iDigit = 0 ; iDigit < cluster->GetNCells() ; iDigit++){
+      for(Int_t iDigit = 0 ; iDigit < cluster->GetNCells() ; iDigit++)
+      {
         Int_t absId = cluster->GetCellsAbsId()[iDigit];
         if( absId == absId1 ) continue ; 
         Float_t endig = cells->GetCellAmplitude(absId);
         GetCaloUtils()->RecalibrateCellAmplitude(endig,fCalorimeter,absId); 
-        if(endig > enmax) {
+        if(endig > enmax) 
+        {
           enmax  = endig ;
           absId2 = absId ;
         }
       }// cell loop
     }// 1 maxima 
-    else {  // n max > 2
+    else
+    {  // n max > 2
       // loop on maxima, find 2 highest
       
       // First max
       Float_t enmax = 0 ;
-      for(Int_t iDigit = 0 ; iDigit < nMax ; iDigit++){
+      for(Int_t iDigit = 0 ; iDigit < nMax ; iDigit++)
+      {
         Float_t endig = maxEList[iDigit];
-        if(endig > enmax) {
+        if(endig > enmax) 
+        {
           enmax  = endig ;
           absId1 = absIdList[iDigit];
         }
@@ -788,10 +797,12 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
       // Second max 
       Float_t enmax2 = 0;
-      for(Int_t iDigit = 0 ; iDigit < nMax ; iDigit++){
+      for(Int_t iDigit = 0 ; iDigit < nMax ; iDigit++)
+      {
         if(absIdList[iDigit]==absId1) continue;
         Float_t endig = maxEList[iDigit];
-        if(endig > enmax2) {
+        if(endig > enmax2) 
+        {
           enmax2  = endig ;
           absId2 = absIdList[iDigit];
         }
@@ -990,6 +1001,8 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   printf("Calorimeter     =     %s\n",  fCalorimeter.Data()) ;
   printf("Loc. Max. E > %2.2f\n",       GetCaloUtils()->GetLocalMaximaCutE());
   printf("Loc. Max. E Diff > %2.2f\n",  GetCaloUtils()->GetLocalMaximaCutEDiff());
+  printf("Min. N Cells =%d \n",         fMinNCells) ;
+  printf("Min. Dist. to Bad =%1.1f \n", fMinBadDist) ;
   printf("%2.2f < lambda_0^2 <%2.2f \n",fM02MinCut,fM02MaxCut);
   printf("pi0 : %2.2f<m<%2.2f \n",      fMassPi0Min,fMassPi0Max);
   printf("eta : %2.2f<m<%2.2f \n",      fMassEtaMin,fMassEtaMax);
@@ -1010,7 +1023,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
                                                    AliAODCaloCluster* cluster2,
                                                    const Int_t nMax)
 {
-
+  
   // Split energy of cluster between the 2 local maxima, sum energy on 3x3, and if the 2 
   // maxima are too close and have common cells, split the energy between the 2
   
@@ -1042,10 +1055,10 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
   Int_t icol = -1, irow = -1, iRCU = -1, sm = -1;  
   Float_t eCluster = 0;
   Float_t minCol = 100, minRow = 100, maxCol = -1, maxRow = -1; 
-  for(Int_t iDigit  = 0; iDigit < ncells; iDigit++ ) {
+  for(Int_t iDigit  = 0; iDigit < ncells; iDigit++ ) 
+  {
     absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit];
     
-  
     Float_t ec = cells->GetCellAmplitude(absIdList[iDigit]);
     GetCaloUtils()->RecalibrateCellAmplitude(ec,fCalorimeter, absIdList[iDigit]);
     eCluster+=ec;
@@ -1060,9 +1073,9 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
       if(irow < minRow) minRow = irow;
       hClusterMap->Fill(icol,irow,ec);
     }
-     
-  }
     
+  }
+  
   // Init counters and variables
   Int_t ncells1 = 1 ;
   UShort_t absIdList1[9] ;  
@@ -1079,7 +1092,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
   Double_t fracList2 [9] ; 
   absIdList2[0] = absId2 ;
   fracList2 [0] = 1. ;
-
+  
   Float_t ecell2 = cells->GetCellAmplitude(absId2);
   GetCaloUtils()->RecalibrateCellAmplitude(ecell2, fCalorimeter, absId2);
   e2 =  ecell2;  
@@ -1097,8 +1110,9 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
   Float_t eRemain = (eCluster-ecell1-ecell2)/2;
   Float_t shareFraction1 = ecell1/eCluster+eRemain/eCluster;
   Float_t shareFraction2 = ecell2/eCluster+eRemain/eCluster;
- 
-  for(Int_t iDigit = 0; iDigit < ncells; iDigit++){
+  
+  for(Int_t iDigit = 0; iDigit < ncells; iDigit++)
+  {
     Int_t absId = absIdList[iDigit];
     
     if(absId==absId1 || absId==absId2 || absId < 0) continue;
@@ -1108,8 +1122,8 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
     
     if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId ))
     { 
-       absIdList1[ncells1]= absId;
-    
+      absIdList1[ncells1]= absId;
+      
       if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absId ))
       { 
         fracList1[ncells1] = shareFraction1; 
@@ -1123,12 +1137,12 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
       
       ncells1++;
       
-     } // neigbour to cell1
+    } // neigbour to cell1
     
     if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absId ))
     { 
       absIdList2[ncells2]= absId;
-     
+      
       if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId ))
       { 
         fracList2[ncells2] = shareFraction2; 
@@ -1139,16 +1153,16 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
         fracList2[ncells2] = 1.; 
         e2 += ecell;
       }
-
+      
       ncells2++;
-
+      
     } // neigbour to cell2
-
+    
   }
   
-   if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::SplitEnergy() - n Local Max %d, Cluster energy  = %f, Ecell1 = %f, Ecell2 = %f, Enew1 = %f, Enew2 = %f, Remain %f, \n ncells %d, ncells1 %d, ncells2 %d, f1 %f, f2  %f, sum f12 = %f \n",
-         nMax, eCluster,ecell1,ecell2,e1,e2,eCluster-e1-e2,ncells,ncells1,ncells2,shareFraction1,shareFraction2,shareFraction1+shareFraction2);
-
+  if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::SplitEnergy() - n Local Max %d, Cluster energy  = %f, Ecell1 = %f, Ecell2 = %f, Enew1 = %f, Enew2 = %f, Remain %f, \n ncells %d, ncells1 %d, ncells2 %d, f1 %f, f2  %f, sum f12 = %f \n",
+                            nMax, eCluster,ecell1,ecell2,e1,e2,eCluster-e1-e2,ncells,ncells1,ncells2,shareFraction1,shareFraction2,shareFraction1+shareFraction2);
+  
   cluster1->SetE(e1);
   cluster2->SetE(e2);  
   
@@ -1209,7 +1223,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
     {
       maxCol+= maxRow-minRow;
     }
-
+    
     TCanvas  * c= new TCanvas("canvas", "canvas", 4000, 4000) ;
     c->Divide(2,2);  
     c->cd(1);
