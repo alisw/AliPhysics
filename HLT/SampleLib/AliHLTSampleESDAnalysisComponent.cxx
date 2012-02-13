@@ -195,21 +195,27 @@ int AliHLTSampleESDAnalysisComponent::DoEvent(const AliHLTComponentEventData& /*
   // which should be ignored for normal processing
   if (!IsDataEvent()) return 0;
 
-  const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
+  TObjArray output; // an array for publishing the tracks as separate output
 
-  // input objects are not supposed to be changed by the component, so they
-  // are defined const. However, the implementation of AliESDEvent does not
-  // support this and we need the const_cast
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
-  TObjArray output;
-  if (esd != NULL) {
-    AliInfoClass(Form("==================== event %3d ================================", GetEventCount()));
-    esd->GetStdContent();
-    for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
-      AliESDtrack* track = esd->GetTrack(i);
-      AliInfoClass(Form("-------------------- track %3d --------------------------------", i));
-      track->Print("");
-      output.Add(track);
+  AliInfoClass(Form("==================== event %3d ================================", GetEventCount()));
+  for (const TObject* obj = GetFirstInputObject();
+       obj!=NULL;
+       obj = GetNextInputObject()) {
+    AliInfoClass(Form("object: %s", obj->GetName()));
+    if (obj->IsA()==AliESDEvent::Class()) {
+      // input objects are not supposed to be changed by the component, so they
+      // are defined const. However, the implementation of AliESDEvent does not
+      // support this and we need the const_cast
+      AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
+      if (esd != NULL) {
+	esd->GetStdContent();
+	for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
+	  AliESDtrack* track = esd->GetTrack(i);
+	  AliInfoClass(Form("-------------------- track %3d --------------------------------", i));
+	  track->Print("");
+	  output.Add(track);
+	}
+      }
     }
   }
 
