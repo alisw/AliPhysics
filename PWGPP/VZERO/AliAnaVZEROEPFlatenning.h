@@ -1,7 +1,7 @@
 #ifndef AliAnaVZEROEPFlatenning_cxx
 #define AliAnaVZEROEPFlatenning_cxx
 
-class AliESDEvent;
+class AliVEvent;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -24,7 +24,7 @@ class AliAnaVZEROEPFlatenning : public AliAnalysisTaskSE {
   Double_t CalculateVZEROEventPlane(const AliVEvent *  event, Int_t ring, Float_t centrality, Double_t &qxTierce, Double_t &qyTierce) const;
 
  private:
-  AliESDEvent *fESD;    //! ESD object
+  AliVEvent   *fEvent;    //! ESD ot AOD object
   TList       *fOutputList; //! Output list
 
   TString fMBTrigName; // MB trigger name (for evt sel)

@@ -10,19 +10,21 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
+#include "AliVEvent.h"
 #include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliAODEvent.h"
+#include "AliInputEventHandler.h"
 #include "AliAnaVZEROEPFlatenning.h"
 #include "AliCentrality.h"
 #include "AliEventplane.h"
 
 // VZERO includes
-#include "AliESDVZERO.h"
+#include "AliVVZERO.h"
 
 ClassImp(AliAnaVZEROEPFlatenning)
 
 AliAnaVZEROEPFlatenning::AliAnaVZEROEPFlatenning() 
-  : AliAnalysisTaskSE("AliAnaVZEROEPFlatenning"), fESD(0), fOutputList(0),
+  : AliAnalysisTaskSE("AliAnaVZEROEPFlatenning"), fEvent(0), fOutputList(0),
   fMBTrigName("CPBI"),
   fUsePhysSel(kFALSE),
   fPsiAC(NULL),
@@ -44,7 +46,7 @@ AliAnaVZEROEPFlatenning::AliAnaVZEROEPFlatenning()
 
 //________________________________________________________________________
 AliAnaVZEROEPFlatenning::AliAnaVZEROEPFlatenning(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0), fOutputList(0),
+  : AliAnalysisTaskSE(name), fEvent(0), fOutputList(0),
   fMBTrigName("CPBI"),
   fUsePhysSel(kFALSE),
   fPsiAC(NULL),
@@ -149,43 +151,65 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
   // Called for each event
 
 
-  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fESD) {
-    printf("ERROR: fESD not available\n");
+  fEvent = InputEvent();
+  if (!fEvent) {
+    printf("ERROR: fEvent not available\n");
     return;
   }
 
-  AliESDVZERO* esdV0 = fESD->GetVZEROData();
+  AliVVZERO* esdV0 = fEvent->GetVZEROData();
   if (!esdV0) {
-    Printf("ERROR: esd V0  not available");
+    Printf("ERROR: esd/aod V0  not available");
     return;
   }
-
-  // Trigger
-  TString trigStr(fESD->GetFiredTriggerClasses());
-  if (!trigStr.Contains("-B-")) return;
-  if (!trigStr.Contains(fMBTrigName.Data())) return;
 
   // Phys sel
   Bool_t goodEvent = kTRUE;
   Bool_t isSelected;
   if (fUsePhysSel)
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral));
   else
     isSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
 
   if (!isSelected) goodEvent = kFALSE;
 
-  AliCentrality *centrality = fESD->GetCentrality();
+  AliCentrality *centrality = fEvent->GetCentrality();
   //  Float_t percentile = centrality->GetCentralityPercentile("V0M");
   Float_t spdPercentile = centrality->GetCentralityPercentile("CL1");
 
-  const AliESDVertex *primaryVtx = fESD->GetPrimaryVertexSPD();
-  if (!primaryVtx) goodEvent = kFALSE;
-  if (!primaryVtx->GetStatus()) goodEvent = kFALSE;
-  Double_t tPrimaryVtxPosition[3];
-  primaryVtx->GetXYZ(tPrimaryVtxPosition);
-  if (TMath::Abs(tPrimaryVtxPosition[2]) > 10.0) goodEvent = kFALSE;
+  TString inputDataType = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  if (inputDataType == "ESD") {
+    AliESDEvent* esdEvent = static_cast<AliESDEvent*>(fEvent);
+    // Trigger
+    TString trigStr(esdEvent->GetFiredTriggerClasses());
+    if (!trigStr.Contains("-B-")) return;
+    if (!trigStr.Contains(fMBTrigName.Data())) return;
+
+    const AliESDVertex *primaryVtx = esdEvent->GetPrimaryVertexSPD();
+    if (!primaryVtx) goodEvent = kFALSE;
+    if (!primaryVtx->GetStatus()) goodEvent = kFALSE;
+    Double_t tPrimaryVtxPosition[3];
+    primaryVtx->GetXYZ(tPrimaryVtxPosition);
+    if (TMath::Abs(tPrimaryVtxPosition[2]) > 10.0) goodEvent = kFALSE;
+  }
+  else if (inputDataType == "AOD") {
+    AliAODEvent* aodEvent = static_cast<AliAODEvent*>(fEvent);
+    // Trigger
+    TString trigStr(aodEvent->GetHeader()->GetFiredTriggerClasses());
+    if (!trigStr.Contains("-B-")) return;
+    if (!trigStr.Contains(fMBTrigName.Data())) return;
+
+    const AliAODVertex *primaryVtx = aodEvent->GetPrimaryVertexSPD();
+    if (!primaryVtx) goodEvent = kFALSE;
+    if (primaryVtx->GetNContributors()==0) goodEvent = kFALSE;
+    Double_t tPrimaryVtxPosition[3];
+    primaryVtx->GetXYZ(tPrimaryVtxPosition);
+    if (TMath::Abs(tPrimaryVtxPosition[2]) > 10.0) goodEvent = kFALSE;
+  }
+  else {
+    AliFatal("Trying to get the vertex from neither ESD nor AOD event!");
+    return;
+  }
 
   if (goodEvent) {
     Double_t qxTierce[8],qyTierce[8];
@@ -196,15 +220,15 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
       Double_t totMult = 0;
       for(Int_t iCh = iring*8; iCh < (iring+1)*8; ++iCh) {
 	Double_t phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
-	c2 += fESD->GetVZEROEqMultiplicity(iCh)*TMath::Cos(2.*phi);
-	s2 += fESD->GetVZEROEqMultiplicity(iCh)*TMath::Sin(2.*phi);
-	if (fESD->GetVZEROEqMultiplicity(iCh) > 1e-6) {
-	  fC2[iring]->Fill(spdPercentile,TMath::Cos(2.*phi),fESD->GetVZEROEqMultiplicity(iCh));
-	  fS2[iring]->Fill(spdPercentile,TMath::Sin(2.*phi),fESD->GetVZEROEqMultiplicity(iCh));
-	  fC4[iring]->Fill(spdPercentile,TMath::Cos(4.*phi),fESD->GetVZEROEqMultiplicity(iCh));
-	  fS4[iring]->Fill(spdPercentile,TMath::Sin(4.*phi),fESD->GetVZEROEqMultiplicity(iCh));
+	c2 += fEvent->GetVZEROEqMultiplicity(iCh)*TMath::Cos(2.*phi);
+	s2 += fEvent->GetVZEROEqMultiplicity(iCh)*TMath::Sin(2.*phi);
+	if (fEvent->GetVZEROEqMultiplicity(iCh) > 1e-6) {
+	  fC2[iring]->Fill(spdPercentile,TMath::Cos(2.*phi),fEvent->GetVZEROEqMultiplicity(iCh));
+	  fS2[iring]->Fill(spdPercentile,TMath::Sin(2.*phi),fEvent->GetVZEROEqMultiplicity(iCh));
+	  fC4[iring]->Fill(spdPercentile,TMath::Cos(4.*phi),fEvent->GetVZEROEqMultiplicity(iCh));
+	  fS4[iring]->Fill(spdPercentile,TMath::Sin(4.*phi),fEvent->GetVZEROEqMultiplicity(iCh));
 	}
-	totMult += fESD->GetVZEROEqMultiplicity(iCh);
+	totMult += fEvent->GetVZEROEqMultiplicity(iCh);
       }
       if (totMult < 1e-6) continue;
 
@@ -213,9 +237,9 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
       fX2Y2[iring]->Fill(spdPercentile,c2*s2);
 
       Double_t qxOut = 0, qyOut = 0;
-      Double_t psiRingRaw = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD,iring,iring,2,qxOut,qyOut);
+      Double_t psiRingRaw = fEvent->GetEventplane()->CalculateVZEROEventPlane(fEvent,iring,iring,2,qxOut,qyOut);
       fPsiRingRawCentr[iring]->Fill(spdPercentile,psiRingRaw);
-      Double_t psiRingFlat2 = CalculateVZEROEventPlane(fESD,iring,spdPercentile,qxTierce[iring],qyTierce[iring]);
+      Double_t psiRingFlat2 = CalculateVZEROEventPlane(fEvent,iring,spdPercentile,qxTierce[iring],qyTierce[iring]);
       fPsiRingFlatCentr[iring]->Fill(spdPercentile,psiRingFlat2);
       fCos8Psi[iring]->Fill(spdPercentile, 2./4.*TMath::Cos(2.*4.*psiRingFlat2));
       Int_t ibin = fCos8PsiIn[iring]->FindBin(spdPercentile);
@@ -232,8 +256,8 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
     Double_t psiC = TMath::ATan2(qyC,qxC)/2.;
 
     fPsiAC->Fill(psiA,psiC);
-    Double_t psiAOrg = fESD->GetEventplane()->GetEventplane("V0A",fESD,2);
-    Double_t psiCOrg = fESD->GetEventplane()->GetEventplane("V0C",fESD,2);
+    Double_t psiAOrg = fEvent->GetEventplane()->GetEventplane("V0A",fEvent,2);
+    Double_t psiCOrg = fEvent->GetEventplane()->GetEventplane("V0C",fEvent,2);
     fPsiACOrg->Fill(psiAOrg,psiCOrg);
   }
 
