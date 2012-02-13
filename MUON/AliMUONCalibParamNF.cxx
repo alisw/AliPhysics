@@ -110,8 +110,7 @@ AliMUONCalibParamNF::CopyTo(AliMUONCalibParamNF& destination) const
 {
 /// Copy *this to destination
 
-  const TObject& o = static_cast<const TObject&>(*this);
-  o.Copy(destination);
+  TObject::Copy(destination);
   
   delete[] destination.fValues;
   destination.fN = fN;
