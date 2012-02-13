@@ -368,6 +368,16 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
     // file name stays in order to be opended in append mode.
     fCurrentFileName="";
   }
+
+  if (!fPublisherConfName.IsNull() && fPublisherConfEvent>=0) {
+    // write '-nextevent' command for all but the first event
+    ofstream conf(fPublisherConfName.Data(), ios::app);
+    if (conf.good()) {
+      conf << "-nextevent " << endl;
+    }
+    conf.close();
+  }
+
   const AliHLTComponentBlockData* pDesc=NULL;
 
   int blockno=0;
@@ -512,6 +522,7 @@ int AliHLTFileWriter::BurstWrite()
     block=fBurstBlocks.end()-1;
     event=fBurstBlockEvents.end()-1;
   }
+
   for (; block!=fBurstBlocks.end() && iResult>=0; block++, event++, blockno++) {
     if (event!=fBurstBlockEvents.begin() && *event!=*(event-1)) {
       blockno=0;
@@ -580,11 +591,6 @@ int AliHLTFileWriter::WriteBlock(int blockno, const AliHLTEventID_t& eventID,
       else filemode=(ios::openmode)0;
       ofstream conf(fPublisherConfName.Data(), filemode);
       if (conf.good()) {
-	if (fPublisherConfEvent>=0 &&
-	    fPublisherConfEvent!=GetEventCount()) {
-	  conf << "-nextevent " << endl;
-	}
-	fPublisherConfEvent=GetEventCount();
 	conf << "-datatype ";
 	conf << DataType2Text(pDesc->fDataType, 3);
 	conf << " -dataspec ";
@@ -598,6 +604,7 @@ int AliHLTFileWriter::WriteBlock(int blockno, const AliHLTEventID_t& eventID,
 	HLTError("can not open file %s for writing of configuration commands", fPublisherConfName.Data());
       }
       conf.close();
+      fPublisherConfEvent=GetEventCount();
     } else {
 	fPublisherConfName="";
 	HLTWarning("option 'concatenate blocks/events' collides with writing of FilePublisher configuration, disable ...");
