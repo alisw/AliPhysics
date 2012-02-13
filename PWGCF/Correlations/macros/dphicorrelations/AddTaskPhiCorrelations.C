@@ -40,6 +40,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
   ana->SetEventMixing(eventMixing);
   ana->SetUseVtxAxis(zVtxAxis);
+  ana->SetTriggerRestrictEta(0.5);
   
 //   ana->SetCompareCentralities(kTRUE);
 //   ana->SetTwoTrackEfficiencyStudy(kTRUE);

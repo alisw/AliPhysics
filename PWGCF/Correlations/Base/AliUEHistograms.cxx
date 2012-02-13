@@ -56,6 +56,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCentralityCorrelation(0),
   fITSClusterMap(0),
   fSelectCharge(0),
+  fTriggerRestrictEta(-1),
   fRunNumber(0)
 {
   // Constructor
@@ -153,6 +154,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCentralityCorrelation(0),
   fITSClusterMap(0),
   fSelectCharge(0),
+  fTriggerRestrictEta(-1),
   fRunNumber(0)
 {
   //
@@ -452,6 +454,9 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
       }
         
+      if (fTriggerRestrictEta > 0 && TMath::Abs(triggerEta) > fTriggerRestrictEta)
+	continue;
+
       for (Int_t j=0; j<jMax; j++)
       {
         if (!mixed && i == j)
@@ -498,6 +503,8 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
     
         // fill all in toward region and do not use the other regions
         fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, weight);
+	
+// 	Printf("%.2f %.2f --> %.2f", triggerEta, eta[j], vars[0]);
       }
  
       if (firstTime)
@@ -699,6 +706,7 @@ void AliUEHistograms::Copy(TObject& c) const
       target.fTwoTrackDistancePt[i] = dynamic_cast<TH3F*> (fTwoTrackDistancePt[i]->Clone());
 
   target.fSelectCharge = fSelectCharge;
+  target.fTriggerRestrictEta = fTriggerRestrictEta;
   target.fRunNumber = fRunNumber;
 }
 

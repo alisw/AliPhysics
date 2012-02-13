@@ -82,6 +82,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
     void   SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
+    void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
     void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
     void   SetFillpT(Bool_t flag) { fFillpT = flag; }
 
@@ -140,9 +141,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
+    Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
+    
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 3); // Analysis task for Underlying Event analysis w.r.t. leading track
+    ClassDef( AliAnalysisTaskPhiCorrelations, 4); // Analysis task for Underlying Event analysis w.r.t. leading track
   };
 
 class AliDPhiBasicParticle : public AliVParticle

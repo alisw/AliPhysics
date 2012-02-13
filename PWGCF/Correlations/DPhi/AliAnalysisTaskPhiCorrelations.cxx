@@ -110,6 +110,7 @@ fFilterBit(0xFF),
 fSelectBit(0),
 fUseChargeHadrons(kFALSE),
 fSelectCharge(0),
+fTriggerRestrictEta(-1),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -205,6 +206,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetSelectCharge(fSelectCharge);
   fHistosMixed->SetSelectCharge(fSelectCharge);
   
+  fHistos->SetTriggerRestrictEta(fTriggerRestrictEta);
+  fHistosMixed->SetTriggerRestrictEta(fTriggerRestrictEta);
+  
   // add histograms to list
   fListOfHistos->Add(fHistos);
   fListOfHistos->Add(fHistosMixed);
@@ -282,6 +286,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
+  settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"SelectCharge/D");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");

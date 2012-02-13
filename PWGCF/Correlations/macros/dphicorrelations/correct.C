@@ -320,7 +320,7 @@ void loadlibs()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGBase");
+  gSystem->Load("libPWGTools");
   gSystem->Load("libPWGCFCorrelationsBase");
 }
 
@@ -556,7 +556,7 @@ void DrawExample(const char* fileName, const char* fileNamePbPbMix)
 
   TH1* hist1 = 0;
   
-  GetDistAndFlow(h, hMixed, &hist1,  0, 6, 0,  2, 2.01, 3.99, 1, kTRUE, 0, kFALSE); 
+  GetDistAndFlow(h, 0, &hist1,  0, 6, 0,  20, 2.01, 3.99, 1, kTRUE, 0, kFALSE); 
   
   ((TH2*) hist1)->Rebin2D(2, 2);
   hist1->Scale(0.25);
@@ -569,6 +569,8 @@ void DrawExample(const char* fileName, const char* fileNamePbPbMix)
   hist1->GetYaxis()->SetTitleOffset(2);
   hist1->SetStats(kFALSE);
   hist1->Draw("SURF1");
+  
+  return;
   
   latex = new TLatex(0.82, 0.74, "ALICE performance");
   latex->SetTextSize(0.02);
@@ -5643,7 +5645,8 @@ void GetSumOfRatios(void* hVoid, void* hMixedVoid, TH1** hist, Int_t step, Int_t
   }
   
   // 2d same and mixed event
-  *hist  = h->GetUEHist(2)->GetSumOfRatios(hMixed->GetUEHist(2), step, 0, ptBegin, ptEnd, centralityBeginBin, centralityEndBin, kFALSE, useVertexBins);
+//   *hist  = h->GetUEHist(2)->GetSumOfRatios(hMixed->GetUEHist(2), step, 0, ptBegin, ptEnd, centralityBeginBin, centralityEndBin, kFALSE, useVertexBins);
+  *hist  = h->GetUEHist(2)->GetSumOfRatios2(hMixed->GetUEHist(2), step, 0, ptBegin, ptEnd, centralityBeginBin, centralityEndBin);
   
   TString str;
   str.Form("%.1f < p_{T,trig} < %.1f", ptBegin - 0.01, ptEnd + 0.01);
@@ -6203,7 +6206,42 @@ void ExamplePhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix)
   hist3->SetLineColor(4);
   hist3->Draw("SAME");
 }  
-   
+
+void ExampleDEtaDPhi(const char* fileNamePbPb, const char* fileNamePbPbMix)
+{
+  loadlibs();
+  
+  if (!fileNamePbPbMix)
+    fileNamePbPbMix = fileNamePbPb;
+  
+  Int_t leadingPtOffset = 1;
+    
+  Int_t maxLeadingPt = 4;
+  Int_t maxAssocPt = 5;
+  Float_t leadingPtArr[] = { 1.0, 2.0, 3.0, 6.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
+  Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
+  leadingPtOffset = 1;
+  
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNamePbPb);
+  hMixed = (AliUEHistograms*) GetUEHistogram(fileNamePbPbMix, 0, kTRUE);
+  
+  Int_t i=1;
+  Int_t j=3;
+  
+  gpTMin = assocPtArr[j] + 0.01;
+  gpTMax = assocPtArr[j+1] - 0.01;
+  
+  SetupRanges(h);
+  SetupRanges(hMixed);
+
+  Int_t step = 6;
+  TH1* hist1 = 0;
+
+  GetSumOfRatios(h, hMixed, &hist1,  step, 0,  5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+
+  hist1->Draw("SURF1");
+}
+
 void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, const char* fileNamepp)
 {
   loadlibs();
@@ -6268,16 +6306,24 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       Bool_t scaleToPairs = kTRUE;
       
       Int_t histType = 1;
-      
-//       GetSumOfRatios(h, hMixed, &hist1,  step, 0,  5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 
-      GetDistAndFlow(h, hMixed, &hist1,  0, step, 0,  5,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-      
-      GetDistAndFlow(h, hMixed, &hist4,  0, step, 30,  40,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+      if (1)
+      {
+	GetSumOfRatios(h, hMixed, &hist1,  step, 0,  5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist4,  step, 20,  30, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist2,  step, 60,  90, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+      }
+      else
+      {
+	GetDistAndFlow(h, hMixed, &hist1,  0, step, 0,  5,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 
-      GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  90,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+	GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  30,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 
-      GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0,  -1,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+	GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  90,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+
+	GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0,  -1,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+      }
 
       file = TFile::Open("dphi_corr.root", "UPDATE");
       
@@ -6422,8 +6468,8 @@ void AnalyzeDeltaPhiEtaGap(const char* fileName)
 {
   TFile::Open(fileName);
   
-  Int_t maxLeadingPt = 4;
-  Int_t maxAssocPt = 5;
+  Int_t maxLeadingPt = 5;
+  Int_t maxAssocPt = 6;
 
   TCanvas* canvas = new TCanvas("DeltaPhi", "DeltaPhi", 1000, 700);
   canvas->Divide(maxAssocPt, maxLeadingPt);
@@ -6559,14 +6605,14 @@ void CheckWing(const char* fileName)
 //       gPad->SetTopMargin(0.01);
       gPad->SetRightMargin(0.01);
       
-      hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 0));
+      hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 3));
       
       if (!hist1)
 	continue;
       
 //       hist1->Draw("COLZ");
 
-      Float_t width = 0.5;
+      Float_t width = 0.25;
 
       proj = ((TH2*) hist1)->ProjectionY(Form("%s_projx", hist1->GetName()), hist1->GetXaxis()->FindBin(TMath::Pi() - width),hist1->GetXaxis()->FindBin(TMath::Pi() + width));
       
@@ -6580,14 +6626,14 @@ void CheckWing(const char* fileName)
       proj2->SetLineColor(2);
       proj2->Draw("SAME");
       
-      proj->SetMinimum(proj2->GetMinimum());
+      proj->SetMinimum(0.999 * proj2->GetMinimum());
     }
 }
 
 void CheckWing()
 {
-  Int_t maxLeadingPt = 4;
-  Int_t maxAssocPt = 5;
+  Int_t maxLeadingPt = 3;
+  Int_t maxAssocPt = 3;
 
   TCanvas* canvas = new TCanvas("DeltaPhi", "DeltaPhi", 1000, 700);
   canvas->Divide(maxAssocPt, maxLeadingPt);
@@ -6601,7 +6647,9 @@ void CheckWing()
 //   const char* fileNames[] = { "dphi_corr_2d_01.root", "dphi_corr.root" };
 //   const char* fileNames[] = { "dphi_corr_2d.root", "dphi_corr_2d_vtxzcentral.root" };
 //   const char* fileNames[] = { "dphi_corr_2d_01.root", , "dphi_corr_2d_01centr_zvtxcentral.root" }; 
-  const char* fileNames[] = { "dphi_corr_10k.root", "dphi_corr_50k.root" }; 
+//   const char* fileNames[] = { "dphi_corr_10k.root", "dphi_corr_50k.root" }; 
+//   const char* fileNames[] = { "wing1.root", "wing2.root" }; 
+  const char* fileNames[] = { "dphi_corr_2d_120112.root", "dphi_corr_2d_p2_111105.root" }; 
   
   for (Int_t i=0; i<maxLeadingPt; i++)
     for (Int_t j=0; j<maxAssocPt; j++)
@@ -6617,7 +6665,7 @@ void CheckWing()
       {
 	TFile::Open(fileNames[fileId]);
   
-	hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 0));
+	hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 3));
 	
 	if (!hist1)
 	  continue;
@@ -6625,25 +6673,29 @@ void CheckWing()
   //       hist1->Draw("COLZ");
 
 	Float_t width = 0.5;
-
-	proj = ((TH2*) hist1)->ProjectionY(Form("%s_%d_projx", hist1->GetName(), fileId), hist1->GetXaxis()->FindBin(TMath::Pi() - width),hist1->GetXaxis()->FindBin(TMath::Pi() + width));
-// 	proj->Rebin(2); proj->Scale(0.5);
 	
-	proj->GetXaxis()->SetRangeUser(-1.79, 1.79);
-	proj->SetStats(kFALSE);
-	proj->SetLineColor(fileId + 1);
-	proj->Draw((fileId == 0) ? "" : "SAME");
-	if (!first)
-	  first = proj;
-	
-	proj->Scale(1. / 12);
-	
-	first->SetMinimum(TMath::Min(first->GetMinimum(), proj->GetMinimum()));
-	first->SetMaximum(TMath::Max(first->GetMaximum(), proj->GetMaximum()));
+	for (Int_t areaId = 0; areaId < 3; areaId++)
+	{
+	  Float_t center = TMath::Pi() / 2 * areaId;
+	  proj = ((TH2*) hist1)->ProjectionY(Form("%s_%d_%d_projx", hist1->GetName(), fileId, areaId), hist1->GetXaxis()->FindBin(center - width), hist1->GetXaxis()->FindBin(center + width));
+  // 	proj->Rebin(2); proj->Scale(0.5);
+	  
+	  proj->GetXaxis()->SetRangeUser(-1.79, 1.79);
+	  proj->SetStats(kFALSE);
+	  proj->SetLineColor(fileId + 1 + areaId * 2);
+	  proj->Draw((fileId == 0 && areaId == 0) ? "" : "SAME");
+	  if (!first)
+	    first = proj;
+	  
+	  proj->Scale(1. / 12);
+	  
+	  first->SetMinimum(0.999 * TMath::Min(first->GetMinimum() / 0.999, proj->GetMinimum()));
+	  first->SetMaximum(1.001 * TMath::Max(first->GetMaximum() / 1.001, proj->GetMaximum()));
+	}
       }
   }
 }
-
+/*
 void FitDeltaPhiEtaGap2D(TH2* hist, Bool_t scale, TVirtualPad* pad1, TVirtualPad* pad2, TVirtualPad* pad3, TGraphErrors* width1, TGraphErrors* width2, Float_t x, Float_t yPosChi2)
 {
   Float_t etaLimit = 1.0;
@@ -6684,6 +6736,7 @@ void FitDeltaPhiEtaGap2D(TH2* hist, Bool_t scale, TVirtualPad* pad1, TVirtualPad
 //     new TCanvas; centralRegion->Draw();
     centralRegion->Fit("pol0", "0", "", TMath::Pi() - 1, TMath::Pi() + 1);
     Float_t scalingFactor = centralRegion->GetFunction("pol0")->GetParameter(0);
+    Printf("  scalingFactor = %f", scalingFactor);
     histTmp2D->Scale(scalingFactor);
   }
     
@@ -6752,7 +6805,85 @@ void FitDeltaPhiEtaGap2D(TH2* hist, Bool_t scale, TVirtualPad* pad1, TVirtualPad
   DrawLatex(0.5, yPosChi2 - 0.05, 1, Form("#chi^{2}/ndf = %.1f/%d = %.1f", chi2, ndf, chi2 / ndf));
 }
 
-void AnalyzeDeltaPhiEtaGap2D(const char* fileName)
+Double_t DeltaPhiWidth2DFitFunction(Double_t *x, Double_t *par)
+{
+  // params: 0: gaussian amplitude, 1: phi width, 2: eta width
+  //         3..bins+2 constants as fct of eta
+  
+  Int_t etaBin = (Int_t) ((x[1] + 2.0) / 0.1);
+  
+  return par[3+etaBin]+par[0]*TMath::Exp(-0.5*((x[0]/par[1])**2+(x[1]/par[2])**2));
+}
+
+void FitDeltaPhi2DOneFunction(TH2* hist, TVirtualPad* pad1, TVirtualPad* pad2, TVirtualPad* pad3, TGraphErrors* width1, TGraphErrors* width2, Float_t x, Float_t yPosChi2)
+{
+  Float_t outerLimit = 1.8;
+
+  hist->GetYaxis()->SetRangeUser(-1.59, 1.59);
+  
+  pad1->cd();
+  hist->SetStats(0);
+  hist->DrawCopy("SURF1");
+  
+  Float_t min = hist->GetMinimum();
+  Float_t max = hist->GetMaximum();
+  
+  Int_t bins = hist->GetNbinsX();
+  
+  // ranges are to exclude eta gap region from fit
+  func = new TF2("func", DeltaPhiWidth2DFitFunction, -5, 5, -outerLimit, outerLimit, bins+3);
+  func->SetParameters(1, 0.3, 0.3);
+  for (Int_t i=3; i<bins+3; i++)
+    func->SetParameter(i, 0);
+
+  func->SetParLimits(0, 0, 10);
+  func->SetParLimits(1, 0.1, 10);
+  func->SetParLimits(2, 0.1, 10);
+  
+  hist->Fit(func, "0R", "");
+//   hist->Fit(func, "IM", "SAME");
+
+  pad2->cd();
+  funcHist = (TH2*) hist->Clone("funcHist");
+  funcHist->Reset();
+  funcHist->Add(func);
+  funcHist->SetMinimum(min);
+  funcHist->SetMaximum(max);
+  funcHist->Draw("SURF1");
+  
+  pad3->cd();
+  hist->Add(func, -1);
+  hist->SetMinimum(min);
+  hist->SetMaximum(max);
+  hist->DrawCopy("SURF1");
+  
+  width1->SetPoint(width1->GetN(), x, TMath::Abs(func->GetParameter(1)));
+  width1->SetPointError(width1->GetN()-1, 0, func->GetParError(1));
+    
+  width2->SetPoint(width2->GetN(), x, TMath::Abs(func->GetParameter(2)));
+  width2->SetPointError(width2->GetN()-1, 0, func->GetParError(2));
+
+  Float_t chi2 = 0;
+  Int_t ndf = 0;
+  for (Int_t i=hist->GetXaxis()->FindBin(-0.8); i<=hist->GetXaxis()->FindBin(0.8); i++)
+    for (Int_t j=hist->GetYaxis()->FindBin(-0.8); j<=hist->GetYaxis()->FindBin(0.8); j++)
+    {
+      if (hist->GetBinError(i, j) > 0)
+      {
+	chi2 += TMath::Power(hist->GetBinContent(i, j) / hist->GetBinError(i, j), 2);
+	ndf++;
+      }
+    }
+  ndf -= func->GetNumberFreeParameters();
+  
+  printf("#chi^{2}/ndf = %.1f/%d = %.1f  ", func->GetChisquare(), func->GetNDF(), func->GetChisquare() / func->GetNDF());
+  Printf("#chi^{2}/ndf = %.1f/%d = %.1f", chi2, ndf, chi2 / ndf);
+
+  DrawLatex(0.5, yPosChi2, 1, Form("#chi^{2}/ndf = %.1f/%d = %.1f", func->GetChisquare(), func->GetNDF(), func->GetChisquare() / func->GetNDF()));
+  DrawLatex(0.5, yPosChi2 - 0.05, 1, Form("#chi^{2}/ndf = %.1f/%d = %.1f", chi2, ndf, chi2 / ndf));
+}
+
+void AnalyzeDeltaPhiEtaGap2D(const char* fileName, Int_t method)
 {
   TFile::Open(fileName);
   
@@ -6792,36 +6923,109 @@ void AnalyzeDeltaPhiEtaGap2D(const char* fileName)
 	
 	Float_t xPos = j*8+i;
 
-	FitDeltaPhiEtaGap2D((TH2*) hist1, kTRUE, canvas->cd(3 * j + 1), canvas->cd(3 * j + 2), canvas->cd(3 * j + 3), width1[histId], width2[histId], xPos, 0.9);
+	if (method == 0)
+	  FitDeltaPhiEtaGap2D((TH2*) hist1, kFALSE, canvas->cd(3 * j + 1), canvas->cd(3 * j + 2), canvas->cd(3 * j + 3), width1[histId], width2[histId], xPos, 0.9);
+	else
+	  FitDeltaPhi2DOneFunction((TH2*) hist1, canvas->cd(3 * j + 1), canvas->cd(3 * j + 2), canvas->cd(3 * j + 3), width1[histId], width2[histId], xPos, 0.9);
+	
+	break;
       }
+      
+      break;
     }
     
-//     break;
+    break;
   }
   
+  return;
+  
   Int_t marker[] = { 20, 24, 25, 26 };
-  Int_t colors[] = { 1, 2, 4, 6 };
+  Int_t colors[] = { 2, 2, 4, 6 };
   const char* labels[] = { "0-5%", "60-90%", "pp", "30-40%" };
-    
-  new TCanvas;
+  
+  Bool_t found = kTRUE;
+  c1 = (TCanvas*) gROOT->GetListOfCanvases()->FindObject("width_phi");
+  if (!c1)
+  {
+    c1 = new TCanvas("width_phi", "width_phi", 800, 600);
+    colors[0] = 1;
+    found = kFALSE;
+  }
+  c1->cd();
+  
   for (Int_t histId = 0; histId < nHists; histId++)
   {
     width1[histId]->SetMarkerStyle(marker[histId]);
     width1[histId]->SetMarkerColor(colors[histId]);
-    width1[histId]->Draw((histId == 0) ? "AP" : "PSAME");
+    width1[histId]->Draw((histId == 0 && !found) ? "AP" : "PSAME");
     DrawLatex(0.7, 0.8 - 0.05 * histId, colors[histId], labels[histId]);
   }
-
-  new TCanvas;
+  
+  found = kTRUE;
+  c1 = (TCanvas*) gROOT->GetListOfCanvases()->FindObject("width_eta");
+  if (!c1)
+  {
+    c1 = new TCanvas("width_eta", "width_eta", 800, 600);
+    colors[0] = 1;
+    found = kFALSE;
+  }
+  c1->cd();
   for (Int_t histId = 0; histId < nHists; histId++)
   {
     width2[histId]->SetMarkerStyle(marker[histId]);
     width2[histId]->SetMarkerColor(colors[histId]);
-    width2[histId]->Draw((histId == 0) ? "AP" : "PSAME");
+    width2[histId]->Draw((histId == 0 && !found) ? "AP" : "PSAME");
     DrawLatex(0.7, 0.8 - 0.05 * histId, colors[histId], labels[histId]);
   }
 }
+*/
 
+void RemoveWing(const char* fileName)
+{
+  // remove wing by flattening using the ratio of a flat line to the corr fct at phi = pi/2 +- 0.25 as fct of delta eta
+
+  file = TFile::Open(fileName);
+  file2 = TFile::Open("dphi_corr.root", "RECREATE");
+  file2->Close();
+  
+  Int_t maxLeadingPt = 5;
+  Int_t maxAssocPt = 6;
+
+  Int_t nHists = 4;
+  for (Int_t histId = 0; histId < nHists; histId++)
+  {
+    for (Int_t i=0; i<maxLeadingPt; i++)
+    {
+      for (Int_t j=0; j<maxAssocPt; j++)
+      {
+	hist = (TH2*) file->Get(Form("dphi_%d_%d_%d", i, j, histId));
+	if (!hist)
+	  continue;
+	
+	Float_t width = 0.25;
+	TH1* proj = hist->ProjectionY(Form("projx", hist->GetName()), hist->GetXaxis()->FindBin(TMath::Pi() / 2 - width), hist->GetXaxis()->FindBin(TMath::Pi() / 2 + width));
+	proj->Fit("pol0", "0");
+	//new TCanvas; proj->DrawCopy();
+	proj->Divide(proj->GetFunction("pol0"));
+	//new TCanvas; proj->DrawCopy();
+	//new TCanvas; hist->DrawCopy("SURF1");
+	for (Int_t x=1; x<=hist->GetNbinsX(); x++)
+	  for (Int_t y=1; y<=hist->GetNbinsY(); y++)
+	  {
+	    if (proj->GetBinContent(y) <= 0)
+	      continue;
+	    hist->SetBinContent(x, y, hist->GetBinContent(x, y) / proj->GetBinContent(y));
+	    hist->SetBinError(x, y, hist->GetBinError(x, y) / proj->GetBinContent(y));
+	  }
+	//new TCanvas; hist->DrawCopy("SURF1");
+
+	file2 = TFile::Open("dphi_corr.root", "UPDATE");
+	hist->Write();
+	file2->Close();
+      }
+    }
+  }  
+}
   
 void PlotPtDistributions(const char* fileName1, Int_t centrBegin = 1, Int_t centrEnd = 2)
 {
@@ -11009,4 +11213,55 @@ void GetExampleDphi(const char* fileName)
   
   TH1* proj = mixedTwoD->ProjectionX("px", 11, 30);
   proj->Draw();
+}
+
+void GaussToyFit()
+{
+  func = new TF1("func", "gaus(0)", -2, 2);
+  func->SetParameters(1, 0, 0.5);
+  
+  hist = new TH1F("hist", "", 100, -2, 2);
+  hist->FillRandom("func", 10000);
+  
+  func = new TF1("func", "gaus(0)", -2, 2);
+  func->SetParLimits(2, 0, 10);
+  func->FixParameter(1, 0);
+  func->SetParameters(2, 0, 0.1);
+  hist->Fit(func, "", "", -1, 1);
+  hist->DrawCopy();
+  
+  func2 = new TF1("func2", "gaus(0)+[3]", -2, 2);
+  func2->SetParLimits(2, 0, 10);
+  func2->FixParameter(1, 0);
+  func2->SetParameters(2, 0, 0.1, 0);
+  func2->SetLineColor(2);
+  hist->Fit(func2, "+", "", -1, 1);
+  
+  return;
+
+  new TCanvas;
+  constant = new TF1("constant", "1", -2, 2);
+  hist->Add(constant, -30);
+  func->SetParameters(2, 0, 0.1);
+  hist->Fit(func, "", "", -1, 1);
+}
+
+void GaussToyFit2()
+{
+  func = new TF2("func", "[0]*exp(-0.5*((x/[1])**2+(y/[2])**2))", -2, 2, -2, 2);
+  func->SetParameters(1, 0.4, 0.6);
+  
+  hist = new TH2F("hist", "", 100, -2, 2, 100, -2, 2);
+  hist->FillRandom("func", 100000);
+  
+  func = new TF2("func", "[0]*exp(-0.5*((x/[1])**2+(y/[2])**2))", -2, 2, -2, 2);
+  func->SetParameters(1, 0.2, 0.2);
+  hist->Fit(func, "", "");
+  hist->DrawCopy();
+  
+  new TCanvas;
+  hist->ProjectionX()->Fit("gaus");
+
+  new TCanvas;
+  hist->ProjectionY()->Fit("gaus");
 }

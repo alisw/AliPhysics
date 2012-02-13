@@ -71,6 +71,7 @@ class AliUEHistograms : public TNamed
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
+  void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   
   void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   void Reset();
@@ -111,10 +112,11 @@ protected:
   TH3F* fTwoTrackDistancePt[2];    // control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
   
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
+  Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 10)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 11)  // underlying event histogram container
 };
 
 #endif
