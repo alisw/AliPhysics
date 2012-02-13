@@ -61,6 +61,11 @@ fLambdaSi(0),
 fLambdaMC(0),
 fLambdaAs(0),
 
+fLambdaBarM(0),
+fLambdaBarSi(0),
+fLambdaBarMC(0),
+fLambdaBarAs(0),
+
 fCPA(0),
 fDCA(0),
 
@@ -69,7 +74,11 @@ fLambdaPt(0),
 
 fLambdaFromXi(0),
 fXiM(0),
-fXiSiP(0)
+fXiSiP(0),
+
+fLambdaBarFromXiBar(0),
+fXiBarM(0),
+fXiBarSiP(0)
 {
   // Constructor. Initialization of pointers
   DefineOutput(1, TList::Class());
@@ -145,6 +154,35 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fLambdaAs->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fLambdaAs);
 
+
+  fLambdaBarM = 
+  new TH2F("fLambdaBarM","Mass for anti-\\Lambda", nbins, 1.065, 1.165,nbins,pMin,pMax);
+  fLambdaBarM->GetXaxis()->SetTitle("Mass (GeV/c)"); 
+  fOutput->Add(fLambdaBarM);
+
+  fLambdaBarSi = 
+  new TH2F("fLambdaBarSi","L_{T} vs p_{T} for anti-\\Lambda, side-band subtructed",
+  nbins,pMin,pMax,nbins,lMin,lMax);
+  fLambdaBarSi->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaBarSi->GetYaxis()->SetTitle("L_{T} (cm)"); 
+  fOutput->Add(fLambdaBarSi);
+
+  fLambdaBarMC = 
+  new TH2F("fLambdaBarMC","L_{T} vs p_{T} for anti-\\Lambda, from MC stack", 
+  nbins,pMin,pMax,nbins,lMin,lMax);
+  fLambdaBarMC->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaBarMC->GetYaxis()->SetTitle("L_{T} (cm)"); 
+  fOutput->Add(fLambdaBarMC);
+
+  fLambdaBarAs = 
+  new TH2F("fLambdaBarAs","L_{T} vs p_{T} for anti-\\Lambda, associated",
+  nbins,pMin,pMax,nbins,lMin,lMax);
+  fLambdaBarAs->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaBarAs->GetYaxis()->SetTitle("L_{T} (cm)"); 
+  fOutput->Add(fLambdaBarAs);
+
+
+
   fCPA=new TH1F("fCPA","Cosine of the pointing angle",30,0.9978,1.);
   fOutput->Add(fCPA);
   fDCA=new TH1F("fDCA","DCA between the daughters",30,0.,1.1);
@@ -162,7 +200,7 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
 
   //----------------------
 
-  fLambdaFromXi=new TH3F("fLambdaFromXi","L_{T} vs p_{T} vs p_{T} of \\Xi for \\Lambda from Xi",
+  fLambdaFromXi=new TH3F("fLambdaFromXi","L_{T} vs p_{T} vs p_{T} of \\Xi for \\Lambda from \\Xi",
   nbins,pMin,pMax,nbins,lMin,lMax,33,pMin,pMax+2);
   fOutput->Add(fLambdaFromXi);
 
@@ -173,6 +211,19 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fXiSiP  = new TH1F("fXiSiP", "Pt for \\Xi, side-band subracted",
   33,pMin,pMax+2);
   fOutput->Add(fXiSiP);
+
+
+  fLambdaBarFromXiBar=new TH3F("fLambdaBarFromXiBar","L_{T} vs p_{T} vs p_{T} of anti-\\Xi for anti-\\Lambda from anti-\\Xi",
+  nbins,pMin,pMax,nbins,lMin,lMax,33,pMin,pMax+2);
+  fOutput->Add(fLambdaFromXi);
+
+  fXiBarM  = 
+  new TH2F("fXiBarM", "anti-\\Xi mass distribution", 50, 1.271, 1.371,12,pMin,pMax+2);
+  fOutput->Add(fXiBarM);
+
+  fXiBarSiP  = new TH1F("fXiBarSiP", "Pt for anti-\\Xi, side-band subracted",
+  33,pMin,pMax+2);
+  fOutput->Add(fXiBarSiP);
 
 
   PostData(1, fOutput);
@@ -287,7 +338,13 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
     return;
   }
 
-  fMult->Fill(-100); //event counter  
+  // Vertex selection
+  const AliAODVertex *vtx=aod->GetPrimaryVertex();
+  if (vtx->GetNContributors()<3) return;
+  Double_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
+
+  if (TMath::Abs(zv) > 10.) return ;   
+ 
 
   // Physics selection
   AliAnalysisManager *mgr= AliAnalysisManager::GetAnalysisManager();
@@ -296,20 +353,15 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
   Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
   if (!isSelected) return;
 
+  fMult->Fill(-100); //event counter  
+
   // Centrality selection
   AliCentrality *cent=aod->GetCentrality();
   if (!cent->IsEventInCentralityClass(fCMin,fCMax,"V0M")) return;
 
-  const AliAODVertex *vtx=aod->GetPrimaryVertex();
-  if (vtx->GetNContributors()<3) return;
-
-  Double_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
-
-  if (TMath::Abs(zv) > 10.) return ;   
- 
   AliPIDResponse *pidResponse = hdr->GetPIDResponse(); 
  
-  //fMult->Fill(-100); //event counter  
+
 
   //+++++++ MC
   TClonesArray *stack = 0x0;
@@ -332,7 +384,8 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
        AliAODMCParticle *p0=(AliAODMCParticle*)stack->UncheckedAt(ntrk1);
        Int_t code=p0->GetPdgCode();
        if (code != kK0Short)
-	 if (code != kLambda0) continue;
+	 if (code != kLambda0)
+	    if (code != kLambda0Bar) continue;
 
        Int_t plab=p0->GetDaughter(0), nlab=p0->GetDaughter(1);
        if (nlab==plab) continue;
@@ -353,7 +406,7 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
        Double_t dxmc=mcXv-x, dymc=mcYv-y, dzmc=mcZv-z;
        Double_t l=TMath::Sqrt(dxmc*dxmc + dymc*dymc + dzmc*dzmc);
 
-       if (l > 0.01) continue; // secondary V0
+       if (l > 0.001) continue; // secondary V0
 
        x=part->Xv(); y=part->Yv();
        dxmc=mcXv-x; dymc=mcYv-y;
@@ -365,8 +418,12 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
        if (code == kLambda0) {
           fLambdaMC->Fill(pt,lt);
        }
+       if (code == kLambda0Bar) {
+          fLambdaBarMC->Fill(pt,lt);
+       }
      }
   }
+  //++++++++++
 
 
   Int_t ntrk2=aod->GetNumberOfTracks();
@@ -418,7 +475,8 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
       Bool_t ctK=kTRUE; if (0.4977*lt/pt > 3*2.68) ctK=kFALSE;
       Bool_t ctL=kTRUE; if (1.1157*lt/pt > 3*7.89) ctL=kFALSE;
 
-      Bool_t isProton=AcceptPID(pidResponse, ptrack, stack);
+      Bool_t isProton   =AcceptPID(pidResponse, ptrack, stack);
+      Bool_t isProtonBar=AcceptPID(pidResponse, ntrack, stack);
 
       //+++++++ MC
       if (stack) {
@@ -451,7 +509,8 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
 
          Int_t code=p0->GetPdgCode();
          if (code != kK0Short)
-	    if (code != kLambda0) goto noas;
+	    if (code != kLambda0)
+	       if (code != kLambda0Bar) goto noas;
 
 	 if (p0->Pt()<pMin) goto noas;
 	 if (TMath::Abs(p0->Y())>yMax ) goto noas;
@@ -463,19 +522,28 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
          Double_t ltAs=TMath::Sqrt(dx0*dx0 + dy0*dy0);
          Double_t ptAs=p0->Pt();
 
-	 if (l > 0.01) { // Secondary V0
-	   if (code != kLambda0) goto noas;
+	 if (l > 0.001) { // Secondary V0
+	   if (code != kLambda0)
+	      if (code != kLambda0Bar) goto noas;
            Int_t nx=p0->GetMother();
            if (nx<0) goto noas;
            if (nx>=ntrk) goto noas;
            AliAODMCParticle *xi=(AliAODMCParticle*)stack->UncheckedAt(nx);
            Int_t xcode=xi->GetPdgCode();
-           if ( xcode != kXiMinus )
-	     if( xcode != 3322 ) goto noas; 
-	   fLambdaFromXi->Fill(ptAs,ltAs,xi->Pt());
+           if (code==kLambda0) {
+              if ( xcode != kXiMinus )
+	         if( xcode != 3322 ) goto noas; 
+	      fLambdaFromXi->Fill(ptAs,ltAs,xi->Pt());
+           } else if (code==kLambda0Bar) {
+              if ( xcode != kXiPlusBar )
+	         if( xcode != -3322 ) goto noas; 
+	      fLambdaBarFromXiBar->Fill(ptAs,ltAs,xi->Pt());
+           }
 	 } else {
 	   if (code == kLambda0) {
               if (ctL) fLambdaAs->Fill(ptAs,ltAs);
+           }else if (code == kLambda0Bar) {
+              if (ctL) fLambdaBarAs->Fill(ptAs,ltAs);
            }else {
               if (ctK) fK0sAs->Fill(ptAs,ltAs);
 	   }
@@ -534,6 +602,33 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
             fDCA->Fill(dca,-1);
          }
       }
+
+      if (ctL)
+      if (isProtonBar)
+      if (TMath::Abs(v0->RapLambda())<yMax) {
+         mass=v0->MassAntiLambda();
+         fLambdaBarM->Fill(mass,pt);
+
+         m=TDatabasePDG::Instance()->GetParticle(kLambda0Bar)->Mass();
+         //s=0.0027 + (0.004-0.0027)/(10-1)*(pt-1);
+         //s=0.0015 + (0.002-0.0015)/(2.6-1)*(pt-1);
+         s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+         if (TMath::Abs(m-mass) < 3*s) {
+            fLambdaBarSi->Fill(pt,lt);
+            fCPA->Fill(cpa,1);
+            fDCA->Fill(dca,1);
+         }
+         if (TMath::Abs(m-mass + 4.5*s) < 1.5*s) {
+            fLambdaBarSi->Fill(pt,lt,-1);
+            fCPA->Fill(cpa,-1);
+            fDCA->Fill(dca,-1);
+         }
+         if (TMath::Abs(m-mass - 4.5*s) < 1.5*s) {
+            fLambdaBarSi->Fill(pt,lt,-1);
+            fCPA->Fill(cpa,-1);
+            fDCA->Fill(dca,-1);
+         }
+      }
   }
 
   Int_t ncs=aod->GetNumberOfCascades();
@@ -550,8 +645,10 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
       Double_t pt=TMath::Sqrt(cs->Pt2Xi());
 
       const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
-
       Bool_t isProton=AcceptPID(pidResponse, ptrack, stack);
+
+      const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
+      Bool_t isProtonBar=AcceptPID(pidResponse, ntrack, stack);
 
       Int_t charge=cs->ChargeXi();      
       if (isProton)
@@ -569,6 +666,23 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
          }
          if (TMath::Abs(m-mass - 4.5*s) < 1.5*s) {
             fXiSiP->Fill(pt,-1);
+         }
+      }
+      if (isProtonBar)
+      if (charge > 0) {
+         Double_t mass=cs->MassXi();
+         fXiBarM->Fill(mass,pt);
+         Double_t m=TDatabasePDG::Instance()->GetParticle(kXiPlusBar)->Mass();
+         //Double_t s=0.0037;
+         Double_t s=0.002 + (0.0032-0.002)/(6-1.5)*(pt-1.5);
+         if (TMath::Abs(m-mass) < 3*s) {
+            fXiBarSiP->Fill(pt);
+         }
+         if (TMath::Abs(m-mass + 4.5*s) < 1.5*s) {
+            fXiBarSiP->Fill(pt,-1);
+         }
+         if (TMath::Abs(m-mass - 4.5*s) < 1.5*s) {
+            fXiBarSiP->Fill(pt,-1);
          }
       }
   }
