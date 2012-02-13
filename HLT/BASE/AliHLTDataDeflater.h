@@ -17,6 +17,10 @@
 #include "AliHLTStdIncludes.h"
 #include <bitset>
 
+class TObjArray;
+class TH1;
+class TH2;
+
 /**
  * @class AliHLTDataDeflater
  * Data deflater class to write a bitstream into a buffer. The necessary
@@ -103,6 +107,29 @@ public:
    */
   bool OutputBytes( AliHLTUInt8_t const * data, UInt_t const & byteCount );      
 
+  /// add a histogram for deflater statistic of the corresponding parameter
+  /// a histogram is created with default settings if h is not specified; if
+  /// provided, the ownership goes over to the base class
+  int AddHistogram(int id, const char* name, int bitWidth, TH1* h=NULL);
+
+  /// enable statistics accounting
+  int EnableStatistics();
+
+  /// check if statistics writing is enabled
+  bool DoStatistics() const {return fHistograms!=NULL;}
+
+  /// fill statistics for a parameter
+  /// @param id           id of the parameter
+  /// @param value        value
+  /// @param length       bit length
+  /// @param codingWeight fraction of bit lenght used for this value
+  int FillStatistics(int id, AliHLTUInt64_t value, unsigned length, float codingWeight=0.0);
+
+  static float CalcEntropy(TH1* histo, const char* option="", int mode=0);
+
+  /// save data according to option
+  virtual void SaveAs(const char *filename="",Option_t *option="") const;
+
   /// clear the object and reset pointer references
   virtual void Clear(Option_t * /*option*/ ="");
 
@@ -115,11 +142,11 @@ public:
   /// find object
   virtual TObject *FindObject(const char */*name*/) const {return NULL;}
 
-  /// save data according to option
-  virtual void SaveAs(const char */*filename*/="",Option_t */*option*/="") const {}
-
   /// write bit pattern of a parameter to the current byte and position
   virtual bool OutputParameterBits( int parameterId, AliHLTUInt64_t const & value );
+
+  /// write bit pattern of a parameter to the current byte and position
+  virtual bool OutputParameterBits( int parameterId, AliHLTUInt64_t const & value, int lengthOffset );
 
   /// return unique version of the deflater, base class has version 0
   virtual int GetDeflaterVersion() const {return 0;}
@@ -142,6 +169,10 @@ private:
   AliHLTUInt8_t *fBitDataCurrentOutputStart; //! bit data current output start
   /// bit data current output end
   AliHLTUInt8_t *fBitDataCurrentOutputEnd; //! bit data current output end 
+
+  TObjArray* fHistograms; //! list of histograms for parameters
+  TH2* fParameterCompression; //! compression for individual parameters
+  TH2* fParameterSize; //! accumulated size for individual parameters
 
   ClassDef(AliHLTDataDeflater, 0)
 };

@@ -32,7 +32,7 @@ public:
   ~AliHLTDataDeflaterHuffman();
 
   /// add a parameter definition to the configuration, return reference id
-  int AddParameterDefinition(const char* name, unsigned bitLength);
+  int AddParameterDefinition(const char* name, unsigned bitLength, unsigned refLength=0);
 
   /// init list of decoders
   int InitDecoders(TList* decoderlist);
@@ -79,6 +79,8 @@ private:
   /// assigment operator prohibited
   AliHLTDataDeflaterHuffman& operator=(const AliHLTDataDeflaterHuffman&);
 
+  /// parameter length reference for calculation of ratio
+  vector<unsigned> fReferenceLength;
   /// index of the decoders in the decoder list
   vector<AliHLTHuffman*> fHuffmanCoders; //! index of decoders
 

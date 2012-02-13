@@ -36,6 +36,7 @@ ClassImp(AliHLTDataDeflaterHuffman)
 
 AliHLTDataDeflaterHuffman::AliHLTDataDeflaterHuffman(bool bTrainingMode)
   : AliHLTDataDeflater()
+  , fReferenceLength()
   , fHuffmanCoders()
   , fHuffmanCoderList(NULL)
   , fTrainingMode(bTrainingMode)
@@ -59,7 +60,7 @@ AliHLTDataDeflaterHuffman::~AliHLTDataDeflaterHuffman()
   Clear();
 }
 
-int AliHLTDataDeflaterHuffman::AddParameterDefinition(const char* name, unsigned bitLength)
+int AliHLTDataDeflaterHuffman::AddParameterDefinition(const char* name, unsigned bitLength, unsigned refLength)
 {
   /// search a parameter definition in the decoder configuration, and set the index
   /// array, return reference id
@@ -83,8 +84,15 @@ int AliHLTDataDeflaterHuffman::AddParameterDefinition(const char* name, unsigned
     return -EPERM;
   }
 
+  fReferenceLength.push_back(refLength);
   fHuffmanCoders.push_back(pHuffman);
-  return fHuffmanCoders.size()-1;
+
+  int memberId=fHuffmanCoders.size()-1;
+  if (DoStatistics()) {
+    AddHistogram(memberId, name, bitLength);
+  }
+
+  return memberId;
 }
 
 int AliHLTDataDeflaterHuffman::InitDecoders(TList* decoderlist)
@@ -129,9 +137,22 @@ bool AliHLTDataDeflaterHuffman::OutputParameterBits( int memberId, AliHLTUInt64_
   AliHLTUInt64_t length = 0;
   const std::bitset<64>& v=fHuffmanCoders[memberId]->Encode((value>fHuffmanCoders[memberId]->GetMaxValue())?fHuffmanCoders[memberId]->GetMaxValue():value, length);
   //cout << fHuffmanCoders[memberId]->GetName() << " value " << value << ": code lenght " << length << " " << v << endl;
+  if (DoStatistics()) {
+    float weight=0.0;
+    unsigned parameterLength=fHuffmanCoders[memberId]->GetMaxBits();
+    if (memberId<(int)fReferenceLength.size() && fReferenceLength[memberId]>0)
+      parameterLength=fReferenceLength[memberId];
+    if (parameterLength>0) {
+      weight=length;
+      weight/=parameterLength;
+    }
+    FillStatistics(memberId, value, length, weight);
+  }
+
   if (length>0) {
     return OutputBits(v, length);
   }
+
   return false;
 }
 
@@ -277,9 +298,10 @@ void AliHLTDataDeflaterHuffman::SaveAs(const char *filename, Option_t *option) c
     output->cd();
     fHuffmanCoderList->Write("DeflaterConfiguration", TObject::kSingleKey);
     output->Close();
+    return;
   }
 
-  return AliHLTDataDeflater::SaveAs(remainingOptions);
+  return AliHLTDataDeflater::SaveAs(filename, remainingOptions);
 }
 
 ostream& operator<<(ostream &out, const AliHLTDataDeflaterHuffman& me)

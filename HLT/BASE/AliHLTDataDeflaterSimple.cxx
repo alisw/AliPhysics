@@ -24,11 +24,6 @@
 ///         number of bits.
 
 #include "AliHLTDataDeflaterSimple.h"
-#include "TFile.h"
-#include "TObjArray.h"
-#include "TH1I.h"
-#include "TH2F.h"
-#include "TMath.h"
 #include <memory>
 #include <algorithm>
 #include <iostream>
@@ -39,14 +34,12 @@ ClassImp(AliHLTDataDeflaterSimple)
 AliHLTDataDeflaterSimple::AliHLTDataDeflaterSimple()
   : AliHLTDataDeflater()
   , fParameterDefinitions()
-  , fHistograms(NULL)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  if (fHistograms) fHistograms->SetOwner(kTRUE);
 }
 
 AliHLTDataDeflaterSimple::~AliHLTDataDeflaterSimple()
@@ -54,36 +47,17 @@ AliHLTDataDeflaterSimple::~AliHLTDataDeflaterSimple()
   // destructor
   Clear();
 
-  if (fHistograms) {
-    delete fHistograms;
-  }
-  fHistograms=NULL;
-
 }
 
 int AliHLTDataDeflaterSimple::AddParameterDefinition(const char* name, int bitLength, int reducedBitLength)
 {
   /// add a parameter definition to the configuration, return reference id
   fParameterDefinitions.push_back(AliHLTDataDeflaterParameter(name, bitLength, reducedBitLength));
-  if (fHistograms) {
-    if (!fHistograms->FindObject(name)) {
-      fHistograms->Add(new TH1I(name, name, 100, 0, 0x1<<bitLength));
-    }
+  int memberId=fParameterDefinitions.size()-1;
+  if (DoStatistics()) {
+    AddHistogram(memberId, name, bitLength);
   }
-  return fParameterDefinitions.size()-1;
-}
-
-int AliHLTDataDeflaterSimple::AddHistogram(TH1* h)
-{
-  /// add a histogram for deflater statistic of the corresponding parameter
-  if (!fHistograms) fHistograms=new TObjArray;
-  if (!fHistograms) return -ENOMEM;
-  if (h!=NULL && fHistograms->FindObject(h->GetName())) {
-    HLTWarning("parameter with name %s already existing, skipping histogram", h->GetName());
-    return -EEXIST;
-  }
-  if (h) fHistograms->Add(h);
-  return 0;
+  return memberId;
 }
 
 bool AliHLTDataDeflaterSimple::OutputParameterBits( int memberId, AliHLTUInt64_t const & value )
@@ -96,15 +70,8 @@ bool AliHLTDataDeflaterSimple::OutputParameterBits( int memberId, AliHLTUInt64_t
   AliHLTUInt32_t length=fParameterDefinitions[memberId].ValueLength(value);
   fParameterDefinitions[memberId].IncrementBitCount(value);
 
-  if (fHistograms) {
-    TObject* o=fHistograms->FindObject(fParameterDefinitions[memberId].GetName());
-    if (o) {
-      TH1* h=dynamic_cast<TH1*>(o);
-      if (h) {
-	h->Fill(v);
-      }
-    }
-  }
+  if (DoStatistics())
+    FillStatistics(memberId, length, value);
 
   if (!OutputBit(switchBit)) return false;
   return OutputBits(v, length);
@@ -113,81 +80,12 @@ bool AliHLTDataDeflaterSimple::OutputParameterBits( int memberId, AliHLTUInt64_t
 void AliHLTDataDeflaterSimple::Clear(Option_t * option)
 {
   // internal cleanup
-  TH2F* hParameterCompression=NULL;
-  if (fHistograms) {
-    int bins=fParameterDefinitions.size();
-    TObject* o=NULL;
-    o=fHistograms->FindObject("ParameterCompression");
-    if (o) {
-      hParameterCompression=dynamic_cast<TH2F*>(o);
-    } else {
-      hParameterCompression=new TH2F("ParameterCompression", "ParameterCompression", bins, 0, bins, 100, 0., 1.1);
-      if (hParameterCompression) fHistograms->Add(hParameterCompression);
-    }
-  }
   unsigned i=0;
   for (vector<AliHLTDataDeflaterParameter>::iterator m=fParameterDefinitions.begin();
        m!=fParameterDefinitions.end(); m++, i++) {
-    int bitLength=m->GetBitLength();
-    int valueCount=m->GetValueCount();
-    if (bitLength==0 || valueCount==0) continue;
-    float ratio=(float)m->GetBitCount();
-    ratio/=bitLength*valueCount;
-    if (hParameterCompression)
-      hParameterCompression->Fill(i, ratio);
-
     m->ResetBitCount();
   }
   AliHLTDataDeflater::Clear(option);
-}
-
-void AliHLTDataDeflaterSimple::SaveAs(const char *filename,Option_t */*option*/) const
-{
-  // safe histograms to file
-  std::auto_ptr<TFile> file(TFile::Open(filename, "RECREATE"));
-  if (!file.get() || file->IsZombie()) {
-    HLTError("can not open file %s", filename);;
-    return;
-  }
-  file->cd();
-  if (fHistograms) {
-    for (int i=0; i<fHistograms->GetEntries(); i++) {
-      if (fHistograms->At(i)==NULL || 
-	  !fHistograms->At(i)->InheritsFrom("TH1") ||
-	  fHistograms->At(i)->InheritsFrom("TH2") ||
-	  fHistograms->At(i)->InheritsFrom("TH3")
-	  ) continue;
-      TH1* h=reinterpret_cast<TH1*>(fHistograms->At(i));
-      if (!h) continue;
-      float entropy=CalcEntropy(h);
-      if (entropy<0) continue;
-      TString title=h->GetTitle();
-      title+=Form(" entropy %.2f", entropy);
-      h->SetTitle(title);
-    }
-    fHistograms->Write();
-  }
-
-  file->Close();
-}
-
-float AliHLTDataDeflaterSimple::CalcEntropy(TH1* histo, const char* /*option*/, int mode)
-{
-
-  if (!histo) return -1000.;
-
-  float l2=TMath::Log(2.0);
-  float integral=histo->Integral(0,histo->GetNbinsX());
-  int centerbin=mode*histo->GetNbinsX()/2;
-  int nofBins=histo->GetNbinsX()-centerbin;
-  float entropy=0.0;
-  for (int offset=0; offset<nofBins; offset++) {
-    float abundance=histo->GetBinContent(offset);
-    if (abundance<1.0) continue;
-    entropy += (- (Double_t) abundance / (Double_t) integral ) * log( ( (Double_t) abundance / (Double_t) integral )) / (l2);
-  }
-
-  return entropy;
 }
 
 void AliHLTDataDeflaterSimple::Print(Option_t *option) const
