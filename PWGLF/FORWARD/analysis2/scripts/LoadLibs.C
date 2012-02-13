@@ -6,12 +6,13 @@
 void
 LoadLibs()
 {
-  gROOT->LoadClass("TVirtualMC",           "libVMC");
-  gROOT->LoadClass("AliVEvent",            "libSTEERBase");
-  gROOT->LoadClass("AliESDEvent",          "libESD");
-  gROOT->LoadClass("AliAnalysisManager",   "libANALYSIS");
-  gROOT->LoadClass("AliAnalysisTaskSE",    "libANALYSISalice");
-  gROOT->LoadClass("AliAODForwardMult",    "libPWGLFforward2");
+  gROOT->LoadClass("TVirtualMC",              "libVMC");
+  gROOT->LoadClass("AliVEvent",               "libSTEERBase");
+  gROOT->LoadClass("AliESDEvent",             "libESD");
+  gROOT->LoadClass("AliAnalysisManager",      "libANALYSIS");
+  gROOT->LoadClass("AliAnalysisTaskSE",       "libANALYSISalice");
+  gROOT->LoadClass("AliOADBPhysicsSelection"  "libOADB");
+  gROOT->LoadClass("AliAODForwardMult",       "libPWGLFforward2");
 }
 //
 // EOF

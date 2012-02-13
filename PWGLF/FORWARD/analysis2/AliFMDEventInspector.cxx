@@ -23,6 +23,7 @@
 #include "AliInputEventHandler.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
+#include "AliOADBPhysicsSelection.h"
 #include "AliAODForwardMult.h"
 #include "AliForwardUtil.h"
 #include "AliCentrality.h"
@@ -575,7 +576,19 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     AliWarning("No input handler");
     return kFALSE;
   }
-  
+  AliPhysicsSelection* ps = 
+    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+  if (!ps) {
+    AliWarning("No physics selection");
+    return kFALSE;
+  }
+  AliOADBPhysicsSelection* oadb = 
+    const_cast<AliOADBPhysicsSelection*>(ps->GetOADBPhysicsSelection());
+  if (!oadb) {
+    AliWarning("No OADB physics selection object");
+    return kFALSE;
+  }
+
   // Check if this is a collision candidate (MB)
   // Note, that we should use the value cached in the input 
   // handler rather than calling IsCollisionCandiate directly 
@@ -672,7 +685,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     triggers |= AliAODForwardMult::kEmpty;
     fHTriggers->Fill(kEmpty+.5);
   }
-  
+#if 0 
   // Check for B triggers
   if (trigStr.Contains("CINT1B-ABCE-NOPF-ALL")   ||   // Early pp
       trigStr.Contains("CINT1-B-NOPF-ALLNOTRD")  ||   // Late pp 
@@ -751,6 +764,53 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
       ) {
     triggers |= AliAODForwardMult::kE;
     fHTriggers->Fill(kE+.5);
+  }
+#endif
+
+  const TList* collTriggClasses = ps->GetCollisionTriggerClasses();
+  const TList* bgTriggClasses = ps->GetBGTriggerClasses();
+
+  TIter nextColl(collTriggClasses);
+  TObjString* oadbString = 0;
+  TObjArray* tokens = 0;
+  while ((oadbString = static_cast<TObjString*>(nextColl()))) {
+    tokens = oadbString->String().Tokenize(" ");
+    for (Int_t i = 0; i < tokens->GetEntries(); i++) {
+      TString string = (((TObjString*)tokens->At(i))->String());
+      if (string[0] != '+') continue;
+      string.Remove(0,1);
+      if (trigStr.Contains(string.Data())) {
+        TString beamSide = oadb->GetBeamSide(oadbString->String().Data());
+        if (beamSide.EqualTo("B")) {
+          triggers |= AliAODForwardMult::kB;
+          fHTriggers->Fill(kB+.5);
+        }
+      }
+    }
+  }
+  TIter nextBG(bgTriggClasses);
+  while ((oadbString = static_cast<TObjString*>(nextBG()))) {
+    tokens = oadbString->String().Tokenize(" ");
+    for (Int_t i = 0; i < tokens->GetEntries(); i++) {
+      TString string = (((TObjString*)tokens->At(i))->String());
+      if (string[0] != '+') continue;
+      string.Remove(0,1);
+      if (trigStr.Contains(string.Data())) {
+        TString beamSide = oadb->GetBeamSide(oadbString->String().Data());
+        if (beamSide.Contains("A")) {
+          triggers |= AliAODForwardMult::kA;
+          fHTriggers->Fill(kA+.5);
+        }
+        if (beamSide.Contains("C")) {
+          triggers |= AliAODForwardMult::kC;
+          fHTriggers->Fill(kC+.5);
+        }
+        if (beamSide.Contains("E")) {
+          triggers |= AliAODForwardMult::kE;
+          fHTriggers->Fill(kE+.5);
+        }
+      }
+    }
   }
 
   // Now check - if we have a collision - for offline triggers and
