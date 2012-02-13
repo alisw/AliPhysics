@@ -878,12 +878,25 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
       if (iResult<0) return iResult;
     }
     
+    if (!fHistogramFile.IsNull())
+      deflater->EnableStatistics();
+
     unsigned nofParameters=AliHLTTPCDefinitions::GetNumberOfClusterParameterDefinitions();
     unsigned p=0;
     for (; p<nofParameters; p++) {
       const AliHLTTPCDefinitions::AliClusterParameter& parameter=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[p];
+      // use the pad/time length as reference for the calculation of ratio for residuals
+      unsigned refLength=0;
+      unsigned refLengthPad=0;
+      unsigned refLengthTime=0;
+      if (parameter.fId==AliHLTTPCDefinitions::kPad)               refLengthPad=parameter.fBitLength;
+      else if (parameter.fId==AliHLTTPCDefinitions::kTime)         refLengthTime=parameter.fBitLength;
+      else if (parameter.fId==AliHLTTPCDefinitions::kResidualPad)  refLength=refLengthPad;
+      else if (parameter.fId==AliHLTTPCDefinitions::kResidualTime) refLength=refLengthTime;
+
       if (deflater->AddParameterDefinition(parameter.fName,
-					   parameter.fBitLength)!=(int)parameter.fId) {
+					   parameter.fBitLength,
+					   refLength)!=(int)parameter.fId) {
 	// for performance reason the parameter id is simply used as index in the array of
 	// definitions, the position must match the id
 	HLTFatal("mismatch between parameter id and position in array for parameter %s, rearrange definitions!", parameter.fName);
@@ -896,6 +909,9 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
   if (mode==1) {
     std::auto_ptr<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
     if (!deflater.get()) return -ENOMEM;
+
+    if (!fHistogramFile.IsNull())
+      deflater->EnableStatistics();
 
     unsigned nofParameters=AliHLTTPCDefinitions::GetNumberOfClusterParameterDefinitions();
     unsigned p=0;
