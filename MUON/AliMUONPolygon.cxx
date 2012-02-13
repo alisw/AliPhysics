@@ -117,29 +117,27 @@ void AliMUONPolygon::Copy(TObject& obj) const
   TObject::Copy(obj);
 
   AliMUONPolygon& rhs = static_cast<AliMUONPolygon&>(obj);
-
-  Double_t* x(0x0);
-  Double_t* y(0x0);
-  
-  if ( fN > 0 )
-  {
-    x = new Double_t[fN];
-    y = new Double_t[fN];
-    
-    for ( Int_t i = 0; i < fN; ++i )
-    {
-      x[i] = fX[i];
-      y[i] = fY[i];
-    }
-  
-  }
   
   delete [] rhs.fX;
   delete [] rhs.fY;
+
+  rhs.fX = 0;
+  rhs.fY = 0;
+  rhs.fN = 0;
   
-  rhs.fX = x;
-  rhs.fY = y;
-  rhs.fN = fN;  
+  if ( fN > 0 )
+  {
+    rhs.fN = fN;
+
+    rhs.fX = new Double_t[rhs.fN];
+    rhs.fY = new Double_t[rhs.fN];
+    
+    for ( Int_t i = 0; i < rhs.fN; ++i )
+    {
+      rhs.fX[i] = fX[i];
+      rhs.fY[i] = fY[i];
+    }
+  }  
 }
 
 //_____________________________________________________________________________
