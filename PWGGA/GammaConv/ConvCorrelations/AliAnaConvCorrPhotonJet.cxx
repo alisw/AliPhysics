@@ -58,7 +58,7 @@ AliAnaConvCorrPhotonJet::~AliAnaConvCorrPhotonJet() {
 
 
 void AliAnaConvCorrPhotonJet::CreateHistograms() {
-  
+  //Create histo
   CreateBaseHistograms();
   fhPtFracGamma = new TH1F("fhPtFracGamma", "fhPtFracGamma", 100, 0, 10);
   GetHistograms()->Add(fhPtFracGamma);
@@ -101,7 +101,7 @@ void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesA
 }
 
 //________________________________________________________________________________
-Bool_t AliAnaConvCorrPhotonJet::IsParticleInJet(AliAODJet * jet, Int_t nTracks, Int_t * trackIds) const {
+Bool_t AliAnaConvCorrPhotonJet::IsParticleInJet(const AliAODJet * jet, const Int_t nTracks, const Int_t * trackIds) const {
   //See header file for documetation
 
   Int_t mTracks = 0;
@@ -123,7 +123,7 @@ Bool_t AliAnaConvCorrPhotonJet::IsParticleInJet(AliAODJet * jet, Int_t nTracks, 
 
 
 //________________________________________________________________________________
-Double_t AliAnaConvCorrPhotonJet::ExtractFromJet(AliAODJet * jet, const AliAODConversionParticle * const particle) const {
+Double_t AliAnaConvCorrPhotonJet::ExtractFromJet(const AliAODJet * jet, const AliAODConversionParticle * const particle) const {
   //See header file for documetation
   
   Float_t jetPt = jet->Pt();

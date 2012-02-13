@@ -6,8 +6,8 @@
 /// @author Svein Lindal
 /// @brief  Class used to find correlations between photons and jets
 
-#ifndef ALIANACONVCORRPIONJET_CXX
-#define ALIANACONVCORRPIONJET_CXX
+#ifndef ALIANACONVCORRPIONJET_H
+#define ALIANACONVCORRPIONJET_H
 
 #include "AliAnaConvCorrBase.h"
 

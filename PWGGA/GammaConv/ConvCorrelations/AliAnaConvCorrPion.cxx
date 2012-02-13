@@ -62,6 +62,8 @@ AliAnaConvCorrPion::~AliAnaConvCorrPion() {
 
 //________________________________________________________________________________
 void AliAnaConvCorrPion::InitMassAxis() {
+  //Init mass axis
+  
   Double_t mbins[7] = {0.1, 0.11, 0.12, 0.15, 0.16, 0.18, 0.2};
   fAxisM.Set(6, mbins);
   fAxisM.SetNameTitle("InvMass", "invariant mass");
