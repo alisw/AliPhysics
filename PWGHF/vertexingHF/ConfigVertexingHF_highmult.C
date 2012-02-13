@@ -8,7 +8,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetJPSItoEleOff();
   //vHF->Set3ProngOff();
   vHF->SetLikeSignOn(); // like-sign pairs and triplets
-  vHF->SetLikeSign3prongOff();
+  //  vHF->SetLikeSign3prongOff();
   vHF->Set4ProngOff();
   //vHF->SetDstarOff();
   vHF->SetFindVertexForDstar(kFALSE);
