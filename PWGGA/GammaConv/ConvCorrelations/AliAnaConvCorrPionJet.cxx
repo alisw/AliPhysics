@@ -50,7 +50,7 @@ AliAnaConvCorrPionJet::~AliAnaConvCorrPionJet() {
 
 ///_______________________________________________________________________________
 void AliAnaConvCorrPionJet::CorrelateWithHadrons(const AliAODConversionParticle * const pion, const TClonesArray * const jets, const Bool_t isolated) {
-
+  //Do it
   FillTriggerCounters(pion, isolated);
 
   //See header file for documentation

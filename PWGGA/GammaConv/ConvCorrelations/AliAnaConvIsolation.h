@@ -7,15 +7,16 @@
 /// @brief  Class used to run isolation studies of conversion gamma/pions
  
 
-#ifndef ALIANACONVISOLATION_CXX
-#define ALIANACONVISOLATION_CXX
+#ifndef ALIANACONVISOLATION_H
+#define ALIANACONVISOLATION_H
 
 #include <iostream>
 #include "TObject.h"
 #include "Rtypes.h"
-#include "TF1.h"
 #include <TMath.h>
+#include "TString.h"
 class TH2F;
+class TF1;
 class TH1F;
 class AliAODConversionPhoton;
 class AliAODConversionParticle;
