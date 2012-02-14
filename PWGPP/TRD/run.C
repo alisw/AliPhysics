@@ -1,7 +1,7 @@
 // Steer TRD QA train for Reconstruction (Clusterizer, Tracking and PID).
 // 
-// Usage:
-//   run.C(optList, files, nev, first, runNo, ocdb_uri, grp_uri)
+// Usage:Char_t *optList="ALL", Int_t run, const Char_t *files=NULL, Long64_t nev=1234567890, Long64_t first = 0
+//   run.C(optList, run, files, nev, first)
 //
 //   optList : "ALL" [default] or one/more of the following:
 //     "EFF"  : TRD Tracking Efficiency 
@@ -19,15 +19,12 @@
 //     "NOFR" : Data set does not have AliESDfriends.root 
 //     "NOMC" : Data set does not have Monte Carlo Informations (default have MC), 
 //
+//     run   : run number [default 0]; if negative value is specified the OCDB connection is left to AddTRDinfoGen.C
 //     files : the list of ESD files to be processed [default AliESds.root from cwd]
 //     nev   : number of events to be processed [default all]
 //     first : first event to process [default 0]
-//     runNo : run number [default 0]
-//     ocdb_uri : OCDB location [default local, $ALICE_ROOT]. In case of AliEn the syntax should be of the form
-//                 alien://folder=/alice/data/2010/OCDB?user=username?cacheF=yourDirectory?cacheS=yourSize
-//     grp_uri  : GRP/GRP/Data location [default cwd]. In case of AliEn the syntax should be of the form
-//                 alien://folder=/alice/data/2010/OCDB?user=username?cacheF=yourDirectory?cacheS=yourSize
-// In compiled mode : 
+//
+// In compiled mode :
 // Don't forget to load first the libraries
 // gSystem->Load("libMemStat.so")
 // gSystem->Load("libMemStatGui.so")
@@ -89,7 +86,7 @@ TChain* MakeChainLST(const char* filename = NULL);
 TChain* MakeChainXML(const char* filename = NULL);
 Bool_t UseMC(Char_t *opt);
 Bool_t UseFriends(Char_t *opt);
-void run(Char_t *optList="ALL", Int_t run, const Char_t *files=NULL, Long64_t nev=1234567890, Long64_t first = 0)
+void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TMemStat *mem = NULL;
   if(MEM){ 
@@ -107,6 +104,7 @@ void run(Char_t *optList="ALL", Int_t run, const Char_t *files=NULL, Long64_t ne
   if(gSystem->Load("libANALYSISalice.so")<0) return;
   if(gSystem->Load("libTENDER.so")<0) return;
   if(gSystem->Load("libPWGPP.so")<0) return;
+  if(gSystem->Load("libPWGmuon.so")<0) return;
   if(gSystem->Load("libCORRFW.so")<0) return;
 
   Bool_t fHasMCdata = UseMC(optList);
@@ -141,10 +139,12 @@ void run(Char_t *optList="ALL", Int_t run, const Char_t *files=NULL, Long64_t ne
   mgr->SetSkipTerminate(kTRUE);
 
   // add CDB task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-  AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
-  if (!taskCDB) return;
-  taskCDB->SetRunNumber(run);
+  if(run>=0){
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    if (!taskCDB) return;
+    taskCDB->SetRunNumber(run);
+  }
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
   if(!AddTrainPerformanceTRD(optList)) {
