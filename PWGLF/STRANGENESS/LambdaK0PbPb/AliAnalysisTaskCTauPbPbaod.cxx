@@ -312,8 +312,12 @@ static Bool_t AcceptPID(const AliPIDResponse *pidResponse,
     if (plab>=0)
       if (plab<ntrk) {
          AliAODMCParticle *pp=(AliAODMCParticle*)stack->UncheckedAt(plab);
-         if (pp->GetPdgCode() != kProton) isProton=kFALSE;
-      }
+         if (pp->Charge() > 0) {
+            if (pp->GetPdgCode() != kProton) isProton=kFALSE;
+         } else {
+            if (pp->GetPdgCode() != kProtonBar) isProton=kFALSE;
+         }
+       }
   } else {
     // Real PID
     const AliAODPid *pid=ptrack->GetDetPid();
