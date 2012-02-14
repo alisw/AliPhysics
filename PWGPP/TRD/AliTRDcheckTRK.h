@@ -17,13 +17,17 @@
 #include "AliTRDresolution.h"
 #endif
 
-/*template <typename Value> class TVectorT;
-typedef struct TVectorT<Double_t> TVectorD;*/
 class TObjArray;
 class AliTRDtrackV1;
 class AliTRDcheckTRK : public AliTRDresolution
 {
 public:
+  enum ETRDcheckTRKsteer {
+     kKalmanUpdate  = 0
+    ,kTrkltRefit
+    ,kClRecalibrate
+    ,kUseITS
+  };
   enum ETRDcheckTRKconst {
      kNptBins    = 25 // no of log bins in pt spectrum
     ,kNSigmaBins = 25 // no of sigma bins
@@ -34,18 +38,19 @@ public:
   AliTRDcheckTRK(char* name);
   virtual ~AliTRDcheckTRK();
   static Float_t  GetKalmanStep()                      { return fgKalmanStep;}
-  static Bool_t   HasClRecalibrate()                   { return fgClRecalibrate;}
-  static Bool_t   HasKalmanUpdate()                    { return fgKalmanUpdate;}
-  static Bool_t   HasTrkltRefit()                      { return fgTrkltRefit;}
+  static Bool_t   HasClRecalibrate()                   { return TESTBIT(fgSteer, kClRecalibrate);}
+  static Bool_t   HasKalmanUpdate()                    { return TESTBIT(fgSteer, kKalmanUpdate);}
+  static Bool_t   HasTrkltRefit()                      { return TESTBIT(fgSteer, kTrkltRefit);}
   virtual TObjArray*  Histos();
   TH1*            PlotTrack(const AliTRDtrackV1 *t=NULL);
   TH1*            DoRoads(const AliTRDtrackV1 *t=NULL);
   static Bool_t   PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *ref);
   static void     SetKalmanStep(Float_t step)          { fgKalmanStep=step;}
-  static void     SetClRecalibrate(Bool_t set=kTRUE)   { fgClRecalibrate=set;}
-  static void     SetKalmanUpdate(Bool_t set=kTRUE)    { fgKalmanUpdate=set;}
-  static void     SetTrkltRefit(Bool_t set=kTRUE)      { fgTrkltRefit=set;}
-
+  static void     SetClRecalibrate(Bool_t s=kTRUE)     { if(s){SETBIT(fgSteer, kClRecalibrate); SetTrkltRefit();} else CLRBIT(fgSteer, kClRecalibrate);}
+  static void     SetKalmanUpdate(Bool_t s=kTRUE)      { if(s) SETBIT(fgSteer, kKalmanUpdate); else CLRBIT(fgSteer, kKalmanUpdate);}
+  static void     SetTrkltRefit(Bool_t s=kTRUE)        { if(s) SETBIT(fgSteer, kTrkltRefit); else CLRBIT(fgSteer, kTrkltRefit);}
+  static void     SetUseITS(Bool_t s=kTRUE)            { if(s) SETBIT(fgSteer, kUseITS); else CLRBIT(fgSteer, kUseITS);}
+  static Bool_t   UseITS()                             { return TESTBIT(fgSteer, kUseITS);}
 private:
   AliTRDcheckTRK(const AliTRDcheckTRK&);
   AliTRDcheckTRK& operator=(const AliTRDcheckTRK&);
@@ -53,9 +58,7 @@ private:
   Int_t    GetPtBinCalib(Float_t pt);
 
   // kalman related settings
-  static Bool_t  fgKalmanUpdate;  // update Kalman with TRD point
-  static Bool_t  fgTrkltRefit;    // refit tracklet
-  static Bool_t  fgClRecalibrate; // recalibrate clusters and recalculate tracklet fit
+  static UChar_t fgSteer;         // steering bit map
   static Float_t fgKalmanStep;    // Kalman stepping
   Float_t        fPtBinCalib[kNptBins+1];  //! pt segmentation
 

@@ -364,12 +364,13 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
     TVectorF *det((TVectorF*)fDets->At(idet));
     if(!det) continue;
     Int_t iopt = Int_t((*det)[4]);
-    AliDebug(2, Form("det[%03d] 0[%+4.1f %+4.1f] 1[%+4.1f %+4.1f] opt[%d]", idet, (*det)[0], (*det)[1], (*det)[2], (*det)[3], iopt));
-    if(strcmp(opt, "eta")==0){xmin=(*det)[0]; xmax=(*det)[2];}
-    else if(strcmp(opt, "pad")==0){
+    if(strcmp(opt, "eta")==0){
+      xmin=(*det)[0]; xmax=(*det)[2];
+    } else if(strcmp(opt, "pad")==0){
       Int_t stk(AliTRDgeometry::GetStack(idet));
       xmin=-0.6+16*(4-stk)-(stk<2?4:0); xmax=xmin+(stk==2?12:16)-0.2;
     } else continue;
+    AliDebug(2, Form("det[%03d] 0[%+4.1f(%+4.1f) %+4.1f] 1[%+4.1f(%+4.1f) %+4.1f] opt[%d]", idet, xmin, (*det)[0], (*det)[1], xmax, (*det)[2], (*det)[3], iopt));
     if(iopt==1){
       gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlack);
       gdet->DrawBox(xmin, (*det)[1], xmax, (*det)[3]);
@@ -377,7 +378,7 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
       gdet->SetFillStyle(style[0]);
       gdet->DrawBox(xmin, (*det)[1], xmax, (*det)[3]);
       if(iopt==2){
-        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlue);
+        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kGreen);
         gdet->DrawBox(xmin, (*det)[1], xmax, 0.5*((*det)[3]+(*det)[1]));
       } else if(iopt==3){
         gdet->SetFillStyle(style[1]);gdet->SetFillColor(kRed);
