@@ -42,6 +42,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
   //  dsTask->SetUseTPCpid(kTRUE);
   //dsTask->SetUseTOFpid(kTRUE);
   dsTask->SetDebugLevel(10);
+  dsTask->SetUseSelectionBit(kTRUE);
   //dsTask->SetMassLimits(0.2);
   mgr->AddTask(dsTask);
   
