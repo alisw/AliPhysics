@@ -33,6 +33,9 @@
   gSystem->Load("libANALYSIS") ;
   gSystem->Load("libANALYSISalice") ;
   gSystem->Load("libCORRFW") ;
+  gSystem->Load("libMFTbase") ;
+  gSystem->Load("libMFTsim") ;
+  gSystem->Load("libMFTrec") ;
   
   //================= define the style =================== //
   
