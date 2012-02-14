@@ -66,10 +66,10 @@ public:
     ,kNclasses        // total number of resolution classes
   };
   enum ETRDresolutionClassProjs {
-    kDetNproj=60       // detector projections
-    ,kClNproj=60       // cluster projections
+    kDetNproj=460      // detector projections
+    ,kClNproj=2800     // cluster projections
     ,kTrkltNproj=8000  // tracklet projections
-    ,kTrkInNproj=240   // trackIn projections
+    ,kTrkInNproj=245   // trackIn projections
     ,kTrkNproj=2500    // track projections
     ,kMCTrkInNproj=260 // trackIn projections
   };
@@ -89,7 +89,8 @@ public:
     ,kNdimTrkIn   = 7
     ,kNbunchCross = 3  // no of classes for bunch crossing
     ,kNpt         = 3  // no of log bins in pt spectrum
-    ,kNcharge     = 2
+    ,kNcharge     = 2  // no of charges
+    ,kNpads       = 4  // no of charges
   };
 
   AliTRDresolution();
@@ -116,6 +117,10 @@ public:
   TObjArray*      Results(ETRDresolutionClass c) const  { if(!fProj) return NULL; return (TObjArray*)fProj->At(c);}
   void            UserExec(Option_t * opt);
   void            InitExchangeContainers();
+  Bool_t          HasProcessDetector() const            { return TESTBIT(fSteer, kDetector);}
+  Bool_t          HasProcessCluster() const             { return TESTBIT(fSteer, kCluster);}
+  Bool_t          HasProcessTrklt() const               { return TESTBIT(fSteer, kTracklet);}
+  Bool_t          HasProcessTrkIn() const               { return TESTBIT(fSteer, kTrackIn);}
   Bool_t          HasTrackRefit() const                 { return TestBit(kTrackRefit);}
   Bool_t          HasTrackSelection() const             { return TestBit(kTrackSelect);}
   Bool_t          IsVerbose() const                     { return TestBit(kVerbose);}
@@ -132,13 +137,14 @@ public:
 //  TH1*            PlotTrackOut(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotMC(const AliTRDtrackV1 *t=NULL);
 
-  static Bool_t   Process(TH2* const h2, TGraphErrors **g, Int_t stat=100);
+  static Bool_t   Process(TH2* const /*h2*/, TGraphErrors **/*g*/, Int_t stat=100){ return Bool_t(stat);}
   void            SetDyRange(Float_t dy) {fDyRange = dy;}
   void            SetPtThreshold(Float_t pt)            { fPtThreshold = pt;}
   void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
   void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
   static void     SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
+  void            SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
   static void     SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
@@ -192,10 +198,10 @@ protected:
   Bool_t      MakeProjectionTracklet(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTrackIn(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTrack();
-  Bool_t      Process(TH2* const h2, TF1 *f, Float_t k, TGraphErrors **g);
+  Bool_t      Process(TH2* const /*h2*/, TF1 */*f*/, Float_t /*k*/, TGraphErrors **/*g*/) { return kTRUE;}
   Bool_t      Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt) const;
 
-  UShort_t              fIdxPlot;         // plot counter (internal)
+  UShort_t              fSteer;           // bit map to steer internal behaviour of class
   UShort_t              fIdxFrame;        // frame counter (internal)
   Float_t               fPtThreshold;     // pt threshold for some performance plots
   Float_t               fDyRange;         // min/max dy

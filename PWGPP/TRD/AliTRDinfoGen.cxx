@@ -337,6 +337,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       AliInfo("OCDB :: initializing locally ...");
       // prepare OCDB access
       ocdb->SetDefaultStorage(fOCDB.Data());
+      //ocdb->SetSpecificStorage("TRD/Align/Data", "local:///home/niham/abercuci/local");
       ocdb->SetRun(fESDev->GetRunNumber());
       // create geo manager
       if(!(obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data")))){
@@ -344,7 +345,9 @@ void AliTRDinfoGen::UserExec(Option_t *){
       } else {
         AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
         AliGeomManager::GetNalignable("TRD");
-        AliGeomManager::ApplyAlignObjsFromCDB("TRD");
+        AliGeomManager::GetNalignable("TPC");
+        AliGeomManager::GetNalignable("ITS");
+        AliGeomManager::ApplyAlignObjsFromCDB("ITS TPC TRD");
       }
       //init magnetic field
       if(!TGeoGlobalMagField::Instance()->IsLocked() &&
@@ -592,6 +595,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL;
     if(esdFriendTrack){
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
+      fTrackInfo->SetITSoutParam(esdFriendTrack->GetITSOut());
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
