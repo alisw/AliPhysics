@@ -65,6 +65,7 @@ extern "C" void type_of_call rluset_ampt(Int_t & lfn, Int_t & move);
 
 ClassImp(TAmpt)
 
+
 //______________________________________________________________________________
 TAmpt::TAmpt()
   : TGenerator("Ampt","Ampt"),
@@ -598,9 +599,9 @@ Float_t  TAmpt::GetBB() const
 Int_t TAmpt::GetKATT(Int_t key1, Int_t key2) const
 {
   // Get values of array KATT in common HMAIN2
-  if ( key1<1 || key1>200000 ) {
+  if ( key1<1 || key1> _MAXNPARTICLE_ ) {
     printf("ERROR in TAmpt::GetKATT(key1,key2):\n");
-    printf("      key1=%i is out of range [1..200000]\n",key1);
+    printf("      key1=%i is out of range [1..%d]\n",key1,_MAXNPARTICLE_);
     return 0;
   }
   if ( key2<1 || key2>4 ) {
@@ -615,7 +616,7 @@ Int_t TAmpt::GetKATT(Int_t key1, Int_t key2) const
 Float_t TAmpt::GetPATT(Int_t key1, Int_t key2) const
 {
   // Get values of array PATT in common HMAIN2
-  if ( key1<1 || key1>200000 ) {
+  if ( key1<1 || key1>_MAXNPARTICLE_ ) {
     printf("ERROR in TAmpt::GetPATT(key1,key2):\n");
     printf("      key1=%i is out of range [1..130000]\n",key1);
     return 0;
@@ -632,7 +633,7 @@ Float_t TAmpt::GetPATT(Int_t key1, Int_t key2) const
 Float_t TAmpt::GetVATT(Int_t key1, Int_t key2) const
 {
   // Get values of array VATT in common HMAIN2
-  if ( key1<1 || key1>200000 ) {
+  if ( key1<1 || key1>_MAXNPARTICLE_ ) {
     printf("ERROR in TAmpt::GetVATT(key1,key2):\n");
     printf("      key1=%i is out of range [1..130000]\n",key1);
     return 0;

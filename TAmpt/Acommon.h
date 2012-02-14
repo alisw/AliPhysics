@@ -170,7 +170,7 @@ typedef struct {
 #define POPCORN COMMON_BLOCK(POPCORN,popcorn)
 COMMON_BLOCK_DEF(PopcornCommon,POPCORN);
 
-#undef _MAXNPARTICLE_ 
+  //#undef _MAXNPARTICLE_ 
 
 } /*extern*/
 #endif
