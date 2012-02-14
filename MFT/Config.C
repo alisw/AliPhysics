@@ -225,7 +225,7 @@ void Config() {
   }
   if (iPIPE) {
     //    AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
-    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe",0.,1.98,0.08,8.0,-50., 3, -57.4, 2.0, 4.0);  // cylindre with new adaptator pipe starting at -59.7cm
+    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe", 1.98, 0.08);  // cylindre with new adaptator pipe
   }
   if (iZDC) {
     AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
