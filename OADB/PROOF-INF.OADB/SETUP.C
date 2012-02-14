@@ -10,7 +10,9 @@ Int_t SETUP()
   gSystem->Setenv("OADB_INCLUDE", "OADB");
   
   // path for the root files
-  gSystem->Setenv("OADB_PATH", "OADB");
+  const char* oadbPath = gSystem->Getenv("OADB_PATH");
+  if (!oadbPath || oadbPath[0] == '\0')
+    gSystem->Setenv("OADB_PATH", "OADB");
 
   // We're happy
   return 0;
