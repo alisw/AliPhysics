@@ -73,8 +73,9 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fSigmaClusterCut(0),
   fChi2GlobalCut(0),
   fSigmaSpectrometerCut(0),
-  fExtrapOriginTransvError(0),
-  fGaussianBlurZVert(0),
+  fVertexErrorX(0.015),
+  fVertexErrorY(0.015),
+  fVertexErrorZ(0.010),
   fNFinalCandidatesCut(0),
   fReadDir(0),
   fOutDir(0),
@@ -92,9 +93,6 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fEv(0),
   fLabelMC(0),
 
-  fHistPtSpectrometer(0), 
-  fHistPtMuonTrackWithGoodMatch(0),
-  fHistPtMuonTrackWithBadMatch(0),
   fHistRadiusEndOfAbsorber(0), 
   fHistNGoodClustersForFinalTracks(0),
   fHistDistanceGoodClusterFromTrackMinusDistanceBestClusterFromTrackAtLastPlane(0),
@@ -243,9 +241,6 @@ AliMuonForwardTrackFinder::~AliMuonForwardTrackFinder() {
   delete fNtuFinalCandidates;
   delete fNtuFinalBestCandidates;
 
-  delete fHistPtSpectrometer;
-  delete fHistPtMuonTrackWithGoodMatch;
-  delete fHistPtMuonTrackWithBadMatch;
   delete fHistRadiusEndOfAbsorber;
 
   delete fHistNGoodClustersForFinalTracks; 
@@ -408,7 +403,6 @@ void AliMuonForwardTrackFinder::Init(Int_t nRun,
   SetNFinalCandidatesCut(10);
   SetRAbsorberCut(26.4);
   SetLowPtCut(0.5);
-  SetExtrapOriginTransvError(1.0);
 
 }
 
@@ -508,21 +502,35 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   // the track we are going to build, starting from fMuonTrackReco and adding the MFT clusters
   AliMuonForwardTrack *track = new ((*fCandidateTracks)[0]) AliMuonForwardTrack();
   track -> SetMUONTrack(fMuonTrackReco);
-  if (fLabelMC>=0 && fStack->Particle(fLabelMC)) track -> SetMCTrackRef(fStack->Particle(fLabelMC));
+  if (fLabelMC>=0 && fStack->Particle(fLabelMC)) track->SetMCTrackRef(fStack->Particle(fLabelMC));
   track -> SetMCLabel(fMuonTrackReco->GetMCLabel());
   track -> SetMatchTrigger(fMuonTrackReco->GetMatchTrigger());
+
+  // track origin
+  Double_t xVtx=-999., yVtx=-999., zVtx=-999999.;
+  if (track->GetMCTrackRef()) {
+    xVtx = track->GetMCTrackRef()->Vx();
+    yVtx = track->GetMCTrackRef()->Vy();
+    zVtx = track->GetMCTrackRef()->Vz();
+  }  
   
-  // track parameters at the first tracking station in the Muon Spectrometer
-  AliMUONTrackParam *param = (AliMUONTrackParam*) (fMuonTrackReco->GetTrackParamAtCluster()->First());
-  Double_t ptSpectrometer = TMath::Sqrt(param->Px()*param->Px() + param->Py()*param->Py());
-  Double_t thetaSpectrometer = TMath::ATan(ptSpectrometer/param->Pz());
-  if (thetaSpectrometer<0.) thetaSpectrometer += TMath::Pi();
-  Double_t etaSpectrometer = -1.*TMath::Log(TMath::Tan(0.5*thetaSpectrometer));
-  //  fOutputQAFile->cd();
-  fHistPtSpectrometer -> Fill(ptSpectrometer);
-  
-  // if the transverse momentum in the Muon Spectrometer is smaller than the threshold, skip to the next track
-  if (ptSpectrometer < fLowPtCut) return 3;
+  // track kinematics
+  Double_t pt=-999., theta=-999., eta=-999.;
+  if (track->GetMCTrackRef()) {
+    pt    = track->GetMCTrackRef()->Pt();
+    theta = track->GetMCTrackRef()->Theta();
+    if (theta<0.) theta += TMath::Pi();
+    eta   = track->GetMCTrackRef()->Eta();
+  }
+  else {
+    AliMUONTrackParam *param = (AliMUONTrackParam*) (fMuonTrackReco->GetTrackParamAtCluster()->First());
+    pt    = TMath::Sqrt(param->Px()*param->Px() + param->Py()*param->Py());
+    theta = TMath::ATan(pt/param->Pz());
+    if (theta<0.) theta += TMath::Pi();
+    eta   = -1.*TMath::Log(TMath::Tan(0.5*theta));
+  }  
+  // if the transverse momentum is smaller than the threshold, skip to the next track
+  if (pt < fLowPtCut) return 3;
   
   // track parameters linearly extrapolated from the first tracking station to the end of the absorber
   AliMUONTrackParam trackParamEndOfAbsorber(*((AliMUONTrackParam*)(fMuonTrackReco->GetTrackParamAtCluster()->First())));
@@ -530,11 +538,9 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   Double_t xEndOfAbsorber = trackParamEndOfAbsorber.GetNonBendingCoor();
   Double_t yEndOfAbsorber = trackParamEndOfAbsorber.GetBendingCoor();
   Double_t rAbsorber      = TMath::Sqrt(xEndOfAbsorber*xEndOfAbsorber + yEndOfAbsorber*yEndOfAbsorber);
-  //  fOutputQAFile->cd();
   fHistRadiusEndOfAbsorber -> Fill(rAbsorber);
   
-  // if the radial distance of the track at the end of the absorber is smaller than a radius corresponding to 
-  // 3 degrees as seen from the interaction point, skip to the next track
+  // if the radial distance of the track at the end of the absorber is smaller than a given radius, skip to the next track
   if (rAbsorber < fRAbsorberCut) return 4;
   
   //------------------------- NOW THE CYCLE OVER THE MFT PLANES STARTS ---------------------------------------
@@ -578,7 +584,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   
   AliDebug(1, "Finished cycle over planes");
 
-  Double_t momentum = ptSpectrometer * TMath::CosH(etaSpectrometer);
+  Double_t momentum = pt * TMath::CosH(eta);
   fTxtTrackMomentum = new TLatex(0.10, 0.70, Form("P_{spectro} = %3.1f GeV/c", momentum));
 
   if (fMatchingMode==kIdealMatching) {
@@ -674,11 +680,12 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 				     Double_t(fEv),
 				     Double_t(fCountRealTracksAnalyzedOfEvent),
 				     Double_t(nFinalTracks),
+				     Double_t(fLabelMC>=0),
+				     xVtx, yVtx, zVtx,
+				     Double_t(fMuonTrackReco->GetMatchTrigger()),
 				     Double_t(nClustersMC),
 				     Double_t(nGoodClusters),
-				     ptSpectrometer,
-				     thetaSpectrometer,
-				     etaSpectrometer, 
+				     pt, theta, eta, 
 				     chi2AtPlane[0],
 				     chi2AtPlane[1],
 				     chi2AtPlane[2],
@@ -733,11 +740,12 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 				       Double_t(fEv),
 				       Double_t(fCountRealTracksAnalyzedOfEvent),
 				       Double_t(nFinalTracks),
+				       Double_t(fLabelMC>=0),
+				       xVtx, yVtx, zVtx,
+				       Double_t(fMuonTrackReco->GetMatchTrigger()),
 				       Double_t(nClustersMC),
 				       Double_t(nGoodClustersBestCandidate),
-				       ptSpectrometer,
-				       thetaSpectrometer,
-				       etaSpectrometer,
+				       pt, theta, eta,
 				       chi2HistoryForBestCandidate[0],
 				       chi2HistoryForBestCandidate[1],
 				       chi2HistoryForBestCandidate[2],
@@ -762,12 +770,6 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   if (fDrawOption && bestCandidateExists) {
     fTxtTrackGoodClusters = new TLatex(0.20, 0.51, Form("N_{GoodClusters} = %d", nGoodClustersBestCandidate));
     DrawPlanes();
-  }
-
-  if (fIsCurrentMuonTrackable) {
-    //    fOutputQAFile->cd();
-    if (nGoodClustersBestCandidate==5) fHistPtMuonTrackWithGoodMatch -> Fill(ptSpectrometer);
-    else                               fHistPtMuonTrackWithBadMatch  -> Fill(ptSpectrometer);
   }
 
   // -------------------------------------------------------------------------------------------
@@ -800,10 +802,13 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     currentParamBack  = (*((AliMUONTrackParam*)(fMuonTrackReco->GetTrackParamAtCluster()->First())));
     currentParamForResearchFront = currentParamFront;
     currentParamForResearchBack  = currentParamBack;
-    AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamFront, 0.); 
-    AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamBack,  0.); 
-    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchFront, 0., 0., gRandom->Gaus(0,fGaussianBlurZVert), fExtrapOriginTransvError, fExtrapOriginTransvError); 
-    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchBack,  0., 0., gRandom->Gaus(0,fGaussianBlurZVert), fExtrapOriginTransvError, fExtrapOriginTransvError); 
+    Double_t xExtrap = gRandom->Gaus(0,fVertexErrorX);
+    Double_t yExtrap = gRandom->Gaus(0,fVertexErrorY);
+    Double_t zExtrap = gRandom->Gaus(0,fVertexErrorZ);
+    AliMUONTrackExtrap::ExtrapToVertex(&currentParamFront, xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+    AliMUONTrackExtrap::ExtrapToVertex(&currentParamBack,  xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchFront, xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchBack,  xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
   }
   else {          // MFT planes others than the last one: mult. scattering correction because of the upstream MFT planes is performed
     currentParamFront = (*((AliMUONTrackParam*)(fCurrentTrack->GetTrackParamAtCluster()->First())));
@@ -1176,11 +1181,6 @@ void AliMuonForwardTrackFinder::BookHistos() {
   const Int_t nMaxNewTracks[]  = {150,     200,   250, 600, 1000};
   const Double_t radiusPlane[] = {0.010, 0.010, 0.050, 0.5,  1.5};
 
-  fHistPtSpectrometer = new TH1D("hPtSpectrometer", "p_{T} as given by the Muon Spectrometer", 200, 0, 20.); 
-
-  fHistPtMuonTrackWithGoodMatch = new TH1D("fHistPtMuonTrackWithGoodMatch", "p_{T} of muon track with good match", 200, 0, 20.); 
-  fHistPtMuonTrackWithBadMatch  = new TH1D("fHistPtMuonTrackWithBadMatch",  "p_{T} of muon track with bad match",  200, 0, 20.); 
-
   fHistRadiusEndOfAbsorber = new TH1D("hRadiusEndOfAbsorber", "Track radial distance at the end of the absorber",  1000, 0, 100.); 
 
   fHistNGoodClustersForFinalTracks = new TH1D("hNGoodClustersForFinalTracks", "Number of Good Clusters per Final Track", 20, -0.25, 9.75);
@@ -1222,9 +1222,6 @@ void AliMuonForwardTrackFinder::BookHistos() {
   
   //------------------------------------------
   
-  fHistPtSpectrometer               -> Sumw2();
-  fHistPtMuonTrackWithGoodMatch     -> Sumw2();
-  fHistPtMuonTrackWithBadMatch      -> Sumw2();
   fHistRadiusEndOfAbsorber          -> Sumw2();
   fHistNGoodClustersForFinalTracks  -> Sumw2();
 
@@ -1244,9 +1241,9 @@ void AliMuonForwardTrackFinder::BookHistos() {
     
   }
 
-  fNtuFinalCandidates     = new TNtuple("ntuFinalCandidates",     "Final Candidates (ALL)", "run:event:muonTrack:nFinalCandidates:nClustersMC:nGoodClusters:ptSpectrometer:thetaSpectrometer:etaSpectrometer:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8");
+  fNtuFinalCandidates     = new TNtuple("ntuFinalCandidates",     "Final Candidates (ALL)", "run:event:muonTrack:nFinalCandidates:MCTrackRefExists:xVtx:yVtx:zVtx:triggerMatch:nClustersMC:nGoodClusters:pt:theta:eta:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8");
 
-  fNtuFinalBestCandidates = new TNtuple("ntuFinalBestCandidates", "Final Best Candidates",  "run:event:muonTrack:nFinalCandidates:nClustersMC:nGoodClusters:ptSpectrometer:thetaSpectrometer:etaSpectrometer:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8:nClustersAtPlane0:nClustersAtPlane1:nClustersAtPlane2:nClustersAtPlane3:nClustersAtPlane4:nClustersAtPlane5:nClustersAtPlane6:nClustersAtPlane7:nClustersAtPlane8");
+  fNtuFinalBestCandidates = new TNtuple("ntuFinalBestCandidates", "Final Best Candidates",  "run:event:muonTrack:nFinalCandidates:MCTrackRefExists:xVtx:yVtx:zVtx:triggerMatch:nClustersMC:nGoodClusters:pt:theta:eta:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8:nClustersAtPlane0:nClustersAtPlane1:nClustersAtPlane2:nClustersAtPlane3:nClustersAtPlane4:nClustersAtPlane5:nClustersAtPlane6:nClustersAtPlane7:nClustersAtPlane8");
 
 }
 
@@ -1254,9 +1251,6 @@ void AliMuonForwardTrackFinder::BookHistos() {
 
 void AliMuonForwardTrackFinder::SetTitleHistos() {
 
-  fHistPtSpectrometer              -> SetXTitle("p_{T}  [GeV/c]");
-  fHistPtMuonTrackWithGoodMatch    -> SetXTitle("p_{T}  [GeV/c]");
-  fHistPtMuonTrackWithBadMatch     -> SetXTitle("p_{T}  [GeV/c]");
   fHistRadiusEndOfAbsorber         -> SetXTitle("R_{abs}  [cm]");
   fHistNGoodClustersForFinalTracks -> SetXTitle("N_{GoodClusters}");
 
@@ -1563,9 +1557,6 @@ void AliMuonForwardTrackFinder::WriteHistos() {
   fOutputQAFile = new TFile(Form("MuonGlobalTracking.QA.run%d.root", fRun), "recreate");
   fOutputQAFile -> cd();
 
-  fHistPtSpectrometer              -> Write();
-  fHistPtMuonTrackWithGoodMatch    -> Write();
-  fHistPtMuonTrackWithBadMatch     -> Write();
   fHistRadiusEndOfAbsorber         -> Write();
   fHistNGoodClustersForFinalTracks -> Write();
 

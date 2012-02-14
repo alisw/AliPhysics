@@ -91,8 +91,7 @@ public:
   void SetRAbsorberCut(Double_t rAbsorberCut) { fRAbsorberCut = rAbsorberCut; }
   void SetLowPtCut(Double_t lowPtCut) { fLowPtCut = lowPtCut; }
   void SetNFinalCandidatesCut(Int_t nFinalCandidatesCut) { fNFinalCandidatesCut = nFinalCandidatesCut; }
-  void SetExtrapOriginTransvError(Double_t extrapOriginTransvError) { fExtrapOriginTransvError = extrapOriginTransvError; }
-  void SetGaussianBlurZVert(Double_t gaussianBlurZVert) { fGaussianBlurZVert = gaussianBlurZVert; }
+  void SetVertexError(Double_t xErr, Double_t yErr, Double_t zErr) { fVertexErrorX=xErr; fVertexErrorY=yErr; fVertexErrorZ=zErr; }
 
   Int_t GetRun() { return fRun; }
   Int_t GetNEvents() { return fNEventsToAnalyze; }
@@ -101,7 +100,6 @@ public:
   Double_t GetChi2GlobalCut() { return fChi2GlobalCut; }
   Double_t GetRAbsorberCut() { return fRAbsorberCut; }
   Double_t GetLowPtCut() { return fLowPtCut; }
-  Double_t GetExtrapOriginTransvError() { return fExtrapOriginTransvError; }
   Int_t GetNPlanesMFT() { return fNPlanesMFT; }
   Int_t GetNFinalCandidatesCut() { return fNFinalCandidatesCut; }
   Int_t GetCurrentEvent() { return fEv; }
@@ -158,8 +156,9 @@ protected:
   Double_t fSigmaClusterCut;         // to select the clusters in the MFT planes which are compatible with the extrapolated muon track
   Double_t fChi2GlobalCut;           // cut on the final chi2 of the global muon track
   Double_t fSigmaSpectrometerCut;    // for the selection of the tracks in the muon spectrometer
-  Double_t fExtrapOriginTransvError; // uncertainty on the x and y position of the muon's origin
-  Double_t fGaussianBlurZVert;       // smearing of the z position of the vertex, to simulate real case when the simulation was performed at fixed zVert=0.
+  Double_t fVertexErrorX;            // uncertainty on the x position of the muon's origin
+  Double_t fVertexErrorY;            // uncertainty on the y position of the muon's origin
+  Double_t fVertexErrorZ;            // uncertainty on the z position of the muon's origin
   Int_t fNFinalCandidatesCut;        // cut on the number of the final candidates for the muon track
   TString fReadDir;
   TString fOutDir;
@@ -188,7 +187,6 @@ protected:
   Double_t fRPlaneMax[fNMaxPlanes];     // max radius of the MFT planes (the support)
   Double_t fRPlaneMin[fNMaxPlanes];     // min radius of the MFT planes (the support)
 
-  TH1D *fHistPtSpectrometer, *fHistPtMuonTrackWithGoodMatch, *fHistPtMuonTrackWithBadMatch;     //
   TH1D *fHistRadiusEndOfAbsorber, *fHistNTracksAfterExtrapolation[fNMaxPlanes];		        //
   TH1D *fHistNGoodClustersForFinalTracks, *fHistResearchRadius[fNMaxPlanes];			//
   TH1D *fHistDistanceGoodClusterFromTrackMinusDistanceBestClusterFromTrackAtLastPlane;		//
