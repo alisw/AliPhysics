@@ -604,6 +604,7 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const {
  
   for (Int_t i=0; i<ntrk; i++) {
     const AliESDfriendTrack *f=ev->GetTrack(i);
+    if (!f) {AliFatal(Form("NULL pointer for ESD track %d",i));}
     GetTrack(i)->SetFriendTrack(f);
   }
 }
@@ -781,6 +782,7 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
   if (rm==last) return kTRUE;
 
   AliESDtrack *t=GetTrack(last);
+  if (!t) {AliFatal(Form("NULL pointer for ESD track %d",last));}
   t->SetID(rm);
   new (a[rm]) AliESDtrack(*t);
   delete a.RemoveAt(last);
@@ -937,6 +939,7 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
   Int_t nTracks=GetNumberOfTracks();
   for (Int_t i=nTracks-1; i>=0; i--) {
     AliESDtrack *track=GetTrack(i);
+    if (!track) {AliFatal(Form("NULL pointer for ESD track %d",i));}
     Float_t xy,z; track->GetImpactParameters(xy,z);
     if ((TMath::Abs(xy) > dmax) || (vtxOK && (TMath::Abs(z) > zmax))) {
       if (RemoveTrack(i)) rc=kTRUE;
@@ -1186,6 +1189,7 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
 
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=GetTrack(i);
+    if (!t) {AliFatal(Form("NULL pointer for ESD track %d",i));}
     const AliESDfriendTrack *f=t->GetFriendTrack();
     ev->AddTrack(f);
 
@@ -1831,6 +1835,7 @@ void AliESDEvent::EstimateMultiplicity(Int_t &tracklets, Int_t &trITSTPC, Int_t 
   ntr = GetNumberOfTracks();
   for (int itr=ntr;itr--;) {
     AliESDtrack *t = GetTrack(itr);
+    if (!t) {AliFatal(Form("NULL pointer for ESD track %d",itr));}
     if (TMath::Abs(t->Eta())>eta) continue;
     if (!t->IsOn(AliESDtrack::kITSin)) continue;
     if (useDCAFlag && t->IsOn(AliESDtrack::kMultSec))  continue;
