@@ -69,6 +69,10 @@ protected:
 		    TH1*                        hist) const;
 
   Bool_t fDoScale;
+private:
+  AliFMDQAChecker(const AliFMDQAChecker& qac); // cpy ctor   
+  AliFMDQAChecker &operator=(const AliFMDQAChecker& qac); // assignment operator
+
   ClassDef(AliFMDQAChecker,0)  // Yves? what to do? 
 };
 

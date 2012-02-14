@@ -29,6 +29,7 @@ public:
 
 private:
   AliPMDQAChecker(const AliPMDQAChecker& qac); // cpy ctor   
+  AliPMDQAChecker &operator=(const AliPMDQAChecker& qac); // assignment operator
   
   ClassDef(AliPMDQAChecker,1)  // description 
 
