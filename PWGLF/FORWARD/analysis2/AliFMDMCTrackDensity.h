@@ -138,7 +138,8 @@ protected:
 		     Double_t       vz,
 		     UShort_t       nC, 
 		     UShort_t       nT,
-		     AliESDFMD&     output) const;
+		     AliESDFMD&     output,
+                     Double_t       w) const;
   /** 
    * Get incident angle of this track reference
    * 
@@ -158,6 +159,21 @@ protected:
    * @return Pointer to mother or null 
    */
   const AliMCParticle* GetMother(Int_t iTr, const AliMCEvent& event) const;
+  /** 
+   * Calculate flow weight 
+   *
+   * @param eta  Pseudo rapidity 
+   * @param pt   Transverse momemtum 
+   * @param b    Impact parameter
+   * @param phi  Azimuthal angle 
+   * @param rp   Reaction plance angle 
+   * @param id   Particle PDG code
+   *
+   * @return Flow weight for the particle
+   */
+  Double_t CalculateWeight(Double_t eta, Double_t pt, Double_t b, 
+			   Double_t phi, Double_t rp, Int_t id) const;
+
   Bool_t   fUseOnlyPrimary;       // Only use primaries 
   UShort_t fMaxConsequtiveStrips; // Max 'cluster' size
   TH1D*    fNr;                   // Number of track-refs per cluster

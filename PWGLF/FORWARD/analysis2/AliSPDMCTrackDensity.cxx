@@ -10,6 +10,9 @@
 #include <TList.h>
 #include <TROOT.h>
 #include <iostream>
+#include "AliGenHijingEventHeader.h"
+#include <TF1.h>
+#include <TGraph.h>
 
 //____________________________________________________________________
 AliSPDMCTrackDensity::AliSPDMCTrackDensity()
@@ -117,7 +120,8 @@ AliSPDMCTrackDensity::StoreParticle(AliMCParticle* particle,
 				    const AliMCParticle* mother, 
 				    Int_t          refNo,
 				    Double_t       vz, 
-				    TH2D&     output) const
+				    TH2D&     output,
+                                    Double_t  w) const
 {
   // Store a particle. 
   if (refNo < 0) return;
@@ -136,14 +140,14 @@ AliSPDMCTrackDensity::StoreParticle(AliMCParticle* particle,
   Double_t et = -TMath::Log(TMath::Tan(th/2));
   Double_t ph = TMath::ATan2(y,x);
   if (ph < 0) ph += 2*TMath::Pi();
-  output.Fill(et,ph);
+  output.Fill(et,ph,w);
 
   const AliMCParticle* mp = (mother ? mother : particle);
   Double_t dEta = mp->Eta() - et;
   Double_t dPhi = (mp->Phi() - ph) * 180 / TMath::Pi();
   if (dPhi >  180) dPhi -= 360;
   if (dPhi < -180) dPhi += 360;
-  fBinFlow->Fill(dEta, dPhi);
+  fBinFlow->Fill(dEta, dPhi,w);
 }
 
 
@@ -166,6 +170,7 @@ AliSPDMCTrackDensity::GetMother(Int_t     iTr,
   return 0;
 }  
 
+// #define USE_FLOW_WEIGHTS
 //____________________________________________________________________
 Bool_t
 AliSPDMCTrackDensity::Calculate(const AliMCEvent& event, 
@@ -187,6 +192,13 @@ AliSPDMCTrackDensity::Calculate(const AliMCEvent& event,
   // Return:
   //    True on succes, false otherwise 
   //
+
+#ifdef USE_FLOW_WEIGHTS
+  AliGenHijingEventHeader* hd = dynamic_cast<AliGenHijingEventHeader*>
+                (event.GenEventHeader());
+  Double_t rp = (hd ? hd->ReactionPlaneAngle() : 0.);
+  Double_t b = (hd ? hd->ImpactParameter() : -1 );
+#endif
 
   AliStack* stack = const_cast<AliMCEvent&>(event).Stack();
   Int_t nTracks   = stack->GetNtrack();
@@ -243,13 +255,127 @@ AliSPDMCTrackDensity::Calculate(const AliMCEvent& event,
       // Only fill first reference 
       if (nRef == 1) { 
 	const AliMCParticle* mother = GetMother(iTr, event);
-	StoreParticle(particle, mother, iTrRef, vz, output);
+#ifdef USE_FLOW_WEIGHTS
+        Double_t phi = (mother ? mother->Phi() : particle->Phi());
+        Double_t eta = (mother ? mother->Eta() : particle->Eta());
+        Double_t pt  = (mother ? mother->Pt() : particle->Pt());
+        Int_t    id  = (mother ? mother->PdgCode() : 2212);
+	Double_t weight = CalculateWeight(eta, pt, b, phi, rp, id);
+#else
+        Double_t weight = 1.; 
+#endif
+	StoreParticle(particle, mother, iTrRef, vz, output, weight);
       }
     }
     fNRefs->Fill(nRef);
   }
   return kTRUE;
 }
+
+//____________________________________________________________________
+Double_t
+AliSPDMCTrackDensity::CalculateWeight(Double_t eta, Double_t pt, Double_t b, 
+				      Double_t phi, Double_t rp, Int_t id) const
+{
+  static TF1 gaus = TF1("gaus", "gaus", -6, 6);
+  gaus.SetParameters(0.1, 0., 9);
+  //  gaus.SetParameters(0.1, 0., 3);
+  //  gaus.SetParameters(0.1, 0., 15);
+  
+  const Double_t xCumulant2nd4050ALICE[] = {0.00, 0.25, 0.350,
+					    0.45, 0.55, 0.650, 
+					    0.75, 0.85, 0.950,
+					    1.10, 1.30, 1.500,
+					    1.70, 1.90, 2.250,
+					    2.75, 3.25, 3.750,
+					    4.50};
+  const Double_t yCumulant2nd4050ALICE[] = {0.00000, 0.043400,
+					    0.059911,0.073516,
+					    0.089756,0.105486,
+					    0.117391,0.128199,
+					    0.138013,0.158271,
+					    0.177726,0.196383,
+					    0.208277,0.216648,
+					    0.242954,0.249961,
+					    0.240131,0.269006,
+					    0.207796};
+  const Int_t nPointsCumulant2nd4050ALICE = 
+    sizeof(xCumulant2nd4050ALICE)/sizeof(Double_t);                                      
+  static TGraph alicePointsPt2(nPointsCumulant2nd4050ALICE,xCumulant2nd4050ALICE,yCumulant2nd4050ALICE);
+#if 0
+  const Double_t xCumulant4th3040ALICE[] = {0.00,0.250,0.35,
+					    0.45,0.550,0.65,
+					    0.75,0.850,0.95,
+					    1.10,1.300,1.50,
+					    1.70,1.900,2.25,
+					    2.75,3.250,3.75,
+					    4.50,5.500,7.00,
+					    9.000000};
+  const Double_t yCumulant4th3040ALICE[] = {0.000000,0.037071,
+					    0.048566,0.061083,
+					    0.070910,0.078831,
+					    0.091396,0.102026,
+					    0.109691,0.124449,
+					    0.139819,0.155561,
+					    0.165701,0.173678,
+					    0.191149,0.202015,
+					    0.204540,0.212560,
+					    0.195885,0.000000,
+					    0.000000,0.000000};
+#endif
+  const Double_t xCumulant4th4050ALICE[] = {0.00,0.25,0.350,
+					    0.45,0.55,0.650,
+					    0.75,0.85,0.950,
+					    1.10,1.30,1.500,
+					    1.70,1.90,2.250,
+					    2.75,3.25,3.750,
+					    4.50};
+  const Double_t yCumulant4th4050ALICE[] = {0.000000,0.038646,
+					    0.049824,0.066662,
+					    0.075856,0.081583,
+					    0.099778,0.104674,
+					    0.118545,0.131874,
+					    0.152959,0.155348,
+					    0.169751,0.179052,
+					    0.178532,0.198851,
+					    0.185737,0.239901,
+					    0.186098};
+  const Int_t nPointsCumulant4th4050ALICE = 
+    sizeof(xCumulant4th4050ALICE)/sizeof(Double_t);   
+  static TGraph alicePointsPt4(nPointsCumulant4th4050ALICE, 
+			       xCumulant4th4050ALICE, 
+			       yCumulant4th4050ALICE);
+
+  const Double_t xCumulant4thTPCrefMultTPConlyAll[] = {1.75,
+						       4.225,
+						       5.965,
+						       7.765,
+						       9.215,
+						       10.46,
+						       11.565,
+						       12.575};
+  const Double_t yCumulant4thTPCrefMultTPConlyAll[] = {0.017855,0.032440,
+						       0.055818,0.073137,
+						       0.083898,0.086690,
+						       0.082040,0.077777};
+  const Int_t nPointsCumulant4thTPCrefMultTPConlyAll = 
+    sizeof(xCumulant4thTPCrefMultTPConlyAll)/sizeof(Double_t);
+  TGraph aliceCent(nPointsCumulant4thTPCrefMultTPConlyAll,
+		   xCumulant4thTPCrefMultTPConlyAll,
+		   yCumulant4thTPCrefMultTPConlyAll);
+
+
+  Double_t weight = (20. * gaus.Eval(eta) * (alicePointsPt2.Eval(pt) * 0.5 + 
+					     alicePointsPt4.Eval(pt) * 0.5) 
+		     * (aliceCent.Eval(b) / aliceCent.Eval(10.46)) 
+		     * 2. * TMath::Cos(2. * (phi - rp)));
+  if      (TMath::Abs(id) == 211)  weight *= 1.3; //pion flow
+  else if (TMath::Abs(id) == 2212) weight *= 1.0;  //proton flow
+  else                             weight *= 0.7;
+  
+  return weight;
+}
+
 //____________________________________________________________________
 void
 AliSPDMCTrackDensity::Print(Option_t* /*option*/) const 
