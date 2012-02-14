@@ -151,6 +151,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Set the debug level of a single algorithm 
   task->GetSharingFilter().SetDebug(0);
 
+  // --- Eventplane Finder -------------------------------------------
+  task->GetEventPlaneFinder().SetUsePhiWeights(false);
+
   // --- Set limits on fits the energy -------------------------------
   // Maximum relative error on parameters 
   AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;

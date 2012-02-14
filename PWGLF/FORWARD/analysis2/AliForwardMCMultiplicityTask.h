@@ -21,7 +21,9 @@
 #include "AliFMDMCCorrector.h"
 #include "AliFMDHistCollector.h"
 #include "AliAODForwardMult.h"
+#include "AliAODForwardEP.h"
 #include "AliFMDEnergyFitter.h"
+#include "AliFMDEventPlaneFinder.h"
 #include <AliESDFMD.h>
 class AliESDEvent;
 class TH2D;
@@ -169,6 +171,18 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   const AliFMDHistCollector& GetHistCollector() const { return fHistCollector; }
+   /**
+   * Get reference to the EventPlaneFinder algorithm 
+   * 
+   * @return Reference to AliFMDEventPlaneFinder object 
+   */
+  AliFMDEventPlaneFinder& GetEventPlaneFinder() { return fEventPlaneFinder; }
+  /**
+   * Get reference to the EventPlaneFinder algorithm 
+   * 
+   * @return Reference to AliFMDEventPlaneFinder object 
+   */
+  const AliFMDEventPlaneFinder& GetEventPlaneFinder() const { return fEventPlaneFinder; }
   /** 
    * @} 
    */
@@ -189,6 +203,7 @@ protected:
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
+  AliAODForwardEP        fAODEP;       // Output object
   AliESDFMD              fMCESDFMD;     // MC 'Sharing corrected' ESD object
   AliForwardUtil::Histos fMCHistos;     // MC Cache histograms 
   AliAODForwardMult      fMCAODFMD;     // MC Output object
@@ -201,6 +216,7 @@ protected:
   AliFMDMCDensityCalculator fDensityCalculator; // Algorithm
   AliFMDMCCorrector         fCorrections;       // Algorithm
   AliFMDHistCollector       fHistCollector;     // Algorithm
+  AliFMDEventPlaneFinder    fEventPlaneFinder;  // Algorithm
 
   TList* fList; // Output list 
 

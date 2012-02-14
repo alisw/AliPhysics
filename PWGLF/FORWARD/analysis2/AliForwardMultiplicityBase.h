@@ -22,6 +22,7 @@ class AliFMDDensityCalculator;
 class AliFMDCorrector;
 class AliFMDHistCollector;
 class AliForwardCorrectionManager;
+class AliFMDEventPlaneFinder;
 class AliESDEvent;
 class TH2D;
 class TList;
@@ -234,6 +235,19 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   virtual const AliFMDHistCollector& GetHistCollector() const = 0;
+   /**
+   * Get reference to the EventPlaneFinder algorithm 
+   * 
+   * @return Reference to AliFMDEventPlaneFinder object 
+   */
+  virtual AliFMDEventPlaneFinder& GetEventPlaneFinder() = 0;
+  /**
+   * Get reference to the EventPlaneFinder algorithm 
+   * 
+   * @return Reference to AliFMDEventPlaneFinder object 
+   */
+  virtual const AliFMDEventPlaneFinder& GetEventPlaneFinder() const = 0;
+
   /** 
    * @} 
    */

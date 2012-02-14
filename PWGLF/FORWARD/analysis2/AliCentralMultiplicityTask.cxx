@@ -188,7 +188,7 @@ AliCentralMultiplicityTask::GetESDEvent()
 
   fNClusterTracklet = new TH2D("nClusterVsnTracklet", 
 			       "Total number of cluster vs number of tracklets",
-			       100, 0, 100, 100, 0, 100);
+			       100, 0, 10000, 100, 0, 10000);
   fNClusterTracklet->SetDirectory(0);
   fNClusterTracklet->SetXTitle("# of free clusters");
   fNClusterTracklet->SetYTitle("# of tracklets");
