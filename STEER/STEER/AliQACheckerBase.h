@@ -33,8 +33,6 @@ class AliQACheckerBase: public TNamed {
 
 public:
   AliQACheckerBase(const char * name = "", const char * title = "") ;          // ctor
-  AliQACheckerBase(const AliQACheckerBase& qac) ;   
-  AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
   virtual ~AliQACheckerBase() ; // dtor
  
   void           DeleteImages() ;  
@@ -70,6 +68,8 @@ protected:
   TList       * fExternParamList; //List of external parameters (TParameter<double>)  
 
 private:
+  AliQACheckerBase(const AliQACheckerBase& qac) ;   
+  AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
    void PrivateCheck(Double_t * rv, AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) ;
 
   ClassDef(AliQACheckerBase,3)  // description 

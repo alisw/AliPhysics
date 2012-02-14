@@ -28,13 +28,13 @@ class AliCorrQAChecker: public AliQACheckerBase {
 
 public:
   AliCorrQAChecker() : AliQACheckerBase("Corr","Corr Quality Assurance Data Maker") {;}          // ctor
-  AliCorrQAChecker(const AliCorrQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  virtual ~AliCorrQAChecker() {;} // dtor
 
   virtual void   Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/, AliDetectorRecoParam * /*recoParam*/) ;
 
 
 private:
+  AliCorrQAChecker(const AliCorrQAChecker& qac); // cpy ctor   
+  virtual ~AliCorrQAChecker(); // dtor
   Double_t * CheckN(AliQAv1::ALITASK_t index, TNtupleD ** nData, AliDetectorRecoParam * recoParam) ; 
 
   ClassDef(AliCorrQAChecker,1)  // description 

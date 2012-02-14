@@ -89,44 +89,6 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
 }
 
 //____________________________________________________________________________ 
-AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qac) :
-  TNamed(qac.GetName(), qac.GetTitle()),
-  fDataSubDir(qac.fDataSubDir), 
-  fRefSubDir(qac.fRefSubDir), 
-  fRefOCDBSubDir(qac.fRefOCDBSubDir), 
-  fLowTestValue(new Float_t[AliQAv1::kNBIT]),
-  fUpTestValue(new Float_t[AliQAv1::kNBIT]), 
-  fImage(new TCanvas*[AliRecoParam::kNSpecies]),  
-  fPrintImage(kTRUE), 
-  fExternParamList(new TList())  
-{
-  //copy ctor
-  for (Int_t index = 0 ; index < AliQAv1::kNBIT ; index++) {
-    fLowTestValue[index]  = qac.fLowTestValue[index] ; 
-    fUpTestValue[index] = qac.fUpTestValue[index] ; 
-  }
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      fImage[specie] = qac.fImage[specie] ; 
-      fRefOCDBSubDir[specie] = qac.fRefOCDBSubDir[specie] ; 
-    }
-  if (qac.fExternParamList) {
-    TIter next(qac.fExternParamList) ; 
-    TParameter<double> * p ; 
-    while ( (p = (TParameter<double>*)next()) )
-      fExternParamList->Add(p) ;
-  }
-}
-
-//____________________________________________________________________________
-AliQACheckerBase& AliQACheckerBase::operator = (const AliQACheckerBase& qac )
-{
-  // Equal operator.
-  this->~AliQACheckerBase();
-  new(this) AliQACheckerBase(qac);
-  return *this;
-}
-
-//____________________________________________________________________________ 
 AliQACheckerBase::~AliQACheckerBase()
 {
   delete [] fLowTestValue ; 
