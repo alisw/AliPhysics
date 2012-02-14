@@ -70,34 +70,6 @@ fSSDChecker(0)  // SSD Checker
 }
 
 //____________________________________________________________________________
-AliITSQAChecker::AliITSQAChecker(const AliITSQAChecker& qac):
-AliQACheckerBase(qac.GetName(), qac.GetTitle()), 
-fkOnline(qac.fkOnline), 
-fDet(qac.fDet), 
-fLDC(qac.fLDC), 
-fSPDOffset(qac.fSPDOffset), 
-fSDDOffset(qac.fSDDOffset), 
-fSSDOffset(qac.fSSDOffset), 
-fSPDHisto(qac.fSPDHisto),
-fSDDHisto(qac.fSDDHisto),
-fSSDHisto(qac.fSSDHisto),
-fSPDChecker(qac.fSPDChecker), 
-fSDDChecker(qac.fSDDChecker), 
-fSSDChecker(qac.fSSDChecker)
-{
-  // copy constructor
-  AliError("Copy should not be used with this class\n");
-}
-//____________________________________________________________________________
-AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
-  // assignment operator
-  this->~AliITSQAChecker();
-  new(this)AliITSQAChecker(qac);
-  return *this;
-}
-
-
-//____________________________________________________________________________
 AliITSQAChecker::~AliITSQAChecker(){
   // destructor
   if(fSPDChecker)delete fSPDChecker;

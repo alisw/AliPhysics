@@ -25,10 +25,10 @@ class AliPMDQAChecker: public AliQACheckerBase {
 
 public:
   AliPMDQAChecker() : AliQACheckerBase("PMD","PMD Quality Assurance Data Maker") {;}          // ctor
-  AliPMDQAChecker(const AliPMDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliPMDQAChecker() {;} // dtor
 
 private:
+  AliPMDQAChecker(const AliPMDQAChecker& qac); // cpy ctor   
   
   ClassDef(AliPMDQAChecker,1)  // description 
 

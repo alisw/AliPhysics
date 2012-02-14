@@ -25,8 +25,6 @@ class AliT0QAChecker: public AliQACheckerBase {
 
 public:
   AliT0QAChecker();    
-  AliT0QAChecker(const AliT0QAChecker& qac);
-  AliT0QAChecker& operator=(const AliT0QAChecker& qac);  
   // dtor
   virtual ~AliT0QAChecker();
   Double_t CheckRaw(TObjArray *listrec ) const ;
@@ -34,6 +32,8 @@ public:
    
  
 private:
+  AliT0QAChecker(const AliT0QAChecker& qac);
+  AliT0QAChecker& operator=(const AliT0QAChecker& qac);  
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
   
   ClassDef(AliT0QAChecker,1)  // description 

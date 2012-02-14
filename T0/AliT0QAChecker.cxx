@@ -64,22 +64,6 @@ AliQACheckerBase("T0","T0 Quality Assurance Checker")
 }
 
 //____________________________________________________________________________
-AliT0QAChecker::AliT0QAChecker(const AliT0QAChecker& qac):
-  AliQACheckerBase(qac.GetName(), qac.GetTitle()) 
-{
-  // copy constructor
-  AliError("Copy should not be used with this class\n");
-}
-//____________________________________________________________________________
-AliT0QAChecker& AliT0QAChecker::operator=(const AliT0QAChecker& qac){
-  // assignment operator
-  this->~AliT0QAChecker();
-  new(this)AliT0QAChecker(qac);
-  return *this;
-}
-
-
-//____________________________________________________________________________
 AliT0QAChecker::~AliT0QAChecker(){
   // destructor
 

@@ -31,8 +31,6 @@ class AliITSQAChecker: public AliQACheckerBase {
 
 public:
   AliITSQAChecker(Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0) ;         // ctor
-  AliITSQAChecker(const AliITSQAChecker& qac);
-  AliITSQAChecker& operator=(const AliITSQAChecker& qac);  
   virtual ~AliITSQAChecker();// dtor
   void SetMode(Bool_t kMode) { fkOnline = kMode; }
   void SetSubDet(Short_t subdet) { fDet = subdet; }
@@ -66,6 +64,8 @@ protected:
   virtual void SetSSDHisto(Int_t SSDhisto){fSSDHisto = SSDhisto;} ;
 
 private:
+  AliITSQAChecker(const AliITSQAChecker& qac);
+  AliITSQAChecker& operator=(const AliITSQAChecker& qac);  
 
   Bool_t  fkOnline; //online=kTRUE offline=kFALSE
   Short_t fDet;   //0=all 1=SPD 2=SDD 3=SSD

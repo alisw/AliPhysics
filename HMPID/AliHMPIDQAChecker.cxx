@@ -62,20 +62,6 @@ fQARefRec(NULL)
 }
 
 //_________________________________________________________________
-AliHMPIDQAChecker::AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) : 
-AliQACheckerBase(qac.GetName(), qac.GetTitle()), 
-fNoReference(qac.fNoReference), 
-fQARefRec(NULL)
-{
-  fNoReference = qac.fNoReference ; 
-  if (qac.fQARefRec) {
-    fQARefRec = new TObjArray(qac.fQARefRec->GetEntries()) ; 
-    for (Int_t index=0; index < qac.fQARefRec->GetEntries(); index++) 
-      fQARefRec->Add(qac.fQARefRec->At(index)) ; 
-  }
-}
-
-//_________________________________________________________________
 AliHMPIDQAChecker::~AliHMPIDQAChecker() 
 {
   if(fQARefRec) { fQARefRec->Delete() ;   delete fQARefRec ; }

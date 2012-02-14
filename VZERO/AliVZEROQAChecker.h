@@ -27,7 +27,6 @@ class AliVZEROQAChecker: public AliQACheckerBase {
 
 public:
   AliVZEROQAChecker() : AliQACheckerBase("VZERO","VZERO Quality Assurance Data Checker") {;}          // ctor
-  AliVZEROQAChecker(const AliVZEROQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliVZEROQAChecker() {;} // destructor
   
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det) ; 
@@ -40,6 +39,7 @@ protected:
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;
   
 private:
+  AliVZEROQAChecker(const AliVZEROQAChecker& qac); // cpy ctor   
   AliVZEROQAChecker &operator=(const AliVZEROQAChecker& qac); // assignment operator
   
   ClassDef(AliVZEROQAChecker,1)  // description 

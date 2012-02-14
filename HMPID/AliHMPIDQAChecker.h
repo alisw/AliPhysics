@@ -27,7 +27,6 @@ class AliHMPIDQAChecker: public AliQACheckerBase {
 
 public:
   AliHMPIDQAChecker() ;          // ctor
-  AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) ; // cpy ctor   
   virtual ~AliHMPIDQAChecker() ; // dtor
   
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
@@ -37,6 +36,7 @@ public:
   Double_t CheckSim(TObjArray *listsim, TObjArray *listref) const ;
 
 private:
+  AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) ; // cpy ctor   
   AliHMPIDQAChecker& operator= (const AliHMPIDQAChecker&); // Not implemented
   Bool_t        fNoReference ; //! flag telling if reference data hqve been found or not  
   TObjArray *   fQARefRec ;    //! Reference data from OCDB 

@@ -19,8 +19,6 @@ class AliZDCQAChecker: public AliQACheckerBase {
 
 public:
   AliZDCQAChecker() : AliQACheckerBase("ZDC","ZDC Quality Assurance Data Maker") {;}          // ctor
-  AliZDCQAChecker(const AliZDCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliZDCQAChecker& operator= (const AliZDCQAChecker & /*checker*/) {return *this;}
   virtual ~AliZDCQAChecker() {;} // dtor
 
  protected:
@@ -28,7 +26,10 @@ public:
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list,
       const AliDetectorRecoParam * /*recoParam*/); 
   void SetupHisto(const TObjArray& messages, TH1& histo, Float_t& code);
-  
+
+ private:  
+  AliZDCQAChecker(const AliZDCQAChecker& qac); // cpy ctor   
+  AliZDCQAChecker& operator= (const AliZDCQAChecker & /*checker*/);
   ClassDef(AliZDCQAChecker,1)  // description 
 
 };
