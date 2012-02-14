@@ -215,7 +215,7 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
 
   fLambdaBarFromXiBar=new TH3F("fLambdaBarFromXiBar","L_{T} vs p_{T} vs p_{T} of anti-\\Xi for anti-\\Lambda from anti-\\Xi",
   nbins,pMin,pMax,nbins,lMin,lMax,33,pMin,pMax+2);
-  fOutput->Add(fLambdaFromXi);
+  fOutput->Add(fLambdaBarFromXiBar);
 
   fXiBarM  = 
   new TH2F("fXiBarM", "anti-\\Xi mass distribution", 50, 1.271, 1.371,12,pMin,pMax+2);
