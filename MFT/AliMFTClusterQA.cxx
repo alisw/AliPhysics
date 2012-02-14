@@ -41,7 +41,7 @@ AliMFTClusterQA::AliMFTClusterQA():
   
   // default constructor
 
-  for (Int_t iPlane=0; iPlane<fMaxNPlanesMFT; iPlane++) {
+  for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) {
     fHistNClustersPerEvent[iPlane] = 0;
     fHistNPixelsPerCluster[iPlane] = 0;
     fHistClusterSizeX[iPlane] = 0; 
