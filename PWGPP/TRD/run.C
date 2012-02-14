@@ -103,9 +103,9 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
   if(gSystem->Load("libTENDER.so")<0) return;
+  if(gSystem->Load("libCORRFW.so")<0) return;
   if(gSystem->Load("libPWGPP.so")<0) return;
   if(gSystem->Load("libPWGmuon.so")<0) return;
-  if(gSystem->Load("libCORRFW.so")<0) return;
 
   Bool_t fHasMCdata = UseMC(optList);
   Bool_t fHasFriends = UseFriends(optList);
@@ -144,7 +144,7 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
     AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
     if (!taskCDB) return;
     taskCDB->SetRunNumber(run);
-  }
+  } else Warning("run.C", "OCDB connection via AliTRDinfoGen.");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
   if(!AddTrainPerformanceTRD(optList)) {

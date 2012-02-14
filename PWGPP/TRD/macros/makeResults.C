@@ -47,6 +47,7 @@
 // gSystem->Load("libTENDER.so");
 // gSystem->Load("libPWGPP.so");
 // gSystem->Load("libCORRFW.so");
+// gSystem->Load("libPWGmuon.so");
 // gSystem->Load("libNetx.so") ;
 // gSystem->Load("libRAliEn.so");
 
