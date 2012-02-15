@@ -19,7 +19,8 @@ void rec(const char *filename="raw.root")
   AliReconstruction rec;
 
   // QA options
-  rec.SetRunQA(":") ;
+  
+  rec.SetRunQA(":");
   rec.SetRunGlobalQA(kFALSE);
   rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
   rec.SetRunPlaneEff(kTRUE);

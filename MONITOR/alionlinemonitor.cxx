@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     TString sqlQuery;
     TTimeStamp ts;
     sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL AND partition REGEXP 'PHYSICS.*'",
-		  (UInt_t)ts.GetSec()-86400);
+      (UInt_t)ts.GetSec()-86400);
     TSQLResult* result = server->Query(sqlQuery);
     if (!result)
     {
@@ -104,16 +104,17 @@ int main(int argc, char **argv)
     {
       for (Int_t iRow = 0; iRow < result->GetRowCount(); iRow++)
       {
-	TSQLRow* row = result->Next();
-	TString runStr = row->GetField(0);
-	if (runStr.IsDigit())
-	  win->StartOfRun(runStr.Atoi());
-	delete row;
+        TSQLRow* row = result->Next();
+        TString runStr = row->GetField(0);
+        if (runStr.IsDigit())
+          win->StartOfRun(runStr.Atoi());
+        delete row;
       }
     }
     delete result;
   }
 
   app.Run(kTRUE);
+  
   return 0;
 }

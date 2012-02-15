@@ -18,5 +18,7 @@ int main(int argc, char **argv)
   mf->MapWindow();
 
   app.Run(kTRUE);
+  
+  app.Terminate(0);
   return 0;
 }

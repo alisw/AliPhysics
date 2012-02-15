@@ -24,6 +24,7 @@ class TGTextButton;
 class TGCheckButton;
 class TGListBox;
 
+
 //______________________________________________________________________________
 // Short description of AliOnlineReco
 //
@@ -34,7 +35,7 @@ class AliOnlineReco : public TGMainFrame
 public:
   AliOnlineReco();
   virtual ~AliOnlineReco();
-
+  
   AliDimIntNotifier* GetSOR(Int_t i) const { return fSOR[i]; }
   AliDimIntNotifier* GetEOR(Int_t i) const { return fEOR[i]; }
 
@@ -56,7 +57,8 @@ public:
   // Handlers of OS signals.
   //------------------------------------------------------------------------------
 
-  void ChildProcTerm(Int_t pid, Int_t status);
+  void ChildProcTerm(Int_t pid, Int_t status); // *SIGNAL*
+  void ExitLoopChildProcTerm();
 
   //------------------------------------------------------------------------------
   // Handlers of button signals.
@@ -100,7 +102,8 @@ private:
 
   mIntInt_t      fRun2PidMap;  // Map from run-number to process id.
 
-  Bool_t         fTestMode;    // Flag for test mode (run xclock instead of alieve).
+  Bool_t         fTestMode;    // Flag for test mode (run alitestproc instead of alieve).
+  Bool_t         fDoExit;     // Flag for exit mode
 
   mIntInt_i FindMapEntryByPid(Int_t pid);
 

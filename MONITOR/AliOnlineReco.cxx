@@ -19,6 +19,7 @@
 #include <TGButton.h>
 
 #include <TInterpreter.h>
+#include <TROOT.h>
 
 #include <unistd.h>
 #include <signal.h>
@@ -35,7 +36,8 @@ AliOnlineReco::AliOnlineReco() :
   fRunList(0), fAutoRun(0), fStartButt(0), fStopButt(0), fExitButt(0),
   fAutoRunTimer(0), fAutoRunScheduled(0), fAutoRunRunning(0),
   fRun2PidMap(),
-  fTestMode(kFALSE)
+  fTestMode(kFALSE),
+  fDoExit(kFALSE)
 {
   // Constructor.
 
@@ -92,6 +94,9 @@ AliOnlineReco::AliOnlineReco() :
   // OS Signal handlers
   // ROOT's TSignalHAndler works not SIGCHLD ...
   AliChildProcTerminator::Instance()->Connect("ChildProcTerm(Int_t,Int_t)", "AliOnlineReco", this, "ChildProcTerm(Int_t,Int_t)");
+  
+  // we need this by OnExit() to kill next process child after another
+  Connect("ChildProcTerm(Int_t,Int_t)", "AliOnlineReco", this, "ExitLoopChildProcTerm()");
 }
 
 AliOnlineReco::~AliOnlineReco()
@@ -223,7 +228,7 @@ void AliOnlineReco::StartAliEve(mIntInt_i& mi)
         if (recMacroPath.IsNull()) {
           recMacroPath = "$ALICE_ROOT/MONITOR/rec.C";
         }
-
+        
         s = execlp("alieve",
              "alieve",
              "-q",
@@ -387,7 +392,7 @@ void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
       fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED [%d]", run, status), run);
     }
     fRunList->Layout();
-    i->second = 0;
+    fRun2PidMap.erase(i);
 
     if (fAutoRunRunning == run && fAutoRun->IsOn())
     {
@@ -403,6 +408,14 @@ void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
   {
     Warning("ChildProcTerm", "Process with pid=%d not registered.", pid);
   }
+ 
+  Emit("ChildProcTerm(Int_t, Int_t)");
+}
+
+void AliOnlineReco::ExitLoopChildProcTerm()
+{
+  if(fDoExit)
+    DoExit();
 }
 
 //------------------------------------------------------------------------------
@@ -463,16 +476,59 @@ void AliOnlineReco::DoStop()
 
 void AliOnlineReco::DoExit()
 {
-  // Slot called from Exit button.
-
-  gSystem->ExitLoop();
+  // Slot called from Exit button or CloseWindow.
+  
+  // kill all started processes
+  Int_t pid;
+  
+  // disable all widgets & AutoRunTimer
+  // so that user does not initiate other GUI signals
+  if(!fDoExit){
+    fAutoRun->SetEnabled(kFALSE);
+    fStartButt->SetEnabled(kFALSE);
+    fStopButt->SetEnabled(kFALSE);
+    fExitButt->SetEnabled(kFALSE);
+      
+    StopAutoRunTimer();
+    fDoExit = kTRUE;
+    gROOT->SetInterrupt(kTRUE);
+  }
+  
+  gSystem->ProcessEvents();
+  
+  // clear runs std::map
+  for(mIntInt_i i = fRun2PidMap.begin(); i != fRun2PidMap.end(); i++)
+  {
+    pid = i->second;
+    
+    if(pid==0)
+    {
+      fRun2PidMap.erase(i); // if process is not started just remove it from map
+    }
+    else
+    {
+      // send kill signal to started process
+      KillPid(pid);
+      
+      // we need to exit loop to let ROOT process events list
+      // after kill signal above, process pid starts signal AliChildProcTerminator::ChildProcTerm(int, int)
+      // and arrives in AliOnlineReco::ChildProcTerm(int, int)
+      // after this we return in DoExit() to process next run
+      break;
+    }
+    
+  }
+  
+  // we can exit after we killed all processes
+  if(fRun2PidMap.empty() ) gSystem->ExitLoop();
 }
 
 void AliOnlineReco::CloseWindow()
 {
   // Virtual method called when window-manager close-window button is pressed.
-
-  gSystem->ExitLoop();
+  
+  DoExit();
+  
 }
 
 Int_t AliOnlineReco::RetrieveGRP(UInt_t run, TString &gdc)
