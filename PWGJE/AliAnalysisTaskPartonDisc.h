@@ -100,6 +100,7 @@ class AliAnalysisTaskPartonDisc : public AliAnalysisTaskSE {
   virtual void  FillPerpConeHisto(TH3F *currenthisto, Int_t ntracks, AliAODEvent *aode, Int_t CentralityBin, Int_t pTBin);
   virtual void  ForceSkipSingleTrackJets(const Bool_t flagForceSJ) {fForceSkipSJ = flagForceSJ;};
   Bool_t        IsEqualRel(Double_t vA, Double_t vB);
+  virtual void  SetEnableJetEtaRestriction(Bool_t flagEnableJetEtaRes) {fIncreasingExcl = flagEnableJetEtaRes;}
 
  private:
   AliAODEvent *fAOD;         //! AOD object
@@ -169,7 +170,7 @@ class AliAnalysisTaskPartonDisc : public AliAnalysisTaskSE {
   Bool_t       fUseAODJetInput;     //  take MC from input AOD not from output AOD
   Double_t     fMinTrackPtInNTX;    //  Minimum track pT taken into the NTX calculation
   Double_t     fMaxTrackPtInNTX;    //  Maximum track pT taken into the NTX calculation
-  TH2F        *fMinTrackPtInNTXh[2];//! Histo to save fMinTrackPtInNTX as a function of jet pT
+  TH3F        *fMinTrackPtInNTXh[2];//! Histo to save fMinTrackPtInNTX as a function of jet pT
   TH2F        *fMaxTrackPtInNTXh[2];//! Histo to save fMaxTrackPtInNTX as a function of jet pT
   TH2F        *fSCM[12];            //! Second central moment as a function of jet pt (MC)
   TH2F        *fSCMRD;              //! Second central moment as a function of jet pt (Real Data)
@@ -257,7 +258,7 @@ class AliAnalysisTaskPartonDisc : public AliAnalysisTaskSE {
   Double_t     fIncExcR;                    //  Increase in the exclusion radius value
   Bool_t       fForceNotTR;                 //  Force NOT to use track references
   Bool_t       fNotExtDiJEx;                //  Not extend the exclusion in the dijet area, old behaviour
-  TH2F        *fMinTrackPtInNTXRecalc;      //! Histo to save fMinTrackPtInNTX after recalculation as a function of jet pT
+  TH3F        *fMinTrackPtInNTXRecalc;      //! Histo to save fMinTrackPtInNTX after recalculation as a function of jet pT
   TH2F        *fMaxTrackPtInNTXRecalc;      //! Histo to save fMaxTrackPtInNTX after recalculation as a function of jet pT
   TH3F        *fPtDistInJetConeRaw;         //! pT distributions of tracks inside the cone for jet pT (raw) ranges and centralities
   TH3F        *fPtDistInPerpConeRaw;        //! pT distributions of tracks inside the perpendicular cone for jet pT (raw) ranges and centralities
@@ -272,11 +273,15 @@ class AliAnalysisTaskPartonDisc : public AliAnalysisTaskSE {
   TH3F        *fNChTrRecECorrPPMult;        //! Number of charged tracks in the energy corrected jet, as a function of corrected jet pt, pp mult
   TH3F        *fNChTrRecPerpECorrPPMult;    //! Number of charged tracks in the perpendicular after correction, as a func. of corr. jet pt, pp mult
   Bool_t       fForceSkipSJ;                //  Force to skip single track jets
+  TH2F        *fJetPtCentPbPbRaw;           //! Raw pT spectrum of reco jets, centrality in PbPb
+  TH2F        *fJetPtCentPbPbCorr;          //! Corrected pT spectrum of reco jets, centrality in PbPb
+  Double_t     fJetAcceptance;              //  Acceptance cut on jets, for multiplicity in PbPb
+  Bool_t       fIncreasingExcl;             //  Flag to indicate that the analyis increases exclusion beyond jet radius
 
   AliAnalysisTaskPartonDisc(const AliAnalysisTaskPartonDisc&); // not implemented
   AliAnalysisTaskPartonDisc& operator=(const AliAnalysisTaskPartonDisc&); // not implemented
   
-  ClassDef(AliAnalysisTaskPartonDisc, 1); 
+  ClassDef(AliAnalysisTaskPartonDisc, 2); 
 };
 
 #endif

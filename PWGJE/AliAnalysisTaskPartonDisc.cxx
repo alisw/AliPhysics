@@ -65,11 +65,11 @@
 
 ClassImp(AliAnalysisTaskPartonDisc)
 
-Double_t *AliAnalysisTaskPartonDisc::fgContainer = 0x0;
+Double_t *AliAnalysisTaskPartonDisc::fgContainer = 0x0; 
 
 //________________________________________________________________________
 AliAnalysisTaskPartonDisc::AliAnalysisTaskPartonDisc() 
-  : AliAnalysisTaskSE(), fAOD(0), fUseAODMC(kFALSE), fPhojetMC(kFALSE), fBranchMC("jetsMC"), fBranchRec("jetsREC"), fBranchSecRec(""), fSqrts(0),  fNtX(0), fJetRadius(0.), fFlavorRadius(0.), fFilterBit(0xFF), fOutputList(0), fJetPt(0), fJetPtSec(0), fJetPtMC(0), fJetEta(0), fJetEtaSec(0), fJetPhi(0), fJetPhiSec(0), fJetEtaMC(0), fJetPhiMC(0), fPtAODMC(0), fPtAOD(0), fEtaAODMC(0), fPhiAODMC(0), fEtaAOD(0), fPhiAOD(0), fFlavor(0), fNJetsMC(0), fNJetsRD(0), fNJetsRDSeco(0), fJetsMultPtMC(0), fJetsMultPtRD(0), fNChTrRD(0), fProfNChTrRD(0), fFracQQ(0), fFracGQ(0), fFracGG(0), fFracOutGoingQQ(0), fFracOutGoingGQ(0), fFracOutGoingGG(0), fh1Xsec(0), fh1Trials(0), fMpdg(0), fProcessJetPt(0), fFlavorLead(0), fProcessLeadJetPt(0), fPDGMothLPart(0), fFlavProc(0), fAvgTrials(1), fUseAODJetInput(kFALSE), fMinTrackPtInNTX(0), fMaxTrackPtInNTX(0), fSCMRD(0), fMinpTVal(0), fZVertex(0), fh1Events(0), fUseOnlyMC(kFALSE), fCheckMCStatus(kTRUE), fEvtCount(0), fNAccJetsMC(0), fNAccJetsRD(0), fNAccJetsRDSeco(0), fEnablePrints(kFALSE), fRecJetPtInclusive(0), fMCJetPtInclusive(0), fRecJetPtLeading(0), fMCJetPtLeading(0), fSecRecJetPtInclusive(0), fSecRecJetPtLeading(0), fHasPerpCone(kTRUE), fEtaPerpCoord(0), fPhiPerpCoord(0), fPtPerpCoord(0), fJetEvent(kFALSE), fPerpCone(0), fNChTrMCPerp(0), fNChTrRecPerp(0), fSCMMCPerp(0), fSCMRecPerp(0), fIsHIevent(kFALSE), fCurrentJetMinPtNT90(0), fBckgSbsJet(0), fCurrentJetMinPtNT90Recalc(0), fNChTrCorrMCQuark(0), fNChTrCorrMCGluon(0), fNChTrCorrMCPerp(0), fIsPossibleToSubstBckg(kTRUE), fNChTrRecECorr(0), fNChTrRecPerpECorr(0), fRefMult(0), fCurrentJetCharge(0), fRefMultWOJet(0), fVZEROMult(0), fMultWOJetVZero(0), fVZero(0), fRefMultFullV0(0), fRefMultV0Corr(0), fFullV0V0Corr(0), fNTXV0MultPt(0), fNTXCBMultPt(0), fMinpTValUE(2.0), fRefMultFullV0UJ(0), fRefMultV0CorrUJ(0), fFullV0V0CorrUJ(0), fMultWOJetVZeroUJ(0), fRefMultWOJetUJ(0), fMaxpTValUE(2.0), fRefAODTrackCount(0), fRefAODTrackCountUJ(0), fTrackCountWOJet(0), fTrackCountWOJetUJ(0), fTrackCountWOJetUJMC(0), fFullV0V0CorrUJMC(0), fMinpTValMC(2.0), fIncExcR(2.0), fForceNotTR(kFALSE), fNotExtDiJEx(kFALSE), fMinTrackPtInNTXRecalc(0), fMaxTrackPtInNTXRecalc(0), fPtDistInJetConeRaw(0), fPtDistInPerpConeRaw(0), fPtInPerpCon(0), fMinTrackPtInNTXR(0), fMaxTrackPtInNTXR(0), fEventCent(0), fJetEtaAll(0), fJetEtaOnlyTPCcut(0), fNChTrRecECorrPPMult(0), fNChTrRecPerpECorrPPMult(0), fForceSkipSJ(kFALSE)
+  : AliAnalysisTaskSE(), fAOD(0), fUseAODMC(kFALSE), fPhojetMC(kFALSE), fBranchMC("jetsMC"), fBranchRec("jetsREC"), fBranchSecRec(""), fSqrts(0),  fNtX(0), fJetRadius(0.), fFlavorRadius(0.), fFilterBit(0xFF), fOutputList(0), fJetPt(0), fJetPtSec(0), fJetPtMC(0), fJetEta(0), fJetEtaSec(0), fJetPhi(0), fJetPhiSec(0), fJetEtaMC(0), fJetPhiMC(0), fPtAODMC(0), fPtAOD(0), fEtaAODMC(0), fPhiAODMC(0), fEtaAOD(0), fPhiAOD(0), fFlavor(0), fNJetsMC(0), fNJetsRD(0), fNJetsRDSeco(0), fJetsMultPtMC(0), fJetsMultPtRD(0), fNChTrRD(0), fProfNChTrRD(0), fFracQQ(0), fFracGQ(0), fFracGG(0), fFracOutGoingQQ(0), fFracOutGoingGQ(0), fFracOutGoingGG(0), fh1Xsec(0), fh1Trials(0), fMpdg(0), fProcessJetPt(0), fFlavorLead(0), fProcessLeadJetPt(0), fPDGMothLPart(0), fFlavProc(0), fAvgTrials(1), fUseAODJetInput(kFALSE), fMinTrackPtInNTX(0), fMaxTrackPtInNTX(0), fSCMRD(0), fMinpTVal(0), fZVertex(0), fh1Events(0), fUseOnlyMC(kFALSE), fCheckMCStatus(kTRUE), fEvtCount(0), fNAccJetsMC(0), fNAccJetsRD(0), fNAccJetsRDSeco(0), fEnablePrints(kFALSE), fRecJetPtInclusive(0), fMCJetPtInclusive(0), fRecJetPtLeading(0), fMCJetPtLeading(0), fSecRecJetPtInclusive(0), fSecRecJetPtLeading(0), fHasPerpCone(kTRUE), fEtaPerpCoord(0), fPhiPerpCoord(0), fPtPerpCoord(0), fJetEvent(kFALSE), fPerpCone(0), fNChTrMCPerp(0), fNChTrRecPerp(0), fSCMMCPerp(0), fSCMRecPerp(0), fIsHIevent(kFALSE), fCurrentJetMinPtNT90(0), fBckgSbsJet(0), fCurrentJetMinPtNT90Recalc(0), fNChTrCorrMCQuark(0), fNChTrCorrMCGluon(0), fNChTrCorrMCPerp(0), fIsPossibleToSubstBckg(kTRUE), fNChTrRecECorr(0), fNChTrRecPerpECorr(0), fRefMult(0), fCurrentJetCharge(0), fRefMultWOJet(0), fVZEROMult(0), fMultWOJetVZero(0), fVZero(0), fRefMultFullV0(0), fRefMultV0Corr(0), fFullV0V0Corr(0), fNTXV0MultPt(0), fNTXCBMultPt(0), fMinpTValUE(2.0), fRefMultFullV0UJ(0), fRefMultV0CorrUJ(0), fFullV0V0CorrUJ(0), fMultWOJetVZeroUJ(0), fRefMultWOJetUJ(0), fMaxpTValUE(2.0), fRefAODTrackCount(0), fRefAODTrackCountUJ(0), fTrackCountWOJet(0), fTrackCountWOJetUJ(0), fTrackCountWOJetUJMC(0), fFullV0V0CorrUJMC(0), fMinpTValMC(2.0), fIncExcR(0.0), fForceNotTR(kFALSE), fNotExtDiJEx(kFALSE), fMinTrackPtInNTXRecalc(0), fMaxTrackPtInNTXRecalc(0), fPtDistInJetConeRaw(0), fPtDistInPerpConeRaw(0), fPtInPerpCon(0), fMinTrackPtInNTXR(0), fMaxTrackPtInNTXR(0), fEventCent(0), fJetEtaAll(0), fJetEtaOnlyTPCcut(0), fNChTrRecECorrPPMult(0), fNChTrRecPerpECorrPPMult(0), fForceSkipSJ(kFALSE), fJetPtCentPbPbRaw(0), fJetPtCentPbPbCorr(0), fJetAcceptance(0.5), fIncreasingExcl(kFALSE)
 {
 
   // Constructor
@@ -132,7 +132,7 @@ AliAnalysisTaskPartonDisc::AliAnalysisTaskPartonDisc()
 }
 //________________________________________________________________________
 AliAnalysisTaskPartonDisc::AliAnalysisTaskPartonDisc(const char *name) 
-  : AliAnalysisTaskSE(name), fAOD(0), fUseAODMC(kFALSE), fPhojetMC(kFALSE), fBranchMC("jetsMC"), fBranchRec("jetsREC"), fBranchSecRec(""), fSqrts(0),  fNtX(0), fJetRadius(0.), fFlavorRadius(0.), fFilterBit(0xFF), fOutputList(0), fJetPt(0), fJetPtSec(0), fJetPtMC(0), fJetEta(0), fJetEtaSec(0), fJetPhi(0), fJetPhiSec(0), fJetEtaMC(0), fJetPhiMC(0), fPtAODMC(0), fPtAOD(0), fEtaAODMC(0), fPhiAODMC(0), fEtaAOD(0), fPhiAOD(0), fFlavor(0), fNJetsMC(0), fNJetsRD(0), fNJetsRDSeco(0), fJetsMultPtMC(0), fJetsMultPtRD(0), fNChTrRD(0), fProfNChTrRD(0), fFracQQ(0), fFracGQ(0), fFracGG(0), fFracOutGoingQQ(0), fFracOutGoingGQ(0), fFracOutGoingGG(0), fh1Xsec(0), fh1Trials(0), fMpdg(0), fProcessJetPt(0), fFlavorLead(0), fProcessLeadJetPt(0), fPDGMothLPart(0), fFlavProc(0), fAvgTrials(1), fUseAODJetInput(kFALSE), fMinTrackPtInNTX(0), fMaxTrackPtInNTX(0), fSCMRD(0), fMinpTVal(0), fZVertex(0), fh1Events(0), fUseOnlyMC(kFALSE), fCheckMCStatus(kTRUE), fEvtCount(0), fNAccJetsMC(0), fNAccJetsRD(0), fNAccJetsRDSeco(0), fEnablePrints(kFALSE), fRecJetPtInclusive(0), fMCJetPtInclusive(0), fRecJetPtLeading(0), fMCJetPtLeading(0), fSecRecJetPtInclusive(0), fSecRecJetPtLeading(0), fHasPerpCone(kTRUE), fEtaPerpCoord(0), fPhiPerpCoord(0), fPtPerpCoord(0), fJetEvent(kFALSE), fPerpCone(0), fNChTrMCPerp(0), fNChTrRecPerp(0), fSCMMCPerp(0), fSCMRecPerp(0), fIsHIevent(kFALSE), fCurrentJetMinPtNT90(0), fBckgSbsJet(0), fCurrentJetMinPtNT90Recalc(0), fNChTrCorrMCQuark(0), fNChTrCorrMCGluon(0), fNChTrCorrMCPerp(0), fIsPossibleToSubstBckg(kTRUE), fNChTrRecECorr(0), fNChTrRecPerpECorr(0), fRefMult(0), fCurrentJetCharge(0), fRefMultWOJet(0), fVZEROMult(0), fMultWOJetVZero(0), fVZero(0), fRefMultFullV0(0), fRefMultV0Corr(0), fFullV0V0Corr(0), fNTXV0MultPt(0), fNTXCBMultPt(0), fMinpTValUE(2.0), fRefMultFullV0UJ(0), fRefMultV0CorrUJ(0), fFullV0V0CorrUJ(0), fMultWOJetVZeroUJ(0), fRefMultWOJetUJ(0), fMaxpTValUE(2.0), fRefAODTrackCount(0), fRefAODTrackCountUJ(0), fTrackCountWOJet(0), fTrackCountWOJetUJ(0), fTrackCountWOJetUJMC(0), fFullV0V0CorrUJMC(0), fMinpTValMC(2.0), fIncExcR(2.0), fForceNotTR(kFALSE), fNotExtDiJEx(kFALSE), fMinTrackPtInNTXRecalc(0), fMaxTrackPtInNTXRecalc(0), fPtDistInJetConeRaw(0), fPtDistInPerpConeRaw(0), fPtInPerpCon(0), fMinTrackPtInNTXR(0), fMaxTrackPtInNTXR(0), fEventCent(0), fJetEtaAll(0), fJetEtaOnlyTPCcut(0), fNChTrRecECorrPPMult(0), fNChTrRecPerpECorrPPMult(0), fForceSkipSJ(kFALSE)
+  : AliAnalysisTaskSE(name), fAOD(0), fUseAODMC(kFALSE), fPhojetMC(kFALSE), fBranchMC("jetsMC"), fBranchRec("jetsREC"), fBranchSecRec(""), fSqrts(0),  fNtX(0), fJetRadius(0.), fFlavorRadius(0.), fFilterBit(0xFF), fOutputList(0), fJetPt(0), fJetPtSec(0), fJetPtMC(0), fJetEta(0), fJetEtaSec(0), fJetPhi(0), fJetPhiSec(0), fJetEtaMC(0), fJetPhiMC(0), fPtAODMC(0), fPtAOD(0), fEtaAODMC(0), fPhiAODMC(0), fEtaAOD(0), fPhiAOD(0), fFlavor(0), fNJetsMC(0), fNJetsRD(0), fNJetsRDSeco(0), fJetsMultPtMC(0), fJetsMultPtRD(0), fNChTrRD(0), fProfNChTrRD(0), fFracQQ(0), fFracGQ(0), fFracGG(0), fFracOutGoingQQ(0), fFracOutGoingGQ(0), fFracOutGoingGG(0), fh1Xsec(0), fh1Trials(0), fMpdg(0), fProcessJetPt(0), fFlavorLead(0), fProcessLeadJetPt(0), fPDGMothLPart(0), fFlavProc(0), fAvgTrials(1), fUseAODJetInput(kFALSE), fMinTrackPtInNTX(0), fMaxTrackPtInNTX(0), fSCMRD(0), fMinpTVal(0), fZVertex(0), fh1Events(0), fUseOnlyMC(kFALSE), fCheckMCStatus(kTRUE), fEvtCount(0), fNAccJetsMC(0), fNAccJetsRD(0), fNAccJetsRDSeco(0), fEnablePrints(kFALSE), fRecJetPtInclusive(0), fMCJetPtInclusive(0), fRecJetPtLeading(0), fMCJetPtLeading(0), fSecRecJetPtInclusive(0), fSecRecJetPtLeading(0), fHasPerpCone(kTRUE), fEtaPerpCoord(0), fPhiPerpCoord(0), fPtPerpCoord(0), fJetEvent(kFALSE), fPerpCone(0), fNChTrMCPerp(0), fNChTrRecPerp(0), fSCMMCPerp(0), fSCMRecPerp(0), fIsHIevent(kFALSE), fCurrentJetMinPtNT90(0), fBckgSbsJet(0), fCurrentJetMinPtNT90Recalc(0), fNChTrCorrMCQuark(0), fNChTrCorrMCGluon(0), fNChTrCorrMCPerp(0), fIsPossibleToSubstBckg(kTRUE), fNChTrRecECorr(0), fNChTrRecPerpECorr(0), fRefMult(0), fCurrentJetCharge(0), fRefMultWOJet(0), fVZEROMult(0), fMultWOJetVZero(0), fVZero(0), fRefMultFullV0(0), fRefMultV0Corr(0), fFullV0V0Corr(0), fNTXV0MultPt(0), fNTXCBMultPt(0), fMinpTValUE(2.0), fRefMultFullV0UJ(0), fRefMultV0CorrUJ(0), fFullV0V0CorrUJ(0), fMultWOJetVZeroUJ(0), fRefMultWOJetUJ(0), fMaxpTValUE(2.0), fRefAODTrackCount(0), fRefAODTrackCountUJ(0), fTrackCountWOJet(0), fTrackCountWOJetUJ(0), fTrackCountWOJetUJMC(0), fFullV0V0CorrUJMC(0), fMinpTValMC(2.0), fIncExcR(0.0), fForceNotTR(kFALSE), fNotExtDiJEx(kFALSE), fMinTrackPtInNTXRecalc(0), fMaxTrackPtInNTXRecalc(0), fPtDistInJetConeRaw(0), fPtDistInPerpConeRaw(0), fPtInPerpCon(0), fMinTrackPtInNTXR(0), fMaxTrackPtInNTXR(0), fEventCent(0), fJetEtaAll(0), fJetEtaOnlyTPCcut(0), fNChTrRecECorrPPMult(0), fNChTrRecPerpECorrPPMult(0), fForceSkipSJ(kFALSE), fJetPtCentPbPbRaw(0), fJetPtCentPbPbCorr(0), fJetAcceptance(0.5), fIncreasingExcl(kFALSE)
 {
 
   // Constructor
@@ -724,9 +724,10 @@ void AliAnalysisTaskPartonDisc::UserCreateOutputObjects()
   fFullV0V0CorrUJMC->Sumw2();
   fOutputList->Add(fFullV0V0CorrUJMC);
 
-  fMinTrackPtInNTXRecalc = new TH2F("fMinTrackPtInNTXRecalc", "Minimum track pT for the jets after pT correction, raw jet pT", 200, 0., 100., 60, 0., 300.);
+  fMinTrackPtInNTXRecalc = new TH3F("fMinTrackPtInNTXRecalc", "Minimum track pT for the jets after pT correction, raw jet pT", 200, 0., 100., 60, 0., 300.,10,0.5,10.5);
   fMinTrackPtInNTXRecalc->GetXaxis()->SetTitle("p_{T}^{TRACK} (GeV/c)");
   fMinTrackPtInNTXRecalc->GetYaxis()->SetTitle("p_{T}^{JET} (GeV/c)");
+  fMinTrackPtInNTXRecalc->GetZaxis()->SetTitle("Selection Bin");  // 9 selections bins as fNChTrRecECorr
   fMinTrackPtInNTXRecalc->Sumw2();
   fOutputList->Add(fMinTrackPtInNTXRecalc);
 
@@ -792,6 +793,18 @@ void AliAnalysisTaskPartonDisc::UserCreateOutputObjects()
   fNChTrRecPerpECorrPPMult->GetZaxis()->SetTitle("Multiplicity Bin");
   fNChTrRecPerpECorrPPMult->Sumw2();
   fOutputList->Add(fNChTrRecPerpECorrPPMult);
+
+  fJetPtCentPbPbRaw = new TH2F("fJetPtCentPbPbRaw", "raw p_{T} distribution of reco jets", 60, 0., 300.,10,0.5,10.5);
+  fJetPtCentPbPbRaw->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fJetPtCentPbPbRaw->GetYaxis()->SetTitle("Selection Bin");
+  fJetPtCentPbPbRaw->Sumw2();
+  fOutputList->Add(fJetPtCentPbPbRaw);
+
+  fJetPtCentPbPbCorr = new TH2F("fJetPtCentPbPbCorr", "Corrected p_{T} distribution of reco jets", 60, 0., 300.,10,0.5,10.5);
+  fJetPtCentPbPbCorr->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fJetPtCentPbPbCorr->GetYaxis()->SetTitle("Selection Bin");
+  fJetPtCentPbPbCorr->Sumw2();
+  fOutputList->Add(fJetPtCentPbPbCorr);
 
   for(Int_t ipt=0;ipt<12;ipt++)
     {
@@ -1003,9 +1016,10 @@ void AliAnalysisTaskPartonDisc::UserCreateOutputObjects()
 		  fFragCandidates[ipt]->Sumw2();
 		  fOutputList->Add(fFragCandidates[ipt]);
 		  
-		  fMinTrackPtInNTXh[ipt] = new TH2F(Form("fMinTrackPtInNTXh[%i]",ipt), "Minimum track pT for the jets", 200, 0., 100., 60, 0., 300.);
+		  fMinTrackPtInNTXh[ipt] = new TH3F(Form("fMinTrackPtInNTXh[%i]",ipt), "Minimum track pT for the jets", 200, 0., 100., 60, 0., 300.,10,0.5,10.5);
 		  fMinTrackPtInNTXh[ipt]->GetXaxis()->SetTitle("p_{T}^{TRACK}");
 		  fMinTrackPtInNTXh[ipt]->GetYaxis()->SetTitle("p_{T}^{JET}");
+		  fMinTrackPtInNTXh[ipt]->GetZaxis()->SetTitle("Selection Bin"); //9 selection bins as fNChTrRecECorr
 		  fMinTrackPtInNTXh[ipt]->Sumw2();
 		  fOutputList->Add(fMinTrackPtInNTXh[ipt]);
 		  
@@ -1075,6 +1089,10 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
       AliAODHeader *aodHeader = fAOD->GetHeader();
       fEventCent = aodHeader->GetCentrality();
     }
+
+  // Jet eta exclusion
+  if(fIncreasingExcl)
+    fJetAcceptance = 0.5 - fIncExcR; // if the increase is 0.1 -> only jets within |eta|<0.4 
 
   // First test of reference multiplicity
   Int_t refMultiplicity = fAOD->GetHeader()->GetRefMultiplicity();
@@ -1738,7 +1756,7 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      fProcessPDG[0]->Fill(jetPt,evtype);
 	      fHistPtParton[0]->Fill(jetPt);
 	      fSCM[0]->Fill(secondCentralR,jetPt);
-	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt); // 0 for MC
+	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt,1); // 0 for pp MC
 	      fMaxTrackPtInNTXh[0]->Fill(fMaxTrackPtInNTX,jetPt); // 0 for MC
 	      if(fIsPossibleToSubstBckg)
 		{
@@ -1755,7 +1773,7 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      fProcessPDG[1]->Fill(jetPt,evtype);
 	      fHistPtParton[1]->Fill(jetPt);
 	      fSCM[1]->Fill(secondCentralR,jetPt);
-	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt); // 0 for MC
+	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt,1); // 0 for pp MC
 	      fMaxTrackPtInNTXh[0]->Fill(fMaxTrackPtInNTX,jetPt); // 0 for MC
 	      if(fIsPossibleToSubstBckg)
 		{
@@ -1772,7 +1790,7 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      fProcessPDG[2]->Fill(jetPt,evtype);
 	      fHistPtParton[2]->Fill(jetPt);
 	      fSCM[2]->Fill(secondCentralR,jetPt);
-	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt); // 0 for MC
+	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt,1); // 0 for pp MC
 	      fMaxTrackPtInNTXh[0]->Fill(fMaxTrackPtInNTX,jetPt); // 0 for MC
 	      if(fIsPossibleToSubstBckg)
 		{
@@ -1789,7 +1807,7 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      fProcessPDG[3]->Fill(jetPt,evtype);
 	      fHistPtParton[3]->Fill(jetPt);
 	      fSCM[3]->Fill(secondCentralR,jetPt);
-	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt); // 0 for MC
+	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt,1); // 0 for pp MC
 	      fMaxTrackPtInNTXh[0]->Fill(fMaxTrackPtInNTX,jetPt); // 0 for MC
 	      if(fIsPossibleToSubstBckg)
 		{
@@ -1806,7 +1824,7 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      fProcessPDG[4]->Fill(jetPt,evtype);
 	      fHistPtParton[4]->Fill(jetPt);
 	      fSCM[4]->Fill(secondCentralR,jetPt);
-	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt); // 0 for MC
+	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt,1); // 0 for pp MC
 	      fMaxTrackPtInNTXh[0]->Fill(fMaxTrackPtInNTX,jetPt); // 0 for MC
 	      if(fIsPossibleToSubstBckg)
 		{
@@ -1823,7 +1841,7 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      fProcessPDG[5]->Fill(jetPt,evtype);
 	      fHistPtParton[5]->Fill(jetPt);
 	      fSCM[5]->Fill(secondCentralR,jetPt);
-	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt); // 0 for MC
+	      fMinTrackPtInNTXh[0]->Fill(fMinTrackPtInNTX,jetPt,1); // 0 for pp MC
 	      fMaxTrackPtInNTXh[0]->Fill(fMaxTrackPtInNTX,jetPt); // 0 for MC
 	      if(fIsPossibleToSubstBckg)
 		{
@@ -2598,9 +2616,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=0&&fEventCent<10.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,2); //filling first centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),2); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,2); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,2); //filling first centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),2); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),2); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,2);
@@ -2646,9 +2668,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=10&&fEventCent<20.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,3); //filling second centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),3); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,3); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,3); //filling second centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),3); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),3); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,3);
@@ -2694,9 +2720,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=20&&fEventCent<30.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,4); //filling third centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),4); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,4); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,4); //filling third centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),4); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),4); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,4);
@@ -2742,9 +2772,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=30&&fEventCent<40.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,5); //filling fourth centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),5); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,5); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,5); //filling fourth centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),5); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),5); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,5);
@@ -2790,9 +2824,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=40&&fEventCent<50.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,6); //filling fourth centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),6); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,6); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,6); //filling fourth centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),6); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),6); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,6);
@@ -2838,9 +2876,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=50&&fEventCent<60.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,7); //filling fourth centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),7); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,7); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,7); //filling fourth centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),7); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),7); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,7);
@@ -2886,9 +2928,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=60&&fEventCent<70.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,8); //filling fourth centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),8); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,8); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,8); //filling fourth centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),8);
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),8);  
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,8);
@@ -2934,9 +2980,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=70&&fEventCent<80.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,9); //filling fourth centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),9); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,9); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,9); //filling fourth centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),9); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),9); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,9);
@@ -2982,9 +3032,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(fEventCent>=80&&fEventCent<100.)
 		    {
 		      fNChTrRecECorr->Fill(ntxrecoRecalc,pTbs,10); //filling sixth centrality bin
+		      fJetPtCentPbPbRaw->Fill(rjet->Pt(),10); 
+		      fJetPtCentPbPbCorr->Fill(pTbs,10); 
 		      if(!IsEqualRel(fCurrentJetMinPtNT90Recalc, 7000.))
 			{
 			  fNChTrRecPerpECorr->Fill(nTRecAboveThresholdPerpRecalc,pTbs,10); //filling sixth centrality bin
+			  fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),10); 
+			  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),10); 
 			  if((rjet->Pt()>10.)&&(rjet->Pt()<20.))
 			    {
 			      fPtInPerpCon->Fill(fPerpCone->Pt(),1,10);
@@ -3032,11 +3086,13 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 
 	  AliDebug(4,"Before filling the histograms for this jet of min and max pT in NTX \n"); 
 	  AliDebug(4,Form("Min:%f, Max:%f \n",fMinTrackPtInNTX,fMaxTrackPtInNTX));
-	  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt());
+	  fMinTrackPtInNTXh[1]->Fill(fMinTrackPtInNTX,rjet->Pt(),1); // for rec pp or inclusive PbPb
+	  fJetPtCentPbPbRaw->Fill(rjet->Pt(),1); // for rec pp or inclusive PbPb
+	  fJetPtCentPbPbCorr->Fill(pTbs,1); // for rec pp or inclusive PbPb
 	  fMaxTrackPtInNTXh[1]->Fill(fMaxTrackPtInNTX,rjet->Pt());
 	  if(fIsPossibleToSubstBckg) // if it was possible to calculate a perpendicular cone
 	    {
-	      fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt());
+	      fMinTrackPtInNTXRecalc->Fill(fMinTrackPtInNTXR,rjet->Pt(),1); // for rec pp or inclusive PbPb
 	      fMaxTrackPtInNTXRecalc->Fill(fMaxTrackPtInNTXR,rjet->Pt());
 	    }
 	  AliDebug(4,"After filling the histograms for this jet of min and max pT in NTX \n");
@@ -3259,11 +3315,11 @@ Int_t AliAnalysisTaskPartonDisc::GetPhojetEventType(AliMCEvent *mcEvent)
 Bool_t AliAnalysisTaskPartonDisc::IsInsideAcceptance(AliAODJet *jet)
 {
   //
-  // Check if the jet is inside abs(eta)<=0.5
+  // Check if the jet is inside abs(eta)<=fJetAcceptance
   //
 
   Double_t jeteta = jet->Eta();
-  if(TMath::Abs(jeteta)<=0.5)
+  if(TMath::Abs(jeteta)<=fJetAcceptance)
     return kTRUE;
   else 
     return kFALSE;
@@ -4342,7 +4398,7 @@ void AliAnalysisTaskPartonDisc::HasOverlapedCones(TClonesArray *JetArray)
 	} // end of skip of single track jets condition
 
       // First check if the current jet has its axis inside acceptance
-      if(!(TMath::Abs(etaCoordinates[inxoj])<=0.5)) //
+      if(!(TMath::Abs(etaCoordinates[inxoj])<=fJetAcceptance)) //
 	{
 	  fJetFlags[inxoj]=kFALSE;
 	  continue;
@@ -4358,7 +4414,7 @@ void AliAnalysisTaskPartonDisc::HasOverlapedCones(TClonesArray *JetArray)
 	    continue;
 	  if(!fJetFlags[idx2]) // if the other jet is already not usable
 	    continue;
-	  if(!(TMath::Abs(etaCoordinates[idx2])<=0.5)) // if the jet is outside acceptance
+	  if(!(TMath::Abs(etaCoordinates[idx2])<=fJetAcceptance)) // if the jet is outside acceptance
 	    continue;
 	  deltaeta = etaCoordinates[currentIdxJet]-etaCoordinates[idx2];
 	  deltaphi = phiCoordinates[currentIdxJet]-phiCoordinates[idx2];
@@ -4808,7 +4864,7 @@ Bool_t AliAnalysisTaskPartonDisc::IsTrackInsideExcludedArea(Double_t tracketa, D
   Double_t deltaeta = 0.0;
   Double_t deltaphi = 0.0;
   Double_t deltar = 0.0;
-  Double_t extendedRadius = fJetRadius+fIncExcR; //default R+0.1
+  Double_t extendedRadius = fJetRadius+fIncExcR; 
   Double_t extendedRadiusDiJet = 0.0;
   Double_t phiCurrJetExArL = 0.0; // preliminary left boundary of exluded phi of current jet
   Double_t phiCurrJetExArR = 0.0; // preliminary right boundary of exluded phi of current jet
