@@ -25,10 +25,9 @@ void AliMuonForwardTrackFinder(Int_t run=0,
   //  finder -> SetRAbsorberCut(26.4);
   finder -> SetLowPtCut(0.0);
   //  finder -> SetLowPtCut(0.5);
-  finder -> SetExtrapOriginTransvError(0.05);   // To be imposed if the gen. vertex is fixed in (0,0,0)
-  finder -> SetGaussianBlurZVert(5.0);          // To be imposed if the gen. vertex is fixed in (0,0,0) 
-  finder -> SetMatchingMode(matching);          // 0 -> real matching   1 -> ideal matching
-  finder -> SetMinResearchRadiusAtLastPlane(0.5);
+  finder -> SetVertexError(0.015, 0.015, 0.010);
+  finder -> SetMatchingMode(matching);                // 0 -> real matching   1 -> ideal matching
+  finder -> SetMinResearchRadiusAtLastPlane(0.0);
 
   while (finder->LoadNextTrack()) continue;
 
