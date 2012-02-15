@@ -25,7 +25,7 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
 
 
    task->SetBranchNames(bRec1,bRec2);
-   task->SetOfflineTrgMask(AliVEvent::kMB);
+   //task->SetOfflineTrgMask(AliVEvent::kMB);
 
    task->SetEvtClassMin(eventClassMin);
    task->SetEvtClassMax(eventClassMax);
@@ -35,7 +35,7 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
  
    
    task->SetJetPtMin(0.);   
-   task->SetAngStructCloseTracks(1);
+   //task->SetAngStructCloseTracks(1);
 
  
 
