@@ -299,19 +299,19 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
       if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
-      track->GetXYZ(xyz0);   // global position
-      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]); 
+      track->GetXYZ(xyz1);   // global position
+      Double_t alphan = TMath::ATan2(xyz1[1], xyz1[0]); 
       //
       Double_t ca=TMath::Cos(alphan-track->GetAlpha()), 
                sa=TMath::Sin(alphan-track->GetAlpha());
       Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
       Double_t sinNew =  sf*ca - cf*sa;
       if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
-      if (!track->Rotate(alphan)) return kFALSE;
+      if (!track->AliExternalTrackParam::Rotate(alphan)) return kFALSE;
     }
     xpos = track->GetX();
     if (addTimeStep && track->IsStartedTimeIntegral()) {
-      track->GetXYZ(xyz1);
+      if (!rotateTo) track->GetXYZ(xyz1); // if rotateTo==kTRUE, then xyz1 is already extracted
       Double_t dX=xyz0[0]-xyz1[0],dY=xyz0[1]-xyz1[1],dZ=xyz0[2]-xyz1[2]; 
       Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
       if (sign) {if (sign>0) d = -d;}  // step sign is imposed, positive means inward direction
@@ -367,19 +367,19 @@ AliTrackerBase::PropagateTrackToBxByBz(AliExternalTrackParam *track,
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
       if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
-      track->GetXYZ(xyz0);   // global position
-      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]); 
+      track->GetXYZ(xyz1);   // global position
+      Double_t alphan = TMath::ATan2(xyz1[1], xyz1[0]); 
       //
       Double_t ca=TMath::Cos(alphan-track->GetAlpha()), 
                sa=TMath::Sin(alphan-track->GetAlpha());
       Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
       Double_t sinNew =  sf*ca - cf*sa;
       if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
-      if (!track->Rotate(alphan)) return kFALSE;
+      if (!track->AliExternalTrackParam::Rotate(alphan)) return kFALSE;
     }
     xpos = track->GetX();    
     if (addTimeStep && track->IsStartedTimeIntegral()) {
-      track->GetXYZ(xyz1);
+      if (!rotateTo) track->GetXYZ(xyz1); // if rotateTo==kTRUE, then xyz1 is already extracted
       Double_t dX=xyz0[0]-xyz1[0],dY=xyz0[1]-xyz1[1],dZ=xyz0[2]-xyz1[2]; 
       Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
       if (sign) {if (sign>0) d = -d;}  // step sign is imposed, positive means inward direction

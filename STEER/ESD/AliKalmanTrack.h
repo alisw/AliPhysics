@@ -67,8 +67,8 @@ public:
   void SetIntegratedLength(Double_t l) {fIntegratedLength=l;}
   void SetIntegratedTimes(const Double_t *times);
 
-  Bool_t IsStartedTimeIntegral() const {return fStartTimeIntegral;}
-  void AddTimeStep(Double_t length);
+  virtual Bool_t IsStartedTimeIntegral() const {return fStartTimeIntegral;}
+  virtual void AddTimeStep(Double_t length);
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
