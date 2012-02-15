@@ -467,14 +467,15 @@ void AliZDCDigitizer::CalculatePMTGains()
     // PTM gains for Pb-Pb @ 1.38+1.38 A TeV on side A
     // PTM gains rescaled to beam energy for p-p on side C
     // WARNING! Energies are set by hand for 2011 pA RUN!!!
-    Float_t scalGainFactor = fBeamEnergy*82/(208*2760.);
+    Float_t scalGainFactor = fBeamEnergy/2760.;
     
     for(Int_t j = 0; j < 5; j++){
        fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000; //ZNC (p)
        fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;  //ZPC (p)
        fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM (Pb)
-       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA (Pb)  	     
-       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA (Pb)  
+       // Npart max scales from 400 in Pb-Pb to ~8 in pPb -> *40.
+       fPMGain[3][j] = 40*50000./(4*scalGainFactor);  // ZNA (Pb)  	     
+       fPMGain[4][j] = 40*100000./(5*scalGainFactor); // ZPA (Pb)  
     }
     AliInfo(Form("\n    ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));
