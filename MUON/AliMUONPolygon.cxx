@@ -82,7 +82,7 @@ fY(0x0)
 {
   /// Copy constructor.
   
-  ((AliMUONPolygon&)rhs).Copy(*this);
+  ((AliMUONPolygon&)rhs).AliMUONPolygon::Copy(*this);
 }
 
 //______________________________________________________________________________
@@ -92,7 +92,7 @@ AliMUONPolygon::operator=(const AliMUONPolygon& rhs)
   /// Assignment operator
   if ( this != &rhs ) 
   {
-    rhs.Copy(*this);
+    rhs.AliMUONPolygon::Copy(*this);
   }
   return *this;
 }
