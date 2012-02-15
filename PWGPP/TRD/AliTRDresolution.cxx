@@ -3240,6 +3240,10 @@ void AliTRDresolution::AliTRDresolutionProjection::Build(const Char_t *n, const 
     az->GetNbins(), az->GetXmin(), az->GetXmax());
   fAx[0] = ix; fAx[1] = iy; fAx[2] = iz;
   fRange[0] = az->GetXmin()/3.; fRange[1] = az->GetXmax()/3.;
+  AliDebug(2, Form("H3(%s, %s) :: %s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]", n, t,
+    ax->GetTitle(), ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
+    ay->GetTitle(), ay->GetNbins(), ay->GetXmin(), ay->GetXmax(),
+    az->GetTitle(), az->GetNbins(), az->GetXmin(), az->GetXmax()));
 }
 
 //________________________________________________________
@@ -3273,7 +3277,7 @@ void AliTRDresolution::AliTRDresolutionProjection::Increment(Int_t bin[], Double
 {
 // increment bin with value "v" pointed by general coord in "bin"
   if(!fH) return;
-  AliDebug(4, Form("  %s", fH->GetName()));
+  AliDebug(4, Form("  %s[%2d]", fH->GetName(), Int_t(v)));
   fH->AddBinContent(fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), Int_t(v));
 }
 
@@ -3302,14 +3306,15 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
   TH1 *h(NULL); Int_t n(0);
   Float_t dz=(fRange[1]-fRange[1])/ncol;
   TString titlez(az->GetTitle()); TObjArray *tokenTitle(titlez.Tokenize(" "));
+  Int_t nt(tokenTitle->GetEntriesFast());
   TH2 *h2 = new TH2F(Form("%s_2D", fH->GetName()),
-            Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], (*tokenTitle)[0]->GetName(), tokenTitle->GetEntriesFast()>1?(*tokenTitle)[1]->GetName():""),
+            Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], nt>0?(*tokenTitle)[0]->GetName():"", nt>1?(*tokenTitle)[1]->GetName():""),
             nx, ax->GetXmin(), ax->GetXmax(), ny, ay->GetXmin(), ay->GetXmax());
   h2->SetContour(ncol);
   h2->GetZaxis()->CenterTitle();
   h2->GetZaxis()->SetTitleOffset(1.4);
   h2->GetZaxis()->SetRangeUser(fRange[0], fRange[1]);
-  //printf("%s[%s] nx[%d] ny[%d]\n", h2->GetName(), h2->GetTitle(), nx, ny);
+  AliDebug(2, Form("%s[%s] nx[%d] ny[%d]", h2->GetName(), h2->GetTitle(), nx, ny));
   for(Int_t iy(0); iy<ny; iy++){
     for(Int_t ix(0); ix<nx; ix++){
       h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin+1, iy*dyBin+1, (iy+1)*dyBin+1);
