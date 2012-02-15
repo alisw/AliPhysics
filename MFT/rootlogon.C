@@ -5,9 +5,8 @@
   gInterpreter->ProcessLine("loadlibs()");
   
   TString includePath = "-I${ROOTSYS}/include ";
-  includePath        += "-I/gridgroup/ALICE/auras/macros ";
-  includePath        += "-I${ALICE_ROOT}/STEER ";
-  includePath        += "-I${ALICE_ROOT}/STEERBase ";
+  includePath        += "-I${ALICE_ROOT}/STEER/STEER ";
+  includePath        += "-I${ALICE_ROOT}/STEER/STEERBase ";
   includePath        += "-I${ALICE_BUILD}/include ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
   includePath        += "-I${ALICE_ROOT}/FASTSIM ";
