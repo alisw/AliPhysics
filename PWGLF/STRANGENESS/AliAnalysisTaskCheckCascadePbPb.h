@@ -47,10 +47,8 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
 				            TVector3 &lTVect3MomXi, 
 				            Double_t  lEtaXi);*/
   virtual Int_t  DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent);
-  
   virtual void   Terminate(Option_t *);
   
-  void SetCollidingSystems           (Short_t collidingSystems          = 0    ) { fCollidingSystems            = collidingSystems;           }
   void SetAnalysisType               (const char* analysisType          = "ESD") { fAnalysisType                = analysisType;               }
   void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers       = rerunV0CascVertexers;       }
   void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
@@ -62,7 +60,6 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   void SetCentralityUpLim            (Float_t centruplim                = 100. ) { fCentrUpLim                  = centruplim;                 }
   void SetCentralityEst              (TString   centrest                = "V0M") { fCentrEstimator              = centrest;                   }
   void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                    = vtxrange;                   }
-  void SetUseCFContCascadeCuts       (Bool_t usecfcontcascadecuts       = kFALSE){fUseCFContCascadeCuts         = usecfcontcascadecuts;       }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -71,8 +68,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
 
 
         TString         fAnalysisType;                  // "ESD" or "AOD" analysis type	
-        Short_t         fCollidingSystems;              // 0 = pp collisions or 1 = AA collisions
-
+        AliESDtrackCuts *fESDtrackCuts;                 // ESD track cuts used for primary track definition
         //TPaveText       *fPaveTextBookKeeping;          // TString to store all the relevant info necessary for book keeping (v0 cuts, cascade cuts, quality cuts, ...)
         AliPIDResponse *fPIDResponse;                   //! PID response object
 
@@ -86,15 +82,12 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         Float_t         fCentrUpLim;                    // Upper limit for centrality percentile selection
         TString         fCentrEstimator;                // string for the centrality estimator
         Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
-        Bool_t          fUseCFContCascadeCuts;          // to use CF containers for topological cut optimization
 
        
-        Double_t        fAlephParameters[5];            // Array to store the 5 param values for the TPC Bethe-Bloch parametrisation
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
 
-
-        TList      *fListHistCascade;              //! List of Cascade histograms
+        TList      *fListHistCascade;                   //! List of Cascade histograms
         
         // - General histos (filled before the trigger selection)
         TH2F    *fHistEvtsInCentralityBinsvsNtracks;  //! Events in centrality bins vs N ESDtracks
@@ -105,9 +98,6 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         TH1F    *fHistTrackMultiplicityForCentrEvt;                //! Track multiplicity distribution (without any cut = include ITS stand-alone + global tracks)
         TH1F    *fHistTPCrefitTrackMultiplicityForCentrEvt;        //! Track multiplicity distribution for tracks with TPCrefit
         
-        // - General histos (filled for any triggered event + (|z(prim. vtx)| < 10 cm ) )
-        TH1F    *fHistCascadeMultiplicityForTrigEvtAndZprimVtx;   //! Cascade multiplicity distribution
-
         // - General histos (filled for events selected in this analysis (|z(prim. vtx)| < 10 cm + prim vtx = SPD or Tracking) )
         TH1F    *fHistCascadeMultiplicityForSelEvt;     //! Cascade multiplicity distribution
         TH1F    *fHistPosBestPrimaryVtxXForSelEvt;      //! (best) primary vertex position distribution in x 
@@ -244,7 +234,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadePbPb(const AliAnalysisTaskCheckCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckCascadePbPb& operator=(const AliAnalysisTaskCheckCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadePbPb, 2);
+  ClassDef(AliAnalysisTaskCheckCascadePbPb, 3);
 };
 
 #endif
