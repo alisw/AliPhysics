@@ -14,8 +14,8 @@ TFile *fileInPileUp=0, *fileInSignal, *fileInUnderlying, *fileOutPileUp=0, *file
 enum {kMergePileUpClusters_pp, kMergePileUpClusters_PbPb, kMergeAllClusters_pp, kMergeAllClusters_PbPb};
 enum {k_pp, k_PbPb};
 
-const Char_t *fPileUpDir[2] = {"$UnderlyingDirPP/spreadVtx",
-			       "$UnderlyingDirPbPb/spreadVtx"};
+const Char_t *fPileUpDir[2] = {"$UnderlyingDirPP/spreadVtx",      // local directory with pile-up event p-p
+			       "$UnderlyingDirPbPb/spreadVtx"};   // local directory with pile-up event Pb-Pb
 
 const Int_t fNRunsPileUp_pp   = 100;
 const Int_t fNRunsPileUp_PbPb =   3;
