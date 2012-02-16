@@ -1771,10 +1771,20 @@ void AliReconstruction::SlaveBegin(TTree*)
   // order to create all branches. Initialization is done from an
   // ESD layout template in CDB
   AliCDBManager* man = AliCDBManager::Instance();
-  AliCDBPath hltESDConfigPath("HLT/ConfigHLT/esdLayout");
+  AliCDBPath hltESDConfigPath("HLT/Calib/esdLayout");
   AliCDBEntry* hltESDConfig=NULL;
-  if (man->GetId(hltESDConfigPath)!=NULL &&
-      (hltESDConfig=man->Get(hltESDConfigPath))!=NULL) {
+  if (man->GetId(hltESDConfigPath)!=NULL)
+    hltESDConfig=man->Get(hltESDConfigPath);
+  if (!hltESDConfig) {
+    // try the alternative path
+    // in Feb 2012 the object has been moved from ConfigHLT to Calib
+    AliCDBPath hltESDConfigLegacyPath("HLT/ConfigHLT/esdLayout");
+    AliInfo(Form("can not find HLT ESD config object in %s, trying legacy path %s",
+		 hltESDConfigPath.GetPath().Data(),
+		 hltESDConfigLegacyPath.GetPath().Data()));
+    hltESDConfig=man->Get(hltESDConfigLegacyPath);
+  }
+  if (hltESDConfig) {
     AliESDEvent* pESDLayout=dynamic_cast<AliESDEvent*>(hltESDConfig->GetObject());
     if (pESDLayout) {
       // init all internal variables from the list of objects
