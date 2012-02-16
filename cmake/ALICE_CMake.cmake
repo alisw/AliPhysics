@@ -580,8 +580,8 @@ macro(ALICE_BuildPAR)
     endforeach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
     
     add_custom_target(${PACKAGE}.par
-                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/test\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/\; s,SRCS *=.*,SRCS = ${SRCS},\;' < Makefile | sed -e 's,HDRS *=.*,HDRS = ${HDRS},\; s,FSRCS *=.*,FSRCS = ${FSRCS},\; s,DHDR *=.*,DHDR = ${DHDR},' > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile
-                      COMMAND cp -pR ${ROOTSYS}/test/Makefile.arch ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile.arch
+                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/\\(etc\\|test\\)\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/\; s,SRCS *=.*,SRCS = ${SRCS},\;' < Makefile | sed -e 's,HDRS *=.*,HDRS = ${HDRS},\; s,FSRCS *=.*,FSRCS = ${FSRCS},\; s,DHDR *=.*,DHDR = ${DHDR},' > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile
+                      COMMAND cp -pR ${ROOTSYS}/etc/Makefile.arch ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile.arch
                       COMMAND cp -pR PROOF-INF.${PACKAGE} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/PROOF-INF
 #                      COMMAND cp -pR lib${PACKAGE}.pkg ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}
                       COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar --exclude=.svn -czhf ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${PACKAGE}
