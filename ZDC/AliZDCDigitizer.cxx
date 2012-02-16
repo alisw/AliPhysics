@@ -177,7 +177,7 @@ Bool_t AliZDCDigitizer::Init()
   }    
   printf("\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
   
-  CalculatePMTGains();
+  ReadPMTGains();
 
   // ADC Caen V965
   fADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
@@ -424,6 +424,85 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 
 
 //_____________________________________________________________________________
+void AliZDCDigitizer::ReadPMTGains()
+{
+// Read PMT gain from an external file
+
+  char *fname = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/PMTGainsdata.txt");
+  FILE *fdata = fopen(fname,"r");
+  if(fdata==NULL){
+     AliWarning(" Can't open file $ALICE_ROOT/ZDC/PMTGainsdata.txt to read ZDC PMT Gains\n");
+     AliWarning("  -> ZDC signal will be pedestal!!!!!!!!!!!!\n\n");
+     return;
+  }
+  Float_t data[5];
+  Int_t beam[12], det[12];
+  Float_t gain[12], aEne[12], bEne[12];
+  for(int ir=0; ir<12; ir++){
+    for(int ic=0; ic<5; ic++){
+       fscanf(fdata,"%f ",&data[ic]);
+    }
+    beam[ir] = data[0];
+    det[ir] = data[1];
+    gain[ir] = data[2];
+    aEne[ir] = data[3];
+    bEne[ir] = data[4];
+  }
+  
+  if(((fBeamType.CompareTo("P-P")) == 0)){
+    for(int i=0; i<12; i++){
+      if(beam[i]==0 && fBeamEnergy!=0.){
+        if(det[i]!=31 && det[i]!=32){
+	  for(Int_t j=0; j<5; j++) fPMGain[det[i]-1][j] = gain[i]*(aEne[i]/fBeamEnergy+bEne[i]);
+	}
+        else if(det[i] == 31) fPMGain[2][1] = gain[i]*(aEne[i]-fBeamEnergy*bEne[i]);
+	else if(det[i] == 32) fPMGain[2][2] = gain[i]*(aEne[i]-fBeamEnergy*bEne[i]);
+      }
+    }
+    //
+    AliInfo(Form("\n    ZDC PMT gains for p-p @ %1.0f+%1.0f GeV: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));     
+  }
+  else if(((fBeamType.CompareTo("A-A")) == 0)){
+    for(int i=0; i<12; i++){
+      if(beam[i]==1){
+        Float_t scalGainFactor = fBeamEnergy/2760.;
+        if(det[i]!=31 && det[i]!=32){
+	  for(Int_t j=0; j<5; j++) fPMGain[det[i]-1][j] = gain[i]/(aEne[i]*scalGainFactor);
+	}
+        else{
+	  for(int iq=1; iq<3; iq++) fPMGain[2][iq] = gain[i]/(aEne[i]*scalGainFactor);
+	}
+      }
+     }  
+     //
+     AliInfo(Form("\n    ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
+  }
+  else if(((fBeamType.CompareTo("p-A")) == 0)){
+    for(int i=0; i<12; i++){
+      if(beam[i]==0 && fBeamEnergy!=0.){
+        if(det[i]==1 || det[i]==2){
+	  for(Int_t j=0; j<5; j++) fPMGain[det[i]-1][j] = gain[i]*(aEne[i]/fBeamEnergy+bEne[i]);
+	}
+      }
+      if(beam[i]==1){
+        Float_t scalGainFactor = fBeamEnergy/2760.;
+	Float_t npartScalingFactor = 208./15.;
+        if(det[i]==4 || det[i]==5){
+	  for(Int_t j=0; j<5; j++) fPMGain[det[i]-1][j] = npartScalingFactor*gain[i]/(aEne[i]*scalGainFactor);
+	}
+        else if(det[i]==31 || det[i]==32){
+	  for(int iq=1; iq<3; iq++) fPMGain[2][iq] = npartScalingFactor*gain[i]/(aEne[i]*scalGainFactor);
+	}
+      }
+    }
+    AliInfo(Form("\n    ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));
+  }
+}
+
+//_____________________________________________________________________________
 void AliZDCDigitizer::CalculatePMTGains()
 {
 // Calculate PMT gain according to beam type and beam energy
@@ -474,8 +553,8 @@ void AliZDCDigitizer::CalculatePMTGains()
        fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;  //ZPC (p)
        fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM (Pb)
        // Npart max scales from 400 in Pb-Pb to ~8 in pPb -> *40.
-       fPMGain[3][j] = 40*50000./(4*scalGainFactor);  // ZNA (Pb)  	     
-       fPMGain[4][j] = 40*100000./(5*scalGainFactor); // ZPA (Pb)  
+       fPMGain[3][j] = 10*50000./(4*scalGainFactor);  // ZNA (Pb)  	     
+       fPMGain[4][j] = 10*100000./(5*scalGainFactor); // ZPA (Pb)  
     }
     AliInfo(Form("\n    ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));

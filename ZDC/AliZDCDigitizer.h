@@ -60,6 +60,7 @@ private:
   AliZDCDigitizer& operator=(const AliZDCDigitizer&);
 
   void    CalculatePMTGains();
+  void    ReadPMTGains();
 
   void    Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
                         Int_t &freeSpecN, Int_t &freeSpecP) const;
