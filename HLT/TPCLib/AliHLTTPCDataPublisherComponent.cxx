@@ -14,13 +14,13 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/// @file   AliHLTTPCRawReaderPublisherComponent.cxx
+/// @file   AliHLTTPCDataPublisherComponent.cxx
 /// @author Matthias Richter
 /// @date   2011-08-08
 /// @brief  
 ///
 
-#include "AliHLTTPCRawReaderPublisherComponent.h"
+#include "AliHLTTPCDataPublisherComponent.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusterMCData.h"
@@ -35,9 +35,9 @@
 #include <memory>
 #include <algorithm>
 
-ClassImp(AliHLTTPCRawReaderPublisherComponent)
+ClassImp(AliHLTTPCDataPublisherComponent)
 
-AliHLTTPCRawReaderPublisherComponent::AliHLTTPCRawReaderPublisherComponent()
+AliHLTTPCDataPublisherComponent::AliHLTTPCDataPublisherComponent()
   : AliHLTRawReaderPublisherComponent()
   , fArraySelected(NULL)
   , fClusters(NULL)
@@ -46,7 +46,7 @@ AliHLTTPCRawReaderPublisherComponent::AliHLTTPCRawReaderPublisherComponent()
   /// constructor
 }
 
-AliHLTTPCRawReaderPublisherComponent::~AliHLTTPCRawReaderPublisherComponent()
+AliHLTTPCDataPublisherComponent::~AliHLTTPCDataPublisherComponent()
 {
   /// destructor
   if (fpDecoder) delete fpDecoder;
@@ -54,19 +54,19 @@ AliHLTTPCRawReaderPublisherComponent::~AliHLTTPCRawReaderPublisherComponent()
 }
 
 
-const char* AliHLTTPCRawReaderPublisherComponent::GetComponentID()
+const char* AliHLTTPCDataPublisherComponent::GetComponentID()
 {
   /// inherited from AliHLTComponent: id of the component
   return "TPCDataPublisher";
 }
 
-AliHLTComponent* AliHLTTPCRawReaderPublisherComponent::Spawn()
+AliHLTComponent* AliHLTTPCDataPublisherComponent::Spawn()
 {
   /// inherited from AliHLTComponent: spawn function.
-  return new AliHLTTPCRawReaderPublisherComponent;
+  return new AliHLTTPCDataPublisherComponent;
 }
 
-int AliHLTTPCRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& evtData, 
+int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& evtData, 
 						   AliHLTComponentTriggerData& trigData, 
 						   AliHLTUInt8_t* outputPtr, 
 						   AliHLTUInt32_t& size, 
@@ -146,7 +146,7 @@ int AliHLTTPCRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventDat
   return iResult;
 }
 
-int AliHLTTPCRawReaderPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer* pContainer)
+int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublisherComponent::AliRawClusterContainer* pContainer)
 {
   // check the HLTOUT for availability of compressed data blocks
   int iResult=0;
@@ -307,7 +307,7 @@ int AliHLTTPCRawReaderPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCRawRead
   return nExtractedClusters;
 }
 
-int AliHLTTPCRawReaderPublisherComponent::DoInit( int argc, const char** argv )
+int AliHLTTPCDataPublisherComponent::DoInit( int argc, const char** argv )
 {
   /// inherited from AliHLTComponent: component initialisation and argument scan.
   int iResult=0;
@@ -340,7 +340,7 @@ int AliHLTTPCRawReaderPublisherComponent::DoInit( int argc, const char** argv )
   return iResult;
 }
 
-int AliHLTTPCRawReaderPublisherComponent::DoDeinit()
+int AliHLTTPCDataPublisherComponent::DoDeinit()
 {
   /// inherited from AliHLTComponent: component cleanup
   int iResult=0;
@@ -351,7 +351,7 @@ int AliHLTTPCRawReaderPublisherComponent::DoDeinit()
   return iResult;
 }
 
-int AliHLTTPCRawReaderPublisherComponent::ScanConfigurationArgument(int argc, const char** argv)
+int AliHLTTPCDataPublisherComponent::ScanConfigurationArgument(int argc, const char** argv)
 {
   /// inherited from AliHLTComponent: argument scan
   if (argc<1) return 0;
@@ -367,7 +367,7 @@ int AliHLTTPCRawReaderPublisherComponent::ScanConfigurationArgument(int argc, co
   return AliHLTRawReaderPublisherComponent::ScanConfigurationArgument(argc, argv);
 }
 
-int AliHLTTPCRawReaderPublisherComponent::GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t &specification) const
+int AliHLTTPCDataPublisherComponent::GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t &specification) const
 {
   /// inherited from AliHLTRawReaderPublisherComponent: get specification
 
@@ -386,7 +386,7 @@ int AliHLTTPCRawReaderPublisherComponent::GetSpecificationFromEquipmentId(int id
   return 0;
 }
 
-bool AliHLTTPCRawReaderPublisherComponent::IsSelected(int equipmentId) const
+bool AliHLTTPCDataPublisherComponent::IsSelected(int equipmentId) const
 {
   /// inherited from AliHLTRawReaderPublisherComponent: check if a block is selected or not
   /// check if a raw data block needs to be published. This is the case if
@@ -415,7 +415,7 @@ bool AliHLTTPCRawReaderPublisherComponent::IsSelected(int equipmentId) const
   return true;
 }
 
-AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::AliRawClusterContainer()
+AliHLTTPCDataPublisherComponent::AliRawClusterContainer::AliRawClusterContainer()
   : AliHLTLogging()
   , fBlockCount(0)
   , fTotalClusterCount(0)
@@ -432,12 +432,12 @@ AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::AliRawClusterConta
   // constructor
 }
 
-AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::~AliRawClusterContainer()
+AliHLTTPCDataPublisherComponent::AliRawClusterContainer::~AliRawClusterContainer()
 {
   // destructor
 }
 
-int AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::SetTargetBuffer(AliHLTUInt8_t* pBuffer, int size)
+int AliHLTTPCDataPublisherComponent::AliRawClusterContainer::SetTargetBuffer(AliHLTUInt8_t* pBuffer, int size)
 {
   // set/reset the external target buffer
   Clear();
@@ -446,7 +446,7 @@ int AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::SetTargetBuffe
   return 0;  
 }
 
-int AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::Sort()
+int AliHLTTPCDataPublisherComponent::AliRawClusterContainer::Sort()
 {
   // merge track model clusters into partition cluster blocks
 
@@ -464,26 +464,26 @@ int AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::Sort()
   return -ENOSYS;
 }
 
-int AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::CopyBlockDescriptors(AliHLTComponentBlockDataList& target) const
+int AliHLTTPCDataPublisherComponent::AliRawClusterContainer::CopyBlockDescriptors(AliHLTComponentBlockDataList& target) const
 {
   // fill block descriptors of extracted partition cluster blocks to target list
   target.insert(target.begin(), fDescriptors.begin(), fDescriptors.end());
   return fDescriptors.size();
 }
 
-AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::BeginPartitionClusterBlock(int count, AliHLTUInt32_t specification)
+AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCDataPublisherComponent::AliRawClusterContainer::BeginPartitionClusterBlock(int count, AliHLTUInt32_t specification)
 {
   /// iterator of partition clusters block of specification
   return ClusterIterator(count, AliHLTTPCDefinitions::RemainingClustersCompressedDataType(), specification, fCurrentBlock);
 }
 
-AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::BeginTrackModelClusterBlock(int count)
+AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCDataPublisherComponent::AliRawClusterContainer::BeginTrackModelClusterBlock(int count)
 {
   /// iterator of track model clusters
   return ClusterIterator(count, AliHLTTPCDefinitions::ClusterTracksCompressedDataType(), 0x23000500, fTrackModelClusters);
 }
 
-AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::ClusterIterator(int /*count*/, AliHLTComponentDataType dt, AliHLTUInt32_t specification, AliHLTTPCRawClusterData* &pData)
+AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCDataPublisherComponent::AliRawClusterContainer::ClusterIterator(int /*count*/, AliHLTComponentDataType dt, AliHLTUInt32_t specification, AliHLTTPCRawClusterData* &pData)
 {
   /// iterator of partition clusters block of specification
   fBlockCount++;
@@ -525,7 +525,7 @@ AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::iterator& AliHLTTP
   return fIterator;
 }
 
-AliHLTTPCRawCluster* AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::NextCluster(int slice, int partition)
+AliHLTTPCRawCluster* AliHLTTPCDataPublisherComponent::AliRawClusterContainer::NextCluster(int slice, int partition)
 {
   /// increment to next cluster
   fTotalClusterCount++;
@@ -546,7 +546,7 @@ AliHLTTPCRawCluster* AliHLTTPCRawReaderPublisherComponent::AliRawClusterContaine
   return data->fClusters+(data->fCount-1);
 }
 
-void  AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::Clear(Option_t * /*option*/)
+void  AliHLTTPCDataPublisherComponent::AliRawClusterContainer::Clear(Option_t * /*option*/)
 {
   /// internal cleanup
   fBlockCount=0;
@@ -561,12 +561,12 @@ void  AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::Clear(Option
   fState=0;
 }
 
-void AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::Print(Option_t */*option*/) const
+void AliHLTTPCDataPublisherComponent::AliRawClusterContainer::Print(Option_t */*option*/) const
 {
   /// print info
 }
 
-AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCRawReaderPublisherComponent::AliRawClusterContainer::iterator::Next(int slice, int partition)
+AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator::Next(int slice, int partition)
 {
   // increment iterator
   if (fContainer) {

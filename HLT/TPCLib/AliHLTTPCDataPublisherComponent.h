@@ -1,12 +1,12 @@
 //-*- Mode: C++ -*-
 // $Id$
-#ifndef ALIHLTTPCRAWREADERPUBLISHERCOMPONENT_H
-#define ALIHLTTPCRAWREADERPUBLISHERCOMPONENT_H
+#ifndef ALIHLTTPCDATAPUBLISHERCOMPONENT_H
+#define ALIHLTTPCDATAPUBLISHERCOMPONENT_H
 //* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/// @file   AliHLTTPCRawReaderPublisherComponent.h
+/// @file   AliHLTTPCDataPublisherComponent.h
 /// @author Matthias Richter
 /// @date   2011-11-18
 /// @brief  Specific publisher for TPC raw data from the AliRawReader
@@ -21,7 +21,7 @@ class AliHLTTPCClusterMCData;
 class AliHLTTPCDataCompressionDecoder;
 
 /**
- * @class AliHLTTPCRawReaderPublisherComponent
+ * @class AliHLTTPCDataPublisherComponent
  * This component uses the functionality of AliHLTRawReaderPublisherComponent
  * and overloads IsSelected and GetSpecificationFromEquipmentId. Blocks are
  * only generated if the corresponding partition is missing in HLTOUT.
@@ -58,12 +58,12 @@ class AliHLTTPCDataCompressionDecoder;
  *
  * @ingroup alihlt_tpc
  */
-class AliHLTTPCRawReaderPublisherComponent : public AliHLTRawReaderPublisherComponent {
+class AliHLTTPCDataPublisherComponent : public AliHLTRawReaderPublisherComponent {
 public:
   /// standard constructor
-  AliHLTTPCRawReaderPublisherComponent();
+  AliHLTTPCDataPublisherComponent();
   /// destructor
-  ~AliHLTTPCRawReaderPublisherComponent();
+  ~AliHLTTPCDataPublisherComponent();
 
   /// inherited from AliHLTComponent: id of the component
   virtual const char* GetComponentID();
@@ -205,14 +205,14 @@ protected:
   virtual bool IsSelected(int equipmentId) const;
 
 private:
-  AliHLTTPCRawReaderPublisherComponent(const AliHLTTPCRawReaderPublisherComponent&);
-  AliHLTTPCRawReaderPublisherComponent& operator=(const AliHLTTPCRawReaderPublisherComponent&);
+  AliHLTTPCDataPublisherComponent(const AliHLTTPCDataPublisherComponent&);
+  AliHLTTPCDataPublisherComponent& operator=(const AliHLTTPCDataPublisherComponent&);
 
   bool* fArraySelected; //! transient
   AliRawClusterContainer* fClusters; // target for decoded clusters
   AliHLTTPCDataCompressionDecoder* fpDecoder; // decoder for compressed cluster blocks
 
-  ClassDef(AliHLTTPCRawReaderPublisherComponent, 0)
+  ClassDef(AliHLTTPCDataPublisherComponent, 0)
 };
 
-#endif //ALIHLTTPCRAWREADERPUBLISHERCOMPONENT_H
+#endif //ALIHLTTPCDATAPUBLISHERCOMPONENT_H

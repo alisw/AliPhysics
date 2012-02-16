@@ -95,7 +95,7 @@ set ( CLASS_HDRS
     comp/AliHLTTPCDataCompressionMonitorComponent.h
     comp/AliHLTTPCDataCompressionDecoder.h
     comp/AliHLTTPCDataCompressionFilterComponent.h
-    AliHLTTPCRawReaderPublisherComponent.h
+    AliHLTTPCDataPublisherComponent.h
     AliHLTTPCClusterHistoComponent.h
     AliHLTTPCTrackHistoComponent.h
     AliHLTTPCTrackDumpComponent.h
