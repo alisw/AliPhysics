@@ -3,17 +3,14 @@
 
 // Event by event charge fluctuation analysis
 // Authors: Satyajit Jena and Panos Cristakoglou
-//          (PID by R+)
 
 class TH1F;
 class TH2F;
 class TString;
 class AliESDEvent;
 class AliESDtrackCuts;
-class AliESDtrack;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliESDpid.h"
 
 const Int_t nCentralityBins = 20;
 
@@ -51,7 +48,6 @@ class AliEbyEFluctuationAnalysisTask : public AliAnalysisTaskSE {
     fAnalysisMode = analysisMode;}
 
  private:
-
   AliESDEvent *fESD;    //! ESD object
   TList       *fOutputList; //! Output list
   TH1F        *fHistEventStats; //!event stats
@@ -76,24 +72,6 @@ class AliEbyEFluctuationAnalysisTask : public AliAnalysisTaskSE {
   AliEbyEFluctuationAnalysisTask(const AliEbyEFluctuationAnalysisTask&); // not implemented
   AliEbyEFluctuationAnalysisTask& operator=(const AliEbyEFluctuationAnalysisTask&); // not implemented
   
-  /*** PID functions ***/
-  Bool_t HasTPCPID(AliESDtrack *track) const; // has TPC PID
-  Bool_t HasTOFPID(AliESDtrack *track) const; // has TOF PID
-  Double_t MakeTPCPID(AliESDtrack *track, Double_t *nSigma) const; // make TPC PID
-  Double_t MakeTOFPID(AliESDtrack *track, Double_t *nSigma) const; // make TOF PID
-  void MakePID(AliESDtrack *track, Bool_t *pidFlag) const; // make PID
-  void InitPID(AliESDEvent *event);// init PID
-
-  /*** PID objects ***/
-  AliESDpid *fESDpid; // ESD pid
-
-  /*** PID histos ***/
-  TH2F *fHistoTPCdEdx; // TPC dEdx
-  TH2F *fHistoTOFbeta; // TOF beta
-  TH2F *fHistoNSigmaTPC[AliPID::kSPECIES]; // nsigma TPC
-  TH2F *fHistoNSigmaTOF[AliPID::kSPECIES]; // nsigma TOF
-    
-
   ClassDef(AliEbyEFluctuationAnalysisTask, 1); // example of analysis
 };
 
