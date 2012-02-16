@@ -19,8 +19,6 @@ class AliESDtrackCuts;
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
  
-enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
-enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };  
 
 class AliAnalysisTaskBF : public AliAnalysisTaskSE {
  public:
@@ -115,6 +113,9 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fAcceptanceParameterization = parameterization;}
 
   //pid
+  enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
+  enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };  
+
   void SetUseBayesianPID(Double_t gMinProbabilityValue) {
     fUsePID = kTRUE; fUsePIDPropabilities = kTRUE;
     fMinAcceptedPIDProbability = gMinProbabilityValue; }
