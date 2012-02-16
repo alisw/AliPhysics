@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTRAWREADERPUBLISHERCOMPONENT_H
 #define ALIHLTRAWREADERPUBLISHERCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -126,15 +126,14 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
   virtual AliHLTComponent* Spawn();
 
  protected:
-  /**
-   * Init method.
-   */
+  /// inherited from AliHLTComponent: component initialisation and argument scan.
   int DoInit( int argc, const char** argv );
 
-  /**
-   * Deinit method.
-   */
+  /// inherited from AliHLTComponent: component cleanup
   int DoDeinit();
+
+  /// inherited from AliHLTComponent: scan configuration argument
+  int ScanConfigurationArgument(int argc, const char** argv);
 
   /**
    * Data source method.
@@ -154,19 +153,25 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
 
   using AliHLTOfflineDataSource::GetEvent;
 
+  /// check if block is selected for publishing
+  /// default method returns true, childs can overload to discard blocks
   virtual bool IsSelected(int /*equipmentId*/) const {return true;}
 
+  int GetVerbosity() const {return fVerbosity;}
+
  protected:
+  /// get the data specification from the equipment id
+  /// default method just returns the equipment id
   virtual int GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t &specification) const;
+
+  /** max output block size, estimated during DoInit */
+  Int_t                   fMaxSize;                                //!transient
 
  private:
   /** copy constructor prohibited */
   AliHLTRawReaderPublisherComponent(const AliHLTRawReaderPublisherComponent&);
   /** assignment operator prohibited */
   AliHLTRawReaderPublisherComponent& operator=(const AliHLTRawReaderPublisherComponent&);
-
-  /** max output block size, estimated during DoInit */
-  Int_t                   fMaxSize;                                //!transient
 
   /** detector string */
   TString                 fDetector;                               //!transient
@@ -189,7 +194,7 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
   /** skip the generation of empty data blocks */
   Bool_t                  fSkipEmpty;                              //!transient
 
-  ClassDef(AliHLTRawReaderPublisherComponent, 1);
+  ClassDef(AliHLTRawReaderPublisherComponent, 0);
 };
 
 #endif

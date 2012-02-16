@@ -1,11 +1,10 @@
 // $Id$
 
 ///**************************************************************************
-///* This file is property of and copyright by the ALICE HLT Project        * 
+///* This file is property of and copyright by the                          * 
 ///* ALICE Experiment at CERN, All rights reserved.                         *
 ///*                                                                        *
 ///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-///*                  for The ALICE HLT Project.                            *
 ///*                                                                        *
 ///* Permission to use, copy, modify and distribute this software and its   *
 ///* documentation strictly for non-commercial purposes is hereby granted   *
@@ -19,14 +18,8 @@
 /// @file   AliHLTRawReaderPublisherComponent.cxx
 /// @author Matthias Richter
 /// @date   
-/// @brief  A general tree publisher component for the AliRawReader.
-///
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @brief  Publisher component for raw data blocks through the AliRawReader
+///         of the offline environment
 
 #include "AliHLTRawReaderPublisherComponent.h"
 #include "AliRawReader.h"
@@ -50,129 +43,47 @@ AliHLTRawReaderPublisherComponent::AliHLTRawReaderPublisherComponent()
   fSpecification(kAliHLTVoidDataSpec),
   fSkipEmpty(kFALSE)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // contructor
 }
 
 AliHLTRawReaderPublisherComponent::~AliHLTRawReaderPublisherComponent()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 const char* AliHLTRawReaderPublisherComponent::GetComponentID()
 {
-  // see header file for class documentation
+  /// inherited from AliHLTComponent: id of the component
   return "AliRawReaderPublisher";
 }
 
 AliHLTComponentDataType AliHLTRawReaderPublisherComponent::GetOutputDataType()
 {
-  // see header file for class documentation
+  /// inherited from AliHLTComponent: output data type of the component.
   return fDataType;
 }
 
 void AliHLTRawReaderPublisherComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-  // see header file for class documentation
+  /// inherited from AliHLTComponent: output data size estimator
   constBase=fMaxSize;
   inputMultiplier=1;
 }
 
 AliHLTComponent* AliHLTRawReaderPublisherComponent::Spawn()
 {
-  // see header file for class documentation
+  /// inherited from AliHLTComponent: spawn function.
   return new AliHLTRawReaderPublisherComponent;
 }
 
 int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  /// inherited from AliHLTComponent: component initialisation and argument scan.
   int iResult=0;
 
   // scan arguments
-  TString argument="";
-  int bMissingParam=0;
-  for (int i=0; i<argc && iResult>=0; i++) {
-    argument=argv[i];
-    if (argument.IsNull()) continue;
-
-    // -detector
-    if (argument.CompareTo("-detector")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      fDetector=argv[i];
-
-      // -equipmentid, -minid
-    } else if (argument.CompareTo("-equipmentid")==0 ||
-	       argument.CompareTo("-minid")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      TString parameter(argv[i]);
-      parameter.Remove(TString::kLeading, ' '); // remove all blanks
-      if (parameter.IsDigit()) {
-	fMinEquId=(AliHLTUInt32_t)parameter.Atoi();
-      } else {
-	HLTError("wrong parameter for argument %s, number expected", argument.Data());
-	iResult=-EINVAL;
-      }
-
-      // -maxid
-    } else if (argument.CompareTo("-maxid")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      TString parameter(argv[i]);
-      parameter.Remove(TString::kLeading, ' '); // remove all blanks
-      if (parameter.IsDigit()) {
-	fMaxEquId=(AliHLTUInt32_t)parameter.Atoi();
-      } else {
-	HLTError("wrong parameter for argument %s, number expected", argument.Data());
-	iResult=-EINVAL;
-      }
-
-      // -verbose
-    } else if (argument.CompareTo("-verbose")==0) {
-      fVerbosity++;
-
-      // -silent
-    } else if (argument.CompareTo("-silent")==0) {
-      fVerbosity=0;
-
-      // -skipempty
-    } else if (argument.CompareTo("-skipempty")==0) {
-      fSkipEmpty=kTRUE;
-
-      // -datatype
-    } else if (argument.CompareTo("-datatype")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      memcpy(&fDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
-      if ((bMissingParam=(++i>=argc))) break;
-      memcpy(&fDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize, (Int_t)strlen(argv[i])));
-
-      // -dataspec
-    } else if (argument.CompareTo("-dataspec")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      TString parameter(argv[i]);
-      parameter.Remove(TString::kLeading, ' '); // remove all blanks
-      if (parameter.IsDigit()) {
-	fSpecification=(AliHLTUInt32_t)parameter.Atoi();
-      } else if (parameter.BeginsWith("0x") &&
-		 parameter.Replace(0,2,"",0).IsHex()) {
-	sscanf(parameter.Data(),"%x", &fSpecification);
-      } else {
-	HLTError("wrong parameter for argument %s, number expected", argument.Data());
-	iResult=-EINVAL;
-      }
-    } else {
-      HLTError("unknown argument %s", argument.Data());
-      iResult=-EINVAL;
-    }
-  }
-  if (bMissingParam) {
-    HLTError("missing parameter for argument %s", argument.Data());
-    iResult=-EINVAL;
-  }
-
-  if (iResult<0) return iResult;
+  if (argc && (iResult = ConfigureFromArgumentString(argc, argv)) < 0)
+    return iResult;
 
   if (!fDetector.IsNull()) {
     int ddloffset=-1;
@@ -212,9 +123,99 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 
 int AliHLTRawReaderPublisherComponent::DoDeinit()
 {
-  // see header file for class documentation
+  /// inherited from AliHLTComponent: component cleanup
   int iResult=0;
   return iResult;
+}
+
+int AliHLTRawReaderPublisherComponent::ScanConfigurationArgument(int argc, const char** argv)
+{
+  /// inherited from AliHLTComponent: argument scan
+  if (argc<1) return 0;
+  int bMissingParam=0;
+  int i=0;
+  TString argument=argv[i];
+
+  do {
+    // -detector
+    if (argument.CompareTo("-detector")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      fDetector=argv[i];
+      return 2;
+
+      // -equipmentid, -minid
+    } else if (argument.CompareTo("-equipmentid")==0 ||
+	       argument.CompareTo("-minid")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter(argv[i]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      if (parameter.IsDigit()) {
+	fMinEquId=(AliHLTUInt32_t)parameter.Atoi();
+	return 2;
+      } else {
+	HLTError("wrong parameter for argument %s, number expected", argument.Data());
+	return -EINVAL;
+      }
+
+      // -maxid
+    } else if (argument.CompareTo("-maxid")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter(argv[i]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      if (parameter.IsDigit()) {
+	fMaxEquId=(AliHLTUInt32_t)parameter.Atoi();
+	return 2;
+      } else {
+	HLTError("wrong parameter for argument %s, number expected", argument.Data());
+	return -EINVAL;
+      }
+
+      // -verbose
+    } else if (argument.CompareTo("-verbose")==0) {
+      fVerbosity++;
+      return 1;
+
+      // -silent
+    } else if (argument.CompareTo("-silent")==0) {
+      fVerbosity=0;
+      return 1;
+
+      // -skipempty
+    } else if (argument.CompareTo("-skipempty")==0) {
+      fSkipEmpty=kTRUE;
+      return 1;
+
+      // -datatype
+    } else if (argument.CompareTo("-datatype")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      memcpy(&fDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
+      if ((bMissingParam=(++i>=argc))) break;
+      memcpy(&fDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize, (Int_t)strlen(argv[i])));
+      return 3;
+
+      // -dataspec
+    } else if (argument.CompareTo("-dataspec")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter(argv[i]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      if (parameter.IsDigit()) {
+	fSpecification=(AliHLTUInt32_t)parameter.Atoi();
+      } else if (parameter.BeginsWith("0x") &&
+		 parameter.Replace(0,2,"",0).IsHex()) {
+	sscanf(parameter.Data(),"%x", &fSpecification);
+      } else {
+	HLTError("wrong parameter for argument %s, number expected", argument.Data());
+	return -EINVAL;
+      }
+      return 2;
+    }
+  } while (0); // using do-while only to have break available
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    return -EINVAL;
+  }
+
+  return -EPROTO;
 }
 
 int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& /*evtData*/, 
@@ -223,7 +224,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 						AliHLTUInt32_t& size, 
 						vector<AliHLTComponentBlockData>& outputBlocks)
 {
-  // see header file for class documentation
+  /// inherited from AliHLTDataSource: get the event
   int iResult=0;
   AliHLTUInt32_t capacity=size;
   size=0;
@@ -251,17 +252,18 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       }
       unsigned int readSize=pRawReader->GetDataSize()+sizeof(AliRawDataHeader);
       int id=pRawReader->GetEquipmentId();
-      if (fVerbosity>0) {
-	AliInfo(Form("got header for id %d, size %d", id, readSize));
-      } else {
-	AliDebug(0, Form("got header for id %d, size %d", id, readSize));
-      }
       if (fMinEquId>id || fMaxEquId<id) {
 	AliError(Form("id %d returned from RawReader is outside range [%d,%d]", id, fMinEquId, fMaxEquId));
 	continue;
       }
       processedIds.push_back(id);
-      if (!IsSelected(id)) continue;
+      bool isSelected=IsSelected(id);
+      if (fVerbosity>0) {
+	AliInfo(Form("got header for id %d, size %d, %s", id, readSize, isSelected?"selected":"discarded"));
+      } else {
+	AliDebug(0, Form("got header for id %d, size %d", id, readSize));
+      }
+      if (!isSelected) continue;
       if (readSize+offset<=capacity) {
 	memcpy(outputPtr+offset, pHeader, sizeof(AliRawDataHeader));
 	if (readSize>sizeof(AliRawDataHeader)) {
@@ -340,6 +342,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 }
 
 int AliHLTRawReaderPublisherComponent::GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t& specification) const {
-  // see header file for class documentation
+  /// get the data specification from the equipment id
+  /// default method just returns the equipment id
   return specification=id;
 }
