@@ -44,6 +44,7 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "AliTPCMonitorDateMonitor.h"
 #include "event.h"
 #include "monitor.h"
+#include <cstdlib>
 
 ClassImp(AliTPCMonitorDateMonitor)
 
