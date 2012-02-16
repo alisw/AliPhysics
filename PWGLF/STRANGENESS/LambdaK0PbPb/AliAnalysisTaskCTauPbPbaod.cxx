@@ -303,7 +303,9 @@ static Bool_t AcceptCascade(const AliAODcascade *cs, const AliAODEvent *aod) {
 static Bool_t AcceptPID(const AliPIDResponse *pidResponse, 
 			const AliAODTrack *ptrack, const TClonesArray *stack) {
 
-  Bool_t isProton=kTRUE;
+  const AliAODPid *pid=ptrack->GetDetPid();
+  if (!pid) return kTRUE;
+  if (pid->GetTPCmomentum() > 1.) return kTRUE;
 
   if (stack) {
     // MC PID
@@ -313,23 +315,18 @@ static Bool_t AcceptPID(const AliPIDResponse *pidResponse,
       if (plab<ntrk) {
          AliAODMCParticle *pp=(AliAODMCParticle*)stack->UncheckedAt(plab);
          if (pp->Charge() > 0) {
-            if (pp->GetPdgCode() != kProton) isProton=kFALSE;
+            if (pp->GetPdgCode() == kProton)    return kTRUE;
          } else {
-            if (pp->GetPdgCode() != kProtonBar) isProton=kFALSE;
+            if (pp->GetPdgCode() == kProtonBar) return kTRUE;
          }
        }
   } else {
     // Real PID
-    const AliAODPid *pid=ptrack->GetDetPid();
-    if (pid) {
-       if (pid->GetTPCmomentum() < 1.) {
-          Double_t nsig=pidResponse->NumberOfSigmasTPC(ptrack,AliPID::kProton);
-          if (TMath::Abs(nsig) > 3.) isProton=kFALSE;
-       }
-    }
+    Double_t nsig=pidResponse->NumberOfSigmasTPC(ptrack,AliPID::kProton);
+    if (TMath::Abs(nsig) < 3.) return kTRUE;
   }
   
-  return isProton; 
+  return kFALSE; 
 }
 
 void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
@@ -537,11 +534,11 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
            if (code==kLambda0) {
               if ( xcode != kXiMinus )
 	         if( xcode != 3322 ) goto noas; 
-	      fLambdaFromXi->Fill(ptAs,ltAs,xi->Pt());
+	      if (ctL) fLambdaFromXi->Fill(ptAs,ltAs,xi->Pt());
            } else if (code==kLambda0Bar) {
               if ( xcode != kXiPlusBar )
 	         if( xcode != -3322 ) goto noas; 
-	      fLambdaBarFromXiBar->Fill(ptAs,ltAs,xi->Pt());
+	      if (ctL) fLambdaBarFromXiBar->Fill(ptAs,ltAs,xi->Pt());
            }
 	 } else {
 	   if (code == kLambda0) {
