@@ -789,7 +789,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       else{
         val[kBC]          = (bc>=kNbunchCross)?(kNbunchCross-1):bc;
         val[kYrez]        = tin->GetY()-ymc;
-        val[kZrez]        = tin->GetZ()-zmc;
+        val[kZrez]        = rc?(tin->GetZ()-zmc):(fTracklet->GetdQdl()*1.8e-4 - 0.9);
         val[kPrez]        = (TMath::ASin(tin->GetSnp())-TMath::ATan(dydx0))*TMath::RadToDeg();
         if((H = (THnSparseI*)fContainer->At(kMCtrackIn))) H->Fill(val);
       }
@@ -861,7 +861,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     dz = z - zmc;
     val[kYrez] = dy - dz*tilt;
     val[kPrez] = TMath::ATan((dydx - dydx0)/(1.+ dydx*dydx0))*TMath::RadToDeg();
-    val[kZrez] = dz + dy*tilt;
+    val[kZrez] = rc?(dz + dy*tilt):(fTracklet->GetdQdl()*3.e-4 - 1.5);
 //      val[kNdim] = pt/pt0-1.;
     if((H = (THnSparse*)fContainer->At(kMCtracklet))) H->Fill(val);
 
