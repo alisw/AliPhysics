@@ -43,17 +43,17 @@ class AliTOFHeader : public TObject {
   virtual ~AliTOFHeader();
 
   void SetTOFResolution(Float_t res) {fTOFtimeResolution=res;}
-  Float_t GetTOFResolution() const {return fTOFtimeResolution;}
+  Float_t GetTOFResolution()       const {return fTOFtimeResolution;}
 
-  void SetT0spread(Float_t res) {fT0spread=res;}
-  Float_t GetT0spread() const {return fT0spread;}
+  void SetT0spread(Float_t res)      {fT0spread=res;}
+  Float_t GetT0spread()            const {return fT0spread;}
 
   Float_t GetDefaultEventTimeVal() const {return fDefaultEventTimeValue;}
   Float_t GetDefaultEventTimeRes() const {return fDefaultEventTimeRes;}
   TArrayF *GetEventTimeValues()    const {return fEventTimeValues;}
   TArrayF *GetEventTimeRes()       const {return fEventTimeRes;}
   TArrayI *GetNvalues()            const {return fNvalues;}
-  Int_t   GetNbins()               const {return fNvalues->GetSize();}
+  Int_t GetNbins()                 const {return fNvalues ? fNvalues->GetSize() : 0;}
 
   void SetDefaultEventTimeVal(Float_t val) {fDefaultEventTimeValue=val;}
   void SetDefaultEventTimeRes(Float_t res) {fDefaultEventTimeRes=res;}
@@ -82,10 +82,3 @@ class AliTOFHeader : public TObject {
 };
 
 #endif
-
-
-
-
-
-
-    

@@ -18,7 +18,7 @@
 //           for the Event Data Summary class
 //           This class contains the Event Time
 //           as estimated by the TOF combinatorial algorithm
-// Origin: A.De Caro, decaro@lsa.infn.it
+// Origin: A.De Caro, decaro@sa.infn.it
 //-----------------------------------------------------------------
 
 //---- standard headers ----
@@ -58,20 +58,25 @@ AliTOFHeader::AliTOFHeader(Float_t defEvTime, Float_t defResEvTime,
   fDefaultEventTimeValue(defEvTime),
   fDefaultEventTimeRes(defResEvTime),
   fNbins(nDifPbins),
-  fEventTimeValues(new TArrayF(nDifPbins)),
-  fEventTimeRes(new TArrayF(nDifPbins)),
-  fNvalues(new TArrayI(nDifPbins)),
+  fEventTimeValues(0),
+  fEventTimeRes(0),
+  fNvalues(0),
   fTOFtimeResolution(tofTimeRes),
   fT0spread(t0spread)
 {
   //
-  // Constructor for vertex Z from pixels
+  // Constructor for TOF header
   //
 
-  for (Int_t ii=0; ii<fNbins; ii++) {
-    fEventTimeValues->SetAt(times[ii],ii);
-    fEventTimeRes->SetAt(res[ii],ii);
-    fNvalues->SetAt(nPbin[ii],ii);
+  if (fNbins>0) {
+    fEventTimeValues = new TArrayF(fNbins);
+    fEventTimeRes = new TArrayF(fNbins);
+    fNvalues = new TArrayI(fNbins);
+    for (Int_t ii=0; ii<fNbins; ii++) {
+      fEventTimeValues->SetAt(times[ii],ii);
+      fEventTimeRes->SetAt(res[ii],ii);
+      fNvalues->SetAt(nPbin[ii],ii);
+    }
   }
 
 }
@@ -82,9 +87,9 @@ AliTOFHeader::AliTOFHeader(const AliTOFHeader &source):
   fDefaultEventTimeValue(source.fDefaultEventTimeValue),
   fDefaultEventTimeRes(source.fDefaultEventTimeRes),
   fNbins(source.fNbins),
-  fEventTimeValues(new TArrayF(fNbins)),
-  fEventTimeRes(new TArrayF(fNbins)),
-  fNvalues(new TArrayI(fNbins)),
+  fEventTimeValues(0),
+  fEventTimeRes(0),
+  fNvalues(0),
   fTOFtimeResolution(source.fTOFtimeResolution),
   fT0spread(source.fT0spread)
 {
@@ -92,12 +97,17 @@ AliTOFHeader::AliTOFHeader(const AliTOFHeader &source):
   // Copy constructor
   //
 
-
-  for(Int_t i=0;i<fNbins;i++) {
-    fEventTimeValues->SetAt(source.fEventTimeValues->GetAt(i),i);
-    fEventTimeRes->SetAt(source.fEventTimeRes->GetAt(i),i);
-    fNvalues->SetAt(source.fNvalues->GetAt(i),i);
+  if (fNbins>0) {
+    fEventTimeValues = new TArrayF(fNbins);
+    fEventTimeRes = new TArrayF(fNbins);
+    fNvalues = new TArrayI(fNbins);
+    for(Int_t i=0;i<fNbins;i++) {
+      (*fEventTimeValues)[i]=source.fEventTimeValues->At(i);
+      (*fEventTimeRes)[i]=source.fEventTimeRes->At(i);
+      (*fNvalues)[i]=source.fNvalues->At(i);
+    }
   }
+
 
 }
 //--------------------------------------------------------------------------
@@ -111,19 +121,24 @@ AliTOFHeader &AliTOFHeader::operator=(const AliTOFHeader &source){
     fDefaultEventTimeValue=source.fDefaultEventTimeValue;
     fDefaultEventTimeRes=source.fDefaultEventTimeRes;
     fNbins=source.fNbins;
-    delete fEventTimeValues;
-    fEventTimeValues=new TArrayF(fNbins);
-    delete fEventTimeRes;
-    fEventTimeRes=new TArrayF(fNbins);
-    delete fNvalues;
-    fNvalues=new TArrayI(fNbins);
     fTOFtimeResolution=source.fTOFtimeResolution;
     fT0spread=source.fT0spread;
-    for(Int_t i=0;i<fNbins;i++) {
-      fEventTimeValues->SetAt(source.fEventTimeValues->GetAt(i),i);
-      fEventTimeRes->SetAt(source.fEventTimeRes->GetAt(i),i);
-      fNvalues->SetAt(source.fNvalues->GetAt(i),i);
+
+    if (fNbins>0) {
+      fEventTimeValues = new TArrayF(fNbins);
+      fEventTimeRes = new TArrayF(fNbins);
+      fNvalues = new TArrayI(fNbins);
+      for(Int_t i=0;i<fNbins;i++) {
+	(*fEventTimeValues)[i]=source.fEventTimeValues->At(i);
+	(*fEventTimeRes)[i]=source.fEventTimeRes->At(i);
+	(*fNvalues)[i]=source.fNvalues->At(i);
+      }
+    } else {
+      fEventTimeValues = 0;
+      fEventTimeRes = 0;
+      fNvalues = 0;
     }
+
   }
   return *this;
 }
@@ -134,9 +149,9 @@ void AliTOFHeader::Copy(TObject &obj) const {
   // to allow run time copying without casting
   // in AliESDEvent
 
-  if(this==&obj)return;
+  if (this==&obj) return;
   AliTOFHeader *robj = dynamic_cast<AliTOFHeader*>(&obj);
-  if(!robj)return; // not an AliTOFHeader
+  if (!robj) return; // not an AliTOFHeader
   *robj = *this;
 
 }
@@ -145,9 +160,19 @@ void AliTOFHeader::Copy(TObject &obj) const {
 AliTOFHeader::~AliTOFHeader()
 {
 
-  delete fEventTimeValues;
-  delete fEventTimeRes;
-  delete fNvalues;
+  fNbins = 0;
+  if (fEventTimeValues) {
+    delete fEventTimeValues;
+    fEventTimeValues=0;
+  }
+  if (fEventTimeRes) {
+    delete fEventTimeRes;
+    fEventTimeRes=0;
+  }
+  if (fNvalues) {
+    delete fNvalues;
+    fNvalues=0;
+  }
 
 }
 
@@ -159,9 +184,20 @@ void AliTOFHeader::SetNbins(Int_t nbins)
   //
 
   fNbins=nbins;
-  fEventTimeValues->Set(nbins);
-  fEventTimeRes->Set(nbins);
-  fNvalues->Set(nbins);
+  if (!fEventTimeValues)
+    fEventTimeValues = new TArrayF(nbins);
+  else
+    fEventTimeValues->Set(nbins);
+
+  if (!fEventTimeRes)
+    fEventTimeRes = new TArrayF(nbins);
+  else
+    fEventTimeRes->Set(nbins);
+
+  if (!fNvalues)
+    fNvalues = new TArrayI(nbins);
+  else
+    fNvalues->Set(nbins);
 
 }
 //--------------------------------------------------------------------------
@@ -172,8 +208,13 @@ void AliTOFHeader::SetEventTimeValues(TArrayF *arr)
   //
 
   fNbins=arr->GetSize();
-  fEventTimeValues->Set(arr->GetSize());
-  for (Int_t ii=0; ii<arr->GetSize(); ii++)
+
+  if (!fEventTimeValues)
+    fEventTimeValues = new TArrayF(fNbins);
+  else
+    fEventTimeValues->Set(fNbins);
+
+  for (Int_t ii=0; ii<fNbins; ii++)
     fEventTimeValues->SetAt(arr->GetAt(ii),ii);
 
 }
@@ -185,8 +226,13 @@ void AliTOFHeader::SetEventTimeRes(TArrayF *arr)
   //
 
   fNbins=arr->GetSize();
-  fEventTimeRes->Set(arr->GetSize());
-  for (Int_t ii=0; ii<arr->GetSize(); ii++)
+
+  if (!fEventTimeRes)
+    fEventTimeRes = new TArrayF(fNbins);
+  else
+    fEventTimeRes->Set(fNbins);
+
+  for (Int_t ii=0; ii<fNbins; ii++)
     fEventTimeRes->SetAt(arr->GetAt(ii),ii);
 
 }
@@ -198,8 +244,13 @@ void AliTOFHeader::SetNvalues(TArrayI *arr)
   //
 
   fNbins=arr->GetSize();
-  fNvalues->Set(arr->GetSize());
-  for (Int_t ii=0; ii<arr->GetSize(); ii++)
+
+  if (!fNvalues)
+    fNvalues = new TArrayI(fNbins);
+  else
+    fNvalues->Set(fNbins);
+
+  for (Int_t ii=0; ii<fNbins; ii++)
     fNvalues->SetAt(arr->GetAt(ii),ii);
 
 }

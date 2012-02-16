@@ -372,9 +372,9 @@ void AliESDpid::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
     }
 
 
-    AliTOFHeader *tofHeader =(AliTOFHeader*)event->GetTOFHeader();
+    AliTOFHeader *tofHeader = (AliTOFHeader*)event->GetTOFHeader();
 
-    if(tofHeader){ // read global info and T0-TOF info from ESD
+    if (tofHeader) { // read global info and T0-TOF info from ESD
       fTOFResponse.SetTimeResolution(tofHeader->GetTOFResolution());
       t0spread = tofHeader->GetT0spread(); // read t0 sprad
       if(t0spread < 10) t0spread = 80;
@@ -386,15 +386,15 @@ void AliESDpid::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	if(startTimeRes[i] < 1.e-5) startTimeRes[i] = t0spread;
       }
 
-      TArrayI *ibin=tofHeader->GetNvalues();
-      TArrayF *t0Bin=tofHeader->GetEventTimeValues();
-      TArrayF *t0ResBin=tofHeader->GetEventTimeRes();
+      TArrayI *ibin=(TArrayI*)tofHeader->GetNvalues();
+      TArrayF *t0Bin=(TArrayF*)tofHeader->GetEventTimeValues();
+      TArrayF *t0ResBin=(TArrayF*)tofHeader->GetEventTimeRes();
       for(Int_t j=0;j < tofHeader->GetNbins();j++){ // fill T0-TOF in p-bins
 	Int_t icurrent = (Int_t)ibin->GetAt(j);
 	startTime[icurrent]=t0Bin->GetAt(j);
 	startTimeRes[icurrent]=t0ResBin->GetAt(j);
- 	if(startTimeRes[icurrent] < 1.e-5) startTimeRes[icurrent] = t0spread;
-     }
+	if(startTimeRes[icurrent] < 1.e-5) startTimeRes[icurrent] = t0spread;
+      }
     }
 
     // for cut of 3 sigma on t0 spread
