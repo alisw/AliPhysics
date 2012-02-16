@@ -2,7 +2,7 @@
 // $Id$
 #ifndef ALIHLTTPCDATACOMPRESSIONDECODER_H
 #define ALIHLTTPCDATACOMPRESSIONDECODER_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -556,6 +556,8 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
 
   const AliHLTTPCRawCluster *clusters = clusterData->fClusters;
   for (int i=0; i<nCount; i++) {
+    AliHLTUInt32_t id=GetClusterId(i);
+    const AliHLTTPCClusterMCLabel* pMC=GetMCLabel(id);
     c.Next(slice, partition);
     c.SetPadRow(clusters[i].GetPadRow());
     c.SetPad(clusters[i].GetPad()+PadShift());
@@ -564,6 +566,7 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
     c.SetSigmaZ2(clusters[i].GetSigmaZ2());
     c.SetCharge(clusters[i].GetCharge());
     c.SetQMax(clusters[i].GetQMax());
+    if (pMC) c.SetMC(pMC);
   }
   return nCount;
 }

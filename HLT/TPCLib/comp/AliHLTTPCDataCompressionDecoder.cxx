@@ -1,10 +1,9 @@
 // $Id$
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -183,7 +182,7 @@ int AliHLTTPCDataCompressionDecoder::AddClusterMCData(const AliHLTComponentBlock
 
 int AliHLTTPCDataCompressionDecoder::AddClusterIds(const AliHLTComponentBlockData* pDesc)
 {
-  /// add cluster id block for remaining or track model clusters
+  /// add cluster id block for partition or track model clusters
   if (!pDesc) return -EINVAL;
   if (pDesc->fDataType==AliHLTTPCDefinitions::ClusterIdTracksDataType()) {
     fTrackModelClusterIds.fIds=reinterpret_cast<AliHLTUInt32_t*>(pDesc->fPtr);
@@ -211,6 +210,8 @@ int AliHLTTPCDataCompressionDecoder::AddClusterIds(const AliHLTComponentBlockDat
 AliHLTUInt32_t AliHLTTPCDataCompressionDecoder::GetClusterId(int clusterNo) const
 {
   /// get the cluster id from the current cluster id block
+  /// clusters ids correctly link the MC label from the separate MC data block
+  /// to the cluster. The option is enabled by default in the simulation.
   if (!fCurrentClusterIds ||
       (int)fCurrentClusterIds->fSize<=clusterNo ||
       clusterNo<0)
@@ -221,6 +222,8 @@ AliHLTUInt32_t AliHLTTPCDataCompressionDecoder::GetClusterId(int clusterNo) cons
 const AliHLTTPCClusterMCLabel* AliHLTTPCDataCompressionDecoder::GetMCLabel(AliHLTUInt32_t clusterId) const
 {
   /// get MC data for a cluster Id
+  /// MC data is sent in a separate data block to keep the raw compressed
+  /// format free from any overhead
   if (clusterId==kAliHLTVoidDataSpec) return NULL;
 
   unsigned slice=AliHLTTPCSpacePointData::GetSlice(clusterId);
@@ -238,7 +241,7 @@ const AliHLTTPCClusterMCLabel* AliHLTTPCDataCompressionDecoder::GetMCLabel(AliHL
 
 void AliHLTTPCDataCompressionDecoder::Clear(const char* option)
 {
-  // cleanup
+  /// cleanup, tabula rase for next event
   if (fpDataInflaterPartition) fpDataInflaterPartition->Clear(option);
   if (fpDataInflaterTrack) fpDataInflaterTrack->Clear(option);
   if (fpClusterMerger) fpClusterMerger->Clear();
