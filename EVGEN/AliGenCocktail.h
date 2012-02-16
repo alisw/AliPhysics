@@ -60,7 +60,7 @@ class AliGenCocktail : public AliGenerator
     AliGenCocktail(const AliGenCocktail &cocktail);
     AliGenCocktail & operator=(const AliGenCocktail & rhs);
 
-    ClassDef(AliGenCocktail,1) // Particle cocktail generator a la SHAKER
+    ClassDef(AliGenCocktail, 2) // Particle cocktail generator a la SHAKER
 };
 
 #endif
