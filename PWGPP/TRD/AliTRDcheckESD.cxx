@@ -2413,39 +2413,31 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   
   TF1* funcConst = new TF1("constFunc", "[0]", 1.0, 3.0);
   if(trendValues) {
-    if(hTRDEffPtPosAll) { 
-      if(hTRDEffPtPosAll->Integral()>0.1) {
-        hTRDEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-        trendValues[0] = funcConst->GetParameter(0);
-        trendValues[1] = funcConst->GetParError(0);
-      }
+    if(hTRDEffPtPosAll && hTRDEffPtPosAll->Integral()>0.1) {
+      hTRDEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[0] = funcConst->GetParameter(0);
+      trendValues[1] = funcConst->GetParError(0);
     }
   }
   if(trendValues) { 
-    if(hTRDEffPtNegAll) {
-      if(hTRDEffPtNegAll->Integral()>0.1) {
-        hTRDEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-        trendValues[2] = funcConst->GetParameter(0);
-        trendValues[3] = funcConst->GetParError(0);
-      }
+    if(hTRDEffPtNegAll && hTRDEffPtNegAll->Integral()>0.1) {
+      hTRDEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[2] = funcConst->GetParameter(0);
+      trendValues[3] = funcConst->GetParError(0);
     }
   }
   if(trendValues) { 
-    if(hTOFEffPtPosAll) {
-      if(hTOFEffPtPosAll->Integral()>0.1) {
-        hTOFEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-        trendValues[4] = funcConst->GetParameter(0);
-        trendValues[5] = funcConst->GetParError(0);
-      }
+    if(hTOFEffPtPosAll && hTOFEffPtPosAll->Integral()>0.1) {
+      hTOFEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[4] = funcConst->GetParameter(0);
+      trendValues[5] = funcConst->GetParError(0);
     }
   }
   if(trendValues) { 
-    if(hTOFEffPtNegAll) {
-      if(hTOFEffPtNegAll->Integral()>0.1) {
-        hTOFEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-        trendValues[6] = funcConst->GetParameter(0);
-        trendValues[7] = funcConst->GetParError(0);
-      }
+    if(hTOFEffPtNegAll && hTOFEffPtNegAll->Integral()>0.1) {
+      hTOFEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[6] = funcConst->GetParameter(0);
+      trendValues[7] = funcConst->GetParError(0);
     }
   }
   
@@ -2483,8 +2475,8 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   SetStyle(hTRDEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
   SetStyle(hTRDEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
   SetStyle(hTRDEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
-  hTRDEffPtPosAll->Draw("same"); leg->AddEntry(hTRDEffPtPosAll, "pos. (#geq 1 tracklet)", "p");
-  hTRDEffPtNegAll->Draw("same"); leg->AddEntry(hTRDEffPtNegAll, "neg. (#geq 1 tracklet)", "p");
+  if(hTRDEffPtPosAll) {hTRDEffPtPosAll->Draw("same"); leg->AddEntry(hTRDEffPtPosAll, "pos. (#geq 1 tracklet)", "p");}
+  if(hTRDEffPtNegAll) {hTRDEffPtNegAll->Draw("same"); leg->AddEntry(hTRDEffPtNegAll, "neg. (#geq 1 tracklet)", "p");}
   hTRDEffPtPosTrk4->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk4, "pos. (4 tracklets)", "p");
   hTRDEffPtNegTrk4->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk4, "neg. (4 tracklets)", "p");
   hTRDEffPtPosTrk5->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk5, "pos. (5 tracklets)", "p");
@@ -2512,11 +2504,11 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   SetStyle(hTOFEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
   SetStyle(hTOFEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
   SetStyle(hTOFEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
-  hTOFEffPtPosAll->Draw("same"); 
+  if(hTOFEffPtPosAll) hTOFEffPtPosAll->Draw("same"); 
   hTOFEffPtPosTrk4->Draw("same"); 
   hTOFEffPtPosTrk5->Draw("same"); 
   hTOFEffPtPosTrk6->Draw("same"); 
-  hTOFEffPtNegAll->Draw("same"); 
+  if(hTOFEffPtNegAll) hTOFEffPtNegAll->Draw("same"); 
   hTOFEffPtNegTrk4->Draw("same"); 
   hTOFEffPtNegTrk5->Draw("same"); 
   hTOFEffPtNegTrk6->Draw("same");  
