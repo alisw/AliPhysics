@@ -5,6 +5,7 @@ void SETUP()
    gSystem->Load("libNet");
    gSystem->Load("libTree");
    gSystem->Load("libPhysics");
+   gSystem->Load("libMinuit");
 
    // Load the STEERBase library
    TString dypath = gSystem->GetDynamicPath();
