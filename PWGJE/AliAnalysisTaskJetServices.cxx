@@ -310,8 +310,8 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fHistList->Add(fh2CentralityTrigger);
 
   for(int i = 0;i<fNTrigger;++i){
-    fh2CentralityTriggerESD->GetYaxis()->SetBinLabel(i+2,fTriggerName[i].Data());
-    fh2CentralityTrigger->GetYaxis()->SetBinLabel(i+2,fTriggerName[i].Data());
+    fh2CentralityTriggerESD->GetYaxis()->SetBinLabel(i+1,fTriggerName[i].Data());
+    fh2CentralityTrigger->GetYaxis()->SetBinLabel(i+1,fTriggerName[i].Data());
   }
 
 

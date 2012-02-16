@@ -10,11 +10,11 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
 
     AliAnalysisManager::SetGlobalStr("kDeltaAODJetName","");
 
+    // event selection
     AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB);
     AliAnalysisManager::SetGlobalInt("kNTrigger",1);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB);    
     AliAnalysisManager::SetGlobalStr("kTriggerName0","kMB");    
-
     // jet selection
     AliAnalysisManager::SetGlobalDbl("kJetEtaWindow",0.5);
 
@@ -49,7 +49,6 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
     AliAnalysisManager::SetGlobalStr("kTriggerName3","kSemiCentral");    
     AliAnalysisManager::SetGlobalStr("kTriggerName4","kEMCEJE");    
 
-
     // jet selection
     AliAnalysisManager::SetGlobalDbl("kJetEtaWindow",0.5);
 
@@ -71,7 +70,6 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
     AliAnalysisManager::SetGlobalInt("kNTrigger",1);    
     AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB);    
     AliAnalysisManager::SetGlobalStr("kTriggerName0","kMB");    
-
 
     // jet selection
     AliAnalysisManager::SetGlobalDbl("kJetEtaWindow",0.5);
