@@ -12,34 +12,35 @@
 
 #include "TNamed.h"
 #include "THnSparse.h"
+#include "AliLog.h"
 
 class TF1;
-class TProfile;
 class TRandom3;
 
 class AliCFUnfolding : public TNamed {
 
  public :
+  enum EUnfoldingErrorStatus {
+    kNotDone   = BIT(0), // Doing the normal unfolding, before errors are calculated
+    kBeingDone = BIT(1), // In the process of calculating errors
+    kDone      = BIT(2)  // Errors have been calculated
+  };
+
   AliCFUnfolding();
   AliCFUnfolding(const Char_t* name, const Char_t* title, const Int_t nVar, 
-		 const THnSparse* response, const THnSparse* efficiency, const THnSparse* measured, const THnSparse* prior=0x0);
+		 const THnSparse* response, const THnSparse* efficiency, const THnSparse* measured, const THnSparse* prior=0x0, 
+		 Double_t maxConvergencePerDOF = 1.e-06, UInt_t randomSeed = 0,
+		 Int_t maxNumIterations = 10);
   AliCFUnfolding(const AliCFUnfolding& c);
   AliCFUnfolding& operator= (const AliCFUnfolding& c);
   ~AliCFUnfolding();
-
-  void SetMaxNumberOfIterations(Int_t n = 10)  {fMaxNumIterations=n; fNRandomIterations=n; }
-
-  /* 
-     The following is for correct error estimation
-     thanks to Marta Verweij
-  */
-  void SetUseCorrelatedErrors  (Double_t maxConvergence = 1.e-06 , UInt_t randomSeed = 0)   {
-    fUseCorrelatedErrors = kTRUE             ;
-    fRandomSeed          = randomSeed        ;
-    SetMaxConvergencePerDOF(maxConvergence)  ;
+  void UnsetCorrelatedErrors()  {AliError("===================> DEPRECATED <=====================");}
+  void SetUseCorrelatedErrors() {AliError("===================> DEPRECATED <=====================");}
+  void SetMaxNumberOfIterations(Int_t n = 10)  {
+    AliError("===================> DEPRECATED : should be set in constructor <=====================");
+    AliError("===================> DEPRECATED : will be removed soon         <=====================");
+    fMaxNumIterations = n;
   }
-  void UnsetCorrelatedErrors() {fUseCorrelatedErrors=kFALSE;}
-
 
   void UseSmoothing(TF1* fcn=0x0, Option_t* opt="iremn") { // if fcn=0x0 then smooth using neighbouring bins 
     fUseSmoothing=kTRUE;                                   // this function must NOT be used if fNVariables > 3
@@ -54,12 +55,12 @@ class AliCFUnfolding : public TNamed {
   THnSparse* GetPrior()                const {return fPrior;}
   THnSparse* GetOriginalPrior()        const {return fOriginalPrior;}
   THnSparse* GetEfficiency()           const {return fEfficiency;}
-  THnSparse* GetUnfolded()             const {return fUnfolded;}
+  THnSparse* GetUnfolded()             const {return fUnfoldedFinal;}
   THnSparse* GetEstMeasured()          const {return fMeasuredEstimate;}
   THnSparse* GetMeasured()             const {return fMeasured;}
   THnSparse* GetConditional()          const {return fConditional;}
   TF1*       GetSmoothFunction()       const {return fSmoothFunction;}
-  TProfile*  GetDeltaUnfoldedProfile() const {return fDeltaUnfoldedP;}
+  THnSparse* GetDeltaUnfoldedProfile() const {return fDeltaUnfoldedP;}
   Int_t      GetDOF();                 // Returns number of degrees of freedom
 
   static Short_t  SmoothUsingNeighbours(THnSparse*); // smoothes the unfolded spectrum using the neighbouring cells
@@ -79,14 +80,12 @@ class AliCFUnfolding : public TNamed {
   THnSparse     *fMeasuredOrig;       // Measured spectrum to be unfolded : dimensions must be N = number of variables (not modified)
   Int_t          fMaxNumIterations;   // Maximum  number of iterations to be performed
   Int_t          fNVariables;         // Number of variables used in analysis spectra (pt, y, ...)
-/*   Double_t       fMaxChi2;            // Maximum Chi2 between unfolded and prior distributions.  */
   Bool_t         fUseSmoothing;       // Smooth the unfolded sectrum at each iteration; default is kFALSE
   TF1           *fSmoothFunction;     // Function used to smooth the unfolded spectrum
   Option_t      *fSmoothOption;       // Option to use during the fit (with fSmoothFunction) ; default is "iremn"
 
   /* correlated error calculation */
   Double_t       fMaxConvergence;     // Convergence criterion in case of correlated error calculation
-  Bool_t         fUseCorrelatedErrors;// Calculate correlated errors for the final unfolded spectrum; default is kTRUE
   Int_t          fNRandomIterations;  // Number of random distributed measured spectra
 
   // internal settings
@@ -94,8 +93,8 @@ class AliCFUnfolding : public TNamed {
   THnSparse     *fInverseResponse;   // Inverse response matrix
   THnSparse     *fMeasuredEstimate;  // Estimation of the measured (M) spectrum given the a priori (T) distribution
   THnSparse     *fConditional;       // Matrix holding the conditional probabilities P(M|T)
-  THnSparse     *fProjResponseInT;   // Projection of the response matrix on TRUE axis
-  THnSparse     *fUnfolded;          // Unfolded spectrum
+  THnSparse     *fUnfolded;          // Unfolded spectrum (modified before and during error calculation)
+  THnSparse     *fUnfoldedFinal;     // Final unfolded spectrum
   Int_t         *fCoordinates2N;     // Coordinates in 2N (measured,true) space
   Int_t         *fCoordinatesN_M;    // Coordinates in measured space
   Int_t         *fCoordinatesN_T;    // Coordinates in true space
@@ -104,9 +103,9 @@ class AliCFUnfolding : public TNamed {
   /* correlated error calculation */
   THnSparse     *fRandomizedDist;    // Randomized distribution for each bin of the measured spectrum to calculate correlated errors
   TRandom3      *fRandom3;           // Object to get random number following Poisson distribution
-  THnSparse     *fRandomUnfolded;
-  TProfile      *fDeltaUnfoldedP;    // Profile of the delta-unfolded distribution
-  Int_t          fNCalcCorrErrors;   // book keeping to prevend infinite loop
+  THnSparse     *fDeltaUnfoldedP;    // Profile of the delta-unfolded distribution
+  THnSparse     *fDeltaUnfoldedN;    // Entries of the delta-unfolded distribution (count for each bin)
+  Short_t        fNCalcCorrErrors;   // Book-keeping to prevend infinite loop
   UInt_t         fRandomSeed;        // Random seed
 
 
@@ -125,7 +124,6 @@ class AliCFUnfolding : public TNamed {
   /* correlated error calculation */
   Double_t GetConvergence();            // Returns convergence criterion
   void     CalculateCorrelatedErrors(); // Calculates correlated errors for the final unfolded spectrum
-  void     InitDeltaUnfoldedProfile();  // Initializes the fDeltaUnfoldedP Profiles with spread option
   void     CreateRandomizedDist();      // Create randomized dist from measured distribution
   void     FillDeltaUnfoldedProfile();  // Fills the fDeltaUnfoldedP profile
   void     SetMaxConvergencePerDOF (Double_t val);
