@@ -63,6 +63,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCDataCompressionComponent.h"
 #include "AliHLTTPCDataCompressionMonitorComponent.h"
 #include "AliHLTTPCDataCompressionFilterComponent.h"
+#include "AliHLTTPCDataPublisherComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -92,6 +93,9 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 {
   // see header file for class documentation
   if (handler) {
+    // AliSimulation: use the AliRawReaderPublisher if the raw reader is available
+    // AliReconstruction: indicated by runloader==NULL, run always on raw data
+    bool bPublishRaw=rawReader!=NULL || runloader==NULL;
 
     // This the tracking configuration for the full TPC
     // - 216 clusterfinders (1 per partition)
@@ -106,50 +110,45 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString arg;
     TString mergerInput;
     TString sinkRawData;
-    TString sinkClusterInput;
     TString sinkHWClusterInput;
     TString dEdXInput;
+    TString hwclustOutput;
     TString compressorInput;
+    TString trackerInput;
+
+
+    arg.Form("-verbose");
+    handler->CreateConfiguration("TPC-DP", "TPCDataPublisher", NULL , arg.Data());
+
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
-      TString trackerInput;
       for (int part=iMinPart; part<=iMaxPart; part++) {
-	TString publisher, cf;
+	TString publisher;
 
 	// digit publisher components
 	publisher.Form("TPC-DP_%02d_%d", slice, part);
-	if (rawReader || !runloader) {
+	if (bPublishRaw) {
 	  // AliSimulation: use the AliRawReaderPublisher if the raw reader is available
-	  // Alireconstruction: indicated by runloader==NULL, run always on raw data
+	  // AliReconstruction: indicated by runloader==NULL, run always on raw data
 	  int ddlno=768;
 	  if (part>1) ddlno+=72+4*slice+(part-2);
 	  else ddlno+=2*slice+part;
 	  arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x -silent", ddlno, slice, slice, part, part);
 	  handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+	  if (sinkRawData.Length()>0) sinkRawData+=" ";
+	  sinkRawData+=publisher;
 	} else {
 	  arg.Form("-slice %d -partition %d", slice, part);
 	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
 	}
 
-	if (sinkRawData.Length()>0) sinkRawData+=" ";
-	sinkRawData+=publisher;
-
-	// cluster finder components
-	cf.Form("TPC-CF_%02d_%d", slice, part);
-	arg="-release-memory -publish-raw";
-	if (!rawReader && runloader) {
-	  arg+=" -do-mc";
-	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
-	} else {
-	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(),arg.Data());
-	}
-
 	// Hardware CF emulator
-	// soon going to replace the software clusterfinder
 	TString hwcfemu;
 	hwcfemu.Form("TPC-HWCFEmu_%02d_%d", slice, part);
-	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), "-do-mc 1");
-	if (compressorInput.Length()>0) compressorInput+=" ";
-	compressorInput+=hwcfemu;
+	arg="";
+	if (!bPublishRaw) arg+=" -do-mc 1";
+	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), arg.Data());
+	if (hwclustOutput.Length()>0) hwclustOutput+=" ";
+	hwclustOutput+=hwcfemu;
 
 	TString hwcf;
 	hwcf.Form("TPC-HWCF_%02d_%d", slice, part);
@@ -159,20 +158,23 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	trackerInput+=hwcf;
 	if (dEdXInput.Length()>0) dEdXInput+=" ";
 	dEdXInput+=hwcf;
-	if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
-	sinkClusterInput+=cf;
 	if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";
 	sinkHWClusterInput+=hwcf;
       }
-      TString tracker;
-      // tracker finder components
-      tracker.Form("TPC-TR_%02d", slice);
-      handler->CreateConfiguration(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
-
-      if (mergerInput.Length()>0) mergerInput+=" ";
-      mergerInput+=tracker;
-
     }
+
+    // tracker finder component
+    // 2012-01-05 changing the configuration according to online setup
+    // the tracking strategy has been changed in the online system in Sep 2011
+    // the tracker now processes all clusters, and several of this 'global' trackers
+    // run in parallel. The GlobalMerger is still in the chain as it produces the final
+    // fit.
+    TString tracker;
+    tracker.Form("TPC-TR");
+    handler->CreateConfiguration(tracker.Data(), "TPCCATracker", trackerInput.Data(), "-GlobalTracking");
+
+    if (mergerInput.Length()>0) mergerInput+=" ";
+    mergerInput+=tracker;
 
     // GlobalMerger component
     handler->CreateConfiguration("TPC-globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
@@ -184,6 +186,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-dEdx","TPCdEdx",dEdXInput.Data(),"");
 
     // compression component
+    if (compressorInput.Length()>0) compressorInput+=" ";
+    compressorInput+=hwclustOutput;
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+="TPC-globalmerger";
     handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), "");
@@ -203,7 +207,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
-    if (!rawReader && runloader) {
+    if (!bPublishRaw) {
       // propagate cluster info to the esd converter in order to fill the MC information
       handler->CreateConfiguration("TPC-clustermc-info", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");  
       handler->CreateConfiguration("TPC-mcTrackMarker","TPCTrackMCMarker","TPC-globalmerger TPC-clustermc-info","" );
@@ -213,15 +217,15 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , converterInput.Data(), "");
 
     // cluster dump collection
-    handler->CreateConfiguration("TPC-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
-    handler->CreateConfiguration("TPC-raw-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
+    handler->CreateConfiguration("TPC-clusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
+    handler->CreateConfiguration("TPC-raw-clusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
     handler->CreateConfiguration("TPC-hwclusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
     handler->CreateConfiguration("TPC-raw-hwclusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
 
     // raw data
     handler->CreateConfiguration("TPC-raw-data", "BlockFilter"   , sinkRawData.Data(), "");
 
-    handler->CreateConfiguration("TPC-hwcfdata", "BlockFilter"   , compressorInput.Data(), "-datatype 'HWCLUST1' 'TPC '");
+    handler->CreateConfiguration("TPC-hwcfdata", "BlockFilter"   , hwclustOutput.Data(), "-datatype 'HWCLUST1' 'TPC '");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //
@@ -299,14 +303,7 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
   // see header file for class documentation
   if (runloader) {
     // reconstruction chains for AliRoot simulation
-    // Note: run loader is only available while running embedded into
-    // AliRoot simulation
-    //if (runloader->GetLoader("TPCLoader") != NULL)
-      //return "TPC-esd-converter TPC-clusters";
-
-    // 2010-10-26 TPC clusters not written to HLTOUT in order to make the simulation
-    // closer to the real data 
-    //return "TPC-clusters";
+    return "TPC-compression";
   } else {
     bool bAddEmulation=true; // add by default
 
@@ -379,6 +376,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDataCompressionComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionMonitorComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionFilterComponent);
+  pHandler->AddComponent(new AliHLTTPCDataPublisherComponent);
   return 0;
 }
 
