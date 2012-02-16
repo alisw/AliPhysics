@@ -716,6 +716,9 @@ extern "C" {
     AliHLTComponentDataType fDataType;
     /** data specification of the data block */
     AliHLTUInt32_t fSpecification;
+
+    AliHLTComponentDataType GetDataType() const {return fDataType;}
+    AliHLTUInt32_t GetSpecification() const {return fSpecification;}
   };
 
   /**
