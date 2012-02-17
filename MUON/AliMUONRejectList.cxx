@@ -148,7 +148,7 @@ namespace
     if ( src && n )
     {
       dest = new UInt_t[n];
-      memcpy(src,dest,n*sizeof(UInt_t));
+      memcpy(dest,src,n*sizeof(UInt_t));
     }
   }
 
@@ -160,7 +160,7 @@ namespace
     if ( src && n )
     {
       dest = new Float_t[n];
-      memcpy(src,dest,n*sizeof(Float_t));
+      memcpy(dest,src,n*sizeof(Float_t));
     }
   }
   
@@ -217,13 +217,13 @@ fChannels(0x0)
 //_____________________________________________________________________________
 AliMUONRejectList::AliMUONRejectList(const AliMUONRejectList& rl)
 : TObject(rl),
-fIsBinary(kTRUE),
-fMaxNofDEs(),
-fMaxNofBPs(),
-fMaxNofManus(),
-fNofDEs(), 
-fNofBPs(), 
-fNofManus(0), 
+fIsBinary(rl.fIsBinary),
+fMaxNofDEs(rl.fMaxNofDEs),
+fMaxNofBPs(rl.fMaxNofBPs),
+fMaxNofManus(rl.fMaxNofManus),
+fNofDEs(rl.fNofDEs), 
+fNofBPs(rl.fNofBPs), 
+fNofManus(rl.fNofManus), 
 fDEIds(0x0),
 fDEProbas(0x0),
 fBPIds(0x0),
@@ -233,7 +233,18 @@ fManuProbas(0x0),
 fChannels(0x0)
 {
   /// Copy ctor
-  rl.CopyTo(*this);
+  
+  ::Copy(rl.fMaxNofDEs,rl.fDEIds,fDEIds);
+  ::Copy(rl.fMaxNofDEs,rl.fDEProbas,fDEProbas);
+  ::Copy(rl.fMaxNofBPs,rl.fBPIds,fBPIds);
+  ::Copy(rl.fMaxNofBPs,rl.fBPProbas,fBPProbas);
+  ::Copy(rl.fMaxNofManus,rl.fManuIds,fManuIds);
+  ::Copy(rl.fMaxNofManus,rl.fManuProbas,fManuProbas);
+  
+  if ( rl.fChannels ) 
+  {
+    fChannels = static_cast<AliMUONVStore*>(rl.fChannels->Clone());
+  }
 }
 
 //_____________________________________________________________________________
@@ -242,34 +253,33 @@ AliMUONRejectList& AliMUONRejectList::operator=(const AliMUONRejectList& rl)
   /// assignement operator
   if ( this != &rl ) 
   {
-    rl.CopyTo(*this);
+    static_cast<TObject&>(*this)=rl;
+    
+    fIsBinary = rl.fIsBinary;
+    fMaxNofDEs = rl.fMaxNofDEs;
+    fMaxNofBPs = rl.fMaxNofBPs;
+    fMaxNofManus = rl.fMaxNofManus;
+    fNofDEs = rl.fNofDEs;
+    fNofBPs = rl.fNofBPs;
+    fNofManus = rl.fNofManus;
+    
+    ::Copy(rl.fMaxNofDEs,rl.fDEIds,fDEIds);
+    ::Copy(rl.fMaxNofDEs,rl.fDEProbas,fDEProbas);
+    ::Copy(rl.fMaxNofBPs,rl.fBPIds,fBPIds);
+    ::Copy(rl.fMaxNofBPs,rl.fBPProbas,fBPProbas);
+    ::Copy(rl.fMaxNofManus,rl.fManuIds,fManuIds);
+    ::Copy(rl.fMaxNofManus,rl.fManuProbas,fManuProbas);
+    
+    delete fChannels;
+    fChannels = 0x0;
+    
+    if ( rl.fChannels ) 
+    {
+      fChannels = static_cast<AliMUONVStore*>(rl.fChannels->Clone());
+    }
+    
   }  
   return *this;
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONRejectList::CopyTo(AliMUONRejectList& rl) const
-{
-  /// Copy this to rl
-  TObject::Copy(rl);
-
-  rl.fIsBinary = fIsBinary;
-
-  ::Copy(rl.fMaxNofDEs,fDEIds,rl.fDEIds);
-  ::Copy(rl.fMaxNofDEs,fDEProbas,rl.fDEProbas);
-  ::Copy(rl.fMaxNofBPs,fBPIds,rl.fBPIds);
-  ::Copy(rl.fMaxNofBPs,fBPProbas,rl.fBPProbas);
-  ::Copy(rl.fMaxNofManus,fManuIds,rl.fManuIds);
-  ::Copy(rl.fMaxNofManus,fManuProbas,rl.fManuProbas);
-  
-  delete rl.fChannels;  
-  rl.fChannels = 0x0;
-  
-  if ( fChannels ) 
-  {
-    rl.fChannels = static_cast<AliMUONVStore*>(fChannels->Clone());
-  }
 }
 
 //_____________________________________________________________________________

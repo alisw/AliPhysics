@@ -47,8 +47,6 @@ public:
   void Print(Option_t* opt="") const;
   
 private:
-  void CopyTo(AliMUONRejectList& destination) const;
-
   void ZeroOrOne(Float_t proba);
   
 private:

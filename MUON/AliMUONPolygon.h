@@ -50,8 +50,6 @@ public:
   
   void Print(Option_t* opt="") const;
   
-  void Copy(TObject& obj) const;
-  
   void Close();
   
 private:
