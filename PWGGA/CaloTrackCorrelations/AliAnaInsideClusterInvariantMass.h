@@ -26,16 +26,14 @@ class AliAODCaloCluster;
 class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
+  
   AliAnaInsideClusterInvariantMass() ; // default ctor
   virtual ~AliAnaInsideClusterInvariantMass() { ; } //virtual dtor
-
   
   TObjString * GetAnalysisCuts();
   
   TList      * GetCreateOutputObjects();
-  
-  TLorentzVector GetCellMomentum(const Int_t absId, Float_t energy, AliVCaloCells* cells) ;
-  
+    
   void         Init();
   
   void         InitParameters();
@@ -51,24 +49,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SetMinNCells(Int_t cut)                   { fMinNCells   = cut ; }
 
   void         SetMinBadChannelDistance(Float_t cut)     { fMinBadDist  = cut ; }
-  
-  void         SetPi0MassRange(Float_t min, Float_t max) { fMassPi0Min  = min ; fMassPi0Max = max ; }
-  void         SetEtaMassRange(Float_t min, Float_t max) { fMassEtaMin  = min ; fMassEtaMax = max ; }
-  void         SetConMassRange(Float_t min, Float_t max) { fMassConMin  = min ; fMassConMax = max ; }
-  
-  void         SplitEnergy(const Int_t absId1, const Int_t absId2, 
-                           AliVCluster *cluster, 
-                           AliVCaloCells* cells,
-                           //Float_t & e1, Float_t & e2,
-                           AliAODCaloCluster *cluster1, 
-                           AliAODCaloCluster *cluster2, 
-                           const Int_t nMax//, Int_t *absIdList, Float_t *maxEList,
-                           );
-  
-  void         SwitchOnClusterPlot()                     { fPlotCluster = kTRUE  ; }
-  void         SwitchOffClusterPlot()                    { fPlotCluster = kFALSE ; }
 
-  
   //For histograms
   enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  
                  kmcEta    = 4, kmcElectron   = 5, kmcHadron = 6 };
@@ -76,17 +57,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString      fCalorimeter ;          // Calorimeter where the gamma is searched
-  Float_t      fM02MaxCut    ;         // Study clusters with l0 smaller than cut
-  Float_t      fM02MinCut    ;         // Study clusters with l0 larger than cut
-  Int_t        fMinNCells ;            // Study clusters with ncells larger than cut
-  Float_t      fMinBadDist ;           // Minimal distance to bad channel to accept cluster
-  Float_t      fMassEtaMin;            // Min Eta mass
-  Float_t      fMassEtaMax;            // Max Eta mass  
-  Float_t      fMassPi0Min;            // Min Pi0 mass
-  Float_t      fMassPi0Max;            // Min Pi0 mass
-  Float_t      fMassConMin;            // Min Conversions mass
-  Float_t      fMassConMax;            // Min Conversions mass
-  Bool_t       fPlotCluster;           // Plot cluster
+  Float_t      fM02MaxCut   ;          // Study clusters with l0 smaller than cut
+  Float_t      fM02MinCut   ;          // Study clusters with l0 larger than cut
+  Int_t        fMinNCells   ;          // Study clusters with ncells larger than cut
+  Float_t      fMinBadDist  ;          // Minimal distance to bad channel to accept cluster
   
   //Histograms
   
@@ -103,9 +77,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassM02NLocMaxNEbin[4] ; //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
   
   TH2F       * fhNLocMax      [7][2] ; //! Number of maxima in cluster vs E, 1-6 for different MC particle types
-  TH2F       * fhNLocMaxNLabel[7][2] ; //! Number of maxima in cluster vs nLabels, E > 5, 1-6 for different MC particle types
-  TH2F       * fhNLocMaxEMax  [7][2] ; //! Number of maxima in cluster vs E of each maxima, 1-6 for different MC particle types
-  TH2F       * fhNLocMaxEFrac [7][2] ; //! Number of maxima in cluster vs fraction of cluster E of each maxima, 1-6 for different MC particle types
   TH2F       * fhNLocMaxM02Cut[7][2] ; //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
 
   TH2F       * fhM02NLocMax1  [7][2] ; //! M02 vs E for N max in cluster = 1, 1-6 for different MC particle types
@@ -146,7 +117,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,10)
+  ClassDef(AliAnaInsideClusterInvariantMass,11)
   
 } ;
 

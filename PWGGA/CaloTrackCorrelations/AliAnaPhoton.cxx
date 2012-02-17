@@ -2139,11 +2139,12 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     //...............................................
     // Data, PID check on
-    if(IsCaloPIDOn()){
+    if(IsCaloPIDOn())
+    {
       // Get most probable PID, 2 options check bayesian PID weights or redo PID
       // By default, redo PID
       
-      aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));
+      aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(calo));
       
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
       
@@ -2154,16 +2155,18 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     //...............................................
     // Data, PID check off
-    else{
+    else
+    {
       //Set PID bits for later selection (AliAnaPi0 for example)
       //GetIdentifiedParticleType already called in SetPIDBits.
       
-      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils(),GetReader()->GetInputEvent());
+      GetCaloPID()->SetPIDBits(calo,&aodph, GetCaloUtils(),GetReader()->GetInputEvent());
       
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PID Bits set \n");		
     }
     
-    if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
+    if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
+                              aodph.Pt(), aodph.GetIdentifiedParticleType());
     
     fhClusterCuts[8]->Fill(calo->E());
     
@@ -2228,12 +2231,14 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
-  for(Int_t iaod = 0; iaod < naod ; iaod++){
+  for(Int_t iaod = 0; iaod < naod ; iaod++)
+  {
     AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ph->GetIdentifiedParticleType();
     
     if(GetDebug() > 3) 
-      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
+      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", 
+             ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
     
     //If PID used, fill histos with photons in Calorimeter fCalorimeter
     if(IsCaloPIDOn() && pdg != AliCaloPID::kPhoton) continue; 

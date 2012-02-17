@@ -7,7 +7,7 @@
 // Class for PID selection with calorimeters
 // The Output of the main method GetIdentifiedParticleType is a PDG number identifying the cluster, 
 // being kPhoton, kElectron, kPi0 ... as defined in the header file
-//   - GetIdentifiedParticleType(const TString calo, const TLorentzVector mom, const AliVCluster * cluster) 
+//   - GetIdentifiedParticleType(const AliVCluster * cluster) 
 //      Assignes a PID tag to the cluster, right now there is the possibility to : use bayesian weights from reco, 
 //      recalculate them (EMCAL) or use other procedures not used in reco.
 //      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
@@ -18,9 +18,9 @@
 //      If it is necessary to change the parameters use the constructor 
 //      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
 
-//   - GetGetIdentifiedParticleTypeFromBayesian(const TString calo, const Double_t * pid, const Float_t energy)
+//   - GetGetIdentifiedParticleTypeFromBayesian(const Double_t * pid, const Float_t energy)
 //      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle, 
-//      executed when bayesian is ON by GetIdentifiedParticleType(const TString calo, const TLorentzVector mom, const AliVCluster * cluster) 
+//      executed when bayesian is ON by GetIdentifiedParticleType(const AliVCluster * cluster) 
 //   - SetPIDBits: Simple PID, depending on the thresholds fLOCut fTOFCut and even the
 //     result of the PID bayesian a different PID bit is set. 
 //
@@ -37,6 +37,7 @@ class TH2F ;
 
 //--- AliRoot system ---
 class AliVCluster;
+class AliVCaloCells;
 class AliAODPWG4Particle;
 class AliEMCALPIDUtils;
 class AliCalorimeterUtils;
@@ -51,7 +52,8 @@ class AliCaloPID : public TObject {
   AliCaloPID(const TNamed * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
   virtual ~AliCaloPID() ;//virtual dtor
   	
-  enum PidType {
+  enum PidType 
+  {
     kPhoton         = 22,
     kPi0            = 111,
     kEta            = 221, 
@@ -71,18 +73,25 @@ class AliCaloPID : public TObject {
 
   void      InitParameters();
   
-  Int_t     GetIdentifiedParticleTypeFromBayesWeights(const TString calo, const Double_t * pid, const Float_t energy) ;
+  Int_t     GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL, const Double_t * pid, const Float_t energy) ;
+
+  Int_t     GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster * cluster, AliVCaloCells* cells, 
+                                                          AliCalorimeterUtils * caloutils,
+                                                          Double_t vertex[3], 
+                                                          Int_t & nLocMax, Double_t & mass, Double_t & angle) ;
   
-  Int_t     GetIdentifiedParticleType(const TString calo, const TLorentzVector mom, const AliVCluster * cluster) ;
+  Int_t     GetIdentifiedParticleType(const AliVCluster * cluster) ;
   
   TString   GetPIDParametersList();
   
   Bool_t    IsTrackMatched(AliVCluster * cluster, AliCalorimeterUtils* cu, AliVEvent* event) const ;    
   
-  void      SetPIDBits(const TString calo,  AliVCluster * cluster, AliAODPWG4Particle *aodph, 
+  void      SetPIDBits(AliVCluster * cluster, AliAODPWG4Particle *aodph, 
                        AliCalorimeterUtils* cu, AliVEvent* event);
   
   void      Print(const Option_t * opt)const;
+  
+  void      PrintClusterPIDWeights(const Double_t * pid) const;
   
   //Check if cluster photon-like. Uses photon cluster parameterization in real pp data 
   //Returns distance in sigmas. Recommended cut 2.5
@@ -179,6 +188,26 @@ class AliCaloPID : public TObject {
   void    SetPHOSDispersionCut(Float_t dcut )  { fPHOSDispersionCut = dcut    ; }
   Float_t GetPHOSDispersionCut()         const { return fPHOSDispersionCut    ; }   
   
+  // Cluster splitting analysis
+  
+  void    SwitchOnClusterSplittingPID()        { fDoClusterSplitting = kTRUE  ; }
+  void    SwitchOffClusterplittingPID()        { fDoClusterSplitting = kFALSE ; }
+
+  void    SetClusterSplittingM02Cut(Float_t min=0, Float_t max=100) 
+  { fSplitM02MinCut   = min ; fSplitM02MaxCut  = max ; }
+  
+  void    SetClusterSplittingMinNCells(Int_t cut)   { fSplitMinNCells   = cut ; }  
+  
+  Float_t GetPi0MinMass()                const { return fMassPi0Min           ; }
+  Float_t GetEtaMinMass()                const { return fMassEtaMin           ; }
+  Float_t GetPhotonMinMass()             const { return fMassPhoMin           ; }  
+  Float_t GetPi0MaxMass()                const { return fMassPi0Max           ; }
+  Float_t GetEtaMaxMass()                const { return fMassEtaMax           ; }
+  Float_t GetPhotonMaxMass()             const { return fMassPhoMax           ; }
+  
+  void    SetPi0MassRange(Float_t min, Float_t max)    { fMassPi0Min  = min ; fMassPi0Max = max ; }
+  void    SetEtaMassRange(Float_t min, Float_t max)    { fMassEtaMin  = min ; fMassEtaMax = max ; }
+  void    SetPhotonMassRange(Float_t min, Float_t max) { fMassPhoMin  = min ; fMassPhoMax = max ; }
   
 private:
   
@@ -218,10 +247,23 @@ private:
   Float_t   fPHOSDispersionCut;                 // Shower shape elipse radious cut
   Float_t   fPHOSRCut;                          // Track-Cluster distance cut for track matching in PHOS  
   
+  // Cluster splitting mass ranges
+  Bool_t    fDoClusterSplitting;                // Cluster splitting analysis
+  Float_t   fSplitM02MaxCut ;                   // Study clusters with l0 smaller than cut
+  Float_t   fSplitM02MinCut ;                   // Study clusters with l0 larger than cut
+  Int_t     fSplitMinNCells ;                   // Study clusters with ncells larger than cut  
+  Float_t   fMassEtaMin  ;                      // Min Eta mass
+  Float_t   fMassEtaMax  ;                      // Max Eta mass  
+  Float_t   fMassPi0Min  ;                      // Min Pi0 mass
+  Float_t   fMassPi0Max  ;                      // Min Pi0 mass
+  Float_t   fMassPhoMin  ;                      // Min Photon mass
+  Float_t   fMassPhoMax  ;                      // Min Photon mass
+  
   AliCaloPID & operator = (const AliCaloPID & g) ; // cpy assignment
   AliCaloPID(              const AliCaloPID & g) ; // cpy ctor
   
-  ClassDef(AliCaloPID,11)
+  ClassDef(AliCaloPID,12)
+  
 } ;
 
 

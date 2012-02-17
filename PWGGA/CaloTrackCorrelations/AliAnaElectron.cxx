@@ -976,17 +976,19 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //-----------------------------------------
     
     // Data, PID check on
-    if(IsCaloPIDOn()){
+    if(IsCaloPIDOn())
+    {
       // Get most probable PID, 2 options check bayesian PID weights or redo PID
       // By default, redo PID
     
-      if(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo)!=AliCaloPID::kPhoton) continue;
+      if(GetCaloPID()->GetIdentifiedParticleType(calo)!=AliCaloPID::kPhoton) continue;
       
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
       
     }
         
-    if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
+    if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
+                              aodph.Pt(), aodph.GetIdentifiedParticleType());
     
     //FIXME, this to MakeAnalysisFillHistograms ...
     Int_t absID             = 0; 
@@ -1055,7 +1057,8 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
-  for(Int_t iaod = 0; iaod < naod ; iaod++){
+  for(Int_t iaod = 0; iaod < naod ; iaod++)
+  {
     AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ph->GetIdentifiedParticleType();
 
