@@ -421,6 +421,7 @@ Bool_t AliMuonForwardTrackFinder::LoadNextEvent() {
   AliInfo(Form(" **** analyzing event # %d  \n", fEv));
   
   fTrackStore    = fMuonRecoCheck->ReconstructedTracks(fEv);
+  if (fTrackStore->IsEmpty()) return kFALSE;
   fTrackRefStore = fMuonRecoCheck->ReconstructibleTracks(fEv);
   
   fRunLoader->GetEvent(fEv);
