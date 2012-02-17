@@ -3,7 +3,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Bool_t storeNtuple=kFALSE,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
-				     TString filename="DplustoKpipiCuts.root",
+				     TString filename="",
 				     TString finAnObjname="AnalysisCuts", TString finProdObjname="ProduCuts")
 {
   //                                                                                                                                    
@@ -20,10 +20,14 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   }
 
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts=TFile::Open(filename.Data());
-  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-    cout<<"Input file not found: using standard cuts"<<endl;
-    stdcuts=kTRUE;
+  TFile* filecuts;
+  if( filename.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(filename.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	AliFatal("Input file not found : check your cut object");
+      }
   }
   
   
@@ -34,7 +38,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   if(stdcuts) {
     if(system==0) analysiscuts->SetStandardCutsPP2010();
     else if(system==1){
-      analysiscuts->SetStandardCutsPbPb2010();
+      analysiscuts->SetStandardCutsPbPb2011();
       analysiscuts->SetMinCentrality(minC);
       analysiscuts->SetMaxCentrality(maxC);
       //      analysiscuts->SetUseAOD049(kTRUE);

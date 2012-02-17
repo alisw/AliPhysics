@@ -16,7 +16,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
 						   Float_t minC=0, Float_t maxC=100,
 
-						   const char * cutsfile="DStartoKpipiCuts.root",
+						   const char * cutsfile="",
 
 						   Bool_t theMCon=kFALSE)
 
@@ -42,14 +42,14 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   Bool_t stdcuts=kFALSE;
 
-  TFile* filecuts=TFile::Open("DStartoKpipiCuts.root");
-
-  if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
-
-    cout<<"Input file not found: exit"<<endl;
-
-    stdcuts=kTRUE;
-
+  TFile* filecuts;
+  if( cutsfile.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(cutsfile.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	AliFatal("Input file not found : check your cut object");
+      }
   }
 
 

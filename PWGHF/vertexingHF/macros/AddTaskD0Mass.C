@@ -3,7 +3,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 				       Int_t system=0/*0=pp,1=PbPb*/,Int_t flagD0D0bar=0,
 				       Float_t minC=0, Float_t maxC=0,
 				       TString finDirname="Loose",
-				       TString finname="D0toKpiCuts.root",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
+				       TString finname="",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
 				       Bool_t FillMassPt=false, Bool_t FillImpPar=false)
 {
   //
@@ -125,17 +125,21 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
 
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts=TFile::Open(finname.Data());
-  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-    cout<<"Input file not found: using std cut object"<<endl;
-    stdcuts=kTRUE;
+  TFile* filecuts;
+  if( finname.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(finname.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	AliFatal("Input file not found : check your cut object");
+      }
   }
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   if(stdcuts) {
     if(system==0) RDHFD0toKpi->SetStandardCutsPP2010();
     else {
-      RDHFD0toKpi->SetStandardCutsPbPb2010();
+      RDHFD0toKpi->SetStandardCutsPbPb2011();
       if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
 	RDHFD0toKpi->SetMinCentrality(minC);
 	RDHFD0toKpi->SetMaxCentrality(maxC);
@@ -147,7 +151,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   else   {
     RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(finObjname.Data());
     if(!RDHFD0toKpi){
-      cout<<"Specific AliRDHFCuts not found"<<endl;
+      AliFatal("Specific AliRDHFCuts not found");
       return;
     }
     if(flagAOD049)RDHFD0toKpi->SetUseAOD049(kTRUE);

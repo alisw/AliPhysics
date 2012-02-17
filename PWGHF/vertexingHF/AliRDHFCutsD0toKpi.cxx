@@ -1387,3 +1387,19 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   return;
 
 }
+
+
+void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2011() {
+  
+  // Default 2010 PbPb cut object
+  SetStandardCutsPbPb2010();
+
+  //
+  // Enable all 2011 PbPb run triggers
+  //  
+  SetTriggerClass("");
+  ResetMaskAndEnableMBTrigger();
+  EnableCentralTrigger();
+  EnableSemiCentralTrigger();
+
+}
