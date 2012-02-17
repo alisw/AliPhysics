@@ -127,6 +127,7 @@ AliForwardMCFlowTaskQC::operator=(const AliForwardMCFlowTaskQC& o)
   // Parameters:
   //    o Object to copy from 
   //
+  if (&o == this) return *this;
   fdNdedpMC        = o.fdNdedpMC;
   fAliceCent4th    = o.fAliceCent4th;
   fAlicePt2nd4050  = o.fAlicePt2nd4050;
@@ -201,7 +202,7 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
   VertexBin* bin = 0;
   while ((bin = static_cast<VertexBin*>(nextFMDTR()))) {
     if (bin->CheckVertex(fZvertex)) {
-      if (!bin->FillHists(fmdTRdNdetadphi)) return kFALSE;
+      if (!bin->FillHists(&fmdTRdNdetadphi)) return kFALSE;
       bin->CumulantsAccumulate(fCent);
     }
   }
@@ -209,7 +210,7 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
   TIter nextSPDTR(&fBinsSPDTR);
   while ((bin = static_cast<VertexBin*>(nextSPDTR()))) {
     if (bin->CheckVertex(fZvertex)) {
-      if (!bin->FillHists(spdTRdNdetadphi)) return kFALSE;
+      if (!bin->FillHists(&spdTRdNdetadphi)) return kFALSE;
       bin->CumulantsAccumulate(fCent);
     }
   }
@@ -220,7 +221,7 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
   TIter nextMC(&fBinsMC);
   while ((bin = static_cast<VertexBin*>(nextMC()))) {
     if (bin->CheckVertex(fZvertex)) {
-      if (!bin->FillHists(fdNdedpMC)) return kFALSE;
+      if (!bin->FillHists(&fdNdedpMC)) return kFALSE;
       bin->CumulantsAccumulate(fCent);
     }
   }
@@ -252,9 +253,6 @@ void AliForwardMCFlowTaskQC::Finalize()
   TProfile2D* fmdHist = 0;
   TProfile2D* spdHist = 0;
   TProfile2D* mcHist = 0;
-  TList* correctionList = new TList();
-  correctionList->SetName("CorrectionList");
-//  fOutputList->Add(correctionList);
 
   for (Int_t i = 2; i <= 4; i += 2) {
     for (Int_t n = 1; n <= 6; n++) {
@@ -275,8 +273,8 @@ void AliForwardMCFlowTaskQC::Finalize()
       fmdHist->SetTitle(Form("FMD QC{%d} v_{%d} Correction Object", i, n));
       fmdHist->SetTitle(Form("SPD QC{%d} v_{%d} Correction Object", i, n));
 
-//      correctionList->Add(fmdHist);
-//      correctionList->Add(spdHist);
+      fOutputList->Add(fmdHist);
+      fOutputList->Add(spdHist);
     }
   }
 
