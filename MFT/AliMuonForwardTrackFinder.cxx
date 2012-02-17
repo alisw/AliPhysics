@@ -1424,7 +1424,7 @@ void AliMuonForwardTrackFinder::PrintParticleHistory() {
 
 //===========================================================================================================================================
 
-Bool_t AliMuonForwardTrackFinder::IsMother(Char_t *nameMother) {
+Bool_t AliMuonForwardTrackFinder::IsMother(const Char_t *nameMother) {
   
   Bool_t result = kFALSE;
   

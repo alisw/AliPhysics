@@ -128,7 +128,7 @@ public:
 
   Bool_t IsCorrectMatch(AliMFTCluster *cluster);
   void CheckCurrentMuonTrackable();
-  Bool_t IsMother(Char_t *nameMother);
+  Bool_t IsMother(const Char_t *nameMother);
 
   void SetMatchingMode(Int_t matchingMode) { fMatchingMode = matchingMode; }
   void SetMinResearchRadiusAtLastPlane(Double_t minResearchRadius) { fMinResearchRadiusAtLastPlane = minResearchRadius; }
