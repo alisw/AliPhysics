@@ -175,12 +175,12 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhELambda1LocMax2 ;       //! E vs lambda1 of selected cluster, 2 local maxima in cluster
   TH2F         * fhELambda0LocMaxN ;       //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
   TH2F         * fhELambda1LocMaxN ;       //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
-  TH2F         * fhMassPairLocMax[6];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
+  TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
 
   AliAnaPi0EbE(              const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,14)
+  ClassDef(AliAnaPi0EbE,15)
 } ;
 
 

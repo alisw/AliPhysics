@@ -29,10 +29,7 @@
 #include <TList.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include <TH3F.h>
-#include <TCanvas.h>
-#include <TStyle.h>
-#include <TPad.h>
+#include <TH2F.h>
 
 // --- Analysis system --- 
 #include "AliAnaInsideClusterInvariantMass.h" 
@@ -57,11 +54,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   AliAnaCaloTrackCorrBaseClass(),  
   fCalorimeter(""), 
   fM02MaxCut(0),    fM02MinCut(0),       
-  fMinNCells(0),    fMinBadDist(0),
-  fMassEtaMin(0),   fMassEtaMax(0),
-  fMassPi0Min(0),   fMassPi0Max(0),
-  fMassConMin(0),   fMassConMax(0),
-  fPlotCluster(0)
+  fMinNCells(0),    fMinBadDist(0)
 {
   //default ctor
   
@@ -75,9 +68,6 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassNLocMax2[i][j]  = 0;
       fhMassNLocMaxN[i][j]  = 0;
       fhNLocMax[i][j]       = 0;
-      fhNLocMaxNLabel[i][j] = 0;
-      fhNLocMaxEMax[i][j]   = 0;
-      fhNLocMaxEFrac[i][j]  = 0;
       fhNLocMaxM02Cut[i][j] = 0;
       fhM02NLocMax1[i][j]   = 0;
       fhM02NLocMax2[i][j]   = 0;
@@ -152,51 +142,10 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fMinNCells =%d \n",        fMinNCells) ;
   parList+=onePar ;    
-  snprintf(onePar,buffersize,"fMinBadDist =%1.1f \n",     fMinBadDist) ;
+  snprintf(onePar,buffersize,"fMinBadDist =%1.1f \n",    fMinBadDist) ;
   parList+=onePar ;  
-  snprintf(onePar,buffersize,"pi0 : %2.1f < m <%2.1f\n", fMassPi0Min,fMassPi0Max);
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"eta : %2.1f < m <%2.1f\n", fMassEtaMin,fMassEtaMax);
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"conv: %2.1f < m <%2.1f\n", fMassConMin,fMassConMax);
-  parList+=onePar ;
 
   return new TObjString(parList) ;
-  
-}
-
-
-//_____________________________________________________________________________________
-TLorentzVector AliAnaInsideClusterInvariantMass::GetCellMomentum(const Int_t absId,
-                                                                 Float_t en,
-                                                                 AliVCaloCells * cells)
-{
-
-  // Cell momentum calculation for invariant mass
-  
-  Double_t cellpos[] = {0, 0, 0};
-  GetEMCALGeometry()->GetGlobal(absId, cellpos);
-  
-  if(GetVertex(0))
-  {//calculate direction from vertex
-    cellpos[0]-=GetVertex(0)[0];
-    cellpos[1]-=GetVertex(0)[1];
-    cellpos[2]-=GetVertex(0)[2];  
-  }
-  
-  Double_t r = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]+cellpos[2]*cellpos[2] ) ;
-  
-  //If not calculated before, get the energy
-  if(en <=0 )
-  {
-    en = cells->GetCellAmplitude(absId);
-    GetCaloUtils()->RecalibrateCellAmplitude(en,fCalorimeter,absId);  
-  }
-  
-  TLorentzVector cellMom ;   
-  cellMom.SetPxPyPzE( en*cellpos[0]/r,  en*cellpos[1]/r, en*cellpos[2]/r,  en) ;   
-
-  return cellMom;
   
 }
 
@@ -286,31 +235,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhNLocMax[i][j]   ->SetYTitle("N maxima");
       fhNLocMax[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhNLocMax[i][j]) ; 
-      
-      if(IsDataMC())
-      {
-        fhNLocMaxNLabel[i][j]     = new TH2F(Form("hNLocMaxNLabel%s%s",pname[i].Data(),sMatched[j].Data()),
-                                             Form("Number of local maxima in cluster vs number of MC labels %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                             nMaxBins,0,nMaxBins,nMaxBins,0,nMaxBins); 
-        fhNLocMaxNLabel[i][j]   ->SetYTitle("N maxima");
-        fhNLocMaxNLabel[i][j]   ->SetXTitle("N MC labels");
-        outputContainer->Add(fhNLocMaxNLabel[i][j]) ; 
-      }
-      
-      fhNLocMaxEMax[i][j]     = new TH2F(Form("hNLocMaxEMax%s%s",pname[i].Data(),sMatched[j].Data()),
-                                         Form("Number of local maxima in cluster vs energy of maxima %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                         nptbins*10,ptmin,ptmax,nMaxBins,0,nMaxBins); 
-      fhNLocMaxEMax[i][j]   ->SetYTitle("N maxima");
-      fhNLocMaxEMax[i][j]   ->SetXTitle("E of maxima (GeV)");
-      outputContainer->Add(fhNLocMaxEMax[i][j]) ; 
-      
-      fhNLocMaxEFrac[i][j]     = new TH2F(Form("hNLocMaxEFrac%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("Number of local maxima in cluster vs fraction of cluster energy of maxima %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                          100,0,1,nMaxBins,0,nMaxBins); 
-      fhNLocMaxEFrac[i][j]   ->SetYTitle("N maxima");
-      fhNLocMaxEFrac[i][j]   ->SetXTitle("E maxima / E cluster");
-      outputContainer->Add(fhNLocMaxEFrac[i][j]) ; 
-      
+            
       fhNLocMaxM02Cut[i][j] = new TH2F(Form("hNLocMaxM02Cut%s%s",pname[i].Data(),sMatched[j].Data()),
                                        Form("Number of local maxima in cluster %s for %2.2f < M02 < %2.2f",ptype[i].Data(),fM02MinCut,fM02MaxCut),
                                        nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins); 
@@ -366,63 +291,72 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       
       
       fhM02Pi0LocMax1[i][j]     = new TH2F(Form("hM02Pi0LocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 1",fMassPi0Min,fMassPi0Max,ptype[i].Data()),
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 1",
+                                                GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02Pi0LocMax1[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02Pi0LocMax1[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02Pi0LocMax1[i][j]) ; 
       
       fhM02EtaLocMax1[i][j]     = new TH2F(Form("hM02EtaLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",fMassEtaMin,fMassEtaMax,ptype[i].Data()),
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                                GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02EtaLocMax1[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02EtaLocMax1[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02EtaLocMax1[i][j]) ; 
       
       fhM02ConLocMax1[i][j]    = new TH2F(Form("hM02ConLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",fMassConMin,fMassConMax,ptype[i].Data()),
+                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
+                                               GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02ConLocMax1[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02ConLocMax1[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02ConLocMax1[i][j]) ; 
       
       fhM02Pi0LocMax2[i][j]     = new TH2F(Form("hM02Pi0LocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 2",fMassPi0Min,fMassPi0Max,ptype[i].Data()),
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 2",
+                                                GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02Pi0LocMax2[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02Pi0LocMax2[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02Pi0LocMax2[i][j]) ; 
       
       fhM02EtaLocMax2[i][j]     = new TH2F(Form("hM02EtaLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",fMassEtaMin,fMassEtaMax,ptype[i].Data()),
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                               GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02EtaLocMax2[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02EtaLocMax2[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02EtaLocMax2[i][j]) ; 
       
       fhM02ConLocMax2[i][j]    = new TH2F(Form("hM02ConLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",fMassConMin,fMassConMax,ptype[i].Data()),
+                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
+                                               GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02ConLocMax2[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02ConLocMax2[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02ConLocMax2[i][j]) ; 
       
       fhM02Pi0LocMaxN[i][j]     = new TH2F(Form("hM02Pi0LocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max > 2",fMassPi0Min,fMassPi0Max,ptype[i].Data()),
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max > 2",
+                                                GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02Pi0LocMaxN[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02Pi0LocMaxN[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02Pi0LocMaxN[i][j]) ; 
       
       fhM02EtaLocMaxN[i][j]     = new TH2F(Form("hM02EtaLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max > 2", fMassEtaMin,fMassEtaMax,ptype[i].Data()),
+                                           Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max > 2", 
+                                                GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02EtaLocMaxN[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02EtaLocMaxN[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhM02EtaLocMaxN[i][j]) ; 
       
       fhM02ConLocMaxN[i][j]    = new TH2F(Form("hM02ConLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f], %s, for N Local max > 2",fMassConMin,fMassConMax,ptype[i].Data()),
+                                          Form("#lambda_{0}^{2} vs E for mass range [%2.2f-%2.2f], %s, for N Local max > 2",
+                                               GetCaloPID()->GetPhotonMinMass(),GetCaloPID()->GetPhotonMaxMass(),ptype[i].Data()),
                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhM02ConLocMaxN[i][j]   ->SetYTitle("#lambda_{0}^{2}");
       fhM02ConLocMaxN[i][j]   ->SetXTitle("E (GeV)");
@@ -568,16 +502,19 @@ void AliAnaInsideClusterInvariantMass::Init()
 { 
   //Init
   //Do some checks
-  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
+  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
+  {
     printf("AliAnaInsideClusterInvariantMass::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
-  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
+  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
+  {
     printf("AliAnaInsideClusterInvariantMass::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
   
-  if( GetReader()->GetDataType() == AliCaloTrackReader::kMC ){
+  if( GetReader()->GetDataType() == AliCaloTrackReader::kMC )
+  {
     printf("AliAnaInsideClusterInvariantMass::Init() - !!STOP: You want to use pure MC data!!\n");
     abort();
     
@@ -598,16 +535,7 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   
   fMinNCells   = 4 ;
   fMinBadDist  = 2 ;
-  
-  fMassEtaMin  = 0.4;
-  fMassEtaMax  = 0.6;
-  
-  fMassPi0Min  = 0.08;
-  fMassPi0Max  = 0.20;
-  
-  fMassConMin  = 0.0;
-  fMassConMax  = 0.05;
-  
+    
 }
 
 
@@ -631,7 +559,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     cells = GetEMCALCells();
   }
   
-  if(!pl || !cells) {
+  if(!pl || !cells) 
+  {
     Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
     return;
   }  
@@ -654,36 +583,23 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
     //       en,GetMinEnergy(), GetMaxEnergy(), nc, fMinNCells, bd, fMinBadDist);
     
-    Int_t    absId1    = -1; Int_t absId2 = -1;
-    Int_t   *absIdList = new Int_t  [nc]; 
-    Float_t *maxEList  = new Float_t[nc]; 
-    Int_t    nMax      = GetCaloUtils()->GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ;
-    Bool_t   matched   = IsTrackMatched(cluster,GetReader()->GetInputEvent());
-    
+   
+    Int_t    nMax = 0;
+    Double_t mass = 0;
+    Double_t angle= 0;
+    Int_t pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(cluster,cells,GetCaloUtils(),
+                                                                               GetVertex(0), nMax, mass, angle);
+                                                                    
     if (nMax <= 0) 
     {
-      printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found!\n");
+      printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found! n Local Max = %d\n",nMax);
       
-      /*
-      for(Int_t iDigit  = 0; iDigit < cluster->GetNCells(); iDigit++ ) {
-        Float_t ec = cells->GetCellAmplitude(cluster->GetCellsAbsId()[iDigit]);
-        GetCaloUtils()->RecalibrateCellAmplitude(ec,fCalorimeter,cluster->GetCellsAbsId()[iDigit]);
-        printf("iDigit %d, absId %d, Ecell %f\n",iDigit,cluster->GetCellsAbsId()[iDigit], ec);
-      }
-      */
-      
-      delete [] absIdList ;
-      delete [] maxEList  ;
       return;
     }
     
-    fhNLocMax[0][matched]->Fill(en,nMax);
+    Bool_t   matched   = IsTrackMatched(cluster,GetReader()->GetInputEvent());
     
-    for(Int_t imax = 0; imax < nMax; imax++)
-    {
-      fhNLocMaxEMax [0][matched]->Fill(maxEList[imax]   ,nMax);
-      fhNLocMaxEFrac[0][matched]->Fill(maxEList[imax]/en,nMax);
-    }
+    fhNLocMax[0][matched]->Fill(en,nMax);
     
     if     ( nMax == 1  ) { fhM02NLocMax1[0][matched]->Fill(en,l0) ; fhNCellNLocMax1[0][matched]->Fill(en,nc) ; }
     else if( nMax == 2  ) { fhM02NLocMax2[0][matched]->Fill(en,l0) ; fhNCellNLocMax2[0][matched]->Fill(en,nc) ; }
@@ -710,8 +626,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     // Play with the MC stack if available
     // Check origin of the candidates
     Int_t mcindex = -1;
-    if(IsDataMC()){
-      
+    if(IsDataMC())
+    {
       Int_t tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(), 0);
             
       if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )      mcindex = kmcPi0;
@@ -722,20 +638,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
                 GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcConversion;
       else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))   mcindex = kmcElectron;
       else                                                                                mcindex = kmcHadron;
-      
-      //GetMCAnalysisUtils()->PrintMCTag(tag);
-      //printf("\t MC index Assigned %d \n",mcindex);
-      fhNLocMaxNLabel[0]      [matched]->Fill(cluster->GetNLabels(),nMax);
-      fhNLocMaxNLabel[mcindex][matched]->Fill(cluster->GetNLabels(),nMax);
 
       fhNLocMax[mcindex][matched]->Fill(en,nMax);
-      
-      for(Int_t imax = 0; imax < nMax; imax++)
-      {
-        fhNLocMaxEMax [mcindex][matched]->Fill(maxEList[imax]   ,nMax);
-        fhNLocMaxEFrac[mcindex][matched]->Fill(maxEList[imax]/en,nMax);
-      }
-      
+            
       if     (nMax == 1 ) { fhM02NLocMax1[mcindex][matched]->Fill(en,l0) ; fhNCellNLocMax1[mcindex][matched]->Fill(en,nc) ; }
       else if(nMax == 2 ) { fhM02NLocMax2[mcindex][matched]->Fill(en,l0) ; fhNCellNLocMax2[mcindex][matched]->Fill(en,nc) ; }
       else if(nMax >= 3 ) { fhM02NLocMaxN[mcindex][matched]->Fill(en,l0) ; fhNCellNLocMaxN[mcindex][matched]->Fill(en,nc) ; }
@@ -748,98 +653,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
       
     }  
-    
-    //---------------------------------------------------------------------
-    // Get the 2 max indeces and do inv mass
-    //---------------------------------------------------------------------
-
-    if     ( nMax == 2 ) 
-    {
-      absId1 = absIdList[0];
-      absId2 = absIdList[1];
-    }
-    else if( nMax == 1 )
-    {
-      
-      absId1 = absIdList[0];
-
-      //Find second highest energy cell
-
-      Float_t enmax = 0 ;
-      for(Int_t iDigit = 0 ; iDigit < cluster->GetNCells() ; iDigit++)
-      {
-        Int_t absId = cluster->GetCellsAbsId()[iDigit];
-        if( absId == absId1 ) continue ; 
-        Float_t endig = cells->GetCellAmplitude(absId);
-        GetCaloUtils()->RecalibrateCellAmplitude(endig,fCalorimeter,absId); 
-        if(endig > enmax) 
-        {
-          enmax  = endig ;
-          absId2 = absId ;
-        }
-      }// cell loop
-    }// 1 maxima 
-    else
-    {  // n max > 2
-      // loop on maxima, find 2 highest
-      
-      // First max
-      Float_t enmax = 0 ;
-      for(Int_t iDigit = 0 ; iDigit < nMax ; iDigit++)
-      {
-        Float_t endig = maxEList[iDigit];
-        if(endig > enmax) 
-        {
-          enmax  = endig ;
-          absId1 = absIdList[iDigit];
-        }
-      }// first maxima loop
-
-      // Second max 
-      Float_t enmax2 = 0;
-      for(Int_t iDigit = 0 ; iDigit < nMax ; iDigit++)
-      {
-        if(absIdList[iDigit]==absId1) continue;
-        Float_t endig = maxEList[iDigit];
-        if(endig > enmax2) 
-        {
-          enmax2  = endig ;
-          absId2 = absIdList[iDigit];
-        }
-      }// second maxima loop
-
-    } // n local maxima > 2
-    
-    //---------------------------------------------------------------------
-    // Split the cluster energy in 2, around the highest 2 local maxima
-    //---------------------------------------------------------------------
-
-    //Float_t en1 = 0, en2 = 0;
-    //SplitEnergy(absId1,absId2,cluster, cells, en1, en2, nMax /*absIdList, maxEList,*/);
-
-    AliAODCaloCluster *cluster1 = new AliAODCaloCluster(0, 0,NULL,0.,NULL,NULL,1,0);
-    AliAODCaloCluster *cluster2 = new AliAODCaloCluster(1, 0,NULL,0.,NULL,NULL,1,0);
-    
-    SplitEnergy(absId1,absId2,cluster, cells, cluster1, cluster2, nMax /*absIdList, maxEList,*/);
-
-    //---------------------------------------------------------------------
-    // Get mass of pair of clusters
-    //---------------------------------------------------------------------
-
-    // First set position of cluster as local maxima position, 
-    // assign splitted energy to calculate momentum
-    
-    //TLorentzVector cellMom1 = GetCellMomentum(absId1, en1, cells);
-    //TLorentzVector cellMom2 = GetCellMomentum(absId2, en2, cells);
-
-    TLorentzVector cellMom1; 
-    TLorentzVector cellMom2;  
-    
-    cluster1->GetMomentum(cellMom1,GetVertex(0));
-    cluster2->GetMomentum(cellMom2,GetVertex(0));
-    
-    Float_t  mass  = (cellMom1+cellMom2).M();
-    Double_t angle = cellMom2.Angle(cellMom1.Vect());
 
     if     (nMax==1) 
     { 
@@ -893,17 +706,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
     }
     
-    
     //---------------------------------------------------------------------
     // From here only if M02 is large but not too large, fill histograms 
     //---------------------------------------------------------------------
     
-    if( l0 < fM02MinCut || l0 > fM02MaxCut ) 
-    {
-      delete [] absIdList ;
-      delete [] maxEList  ;
-      continue;    
-    }
+    if( l0 < fM02MinCut || l0 > fM02MaxCut ) continue ;
     
     fhNLocMaxM02Cut[0][matched]->Fill(en,nMax);
     if(IsDataMC()) fhNLocMaxM02Cut[mcindex][matched]->Fill(en,nMax);
@@ -918,9 +725,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhAnglePairMassLocMax1[matched]->Fill(mass,angle);
       }
       
-      if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax1[0][matched]->Fill(en,l0);
-      else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax1[0][matched]->Fill(en,l0);
-      else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax1[0][matched]->Fill(en,l0);
+      if     (pidTag==AliCaloPID::kPhoton) fhM02ConLocMax1[0][matched]->Fill(en,l0);
+      else if(pidTag==AliCaloPID::kPi0   ) fhM02Pi0LocMax1[0][matched]->Fill(en,l0);
+      else if(pidTag==AliCaloPID::kEta)    fhM02EtaLocMax1[0][matched]->Fill(en,l0);
     }  
     else if(nMax==2) 
     {
@@ -932,9 +739,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhAnglePairMassLocMax2[matched]->Fill(mass,angle);        
       }
       
-      if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[0][matched]->Fill(en,l0);
-      else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[0][matched]->Fill(en,l0);
-      else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax2[0][matched]->Fill(en,l0);        
+      if     (pidTag==AliCaloPID::kPhoton) fhM02ConLocMax2[0][matched]->Fill(en,l0);
+      else if(pidTag==AliCaloPID::kPi0   ) fhM02Pi0LocMax2[0][matched]->Fill(en,l0);
+      else if(pidTag==AliCaloPID::kEta)    fhM02EtaLocMax2[0][matched]->Fill(en,l0);        
     }
     else if(nMax >2) 
     {
@@ -946,43 +753,38 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhAnglePairMassLocMaxN[matched]->Fill(mass,angle);
       }
       
-      if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMaxN[0][matched]->Fill(en,l0);
-      else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMaxN[0][matched]->Fill(en,l0);
-      else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMaxN[0][matched]->Fill(en,l0);
+      if     (pidTag==AliCaloPID::kPhoton) fhM02ConLocMaxN[0][matched]->Fill(en,l0);
+      else if(pidTag==AliCaloPID::kPi0   ) fhM02Pi0LocMaxN[0][matched]->Fill(en,l0);
+      else if(pidTag==AliCaloPID::kEta   ) fhM02EtaLocMaxN[0][matched]->Fill(en,l0);
     }
     
     
-    if(IsDataMC()){
-            
+    if(IsDataMC())
+    {
       if     (nMax==1) 
       { 
         fhMassNLocMax1[mcindex][matched]->Fill(en,mass); 
-        if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax1[mcindex][matched]->Fill(en,l0);
-        else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax1[mcindex][matched]->Fill(en,l0);
-        else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax1[mcindex][matched]->Fill(en,l0);
+        if     (pidTag==AliCaloPID::kPhoton) fhM02ConLocMax1[mcindex][matched]->Fill(en,l0);
+        else if(pidTag==AliCaloPID::kPi0) fhM02Pi0LocMax1[mcindex][matched]->Fill(en,l0);
+        else if(pidTag==AliCaloPID::kEta) fhM02EtaLocMax1[mcindex][matched]->Fill(en,l0);
       }  
       else if(nMax==2) 
       {
         fhMassNLocMax2[mcindex][matched]->Fill(en,mass);
-        if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMax2[mcindex][matched]->Fill(en,l0);
-        else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMax2[mcindex][matched]->Fill(en,l0);
-        else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMax2[mcindex][matched]->Fill(en,l0);        
+        if     (pidTag==AliCaloPID::kPhoton) fhM02ConLocMax2[mcindex][matched]->Fill(en,l0);
+        else if(pidTag==AliCaloPID::kPi0   ) fhM02Pi0LocMax2[mcindex][matched]->Fill(en,l0);
+        else if(pidTag==AliCaloPID::kEta   ) fhM02EtaLocMax2[mcindex][matched]->Fill(en,l0);        
       }
       else if(nMax >2) 
       {
         fhMassNLocMaxN[mcindex][matched]->Fill(en,mass);
-        if     (mass < fMassConMax && mass > fMassConMin) fhM02ConLocMaxN[mcindex][matched]->Fill(en,l0);
-        else if(mass < fMassPi0Max && mass > fMassPi0Min) fhM02Pi0LocMaxN[mcindex][matched]->Fill(en,l0);
-        else if(mass < fMassEtaMax && mass > fMassEtaMin) fhM02EtaLocMaxN[mcindex][matched]->Fill(en,l0);
+        if     (pidTag==AliCaloPID::kPhoton) fhM02ConLocMaxN[mcindex][matched]->Fill(en,l0);
+        else if(pidTag==AliCaloPID::kPi0   ) fhM02Pi0LocMaxN[mcindex][matched]->Fill(en,l0);
+        else if(pidTag==AliCaloPID::kEta) fhM02EtaLocMaxN[mcindex][matched]->Fill(en,l0);
       }
       
     }//Work with MC truth first
     
-    delete cluster1 ;
-    delete cluster2 ;
-    delete [] absIdList ;
-    delete [] maxEList  ;
-
   }//loop
   
   if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - END \n");  
@@ -1004,260 +806,10 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   printf("Min. N Cells =%d \n",         fMinNCells) ;
   printf("Min. Dist. to Bad =%1.1f \n", fMinBadDist) ;
   printf("%2.2f < lambda_0^2 <%2.2f \n",fM02MinCut,fM02MaxCut);
-  printf("pi0 : %2.2f<m<%2.2f \n",      fMassPi0Min,fMassPi0Max);
-  printf("eta : %2.2f<m<%2.2f \n",      fMassEtaMin,fMassEtaMax);
-  printf("conv: %2.2f<m<%2.2f \n",      fMassConMin,fMassConMax);
-
+ 
   printf("    \n") ;
   
 } 
 
 
-
-//________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int_t absId2,
-                                                   AliVCluster* cluster, 
-                                                   AliVCaloCells* cells,
-                                                   //Float_t & e1, Float_t & e2,
-                                                   AliAODCaloCluster* cluster1,
-                                                   AliAODCaloCluster* cluster2,
-                                                   const Int_t nMax)
-{
-  
-  // Split energy of cluster between the 2 local maxima, sum energy on 3x3, and if the 2 
-  // maxima are too close and have common cells, split the energy between the 2
-  
-  TH2F* hClusterMap    = 0 ;
-  TH2F* hClusterLocMax = 0 ;
-  TH2F* hCluster1      = 0 ;
-  TH2F* hCluster2      = 0 ;
-  
-  if(fPlotCluster)
-  {
-    hClusterMap    = new TH2F("hClusterMap","Cluster Map",48,0,48,24,0,24);
-    hClusterLocMax = new TH2F("hClusterLocMax","Cluster 2 highest local maxima",48,0,48,24,0,24);
-    hCluster1      = new TH2F("hCluster1","Cluster 1",48,0,48,24,0,24);
-    hCluster2      = new TH2F("hCluster2","Cluster 2",48,0,48,24,0,24);
-    hClusterMap    ->SetXTitle("column");
-    hClusterMap    ->SetYTitle("row");
-    hClusterLocMax ->SetXTitle("column");
-    hClusterLocMax ->SetYTitle("row");
-    hCluster1      ->SetXTitle("column");
-    hCluster1      ->SetYTitle("row");
-    hCluster2      ->SetXTitle("column");
-    hCluster2      ->SetYTitle("row");
-  }
-  
-  const Int_t ncells  = cluster->GetNCells();  
-  Int_t absIdList[ncells]; 
-  
-  Float_t e1 = 0,  e2   = 0 ;
-  Int_t icol = -1, irow = -1, iRCU = -1, sm = -1;  
-  Float_t eCluster = 0;
-  Float_t minCol = 100, minRow = 100, maxCol = -1, maxRow = -1; 
-  for(Int_t iDigit  = 0; iDigit < ncells; iDigit++ ) 
-  {
-    absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit];
-    
-    Float_t ec = cells->GetCellAmplitude(absIdList[iDigit]);
-    GetCaloUtils()->RecalibrateCellAmplitude(ec,fCalorimeter, absIdList[iDigit]);
-    eCluster+=ec;
-    
-    if(fPlotCluster) 
-    {
-      //printf("iDigit %d, absId %d, Ecell %f\n",iDigit,absIdList[iDigit], cells->GetCellAmplitude(absIdList[iDigit]));
-      sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList[iDigit], fCalorimeter, icol, irow, iRCU) ;
-      if(icol > maxCol) maxCol = icol;
-      if(icol < minCol) minCol = icol;
-      if(irow > maxRow) maxRow = irow;
-      if(irow < minRow) minRow = irow;
-      hClusterMap->Fill(icol,irow,ec);
-    }
-    
-  }
-  
-  // Init counters and variables
-  Int_t ncells1 = 1 ;
-  UShort_t absIdList1[9] ;  
-  Double_t fracList1 [9] ;  
-  absIdList1[0] = absId1 ;
-  fracList1 [0] = 1. ;
-  
-  Float_t ecell1 = cells->GetCellAmplitude(absId1);
-  GetCaloUtils()->RecalibrateCellAmplitude(ecell1, fCalorimeter, absId1);
-  e1 =  ecell1;  
-  
-  Int_t ncells2 = 1 ;
-  UShort_t absIdList2[9] ;  
-  Double_t fracList2 [9] ; 
-  absIdList2[0] = absId2 ;
-  fracList2 [0] = 1. ;
-  
-  Float_t ecell2 = cells->GetCellAmplitude(absId2);
-  GetCaloUtils()->RecalibrateCellAmplitude(ecell2, fCalorimeter, absId2);
-  e2 =  ecell2;  
-  
-  if(fPlotCluster)
-  {
-    Int_t icol1 = -1, irow1 = -1, icol2 = -1, irow2 = -1;
-    sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId1, fCalorimeter, icol1, irow1, iRCU) ;
-    hClusterLocMax->Fill(icol1,irow1,ecell1);
-    sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId2, fCalorimeter, icol2, irow2, iRCU) ;
-    hClusterLocMax->Fill(icol2,irow2,ecell2);
-  }
-  
-  // Very rough way to share the cluster energy
-  Float_t eRemain = (eCluster-ecell1-ecell2)/2;
-  Float_t shareFraction1 = ecell1/eCluster+eRemain/eCluster;
-  Float_t shareFraction2 = ecell2/eCluster+eRemain/eCluster;
-  
-  for(Int_t iDigit = 0; iDigit < ncells; iDigit++)
-  {
-    Int_t absId = absIdList[iDigit];
-    
-    if(absId==absId1 || absId==absId2 || absId < 0) continue;
-    
-    Float_t ecell = cells->GetCellAmplitude(absId);
-    GetCaloUtils()->RecalibrateCellAmplitude(ecell, fCalorimeter, absId);
-    
-    if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId ))
-    { 
-      absIdList1[ncells1]= absId;
-      
-      if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absId ))
-      { 
-        fracList1[ncells1] = shareFraction1; 
-        e1 += ecell*shareFraction1;
-      }
-      else 
-      {
-        fracList1[ncells1] = 1.; 
-        e1 += ecell;
-      }
-      
-      ncells1++;
-      
-    } // neigbour to cell1
-    
-    if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absId ))
-    { 
-      absIdList2[ncells2]= absId;
-      
-      if(GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absId ))
-      { 
-        fracList2[ncells2] = shareFraction2; 
-        e2 += ecell*shareFraction2;
-      }
-      else
-      { 
-        fracList2[ncells2] = 1.; 
-        e2 += ecell;
-      }
-      
-      ncells2++;
-      
-    } // neigbour to cell2
-    
-  }
-  
-  if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::SplitEnergy() - n Local Max %d, Cluster energy  = %f, Ecell1 = %f, Ecell2 = %f, Enew1 = %f, Enew2 = %f, Remain %f, \n ncells %d, ncells1 %d, ncells2 %d, f1 %f, f2  %f, sum f12 = %f \n",
-                            nMax, eCluster,ecell1,ecell2,e1,e2,eCluster-e1-e2,ncells,ncells1,ncells2,shareFraction1,shareFraction2,shareFraction1+shareFraction2);
-  
-  cluster1->SetE(e1);
-  cluster2->SetE(e2);  
-  
-  cluster1->SetNCells(ncells1);
-  cluster2->SetNCells(ncells2);  
-  
-  cluster1->SetCellsAbsId(absIdList1);
-  cluster2->SetCellsAbsId(absIdList2);
-  
-  cluster1->SetCellsAmplitudeFraction(fracList1);
-  cluster2->SetCellsAmplitudeFraction(fracList2);
-  
-  GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster1);
-  GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster2);
-  
-  
-  if(fPlotCluster)
-  {
-    //printf("Cells of cluster1: ");
-    for(Int_t iDigit  = 0; iDigit < ncells1; iDigit++ ) 
-    {
-      //printf(" %d ",absIdList1[iDigit]);
-      
-      sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList1[iDigit], fCalorimeter, icol, irow, iRCU) ;
-      
-      if( GetCaloUtils()->AreNeighbours(fCalorimeter, absId2,absIdList1[iDigit]) )
-        hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit])*shareFraction1);
-      else 
-        hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit]));
-    }
-    
-    //printf(" \n ");
-    //printf("Cells of cluster2: ");
-    
-    for(Int_t iDigit  = 0; iDigit < ncells2; iDigit++ ) 
-    {
-      //printf(" %d ",absIdList2[iDigit]);
-      
-      sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList2[iDigit], fCalorimeter, icol, irow, iRCU) ;
-      if( GetCaloUtils()->AreNeighbours(fCalorimeter, absId1,absIdList2[iDigit]) )
-        hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit])*shareFraction2);
-      else
-        hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit]));
-      
-    }
-    //printf(" \n ");
-    
-    gStyle->SetPadRightMargin(0.1);
-    gStyle->SetPadLeftMargin(0.1);
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit(000000);
-    
-    if(maxCol-minCol > maxRow-minRow)
-    {
-      maxRow+= maxCol-minCol;
-    }
-    else 
-    {
-      maxCol+= maxRow-minRow;
-    }
-    
-    TCanvas  * c= new TCanvas("canvas", "canvas", 4000, 4000) ;
-    c->Divide(2,2);  
-    c->cd(1);
-    gPad->SetGridy();
-    gPad->SetGridx();
-    hClusterMap    ->SetAxisRange(minCol, maxCol,"X");
-    hClusterMap    ->SetAxisRange(minRow, maxRow,"Y");
-    hClusterMap    ->Draw("colz");
-    c->cd(2);
-    gPad->SetGridy();
-    gPad->SetGridx();
-    hClusterLocMax ->SetAxisRange(minCol, maxCol,"X");
-    hClusterLocMax ->SetAxisRange(minRow, maxRow,"Y");
-    hClusterLocMax ->Draw("colz");
-    c->cd(3);
-    gPad->SetGridy();
-    gPad->SetGridx();
-    hCluster1      ->SetAxisRange(minCol, maxCol,"X");
-    hCluster1      ->SetAxisRange(minRow, maxRow,"Y");
-    hCluster1      ->Draw("colz");
-    c->cd(4);
-    gPad->SetGridy();
-    gPad->SetGridx();
-    hCluster2      ->SetAxisRange(minCol, maxCol,"X");
-    hCluster2      ->SetAxisRange(minRow, maxRow,"Y");
-    hCluster2      ->Draw("colz");
-    
-    if(eCluster > 6 )c->Print(Form("clusterFigures/Event%d_E%1.0f_nMax%d_NCell1_%d_NCell2_%d.eps",GetEventNumber(),cluster->E(),nMax,ncells1,ncells2));
-    
-    delete c;
-    delete hClusterMap;
-    delete hClusterLocMax;
-    delete hCluster1;
-    delete hCluster2;
-  }
-}
 

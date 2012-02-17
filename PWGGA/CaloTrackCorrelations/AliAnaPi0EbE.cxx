@@ -86,13 +86,13 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhEMCFracMaxCell[i] = 0;
     fhEMCLambda1[i]     = 0;
     fhEMCDispersion[i]  = 0;
-    fhMassPairLocMax[i] = 0;
   }
   
   //Weight studies
   for(Int_t i =0; i < 14; i++){
     fhLambda0ForW0[i] = 0;
     //fhLambda1ForW0[i] = 0;
+    if(i<8)fhMassPairLocMax[i] = 0;
   }
   
   //Initialize parameters
@@ -671,12 +671,13 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhEPairDiffTime->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhEPairDiffTime);
     
-    TString combiName [] = {"1LocMax","2LocMax","NLocMax","1LocMax2LocMax","1LocMaxNLocMax","2LocMaxNLocMax"};
+    TString combiName [] = {"1LocMax","2LocMax","NLocMax","1LocMax2LocMax","1LocMaxNLocMax","2LocMaxNLocMax","1LocMaxSSBad","NLocMaxSSGood"};
     TString combiTitle[] = {"1 Local Maxima in both clusters","2 Local Maxima in both clusters","more than 2 Local Maxima in both clusters",
       "1 Local Maxima paired with 2 Local Maxima","1 Local Maxima paired with more than 2 Local Maxima",
-      "2 Local Maxima paired with more than 2 Local Maxima"};
+      "2 Local Maxima paired with more than 2 Local Maxima",
+      "1 Local Maxima paired with #lambda_{0}^{2}>0.3","N Local Maxima paired with 0.1<#lambda_{0}^{2}<0.3"};
 
-    for (Int_t i = 0; i < 6 ; i++) 
+    for (Int_t i = 0; i < 8 ; i++) 
     {
 
       if (fAnaType == kIMCaloTracks && i > 2 ) continue ; 
@@ -1094,10 +1095,18 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       else if(nMaxima1==1 || nMaxima2==1)
       {
         if  (nMaxima1==2 || nMaxima2==2) fhMassPairLocMax[3]->Fill(epair,mass);
-        else                             fhMassPairLocMax[4]->Fill(epair,mass);       
+        else                             fhMassPairLocMax[4]->Fill(epair,mass); 
       }
       else  
         fhMassPairLocMax[5]->Fill(epair,mass);
+      
+      // combinations with SS axis cut and NLM cut
+      if(nMaxima1 == 1 && cluster2->GetM02() > 0.3) fhMassPairLocMax[6]->Fill(epair,mass); 
+      if(nMaxima2 == 1 && cluster1->GetM02() > 0.3) fhMassPairLocMax[6]->Fill(epair,mass); 
+      if(nMaxima1 >  1 && cluster2->GetM02() < 0.3 && cluster2->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass); 
+      if(nMaxima2 >  1 && cluster1->GetM02() < 0.3 && cluster1->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass); 
+      
+
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
@@ -1333,6 +1342,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //Create AOD for analysis
     AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(mom);
     aodpi0.SetLabel(calo->GetLabel());
+    
     //Set the indeces of the original caloclusters  
     aodpi0.SetCaloLabel(calo->GetID(),-1);
     aodpi0.SetDetector(fCalorimeter);
@@ -1347,20 +1357,21 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Bad channel cut passed %4.2f\n",distBad);
     
-    if(distBad > fMinDist3) aodpi0.SetDistToBad(2) ;
+    if     (distBad > fMinDist3) aodpi0.SetDistToBad(2) ;
     else if(distBad > fMinDist2) aodpi0.SetDistToBad(1) ; 
-    else aodpi0.SetDistToBad(0) ;
+    else                         aodpi0.SetDistToBad(0) ;
     
     //Check PID
     //PID selection or bit setting
-    if(IsCaloPIDOn()){
+    if(IsCaloPIDOn())
+    {
       //Skip matched clusters with tracks
       if(IsTrackMatched(calo, GetReader()->GetInputEvent())) continue ;
       
       // Get most probable PID, 2 options check bayesian PID weights or redo PID
       // By default, redo PID
      
-      aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));//PID recalculated
+      aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(calo));//PID recalculated
       
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",aodpi0.GetIdentifiedParticleType());
       
@@ -1372,7 +1383,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     {
       //Set PID bits for later selection 
       //GetPDG already called in SetPIDBits.
-      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodpi0, GetCaloUtils(), GetReader()->GetInputEvent());
+      GetCaloPID()->SetPIDBits(calo,&aodpi0, GetCaloUtils(), GetReader()->GetInputEvent());
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PID Bits set \n");		
     }
     
@@ -1380,7 +1391,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     //Play with the MC stack if available
     //Check origin of the candidates
-    if(IsDataMC()){
+    if(IsDataMC())
+    {
       if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
          GetReader()->GetDataType() != AliCaloTrackReader::kMC){
         //aodpi0.SetInputFileIndex(input);
