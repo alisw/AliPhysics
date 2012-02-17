@@ -399,7 +399,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     }
   }
   
-  const Int_t Ncls = fClusterArr->GetEntriesFast();
+  const Int_t Ncls = fClusterArr->GetEntries();
   AliDebug(1, Form("total no of clusters %d", Ncls)); 
   for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
@@ -434,6 +434,16 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetE(recpoint->GetEnergy());
     c->SetPosition(g);
     c->SetNCells(ncells_true);
+    if (esdobjects) {
+      AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
+      cesd->SetCellsAbsId(absIds);
+      cesd->SetCellsAmplitudeFraction(ratios);
+      cesd->SetID(recpoint->GetUniqueID());
+    } else {
+      AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
+      caod->SetCellsAbsId(absIds);
+      caod->SetCellsAmplitudeFraction(ratios);
+    }
     c->SetDispersion(recpoint->GetDispersion());
     c->SetEmcCpvDistance(-1);
     c->SetChi2(-1);
@@ -445,8 +455,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetM20(elipAxis[1]*elipAxis[1]);
     if (fPedestalData) {
       c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
-    } 
-    else {
+    } else {
       if (fRecoUtils && fRecoUtils->IsBadChannelsRemovalSwitchedOn()) {
         fRecoUtils->RecalculateClusterDistanceToBadChannel(geom, cells, c);
       } 
@@ -495,21 +504,8 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
           imin = t;
         }
       }
-  
-      if (esdobjects) {
-        AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
-        cesd->SetCellsAbsId(absIds);
-        cesd->SetCellsAmplitudeFraction(ratios);
-        cesd->SetID(recpoint->GetUniqueID());
-        cesd->SetEmcCpvDistance(imin);
-        cesd->SetTrackDistance(dPhiMin, dEtaMin);
-      } else {
-        AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
-        caod->SetCellsAbsId(absIds);
-        caod->SetCellsAmplitudeFraction(ratios);
-        caod->SetEmcCpvDistance(imin);
-        caod->SetTrackDistance(dPhiMin, dEtaMin);
-      }
+      c->SetEmcCpvDistance(imin);
+      c->SetTrackDistance(dPhiMin, dEtaMin);
     }
   }
 }
