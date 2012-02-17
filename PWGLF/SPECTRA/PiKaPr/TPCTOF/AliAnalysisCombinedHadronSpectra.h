@@ -11,7 +11,7 @@
 class TH1;
 class TH1F;
 class TH2D;
-class TH3F;
+class TH3D;
 class TList;
 class TObjArray;
 class AliESDEvent;
@@ -45,7 +45,7 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   
  private:
   //
-  void  BinLogAxis(const THnSparse *h, Int_t axisNumber);
+  void  BinLogAxis(const TH1 *h);
   Int_t GetPythiaEventProcessType(const AliHeader* aHeader, const Bool_t adebug = kFALSE) const;
   //
   AliESDEvent *fESD;                   //! ESD object
@@ -61,10 +61,10 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   //
   //
   //
-  THnSparseL * fHistRealTracks;        //! histogram with all necessary information for real tracks
-  THnSparseL * fHistMCparticles;       //! histogram with all necessary information for MC particles
+  THnSparseF * fHistRealTracks;        //! histogram with all necessary information for real tracks
+  THnSparseF * fHistMCparticles;       //! histogram with all necessary information for MC particles
   //
-  THnSparseL * fHistPidQA;             //! histogram for the QA of the PID
+  TH3D       * fHistPidQA;             //! histogram for the QA of the PID
   TH2D       * fHistMult;              //! control histogram for multiplicity
   TH1D       * fHistCentrality;        //! control histogram for centrality
   //
