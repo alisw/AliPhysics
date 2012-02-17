@@ -71,7 +71,7 @@ const Char_t* pprField[] = { "kNoField", "k5kG", "kFieldMax" };
 void LoadLibs();
 
 // ----------------------- Generator, field, beam energy,... ------------------------------------------------------------
-static PDCProc_t     proc     = kGenPionKaon;
+static PDCProc_t     proc     = kGenBox;
 static PDCProc_t     signal   = kGenBox;    // only in case kHijing2500Cocktail is the proc
 static Mag_t         mag      = k5kG;
 static Float_t       energy   = 14000.; // energy in CMS
