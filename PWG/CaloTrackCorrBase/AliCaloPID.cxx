@@ -608,7 +608,7 @@ void AliCaloPID::PrintClusterPIDWeights(const Double_t * pid) const
 {
   // print PID of cluster, (AliVCluster*)cluster->GetPID()
   
-  printf("AliCaloPID::PrintClusterPIDWeights() \n \t ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, \n \t \ 
+  printf("AliCaloPID::PrintClusterPIDWeights() \n \t ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, \n \t \
          pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
          pid[AliVCluster::kPhoton],    pid[AliVCluster::kPi0],
          pid[AliVCluster::kElectron],  pid[AliVCluster::kEleCon],
