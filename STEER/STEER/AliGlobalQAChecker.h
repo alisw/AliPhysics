@@ -27,9 +27,8 @@ class AliGlobalLoader ;
 class AliGlobalQAChecker: public AliQACheckerBase {
 
 public:
-  AliGlobalQAChecker() : AliQACheckerBase("Global","Global Quality Assurance Data Maker") {;}          // ctor
-  AliGlobalQAChecker(const AliGlobalQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  virtual ~AliGlobalQAChecker() {;} // dtor
+  AliGlobalQAChecker() : AliQACheckerBase("Global","Global Quality Assurance Data Maker") {}          // ctor
+  virtual ~AliGlobalQAChecker() {} // dtor
 
 private:
   
