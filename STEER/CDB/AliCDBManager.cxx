@@ -1398,12 +1398,15 @@ void AliCDBManager::UnloadFromCache(const char* path){
 			AliDebug(2, Form("Unloading object \"%s\" from cache and from list of ids", path));
 			TObjString pathStr(path);
 			delete fEntryCache.Remove(&pathStr);
+			// we do not remove from the list of Id's (it's not very coherent but we leave the
+			// id for the benefit of the userinfo)
+			/*
 			TIter iter(fIds);
 			AliCDBId *id = 0;
 			while((id = dynamic_cast<AliCDBId*> (iter.Next()))){
 			    if(queryPath.Comprises(id->GetPath()))
 				delete fIds->Remove(id);
-			}
+			}*/
 		} else {
 		  AliError(Form("Cache does not contain object \"%s\"!", path));
 		}
@@ -1422,7 +1425,11 @@ void AliCDBManager::UnloadFromCache(const char* path){
 			AliDebug(2, Form("Unloading object \"%s\" from cache and from list of ids", entryPath.GetPath().Data()));
 			TObjString pathStr(entryPath.GetPath());
 			delete fEntryCache.Remove(&pathStr);
+			removed++;
 
+			// we do not remove from the list of Id's (it's not very coherent but we leave the
+			// id for the benefit of the userinfo)
+			/*
 			TIter iterids(fIds);
 			AliCDBId *anId = 0;
 			while((anId = dynamic_cast<AliCDBId*> (iterids.Next()))){
@@ -1430,9 +1437,8 @@ void AliCDBManager::UnloadFromCache(const char* path){
 			    TString aPathStr = aPath.GetPath();
 			    if(queryPath.Comprises(aPath)) {
 				delete fIds->Remove(anId);
-				removed++;
 			    }
-			}
+			}*/
 		}
 	}
 	AliDebug(2,Form("Cache entries and ids removed: %d   Remaining: %d",removed,fEntryCache.GetEntries()));
