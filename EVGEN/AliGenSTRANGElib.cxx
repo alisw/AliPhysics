@@ -128,7 +128,7 @@ ClassImp(AliGenSTRANGElib)
 //____________________________________________________________
 
   const Double_t ka    = 1000.;
-  const Double_t kdy   = 4.;
+  const Double_t kdy   = 4.*4;
 
 
   Double_t y=TMath::Abs(*py);
@@ -180,7 +180,7 @@ ClassImp(AliGenSTRANGElib)
 //____________________________________________________________
 
   const Double_t ka    = 1000.;
-  const Double_t kdy   = 4.;
+  const Double_t kdy   = 4.*4;
 
 
   Double_t y=TMath::Abs(*py);
@@ -215,7 +215,7 @@ ClassImp(AliGenSTRANGElib)
 //____________________________________________________________
 
   const Double_t ka    = 1000.;
-  const Double_t kdy   = 4.;
+  const Double_t kdy   = 4.*4;
 
 
   Double_t y=TMath::Abs(*py);
@@ -254,7 +254,7 @@ ClassImp(AliGenSTRANGElib)
 //____________________________________________________________
 
   const Double_t ka    = 1000.;
-  const Double_t kdy   = 4.;
+  const Double_t kdy   = 4.*4;
 
 
   Double_t y=TMath::Abs(*py);
@@ -293,7 +293,7 @@ ClassImp(AliGenSTRANGElib)
 //____________________________________________________________
 
   const Double_t ka    = 1000.;
-  const Double_t kdy   = 4.;
+  const Double_t kdy   = 4.*4;
 
 
   Double_t y=TMath::Abs(*py);
