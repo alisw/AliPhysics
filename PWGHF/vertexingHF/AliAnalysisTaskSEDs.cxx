@@ -65,7 +65,6 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fMassRange(0.8),
   fMassBinSize(0.002),
   fCounter(0),
-  fProdCuts(0),
   fAnalysisCuts(0)
 {
   // Default constructor
@@ -105,7 +104,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts,Int_t fillNtuple):
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* analysiscuts,Int_t fillNtuple):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
@@ -122,7 +121,6 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   fMassRange(0.8),
   fMassBinSize(0.002),
   fCounter(0),
-  fProdCuts(productioncuts),
   fAnalysisCuts(analysiscuts)
 {
   // Default constructor
@@ -232,7 +230,6 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
   delete fYVsPtSig;
   delete fNtupleDs;
   delete fCounter;
-  delete fProdCuts;
   delete fAnalysisCuts;
 
 }  
@@ -248,12 +245,9 @@ void AliAnalysisTaskSEDs::Init()
   fListCuts->SetOwner();
   fListCuts->SetName("CutObjects");
 
-  AliRDHFCutsDstoKKpi *production = new AliRDHFCutsDstoKKpi(*fProdCuts);
-  production->SetName("ProductionCuts");
   AliRDHFCutsDstoKKpi *analysis = new AliRDHFCutsDstoKKpi(*fAnalysisCuts);
   analysis->SetName("AnalysisCuts");
   
-  fListCuts->Add(production);
   fListCuts->Add(analysis);
   PostData(2,fListCuts);
   return;
@@ -378,7 +372,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fChanHist[i]);
   }
 
-  fHistNEvents = new TH1F("hNEvents", "number of events ",12,-0.5,11.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",11,-0.5,10.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
@@ -387,10 +381,9 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for vertex out of accept");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for pileup events");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"no. of out centrality events");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of candidate");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of Ds after loose cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"no. of Ds after tight cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"no. of cand wo bitmask");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of 3 prong candidates");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of Ds after filtering cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"no. of Ds after selection cuts");
 
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
 
@@ -465,7 +458,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   // Post the data already here
   PostData(1,fOutput);
   
-  fCounter->StoreEvent(aod,fProdCuts,fReadMC);
+  fCounter->StoreEvent(aod,fAnalysisCuts,fReadMC);
   
 
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
@@ -515,19 +508,19 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
   
   Int_t pdgDstoKKpi[3]={321,321,211};
-  Int_t nSelectedloose=0;
-  Int_t nSelectedtight=0;
-
+  Int_t nSelected=0;
+  Int_t nFiltered=0;
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
   
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     fHistNEvents->Fill(8);
     
     if(fUseSelectionBit && !(d->HasSelectionBit(AliRDHFCuts::kDsCuts))){
-      fHistNEvents->Fill(11);
       continue;
     }
-    
+    nFiltered++;
+    fHistNEvents->Fill(9);
+
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(vtx1);
@@ -536,15 +529,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     
     Bool_t recVtx=kFALSE;
     AliAODVertex *origownvtx=0x0;
-    Int_t retCodeProdCuts=fProdCuts->IsSelected(d,AliRDHFCuts::kCandidate,aod);
    
-    if(retCodeProdCuts) {
-      if(fProdCuts->GetIsPrimaryWithoutDaughters()){
-   	    if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());	
-   	    if(fProdCuts->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
-   	    else fProdCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
-      }
-    }  
     
     Double_t ptCand = d->Pt();
     Int_t iPtBin=TMath::BinarySearch(fNPtBins,fPtLimits,(Float_t)ptCand);
@@ -552,20 +537,20 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     Double_t rapid=d->YDs(); 
     fYVsPt->Fill(ptCand,rapid);
 
-    Bool_t isFidAcc=fAnalysisCuts->IsInFiducialAcceptance(ptCand,rapid);
-    
-    if(retCodeProdCuts>0){
-      if(isFidAcc){
-        nSelectedloose++;
-        fHistNEvents->Fill(9);
-        if(retCodeAnalysisCuts>0)nSelectedtight++;
-      }
-    }
-  
     if(retCodeAnalysisCuts<=0) continue;
+    Bool_t isFidAcc=fAnalysisCuts->IsInFiducialAcceptance(ptCand,rapid);
     if(!isFidAcc) continue;
-    fHistNEvents->Fill(10);
     
+    if(fAnalysisCuts->GetIsPrimaryWithoutDaughters()){
+      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());	
+      if(fAnalysisCuts->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
+      else fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
+    }
+    
+    
+    fHistNEvents->Fill(10);
+    nSelected++;
+        
     Int_t index=GetHistoIndex(iPtBin);
     fPtCandHist[index]->Fill(ptCand);
 
@@ -772,11 +757,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     }
     
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
-    if(recVtx)fProdCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
+    if(recVtx)fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
- 
-  fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);
-  fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);
+   
+  fCounter->StoreCandidates(aod,nFiltered,kTRUE);
+  fCounter->StoreCandidates(aod,nSelected,kFALSE);
 
   PostData(1,fOutput); 
   PostData(3,fCounter);    
