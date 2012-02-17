@@ -72,8 +72,6 @@ AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
   fRecPointsArray(NULL)
 {
   //copy ctor
-  SetName(qadm.GetName()) ; 
-  SetTitle(qadm.GetTitle()) ; 
   fDetectorDirName = GetName() ; 
 }
 

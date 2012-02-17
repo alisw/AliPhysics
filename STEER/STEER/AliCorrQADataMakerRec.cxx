@@ -56,17 +56,20 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kCORR), "Corr Quality Assurance D
 
 //____________________________________________________________________________ 
 AliCorrQADataMakerRec::AliCorrQADataMakerRec(const AliCorrQADataMakerRec& qadm) :
-  AliQADataMakerRec(),
+  AliQADataMakerRec(qadm),
   fMaxRawVar(qadm.fMaxRawVar), 
   fqadm(qadm.fqadm),
   fVarvalue(NULL)
 {
   //copy ctor 
-  SetName((const char*)qadm.GetName()) ; 
-  SetTitle((const char*)qadm.GetTitle()); 
-  if ( fMaxRawVar > 0 ) 
+  if ( fMaxRawVar > 0 ) {
     fVarvalue = new Double_t[fMaxRawVar] ;
+    memcpy(fVarvalue, qadm.fVarvalue, fMaxRawVar*sizeof(Double_t));
+  }
 
+  // Replace shallow copy done by AliQADataMakerRec by a semi-deep
+  // copy where the pointer container is recreated but the Ntuples pointed 
+  // to are simply copied
   fCorrNt = new TNtupleD *[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
     fCorrNt[specie] = qadm.fCorrNt[specie] ; 
@@ -77,25 +80,39 @@ AliCorrQADataMakerRec::AliCorrQADataMakerRec(const AliCorrQADataMakerRec& qadm) 
 AliCorrQADataMakerRec& AliCorrQADataMakerRec::operator = (const AliCorrQADataMakerRec& qadm )
 {
   // assign operator.
-  this->~AliCorrQADataMakerRec();
-  new(this) AliCorrQADataMakerRec(qadm);
-  return *this;
+  if(this != &qadm) {
+    AliQADataMakerRec::operator=(qadm);
+    fMaxRawVar = qadm.fMaxRawVar;
+    fqadm = qadm.fqadm;
+    delete [] fVarvalue;
+    if ( fMaxRawVar > 0 ) {
+      fVarvalue = new Double_t[fMaxRawVar] ;
+      memcpy(fVarvalue, qadm.fVarvalue, fMaxRawVar*sizeof(Double_t));
+    } else fVarvalue = 0;
+
+    // Replace shallow copy done by AliQADataMakerRec by a semi-deep
+    // copy where the pointer container is recreated but the Ntuples pointed 
+    // to are simply copied
+    fCorrNt = new TNtupleD *[AliRecoParam::kNSpecies] ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+      fCorrNt[specie] = qadm.fCorrNt[specie] ; 
+  }
 }
    
 //____________________________________________________________________________ 
 AliCorrQADataMakerRec::~AliCorrQADataMakerRec()  
 {
-  // dtor only destroy the ntuple 
-  if ( fCorrNt ) {
-//    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-//      if ( fCorrNt[specie] != NULL ) 
-//        delete fCorrNt[specie] ; 
-//    }
-		delete[] fCorrNt ; 
-    fCorrNt = 0x0;
-	}  
-  if ( fMaxRawVar > 0 ) 
-    delete [] fVarvalue ;
+  //
+  // dtor only destroy the ntuple otherwise it would violate ownership...
+  // however when the last AliCorrQADataMakerRec is deleted there is
+  // a leak
+  //
+  //  if ( fCorrNt ) 
+  //    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; ++specie) 
+  //        delete fCorrNt[specie] ; 
+  //  
+  delete [] fCorrNt ; 
+  delete [] fVarvalue ;
 }
   
 //____________________________________________________________________________ 
