@@ -53,6 +53,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
 
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
+  virtual void SetStandardCutsPbPb2011();
 
 
   AliAODPidHF* GetPidpion() const {return fPidObjpion;}

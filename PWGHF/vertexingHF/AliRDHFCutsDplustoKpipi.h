@@ -44,6 +44,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
+  virtual void SetStandardCutsPbPb2011();
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}

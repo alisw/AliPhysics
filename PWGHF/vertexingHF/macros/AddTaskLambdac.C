@@ -10,10 +10,14 @@ AliAnalysisTaskSELambdac *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool
 
 
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts=TFile::Open(finname.Data());
-  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-   cout<<"Input file not found: using std cut object"<<endl;
-   stdcuts=kTRUE;
+  TFile* filecuts;
+  if( finname.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(finname.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	AliFatal("Input file not found : check your cut object");
+      }
   }
   AliRDHFCutsLctopKpi* prodcuts=new AliRDHFCutsLctopKpi();
   if(stdcuts) prodcuts->SetStandardCutsPP2010();
