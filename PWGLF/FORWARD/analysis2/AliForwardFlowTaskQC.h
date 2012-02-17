@@ -174,7 +174,7 @@ public:
     *
     * @return false if bad event (det. hotspot)
     */
-    Bool_t FillHists(TH2D dNdetadphi);
+    Bool_t FillHists(TH2D* dNdetadphi);
    /**
     * Do cumulants calculations for current event with 
     * centrality cent
@@ -216,10 +216,6 @@ public:
     TH2D*         fCumuRef;       // histogram for reference flow
     TH2D*         fCumuDiff;      // histogram for differential flow
     TH3D*         fCumuHist;      // histogram for cumulants calculations
-    TH3D*         fHistTwoCorr;   // Diagnostics histogram for <2>
-    TH3D*         fHistW2;        // Diagnostics histogram for w_<2>
-    TH3D*         fHistFourCorr;  // Diagnostics histogram for <4>
-    TH3D*         fHistW4;        // Diagnostics histogram for w_<4>
     TH2D*         fdNdedpAcc;     // Diagnostics histogram to make acc. maps
 
     ClassDef(VertexBin, 1); // object for cumulants ananlysis in FMD
