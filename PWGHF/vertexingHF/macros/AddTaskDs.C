@@ -1,4 +1,4 @@
-AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
+AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=1,Bool_t readMC=kFALSE,
 				     TString filename="DstoKKpiCuts.root")
 {
   //                                                                                                                                    
@@ -26,17 +26,11 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
   
   //Analysis Task
 
-  
   AliRDHFCutsDstoKKpi* analysiscuts=new AliRDHFCutsDstoKKpi();
   analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
 
-  AliRDHFCutsDstoKKpi* prodcuts=new AliRDHFCutsDstoKKpi();
-  prodcuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("ProdCuts");
-  
-  //AliRDHFCutsDstoKKpi *prodcuts = (AliRDHFCutsDstoKKpi*)fileCuts->Get("ProdCuts");
-  //AliRDHFCutsDstoKKpi *analysiscuts = (AliRDHFCutsDstoKKpi*)fileCuts->Get("AnalysisCuts");
+  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",analysiscuts,storeNtuple);
 
-  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",prodcuts,analysiscuts,storeNtuple);
   dsTask->SetReadMC(readMC);
   //dsTask->SetDoLikeSign(kTRUE);
   //  dsTask->SetUseTPCpid(kTRUE);
@@ -67,7 +61,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
    if(storeNtuple){
     AliAnalysisDataContainer *coutputDs2 = mgr->CreateContainer("coutputDs2",TNtuple::Class(),
 								   AliAnalysisManager::kOutputContainer,
-								   "InvMassDs_nt1.root");
+								   outputfile.Data());
     
     coutputDs2->SetSpecialOutput();
   }

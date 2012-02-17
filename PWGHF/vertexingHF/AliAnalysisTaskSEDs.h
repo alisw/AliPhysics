@@ -29,7 +29,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
  public:
  
   AliAnalysisTaskSEDs();
-  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
+  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
@@ -39,7 +39,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
-  void SetProductionCuts(AliRDHFCutsDstoKKpi* cuts){fProdCuts=cuts;}
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -98,10 +97,9 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Double_t fMassBinSize;              // bin size for inv. mass histo
 
   AliNormalizationCounter *fCounter;//!Counter for normalization
-  AliRDHFCutsDstoKKpi *fProdCuts;     // Cuts for Analysis
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,9);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,10);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif
