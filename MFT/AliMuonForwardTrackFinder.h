@@ -216,8 +216,6 @@ protected:
   Int_t fCountRealTracksAnalyzedOfEvent;
   Int_t fCountRealTracksAnalyzedWithFinalCandidates;
 
-  Int_t fNClustersGlobalTrack[fNMaxPlanes], fNDFGlobalTrack[fNMaxPlanes];
-  
   TFile *fFileCluster;   //!
   TFile *fFileESD;       //!
   TFile *fFile_gAlice;   //!

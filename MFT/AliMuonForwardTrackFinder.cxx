@@ -328,10 +328,10 @@ void AliMuonForwardTrackFinder::Init(Int_t nRun,
   Char_t gAliceName[300];
   Char_t clusterName[300];
   
-  sprintf(geoFileName , "%s/geometry.root",      fReadDir.Data());
-  sprintf(esdFileName , "%s/AliESDs.root" ,      fReadDir.Data());
-  sprintf(gAliceName  , "%s/galice.root"  ,      fReadDir.Data());
-  sprintf(clusterName , "%s/MFT.RecPoints.root", fReadDir.Data());
+  snprintf(geoFileName , 300, "%s/geometry.root",      fReadDir.Data());
+  snprintf(esdFileName , 300, "%s/AliESDs.root" ,      fReadDir.Data());
+  snprintf(gAliceName  , 300, "%s/galice.root"  ,      fReadDir.Data());
+  snprintf(clusterName , 300, "%s/MFT.RecPoints.root", fReadDir.Data());
   
   // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
   if (!gGeoManager) {
@@ -1595,50 +1595,50 @@ void AliMuonForwardTrackFinder::WriteHistos() {
 
 void AliMuonForwardTrackFinder::PDGNameConverter(const Char_t *nameIn, Char_t *nameOut) {
 
-  if      (!strcmp(nameIn, "mu+"))     sprintf(nameOut, "#mu^{+}");
-  else if (!strcmp(nameIn, "mu-"))     sprintf(nameOut, "#mu^{-}");
-  else if (!strcmp(nameIn, "pi+"))     sprintf(nameOut, "#pi^{+}");
-  else if (!strcmp(nameIn, "pi-"))     sprintf(nameOut, "#pi^{-}");
-  else if (!strcmp(nameIn, "K+"))      sprintf(nameOut, "K^{+}");
-  else if (!strcmp(nameIn, "K-"))      sprintf(nameOut, "K^{-}");
-  else if (!strcmp(nameIn, "K*+"))     sprintf(nameOut, "K^{*+}");
-  else if (!strcmp(nameIn, "K*-"))     sprintf(nameOut, "K^{*-}");
-  else if (!strcmp(nameIn, "K_S0"))    sprintf(nameOut, "K_{S}^{0}");
-  else if (!strcmp(nameIn, "K_L0"))    sprintf(nameOut, "K_{L}^{0}");
-  else if (!strcmp(nameIn, "K0"))      sprintf(nameOut, "K^{0}");
-  else if (!strcmp(nameIn, "K0_bar"))  sprintf(nameOut, "#bar{K}^{0}");
-  else if (!strcmp(nameIn, "K*0"))     sprintf(nameOut, "K^{*0}");
-  else if (!strcmp(nameIn, "K*0_bar")) sprintf(nameOut, "#bar{K}^{*0}");
-  else if (!strcmp(nameIn, "rho0"))    sprintf(nameOut, "#rho^{0}");
-  else if (!strcmp(nameIn, "rho+"))    sprintf(nameOut, "#rho^{+}");
-  else if (!strcmp(nameIn, "rho-"))    sprintf(nameOut, "#rho^{-}");
-  else if (!strcmp(nameIn, "omega"))   sprintf(nameOut, "#omega");
-  else if (!strcmp(nameIn, "eta'"))    sprintf(nameOut, "#eta'");
-  else if (!strcmp(nameIn, "phi"))     sprintf(nameOut, "#phi");
+  if      (!strcmp(nameIn, "mu+"))     snprintf(nameOut, 50, "#mu^{+}");
+  else if (!strcmp(nameIn, "mu-"))     snprintf(nameOut, 50, "#mu^{-}");
+  else if (!strcmp(nameIn, "pi+"))     snprintf(nameOut, 50, "#pi^{+}");
+  else if (!strcmp(nameIn, "pi-"))     snprintf(nameOut, 50, "#pi^{-}");
+  else if (!strcmp(nameIn, "K+"))      snprintf(nameOut, 50, "K^{+}");
+  else if (!strcmp(nameIn, "K-"))      snprintf(nameOut, 50, "K^{-}");
+  else if (!strcmp(nameIn, "K*+"))     snprintf(nameOut, 50, "K^{*+}");
+  else if (!strcmp(nameIn, "K*-"))     snprintf(nameOut, 50, "K^{*-}");
+  else if (!strcmp(nameIn, "K_S0"))    snprintf(nameOut, 50, "K_{S}^{0}");
+  else if (!strcmp(nameIn, "K_L0"))    snprintf(nameOut, 50, "K_{L}^{0}");
+  else if (!strcmp(nameIn, "K0"))      snprintf(nameOut, 50, "K^{0}");
+  else if (!strcmp(nameIn, "K0_bar"))  snprintf(nameOut, 50, "#bar{K}^{0}");
+  else if (!strcmp(nameIn, "K*0"))     snprintf(nameOut, 50, "K^{*0}");
+  else if (!strcmp(nameIn, "K*0_bar")) snprintf(nameOut, 50, "#bar{K}^{*0}");
+  else if (!strcmp(nameIn, "rho0"))    snprintf(nameOut, 50, "#rho^{0}");
+  else if (!strcmp(nameIn, "rho+"))    snprintf(nameOut, 50, "#rho^{+}");
+  else if (!strcmp(nameIn, "rho-"))    snprintf(nameOut, 50, "#rho^{-}");
+  else if (!strcmp(nameIn, "omega"))   snprintf(nameOut, 50, "#omega");
+  else if (!strcmp(nameIn, "eta'"))    snprintf(nameOut, 50, "#eta'");
+  else if (!strcmp(nameIn, "phi"))     snprintf(nameOut, 50, "#phi");
 
-  else if (!strcmp(nameIn, "D-"))     sprintf(nameOut, "D^{-}");
-  else if (!strcmp(nameIn, "D+"))     sprintf(nameOut, "D^{+}");
-  else if (!strcmp(nameIn, "D0"))     sprintf(nameOut, "D^{0}");
-  else if (!strcmp(nameIn, "D0_bar")) sprintf(nameOut, "#bar{D}^{0}");
-  else if (!strcmp(nameIn, "D*-"))    sprintf(nameOut, "D^{*-}");
-  else if (!strcmp(nameIn, "D*+"))    sprintf(nameOut, "D^{*+}");
-  else if (!strcmp(nameIn, "D_s+"))   sprintf(nameOut, "D_{s}^{+}");
-  else if (!strcmp(nameIn, "D*_s+"))  sprintf(nameOut, "D_{s}^{*+}");
+  else if (!strcmp(nameIn, "D-"))     snprintf(nameOut, 50, "D^{-}");
+  else if (!strcmp(nameIn, "D+"))     snprintf(nameOut, 50, "D^{+}");
+  else if (!strcmp(nameIn, "D0"))     snprintf(nameOut, 50, "D^{0}");
+  else if (!strcmp(nameIn, "D0_bar")) snprintf(nameOut, 50, "#bar{D}^{0}");
+  else if (!strcmp(nameIn, "D*-"))    snprintf(nameOut, 50, "D^{*-}");
+  else if (!strcmp(nameIn, "D*+"))    snprintf(nameOut, 50, "D^{*+}");
+  else if (!strcmp(nameIn, "D_s+"))   snprintf(nameOut, 50, "D_{s}^{+}");
+  else if (!strcmp(nameIn, "D*_s+"))  snprintf(nameOut, 50, "D_{s}^{*+}");
 
-  else if (!strcmp(nameIn, "B-"))       sprintf(nameOut, "B^{-}");
-  else if (!strcmp(nameIn, "B+"))       sprintf(nameOut, "B^{+}");
-  else if (!strcmp(nameIn, "B_s0_bar")) sprintf(nameOut, "#bar{B}_{s}^{0}");
+  else if (!strcmp(nameIn, "B-"))       snprintf(nameOut, 50, "B^{-}");
+  else if (!strcmp(nameIn, "B+"))       snprintf(nameOut, 50, "B^{+}");
+  else if (!strcmp(nameIn, "B_s0_bar")) snprintf(nameOut, 50, "#bar{B}_{s}^{0}");
 
-  else if (!strcmp(nameIn, "antiproton"))  sprintf(nameOut, "#bar{p}");
-  else if (!strcmp(nameIn, "proton"))      sprintf(nameOut, "p");
-  else if (!strcmp(nameIn, "neutron"))     sprintf(nameOut, "n");
-  else if (!strcmp(nameIn, "Sigma+"))      sprintf(nameOut, "#Sigma^{+}");
-  else if (!strcmp(nameIn, "Delta+"))      sprintf(nameOut, "#Delta{+}");
-  else if (!strcmp(nameIn, "Delta--"))     sprintf(nameOut, "#Delta{--}");
-  else if (!strcmp(nameIn, "Lambda0"))     sprintf(nameOut, "#Lambda_0");
-  else if (!strcmp(nameIn, "Lambda0_bar")) sprintf(nameOut, "#bar{Lambda}_0");
+  else if (!strcmp(nameIn, "antiproton"))  snprintf(nameOut, 50, "#bar{p}");
+  else if (!strcmp(nameIn, "proton"))      snprintf(nameOut, 50, "p");
+  else if (!strcmp(nameIn, "neutron"))     snprintf(nameOut, 50, "n");
+  else if (!strcmp(nameIn, "Sigma+"))      snprintf(nameOut, 50, "#Sigma^{+}");
+  else if (!strcmp(nameIn, "Delta+"))      snprintf(nameOut, 50, "#Delta{+}");
+  else if (!strcmp(nameIn, "Delta--"))     snprintf(nameOut, 50, "#Delta{--}");
+  else if (!strcmp(nameIn, "Lambda0"))     snprintf(nameOut, 50, "#Lambda_0");
+  else if (!strcmp(nameIn, "Lambda0_bar")) snprintf(nameOut, 50, "#bar{Lambda}_0");
 
-  else sprintf(nameOut, "%s", nameIn);
+  else snprintf(nameOut, 50, "%s", nameIn);
 
 }
 

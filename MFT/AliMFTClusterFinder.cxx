@@ -179,10 +179,9 @@ void AliMFTClusterFinder::MakeClusterBranch(TTree *treeCluster) {
   if (treeCluster) {
     for(Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
       AliDebug(1, Form("Setting Branch Plane_%02d for treeCluster",iPlane));
-      TBranch *branch = treeCluster->GetBranch(Form("Plane_%02d",iPlane));
-      if (branch) continue;
+      if (treeCluster->GetBranch(Form("Plane_%02d",iPlane))) continue;
       AliDebug(1, Form("Branch Plane_%02d does not exist, creating!",iPlane));
-      branch = treeCluster->Branch(Form("Plane_%02d",iPlane), &(fClustersPerPlane[iPlane])); 
+      treeCluster->Branch(Form("Plane_%02d",iPlane), &(fClustersPerPlane[iPlane])); 
     }
   }
 
