@@ -34,7 +34,8 @@ public:
 
 
 private:
-  AliCorrQAChecker(const AliCorrQAChecker& qac); // cpy ctor   
+  AliCorrQAChecker(const AliCorrQAChecker& qac); // Not implemented
+  AliCorrQAChecker& operator=(const AliCorrQAChecker& qac); // Not implemented
   Double_t * CheckN(AliQAv1::ALITASK_t index, TNtupleD ** nData, AliDetectorRecoParam * recoParam) ; 
 
   ClassDef(AliCorrQAChecker,1)  // description 
