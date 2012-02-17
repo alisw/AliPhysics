@@ -42,6 +42,7 @@
 
 enum PDCProc_t {kGenBox,
 		kGenMuonLMR,
+		kGenPionKaon,
 		kGenCorrHF,
                 kPythia6,
 		kPythiaPerugia0, 
@@ -53,6 +54,7 @@ enum PDCProc_t {kGenBox,
 
 const Char_t* pprRunName[] = {"kGenBox",
 			      "kGenMuonLMR",
+			      "kGenPionKaon",
 			      "kGenCorrHF",
 			      "kPythia6",
 			      "kPythiaPerugia0", 
@@ -69,7 +71,7 @@ const Char_t* pprField[] = { "kNoField", "k5kG", "kFieldMax" };
 void LoadLibs();
 
 // ----------------------- Generator, field, beam energy,... ------------------------------------------------------------
-static PDCProc_t     proc     = kGenBox;
+static PDCProc_t     proc     = kGenPionKaon;
 static PDCProc_t     signal   = kGenBox;    // only in case kHijing2500Cocktail is the proc
 static Mag_t         mag      = k5kG;
 static Float_t       energy   = 14000.; // energy in CMS
@@ -154,6 +156,7 @@ void Config() {
   else if (proc == kGenBox)               gener = GenBox();
   else if (proc == kGenMuonLMR)           gener = GenMuonLMR();
   else if (proc == kGenCorrHF)            gener = GenCorrHF();
+  else if (proc == kGenPionKaon)          gener = GenParamPionKaon();
 
   // Size of the interaction diamond
   Float_t sigmaz  = 5.4 / TMath::Sqrt(2.);     // [cm]
@@ -225,7 +228,7 @@ void Config() {
   }
   if (iPIPE) {
     //    AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
-    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe", 1.98, 0.08);  // cylindre with new adaptator pipe
+    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe", 1.98, 0.08);
   }
   if (iZDC) {
     AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
@@ -287,6 +290,22 @@ AliGenerator* GenMuonLMR() {
   enum {kEta2Body, kEtaDalitz, kRho2Body, kOmega2Body, kOmegaDalitz, kPhi2Body, kEtaPrimeDalitz, kPionLMR, kKaonLMR}; 
   gener->GenerateSingleProcess(kPhi2Body, 500);
   gener->SetCutOnChild(1);
+
+  return gener;
+
+}
+
+//====================================================================================================================================================
+
+AliGenerator* GenParamPionKaon() {
+  
+  AliGenParamPionsKaons *gener = new AliGenParamPionsKaons(100,"$ALICE_ROOT/MFT/PionKaonKinematics.root");
+  gener->SetPtRange(0, 5.);
+  gener->SetPhiRange(0., 360.);
+  gener->SetYRange(-10., 0.);
+  gener->SetOrigin(0.0, 0.0, 0.0);  // vertex position
+  gener->SetSigma(0.0, 0.0, 0.0);   // vertex position smearing
+  //  gener->SetCutOnChild(1);
 
   return gener;
 

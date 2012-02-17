@@ -9,5 +9,6 @@
 #pragma link C++ class  AliMFT+;
 #pragma link C++ class  AliMFTHit+;
 #pragma link C++ class  AliMFTDigitizer+;
+#pragma link C++ class  AliGenParamPionsKaons+;
 
 #endif

@@ -491,9 +491,15 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   
   // ------------------------------------- ...done!
 
-  if (fMuonTrackReco->GetMCLabel()>=0) fCountRealTracksWithRefMC++;
-  
   fLabelMC = fMuonTrackReco->GetMCLabel();
+
+  Int_t motherPdg=0;
+  if (fLabelMC>=0) {
+    fCountRealTracksWithRefMC++;
+    if (fStack->Particle(fLabelMC)->GetFirstMother() != -1) {
+      motherPdg = fStack->Particle(fStack->Particle(fLabelMC)->GetFirstMother())->GetPdgCode();
+    }
+  }
 
   CheckCurrentMuonTrackable();
 
@@ -682,6 +688,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 				     Double_t(nFinalTracks),
 				     Double_t(fLabelMC>=0),
 				     xVtx, yVtx, zVtx,
+				     motherPdg,
 				     Double_t(fMuonTrackReco->GetMatchTrigger()),
 				     Double_t(nClustersMC),
 				     Double_t(nGoodClusters),
@@ -742,6 +749,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 				       Double_t(nFinalTracks),
 				       Double_t(fLabelMC>=0),
 				       xVtx, yVtx, zVtx,
+				       motherPdg,
 				       Double_t(fMuonTrackReco->GetMatchTrigger()),
 				       Double_t(nClustersMC),
 				       Double_t(nGoodClustersBestCandidate),
@@ -1241,9 +1249,9 @@ void AliMuonForwardTrackFinder::BookHistos() {
     
   }
 
-  fNtuFinalCandidates     = new TNtuple("ntuFinalCandidates",     "Final Candidates (ALL)", "run:event:muonTrack:nFinalCandidates:MCTrackRefExists:xVtx:yVtx:zVtx:triggerMatch:nClustersMC:nGoodClusters:pt:theta:eta:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8");
+  fNtuFinalCandidates     = new TNtuple("ntuFinalCandidates",     "Final Candidates (ALL)", "run:event:muonTrack:nFinalCandidates:MCTrackRefExists:xVtx:yVtx:zVtx:motherPdg:triggerMatch:nClustersMC:nGoodClusters:pt:theta:eta:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8");
 
-  fNtuFinalBestCandidates = new TNtuple("ntuFinalBestCandidates", "Final Best Candidates",  "run:event:muonTrack:nFinalCandidates:MCTrackRefExists:xVtx:yVtx:zVtx:triggerMatch:nClustersMC:nGoodClusters:pt:theta:eta:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8:nClustersAtPlane0:nClustersAtPlane1:nClustersAtPlane2:nClustersAtPlane3:nClustersAtPlane4:nClustersAtPlane5:nClustersAtPlane6:nClustersAtPlane7:nClustersAtPlane8");
+  fNtuFinalBestCandidates = new TNtuple("ntuFinalBestCandidates", "Final Best Candidates",  "run:event:muonTrack:nFinalCandidates:MCTrackRefExists:xVtx:yVtx:zVtx:motherPdg:triggerMatch:nClustersMC:nGoodClusters:pt:theta:eta:chi2AtPlane0:chi2AtPlane1:chi2AtPlane2:chi2AtPlane3:chi2AtPlane4:chi2AtPlane5:chi2AtPlane6:chi2AtPlane7:chi2AtPlane8:nClustersAtPlane0:nClustersAtPlane1:nClustersAtPlane2:nClustersAtPlane3:nClustersAtPlane4:nClustersAtPlane5:nClustersAtPlane6:nClustersAtPlane7:nClustersAtPlane8");
 
 }
 
