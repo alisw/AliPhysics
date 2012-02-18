@@ -911,6 +911,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
 }
 
+//__________________________________
+void AliAnaParticleIsolation::Init()
+{
+  // Do some checks and init stuff
+  
+  // In case of several cone and thresholds analysis, open the cuts for the filling of the 
+  // track and cluster reference arrays in cone when done in the MakeAnalysisFillAOD(). 
+  // The different cones, thresholds are tested for this list of tracks, clusters.
+  if(fMakeSeveralIC)
+  {
+    printf("AliAnaParticleIsolation::Init() - Open default isolation cuts for multiple Isolation analysis\n");
+    GetIsolationCut()->SetPtThreshold(100);
+    GetIsolationCut()->SetPtFraction(100);
+    GetIsolationCut()->SetConeSize(1);
+  }
+}
+
 //____________________________________________
 void AliAnaParticleIsolation::InitParameters()
 {
@@ -985,9 +1002,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     //If too small or too large pt, skip
     if(aodinput->Pt() < GetMinPt() || aodinput->Pt() > GetMaxPt() ) continue ; 
     
-    //check if it is low pt trigger particle, then adjust the isolation method
-    if(aodinput->Pt() < GetIsolationCut()->GetPtThreshold() || 
-       aodinput->Pt() < GetIsolationCut()->GetSumPtThreshold())
+    //check if it is low pt trigger particle
+    if((aodinput->Pt() < GetIsolationCut()->GetPtThreshold() || 
+        aodinput->Pt() < GetIsolationCut()->GetSumPtThreshold()) && 
+       !fMakeSeveralIC)
     {
       continue ; //trigger should not come from underlying event
     }
@@ -1085,9 +1103,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(pt < GetMinPt() || pt > GetMaxPt() ) continue ; 
     
     // --- In case of redoing isolation from delta AOD ----
-    if(fMakeSeveralIC) {
+    if(fMakeSeveralIC) 
+    {
       //Analysis of multiple IC at same time
       MakeSeveralICAnalysis(aod);
+      continue;
     }
     else if(fReMakeIC)
     {
@@ -1290,6 +1310,8 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Float_t ptC = ph->Pt();	
   Int_t tag   = ph->GetTag();
   
+  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeSeveralICAnalysis() - Isolate pT %2.2f\n",ptC);
+  
   //Keep original setting used when filling AODs, reset at end of analysis  
   Float_t ptthresorg = GetIsolationCut()->GetPtThreshold();
   Float_t ptfracorg  = GetIsolationCut()->GetPtFraction();
@@ -1305,13 +1327,14 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   {
     GetIsolationCut()->SetConeSize(fConeSizes[icone]);
     coneptsum = 0 ;
-    
+        
     //Loop on ptthresholds
     for(Int_t ipt = 0; ipt<fNPtThresFrac ;ipt++)
     {
       n[icone][ipt]=0;
       nfrac[icone][ipt]=0;
       GetIsolationCut()->SetPtThreshold(fPtThresholds[ipt]);
+            
       GetIsolationCut()->MakeIsolationCut(ph->GetObjArray(GetAODObjArrayName()+"Tracks"), 
                                           ph->GetObjArray(GetAODObjArrayName()+"Clusters"),
                                           GetReader(), GetCaloPID(),
@@ -1319,6 +1342,10 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
                                           n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
       
       //Normal ptThreshold cut
+
+      if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeSeveralICAnalysis() - cone size %1.1f, ptThres  %1.1f, n %d, nfrac %d, coneptsum %2.2f, isolated %d\n",
+                                fConeSizes[icone],fPtThresholds[icone],n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
+
       if(n[icone][ipt] == 0) 
       {
         fhPtThresIsolated[icone][ipt]->Fill(ptC);

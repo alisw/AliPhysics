@@ -66,7 +66,7 @@ class AliIsolationCut : public TObject {
   void       SetPtFraction(Float_t pt)      { fPtFraction     = pt   ; }
   void       SetICMethod(Int_t i )          { fICMethod       = i    ; }
   void       SetParticleTypeInCone(Int_t i) { fPartInCone     = i    ; }
-  
+  void       SetDebug(Int_t d)              { fDebug          = d    ; }
  private:
   
   Float_t    fConeSize ;       // Size of the isolation cone 
@@ -81,10 +81,12 @@ class AliIsolationCut : public TObject {
   Int_t      fPartInCone;      // Type of particles inside cone:
                                // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
 
+  Int_t      fDebug;           // Debug level
+  
   AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,4)
+  ClassDef(AliIsolationCut,5)
 } ;
 
 

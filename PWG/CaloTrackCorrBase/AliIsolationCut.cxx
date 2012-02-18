@@ -51,7 +51,8 @@ fPtThreshold(0.),
 fSumPtThreshold(0.), 
 fPtFraction(0.), 
 fICMethod(0),
-fPartInCone(0)
+fPartInCone(0),
+fDebug(-1)
 {
   //default ctor
   
@@ -113,10 +114,10 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
                                         Bool_t  & isolated) const
 {  
   //Search in cone around a candidate particle if it is isolated 
+  Float_t ptC   = pCandidate->Pt() ;
   Float_t phiC  = pCandidate->Phi() ;
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
-  Float_t ptC   = pCandidate->Pt() ;
   Float_t pt    = -100. ;
   Float_t eta   = -100. ;
   Float_t phi   = -100. ;
@@ -126,6 +127,16 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
   nfrac     = 0 ;
   coneptsum = 0.; 
   isolated  = kFALSE;
+
+  if(fDebug>0) 
+  {
+    printf("AliIsolationCut::MakeIsolationCut() - Cadidate pT %2.2f, eta %2.2f, phi %2.2f, cone %1.2f, thres %2.2f, Fill AOD? %d",
+           pCandidate->Pt(), pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), fConeSize,fPtThreshold,bFillAOD);
+    if(plCTS) printf(", nTracks %d"  ,plCTS->GetEntriesFast());
+    if(plNe)  printf(", nClusters %d",plNe ->GetEntriesFast());
+    
+    printf("\n");
+  }
   
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
@@ -177,8 +188,13 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
 
       rad = Radius(etaC, phiC, eta, phi);
       
+      if(fDebug>0) 
+        printf("\t track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad);
+               
       if(rad < fConeSize)
       {
+        if(fDebug>0)  printf(" -  inside candidate cone");
+
         if(bFillAOD)
         {
           ntrackrefs++;
@@ -194,15 +210,21 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
           reftracks->Add(track);
         }
         
-        //printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
+        
         coneptsum+=pt;
         if(pt > fPtThreshold )    n++;
         if(pt > fPtFraction*ptC ) nfrac++;  
         
       } // Inside cone
+
+      if(fDebug>0)  printf("\n");
+
     }// charged particle loop
+    
+    
   }//Tracks
   
+
   //Check neutral particles in cone.  
   if(plNe && 
      (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
@@ -267,8 +289,13 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
 
       rad = Radius(etaC, phiC, eta, phi);
       
+      if(fDebug>0) 
+        printf("\t cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad);
+      
       if(rad < fConeSize)
       {
+        if(fDebug>0)  printf(" - inside candidate cone");
+
         if(bFillAOD) 
         {
           nclusterrefs++;
@@ -284,7 +311,6 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
           refclusters->Add(calo);
         }
         
-        //printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
         coneptsum+=pt;
         if(pt > fPtThreshold )   n++;
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
@@ -299,11 +325,12 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
         
       }//in cone
       
+      if(fDebug>0)  printf("\n");
+
     }// neutral particle loop
   
   }//neutrals
   
-  //printf("Isolation Cut: in cone with: pT>pTthres %d, pT > pTfrac*pTcandidate %d \n",n,nfrac);
   
   //Add reference arrays to AOD when filling AODs only
   if(bFillAOD) 
