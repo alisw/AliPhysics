@@ -339,7 +339,7 @@ static Bool_t AcceptPID(const AliPIDResponse *pidResponse,
 }
 
 static TParticle*
-Associate(const AliESDtrack *ptrack,const AliESDtrack *ntrack,AliStack *stack,
+AssociateV0(const AliESDtrack *ptrack,const AliESDtrack *ntrack,AliStack *stack,
 TParticle *&mcp) {
   //
   // Try to associate the V0 with the daughters ptrack and ntrack
@@ -374,7 +374,6 @@ TParticle *&mcp) {
   mcp=p;
 
   return p0;
-
 }
 
 
@@ -510,11 +509,6 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
 
   Int_t nv0 = esd->GetNumberOfV0s();
   while (nv0--) {
-
-      Bool_t isK0s=kTRUE;
-      Bool_t isLambda=kTRUE;
-      Bool_t isLambdaBar=kTRUE;
-
       AliESDv0 *v0=esd->GetV0(nv0);
 
       Double_t pt=v0->Pt();
@@ -533,17 +527,22 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
 
       if (lt/pt > 3*7.89/1.1157) continue;  
 
+      //--- V0 switches
+      Bool_t isK0s=kTRUE;
+      Bool_t isLambda=kTRUE;
+      Bool_t isLambdaBar=kTRUE;
+
       if (0.4977*lt/pt > 3*2.68) isK0s=kFALSE;
       if (1.1157*lt/pt > 3*7.89) isLambdaBar=isLambda=kFALSE;
 
-      isLambda    = isLambda && AcceptPID(pidResponse, ptrack, stack);
-      isLambdaBar = isLambdaBar && AcceptPID(pidResponse, ntrack, stack);
+      if (!AcceptPID(pidResponse, ptrack, stack)) isLambda=kFALSE;
+      if (!AcceptPID(pidResponse, ntrack, stack)) isLambdaBar=kFALSE;
 
       Double_t yK0s=TMath::Abs(v0->RapK0Short());
       Double_t yLam=TMath::Abs(v0->RapLambda());
-      isK0s       = isK0s && (yK0s < yMax);
-      isLambda    = isLambda && (yLam < yMax);
-      isLambdaBar = isLambdaBar && (yLam < yMax);
+      if (yK0s > yMax) isK0s=kFALSE;
+      if (yLam > yMax) isLambda=isLambdaBar=kFALSE;
+      //---
 
       Double_t mass=0., m=0., s=0.;
       if (isK0s) {
@@ -621,7 +620,7 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
              if (!isLambdaBar) continue;//check MC only for the accepted V0s 
 
       TParticle *mcp=0;
-      TParticle *mc0=Associate(ptrack,ntrack,stack,mcp);
+      TParticle *mc0=AssociateV0(ptrack,ntrack,stack,mcp);
       if (!mc0) continue;
 
       Double_t ptAs=mc0->Pt();
@@ -682,7 +681,8 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
   for (Int_t i=0; i<ncs; i++) {
       AliESDcascade *cs=esd->GetCascade(i);
 
-      if (cs->Pt() < pMin) continue;
+      Double_t pt=cs->Pt();
+      if (pt < pMin) continue;
       if (TMath::Abs(cs->RapXi()) > yMax) continue;
       if (!AcceptCascade(cs,esd)) continue;
 
@@ -691,28 +691,34 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
       if (TMath::Abs(v0->RapLambda()) > yMax) continue;
       if (!AcceptV0(v0,esd)) continue;
 
-      Double_t pt=cs->Pt();
+      //--- Cascade switches
+      Bool_t isXiMinus=kTRUE;
+      Bool_t isXiPlusBar=kTRUE;
 
       Int_t pidx=TMath::Abs(v0->GetPindex());
       AliESDtrack *ptrack=esd->GetTrack(pidx);
-      Bool_t isProton   =AcceptPID(pidResponse, ptrack, stack);
+      if (!AcceptPID(pidResponse, ptrack, stack)) isXiMinus=kFALSE;
 
       Int_t nidx=TMath::Abs(v0->GetNindex());
       AliESDtrack *ntrack=esd->GetTrack(nidx);
-      Bool_t isProtonBar=AcceptPID(pidResponse, ntrack, stack);
+      if (!AcceptPID(pidResponse, ntrack, stack)) isXiPlusBar=kFALSE;
 
-      Int_t charge=cs->Charge();      
-      if (isProton)
-      if (charge < 0) {         
+      Int_t charge=cs->Charge();
+      if (charge > 0) isXiMinus=kFALSE;
+      if (charge < 0) isXiPlusBar=kFALSE;
+      //---
+      
+      if (isXiMinus) {
          cs->ChangeMassHypothesis(kine0,kXiMinus);
          Double_t mass=cs->GetEffMassXi();
-	 pt=cs->Pt();       
          fXiM->Fill(mass,pt);
          Double_t m=TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass();
          //Double_t s=0.0037;
          Double_t s=0.002 + (0.0032-0.002)/(6-1.5)*(pt-1.5);
          if (TMath::Abs(m-mass) < 3*s) {
             fXiSiP->Fill(pt);
+         } else {
+            isXiMinus=kFALSE;
          }
          if (TMath::Abs(m-mass + 4.5*s) < 1.5*s) {
             fXiSiP->Fill(pt,-1);
@@ -721,17 +727,18 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
             fXiSiP->Fill(pt,-1);
          }
       }
-      if (isProtonBar)
-      if (charge > 0) {         
+
+      if (isXiPlusBar) {         
          cs->ChangeMassHypothesis(kine0,kXiPlusBar);
          Double_t mass=cs->GetEffMassXi();
-	 pt=cs->Pt();       
          fXiBarM->Fill(mass,pt);
          Double_t m=TDatabasePDG::Instance()->GetParticle(kXiPlusBar)->Mass();
          //Double_t s=0.0037;
          Double_t s=0.002 + (0.0032-0.002)/(6-1.5)*(pt-1.5);
          if (TMath::Abs(m-mass) < 3*s) {
             fXiBarSiP->Fill(pt);
+         } else {
+            isXiPlusBar=kFALSE; 
          }
          if (TMath::Abs(m-mass + 4.5*s) < 1.5*s) {
             fXiBarSiP->Fill(pt,-1);
@@ -740,6 +747,13 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
             fXiBarSiP->Fill(pt,-1);
          }
       }
+
+      if (!fIsMC) continue;
+
+      //++++++ MC 
+      if (!isXiMinus)
+         if (!isXiPlusBar) continue;//check MC only for the accepted cascades 
+      // Here is the future association with MC
   }
 
 }
