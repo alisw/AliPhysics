@@ -30,10 +30,10 @@ void PostProcessCTau() {
   // -- V0 particle c*tau distributions (feeddown corrected) 
   //-----------------------------------------------------------------
 
-  TString name("cTau_0090"); //centrality
+  //TString name("cTau_0090"); //centrality
   //TString name("cTau_0005"); //centrality
   //TString name("cTau_2040"); //centrality
-  //TString name("cTau_4060"); //centrality
+  TString name("cTau_4060"); //centrality
   //TString name("cTau_6080"); //centrality
   //TString name("cTau_8090"); //centrality
 
@@ -45,6 +45,9 @@ void PostProcessCTau() {
   TH2F *fK0sSi=(TH2F*)list->FindObject("fK0sSi");fK0sSi->Sumw2();
   TH2F *fLambdaSi=(TH2F*)list->FindObject("fLambdaSi");fLambdaSi->Sumw2();
   TH1F *fXiSiP=(TH1F*)list->FindObject("fXiSiP"); fXiSiP->Sumw2();
+  TH2F *fLambdaBarSi=
+        (TH2F*)list->FindObject("fLambdaBarSi"); fLambdaBarSi->Sumw2();
+  TH1F *fXiBarSiP=(TH1F*)list->FindObject("fXiBarSiP"); fXiBarSiP->Sumw2();
 
   TH1F *fMult=(TH1F*)list->FindObject("fMult");
   //+++++
@@ -61,9 +64,18 @@ void PostProcessCTau() {
   TH2F *fLambdaMC=(TH2F*)listmc->FindObject("fLambdaMC"); fLambdaMC->Sumw2();
   TH2F *fLambdaAs=(TH2F*)listmc->FindObject("fLambdaAs"); fLambdaAs->Sumw2();
 
+  TH2F *fLambdaBarMC=
+        (TH2F*)listmc->FindObject("fLambdaBarMC"); fLambdaBarMC->Sumw2();
+  TH2F *fLambdaBarAs=
+        (TH2F*)listmc->FindObject("fLambdaBarAs"); fLambdaBarAs->Sumw2();
+
   TH1F *fXiSiPMC=(TH1F*)listmc->FindObject("fXiSiP");fXiSiPMC->Sumw2();
   TH3F *fLambdaFromXi=(TH3F*)listmc->FindObject("fLambdaFromXi");
   fLambdaFromXi->Sumw2();
+
+  TH1F *fXiBarSiPMC=(TH1F*)listmc->FindObject("fXiBarSiP");fXiBarSiPMC->Sumw2();
+  TH3F *fLambdaBarFromXiBar=(TH3F*)listmc->FindObject("fLambdaBarFromXiBar");
+  fLambdaBarFromXiBar->Sumw2();
   //+++++
 
 
@@ -71,19 +83,21 @@ void PostProcessCTau() {
   void Correct(TH1 *rw, const TH1 *as, const TH1 *mc);
   void Normalise(Double_t, Double_t, Double_t, Double_t, TH1 *h);
 
-  const Int_t    iMax=2;   // Number of V0 particles
-  const TString  pnam[]={"K^{0}_{S}", "#Lambda"};
-  const Double_t brch[]={0.69, 0.64};
-  const Double_t mass[]={0.4977, 1.115};
-  const Double_t ctau[]={2.68, 7.89};
+  const Int_t    iMax=3;   // Number of V0 particles
+  const TString  pnam[]={"K^{0}_{S}", "#Lambda", "#bar{#Lambda}"};
+  const Double_t brch[]={0.69, 0.64, 0.64};
+  const Double_t mass[]={0.4977, 1.115, 1.115};
+  const Double_t ctau[]={2.68, 7.89, 7.89};
 
   const TH2 *in[]={
     fK0sSi,fK0sAs,fK0sMC,
-    fLambdaSi,fLambdaAs,fLambdaMC
+    fLambdaSi,fLambdaAs,fLambdaMC,
+    fLambdaBarSi,fLambdaBarAs,fLambdaBarMC
   };
   TH1 *fd[]={
     0,0,0,
-    fLambdaFromXi,fXiSiP,fXiSiPMC
+    fLambdaFromXi,fXiSiP,fXiSiPMC,
+    fLambdaBarFromXiBar,fXiBarSiP,fXiBarSiPMC
   };
   Double_t wbx=fK0sSi->GetBinWidth(3);
   Int_t nbx=fLambdaFromXi->GetNbinsX();
@@ -114,7 +128,7 @@ void PostProcessCTau() {
          for (Int_t k=1; k<=nbx; k++) {
              for (Int_t l=1; l<=nby; l++) {
                  for (Int_t m=1; m<=nbz; m++) {
-                     Float_t c=fLambdaFromXi->GetBinContent(k,l,m);
+                     Float_t c=fd3->GetBinContent(k,l,m);
                      c *= rl->GetBinContent(m);
                      fd3->SetBinContent(k,l,m,c);
 		 }
@@ -135,7 +149,7 @@ void PostProcessCTau() {
 
          cr->Add(fd2,-1);
       } 
-      continue;
+      //continue;
  
       //++++ c*tau
       TF2 *f2=new TF2("myexpo2",myExp2,0.,10.,0.,100.,1+1+1+nbx);
