@@ -503,8 +503,8 @@ void AliESDEvent::ResetStdContent()
   if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
   if(fSPDPileupVertices)fSPDPileupVertices->Delete();
   if(fTrkPileupVertices)fTrkPileupVertices->Delete();
-  if(fTracks)fTracks->Delete();
-  if(fMuonTracks)fMuonTracks->Delete();
+  if(fTracks)fTracks->Clear("C"); //Delete();
+  if(fMuonTracks)fMuonTracks->Clear("C"); //Delete();
   if(fPmdTracks)fPmdTracks->Delete();
   if(fTrdTracks)fTrdTracks->Delete();
   if(fTrdTracklets)fTrdTracklets->Delete();

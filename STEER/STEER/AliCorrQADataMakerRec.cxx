@@ -97,6 +97,7 @@ AliCorrQADataMakerRec& AliCorrQADataMakerRec::operator = (const AliCorrQADataMak
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
       fCorrNt[specie] = qadm.fCorrNt[specie] ; 
   }
+  return *this;
 }
    
 //____________________________________________________________________________ 
