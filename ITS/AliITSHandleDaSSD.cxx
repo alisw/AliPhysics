@@ -183,10 +183,11 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
     fModules = NULL;
   }
   if (fModIndex) { delete [] fModIndex; fModIndex = NULL; }
-  if ((ssdadldc.fNumberOfModules > 0) && (ssdadldc.fModules)) {
-    fModules = new (nothrow) AliITSModuleDaSSD* [ssdadldc.fNumberOfModules];
+  fNumberOfModules = ssdadldc.fNumberOfModules;
+  if ((fNumberOfModules > 0) && (ssdadldc.fModules)) {
+    fModules = new (nothrow) AliITSModuleDaSSD* [fNumberOfModules];
     if (fModules) {
-      for (Int_t modind = 0; modind < ssdadldc.fNumberOfModules; modind++) {
+      for (Int_t modind = 0; modind < fNumberOfModules; modind++) {
         if (ssdadldc.fModules[modind]) {
 	      fModules[modind] = new AliITSModuleDaSSD(*(ssdadldc.fModules[modind]));
           if (!fModules[modind]) { 
