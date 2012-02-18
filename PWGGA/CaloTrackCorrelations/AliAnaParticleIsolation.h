@@ -37,6 +37,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TList      * GetCreateOutputObjects() ;
   
+  void         Init() ;
+
   void         InitParameters() ;
   
   void         MakeAnalysisFillAOD()  ;
@@ -223,7 +225,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,10)
+  ClassDef(AliAnaParticleIsolation,11)
 } ;
 
 
