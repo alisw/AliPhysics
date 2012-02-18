@@ -210,6 +210,7 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       int nEvent = GetNumberOfEvents(AliQAv1::kRAWS,trCl);
       //	  printf("fNevent %d \n",nEvent);
       TH1* h10 = (TH1*)harr[10+offsRW];
+      if(nEvent==0) if(h10) nEvent=h10->GetBinContent(1);
       if (h10) h10->SetBinContent(1,nEvent);
       //
       if(nEvent!=0) {
@@ -262,6 +263,7 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	    for(Int_t jj=1; jj<htmp->GetNbinsY()+1;jj++) {	      
 	      if( hcal->GetBinContent(ii,jj) != 0. ) htmp->SetBinContent(ii,jj,1);
 	      else if( hcal->GetBinContent(ii,jj) == 0. ) htmp->SetBinContent(ii,jj,0);
+	      //MM	      printf("x=%i \t y=%i => \t %f \n",ii,jj,hcal->GetBinContent(ii,jj));
 	    }//end x axis
 	  }//end y axis
 	}//end for inumb
@@ -295,6 +297,8 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	//
 	// printf("fNeventRP %d \n",nEventRP);
 	TH1* htmp27 = (TH1*)harr[27+offsRP];
+	if(nEventRP==0) if(htmp27) nEventRP=htmp27->GetBinContent(1);
+
 	if (htmp27) {
 	  htmp27->SetBinContent(1,nEventRP);
 	  
@@ -497,7 +501,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   rv = fAliITSQADataMakerRec->Add2RawsList(hcalibl4,9+offsRW, !expert, image, !saveCorr); 
   fSDDhRawsTask++;
 
-  TH1F *hsummarydata = new TH1F("SDDRawDataCheck","SDDRawDataCheck",46,-0.5,45.5);//10 summary of raw data checks
+  TH1F *hsummarydata = new TH1F("SDDRawDataCheck","SDDRawDataCheck",46,-0.5,45.5);//10 summary of raw data checks Non expert and image
   hsummarydata->GetXaxis()->SetLabelSize(0.02);
   hsummarydata->GetXaxis()->SetTickLength(0.01);
   hsummarydata->GetXaxis()->SetNdivisions(110);
@@ -572,7 +576,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   hsummarydata->GetXaxis()->SetBinLabel(46,"dr_overthl4");
   hsummarydata->GetXaxis()->LabelsOption("v");
 
-  rv = fAliITSQADataMakerRec->Add2RawsList(hsummarydata,10+offsRW, expert, !image, !saveCorr); 
+  rv = fAliITSQADataMakerRec->Add2RawsList(hsummarydata,10+offsRW, !expert, image, !saveCorr); 
   fSDDhRawsTask++;
   fOnlineOffsetRaws = fSDDhRawsTask;
 
@@ -875,25 +879,25 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   TH2F *h2 = new TH2F("SDDGlobalCoordDistribYX","YX Global Coord Distrib",56,-28,28,56,-28,28);//position number 2
   h2->GetYaxis()->SetTitle("Y[cm]");
   h2->GetXaxis()->SetTitle("X[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList(h2,2+offsRP, !expert, image);// NON expert image
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h2,2+offsRP, expert, image);// NON expert image
   fSDDhRecPointsTask++;
 
   TH2F *h3 = new TH2F("SDDGlobalCoordDistribRZ","RZ Global Coord Distrib",128,-32,32,56,12,26);//position number 3
   h3->GetYaxis()->SetTitle("R[cm]");
   h3->GetXaxis()->SetTitle("Z[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList(h3,3+offsRP, !expert, image);// NON expert image
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h3,3+offsRP, expert, image);// NON expert image
   fSDDhRecPointsTask++;
   
   TH2F *h4 = new TH2F("SDDGlobalCoordDistribL3PHIZ","#varphi Z Global Coord Distrib L3",96,-23,23,112,-TMath::Pi(),TMath::Pi());//position number 4
   h4->GetYaxis()->SetTitle("#phi[rad]");
   h4->GetXaxis()->SetTitle("Z[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList(h4,4+offsRP, !expert, image);//NON expert image
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h4,4+offsRP, expert, image);//NON expert image
   fSDDhRecPointsTask++;
 
   TH2F *h5 = new TH2F("SDDGlobalCoordDistribL4PHIZ","#varphi Z Global Coord Distrib L4",128,-31,31,176,-TMath::Pi(),TMath::Pi());//position number 5
   h5->GetYaxis()->SetTitle("#phi[rad]");
   h5->GetXaxis()->SetTitle("Z[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList(h5,5+offsRP, !expert, image);//NON expert image
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h5,5+offsRP, expert, image);//NON expert image
   fSDDhRecPointsTask++;
   
   TH1F *h6 = new TH1F("SDDModPatternRP","Modules pattern RP",fgknSDDmodules,239.5,499.5); //position number 6
@@ -910,13 +914,13 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   TH2F *h7 = new TH2F("SDDModPatternL3RP","Modules pattern L3 RP",12,0.5,6.5,14,0.5,14.5);  //position number 7
   h7->GetXaxis()->SetTitle("z[#Module L3 ]");
   h7->GetYaxis()->SetTitle("#varphi[#Ladder L3]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList(h7,7 +offsRP, expert, !image);// expert NO image
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h7,7 +offsRP, !expert, image);// expert NO image
   fSDDhRecPointsTask++;
 
   TH2F *h8 = new TH2F("SDDModPatternL4RP","Modules pattern L4 RP",16,0.5,8.5,22,0.5,22.5); //position number 8
   h8->GetXaxis()->SetTitle("[#Module L3 ]");
   h8->GetYaxis()->SetTitle("#varphi[#Ladder L4]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList(h8,8 +offsRP, expert, !image);// expert NO image
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h8,8 +offsRP, !expert, image);// expert NO image
   fSDDhRecPointsTask++;
 
   //------------------------norm--------------------------//
@@ -1043,7 +1047,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   hsummarydatarp->SetStats(0);
   hsummarydatarp->SetMaximum(272);
 
-  hsummarydatarp->SetOption("text bar1 hist");
+  hsummarydatarp->SetOption("text bar1");
   hsummarydatarp->SetBarOffset(0.05);
   hsummarydatarp->SetBarWidth(0.95);
   hsummarydatarp->SetFillColor(32);
@@ -1111,7 +1115,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 
   hsummarydatarp->GetXaxis()->LabelsOption("v");
 
-  rv = fAliITSQADataMakerRec->Add2RecPointsList(hsummarydatarp,fSDDhRecPointsTask+offsRP, expert, !image);// expert NO image
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(hsummarydatarp,fSDDhRecPointsTask+offsRP, !expert, image);// No expert  image
 
 
 
@@ -1343,6 +1347,10 @@ void AliITSQASDDDataMakerRec::CreateTheCalibration()
 	      ((TH1F*)(fHistoCalibration->At(0)))->SetBinContent(imod+1,fillmodhisto1);
 	      ((TH2F*)(fHistoCalibration->At(1)))->SetBinContent(index,lad,fillmodhisto2side0);
 	      ((TH2F*)(fHistoCalibration->At(1)))->SetBinContent(index+1,lad,fillmodhisto2side1);
+	      /*
+      	      printf("cal 0 x=%i \t y=%i => \t %i bad= %d \n",index,lad,fillmodhisto2side0,badmodhisto2side0);
+      	      printf("cal 1 x=%i \t y=%i => \t %i bad= %d \n",index+1,lad,fillmodhisto2side1,badmodhisto2side1);
+	      */
 	    }//end layer 3
 	    else if(lay==4){
 	      badmodhisto1=badmodhisto3side0+badmodhisto3side1;

@@ -110,7 +110,7 @@ AliITSQASDDChecker::~AliITSQASDDChecker()
 Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * list, const AliDetectorRecoParam * /*recoparam*/) 
 {
   //check histograms of the different lists  
-  AliInfo(Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset) );
+  AliInfo(Form("AliITSQASDDChecker called with offset: %d \t and specie \n", fSubDetOffset,fESforCheck) );
 
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
 
@@ -429,7 +429,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions didn't take data! \n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
 	  //printf("========================= %d",AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::kCosmic));
 	  //	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE){     
-	  if(AliRecoParam::Convert(GetEventSpecieForCheck())!=AliRecoParam::kCosmic){     
+	  if(AliRecoParam::ConvertIndex(GetEventSpecieForCheck())!=AliRecoParam::kCosmic){     
 	    
 	    results1.Form("%i good module(s) and %i good drift regions didn't take data!",emptydiff,emptydrdiff);
 	    if(neventsraw<numlimit)
@@ -440,14 +440,14 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      }
 	    else
 	      {
-		results2.Form(" Events %d. If PHYISICS, follow the TWiki instruction and call the Expert ",neventsraw);
+		results2.Form(" Events %d. If PHYSICS, follow the TWiki instruction and call the Expert ",neventsraw);
 		color=2;
 		sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 	      }
 	  }
 	  else
 	    //	    if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
-	    if(AliRecoParam::Convert(GetEventSpecieForCheck())==AliRecoParam::kCosmic)
+	    if(AliRecoParam::ConvertIndex(GetEventSpecieForCheck())==AliRecoParam::kCosmic)
 	      {     
 		numlimit=10000;
 		if(neventsraw<numlimit)
@@ -536,7 +536,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    ((TH1F*)hdata)->SetBinContent(13,exactive);
 		    ((TH1F*)hdata)->SetBinContent(14,emptydiff);
 		    ((TH1F*)hdata)->SetBinContent(15,exactivedriftregion);
-		    ((TH1F*)hdata)->SetBinContent(16,emptydr);
+		    ((TH1F*)hdata)->SetBinContent(16,emptydrdiff);
 		    
 		    //layer 3
 		    ((TH1F*)hdata)->SetBinContent(19,activemoduleperlayer[0]);
@@ -549,7 +549,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    ((TH1F*)hdata)->SetBinContent(26,emptydriftregion[0]);
 		    ((TH1F*)hdata)->SetBinContent(27,exactivemoduleperlayer[0]);
 		    ((TH1F*)hdata)->SetBinContent(28,emptyactivemoduleperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(29,activedrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(29,exactivedrperlayer[0]);
 		    ((TH1F*)hdata)->SetBinContent(30,emptyactivedrperlayer[0]);
 		    
 		    //layer 4
@@ -563,8 +563,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    ((TH1F*)hdata)->SetBinContent(40,emptydriftregion[1]);
 		    ((TH1F*)hdata)->SetBinContent(41,exactivemoduleperlayer[1]);
 		    ((TH1F*)hdata)->SetBinContent(42,emptyactivemoduleperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(43,activedrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(43,exactivedrperlayer[1]);
 		    ((TH1F*)hdata)->SetBinContent(44,emptyactivedrperlayer[1]);
+		    hdata->GetListOfFunctions()->Add(pave[0]);
 		    //break; 
 		  }
 	    }//if hdata
@@ -903,7 +904,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 
 	  results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
 	  //	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE)
-	  if(AliRecoParam::Convert(GetEventSpecieForCheck())!=AliRecoParam::kCosmic){     
+	  if(AliRecoParam::ConvertIndex(GetEventSpecieForCheck())!=AliRecoParam::kCosmic){     
 	    
 	      if(neventsrecpoints<numlimits)
 		{
@@ -913,14 +914,14 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		}
 	      else
 		{
-		  results2.Form(" Events %d .If PHYISICS, follow the TWiki instruction and call the Expert ",neventsrecpoints);
+		  results2.Form(" Events %d .If PHYSICS, follow the TWiki instruction and call the Expert ",neventsrecpoints);
 		  color=2;
 		  sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 		}
 	    }
 	  else
 	    //if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
-	    if(AliRecoParam::Convert(GetEventSpecieForCheck())==AliRecoParam::kCosmic){     
+	    if(AliRecoParam::ConvertIndex(GetEventSpecieForCheck())==AliRecoParam::kCosmic){     
 		numlimit=10000;
 		if( neventsrecpoints<numlimit)
 		  {
@@ -1010,7 +1011,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    ((TH1F*)hdata)->SetBinContent(13,exactive);
 		    ((TH1F*)hdata)->SetBinContent(14,emptydiff);
 		    ((TH1F*)hdata)->SetBinContent(15,exactivedriftregion);
-		    ((TH1F*)hdata)->SetBinContent(16,emptydr);
+		    ((TH1F*)hdata)->SetBinContent(16,emptydrdiff);
 		    
 		    //layer 3
 		    ((TH1F*)hdata)->SetBinContent(19,activemoduleperlayer[0]);
@@ -1023,7 +1024,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    ((TH1F*)hdata)->SetBinContent(26,emptydriftregion[0]);
 		    ((TH1F*)hdata)->SetBinContent(27,exactivemoduleperlayer[0]);
 		    ((TH1F*)hdata)->SetBinContent(28,emptyactivemoduleperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(29,activedrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(29,exactivedrperlayer[0]);
 		    ((TH1F*)hdata)->SetBinContent(30,emptyactivedrperlayer[0]);
 		    
 		    //layer 4
@@ -1037,8 +1038,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    ((TH1F*)hdata)->SetBinContent(42,emptydriftregion[1]);
 		    ((TH1F*)hdata)->SetBinContent(43,exactivemoduleperlayer[1]);
 		    ((TH1F*)hdata)->SetBinContent(44,emptyactivemoduleperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(45,activedrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(45,exactivedrperlayer[1]);
 		    ((TH1F*)hdata)->SetBinContent(46,emptyactivedrperlayer[1]);
+		    hdata->GetListOfFunctions()->Add(pave[0]);
 		    
 		  }
 	    }//if hadata
@@ -1301,10 +1303,10 @@ Bool_t AliITSQASDDChecker::MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	someText.Draw(); 
 	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
 	fImage[esIndex]->Clear() ; 
-	Int_t nx =2; //TMath::Nint(TMath::Sqrt(nImages));
-	Int_t ny =2; // nx  ; 
-	//if (nx < TMath::Sqrt(nImages))
-	//ny++ ;  
+	Int_t nx =2;//TMath::Nint(TMath::Sqrt(nImages));//2
+	Int_t ny =3;//nx  ; //2
+	// if (nx < TMath::Sqrt(nImages))
+	// ny++ ;  
 	fImage[esIndex]->Divide(nx, ny) ; 
 	TIter nexthist(list[esIndex]) ; 
 	TH1* hist = NULL ;
@@ -1370,7 +1372,7 @@ Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TAS
       fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
       fImage[esIndex]->Clear() ; 
       Int_t nx =2; //TMath::Nint(TMath::Sqrt(nImages));
-      Int_t ny =4; // nx  ; 
+      Int_t ny =6; // nx  ; 
       //if (nx < TMath::Sqrt(nImages))
       //ny++ ;  
       fImage[esIndex]->Divide(nx, ny) ; 
@@ -1382,6 +1384,8 @@ Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TAS
       while ( (hist=static_cast<TH1*>(nexthist())) ) {
 	//gPad=fImage[esIndex]->cd(npad)->GetPad(npad);
         TString cln(hist->ClassName()) ;
+
+	TString hname(hist->GetName());
 	//printf("=====================> Class name %s \n",cln.Data()); 
         if ( ! cln.Contains("TH") )
           continue ;
@@ -1392,7 +1396,7 @@ Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TAS
 	    hist->GetYaxis()->SetLabelSize(0.02);
 	  if(cln.Contains("TH1"))
 	    {
-	      hist->SetFillColor(kOrange+7);
+	      if(!hname.Contains("Check")) hist->SetFillColor(kOrange+7);
 	      //SetFrameFillColor(kAzure-9);
 	      //hist->DrawCopy() ; 
 	    }
