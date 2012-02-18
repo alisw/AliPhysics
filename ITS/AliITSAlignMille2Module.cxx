@@ -204,7 +204,7 @@ AliITSAlignMille2Module& AliITSAlignMille2Module::operator=(const AliITSAlignMil
   // operator =
   //
   if(this==&m) return *this;
-  ((TNamed *)this)->operator=(m);
+  this->TNamed::operator=(m);
   //
   fNSensVol=m.fNSensVol;
   fIndex=m.fIndex;
