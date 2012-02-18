@@ -44,7 +44,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false ) {
 
 
-  gROOT->Macro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
+  gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   //  Set if calculation considers asymmetric uncertainties or not 
   Bool_t asym = true;
@@ -112,12 +112,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TH1D *hDirectEffpt=0;          // c-->D Acceptance and efficiency correction
   TH1D *hFeedDownEffpt=0;        // b-->D Acceptance and efficiency correction
   TH1D *hRECpt=0;                // all reconstructed D
-  //
-  TH1D *hDirectSimulationpt=0;       // Simulated c--D spectra (used to re-compute the efficiency)
-  TH1D *hDirectReconstructionpt=0;   // Reconstructed c--D spectra (used to re-compute the efficiency)
-  TH1D *hFeedDownSimulationpt=0;     // Simulated b--D spectra (used to re-compute the efficiency)
-  TH1D *hFeedDownReconstructionpt=0; // Reconstructed b--D spectra (used to re-compute the efficiency)
-  //
 
   //
   // Define/Get the input histograms
@@ -164,9 +158,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //
   //
   TFile * efffile = new TFile(efffilename,"read");
-  hDirectEffpt = (TH1D*)efffile->Get("hEffD_rebin");//hDirectEffpt");
+  hDirectEffpt = (TH1D*)efffile->Get("hDirectEffpt");
   hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
-  hFeedDownEffpt = (TH1D*)efffile->Get("hEffB_rebin");//hFeedDownEffpt");
+  hFeedDownEffpt = (TH1D*)efffile->Get("hFeedDownEffpt");
   hFeedDownEffpt->SetNameTitle("hFeedDownEffpt","feed-down acc x eff");
   //
   //
@@ -194,7 +188,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TH2D *histoYieldCorrRcb=0;
   TH2D *histoSigmaCorrRcb=0;
   //
-  Int_t nbins = hRECpt->GetNbinsX();
   TGraphAsymmErrors * gYieldCorr = 0;
   TGraphAsymmErrors * gSigmaCorr = 0;
   TGraphAsymmErrors * gFcExtreme = 0;
@@ -276,6 +269,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     systematics->SetCollisionType(1);
     if ( cc == k010 )  systematics->SetCentrality("010");
     else if ( cc == k1020 )  systematics->SetCentrality("1020");
+    else if ( cc == k020 )  systematics->SetCentrality("020");
     else if ( cc == k2040 ) {
       systematics->SetCentrality("2040");
       systematics->SetIsPbPb2010EnergyScan(true);
