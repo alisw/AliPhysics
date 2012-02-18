@@ -234,12 +234,7 @@ AliESDMuonTrack::~AliESDMuonTrack()
 void AliESDMuonTrack::Clear(Option_t* opt)
 {
   /// Clear arrays
-  if (opt && opt[0] == 'C') {
-    if (fClusters) fClusters->Clear("C");
-  } else {
-    delete fClusters;
-    fClusters = 0x0;
-  }
+  if (fClusters) fClusters->Clear(opt);
 }
 
 //__________________________________________________________________________

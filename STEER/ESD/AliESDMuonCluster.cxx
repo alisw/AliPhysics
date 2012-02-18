@@ -112,15 +112,11 @@ AliESDMuonCluster::~AliESDMuonCluster()
 }
 
 //__________________________________________________________________________
-void AliESDMuonCluster::Clear(Option_t* opt)
+void AliESDMuonCluster::Clear(Option_t* /*opt*/)
 {
   /// Clear arrays
-  if (opt && opt[0] == 'C') {
-    if (fPads) fPads->Clear("C");
-  } else {
-    delete fPads;
-    fPads = 0x0;
-  }
+  delete fPads;
+  fPads = 0x0;
 }
 
 //_____________________________________________________________________________
