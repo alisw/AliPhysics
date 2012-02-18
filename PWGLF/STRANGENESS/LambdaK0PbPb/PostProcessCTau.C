@@ -69,9 +69,10 @@ void PostProcessCTau() {
 
   Double_t myExp2(Double_t *v, Double_t *p);
   void Correct(TH1 *rw, const TH1 *as, const TH1 *mc);
+  void Normalise(Double_t, Double_t, Double_t, Double_t, TH1 *h);
 
   const Int_t    iMax=2;   // Number of V0 particles
-  const TString  pnam[]={"K^{0}_{s}", "#Lambda"};
+  const TString  pnam[]={"K^{0}_{S}", "#Lambda"};
   const Double_t brch[]={0.69, 0.64};
   const Double_t mass[]={0.4977, 1.115};
   const Double_t ctau[]={2.68, 7.89};
@@ -80,9 +81,15 @@ void PostProcessCTau() {
     fK0sSi,fK0sAs,fK0sMC,
     fLambdaSi,fLambdaAs,fLambdaMC
   };
-  Int_t    nbx=fK0sSi->GetNbinsX();
+  TH1 *fd[]={
+    0,0,0,
+    fLambdaFromXi,fXiSiP,fXiSiPMC
+  };
   Double_t wbx=fK0sSi->GetBinWidth(3);
-
+  Int_t nbx=fLambdaFromXi->GetNbinsX();
+  Int_t nby=fLambdaFromXi->GetNbinsY();
+  Int_t nbz=fLambdaFromXi->GetNbinsZ();
+ 
   for (Int_t i=0; i<iMax; i++) {
       TH2 *cr=(TH2*)in[i*3 + 0]->Clone();
       Correct(cr, in[i*3 + 1], in[i*3 + 2]);
@@ -91,15 +98,44 @@ void PostProcessCTau() {
       TH1 *pt=cr->ProjectionX("_px",0,-1,"e");
       TString ptName = pnam[i] + " p_{T} spectrum";
       pt->SetTitle(ptName.Data());
+      Normalise(brch[i], 2*0.5, wbx, nEvents, pt);      
+      Double_t eipt=0., ipt=pt->IntegralAndError(1, nbx, eipt);
 
-      pt->Scale(1/brch[i]);    // branching
-      pt->Scale(1/(2*0.5));    // rapidity
-      pt->Scale(1/wbx);        // bin width in pt 
-      pt->Scale(1/nEvents);    // number of events
-       
       new TCanvas; 
       pt->Draw(); 
 
+      if (i>0) {
+      //++++ feeddown
+	 TH3 *fd3=(TH3*)fd[3*i + 0];
+	 TH1 *rl =(TH1*)fd[3*i + 1];
+	 TH1 *mc =(TH1*)fd[3*i + 2];
+         rl->Divide(mc);
+         
+         for (Int_t k=1; k<=nbx; k++) {
+             for (Int_t l=1; l<=nby; l++) {
+                 for (Int_t m=1; m<=nbz; m++) {
+                     Float_t c=fLambdaFromXi->GetBinContent(k,l,m);
+                     c *= rl->GetBinContent(m);
+                     fd3->SetBinContent(k,l,m,c);
+		 }
+	     }
+	 }
+
+         TH2 *fd2=(TH2*)fd3->Project3D("yxe");
+         TH1 *fd1=fd2->ProjectionX("_px",0,-1,"e");
+         Normalise(brch[i], 2*0.5, wbx, nEvents, fd1);
+         Double_t eifd=0., ifd=fd1->IntegralAndError(1, nbx, eifd);
+
+         Double_t f=ifd/ipt;
+         Double_t ef=1/ipt*TMath::Sqrt(eifd*eifd + f*f*eipt*eipt);
+         cout<<endl<<"Global FD correction: "<<f<<"+/-"<<ef<<endl;
+
+         //new TCanvas();
+         fd1->Draw("same");
+
+         cr->Add(fd2,-1);
+      } 
+      continue;
  
       //++++ c*tau
       TF2 *f2=new TF2("myexpo2",myExp2,0.,10.,0.,100.,1+1+1+nbx);
@@ -116,8 +152,8 @@ void PostProcessCTau() {
       Double_t chi2  = r->Chi2()/r->Ndf();  
       Double_t slope = r->Parameter(0);  
       Double_t error = r->ParError(0);  
-      cout<<pnam[i]<<"  \tstatus: "<<status<<"\tchi2/ndf: "<<chi2<<
-           "\tc*tau: "<<slope<<"+/-"<<error<<endl;
+      cout<<endl<<pnam[i]<<"  \tstatus: "<<status<<"   chi2/ndf: "<<chi2<<
+	"\tc*tau: "<<slope<<"+/-"<<error<<endl<<endl;
   }
 
   return;
@@ -146,3 +182,9 @@ void Correct(TH1 *rw, const TH1 *as, const TH1 *mc) {
   delete eff;
 } 
 
+void Normalise(Double_t br, Double_t yw, Double_t bw, Double_t ne, TH1 *pt) {
+   pt->Scale(1/br);    // branching ratio
+   pt->Scale(1/yw);    // rapidity window
+   pt->Scale(1/bw);    // bin width 
+   pt->Scale(1/ne);    // number of events
+}
