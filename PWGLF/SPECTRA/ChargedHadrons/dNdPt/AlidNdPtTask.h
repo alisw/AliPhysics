@@ -18,7 +18,7 @@ class AlidNdPtCorrection;
 class AliMagFMaps;
 class TList;
 
-#include "dNdPt/AlidNdPtHelper.h"
+#include "AlidNdPtHelper.h"
 #include "AliAnalysisTaskSE.h"
 
 class AlidNdPtTask : public AliAnalysisTaskSE {

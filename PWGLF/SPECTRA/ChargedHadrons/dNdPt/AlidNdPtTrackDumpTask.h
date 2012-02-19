@@ -26,7 +26,7 @@ class TTreeSRedirector;
 
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisTaskSE.h"
-#include "dNdPt/AlidNdPtHelper.h"
+#include "AlidNdPtHelper.h"
 
 class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
  public:
