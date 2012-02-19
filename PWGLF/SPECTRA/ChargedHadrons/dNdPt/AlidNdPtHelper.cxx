@@ -41,9 +41,9 @@
 #include <AliMathBase.h>
 #include <AliESDtrackCuts.h>
 #include <AliTracker.h>
-#include "dNdPt/AlidNdPtEventCuts.h"
-#include "dNdPt/AlidNdPtAcceptanceCuts.h"
-#include "dNdPt/AlidNdPtHelper.h"
+#include "AlidNdPtEventCuts.h"
+#include "AlidNdPtAcceptanceCuts.h"
+#include "AlidNdPtHelper.h"
 
 //____________________________________________________________________
 ClassImp(AlidNdPtHelper)

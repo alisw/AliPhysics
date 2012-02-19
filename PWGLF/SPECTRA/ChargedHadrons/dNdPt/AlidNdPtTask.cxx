@@ -36,11 +36,11 @@
 
 #include "AliESDtrackCuts.h"
 #include "AliMCEventHandler.h"
-#include "dNdPt/AlidNdPt.h"
-#include "dNdPt/AlidNdPtEventCuts.h"
-#include "dNdPt/AlidNdPtAcceptanceCuts.h"
+#include "AlidNdPt.h"
+#include "AlidNdPtEventCuts.h"
+#include "AlidNdPtAcceptanceCuts.h"
 
-#include "dNdPt/AlidNdPtTask.h"
+#include "AlidNdPtTask.h"
 
 using namespace std;
 

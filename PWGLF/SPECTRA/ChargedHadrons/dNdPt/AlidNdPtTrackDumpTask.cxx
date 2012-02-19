@@ -50,11 +50,11 @@
 
 #include "AliESDtrackCuts.h"
 #include "AliMCEventHandler.h"
-#include "dNdPt/AlidNdPt.h"
-#include "dNdPt/AlidNdPtEventCuts.h"
-#include "dNdPt/AlidNdPtAcceptanceCuts.h"
+#include "AlidNdPt.h"
+#include "AlidNdPtEventCuts.h"
+#include "AlidNdPtAcceptanceCuts.h"
 
-#include "dNdPt/AlidNdPtTrackDumpTask.h"
+#include "AlidNdPtTrackDumpTask.h"
 
 using namespace std;
 
@@ -200,7 +200,16 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
     Printf("ERROR: Could not receive input handler");
     return;
   }
+   
+  // get file name
+  TTree *chain = (TChain*)GetInputData(0);
+  if(!chain) { 
+    Printf("ERROR: Could not receive input chain");
+    return;
+  }
+  TObjString fileName(chain->GetCurrentFile()->GetName());
 
+  // trigger
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
@@ -612,12 +621,16 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       Double_t bz = esdEvent->GetMagneticField();
       Double_t runNumber = esdEvent->GetRunNumber();
       Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+
 
       //
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"dNdPtTree"<<
+        "fileName.="<<&fileName<<
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
         "Bz="<<bz<<
 	"vertX="<<vert[0]<<
 	"vertY="<<vert[1]<<
