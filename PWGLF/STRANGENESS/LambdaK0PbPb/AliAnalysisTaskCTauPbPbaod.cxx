@@ -205,7 +205,7 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fOutput->Add(fLambdaFromXi);
 
   fXiM  = 
-  new TH2F("fXiM", "\\Xi mass distribution", 50, 1.271, 1.371,12,pMin,pMax+2);
+  new TH2F("fXiM", "\\Xi mass distribution", 50, 1.271, 1.371,33,pMin,pMax+2);
   fOutput->Add(fXiM);
 
   fXiSiP  = new TH1F("fXiSiP", "Pt for \\Xi, side-band subracted",
@@ -218,7 +218,7 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fOutput->Add(fLambdaBarFromXiBar);
 
   fXiBarM  = 
-  new TH2F("fXiBarM", "anti-\\Xi mass distribution", 50, 1.271, 1.371,12,pMin,pMax+2);
+  new TH2F("fXiBarM", "anti-\\Xi mass distribution", 50, 1.271, 1.371,33,pMin,pMax+2);
   fOutput->Add(fXiBarM);
 
   fXiBarSiP  = new TH1F("fXiBarSiP", "Pt for anti-\\Xi, side-band subracted",
