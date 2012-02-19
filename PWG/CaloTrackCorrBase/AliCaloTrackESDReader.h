@@ -2,7 +2,6 @@
 #define ALICALOTRACKESDREADER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class for reading data (ESDs) in order to do prompt gamma 
@@ -21,12 +20,14 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   
   public: 
   
-  AliCaloTrackESDReader() ; // ctor
-  virtual ~AliCaloTrackESDReader() {;} //virtual dtor
+  AliCaloTrackESDReader() ;            // ctor
+  
+  virtual ~AliCaloTrackESDReader() {;} // virtual dtor
 
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
 	    
   ClassDef(AliCaloTrackESDReader,1)
+  
 } ;
 
 

@@ -2,7 +2,6 @@
 #define ALICALOTRACKREADER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
@@ -22,11 +21,11 @@ class TTree ;
 class TArrayI ;
 
 //--- ANALYSIS system ---
+#include "AliVEvent.h"
 class AliVCaloCells;
 class AliStack; 
 class AliHeader; 
 class AliGenEventHeader; 
-#include "AliVEvent.h"
 class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
@@ -37,9 +36,9 @@ class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
 
-// --- PartCorr / EMCAL ---
-class AliEMCALRecoUtils;
+// --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
+class AliEMCALRecoUtils;
 class AliCalorimeterUtils;
 
 class AliCaloTrackReader : public TObject {
@@ -422,8 +421,8 @@ public:
   Bool_t           fImportGeometryFromFile; // Import geometry settings in geometry.root file
   TString          fImportGeometryFilePath; // path fo geometry.root file
 
-  AliCaloTrackReader(const AliCaloTrackReader & g) ;               // cpy ctor
-  AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ; // cpy assignment
+  AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
+  AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
   ClassDef(AliCaloTrackReader,35)
   

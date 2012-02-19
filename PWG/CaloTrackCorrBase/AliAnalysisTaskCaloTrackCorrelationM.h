@@ -26,6 +26,7 @@ class AliMCEvent;
 class AliAnalysisTaskCaloTrackCorrelationM : public AliAnalysisTaskME
 {
  public:
+  
   AliAnalysisTaskCaloTrackCorrelationM();
   AliAnalysisTaskCaloTrackCorrelationM(const char* name);
   virtual ~AliAnalysisTaskCaloTrackCorrelationM() ; // virtual dtor
@@ -42,9 +43,10 @@ class AliAnalysisTaskCaloTrackCorrelationM : public AliAnalysisTaskME
 	
   void         SetAnalysisMaker(AliAnaCaloTrackCorrMaker * const maker) { fAna = maker ; } 
   AliMixedEvent * InputEvent()                    { return fInputEvent ; }
-  AliMCEvent*  MCEvent()                          { return NULL        ; } // do something about MC event 
+  AliMCEvent*  MCEvent()                    const { return NULL        ; } // do something about MC event 
 
  private:
+  
   AliAnalysisTaskCaloTrackCorrelationM(           const AliAnalysisTaskCaloTrackCorrelationM&); // Not implemented
   AliAnalysisTaskCaloTrackCorrelationM& operator=(const AliAnalysisTaskCaloTrackCorrelationM&); // Not implemented
   
@@ -52,8 +54,7 @@ class AliAnalysisTaskCaloTrackCorrelationM : public AliAnalysisTaskME
   TList * fOutputContainer ;       //! Histogram container
   TString fConfigName ;            //  Configuration file name
   TList * fCuts ;                  //! List with analysis cuts
-  
-  AliMixedEvent * fInputEvent;
+  AliMixedEvent * fInputEvent;     //  Mixed event access pointer
   	
   ClassDef(AliAnalysisTaskCaloTrackCorrelationM, 3); // Analysis task for standard gamma correlation analysis
 };

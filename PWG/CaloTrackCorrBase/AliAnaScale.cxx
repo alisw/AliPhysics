@@ -13,10 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: */
-
 //_________________________________________________________________________
-// A basic analysis task to analyse photon detected by PHOS
+// A basic analysis task to scale histograms to a given cross section
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
@@ -24,7 +22,6 @@
 //Root system
 #include <TH1.h>
 #include <TH1F.h>
-//#include "Riostream.h"
 
 //Analysis system
 #include "AliAnaScale.h" 
@@ -131,10 +128,3 @@ void AliAnaScale::Init()
 
 }
 
-//______________________________________________________________________________
-//void AliAnaScale::Terminate(Option_t *)
-//{
-//  // Processing when the event loop is ended
-//  
-//
-//}

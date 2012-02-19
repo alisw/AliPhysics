@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Count events with different selections
@@ -52,7 +51,7 @@
 #include "AliAnalysisTaskCounter.h"
 ClassImp(AliAnalysisTaskCounter)
 
-//________________________________________________________________________
+//______________________________________________________________
 AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name) 
 : AliAnalysisTaskSE(name), 
   fAcceptFastCluster(kTRUE),
@@ -70,7 +69,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   DefineOutput(1, TList::Class());
 }
 
-//________________________________________________________________________
+//______________________________________________
 AliAnalysisTaskCounter::AliAnalysisTaskCounter() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskCounter"),
     fAcceptFastCluster(kTRUE),
@@ -103,7 +102,7 @@ AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
 }
 
 
-//-------------------------------------------------------------------
+//____________________________________________________
 void AliAnalysisTaskCounter::UserCreateOutputObjects()
 {
   // Init histograms
@@ -169,7 +168,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   
 }
 
-//________________________________________________________________________
+//_______________________________________________
 void AliAnalysisTaskCounter::UserExec(Option_t *) 
 {
   // Main loop
@@ -180,7 +179,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   fhNEvents->Fill(0.5);  
   
   AliVEvent * event = InputEvent();
-  if (!event) {
+  if (!event) 
+  {
     printf("AliAnalysisTaskCounter::UserExec() - ERROR: event not available \n");
     return;
   }
@@ -192,7 +192,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   if(esdevent) triggerclasses = esdevent->GetFiredTriggerClasses();
   if(aodevent) triggerclasses = aodevent->GetFiredTriggerClasses();
 
-  if (triggerclasses.Contains("FAST") && !triggerclasses.Contains("ALL") && !fAcceptFastCluster) {
+  if (triggerclasses.Contains("FAST") && !triggerclasses.Contains("ALL") && !fAcceptFastCluster) 
+  {
     //printf("Do not count events from fast cluster, trigger name %s\n",triggerclasses.Data());
     return;
   }
@@ -216,7 +217,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   fhYVertex->Fill(v[1]);
   fhZVertex->Fill(v[2]);
   
-  if(TMath::Abs(v[2]) < fZVertexCut) {
+  if(TMath::Abs(v[2]) < fZVertexCut) 
+  {
     bSelectVZ=kTRUE;
     fhNEvents->Fill(2.5);  
   }
@@ -226,8 +228,10 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //--------------------------------------------------
   //Tweak for calorimeter only productions
   //--------------------------------------------------
-  if(fCaloFilterPatch && !esdevent){ 
-    if(event->GetNumberOfCaloClusters() > 0) {
+  if(fCaloFilterPatch && !esdevent)
+  { 
+    if(event->GetNumberOfCaloClusters() > 0) 
+    {
       AliVCluster * calo = event->GetCaloCluster(0);
       if(calo->GetNLabels() == 4){
         Int_t * selection = calo->GetLabels();
@@ -239,11 +243,15 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
         //printf(" pu %d, gv %d, v0 %d, track mult %d\n ", selection[0], selection[1], selection[2], selection[3]);
         if(trackMult > 0 )  
           bSelectTrack = kFALSE;
-      } else {
+      } 
+      else 
+      {
         //First filtered AODs, track multiplicity stored there.  
         trackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
       }
-    }else{//at least one cluster
+    }
+    else
+    {   //at least one cluster
         //printf("AliAnalysisTaskCounter::UserExec() - No clusters in event\n");
         //Remove events with  vertex (0,0,0), bad vertex reconstruction
         if(TMath::Abs(v[0]) < 1.e-6 && TMath::Abs(v[1]) < 1.e-6 && TMath::Abs(v[2]) < 1.e-6) bGoodV = kFALSE;
@@ -252,12 +260,14 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
         trackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
     }
   }
-  else {
+  else 
+  {
     //--------------------------------------------------
     //Count tracks, cut on number of tracks in eta < 0.8
     //--------------------------------------------------
     Int_t nTracks   = event->GetNumberOfTracks() ;
-    for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
+    for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
+    {////////////// track loop
       AliVTrack * track = (AliVTrack*)event->GetTrack(itrack) ; // retrieve track from esd
       
       //Only for ESDs
@@ -299,7 +309,9 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   if(!fCaloFilterPatch)
     bPileup = event->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
   //bPileup = event->IsPileupFromSPD(); 
-  if (!bPileup){
+  
+  if (!bPileup)
+  {
                 fhNEvents->Fill(9.5);
     if(bV0AND)  fhNEvents->Fill(16.5);
   }
@@ -332,7 +344,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   {
     AliVCluster *clus = InputEvent()->GetCaloCluster(i);
     if(clus->IsEMCAL()){    
-      if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200)  {
+      if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200)  
+      {
         
         //printf("Counter: Reject event with cluster: E %f, ncells %d\n",clus->E(),clus->GetNCells());
         
@@ -345,11 +358,13 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   }
   
   //LHC11a, 3 last runs, cut with this
-  if(!bEMCALRejected){
+  if(!bEMCALRejected)
+  {
     // Count number of cells in SM3 with energy larger than 0.1, cut on this number
     Int_t ncellsSM3 = 0;
     Int_t ncellsSM4 = 0;
-    for(Int_t icell = 0; icell < event->GetEMCALCells()->GetNumberOfCells(); icell++){
+    for(Int_t icell = 0; icell < event->GetEMCALCells()->GetNumberOfCells(); icell++)
+    {
       if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncellsSM3++;
       if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==4) ncellsSM4++;
     }
@@ -357,8 +372,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
     Int_t ncellcut = 21;
     if(triggerclasses.Contains("EMC")) ncellcut = 35;
     
-    if( ncellsSM3 >= ncellcut || ncellsSM4 >= 100 ){
-      
+    if( ncellsSM3 >= ncellcut || ncellsSM4 >= 100 )
+    {
       //printf("Counter: reject event with ncells in SM3: ncells %d\n",ncells);
 
                        fhNEvents->Fill(19.5); 
@@ -371,30 +386,36 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
 
 }
 
-//____________________________________________________________________________
-Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex(){
+//____________________________________________________
+Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
+{
   //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
   //It only works for ESDs
   
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
   if(!event) return 0;
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) 
+  {
     return 1;
   }
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) {
+  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) 
+  {
     // SPD vertex
-    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) 
+    {
       //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       return 1;
       
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) {
+    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    {
       //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       return 0;
     }
   }
+  
   return 0;
   //return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
 }

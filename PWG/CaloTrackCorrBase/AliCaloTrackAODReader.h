@@ -2,7 +2,6 @@
 #define ALICALOTRACKAODREADER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class for reading data (AODs) in order to do prompt gamma or other particle
@@ -13,8 +12,6 @@
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
-#include "AliAnalysisTaskSE.h"
-
 class AliAODEvent;
 
 #include "AliCaloTrackReader.h" 
@@ -23,10 +20,12 @@ class AliCaloTrackAODReader : public AliCaloTrackReader {
 	
 public: 
 	
-  AliCaloTrackAODReader() ; // ctor
-  virtual ~AliCaloTrackAODReader() {;} //virtual dtor
+  AliCaloTrackAODReader() ;            // ctor
+  
+  virtual ~AliCaloTrackAODReader() {;} // virtual dtor
      
   AliCentrality* GetCentrality() const ;  
+  
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
   AliVEvent* GetOriginalInputEvent() const { return fOrgInputEvent; }
@@ -35,10 +34,11 @@ private:
   
   AliVEvent *fOrgInputEvent; //! Original input event, not from filtering
   
-  AliCaloTrackAODReader(const AliCaloTrackAODReader & ) ; // cpy ctor
-  AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & g) ;//cpy assignment
+  AliCaloTrackAODReader(              const AliCaloTrackAODReader & r) ; // cpy ctor
+  AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & r) ; // cpy assignment
   
   ClassDef(AliCaloTrackAODReader,6)
+  
 } ;
 
 #endif //ALICALOTRACKAODREADER_H
