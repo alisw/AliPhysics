@@ -109,13 +109,15 @@ fDebug = align.fDebug;
 //__________________________________________________________________________
 AliACORDEAlign & AliACORDEAlign::operator =(const AliACORDEAlign &align)
 {
-  //
-  // assignment operator - dummy
 
- //
-  if (&align==this) return *this;
-  new (this) AliACORDEAlign(align);
+//
+  // assignment operator - dummy
+  //
+  if(this!=&align){
+    fDebug=align.fDebug;
+  }
   return (*this);
+
 }
 
 //__________________________________________________________________________
