@@ -376,11 +376,11 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Split the cluster in 2, do invariant mass, get the mass and decide 
   // if this is a photon, pi0, eta, ...
   
-  Int_t    absId1    = -1; Int_t absId2 = -1;
-  Int_t    nc        = cluster->GetNCells();
-  Int_t   *absIdList = new Int_t  [nc]; 
-  Float_t *maxEList  = new Float_t[nc]; 
-  Float_t  l0        = cluster->GetM02();
+  Int_t   absId1 = -1; Int_t absId2 = -1;
+  Float_t l0     = cluster->GetM02();
+  const Int_t nc = cluster->GetNCells();
+  Int_t   absIdList[nc]; 
+  Float_t maxEList [nc]; 
   
   nMax  = -1 ;
   mass  = -1.;
@@ -459,16 +459,16 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Split the cluster energy in 2, around the highest 2 local maxima
   //---------------------------------------------------------------------  
   
-  AliAODCaloCluster *cluster1 = new AliAODCaloCluster(0, 0,NULL,0.,NULL,NULL,1,0);
-  AliAODCaloCluster *cluster2 = new AliAODCaloCluster(1, 0,NULL,0.,NULL,NULL,1,0);
+  AliAODCaloCluster cluster1(0, 0,NULL,0.,NULL,NULL,1,0);
+  AliAODCaloCluster cluster2(1, 0,NULL,0.,NULL,NULL,1,0);
   
-  caloutils->SplitEnergy(absId1,absId2,cluster, cells, cluster1, cluster2,nMax); /*absIdList, maxEList,*/
+  caloutils->SplitEnergy(absId1,absId2,cluster, cells, &cluster1, &cluster2,nMax); /*absIdList, maxEList,*/
   
   TLorentzVector cellMom1; 
   TLorentzVector cellMom2;  
   
-  cluster1->GetMomentum(cellMom1,vertex);
-  cluster2->GetMomentum(cellMom2,vertex);
+  cluster1.GetMomentum(cellMom1,vertex);
+  cluster2.GetMomentum(cellMom2,vertex);
   
   mass  = (cellMom1+cellMom2).M();
   angle = cellMom2.Angle(cellMom1.Vect());
@@ -477,11 +477,6 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   else if(mass < fMassPi0Max && mass > fMassPi0Min) return kPi0;
   else if(mass < fMassEtaMax && mass > fMassEtaMin) return kEta;
   else                                              return kNeutralUnknown;
-  
-  delete cluster1;
-  delete cluster2;
-  delete [] absIdList ;
-  delete [] maxEList  ;
   
 }
 
