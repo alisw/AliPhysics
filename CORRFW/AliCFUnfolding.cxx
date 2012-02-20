@@ -99,10 +99,9 @@ ClassImp(AliCFUnfolding)
 
 AliCFUnfolding::AliCFUnfolding() :
   TNamed(),
-  fResponse(0x0),
-  fPrior(0x0),
-  fEfficiency(0x0),
-  fMeasured(0x0),
+  fResponseOrig(0x0),
+  fPriorOrig(0x0),
+  fEfficiencyOrig(0x0),
   fMeasuredOrig(0x0),
   fMaxNumIterations(0),
   fNVariables(0),
@@ -111,7 +110,10 @@ AliCFUnfolding::AliCFUnfolding() :
   fSmoothOption("iremn"),
   fMaxConvergence(0),
   fNRandomIterations(0),
-  fOriginalPrior(0x0),
+  fResponse(0x0),
+  fPrior(0x0),
+  fEfficiency(0x0),
+  fMeasured(0x0),
   fInverseResponse(0x0),
   fMeasuredEstimate(0x0),
   fConditional(0x0),
@@ -120,7 +122,9 @@ AliCFUnfolding::AliCFUnfolding() :
   fCoordinates2N(0x0),
   fCoordinatesN_M(0x0),
   fCoordinatesN_T(0x0),
-  fRandomizedDist(0x0),
+  fRandomResponse(0x0),
+  fRandomEfficiency(0x0),
+  fRandomMeasured(0x0),
   fRandom3(0x0),
   fDeltaUnfoldedP(0x0),
   fDeltaUnfoldedN(0x0),
@@ -139,10 +143,9 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
 			       Double_t maxConvergencePerDOF, UInt_t randomSeed, Int_t maxNumIterations
 			       ) :
   TNamed(name,title),
-  fResponse((THnSparse*)response->Clone()),
-  fPrior(0x0),
-  fEfficiency((THnSparse*)efficiency->Clone()),
-  fMeasured((THnSparse*)measured->Clone()),
+  fResponseOrig((THnSparse*)response->Clone()),
+  fPriorOrig(0x0),
+  fEfficiencyOrig((THnSparse*)efficiency->Clone()),
   fMeasuredOrig((THnSparse*)measured->Clone()),
   fMaxNumIterations(maxNumIterations),
   fNVariables(nVar),
@@ -151,7 +154,10 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
   fSmoothOption("iremn"),
   fMaxConvergence(0),
   fNRandomIterations(maxNumIterations),
-  fOriginalPrior(0x0),
+  fResponse((THnSparse*)response->Clone()),
+  fPrior(0x0),
+  fEfficiency((THnSparse*)efficiency->Clone()),
+  fMeasured((THnSparse*)measured->Clone()),
   fInverseResponse(0x0),
   fMeasuredEstimate(0x0),
   fConditional(0x0),
@@ -160,7 +166,9 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
   fCoordinates2N(0x0),
   fCoordinatesN_M(0x0),
   fCoordinatesN_T(0x0),
-  fRandomizedDist(0x0),
+  fRandomResponse((THnSparse*)response->Clone()),
+  fRandomEfficiency((THnSparse*)efficiency->Clone()),
+  fRandomMeasured((THnSparse*)measured->Clone()),
   fRandom3(0x0),
   fDeltaUnfoldedP(0x0),
   fDeltaUnfoldedN(0x0),
@@ -176,7 +184,7 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
   if (!prior) CreateFlatPrior(); // if no prior distribution declared, simply use a flat distribution
   else {
     fPrior = (THnSparse*) prior->Clone();
-    fOriginalPrior = (THnSparse*)fPrior->Clone();
+    fPriorOrig = (THnSparse*)fPrior->Clone();
     if (fPrior->GetNdimensions() != fNVariables) 
       AliFatal(Form("The prior matrix should have %d dimensions, and it has actually %d",fNVariables,fPrior->GetNdimensions()));
   }
@@ -195,8 +203,9 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
     AliInfo(Form("measured   matrix has %d bins in dimension %d",fMeasured  ->GetAxis(iVar)->GetNbins(),iVar));
   }
 
-  fRandomizedDist = (THnSparse*) fMeasuredOrig->Clone();
-  fRandomizedDist->SetTitle("Randomized");
+  fRandomResponse  ->SetTitle("Randomized response matrix");
+  fRandomEfficiency->SetTitle("Randomized efficiency");
+  fRandomMeasured  ->SetTitle("Randomized measured");
   SetMaxConvergencePerDOF(maxConvergencePerDOF)  ;
   Init();
 }
@@ -206,10 +215,9 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
 
 AliCFUnfolding::AliCFUnfolding(const AliCFUnfolding& c) :
   TNamed(c),
-  fResponse((THnSparse*)c.fResponse->Clone()),
-  fPrior((THnSparse*)c.fPrior->Clone()),
-  fEfficiency((THnSparse*)c.fEfficiency->Clone()),
-  fMeasured((THnSparse*)c.fMeasured->Clone()),
+  fResponseOrig((THnSparse*)c.fResponseOrig->Clone()),
+  fPriorOrig((THnSparse*)c.fPriorOrig->Clone()),
+  fEfficiencyOrig((THnSparse*)c.fEfficiencyOrig->Clone()),
   fMeasuredOrig((THnSparse*)c.fMeasuredOrig->Clone()),
   fMaxNumIterations(c.fMaxNumIterations),
   fNVariables(c.fNVariables),
@@ -218,7 +226,10 @@ AliCFUnfolding::AliCFUnfolding(const AliCFUnfolding& c) :
   fSmoothOption(c.fSmoothOption),
   fMaxConvergence(c.fMaxConvergence),
   fNRandomIterations(c.fNRandomIterations),
-  fOriginalPrior((THnSparse*)c.fOriginalPrior->Clone()),
+  fResponse((THnSparse*)c.fResponse->Clone()),
+  fPrior((THnSparse*)c.fPrior->Clone()),
+  fEfficiency((THnSparse*)c.fEfficiency->Clone()),
+  fMeasured((THnSparse*)c.fMeasured->Clone()),
   fInverseResponse((THnSparse*)c.fInverseResponse->Clone()),
   fMeasuredEstimate((THnSparse*)fMeasuredEstimate->Clone()),
   fConditional((THnSparse*)c.fConditional->Clone()),
@@ -227,7 +238,9 @@ AliCFUnfolding::AliCFUnfolding(const AliCFUnfolding& c) :
   fCoordinates2N(new Int_t(*c.fCoordinates2N)),
   fCoordinatesN_M(new Int_t(*c.fCoordinatesN_M)),
   fCoordinatesN_T(new Int_t(*c.fCoordinatesN_T)),
-  fRandomizedDist((THnSparse*)c.fRandomizedDist->Clone()),
+  fRandomResponse((THnSparse*)c.fRandomResponse->Clone()),
+  fRandomEfficiency((THnSparse*)c.fRandomEfficiency->Clone()),
+  fRandomMeasured((THnSparse*)c.fRandomMeasured->Clone()),
   fRandom3((TRandom3*)c.fRandom3->Clone()),
   fDeltaUnfoldedP((THnSparse*)c.fDeltaUnfoldedP),
   fDeltaUnfoldedN((THnSparse*)c.fDeltaUnfoldedN),
@@ -248,31 +261,35 @@ AliCFUnfolding& AliCFUnfolding::operator=(const AliCFUnfolding& c) {
   
   if (this!=&c) {
     TNamed::operator=(c);
+    fResponseOrig = (THnSparse*)c.fResponseOrig->Clone() ;
+    fPriorOrig = (THnSparse*)c.fPriorOrig->Clone() ;
+    fEfficiencyOrig = (THnSparse*)c.fEfficiencyOrig->Clone() ;
+    fMeasuredOrig = (THnSparse*)c.fMeasuredOrig->Clone() ;
+    fMaxNumIterations = c.fMaxNumIterations ;
+    fNVariables = c.fNVariables ;
+    fUseSmoothing = c.fUseSmoothing ;
+    fSmoothFunction = (TF1*)c.fSmoothFunction->Clone() ;
+    fSmoothOption = c.fSmoothOption ;
+    fMaxConvergence = c.fMaxConvergence ;
+    fNRandomIterations = c.fNRandomIterations ;
     fResponse = (THnSparse*)c.fResponse->Clone() ;
     fPrior = (THnSparse*)c.fPrior->Clone() ;
     fEfficiency = (THnSparse*)c.fEfficiency->Clone() ;
     fMeasured = (THnSparse*)c.fMeasured->Clone() ;
-    fMeasuredOrig = ((THnSparse*)c.fMeasuredOrig->Clone()),
-    fMaxNumIterations = c.fMaxNumIterations ;
-    fNVariables = c.fNVariables ;
-    fMaxConvergence = c.fMaxConvergence ;
-    fUseSmoothing = c.fUseSmoothing ;
-    fSmoothFunction = (TF1*)c.fSmoothFunction->Clone();
-    fSmoothOption = c.fSmoothOption ;
-    fNRandomIterations = c.fNRandomIterations;
-    fOriginalPrior = (THnSparse*)c.fOriginalPrior->Clone() ;
     fInverseResponse = (THnSparse*)c.fInverseResponse->Clone() ;
     fMeasuredEstimate = (THnSparse*)fMeasuredEstimate->Clone() ;
-    fConditional = (THnSparse*)c.fConditional->Clone() ;
+    fConditional = (THnSparse*)fConditional->Clone() ;
     fUnfolded = (THnSparse*)c.fUnfolded->Clone() ;
     fUnfoldedFinal = (THnSparse*)c.fUnfoldedFinal->Clone() ;
     fCoordinates2N  = new Int_t(*c.fCoordinates2N)  ;
     fCoordinatesN_M = new Int_t(*c.fCoordinatesN_M) ;
     fCoordinatesN_T = new Int_t(*c.fCoordinatesN_T) ;
-    fRandomizedDist = (THnSparse*)c.fRandomizedDist->Clone();
-    fRandom3 = (TRandom3*)c.fRandom3->Clone();
-    fDeltaUnfoldedP = (THnSparse*)c.fDeltaUnfoldedP;
-    fDeltaUnfoldedN = (THnSparse*)c.fDeltaUnfoldedN;
+    fRandomResponse = (THnSparse*)c.fRandomResponse->Clone() ;
+    fRandomEfficiency = (THnSparse*)c.fRandomEfficiency->Clone() ;
+    fRandomMeasured = (THnSparse*)c.fRandomMeasured->Clone() ;
+    fRandom3 = (TRandom3*)c.fRandom3->Clone() ;
+    fDeltaUnfoldedP = (THnSparse*)c.fDeltaUnfoldedP->Clone() ;
+    fDeltaUnfoldedN = (THnSparse*)c.fDeltaUnfoldedN->Clone() ;
     fNCalcCorrErrors = c.fNCalcCorrErrors ;
     fRandomSeed = c.fRandomSeed ;
   }
@@ -288,10 +305,11 @@ AliCFUnfolding::~AliCFUnfolding() {
   if (fResponse)           delete fResponse;
   if (fPrior)              delete fPrior;
   if (fEfficiency)         delete fEfficiency;
+  if (fEfficiencyOrig)     delete fEfficiencyOrig;
   if (fMeasured)           delete fMeasured;
   if (fMeasuredOrig)       delete fMeasuredOrig;
   if (fSmoothFunction)     delete fSmoothFunction;
-  if (fOriginalPrior)      delete fOriginalPrior;
+  if (fPriorOrig)          delete fPriorOrig;
   if (fInverseResponse)    delete fInverseResponse;
   if (fMeasuredEstimate)   delete fMeasuredEstimate;
   if (fConditional)        delete fConditional;
@@ -300,7 +318,9 @@ AliCFUnfolding::~AliCFUnfolding() {
   if (fCoordinates2N)      delete [] fCoordinates2N; 
   if (fCoordinatesN_M)     delete [] fCoordinatesN_M; 
   if (fCoordinatesN_T)     delete [] fCoordinatesN_T; 
-  if (fRandomizedDist)     delete fRandomizedDist;
+  if (fRandomResponse)     delete fRandomResponse;
+  if (fRandomEfficiency)   delete fRandomEfficiency;
+  if (fRandomMeasured)     delete fRandomMeasured;
   if (fRandom3)            delete fRandom3;
   if (fDeltaUnfoldedP)     delete fDeltaUnfoldedP;
   if (fDeltaUnfoldedN)     delete fDeltaUnfoldedN;
@@ -329,14 +349,13 @@ void AliCFUnfolding::Init() {
   fUnfolded->SetTitle("Unfolded");
   // create the frame of the measurement estimate spectrum
   fMeasuredEstimate = (THnSparse*) fMeasured->Clone();
-  // create the frame of the original measurement spectrum
-  fMeasuredOrig = (THnSparse*) fMeasured->Clone();
   
+  // create the frame of the delta profiles
   fDeltaUnfoldedP = (THnSparse*)fPrior->Clone();
   fDeltaUnfoldedP->SetTitle("#Delta unfolded");
   fDeltaUnfoldedP->Reset();
   fDeltaUnfoldedN = (THnSparse*)fPrior->Clone();
-  fDeltaUnfoldedP->SetTitle("");
+  fDeltaUnfoldedN->SetTitle("");
   fDeltaUnfoldedN->Reset();
 }
 
@@ -508,7 +527,7 @@ void AliCFUnfolding::CreateUnfolded() {
 
 void AliCFUnfolding::CalculateCorrelatedErrors() {
 
-  // Step 1: Create randomized distribution (fRandomizedDist) of each bin of 
+  // Step 1: Create randomized distribution (fRandomXXXX) of each bin of 
   //         the measured spectrum to calculate correlated errors. 
   //         Poisson statistics: mean = measured value of bin
   // Step 2: Unfold randomized distribution
@@ -524,15 +543,24 @@ void AliCFUnfolding::CalculateCorrelatedErrors() {
     
     // reset prior to original one
     if (fPrior) delete fPrior ;
-    fPrior = (THnSparse*) fOriginalPrior->Clone();
+    fPrior = (THnSparse*) fPriorOrig->Clone();
 
     // create randomized distribution and stick measured spectrum to it
     CreateRandomizedDist();
-    if (fMeasured) delete fMeasured ;
-    fMeasured = (THnSparse*) fRandomizedDist->Clone();
+
+    if (fResponse) delete fResponse ;
+    fResponse = (THnSparse*) fRandomResponse->Clone();
+    fResponse->SetTitle("Response");
+
+    if (fEfficiency) delete fEfficiency ;
+    fEfficiency = (THnSparse*) fRandomEfficiency->Clone();
+    fEfficiency->SetTitle("Efficiency");
+
+    if (fMeasured)   delete fMeasured   ;
+    fMeasured = (THnSparse*) fRandomMeasured->Clone();
     fMeasured->SetTitle("Measured");
 
-    //unfold fRandomizedDist
+    //unfold with randomized distributions
     Unfold();
     FillDeltaUnfoldedProfile();
   }
@@ -559,16 +587,26 @@ void AliCFUnfolding::CreateRandomizedDist() {
   // This distribution is created several times, each time with a different random number
   //
 
-  Double_t random = 0.;
-  Double_t measuredValue = 0.;
-  Double_t measuredError = 0.;
-
-  for (Long_t iBin=0; iBin<fRandomizedDist->GetNbins(); iBin++) {
-    measuredValue = fMeasuredOrig->GetBinContent(iBin,fCoordinatesN_M); //used as mean
-    measuredError = fMeasuredOrig->GetBinError(fCoordinatesN_M);        //used as sigma
+  for (Long_t iBin=0; iBin<fResponseOrig->GetNbins(); iBin++) {
+    Double_t val = fResponseOrig->GetBinContent(iBin,fCoordinatesN_M); //used as mean
+    Double_t err = fResponseOrig->GetBinError(fCoordinatesN_M);        //used as sigma
+    Double_t ran = fRandom3->Gaus(val,err);
     // random        = fRandom3->PoissonD(measuredValue); //doesn't work for normalized spectra, use Gaus (assuming raw counts in bin is large >10)
-    random        = fRandom3->Gaus(measuredValue,measuredError);
-    fRandomizedDist->SetBinContent(iBin,random);
+    fRandomResponse->SetBinContent(iBin,ran);
+  }
+  for (Long_t iBin=0; iBin<fEfficiencyOrig->GetNbins(); iBin++) {
+    Double_t val = fEfficiencyOrig->GetBinContent(iBin,fCoordinatesN_M); //used as mean
+    Double_t err = fEfficiencyOrig->GetBinError(fCoordinatesN_M);        //used as sigma
+    Double_t ran = fRandom3->Gaus(val,err);
+    // random        = fRandom3->PoissonD(measuredValue); //doesn't work for normalized spectra, use Gaus (assuming raw counts in bin is large >10)
+    fRandomEfficiency->SetBinContent(iBin,ran);
+  }
+  for (Long_t iBin=0; iBin<fMeasuredOrig->GetNbins(); iBin++) {
+    Double_t val = fMeasuredOrig->GetBinContent(iBin,fCoordinatesN_M); //used as mean
+    Double_t err = fMeasuredOrig->GetBinError(fCoordinatesN_M);        //used as sigma
+    Double_t ran = fRandom3->Gaus(val,err);
+    // random        = fRandom3->PoissonD(measuredValue); //doesn't work for normalized spectra, use Gaus (assuming raw counts in bin is large >10)
+    fRandomMeasured->SetBinContent(iBin,ran);
   }
 }
 
@@ -630,7 +668,7 @@ void AliCFUnfolding::CreateConditional() {
   //  --> R*(i,j) = R(i,j) / SUM_k{ R(k,j) }
   //
 
-  fConditional = (THnSparse*) fResponse->Clone();           // output of this function
+  fConditional = (THnSparse*) fResponse->Clone();  // output of this function
 
   Int_t* dim = new Int_t [fNVariables];
   for (Int_t iDim=0; iDim<fNVariables; iDim++) dim[iDim] = fNVariables+iDim ; //dimensions corresponding to TRUE values (i.e. from N to 2N-1)
@@ -893,7 +931,7 @@ void AliCFUnfolding::CreateFlatPrior() {
     fPrior->SetBinError  (bin,0.); // put 0 everywhere
   }
   
-  fOriginalPrior = (THnSparse*)fPrior->Clone();
+  fPriorOrig = (THnSparse*)fPrior->Clone();
 
   delete [] bin;
   delete [] bins;
