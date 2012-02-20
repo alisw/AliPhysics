@@ -89,7 +89,7 @@ void AliCFTaskForUnfolding::UserExec(Option_t *)
   //
   // Main loop function
   //
-  Info("UserExec","") ;
+  AliInfo("") ;
 
   AliVEvent*    fEvent = fInputEvent ;
   AliVParticle* track ;
@@ -102,14 +102,14 @@ void AliCFTaskForUnfolding::UserExec(Option_t *)
   if (!fMCEvent) Error("UserExec","NO MC INFO FOUND");
   
   //pass the MC evt handler to the cuts that need it 
-  fCFManager->SetEventInfo(fMCEvent);
+  fCFManager->SetMCEventInfo(fMCEvent);
 
   // MC-event selection
   Double_t containerInput[2] ;
         
   //loop on the MC event
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
-    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
+    AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);
     
     if (!fCFManager->CheckParticleCuts(0,mcPart)) continue;
     containerInput[0] = (Float_t)mcPart->Pt();
@@ -125,7 +125,7 @@ void AliCFTaskForUnfolding::UserExec(Option_t *)
     
     Int_t label = track->GetLabel();
     if (label<0) continue;
-    AliMCParticle* mcPart = fMCEvent->GetTrack(label);
+    AliMCParticle* mcPart = (AliMCParticle*)fMCEvent->GetTrack(label);
     // check if this track was part of the signal
     if (!fCFManager->CheckParticleCuts(0,mcPart)) continue;
 
