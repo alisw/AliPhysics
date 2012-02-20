@@ -107,7 +107,7 @@ class AliCFManager : public TNamed
   //event info when requested
   virtual void  SetMCEventInfo(const TObject *obj) const;
   virtual void SetRecEventInfo(const TObject *obj) const;
-  virtual void SetEventInfo(TObject*) const {AliError("DEPRECATED !! -> use SetMCEventInfo of SetRecEventInfo instead");}
+  virtual void SetEventInfo(TObject*) const {AliError("DEPRECATED !! -> use SetMCEventInfo or SetRecEventInfo instead");}
 
   //Cut Checkers: by default *all* the cuts of a given input list is checked 
   //(.and. of all cuts), but the user can select a subsample of cuts in the 
