@@ -1447,7 +1447,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     return kFALSE;
   }
   Int_t ndim(H->GetNdimensions()); Bool_t debug(ndim>Int_t(kNdimCl));
-  Int_t coord[kNdim]; memset(coord, 0, sizeof(Int_t) * kNdim); Double_t v = 0.;
+  Int_t coord[10]; memset(coord, 0, sizeof(Int_t) * 10); Double_t v = 0.;
   TAxis *aa[kNdim], *as(NULL), *apt(NULL), *acen(NULL), *anp(NULL); memset(aa, 0, sizeof(TAxis*) * kNdim);
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(ndim > Int_t(kPt)) apt = H->GetAxis(kPt);
@@ -2106,7 +2106,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
       AliError(Form("Missing projection %d", ioff));
       return kFALSE;
     }
-    if(sp>=0){
+    if(sp>=0 && ch<2){
       if(strcmp(pr0->fH->GetName(), Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ch], ptName[pt], sp))!=0){
         AliError(Form("Projection mismatch :: request[H%sTrkInY%c%c%d] found[%s]", mc?"MC":"", chName[ch], ptName[pt], sp, pr0->fH->GetName()));
         return kFALSE;
@@ -3292,7 +3292,10 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
   TH2D *h2s(NULL), *hyx(NULL);
   if(!(h2s = (TH2D*)fH->Project3D("yx"))) return NULL;
   // save a copy of the original distribution
-  if(!del) hyx = (TH2D*)h2s->Clone(Form("%sEn", fH->GetName()));
+  if(!del){
+    hyx = (TH2D*)h2s->Clone();
+    hyx->SetName(Form("%sEn", fH->GetName()));
+  }
   Int_t irebin(0), dxBin(1), dyBin(1);
   while(irebin<fNrebin && (AliTRDresolution::GetMeanStat(h2s, .5, ">")<nstat)){
     h2s->Rebin2D(fRebinX[irebin], fRebinY[irebin]);
