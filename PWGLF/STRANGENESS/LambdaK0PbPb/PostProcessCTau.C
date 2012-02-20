@@ -30,10 +30,10 @@ void PostProcessCTau() {
   // -- V0 particle c*tau distributions (feeddown corrected) 
   //-----------------------------------------------------------------
 
-  //TString name("cTau_0090"); //centrality
+  TString name("cTau_0090"); //centrality
   //TString name("cTau_0005"); //centrality
   //TString name("cTau_2040"); //centrality
-  TString name("cTau_4060"); //centrality
+  //TString name("cTau_4060"); //centrality
   //TString name("cTau_6080"); //centrality
   //TString name("cTau_8090"); //centrality
 
@@ -136,6 +136,8 @@ void PostProcessCTau() {
 	 }
 
          TH2 *fd2=(TH2*)fd3->Project3D("yxe");
+         Correct(fd2, in[i*3 + 1], in[i*3 + 2]);
+
          TH1 *fd1=fd2->ProjectionX("_px",0,-1,"e");
          Normalise(brch[i], 2*0.5, wbx, nEvents, fd1);
          Double_t eifd=0., ifd=fd1->IntegralAndError(1, nbx, eifd);
