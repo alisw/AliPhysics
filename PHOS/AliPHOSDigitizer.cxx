@@ -223,6 +223,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) :
     fInputFileNames[iInput] = d.fInputFileNames[iInput];
     fEventNames[iInput]     = d.fEventNames[iInput];
   }
+  fADCValuesLG = new Int_t[fPulse->GetRawFormatTimeBins()];
+  fADCValuesHG = new Int_t[fPulse->GetRawFormatTimeBins()];
 }
 
 //____________________________________________________________________________ 
