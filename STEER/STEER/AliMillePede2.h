@@ -161,6 +161,7 @@ class AliMillePede2: public TObject
   // aliases for compatibility with millipede1
   void                 SetParSigma(Int_t i,Double_t par)      {SetSigmaPar(i,par);}
   void                 SetGlobalParameters(Double_t *par)     {SetInitPars(par);}
+  void                 SetNonLinear(int index, Bool_t v=kTRUE) {fIsLinear[index] = !v;}
   //
  protected:
   //
