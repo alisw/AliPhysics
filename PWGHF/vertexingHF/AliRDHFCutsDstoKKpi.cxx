@@ -746,3 +746,125 @@ UInt_t AliRDHFCutsDstoKKpi::GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const{
 
 }
 
+
+//---------------------------------------------------------------------------
+
+void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
+  //
+  //STANDARD CUTS USED FOR 2010 pp analysis 
+  //                                            
+  
+  SetName("DstoKKpiCutsStandard");
+  SetTitle("Standard Cuts for D+s analysis");
+  
+  // PILE UP REJECTION
+  SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
+  // EVENT CUTS
+  SetMinVtxContr(1);
+
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //default
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  //esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny); 
+  // default is kBoth, otherwise kAny
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+  
+  AddTrackCuts(esdTrackCuts);
+  
+ 
+   
+  const Int_t nptbins=4;
+  Float_t* ptbins;
+  ptbins=new Float_t[nptbins+1];
+  ptbins[0]=2.;
+  ptbins[1]=4.;
+  ptbins[2]=6.;
+  ptbins[3]=8.;
+  ptbins[4]=12.;
+  
+  const Int_t nvars=16;
+      
+  Float_t** anacutsval;
+  anacutsval=new Float_t*[nvars];
+  
+  for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}  
+  for(Int_t ipt=0;ipt<nptbins;ipt++){
+  
+    anacutsval[0][ipt]=0.35;
+    anacutsval[1][ipt]=0.3;
+    anacutsval[2][ipt]=0.3;
+    anacutsval[3][ipt]=0.;
+    anacutsval[4][ipt]=0.;
+    anacutsval[5][ipt]=0.005;
+    anacutsval[8][ipt]=0.;
+    anacutsval[10][ipt]=0.;
+    anacutsval[11][ipt]=1000.0;
+    anacutsval[13][ipt]=0.1;
+  }
+ 
+  //sigmavertex
+
+  anacutsval[6][0]=0.020;
+  anacutsval[6][1]=0.030;
+  anacutsval[6][2]=0.030;
+  anacutsval[6][3]=0.060;
+   
+  //Decay length
+    
+  anacutsval[7][0]=0.035;
+  anacutsval[7][1]=0.035;
+  anacutsval[7][2]=0.040;
+  anacutsval[7][3]=0.040;
+ 
+  //cosThetaPoint
+    
+  anacutsval[9][0]=0.94;
+  anacutsval[9][1]=0.94;
+  anacutsval[9][2]=0.94;
+  anacutsval[9][3]=0.94;
+   
+  //phi DeltaMass
+    
+  anacutsval[12][0]=0.0080;
+  anacutsval[12][1]=0.0050;
+  anacutsval[12][2]=0.0045;
+  anacutsval[12][3]=0.0090;
+      
+  //Kin1
+    
+  anacutsval[14][0]=0.10;
+  anacutsval[14][1]=0.05;
+  anacutsval[14][2]=0.0;
+  anacutsval[14][3]=0.05;
+      
+  //Kin2
+  
+  anacutsval[15][0]=0.95;
+  anacutsval[15][1]=0.95;
+  anacutsval[15][2]=1.;
+  anacutsval[15][3]=0.95;     
+  
+  
+  SetUsePID(kTRUE); 
+  SetPidOption(1);
+  SetGlobalIndex(nvars,nptbins);
+  SetPtBins(nptbins+1,ptbins);
+  SetCuts(nvars,nptbins,anacutsval);
+  SetRemoveDaughtersFromPrim(kTRUE);
+  
+  PrintAll();
+
+  for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
+  delete [] anacutsval;
+  anacutsval=NULL;
+
+  return;
+}
+
