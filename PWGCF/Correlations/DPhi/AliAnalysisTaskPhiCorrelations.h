@@ -95,6 +95,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void            AnalyseCorrectionMode();                            // main algorithm to get correction maps
     void            AnalyseDataMode();                                  // main algorithm to get raw distributions
     void            Initialize(); 			                // initialize some common pointer
+    TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
 
 
 
