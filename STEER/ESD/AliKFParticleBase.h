@@ -313,7 +313,7 @@ class AliKFParticleBase :public TObject {
   Double_t SumDaughterMass;  //* sum of the daughter particles masses
   Double_t fMassHypo;  //* sum of the daughter particles masses
 
-  ClassDef( AliKFParticleBase, 1 );
+  ClassDef( AliKFParticleBase, 2);
 };
 
 #endif 
