@@ -45,16 +45,17 @@
 #include "AliLog.h"
  
 ClassImp(AliPIPEv3)
+
  
 //_____________________________________________________________________________
-AliPIPEv3::AliPIPEv3()
+AliPIPEv3::AliPIPEv3() : fBeamBackground(0)
 {
 // Constructor
 }
 
 //_____________________________________________________________________________
 AliPIPEv3::AliPIPEv3(const char *name, const char *title)
-  : AliPIPE(name,title)
+  : AliPIPE(name,title), fBeamBackground(0)
 {
 // Constructor
 }
@@ -1616,7 +1617,7 @@ void AliPIPEv3::CreateGeometry()
     TGeoVolumeAssembly* voRB24 = new TGeoVolumeAssembly("RB24");
     // Cu Tube with two simplified flanges
     voRB24->AddNode(voRB24CuTubeM, 1, gGeoIdentity);
-    voRB24->AddNode(voRB24CuTubeA, 1, gGeoIdentity);
+    if (!fBeamBackground) voRB24->AddNode(voRB24CuTubeA, 1, gGeoIdentity);
     z = - kRB24CuTubeL/2 + kRB24CuTubeFL/2.;
     voRB24->AddNode(voRB24CuTubeF, 1, new TGeoTranslation(0., 0., z));
     z = + kRB24CuTubeL/2 - kRB24CuTubeFL/2.;
