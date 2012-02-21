@@ -686,15 +686,22 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
        break;
      case 7:
        {
-         if ((ntokens < 8) || (ntokens >10)) {
+         if ((ntokens !=8) && (ntokens != 10)) {
   	   AliError(Form("Invalid trigger class syntax (%s)!",strLine.Data()));
 	   return kFALSE;
          }
-         AliTriggerClass *trclass = new AliTriggerClass(this,
-							((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String().Atoi(),
-							((TObjString*)tokens->At(2))->String(),((TObjString*)tokens->At(3))->String(),
-							((TObjString*)tokens->At(4))->String(),((TObjString*)tokens->At(5))->String(),
-							((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(7))->String().Atoi()));
+	 AliTriggerClass *trclass=0;
+	 if(ntokens == 8)trclass = new AliTriggerClass(this,
+			((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String().Atoi(),
+			((TObjString*)tokens->At(2))->String(),((TObjString*)tokens->At(3))->String(),
+			((TObjString*)tokens->At(4))->String(),((TObjString*)tokens->At(5))->String(),
+			((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(7))->String().Atoi()));
+	 else trclass = new AliTriggerClass(this,
+			((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String().Atoi(),
+			((TObjString*)tokens->At(2))->String(),((TObjString*)tokens->At(3))->String(),
+			((TObjString*)tokens->At(4))->String(),((TObjString*)tokens->At(5))->String(),
+			((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(7))->String().Atoi()),
+			(((TObjString*)tokens->At(8))->String().Atoi()),(((TObjString*)tokens->At(9))->String().Atoi()));
 	 AddClass(trclass);
        }
      default:

@@ -8,8 +8,9 @@
 //                                                                           //
 // This class represents the CTP class objects                               //
 //                                                                           //
-// The Class consists of Name, descriptor, mask, protection, index in the    //
-// trigger mask                                                              //
+// The Class consists of Name, index in the trigger mask counted from 1,     //
+// descriptor, cluster,past-future, mask, downscale, allrare,                //
+// time group, time window                                                   //
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,6 +36,12 @@ public:
 					   TString &desc, TString &clus,
 					   TString &pfp, TString &mask,
 					   UInt_t prescaler, Bool_t allrare);
+                          AliTriggerClass( AliTriggerConfiguration *config,
+					   TString & name, UChar_t index,
+					   TString &desc, TString &clus,
+					   TString &pfp, TString &mask,
+					   UInt_t prescaler, Bool_t allrare,
+					   UInt_t timegroup, UInt_t timewindow);
 
                           AliTriggerClass( const AliTriggerClass& trclass );
                virtual   ~AliTriggerClass();
@@ -48,6 +55,8 @@ public:
     AliTriggerDescriptor* GetDescriptor() const { return fDescriptor; }
        AliTriggerCluster* GetCluster() const { return fCluster; }
         AliTriggerBCMask* GetBCMask() const { return fMask; }
+	           UInt_t GetTimeGroup() const { return fTimeGroup; }
+	           UInt_t GetTimeWindow() const { return fTimeGroup; }
 
                     void  Trigger( const TObjArray& inputs , const TObjArray& functions);
 		    void  Print( const Option_t* ) const;
@@ -64,8 +73,10 @@ private:
                   UInt_t  fPrescaler;    // Downscaling factor
                   Bool_t  fAllRare;      // All or Rare trigger
 		  Bool_t  fStatus;       //! true = Condition has been satisfied after Trigger
+		  UInt_t  fTimeGroup;    // time group
+		  UInt_t  fTimeWindow;   // the size of time window for its group
 
-  ClassDef( AliTriggerClass, 3 )  // Define a trigger class object
+  ClassDef( AliTriggerClass, 4 )  // Define a trigger class object
 };
 
 #endif
