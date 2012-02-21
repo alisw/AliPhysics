@@ -778,27 +778,34 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     // get mixed event normalization by assuming full acceptance at deta of 0
     Double_t mixedNorm = tracksMixed->Integral(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01));
     mixedNorm /= (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
-    tracksMixed->Scale(1.0 / mixedNorm);
-
-//     tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
-    
-    tracksSame->Divide(tracksMixed);
-    
-    // code to draw contributions
-    /*
-    TH1* proj = tracksSame->ProjectionX("projx", tracksSame->GetYaxis()->FindBin(-1.59), tracksSame->GetYaxis()->FindBin(1.59));
-    proj->SetTitle(Form("Bin %d", vertexBin));
-    proj->SetLineColor(vertexBin);
-    proj->DrawCopy((vertexBin > 1) ? "SAME" : "");
-    */
-    
-    if (!totalTracks)
-      totalTracks = (TH2*) tracksSame->Clone("totalTracks");
+    if (mixedNorm <= 0)
+    {
+      Printf("ERROR: Skipping vertex bin %d because mixed event is empty at (0,0)", vertexBin);
+    }
     else
-      totalTracks->Add(tracksSame);
+    {
+      tracksMixed->Scale(1.0 / mixedNorm);
 
-    delete tracksSame;
-    delete tracksMixed;
+  //     tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
+      
+      tracksSame->Divide(tracksMixed);
+      
+      // code to draw contributions
+      /*
+      TH1* proj = tracksSame->ProjectionX("projx", tracksSame->GetYaxis()->FindBin(-1.59), tracksSame->GetYaxis()->FindBin(1.59));
+      proj->SetTitle(Form("Bin %d", vertexBin));
+      proj->SetLineColor(vertexBin);
+      proj->DrawCopy((vertexBin > 1) ? "SAME" : "");
+      */
+      
+      if (!totalTracks)
+	totalTracks = (TH2*) tracksSame->Clone("totalTracks");
+      else
+	totalTracks->Add(tracksSame);
+
+      delete tracksSame;
+      delete tracksMixed;
+    }
   }
 
   Int_t totalEvents = eventSameAll->Integral();
@@ -806,11 +813,11 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
     if (totalEvents > 0)
       totalTracks->Scale(1.0 / totalEvents);
-  }
   
-  // normalizate to dphi width
-  Float_t normalization = totalTracks->GetXaxis()->GetBinWidth(1);
-  totalTracks->Scale(1.0 / normalization);
+    // normalizate to dphi width
+    Float_t normalization = totalTracks->GetXaxis()->GetBinWidth(1);
+    totalTracks->Scale(1.0 / normalization);
+  }
   
   delete trackSameAll;
   delete trackMixedAll;
