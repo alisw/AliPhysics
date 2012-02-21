@@ -1,9 +1,9 @@
 AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2);
 
-Int_t kBackgroundMode = 0;
-Float_t kPtTrackCut = 0.15;
-Float_t kTrackEtaWindow = 0.8;
-Float_t kVertexWindow = 10;
+Int_t kBackgroundModeCl = 0;
+Float_t kPtTrackCutCl = 0.15;
+Float_t kTrackEtaWindowCl = 0.8;
+Float_t kVertexWindowCl = 10;
 
 AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", UInt_t iFlag){
    AliAnalysisTaskJetCluster *js = 0;
@@ -33,9 +33,9 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
 AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone)
  {
  // Creates a jet fider task, configures it and adds it to the analysis manager.
-   kPtTrackCut = ptTrackCut;
-   kTrackEtaWindow = etaTrackWindow;
-   kVertexWindow = vertexWindow;
+   kPtTrackCutCl = ptTrackCut;
+   kTrackEtaWindowCl = etaTrackWindow;
+   kVertexWindowCl = vertexWindow;
 
    TString outputFile(deltaFile);
     // Get the pointer to the existing analysis manager via the static access method.
@@ -69,11 +69,11 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
 
     TString cAdd = "";
     cAdd += Form("%02d_",(int)((radius+0.01)*10.));
-    cAdd += Form("B%d",(int)kBackgroundMode);
+    cAdd += Form("B%d",(int)kBackgroundModeCl);
     cAdd += Form("_Filter%05d",filterMask);
-    cAdd += Form("_Cut%05d",(int)(1000.*kPtTrackCut));
+    cAdd += Form("_Cut%05d",(int)(1000.*kPtTrackCutCl));
     cAdd += Form("_Skip%02d",nSkip);
-    Printf("%s %E",cAdd.Data(),kPtTrackCut);
+    Printf("%s %E",cAdd.Data(),kPtTrackCutCl);
     AliAnalysisTaskJetCluster* clus = new  AliAnalysisTaskJetCluster(Form("JetCluster%s_%s%s",bRec,jf,cAdd.Data()));
       
    // or a config file
@@ -82,7 +82,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    // clus->SetDebugLevel(11); 
    clus->SetFilterMask(filterMask); 
    //   clus->SetUseGlobalSelection(kTRUE); 
-   clus->SetVtxCuts(kVertexWindow,1);
+   clus->SetVtxCuts(kVertexWindowCl,1);
    if(type == "AOD"){
      // Assume all jet are produced already
      clus->SetAODTrackInput(kTRUE);
@@ -91,39 +91,39 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
 
    if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
-     clus->SetTrackPtCut(kPtTrackCut);
-     clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackPtCut(kPtTrackCutCl);
+     clus->SetTrackEtaWindow(kTrackEtaWindowCl);
    }
    else if (typeRec.Contains("AODMC2")){
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCCharged);
-     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackPtCut(kPtTrackCutCl);
      clus->SetTrackEtaWindow(5);
    }
    else if (typeRec.Contains("AODMC")){
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCAll);
-     clus->SetTrackPtCut(kPtTrackCut);
+     clus->SetTrackPtCut(kPtTrackCutCl);
      clus->SetTrackEtaWindow(5);
    }
    else if (typeRec.Contains("AODextraonly")) {
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextraonly);
-     clus->SetTrackPtCut(kPtTrackCut);
-     clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackPtCut(kPtTrackCutCl);
+     clus->SetTrackEtaWindow(kTrackEtaWindowCl);
    }
    else if (typeRec.Contains("AODextra")) {
      cout << "AliAnalysisTaskJetCluster::kTrackAODextra: " << AliAnalysisTaskJetCluster::kTrackAODextra << endl;
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextra);
-     clus->SetTrackPtCut(kPtTrackCut);
-     clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackPtCut(kPtTrackCutCl);
+     clus->SetTrackEtaWindow(kTrackEtaWindowCl);
    }
    else if (typeRec.Contains("AOD")) {
      clus->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAOD);
-     clus->SetTrackPtCut(kPtTrackCut);
-     clus->SetTrackEtaWindow(kTrackEtaWindow);
+     clus->SetTrackPtCut(kPtTrackCutCl);
+     clus->SetTrackEtaWindow(kTrackEtaWindowCl);
    }
 
    clus->SetRparam(radius);
    clus->SetGhostArea(0.005);
-   clus->SetGhostEtamax(kTrackEtaWindow);
+   clus->SetGhostEtamax(kTrackEtaWindowCl);
 
    switch (jf) {
    case "ANTIKT":
