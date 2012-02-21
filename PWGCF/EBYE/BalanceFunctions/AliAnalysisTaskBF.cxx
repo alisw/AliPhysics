@@ -70,12 +70,14 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fHistBetavsPTOFbeforePID(NULL), 
   fHistProbTPCvsPtbeforePID(NULL), 
   fHistProbTOFvsPtbeforePID(NULL), 
+  fHistProbTPCTOFvsPtbeforePID(NULL),
   fHistNSigmaTPCvsPtbeforePID(NULL), 
   fHistNSigmaTOFvsPtbeforePID(NULL), 
   fHistdEdxVsPTPCafterPID(NULL),
   fHistBetavsPTOFafterPID(NULL), 
   fHistProbTPCvsPtafterPID(NULL), 
   fHistProbTOFvsPtafterPID(NULL), 
+  fHistProbTPCTOFvsPtafterPID(NULL),
   fHistNSigmaTPCvsPtafterPID(NULL), 
   fHistNSigmaTOFvsPtafterPID(NULL),  
   fPIDResponse(0x0),
@@ -301,11 +303,14 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fHistBetavsPTOFbeforePID = new TH2D ("BetavsPTOFbefore","BetavsPTOFbefore", 1000, -10.0, 10., 1000, 0, 1.2); 
     fHistListPIDQA->Add(fHistBetavsPTOFbeforePID); //addition
     
-    fHistProbTPCvsPtbeforePID = new TH2D ("ProbTPCvsPtbefore","ProbTPCvsPtbefore", 1000, -10.0,10.0, 1000, 0, 100); 
+    fHistProbTPCvsPtbeforePID = new TH2D ("ProbTPCvsPtbefore","ProbTPCvsPtbefore", 1000, -10.0,10.0, 1000, 0, 2.0); 
     fHistListPIDQA->Add(fHistProbTPCvsPtbeforePID); //addition 
     
-    fHistProbTOFvsPtbeforePID = new TH2D ("ProbTOFvsPtbefore","ProbTOFvsPtbefore", 1000, -50, 50, 1000, 0, 100); 
+    fHistProbTOFvsPtbeforePID = new TH2D ("ProbTOFvsPtbefore","ProbTOFvsPtbefore", 1000, -50, 50, 1000, 0, 2.0); 
     fHistListPIDQA->Add(fHistProbTOFvsPtbeforePID); //addition 
+
+    fHistProbTPCTOFvsPtbeforePID =new TH2D ("ProbTPCTOFvsPtbefore","ProbTPCTOFvsPtbefore", 1000, -50, 50, 1000, 0, 2.0); 
+    fHistListPIDQA->Add(fHistProbTPCTOFvsPtbeforePID); //addition 
     
     fHistNSigmaTPCvsPtbeforePID = new TH2D ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore", 1000, -10, 10, 1000, 0, 500); 
     fHistListPIDQA->Add(fHistNSigmaTPCvsPtbeforePID); //addition 
@@ -325,6 +330,9 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fHistProbTOFvsPtafterPID = new TH2D ("ProbTOFvsPtafter","ProbTOFvsPtafter", 1000,  -10, 10, 1000, 0, 2); 
     fHistListPIDQA->Add(fHistProbTOFvsPtafterPID); //addition  
     
+    fHistProbTPCTOFvsPtafterPID =new TH2D ("ProbTPCTOFvsPtafter","ProbTPCTOFvsPtafter", 1000, -50, 50, 1000, 0, 2.0); 
+    fHistListPIDQA->Add(fHistProbTPCTOFvsPtafterPID); //addition 
+
     fHistNSigmaTPCvsPtafterPID = new TH2D ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter", 1000, -10, 10, 1000, 0, 500); 
     fHistListPIDQA->Add(fHistNSigmaTPCvsPtafterPID); //addition  
     
@@ -457,25 +465,40 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    //===========================PID===============================//		    
 		    if(fUsePID) {
 		      Double_t prob[AliPID::kSPECIES]={0.};
+		      Double_t probTPC[AliPID::kSPECIES]={0.};
+		      Double_t probTOF[AliPID::kSPECIES]={0.};
+		      Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+
 		      Double_t nSigma = 0.;
+                      UInt_t detUsedTPC = 0;
+		      UInt_t detUsedTOF = 0;
+                      UInt_t detUsedTPCTOF = 0;
+
 		      //Decide what detector configuration we want to use
 		      switch(fPidDetectorConfig) {
 		      case kTPCpid:
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
 			nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest));
+			detUsedTPC = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
+			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+			  prob[iSpecies] = probTPC[iSpecies];
 			break;
 		      case kTOFpid:
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
 			nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest));
+			detUsedTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTOF);
+			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+			  prob[iSpecies] = probTOF[iSpecies];
 			break;
 		      case kTPCTOF:
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+			detUsedTPCTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
+			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+			  prob[iSpecies] = probTPCTOF[iSpecies];
 			break;
 		      default:
 			break;
 		      }//end switch: define detector mask
-		      
-		      UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, prob);
 		      
 		      //Filling the PID QA
 		      Double_t tofTime = -999., length = 999., tof = -999.;
@@ -503,18 +526,19 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 			
 			nSigmaTOFForParticleOfInterest = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest);
 			fHistBetavsPTOFbeforePID ->Fill(track->P()*track->Charge(),beta);
-			fHistProbTOFvsPtbeforePID ->Fill(track->Pt(),prob[fParticleOfInterest]);
+			fHistProbTOFvsPtbeforePID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
 			fHistNSigmaTOFvsPtbeforePID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
 		      }//TOF signal 
 		      
 		      
 		      Double_t  nSigmaTPCForParticleOfInterest = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest);
 		      fHistdEdxVsPTPCbeforePID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
-		      fHistProbTPCvsPtbeforePID -> Fill(track->Pt(),prob[fParticleOfInterest]); 
+		      fHistProbTPCvsPtbeforePID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
 		      fHistNSigmaTPCvsPtbeforePID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
+		      fHistProbTPCTOFvsPtbeforePID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
 		      //end of QA-before pid
 		      
-		      if (detUsed != 0) {
+		      if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
 			//Make the decision based on the n-sigma
 			if(fUsePIDnSigma) {
 			  if(nSigma > fPIDNSigma) continue;}
@@ -527,11 +551,12 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 			
 			//Fill QA after the PID
 			fHistBetavsPTOFafterPID ->Fill(track->P()*track->Charge(),beta);
-			fHistProbTOFvsPtafterPID ->Fill(track->Pt(),prob[fParticleOfInterest]);
+			fHistProbTOFvsPtafterPID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
 			fHistNSigmaTOFvsPtafterPID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
 			
 			fHistdEdxVsPTPCafterPID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
-			fHistProbTPCvsPtafterPID -> Fill(track->Pt(),prob[fParticleOfInterest]); 
+			fHistProbTPCvsPtafterPID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
+			fHistProbTPCTOFvsPtafterPID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
 			fHistNSigmaTPCvsPtafterPID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
 		      }
 		      

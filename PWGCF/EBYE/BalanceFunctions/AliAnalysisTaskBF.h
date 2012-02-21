@@ -117,11 +117,11 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };  
 
   void SetUseBayesianPID(Double_t gMinProbabilityValue) {
-    fUsePID = kTRUE; fUsePIDPropabilities = kTRUE;
+    fUsePID = kTRUE; fUsePIDnSigma = kFALSE; fUsePIDPropabilities = kTRUE;
     fMinAcceptedPIDProbability = gMinProbabilityValue; }
 
   void SetUseNSigmaPID(Double_t gMaxNSigma) {
-    fUsePID = kTRUE; fUsePIDnSigma = kTRUE;
+    fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
     fPIDNSigma = gMaxNSigma; }
 
   void SetParticleOfInterest(kParticleOfInterest poi) {
@@ -162,12 +162,14 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TH2D *fHistBetavsPTOFbeforePID;//
   TH2D *fHistProbTPCvsPtbeforePID; //
   TH2D *fHistProbTOFvsPtbeforePID;//
+  TH2D *fHistProbTPCTOFvsPtbeforePID;//
   TH2D *fHistNSigmaTPCvsPtbeforePID;//
   TH2D *fHistNSigmaTOFvsPtbeforePID;//
   TH2D *fHistdEdxVsPTPCafterPID;//
   TH2D *fHistBetavsPTOFafterPID;//
   TH2D *fHistProbTPCvsPtafterPID;//
   TH2D *fHistProbTOFvsPtafterPID;//
+  TH2D *fHistProbTPCTOFvsPtafterPID;//
   TH2D *fHistNSigmaTPCvsPtafterPID;//
   TH2D *fHistNSigmaTOFvsPtafterPID; //
 
