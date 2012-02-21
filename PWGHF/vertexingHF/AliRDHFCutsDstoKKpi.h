@@ -38,6 +38,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
 
 
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  virtual void SetStandardCutsPP2010();
    
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
