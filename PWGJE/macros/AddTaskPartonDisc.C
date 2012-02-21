@@ -37,7 +37,7 @@ AliAnalysisTaskPartonDisc* AddTaskPartonDisc(const char* bRec = "jetsAOD_UA104_B
 
   if(iPhysicsSelectionFlag)
     taskPD->SelectCollisionCandidates(iPhysicsSelectionFlag);
-  taskPD->SetAODMCInput(kTRUE); // true when running over AODs
+  taskPD->SetAODMCInput(kFALSE); // true when running over AODs, false on trains
   taskPD->SetRecBranch(bRec);
   taskPD->SetSecondRecBranch(bRec2);
   taskPD->SetXNtX(ntx);  
@@ -50,7 +50,7 @@ AliAnalysisTaskPartonDisc* AddTaskPartonDisc(const char* bRec = "jetsAOD_UA104_B
   taskPD->ForceNotUseTrackRefs(kFALSE); // kTRUE para ignorar las tracks refs(diferente bit del usado en jet finding) 
   taskPD->NotExtendDiJetExclusion(notextendExcl); // kFALSE->extend radius in dijet area, kTRUE->don't extend the radius in dijet area 
   taskPD->ForceSkipSingleTrackJets(skipsingletr); // kTRUE to force to skip single track jets
-  task->SetEnableJetEtaRestriction(enaEtaRest); // If increase of exclusion radius =!0 -> kTRUE, if not kFALSE
+  taskPD->SetEnableJetEtaRestriction(enaEtaRest); // If increase of exclusion radius =!0 -> kTRUE, if not kFALSE
   mgr->AddTask(taskPD);
     
   AliAnalysisDataContainer *coutput_PartDisc = mgr->CreateContainer(Form("taskPD_%s_%s",bRec,bGen),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWJE_taskPD_%s_%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen));
