@@ -53,6 +53,7 @@
 #include "AliDCSArray.h"
 #include "AliDAQ.h"
 #include "AliLTUConfig.h"
+#include "AliQAThresholds.h"
 
 class AliLog;
 class AliDCSValue;
@@ -1335,8 +1336,10 @@ UInt_t AliGRPPreprocessor::ProcessDqmFxs()
 	// Processing DQM fxs information
 	//
 
+	// TriggerClassesAndHistosToClone
 	TList* list = GetFileSources(kDQM, "TriggerClassesAndHistosToClone");
 	Bool_t storeResult = kTRUE;
+	Bool_t storeResultQAThr = kTRUE;
 	if (list !=0x0 && list->GetEntries()!=0){
 		AliInfo("The following sources produced files with the id TriggerClassesAndHistosToClone for GRP");
 		list->Print();
@@ -1369,7 +1372,86 @@ UInt_t AliGRPPreprocessor::ProcessDqmFxs()
 	}
 	
 	if (list) delete list;
-	
+
+	// QAThresholds
+	TObjArray* qaThrArray = new TObjArray();
+	for (Int_t idet = 0; idet < AliDAQ::kNDetectors; idet++){
+		TString detName = AliDAQ::OnlineName(idet);
+		if (detName == "TRI" || detName == "HLT" || detName == "TST") continue;   // skipping TRI, HLT, TST since they do not produce QAThresholds
+		AliDebug(2, Form("Processing QAThreshold for detector %s",detName.Data())); 
+		TList* listQAThr = GetForeignFileSources(detName.Data(), kDQM, "QAThresholds");
+		if (listQAThr !=0x0){
+			if (listQAThr->GetEntries() > 1){
+				AliError(Form("More than one sources found for QAThresholds from detector %s, skipping",detName.Data()));
+				continue;
+			}
+			else if (listQAThr->GetEntries()==1){
+				AliInfo(Form("The following source produced files with the id QAThresholds for GRP, coming from detector %s:",detName.Data()));
+				listQAThr->Print();
+				TObjString * str = dynamic_cast<TObjString*> (listQAThr->At(0)); 
+				if (!str){
+					AliError(Form("Expecting a TObjString in the list for detector %s, but something else was found.",detName.Data()));
+					delete listQAThr;
+					continue;
+				}
+				AliInfo(Form("found source %s", str->String().Data()));
+				TString fileNameRun = GetForeignFile(detName.Data(), kDQM, "QAThresholds", str->GetName());
+				if (fileNameRun.Length()>0){
+					AliInfo(Form("Got the file %s", fileNameRun.Data()));
+					TFile dqmFile(fileNameRun.Data(),"READ");
+					if (dqmFile.IsOpen()) {
+						AliQAThresholds* qaThr = dynamic_cast<AliQAThresholds*>(dqmFile.Get("AliQAThresholds"));
+						if (qaThr){
+							Int_t qaThrId = qaThr->GetDetectorId();
+							if (qaThrId != idet){
+								AliError(Form("Expecting QA threshold for detector %s, but found that for detector %s, skipping",detName.Data(), AliDAQ::OnlineName(qaThrId)));
+								delete listQAThr;
+								continue;
+							}
+							else{
+								qaThrArray->AddAtAndExpand(qaThr, qaThrId);
+								delete listQAThr;
+							}
+						}
+						else {
+							AliError(Form("No QAThresholds object found in the file for detector %s, skipping",detName.Data()));
+							delete listQAThr;
+							continue;
+						}
+					}			      
+					else {
+						AliError(Form("Can't open QAThreshold file for detector %s, skipping",detName.Data()));
+						delete listQAThr;
+						continue;					
+					}
+				}
+				else{
+					AliWarning(Form("No file found for DQM QAThreshold for detector %s, skipping",detName.Data()));
+					delete listQAThr;
+					continue;
+				}
+			}
+			else {
+				AliError(Form("No sources found for QAThresholds from detector %s, skipping",detName.Data()));
+				delete listQAThr;
+				continue;
+			}
+		}
+		else {
+			AliWarning(Form("No list found for DQM QAThreshold for detector %s, skipping",detName.Data()));
+			continue;
+		}
+	}
+	if (qaThrArray->GetEntries() > 0){
+		AliCDBMetaData md;
+		md.SetResponsible("Barthélémy von Haller");
+		md.SetComment("QA Threshold TObjArray");					
+		storeResultQAThr = Store("Calib", "QAThresholds", qaThrArray, &md, 0, kTRUE); 
+	}
+	else{
+		Printf("No valid QAThresholds entries found, storing nothing in the OCDB");
+	}
+
 	//	return storeResult;
 	return kTRUE;  // temporary!!
 }
