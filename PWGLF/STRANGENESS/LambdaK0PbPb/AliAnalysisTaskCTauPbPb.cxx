@@ -100,57 +100,57 @@ void AliAnalysisTaskCTauPbPb::UserCreateOutputObjects()
   fOutput->Add(fdEdxPid);
 
   fK0sM = 
-  new TH2F("fK0sM", "Mass for K^{0}_{s}", nbins/2, 0.448, 0.548, nbins,0.,ptMax);
-  fK0sM->GetXaxis()->SetTitle("Mass [GeV/c]"); 
+  new TH2F("fK0sM", "Mass for K^{0}_{s}", nbins/2,0.448,0.548,nbins,0.,ptMax);
+  fK0sM->GetXaxis()->SetTitle("Mass (GeV/c)"); 
   fOutput->Add(fK0sM);
 
   fK0sSi = 
   new TH2F("fK0sSi","L_{T} vs p_{T} for K^{0}_{s}, side-band subtracted",
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fK0sSi->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fK0sSi->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fK0sSi->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fK0sSi->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fK0sSi);
 
   fK0sMC = 
   new TH2F("fK0sMC","L_{T} vs p_{T} for K^{0}_{s}, from MC stack", 
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fK0sMC->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fK0sMC->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fK0sMC->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fK0sMC->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fK0sMC);
 
   fK0sAs = 
   new TH2F("fK0sAs", "L_{T} vs p_{T} for K^{0}_{s}, associated", 
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fK0sAs->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fK0sAs->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fK0sAs->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fK0sAs->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fK0sAs);
 
   //----------------------
 
   fLambdaM = 
   new TH2F("fLambdaM","Mass for \\Lambda", nbins, 1.065, 1.165,nbins,0.,ptMax);
-  fLambdaM->GetXaxis()->SetTitle("Mass [GeV/c]"); 
+  fLambdaM->GetXaxis()->SetTitle("Mass (GeV/c)"); 
   fOutput->Add(fLambdaM);
 
   fLambdaSi = 
   new TH2F("fLambdaSi","L_{T} vs p_{T} for \\Lambda, side-band subtructed",
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fLambdaSi->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fLambdaSi->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fLambdaSi->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaSi->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fLambdaSi);
 
   fLambdaMC = 
-  new TH2F("fLambdaMC","c\\tau for \\Lambda, from MC stack", 
+  new TH2F("fLambdaMC","L_{T} vs p_{T} for \\Lambda, from MC stack", 
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fLambdaMC->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fLambdaMC->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fLambdaMC->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaMC->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fLambdaMC);
 
   fLambdaAs = 
-  new TH2F("fLambdaAs","c\\tau for \\Lambda, associated",
+  new TH2F("fLambdaAs","L_{T} vs p_{T} for \\Lambda, associated",
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fLambdaAs->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fLambdaAs->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fLambdaAs->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaAs->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fLambdaAs);
 
   //----------------------
@@ -169,28 +169,28 @@ void AliAnalysisTaskCTauPbPb::UserCreateOutputObjects()
 
   fLambdaBarM = 
   new TH2F("fLambdaBarM","Mass for anti-\\Lambda", nbins, 1.065, 1.165,nbins,0.,ptMax);
-  fLambdaBarM->GetXaxis()->SetTitle("Mass [GeV/c]"); 
+  fLambdaBarM->GetXaxis()->SetTitle("Mass (GeV/c)"); 
   fOutput->Add(fLambdaBarM);
 
   fLambdaBarSi = 
   new TH2F("fLambdaBarSi","L_{T} vs p_{T} for anti-\\Lambda, side-band subtructed",
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fLambdaBarSi->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fLambdaBarSi->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fLambdaBarSi->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaBarSi->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fLambdaBarSi);
 
   fLambdaBarMC = 
-  new TH2F("fLambdaBarMC","c\\tau for anti-\\Lambda, from MC stack", 
+  new TH2F("fLambdaBarMC","L_{T} vs p_{T} for anti-\\Lambda, from MC stack", 
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fLambdaBarMC->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fLambdaBarMC->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fLambdaBarMC->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaBarMC->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fLambdaBarMC);
 
   fLambdaBarAs = 
-  new TH2F("fLambdaBarAs","c\\tau for anti-\\Lambda, associated",
+  new TH2F("fLambdaBarAs","L_{T} vs p_{T} for anti-\\Lambda, associated",
   nbins,0.,ptMax,nbins,0.,ltMax);
-  fLambdaBarAs->GetXaxis()->SetTitle("p_{T} [GeV/c]"); 
-  fLambdaBarAs->GetYaxis()->SetTitle("L_{T} [cm]"); 
+  fLambdaBarAs->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaBarAs->GetYaxis()->SetTitle("L_{T} (cm)"); 
   fOutput->Add(fLambdaBarAs);
 
 
@@ -363,7 +363,7 @@ TParticle *&mcp) {
 
   Int_t imn=n->GetFirstMother();
   if (imp != imn) {  // Check decays of the daughters
-    return 0; // Fixme
+     return 0; // Fixme
   }
 
   Int_t code=p0->GetPdgCode();
