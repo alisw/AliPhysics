@@ -920,8 +920,6 @@ Bool_t AliCDBManager::SetSnapshotMode(const char* snapshotFileName) {
 	return kFALSE;
     }
 
-    fSnapshotMode = kTRUE;
-
     //open snapshot file
     TString snapshotFile(snapshotFileName);
     if(snapshotFile.BeginsWith("alien://")){
@@ -940,33 +938,7 @@ Bool_t AliCDBManager::SetSnapshotMode(const char* snapshotFileName) {
 	return kFALSE;
     }
 
-    /*
-    // retrieve pointer to entries' map from snapshot file
-    TIter next(fSnapshotFile->GetListOfKeys());
-    TKey *key;
-    while ((key = (TKey*)next())) {
-	if (strcmp(key->GetClassName(),"TMap") != 0) continue;
-	fSnapshotCache = (TMap*)key->ReadObj();
-	break;
-    }
-    if (!fSnapshotCache || fSnapshotCache->GetEntries()==0){
-	AliError("Cannot get valid map of CDB entries from snapshot file");
-	return kFALSE;
-    }
-
-    // retrieve pointer to ids' list from snapshot file
-    TIter nextKey(fSnapshotFile->GetListOfKeys());
-    TKey *keyN;
-    while ((keyN = (TKey*)nextKey())) {
-	if (strcmp(keyN->GetClassName(),"TList") != 0) continue;
-	fSnapshotIdsList = (TList*)keyN->ReadObj();
-	break;
-    }
-    if (!fSnapshotIdsList || fSnapshotIdsList->GetEntries()==0){
-	AliError("Cannot get valid list of CDB entries from snapshot file");
-	return kFALSE;
-    }
-    */
+    fSnapshotMode = kTRUE;
     return kTRUE;
 
 }
