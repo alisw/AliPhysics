@@ -619,8 +619,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
     
     //pool->SetDebug(1);
-      
-    if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10) 
+     
+    if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
     {
       
       Int_t nMix = pool->GetCurrentNEvents();
