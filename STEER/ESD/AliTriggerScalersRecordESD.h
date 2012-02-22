@@ -32,7 +32,9 @@ public:
            const TObjArray*   GetTriggerScalers()  const { return  &fScalers; }
 const AliTriggerScalersESD*   GetTriggerScalersForClass( const Int_t classindex ) const;       
         const AliTimeStamp*   GetTimeStamp() const {return &fTimestamp;};
-                       void   SetTimeStamp(const AliTimeStamp *stamp){fTimestamp = *stamp;};  
+	             UInt_t   GetTimeGroup() const {return fTimeGroup; };
+                       void   SetTimeStamp(const AliTimeStamp *stamp){fTimestamp = *stamp;};
+		       void   SetTimeGroup(const UInt_t group){fTimeGroup = group;};
                virtual void   Print( const Option_t* opt ="" ) const;
                       
                            AliTriggerScalersRecordESD( const AliTriggerScalersRecordESD &rec );
@@ -42,7 +44,8 @@ const AliTriggerScalersESD*   GetTriggerScalersForClass( const Int_t classindex 
 private:  
                         AliTimeStamp fTimestamp;    // record timestamp
                         TObjArray    fScalers;      // Array of scalers (AliTriggerScalersESD) 
-                        ClassDef( AliTriggerScalersRecordESD, 2 )  // Define a Record of Trigger Scalers 
+			      UInt_t fTimeGroup;    // Active time group
+                        ClassDef( AliTriggerScalersRecordESD, 3 )  // Define a Record of Trigger Scalers 
 };
 
 #endif

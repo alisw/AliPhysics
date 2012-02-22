@@ -26,7 +26,8 @@ ClassImp( AliTriggerScalersRecordESD )
 AliTriggerScalersRecordESD::AliTriggerScalersRecordESD():
 TObject(),
 fTimestamp(),
-fScalers()
+fScalers(),
+fTimeGroup(0)
 {
 }
 
@@ -47,7 +48,8 @@ void AliTriggerScalersRecordESD::AddTriggerScalers( UChar_t classIndex, ULong64_
 AliTriggerScalersRecordESD::AliTriggerScalersRecordESD( const AliTriggerScalersRecordESD &rec ) :
 TObject(rec),
 fTimestamp(rec.fTimestamp),
-fScalers()
+fScalers(),
+fTimeGroup(rec.fTimeGroup)
 {
 //copy constructor
 for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
@@ -65,7 +67,7 @@ fScalers.Delete();
 for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
     if (rec.fScalers[i]) fScalers.Add(rec.fScalers[i]->Clone());
   }
-
+fTimeGroup=rec.fTimeGroup;
 return *this;
 } 
 
@@ -74,6 +76,7 @@ void AliTriggerScalersRecordESD::Reset()
 {
 fScalers.SetOwner();
 fScalers.Clear();
+fTimeGroup=0;
 } 
 
 //_____________________________________________________________________________
@@ -99,7 +102,7 @@ const AliTriggerScalersESD* AliTriggerScalersRecordESD::GetTriggerScalersForClas
 void AliTriggerScalersRecordESD::Print( const Option_t* ) const
 {
    // Print
-  cout << "Trigger Scalers Record: " << endl;
+  cout << "Trigger Scalers Record, time group: "<< fTimeGroup << endl;
   for( Int_t i=0; i<fScalers.GetEntriesFast(); ++i ) 
      ((AliTriggerScalersESD*)fScalers.At(i))->Print();
 }
