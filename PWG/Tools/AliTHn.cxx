@@ -81,19 +81,26 @@ void AliTHn::Init()
 } 
 
 AliTHn::AliTHn(const AliTHn &c) :
-  AliCFContainer(),
-  fNBins(0),
-  fNVars(0),
-  fNSteps(0),
-  fValues(0),
-  fSumw2(0),
+  AliCFContainer(c),
+  fNBins(c.fNBins),
+  fNVars(c.fNVars),
+  fNSteps(c.fNSteps),
+  fValues(new TArrayF*[c.fNSteps]),
+  fSumw2(new TArrayF*[c.fNSteps]),
   axisCache(0)
 {
   //
   // AliTHn copy constructor
   //
 
-  ((AliTHn &) c).Copy(*this);
+  memset(fValues,0,fNSteps*sizeof(TArrayF*));
+  memset(fSumw2,0,fNSteps*sizeof(TArrayF*));
+
+  for (Int_t i=0; i<fNSteps; i++) {
+    if (c.fValues[i]) fValues[i] = new TArrayF(*(c.fValues[i]));
+    if (c.fSumw2[i])  fSumw2[i]  = new TArrayF(*(c.fSumw2[i]));
+  }
+
 }
 
 AliTHn::~AliTHn()
@@ -102,23 +109,10 @@ AliTHn::~AliTHn()
   
   DeleteContainers();
   
-  if (fValues)
-  {
-    delete[] fValues;
-    fValues = 0;
-  }
+  delete[] fValues;
+  delete[] fSumw2;
+  delete[] axisCache;
 
-  if (fSumw2)
-  {
-    delete[] fSumw2;
-    fSumw2 = 0;
-  }
-  
-  if (axisCache)
-  {
-    delete[] axisCache;
-    axisCache = 0;
-  }
 }
 
 void AliTHn::DeleteContainers()
@@ -146,9 +140,34 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
 {
   // assigment operator
 
-  if (this != &c)
-    ((AliTHn &) c).Copy(*this);
+  if (this != &c) {
+    AliCFContainer::operator=(c);
+    fNBins=c.fNBins;
+    fNVars=c.fNVars;
+    fNSteps=c.fNSteps;
+    fValues=0;
+    fSumw2=0;
+    if(fNSteps) {
+      for(Int_t i=0; i< fNSteps; ++i) {
+	delete fValues[i];
+	delete fSumw2[i];
+      }
+      delete [] fValues;
+      delete [] fSumw2;
 
+      fValues=new TArrayF*[fNSteps];
+      fSumw2=new TArrayF*[fNSteps];
+      memset(fValues,0,fNSteps*sizeof(TArrayF*));
+      memset(fSumw2,0,fNSteps*sizeof(TArrayF*));
+
+      for (Int_t i=0; i<fNSteps; i++) {
+	if (c.fValues[i]) fValues[i] = new TArrayF(*(c.fValues[i]));
+	if (c.fSumw2[i])  fSumw2[i]  = new TArrayF(*(c.fSumw2[i]));
+      }
+    }
+    delete [] axisCache;
+    axisCache = 0;
+  }
   return *this;
 }
 
