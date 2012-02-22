@@ -1495,8 +1495,7 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
       = Unfold(hnHist,hnResponse,hnFlatEfficiency,nIter,useCorrelatedErrors,hnPrior);  
      
     TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
-    if(hist)
-      hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+    hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
     
     if(type == kFlagPt) fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hUnfolded,0,0);
     if(type == kFlagZ)  fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,0,hUnfolded,0);
