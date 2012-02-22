@@ -179,8 +179,13 @@ Bool_t AliZDCDigitizer::Init()
   }    
   printf("\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
   
-  ReadPMTGains();
-
+  if(fBeamEnergy>0.1){
+    ReadPMTGains();
+  }
+  else{
+    AliWarning("\n Beam energy is 0 -> ZDC PMT gains can't be set -> NO ZDC DIGITS!!!\n");
+  }
+  
   // ADC Caen V965
   fADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
   fADCRes[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
