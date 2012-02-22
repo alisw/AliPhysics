@@ -1,6 +1,6 @@
 PACKAGE = invalid-only-for-proof
 
-include $(ROOTSYS)/test/Makefile.arch
+include Makefile.arch
 
 SRCS     = $(wildcard *.cxx)
 HDRS     = $(SRCS:.cxx=.h)
@@ -19,11 +19,11 @@ ifneq ($(STEERBase_INCLUDE),)
 endif
 
 # only if no par file was loaded before
-ifeq ($(ALICEINC),-I.)
+#ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
   endif
-endif
+#endif
 
 CXXFLAGS += $(ALICEINC) -g
 
@@ -33,28 +33,7 @@ OBJS          = $(SRCS:.cxx=.o)
 lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(PLATFORM),macosx)
-# We need to make both the .dylib and the .so
-		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@
-ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
-ifeq ($(MACOSX_MINOR),4)
-		ln -sf $@ $(subst .$(DllSuf),.so,$@)
-else
-		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
-		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
-endif
-endif
-else
-ifeq ($(PLATFORM),win32)
-		bindexplib $* $^ > $*.def
-		lib -nologo -MACHINE:IX86 $^ -def:$*.def \
-		   $(OutPutOpt)$(EVENTLIB)
-		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $*.exp $(LIBS) \
-		   $(OutPutOpt)$@
-else
-		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
-endif
-endif
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
 	@chmod a+x $@
 	@echo "done"
 
