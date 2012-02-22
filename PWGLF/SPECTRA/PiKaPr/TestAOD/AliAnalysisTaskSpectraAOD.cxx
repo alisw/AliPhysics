@@ -154,6 +154,9 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
       fHistMan->GetPIDHistogram(kHistPIDTPC)->Fill(track->P(), track->GetTPCsignal()); // PID histo
       fHistMan->GetPIDHistogram(kHistPIDTPCPt)->Fill(track->Pt(), track->GetTPCsignal());
       
+      // MF 22/02/2012
+      // Fill DCA vs pt histos
+
       // Sigma identify particles (for both MC and regular data):
       // note: as of now, very crude identification. how many sigmas are allowed? what to do with high pt?
       AliVParticle *inEvHMain = dynamic_cast<AliVParticle *>(track);
@@ -177,6 +180,8 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
           else  { fHistMan->GetHistogram(kHistPtRecSigmaPionMinus)->Fill(track->Pt()); }
       }
       /* MC Part */
+      // MF 22/02/2012
+      // fill mc DCA vs pt
       if (arrayMC) {
          AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
          if (!partMC) { 
@@ -198,7 +203,8 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
             if (partMC->IsPhysicalPrimary()) {fHistMan->GetHistogram(kHistPtRecTruePrimaryPionMinus)->Fill(partMC->Pt()); }}
          }
 
-         // primaries, sigma pid
+         // primaries, sigma pid 
+	 // DCA vs pt not needed?
          if (partMC->IsPhysicalPrimary()) { 
             if( ( nsigmaTPCkKaon < nsigmaTPCkPion ) && ( nsigmaTPCkKaon < nsigmaTPCkProton ) ) {
                if ( (nsigmaTPCkKaon > fNSigmaPID ) || (!CheckYCut(kKaon, track) ) ) continue; 
@@ -217,6 +223,8 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
             }
          }
          //secondaries
+	 // MF 22/02/2012
+	 // Distinguish weak decay and material
          else {
             if( ( nsigmaTPCkKaon < nsigmaTPCkPion ) && ( nsigmaTPCkKaon < nsigmaTPCkProton ) ) { 
                if ( (nsigmaTPCkKaon > fNSigmaPID )  || (!CheckYCut(kKaon, track) ) ) continue;
