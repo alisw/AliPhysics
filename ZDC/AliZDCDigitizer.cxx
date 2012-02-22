@@ -21,7 +21,9 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+// --- Standard libraries
 #include <stdlib.h>
+#include <stdio.h>
 
 // --- ROOT system
 #include <TTree.h>
@@ -435,12 +437,14 @@ void AliZDCDigitizer::ReadPMTGains()
      AliWarning("  -> ZDC signal will be pedestal!!!!!!!!!!!!\n\n");
      return;
   }
+  int read=1;
   Float_t data[5];
   Int_t beam[12], det[12];
   Float_t gain[12], aEne[12], bEne[12];
   for(int ir=0; ir<12; ir++){
     for(int ic=0; ic<5; ic++){
-       fscanf(fdata,"%f ",&data[ic]);
+       read = fscanf(fdata,"%f ",&data[ic]);
+       if(read==0) AliDebug(3, " Error in reading PMT gains from external file ");
     }
     beam[ir] = data[0];
     det[ir] = data[1];
