@@ -29,7 +29,7 @@ class AliACORDEAlign : public  TObject{
   void LoadSurveyData();
 //  void CreateACORDEAlignObjs();
   void StoreAlignObj();
-  void SetDebug(Int_t debug){fDebug=debug;}
+ // void SetDebug(Int_t debug){fDebug=debug;}
   virtual ~AliACORDEAlign();
   //
  private:

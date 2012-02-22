@@ -113,10 +113,9 @@ AliACORDEAlign & AliACORDEAlign::operator =(const AliACORDEAlign &align)
 //
   // assignment operator - dummy
   //
-  if(this!=&align){
-    fDebug=align.fDebug;
-  }
-  return (*this);
+if (this != &align) ((AliACORDEAlign &) align).Copy(*this);
+
+   return (*this);
 
 }
 
