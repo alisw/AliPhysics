@@ -4,7 +4,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
 				     TString filename="",
-				     TString finAnObjname="AnalysisCuts", TString finProdObjname="ProduCuts")
+				     TString finAnObjname="AnalysisCuts", TString finProdObjname="ProdCuts")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
@@ -116,7 +116,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   if(storeNtuple){
     AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								   AliAnalysisManager::kOutputContainer,
-								   "InvMassDplus_nt1.root");
+								   outputfile.Data());
     
     coutputDplus2->SetSpecialOutput();
   }
