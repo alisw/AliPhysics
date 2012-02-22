@@ -2207,7 +2207,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       if (myTrackNeg) lDcaNegToPrimVertex = TMath::Abs(myTrackNeg->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lMagneticField) );
       
       // Quality tracks cuts:
-      if ( !(fTracksCuts->IsSelected(myTrackPos)) || !(fTracksCuts->IsSelected(myTrackNeg)) ) 
+      if ( !(myTrackPos && fTracksCuts->IsSelected(myTrackPos)) || !(myTrackNeg && fTracksCuts->IsSelected(myTrackNeg)) ) 
 
 
 	{
