@@ -39,6 +39,7 @@ class AliRDHFCutsDStartoKpipi;
 class AliESDtrack;
 class AliVEvent;
 class AliAODVertex;
+class AliVertexerTracks;
 class AliESDv0; 
 class AliAODv0; 
 
@@ -112,6 +113,22 @@ class AliAnalysisVertexingHF : public TNamed {
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
     fTrackFilter = trackF; 
   }
+  void SetTrackFilter2prongPbCentral(Float_t maxPercentile, AliAnalysisFilter* trackF) {
+    // switch off the TOF selection that cannot be applied with AODTracks 
+    TList *l = (TList*)trackF->GetCuts();
+    AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
+    if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
+    fTrackFilter2prongCentral = trackF; 
+    fMaxCentPercentileForTightCuts=maxPercentile;
+  }
+  void SetTrackFilter3prongPbCentral(Float_t maxPercentile, AliAnalysisFilter* trackF) {
+    // switch off the TOF selection that cannot be applied with AODTracks 
+    TList *l = (TList*)trackF->GetCuts();
+    AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
+    if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
+    fTrackFilter3prongCentral = trackF; 
+    fMaxCentPercentileForTightCuts=maxPercentile;
+  }
   void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) { 
     // switch off the TOF selection that cannot be applied with AODTracks 
     TList *l = (TList*)trackF->GetCuts();
@@ -139,15 +156,18 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsDStartoKpipi* GetCutsDStartoKpipi() const { return fCutsDStartoKpipi; }
   void SetMassCutBeforeVertexing(Bool_t flag) { fMassCutBeforeVertexing=flag; } 
 
+  void SetMasses();
+
   //
  private:
   //
-  enum { kBitDispl = 0, kBitSoftPi = 1 };
+  enum { kBitDispl = 0, kBitSoftPi = 1, kBit3Prong = 2 };
 
   Bool_t fInputAOD; // input from AOD (kTRUE) or ESD (kFALSE) 
   Int_t fAODMapSize; // size of fAODMap 
   Int_t *fAODMap; //[fAODMapSize] map between index and ID for AOD tracks
 
+  AliVertexerTracks* fVertexerTracks; // vertexer, to compute secondary vertices
   Double_t fBzkG; // z componenent of field in kG
 
   Bool_t fSecVtxWithKF; // if kTRUE use KF vertexer, else AliVertexerTracks
@@ -170,8 +190,12 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fLikeSign3prong;  // Like-sign triplets
   Bool_t fMixEvent; // event mixing
 
+  Float_t fMaxCentPercentileForTightCuts; //max. centrality percentile for using tight cuts
+
   // single-track cuts
   AliAnalysisFilter *fTrackFilter; //  Track Filter for displaced vertices
+  AliAnalysisFilter *fTrackFilter2prongCentral; //  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 2 prong (D0->Kpi)
+  AliAnalysisFilter *fTrackFilter3prongCentral; //  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 3 prong (D+, Ds, Lc)
   AliAnalysisFilter *fTrackFilterSoftPi; //  Track Filter for D* soft pion
   // candidates cuts
   AliRDHFCutsD0toKpi *fCutsD0toKpi; // D0->Kpi cuts
@@ -191,9 +215,25 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAODRecoDecay *fMassCalc2; // for 2 prong
   AliAODRecoDecay *fMassCalc3; // for 3 prong
   AliAODRecoDecay *fMassCalc4; // for 4 prong
+  Bool_t fOKInvMassD0; // pair fullfilling D0 inv mass selection
+  Bool_t fOKInvMassJpsi; // pair fullfilling Jpsi inv mass selection
+  Bool_t fOKInvMassDplus; // triplet fullfilling D+ inv mass selection
+  Bool_t fOKInvMassDs; // triplet fullfilling Ds inv mass selection
+  Bool_t fOKInvMassLc; // triplet fullfilling Lc inv mass selection
+  Bool_t fOKInvMassDstar; // combination fullfilling D* inv mass selection
+  Bool_t fOKInvMassD0to4p; // 4tracks fullfilling D0 inv mass selection
+  Bool_t fOKInvMassLctoV0; // triplet fullfilling Lc inv mass selection
 
   Int_t fnTrksTotal;
   Int_t fnSeleTrksTotal;
+
+  Double_t fMassDzero;
+  Double_t fMassDplus;
+  Double_t fMassDs;
+  Double_t fMassLambdaC;
+  Double_t fMassDstar;
+  Double_t fMassJpsi;
+
 
   //
   void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,const AliVEvent *event,
@@ -202,37 +242,46 @@ class AliAnalysisVertexingHF : public TNamed {
 		       const TObjArray *trkArray) const;
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliVEvent *event,
 				      AliAODVertex *secVert,Double_t dcap1n1,
-				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar) const;
+				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliVEvent *event,
 				      AliAODVertex *secVert,
 				      Double_t dispersion,
 				      const AliAODVertex *vertexp1n1,
 				      const AliAODVertex *vertexp2n1,
 				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
-				      Bool_t &ok3Prong) const;
+				      Bool_t &ok3Prong);
   AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliVEvent *event,
                                       AliAODVertex *secVert,
                                       const AliAODVertex *vertexp1n1,
                                       const AliAODVertex *vertexp1n1p2,
                                       Double_t dcap1n1,Double_t dcap1n2,
                                       Double_t dcap2n1,Double_t dcap2n2,
-                                      Bool_t &ok4Prong) const;
+                                      Bool_t &ok4Prong);
   AliAODRecoCascadeHF* MakeCascade(TObjArray *twoTrackArray,AliVEvent *event,
 				   AliAODVertex *secVert,
 				   AliAODRecoDecayHF2Prong *rd2Prong,
 				   Double_t dca,
-				   Bool_t &okDstar) const;
+				   Bool_t &okDstar);
   AliAODRecoCascadeHF* MakeCascade(TObjArray *twoTrackArray,AliVEvent *event,
 				   AliAODVertex *secVert,
 				   AliAODv0 *v0,
 				   Double_t dca,
-				   Bool_t &okCascades) const;
+				   Bool_t &okCascades);
 
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray=0x0,AliVEvent *event=0x0) const;
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion,Bool_t useTRefArray=kTRUE) const;
-  Bool_t SelectInvMassAndPt(Int_t decay,Int_t nprongs,
-		       Double_t *px,Double_t *py,Double_t *pz) const;
-  Bool_t SelectInvMassAndPt(TObjArray *trkArray) const;
+
+  Bool_t SelectInvMassAndPt3prong(Double_t *px,Double_t *py,Double_t *pz);
+  Bool_t SelectInvMassAndPt4prong(Double_t *px,Double_t *py,Double_t *pz);
+  Bool_t SelectInvMassAndPtD0Kpi(Double_t *px,Double_t *py,Double_t *pz);
+  Bool_t SelectInvMassAndPtJpsiee(Double_t *px,Double_t *py,Double_t *pz);
+  Bool_t SelectInvMassAndPtDstarD0pi(Double_t *px,Double_t *py,Double_t *pz);
+  Bool_t SelectInvMassAndPtCascade(Double_t *px,Double_t *py,Double_t *pz);
+
+  Bool_t SelectInvMassAndPt3prong(TObjArray *trkArray);
+  Bool_t SelectInvMassAndPt4prong(TObjArray *trkArray);
+  Bool_t SelectInvMassAndPtDstarD0pi(TObjArray *trkArray);
+
   void   SelectTracksAndCopyVertex(const AliVEvent *event,Int_t trkEntries,
 				   TObjArray &seleTrksArray,
 				   TObjArray &tracksAtVertex,
@@ -240,7 +289,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   UChar_t *seleFlags,Int_t *evtNumber);
   void SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const;
 
-  Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
+  Bool_t SingleTrkCuts(AliESDtrack *trk,Float_t centralityperc, Bool_t &okDisplaced,Bool_t &okSoftPi, Bool_t &ok3prong) const;
 
   void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit);
 
@@ -248,7 +297,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   //
-  ClassDef(AliAnalysisVertexingHF,19);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,20);  // Reconstruction of HF decay candidates
 };
 
 
