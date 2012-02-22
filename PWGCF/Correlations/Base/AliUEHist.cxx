@@ -922,11 +922,10 @@ TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHi
 
   if (useVertexBins)
     totalEvents = vertexAxis->GetNbins();
-  if (totalTracks) {
-    Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
-    if (totalEvents > 0)
-      totalTracks->Scale(1.0 / totalEvents);
-  }
+
+  Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
+  if (totalEvents > 0)
+    totalTracks->Scale(1.0 / totalEvents);
   
   return totalTracks;
 }
