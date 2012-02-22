@@ -20,7 +20,7 @@ CaloTrackCorrelations (former PartCorrDep) depends on PWG/CaloTrackCorrBase (for
 Responsible: G. Conesa 
 
 EMCALTasks: holds code re the EMCAL
-Responsible: G. Conesa and C. Loizides
+Responsible: G. Conesa, M. Cosentino 
 
 GammaConv: holds code re Conversions depends on CORRFW
 Responsible: S. Lindal, D. Lohner
@@ -29,5 +29,5 @@ PHOSTasks: holds code re the PHOS
 Responsible: D. Peressounko, Y. Kharlov
 
 CaloTasks: hold code re the calirometers
-Responsible: t.b.d
+Responsible: G. Conesa, Y. Kharlov
 Remarks: Could be made dependent on the other PWGGA libraries as needed
