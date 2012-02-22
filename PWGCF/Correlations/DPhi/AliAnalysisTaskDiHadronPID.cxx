@@ -177,6 +177,10 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
 	AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*> (manager->GetInputEventHandler());
 
+	if(!inputHandler) {
+	  AliFatal("Error getting AliInputEventHandler");
+	}
+
 	// Pointers to PID Response objects.	
 	fPIDResponse = inputHandler->GetPIDResponse(); 
 	cout << "PID Response object: " << fPIDResponse << endl;
