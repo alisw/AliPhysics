@@ -3201,7 +3201,6 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         lPosXi[1] = xiAOD->DecayVertexXiY();
         lPosXi[2] = xiAOD->DecayVertexXiZ();
 
-        lInvMassLambdaAsCascDghter      = xiAOD->MassLambda();
                                         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
         lDcaV0DaughtersXi               = xiAOD->DcaV0Daughters();
         // lV0Chi2Xi                    = xiAOD->GetChi2V0();
@@ -3381,6 +3380,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         if( mcMotherBach                ->GetPdgCode() ==   3312 &&
             mcGdMotherPosV0Dghter       ->GetPdgCode() ==   3312 &&
             mcGdMotherNegV0Dghter       ->GetPdgCode() ==   3312)    {  lAssoXiMinus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassLambda();
                                                                         cascadeMass = 1.321;
                                                                       //  Printf("Xi- asso current index = %n ", lblGdMotherPosV0Dghter);
                                                                         nAssoXiMinus++; }
@@ -3388,18 +3388,21 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         else if( mcMotherBach           ->GetPdgCode() ==  -3312 &&
             mcGdMotherPosV0Dghter       ->GetPdgCode() ==  -3312 &&
             mcGdMotherNegV0Dghter       ->GetPdgCode() ==  -3312)    {  lAssoXiPlus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassAntiLambda();
                                                                         cascadeMass = 1.321;
                                                                         nAssoXiPlus++; }
 
         else if( mcMotherBach           ->GetPdgCode() ==   3334 &&
             mcGdMotherPosV0Dghter       ->GetPdgCode() ==   3334 &&
             mcGdMotherNegV0Dghter       ->GetPdgCode() ==   3334)    {  lAssoOmegaMinus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassLambda();
                                                                         cascadeMass = 1.672;
                                                                         nAssoOmegaMinus++; }
 
         else if( mcMotherBach           ->GetPdgCode() ==  -3334 &&
             mcGdMotherPosV0Dghter       ->GetPdgCode() ==  -3334 &&
             mcGdMotherNegV0Dghter       ->GetPdgCode() ==  -3334)    {  lAssoOmegaPlus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassAntiLambda();
                                                                         cascadeMass = 1.672;
                                                                         nAssoOmegaPlus++; }
         //-------------
