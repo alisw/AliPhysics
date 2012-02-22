@@ -86,6 +86,7 @@
 #pragma link C++ class AliForwardFlowTaskQC+;
 #pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
 #pragma link C++ class AliForwardMCFlowTaskQC+;
+#pragma link C++ class AliFMDEventPlaneTask+;
 #pragma link C++ class AliSPDMCTrackDensity+;
 #pragma link C++ class AliFMDMultCuts+;
 #pragma link C++ class AliPoissonCalculator+;
