@@ -187,6 +187,13 @@ void analysis_macro(const char * dataFile = "Pt.AOD.1._data_ptcut.root", const c
   ecuts_data->PrintCuts();
   tcuts_data->PrintCuts();
   // get the histo's necessary to write the contamination histos from the rootfile
+  // MF 22/02/2012
+  // Get the raw data distribution:
+  // 1. Get DCA vs pt histo for each particle
+  // 2. Loop over all pt bins, projecting on DCA
+  // 3. Fit the DCA data distribution with MC templates for primaries, sec. w., sec. m. (TFractionFitter)
+  // 4. Extract from the fit raw primaries vs pt in data
+  // 5. Correct for the primaries efficiency estimated in MC
   TH1F* spectrahistos_data[30];
   cout << " -- Reading and normalizing histograms -- " << endl;
   for( Int_t i = 0 ; i <= AliSpectraNameSpace::kNPtSpecies ; i++ ) { 
