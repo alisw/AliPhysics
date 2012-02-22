@@ -21,7 +21,7 @@ extern TROOT *gROOT;
 //extern TFile *gFile;
 
 
-void PostProcessCTau() {
+void PostProcessCTau(Int_t corrType=1) {
   //-----------------------------------------------------------------
   // PostProcess the histograms produced by AliAnalysisTaskCTau* 
   // Produce:
@@ -88,6 +88,11 @@ void PostProcessCTau() {
   const Double_t brch[]={0.69, 0.64, 0.64};
   const Double_t mass[]={0.4977, 1.115, 1.115};
   const Double_t ctau[]={2.68, 7.89, 7.89};
+  const Double_t yWin=2*0.5; // rapidity window
+  const Double_t wbx=fK0sSi->GetBinWidth(3);
+  const Int_t nbx=fLambdaFromXi->GetNbinsX();
+  const Int_t nby=fLambdaFromXi->GetNbinsY();
+  const Int_t nbz=fLambdaFromXi->GetNbinsZ();
 
   const TH2 *in[]={
     fK0sSi,fK0sAs,fK0sMC,
@@ -99,21 +104,26 @@ void PostProcessCTau() {
     fLambdaFromXi,fXiSiP,fXiSiPMC,
     fLambdaBarFromXiBar,fXiBarSiP,fXiBarSiPMC
   };
-  Double_t wbx=fK0sSi->GetBinWidth(3);
-  Int_t nbx=fLambdaFromXi->GetNbinsX();
-  Int_t nby=fLambdaFromXi->GetNbinsY();
-  Int_t nbz=fLambdaFromXi->GetNbinsZ();
  
   for (Int_t i=0; i<iMax; i++) {
-      TH2 *cr=(TH2*)in[i*3 + 0]->Clone();
-      Correct(cr, in[i*3 + 1], in[i*3 + 2]);
+      const TH2 *ptRw=in[3*i+0], *ptAs=in[3*i+1], *ptMc=in[3*i+2];
+      TH1 *ptAsPx=0, *ptMcPx=0, *pt=0;
+
+      TH2 *cr=(TH2*)ptRw->Clone();
+      Correct(cr, ptAs, ptMc);
 
       //++++ pT spectrum
-      TH1 *pt=cr->ProjectionX("_px",0,-1,"e");
+      if (corrType==1) {
+         pt    =ptRw->ProjectionX("_px",0,-1,"e"); 
+         ptAsPx=ptAs->ProjectionX("_px",0,-1,"e"); 
+         ptMcPx=ptMc->ProjectionX("_px",0,-1,"e"); 
+         Correct(pt, ptAsPx, ptMcPx);
+      } else {
+         pt=cr->ProjectionX("_px",0,-1,"e");
+      }
       TString ptName = pnam[i] + " p_{T} spectrum";
       pt->SetTitle(ptName.Data());
-      Normalise(brch[i], 2*0.5, wbx, nEvents, pt);      
-      Double_t eipt=0., ipt=pt->IntegralAndError(1, nbx, eipt);
+      Normalise(brch[i], yWin, wbx, nEvents, pt);      
 
       new TCanvas; 
       pt->Draw(); 
@@ -123,6 +133,14 @@ void PostProcessCTau() {
 	 TH3 *fd3=(TH3*)fd[3*i + 0];
 	 TH1 *rl =(TH1*)fd[3*i + 1];
 	 TH1 *mc =(TH1*)fd[3*i + 2];
+
+         Double_t nLambdaFromXiMc=fd3->Integral();
+         Double_t nXiMc=mc->Integral();
+         Double_t nXiRl=rl->Integral();
+         Double_t f=(nLambdaFromXiMc*nXiRl/nXiMc)/ptRw->Integral();
+         Double_t ef=f*TMath::Sqrt(nXiMc)/nXiMc;
+         cout<<endl<<"Global FD correction: "<<f<<"+/-"<<ef<<endl;
+
          rl->Divide(mc);
          
          for (Int_t k=1; k<=nbx; k++) {
@@ -136,15 +154,16 @@ void PostProcessCTau() {
 	 }
 
          TH2 *fd2=(TH2*)fd3->Project3D("yxe");
-         Correct(fd2, in[i*3 + 1], in[i*3 + 2]);
+         Correct(fd2, ptAs, ptMc);
 
-         TH1 *fd1=fd2->ProjectionX("_px",0,-1,"e");
-         Normalise(brch[i], 2*0.5, wbx, nEvents, fd1);
-         Double_t eifd=0., ifd=fd1->IntegralAndError(1, nbx, eifd);
-
-         Double_t f=ifd/ipt;
-         Double_t ef=1/ipt*TMath::Sqrt(eifd*eifd + f*f*eipt*eipt);
-         cout<<endl<<"Global FD correction: "<<f<<"+/-"<<ef<<endl;
+         TH1 *fd1=0;
+         if (corrType==1) {
+            fd1=(TH1*)fd3->Project3D("x");
+            Correct(fd1, ptAsPx, ptMcPx);
+         } else {
+            fd1=fd2->ProjectionX("_px",0,-1,"e");
+	 }
+         Normalise(brch[i], yWin, wbx, nEvents, fd1);
 
          //new TCanvas();
          fd1->Draw("same");
