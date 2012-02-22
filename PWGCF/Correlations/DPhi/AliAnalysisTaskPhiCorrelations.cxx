@@ -354,12 +354,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, 0, weight);
   
   // mixed event
-  AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
-//   pool->PrintInfo();
-  if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
-    for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
-      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
-  pool->UpdatePool(CloneAndReduceTrackList(tracksMC));
+  if (fFillMixed)
+  {
+    AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
+    //pool->PrintInfo();
+    if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
+      for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
+    pool->UpdatePool(CloneAndReduceTrackList(tracksMC));
+  }
   
   // Trigger selection ************************************************
   if (fAnalyseUE->TriggerSelection(fInputHandler))
@@ -426,12 +429,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
       
       // mixed event
-      AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
-//       pool2->PrintInfo();
-      if (pool2->IsReady() || pool2->NTracksInPool() > fMixingTracks / 10 || pool2->GetCurrentNEvents() >= 5) 
-	for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) 
-	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
-      pool2->UpdatePool(CloneAndReduceTrackList(tracks));
+      if (fFillMixed)
+      {
+	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
+	//pool2->PrintInfo();
+	if (pool2->IsReady() || pool2->NTracksInPool() > fMixingTracks / 10 || pool2->GetCurrentNEvents() >= 5) 
+	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) 
+	    fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
+	pool2->UpdatePool(CloneAndReduceTrackList(tracks));
+      }
       
       if (0 && !fReduceMemoryFootprint)
       {
