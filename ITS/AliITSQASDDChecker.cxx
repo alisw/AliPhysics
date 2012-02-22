@@ -110,7 +110,7 @@ AliITSQASDDChecker::~AliITSQASDDChecker()
 Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * list, const AliDetectorRecoParam * /*recoparam*/) 
 {
   //check histograms of the different lists  
-  AliInfo(Form("AliITSQASDDChecker called with offset: %d \t and specie \n", fSubDetOffset,fESforCheck) );
+  AliInfo(Form("AliITSQASDDChecker called with offset: %d \t and specie %d\n", fSubDetOffset,fESforCheck));
 
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
 
@@ -499,7 +499,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
-	TPaveText *pave[2];
+	TPaveText *pave[2]={0,0};
 	next.Begin();
 
 	while( (hdata=dynamic_cast<TH1* >(next())) )
