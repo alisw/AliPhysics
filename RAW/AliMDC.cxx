@@ -548,7 +548,6 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
       Error("Run", "AliMDC was compiled without event builder support");
       delete fRawDB;
       fRawDB = NULL;
-      if (fd>-1) close(fd);
       return 1;
 #endif
 
