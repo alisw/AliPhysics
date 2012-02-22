@@ -93,16 +93,15 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
   memset(fVolArray,0,sizeof(AliTrackPointArray*)*fN);
   memset(fTrackArray,0,sizeof(AliTrackPointArray*)*fN);
 
-  for (Int_t itrack = 0; itrack < fN; itrack++)
-      {
-	if (res.fVolArray[itrack])
-	  fVolArray[itrack] = new AliTrackPointArray(*res.fVolArray[itrack]);
-	if (res.fTrackArray[itrack])
-	  fTrackArray[itrack] = new AliTrackPointArray(*res.fTrackArray[itrack]);
-      }
+  for (Int_t itrack = 0; itrack < fN; itrack++) {
+    if (res.fVolArray[itrack])
+      fVolArray[itrack] = new AliTrackPointArray(*res.fVolArray[itrack]);
+    if (res.fTrackArray[itrack])
+      fTrackArray[itrack] = new AliTrackPointArray(*res.fTrackArray[itrack]);
+  }
 
-    memcpy(fBFixed,res.fBFixed,sizeof(Bool_t)*6);
-    memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
+  memcpy(fBFixed,res.fBFixed,sizeof(Bool_t)*6);
+  memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
 
 }
 
@@ -114,20 +113,49 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
   if(this!=&res) {
     TObject::operator=(res);
     
-    fN = res.fN;
     fLast = res.fLast;
-    fAlignObj = res.fAlignObj;
-    fVolArray = res.fVolArray;
-    fTrackArray = res.fTrackArray;
+    delete fAlignObj;
+    if(res.fAlignObj) 
+      fAlignObj = (AliAlignObj *)res.fAlignObj->Clone();
+    else
+      fAlignObj = 0;
+      
+    if (fIsOwner) {
+      if (fVolArray) {
+	for (Int_t itrack = 0; itrack < fN; itrack++) 
+	  delete fVolArray[itrack];
+	delete [] fVolArray;
+	fVolArray=0;
+      }
+      if(res.fN) {
+	fVolArray = new AliTrackPointArray*[res.fN];
+	memset(fVolArray,0,sizeof(AliTrackPointArray*)*res.fN);
+	for (Int_t itrack = 0; itrack < res.fN; itrack++) 
+	  if (res.fVolArray[itrack])
+	    fVolArray[itrack] = new AliTrackPointArray(*res.fVolArray[itrack]);
+      }
+      if (fTrackArray) {
+	for (Int_t itrack = 0; itrack < fN; itrack++) 
+	  delete fTrackArray[itrack];
+	delete [] fTrackArray;
+      }
+      if(res.fN) {
+	fTrackArray = new AliTrackPointArray*[res.fN];
+	memset(fTrackArray,0,sizeof(AliTrackPointArray*)*res.fN);
+	for (Int_t itrack = 0; itrack < res.fN; itrack++) 
+	  if (res.fTrackArray[itrack])
+	    fTrackArray[itrack] = new AliTrackPointArray(*res.fTrackArray[itrack]);
+      }
+    } else {
+      fVolArray = res.fVolArray;
+      fTrackArray = res.fTrackArray;
+    }
+    fN = res.fN;
     fChi2 = res.fChi2;
     fNdf  = res.fNdf;
     fMinNPoints = res.fMinNPoints;
     fIsOwner = kFALSE;
 
-    fAlignObj = res.fAlignObj;
-    fVolArray = res.fVolArray;
-    fTrackArray = res.fTrackArray;
-    
     memcpy(fBFixed,res.fBFixed,sizeof(Bool_t)*6);
     memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
   }
@@ -138,7 +166,7 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
 AliTrackResiduals::~AliTrackResiduals()
 {
   // Destructor
-  if (fAlignObj) delete fAlignObj;
+  delete fAlignObj;
   DeleteTrackPointArrays();
 }
 
@@ -192,7 +220,7 @@ void AliTrackResiduals::InitAlignObj()
 {
   // Create the alignment object 
   // to be updated
-  if (fAlignObj) delete fAlignObj;
+  delete fAlignObj;
   fAlignObj = new AliAlignObjParams;
 }
 
@@ -221,15 +249,13 @@ void AliTrackResiduals::DeleteTrackPointArrays()
   // Called by the destructor and SetNTracks methods.
   if (fIsOwner) {
     if (fVolArray) {
-      for (Int_t itrack = 0; itrack < fN; itrack++) {
-	if (fVolArray[itrack]) delete fVolArray[itrack];
-      }
+      for (Int_t itrack = 0; itrack < fN; itrack++) 
+	delete fVolArray[itrack];
       delete [] fVolArray;
     }
     if (fTrackArray) {
-      for (Int_t itrack = 0; itrack < fN; itrack++) {
-	if (fTrackArray[itrack]) delete fTrackArray[itrack];
-      }
+      for (Int_t itrack = 0; itrack < fN; itrack++) 
+	delete fTrackArray[itrack];
       delete [] fTrackArray;
     }
   }
