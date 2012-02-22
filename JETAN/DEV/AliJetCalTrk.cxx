@@ -99,10 +99,10 @@ void AliJetCalTrkTrack::Clear(Option_t* /*option*/)
 }
 
 //-----------------------------------------------------------------------
-void AliJetCalTrkTrack::Print(const Option_t* option)
+void AliJetCalTrkTrack::Print(const Option_t* option) const
 {
   cout << "Track: " << option << ", Pt: " << GetPt() << ", Eta: " << GetEta() << ", Phi: " << GetPhi() << endl;
-  if (!option) TObject::Print();
+
 }
 
 //...........................................................................
@@ -114,7 +114,10 @@ ClassImp(AliJetCalTrkTrackKine)
     fCalTrkPtReso(1.),
     fCalTrkTrackE(-999.),
     fCalTrkTrackPt(-999.),
-    fCalTrkTrackP(-999.)
+    fCalTrkTrackP(-999.),
+    fCalTrkTrackPx(-999.),
+    fCalTrkTrackPy(-999.),
+    fCalTrkTrackPz(-999.)
 {
   // Default constructor
 }
@@ -125,9 +128,14 @@ AliJetCalTrkTrackKine::AliJetCalTrkTrackKine(AliVParticle* track, Bool_t cutFlag
   fCalTrkPtReso(ptReso),
   fCalTrkTrackE(-999.),
   fCalTrkTrackPt(-999.),
-  fCalTrkTrackP(-999.)
+  fCalTrkTrackP(-999.),
+  fCalTrkTrackPx(-999.),
+  fCalTrkTrackPy(-999.),
+  fCalTrkTrackPz(-999.)
 {
   // Constructor 2
+  CalcPx(); CalcPy(); CalcPz(); CalcP(); CalcPt(); CalcE();
+
 }
 
 //------------------------------------------------------------------------
@@ -138,12 +146,15 @@ void AliJetCalTrkTrackKine::Clear(Option_t* option)
   fCalTrkTrackE     = -999;
   fCalTrkTrackPt    = -999;
   fCalTrkTrackP     = -999;
+  fCalTrkTrackPx    = -999;
+  fCalTrkTrackPy    = -999;
+  fCalTrkTrackPz    = -999;
   AliJetCalTrkTrack::Clear(option);
 
 }
 
 //------------------------------------------------------------------------
-Float_t AliJetCalTrkTrackKine::GetE()
+Float_t AliJetCalTrkTrackKine::CalcE()
 {
   // Particle energy
   if(fCalTrkTrackE==-999){
@@ -158,7 +169,7 @@ Float_t AliJetCalTrkTrackKine::GetE()
 }
 
 //------------------------------------------------------------------------
-Float_t AliJetCalTrkTrackKine::GetPt()
+Float_t AliJetCalTrkTrackKine::CalcPt()
 {
   // Particle transverse momentum
   if(fCalTrkTrackPt==-999){
@@ -173,7 +184,7 @@ Float_t AliJetCalTrkTrackKine::GetPt()
 }
 
 //------------------------------------------------------------------------
-Float_t AliJetCalTrkTrackKine::GetP()
+Float_t AliJetCalTrkTrackKine::CalcP()
 {
   // Particle momentum
   if(fCalTrkTrackP==-999){
