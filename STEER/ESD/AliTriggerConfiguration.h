@@ -130,7 +130,7 @@ private:
    AliTriggerConfiguration&   operator=(const AliTriggerConfiguration& des);
    AliTriggerConfiguration( const AliTriggerConfiguration& des );
 
-   ClassDef( AliTriggerConfiguration, 2 )  // Define a trigger configuration
+   ClassDef( AliTriggerConfiguration, 3 )  // Define a trigger configuration
 };
 
 #endif
