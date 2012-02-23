@@ -207,7 +207,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
     //                        3rd word = seconds (32 bits) from epoch
     //                        4th word = microsecs (32 bits)
     //  other lines = 6 words of counters (L0 before,L0 after, ....)
-    if (ntokens != 4) { 
+    if (ntokens != 4 && ntokens !=5) { 
       AliErrorClass( Form( "Error reading timestamp from (%s): line (%s)", 
                             filename.Data(), strLine.Data() )); 
       return NULL;
@@ -216,9 +216,13 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
     UInt_t orbit     = strtoul(((TObjString*)tokens->At(0))->String(), NULL, 10);
     UInt_t period    = strtoul(((TObjString*)tokens->At(1))->String(), NULL, 10);
     UInt_t seconds   = strtoul(((TObjString*)tokens->At(2))->String(), NULL, 10);
-    UInt_t microSecs = strtoul(((TObjString*)tokens->At(3))->String(), NULL, 10);
+    UInt_t microSecs = strtoul(((TObjString*)tokens->At(3))->String(), NULL, 10); 
 
     AliTriggerScalersRecord * rec = new AliTriggerScalersRecord();
+    if(ntokens==5){
+      UInt_t tgroup=strtoul(((TObjString*)tokens->At(4))->String(), NULL, 10);
+      rec->SetTimeGroup(tgroup);
+    }
     rec->SetTimeStamp( orbit, period, seconds, microSecs );
     TString strLine1;
     for (Int_t i=0; i<nclass; ++i) {

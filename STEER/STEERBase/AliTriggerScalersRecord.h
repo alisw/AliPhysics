@@ -26,6 +26,7 @@ public:
                  
                  
                     void    SetTimeStamp( UInt_t orbit, UInt_t period, UInt_t seconds, UInt_t microsecs );
+		    void    SetTimeGroup(UInt_t tgr){fTimeGroup=tgr;};
                     void    AddTriggerScalers( AliTriggerScalers* scaler );
                     void    AddTriggerScalers( UChar_t classIndex, UInt_t LOCB, UInt_t LOCA,        
                                               UInt_t L1CB, UInt_t L1CA, UInt_t L2CB, UInt_t L2CA );
@@ -33,7 +34,8 @@ public:
       const AliTimeStamp*   GetTimeStamp() const { return &fTimestamp; }
          const TObjArray*   GetTriggerScalers()  const { return  &fScalers; }
  const AliTriggerScalers*   GetTriggerScalersForClass( const Int_t classindex ) const;       
-       AliTriggerScalers*   GetTriggerScalersForClassBinary( const Int_t classindex ) ;       
+       AliTriggerScalers*   GetTriggerScalersForClassBinary( const Int_t classindex ) ;     
+                   UInt_t   GetTimeGroup(){return fTimeGroup;}
           virtual Bool_t    IsSortable() const { return kTRUE; }
                                 
            virtual Int_t    Compare( const TObject* obj ) const;
@@ -46,12 +48,13 @@ private:
 
             AliTimeStamp    fTimestamp;    // record timestamp
                TObjArray    fScalers;      // Array of scalers (AliTriggerScalers) 
+	          UInt_t    fTimeGroup;    // Time group of record
 
 
                             AliTriggerScalersRecord( const AliTriggerScalersRecord &rec );
  AliTriggerScalersRecord&   operator=(const AliTriggerScalersRecord& rec);
 
-   ClassDef( AliTriggerScalersRecord, 1 )  // Define a Record of Trigger Scalers 
+   ClassDef( AliTriggerScalersRecord, 2 )  // Define a Record of Trigger Scalers 
 };
 
 #endif

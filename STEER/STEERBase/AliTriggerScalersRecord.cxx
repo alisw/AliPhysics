@@ -36,7 +36,8 @@ ClassImp( AliTriggerScalersRecord )
 //_____________________________________________________________________________
 AliTriggerScalersRecord::AliTriggerScalersRecord():
   fTimestamp(),
-  fScalers()
+  fScalers(),
+  fTimeGroup(0)
 {
  //Default constructor
 }
