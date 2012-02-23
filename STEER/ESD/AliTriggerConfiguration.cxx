@@ -230,7 +230,7 @@ Bool_t  AliTriggerConfiguration::AddFunction(AliTriggerInteraction *func)
       AliError("Invalid logical function ! Impossible to add it !");
   }
   else
-    AliError("CTP can handle up to 2 logical functions ! Impossible to add the required interaction !");
+    AliError("CTP can handle up to 4 logical functions ! Impossible to add the required interaction !");
 
   return kFALSE;
 }
@@ -274,12 +274,12 @@ Bool_t AliTriggerConfiguration::AddMask( AliTriggerBCMask* mask )
 {
   // Add a trigger bunch-crossing mask object to
   // the list of the trigger bunch-crossing masks
-  if (fMasks.GetEntries() < (kNMaxMasks+1)) {  //+1 to account for NONE
+  if (fMasks.GetEntries() < (kNMaxMasks)) {  
       fMasks.AddLast( mask );
       return kTRUE;
   }
   else
-    AliError("CTP can handle up to 4 bunch-crossing masks ! Impossible to add the required mask !");
+    AliError("CTP can handle up to 12 bunch-crossing masks ! Impossible to add the required mask !");
 
   return kFALSE;
 }
@@ -595,12 +595,12 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
        }
        if (((TObjString*)tokens->At(0))->String().BeginsWith("l0f")) {
 	 // function
-	 AddFunction(((TObjString*)tokens->At(0))->String(),
-			  strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
+	 if(!AddFunction(((TObjString*)tokens->At(0))->String(),
+			  strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""))) return kFALSE;
        }
        else {
-	 AddDescriptor(((TObjString*)tokens->At(0))->String(),
-			    strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
+	 if(!AddDescriptor(((TObjString*)tokens->At(0))->String(),
+			    strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""))) return kFALSE;
        }
        break;
      case 4:
@@ -677,11 +677,10 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
          }
        if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0)
        {	 
-         AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()));
+         if(!AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()))) return kFALSE;
        }
        else {
-	 AddMask(((TObjString*)tokens->At(0))->String(),
-		      ((TObjString*)tokens->At(1))->String());
+	 if(!AddMask(((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String())) return kFALSE;
        }
        break;
      case 7:
@@ -696,13 +695,15 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 			((TObjString*)tokens->At(2))->String(),((TObjString*)tokens->At(3))->String(),
 			((TObjString*)tokens->At(4))->String(),((TObjString*)tokens->At(5))->String(),
 			((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(7))->String().Atoi()));
-	 else trclass = new AliTriggerClass(this,
+	 else{ trclass = new AliTriggerClass(this,
 			((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String().Atoi(),
 			((TObjString*)tokens->At(2))->String(),((TObjString*)tokens->At(3))->String(),
-			((TObjString*)tokens->At(4))->String(),((TObjString*)tokens->At(5))->String(),
+			((TObjString*)tokens->At(4))->String(),
 			((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(7))->String().Atoi()),
 			(((TObjString*)tokens->At(8))->String().Atoi()),(((TObjString*)tokens->At(9))->String().Atoi()));
-	 AddClass(trclass);
+		if(!trclass->SetMasks(this,((TObjString*)tokens->At(5))->String())) return kFALSE;
+         }
+         AddClass(trclass);
        }
      default:
        break;

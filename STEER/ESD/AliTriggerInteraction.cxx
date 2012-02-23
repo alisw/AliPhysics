@@ -89,7 +89,7 @@ Bool_t AliTriggerInteraction::CheckInputs(const TObjArray &inputs) const
       delete tokens;
       return kFALSE;
     }
-    if (inp->GetMask() == 0 || inp->GetMask() > 16) {
+    if (inp->GetMask() == 0 || inp->GetMask() > (1<<24)) { // New l0f can use all inputs
       AliError( Form( "The trigger input (%s) is not among the first 4 trigger inputs used to create interactions. Interaction (%s) is invalid",
 		      iname->String().Data(), GetName() ) ); 
       delete tokens;

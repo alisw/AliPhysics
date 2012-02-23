@@ -105,11 +105,11 @@ public:
 
       enum {kNMaxInputs = 60}; // CTP handles up to 60 trigger detector inputs
       enum {kNMaxInteractions = 2}; // CTP handles up to two different interactions
-      enum {kNMaxFunctions = 2}; // CTP handles up to two different logical functions
+      enum {kNMaxFunctions = 4}; // CTP handles up to 4 different logical functions
       enum {kNMaxClasses = 50}; // Maximum number of trigger classes = 50
       enum {kNMaxClusters = 6}; // Maximum number of different detector clusters that can be handled by CTP
       enum {kNMaxPFProtections = 4}; // Maximum number of different past-future protections that can be handled by CTP
-      enum {kNMaxMasks = 4};  // CTP handles up to 4 different BC masks
+      enum {kNMaxMasks = 13};  // CTP handles up to 12 different BC masks + NONE
 
 private:
       Bool_t ProcessConfigurationLine(const char* line, Int_t& level);

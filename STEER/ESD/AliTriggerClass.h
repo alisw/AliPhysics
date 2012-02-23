@@ -39,7 +39,7 @@ public:
                           AliTriggerClass( AliTriggerConfiguration *config,
 					   TString & name, UChar_t index,
 					   TString &desc, TString &clus,
-					   TString &pfp, TString &mask,
+					   TString &pfp,
 					   UInt_t prescaler, Bool_t allrare,
 					   UInt_t timegroup, UInt_t timewindow);
 
@@ -54,29 +54,32 @@ public:
                ULong64_t  GetMask() const { return fClassMask; }
     AliTriggerDescriptor* GetDescriptor() const { return fDescriptor; }
        AliTriggerCluster* GetCluster() const { return fCluster; }
-        AliTriggerBCMask* GetBCMask() const { return fMask; }
+        AliTriggerBCMask* GetBCMask() const { return fMask[0]; }
 	           UInt_t GetTimeGroup() const { return fTimeGroup; }
 	           UInt_t GetTimeWindow() const { return fTimeGroup; }
 
+		   Bool_t SetMasks(AliTriggerConfiguration *config,TString &mask);
                     void  Trigger( const TObjArray& inputs , const TObjArray& functions);
 		    void  Print( const Option_t* ) const;
 
                   Bool_t  CheckClass(AliTriggerConfiguration *config) const;
 		  Bool_t  IsActive( const TObjArray& inputs, const TObjArray& functions) const;
+		  enum {kNMaxMasks = 13};  // CTP handles up to 12 different BC masks + NONE
+
 private:
 	       ULong64_t  fClassMask;    // trigger mask (1<< (index-1))
 	       	 UChar_t  fIndex;        // position of class in mask
     AliTriggerDescriptor* fDescriptor;   // pointer to the descriptor
        AliTriggerCluster* fCluster;      // pointer to the cluster
   AliTriggerPFProtection* fPFProtection; // pointer to the past-future protection
-        AliTriggerBCMask* fMask;         // pointer to bunch-crossing mask
+        AliTriggerBCMask* fMask[kNMaxMasks];         // array of pinters pointer to bunch-crossing mask
                   UInt_t  fPrescaler;    // Downscaling factor
                   Bool_t  fAllRare;      // All or Rare trigger
 		  Bool_t  fStatus;       //! true = Condition has been satisfied after Trigger
 		  UInt_t  fTimeGroup;    // time group
 		  UInt_t  fTimeWindow;   // the size of time window for its group
 
-  ClassDef( AliTriggerClass, 4 )  // Define a trigger class object
+  ClassDef( AliTriggerClass, 5 )  // Define a trigger class object
 };
 
 #endif
