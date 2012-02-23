@@ -97,19 +97,21 @@ AliPHOSRecPoint& AliPHOSRecPoint::operator= (const AliPHOSRecPoint &rp)
 {
   if(&rp == this) return *this;
 
-  fPHOSMod = rp.fPHOSMod;
-  fMulTrack = rp.fMulTrack;
-  fMaxDigit = rp.fMaxDigit;
-  fMulDigit = rp.fMulDigit;
-  fMaxTrack = rp.fMaxTrack;
-  fAmp = rp.fAmp;
+  fPHOSMod     = rp.fPHOSMod;
+  fMulTrack    = rp.fMulTrack;
+  fMaxDigit    = rp.fMaxDigit;
+  fMulDigit    = rp.fMulDigit;
+  fMaxTrack    = rp.fMaxTrack;
+  fAmp         = rp.fAmp;
   fIndexInList = rp.fIndexInList; 
   fLocPos = rp.fLocPos;
 
+  if (fDigitsList != 0) delete [] fDigitsList;
   if (rp.fMulDigit>0) fDigitsList = new Int_t[rp.fMulDigit];
   for(Int_t i=0; i<fMaxDigit; i++)
     fDigitsList[i] = rp.fDigitsList[i];
 
+  if (fTracksList != 0) delete [] fTracksList;
   if (rp.fMulTrack>0) fTracksList = new Int_t[rp.fMulTrack];
   for(Int_t i=0; i<fMaxTrack; i++)
     fTracksList[i] = rp.fTracksList[i];

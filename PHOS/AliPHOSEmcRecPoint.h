@@ -93,12 +93,10 @@ public:
   Float_t     GetDistanceToBadCrystal() const {return fDistToBadCrystal;}
   void        SetDistanceToBadCrystal(Float_t dist) {fDistToBadCrystal=dist;}
 
-  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & /*rvalue*/)  {
-    Fatal("operator =", "not implemented");
-    return *this ;
-  }
+private:
+  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & /*rvalue*/) {return *this;}
 
- protected:
+protected:
   virtual void  EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TClonesArray * digits, TVector3 &vInc) ;// computes the position in the PHOS module 
   virtual void  EvalDispersion(Float_t logWeight, TClonesArray * digits, TVector3 &vInc) ;   // computes the dispersion of the shower
   virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits, TVector3 &vInc );   // computes the axis of shower ellipsoide

@@ -67,12 +67,10 @@ public:
 
   void    Print(const Option_t * = "")const ;
  
+private:
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
-
   
 private:
 

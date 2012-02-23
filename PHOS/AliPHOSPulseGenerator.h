@@ -47,10 +47,8 @@ public:
   virtual void Print(Option_t*) const;
   virtual void Draw (Option_t* opt = "all");
 
-  AliPHOSPulseGenerator& operator = (const AliPHOSPulseGenerator &) {
-    Fatal("operator =", "not implemented") ;
-    return *this;
-  }
+private:
+  AliPHOSPulseGenerator& operator = (const AliPHOSPulseGenerator &) {return *this;}
 
 private:
   static Int_t    fgOrder ;             // order of the gamma function
