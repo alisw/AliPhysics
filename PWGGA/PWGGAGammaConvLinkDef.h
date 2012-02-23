@@ -16,9 +16,6 @@
 #pragma link C++ class AliAnaConvCorrBase++;
 #pragma link C++ class AliAnaConvCorrPion++;
 #pragma link C++ class AliAnaConvCorrPhoton++;
-#pragma link C++ class AliAnaConvCorrPhotonJet++;
-#pragma link C++ class AliAnaConvCorrPionJet++;
-#pragma link C++ class AliConversionTrackCuts++;
 
 #pragma link C++ class AliConversionPhotonBase++;
 #pragma link C++ class AliAODConversionParticle+;
@@ -29,4 +26,6 @@
 
 #pragma link C++ class AliAnalysisTaskdPhi+;
 #pragma link C++ class AliConversionCuts++;
+#pragma link C++ class AliConversionTrackCuts++;
+
 #endif

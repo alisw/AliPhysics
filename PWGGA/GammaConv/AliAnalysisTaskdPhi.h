@@ -17,9 +17,9 @@
 #include <iostream>
 #include <AliAnaConvCorrBase.h>
 #include <AliLog.h>
+#include <AliAnalysisCuts.h>
 class AliAnaConvIsolation;
 class AliConversionCuts;
-#include "AliConversionTrackCuts.h"
 class TList;
 class TH2I;
 //class THnSparseF;
@@ -37,7 +37,6 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-
   TAxis& GetAxistPt()   { return fAxistPt;   }
   TAxis& GetAxiscPt()   { return fAxiscPt;   }
   TAxis& GetAxisEta()  { return fAxisEta;  }
@@ -46,16 +45,11 @@ public:
   TAxis& GetAxisCent() { return fAxisCent; }
   TAxis& GetAxisPiMass() { return fAxisPiM; }
 
-  // void SetDielV0Filter(AliAnalysisFilter * filter) { fVDielV0Filter = filter; }
-  // void SetDielPi0Filter(AliAnalysisFilter * filter) { fDielPi0Filter = filter; }
-  // void SetDielV0TrackFilter(AliAnalysisFilter * filter) { fVDielV0TrackFilter = filter; }
-  // void SetDielTrackFilter(AliAnalysisFilter * filter) { fTDielrackFilter = filter; }
 
   void SetV0Filter(AliConversionCuts * filter) { fV0Filter = filter; }
-  //void SetPi0Filter(AliConversionPi0Filter * filter) { fPionFilter = filter; }
+  AliAnalysisCuts * GetTrackCuts() const { return fTrackCuts; }
+  void SetTrackCuts( AliAnalysisCuts * cuts) { if (fTrackCuts) delete fTrackCuts; fTrackCuts = cuts; }
   
-  
-  //enum kAxes { kVertexZ, kCentrality, kEta, kPhi, kPt };
   
 protected:
   
@@ -74,9 +68,8 @@ private:
   TList * fHistoGamma; //gamma histo
   TList * fHistoPion; //pion histo
 
-
   AliConversionCuts * fV0Filter; //v0 filter
-  AliConversionTrackCuts fTrackCuts;
+  AliAnalysisCuts * fTrackCuts;
 
   TObjArray * fGammas; //gammas
   TObjArray * fPions; //poins
@@ -90,8 +83,6 @@ private:
   TObjArray * fPionCorr; //poin
   AliAnaConvIsolation * fIsoAna; //comment
 
-  Int_t fL1; //comment
-  Int_t fL2; //comment
 
   TString fDeltaAODBranchName; //comment
 
@@ -106,7 +97,7 @@ private:
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 2); // example of analysis
+  ClassDef(AliAnalysisTaskdPhi, 3); // example of analysis
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {
