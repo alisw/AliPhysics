@@ -253,7 +253,8 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
    Int_t nSel, nTot = ev->GetAbsoluteSum();
    AliRsnDaughter check;
    TClonesArray *cutsArray = 0x0, *entryArray = 0x0;
-
+   TEntryList labelList;
+   TEntryList *el = 0;
    for (id = 0; id < nTot; id++) {
       ev->SetDaughter(check, id);
       // some checks
@@ -281,8 +282,12 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
       for (is = 0; is < nSel; is++) {
          AliRsnCutSet *cuts = (AliRsnCutSet *)cutsArray->At(is);
          if (cuts->IsSelected(&check)) {
-            TEntryList *el = (TEntryList *)entryArray->At(is);
-            el->Enter(id);
+            if (!labelList.Contains(check.GetLabel())) {
+               el = (TEntryList *)entryArray->At(is);
+               el->Enter(id);
+               labelList.Enter(check.GetLabel());
+            }
+
          }
       }
    }
