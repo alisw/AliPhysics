@@ -58,6 +58,8 @@ Bool_t RunALICE(TString anSrc = "grid",
    // adds all tasks
    if (!AddAllManagers(listManagers, anSrc, anMode,input,inputMC)) { Printf("Error : AddAllManagers failed !!!"); return kFALSE;}
 
+   gSystem->ListLibraries("ls");
+
    TStopwatch timer;
    timer.Start();
    // runs analysis

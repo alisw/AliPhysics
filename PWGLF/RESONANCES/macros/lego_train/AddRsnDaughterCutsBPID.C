@@ -36,9 +36,9 @@ Int_t AddRsnDaughterCutsBPID(AliPID::EParticleType type1,AliPID::EParticleType t
       numberOfCuts++;
    }
    if (opt.Contains("mon")) {
-      AddMonitorOutput(cuts1->GetMonitorOutput());
+      AddMonitorOutput(cuts1->GetMonitorOutput(),opt);
       if (type1 != type2) {
-         AddMonitorOutput(cuts2->GetMonitorOutput());
+         AddMonitorOutput(cuts2->GetMonitorOutput(),opt);
       }
    }
    if (isRsnMini) {

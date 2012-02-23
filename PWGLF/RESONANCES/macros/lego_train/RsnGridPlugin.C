@@ -21,10 +21,13 @@ void RsnGridPlugin() {
    if (!gGrid) TGrid::Connect("alien://");
    if (!gGrid) return;
    TGridResult *r = gGrid->Query(Form("%s/RsnTrain/%s",gGrid->GetHomeDirectory(),rsnTrainName.Data()),"*/analysis.root");
-   TString s = r->GetKey(r->GetSize()-1,"lfn");
-   s.ReplaceAll("/analysis.root","");
-   s = gSystem->BaseName(s);
-   Int_t idRsnTrain = s.Atoi()+1;
+   Int_t idRsnTrain = 0;
+   if (r) {
+      TString s = r->GetKey(r->GetSize()-1,"lfn");
+      s.ReplaceAll("/analysis.root","");
+      s = gSystem->BaseName(s);
+      if (!s.IsNull()) idRsnTrain = s.Atoi()+1;
+   }
    rsnTrainName.Append(Form("/%03d",idRsnTrain));
 
    TString rsnTrainWkDir = Form("RsnTrain/%s",rsnTrainName.Data());
@@ -34,7 +37,7 @@ void RsnGridPlugin() {
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
 
    plugin->SetAPIVersion("V1.1x");
-   
+
    TString rootver = AliAnalysisManager::GetGlobalStr("rsnLegoTrainROOTversion",valid);
    plugin->SetROOTVersion(rootver.Data());
 
@@ -60,7 +63,7 @@ void RsnGridPlugin() {
 
    RsnSetData(plugin,dsConfig,1000);
 
-   plugin->SetSplitMaxInputFileNumber(50);
+   plugin->SetSplitMaxInputFileNumber(25);
 
    //   Fatal("RsnDataSet","No dataset found !!!");
 }
@@ -126,7 +129,7 @@ void RsnSetData(AliAnalysisAlien *plugin,TString dsConf,Int_t maxRunsPerMaster =
 
 }
 
-void GetParameterFromConfig(TString &str,TString token="="){
+void GetParameterFromConfig(TString &str,TString token="=") {
    TObjArray *array = str.Tokenize(token.Data());
    TObjString *strObj = (TObjString *)array->At(1);
    if (strObj) str = strObj->GetString();

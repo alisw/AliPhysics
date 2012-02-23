@@ -1,18 +1,18 @@
 #ifndef __CINT__
-#include <PWG2/RESONANCES/AliRsnCutPrimaryVertex.h>
-#include <PWG2/RESONANCES/AliRsnValuePair.h>
-#include <PWG2/RESONANCES/AliRsnListOutput.h>
-#include <PWG2/RESONANCES/AliRsnPairDef.h>
-#include <PWG2/RESONANCES/AliRsnLoopPair.h>
-#include <PWG2/RESONANCES/AliRsnAnalysisTask.h>
-#include <PWG2/RESONANCES/AliRsnLoopDaughter.h>
-#include <PWG2/RESONANCES/AliRsnValueDaughter.h>
-#include <PWG2/RESONANCES/AliRsnMiniAnalysisTask.h>
-#include <PWG2/RESONANCES/AliRsnCutMiniPair.h>
-#include <PWG2/RESONANCES/AliRsnInputHandler.h>
-#include <PWG2/RESONANCES/AliRsnMiniMonitor.h>
-#include <ANALYSIS/AliAnalysisManager.h>
-#include <PWG2/RESONANCES/AliRsnValueEvent.h>
+#include <AliAnalysisManager.h>
+#include <PWGLF/RESONANCES/AliRsnCutPrimaryVertex.h>
+#include <PWGLF/RESONANCES/AliRsnValuePair.h>
+#include <PWGLF/RESONANCES/AliRsnListOutput.h>
+#include <PWGLF/RESONANCES/AliRsnPairDef.h>
+#include <PWGLF/RESONANCES/AliRsnLoopPair.h>
+#include <PWGLF/RESONANCES/AliRsnAnalysisTask.h>
+#include <PWGLF/RESONANCES/AliRsnLoopDaughter.h>
+#include <PWGLF/RESONANCES/AliRsnValueDaughter.h>
+#include <PWGLF/RESONANCES/AliRsnMiniAnalysisTask.h>
+#include <PWGLF/RESONANCES/AliRsnCutMiniPair.h>
+#include <PWGLF/RESONANCES/AliRsnInputHandler.h>
+#include <PWGLF/RESONANCES/AliRsnMiniMonitor.h>
+#include <PWGLF/RESONANCES/AliRsnValueEvent.h>
 #endif
 
 Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInputHandler *rsnIH=0,TList *listRsn=0) {
@@ -24,7 +24,7 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
    }
    Bool_t valid;
    Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
-
+   TString rsnCutOptCommon = AliAnalysisManager::GetGlobalStr("rsnLegoTrainCommonCutOption",valid);
    Int_t cutIndex = 0;
    Int_t numOfCuts = 0;
 
@@ -41,10 +41,17 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
    TString rsnName,rsnNameOpt,rsnNameOptFull,rsnCutName,rsnCutOpt,rsnCutNameOptFull;
    while ((rsnObj = (TNamed *)next())) {
       GetOptionFromString(rsnObj->GetName(),rsnName,rsnNameOpt);
-      rsnNameOptFull=rsnName; if (!rsnNameOpt.IsNull()) rsnNameOptFull += Form("_%s",rsnNameOpt.Data());
+      rsnNameOptFull=rsnName;
+      if (!rsnNameOpt.IsNull()) rsnNameOptFull += Form("_%s",rsnNameOpt.Data());
 
       GetOptionFromString(rsnObj->GetTitle(),rsnCutName,rsnCutOpt);
-      rsnCutNameOptFull=rsnCutName; if (!rsnCutOpt.IsNull())rsnCutNameOptFull += Form("_%s",rsnCutOpt.Data());
+      rsnCutNameOptFull=rsnCutName;
+      if (!rsnCutOpt.IsNull())rsnCutNameOptFull += Form("_%s",rsnCutOpt.Data());
+
+      if (!rsnCutOptCommon.IsNull()) {
+         if (!rsnCutOpt.IsNull()) rsnCutOpt += "_";
+         rsnCutOpt += rsnCutOptCommon.Data();
+      }
 
       if (!RsnLoadMacroFromConfig(Form("AddRsnDaughterCuts%s.C",rsnCutName.Data()))) return kFALSE;
       if (!RsnLoadMacroFromConfig(Form("AddRsnPairs%s.C",rsnName.Data()))) return kFALSE;
@@ -81,7 +88,7 @@ Bool_t RsnLoadMacroFromConfig(TString macro,TString path="") {
 
    Bool_t valid;
    TString lego_path = AliAnalysisManager::GetGlobalStr("rsnLegoTrainPath",valid);
-   if (!valid) lego_path = "$ALICE_ROOT/PWG2/RESONANCES/macros/lego_train";
+   if (!valid) lego_path = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
 
    if (!gSystem->AccessPathName(macro.Data())) {
       gROOT->LoadMacro(macro.Data());
@@ -218,14 +225,17 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
 
 // void AddMonitorOutput(AliRsnLoopDaughter *mon)
 
-void AddMonitorOutput(TObjArray *mon)
+void AddMonitorOutput(TObjArray *mon,TString opt="")
 {
 
-   if (!mon) {Printf("Error: mon is null !!!!");return;}
+   if (!mon) {
+      Printf("Error: mon is null !!!!");
+      return;
+   }
 
    Bool_t valid;
-   Int_t useMCMomentum = AliAnalysisManager::GetGlobalInt("rsnUseMCMomentum",valid);
-   if (useMCMomentum) return;
+   Int_t useMCMon = AliAnalysisManager::GetGlobalInt("rsnUseMCMonitoring",valid);
+//     if (useMCMon) return;
 
    // dEdx tpc
    AliRsnValueDaughter *axisMomTPC = new AliRsnValueDaughter("pTPC", AliRsnValueDaughter::kPtpc);
@@ -253,7 +263,7 @@ void AddMonitorOutput(TObjArray *mon)
    outMonitordEdxTOF->AddValue(axisSigTOF);
 
    // add outputs to loop
-   //    mon->Add(outMonitordEdxTOF);
+   mon->Add(outMonitordEdxTOF);
 
 
    // Momentum
@@ -267,6 +277,21 @@ void AddMonitorOutput(TObjArray *mon)
    // add outputs to loop
    mon->Add(outMonitorP);
 
+
+   if (useMCMon) {
+      AliRsnValueDaughter *axisMomPMC = new AliRsnValueDaughter("pMC", AliRsnValueDaughter::kP);
+      axisMomPMC->SetUseMCInfo(kTRUE);
+      axisMomPMC->SetBins(0.0,5.0,0.01);
+
+      // output: 2D histogram of TPC signal vs. TPC momentum
+      AliRsnListOutput *outMonitorPMC = new AliRsnListOutput("PMC", AliRsnListOutput::kHistoDefault);
+      outMonitorPMC->AddValue(axisMomPMC);
+
+      // add outputs to loop
+      mon->Add(outMonitorPMC);
+   }
+
+
    // Momentum Pt
    AliRsnValueDaughter *axisMomPt = new AliRsnValueDaughter("pt", AliRsnValueDaughter::kPt);
    axisMomPt->SetBins(0.0,5.0,0.01);
@@ -277,6 +302,20 @@ void AddMonitorOutput(TObjArray *mon)
 
    // add outputs to loop
    mon->Add(outMonitorPt);
+
+   if (useMCMon) {
+      // Momentum Pt
+      AliRsnValueDaughter *axisMomPtMC = new AliRsnValueDaughter("ptMC", AliRsnValueDaughter::kPt);
+      axisMomPtMC->SetUseMCInfo(kTRUE);
+      axisMomPtMC->SetBins(0.0,5.0,0.01);
+
+      // output: 2D histogram of TPC signal vs. TPC momentum
+      AliRsnListOutput *outMonitorPtMC = new AliRsnListOutput("PtMC", AliRsnListOutput::kHistoDefault);
+      outMonitorPtMC->AddValue(axisMomPtMC);
+
+      // add outputs to loop
+      mon->Add(outMonitorPtMC);
+   }
 
    // Eta
    AliRsnValueDaughter *axisMomEta = new AliRsnValueDaughter("eta", AliRsnValueDaughter::kEta);
@@ -289,9 +328,22 @@ void AddMonitorOutput(TObjArray *mon)
    // add outputs to loop
    mon->Add(outMonitorEta);
 
+   if (useMCMon) {
+      // Eta
+      AliRsnValueDaughter *axisMomEtaMC = new AliRsnValueDaughter("etaMC", AliRsnValueDaughter::kEta);
+      axisMomEtaMC->SetUseMCInfo(kTRUE);
+      axisMomEtaMC->SetBins(-1.0,1.0,0.01);
+
+      // output: 2D histogram of TPC signal vs. TPC momentum
+      AliRsnListOutput *outMonitorEtaMC = new AliRsnListOutput("EtaMC", AliRsnListOutput::kHistoDefault);
+      outMonitorEtaMC->AddValue(axisMomEtaMC);
+
+      // add outputs to loop
+      mon->Add(outMonitorEtaMC);
+   }
    // kTOFnsigmaK
    AliRsnValueDaughter *axisTPCnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTPCnsigmaK);
-   axisTPCnsigmaK->SetBins(1000,0,100);
+   axisTPCnsigmaK->SetBins(1001,-100,100);
 
    // output: 2D histogram of TPC signal vs. TPC momentum
    AliRsnListOutput *outMonitorTPCnsigmaK = new AliRsnListOutput("TPC_nsigma", AliRsnListOutput::kHistoDefault);
@@ -302,7 +354,7 @@ void AddMonitorOutput(TObjArray *mon)
 
    // kTPCnsigmaPi
    AliRsnValueDaughter *axisTPCnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTPCnsigmaPi);
-   axisTPCnsigmaPi->SetBins(1000,0,100);
+   axisTPCnsigmaPi->SetBins(1001,-100,100);
 
    // output: 2D histogram of TPC signal vs. TPC momentum
    AliRsnListOutput *outMonitorTPCnsigmaPi = new AliRsnListOutput("TPC_nsigma", AliRsnListOutput::kHistoDefault);
@@ -313,7 +365,7 @@ void AddMonitorOutput(TObjArray *mon)
 
    // kTPCnsigmaP
    AliRsnValueDaughter *axisTPCnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTPCnsigmaP);
-   axisTPCnsigmaP->SetBins(1000,0,100);
+   axisTPCnsigmaP->SetBins(1001,-100,100);
 
    // output: 2D histogram of TPC signal vs. TPC momentum
    AliRsnListOutput *outMonitorTPCnsigmaP = new AliRsnListOutput("TPC_nsigma", AliRsnListOutput::kHistoDefault);
@@ -323,38 +375,41 @@ void AddMonitorOutput(TObjArray *mon)
    mon->Add(outMonitorTPCnsigmaP);
 
 
-   // kTOFnsigmaK
-   AliRsnValueDaughter *axisTOFnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTOFnsigmaK);
-   axisTOFnsigmaK->SetBins(1000,0,100);
+   if (!opt.Contains("NoTOFSIGMA")) {
 
-   // output: 2D histogram of TPC signal vs. TPC momentum
-   AliRsnListOutput *outMonitorTOFnsigmaK = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
-   outMonitorTOFnsigmaK->AddValue(axisTOFnsigmaK);
+      // kTOFnsigmaK
+      AliRsnValueDaughter *axisTOFnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTOFnsigmaK);
+      axisTOFnsigmaK->SetBins(1001,-100,100);
 
-   // add outputs to loop
-   mon->Add(outMonitorTOFnsigmaK);
+      // output: 2D histogram of TPC signal vs. TPC momentum
+      AliRsnListOutput *outMonitorTOFnsigmaK = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
+      outMonitorTOFnsigmaK->AddValue(axisTOFnsigmaK);
 
-   // kTOFnsigmaPi
-   AliRsnValueDaughter *axisTOFnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTOFnsigmaPi);
-   axisTOFnsigmaPi->SetBins(1000,0,100);
+      // add outputs to loop
+      mon->Add(outMonitorTOFnsigmaK);
 
-   // output: 2D histogram of TPC signal vs. TPC momentum
-   AliRsnListOutput *outMonitorTOFnsigmaPi = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
-   outMonitorTOFnsigmaPi->AddValue(axisTOFnsigmaPi);
+      // kTOFnsigmaPi
+      AliRsnValueDaughter *axisTOFnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTOFnsigmaPi);
+      axisTOFnsigmaPi->SetBins(1001,-100,100);
 
-   // add outputs to loop
-   mon->Add(outMonitorTOFnsigmaPi);
+      // output: 2D histogram of TPC signal vs. TPC momentum
+      AliRsnListOutput *outMonitorTOFnsigmaPi = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
+      outMonitorTOFnsigmaPi->AddValue(axisTOFnsigmaPi);
 
-   // kTOFnsigmaP
-   AliRsnValueDaughter *axisTOFnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTOFnsigmaP);
-   axisTOFnsigmaP->SetBins(1000,0,100);
+      // add outputs to loop
+      mon->Add(outMonitorTOFnsigmaPi);
 
-   // output: 2D histogram of TPC signal vs. TPC momentum
-   AliRsnListOutput *outMonitorTOFnsigmaP = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
-   outMonitorTOFnsigmaP->AddValue(axisTOFnsigmaP);
+      // kTOFnsigmaP
+      AliRsnValueDaughter *axisTOFnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTOFnsigmaP);
+      axisTOFnsigmaP->SetBins(1001,-100,100);
 
-   // add outputs to loop
-   mon->Add(outMonitorTOFnsigmaP);
+      // output: 2D histogram of TPC signal vs. TPC momentum
+      AliRsnListOutput *outMonitorTOFnsigmaP = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
+      outMonitorTOFnsigmaP->AddValue(axisTOFnsigmaP);
+
+      // add outputs to loop
+      mon->Add(outMonitorTOFnsigmaP);
+   }
 
 
    AliRsnListOutput *outMonitorPTvsMult = new AliRsnListOutput("PTvsMult",AliRsnListOutput::kHistoDefault);
