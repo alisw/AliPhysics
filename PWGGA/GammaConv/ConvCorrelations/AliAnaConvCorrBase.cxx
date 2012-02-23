@@ -116,7 +116,7 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fTrigAxisList.AddAt(&fAxistPt, 2);
   fTrigAxisList.AddAt(&fAxisIso, 3);
 
-  for(int iIso = 0; iIso < 2; iIso++) {
+  for(int iIso = 0; iIso < 3; iIso++) {
     fHNTriggers[iIso] = NULL;
   }
 }
@@ -134,12 +134,11 @@ void AliAnaConvCorrBase::CreateBaseHistograms() {
 
   for(int iIso = 0; iIso < 3; iIso++) {
 
-    fHNTriggers[iIso] = new TH1F(Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
-								 Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
+    fHNTriggers[iIso] = new TH1F(Form("%s_%d_fNTriggers", fName.Data(), iIso),
+								 Form("%s_%d_fNTriggers", fName.Data(), iIso),
 								 fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
     fHNTriggers[iIso]->Sumw2();
     fHistograms->Add(fHNTriggers[iIso]);
-  
   }
 
   fCorrSparse = CreateSparse(GetName(), GetTitle(), &fAxesList);
