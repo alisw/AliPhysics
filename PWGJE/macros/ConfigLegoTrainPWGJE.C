@@ -1,5 +1,6 @@
 void ConfigLegoTrainPWGJE(int iFlag = 0){
 
+  Printf("%s:%d with flag %d",(char*)__FILE__,__LINE__,iFlag);
   // Adds the Global Variables depending on the flag
   // 
 
