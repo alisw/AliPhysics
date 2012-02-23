@@ -103,6 +103,9 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fPions = new TObjArray();
   fPions->SetOwner(kFALSE);
   
+  fTrackCuts.SetDefaults2010();
+  fTrackCuts.Print();
+
   // Define input and output slots here
   DefineInput(0, TChain::Class());
   //DefineInput(1, TClonesArray::Class());
@@ -518,10 +521,15 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 	  pion->SetLabels(i1, i2);
 	  
 	  if(!fV0Filter || fV0Filter->MesonIsSelected(pion, kTRUE) ) {
+		
+
 		Int_t leadingpi = fIsoAna->IsLeading(static_cast<AliAODConversionParticle*>(pion), tracks, tIDs);
+		piCorr->FillTriggerCounters(pion, leadingpi);
 		tIDs[2] = ph2->GetLabel(0);
 		tIDs[3] = ph2->GetLabel(1);
-		if(pion->Pt() > fAxistPt.GetBinLowEdge(1)) {
+		if(pion->Pt() > fAxistPt.GetBinLowEdge(1) && 
+		   pion->M() > fAxisPiM.GetBinLowEdge(1) && 
+		   pion->M() < fAxisPiM.GetBinUpEdge(fAxisPiM.GetNbins())) {
 		  piCorr->CorrelateWithTracks(pion, tracks, tIDs, leadingpi);
 		}
 	  }

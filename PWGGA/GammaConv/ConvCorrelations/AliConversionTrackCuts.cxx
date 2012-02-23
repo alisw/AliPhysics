@@ -22,7 +22,7 @@
 //#include "AliAODTrack.h"
 #include "AliAODEvent.h"
 #include <TFormula.h>
-
+#include <iostream>
 
 
 using namespace std;
@@ -92,6 +92,7 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
    //    return kFALSE;
    // }
 
+
    // step #0: check SPD and ITS clusters
    Int_t nSPD = 0;
    nSPD  = TESTBIT(track->GetITSClusterMap(), 0);
@@ -106,20 +107,23 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
       AliDebug(AliLog::kDebug + 2, "Too few TPC clusters. Rejected");
       return kFALSE;
    }
+
    if (track->GetITSNcls() < fITSminNClusters) {
       AliDebug(AliLog::kDebug + 2, "Too few ITS clusters. Rejected");
       return kFALSE;
    }
-
+ 
    // step #2: check chi square
    if (track->Chi2perNDF() > fTPCmaxChi2) {
       AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
       return kFALSE;
    }
+
    if (track->Chi2perNDF() > fITSmaxChi2) {
       AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
       return kFALSE;
    }
+
 
    // step #3: reject kink daughters
    AliAODVertex *vertex = track->GetProdVertex();
@@ -130,6 +134,7 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
       }
    }
 
+
    // step #4: DCA cut (transverse)
    Double_t b[2], cov[3];
    vertex = aodEvent->GetPrimaryVertex();
@@ -137,10 +142,12 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
       AliDebug(AliLog::kDebug + 2, "NULL vertex");
       return kFALSE;
    }
+
    if (!track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov)) {
       AliDebug(AliLog::kDebug + 2, "Failed propagation to vertex");
       return kFALSE;
    }
+
    // if the DCA cut is not fixed, compute current value
    if (!fDCARfixed) {
       static TString str(fDCARptFormula);
@@ -148,12 +155,14 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
       static const TFormula dcaXY(Form("%s_dcaXY", GetName()), str.Data());
       fDCARmax = dcaXY.Eval(track->Pt());
    }
+
    // check the cut
    if (TMath::Abs(b[0]) > fDCARmax) {
       AliDebug(AliLog::kDebug + 2, "Too large transverse DCA");
       return kFALSE;
    }
 
+ 
    // step #5: DCA cut (longitudinal)
    // the DCA has already been computed above
    // if the DCA cut is not fixed, compute current value
@@ -163,21 +172,24 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
       static const TFormula dcaZ(Form("%s_dcaXY", GetName()), str.Data());
       fDCAZmax = dcaZ.Eval(track->Pt());
    }
+
    // check the cut
-   if (TMath::Abs(b[1]) > fDCAZmax) {
+  if (TMath::Abs(b[1]) > fDCAZmax) {
       AliDebug(AliLog::kDebug + 2, "Too large longitudinal DCA");
       return kFALSE;
    }
 
+ 
    // step #6: check eta/pt range
    if (track->Eta() < fEta[0] || track->Eta() > fEta[1]) {
       AliDebug(AliLog::kDebug + 2, "Outside ETA acceptance");
       return kFALSE;
    }
-   if (track->Pt() < fPt[0] || track->Pt() > fPt[1]) {
-      AliDebug(AliLog::kDebug + 2, "Outside PT acceptance");
-      return kFALSE;
-   }
+
+   // if (track->Pt() < fPt[0] || track->Pt() > fPt[1]) {
+   //    AliDebug(AliLog::kDebug + 2, "Outside PT acceptance");
+   //    return kFALSE;
+   // }
 
    // if we are here, all cuts were passed and no exit point was got
    return kTRUE;

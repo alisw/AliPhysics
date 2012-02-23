@@ -78,10 +78,10 @@ void AliAnaConvCorrBase::CreateHistograms() {
 void AliAnaConvCorrBase::SetUpDefaultBins() {
   //Set up default bins
   Double_t ptbins[19] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
-  fAxisdEta.Set(160, -1.6, 1.6);
+  fAxisdEta.Set(30, -1.5, 1.5);
   fAxisdEta.SetNameTitle("dEta", "delta eta");
 
-  fAxisdPhi.Set(64, -TMath::PiOver2(), 3*TMath::PiOver2());
+  fAxisdPhi.Set(32, -TMath::PiOver2(), 3*TMath::PiOver2());
   fAxisdPhi.SetNameTitle("dPhi", "delta Phi");
 
   fAxistPt.Set(18, ptbins);
@@ -102,7 +102,7 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxisMEEta.Set(160, -0.8, 0.8);
   fAxisMEEta.SetNameTitle("eta", "eta");
   
-  fAxisMEPhi.Set(64, 0, TMath::TwoPi());
+  fAxisMEPhi.Set(128, 0, TMath::TwoPi());
   fAxisMEPhi.SetNameTitle("phi", "phi");
 
   fTrackAxisList.AddAt(&fAxisMEEta, 0);
@@ -126,13 +126,13 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
 void AliAnaConvCorrBase::CreateBaseHistograms() {
   //Create histograms add, to outputlis
 
-  cout << "Creating histograms for "<< GetName() << endl;
+  //cout << "Creating histograms for "<< GetName() << endl;
 
   fHistograms = new TList();
   fHistograms->SetOwner(kTRUE);
   fHistograms->SetName(fName);
 
-  for(int iIso = 0; iIso < 2; iIso++) {
+  for(int iIso = 0; iIso < 3; iIso++) {
 
     fHNTriggers[iIso] = new TH1F(Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
 								 Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
@@ -158,7 +158,7 @@ THnSparseF * AliAnaConvCorrBase::CreateSparse(TString nameString, TString titleS
   //Create sparse
   const Int_t dim = axesList->GetSize();
   
-  cout << nameString << " " << titleString << " " <<   "    dimesion: " << dim << endl;
+  //cout << nameString << " " << titleString << " " <<   "    dimesion: " << dim << endl;
 
   TAxis * axes[dim];
   Int_t   bins[dim];
@@ -175,8 +175,8 @@ THnSparseF * AliAnaConvCorrBase::CreateSparse(TString nameString, TString titleS
   }
 
   for(Int_t i = 0; i<dim; i++) {
-	cout << axes[i]->GetTitle() << endl;
-	bins[i] = axes[i]->GetNbins(); 
+	//cout << axes[i]->GetTitle() << endl;
+ 	bins[i] = axes[i]->GetNbins(); 
 	min[i] = axes[i]->GetBinLowEdge(1);
 	max[i] = axes[i]->GetBinUpEdge(axes[i]->GetNbins());
   }
@@ -231,7 +231,7 @@ void AliAnaConvCorrBase::PrintStatistics()  {
 
 
 //_______________________________________________________________________________
-void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t leading) {
+void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
   fHNTriggers[leading]->Fill(particle->Pt());
 }
 
@@ -240,6 +240,7 @@ void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * pa
 void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, Int_t const tIDs[4], Int_t isolated = 0) {
   //Correlate particle with tracks
 
+
   FillTriggerCounters(particle, isolated);
 
   Int_t nDim = fAxesList.GetSize();
@@ -247,12 +248,18 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
   Double_t trackValues[nDim];
   Double_t trigValues[nDim - 1];
 
-
   trigValues[0] = particle->Eta();
   trigValues[1] = particle->Phi();
   trigValues[2] = particle->Pt();
   trigValues[3] = isolated;
+  
   fTrigSparse->Fill(trigValues);
+
+  if(nDim > 4) {
+	dphivalues[5] = particle->M();
+	trackValues[5] = particle->M();
+	trigValues[4] = particle->M();
+  }
 
   for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
 	AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));
@@ -275,11 +282,6 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
 	trackValues[4] = isolated;
 
 
-	if(nDim > 4) {
-	  dphivalues[5] = particle->M();
-	  trackValues[5] = particle->M();
-	  trigValues[4] = particle->M();
-	}
 	
 	fCorrSparse->Fill(dphivalues);
 	fTrackSparse->Fill(trackValues);
