@@ -75,6 +75,7 @@ protected :
    Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
 
   TH2F * fhPhi;
+  TH2F * fhPhiPt;
   TList * fHistograms;
 
   AliConversionTrackCuts(const AliConversionTrackCuts&); // not implemented
@@ -95,7 +96,7 @@ inline void AliConversionTrackCuts::SetDefaults2010()
 
    AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
    AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
-   //AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
    SetEtaRange(-0.8, 0.8);
    //SetDCARPtFormula("0.0182+0.0350/pt^1.01");
    SetDCAZmax(2.0);
