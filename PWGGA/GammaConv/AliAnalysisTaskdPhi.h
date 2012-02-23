@@ -72,7 +72,7 @@ private:
   THnSparseF * GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array);
   AliAnaConvCorrBase * GetCorrObject(Int_t binz, Int_t binc, TObjArray * array);
   void Process(TObjArray * gammas, TObjArray * tracks, Int_t vertexBin, Int_t centBin);
-  void FindDeltaAODBranchName(AliAODEvent * event);
+  void FindDeltaAODBranchName(AliVEvent * event);
   
   TList * fHistograms; //histograms
   TList * fHistoGamma; //gamma histo

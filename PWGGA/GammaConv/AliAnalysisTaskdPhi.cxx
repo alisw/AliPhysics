@@ -107,7 +107,7 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   
   // Define input and output slots here
   DefineInput(0, TChain::Class());
-  DefineInput(1, TClonesArray::Class());
+  //DefineInput(1, TClonesArray::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
@@ -284,6 +284,7 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   TList * outAxesList = new TList();
   outAxesList->Add(&fAxisCent);
   outAxesList->Add(&fAxisZ);
+  fHistograms->Add(outAxesList);
 
   // for(Int_t iz = 0; iz < fAxisZ.GetNbins(); iz++) {
   // 	TObjArray * trackArray = new TObjArray();
@@ -423,7 +424,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 
   if(centBin < 0 || vertexBin < 0) {
 	AliError("bin out of range");
-	cout << "bad bin"<<endl;
 	return;
   }
 
@@ -500,8 +500,9 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 	Int_t tIDs[4] = {ph1->GetLabel(0), ph1->GetLabel(1), -1, -1};
 
 	Int_t leading = fIsoAna->IsLeading(static_cast<AliAODConversionParticle*>(ph1), tracks, tIDs);
-	gCorr->CorrelateWithTracks( static_cast<AliAODConversionParticle*>(ph1), tracks, tIDs, leading);
-	
+	if(ph1->Pt() > fAxistPt.GetBinLowEdge(1)) {
+	  gCorr->CorrelateWithTracks( static_cast<AliAODConversionParticle*>(ph1), tracks, tIDs, leading);
+	}
 	for(Int_t i2 = 0; i2 < i1; i2++) {
 	  AliAODConversionPhoton * ph2 = static_cast<AliAODConversionPhoton*>(gammas->UncheckedAt(i2));
 	  
@@ -519,12 +520,13 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 		Int_t leadingpi = fIsoAna->IsLeading(static_cast<AliAODConversionParticle*>(pion), tracks, tIDs);
 		tIDs[2] = ph2->GetLabel(0);
 		tIDs[3] = ph2->GetLabel(1);
-		piCorr->CorrelateWithTracks(pion, tracks, tIDs, leadingpi);
+		if(pion->Pt() > fAxistPt.GetBinLowEdge(1)) {
+		  piCorr->CorrelateWithTracks(pion, tracks, tIDs, leadingpi);
+		}
 	  }
 	}
   }
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskdPhi::Terminate(Option_t *) {
@@ -543,12 +545,9 @@ TClonesArray * AliAnalysisTaskdPhi::GetConversionGammas(Bool_t isAOD) {
 	if(gammas) {
 	  return gammas;
 	}
-	//If not found try to locate branch
-	FindDeltaAODBranchName(AODEvent());
-  //gammas = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(fDeltaAODBranchName.Data()));
-  //return gammas;
-	
-	gammas = dynamic_cast<TClonesArray*>(AODEvent()->FindListObject(fDeltaAODBranchName.Data()));
+
+	FindDeltaAODBranchName(fInputEvent);
+	gammas = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(fDeltaAODBranchName.Data()));
 	return gammas;
 
   } else {
@@ -559,7 +558,7 @@ TClonesArray * AliAnalysisTaskdPhi::GetConversionGammas(Bool_t isAOD) {
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskdPhi::FindDeltaAODBranchName(AliAODEvent * event){
+void AliAnalysisTaskdPhi::FindDeltaAODBranchName(AliVEvent * event){
   ///Find aod branch
   TList *list=event->GetList();
   for(Int_t ii=0;ii<list->GetEntries();ii++){
