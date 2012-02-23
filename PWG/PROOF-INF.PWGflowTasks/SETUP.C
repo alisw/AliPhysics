@@ -1,13 +1,15 @@
 void SETUP() {
-
+  // Set the library paths
   TString dypath = gSystem->GetDynamicPath();
-  dypath.Prepend(".:");
+  dypath.Prepend("./PWGflowTasks/:");
   gSystem->SetDynamicPath(dypath);
   gSystem->Load("libPWGflowBase");
   gSystem->Load("libPWGflowTasks");
   
   // Set the include paths
-  gROOT->ProcessLine(".include PWGflowTasks/FLOW/Tasks $(ALICE_ROOT)/TOF");
+  TString incpath = gSystem->GetIncludePath();
+  incpath.Prepend("-I./PWGflowTasks/FLOW/Tasks -I$ALICE_ROOT/TOF ");
+  gSystem->SetIncludePath(incpath);
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWGflowTasks_INCLUDE", "PWGflowTasks/FLOW/Tasks");

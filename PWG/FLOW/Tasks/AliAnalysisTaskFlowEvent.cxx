@@ -101,6 +101,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fNbinsPhi(100),
   fNbinsEta(200),
   fNbinsQ(500),
+  fNbinsMass(1),
   fMultMin(0.),            
   fMultMax(10000.),
   fPtMin(0.),	     
@@ -111,6 +112,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
+  fMassMin(-1.),	     
+  fMassMax(0.),
   fHistWeightvsPhiMin(0.),
   fHistWeightvsPhiMax(3.),
   fExcludedEtaMin(0.), 
@@ -157,6 +160,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fNbinsPhi(100),
   fNbinsEta(200),
   fNbinsQ(500),
+  fNbinsMass(1),
   fMultMin(0.),            
   fMultMax(10000.),
   fPtMin(0.),	     
@@ -167,6 +171,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
+  fMassMin(-1.),	     
+  fMassMax(0.),
   fHistWeightvsPhiMin(0.),
   fHistWeightvsPhiMax(3.),
   fExcludedEtaMin(0.), 
@@ -253,6 +259,7 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
   cc->SetNbinsPhi(fNbinsPhi); 
   cc->SetNbinsEta(fNbinsEta);
   cc->SetNbinsQ(fNbinsQ);
+  cc->SetNbinsMass(fNbinsMass);
   cc->SetMultMin(fMultMin);
   cc->SetMultMax(fMultMax);
   cc->SetPtMin(fPtMin);
@@ -263,6 +270,8 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
   cc->SetEtaMax(fEtaMax);
   cc->SetQMin(fQMin);
   cc->SetQMax(fQMax);
+  cc->SetMassMin(fMassMin);
+  cc->SetMassMax(fMassMax);
   cc->SetHistWeightvsPhiMax(fHistWeightvsPhiMax);
   cc->SetHistWeightvsPhiMin(fHistWeightvsPhiMin);
 
@@ -471,15 +480,13 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   if(fLoadCandidates) {
     TObjArray* candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
     //if(candidates->GetEntriesFast()) 
-      //printf("I received %d candidates\n",candidates->GetEntriesFast());
+    //  printf("I received %d candidates\n",candidates->GetEntriesFast());
     if (candidates)
     {
       for(int iCand=0; iCand!=candidates->GetEntriesFast(); ++iCand ) {
         AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(candidates->At(iCand));
         if (!cand) continue;
-        cand->SetForPOISelection(kTRUE);
-        cand->SetForRPSelection(kFALSE);
-        //printf(" Ⱶ Checking at candidate %d with %d daughters\n",iCand,cand->GetNDaughters());
+        //printf(" Ⱶ Checking at candidate %d with %d daughters: mass %f\n",iCand,cand->GetNDaughters(),cand->Mass());
         for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
           //printf("    Ⱶ Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau) );
           for(int iRPs=0; iRPs!=fFlowEvent->NumberOfTracks(); ++iRPs ) {
@@ -489,14 +496,16 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
               continue;
             if( cand->GetIDDaughter(iDau) == iRP->GetID() ) {
               //printf(" was in RP set");
-              cand->SetDaughter( iDau, iRP );
+              //cand->SetDaughter( iDau, iRP );
               //temporarily untagging all daugters
               iRP->SetForRPSelection(kFALSE);
+	      fFlowEvent->SetNumberOfRPs( fFlowEvent->GetNumberOfRPs() -1 );
             }
           }
           //printf("\n");
         }
-        fFlowEvent->AddTrack(cand);
+	cand->SetForPOISelection(kTRUE);
+	fFlowEvent->InsertTrack( ((AliFlowTrack*) cand) );
       }
     }
   }

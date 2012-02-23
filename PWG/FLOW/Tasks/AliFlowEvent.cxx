@@ -673,6 +673,23 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
     }
   }
 }
+//-----------------------------------------------------------------------
+void AliFlowEvent::InsertTrack(AliFlowTrack *thisTrack) {
+  // adds a flow track at the end of the container
+  AliFlowTrack *pTrack = ReuseTrack( fNumberOfTracks++ );
+  pTrack->SetPt( thisTrack->Pt() );
+  pTrack->SetPhi( thisTrack->Phi() );
+  pTrack->SetEta( thisTrack->Eta() );
+  pTrack->SetWeight( thisTrack->Weight() );
+  pTrack->SetCharge( thisTrack->Charge() );
+  pTrack->SetMass( thisTrack->Mass() );
+  pTrack->SetForRPSelection( thisTrack->InRPSelection() );
+  pTrack->SetForPOISelection( thisTrack->InPOISelection() );
+  if(thisTrack->InSubevent(0)) pTrack->SetForSubevent(0);
+  if(thisTrack->InSubevent(1)) pTrack->SetForSubevent(1);
+  pTrack->SetID( thisTrack->GetID() );
+  return;
+}
 
 //-----------------------------------------------------------------------
 AliFlowTrack* AliFlowEvent::ReuseTrack(Int_t i)

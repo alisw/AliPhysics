@@ -27,6 +27,7 @@ class AliFlowCommonConstants: public TNamed {
   Int_t GetNbinsPhi()  const { return fNbinsPhi; }
   Int_t GetNbinsEta()  const { return fNbinsEta; }
   Int_t GetNbinsQ()    const { return fNbinsQ; }
+  Int_t GetNbinsMass() const { return fNbinsMass; }
    
   Double_t GetMultMin() const { return fMultMin; }
   Double_t GetMultMax() const { return fMultMax; }
@@ -38,6 +39,8 @@ class AliFlowCommonConstants: public TNamed {
   Double_t GetEtaMax()  const { return fEtaMax; }
   Double_t GetQMin()    const { return fQMin; }
   Double_t GetQMax()    const { return fQMax; }
+  Double_t GetMassMin()    const { return fMassMin; }
+  Double_t GetMassMax()    const { return fMassMax; }
   Double_t GetHistWeightvsPhiMax() const {return fHistWeightvsPhiMax;}
   Double_t GetHistWeightvsPhiMin() const {return fHistWeightvsPhiMin;}
   
@@ -46,6 +49,7 @@ class AliFlowCommonConstants: public TNamed {
   void SetNbinsPhi( Int_t i )  { fNbinsPhi = i; }
   void SetNbinsEta( Int_t i )  { fNbinsEta = i; }
   void SetNbinsQ( Int_t i )    { fNbinsQ = i; }
+  void SetNbinsMass( Int_t i ) { fNbinsMass = i; }
    
   void SetMultMin( Double_t i ) { fMultMin = i; }
   void SetMultMax( Double_t i ) { fMultMax = i; }
@@ -57,6 +61,8 @@ class AliFlowCommonConstants: public TNamed {
   void SetEtaMax( Double_t i )  { fEtaMax = i; }
   void SetQMin( Double_t i )    { fQMin = i; }
   void SetQMax( Double_t i )    { fQMax = i; }
+  void SetMassMin( Double_t i )    { fMassMin = i; }
+  void SetMassMax( Double_t i )    { fMassMax = i; }
   void SetHistWeightvsPhiMax( Double_t d ) {fHistWeightvsPhiMax=d;}
   void SetHistWeightvsPhiMin( Double_t d ) {fHistWeightvsPhiMin=d;}
   
@@ -70,6 +76,7 @@ class AliFlowCommonConstants: public TNamed {
   Int_t  fNbinsPhi;  // histogram size
   Int_t  fNbinsEta;  // histogram size
   Int_t  fNbinsQ;    // histogram size
+  Int_t  fNbinsMass; // histogram size
  
   // Histograms limits
   Double_t  fMultMin;  // histogram limit 
@@ -82,12 +89,14 @@ class AliFlowCommonConstants: public TNamed {
   Double_t  fEtaMax;	 // histogram limit
   Double_t  fQMin;	   // histogram limit
   Double_t  fQMax;     // histogram limit
+  Double_t  fMassMin;  // histogram limit 
+  Double_t  fMassMax;  // histogram limit
   Double_t  fHistWeightvsPhiMin; // histogram limit
   Double_t  fHistWeightvsPhiMax; // histogram limit
  
   static AliFlowCommonConstants* fgPMasterConfig; //master object
   
-  ClassDef(AliFlowCommonConstants,1) //ClassDef
+  ClassDef(AliFlowCommonConstants,2) //ClassDef
 };
 
 #endif
