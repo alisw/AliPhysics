@@ -144,9 +144,6 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
     AliCFContainer::operator=(c);
     fNBins=c.fNBins;
     fNVars=c.fNVars;
-    fNSteps=c.fNSteps;
-    fValues=0;
-    fSumw2=0;
     if(fNSteps) {
       for(Int_t i=0; i< fNSteps; ++i) {
 	delete fValues[i];
@@ -154,7 +151,9 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
       }
       delete [] fValues;
       delete [] fSumw2;
-
+    }
+    fNSteps=c.fNSteps;
+    if(fNSteps) {
       fValues=new TArrayF*[fNSteps];
       fSumw2=new TArrayF*[fNSteps];
       memset(fValues,0,fNSteps*sizeof(TArrayF*));
@@ -164,6 +163,9 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
 	if (c.fValues[i]) fValues[i] = new TArrayF(*(c.fValues[i]));
 	if (c.fSumw2[i])  fSumw2[i]  = new TArrayF(*(c.fSumw2[i]));
       }
+    } else {
+      fValues = 0;
+      fSumw2 = 0;
     }
     delete [] axisCache;
     axisCache = 0;
