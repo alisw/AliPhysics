@@ -6,7 +6,7 @@ PACKAGE = PWGLFresonances
 
 default-target: lib$(PACKAGE).so 
 
-ALICEINC      = -I. -I$(ALICE_ROOT)/TOF -I$(ALICE_ROOT)/ANALYSIS/EventMixing
+ALICEINC      = -I. -I$(ALICE_ROOT)/TOF -I$(ALICE_ROOT)/ANALYSIS/EventMixing -I$(ALICE_ROOT)/PWGUD/base
 
 ### define include dir for local case and par case
 ifneq ($(ESD_INCLUDE),)
