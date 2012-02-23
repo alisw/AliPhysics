@@ -38,7 +38,6 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   AliITStrackerUpgrade();
   AliITStrackerUpgrade(Int_t nLay);
   AliITStrackerUpgrade(const AliITStrackerUpgrade& tracker);
-  AliITStrackerUpgrade& operator=(const AliITStrackerUpgrade& source);
   virtual ~AliITStrackerUpgrade();  
   virtual Int_t Clusters2Tracks(AliESDEvent *event);  
   Int_t FindTracks(AliESDEvent* event,Bool_t useAllClusters=kFALSE);
@@ -162,6 +161,9 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
 
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
+
+  private:
+  AliITStrackerUpgrade &operator=(const AliITStrackerUpgrade &tr);
 
   ClassDef(AliITStrackerUpgrade,2)
     };

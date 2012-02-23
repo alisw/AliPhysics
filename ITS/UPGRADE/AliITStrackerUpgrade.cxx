@@ -102,18 +102,13 @@ AliITStrackerUpgrade::AliITStrackerUpgrade(const AliITStrackerUpgrade& tracker):
     fPoint3[i]=tracker.fPoint3[i];
     fPointc[i]=tracker.fPointc[i];
   }
-  if(tracker.fVertexer && tracker.fVert){
-    fVert = new AliESDVertex(*tracker.fVert);
-  }
-  else {
-    fVert = tracker.fVert;
-  }
   for(Int_t i=0;i<fNLayers;i++){
     fCluLayer[i] = tracker.fCluLayer[i];
     fCluCoord[i] = tracker.fCluCoord[i];
   }
 }
 //______________________________________________________________________
+/*
 AliITStrackerUpgrade& AliITStrackerUpgrade::operator=(const AliITStrackerUpgrade& source){
   // Assignment operator. 
   this->~AliITStrackerUpgrade();
@@ -121,7 +116,7 @@ AliITStrackerUpgrade& AliITStrackerUpgrade::operator=(const AliITStrackerUpgrade
   return *this;
  
 }
-
+*/
 //____________________________________________________________________________
 AliITStrackerUpgrade::~AliITStrackerUpgrade(){
   // destructor
@@ -235,18 +230,18 @@ Int_t AliITStrackerUpgrade::LoadClusters(TTree *clusTree){
   // 
 
   TClonesArray statITSCluster("AliITSRecPointU");
-  TClonesArray *ITSCluster = &statITSCluster;
+  TClonesArray *itsCluster = &statITSCluster;
 
   TBranch* itsClusterBranch=clusTree->GetBranch("ITSRecPoints");
   if (!itsClusterBranch){
     AliError("can't get the branch with the ITS clusters ! \n");
     return 1;
   }
-  itsClusterBranch->SetAddress(&ITSCluster);
+  itsClusterBranch->SetAddress(&itsCluster);
   clusTree->GetEvent(0);
-  Int_t nCluster = ITSCluster->GetEntriesFast();
+  Int_t nCluster = itsCluster->GetEntriesFast();
   for(Int_t i=0; i<nCluster; i++){
-    AliITSRecPointU *recp = (AliITSRecPointU*)ITSCluster->UncheckedAt(i);
+    AliITSRecPointU *recp = (AliITSRecPointU*)itsCluster->UncheckedAt(i);
     fLayers[recp->GetLayer()]->InsertCluster(new AliITSRecPointU(*recp));
   }//loop clusters
 
@@ -881,21 +876,24 @@ Double_t AliITStrackerUpgrade::ChoosePoint(Double_t p1, Double_t p2, Double_t pp
 }
 //_________________________________________________________________
 Int_t AliITStrackerUpgrade::FindTrackLowChiSquare() const {
+
   // returns track with lowest chi square  
-  Int_t dim=fListOfUTracks->GetEntries();
+
+Int_t dim=fListOfUTracks->GetEntries();
   if(dim<=1) return 0;
   AliITStrackV2* trk = (AliITStrackV2*)fListOfUTracks->At(0);
-  Double_t minChi2=trk->GetChi2();
+  Double_t minChi2=trk->GetChi2()/trk->GetNumberOfClusters();
   Int_t index=0;
   for(Int_t i=1;i<dim;i++){
     trk = (AliITStrackV2*)fListOfUTracks->At(i);
-    Double_t chi2=trk->GetChi2();
+    Double_t chi2=trk->GetChi2()/trk->GetNumberOfClusters();
     if(chi2<minChi2){
       minChi2=chi2;
       index=i;
     }
   }
   return index;
+
 }
 
 //__________________________________________________________

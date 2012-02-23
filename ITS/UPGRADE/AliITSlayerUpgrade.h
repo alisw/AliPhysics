@@ -5,8 +5,9 @@
 
 /* $Id$ */
 #include <TObject.h>
-#include "AliITSRecPoint.h"
 #include "AliITSRecoParam.h"
+
+class AliITSRecPoint;
 
  class AliITSlayerUpgrade : public TObject {
 

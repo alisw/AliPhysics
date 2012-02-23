@@ -38,11 +38,14 @@ ClassImp(AliITSDigitUpgrade)
     fNelectrons(0),
     fNTracksIdMC(0)
 {
+ //
+ // default constructor
+ //
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=-1;
     fSignalID[i]=-1;
   }
-} //default creator
+} 
 //_______________________________________________________________________
 AliITSDigitUpgrade::AliITSDigitUpgrade(Int_t *digits): 
   AliDigit(digits),
@@ -53,11 +56,14 @@ AliITSDigitUpgrade::AliITSDigitUpgrade(Int_t *digits):
   fNelectrons(0),
   fNTracksIdMC(0)
 {
+ //
+ // constructor
+ // 
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=-1;
     fSignalID[i]=-1;
   }
-} //default creator
+} 
 //____________________________________________________________________________________________________
 AliITSDigitUpgrade::AliITSDigitUpgrade(ULong_t pixid, Float_t eloss): 
   AliDigit(),
@@ -68,11 +74,14 @@ AliITSDigitUpgrade::AliITSDigitUpgrade(ULong_t pixid, Float_t eloss):
   fNelectrons(0),
   fNTracksIdMC(0)
 {
+ //
+ // Used constructor in simulation
+ //
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=-1;
     fSignalID[i]=-1;
   }
-} //standard creator digits only
+} 
 //____________________________________________________________________________________________________
 AliITSDigitUpgrade::AliITSDigitUpgrade(const AliITSDigitUpgrade &d):
   AliDigit(d),
@@ -83,12 +92,15 @@ AliITSDigitUpgrade::AliITSDigitUpgrade(const AliITSDigitUpgrade &d):
   fNelectrons(d.fNelectrons),
   fNTracksIdMC(d.fNTracksIdMC)
 {
+ // 
+ // copy constructor
+ //
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=d.fTrackIdMC[i];
     fSignalID[i]=d.fSignalID[i];
   }
   for(Int_t i=0; i<3 ; i++) fSignalID[i]=d.fSignalID[i];
-} //copy constructor
+} 
 
 //____________________________________________________________________________________________________
 void AliITSDigitUpgrade::AddTrackID(Int_t tid) { 

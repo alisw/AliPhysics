@@ -128,6 +128,7 @@ AliITStrackU::AliITStrackU(const AliITStrackU& t, Bool_t trackMI) :
 //    fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i]; fSigmaYZ[i]=t.fSigmaYZ[i]; 
 //  }
 }
+
 //____________________________________________________
 AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab, Int_t nlay ):
   fNLayers(nlay),

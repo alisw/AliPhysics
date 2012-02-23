@@ -97,8 +97,10 @@ class AliITStrackU : public AliITStrackV2 {
 
   Float_t fNormChi2[fgMaxNLayer];        // normalized chi2
   Int_t    fClIndex[fgMaxNLayer];        //cluster Index
-  
-  
+
+  private:
+  AliITStrackU &operator=(const AliITStrackU &t);
+
   ClassDef(AliITStrackU,2)
     };
 
