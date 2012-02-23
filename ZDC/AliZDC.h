@@ -86,6 +86,7 @@ public:
   Int_t SpectatorsTracked() const {return fSpectatorTracked;}
   void  SetBeamEnergy(Float_t beamEnergy) {fBeamEnergy = beamEnergy;}
   void  SetpAsystem() {fIspASystem = kTRUE;}
+  void  SetRELDISGenerator() {fIsRELDISgen = kTRUE;}
 
 private:
 
