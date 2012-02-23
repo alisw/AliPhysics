@@ -169,12 +169,12 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperforman
 
   } else {
     plugin->SetGridDataDir("/alice/data/2010/LHC10h");   // Define production directory LFN
-    if (anatype == "ESD") {
-      plugin->SetDataPattern("ESDs/pass2/*/*ESDs.root");  // Set data search pattern
-      plugin->SetRunPrefix("000");
-    } else plugin->SetDataPattern("*AOD.root"); 
+    if (anatype == "ESD") plugin->SetDataPattern("ESDs/pass2/*/*ESDs.root");  // Set data search pattern
+    else plugin->SetDataPattern("ESDs/pass2/AOD073/*/*AOD.root"); 
+    plugin->SetRunPrefix("000");
     //plugin->SetRunRange(80000,80000); // ...then add run numbers to be considered
     plugin->AddRunNumber(138534);
+   
   }
   // Method 2: Use your input collection 
   //plugin->AddDataFile("/alice/cern.ch/user/m/mnicassi/139105.xml");
