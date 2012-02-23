@@ -93,8 +93,12 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   fHistograms->SetOwner(kTRUE);
   fHistograms->SetName("trackCuts");
 
-  fhPhi = new TH2F("phi", "phi", 20, -0.5, 19.5, 64, 0, TMath::TwoPi());
+  fhPhi = new TH2F("phi", "phi", 20, -0.5, 19.5, 128, 0, TMath::TwoPi());
   fHistograms->Add(fhPhi);
+
+  fhPhiPt = new TH2F("phipt", "phipt", 80, 0, 100, 128, 0, TMath::TwoPi());
+  fHistograms->Add(fhPhiPt);
+
 
   return fHistograms;
 }
@@ -103,6 +107,7 @@ TList * AliConversionTrackCuts::CreateHistograms() {
 void AliConversionTrackCuts::FillHistograms(Int_t cutIndex, AliVTrack * track) {
   
   fhPhi->Fill(cutIndex, track->Phi());
+  fhPhiPt->Fill(track->Pt(), track->Phi());
 }
 
 Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * aodEvent) {
