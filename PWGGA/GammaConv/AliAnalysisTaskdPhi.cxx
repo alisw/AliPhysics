@@ -238,6 +238,8 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   }
   
 
+  fHistograms->Add(fTrackCuts.CreateHistograms());
+
   SetUpCorrObjects();
 
 
