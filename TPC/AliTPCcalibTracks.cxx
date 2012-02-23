@@ -16,12 +16,49 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//     Class to analyse tracks for calibration                               //
-//     to be used as a component in AliTPCSelectorTracks                     //
-//     In the constructor you have to specify name and title                 //
-//     to get the Object out of a file.                                      //
+//     Class for calibration of the cluster properties:                       //
+//     Cluster position resolution (RMS)  and short term distortions (within pad or within time bin)
+// 
+//  Algorithm:
+//    1. Creation of the residual/properties  histograms
+//    2. Filling of the histograms.
+//       2.a Traklet fitting
+//       2.b Resudual filling
+//    3. Postprocessing: Creation of the tree with the mean values and RMS at different bins
+//    4.               : Paramaterization fitting. 
+//                       In old AliRoot the RMS paramterization was used to characterize cluster resolution
+//                       Mean value /bias was neglected
+//    5. To be implemented 
+//          a.) lookup table for the distortion parmaterization - THn
+//          b.) Usage in the reconstruction  
+//                               
+// 
+//   1. Creation of the histograms:   MakeHistos() 
+//
+//         6 n dimensional histograms  are filled during the calibration:
+//         cluster  performance bins
+//         0 - variable of interest
+//         1 - pad type   - 0- IROC Short 1- OCROC medium 2 - OROC long pads
+//         2 - drift length - drift length -0-1
+//         3 - Qmax         - Qmax  - 2- 400
+//         4 - cog          - COG position - 0-1
+//         5 - tan(phi)     - local  angle
+//        Histograms:
+//        THnSparse  *fHisDeltaY;    // THnSparse - delta Y between the cluster and tracklet interpolation (+-X(5?) rows) 
+//        THnSparse  *fHisDeltaZ;    // THnSparse - delta Z 
+//        THnSparse  *fHisRMSY;      // THnSparse - rms Y 
+//        THnSparse  *fHisRMSZ;      // THnSparse - rms Z 
+//        THnSparse  *fHisQmax;      // THnSparse - qmax 
+//        THnSparse  *fHisQtot;      // THnSparse - qtot 
+//
+//
+//
+
+
+                     //
 //     The parameter 'clusterParam', a AliTPCClusterParam object             //
 //      (needed for TPC cluster error and shape parameterization)            //
+//
 //     Normally you get this object out of the file 'TPCClusterParam.root'   //
 //     In the parameter 'cuts' the cuts are specified, that decide           //
 //     weather a track will be accepted for calibration or not.              //
@@ -34,6 +71,23 @@
                Offline/HLT             Offline/HLT                    OCDB entries (AliTPCClusterParam) 
 */            
 
+/*
+  Example usage - creation of the residual trees:
+  TFile f("CalibObjects.root");
+  AliTPCcalibTracks *calibTracks = ( AliTPCcalibTracks *)TPCCalib->FindObject("calibTracks");
+  TH2 * his2 = calibTracks->fHisDeltaY->Projection(0,4);
+  his2->SetName("his2");
+  his2->FitSlicesY();
+
+  
+  TTreeSRedirector *pcstream = new TTreeSRedirector("clusterLookup.root");
+  AliTPCcalibTracks::MakeSummaryTree(calibTracks->fHisDeltaY, pcstream, 0);
+  AliTPCcalibTracks::MakeSummaryTree(calibTracks->fHisDeltaZ, pcstream, 1);
+  delete pcstream;
+  TFile fl("clusterLookup.root");
+  TCut cutNI="cogA==0&&angleA==0&&qmaxA==0&&zA==0&&ipadA==0"
+
+*/
 
                                                                //
 ///////////////////////////////////////////////////////////////////////////////
@@ -756,19 +810,19 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
     // Fill THN histograms
     //
     Double_t xvar[9];
-    xvar[1]=padSize;
-    xvar[2]=cluster0->GetZ();
+    xvar[1]=padSize;   // pad type 
+    xvar[2]=cluster0->GetZ();  // 
     xvar[3]=cluster0->GetMax();
     
     xvar[0]=deltay;
-    xvar[4]=cluster0->GetPad()-Int_t(cluster0->GetPad());      
+    xvar[4]=cluster0->GetPad()-Int_t(cluster0->GetPad());// distance to the center of the pad       
     xvar[5]=angley;
     fHisDeltaY->Fill(xvar);
     xvar[0]=TMath::Sqrt(cluster0->GetSigmaY2());
     fHisRMSY->Fill(xvar);
     
     xvar[0]=deltaz;
-    xvar[4]=cluster0->GetTimeBin()-Int_t(cluster0->GetTimeBin());
+    xvar[4]=cluster0->GetTimeBin()-Int_t(cluster0->GetTimeBin()); // distance to the center of the time bin
     xvar[5]=anglez;
     fHisDeltaZ->Fill(xvar);
     xvar[0]=TMath::Sqrt(cluster0->GetSigmaZ2());
@@ -1535,17 +1589,17 @@ void AliTPCcalibTracks::MakeSummaryTree(THnSparse *hisInput, TTreeSRedirector *p
 	    //
 	    (*pcstream)<<hname[ptype].Data()<<
 	      // flag - intgrated values for given bin
-	      "angleA="<<bin5All<<
+	      "angleA="<<bin5All<<   
 	      "cogA="<<bin4All<<
 	      "qmaxA="<<bin3All<<
 	      "zA="<<bin2All<<
 	      "ipadA="<<bin1All<<
 	      // center of bin value
-	      "angle="<<x5<<
-	      "cog="<<x4<<
-	      "qmax="<<x3<<
-	      "z="<<x2<<
-	      "ipad="<<x1<<
+	      "angle="<<x5<<       // local angle
+	      "cog="<<x4<<         // distance cluster to center
+	      "qmax="<<x3<<        // qmax
+	      "z="<<x2<<           // z of the cluster
+	      "ipad="<<x1<<        // type of the region
 	      // mean values
 	      //
 	      "entries="<<entries<<
