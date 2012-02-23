@@ -1400,7 +1400,7 @@ UInt_t AliGRPPreprocessor::ProcessDqmFxs()
 					AliInfo(Form("Got the file %s", fileNameRun.Data()));
 					TFile dqmFile(fileNameRun.Data(),"READ");
 					if (dqmFile.IsOpen()) {
-						AliQAThresholds* qaThr = dynamic_cast<AliQAThresholds*>(dqmFile.Get("AliQAThresholds"));
+						AliQAThresholds* qaThr = dynamic_cast<AliQAThresholds*>(dqmFile.Get(detName.Data()));
 						if (qaThr){
 							Int_t qaThrId = qaThr->GetDetectorId();
 							if (qaThrId != idet){

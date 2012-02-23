@@ -15,9 +15,11 @@
 
 #include "AliQAThresholds.h"
 
+#include "AliDAQ.h"
+
 ClassImp(AliQAThresholds)
 
-  AliQAThresholds::AliQAThresholds(Int_t detId): TObject(), fThresholds(), fDetectorId(detId)
+  AliQAThresholds::AliQAThresholds(Int_t detId): TNamed(), fThresholds(), fDetectorId(detId)
 {
   // constructor
 
@@ -27,6 +29,16 @@ ClassImp(AliQAThresholds)
 AliQAThresholds::~AliQAThresholds()
 {
   // destructor
+}
+
+const char* AliQAThresholds::GetName() const 
+{
+  return AliDAQ::OnlineName(fDetectorId);
+}
+
+const char* AliQAThresholds::GetTitle() const 
+{
+  return AliDAQ::OnlineName(fDetectorId);
 }
 
 Int_t AliQAThresholds::GetDetectorId()

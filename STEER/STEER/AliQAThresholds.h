@@ -18,13 +18,16 @@
 #include "TObjArray.h"
 #include "TParameter.h"
 
-class AliQAThresholds: public TObject {
+class AliQAThresholds: public TNamed {
 
  public:
 
   AliQAThresholds(Int_t detId);
-  AliQAThresholds() : TObject(), fThresholds(), fDetectorId(-1){};
+  AliQAThresholds() : TNamed(), fThresholds(), fDetectorId(-1){};
   virtual ~AliQAThresholds();
+
+  virtual const char* GetName() const;
+  virtual const char* GetTitle() const;
 
   Int_t GetDetectorId();
   void SetDetectorId(Int_t i);
@@ -44,7 +47,7 @@ class AliQAThresholds: public TObject {
   TObjArray fThresholds;
   Int_t fDetectorId;       // in the sense of the class AliDAQ
 
-  ClassDef(AliQAThresholds, 2)
+  ClassDef(AliQAThresholds, 3)
 };
 
 #endif
