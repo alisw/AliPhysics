@@ -4,7 +4,6 @@
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
 // Authors: (this code is mostly copied from AliRsnTrackQuality) adapted by Svein Lindal 	*
 
-class AliAODEvent;
 class TH2F;
 class TList;
 #include "AliAODTrack.h"
@@ -16,10 +15,24 @@ using namespace std;
 class AliConversionTrackCuts : public AliAnalysisCuts {
 	
 public:
+  
+  enum CTCuts_t {
+	kPreCut = -1,
+	kCutNcls,
+	kCutNclsFrac,
+	kCutNDF,
+	kCutKinc,
+	kCutDCAZ,
+	kCutDCAXY,
+	kCutTPCRefit,
+	kNCuts
+  };
 
-  Bool_t IsSelected(TObject * object, AliAODEvent * event) { return AcceptTrack(dynamic_cast<AliAODTrack*>(object), event); }
-  Bool_t IsSelected(TList * list) { return kFALSE; }
-  Bool_t AcceptTrack(AliAODTrack * track, AliAODEvent* event);
+  static const char * fgkCutNames[kNCuts];
+
+  Bool_t IsSelected(TObject * object ) { return AcceptTrack(dynamic_cast<AliAODTrack*>(object)); }
+  Bool_t IsSelected(TList * /*list*/) { return kFALSE; }
+  Bool_t AcceptTrack(AliAODTrack * track);
 
   AliConversionTrackCuts();
   AliConversionTrackCuts(TString name, TString title);
@@ -41,14 +54,17 @@ public:
   void      SetITSmaxChi2(Double_t value)             {fITSmaxChi2 = value;}
   
   void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
+  void      SetTPCCFoundClusters(Double_t value)           {fTPCClusOverFindable = value;}
   void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
   
   void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}  
   void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
+
+  void      SetRequireTPCRefit(Bool_t require)        { fRequireTPCRefit = require; }
   void      SetDefaults2010();
   
   TList * CreateHistograms();
-  void FillHistograms(Int_t cutIndex, AliVTrack * track);
+  void FillHistograms(Int_t cutIndex, AliVTrack * track, Bool_t passed);
   virtual void   Print(const Option_t *option = "") const;
 
 protected :
@@ -67,18 +83,30 @@ protected :
    TString    fDCAZptFormula;          // expression to compute longitudinal DCA sigma w.r. to pt
    Double_t   fDCAZmax;                // maximum value for longitudinal DCA
 
-  Double_t fDCAXYmax;
+  Double_t fDCAXYmax;                  // maximum xy value for dca
 
    Int_t      fSPDminNClusters;        // minimum number of required clusters in SPD
    Int_t      fITSminNClusters;        // minimum number of required clusters in ITS
    Double_t   fITSmaxChi2;             // maximum chi2 / number of clusters in ITS
 
    Int_t      fTPCminNClusters;        // minimum number of required clusters in TPC
+   Double_t   fTPCClusOverFindable;        // minimum number of required clusters in TPC
    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
    Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
+  Bool_t      fRequireTPCRefit;        // Require TPC refit
 
-  TH2F * fhPhi;
-  TH2F * fhPhiPt;
+  TH2F * fhPhi; //histo
+  TH2F * fhPt; //histo
+  TH2F * fhPhiPt;//histo
+  TH2F * fhdcaxyPt;//histo
+  TH2F * fhdcazPt;//histo
+  TH2F * fhnclpt;//histo
+  TH2F * fhnclsfpt;//histo
+  
+ // TAxis fCutAxis;
+ // TAxisArr fCutVarAxes[kNCuts];
+ // TAxisArr fVarAxes[kNVar];
+
   TList * fHistograms;
 
   AliConversionTrackCuts(const AliConversionTrackCuts&); // not implemented
@@ -100,7 +128,7 @@ inline void AliConversionTrackCuts::SetDefaults2010()
    SetDCAZmax(3.0);
    SetDCAXYmax(2.5);
    SetTPCminNClusters(70);
-   SetTPCmaxChi2(2.0);
+   SetTPCmaxChi2(12.0);
    SetRejectKinkDaughters();
 }
 

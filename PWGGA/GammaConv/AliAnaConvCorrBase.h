@@ -33,15 +33,6 @@ public:
   AliAnaConvCorrBase(TString name, TString title); 
   virtual ~AliAnaConvCorrBase();
   
-  //Set and get min pt for triggers
-  // void SetTriggerPt(Float_t pt) { fTriggerPt = pt; }
-  // inline Float_t GetTriggerPt() const {return fTriggerPt; }
-
-
-  // //Set and get min pt for correlation particles
-  // void SetCorrelatedPt(Float_t pt) { fCorrelatedPt = pt; }
-  // inline Float_t GetCorrelatedPt() const {return fCorrelatedPt; }
-
   //CreateHistograms
   void CreateBaseHistograms();
   //To be overrriden by children. Should always call CreateBaseHistograms()
@@ -61,10 +52,8 @@ public:
     else return ( (dPhi>0)? dPhi - TMath::TwoPi() : dPhi + TMath::TwoPi() ); 
   }
 
-  void PrintStatistics();
 
   void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Int_t isolated);
-  virtual void FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading);
 
   TAxis& GetAxistPt()       { return fAxistPt;   }
   TAxis& GetAxiscPt()       { return fAxiscPt;   }
@@ -87,7 +76,6 @@ protected:
   //Fill trigger counter histograms
   //virtual void FillTriggerCounters(Float_t tPt, Bool_t isolated) = NULL;
   THnSparseF * CreateSparse(TString name, TString title, TList * axes);
-  TH1F * fHNTriggers[3]; //Histograms containing number of triggers in various bins
 
 private:
 
@@ -117,7 +105,7 @@ private:
   AliAnaConvCorrBase(const AliAnaConvCorrBase&); // not implemented
   AliAnaConvCorrBase& operator=(const AliAnaConvCorrBase&); // not implemented
 
-  ClassDef(AliAnaConvCorrBase, 5); // example of analysis
+  ClassDef(AliAnaConvCorrBase, 6); // example of analysis
 
 };
 

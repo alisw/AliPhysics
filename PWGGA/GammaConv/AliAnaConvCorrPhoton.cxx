@@ -13,15 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/// @file   AliAnaConvCorrPion.cxx
+/// @file   AliAnaConvCorrPhoton.cxx
 /// @author Svein Lindal
-/// @brief  Class used to fill calculate correlation between photons - jets
-
-#include "AliAnaConvCorrPionJet.h"
+/// @brief  Class used to fill calculate correlation between photons - tracks
+ 
+#include "AliAnaConvCorrPhoton.h"
 #include "AliAODTrack.h"
 #include "TClonesArray.h"
-#include "AliAODConversionParticle.h"
-#include "AliAODJet.h"
+#include "AliAODConversionPhoton.h"
 
 #include <iostream>
 // Gamma - jet correlation analysis task
@@ -29,38 +28,27 @@
 
 
 using namespace std;
-ClassImp(AliAnaConvCorrPionJet)
+ClassImp(AliAnaConvCorrPhoton)
 
-//________________________________________________________________________________
-AliAnaConvCorrPionJet::AliAnaConvCorrPionJet() :
-AliAnaConvCorrBase("PionJet", "Pion Jet") {
+//________________________________________________________________________
+AliAnaConvCorrPhoton::AliAnaConvCorrPhoton() :
+AliAnaConvCorrBase("photon_hadron_corr", "Photon corr"), 
+  fSkipDecayParticles(kFALSE),
+  fDecayOnly(kFALSE)
+{
   //consctructor
 }
-//________________________________________________________________________________
-AliAnaConvCorrPionJet::AliAnaConvCorrPionJet(TString name) :
-  AliAnaConvCorrBase(name, "Pion Jet") {
+//________________________________________________________________________
+AliAnaConvCorrPhoton::AliAnaConvCorrPhoton(TString name, TString title = "Photon corr") :
+AliAnaConvCorrBase(name, title),
+fSkipDecayParticles(kFALSE),
+fDecayOnly(kFALSE)
+{
   //consctructor
 }
 
-
 //________________________________________________________________________________
-AliAnaConvCorrPionJet::~AliAnaConvCorrPionJet() {
+AliAnaConvCorrPhoton::~AliAnaConvCorrPhoton() {
   //destructor
 }
 
-///_______________________________________________________________________________
-void AliAnaConvCorrPionJet::CorrelateWithHadrons(const AliAODConversionParticle * const pion, const TClonesArray * const jets, const Bool_t isolated) {
-  //Do it
-  FillTriggerCounters(pion, isolated);
-
-  //See header file for documentation
-  if (jets) {
-      
-    for(int ij = 0; ij < jets->GetEntriesFast(); ij++) {
-      AliAODJet * jet = dynamic_cast<AliAODJet*>(jets->At(ij));
-      if(jet) {
-		//FillHistograms(pion->Pt(), jet->Pt(), GetDPhi(pion->Phi() - jet->Phi()), pion->Eta() - jet->Eta(), isolated);
-      }
-    }
-  }
-}

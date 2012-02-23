@@ -23,7 +23,7 @@
 
 #include "TClonesArray.h"
 #include "TH1F.h"
-#include "TH3.h"
+#include "TH2F.h"
 #include "TList.h"
 #include "AliAODConversionParticle.h"
 
@@ -77,17 +77,18 @@ void AliAnaConvCorrBase::CreateHistograms() {
 ///________________________________________________________________________________
 void AliAnaConvCorrBase::SetUpDefaultBins() {
   //Set up default bins
-  Double_t ptbins[19] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
-  fAxisdEta.Set(30, -1.5, 1.5);
+  fAxisdEta.Set(40, -1.6, 1.6);
   fAxisdEta.SetNameTitle("dEta", "delta eta");
 
   fAxisdPhi.Set(32, -TMath::PiOver2(), 3*TMath::PiOver2());
   fAxisdPhi.SetNameTitle("dPhi", "delta Phi");
 
-  fAxistPt.Set(18, ptbins);
+  Double_t tptbins[14] = {3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
+  fAxistPt.Set(13, tptbins);
   fAxistPt.SetNameTitle("tPt", "trigger Pt");
 
-  fAxiscPt.Set(18, ptbins);
+  Double_t cptbins[18] = {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
+  fAxiscPt.Set(17, cptbins);
   fAxiscPt.SetNameTitle("cPt", "track Pt");
 
   fAxisIso.Set(3, -0.5, 2.5);
@@ -99,10 +100,10 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxesList.AddAt(&fAxiscPt, 3);
   fAxesList.AddAt(&fAxisIso, 4);
 
-  fAxisMEEta.Set(160, -0.8, 0.8);
+  fAxisMEEta.Set(320, -0.8, 0.8);
   fAxisMEEta.SetNameTitle("eta", "eta");
   
-  fAxisMEPhi.Set(128, 0, TMath::TwoPi());
+  fAxisMEPhi.Set(256, 0, TMath::TwoPi());
   fAxisMEPhi.SetNameTitle("phi", "phi");
 
   fTrackAxisList.AddAt(&fAxisMEEta, 0);
@@ -116,9 +117,6 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fTrigAxisList.AddAt(&fAxistPt, 2);
   fTrigAxisList.AddAt(&fAxisIso, 3);
 
-  for(int iIso = 0; iIso < 3; iIso++) {
-    fHNTriggers[iIso] = NULL;
-  }
 }
 
 
@@ -132,14 +130,6 @@ void AliAnaConvCorrBase::CreateBaseHistograms() {
   fHistograms->SetOwner(kTRUE);
   fHistograms->SetName(fName);
 
-  for(int iIso = 0; iIso < 3; iIso++) {
-
-    fHNTriggers[iIso] = new TH1F(Form("%s_%d_fNTriggers", fName.Data(), iIso),
-								 Form("%s_%d_fNTriggers", fName.Data(), iIso),
-								 fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
-    fHNTriggers[iIso]->Sumw2();
-    fHistograms->Add(fHNTriggers[iIso]);
-  }
 
   fCorrSparse = CreateSparse(GetName(), GetTitle(), &fAxesList);
   fHistograms->Add(fCorrSparse);
@@ -194,53 +184,12 @@ THnSparseF * AliAnaConvCorrBase::CreateSparse(TString nameString, TString titleS
 }
 
 
-///____________________________________________________________________________
-// void AliAnaConvCorrBase::FillTriggerCounters(Float_t tPt, Bool_t isolated){ 
-//   //Fill histogram with trigger counters
-
-//   fHNTriggers[0]->Fill(tPt);
-  
-//   if(isolated) {
-//     fHNTriggers[isolated]->Fill(tPt);
-    
-//   }
-// }
-
-// ///_____________________________________________________________________________
-// void AliAnaConvCorrBase::FillHistograms(Float_t tPt, Float_t cPt, Float_t dPhi, Float_t dEta, Bool_t isolated) {
-//   //Fill histograms
-
-//   if(dEta) { ;}
-//   //fHdPhi[0]->Fill(tPt, cPt, dPhi);
-//   if(isolated) {
-//     //fHdPhi[isolated]->Fill(tPt, cPt, dPhi);
-//   }
-// }
-
-//_______________________________________________________________________________
-
-void AliAnaConvCorrBase::PrintStatistics()  { 
-  //Print some statistics between each file
-  for(Int_t i = 1; i <= fHNTriggers[0]->GetNbinsX(); i++) {
-    Int_t nTrig = (Int_t) fHNTriggers[0]->GetBinContent(i+1);
-    cout << "triggers: " << nTrig << endl;
-
-  }
-}
-
-
-//_______________________________________________________________________________
-void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
-  fHNTriggers[leading]->Fill(particle->Pt());
-}
-
 
 //________________________________________________________________
 void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, Int_t const tIDs[4], Int_t isolated = 0) {
   //Correlate particle with tracks
 
 
-  FillTriggerCounters(particle, isolated);
 
   Int_t nDim = fAxesList.GetSize();
   Double_t dphivalues[nDim];
@@ -251,14 +200,15 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
   trigValues[1] = particle->Phi();
   trigValues[2] = particle->Pt();
   trigValues[3] = isolated;
-  
-  fTrigSparse->Fill(trigValues);
 
   if(nDim > 4) {
 	dphivalues[5] = particle->M();
 	trackValues[5] = particle->M();
 	trigValues[4] = particle->M();
   }
+  
+  fTrigSparse->Fill(trigValues);
+
 
   for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
 	AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));
