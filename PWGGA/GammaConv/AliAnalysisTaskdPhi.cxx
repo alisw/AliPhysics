@@ -33,6 +33,7 @@
 #include <AliAODInputHandler.h>
 #include <AliAnalysisFilter.h>
 
+#include "AliConversionTrackCuts.h"
 #include "AliConversionCuts.h"
 #include "AliAODConversionPhoton.h"
 #include "AliAODConversionMother.h"
@@ -50,11 +51,8 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fHistograms(NULL),
   fHistoGamma(NULL),
   fHistoPion(NULL),
-  fDielV0TrackFilter(NULL), 
-  fDielV0Filter(NULL),
-  fDielPi0Filter(NULL),
-  fDielTrackFilter(NULL),
   fV0Filter(NULL),
+  fTrackCuts(),
   fGammas(NULL),
   fPions(NULL),
   hMETracks(NULL), 
@@ -467,9 +465,12 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   for(Int_t iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); iTrack++) {
 
 	AliVTrack * track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
-	if(track->Pt() < 0.5) continue;
-	if(TMath::Abs(track->Eta()) > 0.8) continue;
-	tracks.Add(track);
+	//if(track->Pt() < 0.5) continue;
+	//if(TMath::Abs(track->Eta()) > 0.8) continue;
+	//if(track->GetTPCNcls() > 70)continue;
+	if(fTrackCuts.AcceptTrack(static_cast<AliAODTrack*>(track), static_cast<AliAODEvent*>(fInputEvent))) {
+	  tracks.Add(track);
+	}
   }
   
   Process(fGammas, &tracks, vertexBin, centBin);

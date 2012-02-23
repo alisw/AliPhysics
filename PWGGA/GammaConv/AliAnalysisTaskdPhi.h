@@ -18,8 +18,8 @@
 #include <AliAnaConvCorrBase.h>
 #include <AliLog.h>
 class AliAnaConvIsolation;
-//class AliConversionPi0Filter;
 class AliConversionCuts;
+#include "AliConversionTrackCuts.h"
 class TList;
 class TH2I;
 //class THnSparseF;
@@ -37,10 +37,6 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  AliAnalysisFilter& GetDielV0Filter()      { return fDielV0Filter;      }
-  AliAnalysisFilter& GetDielV0TrackFilter() { return fDielV0TrackFilter; }
-  AliAnalysisFilter& GetDielTrackFilter()   { return fDielTrackFilter;   }
-  AliAnalysisFilter& GetDielPi0Filter()     { return fDielPi0Filter;     }
 
   TAxis& GetAxistPt()   { return fAxistPt;   }
   TAxis& GetAxiscPt()   { return fAxiscPt;   }
@@ -78,13 +74,9 @@ private:
   TList * fHistoGamma; //gamma histo
   TList * fHistoPion; //pion histo
 
-  AliAnalysisFilter  fDielV0TrackFilter; //Track filter
-  AliAnalysisFilter  fDielV0Filter; //v0 filter
-  AliAnalysisFilter  fDielPi0Filter; //pion filter
-  AliAnalysisFilter  fDielTrackFilter; //track filter
 
   AliConversionCuts * fV0Filter; //v0 filter
-  //AliConversionPi0Filter * fPionFilter;
+  AliConversionTrackCuts fTrackCuts;
 
   TObjArray * fGammas; //gammas
   TObjArray * fPions; //poins
