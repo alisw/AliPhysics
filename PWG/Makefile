@@ -61,6 +61,8 @@ endif
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
     ALICEINC += -I$(ALICE_ROOT)/ANALYSIS
+    ALICEINC += -I$(ALICE_ROOT)/PWG/FLOW/Base
+    ALICEINC += -I$(ALICE_ROOT)/MUON
   endif
 #endif
 

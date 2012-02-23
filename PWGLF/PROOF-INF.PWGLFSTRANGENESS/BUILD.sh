@@ -1,3 +1,3 @@
 #! /bin/sh
 
-make libPWGLFSNGENESS.so
+make libPWGLFSTRANGENESS.so
