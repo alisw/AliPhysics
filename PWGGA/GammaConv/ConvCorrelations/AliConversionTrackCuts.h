@@ -97,7 +97,7 @@ inline void AliConversionTrackCuts::SetDefaults2010()
    SetITSminNClusters(0);
    SetITSmaxChi2(1E+20);
    SetTPCminNClusters(70);
-   SetTPCmaxChi2(4.0);
+   SetTPCmaxChi2(10.0);
    SetRejectKinkDaughters();
    SetAODTestFilterBit(5);
 }

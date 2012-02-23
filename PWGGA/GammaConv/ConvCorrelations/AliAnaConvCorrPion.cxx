@@ -38,7 +38,7 @@ ClassImp(AliAnaConvCorrPion)
 //________________________________________________________________________________
 AliAnaConvCorrPion::AliAnaConvCorrPion() :
 AliAnaConvCorrBase("pion_hadron_corr", "Pion dPhi"),
-  hTriggerPtvsMass(NULL),
+//hTriggerPtvsMass(NULL),
   fAxisM()
 {
   //consctructor
@@ -47,7 +47,7 @@ AliAnaConvCorrBase("pion_hadron_corr", "Pion dPhi"),
 //________________________________________________________________________________
 AliAnaConvCorrPion::AliAnaConvCorrPion(TString name, TString title = "Pion Corr") :
   AliAnaConvCorrBase(name, title),
-  hTriggerPtvsMass(NULL),
+  //hTriggerPtvsMass(NULL),
   fAxisM()
 {
   //consctructor
@@ -76,16 +76,21 @@ void AliAnaConvCorrPion::InitMassAxis() {
 void AliAnaConvCorrPion::CreateHistograms() {
   //Create histograms
   CreateBaseHistograms();
-  hTriggerPtvsMass = new TH2D("hTriggerPtvsMass", "Pt vs Mass", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
-  GetHistograms()->Add(hTriggerPtvsMass);
+ 
+  hTriggerPtvsMass[0] = new TH2D("hTriggerPtvsMass_all", "Pt vs Mass all pizero", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
+  hTriggerPtvsMass[1] = new TH2D("hTriggerPtvsMass_leadingcone", "Pt vs Mass leading cone", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
+  hTriggerPtvsMass[2] = new TH2D("hTriggerPtvsMass_leadingevent", "Pt vs Mass leading event", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
+  GetHistograms()->Add(hTriggerPtvsMass[0]);
+  GetHistograms()->Add(hTriggerPtvsMass[1]);
+  GetHistograms()->Add(hTriggerPtvsMass[2]);
 }
 
 
 ///________________________________________________________________________________
-void AliAnaConvCorrPion::FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t isolated) {
+void AliAnaConvCorrPion::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
   //Fill histograms counting triggers
-  fHNTriggers[isolated]->Fill(particle->Pt());
-  hTriggerPtvsMass->Fill(particle->M(), particle->Pt());
+  fHNTriggers[leading]->Fill(particle->Pt());
+  hTriggerPtvsMass[leading]->Fill(particle->M(), particle->Pt());
 }
 
 //________________________________________________________________________________

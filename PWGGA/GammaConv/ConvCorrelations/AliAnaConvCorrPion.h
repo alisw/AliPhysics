@@ -36,7 +36,7 @@ public:
   //void Process(TClonesArray * pions, TClonesArray * photons, TClonesArray * tracks);
   
 
-  void FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t isolated);
+  void FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading);
   
  private:
 
@@ -46,7 +46,7 @@ public:
 
   //TH2F * fhPtVsInvMass;
 
-  TH2D * hTriggerPtvsMass; //Histograms containing number of triggers in various bins
+  TH2D * hTriggerPtvsMass[3]; //Histograms containing number of triggers in various bins
   TAxis fAxisM;  //Mass axis
 
   AliAnaConvCorrPion(const AliAnaConvCorrPion&); // not implemented
