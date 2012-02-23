@@ -20,6 +20,7 @@ class AliFlowCandidateTrack : public AliFlowTrack {
     AliFlowCandidateTrack& operator=(const AliFlowCandidateTrack& );
     ~AliFlowCandidateTrack();
 
+    void ClearMe(void);
     Int_t GetNDaughters(void)        const { return fNDaughters; }
     void  AddDaughter(Int_t value)  { if(fNDaughters<3) fDaughter[fNDaughters++]=value; }
     Int_t GetIDDaughter(Int_t value) const { return fDaughter[value]; }

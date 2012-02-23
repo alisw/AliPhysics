@@ -78,6 +78,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void SetNbinsPhi( Int_t i )  { fNbinsPhi = i; }
   void SetNbinsEta( Int_t i )  { fNbinsEta = i; }
   void SetNbinsQ( Int_t i )    { fNbinsQ = i; }
+  void SetNbinsMass( Int_t i ) { fNbinsMass = i; }
    
   void SetMultMin( Double_t i ) { fMultMin = i; }
   void SetMultMax( Double_t i ) { fMultMax = i; }
@@ -89,6 +90,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void SetEtaMax( Double_t i )  { fEtaMax = i; }
   void SetQMin( Double_t i )    { fQMin = i; }
   void SetQMax( Double_t i )    { fQMax = i; }
+  void SetMassMin( Double_t i ) { fMassMin = i; }
+  void SetMassMax( Double_t i ) { fMassMax = i; }
   void SetHistWeightvsPhiMin( Double_t i ) {fHistWeightvsPhiMin=i;}
   void SetHistWeightvsPhiMax( Double_t i ) {fHistWeightvsPhiMax=i;}
   // end setters common constants
@@ -134,6 +137,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Int_t  fNbinsPhi;  // histogram size
   Int_t  fNbinsEta;  // histogram size
   Int_t  fNbinsQ;    // histogram size
+  Int_t  fNbinsMass; // histogram size
  
   // Histograms limits
   Double_t  fMultMin;  // histogram limit 
@@ -146,6 +150,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fEtaMax;   // histogram limit
   Double_t  fQMin;     // histogram limit
   Double_t  fQMax;     // histogram limit
+  Double_t  fMassMin;  // histogram limit
+  Double_t  fMassMax;  // histogram limit
   Double_t fHistWeightvsPhiMin; //histogram limit
   Double_t fHistWeightvsPhiMax; //histogram limit
   // end common constants

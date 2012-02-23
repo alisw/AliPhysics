@@ -73,6 +73,7 @@ class AliFlowCommonHist: public TNamed {
   TProfile* GetHarmonic()            {return fHarmonic; } ; 
   TProfile* GetRefMultVsNoOfRPs()    {return fRefMultVsNoOfRPs; } ;
   TH1F*     GetHistRefMult()         {return fHistRefMult; } ; 
+  TH2F*     GetHistMassPOI()         {return fHistMassPOI; }
   TList*    GetHistList()            {return fHistList;} ;  
 
    
@@ -109,10 +110,11 @@ class AliFlowCommonHist: public TNamed {
   TProfile* fHarmonic;            // harmonic 
   TProfile* fRefMultVsNoOfRPs;    // <reference multiplicity> versus # of RPs
   TH1F*     fHistRefMult;         // reference multiplicity distribution
+  TH2F*     fHistMassPOI;         // mass distribution for POI selection
   
   TList*    fHistList;            // list to hold all histograms  
 
-  ClassDef(AliFlowCommonHist,3)   // macro for rootcint
+  ClassDef(AliFlowCommonHist,4)   // macro for rootcint
 };
 #endif
 

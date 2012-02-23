@@ -70,6 +70,7 @@ AliFlowCommonHist::AliFlowCommonHist():
   fHarmonic(NULL),
   fRefMultVsNoOfRPs(NULL),
   fHistRefMult(NULL),
+  fHistMassPOI(NULL),
   fHistList(NULL)
 {
   
@@ -106,6 +107,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHarmonic(new TProfile(*a.fHarmonic)),
   fRefMultVsNoOfRPs(new TProfile(*a.fRefMultVsNoOfRPs)),
   fHistRefMult(new TH1F(*a.fHistRefMult)),  
+  fHistMassPOI(new TH2F(*a.fHistMassPOI)),  
   fHistList(NULL)
 {
   // copy constructor
@@ -133,6 +135,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHarmonic);  
   fHistList-> Add(fRefMultVsNoOfRPs);
   fHistList-> Add(fHistRefMult); 
+  fHistList-> Add(fHistMassPOI); 
   if(!fBookOnlyBasic){fHistList-> Add(fHistQ);} 
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
@@ -173,6 +176,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
     fHarmonic(NULL),
     fRefMultVsNoOfRPs(NULL),
     fHistRefMult(NULL),
+    fHistMassPOI(NULL),
     fHistList(NULL)
 {
 
@@ -182,6 +186,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   Int_t iNbinsPhi = AliFlowCommonConstants::GetMaster()->GetNbinsPhi();
   Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
   Int_t iNbinsQ = AliFlowCommonConstants::GetMaster()->GetNbinsQ();
+  Int_t iNbinsMass = AliFlowCommonConstants::GetMaster()->GetNbinsMass();
   TString sName;
 
   Double_t  dMultMin = AliFlowCommonConstants::GetMaster()->GetMultMin();            
@@ -196,6 +201,9 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   Double_t  dQMax = AliFlowCommonConstants::GetMaster()->GetQMax();	
   Double_t  dHistWeightvsPhiMin = AliFlowCommonConstants::GetMaster()->GetHistWeightvsPhiMin();
   Double_t  dHistWeightvsPhiMax = AliFlowCommonConstants::GetMaster()->GetHistWeightvsPhiMax();
+  Double_t  dMassMin = AliFlowCommonConstants::GetMaster()->GetMassMin();
+  Double_t  dMassMax = AliFlowCommonConstants::GetMaster()->GetMassMax();
+
   
   cout<<"The settings for the common histograms are as follows:"<<endl;
   cout<<"Multiplicity: "<<iNbinsMult<<" bins between "<<dMultMin<<" and "<<dMultMax<<endl;
@@ -203,6 +211,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   cout<<"Phi: "<<iNbinsPhi<<" bins between "<<dPhiMin<<" and "<<dPhiMax<<endl;
   cout<<"Eta: "<<iNbinsEta<<" bins between "<<dEtaMin<<" and "<<dEtaMax<<endl;
   cout<<"Q: "<<iNbinsQ<<" bins between "<<dQMin<<" and "<<dQMax<<endl;
+  cout<<"Mass: "<<iNbinsMass<<" bins between "<<dMassMin<<" and "<<dMassMax<<endl;
 
   //Multiplicity
   sName = "Control_Flow_MultRP_";
@@ -401,6 +410,16 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistRefMult->SetXTitle("Reference multiplicity");
   fHistRefMult->SetYTitle("Counts");
 
+  //mass for POI selection
+  sName = "Control_Flow_Mass_POI";
+  sName +=anInput;
+  fHistMassPOI = new TH2F(sName.Data(), sName.Data(), iNbinsMass, dMassMin, dMassMax,
+			  iNbinsPt, dPtMin, dPtMax);
+  double mbWidth = (dMassMax-dMassMin)/iNbinsMass*1000.;
+  fHistMassPOI->SetXTitle("Mass (GeV/c^{2})");
+  fHistMassPOI->SetYTitle("P_{t} (GeV/c)");
+  fHistMassPOI->SetZTitle( Form("Counts/(%.2f MeV/c^{2})",mbWidth) );
+
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
   fHistList-> Add(fHistMultRP);        
@@ -425,6 +444,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHarmonic); 
   fHistList-> Add(fRefMultVsNoOfRPs); 
   fHistList-> Add(fHistRefMult);   
+  fHistList-> Add(fHistMassPOI);   
   if(!fBookOnlyBasic){fHistList-> Add(fHistQ);}           
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
@@ -464,6 +484,7 @@ AliFlowCommonHist::~AliFlowCommonHist()
   delete fHarmonic;
   delete fRefMultVsNoOfRPs;
   delete fHistRefMult;  
+  delete fHistMassPOI;  
   delete fHistList;
 }
 
@@ -664,6 +685,8 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 	if(!fBookOnlyBasic){fHistPhiEtaPOI ->Fill(dEta,dPhi,dW);}
 	//mean pt
 	fHistProMeanPtperBin ->Fill(dPt,dPt,dW);
+	//mass
+	fHistMassPOI->Fill(pTrack->Mass(),dPt,dW);
 	//count
 	dMultPOI += dW;
       }

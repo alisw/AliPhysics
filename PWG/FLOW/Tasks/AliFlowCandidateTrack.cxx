@@ -34,6 +34,16 @@ AliFlowCandidateTrack::AliFlowCandidateTrack():
   }
 }
 
+void AliFlowCandidateTrack::ClearMe(void) {
+  AliFlowTrackSimple::Clear();
+  fNDaughters = 0;
+  for(int i=0; i!=5; ++i) {
+    fDaughter[i] = -1;
+    fTrack[i] = NULL;
+  }
+  return;
+}
+
 AliFlowCandidateTrack::AliFlowCandidateTrack(const AliFlowCandidateTrack& aTrack):
   AliFlowTrack(aTrack),
   fNDaughters(aTrack.fNDaughters)
