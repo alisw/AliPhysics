@@ -917,9 +917,6 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       continue;
     }
     fh1PtJetsIn[iType]->Fill(ptJet);
-    if(ptJet>ptOld){
-      Printf("%s:%d Jets Type %d Not Sorted !! %d:%.3E %d:%.3E",(char*)__FILE__,__LINE__,iType,ij,ptJet,ij-1,ptOld);
-    }
     ptOld = ptJet;
     
     // find the dijets assume sorting and acceptance cut...
