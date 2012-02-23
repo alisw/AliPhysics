@@ -34,6 +34,7 @@ public:
   void      SetDCARmax(Double_t value)                {fDCARmax = value; fDCARptFormula = ""; fDCARfixed = kTRUE;}
   void      SetDCAZPtFormula(const char *formula)     {fDCAZptFormula = formula; fDCAZfixed = kFALSE;}
   void      SetDCAZmax(Double_t value)                {fDCAZmax = value; fDCAZptFormula = ""; fDCAZfixed = kTRUE;}
+  void      SetDCAXYmax(Double_t value)                {fDCAXYmax = value*value;}
   
   void      SetSPDminNClusters(Int_t value)           {fSPDminNClusters = value;}
   void      SetITSminNClusters(Int_t value)           {fITSminNClusters = value;}
@@ -66,6 +67,8 @@ protected :
    TString    fDCAZptFormula;          // expression to compute longitudinal DCA sigma w.r. to pt
    Double_t   fDCAZmax;                // maximum value for longitudinal DCA
 
+  Double_t fDCAXYmax;
+
    Int_t      fSPDminNClusters;        // minimum number of required clusters in SPD
    Int_t      fITSminNClusters;        // minimum number of required clusters in ITS
    Double_t   fITSmaxChi2;             // maximum chi2 / number of clusters in ITS
@@ -94,19 +97,11 @@ inline void AliConversionTrackCuts::SetDefaults2010()
 // Default settings for cuts used in 2010
 //
 
-   AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
-   AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
-   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
-   SetEtaRange(-0.8, 0.8);
-   //SetDCARPtFormula("0.0182+0.0350/pt^1.01");
-   SetDCAZmax(2.0);
-   SetSPDminNClusters(0);
-   SetITSminNClusters(0);
-   SetITSmaxChi2(1E+20);
+   SetDCAZmax(3.0);
+   SetDCAXYmax(2.5);
    SetTPCminNClusters(70);
-   SetTPCmaxChi2(10.0);
+   SetTPCmaxChi2(2.0);
    SetRejectKinkDaughters();
-   SetAODTestFilterBit(5);
 }
 
 #endif

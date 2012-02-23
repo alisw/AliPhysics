@@ -64,6 +64,7 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fDCAZfixed(kTRUE),
   fDCAZptFormula(""),
   fDCAZmax(1E20),
+  fDCAXYmax(1E20),
   fSPDminNClusters(0),
   fITSminNClusters(0),
   fITSmaxChi2(1E20),
@@ -128,18 +129,7 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
   
   FillHistograms(cutIndex, track);
   cutIndex++;
-  // step #0: check SPD and ITS clusters
-  Int_t nSPD = 0;
-  nSPD  = TESTBIT(track->GetITSClusterMap(), 0);
-  nSPD += TESTBIT(track->GetITSClusterMap(), 1);
-  if (nSPD < fSPDminNClusters) {
-  FillHistograms(cutIndex, track);
-	AliDebug(AliLog::kDebug + 2, "Not enough SPD clusters in this track. Rejected");
-	return kFALSE;
-  }
-  cutIndex++;
   
-  // step #1: check number of clusters in TPC
   if (track->GetTPCNcls() < fTPCminNClusters) {
   FillHistograms(cutIndex, track);
 	AliDebug(AliLog::kDebug + 2, "Too few TPC clusters. Rejected");
@@ -147,14 +137,6 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
   }
   cutIndex++;
   
-  if (track->GetITSNcls() < fITSminNClusters) {
-  FillHistograms(cutIndex, track);
-	AliDebug(AliLog::kDebug + 2, "Too few ITS clusters. Rejected");
-	return kFALSE;
-  }
-  cutIndex++;
-  
-  // step #2: check chi square
   if (track->Chi2perNDF() > fTPCmaxChi2) {
   FillHistograms(cutIndex, track);
 	AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
@@ -162,98 +144,53 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track, AliAODEvent * ao
   }
   cutIndex++;
 
-  if (track->Chi2perNDF() > fITSmaxChi2) {
-  FillHistograms(cutIndex, track);
-	AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
+  AliAODVertex *vertex = track->GetProdVertex();
+  if (vertex && fRejectKinkDaughters) {
+	if (vertex->GetType() == AliAODVertex::kKink) {
+	  FillHistograms(cutIndex, track);
+	  AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
+	  return kFALSE;
+	}
+  }
+  cutIndex++;
+
+  if(track->ZAtDCA() > fDCAZmax) {
+	FillHistograms(cutIndex, track);
+	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
+	return kFALSE;
+  }
+  cutIndex++;
+
+  Float_t xatdca = track->XAtDCA();
+  Float_t yatdca = track->YAtDCA();
+  
+  if(xatdca*xatdca * yatdca*yatdca > fDCAXYmax) {
+	FillHistograms(cutIndex, track);
+	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
 	return kFALSE;
   }
   cutIndex++;
 
 
-   // step #3: reject kink daughters
-   AliAODVertex *vertex = track->GetProdVertex();
-   if (vertex && fRejectKinkDaughters) {
-      if (vertex->GetType() == AliAODVertex::kKink) {
-  FillHistograms(cutIndex, track);
-         AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
-         return kFALSE;
-      }
-   }
+
+  ULong_t status = track->GetStatus();
+  if ((status&AliESDtrack::kTPCrefit) == 0) {
+	FillHistograms(cutIndex, track);
+	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
+	return kFALSE;
+  }
+  cutIndex++;
+
+  if ((status&AliESDtrack::kITSrefit) == 0) {
+	FillHistograms(cutIndex, track);
+	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
+	return kFALSE;
+  }
   cutIndex++;
 
 
-   // step #4: DCA cut (transverse)
-   Double_t b[2], cov[3];
-   vertex = aodEvent->GetPrimaryVertex();
-   if (!vertex) {
-  FillHistograms(cutIndex, track);
-      AliDebug(AliLog::kDebug + 2, "NULL vertex");
-      return kFALSE;
-   }
-  cutIndex++;
 
-   if (!track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov)) {
-      AliDebug(AliLog::kDebug + 2, "Failed propagation to vertex");
-  FillHistograms(cutIndex, track);
-      return kFALSE;
-   }
-  cutIndex++;
-
-   // if the DCA cut is not fixed, compute current value
-   if (!fDCARfixed) {
-	 FillHistograms(cutIndex, track);
-      static TString str(fDCARptFormula);
-      str.ReplaceAll("pt", "x");
-      static const TFormula dcaXY(Form("%s_dcaXY", GetName()), str.Data());
-      fDCARmax = dcaXY.Eval(track->Pt());
-   }
-  cutIndex++;
-
-   // check the cut
-   if (TMath::Abs(b[0]) > fDCARmax) {
-       FillHistograms(cutIndex, track);
-	   AliDebug(AliLog::kDebug + 2, "Too large transverse DCA");
-      return kFALSE;
-   }
-  cutIndex++;
-
- 
-   // step #5: DCA cut (longitudinal)
-   // the DCA has already been computed above
-   // if the DCA cut is not fixed, compute current value
-   if (!fDCAZfixed) {
-        FillHistograms(cutIndex, track);
-		static TString str(fDCAZptFormula);
-      str.ReplaceAll("pt", "x");
-      static const TFormula dcaZ(Form("%s_dcaXY", GetName()), str.Data());
-      fDCAZmax = dcaZ.Eval(track->Pt());
-   }
-  cutIndex++;
-
-   // check the cut
-  if (TMath::Abs(b[1]) > fDCAZmax) {
-       FillHistograms(cutIndex, track);
-	   AliDebug(AliLog::kDebug + 2, "Too large longitudinal DCA");
-      return kFALSE;
-   }
-
-  cutIndex++;
- 
-   // step #6: check eta/pt range
-   if (track->Eta() < fEta[0] || track->Eta() > fEta[1]) {
-      FillHistograms(cutIndex, track);
-	  AliDebug(AliLog::kDebug + 2, "Outside ETA acceptance");
-      return kFALSE;
-   }
-  cutIndex++;
-
-   // if (track->Pt() < fPt[0] || track->Pt() > fPt[1]) {
-   //    AliDebug(AliLog::kDebug + 2, "Outside PT acceptance");
-   //    return kFALSE;
-   // }
-
-   // if we are here, all cuts were passed and no exit point was got
-   return kTRUE;
+  return kTRUE;
 }
 
 //_________________________________________________________________________________________________
