@@ -118,6 +118,15 @@ void PostProcessCTau(Int_t corrType=1) {
          ptAsPx=ptAs->ProjectionX("_px",0,-1,"e"); 
          ptMcPx=ptMc->ProjectionX("_px",0,-1,"e"); 
          Correct(pt, ptAsPx, ptMcPx);
+	 /*
+         TString effName = "Efficiency for " + pnam[i] + " (" + name + ")";
+         TH1 *eff = (TH1*)ptAsPx->Clone();
+         eff->SetTitle(effName.Data());
+         eff->Divide(ptAsPx,ptMcPx,1,1,"b");
+         eff->SetName("eff");
+         eff->Scale(brch[i]);
+         new TCanvas; eff->Draw();
+	 */
       } else {
          pt=cr->ProjectionX("_px",0,-1,"e");
       }
