@@ -5,6 +5,8 @@
 // Authors: (this code is mostly copied from AliRsnTrackQuality) adapted by Svein Lindal 	*
 
 class AliAODEvent;
+class TH2F;
+class TList;
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisCuts.h"
@@ -21,7 +23,7 @@ public:
 
   AliConversionTrackCuts();
   AliConversionTrackCuts(TString name, TString title);
-  
+  ~AliConversionTrackCuts();
 
   void      AddStatusFlag(ULong_t f, Bool_t on)       {if (on) fFlagsOn = fFlagsOn | f; else fFlagsOff = fFlagsOff | f;}
   void      SetStatusFlags(ULong_t f, Bool_t on)      {if (on) fFlagsOn = f; else fFlagsOff = f;}
@@ -44,6 +46,8 @@ public:
   void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
   void      SetDefaults2010();
   
+  TList * CreateHistograms();
+  void FillHistograms(Int_t cutIndex, AliVTrack * track);
   virtual void   Print(const Option_t *option = "") const;
 
 protected :
@@ -70,6 +74,8 @@ protected :
    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
    Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
 
+  TH2F * fhPhi;
+  TList * fHistograms;
 
   AliConversionTrackCuts(const AliConversionTrackCuts&); // not implemented
   AliConversionTrackCuts& operator=(const AliConversionTrackCuts&); // not implemented
@@ -89,11 +95,11 @@ inline void AliConversionTrackCuts::SetDefaults2010()
 
    AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
    AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
-   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+   //AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
    SetEtaRange(-0.8, 0.8);
    //SetDCARPtFormula("0.0182+0.0350/pt^1.01");
    SetDCAZmax(2.0);
-   SetSPDminNClusters(1);
+   SetSPDminNClusters(0);
    SetITSminNClusters(0);
    SetITSmaxChi2(1E+20);
    SetTPCminNClusters(70);
