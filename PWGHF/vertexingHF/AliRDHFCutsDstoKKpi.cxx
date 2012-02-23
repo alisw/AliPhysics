@@ -781,8 +781,7 @@ void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
  
    
   const Int_t nptbins=4;
-  Float_t* ptbins;
-  ptbins=new Float_t[nptbins+1];
+  Float_t ptbins[nptbins+1];
   ptbins[0]=2.;
   ptbins[1]=4.;
   ptbins[2]=6.;
