@@ -28,5 +28,6 @@
 #pragma link C++ class AliStaPart+;
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaVertex+;
+#pragma link C++ class AliAnalysisTaskTrgContam+;
 
 #endif
