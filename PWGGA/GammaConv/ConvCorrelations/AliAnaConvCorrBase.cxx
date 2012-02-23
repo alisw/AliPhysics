@@ -247,6 +247,13 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
   Double_t trackValues[nDim];
   Double_t trigValues[nDim - 1];
 
+
+  trigValues[0] = particle->Eta();
+  trigValues[1] = particle->Phi();
+  trigValues[2] = particle->Pt();
+  trigValues[3] = isolated;
+  fTrigSparse->Fill(trigValues);
+
   for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
 	AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));
 	Int_t tid = track->GetID();
@@ -267,10 +274,6 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
 	trackValues[3] = track->Pt();
 	trackValues[4] = isolated;
 
-	trigValues[0] = particle->Eta();
-	trigValues[1] = particle->Phi();
-	trigValues[2] = particle->Pt();
-	trigValues[4] = isolated;
 
 	if(nDim > 4) {
 	  dphivalues[5] = particle->M();
@@ -280,7 +283,6 @@ void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle
 	
 	fCorrSparse->Fill(dphivalues);
 	fTrackSparse->Fill(trackValues);
-	fTrigSparse->Fill(trigValues);
   }
 }
 
