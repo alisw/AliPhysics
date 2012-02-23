@@ -373,7 +373,7 @@ AliFMDEventPlaneFinder::CalcQVectors(TH2D* h, TH1D* eHist)
       if (fUsePhiWeights) weight *= GetPhiWeight(e, p);
       // fix for FMD1 hole
       if (e > 168 && p == 14) {
-	h->GetBinContent(e, 4);
+	weight = h->GetBinContent(e, 4);
         if (fUsePhiWeights) weight *= GetPhiWeight(e, 4);
       }
       fHistPhiDist->Fill(eta, phi, weight);
@@ -442,7 +442,7 @@ AliFMDEventPlaneFinder::FillHists(AliAODForwardEP* fmdEP)
   // TPC comparison
   AliEventplane* ep = fEvent->GetEventplane();
   Double_t tpcEP = -1;
-  if (ep) ep->GetEventplane("Q");
+  if (ep) tpcEP = ep->GetEventplane("Q");
 
   Double_t diffTPC = fmdEPt - tpcEP;
 
@@ -458,7 +458,7 @@ AliFMDEventPlaneFinder::FillHists(AliAODForwardEP* fmdEP)
 
   // VZERO comparison
   Double_t vzeroEP = -1;
-  if (ep) ep->GetEventplane("V0");
+  if (ep) vzeroEP = ep->GetEventplane("V0", fEvent, 2);
 
   Double_t diffVZERO = fmdEPt - vzeroEP;
 
