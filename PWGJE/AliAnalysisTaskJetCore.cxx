@@ -69,6 +69,7 @@ fVtxZMin(-10.),
 fVtxZMax(10.),
 fEvtClassMin(0),
 fEvtClassMax(4),
+fFilterMask(0),
 fRadioFrac(0.2),
 fMinDist(0.1),
 fCentMin(0.),
@@ -343,6 +344,7 @@ fVtxZMin(-10.),
 fVtxZMax(10.),
 fEvtClassMin(0),
 fEvtClassMax(4),
+fFilterMask(0),
 fRadioFrac(0.2),
 fMinDist(0.1),
 fCentMin(0.),
@@ -756,153 +758,153 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
 
 
-    fh2DeltaRC10pt1 = new TH2F("DeltaRC10pt1","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt1 = new TH2F("DeltaRC20pt1","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt1 = new TH2F("DeltaRC30pt1","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt1 = new TH2F("DeltaRC60pt1","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt2 = new TH2F("DeltaRC10pt2","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt2 = new TH2F("DeltaRC20pt2","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt2 = new TH2F("DeltaRC30pt2","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt2 = new TH2F("DeltaRC60pt2","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt3 = new TH2F("DeltaRC10pt3","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt3 = new TH2F("DeltaRC20pt3","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt3 = new TH2F("DeltaRC30pt3","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt3 = new TH2F("DeltaRC60pt3","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt4 = new TH2F("DeltaRC10pt4","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt4 = new TH2F("DeltaRC20pt4","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt4 = new TH2F("DeltaRC30pt4","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt4 = new TH2F("DeltaRC60pt4","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaEtaC10pt1 = new TH2F("DeltaEtaC10pt1","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt1 = new TH2F("DeltaEtaC20pt1","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt1 = new TH2F("DeltaEtaC30pt1","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt1 = new TH2F("DeltaEtaC60pt1","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt2 = new TH2F("DeltaEtaC10pt2","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt2 = new TH2F("DeltaEtaC20pt2","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt2 = new TH2F("DeltaEtaC30pt2","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt2 = new TH2F("DeltaEtaC60pt2","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt3 = new TH2F("DeltaEtaC10pt3","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt3 = new TH2F("DeltaEtaC20pt3","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt3 = new TH2F("DeltaEtaC30pt3","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt3 = new TH2F("DeltaEtaC60pt3","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt4 = new TH2F("DeltaEtaC10pt4","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt4 = new TH2F("DeltaEtaC20pt4","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt4 = new TH2F("DeltaEtaC30pt4","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt4 = new TH2F("DeltaEtaC60pt4","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaPhiC10pt1 = new TH2F("DeltaPhiC10pt1","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt1 = new TH2F("DeltaPhiC20pt1","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt1 = new TH2F("DeltaPhiC30pt1","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt1 = new TH2F("DeltaPhiC60pt1","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt2 = new TH2F("DeltaPhiC10pt2","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt2 = new TH2F("DeltaPhiC20pt2","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt2 = new TH2F("DeltaPhiC30pt2","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt2 = new TH2F("DeltaPhiC60pt2","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt3 = new TH2F("DeltaPhiC10pt3","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt3 = new TH2F("DeltaPhiC20pt3","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt3 = new TH2F("DeltaPhiC30pt3","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt3 = new TH2F("DeltaPhiC60pt3","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt4 = new TH2F("DeltaPhiC10pt4","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt4 = new TH2F("DeltaPhiC20pt4","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt4 = new TH2F("DeltaPhiC30pt4","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt4 = new TH2F("DeltaPhiC60pt4","",150, 0., 150.,100,-6.5,6.5); 
+    fh2DeltaRC10pt1 = new TH2F("DeltaRC10pt1","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt1 = new TH2F("DeltaRC20pt1","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt1 = new TH2F("DeltaRC30pt1","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt1 = new TH2F("DeltaRC60pt1","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt2 = new TH2F("DeltaRC10pt2","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt2 = new TH2F("DeltaRC20pt2","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt2 = new TH2F("DeltaRC30pt2","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt2 = new TH2F("DeltaRC60pt2","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt3 = new TH2F("DeltaRC10pt3","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt3 = new TH2F("DeltaRC20pt3","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt3 = new TH2F("DeltaRC30pt3","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt3 = new TH2F("DeltaRC60pt3","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt4 = new TH2F("DeltaRC10pt4","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt4 = new TH2F("DeltaRC20pt4","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt4 = new TH2F("DeltaRC30pt4","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt4 = new TH2F("DeltaRC60pt4","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaEtaC10pt1 = new TH2F("DeltaEtaC10pt1","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt1 = new TH2F("DeltaEtaC20pt1","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt1 = new TH2F("DeltaEtaC30pt1","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt1 = new TH2F("DeltaEtaC60pt1","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt2 = new TH2F("DeltaEtaC10pt2","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt2 = new TH2F("DeltaEtaC20pt2","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt2 = new TH2F("DeltaEtaC30pt2","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt2 = new TH2F("DeltaEtaC60pt2","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt3 = new TH2F("DeltaEtaC10pt3","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt3 = new TH2F("DeltaEtaC20pt3","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt3 = new TH2F("DeltaEtaC30pt3","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt3 = new TH2F("DeltaEtaC60pt3","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt4 = new TH2F("DeltaEtaC10pt4","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt4 = new TH2F("DeltaEtaC20pt4","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt4 = new TH2F("DeltaEtaC30pt4","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt4 = new TH2F("DeltaEtaC60pt4","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaPhiC10pt1 = new TH2F("DeltaPhiC10pt1","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt1 = new TH2F("DeltaPhiC20pt1","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt1 = new TH2F("DeltaPhiC30pt1","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt1 = new TH2F("DeltaPhiC60pt1","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt2 = new TH2F("DeltaPhiC10pt2","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt2 = new TH2F("DeltaPhiC20pt2","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt2 = new TH2F("DeltaPhiC30pt2","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt2 = new TH2F("DeltaPhiC60pt2","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt3 = new TH2F("DeltaPhiC10pt3","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt3 = new TH2F("DeltaPhiC20pt3","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt3 = new TH2F("DeltaPhiC30pt3","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt3 = new TH2F("DeltaPhiC60pt3","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt4 = new TH2F("DeltaPhiC10pt4","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt4 = new TH2F("DeltaPhiC20pt4","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt4 = new TH2F("DeltaPhiC30pt4","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt4 = new TH2F("DeltaPhiC60pt4","",150, 0., 15.,100,-6.5,6.5); 
 
-    fh2DeltaRC10pt1lead = new TH2F("DeltaRC10pt1lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt1lead = new TH2F("DeltaRC20pt1lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt1lead = new TH2F("DeltaRC30pt1lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt1lead = new TH2F("DeltaRC60pt1lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt2lead = new TH2F("DeltaRC10pt2lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt2lead = new TH2F("DeltaRC20pt2lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt2lead = new TH2F("DeltaRC30pt2lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt2lead = new TH2F("DeltaRC60pt2lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt3lead = new TH2F("DeltaRC10pt3lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt3lead = new TH2F("DeltaRC20pt3lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt3lead = new TH2F("DeltaRC30pt3lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt3lead = new TH2F("DeltaRC60pt3lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt4lead = new TH2F("DeltaRC10pt4lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt4lead = new TH2F("DeltaRC20pt4lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt4lead = new TH2F("DeltaRC30pt4lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt4lead = new TH2F("DeltaRC60pt4lead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaEtaC10pt1lead = new TH2F("DeltaEtaC10pt1lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt1lead = new TH2F("DeltaEtaC20pt1lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt1lead = new TH2F("DeltaEtaC30pt1lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt1lead = new TH2F("DeltaEtaC60pt1lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt2lead = new TH2F("DeltaEtaC10pt2lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt2lead = new TH2F("DeltaEtaC20pt2lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt2lead = new TH2F("DeltaEtaC30pt2lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt2lead = new TH2F("DeltaEtaC60pt2lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt3lead = new TH2F("DeltaEtaC10pt3lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt3lead = new TH2F("DeltaEtaC20pt3lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt3lead = new TH2F("DeltaEtaC30pt3lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt3lead = new TH2F("DeltaEtaC60pt3lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt4lead = new TH2F("DeltaEtaC10pt4lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt4lead = new TH2F("DeltaEtaC20pt4lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt4lead = new TH2F("DeltaEtaC30pt4lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt4lead = new TH2F("DeltaEtaC60pt4lead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaPhiC10pt1lead = new TH2F("DeltaPhiC10pt1lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt1lead = new TH2F("DeltaPhiC20pt1lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt1lead = new TH2F("DeltaPhiC30pt1lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt1lead = new TH2F("DeltaPhiC60pt1lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt2lead = new TH2F("DeltaPhiC10pt2lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt2lead = new TH2F("DeltaPhiC20pt2lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt2lead = new TH2F("DeltaPhiC30pt2lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt2lead = new TH2F("DeltaPhiC60pt2lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt3lead = new TH2F("DeltaPhiC10pt3lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt3lead = new TH2F("DeltaPhiC20pt3lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt3lead = new TH2F("DeltaPhiC30pt3lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt3lead = new TH2F("DeltaPhiC60pt3lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt4lead = new TH2F("DeltaPhiC10pt4lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt4lead = new TH2F("DeltaPhiC20pt4lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt4lead = new TH2F("DeltaPhiC30pt4lead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt4lead = new TH2F("DeltaPhiC60pt4lead","",150, 0., 150.,100,-6.5,6.5); 
+    fh2DeltaRC10pt1lead = new TH2F("DeltaRC10pt1lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt1lead = new TH2F("DeltaRC20pt1lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt1lead = new TH2F("DeltaRC30pt1lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt1lead = new TH2F("DeltaRC60pt1lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt2lead = new TH2F("DeltaRC10pt2lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt2lead = new TH2F("DeltaRC20pt2lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt2lead = new TH2F("DeltaRC30pt2lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt2lead = new TH2F("DeltaRC60pt2lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt3lead = new TH2F("DeltaRC10pt3lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt3lead = new TH2F("DeltaRC20pt3lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt3lead = new TH2F("DeltaRC30pt3lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt3lead = new TH2F("DeltaRC60pt3lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt4lead = new TH2F("DeltaRC10pt4lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt4lead = new TH2F("DeltaRC20pt4lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt4lead = new TH2F("DeltaRC30pt4lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt4lead = new TH2F("DeltaRC60pt4lead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaEtaC10pt1lead = new TH2F("DeltaEtaC10pt1lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt1lead = new TH2F("DeltaEtaC20pt1lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt1lead = new TH2F("DeltaEtaC30pt1lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt1lead = new TH2F("DeltaEtaC60pt1lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt2lead = new TH2F("DeltaEtaC10pt2lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt2lead = new TH2F("DeltaEtaC20pt2lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt2lead = new TH2F("DeltaEtaC30pt2lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt2lead = new TH2F("DeltaEtaC60pt2lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt3lead = new TH2F("DeltaEtaC10pt3lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt3lead = new TH2F("DeltaEtaC20pt3lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt3lead = new TH2F("DeltaEtaC30pt3lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt3lead = new TH2F("DeltaEtaC60pt3lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt4lead = new TH2F("DeltaEtaC10pt4lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt4lead = new TH2F("DeltaEtaC20pt4lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt4lead = new TH2F("DeltaEtaC30pt4lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt4lead = new TH2F("DeltaEtaC60pt4lead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaPhiC10pt1lead = new TH2F("DeltaPhiC10pt1lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt1lead = new TH2F("DeltaPhiC20pt1lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt1lead = new TH2F("DeltaPhiC30pt1lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt1lead = new TH2F("DeltaPhiC60pt1lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt2lead = new TH2F("DeltaPhiC10pt2lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt2lead = new TH2F("DeltaPhiC20pt2lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt2lead = new TH2F("DeltaPhiC30pt2lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt2lead = new TH2F("DeltaPhiC60pt2lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt3lead = new TH2F("DeltaPhiC10pt3lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt3lead = new TH2F("DeltaPhiC20pt3lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt3lead = new TH2F("DeltaPhiC30pt3lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt3lead = new TH2F("DeltaPhiC60pt3lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt4lead = new TH2F("DeltaPhiC10pt4lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt4lead = new TH2F("DeltaPhiC20pt4lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt4lead = new TH2F("DeltaPhiC30pt4lead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt4lead = new TH2F("DeltaPhiC60pt4lead","",150, 0., 15.,100,-6.5,6.5); 
 
 
-    fh2DeltaRC10pt1sublead = new TH2F("DeltaRC10pt1sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt1sublead = new TH2F("DeltaRC20pt1sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt1sublead = new TH2F("DeltaRC30pt1sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt1sublead = new TH2F("DeltaRC60pt1sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt2sublead = new TH2F("DeltaRC10pt2sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt2sublead = new TH2F("DeltaRC20pt2sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt2sublead = new TH2F("DeltaRC30pt2sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt2sublead = new TH2F("DeltaRC60pt2sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt3sublead = new TH2F("DeltaRC10pt3sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt3sublead = new TH2F("DeltaRC20pt3sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt3sublead = new TH2F("DeltaRC30pt3sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt3sublead = new TH2F("DeltaRC60pt3sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC10pt4sublead = new TH2F("DeltaRC10pt4sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC20pt4sublead = new TH2F("DeltaRC20pt4sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC30pt4sublead = new TH2F("DeltaRC30pt4sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaRC60pt4sublead = new TH2F("DeltaRC60pt4sublead","",150, 0., 150.,100,0.,1.5); 
-    fh2DeltaEtaC10pt1sublead = new TH2F("DeltaEtaC10pt1sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt1sublead = new TH2F("DeltaEtaC20pt1sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt1sublead = new TH2F("DeltaEtaC30pt1sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt1sublead = new TH2F("DeltaEtaC60pt1sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt2sublead = new TH2F("DeltaEtaC10pt2sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt2sublead = new TH2F("DeltaEtaC20pt2sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt2sublead = new TH2F("DeltaEtaC30pt2sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt2sublead = new TH2F("DeltaEtaC60pt2sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt3sublead = new TH2F("DeltaEtaC10pt3sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt3sublead = new TH2F("DeltaEtaC20pt3sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt3sublead = new TH2F("DeltaEtaC30pt3sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt3sublead = new TH2F("DeltaEtaC60pt3sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt4sublead = new TH2F("DeltaEtaC10pt4sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt4sublead = new TH2F("DeltaEtaC20pt4sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt4sublead = new TH2F("DeltaEtaC30pt4sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt4sublead = new TH2F("DeltaEtaC60pt4sublead","",150, 0., 150.,100,-1.5,1.5); 
-    fh2DeltaPhiC10pt1sublead = new TH2F("DeltaPhiC10pt1sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt1sublead = new TH2F("DeltaPhiC20pt1sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt1sublead = new TH2F("DeltaPhiC30pt1sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt1sublead = new TH2F("DeltaPhiC60pt1sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt2sublead = new TH2F("DeltaPhiC10pt2sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt2sublead = new TH2F("DeltaPhiC20pt2sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt2sublead = new TH2F("DeltaPhiC30pt2sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt2sublead = new TH2F("DeltaPhiC60pt2sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt3sublead = new TH2F("DeltaPhiC10pt3sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt3sublead = new TH2F("DeltaPhiC20pt3sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt3sublead = new TH2F("DeltaPhiC30pt3sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt3sublead = new TH2F("DeltaPhiC60pt3sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt4sublead = new TH2F("DeltaPhiC10pt4sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt4sublead = new TH2F("DeltaPhiC20pt4sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt4sublead = new TH2F("DeltaPhiC30pt4sublead","",150, 0., 150.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt4sublead = new TH2F("DeltaPhiC60pt4sublead","",150, 0., 150.,100,-6.5,6.5); 
+    fh2DeltaRC10pt1sublead = new TH2F("DeltaRC10pt1sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt1sublead = new TH2F("DeltaRC20pt1sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt1sublead = new TH2F("DeltaRC30pt1sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt1sublead = new TH2F("DeltaRC60pt1sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt2sublead = new TH2F("DeltaRC10pt2sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt2sublead = new TH2F("DeltaRC20pt2sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt2sublead = new TH2F("DeltaRC30pt2sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt2sublead = new TH2F("DeltaRC60pt2sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt3sublead = new TH2F("DeltaRC10pt3sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt3sublead = new TH2F("DeltaRC20pt3sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt3sublead = new TH2F("DeltaRC30pt3sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt3sublead = new TH2F("DeltaRC60pt3sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC10pt4sublead = new TH2F("DeltaRC10pt4sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC20pt4sublead = new TH2F("DeltaRC20pt4sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC30pt4sublead = new TH2F("DeltaRC30pt4sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaRC60pt4sublead = new TH2F("DeltaRC60pt4sublead","",150, 0., 15.,100,0.,1.5); 
+    fh2DeltaEtaC10pt1sublead = new TH2F("DeltaEtaC10pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt1sublead = new TH2F("DeltaEtaC20pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt1sublead = new TH2F("DeltaEtaC30pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt1sublead = new TH2F("DeltaEtaC60pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt2sublead = new TH2F("DeltaEtaC10pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt2sublead = new TH2F("DeltaEtaC20pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt2sublead = new TH2F("DeltaEtaC30pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt2sublead = new TH2F("DeltaEtaC60pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt3sublead = new TH2F("DeltaEtaC10pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt3sublead = new TH2F("DeltaEtaC20pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt3sublead = new TH2F("DeltaEtaC30pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt3sublead = new TH2F("DeltaEtaC60pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC10pt4sublead = new TH2F("DeltaEtaC10pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC20pt4sublead = new TH2F("DeltaEtaC20pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC30pt4sublead = new TH2F("DeltaEtaC30pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaEtaC60pt4sublead = new TH2F("DeltaEtaC60pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
+    fh2DeltaPhiC10pt1sublead = new TH2F("DeltaPhiC10pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt1sublead = new TH2F("DeltaPhiC20pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt1sublead = new TH2F("DeltaPhiC30pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt1sublead = new TH2F("DeltaPhiC60pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt2sublead = new TH2F("DeltaPhiC10pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt2sublead = new TH2F("DeltaPhiC20pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt2sublead = new TH2F("DeltaPhiC30pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt2sublead = new TH2F("DeltaPhiC60pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt3sublead = new TH2F("DeltaPhiC10pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt3sublead = new TH2F("DeltaPhiC20pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt3sublead = new TH2F("DeltaPhiC30pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt3sublead = new TH2F("DeltaPhiC60pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC10pt4sublead = new TH2F("DeltaPhiC10pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC20pt4sublead = new TH2F("DeltaPhiC20pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC30pt4sublead = new TH2F("DeltaPhiC30pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
+    fh2DeltaPhiC60pt4sublead = new TH2F("DeltaPhiC60pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
 
 
 
@@ -1344,7 +1346,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Int_t indexsublead=-1;
    Int_t indexstop=-1;
   
-   TMath::Sort(fListJets[0]->GetEntries(),ptsub,inord);
+   if(fListJets[0]->GetEntries()>0) TMath::Sort(fListJets[0]->GetEntries(),ptsub,inord);
 
    for(Int_t jj=0;jj<fListJets[0]->GetEntries();jj++){
    AliAODJet* jetlead = (AliAODJet*)(fListJets[0]->At(inord[jj]));
@@ -1844,7 +1846,7 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
     Int_t iCount = 0;
  
-  Int_t fFilterMask=272;
+    
     for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
       AliAODTrack *tr = fAOD->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
@@ -1864,7 +1866,7 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
     Int_t iCount = 0;
  
-  Int_t fFilterMask=272;
+  
     for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
       AliAODTrack *tr = fAOD->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;

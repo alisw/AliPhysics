@@ -65,6 +65,7 @@ public:
    virtual void     SetVtxZMax(Float_t z) { fVtxZMax = z; }
    virtual void     SetEvtClassMin(Int_t evtClass) { fEvtClassMin = evtClass; }
    virtual void     SetEvtClassMax(Int_t evtClass) { fEvtClassMax = evtClass; }
+   virtual void     SetFilterMask(UInt_t i){fFilterMask = i;}
    virtual void     SetRadioFrac(Float_t radiofrac) { fRadioFrac = radiofrac; }
    virtual void     SetMinDist(Float_t minDist) { fMinDist = minDist; }
    virtual void     SetCentMin(Float_t cent) { fCentMin = cent; }
@@ -104,6 +105,7 @@ private:
    Float_t fVtxZMax;	  // upper bound on vertex z
    Int_t   fEvtClassMin;	  // lower bound on event class
    Int_t   fEvtClassMax;	  // upper bound on event class
+   UInt_t  fFilterMask;            // filter bit for slecected tracks
    Float_t fRadioFrac;                          //!size of the concentric cone
    Float_t fMinDist;   
    Float_t fCentMin;	  // lower bound on centrality

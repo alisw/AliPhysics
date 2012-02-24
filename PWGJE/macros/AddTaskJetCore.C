@@ -25,13 +25,12 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
 
 
    task->SetBranchNames(bRec1,bRec2);
-   //task->SetOfflineTrgMask(AliVEvent::kMB);
-
+   task->SetOfflineTrgMask(kTriggerMask);
    task->SetEvtClassMin(eventClassMin);
    task->SetEvtClassMax(eventClassMax);
    task->SetCentMin(0.);
    task->SetCentMax(100.);
-
+   task->SetFilterMask(filterMask); 
  
    
    task->SetJetPtMin(0.);   
