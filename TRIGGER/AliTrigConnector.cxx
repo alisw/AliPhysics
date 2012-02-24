@@ -61,27 +61,6 @@ AliTrigConnector::~AliTrigConnector()
 }
 
 //______________________________________________________________________________
-AliTrigConnector& AliTrigConnector::operator=(const AliTrigConnector &other)
-{
-// Assignment
-  if (&other == this) return *this;
-  TNamed::operator=(other);
-  fFeeder = other.fFeeder;
-  fOutput = other.fOutput;
-  fNclients = other.fNclients;
-  fArraySize = other.fArraySize;
-  fInputs = 0;
-  fDevices = 0;
-  if (fArraySize && other.fInputs) {
-    fInputs = new Int_t[fArraySize];
-    memcpy(fInputs, other.fInputs, fNclients*sizeof(Int_t));
-    fDevices = new TObjArray(fArraySize);
-    for (Int_t i=0; i<fNclients; i++) fDevices->Add(other.fDevices->At(i));
-  }     
-  return *this;
-}
-
-//______________________________________________________________________________
 void AliTrigConnector::Connect(AliTrigDevice *client, Int_t input)
 {
 // Adds the device and its input to the list of clients.

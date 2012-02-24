@@ -24,10 +24,8 @@ class AliTrigConnector : public TNamed {
 public:
   AliTrigConnector() : TNamed(), fFeeder(0), fOutput(0), fNclients(0), fArraySize(0), fInputs(0), fDevices(0) {}
   AliTrigConnector(const char *name, AliTrigDevice *feeder, Int_t output) : TNamed(name, ""), fFeeder(feeder), fOutput(output), fNclients(0), fArraySize(0), fInputs(0), fDevices(0) {}
-  AliTrigConnector(const AliTrigConnector &other);
   virtual ~AliTrigConnector();
 
-  AliTrigConnector &operator=(const AliTrigConnector &other);
   
   // Connect a client input.
   void                      Connect(AliTrigDevice *client, Int_t input);
@@ -40,6 +38,9 @@ public:
   Bool_t                    Transmit(AliTrigEvent *event);
   
 private:
+  AliTrigConnector(const AliTrigConnector &other);
+  AliTrigConnector &operator=(const AliTrigConnector &other);
+
   AliTrigDevice            *fFeeder;    // Feeder device
   Int_t                     fOutput;    // Output slot index for the feeder
   Int_t                     fNclients;  // Number of clients
