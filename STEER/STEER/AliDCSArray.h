@@ -31,11 +31,8 @@ class AliDCSArray : public TObject {
 	};
 	
 	AliDCSArray();
-	AliDCSArray(const AliDCSArray& c);
 	
 	virtual ~AliDCSArray();
-	
-	AliDCSArray& operator=(const AliDCSArray& c);
 	
 	AliDCSArray(Int_t nentries, Bool_t* value, Double_t timeStamp);
 	AliDCSArray(Int_t nentries, Char_t* value, Double_t timeStamp);
@@ -85,6 +82,10 @@ class AliDCSArray : public TObject {
 	Double_t fTimeStamp;    // timestamp of this value
 
 	Double_t* fDouble;         //[fnentries] double value
+
+ private:
+	AliDCSArray(const AliDCSArray& c);
+	AliDCSArray& operator=(const AliDCSArray& c);
 	
 	ClassDef(AliDCSArray, 2);
 };

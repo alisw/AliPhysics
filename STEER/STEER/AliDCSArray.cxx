@@ -213,59 +213,6 @@ AliDCSArray::AliDCSArray(Int_t nentries, TObjArray* value, Double_t timeStamp) :
 }
 
 //-----------------------------------------------------------------------
-AliDCSArray::AliDCSArray(const AliDCSArray& c) :
-	TObject(c),
-	fType(c.fType),
-	fnentries(c.fnentries),
-	fBool(0x0),
-	fChar(0x0),
-	fInt(0x0),
-	fUInt(0x0),
-	fFloat(0x0),
-	fStringArray(0x0),
-	fTimeStamp(c.fTimeStamp),
-	fDouble(0x0)
-{
-	//
-	// copy constructor
-	//
-	
-	if (fType == kBool && c.fBool){
-		fBool = new Bool_t[fnentries];
-		memcpy(fBool,c.fBool,fnentries*sizeof(Bool_t));
-	} 
-	if (fType == kChar && c.fChar){
-		fChar = new Char_t[fnentries];
-		memcpy(fChar,c.fChar,fnentries*sizeof(Char_t));
-	} 
- 	if (fType == kUInt && c.fUInt){
-		fUInt = new UInt_t[fnentries];
-		memcpy(fUInt,c.fUInt,fnentries*sizeof(UInt_t));
-	} 
- 	if (fType == kInt && c.fInt){
-		fInt = new Int_t[fnentries];
-		memcpy(fInt,c.fInt,fnentries*sizeof(Int_t));
-	} 
- 	if (fType == kFloat && c.fFloat){
-		fFloat = new Float_t[fnentries];
-		memcpy(fFloat,c.fFloat,fnentries*sizeof(Float_t));
-	} 
- 	if (fType == kDouble && c.fDouble){
-		fDouble = new Double_t[fnentries];
-		memcpy(fDouble,c.fDouble,fnentries*sizeof(Double_t));
-	} 
- 	if (fType == kString && c.fStringArray){
-		fStringArray = new TObjArray();
-		fStringArray->SetOwner(1);
-		for (Int_t i = 0; i<fnentries; i++){
-			TObjString* strobj = new TObjString(*(TObjString*)(c.fStringArray->At(i)));
-			fStringArray->Add(strobj);
-		}
-	}
-
-}
-
-//-----------------------------------------------------------------------
 AliDCSArray::~AliDCSArray()
 {
 	//
@@ -300,50 +247,6 @@ AliDCSArray::~AliDCSArray()
 		delete [] fDouble;
 		fDouble = 0x0;
 	}
-}
-
-//-----------------------------------------------------------------------
-AliDCSArray &AliDCSArray::operator=(const AliDCSArray &c)
-{
-	//
-	// operator = 
-	//
-	
-	if(&c == this) return *this;
-	if (fType == kBool && c.fBool){
-		fBool = new Bool_t[fnentries];
-		memcpy(fBool,c.fBool,fnentries*sizeof(Bool_t));
-	} 
-	if (fType == kChar && c.fChar){
-		fChar = new Char_t[fnentries];
-		memcpy(fChar,c.fChar,fnentries*sizeof(Char_t));
-	} 
- 	if (fType == kUInt && c.fUInt){
-		fUInt = new UInt_t[fnentries];
-		memcpy(fUInt,c.fUInt,fnentries*sizeof(UInt_t));
-	} 
- 	if (fType == kInt && c.fInt){
-		fInt = new Int_t[fnentries];
-		memcpy(fInt,c.fInt,fnentries*sizeof(Int_t));
-	} 
- 	if (fType == kFloat && c.fFloat){
-		fFloat = new Float_t[fnentries];
-		memcpy(fFloat,c.fFloat,fnentries*sizeof(Float_t));
-	} 
- 	if (fType == kDouble && c.fDouble){
-		fDouble = new Double_t[fnentries];
-		memcpy(fDouble,c.fDouble,fnentries*sizeof(Double_t));
-	} 
- 	if (fType == kString && c.fStringArray){
-		fStringArray = new TObjArray();
-		fStringArray->SetOwner(1);
-		for (Int_t i = 0; i<fnentries; i++){
-			TObjString* strobj = new TObjString(*(TObjString*)(c.fStringArray->At(i)));
-			fStringArray->Add(strobj);
-		}
-	}
-
-	return *this;
 }
 
 //-----------------------------------------------------------------------
