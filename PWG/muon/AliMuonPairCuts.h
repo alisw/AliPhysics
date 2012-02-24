@@ -31,6 +31,7 @@ class AliMuonPairCuts : public AliAnalysisCuts
   AliMuonPairCuts(const char* name, const char* title, Bool_t isESD);
   AliMuonPairCuts(const char* name, const char* title, const AliMuonTrackCuts& trackCuts);
   AliMuonPairCuts(const AliMuonPairCuts& obj);
+  AliMuonPairCuts& operator=(const AliMuonPairCuts& obj);
 
   virtual ~AliMuonPairCuts();
 
@@ -50,7 +51,6 @@ class AliMuonPairCuts : public AliAnalysisCuts
   Double_t MuonMass2() const;
 
  private:
-  AliMuonPairCuts& operator=(const AliMuonPairCuts& obj); // not implemented (on purpose)
   
   AliMuonTrackCuts fMuonTrackCuts; ///< Muon track cuts
 
