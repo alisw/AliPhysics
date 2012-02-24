@@ -108,9 +108,11 @@ void AliEmcalCompatTask::UserExec(Option_t *)
       if (clsname == "AliEsdTrackExt") {
         const Int_t N = ts->GetEntries();
         for (Int_t i=0; i<N; ++i) {
-          AliEsdTrackExt *t = dynamic_cast<AliEsdTrackExt*>(ts->At(i));
-          t->SetESDEvent(esdEv);
-          t->Setup();
+          AliEsdTrackExt *t = static_cast<AliEsdTrackExt*>(ts->At(i));
+          if (t) {
+            t->SetESDEvent(esdEv);
+            t->Setup();
+          }
         }
       }
     }
