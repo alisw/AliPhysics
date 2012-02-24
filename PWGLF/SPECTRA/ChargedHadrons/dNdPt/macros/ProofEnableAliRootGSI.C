@@ -8,14 +8,12 @@ void ProofEnableAliRootGSI(const char* location = "/usr/local/grid/AliRoot/v4-05
 
   gProof->AddIncludePath(Form("%s/include", location));
   gProof->AddIncludePath(Form("%s/TPC", location));
-  gProof->AddIncludePath(Form("%s/PWG0", location));
-  gProof->AddIncludePath(Form("%s/PWG0/dNdPt", location));
+  gProof->AddIncludePath(Form("%s/PWGLF", location));
+  gProof->AddIncludePath(Form("%s/PWGLF/SPECTRA/ChargedHadrons/dNdPt", location));
   gProof->AddIncludePath(Form("%s/ANALYSIS", location));
 
   gProof->AddDynamicPath(Form("%s/lib/tgt_linuxx8664gcc", location));
 
   // load all libraries
-  gProof->Exec("gROOT->Macro(\"$ALICE_ROOT/PWG0/dNdPt/macros/LoadMyLibs.C\")",kTRUE);
+  gProof->Exec("gROOT->Macro(\"$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/LoadMyLibs.C\")",kTRUE);
 }
-
- 

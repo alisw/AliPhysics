@@ -20,6 +20,8 @@ class AlidNdPtCorrection;
 class AliMagFMaps;
 class AliESDEvent; 
 class AliMCEvent; 
+class AliKFParticle; 
+class AliESDv0; 
 class TList;
 class TTree;
 class TTreeSRedirector;
@@ -45,6 +47,7 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   
   // Process events
   virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  virtual void ProcessV0(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
 
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
   void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fdNdPtAcceptanceCuts = cuts; }
@@ -71,6 +74,12 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Bool_t ConstrainTPCInner(AliExternalTrackParam *const tpcInnerC, const AliESDVertex* vtx, Double_t b[3]);
   Bool_t ConstrainTrackInner(AliExternalTrackParam *const trackInnerC, const AliESDVertex* vtx, Double_t mass, Double_t b[3]);
 
+  // v0s selection
+  Int_t  GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle);
+  Bool_t IsV0Downscaled(AliESDv0 *const v0);
+
+  void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
+  void SetLowPtV0DownscaligF(Double_t fact)    { fLowPtV0DownscaligF = fact; }
 
  private:
 
@@ -94,6 +103,8 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
 
   TString fCentralityEstimator;     //! use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
 
+  Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
+  Double_t fLowPtV0DownscaligF; // low pT V0 downscaling factor
 
   AlidNdPtTrackDumpTask(const AlidNdPtTrackDumpTask&); // not implemented
   AlidNdPtTrackDumpTask& operator=(const AlidNdPtTrackDumpTask&); // not implemented

@@ -30,10 +30,10 @@ void LoadMyLibs() {
   //CheckLoadLibrary("libTRDrec");
   CheckLoadLibrary("libITSbase");
   CheckLoadLibrary("libITSrec");
-  CheckLoadLibrary("libPWG0base");
-  CheckLoadLibrary("libPWG0dep");
-  CheckLoadLibrary("libPWG0selectors");
-  //CheckLoadLibrary("libPWGPP");
+
+  CheckLoadLibrary("libPWGPP");
+  CheckLoadLibrary("libPWGPPdep");
+  CheckLoadLibrary("libPWGLFspectra");
 }
 
 Int_t CheckLoadLibrary(const char* library) {
