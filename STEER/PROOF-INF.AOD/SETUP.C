@@ -13,7 +13,7 @@ void SETUP()
    gSystem->Load("libAOD");
 
    // Set the include paths
-   gROOT->ProcessLine(".include AOD");
+   gROOT->ProcessLine(".include AOD/AOD");
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("AOD_INCLUDE", "AOD/AOD");

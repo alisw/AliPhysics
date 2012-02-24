@@ -3,6 +3,7 @@ void SETUP() {
 
   // Set the include paths
   gROOT->ProcessLine(".include TTherminator");
+  gROOT->ProcessLine(".include TTherminator/Therminator");
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("TTherminator_INCLUDE", "TTherminator");

@@ -14,7 +14,7 @@ void SETUP()
    gSystem->Load("libSTEERBase");
 
    // Set the include paths
-   gROOT->ProcessLine(".include STEERBase");
+   gROOT->ProcessLine(".include STEERBase/STEERBase");
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("STEERBase_INCLUDE", "STEERBase/STEERBase");

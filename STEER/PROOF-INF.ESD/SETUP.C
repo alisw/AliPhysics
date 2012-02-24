@@ -13,7 +13,7 @@ void SETUP()
    gSystem->Load("libESD");
 
    // Set the include paths
-   gROOT->ProcessLine(".include ESD");
+   gROOT->ProcessLine(".include ESD/ESD");
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("ESD_INCLUDE", "ESD/ESD");

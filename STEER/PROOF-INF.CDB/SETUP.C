@@ -13,7 +13,7 @@ void SETUP()
    gSystem->Load("libCDB");
 
    // Set the include paths
-   gROOT->ProcessLine(".include CDB");
+   gROOT->ProcessLine(".include CDB/CDB");
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("CDB_INCLUDE", "CDB/CDB");
