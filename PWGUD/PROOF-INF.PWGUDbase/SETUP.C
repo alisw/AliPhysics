@@ -11,10 +11,10 @@ void SETUP()
 
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWGUDbase");
+   gROOT->ProcessLine(".include PWGUDbase/base");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWGUDbase_INCLUDE", "PWGUDbase");
+   gSystem->Setenv("PWGUDbase_INCLUDE", "PWGUDbase/base");
 }
 
 Int_t CheckLoadLibrary(const char* library)

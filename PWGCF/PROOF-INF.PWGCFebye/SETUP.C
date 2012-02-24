@@ -3,6 +3,9 @@ void SETUP() {
 
   // Set the include paths
   gROOT->ProcessLine(".include PWGCFebye/EBYE");
+  gROOT->ProcessLine(".include PWGCFebye/EBYE/BalanceFunctions");
+  gROOT->ProcessLine(".include PWGCFebye/EBYE/LRC");
+  gROOT->ProcessLine(".include PWGCFebye/EBYE/MeanPtFluctuations");
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWGCFebye_INCLUDE", "PWGCFebye");

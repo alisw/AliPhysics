@@ -5,7 +5,7 @@ void SETUP()
 
    // Set the Inlucde paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IJETANdev");
-   gROOT->ProcessLine(".include JETANdev");
+   gROOT->ProcessLine(".include JETANdev/DEV");
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("JETANDEV_INCLUDE", "JETANdev/DEV/");
