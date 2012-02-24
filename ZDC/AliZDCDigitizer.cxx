@@ -218,11 +218,11 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
   // ### Out of time ADC added (22 channels)
   // --- same codification as for signal PTMs (see above)
   // ------------------------------------------------------------
-  Float_t pmoot[5][5];
-  for(Int_t iSector1=0; iSector1<5; iSector1++) 
-    for(Int_t iSector2=0; iSector2<5; iSector2++){
-      pmoot[iSector1][iSector2] = 0;
-    }
+  // Float_t pmoot[5][5];
+  // for(Int_t iSector1=0; iSector1<5; iSector1++) 
+  //   for(Int_t iSector2=0; iSector2<5; iSector2++){
+  //     pmoot[iSector1][iSector2] = 0;
+  //   }
 
   // impact parameter and number of spectators
   Float_t impPar = 0;
@@ -457,6 +457,7 @@ void AliZDCDigitizer::ReadPMTGains()
     aEne[ir] = data[3];
     bEne[ir] = data[4];
   }
+  fclose(fdata);
   
   if(((fBeamType.CompareTo("P-P")) == 0)){
     for(int i=0; i<12; i++){
