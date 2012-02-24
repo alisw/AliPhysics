@@ -3042,19 +3042,19 @@ TGeoVolume* AliPIPEv4::MakeBellow(const char* ext, Int_t nc, Float_t rMin, Float
   const TGeoMedium* kMedAlu5083 =  gGeoManager->GetMedium("PIPE_AA5083"); //FM       
 
   char name[64], nameA[64], nameB[64], bools[64];
-  sprintf(name, "%sBellowUS", ext);
+  snprintf(name, 64, "%sBellowUS", ext);
   TGeoVolume* voBellow = new TGeoVolume(name, new TGeoTube(rMin, rMax, dU/2.), kMedVac);
   //      
   //  Upper part of the undulation
   //
   TGeoTorus* shPlieTorusU  =  new TGeoTorus(rMax - rPlie, rPlie - dPlie, rPlie);
-  sprintf(nameA, "%sTorusU", ext);
+  snprintf(nameA, 64, "%sTorusU", ext);
   shPlieTorusU->SetName(nameA);
   TGeoTube*  shPlieTubeU   =  new TGeoTube (rMax - rPlie, rMax, rPlie);
-  sprintf(nameB, "%sTubeU", ext);
+  snprintf(nameB, 64, "%sTubeU", ext);
   shPlieTubeU->SetName(nameB);
-  sprintf(name, "%sUpperPlie", ext);
-  sprintf(bools, "%s*%s", nameA, nameB);
+  snprintf(name, 64, "%sUpperPlie", ext);
+  snprintf(bools, 64, "%s*%s", nameA, nameB);
   TGeoCompositeShape*  shUpperPlie = new TGeoCompositeShape(name, bools);
     
   TGeoVolume* voWiggleU = new TGeoVolume(name, shUpperPlie, kMedAlu5083);
@@ -3062,27 +3062,27 @@ TGeoVolume* AliPIPEv4::MakeBellow(const char* ext, Int_t nc, Float_t rMin, Float
   //
   // Lower part of the undulation
   TGeoTorus* shPlieTorusL =  new TGeoTorus(rMin + rPlie, rPlie - dPlie, rPlie);
-  sprintf(nameA, "%sTorusL", ext);
+  snprintf(nameA, 64, "%sTorusL", ext);
   shPlieTorusL->SetName(nameA);
   TGeoTube*  shPlieTubeL  =  new TGeoTube (rMin, rMin + rPlie, rPlie);
-  sprintf(nameB, "%sTubeL", ext);
+  snprintf(nameB, 64, "%sTubeL", ext);
   shPlieTubeL->SetName(nameB);
-  sprintf(name, "%sLowerPlie", ext);
-  sprintf(bools, "%s*%s", nameA, nameB);
+  snprintf(name, 64, "%sLowerPlie", ext);
+  snprintf(bools, 64, "%s*%s", nameA, nameB);
   TGeoCompositeShape*  shLowerPlie = new TGeoCompositeShape(name, bools);
     
   TGeoVolume* voWiggleL = new TGeoVolume(name, shLowerPlie, kMedAlu5083); 
   voWiggleL->SetLineColor(kOrange+3); //FM
   //
   // Connection between upper and lower part of undulation
-  sprintf(name, "%sPlieConn1", ext);
+  snprintf(name, 64, "%sPlieConn1", ext);
   TGeoVolume* voWiggleC1 = new TGeoVolume(name, new TGeoTube(rMin + rPlie, rMax - rPlie, dPlie/2.), kMedAlu5083);
   voWiggleC1->SetLineColor(kOrange+3); //FM
   //
   // One wiggle
   Float_t dz = rPlie -  dPlie / 2.;
   Float_t z0 = -  dPlie / 2.;
-  sprintf(name, "%sWiggle", ext);
+  snprintf(name, 64, "%sWiggle", ext);
   TGeoVolumeAssembly* asWiggle = new TGeoVolumeAssembly(name);
 
   asWiggle->AddNode(voWiggleC1,  1 , new TGeoTranslation(0., 0., z0));
