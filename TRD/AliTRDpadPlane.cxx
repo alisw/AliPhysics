@@ -95,48 +95,6 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t layer, Int_t stack)
 }
 
 //_____________________________________________________________________________
-AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
-  :TObject(p)
-  ,fLayer(p.fLayer)
-  ,fStack(p.fStack)
-  ,fLength(p.fLength)
-  ,fWidth(p.fWidth)
-  ,fLengthRim(p.fLengthRim)
-  ,fWidthRim(p.fLengthRim)
-  ,fLengthOPad(p.fLengthOPad)
-  ,fWidthOPad(p.fWidthOPad)
-  ,fLengthIPad(p.fLengthIPad)
-  ,fWidthIPad(p.fWidthIPad)
-  ,fRowSpacing(p.fRowSpacing)
-  ,fColSpacing(p.fColSpacing)
-  ,fNrows(p.fNrows)
-  ,fNcols(p.fNcols)
-  ,fTiltingAngle(p.fTiltingAngle)
-  ,fTiltingTan(p.fTiltingTan)
-  ,fPadRow(0)
-  ,fPadCol(0)
-  ,fPadRowSMOffset(p.fPadRowSMOffset)
-  ,fAnodeWireOffset(p.fAnodeWireOffset)
-{
-  //
-  // AliTRDpadPlane copy constructor
-  //
-
-  Int_t iBin = 0;
-
-  fPadRow = new Double_t[fNrows];
-  for (iBin = 0; iBin < fNrows; iBin++) {
-    fPadRow[iBin] = ((AliTRDpadPlane &) p).fPadRow[iBin];
-  }                                                                             
-
-  fPadCol = new Double_t[fNrows];
-  for (iBin = 0; iBin < fNrows; iBin++) {
-    fPadCol[iBin] = ((AliTRDpadPlane &) p).fPadCol[iBin];
-  }                                                                             
-
-}
-
-//_____________________________________________________________________________
 AliTRDpadPlane::~AliTRDpadPlane()
 {
   //
@@ -152,60 +110,6 @@ AliTRDpadPlane::~AliTRDpadPlane()
     delete [] fPadCol;
     fPadCol = 0;
   }
-
-}
-
-//_____________________________________________________________________________
-AliTRDpadPlane &AliTRDpadPlane::operator=(const AliTRDpadPlane &p)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this == &p) {
-    return *this;
-  }
-
-  fLayer           = p.fLayer;
-  fStack           = p.fStack;
-  fLength          = p.fLength;
-  fWidth           = p.fWidth;
-  fLengthRim       = p.fLengthRim;
-  fWidthRim        = p.fLengthRim;
-  fLengthOPad      = p.fLengthOPad;
-  fWidthOPad       = p.fWidthOPad;
-  fLengthIPad      = p.fLengthIPad;
-  fWidthIPad       = p.fWidthIPad;
-  fRowSpacing      = p.fRowSpacing;
-  fColSpacing      = p.fColSpacing;
-  fNrows           = p.fNrows;
-  fNcols           = p.fNcols;
-  fTiltingAngle    = p.fTiltingAngle;
-  fTiltingTan      = p.fTiltingTan;
-  fPadRow          = 0;
-  fPadCol          = 0;
-  fPadRowSMOffset  = p.fPadRowSMOffset;
-  fAnodeWireOffset = p.fAnodeWireOffset;
-
-  Int_t iBin = 0;
-
-  if (fPadRow) {
-    delete [] fPadRow;
-  }
-  fPadRow = new Double_t[fNrows];
-  for (iBin = 0; iBin < fNrows; iBin++) {
-    fPadRow[iBin] = ((AliTRDpadPlane &) p).fPadRow[iBin];
-  }                                                                             
-
-  if (fPadCol) {
-    delete [] fPadCol;
-  }
-  fPadCol = new Double_t[fNrows];
-  for (iBin = 0; iBin < fNrows; iBin++) {
-    fPadCol[iBin] = ((AliTRDpadPlane &) p).fPadCol[iBin];
-  }                                                                             
-
-  return *this;
 
 }
 

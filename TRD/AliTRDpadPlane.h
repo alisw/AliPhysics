@@ -25,9 +25,7 @@ class AliTRDpadPlane : public TObject {
 
   AliTRDpadPlane();
   AliTRDpadPlane(Int_t layer, Int_t stack);
-  AliTRDpadPlane(const AliTRDpadPlane &p);
   virtual           ~AliTRDpadPlane();
-  AliTRDpadPlane    &operator=(const AliTRDpadPlane &p);
   virtual void       Copy(TObject &p) const;
 
   void     SetLayer(Int_t l)                   { fLayer          = l; };
@@ -150,6 +148,10 @@ class AliTRDpadPlane : public TObject {
   Double_t  fPadRowSMOffset;  //  To be added to translate local ROC system to local SM system
 
   Double_t  fAnodeWireOffset; //  Distance of first anode wire from pad edge
+
+ private:
+  AliTRDpadPlane(const AliTRDpadPlane &p);
+  AliTRDpadPlane    &operator=(const AliTRDpadPlane &p);
 
   ClassDef(AliTRDpadPlane,6)  //  TRD ROC pad plane
 
