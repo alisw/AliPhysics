@@ -482,9 +482,9 @@ void AliCFUnfolding::CalculateCorrelatedErrors() {
   // Get statistical errors for final unfolded spectrum
   // ie. spread of each pt bin in fDeltaUnfoldedP
   Double_t sigma       = 0.;
-  // Double_t dummy       = 0.;
+  Double_t dummy       = 0.;
   for (Long_t iBin=0; iBin<fUnfoldedFinal->GetNbins(); iBin++) {
-    // dummy = fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M);
+    dummy = fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M);
     sigma = fDeltaUnfoldedP->GetBinError(fCoordinatesN_M);
     //AliDebug(2,Form("filling error %e\n",sigma));
     fUnfoldedFinal->SetBinError(fCoordinatesN_M,sigma);
