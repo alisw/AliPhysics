@@ -229,11 +229,11 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		zMeanVtx = fitVtxZ -> GetParameter(1);
 		zSigmaVtx = fitVtxZ -> GetParameter(2);
 		if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
-			zMeanVtx = 0.;
-			zMeanVtx = 5.;
-			writeMeanVertexSPD=kTRUE;
+		  zMeanVtx = histTRKvtxZ->GetMean();
+		  zSigmaVtx = histTRKvtxZ->GetRMS();
+		  writeMeanVertexSPD=kTRUE;
 		}	
-	
+		
 	}
 	
 	
@@ -242,51 +242,51 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	Double_t xHistoRMS, yHistoRMS, zHistoRMS;
 
 	if (useTRKvtx || useITSSAvtx){
-		xHistoMean = histTRKvtxX -> GetMean();	
-		xHistoRMS = histTRKvtxX ->GetRMS();
-		
-		if ((TMath::Abs(xHistoMean-xMeanVtx) > 0.5)){
-			AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
+	  xHistoMean = histTRKvtxX -> GetMean();	
+	  xHistoRMS = histTRKvtxX ->GetRMS();
+	  
+	  if ((TMath::Abs(xHistoMean-xMeanVtx) > 0.5)){
+	    AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
             useTRKvtx = kFALSE;
-			useITSSAvtx = kFALSE;
-			useSPDvtx = kTRUE;
-		}
-		
-		yHistoMean = histTRKvtxY -> GetMean();	
-		yHistoRMS = histTRKvtxY ->GetRMS();
-		
-		if ((TMath::Abs(yHistoMean-yMeanVtx) > 0.5)){
-			AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
+	    useITSSAvtx = kFALSE;
+	    useSPDvtx = kTRUE;
+	  }
+	  
+	  yHistoMean = histTRKvtxY ->GetMean();	
+	  yHistoRMS = histTRKvtxY ->GetRMS();
+	  
+	  if ((TMath::Abs(yHistoMean-yMeanVtx) > 0.5)){
+	    AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
             useTRKvtx = kFALSE;
-			useITSSAvtx = kFALSE;
-			useSPDvtx = kTRUE;
-		}
-		
-		zHistoMean = histTRKvtxZ -> GetMean();	
-		zHistoRMS = histTRKvtxZ ->GetRMS();
-		
-		if ((TMath::Abs(zHistoMean-zMeanVtx) > 1.)){
-			AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
+	    useITSSAvtx = kFALSE;
+	    useSPDvtx = kTRUE;
+	  }
+	  
+	  zHistoMean = histTRKvtxZ -> GetMean();	
+	  zHistoRMS = histTRKvtxZ ->GetRMS();
+	  
+	  if ((TMath::Abs(zHistoMean-zMeanVtx) > 1.)){
+	    AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
             useTRKvtx = kFALSE;
-			useITSSAvtx = kFALSE;
-			useSPDvtx = kTRUE;
-		}
+	    useITSSAvtx = kFALSE;
+	    useSPDvtx = kTRUE;
+	  }
 	}
 	
-
+	
 	if ((useSPDvtx) && (spdAvailable) && (!vertexerSPD3Doff)){
-		
-		histSPDvtxX ->Fit("gaus", "M");
-		fitVtxX = histSPDvtxX -> GetFunction("gaus");
-		xMeanVtx = fitVtxX -> GetParameter(1);
-		if (TMath::Abs(xMeanVtx) > 2.) {
+	  
+	  histSPDvtxX ->Fit("gaus", "M");
+	  fitVtxX = histSPDvtxX -> GetFunction("gaus");
+	  xMeanVtx = fitVtxX -> GetParameter(1);
+	  if (TMath::Abs(xMeanVtx) > 2.) {
 			xMeanVtx = 0.;
 			writeMeanVertexSPD=kTRUE;
-		}
+	  }
 		
-		histSPDvtxY ->Fit("gaus", "M");
-		fitVtxY = histSPDvtxY -> GetFunction("gaus");
-		yMeanVtx = fitVtxY -> GetParameter(1);
+	  histSPDvtxY ->Fit("gaus", "M");
+	  fitVtxY = histSPDvtxY -> GetFunction("gaus");
+	  yMeanVtx = fitVtxY -> GetParameter(1);
 		if (TMath::Abs(yMeanVtx) > 2.) {
 			yMeanVtx = 0.;
 			writeMeanVertexSPD=kTRUE;
@@ -297,9 +297,9 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		zMeanVtx = fitVtxZ -> GetParameter(1);
 		zSigmaVtx = fitVtxZ -> GetParameter(2);
 		if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
-			zMeanVtx = 0.;
-			zSigmaVtx = 5.;
-			writeMeanVertexSPD = kTRUE;
+		  zMeanVtx = histSPDvtxZ ->GetMean();
+		  zSigmaVtx = histSPDvtxZ->GetRMS();
+		  writeMeanVertexSPD = kTRUE;
 		}	
 				
 	}
@@ -313,7 +313,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	
 	 Double_t posOnline[3], sigmaOnline[3];
 	
-	if (useTRKvtx || useITSSAvtx){
+	if (useTRKvtx || useITSSAvtx || writeMeanVertexSPD){
 		AliCDBManager *manCheck = AliCDBManager::Instance();
 		manCheck->SetDefaultStorage("raw://");
 		manCheck->SetRun(runNb);
@@ -344,7 +344,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		
 		AliWarning(Form("Writing Mean Vertex SPD, Mean Vertex not available"));
 				   
-		Double_t sigma[3]={0.0150, 0.0150, 6.};
+		Double_t sigma[3]={0.0150, 0.0150, zSigmaVtx};
 			 
 		AliESDVertex  *vertex =  new AliESDVertex(posOnline, sigma, "vertex");
 		
