@@ -89,6 +89,11 @@ AliMillePede2::AliMillePede2()
   fFillIndex(0),
   fFillValue(0),
   //
+  fRecDataTreeName("AliMillePedeRecords_Data"),
+  fRecConsTreeName("AliMillePedeRecords_Consaints"),
+  fRecDataBranchName("Record_Data"),
+  fRecConsBranchName("Record_Consaints"),
+  //
   fDataRecFName("/tmp/mp2_data_records.root"),
   fRecord(0),
   fDataRecFile(0),  
@@ -116,6 +121,7 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
   fResCut(0),fMinPntValid(1),fNGroupsSet(0),fParamGrID(0),fProcPnt(0),fVecBLoc(0),fDiagCGlo(0),fVecBGlo(0),
   fInitPar(0),fDeltaPar(0),fSigmaPar(0),fIsLinear(0),fConstrUsed(0),fGlo2CGlo(0),fCGlo2Glo(0),
   fMatCLoc(0),fMatCGlo(0),fMatCGloLoc(0),fFillIndex(0),fFillValue(0),
+  fRecDataTreeName(0),fRecConsTreeName(0),fRecDataBranchName(0),fRecConsBranchName(0),
   fDataRecFName(0),fRecord(0),fDataRecFile(0),
   fTreeData(0),fRecFileStatus(0),fConstrRecFName(0),fTreeConstr(0),fConsRecFile(0),fCurrRecDataID(0),
   fCurrRecConstrID(0),fLocFitAdd(kTRUE),
@@ -236,11 +242,11 @@ Bool_t AliMillePede2::InitDataRecStorage(Bool_t read)
     fDataRecFile = TFile::Open(GetDataRecFName(),"recreate");
     if (!fDataRecFile) {AliFatal(Form("Failed to initialize data records file %s",GetDataRecFName())); return kFALSE;}
     AliInfo(Form("File %s used for derivatives records",GetDataRecFName()));
-    fTreeData = new TTree("AliMillePedeRecords_Data","Data Records for AliMillePede2");
-    fTreeData->Branch("Record_Data","AliMillePedeRecord",&fRecord,32000,99);
+    fTreeData = new TTree(GetRecDataTreeName(),"Data Records for AliMillePede2");
+    fTreeData->Branch(GetRecDataBranchName(),"AliMillePedeRecord",&fRecord,32000,99);
   }
   else { // use chain
-    TChain* ch = new TChain("AliMillePedeRecords_Data");
+    TChain* ch = new TChain(GetRecDataTreeName());
     //
     if (fDataRecFName.EndsWith(".root")) ch->AddFile(fDataRecFName);
     else { // assume text file with list of filenames
@@ -267,7 +273,7 @@ Bool_t AliMillePede2::InitDataRecStorage(Bool_t read)
     Long64_t nent = ch->GetEntries();
     if (nent<1) { AliInfo("Obtained chain is empty"); return kFALSE;}
     fTreeData = ch;
-    fTreeData->SetBranchAddress("Record_Data",&fRecord);
+    fTreeData->SetBranchAddress(GetRecDataBranchName(),&fRecord);
     AliInfo(Form("Found %lld derivatives records",nent));
   }
   fCurrRecDataID = -1;
@@ -290,16 +296,16 @@ Bool_t AliMillePede2::InitConsRecStorage(Bool_t read)
   //
   AliInfo(Form("File %s used for constraints records",GetConsRecFName()));
   if (read) {
-    fTreeConstr = (TTree*)fConsRecFile->Get("AliMillePedeRecords_Constraints");
+    fTreeConstr = (TTree*)fConsRecFile->Get(GetRecConsTreeName());
     if (!fTreeConstr) {AliInfo(Form("Did not find constraints records tree in %s",GetConsRecFName())); return kFALSE;}
-    fTreeConstr->SetBranchAddress("Record_Constraints",&fRecord);
+    fTreeConstr->SetBranchAddress(GetRecConsBranchName(),&fRecord);
     AliInfo(Form("Found %lld constraints records",fTreeConstr->GetEntries()));
     //
   }
   else {
     //
-    fTreeConstr = new TTree("AliMillePedeRecords_Constraints","Constraints Records for AliMillePede2");
-    fTreeConstr->Branch("Record_Constraints","AliMillePedeRecord",&fRecord,32000,99);
+    fTreeConstr = new TTree(GetRecConsTreeName(),"Constraints Records for AliMillePede2");
+    fTreeConstr->Branch(GetRecConsBranchName(),"AliMillePedeRecord",&fRecord,32000,99);
   }
   fCurrRecConstrID = -1;
   //

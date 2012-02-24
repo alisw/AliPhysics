@@ -137,7 +137,16 @@ class AliMillePede2: public TObject
   const Char_t*        GetDataRecFName()               const {return fDataRecFName.Data();}
   void                 SetConsRecFName(const char* flname)   {fConstrRecFName = flname;}
   const Char_t*        GetConsRecFName()               const {return fConstrRecFName.Data();}
-
+  //
+  void   SetRecDataTreeName(const char* name=0)     {fRecDataTreeName = name;   if (fRecDataTreeName.IsNull()) fRecDataTreeName = "AliMillePedeRecords_Data";}
+  void   SetRecConsTreeName(const char* name=0)     {fRecConsTreeName = name;   if (fRecConsTreeName.IsNull()) fRecConsTreeName = "AliMillePedeRecords_Consaints";}
+  void   SetRecDataBranchName(const char* name=0)   {fRecDataBranchName = name; if (fRecDataBranchName.IsNull()) fRecDataBranchName = "Record_Data";}
+  void   SetRecConsBranchName(const char* name=0)   {fRecConsBranchName = name; if (fRecConsBranchName.IsNull()) fRecConsBranchName = "Record_Consaints";}
+  const char* GetRecDataTreeName()     const {return fRecDataTreeName.Data();}
+  const char* GetRecConsTreeName()     const {return fRecConsTreeName.Data();}
+  const char* GetRecDataBranchName()   const {return fRecDataBranchName.Data();}
+  const char* GetRecConsBranchName()   const {return fRecConsBranchName.Data();}
+  //
   Bool_t               InitDataRecStorage(Bool_t read=kFALSE);
   Bool_t               InitConsRecStorage(Bool_t read=kFALSE);
   Bool_t               ImposeDataRecFile(const char* fname);
@@ -216,6 +225,11 @@ class AliMillePede2: public TObject
   Double_t             *fFillValue;                      // auxilary value array for fast matrix fill
   //
   // processed data record bufferization   
+  TString               fRecDataTreeName;                // Name of data records tree
+  TString               fRecConsTreeName;                // Name of constraints records tree
+  TString               fRecDataBranchName;              // Name of data records branch name
+  TString               fRecConsBranchName;              // Name of constraints records branch name
+  
   TString               fDataRecFName;                   // Name of File for data records               
   AliMillePedeRecord   *fRecord;                         // Buffer of measurements records
   TFile                *fDataRecFile;                    // File of processed measurements records
