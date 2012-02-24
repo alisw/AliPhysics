@@ -20,12 +20,15 @@ class AliMuonTrackCuts : public AliAnalysisCuts
     kMuMatchLpt = BIT(4),
     kMuMatchHpt = BIT(5),
     kMuTrackChiSquare = BIT(6),
-    kMuSharpPtCut = BIT(7)
+    kMuMatchSharpApt = BIT(7),
+    kMuMatchSharpLpt = BIT(8),
+    kMuMatchSharpHpt = BIT(9)
   };
 
   AliMuonTrackCuts();
   AliMuonTrackCuts(const char* name, const char* title, Bool_t isESD);
   AliMuonTrackCuts(const AliMuonTrackCuts& obj);
+  AliMuonTrackCuts& operator=(const AliMuonTrackCuts& obj);
 
   virtual ~AliMuonTrackCuts();
 
@@ -96,8 +99,7 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   Bool_t StreamParameters ( Int_t runNumber, Int_t maxRun );
 
  private:
-  AliMuonTrackCuts& operator=(const AliMuonTrackCuts& obj); // not implemented (on purpose)
-
+  
   Int_t GetThetaAbsBin ( Double_t rAtAbsEnd ) const;
   Bool_t SetParameter ( Int_t iparam, Float_t value );
   Bool_t RunMatchesRange ( Int_t runNumber, const Char_t* objName );

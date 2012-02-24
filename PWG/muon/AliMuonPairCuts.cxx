@@ -65,6 +65,18 @@ AliMuonPairCuts::AliMuonPairCuts(const AliMuonPairCuts& obj) :
 
 
 //________________________________________________________________________
+AliMuonPairCuts& AliMuonPairCuts::operator=(const AliMuonPairCuts& obj)
+{
+  /// Assignment operator
+  if ( this != &obj ) { 
+    AliAnalysisCuts::operator=(obj);
+    fMuonTrackCuts = obj.fMuonTrackCuts;
+  }
+  return *this;
+}
+
+
+//________________________________________________________________________
 AliMuonPairCuts::~AliMuonPairCuts()
 {
   /// Destructor
