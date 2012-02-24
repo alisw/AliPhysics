@@ -324,8 +324,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    excluded++;
 	    excludedmoduleperlayer[lay-3]++;
 	    Double_t content=0.;
-	    Double_t contentlayer[2];
-	    for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
+	    //Double_t contentlayer[2];
+	    //for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
 	    if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram will be stored in the QA file otherwise the histogram will not be written on the logbook
 	    //	    if(hlayer[lay-3]) contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
 	    if(AliITSQADataMakerRec::AreEqual(content,0.)== kFALSE) {
@@ -796,8 +796,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    excluded++;
 	    excludedmoduleperlayer[lay-3]++;
 	    Double_t content=0.;
-	    Double_t contentlayer[2];
-	    for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
+	    //Double_t contentlayer[2];
+	    //for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
 	    if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram will be stored in the QA file otherwise the histogram will not be written on the logbook
 	    //	    if(hlayer[lay-3]) contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
 	    if(AliITSQADataMakerRec::AreEqual(content,0.)== kFALSE) {
@@ -974,7 +974,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
-	TPaveText *pave[2];
+	TPaveText *pave[2]={0,0};
 	next.Begin();
 
 	while( (hdata=dynamic_cast<TH1* >(next())) )
