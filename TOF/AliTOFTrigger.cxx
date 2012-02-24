@@ -33,6 +33,7 @@
 
 #include <TClonesArray.h>
 #include <TTree.h>
+#include <TMath.h>
 
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -53,6 +54,8 @@
 
 
 extern AliRun* gAlice;
+
+AliTOFGeometry* AliTOFTrigger::fgTofGeo = NULL; // TOF geometry needed to get the minimial arrival time for each channel
 
 //-------------------------------------------------------------------------
 ClassImp(AliTOFTrigger)
@@ -76,7 +79,10 @@ ClassImp(AliTOFTrigger)
     fNCrateOn(0),
     fNMaxipadOn(0),
     fNMaxipadOnAll(0),
-    fTOFTrigMask(0)
+    fTOFTrigMask(0),
+    fStartTimeHit(0.0),
+    fTimeWidthTrigger(25.0)
+
 {
   //main ctor
   for (Int_t i=0;i<kNCTTM;i++) fLTMarray[i] = kFALSE;
@@ -106,7 +112,7 @@ ClassImp(AliTOFTrigger)
 
 //----------------------------------------------------------------------
 
-AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow) :
+AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow,Float_t startTimeWindow,Float_t widthTimeWindow) :
   AliTriggerDetector(),
   fHighMultTh(HighMultTh),
   fppMBTh(ppMBTh),
@@ -124,7 +130,9 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
   fNCrateOn(0),
   fNMaxipadOn(0),
   fNMaxipadOnAll(0),
-  fTOFTrigMask(0)
+  fTOFTrigMask(0),
+  fStartTimeHit(startTimeWindow),
+  fTimeWidthTrigger(widthTimeWindow)
 {
   //ctor with thresholds for triggers
   for (Int_t i=0;i<kNCTTM;i++) fLTMarray[i] = kFALSE;
@@ -234,6 +242,7 @@ void AliTOFTrigger::Trigger() {
   fSel4=0;
 
   CreateLTMMatrix();
+
   Int_t nchonFront = 0;
   Int_t nchonBack = 0;
   Int_t nchonTot = 0;
@@ -489,6 +498,9 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
   //                                   3 -> padz
   //                                   4 -> padx
 
+  if(! fgTofGeo) fgTofGeo = new AliTOFGeometry();
+
+
   for (Int_t i=0;i<ndigits;i++){
     AliTOFdigit * digit = (AliTOFdigit*)tofDigits->UncheckedAt(i);
     detind[0] = digit->GetSector();
@@ -500,9 +512,20 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
     Int_t indexLTM[2] = {-1,-1};
     GetLTMIndex(detind,indexLTM);
 
-    fLTMmatrix[indexLTM[0]][indexLTM[1]] = kTRUE;
+    Float_t timedigit = digit->GetTdc()*AliTOFGeometry::TdcBinWidth()*1E-3; // time digit in ns
+
+    Float_t pos[3];
+    fgTofGeo->GetPosPar(detind, pos);
+    Float_t length = 0.;
+    for (Int_t ic = 0; ic < 3; ic++) length += pos[ic] * pos[ic];
+    length = TMath::Sqrt(length);
+    timedigit -= length * 0.0333564095198152043; // subtract the minimal time in ns for the current channel
+
+    if(timedigit > fStartTimeHit - 0.5 && timedigit < fStartTimeHit + fTimeWidthTrigger - 0.5)
+      fLTMmatrix[indexLTM[0]][indexLTM[1]] = kTRUE;
+
 //    fLTMarray[indexLTM[0]%36] = kTRUE; //dimensione MAX array 36 = kNCTTM 
-    }
+  }
 
 
   tofLoader->UnloadDigits();

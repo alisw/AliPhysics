@@ -17,12 +17,13 @@
 
 class AliTOFrawData;
 class AliTOFTriggerMask;
+class AliTOFGeometry;
 
 class AliTOFTrigger : public AliTriggerDetector
 {
  public:
   AliTOFTrigger();  // constructor
-  AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow); //constructor with parameters
+  AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow,Float_t startTimeWindow=0.0,Float_t widthTimeWindow=25.); //constructor with parameters
   virtual ~AliTOFTrigger();  // destructor
   virtual void    CreateInputs();
   virtual void    Trigger();
@@ -67,6 +68,11 @@ class AliTOFTrigger : public AliTriggerDetector
 			 else { AliWarning(Form(" Index out of range: %d not in [0,3]",i)); return kFALSE; }
 			};
 
+  Float_t GetStartTimeWindow() const {return fStartTimeHit;}; // in ns
+  Float_t GetTimeWidthWindow() const {return fTimeWidthTrigger;}; // in ns
+  void    SetStartTimeWindow(Float_t val) {fStartTimeHit = val;}; // in ns
+  void    SetTimeWidthWindow(Float_t val) {fTimeWidthTrigger = val;}; // in ns
+  
   Int_t GetNumberOfCrateOn(){return fNCrateOn;}; 
   Int_t GetNumberOfMaxipadOn(){return fNMaxipadOn;}; 
   Int_t GetNumberOfMaxipadOnAll(){return fNMaxipadOnAll;}; 
@@ -84,6 +90,8 @@ class AliTOFTrigger : public AliTriggerDetector
     kNCTTMchannels = 24,  //Number of channels in a CTTM
     kNLTMtoTRDchannels = 8  //Number of channels in a CTTM
   };
+
+  static AliTOFGeometry *fgTofGeo; // TOF geometry needed to compute the minimal arrival time per channel
 
   AliTOFTrigger& operator=(const AliTOFTrigger &/*source*/); // ass. op.
   AliTOFTrigger(const AliTOFTrigger & tr);
@@ -113,7 +121,11 @@ class AliTOFTrigger : public AliTriggerDetector
   Int_t fNMaxipadOnAll; // number of Maxipad fired w/o TDC dead mask
   AliTOFTriggerMask *fTOFTrigMask; // class with the TOF trigger mask
 
-  ClassDef(AliTOFTrigger,1)  // TOF Trigger Detector class
+  // aggiungere larghezza finestra temporale e tempo0 in ns
+  Float_t fStartTimeHit;      // time window start after channel equalization (subtraction of the minimal time per channel default 0 ns)
+  Float_t fTimeWidthTrigger;  // time window width (default 25 ns)
+   
+  ClassDef(AliTOFTrigger,2)  // TOF Trigger Detector class
 };
 #endif
 
