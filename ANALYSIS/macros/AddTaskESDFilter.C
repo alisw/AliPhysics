@@ -357,7 +357,7 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
    trackFilter->AddCuts(esdTrackCutsHTGC);
    esdfilter->SetGlobalConstrainedFilterMask(1<<9); // these tracks are written out as global constrained tracks 
    esdfilter->SetWriteHybridGlobalConstrainedOnly(kTRUE); // write only the complement
-   // 1024, 1<< 10
+   // 1024, 1<< 10 // tight DCA cuts
    trackFilter->AddCuts(esdTrackCutsH2Cluster);
    esdfilter->SetTrackFilter(trackFilter);
 
