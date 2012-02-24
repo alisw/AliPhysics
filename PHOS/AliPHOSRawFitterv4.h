@@ -20,7 +20,6 @@ class AliPHOSRawFitterv4 : public AliPHOSRawFitterv1
 public:
 
   AliPHOSRawFitterv4();
-  AliPHOSRawFitterv4(const AliPHOSRawFitterv4& rawFitterv4);
   virtual ~AliPHOSRawFitterv4();
 
   virtual Bool_t Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength);
@@ -34,7 +33,11 @@ protected:
   Bool_t EvalWithFitting(TArrayI*samples, TArrayI * times);
 
   Bool_t fFitHighGain ; //Switch on/off fitting of the HG channel
-  
+
+ private:  
+  AliPHOSRawFitterv4(const AliPHOSRawFitterv4& rawFitterv4);
+  AliPHOSRawFitterv4& operator=(const AliPHOSRawFitterv4& rawFitterv4);
+
   ClassDef(AliPHOSRawFitterv4,1)
 };
 

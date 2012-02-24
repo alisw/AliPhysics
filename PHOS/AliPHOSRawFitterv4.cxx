@@ -68,16 +68,6 @@ AliPHOSRawFitterv4::~AliPHOSRawFitterv4()
 }
 
 //-----------------------------------------------------------------------------
-AliPHOSRawFitterv4::AliPHOSRawFitterv4(const AliPHOSRawFitterv4 &phosFitter ):
-  AliPHOSRawFitterv1((AliPHOSRawFitterv1)phosFitter),
-  fFitHighGain(0) 
-{
-  //Copy constructor
-  fFitHighGain=phosFitter.fFitHighGain;
-}
-
-
-//-----------------------------------------------------------------------------
 
 Bool_t AliPHOSRawFitterv4::Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength)
 {
