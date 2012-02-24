@@ -83,8 +83,8 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SPD", "VertexDiamond", "gdc-GLOBAL-01", "$ALICE_ROOT/GRP/ShuttleInput/run000104892_SPD_mon-DA-SPD-0_VertexDiamond");
 	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "LHCData", "", "$ALICE_ROOT/GRP/ShuttleInput/testRun_GRP_run_number_testRun_data.txt");
 	  shuttle->AddInputFile(AliShuttleInterface::kDQM, "GRP", "TriggerClassesAndHistosToClone", "DQM", "$ALICE_ROOT/GRP/ShuttleInput/run000158496_GRP_DQM_TriggerClassesAndHistosToClone");
-	  shuttle->AddInputFile(AliShuttleInterface::kDQM, "ACO", "QAThresholds", "DQM", "$ALICE_ROOT/GRP/ShuttleInput/run000168322_ACO_DQM_QAThreshold");
-	  shuttle->AddInputFile(AliShuttleInterface::kDQM, "TPC", "QAThresholds", "DQM", "$ALICE_ROOT/GRP/ShuttleInput/run000168322_TPC_DQM_QAThreshold");
+	  shuttle->AddInputFile(AliShuttleInterface::kDQM, "ACO", "QAThresholds", "DQM", "$ALICE_ROOT/GRP/ShuttleInput/run000168322_ACO_DQM_QAThresholds");
+	  shuttle->AddInputFile(AliShuttleInterface::kDQM, "TPC", "QAThresholds", "DQM", "$ALICE_ROOT/GRP/ShuttleInput/run000168322_TPC_DQM_QAThresholds");
           
 	  /*
 	  // for example:
