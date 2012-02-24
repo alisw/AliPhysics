@@ -3,6 +3,7 @@ void SETUP() {
 
   // Set the include paths
   gROOT->ProcessLine(".include PWGLFSTRANGENESS/STRANGENESS");
+  gROOT->ProcessLine(".include PWGLFSTRANGENESS/STRANGENESS/LambdaK0PbPb");
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWGLFSTRANGENESS_INCLUDE", "PWGLFSTRANGENESS");
