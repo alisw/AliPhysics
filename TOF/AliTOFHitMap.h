@@ -27,7 +27,6 @@ class AliTOFHitMap : public TObject
  public:
     AliTOFHitMap();
     AliTOFHitMap(TClonesArray *sdig);
-    AliTOFHitMap(const AliTOFHitMap & hitMap);
     
     virtual ~AliTOFHitMap();
     // Clear the hit map
@@ -41,13 +40,13 @@ class AliTOFHitMap : public TObject
     virtual TObject*  GetHit(Int_t *vol) const;
     // Test hit status
     virtual FlagType TestHit(Int_t *vol) const;
-    // Assignment operator
-    AliTOFHitMap& operator = (const AliTOFHitMap& rhs);
     
  private:
+    AliTOFHitMap(const AliTOFHitMap & hitMap);
+    AliTOFHitMap& operator = (const AliTOFHitMap& rhs);
+
     // Check index
     Int_t CheckedIndex(Int_t * const vol) const;
- private:
     Int_t fNSector;                       // Number of sectors
     Int_t fNplate;                        // Number of plates
     Int_t fNstrip;                        // Maximum number of strips
