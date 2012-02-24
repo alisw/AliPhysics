@@ -27,8 +27,6 @@ class AliTOFRawMap : public TObject
  public:
     AliTOFRawMap();
     AliTOFRawMap(TClonesArray *sdig);
-    AliTOFRawMap(const AliTOFRawMap & rawMap);
-    AliTOFRawMap &operator=(const AliTOFRawMap & rawMap);
     
     virtual ~AliTOFRawMap();
     // Clear the raw map
@@ -44,9 +42,10 @@ class AliTOFRawMap : public TObject
     virtual FlagType TestHit(Int_t *vol) const;
     
  private:
+    AliTOFRawMap(const AliTOFRawMap & rawMap);
+    AliTOFRawMap &operator=(const AliTOFRawMap & rawMap);
     // Check index
     Int_t CheckedIndex(const Int_t * const slot) const;
- private:
     Int_t fNtrm;            // Number of TRM
     Int_t fNtrmChain;       // Number of TRM chains per TRM
     Int_t fNtdc;            // Number of TDCs per TRM

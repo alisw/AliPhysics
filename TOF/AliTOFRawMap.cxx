@@ -75,54 +75,6 @@ AliTOFRawMap::AliTOFRawMap(TClonesArray *dig)://, AliTOFGeometry *tofGeom:
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFRawMap::AliTOFRawMap(const AliTOFRawMap & rawMap) :
-  TObject(rawMap),
-  fNtrm(rawMap.fNtrm),
-  fNtrmChain(rawMap.fNtrmChain),
-  fNtdc(rawMap.fNtdc),
-  fNtdcChannel(rawMap.fNtdcChannel),
-  fRawData(rawMap.fRawData),
-  fMaxIndex(-1),
-  fRawMap(0x0)
-{
-//
-// Dummy copy constructor
-//
-
-  fMaxIndex = fNtrm*fNtrmChain*fNtdc*fNtdcChannel;
-  fRawMap = new Int_t[fMaxIndex];
-  for (Int_t i=0; i<fMaxIndex; i++)
-    fRawMap[i]=rawMap.fRawMap[i];
-
-}
-
-////////////////////////////////////////////////////////////////////////
-AliTOFRawMap & AliTOFRawMap::operator=(const AliTOFRawMap & rawMap)
-{
-//
-// Assignment operator
-//
-
-  if (this == &rawMap)
-    return *this;
-
-  fNtrm=rawMap.fNtrm;
-  fNtrmChain=rawMap.fNtrmChain;
-  fNtdc=rawMap.fNtdc;
-  fNtdcChannel=rawMap.fNtdcChannel;
-
-  *fRawData=*rawMap.fRawData; // coverity: to be solved
-
-  fMaxIndex=fNtrm*fNtrmChain*fNtdc*fNtdcChannel;
-  fRawMap = new Int_t[fMaxIndex];
-  for (Int_t i=0; i<fMaxIndex; i++)
-    fRawMap[i]=rawMap.fRawMap[i];
-  return *this;
-
-}
-
- 
-////////////////////////////////////////////////////////////////////////
 AliTOFRawMap::~AliTOFRawMap()
 {
 //
