@@ -16,6 +16,7 @@
 #include "iostream"
 
 #include <TPDGCode.h>
+#include <TDatabasePDG.h>
 
 #include "TChain.h"
 #include "TTreeStream.h"
@@ -25,7 +26,7 @@
 #include "TList.h"
 #include "TFile.h"
 #include "TMatrixD.h"
-#include "TRandom.h"
+#include "TRandom3.h"
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
@@ -55,6 +56,8 @@
 #include "AlidNdPtAcceptanceCuts.h"
 
 #include "AlidNdPtTrackDumpTask.h"
+#include "AliKFParticle.h"
+#include "AliESDv0.h"
 
 using namespace std;
 
@@ -78,6 +81,8 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
   , fOutputSummary(0)
   , fTreeSRedirector(0)
   , fCentralityEstimator(0)
+  , fLowPtTrackDownscaligF(0)
+  , fLowPtV0DownscaligF(0)
 {
   // Constructor
 
@@ -125,7 +130,7 @@ void AlidNdPtTrackDumpTask::UserCreateOutputObjects()
   //
   // create output tree
   //
-  fTreeSRedirector = new TTreeSRedirector("dNdPtOutliersAnalysisPbPb.root");
+  fTreeSRedirector = new TTreeSRedirector("jotwinow_HighPt_TrackAndV0_Trees.root");
 
   PostData(0, fOutputSummary);
   //PostData(1, fOutput);
@@ -161,6 +166,7 @@ void AlidNdPtTrackDumpTask::UserExec(Option_t *)
 
   //
   Process(fESD,fMC,fESDfriend);
+  ProcessV0(fESD,fMC,fESDfriend);
 
   // Post output data.
   PostData(0, fOutputSummary);
@@ -295,7 +301,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
-    TRandom random;
+    TRandom3 random;
 
     for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
     {
@@ -306,7 +312,8 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       if(!accCuts->AcceptTrack(track)) continue;
 
       // downscale low-pT tracks
-      if(TMath::Exp(2*track->Pt())<1000*random.Rndm()) continue;
+      Double_t scalempt= TMath::Min(track->Pt(),10.);
+      if(TMath::Exp(2*scalempt)<fLowPtTrackDownscaligF*random.Rndm()) continue;
 
       // Dump to the tree 
       // vertex
@@ -684,6 +691,302 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   //PostData(1, fOutput);
 }
 
+//_____________________________________________________________________________
+void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
+{
+  //
+  // Process real and/or simulated events
+  //
+  if(!esdEvent) {
+    AliDebug(AliLog::kError, "esdEvent not available");
+    return;
+  }
+
+  // get selection cuts
+  AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
+  AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
+  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
+
+  if(!evtCuts || !accCuts  || !esdTrackCuts) {
+    AliDebug(AliLog::kError, "cuts not available");
+    return;
+  }
+
+
+
+
+  // trigger selection
+  Bool_t isEventTriggered = kTRUE;
+  AliPhysicsSelection *physicsSelection = NULL;
+  AliTriggerAnalysis* triggerAnalysis = NULL;
+
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+   
+  // get file name
+  TTree *chain = (TChain*)GetInputData(0);
+  if(!chain) { 
+    Printf("ERROR: Could not receive input chain");
+    return;
+  }
+  TObjString fileName(chain->GetCurrentFile()->GetName());
+
+  // trigger
+  if(evtCuts->IsTriggerRequired())  
+  {
+    // always MB
+    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+
+    physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if(!physicsSelection) return;
+    //SetPhysicsTriggerSelection(physicsSelection);
+
+    if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
+      // set trigger (V0AND)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+      if(!triggerAnalysis) return;
+      isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
+    }
+  }
+
+  // centrality determination
+  Float_t centralityF = -1;
+  AliCentrality *esdCentrality = esdEvent->GetCentrality();
+  centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data());
+
+
+  // get reconstructed vertex  
+  //const AliESDVertex* vtxESD = 0; 
+  const AliESDVertex* vtxESD = 0; 
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
+        vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+     vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    	return;
+  }
+
+  if(!vtxESD) return;
+
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
+  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
+  //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
+
+  // check event cuts
+  if(isEventOK && isEventTriggered) {
+  //
+  // Dump the pt downscaled V0 into the tree
+  // 
+  //
+  Int_t ntracks = esdEvent->GetNumberOfTracks();
+  Int_t nV0s = esdEvent->GetNumberOfV0s();
+  Int_t run = esdEvent->GetRunNumber();
+  Int_t time= esdEvent->GetTimeStamp();
+  Int_t evNr=esdEvent->GetEventNumberInFile();
+  
+  for (Int_t iv0=0; iv0<nV0s; iv0++){
+    AliESDv0 * v0 = esdEvent->GetV0(iv0);
+    if (!v0) continue;
+    AliESDtrack * track0 = esdEvent->GetTrack(v0->GetIndex(0));
+    AliESDtrack * track1 = esdEvent->GetTrack(v0->GetIndex(1));
+    if (!track0) continue;
+    if (!track1) continue;
+    if (track0->GetSign()<0) {
+      track1 = esdEvent->GetTrack(v0->GetIndex(0));
+      track0 = esdEvent->GetTrack(v0->GetIndex(1));
+    }
+    //
+    Bool_t isDownscaled = IsV0Downscaled(v0);
+    if (isDownscaled) continue;
+    AliKFParticle kfparticle; //
+    Int_t type=GetKFParticle(v0,esdEvent,kfparticle);
+    if (type==0) continue;   
+
+    if(!fTreeSRedirector) return;
+    (*fTreeSRedirector)<<"V0s"<<
+      "isDownscaled="<<isDownscaled<<
+      "run="<<run<<
+      "fname="<<&fileName<<
+      "time="<<time<<
+      "evNr="<<evNr<<
+      "type="<<type<<
+      "ntracks="<<ntracks<<
+      "v0.="<<v0<<
+      "kf.="<<&kfparticle<<
+      "track0.="<<track0<<
+      "track1.="<<track1<<
+      "centralityF="<<centralityF<<
+      "\n";
+  }
+  }
+  PostData(0, fOutputSummary);
+}
+
+//_____________________________________________________________________________
+Int_t   AlidNdPtTrackDumpTask::GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle)
+{
+  //
+  // Create KF particle in case the V0 fullfill selection criteria
+  //
+  // Selection criteria
+  //  0. algorithm cut
+  //  1. track cut
+  //  3. chi2 cut
+  //  4. rough mass cut
+  //  5. Normalized pointing angle cut
+  //
+  const Double_t cutMass=0.2;
+  const Double_t kSigmaDCACut=3;
+  //
+  // 0.) algo cut - accept only on the fly
+  //
+  if (v0->GetOnFlyStatus() ==kFALSE) return 0;     
+  //
+  // 1.) track cut
+  // 
+  AliESDtrack * track0 = event->GetTrack(v0->GetIndex(0));
+  AliESDtrack * track1 = event->GetTrack(v0->GetIndex(1));
+  /*
+    TCut cutD="abs(track0.fD/sqrt(track0.fCdd))>2&&abs(track1.fD/sqrt(track1.fCdd))>2";
+    TCut cutTheta="abs(track0.fP[3])<1&&abs(track1.fP[3])<1";
+    TCut cutNcl="track0.GetTPCClusterInfo(2,1)>100&&track1.GetTPCClusterInfo(2,1)>100";
+  */  
+  if (TMath::Abs(track0->GetTgl())>1) return 0;
+  if (TMath::Abs(track1->GetTgl())>1) return 0;
+  if ((track0->GetTPCClusterInfo(2,1))<100) return 0;
+  if ((track1->GetTPCClusterInfo(2,1))<100) return 0;
+  //if ((track0->GetITSclusters(0))<2) return 0;
+  //if ((track1->GetITSclusters(0))<2) return 0; 
+  Float_t pos0[2]={0}, cov0[3]={0};
+  Float_t pos1[2]={0}, cov1[3]={0};
+  track0->GetImpactParameters(pos0,cov0);
+  track0->GetImpactParameters(pos1,cov1);
+  //
+  if (TMath::Abs(pos0[0])<kSigmaDCACut*TMath::Sqrt(cov0[0])) return 0;
+  if (TMath::Abs(pos1[0])<kSigmaDCACut*TMath::Sqrt(cov1[0])) return 0;
+  // 
+  //
+  // 3.) Chi2 cut
+  //
+  Double_t chi2KF = v0->GetKFInfo(2,2,2);
+  if (chi2KF>25) return 0;
+  //
+  // 4.) Rough mass cut - 0.200 GeV
+  //
+  static Double_t masses[2]={-1};
+  if (masses[0]<0){
+    masses[0] = TDatabasePDG::Instance()->GetParticle("K_S0")->Mass();
+    masses[1] = TDatabasePDG::Instance()->GetParticle("Lambda0")->Mass();
+  }
+  Double_t mass00=  v0->GetEffMass(0,0);
+  Double_t mass22=  v0->GetEffMass(2,2);
+  Double_t mass42=  v0->GetEffMass(4,2);
+  Double_t mass24=  v0->GetEffMass(2,4);
+  Bool_t massOK=kFALSE;
+  Int_t type=0;
+  Int_t ptype=0;
+  Double_t dmass=1;
+  Int_t p1=0, p2=0;
+  if (TMath::Abs(mass00-0)<cutMass) {
+    massOK=kTRUE; type+=1; 
+    if (TMath::Abs(mass00-0)<dmass) {
+      ptype=1;
+      dmass=TMath::Abs(mass00-0);      
+      p1=0; p2=0;
+    } 
+  }
+  if (TMath::Abs(mass24-masses[1])<cutMass) {
+    massOK=kTRUE; type+=2; 
+    if (TMath::Abs(mass24-masses[1])<dmass){
+      dmass = TMath::Abs(mass24-masses[1]);
+      ptype=2;
+      p1=2; p2=4;
+    }
+  }
+  if (TMath::Abs(mass42-masses[1])<cutMass) {
+    massOK=kTRUE; type+=4;
+    if (TMath::Abs(mass42-masses[1])<dmass){
+      dmass = TMath::Abs(mass42-masses[1]);
+      ptype=4;
+      p1=4; p2=2;
+    }
+  }
+  if (TMath::Abs(mass22-masses[0])<cutMass) {
+    massOK=kTRUE; type+=8;
+    if (TMath::Abs(mass22-masses[0])<dmass){
+      dmass = TMath::Abs(mass22-masses[0]);
+      ptype=8;
+      p1=2; p2=2;
+    }
+  }
+  if (type==0) return 0;
+  //
+  const Int_t spdg[5]={kPositron,kMuonPlus,kPiPlus, kKPlus, kProton};
+  const AliExternalTrackParam *paramP = v0->GetParamP();
+  const AliExternalTrackParam *paramN = v0->GetParamN();
+  if (paramP->GetSign()<0){
+    paramP=v0->GetParamP();
+    paramN=v0->GetParamN();
+  }
+  //Double_t *pparam1 = (Double_t*)paramP->GetParameter();
+  //Double_t *pparam2 = (Double_t*)paramN->GetParameter();
+  //
+  AliKFParticle kfp1( *paramP, spdg[p1]  );
+  AliKFParticle kfp2( *paramN, -1 *spdg[p2]  );
+  AliKFParticle V0KF;
+  (V0KF)+=kfp1;
+  (V0KF)+=kfp2;
+  kfparticle=V0KF;
+  //
+  // Pointing angle
+  //
+  Double_t  errPhi    = V0KF.GetErrPhi();
+  Double_t  pointAngle= TMath::ACos(v0->GetV0CosineOfPointingAngle());
+  if (pointAngle/errPhi>10) return 0;  
+  //
+  return ptype;  
+}
+
+//_____________________________________________________________________________
+Bool_t AlidNdPtTrackDumpTask::IsV0Downscaled(AliESDv0 *const v0)
+{
+  //
+  // Downscale randomly low pt V0
+  //
+  //return kFALSE;
+  Double_t maxPt= TMath::Max(v0->GetParamP()->Pt(), v0->GetParamN()->Pt());
+  Double_t scalempt= TMath::Min(maxPt,10.);
+  if (TMath::Exp(2*scalempt)<fLowPtV0DownscaligF*gRandom->Rndm()) return kTRUE;
+  return kFALSE;
+  /*
+  
+    TH1F his1("his1","his1",100,0,10);
+    TH1F his2("his2","his2",100,0,10);
+    {for (Int_t i=0; i<10000; i++){
+       Double_t rnd=gRandom->Exp(1);
+       Bool_t isDownscaled =TMath::Exp(rnd)<100*gRandom->Rndm();
+       his1->Fill(rnd); 
+       if (!isDownscaled) his2->Fill(rnd); 
+    }}
+
+   */
+
+}
+
+
+
+
+
+
+
+
 
 //_____________________________________________________________________________
 Bool_t AlidNdPtTrackDumpTask::ConstrainTPCInner(AliExternalTrackParam *const tpcInnerC, const AliESDVertex* vtx, Double_t b[3])
@@ -860,15 +1163,13 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
 void AlidNdPtTrackDumpTask::Terminate(Option_t *) 
 {
   // Called one at the end 
-  
-  // check output data
+  if(fTreeSRedirector)  delete fTreeSRedirector; fTreeSRedirector=0;
   fOutputSummary = dynamic_cast<TTree*> (GetOutputData(0));
   if(fOutputSummary) delete fOutputSummary; fOutputSummary=0;
-  if(fTreeSRedirector)  delete fTreeSRedirector; fTreeSRedirector=0;
 
   TChain* chain = new TChain("dNdPtTree");
   if(!chain) return;
-  chain->Add("dNdPtOutliersAnalysisPbPb.root");
+  chain->Add("jotwinow_HighPt_TrackAndV0_Trees.root");
   TTree *tree = chain->CopyTree("1");
   if (chain) { delete chain; chain=0; }
   if(!tree) return;
@@ -879,8 +1180,6 @@ void AlidNdPtTrackDumpTask::Terminate(Option_t *)
     Printf("ERROR: AlidNdPtTrackDumpTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
     return;
   }
-  
-
 
   PostData(0, fOutputSummary);
   //PostData(1, fOutput);
