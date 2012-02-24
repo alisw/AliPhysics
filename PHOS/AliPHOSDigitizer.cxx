@@ -198,36 +198,6 @@ AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName,
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) : 
-  AliDigitizer(d),
-  fDefaultInit(d.fDefaultInit),
-  fDigitsInRun(d.fDigitsInRun),
-  fInit(d.fInit),
-  fInput(d.fInput),
-  fInputFileNames(0x0),
-  fEventNames(0x0),
-  fEmcCrystals(d.fEmcCrystals),
-  fEventFolderName(d.fEventFolderName),
-  fFirstEvent(d.fFirstEvent),
-  fLastEvent(d.fLastEvent), 
-  fcdb (new AliPHOSCalibData(-1)), 
-  fEventCounter(0),
-  fPulse(new AliPHOSPulseGenerator),
-  fADCValuesLG(0),
-  fADCValuesHG(0)
-{
-  // copyy ctor 
-  SetName(d.GetName()) ; 
-  SetTitle(d.GetTitle()) ; 
-  for (Int_t iInput=0; iInput<fInput; iInput++) {
-    fInputFileNames[iInput] = d.fInputFileNames[iInput];
-    fEventNames[iInput]     = d.fEventNames[iInput];
-  }
-  fADCValuesLG = new Int_t[fPulse->GetRawFormatTimeBins()];
-  fADCValuesHG = new Int_t[fPulse->GetRawFormatTimeBins()];
-}
-
-//____________________________________________________________________________ 
 AliPHOSDigitizer::AliPHOSDigitizer(AliDigitizationInput * rd) :
   AliDigitizer(rd,"PHOSDigitizer"),
   fDefaultInit(kFALSE),

@@ -53,7 +53,6 @@ class AliPHOSDigitizer: public AliDigitizer {
 public:
   AliPHOSDigitizer() ;          // ctor
   AliPHOSDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; 
-  AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) ;
   AliPHOSDigitizer(AliDigitizationInput * digInput) ;
   virtual ~AliPHOSDigitizer() ;       
 
@@ -68,11 +67,8 @@ public:
   void    Print(const Option_t * = "")const ;
  
 private:
-  AliPHOSDigitizer & operator = (const AliPHOSDigitizer & /*rvalue*/)  {
-    return *this ; 
-  }
-  
-private:
+  AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) ;
+  AliPHOSDigitizer & operator = (const AliPHOSDigitizer & /*rvalue*/);
 
   virtual Bool_t Init() ; 
   void    InitParameters() ; 
