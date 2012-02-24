@@ -70,19 +70,6 @@ AliPHOSPulseGenerator::AliPHOSPulseGenerator(Double_t a, Double_t t0)
 }
 
 //-----------------------------------------------------------------------------
-AliPHOSPulseGenerator::AliPHOSPulseGenerator(const AliPHOSPulseGenerator & pulse)
-  : TObject(), fAmplitude(pulse.fAmplitude), fTZero(pulse.fTZero),fHG2LGratio(pulse.fHG2LGratio),
-  fDataHG(0), fDataLG(0), fDigitize(kTRUE)
-{
-  fDataHG = new Double_t[pulse.fkTimeBins];
-  fDataLG = new Double_t[pulse.fkTimeBins];
-  for (Int_t i=0; i<pulse.fkTimeBins; i++) {
-    fDataHG[i] = pulse.fDataHG[i];
-    fDataLG[i] = pulse.fDataHG[i];
-  }
-}
-
-//-----------------------------------------------------------------------------
 AliPHOSPulseGenerator::~AliPHOSPulseGenerator()
 {
   // Destructor: delete arrays of samples
