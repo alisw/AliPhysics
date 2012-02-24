@@ -34,25 +34,6 @@
 ClassImp(AliTrigConnector)
 
 //______________________________________________________________________________
-AliTrigConnector::AliTrigConnector(const AliTrigConnector &other)
-                 :TNamed(other),
-                  fFeeder(other.fFeeder),
-                  fOutput(other.fOutput),
-                  fNclients(other.fNclients),
-                  fArraySize(other.fArraySize),
-                  fInputs(0),
-                  fDevices(0)
-{
-// Copy ctor.
-  if (fArraySize && other.fInputs) {
-    fInputs = new Int_t[fArraySize];
-    memcpy(fInputs, other.fInputs, fNclients*sizeof(Int_t));
-    fDevices = new TObjArray(fArraySize);
-    for (Int_t i=0; i<fNclients; i++) fDevices->Add(other.fDevices->At(i));
-  }   
-}                        
-
-//______________________________________________________________________________
 AliTrigConnector::~AliTrigConnector()
 {
 // Destructor.
