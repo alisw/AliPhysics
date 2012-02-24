@@ -52,22 +52,6 @@ public:
   
   /* Destructor */
   virtual ~AliHLTPHOSSanityInspector();
-
-  /** Copy constructor */  
-  AliHLTPHOSSanityInspector(const AliHLTPHOSSanityInspector &) : 
-    //    AliHLTPHOSBase(),
-    fMaxDifference(0)
-  {
-    //Copy constructor not implemented
-  }
-  
-  /** Assignment */
-  AliHLTPHOSSanityInspector & operator = (const AliHLTPHOSSanityInspector)
-  {
-    //Assignment
-    return *this; 
-  }
-  
   
   //  Int_t CheckInsanity(UInt_t* data, Int_t nSamples);
   
@@ -86,6 +70,10 @@ public:
   void SetMaxDifference(Int_t maxDiff) { fMaxDifference = maxDiff; }
     
 private:
+  /** Copy constructor */  
+  AliHLTPHOSSanityInspector(const AliHLTPHOSSanityInspector &);
+  /** Assignment */
+  AliHLTPHOSSanityInspector & operator = (const AliHLTPHOSSanityInspector);
 
   /** The max difference between 2 samples */
   Int_t fMaxDifference;           //COMMENT
