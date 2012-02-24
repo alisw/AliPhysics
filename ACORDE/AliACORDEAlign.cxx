@@ -81,44 +81,6 @@ AliACORDEAlign::AliACORDEAlign(/*Int_t reportloc,*/Int_t reportglob):
 
 }
 
-
-
-
-AliACORDEAlign::AliACORDEAlign(const AliACORDEAlign &align):
-  TObject(),
-  fFileGlob(0x0),
-  fRepLoc(0),
-  fRepGlob(0),
-  fUser(0x0),
-  fX(),
-  fAlignACORDEObjArray(0x0),
-  fDebug(0)
-{
-  //
-  //  default copy constructor
-//TObject = align.TObject;
-fFileGlob = align.fFileGlob;
-fRepLoc = align.fRepLoc;
-fRepGlob = align.fRepGlob;
-fUser = align.fUser;
-fX = align.fX;
-fAlignACORDEObjArray = align.fAlignACORDEObjArray;
-fDebug = align.fDebug;
-}
-
-//__________________________________________________________________________
-AliACORDEAlign & AliACORDEAlign::operator =(const AliACORDEAlign &align)
-{
-
-//
-  // assignment operator - dummy
-  //
-if (this != &align) ((AliACORDEAlign &) align).Copy(*this);
-
-   return (*this);
-
-}
-
 //__________________________________________________________________________
 AliACORDEAlign::~AliACORDEAlign(){
   //
