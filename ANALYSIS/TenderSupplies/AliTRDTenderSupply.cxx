@@ -84,6 +84,7 @@ AliTRDTenderSupply::AliTRDTenderSupply() :
   // default ctor
   //
   memset(fSlicesForPID, 0, sizeof(UInt_t) * 2);
+  memset(fBadChamberID, 0, sizeof(Int_t) * kNChambers);
 }
 
 //_____________________________________________________
