@@ -57,8 +57,6 @@ public:
 	enum HESDType_t {kESDCaloClusE,kESDCaloClusM,kESDCaloCellA,kESDCaloCellM} ;
 
   AliEMCALQAChecker() ;        // ctor
-  AliEMCALQAChecker(const AliEMCALQAChecker& qac);
-  AliEMCALQAChecker& operator = (const AliEMCALQAChecker& qac) ;
   virtual ~AliEMCALQAChecker() ; // dtor
 	
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det) ; 
@@ -76,6 +74,8 @@ protected:
 	
 	
 private:
+  AliEMCALQAChecker(const AliEMCALQAChecker& qac);
+  AliEMCALQAChecker& operator = (const AliEMCALQAChecker& qac) ;
 	//TH1F * htemp; //a tempory histrogram for getting the mean and sigma
 	//Double_t fMean; //mean value 
 	//Double_t fWidth; //sigma of the distribution

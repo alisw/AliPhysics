@@ -95,31 +95,6 @@ AliEMCALQAChecker::~AliEMCALQAChecker()
   delete fText  ; 
 }
 
-//__________________________________________________________________
-AliEMCALQAChecker::AliEMCALQAChecker(const AliEMCALQAChecker& qac) : 
-AliQACheckerBase(qac.GetName(), qac.GetTitle()), 
-fTextSM(new TText*[fgknSM]) ,
-fLineCol(static_cast<TLine*>(qac.fLineCol->Clone())) , 
-fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
-{
-   // copy ctor 
-  for (Int_t sm = 0 ; sm < fgknSM ; sm++){
-    fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
-  }
-	for(Int_t i = 0 ; i < 5 ; i++) {
-
-		fLineRow[i] = static_cast<TLine*>(qac.fLineRow[i]->Clone()) ; 
-	}
-}   
-//__________________________________________________________________
-AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac) 
-{ // assignment operator; use copy ctor
-  if (&qac == this) return *this;
-
-  new (this) AliEMCALQAChecker(qac);
-  return *this;
-}
-
 //______________________________________________________________________________
 void AliEMCALQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
