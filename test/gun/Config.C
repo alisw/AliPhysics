@@ -57,6 +57,8 @@ const char * pprTrigConfName[] = {
 
 Float_t EtaToTheta(Float_t arg);
 
+static AliMagF::BeamType_t beamType = AliMagF::kBeamTypeAA;
+static Double_t            beamEnergy = 7000.*82./208;
 static PprTrigConf_t strig = kDefaultPPTrig;// default PP trigger configuration
 
 void Config()
@@ -149,6 +151,7 @@ void Config()
     // The cocktail itself
 
     AliGenCocktail *gener = new AliGenCocktail();
+    gener->SetEnergyCMS(beamEnergy); // Needed by ZDC
     gener->SetPhiRange(0, 360);
     // Set pseudorapidity range from -8 to 8.
     Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
@@ -386,7 +389,7 @@ void Config()
     //
     //gener->SetVertexSmear(perTrack); 
     // Field (L3 0.5 T)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG,beamType,beamEnergy));
 
     Int_t   iABSO  =  1;
     Int_t   iDIPO  =  1;
