@@ -26,8 +26,6 @@ class AliCFUnfolding : public TNamed {
 		 const THnSparse* response, const THnSparse* efficiency, const THnSparse* measured, const THnSparse* prior=0x0, 
 		 Double_t maxConvergencePerDOF = 1.e-06, UInt_t randomSeed = 0,
 		 Int_t maxNumIterations = 10);
-  AliCFUnfolding(const AliCFUnfolding& c);
-  AliCFUnfolding& operator= (const AliCFUnfolding& c);
   ~AliCFUnfolding();
   void UnsetCorrelatedErrors()  {AliError("===================> DEPRECATED <=====================");}
   void SetUseCorrelatedErrors() {AliError("===================> DEPRECATED <=====================");}
@@ -61,6 +59,8 @@ class AliCFUnfolding : public TNamed {
   static Short_t  SmoothUsingNeighbours(THnSparse*); // smoothes the unfolded spectrum using the neighbouring cells
 
  private :
+  AliCFUnfolding(const AliCFUnfolding& c);
+  AliCFUnfolding& operator= (const AliCFUnfolding& c);
   
   //
   // user-related settings

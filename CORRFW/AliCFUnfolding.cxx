@@ -210,92 +210,6 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
   Init();
 }
 
-
-//______________________________________________________________
-
-AliCFUnfolding::AliCFUnfolding(const AliCFUnfolding& c) :
-  TNamed(c),
-  fResponseOrig((THnSparse*)c.fResponseOrig->Clone()),
-  fPriorOrig((THnSparse*)c.fPriorOrig->Clone()),
-  fEfficiencyOrig((THnSparse*)c.fEfficiencyOrig->Clone()),
-  fMeasuredOrig((THnSparse*)c.fMeasuredOrig->Clone()),
-  fMaxNumIterations(c.fMaxNumIterations),
-  fNVariables(c.fNVariables),
-  fUseSmoothing(c.fUseSmoothing),
-  fSmoothFunction((TF1*)c.fSmoothFunction->Clone()),
-  fSmoothOption(c.fSmoothOption),
-  fMaxConvergence(c.fMaxConvergence),
-  fNRandomIterations(c.fNRandomIterations),
-  fResponse((THnSparse*)c.fResponse->Clone()),
-  fPrior((THnSparse*)c.fPrior->Clone()),
-  fEfficiency((THnSparse*)c.fEfficiency->Clone()),
-  fMeasured((THnSparse*)c.fMeasured->Clone()),
-  fInverseResponse((THnSparse*)c.fInverseResponse->Clone()),
-  fMeasuredEstimate((THnSparse*)fMeasuredEstimate->Clone()),
-  fConditional((THnSparse*)c.fConditional->Clone()),
-  fUnfolded((THnSparse*)c.fUnfolded->Clone()),
-  fUnfoldedFinal((THnSparse*)c.fUnfoldedFinal->Clone()),
-  fCoordinates2N(new Int_t(*c.fCoordinates2N)),
-  fCoordinatesN_M(new Int_t(*c.fCoordinatesN_M)),
-  fCoordinatesN_T(new Int_t(*c.fCoordinatesN_T)),
-  fRandomResponse((THnSparse*)c.fRandomResponse->Clone()),
-  fRandomEfficiency((THnSparse*)c.fRandomEfficiency->Clone()),
-  fRandomMeasured((THnSparse*)c.fRandomMeasured->Clone()),
-  fRandom3((TRandom3*)c.fRandom3->Clone()),
-  fDeltaUnfoldedP((THnSparse*)c.fDeltaUnfoldedP),
-  fDeltaUnfoldedN((THnSparse*)c.fDeltaUnfoldedN),
-  fNCalcCorrErrors(c.fNCalcCorrErrors),
-  fRandomSeed(c.fRandomSeed)
-{
-  //
-  // copy constructor
-  //
-}
-
-//______________________________________________________________
-
-AliCFUnfolding& AliCFUnfolding::operator=(const AliCFUnfolding& c) {
-  //
-  // assignment operator
-  //
-  
-  if (this!=&c) {
-    TNamed::operator=(c);
-    fResponseOrig = (THnSparse*)c.fResponseOrig->Clone() ;
-    fPriorOrig = (THnSparse*)c.fPriorOrig->Clone() ;
-    fEfficiencyOrig = (THnSparse*)c.fEfficiencyOrig->Clone() ;
-    fMeasuredOrig = (THnSparse*)c.fMeasuredOrig->Clone() ;
-    fMaxNumIterations = c.fMaxNumIterations ;
-    fNVariables = c.fNVariables ;
-    fUseSmoothing = c.fUseSmoothing ;
-    fSmoothFunction = (TF1*)c.fSmoothFunction->Clone() ;
-    fSmoothOption = c.fSmoothOption ;
-    fMaxConvergence = c.fMaxConvergence ;
-    fNRandomIterations = c.fNRandomIterations ;
-    fResponse = (THnSparse*)c.fResponse->Clone() ;
-    fPrior = (THnSparse*)c.fPrior->Clone() ;
-    fEfficiency = (THnSparse*)c.fEfficiency->Clone() ;
-    fMeasured = (THnSparse*)c.fMeasured->Clone() ;
-    fInverseResponse = (THnSparse*)c.fInverseResponse->Clone() ;
-    fMeasuredEstimate = (THnSparse*)fMeasuredEstimate->Clone() ;
-    fConditional = (THnSparse*)fConditional->Clone() ;
-    fUnfolded = (THnSparse*)c.fUnfolded->Clone() ;
-    fUnfoldedFinal = (THnSparse*)c.fUnfoldedFinal->Clone() ;
-    fCoordinates2N  = new Int_t(*c.fCoordinates2N)  ;
-    fCoordinatesN_M = new Int_t(*c.fCoordinatesN_M) ;
-    fCoordinatesN_T = new Int_t(*c.fCoordinatesN_T) ;
-    fRandomResponse = (THnSparse*)c.fRandomResponse->Clone() ;
-    fRandomEfficiency = (THnSparse*)c.fRandomEfficiency->Clone() ;
-    fRandomMeasured = (THnSparse*)c.fRandomMeasured->Clone() ;
-    fRandom3 = (TRandom3*)c.fRandom3->Clone() ;
-    fDeltaUnfoldedP = (THnSparse*)c.fDeltaUnfoldedP->Clone() ;
-    fDeltaUnfoldedN = (THnSparse*)c.fDeltaUnfoldedN->Clone() ;
-    fNCalcCorrErrors = c.fNCalcCorrErrors ;
-    fRandomSeed = c.fRandomSeed ;
-  }
-  return *this;
-}
-
 //______________________________________________________________
 
 AliCFUnfolding::~AliCFUnfolding() {
@@ -568,9 +482,9 @@ void AliCFUnfolding::CalculateCorrelatedErrors() {
   // Get statistical errors for final unfolded spectrum
   // ie. spread of each pt bin in fDeltaUnfoldedP
   Double_t sigma       = 0.;
-  Double_t dummy       = 0.;
+  // Double_t dummy       = 0.;
   for (Long_t iBin=0; iBin<fUnfoldedFinal->GetNbins(); iBin++) {
-    dummy = fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M);
+    // dummy = fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M);
     sigma = fDeltaUnfoldedP->GetBinError(fCoordinatesN_M);
     //AliDebug(2,Form("filling error %e\n",sigma));
     fUnfoldedFinal->SetBinError(fCoordinatesN_M,sigma);
