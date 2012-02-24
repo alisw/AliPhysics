@@ -31,6 +31,9 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
 
   void MyUserCreateOutputObjects();
   void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
+  
+  /// Set minimum number of vertex contributors
+  void SetMinNvtxContributors(Int_t minNvtxContributors) { fMinNvtxContirbutors = minNvtxContributors; }
 
  private:
 
@@ -66,10 +69,12 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
     kHvarMotherType, ///< Mother type (MC only)
     kNvars           ///< THnSparse dimensions
   };
+  
+  Int_t fMinNvtxContirbutors;  ///< Minimum number of vertex contributors
 
   TObjArray* fThetaAbsKeys;    ///< Name of theta at absorber end
 
-  ClassDef(AliAnalysisTaskSingleMu, 1); // Single muon analysis
+  ClassDef(AliAnalysisTaskSingleMu, 2); // Single muon analysis
 };
 
 #endif

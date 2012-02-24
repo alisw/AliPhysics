@@ -45,6 +45,7 @@
 //#include "TMCProcess.h"
 #include "TMinuit.h"
 #include "TArrayI.h"
+#include "TPaveStats.h"
 
 // STEER includes
 #include "AliAODEvent.h"
@@ -64,11 +65,13 @@
 // CORRFW includes
 #include "AliCFContainer.h"
 #include "AliCFGridSparse.h"
+#include "AliCFEffGrid.h"
 
-// PWG3 includes
+// PWG includes
 #include "AliVAnalysisMuon.h"
 #include "AliMergeableCollection.h"
 #include "AliCounterCollection.h"
+#include "AliMuonTrackCuts.h"
 
 
 /// \cond CLASSIMP
@@ -79,6 +82,7 @@ ClassImp(AliAnalysisTaskSingleMu) // Class implementation in ROOT context
 //________________________________________________________________________
 AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu() :
   AliVAnalysisMuon(),
+  fMinNvtxContirbutors(0),
   fThetaAbsKeys(0x0)
 {
   /// Default ctor.
@@ -87,6 +91,7 @@ AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu() :
 //________________________________________________________________________
 AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name, const AliMuonTrackCuts& cuts) :
   AliVAnalysisMuon(name, cuts),
+  fMinNvtxContirbutors(1),
   fThetaAbsKeys(0x0)
 {
   //
@@ -179,7 +184,7 @@ void AliAnalysisTaskSingleMu::MyUserCreateOutputObjects()
   
   AddObjectToCollection(cfContainer, kTrackContainer);
   
-  fMuonTrackCuts.Print("mask");
+  fMuonTrackCuts->Print("mask");
 }
 
 //________________________________________________________________________
@@ -190,7 +195,7 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
   //
 
   AliVVertex* primaryVertex = ( fAODEvent ) ? (AliVVertex*)fAODEvent->GetPrimaryVertexSPD() : (AliVVertex*)fESDEvent->GetPrimaryVertexSPD();
-  if ( primaryVertex->GetNContributors() < 1 ) return;
+  if ( primaryVertex->GetNContributors() < fMinNvtxContirbutors ) return;
 
   Double_t ipVz = primaryVertex->GetZ();
   Double_t ipVzMC = 0;
@@ -218,8 +223,29 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
     for (Int_t itrack = 0; itrack < nTracks; itrack++) {
       track = ( istep == kStepReconstructed ) ? GetTrack(itrack) : GetMCTrack(itrack);
       
-      Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts.IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 );
+      Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts->IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 );
       if ( ! isSelected ) continue;
+      
+      // In W simulations with Pythia, sometimes muon is stored twice.
+      // Remove muon in case it has another muon as daugther
+      if ( istep == kStepGeneratedMC ) {
+        Int_t firstDaughter = GetDaughterIndex(track, 0);
+        if ( firstDaughter >= 0 ) {
+          Bool_t hasMuonDaughter = kFALSE;
+          Int_t lastDaughter = GetDaughterIndex(track, 1);
+          for ( Int_t idaugh=firstDaughter; idaugh<=lastDaughter; idaugh++ ) {
+            AliVParticle* currTrack = GetMCTrack(idaugh);
+            if ( currTrack->PdgCode() == track->PdgCode() ) {
+              hasMuonDaughter = kTRUE;
+              break;
+            }
+          }
+          if ( hasMuonDaughter ) {
+            AliDebug(1, Form("Current muon (%i) has muon daughter: rejecting it", itrack));
+            continue;
+          }
+        }
+      }      
       
       Int_t trackSrc = ( istep == kStepReconstructed ) ? GetParticleType(track) : RecoTrackMother(track);
       
@@ -269,8 +295,14 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   
   AliCFContainer* cfContainer = static_cast<AliCFContainer*> ( GetSum(physSel,trigClassName,centralityRange,"SingleMuContainer") );
   if ( ! cfContainer ) return;
+  
+  AliCFEffGrid* effSparse = new AliCFEffGrid(Form("eff%s", cfContainer->GetName()),Form("Efficiency %s", cfContainer->GetTitle()),*cfContainer);
+  effSparse->CalculateEfficiency(kStepReconstructed, kStepGeneratedMC);
+  
+  AliCFGridSparse* gridSparseArray[3] = {effSparse->GetNum(), effSparse->GetDen(), effSparse};
+  TString gridSparseName[3] = {cfContainer->GetStepTitle(kStepReconstructed), cfContainer->GetStepTitle(kStepGeneratedMC), "Efficiency"};
 
-  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kGreen, kBlue, kViolet, 7, kOrange};
+  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange};
 //  TString allSrcNames = "";
 //  for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
 //    if ( ! allSrcNames.IsNull() ) allSrcNames.Append(" ");
@@ -292,45 +324,60 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   ////////////////
   // Kinematics //
   ////////////////
-  for ( Int_t istep=0; istep<kNsteps; ++istep ) {
-    igroup1++;
-    igroup2 = 0;
-    AliCFGridSparse* gridSparse = cfContainer->GetGrid(istep);
-    if ( gridSparse->GetEntries() == 0. ) continue;
-    SetSparseRange(gridSparse, kHvarEta, "", -3.999, -2.501);
-    currName = Form("%s_proj_%s", GetName(), cfContainer->GetStepTitle(istep));
-    can = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
-    can->Divide(2,2);
-    TLegend* leg = new TLegend(0.6, 0.6, 0.8, 0.8);
-    igroup2++;
-    for ( Int_t iproj=0; iproj<4; ++iproj ) {
-      can->cd(iproj+1);
-      if ( iproj == kHvarPt || iproj == kHvarVz ) gPad->SetLogy();
-      for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
-        SetSparseRange(gridSparse, kHvarMotherType, "", isrc+1, isrc+1, "USEBIN");
-        for ( Int_t icharge=0; icharge<2; ++icharge ) {
-          SetSparseRange(gridSparse, kHvarCharge, "", icharge+1, icharge+1, "USEBIN");
-          TH1* projHisto = gridSparse->Project(iproj);
-          projHisto->SetName(Form("proj%i_%s_src%i_charge%i", iproj, cfContainer->GetStepTitle(istep), isrc, icharge));
+  TCanvas* canKine[3] = {0x0, 0x0, 0x0};
+  TLegend* legKine[3] = {0x0, 0x0, 0x0};
+  for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
+    for ( Int_t icharge=0; icharge<2; ++icharge ) {        
+      for ( Int_t igrid=0; igrid<3; ++igrid ) {
+        if ( gridSparseArray[igrid]->GetEntries() == 0. ) break;
+        if ( gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) {
+          SetSparseRange(gridSparseArray[igrid], kHvarEta, "", -3.999, -2.501);
+          SetSparseRange(gridSparseArray[igrid], kHvarMotherType, "", isrc+1, isrc+1, "USEBIN");
+          SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", icharge+1, icharge+1, "USEBIN");
+        }
+        if ( ! canKine[igrid] ) {
+          igroup1++;
+          igroup2 = 0;
+          currName = Form("%s_proj_%s", GetName(), gridSparseName[igrid].Data());
+          canKine[igrid] = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
+          canKine[igrid]->Divide(2,2);
+          legKine[igrid] = new TLegend(0.6, 0.6, 0.8, 0.8);
+          igroup2++;
+        }
+        for ( Int_t iproj=0; iproj<4; ++iproj ) {
+          canKine[igrid]->cd(iproj+1);
+          if ( ( iproj == kHvarPt || iproj == kHvarVz ) && gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) gPad->SetLogy();
+          TH1* projHisto = gridSparseArray[igrid]->Project(iproj);
+          projHisto->SetName(Form("proj%i_%s_src%i_charge%i", iproj, gridSparseName[igrid].Data(), isrc, icharge));
           if ( projHisto->GetEntries() == 0 ) continue;
           Bool_t isFirst = ( gPad->GetListOfPrimitives()->GetEntries() == 0 );
-          drawOpt = isFirst ? "e" : "esame";
+          drawOpt = isFirst ? "e" : "esames";
           //if ( isrc == kUnidentified && ! drawOpt.Contains("same") ) isMC = kFALSE;
           //if ( ! isMC ) srcColors[kUnidentified] = 1;
           projHisto->SetLineColor(srcColors[isrc]);
           projHisto->SetMarkerColor(srcColors[isrc]);
           projHisto->SetMarkerStyle(20+4*icharge);
           projHisto->Draw(drawOpt.Data());
+          gPad->Update();
+          TPaveStats* paveStats = (TPaveStats*)projHisto->FindObject("stats");
+          if ( paveStats ) paveStats->SetTextColor(srcColors[isrc]);
           if ( iproj == 0 ) {
             TString legEntry = fChargeKeys->At(icharge)->GetName();
             if ( isMC ) legEntry += Form(" %s", fSrcKeys->At(isrc)->GetName());
-            leg->AddEntry(projHisto,legEntry.Data(), "lp");
+            legKine[igrid]->AddEntry(projHisto,legEntry.Data(), "lp");
           }
-        } // loop on mu charge
-      } // loop on track sources
-      if ( iproj == 0 ) leg->Draw("same");
-    } // loop on projections
-    SetSparseRange(gridSparse, kHvarCharge, "", 1, gridSparse->GetAxis(kHvarCharge)->GetNbins(), "USEBIN"); // Reset range
+        } // loop on grid sparse
+      } // loop on projections
+    } // loop on mu charge
+  } // loop on track sources
+  
+  
+  for ( Int_t igrid=0; igrid<3; igrid++ ) {
+    if ( ! canKine[igrid] ) continue;
+    canKine[igrid]->cd(1);
+    legKine[igrid]->Draw("same");
+    if ( gridSparseArray[igrid]->IsA() == AliCFEffGrid::Class() ) continue;
+    SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", 1, gridSparseArray[igrid]->GetAxis(kHvarCharge)->GetNbins(), "USEBIN"); // Reset range
   } // loop on container steps
   
   

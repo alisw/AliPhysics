@@ -51,6 +51,7 @@
 //#include "AliStack.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
+#include "AliCounterCollection.h"
 
 // ANALYSIS includes
 #include "AliAnalysisManager.h"
@@ -62,8 +63,9 @@
 #include "AliCFGridSparse.h"
 
 // PWG3 includes
-#include "AliCounterCollection.h"
 #include "AliMergeableCollection.h"
+#include "AliMuonTrackCuts.h"
+#include "AliMuonPairCuts.h"
 
 /// \cond CLASSIMP
 ClassImp(AliVAnalysisMuon) // Class implementation in ROOT context
@@ -73,8 +75,8 @@ ClassImp(AliVAnalysisMuon) // Class implementation in ROOT context
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon() :
   AliAnalysisTaskSE(),
-  fMuonTrackCuts(),
-  fMuonPairCuts(),
+  fMuonTrackCuts(0x0),
+  fMuonPairCuts(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
   fTerminateOptions(0x0),
@@ -97,8 +99,8 @@ AliVAnalysisMuon::AliVAnalysisMuon() :
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts, const AliMuonPairCuts& pairCuts) :
   AliAnalysisTaskSE(name),
-  fMuonTrackCuts(trackCuts),
-  fMuonPairCuts(pairCuts),
+  fMuonTrackCuts(new AliMuonTrackCuts(trackCuts)),
+  fMuonPairCuts(new AliMuonPairCuts(pairCuts)),
   fESDEvent(0x0),
   fAODEvent(0x0),
   fTerminateOptions(0x0),
@@ -130,8 +132,8 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts) :
   AliAnalysisTaskSE(name),
-  fMuonTrackCuts(trackCuts),
-  fMuonPairCuts(),
+  fMuonTrackCuts(new AliMuonTrackCuts(trackCuts)),
+  fMuonPairCuts(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
   fTerminateOptions(0x0),
@@ -164,8 +166,8 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pairCuts) :
   AliAnalysisTaskSE(name),
-  fMuonTrackCuts(),
-  fMuonPairCuts(pairCuts),
+  fMuonTrackCuts(0x0),
+  fMuonPairCuts(new AliMuonPairCuts(pairCuts)),
   fESDEvent(0x0),
   fAODEvent(0x0),
   fTerminateOptions(0x0),
@@ -201,6 +203,8 @@ AliVAnalysisMuon::~AliVAnalysisMuon()
   /// Destructor
   //
 
+  delete fMuonTrackCuts;
+  delete fMuonPairCuts;
   delete fTerminateOptions;
   delete fChargeKeys;
   delete fSrcKeys;
@@ -256,8 +260,8 @@ void AliVAnalysisMuon::FinishTaskOutput()
 void AliVAnalysisMuon::NotifyRun()
 {
   /// Set run number for cuts
-  if ( fMuonTrackCuts.GetFilterMask() ) fMuonTrackCuts.SetRun(fCurrentRunNumber);
-  if ( fMuonPairCuts.GetFilterMask() ) fMuonPairCuts.SetRun(fCurrentRunNumber);
+  if ( fMuonTrackCuts ) fMuonTrackCuts->SetRun(fCurrentRunNumber);
+  if ( fMuonPairCuts ) fMuonPairCuts->SetRun(fCurrentRunNumber);
 }
 
 //___________________________________________________________________________
@@ -454,6 +458,40 @@ AliVParticle* AliVAnalysisMuon::GetMCTrack(Int_t trackLabel)
 }
 
 //________________________________________________________________________
+Int_t AliVAnalysisMuon::GetMotherIndex(AliVParticle* mcParticle)
+{
+  //
+  /// Return the mother index
+  //
+  Int_t imother = ( fMCEvent ) ? ((AliMCParticle*)mcParticle)->GetMother() : ((AliAODMCParticle*)mcParticle)->GetMother();
+  return imother;
+}
+
+//________________________________________________________________________
+Int_t AliVAnalysisMuon::GetDaughterIndex(AliVParticle* mcParticle, Int_t idaughter)
+{
+  //
+  /// Return the daughter index
+  /// idaughter can be:
+  /// 0 -> first daughter
+  /// 1 -> last daughter
+  //
+  if ( idaughter < 0 || idaughter > 1 ) {
+    AliError(Form("Requested daughter %i Daughter index can be either 0 (first) or 1 (last)", idaughter));
+    return -1;
+  }
+  
+  if ( fMCEvent ) {
+    if ( idaughter == 0 ) return ((AliMCParticle*)mcParticle)->GetFirstDaughter();
+    else return ((AliMCParticle*)mcParticle)->GetLastDaughter();
+  }
+  
+  return ((AliAODMCParticle*)mcParticle)->GetDaughter(idaughter);
+}
+
+
+
+//________________________________________________________________________
 Bool_t AliVAnalysisMuon::IsMC()
 {
   //
@@ -492,7 +530,7 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
   // Track is not a muon
   if ( TMath::Abs(recoPdg) != 13 ) return kRecoHadron;
   
-  Int_t imother = ( fMCEvent ) ? ((AliMCParticle*)mcParticle)->GetMother() : ((AliAODMCParticle*)mcParticle)->GetMother();
+  Int_t imother = GetMotherIndex(mcParticle);
   
   Int_t den[3] = {100, 1000, 1};
   
@@ -506,6 +544,8 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
     Bool_t isPrimary = ( fMCEvent ) ? ( imother < fMCEvent->GetNumberOfPrimaries() ) : ((AliAODMCParticle*)part)->IsPrimary();
     
     if ( isPrimary ) {
+      if ( absPdg == 24 ) return kWbosonMu;
+      
       for ( Int_t idec=0; idec<3; idec++ ) {
         Int_t flv = (absPdg%100000)/den[idec];
         if ( flv > 0 && flv < 4 ) return kDecayMu;
@@ -529,7 +569,7 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
       }
     } // is secondary
     
-    imother = ( fMCEvent ) ? ((AliMCParticle*)part)->GetMother() : ((AliAODMCParticle*)part)->GetMother();
+    imother = GetMotherIndex(part);
     
   } // loop on mothers
   
@@ -834,7 +874,7 @@ void AliVAnalysisMuon::InitKeys()
   TString chargeKeys = "MuMinus MuPlus";
   fChargeKeys = chargeKeys.Tokenize(" ");
   
-  TString srcKeys = "CharmMu BeautyMu QuarkoniumMu DecayMu SecondaryMu Hadron Unidentified";
+  TString srcKeys = "CharmMu BeautyMu QuarkoniumMu WbosonMu DecayMu SecondaryMu Hadron Unidentified";
   fSrcKeys = srcKeys.Tokenize(" ");
   
   TString physSelKeys = "PhysSelPass PhysSelReject";

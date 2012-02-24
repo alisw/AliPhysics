@@ -10,8 +10,6 @@
 //
 
 #include "AliAnalysisTaskSE.h"
-#include "AliMuonTrackCuts.h"
-#include "AliMuonPairCuts.h"
 
 class TString;
 class TObjArray;
@@ -24,6 +22,8 @@ class AliVParticle;
 class AliAODEvent;
 class AliESDEvent;
 class AliCFGridSparse;
+class AliMuonTrackCuts;
+class AliMuonPairCuts;
 
 class AliVAnalysisMuon : public AliAnalysisTaskSE {
  public:
@@ -31,6 +31,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts);
   AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pairCuts);
   AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts, const AliMuonPairCuts& pairCuts);
+  
   virtual ~AliVAnalysisMuon();
 
   virtual void   UserCreateOutputObjects();
@@ -43,6 +44,11 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
 
   void SetTrigClassPatterns(TString pattern = "CINT CMU !CMUP CMBAC CPBI !-ACE- !-AC- !-E- !WU !EGA !EJE");
   void SetTerminateOptions(TString physSel="All", TString trigClass="ANY", TString centralityRange="", TString furtherOpts="");
+  
+  /// Get muon track cuts
+  AliMuonTrackCuts* GetMuonTrackCuts() { return fMuonTrackCuts; }
+  /// Get muon pair cuts
+  AliMuonPairCuts* GetMuonPairCuts() { return fMuonPairCuts; }
   
   // Utility methods for CF container
   static Bool_t SetSparseRange(AliCFGridSparse* gridSparse,
@@ -81,6 +87,8 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   Bool_t IsMC();
   Int_t GetNMCTracks();
   AliVParticle* GetMCTrack(Int_t trackLabel);
+  Int_t GetMotherIndex(AliVParticle* mcParticle);
+  Int_t GetDaughterIndex(AliVParticle* mcParticle, Int_t idaughter);
   Int_t GetParticleType(AliVParticle* track);
   Int_t RecoTrackMother(AliVParticle* mcParticle);
   
@@ -106,6 +114,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
     kCharmMu,       ///< Mu from charm
     kBeautyMu,      ///< Mu from beauty
     kQuarkoniumMu,  ///< Mu from resonance
+    kWbosonMu,      ///< Mu from W
     kDecayMu,       ///< Decay mu
     kSecondaryMu,   ///< Secondary mu
     kRecoHadron,    ///< Reconstructed hadron
@@ -113,8 +122,8 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
     kNtrackSources  ///< Total number of track sources
   };
     
-  AliMuonTrackCuts fMuonTrackCuts; ///< Muon track cuts
-  AliMuonPairCuts fMuonPairCuts;   ///< Muon pair track cuts
+  AliMuonTrackCuts* fMuonTrackCuts; ///< Muon track cuts
+  AliMuonPairCuts* fMuonPairCuts;   ///< Muon pair track cuts
   AliESDEvent* fESDEvent;      //!< ESD event, not owner
   AliAODEvent* fAODEvent;      //!< AOD event, not owner
   TObjArray* fTerminateOptions; ///< Terminate options
@@ -141,7 +150,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   TObjArray* fSelectedTrigLevel;   ///< Track-trigger pt cut for selected trigger class
   TObjArray* fOutputPrototypeList; //!< List of prototype object to be used in collection
 
-  ClassDef(AliVAnalysisMuon, 1);
+  ClassDef(AliVAnalysisMuon, 2);
 };
 
 #endif
