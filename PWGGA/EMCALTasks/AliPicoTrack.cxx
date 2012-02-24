@@ -107,8 +107,10 @@ void AliPicoTrack::GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff
     }
   }
 
-  if (0&&(TMath::Abs(veta)>0.75 || (vphi<70*TMath::DegToRad()) || (vphi>190*TMath::DegToRad())))
-    return;
+  if (0) {
+    if (TMath::Abs(veta)>0.75 || (vphi<70*TMath::DegToRad()) || (vphi>190*TMath::DegToRad()))
+      return;
+  }
 
   Float_t pos[3] = {0};
   v->GetPosition(pos);  
