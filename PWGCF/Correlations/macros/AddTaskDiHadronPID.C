@@ -24,13 +24,9 @@ AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID() {
 	
 	AliAnalysisDataContainer *coutput1 = 
     mgr->CreateContainer("DiHadronPID", TList::Class(),
-						 AliAnalysisManager::kOutputContainer,"DiHadronPID.root");
+                         AliAnalysisManager::kOutputContainer,"DiHadronPID.root");
 	
-	mgr->ConnectInput  (task,  0, cinput );
-	mgr->ConnectOutput (task,  0, coutput1);
+	mgr->ConnectOutput (task,  1, coutput1);
 	
 	return task;
-	
-	
-	
 }
