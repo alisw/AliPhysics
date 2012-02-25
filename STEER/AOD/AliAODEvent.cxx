@@ -52,7 +52,8 @@ ClassImp(AliAODEvent)
 						      "dimuons",
 						      "AliAODTZERO",
 						      "AliAODVZERO",
-						      "AliAODZDC"
+						      "AliAODZDC",
+						      "AliTOFHeader"
 #ifdef MFT_UPGRADE	  
 						      ,"AliAODMFT"
 #endif						      
@@ -81,7 +82,8 @@ AliAODEvent::AliAODEvent() :
   fDimuons(0),
   fAODTZERO(0),
   fAODVZERO(0),
-  fAODZDC(0)
+  fAODZDC(0),
+  fTOFHeader(0)
 #ifdef MFT_UPGRADE
   ,fAODMFT(0)
 #endif
@@ -113,7 +115,8 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fDimuons(new TClonesArray(*aod.fDimuons)),
   fAODTZERO(new AliAODTZERO(*aod.fAODTZERO)),
   fAODVZERO(new AliAODVZERO(*aod.fAODVZERO)),
-  fAODZDC(new AliAODZDC(*aod.fAODZDC))
+  fAODZDC(new AliAODZDC(*aod.fAODZDC)),
+  fTOFHeader(new AliTOFHeader(*aod.fTOFHeader))
 #ifdef MFT_UPGRADE
   ,fAODMFT(new AliAODMFT(*aod.fAODMFT))
 #endif
@@ -137,6 +140,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fAODTZERO);
   AddObject(fAODVZERO);
   AddObject(fAODZDC);
+  AddObject(fTOFHeader);
 #ifdef MFT_UPGRADE	
   AddObject(fAODVZERO);
 #endif
@@ -310,6 +314,7 @@ void AliAODEvent::CreateStdContent()
   AddObject(new AliAODTZERO());
   AddObject(new AliAODVZERO());
   AddObject(new AliAODZDC());
+  AddObject(new AliTOFHeader());
 #ifdef MFT_UPGRADE
   AddObject(new AliAODMFT());
 #endif
@@ -401,6 +406,7 @@ void AliAODEvent::GetStdContent()
   fAODTZERO      = (AliAODTZERO*)fAODObjects->FindObject("AliAODTZERO");
   fAODVZERO      = (AliAODVZERO*)fAODObjects->FindObject("AliAODVZERO");
   fAODZDC        = (AliAODZDC*)fAODObjects->FindObject("AliAODZDC");
+  fTOFHeader     = (AliTOFHeader*)fAODObjects->FindObject("AliTOFHeader");
 #ifdef MFT_UPGRADE
   fAODMFT        = (AliAODMFT*)fAODObjects->FindObject("AliAODMFT");
 #endif
@@ -875,4 +881,24 @@ Float_t AliAODEvent::GetVZEROEqMultiplicity(Int_t i) const
   Float_t factor = fHeader->GetVZEROEqFactors(i)*8./factorSum;
 
   return (fAODVZERO->GetMultiplicity(i)/factor);
+}
+
+//------------------------------------------------------------
+void  AliAODEvent::SetTOFHeader(const AliTOFHeader *header)
+{
+  //
+  // Set the TOF event_time
+  //
+
+  if (fTOFHeader) {
+    *fTOFHeader=*header;
+    //fTOFHeader->SetName(fgkESDListName[kTOFHeader]);
+  }
+  else {
+    // for analysis of reconstructed events
+    // when this information is not avaliable
+    fTOFHeader = new AliTOFHeader(*header);
+    //AddObject(fTOFHeader);
+  }
+
 }

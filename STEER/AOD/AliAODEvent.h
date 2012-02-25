@@ -34,6 +34,7 @@
 #include "AliAODTZERO.h"
 #include "AliAODVZERO.h"
 #include "AliAODZDC.h"
+#include "AliTOFHeader.h"
 #ifdef MFT_UPGRADE
 #include "AliAODMFT.h"
 #endif
@@ -64,6 +65,7 @@ class AliAODEvent : public AliVEvent {
 		       kAODTZERO,
 		       kAODVZERO,
 		       kAODZDC,
+		       kTOFHeader,
 		       kAODListN
 	           #ifdef MFT_UPGRADE
 	           ,kAODVZERO
@@ -127,6 +129,12 @@ class AliAODEvent : public AliVEvent {
   Double_t  GetZDCN2Energy()        const { return fHeader ? fHeader->GetZDCN2Energy() : -999.; }
   Double_t  GetZDCP2Energy()        const { return fHeader ? fHeader->GetZDCP2Energy() : -999.; }
   Double_t  GetZDCEMEnergy(Int_t i) const { return fHeader ? fHeader->GetZDCEMEnergy(i) : -999.; }
+
+  void SetTOFHeader(const AliTOFHeader * tofEventTime);
+  const AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
+  Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
+  Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
+
 
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
@@ -303,13 +311,17 @@ class AliAODEvent : public AliVEvent {
   AliAODTZERO     *fAODTZERO;     //! TZERO AOD
   AliAODVZERO     *fAODVZERO;     //! VZERO AOD
   AliAODZDC       *fAODZDC;       //! ZDC AOD
+  AliTOFHeader    *fTOFHeader;  //! event times (and sigmas) as estimated by TOF
+			     //  combinatorial algorithm.
+                             //  It contains also TOF time resolution
+                             //  and T0spread as written in OCDB
 #ifdef MFT_UPGRADE
   AliAODMFT       *fAODMFT;       //! VZERO AOD
 #endif
   
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent,89);
+  ClassDef(AliAODEvent,90);
 };
 
 #endif
