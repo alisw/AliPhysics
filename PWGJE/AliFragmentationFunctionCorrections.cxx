@@ -1466,8 +1466,11 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     else if(type == kFlagXi && fh1FFXiPrior[i]  && ((TString(fh1FFXiPrior[i]->GetName())).Length() > 0)      ) hPrior = fh1FFXiPrior[i];
 
 
-    TString histNameTHn = hist->GetName();
-    histNameTHn.ReplaceAll("TH1","THn");
+    TString histNameTHn;
+    if (hist) {
+      histNameTHn = hist->GetName();
+      histNameTHn.ReplaceAll("TH1","THn");
+    }
 
     TString priorNameTHn; 
     if(hPrior){
@@ -1475,15 +1478,23 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
       priorNameTHn.ReplaceAll("TH1","THn");
     }
 
-    TString histNameBackFolded = hist->GetName();
+    TString histNameBackFolded;
+    if (hist)
+      histNameBackFolded = hist->GetName();
     histNameBackFolded.Append("_backfold");
 
-    TString histNameRatioFolded = hist->GetName();
-    histNameRatioFolded.ReplaceAll("fh1FF","hRatioFF");
+    TString histNameRatioFolded;
+    if (hist) {
+      histNameRatioFolded = hist->GetName();
+      histNameRatioFolded.ReplaceAll("fh1FF","hRatioFF");
+    }
     histNameRatioFolded.Append("_unfold");
 
-    TString histNameRatioBackFolded = hist->GetName();
-    histNameRatioBackFolded.ReplaceAll("fh1FF","hRatioFF");
+    TString histNameRatioBackFolded;
+    if (hist) {
+      histNameRatioBackFolded = hist->GetName();
+      histNameRatioBackFolded.ReplaceAll("fh1FF","hRatioFF");
+    }
     histNameRatioBackFolded.Append("_backfold");
  
     THnSparse* hnHist           = TH1toSparse(hist,histNameTHn,hist->GetTitle());
@@ -1495,7 +1506,8 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
       = Unfold(hnHist,hnResponse,hnFlatEfficiency,nIter,useCorrelatedErrors,hnPrior);  
      
     TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
-    hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+    if (hist)
+      hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
     
     if(type == kFlagPt) fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hUnfolded,0,0);
     if(type == kFlagZ)  fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,0,hUnfolded,0);
