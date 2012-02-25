@@ -78,7 +78,7 @@ private:
   /** Copy constructor */  
   AliHLTCaloSanityInspector(const AliHLTCaloSanityInspector &);
   /** Assignment */
-  AliHLTCaloSanityInspector & operator = (const AliHLTCaloSanityInspector);
+  AliHLTCaloSanityInspector & operator = (const AliHLTCaloSanityInspector &);
 
   /** The max difference between 2 samples */
   Int_t fMaxDifference;           //COMMENT
