@@ -38,6 +38,7 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t* );
   
   virtual void   SetJetBranch(const char* c){fBranchJets = c;}
+  virtual void   SetNonStdFile(char* c){fNonStdFile = c;}
   virtual void   SetTrackType(Int_t i){fTrackType = i;}
   virtual void   SetEventCuts(Float_t VtxZ=10.,Int_t nContributors=2)
   {fMaxVertexZ = VtxZ; fNContributors = nContributors;}
