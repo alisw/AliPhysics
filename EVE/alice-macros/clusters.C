@@ -12,7 +12,7 @@
 #include "AliESDtrack.h"
 #include "AliESDfriend.h"
 
-#include "ITS/AliITSRecoParam.h"
+#include "AliITSRecoParam.h"
 #endif
 
 void clusters()

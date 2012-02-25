@@ -145,3 +145,16 @@ set ( PACKCFLAGS  ${HLTCLFAGS})
 set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
 
 set ( EINCLUDE HLT/BASE HLT/BASE/HOMER)
+
+set ( EXPORT 
+    BASE/AliHLTDataTypes.h
+    BASE/AliHLTStdIncludes.h 
+    BASE/AliHLTLogging.h
+    BASE/AliHLTGlobalTriggerDecision.h 
+    BASE/AliHLTDomainEntry.h 
+    BASE/AliHLTTriggerDomain.h 
+    BASE/AliHLTTriggerDecision.h
+    BASE/AliHLTReadoutList.h 
+    BASE/AliHLTTriggerMenu.h 
+    BASE/AliHLTTriggerMenuItem.h 
+    BASE/AliHLTTriggerMenuSymbol.h)

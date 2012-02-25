@@ -20,6 +20,8 @@
 #else
 class TEveElement;
 class TEvePointSet;
+class TTree;
+class TBranch;
 #endif
 
 

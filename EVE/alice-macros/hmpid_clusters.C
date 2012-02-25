@@ -14,6 +14,8 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 #include <TEvePointSet.h>
+#include <TTree.h>
+#include <TBranch.h>
 
 #include <STEER/STEER/AliCluster3D.h>
 #include <STEER/STEER/AliRunLoader.h>
@@ -21,6 +23,8 @@
 #else
 class TEveElement;
 class TEvePointSet;
+class TTree;
+class TBranch;
 #endif
 
 TEvePointSet* hmpid_clusters(TEveElement* cont=0)

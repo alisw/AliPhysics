@@ -116,3 +116,31 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  TPCbaseLinkDef.h)
 
 set ( EINCLUDE  RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set (EXPORT AliSegmentID.h)
+
+install ( DIRECTORY mapping
+          DESTINATION TPC
+          PATTERN ".d"  EXCLUDE
+          PATTERN ".so" EXCLUDE)
+
+install ( DIRECTORY . 
+          DESTINATION TPC
+          FILES_MATCHING PATTERN "*.root"
+                         PATTERN "*.dat"
+			 PATTERN "testMC" EXCLUDE
+			 PATTERN "doc" EXCLUDE
+			 PATTERN "Calib" EXCLUDE
+			 PATTERN "macros" EXCLUDE
+			 PATTERN "CalibMacros" EXCLUDE
+			 PATTERN ".svn" EXCLUDE
+			 PATTERN "mapping" EXCLUDE
+			 PATTERN "fastSimul" EXCLUDE
+			 PATTERN "Cal" EXCLUDE
+			 PATTERN "scripts" EXCLUDE
+			 PATTERN "tgt_linuxx8664gcc" EXCLUDE
+			 PATTERN "stressTest" EXCLUDE)
+
+#
+# EOF
+#

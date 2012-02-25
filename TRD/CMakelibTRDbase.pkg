@@ -109,4 +109,6 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TRDbaseLinkDef.h)
 
+set ( EXPORT AliTRDgeometry.h Cal/AliTRDCalPID.h )
+
 set ( EINCLUDE  RAW TRD/Cal STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

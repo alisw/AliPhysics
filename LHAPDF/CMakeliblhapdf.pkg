@@ -50,3 +50,12 @@ endif( ALICE_TARGET STREQUAL "solarisCC5")
 set( PACKCXXFLAGS "${CXXFLAGS} -DDEFAULTPREFIXPATH=\\\"NONE\\\" -DDEFAULTLHAPATH=\\\"../AliRoot/LHAPDF/PDFsets\\\"" )
 
 set ( EXPORT AliStructFuncType.h)
+
+#--------------------------------------------------------------------------------#
+# install PDF data 
+install ( DIRECTORY PDFsets
+  DESTINATION LHAPDF
+  PATTERN ".svn" EXCLUDE
+  PATTERN ".d"  EXCLUDE 
+  PATTERN ".so" EXCLUDE)
+

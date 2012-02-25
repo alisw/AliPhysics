@@ -72,3 +72,23 @@ set ( DHDR  PHOSbaseLinkDef.h)
 set ( EXPORT AliPHOSGeometry.h AliPHOSEMCAGeometry.h AliPHOSCPVGeometry.h AliPHOSSupportGeometry.h AliPHOSCalibData.h)
 
 set ( EINCLUDE RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+install ( DIRECTORY mapping
+          DESTINATION PHOS
+	  PATTERN ".svn" EXCLUDE	
+          PATTERN ".d"  EXCLUDE
+          PATTERN ".so" EXCLUDE)
+
+install ( DIRECTORY . 
+          DESTINATION PHOS
+          FILES_MATCHING PATTERN "*.root"
+                         PATTERN "*.dat"
+			 PATTERN "doc" EXCLUDE
+			 PATTERN "macros" EXCLUDE 
+			 PATTERN "ShuttleInput" EXCLUDE
+			 PATTERN "PROOF-INF.PHOSUtils" EXCLUDE
+			 PATTERN "tgt_*" EXCLUDE)
+
+#
+# EOF
+#

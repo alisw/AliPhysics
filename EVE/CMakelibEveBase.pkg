@@ -33,3 +33,11 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  EveBase/EveBaseLinkDef.h)
 
 set ( EINCLUDE  RAW ITS TPC EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
+
+install (FILES 
+  EveBase/AliEveTrack.h 
+  EveBase/AliEveEventManager.h
+  EveBase/AliEveTrackCounter.h
+  EveBase/AliEveMagField.h
+  EveBase/AliEveKineTools.h
+  DESTINATION EVE/EveBase)

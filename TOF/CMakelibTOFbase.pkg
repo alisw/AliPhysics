@@ -82,3 +82,8 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR TOFbaseLinkDef.h)
 
 set ( EINCLUDE  RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+install (DIRECTORY data
+	 DESTINATION TOF
+	 PATTERN ".svn" EXCLUDE)
+

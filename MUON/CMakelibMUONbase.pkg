@@ -66,3 +66,23 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  MUONbaseLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT AliMUONDigitMaker.h 
+  AliMUONVDigitStore.h 
+  AliMUONDigitStoreV2R.h 
+  AliMUONDigitStoreVImpl.h 
+  AliMUONVDigit.h 
+  AliMUONVCluster.h 
+  AliMUONConstants.h 
+  AliMUONTriggerCircuit.h )
+
+install (DIRECTORY data
+	 DESTINATION MUON
+	 PATTERN ".svn" EXCLUDE)
+
+
+#
+# EOF
+#
+
+

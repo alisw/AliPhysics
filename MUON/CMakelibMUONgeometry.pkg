@@ -50,3 +50,5 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set ( EINCLUDE  RAW MUON/mapping)
 
 set ( DHDR  MUONgeometryLinkDef.h)
+
+set ( EXPORT AliMUONGeometryTransformer.h )

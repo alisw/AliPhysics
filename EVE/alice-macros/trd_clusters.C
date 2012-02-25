@@ -14,10 +14,10 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <STEER/STEER/AliCluster.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <TRD/AliTRDcluster.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliCluster.h>
+#include <AliRunLoader.h>
+#include <AliTRDcluster.h>
+#include <AliEveEventManager.h>
 #else
 class TEvePointSet;
 class TEveElement;

@@ -13,11 +13,11 @@
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 
-#include <STEER/STEER/AliCluster.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <TPC/AliTPCClustersRow.h>
-#include <TPC/AliTPCclusterMI.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliCluster.h>
+#include <AliRunLoader.h>
+#include <AliTPCClustersRow.h>
+#include <AliTPCclusterMI.h>
+#include <AliEveEventManager.h>
 #else
 class TEveElement;
 class TEvePointSet;

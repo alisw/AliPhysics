@@ -51,3 +51,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  MUONcoreLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping)
+
+set ( EXPORT mapping/AliMpExMap.h AliMUONVStore.h )

@@ -1,4 +1,5 @@
-#--------------------------------------------------------------------------------#
+# -*- mode: CMake -*- 
+#-----------------------------------------------------------------------#
 # Package File for alieve                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
@@ -23,7 +24,7 @@
 # CINTAUTOLINK - Set automatic dictionary generation                             #
 # ARLIBS - Archive Libraries and objects for linking (Executables only)          #
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
-#--------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------#
 
 set ( SRCS  alieve_main/alieve_main.cxx)
 set ( CSRCS )
@@ -36,7 +37,7 @@ set ( ELIBS  EveBase EveDet MONITOR MUONmapping MUONevaluation MUONsim MUONrec M
 if(PYTHIA6)
   list (APPEND ELIBS EVGEN)
 endif(PYTHIA6)
-set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS})
+set ( PACKBLIBS  -lftgl ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS} )
 
 
 if( ALICE_TARGET STREQUAL "macosx")
@@ -59,3 +60,30 @@ if( ALICE_TARGET STREQUAL "macosx")
 	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
 	
 endif( ALICE_TARGET STREQUAL "macosx")
+
+install (DIRECTORY macros 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+	 
+install (DIRECTORY alice-macros 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+install (DIRECTORY alice-data 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+install (DIRECTORY hlt-macros 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+	 

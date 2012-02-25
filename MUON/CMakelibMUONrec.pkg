@@ -80,3 +80,6 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  MUONrecLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT AliMUONESDInterface.h AliMUONTrack.h AliMUONVClusterStore.h 
+  AliMUONTrackExtrap.h AliMUONTrackParam.h AliMUONCDB.h )
