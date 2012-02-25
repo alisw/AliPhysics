@@ -92,7 +92,6 @@
 
 #pragma link C++ class  AliESDHandler+;
 #pragma link C++ class  AliTrackerBase+;
-#pragma link C++ class  AliTOFHeader+;
 
 #pragma link C++ namespace AliESDUtils;
 

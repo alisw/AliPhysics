@@ -52,7 +52,6 @@ set ( SRCS
     ESD/AliESDVZEROfriend.cxx 
     ESD/AliESDHandler.cxx 
     ESD/AliTrackerBase.cxx  
-    ESD/AliTOFHeader.cxx 
     ESD/AliESDUtils.cxx
     ESD/AliTriggerIR.cxx 
     ESD/AliTriggerScalersESD.cxx 
