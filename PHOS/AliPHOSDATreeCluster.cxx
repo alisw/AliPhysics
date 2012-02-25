@@ -165,7 +165,7 @@ bool AliPHOSDATreeCluster::Append(AliPHOSDATreeCluster& cluster){
       newfDigits[ndigitsall]= cluster.fDigits[--ndigits2];
     } else {
       std::cout<<" AliPHOSDATreeCluster::Append() Something wrong.. "<<std::endl;
-      delete newfDigits;
+      delete [] newfDigits;
       return false;
     }
   }
