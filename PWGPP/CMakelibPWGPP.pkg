@@ -94,3 +94,34 @@ set ( EINCLUDE
   STEER/ESD
   STEER/STEERBase
   )
+
+# install macros as needed
+install ( DIRECTORY macros 
+	  DESTINATION PWGPP 
+	  PATTERN ".d"  EXCLUDE 
+	  PATTERN ".so" EXCLUDE)
+install ( DIRECTORY PilotTrain
+	  DESTINATION PWGPP/ 
+	  PATTERN ".d"  EXCLUDE 
+	  PATTERN ".so" EXCLUDE)
+install ( FILES HMPID/AddTaskHmpidQA.C
+	  DESTINATION PWGPP/HMPID)
+install ( FILES T0/AddTaskT0QA.C
+	  DESTINATION PWGPP/T0)
+install ( FILES TOF/AddTaskTOFQA.C
+	  DESTINATION PWGPP/TOF)
+install ( DIRECTORY TPC/macros
+	  DESTINATION PWGPP/TPC
+	  PATTERN ".C")
+install ( DIRECTORY TRD
+	  DESTINATION PWGPP)
+install ( FILES ZDC/AddTaskZDCQA.C
+	  DESTINATION PWGPP/ZDC)
+install ( FILES PilotTrain/AddTaskMuonQA.C
+  	  DESTINATION PWGPP/PilotTrain/ )
+
+
+#
+# EOF
+#
+
