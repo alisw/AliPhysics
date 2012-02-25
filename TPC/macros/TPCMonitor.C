@@ -74,27 +74,28 @@ void TPCMonitor()
   // Initialize the monitor 
   SetStyle();
   
-  // MappingHandler
-  Char_t fglobalmap[256] ; sprintf(fglobalmap,"%s/TPC/mapping/MappingGlobal.txt", gSystem->Getenv("ALICE_ROOT"));
-  Char_t frowmap[256]    ; sprintf(frowmap,   "%s/TPC/mapping/MappingRow.txt",    gSystem->Getenv("ALICE_ROOT"));
-  Char_t ffecmap[256]    ; sprintf(ffecmap,   "%s/TPC/mapping/MappingCards.txt",  gSystem->Getenv("ALICE_ROOT"));
-  Char_t fnameconf[256]  ; sprintf(fnameconf, "%s/TPC/AliTPCMonitorConfig.txt",   gSystem->Getenv("ALICE_ROOT"));
+  TString aliceroot=gSystem->Getenv("ALICE_ROOT");
+  TString dateroot=gSystem->Getenv("DATE_ROOT");
   
-  cout << " ALICE_ROOT : " << gSystem->Getenv("ALICE_ROOT") << endl;
-  cout << " DATE_ROOT  : " << gSystem->Getenv("DATE_ROOT")  << endl;
-
+  cout << " ALICE_ROOT : " << aliceroot.Data() << endl;
+  cout << " DATE_ROOT  : " << dateroot.Data()  << endl;
+  
+  // MappingHandler
+  TString fglobalmap=Form("%s/TPC/mapping/MappingGlobal.txt", aliceroot.Data());
+  TString frowmap=Form("%s/TPC/mapping/MappingRow.txt",    aliceroot.Data());
+  TString ffecmap=Form("%s/TPC/mapping/MappingCards.txt",  aliceroot.Data());
+  TString fnameconf=Form("%s/TPC/AliTPCMonitorConfig.txt",   aliceroot.Data());
   fMapHand = new AliTPCMonitorMappingHandler("maphand","maphand");
-  fMapHand->ReadMapping(fglobalmap);
-  fMapHand->ReadRowMappingGlob(frowmap);
-  fMapHand->ReadFECMapping(    ffecmap);  
+  fMapHand->ReadMapping(fglobalmap.Data());
+  fMapHand->ReadRowMappingGlob(frowmap.Data());
+  fMapHand->ReadFECMapping(    ffecmap.Data());
   if (gDirectory) { gDirectory->Append(fMapHand); }
   
   // Monitor
   fMon = new AliTPCMonitor("monitor","monitor");
-  fMon->ReadConfig(fnameconf);
+  fMon->ReadConfig(fnameconf.Data());
   fMon->SetMappingHandler(fMapHand);
   MonitorGui(fMon);
-  
 }
 
 //_________________________________________________________________________

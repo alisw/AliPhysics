@@ -28,11 +28,11 @@ class AliTPCMonitorMappingHandler:   public TNamed {
 
     ~AliTPCMonitorMappingHandler();
     
-    void     ReadMapping(char* mapfile);
-    void     ReadRowMappingGlob(char* fpathtoMappingRowfile) ;
+    void     ReadMapping(const char* mapfile);
+    void     ReadRowMappingGlob(const char* fpathtoMappingRowfile) ;
     Int_t    GetNumOfChannels() const;
     Int_t    GetSizeofArray() const ;
-    Short_t* GetLine(          Int_t channel) const;
+    const Short_t* GetLine(          Int_t channel) const;
     Int_t    GetIndex(         Int_t channel) const;
     Int_t    GetPadRow(        Int_t channel) const;
     Int_t    GetPad(           Int_t channel) const;
@@ -46,9 +46,9 @@ class AliTPCMonitorMappingHandler:   public TNamed {
     Int_t    GetPadAddInRow(   Int_t row, Int_t pad);
     Int_t    GetNumofPads(     Int_t row);
     
-    Int_t    ReadFECMapping(   char* u2ftestfile);
+    Int_t    ReadFECMapping(   const char* u2ftestfile);
     void     ReadfecHwMap(     Int_t sector);
-    void     ReadfecGainMap(   char* fecgainmap);
+    void     ReadfecGainMap(   const char* fecgainmap);
      
     Int_t    U2fGetBranch(     Int_t fecnr) const;
     Int_t    U2fGetRCU(        Int_t fecnr) const;
@@ -65,15 +65,15 @@ class AliTPCMonitorMappingHandler:   public TNamed {
  private:
     
  
-    Int_t     fnumofChannels;            // Max number of channels
-    Int_t     fmaxHWAdress;              // Max value of hardware addresses
-    Int_t     fsizeofArray;              // Set to max value of hardware addresses
-    Short_t** fmapping;                  // global  mapping array
-    Int_t**   fmappingChannelinRow;      // mapping of hardware addresses in one pad row
+    Int_t   fnumofChannels;              // Max number of channels
+    Int_t   fmaxHWAdress;                // Max value of hardware addresses
+    Int_t   fsizeofArray;                // Set to max value of hardware addresses
+    Short_t fmapping[24000][11];         // global  mapping array
+    Int_t   fmappingChannelinRow[159][150];  // mapping of hardware addresses in one pad row
     
-    Short_t** fu2ftestmapping;           // mapping of global FEC numbers in sectors (determined during installation with U2F card)  
-    Int_t**   fMapHwFECglobal;           // mapping of global FEC numbers to hardware addresses in these FECs              
-    Float_t** fecGainMap;                // global gain calibration map
+    Short_t fu2ftestmapping[7000][8];  // mapping of global FEC numbers in sectors (determined during installation with U2F card)
+    Int_t   fMapHwFECglobal[24000][2]; // mapping of global FEC numbers to hardware addresses in these FECs
+    Float_t fecGainMap[7000][128];     // global gain calibration map
 	
     ClassDef(AliTPCMonitorMappingHandler,1);
 };

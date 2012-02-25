@@ -1921,7 +1921,7 @@ void AliTPCMonitor::ShowSel(const Int_t* compval)
   Int_t   feclocbran  =  0;
   Int_t   branch      =  0;
   Short_t rcuget      =  0;
-  Int_t   emptyI      =  1;
+  // Int_t   emptyI      =  1;
   Int_t   index       = -1;
   Int_t   hwadd       =  0;
   
@@ -1991,7 +1991,7 @@ void AliTPCMonitor::ShowSel(const Int_t* compval)
     // Altro chip
       altrochip     =  fMapHand->GetAltro(hwadd);
       if(compval[5]!=-1 && altrochip!=compval[5])      { 	  fHist->SetCellContent(row-subrows+1,pad+1,0); 	  continue; 	}
-      emptyI =0;
+      // emptyI =0;
     }
   }
   

@@ -47,7 +47,7 @@ class AliTPCMonitorConfig: public TNamed
     Int_t    GetCanvasXSpace()                       const { return fCanvasXSpace;}
     Int_t    GetCanvasYSpace()                       const { return fCanvasYSpace;}
     
-    Float_t* GetComponentSelection()                 const { return fComponents;}
+    const Float_t* GetComponentSelection()                 const { return fComponents;}
     
     Int_t    GetEventProcessed()                     const { return fEventProcessed  ;}
     
@@ -145,7 +145,7 @@ class AliTPCMonitorConfig: public TNamed
     Int_t    fSector;                                                   // Currently processed sector 
     Int_t    fSectorLast;                                               // Previously processed sector
     Int_t    fSectorLastDisplayed;                                      // Last displayed sector
-    Int_t*   fSectorArr;                                                // Array of processed sectors
+    Int_t    fSectorArr[36];                                            // Array of processed sectors
     
     // Current and Last Files and Dirs
     TString  fFileLast;                                                 // Name of last processed file/stream
@@ -193,7 +193,7 @@ class AliTPCMonitorConfig: public TNamed
     Int_t    fWrite10Bit ;                                              // Flag to write 10 bit data words to file
     
     // Arr to Store Selected components to be displayed
-    Float_t* fComponents;                                               // Array of components to be selected for display
+    Float_t  fComponents[10];                                           // Array of components to be selected for display
     
     // Sampling Freq required for FFT 
     Int_t    fSamplingFreq;                                             // Sampling frequency for data taking

@@ -59,43 +59,30 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(const Char_t* name, con
   TNamed(name,title),
   fnumofChannels(0),
   fmaxHWAdress(0),
-  fsizeofArray(0),
-  fmapping(new Short_t*[24000]),
-  fmappingChannelinRow(new Int_t*[160]),
-  fu2ftestmapping(new Short_t*[7000]),
-  fMapHwFECglobal(new Int_t*[24000]),
-  fecGainMap(new Float_t*[7000])
+  fsizeofArray(0)
 {
   // Constructor : Initialize mapping arrays
  
-  for(Int_t in = 0; in<160; in++)
-    {
-      Int_t* hold = new Int_t[150]; 
-      for(Int_t jn = 0; jn<150;jn++)  hold[jn]=0;
-      fmappingChannelinRow[in]= hold;
-    }
+  for(Int_t in = 0; in<160; ++in)
+    for(Int_t jn = 0; jn<150; ++jn)
+      fmappingChannelinRow[in][jn] = 0;
   
-  for(Int_t i = 0; i<7000; i++)
-    {
-      Short_t* hold = new Short_t[8]; 
-      for(Int_t j = 0; j<8;j++)  hold[j]=0;
-      fu2ftestmapping[i]= hold;
-    }
+  for(Int_t i = 0; i<7000; ++i){
+    for(Int_t j = 0; j<8; ++j)
+      fu2ftestmapping[i][j] = 0;
+    
+    for(Int_t j = 0; j<128; ++j)
+      fecGainMap[i][j] = 0.;
+  }
   
-  for(Int_t i = 0; i<24000; i++)
-    {
-      Int_t* hold = new Int_t[2]; 
-      for(Int_t j = 0; j<2;j++)  hold[j]=0;
-      fMapHwFECglobal[i]= hold;
-    }
-  
-  
-  for(Int_t i = 0; i<7000; i++)
-    {
-      Float_t* hold = new Float_t[128]; 
-      for(Int_t j = 0; j<128;j++)  hold[j]=0;
-      fecGainMap[i]= hold;
-    }
+  for(Int_t i = 0; i<24000; ++i){
+    for(Int_t j = 0; j<2; ++j)
+      fMapHwFECglobal[i][j]=0;
+    
+    for (Int_t j=0; j<11; ++j)
+      fmapping[i][j]=0;
+    fmapping[i][1]=-1;
+  }
 }
 
 //____________________________________________________________________________
@@ -103,44 +90,30 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(const  AliTPCMonitorMap
   TNamed(maphand.GetName(),maphand.GetTitle()),
   fnumofChannels(maphand.fnumofChannels),
   fmaxHWAdress(maphand.fmaxHWAdress),
-  fsizeofArray(maphand.fsizeofArray),
-  fmapping(new Short_t*[24000]),
-  fmappingChannelinRow(new Int_t*[160]),
-  fu2ftestmapping(new Short_t*[7000]),
-  fMapHwFECglobal(new Int_t*[24000]),
-  fecGainMap(new Float_t*[7000])
+  fsizeofArray(maphand.fsizeofArray)
 {
   // copy constructor
  
  
-  for(Int_t in = 0; in<160; in++)
-    {
-      Int_t* hold = new Int_t[150]; 
-      for(Int_t jn = 0; jn<150;jn++)  hold[jn]=maphand.fmappingChannelinRow[in][jn];
-      fmappingChannelinRow[in]= hold;
-    }
+  for(Int_t in = 0; in<160; ++in)
+    for(Int_t jn = 0; jn<150; ++jn)
+      fmappingChannelinRow[in][jn] = maphand.fmappingChannelinRow[in][jn];
   
-  for(Int_t i = 0; i<7000; i++)
-    {
-      Short_t* hold = new Short_t[8]; 
-      for(Int_t j = 0; j<8;j++)  hold[j]=maphand.fu2ftestmapping[i][j];
-      fu2ftestmapping[i]= hold;
-    }
+  for(Int_t i = 0; i<7000; ++i){
+    for(Int_t j = 0; j<8; ++j)
+      fu2ftestmapping[i][j] = maphand.fu2ftestmapping[i][j];
 
-  for(Int_t i = 0; i<24000; i++)
-    {
-      Int_t* hold = new Int_t[2]; 
-      for(Int_t j = 0; j<2;j++)  hold[j]=maphand.fMapHwFECglobal[i][j];
-      fMapHwFECglobal[i]= hold;
-    }
-  
-  for(Int_t i = 0; i<7000; i++)
-    {
-      Float_t* hold = new Float_t[128]; 
-      for(Int_t j = 0; j<128;j++)  hold[j]=maphand.fecGainMap[i][j];
-      fecGainMap[i]= hold;
-    }
+    for(Int_t j = 0; j<128; ++j)
+      fecGainMap[i][j] = maphand.fecGainMap[i][j];
+  }
 
+  for(Int_t i = 0; i<24000; ++i){
+    for (Int_t j = 0; j<2; ++j)
+      fMapHwFECglobal[i][j]=maphand.fMapHwFECglobal[i][j];
+
+    for (Int_t j=0; j<11; ++j)
+      fmapping[i][j] = maphand.fmapping[i][j];
+  }
 }
 
 
@@ -148,49 +121,32 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(const  AliTPCMonitorMap
 AliTPCMonitorMappingHandler &AliTPCMonitorMappingHandler:: operator= (const AliTPCMonitorMappingHandler& maphand)
 {
   // assignment operator
-  if(this!=&maphand)
-    {
-      fnumofChannels=maphand.fnumofChannels;
-      fmaxHWAdress=maphand.fmaxHWAdress;
-      fsizeofArray=maphand.fsizeofArray;
+  if (this == &maphand) return *this;
 
-      fmapping = new Short_t*[24000]; // empty
+  fnumofChannels=maphand.fnumofChannels;
+  fmaxHWAdress=maphand.fmaxHWAdress;
+  fsizeofArray=maphand.fsizeofArray;
+
+  for(Int_t in = 0; in<160; ++in)
+    for(Int_t jn = 0; jn<150; ++jn)
+      fmappingChannelinRow[in][jn] = maphand.fmappingChannelinRow[in][jn];
   
-      
-      fmappingChannelinRow = new Int_t*[160];
-      for(Int_t in = 0; in<160; in++)
-	{
-	  Int_t* hold = new Int_t[150]; 
-	  for(Int_t jn = 0; jn<150;jn++)  hold[jn]=maphand.fmappingChannelinRow[in][jn];
-	  fmappingChannelinRow[in]= hold;
-	}
-      
-      fu2ftestmapping      = new Short_t*[7000];
-      for(Int_t i = 0; i<7000; i++)
-	{
-	  Short_t* hold = new Short_t[8]; 
-	  for(Int_t j = 0; j<8;j++)  hold[j]=maphand.fu2ftestmapping[i][j];
-	  fu2ftestmapping[i]= hold;
-	}
-      
-      fMapHwFECglobal = new Int_t*[24000];
-      for(Int_t i = 0; i<24000; i++)
-	{
-	  Int_t* hold = new Int_t[2]; 
-	  for(Int_t j = 0; j<2;j++)  hold[j]=maphand.fMapHwFECglobal[i][j];
-	  fMapHwFECglobal[i]= hold;
-	}
-      
-      fecGainMap = new Float_t*[7000];
-      for(Int_t i = 0; i<7000; i++)
-	{
-	  Float_t* hold = new Float_t[128]; 
-	  for(Int_t j = 0; j<128;j++)  hold[j]=maphand.fecGainMap[i][j];
-	  fecGainMap[i]= hold;
-	}
-      
-      
-    }
+  for(Int_t i = 0; i<7000; ++i){
+    for(Int_t j = 0; j<8; ++j)
+      fu2ftestmapping[i][j]=maphand.fu2ftestmapping[i][j];
+
+    for(Int_t j = 0; j<128; ++j)
+      fecGainMap[i][j] = maphand.fecGainMap[i][j];
+  }
+
+  for(Int_t i = 0; i<24000; ++i){
+    for(Int_t j = 0; j<2; ++j)
+      fMapHwFECglobal[i][j] = maphand.fMapHwFECglobal[i][j];
+
+    for (Int_t j=0; j<11; ++j)
+      fmapping[i][j] = maphand.fmapping[i][j];
+  }
+
   return *this;
 }
 
@@ -199,53 +155,10 @@ AliTPCMonitorMappingHandler &AliTPCMonitorMappingHandler:: operator= (const AliT
 AliTPCMonitorMappingHandler::~AliTPCMonitorMappingHandler() 
 {
   // Destructor
-  Short_t* temp;
-  for(Int_t i = 0; i < 24000 ; i++) {
-    temp = (Short_t *) fmapping[i];
-    if(temp[1] != -1)
-      delete temp;
-  }
-  temp = (Short_t *) fmapping;
-  delete temp;
-  
-  
-  Int_t* temp1;
-  for(Int_t i = 0; i < 24000 ; i++) {
-    temp1 = (Int_t *) fMapHwFECglobal[i];
-    delete temp1;
-  }
-  temp1 = (Int_t *) fMapHwFECglobal;
-  delete temp1;
- 
-  for(Int_t i = 0; i < 7000 ; i++) {
-    temp = (Short_t *) fu2ftestmapping[i];
-    delete temp;
-  }
- 
-  temp = (Short_t *) fu2ftestmapping;
-  delete temp;
- 	 
-  for(Int_t i = 0; i < 150 ; i++) {
-    temp1= (Int_t *) fmappingChannelinRow[i];
-    delete temp1;
-  }
-  temp1 = (Int_t *) fmappingChannelinRow;
-  delete temp1;
-
-  Float_t* temp2;
-  for(Int_t i = 0; i<7000; i++)
-    {
-      temp2= (Float_t *) fecGainMap[i];
-      delete temp2;
-    }
-  temp2 = (Float_t *) fecGainMap;
-  delete temp2;
-
-	
 }
 
 //_____________________________________________________________________________________________
-void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
+void AliTPCMonitorMappingHandler::ReadMapping(const char* mapfile)
 {
   // Read global Mapping file
   // Format of data in mapping file:
@@ -268,73 +181,58 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
   // can hence be found in fmapping[hwaddr]
 
 
-  Short_t*  mappingRow; 
-//   char readcarry[255];
   Int_t version = -1;
   Int_t actPos  = 0;
-  Int_t oldPos  = 0;
 
-  ifstream *in = new ifstream();
-  in->open(mapfile);
+  ifstream infile(mapfile,ios::in);
 
-  if (!in->is_open()) return;
+//   printf("file1: %s\n",mapfile);
+  if (!infile.is_open()) return;
+//   int numLines = 0;
+//   std::string line;
+//   while ( std::getline(infile, line) )
+//     ++numLines;
+//   infile.seekg(0,ios::beg);
+//   infile.clear();
 
-  int numLines = 0;
-  std::string line;
-  while ( std::getline(*in, line) )
-    ++numLines;
- in->seekg(0,ios::beg);
+//   printf("file: %s - %d\n",mapfile,numLines);
   
-//   *in >> readcarry;
-//   version = atoi(readcarry);
-  *in >> version;
-  --numLines;
-//   *in >> readcarry;
-//   fnumofChannels = atoi(readcarry);
-  *in >> fnumofChannels;
-  --numLines;
+  infile >> version;
+//   --numLines;
+
+  infile >> fnumofChannels;
+//   --numLines;
   
-//   *in >> readcarry;
-//   fmaxHWAdress = atoi(readcarry);
-  *in >> fmaxHWAdress;
+  infile >> fmaxHWAdress;
   fsizeofArray = fmaxHWAdress;
-  --numLines;
+//   --numLines;
 
   //consistency check
   fnumofChannels=TMath::Abs(fnumofChannels);
-  fnumofChannels=TMath::Min(fnumofChannels,numLines);
-  
-  Short_t *fmappingEmptyRow = new Short_t[11];
-  for(Int_t i = 0; i < 11 ; i++) {
-    fmappingEmptyRow[i] = 0;
-  }
-  fmappingEmptyRow[1] = -1;
-  for(Int_t i = 0; i < fnumofChannels ; i++) {
-    mappingRow = new Short_t[11];
-    for(Int_t j = 0 ; j < 11 ; j++) {
-//       *in >> readcarry;
-//       mappingRow[j] = atoi(readcarry);
-      *in >> mappingRow[j];
-    }
-    actPos = mappingRow[0];
-    fmapping[actPos] = mappingRow;
-    if( (actPos - oldPos) > 1) {
-      for(Int_t j = (oldPos+1); j < actPos; j++) {
-        fmapping[j] = fmappingEmptyRow;
-      }
-    }
-    oldPos = actPos;
-    fmapping[actPos][0] = i;
-  }
-  
-  in->close();
-  delete in;
+//   fnumofChannels=TMath::Min(fnumofChannels,numLines);
 
-  delete [] fmappingEmptyRow;
+  Int_t val=0;
+  for(Int_t i = 0; i < fnumofChannels ; i++) {
+    //get hw address
+    infile >> actPos;
+
+    //set first value of hw address to channel number
+    if (actPos>0 && actPos<24000)
+      fmapping[actPos][0] = (Short_t)i;
+
+    //loop over channel parameters
+    for(Int_t j = 1 ; j < 11 ; j++) {
+      infile >> val;
+      if (actPos>0 && actPos<24000)
+        fmapping[actPos][j] = (Short_t)val;
+    }
+  }
+  
+  infile.close();
 }
 
 //_____________________________________________________________________________________________
-Int_t  AliTPCMonitorMappingHandler::ReadFECMapping(char* u2ftestfile)
+Int_t  AliTPCMonitorMappingHandler::ReadFECMapping(const char* u2ftestfile)
 {
   // Read in Mapping of global FEC numbers to branches, rcu patches etc.
   // Format in Mapping file
@@ -354,16 +252,14 @@ Int_t  AliTPCMonitorMappingHandler::ReadFECMapping(char* u2ftestfile)
   Int_t carry     = 0;
   Int_t ncards    = 0;
  
-  for(Int_t ind = 0; ind<7000; ind++)
-    {
-      for(Int_t entr = 0; entr<8; entr++)
-	{
-	  datin >> carry ;
-	  fu2ftestmapping[ind][entr] = carry  ;
-	  
-	  if(entr==0 && carry!=0) ncards++;
-	}
-    }
+  for(Int_t ind = 0; ind<7000; ind++) {
+      for(Int_t entr = 0; entr<8; entr++) {
+        datin >> carry ;
+        fu2ftestmapping[ind][entr] = carry  ;
+
+        if(entr==0 && carry!=0) ncards++;
+      }
+  }
   return ncards ;
 }
 
@@ -390,30 +286,28 @@ void AliTPCMonitorMappingHandler::ReadfecHwMap(Int_t sector)
   if(sector>18)    fsector= sector-18;
   else             fsector= sector   ;
 
-  for(Int_t ind = 0; ind<7000; ind++)
-    { 
-      if((Int_t)U2fGetSide(ind)==fside && U2fGetSector(ind)==fsector) 
-	{
-	  nfecs++;
-	  fec            = U2fGetFECinBranch(ind);
-	  branch         = U2fGetBranch(ind);
-	  rcupatch      = U2fGetRCU(ind);
-	  	  
-	  for(Int_t ch = 0; ch<128; ch++)
-	    {
-	      altrchann      = ch%16;
-	      altrchip       = ch/16;
-	      
-	      nextHwAddress  = (   ((branch&1)<<11) + (fec<<7) + (altrchip<<4) + (altrchann)  + ((rcupatch-1)<<12) ); 
-	      
-	      fMapHwFECglobal[nextHwAddress][0] = ind;
-	      fMapHwFECglobal[nextHwAddress][1] = ch ;
-	    }
-	}
+  for(Int_t ind = 0; ind<7000; ind++) { 
+    if((Int_t)U2fGetSide(ind)==fside && U2fGetSector(ind)==fsector) {
+      nfecs++;
+      fec            = U2fGetFECinBranch(ind);
+      branch         = U2fGetBranch(ind);
+      rcupatch      = U2fGetRCU(ind);
+
+      for(Int_t ch = 0; ch<128; ch++) {
+        altrchann      = ch%16;
+        altrchip       = ch/16;
+
+        nextHwAddress  = (   ((branch&1)<<11) + (fec<<7) + (altrchip<<4) + (altrchann)  + ((rcupatch-1)<<12) );
+
+        if (nextHwAddress<0 || nextHwAddress>=24000) continue;
+        fMapHwFECglobal[nextHwAddress][0] = ind;
+        fMapHwFECglobal[nextHwAddress][1] = ch ;
+      }
     }
+  }
 }
 //_____________________________________________________________________________________________
-void AliTPCMonitorMappingHandler::ReadfecGainMap(char* fecgainmap)
+void AliTPCMonitorMappingHandler::ReadfecGainMap(const char* fecgainmap)
 {
   // Read global gain calibration pap
   // Format in file :
@@ -430,13 +324,14 @@ void AliTPCMonitorMappingHandler::ReadfecGainMap(char* fecgainmap)
     for(Int_t in = 0; in<128; in++)
     {
       datin >> val ;
+      if (fecnr<0 || fecnr>=7000) continue;
       fecGainMap[fecnr][in] = val;
     }
   }
 }
 
 //_____________________________________________________________________________________________
-void  AliTPCMonitorMappingHandler::ReadRowMappingGlob(char* fpathtoMappingRowfile) 
+void  AliTPCMonitorMappingHandler::ReadRowMappingGlob(const char* fpathtoMappingRowfile) 
 {
   // Read mapping of hardware addresses in rows
   // Format of file:
@@ -446,21 +341,20 @@ void  AliTPCMonitorMappingHandler::ReadRowMappingGlob(char* fpathtoMappingRowfil
  
   char readcarry[256];
   char readcarry2[256];
-  ifstream *in = new ifstream();
-  in->open(fpathtoMappingRowfile);
+  ifstream in(fpathtoMappingRowfile,ios::in);
   
   for(Int_t i = 0; i < 159 ; i++) {
-    *in >> readcarry;   // row number 
-    *in >> readcarry2;  // numof pads
+    in >> readcarry;   // row number
+    in >> readcarry2;  // numof pads
     fmappingChannelinRow[i][0] = atoi(readcarry2);
     fmappingChannelinRow[i][1] = atoi(readcarry);
     
     for(Int_t j = 2 ; j < fmappingChannelinRow[i][0]+2 ; j++) {
-      *in >> readcarry;
+      in >> readcarry;
       fmappingChannelinRow[i][j] = atoi(readcarry);
     }
   }
-  in->close();
+  in.close();
 }
 
 
@@ -482,10 +376,10 @@ Int_t AliTPCMonitorMappingHandler::GetSizeofArray() const
 
 
 //_____________________________________________________________________________________________
-Short_t* AliTPCMonitorMappingHandler::GetLine(Int_t hwaddr)const
+const Short_t* AliTPCMonitorMappingHandler::GetLine(Int_t hwaddr) const
 {
   // Return pointer to mapping array for the hardware address hwaddr 
-  Short_t* retval;
+  const Short_t* retval=0x0;
   if(hwaddr <= fsizeofArray)
     retval = fmapping[hwaddr];
   else
@@ -618,10 +512,10 @@ Int_t AliTPCMonitorMappingHandler::GetAltro(Int_t hwaddr)  const
 Int_t AliTPCMonitorMappingHandler::GetNumofPads(Int_t row) 
 {
   // Return number of pads in row
-  if(row<159)
+  if(row>=0&&row<159)
     return fmappingChannelinRow[row][0];
   else  {
-    AliError("Row number to high");
+    AliError("Wrong row number");
     return 0;
   }
 }
@@ -630,10 +524,10 @@ Int_t AliTPCMonitorMappingHandler::GetNumofPads(Int_t row)
 Int_t AliTPCMonitorMappingHandler::GetPadAddInRow(Int_t row,Int_t pad )
 {
   // Return hardware address for given pad in row
-  if(row<159)
+  if(row>=0&&row<159)
     return fmappingChannelinRow[row][pad+2];
   else {
-    AliError("Row number to high");
+    AliError("Wrong row number");
     return 0;
   }
 }

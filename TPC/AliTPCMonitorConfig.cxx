@@ -53,7 +53,6 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const Char_t* name, const Char_t* title
   fSector(0),
   fSectorLast(-1),
   fSectorLastDisplayed(-1),
-  fSectorArr(new Int_t[36]),
   fFileLast(),
   fFileLastSet(0),
   fFileCurrent(),
@@ -82,7 +81,6 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const Char_t* name, const Char_t* title
   fButtonFirstX2(50),
   fButtonFirstY(300),  
   fWrite10Bit(0),
-  fComponents(new Float_t[10]), 
   fSamplingFreq(1000000),
   fPedestals(1),
   fNumOfChannels(16000),
@@ -106,7 +104,6 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
   fSector(config.fSector),
   fSectorLast(config.fSectorLast),
   fSectorLastDisplayed(config.fSectorLastDisplayed),
-  fSectorArr(new Int_t[36]),
   fFileLast(config.fFileLast),
   fFileLastSet(config.fFileLastSet),
   fFileCurrent(config.fFileCurrent),
@@ -135,7 +132,6 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
   fButtonFirstX2(config.fButtonFirstX2),
   fButtonFirstY(config.fButtonFirstY),
   fWrite10Bit(config.fWrite10Bit),
-  fComponents(new Float_t[10]),
   fSamplingFreq(config.fSamplingFreq),
   fPedestals(config.fPedestals),
   fNumOfChannels(config.fNumOfChannels),
@@ -146,8 +142,8 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
 {
   // copy constructor
   
-  for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
-  for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
+  for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  config.fSectorArr[i]; }
+  for(Int_t i =0; i<10;i++)  { fComponents[i] =  config.fComponents[i];}
 
 
 }
@@ -162,7 +158,6 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
   fSector=config.fSector;
   fSectorLast=config.fSectorLast;
   fSectorLastDisplayed=config.fSectorLastDisplayed;
-  if (!fSectorArr) fSectorArr= new Int_t[36];
   fFileLast= config.fFileLast;
   fFileLastSet=config.fFileLastSet;
   fFileCurrent=config.fFileCurrent;
@@ -191,7 +186,6 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
   fButtonFirstX2=config.fButtonFirstX2;
   fButtonFirstY=config.fButtonFirstY;
   fWrite10Bit=config.fWrite10Bit;
-  if (!fComponents) fComponents= new Float_t[10];
   fSamplingFreq=config.fSamplingFreq;
   fPedestals=config.fPedestals;
   fNumOfChannels=config.fNumOfChannels;
@@ -200,8 +194,8 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
   fFitPulse=config.fFitPulse;
   fProcOneSector=config.fProcOneSector;
 
-  for(Int_t i =0; i<36; i++) { fSectorArr[i]  = 0;}
-  for(Int_t i =0; i<10;i++)  { fComponents[i] = 0.;}
+  for(Int_t i =0; i<36; i++) { fSectorArr[i]  = config.fSectorArr[i]; }
+  for(Int_t i =0; i<10;i++)  { fComponents[i] = config.fComponents[i];}
     
   return *this;
 }
@@ -211,8 +205,6 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
 AliTPCMonitorConfig::~AliTPCMonitorConfig() 
 {
   // Destructor
-  delete[] fSectorArr;
-  delete[] fComponents;
 } 
 
 
@@ -284,60 +276,63 @@ void AliTPCMonitorConfig::ReadConfig(const Char_t* nameconf)
   ifstream datin;
   datin.open(nameconf);
   
-  if(!datin) {  AliWarning("Could not read configfile");}
+  if(!datin.is_open()) {
+    AliWarning(Form("Could not read configfile '%s'",nameconf));
+    return;
+  }
   
   cout << "////  Read Configuration ///////// " << endl;
   while(!datin.eof())
+  {
+    string line;
+    getline(datin,line);
+    if(line.find("max adc")!=string::npos)
     {
-      string line;
-      getline(datin,line);
-      if(line.find("max adc")!=string::npos)
-	{ 
-	  datin >> fRangeMaxAdcMin     ; 
-	  datin >> fRangeMaxAdcMax     ;
-	  cout << " range max          :: " << fRangeMaxAdcMin << " : " << fRangeMaxAdcMax << endl;
-	}
-      
-      if(line.find("baseline")!=string::npos)
-	{ 
-	  datin >> fRangeBaseMin  ;
-	  datin >> fRangeBaseMax  ;
-	  cout << " range  base        :: " <<  fRangeBaseMin << " : " <<  fRangeBaseMax  << endl;
-	}
-      if(line.find("adc sum")!=string::npos)
-	{ 
-	  datin >> fRangeSumMin  ;
-	  datin >> fRangeSumMax  ;
-	  cout << " range sum          :: " <<  fRangeSumMin << " : " << fRangeSumMax  << endl;
-	}
-      if(line.find("frequency")!=string::npos)
-	{ 
-	  datin >> fSamplingFreq  ;
-	  cout << " sampling frequency :: " <<  fSamplingFreq << endl;
-	}
-      if(line.find("timebins")!=string::npos)
-	{ 
-	  datin >> fTimeBins  ;
-	  cout << " timebins           :: " <<  fTimeBins << endl;
-	}
-      if(line.find("pedestal")!=string::npos)
-	{ 
-	  datin >> fPedestals  ;
-	  cout << " pedestal scheme    :: " <<  fPedestals << endl;
-	}
-      if(line.find("main window size")!=string::npos)
-	{ 
-	  datin >> fMainXSize  ;
-	  datin >> fMainYSize  ;
-	  cout << " main window size   :: " <<  fMainXSize  << "  , " << fMainYSize <<  endl;
-	}
-      if(line.find("border size")!=string::npos)
-	{ 
-	  datin >> fBorderXSize  ; 
-	  datin >> fBorderYSize  ;
-	  cout << " border size        :: " <<  fBorderXSize  << "  , " << fBorderYSize <<  endl;
-	}
+      datin >> fRangeMaxAdcMin     ;
+      datin >> fRangeMaxAdcMax     ;
+      cout << " range max          :: " << fRangeMaxAdcMin << " : " << fRangeMaxAdcMax << endl;
     }
+
+    if(line.find("baseline")!=string::npos)
+    {
+      datin >> fRangeBaseMin  ;
+      datin >> fRangeBaseMax  ;
+      cout << " range  base        :: " <<  fRangeBaseMin << " : " <<  fRangeBaseMax  << endl;
+    }
+    if(line.find("adc sum")!=string::npos)
+    {
+      datin >> fRangeSumMin  ;
+      datin >> fRangeSumMax  ;
+      cout << " range sum          :: " <<  fRangeSumMin << " : " << fRangeSumMax  << endl;
+    }
+    if(line.find("frequency")!=string::npos)
+    {
+      datin >> fSamplingFreq  ;
+      cout << " sampling frequency :: " <<  fSamplingFreq << endl;
+    }
+    if(line.find("timebins")!=string::npos)
+    {
+      datin >> fTimeBins  ;
+      cout << " timebins           :: " <<  fTimeBins << endl;
+    }
+    if(line.find("pedestal")!=string::npos)
+    {
+      datin >> fPedestals  ;
+      cout << " pedestal scheme    :: " <<  fPedestals << endl;
+    }
+    if(line.find("main window size")!=string::npos)
+    {
+      datin >> fMainXSize  ;
+      datin >> fMainYSize  ;
+      cout << " main window size   :: " <<  fMainXSize  << "  , " << fMainYSize <<  endl;
+    }
+    if(line.find("border size")!=string::npos)
+    {
+      datin >> fBorderXSize  ;
+      datin >> fBorderYSize  ;
+      cout << " border size        :: " <<  fBorderXSize  << "  , " << fBorderYSize <<  endl;
+    }
+  }
   cout << "////  Read Configuration done //// " << endl;
   SetMainSize(fMainXSize,fMainYSize,fBorderXSize,fBorderYSize) ;
 }
