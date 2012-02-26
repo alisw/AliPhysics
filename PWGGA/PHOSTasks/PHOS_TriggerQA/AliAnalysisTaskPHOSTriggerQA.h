@@ -35,6 +35,8 @@ private:
   void   MaxEnergyCellPos(AliESDCaloCells *cells, AliESDCaloCluster* clu, Int_t& maxId);
   Bool_t Matched(Int_t *trig_relid,Int_t *cluster_relid); //is cluster position coincides with 4x4 position?
 
+  Int_t GetTRUNum(Int_t cellX, Int_t cellZ);
+
 private:
 
   TList * fOutputContainer;   //final histogram container
