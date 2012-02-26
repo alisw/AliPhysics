@@ -13,6 +13,7 @@
 #pragma link C++ class AliAODHFUtil+;
 #pragma link C++ class AliAODPidHF+;
 #pragma link C++ class AliRDHFCuts+;
+#pragma link C++ class AliVertexingHFUtils+;
 #pragma link C++ class AliHFSystErr+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
 #pragma link C++ class AliRDHFCutsJpsitoee+;
