@@ -1212,7 +1212,8 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   }
 
   TObjArray *allChargedTracks=0;
-  Int_t multAll=0, multAcc=0, multRec=0;
+  //Int_t multAll=0, multAcc=0, multRec=0;
+  Int_t multAll=0, multRec=0;
   Int_t *labelsAll=0, *labelsAcc=0, *labelsRec=0;
 
 
