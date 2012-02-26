@@ -482,44 +482,47 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",100,-20,20);
 
 
-    TH2F* hTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",11,-0.5,10.5,12,-10,110);
+    TH2F* hTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",12,-1.5,10.5,12,-10,110);
     hTrigCent->GetXaxis()->SetBinLabel(1,"All");
-    hTrigCent->GetXaxis()->SetBinLabel(2,"kMB");
-    hTrigCent->GetXaxis()->SetBinLabel(3,"kINT7");
-    hTrigCent->GetXaxis()->SetBinLabel(4,"kCINT5");
-    hTrigCent->GetXaxis()->SetBinLabel(5,"kCent");
-    hTrigCent->GetXaxis()->SetBinLabel(6,"kSemiCent");
-    hTrigCent->GetXaxis()->SetBinLabel(7,"kEMC1+7");
-    hTrigCent->GetXaxis()->SetBinLabel(8,"kEMCJET+GAMMA");
-    hTrigCent->GetXaxis()->SetBinLabel(9,"Muons");
-    hTrigCent->GetXaxis()->SetBinLabel(10,"PHOS");
-    hTrigCent->GetXaxis()->SetBinLabel(11,"Others");
+    hTrigCent->GetXaxis()->SetBinLabel(2,"kAny");
+    hTrigCent->GetXaxis()->SetBinLabel(3,"kMB");
+    hTrigCent->GetXaxis()->SetBinLabel(4,"kINT7");
+    hTrigCent->GetXaxis()->SetBinLabel(5,"kCINT5");
+    hTrigCent->GetXaxis()->SetBinLabel(6,"kCent");
+    hTrigCent->GetXaxis()->SetBinLabel(7,"kSemiCent");
+    hTrigCent->GetXaxis()->SetBinLabel(8,"kEMC1+7");
+    hTrigCent->GetXaxis()->SetBinLabel(9,"kEMCJET+GAMMA");
+    hTrigCent->GetXaxis()->SetBinLabel(10,"Muons");
+    hTrigCent->GetXaxis()->SetBinLabel(11,"PHOS");
+    hTrigCent->GetXaxis()->SetBinLabel(12,"Others");
 
-    TH2F* hTrigMul=new TH2F("hTrigMul","Multiplicity vs. Trigger types",11,-0.5,10.5,100,0.,10000.);
+    TH2F* hTrigMul=new TH2F("hTrigMul","Multiplicity vs. Trigger types",12,-1.5,10.5,100,0.,10000.);
     hTrigMul->GetXaxis()->SetBinLabel(1,"All");
-    hTrigMul->GetXaxis()->SetBinLabel(2,"kMB");
-    hTrigMul->GetXaxis()->SetBinLabel(3,"kINT7");
-    hTrigMul->GetXaxis()->SetBinLabel(4,"kCINT5");
-    hTrigMul->GetXaxis()->SetBinLabel(5,"kCent");
-    hTrigMul->GetXaxis()->SetBinLabel(6,"kSemiCent");
-    hTrigMul->GetXaxis()->SetBinLabel(7,"kEMC1+7");
-    hTrigMul->GetXaxis()->SetBinLabel(8,"kEMCJET+GAMMA");
-    hTrigMul->GetXaxis()->SetBinLabel(9,"Muons");
-    hTrigMul->GetXaxis()->SetBinLabel(10,"PHOS");
-    hTrigMul->GetXaxis()->SetBinLabel(11,"Others");
+    hTrigMul->GetXaxis()->SetBinLabel(2,"kAny");
+    hTrigMul->GetXaxis()->SetBinLabel(3,"kMB");
+    hTrigMul->GetXaxis()->SetBinLabel(4,"kINT7");
+    hTrigMul->GetXaxis()->SetBinLabel(5,"kCINT5");
+    hTrigMul->GetXaxis()->SetBinLabel(6,"kCent");
+    hTrigMul->GetXaxis()->SetBinLabel(7,"kSemiCent");
+    hTrigMul->GetXaxis()->SetBinLabel(8,"kEMC1+7");
+    hTrigMul->GetXaxis()->SetBinLabel(9,"kEMCJET+GAMMA");
+    hTrigMul->GetXaxis()->SetBinLabel(10,"Muons");
+    hTrigMul->GetXaxis()->SetBinLabel(11,"PHOS");
+    hTrigMul->GetXaxis()->SetBinLabel(12,"Others");
 
-    TH2F* hTrigCentSel=new TH2F("hTrigCentSel","Trigger types",11,-0.5,10.5,12,-10,110);
+    TH2F* hTrigCentSel=new TH2F("hTrigCentSel","Trigger types",12,-1.5,10.5,12,-10,110);
     hTrigCentSel->GetXaxis()->SetBinLabel(1,"All");
-    hTrigCentSel->GetXaxis()->SetBinLabel(2,"kMB");
-    hTrigCentSel->GetXaxis()->SetBinLabel(3,"kINT7");
-    hTrigCentSel->GetXaxis()->SetBinLabel(4,"kCINT5");
-    hTrigCentSel->GetXaxis()->SetBinLabel(5,"kCent");
-    hTrigCentSel->GetXaxis()->SetBinLabel(6,"kSemiCent");
-    hTrigCentSel->GetXaxis()->SetBinLabel(7,"kEMC1+7");
-    hTrigCentSel->GetXaxis()->SetBinLabel(8,"kEMCJET+GAMMA");
-    hTrigCentSel->GetXaxis()->SetBinLabel(9,"Muons");
-    hTrigCentSel->GetXaxis()->SetBinLabel(10,"PHOS");
-    hTrigCentSel->GetXaxis()->SetBinLabel(11,"Others");
+    hTrigCentSel->GetXaxis()->SetBinLabel(2,"kAny");
+    hTrigCentSel->GetXaxis()->SetBinLabel(3,"kMB");
+    hTrigCentSel->GetXaxis()->SetBinLabel(4,"kINT7");
+    hTrigCentSel->GetXaxis()->SetBinLabel(5,"kCINT5");
+    hTrigCentSel->GetXaxis()->SetBinLabel(6,"kCent");
+    hTrigCentSel->GetXaxis()->SetBinLabel(7,"kSemiCent");
+    hTrigCentSel->GetXaxis()->SetBinLabel(8,"kEMC1+7");
+    hTrigCentSel->GetXaxis()->SetBinLabel(9,"kEMCJET+GAMMA");
+    hTrigCentSel->GetXaxis()->SetBinLabel(10,"Muons");
+    hTrigCentSel->GetXaxis()->SetBinLabel(11,"PHOS");
+    hTrigCentSel->GetXaxis()->SetBinLabel(12,"Others");
 
     AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
     trigCounter->AddRubric("run",500000);
@@ -755,10 +758,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     TH2F* hTrigM=(TH2F*)fOutputEvSelection->FindObject("hTrigMul");
     AliCounterCollection* trigCount=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter");
 
-    hTrigC->Fill(0.,centrality);
-    hTrigM->Fill(0.,multiplicity);
-    trigCount->Count(Form("triggerType:Any/Run:%d",runNumber));
-  
+    hTrigC->Fill(-1.,centrality);
+    hTrigM->Fill(-1.,multiplicity);
+    
+    if(evSelMask & AliVEvent::kAny){
+      hTrigC->Fill(0.,centrality);
+      hTrigM->Fill(0.,multiplicity);
+      trigCount->Count(Form("triggerType:Any/Run:%d",runNumber));
+    }  
     if(evSelMask & AliVEvent::kMB){
       hTrigC->Fill(1.,centrality);
       hTrigM->Fill(1.,multiplicity);
@@ -829,20 +836,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
 
-  Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kFALSE;
+  Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kTRUE,evSelByPS=kTRUE;
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
-    if(fCuts->GetWhyRejection()==1) {fNEntries->Fill(1); evselByPileup=kTRUE;}// rejected for pileup
+    if(fCuts->GetWhyRejection()==1) {fNEntries->Fill(1); evselByPileup=kFALSE;}// rejected for pileup
     if(fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3) evSelbyCentrality=kFALSE; //rejected by centrality
     if(fCuts->GetWhyRejection()==4) evSelByVertex=kFALSE; //rejected by vertex
     if(fCuts->GetWhyRejection()==5) fNEntries->Fill(5);//tmp
     if(fCuts->GetWhyRejection()==6 && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber));
+    if(fCuts->GetWhyRejection()==7) { evSelByPS=kFALSE; }
   }
   if(evSelected){
     TH2F* hTrigS=(TH2F*)fOutputEvSelection->FindObject("hTrigCentSel");
-    hTrigS->Fill(0.,centrality);
+    hTrigS->Fill(-1.,centrality);
 
+    if(evSelMask & AliVEvent::kAny) hTrigS->Fill(0.,centrality);
     if(evSelMask & AliVEvent::kMB) hTrigS->Fill(1.,centrality);
     if(evSelMask & AliVEvent::kINT7) hTrigS->Fill(2.,centrality);
     if(evSelMask & AliVEvent::kCINT5) hTrigS->Fill(3.,centrality);
@@ -855,7 +864,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)) hTrigS->Fill(10.,centrality);
   }
   
-  if(evSelected || (!evSelected && !evSelbyCentrality && evSelByVertex && !evselByPileup)){ //events selected or not selected because of vtx or pileup
+  if(evSelected || (!evSelbyCentrality && evSelByVertex && evselByPileup && evSelByPS)){ //events selected or not selected because of centrality
     if(fOnOff[2] && fCuts->GetUseCentrality()){
 
       Float_t stdCentf=fCuts->GetCentrality(aod);
