@@ -16,6 +16,8 @@
 
 #include "TObject.h"
 #include "TH1F.h"
+#include "TH2F.h"
+#include "TF1.h"
 
 class AliVertexingHFUtils : public TObject{
  public:
@@ -63,6 +65,10 @@ class AliVertexingHFUtils : public TObject{
   Int_t GetNumberOfTrackletsInEtaRange(AliAODEvent* ev) const {
     return GetNumberOfTrackletsInEtaRange(ev,fMinEtaForTracklets,fMaxEtaForTracklets);
   }
+
+  // Functions for computing average pt 
+  static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Int_t rebin=4);
+
 
  private:
 

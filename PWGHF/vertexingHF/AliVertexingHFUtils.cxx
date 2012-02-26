@@ -166,3 +166,80 @@ Int_t AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AliAODEvent* ev, Doubl
   }
   return count;
 }
+//______________________________________________________________________
+void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Int_t rebin){
+
+  // Compute <pt> from 2D histogram M vs pt
+
+  //Make 2D histos in the desired pt range
+  Int_t start=hMassD->FindBin(ptmin);
+  Int_t end=hMassD->FindBin(ptmax)-1;
+  const Int_t nx=end-start;
+  TH2F *hMassDpt=new TH2F("hptmass","hptmass",nx,ptmin,ptmax,hMassD->GetNbinsY(),hMassD->GetYaxis()->GetBinLowEdge(1),hMassD->GetYaxis()->GetBinLowEdge(hMassD->GetNbinsY())+hMassD->GetYaxis()->GetBinWidth(hMassD->GetNbinsY()));
+  for(Int_t ix=start;ix<end;ix++){
+    for(Int_t iy=1;iy<=hMassD->GetNbinsY();iy++){
+      hMassDpt->SetBinContent(ix-start+1,iy,hMassD->GetBinContent(ix,iy));
+      hMassDpt->SetBinError(ix-start+1,iy,hMassD->GetBinError(ix,iy));
+    }
+  }
+
+  Double_t minMassSig=massFromFit-sigmaRangeForSig*sigmaFromFit;
+  Double_t maxMassSig=massFromFit+sigmaRangeForSig*sigmaFromFit;
+  Int_t minBinSig=hMassD->GetYaxis()->FindBin(minMassSig);
+  Int_t maxBinSig=hMassD->GetYaxis()->FindBin(maxMassSig);
+  Double_t minMassSigBin=hMassD->GetYaxis()->GetBinLowEdge(minBinSig);
+  Double_t maxMassSigBin=hMassD->GetYaxis()->GetBinLowEdge(maxBinSig)+hMassD->GetYaxis()->GetBinWidth(maxBinSig);
+  //  printf("Signal Fit Limits = %f %f\n",minMassSigBin,maxMassSigBin);
+
+  Double_t maxMassBkgLow=massFromFit-sigmaRangeForBkg*sigmaFromFit;
+  Int_t minBinBkgLow=2;
+  Int_t maxBinBkgLow=hMassD->GetYaxis()->FindBin(maxMassBkgLow);
+  Double_t minMassBkgLowBin=hMassD->GetYaxis()->GetBinLowEdge(minBinBkgLow);
+  Double_t maxMassBkgLowBin=hMassD->GetYaxis()->GetBinLowEdge(maxBinBkgLow)+hMassD->GetYaxis()->GetBinWidth(maxBinBkgLow);
+  Double_t minMassBkgHi=massFromFit+sigmaRangeForBkg*sigmaFromFit;
+  Int_t minBinBkgHi=hMassD->GetYaxis()->FindBin(minMassBkgHi);
+  Int_t maxBinBkgHi=hMassD->GetNbinsY()-1;
+  Double_t minMassBkgHiBin=hMassD->GetYaxis()->GetBinLowEdge(minBinBkgHi);
+  Double_t maxMassBkgHiBin=hMassD->GetYaxis()->GetBinLowEdge(maxBinBkgHi)+hMassD->GetYaxis()->GetBinWidth(maxBinBkgHi);
+  //  printf("BKG Fit Limits = %f %f  && %f %f\n",minMassBkgLowBin,maxMassBkgLowBin,minMassBkgHiBin,maxMassBkgHiBin);
+
+  Double_t bkgSig=funcB2->Integral(minMassSigBin,maxMassSigBin);
+  Double_t bkgLow=funcB2->Integral(minMassBkgLowBin,maxMassBkgLowBin);
+  Double_t bkgHi=funcB2->Integral(minMassBkgHiBin,maxMassBkgHiBin);
+  //  printf("Background integrals = %f %f %f\n",bkgLow,bkgSig,bkgHi);
+
+  TH1F* hMptBkgLo=(TH1F*)hMassDpt->ProjectionX("hPtBkgLoBin",minBinBkgLow,maxBinBkgLow);
+  TH1F* hMptBkgHi=(TH1F*)hMassDpt->ProjectionX("hPtBkgHiBin",minBinBkgHi,maxBinBkgHi);
+  TH1F* hMptSigReg=(TH1F*)hMassDpt->ProjectionX("hCPtBkgSigBin",minBinSig,maxBinSig);
+
+  hMptBkgLo->Rebin(rebin);
+  hMptBkgHi->Rebin(rebin);
+  hMptSigReg->Rebin(rebin);
+
+  hMptBkgLo->Sumw2();
+  hMptBkgHi->Sumw2();
+  TH1F* hMptBkgLoScal=(TH1F*)hMptBkgLo->Clone("hPtBkgLoScalBin");
+  hMptBkgLoScal->Scale(bkgSig/bkgLow);
+  TH1F* hMptBkgHiScal=(TH1F*)hMptBkgHi->Clone("hPtBkgHiScalBin");
+  hMptBkgHiScal->Scale(bkgSig/bkgHi);
+
+  TH1F* hMptBkgAver=0x0;
+  hMptBkgAver=(TH1F*)hMptBkgLoScal->Clone("hPtBkgAverBin");
+  hMptBkgAver->Add(hMptBkgHiScal);
+  hMptBkgAver->Scale(0.5);
+  TH1F* hMptSig=(TH1F*)hMptSigReg->Clone("hCPtSigBin");
+  hMptSig->Add(hMptBkgAver,-1.);   
+ 
+  averagePt = hMptSig->GetMean();
+  errorPt = hMptSig->GetMeanError();
+
+  delete hMptBkgLo;
+  delete hMptBkgHi;
+  delete hMptSigReg;
+  delete hMptBkgLoScal;
+  delete hMptBkgHiScal;
+  delete hMptBkgAver;
+  delete hMassDpt;
+  delete hMptSig;
+
+}
