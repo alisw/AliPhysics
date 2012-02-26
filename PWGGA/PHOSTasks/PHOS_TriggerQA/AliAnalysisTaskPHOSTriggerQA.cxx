@@ -84,7 +84,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserCreateOutputObjects()
   Int_t nTrMax = 1200;
   Float_t trMax = 600.;
 
-  fOutputContainer->Add(new TH1F("hNtr","Number of fired 4x4 regions",nTrMax,0.,trMax));
+  fOutputContainer->Add(new TH1F("hNtr","Number of fired 4x4 regions per event",nTrMax,0.,trMax));
 
   for(Int_t sm=1; sm<4; sm++) {
 
@@ -94,6 +94,10 @@ void AliAnalysisTaskPHOSTriggerQA::UserCreateOutputObjects()
     
     snprintf(key,55,"h4x4SM%d",sm);
     snprintf(titl,55,"SM%d 4x4 occupancy",sm);
+    fOutputContainer->Add(new TH2F(key,titl,nRows,0.,nRows,nCols,0.,nCols));
+
+    snprintf(key,55,"h4x4CluSM%d",sm);
+    snprintf(titl,55,"SM%d 4x4 occupancy associated with clusters (E>2GeV)",sm);
     fOutputContainer->Add(new TH2F(key,titl,nRows,0.,nRows,nCols,0.,nCols));
 
     snprintf(key,55,"hCluSM%d",sm);
@@ -108,9 +112,22 @@ void AliAnalysisTaskPHOSTriggerQA::UserCreateOutputObjects()
     snprintf(titl,55,"SM%d cluster energy",sm);
     fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
 
+    for(Int_t iTRU=1; iTRU<=8; iTRU++) {
+      snprintf(key,55,"hPhotAllSM%dTRU%d",sm,iTRU);
+      snprintf(titl,55,"SM%d: clusters energy in TRU%d",sm,iTRU);
+      fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
+    }
+    
     snprintf(key,55,"hPhotTrigSM%d",sm);
     snprintf(titl,55,"SM%d triggered cluster energy",sm);
     fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
+    
+    for(Int_t iTRU=1; iTRU<=8; iTRU++) {
+      snprintf(key,55,"hPhotTrigSM%dTRU%d",sm,iTRU);
+      snprintf(titl,55,"SM%d: triggered clusters energy in TRU%d",sm,iTRU);
+      fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
+    }
+    
   }
   
   PostData(1, fOutputContainer);
@@ -137,14 +154,9 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   AliESDCaloTrigger* trgESD = event->GetCaloTrigger("PHOS");
   trgESD->Reset();
   
-  if (!trgESD->GetEntries()) {
-    PostData(1, fOutputContainer);
-    return;
-  }
-  
-  FillHistogram("hNev",1.); // triggered events
+  if(trgESD->GetEntries()) FillHistogram("hNev",1.); // triggered events
   FillHistogram("hNtr",trgESD->GetEntries());
-
+  
   TString trigClasses = event->GetFiredTriggerClasses();
   printf("\nEvent %d: %d non-zero trigger digits %s\n",
 	 fEventCounter,trgESD->GetEntries(),trigClasses.Data());
@@ -183,11 +195,17 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
       AliESDCaloCluster *c1 = event->GetCaloCluster(i);
       if(!c1->IsPHOS()) continue;
       
+      if(c1->E()<0.3) continue; 
+      if(c1->GetNCells()<3) continue ; 
+      
       Int_t maxId, relid[4];
       MaxEnergyCellPos(phsCells,c1,maxId);
       
       fPHOSGeo->AbsToRelNumbering(maxId, relid);
       snprintf(key,55,"hPhotAllSM%d",relid[0]);
+      FillHistogram(key,c1->E());
+
+      snprintf(key,55,"hPhotAllSM%dTRU%d",relid[0],GetTRUNum(relid[2]-1,relid[3]-1));
       FillHistogram(key,c1->E());
       
       snprintf(key,55,"hCluSM%d",relid[0]);
@@ -197,10 +215,17 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
 
 	snprintf(key,55,"hPhotTrigSM%d",relid[0]);
 	FillHistogram(key,c1->E());
+	
+	snprintf(key,55,"hPhotTrigSM%dTRU%d",relid[0],GetTRUNum(relid[2]-1,relid[3]-1));
+	FillHistogram(key,c1->E());
 
 	snprintf(key,55,"hCluTSM%d",relid[0]);
 	FillHistogram(key,relid[2]-1,relid[3]-1);
 	
+	if(c1->E()>2.) { // Eclu > 2 GeV
+	  snprintf(key,55,"h4x4CluSM%d",trelid[0]);
+	  FillHistogram(key,trelid[2]-1,trelid[3]-1);
+	}	
 	continue;
       }
       
@@ -282,4 +307,43 @@ Bool_t AliAnalysisTaskPHOSTriggerQA::Matched(Int_t *trig_relid, Int_t *cluster_r
   if( TMath::Abs(trig_relid[3]-cluster_relid[3])>3 ) return kFALSE; // Z-distance too large!
 
   return kTRUE;
+}
+
+//_______________________________________________________________________________
+Int_t AliAnalysisTaskPHOSTriggerQA::GetTRUNum(Int_t cellX, Int_t cellZ)
+{
+  //Return TRU region number for given cell.
+  //cellX: [0-63], cellZ: [0-55]
+ 
+  Int_t iTRU=-111;
+
+  //RCU0: TRU 1,2
+  if(0<=cellX&&cellX<16) { 
+
+    if(0<=cellZ&&cellZ<28) iTRU=2;
+    else iTRU=1;
+  }
+
+  //RCU1: TRU 3,4
+  if(16<=cellX&&cellX<32) { 
+    
+    if(0<=cellZ&&cellZ<28) iTRU=4;
+    else iTRU=3;
+  }
+
+  //RCU2: TRU 5,6
+  if(32<=cellX&&cellX<48) { 
+    
+    if(0<=cellZ&&cellZ<28) iTRU=6;
+    else iTRU=5;
+  }
+  
+  //RCU3: TRU 7,8
+  if(48<=cellX&&cellX<64) { 
+    
+    if(0<=cellZ&&cellZ<28) iTRU=8;
+    else iTRU=7;
+  }
+  
+  return iTRU;
 }
