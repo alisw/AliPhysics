@@ -64,6 +64,22 @@ AliQACheckerBase("T0","T0 Quality Assurance Checker")
 }
 
 //____________________________________________________________________________
+AliT0QAChecker::AliT0QAChecker(const AliT0QAChecker& qac):
+  AliQACheckerBase(qac.GetName(), qac.GetTitle()) 
+{
+  // copy constructor
+  AliError("Copy should not be used with this class\n");
+}
+//____________________________________________________________________________
+AliT0QAChecker& AliT0QAChecker::operator=(const AliT0QAChecker& qac){
+  // assignment operator
+  this->~AliT0QAChecker();
+  new(this)AliT0QAChecker(qac);
+  return *this;
+}
+
+
+//____________________________________________________________________________
 AliT0QAChecker::~AliT0QAChecker(){
   // destructor
 
@@ -83,125 +99,225 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
   if( !QARefRec){
     AliInfo("QA reference data NOT retrieved for Reconstruction check. No T0 reference distribution");
   }
-  
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    test[specie]    = 10.0 ; 
 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    //  TString dataType = AliQAv1::GetAliTaskName(index);
-    if (!(AliQAv1::Instance()->IsEventSpecieSet(specie) && list[specie]) || list[specie]->GetEntries() == 0) {
-      test[specie] = 1. ; // nothing to check
+    
+  for(Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++){ 
+    test[specie]    = 1.0; //FK//  initiate qa flag for the whole set of histograms as good 
+  }
+
+
+  for(Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if(!(AliQAv1::Instance()->IsEventSpecieSet(specie) && list[specie]) || list[specie]->GetEntries() == 0) {
       continue;
     }
-    if (index == AliQAv1::kRAW && AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)
-      //      if (index == AliQAv1::kRAW )
-      {
-	test[specie] = CheckRaw(list[specie]);
+    if(index == AliQAv1::kRAW){
+
+      if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib){//      if (index == AliQAv1::kRAW )
+        //check laser data efficiencies   
+        Double_t qaFlag = CheckLaser(list[specie]);
+        if(qaFlag < test[specie]) test[specie] = qaFlag;
       }
-    if (index == AliQAv1::kESD && AliRecoParam::Convert(specie) != AliRecoParam::kCalib)
+
+      if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib   ||
+         AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault){ 
+         
+        //check BCID   
+        Double_t qaFlag = CheckBCID(list[specie]);
+        if(qaFlag < test[specie]) test[specie] = qaFlag;
+      }
+
+      if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault){ 
+        //check physics 
+        Double_t qaFlag = CheckRaw(list[specie]);
+        if(qaFlag < test[specie]) test[specie] = qaFlag;
+      }
+    }
+
+    if(index == AliQAv1::kESD && AliRecoParam::Convert(specie) != AliRecoParam::kCalib){
       test[specie] = CheckESD(list[specie]);
-    //
+    } 
   }
 }
 
 //--------------------------------------------------------------------------
-Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const
-{
-   Float_t checkr = 0;
+Double_t AliT0QAChecker::CheckLaser(TObjArray *listrec) const {
    
-  TString hname[10];
-   TH1*hdata; 
-   const char *cname;
-   TH1 *fhRawEff[10];
-   Int_t nh=0;
- 
+  TH1 *hdata; 
+  TH1 *fhRawEff[10];
+  Int_t nEffHistos=0;
 
-   //   Int_t nnn[4] = { 420, 458, 459, 460};
-   Int_t nnn[4] = { 169, 207, 208, 209};
-   for (Int_t ir=0; ir<4; ir++)
-     {
-	 hdata = (TH1*) listrec->UncheckedAt(nnn[ir]);
-	 if(hdata) {
-	   cname = hdata->GetName();
-	   hname[ir] = cname;
-	   fhRawEff[nh] = hdata;
-	   nh++;
-	 }
+  //thresholds for warning and error on efficiencies
+  Float_t thrWarning = 0.5; //FK//  warning level
+  Float_t thrError   = 0.2; //FK//  error level
+
+  const int kNumberOfHistos = 3; 
+  Int_t consecutiveHistoNumber[kNumberOfHistos] = { 207, 208, 209};  //Checked histos   fhCDFeff, hEffLED, hEffQTC
+  Int_t qualityFlag[kNumberOfHistos]; //quality flag for a given histogram
+
+  for(Int_t ir=0; ir<kNumberOfHistos; ir++){
+    qualityFlag[ir] = kT0Info; //init quality flag for a given histogram
+
+    hdata = (TH1*) listrec->UncheckedAt(consecutiveHistoNumber[ir]);
+    if(hdata){
+      fhRawEff[nEffHistos] = hdata;
+      nEffHistos++;
     }
+  }
      
-   TLine linelowyellow(0, 0.7, 24, 0.7);    
-   linelowyellow.SetLineColor(5);
-   linelowyellow.SetLineStyle(3);
-   linelowyellow.SetLineWidth(4);
-   TLine linelowred(0, 0.2, 24, 0.2);    
-   linelowred.SetLineColor(2);
-   linelowred.SetLineStyle(3);
-   linelowred.SetLineWidth(4);
+  TLine linelowyellow(0, thrWarning, 24, thrWarning);    
+  linelowyellow.SetLineColor(5);
+  linelowyellow.SetLineStyle(3);
+  linelowyellow.SetLineWidth(4);
+  TLine linelowred(0, thrError, 24, thrError);    
+  linelowred.SetLineColor(2);
+  linelowred.SetLineStyle(3);
+  linelowred.SetLineWidth(4);
 
-   Float_t thryell = 0.7;
-   //   TPaveText text(0.30,0.50,0.99,0.99,"NDC");    
-   Float_t thrred = 0.2;
-   Float_t chcont =0;
-    for (Int_t ih= 0; ih<4; ih++)
-     { 
-       // clean objects added at previous checks
-       TList* lstF = fhRawEff[ih]->GetListOfFunctions();
-       if (lstF) {
-	 TObject *stats = lstF->FindObject("stats");
-	 lstF->Remove(stats);
-	 TObject *obj;
-	 while ((obj = lstF->First())) {
-	   while(lstF->Remove(obj)) { }
-	   delete obj;
-	 }
-	 if (stats) lstF->Add(stats);
-       } 
-       fhRawEff[ih]->SetLineWidth(2);
-       fhRawEff[ih]->SetMaximum(2.);
-       fhRawEff[ih]->SetMinimum(0.);
-       fhRawEff[ih]->GetListOfFunctions()->Add((TLine*)linelowyellow.Clone());
-       fhRawEff[ih]->GetListOfFunctions()->Add((TLine*)linelowred.Clone());
+  Bool_t bEffHistosNotEmpty = kFALSE; //check if all histograms have some counts
+ 
+  for(Int_t ih = 0; ih < nEffHistos; ih++){
+     
+    EraseOldMessages((TH1*) fhRawEff[ih]);// clean objects added at previous checks
+ 
+    fhRawEff[ih]->SetLineWidth(2);
+    fhRawEff[ih]->SetMaximum(2.);
+    fhRawEff[ih]->SetMinimum(0.);
+    fhRawEff[ih]->GetListOfFunctions()->Add((TLine*)linelowyellow.Clone());
+    fhRawEff[ih]->GetListOfFunctions()->Add((TLine*)linelowred.Clone());
 
-       Int_t nbins= fhRawEff[ih]->GetNbinsX();
-       Bool_t yell = kFALSE;
-       Bool_t red = kFALSE;
-       for (Int_t in=1; in<nbins-1; in++)
-	 {
-	   if(ih==0 && in==5) continue;
-	   chcont=fhRawEff[ih]->GetBinContent(in);
-	   if (chcont < thryell  ) yell = kTRUE;
-	   if (chcont < thrred  ) red = kTRUE;
-	 }
-       
-       if (! yell && !red) {
-	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is good", fhRawEff[ih]->GetName() ));
-	 checkr=1.;
-	 //	 text.AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
-	 //	 text.AddText(Form(" No problems "));
-	 //	 text.SetFillColor(3);
-       }
-       
-       if(red ) {
-	 checkr = 0.;
-	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is not so good", fhRawEff[ih]->GetName() ));
-	 //	 text.AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
-	 //	 text.AddText(Form("Very serious problem, call expert "));
-	 //	 text.SetFillColor(2);
-       }
-       
-       if ( yell && !red) {
-	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is not so good", fhRawEff[ih]->GetName() ));
-	 checkr=0.75;
-	 //	 text.AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
-	 //	 text.AddText(Form("Some problems "));
-	 //	 text.SetFillColor(5);
+    if(fhRawEff[ih]->Integral()>0) bEffHistosNotEmpty = kTRUE; //this histo does have some counts in it
+
+    Int_t nbins= fhRawEff[ih]->GetNbinsX();
+    for(Int_t ib=1; ib<=nbins; ib++){ //loop over bins and check if the efficiency is above level
+        
+      Float_t chcont = fhRawEff[ih]->GetBinContent(ib);
+      if(chcont < thrWarning && qualityFlag[ih] > kT0Error  ) qualityFlag[ih] = kT0Warning;//Warning level
+      if(chcont < thrError)  qualityFlag[ih] = kT0Error;//Error level
+    }
+   
+    if(qualityFlag[ih] == kT0Info ){
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 efficiency  %s  is good", fhRawEff[ih]->GetName() ));
+    }else if(qualityFlag[ih] == kT0Warning){ 
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 efficiency  %s  is not so good", fhRawEff[ih]->GetName() ));
+    }else if(qualityFlag[ih] == kT0Error){
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 efficiency  %s  is not good", fhRawEff[ih]->GetName() ));
+    }
+  }
+
+  //executive summary
+  int lowestQualityFlag = (int) kT0Info;
+  for(Int_t ih = 0; ih < nEffHistos; ih++){
+
+    if(!bEffHistosNotEmpty){ //all laser efficiency plots are empty
+      TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+      text.AddText(Form("1) T0 is in BEAMTUNIG: empty plots are ok")); 
+      text.AddText(Form("2) T0 is in READY: check calibriation trigger")); 
+      text.AddText(Form("if also physics data are empty report"));
+      text.AddText(Form("readout problem to the T0 on-call expert")); 
+      fhRawEff[ih]->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+    }
+ 
+    if( qualityFlag[ih] <lowestQualityFlag )  lowestQualityFlag = qualityFlag[ih];
+  }
+   
+  return ConvertQualityFlagToDouble(lowestQualityFlag); 
+}
+//--------------------------------------------------------------------------
+Double_t AliT0QAChecker::CheckBCID(TObjArray *listrec) const {
+   
+  Int_t qualityFlagBCID = kT0Info; //init quality flag for a given histogram; 
+
+  TH2F *hBCID = (TH2F*) listrec->UncheckedAt(224); //BCID versus TRM  BCID
+
+     
+  // clean objects added at previous checks
+  EraseOldMessages((TH1*)hBCID);
+
+  if(hBCID->Integral()>0){
+    //BCID does have some counts in it
+
+    Int_t nbinsX = hBCID->GetNbinsX();
+    Int_t nbinsY = hBCID->GetNbinsY();
+    double entriesOnDiagonal  = 0; //count diagonal and off diagonal entries
+    double entriesOffDiagonal = 0;
+
+    for(Int_t ix=1; ix<=nbinsX; ix++){ 
+      for(Int_t iy=1; iy<=nbinsY; iy++){ 
+        if(TMath::Abs(ix-iy)<6) entriesOnDiagonal  += hBCID->GetBinContent(ix,iy); //On  Diagonal
+        else       entriesOffDiagonal += hBCID->GetBinContent(ix,iy); //Off Diagonal
       }
-       // fhRawEff[ih]->GetListOfFunctions()->Add((TPaveText*)text.Clone());	       
-     }
-    return checkr;
+    }
+    if(entriesOnDiagonal<1 || entriesOffDiagonal>0){
+      qualityFlagBCID = kT0Error; //no entries on diagonal
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("T0   %s is not diagonal", hBCID->GetName() ));
+
+      TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+      text.AddText(Form("Check if entries are on a diagonal.")); 
+      text.AddText(Form("Report readout problem to the T0 on-call expert")); 
+      hBCID->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+    }
+  }else{ //BCID empty
+
+    qualityFlagBCID = kT0Error;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 :  %s has NO entries", hBCID->GetName() ));
+
+    TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+    text.AddText(Form("NO ENTRIES!!!")); 
+    text.AddText(Form("If T0 is READY report")); 
+    text.AddText(Form("readout problem to the T0 on-call expert")); 
+    hBCID->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+  }
+
+  //executive summary
+  int lowestQualityFlag = (int) qualityFlagBCID;
+
+  return ConvertQualityFlagToDouble(lowestQualityFlag); 
   
 }
 
+//--------------------------------------------------------------------------
+Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
+   
+
+  Int_t qualityFlagTrigger = kT0Info; //init quality flag for a given histogram; 
+
+  TH1F *hTrigger = (TH1F*) listrec->UncheckedAt(169);//hRawTrigger 
+
+     
+  // clean objects added at previous checks
+  EraseOldMessages((TH1*) hTrigger); 
+
+  if(hTrigger->Integral()>0){
+    //trigger plot does have some counts in it
+    //are Mean, ORA and ORC not empty?  
+    if( hTrigger->GetBinContent(1)<0.001 || hTrigger->GetBinContent(3)<0.001 || hTrigger->GetBinContent(4)<0.001){
+      qualityFlagTrigger = kT0Error; //no entries on diagonal
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("T0: too little ORA and ORC in  %s", hTrigger->GetName() ));
+
+      TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+      text.AddText(Form("Check ORA and ORC")); 
+      text.AddText(Form("Report problem to the T0 on-call expert")); 
+      hTrigger->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+    }
+  }else{ //Trigger histo empty
+
+    qualityFlagTrigger = kT0Error;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 histogram  %s has NO entries", hTrigger->GetName() ));
+
+    TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+    text.AddText(Form("NO ENTRIES!!!")); 
+    text.AddText(Form("If T0 is READY report")); 
+    text.AddText(Form("readout problem to the T0 on-call expert")); 
+    hTrigger->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+  }
+
+  //executive summary
+  int lowestQualityFlag = (int) qualityFlagTrigger;
+   
+
+  return ConvertQualityFlagToDouble(lowestQualityFlag); 
+  
+}
 
 //--------------------------------------------------------------------------
 Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
@@ -268,3 +384,43 @@ Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
   
   return checkr;
 }
+
+
+//--------------------------------------------------------------------------
+void AliT0QAChecker::EraseOldMessages(TH1* h) const 
+{
+  //erase the old captions 
+  TList* lstF = h->GetListOfFunctions();
+  if(lstF){  
+     TObject *stats = lstF->FindObject("stats");
+     lstF->Remove(stats);
+     TObject *obj;
+     while ((obj = lstF->First())) {
+       while(lstF->Remove(obj)) { }
+         delete obj;
+    }
+    if (stats) lstF->Add(stats);
+  }
+}
+//--------------------------------------------------------------------------
+Double_t AliT0QAChecker::ConvertQualityFlagToDouble(int qualityFlag) const 
+{
+  //covert quality flag to double
+  Double_t checkr=1.0;
+
+  switch ( qualityFlag ){
+    case kT0Info:
+        checkr = 1.0; break;
+    case kT0Warning:
+        checkr = 0.75; break;
+    case kT0Error:
+          checkr = 0.25; break;
+    case kT0Fatal:
+        checkr = -1.0; break;
+    default:
+         AliError("Invalid ecc value. FIXME !");
+         checkr = 0.25; break;
+  };
+
+  return checkr; 
+} 
