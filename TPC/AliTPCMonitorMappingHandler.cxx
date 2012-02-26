@@ -63,7 +63,7 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(const Char_t* name, con
 {
   // Constructor : Initialize mapping arrays
  
-  for(Int_t in = 0; in<160; ++in)
+  for(Int_t in = 0; in<159; ++in)
     for(Int_t jn = 0; jn<150; ++jn)
       fmappingChannelinRow[in][jn] = 0;
   
@@ -95,7 +95,7 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(const  AliTPCMonitorMap
   // copy constructor
  
  
-  for(Int_t in = 0; in<160; ++in)
+  for(Int_t in = 0; in<159; ++in)
     for(Int_t jn = 0; jn<150; ++jn)
       fmappingChannelinRow[in][jn] = maphand.fmappingChannelinRow[in][jn];
   
@@ -127,7 +127,7 @@ AliTPCMonitorMappingHandler &AliTPCMonitorMappingHandler:: operator= (const AliT
   fmaxHWAdress=maphand.fmaxHWAdress;
   fsizeofArray=maphand.fsizeofArray;
 
-  for(Int_t in = 0; in<160; ++in)
+  for(Int_t in = 0; in<159; ++in)
     for(Int_t jn = 0; jn<150; ++jn)
       fmappingChannelinRow[in][jn] = maphand.fmappingChannelinRow[in][jn];
   
@@ -347,7 +347,7 @@ void  AliTPCMonitorMappingHandler::ReadRowMappingGlob(const char* fpathtoMapping
     in >> readcarry;   // row number
     in >> readcarry2;  // numof pads
     fmappingChannelinRow[i][0] = atoi(readcarry2);
-    fmappingChannelinRow[i][1] = atoi(readcarry);
+    fmappingChannelinRow[i][1] = TMath::Min(TMath::Abs(atoi(readcarry)),140); //maximum number of pads is 140
     
     for(Int_t j = 2 ; j < fmappingChannelinRow[i][0]+2 ; j++) {
       in >> readcarry;
