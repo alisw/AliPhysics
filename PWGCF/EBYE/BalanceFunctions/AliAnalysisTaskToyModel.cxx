@@ -86,6 +86,10 @@ AliAnalysisTaskToyModel::~AliAnalysisTaskToyModel() {
 //________________________________________________________________________
 void AliAnalysisTaskToyModel::Init() {
   //Initialize objects
+  //==============gRandom Seed=======================//
+  gRandom->SetSeed(0);  //seed is set to a random value (depending on machine clock)
+  //==============gRandom Seed=======================//
+
   //==============Particles and spectra==============//
   TParticle *pion = new TParticle();
   pion->SetPdgCode(211);
@@ -432,7 +436,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       }
       else {
 	v_pt = fPtSpectraAllCharges->GetRandom();
-	v_phi = TMath::RadToDeg()*fAzimuthalAngleAllCharges->GetRandom();
+	v_phi = fAzimuthalAngleAllCharges->GetRandom();
       }
       
       v_p[0] = v_pt*TMath::Cos(v_phi);
@@ -620,7 +624,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       }
       gNumberOfAcceptedParticles += 1;
     }//generated negative particle loop
-   
+    
     //Dynamical correlations
     Double_t v_chargePrime = 0;
     Double_t v_yPrime = 0.0;
