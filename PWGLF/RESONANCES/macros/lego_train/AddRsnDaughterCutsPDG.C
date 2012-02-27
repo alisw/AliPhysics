@@ -1,7 +1,8 @@
 #ifndef __CINT__
-#include <PWG2/RESONANCES/AliRsnCutPID.h>
-#include <PWG2/RESONANCES/AliRsnInputHandler.h>
-#include <PWG2/RESONANCES/AliRsnCutSet.h>
+#include <AliRsnCutPID.h>
+#include <AliRsnInputHandler.h>
+#include <AliRsnCutSet.h>
+#include <AliRsnCutValue.h>
 #endif
 
 Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType type2,TString opt,Bool_t isRsnMini=kFALSE,AliRsnInputHandler *rsnIH=0,AliAnalysisTaskSE *task=0)
@@ -19,6 +20,12 @@ Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType ty
    //  Define single cuts
    //---------------------------------------------
 
+   Bool_t useQuality = kFALSE;
+   if (opt.Contains("quality")) {
+      useQuality = kTRUE;
+   }
+
+
    Double_t etaRange=0.8;
 
    AliRsnCutValue *cutEta;
@@ -33,42 +40,57 @@ Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType ty
    Double_t nSigmaTPC=3.0;
    Double_t nSigmaTOF=3.0;
    Double_t ptTPCMax=0.8;
-   AliRsnCutKaonForPhi2010 *cutQuality1 = new AliRsnCutKaonForPhi2010("cutKaonPhi2010",nSigmaTPC,nSigmaTOF,ptTPCMax);
-   cutQuality1->SetMode(AliRsnCutKaonForPhi2010::kQuality);
-   cuts1->AddCut(cutQuality1);
+
+   TString scheme;
 
    AliRsnCutPID *cut1 = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type1),opt.Data()),type1,0.0,kTRUE);
    cuts1->AddCut(cut1);
+   if (!scheme.IsNull()) scheme += "&";
+   scheme += cut1->GetName();
    if (useEta) {
       AliRsnCutValue *cutEta1 = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type1),opt.Data()),-etaRange,etaRange);
       AliRsnValueDaughter *valEta1 = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type1)),AliRsnValueDaughter::kEta);
       cutEta1->SetValueObj(valEta1);
       cuts1->AddCut(cutEta1);
-
-      cuts1->SetCutScheme(Form("%s&%s&%s",cutQuality1->GetName(),cut1->GetName(),cutEta1->GetName()));
-   } else {
-      cuts1->SetCutScheme(Form("%s&%s",cutQuality1->GetName(),cut1->GetName()));
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutEta1->GetName();
    }
+   if (useQuality) {
+      AliRsnCutKaonForPhi2010 *cutQuality1 = new AliRsnCutKaonForPhi2010("cutKaonPhi2010",nSigmaTPC,nSigmaTOF,ptTPCMax);
+      cutQuality1->SetMode(AliRsnCutKaonForPhi2010::kQuality);
+      cuts1->AddCut(cutQuality1);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutQuality1->GetName();
+   }
+   cuts1->SetCutScheme(scheme.Data());
    sel->Add(cuts1, kTRUE);
 
+   scheme = "";
    AliRsnCutSet *cuts2 = 0;
    if (type1 != type2) {
       AliRsnCutPID *cut2 = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type2),opt.Data()),type2,0.0,kTRUE);
-      AliRsnCutKaonForPhi2010 *cutQuality2 = new AliRsnCutKaonForPhi2010("cutKaonPhi2010",nSigmaTPC,nSigmaTOF,ptTPCMax);
-      cutQuality2->SetMode(AliRsnCutKaonForPhi2010::kQuality);
-      cuts2->AddCut(cutQuality2);
 
       cuts2 = new AliRsnCutSet(Form("%sPDG%s",AliPID::ParticleName(type2),opt.Data()), AliRsnTarget::kDaughter);
       cuts2->AddCut(cut2);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cut2->GetName();
+      if (useQuality) {
+         AliRsnCutKaonForPhi2010 *cutQuality2 = new AliRsnCutKaonForPhi2010("cutKaonPhi2010",nSigmaTPC,nSigmaTOF,ptTPCMax);
+         cutQuality2->SetMode(AliRsnCutKaonForPhi2010::kQuality);
+         cuts2->AddCut(cutQuality2);
+         if (!scheme.IsNull()) scheme += "&";
+         scheme += cutQuality2->GetName();
+      }
       if (useEta) {
          AliRsnCutValue *cutEta2 = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type2),opt.Data()),-etaRange,etaRange);
          AliRsnValueDaughter *valEta2 = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type2)),AliRsnValueDaughter::kEta);
          cutEta2->SetValueObj(valEta2);
          cuts2->AddCut(cutEta2);
-         cuts2->SetCutScheme(Form("%s&%s&%s",cutQuality2->GetName(),cut2->GetName(),cutEta2->GetName()));
-      } else {
-         cuts2->SetCutScheme(Form("%s&%s",cutQuality2->GetName(),cut2->GetName()));
+         if (!scheme.IsNull()) scheme += "&";
+         scheme += cutEta2->GetName();
       }
+
+      cuts2->SetCutScheme(scheme.Data());
       sel->Add(cuts2, kTRUE);
       numberOfCuts++;
    }
