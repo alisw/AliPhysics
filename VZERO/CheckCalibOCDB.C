@@ -9,7 +9,7 @@ void CheckCalibOCDB(Int_t run)
   AliVZEROCalibData *calData = (AliVZEROCalibData*)ent->GetObject();
 
   for(Int_t pmNumber = 0; pmNumber < 64; ++pmNumber) {
-    printf("Ch=%d HV=%.1f MIP=%.2f Ped0=%.1f Ped1=%.1f Thr=%1.f\n",
+    printf("Ch=%d HV=%.1f MIP=%.3f Ped0=%.1f Ped1=%.1f Thr=%1.f\n",
 	   pmNumber,
 	   calData->GetMeanHV(pmNumber),
 	   1./calData->GetMIPperADC(pmNumber),
