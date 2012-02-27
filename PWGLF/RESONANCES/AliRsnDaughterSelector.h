@@ -30,6 +30,8 @@ public:
 
    TClonesArray *GetCutSetC() {return &fCutSetsC;}
    TClonesArray *GetCutSetN() {return &fCutSetsN;}
+   
+   void SetLabelCheck(Bool_t useLabelCheck = kTRUE) { fUseLabelCheck = useLabelCheck;}
 
 private:
 
@@ -39,8 +41,10 @@ private:
    TClonesArray fEntryListsN;     // entry lists for neutrals
    TClonesArray fEntryListsP;     // entry lists for charged (one per sign)
    TClonesArray fEntryListsM;     // entry lists for charged (one per sign)
+   
+   Bool_t       fUseLabelCheck;   // flag is reapiting of label should be checked
 
-   ClassDef(AliRsnDaughterSelector, 1)
+   ClassDef(AliRsnDaughterSelector, 2)
 };
 
 #endif
