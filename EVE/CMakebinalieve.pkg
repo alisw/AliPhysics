@@ -37,7 +37,7 @@ set ( ELIBS  EveBase EveDet MONITOR MUONmapping MUONevaluation MUONsim MUONrec M
 if(PYTHIA6)
   list (APPEND ELIBS EVGEN)
 endif(PYTHIA6)
-set ( PACKBLIBS  -lftgl ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS} )
+set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS} )
 
 
 if( ALICE_TARGET STREQUAL "macosx")
