@@ -1454,6 +1454,12 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
       Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
       return;
     }
+    
+    if(!hist){
+      Printf("%s%d no histo found ",(char*)__FILE__,__LINE__);
+      return;
+    }
+
 
     THnSparse* hnResponse = 0;
     if(type == kFlagPt)      hnResponse = fhnResponsePt[i];
@@ -1467,10 +1473,9 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
 
 
     TString histNameTHn;
-    if (hist) {
-      histNameTHn = hist->GetName();
-      histNameTHn.ReplaceAll("TH1","THn");
-    }
+    histNameTHn = hist->GetName();
+    histNameTHn.ReplaceAll("TH1","THn");
+    
 
     TString priorNameTHn; 
     if(hPrior){
@@ -1479,35 +1484,30 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     }
 
     TString histNameBackFolded;
-    if (hist)
-      histNameBackFolded = hist->GetName();
+    histNameBackFolded = hist->GetName();
     histNameBackFolded.Append("_backfold");
-
+    
     TString histNameRatioFolded;
-    if (hist) {
-      histNameRatioFolded = hist->GetName();
-      histNameRatioFolded.ReplaceAll("fh1FF","hRatioFF");
-    }
+    histNameRatioFolded = hist->GetName();
+    histNameRatioFolded.ReplaceAll("fh1FF","hRatioFF");
+    
     histNameRatioFolded.Append("_unfold");
 
     TString histNameRatioBackFolded;
-    if (hist) {
-      histNameRatioBackFolded = hist->GetName();
-      histNameRatioBackFolded.ReplaceAll("fh1FF","hRatioFF");
-    }
+    histNameRatioBackFolded = hist->GetName();
+    histNameRatioBackFolded.ReplaceAll("fh1FF","hRatioFF");
     histNameRatioBackFolded.Append("_backfold");
  
     THnSparse* hnHist           = TH1toSparse(hist,histNameTHn,hist->GetTitle());
     THnSparse* hnFlatEfficiency = TH1toSparse(hist,"fhnEfficiency","eff",kTRUE); // could optionally also use real eff 
     THnSparse* hnPrior          = 0;
     if(hPrior) hnPrior = TH1toSparse(hPrior,priorNameTHn,hPrior->GetTitle());
-
+    
     THnSparse* hnUnfolded 
       = Unfold(hnHist,hnResponse,hnFlatEfficiency,nIter,useCorrelatedErrors,hnPrior);  
      
     TH1F* hUnfolded = (TH1F*) hnUnfolded->Projection(0); 
-    if (hist)
-      hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
+    hUnfolded->SetNameTitle(hist->GetName(),hist->GetTitle());
     
     if(type == kFlagPt) fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,hUnfolded,0,0);
     if(type == kFlagZ)  fCorrFF[fNCorrectionLevels-1]->AddCorrHistos(i,0,hUnfolded,0);
@@ -1515,8 +1515,7 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
 
     // backfolding: apply response matrix to unfolded spectrum
     TH1F* hBackFolded = ApplyResponse(hUnfolded,hnResponse); 
-    if(hist) 
-      hBackFolded->SetNameTitle(histNameBackFolded,hist->GetTitle());
+    hBackFolded->SetNameTitle(histNameBackFolded,hist->GetTitle());
 
     if(type == kFlagPt) fh1FFTrackPtBackFolded[i] = hBackFolded;
     if(type == kFlagZ)  fh1FFZBackFolded[i]       = hBackFolded;
@@ -1525,8 +1524,7 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
     // ratio unfolded to original histo 
     TH1F* hRatioUnfolded = (TH1F*) hUnfolded->Clone(histNameRatioFolded);
     hRatioUnfolded->Reset();
-    if (hist) 
-      hRatioUnfolded->Divide(hUnfolded,hist,1,1,"B");
+    hRatioUnfolded->Divide(hUnfolded,hist,1,1,"B");
 
     if(type == kFlagPt) fh1FFRatioTrackPtFolded[i] = hRatioUnfolded;
     if(type == kFlagZ)  fh1FFRatioZFolded[i]       = hRatioUnfolded;
