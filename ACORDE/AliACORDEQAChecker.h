@@ -45,7 +45,6 @@ private:
 
   TPaveText * fTextDQMShifterInfo; //! Pave text for alarm in DQM plots
   TLine * fMax; //! Maximum hits allowed per module (normalized data)
-  TLine * fMin; //! Minimum hits allowed per module (normalized data)
   
   ClassDef(AliACORDEQAChecker,1)  // description 
 

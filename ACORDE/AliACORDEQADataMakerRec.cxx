@@ -111,16 +111,16 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 
 	if ((itc==-1) && ( (integralAMU=h2->Integral()==0) || (integralSL0=h0->Integral()==0) ) ) continue;
 
-	Float_t maxSL0 = 1.1*h0->GetMaximum();
+	Float_t maxSL0 = 1*h0->GetMaximum();
 	Float_t scaleSL0 = 0.;
-	if (maxSL0!=0) scaleSL0 = 1./maxSL0;
+	if (maxSL0!=0) scaleSL0 = 1/maxSL0;
 	else scaleSL0 = 1.;
 	h0->Scale(scaleSL0);
 
 
-	Float_t maxAMU = 1.1*h2->GetMaximum();
+	Float_t maxAMU = 1*h2->GetMaximum();
 	Float_t scaleAMU = 0.;
-	if (maxAMU!=0) scaleAMU = 1./maxAMU;
+	if (maxAMU!=0) scaleAMU = 1/maxAMU;
 	else scaleAMU = 1.;
 	h2->Scale(scaleAMU);
       
@@ -138,6 +138,32 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 
 	meanHitsSL0 = h0->Integral()/indexActiveModuleSL0;
 	meanHitsAMU = h2->Integral()/indexActiveModuleAMU;
+
+	TH1* h6 = (TH1*)harr[6];
+	TH1* h7 = (TH1*)harr[7];
+
+	Int_t goodModulesSL0 = 0;
+	Int_t badModulesSL0 = 0;
+	Int_t goodModulesAMU = 0;
+	Int_t badModulesAMU = 0;
+
+	for (Int_t imod = 0; imod < 60; imod++)
+	{
+		if (TMath::Abs(h0->GetBinContent(imod)/meanHitsSL0-1) < 0.65) goodModulesSL0++;
+		else badModulesSL0++;
+		if (TMath::Abs(h2->GetBinContent(imod)/meanHitsAMU-1) < 0.65) goodModulesAMU++;
+		else badModulesAMU++;
+
+	}
+	h6->SetMaximum(60);
+	h6->SetMinimum(0);
+	h6->Fill(1,goodModulesSL0);
+	h6->Fill(2,badModulesSL0);
+
+	h7->SetMaximum(60);
+	h7->SetMinimum(0);
+	h7->Fill(1,goodModulesAMU);
+	h7->Fill(2,badModulesAMU);
 
         TH1* h4 = (TH1*)harr[4];
         TH1* h5 = (TH1*)harr[5];
@@ -177,6 +203,29 @@ void AliACORDEQADataMakerRec::InitRaws()
         TH1F * fhACORDEMultiplicityAMUDQM = new TH1F("ACOMultiAMU_DQM_Shifter","Multiplicity of ACORDE fired modules for DQM shifter; No. of fired modules; No. of events",62,-1,60); // Multiplicity histo. for QA-shifter ACO-SL0 trigger mode
         TH1F * fhACORDEBitPatternCheckDQMSL0 = new TH1F("ACOHitsTriggerCheck_DQMExpertSL0","Check the activity of ACORDE's modules; Hits per module/mean of Hits; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
         TH1F * fhACORDEBitPatternCheckDQMAMU = new TH1F("ACOHitsTriggerCheck_DQMExpertAMU","Check the activity of ACORDE's modules; Hits per module/mean of Hits; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
+
+  //const char *acoStatus[4]={"O.K.","High","Low","Not O.K."};
+  const char *acoStatus[2]={"STABLE RATE","FLUCTUATING RATE"};
+
+
+
+	TH1F * fhACORDEStatusSL0_DQM = new TH1F("fhACORDEStatusSL0_DQM","Status of rate for ACORDE's modules (SL0 mode)",2,1,3);
+	TH1F * fhACORDEStatusAMU_DQM = new TH1F("fhACORDEStatusAMU_DQM","Status of rate for ACORDE's modules (AMU mode)",2,1,3);
+  	for (Int_t i=0;i<2;i++) 
+	{
+		fhACORDEStatusSL0_DQM->GetXaxis()->SetBinLabel(i+1,acoStatus[i]); 
+		fhACORDEStatusAMU_DQM->GetXaxis()->SetBinLabel(i+1,acoStatus[i]); 
+	}
+	fhACORDEStatusSL0_DQM->SetYTitle("No. of modules");
+	fhACORDEStatusAMU_DQM->SetYTitle("No. of modules");
+
+	Add2RawsList(fhACORDEStatusSL0_DQM,6,expert,image,!saveCorr);
+	Add2RawsList(fhACORDEStatusAMU_DQM,7,!expert,image,!saveCorr);
+
+	fhACORDEStatusSL0_DQM->SetFillColor(kAzure-5);
+	fhACORDEStatusAMU_DQM->SetFillColor(kAzure-7);
+
+
          // Expert histograms
          // Check the hits multiplicity from trigger configuration
          Add2RawsList(fhACORDEBitPatternCheckDQMSL0,4,expert,image,!saveCorr);
@@ -189,9 +238,9 @@ void AliACORDEQADataMakerRec::InitRaws()
  
         // For SL0 ACO trigger mode
  
-         Add2RawsList(fhACORDEBitPatternDQM,0,!expert,image,!saveCorr);
+         Add2RawsList(fhACORDEBitPatternDQM,0,expert,image,!saveCorr);
 	 ForbidCloning(fhACORDEBitPatternDQM);
-         Add2RawsList(fhACORDEMultiplicitySL0DQM,1,!expert,image,!saveCorr);
+         Add2RawsList(fhACORDEMultiplicitySL0DQM,1,expert,image,!saveCorr);
  	 ForbidCloning(fhACORDEMultiplicitySL0DQM);
 
          // For Hits distribution on ACORDE
@@ -204,8 +253,8 @@ void AliACORDEQADataMakerRec::InitRaws()
  
          // For AMU ACO trigger mode
  
-         Add2RawsList(fhACORDEBitPatternAMUDQM,2,!expert,image,!saveCorr);
-         Add2RawsList(fhACORDEMultiplicityAMUDQM,3,!expert,image,!saveCorr);
+         Add2RawsList(fhACORDEBitPatternAMUDQM,2,expert,image,!saveCorr);
+         Add2RawsList(fhACORDEMultiplicityAMUDQM,3,expert,image,!saveCorr);
  
          // For Hits distribution on ACORDE
  
