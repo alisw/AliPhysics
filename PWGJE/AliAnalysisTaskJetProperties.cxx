@@ -771,6 +771,7 @@ void AliAnalysisTaskJetProperties::FillJetProperties(TList *jetlist){
 	if(JetPt)FF = TrackPt/JetPt;
 	DelEta      = TMath::Abs(JetEta - TrackEta);
 	DelPhi      = TMath::Abs(JetPhi - TrackPhi);
+	if(DelPhi>TMath::Pi())DelPhi = TMath::Abs(DelPhi-TMath::TwoPi());
 	DelR        = TMath::Sqrt(DelEta*DelEta + DelPhi*DelPhi);
 	AreaJ       = TMath::Pi()*DelR*DelR;
 	fh2EtaTrack ->Fill(JetPt,TrackEta);
