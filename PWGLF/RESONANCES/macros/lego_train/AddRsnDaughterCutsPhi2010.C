@@ -21,6 +21,7 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
 
    if (isPP && (opt.Contains("usePP"))) usePPCut = kTRUE;
 
+   
    // === USER HAS TO SET CORRECT NUMBER OF CUTS SETS =====
    Int_t numberOfCuts = 1;
 
@@ -92,6 +93,9 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
    if (opt.Contains("pdg")) {
       Printf("Using PDG");
       usePDG = kTRUE;
+      if (opt.Contains("pdgPI")) type1 = AliPID::kPion;
+//       type1 = AliPID::kPion;
+
    }
 
 
@@ -132,7 +136,6 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
       cuts->AddCut(cutEta);
       if (!scheme.IsNull()) scheme += "&";
       scheme += cutEta->GetName();
-//         cuts->SetCutScheme(Form("%s&%s",cut->GetName(),cutEta->GetName()));
    }
    if (usePDG) {
       Printf("Adding PDG ...");
@@ -158,6 +161,7 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
       }
    } else {
       AliRsnDaughterSelector *sel = rsnIH->GetSelector();
+//       sel->SetLabelCheck(kFALSE);
       sel->Add(cuts, kTRUE);
    }
    return numberOfCuts;

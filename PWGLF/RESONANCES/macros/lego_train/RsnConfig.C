@@ -13,6 +13,7 @@
 #include <PWGLF/RESONANCES/AliRsnInputHandler.h>
 #include <PWGLF/RESONANCES/AliRsnMiniMonitor.h>
 #include <PWGLF/RESONANCES/AliRsnValueEvent.h>
+#include <AliRsnMiniMonitorTask.h>
 #endif
 
 Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInputHandler *rsnIH=0,TList *listRsn=0) {
@@ -223,15 +224,8 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
    return kTRUE;
 }
 
-// void AddMonitorOutput(AliRsnLoopDaughter *mon)
-
-void AddMonitorOutput(TObjArray *mon,TString opt="")
+void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 {
-
-   if (!mon) {
-      Printf("Error: mon is null !!!!");
-      return;
-   }
 
    Bool_t valid;
    Int_t useMCMon = AliAnalysisManager::GetGlobalInt("rsnUseMCMonitoring",valid);
@@ -249,7 +243,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitordEdxTPC->AddValue(axisSigTPC);
 
    // add outputs to loop
-   mon->Add(outMonitordEdxTPC);
+   if (mon) mon->Add(outMonitordEdxTPC);
+   if (lm) lm->AddOutput(outMonitordEdxTPC);
 
    // dEdx tpc
    AliRsnValueDaughter *axisMomTPCForTOF = new AliRsnValueDaughter("pTPC", AliRsnValueDaughter::kPtpc);
@@ -263,7 +258,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitordEdxTOF->AddValue(axisSigTOF);
 
    // add outputs to loop
-   mon->Add(outMonitordEdxTOF);
+   if (mon) mon->Add(outMonitordEdxTOF);
+   if (lm) lm->AddOutput(outMonitordEdxTOF);
 
 
    // Momentum
@@ -275,7 +271,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitorP->AddValue(axisMomP);
 
    // add outputs to loop
-   mon->Add(outMonitorP);
+   if (mon) mon->Add(outMonitorP);
+   if (lm) lm->AddOutput(outMonitorP);
 
 
    if (useMCMon) {
@@ -288,7 +285,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
       outMonitorPMC->AddValue(axisMomPMC);
 
       // add outputs to loop
-      mon->Add(outMonitorPMC);
+      if (mon) mon->Add(outMonitorPMC);
+      if (lm) lm->AddOutput(outMonitorPMC);
    }
 
 
@@ -301,8 +299,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitorPt->AddValue(axisMomPt);
 
    // add outputs to loop
-   mon->Add(outMonitorPt);
-
+   if (mon) mon->Add(outMonitorPt);
+   if (lm) lm->AddOutput(outMonitorPt);
    if (useMCMon) {
       // Momentum Pt
       AliRsnValueDaughter *axisMomPtMC = new AliRsnValueDaughter("ptMC", AliRsnValueDaughter::kPt);
@@ -314,7 +312,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
       outMonitorPtMC->AddValue(axisMomPtMC);
 
       // add outputs to loop
-      mon->Add(outMonitorPtMC);
+      if (mon) mon->Add(outMonitorPtMC);
+      if (lm) lm->AddOutput(outMonitorPtMC);
    }
 
    // Eta
@@ -326,7 +325,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitorEta->AddValue(axisMomEta);
 
    // add outputs to loop
-   mon->Add(outMonitorEta);
+   if (mon) mon->Add(outMonitorEta);
+   if (lm) lm->AddOutput(outMonitorEta);
 
    if (useMCMon) {
       // Eta
@@ -339,7 +339,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
       outMonitorEtaMC->AddValue(axisMomEtaMC);
 
       // add outputs to loop
-      mon->Add(outMonitorEtaMC);
+      if (mon) mon->Add(outMonitorEtaMC);
+      if (lm) lm->AddOutput(outMonitorEtaMC);
    }
    // kTOFnsigmaK
    AliRsnValueDaughter *axisTPCnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTPCnsigmaK);
@@ -350,7 +351,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitorTPCnsigmaK->AddValue(axisTPCnsigmaK);
 
    // add outputs to loop
-   mon->Add(outMonitorTPCnsigmaK);
+   if (mon) mon->Add(outMonitorTPCnsigmaK);
+   if (lm) lm->AddOutput(outMonitorTPCnsigmaK);
 
    // kTPCnsigmaPi
    AliRsnValueDaughter *axisTPCnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTPCnsigmaPi);
@@ -361,7 +363,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitorTPCnsigmaPi->AddValue(axisTPCnsigmaPi);
 
    // add outputs to loop
-   mon->Add(outMonitorTPCnsigmaPi);
+   if (mon) mon->Add(outMonitorTPCnsigmaPi);
+   if (lm) lm->AddOutput(outMonitorTPCnsigmaPi);
 
    // kTPCnsigmaP
    AliRsnValueDaughter *axisTPCnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTPCnsigmaP);
@@ -372,7 +375,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    outMonitorTPCnsigmaP->AddValue(axisTPCnsigmaP);
 
    // add outputs to loop
-   mon->Add(outMonitorTPCnsigmaP);
+   if (mon) mon->Add(outMonitorTPCnsigmaP);
+   if (lm) lm->AddOutput(outMonitorTPCnsigmaP);
 
 
    if (!opt.Contains("NoTOFSIGMA")) {
@@ -386,7 +390,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
       outMonitorTOFnsigmaK->AddValue(axisTOFnsigmaK);
 
       // add outputs to loop
-      mon->Add(outMonitorTOFnsigmaK);
+      if (mon) mon->Add(outMonitorTOFnsigmaK);
+      if (lm) lm->AddOutput(outMonitorTOFnsigmaK);
 
       // kTOFnsigmaPi
       AliRsnValueDaughter *axisTOFnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTOFnsigmaPi);
@@ -397,7 +402,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
       outMonitorTOFnsigmaPi->AddValue(axisTOFnsigmaPi);
 
       // add outputs to loop
-      mon->Add(outMonitorTOFnsigmaPi);
+      if (mon) mon->Add(outMonitorTOFnsigmaPi);
+      if (lm) lm->AddOutput(outMonitorTOFnsigmaPi);
 
       // kTOFnsigmaP
       AliRsnValueDaughter *axisTOFnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTOFnsigmaP);
@@ -408,7 +414,8 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
       outMonitorTOFnsigmaP->AddValue(axisTOFnsigmaP);
 
       // add outputs to loop
-      mon->Add(outMonitorTOFnsigmaP);
+      if (mon) mon->Add(outMonitorTOFnsigmaP);
+      if (lm) lm->AddOutput(outMonitorTOFnsigmaP);
    }
 
 
@@ -420,56 +427,74 @@ void AddMonitorOutput(TObjArray *mon,TString opt="")
    AliRsnValueEvent *ve1 = new AliRsnValueEvent("mult",AliRsnValueEvent::kMult);
    ve1->SetBins(0.0,100.0,1);
    outMonitorPTvsMult->AddValue(ve1);
-   mon->Add(outMonitorPTvsMult);
+   if (mon) mon->Add(outMonitorPTvsMult);
+   if (lm) lm->AddOutput(outMonitorPTvsMult);
 
-   //    mon->SetMCRefInfo(gRsnUseMCMomentum);
-
+   
+//    if (lm) lm->SetTrueMC(kTRUE);
 }
 
-void AddMonitorOutputMini(AliRsnMiniAnalysisTask *task,Int_t listID1,TString name = "",Char_t charge='0')
+void AddMonitorOutputMini(AliRsnMiniMonitorTask *task,Int_t listID1,TString name = "",Char_t charge='0')
 {
    TString chargeName="all";
    if ( charge == '+' ) chargeName = "pos";
    if ( charge == '-' ) chargeName = "neg";
 
-   AliRsnMiniMonitor *mondEdx = new AliRsnMiniMonitor(Form("%s_dEdxTPCvsP_%s", name.Data(),chargeName.Data()),AliRsnMiniMonitor::kdEdxTPCvsP, listID1);
+   AliRsnMiniMonitor *mondEdx = task->CreateMonitor(Form("%s_dEdx_pTPC_%s", name.Data(),chargeName.Data()),AliRsnMiniMonitor::kdEdxTPCvsP, listID1);
    mondEdx->SetCharge(charge);
-
-   AliRsnMiniMonitor *monPt = new AliRsnMiniMonitor(Form("%s_Pt_%s", name.Data(),chargeName.Data()),AliRsnMiniMonitor::kTrackPt, listID1);
+   AliRsnMiniMonitor *monPt = task->CreateMonitor(Form("%s_Pt_%s", name.Data(),chargeName.Data()),AliRsnMiniMonitor::kTrackPt, listID1);
    monPt->SetCharge(charge);
-
 }
 
 void AddParticleMonitor(AliAnalysisTaskSE *task, Bool_t isMC, Int_t listID1,AliRsnCutSet *commonEventCuts=0,AliRsnCutSet *cutPair=0,TString name = "")
 {
    Bool_t valid;
    Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
+   Int_t useMCMon = AliAnalysisManager::GetGlobalInt("rsnUseMCMonitoring",valid);
+
    if (isRsnMini) {
-      Printf("Monitoring by mini is not supported now. It will be soon !!!");
-      return ;
-      //       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      //
-      //       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name);
-      //       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name,'+');
-      //       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name,'-');
+//       Printf("Monitoring by mini is not supported now. It will be soon !!!");
+//       return ;
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliRsnMiniMonitorTask *monTask = new AliRsnMiniMonitorTask(name.Data(),useMCMon);
+      AddMonitorOutputMini(monTask,listID1,name);
+//       AddMonitorOutputMini(monTask,listID1,name,'+');
+//       AddMonitorOutputMini(monTask,listID1,name,'-');
+      mgr->AddTask(monTask);
+      // connect input container according to source choice
+      mgr->ConnectInput(monTask, 0, mgr->GetCommonInputContainer());
+
+      // create paths for the output in the common file
+      TString commonPath = AliAnalysisManager::GetCommonFileName();
+
+      // create containers for output
+      AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnMonMini%s", name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, commonPath.Data());
+
+      mgr->ConnectOutput(monTask, 1, output);
+
+
+
    } else {
+
       TList *listLoops = new TList;
       // monitor definition
       AliRsnDaughterDef *tracksAll = new AliRsnDaughterDef(AliRsnDaughter::kTrack /*'+' or '-'*/);
-      AliRsnDaughterDef *tracksPos = new AliRsnDaughterDef(AliRsnDaughter::kTrack,'+');
-      AliRsnDaughterDef *tracksNeg = new AliRsnDaughterDef(AliRsnDaughter::kTrack,'-');
-
+// //       AliRsnDaughterDef *tracksPos = new AliRsnDaughterDef(AliRsnDaughter::kTrack,'+');
+// //       AliRsnDaughterDef *tracksNeg = new AliRsnDaughterDef(AliRsnDaughter::kTrack,'-');
+//
       AliRsnLoopDaughter *lm =0;
-      // loop object
-      listLoops->Add(new AliRsnLoopDaughter(Form("%s_all", name.Data()), listID1, tracksAll));
-      listLoops->Add(new AliRsnLoopDaughter(Form("%s_pos", name.Data()), listID1, tracksPos));
-      listLoops->Add(new AliRsnLoopDaughter(Form("%s_neg", name.Data()), listID1, tracksNeg));
-
+//       // loop object
+      listLoops->Add(new AliRsnLoopDaughter(Form("ALL_%s", name.Data()), listID1, tracksAll));
+//
+// //       listLoops->Add(new AliRsnLoopDaughter(Form("%s_pos", name.Data()), listID1, tracksPos));
+// //       listLoops->Add(new AliRsnLoopDaughter(Form("%s_neg", name.Data()), listID1, tracksNeg));
+//
       TIter next(listLoops);
       while ((lm = (AliRsnLoopDaughter *)next.Next())) {
-         if (commonEventCuts) lm->SetEventCuts(commonEventCuts);
-         AddMonitorOutput(lm);
+//          if (commonEventCuts) lm->SetEventCuts(commonEventCuts);
+         AddMonitorOutput(0,"mc_loop",lm);
          ((AliRsnAnalysisTask *)task)->AddLoop(lm);
       }
    }
 }
+
