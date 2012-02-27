@@ -74,6 +74,7 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "n crossed rows / n findable clusters",
  "missing ITS points",
  "#Chi^{2} TPC constrained vs. global",
+ "require TOF out",
  "TOF Distance cut"
 };
 
@@ -137,6 +138,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fEtaMax(0),
   fRapMin(0),
   fRapMax(0),
+  fCutRequireTOFout(kFALSE),
   fFlagCutTOFdistance(kFALSE),
   fCutTOFdistance(3.),
   fHistogramsOn(0),
@@ -249,11 +251,12 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fEtaMax(0),
   fRapMin(0),
   fRapMax(0),
+  fCutRequireTOFout(kFALSE),
   fFlagCutTOFdistance(kFALSE),
   fCutTOFdistance(3.),
   fHistogramsOn(0),
-  ffDTheoretical(0),				     
-  fhCutStatistics(0),         
+  ffDTheoretical(0),
+  fhCutStatistics(0),
   fhCutCorrelation(0)
 {
   //
@@ -567,6 +570,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.fFlagCutTOFdistance = fFlagCutTOFdistance;
   target.fCutTOFdistance = fCutTOFdistance;
+  target.fCutRequireTOFout = fCutRequireTOFout;
 
   target.fHistogramsOn = fHistogramsOn;
 
@@ -752,7 +756,6 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   //esdTrackCuts->SetEtaRange(-0.8,+0.8);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
-  // to be added after validation: esdTrackCuts->SetFlagCutTOFdistance(kTRUE);
   
   return esdTrackCuts;
 }
@@ -796,7 +799,6 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
-  // to be added after validation: esdTrackCuts->SetFlagCutTOFdistance(kTRUE);
 
   return esdTrackCuts;
 }
@@ -840,7 +842,6 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
-  // to be added after validation: esdTrackCuts->SetFlagCutTOFdistance(kTRUE);
 
   return esdTrackCuts;
 }
@@ -1287,6 +1288,41 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   }
   if(nMissITSpts>fCutMaxMissingITSPoints) cuts[38] = kTRUE;
   
+  //kTOFout
+  if (fCutRequireTOFout && (status&AliESDtrack::kTOFout)==0)
+    cuts[40]=kTRUE;
+
+  // TOF signal Dz cut
+  Float_t dxTOF = esdTrack->GetTOFsignalDx();
+  Float_t dzTOF = esdTrack->GetTOFsignalDz();
+  if (fFlagCutTOFdistance && (esdTrack->GetStatus() & AliESDtrack::kTOFout) == AliESDtrack::kTOFout){ // applying the TOF distance cut only if requested, and only on tracks that reached the TOF and where associated with a TOF hit 
+	  if (fgBeamTypeFlag < 0) {  // the check on the beam type was not done yet
+		  const AliESDEvent* event = esdTrack->GetESDEvent();
+		  if (event){
+			  TString beamTypeESD = event->GetBeamType();
+			  AliDebug(2,Form("Beam type from ESD event = %s",beamTypeESD.Data()));
+			  if (beamTypeESD.CompareTo("A-A",TString::kIgnoreCase) == 0){ // we are in PbPb collisions --> fgBeamTypeFlag will be set to 1, to apply the cut on TOF signal Dz
+				  fgBeamTypeFlag = 1;
+			  }
+			  else { // we are NOT in PbPb collisions --> fgBeamTypeFlag will be set to 0, to NOT apply the cu6 on TOF signal Dz
+				  fgBeamTypeFlag = 0;
+			  }				  
+		  }
+		  else{
+			  AliFatal("Beam type not available, but it is needed to apply the TOF cut!");
+		  }
+	  }
+
+	  if (fgBeamTypeFlag == 1){ // we are in PbPb collisions --> apply the cut on TOF signal Dz
+		  Float_t radiusTOF = TMath::Sqrt(dxTOF*dxTOF + dzTOF*dzTOF);
+		  AliDebug(3,Form("TOF check (with fCutTOFdistance = %f) --> dx = %f, dz = %f, radius = %f", fCutTOFdistance, dxTOF, dzTOF, radiusTOF));
+		  if (radiusTOF > fCutTOFdistance){
+			  AliDebug(2, Form("************* the radius is outside the range! %f > %f, the track will be skipped", radiusTOF, fCutTOFdistance));
+			  cuts[41] = kTRUE;
+		  }
+	  }
+  }
+  
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) {cut = kTRUE;}
@@ -1343,38 +1379,6 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     }
   }
 
-  // TOF signal Dz cut
-  Float_t dxTOF = esdTrack->GetTOFsignalDx();
-  Float_t dzTOF = esdTrack->GetTOFsignalDz();
-  if (fFlagCutTOFdistance){
-	  if (fgBeamTypeFlag < 0) {  // the check on the beam type was not done yet
-		  const AliESDEvent* event = esdTrack->GetESDEvent();
-		  if (event){
-			  TString beamTypeESD = event->GetBeamType();
-			  AliDebug(2,Form("Beam type from ESD event = %s",beamTypeESD.Data()));
-			  if (beamTypeESD.CompareTo("A-A",TString::kIgnoreCase) == 0){ // we are in PbPb collisions --> fgBeamTypeFlag will be set to 1, to apply the cut on TOF signal Dz
-				  fgBeamTypeFlag = 1;
-			  }
-			  else { // we are NOT in PbPb collisions --> fgBeamTypeFlag will be set to 0, to NOT apply the cu6 on TOF signal Dz
-				  fgBeamTypeFlag = 0;
-			  }				  
-		  }
-		  else{
-			  AliFatal("Beam type not available, but it is needed to apply the TOF cut!");
-		  }
-	  }
-
-	  if (fgBeamTypeFlag == 1){ // we are in PbPb collisions --> apply the cut on TOF signal Dz
-		  Float_t radiusTOF = TMath::Sqrt(dxTOF*dxTOF + dzTOF*dzTOF);
-		  AliDebug(3,Form("TOF check (with fCutTOFdistance = %f) --> dx = %f, dz = %f, radius = %f", fCutTOFdistance, dxTOF, dzTOF, radiusTOF));
-		  if (radiusTOF > fCutTOFdistance){
-			  AliDebug(2, Form("************* the radius is outside the range! %f > %f, the track will be skipped", radiusTOF, fCutTOFdistance));
-			  cuts[40] = kTRUE;
-			  cut = kTRUE;
-		  }
-	  }
-  }
-  
   //########################################################################
   // filling histograms
   if (fHistogramsOn) {
@@ -2336,3 +2340,15 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
 
   return multiplicityEstimate;
 }
+
+//____________________________________________________________________
+void AliESDtrackCuts::SetRequireStandardTOFmatchCuts(){
+
+	// setting the TOF cuts flags (kTOFout = TOF matching distance) to true, to include the selection on the standard TOF matching 
+
+	SetRequireTOFout(kTRUE);
+	SetFlagCutTOFdistance(kTRUE);
+	SetCutTOFdistance(3.);
+
+}
+
