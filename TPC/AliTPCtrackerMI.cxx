@@ -7643,6 +7643,9 @@ void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){
   factor[2]= TMath::Sqrt(TMath::Abs((covarS[5] + param[2]*param[2])/covarS[5]));
   factor[3]= TMath::Sqrt(TMath::Abs((covarS[9] + param[3]*param[3])/covarS[9]));
   factor[4]= TMath::Sqrt(TMath::Abs((covarS[14] + facC*facC*param[4]*param[4])/covarS[14]));
+  //
+  factor[0]=factor[2];
+  factor[4]=factor[2];
   // 0
   // 1    2
   // 3    4    5
