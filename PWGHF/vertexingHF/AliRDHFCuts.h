@@ -92,7 +92,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     fTriggerMask|=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   }
-  void ResetMaskAndnableEMCALTrigger(){
+  void ResetMaskAndEnableEMCALTrigger(){
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   } 
