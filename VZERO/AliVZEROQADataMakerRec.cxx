@@ -278,7 +278,7 @@ void AliVZEROQADataMakerRec::InitRaws()
 
 	h2d = new TH2F("H2D_Trigger_Type", "V0 Trigger Type;V0A;V0C", 4,0 ,4,4,0,4) ;  
 	Add2RawsList(h2d,kTriggers2, !expert, image, saveCorr);   iHisto++;
- 	h2d->SetDrawOption("coltext");
+ 	h2d->SetOption("coltext");
 	h2d->GetXaxis()->SetLabelSize(0.06);
 	h2d->GetXaxis()->SetNdivisions(808,kFALSE);
 	h2d->GetYaxis()->SetNdivisions(808,kFALSE);
@@ -423,7 +423,7 @@ void AliVZEROQADataMakerRec::InitRaws()
   // Creation of histograms with the charge sums used inthe centrality triggers
   h2d = new TH2F("H2D_CentrChargeV0A_V0C","Trigger charge sums V0C vs V0A; V0A Charge Sum [ADC counts]; V0C Charge Sum [ADC counts];",
 		 300,0,15000,500,0,25000);
-  Add2RawsList(h2d,kCentrChargeV0AV0C, !expert, image, saveCorr); iHisto++;
+  Add2RawsList(h2d,kCentrChargeV0AV0C, expert, !image, saveCorr); iHisto++;
 
   AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
   //

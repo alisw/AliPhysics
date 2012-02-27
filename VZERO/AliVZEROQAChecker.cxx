@@ -36,75 +36,81 @@
 #include "AliQAChecker.h"
 #include "AliVZEROQAChecker.h"
 #include "AliVZEROQADataMakerRec.h"
-//#include "AliCDBEntry.h"
-//#include "AliCDBManager.h"
 
 ClassImp(AliVZEROQAChecker)
 
 //__________________________________________________________________
+AliVZEROQAChecker::AliVZEROQAChecker() : AliQACheckerBase("VZERO","VZERO Quality Assurance Data Checker"),
+  fLowEventCut(1000),
+  fORvsANDCut(0.2),
+  fBGvsBBCut(0.2)
+{
+  // Default constructor
+  // Nothing else here
+}
+
+//__________________________________________________________________
 void AliVZEROQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
 {
+  // Main check function: Depending on the TASK, different checks will be applied
+  // Check for missing channels and check on the trigger type for raw data
+  // Check for missing disk or rings for esd (to be redone)
 
-// Main check function: Depending on the TASK, different checks will be applied
-// Check for empty histograms 
-
-//   AliDebug(AliQAv1::GetQADebugLevel(),Form("AliVZEROChecker"));
-//   AliCDBEntry *QARefRec = AliCDBManager::Instance()->Get("VZERO/QARef/RAW");
-//   if( !QARefRec){
-//     AliDebug(AliQAv1::GetQADebugLevel(), "QA reference data NOT retrieved for QA check...");
-//     return 1.;
-//   }
-
-//   Check that histos are filled - (FATAL) set if empty
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    check[specie]    = 1.0 ; 
+    check[specie] = 1.0;
+    // no check on cosmic or calibration events
+    if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic || AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)
+      continue;
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
-      continue ; 
-    if(CheckEntries(list[specie]) == 0.0){
-        check[specie] =  CheckEntries(list[specie]);
-    } else {
-      //   Check for one disk missing (FATAL) or one ring missing (ERROR) in ESDs     
-      if(index == AliQAv1::kESD) 
-          check[specie] =  CheckEsds(list[specie]);
+      continue;
+    if (index == AliQAv1::kRAW) {
+      check[specie] =  CheckRaws(list[specie]);
+    } else if (index == AliQAv1::kESD) {
+      // Check for one disk missing (FATAL) or one ring missing (ERROR) in ESDs (to be redone)
+      check[specie] =  CheckEsds(list[specie]);
     } 
   }
 }
 
 //_________________________________________________________________
-Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
+Double_t AliVZEROQAChecker::CheckRaws(TObjArray * list) const
 {
 
-  //  check on the QA histograms on the input list: list
-//  list->Print();
+  //  Check on the QA histograms on the raw-data input list:
+  //  Two things are checked: the presence of data in all channels and
+  //  the ratio between different trigger types
 
-  Double_t test = 0.0 ;
-  Int_t   count = 0 ; 
-
+  Double_t test = 1.0;
   if (list->GetEntries() == 0){  
-	test = 1.0; 
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("There are NO ENTRIES to be checked..."));
+    AliWarning("There are no histograms to be checked");
   } else {
-	TIter next(list) ; 
-	TH1 * hdata ;
-	count = 0 ; 
-	while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-		if (hdata) { 	   
-			Double_t rv = 0.0;
-			if(hdata->GetEntries()>0) rv=1.0;
-//	   AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)); 
-			count++ ;        // number of histos
-			test += rv ;     // number of histos filled
-        }else{
-			AliError(Form("Data type cannot be processed"));
-        }      
-	}
-	if (count != 0) { 
-		if (test==0.0) {
-			AliWarning(Form("Histograms are BOOKED for this specific task, but they are all EMPTY"));
-		} else {
-			test /= count; 
-		}
-	}
+    TH1F *hTriggers  = (TH1F*)list->At(AliVZEROQADataMakerRec::kTriggers);
+    if (!hTriggers) {
+      AliWarning("Trigger type histogram is not found");
+    }
+    else if (hTriggers->GetEntries() < fLowEventCut) {
+      AliInfo("Not enough events to perform QA checks");
+    }
+    else {
+      Double_t nANDs = hTriggers->GetBinContent(hTriggers->FindBin(0));
+      Double_t nORs = hTriggers->GetBinContent(hTriggers->FindBin(1));
+      Double_t nBGAs = hTriggers->GetBinContent(hTriggers->FindBin(2));
+      Double_t nBGCs = hTriggers->GetBinContent(hTriggers->FindBin(3));
+      if ((nORs - nANDs) > fORvsANDCut*nANDs) test = 0.001;
+      if ((nBGAs + nBGCs) > fBGvsBBCut*nANDs) test = 0.002;
+    }
+    TH1F *hBBflags = (TH1F*)list->At(AliVZEROQADataMakerRec::kBBFlagsPerChannel);
+    if (!hBBflags) {
+      AliWarning("BB-flags per channel histogram is not found");
+    }
+    else if (hBBflags->GetEntries() < fLowEventCut) {
+      AliInfo("Not enough events to perform QA checks");
+    }
+    else {
+      for(Int_t iBin = 1; iBin <= 64; ++iBin) {
+	if (hBBflags->GetBinContent(iBin) < 1.0) test = -1.0;
+      }
+    }
   }
   return test ; 
 }  
@@ -114,7 +120,6 @@ Double_t AliVZEROQAChecker::CheckEsds(TObjArray * list) const
 {
   
 //  check the ESDs for missing disk or ring
-
 //  printf(" Number of entries in ESD list = %d\n", list->GetEntries()); 
 //  list->Print();
 
