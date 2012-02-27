@@ -46,42 +46,53 @@ AliAnalysisTaskMuonTreeBuilder::AliAnalysisTaskMuonTreeBuilder() :
   fNumMuonTracks(0),
   fNumSPDTracklets(0),
   fNumContributors(0),
-  fVertex(),
-  fpT(),
-  fE(),
-  fpx(),
-  fpy(),
-  fpz(),
-  fpxUncorr(),
-  fpyUncorr(),
-  fpzUncorr(),
-  fy(),
-  feta(),
-  fphi(),
-  fMatchTrig(),
-  fTrackChi2(),
-  fMatchTrigChi2(),
-  fDCA(),
-  fCharge(),
-  fMuFamily(),
-  fRAtAbsEnd(),
-  fNumDimuons(0),
-  fDimuonConstituent(),
-  fpTdimuon(),
-  fpxdimuon(),
-  fpydimuon(),
-  fpzdimuon(),
-  fiMassdimuon(),
-  fcostCS(),
-  fcostHE(),
-  fphiCS(),
-  fPDG(),
-  fPDGmother(),
-  fPDGdimu()
+  fNumDimuons(0)
 {
   //
   //Default ctor
   //
+  for(Int_t i=0; i<45; i++){
+    if(i<3) fVertex[i]=-666;
+    if(i<10){
+      fDCA[i]=-666;		
+      fpT[i]=-666;		
+      fE[i]=-666;			
+      fpx[i]=-666;		
+      fpy[i]=-666;		
+      fpz[i]=-666;		
+      fpxUncorr[i]=-666;		
+      fpyUncorr[i]=-666;		
+      fpzUncorr[i]=-666;		
+      fy[i]=-666;			
+      feta[i]=-666;		
+      fphi[i]=-666;		
+      fMatchTrig[i]=-666;		
+      fTrackChi2[i]=-666;		
+      fMatchTrigChi2[i]=-666;	
+      fCharge[i]=-666;		
+      fMuFamily[i]=-666;		
+      fRAtAbsEnd[i]=-666;	
+      fPDG[i]=-666;		
+      fPDGmother[i]=-666;		
+    }	
+    
+    fpTdimuon[i]=-666;		
+    fpxdimuon[i]=-666;		
+    fpydimuon[i]=-666;		
+    fpzdimuon[i]=-666;		
+    fydimuon[i]=-666;		
+    fiMassdimuon[i]=-666;	
+    fcostCS[i]=-666;		
+    fcostHE[i]=-666;		
+    fphiCS[i]=-666;		
+    fphiHE[i]=-666;		
+    fPDGdimu[i]=-666;		
+
+    for(Int_t j=0; j<2; j++){fDimuonConstituent[i][j]=-666;}
+
+  }
+  snprintf(fTrigClass,100," ");
+
 }
 //___________________________________________________________________________
 AliAnalysisTaskMuonTreeBuilder::AliAnalysisTaskMuonTreeBuilder(const Char_t* name) :
@@ -95,43 +106,54 @@ AliAnalysisTaskMuonTreeBuilder::AliAnalysisTaskMuonTreeBuilder(const Char_t* nam
   fNumMuonTracks(0),
   fNumSPDTracklets(0),
   fNumContributors(0),
-  fVertex(),
-  fpT(),
-  fE(),
-  fpx(),
-  fpy(),
-  fpz(),
-  fpxUncorr(),
-  fpyUncorr(),
-  fpzUncorr(),
-  fy(),
-  feta(),
-  fphi(),
-  fMatchTrig(),
-  fTrackChi2(),
-  fMatchTrigChi2(),
-  fDCA(),
-  fCharge(),
-  fMuFamily(),
-  fRAtAbsEnd(),
-  fNumDimuons(0),
-  fDimuonConstituent(),
-  fpTdimuon(),
-  fpxdimuon(),
-  fpydimuon(),
-  fpzdimuon(),
-  fiMassdimuon(),
-  fcostCS(),
-  fcostHE(),
-  fphiCS(),
-  fPDG(),
-  fPDGmother(),
-  fPDGdimu()
+  fNumDimuons(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskMuonTreeBuilder","Calling Constructor");
+
+  for(Int_t i=0; i<45; i++){
+    if(i<3) fVertex[i]=-666;
+    if(i<10){
+      fDCA[i]=-666;		
+      fpT[i]=-666;		
+      fE[i]=-666;			
+      fpx[i]=-666;		
+      fpy[i]=-666;		
+      fpz[i]=-666;		
+      fpxUncorr[i]=-666;		
+      fpyUncorr[i]=-666;		
+      fpzUncorr[i]=-666;		
+      fy[i]=-666;			
+      feta[i]=-666;		
+      fphi[i]=-666;		
+      fMatchTrig[i]=-666;		
+      fTrackChi2[i]=-666;		
+      fMatchTrigChi2[i]=-666;	
+      fCharge[i]=-666;		
+      fMuFamily[i]=-666;		
+      fRAtAbsEnd[i]=-666;	
+      fPDG[i]=-666;		
+      fPDGmother[i]=-666;		
+    }	
+    
+    fpTdimuon[i]=-666;		
+    fpxdimuon[i]=-666;		
+    fpydimuon[i]=-666;		
+    fpzdimuon[i]=-666;		
+    fydimuon[i]=-666;		
+    fiMassdimuon[i]=-666;	
+    fcostCS[i]=-666;		
+    fcostHE[i]=-666;		
+    fphiCS[i]=-666;		
+    fphiHE[i]=-666;		
+    fPDGdimu[i]=-666;		
+
+    for(Int_t j=0; j<2; j++){fDimuonConstituent[i][j]=-666;}
+
+  }
+  snprintf(fTrigClass,100," ");
 
   DefineOutput(1,TTree::Class());
 }
@@ -166,6 +188,47 @@ AliAnalysisTaskMuonTreeBuilder::AliAnalysisTaskMuonTreeBuilder(const AliAnalysis
   //
   // Copy Constructor										FIDUCIAL REGIONS?
   //
+  for(Int_t i=0; i<45; i++){
+    if(i<3) fVertex[i]=-666;
+    if(i<10){
+      fDCA[i]=-666;		
+      fpT[i]=-666;		
+      fE[i]=-666;			
+      fpx[i]=-666;		
+      fpy[i]=-666;		
+      fpz[i]=-666;		
+      fpxUncorr[i]=-666;		
+      fpyUncorr[i]=-666;		
+      fpzUncorr[i]=-666;		
+      fy[i]=-666;			
+      feta[i]=-666;		
+      fphi[i]=-666;		
+      fMatchTrig[i]=-666;		
+      fTrackChi2[i]=-666;		
+      fMatchTrigChi2[i]=-666;	
+      fCharge[i]=-666;		
+      fMuFamily[i]=-666;		
+      fRAtAbsEnd[i]=-666;	
+      fPDG[i]=-666;		
+      fPDGmother[i]=-666;		
+    }	
+    
+    fpTdimuon[i]=-666;		
+    fpxdimuon[i]=-666;		
+    fpydimuon[i]=-666;		
+    fpzdimuon[i]=-666;		
+    fydimuon[i]=-666;		
+    fiMassdimuon[i]=-666;	
+    fcostCS[i]=-666;		
+    fcostHE[i]=-666;		
+    fphiCS[i]=-666;		
+    fphiHE[i]=-666;		
+    fPDGdimu[i]=-666;		
+
+    for(Int_t j=0; j<2; j++){fDimuonConstituent[i][j]=-666;}
+
+  }
+  snprintf(fTrigClass,100," ");
 }
 
 //___________________________________________________________________________
