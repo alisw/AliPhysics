@@ -4,7 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Bool_t test = kTRUE, Int_t material = 0) {
+void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Bool_t test = kFALSE, Int_t material = 0, Bool_t altV0Scale = kFALSE) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -18,8 +18,10 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Boo
 
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
+    gSystem->Load("libPWGUDbase.so");
 
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    gSystem->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
    gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
@@ -72,7 +74,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Boo
   if(submit){
 
     gROOT->LoadMacro("CreateAlienHandlerHadEt.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material);//integer dataset, boolean isData, bool submit-in-test-mode
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material,altV0Scale);//integer dataset, boolean isData, bool submit-in-test-mode, bool use alternatve V0 scaling
       if (!alienHandler) return;
       mgr->SetGridHandler(alienHandler);
   }
@@ -88,7 +90,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Boo
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
+  if(data) AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
 
   AliCentralitySelectionTask *centTask;
@@ -119,7 +121,8 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Boo
        else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11b1a.pp.ForSimulations.root","corrections.root",kTRUE);}
      }
      if(dataset==20111){//pp 2.76 TeV
-       gSystem->CopyFile("ConfigHadEtMonteCarlopp276TeV.C","ConfigHadEtMonteCarlo.C",kTRUE);
+       if(altV0Scale)gSystem->CopyFile("ConfigHadEtMonteCarlopp276TeVAlt.C","ConfigHadEtMonteCarlo.C",kTRUE);
+       else{gSystem->CopyFile("ConfigHadEtMonteCarlopp276TeV.C","ConfigHadEtMonteCarlo.C",kTRUE);}
        gSystem->CopyFile("ConfigHadEtReconstructedpp276TeV.C","ConfigHadEtReconstructed.C",kTRUE);
        if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11b10a.pp.ForData.root","corrections.root",kTRUE);}
        else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11b10a.pp.ForSimulations.root","corrections.root",kTRUE);}
