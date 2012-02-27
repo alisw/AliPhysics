@@ -79,8 +79,8 @@ void AliAnaConvCorrPion::CreateHistograms() {
 
 
 ///________________________________________________________________________________
-void AliAnaConvCorrPion::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t isolated) {
+void AliAnaConvCorrPion::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
   //Fill histograms counting triggers
-  TH2F *hpt = dynamic_cast<TH2F*>(GetHistograms()->FindObject(Form("%s_iso_%d_ptVsmass", fName.Data(), isolated)));
+  TH2F *hpt = dynamic_cast<TH2F*>(GetHistograms()->FindObject(Form("%s_iso_%d_ptVsmass", fName.Data(), leading)));
   if(hpt) hpt->Fill(particle->M(), particle->Pt());
 }

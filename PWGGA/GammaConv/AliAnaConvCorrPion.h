@@ -29,7 +29,7 @@ public:
 
 void CreateHistograms();
 
-  void FillTriggerCounters(const AliAODConversionParticle * particle, Int_t isolated);
+  void FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading);
   
  private:
 

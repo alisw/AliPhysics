@@ -54,13 +54,12 @@ AliAnaConvCorrBase::AliAnaConvCorrBase(TString name, TString title = "title") : 
   fTrackSparse(NULL)
 {
   //Constructor
+  fAxesList.SetOwner(kFALSE);
+  fTrackAxisList.SetOwner(kFALSE);
+  fTrigAxisList.SetOwner(kFALSE);
 
   SetUpDefaultBins();
-  
-  fAxesList.SetOwner(kTRUE);
-  fTrackAxisList.SetOwner(kTRUE);
-  fTrigAxisList.SetOwner(kTRUE);
-
+ 
 }
 
 
