@@ -38,23 +38,16 @@ AliAnalysisTaskDimuonCFContainerBuilder::AliAnalysisTaskDimuonCFContainerBuilder
   fNevt(0),
   fBeamEnergy(3500.),
   fOutput(0x0),
-  fChi2Track(),
-  fChi2MatchTrig(),
-  fPtSingMuCut(),
-  fThetaSingMuCut(),
-  fzPrimVertexSPD(),
   fCutOnzVtxSPD(kFALSE),
-  fNContributors(),
   fCutOnNContributors(kFALSE),
   fTrigClassMuon(""),
   fTrigClassInteraction(""),
-  fTrigClassMuonSide(),
-  fTrigClassInteractionSide(),
   fDistinguishTrigClass(kFALSE)
 {
   
   //Default constructor
-  
+  fNContributors[0]=0;
+  fNContributors[0]=10000;
   Double_t chilims[2]={0.,10000.};
   Double_t ptlims[2]={0.,100.};
   Double_t thetalims[2]={0.,180.};
@@ -82,24 +75,19 @@ AliAnalysisTaskDimuonCFContainerBuilder::AliAnalysisTaskDimuonCFContainerBuilder
   fNevt(0),
   fBeamEnergy(3500.),
   fOutput(0x0),
-  fChi2Track(),
-  fChi2MatchTrig(),
-  fPtSingMuCut(),
-  fThetaSingMuCut(),
-  fzPrimVertexSPD(),
   fCutOnzVtxSPD(kFALSE),
-  fNContributors(),
   fCutOnNContributors(kFALSE),
   fTrigClassMuon(""),
   fTrigClassInteraction(""),
-  fTrigClassMuonSide(),
-  fTrigClassInteractionSide(),
   fDistinguishTrigClass(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskDimuonCFContainerBuilder","Calling Constructor");
+
+  fNContributors[0]=0;
+  fNContributors[0]=10000;
 
   SetReadAODData(readaod);
   SetReadMCinfo(readMC);
@@ -162,6 +150,19 @@ AliAnalysisTaskDimuonCFContainerBuilder::AliAnalysisTaskDimuonCFContainerBuilder
 {
   
   // Copy Constructor
+  fNContributors[0]=0;
+  fNContributors[0]=10000;
+
+
+  Double_t chilims[2]={0.,10000.};
+  Double_t ptlims[2]={0.,100.};
+  Double_t thetalims[2]={0.,180.};
+  Double_t vtxlims[2]={-1000.,1000.};
+  SetChi2Limits(chilims);
+  SetChi2MatchLimits(chilims);
+  SetPtSingMuLimits(ptlims);
+  SetThetaSingMuLimits(thetalims);
+  SetZprimVertLimits(vtxlims);
   
 }
 
