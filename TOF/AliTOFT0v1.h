@@ -36,7 +36,7 @@ public:
 /*   void  Print(Option_t* option) const ; */
 
   void   SetTimeResolution(Float_t /* timeres */){}; // obsolete
-
+  void SetOptimization(Bool_t flag=kFALSE){fOptFlag=flag;};
   void Init(AliESDEvent *event); // init
 
  private:
@@ -56,14 +56,17 @@ public:
   Float_t fTimeCorr;  // global time resolution used to calculate T0
   AliESDEvent* fEvent;      //evento per il quale si vuole calcolare il T0
   Double_t fT0SigmaT0def[6]; // array with the event information ([0]=event time -- [1] = sigma -- [2] = tracks on the TOF -- [3] = tracks used for the event time)
+
+  Int_t fLookupPowerThree[15]; //! lookup table for power 3 to speed up the code
   
   AliESDpid *fPIDesd; // class with the detector response
 
   TObjArray *fTracks;   //! array of tracks
   TObjArray *fGTracks;  //! array of good tracks
   TObjArray *fTracksT0; //! array of tracks usefull for T0 estimate
+  Bool_t fOptFlag;    // use optimized code
 
-  ClassDef(AliTOFT0v1,4);  // Calculate the time zero using TOF detector */
+  ClassDef(AliTOFT0v1,5);  // Calculate the time zero using TOF detector */
   
 };
 

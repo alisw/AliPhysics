@@ -54,6 +54,9 @@ public:
   
   void WriteInESD(AliESDEvent *esd);
 
+  void SetTOFT0algorithm(Int_t flag=1){fTOFT0algorithm=flag;};
+  Int_t GetTOFT0algorithm() const {return fTOFT0algorithm;};
+
  private:
   
   AliTOFT0maker(const AliTOFT0maker &);
@@ -85,8 +88,9 @@ public:
 
   Float_t fT0spreadExt;
   Float_t fT0fillExt; // t0spread if set 
+  Int_t  fTOFT0algorithm; // select algorithm (1 default, 2 speed up)
 
-  ClassDef(AliTOFT0maker,2);  // Calculate the time zero using TOF detector */
+  ClassDef(AliTOFT0maker,3);  // Calculate the time zero using TOF detector */
   
 };
 

@@ -53,6 +53,8 @@
 // Different Selections for pp and Pb-Pb: Momentum Range, Max Time, # pions 
 //-- Author: F. Pierella
 //-- Mod By Silvia Arcelli, Francesco Noferini, Barbara Guerzoni
+//-- AliTOFT0v1 contains code speed up provided by Jens Wiechula (look-up table
+//   for Power3)
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AliESDtrack.h"
@@ -74,7 +76,8 @@ AliTOFT0v1::AliTOFT0v1(AliESDpid *extPID):
   fPIDesd(extPID),
   fTracks(new TObjArray(10)),
   fGTracks(new TObjArray(10)),
-  fTracksT0(new TObjArray(10))
+  fTracksT0(new TObjArray(10)),
+  fOptFlag(kFALSE)
 {
   //
   // default constructor
@@ -86,7 +89,13 @@ AliTOFT0v1::AliTOFT0v1(AliESDpid *extPID):
   }
 
   Init(NULL);
-    
+
+  //initialise lookup table for power 3
+  // a set should only have 10 tracks a t maximum
+  // so up to 15 should be more than enough
+  for (Int_t i=0; i<15; ++i) {
+    fLookupPowerThree[i]=ToCalculatePower(3,i);
+  }
 }
 
 //____________________________________________________________________________ 
@@ -99,7 +108,8 @@ AliTOFT0v1::AliTOFT0v1(AliESDEvent* event,AliESDpid *extPID):
   fPIDesd(extPID),
   fTracks(new TObjArray(10)),
   fGTracks(new TObjArray(10)),
-  fTracksT0(new TObjArray(10))
+  fTracksT0(new TObjArray(10)),
+  fOptFlag(kFALSE)
 {
   //
   // real constructor
@@ -111,7 +121,10 @@ AliTOFT0v1::AliTOFT0v1(AliESDEvent* event,AliESDpid *extPID):
   }
 
   Init(event);
-
+  //initialise lookup table for power 3
+  for (Int_t i=0; i<15; ++i) {
+    fLookupPowerThree[i]=Int_t(TMath::Power(3,i));
+  }
 }
 //____________________________________________________________________________ 
 AliTOFT0v1& AliTOFT0v1::operator=(const AliTOFT0v1 &tzero)
@@ -144,6 +157,8 @@ AliTOFT0v1& AliTOFT0v1::operator=(const AliTOFT0v1 &tzero)
 
   for (Int_t ii=0; ii<tzero.fTracksT0->GetEntries(); ii++)
     fTracksT0->AddLast(tzero.fTracksT0->At(ii));
+  
+  fOptFlag=tzero.fOptFlag;
 
   return *this;
 }
@@ -171,6 +186,7 @@ AliTOFT0v1::~AliTOFT0v1()
     delete fTracksT0;
     fTracksT0=0x0;
   }
+
 
 }
 //____________________________________________________________________________ 
@@ -321,6 +337,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	
 	Int_t   assparticle[nmaxtracksinsetMax];
 	Float_t exptof[nmaxtracksinsetMax][3];
+	Float_t momErr[nmaxtracksinsetMax][3];
 	Float_t timeofflight[nmaxtracksinsetMax];
 	Float_t momentum[nmaxtracksinsetMax];
 	Float_t timezero[nmaxtracksinsetMax];
@@ -381,8 +398,15 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  exptof[j][2]=exptime[4]*1.E-3+fTimeCorr;
 	  momentum[j]=mom;
 	  assparticle[j]=3;
-	  
-	} //end  for (Int_t j=0; j<ntracksinsetmy; j++) {
+
+	  // in principle GetMomError only depends on two indices k=imass[j] and j itslef (see blow in the ncombinatorial loop)
+	  // so it should be possible to make a lookup in order to speed up the code:
+	  if (fOptFlag) {
+	    momErr[j][0]=GetMomError(0, momentum[j], exptof[j][0]);
+	    momErr[j][1]=GetMomError(1, momentum[j], exptof[j][1]);
+	    momErr[j][2]=GetMomError(2, momentum[j], exptof[j][2]);
+	  }
+  } //end  for (Int_t j=0; j<ntracksinsetmy; j++) {
 	
 	for (Int_t itz=0; itz<ntracksinsetmy;itz++) {
 	  beta[itz]=momentum[itz]/sqrt(massarray[0]*massarray[0]
@@ -403,15 +427,19 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	for (Int_t j=0; j<ntracksinsetmy; j++) {
 	  imass[j] = 3;
 	}
-	
-	Int_t ncombinatorial = ToCalculatePower(3,ntracksinsetmy);
-	
+
+	Int_t ncombinatorial;
+	if (fOptFlag) ncombinatorial = fLookupPowerThree[ntracksinsetmy];
+	else ncombinatorial = ToCalculatePower(3,ntracksinsetmy);
+
+
 	// Loop on mass hypotheses
 	for (Int_t k=0; k < ncombinatorial;k++) {
 	  for (Int_t j=0; j<ntracksinsetmy; j++) {
-	    imass[j] = (k % ToCalculatePower(3,ntracksinsetmy-j))/ToCalculatePower(3,ntracksinsetmy-j-1);
+	    imass[j] = (k % fLookupPowerThree[ntracksinsetmy-j])/fLookupPowerThree[ntracksinsetmy-j-1];
 	    texp[j]=exptof[j][imass[j]];
-	    dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
+            if (fOptFlag) dtexp[j]=momErr[j][imass[j]]; // see comments above in the initialisation of momErr
+ 	    else dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
 	  }
 
 	  Float_t sumAllweights=0.;
@@ -491,9 +519,10 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  //	  printf("Redo T0\n");
 	  for (Int_t k=0; k < ncombinatorial;k++) {
 	    for (Int_t j=0; j<ntracksinsetmy; j++) {
-	      imass[j] = (k % ToCalculatePower(3,ntracksinsetmy-j)) / ToCalculatePower(3,ntracksinsetmy-j-1);
+	      imass[j] = (k % fLookupPowerThree[ntracksinsetmy-j]) / fLookupPowerThree[ntracksinsetmy-j-1];
 	      texp[j]=exptof[j][imass[j]];
-	      dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
+	      if (fOptFlag) dtexp[j]=momErr[j][imass[j]]; // see comments above in the initialisation of momErr
+	      else dtexp[j]=GetMomError(imass[j], momentum[j], texp[j]);
 	    }
 	    
 	    Float_t sumAllweights=0.;

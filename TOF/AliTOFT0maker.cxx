@@ -73,7 +73,8 @@ AliTOFT0maker::AliTOFT0maker():
   fKmask(0),
   fT0width(150.),
   fT0spreadExt(-1.),
-  fT0fillExt(0)
+  fT0fillExt(0),
+  fTOFT0algorithm(1)
 {
   // ctr
   fCalculated[0] = 0;
@@ -109,7 +110,8 @@ AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
     fKmask(0),
     fT0width(150.),
     fT0spreadExt(-1.),
-    fT0fillExt(0)
+    fT0fillExt(0),
+    fTOFT0algorithm(1)
 {
   // ctr
   fCalculated[0] = 0;
@@ -138,7 +140,6 @@ AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
 AliTOFT0maker::~AliTOFT0maker()
 {
   // dtor
-
   delete fT0TOF;
   if (!fExternalPIDFlag) delete fPIDesd;
 }
@@ -184,9 +185,10 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
 
   Float_t thrGood = TMath::Max(Float_t(500.),fT0width*3);
 
-  fT0TOF->Init(esd);
-  AliTOFT0v1* t0maker= fT0TOF;
 
+  fT0TOF->Init(esd);
+  AliTOFT0v1* t0maker = fT0TOF;
+  if (fTOFT0algorithm==2) t0maker->SetOptimization(kTRUE);
   t0maker->DefineT0("all",1.5,3.0);
   t0tof[0] = t0maker->GetResult(0);
   t0tof[1] = t0maker->GetResult(1);
