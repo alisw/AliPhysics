@@ -57,7 +57,10 @@ delete calibSummary;
 #include <AliCTPTimeParams.h>
 #include <AliTPCcalibSummary.h>
 #include <TStatToolkit.h>
-#include <TCut.h>
+#include <TCut.h> 
+#include "AliTPCCalibGlobalMisalignment.h"
+#include "AliTPCExBTwist.h"
+#include "AliTPCComposedCorrection.h"
 //
 //
 //
@@ -140,7 +143,7 @@ void AliTPCcalibSummary::Process(const char * runList, Int_t first, Int_t last){
       if (startTime>0&&endTime>0) break;
     }
     AliDCSSensorArray* goofieArray = fCalibDB->GetGoofieSensors(irun);	
-    if (goofieArray) fDButil->FilterGoofie(goofieArray,0.5,4.,6.85,7.05,fPcstream);
+    if (goofieArray) fDButil->FilterGoofie(goofieArray,0.5,4.,4,10,fPcstream);
     // don't filter goofie for the moment
     ProcessRun(irun, startTime,endTime);
   }
@@ -314,7 +317,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     //
     TVectorD voltagesIROC(36);
     TVectorD voltagesOROC(36); 
-    for(Int_t j=1; j<36; j++) voltagesIROC[j-1] = fCalibDB->GetChamberHighVoltage(irun, j,itime);
+      for(Int_t j=0; j<36; j++) voltagesIROC[j] = fCalibDB->GetChamberHighVoltage(irun, j,itime); 
     for(Int_t j=36; j<72; j++) voltagesOROC[j-36] = fCalibDB->GetChamberHighVoltage(irun, j,itime);
     Double_t voltIROC = TMath::Median(36, voltagesIROC.GetMatrixArray());
     Double_t voltOROC = TMath::Median(36, voltagesOROC.GetMatrixArray());
@@ -526,6 +529,34 @@ void AliTPCcalibSummary::ProcessDrift(Int_t run, Int_t timeStamp){
     "slaserA="<<slaserA<<
     "slaserC="<<slaserC<<
     "scosmic="<<scosmic;
+
+  static TGeoMatrix * matrixAlign=0;
+  static Double_t twistX=0;
+  static Double_t twistY=0;
+  if (matrixAlign==0){
+    AliTPCComposedCorrection * corr =  (AliTPCComposedCorrection *)array->FindObject("FitCorrectionTime");
+    if (!corr) {
+      matrixAlign=new TGeoHMatrix;
+      
+    }
+    if (corr){
+       AliTPCCalibGlobalMisalignment *align = (AliTPCCalibGlobalMisalignment*)corr->GetCorrections()->FindObject("FitAlignTime");
+       AliTPCExBTwist *twist  = (AliTPCExBTwist*)corr->GetCorrections()->FindObject("FitExBTwistTime");
+       if (twist){
+	 twistX=twist->GetXTwist();
+	 twistY=twist->GetYTwist();
+	 //delete twist;
+       }
+       if (align && align->GetAlignGlobal()){
+	 matrixAlign =  (TGeoMatrix*) (align->GetAlignGlobal()->Clone());	 
+	 //delete align;
+       }
+    }    
+  }
+  (*fPcstream)<<"dcs"<<
+    "alignTime.="<<matrixAlign<<
+    "twistX="<<twistX<<
+    "twistY="<<twistY;
 }
 
 void AliTPCcalibSummary::ProcessDriftCE(Int_t run,Int_t timeStamp){
