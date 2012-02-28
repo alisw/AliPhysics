@@ -137,6 +137,9 @@ class AliMUONAlignmentTrackRecord:public TObject
 
 public:
 
+	/// constructor
+  AliMUONAlignmentTrackRecord(TRootIOCtor* dummy);
+	
   /// constructor
   AliMUONAlignmentTrackRecord( void );
 

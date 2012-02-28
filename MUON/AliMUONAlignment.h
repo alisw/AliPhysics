@@ -32,6 +32,8 @@ class AliMUONAlignment:public TObject
 
   /// constructor
   AliMUONAlignment();
+	/// rootio constructor
+	AliMUONAlignment(TRootIOCtor* dummy);
 
   /// destructor
   virtual ~AliMUONAlignment();

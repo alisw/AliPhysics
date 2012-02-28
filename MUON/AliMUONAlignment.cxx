@@ -104,6 +104,31 @@ AliMUONAlignment::AliMUONAlignment()
 }
 
 //_____________________________________________________________________
+AliMUONAlignment::AliMUONAlignment(TRootIOCtor* /*dummy*/)
+: TObject(),
+fBFieldOn(kFALSE),
+fStartFac(0.),
+fResCutInitial(0.),
+fResCut(0.),
+fMillepede(0),
+fTrack(0),
+fCluster(0),
+fTrackParam(0),
+fNGlobal(0),
+fNLocal(0),
+fNStdDev(0),
+fDetElemId(0),
+fDetElemNumber(0),
+fPhi(0.),
+fCosPhi(0.),
+fSinPhi(0.),
+fTrackRecord(),
+fTransform(0)
+{
+	/// Root IO constructor
+}
+
+//_____________________________________________________________________
 AliMUONAlignment::~AliMUONAlignment()
 {}
 

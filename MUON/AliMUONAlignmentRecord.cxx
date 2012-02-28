@@ -73,10 +73,17 @@ void AliMUONAlignmentClusterRecord::Print( Option_t* ) const
 }
 
 //__________________________________________________________________________
-AliMUONAlignmentTrackRecord::AliMUONAlignmentTrackRecord( void ):
-  fClusterRecords (new TClonesArray( "AliMUONAlignmentClusterRecord", fSize ) ),
+AliMUONAlignmentTrackRecord::AliMUONAlignmentTrackRecord( TRootIOCtor* /*dummy*/ ):
+  fClusterRecords (0x0),
   fClusterCount( 0 )
   {}
+
+//__________________________________________________________________________
+AliMUONAlignmentTrackRecord::AliMUONAlignmentTrackRecord( void ):
+fClusterRecords (new TClonesArray( "AliMUONAlignmentClusterRecord", fSize ) ),
+fClusterCount( 0 )
+{}
+
 
 //__________________________________________________________________________
 AliMUONAlignmentTrackRecord::AliMUONAlignmentTrackRecord( const AliMUONAlignmentTrackRecord& other ):
