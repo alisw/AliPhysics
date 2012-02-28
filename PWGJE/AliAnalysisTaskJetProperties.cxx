@@ -111,10 +111,14 @@ ClassImp(AliAnalysisTaskJetProperties)
    ,fProAreaCh(0)
    ,fh3PtDelRNchSum(0)
    ,fh3PtDelRPtSum(0)
+   ,fProDiffJetShape(0)
+   ,fProIntJetShape(0)
 {
   for(Int_t ii=0; ii<5; ii++){
-    fProDelRNchSum[ii] = NULL;  
-    fProDelRPtSum[ii]  = NULL;  
+    fProDelRNchSum[ii]    = NULL;  
+    fProDelRPtSum[ii]     = NULL;
+    fProDiffJetShapeA[ii] = NULL;
+    fProIntJetShapeA[ii]  = NULL;
   }//ii loop
   // default constructor
 }
@@ -176,10 +180,14 @@ AliAnalysisTaskJetProperties::AliAnalysisTaskJetProperties(const char *name)
   ,fProAreaCh(0)
   ,fh3PtDelRNchSum(0)
   ,fh3PtDelRPtSum(0)
+  ,fProDiffJetShape(0)
+  ,fProIntJetShape(0)
 {
   for(Int_t ii=0; ii<5; ii++){
-    fProDelRNchSum[ii] = NULL;  
-    fProDelRPtSum[ii]  = NULL;  
+    fProDelRNchSum[ii]    = NULL;  
+    fProDelRPtSum[ii]     = NULL;  
+    fProDiffJetShapeA[ii] = NULL;
+    fProIntJetShapeA[ii]  = NULL;
   }//ii loop
   // constructor
   DefineOutput(1,TList::Class());
@@ -354,7 +362,11 @@ void AliAnalysisTaskJetProperties::UserCreateOutputObjects()
 				   kNbinsPtSliceJS, xMinPtSliceJS, xMaxPtSliceJS,
 				   kNbinsDelR1D,    xMinDelR1D,    xMaxDelR1D,
 				   kNbinsPt,        xMinPt,        xMaxPt);
-  
+  fProDiffJetShape      = new TProfile("DiffJetShape","DiffJetShape",
+				  10,0.0,1.0,0.0,250.0);
+  fProIntJetShape       = new TProfile("IntJetShape","IntJetShape",
+				  10,0.0,1.0,0.0,250.0);
+
   TString title;
   for(Int_t ii=0; ii<5; ii++){
     if(ii==0)title = "_JetPt20to30";
@@ -373,9 +385,23 @@ void AliAnalysisTaskJetProperties::UserCreateOutputObjects()
     fProDelRNchSum[ii] ->GetYaxis()->SetTitle("<NchSum>");
     fProDelRPtSum[ii]  ->GetXaxis()->SetTitle("R");  
     fProDelRPtSum[ii]  ->GetYaxis()->SetTitle("<PtSum>");
+
+    fProDiffJetShapeA[ii] = new TProfile(Form("DiffJetShape%s",title.Data()),Form("DiffJetShape%s",title.Data()),
+					 10,0.0,1.0,0.0,250.0);
+    fProIntJetShapeA[ii]  = new TProfile(Form("IntJetShape%s",title.Data()),Form("IntJetShape%s",title.Data()),
+					 10,0.0,1.0,0.0,250.0);
+
+    fProDiffJetShapeA[ii]->GetXaxis()->SetTitle("R"); 
+    fProDiffJetShapeA[ii]->GetYaxis()->SetTitle("Diff jet shape"); 
+    fProIntJetShapeA[ii]->GetXaxis()->SetTitle("R");  
+    fProIntJetShapeA[ii]->GetYaxis()->SetTitle("Integrated jet shape");  
+    
     fCommonHistList->Add(fProDelRNchSum[ii]);
     fCommonHistList->Add(fProDelRPtSum[ii]);
-  }//ii loop
+    fCommonHistList->Add(fProDiffJetShapeA[ii]);
+    fCommonHistList->Add(fProIntJetShapeA[ii]);
+  
+}//ii loop
   
   fh2EtaJet     ->GetXaxis()->SetTitle("JetPt");  fh2EtaJet     ->GetYaxis()->SetTitle("JetEta");
   fh2PhiJet     ->GetXaxis()->SetTitle("JetPt");  fh2PhiJet     ->GetYaxis()->SetTitle("JetPhi");
@@ -402,6 +428,10 @@ void AliAnalysisTaskJetProperties::UserCreateOutputObjects()
   fProAreaCh            ->GetXaxis()->SetTitle("JetPt");  fProAreaCh            ->GetYaxis()->SetTitle("<jet area>");
   fh3PtDelRNchSum       ->GetXaxis()->SetTitle("JetPt");  fh3PtDelRNchSum       ->GetYaxis()->SetTitle("R");  fh3PtDelRNchSum->GetZaxis()->SetTitle("NchSum");
   fh3PtDelRPtSum        ->GetXaxis()->SetTitle("JetPt");  fh3PtDelRPtSum        ->GetYaxis()->SetTitle("R");  fh3PtDelRPtSum ->GetZaxis()->SetTitle("PtSum");
+  fProDiffJetShape->GetXaxis()->SetTitle("R"); 
+  fProDiffJetShape->GetYaxis()->SetTitle("Diff jet shape"); 
+  fProIntJetShape->GetXaxis()->SetTitle("R");  
+  fProIntJetShape->GetYaxis()->SetTitle("Integrated jet shape");  
   
   fCommonHistList->Add(fh1EvtSelection);
   fCommonHistList->Add(fh1VertexNContributors);
@@ -435,7 +465,8 @@ void AliAnalysisTaskJetProperties::UserCreateOutputObjects()
   fCommonHistList->Add(fProAreaCh); 
   fCommonHistList->Add(fh3PtDelRNchSum); 
   fCommonHistList->Add(fh3PtDelRPtSum); 
-  
+  fCommonHistList->Add(fProDiffJetShape);
+  fCommonHistList->Add(fProIntJetShape);
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fCommonHistList->GetEntries(); ++i){
     TH1 *h1 = dynamic_cast<TH1*>(fCommonHistList->At(i));
@@ -797,11 +828,14 @@ void AliAnalysisTaskJetProperties::FillJetShape(TList *jetlist){
     JetPhi = jet->Phi();
     JetPt  = jet->Pt();
     fh1PtLeadingJet->Fill(JetPt);
-    Float_t NchSumA[50]     = {0.};
-    Float_t PtSumA[50]      = {0.};
-    Float_t delRPtSum80pc   = 0;
-    Float_t delRNtrkSum80pc = 0;
-    
+    Float_t NchSumA[50]         = {0.};
+    Float_t PtSumA[50]          = {0.};
+    Float_t delRPtSum80pc       = 0;
+    Float_t delRNtrkSum80pc     = 0;
+    Float_t PtSumDiffShape[10]  = {0.0};
+    Float_t PtSumIntShape[10]   = {0.0};
+    Int_t kNbinsR               = 10;
+
     Int_t nJT = GetListOfJetTracks(fTrackList,jet);
     Int_t nJetTracks = 0;
     if(nJT>=0) nJetTracks = fTrackList->GetEntries();
@@ -858,6 +892,7 @@ void AliAnalysisTaskJetProperties::FillJetShape(TList *jetlist){
       
       DelEta = TMath::Abs(JetEta - TrackEta);
       DelPhi = TMath::Abs(JetPhi - TrackPhi);
+      if(DelPhi>TMath::Pi())DelPhi = TMath::Abs(DelPhi-TMath::TwoPi());
       DelR   = TMath::Sqrt(DelEta*DelEta + DelPhi*DelPhi);
       AreaJ  = TMath::Pi()*DelR*DelR;
       
@@ -870,6 +905,17 @@ void AliAnalysisTaskJetProperties::FillJetShape(TList *jetlist){
       trackEtaA[j] = TrackEta;
       trackPhiA[j] = TrackPhi;
       
+      //calculating diff and integrated jet shapes
+      Float_t kDeltaR = 0.1;
+      Float_t RMin    = kDeltaR/2.0;
+      Float_t RMax    = kDeltaR/2.0;
+      Float_t tmpR    = 0.05;
+      for(Int_t ii1=0; ii1<kNbinsR;ii1++){
+	if((DelR > (tmpR-RMin)) && (DelR <=(tmpR+RMax)))PtSumDiffShape[ii1]+= TrackPt;
+	if(DelR>0.0 && DelR <=(tmpR+RMax))PtSumIntShape[ii1]+= TrackPt;
+	tmpR += 0.1;
+      }//ii1 loop
+      
       for(Int_t ibin=1; ibin<=50; ibin++){
 	Float_t xlow = 0.02*(ibin-1);
 	Float_t xup  = 0.02*ibin;
@@ -880,6 +926,29 @@ void AliAnalysisTaskJetProperties::FillJetShape(TList *jetlist){
       }//for ibin loop
     }//track loop
     fTrackList->Clear();
+    
+    //---------------------
+    Float_t tmp1R = 0.05;
+    for(Int_t jj1=0; jj1<kNbinsR;jj1++){
+      if(JetPt>20 && JetPt<=100){
+	fProDiffJetShape->Fill(tmp1R,PtSumDiffShape[jj1]/JetPt);
+	fProIntJetShape ->Fill(tmp1R,PtSumIntShape[jj1]/JetPt);
+      }
+      Float_t jetPtMin0=20.0; Float_t jetPtMax0=30.0;
+      for(Int_t k=0; k<5; k++){
+	if(k==0){jetPtMin0=20.0;jetPtMax0=30.0;}
+	if(k==1){jetPtMin0=30.0;jetPtMax0=40.0;}
+	if(k==2){jetPtMin0=40.0;jetPtMax0=60.0;}
+	if(k==3){jetPtMin0=60.0;jetPtMax0=80.0;}
+	if(k==4){jetPtMin0=80.0;jetPtMax0=100.0;}
+	if(JetPt>jetPtMin0 && JetPt<=jetPtMax0){
+	  fProDiffJetShapeA[k]->Fill(tmp1R,PtSumDiffShape[jj1]/JetPt);
+	  fProIntJetShapeA[k] ->Fill(tmp1R,PtSumIntShape[jj1]/JetPt);
+	}//if
+      }//k loop
+      tmp1R +=0.1;
+    }//jj1 loop
+    //----------------------//
     Float_t PtSum = 0;
     Int_t NtrkSum = 0;
     Bool_t iflagPtSum   = kFALSE;
