@@ -834,7 +834,7 @@ void AliTPCcalibDButil::ProcessPulserVariations(TVectorF &pulserQdeviations, Flo
         Float_t pt=ptROC->GetValue(irow,ipad);
 //         Float_t ptRef=ptRefROC->GetValue(irow,ipad);
         //comparisons q
-        Float_t deviation=TMath::Abs(pq/pqRef-1);
+	Float_t deviation=TMath::Abs(pqRef)>1e-20?TMath::Abs(pq/pqRef-1):-999; 
         for (Int_t i=0;i<npar;++i){
           if (deviation>vThres[i])
             ++pulserQdeviations.GetMatrixArray()[i];
