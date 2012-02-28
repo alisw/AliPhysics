@@ -145,7 +145,7 @@ Bool_t AliMuonTrackCuts::StreamParameters( Int_t runNumber,  Int_t runMax )
     }
   }
 
-  TString filename = Form("%s/PWG3/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
+  TString filename = Form("%s/PWG/MUON/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
   if ( fIsMC ) filename.ReplaceAll(".root", "_MC.root");
 
   TString parNames[kNParameters];
