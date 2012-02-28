@@ -120,12 +120,17 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   TProfile* fProAreaCh;               //!charged jet area vs jet pT
   TH3F*     fh3PtDelRNchSum;          //!Nch sum vs R
   TH3F*     fh3PtDelRPtSum;           //!Pt sum vs R
-  TProfile* fProDelRNchSum[5];        //!!Nch sum vs R
-  TProfile* fProDelRPtSum[5];         //!!Pt sum vs R
+  TProfile* fProDiffJetShape;         //!Diff jet shape pT=20-100
+  TProfile* fProIntJetShape;          //!Int jet shape pT=20-100
+  TProfile* fProDelRNchSum[5];        //!Nch sum vs R
+  TProfile* fProDelRPtSum[5];         //!Pt sum vs R
+  TProfile* fProDiffJetShapeA[5];     //!Diff jet shape pT
+  TProfile* fProIntJetShapeA[5];      //!Int jet shape pT
+
 
   AliAnalysisTaskJetProperties(const AliAnalysisTaskJetProperties&);// not implemented
   AliAnalysisTaskJetProperties& operator=(const AliAnalysisTaskJetProperties&);// not implemented
-  ClassDef(AliAnalysisTaskJetProperties, 1);
+  ClassDef(AliAnalysisTaskJetProperties, 2);
 };
 
 #endif
