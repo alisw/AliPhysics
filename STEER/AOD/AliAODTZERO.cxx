@@ -14,9 +14,9 @@
  **************************************************************************/
 
 //-------------------------------------------------------------------------
-//     Container class for AOD VZERO data
-//     Author: Cvetan Cheshkov
-//     cvetan.cheshkov@cern.ch 2/02/2011
+//     Container class for AOD TZERO data
+//     Author: Filip Krizek 
+//     filip.krizek@cern.ch 23/02/2012
 //-------------------------------------------------------------------------
 
 #include "AliAODTZERO.h"
@@ -29,7 +29,8 @@ AliAODTZERO::AliAODTZERO()
   :TObject(),
    fPileup(0),
    fSattelite(0),
-   fBackground(0)
+   fBackground(0),
+   fT0VertexRaw(999)
 {   
   // Default constructor 
   for(Int_t j=0; j<3; j++){ 
@@ -43,7 +44,8 @@ AliAODTZERO::AliAODTZERO(const AliAODTZERO &source)
   :TObject(source),
    fPileup(source.fPileup),
    fSattelite(source.fSattelite),
-   fBackground(source.fBackground)
+   fBackground(source.fBackground),
+   fT0VertexRaw(source.fT0VertexRaw)
 {   
   // Default constructor 
   for(Int_t j=0; j<3; j++) {
@@ -59,9 +61,10 @@ AliAODTZERO& AliAODTZERO::operator=(const AliAODTZERO& source)
   //
   if(this==&source) return *this;
   // Assignment operator
-  fPileup     = source.fPileup;
-  fSattelite  = source.fSattelite;
-  fBackground = source.fBackground;
+  fPileup      = source.fPileup;
+  fSattelite   = source.fSattelite;
+  fBackground  = source.fBackground;
+  fT0VertexRaw = source.fT0VertexRaw;
 
   for(Int_t j=0; j<3; j++){
     fT0TOF[j]     = source.fT0TOF[j];

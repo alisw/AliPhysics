@@ -1897,6 +1897,33 @@ void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
   aodTzero->SetPileupFlag(esdTzero->GetPileupFlag());
   aodTzero->SetSatelliteFlag(esdTzero->GetSatellite()); 
 
+  Float_t rawTime[24];
+  for(Int_t ipmt=0; ipmt<24; ipmt++)
+    rawTime[ipmt] = esdTzero->GetTimeFull(ipmt,0);
+   
+  Int_t idxOfFirstPmtA = -1,       idxOfFirstPmtC = -1;
+  Float_t timeOfFirstPmtA = 9999, timeOfFirstPmtC = 9999;
+  for(int ipmt=0;  ipmt<12; ipmt++){
+    if( rawTime[ipmt] > -200 && rawTime[ipmt] < timeOfFirstPmtC && rawTime[ipmt]!=0){
+      timeOfFirstPmtC = rawTime[ipmt];
+      idxOfFirstPmtC  = ipmt;
+    }
+  }
+  for(int ipmt=12; ipmt<24; ipmt++){
+    if( rawTime[ipmt] > -200 && rawTime[ipmt] < timeOfFirstPmtA && rawTime[ipmt]!=0 ){
+      timeOfFirstPmtA = rawTime[ipmt];
+      idxOfFirstPmtA  = ipmt;
+    }
+  }
+
+  if(idxOfFirstPmtA != -1 && idxOfFirstPmtC != -1){
+    //speed of light in cm/ns   TMath::C()*1e-7 
+    Float_t vertexraw = TMath::C()*1e-7 * (rawTime[idxOfFirstPmtA] - rawTime[idxOfFirstPmtC])/2;
+    aodTzero->SetT0VertexRaw( vertexraw );
+  }else{
+    aodTzero->SetT0VertexRaw(99999);
+  }
+
 }
 
 
