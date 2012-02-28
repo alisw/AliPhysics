@@ -324,7 +324,7 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleESDs(Int_t, TObjArray**)
 	    hESDClusterChargePerDE->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
 	  }
         
-	  if (hESDResidualXPerDEMean && hESDResidualXPerDESigma && hESDSumResidualXPerDE) {
+	  if (hESDResidualXPerDEMean && hESDResidualXPerDESigma && hESDSumResidualXPerDE && hESDSumResidualX2PerDE) {
 	    Double_t meanResX = hESDSumResidualXPerDE->GetBinContent(iDE+1)/nClusters;
 	    hESDResidualXPerDEMean->SetBinContent(iDE+1, meanResX);
 	    hESDResidualXPerDEMean->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(nClusters));
@@ -333,7 +333,7 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleESDs(Int_t, TObjArray**)
 	    hESDResidualXPerDESigma->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(2.*nClusters));
 	  }
 	  //        
-	  if (hESDResidualYPerDEMean && hESDResidualYPerDESigma && hESDSumResidualYPerDE) {
+	  if (hESDResidualYPerDEMean && hESDResidualYPerDESigma && hESDSumResidualYPerDE && hESDSumResidualY2PerDE) {
 	    Double_t meanResY = hESDSumResidualYPerDE->GetBinContent(iDE+1)/nClusters;
 	    hESDResidualYPerDEMean->SetBinContent(iDE+1, meanResY);
 	    hESDResidualYPerDEMean->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(nClusters));
