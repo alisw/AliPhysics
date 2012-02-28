@@ -201,7 +201,7 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
   Double_t ipVzMC = 0;
   if ( IsMC() ) {
     if ( fMCEvent ) ipVzMC = fMCEvent->GetPrimaryVertex()->GetZ();
-    else {
+    else if ( fAODEvent ) {
       AliAODMCHeader* aodMCHeader = (AliAODMCHeader *)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName());
       if ( aodMCHeader ) ipVzMC = aodMCHeader->GetVtxZ();
     }
@@ -523,10 +523,10 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
             fitFunc->GetParameter(0) > 0. && 
             fitFunc->GetParameter(1) > 0. )
           break;
+        else if ( furtherOpt.Contains("REFIT") ) printf("Re-fit with limits\n");
         else {
-          printf("Warning: fit problems !!!\n"); // COMMENT TO REFIT
-          break; // COMMENT TO REFIT
-          //printf("Re-fit with limits\n"); //UNCOMMENT TO REFIT 
+          printf("Warning: fit problems !!!\n");
+          break;
         }
       }
       
