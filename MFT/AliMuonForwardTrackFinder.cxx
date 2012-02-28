@@ -151,7 +151,6 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fOutputEventTree(0),
   fMuonForwardTracks(0),
   fMatchingMode(-1),
-  fMinResearchRadiusAtLastPlane(0),
   fGRPData(0),
   fRunInfo(0)
 
@@ -192,6 +191,8 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
 
     fIsPlaneMandatory[iPlane] = kFALSE;
     
+    fMinResearchRadiusAtPlane[iPlane] = 0.;
+
   }
 
   //  fNextTrack = 0;
@@ -435,7 +436,7 @@ Bool_t AliMuonForwardTrackFinder::LoadNextEvent() {
   fRunLoader -> LoadKinematics();
   fStack = fRunLoader->Stack();
   fNextTrack = fTrackStore->CreateIterator();
-  fMuonForwardTracks->Clear();
+  fMuonForwardTracks->Delete();
 
   fEv++;
   
@@ -467,7 +468,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   fCountRealTracksAnalyzed++;
 
-  fCandidateTracks -> Clear();
+  fCandidateTracks -> Delete();
 
   fLabelMC = -1;
   fDistanceFromGoodClusterAndTrackAtLastPlane = -1.;
@@ -600,7 +601,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
     AliMuonForwardTrack *newTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(0);
     new ((*fMuonForwardTracks)[fMuonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);
     AliDebug(1, "...track added!\n");
-    fCandidateTracks->Clear();
+    fCandidateTracks->Delete();
     fCountRealTracksAnalyzedOfEvent++;
     fCountRealTracksAnalyzedWithFinalCandidates++;
     PrintParticleHistory();
@@ -783,7 +784,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   // -------------------------------------------------------------------------------------------
 
-  fCandidateTracks->Clear();
+  fCandidateTracks->Delete();
   fFinalBestCandidate = NULL;
   
   fCountRealTracksAnalyzedOfEvent++;
@@ -853,8 +854,8 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
 
   Double_t researchRadiusFront = TMath::Sqrt(squaredError_X_Front + squaredError_Y_Front);
   Double_t researchRadiusBack  = TMath::Sqrt(squaredError_X_Back  + squaredError_Y_Back);
-  if (planeId==fNPlanesMFT-1 && 0.5*(researchRadiusFront+researchRadiusBack)<fMinResearchRadiusAtLastPlane) {
-    corrFact = fMinResearchRadiusAtLastPlane/(0.5*(researchRadiusFront+researchRadiusBack));
+  if (0.5*(researchRadiusFront+researchRadiusBack)<fMinResearchRadiusAtPlane[planeId]) {
+    corrFact = fMinResearchRadiusAtPlane[planeId]/(0.5*(researchRadiusFront+researchRadiusBack));
   }
   if (fIsCurrentMuonTrackable) {
     //    fOutputQAFile->cd();
@@ -1157,8 +1158,8 @@ Double_t AliMuonForwardTrackFinder::TryOneCluster(const AliMUONTrackParam &track
 void AliMuonForwardTrackFinder::SeparateFrontBackClusters() {
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    fMFTClusterArrayFront[iPlane]->Clear();
-    fMFTClusterArrayBack[iPlane] ->Clear();
+    fMFTClusterArrayFront[iPlane]->Delete();
+    fMFTClusterArrayBack[iPlane] ->Delete();
     for (Int_t iCluster=0; iCluster<fMFTClusterArray[iPlane]->GetEntries(); iCluster++) {
       AliMFTCluster *cluster = (AliMFTCluster*) fMFTClusterArray[iPlane]->At(iCluster);
       if (TMath::Abs(cluster->GetZ())<TMath::Abs(fSegmentation->GetPlane(iPlane)->GetZCenter())) {

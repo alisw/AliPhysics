@@ -42,6 +42,7 @@
 
 enum PDCProc_t {kGenBox,
 		kGenMuonLMR,
+		kGenParamJpsi,
 		kGenPionKaon,
 		kGenCorrHF,
                 kPythia6,
@@ -54,6 +55,7 @@ enum PDCProc_t {kGenBox,
 
 const Char_t* pprRunName[] = {"kGenBox",
 			      "kGenMuonLMR",
+			      "kGenParamJpsi",
 			      "kGenPionKaon",
 			      "kGenCorrHF",
 			      "kPythia6",
@@ -155,6 +157,7 @@ void Config() {
   else if (proc == kHijing2500Cocktail)   gener = Hijing2500Cocktail();
   else if (proc == kGenBox)               gener = GenBox();
   else if (proc == kGenMuonLMR)           gener = GenMuonLMR();
+  else if (proc == kGenParamJpsi)         gener = GenParamJpsi();
   else if (proc == kGenCorrHF)            gener = GenCorrHF();
   else if (proc == kGenPionKaon)          gener = GenParamPionKaon();
 
@@ -280,15 +283,35 @@ AliGenerator* GenMuonLMR() {
   AliGenMUONLMR *gener = new AliGenMUONLMR();
   gener->SetMomentumRange(0,999);
   gener->SetPtRange(0,100.);
+  gener->SetYRange(-4.0, -2.5);
   gener->SetPhiRange(0., 360.);
-  gener->SetThetaRange(0., 180.);
-  gener->SetChildThetaRange(170.0,179.0);
-  gener->SetYRange(-4.5, -2.0);
+  gener->SetChildThetaRange(170.0,178.0);
   gener->SetOrigin(0.0, 0.0, 0.0);             // vertex position
   gener->SetSigma(0.0, 0.0, 0.0);              // vertex position smearing
   gener->SetVertexSmear(kPerEvent);
   enum {kEta2Body, kEtaDalitz, kRho2Body, kOmega2Body, kOmegaDalitz, kPhi2Body, kEtaPrimeDalitz, kPionLMR, kKaonLMR}; 
-  gener->GenerateSingleProcess(kPhi2Body, 500);
+  gener->GenerateSingleProcess(kPhi2Body, 100);
+  gener->SetCutOnChild(1);
+
+  return gener;
+
+}
+
+//====================================================================================================================================================
+
+AliGenerator* GenParamJpsi() {
+
+  AliGenParam *gener = new AliGenParam(5, AliGenMUONlib::kJpsi);
+  gener->SetMomentumRange(0,999);
+  gener->SetPtRange(0,100.);
+  gener->SetYRange(-4.0, -2.5);
+  gener->SetPhiRange(0., 360.);
+  gener->SetChildThetaRange(170.0,178.0);
+  gener->SetOrigin(0.0, 0.0, 0.0);          // vertex position
+  gener->SetSigma(0.0, 0.0, 0.0);           // Sigma in (X,Y,Z) (cm) on IP position
+  gener->SetVertexSmear(kPerEvent);
+  gener->SetForceDecay(kDiMuon);
+  gener->SetTrackingFlag(1);
   gener->SetCutOnChild(1);
 
   return gener;

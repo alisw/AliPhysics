@@ -131,7 +131,7 @@ public:
   Bool_t IsMother(const Char_t *nameMother);
 
   void SetMatchingMode(Int_t matchingMode) { fMatchingMode = matchingMode; }
-  void SetMinResearchRadiusAtLastPlane(Double_t minResearchRadius) { fMinResearchRadiusAtLastPlane = minResearchRadius; }
+  void SetMinResearchRadiusAtPlane(Int_t plane, Double_t radius) { if (plane>=0 && plane<fNMaxPlanes) fMinResearchRadiusAtPlane[plane] = radius; }
 
   void FillOutputTree();
   void WriteOutputTree();
@@ -250,7 +250,7 @@ protected:
   TClonesArray *fMuonForwardTracks;       //! array of AliMuonForwardTrack
 
   Int_t fMatchingMode;
-  Double_t fMinResearchRadiusAtLastPlane;
+  Double_t fMinResearchRadiusAtPlane[fNMaxPlanes];
 
   AliGRPObject *fGRPData;              //! Data from the GRP/GRP/Data CDB folder
   AliRunInfo *fRunInfo;                //!

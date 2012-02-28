@@ -22,6 +22,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
 #include "TDatabasePDG.h"
+#include "TGraph.h"
 
 //====================================================================================================================================================
 
@@ -86,9 +87,12 @@ private:
   TH2D *fHistOffsetSingleMuonsX_vsPtRapidity, *fHistOffsetSingleMuonsY_vsPtRapidity, *fHistSingleMuonsPtRapidity;  //!
   TH1D *fHistOffsetSingleMuonsX_tmp[fNRapBinsOffsetSingleMuons][fNPtBinsOffsetSingleMuons];			   //!
   TH1D *fHistOffsetSingleMuonsY_tmp[fNRapBinsOffsetSingleMuons][fNPtBinsOffsetSingleMuons];			   //!
+  TH2D *fHistSingleMuonsOffsetChi2;                                                                                //!
   TH1D *fHistWOffsetMuonPairs, *fHistMassMuonPairs, *fHistMassMuonPairsWithoutMFT, *fHistMassMuonPairsMC;          //!
   TH2D *fHistRapidityPtMuonPairsMC;
  
+  TGraph *fGraphSingleMuonsOffsetChi2;     //!
+
   Int_t fNMassBins;
   Double_t fMassMin, fMassMax;
 

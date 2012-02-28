@@ -22,6 +22,7 @@
 #include "TRandom.h"
 #include "TLorentzVector.h"
 #include "TDatabasePDG.h"
+#include "TGraph.h"
 #include "AliMuonForwardTrackAnalysis.h"
 
 ClassImp(AliMuonForwardTrackAnalysis)
@@ -55,11 +56,13 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fHistOffsetSingleMuonsX_vsPtRapidity(0x0),
   fHistOffsetSingleMuonsY_vsPtRapidity(0x0),
   fHistSingleMuonsPtRapidity(0x0),
+  fHistSingleMuonsOffsetChi2(0x0),
   fHistWOffsetMuonPairs(0x0),
   fHistMassMuonPairs(0x0),
   fHistMassMuonPairsWithoutMFT(0x0),
   fHistMassMuonPairsMC(0x0),
   fHistRapidityPtMuonPairsMC(0x0),
+  fGraphSingleMuonsOffsetChi2(0x0),
   fNMassBins(1000),
   fMassMin(0),
   fMassMax(10),
@@ -67,9 +70,9 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fMuonPairAnalysis(1),
   fMatchTrigger(0),
   fOption(0),
-  fXVertResMC(150.e-4),
-  fYVertResMC(150.e-4),
-  fZVertResMC(100.e-4),
+  fXVertResMC(50.e-4),
+  fYVertResMC(50.e-4),
+  fZVertResMC(50.e-4),
   fMaxNWrongClustersMC(999),
   fPtMinSingleMuons(0)
 {
@@ -163,7 +166,7 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
 
   if (fNTracksAnalyzedOfEvent>=fNTracksOfEvent) return kFALSE;
 
-  fMFTTrack   = (AliMuonForwardTrack*) fMuonForwardTracks->At(fNTracksAnalyzedOfEvent);
+  fMFTTrack = (AliMuonForwardTrack*) fMuonForwardTracks->At(fNTracksAnalyzedOfEvent);
   fNTracksAnalyzedOfEvent++;
   if (fMatchTrigger && !fMFTTrack->GetMatchTrigger()) return kTRUE;
   fMCRefTrack = fMFTTrack->GetMCTrackRef();
@@ -172,7 +175,9 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
   if (fMFTTrack->GetNWrongClustersMC()>fMaxNWrongClustersMC) return kTRUE;
 
   Double_t xOrig=gRandom->Gaus(0., fXVertResMC);
-  Double_t yOrig=gRandom->Gaus(0., fXVertResMC);
+  Double_t yOrig=gRandom->Gaus(0., fYVertResMC);
+//   Double_t xOrig = 0.;
+//   Double_t yOrig = 0.;
   Double_t zOrig=gRandom->Gaus(0., fZVertResMC);
 
   AliMUONTrackParam *param = fMFTTrack->GetTrackParamAtMFTCluster(0);
@@ -208,9 +213,12 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
     fHistOffsetSingleMuonsX_tmp[rapBin-1][ptBin-1]->Fill(1.e4*dX);
     fHistOffsetSingleMuonsY_tmp[rapBin-1][ptBin-1]->Fill(1.e4*dY);
   }
-  fHistSingleMuonsPtRapidity -> Fill(pMu.Rapidity(), pMu.Pt());
-  fHistOffsetSingleMuons     -> Fill(1.e4*offset);
-  fHistWOffsetSingleMuons    -> Fill(weightedOffset);
+  fHistSingleMuonsPtRapidity  -> Fill(pMu.Rapidity(), pMu.Pt());
+  fHistOffsetSingleMuons      -> Fill(1.e4*offset);
+  fHistWOffsetSingleMuons     -> Fill(weightedOffset);
+  Double_t chi2OverNdf = fMFTTrack->GetGlobalChi2()/Double_t(fMFTTrack->GetNMFTClusters()+fMFTTrack->GetNMUONClusters());
+  fHistSingleMuonsOffsetChi2  -> Fill(1.e4*offset, chi2OverNdf);
+  fGraphSingleMuonsOffsetChi2 -> SetPoint(fGraphSingleMuonsOffsetChi2->GetN(),1.e4*offset, chi2OverNdf);
 
   fNTracksAnalyzed++;
 
@@ -232,7 +240,7 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair() {
   }
 
   Double_t xOrig=gRandom->Gaus(0., fXVertResMC);
-  Double_t yOrig=gRandom->Gaus(0., fXVertResMC);
+  Double_t yOrig=gRandom->Gaus(0., fYVertResMC);
   Double_t zOrig=gRandom->Gaus(0., fZVertResMC);
   AliDebug(1, Form("origin = (%f, %f, %f)", xOrig, yOrig, zOrig));
 
@@ -322,6 +330,9 @@ void AliMuonForwardTrackAnalysis::Terminate(Char_t *outputFileName) {
 //   }
 
   fHistSingleMuonsPtRapidity -> Write();
+  fHistSingleMuonsOffsetChi2 -> Write();
+
+  fGraphSingleMuonsOffsetChi2 -> Write();
 
   fHistWOffsetMuonPairs        -> Write();
   fHistMassMuonPairs	       -> Write();
@@ -341,7 +352,7 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   fHistOffsetSingleMuonsY = new TH1D("fHistOffsetSingleMuonsY", "Offset for single muons along Y",  200, -1000, 1000);
   fHistErrorSingleMuonsX  = new TH1D("fHistErrorSingleMuonsX",  "Coordinate Error for single muons along X",  200, 0, 1000);
   fHistErrorSingleMuonsY  = new TH1D("fHistErrorSingleMuonsY",  "Coordinate Error for single muons along Y",  200, 0, 1000);
-  fHistOffsetSingleMuons  = new TH1D("fHistOffsetSingleMuons",  "Offset for single muons",          100, 0, 2000);
+  fHistOffsetSingleMuons  = new TH1D("fHistOffsetSingleMuons",  "Offset for single muons",          200, 0, 2000);
   fHistWOffsetSingleMuons = new TH1D("fHistWOffsetSingleMuons", "Weighted Offset for single muons", 300, 0, 15);  
 
   fHistOffsetSingleMuonsX_vsPtRapidity = new TH2D("fHistOffsetSingleMuonsX_vsPtRapidity", "Offset for single muons along X", 
@@ -357,6 +368,7 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   }
 
   fHistSingleMuonsPtRapidity = new TH2D("fHistSingleMuonsPtRapidity", "Phase Space for single muons", 10, -4, -2.5, 10, 0.5, 5.5);
+  fHistSingleMuonsOffsetChi2 = new TH2D("fHistSingleMuonsOffsetChi2", "Offset vs #chi^{2}/ndf for single muons", 400, 0, 4000, 100, 0, 20);
 
   fHistOffsetSingleMuonsX -> SetXTitle("Offset(X)  [#mum]");
   fHistOffsetSingleMuonsY -> SetXTitle("Offset(Y)  [#mum]");
@@ -372,6 +384,8 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
 
   fHistSingleMuonsPtRapidity -> SetXTitle("y^{#mu}");
   fHistSingleMuonsPtRapidity -> SetYTitle("p_{T}^{#mu}  [GeV/c]");
+  fHistSingleMuonsOffsetChi2 -> SetXTitle("Offset  [#mum]");
+  fHistSingleMuonsOffsetChi2 -> SetYTitle("#chi^{2}/ndf");
 
   fHistOffsetSingleMuonsX -> Sumw2();
   fHistOffsetSingleMuonsY -> Sumw2();
@@ -383,7 +397,13 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   fHistOffsetSingleMuonsX_vsPtRapidity -> Sumw2();
   fHistOffsetSingleMuonsY_vsPtRapidity -> Sumw2();
   fHistSingleMuonsPtRapidity           -> Sumw2();
+  fHistSingleMuonsOffsetChi2           -> Sumw2();
     
+  //--------------------------------------------
+
+  fGraphSingleMuonsOffsetChi2 = new TGraph("fGraphSingleMuonsOffsetChi2");
+  fGraphSingleMuonsOffsetChi2 -> SetName("fGraphSingleMuonsOffsetChi2");
+
   //--------------------------------------------
 
   fHistWOffsetMuonPairs        = new TH1D("fHistWOffsetMuonPairs",        "Weighted Offset for Muon Pairs", 300, 0, 60);

@@ -86,7 +86,7 @@ void AliMFTClusterFinder::StartEvent() {
   AliDebug(1, "Starting Event...");
   
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
-    fClustersPerPlane[iPlane]->Clear();
+    fClustersPerPlane[iPlane]->Delete();
   }
 
   AliDebug(1, "... done!");
@@ -105,11 +105,13 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
   StartEvent(); 
   Bool_t isDigAvailableForNewCluster = kTRUE;
   
+  TClonesArray *myDigitList = 0;
+
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
 
     AliDebug(1, Form("Plane %02d", iPlane));
 
-    TClonesArray *myDigitList = (TClonesArray*) pDigitList->At(iPlane);
+    myDigitList = (TClonesArray*) pDigitList->At(iPlane);
 
     AliDebug(1, Form("myDigitList->GetEntries() = %d", myDigitList->GetEntries()));
 
@@ -161,6 +163,8 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
     }
 
     AliDebug(1, Form("Found %d clusters in plane %02d", fClustersPerPlane[iPlane]->GetEntries(), iPlane));
+
+    myDigitList -> Delete();
 
   }  // end of cycle over the planes
 
