@@ -78,6 +78,7 @@ set (SRCS
     hfe/AliHFEpidBayes.cxx
     hfe/AliHFEpidObject.cxx
     hfe/AliAnalysisTaskElecHadronCorrel.cxx
+    hfe/AliHFEdebugTreeTask.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")

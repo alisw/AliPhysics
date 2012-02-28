@@ -37,6 +37,7 @@ public:
 
    void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
+   void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseContinuousMix()                 {fContinuousMix = kTRUE;}
    void                UseBinnedMix()                     {fContinuousMix = kFALSE;}
@@ -66,6 +67,7 @@ private:
    void     FillMiniEvent(Char_t evType);
    Double_t ComputeAngle();
    Double_t ComputeCentrality(Bool_t isESD);
+   Double_t ApplyCentralityPatchAOD049();
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
@@ -75,6 +77,7 @@ private:
    Int_t                fEvNum;           //! absolute event counter
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
+   Bool_t               fUseAOD049CentralityPatch; //flag to enable AOD049 centrality patch
 
    Bool_t               fContinuousMix;   //  mixing --> technique chosen (continuous or binned)
    Int_t                fNMix;            //  mixing --> required number of mixes
@@ -97,7 +100,7 @@ private:
    Bool_t               fBigOutput;       // flag if open file for output list
    Int_t                fMixPrintRefresh; // how often info in mixing part is printed
 
-   ClassDef(AliRsnMiniAnalysisTask, 3);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 4);   // AliRsnMiniAnalysisTask
 };
 
 inline Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t useMC)

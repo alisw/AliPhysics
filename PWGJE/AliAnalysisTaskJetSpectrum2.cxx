@@ -96,6 +96,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
   fFilterMask(0),
   fEventSelectionMask(0),
+  fNTrigger(0),
+  fTriggerBit(0x0),
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -112,6 +114,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fRPAngle(0),
   fMultRec(0),
   fMultGen(0),
+  fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -188,6 +191,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
   fFilterMask(0),
   fEventSelectionMask(0),
+  fNTrigger(0),
+  fTriggerBit(0x0),
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -204,6 +209,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fRPAngle(0),
   fMultRec(0),
   fMultGen(0),
+  fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -329,10 +335,10 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
   
   // event npsparse cent, mult
-  const Int_t nBinsSparse0 = 2;
-  const Int_t nBins0[nBinsSparse0] = {     100, 500};
-  const Double_t xmin0[nBinsSparse0]  = {    0,   0};
-  const Double_t xmax0[nBinsSparse0]  = {  100,5000};
+  const Int_t nBinsSparse0 = 3;
+  const Int_t nBins0[nBinsSparse0] = {     100, 500,fNTrigger};
+  const Double_t xmin0[nBinsSparse0]  = {    0,   0, -0.5};
+  const Double_t xmax0[nBinsSparse0]  = {  100,5000,fNTrigger-0.5};
       
 
   fhnEvent = new THnSparseF("fhnEvent",";cent;mult",nBinsSparse0,
@@ -473,17 +479,17 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fp2CentRPPhiTrackPt[ij] = new TProfile2D(Form("fp2CentRPPhiTrackPt%s",cAdd.Data()),"RP phi vs cent;# cent;#Delta#phi_{RP}; <p_{T}>",10,0,100,181,-1./180.*TMath::Pi(),TMath::Pi(),"S");
     fHistList->Add(fp2CentRPPhiTrackPt[ij]);    
 
-    // Bins:  Jet number: pTJet, cent, mult, RP, Area.   total bins = 4.5M
-    const Int_t nBinsSparse1 = 6;
-    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 10};
+    // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger total bins = 4.5M
+    const Int_t nBinsSparse1 = 7;
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 10,fNTrigger};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
       nBins1[5] = 1;
     }
-    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.};
-    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0};
+    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5};
+    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0,fNTrigger-0.5};
     
-    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area",nBinsSparse1,nBins1,xmin1,xmax1);
+    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger",nBinsSparse1,nBins1,xmin1,xmax1);
     fHistList->Add(fhnJetPt[ij]);
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
@@ -835,11 +841,15 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   fMultGen = genMult1;
   if(fMultGen<=0)fMultGen = genMult2;
 
-  Double_t var0[2] = {0,};
+  Double_t var0[3] = {0,};
   var0[0] = fCentrality;
   var0[1] = fMultRec;
-  fhnEvent->Fill(var0);
-
+  for(int it=0;it<fNTrigger;it++){
+    if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+      var0[2] = it;
+      fhnEvent->Fill(var0);
+    }
+  }
   // the loops for rec and gen should be indentical... pass it to a separate
   // function ...
   // Jet Loop
@@ -891,7 +901,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   Int_t ij0 = -1;
   Int_t ij1 = -1;
 
-  Double_t var1[6] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area
+  Double_t var1[7] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area
   var1[2] = fCentrality; 
   var1[3] = refMult;
 
@@ -907,9 +917,6 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       continue;
     }
     fh1PtJetsIn[iType]->Fill(ptJet);
-    if(ptJet>ptOld){
-      Printf("%s:%d Jets Type %d Not Sorted !! %d:%.3E %d:%.3E",(char*)__FILE__,__LINE__,iType,ij,ptJet,ij-1,ptOld);
-    }
     ptOld = ptJet;
     
     // find the dijets assume sorting and acceptance cut...
@@ -957,12 +964,23 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 	if(leadTrack)fh2LTrackPtJetPt[iType][ij]->Fill(leadTrack->Pt(),ptJet);
 	var1[0] = ij;
 	var2[0] = ij;
-	fhnJetPt[iType]->Fill(var1);
+	for(int it = 0;it <fNTrigger;it++){
+	  if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+	    var1[6] = it;
+	    fhnJetPt[iType]->Fill(var1);
+	  }
+	}
 	fhnJetPtQA[iType]->Fill(var2);
       }
       var1[0] = kMaxJets;// fill for all jets
       var2[0] = kMaxJets;// fill for all jets
-      fhnJetPt[iType]->Fill(var1);
+      for(int it = 0;it <fNTrigger;it++){
+	if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+	  var1[6] = it;
+	  fhnJetPt[iType]->Fill(var1);
+	}
+      }
+
       fhnJetPtQA[iType]->Fill(var2);
       if(leadTrack)fh2LTrackPtJetPt[iType][kMaxJets]->Fill(leadTrack->Pt(),ptJet);
 
@@ -1511,3 +1529,28 @@ Int_t AliAnalysisTaskJetSpectrum2::GetPhiBin(Double_t phi)
     return phibin;
 }
 
+void AliAnalysisTaskJetSpectrum2::SetNTrigger(Int_t n){
+  if(n>0){
+      fNTrigger = n;
+      delete [] fTriggerName;
+      fTriggerName = new TString [fNTrigger];
+      delete [] fTriggerBit;fTriggerBit = 0;
+      fTriggerBit = new UInt_t [fNTrigger];
+  }
+  else{
+    fNTrigger = 0;
+  }
+}
+
+void AliAnalysisTaskJetSpectrum2::SetTrigger(Int_t i,UInt_t it,const char* c){
+  if(i<fNTrigger){
+    fTriggerBit[i] = it;
+    fTriggerName[i] =  c;     
+  } 
+}
+
+AliAnalysisTaskJetSpectrum2::~AliAnalysisTaskJetSpectrum2(){
+  // 
+  delete [] fTriggerBit;
+  delete [] fTriggerName;
+}

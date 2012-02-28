@@ -77,11 +77,17 @@ ClassImp(AliAnaParticleIsolation)
     fhPtNoIsoPi0Decay(0),             fhPtNoIsoEtaDecay(0),            fhPtNoIsoOtherDecay(0),
     fhPtNoIsoPrompt(0),               fhPtIsoMCPhoton(0),              fhPtNoIsoMCPhoton(0),
     fhPtNoIsoConversion(0),           fhPtNoIsoFragmentation(0),       fhPtNoIsoUnknown(0),
+    // Cluster control histograms
     fhTrackMatchedDEta(0x0),          fhTrackMatchedDPhi(0x0),         fhTrackMatchedDEtaDPhi(0x0),
     fhdEdx(0),                        fhEOverP(0),                     fhTrackMatchedMCParticle(0),
     fhELambda0(0),                    fhELambda1(0), 
-    fhELambda0TRD(0),                 fhELambda1TRD(0), 
-    //Histograms settings
+    fhELambda0TRD(0),                 fhELambda1TRD(0),
+    // Number of local maxima in cluster
+    fhNLocMax(0),
+    fhELambda0LocMax1(0),             fhELambda1LocMax1(0),
+    fhELambda0LocMax2(0),             fhELambda1LocMax2(0),
+    fhELambda0LocMaxN(0),             fhELambda1LocMaxN(0),
+    // Histograms settings
     fHistoNPtSumBins(0),              fHistoPtSumMax(0.),              fHistoPtSumMin(0.),
     fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInConeMin(0.)
 {
@@ -137,12 +143,19 @@ ClassImp(AliAnaParticleIsolation)
 //________________________________________________________________________________________________
 void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
                                                                             const Int_t clusterID,
+                                                                            const Int_t nMaxima,
                                                                             const Int_t mcTag
                                                                             )
 {
   // Fill Track matching and Shower Shape control histograms
   
   if(!fFillTMHisto &&  !fFillSSHisto) return;
+  
+  if(clusterID < 0 ) 
+  {
+    printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(), ID of cluster = %d, not possible! ", clusterID);
+    return;
+  }
   
   Int_t iclus = -1;
   TObjArray* clusters = 0x0;
@@ -165,6 +178,12 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
         fhELambda0TRD   ->Fill(energy, cluster->GetM02() );  
         fhELambda1TRD   ->Fill(energy, cluster->GetM20() );  
       }
+      
+      fhNLocMax->Fill(energy,nMaxima);
+      if     (nMaxima==1) { fhELambda0LocMax1->Fill(energy,cluster->GetM02()); fhELambda1LocMax1->Fill(energy,cluster->GetM20()); }
+      else if(nMaxima==2) { fhELambda0LocMax2->Fill(energy,cluster->GetM02()); fhELambda1LocMax2->Fill(energy,cluster->GetM20()); }
+      else                { fhELambda0LocMaxN->Fill(energy,cluster->GetM02()); fhELambda1LocMaxN->Fill(energy,cluster->GetM20()); }
+      
     } // SS histo fill        
     
     
@@ -424,6 +443,49 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhELambda1TRD->SetXTitle("E (GeV)");
         outputContainer->Add(fhELambda1TRD) ;       
       }
+      
+      fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
+                                     nptbins,ptmin,ptmax,10,0,10); 
+      fhNLocMax ->SetYTitle("N maxima");
+      fhNLocMax ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhNLocMax) ;       
+      
+      fhELambda0LocMax1  = new TH2F
+      ("hELambda0LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0LocMax1->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0LocMax1->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0LocMax1) ; 
+      
+      fhELambda1LocMax1  = new TH2F
+      ("hELambda1LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda1LocMax1->SetYTitle("#lambda_{1}^{2}");
+      fhELambda1LocMax1->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda1LocMax1) ; 
+      
+      fhELambda0LocMax2  = new TH2F
+      ("hELambda0LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0LocMax2->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0LocMax2->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0LocMax2) ; 
+      
+      fhELambda1LocMax2  = new TH2F
+      ("hELambda1LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda1LocMax2->SetYTitle("#lambda_{1}^{2}");
+      fhELambda1LocMax2->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda1LocMax2) ; 
+      
+      fhELambda0LocMaxN  = new TH2F
+      ("hELambda0LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0LocMaxN->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0LocMaxN->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0LocMaxN) ; 
+      
+      fhELambda1LocMaxN  = new TH2F
+      ("hELambda1LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda1LocMaxN->SetYTitle("#lambda_{1}^{2}");
+      fhELambda1LocMaxN->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda1LocMaxN) ; 
+      
     }
     
     fhConeSumPt  = new TH2F
@@ -849,6 +911,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
 }
 
+//__________________________________
+void AliAnaParticleIsolation::Init()
+{
+  // Do some checks and init stuff
+  
+  // In case of several cone and thresholds analysis, open the cuts for the filling of the 
+  // track and cluster reference arrays in cone when done in the MakeAnalysisFillAOD(). 
+  // The different cones, thresholds are tested for this list of tracks, clusters.
+  if(fMakeSeveralIC)
+  {
+    printf("AliAnaParticleIsolation::Init() - Open default isolation cuts for multiple Isolation analysis\n");
+    GetIsolationCut()->SetPtThreshold(100);
+    GetIsolationCut()->SetPtFraction(100);
+    GetIsolationCut()->SetConeSize(1);
+  }
+}
+
 //____________________________________________
 void AliAnaParticleIsolation::InitParameters()
 {
@@ -923,9 +1002,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     //If too small or too large pt, skip
     if(aodinput->Pt() < GetMinPt() || aodinput->Pt() > GetMaxPt() ) continue ; 
     
-    //check if it is low pt trigger particle, then adjust the isolation method
-    if(aodinput->Pt() < GetIsolationCut()->GetPtThreshold() || 
-       aodinput->Pt() < GetIsolationCut()->GetSumPtThreshold())
+    //check if it is low pt trigger particle
+    if((aodinput->Pt() < GetIsolationCut()->GetPtThreshold() || 
+        aodinput->Pt() < GetIsolationCut()->GetSumPtThreshold()) && 
+       !fMakeSeveralIC)
     {
       continue ; //trigger should not come from underlying event
     }
@@ -936,7 +1016,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     if(check == -1) return;
     
     //find the leading particles with highest momentum
-    if ((aodinput->Pt())>ptLeading) 
+    if ( aodinput->Pt() > ptLeading ) 
     {
       ptLeading = aodinput->Pt() ;
       idLeading = iaod ;
@@ -951,7 +1031,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   
   AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(idLeading));
   aodinput->SetLeadingParticle(kTRUE);
-    
+  
+  // Check isolation only of clusters in fiducial region
+  if(IsFiducialCutOn())
+  {
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodinput->Momentum(),fCalorimeter) ;
+    if(! in ) return ;
+  }
+  
   //After cuts, study isolation
   n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
   GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,
@@ -993,6 +1080,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     if(!aod->IsLeadingParticle()) continue; // Try to isolate only leading cluster or track
     
+    // Check isolation only of clusters in fiducial region
+    if(IsFiducialCutOn())
+    {
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(*aod->Momentum(),fCalorimeter) ;
+      if(! in ) continue ;
+    }
+    
     Bool_t  isolation  = aod->IsIsolated(); 
     Bool_t  decay      = aod->IsTagged();
     Float_t energy     = aod->E();
@@ -1009,9 +1103,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(pt < GetMinPt() || pt > GetMaxPt() ) continue ; 
     
     // --- In case of redoing isolation from delta AOD ----
-    if(fMakeSeveralIC) {
+    if(fMakeSeveralIC) 
+    {
       //Analysis of multiple IC at same time
       MakeSeveralICAnalysis(aod);
+      continue;
     }
     else if(fReMakeIC)
     {
@@ -1024,7 +1120,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhConeSumPt->Fill(pt,coneptsum);    
       if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
     }
-    // --- -------------------------------------------- ----
+    // ---------------------------------------------------
     
     //Fill pt distribution of particles in cone
     //Tracks
@@ -1094,7 +1190,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {    
       if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED, fill histograms\n", iaod);
      
-      FillTrackMatchingShowerShapeControlHistograms(clID, mcTag);
+      FillTrackMatchingShowerShapeControlHistograms(clID,aod->GetFiducialArea(),mcTag);
       
       fhEIso      ->Fill(energy);
       fhPtIso     ->Fill(pt);
@@ -1214,6 +1310,8 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Float_t ptC = ph->Pt();	
   Int_t tag   = ph->GetTag();
   
+  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeSeveralICAnalysis() - Isolate pT %2.2f\n",ptC);
+  
   //Keep original setting used when filling AODs, reset at end of analysis  
   Float_t ptthresorg = GetIsolationCut()->GetPtThreshold();
   Float_t ptfracorg  = GetIsolationCut()->GetPtFraction();
@@ -1229,13 +1327,14 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   {
     GetIsolationCut()->SetConeSize(fConeSizes[icone]);
     coneptsum = 0 ;
-    
+        
     //Loop on ptthresholds
     for(Int_t ipt = 0; ipt<fNPtThresFrac ;ipt++)
     {
       n[icone][ipt]=0;
       nfrac[icone][ipt]=0;
       GetIsolationCut()->SetPtThreshold(fPtThresholds[ipt]);
+            
       GetIsolationCut()->MakeIsolationCut(ph->GetObjArray(GetAODObjArrayName()+"Tracks"), 
                                           ph->GetObjArray(GetAODObjArrayName()+"Clusters"),
                                           GetReader(), GetCaloPID(),
@@ -1243,6 +1342,10 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
                                           n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
       
       //Normal ptThreshold cut
+
+      if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeSeveralICAnalysis() - cone size %1.1f, ptThres  %1.1f, n %d, nfrac %d, coneptsum %2.2f, isolated %d\n",
+                                fConeSizes[icone],fPtThresholds[icone],n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
+
       if(n[icone][ipt] == 0) 
       {
         fhPtThresIsolated[icone][ipt]->Fill(ptC);

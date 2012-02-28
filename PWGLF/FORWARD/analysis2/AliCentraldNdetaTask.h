@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_dndeta
  * 
  */
 #include "AliBasedNdetaTask.h"
@@ -21,8 +21,8 @@ class TH1D;
 /**
  * Tasks to determine @f$ dN/d\eta@f$ in the forward regions
  *
- * @ingroup pwg2_forward_tasks_dndeta
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_tasks_dndeta
+ * @ingroup pwglf_forward_dndeta
  */
 class AliCentraldNdetaTask : public AliBasedNdetaTask
 {

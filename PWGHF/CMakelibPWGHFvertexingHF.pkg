@@ -35,6 +35,7 @@ set ( SRCS
     vertexingHF/AliAODRecoCascadeHF.cxx 
     vertexingHF/AliAODPidHF.cxx 
     vertexingHF/AliRDHFCuts.cxx 
+    vertexingHF/AliVertexingHFUtils.cxx 
     vertexingHF/AliHFSystErr.cxx 
     vertexingHF/AliRDHFCutsD0toKpi.cxx 
     vertexingHF/AliRDHFCutsJpsitoee.cxx 

@@ -541,8 +541,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     his2D  = dynamic_cast<TH2*>(his3D->Project3D("xz"));
     if (his2D)
       his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
+
     width =  dynamic_cast<TH1*>(arrayWidth.At(2));
-    if (width)
+    if (width) 
+    {
       nXbins = width->GetNbinsX();
     for(Int_t i=2; i<nXbins; i++){
       x = width->GetBinCenter(i);
@@ -564,6 +566,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
 	pn = Int_t(TMath::Abs(dcarAP1)/dcarAP1);
       dcarAP1 = pn*TMath::Sqrt(TMath::Abs(dcarAP1));
     }
+    }
 
     linearFit.ClearPoints();
     
@@ -572,8 +575,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     his2D  = dynamic_cast<TH2*>(his3D->Project3D("xz"));
     if (his2D)
       his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
-    width =  dynamic_cast<TH1*>(arrayWidth.At(2));
-    if (width)
+      width =  dynamic_cast<TH1*>(arrayWidth.At(2));
+    if (width) 
+    {
       nXbins = width->GetNbinsX();
     for(Int_t i=2; i<nXbins; i++){
       x = width->GetBinCenter(i);
@@ -593,6 +597,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
       if(dcarCP1!=0)
 	pn = Int_t(TMath::Abs(dcarCP1)/dcarCP1);
       dcarCP1 = pn*TMath::Sqrt(TMath::Abs(dcarCP1));
+    }
     }
     his3D->GetYaxis()->SetRangeUser(-1,1);
     his3D->GetZaxis()->SetRangeUser(0,20);

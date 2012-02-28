@@ -8,7 +8,7 @@
  * train via AliFMDEnergyFitterTask::Terminate but if this fails or
  * impatience takes over this script can help...
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 /** 
  * 
@@ -19,14 +19,14 @@
  * @param field 
  * @param mc 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void MakeELossFitsFromFile(const Char_t* filename="forward.root",
 			   UShort_t sys=1, UShort_t sNN=900, Short_t field=5, 
 			   Bool_t mc=false) 
 {
   
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
   
   TFile::Open(filename);
   TList* list = (TList*)gFile->Get("Forward");

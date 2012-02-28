@@ -5,11 +5,11 @@
  * 
  * @brief  Include the Forward QA task in a train.  
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  */
 /**
- * @defgroup pwg2_forward_qa Quality Assurance
- * @ingroup pwg2_forward_topical
+ * @defgroup pwglf_forward_qa Quality Assurance
+ * @ingroup pwglf_forward_topical
  */
 /**
  * This is the macro to include the Forward QA task in a train.  
@@ -17,13 +17,13 @@
  * @param mc       Monte-carlo input 
  * @param useCent  Use centrality 
  *
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*
 AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
 {
   // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -135,7 +135,7 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
     
   // --- Make the output container and connect it --------------------
   // TString outputfile = ;
-  // outputfile += ":PWG2forwardDnDeta"; 
+  // outputfile += ":PWGLFforwardDnDeta"; 
   // Form(":%s",pars->GetDndetaAnalysisName());
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 

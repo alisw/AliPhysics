@@ -16,8 +16,8 @@
  * t.Run("LOCAL", "FULL", -1, false, false);
  * @endcode 
  *
- * @ingroup pwg2_forward_mc
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_mc
+ * @ingroup pwglf_forward_trains
  */
 class MakeMCCorrTrain : public TrainSetup
 {
@@ -88,10 +88,10 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_mccorr.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWG2forward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------

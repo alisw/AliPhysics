@@ -46,6 +46,7 @@ public:
     Double32_t* GetSliceIter() const             { return fTRDslices;}
     const Double32_t* GetResponseIter() const    { return &fTRDr[0];}
     AliExternalTrackParam* GetOuterParam() const { return fOP;}
+    AliExternalTrackParam* GetITSoutParam() const { return fITSout;}
     AliExternalTrackParam* GetTPCoutParam() const { return fTPCout;}
     const Int_t* GetV0pid() const                { return &fTRDv0pid[0];}
     Int_t       GetV0pid(Int_t i) const          { return fTRDv0pid[i];}
@@ -63,9 +64,10 @@ public:
     Double32_t *fTRDslices;     //[fTRDnSlices] 
     AliExternalTrackParam *fOP; // outer track param
     AliExternalTrackParam *fTPCout; // outer TPC param
+    AliExternalTrackParam *fITSout; // outer ITS param
     Int_t  fTRDv0pid[AliPID::kSPECIES]; // PID from v0s
 
-    ClassDef(AliESDinfo, 5)     // ESD info related to TRD
+    ClassDef(AliESDinfo, 6)     // ESD info related to TRD
   };
 
   class AliMCinfo{
@@ -139,6 +141,7 @@ public:
   void               SetPDG(Int_t pdg)                { if(fMC) fMC->fPDG = pdg; }
   void               SetPrimary(Bool_t prim = kTRUE)  {SetBit(kPrim, prim);}
   void               SetOuterParam(const AliExternalTrackParam *op);
+  void               SetITSoutParam(const AliExternalTrackParam *op);
   void               SetTPCoutParam(const AliExternalTrackParam *op);
   void               SetStatus(ULong_t stat)          { fESD.fStatus = stat;}
   void               SetKinkIndex(Int_t kinkIndex)    { fESD.fKinkIndex = kinkIndex;}

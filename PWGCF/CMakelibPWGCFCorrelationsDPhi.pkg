@@ -31,7 +31,8 @@ set ( SRCS
     Correlations/DPhi/AliPhiCorrelationsQATask.cxx 
     Correlations/DPhi/AliAnalysisTaskLeadingTrackUE.cxx 
     Correlations/DPhi/AliAnalysisTaskMinijet.cxx
-    Correlations/DPhi/AliAnalysisTaskDiHadron.cxx 
+    Correlations/DPhi/AliAnalysisTaskDiHadron.cxx
+    Correlations/DPhi/AliAnalysisTaskDiHadronPID.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

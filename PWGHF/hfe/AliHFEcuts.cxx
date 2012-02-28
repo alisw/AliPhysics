@@ -66,6 +66,8 @@
 #include "AliCFTrackQualityCuts.h"
 #include "AliESDtrack.h"
 #include "AliHFEextraEventCuts.h"
+#include "AliMCEvent.h"
+#include "AliVEvent.h"
 
 #include "AliHFEcuts.h"
 
@@ -114,6 +116,7 @@ AliHFEcuts::AliHFEcuts():
   fTPCclusterDef(AliHFEextraCuts::kFound),
   fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
   fMinClustersTPC(0),
+  fMinClustersTPCPID(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
   fCutITSPixel(0),
@@ -122,6 +125,7 @@ AliHFEcuts::AliHFEcuts():
   fMaxChi2clusterTPC(0.),
   fMinClusterRatioTPC(0.),
   fVertexRangeZ(20.),
+  fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
@@ -151,6 +155,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fTPCclusterDef(AliHFEextraCuts::kFound),
   fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
   fMinClustersTPC(0),
+  fMinClustersTPCPID(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
   fCutITSPixel(0),
@@ -159,6 +164,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fMaxChi2clusterTPC(0.),
   fMinClusterRatioTPC(0.),
   fVertexRangeZ(20.),
+  fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
@@ -187,6 +193,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCratioDef(c.fTPCratioDef),
   fMinClustersTPC(0),
+  fMinClustersTPCPID(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
   fCutITSPixel(0),
@@ -195,6 +202,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fMaxChi2clusterTPC(0),
   fMinClusterRatioTPC(0),
   fVertexRangeZ(20.),
+  fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
@@ -232,6 +240,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fTPCclusterDef = fTPCclusterDef;
   target.fTPCratioDef = fTPCratioDef;
   target.fMinClustersTPC = fMinClustersTPC;
+  target.fMinClustersTPCPID = fMinClustersTPCPID;
   target.fMinClustersITS = fMinClustersITS;
   target.fMinTrackletsTRD = fMinTrackletsTRD;
   target.fCutITSPixel = fCutITSPixel;
@@ -240,6 +249,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fMaxChi2clusterTPC = fMaxChi2clusterTPC;
   target.fMinClusterRatioTPC = fMinClusterRatioTPC;
   target.fVertexRangeZ = fVertexRangeZ;
+  target.fTRDtrackletsExact = fTRDtrackletsExact;
   target.fTOFPIDStep = fTOFPIDStep;
   target.fTOFMISMATCHStep = fTOFMISMATCHStep;
   target.fTPCPIDCLEANUPStep = fTPCPIDCLEANUPStep;
@@ -546,11 +556,12 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   trackQuality->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
   //trackQuality->SetMaxCovDiagonalElements(2., 2., 0.5, 0.5, 2); 
 
-  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPC","Extra cuts from the HFE group");
+  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPCRec","Extra cuts from the HFE group");
   hfecuts->SetDebugLevel(fDebugLevel);
 
   // Set the cut in the TPC number of clusters
   hfecuts->SetMinNClustersTPC(fMinClustersTPC, fTPCclusterDef);
+  hfecuts->SetMinNClustersTPCPID(fMinClustersTPCPID);
   hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC, fTPCratioDef);
   if(fFractionOfSharedTPCClusters > 0.0) hfecuts->SetFractionOfTPCSharedClusters(fFractionOfSharedTPCClusters); 
   
@@ -654,7 +665,7 @@ void AliHFEcuts::SetHFElectronTPCCuts(){
   // Special Cuts introduced by the HFElectron Group: TPC
   //
   AliDebug(2, "Called\n");
-  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPC","Extra cuts from the HFE group on TPC PID");
+  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPCPID","Extra cuts from the HFE group on TPC PID");
   if(fTPCPIDCLEANUPStep) hfecuts->SetTPCPIDCleanUp(kTRUE);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
@@ -673,7 +684,7 @@ void AliHFEcuts::SetHFElectronTRDCuts(){
   //
   AliDebug(2, "Called\n");
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTRD","Extra cuts from the HFE group on TRD PID");
-  if(fMinTrackletsTRD > 0.) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD);
+  if(fMinTrackletsTRD > 0.) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD, fTRDtrackletsExact);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
   
@@ -735,4 +746,36 @@ Bool_t AliHFEcuts::CheckEventCuts(const char*namestep, TObject *o){
     status &= mycut->IsSelected(o);
   }
   return status;
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetRecEvent(const AliVEvent *ev){
+  //
+  // Publish reconstructed event to the cuts
+  //
+  TIter cutsteps(fCutList);
+  TObjArray *cutstep;
+  AliCFCutBase *cut;
+  while((cutstep = dynamic_cast<TObjArray *>(cutsteps()))){
+    TIter cutIter(cutstep);
+    while((cut = dynamic_cast<AliCFCutBase *>(cutIter()))){
+      cut->SetRecEventInfo(ev);
+    }
+  }
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetMCEvent(const AliMCEvent *ev){
+  //
+  // Publish reconstructed event to the cuts
+  //
+  TIter cutsteps(fCutList);
+  TObjArray *cutstep;
+  AliCFCutBase *cut;
+  while((cutstep = dynamic_cast<TObjArray *>(cutsteps()))){
+    TIter cutIter(cutstep);
+    while((cut = dynamic_cast<AliCFCutBase *>(cutIter()))){
+      cut->SetMCEventInfo(ev);
+    }
+  }
 }

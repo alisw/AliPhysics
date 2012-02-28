@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="D0toKpiCuts.root",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname=""){
+AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname=""){
   //
   // Test macro for the AliAnalysisTaskSE for HF mesons quality assurance
   //Author: C.Bianchin chiara.bianchin@pd.infn.it
@@ -10,10 +10,14 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   }
 
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts=TFile::Open(filecutsname.Data());
-  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-    cout<<"Input file not found: using std cut object"<<endl;
-    stdcuts=kTRUE;
+  TFile* filecuts;
+  if( filecutsname.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(filecutsname.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	AliFatal("Input file not found : check your cut object");
+      }
   }
 
   Bool_t onoff[4]={kTRUE,kTRUE,kTRUE,kTRUE}; //tracks (0), PID (1), centrality (2), event selection(3) 
@@ -32,7 +36,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDplustoKpipi();
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
-      else analysiscuts->SetStandardCutsPbPb2010();
+      else analysiscuts->SetStandardCutsPbPb2011();
     }
     else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
     suffix="Dplus";
@@ -42,7 +46,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsD0toKpi();
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
-      else analysiscuts->SetStandardCutsPbPb2010();
+      else analysiscuts->SetStandardCutsPbPb2011();
     }
     else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
     suffix="D0";
@@ -52,7 +56,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDStartoKpipi();
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
-      else analysiscuts->SetStandardCutsPbPb2010();
+      else analysiscuts->SetStandardCutsPbPb2011();
     }
     else analysiscuts = (AliRDHFCutsDstartoKpipi*)filecuts->Get(cutsobjname);
     suffix="Dstar";

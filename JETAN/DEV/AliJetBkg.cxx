@@ -290,7 +290,7 @@ void AliJetBkg::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float_t&etbgT
       count=count+1;
     }
   }
-  sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
+  if(count>0)sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
 
 }
 

@@ -12,7 +12,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_corr
+ * @ingroup pwglf_forward_corr
  */
 #include <TObject.h>
 #include <TObjArray.h>
@@ -24,7 +24,7 @@ class TH2D;
  *
  * These are generated from the on-line dead channel calculations 
  *
- * @ingroup pwg2_forward_corr
+ * @ingroup pwglf_forward_corr
  */
 class AliCentralCorrSecondaryMap : public TObject 
 {

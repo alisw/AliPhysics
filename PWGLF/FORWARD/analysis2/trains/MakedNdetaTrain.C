@@ -16,8 +16,8 @@
  * t.Run("LOCAL", "FULL", -1, false, false);
  * @endcode 
  *
- * @ingroup pwg2_forward_dndeta
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_dndeta
+ * @ingroup pwglf_forward_trains
  */
 class MakedNdetaTrain : public TrainSetup
 {
@@ -122,10 +122,10 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWG2forward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Add the task ----------------------------------------------

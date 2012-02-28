@@ -1,6 +1,6 @@
 PACKAGE = invalid-only-for-proof
 
-include $(ROOTSYS)/test/Makefile.arch
+include Makefile.arch
 
 ifndef PACKCXXFLAGS
    PACKCXXFLAGS = $(CXXFLAGS)
@@ -45,11 +45,24 @@ ifneq ($(CORRFW_INCLUDE),)
   ALICEINC += -I../$(CORRFW_INCLUDE)
 endif
 
+ifneq ($(PWGflowBase_INCLUDE),)
+  ALICEINC += -I../$(PWGflowBase_INCLUDE)
+endif
+
+#needed by flowTasks
+ALICEINC += -I$(ALICE_ROOT)/TOF
+
+ifneq ($(PWGflowTasks_INCLUDE),)
+  ALICEINC += -I../$(PWGflowTasks_INCLUDE)
+endif
+
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
     ALICEINC += -I$(ALICE_ROOT)/ANALYSIS
+    ALICEINC += -I$(ALICE_ROOT)/PWG/FLOW/Base
+    ALICEINC += -I$(ALICE_ROOT)/MUON
   endif
 #endif
 
@@ -69,28 +82,7 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_PWG)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(PLATFORM),macosx)
-# We need to make both the .dylib and the .so
-		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@
-ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
-ifeq ($(MACOSX_MINOR),4)
-		ln -sf $@ $(subst .$(DllSuf),.so,$@)
-else
-		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
-		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
-endif
-endif
-else
-ifeq ($(PLATFORM),win32)
-		bindexplib $* $^ > $*.def
-		lib -nologo -MACHINE:IX86 $^ -def:$*.def \
-		   $(OutPutOpt)$(EVENTLIB)
-		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $*.exp $(LIBS) \
-		   $(OutPutOpt)$@
-else
-		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
-endif
-endif
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
 	@chmod a+x $@
 	@echo "done"
 

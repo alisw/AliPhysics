@@ -23,7 +23,11 @@
 
 
 // --- ROOT system ---
-#include "TGeoManager.h"
+#include <TGeoManager.h>
+#include <TH2F.h>
+#include <TCanvas.h>
+#include <TStyle.h>
+#include <TPad.h>
 
 // --- ANALYSIS system ---
 #include "AliCalorimeterUtils.h"
@@ -34,6 +38,7 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliMixedEvent.h"
+#include "AliAODCaloCluster.h"
 
 // --- Detector ---
 #include "AliEMCALGeometry.h"
@@ -59,7 +64,8 @@ ClassImp(AliCalorimeterUtils)
     fRecalculateMatching(kFALSE),
     fCutR(20),                        fCutZ(20),
     fCutEta(20),                      fCutPhi(20),
-    fLocMaxCutE(0),                   fLocMaxCutEDiff(0)
+    fLocMaxCutE(0),                   fLocMaxCutEDiff(0),
+    fPlotCluster(0)
 {
   //Ctor
   
@@ -107,15 +113,15 @@ Bool_t AliCalorimeterUtils::AreNeighbours(const TString calo,
   
   Int_t rowdiff =  0, coldiff =  0;
   
-  Int_t nSupMod1 = GetModuleNumberCellIndexes(absId1, calo, irow1, icol1, iRCU1); 
-  Int_t nSupMod2 = GetModuleNumberCellIndexes(absId2, calo, irow2, icol2, iRCU2); 
+  Int_t nSupMod1 = GetModuleNumberCellIndexes(absId1, calo, icol1, irow1, iRCU1); 
+  Int_t nSupMod2 = GetModuleNumberCellIndexes(absId2, calo, icol2, irow2, iRCU2); 
   
   if(calo=="EMCAL" && nSupMod1!=nSupMod2)
   {
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
     // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
     if(nSupMod1%2) icol1+=AliEMCALGeoParams::fgkEMCALCols;
-    else           icol2+=AliEMCALGeoParams::fgkEMCALCols;
+    else           icol2+=AliEMCALGeoParams::fgkEMCALCols;    
 	}
   
   rowdiff = TMath::Abs( irow1 - irow2 ) ;  
@@ -567,6 +573,21 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 }
 
 //___________________________________________________________________________________________
+Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells) 
+{
+  // Find local maxima in cluster
+  
+  const Int_t   nc = cluster->GetNCells();
+  Int_t   absIdList[nc]; 
+  Float_t maxEList[nc]; 
+  
+  Int_t nMax = GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList);
+  
+  return nMax;
+  
+}
+
+//___________________________________________________________________________________________
 Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
                                                   Int_t *absIdList,     Float_t *maxEList) 
 {
@@ -582,68 +603,83 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
   if(!cluster->IsEMCAL()) calorimeter = "PHOS";
   
   //printf("cluster : ncells %d \n",nCells);
-  for(iDigit = 0; iDigit < nCells ; iDigit++){
+  
+  Float_t emax  = 0;
+  Int_t   idmax =-1;
+  for(iDigit = 0; iDigit < nCells ; iDigit++)
+  {
     absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit]  ; 
-    /* 
-     Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-     RecalibrateCellAmplitude(en,calo,absIdList[iDigit]);  
-     Int_t icol = -1, irow = -1, iRCU = -1;
-     Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
-     
-     printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
-     */ 
+    Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+    RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
+    if( en > emax )
+    {
+      emax  = en ;
+      idmax = absIdList[iDigit] ;
+    }
+    //Int_t icol = -1, irow = -1, iRCU = -1;
+    //Int_t sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
+    //printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
   }
   
-  
-  for(iDigit = 0 ; iDigit < nCells; iDigit++) {   
-    if(absIdList[iDigit]>=0) {
-      
-      absId1 = absIdList[iDigit] ;
-      //printf("%d : absID111 %d, %s\n",iDigit, absId1,calorimeter.Data());
+  for(iDigit = 0 ; iDigit < nCells; iDigit++) 
+  {   
+    if(absIdList[iDigit]>=0) 
+    {
+      absId1 = cluster->GetCellsAbsId()[iDigit];
       
       Float_t en1 = cells->GetCellAmplitude(absId1);
       RecalibrateCellAmplitude(en1,calorimeter,absId1);  
       
-      for(iDigitN = 0; iDigitN < nCells; iDigitN++) {	
+      //printf("%d : absIDi %d, E %f\n",iDigit, absId1,en1);
+      
+      for(iDigitN = 0; iDigitN < nCells; iDigitN++) 
+      {	
+        absId2 = cluster->GetCellsAbsId()[iDigitN] ;
         
-        absId2 = absIdList[iDigitN] ;
+        if(absId2==-1 || absId2==absId1) continue;
         
-        if(absId2==-1) continue;
-        
-        //printf("\t %d : absID222 %d, %s\n",iDigitN, absId2,calorimeter.Data());
+        //printf("\t %d : absIDj %d\n",iDigitN, absId2);
         
         Float_t en2 = cells->GetCellAmplitude(absId2);
         RecalibrateCellAmplitude(en2,calorimeter,absId2);
         
-        if ( AreNeighbours(calorimeter, absId1, absId2) ) {
-          
-          if (en1 > en2 ) {    
+        //printf("\t %d : absIDj %d, E %f\n",iDigitN, absId2,en2);
+        
+        if ( AreNeighbours(calorimeter, absId1, absId2) ) 
+        {
+          // printf("\t \t Neighbours \n");
+          if (en1 > en2 ) 
+          {    
             absIdList[iDigitN] = -1 ;
             //printf("\t \t indexN %d not local max\n",iDigitN);
             // but may be digit too is not local max ?
             if(en1 < en2 + fLocMaxCutEDiff) {
-              //printf("\t \t index %d not local max cause locMaxCut\n",iDigit);
+              //printf("\t \t index %d not local max cause locMaxCutEDiff\n",iDigit);
               absIdList[iDigit] = -1 ;
             }
           }
-          else {
+          else 
+          {
             absIdList[iDigit] = -1 ;
             //printf("\t \t index %d not local max\n",iDigitN);
             // but may be digitN too is not local max ?
             if(en1 > en2 - fLocMaxCutEDiff) 
             {
               absIdList[iDigitN] = -1 ; 
-              //printf("\t \t indexN %d not local max cause locMaxCut\n",iDigit);
+              //printf("\t \t indexN %d not local max cause locMaxCutEDiff\n",iDigit);
             }
           } 
-        } // if Areneighbours
+        } // if Are neighbours
+        //else printf("\t \t NOT Neighbours \n");
       } // while digitN
     } // slot not empty
   } // while digit
   
   iDigitN = 0 ;
-  for(iDigit = 0; iDigit < nCells; iDigit++) { 
-    if(absIdList[iDigit]>=0 ){
+  for(iDigit = 0; iDigit < nCells; iDigit++) 
+  { 
+    if(absIdList[iDigit]>=0 )
+    {
       absIdList[iDigitN] = absIdList[iDigit] ;
       Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
       RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
@@ -654,8 +690,26 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
     }
   }
   
-  //printf("N maxima %d \n",iDigitN);
-  //for(Int_t imax = 0; imax < iDigitN; imax++) printf("imax %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
+  if(iDigitN == 0)
+  {
+    if(fDebug > 0) 
+      printf("AliCalorimeterUtils::GetNumberOfLocalMaxima() - No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f\n",
+             idmax,emax,cluster->E());
+    iDigitN      = 1     ;
+    maxEList[0]  = emax  ;
+    absIdList[0] = idmax ; 
+  }
+  
+  if(fDebug > 0) 
+  {    
+    printf("AliCalorimeterUtils::GetNumberOfLocalMaxima() - In cluster E %2.2f, M02 %2.2f, M20 %2.2f, N maxima %d \n", 
+           cluster->E(),cluster->GetM02(),cluster->GetM20(), iDigitN);
+  
+    if(fDebug > 1) for(Int_t imax = 0; imax < iDigitN; imax++) 
+    {
+      printf(" \t i %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
+    }
+  }
   
   return iDigitN ;
   
@@ -807,9 +861,9 @@ Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,
   
 }
 
-//____________________________________________________________________________________
+//__________________________________________________________________________________________
 void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp,
-                                                   const TString calo, const Int_t id)
+                                                   const TString calo, const Int_t id) const
 {
   //Recaculate cell energy if recalibration factor
   
@@ -829,10 +883,10 @@ void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp,
   }
 }
 
-//___________________________________________________________________________
+//_________________________________________________________________________________
 void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, 
                                               const TString calo, 
-                                              const Int_t id, const Int_t bc)
+                                              const Int_t id, const Int_t bc) const
 {
   // Recalculate time if time recalibration available for EMCAL
   // not ready for PHOS
@@ -990,13 +1044,273 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
   
 }
 
+//___________________________________________________________________________
+void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
+                                      AliVCluster* cluster, 
+                                      AliVCaloCells* cells,
+                                      //Float_t & e1, Float_t & e2,
+                                      AliAODCaloCluster* cluster1,
+                                      AliAODCaloCluster* cluster2,
+                                      const Int_t nMax,
+                                      const Int_t eventNumber)
+{
+  
+  // Split energy of cluster between the 2 local maxima, sum energy on 3x3, and if the 2 
+  // maxima are too close and have common cells, split the energy between the 2
+  
+  TH2F* hClusterMap    = 0 ;
+  TH2F* hClusterLocMax = 0 ;
+  TH2F* hCluster1      = 0 ;
+  TH2F* hCluster2      = 0 ;
+  
+  if(fPlotCluster)
+  {
+    hClusterMap    = new TH2F("hClusterMap","Cluster Map",48,0,48,24,0,24);
+    hClusterLocMax = new TH2F("hClusterLocMax","Cluster 2 highest local maxima",48,0,48,24,0,24);
+    hCluster1      = new TH2F("hCluster1","Cluster 1",48,0,48,24,0,24);
+    hCluster2      = new TH2F("hCluster2","Cluster 2",48,0,48,24,0,24);
+    hClusterMap    ->SetXTitle("column");
+    hClusterMap    ->SetYTitle("row");
+    hClusterLocMax ->SetXTitle("column");
+    hClusterLocMax ->SetYTitle("row");
+    hCluster1      ->SetXTitle("column");
+    hCluster1      ->SetYTitle("row");
+    hCluster2      ->SetXTitle("column");
+    hCluster2      ->SetYTitle("row");
+  }
+  
+  TString calorimeter = "EMCAL";
+  if(cluster->IsPHOS())
+  {
+    calorimeter="PHOS";
+    printf("AliCalorimeterUtils::SplitEnerg() Not supported for PHOS yet \n");
+    return;
+  }
+  
+  const Int_t ncells  = cluster->GetNCells();  
+  Int_t absIdList[ncells]; 
+  
+  Float_t e1 = 0,  e2   = 0 ;
+  Int_t icol = -1, irow = -1, iRCU = -1, sm = -1;  
+  Float_t eCluster = 0;
+  Float_t minCol = 100, minRow = 100, maxCol = -1, maxRow = -1; 
+  for(Int_t iDigit  = 0; iDigit < ncells; iDigit++ ) 
+  {
+    absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit];
+    
+    Float_t ec = cells->GetCellAmplitude(absIdList[iDigit]);
+    RecalibrateCellAmplitude(ec,calorimeter, absIdList[iDigit]);
+    eCluster+=ec;
+    
+    if(fPlotCluster) 
+    {
+      //printf("iDigit %d, absId %d, Ecell %f\n",iDigit,absIdList[iDigit], cells->GetCellAmplitude(absIdList[iDigit]));
+      sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
+      if(icol > maxCol) maxCol = icol;
+      if(icol < minCol) minCol = icol;
+      if(irow > maxRow) maxRow = irow;
+      if(irow < minRow) minRow = irow;
+      hClusterMap->Fill(icol,irow,ec);
+    }
+    
+  }
+  
+  // Init counters and variables
+  Int_t ncells1 = 1 ;
+  UShort_t absIdList1[9] ;  
+  Double_t fracList1 [9] ;  
+  absIdList1[0] = absId1 ;
+  fracList1 [0] = 1. ;
+  
+  Float_t ecell1 = cells->GetCellAmplitude(absId1);
+  RecalibrateCellAmplitude(ecell1, calorimeter, absId1);
+  e1 =  ecell1;  
+  
+  Int_t ncells2 = 1 ;
+  UShort_t absIdList2[9] ;  
+  Double_t fracList2 [9] ; 
+  absIdList2[0] = absId2 ;
+  fracList2 [0] = 1. ;
+  
+  Float_t ecell2 = cells->GetCellAmplitude(absId2);
+  RecalibrateCellAmplitude(ecell2, calorimeter, absId2);
+  e2 =  ecell2;  
+  
+  if(fPlotCluster)
+  {
+    Int_t icol1 = -1, irow1 = -1, icol2 = -1, irow2 = -1;
+    sm = GetModuleNumberCellIndexes(absId1, calorimeter, icol1, irow1, iRCU) ;
+    hClusterLocMax->Fill(icol1,irow1,ecell1);
+    sm = GetModuleNumberCellIndexes(absId2, calorimeter, icol2, irow2, iRCU) ;
+    hClusterLocMax->Fill(icol2,irow2,ecell2);
+  }
+  
+  // Very rough way to share the cluster energy
+  Float_t eRemain = (eCluster-ecell1-ecell2)/2;
+  Float_t shareFraction1 = ecell1/eCluster+eRemain/eCluster;
+  Float_t shareFraction2 = ecell2/eCluster+eRemain/eCluster;
+  
+  for(Int_t iDigit = 0; iDigit < ncells; iDigit++)
+  {
+    Int_t absId = absIdList[iDigit];
+    
+    if(absId==absId1 || absId==absId2 || absId < 0) continue;
+    
+    Float_t ecell = cells->GetCellAmplitude(absId);
+    RecalibrateCellAmplitude(ecell, calorimeter, absId);
+    
+    if(AreNeighbours(calorimeter, absId1,absId ))
+    { 
+      absIdList1[ncells1]= absId;
+      
+      if(AreNeighbours(calorimeter, absId2,absId ))
+      { 
+        fracList1[ncells1] = shareFraction1; 
+        e1 += ecell*shareFraction1;
+      }
+      else 
+      {
+        fracList1[ncells1] = 1.; 
+        e1 += ecell;
+      }
+      
+      ncells1++;
+      
+    } // neigbour to cell1
+    
+    if(AreNeighbours(calorimeter, absId2,absId ))
+    { 
+      absIdList2[ncells2]= absId;
+      
+      if(AreNeighbours(calorimeter, absId1,absId ))
+      { 
+        fracList2[ncells2] = shareFraction2; 
+        e2 += ecell*shareFraction2;
+      }
+      else
+      { 
+        fracList2[ncells2] = 1.; 
+        e2 += ecell;
+      }
+      
+      ncells2++;
+      
+    } // neigbour to cell2
+    
+  }
+  
+  if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::SplitEnergy() - n Local Max %d, Cluster energy  = %f, Ecell1 = %f, Ecell2 = %f, Enew1 = %f, Enew2 = %f, Remain %f, \n ncells %d, ncells1 %d, ncells2 %d, f1 %f, f2  %f, sum f12 = %f \n",
+                            nMax, eCluster,ecell1,ecell2,e1,e2,eCluster-e1-e2,ncells,ncells1,ncells2,shareFraction1,shareFraction2,shareFraction1+shareFraction2);
+  
+  cluster1->SetE(e1);
+  cluster2->SetE(e2);  
+  
+  cluster1->SetNCells(ncells1);
+  cluster2->SetNCells(ncells2);  
+  
+  cluster1->SetCellsAbsId(absIdList1);
+  cluster2->SetCellsAbsId(absIdList2);
+  
+  cluster1->SetCellsAmplitudeFraction(fracList1);
+  cluster2->SetCellsAmplitudeFraction(fracList2);
+  
+  if(calorimeter=="EMCAL")
+  {
+    GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster1);
+    GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster2);
+  }
+  
+  if(fPlotCluster)
+  {
+    //printf("Cells of cluster1: ");
+    for(Int_t iDigit  = 0; iDigit < ncells1; iDigit++ ) 
+    {
+      //printf(" %d ",absIdList1[iDigit]);
+      
+      sm = GetModuleNumberCellIndexes(absIdList1[iDigit], calorimeter, icol, irow, iRCU) ;
+      
+      if( AreNeighbours(calorimeter, absId2,absIdList1[iDigit]) )
+        hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit])*shareFraction1);
+      else 
+        hCluster1->Fill(icol,irow,cells->GetCellAmplitude(absIdList1[iDigit]));
+    }
+    
+    //printf(" \n ");
+    //printf("Cells of cluster2: ");
+    
+    for(Int_t iDigit  = 0; iDigit < ncells2; iDigit++ ) 
+    {
+      //printf(" %d ",absIdList2[iDigit]);
+      
+      sm = GetModuleNumberCellIndexes(absIdList2[iDigit], calorimeter, icol, irow, iRCU) ;
+      if( AreNeighbours(calorimeter, absId1,absIdList2[iDigit]) )
+        hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit])*shareFraction2);
+      else
+        hCluster2->Fill(icol,irow,cells->GetCellAmplitude(absIdList2[iDigit]));
+      
+    }
+    //printf(" \n ");
+    
+    gStyle->SetPadRightMargin(0.1);
+    gStyle->SetPadLeftMargin(0.1);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(000000);
+    
+    if(maxCol-minCol > maxRow-minRow)
+    {
+      maxRow+= maxCol-minCol;
+    }
+    else 
+    {
+      maxCol+= maxRow-minRow;
+    }
+    
+    TCanvas  * c= new TCanvas("canvas", "canvas", 4000, 4000) ;
+    c->Divide(2,2);  
+    c->cd(1);
+    gPad->SetGridy();
+    gPad->SetGridx();
+    hClusterMap    ->SetAxisRange(minCol, maxCol,"X");
+    hClusterMap    ->SetAxisRange(minRow, maxRow,"Y");
+    hClusterMap    ->Draw("colz");
+    c->cd(2);
+    gPad->SetGridy();
+    gPad->SetGridx();
+    hClusterLocMax ->SetAxisRange(minCol, maxCol,"X");
+    hClusterLocMax ->SetAxisRange(minRow, maxRow,"Y");
+    hClusterLocMax ->Draw("colz");
+    c->cd(3);
+    gPad->SetGridy();
+    gPad->SetGridx();
+    hCluster1      ->SetAxisRange(minCol, maxCol,"X");
+    hCluster1      ->SetAxisRange(minRow, maxRow,"Y");
+    hCluster1      ->Draw("colz");
+    c->cd(4);
+    gPad->SetGridy();
+    gPad->SetGridx();
+    hCluster2      ->SetAxisRange(minCol, maxCol,"X");
+    hCluster2      ->SetAxisRange(minRow, maxRow,"Y");
+    hCluster2      ->Draw("colz");
+    
+    if(eCluster > 6 )c->Print(Form("clusterFigures/Event%d_E%1.0f_nMax%d_NCell1_%d_NCell2_%d.eps",
+                                   eventNumber,cluster->E(),nMax,ncells1,ncells2));
+    
+    delete c;
+    delete hClusterMap;
+    delete hClusterLocMax;
+    delete hCluster1;
+    delete hCluster2;
+  }
+}
+
 //________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 
                                                           TObjArray* clusterArray) 
 { 
   //Recalculate track matching
   
-  if (fRecalculateMatching) {
+  if (fRecalculateMatching) 
+  {
     fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo)   ; 
     //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
     //if(esdevent){

@@ -5,7 +5,7 @@
  * 
  * @brief  Task to copy ESD header to AOD 
  * 
- * @ingroup pwg2_forward_tasks 
+ * @ingroup pwglf_forward_tasks 
  */
 
 #include "AliCopyHeaderTask.h"

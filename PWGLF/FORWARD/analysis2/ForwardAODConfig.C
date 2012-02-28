@@ -5,7 +5,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  * 
  */
 /**
@@ -15,7 +15,7 @@
  * directory up-front in your ROOT macro path, and edit it to suit your
  * needs.
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 void
 ForwardAODConfig(AliForwardMultiplicityBase* task)
@@ -150,6 +150,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->SetDebug(0);
   // Set the debug level of a single algorithm 
   task->GetSharingFilter().SetDebug(0);
+
+  // --- Eventplane Finder -------------------------------------------
+  task->GetEventPlaneFinder().SetUsePhiWeights(false);
 
   // --- Set limits on fits the energy -------------------------------
   // Maximum relative error on parameters 

@@ -95,6 +95,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fDiJetCDFCut(0)
    ,fDiJetKindBins(0)
    ,fFFRadius(0)
+   ,fFFMaxTrackPt(-1)
+   ,fFFMinnTracks(0)
    ,fFFBckgRadius(0)
    ,fBckgMode(0)
    ,fIJMode(0)
@@ -397,6 +399,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fDiJetCDFCut(0)
   ,fDiJetKindBins(0)
   ,fFFRadius(0)
+  ,fFFMaxTrackPt(-1)
+  ,fFFMinnTracks(0)
   ,fFFBckgRadius(0)
   ,fBckgMode(0)
   ,fIJMode(0)
@@ -703,6 +707,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fDiJetCDFCut(copy.fDiJetCDFCut)
   ,fDiJetKindBins(copy.fDiJetKindBins)
   ,fFFRadius(copy.fFFRadius)
+  ,fFFMaxTrackPt(copy.fFFMaxTrackPt)
+  ,fFFMinnTracks(copy.fFFMinnTracks)
   ,fFFBckgRadius(copy.fFFBckgRadius)
   ,fBckgMode(copy.fBckgMode)
   ,fIJMode(copy.fIJMode)
@@ -1010,6 +1016,8 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fDiJetCDFCut                  = o.fDiJetCDFCut;
     fDiJetKindBins                = o.fDiJetKindBins;
     fFFRadius                     = o.fFFRadius;
+    fFFMaxTrackPt                 = o.fFFMaxTrackPt;
+    fFFMinnTracks                 = o.fFFMinnTracks;
     fFFBckgRadius                 = o.fFFBckgRadius;
     fBckgMode                     = o.fBckgMode;
     fIJMode                       = o.fIJMode;
@@ -3815,18 +3823,23 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	// get tracks in jet
 	TList* jettracklist = new TList();
 	Double_t sumPt      = 0.;
+	Bool_t isBadJet     = kFALSE;
 	Float_t leadTrackPt = 0.;
 	TLorentzVector* leadTrackV = new TLorentzVector();
 
+
 	if(GetFFRadius()<=0){
-	  GetJetTracksTrackrefs(jettracklist, jet);
+	  GetJetTracksTrackrefs(jettracklist, jet, GetFFMaxTrackPt(), isBadJet);
 	} else {
 	  if(fUseEmbeddedJetAxis){
-	    if(embeddedJet) GetJetTracksPointing(fTracksRecCuts, jettracklist, embeddedJet, GetFFRadius(), sumPt);
+	    if(embeddedJet) GetJetTracksPointing(fTracksRecCuts, jettracklist, embeddedJet, GetFFRadius(), sumPt, GetFFMaxTrackPt(), isBadJet);
 	  }
-	  else              GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt);
+	  else              GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMaxTrackPt(), isBadJet);
 	}
 	
+	if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
+	
+	if(isBadJet) continue; 
 
 	if(ptFractionEmbedded>=fCutFractionPtEmbedded){ // if no embedding: ptFraction = cutFraction = 0
 	  
@@ -3938,18 +3951,23 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	
 	TList* jettracklist = new TList();
 	Double_t sumPt      = 0.;
+	Bool_t isBadJet     = kFALSE;
 	Float_t leadTrackPt = 0.;
 	TLorentzVector* leadTrackV = new TLorentzVector();
 	
 	if(GetFFRadius()<=0){
-	  GetJetTracksTrackrefs(jettracklist, jet);
+	  GetJetTracksTrackrefs(jettracklist, jet, GetFFMaxTrackPt(), isBadJet);
 	} else {
-	  GetJetTracksPointing(fTracksGen, jettracklist, jet, GetFFRadius(), sumPt);
+	  GetJetTracksPointing(fTracksGen, jettracklist, jet, GetFFRadius(), sumPt, GetFFMaxTrackPt(), isBadJet);
 	}
 	
+	if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;;
+	if(isBadJet) continue; 
+
 	for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	  
 	  AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+	  if(!trackVP)continue;
 	  TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 	  
 	  Float_t jetPt   = jet->Pt();
@@ -4034,73 +4052,83 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 		if(fDJMode&1){
 		  TList* jettracklist1 = new TList();
 		  Double_t sumPt1      = 0.;
+		  Bool_t isBadJet1     = kFALSE;
 		  Float_t leadTrackPt1 = 0;
 		  
+
 		  TList* jettracklist2 = new TList();
 		  Double_t sumPt2      = 0.;
+		  Bool_t isBadJet2     = kFALSE;
 		  Float_t leadTrackPt2 = 0;
 		  
 		  if(GetFFRadius()<=0)
 		    {
-		      GetJetTracksTrackrefs(jettracklist1, jet1);
-		      GetJetTracksTrackrefs(jettracklist2, jet2);
+		      GetJetTracksTrackrefs(jettracklist1, jet1, GetFFMaxTrackPt(), isBadJet1);
+		      GetJetTracksTrackrefs(jettracklist2, jet2, GetFFMaxTrackPt(), isBadJet2);
 		    }
 		  else
 		    {
-		      GetJetTracksPointing(fTracksRecCuts, jettracklist1, jet1, GetFFRadius(), sumPt1);
-		      GetJetTracksPointing(fTracksRecCuts, jettracklist2, jet2, GetFFRadius(), sumPt2);
+		      GetJetTracksPointing(fTracksRecCuts, jettracklist1, jet1, GetFFRadius(), sumPt1, GetFFMaxTrackPt(), isBadJet1);
+		      GetJetTracksPointing(fTracksRecCuts, jettracklist2, jet2, GetFFRadius(), sumPt2, GetFFMaxTrackPt(), isBadJet2);
 		    }
 		  
-		  Int_t nTracks = jettracklist1->GetSize(); 
-		  if (jettracklist1->GetSize() < jettracklist2->GetSize()) nTracks = jettracklist2->GetSize();
+
+		  if(GetFFMinNTracks()>0 && jettracklist1->GetSize()<=GetFFMinNTracks()) isBadJet1 = kTRUE;
+		  if(GetFFMinNTracks()>0 && jettracklist1->GetSize()<=GetFFMinNTracks()) isBadJet2 = kTRUE;
+
+		  if(!(isBadJet1 || isBadJet2)){ // good jets
+
+		    Int_t nTracks = jettracklist1->GetSize(); 
+		    if (jettracklist1->GetSize() < jettracklist2->GetSize()) nTracks = jettracklist2->GetSize();
 		  
-		  for(Int_t it=0; it<nTracks; ++it)
-		    {
-		      if (it < jettracklist1->GetSize())
-			{ 
-			  AliVParticle *vp = (dynamic_cast<AliVParticle*> (jettracklist1->At(it)));
-			  Float_t trackPt1 = (vp?vp->Pt():0);
-			  Float_t jetPt1   = jet1->Pt();
+		    for(Int_t it=0; it<nTracks; ++it)
+		      {
+			if (it < jettracklist1->GetSize())
+			  { 
+			    AliVParticle *vp = (dynamic_cast<AliVParticle*> (jettracklist1->At(it)));
+			    Float_t trackPt1 = (vp?vp->Pt():0);
+			    Float_t jetPt1   = jet1->Pt();
+			    
+			    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 			  
-			  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
-			  
-			  fFFDiJetHistosRecCuts->FillDiJetFF(1, trackPt1, jetPt1, jetBin, incrementJetPt);
-			  fFFDiJetHistosRecCuts->FillDiJetFF(0, trackPt1, jetPt1, jetBin, incrementJetPt);
-			  
-			  if (it == 0)
-			    {
-			      leadTrackPt1 = trackPt1;
-			      
-			      fFFDiJetHistosRecLeadingTrack->FillDiJetFF(1, leadTrackPt1, jetPt1, jetBin, kTRUE); 
-			      fFFDiJetHistosRecLeadingTrack->FillDiJetFF(0, leadTrackPt1, jetPt1, jetBin, kTRUE); 
-			    }
-			  
-			  fFFDiJetHistosRecLeading->FillDiJetFF(1, trackPt1, leadTrackPt1, jetBin, incrementJetPt); 
-			  fFFDiJetHistosRecLeading->FillDiJetFF(0, trackPt1, leadTrackPt1, jetBin, incrementJetPt); 
-			}
-		      
-		      if (it < jettracklist2->GetSize())
-			{ 
-			  Float_t trackPt2   = ((AliVParticle*)(jettracklist2->At(it)))->Pt();
-			  Float_t jetPt2     = jet2->Pt();
-			  
-			  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
-			  
-			  fFFDiJetHistosRecCuts->FillDiJetFF(2, trackPt2, jetPt2, jetBin, incrementJetPt);
-			  fFFDiJetHistosRecCuts->FillDiJetFF(0, trackPt2, jetPt2, jetBin, incrementJetPt);
-			  
-			  if (it == 0)
-			    {
-			      leadTrackPt2 = trackPt2;
-			      
-			      fFFDiJetHistosRecLeadingTrack->FillDiJetFF(2, leadTrackPt2, jetPt2, jetBin, kTRUE);
-			      fFFDiJetHistosRecLeadingTrack->FillDiJetFF(0, leadTrackPt2, jetPt2, jetBin, kTRUE);
-			    }
-			  
-			  fFFDiJetHistosRecLeading->FillDiJetFF(2, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
-			  fFFDiJetHistosRecLeading->FillDiJetFF(0, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
-			}
-		    } // End loop on tracks
+			    fFFDiJetHistosRecCuts->FillDiJetFF(1, trackPt1, jetPt1, jetBin, incrementJetPt);
+			    fFFDiJetHistosRecCuts->FillDiJetFF(0, trackPt1, jetPt1, jetBin, incrementJetPt);
+			    
+			    if (it == 0)
+			      {
+				leadTrackPt1 = trackPt1;
+				
+				fFFDiJetHistosRecLeadingTrack->FillDiJetFF(1, leadTrackPt1, jetPt1, jetBin, kTRUE); 
+				fFFDiJetHistosRecLeadingTrack->FillDiJetFF(0, leadTrackPt1, jetPt1, jetBin, kTRUE); 
+			      }
+			    
+			    fFFDiJetHistosRecLeading->FillDiJetFF(1, trackPt1, leadTrackPt1, jetBin, incrementJetPt); 
+			    fFFDiJetHistosRecLeading->FillDiJetFF(0, trackPt1, leadTrackPt1, jetBin, incrementJetPt); 
+			  }
+			
+			if (it < jettracklist2->GetSize())
+			  { 
+			    Float_t trackPt2   = ((AliVParticle*)(jettracklist2->At(it)))->Pt();
+			    Float_t jetPt2     = jet2->Pt();
+			    
+			    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+			    
+			    fFFDiJetHistosRecCuts->FillDiJetFF(2, trackPt2, jetPt2, jetBin, incrementJetPt);
+			    fFFDiJetHistosRecCuts->FillDiJetFF(0, trackPt2, jetPt2, jetBin, incrementJetPt);
+			    
+			    if (it == 0)
+			      {
+				leadTrackPt2 = trackPt2;
+				
+				fFFDiJetHistosRecLeadingTrack->FillDiJetFF(2, leadTrackPt2, jetPt2, jetBin, kTRUE);
+				fFFDiJetHistosRecLeadingTrack->FillDiJetFF(0, leadTrackPt2, jetPt2, jetBin, kTRUE);
+			      }
+			    
+			    fFFDiJetHistosRecLeading->FillDiJetFF(2, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
+			    fFFDiJetHistosRecLeading->FillDiJetFF(0, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
+			  }
+		      } // End loop on tracks
+		  }
 		  
 		  delete jettracklist1;
 		  delete jettracklist2;
@@ -4163,73 +4191,82 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 		if(fDJMode&1){
 		  TList* jettracklist1 = new TList();
 		  Double_t sumPt1 = 0.;
+		  Bool_t isBadJet1     = kFALSE;
 		  Float_t leadTrackPt1 = 0.;
-		  
+
 		  TList* jettracklist2 = new TList();
 		  Double_t sumPt2 = 0.;
+		  Bool_t isBadJet2     = kFALSE;
 		  Float_t leadTrackPt2 = 0.;
 		  
 		  if(GetFFRadius()<=0)
 		    {
-		      GetJetTracksTrackrefs(jettracklist1, jet1);
-		      GetJetTracksTrackrefs(jettracklist2, jet2);
+		      GetJetTracksTrackrefs(jettracklist1, jet1, GetFFMaxTrackPt(), isBadJet1);
+		      GetJetTracksTrackrefs(jettracklist2, jet2, GetFFMaxTrackPt(), isBadJet2);
 		    }
 		  else
 		    {
-		      GetJetTracksPointing(fTracksGen, jettracklist1, jet1, GetFFRadius(), sumPt1);
-		      GetJetTracksPointing(fTracksGen, jettracklist2, jet2, GetFFRadius(), sumPt2);
+		      GetJetTracksPointing(fTracksGen, jettracklist1, jet1, GetFFRadius(), sumPt1, GetFFMaxTrackPt(), isBadJet1);
+		      GetJetTracksPointing(fTracksGen, jettracklist2, jet2, GetFFRadius(), sumPt2, GetFFMaxTrackPt(), isBadJet2);
 		    }
 		  
-		  Int_t nTracks = jettracklist1->GetSize(); 
-		  if (jettracklist1->GetSize() < jettracklist2->GetSize()) nTracks = jettracklist2->GetSize();
 		  
-		  for(Int_t it=0; it<nTracks; ++it)
-		    {
-		      if (it < jettracklist1->GetSize())
-			{ 
-			  Float_t trackPt1 = ((AliVParticle*)jettracklist1->At(it))->Pt();
-			  Float_t jetPt1 = jet1->Pt();
-			  
-			  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
-			  
-			  fFFDiJetHistosGen->FillDiJetFF( 1, trackPt1, jetPt1, jetBin, incrementJetPt);
-			  fFFDiJetHistosGen->FillDiJetFF( 0, trackPt1, jetPt1, jetBin, incrementJetPt);
-			  
-			  if(it==0)
-			    { 
-			      leadTrackPt1 = trackPt1;
-			      
-			      fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 1, leadTrackPt1, jetPt1, jetBin, kTRUE);
-			      fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 0, leadTrackPt1, jetPt1, jetBin, kTRUE);
-			    }
-			  
-			  fFFDiJetHistosGenLeading->FillDiJetFF( 1, trackPt1, leadTrackPt1, jetBin, incrementJetPt);
-			  fFFDiJetHistosGenLeading->FillDiJetFF( 0, trackPt1, leadTrackPt1, jetBin, incrementJetPt);
-			}
-		      
-		      if (it < jettracklist2->GetSize())
-			{ 
-			  Float_t trackPt2 = ((AliVParticle*)jettracklist2->At(it))->Pt();
-			  Float_t jetPt2 = jet2->Pt();
-			  
-			  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
-			  
-			  fFFDiJetHistosGen->FillDiJetFF( 2, trackPt2, jetPt2, jetBin, incrementJetPt);
-			  fFFDiJetHistosGen->FillDiJetFF( 0, trackPt2, jetPt2, jetBin, incrementJetPt);
-			  
-			  if (it==0)
-			    { 
-			      leadTrackPt2 = trackPt2;
-			      
-			      fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 2, leadTrackPt2, jetPt2, jetBin, kTRUE);
-			      fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 0, leadTrackPt2, jetPt2, jetBin, kTRUE);
-			    }
-			  
-			  fFFDiJetHistosGenLeading->FillDiJetFF( 2, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
-			  fFFDiJetHistosGenLeading->FillDiJetFF( 0, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
-			}
-		    } // End loop on tracks
+		  if(GetFFMinNTracks()>0 && jettracklist1->GetSize()<=GetFFMinNTracks()) isBadJet1 = kTRUE;
+		  if(GetFFMinNTracks()>0 && jettracklist1->GetSize()<=GetFFMinNTracks()) isBadJet2 = kTRUE;
 		  
+		  if(!(isBadJet1 || isBadJet2)){ // good jets
+
+		    Int_t nTracks = jettracklist1->GetSize(); 
+		    if (jettracklist1->GetSize() < jettracklist2->GetSize()) nTracks = jettracklist2->GetSize();
+		  
+		    for(Int_t it=0; it<nTracks; ++it)
+		      {
+			if (it < jettracklist1->GetSize())
+			  { 
+			    Float_t trackPt1 = ((AliVParticle*)jettracklist1->At(it))->Pt();
+			    Float_t jetPt1 = jet1->Pt();
+			    
+			    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+			    
+			    fFFDiJetHistosGen->FillDiJetFF( 1, trackPt1, jetPt1, jetBin, incrementJetPt);
+			    fFFDiJetHistosGen->FillDiJetFF( 0, trackPt1, jetPt1, jetBin, incrementJetPt);
+			    
+			    if(it==0)
+			      { 
+				leadTrackPt1 = trackPt1;
+				
+				fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 1, leadTrackPt1, jetPt1, jetBin, kTRUE);
+				fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 0, leadTrackPt1, jetPt1, jetBin, kTRUE);
+			      }
+			    
+			    fFFDiJetHistosGenLeading->FillDiJetFF( 1, trackPt1, leadTrackPt1, jetBin, incrementJetPt);
+			    fFFDiJetHistosGenLeading->FillDiJetFF( 0, trackPt1, leadTrackPt1, jetBin, incrementJetPt);
+			  }
+			
+			if (it < jettracklist2->GetSize())
+			  { 
+			    Float_t trackPt2 = ((AliVParticle*)jettracklist2->At(it))->Pt();
+			    Float_t jetPt2 = jet2->Pt();
+			    
+			    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+			    
+			    fFFDiJetHistosGen->FillDiJetFF( 2, trackPt2, jetPt2, jetBin, incrementJetPt);
+			    fFFDiJetHistosGen->FillDiJetFF( 0, trackPt2, jetPt2, jetBin, incrementJetPt);
+			  
+			    if (it==0)
+			      { 
+				leadTrackPt2 = trackPt2;
+				
+				fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 2, leadTrackPt2, jetPt2, jetBin, kTRUE);
+				fFFDiJetHistosGenLeadingTrack->FillDiJetFF( 0, leadTrackPt2, jetPt2, jetBin, kTRUE);
+			      }
+			  
+			    fFFDiJetHistosGenLeading->FillDiJetFF( 2, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
+			    fFFDiJetHistosGenLeading->FillDiJetFF( 0, trackPt2, leadTrackPt2, jetBin, incrementJetPt);
+			  }
+		      } // End loop on tracks
+		  }		  
+
 		  delete jettracklist1;
 		  delete jettracklist2;
 		}
@@ -4288,21 +4325,33 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     for(Int_t ij=0; ij<nRecEffJets; ++ij){ 
     
       AliAODJet* jet = (AliAODJet*)(fJetsRecEff->At(ij));
+      Bool_t isBadJetGenPrim = kFALSE;
+      Bool_t isBadJetGenSec  = kFALSE;
+      Bool_t isBadJetRec     = kFALSE;
     
+
       if(ij==0){ // leading jet
 	
+	// for efficiency: gen tracks from pointing with gen/rec jet
 	TList* jettracklistGenPrim = new TList();
-	GetJetTracksPointing(fTracksAODMCCharged, jettracklistGenPrim, jet, GetFFRadius(), sumPtGenLeadingJetRecEff); // for efficiency: gen tracks from pointing with gen/rec jet
+	GetJetTracksPointing(fTracksAODMCCharged, jettracklistGenPrim, jet, GetFFRadius(), sumPtGenLeadingJetRecEff, GetFFMaxTrackPt(), isBadJetGenPrim); 
 
 	TList* jettracklistGenSec = new TList();
-	GetJetTracksPointing(fTracksAODMCChargedSec, jettracklistGenSec, jet, GetFFRadius(), sumPtGenLeadingJetSec); // for efficiency: gen tracks from pointing with gen/rec jet
-	
+	GetJetTracksPointing(fTracksAODMCChargedSec, jettracklistGenSec, jet, GetFFRadius(), sumPtGenLeadingJetSec, GetFFMaxTrackPt(), isBadJetGenSec); 
+
+	// bin efficiency in jet pt bins using rec tracks  
 	TList* jettracklistRec = new TList();
-	GetJetTracksPointing(fTracksRecCuts,jettracklistRec, jet, GetFFRadius(), sumPtRecLeadingJetRecEff); // bin efficiency in jet pt bins using rec tracks  
+	GetJetTracksPointing(fTracksRecCuts,jettracklistRec, jet, GetFFRadius(), sumPtRecLeadingJetRecEff, GetFFMaxTrackPt(), isBadJetRec); 
 	
 	Double_t jetEta   = jet->Eta();
 	Double_t jetPhi   = TVector2::Phi_0_2pi(jet->Phi());
 	
+	if(GetFFMinNTracks()>0 && jettracklistGenPrim->GetSize()<=GetFFMinNTracks()) isBadJetGenPrim = kTRUE;
+	if(GetFFMinNTracks()>0 && jettracklistGenSec->GetSize()<=GetFFMinNTracks())  isBadJetGenSec  = kTRUE;
+	if(GetFFMinNTracks()>0 && jettracklistRec->GetSize()<=GetFFMinNTracks())     isBadJetRec     = kTRUE;
+
+	if(isBadJetRec) continue;
+
 	if(fQAMode&2) fQAJetHistosRecEffLeading->FillJetQA( jetEta, jetPhi, sumPtGenLeadingJetRecEff ); 
 	
 	if(fFFMode) FillJetTrackHistosRecGen(fFFHistosRecEffGen,fFFHistosRecEffRec,sumPtGenLeadingJetRecEff,sumPtRecLeadingJetRecEff,
@@ -4893,11 +4942,13 @@ void AliAnalysisTaskFragmentationFunction::SetProperties(TH1* h,const char* x, c
 }
 
 // ________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, const Double_t radius,Double_t& sumPt)
+void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, 
+								const Double_t radius, Double_t& sumPt, const Double_t maxPt, Bool_t& isBadMaxPt)
 {
   // fill list of tracks in cone around jet axis  
 
   sumPt = 0;
+  isBadMaxPt = kFALSE;
 
   Double_t jetMom[3];
   jet->PxPyPz(jetMom);
@@ -4918,14 +4969,17 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
       outputlist->Add(track);
       
       sumPt += track->Pt();
+
+      if(maxPt>0 && track->Pt()>maxPt) isBadMaxPt = kTRUE;
+      if(maxPt>0 && track->Pt()>maxPt) std::cout<<" found bad jet, track pt "<<track->Pt()<<" max Pt "<<maxPt<<std::endl;
     }
   }
-  
+
   outputlist->Sort();
 }
 
 // ___________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet)
+void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t maxPt, Bool_t& isBadMaxPt)
 {
   // list of jet tracks from trackrefs
   
@@ -4939,6 +4993,7 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, co
       continue;
     }
         
+    if(maxPt>0 && track->Pt()>maxPt) isBadMaxPt = kTRUE;
     list->Add(track);
   }
   

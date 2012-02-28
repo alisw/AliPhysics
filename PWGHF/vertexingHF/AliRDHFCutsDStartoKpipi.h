@@ -39,7 +39,8 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(9,iPtBin)] : 1.e6);} // for the Dstar
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);} // for the D0
   virtual void SetStandardCutsPP2010();
-  virtual void SetStandardCutsPbPb2010();  
+  virtual void SetStandardCutsPbPb2010();
+  virtual void SetStandardCutsPbPb2011();  
 
   void AddTrackCutsSoftPi(const AliESDtrackCuts *cuts) 
      {fTrackCutsSoftPi=new AliESDtrackCuts(*cuts); return;}

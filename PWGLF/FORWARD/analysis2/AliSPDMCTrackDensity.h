@@ -30,9 +30,9 @@ class TH1D;
  *    - Incident angle vs number of track references
  *    - Incident angle vs number of strips/cluster
  *
- * @ingroup pwg2_forward_algo
- * @ingroup pwg2_forward_mc
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo
+ * @ingroup pwglf_forward_mc
+ * @ingroup pwglf_forward_aod
  */
 class AliSPDMCTrackDensity : public TNamed
 {
@@ -117,7 +117,8 @@ protected:
 		     const AliMCParticle* mother,
 		     Int_t                refNo,
 		     Double_t             vz, 
-		     TH2D&                output) const;
+		     TH2D&                output,
+                     Double_t             w) const;
   /** 
    * Get ultimate mother of a track 
    * 
@@ -137,6 +138,21 @@ protected:
    */
   Double_t GetTrackRefTheta(const AliTrackReference* ref,
 			    Double_t vz) const;
+  /** 
+   * Calculate flow weight 
+   *
+   * @param eta  Pseudo rapidity 
+   * @param pt   Transverse momemtum 
+   * @param b    Impact parameter
+   * @param phi  Azimuthal angle 
+   * @param rp   Reaction plance angle 
+   * @param id   Particle PDG code
+   *
+   * @return Flow weight for the particle
+   */
+  Double_t CalculateWeight(Double_t eta, Double_t pt, Double_t b, 
+			   Double_t phi, Double_t rp, Int_t id) const;
+
   Bool_t   fUseOnlyPrimary;       // Only use primaries 
   Double_t fMinR;             // Min radius 
   Double_t fMaxR;             // Max radius 

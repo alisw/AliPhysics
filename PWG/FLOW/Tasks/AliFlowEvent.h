@@ -77,6 +77,8 @@ public:
 
   AliFlowTrack* GetTrack( Int_t i );
 
+  void InsertTrack(AliFlowTrack*);
+
 protected:
   AliFlowTrack* ReuseTrack( Int_t i);
 

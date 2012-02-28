@@ -8,7 +8,7 @@
  * @param n2 
  * @param load 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 CompareVtxBias(const char* fn1,   const char* fn2, 
@@ -18,8 +18,8 @@ CompareVtxBias(const char* fn1,   const char* fn2,
 
   // --- Load Utilities ----------------------------------------------
   if (load) {
-    gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/CompareCorrs.C");
+    gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/CompareCorrs.C");
   }
 
   // --- Get Objects -------------------------------------------------

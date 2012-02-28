@@ -27,11 +27,6 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALClusterize(const char *name);
   virtual ~AliAnalysisTaskEMCALClusterize();
 
- private:  
-  AliAnalysisTaskEMCALClusterize(const AliAnalysisTaskEMCALClusterize&); 
-  AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
-  
- public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Init();
@@ -160,7 +155,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
   TString                fImportGeometryFilePath;  // path fo geometry.root file
 
-  
+  AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
+  AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
+
   ClassDef(AliAnalysisTaskEMCALClusterize, 18);
 
 };

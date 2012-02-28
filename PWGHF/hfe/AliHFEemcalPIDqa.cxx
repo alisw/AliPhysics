@@ -157,15 +157,15 @@ void AliHFEemcalPIDqa::Initialize(){
   const Double_t kTPCSigMim = 40.;
   const Double_t kTPCSigMax = 140.;
 
-  // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  Centrality, select)
-  Int_t nBins[10] = {AliPID::kSPECIES + 1, 500, 500,          400, 630,   200,   400,  300, kCentralityBins, 2};
-  Double_t min[10] = {-1,               kMinP, kMinP,  kTPCSigMim,  0.,  -1.0,  -4.0,    0,               0, 0.};
-  Double_t max[10] = {AliPID::kSPECIES, kMaxP, kMaxP,  kTPCSigMax, 6.3,   1.0,   4.0,  3.0,             11., 2.};
-  fHistos->CreateTHnSparse("EMCAL_TPCdedx", "EMCAL signal; species; p [GeV/c]; pT [GeV/c] ; TPC signal [a.u.]; phi ; eta ; nSig ; E/p ; Centrality; PID Step; ", 10, nBins, min, max);
+  // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, Centrality, select)
+  Int_t nBins[12] = {AliPID::kSPECIES + 1, 500, 500,          400, 630,   200,   600,  300, 125, kCentralityBins, 6, 2};
+  Double_t min[12] = {-1,               kMinP, kMinP,  kTPCSigMim,  0.,  -1.0,  -8.0,    0,   0,            0, -3.0, 0.};
+  Double_t max[12] = {AliPID::kSPECIES, kMaxP, kMaxP,  kTPCSigMax, 6.3,   1.0,   4.0,  3.0, 0.5,           11., 3.0, 2.};
+  fHistos->CreateTHnSparse("EMCAL_TPCdedx", "EMCAL signal; species; p [GeV/c]; pT [GeV/c] ; TPC signal [a.u.]; phi ; eta ; nSig ; E/p ; Rmatch ;Centrality; PID Step; ", 12, nBins, min, max);
 
   //2nd histogram: EMCAL signal - E/p 
-  Int_t nBins2[7] = {AliPID::kSPECIES + 1, 500, 500, 500, 125, 400, 2};
-  Double_t min2[7] = {-1, kMinP, kMinP, 0,  0, -4., 0.};
+  Int_t nBins2[7] = {AliPID::kSPECIES + 1, 500, 500, 500, 125, 600, 2};
+  Double_t min2[7] = {-1, kMinP, kMinP, 0,  0, -8., 0.};
   Double_t max2[7] = {AliPID::kSPECIES, kMaxP, kMaxP, 5,  0.5, 4., 2.};
   fHistos->CreateTHnSparse("EMCAL_Signal", "EMCAL true signal; species; p [GeV/c]; pT [GeV/c] ; E/p; Rmatch; TPCnsigma; PID Step", 7, nBins2, min2, max2);
     
@@ -197,6 +197,8 @@ void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa:
   AliDebug(2, Form("nSigmatpc = %f\n",nSigmatpc));
   //
 
+  double charge = esdtrack->Charge();
+  //printf("charge %f\n",charge); 
 
 
   //printf("phi %f, eta %f\n;",phi,eta);
@@ -214,7 +216,7 @@ void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa:
   contentSignal2[6] = step == AliHFEdetPIDqa::kBeforePID ? 0. : 1.;
 
   // QA array
-  Double_t contentSignal[10];
+  Double_t contentSignal[12];
   contentSignal[0] = species;
   contentSignal[1] = track->GetRecTrack()->P();
   contentSignal[2] = track->GetRecTrack()->Pt();
@@ -225,8 +227,10 @@ void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa:
   contentSignal[5] = eta;
   contentSignal[6] = nSigmatpc;
   contentSignal[7] = emcsignal(0);
-  contentSignal[8] = centrality;
-  contentSignal[9] = step == AliHFEdetPIDqa::kBeforePID ? 0. : 1.;
+  contentSignal[8] = emcsignal(2);
+  contentSignal[9] = centrality;
+  contentSignal[10] = charge;
+  contentSignal[11] = step == AliHFEdetPIDqa::kBeforePID ? 0. : 1.;
 
 
   //printf("ProcessTrack ; Print Content %g; %g; %g; %g \n",contentSignal[0],contentSignal[1],contentSignal[2],contentSignal[3]); 
@@ -264,6 +268,13 @@ TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV2(const AliESDtrack *esdtrack) co
   Int_t icl = esdtrack->GetEMCALcluster(); //From tender
   AliVCluster *cluster = (AliVCluster*) evt->GetCaloCluster(icl);
   if(!cluster->IsEMCAL()) return refVec;
+
+  // from ESDs
+  double delphi = cluster->GetTrackDx(); 
+  double deleta = cluster->GetTrackDz(); 
+  double rmatch1 = sqrt(pow(delphi,2)+pow(deleta,2));
+
+  //
   cluster->GetPosition(clsPos);
   TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);//Vector of emcal cluster
 
@@ -300,6 +311,7 @@ TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV2(const AliESDtrack *esdtrack) co
   
   double rmatch = sqrt(pow(delEmcphi,2)+pow(delEmceta,2));
   
+  
   matchclsE = cluster->E();
   
   //double feop = -9999.9;
@@ -307,7 +319,7 @@ TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV2(const AliESDtrack *esdtrack) co
   double feop = matchclsE/esdtrack->P();
   
   //   if(feop!=-9999.9)printf("%f\n",feop) ; 
-  TVector3 emcsignal(feop,rmatch,0);
+  TVector3 emcsignal(feop,rmatch,rmatch1);
   
   return emcsignal;
   

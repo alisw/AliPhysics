@@ -11,7 +11,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  * 
  */
 #include "AliCentralMultiplicityTask.h"
@@ -34,8 +34,8 @@ class AliMCEvent;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_forward_tasks
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_tasks
+ * @ingroup pwglf_forward_aod
  * 
  */
 class AliCentralMCMultiplicityTask : public AliCentralMultiplicityTask

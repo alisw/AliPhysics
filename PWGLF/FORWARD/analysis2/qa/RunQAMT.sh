@@ -267,7 +267,7 @@ check_file()
 {
     if test $docheck -lt 1 ; then return 0; fi 
     root -l -b  <<EOF >> ${redir} 2>&1 
-.L $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/CheckQAFile.C
+.L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/CheckQAFile.C
 CheckQAFile("$1");
 .q
 EOF
@@ -293,7 +293,7 @@ analyse_file()
 
     (cd $dir 
 	root -l -b  <<EOF > /dev/stderr
-.L $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunFileQA.C
+.L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/RunFileQA.C
 RunFileQA("$inp", "$out");
 .q
 EOF
@@ -448,7 +448,7 @@ make_trend()
 	rm -f trend_*_*.root
 
 	root -l -b <<EOF > /dev/stderr
-.L $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunFinalQA.C
+.L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/RunFinalQA.C
 RunFinalQA(".");
 .q
 EOF
@@ -639,7 +639,7 @@ fi
 analyse_runs ${top}/$store $numf $files
 
 # --- Now analyse all runs -------------------------------------------
-style=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/style.css 
+style=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css 
 make_trend ${top}/$store
 
 # --- Make index files -----------------------------------------------

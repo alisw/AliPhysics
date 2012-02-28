@@ -5,7 +5,7 @@
  * 
  * @brief  Class to plot QA trends
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  * 
  */
 #ifndef __CINT__
@@ -40,7 +40,7 @@ class TH1;
 /**
  * Class to plot QA trends 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct QAPlotter : public QABase
 {

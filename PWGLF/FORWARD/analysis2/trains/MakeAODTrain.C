@@ -1,3 +1,5 @@
+#include "TrainSetup.C"
+
 /**
  * @file   MakeAODTrain.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
@@ -5,10 +7,9 @@
  * 
  * @brief  Run first pass analysis - make AOD tree
  * 
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  */
 //====================================================================
-#include "TrainSetup.C"
 
 /**
  * Analysis train to make Forward and Central multiplicity
@@ -25,8 +26,8 @@
  * t.Run("LOCAL", "FULL", -1, false, false);
  * @endcode 
  *
- * @ingroup pwg2_forward_aod
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_aod
+ * @ingroup pwglf_forward_trains
  */
 class MakeAODTrain : public TrainSetup
 {
@@ -112,15 +113,20 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWG2forward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+			     gROOT->GetMacroPath()));
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
+    // --- Add TPC eventplane task
+    gROOT->Macro("AddTaskEventplane.C");
+
     // --- Task to copy header information ---------------------------
     gROOT->Macro("AddTaskCopyHeader.C");
 
@@ -133,6 +139,10 @@ protected:
     gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d)", 
 		      mc, fSys, fSNN, fField));
     AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "CentralAODConfig.C"));
+
+    // --- Add MC particle task --------------------------------------
+    if (mc) gROOT->Macro("AddTaskMCParticleFilter.C");
+
   }
   //__________________________________________________________________
   /** 
@@ -161,6 +171,41 @@ protected:
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
+/*
+    if (mc) {
+      AliOADBPhysicsSelection * oadbDefaultPbPb = new AliOADBPhysicsSelection("oadbDefaultPbPb");
+      oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALLNOTRD","B",0);
+      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-A-NOPF-ALLNOTRD","A",0);
+      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-C-NOPF-ALLNOTRD","C",0);
+      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-E-NOPF-ALLNOTRD","E",0);  
+      oadbDefaultPbPb->SetHardwareTrigger         ( 0,"SPDGFO >= 100");
+      oadbDefaultPbPb->SetOfflineTrigger          ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG");
+  
+      oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CMBACS2-B-NOPF-ALLNOTRD","B",1);
+      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-A-NOPF-ALLNOTRD","A",1);
+      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-C-NOPF-ALLNOTRD","C",1);
+      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-E-NOPF-ALLNOTRD","E",1);
+      oadbDefaultPbPb->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFO > 1)");
+      oadbDefaultPbPb->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFO > 1) && !V0ABG && !V0CBG");
+    // LHC10h8
+      AliOADBPhysicsSelection * oadbLHC10h8 = new AliOADBPhysicsSelection("oadbLHC10h8");
+      oadbLHC10h8->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALL","B",0);
+      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-A-NOPF-ALL","A",0);
+      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-C-NOPF-ALL","C",0);
+      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-E-NOPF-ALL","E",0);  
+      oadbLHC10h8->SetHardwareTrigger         ( 0,"SPDGFO >= 100");
+      oadbLHC10h8->SetOfflineTrigger          ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG");
+  
+      oadbLHC10h8->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CMBACS2-B-NOPF-ALL","B",1);
+      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-A-NOPF-ALL","A",1);
+      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-C-NOPF-ALL","C",1);
+      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-E-NOPF-ALL","E",1);
+      oadbLHC10h8->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFOL1 > 1)");
+      oadbLHC10h8->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFOL1 > 1) && !V0ABG && !V0CBG");
+
+      ps->SetCustomOADBObjects(oadbDefaultPbPb, 0, 0);
+      ps->SetCustomOADBObjects(oadbLHC10h8, 0, 0);
+    }*/
   }
   //__________________________________________________________________
   /** 

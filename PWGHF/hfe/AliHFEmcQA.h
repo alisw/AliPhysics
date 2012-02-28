@@ -191,7 +191,6 @@ class AliHFEmcQA: public TObject {
     AliHists fHist[3][7][6]; // struct of histograms to store kinematics of given particles
     AliHistsComm fHistComm[2][6]; // struct of additional histograms of given particles
     TH2F *fhD[9]; // D meson pt,Y spectra
-    TH1F *fhDLogbin[9]; // D meson pt w diff binning
 
     TList *fQAhistos;           // Container for QA histos
     AliHFEcollection *fMCQACollection;      //! Tasks own QA collection

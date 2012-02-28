@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliNeutralMesonSelection.cxx 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 // Class that contains methods to select candidate pairs to neutral meson 
@@ -31,7 +30,7 @@
 ClassImp(AliNeutralMesonSelection)
   
   
-//____________________________________________________________________________
+//______________________________________________________
   AliNeutralMesonSelection::AliNeutralMesonSelection() : 
     TObject(),             fAsymmetryCut(1),                fUseAsymmetryCut(0),
     fM(0),                 fInvMassMaxCut(0.),              fInvMassMinCut(0.),           fInvMassMaxCutParam(),
@@ -50,7 +49,7 @@ ClassImp(AliNeutralMesonSelection)
   InitParameters();
 }
 
-//________________________________________________________________________
+//_________________________________________________________
 TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file and 
@@ -163,7 +162,7 @@ TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
 
 }
 
-//____________________________________________________________________________
+//_____________________________________________
 void AliNeutralMesonSelection::InitParameters()
 {
   
@@ -184,8 +183,9 @@ void AliNeutralMesonSelection::InitParameters()
 
 }
 
-//__________________________________________________________________________-
-Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float_t e) const 
+//_____________________________________________________________________
+Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,
+                                                 const Float_t e) const 
 {
  
   // Check if the opening angle of the candidate pairs is inside 
@@ -204,8 +204,10 @@ Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float
 
 }
 
-//____________________________________________________________________________
-Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVector gammaj, TString calo)  
+//_________________________________________________________________
+Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, 
+                                             TLorentzVector gammaj, 
+                                             TString calo)  
 {  
   
   //Search for the neutral pion within selection cuts
@@ -214,22 +216,27 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVect
   Double_t phi = (gammai+gammaj).Phi();
   if(phi < 0)
     phi+=TMath::TwoPi();
+  
   Double_t invmass = (gammai+gammaj).M();
   Double_t angle   = gammaj.Angle(gammai.Vect());
   Double_t e       = (gammai+gammaj).E();
   Double_t asy     = TMath::Abs((gammai-gammaj).E())/(gammai+gammaj).E();
 
   //Fill histograms with no cuts applied.
-  if(fKeepNeutralMesonHistos){
+  if(fKeepNeutralMesonHistos)
+  {
 	  fhAnglePairNoCut  ->Fill(e,angle);
 	  fhInvMassPairNoCut->Fill(e,invmass);
 	  fhAsymmetryNoCut  ->Fill(e,asy);
   }
   
   //Cut on the aperture of the pair
-  if(fUseAngleCut){
-    if(IsAngleInWindow(angle,e)){
-      if(fKeepNeutralMesonHistos ){
+  if(fUseAngleCut)
+  {
+    if(IsAngleInWindow(angle,e))
+    {
+      if(fKeepNeutralMesonHistos )
+      {
         fhAnglePairOpeningAngleCut  ->Fill(e,angle);
         fhInvMassPairOpeningAngleCut->Fill(e,invmass);
         fhAsymmetryOpeningAngleCut  ->Fill(e,asy);
@@ -239,9 +246,12 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVect
   }
   
   // Asymmetry cut
-  if(fUseAsymmetryCut){
-    if(fAsymmetryCut > asy){
-      if(fKeepNeutralMesonHistos){
+  if(fUseAsymmetryCut)
+  {
+    if(fAsymmetryCut > asy)
+    {
+      if(fKeepNeutralMesonHistos)
+      {
         fhInvMassPairAsymmetryCut->Fill(e,invmass);
         fhAnglePairAsymmetryCut  ->Fill(e,angle);
       }
@@ -252,15 +262,18 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVect
   //Cut on the invariant mass of the pair
   
   Float_t invmassmaxcut = fInvMassMaxCut;
-  if(calo=="EMCAL" && e > 6.){ // for EMCAL, pi0s, mass depends strongly with energy for e > 6, loose max cut
+  if(calo=="EMCAL" && e > 6.)
+  { // for EMCAL, pi0s, mass depends strongly with energy for e > 6, loose max cut
   
     invmassmaxcut = (fInvMassMaxCutParam[0]+fInvMassMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
     //printf("e %f, max cut %f, p00 %f,p0 %f,p1 %f,p2 %f\n",
     //       e,invmassmaxcut,fInvMassMaxCut,fInvMassMaxCutParam[0],fInvMassMaxCutParam[1],fInvMassMaxCutParam[2]);
   }
   
-  if((invmass > fInvMassMinCut) && (invmass < invmassmaxcut)){ 
-    if(fKeepNeutralMesonHistos){
+  if( (invmass > fInvMassMinCut) && (invmass < invmassmaxcut) )
+  { 
+    if(fKeepNeutralMesonHistos)
+    {
       fhInvMassPairAllCut->Fill(e,invmass);
       fhAnglePairAllCut  ->Fill(e,angle);
       fhAsymmetryAllCut  ->Fill(e,asy);
@@ -270,57 +283,60 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVect
     return kTRUE;
     
   }//(invmass>0.125) && (invmass<0.145)
-  else return kFALSE;
+  else 
+    return kFALSE;
   
 }
 
-//____________________________________________________________________________
-void  AliNeutralMesonSelection::SetParticle(TString particleName){
+//_______________________________________________________________
+void  AliNeutralMesonSelection::SetParticle(TString particleName)
+{
   // Set some default parameters for selection of pi0 or eta
   
-  if(particleName=="Pi0"){
+  if(particleName=="Pi0")
+  {
+    fHistoNIMBins          = 150 ;
+    fHistoIMMax            = 0.3 ;
+    fHistoIMMin            = 0.  ;  
     
-    fM               = 0.135 ; // GeV
-    fInvMassMaxCut   = 0.16  ; // GeV
-    fInvMassMinCut   = 0.11  ; // GeV
+    fM                     = 0.135 ; // GeV
+    fInvMassMaxCut         = 0.16  ; // GeV
+    fInvMassMinCut         = 0.11  ; // GeV
 
     fInvMassMaxCutParam[0] = 0.0   ;
     fInvMassMaxCutParam[1] =-7.e-5 ;
     fInvMassMaxCutParam[2] = 8.e-5 ;    
          
-    fShiftMinAngle[0]   =-0.03  ;
-    fShiftMinAngle[1]   = 0.0025;
+    fShiftMinAngle[0]      =-0.03  ;
+    fShiftMinAngle[1]      = 0.0025;
     
     fAngleMaxParam.AddAt( 0.8,  0) ;
     fAngleMaxParam.AddAt(-1,    1) ;
     fAngleMaxParam.AddAt( 0.09, 2) ; //for pi0 shift, for eta maybe 0.09 
     fAngleMaxParam.AddAt(-2.e-3,3) ;
-    
-    fHistoNIMBins    = 150 ;
-    fHistoIMMax      = 0.3 ;
-    fHistoIMMin      = 0.  ;  
-    
-  }else if(particleName=="Eta"){
   
-    fM               = 0.547 ; // GeV
-    fInvMassMaxCut   = 0.590 ; // GeV
-    fInvMassMinCut   = 0.510 ; // GeV
+  }
+  else if(particleName=="Eta")
+  {
+    fHistoNIMBins          = 200  ; // GeV
+    fHistoIMMax            = 0.75 ; // GeV
+    fHistoIMMin            = 0.35 ; // GeV 
+  
+    fM                     = 0.547 ; // GeV
+    fInvMassMaxCut         = 0.590 ; // GeV
+    fInvMassMinCut         = 0.510 ; // GeV
     
     fInvMassMaxCutParam[0] = 0.0 ;
     fInvMassMaxCutParam[1] = 0.0 ;
     fInvMassMaxCutParam[2] = 0.0 ;
     
-    fShiftMinAngle[0]   =-0.03   ;
-    fShiftMinAngle[0]   = 0.00  ;
+    fShiftMinAngle[0]      =-0.03  ;
+    fShiftMinAngle[0]      = 0.00  ;
     
     fAngleMaxParam.AddAt( 0.80,  0) ; // Same as pi0
     fAngleMaxParam.AddAt(-0.25,  1) ; // Same as pi0
     fAngleMaxParam.AddAt( 0.12,  2) ;   // Shifted with respect to pi0
     fAngleMaxParam.AddAt(-5.e-4, 3) ; // Same as pi0
-  
-    fHistoNIMBins    = 200  ; // GeV
-    fHistoIMMax      = 0.75 ; // GeV
-    fHistoIMMin      = 0.35 ; // GeV 
     
   }
   else 
@@ -329,7 +345,7 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName){
   
 }
 
-//__________________________________________________________________
+//______________________________________________________________
 void AliNeutralMesonSelection::Print(const Option_t * opt) const
 {
 

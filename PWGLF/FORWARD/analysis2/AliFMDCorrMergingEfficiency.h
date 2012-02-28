@@ -12,7 +12,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_corr
+ * @ingroup pwglf_forward_corr
  */
 #include <TObject.h>
 #include <TObjArray.h>
@@ -29,7 +29,7 @@ class TH1D;
  *
  * These are generated from Monte-Carlo truth and ESD information. 
  *
- * @ingroup pwg2_forward_corr
+ * @ingroup pwglf_forward_corr
  */
 class AliFMDCorrMergingEfficiency : public TObject 
 {

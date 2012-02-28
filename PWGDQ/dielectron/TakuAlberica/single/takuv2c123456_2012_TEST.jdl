@@ -1,0 +1,60 @@
+Jobtag = {
+   "comment:Automatically generated analysis JDL"
+};
+# Input xml collections
+InputDataCollection = {
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/$1,nodownload"
+};
+# Output directory
+OutputDir = "/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/output/$2/#alien_counter_03i#";
+# List of requested packages
+Packages = {
+   "VO_ALICE@AliRoot::v5-01-Rev-19",
+   "VO_ALICE@ROOT::v5-30-03-1",
+   "VO_ALICE@APISCONFIG::V1.1x"
+};
+# List of input files to be uploaded to workers
+InputFile = {
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/takuv2c123456_2012_TEST.C",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/takuv2c123456_2012_TEST.root",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliDielectronHistosTaku.h",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliDielectronHistosTaku.cxx",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliDielectronDebugTreeTaku.h",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliDielectronDebugTreeTaku.cxx",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliDielectronTaku.h",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliDielectronTaku.cxx",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliAnalysisTaskMultiDielectronNewTaku.h",
+   "LF:/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/AliAnalysisTaskMultiDielectronNewTaku.cxx"
+};
+# This is the startup script
+Executable = "takuv2c123456_2012_TEST.sh";
+# We split per SE or file
+Split = "se";
+# Time after which the job is killed (1500 min.)
+TTL = "90000";
+# Resubmit failed jobs until DONE rate reaches this percentage
+MasterResubmitThreshold = "90%";
+# Maximum number of input files to be processed per subjob
+SplitMaxInputFileNumber = "50";
+# Format of input data
+InputDataListFormat = "xml-single";
+# Collection name to be processed on each worker node
+InputDataList = "wn.xml";
+# Files to be archived
+OutputArchive = {
+   "log_archive.zip:std*@disk=1","root_archive.zip:EventStat_temp.root,Resultstakuv2c123456_2012_TESTAnalysisResults.root,*.stat@disk=2"
+};
+# Maximum number of first failing jobs to abort the master job
+MaxInitFailed = "20";
+# AliEn price for this job
+Price = "1";
+# Validation script to be run for each subjob
+Validationcommand = "/alice/cern.ch/user/a/atoia/takuv2c123456_2012_TEST/takuv2c123456_2012_TEST_validation.sh";
+
+# JDL variables
+JDLVariables = 
+{
+   "Packages",
+   "OutputDir"
+};
+Workdirectorysize = {"5000MB"};

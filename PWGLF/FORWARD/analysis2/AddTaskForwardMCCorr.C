@@ -6,7 +6,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
  * Add a Forward MC correction generator task to train 
@@ -14,13 +14,13 @@
  * 
  * @return Added task 
  *
- * @ingroup pwg2_forward_mc
+ * @ingroup pwglf_forward_mc
  */
 AliAnalysisTask*
 AddTaskForwardMCCorr()
 {
   // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
 
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = AliAnalysisManager::GetAnalysisManager();

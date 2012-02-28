@@ -40,8 +40,8 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) :
 AliRDHFCuts(name),
   fUseStrongPid(0),
   fMaxPtStrongPid(0.),
-  fMaxPtStrongPidK(0.),
-  fMaxPtStrongPidpi(0.),
+  fMaxPStrongPidK(0.),
+  fMaxPStrongPidpi(0.),
   fUseImpParProdCorrCut(kFALSE)
 {
   //
@@ -125,8 +125,8 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &
   AliRDHFCuts(source),
   fUseStrongPid(source.fUseStrongPid),
   fMaxPtStrongPid(source.fMaxPtStrongPid),
-  fMaxPtStrongPidK(source.fMaxPtStrongPidK),
-  fMaxPtStrongPidpi(source.fMaxPtStrongPidpi),
+  fMaxPStrongPidK(source.fMaxPStrongPidK),
+  fMaxPStrongPidpi(source.fMaxPStrongPidpi),
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut)
 {
   //
@@ -146,8 +146,8 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
 
   fUseStrongPid=source.fUseStrongPid;
   fMaxPtStrongPid=source.fMaxPtStrongPid;
-  fMaxPtStrongPidK=source.fMaxPtStrongPidK;
-  fMaxPtStrongPidpi=source.fMaxPtStrongPidpi;
+  fMaxPStrongPidK=source.fMaxPStrongPidK;
+  fMaxPStrongPidpi=source.fMaxPStrongPidpi;
   fUseImpParProdCorrCut=source.fUseImpParProdCorrCut;
 
   return *this;
@@ -325,11 +325,11 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
     if(isKaon<0) nNotKaons++;  
     if(sign==track->Charge()){//pions
       if(isPion<0)return 0;
-      if(rd->Pt()<fMaxPtStrongPid && isPion<=0 && fUseStrongPid&2 && track->Pt()<fMaxPtStrongPidpi)return 0;
+      if(rd->Pt()<fMaxPtStrongPid && isPion<=0 && fUseStrongPid&2 && track->P()<fMaxPStrongPidpi)return 0;
     }
     else{//kaons
       if(isKaon<0)return 0;
-	if(rd->Pt()<fMaxPtStrongPid && isKaon<=0 && fUseStrongPid&1&& track->Pt()<fMaxPtStrongPidK)return 0;
+	if(rd->Pt()<fMaxPtStrongPid && isKaon<=0 && fUseStrongPid&1&& track->P()<fMaxPStrongPidK)return 0;
     }
   }
   
@@ -757,3 +757,17 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   return;
 }
 
+
+void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2011() {
+
+  // Default 2010 PbPb cut object
+  SetStandardCutsPbPb2010();
+
+  // Enable all 2011 PbPb run triggers
+  //  
+  SetTriggerClass("");
+  ResetMaskAndEnableMBTrigger();
+  EnableCentralTrigger();
+  EnableSemiCentralTrigger();
+
+} 

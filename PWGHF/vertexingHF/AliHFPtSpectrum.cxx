@@ -48,7 +48,7 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 
-#include "AliLog.h"
+//#include "AliLog.h"
 #include "AliHFSystErr.h"
 #include "AliHFPtSpectrum.h"
 
@@ -94,9 +94,12 @@ AliHFPtSpectrum::AliHFPtSpectrum(const char* name, const char* title, Int_t opti
   fgSigmaCorrExtreme(NULL),
   fgSigmaCorrConservative(NULL),
   fnSigma(NULL),
+  fnHypothesis(NULL),
   fFeedDownOption(option),
   fAsymUncertainties(kTRUE),
   fPbPbElossHypothesis(kFALSE),
+  fIsStatUncEff(kTRUE),
+  fParticleAntiParticle(2),
   fhStatUncEffcSigma(NULL),
   fhStatUncEffbSigma(NULL),
   fhStatUncEffcFD(NULL),
@@ -153,9 +156,12 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
   fgSigmaCorrExtreme(rhs.fgSigmaCorrExtreme),
   fgSigmaCorrConservative(rhs.fgSigmaCorrConservative),
   fnSigma(rhs.fnSigma),
+  fnHypothesis(rhs.fnHypothesis),
   fFeedDownOption(rhs.fFeedDownOption),
   fAsymUncertainties(rhs.fAsymUncertainties),
   fPbPbElossHypothesis(rhs.fPbPbElossHypothesis),
+  fIsStatUncEff(rhs.fIsStatUncEff),
+  fParticleAntiParticle(rhs.fParticleAntiParticle),
   fhStatUncEffcSigma(NULL),
   fhStatUncEffbSigma(NULL),
   fhStatUncEffcFD(NULL),
@@ -215,9 +221,12 @@ AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
   fgSigmaCorrExtreme = source.fgSigmaCorrExtreme;
   fgSigmaCorrConservative = source.fgSigmaCorrConservative;
   fnSigma = source.fnSigma;
+  fnHypothesis = source.fnHypothesis;
   fFeedDownOption = source.fFeedDownOption;
   fAsymUncertainties = source.fAsymUncertainties;
   fPbPbElossHypothesis = source.fPbPbElossHypothesis;
+  fIsStatUncEff = source.fIsStatUncEff;
+  fParticleAntiParticle = source.fParticleAntiParticle;
   
   for(Int_t i=0; i<2; i++){
     fLuminosity[i] = source.fLuminosity[i];
@@ -265,6 +274,7 @@ AliHFPtSpectrum::~AliHFPtSpectrum(){
   if (fgSigmaCorrExtreme) delete fgSigmaCorrExtreme;
   if (fgSigmaCorrConservative) delete fgSigmaCorrConservative;
   if (fnSigma) delete fnSigma;
+  if (fnHypothesis) delete fnHypothesis;
 }
   
 
@@ -531,7 +541,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   // variables : analysed delta_y, BR for the final correction,
   //             BR b --> D --> decay (relative to the input theoretical prediction)
   //
-  //   Sigma = ( 1. / (lumi * delta_y * BR_c * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
+  //   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
   //
   // Uncertainties: (stat) delta_sigma = sigma * sqrt ( (delta_spectra/spectra)^2 )
   //  (syst but feed-down) delta_sigma = sigma * sqrt ( (delta_spectra_syst/spectra)^2 + (delta_lumi/lumi)^2 + (delta_eff_trig/eff_trig)^2 + (delta_eff/eff)^2 )
@@ -549,6 +559,8 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     AliInfo(" Histos not properly initialized. Check : inconsistent binning ? missing histos ?");
     return;
   }
+  // Reset the statistical uncertainties on the efficiencies if needed
+  if(!fIsStatUncEff) ResetStatUncEff();
 
   //
   // Second: Correct for feed-down
@@ -578,6 +590,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     AliInfo(" Are you sure the feed-down correction option is right ?"); 
   }
 
+
   // Print out information
   printf("\n\n     Correcting the spectra with : \n   luminosity = %2.2e +- %2.2e, trigger efficiency = %2.2e +- %2.2e, \n    delta_y = %2.2f, BR_c = %2.2e, BR_b_decay = %2.2e \n    %2.2f percent uncertainty on the efficiencies, and %2.2f percent uncertainty on the b/c efficiencies ratio \n\n",fLuminosity[0],fLuminosity[1],fTrigEfficiency[0],fTrigEfficiency[1],deltaY,branchingRatioC,branchingRatioBintoFinalDecay,fGlobalEfficiencyUncertainties[0],fGlobalEfficiencyUncertainties[1]);
   if (fPbPbElossHypothesis)  printf("\n\n     The considered Tab is  %4.2e +- %2.2e \n\n",fTab[0],fTab[1]);
@@ -606,11 +619,11 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   fhSigmaCorrDataSyst = new TH1D("fhSigmaCorrDataSyst","data syst uncertainties on the corrected sigma",nbins,limits);
   if (fPbPbElossHypothesis && fFeedDownOption==1) {
     fhSigmaCorrRcb = new TH2D("fhSigmaCorrRcb","corrected sigma vs Rcb Eloss hypothesis; p_{T} [GeV/c] ; Rcb Eloss hypothesis ; #sigma",nbins,limits,800,0.,4.);
-    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rcb:fc:Yield:Sigma:SigmaStatUnc");
+    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rcb:fc:Yield:Sigma:SigmaStatUnc:SigmaMax:SigmaMin");
   }
   if (fPbPbElossHypothesis && fFeedDownOption==2) {
     fhSigmaCorrRcb = new TH2D("fhSigmaCorrRcb","corrected sigma vs Rb Eloss hypothesis; p_{T} [GeV/c] ; Rb Eloss hypothesis ; #sigma",nbins,limits,800,0.,4.);
-    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rb:fc:Yield:Sigma:SigmaStatUnc");
+    fnSigma = new TNtuple("fnSigma"," Sigma ntuple calculation","pt:Signal:Rb:fc:Yield:Sigma:SigmaStatUnc:SigmaMax:SigmaMin");
   }
   // and the output TGraphAsymmErrors
   if (fAsymUncertainties){
@@ -643,9 +656,9 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     errvalueStatUncEffc=0.; errvalueStatUncEffb=0.;
 
     // Sigma calculation
-    //   Sigma = ( 1. / (lumi * delta_y * BR_c * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
+    //   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
     value = (fhDirectEffpt->GetBinContent(ibin) && fhDirectEffpt->GetBinContent(ibin)!=0. && fhRECpt->GetBinContent(ibin)>0.) ? 
-      ( fhYieldCorr->GetBinContent(ibin) / ( deltaY * branchingRatioC * fLuminosity[0] * fTrigEfficiency[0] * fhDirectEffpt->GetBinContent(ibin) ) )
+      ( fhYieldCorr->GetBinContent(ibin) / ( deltaY * branchingRatioC * fParticleAntiParticle * fLuminosity[0] * fTrigEfficiency[0] * fhDirectEffpt->GetBinContent(ibin) ) )
       : 0. ;
 
     // Sigma statistical uncertainty:
@@ -704,30 +717,61 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     //
     fhSigmaCorr->SetBinContent(ibin,value);
     fhSigmaCorr->SetBinError(ibin,errValue);
+
     //
     // Fill the histos and ntuple vs the Eloss hypothesis
     //
     if (fPbPbElossHypothesis) {
+
       // Loop over the Eloss hypothesis
-      for (Float_t rval=0.0025; rval<4.0; rval+=0.005) {
-	Int_t rbin = FindTH2YBin(fhYieldCorrRcb,rval);
-	Double_t yieldRcbvalue = fhYieldCorrRcb->GetBinContent(ibin,rbin);
+      if(!fnHypothesis) { 
+	AliError("Error reading the fc hypothesis no ntuple, please check !!");
+	delete [] limits;
+	delete [] binwidths;
+	return ;
+      }
+      Int_t entriesHypo = fnHypothesis->GetEntries();
+      Float_t pt=0., Rhy=0., fc=0., fcMin=0., fcMax=0.;
+      fnHypothesis->SetBranchAddress("pt",&pt);
+      if (fFeedDownOption==2) fnHypothesis->SetBranchAddress("Rb",&Rhy);
+      else if (fFeedDownOption==1) fnHypothesis->SetBranchAddress("Rcb",&Rhy);
+      fnHypothesis->SetBranchAddress("fc",&fc);
+      fnHypothesis->SetBranchAddress("fcMax",&fcMax);
+      fnHypothesis->SetBranchAddress("fcMin",&fcMin);
+
+      for (Int_t item=0; item<entriesHypo; item++) {
+
+	fnHypothesis->GetEntry(item);
+	if ( TMath::Abs( pt - fhDirectEffpt->GetBinCenter(ibin) ) > 0.15 ) continue;
+
+	Double_t yieldRcbvalue = (fhRECpt->GetBinContent(ibin) ) ? fhRECpt->GetBinContent(ibin) * fc : 0. ;
+	yieldRcbvalue /= fhRECpt->GetBinWidth(ibin) ;
+	Double_t yieldRcbvalueMax = (fhRECpt->GetBinContent(ibin) ) ? fhRECpt->GetBinContent(ibin) * fcMax : 0. ;
+	yieldRcbvalueMax /= fhRECpt->GetBinWidth(ibin) ;
+	Double_t yieldRcbvalueMin = (fhRECpt->GetBinContent(ibin) ) ? fhRECpt->GetBinContent(ibin) * fcMin : 0. ;
+	yieldRcbvalueMin /= fhRECpt->GetBinWidth(ibin) ;
+
 	// Sigma calculation
-	//   Sigma = ( 1. / (lumi * delta_y * BR_c * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
-	Double_t sigmaRcbvalue = (fhDirectEffpt->GetBinContent(ibin) && fhDirectEffpt->GetBinContent(ibin)!=0.) ? 
-	  ( yieldRcbvalue / ( deltaY * branchingRatioC * fLuminosity[0] * fTrigEfficiency[0] * fhDirectEffpt->GetBinContent(ibin) ) )
+	//   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
+	Double_t sigmaRcbvalue = (fhDirectEffpt->GetBinContent(ibin) && fhDirectEffpt->GetBinContent(ibin)>0.) ? 
+	  ( yieldRcbvalue / ( deltaY * branchingRatioC * fParticleAntiParticle * fLuminosity[0] * fTrigEfficiency[0] * fhDirectEffpt->GetBinContent(ibin) ) )
+	  : 0. ;
+	Double_t sigmaRcbvalueMax = (sigmaRcbvalue!=0.) ? 
+	  ( yieldRcbvalueMax / ( deltaY * branchingRatioC * fParticleAntiParticle * fLuminosity[0] * fTrigEfficiency[0] * fhDirectEffpt->GetBinContent(ibin) ) )
+	  : 0. ;
+	Double_t sigmaRcbvalueMin = (sigmaRcbvalue!=0.) ? 
+	  ( yieldRcbvalueMin / ( deltaY * branchingRatioC * fParticleAntiParticle * fLuminosity[0] * fTrigEfficiency[0] * fhDirectEffpt->GetBinContent(ibin) ) )
 	  : 0. ;
 	// Sigma statistical uncertainty:
 	//   delta_sigma = sigma * sqrt ( (delta_spectra/spectra)^2 ) = sigma * ( delta_spectra / (spectra-corr * binwidth) )
 	Double_t sigmaRcbvalueStatUnc = (sigmaRcbvalue!=0.) ? 
 	  sigmaRcbvalue * ( fhRECpt->GetBinError(ibin) / ( yieldRcbvalue * fhRECpt->GetBinWidth(ibin) ) )  : 0. ;
 
-	fhSigmaCorrRcb->Fill( fhSigmaCorr->GetBinCenter(ibin) , rval, sigmaRcbvalue );
+	fhSigmaCorrRcb->Fill( fhSigmaCorr->GetBinCenter(ibin) , Rhy, sigmaRcbvalue );
 	// 	if(ibin==3) 
 	// 	  cout << " pt "<< fhRECpt->GetBinCenter(ibin) <<" bin "<< ibin<<" rval="<<rval<<", rbin="<<rbin<<" fc-value="<< fhFcRcb->GetBinContent(ibin,rbin) <<", yield-fcRbvalue="<<yieldRcbvalue<<", sigma-fcRbvalue="<<sigmaRcbvalue<<endl;
 	fnSigma->Fill(fhRECpt->GetBinCenter(ibin), fhRECpt->GetBinContent(ibin),
-		      rval, fhFcRcb->GetBinContent(ibin,rbin),
-		      yieldRcbvalue, sigmaRcbvalue, sigmaRcbvalueStatUnc );
+		      Rhy, fc, yieldRcbvalue, sigmaRcbvalue, sigmaRcbvalueStatUnc, sigmaRcbvalueMax, sigmaRcbvalueMin );
       }
     }
     //
@@ -1015,7 +1059,10 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
   fhFc = new TH1D("fhFc","fc correction factor",nbins,limits);
   fhFcMax = new TH1D("fhFcMax","max fc correction factor",nbins,limits);
   fhFcMin = new TH1D("fhFcMin","min fc correction factor",nbins,limits);
-  if(fPbPbElossHypothesis) fhFcRcb = new TH2D("fhFcRcb","fc correction factor vs Rcb Eloss hypothesis; p_{T} [GeV/c] ; Rcb Eloss hypothesis ; fc correction",nbins,limits,800,0.,4.);
+  if(fPbPbElossHypothesis) {
+    fhFcRcb = new TH2D("fhFcRcb","fc correction factor vs Rcb Eloss hypothesis; p_{T} [GeV/c] ; Rcb Eloss hypothesis ; fc correction",nbins,limits,800,0.,4.);
+    fnHypothesis = new TNtuple("fnHypothesis"," Feed-down correction vs hypothesis (fc)","pt:Rcb:fc:fcMax:fcMin");
+  }
   // two local control histograms
   TH1D *hTheoryRatio = new TH1D("hTheoryRatio","Theoretical B-->D over c-->D (feed-down/direct) ratio",nbins,limits);
   TH1D *hEffRatio = new TH1D("hEffRatio","Efficiency B-->D over c-->D (feed-down/direct) ratio",nbins,limits);
@@ -1080,37 +1127,24 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
 
     // fc uncertainty from (eff_b/eff_c) = fc^2 * (N_b/N_c) * delta(eff_b/eff_c)
     //  delta(eff_b/eff_c) is a percentage = effRatio * sqrt( fGlobalEfficiencyUncertainties[1]^2 + unc_eff_c ^2 + unc_eff_b ^2 ) 
-    correctionUnc = correction*correction * theoryRatio * effRatio *
-      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
-		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
-		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
-		   );
-    correctionExtremeAUnc = correctionExtremeA*correctionExtremeA * theoryRatioExtremeA  * effRatio *
-      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
-		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
-		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
-		   );
-    correctionExtremeBUnc = correctionExtremeB*correctionExtremeB * theoryRatioExtremeB  * effRatio *
-      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
-		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
-		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
-		   );
-    correctionConservativeAUnc = correctionConservativeA*correctionConservativeA * theoryRatioConservativeA  *effRatio *
-      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
-		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
-		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
-		   );
+    Double_t relEffUnc =  TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
+				       (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
+				       (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
+				       );
+
+    correctionUnc = correction*correction * theoryRatio * effRatio * relEffUnc;
+    correctionExtremeAUnc = correctionExtremeA*correctionExtremeA * theoryRatioExtremeA  * effRatio * relEffUnc;
+    correctionExtremeBUnc = correctionExtremeB*correctionExtremeB * theoryRatioExtremeB  * effRatio * relEffUnc;
+
+    correctionConservativeAUnc = correctionConservativeA*correctionConservativeA * theoryRatioConservativeA  *effRatio * relEffUnc;
     //
     correctionConservativeAUncStatEffc = correctionConservativeA*correctionConservativeA * theoryRatioConservativeA  *effRatio * 
       (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin));
     correctionConservativeAUncStatEffb = correctionConservativeA*correctionConservativeA * theoryRatioConservativeA  *effRatio * 
       (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin));
 
-    correctionConservativeBUnc = correctionConservativeB*correctionConservativeB * theoryRatioConservativeB  *effRatio *
-      TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
-		   (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
-		   (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
-		   );
+    correctionConservativeBUnc = correctionConservativeB*correctionConservativeB * theoryRatioConservativeB  *effRatio * relEffUnc;
+
     correctionConservativeBUncStatEffb = correctionConservativeB*correctionConservativeB * theoryRatioConservativeB  *effRatio * 
       (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin));
     correctionConservativeBUncStatEffc = correctionConservativeB*correctionConservativeB * theoryRatioConservativeB  *effRatio * 
@@ -1124,16 +1158,29 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
     //
     // Estimate how the result varies vs charm/beauty Eloss hypothesis
     //
-    if ( TMath::Abs(correction-1.0)>0.01 && fPbPbElossHypothesis){
+    if ( TMath::Abs(correction-1.0)>0.0001 && fPbPbElossHypothesis){
       // Loop over the Eloss hypothesis
       //      Int_t rbin=0;
       for (Float_t rval=0.0025; rval<4.0; rval+=0.005){
+	// Central fc with Eloss hypothesis
 	Double_t correctionRcb = ( 1. / ( 1 + ( effRatio * theoryRatio * (1/rval) ) ) );
 	fhFcRcb->Fill( fhFc->GetBinCenter(ibin) , rval, correctionRcb );
 	// 	if(ibin==3){
 	// 	  cout << " pt "<< fhFc->GetBinCenter(ibin) <<" bin "<< ibin<<" rval="<<rval<<", rbin="<<rbin<<", fc-Rcb-value="<<correctionRcb<<endl;
 	// 	  rbin++;
 	// 	}
+	// Upper / lower fc with up / low FONLL bands and Eloss hypothesis
+	Double_t correctionConservativeARcb = ( 1. / ( 1 + ( effRatio * theoryRatioConservativeA * (1/rval) ) ) );
+	Double_t correctionConservativeBRcb = ( 1. / ( 1 + ( effRatio * theoryRatioConservativeB * (1/rval) ) ) );
+	Double_t correctionConservativeARcbUnc = correctionConservativeARcb*correctionConservativeARcb * theoryRatioConservativeA * (1/rval) *effRatio * relEffUnc;
+	Double_t correctionConservativeBRcbUnc = correctionConservativeBRcb*correctionConservativeBRcb * theoryRatioConservativeB * (1/rval) *effRatio * relEffUnc;
+	Double_t consvalRcb[4] = { correctionConservativeARcb - correctionConservativeARcbUnc, correctionConservativeARcb + correctionConservativeARcbUnc,
+				   correctionConservativeBRcb - correctionConservativeBRcbUnc, correctionConservativeBRcb + correctionConservativeBRcbUnc};
+	Double_t uncConservativeRcbMin = correctionRcb - TMath::MinElement(4,consvalRcb);
+	Double_t uncConservativeRcbMax =  TMath::MaxElement(4,consvalRcb) - correctionRcb;
+// 	if(ibin==3)
+// 	  cout << " pt="<<fhDirectEffpt->GetBinCenter(ibin)<<", hypo="<<rval<<", fc="<<correctionRcb<<" +"<<uncConservativeRcbMax<<" -"<<uncConservativeRcbMin<<endl;
+	fnHypothesis->Fill( fhDirectEffpt->GetBinCenter(ibin), rval, correctionRcb, correctionRcb+uncConservativeRcbMax, correctionRcb-uncConservativeRcbMin);
       }
     }
     //
@@ -1171,7 +1218,6 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
       fhStatUncEffcFD->SetBinContent(ibin,0.); fhStatUncEffcFD->SetBinError(ibin,uncConservativeStatEffc*100.);
       fhStatUncEffbFD->SetBinContent(ibin,0.); fhStatUncEffbFD->SetBinError(ibin,uncConservativeStatEffb*100.);
       //      cout << " pt "<< fhStatUncEffcFD->GetBinCenter(ibin) <<" bin "<< ibin<<" fc-stat-c ="<<uncConservativeStatEffc<<" fc-stat-b ="<<uncConservativeStatEffb<<endl;
-      
     }
 
   }
@@ -1352,6 +1398,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
   if(fPbPbElossHypothesis) {
     fhFcRcb = new TH2D("fhFcRcb","fc correction factor (Nb method) vs Rb Eloss hypothesis; p_{T} [GeV/c] ; Rb Eloss hypothesis ; fc correction",nbins,limits,800,0.,4.);
     fhYieldCorrRcb = new TH2D("fhYieldCorrRcb","corrected yield (by Nb) vs Rb Eloss hypothesis; p_{T} [GeV/c] ; Rb Eloss hypothesis ; corrected yield",nbins,limits,800,0.,4.);
+    fnHypothesis = new TNtuple("fnHypothesis"," Feed-down correction vs hypothesis (Nb)","pt:Rb:fc:fcMax:fcMin");
   }
   // and the output TGraphAsymmErrors
   if (fAsymUncertainties){
@@ -1393,7 +1440,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     
     value = ( fhRECpt->GetBinContent(ibin)>0. && fhRECpt->GetBinContent(ibin)!=0. && 
 	      fhFeedDownMCpt->GetBinContent(ibin)>0. && fhFeedDownEffpt->GetBinContent(ibin)>0. ) ?
-      fhRECpt->GetBinContent(ibin) - frac*(deltaY*branchingRatioBintoFinalDecay*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ) 
+      fhRECpt->GetBinContent(ibin) - frac*(deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ) 
       : 0. ;
     value /= fhRECpt->GetBinWidth(ibin);
     if (value<0.) value =0.;
@@ -1407,7 +1454,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     // correction =  [ 1  - (lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th)/reco ] 
     // in HIC: correction =  [ 1  - ( Tab * Nevt * delta_y * BR_b * eff_trig * eff_b * Nb_th)/reco ]
     correction = (value>0.) ? 
-      1 - (frac*deltaY*branchingRatioBintoFinalDecay*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ) / fhRECpt->GetBinContent(ibin)  : 0. ;
+      1 - (frac*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ) / fhRECpt->GetBinContent(ibin)  : 0. ;
     if (correction<0.) correction = 0.;
 
     // Systematic uncertainties
@@ -1415,7 +1462,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     //         (feed-down syst)  delta_physics = sqrt ( (k*delta_lumi/lumi)^2 + (k*delta_eff_trig/eff_trig)^2 
     //                                                   + (k*delta_Nb/Nb)^2 + (k*delta_eff/eff)^2 + (k*global_eff_ratio)^2 ) / bin-width
     //                    where k = lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th * bin-width
-    kfactor = frac*deltaY*branchingRatioBintoFinalDecay*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ;
+    kfactor = frac*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ;
     //
     if (fAsymUncertainties && value>0.) {
       Double_t nb =  fhFeedDownMCpt->GetBinContent(ibin);
@@ -1431,35 +1478,19 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
   
       // Feed-down systematics
       // min value with the maximum Nb
-      errvalueExtremeMin = TMath::Sqrt( ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) +
-					( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
-					( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) )  +
-					( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
-					( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) 
-					) / fhRECpt->GetBinWidth(ibin);
+      Double_t errCom =  ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) +
+	( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
+	( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
+	( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) ;
+      errvalueExtremeMin = TMath::Sqrt( errCom + ( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) ) ) / fhRECpt->GetBinWidth(ibin);
       // max value with the minimum Nb
-      errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) +
-					 ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
-					 ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) )  +
-					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
-					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
-					 ) / fhRECpt->GetBinWidth(ibin);
+      errvalueExtremeMax =  TMath::Sqrt( errCom + ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) ) ) / fhRECpt->GetBinWidth(ibin);
 
       // Correction systematics (fc)
       // min value with the maximum Nb
-      correctionMin = TMath::Sqrt( ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) + 
-				   ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
-				   ( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) )  +
-				   ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
-				   ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) 
-				   ) / fhRECpt->GetBinContent(ibin) ;
+      correctionMin = TMath::Sqrt( errCom + ( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) ) ) / fhRECpt->GetBinContent(ibin) ;
       // max value with the minimum Nb
-      correctionMax =  TMath::Sqrt( ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) + 
-				    ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
-				    ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) )  +
-				    ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
-				    ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
-				    ) / fhRECpt->GetBinContent(ibin) ;
+      correctionMax =  TMath::Sqrt( errCom + ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) ) ) / fhRECpt->GetBinContent(ibin) ;
       //
       correctionUncStatEffb = TMath::Sqrt(  ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	)
 					    ) / fhRECpt->GetBinContent(ibin) ;
@@ -1486,7 +1517,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       //      Int_t rbin=0;
       for (Float_t rval=0.0025; rval<4.0; rval+=0.005){
 	// correction =  [ 1  - (Tab *Nevt * delta_y * BR_b * eff_trig * eff_b * Nb_th *binwidth )* (rval) /reco ] 
-	Double_t fcRcbvalue = 1 - (fTab[0]*fNevts*deltaY*branchingRatioBintoFinalDecay*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin)*fhRECpt->GetBinWidth(ibin) * rval ) / fhRECpt->GetBinContent(ibin) ;
+	Double_t fcRcbvalue = 1 - (fTab[0]*fNevts*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin)*fhRECpt->GetBinWidth(ibin) * rval ) / fhRECpt->GetBinContent(ibin) ;
 	if(fcRcbvalue<0.) fcRcbvalue=0.;
 	fhFcRcb->Fill( fhRECpt->GetBinCenter(ibin) , rval, fcRcbvalue );
 	//    physics = reco * fcRcb / bin-width
@@ -1499,6 +1530,11 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 	//	cout << " pt "<< fhFcRcb->GetBinCenter(ibin) <<" bin "<< ibin<<" rval="<<rval<<", fc-Rb-value="<< fcRcbvalue << ", yield-Rb-value="<< Rcbvalue <<endl;
 	// 	  rbin++;
 	// 	}
+	Double_t correctionMaxRcb = correctionMax*rval;
+	Double_t correctionMinRcb = correctionMin*rval;
+	fnHypothesis->Fill( fhYieldCorr->GetBinCenter(ibin), rval, fcRcbvalue, fcRcbvalue + correctionMaxRcb, fcRcbvalue - correctionMinRcb);
+// 	if(ibin==3){
+// 	  cout << " pt="<< fhFcRcb->GetBinCenter(ibin) <<", rval="<<rval<<", fc="<<fcRcbvalue<<" +"<<correctionMaxRcb<<" -"<<correctionMinRcb<<endl;}
       }
     }
     //
@@ -1730,4 +1766,15 @@ Int_t AliHFPtSpectrum::FindTH2YBin(TH2D *histo, Float_t yvalue){
   }
   
   return ybin;
+}
+
+//_________________________________________________________________________________________________________
+void AliHFPtSpectrum::ResetStatUncEff(){
+
+  Int_t entries = fhDirectEffpt->GetNbinsX();
+  for(Int_t i=0; i<=entries; i++){
+    fhDirectEffpt->SetBinError(i,0.);
+    fhFeedDownEffpt->SetBinError(i,0.);
+  }
+
 }

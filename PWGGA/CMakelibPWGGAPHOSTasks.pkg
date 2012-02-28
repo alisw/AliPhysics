@@ -33,6 +33,7 @@ set ( SRCS
  PHOSTasks/PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
  PHOSTasks/PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
  PHOSTasks/PHOS_PbPbQA/AliAnalysisTaskPHOSPbPbQA.cxx
+ PHOSTasks/PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
  PHOSTasks/CaloCellQA/AliCaloCellsQA.cxx
  PHOSTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
  PHOSTasks/omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
@@ -45,3 +46,7 @@ set ( DHDR  PWGGAPHOSTasksLinkDef.h)
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE  PWGGA/PHOSTasks/PHOS_pp_pi0 PWGGA/PHOSTasks/CaloCellQA PWGGA/PHOSTasks/omega3pi PHOS STEER/ESD STEER/STEERBase)
+
+install (FILES PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C 
+	       PHOSTasks/CaloCellQA/macros/AddTaskPHOSQA.C 
+	 DESTINATION PWGGA/PHOSTasks/CaloCellQA/macros)

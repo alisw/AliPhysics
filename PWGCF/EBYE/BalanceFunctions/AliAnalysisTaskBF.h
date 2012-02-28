@@ -15,6 +15,10 @@ class AliESDtrackCuts;
 #include "AliAnalysisTaskSE.h"
 #include "AliBalance.h"
 
+#include "AliPID.h"  
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+ 
 
 class AliAnalysisTaskBF : public AliAnalysisTaskSE {
  public:
@@ -108,6 +112,23 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   void SetAcceptanceParameterization(TF1 *parameterization) {
     fAcceptanceParameterization = parameterization;}
 
+  //pid
+  enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
+  enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };  
+
+  void SetUseBayesianPID(Double_t gMinProbabilityValue) {
+    fUsePID = kTRUE; fUsePIDnSigma = kFALSE; fUsePIDPropabilities = kTRUE;
+    fMinAcceptedPIDProbability = gMinProbabilityValue; }
+
+  void SetUseNSigmaPID(Double_t gMaxNSigma) {
+    fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
+    fPIDNSigma = gMaxNSigma; }
+
+  void SetParticleOfInterest(kParticleOfInterest poi) {
+    fParticleOfInterest = poi;}
+  void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
+    fPidDetectorConfig = detConfig;}
+
  private:
   AliBalance *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
@@ -115,6 +136,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TList *fList; //fList object
   TList *fListBF; //fList object
   TList *fListBFS; //fList object
+  TList *fHistListPIDQA;  //! list of histograms
 
   TH1F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
@@ -134,6 +156,35 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TH1F *fHistPhiAfter;//
   TH2F *fHistV0M;//
   TH2F *fHistRefTracks;//
+
+  //============PID============//
+  TH2D *fHistdEdxVsPTPCbeforePID;//
+  TH2D *fHistBetavsPTOFbeforePID;//
+  TH2D *fHistProbTPCvsPtbeforePID; //
+  TH2D *fHistProbTOFvsPtbeforePID;//
+  TH2D *fHistProbTPCTOFvsPtbeforePID;//
+  TH2D *fHistNSigmaTPCvsPtbeforePID;//
+  TH2D *fHistNSigmaTOFvsPtbeforePID;//
+  TH2D *fHistdEdxVsPTPCafterPID;//
+  TH2D *fHistBetavsPTOFafterPID;//
+  TH2D *fHistProbTPCvsPtafterPID;//
+  TH2D *fHistProbTOFvsPtafterPID;//
+  TH2D *fHistProbTPCTOFvsPtafterPID;//
+  TH2D *fHistNSigmaTPCvsPtafterPID;//
+  TH2D *fHistNSigmaTOFvsPtafterPID; //
+
+  AliPIDResponse *fPIDResponse;     //! PID response object
+  AliPIDCombined       *fPIDCombined;     //! combined PID object
+  
+  kParticleOfInterest  fParticleOfInterest;
+  kDetectorUsedForPID   fPidDetectorConfig;
+
+  Bool_t fUsePID; //
+  Bool_t fUsePIDnSigma;//
+  Bool_t fUsePIDPropabilities;//
+  Double_t fPIDNSigma;//
+  Double_t fMinAcceptedPIDProbability;//
+  //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
 
@@ -176,6 +227,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products from the MC analysis
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
+
+  
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented

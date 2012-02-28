@@ -1,21 +1,20 @@
-// **** to run the macro: ***********
+/// **** to run the macro: ***********
 // alien-token-init username
-// source /tmp/gclient_env_IDuser
 // root -l runGrid.C
 
 class AliAnalysisGrid;
 
-void runGridCascadePbPb ( Bool_t   useMC             = kTRUE,  // kTRUE if analysing a MC sample 
-                          Bool_t   runperformancetask = kTRUE,  
-                          Float_t  centrlowlim       = 0.,
-                          Float_t  centruplim        = 80.,
-                          TString  centrest         = "V0M",
-                          Short_t  lCollidingSystems = 1,       //0 = pp, 1 = AA
-                          Float_t  vtxlim             = 15.,
-                          Bool_t   usecfcontainers     = kTRUE,
-                          Bool_t   kextrasel           = kFALSE,
-                          Bool_t   acccut = kTRUE,
-                          const char *plugin_mode="test") {
+void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if analysing a MC sample 
+                         Bool_t   runperformancetask  = kTRUE,  
+                         Float_t  centrlowlim         = 0.,
+                         Float_t  centruplim          = 90.,
+                         TString  centrest            = "V0M",
+                         Float_t  vtxlim              = 10.,
+                         Bool_t   kextrasel           = kFALSE,
+                         Bool_t   acccut              = kFALSE,
+                         Bool_t   krelaunchvertexers  = kFALSE,
+                         TString  anatype             = "AOD",//"ESD",
+                         const char *plugin_mode      ="full") {
 
   // Load common libraries
   gSystem->Load("libCore.so");
@@ -44,7 +43,7 @@ void runGridCascadePbPb ( Bool_t   useMC             = kTRUE,  // kTRUE if analy
   //__________________________________________________________________________
   // Create and configure the alien handler plugin
 //  gROOT->LoadMacro("CreateAlienHandler.C");
-  AliAnalysisGrid *alienHandler = CreateAlienHandler(plugin_mode, runperformancetask, useMC);
+  AliAnalysisGrid *alienHandler = CreateAlienHandler(plugin_mode, runperformancetask, useMC, anatype);
   if (!alienHandler) return;
  
   //__________________________________________________________________________
@@ -55,26 +54,47 @@ void runGridCascadePbPb ( Bool_t   useMC             = kTRUE,  // kTRUE if analy
   // Connect plug-in to the analysis manager
   mgr->SetGridHandler(alienHandler);
 
+  // Input handlers
+  AliESDInputHandler* esdH = new AliESDInputHandler();
+  AliAODInputHandler* aodH = new AliAODInputHandler();
+  if (anatype=="ESD") mgr->SetInputEventHandler(esdH);
+  else mgr->SetInputEventHandler(aodH);
+  if (runperformancetask&&(anatype=="ESD")) {
+    AliMCEventHandler* mcHandler = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mcHandler);
+  }
+
   //__________________________________________________________________________
-  // Add task 
+  // Add tasks
+
+ // Physics selection
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask *physSel = AddTaskPhysicsSelection(useMC);
+  
+  // Centrality selection
+  if (anatype == "ESD") { 
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
+    if (useMC){
+      taskCentr->SetMCInput();
+      taskCentr->DontUseCleaning();
+    }
+  }
+
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AliAnalysisTaskPIDResponse *pidTask = AddTaskPIDResponse(useMC);
 
   if (runperformancetask) {
     gROOT->LoadMacro("AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
     AliAnalysisTaskCheckPerformanceCascadePbPb *task = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskPerformanceCascade");
-    task->SetDebugLevelCascade           (0);                 // not used in the task
-    task->SetApplyAccCut                 (acccut);
-    task->SetUseCFCont                   (usecfcontainers);
-    task->SetAlephParamFor1PadTPCCluster (kTRUE);             // to set aleph param - ask which ones have to be used
+    task->SetApplyAccCut                (acccut);
+    task->SetRejectEventPileUp          (kFALSE);            // selects pile up
   } else {
     gROOT->LoadMacro("AliAnalysisTaskCheckCascadePbPb.cxx++g");
     AliAnalysisTaskCheckCascadePbPb *task = new AliAnalysisTaskCheckCascadePbPb("TaskCascade");
-    task->SetUseCFContCascadeCuts       (usecfcontainers);
   }
-
- 
-  task->SetCollidingSystems           (lCollidingSystems); // only for multiplicity binning
-  task->SetAnalysisType               ("ESD");
-  task->SetRelaunchV0CascVertexers    (0);                 // used but code is commented out
+  task->SetRelaunchV0CascVertexers    (krelaunchvertexers); 
+  task->SetAnalysisType               (anatype);
   task->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
   task->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
   task->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
@@ -87,23 +107,8 @@ void runGridCascadePbPb ( Bool_t   useMC             = kTRUE,  // kTRUE if analy
  
   mgr->AddTask(task);
 
-  // ESD case
-  AliESDInputHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);
-  if (runperformancetask) {
-    AliMCEventHandler* mcHandler = new AliMCEventHandler();
-    mgr->SetMCtruthEventHandler(mcHandler);
-  }
-
-  // Physics selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask *physSel = AddTaskPhysicsSelection(useMC);
   task->SelectCollisionCandidates();
-  // Centrality selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-  AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
-  if (useMC) taskCentr->SetMCInput();
- 
+
   //Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   if (runperformancetask) AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist", TList::Class(), AliAnalysisManager::kOutputContainer, "CascadePerformance.root");
@@ -128,7 +133,7 @@ void runGridCascadePbPb ( Bool_t   useMC             = kTRUE,  // kTRUE if analy
 
 //__________________________________________________________________________
 
-AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperformancetask, Bool_t useMC) {
+AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperformancetask, Bool_t useMC, TString anatype) {
   //__________________________________________________________________________
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -146,37 +151,40 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperforman
 
   //__________________________________________________________________________
   // On GRID - current
-  plugin->SetROOTVersion("v5-27-06d");
-  plugin->SetAliROOTVersion("v4-21-16-AN");
+  plugin->SetROOTVersion("v5-30-06-1");
+  plugin->SetAliROOTVersion("v5-03-01-AN"); 
 
   //__________________________________________________________________________
   // Declare input data to be processed.
   // Method 1: Create automatically XML collections using alien 'find' command.
   if (useMC) {
-    plugin->SetGridDataDir("/alice/sim/LHC11a7");   // Define production directory 
+    //plugin->SetGridDataDir("/alice/sim/LHC11a10b_bis");   // Define production directory
+    //plugin->SetGridDataDir("/alice/sim/LHC11a10b_plus");
+    plugin->SetGridDataDir("/alice/sim/2011/LHC11f5");
     // Set data search pattern
-    plugin->SetDataPattern("*ESDs.root"); 
-    plugin->SetRunRange(137161,138225); 
+    if (anatype == "ESD") plugin->SetDataPattern("*ESDs.root");
+    else plugin->SetDataPattern("AOD081/*AOD.root");  
+    plugin->AddRunNumber(137124);
+
+
   } else {
     plugin->SetGridDataDir("/alice/data/2010/LHC10h");   // Define production directory LFN
-    plugin->SetDataPattern("ESDs/pass2_rev15/*/*ESDs.root");  // Set data search pattern
-    // plugin->SetRunRange(80000,80000); // ...then add run numbers to be considered
+    if (anatype == "ESD") plugin->SetDataPattern("ESDs/pass2/*/*ESDs.root");  // Set data search pattern
+    else plugin->SetDataPattern("ESDs/pass2/AOD073/*/*AOD.root"); 
     plugin->SetRunPrefix("000");
-//    plugin->AddRunNumber(137366);
-    plugin->AddRunNumber(138200);
-//    plugin->AddRunNumber(139172);
-  }
-  // Method 2: Use your input collection
+    //plugin->SetRunRange(80000,80000); // ...then add run numbers to be considered
+    plugin->AddRunNumber(138534);
    
-  //plugin->AddDataFile("/alice/cern.ch/user/d/dcolella/wn.xml");
-
+  }
+  // Method 2: Use your input collection 
+  //plugin->AddDataFile("/alice/cern.ch/user/m/mnicassi/139105.xml");
   //__________________________________________________________________________
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
-  if (runperformancetask) plugin->SetGridWorkingDir("workperf");
-  else plugin->SetGridWorkingDir("work");
-  // Declare alien output directory. Relative to working directory.
-  plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
+  if (runperformancetask) plugin->SetGridWorkingDir("workperfcentral");
+  else plugin->SetGridWorkingDir("workdata");
+  plugin->SetGridOutputDir("output");
 
+  //__________________________________________________________________________
   if (runperformancetask) plugin->SetAnalysisSource("AliAnalysisTaskCheckPerformanceCascadePbPb.cxx");
   else plugin->SetAnalysisSource("AliAnalysisTaskCheckCascadePbPb.cxx");
 
@@ -192,22 +200,22 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperforman
     plugin->SetAdditionalLibs("AliAnalysisTaskCheckPerformanceCascadePbPb.h AliAnalysisTaskCheckPerformanceCascadePbPb.cxx");
     // Optionally modify the executable name (default analysis.sh)
     plugin->SetExecutable("CascadePerformancePbPb.sh");
-
   } else {
-    plugin->SetAdditionalLibs("AliAnalysisTaskCheckCascadePbPb.h AliAnalysisTaskCheckCascadePbPb.cxx");
+    plugin->SetAdditionalLibs("AliAnalysisTaskCheckCascadePbPb.h AliAnalysisTaskCheckCascadePbPb.cxx ");
     // Optionally modify the executable name (default analysis.sh)
     plugin->SetExecutable("CascadePbPb.sh");
 
   }
+  
   //__________________________________________________________________________
   // Declare the output file names separated by blancs.
   // (can be like: file.root or file.root@ALICE::Niham::File)
-  plugin->SetDefaultOutputs(kFALSE);
-  if (runperformancetask) plugin->SetOutputFiles("CascadePerformance.root");
-  else plugin->SetOutputFiles("Cascades.root");
+  //plugin->SetDefaultOutputs(kFALSE);
+  //if (runperformancetask) plugin->SetOutputFiles("CascadePerformance.root");
+  //else plugin->SetOutputFiles("Cascades.root");
 
   // Optionally define the files to be archived.
-  plugin->SetOutputArchive("root_archive.zip:*.root log_archive.zip:stdout,stderr");
+  //plugin->SetOutputArchive("root_archive.zip:*.root log_archive.zip:stdout,stderr");
 
   //__________________________________________________________________________
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
@@ -222,20 +230,19 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperforman
   if (runperformancetask) plugin->SetJDLName("TaskCheckPerformanceCascadePbPb.jdl");
   else plugin->SetJDLName("TaskCheckCascadePbPb.jdl");
 
-  // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(100);
-
   // Optionally modify job price (default 1)
   plugin->SetPrice(1);
 
   // Merge via JDL
   // comment out the next line when using the "terminate" option, unless
   // you want separate merged files for each run
-//  plugin->SetMergeViaJDL(kTRUE);  // run first in full mode, then in terminate
-//  plugin->SetOneStageMerging(kFALSE);
-//  plugin->SetMaxMergeStages(2);// to define the number of stages
+/*  plugin->SetMergeViaJDL(kTRUE);  // run first in full mode, then in terminate
+  plugin->SetOneStageMerging(kFALSE);
+  plugin->SetMaxMergeFiles(50);
+  plugin->SetMaxMergeStages(2);// to define the number of stages
+*/
   // Optionally set number of runs per master
-  plugin->SetNrunsPerMaster(1);
+//  plugin->SetNrunsPerMaster(1);
   //
   plugin->SetOutputToRunNo();
   // Optionally modify split mode (default 'se')

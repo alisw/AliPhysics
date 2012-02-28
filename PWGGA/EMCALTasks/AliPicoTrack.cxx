@@ -5,11 +5,13 @@
 //
 
 #include "AliPicoTrack.h"
+#include "AliExternalTrackParam.h"
+#include "AliVCluster.h"
 
 //_________________________________________________________________________________________________
 AliPicoTrack::AliPicoTrack() :
   AliVTrack(),
-  fPt(0), fEta(0), fPhi(0), fQ(0), fLabel(-1), fEtaEmc(0), fPhiEmc(0), fEmcal(0)
+  fPt(0), fEta(0), fPhi(0), fQ(0), fLabel(-1), fEtaEmc(0), fPhiEmc(0), fEmcal(0), fClusId(-1)
 {
   // Default constructor.
 }
@@ -19,7 +21,7 @@ AliPicoTrack::AliPicoTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t q, By
                            Double_t etaemc, Double_t phiemc, Bool_t ise) :
   AliVTrack(),
   fPt(pt), fEta(eta), fPhi(phi), fQ(q), fLabel(lab), 
-  fEtaEmc(etaemc), fPhiEmc(phiemc), fEmcal(ise)
+  fEtaEmc(etaemc), fPhiEmc(phiemc), fEmcal(ise), fClusId(-1)
 {
   // Constructor.
 }
@@ -29,7 +31,8 @@ AliPicoTrack::AliPicoTrack(const AliPicoTrack &pc) :
   AliVTrack(pc),
   fPt(pc.fPt), fEta(pc.fEta), fPhi(pc.fPhi), 
   fQ(pc.fQ), fLabel(pc.fLabel), 
-  fEtaEmc(pc.fEtaEmc), fPhiEmc(pc.fPhiEmc), fEmcal(pc.fEmcal)
+  fEtaEmc(pc.fEtaEmc), fPhiEmc(pc.fPhiEmc), fEmcal(pc.fEmcal),
+  fClusId(pc.fClusId)
 {
   // Constructor.
 }
@@ -49,6 +52,7 @@ AliPicoTrack &AliPicoTrack::operator=(const AliPicoTrack &pc)
     fEtaEmc = pc.fEtaEmc;
     fPhiEmc = pc.fPhiEmc;
     fEmcal  = pc.fEmcal;
+    fClusId = pc.fClusId;
   }
 
   return *this;
@@ -71,4 +75,48 @@ Int_t AliPicoTrack::Compare(const TObject* obj) const
   return 0;
 }
 
+//_________________________________________________________________________________________________
+void AliPicoTrack::GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
+{
+  // Calculate phi and eta difference between track and cluster.
+ 
+  phidiff = 999;
+  etadiff = 999;
 
+  if (!t||!v)
+    return;
+
+  if (!t->IsEMCAL())
+    return;
+
+  const AliExternalTrackParam *outp = t->GetOuterParam();
+  Double_t veta = 999;
+  Double_t vphi = 999;
+  if (outp) {
+    Double_t trkPos[3] = {0.,0.,0.};
+    if (!outp->GetXYZ(trkPos)) 
+      return;
+    TVector3 vec(trkPos[0],trkPos[1],trkPos[2]);
+    veta = vec.Eta();
+    vphi = vec.Phi();
+  } else {
+    AliPicoTrack *ptrack = dynamic_cast<AliPicoTrack*>(t);
+    if (ptrack) {
+      veta = ptrack->GetEtaEmc();
+      vphi = ptrack->GetPhiEmc();
+    }
+  }
+
+  if (0) {
+    if (TMath::Abs(veta)>0.75 || (vphi<70*TMath::DegToRad()) || (vphi>190*TMath::DegToRad()))
+      return;
+  }
+
+  Float_t pos[3] = {0};
+  v->GetPosition(pos);  
+  TVector3 cpos(pos); 
+  Double_t ceta     = cpos.Eta();
+  Double_t cphi     = cpos.Phi();
+  etadiff=veta-ceta;
+  phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
+}

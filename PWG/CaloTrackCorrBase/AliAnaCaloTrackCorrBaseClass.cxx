@@ -76,12 +76,12 @@ AliAnaCaloTrackCorrBaseClass::~AliAnaCaloTrackCorrBaseClass()
   //delete fCaloUtils ; //Already deleted in maker
   //delete fReader ;    //Already deleted in maker
 	
-  delete fCaloPID ; fCaloPID = 0;
-  delete fFidCut ;  fFidCut  = 0;
-  delete fIC ;      fIC      = 0;
-  delete fMCUtils ; fMCUtils = 0;
-  delete fNMS ;     fNMS     = 0;
-  delete fHisto;    fHisto   = 0;
+  delete fCaloPID ; 
+  delete fFidCut  ;  
+  delete fIC      ;      
+  delete fMCUtils ; 
+  delete fNMS     ;     
+  delete fHisto   ;    
 }
 
 //______________________________________________________________________

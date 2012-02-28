@@ -6,7 +6,7 @@
  * @brief  Draw corrlation of neighboring strips
  * 
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 #ifndef __CINT__
 # include <TH1.h>
@@ -31,7 +31,7 @@ class TList;
  * @param r  Ring
  *
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
@@ -89,7 +89,7 @@ DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
  * @param filename Input file name 
  * @param folder   Input folder name in file 
  *
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  * @deprecated Use QATrender instead
  */
 void

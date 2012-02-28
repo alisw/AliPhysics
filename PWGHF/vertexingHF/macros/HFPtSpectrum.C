@@ -26,30 +26,25 @@
 //  1) acceptance and reconstruction efficiencies file name (direct & feed-down)
 //  2) reconstructed spectra file name 
 //  3) output file name
-//  4) Set the feed-down calculation option flag: 0=none, 1=fc only, 2=Nb only
-//  5-6) Set the luminosity: the number of events analyzed, and the cross-section of the sample
-//  7) Set the trigger efficiency
+//  4) Set the feed-down calculation option flag: knone=none, kfc=fc only, kNb=Nb only
+//  5-6) Set the luminosity: the number of events analyzed, and the cross-section of the sample [nb]
+//  7) Set whether the yield is for particle + anti-particles or only one of the 'charges'
 //  8) Set the centrality class
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
-//  10-17) If the efficiency histos do not have the right bin width, set the files & histo-names, they'll be computed, if the efficiencies are in file (6), don't set these parameters
 //
 
-enum centrality{ kpp7, kpp276, k010, k020, k2040, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp7, kpp276, k010, k1020, k020, k2040, k4060, k6080, k4080, k80100 };
+enum BFDSubtrMethod { knone, kfc, kNb };
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
-		    //		    Int_t option=1, Double_t lumi=1.0, Double_t effTrig=1.0, Int_t cc=kpp, Bool_t PbPbEloss=false,
-		    Int_t option=1, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[nb]
-		    Double_t effTrig=1.0, Int_t cc=kpp7, Bool_t PbPbEloss=false,
-		    const char *directsimufilename="", const char *directsimuhistoname="CFHFccontainer0_New_3Prong_SelStep0_proj-pt", 
-		    const char *directrecofilename="", const char *directrecohistoname="CFHFccontainer0_New_3Prong_SelStep8_proj-pt", 
-		    const char *feeddownsimufilename="", const char *feeddownsimuhistoname="CFHFccontainer0allD_New_3Prong_SelStep0_proj-pt", 
-		    const char *feeddownrecofilename="", const char *feeddownrecohistoname="CFHFccontainer0allD_New_3Prong_SelStep8_proj-pt") {
+		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[nb]
+		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false ) {
 
 
-  gROOT->Macro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
+  gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   //  Set if calculation considers asymmetric uncertainties or not 
   Bool_t asym = true;
@@ -64,6 +59,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     return;
   }
 
+  Int_t option=3;
+  if (fdMethod==kfc) option=1;
+  else if (fdMethod==kNb) option=2;
+  else if (fdMethod==knone) option=0;
+  else option=3;
+
   if (option>2) { 
     cout<< "Bad calculation option, should be <=2"<<endl;
     return;
@@ -73,10 +74,13 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   //
   // Defining the Tab values for the given centrality class
+  // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
   //
   Double_t tab = 1., tabUnc = 0.;
   if ( cc == k010 ) {
     tab = 23.48; tabUnc = 0.97;
+  } else if ( cc == k1020 ) {
+    tab = 14.4318; tabUnc = 0.5733;
   } else if ( cc == k020 ) {
     tab = 18.93; tabUnc = 0.74;
   } else if ( cc == k2040 ) {
@@ -108,12 +112,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TH1D *hDirectEffpt=0;          // c-->D Acceptance and efficiency correction
   TH1D *hFeedDownEffpt=0;        // b-->D Acceptance and efficiency correction
   TH1D *hRECpt=0;                // all reconstructed D
-  //
-  TH1D *hDirectSimulationpt=0;       // Simulated c--D spectra (used to re-compute the efficiency)
-  TH1D *hDirectReconstructionpt=0;   // Reconstructed c--D spectra (used to re-compute the efficiency)
-  TH1D *hFeedDownSimulationpt=0;     // Simulated b--D spectra (used to re-compute the efficiency)
-  TH1D *hFeedDownReconstructionpt=0; // Reconstructed b--D spectra (used to re-compute the efficiency)
-  //
 
   //
   // Define/Get the input histograms
@@ -123,31 +121,31 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   if (isD0Kpi){
     decay = 1;
     hDirectMCpt = (TH1D*)mcfile->Get("hD0Kpipred_central");
-    hFeedDownMCpt = (TH1D*)mcfile->Get("hD0KpifromBpred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hD0KpifromBpred_central_corr");
     hDirectMCptMax = (TH1D*)mcfile->Get("hD0Kpipred_max");
     hDirectMCptMin = (TH1D*)mcfile->Get("hD0Kpipred_min");
-    hFeedDownMCptMax = (TH1D*)mcfile->Get("hD0KpifromBpred_max");
-    hFeedDownMCptMin = (TH1D*)mcfile->Get("hD0KpifromBpred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hD0KpifromBpred_max_corr");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hD0KpifromBpred_min_corr");
     //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("D0Kpiprediction");
   }
   else if (isDplusKpipi){
     decay = 2;
     hDirectMCpt = (TH1D*)mcfile->Get("hDpluskpipipred_central");
-    hFeedDownMCpt = (TH1D*)mcfile->Get("hDpluskpipifromBpred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hDpluskpipifromBpred_central_corr");
     hDirectMCptMax = (TH1D*)mcfile->Get("hDpluskpipipred_max");
     hDirectMCptMin = (TH1D*)mcfile->Get("hDpluskpipipred_min");
-    hFeedDownMCptMax = (TH1D*)mcfile->Get("hDpluskpipifromBpred_max");
-    hFeedDownMCptMin = (TH1D*)mcfile->Get("hDpluskpipifromBpred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hDpluskpipifromBpred_max_corr");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hDpluskpipifromBpred_min_corr");
     //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("Dpluskpipiprediction");
   }
   else if(isDstarD0pi){
     decay = 3;
     hDirectMCpt = (TH1D*)mcfile->Get("hDstarD0pipred_central");
-    hFeedDownMCpt = (TH1D*)mcfile->Get("hDstarD0pifromBpred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hDstarD0pifromBpred_central_corr");
     hDirectMCptMax = (TH1D*)mcfile->Get("hDstarD0pipred_max");
     hDirectMCptMin = (TH1D*)mcfile->Get("hDstarD0pipred_min");
-    hFeedDownMCptMax = (TH1D*)mcfile->Get("hDstarD0pifromBpred_max");
-    hFeedDownMCptMin = (TH1D*)mcfile->Get("hDstarD0pifromBpred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hDstarD0pifromBpred_max_corr");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hDstarD0pifromBpred_min_corr");
     //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("DstarD0piprediction");
   }
   //
@@ -159,36 +157,11 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   hFeedDownMCptMin->SetNameTitle("hFeedDownMCptMin","min feed-down MC spectra");
   //
   //
-  if (strcmp(directsimufilename,"")!=0 && strcmp(directrecofilename,"")!=0 &&
-      strcmp(feeddownsimufilename,"")!=0 && strcmp(feeddownrecofilename,"")!=0 ) {
-    if (strcmp(directsimufilename,"")!=0){
-      TFile *directSimufile = new TFile(directsimufilename,"read");
-      hDirectSimulationpt = (TH1D*)directSimufile->Get(directsimuhistoname);
-      hDirectSimulationpt->SetNameTitle("hDirectSimulationpt","hDirectSimulationpt");
-    }
-    if (strcmp(directrecofilename,"")!=0){
-      TFile *directRecofile = new TFile(directrecofilename,"read");
-      hDirectReconstructionpt = (TH1D*)directRecofile->Get(directrecohistoname);
-      hDirectReconstructionpt->SetNameTitle("hDirectReconstructionpt","hDirectReconstructionpt");
-    }
-    if (strcmp(feeddownsimufilename,"")!=0){
-      TFile *feeddownSimufile = new TFile(feeddownsimufilename,"read");
-      hFeedDownSimulationpt = (TH1D*)feeddownSimufile->Get(feeddownsimuhistoname);
-      hFeedDownSimulationpt->SetNameTitle("hFeedDownSimulationpt","hFeedDownSimulationpt");
-    }
-    if (strcmp(feeddownrecofilename,"")!=0){
-      TFile *feeddownRecofile = new TFile(feeddownrecofilename,"read");
-      hFeedDownReconstructionpt = (TH1D*)feeddownRecofile->Get(feeddownrecohistoname);
-      hFeedDownReconstructionpt->SetNameTitle("hFeedDownReconstructionpt","hFeedDownReconstructionpt");
-    }
-  }
-  else {
-    TFile * efffile = new TFile(efffilename,"read");
-    hDirectEffpt = (TH1D*)efffile->Get("hEffD_rebin");//hDirectEffpt");//hRecoPIDGenLimAcc");//hDirectEffpt");//hEffD");
-    hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
-    hFeedDownEffpt = (TH1D*)efffile->Get("hEffB_rebin");//hFeedDownEffpt");//hRecoPIDGenLimAccFromB");//hFeedDownEffpt");//hEffB");
-    hFeedDownEffpt->SetNameTitle("hFeedDownEffpt","feed-down acc x eff");
-  }
+  TFile * efffile = new TFile(efffilename,"read");
+  hDirectEffpt = (TH1D*)efffile->Get("hDirectEffpt");
+  hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
+  hFeedDownEffpt = (TH1D*)efffile->Get("hFeedDownEffpt");
+  hFeedDownEffpt->SetNameTitle("hFeedDownEffpt","feed-down acc x eff");
   //
   //
   TFile * recofile = new TFile(recofilename,"read");
@@ -215,7 +188,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TH2D *histoYieldCorrRcb=0;
   TH2D *histoSigmaCorrRcb=0;
   //
-  Int_t nbins = hRECpt->GetNbinsX();
   TGraphAsymmErrors * gYieldCorr = 0;
   TGraphAsymmErrors * gSigmaCorr = 0;
   TGraphAsymmErrors * gFcExtreme = 0;
@@ -244,15 +216,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   cout << " Setting the reconstructed spectrum,";
   spectra->SetReconstructedSpectrum(hRECpt);
   // acceptance and efficiency corrections
-  cout << " the files to compute the efficiency,";
-  if (strcmp(directsimufilename,"")!=0 && strcmp(directrecofilename,"")!=0 &&
-      strcmp(feeddownsimufilename,"")!=0 && strcmp(feeddownrecofilename,"")!=0 ) {
-    spectra->EstimateAndSetDirectEfficiencyRecoBin(hDirectSimulationpt,hDirectReconstructionpt);
-    spectra->EstimateAndSetFeedDownEfficiencyRecoBin(hFeedDownSimulationpt,hFeedDownReconstructionpt);
-  }
-  else {
-    spectra->SetAccEffCorrection(hDirectEffpt,hFeedDownEffpt);
-  }
+  cout << " the efficiency,";
+  spectra->SetAccEffCorrection(hDirectEffpt,hFeedDownEffpt);
+  //    spectra->SetfIsStatUncEff(false);
   // option specific histos (theory)
   cout << " the theoretical spectra";
   if(option==1){
@@ -268,14 +234,18 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   // Set normalization factors (uncertainties set to 0. as example)
   spectra->SetNormalization(nevents,sigma);
   Double_t lumi = nevents / sigma ;
-  Double_t lumiUnc = 0.07*lumi; // 10% uncertainty on the luminosity
+  Double_t lumiUnc = 0.04*lumi; // 10% uncertainty on the luminosity
   spectra->SetLuminosity(lumi,lumiUnc);
+  Double_t effTrig = 1.0;
   spectra->SetTriggerEfficiency(effTrig,0.);
 
   // Set the global uncertainties on the efficiencies (in percent)
   Double_t globalEffUnc = 0.15; 
   Double_t globalBCEffRatioUnc = 0.15;
   spectra->SetAccEffPercentageUncertainty(globalEffUnc,globalBCEffRatioUnc);
+
+  // Set if the yield is for particle+anti-particle or only one type
+  spectra->SetIsParticlePlusAntiParticleYield(isParticlePlusAntiParticleYield);
 
   // Set the Tab parameter and uncertainties
   if ( (cc != kpp7) && (cc != kpp276) ) {
@@ -297,12 +267,16 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     systematics->SetIsLowEnergy(true);
   } else if( cc!=kpp7 )  {
     systematics->SetCollisionType(1);
-    if ( cc == k020 ) {
-      systematics->SetCentrality("020");
+    if ( cc == k010 )  systematics->SetCentrality("010");
+    else if ( cc == k1020 )  systematics->SetCentrality("1020");
+    else if ( cc == k020 )  systematics->SetCentrality("020");
+    else if ( cc == k2040 ) {
+      systematics->SetCentrality("2040");
+      systematics->SetIsPbPb2010EnergyScan(true);
     }
-    else if ( cc == k4080 ) {
-      systematics->SetCentrality("4080");
-    }
+    else if ( cc == k4060 )  systematics->SetCentrality("4060");
+    else if ( cc == k6080 )  systematics->SetCentrality("6080");
+    else if ( cc == k4080 ) systematics->SetCentrality("4080");
     else { 
       cout << " Systematics not yet implemented " << endl;
       return;

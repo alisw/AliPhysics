@@ -11,7 +11,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  * 
  */
 #include <AliAnalysisTaskSE.h>
@@ -40,8 +40,8 @@ class TTree;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_forward_tasks
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_tasks
+ * @ingroup pwglf_forward_aod
  * 
  */
 class AliCentralMultiplicityTask : public AliAnalysisTaskSE

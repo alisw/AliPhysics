@@ -12,6 +12,7 @@
 
 class AliESDEvent;
 class AliAODEvent;
+class AliAODJet;
 class AliAODExtension;
 class TList;
 class TH1F;
@@ -373,6 +374,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetKindSlices(Int_t slice = 1) {fDiJetKindBins = slice;}
 
   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
+  virtual void   SetFFMaxTrackPt(Float_t pt = -1) { fFFMaxTrackPt = pt; }
+  virtual void   SetFFMinNTracks(Int_t nTracks = 0) { fFFMinnTracks = nTracks; }
   virtual void   SetFFBckgRadius(Float_t r = 0.7) { fFFBckgRadius = r; }
   virtual void   SetBckgMode(Bool_t bg = 1) { fBckgMode = bg; }
   virtual void   SetBckgType(Int_t bg0 = 0, Int_t bg1 = 1,Int_t bg2 = 2, Int_t bg3 = 3, Int_t bg4 = 4) 
@@ -452,9 +455,11 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   }
 
   Float_t  GetFFRadius() const { return fFFRadius; }
+  Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
+  Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
   Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
-  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j);
-  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& pt);  
+  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t maxPt, Bool_t& isBadMaxPt);
+  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& sumPt, const Double_t maxPt, Bool_t& isBadMaxPt);  
   void     GetTracksOutOfNJets(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt);
   void     GetTracksOutOfNJetsStat(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt, Double_t &normFactor);
   void     GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt);
@@ -558,6 +563,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Int_t   fDiJetKindBins;       // type of bins: invmass, etleading, emean
 
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
+  Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value
+  Int_t   fFFMinnTracks;    // reject jets with less tracks than this value
   Float_t fFFBckgRadius;    // compute background outside cone of this radius around jet axes
   Bool_t  fBckgMode;        // Set background subtraction mode
   Int_t   fBckgType[5];     // Set background subtraction mode

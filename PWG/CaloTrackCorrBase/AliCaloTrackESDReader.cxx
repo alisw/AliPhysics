@@ -13,7 +13,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class for reading data (ESDs) in order to do prompt gamma 
@@ -58,23 +57,29 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd,
   
   Bool_t tesd = kFALSE ; 
   
-  if ( strcmp(esd->GetName(), "AliMixedEvent") == 0 ) {
+  if ( strcmp(esd->GetName(), "AliMixedEvent") == 0 ) 
+  {
     AliMultiEventInputHandler* multiEH = dynamic_cast<AliMultiEventInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if(multiEH){
-      if (multiEH->GetFormat() == 0 ) {
+    if(multiEH)
+    {
+      if (multiEH->GetFormat() == 0 ) 
+      {
         tesd = kTRUE ; 
       }
     }
-    else{
+    else
+    {
       printf("AliCaloTrackESDReader::SetInputOutputMCEvent() - MultiEventHandler is NULL");
       abort();
     }
   }
-  if (strcmp(esd->GetName(),"AliESDEvent") == 0) {
+  if (strcmp(esd->GetName(),"AliESDEvent") == 0)
+  {
     tesd = kTRUE ; 
   }
   
-  if(!tesd){
+  if(!tesd)
+  {
     AliFatal(Form("AliCaloTrackESDReader::SetInputOutputMCEvent() - STOP ::Wrong reader, here only ESDs. Input name: %s != AliESDEvent \n",esd->GetName()));
   }
   

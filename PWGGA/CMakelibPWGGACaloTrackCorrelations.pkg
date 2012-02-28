@@ -52,3 +52,6 @@ set ( DHDR  PWGGACaloTrackCorrelationsLinkDef.h)
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE  ANALYSIS EMCAL PHOS PWG/CaloTrackCorrBase PWGGA/CaloTrackCorrelations STEER/AOD STEER/STEERBase)
+
+install (FILES CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C
+	DESTINATION PWGGA/CaloTrackCorrelations/macros/QA/ )

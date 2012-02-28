@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include "AliFMDEventInspector.h"
 class AliMCEvent;
@@ -34,9 +34,9 @@ class AliStack;
  * @par Corrections used: 
  *   - None
  *
- * @ingroup pwg2_forward_algo 
- * @ingroup pwg2_forward_mc
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo 
+ * @ingroup pwglf_forward_mc
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDMCEventInspector : public AliFMDEventInspector
 {

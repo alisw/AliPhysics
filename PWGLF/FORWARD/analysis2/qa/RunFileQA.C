@@ -5,7 +5,7 @@
  * 
  * @brief  Script to run a run QA
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 /** 
  * script to run a run QA.  Note, on errors, the ROOT session is terminated
@@ -13,16 +13,16 @@
  * @param input   Input file 
  * @param output  Output tree file (optional)
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 void
 RunFileQA(const char* input, const char* output=0)
 {
   int ret = 0;
-  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
-			   "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
+  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
+			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:%s",
 			   gROOT->GetMacroPath()));
-  gSystem->AddIncludePath("-I\${ALICE_ROOT}/PWG2/FORWARD/analysis2/qa");
+  gSystem->AddIncludePath("-I\${ALICE_ROOT}/PWGLF/FORWARD/analysis2/qa");
   gSystem->Load("libGpad");
   gSystem->Load("libTree");
   

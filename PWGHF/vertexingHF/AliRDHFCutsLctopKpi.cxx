@@ -771,6 +771,20 @@ AliKFParticle* AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int
  return decay;
 }
 
+//------------------
+void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2011() {
+
+  // Default 2010 PbPb cut object
+  SetStandardCutsPbPb2010();
+
+  //
+  // Enable all 2011 PbPb run triggers
+  //  
+  SetTriggerClass("");
+  ResetMaskAndEnableMBTrigger();
+  EnableCentralTrigger();
+  EnableSemiCentralTrigger();
+}
 //-----------------
 
 Bool_t AliRDHFCutsLctopKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const

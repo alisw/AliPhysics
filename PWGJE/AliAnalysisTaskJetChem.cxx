@@ -852,24 +852,29 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
 
     AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
-    
+    Double_t jetPt = jet->Pt();
+
     if(ij==0){ // leading jet
       
       TList* jettracklist = new TList();
       Double_t sumPt      = 0.;
+      Bool_t isBadJet     = kFALSE;
       
       if(GetFFRadius()<=0){
- 	GetJetTracksTrackrefs(jettracklist, jet);
+ 	GetJetTracksTrackrefs(jettracklist, jet, GetFFMaxTrackPt(), isBadJet);
       } else {
- 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt);
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMaxTrackPt(), isBadJet);
       }
+
+      if(GetFFMinNTracks()>0 && jettracklist->GetSize() <= GetFFMinNTracks()) isBadJet = kTRUE;
+      if(isBadJet) continue; 
+
       
       for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 
 	AliVParticle* trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));	
 	if(!trackVP)continue;
 
-	Float_t jetPt   = jet->Pt();
 	Float_t trackPt = trackVP->Pt();
 	
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
@@ -879,20 +884,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }
       
       delete jettracklist;
-    }
-  }
 
-
-  for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // jet loop
-
-    AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(ij));
-    if(!jet) continue;
-    
-    if(ij==0){ // leading jet
+      // ---- K0s ---- 
       
-      //fQAJetHistosRecCutsLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
-      
-      Float_t jetPt   = jet->Pt();
+      // fQAJetHistosRecCutsLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
 
       for(Int_t it=0; it<fListK0s->GetSize(); ++it){ // loop all K0s 
 
@@ -916,6 +911,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	fh1dPhiJetK0->Fill(dPhiJetK0);
 
       }
+
       if(fListK0s->GetSize() == 0){ // no K0: increment jet pt spectrum 
 
 	Bool_t incrementJetPt = kTRUE;
@@ -924,10 +920,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
 
       TList* jetConeK0list = new TList();
-      Double_t sumPt   = 0.;
-      
-      GetJetTracksPointing(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPt);
- 
+      Double_t sumPtK0     = 0.;
+      Bool_t isBadJetK0    = kFALSE; // dummy, do not use
+
+      GetJetTracksPointing(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPtK0, GetFFMaxTrackPt(), isBadJetK0);
+
+
       if(fDebug>2)Printf("%s:%d nK0s total: %d, in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0list->GetEntries(),GetFFRadius());
       
       for(Int_t it=0; it<jetConeK0list->GetSize(); ++it){ // loop K0s in jet cone

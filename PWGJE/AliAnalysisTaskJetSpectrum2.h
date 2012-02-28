@@ -41,7 +41,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
  public:
     AliAnalysisTaskJetSpectrum2();
     AliAnalysisTaskJetSpectrum2(const char* name);
-    virtual ~AliAnalysisTaskJetSpectrum2() {;}
+    virtual ~AliAnalysisTaskJetSpectrum2();
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void Init();
@@ -80,6 +80,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
 
     virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
+
+    virtual void SetNTrigger(Int_t n);
+    virtual void SetTrigger(Int_t i,UInt_t it,const char* c = "");
 
 
     // Helper
@@ -154,9 +157,11 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fDoMatching;            // switch on the matching between rec and gen
     Short_t       fNMatchJets;            // number of leading jets considered from the list
     Short_t       fNRPBins;               // number of bins with respect to RP
-    UChar_t        fJetTriggerExcludeMask; // mask for jet triggers to exclude
+    UChar_t       fJetTriggerExcludeMask; // mask for jet triggers to exclude
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fEventSelectionMask;    // Selection information used to filter events
+    Int_t         fNTrigger;              // number of triggers for selection
+    UInt_t        *fTriggerBit;            //[fNTrigger] trigger bits 
     Int_t         fAnalysisType;          // Analysis type 
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
@@ -174,7 +179,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fRPAngle;               // ! RP angle of the reaction plane
     Int_t         fMultRec;               // ! reconstructed track multiplicity
     Int_t         fMultGen;               // ! generated track multiplicity
-    
+    TString       *fTriggerName;  //[fNTrigger] array of trigger names
 
     TProfile*     fh1Xsec;   //! pythia cross section and trials
     TH1F*         fh1Trials; //! trials are added
@@ -226,7 +231,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 18) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 18); // Analysis task for standard jet analysis
 };
  
 #endif

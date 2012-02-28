@@ -29,6 +29,7 @@
 #include "TROOT.h"
 #include "TGraphAsymmErrors.h"
 #include "TList.h"
+#include "TFile.h"
 
 // STEER includes
 #include "AliVParticle.h"
@@ -198,6 +199,7 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
                   if ( ! histoAdd ) continue;
                   histoName = GetHistoName(itype, icount, ich, imatch);
                   if ( ! histo ) histo = (TH1*)GetMergeableObject(fPhysSelKeys->At(isel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent), histoName);
+                  AliDebug(2,Form("Adding %s (%g) to %s (%g)", histoAdd->GetName(), histoAdd->Integral(), histo->GetName(), histo->Integral()));
                   histo->Add(histoAdd);
                 } // loop on higher pt matching
               } // loop on match trigger
@@ -305,16 +307,17 @@ void AliAnalysisTaskTrigChEff::MyUserCreateOutputObjects()
     
     histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel);
     histo2D = new TH2F(histoName.Data(), "Rejected tracks motivation", 
-                       4, 20.5, 24.5, nBoardBins, boardLow, boardHigh);
+                       5, 20.5, 25.5, nBoardBins, boardLow, boardHigh);
     histo2D->GetXaxis()->SetBinLabel(1,"Many pads");
     histo2D->GetXaxis()->SetBinLabel(2,"Few pads");
     histo2D->GetXaxis()->SetBinLabel(3,"Outside geom");
     histo2D->GetXaxis()->SetBinLabel(4,"Tracker track");
+    histo2D->GetXaxis()->SetBinLabel(5,"Masked board");
     histo2D->GetYaxis()->SetTitle(boardName);
     AddObjectToCollection(histo2D);
   } // loop on track selection
 
-  fMuonTrackCuts.Print();
+  fMuonTrackCuts->Print("mask");
   
   fList = new TList();
   fList->SetOwner();
@@ -365,8 +368,13 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
 
     Int_t matchTrig = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMatchTrigger() : ((AliESDMuonTrack*)track)->GetMatchTrigger();
     itrackSel = matchTrig;
-    if ( ! fMuonTrackCuts.IsSelected(track) ) itrackSel = kNoSelCutApt;
-    
+    UInt_t selection = fMuonTrackCuts->GetSelectionMask(track);
+    Bool_t isSelected = ( ( selection & fMuonTrackCuts->GetFilterMask() ) == fMuonTrackCuts->GetFilterMask() );
+    if ( matchTrig == 1 && ( ( selection & AliMuonTrackCuts::kMuMatchSharpApt ) == 0 ) ) isSelected = kFALSE;
+    if ( matchTrig == 2 && ( ( selection & AliMuonTrackCuts::kMuMatchSharpLpt ) == 0 ) ) isSelected = kFALSE;
+    if ( matchTrig == 3 && ( ( selection & AliMuonTrackCuts::kMuMatchSharpHpt ) == 0 ) ) isSelected = kFALSE;
+    if ( ! isSelected ) itrackSel = kNoSelCutApt;
+        
     pattern = ( fAODEvent ) ? ((AliAODTrack*)track)->GetHitsPatternInTrigCh() :  ((AliESDMuonTrack*)track)->GetHitsPatternInTrigCh();
     Int_t effFlag = AliESDMuonTrack::GetEffFlag(pattern);
 
@@ -475,15 +483,17 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
   TObjArray* optArr = furtherOpt.Tokenize(" ");
   TObjArray trackSel;
   trackSel.SetOwner();
+  TString outFileOpt = "";
   for ( Int_t iopt=0; iopt<optArr->GetEntries(); iopt++ ) {
     currName = optArr->At(iopt)->GetName();
-    if ( currName.Contains("Match") ) trackSel.Add(new TObjString(currName));
+    if ( currName.Contains(".root") ) outFileOpt = currName;
+    else if ( currName.Contains("Match") ) trackSel.Add(new TObjString(currName));
   }
   delete optArr;
 
   furtherOpt.ToUpper();
   
-  Int_t chosenType = kHslatEff;
+  Int_t chosenType = ( furtherOpt.Contains("BOARD") ) ? kHboardEff : kHslatEff;
 
   igroup1++;
   igroup2 = 0;
@@ -544,8 +554,12 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
                   if ( furtherOpt.Contains("DIFF") ) {
                     refVal = ( baseY > 0. ) ? baseY : 1.;
                     newY = ( currY - baseY ) / refVal;
-                    errYlow = effGraph->GetErrorYlow(ipoint) / refVal;
-                    errYhigh = effGraph->GetErrorYhigh(ipoint) / refVal;
+                    Double_t errYlow1 = effGraph->GetErrorYlow(ipoint);
+                    Double_t errYlow2 = refGraph->GetErrorYlow(ipoint);
+                    Double_t errYhigh1 = effGraph->GetErrorYhigh(ipoint);
+                    Double_t errYhigh2 = refGraph->GetErrorYhigh(ipoint);
+                    errYlow = TMath::Sqrt(errYlow1*errYlow1 + errYlow2*errYlow2) / refVal;
+                    errYhigh = TMath::Sqrt(errYhigh1*errYhigh1 + errYhigh2*errYhigh2) / refVal;
                     //yAxisTitle = Form("(%s - %s) / %s", effGraph->GetTitle(), refGraph->GetTitle(), refGraph->GetTitle());
                     yAxisTitle = "(eff - ref ) / ref";
                     effGraph->SetTitle(Form("Rel. diff. w.r.t. %s", refGraph->GetTitle()));
@@ -595,37 +609,51 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
   
    
   fList = dynamic_cast<TList*>(GetOutputData(2));
-  if ( ! fList ) return;
+  if ( fList ) {
   
-  ///////////////////////////
-  // Show final efficiency //
-  ///////////////////////////
-  TString baseName[3] = {"Chamber", "RPC", "Board"};
-  Int_t baseIndex[3] = {kHchamberEff, kHslatEff, kHboardEff};
-  TString effName[kNcounts-1] = {"BendPlane", "NonBendPlane", "BothPlanes"};
-  for ( Int_t itype=0; itype<3; itype++ ) {
-    for ( Int_t icount=0; icount<kNcounts-1; icount++ ){
-      TString canName = Form("efficiencyPer%s_%s",baseName[itype].Data(),effName[icount].Data());
-      TCanvas* can = new TCanvas(canName.Data(),canName.Data(),10*(1+kNcounts*itype+icount),10*(1+kNcounts*itype+icount),310,310);
-      can->SetFillColor(10); can->SetHighLightColor(10);
-      can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);  
-      if ( itype > 0 )
-        can->Divide(2,2);
-      
-      for ( Int_t ich=-1; ich<4; ich++ ) {
-        histoName = GetHistoName(baseIndex[itype], icount, ich, -1);
-        num = (TH1*)fList->FindObject(histoName.Data());
-        histoName = GetHistoName(baseIndex[itype], kNcounts-1, ich, -1);
-        den = (TH1*)fList->FindObject(histoName.Data());
-        if ( ! num || ! den ) continue;
-        effGraph = new TGraphAsymmErrors(num, den);
-        effGraph->GetYaxis()->SetRangeUser(0., 1.1);
-        effGraph->GetYaxis()->SetTitle("Efficiency");
-        effGraph->GetXaxis()->SetTitle(baseName[itype].Data());
-        can->cd(ich+1);
-        effGraph->Draw("AP");
-        if ( itype == 0 ) break;
-      } // loop on chamber
-    } // loop on count types
-  } // loop on histo
+    ///////////////////////////
+    // Show final efficiency //
+    ///////////////////////////
+    TString baseName[3] = {"Chamber", "RPC", "Board"};
+    Int_t baseIndex[3] = {kHchamberEff, kHslatEff, kHboardEff};
+    TString effName[kNcounts-1] = {"BendPlane", "NonBendPlane", "BothPlanes"};
+    for ( Int_t itype=0; itype<3; itype++ ) {
+      for ( Int_t icount=0; icount<kNcounts-1; icount++ ){
+        TString canName = Form("efficiencyPer%s_%s",baseName[itype].Data(),effName[icount].Data());
+        TCanvas* can = new TCanvas(canName.Data(),canName.Data(),10*(1+kNcounts*itype+icount),10*(1+kNcounts*itype+icount),310,310);
+        can->SetFillColor(10); can->SetHighLightColor(10);
+        can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);  
+        if ( itype > 0 )
+          can->Divide(2,2);
+        
+        for ( Int_t ich=-1; ich<4; ich++ ) {
+          histoName = GetHistoName(baseIndex[itype], icount, ich, -1);
+          num = (TH1*)fList->FindObject(histoName.Data());
+          histoName = GetHistoName(baseIndex[itype], kNcounts-1, ich, -1);
+          den = (TH1*)fList->FindObject(histoName.Data());
+          if ( ! num || ! den ) continue;
+          effGraph = new TGraphAsymmErrors(num, den);
+          effGraph->GetYaxis()->SetRangeUser(0., 1.1);
+          effGraph->GetYaxis()->SetTitle("Efficiency");
+          effGraph->GetXaxis()->SetTitle(baseName[itype].Data());
+          can->cd(ich+1);
+          effGraph->Draw("AP");
+          if ( itype == 0 ) break;
+        } // loop on chamber
+      } // loop on count types
+    } // loop on histo
+  }
+
+  
+  if ( ! outFileOpt.IsNull() ) {
+    TObjArray* outFileOptList = outFileOpt.Tokenize("?");
+    AliInfo(Form("Creating file %s", outFileOptList->At(0)->GetName()));
+    TList* effList = GetEffHistoList(outFileOptList->At(1)->GetName(), outFileOptList->At(2)->GetName(), outFileOptList->At(3)->GetName(), outFileOptList->At(4)->GetName());
+    effList->SetName("triggerChamberEff");
+    TFile* outFile = TFile::Open(outFileOptList->At(0)->GetName(), "RECREATE");
+    effList->Write(fList->GetName(),TObject::kSingleKey);
+    outFile->Close();
+    delete effList;
+    delete outFileOptList;
+  }
 }

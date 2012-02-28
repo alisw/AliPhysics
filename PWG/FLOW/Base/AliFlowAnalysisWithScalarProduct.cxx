@@ -485,15 +485,6 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
   TString sPOI[2] = {"RP","POI"};
   TString sEta[2] = {"Pt","eta"};
   TString sWeights[3] = {"uQ","uQuQ","uQQaQb"};
-  Int_t iNbins[2];
-  Double_t dMin[2], dMax[2];
-  
-  iNbins[0] = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
-  iNbins[1] = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
-  dMin[0]   = AliFlowCommonConstants::GetMaster()->GetPtMin();
-  dMin[1]   = AliFlowCommonConstants::GetMaster()->GetEtaMin();
-  dMax[0]   = AliFlowCommonConstants::GetMaster()->GetPtMax();
-  dMax[1]   = AliFlowCommonConstants::GetMaster()->GetEtaMax();
   for(Int_t iPOI=0; iPOI!=2; ++iPOI) for(Int_t iSpace=0; iSpace!=2; ++iSpace) {
     fHistProUQ[iPOI][iSpace] = (TProfile*) uQ->FindObject( Form( "FlowPro_UQ_%s%s_SP", sEta[iSpace].Data(), sPOI[iPOI].Data() ) );
     if(!fHistProUQ[iPOI][iSpace]) printf("Error loading fHistProUQ[%d][%d]\n",iPOI,iSpace);
@@ -521,9 +512,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   printf("AliFlowAnalysisWithScalarProduct::Finish()\n");
   
   // access harmonic:
-  fApplyCorrectionForNUA = fHistProConfig->GetBinContent(1);
-  fNormalizationType = fHistProConfig->GetBinContent(2);
-  fHarmonic = fHistProConfig->GetBinContent(4);
+  fApplyCorrectionForNUA = (Int_t)(fHistProConfig->GetBinContent(1));
+  fNormalizationType = (Int_t)(fHistProConfig->GetBinContent(2));
+  fHarmonic = (Int_t)(fHistProConfig->GetBinContent(4));
   
   printf("*************************************\n");
   printf("*************************************\n");

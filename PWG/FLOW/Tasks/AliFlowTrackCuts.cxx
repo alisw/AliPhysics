@@ -653,7 +653,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 
   //the case of ESD or AOD
   if (esdTrack) { if (!PassesESDcuts(esdTrack)) { pass=kFALSE; } }
-  if (aodTrack) { if (!PassesAODcuts(aodTrack)) { pass=kFALSE; } }
+  if (aodTrack) { if (!PassesAODcuts(aodTrack,pass)) { pass=kFALSE; } }
 
   if (fQA)
   {
@@ -847,10 +847,10 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 }
 
 //_______________________________________________________________________
-Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track)
+Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFid)
 {
   //check cuts for AOD
-  Bool_t pass = kTRUE;
+  Bool_t pass = passedFid;
 
   if (fCutNClustersTPC)
   {
@@ -879,7 +879,29 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track)
 
   if (fCutDCAToVertexZ && track->ZAtDCA()>GetMaxDCAToVertexZ()) pass=kFALSE;
 
-  if (track->GetTPCsignal() < fMinimalTPCdedx) pass=kFALSE;
+  Double_t dedx = track->GetTPCsignal();
+  if (dedx < fMinimalTPCdedx) pass=kFALSE;
+  Double_t time[5];
+  track->GetIntegratedTimes(time);
+  if (fQA) {
+    Double_t momTPC = track->GetTPCmomentum();
+    QAbefore( 1)->Fill(momTPC,dedx);
+    QAbefore( 5)->Fill(track->Pt(),track->DCA());
+    QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
+    if (pass) QAafter( 1)->Fill(momTPC,dedx);
+    if (pass) QAafter( 5)->Fill(track->Pt(),track->DCA());
+    if (pass) QAafter( 6)->Fill(track->Pt(),track->ZAtDCA());
+    QAbefore( 8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
+    if (pass) QAafter(  8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
+    QAbefore( 9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
+    if (pass) QAafter(  9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
+    QAbefore(10)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kPion]));
+    if (pass) QAafter( 10)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kPion]));
+    QAbefore(11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
+    if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
+    QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
+    if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
+  }
 
   return pass;
 }
@@ -1694,6 +1716,21 @@ void AliFlowTrackCuts::DefineHistograms()
   before->Add(hb);//7
   after->Add(ha);//7
 
+  before->Add(new TH2F("TOFkElectron",";p_{t}[GeV/c];TOF signal - IT", kNbinsP,binsP,1000,-2e4, 2e4));//8
+  after->Add( new TH2F("TOFkElectron",";p_{t}[GeV/c];TOF signal - IT", kNbinsP,binsP,1000,-2e4, 2e4));//8
+
+  before->Add(new TH2F("TOFkMuon",";p_{t}[GeV/c];TOF signal - IT",     kNbinsP,binsP,1000,-2e4, 2e4));//9
+  after->Add( new TH2F("TOFkMuon",";p_{t}[GeV/c];TOF signal - IT",     kNbinsP,binsP,1000,-2e4, 2e4));//9
+
+  before->Add(new TH2F("TOFkPion",";p_{t}[GeV/c];TOF signal - IT",     kNbinsP,binsP,1000,-2e4, 2e4));//10
+  after->Add( new TH2F("TOFkPion",";p_{t}[GeV/c];TOF signal - IT",     kNbinsP,binsP,1000,-2e4, 2e4));//10
+
+  before->Add(new TH2F("TOFkKaon",";p_{t}[GeV/c];TOF signal - IT",     kNbinsP,binsP,1000,-2e4, 2e4));//11
+  after->Add( new TH2F("TOFkKaon",";p_{t}[GeV/c];TOF signal - IT",     kNbinsP,binsP,1000,-2e4, 2e4));//11
+
+  before->Add(new TH2F("TOFkProton",";p_{t}[GeV/c];TOF signal - IT",   kNbinsP,binsP,1000,-2e4, 2e4));//12
+  after->Add( new TH2F("TOFkProton",";p_{t}[GeV/c];TOF signal - IT",   kNbinsP,binsP,1000,-2e4, 2e4));//12
+
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -2423,52 +2460,61 @@ Bool_t AliFlowTrackCuts::PassesNucleiSelection(const AliESDtrack* track)
   Bool_t select=kFALSE;
 
   //if (!track) continue; 
-  
+
   if (!track->GetInnerParam()) 
     return kFALSE;    //break;
-  
+
   const AliExternalTrackParam* tpcTrack = track->GetInnerParam();
-   
+
   Double_t ptotTPC = tpcTrack->GetP();
   Double_t sigTPC = track->GetTPCsignal();
   Double_t dEdxBBA = 0.;
   Double_t dSigma = 0.; 
 
   switch (fParticleID)
-    {
+  {
     case AliPID::kDeuteron:
       //pid=10;
       dEdxBBA = AliExternalTrackParam::BetheBlochAleph(ptotTPC/1.8756,
-						       4.60e+00,
-						       8.9684e+00,
-						       1.640e-05,
-						       2.35e+00,
-						       2.35e+00);
+          4.60e+00,
+          8.9684e+00,
+          1.640e-05,
+          2.35e+00,
+          2.35e+00);
       dSigma = (sigTPC -  dEdxBBA)/dEdxBBA;
-      
+
       if( ptotTPC<=1.1 && (dSigma < (0.5 - (0.1818*ptotTPC)) ) && (dSigma > ( (0.218*ptotTPC - 0.4) ) )  )
-	{select=kTRUE;}
+      {select=kTRUE;}
       break;
-      
+
     case AliPID::kTriton:
       //pid=11;
       select=kFALSE;
       break;
-      
+
     case AliPID::kHe3:
       //pid=12;
-      select=kFALSE;
+      // ----- Pass 2 -------
+      dEdxBBA = 4.0 * AliExternalTrackParam::BetheBlochAleph( (2.*ptotTPC)/2.8084,
+          1.74962,
+          27.4992,
+          4.00313e-15,
+          2.42485,
+          8.31768);
+      dSigma = (sigTPC -  dEdxBBA)/dEdxBBA;
+      if(ptotTPC<=5.0 && (dSigma >= (-0.03968*ptotTPC - 0.1)) && (dSigma <= (0.31 - 0.0217*ptotTPC)))
+      {select=kTRUE;}
       break;
-      
+
     case AliPID::kAlpha:
       //pid=13;
       select=kFALSE;
       break;
-      
+
     default:
       return kFALSE;
-    }       
-  
+  }       
+
   return select;
 }
 // end part added by Natasha

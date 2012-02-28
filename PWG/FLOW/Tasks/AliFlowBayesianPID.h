@@ -14,6 +14,8 @@ class TObject;
 class TDatabasePDG;
 class AliESDEvent;
 class AliESDtrack;
+class AliAODEvent;
+class AliAODTrack;
 class TH2D;
 class TSpline3;
 class TF1;
@@ -31,7 +33,6 @@ or (if you want a global AliESDpid object)
 
   AliESDpid *PIDesd = new AliESDpid();
   ....
-  gROOT->LoadMacro("AliFlowBayesianPID.cxx++g");
   AliFlowBayesianPID *mypid = new AliFlowBayesianPID(PIDesd);
 
 for data starting from the PbPb pass2 reconstruction
@@ -39,14 +40,23 @@ for data starting from the PbPb pass2 reconstruction
   mypid->SetNewTrackParam();
 
 
-2) pass the pointer to your task
+before to loop on the on ESD tracks 
+ mypid->SetDetResponse(esdEvent, centrality,AliESDpid::kTOF_T0,kFALSE); // centrality > 0 = PbPb or -1 for pp collisions
 
-3) In your Task Exec:
-     mypid->SetDetResponse(esdEvent, centrality,AliESDpid::kTOF_T0,kFALSE); // centrality = PbPb centrality class (0-100%) or -1 for pp collisions
+before to loop on the on AOD tracks 
+ mypid->SetDetResponse(aodEvent, centrality); // centrality > 0 = PbPb or -1 for pp collisions
+
+if you want to use a dE/dx depdence on DeltaPhi set the EP with its resolution otherwise it will be skipped
+ mypid->SetPsiCorrectionDeDx(psiEP,resEP);
+
+
      for(...){ // track loop
-     mypid->ComputeProb(track,centrality);
-     Float_t *prob = mypid->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mismatch parameterization
+       mypid->ComputeProb(track,centrality); // both for ESD and AOD tracks
+       Float_t *prob = mypid->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mismatch parameterization
+     }
 
+
+More details:
      // for the single detector weights (no priors)
      Float_t *tpcWeight = mypid->GetWeights(0); // TPC weights (equal weights in case of no kTPCpid)
      Float_t *tofWeight = mypid->GetWeights(1); // TOF weights (equal weights in case of no kTOFpid)
@@ -59,11 +69,9 @@ for data starting from the PbPb pass2 reconstruction
      TH2D *hPr = mypid->GetHistoPriors(isp); // 2D (centrality - pT) histo for the priors of specie-isp (centrality < 0 means pp collisions)
                                              // all the priors are normalized to the pion ones
 
-  }
-
 */
 
-class AliFlowBayesianPID : public AliPIDResponse {
+class AliFlowBayesianPID : public AliPIDResponse{
  public:
   AliFlowBayesianPID(AliESDpid *esdpid=NULL); 
   virtual ~AliFlowBayesianPID();
@@ -73,11 +81,13 @@ class AliFlowBayesianPID : public AliPIDResponse {
 
   // setter
   void SetDetResponse(AliESDEvent *esd,Float_t centrality=-1.0,EStartTimeType_t flagStart=AliESDpid::kTOF_T0,Bool_t recomputeT0TOF=kFALSE);
+  void SetDetResponse(AliAODEvent *aod,Float_t centrality=-1.0);
   void SetNewTrackParam(Bool_t flag=kTRUE){fNewTrackParam=flag;};
   void SetDetAND(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskAND[idet] = kTRUE;};
   void SetDetOR(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskOR[idet] = kTRUE;};
   void ResetDetAND(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskAND[idet] = kFALSE;};
   void ResetDetOR(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskOR[idet] = kFALSE;};
+  void SetPsiCorrectionDeDx(Float_t psi,Float_t res);
 
   // getter
   AliESDpid* GetESDpid(){return fPIDesd;};
@@ -95,11 +105,14 @@ class AliFlowBayesianPID : public AliPIDResponse {
   Bool_t GetDetORstatus(Int_t idet) const {if(idet < fgkNdetectors && idet >= 0){return fMaskOR[idet];} else{return kFALSE;} };
   Bool_t GetCurrentMask(Int_t idet) const {if(idet < fgkNdetectors && idet >= 0){return fMaskCurrent[idet];} else{return kFALSE;} };
   Float_t GetExpDeDx(const AliESDtrack *t,Int_t iS) const;
+  Float_t GetExpDeDx(const AliAODTrack *t,Int_t iS) const;
 
   // methods for Bayesina Combined PID
   void ComputeWeights(const AliESDtrack *t);
   void ComputeProb(const AliESDtrack *t,Float_t); // obsolete method
   void ComputeProb(const AliESDtrack *t){ComputeProb(t,0.0);}; 
+  void ComputeWeights(const AliAODTrack *t);
+  void ComputeProb(const AliAODTrack *t); // obsolete method
 
   void SetTOFres(Float_t res){fTOFresolution=res;};
 
@@ -136,6 +149,8 @@ class AliFlowBayesianPID : public AliPIDResponse {
   Bool_t fMaskAND[fgkNdetectors],fMaskOR[fgkNdetectors],fMaskCurrent[fgkNdetectors]; // mask detector should be used
 
   Float_t fCurrCentrality; // Centrality in current event
+
+  Float_t fPsi,fPsiRes;    // RP and its resolution for the event (999 if not available) to correct dEdx for p > 1
 
   ClassDef(AliFlowBayesianPID, 5); // example of analysis
 };

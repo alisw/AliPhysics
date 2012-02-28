@@ -75,6 +75,21 @@ AliMuonTrackCuts::AliMuonTrackCuts(const AliMuonTrackCuts& obj) :
 
 
 //________________________________________________________________________
+AliMuonTrackCuts& AliMuonTrackCuts::operator=(const AliMuonTrackCuts& obj)
+{
+  /// Assignment operator
+  if ( this != &obj ) { 
+    AliAnalysisCuts::operator=(obj);
+    fIsESD = obj.fIsESD;
+    fIsMC = obj.fIsMC;
+    fUseCustomParam = obj.fUseCustomParam;
+    fParameters = obj.fParameters;
+  }
+  return *this;
+}
+
+
+//________________________________________________________________________
 AliMuonTrackCuts::~AliMuonTrackCuts()
 {
   /// Destructor
@@ -130,7 +145,7 @@ Bool_t AliMuonTrackCuts::StreamParameters( Int_t runNumber,  Int_t runMax )
     }
   }
 
-  TString filename = Form("%s/PWG3/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
+  TString filename = Form("%s/PWG/MUON/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
   if ( fIsMC ) filename.ReplaceAll(".root", "_MC.root");
 
   TString parNames[kNParameters];
@@ -265,11 +280,14 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
   if ( thetaAbsEndDeg > 2. && thetaAbsEndDeg < 10. ) selectionMask |= kMuThetaAbs;
 
   Int_t matchTrig = ( fIsESD ) ? ((AliESDMuonTrack*)track)->GetMatchTrigger() : ((AliAODTrack*)track)->GetMatchTrigger();
-  if ( matchTrig >= 1 ) selectionMask |= kMuMatchApt;
-  if ( matchTrig >= 2 ) selectionMask |= kMuMatchLpt;
-  if ( matchTrig >= 3 ) selectionMask |= kMuMatchHpt;
-  
-  if ( track->Pt() >= GetSharpPtCut( matchTrig-1, kFALSE ) ) selectionMask |= kMuSharpPtCut;
+  Int_t cutLevel[3] = {kMuMatchApt, kMuMatchLpt, kMuMatchHpt};
+  Int_t cutLevelSharp[3] = {kMuMatchSharpApt, kMuMatchSharpLpt, kMuMatchSharpHpt};
+  Double_t pt = track->Pt();
+  for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
+    if ( matchTrig < ilevel+1 ) break;
+    selectionMask |= cutLevel[ilevel];
+    if ( pt >= GetSharpPtCut(ilevel) ) selectionMask |= cutLevelSharp[ilevel];
+  }
 
   Double_t chi2norm = ( fIsESD ) ? ((AliESDMuonTrack*)track)->GetNormalizedChi2() : ((AliAODTrack*)track)->Chi2perNDF();
   if ( chi2norm < GetChi2NormCut() ) selectionMask |= kMuTrackChiSquare;
@@ -315,6 +333,8 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
   Double_t sigmaPdcaWithRes = TMath::Sqrt( pResolutionEffect*pResolutionEffect + slopeResolutionEffect*slopeResolutionEffect );
   
   if ( pDca < GetNSigmaPdca() * sigmaPdcaWithRes ) selectionMask |= kMuPdca;
+  
+  AliDebug(1, Form("Selection mask 0x%x\n", selectionMask));
 
   return selectionMask;
 }
@@ -537,17 +557,22 @@ void AliMuonTrackCuts::Print(Option_t* option) const
   sopt.ToLower();
   if ( sopt.IsNull() || sopt.Contains("*") || sopt.Contains("all") ) sopt = "mask param";
   UInt_t filterMask = GetFilterMask();
+  Int_t cutLevel[3] = {kMuMatchApt, kMuMatchLpt, kMuMatchHpt};
+  Int_t cutLevelSharp[3] = {kMuMatchSharpApt, kMuMatchSharpLpt, kMuMatchSharpHpt};
+  TString cutLevelName[3] = {"Apt", "Lpt", "Hpt"};
   if ( sopt.Contains("mask") ) {
     printf(" *** Muon track filter mask: *** \n");
     printf("  0x%x\n", filterMask);
     if ( filterMask & kMuEta ) printf("  -4 < eta < -2.5\n");
     if ( filterMask & kMuThetaAbs ) printf("  2 < theta_abs < 10 deg\n");
     if ( filterMask & kMuPdca ) printf("  pxDCA cut\n");
-    if ( filterMask & kMuMatchApt ) printf("  match Apt\n");
-    if ( filterMask & kMuMatchLpt ) printf("  match Lpt\n");
-    if ( filterMask & kMuMatchHpt ) printf("  match Hpt\n");
+    for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
+      if ( filterMask & cutLevel[ilevel] ) printf("  match %s\n", cutLevelName[ilevel].Data());
+    }
     if ( filterMask & kMuTrackChiSquare ) printf("  Chi2 cut on track\n");
-    if ( filterMask & kMuSharpPtCut ) printf("  sharp tracker pt cut matching trig. pt cut\n");
+    for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
+      if ( filterMask & cutLevelSharp[ilevel] ) printf("  sharp tracker pt cut matching trig. %s cut\n", cutLevelName[ilevel].Data());
+    }
     printf(" ******************** \n");
   }
   if ( sopt.Contains("param") ) {

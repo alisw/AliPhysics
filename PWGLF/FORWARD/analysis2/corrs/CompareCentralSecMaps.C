@@ -1,7 +1,7 @@
 /**
- * @defgroup pwg2_forward_scripts_corr Correction scripts 
+ * @defgroup pwglf_forward_scripts_corr Correction scripts 
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 
 //____________________________________________________________________
@@ -14,7 +14,7 @@
  * @param n2   Name 2
  * @param load 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 CompareCentralSecMaps(const char* fn1,   const char* fn2, 
@@ -24,8 +24,8 @@ CompareCentralSecMaps(const char* fn1,   const char* fn2,
 
   // --- Load Utilities ----------------------------------------------
   if (load) {
-    gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
-    //   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/CompareCorrs.C");
+    gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+    //   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/CompareCorrs.C");
   }
 
   // --- Get Objects -------------------------------------------------

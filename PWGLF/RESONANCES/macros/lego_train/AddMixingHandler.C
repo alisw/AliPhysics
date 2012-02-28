@@ -16,17 +16,19 @@ void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysis
       AliRsnMiniAnalysisTask *taskRsn = (AliRsnMiniAnalysisTask *) task;
 
       // settings
-      if (isPP)
+      if (isPP) {
          taskRsn->UseMultiplicity("QUALITY");
-      else
+         taskRsn->SetMaxDiffMult(1.0);
+      } else {
          taskRsn->UseCentrality("V0M");
-
+         taskRsn->SetMaxDiffMult(10.0);
+      }
       // set mixing
       taskRsn->UseContinuousMix();
       //task->UseBinnedMix();
       taskRsn->SetNMix(mixNum);
       taskRsn->SetMaxDiffVz(1.0);
-      taskRsn->SetMaxDiffMult(10.0);
+//      taskRsn->SetMaxDiffMult(10.0);
       taskRsn->SetMaxDiffAngle(1E20);
 
    } else {

@@ -5,7 +5,7 @@
  * 
  * @brief  Data structures used in QA trending tree
  *
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 #ifndef QASTRUCTS_H
 #define QASTRUCTS_H
@@ -20,7 +20,7 @@ class TTree;
 /**
  * A simple quantity with mean, variance, min, and max
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct Quantity
 {
@@ -64,7 +64,7 @@ struct Quantity
 /**
  * A per-ring quantity with mean, variance, min, and max
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct RingQuantity : public Quantity 
 {
@@ -124,7 +124,7 @@ struct RingQuantity : public Quantity
 /**
  * Per run information
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct Global 
 {
@@ -168,7 +168,7 @@ struct Global
 /**
  * Per-ring status information on ELoss fits
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct FitStatus
 {
@@ -230,7 +230,7 @@ struct FitStatus
 /**
  * Per-ring status information on merging (sharing filter)
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct Merge
 {
@@ -290,7 +290,7 @@ struct Merge
 /**
  * Per-ring status information on hit 'loss'
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct DataLoss
 {
@@ -350,7 +350,7 @@ struct DataLoss
 /**
  * Per-ring status information on Poisson vs ELoss correlation
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct Correlation
 {

@@ -153,7 +153,7 @@ Float_t AliTRDresolution::fgPtBin[25];
 //________________________________________________________
 AliTRDresolution::AliTRDresolution()
   :AliTRDrecoTask()
-  ,fIdxPlot(0)
+  ,fSteer(0)
   ,fIdxFrame(0)
   ,fPtThreshold(.3)
   ,fDyRange(0.75)
@@ -170,12 +170,13 @@ AliTRDresolution::AliTRDresolution()
   //
   SetNameTitle("TRDresolution", "TRD spatial and momentum resolution");
   MakePtSegmentation();
+  SetProcesses(kTRUE, kTRUE, kTRUE, kTRUE);
 }
 
 //________________________________________________________
 AliTRDresolution::AliTRDresolution(char* name, Bool_t xchange)
   :AliTRDrecoTask(name, "TRD spatial and momentum resolution")
-  ,fIdxPlot(0)
+  ,fSteer(0)
   ,fIdxFrame(0)
   ,fPtThreshold(.3)
   ,fDyRange(0.75)
@@ -193,6 +194,7 @@ AliTRDresolution::AliTRDresolution(char* name, Bool_t xchange)
 
   InitFunctorList();
   MakePtSegmentation();
+  SetProcesses(kTRUE, kTRUE, kTRUE, kTRUE);
   if(xchange){
     SetUseExchangeContainers();
     DefineOutput(kClToTrk, TObjArray::Class()); // cluster2track
@@ -352,7 +354,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   }
 
   AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
-  Double_t val[kNdim],
+  Double_t val[kNdim+2],
            alpha(0.), cs(-2.), sn(0.); //Float_t exb, vd, t0, s2, dl, dt;
   TObjArray     *clInfoArr(NULL);
   AliTRDseedV1  *fTracklet(NULL);
@@ -387,6 +389,8 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       if((cc = fTracklet->GetClusters(tb-2))) {val[kZrez] += TMath::Abs(cc->GetQ()); ic++;}
       if(ic) val[kZrez] /= (ic*q);
       val[kSpeciesChgRC]= fTracklet->IsRowCross()?0.:(TMath::Max(q*corr, Float_t(3.)));
+      val[kNdim]   = fEvent->GetMultiplicity();
+      val[kNdim+1] = c->IsFivePad()?1:c->GetNPads();
       H->Fill(val);
 /*      // tilt rotation of covariance for clusters
       Double_t sy2(c->GetSigmaY2()), sz2(c->GetSigmaZ2());
@@ -500,20 +504,18 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
              tilt(fTracklet->GetTilt());
     // correct for tilt rotation
     val[kYrez] = dyt - dzt*tilt;
-    val[kZrez] = dzt + dyt*tilt;
+    val[kZrez] = fTracklet->IsRowCross()?(dzt + dyt*tilt):(fTracklet->GetdQdl()*3.e-4-1.5);
     dydx+= tilt*fTracklet->GetZref(1);
     val[kPrez] = TMath::ATan((dydx - fTracklet->GetYref(1))/(1.+ fTracklet->GetYref(1)*dydx)) * TMath::RadToDeg();
-    if(fTracklet->IsRowCross()) val[kSpeciesChgRC]= 0.;
-    val[kNdim] = fTracklet->GetdQdl()*2.e-3;
-    val[kNdim+1] = fEvent?fEvent->GetMultiplicity():0;
-    val[kNdim+2] = 1.e2*fTracklet->GetTBoccupancy()/AliTRDseedV1::kNtb;
+    val[kNdim] = fEvent?fEvent->GetMultiplicity():0;
+    val[kNdim+1] = 1.e2*fTracklet->GetTBoccupancy()/AliTRDseedV1::kNtb;
     Int_t n = fTracklet->GetChargeGaps(sz, pos, ntbGap);
-    val[kNdim+3] = 0.; for(Int_t igap(0); igap<n; igap++) val[kNdim+3] += sz[igap];
-    for(Int_t ifill(0); ifill<3; ifill++){ val[kNdim+4+ifill]=0.;val[kNdim+5+ifill]=0.;}
+    val[kNdim+2] = 0.; for(Int_t igap(0); igap<n; igap++) val[kNdim+2] += sz[igap];
+    for(Int_t ifill(0); ifill<3; ifill++){ val[kNdim+3+ifill]=0.;val[kNdim+4+ifill]=0.;}
     for(Int_t igap(0), ifill(0); igap<n&&ifill<2; igap++){
       if(ntbGap[igap]<2) continue;
-      val[kNdim+4+ifill] = sz[igap];
-      val[kNdim+5+ifill] = pos[igap];
+      val[kNdim+3+ifill] = sz[igap];
+      val[kNdim+4+ifill] = pos[igap];
       ifill++;
     }
     H->Fill(val);
@@ -622,7 +624,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
     return H->Projection(kYrez);
   }
-  //printf("USE y[%+f] dydx[%+f]\n", fTracklet->GetYfit(0), fTracklet->GetYfit(1));
+//  printf("USE y[%+f] dydx[%+f]\n", fTracklet->GetYfit(0), fTracklet->GetYfit(1));
 
   Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
   const Double_t *parR(tin->GetParameter());
@@ -649,7 +651,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   val[kYrez]        = dy;
   val[kZrez]        = fTracklet->IsRowCross()?dz:(fTracklet->GetdQdl()*5.e-4 - 2.5);
   val[kPrez]        = dphi*TMath::RadToDeg();
-  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies;
+  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies; //printf("val[%d] = %4.2f\n", kSpeciesChgRC, val[kSpeciesChgRC]);
   val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
   val[kNdim]        = GetPtBin(fTracklet->GetMomentum());
   val[kNdim+1]      = dx;
@@ -787,7 +789,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       else{
         val[kBC]          = (bc>=kNbunchCross)?(kNbunchCross-1):bc;
         val[kYrez]        = tin->GetY()-ymc;
-        val[kZrez]        = tin->GetZ()-zmc;
+        val[kZrez]        = rc?(tin->GetZ()-zmc):(fTracklet->GetdQdl()*1.8e-4 - 0.9);
         val[kPrez]        = (TMath::ASin(tin->GetSnp())-TMath::ATan(dydx0))*TMath::RadToDeg();
         if((H = (THnSparseI*)fContainer->At(kMCtrackIn))) H->Fill(val);
       }
@@ -859,7 +861,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     dz = z - zmc;
     val[kYrez] = dy - dz*tilt;
     val[kPrez] = TMath::ATan((dydx - dydx0)/(1.+ dydx*dydx0))*TMath::RadToDeg();
-    val[kZrez] = dz + dy*tilt;
+    val[kZrez] = rc?(dz + dy*tilt):(fTracklet->GetdQdl()*3.e-4 - 1.5);
 //      val[kNdim] = pt/pt0-1.;
     if((H = (THnSparse*)fContainer->At(kMCtracklet))) H->Fill(val);
 
@@ -1055,9 +1057,10 @@ void AliTRDresolution::MakeSummary()
                 vClSignMax[2] = {4.4e2, 6.2e2},
                 vClMin[nClViews] = {3.2e2, vClSignMin[Int_t(fBsign)], vClSignMin[Int_t(!fBsign)], 0., 0., 0., 0., 0., 3.2e2},
                 vClMax[nClViews] = {5.e2, vClSignMax[Int_t(fBsign)], vClSignMax[Int_t(!fBsign)], 0., 0., 0., 0., 0., 5.e2};
-  const Int_t nTrkltViews(19);
+  const Int_t nTrkltViews(20);
   const Char_t *vTrkltName[nTrkltViews] = {
     "TrkltY", "TrkltYn", "TrkltYp", "TrkltY", "TrkltYn", "TrkltYp",
+    "TrkltRCZ",
     "TrkltPh", "TrkltPhn", "TrkltPhp",
     "TrkltQ", "TrkltQn", "TrkltQp",
     "TrkltQS", "TrkltQSn", "TrkltQSp",
@@ -1068,6 +1071,7 @@ void AliTRDresolution::MakeSummary()
   };
   const UChar_t vTrkltOpt[nTrkltViews] = {
     0, 0, 0, 1, 1, 1,
+    0,
     0, 0, 0,
     0, 0, 0,
     0, 0, 0,
@@ -1105,7 +1109,7 @@ void AliTRDresolution::MakeSummary()
     for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
       for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
         p=cOut->cd(icen*AliTRDgeometry::kNlayer+ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
-        if(!(h2 = (TH2*)arr->FindObject(Form("HDetQ%d%d_yx", ily, icen)))) continue;
+        if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d%dEn", ily, icen)))) continue;
         SetNormZ(h2, 1, 11, 1, -1, 10.);
         SetRangeZ(h2, 0., 150, -25.);
         h2->GetZaxis()->SetTitle("Rel. Det. Occup. [%]");
@@ -1119,7 +1123,7 @@ void AliTRDresolution::MakeSummary()
     cOut->Divide(3,2, 1.e-5, 1.e-5);
     for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
       p=cOut->cd(ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
-      if(!(h2 = (TH2*)arr->FindObject(Form("HDetQ%d_2D", ily)))) continue;
+      if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d_2D", ily)))) continue;
       SetNormZ(h2, 1, 11, 1, -1, 10.);
       SetRangeZ(h2, 0., 45., -15.);
       h2->GetZaxis()->SetTitle("Rel. Mean(q) [%]");
@@ -1135,15 +1139,15 @@ void AliTRDresolution::MakeSummary()
         cOut = new TCanvas(Form("%s_%s%s_%d", GetName(), typName[ityp], vClName[iview], vClOpt[iview]), "Cluster Resolution", nx, ny);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
         Int_t nplot(0);
-        for(Int_t iplot(0); iplot<6; iplot++){
-          p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
-          if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vClName[iview], iplot)))) continue;
+        for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+          p=cOut->cd(ily+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
+          if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vClName[iview], ily)))) continue;
           nplot++;
           if(vClOpt[iview]==0) h2->Draw("colz");
           else if(vClOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [#mum]", vClMin[iview], vClMax[iview], 1.e4);
-          if(iview<3) MakeDetectorPlot(iplot);
+          if(iview<5) MakeDetectorPlot(ily);
         }
-        if(nplot==6) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+        if(nplot==AliTRDgeometry::kNlayer) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
         else delete cOut;
       }
     }
@@ -1158,7 +1162,7 @@ void AliTRDresolution::MakeSummary()
           if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vTrkltName[iview], iplot)))) continue;
           nplot++;
           if(vTrkltOpt[iview]==0) h2->Draw("colz");
-          else if (vTrkltOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [cm]", .15, .6);
+          else if (vTrkltOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [cm]", .15, .4);
           else if (vTrkltOpt[iview]==2) DrawSigma(h2, "#sigma(occupancy) [%]", 10.5, 15.);
           MakeDetectorPlot(iplot);
         }
@@ -1190,26 +1194,35 @@ void AliTRDresolution::MakeSummary()
         else delete cOut;
       }
       // species
-      const Char_t *plot[] = {"Ph", "Q", "QS"};
-      for(Int_t iview(0); iview<3; iview++){
-        cOut = new TCanvas(Form("%s_%sTrkInSpc%s", GetName(), typName[ityp], plot[iview]), "Track IN PID", Int_t(1.5*nx), Int_t(1.5*ny));
-        cOut->Divide(5,3, 1.e-5, 1.e-5);
-        Int_t nplot(0); const Char_t *chName[] = {"p", "n", ""};
-        for(Int_t iplot(0); iplot<3; iplot++){
-          for(Int_t ispec(0); ispec<AliPID::kSPECIES; ispec++){
-            p=cOut->cd(iplot*AliPID::kSPECIES+ispec+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
-            if(!(h2 = (TH2*)arr->FindObject(Form("H%sTrkIn%s%s%d_2D", typName[ityp], plot[iview], chName[iplot], ispec)))) {
-              AliInfo(Form("Missing H%sTrkIn%s%s%d_2D", typName[ityp], plot[iview], chName[iplot], ispec));
-              continue;
-            }
-            nplot++;
-            h2->Draw("colz");
-            MakeDetectorPlot(0);
-          }
+      const Float_t zmin[] = {1., 20., 25., 10., 5.},
+                    zmax[] = {10., 38., 43., 28., 14.};
+      cOut = new TCanvas(Form("%s_%sTrkInSpc", GetName(), typName[ityp]), "Track IN PID", Int_t(1.5*nx), Int_t(1.5*ny));
+      cOut->Divide(5,3, 1.e-5, 1.e-5);
+      Int_t nplot(0); const Char_t *chName[] = {"p", "n", ""};
+      for(Int_t ich(0), ipad(1); ich<3; ich++){
+        TH2 *h2s(NULL);
+        if(!(h2s = (TH2*)arr->FindObject(Form("H%sTrkInY%sEn", typName[ityp], chName[ich])))) {
+          AliInfo(Form("Missing H%sTrkIn%sEn", typName[ityp], chName[ich]));
+          continue;
         }
-        if(nplot==15) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-        else delete cOut;
+        for(Int_t ispec(0); ispec<AliPID::kSPECIES; ispec++){
+          p=cOut->cd(ipad++); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
+          if(!(h2 = (TH2*)arr->FindObject(Form("H%sTrkInY%s%dEn", typName[ityp], chName[ich], ispec)))) {
+            AliInfo(Form("Missing H%sTrkIn%s%dEn", typName[ityp], chName[ich], ispec));
+            continue;
+          }
+          nplot++;
+          h2->Divide(h2, h2s, 1.e2);
+          h2->SetContour(9);
+          h2->GetZaxis()->SetRangeUser(zmin[ispec], zmax[ispec]);
+          h2->GetZaxis()->SetTitle("Rel. Abundancy [%]");h2->GetZaxis()->CenterTitle();
+          TString tit(h2->GetTitle()); h2->SetTitle(Form("%s :: Relative Abundancy", ((*(tit.Tokenize("::")))[0])->GetName()));
+          h2->Draw("colz");
+          MakeDetectorPlot(0);
+        }
       }
+      if(nplot==15) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+      else delete cOut;
     }
   }
   // track MC systematic
@@ -1338,45 +1351,47 @@ Bool_t AliTRDresolution::MakeProjectionDetector()
   }
   Int_t ndim(H->GetNdimensions());
   Int_t coord[kNdim]; memset(coord, 0, sizeof(Int_t) * kNdim); Double_t v = 0.;
-  TAxis *aa[kNdim], *ac(NULL); memset(aa, 0, sizeof(TAxis*) * kNdim);
+  TAxis *aa[kNdim], *an(NULL); memset(aa, 0, sizeof(TAxis*) * kNdim);
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
-  Int_t nCen(1);
-  if(ndim > 4){
-    ac = H->GetAxis(4);
-    nCen = AliTRDeventInfo::kCentralityClasses;
+  if(ndim < 5) aa[4] = new TAxis(1, -0.5, 0.5);
+  Int_t nPad(1);
+  if(ndim > 5){
+    an = H->GetAxis(5);
+    nPad = kNpads+1;
   }
   // build list of projections
-  const Int_t nsel(AliTRDgeometry::kNlayer*AliTRDeventInfo::kCentralityClasses);
+  const Int_t nsel(8*AliTRDgeometry::kNlayer*AliTRDeventInfo::kCentralityClasses);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 2, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
+  //const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
+  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"2800-inf", "2100-2799", "1400-2099", "700-1399", "0-699"};
   AliTRDresolutionProjection hp[kDetNproj];  TObjArray php(kDetNproj);
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
-  for(Int_t icen(0); icen<nCen; icen++){
-    for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
-      isel++; // new selection
-      hp[ih].Build(Form("HDetQ%d%d", ily, icen),
-                   Form("Detectors :: Q Ly[%d] Cen[%s]", ily, cenName[icen]),
-                   kEta, kPhi, kYrez, aa);
-      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      hp[ih].SetShowRange(10., 55.);
-      php.AddLast(&hp[ih++]); np[isel]++;
+  for(Int_t ipad(0); ipad<nPad; ipad++){
+    for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
+      for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+        isel++; // new selection
+        hp[ih].Build(Form("HDet%d%d%d", ily, icen, ipad),
+                    Form("Detectors :: Ly[%d] Cen[%s] Pads[%s]", ily, cenName[icen], ipad?(ipad<kNpads?Form("%d", ipad+1):Form(">%d", kNpads)):"deconv"),
+                    kEta, kPhi, 4, aa);
+        hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        hp[ih].SetShowRange(10., 55.);
+        php.AddLast(&hp[ih++]); np[isel]++;
+      }
     }
   }
   AliInfo(Form("Build %3d 3D projections.", ih));
 
-  Int_t ly(0), cen(0);
+  Int_t ly(0), cen(0), npad(0);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord); if(v<1.) continue;
-    ly = coord[kBC]-1;
-
-    // centrality selection
-    cen = 0;
-    if(ac) cen = coord[4]-1;
-
-    isel = cen*AliTRDgeometry::kNlayer+ly; Int_t ioff=isel;
-//    AliDebug(4, Form("SELECTION[%d] :: ch[%c] pt[%c] sp[%d] ly[%d]\n", np[isel], ch==2?'Z':chName[ch], ptName[pt], sp, ly));
-    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
+    ly = coord[kBC]-1;    // layer selection
+    cen = coord[kYrez]-1; // centrality selection
+    npad = 0;             // no. of pads selection
+    if(an) npad = TMath::Min(coord[5]-1, Int_t(kNpads));
+    isel = npad*AliTRDeventInfo::kCentralityClasses*AliTRDgeometry::kNlayer+cen*AliTRDgeometry::kNlayer+ly;
+    ((AliTRDresolutionProjection*)php.At(isel))->Increment(coord, v);
+    //Int_t ioff=isel;for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kDetNproj), kDetector);
@@ -1386,18 +1401,26 @@ Bool_t AliTRDresolution::MakeProjectionDetector()
     if(!hp[ih].fH) continue;
     if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours, 0, kFALSE))) continue;
     arr->AddAt(h2, jh++);
-    if(!(h2 = (TH2*)gDirectory->Get(Form("%s_yx", hp[ih].fH->GetName())))) continue;
+    if(!(h2 = (TH2*)gDirectory->Get(Form("%sEn", hp[ih].fH->GetName())))) continue;
     arr->AddAt(h2, jh++);
   }
   AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HDetQ%d%d", ily, 0)))){
-      for(Int_t icen(1); icen<nCen; icen++){
-        if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HDetQ%d%d", ily, icen)))){
-          (*pr0)+=(*pr1);
+    for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
+      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, icen, 0)))){
+        for(Int_t ipad(1); ipad<nPad; ipad++){
+          if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, icen, ipad)))){
+            (*pr0)+=(*pr1);
+          }
         }
+        pr0->fH->SetNameTitle(Form("HDet%d%d", ily, icen), Form("Detectors :: Ly[%d] Cen[%s]", ily, cenName[icen]));
+        if((h2 = pr0->Projection2D(kNstat, kNcontours, 0, kFALSE))) arr->AddAt(h2, jh++);
+        if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
+        if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, 0, 0)))) (*pr1)+=(*pr0);
       }
-      pr0->fH->SetNameTitle(Form("HDetQ%d", ily), Form("Detectors :: Q Ly[%d]", ily));
+    }
+    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, 0, 0)))){
+      pr0->fH->SetNameTitle(Form("HDet%d", ily), Form("Detectors :: Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
     }
   }
@@ -1424,46 +1447,59 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     return kFALSE;
   }
   Int_t ndim(H->GetNdimensions()); Bool_t debug(ndim>Int_t(kNdimCl));
-  Int_t coord[kNdim]; memset(coord, 0, sizeof(Int_t) * kNdim); Double_t v = 0.;
-  TAxis *aa[kNdim], *as(NULL), *apt(NULL); memset(aa, 0, sizeof(TAxis*) * kNdim);
+  Int_t coord[10]; memset(coord, 0, sizeof(Int_t) * 10); Double_t v = 0.;
+  TAxis *aa[kNdim], *as(NULL), *apt(NULL), *acen(NULL), *anp(NULL); memset(aa, 0, sizeof(TAxis*) * kNdim);
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(ndim > Int_t(kPt)) apt = H->GetAxis(kPt);
   if(ndim > Int_t(kSpeciesChgRC)) as  = H->GetAxis(kSpeciesChgRC);
+  if(ndim > Int_t(kNdim)) acen  = H->GetAxis(kNdim);
+  if(ndim > Int_t(kNdim)+1) anp  = H->GetAxis(kNdim+1);
+  // calculate size depending on debug level
+  const Int_t nCh(apt?2:1);
+  const Int_t nCen(acen?Int_t(AliTRDeventInfo::kCentralityClasses):1);
+  const Int_t nNpad(anp?(Int_t(kNpads)+1):1);
+  
   // build list of projections
-  const Int_t nsel(12);
+  const Int_t nsel(AliTRDgeometry::kNlayer*kNcharge*(kNpads+1)*AliTRDeventInfo::kCentralityClasses);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   AliTRDresolutionProjection hp[kClNproj];  TObjArray php(kClNproj);
   const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
+  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"2800-inf", "2100-2799", "1400-2099", "700-1399", "0-699"};
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
-    for(Int_t ich(0); ich<kNcharge; ich++){
-      isel++; // new selection
-      hp[ih].Build(Form("H%sClY%c%d", mc?"MC":"", chName[ich], ily),
-                   Form("Clusters[%c] :: #Deltay Ly[%d]", chSgn[ich], ily),
-                   kEta, kPhi, kYrez, aa);
-      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php.AddLast(&hp[ih++]); np[isel]++;
-      if(!debug) break;
-      hp[ih].Build(Form("H%sClQ%c%d", mc?"MC":"", chName[ich], ily),
-                   Form("Clusters[%c] :: Q Ly[%d]", chSgn[ich], ily),
-                   kEta, kPhi, kSpeciesChgRC, aa);
-      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      hp[ih].SetShowRange(20., 40.);
-      php.AddLast(&hp[ih++]); np[isel]++;
-      hp[ih].Build(Form("H%sClYXTC%c%d", mc?"MC":"", chName[ich], ily),
-                   Form("Clusters[%c] :: #Deltay(x,TC) Ly[%d]", chSgn[ich], ily),
-                   kPrez, kZrez, kYrez, aa);
-      php.AddLast(&hp[ih++]); np[isel]++;
-      hp[ih].Build(Form("H%sClYXPh%c%d", mc?"MC":"", chName[ich], ily),
-                    Form("Clusters[%c] :: #Deltay(x,#Phi) Ly[%d]", chSgn[ich], ily),
-                    kPrez, kPt, kYrez, aa);
-      php.AddLast(&hp[ih++]); np[isel]++;
+    for(Int_t ich(0); ich<nCh; ich++){
+      for(Int_t icen(0); icen<nCen; icen++){
+        for(Int_t ipad(0); ipad<nNpad; ipad++){
+          isel++; // new selection
+          hp[ih].Build(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad),
+                      Form("Clusters[%c] :: #Deltay Ly[%d] Cen[%s] Pads[%s]", chSgn[ich], ily, cenName[icen], ipad?(ipad<kNpads?Form("%d", ipad+1):Form(">%d", kNpads)):"deconv"),
+                      kEta, kPhi, kYrez, aa);
+          hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+          php.AddLast(&hp[ih++]); np[isel]++;
+          if(!debug) break;
+          hp[ih].Build(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad),
+                      Form("Clusters[%c] :: Q Ly[%d] Cen[%s] Pads[%s]", chSgn[ich], ily, cenName[icen], ipad?(ipad<kNpads?Form("%d", ipad+1):Form(">%d", kNpads)):"deconv"),
+                      kEta, kPhi, kSpeciesChgRC, aa);
+          hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+          hp[ih].SetShowRange(24., 33.);
+          php.AddLast(&hp[ih++]); np[isel]++;
+          hp[ih].Build(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad),
+                      Form("Clusters[%c] :: #Deltay(x,TC) Ly[%d] Cen[%s] Pads[%s]", chSgn[ich], ily, cenName[icen], ipad?(ipad<kNpads?Form("%d", ipad+1):Form(">%d", kNpads)):"deconv"),
+                      kPrez, kZrez, kYrez, aa);
+          php.AddLast(&hp[ih++]); np[isel]++;
+          hp[ih].Build(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad),
+                        Form("Clusters[%c] :: #Deltay(x,#Phi) Ly[%d] Cen[%s] Pads[%s]", chSgn[ich], ily, cenName[icen], ipad?(ipad<kNpads?Form("%d", ipad+1):Form(">%d", kNpads)):"deconv"),
+                        kPrez, kPt, kYrez, aa);
+          php.AddLast(&hp[ih++]); np[isel]++;
+        }
+      }
     }
   }
   AliInfo(Form("Build %3d 3D projections.", ih));
 
-  Int_t ly(0), ch(0), rcBin(as?as->FindBin(0.):-1), chBin(apt?apt->FindBin(0.):-1), ioff(0);
+  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
+  Int_t ly(0), ch(0), rcBin(as?as->FindBin(0.):-1), chBin(apt?apt->FindBin(0.):-1), ioff(0), cen(0), npad(0);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord); if(v<1.) continue;
     ly = coord[kBC]-1;
@@ -1473,13 +1509,32 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     // charge selection
     ch = 0; // [-] track
     if(chBin>0 && coord[kPt] > chBin) ch = 1;  // [+] track
+    cen = 0; // centrality selection
+    if(acen) cen = coord[kNdim]-1;
+    npad = 0;             // no. of pads selection
+    if(anp) npad = TMath::Min(coord[kNdim+1]-1, Int_t(kNpads));
 
     if(debug){
-      isel = ly*2+ch; ioff=isel*4;
+      isel = ly*nCh*nCen*nNpad
+            +ch*nCen*nNpad
+            +cen*nNpad
+            +npad;
+      ioff=isel*4;
     } else {
       isel = ly; ioff = isel;
     }
-//    AliDebug(4, Form("SELECTION[%d] :: ch[%c] pt[%c] sp[%d] ly[%d]\n", np[isel], ch==2?'Z':chName[ch], ptName[pt], sp, ly));
+    if(ioff>=ih){
+      AliError(Form("Wrong selection %d [%3d]", ioff, ih));
+      return kFALSE;
+    }
+    if(!(pr0=(AliTRDresolutionProjection*)php.At(ioff))) {
+      AliError(Form("Missing projection %d", ioff));
+      return kFALSE;
+    }
+    if(strcmp(pr0->fH->GetName(), Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ch], ly, cen, npad))!=0){
+      AliError(Form("Projection mismatch :: request[H%sClY%c%d%d%d] found[%s]", mc?"MC":"", chName[ch], ly, cen, npad, pr0->fH->GetName()));
+      return kFALSE;
+    }
     for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
   TObjArray *arr(NULL);
@@ -1488,28 +1543,104 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
   TH2 *h2(NULL);  Int_t jh(0);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
-    //if(hp[ih].fH->GetEntries()<100) continue;
-    Int_t mid(1), nstat(kNstat);
-    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; nstat=300;}
-    if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
-    arr->AddAt(h2, jh++);
+    if(strchr(hp[ih].fH->GetName(), 'Q')){
+      if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours, 0, kFALSE))) continue;
+      arr->AddAt(h2, jh++);
+      if(!(h2 = (TH2*)gDirectory->Get(Form("%sEn", hp[ih].fH->GetName())))) continue;
+      arr->AddAt(h2, jh++);
+    } else {
+      if((h2 = hp[ih].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    }
   }
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d", mc?"MC":"", chName[0], ily)))){
-      if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d", mc?"MC":"", chName[1], ily)))){
-        (*pr0)+=(*pr1);
-        pr0->fH->SetNameTitle(Form("H%sClY%d", mc?"MC":"", ily), Form("Clusters :: #Deltay Ly[%d]", ily));
+    for(Int_t ich(0); ich<nCh; ich++){
+      for(Int_t icen(0); icen<nCen; icen++){
+        /*!dy*/
+        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+          for(Int_t ipad(1); ipad<nNpad; ipad++){
+            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            (*pr0)+=(*pr1);
+          }
+          pr0->fH->SetNameTitle(Form("H%sClY%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+        }
+        /*!Q*/
+        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+          for(Int_t ipad(1); ipad<nNpad; ipad++){
+            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            (*pr0)+=(*pr1);
+          }
+          pr0->fH->SetNameTitle(Form("H%sClQ%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: Q Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          if((h2 = pr0->Projection2D(kNstat, kNcontours, 2, kFALSE))) arr->AddAt(h2, jh++);
+          if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
+          pr0->fH->SetName(Form("H%sClQS%c%d%d", mc?"MC":"", chName[ich], ily, icen));
+          if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
+          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+        }
+        /*!YXTC*/
+        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+          for(Int_t ipad(1); ipad<nNpad; ipad++){
+            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            (*pr0)+=(*pr1);
+          }
+          pr0->fH->SetNameTitle(Form("H%sClYXTC%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,TC) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+        }
+        /*!YXPh*/
+        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+          for(Int_t ipad(1); ipad<nNpad; ipad++){
+            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            (*pr0)+=(*pr1);
+          }
+          pr0->fH->SetNameTitle(Form("H%sClYXPh%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,#Phi) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+        }
+      } // end centrality integration
+      /*!dy*/
+      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->fH->SetNameTitle(Form("H%sClY%c%d", mc?"MC":"", chName[ich], ily),
+                              Form("Clusters[%c]:: #Deltay Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
       }
-    }
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d", mc?"MC":"", chName[0], ily)))){
-      if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d", mc?"MC":"", chName[1], ily)))){
-        (*pr0)+=(*pr1);
-        pr0->fH->SetNameTitle(Form("H%sClYXPh%d", mc?"MC":"", ily), Form("Clusters :: #Deltay(x,#Phi) Ly[%d]", ily));
+      /*!Q*/
+      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->fH->SetNameTitle(Form("H%sClQ%c%d", mc?"MC":"", chName[ich], ily),
+                              Form("Clusters[%c]:: Q Ly[%d]", chSgn[ich], ily));
+        if((h2 = pr0->Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
+        pr0->fH->SetName(Form("H%sClQS%c%d", mc?"MC":"", chName[ich], ily));
+        if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
+        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
+      }
+      /*!YXTC*/
+      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->fH->SetNameTitle(Form("H%sClYXTC%c%d", mc?"MC":"", chName[ich], ily),
+                              Form("Clusters[%c]:: #Deltay(x,TC) Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
       }
+      /*!YXPh*/
+      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->fH->SetNameTitle(Form("H%sClYXPh%c%d", mc?"MC":"", chName[ich], ily),
+                              Form("Clusters[%c]:: #Deltay(x,#Phi) Ly[%d]", chSgn[ich], ily));
+        if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
+      }
+    } // end charge integration
+    /*!dy*/
+    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
+      pr0->fH->SetNameTitle(Form("H%sClY%d", mc?"MC":"", ily), Form("Clusters :: #Deltay Ly[%d]", ily));
+      if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
+    /*!YXPh*/
+    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
+      pr0->fH->SetNameTitle(Form("H%sClYXPh%d", mc?"MC":"", ily), Form("Clusters :: #Deltay Ly[%d]", ily));
+      if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    }
+
   }
   AliInfo(Form("Done %3d 2D projections.", jh));
   return kTRUE;
@@ -1541,7 +1672,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(ndim > Int_t(kSpeciesChgRC)) as = H->GetAxis(kSpeciesChgRC); // init species/charge selection
   if(ndim > Int_t(kPt))           ap = H->GetAxis(kPt);           // init pt selection
-  if(ndim > Int_t(kNdim)+1)       ac = H->GetAxis(kNdim+1);       // init centrality selection
+  if(ndim > Int_t(kNdim))         ac = H->GetAxis(kNdim);         // init centrality selection
   // calculate size depending on debug level
   const Int_t nCen(debug?Int_t(AliTRDeventInfo::kCentralityClasses):1);
   const Int_t nPt(debug?Int_t(kNpt):1);
@@ -1557,7 +1688,8 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
   const Char_t ptName[kNpt] = {'l', 'i', 'h'};
   const Char_t *ptCut[kNpt] = {"p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "p_{t}[GeV/c]>=1.5"};
-  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
+//  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
+  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"2800-inf", "2100-2799", "1400-2099", "700-1399", "0-699"};
   for(Int_t icen(0); icen<nCen; icen++){
     for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
       for(Int_t ipt(0); ipt<nPt; ipt++){
@@ -1578,13 +1710,13 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
             php.AddLast(&hp[ih++]); np[isel]++;
             hp[ih].Build(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen),
                         Form("Tracklets[%s%c]:: dQdl{%s} Ly[%d] Cen[%s]", AliPID::ParticleLatexName(isp), chSgn[ich], ptCut[ipt], ily, cenName[icen]),
-                        kEta, kPhi, kNdim, aa);
+                        kEta, kPhi, kZrez, aa);
             hp[ih].SetShowRange(1.,2.3);
             hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
             php.AddLast(&hp[ih++]); np[isel]++;
             hp[ih].Build(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen),
                         Form("Tracklets[%s%c]:: OccupancyTB{%s} Ly[%d] Cen[%s]", AliPID::ParticleLatexName(isp), chSgn[ich], ptCut[ipt], ily, cenName[icen]),
-                        kEta, kPhi, kNdim+2, aa);
+                        kEta, kPhi, kNdim+1, aa);
             hp[ih].SetShowRange(30., 70.);
             hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
             php.AddLast(&hp[ih++]); np[isel]++;
@@ -1599,7 +1731,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   //      hp[ih].SetShowRange(-0.1,0.1);
         hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
         php.AddLast(&hp[ih++]); np[isel]++;
-        hp[ih].Build(Form("H%sTrkltRCY%c%d%d", mc?"MC":"", ptName[ipt], ily, icen),
+/*        hp[ih].Build(Form("H%sTrkltRCY%c%d%d", mc?"MC":"", ptName[ipt], ily, icen),
                     Form("Tracklets[RC]:: #Deltay{%s} Ly[%d] Cen[%s]", ptCut[ipt], ily, cenName[icen]),
                     kEta, kPhi, kYrez, aa);
         //hp[ih].SetShowRange(-0.1,0.1);
@@ -1616,20 +1748,21 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
                     kEta, kPhi, kNdim, aa);
         //hp[ih].SetShowRange(-0.1,0.1);
         hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-        php.AddLast(&hp[ih++]); np[isel]++;
+        php.AddLast(&hp[ih++]); np[isel]++;*/
       }
     }
   }
   AliInfo(Form("Build %3d 3D projections.", ih));
 
-  Int_t ly(0), ch(0), sp(2), rcBin(as?as->FindBin(0.):-1), pt(0), cen(0), ioff(0), ispc(0);
+  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
+  Int_t ly(0), ch(0), sp(2), rcBin(as?as->FindBin(0.):-1), pt(0), cen(0), ioff(0), jspc(nSpc*nCh+1), kspc(nSpc*nCh*4+1);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord);
     if(v<1.) continue;
     ly = coord[kBC]-1; // layer selection
     // charge selection
     ch = 0; sp=0;// [e-] track [dafault]
-    if(rcBin>0){ // debug mode in which species are also saved
+    if(rcBin>0){ // debug mode in which species/charge are also saved
       sp = Int_t(TMath::Abs(as->GetBinCenter(coord[kSpeciesChgRC])))-1;
       if(coord[kSpeciesChgRC] > rcBin) ch = 1;  // [+] track
       else if(coord[kSpeciesChgRC] == rcBin) ch = 2;  // [RC] track
@@ -1639,17 +1772,34 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     if(ap) pt = TMath::Min(coord[kPt]-1, Int_t(kNpt)-1);
     // centrality selection
     cen = 0; // default
-    if(ac) cen = coord[kNdim+1]-1;
+    if(ac) cen = coord[kNdim]-1;
     // global selection
     if(ndim==kNdimTrklt){
       ioff = ly*4;
       isel = ly;
     } else {
-      ispc = nSpc*nCh+1;
-      isel = cen*AliTRDgeometry::kNlayer*kNpt*ispc+ly*kNpt*ispc+pt*ispc; isel+=sp<0?(nSpc*nCh):(sp*nCh+ch);
-      ioff = 4*isel;
+      isel = cen*AliTRDgeometry::kNlayer*nPt*jspc+ly*nPt*jspc+pt*jspc; isel+=sp<0?(nSpc*nCh):ch;
+      ioff = cen*AliTRDgeometry::kNlayer*nPt*kspc+ly*nPt*kspc+pt*kspc; ioff+=sp<0?((nSpc*nCh)*4):(ch*4);
     }
-    AliDebug(4, Form("SELECTION[%d] :: ch[%c] pt[%c] sp[%d] ly[%d] cen[%d]", np[isel], ch==2?'Z':chName[ch], ptName[pt], sp, ly, cen));
+    if(ioff>=ih){
+      AliError(Form("Wrong selection %d [%3d]", ioff, ih));
+      return kFALSE;
+    }
+    if(!(pr0=(AliTRDresolutionProjection*)php.At(ioff))) {
+      AliError(Form("Missing projection %d", ioff));
+      return kFALSE;
+    }
+    if(sp>=0){
+      if(strcmp(pr0->fH->GetName(), Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ch], ptName[pt], sp, ly, cen))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkltY%c%c%d%d%d] found[%s]", mc?"MC":"", chName[ch], ptName[pt], sp, ly, cen, pr0->fH->GetName()));
+        return kFALSE;
+      }
+    } else {
+      if(strcmp(pr0->fH->GetName(), Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[pt], ly, cen))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkltRCZ%c%d%d] found[%s]", mc?"MC":"", ptName[pt], ly, cen, pr0->fH->GetName()));
+        return kFALSE;
+      }
+    }
     for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
   TObjArray *arr(NULL);
@@ -1664,7 +1814,6 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     arr->AddAt(h2, jh++);
   }
   // build combined performance plots
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     for(Int_t ich(0); ich<nCh; ich++){
       for(Int_t icen(0); icen<nCen; icen++){
@@ -1926,6 +2075,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
 
   // fill projections
   Int_t ch(0), pt(0), sp(1), rcBin(as?as->FindBin(0.):-1), ioff(0);
+  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord);
     if(v<1.) continue;
@@ -1935,6 +2085,10 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     ch = 0; sp=1;// [-] track
     if(rcBin>0){ // debug mode in which species are also saved
       sp = Int_t(TMath::Abs(as->GetBinCenter(coord[kSpeciesChgRC])))-1;
+      if(sp>=AliPID::kSPECIES){
+        AliDebug(2, Form("Wrong SpeciesIndex[%d]. Rescale", sp));
+        sp = AliPID::kSPECIES-1;
+      }
       if(coord[kSpeciesChgRC] > rcBin) ch = 1;  // [+] track
       else if(coord[kSpeciesChgRC] == rcBin) ch = 2;  // [RC] track
     }
@@ -1942,9 +2096,27 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     pt = 0; // low pt
     if(ap) pt = TMath::Min(coord[kPt]-1, Int_t(kNpt)-1);
     // global selection
-    isel = pt*11; isel+=sp<0?10:(sp*kNcharge+ch);
+    isel = pt*(AliPID::kSPECIES*kNcharge+1); isel+=sp<0?(AliPID::kSPECIES*kNcharge):(sp*kNcharge+ch);
     ioff = isel*(ax?4:3);
-    AliDebug(4, Form("SELECTION[%d] :: ch[%c] pt[%c] sp[%d]\n", np[isel], ch==2?'Z':chName[ch], ptName[pt], sp));
+    if(ioff>=ih){
+      AliError(Form("Wrong selection %d [%3d]", ioff, ih));
+      return kFALSE;
+    }
+    if(!(pr0=(AliTRDresolutionProjection*)php.At(ioff))) {
+      AliError(Form("Missing projection %d", ioff));
+      return kFALSE;
+    }
+    if(sp>=0 && ch<2){
+      if(strcmp(pr0->fH->GetName(), Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ch], ptName[pt], sp))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkInY%c%c%d] found[%s]", mc?"MC":"", chName[ch], ptName[pt], sp, pr0->fH->GetName()));
+        return kFALSE;
+      }
+    } else {
+      if(strcmp(pr0->fH->GetName(), Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[pt]))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkltRCZ%c] found[%s]", mc?"MC":"", ptName[pt], pr0->fH->GetName()));
+        return kFALSE;
+      }
+    }
     for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
   TObjArray *arr(NULL);
@@ -1958,7 +2130,6 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   }
   // build combined performance plots
   // combine up the tree of projections
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
   AliTRDresolutionProjection xlow[2], specY[kNcharge*AliPID::kSPECIES], specPh[kNcharge*AliPID::kSPECIES], specQ[kNcharge*AliPID::kSPECIES];
   for(Int_t ich(0); ich<kNcharge; ich++){
     // PID dependency - summation over pt
@@ -1976,7 +2147,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         }
         php.AddLast(&specY[idx]);
         if((h2 = specY[idx].Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-        if((h2 = (TH2*)gDirectory->Get(Form("%s_yx", specY[idx].fH->GetName())))) arr->AddAt(h2, jh++);
+        if((h2 = (TH2*)gDirectory->Get(Form("%sEn", specY[idx].fH->GetName())))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specY[idx];
       }
       /*!dphi*/
@@ -2013,7 +2184,8 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         if((h2 = specQ[idx].Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specQ[idx];
       }
-    }
+    } // end PID loop for pt integration
+
     // pt dependency - summation over PID
     for(Int_t ipt(0); ipt<nPt; ipt++){
       /*!dy*/
@@ -2024,6 +2196,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         }
         pr0->fH->SetNameTitle(Form("H%sTrkInY%c%c", mc?"MC":"", chName[ich], ptName[ipt]),
                                   Form("TrackIn[%c]:: #Deltay{%s}", chSgn[ich], ptCut[ipt]));
+        pr0->SetShowRange(-0.3, 0.3);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
         if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
       }
@@ -2055,13 +2228,15 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         }
         if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
       }
-    }
+    } // end pt loop for PID integration
+
     /*!dy*/
     if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))){
       pr0->fH->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", chName[ich]),
                             Form("TrackIn[%c]:: #Deltay", chSgn[ich]));
       pr0->SetShowRange(-0.3, 0.3);
-      if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+      if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
+      if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
       if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
     /*!dy high pt*/
@@ -2069,6 +2244,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
       if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[2], 0)))){
         (*pr0)+=(*pr1);
         pr0->fH->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", ptName[2]), Form("TrackIn :: #Deltay{%s}", ptCut[2]));
+        pr0->SetShowRange(-0.3, 0.3);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
       }
     }
@@ -2095,14 +2271,15 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
       }
     }
-  }
+  } // end charge loop
+
   for(Int_t isp(0); isp<AliPID::kSPECIES; isp++){
     /*!dy*/
     if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))){
       pr0->fH->SetNameTitle(Form("H%sTrkInY%d", mc?"MC":"", isp), Form("TrackIn[%s] :: #Deltay", AliPID::ParticleLatexName(isp)));
       pr0->SetShowRange(-0.3, 0.3);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-      if((h2 = (TH2*)gDirectory->Get(Form("%s_yx", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
+      if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
     }
     /*!dphi*/
     if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[0], isp)))){
@@ -2119,12 +2296,14 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
       pr0->SetShowRange(-1.7, -1.25);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
     }
-  }
+  } // end PID processing
+
   /*!dy*/
   if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
     pr0->fH->SetNameTitle(Form("H%sTrkInY", mc?"MC":""), "TrackIn :: #Deltay");
     pr0->SetShowRange(-0.3, 0.3);
-    if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
+    if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
   }
   /*!dphi*/
   if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
@@ -2136,6 +2315,8 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     pr0->fH->SetNameTitle(Form("H%sTrkInX", mc?"MC":""), "TrackIn :: #Deltax");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
+
+  // Row Cross processing
   /*!RC dz*/
   if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[0])))){
     for(Int_t ipt(0); ipt<kNpt; ipt++){
@@ -2375,15 +2556,15 @@ Bool_t AliTRDresolution::PostProcess()
 
   //PROCESS EXPERIMENTAL DISTRIBUTIONS
   // Clusters detector
-  if(!MakeProjectionDetector()) return kFALSE;
+  if(HasProcessDetector() && !MakeProjectionDetector()) return kFALSE;
   // Clusters residuals
-  if(!MakeProjectionCluster()) return kFALSE;
+  if(HasProcessCluster() && !MakeProjectionCluster()) return kFALSE;
   fNRefFigures = 3;
   // Tracklet residual/pulls
-  if(!MakeProjectionTracklet()) return kFALSE;
+  if(HasProcessTrklt() && !MakeProjectionTracklet()) return kFALSE;
   fNRefFigures = 7;
   // TRDin residual/pulls
-  if(!MakeProjectionTrackIn()) return kFALSE;
+  if(HasProcessTrkIn() && !MakeProjectionTrackIn()) return kFALSE;
   fNRefFigures = 11;
 
   if(!HasMCdata()) return kTRUE;
@@ -2618,9 +2799,9 @@ TObjArray* AliTRDresolution::Histos()
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     const Int_t mdim(6);
     const Char_t *cldTitle[mdim] = {"layer", fgkTitle[kPhi], "pad row", "centrality", "q [a.u.]", "no. of pads"/*, "tb [10 Hz]"*/};
-    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], 76, AliTRDeventInfo::kCentralityClasses, 50, 7};
+    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], 76, AliTRDeventInfo::kCentralityClasses, 50, kNpads};
     const Double_t cldMin[mdim]  = {-0.5, fgkMin[kPhi], -0.5, -0.5, 0., 0.5},
-                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], 75.5, AliTRDeventInfo::kCentralityClasses - 0.5, 1200., 7.5};
+                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], 75.5, AliTRDeventInfo::kCentralityClasses - 0.5, 1200., kNpads+.5};
     st = "cluster proprieties;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?mdim:Int_t(kNdimDet);
@@ -2632,13 +2813,14 @@ TObjArray* AliTRDresolution::Histos()
   // cluster to tracklet residuals/pulls
   snprintf(hn, nhn, "h%s", fgPerformanceName[kCluster]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
-    const Char_t *clTitle[kNdim] = {"layer", fgkTitle[kPhi], fgkTitle[kEta], fgkTitle[kYrez], "#Deltax [cm]", "Q</Q", "Q/angle", "#Phi [deg]"};
-    const Int_t clNbins[kNdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], fgkNbins[kEta], fgkNbins[kYrez], 45, 30, 30, 15};
-    const Double_t clMin[kNdim]  = {-0.5, fgkMin[kPhi], fgkMin[kEta], fgkMin[kYrez]/10., -.5, 0.1, -2., -45},
-                   clMax[kNdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], fgkMax[kEta], fgkMax[kYrez]/10., 4., 2.1, 118., 45};
+    const Int_t mdim(10);
+    const Char_t *clTitle[mdim] = {"layer", fgkTitle[kPhi], fgkTitle[kEta], fgkTitle[kYrez], "#Deltax [cm]", "Q</Q", "Q/angle", "#Phi [deg]", "centrality", "no. of pads"};
+    const Int_t clNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], fgkNbins[kEta], fgkNbins[kYrez], 45, 30, 30, 15, AliTRDeventInfo::kCentralityClasses, kNpads};
+    const Double_t clMin[mdim]  = {-0.5, fgkMin[kPhi], fgkMin[kEta], fgkMin[kYrez]/10., -.5, 0.1, -2., -45, -0.5, 0.5},
+                   clMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], fgkMax[kEta], fgkMax[kYrez]/10., 4., 2.1, 118., 45, AliTRDeventInfo::kCentralityClasses - 0.5, kNpads+.5};
     st = "cluster spatial&charge resolution;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?Int_t(kNdim):Int_t(kNdimCl);
+    Int_t ndim=DebugLevel()>=1?mdim:Int_t(kNdimCl);
     for(Int_t idim(0); idim<ndim; idim++){ st += clTitle[idim]; st+=";";}
     H = new THnSparseI(hn, st.Data(), ndim, clNbins, clMin, clMax);
   } else H->Reset();
@@ -2657,18 +2839,18 @@ TObjArray* AliTRDresolution::Histos()
     trMin[kPrez] = -4.5; trMax[kPrez] = 4.5;
     trMin[kZrez] = -1.5; trMax[kZrez] = 1.5;
     trTitle[kBC]=StrDup("layer"); trNbins[kBC] = AliTRDgeometry::kNlayer; trMin[kBC] = -0.5; trMax[kBC] = AliTRDgeometry::kNlayer-0.5;
-    Int_t jdim(kNdim); trTitle[jdim]=StrDup("dq/dl [a.u.]"); trNbins[jdim] = 100; trMin[jdim] = 0.; trMax[jdim] = 20;
-    jdim++; trTitle[jdim]=StrDup("centrality"); trNbins[jdim] = AliTRDeventInfo::kCentralityClasses; trMin[jdim] = -.5; trMax[jdim] = AliTRDeventInfo::kCentralityClasses - 0.5;
+    Int_t jdim(kNdim);
+    trTitle[jdim]=StrDup("centrality"); trNbins[jdim] = AliTRDeventInfo::kCentralityClasses; trMin[jdim] = -.5; trMax[jdim] = AliTRDeventInfo::kCentralityClasses - 0.5;
     jdim++; trTitle[jdim]=StrDup("occupancy [%]"); trNbins[jdim] = 12; trMin[jdim] = 25.; trMax[jdim] = 85.;
-    jdim++; trTitle[jdim]=StrDup("gap [cm]"); trNbins[jdim] = 80; trMin[jdim] = 0.1; trMax[jdim] = 2.1;
-    jdim++; trTitle[jdim]=StrDup("size_{0} [cm]"); trNbins[jdim] = 16; trMin[jdim] = 0.15; trMax[jdim] = 1.75;
-    jdim++; trTitle[jdim]=StrDup("pos_{0} [cm]"); trNbins[jdim] = 10; trMin[jdim] = 0.; trMax[jdim] = 3.5;
-    jdim++; trTitle[jdim]=StrDup("size_{1} [cm]"); trNbins[jdim] = 16; trMin[jdim] = 0.15; trMax[jdim] = 1.75;
-    jdim++; trTitle[jdim]=StrDup("pos_{1} [cm]"); trNbins[jdim] = 10; trMin[jdim] = 0.; trMax[jdim] = 3.5;
+//    jdim++; trTitle[jdim]=StrDup("gap [cm]"); trNbins[jdim] = 80; trMin[jdim] = 0.1; trMax[jdim] = 2.1;
+//     jdim++; trTitle[jdim]=StrDup("size_{0} [cm]"); trNbins[jdim] = 16; trMin[jdim] = 0.15; trMax[jdim] = 1.75;
+//     jdim++; trTitle[jdim]=StrDup("pos_{0} [cm]"); trNbins[jdim] = 10; trMin[jdim] = 0.; trMax[jdim] = 3.5;
+//     jdim++; trTitle[jdim]=StrDup("size_{1} [cm]"); trNbins[jdim] = 16; trMin[jdim] = 0.15; trMax[jdim] = 1.75;
+//     jdim++; trTitle[jdim]=StrDup("pos_{1} [cm]"); trNbins[jdim] = 10; trMin[jdim] = 0.; trMax[jdim] = 3.5;
 
     st = "tracklet spatial&charge resolution;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?mdim:kNdimTrklt;
+    Int_t ndim=DebugLevel()>=1?(jdim+1):kNdimTrklt;
     for(Int_t idim(0); idim<ndim; idim++){ st += trTitle[idim]; st+=";";}
     H = new THnSparseI(hn, st.Data(), ndim, trNbins, trMin, trMax);
   } else H->Reset();
@@ -2689,7 +2871,7 @@ TObjArray* AliTRDresolution::Histos()
     trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
     st = "r-#phi/z/angular residuals @ TRD entry;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?mdim:kNdimTrkIn;
+    Int_t ndim=DebugLevel()>=1?mdim:kNdim;//kNdimTrkIn;
     for(Int_t idim(0); idim<ndim; idim++){st+=trinTitle[idim]; st+=";";}
     H = new THnSparseI(hn, st.Data(), ndim, trinNbins, trinMin, trinMax);
   } else H->Reset();
@@ -2783,126 +2965,6 @@ TObjArray* AliTRDresolution::Histos()
 
   return fContainer;
 }
-
-//________________________________________________________
-Bool_t AliTRDresolution::Process(TH2* const h2, TGraphErrors **g, Int_t stat)
-{
-// Robust function to process sigma/mean for 2D plot dy(x)
-// For each x bin a gauss fit is performed on the y projection and the range
-// with the minimum chi2/ndf is choosen
-
-  if(!h2) {
-    if(AliLog::GetDebugLevel("PWGPP", "AliTRDresolution")>0) printf("D-AliTRDresolution::Process() : NULL pointer input container.\n");
-    return kFALSE;
-  }
-  if(!Int_t(h2->GetEntries())){
-    if(AliLog::GetDebugLevel("PWGPP", "AliTRDresolution")>0) printf("D-AliTRDresolution::Process() : Empty h[%s - %s].\n", h2->GetName(), h2->GetTitle());
-    return kFALSE;
-  }
-  if(!g || !g[0]|| !g[1]) {
-    if(AliLog::GetDebugLevel("PWGPP", "AliTRDresolution")>0) printf("D-AliTRDresolution::Process() : NULL pointer output container.\n");
-    return kFALSE;
-  }
-  // prepare
-  TAxis *ax(h2->GetXaxis()), *ay(h2->GetYaxis());
-  Float_t ymin(ay->GetXmin()), ymax(ay->GetXmax()), dy(ay->GetBinWidth(1)), y0(0.), y1(0.);
-  TF1 f("f", "gaus", ymin, ymax);
-  Int_t n(0);
-  if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
-  if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
-  TH1D *h(NULL);
-  if((h=(TH1D*)gROOT->FindObject("py"))) delete h;
-  Double_t x(0.), y(0.), ex(0.), ey(0.), sy(0.), esy(0.);
-
-
-  // do actual loop
-  Float_t chi2OverNdf(0.);
-  for(Int_t ix = 1, np=0; ix<=ax->GetNbins(); ix++){
-    x = ax->GetBinCenter(ix); ex= ax->GetBinWidth(ix)*0.288; // w/sqrt(12)
-    ymin = ay->GetXmin(); ymax = ay->GetXmax();
-
-    h = h2->ProjectionY("py", ix, ix);
-    if((n=(Int_t)h->GetEntries())<stat){
-      if(AliLog::GetDebugLevel("PWGPP", "AliTRDresolution")>1) printf("I-AliTRDresolution::Process() : Low statistics @ x[%f] stat[%d]=%d [%d].\n", x, ix, n, stat);
-      continue;
-    }
-    // looking for a first order mean value
-    f.SetParameter(1, 0.); f.SetParameter(2, 3.e-2);
-    h->Fit(&f, "QNW");
-    chi2OverNdf = f.GetChisquare()/f.GetNDF();
-    printf("x[%f] range[%f %f] chi2[%f] ndf[%d] chi2/ndf[%f]\n", x, ymin, ymax, f.GetChisquare(),f.GetNDF(),chi2OverNdf);
-    y = f.GetParameter(1); y0 = y-4*dy; y1 = y+4*dy;
-    ey  = f.GetParError(1);
-    sy = f.GetParameter(2); esy = f.GetParError(2);
-//     // looking for the best chi2/ndf value
-//     while(ymin<y0 && ymax>y1){
-//       f.SetParameter(1, y);
-//       f.SetParameter(2, sy);
-//       h->Fit(&f, "QNW", "", y0, y1);
-//       printf("   range[%f %f] chi2[%f] ndf[%d] chi2/ndf[%f]\n", y0, y1, f.GetChisquare(),f.GetNDF(),f.GetChisquare()/f.GetNDF());
-//       if(f.GetChisquare()/f.GetNDF() < Chi2OverNdf){
-//         chi2OverNdf = f.GetChisquare()/f.GetNDF();
-//         y  = f.GetParameter(1); ey  = f.GetParError(1);
-//         sy = f.GetParameter(2); esy = f.GetParError(2);
-//         printf("    set y[%f] sy[%f] chi2/ndf[%f]\n", y, sy, chi2OverNdf);
-//       }
-//       y0-=dy; y1+=dy;
-//     }
-    g[0]->SetPoint(np, x, y);
-    g[0]->SetPointError(np, ex, ey);
-    g[1]->SetPoint(np, x, sy);
-    g[1]->SetPointError(np, ex, esy);
-    np++;
-  }
-  return kTRUE;
-}
-
-
-//________________________________________________________
-Bool_t AliTRDresolution::Process(TH2 * const h2, TF1 *f, Float_t k, TGraphErrors **g)
-{
-  //
-  // Do the processing
-  //
-
-  Char_t pn[10]; snprintf(pn, 10, "p%03d", fIdxPlot);
-  Int_t n = 0;
-  if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
-  if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
-  if(Int_t(h2->GetEntries())){
-    AliDebug(4, Form("%s: g[%s %s]", pn, g[0]->GetName(), g[0]->GetTitle()));
-  } else {
-    AliDebug(2, Form("%s: g[%s %s]: Missing entries.", pn, g[0]->GetName(), g[0]->GetTitle()));
-    fIdxPlot++;
-    return kTRUE;
-  }
-
-  const Int_t kINTEGRAL=1;
-  for(Int_t ibin = 0; ibin < Int_t(h2->GetNbinsX()/kINTEGRAL); ibin++){
-    Int_t abin(ibin*kINTEGRAL+1),bbin(abin+kINTEGRAL-1),mbin(abin+Int_t(kINTEGRAL/2));
-    Double_t x = h2->GetXaxis()->GetBinCenter(mbin);
-    TH1D *h = h2->ProjectionY(pn, abin, bbin);
-    if((n=(Int_t)h->GetEntries())<150){
-      AliDebug(4, Form("  x[%f] range[%d %d] stat[%d] low statistics !", x, abin, bbin, n));
-      continue;
-    }
-    h->Fit(f, "QN");
-    Int_t ip = g[0]->GetN();
-    AliDebug(4, Form("  x_%d[%f] range[%d %d] stat[%d] M[%f] Sgm[%f]", ip, x, abin, bbin, n, f->GetParameter(1), f->GetParameter(2)));
-    g[0]->SetPoint(ip, x, k*f->GetParameter(1));
-    g[0]->SetPointError(ip, 0., k*f->GetParError(1));
-    g[1]->SetPoint(ip, x, k*f->GetParameter(2));
-    g[1]->SetPointError(ip, 0., k*f->GetParError(2));
-/*
-    g[0]->SetPoint(ip, x, k*h->GetMean());
-    g[0]->SetPointError(ip, 0., k*h->GetMeanError());
-    g[1]->SetPoint(ip, x, k*h->GetRMS());
-    g[1]->SetPointError(ip, 0., k*h->GetRMSError());*/
-  }
-  fIdxPlot++;
-  return kTRUE;
-}
-
 
 //____________________________________________________________________
 Bool_t AliTRDresolution::FitTrack(const Int_t np, AliTrackPoint *points, Float_t param[10])
@@ -3178,6 +3240,10 @@ void AliTRDresolution::AliTRDresolutionProjection::Build(const Char_t *n, const 
     az->GetNbins(), az->GetXmin(), az->GetXmax());
   fAx[0] = ix; fAx[1] = iy; fAx[2] = iz;
   fRange[0] = az->GetXmin()/3.; fRange[1] = az->GetXmax()/3.;
+  AliDebug(2, Form("H3(%s, %s) :: %s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]", n, t,
+    ax->GetTitle(), ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
+    ay->GetTitle(), ay->GetNbins(), ay->GetXmin(), ay->GetXmax(),
+    az->GetTitle(), az->GetNbins(), az->GetXmin(), az->GetXmax()));
 }
 
 //________________________________________________________
@@ -3211,7 +3277,7 @@ void AliTRDresolution::AliTRDresolutionProjection::Increment(Int_t bin[], Double
 {
 // increment bin with value "v" pointed by general coord in "bin"
   if(!fH) return;
-  AliDebug(4, Form("  %s", fH->GetName()));
+  AliDebug(4, Form("  %s[%2d]", fH->GetName(), Int_t(v)));
   fH->AddBinContent(fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), Int_t(v));
 }
 
@@ -3223,8 +3289,13 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
   const Char_t *title[] = {"Mean", "#mu", "MPV"};
   if(!fH) return NULL;
   TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
-  TH2 *h2s(NULL);
-  if(!(h2s = (TH2*)fH->Project3D("yx"))) return NULL;
+  TH2D *h2s(NULL), *hyx(NULL);
+  if(!(h2s = (TH2D*)fH->Project3D("yx"))) return NULL;
+  // save a copy of the original distribution
+  if(!del){
+    hyx = (TH2D*)h2s->Clone();
+    hyx->SetName(Form("%sEn", fH->GetName()));
+  }
   Int_t irebin(0), dxBin(1), dyBin(1);
   while(irebin<fNrebin && (AliTRDresolution::GetMeanStat(h2s, .5, ">")<nstat)){
     h2s->Rebin2D(fRebinX[irebin], fRebinY[irebin]);
@@ -3232,20 +3303,21 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
     irebin++;
   }
   Int_t nx(h2s->GetNbinsX()), ny(h2s->GetNbinsY());
-  if(h2s && del) delete h2s;
+  delete h2s;
 
   // start projection
   TH1 *h(NULL); Int_t n(0);
   Float_t dz=(fRange[1]-fRange[1])/ncol;
   TString titlez(az->GetTitle()); TObjArray *tokenTitle(titlez.Tokenize(" "));
+  Int_t nt(tokenTitle->GetEntriesFast());
   TH2 *h2 = new TH2F(Form("%s_2D", fH->GetName()),
-            Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], (*tokenTitle)[0]->GetName(), tokenTitle->GetEntriesFast()>1?(*tokenTitle)[1]->GetName():""),
+            Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], nt>0?(*tokenTitle)[0]->GetName():"", nt>1?(*tokenTitle)[1]->GetName():""),
             nx, ax->GetXmin(), ax->GetXmax(), ny, ay->GetXmin(), ay->GetXmax());
   h2->SetContour(ncol);
   h2->GetZaxis()->CenterTitle();
   h2->GetZaxis()->SetTitleOffset(1.4);
   h2->GetZaxis()->SetRangeUser(fRange[0], fRange[1]);
-  //printf("%s[%s] nx[%d] ny[%d]\n", h2->GetName(), h2->GetTitle(), nx, ny);
+  AliDebug(2, Form("%s[%s] nx[%d] ny[%d]", h2->GetName(), h2->GetTitle(), nx, ny));
   for(Int_t iy(0); iy<ny; iy++){
     for(Int_t ix(0); ix<nx; ix++){
       h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin+1, iy*dyBin+1, (iy+1)*dyBin+1);
@@ -3306,6 +3378,16 @@ void AliTRDresolution::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, 
       else h2->SetBinContent(ix, iy, 100.*(c/s-1.));
     }
   }
+}
+
+//________________________________________________________
+void AliTRDresolution::SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin)
+{
+// steer processes
+  if(det) SETBIT(fSteer, kDetector); else CLRBIT(fSteer, kDetector);
+  if(cl)  SETBIT(fSteer, kCluster); else CLRBIT(fSteer, kCluster);
+  if(trklt) SETBIT(fSteer, kTracklet); else CLRBIT(fSteer, kTracklet);
+  if(trkin) SETBIT(fSteer, kTrackIn); else CLRBIT(fSteer, kTrackIn);
 }
 
 //________________________________________________________

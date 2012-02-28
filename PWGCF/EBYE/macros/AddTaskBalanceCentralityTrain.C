@@ -7,6 +7,13 @@
 //Bool_t gRunShuffling = kFALSE;
 //Bool_t gRunShuffling = kTRUE;
 //=============================================//
+
+//PID config
+Bool_t kUseNSigmaPID = kFALSE;
+Double_t nSigmaMax = 3.0;
+Bool_t kUseBayesianPID = kTRUE;
+Double_t gMinAcceptedProbability = 0.7;
+
 //_________________________________________________________//
 AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t centrMax=100.,
@@ -21,7 +28,9 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t etaMax=0.8,
 						 Double_t maxTPCchi2 = -1, 
 						 Int_t minNClustersTPC = -1,
+						 Bool_t kUsePID = kFALSE,
 						 Int_t AODfilterBit = 128,
+						 Bool_t bCentralTrigger = kFALSE,
 						 TString fileNameBase="AnalysisResults") {
 
   // Creates a balance function analysis task and adds it to the analysis manager.
@@ -52,6 +61,8 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   centralityName+=Form("%d",minNClustersTPC);
   centralityName+="_Bit";
   centralityName+=Form("%d",AODfilterBit);
+  if(bCentralTrigger)   centralityName+="_withCentralTrigger";
+
 
 
 
@@ -108,7 +119,14 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   if(analysisType == "ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
     taskBF->SetAnalysisCutObject(trackCuts);
-    
+    if(kUsePID) {
+      if(kUseBayesianPID)
+	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
+      else if(kUseNSigmaPID)
+	taskBF->SetUseNSigmaPID(nSigmaMax);
+      taskBF->SetParticleOfInterest(AliAnalysistaskBF::kProton);
+      taskBF->SetDetectorUsedForPID(AliAnalysisTaskBF::kTOFpid);
+    }
   }
   else if(analysisType == "AOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
@@ -130,8 +148,9 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
   // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
   // documentation in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWG1EvSelDocumentation
-  taskBF->SelectCollisionCandidates(AliVEvent::kMB);
-  
+  if(bCentralTrigger) taskBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  else                taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+
   // centrality estimator (default = V0M)
   taskBF->SetCentralityEstimator(centralityEstimator);
   
@@ -150,11 +169,14 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   outputFileName += ":PWGCFEbyE.outputBalanceFunctionAnalysis";
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(gRunShuffling) AliAnalysisDataContainer *coutBFS= mgr->CreateContainer(Form("listBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer(Form("listBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(kUsePID) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer(Form("listQAPID_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
   mgr->ConnectOutput(taskBF, 2, coutBF);
   if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
+  if(kUsePID && analysisType == "ESD") mgr->ConnectOutput(taskBF, 4, coutQAPID);
 
   return taskBF;
 }

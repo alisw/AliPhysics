@@ -5,7 +5,7 @@
  * @param n 
  * 
  * @return 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 Bool_t
 Backup(const TString& fname, Int_t n=10)
@@ -39,7 +39,7 @@ Backup(const TString& fname, Int_t n=10)
  * @param what 
  * 
  * @return 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 Bool_t
 MoveWhat(UInt_t what) 
@@ -110,7 +110,7 @@ MoveWhat(UInt_t what)
  * @param vtx 
  * @param merge 
  * @param eloss 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 MoveCorrections(bool sec=true, 
@@ -120,7 +120,7 @@ MoveCorrections(bool sec=true,
 		bool eloss=true)
 {
   Info("MoveCorrections", "Loadingl libraries ...");
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   Info("MoveCorrections", "Moving selected corrections ...");
   if (sec)   MoveWhat(AliForwardCorrectionManager::kSecondaryMap);

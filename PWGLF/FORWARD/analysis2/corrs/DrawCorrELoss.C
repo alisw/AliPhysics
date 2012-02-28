@@ -3,14 +3,14 @@
  * 
  * Scripts to draw energy loss fits from correction object file 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 /** 
  * Clear canvas 
  * 
  * @param c Canvas to clear 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 ClearCanvas(TCanvas* c)
@@ -37,14 +37,14 @@ ClearCanvas(TCanvas* c)
  * @param fname   File name 
  * @param option  Drawing options 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 DrawCorrELoss(const char* fname, const char* option="summary error")
 {
   //__________________________________________________________________
   // Load libraries and object 
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   TFile* file = TFile::Open(fname, "READ");
   if (!file) { 

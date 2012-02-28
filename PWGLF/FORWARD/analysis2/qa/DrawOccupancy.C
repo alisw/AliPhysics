@@ -6,7 +6,7 @@
  * @brief  A script to draw the occupancy as given by Poisson method
  *
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  * 
  */
 #ifndef __CINT__
@@ -35,7 +35,7 @@ class TList;
  * @return The occupancy (in percent)
  *
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 Double_t
 DrawRingOccupancy(TList* p, UShort_t d, Char_t r)
@@ -88,7 +88,7 @@ DrawRingOccupancy(TList* p, UShort_t d, Char_t r)
  * @param folder   Input folder name in file
  * 
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawOccupancy(const char* filename="forward.root", 

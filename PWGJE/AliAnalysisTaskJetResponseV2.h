@@ -10,11 +10,13 @@
 //
 
 class TH1F;
+class TH1I;
 class TH2F;
 class TH3F;
 class THnSparse;
 class AliESDEvent;
 class AliAODEvent;
+class AliAODJet;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"

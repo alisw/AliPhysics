@@ -6,7 +6,7 @@
  * @brief Class and script to add a multiplicity task for the central
  *        @f$\eta@f$ region
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  * 
  */
 #include <AliAnalysisTaskSE.h>
@@ -75,7 +75,7 @@ class TH1D;
  * Only minimum bias events with a @f$v_z@f$ within the defined cut
  * are analysed.
  *
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 class CentralMultTask : public AliAnalysisTaskSE
 {

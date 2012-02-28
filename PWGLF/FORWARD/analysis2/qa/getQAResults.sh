@@ -7,7 +7,7 @@
 # @brief Retrieve trending.root/QAResults.root files from AliEn for a
 # given producton as specified by the command line options 
 # 
-# @ingroup pwg2_forward_qa_scripts
+# @ingroup pwglf_forward_qa_scripts
 #
 
 # --------------------------------------------------------------------

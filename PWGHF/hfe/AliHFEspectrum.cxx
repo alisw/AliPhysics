@@ -61,7 +61,7 @@ ClassImp(AliHFEspectrum)
 //____________________________________________________________
 AliHFEspectrum::AliHFEspectrum(const char *name):
   TNamed(name, ""),
-  fCFContainers(NULL),
+  fCFContainers(new TObjArray(kDataContainerV0+1)),
   fTemporaryObjects(NULL),
   fCorrelation(NULL),
   fBackground(NULL),
@@ -77,7 +77,7 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fIPanaConversionBgSubtract(kFALSE),
   fIPanaNonHFEBgSubtract(kFALSE),
   fNonHFEbgMethod2(kFALSE),
-  fNonHFEmode(0),
+  fNonHFEsyst(0),
   fNbDimensions(1),
   fNMCEvents(0),
   fNMCbgEvents(0),
@@ -88,13 +88,14 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fStepAfterCutsV0(-1),
   fStepGuessedUnfolding(-1),
   fNumberOfIterations(5),
-  fChargeChoosen(-1),
+  fChargeChoosen(kAllCharge),
   fNCentralityBinAtTheEnd(0),
   fHadronEffbyIPcut(NULL),
   fConversionEff(NULL),
   fNonHFEEff(NULL),
   fBeamType(0),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fWriteToFile(kFALSE)
 {
   //
   // Default constructor
@@ -106,6 +107,9 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
     fHighBoundaryCentralityBinAtTheEnd[k] = 0;
   }
   memset(fEtaRange, 0, sizeof(Double_t) * 2);
+  memset(fEtaRangeNorm, 0, sizeof(Double_t) * 2);
+  memset(fConvSourceContainer, 0, sizeof(AliCFContainer*) * kElecBgSources * kBgLevels);
+  memset(fNonHFESourceContainer, 0, sizeof(AliCFContainer*) * kElecBgSources * kBgLevels);
 }
 
 //____________________________________________________________
@@ -132,53 +136,46 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   // If no inclusive spectrum, then take only efficiency map for beauty electron
   // and the appropriate correlation matrix
   //
-    Int_t kNdim = 3;
-    if(fBeamType==0) kNdim=3;
-    if(fBeamType==1) kNdim=4;
+  Int_t kNdim = 3;
+  if(fBeamType==0) kNdim=3;
+  if(fBeamType==1) kNdim=4;
 
-    Int_t dims[kNdim];
-    // Get the requested format
-    if(fBeamType==0)
-    {
-        // pp analysis
-	switch(fNbDimensions){
-	case 1:   dims[0] = 0;
-	break;
-	case 2:   for(Int_t i = 0; i < 2; i++) dims[i] = i;
-	break;
-	case 3:   for(Int_t i = 0; i < 3; i++) dims[i] = i;
-	break;
-	default:
-	    AliError("Container with this number of dimensions not foreseen (yet)");
-	    return kFALSE;
-	};
-    }
+  Int_t dims[kNdim];
+  // Get the requested format
+  if(fBeamType==0){
+    // pp analysis
+    switch(fNbDimensions){
+      case 1:   dims[0] = 0;
+                break;
+      case 2:   for(Int_t i = 0; i < 2; i++) dims[i] = i;
+                break;
+      case 3:   for(Int_t i = 0; i < 3; i++) dims[i] = i;
+                break;
+      default:
+                AliError("Container with this number of dimensions not foreseen (yet)");
+                return kFALSE;
+    };
+  }
 
-    if(fBeamType==1)
-    {
-        // PbPb analysis; centrality as first dimension
-      Int_t nbDimensions = fNbDimensions;
-      fNbDimensions = fNbDimensions + 1;
-	switch(nbDimensions){
-	case 1:
-	  dims[0] = 5;
-	  dims[1] = 0;
-	  break;
-	case 2:
-	  dims[0] = 5;
-	  for(Int_t i = 0; i < 2; i++) dims[(i+1)] = i;
-	  break;
-	case 3:
-	  dims[0] = 5;
-	  for(Int_t i = 0; i < 3; i++) dims[(i+1)] = i;
-	  break;
-	default:
-	    AliError("Container with this number of dimensions not foreseen (yet)");
-	    return kFALSE;
-	};
-    }
-
-
+  if(fBeamType==1){
+    // PbPb analysis; centrality as first dimension
+    Int_t nbDimensions = fNbDimensions;
+    fNbDimensions = fNbDimensions + 1;
+    switch(nbDimensions){
+      case 1: dims[0] = 5;
+              dims[1] = 0;
+              break;
+      case 2: dims[0] = 5;
+              for(Int_t i = 0; i < 2; i++) dims[(i+1)] = i;
+              break;
+      case 3: dims[0] = 5;
+              for(Int_t i = 0; i < 3; i++) dims[(i+1)] = i;
+              break;
+      default:
+              AliError("Container with this number of dimensions not foreseen (yet)");
+              return kFALSE;
+    };
+  }
 
   // Data container: raw spectrum + hadron contamination  
   AliCFContainer *datacontainer = 0x0; 
@@ -204,6 +201,8 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   AliCFContainer *mccontainermcbg = 0x0;
   AliCFContainer *nonHFEweightedContainer = 0x0;
   AliCFContainer *convweightedContainer = 0x0;
+  AliCFContainer *nonHFEtempContainer = 0x0;//temporary container to be sliced for the fnonHFESourceContainers
+  AliCFContainer *convtempContainer = 0x0;//temporary container to be sliced for the fConvSourceContainers
    
   if(fInclusiveSpectrum) {
     mccontaineresd = mchfecontainer->MakeMergedCFContainer("sumesd","sumesd","MCTrackCont:recTrackContReco");
@@ -213,12 +212,28 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
     mccontaineresd = mchfecontainer->MakeMergedCFContainer("sumesd","sumesd","MCTrackCont:recTrackContReco:recTrackContDEReco");
     mccontainermc = mchfecontainer->MakeMergedCFContainer("summc","summc","MCTrackCont:recTrackContMC:recTrackContDEMC");
     mccontainermcbg = bghfecontainer->MakeMergedCFContainer("summcbg","summcbg","MCTrackCont:recTrackContMC:recTrackContDEMC");
-    nonHFEweightedContainer = bghfecontainer->GetCFContainer("mesonElecs");
-    convweightedContainer = bghfecontainer->GetCFContainer("conversionElecs");
-    if((!nonHFEweightedContainer) || (!convweightedContainer)) return kFALSE;
+
+    if(fNonHFEsyst){   
+      const Char_t *sourceName[kElecBgSources]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
+      const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
+      for(Int_t iSource = 0; iSource < kElecBgSources; iSource++){
+	for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+          nonHFEtempContainer =  bghfecontainer->GetCFContainer(Form("mesonElecs%s%s",sourceName[iSource],levelName[iLevel]));
+	  fNonHFESourceContainer[iSource][iLevel] = GetSlicedContainer(nonHFEtempContainer, fNbDimensions, dims, -1, fChargeChoosen);
+          convtempContainer =  bghfecontainer->GetCFContainer(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]));
+	  fConvSourceContainer[iSource][iLevel] = GetSlicedContainer(convtempContainer, fNbDimensions, dims, -1, fChargeChoosen);
+          if((!fConvSourceContainer[iSource][iLevel])||(!fNonHFESourceContainer[iSource][iLevel])) return kFALSE;   
+	}
+      }
+    }
+    else{      
+      nonHFEweightedContainer = bghfecontainer->GetCFContainer("mesonElecs");
+      convweightedContainer = bghfecontainer->GetCFContainer("conversionElecs");
+      if((!convweightedContainer)||(!nonHFEweightedContainer)) return kFALSE;  
+    }
   }
   if((!mccontaineresd) || (!mccontainermc)) return kFALSE;  
-
+  
   Int_t source = -1;
   if(!fInclusiveSpectrum) source = 1; //beauty
   AliCFContainer *mccontaineresdD = GetSlicedContainer(mccontaineresd, fNbDimensions, dims, source, fChargeChoosen);
@@ -245,13 +260,14 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
    efficiencyNonhfe->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. be careful with step #
    fNonHFEEff = (TH1D*)efficiencyNonhfe->Project(0);
 
-   AliCFContainer *nonHFEweightedContainerD = GetSlicedContainer(nonHFEweightedContainer, fNbDimensions, dims, -1, fChargeChoosen);
-   SetContainer(nonHFEweightedContainerD,AliHFEspectrum::kMCWeightedContainerNonHFEESD);
-   AliCFContainer *convweightedContainerD = GetSlicedContainer(convweightedContainer, fNbDimensions, dims, -1, fChargeChoosen);
-   SetContainer(convweightedContainerD,AliHFEspectrum::kMCWeightedContainerConversionESD);
+   if(!fNonHFEsyst){
+     AliCFContainer *nonHFEweightedContainerD = GetSlicedContainer(nonHFEweightedContainer, fNbDimensions, dims, -1, fChargeChoosen);
+     SetContainer(nonHFEweightedContainerD,AliHFEspectrum::kMCWeightedContainerNonHFEESD);
+     AliCFContainer *convweightedContainerD = GetSlicedContainer(convweightedContainer, fNbDimensions, dims, -1, fChargeChoosen);
+     SetContainer(convweightedContainerD,AliHFEspectrum::kMCWeightedContainerConversionESD);
+   }
   }
- 
-// MC container: correlation matrix
+  // MC container: correlation matrix
   THnSparseF *mccorrelation = 0x0;
   if(fInclusiveSpectrum) {
     if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 2)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
@@ -276,7 +292,7 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   if(v0hfecontainer) {
     AliCFContainer *containerV0 = v0hfecontainer->GetCFContainer("taggedTrackContainerReco");
     if(!containerV0) return kFALSE;
-    AliCFContainer *containerV0Electron = GetSlicedContainer(containerV0, fNbDimensions, dims, AliPID::kElectron+1);
+    AliCFContainer *containerV0Electron = GetSlicedContainer(containerV0, fNbDimensions, dims, AliPID::kElectron);
     if(!containerV0Electron) return kFALSE;
     SetContainer(containerV0Electron,AliHFEspectrum::kDataContainerV0);
   }
@@ -314,20 +330,19 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
     ccorrelation->cd(1);
     if(mccorrelationD) {
       if(fBeamType==0){
-	TH2D * ptcorrelation = (TH2D *) mccorrelationD->Projection(fNbDimensions,0);
-	ptcorrelation->Draw("colz");
+        TH2D * ptcorrelation = (TH2D *) mccorrelationD->Projection(fNbDimensions,0);
+        ptcorrelation->Draw("colz");
       }
       if(fBeamType==1){
-	TH2D * ptcorrelation = (TH2D *) mccorrelationD->Projection(fNbDimensions+1,1);
-	ptcorrelation->Draw("colz");
+        TH2D * ptcorrelation = (TH2D *) mccorrelationD->Projection(fNbDimensions+1,1);
+        ptcorrelation->Draw("colz");
       }
     }
+    if(fWriteToFile) ccontaminationspectrum->SaveAs("contaminationspectrum.eps");
   }
 
 
   return kTRUE;
- 
-  
 }
 
 
@@ -462,6 +477,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     ratiocorrected->Divide(correctedTH1D,alltogetherTH1D,1,1);
     ratiocorrected->SetStats(0);
     ratiocorrected->Draw();
+    if(fWriteToFile)ccorrected->SaveAs("CorrectedPbPb.eps");
 
     //TH1D unfoldingspectrac[fNCentralityBinAtTheEnd];
     //TGraphErrors unfoldingspectracn[fNCentralityBinAtTheEnd];
@@ -472,8 +488,6 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     TGraphErrors *unfoldingspectracn = new TGraphErrors[fNCentralityBinAtTheEnd];
     TH1D *correctedspectrac = new TH1D[fNCentralityBinAtTheEnd];
     TGraphErrors *correctedspectracn = new TGraphErrors[fNCentralityBinAtTheEnd];
-
-    
 
     if(fBeamType==1) {
 
@@ -490,127 +504,127 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       Int_t stylee[20] = {20,21,22,23,24,25,26,27,28,30,4,5,7,29,29,29,29,29,29,29};
       Int_t colorr[20] = {2,3,4,5,6,7,8,9,46,38,29,30,31,32,33,34,35,37,38,20};
       for(Int_t binc = 0; binc < fNCentralityBinAtTheEnd; binc++){
-	TString titlee("corrected_centrality_bin_");
-	titlee += "[";
-	titlee += fLowBoundaryCentralityBinAtTheEnd[binc];
-	titlee += "_";
-	titlee += fHighBoundaryCentralityBinAtTheEnd[binc];
-	titlee += "[";
-	TString titleec("corrected_check_projection_bin_");
-	titleec += "[";
-	titleec += fLowBoundaryCentralityBinAtTheEnd[binc];
-	titleec += "_";
-	titleec += fHighBoundaryCentralityBinAtTheEnd[binc];
-	titleec += "[";
-	TString titleenameunotnormalized("Unfolded_Notnormalized_centrality_bin_");
-	titleenameunotnormalized += "[";
-	titleenameunotnormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
-	titleenameunotnormalized += "_";
-	titleenameunotnormalized += fHighBoundaryCentralityBinAtTheEnd[binc];
-	titleenameunotnormalized += "[";
-       	TString titleenameunormalized("Unfolded_normalized_centrality_bin_");
-	titleenameunormalized += "[";
-	titleenameunormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
-	titleenameunormalized += "_";
-	titleenameunormalized += fHighBoundaryCentralityBinAtTheEnd[binc];	
-	titleenameunormalized += "[";
-	TString titleenamednotnormalized("Dirrectcorrected_Notnormalized_centrality_bin_");
-	titleenamednotnormalized += "[";
-	titleenamednotnormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
-	titleenamednotnormalized += "_";
-	titleenamednotnormalized += fHighBoundaryCentralityBinAtTheEnd[binc];
-	titleenamednotnormalized += "[";
-	TString titleenamednormalized("Dirrectedcorrected_normalized_centrality_bin_");
-	titleenamednormalized += "[";
-	titleenamednormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
-	titleenamednormalized += "_";
-	titleenamednormalized += fHighBoundaryCentralityBinAtTheEnd[binc];	
-	titleenamednormalized += "[";
-	Int_t nbEvents = 0;
-	for(Int_t k = fLowBoundaryCentralityBinAtTheEnd[binc]; k < fHighBoundaryCentralityBinAtTheEnd[binc]; k++) {
-	  printf("Number of events %d in the bin %d added!!!\n",fNEvents[k],k);
-	  nbEvents += fNEvents[k];
-	}
-	Double_t lowedgega = cenaxisa->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
-	Double_t upedgega = cenaxisa->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
-	printf("Bin Low edge %f, up edge %f for a\n",lowedgega,upedgega);
-	Double_t lowedgegb = cenaxisb->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
-	Double_t upedgegb = cenaxisb->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
-	printf("Bin Low edge %f, up edge %f for b\n",lowedgegb,upedgegb);
-	cenaxisa->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
-	cenaxisb->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
-	TCanvas * ccorrectedcheck = new TCanvas((const char*) titleec,(const char*) titleec,1000,700);
-	ccorrectedcheck->cd(1);
-	TH1D *aftersuc = (TH1D *) sparsesu->Projection(0);
-	TH1D *aftersdc = (TH1D *) sparsed->Projection(0);
-	aftersuc->Draw();
-	aftersdc->Draw("same");
-	TCanvas * ccorrectede = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
-	ccorrectede->Divide(2,1);
-	ccorrectede->cd(1);
-	gPad->SetLogy();
-	TH1D *aftersu = (TH1D *) sparsesu->Projection(1);
-	CorrectFromTheWidth(aftersu);
-	aftersu->SetName((const char*)titleenameunotnormalized);
-	unfoldingspectrac[binc] = *aftersu;
-	ccorrectede->cd(1);
-       	TGraphErrors* aftersun = NormalizeTH1N(aftersu,nbEvents);
-	aftersun->SetTitle("");
-	aftersun->GetYaxis()->SetTitleOffset(1.5);
-	aftersun->GetYaxis()->SetRangeUser(0.000000001,1.0);
-	aftersun->SetMarkerStyle(26);
-	aftersun->SetMarkerColor(kBlue);
-	aftersun->SetLineColor(kBlue);
-	aftersun->Draw("AP");
-	aftersun->SetName((const char*)titleenameunormalized);
-	unfoldingspectracn[binc] = *aftersun;
-	ccorrectede->cd(1);
-	TH1D *aftersd = (TH1D *) sparsed->Projection(1);
-	CorrectFromTheWidth(aftersd);
-	aftersd->SetName((const char*)titleenamednotnormalized);
-	correctedspectrac[binc] = *aftersd;
-	ccorrectede->cd(1);
-	TGraphErrors* aftersdn = NormalizeTH1N(aftersd,nbEvents);
-	aftersdn->SetTitle("");
-	aftersdn->GetYaxis()->SetTitleOffset(1.5);
-	aftersdn->GetYaxis()->SetRangeUser(0.000000001,1.0);
-	aftersdn->SetMarkerStyle(25);
-	aftersdn->SetMarkerColor(kBlack);
-	aftersdn->SetLineColor(kBlack);
-	aftersdn->Draw("P");
-	aftersdn->SetName((const char*)titleenamednormalized);
-	correctedspectracn[binc] = *aftersdn;
-	TLegend *legcorrectedud = new TLegend(0.4,0.6,0.89,0.89);
-	legcorrectedud->AddEntry(aftersun,"Corrected","p");
-	legcorrectedud->AddEntry(aftersdn,"Alltogether","p");
-	legcorrectedud->Draw("same");
-	ccorrectedallspectra->cd(1);
-	gPad->SetLogy();
-	TH1D *aftersunn = (TH1D *) aftersun->Clone();
-	aftersunn->SetMarkerStyle(stylee[binc]);
-	aftersunn->SetMarkerColor(colorr[binc]);
-	if(binc==0) aftersunn->Draw("AP");
-	else aftersunn->Draw("P");
-	legtotal->AddEntry(aftersunn,(const char*) titlee,"p");
-	ccorrectedallspectra->cd(2);
-	gPad->SetLogy();
-	TH1D *aftersdnn = (TH1D *) aftersdn->Clone();
-	aftersdnn->SetMarkerStyle(stylee[binc]);
-	aftersdnn->SetMarkerColor(colorr[binc]);
-	if(binc==0) aftersdnn->Draw("AP");
-	else aftersdnn->Draw("P");
-	legtotalg->AddEntry(aftersdnn,(const char*) titlee,"p");
-	ccorrectede->cd(2);
-	TH1D* ratiocorrectedbinc = (TH1D*)aftersu->Clone();
-	TString titleee("ratiocorrected_bin_");
-	titleee += binc;
-	ratiocorrectedbinc->SetName((const char*) titleee);
-	ratiocorrectedbinc->SetTitle("");
-	ratiocorrectedbinc->GetYaxis()->SetTitle("Unfolded/DirectCorrected");
-	ratiocorrectedbinc->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	ratiocorrectedbinc->Divide(aftersu,aftersd,1,1);
-	ratiocorrectedbinc->SetStats(0);
-	ratiocorrectedbinc->Draw();
+        TString titlee("corrected_centrality_bin_");
+        titlee += "[";
+        titlee += fLowBoundaryCentralityBinAtTheEnd[binc];
+        titlee += "_";
+        titlee += fHighBoundaryCentralityBinAtTheEnd[binc];
+        titlee += "[";
+        TString titleec("corrected_check_projection_bin_");
+        titleec += "[";
+        titleec += fLowBoundaryCentralityBinAtTheEnd[binc];
+        titleec += "_";
+        titleec += fHighBoundaryCentralityBinAtTheEnd[binc];
+        titleec += "[";
+        TString titleenameunotnormalized("Unfolded_Notnormalized_centrality_bin_");
+        titleenameunotnormalized += "[";
+        titleenameunotnormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
+        titleenameunotnormalized += "_";
+        titleenameunotnormalized += fHighBoundaryCentralityBinAtTheEnd[binc];
+        titleenameunotnormalized += "[";
+        TString titleenameunormalized("Unfolded_normalized_centrality_bin_");
+        titleenameunormalized += "[";
+        titleenameunormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
+        titleenameunormalized += "_";
+        titleenameunormalized += fHighBoundaryCentralityBinAtTheEnd[binc];	
+        titleenameunormalized += "[";
+        TString titleenamednotnormalized("Dirrectcorrected_Notnormalized_centrality_bin_");
+        titleenamednotnormalized += "[";
+        titleenamednotnormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
+        titleenamednotnormalized += "_";
+        titleenamednotnormalized += fHighBoundaryCentralityBinAtTheEnd[binc];
+        titleenamednotnormalized += "[";
+        TString titleenamednormalized("Dirrectedcorrected_normalized_centrality_bin_");
+        titleenamednormalized += "[";
+        titleenamednormalized += fLowBoundaryCentralityBinAtTheEnd[binc];
+        titleenamednormalized += "_";
+        titleenamednormalized += fHighBoundaryCentralityBinAtTheEnd[binc];	
+        titleenamednormalized += "[";
+        Int_t nbEvents = 0;
+        for(Int_t k = fLowBoundaryCentralityBinAtTheEnd[binc]; k < fHighBoundaryCentralityBinAtTheEnd[binc]; k++) {
+          printf("Number of events %d in the bin %d added!!!\n",fNEvents[k],k);
+          nbEvents += fNEvents[k];
+        }
+        Double_t lowedgega = cenaxisa->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
+        Double_t upedgega = cenaxisa->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
+        printf("Bin Low edge %f, up edge %f for a\n",lowedgega,upedgega);
+        Double_t lowedgegb = cenaxisb->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
+        Double_t upedgegb = cenaxisb->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
+        printf("Bin Low edge %f, up edge %f for b\n",lowedgegb,upedgegb);
+        cenaxisa->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
+        cenaxisb->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
+        TCanvas * ccorrectedcheck = new TCanvas((const char*) titleec,(const char*) titleec,1000,700);
+        ccorrectedcheck->cd(1);
+        TH1D *aftersuc = (TH1D *) sparsesu->Projection(0);
+        TH1D *aftersdc = (TH1D *) sparsed->Projection(0);
+        aftersuc->Draw();
+        aftersdc->Draw("same");
+        TCanvas * ccorrectede = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
+        ccorrectede->Divide(2,1);
+        ccorrectede->cd(1);
+        gPad->SetLogy();
+        TH1D *aftersu = (TH1D *) sparsesu->Projection(1);
+        CorrectFromTheWidth(aftersu);
+        aftersu->SetName((const char*)titleenameunotnormalized);
+        unfoldingspectrac[binc] = *aftersu;
+        ccorrectede->cd(1);
+        TGraphErrors* aftersun = NormalizeTH1N(aftersu,nbEvents);
+        aftersun->SetTitle("");
+        aftersun->GetYaxis()->SetTitleOffset(1.5);
+        aftersun->GetYaxis()->SetRangeUser(0.000000001,1.0);
+        aftersun->SetMarkerStyle(26);
+        aftersun->SetMarkerColor(kBlue);
+        aftersun->SetLineColor(kBlue);
+        aftersun->Draw("AP");
+        aftersun->SetName((const char*)titleenameunormalized);
+        unfoldingspectracn[binc] = *aftersun;
+        ccorrectede->cd(1);
+        TH1D *aftersd = (TH1D *) sparsed->Projection(1);
+        CorrectFromTheWidth(aftersd);
+        aftersd->SetName((const char*)titleenamednotnormalized);
+        correctedspectrac[binc] = *aftersd;
+        ccorrectede->cd(1);
+        TGraphErrors* aftersdn = NormalizeTH1N(aftersd,nbEvents);
+        aftersdn->SetTitle("");
+        aftersdn->GetYaxis()->SetTitleOffset(1.5);
+        aftersdn->GetYaxis()->SetRangeUser(0.000000001,1.0);
+        aftersdn->SetMarkerStyle(25);
+        aftersdn->SetMarkerColor(kBlack);
+        aftersdn->SetLineColor(kBlack);
+        aftersdn->Draw("P");
+        aftersdn->SetName((const char*)titleenamednormalized);
+        correctedspectracn[binc] = *aftersdn;
+        TLegend *legcorrectedud = new TLegend(0.4,0.6,0.89,0.89);
+        legcorrectedud->AddEntry(aftersun,"Corrected","p");
+        legcorrectedud->AddEntry(aftersdn,"Alltogether","p");
+        legcorrectedud->Draw("same");
+        ccorrectedallspectra->cd(1);
+        gPad->SetLogy();
+        TH1D *aftersunn = (TH1D *) aftersun->Clone();
+        aftersunn->SetMarkerStyle(stylee[binc]);
+        aftersunn->SetMarkerColor(colorr[binc]);
+        if(binc==0) aftersunn->Draw("AP");
+        else aftersunn->Draw("P");
+        legtotal->AddEntry(aftersunn,(const char*) titlee,"p");
+        ccorrectedallspectra->cd(2);
+        gPad->SetLogy();
+        TH1D *aftersdnn = (TH1D *) aftersdn->Clone();
+        aftersdnn->SetMarkerStyle(stylee[binc]);
+        aftersdnn->SetMarkerColor(colorr[binc]);
+        if(binc==0) aftersdnn->Draw("AP");
+        else aftersdnn->Draw("P");
+        legtotalg->AddEntry(aftersdnn,(const char*) titlee,"p");
+        ccorrectede->cd(2);
+        TH1D* ratiocorrectedbinc = (TH1D*)aftersu->Clone();
+        TString titleee("ratiocorrected_bin_");
+        titleee += binc;
+        ratiocorrectedbinc->SetName((const char*) titleee);
+        ratiocorrectedbinc->SetTitle("");
+        ratiocorrectedbinc->GetYaxis()->SetTitle("Unfolded/DirectCorrected");
+        ratiocorrectedbinc->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        ratiocorrectedbinc->Divide(aftersu,aftersd,1,1);
+        ratiocorrectedbinc->SetStats(0);
+        ratiocorrectedbinc->Draw();
       }
 
       ccorrectedallspectra->cd(1);
@@ -620,7 +634,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       
       cenaxisa->SetRange(0,nbbin);
       cenaxisb->SetRange(0,nbbin);
-
+      if(fWriteToFile) ccorrectedallspectra->SaveAs("CorrectedPbPb.eps");
     }
 
     // Dump to file if needed
@@ -637,10 +651,10 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
       alltogetherCorrection->Write();
       for(Int_t binc = 0; binc < fNCentralityBinAtTheEnd; binc++){
-	unfoldingspectrac[binc].Write();
-	unfoldingspectracn[binc].Write();
-	correctedspectrac[binc].Write();
-	correctedspectracn[binc].Write();
+	      unfoldingspectrac[binc].Write();
+	      unfoldingspectracn[binc].Write();
+	      correctedspectrac[binc].Write();
+	      correctedspectracn[binc].Write();
       }
       out->Close(); delete out;
     }
@@ -651,9 +665,6 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     if (correctedspectracn) delete[] correctedspectracn;
 
   }
-
-
-  
 
   return kTRUE;
 }
@@ -694,9 +705,13 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
   // Subtract hadron background
   /////////////////////////////////
   AliCFDataGrid *dataspectrumaftersubstraction = 0x0;
+  AliCFDataGrid *unnormalizedRawSpectrum = 0x0;
+  TGraphErrors *gNormalizedRawSpectrum = 0x0;
   if(subtractcontamination) {
     dataspectrumaftersubstraction = SubtractBackground(kTRUE);
+    unnormalizedRawSpectrum = (AliCFDataGrid*)dataspectrumaftersubstraction->Clone();
     dataGridAfterFirstSteps = dataspectrumaftersubstraction;
+    gNormalizedRawSpectrum = Normalize(unnormalizedRawSpectrum);
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -782,6 +797,11 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
     ratiocorrected->Divide(correctedTH1D,alltogetherTH1D,1,1);
     ratiocorrected->SetStats(0);
     ratiocorrected->Draw();
+    if(fWriteToFile) ccorrected->SaveAs("CorrectedBeauty.eps");
+
+    if(fNonHFEsyst){
+      CalculateNonHFEsyst();
+    }
 
 
     // Dump to file if needed
@@ -789,15 +809,7 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
     if(fDumpToFile) {
       
       TFile *out;
-      if(fNonHFEmode == 1){
-	out = new TFile("finalSpectrumLow.root","recreate");
-      }
-      else if(fNonHFEmode == 2){
-	out = new TFile("finalSpectrumUp.root","recreate");
-      }
-      else{
-	out = new TFile("finalSpectrum.root","recreate");
-      }
+      out = new TFile("finalSpectrum.root","recreate");
       out->cd();
       //
       correctedspectrumD->SetName("UnfoldingCorrectedSpectrum");
@@ -812,11 +824,19 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
       alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
       alltogetherCorrection->Write();
       //
+      if(unnormalizedRawSpectrum) {
+	unnormalizedRawSpectrum->SetName("beautyAfterIP");
+	unnormalizedRawSpectrum->Write();
+      }
+      
+      if(gNormalizedRawSpectrum){
+        gNormalizedRawSpectrum->SetName("normalizedBeautyAfterIP");
+        gNormalizedRawSpectrum->Write();
+      }
+
       out->Close(); 
       delete out;
     }
-  
-
   }
 
   return kTRUE;
@@ -856,8 +876,12 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
     CorrectFromTheWidth(measuredTH1Draw);
     TCanvas *rawspectra = new TCanvas("rawspectra","rawspectra",600,500);
     rawspectra->cd();
+    rawspectra->SetLogx();
+    rawspectra->SetLogy();
+    TLegend *lRaw = new TLegend(0.65,0.65,0.95,0.95);
     measuredTH1Draw->SetMarkerStyle(20);
     measuredTH1Draw->Draw();
+    lRaw->AddEntry(measuredTH1Draw,"measured raw spectrum");
     if(fIPanaHadronBgSubtract){
       // Hadron background
       printf("Hadron background for IP analysis subtracted!\n");
@@ -874,6 +898,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       hadronbg->SetMarkerStyle(20);
       rawspectra->cd();
       hadronbg->Draw("samep");
+      lRaw->AddEntry(hadronbg,"hadrons");
       // subtract hadron contamination
       spectrumSubtracted->Add(backgroundGrid,-1.0);
     }
@@ -888,6 +913,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       charmbg->SetMarkerStyle(20);
       rawspectra->cd();
       charmbg->Draw("samep");
+      lRaw->AddEntry(charmbg,"charm elecs");
       // subtract charm background
       spectrumSubtracted->Add(charmbgContainer,-1.0);
     }
@@ -901,6 +927,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       conversionbg->SetMarkerStyle(20);
       rawspectra->cd();
       conversionbg->Draw("samep");
+      lRaw->AddEntry(conversionbg,"conversion elecs");
       // subtract conversion background
       spectrumSubtracted->Add(conversionbgContainer,-1.0);
       printf("Conversion background subtraction is preliminary!\n");
@@ -915,6 +942,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       nonhfebg->SetMarkerStyle(20);
       rawspectra->cd();
       nonhfebg->Draw("samep");
+      lRaw->AddEntry(nonhfebg,"non-HF elecs");
       // subtract Dalitz/dielectron background
       spectrumSubtracted->Add(nonHFEbgContainer,-1.0);
       printf("Non HFE background subtraction is preliminary!\n");
@@ -923,7 +951,9 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
     CorrectFromTheWidth(rawbgsubtracted);
     rawbgsubtracted->SetMarkerStyle(24);
     rawspectra->cd();
+    lRaw->AddEntry(rawbgsubtracted,"subtracted raw spectrum");
     rawbgsubtracted->Draw("samep");
+    lRaw->Draw("SAME");
   }
   else{
     // Subtract 
@@ -999,6 +1029,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
     measuredTH1background->SetMarkerColor(kBlack);
     measuredTH1background->SetLineColor(kBlack);
     measuredTH1background->Draw();
+    if(fWriteToFile) cbackgroundsubtraction->SaveAs("BackgroundSubtracted.eps");
 
     if(fBeamType==1) {
 
@@ -1015,73 +1046,72 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       Int_t stylee[20] = {20,21,22,23,24,25,26,27,28,30,4,5,7,29,29,29,29,29,29,29};
       Int_t colorr[20] = {2,3,4,5,6,7,8,9,46,38,29,30,31,32,33,34,35,37,38,20};
       for(Int_t binc = 0; binc < nbbin; binc++){
-	TString titlee("BackgroundSubtraction_centrality_bin_");
-	titlee += binc;
-	TCanvas * cbackground = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
-	cbackground->Divide(2,1);
-	cbackground->cd(1);
-	gPad->SetLogy();
-	cenaxisa->SetRange(binc+1,binc+1);
-	cenaxisb->SetRange(binc+1,binc+1);
-	TH1D *aftersubstraction = (TH1D *) sparsesubtracted->Projection(1);
-	TH1D *beforesubstraction = (TH1D *) sparsebefore->Projection(1);
-	CorrectFromTheWidth(aftersubstraction);
-	CorrectFromTheWidth(beforesubstraction);
-	aftersubstraction->SetStats(0);
-	aftersubstraction->SetTitle((const char*)titlee);
-	aftersubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-	aftersubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	aftersubstraction->SetMarkerStyle(25);
-	aftersubstraction->SetMarkerColor(kBlack);
-	aftersubstraction->SetLineColor(kBlack);
-	beforesubstraction->SetStats(0);
-	beforesubstraction->SetTitle((const char*)titlee);
-	beforesubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-	beforesubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	beforesubstraction->SetMarkerStyle(24);
-	beforesubstraction->SetMarkerColor(kBlue);
-	beforesubstraction->SetLineColor(kBlue);
-	aftersubstraction->Draw();
-	beforesubstraction->Draw("same");
-	TLegend *lega = new TLegend(0.4,0.6,0.89,0.89);
-	lega->AddEntry(beforesubstraction,"With hadron contamination","p");
-	lega->AddEntry(aftersubstraction,"Without hadron contamination ","p");
-	lega->Draw("same");
-	cbackgrounde->cd(1);
-	gPad->SetLogy();
-	TH1D *aftersubtractionn = (TH1D *) aftersubstraction->Clone();
-	aftersubtractionn->SetMarkerStyle(stylee[binc]);
-	aftersubtractionn->SetMarkerColor(colorr[binc]);
-	if(binc==0) aftersubtractionn->Draw();
-	else aftersubtractionn->Draw("same");
-	legtotal->AddEntry(aftersubtractionn,(const char*) titlee,"p");
-	cbackgrounde->cd(2);
-	gPad->SetLogy();
-	TH1D *aftersubtractionng = (TH1D *) aftersubstraction->Clone();
-	aftersubtractionng->SetMarkerStyle(stylee[binc]);
-	aftersubtractionng->SetMarkerColor(colorr[binc]);
-	if(fNEvents[binc] > 0.0) aftersubtractionng->Scale(1/(Double_t)fNEvents[binc]);
-	if(binc==0) aftersubtractionng->Draw();
-	else aftersubtractionng->Draw("same");
-	legtotalg->AddEntry(aftersubtractionng,(const char*) titlee,"p");
-	cbackground->cd(2);
-	TH1D* ratiocontamination = (TH1D*)beforesubstraction->Clone();
-	ratiocontamination->SetName("ratiocontamination");
-	ratiocontamination->SetTitle((const char*)titlee);
-	ratiocontamination->GetYaxis()->SetTitle("(with contamination - without contamination) / with contamination");
-	ratiocontamination->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	ratiocontamination->Add(aftersubstraction,-1.0);
-	ratiocontamination->Divide(beforesubstraction);
-	Int_t totalbin = ratiocontamination->GetXaxis()->GetNbins();
-	for(Int_t nbinpt = 0; nbinpt < totalbin; nbinpt++) {
-	  ratiocontamination->SetBinError(nbinpt+1,0.0);
-	}
-	ratiocontamination->SetStats(0);
-	ratiocontamination->SetMarkerStyle(26);
-	ratiocontamination->SetMarkerColor(kBlack);
-	ratiocontamination->SetLineColor(kBlack);
-	ratiocontamination->Draw("P");
-	
+        TString titlee("BackgroundSubtraction_centrality_bin_");
+        titlee += binc;
+        TCanvas * cbackground = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
+        cbackground->Divide(2,1);
+        cbackground->cd(1);
+        gPad->SetLogy();
+        cenaxisa->SetRange(binc+1,binc+1);
+        cenaxisb->SetRange(binc+1,binc+1);
+        TH1D *aftersubstraction = (TH1D *) sparsesubtracted->Projection(1);
+        TH1D *beforesubstraction = (TH1D *) sparsebefore->Projection(1);
+        CorrectFromTheWidth(aftersubstraction);
+        CorrectFromTheWidth(beforesubstraction);
+        aftersubstraction->SetStats(0);
+        aftersubstraction->SetTitle((const char*)titlee);
+        aftersubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+        aftersubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        aftersubstraction->SetMarkerStyle(25);
+        aftersubstraction->SetMarkerColor(kBlack);
+        aftersubstraction->SetLineColor(kBlack);
+        beforesubstraction->SetStats(0);
+        beforesubstraction->SetTitle((const char*)titlee);
+        beforesubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+        beforesubstraction->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        beforesubstraction->SetMarkerStyle(24);
+        beforesubstraction->SetMarkerColor(kBlue);
+        beforesubstraction->SetLineColor(kBlue);
+        aftersubstraction->Draw();
+        beforesubstraction->Draw("same");
+        TLegend *lega = new TLegend(0.4,0.6,0.89,0.89);
+        lega->AddEntry(beforesubstraction,"With hadron contamination","p");
+        lega->AddEntry(aftersubstraction,"Without hadron contamination ","p");
+        lega->Draw("same");
+        cbackgrounde->cd(1);
+        gPad->SetLogy();
+        TH1D *aftersubtractionn = (TH1D *) aftersubstraction->Clone();
+        aftersubtractionn->SetMarkerStyle(stylee[binc]);
+        aftersubtractionn->SetMarkerColor(colorr[binc]);
+        if(binc==0) aftersubtractionn->Draw();
+        else aftersubtractionn->Draw("same");
+        legtotal->AddEntry(aftersubtractionn,(const char*) titlee,"p");
+        cbackgrounde->cd(2);
+        gPad->SetLogy();
+        TH1D *aftersubtractionng = (TH1D *) aftersubstraction->Clone();
+        aftersubtractionng->SetMarkerStyle(stylee[binc]);
+        aftersubtractionng->SetMarkerColor(colorr[binc]);
+        if(fNEvents[binc] > 0.0) aftersubtractionng->Scale(1/(Double_t)fNEvents[binc]);
+        if(binc==0) aftersubtractionng->Draw();
+        else aftersubtractionng->Draw("same");
+        legtotalg->AddEntry(aftersubtractionng,(const char*) titlee,"p");
+        cbackground->cd(2);
+        TH1D* ratiocontamination = (TH1D*)beforesubstraction->Clone();
+        ratiocontamination->SetName("ratiocontamination");
+        ratiocontamination->SetTitle((const char*)titlee);
+        ratiocontamination->GetYaxis()->SetTitle("(with contamination - without contamination) / with contamination");
+        ratiocontamination->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        ratiocontamination->Add(aftersubstraction,-1.0);
+        ratiocontamination->Divide(beforesubstraction);
+        Int_t totalbin = ratiocontamination->GetXaxis()->GetNbins();
+        for(Int_t nbinpt = 0; nbinpt < totalbin; nbinpt++) {
+          ratiocontamination->SetBinError(nbinpt+1,0.0);
+        }
+        ratiocontamination->SetStats(0);
+        ratiocontamination->SetMarkerStyle(26);
+        ratiocontamination->SetMarkerColor(kBlack);
+        ratiocontamination->SetLineColor(kBlack);
+        ratiocontamination->Draw("P");
       }
      
       cbackgrounde->cd(1);
@@ -1091,10 +1121,8 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
 
       cenaxisa->SetRange(0,nbbin);
       cenaxisb->SetRange(0,nbbin);
-      
+      if(fWriteToFile) cbackgrounde->SaveAs("BackgroundSubtractedPbPb.eps");
     }
-   
-       
   }
   
   return spectrumSubtracted;
@@ -1208,6 +1236,7 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
   legcharmbg2->Draw("same");
 
   CorrectStatErr(charmBackgroundGrid);
+  if(fWriteToFile) cCharmBgEval->SaveAs("CharmBackground.eps");
 
   return charmBackgroundGrid;
 }
@@ -1217,29 +1246,47 @@ AliCFDataGrid* AliHFEspectrum::GetConversionBackground(){
   //
   // calculate conversion background
   //
-
+  
   Double_t evtnorm[1] = {0.0};
   if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
   printf("check event!!! %lf \n",evtnorm[0]);
-
-  // Background Estimate
-  AliCFContainer *backgroundContainer = GetContainer(kMCWeightedContainerConversionESD);
+  
+  AliCFContainer *backgroundContainer = 0x0;
+  
+  if(fNonHFEsyst){
+    backgroundContainer = (AliCFContainer*)fConvSourceContainer[0][0]->Clone();
+    for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+      backgroundContainer->Add(fConvSourceContainer[iSource][0]);
+    }  
+  }
+  else{    
+    // Background Estimate
+    backgroundContainer = GetContainer(kMCWeightedContainerConversionESD);    
+  } 
   if(!backgroundContainer){
     AliError("MC background container not found");
     return NULL;
   }
-
+  
   Int_t stepbackground = 3;
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("ConversionBgGrid","ConversionBgGrid",*backgroundContainer,stepbackground);
-  backgroundGrid->Scale(evtnorm);
-
-  Int_t* bins=new Int_t[1];
+  //backgroundGrid->Scale(evtnorm);
+  //workaround for statistical errors: "Scale" method does not work for our errors, since Sumw2 is not defined for AliCFContainer
+  Int_t nBin[1];
+  
+  Int_t bins[1];
   bins[0]=fConversionEff->GetNbinsX();
-  AliCFDataGrid *weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,bins);
+  
+  for(Long_t iBin=1; iBin<= bins[0];iBin++){
+    nBin[0]=iBin;
+    backgroundGrid->SetElementError(nBin, backgroundGrid->GetElementError(nBin)*evtnorm[0]);
+    backgroundGrid->SetElement(nBin,backgroundGrid->GetElement(nBin)*evtnorm[0]);
+  }
+  //end of workaround for statistical errors
+  
+  AliCFDataGrid *weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,&bins[0]);
   weightedConversionContainer->SetGrid(GetPIDxIPEff(2));
   backgroundGrid->Multiply(weightedConversionContainer,1.0);
-  
-  CorrectStatErr(backgroundGrid);
   
   return backgroundGrid;
 }
@@ -1254,26 +1301,43 @@ AliCFDataGrid* AliHFEspectrum::GetNonHFEBackground(){
   Double_t evtnorm[1] = {0.0};
   if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
   printf("check event!!! %lf \n",evtnorm[0]);
-
-  // Background Estimate
-  AliCFContainer *backgroundContainer = GetContainer(kMCWeightedContainerNonHFEESD);
+  
+  AliCFContainer *backgroundContainer = 0x0;
+  if(fNonHFEsyst){
+    backgroundContainer = (AliCFContainer*)fNonHFESourceContainer[0][0]->Clone();
+    for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+      backgroundContainer->Add(fNonHFESourceContainer[iSource][0]);
+    } 
+  }
+  else{    
+    // Background Estimate 
+    backgroundContainer = GetContainer(kMCWeightedContainerNonHFEESD);
+  }
   if(!backgroundContainer){
     AliError("MC background container not found");
     return NULL;
   }
-
-
+  
+  
   Int_t stepbackground = 3;
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("NonHFEBgGrid","NonHFEBgGrid",*backgroundContainer,stepbackground);
-  backgroundGrid->Scale(evtnorm);
-
-  Int_t* bins=new Int_t[1];
-  bins[0]=fNonHFEEff->GetNbinsX();
-  AliCFDataGrid *weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,bins);
+  //backgroundGrid->Scale(evtnorm);
+  //workaround for statistical errors: "Scale" method does not work for our errors, since Sumw2 is not defined for AliCFContainer
+  Int_t nBin[1];
+  
+  Int_t bins[1];
+  bins[0]=fConversionEff->GetNbinsX();
+  
+  for(Long_t iBin=1; iBin<= bins[0];iBin++){
+    nBin[0]=iBin;
+    backgroundGrid->SetElementError(nBin, backgroundGrid->GetElementError(nBin)*evtnorm[0]);
+    backgroundGrid->SetElement(nBin,backgroundGrid->GetElement(nBin)*evtnorm[0]);
+  }
+  //end of workaround for statistical errors
+  
+  AliCFDataGrid *weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,&bins[0]);
   weightedNonHFEContainer->SetGrid(GetPIDxIPEff(3));
   backgroundGrid->Multiply(weightedNonHFEContainer,1.0);
-
-  CorrectStatErr(backgroundGrid);
 
   return backgroundGrid;
 }
@@ -1393,7 +1457,7 @@ AliCFDataGrid *AliHFEspectrum::CorrectParametrizedEfficiency(AliCFDataGrid* cons
     //ratioefficiency->Divide(afterE);
     //ratioefficiency->Draw();
 
-
+    if(fWriteToFile) cEfficiencyParametrized->SaveAs("efficiency.eps");
   }
 
   
@@ -1492,63 +1556,62 @@ AliCFDataGrid *AliHFEspectrum::CorrectV0Efficiency(AliCFDataGrid* const bgsubpec
       Int_t stylee[20] = {20,21,22,23,24,25,26,27,28,30,4,5,7,29,29,29,29,29,29,29};
       Int_t colorr[20] = {2,3,4,5,6,7,8,9,46,38,29,30,31,32,33,34,35,37,38,20};
       for(Int_t binc = 0; binc < nbbin; binc++){
-	TString titlee("V0Efficiency_centrality_bin_");
-	titlee += binc;
-	TCanvas * ccV0Efficiency = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
-	ccV0Efficiency->Divide(2,1);
-	ccV0Efficiency->cd(1);
-	gPad->SetLogy();
-	cenaxisa->SetRange(binc+1,binc+1);
-	cenaxisb->SetRange(binc+1,binc+1);
-	cenaxisc->SetRange(binc+1,binc+1);
-	TH1D *aftere = (TH1D *) sparseafter->Projection(1);
-	TH1D *beforee = (TH1D *) sparsebefore->Projection(1);
-	CorrectFromTheWidth(aftere);
-	CorrectFromTheWidth(beforee);
-	aftere->SetStats(0);
-	aftere->SetTitle((const char*)titlee);
-	aftere->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-	aftere->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	aftere->SetMarkerStyle(25);
-	aftere->SetMarkerColor(kBlack);
-	aftere->SetLineColor(kBlack);
-	beforee->SetStats(0);
-	beforee->SetTitle((const char*)titlee);
-	beforee->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-	beforee->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	beforee->SetMarkerStyle(24);
-	beforee->SetMarkerColor(kBlue);
-	beforee->SetLineColor(kBlue);
-	aftere->Draw();
-	beforee->Draw("same");
-	TLegend *lega = new TLegend(0.4,0.6,0.89,0.89);
-	lega->AddEntry(beforee,"Before correction","p");
-	lega->AddEntry(aftere,"After correction","p");
-	lega->Draw("same");
-	cV0Efficiencye->cd(1);
-	gPad->SetLogy();
-	TH1D *afteree = (TH1D *) aftere->Clone();
-	afteree->SetMarkerStyle(stylee[binc]);
-	afteree->SetMarkerColor(colorr[binc]);
-	if(binc==0) afteree->Draw();
-	else afteree->Draw("same");
-	legtotal->AddEntry(afteree,(const char*) titlee,"p");
-	cV0Efficiencye->cd(2);
-	gPad->SetLogy();
-	TH1D *aftereeu = (TH1D *) aftere->Clone();
-	aftereeu->SetMarkerStyle(stylee[binc]);
-	aftereeu->SetMarkerColor(colorr[binc]);
-	if(fNEvents[binc] > 0.0) aftereeu->Scale(1/(Double_t)fNEvents[binc]);
-	if(binc==0) aftereeu->Draw();
-	else aftereeu->Draw("same");
-	legtotalg->AddEntry(aftereeu,(const char*) titlee,"p");
-	ccV0Efficiency->cd(2);
-	TH1D* efficiencyDDproj = (TH1D *) efficiencya->Projection(1);
-	efficiencyDDproj->SetTitle("");
-	efficiencyDDproj->SetStats(0);
-	efficiencyDDproj->SetMarkerStyle(25);
-	efficiencyDDproj->Draw();
-		
+        TString titlee("V0Efficiency_centrality_bin_");
+        titlee += binc;
+        TCanvas * ccV0Efficiency = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
+        ccV0Efficiency->Divide(2,1);
+        ccV0Efficiency->cd(1);
+        gPad->SetLogy();
+        cenaxisa->SetRange(binc+1,binc+1);
+        cenaxisb->SetRange(binc+1,binc+1);
+        cenaxisc->SetRange(binc+1,binc+1);
+        TH1D *aftere = (TH1D *) sparseafter->Projection(1);
+        TH1D *beforee = (TH1D *) sparsebefore->Projection(1);
+        CorrectFromTheWidth(aftere);
+        CorrectFromTheWidth(beforee);
+        aftere->SetStats(0);
+        aftere->SetTitle((const char*)titlee);
+        aftere->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+        aftere->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        aftere->SetMarkerStyle(25);
+        aftere->SetMarkerColor(kBlack);
+        aftere->SetLineColor(kBlack);
+        beforee->SetStats(0);
+        beforee->SetTitle((const char*)titlee);
+        beforee->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+        beforee->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        beforee->SetMarkerStyle(24);
+        beforee->SetMarkerColor(kBlue);
+        beforee->SetLineColor(kBlue);
+        aftere->Draw();
+        beforee->Draw("same");
+        TLegend *lega = new TLegend(0.4,0.6,0.89,0.89);
+        lega->AddEntry(beforee,"Before correction","p");
+        lega->AddEntry(aftere,"After correction","p");
+        lega->Draw("same");
+        cV0Efficiencye->cd(1);
+        gPad->SetLogy();
+        TH1D *afteree = (TH1D *) aftere->Clone();
+        afteree->SetMarkerStyle(stylee[binc]);
+        afteree->SetMarkerColor(colorr[binc]);
+        if(binc==0) afteree->Draw();
+        else afteree->Draw("same");
+        legtotal->AddEntry(afteree,(const char*) titlee,"p");
+        cV0Efficiencye->cd(2);
+        gPad->SetLogy();
+        TH1D *aftereeu = (TH1D *) aftere->Clone();
+        aftereeu->SetMarkerStyle(stylee[binc]);
+        aftereeu->SetMarkerColor(colorr[binc]);
+        if(fNEvents[binc] > 0.0) aftereeu->Scale(1/(Double_t)fNEvents[binc]);
+        if(binc==0) aftereeu->Draw();
+        else aftereeu->Draw("same");
+        legtotalg->AddEntry(aftereeu,(const char*) titlee,"p");
+        ccV0Efficiency->cd(2);
+        TH1D* efficiencyDDproj = (TH1D *) efficiencya->Projection(1);
+        efficiencyDDproj->SetTitle("");
+        efficiencyDDproj->SetStats(0);
+        efficiencyDDproj->SetMarkerStyle(25);
+        efficiencyDDproj->Draw();
       }
      
       cV0Efficiencye->cd(1);
@@ -1559,7 +1622,8 @@ AliCFDataGrid *AliHFEspectrum::CorrectV0Efficiency(AliCFDataGrid* const bgsubpec
       cenaxisa->SetRange(0,nbbin);
       cenaxisb->SetRange(0,nbbin);
       cenaxisc->SetRange(0,nbbin);
-      
+
+      if(fWriteToFile) cV0Efficiencye->SaveAs("V0efficiency.eps");
     }
 
   }
@@ -1613,7 +1677,7 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   // Consider parameterized IP cut efficiency
   if(!fInclusiveSpectrum){
     Int_t* bins=new Int_t[1];
-    bins[0]=44;
+    bins[0]=35;
 
     AliCFEffGrid *beffContainer = new AliCFEffGrid("beffContainer","beffContainer",1,bins);
     beffContainer->SetGrid(GetBeautyIPEff());
@@ -1685,7 +1749,8 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
     ratioresidual->Divide(residualTH1D,measuredTH1D,1,1);
     ratioresidual->SetStats(0);
     ratioresidual->Draw();
-    
+
+    if(fWriteToFile) cresidual->SaveAs("Unfolding.eps");
   }
 
   return listofresults;
@@ -1712,7 +1777,7 @@ AliCFDataGrid *AliHFEspectrum::CorrectForEfficiency(AliCFDataGrid* const bgsubpe
   // Consider parameterized IP cut efficiency
   if(!fInclusiveSpectrum){
     Int_t* bins=new Int_t[1];
-    bins[0]=44;
+    bins[0]=35;
   
     AliCFEffGrid *beffContainer = new AliCFEffGrid("beffContainer","beffContainer",1,bins);
     beffContainer->SetGrid(GetBeautyIPEff());
@@ -1795,60 +1860,59 @@ AliCFDataGrid *AliHFEspectrum::CorrectForEfficiency(AliCFDataGrid* const bgsubpe
       //Int_t stylee[20] = {20,21,22,23,24,25,26,27,28,30,4,5,7,29,29,29,29,29,29,29};
       //Int_t colorr[20] = {2,3,4,5,6,7,8,9,46,38,29,30,31,32,33,34,35,37,38,20};
       for(Int_t binc = 0; binc < fNCentralityBinAtTheEnd; binc++){
-     	TString titlee("Efficiency_centrality_bin_");
-	titlee += fLowBoundaryCentralityBinAtTheEnd[binc];
-	titlee += "_";
-	titlee += fHighBoundaryCentralityBinAtTheEnd[binc];
-	TCanvas * cefficiencye = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
-	cefficiencye->Divide(2,1);
-	cefficiencye->cd(1);
-	gPad->SetLogy();
-	cenaxisa->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
-	cenaxisb->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
-	TH1D *afterefficiency = (TH1D *) sparseafter->Projection(ptpr);
-	TH1D *beforeefficiency = (TH1D *) sparsebefore->Projection(ptpr);
-	CorrectFromTheWidth(afterefficiency);
-	CorrectFromTheWidth(beforeefficiency);
-	afterefficiency->SetStats(0);
-	afterefficiency->SetTitle((const char*)titlee);
-	afterefficiency->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-	afterefficiency->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	afterefficiency->SetMarkerStyle(25);
-	afterefficiency->SetMarkerColor(kBlack);
-	afterefficiency->SetLineColor(kBlack);
-	beforeefficiency->SetStats(0);
-	beforeefficiency->SetTitle((const char*)titlee);
-	beforeefficiency->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-	beforeefficiency->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-	beforeefficiency->SetMarkerStyle(24);
-	beforeefficiency->SetMarkerColor(kBlue);
-	beforeefficiency->SetLineColor(kBlue);
-	afterefficiency->Draw();
-	beforeefficiency->Draw("same");
-	TLegend *lega = new TLegend(0.4,0.6,0.89,0.89);
-	lega->AddEntry(beforeefficiency,"Before efficiency correction","p");
-	lega->AddEntry(afterefficiency,"After efficiency correction","p");
-	lega->Draw("same");
-	cefficiencye->cd(2);
-	cenaxisc->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fLowBoundaryCentralityBinAtTheEnd[binc]+1);
-	TH1D* efficiencyDDproj = (TH1D *) efficiencya->Projection(ptpr);
-	efficiencyDDproj->SetTitle("");
-	efficiencyDDproj->SetStats(0);
-	efficiencyDDproj->SetMarkerStyle(25);
-	efficiencyDDproj->SetMarkerColor(2);
-	efficiencyDDproj->Draw();
-	cenaxisc->SetRange(fHighBoundaryCentralityBinAtTheEnd[binc],fHighBoundaryCentralityBinAtTheEnd[binc]);
-	TH1D* efficiencyDDproja = (TH1D *) efficiencya->Projection(ptpr);
-	efficiencyDDproja->SetTitle("");
-	efficiencyDDproja->SetStats(0);
-	efficiencyDDproja->SetMarkerStyle(26);
-	efficiencyDDproja->SetMarkerColor(4);
-	efficiencyDDproja->Draw("same");
-	
+        TString titlee("Efficiency_centrality_bin_");
+        titlee += fLowBoundaryCentralityBinAtTheEnd[binc];
+        titlee += "_";
+        titlee += fHighBoundaryCentralityBinAtTheEnd[binc];
+        TCanvas * cefficiencye = new TCanvas((const char*) titlee,(const char*) titlee,1000,700);
+        cefficiencye->Divide(2,1);
+        cefficiencye->cd(1);
+        gPad->SetLogy();
+        cenaxisa->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
+        cenaxisb->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
+        TH1D *afterefficiency = (TH1D *) sparseafter->Projection(ptpr);
+        TH1D *beforeefficiency = (TH1D *) sparsebefore->Projection(ptpr);
+        CorrectFromTheWidth(afterefficiency);
+        CorrectFromTheWidth(beforeefficiency);
+        afterefficiency->SetStats(0);
+        afterefficiency->SetTitle((const char*)titlee);
+        afterefficiency->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+        afterefficiency->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        afterefficiency->SetMarkerStyle(25);
+        afterefficiency->SetMarkerColor(kBlack);
+        afterefficiency->SetLineColor(kBlack);
+        beforeefficiency->SetStats(0);
+        beforeefficiency->SetTitle((const char*)titlee);
+        beforeefficiency->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+        beforeefficiency->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+        beforeefficiency->SetMarkerStyle(24);
+        beforeefficiency->SetMarkerColor(kBlue);
+        beforeefficiency->SetLineColor(kBlue);
+        afterefficiency->Draw();
+        beforeefficiency->Draw("same");
+        TLegend *lega = new TLegend(0.4,0.6,0.89,0.89);
+        lega->AddEntry(beforeefficiency,"Before efficiency correction","p");
+        lega->AddEntry(afterefficiency,"After efficiency correction","p");
+        lega->Draw("same");
+        cefficiencye->cd(2);
+        cenaxisc->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fLowBoundaryCentralityBinAtTheEnd[binc]+1);
+        TH1D* efficiencyDDproj = (TH1D *) efficiencya->Projection(ptpr);
+        efficiencyDDproj->SetTitle("");
+        efficiencyDDproj->SetStats(0);
+        efficiencyDDproj->SetMarkerStyle(25);
+        efficiencyDDproj->SetMarkerColor(2);
+        efficiencyDDproj->Draw();
+        cenaxisc->SetRange(fHighBoundaryCentralityBinAtTheEnd[binc],fHighBoundaryCentralityBinAtTheEnd[binc]);
+        TH1D* efficiencyDDproja = (TH1D *) efficiencya->Projection(ptpr);
+        efficiencyDDproja->SetTitle("");
+        efficiencyDDproja->SetStats(0);
+        efficiencyDDproja->SetMarkerStyle(26);
+        efficiencyDDproja->SetMarkerColor(4);
+        efficiencyDDproja->Draw("same");
       }
     }
 
-
+    if(fWriteToFile) cefficiency->SaveAs("efficiencyCorrected.eps");
   }
   
   return result;
@@ -1909,9 +1973,9 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1(TH1 *input,Int_t i) const {
   // Give the final pt spectrum to be compared
   //
   Double_t chargecoefficient = 0.5;
-  if(fChargeChoosen >= 0) chargecoefficient = 1.0;
+  if(fChargeChoosen != 0) chargecoefficient = 1.0;
 
-  Double_t etarange = fEtaSelected ? fEtaRange[1] - fEtaRange[0] : 1.6;
+  Double_t etarange = fEtaSelected ? fEtaRangeNorm[1] - fEtaRangeNorm[0] : 1.6;
   printf("Normalizing Eta Range %f\n", etarange);
   if(fNEvents[i] > 0) {
 
@@ -1957,9 +2021,9 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1N(TH1 *input,Int_t normalization) cons
   // Give the final pt spectrum to be compared
   //
   Double_t chargecoefficient = 0.5;
-  if(fChargeChoosen >= 0) chargecoefficient = 1.0;
+  if(fChargeChoosen != kAllCharge) chargecoefficient = 1.0;
 
-  Double_t etarange = fEtaSelected ? fEtaRange[1] - fEtaRange[0] : 1.6;
+  Double_t etarange = fEtaSelected ? fEtaRangeNorm[1] - fEtaRangeNorm[0] : 1.6;
   printf("Normalizing Eta Range %f\n", etarange);
   if(normalization > 0) {
 
@@ -2003,7 +2067,7 @@ void AliHFEspectrum::SetContainer(AliCFContainer *cont, AliHFEspectrum::CFContai
   //
   // Set the container for a given step to the 
   //
-  if(!fCFContainers) fCFContainers = new TList;
+  if(!fCFContainers) fCFContainers = new TObjArray(kDataContainerV0+1);
   fCFContainers->AddAt(cont, type);
 }
 
@@ -2016,7 +2080,7 @@ AliCFContainer *AliHFEspectrum::GetContainer(AliHFEspectrum::CFContainer_t type)
   return dynamic_cast<AliCFContainer *>(fCFContainers->At(type));
 }
 //____________________________________________________________
-AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions,Int_t source,Int_t positivenegative) {
+AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions,Int_t source,Chargetype_t charge) {
   //
   // Slice bin for a given source of electron
   // nDim is the number of dimension the corrections are done
@@ -2038,24 +2102,27 @@ AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, In
     // source
     if(ivar == 4){
       if((source>= 0) && (source<container->GetNBins(ivar))) {
-	varMin[ivar] = binLimits[source];
-	varMax[ivar] = binLimits[source];
+	      varMin[ivar] = binLimits[source];
+	      varMax[ivar] = binLimits[source];
       }     
     }
     // charge
     if(ivar == 3) {
-      if((positivenegative>= 0) && (positivenegative<container->GetNBins(ivar))) {
-	varMin[ivar] = binLimits[positivenegative];
-	varMax[ivar] = binLimits[positivenegative];
-      }
+      if(charge != kAllCharge) varMin[ivar] = varMax[ivar] = charge;
     }
     // eta
     if(ivar == 1){
-      for(Int_t ic = 1; ic <= container->GetAxis(1,0)->GetLast(); ic++) AliDebug(1, Form("eta bin %d, min %f, max %f\n", ic, container->GetAxis(1,0)->GetBinLowEdge(ic), container->GetAxis(1,0)->GetBinUpEdge(ic))); 
+      for(Int_t ic = 1; ic <= container->GetAxis(1,0)->GetLast(); ic++) 
+        AliDebug(1, Form("eta bin %d, min %f, max %f\n", ic, container->GetAxis(1,0)->GetBinLowEdge(ic), container->GetAxis(1,0)->GetBinUpEdge(ic))); 
       if(fEtaSelected){
         varMin[ivar] = fEtaRange[0];
         varMax[ivar] = fEtaRange[1];
       }
+    }
+    if(fEtaSelected){
+      fEtaRangeNorm[0] = container->GetAxis(1,0)->GetBinLowEdge(container->GetAxis(1,0)->FindBin(fEtaRange[0]));
+      fEtaRangeNorm[1] = container->GetAxis(1,0)->GetBinUpEdge(container->GetAxis(1,0)->FindBin(fEtaRange[1]));
+      AliInfo(Form("Normalization done in eta range [%f,%f]\n", fEtaRangeNorm[0], fEtaRangeNorm[0]));
     }
     
 
@@ -2189,21 +2256,19 @@ THnSparse* AliHFEspectrum::GetCharmWeights(){
   //
 
   const Int_t nDim=1;
-  Int_t nBin[nDim] = {44};
-  const Double_t kPtbound[2] = {0.1, 20.};
+  Int_t nBin[nDim] = {35};
 
-  Double_t* binEdges[nDim];
-  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(nBin[0], kPtbound[0], kPtbound[1]);
+  Double_t ptbinning1[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
 
   fWeightCharm = new THnSparseF("weightHisto", "weiting factor; pt[GeV/c]", nDim, nBin);
   for(Int_t idim = 0; idim < nDim; idim++)
-     fWeightCharm->SetBinEdges(idim, binEdges[idim]);
-     Double_t weight[44]={
-1.11865,1.11444,1.13395,1.15751,1.13412,1.14446,1.15372,1.09458,1.13446,1.11707,1.1352,1.10979,1.08887,1.11164,1.10772,1.10727,1.07027,1.07016,1.04826,1.03248,1.0093,0.973534,0.932574,0.869838,0.799316,0.734015,0.643001,0.584319,0.527147,0.495661,0.470002,0.441129,0.431156,0.417242,0.39246,0.379611,0.390845,0.368857,0.34959,0.387186,0.376364,0.384437,0.349585,0.383225};
+     fWeightCharm->SetBinEdges(idim, ptbinning1);
+     Double_t weight[35]={0.859260, 0.872552, 0.847475, 0.823631, 0.839386, 0.874024, 0.916755, 0.942801, 0.965856, 0.933905, 0.933414, 0.931936, 0.847826, 0.810902, 0.796608, 0.727002, 0.659227, 0.583610, 0.549956, 0.512633, 0.472254, 0.412364, 0.353191, 0.319145, 0.305412, 0.290334, 0.269863, 0.254646, 0.230245, 0.200859, 0.275953, 0.276271, 0.227332, 0.197004, 0.474385};
+//{1.11865,1.11444,1.13395,1.15751,1.13412,1.14446,1.15372,1.09458,1.13446,1.11707,1.1352,1.10979,1.08887,1.11164,1.10772,1.10727,1.07027,1.07016,1.04826,1.03248,1.0093,0.973534,0.932574,0.869838,0.799316,0.734015,0.643001,0.584319,0.527147,0.495661,0.470002,0.441129,0.431156,0.417242,0.39246,0.379611,0.390845,0.368857,0.34959,0.387186,0.376364,0.384437,0.349585,0.383225};
   //points
   Double_t pt[1];
   for(int i=0; i<nBin[0]; i++){
-    pt[0]=(binEdges[0][i]+binEdges[0][i+1])/2.;
+    pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
     fWeightCharm->Fill(pt,weight[i]);
   }
   Int_t* ibins[nDim];
@@ -2221,19 +2286,17 @@ THnSparse* AliHFEspectrum::GetBeautyIPEff(){
   //
 
   const Int_t nDim=1;
-  Int_t nBin[nDim] = {44};
-  const Double_t kPtbound[2] = {0.1, 20.};
+  Int_t nBin[nDim] = {35};
 
-  Double_t* binEdges[nDim];
-  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(nBin[0], kPtbound[0], kPtbound[1]);
+  Double_t ptbinning1[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
 
   THnSparseF *ipcut = new THnSparseF("beff", "b eff; pt[GeV/c]", nDim, nBin);
   for(Int_t idim = 0; idim < nDim; idim++)
-     ipcut->SetBinEdges(idim, binEdges[idim]);
+     ipcut->SetBinEdges(idim, ptbinning1);
   Double_t pt[1];
   Double_t weight;
   for(int i=0; i<nBin[0]; i++){
-    pt[0]=(binEdges[0][i]+binEdges[0][i+1])/2.;
+    pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
     weight=0.612*(0.385+0.111*log(pt[0])-0.00435*log(pt[0])*log(pt[0]))*tanh(5.42*pt[0]-1.22);  // for 3 sigma cut   
     //weight=0.786*(0.493+0.0283*log(pt[0])-0.0190*log(pt[0])*log(pt[0]))*tanh(1.84*pt[0]-0.00368);  // for 2 sigma cut   
     ipcut->Fill(pt,weight);
@@ -2253,19 +2316,17 @@ THnSparse* AliHFEspectrum::GetCharmEff(){
   //
 
   const Int_t nDim=1;
-  Int_t nBin[nDim] = {44};
-  const Double_t kPtbound[2] = {0.1, 20.};
+  Int_t nBin[nDim] = {35};
 
-  Double_t* binEdges[nDim];
-  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(nBin[0], kPtbound[0], kPtbound[1]);
+  Double_t ptbinning1[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
 
   THnSparseF *ipcut = new THnSparseF("ceff", "c eff; pt[GeV/c]", nDim, nBin);
   for(Int_t idim = 0; idim < nDim; idim++)
-     ipcut->SetBinEdges(idim, binEdges[idim]);
+     ipcut->SetBinEdges(idim, ptbinning1);
   Double_t pt[1];
   Double_t weight;
   for(int i=0; i<nBin[0]; i++){
-    pt[0]=(binEdges[0][i]+binEdges[0][i+1])/2.;
+    pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
     weight=0.299*(0.307+0.176*log(pt[0])+0.0176*log(pt[0])*log(pt[0]))*tanh(96.3*pt[0]-19.7); // for 3 sigma cut
     //weight=0.477*(0.3757+0.184*log(pt[0])-0.0013*log(pt[0])*log(pt[0]))*tanh(436.013*pt[0]-96.2137); // for 2 sigma cut
     ipcut->Fill(pt,weight);
@@ -2284,22 +2345,22 @@ THnSparse* AliHFEspectrum::GetPIDxIPEff(Int_t source){
   // Return PID x IP cut efficiency
   //
 
-  const Int_t nDim=1;
-  Int_t nBin[nDim] = {44};
-  const Double_t kPtbound[2] = {0.1, 20.};
+  const Int_t nPtbinning1 = 35;//number of pt bins, according to new binning
+ 
+  const Int_t nDim=1;//dimensions of the efficiency weighting grid
+  Int_t nBin[nDim] = {nPtbinning1};
 
-  Double_t* binEdges[nDim];
-  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(nBin[0], kPtbound[0], kPtbound[1]);
+  Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
 
   THnSparseF *pideff = new THnSparseF("pideff", "PID efficiency; p_{t}(GeV/c)", nDim, nBin);
   for(Int_t idim = 0; idim < nDim; idim++)
-     pideff->SetBinEdges(idim, binEdges[idim]);
+     pideff->SetBinEdges(idim, kPtRange);
 
   Double_t pt[1];
   Double_t weight = 1.0;
   Double_t trdtpcPidEfficiency = fEfficiencyFunction->Eval(0); // assume we have constant TRD+TPC PID efficiency
   for(int i=0; i<nBin[0]; i++){
-    pt[0]=(binEdges[0][i]+binEdges[0][i+1])/2.;
+    pt[0]=(kPtRange[i]+kPtRange[i+1])/2.;
     Double_t tofeff = 0.9885*(0.8551+0.0070*log(pt[0])-0.0014*log(pt[0])*log(pt[0]))*tanh(0.8884*pt[0]+0.6061); // parameterized TOF PID eff
 
     if(source==0) weight = tofeff*trdtpcPidEfficiency*0.299*(0.307+0.176*log(pt[0])+0.0176*log(pt[0])*log(pt[0]))*tanh(96.3*pt[0]-19.7); // for 3 sigma cut
@@ -2308,7 +2369,7 @@ THnSparse* AliHFEspectrum::GetPIDxIPEff(Int_t source){
     //if(source==3) weight = tofeff*trdtpcPidEfficiency*0.0937*(0.4449-0.3769*log(pt[0])+0.5031*log(pt[0])*log(pt[0]))*tanh(6.4063*pt[0]+3.1425); // multiply ip cut eff for Dalitz/dielectrons
     if(source==2) weight = tofeff*trdtpcPidEfficiency*fConversionEff->GetBinContent(i+1); // multiply ip cut eff for conversion electrons
     if(source==3) weight = tofeff*trdtpcPidEfficiency*fNonHFEEff->GetBinContent(i+1); // multiply ip cut eff for Dalitz/dielectrons
-    printf("tofeff= %lf trdtpcPidEfficiency= %lf conversion= %lf nonhfe= %lf\n",tofeff,trdtpcPidEfficiency,fConversionEff->GetBinContent(i+1),fNonHFEEff->GetBinContent(i+1));
+    //printf("tofeff= %lf trdtpcPidEfficiency= %lf conversion= %lf nonhfe= %lf\n",tofeff,trdtpcPidEfficiency,fConversionEff->GetBinContent(i+1),fNonHFEEff->GetBinContent(i+1));
 
     pideff->Fill(pt,weight);
   }
@@ -2318,4 +2379,214 @@ THnSparse* AliHFEspectrum::GetPIDxIPEff(Int_t source){
   pideff->SetBinError(ibins[0],0);
 
   return pideff;
+}
+//__________________________________________________________________________
+void AliHFEspectrum::CalculateNonHFEsyst(){
+  //
+  //Calculate systematic errors for non-HFE and conversion background,
+  //based on correlated errors from pi0 input and uncorrelated errors 
+  //from m_t scaling
+  //
+  if(!fNonHFEsyst)
+    return;
+
+  Double_t evtnorm[1] = {0.0};
+  if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
+  
+  AliCFDataGrid *convSourceGrid[kElecBgSources][kBgLevels];
+  AliCFDataGrid *nonHFESourceGrid[kElecBgSources][kBgLevels];
+
+  AliCFDataGrid *bgLevelGrid[kBgLevels];
+  AliCFDataGrid *bgNonHFEGrid[kBgLevels];
+  AliCFDataGrid *bgConvGrid[kBgLevels];
+
+  Int_t stepbackground = 3;
+  Int_t* bins=new Int_t[1];
+  bins[0]=fConversionEff->GetNbinsX();
+  AliCFDataGrid *weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,bins);
+  AliCFDataGrid *weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,bins);
+
+  for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+   
+    for(Int_t iSource = 0; iSource < kElecBgSources; iSource++){
+      convSourceGrid[iSource][iLevel] = new AliCFDataGrid(Form("convGrid_%d_%d",iSource,iLevel),Form("convGrid_%d_%d",iSource,iLevel),*fConvSourceContainer[iSource][iLevel],stepbackground); 
+      weightedConversionContainer->SetGrid(GetPIDxIPEff(2));
+      convSourceGrid[iSource][iLevel]->Multiply(weightedConversionContainer,1.0);
+
+      nonHFESourceGrid[iSource][iLevel] = new AliCFDataGrid(Form("nonHFEGrid_%d_%d",iSource,iLevel),Form("nonHFEGrid_%d_%d",iSource,iLevel),*fNonHFESourceContainer[iSource][iLevel],stepbackground);
+      weightedNonHFEContainer->SetGrid(GetPIDxIPEff(3));
+      nonHFESourceGrid[iSource][iLevel]->Multiply(weightedNonHFEContainer,1.0);
+    }
+
+    bgConvGrid[iLevel] = (AliCFDataGrid*)convSourceGrid[0][iLevel]->Clone();
+    for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+      bgConvGrid[iLevel]->Add(convSourceGrid[iSource][iLevel]);
+    }
+    
+    bgNonHFEGrid[iLevel] = (AliCFDataGrid*)nonHFESourceGrid[0][iLevel]->Clone(); 
+    for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){//add other sources to get overall background from all meson decays
+      bgNonHFEGrid[iLevel]->Add(nonHFESourceGrid[iSource][iLevel]);
+    }
+        
+    bgLevelGrid[iLevel] = (AliCFDataGrid*)bgConvGrid[iLevel]->Clone();
+    bgLevelGrid[iLevel]->Add(bgNonHFEGrid[iLevel]);
+  }
+  
+  //Now subtract the mean from upper, and lower from mean container to get the error based on the pion yield uncertainty (-> this error sums linearly, since its contribution to all meson yields is correlated)
+  AliCFDataGrid *bgErrorGrid[2];
+  bgErrorGrid[0] = (AliCFDataGrid*)bgLevelGrid[1]->Clone();
+  bgErrorGrid[1] = (AliCFDataGrid*)bgLevelGrid[2]->Clone();
+  bgErrorGrid[0]->Add(bgLevelGrid[0],-1.);
+  bgErrorGrid[1]->Add(bgLevelGrid[0],-1.);
+ 
+  //plot absolute differences between limit yields (upper/lower limit, based on pi0 errors) and best estimate
+  TH1D* hpiErrors[2];
+  hpiErrors[0] = (TH1D*)bgErrorGrid[0]->Project(0);
+  hpiErrors[0]->Scale(-1.);
+  hpiErrors[0]->SetTitle("Absolute systematic errors from non-HF meson decays and conversions");
+  hpiErrors[1] = (TH1D*)bgErrorGrid[1]->Project(0);
+
+  
+
+   //Calculate the scaling errors for electrons from all mesons except for pions: square sum of (0.3 * best yield estimate), where 0.3 is the error generally assumed for m_t scaling
+  TH1D *hSpeciesErrors[kElecBgSources-1];
+  for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+    hSpeciesErrors[iSource-1] = (TH1D*)convSourceGrid[iSource][0]->Project(0);
+    TH1D *hNonHFEtemp = (TH1D*)nonHFESourceGrid[iSource][0]->Project(0);
+    hSpeciesErrors[iSource-1]->Add(hNonHFEtemp);
+    hSpeciesErrors[iSource-1]->Scale(0.3);   
+  }
+
+  TH1D *hOverallSystErrLow = (TH1D*)hSpeciesErrors[0]->Clone();
+  TH1D *hOverallSystErrUp = (TH1D*)hSpeciesErrors[0]->Clone();
+  TH1D *hScalingErrors = (TH1D*)hSpeciesErrors[0]->Clone();
+
+  TH1D *hOverallBinScaledErrsUp = (TH1D*)hOverallSystErrUp->Clone();
+  TH1D *hOverallBinScaledErrsLow = (TH1D*)hOverallSystErrLow->Clone();
+
+  for(Int_t iBin = 1; iBin <= kBgPtBins; iBin++){
+    Double_t pi0basedErrLow = hpiErrors[0]->GetBinContent(iBin); 
+    Double_t pi0basedErrUp = hpiErrors[1]->GetBinContent(iBin);
+    
+    Double_t sqrsumErrs= 0;
+    for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+      Double_t scalingErr=hSpeciesErrors[iSource-1]->GetBinContent(iBin);
+      sqrsumErrs+=(scalingErr*scalingErr);
+    }
+    for(Int_t iErr = 0; iErr < 2; iErr++){
+      hpiErrors[iErr]->SetBinContent(iBin,hpiErrors[iErr]->GetBinContent(iBin)/hpiErrors[iErr]->GetBinWidth(iBin));
+    }
+    hOverallSystErrUp->SetBinContent(iBin, TMath::Sqrt((pi0basedErrUp*pi0basedErrUp)+sqrsumErrs));
+    hOverallSystErrLow->SetBinContent(iBin, TMath::Sqrt((pi0basedErrLow*pi0basedErrLow)+sqrsumErrs));
+    hScalingErrors->SetBinContent(iBin, TMath::Sqrt(sqrsumErrs)/hScalingErrors->GetBinWidth(iBin));
+
+    hOverallBinScaledErrsUp->SetBinContent(iBin,hOverallSystErrUp->GetBinContent(iBin)/hOverallBinScaledErrsUp->GetBinWidth(iBin));
+    hOverallBinScaledErrsLow->SetBinContent(iBin,hOverallSystErrLow->GetBinContent(iBin)/hOverallBinScaledErrsLow->GetBinWidth(iBin));		  
+  }
+   
+
+   // /hOverallSystErrUp->GetBinWidth(iBin))
+  
+  TCanvas *cPiErrors = new TCanvas("cPiErrors","cPiErrors",1000,600);
+  cPiErrors->cd();
+  cPiErrors->SetLogx();
+  cPiErrors->SetLogy();
+  hpiErrors[0]->Draw();
+  hpiErrors[1]->SetMarkerColor(kBlack);
+  hpiErrors[1]->SetLineColor(kBlack);
+  hpiErrors[1]->Draw("SAME");
+  hOverallBinScaledErrsUp->SetMarkerColor(kBlue);
+  hOverallBinScaledErrsUp->SetLineColor(kBlue);
+  hOverallBinScaledErrsUp->Draw("SAME");
+  hOverallBinScaledErrsLow->SetMarkerColor(kGreen);
+  hOverallBinScaledErrsLow->SetLineColor(kGreen);
+  hOverallBinScaledErrsLow->Draw("SAME");
+  hScalingErrors->SetLineColor(11);
+  hScalingErrors->Draw("SAME");
+
+  TLegend *lPiErr = new TLegend(0.6,0.6, 0.95,0.95);
+  lPiErr->AddEntry(hpiErrors[0],"Lower error from pion error");
+  lPiErr->AddEntry(hpiErrors[1],"Upper error from pion error");
+  lPiErr->AddEntry(hScalingErrors, "scaling error");
+  lPiErr->AddEntry(hOverallBinScaledErrsLow, "overall lower systematics");
+  lPiErr->AddEntry(hOverallBinScaledErrsUp, "overall upper systematics");
+  lPiErr->Draw("SAME");
+
+  //Normalize errors
+  TH1D *hUpSystScaled = (TH1D*)hOverallSystErrUp->Clone();
+  TH1D *hLowSystScaled = (TH1D*)hOverallSystErrLow->Clone();
+  hUpSystScaled->Scale(evtnorm[0]);//scale by N(data)/N(MC), to make data sets comparable to saved subtracted spectrum (calculations in separate macro!)
+  hLowSystScaled->Scale(evtnorm[0]);
+  TH1D *hNormAllSystErrUp = (TH1D*)hUpSystScaled->Clone();
+  TH1D *hNormAllSystErrLow = (TH1D*)hLowSystScaled->Clone();
+  //histograms to be normalized to TGraphErrors
+  CorrectFromTheWidth(hNormAllSystErrUp);
+  CorrectFromTheWidth(hNormAllSystErrLow);
+
+  TCanvas *cNormOvErrs = new TCanvas("cNormOvErrs","cNormOvErrs");
+  cNormOvErrs->cd();
+  cNormOvErrs->SetLogx();
+  cNormOvErrs->SetLogy();
+
+  TGraphErrors* gOverallSystErrUp = NormalizeTH1(hNormAllSystErrUp);
+  TGraphErrors* gOverallSystErrLow = NormalizeTH1(hNormAllSystErrLow);
+  gOverallSystErrUp->SetTitle("Overall Systematic non-HFE Errors");
+  gOverallSystErrUp->SetMarkerColor(kBlack);
+  gOverallSystErrUp->SetLineColor(kBlack);
+  gOverallSystErrLow->SetMarkerColor(kRed);
+  gOverallSystErrLow->SetLineColor(kRed);
+  gOverallSystErrUp->Draw("AP");
+  gOverallSystErrLow->Draw("PSAME");
+  TLegend *lAllSys = new TLegend(0.4,0.6,0.89,0.89);
+  lAllSys->AddEntry(gOverallSystErrLow,"lower","p");
+  lAllSys->AddEntry(gOverallSystErrUp,"upper","p");
+  lAllSys->Draw("same");
+
+
+  AliCFDataGrid *bgYieldGrid;
+  bgYieldGrid = (AliCFDataGrid*)bgLevelGrid[0]->Clone();
+
+  TH1D *hBgYield = (TH1D*)bgYieldGrid->Project(0);
+  TH1D* hRelErrUp = (TH1D*)hOverallSystErrUp->Clone();
+  hRelErrUp->Divide(hBgYield);
+  TH1D* hRelErrLow = (TH1D*)hOverallSystErrLow->Clone();
+  hRelErrLow->Divide(hBgYield);
+
+  TCanvas *cRelErrs = new TCanvas("cRelErrs","cRelErrs");
+  cRelErrs->cd();
+  cRelErrs->SetLogx();
+  hRelErrUp->SetTitle("Relative error of non-HFE background yield");
+  hRelErrUp->Draw();
+  hRelErrLow->SetLineColor(kBlack);
+  hRelErrLow->Draw("SAME");
+
+  TLegend *lRel = new TLegend(0.6,0.6,0.95,0.95);
+  lRel->AddEntry(hRelErrUp, "upper");
+  lRel->AddEntry(hRelErrLow, "lower");
+  lRel->Draw("SAME");
+
+  //CorrectFromTheWidth(hBgYield);
+  //hBgYield->Scale(evtnorm[0]);
+ 
+ 
+  //write histograms/TGraphs to file
+  TFile *output = new TFile("systHists.root","recreate");
+
+  hBgYield->SetName("hBgYield");  
+  hBgYield->Write();
+  hRelErrUp->SetName("hRelErrUp");
+  hRelErrUp->Write();
+  hRelErrLow->SetName("hRelErrLow");
+  hRelErrLow->Write();
+  hUpSystScaled->SetName("hOverallSystErrUp");
+  hUpSystScaled->Write();
+  hLowSystScaled->SetName("hOverallSystErrLow");
+  hLowSystScaled->Write();
+  gOverallSystErrUp->SetName("gOverallSystErrUp");
+  gOverallSystErrUp->Write();
+  gOverallSystErrLow->SetName("gOverallSystErrLow");
+  gOverallSystErrLow->Write(); 
+
+  output->Close(); 
+  delete output;  
 }

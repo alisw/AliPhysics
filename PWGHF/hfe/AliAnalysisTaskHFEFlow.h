@@ -31,6 +31,8 @@ class AliHFEcuts;
 class AliHFEpid;
 class TH1D;
 class TH2D;
+class TProfile;
+class TProfile2D;
 class THnSparse;
 class AliHFEpidQAmanager;
 class AliFlowEvent;
@@ -50,7 +52,12 @@ public:
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
   void SetSubEtaGapTPC(Bool_t  subEtaGapTPC) { fSubEtaGapTPC = subEtaGapTPC; };
   void SetEtaGap(Double_t  etaGap) { fEtaGap = etaGap; };
+  void SetVZEROEventPlane(Bool_t vzeroEventPlane) { fVZEROEventPlane = vzeroEventPlane; };
+  void SetVZEROEventPlaneA(Bool_t vzeroEventPlaneA) { fVZEROEventPlaneA = vzeroEventPlaneA; };
+  void SetVZEROEventPlaneC(Bool_t vzeroEventPlaneC) { fVZEROEventPlaneC = vzeroEventPlaneC; };
 
+  void SetNbBinsCentralityQCumulant(Int_t nbBinsCentralityQCumulant) { fNbBinsCentralityQCumulant = nbBinsCentralityQCumulant; };
+  void SetBinCentralityLess(Int_t k, Float_t value)  { fBinCentralityLess[k] = value; };
   void SetNbBinsPtQCumulant(Int_t nbBinsPtQCumulant) { fNbBinsPtQCumulant = nbBinsPtQCumulant; };
   void SetMinPtQCumulant(Double_t minPtQCumulant) { fMinPtQCumulant = minPtQCumulant; };
   void SetMaxPtQCumulant(Double_t maxPtQCumulant) { fMaxPtQCumulant = maxPtQCumulant; };
@@ -63,6 +70,10 @@ public:
   void SetUseMCReactionPlane(Bool_t useMCReactionPlane) { fUseMCReactionPlane = useMCReactionPlane;};
   void SetMCPID(Bool_t mcPID) { fMCPID = mcPID;};
 
+  void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel;};
+
+  Int_t GetNbBinsCentralityQCumulant() const { return  fNbBinsCentralityQCumulant; };
+  Double_t GetBinCentralityLess(Int_t k) const { return fBinCentralityLess[k]; };
   
   AliFlowCandidateTrack *MakeTrack( Double_t mass, Double_t pt, Double_t phi, Double_t eta) ;
   Double_t GetPhiAfterAddV2(Double_t phi,Double_t reactionPlaneAngle) const;
@@ -70,13 +81,19 @@ public:
 private:
   TList       *fListHist;  //TH list
 
-  Bool_t  fSubEtaGapTPC;  // bool to fill with eta gap
-  Double_t fEtaGap;       // Value of the eta gap
+  Bool_t    fVZEROEventPlane; // Use Event Planes from VZERO
+  Bool_t    fVZEROEventPlaneA; // Use Event Planes from VZERO A
+  Bool_t    fVZEROEventPlaneC; // Use Event Planes from VZERO C
 
-  Int_t   fNbBinsPtQCumulant; // Nbbinspt QCumulant method
-  Double_t fMinPtQCumulant;   // Min pt QCumulant method
-  Double_t fMaxPtQCumulant;   // Max pt QCumulant method
-  Bool_t   fAfterBurnerOn;    // Add flow to all tracks
+  Bool_t    fSubEtaGapTPC;  // bool to fill with eta gap
+  Double_t  fEtaGap;       // Value of the eta gap
+
+  Int_t     fNbBinsCentralityQCumulant;  // Number of Bins Q Cumulant
+  Double_t  fBinCentralityLess[10]; // Centrality Bin lower value
+  Int_t     fNbBinsPtQCumulant; // Nbbinspt QCumulant method
+  Double_t  fMinPtQCumulant;   // Min pt QCumulant method
+  Double_t  fMaxPtQCumulant;   // Max pt QCumulant method
+  Bool_t    fAfterBurnerOn;    // Add flow to all tracks
   Int_t     fNonFlowNumberOfTrackClones; // number of times to clone the particles (nonflow) 
   Double_t  fV1;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV2;        // Add Flow. Must be in range [0,0.5].
@@ -88,7 +105,8 @@ private:
   Bool_t    fUseMCReactionPlane; // use MC reaction plane
 
   Bool_t    fMCPID; // MC PID for electrons
-  
+
+  Int_t     fDebugLevel; // Debug Level  
 
   // Cuts for FLOW PWG2
   AliFlowTrackCuts* fcutsRP;  // Reference particle cut
@@ -104,29 +122,40 @@ private:
   // Histos
   TH2D *fHistEV;               // Number of events
   
-  // A Event plane as function of phiep, centrality 
+  // A Event plane as function of phiepa, phiepb, phiepc, phiepd centrality 
+  // a V0A, b V0C, c TPC, d V0
   THnSparseF *fEventPlane;     // Event plane
   
   // B Event Plane after subtraction as function of phiep, centrality 
   THnSparseF *fEventPlaneaftersubtraction; // Event plane
 
+  // Monitoring Event plane: cos2phi, sin2phi, centrality
+  THnSparseF *fCosSin2phiep;        // Cos(2phi), Sin(2phi)
+  
   // E Monitoring Event plane after subtraction of the track: cos, centrality, pt, eta
   THnSparseF *fCos2phie;  // Monitoring
   THnSparseF *fSin2phie;  // Monitoring
   THnSparseF *fCos2phiep;  // Monitoring
   THnSparseF *fSin2phiep;  // Monitoring
   THnSparseF *fSin2phiephiep;  // Monitoring
+
+  // Fbis Resolution as function of cosres, cosres, cosres, centrality for three subevents (V0)
+  // a V0A, b V0C, c TPC
+  THnSparseF *fCosResabc; // Res
+  TProfile   *fProfileCosResab; // Profile Res_a_b
+  TProfile   *fProfileCosResac; // Profile Res_a_c
+  TProfile   *fProfileCosResbc; // Profile Res_b_c
   
-  // F Resolution as function of cosres, centrality 
+  // F Resolution as function of cosres, centrality for two subevents (TPC)
   THnSparseF *fCosRes; // Res
+  TProfile   *fProfileCosRes; // Profile Res
   
   // G Maps delta phi as function of deltaphi, centrality, pt
   THnSparseF *fDeltaPhiMaps; // Delta phi
   
   // H Maps cos phi : cos, centrality, pt
-  THnSparseF *fCosPhiMaps;  //Cos
-
-         
+  THnSparseF *fCosPhiMaps;         //Cos
+  TProfile2D *fProfileCosPhiMaps;  // Profile Cos
   
   
   AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow&); // not implemented

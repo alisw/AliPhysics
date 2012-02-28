@@ -13,6 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 //
+//
 // The analysis task:
 // Filling an AliCFContainer with the quantities pt, eta and phi
 // for tracks which survivied the particle cuts (MC resp. ESD tracks)
@@ -65,8 +66,6 @@
 #include "AliStack.h"
 #include "AliTriggerAnalysis.h"
 #include "AliVVertex.h"
-#include "TTreeStream.h"
-#include "AliESDtrackCuts.h"
 
 #include "AliHFEcollection.h"
 #include "AliHFEcontainer.h"
@@ -132,8 +131,6 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(NULL)
-  , fDebugLevel(0)
-  , fTreeStream(NULL)
 {
   //
   // Dummy constructor
@@ -189,8 +186,6 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(0x0)
-  , fDebugLevel(0)
-  , fTreeStream(NULL)
 {
   //
   // Default constructor
@@ -253,8 +248,6 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(NULL)
-  , fDebugLevel(ref.fDebugLevel)
-  , fTreeStream(NULL)
 {
   //
   // Copy Constructor
@@ -320,8 +313,6 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fHistSECVTX = fHistSECVTX;
   target.fHistELECBACKGROUND = fHistELECBACKGROUND;
   target.fQACollection = fQACollection;
-  target.fDebugLevel = fDebugLevel;
-  target.fTreeStream = fTreeStream;
 }
 
 //____________________________________________________________
@@ -345,7 +336,6 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
     if(fPIDqa) delete fPIDqa;
     if(fOutput) delete fOutput;
     if(fQA) delete fQA;
-    if(fTreeStream) delete fTreeStream;
   }
 }
 
@@ -391,6 +381,8 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
+  fQACollection->CreateTH2F("TPCdEdxBeforePID", "TPC dE/dx; p (GeV/c); TPC dE/dx (a.u.)", 1000, 0., 10., 200, 0., 200.); 
+  fQACollection->CreateTH2F("TPCnSigmaBeforePID", "TPC dE/dx; p (GeV/c); TPC dE/dx - <TPC dE/dx>|_{el} (#sigma)", 1000, 0., 10., 1000, -10., 10.);
  
   InitPIDperformanceQA();
   InitContaminationQA();
@@ -441,7 +433,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     if(IsPbPb()) fMCQA->SetPbPb();
     if(fisppMultiBin) fMCQA->SetPPMultiBin();
     fMCQA->CreatDefaultHistograms(fHistMCQA);
-    if(!fFillSignalOnly) fMCQA->SetBackgroundWeightFactor(fElecBackgroundFactor[0][0][0],fBinLimit);
+    fMCQA->SetBackgroundWeightFactor(fElecBackgroundFactor[0][0][0],fBinLimit);
     fQA->Add(fHistMCQA);
   } 
 
@@ -505,12 +497,6 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fQA->Add(fTaggedTrackAnalysis->GetPIDQA());
     fQA->Add(fTaggedTrackAnalysis->GetCutQA());
     fQA->Add(fTaggedTrackAnalysis->GetQAcollection());
-  }
-
-  Bool_t isProof = AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis;
-  if(fDebugLevel && !isProof){
-    AliDebug(1,"Create OutputStream");
-    fTreeStream = new TTreeSRedirector(Form("HFEdebugTree%s.root", GetName()));
   }
 
   PrintStatus();
@@ -931,75 +917,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(track->GetKinkIndex(0) != 0) continue; } // Quick and dirty fix to reject both kink mothers and daughters
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
 
-    if(fTreeStream && fDebugLevel >= 2){
-      // Debug streaming of PID-related quantities
-      Double_t nSigmaTOF = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-      Double_t nSigmaTPC = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-      if(TMath::Abs(nSigmaTOF) < 5 && TMath::Abs(nSigmaTPC) < 5){
-        // we are not interested in tracks which are more than 5 sigma away from the electron hypothesis in either TOF or TPC
-        Double_t charge = track->Charge() > 0 ? 1. : -1.;
-        Char_t myv0pid = v0pid;
-        Double_t momentum = track->P() * charge;
-        Double_t transversemomentum = track->Pt() * charge;
-        Int_t run = fInputEvent->GetRunNumber();
-        Double_t eta = track->Eta();
-        Double_t phi = track->Phi();
-        UChar_t ntracklets = track->GetTRDntrackletsPID();
-        UChar_t nclustersTPCPID = track->GetTPCsignalN();
-        UChar_t nclustersTPCshared = 0;
-        const TBits &sharedTPC = track->GetTPCSharedMap();
-        for(Int_t ibit = 0; ibit < 160; ibit++) if(sharedTPC.TestBitNumber(ibit)) nclustersTPCshared++;
-        UChar_t nclustersTPC = track->GetTPCncls();
-        UChar_t nclustersITS = track->GetITSclusters(NULL);
-        UChar_t nclustersTRD = track->GetTRDncls();
-        UChar_t hasClusterITS[6], hasTrackletTRD[6];
-        UChar_t itsPixel = track->GetITSClusterMap();
-        for(Int_t icl = 0; icl < 6; icl++) hasClusterITS[icl] = TESTBIT(itsPixel, icl) ? 1 : 0;
-        for(Int_t itl = 0; itl < 6; itl++){
-          Int_t nSliceNonZero = 0;
-          for(Int_t islice = 0; islice < 8; islice++){
-            if(track->GetTRDslice(itl, islice) > 0.001) nSliceNonZero++;
-          }
-          hasTrackletTRD[itl] = nSliceNonZero ? 1 : 0;
-        }
-        Double_t pidprobs[5];
-        track->GetTRDpid(pidprobs);
-        Double_t likeEleTRD = pidprobs[0];
-        Double_t likeEleTRDn = likeEleTRD/(likeEleTRD + pidprobs[2]);
-        (*fTreeStream) << "PIDdebug"
-              << "signal="              << signal
-              << "v0pid="               << myv0pid
-              << "run="                 << run
-              << "p="                   << momentum
-              << "pt="                  << transversemomentum
-              << "eta="                 << eta
-              << "phi="                 << phi
-              << "ntracklets="          << ntracklets
-              << "nclustersTPC="        << nclustersTPC
-              << "nclustersTPCPID="     << nclustersTPCPID
-              << "nclustersTPCshared="  << nclustersTPCshared
-              << "nclustersITS="        << nclustersITS
-              << "nclusters="           << nclustersTRD
-              << "its0="                << hasClusterITS[0]
-              << "its1="                << hasClusterITS[1]
-              << "its2="                << hasClusterITS[2]
-              << "its3="                << hasClusterITS[3]
-              << "its4="                << hasClusterITS[4]
-              << "its5="                << hasClusterITS[5]
-              << "trd0="                << hasTrackletTRD[0]
-              << "trd1="                << hasTrackletTRD[1]
-              << "trd2="                << hasTrackletTRD[2]
-              << "trd3="                << hasTrackletTRD[3]
-              << "trd4="                << hasTrackletTRD[4]
-              << "trd5="                << hasTrackletTRD[5]
-              << "TOFsigmaEl="          << nSigmaTOF
-              << "TPCsigmaEl="          << nSigmaTPC
-              << "TRDlikeEl="           << likeEleTRD
-              << "TRDlikeEln="          << likeEleTRDn
-              << "\n";
-      }
-    }
-
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
   
@@ -1057,7 +974,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
         }
       }
     }
-    
+
+    if(TMath::Abs(track->Eta()) < 0.5){
+      fQACollection->Fill("TPCdEdxBeforePID", track->P(), track->GetTPCsignal());
+      fQACollection->Fill("TPCnSigmaBeforePID", track->P(), fInputHandler->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron));
+    }
+
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
     hfetrack.SetRecTrack(track);
@@ -1072,17 +994,25 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // Temporary histogram for chi2/ITS cluster
     if(IsPbPb()) {
             TBits shared = track->GetTPCSharedMap();
-          Int_t sharebit=0;
+	    Int_t sharebit=0;
             if(shared.CountBits() >= 2) sharebit=1;
 
+	    Double_t itschi2percluster = 0.0;
+	    Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
+	    if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
+
             Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
-            fCentralityF,track->GetTPCsignalN(), sharebit,
-            track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0))};
+				   fCentralityF,track->GetTPCsignalN(), sharebit, itschi2percluster};
             fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
     else{
-            Double_t itsChi2[3] = {track->Pt(), fCentralityF, track->GetITSchi2()/static_cast<Double_t>(track->GetNcls(0))};
-            fQACollection->Fill("fChi2perITScluster", itsChi2);
+      
+      Double_t itschi2percluster = 0.0;
+      Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
+      if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
+
+      Double_t itsChi2[3] = {track->Pt(), fCentralityF, itschi2percluster};
+      fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
 
     // Fill Histogram for Hadronic Background
@@ -1177,63 +1107,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
     } // end of electron background analysis
 
 
-    // high dca track study [for temporary] ---------
-    if (fTreeStream && fDebugLevel >= 1){
-      Float_t b[2] = {0.,0.};
-      Float_t bCov[3] = {0.,0.,0.};
-      track->GetImpactParameters(b,bCov);
-      Double_t dataD[11];
-      dataD[0] = b[0]; // impact parameter xy
-      dataD[1] = b[1]; // impact parameter z
-      dataD[2] = TMath::Sqrt(b[0]*b[0]+b[1]*b[1]); // impact parameter space
-      dataD[3]=0; dataD[4]=0;
-      if(bCov[0]>0) dataD[3] = b[0]/TMath::Sqrt(bCov[0]); // normalised impact parameter xy
-      if(bCov[2]>0) dataD[4] = b[1]/TMath::Sqrt(bCov[2]); // normalised impact parameter z
-      dataD[5] = AliESDtrackCuts::GetSigmaToVertex(track); // n_sigma
-      dataD[6] = track->GetTPCclusters(0x0);
-      dataD[7] = track->GetITSclusters(0x0);
-      dataD[8] = track->Eta();
-      dataD[9] = track->Pt();
-      Double_t p = track->GetP();
-      Double_t phi = track->Phi();
-      if(HasMCData()){
-        if(fSignalCuts->IsCharmElectron(track)) dataD[10] = 0;
-        else if(fSignalCuts->IsBeautyElectron(track)) dataD[10] = 1;
-        else if(fSignalCuts->IsGammaElectron(track)) dataD[10] = 2;
-        else if(fSignalCuts->IsNonHFElectron(track)) dataD[10] = 3;
-        else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)) dataD[10] = 4;
-        else dataD[10] = 5;
-      } 
-      Double_t vtx[3];
-      fInputEvent->GetPrimaryVertex()->GetXYZ(vtx);
-      Double_t nt = fInputEvent->GetPrimaryVertex()->GetNContributors();
-      Double_t nSigmaTPC = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-      Double_t runn = (Double_t)fInputEvent->GetRunNumber();
-
-      //printf("%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",dataD[0],dataD[1],dataD[2],dataD[3],dataD[4],dataD[5],dataD[6],dataD[7],dataD[8],dataD[9]);
-      (*fTreeStream)<<"dcaQA"<<
-        "dcaR="<<dataD[0]<<
-        "dcaZ="<<dataD[1]<<
-        "dca="<<dataD[2]<<
-        "dcaSR="<<dataD[3]<<
-        "dcaSZ="<<dataD[4]<<
-        "dcaS="<<dataD[5]<<
-        "nTPCclus="<<dataD[6]<<
-        "nITSclus="<<dataD[7]<<
-        "eta="<<dataD[8]<<
-        "pt="<<dataD[9]<<
-              "p="<< p <<
-              "phi="<< phi <<
-        "source="<<dataD[10] <<
-        "vx=" << vtx[0] <<
-        "vy=" << vtx[1] <<
-        "vz=" << vtx[2] << 
-              "nt=" << nt <<
-        "TPCnSigma=" << nSigmaTPC <<
-              "run=" << runn
-        << "\n";
-    }
-    //-------------------------------------------
 
     if (GetPlugin(kDEstep)) { 
       Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.,};
@@ -1268,7 +1141,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
           fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
           fQACollection->Fill("hadronsBeforeIPcutMC",mctrack->Pt());
         }
-        if(fMCQA && !fFillSignalOnly) {
+        if(fMCQA) {
           
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
             weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
@@ -1295,15 +1168,19 @@ void AliAnalysisTaskHFE::ProcessESD(){
             }
           }
           //else{
-            if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 0, kFALSE, weightElecBgV0[0]);
-            else if(weightElecBgV0[0]<0) fVarManager->FillContainer(fContainer, "mesonElecs", 0, kFALSE, -1*weightElecBgV0[0]);
-            //}
+          if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 0, kFALSE, weightElecBgV0[0]);
+          else if(weightElecBgV0[0]<0) fVarManager->FillContainer(fContainer, "mesonElecs", 0, kFALSE, -1*weightElecBgV0[0]);
+          //}
+          if(bTagged){ // bg estimation for the secondary vertex tagged signals
+            if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 2, kFALSE, weightElecBgV0[0]);
+            else if(weightElecBgV0[0]<0) fVarManager->FillContainer(fContainer, "mesonElecs", 2, kFALSE, -1*weightElecBgV0[0]);
+          }
         }
       }
       // Fill Containers for impact parameter analysis
       if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsDca + AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack,track)) continue;
       if(HasMCData()){
-        if(fMCQA && !fFillSignalOnly) {
+        if(fMCQA) {
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
             weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
             if(!fisNonHFEsystematics)break;        
@@ -1487,7 +1364,7 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
   signalContainer[2] = track->Phi();
   signalContainer[3] = track->Charge()/3;
 
- Double_t vertex[3]; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
+  Double_t vertex[3] = {0.,0.,0.}; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
   if(IsESDanalysis()){
     AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(track);
     if(mctrack){
@@ -1642,6 +1519,8 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
   if(HasMCData()){
     fContainer->CreateContainer("conversionElecs", "Container for weighted conversion electrons",4);
     fContainer->CreateContainer("mesonElecs", "Container for weighted electrons from meson decays",4);
+    fContainer->Sumw2("conversionElecs");
+    fContainer->Sumw2("mesonElecs");
    
     if(fisNonHFEsystematics){
       const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
@@ -1650,6 +1529,8 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
         for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
           fContainer->CreateContainer(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]), Form("Container for weighted conversion electrons from %s grandm., %s level",sourceName[iSource],levelName[iLevel]),4);
           fContainer->CreateContainer(Form("mesonElecs%s%s",sourceName[iSource],levelName[iLevel]), Form("Container for weighted electrons from %s decays, %s level",sourceName[iSource],levelName[iLevel]),4);
+          fContainer->Sumw2(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]));
+          fContainer->Sumw2(Form("mesonElecs%s%s",sourceName[iSource],levelName[iLevel]));
         }
       }
     }

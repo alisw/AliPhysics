@@ -7,7 +7,7 @@
  * density calculations 
  *
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 
 #ifndef __CINT__
@@ -35,7 +35,7 @@ class TLatex;
  * @param c2   Second string 
  *
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void 
 DrawText(TLatex* l, Double_t x, Double_t& y, const char* c1, const char* c2)
@@ -54,7 +54,7 @@ DrawText(TLatex* l, Double_t x, Double_t& y, const char* c1, const char* c2)
  * @param r      Ring 
  *
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
@@ -157,7 +157,7 @@ DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
  * @param folder   Input folder name in file 
  *
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawRecAnaEloss(const char* filename="forward.root",

@@ -53,30 +53,6 @@ void makeInputAliAnalysisTaskSEDsPP(){
     
     const Int_t nvars=16;
     
-    Float_t** prodcutsval;
-    prodcutsval=new Float_t*[nvars];
-    for(Int_t ic=0;ic<nvars;ic++){prodcutsval[ic]=new Float_t[nptbins];}  
-    for(Int_t ipt=0;ipt<nptbins;ipt++){
-      prodcutsval[0][ipt]=0.35;
-      prodcutsval[1][ipt]=0.3;
-      prodcutsval[2][ipt]=0.3;
-      prodcutsval[3][ipt]=0.;
-      prodcutsval[4][ipt]=0.;
-      prodcutsval[5][ipt]=0.005;
-      prodcutsval[6][ipt]=0.06;
-      prodcutsval[7][ipt]=0.0;
-      prodcutsval[8][ipt]=0.;
-      prodcutsval[9][ipt]=0.7;
-      prodcutsval[10][ipt]=0.;
-      prodcutsval[11][ipt]=1000.0;
-      prodcutsval[12][ipt]=0.1;
-      prodcutsval[13][ipt]=0.1;
-      prodcutsval[14][ipt]=0.;
-      prodcutsval[15][ipt]=1.;
-      
-    }
-    
-    
     Float_t** anacutsval;
     anacutsval=new Float_t*[nvars];
   
@@ -126,11 +102,6 @@ void makeInputAliAnalysisTaskSEDsPP(){
 	15  		"CosPiDsLabFrame"};
     */
  
-    AliRDHFCutsDstoKKpi *prodcuts = new AliRDHFCutsDstoKKpi();
-    prodcuts->SetName("ProdCuts");
-    prodcuts->SetPtBins(nptbins+1,ptbins);
-    prodcuts->SetCuts(nvars,nptbins,prodcutsval);
-    
     
     AliRDHFCutsDstoKKpi* analysiscuts=new AliRDHFCutsDstoKKpi();
     analysiscuts->SetName("AnalysisCuts");
@@ -147,7 +118,6 @@ void makeInputAliAnalysisTaskSEDsPP(){
     analysiscuts->PrintAll();
     TFile* fout=new TFile("DstoKKpiCuts.root","recreate");   
     fout->cd();
-    prodcuts->Write();
     analysiscuts->Write();
     fout->Close();
     
@@ -186,30 +156,6 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
     
     const Int_t nvars=16;
     
-    Float_t** prodcutsval;
-    prodcutsval=new Float_t*[nvars];
-    for(Int_t ic=0;ic<nvars;ic++){prodcutsval[ic]=new Float_t[nptbins];}  
-    for(Int_t ipt=0;ipt<nptbins;ipt++){
-      prodcutsval[0][ipt]=0.35;
-      prodcutsval[1][ipt]=0.3;
-      prodcutsval[2][ipt]=0.3;
-      prodcutsval[3][ipt]=0.;
-      prodcutsval[4][ipt]=0.;
-      prodcutsval[5][ipt]=0.005;
-      prodcutsval[6][ipt]=0.06;
-      prodcutsval[7][ipt]=0.0;
-      prodcutsval[8][ipt]=0.;
-      prodcutsval[9][ipt]=0.90;
-      prodcutsval[10][ipt]=0.;
-      prodcutsval[11][ipt]=1000.0;
-      prodcutsval[12][ipt]=0.1;
-      prodcutsval[13][ipt]=0.1;
-      prodcutsval[14][ipt]=0.;
-      prodcutsval[15][ipt]=1.;
-      
-    }
-    
-    
     Float_t** anacutsval;
     anacutsval=new Float_t*[nvars];
   
@@ -225,10 +171,10 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
       anacutsval[6][ipt]=0.06;
       anacutsval[7][ipt]=0.0;
       anacutsval[8][ipt]=0.;
-      anacutsval[9][ipt]=0.90;
+      anacutsval[9][ipt]=0.7;
       anacutsval[10][ipt]=0.;
       anacutsval[11][ipt]=1000.0;
-      anacutsval[12][ipt]=0.015;
+      anacutsval[12][ipt]=0.1;
       anacutsval[13][ipt]=0.1;
       anacutsval[14][ipt]=0.;
       anacutsval[15][ipt]=1.;
@@ -258,11 +204,6 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
     14    		"Abs(CosineKpiPhiRFrame)^3",
 	15  		"CosPiDsLabFrame"};
     */
- 
-    AliRDHFCutsDstoKKpi *prodcuts = new AliRDHFCutsDstoKKpi();
-    prodcuts->SetName("ProdCuts");
-    prodcuts->SetPtBins(nptbins+1,ptbins);
-    prodcuts->SetCuts(nvars,nptbins,prodcutsval);
     
     AliRDHFCutsDstoKKpi* analysiscuts=new AliRDHFCutsDstoKKpi();
     analysiscuts->SetName("AnalysisCuts");
@@ -276,7 +217,7 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
     Float_t maxcen=40.;
     
     analysiscuts->SetUsePID(kTRUE);
-    analysiscuts->SetPidOption(1);
+    analysiscuts->SetPidOption(0);
     //analysiscuts->SetUseImpParProdCorrCut(kFALSE);
     analysiscuts->SetOptPileup(kFALSE);
     //analysiscuts->SetUseAOD049(kTRUE);
@@ -293,7 +234,6 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
     analysiscuts->PrintAll();
     TFile* fout=new TFile("DstoKKpiCuts.root","recreate");   
     fout->cd();
-    prodcuts->Write();
     analysiscuts->Write();
     fout->Close();
     

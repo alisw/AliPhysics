@@ -45,16 +45,15 @@ class AliJetCalTrkTrack : public TObject
   Float_t         GetPtCorr() const      {return fCalTrkPtCorr;}
   Float_t         GetEta() const         {return GetParticle()->Eta();}
   Float_t         GetPhi() const         {return GetParticle()->Phi();}
-  virtual Float_t GetE()                 {return GetParticle()->E();}
-  virtual Float_t GetPt()                {return GetParticle()->Pt();}
-  virtual Float_t GetPx()                {return GetParticle()->Px();}
-  virtual Float_t GetPy()                {return GetParticle()->Py();}
-  virtual Float_t GetPz()                {return GetParticle()->Pz();}
-  virtual Float_t GetP()                 {return GetParticle()->P();}
+  virtual Float_t GetE() const           {return GetParticle()->E();}
+  virtual Float_t GetPt() const          {return GetParticle()->Pt();}
+  virtual Float_t GetPx() const          {return GetParticle()->Px();}
+  virtual Float_t GetPy() const          {return GetParticle()->Py();}
+  virtual Float_t GetPz() const          {return GetParticle()->Pz();}
+  virtual Float_t GetP() const           {return GetParticle()->P();}
   Int_t           GetID() const          {return GetTrack()->GetID();}
   Float_t         GetM() const           {return GetParticle()->M();}
-  using           TObject::Print;
-  void            Print(const Option_t* option);
+  void            Print(const Option_t* /*option*/) const;
 
   virtual void    Clear(Option_t* /*option = ""*/);
 
@@ -80,12 +79,18 @@ class AliJetCalTrkTrackKine : public AliJetCalTrkTrack
   virtual  ~AliJetCalTrkTrackKine() {;}
 
   Float_t        GetPtReso() const {return fCalTrkPtReso;}
-  Float_t        GetE();
-  Float_t        GetPt();
-  Float_t        GetPx() {return GetPtReso()*GetParticle()->Px();}
-  Float_t        GetPy() {return GetPtReso()*GetParticle()->Py();}
-  Float_t        GetPz() {return GetPtReso()*GetParticle()->Pz();}
-  Float_t        GetP();
+  Float_t        GetE()  const {return fCalTrkTrackE;}
+  Float_t        GetPt() const {return fCalTrkTrackPt;}
+  Float_t        GetPx() const {return fCalTrkTrackPx;}
+  Float_t        GetPy() const {return fCalTrkTrackPy;}
+  Float_t        GetPz() const {return fCalTrkTrackPz;}
+  Float_t        GetP()  const {return fCalTrkTrackP;}
+  Float_t        CalcPx() {fCalTrkTrackPx = GetPtReso()*GetParticle()->Px(); return fCalTrkTrackPx;}
+  Float_t        CalcPy() {fCalTrkTrackPy = GetPtReso()*GetParticle()->Py(); return fCalTrkTrackPy;}
+  Float_t        CalcPz() {fCalTrkTrackPz = GetPtReso()*GetParticle()->Pz(); return fCalTrkTrackPz;}
+  Float_t        CalcP();
+  Float_t        CalcPt();
+  Float_t        CalcE();
   void           Clear(Option_t* option = "");
 
  private:
@@ -93,6 +98,9 @@ class AliJetCalTrkTrackKine : public AliJetCalTrkTrack
   Float_t        fCalTrkTrackE;       // Particle energy
   Float_t        fCalTrkTrackPt;      // Particle Pt
   Float_t        fCalTrkTrackP;       // Particle P
+  Float_t        fCalTrkTrackPx;      // Particle Px
+  Float_t        fCalTrkTrackPy;      // Particle Py
+  Float_t        fCalTrkTrackPz;      // Particle Pz
 
   ClassDef(AliJetCalTrkTrackKine,1) // Implementation of AliJetCalTrkTrackKine
 };
@@ -113,7 +121,7 @@ class AliJetCalTrkEvent : public TObject
   Int_t                  GetNCalTrkTracks() const {return fNJetCalTrkTrack;}
 
   void                   Clear(Option_t* option = ""); 
-  void                   Print(const Option_t* /*option*/) const;
+  void                   Print(const Option_t* = "") const;
   
  private:
   AliJetCalTrkEvent& operator = (const AliJetCalTrkEvent& rhs);

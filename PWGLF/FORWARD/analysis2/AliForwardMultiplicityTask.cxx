@@ -34,12 +34,14 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
     fESDFMD(),
     fHistos(),
     fAODFMD(),
+    fAODEP(),
     fRingSums(),
     fEventInspector(),
     fSharingFilter(),
     fDensityCalculator(),
     fCorrections(),
     fHistCollector(),
+    fEventPlaneFinder(),
     fList(0)
 {
   // 
@@ -54,12 +56,14 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
     fESDFMD(),
     fHistos(),
     fAODFMD(false),
+    fAODEP(false),
     fRingSums(),
     fEventInspector("event"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
     fCorrections("corrections"),
     fHistCollector("collector"),
+    fEventPlaneFinder("eventplane"),
     fList(0)
 {
   // 
@@ -78,12 +82,14 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
     fESDFMD(o.fESDFMD),
     fHistos(o.fHistos),
     fAODFMD(o.fAODFMD),
+    fAODEP(o.fAODEP),
     fRingSums(o.fRingSums),
     fEventInspector(o.fEventInspector),
     fSharingFilter(o.fSharingFilter),
     fDensityCalculator(o.fDensityCalculator),
     fCorrections(o.fCorrections),
     fHistCollector(o.fHistCollector),
+    fEventPlaneFinder(o.fEventPlaneFinder),
     fList(o.fList) 
 {
   // 
@@ -117,8 +123,10 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
   fDensityCalculator = o.fDensityCalculator;
   fCorrections       = o.fCorrections;
   fHistCollector     = o.fHistCollector;
+  fEventPlaneFinder  = o.fEventPlaneFinder;
   fHistos            = o.fHistos;
   fAODFMD            = o.fAODFMD;
+  fAODEP             = o.fAODEP;
   fRingSums          = o.fRingSums;
   fList              = o.fList;
 
@@ -140,6 +148,7 @@ AliForwardMultiplicityTask::SetDebug(Int_t dbg)
   fDensityCalculator.SetDebug(dbg);
   fCorrections.SetDebug(dbg);
   fHistCollector.SetDebug(dbg);
+  fEventPlaneFinder.SetDebug(dbg);
 }
 
 //____________________________________________________________________
@@ -157,6 +166,7 @@ AliForwardMultiplicityTask::InitializeSubs()
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
+  fAODEP.Init(*pe);
   fRingSums.Init(*pe);
 
   fHData = static_cast<TH2D*>(fAODFMD.GetHistogram().Clone("d2Ndetadphi"));
@@ -185,6 +195,7 @@ AliForwardMultiplicityTask::InitializeSubs()
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
   fHistCollector.Init(*pv,*pe);
+  fEventPlaneFinder.Init(*pe);
 
   this->Print();
 }
@@ -208,12 +219,15 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
     
   TObject* obj = &fAODFMD;
   ah->AddBranch("AliAODForwardMult", &obj);
+  TObject* epobj = &fAODEP;
+  ah->AddBranch("AliAODForwardEP", &epobj);
 
   fEventInspector.DefineOutput(fList);
   fSharingFilter.DefineOutput(fList);
   fDensityCalculator.DefineOutput(fList);
   fCorrections.DefineOutput(fList);
   fHistCollector.DefineOutput(fList);
+  fEventPlaneFinder.DefineOutput(fList);
 
   PostData(1, fList);
 }
@@ -237,6 +251,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fHistos.Clear();
   fESDFMD.Clear();
   fAODFMD.Clear();
+  fAODEP.Clear();
   
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
@@ -257,7 +272,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fAODFMD.SetCentrality(cent);
   fAODFMD.SetNClusters(nClusters);
   MarkEventForStore();
-  
+ 
   if (found & AliFMDEventInspector::kNoSPD)      return;
   if (found & AliFMDEventInspector::kNoFMD)      return;
   if (found & AliFMDEventInspector::kNoVertex)   return;
@@ -278,12 +293,17 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
     AliWarning("Sharing filter failed!");
     return;
   }
-
+  
   // Calculate the inclusive charged particle density 
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
+  }
+
+  if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
+    if (!fEventPlaneFinder.FindEventplane(esd, fAODEP, &(fAODFMD.GetHistogram()), &fHistos))
+      AliWarning("Eventplane finder failed!");
   }
   
   // Do the secondary and other corrections. 

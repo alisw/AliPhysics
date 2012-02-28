@@ -17,6 +17,12 @@ AliAnalysisTaskJetsReader *AddTaskJetsReader(AliAnalysisDataContainer* contname,
 Int_t AddTaskJetsReaderDelta(AliAnalysisDataContainer* contname,char *nonStdFile = "",UInt_t filterMask = 0,Bool_t kUseAODMC = kTRUE,UInt_t runFlag = 1|4|32|128|256);     
 AliAnalysisTaskJetsReader *AddTaskJetsReader(AliAnalysisDataContainer* contname,UInt_t filterMask = 0);
 
+AliAnalysisTaskJetsReader *AddTaskJetsReader(const char* contname, UInt_t filterMask = 0) { return AddTaskJetsReader(AddJetExchangeContainer(contname),filterMask); } // LEGO trains  
+AliAnalysisTaskJetsReader *AddTaskJetsReader(const char* contname,Char_t *jr, UInt_t filterMask = 0,Float_t ptTrackMin = 0.15 , Int_t dettype = 1) {  
+ return AddTaskJetsReader(AddJetExchangeContainer(contname),jr,filterMask,ptTrackMin,dettype); 
+
+}
+
 AliAnalysisTaskJetsReader *AddTaskJetsReader(AliAnalysisDataContainer* contname,UInt_t filterMask){
   // fills the standard input "jets" branch in the AOD
   // need the ESDFilter to run before, to access the AODtracks

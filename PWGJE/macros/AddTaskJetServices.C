@@ -1,4 +1,6 @@
-AliAnalysisTaskJetServices *AddTaskJetServices(TString v0CalibFile = "")
+AliAnalysisTaskJetServices* serv = 0;
+Bool_t ConfigWithFlagsJetServices();
+AliAnalysisTaskJetServices *AddTaskJetServices()
 {
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -20,25 +22,21 @@ AliAnalysisTaskJetServices *AddTaskJetServices(TString v0CalibFile = "")
    // Create the task and configure it.
    //===========================================================================
    
-   AliAnalysisTaskJetServices* serv = new  AliAnalysisTaskJetServices("JetServices");
+   serv = new AliAnalysisTaskJetServices("JetServices");
       
-   if(v0CalibFile.Length()){
-     TFile *fV0 = TFile::Open(v0CalibFile.Data());
-     if(fV0){
-       TDirectory *dir = (TDirectory*)fV0->Get("PWG4_services");
-       TList *list = (TList*)dir->Get("serv");
-       TProfile *xa = (TProfile*)list->FindObject("fp1RPXA");
-       TProfile *ya = (TProfile*)list->FindObject("fp1RPYA");
-       TProfile *xc = (TProfile*)list->FindObject("fp1RPXC");
-       TProfile *yc = (TProfile*)list->FindObject("fp1RPYC");
-       serv->SetV0Centroids(xa,ya,xc,yc);
-     }
-   }
 
    if(type == "AOD"){
      serv->SetAODInput(kTRUE);
    }
    mgr->AddTask(serv);
+
+   // evaluate global variables 
+   Bool_t bGood1 = false;
+   Bool_t bGood2 = false;
+
+
+   if(!ConfigWithFlagsJetServices())return 0;
+   serv->SetUsePhysicsSelection(kTRUE);
      
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
@@ -50,4 +48,55 @@ AliAnalysisTaskJetServices *AddTaskJetServices(TString v0CalibFile = "")
    mgr->ConnectOutput (serv,  1, coutput1_Serv );
    
    return serv;
+}
+
+Bool_t ConfigWithFlagsJetServices(){
+    
+  Bool_t bGood1 = kFALSE;
+  Bool_t bGood2 = kFALSE;
+
+
+  serv->SetRunRange(AliAnalysisManager::GetGlobalInt("kGridRunRangeLo",bGood1),
+		      AliAnalysisManager::GetGlobalInt("kGridRunRangeLo",bGood2));
+  
+  if(!bGood1||!bGood2){
+    Printf("%s:%d Run range not set",(char*)__FILE__,__LINE__);
+    serv->SetRunRange(110000,160000);
+  }
+   
+
+  Int_t nTrigger = AliAnalysisManager::GetGlobalInt("kNTrigger",bGood1);
+  
+  if(bGood1){
+    serv->SetNTrigger(nTrigger);
+    for(int it = 0;it < nTrigger;it++){
+      serv->SetTrigger(it,
+		       AliAnalysisManager::GetGlobalInt(Form("kTriggerBit%d",it),bGood1),
+		       AliAnalysisManager::GetGlobalStr(Form("kTriggerName%d",it),bGood2));
+     }
+   }
+     
+   AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",bGood1);if(bGood1)serv->SetPhysicsSelectionFlag(AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",bGood1));
+   else {Printf("%s%d: kPhysicsSelectionFlag not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+   AliAnalysisManager::GetGlobalStr("kDeltaAODJetName",bGood1);if(bGood1)serv->SetNonStdFile(AliAnalysisManager::GetGlobalStr("kDeltaAODJetName",bGood1));
+   else {Printf("%s%d: kDeltaAODJetName not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+
+   AliAnalysisManager::GetGlobalDbl("kTrackEtaWindow",bGood1);if(bGood1)serv->SetTrackEtaWindow(AliAnalysisManager::GetGlobalDbl("kTrackEtaWindow",bGood1));
+   else {Printf("%s%d: kTrackEtaWindow not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+   AliAnalysisManager::GetGlobalDbl("kVertexWindow",bGood1);if(bGood1)serv->SetZVertexCut(AliAnalysisManager::GetGlobalDbl("kVertexWindow",bGood1));
+   else {Printf("%s%d: kVertexWindow not defined",(char*)__FILE__,__LINE__); return kFALSE; }
+   
+   AliAnalysisManager::GetGlobalInt("kHighPtFilterMask",bGood1);if(bGood1)serv->SetFilterMask(AliAnalysisManager::GetGlobalInt("kHighPtFilterMask",bGood1));
+   else {Printf("%s%d: kHighPtFilterMask not defined",(char*)__FILE__,__LINE__); return kFALSE; }   
+
+   TString cRun(AliAnalysisManager::GetGlobalStr("kJetRunPeriod",bGood1));
+   if(cRun.Contains("10h")||cRun.Contains("11h")){
+     serv->SetCollisionType(AliAnalysisTaskJetServices::kPbPb);
+   }
+   else{
+     serv->SetCollisionType(AliAnalysisTaskJetServices::kPP);
+   }
+   
+   return kTRUE;
+
 }

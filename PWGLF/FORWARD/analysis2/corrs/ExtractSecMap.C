@@ -1,7 +1,7 @@
 /**
  * Script to draw the energy loss fits 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 #ifndef __CINT__
 #include <TFile.h>
@@ -22,14 +22,14 @@
  * @param sNN    Center of mass energy (in GeV) per nucleon
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 ExtractSecMap(const char* fname,
 	     UShort_t sys=1, UShort_t sNN=900, Short_t field=5)
 {
 #ifdef __CINT__
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 #endif
 
   TFile* file = TFile::Open(fname, "READ");
@@ -51,13 +51,13 @@ ExtractSecMap(const char* fname,
  * @param sNN   Center of mass energy (GeV) per nucleon
  * @param field L3 magnetic field
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void     
 ExtractFMDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
 {
   TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
-  // static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
+  // static_cast<TList*>(file->Get("PWGLFforwardDnDeta/Forward"));
   if (!forward) { 
     Error("ExtractSecMap", "Couldn't get forward list from %s", fname);
     return;
@@ -85,13 +85,13 @@ ExtractFMDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
  * @param sNN   Center of mass energy (GeV) per nucleon
  * @param field L3 magnetic field
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void     
 ExtractSPDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
 {
   TList* central = static_cast<TList*>(file->Get("CentralResults"));
-  // static_cast<TList*>(file->Get("PWG2centralDnDeta/Central"));
+  // static_cast<TList*>(file->Get("PWGLFcentralDnDeta/Central"));
   if (!central) { 
     Error("ExtractSecMap", "Couldn't get central list from %s", fname);
     return;
@@ -124,7 +124,7 @@ ExtractSPDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
  * @param sNN    Center of mass energy (in GeV) per nucleon
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 ExtractSecMap(const char* fname="forward_mccorr.root", 
@@ -132,7 +132,7 @@ ExtractSecMap(const char* fname="forward_mccorr.root",
 	      Float_t     sNN=900, 
 	      Float_t     field=5)
 {
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   UShort_t uSys   = AliForwardUtil::ParseCollisionSystem(sys);
   UShort_t usNN   = AliForwardUtil::ParseCenterOfMassEnergy(uSys,sNN);

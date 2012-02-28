@@ -12,7 +12,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward 
+ * @ingroup pwglf_forward 
  */
 #include <TObject.h>
 #include <TString.h>
@@ -27,7 +27,7 @@ class AliESDEvent;
 /** 
  * Utilities used in the forward multiplcity analysis 
  * 
- * @ingroup pwg2_forward 
+ * @ingroup pwglf_forward 
  */
 class AliForwardUtil : public TObject
 {
@@ -333,7 +333,7 @@ public:
   /** 
    * Structure to do fits to the energy loss spectrum 
    * 
-   * @ingroup pwg2_forward 
+   * @ingroup pwglf_forward 
    */
   struct ELossFitter 
   {
@@ -451,7 +451,7 @@ public:
   /** 
    * Structure to hold histograms 
    *
-   * @ingroup pwg2_forward 
+   * @ingroup pwglf_forward 
    */
   struct Histos : public TObject
   {	
@@ -529,7 +529,7 @@ public:
   /**
    * Base class for structure holding ring specific histograms
    * 
-   * @ingroup pwg2_forward 
+   * @ingroup pwglf_forward 
    */
   struct RingHistos : public TObject
   {

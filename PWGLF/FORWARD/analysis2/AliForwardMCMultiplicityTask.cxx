@@ -35,6 +35,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
     fESDFMD(),
     fHistos(),
     fAODFMD(),
+    fAODEP(),
     fMCESDFMD(),
     fMCHistos(),
     fMCAODFMD(),
@@ -46,6 +47,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
     fDensityCalculator(),
     fCorrections(),
     fHistCollector(),
+    fEventPlaneFinder(),
     fList(0)
 {
   // 
@@ -60,6 +62,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
     fESDFMD(),
     fHistos(),
     fAODFMD(kFALSE),
+    fAODEP(kFALSE),
     fMCESDFMD(),
     fMCHistos(),
     fMCAODFMD(kTRUE),
@@ -71,6 +74,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
     fDensityCalculator("density"),
     fCorrections("corrections"),
     fHistCollector("collector"),
+    fEventPlaneFinder("eventplane"),
     fList(0)
 {
   // 
@@ -89,6 +93,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const AliForwardMCMul
     fESDFMD(o.fESDFMD),
     fHistos(o.fHistos),
     fAODFMD(o.fAODFMD),
+    fAODEP(o.fAODEP),
     fMCESDFMD(o.fMCESDFMD),
     fMCHistos(o.fMCHistos),
     fMCAODFMD(o.fMCAODFMD),
@@ -100,6 +105,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const AliForwardMCMul
     fDensityCalculator(o.fDensityCalculator),
     fCorrections(o.fCorrections),
     fHistCollector(o.fHistCollector),
+    fEventPlaneFinder(o.fEventPlaneFinder),
     fList(o.fList) 
 {
   // 
@@ -133,8 +139,10 @@ AliForwardMCMultiplicityTask::operator=(const AliForwardMCMultiplicityTask& o)
   fDensityCalculator = o.fDensityCalculator;
   fCorrections       = o.fCorrections;
   fHistCollector     = o.fHistCollector;
+  fEventPlaneFinder  = o.fEventPlaneFinder;
   fHistos            = o.fHistos;
   fAODFMD            = o.fAODFMD;
+  fAODEP             = o.fAODEP;
   fMCHistos          = o.fMCHistos;
   fMCAODFMD          = o.fMCAODFMD;
   fRingSums          = o.fRingSums;
@@ -160,6 +168,7 @@ AliForwardMCMultiplicityTask::SetDebug(Int_t dbg)
   fDensityCalculator.SetDebug(dbg);
   fCorrections.SetDebug(dbg);
   fHistCollector.SetDebug(dbg);
+  fEventPlaneFinder.SetDebug(dbg);
 }
 //____________________________________________________________________
 void
@@ -184,6 +193,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
+  fAODEP.Init(*pe);
   fMCHistos.Init(*pe);
   fMCAODFMD.Init(*pe);
   fRingSums.Init(*pe);
@@ -234,6 +244,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
   fHistCollector.Init(*pv,*pe);
+  fEventPlaneFinder.Init(*pe);
 
   this->Print();
 }
@@ -261,6 +272,9 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   TObject* mcobj = &fMCAODFMD;
   ah->AddBranch("AliAODForwardMult", &mcobj);
 
+  TObject* epobj = &fAODFMD;
+  ah->AddBranch("AliAODForwardEP", &epobj);
+  
   fPrimary = new TH2D("primary", "MC Primaries", 
 		      200, -4, 6, 20, 0, 2*TMath::Pi());
   fPrimary->SetXTitle("#eta");
@@ -276,6 +290,7 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   fDensityCalculator.DefineOutput(fList);
   fCorrections.DefineOutput(fList);
   fHistCollector.DefineOutput(fList);
+  fEventPlaneFinder.DefineOutput(fList);
 
   PostData(1, fList);
 }
@@ -302,6 +317,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fHistos.Clear();
   fESDFMD.Clear();
   fAODFMD.Clear();
+  fAODEP.Clear();
   fMCHistos.Clear();
   fMCESDFMD.Clear();
   fMCAODFMD.Clear();
@@ -396,6 +412,11 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   }
   fDensityCalculator.CompareResults(fHistos, fMCHistos);
   
+  if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
+    if (!fEventPlaneFinder.FindEventplane(esd, fAODEP, &(fAODFMD.GetHistogram()) , &fHistos))
+      AliWarning("Eventplane finder failed!");
+  }
+
   // Do the secondary and other corrections. 
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");

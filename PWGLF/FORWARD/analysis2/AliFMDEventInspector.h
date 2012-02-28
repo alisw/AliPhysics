@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include <TNamed.h>
 #include <TAxis.h>
@@ -40,8 +40,8 @@ class TList;
  * @par Corrections used: 
  *   - None
  *
- * @ingroup pwg2_forward_algo 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo 
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDEventInspector : public TNamed
 {

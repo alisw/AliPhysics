@@ -37,6 +37,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TList      * GetCreateOutputObjects() ;
   
+  void         Init() ;
+
   void         InitParameters() ;
   
   void         MakeAnalysisFillAOD()  ;
@@ -47,7 +49,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  
   //Analysis specific methods 
   
-  void         FillTrackMatchingShowerShapeControlHistograms( const Int_t clusterID, const Int_t mcTag ) ;
+  void         FillTrackMatchingShowerShapeControlHistograms(const Int_t clusterID, 
+                                                             const Int_t nLocMax,
+                                                             const Int_t mcTag ) ;
   
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph ) ; 
   
@@ -201,6 +205,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda0TRD;                         //! Shower shape of isolated photons, SM behind TRD
   TH2F *   fhELambda1TRD;                         //! Shower shape of isolated photons, SM behind TRD
   
+  // Local maxima
+  TH2F * fhNLocMax;                               //! number of maxima in selected clusters
+  TH2F * fhELambda0LocMax1 ;                      //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
+  TH2F * fhELambda1LocMax1 ;                      //! E vs lambda1 of selected cluster, 1 local maxima in cluster 
+  TH2F * fhELambda0LocMax2 ;                      //! E vs lambda0 of selected cluster, 2 local maxima in cluster 
+  TH2F * fhELambda1LocMax2 ;                      //! E vs lambda1 of selected cluster, 2 local maxima in cluster
+  TH2F * fhELambda0LocMaxN ;                      //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
+  TH2F * fhELambda1LocMaxN ;                      //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
+  
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
   Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
@@ -212,7 +225,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,9)
+  ClassDef(AliAnaParticleIsolation,11)
 } ;
 
 

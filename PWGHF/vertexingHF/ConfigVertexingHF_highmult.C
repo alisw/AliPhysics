@@ -8,6 +8,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetJPSItoEleOff();
   //vHF->Set3ProngOff();
   vHF->SetLikeSignOn(); // like-sign pairs and triplets
+  //  vHF->SetLikeSign3prongOff();
   vHF->Set4ProngOff();
   //vHF->SetDstarOff();
   vHF->SetFindVertexForDstar(kFALSE);
@@ -96,14 +97,12 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0toKpipipi->SetCuts(9,cutsArrayD0toKpipipi);
   cutsD0toKpipipi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsD0toKpipipi(cutsD0toKpipipi);
-  AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
-  cutsDStartoKpipi->SetStandardCutsPbPb2010();
-  cutsDStartoKpipi->SetUsePID(kFALSE);
 
 
  // D* pt dependent cuts ------------------------------------------
 
   AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
+  cutsDStartoKpipi->SetUsePID(kFALSE);
   
   const Int_t nvars=16;
   const Int_t nptbins=2;
@@ -111,7 +110,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
   ptbins[0]=0.;
-  ptbins[1]=4.;
+  ptbins[1]=5.;
   ptbins[2]=999.;
   
   cutsDStartoKpipi->SetPtBins(nptbins+1,ptbins);
@@ -121,46 +120,46 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   for(Int_t iv=0;iv<nvars;iv++){
     rdcutsvalmine[iv]=new Float_t[nptbins];
   }
-  //0-4
-  rdcutsvalmine[0][0]=0.15;
-  rdcutsvalmine[1][0]=0.07;
-  rdcutsvalmine[2][0]=0.8;
-  rdcutsvalmine[3][0]=0.8;
-  rdcutsvalmine[4][0]=0.8;
-  rdcutsvalmine[5][0]=0.08;
-  rdcutsvalmine[6][0]=0.08;
-  rdcutsvalmine[7][0]=-0.00002;
-  rdcutsvalmine[8][0]=0.72;
-  rdcutsvalmine[9][0]=0.15;
-  rdcutsvalmine[10][0]=0.03;
-  rdcutsvalmine[11][0]=0.2;
-  rdcutsvalmine[12][0]=100.;
-  rdcutsvalmine[13][0]=0.5;
-  rdcutsvalmine[14][0]=-1.;
-  rdcutsvalmine[15][0]=0.;
-  //4-999
-  rdcutsvalmine[0][1]=0.24;
-  rdcutsvalmine[1][1]=0.07;
-  rdcutsvalmine[2][1]=0.8;
-  rdcutsvalmine[3][1]=0.8;
-  rdcutsvalmine[4][1]=0.8;
-  rdcutsvalmine[5][1]=0.1;
-  rdcutsvalmine[6][1]=0.1;
-  rdcutsvalmine[7][1]=0.00001;
-  rdcutsvalmine[8][1]=0.72;
-  rdcutsvalmine[9][1]=0.15;
-  rdcutsvalmine[10][1]=0.03;
-  rdcutsvalmine[11][1]=0.2;
-  rdcutsvalmine[12][1]=100.;
-  rdcutsvalmine[13][1]=0.5;
-  rdcutsvalmine[14][1]=-1.;
-  rdcutsvalmine[15][1]=0.;
+  //0-5
+  rdcutsvalmine[0][0]=0.10;  //D0 inv mass window
+  rdcutsvalmine[1][0]=0.06;   // dca
+  rdcutsvalmine[2][0]=0.9;    // thetastar
+  rdcutsvalmine[3][0]=0.5;    // pt Pion
+  rdcutsvalmine[4][0]=0.5;    // Pt Kaon
+  rdcutsvalmine[5][0]=0.1;    // d0K
+  rdcutsvalmine[6][0]=0.1;    // d0Pi
+  rdcutsvalmine[7][0]=0.0001; // d0xd0
+  rdcutsvalmine[8][0]=0.8;    // costhetapoint
+  rdcutsvalmine[9][0]=0.15;   // Dstar inv mass window
+  rdcutsvalmine[10][0]=0.03;  // half width of (M_Kpipi-M_D0)
+  rdcutsvalmine[11][0]=0.1;   // Pt min of Pi soft
+  rdcutsvalmine[12][0]=100.;  // Pt max of pi soft
+  rdcutsvalmine[13][0]=9999.; // theta
+  rdcutsvalmine[14][0]=0.9;   // |cosThetaPointXY|
+  rdcutsvalmine[15][0]=1.;    // NormDecayLenghtXY
+ //5-999
+  rdcutsvalmine[0][1]=0.10;   //D0 inv mass window
+  rdcutsvalmine[1][1]=0.06;   // dca
+  rdcutsvalmine[2][1]=0.9;    // thetastar
+  rdcutsvalmine[3][1]=0.5;    // pt Pion
+  rdcutsvalmine[4][1]=0.5;    // Pt Kaon
+  rdcutsvalmine[5][1]=0.1;    // d0K
+  rdcutsvalmine[6][1]=0.1;    // d0Pi
+  rdcutsvalmine[7][1]=0.0001; // d0xd0
+  rdcutsvalmine[8][1]=0.7;    // costhetapoint
+  rdcutsvalmine[9][1]=0.15;   // Dstar inv mass window
+  rdcutsvalmine[10][1]=0.03;  // half width of (M_Kpipi-M_D0)
+  rdcutsvalmine[11][1]=0.1;   // Pt min of Pi soft
+  rdcutsvalmine[12][1]=100.;  // Pt max of pi soft
+  rdcutsvalmine[13][1]=9999.; // theta
+  rdcutsvalmine[14][1]=0.8;   // |cosThetaPointXY|
+  rdcutsvalmine[15][1]=0.;    // NormDecayLenghtXY
 
   cutsDStartoKpipi->SetCuts(nvars,nptbins,rdcutsvalmine);
  
   cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
-  cutsDStartoKpipi->SetMinPtCandidate(3.);
+  cutsDStartoKpipi->SetMinPtCandidate(2.);
   vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
 
   //--------------------------------------------------------

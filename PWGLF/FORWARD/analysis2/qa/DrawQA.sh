@@ -7,7 +7,7 @@
 # @brief  Draw most QA stuff
 # 
 # @deprecated Use QATrender instead
-# @ingroup pwg2_forward_qa_scripts
+# @ingroup pwglf_forward_qa_scripts
 file=trending.root 
 
 # --- Help message ---------------------------------------------------
@@ -36,7 +36,7 @@ while test $# -gt 0 ; do
 done 
 
 # --- Run aliroot ----------------------------------------------------
-scr=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/DrawQA.C 
+scr=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/DrawQA.C 
 
 root -l -b -q ${scr}\(\"$file\"\)
 

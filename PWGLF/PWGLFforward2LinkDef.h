@@ -34,6 +34,7 @@
 #pragma link C++ class AliForwardUtil::RingHistos+;
 #pragma link C++ class AliFMDEventInspector+;
 #pragma link C++ class AliFMDMCEventInspector+;
+#pragma link C++ class AliFMDEventPlaneFinder+;
 #pragma link C++ class AliFMDSharingFilter+;
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
 #pragma link C++ class AliFMDMCSharingFilter+;
@@ -57,7 +58,8 @@
 #pragma link C++ class AliFMDCorrDoubleHit+;
 #pragma link C++ class AliFMDCorrVertexBias+;
 #pragma link C++ class AliFMDCorrMergingEfficiency+;
-#pragma link C++ class AliAODForwardMult+;
+#pragma link C++ class AliAODForwardMult+; 
+#pragma link C++ class AliAODForwardEP+;
 #pragma link C++ class AliForwardMultiplicityBase+;
 #pragma link C++ class AliForwardMultiplicityTask+;
 #pragma link C++ class AliForwardMCMultiplicityTask+;
@@ -81,8 +83,10 @@
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentralCorrAcceptance+;
 #pragma link C++ class AliCentraldNdetaTask+;
-#pragma link C++ class AliForwardFlowUtil+;
 #pragma link C++ class AliForwardFlowTaskQC+;
+#pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
+#pragma link C++ class AliForwardMCFlowTaskQC+;
+#pragma link C++ class AliFMDEventPlaneTask+;
 #pragma link C++ class AliSPDMCTrackDensity+;
 #pragma link C++ class AliFMDMultCuts+;
 #pragma link C++ class AliPoissonCalculator+;

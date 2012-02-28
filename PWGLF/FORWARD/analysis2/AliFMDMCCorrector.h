@@ -12,7 +12,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include "AliFMDCorrector.h"
 #include <TList.h>
@@ -20,9 +20,9 @@ class TProfile2D;
 class TH2;
 
 /** 
- * @defgroup pwg2_forward_mc  Monte-carlo code
+ * @defgroup pwglf_forward_mc  Monte-carlo code
  * 
- * @ingroup pwg2_forward
+ * @ingroup pwglf_forward
  */
 /** 
  * This class calculates the exclusive charged particle density
@@ -41,9 +41,9 @@ class TH2;
  *   - AliFMDCorrVertexBias
  *   - AliFMDCorrMergingEfficiency
  *
- * @ingroup pwg2_forward_algo
- * @ingroup pwg2_forward_mc
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo
+ * @ingroup pwglf_forward_mc
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDMCCorrector : public AliFMDCorrector
 {

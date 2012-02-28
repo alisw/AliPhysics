@@ -24,6 +24,7 @@
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
 #include "AliFMDHistCollector.h"
+#include "AliFMDEventPlaneFinder.h"
 #include "AliESDEvent.h"
 #include <TROOT.h>
 #include <TAxis.h>
@@ -191,6 +192,7 @@ AliForwardMultiplicityBase::GetESDEvent()
 
     fFirstEvent = false;
 
+    GetEventPlaneFinder().SetRunNumber(esd->GetRunNumber());
     InitializeSubs();
   }
   return esd;
@@ -315,6 +317,7 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   GetDensityCalculator().Print(option);
   GetCorrections()      .Print(option);
   GetHistCollector()    .Print(option);
+  GetEventPlaneFinder() .Print(option);
   gROOT->DecreaseDirLevel();
 }
 

@@ -48,7 +48,6 @@ class AliVParticle;
 class AliTriggerAnalysis;
 class TH1I; 
 class TList;
-class TTreeSRedirector;
 
 class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
   public:
@@ -127,7 +126,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       fBackGroundFactorApply=kTRUE;
       SetBit(kBackgroundInitialized);
     };
-    void SetDebugStreaming(UChar_t debugLevel = 1) { fDebugLevel = debugLevel; }
     void SetBackgroundFactorsFromOADB(AliOADBContainer *cont) { fHadronBackgroundOADB = cont; fBackGroundFactorApply = kTRUE; }
     void SetElecBackGroundFactors(Int_t iPt, Int_t iType, Int_t iCent, Int_t iError, Double_t elecBackGroundFactor) {fElecBackgroundFactor[iError][iCent][iType][iPt] = elecBackGroundFactor; };
     void SetBinLimits(Int_t iPt, Double_t momentum){fBinLimit[iPt] = momentum;};
@@ -207,10 +205,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
-
-    // Debug streaming
-    UChar_t fDebugLevel;                  // Debug level 
-    TTreeSRedirector *fTreeStream;        //! TreeStream
 
     ClassDef(AliAnalysisTaskHFE, 2)       // The electron Analysis Task
 };

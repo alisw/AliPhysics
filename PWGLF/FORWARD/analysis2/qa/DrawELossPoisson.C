@@ -7,7 +7,7 @@
  * 
  *
  * @deprecated Use QATrender instead 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  * 
  */
 #ifndef __CINT__
@@ -42,7 +42,7 @@ class TList;
  * @return The regression coefficient 
  *
  * @deprecated Use QATrender instead 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 Double_t
 DrawRingELossPoisson(TList* p, UShort_t d, Char_t r, 
@@ -186,7 +186,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
  * @param xmin     Maximum X 
  *
  * @deprecated Use QATrender instead 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawELossPoisson(const char* filename="forward.root", 

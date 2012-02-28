@@ -7,15 +7,15 @@
  * 
  * @brief  A task to copy the ESD header to AOD
  * 
- * @ingroup pwg2_forward_tasks 
+ * @ingroup pwglf_forward_tasks 
  */
 #include <AliAnalysisTaskSE.h>
 
 /**
  * Task to copy header from ESD to AOD 
  * 
- * @ingroup pwg2_forward_scripts_tasks
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_scripts_tasks
+ * @ingroup pwglf_forward_aod
  */
 class AliCopyHeaderTask : public AliAnalysisTaskSE
 {

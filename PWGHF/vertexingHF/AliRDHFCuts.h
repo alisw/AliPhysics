@@ -35,13 +35,14 @@ class AliRDHFCuts : public AliAnalysisCuts
   virtual ~AliRDHFCuts();
   
   AliRDHFCuts(const AliRDHFCuts& source);
-  AliRDHFCuts& operator=(const AliRDHFCuts& source); 
+  AliRDHFCuts& operator=(const AliRDHFCuts& source);
 
-  virtual void SetStandardCutsPP2010() {return;}  
-  virtual void SetStandardCutsPbPb2010() {return;}  
+  virtual void SetStandardCutsPP2010() {return;}
+  virtual void SetStandardCutsPbPb2010() {return;}
+  virtual void SetStandardCutsPbPb2011() {return;}
 
 
-  void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;} 
+  void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;}
   void SetMaxCentrality(Float_t maxCentrality=100.) {fMaxCentrality=maxCentrality;} 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
   void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}  
@@ -91,7 +92,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     fTriggerMask|=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   }
-  void ResetMaskAndnableEMCALTrigger(){
+  void ResetMaskAndEnableEMCALTrigger(){
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   } 
@@ -173,6 +174,7 @@ class AliRDHFCuts : public AliAnalysisCuts
                 {return IsSelected(obj,selectionLevel);}
   Int_t PtBin(Double_t pt) const;
   void PrintAll()const;
+  void PrintTrigger() const;
 
   virtual Bool_t IsInFiducialAcceptance(Double_t /*pt*/,Double_t /*y*/) const {return kTRUE;}
 

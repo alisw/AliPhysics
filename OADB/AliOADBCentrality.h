@@ -93,32 +93,32 @@ class AliOADBCentrality : public TNamed {
   AliOADBCentrality& operator=(const AliOADBCentrality& cont);
 
  private:
-  Float_t fV0MScaleFactor; // V0  scale factor
-  Float_t fSPDScaleFactor; // SPD scale factor
-  Float_t fTPCScaleFactor; // TPC scale factor
-  Float_t fV0MScaleFactorMC; // V0  scale factor for MC
+  Float_t fV0MScaleFactor;     // V0  scale factor
+  Float_t fSPDScaleFactor;     // SPD scale factor
+  Float_t fTPCScaleFactor;     // TPC scale factor
+  Float_t fV0MScaleFactorMC;   // V0  scale factor for MC
 
-  Float_t fV0MSPDOutlierPar0;
-  Float_t fV0MSPDOutlierPar1;
-  Float_t fV0MTPCOutlierPar0;
-  Float_t fV0MTPCOutlierPar1;
+  Float_t fV0MSPDOutlierPar0;  // V0-SPD outlier parameterisation Par0
+  Float_t fV0MSPDOutlierPar1;  // Par1
+  Float_t fV0MTPCOutlierPar0;  // Par2
+  Float_t fV0MTPCOutlierPar1;  // Par3
 
-  Float_t fV0MSPDSigmaOutlierPar0;
-  Float_t fV0MSPDSigmaOutlierPar1;
-  Float_t fV0MSPDSigmaOutlierPar2;
-  Float_t fV0MTPCSigmaOutlierPar0;
-  Float_t fV0MTPCSigmaOutlierPar1;
-  Float_t fV0MTPCSigmaOutlierPar2;
+  Float_t fV0MSPDSigmaOutlierPar0; // V0-SPD Sigma outlier parameterisation Par0
+  Float_t fV0MSPDSigmaOutlierPar1; // Par1
+  Float_t fV0MSPDSigmaOutlierPar2; // Par2
+  Float_t fV0MTPCSigmaOutlierPar0; // Par3
+  Float_t fV0MTPCSigmaOutlierPar1; // Par4
+  Float_t fV0MTPCSigmaOutlierPar2; // Par5
 
-  Float_t fV0MZDCOutlierPar0;
-  Float_t fV0MZDCOutlierPar1;
-  Float_t fV0MZDCEcalOutlierPar0;
-  Float_t fV0MZDCEcalOutlierPar1;
+  Float_t fV0MZDCOutlierPar0;     // V0-ZDC outlier parameterisation Par0
+  Float_t fV0MZDCOutlierPar1;     // Par1
+  Float_t fV0MZDCEcalOutlierPar0; // Par2
+  Float_t fV0MZDCEcalOutlierPar1; // Par3
 
-  Float_t fZVCut;
-  Float_t fOutliersCut;
-  Bool_t fUseScaling;
-  Bool_t fUseCleaning;
+  Float_t fZVCut;                 // zV-cut
+  Float_t fOutliersCut;           // outlier cuts
+  Bool_t fUseScaling;             // Flag for scaling
+  Bool_t fUseCleaning;            // Flag for cleaning
 
   TList*    f1DHistos; // Reference to list of 1D Centrality histos 
   TList*    f2DHistos; // Reference to list of 2D Centrality histos

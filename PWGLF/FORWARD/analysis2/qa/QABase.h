@@ -5,7 +5,7 @@
  * 
  * @brief  Base class for QA active classes
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  * 
  */
 #ifndef QABASE_H
@@ -32,7 +32,7 @@ class TCanvas;
  * Base class for active QA classes.  This manages the I/O files, like
  * the tree file, the LaTeX file, and the storage file 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct QABase 
 {

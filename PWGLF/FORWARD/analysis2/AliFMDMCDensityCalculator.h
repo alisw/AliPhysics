@@ -12,7 +12,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include "AliFMDDensityCalculator.h"
 #include <TList.h>
@@ -35,9 +35,9 @@ class TProfile2D;
  * @par Corrections used: 
  *   - None
  *
- * @ingroup pwg2_forward_algo
- * @ingroup pwg2_forward_mc
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo
+ * @ingroup pwglf_forward_mc
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDMCDensityCalculator : public AliFMDDensityCalculator
 {

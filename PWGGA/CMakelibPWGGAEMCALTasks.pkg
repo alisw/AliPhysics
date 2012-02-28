@@ -33,15 +33,21 @@ set ( SRCS
  EMCALTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
  EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
  EMCALTasks/AliAnalysisTaskESDfilterEMCALEventSelect.cxx
+ EMCALTasks/AliEmcalClusTrackMatcherTask.cxx
+ EMCALTasks/AliEmcalCompatTask.cxx
  EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
  EMCALTasks/AliEmcalPhysicsSelection.cxx
  EMCALTasks/AliEmcalPhysicsSelectionTask.cxx
  EMCALTasks/AliEmcalSetupTask.cxx
  EMCALTasks/AliEmcalTrackPropagatorTask.cxx
+ EMCALTasks/AliESDJet.cxx
+ EMCALTasks/AliEsdJetTask.cxx
  EMCALTasks/AliEsdSkimTask.cxx
  EMCALTasks/AliEsdTrackExt.cxx
  EMCALTasks/AliPicoTrack.cxx
  EMCALTasks/AliStaObjects.cxx
+ EMCALTasks/AliFJWrapper.cxx
+ EMCALTasks/AliAnalysisTaskTrgContam.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -50,4 +56,16 @@ set ( DHDR  PWGGAEMCALTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWGGA/EMCALTasks EMCAL STEER/ESD STEER/STEERBase)
+set(FASTJET_ROOT $ENV{FASTJET_ROOT})
+if(FASTJET_ROOT)
+  set ( EDEFINE "-isystem${FASTJET_ROOT}/include -D__HAVE_FJINTERFACE__")
+else()
+  set(FASTJET $ENV{FASTJET})
+  if(FASTJET)
+    set ( EDEFINE "-isystem${FASTJET}/include -D__HAVE_FJINTERFACE__")
+  else()
+    set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
+  endif(FASTJET)
+endif(FASTJET_ROOT)
+
+set ( EINCLUDE PWGGA/EMCALTasks EMCAL STEER/ESD STEER/STEERBase)

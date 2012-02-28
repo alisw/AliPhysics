@@ -1,6 +1,6 @@
 
 
-AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt_t filterMask = 272 , Float_t ptTrackMin = 0.15,  Int_t eventClassMin = 0, Int_t eventClassMax = 4){
+AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt_t filterMask = 272 , Float_t ptTrackMin = 0.15, Int_t kTriggerMask=0, Int_t eventClassMin = 0, Int_t eventClassMax = 4){
 
    Printf("adding task jet response\n");
 
@@ -20,29 +20,28 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
   TString typeRec(bRec1);
   TString typeGen(bRec2);
       
-  AliAnalysisTaskJetCore *task = new AliAnalysisTaskJetCore(Form("JetCore_%s_%s",bRec1,bRec2));
+  AliAnalysisTaskJetCore *task = new AliAnalysisTaskJetCore(Form("JetCore_%s_%s_%d",bRec1,bRec2,kTriggerMask));
    
 
 
    task->SetBranchNames(bRec1,bRec2);
-   task->SetOfflineTrgMask(AliVEvent::kMB);
-
+   task->SetOfflineTrgMask(kTriggerMask);
    task->SetEvtClassMin(eventClassMin);
    task->SetEvtClassMax(eventClassMax);
    task->SetCentMin(0.);
    task->SetCentMax(100.);
-
+   task->SetFilterMask(filterMask); 
  
    
    task->SetJetPtMin(0.);   
-   task->SetAngStructCloseTracks(1);
+   //task->SetAngStructCloseTracks(1);
 
  
 
    mgr->AddTask(task);
 
 
-   AliAnalysisDataContainer *coutputJetCore = mgr->CreateContainer(Form("pwgjejetcore_%s_%s",bRec1,bRec2), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_jetcore_%s_%s",AliAnalysisManager::GetCommonFileName(),bRec1,bRec2));
+   AliAnalysisDataContainer *coutputJetCore = mgr->CreateContainer(Form("pwgjejetcore_%s_%s_%d",bRec1,bRec2,kTriggerMask), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_jetcore_%s_%s_%d",AliAnalysisManager::GetCommonFileName(),bRec1,bRec2,kTriggerMask));
 
 
 

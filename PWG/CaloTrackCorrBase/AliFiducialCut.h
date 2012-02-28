@@ -2,7 +2,6 @@
 #define ALIFIDUCIALCUT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class for track/cluster acceptance selection
@@ -20,8 +19,6 @@
 class TString ;
 class TLorentzVector ;
 
-//--- AliRoot system ---
-
 
 class AliFiducialCut : public TObject {
   
@@ -37,20 +34,19 @@ public:
   
   Bool_t    IsInFiducialCut    (const TLorentzVector lv, const TString det) const ;
   
-  void      DoCTSFiducialCut  (Bool_t b) {fCTSFiducialCut   = b ; }
-  void      DoEMCALFiducialCut(Bool_t b) {fEMCALFiducialCut = b ; }
-  void      DoPHOSFiducialCut (Bool_t b) {fPHOSFiducialCut  = b ; }
+  void      DoCTSFiducialCut  (Bool_t b)     { fCTSFiducialCut   = b    ; }
+  void      DoEMCALFiducialCut(Bool_t b)     { fEMCALFiducialCut = b    ; }
+  void      DoPHOSFiducialCut (Bool_t b)     { fPHOSFiducialCut  = b    ; }
   
-  Bool_t    GetCTSFiducialCutStatus()  const {return fCTSFiducialCut   ; }
-  Bool_t    GetEMCALFiducialCut()      const {return fEMCALFiducialCut ; }
-  Bool_t    GetPHOSFiducialCutStatus() const {return fPHOSFiducialCut  ; }
+  Bool_t    GetCTSFiducialCutStatus()  const { return fCTSFiducialCut   ; }
+  Bool_t    GetEMCALFiducialCut()      const { return fEMCALFiducialCut ; }
+  Bool_t    GetPHOSFiducialCutStatus() const { return fPHOSFiducialCut  ; }
   
   void      SetSimpleCTSFiducialCut  (const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
   void      SetSimpleEMCALFiducialCut(const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
   void      SetSimplePHOSFiducialCut (const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
   
   void      Print(const Option_t * opt)const;
-
   
   void      AddCTSFidCutMaxEtaArray(Int_t size, Float_t* array)  
                                               { fCTSFidCutMaxEta->Set(size,array)   ; } 
@@ -100,12 +96,12 @@ public:
                                               { fPHOSFidCutMinPhi->Set(size,array)  ; }
   TArrayF * GetPHOSFidCutMinPhiArray() const  { return fPHOSFidCutMinPhi            ; }
   
-protected:
+private:
   
   //Detector acceptance cuts
   Bool_t    fEMCALFiducialCut ;  // Apply fiducial cuts to EMCAL clusters
-  Bool_t    fPHOSFiducialCut ;   // Apply fiducial cuts to PHOS clusters
-  Bool_t    fCTSFiducialCut ;    // Apply fiducial cuts to  CTS tracks
+  Bool_t    fPHOSFiducialCut  ;  // Apply fiducial cuts to PHOS clusters
+  Bool_t    fCTSFiducialCut   ;  // Apply fiducial cuts to  CTS tracks
   
   TArrayF * fCTSFidCutMinEta ;   // Take particles in CTS with eta > fCTSFidCutMinEta
   TArrayF * fCTSFidCutMinPhi ;   // Take particles in CTS with phi > fCTSFidCutMinPhi
@@ -122,8 +118,8 @@ protected:
   TArrayF * fPHOSFidCutMaxEta ;  // Take particles in PHOS with eta < fPHOSFidCutMaxEta
   TArrayF * fPHOSFidCutMaxPhi ;  // Take particles in PHOS with phi > fPHOSFidCutMaxPhi
   
-  AliFiducialCut(const AliFiducialCut & g) ;              // cpy ctor
-  AliFiducialCut & operator = (const AliFiducialCut & g) ;// cpy assignment
+  AliFiducialCut(              const AliFiducialCut & g) ; // cpy ctor
+  AliFiducialCut & operator = (const AliFiducialCut & g) ; // cpy assignment
   
   ClassDef(AliFiducialCut,1)
   

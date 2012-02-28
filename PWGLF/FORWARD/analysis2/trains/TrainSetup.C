@@ -1,7 +1,7 @@
 /**
- * @defgroup pwg2_forward_trains Trains
+ * @defgroup pwglf_forward_trains Trains
  * 
- * @ingroup pwg2_forward
+ * @ingroup pwglf_forward
  */
 /**
  * @file   TrainSetup.C
@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  * 
  */
 
@@ -117,7 +117,7 @@ class AliAnalysisManager;
  *
  * @verbatim 
  * > aliroot 
- * Root> gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+ * Root> gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
  * Root>                          "$ALICE_ROOT/ANALYSIS/macros",
  * Root> 			  gROOT->GetMacroPath()));
  * Root> gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
@@ -128,7 +128,7 @@ class AliAnalysisManager;
  * @endverbatim 
  * 
  * 
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  * 
  */
 struct TrainSetup
@@ -469,6 +469,178 @@ struct TrainSetup
   void SetAllowOverwrite(Bool_t allow) { fAllowOverwrite = allow; }
   //__________________________________________________________________
   /** 
+   * Service function to make a PAR out of a script.  
+   * 
+   * The script should contain can contain a sub-class of AliAnalysisTask. 
+   * The script will be compiled on the slaves before loading the 
+   * AliAnalysisManager.  Parts to (not) be compiled can be protected like 
+   * 
+   * @code 
+   * #ifdef BUILD_PAR
+   * // This will _only_ be compiled in the servers 
+   * #endif
+   * #ifndef BUILD_PAR
+   * // This will not be compiled in the servers 
+   * #endif
+   * @endcode
+   * 
+   * @param script Script to upload and compile in the PAR
+   * @param deps   Dependency pars 
+   * 
+   * @return true on success. 
+   */
+  static Bool_t MakeScriptPAR(const char* script, const char* deps)
+  {
+    // Get the base name 
+    TString base(gSystem->BaseName(script));
+    Int_t   idx = base.Last('.');
+    if (idx != kNPOS) base.Remove(idx);
+    Bool_t retval = true;
+    Info("MakeScriptPAR", "script=%s, base=%s", script, base.Data());
+
+    try {
+      // Check name of script file 
+      TString scr(script);
+      TString ext;
+      if      (scr.EndsWith(".C"))   ext = "C"; 
+      else if (scr.EndsWith(".cxx")) ext = "cxx";
+      else                           { ext = "C"; scr.Append(".C"); }
+      
+      // Check if we can access the file 
+      TString path = TString::Format(".:%s", TROOT::GetMacroPath());
+      char* loc = gSystem->Which(path, scr);
+      if (!loc) throw TString::Format("Script %s not found in %s", 
+				      scr.Data(), path.Data());
+      TString full(loc);
+
+      
+      // Set-up directories 
+      if (gSystem->MakeDirectory(base) < 0) {
+	base = "";
+	throw TString::Format("Could not make directory '%s'", base.Data());
+      }
+      
+      if (gSystem->MakeDirectory(Form("%s/PROOF-INF", base.Data()))) 
+	throw TString::Format("Could not make directory %s/PROOF-INF", 
+			      base.Data());
+      
+      // Copy the script to the setup directory 
+      TString dest = TString::Format("%s/%s.%s", base.Data(),
+				     base.Data(), ext.Data());
+      Int_t ret = gSystem->CopyFile(full, dest, true);
+      switch (ret) { 
+      case -1: throw TString::Format("Couldn't open %s for copy", scr.Data());
+      case -2: throw TString::Format("File %s exists", dest.Data());
+      case -3: throw TString::Format("Error while copying %s", scr.Data());
+      }
+      
+      // Make our build file 
+      std::ofstream build(Form("%s/PROOF-INF/BUILD.sh", base.Data()));
+      if (!build) 
+	throw TString::Format("Failed to open build shell script");
+      build << "#!/bin/sh\n"
+	    << "echo BUILD.sh@`hostname`: Building " << base << "\n"
+	    << "root.exe -l -b -q PROOF-INF/BUILD.C 2>&1 | tee " << base << ".log\n"
+	    << "echo BUILD.sh@`hostname`: done: $?\n"
+	    << std::endl;
+      build.close();
+      if (gSystem->Chmod(Form("%s/PROOF-INF/BUILD.sh", base.Data()), 0755) != 0)
+	throw TString::Format("Failed to set exectuable flags on "
+			      "%s/PROOF-INF/BUILD.sh", base.Data());
+      
+      std::ofstream util(Form("%s/PROOF-INF/UTIL.C", base.Data()));
+      if (!util) 
+	throw TString::Format("Failed to open utility script");
+      util << "void LoadROOTLibs() {\n"
+	   << "  gSystem->Load(\"libVMC\");\n"
+	   << "  gSystem->Load(\"libNet\");\n"
+	   << "  gSystem->Load(\"libTree\");\n"
+	   << "  gSystem->Load(\"libPhysics\");\n"
+	   << "  gSystem->Load(\"libMinuit\");\n"
+	   << "}\n\n"
+	   << "void AddDep(const char* env) {\n"
+	   << "  TString val(gSystem->Getenv(Form(\"%s_INCLUDE\",env)));\n"
+	   << "  if (val.IsNull())\n"
+	   << "    Warning(\"Add\",\"%s_INCLUDE not defined\", env);\n"
+	   << "  else {\n"
+	   << "    gSystem->AddIncludePath(Form(\"-I../%s\",val.Data()));\n"
+	   << "  }\n"
+	   << "}\n\n"
+	   << "void LoadDep(const char* name) {\n"
+	   << "  gSystem->AddDynamicPath(Form(\"../%s\",name));\n"
+	   << "  char* full = gSystem->DynamicPathName(name,true);\n"
+	   << "  if (!full) \n"
+	   << "   full = gSystem->DynamicPathName(Form(\"lib%s\",name),true);\n"
+	   << "  if (!full) \n"
+	   << "   full = gSystem->DynamicPathName(Form(\"lib%s.so\",name),true);\n"
+	   << "  if (!full) {\n"
+	   << "    Warning(\"LoadDep\",\"Module %s not found\", name);\n"
+	   << "    return;\n"
+	   << "  }\n"
+	   << "  gSystem->Load(full);\n"
+	   << "}\n"
+	   << std::endl;
+	          
+      std::ofstream cbuild(Form("%s/PROOF-INF/BUILD.C", base.Data()));
+      if (!cbuild) 
+	throw TString::Format("Failed to open build script");
+      cbuild << "void BUILD() {\n"
+	     << "  gSystem->AddIncludePath(\"-DBUILD_PAR=1\");\n"
+	     << "  gROOT->LoadMacro(\"PROOF-INF/UTIL.C\");\n"
+	     << "  LoadROOTLibs();\n";
+      TObjArray*  depList = TString(deps).Tokenize(",");
+      TIter       next(depList);
+      TObject*    dep = 0;
+      while ((dep = next())) {
+	cbuild << "  AddDep(\"" << dep->GetName() << "\");\t"
+	       << "  LoadDep(\"" << dep->GetName() << "\");\n";
+      }
+      cbuild << "  // gDebug = 5;\n"
+	     << "  int ret = gROOT->LoadMacro(\"" 
+	     << base << "." << ext << "++g\");\n"
+	     << "  if (ret != 0) Fatal(\"BUILD\",\"Failed to build\");\n"
+	     << "  else Info(\"BUILD\", \"Made " << base << "\");\n"
+	    << "}\n"
+	    << std::endl;
+      cbuild.close();
+      
+      // Make our set-up script 
+      std::ofstream setup(Form("%s/PROOF-INF/SETUP.C", base.Data()));
+      if (!build) 
+	throw TString::Format("Failed to open setup script");
+      setup << "void SETUP() {\n"
+	    << "  gROOT->LoadMacro(\"PROOF-INF/UTIL.C\");\n"
+	    << "  LoadROOTLibs();\n"
+	    << "  Info(\"SETUP\",\"Loading libraries\");\n";
+      next.Reset();
+      dep = 0;
+      while ((dep = next())) 
+	setup << "  LoadDep(\"" << dep->GetName() << "\");\n";
+      setup << "  gDebug = 5;\n"
+	    << "  gSystem->Load(\"" << base << "_" << ext << ".so\");\n"
+	    << "  gDebug = 0;\n"
+	    << "  gROOT->ProcessLine(\".include " << base << "\");\n"
+	    << "  gSystem->Setenv(\"" << base << "_INCLUDE\",\"" 
+	    << base << "\");\n"
+	    << "  Info(\"SETUP\", \"Done\");\n"
+	    << "}\n"
+	    << std::endl;
+      setup.close();
+
+      ret = gSystem->Exec(Form("tar -czvf %s.par %s", base.Data(),base.Data()));
+      if (ret != 0) 
+	throw TString::Format("Failed to create PAR file %s.PAR", base.Data());
+    }
+    catch (TString& e) { 
+      Error("MakeScriptPAR", e.Data()); 
+      retval = false;
+    }
+    if (!base.IsNull())
+      gSystem->Exec(Form("rm -vrf %s", base.Data()));
+    return retval;
+  }
+  //__________________________________________________________________
+  /** 
    * Print the setup 
    * 
    */
@@ -649,10 +821,13 @@ protected:
 
     if (mode == kProof) usePar    = true;
 
+    Info("Exec", "Connecting in mode=%d", mode);
     if (!Connect(mode)) return;
 
     TString cwd = gSystem->WorkingDirectory();
     TString nam = EscapedName();
+    Info("Exec", "Current directory=%s, escaped name=%s", 
+	 cwd.Data(), nam.Data());
     if (oper != kTerminate) { 
       if (!fAllowOverwrite && !gSystem->AccessPathName(nam.Data())) {
 	Error("Exec", "File/directory %s already exists", nam.Data());
@@ -660,7 +835,7 @@ protected:
       }
       if (gSystem->AccessPathName(nam.Data())) {
 	if (gSystem->MakeDirectory(nam.Data())) {
-	  Error("Exec", "Failed to make directory %s", nam.Data());
+	  Error("Exec", "Failed to make directory '%s'", nam.Data());
 	  return;
 	}
       }
@@ -1059,7 +1234,7 @@ protected:
     AliCentralitySelectionTask* ctask = 
       dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask("CentralitySelection"));
     if (!ctask) return;
-    ctask->SetPass(fESDPass);
+    // ctask->SetPass(fESDPass);
     if (mc) ctask->SetMCInput();
   }
   //__________________________________________________________________
@@ -1085,6 +1260,7 @@ protected:
 			  
     // --- Set-up connections to Proof cluster and alien -------------
     if (mode == kProof) { 
+      Info("Connect", "Opening connection to proof server");
       // --- Find user name ------------------------------------------
       TString userName(gSystem->Getenv("alien_API_USER"));
       if (userName.IsNull()) {
@@ -1115,6 +1291,7 @@ protected:
       }
       
       // --- Add ALICE_ROOT directory to search path for packages ----
+      Info("Connect", "Set location of packages");
       gEnv->SetValue("Proof.GlobalPackageDirs", 
 		     Form("%s:%s", 
 			  gEnv->GetValue("Proof.GlobalPackageDirs", "."), 
@@ -1133,10 +1310,13 @@ protected:
 	      fProofServer.Data(), userName.Data());
 	return false;
       }
+      Info("Connect", "Now connected to Proof");
+      // gProof->SetParameter("PROOF_LookupOpt", "all");
       if (lite) return true;
     }
 
     // --- Open a connection to the grid -----------------------------
+#if 0
     TGrid::Connect("alien://");
     if (!gGrid || !gGrid->IsConnected()) { 
       // This is only fatal in grid mode 
@@ -1165,7 +1345,7 @@ protected:
     // Make output directory 
     gGrid->Mkdir("proof_output");
     gGrid->Cd("proof_output");
-
+#endif
     return true;
   }	  
   //__________________________________________________________________
@@ -1197,6 +1377,20 @@ protected:
       
     }
 
+#if 0
+    // We need to activate the workers here in case 
+    // we have dynamic slaves - otherwise they won't get
+    // the packages 
+    if (mode == kProof) { 
+      Info("LoadCommonLibraries", "Starting slaves");
+      if (!gProof->StartSlaves()) { 
+	Error("LoadCommonLibraries", "Failed to start slaves");
+	return false;
+      }
+      Info("LoadCommonLibraries", "Slaves started");
+    }
+#endif       
+      
     Bool_t ret   = true;
     Bool_t basic = mode == kGrid ? false : par;
     
@@ -1245,7 +1439,8 @@ protected:
       }
       break;
     case kProof: 
-      ret = gProof->UploadPackage(what);
+      Info("LoadLibrary", "Uploading %s", what);
+      ret = gProof->UploadPackage(what, TProof::kRemoveOld);
       if (ret < 0)  {	
 	  ret = gProof->UploadPackage(gSystem->ExpandPathName(Form("../%s.par",
 								   what)));
@@ -1262,6 +1457,7 @@ protected:
 	  }
 	}
       }
+      Info("LoadLibrary", "Enabling package %s", what);
       ret = gProof->EnablePackage(what);
       break;
     }
@@ -1599,7 +1795,7 @@ protected:
 void
 BuildTrainSetup()
 {
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
 			   "$ALICE_ROOT/ANALYSIS/macros",
 			   gROOT->GetMacroPath()));
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include");

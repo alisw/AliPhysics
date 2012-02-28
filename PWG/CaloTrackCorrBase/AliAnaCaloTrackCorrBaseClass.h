@@ -14,14 +14,13 @@
 #include <cstdlib>
 
 //ROOT
-class TClonesArray ;
-class TObjArray ;
 #include <TList.h> 
 #include <TObject.h>
+class TClonesArray ;
+class TObjArray ;
 class TObjString;
 
 //Analysis
-class AliVCaloCells;
 #include "AliCaloTrackReader.h"   
 #include "AliCaloPID.h"
 #include "AliFiducialCut.h"
@@ -30,15 +29,16 @@ class AliVCaloCells;
 #include "AliNeutralMesonSelection.h"
 #include "AliCalorimeterUtils.h" 
 #include "AliHistogramRanges.h"
+#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliMixedEvent.h" 
+class AliVCaloCells;
 class AliStack ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
-#include "AliAODPWG4ParticleCorrelation.h"
 class AliEMCALGeometry;
 class AliPHOSGeoUtils;
-#include "AliMixedEvent.h" 
-#include "AliCentrality.h"
-#include "AliEventplane.h"
+class AliCentrality;
+class AliEventplane;
 
 class AliAnaCaloTrackCorrBaseClass : public TObject {
 	

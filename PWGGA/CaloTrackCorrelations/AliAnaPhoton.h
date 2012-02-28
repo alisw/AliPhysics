@@ -124,6 +124,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   //Histograms 
   TH1F * fhClusterCuts[9];               //! control histogram on the different photon selection cuts
   TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
+  TH2F * fhCellsE;                       //! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;          //! Fraction of energy carried by cell with maximum energy
   TH2F * fhTimeE;                        //! time of cluster vs E 
 

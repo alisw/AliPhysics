@@ -24,31 +24,36 @@
  * @ingroup pwg2_forward_flow
  */
 void MakeFlow(TString data      = "", 
-	      Int_t   nevents   = 0, 
+	      Int_t   nEvents   = 0, 
 	      TString type      = "", 
-	      Int_t   etabins   = 48,
               Bool_t  mc        = kFALSE,
+	      const char* name  = 0,
+	      Int_t   proof     = 0,
 	      TString addFlow   = "",
               Int_t   addFType  = 0,
               Int_t   addFOrder = 0,
-	      Bool_t  proof     = kFALSE)
+              Bool_t  gdb       = kFALSE)
 {
-  Bool_t proof = kFALSE;
-
   // --- Load libs ---------------------------------------------------
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
-  // --- Check for proof mode, and possibly upload pars --------------
-  if (proof> 0) { 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
-    if (!LoadPars(proof)) { 
-      AliError("MakeFlow", "Failed to load PARs");
-      return;
-    }
+  // --- Possibly use plug-in for this -------------------------------
+  if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
+ 
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/TrainSetup.C+");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeFlowTrain.C+");
+
+    MakeFlowTrain t(name, type.Data(), mc, addFlow.Data(), addFType, addFOrder, false);
+    t.SetDataDir(data.Data());
+    t.SetDataSet("");
+    t.SetProofServer(Form("workers=%d", proof));
+    t.SetUseGDB(gdb);
+    t.Run(proof > 0 ? "proof" : "local", "full", nEvents, proof > 0);
+    return;
   }
 
   // --- Set the macro path ------------------------------------------
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
 			   "$ALICE_ROOT/ANALYSIS/macros",
 			   gROOT->GetMacroPath()));
 
@@ -57,19 +62,10 @@ void MakeFlow(TString data      = "",
     AliError("You didn't add a data file");
     return;
   }
-  TChain* chain = new TChain("aodTree");
-
-  if (data.Contains(".txt")) MakeChain(data, chain);
-
-  if (data.Contains(".root")) {
-    TFile* test = TFile::Open(data.Data());
-    if (!test) {
-      AliError(Form("AOD file %s not found", data.Data()));
-      return;
-    }
-    test->Close(); // Remember to close!
-    chain->Add(data.Data());
-  }
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/MakeChain.C");
+  TChain* chain = MakeChain("AOD", data.Data(), true);
+  // If 0 or less events is select, choose all 
+  if (nEvents <= 0) nEvents = chain->GetEntries();
 
   // --- Initiate the event handlers --------------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Forward Flow", 
@@ -81,7 +77,7 @@ void MakeFlow(TString data      = "",
 
   // --- Add the tasks ---------------------------------------------
   gROOT->LoadMacro("AddTaskForwardFlow.C");
-  AddTaskForwardFlow(type, etabins, mc, addFlow, addFType, addFOrder);
+  AddTaskForwardFlow(type, mc, addFlow, addFType, addFOrder);
 
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
@@ -91,51 +87,21 @@ void MakeFlow(TString data      = "",
   }
   mgr->PrintStatus();
   Printf("****************************************");
-  Printf("Doing flow analysis on %d Events", nevents == 0 ? chain->GetEntries() : nevents);
+  Printf("Doing flow analysis on %d Events", nEvents);
   Printf("****************************************");
   // 
-  if (proof) mgr->SetDebugLevel(3);
-  if (mgr->GetDebugLevel() < 1 && !proof) 
-    mgr->SetUseProgressBar(kTRUE,chain->GetEntries() < 10000 ? 100 : 1000);
+  mgr->SetDebugLevel(0);
+  if (mgr->GetDebugLevel() < 1) 
+    mgr->SetUseProgressBar(kTRUE, nEvents < 10000 ? 100 : 1000);
 
 //  mgr->SetSkipTerminate(true);
 
   t.Start();
-  if (nevents == 0) mgr->StartAnalysis("local", chain);
-  if (nevents != 0) mgr->StartAnalysis("local", chain, nevents);
+  mgr->StartAnalysis("local", chain, nEvents);
   t.Stop();
   t.Print();
 }
 //----------------------------------------------------------------
-void MakeChain(TString data = "", TChain* chain = 0)
-{
-  // creates chain of files in a given directory or file containing a list.
-  
-  // Open the input stream
-  ifstream in;
-  in.open(data.Data());
-
-  // Read the input list of files and add them to the chain
-  TString line;
-  TFile* file;
-  while(in.good()) 
-  {
-    in >> line;
-      
-    if (line.Length() == 0)
-      continue;      
-    if (!(file = TFile::Open(line))) 
-      gROOT->ProcessLine(Form(".!rm %s", line.Data()));
-    else {
-      chain->Add(line);
-      file->Close();
-    }
-  }
-
-  in.close();
-
-  return;
-}
 //
 // EOF
 //

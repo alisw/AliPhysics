@@ -5,7 +5,7 @@
  * 
  * @brief  Base class for QA rings
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 #ifndef QARING_H
 #define QARING_H
@@ -24,7 +24,7 @@ class TTree;
  * Base class for QA rings.  This manages the per-ring entries in the
  * tree 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 struct QARing 
 { 

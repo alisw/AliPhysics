@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
@@ -51,7 +50,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 
-// ---- PartCorr ---
+// ---- CaloTrackCorr ---
 #include "AliCalorimeterUtils.h"
 #include "AliCaloTrackReader.h"
 

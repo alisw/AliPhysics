@@ -44,6 +44,8 @@ AliAnalysisTaskHFEpidQA::AliAnalysisTaskHFEpidQA():
   , fEvents(NULL)
   , fNNref(NULL)
   , fTRDTotalChargeInSlice0(kFALSE)
+  , fIsQAPbPb(kFALSE)
+  , fIsQAppMultiBin(kFALSE)
 {
   //
   // Default Constructor
@@ -57,6 +59,8 @@ AliAnalysisTaskHFEpidQA::AliAnalysisTaskHFEpidQA(const Char_t *name):
   , fEvents(NULL)
   , fNNref(NULL)
   , fTRDTotalChargeInSlice0(kFALSE)
+  , fIsQAPbPb(kFALSE)
+  , fIsQAppMultiBin(kFALSE)
 {
   //
   // Default Constructor
@@ -89,6 +93,12 @@ void AliAnalysisTaskHFEpidQA::UserCreateOutputObjects(){
   if(HasV0pidQA()) fPIDqa->SetV0pidQA();
   if(HasRecalculateTRDpid()) fPIDqa->SetRecalculateTRDpid();
   if(fNNref) fPIDqa->SetNNref(fNNref);
+  if(fIsQAPbPb) fPIDqa->SetPbPb();
+  else
+  {
+      if(fIsQAppMultiBin) fPIDqa->SetPPMultiBin();
+      else fPIDqa->SetPP();
+  }
   fPIDqa->Init();
 
   TList *tmp = fPIDqa->GetOutput();

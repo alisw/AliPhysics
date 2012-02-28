@@ -5,7 +5,7 @@ ViewEDCor(const char* filename)
   // gSystem->Load("libANALYSIS");
   // gSystem->Load("libANALYSISalice");
   // gSystem->Load("libPWG0base");
-  // gSystem->Load("libPWG2forward");
+  // gSystem->Load("libPWGLFforward");
 
   AliFMDAnaParameters* param = AliFMDAnaParameters::Instance();
   param->SetEnergy(900.F);

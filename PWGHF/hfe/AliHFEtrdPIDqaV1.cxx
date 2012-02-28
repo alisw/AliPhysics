@@ -231,6 +231,12 @@ void AliHFEtrdPIDqaV1::Initialize(){
   Double_t maxTRDtm[5] = {kMaxPID, kMaxP, 20000., 2., 11.};
   fHistos->CreateTHnSparse("hTRDtruncatedMean", "TRD truncated Mean; species; p [GeV/c]; TRD signal [a.u.]; selection step", 5, nBinsTRDtm, minTRDtm, maxTRDtm);
   fHistos->Sumw2("hTRDtruncatedMean");
+
+  // Monitoring of the number of tracklets
+  fHistos->CreateTH2F("hNtrackletsBefore", "Number of tracklets before PID; species; p (GeV/c), Number of Tracklets", kPbins, kMinP, kMaxP, 7, 0., 7.);
+  fHistos->Sumw2("hNtrackletsBefore");
+  fHistos->CreateTH2F("hNtrackletsAfter", "Number of tracklets after PID; species; p (GeV/c), Number of Tracklets", kPbins, kMinP, kMaxP, 7, 0., 7.);
+  fHistos->Sumw2("hNtrackletsAfter");
 }
 
 //____________________________________________________________
@@ -269,6 +275,12 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
     if(container[2] < 1e-3) continue; // Filter out 0 entries
     fHistos->Fill("hTRDcharge", container);
   }
+
+  Int_t ntracklets = track->GetRecTrack()->GetTRDntrackletsPID();
+  if(step == AliHFEdetPIDqa::kBeforePID)
+    fHistos->Fill("hNtrackletsBefore", trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0., ntracklets);
+  else
+    fHistos->Fill("hNtrackletsAfter", trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0., ntracklets);
 }
 
 //_________________________________________________________

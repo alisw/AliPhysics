@@ -7,7 +7,7 @@
  * 
  * @return 
  *
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_trains
  */
 Bool_t
 BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
@@ -19,18 +19,19 @@ BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
   gROOT->LoadClass("AliESDEvent",          "libESD");
   gROOT->LoadClass("AliAnalysisManager",   "libANALYSIS");
   gROOT->LoadClass("AliAnalysisTaskSE",    "libANALYSISalice");
-  gROOT->LoadClass("AliAODForwardMult",    "libPWG2forward2");
+  gROOT->LoadClass("AliAODForwardMult",    "libPWGLFforward2");
 
   // --- Setup script path -------------------------------------------
   const char* aliPath   = gSystem->ExpandPathName("$ALICE_ROOT");
   const char* fwd2Path  = 
-    gSystem->ExpandPathName("$ALICE_ROOT/PWG2/FORWARD/analysis2");
+    gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD/analysis2");
   const char* macroPath = gROOT->GetMacroPath();
   gROOT->SetMacroPath(Form(".:%s:%s/trains:%s/scripts",
 			   macroPath,fwd2Path,fwd2Path));
   
   // --- Setup include path ------------------------------------------
   gSystem->AddIncludePath(Form("-I%s", fwd2Path));
+  gSystem->AddIncludePath(Form("-I%s/trains", fwd2Path));
   gSystem->AddIncludePath(Form("-I%s", aliPath));
   gSystem->AddIncludePath(Form("-I%s/include", aliPath));
 

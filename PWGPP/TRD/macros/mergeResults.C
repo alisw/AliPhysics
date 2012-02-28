@@ -5,6 +5,7 @@ void mergeResults(Char_t *files, Char_t *file="QAresults.root")
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libTENDER.so");
   gSystem->Load("libPWGPP.so");
+  gSystem->Load("libPWGmuon.so");
 
   TDatime dt; gRandom->SetSeed(dt.Get());
   gSystem->Exec("mkdir -p merge; rm -rf merge/*");

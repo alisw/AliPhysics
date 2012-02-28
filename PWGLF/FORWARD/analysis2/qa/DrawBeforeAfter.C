@@ -6,7 +6,7 @@
  * @brief  Script to draw the before/after merging energy loss spectra 
  * 
  * @deprecated Use QATrender instead 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 #ifndef __CINT__
 # include <TH1.h>
@@ -32,7 +32,7 @@ class TList;
  * @param r  Ring 
  *
  * @deprecated Use QATrender instead 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawRingBeforeAfter(TList* p, UShort_t d, Char_t r)
@@ -69,7 +69,7 @@ DrawRingBeforeAfter(TList* p, UShort_t d, Char_t r)
  * @param folder   Input folder in file 
  *
  * @deprecated Use QATrender instead 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawBeforeAfter(const char* filename="forward.root", 

@@ -2,7 +2,6 @@
 #define ALIISOLATIONCUT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  */
 
 //_________________________________________________________________________
 // Class containing methods for the isolation cut. 
@@ -10,11 +9,9 @@
 // is passed. Look in a cone around the candidate and study
 // the hadronic activity inside to decide if the candidate is isolated
 //
-//
-// 
 // -- Author: Gustavo Conesa (INFN-LNF)
-
-//-Yaxian Mao (add the possibility for different IC method with different pt range, 01/10/2010)
+//
+// -- Yaxian Mao (add the possibility for different IC method with different pt range, 01/10/2010)
 
 // --- ROOT system --- 
 #include <TObject.h>
@@ -24,6 +21,7 @@ class TObjArray ;
 class AliAODPWG4ParticleCorrelation ;
 class AliCaloTrackReader ;
 class AliCaloPID; 
+
 class AliIsolationCut : public TObject {
   
  public: 
@@ -68,7 +66,7 @@ class AliIsolationCut : public TObject {
   void       SetPtFraction(Float_t pt)      { fPtFraction     = pt   ; }
   void       SetICMethod(Int_t i )          { fICMethod       = i    ; }
   void       SetParticleTypeInCone(Int_t i) { fPartInCone     = i    ; }
-  
+  void       SetDebug(Int_t d)              { fDebug          = d    ; }
  private:
   
   Float_t    fConeSize ;       // Size of the isolation cone 
@@ -83,10 +81,12 @@ class AliIsolationCut : public TObject {
   Int_t      fPartInCone;      // Type of particles inside cone:
                                // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
 
-  AliIsolationCut(const AliIsolationCut & g) ;               // cpy ctor
+  Int_t      fDebug;           // Debug level
+  
+  AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,4)
+  ClassDef(AliIsolationCut,5)
 } ;
 
 

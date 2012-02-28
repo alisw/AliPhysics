@@ -30,7 +30,9 @@
 
 class AliCFManager;
 class AliESDtrack;
+class AliMCEvent;
 class AliMCParticle;
+class AliVEvent;
 
 class TObjArray;
 class TList;
@@ -85,6 +87,8 @@ class AliHFEcuts : public TNamed{
 
     Bool_t CheckParticleCuts(UInt_t step, TObject *o);
     Bool_t CheckEventCuts(const char*namestep, TObject *o);
+    void SetRecEvent(const AliVEvent *ev);
+    void SetMCEvent(const AliMCEvent *ev);
   
     TList *GetQAhistograms() const { return fHistQA; }
     
@@ -133,8 +137,9 @@ class AliHFEcuts : public TNamed{
     inline void SetCutITSpixel(UChar_t cut);
     void SetCheckITSLayerStatus(Bool_t checkITSLayerStatus) { fCheckITSLayerStatus = checkITSLayerStatus; }
     void SetMinNClustersTPC(UChar_t minClustersTPC) { fMinClustersTPC = minClustersTPC; }
+    void SetMinNClustersTPCPID(UChar_t minClustersTPC) { fMinClustersTPCPID = minClustersTPC; }
     void SetMinNClustersITS(UChar_t minClustersITS) { fMinClustersITS = minClustersITS; }
-    void SetMinNTrackletsTRD(UChar_t minNtrackletsTRD) { fMinTrackletsTRD = minNtrackletsTRD; }
+    void SetMinNTrackletsTRD(UChar_t minNtrackletsTRD, Bool_t exact = kFALSE) { fMinTrackletsTRD = minNtrackletsTRD; fTRDtrackletsExact = exact; }
     void SetMaxChi2perClusterITS(Double_t chi2) { fMaxChi2clusterITS = chi2; };
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
@@ -154,7 +159,7 @@ class AliHFEcuts : public TNamed{
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
     void SetTPCPIDCleanUpStep(Bool_t tpcPIDCleanUpStep) {fTPCPIDCLEANUPStep = tpcPIDCleanUpStep;};
     void SetUseMixedVertex(Bool_t useMixedVertex) {fUseMixedVertex = useMixedVertex;};    
-    void SetFractionOfSharedTPCClusters( Bool_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
+    void SetFractionOfSharedTPCClusters(Double_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { fMaxImpactParameterRpar = maxImpactParameterRpar; };
     
     inline void CreateStandardCuts();
@@ -210,6 +215,7 @@ class AliHFEcuts : public TNamed{
     Double_t fProdVtx[4];	        // Production Vertex
     Double_t fPtRange[2];	        // pt range
     UChar_t fMinClustersTPC;	    // Min.Number of TPC clusters
+    UChar_t fMinClustersTPCPID;	  // Min.Number of TPC clusters
     UChar_t fMinClustersITS;	    // Min.Number of TPC clusters
     UChar_t fMinTrackletsTRD;	    // Min. Number of TRD tracklets
     UChar_t fCutITSPixel;	        // Cut on ITS pixel
@@ -219,6 +225,7 @@ class AliHFEcuts : public TNamed{
     Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
     Double_t fSigmaToVtx[3];	    // Sigma To Vertex
     Double_t fVertexRangeZ;             // Vertex Range reconstructed
+    Bool_t   fTRDtrackletsExact;        // Require exact number of tracklets
     Bool_t   fTOFPIDStep;               // TOF matching step efficiency
     Bool_t   fTOFMISMATCHStep;        // TOF mismatch step
     Bool_t   fTPCPIDCLEANUPStep;      // TPC PIC cleanup step

@@ -3,7 +3,7 @@
  * 
  * @param max 
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 void
 dndeta_final(Double_t max=6)

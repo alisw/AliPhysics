@@ -1,5 +1,6 @@
-AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
-				     TString filename="DstoKKpiCuts.root")
+AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
+                     Int_t storeNtuple=0,Bool_t readMC=kFALSE,
+				     TString filename="")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for Ds candidates 
@@ -15,33 +16,40 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
   if (!mgr) {
     ::Error("AddTaskDs", "No analysis manager to connect to.");
   }
-
-
-  TFile* filecuts=TFile::Open(filename.Data());
-  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-    cout<<"Error: Input file not found!"<<endl;
-    return 0;
-  }
   
+  Bool_t stdcuts=kFALSE;
+  TFile* filecuts;
+  if( filename.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+    filecuts=TFile::Open(filename.Data());
+    if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	  AliFatal("Cut object not found: analysis will not start!\n");
+    }
+    else printf("Cut object correctly found\n");
+  }
   
   //Analysis Task
 
-  
   AliRDHFCutsDstoKKpi* analysiscuts=new AliRDHFCutsDstoKKpi();
-  analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
-
-  AliRDHFCutsDstoKKpi* prodcuts=new AliRDHFCutsDstoKKpi();
-  prodcuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("ProdCuts");
   
-  //AliRDHFCutsDstoKKpi *prodcuts = (AliRDHFCutsDstoKKpi*)fileCuts->Get("ProdCuts");
-  //AliRDHFCutsDstoKKpi *analysiscuts = (AliRDHFCutsDstoKKpi*)fileCuts->Get("AnalysisCuts");
+  if(stdcuts) {
+    if(system==0) {
+      printf("Cut object not found: standard pp cut object used\n");
+      analysiscuts->SetStandardCutsPP2010();
+    }
+    else AliFatal("Standard cut object not available for PbPb: analysis will not start!\n");
+  }
+  else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
+  
+  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",analysiscuts,storeNtuple);
 
-  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",prodcuts,analysiscuts,storeNtuple);
   dsTask->SetReadMC(readMC);
   //dsTask->SetDoLikeSign(kTRUE);
   //  dsTask->SetUseTPCpid(kTRUE);
   //dsTask->SetUseTOFpid(kTRUE);
   dsTask->SetDebugLevel(10);
+  dsTask->SetUseSelectionBit(kTRUE);
   //dsTask->SetMassLimits(0.2);
   mgr->AddTask(dsTask);
   
@@ -66,7 +74,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
    if(storeNtuple){
     AliAnalysisDataContainer *coutputDs2 = mgr->CreateContainer("coutputDs2",TNtuple::Class(),
 								   AliAnalysisManager::kOutputContainer,
-								   "InvMassDs_nt1.root");
+								   outputfile.Data());
     
     coutputDs2->SetSpecialOutput();
   }

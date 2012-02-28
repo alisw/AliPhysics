@@ -14,22 +14,24 @@
 //-----------------------------------------------------------------
 //	      AliAnalysisTaskCheckPerformanceCascadePbPb class
 //            This task is for a performance study of cascade identification in PbPb.
-//            It works with MC info and ESD.
-//            Use with AOD tree = under development
+//            It works with MC info and ESD/AOD.
 //            Origin   : AliAnalysisTaskCheckPerformanceCascade class by A. Maire Nov2010, antonin.maire@ires.in2p3.fr
 //            Modified for PbPb analysis: M. Nicassio Feb2011, maria.nicassio@ba.infn.it:
-//                        - physics selection moved to the runProof.C macro
-//                        - added centrality selection  
+//                        - physics selection moved to the run.C macro
+//                        - added centrality selection and possibility to select events in nTracks ranges 
 //                        - added new histograms 
 //                        - modified binning of some histograms and containers 
 //                        - flag to enable CF container usage 
-//                        - protection in the destructor for CAF usage
+//                        - check in the destructor for CAF usage
 //                        - flag for acceptance cut in the MC part
 //                        - in the MC particle selection IsPhysicalPrimary added and number of particles taken as appropriate for HIJING 
-//                          (however for cascades one gets the same if runs on Nprimaries in the stack and does not require IsPhysicalPrimary)
-//                        - number of tracklets from AOD also
-//                        - automatic settings for PID (July 2011) 
-//                        - added possibility to select either injected cascades or HIJING cascades (May 2011)  
+//                          (however for cascades one gets the same if runs on Nprimaries in the stack and does not check IsPhysicalPrimary)
+//                        - automatic settings for PID 
+//                        - selection of injected cascades and HIJING cascades (kind of "bug" in method IsFromBGEvent())
+//                        - added proper time histograms for cascades and lambdas
+//                        - cos of PA V0 wrt Xi vertex and not primary vertex  
+//                        - distance xi-V0 added in the container
+//                        - AOD analysis developed (January 2012)
 //-----------------------------------------------------------------
 
 
@@ -64,11 +66,12 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
-//   #include "AliV0vertexer.h"
-//   #include "AliCascadeVertexer.h"
+//#include "AliV0vertexer.h"
+//#include "AliCascadeVertexer.h"
 #include "AliESDEvent.h"
 #include "AliESDcascade.h"
 #include "AliAODEvent.h"
+#include "AliAODMCParticle.h" 
 #include "AliAnalysisTaskCheckPerformanceCascadePbPb.h"
 
 ClassImp(AliAnalysisTaskCheckPerformanceCascadePbPb)
@@ -78,7 +81,7 @@ ClassImp(AliAnalysisTaskCheckPerformanceCascadePbPb)
      //_____Dummy constructor________________________________________________________________
 AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCascadePbPb() 
 : AliAnalysisTaskSE(), // <- take care to AliAnalysisTask( empty )
-  fDebugCascade(0), fAnalysisType("ESD"), fCollidingSystems(0), fESDtrackCuts(0), /*fPaveTextBookKeeping(0),*/
+  fAnalysisType("ESD"), fESDtrackCuts(0), /*fPaveTextBookKeeping(0),*/
 
     fPIDResponse                   (0),
     fkRerunV0CascVertexers         (0),
@@ -87,9 +90,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fkQualityCutNoTPConlyPrimVtx   (kTRUE),
     fkQualityCutTPCrefit           (kTRUE),
     fkQualityCut80TPCcls           (kTRUE),
-    fkIsDataRecoWith1PadTPCCluster (kTRUE),
     fkExtraSelections              (0),
-    fUseCFCont                     (0),
     fCentrLowLim(0),    fCentrUpLim(0), fCentrEstimator(0),
     fVtxRange                      (0),
     fApplyAccCut                   (0),
@@ -100,6 +101,9 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 
     // Events in centrality bins
     fHistEvtsInCentralityBinsvsNtracks(0),
+    fHistBestVtxX(0),
+    fHistBestVtxY(0),
+    fHistBestVtxZ(0),
  
     // Cascade multiplicity histos
 
@@ -128,11 +132,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
       
    // Xi-
    fHistEtaGenCascXiMinus(0),
-   f3dHistGenPtVsGenYGenvsCentXiMinus(0),
-   f3dHistGenPtVsGenYGenvsNtracksXiMinus(0),
-
+   f3dHistGenPtVsGenYvsCentXiMinusNat(0),
+   f3dHistGenPtVsGenYvsNtracksXiMinusNat(0),
+   f3dHistGenPtVsGenYvsCentXiMinusInj(0),
+   f3dHistGenPtVsGenYvsNtracksXiMinusInj(0),
+   f3dHistGenPtVsGenctauvsYXiMinusNat(0),
+   f3dHistGenPtVsGenctauvsYXiMinusInj(0),
    
-    fHistThetaGenCascXiMinus(0),
+    fHistThetaGenCascXiMinusNat(0),
+    fHistThetaGenCascXiMinusInj(0), 
     f2dHistGenPtVsGenYFdblXiMinus(0),
     
     fHistThetaLambdaXiMinus(0), 
@@ -148,11 +156,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    
    // Xi+
    fHistEtaGenCascXiPlus(0),
-   f3dHistGenPtVsGenYGenvsCentXiPlus(0),
-   f3dHistGenPtVsGenYGenvsNtracksXiPlus(0),
-
+   f3dHistGenPtVsGenYvsCentXiPlusNat(0),
+   f3dHistGenPtVsGenYvsNtracksXiPlusNat(0),
+   f3dHistGenPtVsGenYvsCentXiPlusInj(0),
+   f3dHistGenPtVsGenYvsNtracksXiPlusInj(0),
+   f3dHistGenPtVsGenctauvsYXiPlusNat(0),
+   f3dHistGenPtVsGenctauvsYXiPlusInj(0),
    
-    fHistThetaGenCascXiPlus(0), 
+    fHistThetaGenCascXiPlusNat(0), 
+    fHistThetaGenCascXiPlusInj(0),
     f2dHistGenPtVsGenYFdblXiPlus(0),
     
     fHistThetaLambdaXiPlus(0), 
@@ -167,11 +179,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    
    // Omega-
    fHistEtaGenCascOmegaMinus(0),
-   f3dHistGenPtVsGenYGenvsCentOmegaMinus(0),
-   f3dHistGenPtVsGenYGenvsNtracksOmegaMinus(0),
-
+   f3dHistGenPtVsGenYvsCentOmegaMinusNat(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaMinusNat(0),
+   f3dHistGenPtVsGenYvsCentOmegaMinusInj(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaMinusInj(0),
+   f3dHistGenPtVsGenctauvsYOmegaMinusNat(0),
+   f3dHistGenPtVsGenctauvsYOmegaMinusInj(0),
    
-    fHistThetaGenCascOmegaMinus(0),
+    fHistThetaGenCascOmegaMinusNat(0),
+    fHistThetaGenCascOmegaMinusInj(0),
     f2dHistGenPtVsGenYFdblOmegaMinus(0),
     
     fHistThetaLambdaOmegaMinus(0), 
@@ -187,11 +203,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    
    // Omega+
    fHistEtaGenCascOmegaPlus(0),
-   f3dHistGenPtVsGenYGenvsCentOmegaPlus(0),
-   f3dHistGenPtVsGenYGenvsNtracksOmegaPlus(0),
-
+   f3dHistGenPtVsGenYvsCentOmegaPlusNat(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaPlusNat(0),
+   f3dHistGenPtVsGenYvsCentOmegaPlusInj(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaPlusInj(0),
+   f3dHistGenPtVsGenctauvsYOmegaPlusNat(0),
+   f3dHistGenPtVsGenctauvsYOmegaPlusInj(0),
    
-    fHistThetaGenCascOmegaPlus(0),
+    fHistThetaGenCascOmegaPlusNat(0),
+    fHistThetaGenCascOmegaPlusInj(0),
     f2dHistGenPtVsGenYFdblOmegaPlus(0),
     
     fHistThetaLambdaOmegaPlus(0), 
@@ -264,7 +284,17 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     f2dHistAsMCResPhiXiPlus(0),
     f2dHistAsMCResPhiOmegaMinus(0),
     f2dHistAsMCResPhiOmegaPlus(0),
-                               
+
+       //  - Correlation between proton (antiproton) daughter MC pt and Xi/Omega MC pt (to apply Geat/Fluka correction)
+    f2dHistAsMCptProtonMCptXiMinus(0),
+    f2dHistAsMCptAntiprotonMCptXiPlus(0),
+    f2dHistAsMCptProtonMCptOmegaMinus(0),
+    f2dHistAsMCptAntiprotonMCptOmegaPlus(0),
+    
+    fHistV0toXiCosineOfPointingAngle(0),
+    fHistV0CosineOfPointingAnglevsPtXi(0),
+    fHistV0CosineOfPointingAnglevsPtOmega(0), 
+                           
     fCFContCascadePIDAsXiMinus(0),
     fCFContCascadePIDAsXiPlus(0),
     fCFContCascadePIDAsOmegaMinus(0),
@@ -276,7 +306,6 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 
 {
 // Dummy constructor
-        for(Int_t iAlephIdx   = 0; iAlephIdx   < 5; iAlephIdx++   ) { fAlephParameters [iAlephIdx]    = -1.; }
         for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0Sels          [iV0selIdx   ] = -1.; }
         for(Int_t iCascSelIdx = 0; iCascSelIdx < 8; iCascSelIdx++ ) { fCascSels        [iCascSelIdx ] = -1.; }
 }
@@ -287,17 +316,16 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 //_____Non-default Constructor________________________________________________________________
 AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCascadePbPb(const char *name) 
   : AliAnalysisTaskSE(name),
-    fDebugCascade(0), fAnalysisType("ESD"), fCollidingSystems(0), 
- fESDtrackCuts(0), /*fPaveTextBookKeeping(0),*/
+    fAnalysisType("ESD"), fESDtrackCuts(0), /*fPaveTextBookKeeping(0),*/
+
+    fPIDResponse                   (0),
     fkRerunV0CascVertexers         (0),
     fkQualityCutZprimVtxPos        (kTRUE),
     fkRejectEventPileUp            (kTRUE),
     fkQualityCutNoTPConlyPrimVtx   (kTRUE),
     fkQualityCutTPCrefit           (kTRUE),
     fkQualityCut80TPCcls           (kTRUE),
-    fkIsDataRecoWith1PadTPCCluster (kTRUE),
     fkExtraSelections              (0),
-    fUseCFCont(0),
     fCentrLowLim(0), fCentrUpLim(0), fCentrEstimator(0),
     fVtxRange                      (0),
     fApplyAccCut                   (0),
@@ -308,6 +336,9 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 
     // Events in centraity bins
     fHistEvtsInCentralityBinsvsNtracks(0),
+    fHistBestVtxX(0),
+    fHistBestVtxY(0),
+    fHistBestVtxZ(0),
 
     // Cascade multiplicity histos
 
@@ -335,11 +366,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    
 // Xi-
    fHistEtaGenCascXiMinus(0),
-   f3dHistGenPtVsGenYGenvsCentXiMinus(0),
-   f3dHistGenPtVsGenYGenvsNtracksXiMinus(0),
-
+   f3dHistGenPtVsGenYvsCentXiMinusNat(0),
+   f3dHistGenPtVsGenYvsNtracksXiMinusNat(0),
+   f3dHistGenPtVsGenYvsCentXiMinusInj(0),
+   f3dHistGenPtVsGenYvsNtracksXiMinusInj(0),
+   f3dHistGenPtVsGenctauvsYXiMinusNat(0),
+   f3dHistGenPtVsGenctauvsYXiMinusInj(0),
    
-    fHistThetaGenCascXiMinus(0),
+    fHistThetaGenCascXiMinusNat(0),
+    fHistThetaGenCascXiMinusInj(0),
     f2dHistGenPtVsGenYFdblXiMinus(0),
     
     fHistThetaLambdaXiMinus(0), 
@@ -355,10 +390,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    
    // Xi+
    fHistEtaGenCascXiPlus(0),
-  f3dHistGenPtVsGenYGenvsCentXiPlus(0),
-  f3dHistGenPtVsGenYGenvsNtracksXiPlus(0),
- 
-    fHistThetaGenCascXiPlus(0), 
+  f3dHistGenPtVsGenYvsCentXiPlusNat(0),
+  f3dHistGenPtVsGenYvsNtracksXiPlusNat(0),
+  f3dHistGenPtVsGenYvsCentXiPlusInj(0),
+  f3dHistGenPtVsGenYvsNtracksXiPlusInj(0),
+  f3dHistGenPtVsGenctauvsYXiPlusNat(0),
+  f3dHistGenPtVsGenctauvsYXiPlusInj(0),
+
+    fHistThetaGenCascXiPlusNat(0), 
+    fHistThetaGenCascXiPlusInj(0),
     f2dHistGenPtVsGenYFdblXiPlus(0),
     
     fHistThetaLambdaXiPlus(0), 
@@ -373,10 +413,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    
    // Omega-
    fHistEtaGenCascOmegaMinus(0),
-   f3dHistGenPtVsGenYGenvsCentOmegaMinus(0),
-   f3dHistGenPtVsGenYGenvsNtracksOmegaMinus(0),
-   
-    fHistThetaGenCascOmegaMinus(0),
+   f3dHistGenPtVsGenYvsCentOmegaMinusNat(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaMinusNat(0),
+   f3dHistGenPtVsGenYvsCentOmegaMinusInj(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaMinusInj(0),
+   f3dHistGenPtVsGenctauvsYOmegaMinusNat(0),
+   f3dHistGenPtVsGenctauvsYOmegaMinusInj(0),
+ 
+    fHistThetaGenCascOmegaMinusNat(0),
+    fHistThetaGenCascOmegaMinusInj(0),
     f2dHistGenPtVsGenYFdblOmegaMinus(0),
     
     fHistThetaLambdaOmegaMinus(0), 
@@ -392,11 +437,15 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    
    // Omega+
    fHistEtaGenCascOmegaPlus(0),
-   f3dHistGenPtVsGenYGenvsCentOmegaPlus(0),
-   f3dHistGenPtVsGenYGenvsNtracksOmegaPlus(0),
-
+   f3dHistGenPtVsGenYvsCentOmegaPlusNat(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaPlusNat(0),
+   f3dHistGenPtVsGenYvsCentOmegaPlusInj(0),
+   f3dHistGenPtVsGenYvsNtracksOmegaPlusInj(0),
+   f3dHistGenPtVsGenctauvsYOmegaPlusNat(0),
+   f3dHistGenPtVsGenctauvsYOmegaPlusInj(0),
    
-    fHistThetaGenCascOmegaPlus(0),
+    fHistThetaGenCascOmegaPlusNat(0),
+    fHistThetaGenCascOmegaPlusInj(0),
     f2dHistGenPtVsGenYFdblOmegaPlus(0),
     
     fHistThetaLambdaOmegaPlus(0), 
@@ -470,6 +519,16 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     f2dHistAsMCResPhiOmegaMinus(0),
     f2dHistAsMCResPhiOmegaPlus(0),
 
+       //  - Correlation between proton (antiproton) daughter MC pt and Xi/Omega MC pt (to apply Geat/Fluka correction)
+    f2dHistAsMCptProtonMCptXiMinus(0),
+    f2dHistAsMCptAntiprotonMCptXiPlus(0),
+    f2dHistAsMCptProtonMCptOmegaMinus(0),
+    f2dHistAsMCptAntiprotonMCptOmegaPlus(0),
+
+    fHistV0toXiCosineOfPointingAngle(0),
+    fHistV0CosineOfPointingAnglevsPtXi(0),
+    fHistV0CosineOfPointingAnglevsPtOmega(0),
+
     fCFContCascadePIDAsXiMinus(0),
     fCFContCascadePIDAsXiPlus(0),
     fCFContCascadePIDAsOmegaMinus(0),
@@ -479,7 +538,6 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 
     fV0Ampl(0)
 
-
 {
   // Constructor
 
@@ -487,26 +545,25 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
   // Input slot #0 works with a TChain
   // Output slot #1 writes into a TList container (cascade)
         
-        for(Int_t iAlephIdx   = 0; iAlephIdx   < 5; iAlephIdx++   ) { fAlephParameters [iAlephIdx]    = -1.; }
         
-        // Hyper Loose  // FIXME change with PbPb cuts
+        // PbPb default cuts
         
         fV0Sels[0] =  33.  ;  // max allowed chi2
-        fV0Sels[1] =   0.001; // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-        fV0Sels[2] =   0.001; // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
-        fV0Sels[3] =   5.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
-        fV0Sels[4] =   0.0 ;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
-        fV0Sels[5] =   0.1 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
-        fV0Sels[6] = 100.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
+        fV0Sels[1] =   0.1; // min allowed impact parameter for the 1st daughter 
+        fV0Sels[2] =   0.1; // min allowed impact parameter for the 2nd daughter 
+        fV0Sels[3] =   1.0 ;  // max allowed DCA between the daughter tracks       
+        fV0Sels[4] =   0.998 ;  // min allowed cosine of V0's pointing angle         
+        fV0Sels[5] =   0.9;  // min radius of the fiducial volume                 
+        fV0Sels[6] = 100.  ;  // max radius of the fiducial volume                 
         
-        fCascSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
-        fCascSels[1] =   0.001;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-        fCascSels[2] =   0.008;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
-        fCascSels[3] =   0.001;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
-        fCascSels[4] =   5.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
-        fCascSels[5] =   0.82 ;  //FIXME min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
-        fCascSels[6] =   0.1  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
-        fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+        fCascSels[0] =  33.   ;  // max allowed chi2 
+        fCascSels[1] =   0.05;  // min allowed V0 impact parameter                    
+        fCascSels[2] =   0.008;  // "window" around the Lambda mass                    
+        fCascSels[3] =   0.03;  // min allowed bachelor's impact parameter            
+        fCascSels[4] =   0.3  ;  // max allowed DCA between the V0 and the bachelor    
+        fCascSels[5] =   0.999;  // min allowed cosine of the cascade pointing angle   
+        fCascSels[6] =   0.9  ;  // min radius of the fiducial volume                  
+        fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  
         
         
   DefineOutput(1, TList::Class());
@@ -549,13 +606,13 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserCreateOutputObjects()
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
    fPIDResponse = inputHandler->GetPIDResponse();
         
-// Only used to get the number of primary reconstructed tracks
-if(! fESDtrackCuts ){
-      fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE); // Std definition of primary (see kTRUE argument) tracks for 2010
-//      fESDtrackCuts->SetEtaRange(-0.8,+0.8);
-//      fESDtrackCuts->SetPtRange(0.15, 1e10);
-      Printf("CheckCascade - ESDtrackCuts set up to 2010 std ITS-TPC cuts...");
-}
+   // Only used to get the number of primary reconstructed tracks
+   if (! fESDtrackCuts ){
+     fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE); // Std definition of primary (see kTRUE argument) tracks for 2010
+//     fESDtrackCuts->SetEtaRange(-0.8,+0.8);
+//     fESDtrackCuts->SetPtRange(0.15, 1e10);
+     Printf("CheckCascade - ESDtrackCuts set up to 2010 std ITS-TPC cuts...");
+   }
 
 
 /*
@@ -572,8 +629,7 @@ if( !fPaveTextBookKeeping){
         fPaveTextBookKeeping->AddText( "Task CHECK PERFORMANCE CASCADE analysis" );
         fPaveTextBookKeeping->AddText("- - - - - - - - - - - ");
         fPaveTextBookKeeping->AddText( Form("AnalysisType : %s ", fAnalysisType.Data() ));
-        if(!fCollidingSystems)  fPaveTextBookKeeping->AddText("Colliding system : p-p collisions ");
-        else                    fPaveTextBookKeeping->AddText("Colliding system : A-A collisions ");
+        fPaveTextBookKeeping->AddText("Colliding system : A-A collisions ");
 
         fPaveTextBookKeeping->AddText("- - - - - - - - - - - ");
     
@@ -616,27 +672,31 @@ if( !fPaveTextBookKeeping){
 
         fPaveTextBookKeeping->AddText("- - - - - - - - - - - ");
 
-        fPaveTextBookKeeping->AddText("G. TPC Aleph Param : ");
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [0] =  %.5g", fAlephParameters[0] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [1] =  %.5g", fAlephParameters[1] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [2] =  %.5g", fAlephParameters[2] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [3] =  %.5g", fAlephParameters[3] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [4] =  %.5g", fAlephParameters[4] ));
-        
         fListHistCascade->Add(fPaveTextBookKeeping);
 }       
 */
  
   // - General
   Double_t ptBinLimits[101];
-  for (Int_t iptbin = 0; iptbin<101; ++iptbin) {ptBinLimits[iptbin]=iptbin*0.1;};
-  Double_t yBinLimits[221];
-  for (Int_t iybin = 0; iybin<221; ++iybin) {yBinLimits[iybin]=-1.1+iybin*0.01;};
+  for (Int_t iptbin = 0; iptbin<101; ++iptbin) ptBinLimits[iptbin]=iptbin*0.1;
+  Double_t yBinLimits[111];
+  for (Int_t iybin = 0; iybin<111; ++iybin) yBinLimits[iybin]=-1.1+iybin*0.02;
 
   // Events in centrality bins
   Double_t centBinLimits[12] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100.};
-  fHistEvtsInCentralityBinsvsNtracks = new TH2F("fHistEvtsInCentralityBinsvsNtracks","",11,centBinLimits,100,0.,6000.);
+
+  Double_t ctauBinLimits[112];
+  for (Int_t ict = 0; ict<112; ++ict) ctauBinLimits[ict] = (Double_t) (ict-1.); 
+
+  fHistEvtsInCentralityBinsvsNtracks = new TH2F("fHistEvtsInCentralityBinsvsNtracks","",11,centBinLimits,100,0.,4000.);
   fListHistCascade->Add(fHistEvtsInCentralityBinsvsNtracks);
+
+  fHistBestVtxX = new TH1F("fHistBestVtxX","",100,-0.1,0.1);
+  fListHistCascade->Add(fHistBestVtxX);
+  fHistBestVtxY = new TH1F("fHistBestVtxY","",100,-1,1);
+  fListHistCascade->Add(fHistBestVtxY);
+  fHistBestVtxZ = new TH1F("fHistBestVtxZ","",100,-20.,20.);
+  fListHistCascade->Add(fHistBestVtxZ);
 
   // Cascade multiplicity distributions
   
@@ -668,19 +728,19 @@ if( !fPaveTextBookKeeping){
   fListHistCascade->Add(fHistnAssoOmegaPlus);
   
   if (!fHistMCTrackMultiplicity) {
-     fHistMCTrackMultiplicity = new TH1F("fHistMCTrackMultiplicity", "Multiplicity distribution;Number of tracks;Events", 200, 0, 400000); 
-  fListHistCascade->Add(fHistMCTrackMultiplicity);
+    fHistMCTrackMultiplicity = new TH1F("fHistMCTrackMultiplicity", "Multiplicity distribution;Number of tracks;Events", 200, 0, 200000.); 
+    fListHistCascade->Add(fHistMCTrackMultiplicity);
   }
   
     // - Resolution of the multiplicity estimator
-  if(! f2dHistRecoMultVsMCMult){
-       f2dHistRecoMultVsMCMult = new TH2F("f2dHistRecoMultVsMCMult", "Resolution of the multiplicity estimator (prim. tracks); Reco Multiplicity (prim. tracks); MC multiplicity (gen. part.)", 200, 0., 6000., 200, 0., 6000.);
-       fListHistCascade->Add(f2dHistRecoMultVsMCMult);
+  if (! f2dHistRecoMultVsMCMult){
+    f2dHistRecoMultVsMCMult = new TH2F("f2dHistRecoMultVsMCMult", "Resolution of the multiplicity estimator (prim. tracks); Reco Multiplicity (prim. tracks); MC multiplicity (gen. part.)", 200, 0., 150000., 200, 0., 200000.);
+    fListHistCascade->Add(f2dHistRecoMultVsMCMult);
   }
   
   if (!fHistEtaGenProton) {
-     fHistEtaGenProton = new TH1F("fHistEtaGenProton", "#eta of any gen. p^{+};#eta;Number of prim. protons", 200, -10, 10);
-     fListHistCascade->Add(fHistEtaGenProton);
+    fHistEtaGenProton = new TH1F("fHistEtaGenProton", "#eta of any gen. p^{+};#eta;Number of prim. protons", 200, -10, 10);
+    fListHistCascade->Add(fHistEtaGenProton);
   }
   
   if (!fHistEtaGenAntiProton) {
@@ -695,25 +755,47 @@ if( !fPaveTextBookKeeping){
   if (!fHistEtaGenCascXiMinus) {
      fHistEtaGenCascXiMinus = new TH1F("fHistEtaGenCascXiMinus", "#eta of any gen. #Xi^{-};#eta;Number of Casc", 200, -10, 10);
      fListHistCascade->Add(fHistEtaGenCascXiMinus);
+   }
+
+  if (!f3dHistGenPtVsGenYvsCentXiMinusNat) {
+     f3dHistGenPtVsGenYvsCentXiMinusNat = new TH3D("f3dHistGenPtVsGenYvsCentXiMinusNat", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentXiMinusNat);
+   }
+  if (!f3dHistGenPtVsGenYvsNtracksXiMinusNat) {
+    f3dHistGenPtVsGenYvsNtracksXiMinusNat = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinusNat", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+    fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinusNat);
+  }
+  if (!f3dHistGenPtVsGenYvsCentXiMinusInj) {
+     f3dHistGenPtVsGenYvsCentXiMinusInj = new TH3D("f3dHistGenPtVsGenYvsCentXiMinusInj", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentXiMinusInj);
+  }
+  if (!f3dHistGenPtVsGenYvsNtracksXiMinusInj) {
+    f3dHistGenPtVsGenYvsNtracksXiMinusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinusInj", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+    fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinusInj);
+  }
+  if (!f3dHistGenPtVsGenctauvsYXiMinusNat) {
+     f3dHistGenPtVsGenctauvsYXiMinusNat = new TH3D("f3dHistGenPtVsGenctauvsYXiMinusNat", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinusNat);
   }
 
-  if (!f3dHistGenPtVsGenYGenvsCentXiMinus) {
-     f3dHistGenPtVsGenYGenvsCentXiMinus = new TH3D("f3dHistGenPtVsGenYGenvsCentXiMinus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 220, yBinLimits, 11, centBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsCentXiMinus);
+  if (!f3dHistGenPtVsGenctauvsYXiMinusInj) {
+     f3dHistGenPtVsGenctauvsYXiMinusInj = new TH3D("f3dHistGenPtVsGenctauvsYXiMinusInj", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinusInj);
   }
-  if (!f3dHistGenPtVsGenYGenvsNtracksXiMinus) {
-     f3dHistGenPtVsGenYGenvsNtracksXiMinus = new TH3D("f3dHistGenPtVsGenYGenvsNtracksXiMinus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1, 100, 0., 6000.);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsNtracksXiMinus);
-  }
-
- 
   
+
   // - Info at the generation level of multi-strange particle
   
-  if (!fHistThetaGenCascXiMinus) {
-     fHistThetaGenCascXiMinus = new TH1F("fHistThetaGenCascXiMinus", "#theta of gen. #Xi^{-};#theta;Number of Casc.", 200, -10, 190);
-     fListHistCascade->Add(fHistThetaGenCascXiMinus);
+  if (!fHistThetaGenCascXiMinusNat) {
+     fHistThetaGenCascXiMinusNat = new TH1F("fHistThetaGenCascXiMinusNat", "#theta of gen. #Xi^{-};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascXiMinusNat);
   }
+
+  if (!fHistThetaGenCascXiMinusInj) {
+     fHistThetaGenCascXiMinusInj = new TH1F("fHistThetaGenCascXiMinusInj", "#theta of injected. #Xi^{-};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascXiMinusInj);
+  }
+
 
   if (!f2dHistGenPtVsGenYFdblXiMinus) {
      f2dHistGenPtVsGenYFdblXiMinus = new TH2D("f2dHistGenPtVsGenYFdblXiMinus", "MC P_{t} Vs MC Y of findable Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1);
@@ -768,22 +850,44 @@ if( !fPaveTextBookKeeping){
      fHistEtaGenCascXiPlus = new TH1F("fHistEtaGenCascXiPlus", "#eta of any gen. #Xi^{+};#eta;Number of Casc", 200, -10, 10);
      fListHistCascade->Add(fHistEtaGenCascXiPlus);
   }
-if (!f3dHistGenPtVsGenYGenvsCentXiPlus) {
-     f3dHistGenPtVsGenYGenvsCentXiPlus = new TH3D("f3dHistGenPtVsGenYGenvsCentXiPlus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 220, yBinLimits, 11, centBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsCentXiPlus);
+  if (!f3dHistGenPtVsGenYvsCentXiPlusNat) {
+     f3dHistGenPtVsGenYvsCentXiPlusNat = new TH3D("f3dHistGenPtVsGenYvsCentXiPlusNat", "MC P_{t} Vs MC Y of Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentXiPlusNat);
   }
-  if (!f3dHistGenPtVsGenYGenvsNtracksXiPlus) {
-     f3dHistGenPtVsGenYGenvsNtracksXiPlus = new TH3D("f3dHistGenPtVsGenYGenvsNtracksXiPlus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1, 100, 0., 6000.);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsNtracksXiPlus);
+  if (!f3dHistGenPtVsGenYvsNtracksXiPlusNat) {
+    f3dHistGenPtVsGenYvsNtracksXiPlusNat = new TH3D("f3dHistGenPtVsGenYvsNtracksXiPlusNat", "MC P_{t} Vs MC Y of Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+    fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiPlusNat);
   }
+  if (!f3dHistGenPtVsGenYvsCentXiPlusInj) {
+     f3dHistGenPtVsGenYvsCentXiPlusInj = new TH3D("f3dHistGenPtVsGenYvsCentXiPlusInj", "MC P_{t} Vs MC Y of Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentXiPlusInj);
+  }
+  if (!f3dHistGenPtVsGenYvsNtracksXiPlusInj) {
+    f3dHistGenPtVsGenYvsNtracksXiPlusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksXiPlusInj", "MC P_{t} Vs MC Y of Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+    fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiPlusInj);
+  }
+  if (!f3dHistGenPtVsGenctauvsYXiPlusNat) {
+     f3dHistGenPtVsGenctauvsYXiPlusNat = new TH3D("f3dHistGenPtVsGenctauvsYXiPlusNat", "MC P_{t} Vs MC ctau Vs Yof Gen #Xi^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlusNat);
+  }
+  if (!f3dHistGenPtVsGenctauvsYXiPlusInj) {
+     f3dHistGenPtVsGenctauvsYXiPlusInj = new TH3D("f3dHistGenPtVsGenctauvsYXiPlusInj", "MC P_{t} Vs MC ctau Vs Yof Gen #Xi^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlusInj);
+  }
+
   
   
   // - Info at the generation level of multi-strange particle
   
-  if (!fHistThetaGenCascXiPlus) {
-     fHistThetaGenCascXiPlus = new TH1F("fHistThetaGenCascXiPlus", "#theta of gen. #Xi^{+};#theta;Number of Casc.", 200, -10, 190);
-     fListHistCascade->Add(fHistThetaGenCascXiPlus);
+  if (!fHistThetaGenCascXiPlusNat) {
+     fHistThetaGenCascXiPlusNat = new TH1F("fHistThetaGenCascXiPlusNat", "#theta of gen. #Xi^{+};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascXiPlusNat);
   }
+  if (!fHistThetaGenCascXiPlusInj) {
+     fHistThetaGenCascXiPlusInj = new TH1F("fHistThetaGenCascXiPlusInj", "#theta of inj. #Xi^{+};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascXiPlusInj);
+  }
+
  
   if (!f2dHistGenPtVsGenYFdblXiPlus) {
      f2dHistGenPtVsGenYFdblXiPlus = new TH2D("f2dHistGenPtVsGenYFdblXiPlus", "MC P_{t} Vs MC Y of findable Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1);
@@ -837,23 +941,46 @@ if (!f3dHistGenPtVsGenYGenvsCentXiPlus) {
      fHistEtaGenCascOmegaMinus = new TH1F("fHistEtaGenCascOmegaMinus", "#eta of any gen. #Omega^{-};#eta;Number of Casc", 200, -10, 10);
      fListHistCascade->Add(fHistEtaGenCascOmegaMinus);
   }
- if (!f3dHistGenPtVsGenYGenvsCentOmegaMinus) {
-     f3dHistGenPtVsGenYGenvsCentOmegaMinus = new TH3D("f3dHistGenPtVsGenYGenvsCentOmegaMinus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 220, yBinLimits, 11, centBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsCentOmegaMinus);
+ if (!f3dHistGenPtVsGenYvsCentOmegaMinusNat) {
+     f3dHistGenPtVsGenYvsCentOmegaMinusNat = new TH3D("f3dHistGenPtVsGenYvsCentOmegaMinusNat", "MC P_{t} Vs MC Y of Gen #Omega^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentOmegaMinusNat);
   }
-  if (!f3dHistGenPtVsGenYGenvsNtracksOmegaMinus) {
-     f3dHistGenPtVsGenYGenvsNtracksOmegaMinus = new TH3D("f3dHistGenPtVsGenYGenvsNtracksOmegaMinus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1, 100, 0., 6000.);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsNtracksOmegaMinus);
+  if (!f3dHistGenPtVsGenYvsNtracksOmegaMinusNat) {
+     f3dHistGenPtVsGenYvsNtracksOmegaMinusNat = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaMinusNat", "MC P_{t} Vs MC Y of Gen #Omega^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaMinusNat);
   }
+  if (!f3dHistGenPtVsGenYvsCentOmegaMinusInj) {
+     f3dHistGenPtVsGenYvsCentOmegaMinusInj = new TH3D("f3dHistGenPtVsGenYvsCentOmegaMinusInj", "MC P_{t} Vs MC Y of Gen #Omega^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentOmegaMinusInj);
+  }
+  if (!f3dHistGenPtVsGenYvsNtracksOmegaMinusInj) {
+     f3dHistGenPtVsGenYvsNtracksOmegaMinusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaMinusInj", "MC P_{t} Vs MC Y of Gen #Omega^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaMinusInj);
+  }
+  if (!f3dHistGenPtVsGenctauvsYOmegaMinusNat) { 
+     f3dHistGenPtVsGenctauvsYOmegaMinusNat = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinusNat", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinusNat);
+  }
+  if (!f3dHistGenPtVsGenctauvsYOmegaMinusInj) {
+     f3dHistGenPtVsGenctauvsYOmegaMinusInj = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinusInj", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinusInj);
+  }
+
+
 
   
   
   // - Info at the generation level of multi-strange particle
   
-  if (!fHistThetaGenCascOmegaMinus) {
-     fHistThetaGenCascOmegaMinus = new TH1F("fHistThetaGenCascOmegaMinus", "#theta of gen. #Omega^{-};#theta;Number of Casc.", 200, -10, 190);
-     fListHistCascade->Add(fHistThetaGenCascOmegaMinus);
+  if (!fHistThetaGenCascOmegaMinusNat) {
+     fHistThetaGenCascOmegaMinusNat = new TH1F("fHistThetaGenCascOmegaMinusNat", "#theta of gen. #Omega^{-};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascOmegaMinusNat);
   }
+  if (!fHistThetaGenCascOmegaMinusInj) {
+     fHistThetaGenCascOmegaMinusInj = new TH1F("fHistThetaGenCascOmegaMinusInj", "#theta of inj. #Omega^{-};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascOmegaMinusInj);
+  }
+
  
   if (!f2dHistGenPtVsGenYFdblOmegaMinus) {
      f2dHistGenPtVsGenYFdblOmegaMinus = new TH2D("f2dHistGenPtVsGenYFdblOmegaMinus", "MC P_{t} Vs MC Y of findable Gen #Omega^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1);
@@ -907,22 +1034,43 @@ if (!f3dHistGenPtVsGenYGenvsCentXiPlus) {
      fHistEtaGenCascOmegaPlus = new TH1F("fHistEtaGenCascOmegaPlus", "#eta of any gen. #Omega^{+};#eta;Number of Casc", 200, -10, 10);
      fListHistCascade->Add(fHistEtaGenCascOmegaPlus);
   }
-  if (!f3dHistGenPtVsGenYGenvsCentOmegaPlus) {
-     f3dHistGenPtVsGenYGenvsCentOmegaPlus = new TH3D("f3dHistGenPtVsGenYGenvsCentOmegaPlus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 220, yBinLimits, 11, centBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsCentOmegaPlus);
+  if (!f3dHistGenPtVsGenYvsCentOmegaPlusNat) {
+     f3dHistGenPtVsGenYvsCentOmegaPlusNat = new TH3D("f3dHistGenPtVsGenYvsCentOmegaPlusNat", "MC P_{t} Vs MC Y of Gen #Omega^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentOmegaPlusNat);
   }
-  if (!f3dHistGenPtVsGenYGenvsNtracksOmegaPlus) {
-     f3dHistGenPtVsGenYGenvsNtracksOmegaPlus = new TH3D("f3dHistGenPtVsGenYGenvsNtracksOmegaPlus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1, 100, 0., 6000.);
-     fListHistCascade->Add(f3dHistGenPtVsGenYGenvsNtracksOmegaPlus);
+  if (!f3dHistGenPtVsGenYvsNtracksOmegaPlusNat) {
+     f3dHistGenPtVsGenYvsNtracksOmegaPlusNat = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlusNat", "MC P_{t} Vs MC Y of Gen #Omega^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlusNat);
+  }
+  if (!f3dHistGenPtVsGenYvsCentOmegaPlusInj) {
+     f3dHistGenPtVsGenYvsCentOmegaPlusInj = new TH3D("f3dHistGenPtVsGenYvsCentOmegaPlusInj", "MC P_{t} Vs MC Y of Gen #Omega^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, ptBinLimits, 110, yBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsCentOmegaPlusInj);
+  }
+  if (!f3dHistGenPtVsGenYvsNtracksOmegaPlusInj) {
+     f3dHistGenPtVsGenYvsNtracksOmegaPlusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlusInj", "MC P_{t} Vs MC Y of Gen #Omega^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
+     fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlusInj);
+  }
+  if (!f3dHistGenPtVsGenctauvsYOmegaPlusNat) {
+     f3dHistGenPtVsGenctauvsYOmegaPlusNat = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlusNat", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlusNat);
+  }
+  if (!f3dHistGenPtVsGenctauvsYOmegaPlusInj) {
+     f3dHistGenPtVsGenctauvsYOmegaPlusInj = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlusInj", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlusInj);
   }
  
   
   // - Info at the generation level of multi-strange particle
   
-  if (!fHistThetaGenCascOmegaPlus) {
-     fHistThetaGenCascOmegaPlus = new TH1F("fHistThetaGenCascOmegaPlus", "#theta of gen. #Omega^{+};#theta;Number of Casc.", 200, -10, 190);
-     fListHistCascade->Add(fHistThetaGenCascOmegaPlus);
+  if (!fHistThetaGenCascOmegaPlusNat) {
+     fHistThetaGenCascOmegaPlusNat = new TH1F("fHistThetaGenCascOmegaPlusNat", "#theta of gen. #Omega^{+};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascOmegaPlusNat);
   }
+  if (!fHistThetaGenCascOmegaPlusInj) {
+     fHistThetaGenCascOmegaPlusInj = new TH1F("fHistThetaGenCascOmegaPlusInj", "#theta of inj. #Omega^{+};#theta;Number of Casc.", 200, -10, 190);
+     fListHistCascade->Add(fHistThetaGenCascOmegaPlusInj);
+  }
+
  
   if (!f2dHistGenPtVsGenYFdblOmegaPlus) {
      f2dHistGenPtVsGenYFdblOmegaPlus = new TH2D("f2dHistGenPtVsGenYFdblOmegaPlus", "MC P_{t} Vs MC Y of findable Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1);
@@ -1212,10 +1360,42 @@ if (!f3dHistGenPtVsGenYGenvsCentXiPlus) {
           f2dHistAsMCResPhiOmegaPlus = new TH2F( "f2dHistAsMCResPhiOmegaPlus", "Resolution in #phi for #Omega^{+}; Pt_{MC} (GeV/c); #phi(MC) - #phi(reco)   (deg)", 200, 0., 10., 60, -30., 30.);
           fListHistCascade->Add(f2dHistAsMCResPhiOmegaPlus);
   }
-  
+
+         //  - Correlation between proton (antiproton) daughter MC pt and Xi/Omega MC pt (to apply Geant/Fluka correction)
+    if (!f2dHistAsMCptProtonMCptXiMinus) {
+      f2dHistAsMCptProtonMCptXiMinus = new TH2F( "f2dHistAsMCptProtonMCptXiMinus", "Proton MC pt vs Xi- MC pt", 100, 0., 10., 100, 0., 10.); 
+      fListHistCascade->Add(f2dHistAsMCptProtonMCptXiMinus);
+    }
+    if (!f2dHistAsMCptAntiprotonMCptXiPlus) {
+      f2dHistAsMCptAntiprotonMCptXiPlus = new TH2F( "f2dHistAsMCptAntiprotonMCptXiPlus", "Antiproton MC pt vs Xi+ MC pt", 100, 0., 10., 100, 0., 10.);
+      fListHistCascade->Add(f2dHistAsMCptAntiprotonMCptXiPlus);
+    }
+    if (!f2dHistAsMCptProtonMCptOmegaMinus) {
+      f2dHistAsMCptProtonMCptOmegaMinus = new TH2F( "f2dHistAsMCptProtonMCptOmegaMinus", "Proton MC pt vs Omega- MC pt", 100, 0., 10., 100, 0., 10.);
+      fListHistCascade->Add(f2dHistAsMCptProtonMCptOmegaMinus);
+    }
+    if (!f2dHistAsMCptAntiprotonMCptOmegaPlus) {
+      f2dHistAsMCptAntiprotonMCptOmegaPlus = new TH2F( "f2dHistAsMCptAntiprotonMCptOmegaPlus", "Antiproton MC pt vs Omega+ MC pt", 100, 0., 10., 100, 0., 10.);
+      fListHistCascade->Add(f2dHistAsMCptAntiprotonMCptOmegaPlus);
+    }
+
+    if (! fHistV0toXiCosineOfPointingAngle) {
+        fHistV0toXiCosineOfPointingAngle = new TH1F("fHistV0toXiCosineOfPointingAngle", "Cos. of V0 Ptng Angl / Xi vtx ;Cos(V0 Point. Angl / Xi vtx); Counts", 200, 0.95, 1.0001);
+        fListHistCascade->Add(fHistV0toXiCosineOfPointingAngle);
+    }
+
+    if (! fHistV0CosineOfPointingAnglevsPtXi) {
+        fHistV0CosineOfPointingAnglevsPtXi = new TH2F("fHistV0CosineOfPointingAnglevsPtXi", "Cos. of V0 Ptng Angl vs cascade Pt ;Cos(V0 Point. Angl); Counts",100, 0., 10., 200, 0.95, 1.0001);
+        fListHistCascade->Add(fHistV0CosineOfPointingAnglevsPtXi);
+    }
+    if (! fHistV0CosineOfPointingAnglevsPtOmega) {
+        fHistV0CosineOfPointingAnglevsPtOmega = new TH2F("fHistV0CosineOfPointingAnglevsPtOmega", "Cos. of V0 Ptng Angl vs cascade Pt ;Cos(V0 Point. Angl); Counts",100, 0., 10., 200, 0.95, 1.0001);
+        fListHistCascade->Add(fHistV0CosineOfPointingAnglevsPtOmega);
+    }
+
   
                 // - PID container
-if(! fCFContCascadePIDAsXiMinus&&fUseCFCont)  {
+if(! fCFContCascadePIDAsXiMinus)  {
   const	Int_t  lNbSteps      =  7 ;
   const Int_t  lNbVariables  =  4 ;
 
@@ -1224,8 +1404,7 @@ if(! fCFContCascadePIDAsXiMinus&&fUseCFCont)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 800;
   lNbBinsPerVar[2] = 22;
-  if(fCollidingSystems) lNbBinsPerVar[3] = 11;
-  else lNbBinsPerVar[3] = 100;
+  lNbBinsPerVar[3] = 11;
 
   fCFContCascadePIDAsXiMinus = new AliCFContainer("fCFContCascadePIDAsXiMinus","Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
@@ -1233,15 +1412,12 @@ if(! fCFContCascadePIDAsXiMinus&&fUseCFCont)  {
   fCFContCascadePIDAsXiMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDAsXiMinus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
   fCFContCascadePIDAsXiMinus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) {
-    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
-    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
-    lBinLim3[0] = 0.0;
-    lBinLim3[1] = 5.0;
-    lBinLim3[2] = 10.0;
-    fCFContCascadePIDAsXiMinus->SetBinLimits(3,  lBinLim3 );       // Centrality
-  } else
-    fCFContCascadePIDAsXiMinus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklet multiplicity
+  Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+  for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+  lBinLim3[0] = 0.0;
+  lBinLim3[1] = 5.0;
+  lBinLim3[2] = 10.0;
+  fCFContCascadePIDAsXiMinus->SetBinLimits(3,  lBinLim3 );       // Centrality
   
   // Setting the step title : one per PID case
   fCFContCascadePIDAsXiMinus->SetStepTitle(0, "No PID");
@@ -1256,14 +1432,13 @@ if(! fCFContCascadePIDAsXiMinus&&fUseCFCont)  {
   fCFContCascadePIDAsXiMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDAsXiMinus->SetVarTitle(1, "M( #Lambda , #pi^{-} ) (GeV/c^{2})");
   fCFContCascadePIDAsXiMinus->SetVarTitle(2, "Y_{#Xi}");
-  if (fCollidingSystems) fCFContCascadePIDAsXiMinus->SetVarTitle(3, "Centrality");
-  else fCFContCascadePIDAsXiMinus->SetVarTitle(3, "SPD tracklets Multiplicity");
+  fCFContCascadePIDAsXiMinus->SetVarTitle(3, "Centrality");
 
   fListHistCascade->Add(fCFContCascadePIDAsXiMinus);
   
 }
 
-if(! fCFContCascadePIDAsXiPlus&&fUseCFCont)  {
+if(! fCFContCascadePIDAsXiPlus)  {
   const	Int_t  lNbSteps      =  7 ;
   const Int_t  lNbVariables  =  4 ;
 
@@ -1272,8 +1447,7 @@ if(! fCFContCascadePIDAsXiPlus&&fUseCFCont)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 800;
   lNbBinsPerVar[2] = 22;
-  if(fCollidingSystems) lNbBinsPerVar[3] = 11;
-  else lNbBinsPerVar[3] = 100;
+  lNbBinsPerVar[3] = 11;
   
   fCFContCascadePIDAsXiPlus = new AliCFContainer("fCFContCascadePIDAsXiPlus","Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
@@ -1282,15 +1456,12 @@ if(! fCFContCascadePIDAsXiPlus&&fUseCFCont)  {
   fCFContCascadePIDAsXiPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDAsXiPlus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
   fCFContCascadePIDAsXiPlus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) {
-    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
-    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
-    lBinLim3[0] = 0.0;
-    lBinLim3[1] = 5.0;
-    lBinLim3[2] = 10.0;
-        fCFContCascadePIDAsXiPlus->SetBinLimits(3,lBinLim3);     // Centrality
-  } else
-	fCFContCascadePIDAsXiPlus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklets Multiplicity 
+  Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+  for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+  lBinLim3[0] = 0.0;
+  lBinLim3[1] = 5.0;
+  lBinLim3[2] = 10.0;
+  fCFContCascadePIDAsXiPlus->SetBinLimits(3,lBinLim3);     // Centrality
   
   // Setting the step title : one per PID case
   fCFContCascadePIDAsXiPlus->SetStepTitle(0, "No PID");
@@ -1305,15 +1476,14 @@ if(! fCFContCascadePIDAsXiPlus&&fUseCFCont)  {
   fCFContCascadePIDAsXiPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDAsXiPlus->SetVarTitle(1, "M( #Lambda , #pi^{+} ) (GeV/c^{2})");
   fCFContCascadePIDAsXiPlus->SetVarTitle(2, "Y_{#Xi}");
-  if(fCollidingSystems) fCFContCascadePIDAsXiPlus->SetVarTitle(3, "Centrality");
-  else fCFContCascadePIDAsXiPlus->SetVarTitle(3, "SPD tracklets Multiplicity");
+  fCFContCascadePIDAsXiPlus->SetVarTitle(3, "Centrality");
   
   fListHistCascade->Add(fCFContCascadePIDAsXiPlus);
   
 }
 
 
-if(! fCFContCascadePIDAsOmegaMinus&&fUseCFCont)  {
+if(! fCFContCascadePIDAsOmegaMinus)  {
   const	Int_t  lNbSteps      =  7 ;
   const Int_t  lNbVariables  =  4 ;
 
@@ -1322,9 +1492,7 @@ if(! fCFContCascadePIDAsOmegaMinus&&fUseCFCont)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 1000;
   lNbBinsPerVar[2] = 22;
-  if(fCollidingSystems) lNbBinsPerVar[3] = 11;
-  else lNbBinsPerVar[3] = 100;
- 
+  lNbBinsPerVar[3] = 11;
   
   fCFContCascadePIDAsOmegaMinus = new AliCFContainer("fCFContCascadePIDAsOmegaMinus","Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
@@ -1333,15 +1501,12 @@ if(! fCFContCascadePIDAsOmegaMinus&&fUseCFCont)  {
   fCFContCascadePIDAsOmegaMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDAsOmegaMinus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
   fCFContCascadePIDAsOmegaMinus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) {
-    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
-    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
-    lBinLim3[0] = 0.0;
-    lBinLim3[1] = 5.0;
-    lBinLim3[2] = 10.0;
-        fCFContCascadePIDAsOmegaMinus->SetBinLimits(3,lBinLim3);     // Centrality
-  } else
-	fCFContCascadePIDAsOmegaMinus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklets multiplicity 
+  Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+  for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+  lBinLim3[0] = 0.0;
+  lBinLim3[1] = 5.0;
+  lBinLim3[2] = 10.0;
+  fCFContCascadePIDAsOmegaMinus->SetBinLimits(3,lBinLim3);     // Centrality
   
   // Setting the step title : one per PID case
   fCFContCascadePIDAsOmegaMinus->SetStepTitle(0, "No PID");
@@ -1356,15 +1521,13 @@ if(! fCFContCascadePIDAsOmegaMinus&&fUseCFCont)  {
   fCFContCascadePIDAsOmegaMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDAsOmegaMinus->SetVarTitle(1, "M( #Lambda , K^{-} ) (GeV/c^{2})");
   fCFContCascadePIDAsOmegaMinus->SetVarTitle(2, "Y_{#Omega}");
-  if(fCollidingSystems) fCFContCascadePIDAsOmegaMinus->SetVarTitle(3, "Centrality");
-  else fCFContCascadePIDAsOmegaMinus->SetVarTitle(3, "SPD tracklet multiplicity");
-  
+  fCFContCascadePIDAsOmegaMinus->SetVarTitle(3, "Centrality");
   
   fListHistCascade->Add(fCFContCascadePIDAsOmegaMinus);
   
 }
 
-if(! fCFContCascadePIDAsOmegaPlus&&fUseCFCont)  {
+if(! fCFContCascadePIDAsOmegaPlus)  {
   const	Int_t  lNbSteps      =  7 ;
   const Int_t  lNbVariables  =  4 ;
 
@@ -1373,8 +1536,7 @@ if(! fCFContCascadePIDAsOmegaPlus&&fUseCFCont)  {
   lNbBinsPerVar[0] = 100;
   lNbBinsPerVar[1] = 1000;
   lNbBinsPerVar[2] = 22;
-  if(fCollidingSystems) lNbBinsPerVar[3] = 11;
-  else lNbBinsPerVar[3] = 100;
+  lNbBinsPerVar[3] = 11;
   
   fCFContCascadePIDAsOmegaPlus = new AliCFContainer("fCFContCascadePIDAsOmegaPlus","Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
@@ -1383,15 +1545,12 @@ if(! fCFContCascadePIDAsOmegaPlus&&fUseCFCont)  {
   fCFContCascadePIDAsOmegaPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDAsOmegaPlus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
   fCFContCascadePIDAsOmegaPlus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) {
-    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
-    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
-    lBinLim3[0] = 0.0;
-    lBinLim3[1] = 5.0;
-    lBinLim3[2] = 10.0;
-        fCFContCascadePIDAsOmegaPlus->SetBinLimits(3,lBinLim3);     // Centrality
-  } else
-	fCFContCascadePIDAsOmegaPlus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklet multiplicity
+  Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+  for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+  lBinLim3[0] = 0.0;
+  lBinLim3[1] = 5.0;
+  lBinLim3[2] = 10.0;
+  fCFContCascadePIDAsOmegaPlus->SetBinLimits(3,lBinLim3);     // Centrality
   
   // Setting the step title : one per PID case
   fCFContCascadePIDAsOmegaPlus->SetStepTitle(0, "No PID");
@@ -1406,91 +1565,87 @@ if(! fCFContCascadePIDAsOmegaPlus&&fUseCFCont)  {
   fCFContCascadePIDAsOmegaPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDAsOmegaPlus->SetVarTitle(1, "M( #Lambda , K^{+} ) (GeV/c^{2})");
   fCFContCascadePIDAsOmegaPlus->SetVarTitle(2, "Y_{#Omega}");
-  if(fCollidingSystems) fCFContCascadePIDAsOmegaPlus->SetVarTitle(3, "Centrality");
-  else fCFContCascadePIDAsOmegaPlus->SetVarTitle(3,"SPD tracklet multiplicity");
+  fCFContCascadePIDAsOmegaPlus->SetVarTitle(3, "Centrality");
   
   fListHistCascade->Add(fCFContCascadePIDAsOmegaPlus);
   
 }
 
 // Part 3 : Towards the optimisation of topological selections -------
-if(! fCFContAsCascadeCuts&&fUseCFCont){
+if(! fCFContAsCascadeCuts){
    
 	// Container meant to store all the relevant distributions corresponding to the cut variables.
-        //          - FIXME optimize number of bins
         //          - NB overflow/underflow of variables on which we want to cut later should be 0!!!
 
   const	Int_t  lNbSteps      =  4 ;
-  const Int_t  lNbVariables  =  19 ;
+  const Int_t  lNbVariables  =  22 ;
   
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[lNbVariables] = {0};
   lNbBinsPerVar[0]  = 100;
   lNbBinsPerVar[1]  = 126;
-  lNbBinsPerVar[2]  = 100;
-  lNbBinsPerVar[3]  = 221;
+  lNbBinsPerVar[2]  = 24;
+  lNbBinsPerVar[3]  = 220;
   lNbBinsPerVar[4]  = 30;
   lNbBinsPerVar[5]  = 50;
   
-  lNbBinsPerVar[6]  = 100;
-  lNbBinsPerVar[7]  = 43;
+  lNbBinsPerVar[6]  = 101;
+  lNbBinsPerVar[7]  = 102;
   lNbBinsPerVar[8]  = 101;
   lNbBinsPerVar[9]  = 26;
   lNbBinsPerVar[10] = 26;
   
-  lNbBinsPerVar[11] = 150; // 2-MeV/c2 bins
-  lNbBinsPerVar[12] = 120; // 2-MeV/c2 bins
+  lNbBinsPerVar[11] = 150; // 1-MeV/c2 bins
+  lNbBinsPerVar[12] = 120;  
   
   lNbBinsPerVar[13] = 100;
   
-  lNbBinsPerVar[14] = 44; // 0.05 in rapidity units
-  lNbBinsPerVar[15] = 44; // 0.05 in rapidity units
+  lNbBinsPerVar[14] = 110; // 0.02 unit of y per bin 
+  lNbBinsPerVar[15] = 110; 
   
-  lNbBinsPerVar[16] = 20;
+  lNbBinsPerVar[16] = 2;
  
-
-  if(fCollidingSystems) lNbBinsPerVar[17] = 11;
-  else lNbBinsPerVar[17] = 100;
+  lNbBinsPerVar[17] = 11;
   lNbBinsPerVar[18] = 100;
-   
-   
+
+  lNbBinsPerVar[19] = 112; // Proper time of cascade
+  lNbBinsPerVar[20] = 112; // Proper time of V0 
+  lNbBinsPerVar[21] = 112; // Distance V0-Xi in the transverse plane 
+  
   fCFContAsCascadeCuts = new AliCFContainer("fCFContAsCascadeCuts","Cut Container for Asso. Cascades", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   //0
   fCFContAsCascadeCuts->SetBinLimits(0, 0., 2.);                 // DcaXiDaughters : 0.0 to 2.0
   //1
    Double_t *lBinLim1  = new Double_t[ lNbBinsPerVar[1]+1 ];
-   for(Int_t i=0; i< lNbBinsPerVar[1];i++)   lBinLim1[i]  = (Double_t)0.0   + (5.  - 0.0 )/(lNbBinsPerVar[1]-1)  * (Double_t)i ;
+   lBinLim1[0] = 0.0;
+   lBinLim1[1] = 0.03;
+   for(Int_t i=2; i< lNbBinsPerVar[1];i++)   lBinLim1[i]  = (Double_t)0.03   + (5.  - 0.03 )/(lNbBinsPerVar[1]-2)  * (Double_t)(i-1) ;
    lBinLim1[ lNbBinsPerVar[1]  ] = 100.0;
    fCFContAsCascadeCuts -> SetBinLimits(1,  lBinLim1 );
   delete [] lBinLim1;                                            // DcaBachToPrimVertexXi : 0.0 to 0.5
   //2
-  fCFContAsCascadeCuts->SetBinLimits(2, .99, 1.);                // XiCosineOfPointingAngle : 0.99 to 1.0        
+  fCFContAsCascadeCuts->SetBinLimits(2, .9988, 1.);                // XiCosineOfPointingAngle : 0.99 to 1.0        
   //3
-  Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
-  for(Int_t i=0; i< lNbBinsPerVar[3];i++)   lBinLim3[i] = (Double_t)0.0 + (5.  - 0.0 )/(lNbBinsPerVar[3]-1) * (Double_t)i ;
-  lBinLim3[ lNbBinsPerVar[3]  ] = 110.0;
-  fCFContAsCascadeCuts -> SetBinLimits(3,  lBinLim3 );            // XiRadius : 0.0 to 4.0
-  delete [] lBinLim3;
+  fCFContAsCascadeCuts -> SetBinLimits(3, 0., 110. );            // XiRadius : 0.0 to 110.0
 
   //4
   fCFContAsCascadeCuts->SetBinLimits(4, 1.1, 1.13);               // InvMassLambdaAsCascDghter
   //5
   fCFContAsCascadeCuts->SetBinLimits(5, 0., 2.);                  // DcaV0DaughtersXi : 0.0 to 2.0        
   //6
-  fCFContAsCascadeCuts->SetBinLimits(6, 0.99, 1.);                // V0CosineOfPointingAngleXi : 0.98 to 1.0      
+  fCFContAsCascadeCuts->SetBinLimits(6, 0.95, 1.0005);                // V0CosineOfPointingAngleXi : 0.99 to 1.0      // temporary test 1.1
   //7
   Double_t *lBinLim7  = new Double_t[ lNbBinsPerVar[7]+1 ];
-  for(Int_t i=0; i< lNbBinsPerVar[7]-2;i++)   lBinLim7[i]  = (Double_t)0.0   + (20.  - 0.0 )/(lNbBinsPerVar[7]-3)  * (Double_t)i ;
-  lBinLim7[ lNbBinsPerVar[7]-2] = 100.0;
+  for(Int_t i=0; i< lNbBinsPerVar[7]-1;i++)   lBinLim7[i]  = (Double_t)0.0   + (100.  - 0.0 )/(lNbBinsPerVar[7]-2)  * (Double_t)i ;
   lBinLim7[ lNbBinsPerVar[7]-1] = 200.0;
   lBinLim7[ lNbBinsPerVar[7]] = 1000.0;
   fCFContAsCascadeCuts -> SetBinLimits(7,  lBinLim7 );
-  delete [] lBinLim7;                                             // V0RadiusXi : 0.0 to 20.0      
+  delete [] lBinLim7;                                             // V0RadiusXi : 0.0 to 1000.0      
   //8
   Double_t *lBinLim8  = new Double_t[ lNbBinsPerVar[8]+1 ];
-        for(Int_t i=0; i< lNbBinsPerVar[8];i++)   lBinLim8[i]  = (Double_t)0.0   + (0.4  - 0.0 )/(lNbBinsPerVar[8]-1)  * (Double_t)i ;
-        lBinLim8[ lNbBinsPerVar[8]  ] = 100.0;
+  for(Int_t i=0; i< lNbBinsPerVar[8];i++)   lBinLim8[i]  = (Double_t)0.0   + (0.4  - 0.0 )/(lNbBinsPerVar[8]-1)  * (Double_t)i ;
+  lBinLim8[ lNbBinsPerVar[8]  ] = 100.0;
   fCFContAsCascadeCuts -> SetBinLimits(8,  lBinLim8 );
   delete [] lBinLim8;                                             // DcaV0ToPrimVertexXi : 0. to 0.4     
   //9
@@ -1511,21 +1666,22 @@ if(! fCFContAsCascadeCuts&&fUseCFCont){
   fCFContAsCascadeCuts->SetBinLimits(13, 0.0, 10.0);	          // XiTransvMom 
   fCFContAsCascadeCuts->SetBinLimits(14, -1.1, 1.1);              // Y(Xi)
   fCFContAsCascadeCuts->SetBinLimits(15, -1.1, 1.1);              // Y(Omega)
-  fCFContAsCascadeCuts->SetBinLimits(16, -10.0, 10.0);            // BestPrimaryVtxPosZ
-  if (fCollidingSystems) {
-    Double_t *lBinLim17  = new Double_t[ lNbBinsPerVar[17]+1 ];
-    for(Int_t i=3; i< lNbBinsPerVar[17]+1;i++)   lBinLim17[i]  = (Double_t)(i-1)*10.;
-    lBinLim17[0] = 0.0;
-    lBinLim17[1] = 5.0;
-    lBinLim17[2] = 10.0;
-    fCFContAsCascadeCuts -> SetBinLimits(17,  lBinLim17 );       // Centrality
-    delete [] lBinLim17;
-    fCFContAsCascadeCuts->SetBinLimits(18, 0.0, 6000.0);         // ESD track multiplicity 
-  } else {
-    fCFContAsCascadeCuts->SetBinLimits(17, 0.0, 250.0);          // SPDTrackletsMultiplicity
-    fCFContAsCascadeCuts->SetBinLimits(18, 0.0, 200.0);          // ESD track multiplicity
-  }
-
+  fCFContAsCascadeCuts->SetBinLimits(16, 0.0, 2.0);               // Natural or injected  
+  Double_t *lBinLim17  = new Double_t[ lNbBinsPerVar[17]+1 ];
+  for(Int_t i=3; i< lNbBinsPerVar[17]+1;i++)   lBinLim17[i]  = (Double_t)(i-1)*10.;
+  lBinLim17[0] = 0.0;
+  lBinLim17[1] = 5.0;
+  lBinLim17[2] = 10.0;
+  fCFContAsCascadeCuts -> SetBinLimits(17,  lBinLim17 );       // Centrality
+  delete [] lBinLim17;
+  fCFContAsCascadeCuts->SetBinLimits(18, 0.0, 6000.0);         // ESD track multiplicity 
+  Double_t *lBinLim19  = new Double_t[ lNbBinsPerVar[19]+1 ];
+  for(Int_t i=0; i< lNbBinsPerVar[19];i++)   lBinLim19[i]  = (Double_t)-1.   + (110.  + 1.0 )/(lNbBinsPerVar[19]-1)  * (Double_t)i ;
+  lBinLim19[ lNbBinsPerVar[19]  ] = 2000.0;
+  fCFContAsCascadeCuts->SetBinLimits(19, lBinLim19);           // Proper time cascade 
+  fCFContAsCascadeCuts->SetBinLimits(20, lBinLim19);           // Proper time V0
+  fCFContAsCascadeCuts->SetBinLimits(21, lBinLim19);           // Distance V0-Xi in the transverse plane
+  delete [] lBinLim19;
   // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
   fCFContAsCascadeCuts->SetStepTitle(0, "#Xi^{-} candidates associated to MC");
   fCFContAsCascadeCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates associated to MC");
@@ -1554,12 +1710,15 @@ if(! fCFContAsCascadeCuts&&fUseCFCont){
   fCFContAsCascadeCuts->SetVarTitle(14, "Y_{MC}(Xi)");
   fCFContAsCascadeCuts->SetVarTitle(15, "Y_{MC}(Omega)");
   
-  fCFContAsCascadeCuts->SetVarTitle(16, "Z-position(BestPrimVtx) (cm)");
+  fCFContAsCascadeCuts->SetVarTitle(16, "Injected or natural particles");
   
-  if (fCollidingSystems) fCFContAsCascadeCuts->SetVarTitle(17, "Centrality");
-  else fCFContAsCascadeCuts->SetVarTitle(17, "SPD tracklets Multiplicity");
+  fCFContAsCascadeCuts->SetVarTitle(17, "Centrality");
   fCFContAsCascadeCuts->SetVarTitle(18, "ESD track multiplicity");
   
+  fCFContAsCascadeCuts->SetVarTitle(19, "Proper time cascade");
+  fCFContAsCascadeCuts->SetVarTitle(20, "Proper time V0"); 
+  fCFContAsCascadeCuts->SetVarTitle(21, "Distance V0-Xi in the transverse plane");
+
   fListHistCascade->Add(fCFContAsCascadeCuts);
 }
 
@@ -1572,8 +1731,7 @@ PostData(1, fListHistCascade);
 
 
 //________________________________________________________________________
-void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) 
-{
+void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
 	
   // Main loop
   // Called for each event
@@ -1582,194 +1740,243 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *)
 	AliAODEvent *lAODevent = 0x0;
 	AliMCEvent  *lMCevent  = 0x0; 
 	AliStack    *lMCstack  = 0x0; 
-	Int_t ncascades = -1;
-	
-	
-  // Connect to the InputEvent	
-  // After these lines, we should have an ESD/AOD event + the number of cascades in it.
-		
-	if (fAnalysisType == "ESD") {
-		lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
-		if (!lESDevent) {
-			Printf("ERROR: lESDevent not available \n");
-			cout << "Name of the file with pb :" <<  CurrentFileName() << endl;  // or AliAnalysisTaskSE::CurrentFileName()
-			return;
-		}
-	} else if (fAnalysisType == "AOD") {  
-		lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() ); 
-		if (!lAODevent) {
-			Printf("ERROR: lAODevent not available \n");
-			cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
-			return;
-		}
-	}
-	
 
-	lMCevent = MCEvent();
-	if (!lMCevent) {
-		Printf("ERROR: Could not retrieve MC event \n");
-		cout << "Name of the file with pb :" <<  CurrentFileName() << endl;	
-		return;
-	}
+        TClonesArray *arrayMC = 0;
 
-	lMCstack = lMCevent->Stack();
-	if (!lMCstack) {
-		Printf("ERROR: Could not retrieve MC stack \n");
-		cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
-		return;
-		
-	}
-
-        
-   // Temporary way : AOD awareness of the code to be developed  FIXME
-   if (fAnalysisType == "AOD") return;
-   
-  //-------------------------------------------------
-  // 1 - Cascade vertexer (ESD)
-        if (fkRerunV0CascVertexers) { // relaunch V0 and Cascade vertexers, not test in PbPb 
-                if(fAnalysisType == "ESD" ){
-//                         lESDevent->ResetCascades();
-//                         lESDevent->ResetV0s();
-// 
-//                         AliV0vertexer lV0vtxer;
-//                         AliCascadeVertexer lCascVtxer;
-// 
-//                         lV0vtxer.SetDefaultCuts(fV0Sels);
-//                         lCascVtxer.SetDefaultCuts(fCascSels);
-// 
-//                         lV0vtxer.Tracks2V0vertices(lESDevent);
-//                         lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
-                }
+        if (!fPIDResponse) {
+          AliError("Cannot get pid response");
+          return;
         }
 
+	
+  // Connect to the InputEvent	
+  // After these lines, we should have an ESD/AOD event 
+		
+	if (fAnalysisType == "ESD") {
+
+	  lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
+	  if (!lESDevent) {
+	    Printf("ERROR: lESDevent not available \n");
+	    cout << "Name of the file with pb :" <<  CurrentFileName() << endl;  
+	    return;
+	  }
+          lMCevent = MCEvent();
+          if (!lMCevent) {
+            Printf("ERROR: Could not retrieve MC event \n");
+            cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
+            return;
+          }
+
+          lMCstack = lMCevent->Stack();
+          if (!lMCstack) {
+            Printf("ERROR: Could not retrieve MC stack \n");
+            cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
+            return;
+          }
+
+          if (fkRerunV0CascVertexers) { // relaunch V0 and Cascade vertexer
+           /* lESDevent->ResetCascades();
+            lESDevent->ResetV0s();
+
+            AliV0vertexer lV0vtxer;
+            AliCascadeVertexer lCascVtxer;
+
+            lV0vtxer.SetCuts(fV0Sels);
+            lCascVtxer.SetCuts(fCascSels);
+
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);*/
+          }
+
+	} else if (fAnalysisType == "AOD") {  
+
+	  lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() ); 
+	  if (!lAODevent) {
+	    Printf("ERROR: lAODevent not available \n");
+	    cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
+	    return;
+	  }
+
+          arrayMC = (TClonesArray*) lAODevent->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+          if (!arrayMC) AliFatal("Error: MC particles branch not found!\n");
+
+	} else {
+
+          Printf("Analysis type (ESD or AOD) not specified \n");
+          return;
+
+        }
+	
 
   //------------------------------------------------
-  // 2 - Preparing the general info about of the event = prim. Vtx + magnetic field (ESD)
-  
+  // 1 - Preparing the general info about of the event = prim. Vtx + magnetic field (ESD)
+ 
+        Double_t lBestPrimaryVtxPos[3]   = {-100.0, -100.0, -100.0};
+        Double_t lMagneticField    = -10.; 
+        Int_t ncascades = -1;
+        // Primary tracks from ESD/AOD
+        Float_t lPrimaryTrackMultiplicity= -1.;
 
-//      if(fAnalysisType == "ESD" ){
+        AliCentrality* centrality = 0x0;
+        AliESDVZERO* esdV0 = 0x0;
+        AliAODVZERO* aodV0 = 0x0;
+        Float_t multV0A = 0.;
+        Float_t multV0C = 0.;
 
-        // Magnetic field
-                const Double_t lMagneticField = lESDevent->GetMagneticField( );
+        Int_t   nNumberOfMCPrimaries     = -1;
+
+        Int_t nTrackMultiplicity = (InputEvent())->GetNumberOfTracks();
+
+        if (fAnalysisType == "ESD" ) {
 
         // Prim vertex
-                const AliESDVertex *lPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();  // get the vtx stored in ESD found with tracks
-                const AliESDVertex *lPrimarySPDVtx      = lESDevent->GetPrimaryVertexSPD();     // get the vtx stored in ESD found with SPD tracklets
+          const AliESDVertex *lPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();  // get the vtx stored in ESD found with tracks
+          const AliESDVertex *lPrimarySPDVtx      = lESDevent->GetPrimaryVertexSPD();     // get the vtx stored in ESD found with SPD tracklets
 
-                const AliESDVertex *lPrimaryBestVtx     = lESDevent->GetPrimaryVertex();
-                        // get the best primary vertex available for the event
-                        // As done in AliCascadeVertexer, we keep the one which is the best one available.
-                        // between : Tracking vertex > SPD vertex > TPC vertex > default SPD vertex
-                        Double_t lBestPrimaryVtxPos[3]   = {-100.0, -100.0, -100.0};
-                lPrimaryBestVtx->GetXYZ( lBestPrimaryVtxPos );
+          const AliESDVertex *lPrimaryBestVtx     = lESDevent->GetPrimaryVertex();
+          // get the best primary vertex available for the event
+          // As done in AliCascadeVertexer, we keep the one which is the best one available.
+          // between : Tracking vertex > SPD vertex > TPC vertex > default SPD vertex
+          lPrimaryBestVtx->GetXYZ( lBestPrimaryVtxPos );
 
-                // FIXME : quality cut on the z-position of the prim vertex.
-                if(fkQualityCutZprimVtxPos) {
-                        if(TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) { 
-                                AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !"); 
-                                PostData(1, fListHistCascade); 
-                                return;
-                        }
-                }
-                // FIXME : quality selection regarding pile-up rejection 
-                if(fkRejectEventPileUp) {
-                        if(lESDevent->IsPileupFromSPD() ){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
-                                AliWarning("Pb / Event tagged as pile-up by SPD... return !"); 
-                                PostData(1, fListHistCascade); 
-                                return; 
-                        }
-                }
-                // FIXME : remove TPC-only primary vertex : retain only events with tracking + SPD vertex
-                if(fkQualityCutNoTPConlyPrimVtx) {
-                        if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingVtx->GetStatus() ){
-                                AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
-                                PostData(1, fListHistCascade); 
-                                return;
-                        }
-                }
+          // FIXME : quality selection regarding pile-up rejection, not in the Cascade task 
+          if (fkRejectEventPileUp) {
+            if (lESDevent->IsPileupFromSPD() ) {// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
+              AliWarning("Pb / Event tagged as pile-up by SPD... return !"); 
+              PostData(1, fListHistCascade); 
+              return; 
+            }
+          }
+          // FIXME : remove TPC-only primary vertex : retain only events with tracking + SPD vertex
+          if (fkQualityCutNoTPConlyPrimVtx) {
+            if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingVtx->GetStatus() ){
+              AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+              PostData(1, fListHistCascade); 
+              return;
+            }
+          }
 
-  // Centrality determination
-  AliESDVZERO* esdV0 = lESDevent->GetVZEROData();
-  Float_t multV0A=esdV0->GetMTotV0A();
-  Float_t multV0C=esdV0->GetMTotV0C();
+          lMagneticField = lESDevent->GetMagneticField();
 
-  AliCentrality *centrality = lESDevent->GetCentrality();
-  //  Printf("Centrality percentile V0M for this event %f)\n",  centrality->GetCentralityPercentile("V0M"));
-  Float_t lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
-  if (lcentrality==100.) lcentrality=99.9;
-/*  if (lcentrality==-1||lcentrality>=90.) {
-    PostData(1, fListHistCascade);
-    return;
-  }
-*/
-/*  if (!(centrality->IsEventInCentralityClass(fCentrLowLim,fCentrUpLim,fCentrEstimator.Data()))) {
-    PostData(1, fListHistCascade);
-    return; 
-  }
-*/
-  fV0Ampl->Fill(multV0A+multV0C);
+          ncascades = lESDevent->GetNumberOfCascades();
 
-//      }// if ESD
-        
-        
-  //	cout << "Name of the accessed file :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+          lPrimaryTrackMultiplicity = fESDtrackCuts->CountAcceptedTracks(lESDevent);
 
-  //	cout << "Tree characteristics ..." << endl;
-  //	fInputHandler->GetTree()->Print("toponly");
-  //	fInputHandler->GetTree()->GetBranch("PrimaryVertex")->Print();
-  //	fInputHandler->GetTree()->GetBranch("SPDVertex")->Print();
+          //        nNumberOfMCPrimaries       = lMCstack->GetNprimary();
+          nNumberOfMCPrimaries = lMCstack->GetNtrack(); // MN: this stack->GetNtrack(); has to be used to check primaries because in HIJING decay products of D and B mesons are also primaries and produced in HIJING during transport, however this is not the number of primaries!
+          // Centrality determination
+          esdV0 = lESDevent->GetVZEROData();
+          multV0A = esdV0->GetMTotV0A();
+          multV0C = esdV0->GetMTotV0C();
+
+          centrality = lESDevent->GetCentrality();
+
+        } else if (fAnalysisType == "AOD") {
+
+          const AliAODVertex *lPrimaryBestAODVtx = lAODevent->GetPrimaryVertex();
+          if (!lPrimaryBestAODVtx) {
+            AliWarning("No prim. vertex in AOD... return!");
+            PostData(1, fListHistCascade);
+            return;
+          }
+
+          // get the best primary vertex available for the event GetVertex(0)
+          // This one will be used for next calculations (DCA essentially)
+          lPrimaryBestAODVtx->GetXYZ( lBestPrimaryVtxPos );
+
+          lMagneticField = lAODevent->GetMagneticField();
+
+          ncascades = lAODevent->GetNumberOfCascades();
+
+          lPrimaryTrackMultiplicity = 0.;
+          for (Int_t itrack = 0; itrack<nTrackMultiplicity; itrack++) {
+            AliAODTrack* track = lAODevent->GetTrack(itrack);
+            if (track->TestFilterBit(AliAODTrack::kTrkGlobal)) lPrimaryTrackMultiplicity++;
+          }
+
+          nNumberOfMCPrimaries = arrayMC->GetEntries();
 
 
+          centrality = lAODevent->GetCentrality();
+          aodV0 = lAODevent->GetVZEROData();
+          multV0A=aodV0->GetMTotV0A();
+          multV0C=aodV0->GetMTotV0C();
 
-  // ---------------------------------------------------------------
-  // - Initialisation of the part dedicated to cascade vertices
+        } 
 
-  if(fAnalysisType == "ESD")            ncascades = lESDevent->GetNumberOfCascades();
-  else if(fAnalysisType == "AOD")       ncascades = lAODevent->GetNumberOfCascades();
-	
-  
-  Int_t   nNumberOfMCPrimaries       = -1;
-  Int_t   nMCPrimariesInAcceptance   =  0;
-  Int_t   nTrackPrimaryMultiplicity  = -1;
-  
-  
-//        nNumberOfMCPrimaries       = lMCstack->GetNprimary(); 
-        nNumberOfMCPrimaries = lMCstack->GetNtrack(); // MN: this stack->GetNtrack(); has to be used because in HIJING decay products of D and B mesons are also primaries and produced in HIJING during transport  
-         
-        nTrackPrimaryMultiplicity  = fESDtrackCuts->CountAcceptedTracks(lESDevent);
+        if (fkQualityCutZprimVtxPos) { // Should be already in the centrality selection
+          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) {
+            AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+            PostData(1, fListHistCascade);
+            return;
+          }
+        }
+ 
 
-        fHistEvtsInCentralityBinsvsNtracks->Fill(lcentrality,nTrackPrimaryMultiplicity);
+      //  Printf("Centrality percentile V0M for this event %f)\n",  centrality->GetCentralityPercentile("V0M"));
 
-        if(nNumberOfMCPrimaries < 1) return;
-    
-        fHistMCTrackMultiplicity->Fill( nNumberOfMCPrimaries );  // MN: neutral particles included and also not physical ones 
-    
+
+        Float_t lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
+        if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim) {
+          PostData(1, fListHistCascade);
+          return;
+        }
+
+        if (nNumberOfMCPrimaries < 1) {
+          PostData(1, fListHistCascade);
+          return; // should be useless because we require vertex and centrality selection 
+        }
+
+        fV0Ampl->Fill(multV0A+multV0C);
+
+        // Best vertex distribution
+        fHistBestVtxX->Fill(lBestPrimaryVtxPos[0]);
+        fHistBestVtxY->Fill(lBestPrimaryVtxPos[1]);
+        fHistBestVtxZ->Fill(lBestPrimaryVtxPos[2]);
+ 
+        fHistEvtsInCentralityBinsvsNtracks->Fill(lcentrality,lPrimaryTrackMultiplicity);
+
+        fHistMCTrackMultiplicity->Fill( nNumberOfMCPrimaries );  // MN: neutral particles included and also not physical ones
+
+        //cout << "Name of the accessed file :" <<  CurrentFileName() << endl;
+
+        Int_t   nMCPrimariesInAcceptance   =  0;
 //_____________________________________________________________________________	
 // Part 1 - Loop over the MC primaries	
         
-    for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < nNumberOfMCPrimaries; iCurrentLabelStack++) {// This is the beginning of the loop on primaries
+    for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < nNumberOfMCPrimaries; iCurrentLabelStack++) {
+
+      if (fAnalysisType == "ESD") {
 
         TParticle* lCurrentParticle = 0x0; 
                    lCurrentParticle = lMCstack->Particle( iCurrentLabelStack );
-        if(!lCurrentParticle) {
-                Printf("MC Primary loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
-                continue;
+        if (!lCurrentParticle) {
+          Printf("MC Primary loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+          continue;
         }
   
         if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) continue;
         
        
-        if( TMath::Abs( lCurrentParticle->Eta() ) > 0.8 ) continue;    
-        nMCPrimariesInAcceptance++;  
-    }
+        if ( TMath::Abs( lCurrentParticle->Eta() ) > 0.8 ) continue;    
+
+      } else if (fAnalysisType == "AOD") {
+
+        AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack);
+        if(TMath::Abs(partMC->Eta())>0.8) continue;  
+
+      }
+
+      nMCPrimariesInAcceptance++;
+ 
+   }
     
-    f2dHistRecoMultVsMCMult->Fill( nTrackPrimaryMultiplicity, nMCPrimariesInAcceptance );  // MN: neutral are included
+   f2dHistRecoMultVsMCMult->Fill( lPrimaryTrackMultiplicity, nMCPrimariesInAcceptance );  // MN: neutral are included
 
 
    // For proton
    
-/*   for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < nNumberOfMCPrimaries; iCurrentLabelStack++) 
-    	{// This is the begining of the loop on primaries, for protons
+/*   for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < nNumberOfMCPrimaries; iCurrentLabelStack++) {
           
     	TParticle* lCurrentParticle = lMCstack->Particle( iCurrentLabelStack );
 	if(!lCurrentParticle){
@@ -1783,7 +1990,7 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *)
 
 	if( lCurrentParticle->GetPdgCode() == -2212 )
 		fHistEtaGenAntiProton->Fill( lCurrentParticle->Eta() );
-	}// end loop over primary proton
+      }// end loop over primary proton
 */   
 
       
@@ -1801,9 +2008,15 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *)
 	
 	
 	TH1F *lHistEtaGenCasc         = 0;	
-	TH3D *l3dHistGenPtVsGenYGenvsCent = 0;
-        TH3D *l3dHistGenPtVsGenYGenvsNtracks = 0;
-	TH1F *lHistThetaGenCasc       = 0;
+	TH3D *l3dHistGenPtVsGenYvsCentNat = 0;
+        TH3D *l3dHistGenPtVsGenYvsNtracksNat = 0;
+        TH3D *l3dHistGenPtVsGenYvsCentInj = 0;
+        TH3D *l3dHistGenPtVsGenYvsNtracksInj = 0;
+        TH3D *l3dHistGenPtVsGenctauvsYNat = 0;
+        TH3D *l3dHistGenPtVsGenctauvsYInj = 0; 
+
+	TH1F *lHistThetaGenCascNat    = 0;
+        TH1F *lHistThetaGenCascInj    = 0;
 	TH2D *l2dHistGenPtVsGenYFdbl  = 0;
 	TH1F *lHistThetaLambda        = 0;
 	TH1F *lHistThetaBach          = 0;
@@ -1815,10 +2028,13 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *)
         Int_t ncascperev = 0; 
         Int_t ncascperevtot = 0;
 
+        Int_t endOfHijingEvent = -1;
 
 for (Int_t iCascType = 1; iCascType < 5; iCascType++) { 
   ncascperev = 0;
   ncascperevtot = 0;
+
+  endOfHijingEvent = -1;
        
   switch (iCascType) {
     case 1: // Xi-
@@ -1830,10 +2046,16 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
 	 	
 	 	// any Xi-
 	 lHistEtaGenCasc        = fHistEtaGenCascXiMinus;
-         l3dHistGenPtVsGenYGenvsCent = f3dHistGenPtVsGenYGenvsCentXiMinus;
-         l3dHistGenPtVsGenYGenvsNtracks = f3dHistGenPtVsGenYGenvsNtracksXiMinus;	
+         l3dHistGenPtVsGenYvsCentNat = f3dHistGenPtVsGenYvsCentXiMinusNat;
+         l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksXiMinusNat;
+         l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentXiMinusInj;
+         l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksXiMinusInj;
+         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYXiMinusNat;
+         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYXiMinusInj;
+
 	 	// cascades generated within acceptance (cut in pt + theta)
-	 lHistThetaGenCasc      = fHistThetaGenCascXiMinus;
+	 lHistThetaGenCascNat      = fHistThetaGenCascXiMinusNat;
+         lHistThetaGenCascInj      = fHistThetaGenCascXiMinusInj;
 	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblXiMinus;
 	 lHistThetaLambda       = fHistThetaLambdaXiMinus;
 	 lHistThetaBach         = fHistThetaBachXiMinus;
@@ -1853,13 +2075,16 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
 	 
 	 	// any Xi+
 	 lHistEtaGenCasc     	= fHistEtaGenCascXiPlus;
-	 //l2dHistGenPtVsGenYGen  = f2dHistGenPtVsGenYGenXiPlus;
-         l3dHistGenPtVsGenYGenvsCent = f3dHistGenPtVsGenYGenvsCentXiPlus;
-         l3dHistGenPtVsGenYGenvsNtracks = f3dHistGenPtVsGenYGenvsNtracksXiPlus;
-
+         l3dHistGenPtVsGenYvsCentNat = f3dHistGenPtVsGenYvsCentXiPlusNat;
+         l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksXiPlusNat;
+         l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentXiPlusInj;
+         l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksXiPlusInj;
+         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYXiPlusNat;
+         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYXiPlusInj;
 	
 	 	// cascades generated within acceptance (cut in pt + theta)	 
-	 lHistThetaGenCasc      = fHistThetaGenCascXiPlus;
+	 lHistThetaGenCascNat      = fHistThetaGenCascXiPlusNat;
+         lHistThetaGenCascInj      = fHistThetaGenCascXiPlusInj;
 	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblXiPlus;
 	 lHistThetaLambda       = fHistThetaLambdaXiPlus;
 	 lHistThetaBach         = fHistThetaBachXiPlus;
@@ -1879,13 +2104,16 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
 	 
 	 	// any Omega-
 	 lHistEtaGenCasc        = fHistEtaGenCascOmegaMinus;	 	
-//	 l2dHistGenPtVsGenYGen  = f2dHistGenPtVsGenYGenOmegaMinus;	
-         l3dHistGenPtVsGenYGenvsCent = f3dHistGenPtVsGenYGenvsCentOmegaMinus;
-         l3dHistGenPtVsGenYGenvsNtracks = f3dHistGenPtVsGenYGenvsNtracksOmegaMinus;
-
+         l3dHistGenPtVsGenYvsCentNat = f3dHistGenPtVsGenYvsCentOmegaMinusNat;
+         l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksOmegaMinusNat;
+         l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentOmegaMinusInj;
+         l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksOmegaMinusInj; 
+         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYOmegaMinusNat;
+         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYOmegaMinusInj;
 	
 	 	// cascades generated within acceptance (cut in pt + theta)
-	 lHistThetaGenCasc      = fHistThetaGenCascOmegaMinus;
+	 lHistThetaGenCascNat      = fHistThetaGenCascOmegaMinusNat;
+         lHistThetaGenCascInj      = fHistThetaGenCascOmegaMinusInj;
 	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblOmegaMinus;
 	 lHistThetaLambda       = fHistThetaLambdaOmegaMinus;
 	 lHistThetaBach         = fHistThetaBachOmegaMinus;
@@ -1905,12 +2133,17 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
 	 
 	 	// any Omega+
 	 lHistEtaGenCasc        = fHistEtaGenCascOmegaPlus;
-         l3dHistGenPtVsGenYGenvsCent = f3dHistGenPtVsGenYGenvsCentOmegaPlus;
-         l3dHistGenPtVsGenYGenvsNtracks = f3dHistGenPtVsGenYGenvsNtracksOmegaPlus;
+         l3dHistGenPtVsGenYvsCentNat = f3dHistGenPtVsGenYvsCentOmegaPlusNat;
+         l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksOmegaPlusNat;
+         l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentOmegaPlusInj;
+         l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksOmegaPlusInj;
+         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYOmegaPlusNat;
+         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYOmegaPlusInj;
 
 	 	
 	 	// cascades generated within acceptance (cut in pt + theta)
-	 lHistThetaGenCasc      = fHistThetaGenCascOmegaPlus;
+	 lHistThetaGenCascNat      = fHistThetaGenCascOmegaPlusNat;
+         lHistThetaGenCascInj      = fHistThetaGenCascOmegaPlusInj;
 	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblOmegaPlus;
 	 lHistThetaLambda       = fHistThetaLambdaOmegaPlus;
 	 lHistThetaBach         = fHistThetaBachOmegaPlus;
@@ -1924,173 +2157,386 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
   }// end switch cascade
 
 
-  for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < nNumberOfMCPrimaries; iCurrentLabelStack++) {// This is the beginning of the loop on primaries
-      
-        TParticle* lCurrentParticle = 0x0; 
-    	           lCurrentParticle = lMCstack->Particle( iCurrentLabelStack );
-	if (!lCurrentParticle) {
-          Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+  for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < nNumberOfMCPrimaries; iCurrentLabelStack++) {
+
+    Bool_t kIsNaturalPart = kFALSE;
+    Double_t partEnergy = 0.;
+    Double_t partPz     = 0.;
+    Double_t partEta    = 0.;
+    Double_t partTheta  = 0.;
+    Double_t partP      = 0.;
+    Double_t partPt     = 0.;
+    Double_t partVx     = 0.;
+    Double_t partVy     = 0.;
+    Double_t partVz     = 0.;
+    Double_t bacVx      = 0.;
+    Double_t bacVy      = 0.;
+    Double_t bacVz      = 0.;    
+    Double_t partMass   = 0.;
+
+    if ( fAnalysisType == "ESD" ) {      
+      TParticle* lCurrentParticle = 0x0; 
+                 lCurrentParticle = lMCstack->Particle( iCurrentLabelStack );
+      if (!lCurrentParticle) {
+        Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+        continue;
+      }
+      if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) continue; 
+      if (lCurrentParticle->GetPdgCode() == lPdgCodeCasc) {  // Here !
+        //cout << "Xi- within loop " << iCurrentLabelStack << "/ " << nNumberOfMCPrimaries << endl;
+		
+	// -  Xi level ... _____________________________________________________________
+	TParticle* xiMC = 0x0;
+		   xiMC = lCurrentParticle;
+	if (!xiMC) {
+	  Printf("MC TParticle pointer to Cascade = 0x0 ! Skip ...");
 	  continue;
 	}
-	if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) continue; 
-    	if (lCurrentParticle->GetPdgCode() == lPdgCodeCasc) {  // Here !
-   		//cout << "Xi- within loop " << iCurrentLabelStack << "/ " << nNumberOfMCPrimaries << endl;
-		
-		// -  Xi level ... _____________________________________________________________
-		TParticle* xiMC = 0x0;
-			   xiMC = lCurrentParticle;
-		if(!xiMC){
-			Printf("MC TParticle pointer to Cascade = 0x0 ! Skip ...");
-			continue;
-		} // redundant?
 
-                // To select injected/bio particles Bool_t AliMCEvent::IsFromBGEvent(Int_t index) 
+        kIsNaturalPart = lMCevent->IsFromBGEvent(iCurrentLabelStack); 
+        if (!kIsNaturalPart) { 
+          if (!(lCurrentParticle->GetFirstMother()<0)) kIsNaturalPart = kTRUE; // because there are primaries (ALICE definition) not produced in the collision   
+        }
+        partEnergy = xiMC->Energy();
+        partPz = xiMC->Pz();
+        partEta = xiMC->Eta();
+        partPt = xiMC->Pt();
+        partP = xiMC->P();
+        partTheta = xiMC->Theta();
+        partMass = xiMC->GetMass();
+        partVx = xiMC->Vx();
+        partVy = xiMC->Vy();
+        partVz = xiMC->Vz();
 
-	        ncascperevtot++;	
-		// Fill the first histos : = any generated Xi, not necessarily within the acceptance
-		Double_t lRapXiMC = 0.5*TMath::Log((xiMC->Energy() + xiMC->Pz()) / (xiMC->Energy() - xiMC->Pz() +1.e-13));
+        if (xiMC->GetDaughter(0)>=0) {
+          TParticle *mcBach = lMCstack->Particle(xiMC->GetDaughter(0));
+          if (mcBach) {
+            bacVx  = mcBach->Vx();
+            bacVy  = mcBach->Vy();
+            bacVz  = mcBach->Vz();
+          }
+        }
+      } else continue;
+    } else if ( fAnalysisType == "AOD" ) {
+
+      AliAODMCParticle *lCurrentParticleaod = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack);
+      if (!lCurrentParticleaod) {
+        Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+        continue;
+      }
+      
+      if (endOfHijingEvent==-1) {  // For injected MC: determine where HIJING event ends 
+        if ((lCurrentParticleaod->GetStatus()==21)||
+            ( (lCurrentParticleaod->GetPdgCode() == 443) &&
+              (lCurrentParticleaod->GetMother() == -1)   &&
+              (lCurrentParticleaod->GetDaughter(0) ==  (iCurrentLabelStack+1)))) {
+ 
+         
+          endOfHijingEvent = iCurrentLabelStack; 
+
+        }
+      }  
+
+      if (!lCurrentParticleaod->IsPhysicalPrimary()) continue;  
+      if (!(lCurrentParticleaod->PdgCode() == lPdgCodeCasc)) continue;
+
+       
+      kIsNaturalPart = kTRUE;
+      if ((iCurrentLabelStack>=endOfHijingEvent)&&(endOfHijingEvent!=-1)&&(lCurrentParticleaod->GetMother()<0)) kIsNaturalPart = kFALSE; 
+
+      partEnergy = lCurrentParticleaod->E();
+      partPz = lCurrentParticleaod->Pz();
+      partEta = lCurrentParticleaod->Eta();
+      partP = lCurrentParticleaod->P();
+      partPt = lCurrentParticleaod->Pt();
+      partTheta = lCurrentParticleaod->Theta();
+      partMass = lCurrentParticleaod->M(); // FIXME not sure this works, seems not implemented
+      partVx = lCurrentParticleaod->Xv();
+      partVy = lCurrentParticleaod->Yv();
+      partVz = lCurrentParticleaod->Zv();
+
+      if (lCurrentParticleaod->GetDaughter(0)>=0) {
+        AliAODMCParticle *mcBach = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod->GetDaughter(0));
+        if (mcBach) {
+          bacVx  = mcBach->Xv();
+          bacVy  = mcBach->Yv();
+          bacVz  = mcBach->Zv();
+        }
+      }
+
+    }
+      
+    ncascperevtot++;	
+	// Fill the first histos : = any generated Xi, not necessarily within the acceptance
+    Double_t lRapXiMC = 0.5*TMath::Log((partEnergy + partPz) / (partEnergy - partPz +1.e-13));
+        // Calculate proper time
+    Double_t lctau = TMath::Sqrt((partVx-bacVx)*(partVx-bacVx)+(partVy-bacVy)*(partVy-bacVy)+(partVz-bacVz)*(partVz-bacVz));
+    if (partP!=0.)    lctau = lctau*partMass/partP;
+    else lctau = -1.;
+
+    Double_t lRadToDeg = 180.0/TMath::Pi();
+
+    // Fill the first histos : = any generated Xi, not necessarily within the acceptance		
+    lHistEtaGenCasc	->Fill( partEta );	 
+
+    if (kIsNaturalPart) {
+      l3dHistGenPtVsGenYvsCentNat   ->Fill( partPt, lRapXiMC, lcentrality );
+      l3dHistGenPtVsGenYvsNtracksNat->Fill( partPt, lRapXiMC, lPrimaryTrackMultiplicity );     
+      l3dHistGenPtVsGenctauvsYNat->Fill( partPt, lctau, lRapXiMC );
+      lHistThetaGenCascNat       ->Fill( lRadToDeg * partTheta );
+    } else {
+      l3dHistGenPtVsGenYvsCentInj   ->Fill( partPt, lRapXiMC, lcentrality );
+      l3dHistGenPtVsGenYvsNtracksInj->Fill( partPt, lRapXiMC, lPrimaryTrackMultiplicity );
+      l3dHistGenPtVsGenctauvsYInj->Fill( partPt, lctau, lRapXiMC );
+      lHistThetaGenCascInj       ->Fill( lRadToDeg * partTheta );
+    }
+
+    // Check the emission of particle stays within the acceptance of the detector (cut in theta)
+    if (fApplyAccCut) { if( partTheta < TMath::Pi()/4.0 || partTheta > 3.0*TMath::Pi()/4.0 ) continue;}	
+
+    Float_t lambdaTheta = 0.;
+    Float_t bacTheta    = 0.;
+    Float_t dghtBarV0Theta = 0.;
+    Float_t dghtMesV0Theta = 0.;
+    Float_t bacPt       = 0.;
+    Float_t dghtBarV0Pt = 0.;
+    Float_t dghtMesV0Pt = 0.;
+
+
+    if ( fAnalysisType == "ESD" ) { 
+      TParticle* xiMC = lMCstack->Particle( iCurrentLabelStack ); 
+      if ( xiMC->GetNDaughters() != 2) continue;
+      if ( xiMC->GetDaughter(0) < 0 )  continue;
+      if ( xiMC->GetDaughter(1) < 0 )  continue;
 		
-		lHistEtaGenCasc 	->Fill( xiMC->Eta() );	 
-		l3dHistGenPtVsGenYGenvsCent   ->Fill( xiMC->Pt(), lRapXiMC, lcentrality );
-                l3dHistGenPtVsGenYGenvsNtracks->Fill( xiMC->Pt(), lRapXiMC, nTrackPrimaryMultiplicity );     	
+      TParticle* lDght0ofXi = lMCstack->Particle(  xiMC->GetDaughter(0) );
+      TParticle* lDght1ofXi = lMCstack->Particle(  xiMC->GetDaughter(1) );
 			
-		
-		
-		// Check the emission of particle stays within the acceptance of the detector (cut in theta)
-		if (fApplyAccCut) {if( xiMC->Theta() < TMath::Pi()/4.0  ||    xiMC->Theta() > 3.0*TMath::Pi()/4.0 ) continue;}	
-		if( xiMC->GetNDaughters() != 2) continue;
-		if( xiMC->GetDaughter(0) < 0 )  continue;
-		if( xiMC->GetDaughter(1) < 0 )  continue;
-		
-			TParticle* lDght0ofXi = lMCstack->Particle(  xiMC->GetDaughter(0) );
-			TParticle* lDght1ofXi = lMCstack->Particle(  xiMC->GetDaughter(1) );
+      TParticle* lLambda = 0;
+      TParticle* lBach   = 0;
 			
-		TParticle* lLambda = 0;
-		TParticle* lBach   = 0;
-			
-		// Xi - Case 1
-			if(	lDght0ofXi->GetPdgCode() == lPdgCodeLambda   &&  // Here !
-				lDght1ofXi->GetPdgCode() == lPdgCodeBach ){      // Here !
+      // Xi - Case 1
+      if ( lDght0ofXi->GetPdgCode() == lPdgCodeLambda   &&  // Here !
+           lDght1ofXi->GetPdgCode() == lPdgCodeBach ){      // Here !
 				
-				lLambda = lDght0ofXi;
-				lBach   = lDght1ofXi;
-			}// end if dghter 0 = Lambda and    dghter 1 = Pi-  
+        lLambda = lDght0ofXi;
+        lBach   = lDght1ofXi;
+      }// end if dghter 0 = Lambda and    dghter 1 = Pi-  
 			
-		// Xi - Case 2
-			else if( lDght0ofXi->GetPdgCode() == lPdgCodeBach  &&      // Here !
-				 lDght1ofXi->GetPdgCode() == lPdgCodeLambda ){     // Here !
+      // Xi - Case 2
+        else if ( lDght0ofXi->GetPdgCode() == lPdgCodeBach  &&      // Here !
+                  lDght1ofXi->GetPdgCode() == lPdgCodeLambda ){     // Here !
 			
-				lBach   = lDght0ofXi;
-				lLambda = lDght1ofXi;
-			}//  end if dghter 0 = Pi-  and   dghter 1 = Lambda
+        lBach   = lDght0ofXi;
+	lLambda = lDght1ofXi;
+      }//  end if dghter 0 = Pi-  and   dghter 1 = Lambda
 			
-		// V0 otherwise - Case 3	
-			else continue;
+	// V0 otherwise - Case 3	
+        else continue;
 		
-			// Check the emission of particle stays within the acceptance of the detector (cut in pt + theta)
-     			if (fApplyAccCut) { 
-                          if( lLambda->Theta() < TMath::Pi()/4.0  ||    lLambda->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
-     	                  if( lBach->Theta() < TMath::Pi()/4.0    ||    lBach->Theta() > 3.0*TMath::Pi()/4.0 )   continue;
-			  if( lBach->Pt() < 0.150 ) continue; //FIXME : maybe tuned for Xi but not for K- from Omega ...
-                        } 		
+      // Check the emission of particle stays within the acceptance of the detector (cut in pt + theta)
+      if (fApplyAccCut) { 
+        if ( lLambda->Theta() < TMath::Pi()/4.0  ||    lLambda->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
+        if( lBach->Theta() < TMath::Pi()/4.0    ||    lBach->Theta() > 3.0*TMath::Pi()/4.0 )   continue;
+        if( lBach->Pt() < 0.150 ) continue; //FIXME : maybe tuned for Xi but not for K- from Omega ...
+      } 		
 		
-		// -  V0 level ... _____________________________________________________________
-		TParticle* lDghtBarV0 = 0;
-		TParticle* lDghtMesV0 = 0;
+      // -  V0 level ... _____________________________________________________________
+      TParticle* lDghtBarV0 = 0;
+      TParticle* lDghtMesV0 = 0;
+	
+      if( lLambda->GetNDaughters() != 2 )  continue;
+      if( lLambda->GetDaughter(0) < 0 )    continue;
+      if( lLambda->GetDaughter(1) < 0 )    continue;
 		
-		if( lLambda->GetNDaughters() != 2 )  continue;
-		if( lLambda->GetDaughter(0) < 0 )    continue;
-		if( lLambda->GetDaughter(1) < 0 )    continue;
 		
-		
-		TParticle* lDght0ofLambda = lMCstack->Particle(  lLambda->GetDaughter(0) );
-		TParticle* lDght1ofLambda = lMCstack->Particle(  lLambda->GetDaughter(1) );
+      TParticle* lDght0ofLambda = lMCstack->Particle(  lLambda->GetDaughter(0) );
+      TParticle* lDght1ofLambda = lMCstack->Particle(  lLambda->GetDaughter(1) );
 			
-		// V0 - Case 1
-			if( 	lDght0ofLambda->GetPdgCode() == lPdgCodeDghtBarV0 &&    // Here !
-				lDght1ofLambda->GetPdgCode() == lPdgCodeDghtMesV0 ){    // Here !
+      // V0 - Case 1
+      if ( lDght0ofLambda->GetPdgCode() == lPdgCodeDghtBarV0 &&    // Here !
+           lDght1ofLambda->GetPdgCode() == lPdgCodeDghtMesV0 ) {    // Here !
 			
-				lDghtBarV0 = lDght0ofLambda;
-				lDghtMesV0 = lDght1ofLambda;
-			}// end if dghter 0 = Proton  and   dghter 1 = Pi-  
+        lDghtBarV0 = lDght0ofLambda;
+        lDghtMesV0 = lDght1ofLambda;
+      }// end if dghter 0 = Proton  and   dghter 1 = Pi-  
 			
-		// V0 - Case 2
-			else if( lDght0ofLambda->GetPdgCode() == lPdgCodeDghtMesV0  &&     // Here !
-				 lDght1ofLambda->GetPdgCode() == lPdgCodeDghtBarV0 ){      // Here !
+      // V0 - Case 2
+        else if ( lDght0ofLambda->GetPdgCode() == lPdgCodeDghtMesV0  &&     // Here !
+                  lDght1ofLambda->GetPdgCode() == lPdgCodeDghtBarV0 ) {      // Here !
 			
-				lDghtMesV0 = lDght0ofLambda;
-				lDghtBarV0 = lDght1ofLambda;
-			}//  end if dghter 0 = Pi-  and   dghter 1 = proton
+        lDghtMesV0 = lDght0ofLambda;
+	lDghtBarV0 = lDght1ofLambda;
+      }//  end if dghter 0 = Pi-  and   dghter 1 = proton
 			
-		// V0 otherwise - Case 3
-			else continue;
+      // V0 otherwise - Case 3
+        else continue;
 	
 			
-			// Check the emission of particle stays within the acceptance of the detector
-			if (fApplyAccCut) { 
-                          if( lDghtBarV0->Theta() < TMath::Pi()/4.0  ||  lDghtBarV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
-                          if( lDghtMesV0->Theta() < TMath::Pi()/4.0  ||  lDghtMesV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
-			
-			  if( lDghtBarV0->Pt() < 0.250 ) continue;
-			  if( lDghtMesV0->Pt() < 0.150 ) continue;
-			}
-			
-			
-		// - Just to know which file is currently open : locate the file containing Xi 
-		//cout << "Name of the file containing generated Xi :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() 
-		//						     <<  endl;	
-			
-		Double_t lRadToDeg = 180.0/TMath::Pi();	
-			
-		// - Filling histos ... _________________________________________________________________	
-			lHistThetaGenCasc	->Fill( lRadToDeg * xiMC->Theta()  );
-			l2dHistGenPtVsGenYFdbl	->Fill( xiMC->Pt(), lRapXiMC );
-			
-			// - Fill theta histos for Lambda and Bach
-			lHistThetaLambda	->Fill( lRadToDeg * lLambda->Theta() );
-			lHistThetaBach  	->Fill( lRadToDeg *   lBach->Theta() );
-			
-			// - Fill theta histos for V0 daughters
-			lHistThetaBarDghter	->Fill( lRadToDeg * lDghtBarV0->Theta() );
-			lHistThetaMesDghter	->Fill( lRadToDeg * lDghtMesV0->Theta() );
-			
-			// - Fill pt histos.
-			lHistPtBach		->Fill(      lBach->Pt() );
-			lHistPtBarDghter	->Fill( lDghtBarV0->Pt() );
-			lHistPtMesDghter	->Fill( lDghtMesV0->Pt() );
-                      //  if(iCascType == 1) Printf("Xi- current index = %n ", iCurrentLabelStack);
-			ncascperev++;			
-		}// end if current particle = Xi-
+      // Check the emission of particle stays within the acceptance of the detector
+      if (fApplyAccCut) { 
+        if( lDghtBarV0->Theta() < TMath::Pi()/4.0  ||  lDghtBarV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
+        if( lDghtMesV0->Theta() < TMath::Pi()/4.0  ||  lDghtMesV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
+	
+        if( lDghtBarV0->Pt() < 0.250 ) continue;
+        if( lDghtMesV0->Pt() < 0.150 ) continue;
+      }
+
+      lambdaTheta = lLambda->Theta();
+      bacTheta    = lBach->Theta();
+      dghtBarV0Theta = lDghtBarV0->Theta(); 			
+      dghtMesV0Theta = lDghtMesV0->Theta();
+      bacPt       = lBach->Pt();
+      dghtBarV0Pt = lDghtBarV0->Pt();
+      dghtMesV0Pt = lDghtMesV0->Pt();
+	 	 	
+    } else if ( fAnalysisType == "AOD") {
+
+      AliAODMCParticle *xiMC = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack);
+      if ( xiMC->GetNDaughters() != 2) continue;
+      if ( xiMC->GetDaughter(0) < 0 )  continue;
+      if ( xiMC->GetDaughter(1) < 0 )  continue;
+
+      AliAODMCParticle* lDght0ofXi = (AliAODMCParticle*) arrayMC->At(  xiMC->GetDaughter(0) );
+      AliAODMCParticle* lDght1ofXi = (AliAODMCParticle*) arrayMC->At(  xiMC->GetDaughter(1) );
+
+      AliAODMCParticle* lLambda = 0;
+      AliAODMCParticle* lBach   = 0;
+
+      // Xi - Case 1
+      if ( lDght0ofXi->PdgCode() == lPdgCodeLambda   &&  // Here !
+           lDght1ofXi->PdgCode() == lPdgCodeBach ){      // Here !
+
+        lLambda = lDght0ofXi;
+        lBach   = lDght1ofXi;
+      }// end if dghter 0 = Lambda and    dghter 1 = Pi-
+
+      // Xi - Case 2
+        else if ( lDght0ofXi->PdgCode() == lPdgCodeBach  &&      // Here !
+                  lDght1ofXi->PdgCode() == lPdgCodeLambda ){     // Here !
+
+        lBach   = lDght0ofXi;
+        lLambda = lDght1ofXi;
+      }//  end if dghter 0 = Pi-  and   dghter 1 = Lambda
+
+        // V0 otherwise - Case 3
+        else continue;
+
+      // Check the emission of particle stays within the acceptance of the detector (cut in pt + theta)
+      if (fApplyAccCut) {
+        if ( lLambda->Theta() < TMath::Pi()/4.0  ||    lLambda->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
+        if( lBach->Theta() < TMath::Pi()/4.0    ||    lBach->Theta() > 3.0*TMath::Pi()/4.0 )   continue;
+        if( lBach->Pt() < 0.150 ) continue; //FIXME : maybe tuned for Xi but not for K- from Omega ...
+      }
+
+      // -  V0 level ... _____________________________________________________________
+      AliAODMCParticle* lDghtBarV0 = 0;
+      AliAODMCParticle* lDghtMesV0 = 0;
+
+      if( lLambda->GetNDaughters() != 2 )  continue;
+      if( lLambda->GetDaughter(0) < 0 )    continue;
+      if( lLambda->GetDaughter(1) < 0 )    continue;
+
+
+      AliAODMCParticle* lDght0ofLambda = (AliAODMCParticle*) arrayMC->At(  lLambda->GetDaughter(0) );
+      AliAODMCParticle* lDght1ofLambda = (AliAODMCParticle*) arrayMC->At(  lLambda->GetDaughter(1) );
+
+      // V0 - Case 1
+      if ( lDght0ofLambda->PdgCode() == lPdgCodeDghtBarV0 &&    // Here !
+           lDght1ofLambda->PdgCode() == lPdgCodeDghtMesV0 ) {    // Here !
+
+        lDghtBarV0 = lDght0ofLambda;
+        lDghtMesV0 = lDght1ofLambda;
+      }// end if dghter 0 = Proton  and   dghter 1 = Pi-
+
+      // V0 - Case 2
+        else if ( lDght0ofLambda->PdgCode() == lPdgCodeDghtMesV0  &&     // Here !
+                  lDght1ofLambda->PdgCode() == lPdgCodeDghtBarV0 ) {      // Here !
+
+        lDghtMesV0 = lDght0ofLambda;
+        lDghtBarV0 = lDght1ofLambda;
+      }//  end if dghter 0 = Pi-  and   dghter 1 = proton
+
+      // V0 otherwise - Case 3
+        else continue;
+
+
+      // Check the emission of particle stays within the acceptance of the detector
+      if (fApplyAccCut) {
+        if( lDghtBarV0->Theta() < TMath::Pi()/4.0  ||  lDghtBarV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
+        if( lDghtMesV0->Theta() < TMath::Pi()/4.0  ||  lDghtMesV0->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
+
+        if( lDghtBarV0->Pt() < 0.250 ) continue;
+        if( lDghtMesV0->Pt() < 0.150 ) continue;
+      }
+
+
+      lambdaTheta = lLambda->Theta();
+      bacTheta    = lBach->Theta();
+      dghtBarV0Theta = lDghtBarV0->Theta();
+      dghtMesV0Theta = lDghtMesV0->Theta();
+      bacPt       = lBach->Pt();
+      dghtBarV0Pt = lDghtBarV0->Pt();
+      dghtMesV0Pt = lDghtMesV0->Pt();
+
+    }
+
+    // - Just to know which file is currently open : locate the file containing Xi
+                //cout << "Name of the file containing generated Xi :" <<  CurrentFileName()
+                //       
+    // - Filling histos for findable cascades... _________________________________________________________________
+
+    // - Fill theta histos for Lambda and Bach
+    lHistThetaLambda        ->Fill( lRadToDeg * lambdaTheta );
+    lHistThetaBach          ->Fill( lRadToDeg * bacTheta );
+
+    // - Fill theta histos for V0 daughters
+    lHistThetaBarDghter     ->Fill( lRadToDeg * dghtBarV0Theta );
+    lHistThetaMesDghter     ->Fill( lRadToDeg * dghtMesV0Theta );
+
+    // - Fill pt histos.
+    lHistPtBach             ->Fill( bacPt );
+    lHistPtBarDghter        ->Fill( dghtBarV0Pt );
+    lHistPtMesDghter        ->Fill( dghtMesV0Pt );
+    //  if(iCascType == 1) Printf("Xi- current index = %n ", iCurrentLabelStack);
+
+    l2dHistGenPtVsGenYFdbl  ->Fill( partPt, lRapXiMC );
+
+    ncascperev++;			
+		
 	     
-     }// This is the end of the loop on primaries
+  }// This is the end of the loop on primaries
   
-     if(iCascType == 1) {
-       fHistnXiMinusPerEv->Fill(ncascperev);
-       fHistnXiMinusPerEvTot->Fill(ncascperevtot);
+  if (iCascType == 1) {
+    fHistnXiMinusPerEv->Fill(ncascperev);
+    fHistnXiMinusPerEvTot->Fill(ncascperevtot);
 //       Printf("N xi-tot = %n N xi-acc = %n\n", ncascperevtot, ncascperev);
-     }
-     if(iCascType == 2) {
-       fHistnXiPlusPerEv->Fill(ncascperev);
-       fHistnXiPlusPerEvTot->Fill(ncascperevtot);
-     }
-     if(iCascType == 3) {
-       fHistnOmegaMinusPerEv->Fill(ncascperev);
-       fHistnOmegaMinusPerEvTot->Fill(ncascperevtot);
-     }
-     if(iCascType == 4) {
-       fHistnOmegaPlusPerEv->Fill(ncascperev);
-       fHistnOmegaPlusPerEvTot->Fill(ncascperevtot);
-     }
-
-
+  }
+  if (iCascType == 2) {
+    fHistnXiPlusPerEv->Fill(ncascperev);
+    fHistnXiPlusPerEvTot->Fill(ncascperevtot);
+  }
+  if (iCascType == 3) {
+    fHistnOmegaMinusPerEv->Fill(ncascperev);
+    fHistnOmegaMinusPerEvTot->Fill(ncascperevtot);
+  }
+  if (iCascType == 4) {
+    fHistnOmegaPlusPerEv->Fill(ncascperev);
+    fHistnOmegaPlusPerEvTot->Fill(ncascperevtot);
+  }
 
    
 // - Re-initialisation of the local TH1F pointers
 lHistEtaGenCasc         = 0x0;
-l3dHistGenPtVsGenYGenvsCent = 0x0;
-l3dHistGenPtVsGenYGenvsNtracks = 0x0;
+l3dHistGenPtVsGenYvsCentNat = 0x0;
+l3dHistGenPtVsGenYvsNtracksNat = 0x0;
+l3dHistGenPtVsGenYvsCentInj = 0x0;
+l3dHistGenPtVsGenYvsNtracksInj = 0x0;
+l3dHistGenPtVsGenctauvsYNat = 0x0;
+l3dHistGenPtVsGenctauvsYInj = 0x0;
 
-lHistThetaGenCasc       = 0x0;
+lHistThetaGenCascNat    = 0x0;
+lHistThetaGenCascInj    = 0x0;
 l2dHistGenPtVsGenYFdbl  = 0x0;
 lHistThetaLambda        = 0x0;
 lHistThetaBach          = 0x0;
@@ -2112,8 +2558,104 @@ Int_t nAssoXiPlus = 0;
 Int_t nAssoOmegaMinus = 0;
 Int_t nAssoOmegaPlus = 0;
 
+
+Int_t lPosTPCClusters   = 0;
+Int_t lNegTPCClusters   = 0;
+Int_t lBachTPCClusters  = 0;
+
+
+// Double_t lChi2Xi         = -1. ;
+Double_t lDcaXiDaughters            = -1. ;
+Double_t lDcaBachToPrimVertexXi     = -1. ;
+Double_t lXiCosineOfPointingAngle   = -1. ;
+Double_t lPosXi[3]                  = { -1000.0, -1000.0, -1000.0 };
+Double_t lXiRadius                  = -1000. ;
+
+Double_t lInvMassLambdaAsCascDghter = 0.;
+Double_t lDcaV0DaughtersXi          = -1.;
+// Double_t lV0Chi2Xi               = -1. ;
+Double_t lV0CosineOfPointingAngleXi = -1.;
+Double_t lV0CosineOfPointingAngle   = -1.;
+Double_t lPosV0Xi[3]                = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
+Double_t lV0RadiusXi                = -1000.;
+Double_t lDcaV0ToPrimVertexXi       = -1.;
+Double_t lDcaPosToPrimVertexXi      = -1.;
+Double_t lDcaNegToPrimVertexXi      = -1.;
+
+Double_t lChargeXi                  = -1.;
+
+Double_t lV0mom = -1000.;
+ 
+Double_t lmcPt = -1.;         
+Double_t lmcRapCasc = -1.; 
+Double_t lmcEta = -1000.;     
+Double_t lmcTransvRadius = -1000.; 
+
+
+Double_t lrecoPt = -100.;     
+Double_t lrecoTransvRadius = -1000.; 
+
+Double_t lDeltaPhiMcReco = -1.;
+
+Double_t lmcPtPosV0Dghter = -100.;
+Double_t lmcPtNegV0Dghter = -100.;
+Double_t lrecoP = -100.;
+
+Double_t   lmcPtBach = -100.;
+
+Double_t cascadeMass = 0.;
+
+Int_t    lSPDTrackletsMultiplicity       = -1;
+
+
 for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Cascade loop
-		
+
+
+      Bool_t   lIsPosInXiProton      = kFALSE;
+      Bool_t   lIsPosInXiPion        = kFALSE;
+      Bool_t   lIsPosInOmegaProton   = kFALSE;
+      Bool_t   lIsPosInOmegaPion     = kFALSE;
+
+      Bool_t   lIsNegInXiProton      = kFALSE;
+      Bool_t   lIsNegInXiPion        = kFALSE;
+      Bool_t   lIsNegInOmegaProton   = kFALSE;
+      Bool_t   lIsNegInOmegaPion     = kFALSE;
+
+      Bool_t   lIsBachelorKaon       = kFALSE;
+      Bool_t   lIsBachelorPion       = kFALSE;
+
+      Bool_t   lIsBachelorKaonForTPC = kFALSE;
+      Bool_t   lIsBachelorPionForTPC = kFALSE;
+      Bool_t   lIsNegPionForTPC      = kFALSE;
+      Bool_t   lIsPosPionForTPC      = kFALSE;
+      Bool_t   lIsNegProtonForTPC    = kFALSE;
+      Bool_t   lIsPosProtonForTPC    = kFALSE;
+
+      // Combined PID
+      // Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)
+      Double_t lPriorsGuessXi[5]    = {0, 0, 2, 0, 1};
+      Double_t lPriorsGuessOmega[5] = {0, 0, 1, 1, 1};
+
+      Double_t ppionBach = 0.0, pkaonBach = 0.0;
+
+      Bool_t   lIsBachelorMCPiMinus  = kFALSE;
+      Bool_t   lIsBachelorMCPiPlus   = kFALSE;
+      Bool_t   lIsBachelorMCKMinus   = kFALSE;
+      Bool_t   lIsBachelorMCKPlus    = kFALSE;
+
+      Double_t lInvMassXiMinus    = 0.;
+      Double_t lInvMassXiPlus     = 0.;
+      Double_t lInvMassOmegaMinus = 0.;
+      Double_t lInvMassOmegaPlus  = 0.;
+
+      Bool_t lAssoXiMinus    = kFALSE;
+      Bool_t lAssoXiPlus     = kFALSE;
+      Bool_t lAssoOmegaMinus = kFALSE;
+      Bool_t lAssoOmegaPlus  = kFALSE;
+
+      Bool_t kIsNaturalPart = kFALSE;
+
+      if ( fAnalysisType == "ESD" ) {		
 	AliESDcascade *xiESD = lESDevent->GetCascade(iXi);
 	if (!xiESD) continue;
 	
@@ -2142,9 +2684,9 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		continue;
 	}
 	
-        Int_t lPosTPCClusters   = pTrackXi->GetTPCNcls();
-        Int_t lNegTPCClusters   = nTrackXi->GetTPCNcls();
-        Int_t lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
+        lPosTPCClusters   = pTrackXi->GetTPCNcls();
+        lNegTPCClusters   = nTrackXi->GetTPCNcls();
+        lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
 
                 // FIXME : rejection of a poor quality tracks
         if(fkQualityCutTPCrefit){
@@ -2166,10 +2708,6 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 	// - Step II.2 : Info over reconstructed cascades
 	//-------------	
 	
-	Double_t lInvMassXiMinus    = 0.;
-	Double_t lInvMassXiPlus     = 0.;
-	Double_t lInvMassOmegaMinus = 0.;
-	Double_t lInvMassOmegaPlus  = 0.;
 	
 	Double_t lV0quality = 0.;
 	
@@ -2208,25 +2746,6 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		xiESD->ChangeMassHypothesis(lV0quality , -3312); 	// Back to "default" hyp.
 	}
 	
-        // Double_t lChi2Xi         = -1. ;
-        Double_t lDcaXiDaughters            = -1. ;
-        Double_t lDcaBachToPrimVertexXi     = -1. ;
-        Double_t lXiCosineOfPointingAngle   = -1. ;
-        Double_t lPosXi[3]                  = { -1000.0, -1000.0, -1000.0 };
-        Double_t lXiRadius                  = -1000. ;
-
-        Double_t lInvMassLambdaAsCascDghter = 0.;
-        Double_t lDcaV0DaughtersXi          = -1.;
-        // Double_t lV0Chi2Xi               = -1. ;
-        Double_t lV0CosineOfPointingAngleXi = -1.;
-        Double_t lPosV0Xi[3]                = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
-        Double_t lV0RadiusXi                = -1000.;
-        Double_t lDcaV0ToPrimVertexXi       = -1.;
-        Double_t lDcaPosToPrimVertexXi      = -1.;
-        Double_t lDcaNegToPrimVertexXi      = -1.;
-
-        Int_t    nTrackWithTPCrefitMultiplicity  =  0;
-        Int_t    lSPDTrackletsMultiplicity       = -1;
 
         //lChi2Xi                       = xiESD->GetChi2Xi();
         lDcaXiDaughters                 = xiESD->GetDcaXiDaughters();
@@ -2238,17 +2757,22 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                                                                                   lBestPrimaryVtxPos[1],
                                                                                   lBestPrimaryVtxPos[2] );
                                         // Take care : the best available vertex should be used (like in AliCascadeVertexer)
-        xiESD->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
-        lXiRadius                       = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
+        xiESD->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );  
         lInvMassLambdaAsCascDghter      = xiESD->GetEffMass();
                                         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
         lDcaV0DaughtersXi               = xiESD->GetDcaV0Daughters();
         // lV0Chi2Xi                    = xiESD->GetChi2V0();
-        lV0CosineOfPointingAngleXi      = xiESD->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0],
-                                                                             lBestPrimaryVtxPos[1],
-                                                                             lBestPrimaryVtxPos[2] );
+        lV0CosineOfPointingAngleXi      = xiESD->GetV0CosineOfPointingAngle( lPosXi[0],    
+                                                                             lPosXi[1],
+                                                                             lPosXi[2] );
+
+        lV0CosineOfPointingAngle      = xiESD->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0],
+                                                                           lBestPrimaryVtxPos[1],
+                                                                           lBestPrimaryVtxPos[2]); 
+
+        //if (lV0CosineOfPointingAngleXi==1.) cout << "Cosine V0 PA wrt Xi pos ==1!" <<endl;
+        //else if (lV0CosineOfPointingAngleXi>1.) cout <<"Cosine V0 PA wrt Xi pos >1!"<<endl;
         xiESD->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
-        lV0RadiusXi                     = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
 
         lDcaV0ToPrimVertexXi            = xiESD->GetD( lBestPrimaryVtxPos[0],
                                                 lBestPrimaryVtxPos[1],
@@ -2262,39 +2786,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                                                                          lBestPrimaryVtxPos[1],
                                                                          lMagneticField  )     );
 
-                               // - II.Step 3' : extra-selection for cascade candidates
-                // Towards optimisation of AA selection
-      if (fkExtraSelections) {
-
-        // if(lChi2Xi > 2000) continue; // in AliCascadeVertexer
-        // if(lV0Chi2Xi > 2000) continue; // in AliV0vertexer
-
-        if (lDcaXiDaughters > 0.3) continue; // in AliCascadeVertexer
-        if (lXiCosineOfPointingAngle < 0.999 ) continue; // in AliCascadeVertexer
-        if (lDcaV0ToPrimVertexXi < 0.05) continue; // in AliCascadeVertexer
-        if (lDcaBachToPrimVertexXi < 0.03) continue; // in AliCascadeVertexer
-////      if (TMath::Abs(lInvMassLambdaAsCascDghter-1.11568) > 0.006 ) continue;  // in AliCascadeVertexer
-
-        if (lDcaV0DaughtersXi > 1.) continue; // in AliV0vertexer
-        if (lV0CosineOfPointingAngleXi < 0.998) continue; // in AliV0vertexer
-        if (lDcaPosToPrimVertexXi < 0.1) continue; // in AliV0vertexer
-        if (lDcaNegToPrimVertexXi < 0.1) continue; // in AliV0vertexer
-
-
-          if(lXiRadius < .9) continue; // in AliCascadeVertexer
-//        if(lXiRadius > 100) continue; // in AliCascadeVertexer
-          if(lV0RadiusXi < 0.9) continue; // in AliV0vertexer
-//        if(lV0RadiusXi > 100) continue; // in AliV0vertexer
-
-      }
+	lChargeXi = xiESD->Charge();
 	
-	Double_t lChargeXi = xiESD->Charge();
-	
-	if( lChargeXi < 0 )	fHistMassXiMinus	->Fill( lInvMassXiMinus );
-	if( lChargeXi > 0 )	fHistMassXiPlus		->Fill( lInvMassXiPlus );
-	if( lChargeXi < 0 )	fHistMassOmegaMinus	->Fill( lInvMassOmegaMinus );
-	if( lChargeXi > 0 )	fHistMassOmegaPlus	->Fill( lInvMassOmegaPlus );
-
 	// - Step II.3 : PID info   
 
 	//-------------
@@ -2302,31 +2795,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 	
 	// 3.1 - PID Information
 
-	Bool_t   lIsPosInXiProton      = kFALSE;
-	Bool_t   lIsPosInXiPion        = kFALSE;
-	Bool_t   lIsPosInOmegaProton   = kFALSE;
-	Bool_t   lIsPosInOmegaPion     = kFALSE;
-	
-	Bool_t   lIsNegInXiProton      = kFALSE;
-	Bool_t   lIsNegInXiPion        = kFALSE;
-	Bool_t   lIsNegInOmegaProton   = kFALSE;
-	Bool_t   lIsNegInOmegaPion     = kFALSE;
-	
-	Bool_t   lIsBachelorKaon       = kFALSE;
-	Bool_t   lIsBachelorPion       = kFALSE; 
-	
-	Bool_t   lIsBachelorKaonForTPC = kFALSE; // For ESD only ...//FIXME : wait for availability in AOD
-	Bool_t   lIsBachelorPionForTPC = kFALSE; // For ESD only ...
-	Bool_t   lIsNegPionForTPC      = kFALSE; // For ESD only ...
-	Bool_t   lIsPosPionForTPC      = kFALSE; // For ESD only ...
-	Bool_t   lIsNegProtonForTPC    = kFALSE; // For ESD only ...
-	Bool_t   lIsPosProtonForTPC    = kFALSE; // For ESD only ...
 
-        // 3.1.A - Combined PID
-	// Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)
-	Double_t lPriorsGuessXi[5]    = {0, 0, 2, 0, 1};
-	Double_t lPriorsGuessOmega[5] = {0, 0, 1, 1, 1};
-	
 	// Combined VO-positive-daughter PID
 	AliPID pPidXi;		pPidXi.SetPriors(    lPriorsGuessXi    );
 	AliPID pPidOmega;	pPidOmega.SetPriors( lPriorsGuessOmega );
@@ -2374,7 +2843,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 	AliPID nPidXi;		nPidXi.SetPriors(    lPriorsGuessXi    );
 	AliPID nPidOmega;	nPidOmega.SetPriors( lPriorsGuessOmega );
 		
-	if( nTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+	if( nTrackXi->IsOn(AliESDtrack::kESDpid) ) {  // Combined PID exists
 		Double_t r[10] = {0.}; nTrackXi->GetESDpid(r);
 		nPidXi.SetProbabilities(r);
 		nPidOmega.SetProbabilities(r);
@@ -2416,9 +2885,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 	AliPID bachPidXi;	bachPidXi.SetPriors(    lPriorsGuessXi    );
 	AliPID bachPidOmega;	bachPidOmega.SetPriors( lPriorsGuessOmega );
 	
-        Double_t ppionBach = 0.0, pkaonBach = 0.0;
         
-	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+	if ( bachTrackXi->IsOn(AliESDtrack::kESDpid) ) {  // Combined PID exists
 		Double_t r[10] = {0.}; bachTrackXi->GetESDpid(r);
 		bachPidXi.SetProbabilities(r);
 		bachPidOmega.SetProbabilities(r);
@@ -2439,7 +2907,6 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 	
 	// 3.1.B - TPC PID : 4-sigma bands on Bethe-Bloch curve
 
-        // Here for the new PID object I put fPIDResponse instead of fESDpid
         // Bachelor
         if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
         if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
@@ -2480,47 +2947,22 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         }
 */        
 		
-        // Combined PID TH1s
-	if( lChargeXi < 0 && lIsBachelorPion )    fHistMassWithCombPIDXiMinus     ->Fill( lInvMassXiMinus    );
-	if( lChargeXi > 0 && lIsBachelorPion )    fHistMassWithCombPIDXiPlus      ->Fill( lInvMassXiPlus     );
-	if( lChargeXi < 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
-	if( lChargeXi > 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaPlus   ->Fill( lInvMassOmegaPlus  );
-         
-	
 	// 3.2 - PID proba Vs Pt(Bach)
 	Int_t      lblBachForPID  = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
 	TParticle* mcBachForPID   = lMCstack->Particle( lblBachForPID );
-	Double_t   lmcPtBach      = mcBachForPID->Pt();
+	lmcPtBach      = mcBachForPID->Pt();
 	
-	if(lIsBachelorPion)   f2dHistPIDprobaPionVsMCPtBach->Fill( lmcPtBach, ppionBach );
-	if(lIsBachelorKaon)   f2dHistPIDprobaKaonVsMCPtBach->Fill( lmcPtBach, pkaonBach );
-	
-			
 	// 3.3 - MC perfect PID
-	Bool_t   lIsBachelorMCPiMinus  = kFALSE;
-	Bool_t   lIsBachelorMCPiPlus   = kFALSE;
-	Bool_t   lIsBachelorMCKMinus   = kFALSE;
-	Bool_t   lIsBachelorMCKPlus    = kFALSE;	
 	
 	if( mcBachForPID->GetPdgCode() == -211) lIsBachelorMCPiMinus = kTRUE;
 	if( mcBachForPID->GetPdgCode() ==  211) lIsBachelorMCPiPlus  = kTRUE;
 	if( mcBachForPID->GetPdgCode() == -321) lIsBachelorMCKMinus  = kTRUE;
 	if( mcBachForPID->GetPdgCode() ==  321) lIsBachelorMCKPlus   = kTRUE;
 	
-	if( lChargeXi < 0 && lIsBachelorMCPiMinus )    fHistMassWithMcPIDXiMinus     ->Fill( lInvMassXiMinus );
-	if( lChargeXi > 0 && lIsBachelorMCPiPlus  )    fHistMassWithMcPIDXiPlus      ->Fill( lInvMassXiPlus );
-	if( lChargeXi < 0 && lIsBachelorMCKMinus  )    fHistMassWithMcPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
-	if( lChargeXi > 0 && lIsBachelorMCKPlus   )    fHistMassWithMcPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
 	
 	
 	// - Step II.4 : MC association (care : lots of "continue;" below this line)
 	//-------------	
-	
-	Bool_t lAssoXiMinus    = kFALSE;
-	Bool_t lAssoXiPlus     = kFALSE;
-	Bool_t lAssoOmegaMinus = kFALSE;
-	Bool_t lAssoOmegaPlus  = kFALSE;
-	
 	
 	if(fDebug > 5)
 		cout 	<< "MC EventNumber : " << lMCevent->Header()->GetEvent() 
@@ -2578,32 +3020,40 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 
         if (!(lMCstack->IsPhysicalPrimary(lblMotherBach))) continue;  
 
+        kIsNaturalPart = lMCevent->IsFromBGEvent(lblMotherBach); // if kTRUE the particle is a natural one
+        if (!kIsNaturalPart) {
+          if (!(mcMotherBach->GetFirstMother()<0)) kIsNaturalPart = kTRUE;
+        }
+
 	// - Step 4.4 : Manage boolean for association
-	
+    	
 	if( mcMotherBach 		->GetPdgCode() ==   3312 &&
 	    mcGdMotherPosV0Dghter	->GetPdgCode() ==   3312 &&
 	    mcGdMotherNegV0Dghter	->GetPdgCode() ==   3312)    {	lAssoXiMinus = kTRUE;
+                                                                        cascadeMass = 1.321;
                                                                       //  Printf("Xi- asso current index = %n ", lblGdMotherPosV0Dghter);  
                                                                         nAssoXiMinus++; }
 	
 	else if( mcMotherBach 		->GetPdgCode() ==  -3312 &&
 	    mcGdMotherPosV0Dghter	->GetPdgCode() ==  -3312 &&
 	    mcGdMotherNegV0Dghter	->GetPdgCode() ==  -3312)    {	lAssoXiPlus = kTRUE;
+                                                                        cascadeMass = 1.321;
                                                                         nAssoXiPlus++; }
 	
 	else if( mcMotherBach 		->GetPdgCode() ==   3334 &&
 	    mcGdMotherPosV0Dghter	->GetPdgCode() ==   3334 &&
 	    mcGdMotherNegV0Dghter	->GetPdgCode() ==   3334)    {	lAssoOmegaMinus = kTRUE;
+                                                                        cascadeMass = 1.672;
                                                                         nAssoOmegaMinus++; }
 		
 	else if( mcMotherBach 		->GetPdgCode() ==  -3334 &&
 	    mcGdMotherPosV0Dghter	->GetPdgCode() ==  -3334 &&
 	    mcGdMotherNegV0Dghter	->GetPdgCode() ==  -3334)    { 	lAssoOmegaPlus = kTRUE;
+                                                                        cascadeMass = 1.672;
                                                                         nAssoOmegaPlus++; }
 	
 	
 	
-	if(!lAssoXiMinus && !lAssoXiPlus && !lAssoOmegaMinus && !lAssoOmegaPlus) continue; // no association, skip the rest of the code	
 	// If a proper association  exists ...
 		
 	if(fDebug > 4){
@@ -2644,34 +3094,432 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 	}
 
 	
-	// - Step 5 : Plots around the cascade candidates associated with MC
-	//-------------	
-	
-        Double_t lmcPt             = mcMotherBach->Pt();
-        Double_t lmcRapCasc        = 0.5*TMath::Log( (mcMotherBach->Energy() + mcMotherBach->Pz()) / 
+        lmcPt             = mcMotherBach->Pt();
+        lmcRapCasc        = 0.5*TMath::Log( (mcMotherBach->Energy() + mcMotherBach->Pz()) / 
                                                      (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) );
-        Double_t lmcEta            = mcMotherBach->Eta();
-        Double_t lmcTransvRadius   = mcBach->R(); // to get the decay point of Xi, = the production vertex of Bachelor ...
+        lmcEta            = mcMotherBach->Eta();
+        lmcTransvRadius   = mcBach->R(); // to get the decay point of Xi, = the production vertex of Bachelor ...
         
         TVector3 lmcTVect3Mom( mcMotherBach->Px(), mcMotherBach->Py(), mcMotherBach->Pz() );
 
-        Double_t lrecoPt           = xiESD->Pt();
-        Double_t lrecoTransvRadius = TMath::Sqrt( xiESD->Xv() * xiESD->Xv() + xiESD->Yv() * xiESD->Yv() );
+        lrecoPt           = xiESD->Pt();
+        lrecoTransvRadius = TMath::Sqrt( xiESD->Xv() * xiESD->Xv() + xiESD->Yv() * xiESD->Yv() );
         
-        TVector3 lrecoTVect3Mom( xiESD->Px(), xiESD->Py(), xiESD->Pz()  );
-        Double_t lDeltaPhiMcReco   = lmcTVect3Mom.DeltaPhi( lrecoTVect3Mom ) * 180.0/TMath::Pi();
+        TVector3 lrecoTVect3Mom( xiESD->Px(), xiESD->Py(), xiESD->Pz() );
+        lDeltaPhiMcReco   = lmcTVect3Mom.DeltaPhi( lrecoTVect3Mom ) * 180.0/TMath::Pi();
 
-        
+        lmcPtPosV0Dghter = mcPosV0Dghter->Pt() ;
+        lmcPtNegV0Dghter = mcNegV0Dghter->Pt();
+        lrecoP           = xiESD->P();
+
+        Double_t nV0mom[3] = {0. ,0. ,0. };
+        Double_t pV0mom[3] = {0. ,0. ,0. };
+
+        xiESD->GetNPxPyPz(nV0mom[0],nV0mom[1],nV0mom[2]);    
+        xiESD->GetPPxPyPz(pV0mom[0],pV0mom[1],pV0mom[2]);
+
+        lV0mom = TMath::Sqrt(TMath::Power(nV0mom[0]+pV0mom[0],2)+TMath::Power(nV0mom[1]+pV0mom[1],2)+TMath::Power(nV0mom[2]+pV0mom[2],2)); 
+
+      } else if ( fAnalysisType == "AOD" ) {
+
+        const AliAODcascade *xiAOD = lAODevent->GetCascade(iXi);
+
+        if (!xiAOD) continue;
+
+        // - Step II.1 : Connection to daughter tracks of the current cascade
+        //-------------
+
+        AliAODTrack *pTrackXi    = dynamic_cast<AliAODTrack*>( xiAOD->GetDaughter(0) );
+        AliAODTrack *nTrackXi    = dynamic_cast<AliAODTrack*>( xiAOD->GetDaughter(1) );
+        AliAODTrack *bachTrackXi = dynamic_cast<AliAODTrack*>( xiAOD->GetDecayVertexXi()->GetDaughter(0) );
+        if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
+          AliWarning("ERROR: Could not retrieve one of the 3 AOD daughter tracks of the cascade ...");
+          continue;
+        }
+
+        UInt_t lIdxPosXi  = (UInt_t) TMath::Abs( pTrackXi->GetID() );
+        UInt_t lIdxNegXi  = (UInt_t) TMath::Abs( nTrackXi->GetID() );
+        UInt_t lBachIdx   = (UInt_t) TMath::Abs( bachTrackXi->GetID() );
+
+                // abs value not needed ; the index should always be positive (!= label ...)
+
+
+        // FIXME : rejection of a double use of a daughter track (nothing but just a crosscheck of what is done in the cascade vertexer)
+        if(lBachIdx == lIdxNegXi) {
+                AliWarning("Pb / Idx(Bach. track) = Idx(Neg. track) ... continue!"); continue;
+        }
+        if(lBachIdx == lIdxPosXi) {
+                AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!"); continue;
+        }
+
+        lPosTPCClusters   = pTrackXi->GetTPCNcls();
+        lNegTPCClusters   = nTrackXi->GetTPCNcls();
+        lBachTPCClusters  = bachTrackXi->GetTPCNcls();
+
+
+        // FIXME : rejection of a poor quality tracks
+        if (fkQualityCutTPCrefit) {
+                // 1 - Poor quality related to TPCrefit
+          if (!(pTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
+          if (!(nTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
+          if (!(bachTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
+
+        }
+        if (fkQualityCut80TPCcls) {
+                // 2 - Poor quality related to TPC clusters
+                if(lPosTPCClusters  < 80) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lNegTPCClusters  < 80) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lBachTPCClusters < 80) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+        }
+
+        // - Step II.2 : Info over reconstructed cascades
+        //-------------
+
+
+        if( bachTrackXi->Charge() < 0 ) {
+                lInvMassXiMinus = xiAOD->MassXi();
+
+                lInvMassOmegaMinus = xiAOD->MassOmega();
+        }
+
+        if( bachTrackXi->Charge() >  0 ){
+                lInvMassXiPlus = xiAOD->MassXi();
+
+                lInvMassOmegaPlus = xiAOD->MassOmega();
+
+        }
+
+
+        //lChi2Xi                       = xiAOD->Chi2Xi();
+        lDcaXiDaughters                 = xiAOD->DcaXiDaughters();
+        lDcaBachToPrimVertexXi          = xiAOD->DcaBachToPrimVertex();
+        lXiCosineOfPointingAngle        = xiAOD->CosPointingAngleXi( lBestPrimaryVtxPos[0],
+                                                                     lBestPrimaryVtxPos[1],
+                                                                     lBestPrimaryVtxPos[2] );
+
+        lPosXi[0] = xiAOD->DecayVertexXiX();
+        lPosXi[1] = xiAOD->DecayVertexXiY();
+        lPosXi[2] = xiAOD->DecayVertexXiZ();
+
+                                        // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
+        lDcaV0DaughtersXi               = xiAOD->DcaV0Daughters();
+        // lV0Chi2Xi                    = xiAOD->GetChi2V0();
+        lV0CosineOfPointingAngleXi      = xiAOD->CosPointingAngle( lPosXi );
+
+        lV0CosineOfPointingAngle        = xiAOD->CosPointingAngle( lBestPrimaryVtxPos );
+
+        lPosV0Xi[0] = xiAOD->DecayVertexV0X();
+        lPosV0Xi[1] = xiAOD->DecayVertexV0Y();
+        lPosV0Xi[2] = xiAOD->DecayVertexV0Z();
+
+
+        lDcaV0ToPrimVertexXi            = xiAOD->DcaV0ToPrimVertex();
+
+        lDcaPosToPrimVertexXi           = xiAOD->DcaPosToPrimVertex();
+
+        lDcaNegToPrimVertexXi           = xiAOD->DcaNegToPrimVertex();
+
+        lChargeXi = xiAOD->ChargeXi();
+
+        // - Step II.3 : PID info
+
+        //-------------
+
+
+        // 3.1 - PID Information
+
+
+        // Combined VO-positive-daughter PID
+
+        // Combined bachelor PID
+/*        AliPID bachPidXi;       bachPidXi.SetPriors(    lPriorsGuessXi    );
+        AliPID bachPidOmega;    bachPidOmega.SetPriors( lPriorsGuessOmega );
+
+        if ( bachTrackXi->IsOn(AliESDtrack::kESDpid) ) {  // Combined PID exists
+                Double_t r[10] = {0.}; bachTrackXi->GetESDpid(r);
+                bachPidXi.SetProbabilities(r);
+                bachPidOmega.SetProbabilities(r);
+                // Check if the bachelor track is a pion
+                    ppionBach = bachPidXi.GetProbability(AliPID::kPion);
+                if (ppionBach > bachPidXi.GetProbability(AliPID::kElectron) &&
+                    ppionBach > bachPidXi.GetProbability(AliPID::kMuon)     &&
+                    ppionBach > bachPidXi.GetProbability(AliPID::kKaon)     &&
+                    ppionBach > bachPidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
+                // Check if the bachelor track is a kaon
+                    pkaonBach = bachPidOmega.GetProbability(AliPID::kKaon);
+                if (pkaonBach > bachPidOmega.GetProbability(AliPID::kElectron) &&
+                    pkaonBach > bachPidOmega.GetProbability(AliPID::kMuon)     &&
+                    pkaonBach > bachPidOmega.GetProbability(AliPID::kPion)     &&
+                    pkaonBach > bachPidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
+        }// end if bachelor track with existing combined PID
+*/
+
+        // 3.1.B - TPC PID : 4-sigma bands on Bethe-Bloch curve
+
+
+                // Bachelor
+        if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
+        if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
+
+        // Negative V0 daughter
+        if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 4) lIsNegPionForTPC   = kTRUE;
+        if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < 4) lIsNegProtonForTPC = kTRUE;
+
+        // Positive V0 daughter
+        if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
+        if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
+
+/*
+        const AliExternalTrackParam *pInnerWallTrackXi    = pTrackXi    ->GetInnerParam(); // Do not use GetTPCInnerWall
+        const AliExternalTrackParam *nInnerWallTrackXi    = nTrackXi    ->GetInnerParam();
+        const AliExternalTrackParam *bachInnerWallTrackXi = bachTrackXi ->GetInnerParam();
+        if(pInnerWallTrackXi && nInnerWallTrackXi && bachInnerWallTrackXi ){
+
+                Double_t pMomInnerWall    = pInnerWallTrackXi   ->GetP();
+                Double_t nMomInnerWall    = nInnerWallTrackXi   ->GetP();
+                Double_t bachMomInnerWall = bachInnerWallTrackXi->GetP();
+
+                // Bachelor
+                if (TMath::Abs(fESDpid->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 3)                              lIsBachelorPionForTPC = kTRUE;
+                if (bachMomInnerWall < 0.350  && TMath::Abs(fESDpid->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 5) lIsBachelorKaonForTPC = kTRUE;
+                if (bachMomInnerWall > 0.350  && TMath::Abs(fESDpid->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 3) lIsBachelorKaonForTPC = kTRUE;
+
+                // Negative V0 daughter
+                if (TMath::Abs(fESDpid->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 3  )                           lIsNegPionForTPC   = kTRUE;
+                if (nMomInnerWall < 0.6  && TMath::Abs(fESDpid->NumberOfSigmasTPC( nTrackXi,AliPID::kProton ) ) < 5 )   lIsNegProtonForTPC = kTRUE;
+                if (nMomInnerWall > 0.6  && TMath::Abs(fESDpid->NumberOfSigmasTPC( nTrackXi,AliPID::kProton ) ) < 3 )   lIsNegProtonForTPC = kTRUE;
+
+                // Positive V0 daughter
+                if (TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 3 )                            lIsPosPionForTPC   = kTRUE;
+                if (pMomInnerWall < 0.6  && TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 5)     lIsPosProtonForTPC = kTRUE;
+                if (pMomInnerWall > 0.6  && TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 3)     lIsPosProtonForTPC = kTRUE;
+
+        }
+*/
+
+        // 3.2 - PID proba Vs Pt(Bach)
+        Int_t      lblBachForPID  = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+        AliAODMCParticle* mcBachForPID   = (AliAODMCParticle*) arrayMC->At( lblBachForPID );
+        lmcPtBach      = mcBachForPID->Pt();
+
+        // 3.3 - MC perfect PID
+
+        if( mcBachForPID->PdgCode() == -211) lIsBachelorMCPiMinus = kTRUE;
+        if( mcBachForPID->PdgCode() ==  211) lIsBachelorMCPiPlus  = kTRUE;
+        if( mcBachForPID->PdgCode() == -321) lIsBachelorMCKMinus  = kTRUE;
+        if( mcBachForPID->PdgCode() ==  321) lIsBachelorMCKPlus   = kTRUE;
+
+
+
+        // - Step II.4 : MC association (care : lots of "continue;" below this line)
+        //-------------
+
+        if(fDebug > 5)
+                cout    << "MC EventNumber : " << lMCevent->Header()->GetEvent()
+                        << " / MC event Number in Run : " << lMCevent->Header()->GetEventNrInRun() << endl;
+
+        // - Step 4.1 : level of the V0 daughters
+
+        Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );
+                // Abs value = needed ! question of quality track association ... (negative label when at least one cluster in the track is from a different particle)
+        Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
+        AliAODMCParticle* mcPosV0Dghter = (AliAODMCParticle*) arrayMC->At( lblPosV0Dghter );
+        AliAODMCParticle* mcNegV0Dghter = (AliAODMCParticle*) arrayMC->At( lblNegV0Dghter );
+
+
+        // - Step 4.2 : level of the Xi daughters
+
+        Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetMother();   
+        Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetMother();
+
+                if( lblMotherPosV0Dghter != lblMotherNegV0Dghter) continue; // same mother
+                if( lblMotherPosV0Dghter < 0 ) continue; // this particle is primary, no mother
+                if( lblMotherNegV0Dghter < 0 ) continue;
+
+
+                // mothers = Lambda candidate ... a priori
+
+        AliAODMCParticle* mcMotherPosV0Dghter = (AliAODMCParticle*) arrayMC->At( lblMotherPosV0Dghter );
+        AliAODMCParticle* mcMotherNegV0Dghter = (AliAODMCParticle*) arrayMC->At( lblMotherNegV0Dghter );  // MN: redundant?? already checked that labels are the same...-->same part from stack
+
+        Int_t      lblBach  = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+        AliAODMCParticle* mcBach   = (AliAODMCParticle*) arrayMC->At( lblBach );
+
+
+        // - Step 4.3 : level of Xi candidate
+
+        Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetMother() ;
+        Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetMother() ;
+
+                if( lblGdMotherPosV0Dghter != lblGdMotherNegV0Dghter ) continue;
+                if( lblGdMotherPosV0Dghter < 0 ) continue; // primary lambda ...
+                if( lblGdMotherNegV0Dghter < 0 ) continue; // primary lambda ...
+
+                // Gd mothers = Xi candidate ... a priori
+
+        AliAODMCParticle* mcGdMotherPosV0Dghter = (AliAODMCParticle*) arrayMC->At( lblGdMotherPosV0Dghter );
+        AliAODMCParticle* mcGdMotherNegV0Dghter = (AliAODMCParticle*) arrayMC->At( lblGdMotherNegV0Dghter );
+
+        Int_t lblMotherBach = (Int_t) TMath::Abs( mcBach->GetMother() );
+
+        if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
+
+        AliAODMCParticle* mcMotherBach = (AliAODMCParticle*) arrayMC->At( lblMotherBach );
+
+                // Check if cascade is primary
+
+        if (!(mcMotherBach->IsPhysicalPrimary())) continue;
+
+
+        kIsNaturalPart = kTRUE;
+
+        if ((lblMotherBach>=endOfHijingEvent)&&(endOfHijingEvent!=-1)&&(mcMotherBach->GetMother()<0)) kIsNaturalPart = kFALSE;
+
+        // - Step 4.4 : Manage boolean for association
+
+        if( mcMotherBach                ->GetPdgCode() ==   3312 &&
+            mcGdMotherPosV0Dghter       ->GetPdgCode() ==   3312 &&
+            mcGdMotherNegV0Dghter       ->GetPdgCode() ==   3312)    {  lAssoXiMinus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassLambda();
+                                                                        cascadeMass = 1.321;
+                                                                      //  Printf("Xi- asso current index = %n ", lblGdMotherPosV0Dghter);
+                                                                        nAssoXiMinus++; }
+
+        else if( mcMotherBach           ->GetPdgCode() ==  -3312 &&
+            mcGdMotherPosV0Dghter       ->GetPdgCode() ==  -3312 &&
+            mcGdMotherNegV0Dghter       ->GetPdgCode() ==  -3312)    {  lAssoXiPlus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassAntiLambda();
+                                                                        cascadeMass = 1.321;
+                                                                        nAssoXiPlus++; }
+
+        else if( mcMotherBach           ->GetPdgCode() ==   3334 &&
+            mcGdMotherPosV0Dghter       ->GetPdgCode() ==   3334 &&
+            mcGdMotherNegV0Dghter       ->GetPdgCode() ==   3334)    {  lAssoOmegaMinus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassLambda();
+                                                                        cascadeMass = 1.672;
+                                                                        nAssoOmegaMinus++; }
+
+        else if( mcMotherBach           ->GetPdgCode() ==  -3334 &&
+            mcGdMotherPosV0Dghter       ->GetPdgCode() ==  -3334 &&
+            mcGdMotherNegV0Dghter       ->GetPdgCode() ==  -3334)    {  lAssoOmegaPlus = kTRUE;
+                                                                        lInvMassLambdaAsCascDghter = xiAOD->MassAntiLambda();
+                                                                        cascadeMass = 1.672;
+                                                                        nAssoOmegaPlus++; }
+        //-------------
+
+        lmcPt             = mcMotherBach->Pt();
+        lmcRapCasc        = 0.5*TMath::Log( (mcMotherBach->E() + mcMotherBach->Pz()) /
+                                                     (mcMotherBach->E() - mcMotherBach->Pz() +1.e-13) );
+        lmcEta            = mcMotherBach->Eta();
+        Float_t decayCascX = mcBach->Xv();
+        Float_t decayCascY = mcBach->Yv();
+        lmcTransvRadius   = TMath::Sqrt(decayCascX*decayCascX+decayCascY*decayCascY); // decay point of Xi, = the production vertex of Bachelor ...
+
+        TVector3 lmcTVect3Mom( mcMotherBach->Px(), mcMotherBach->Py(), mcMotherBach->Pz() );
+
+        Double_t xiMomX = xiAOD->MomXiX();
+        Double_t xiMomY = xiAOD->MomXiY();
+        Double_t xiMomZ = xiAOD->MomXiZ();
+
+        lrecoPt           = TMath::Sqrt( xiMomX*xiMomX   + xiMomY*xiMomY ); 
+        lrecoTransvRadius = TMath::Sqrt( xiAOD->DecayVertexXiX() * xiAOD->DecayVertexXiX() + xiAOD->DecayVertexXiY() * xiAOD->DecayVertexXiY() );
+
+        TVector3 lrecoTVect3Mom( xiMomX, xiMomY, xiMomZ );
+        lDeltaPhiMcReco   = lmcTVect3Mom.DeltaPhi( lrecoTVect3Mom ) * 180.0/TMath::Pi();
+
+        lmcPtPosV0Dghter = mcPosV0Dghter->Pt() ;
+        lmcPtNegV0Dghter = mcNegV0Dghter->Pt();
+        lrecoP           = TMath::Sqrt( xiMomX*xiMomX   + xiMomY*xiMomY   + xiMomZ*xiMomZ );;
+
+        Double_t lV0momX = xiAOD->MomV0X();
+        Double_t lV0momY = xiAOD->MomV0Y();
+        Double_t lV0momZ = xiAOD->MomV0Z();
+        lV0mom = TMath::Sqrt(TMath::Power(lV0momX,2)+TMath::Power(lV0momY,2)+TMath::Power(lV0momZ,2));
+
+      }
+
+      lXiRadius                       = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
+      lV0RadiusXi                     = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] ); 
+
+      // Extra-selection for cascade candidates
+                // Towards optimisation of AA selection
+      if (fkExtraSelections) {
+
+        // if(lChi2Xi > 2000) continue; // in AliCascadeVertexer
+        // if(lV0Chi2Xi > 2000) continue; // in AliV0vertexer
+
+        if (lDcaXiDaughters > 0.3) continue; // in AliCascadeVertexer
+        if (lXiCosineOfPointingAngle < 0.999 ) continue; // in AliCascadeVertexer
+        if (lDcaV0ToPrimVertexXi < 0.05) continue; // in AliCascadeVertexer
+        if (lDcaBachToPrimVertexXi < 0.03) continue; // in AliCascadeVertexer
+////      if (TMath::Abs(lInvMassLambdaAsCascDghter-1.11568) > 0.006 ) continue;  // in AliCascadeVertexer
+
+        if (lDcaV0DaughtersXi > 1.) continue; // in AliV0vertexer
+        if (lV0CosineOfPointingAngleXi < 0.998) continue; // in AliV0vertexer
+        if (lDcaPosToPrimVertexXi < 0.1) continue; // in AliV0vertexer
+        if (lDcaNegToPrimVertexXi < 0.1) continue; // in AliV0vertexer
+
+
+          if(lXiRadius < .9) continue; // in AliCascadeVertexer
+//        if(lXiRadius > 100) continue; // in AliCascadeVertexer
+          if(lV0RadiusXi < 0.9) continue; // in AliV0vertexer
+//        if(lV0RadiusXi > 100) continue; // in AliV0vertexer
+
+      }
+
+
+      // Combined PID TH1s
+      if( lChargeXi < 0 && lIsBachelorPion )    fHistMassWithCombPIDXiMinus     ->Fill( lInvMassXiMinus    );
+      if( lChargeXi > 0 && lIsBachelorPion )    fHistMassWithCombPIDXiPlus      ->Fill( lInvMassXiPlus     );
+      if( lChargeXi < 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
+      if( lChargeXi > 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaPlus   ->Fill( lInvMassOmegaPlus  );
+
+ 
+      if( lChargeXi < 0 )     fHistMassXiMinus        ->Fill( lInvMassXiMinus );
+      if( lChargeXi > 0 )     fHistMassXiPlus         ->Fill( lInvMassXiPlus );
+      if( lChargeXi < 0 )     fHistMassOmegaMinus     ->Fill( lInvMassOmegaMinus );
+      if( lChargeXi > 0 )     fHistMassOmegaPlus      ->Fill( lInvMassOmegaPlus );
+
+      if(lIsBachelorPion)   f2dHistPIDprobaPionVsMCPtBach->Fill( lmcPtBach, ppionBach );
+      if(lIsBachelorKaon)   f2dHistPIDprobaKaonVsMCPtBach->Fill( lmcPtBach, pkaonBach );
+
+      if( lChargeXi < 0 && lIsBachelorMCPiMinus )    fHistMassWithMcPIDXiMinus     ->Fill( lInvMassXiMinus );
+      if( lChargeXi > 0 && lIsBachelorMCPiPlus  )    fHistMassWithMcPIDXiPlus      ->Fill( lInvMassXiPlus );
+      if( lChargeXi < 0 && lIsBachelorMCKMinus  )    fHistMassWithMcPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
+      if( lChargeXi > 0 && lIsBachelorMCKPlus   )    fHistMassWithMcPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
+
+
+
+      if(!lAssoXiMinus && !lAssoXiPlus && !lAssoOmegaMinus && !lAssoOmegaPlus) continue; // no association, skip the rest of the code
+         
+        // Calculate proper time for cascade (reconstructed)
+         
+        Double_t lctau =  TMath::Sqrt(TMath::Power((lPosXi[0]-lBestPrimaryVtxPos[0]),2)+TMath::Power((lPosXi[1]-lBestPrimaryVtxPos[1]),2)+TMath::Power((lPosXi[2]-lBestPrimaryVtxPos[2]),2));
+        if (lrecoP!=0)         lctau = lctau*cascadeMass/lrecoP;   
+        else lctau = -1.;
+
+
+        // Calculate proper time for Lambda (reconstructed)
+        Float_t lambdaMass = 1.115683; // PDG mass 
+        Float_t distV0Xi =  TMath::Sqrt(TMath::Power((lPosV0Xi[0]-lPosXi[0]),2)+TMath::Power((lPosV0Xi[1]-lPosXi[1]),2)+TMath::Power((lPosV0Xi[2]-lPosXi[2]),2)); 
+        Float_t lctauV0 = -1.;
+        if (lV0mom!=0) lctauV0 = distV0Xi*lambdaMass/lV0mom; 
+
+        Float_t distTV0Xi =  TMath::Sqrt(TMath::Power((lPosV0Xi[0]-lPosXi[0]),2)+TMath::Power((lPosV0Xi[1]-lPosXi[1]),2));
+       
+ 
 	// - Histos for the cascade candidates associated with MC
 	
 	if( lChargeXi < 0 && lAssoXiMinus){	
-		fHistAsMCMassXiMinus	      ->Fill( lInvMassXiMinus  );
+                fHistAsMCMassXiMinus	      ->Fill( lInvMassXiMinus  );
 		if(lIsBachelorPion)	f2dHistAsMCandCombPIDGenPtVsGenYXiMinus->Fill( lmcPt, lmcRapCasc );
 		f2dHistAsMCGenPtVsGenYXiMinus ->Fill( lmcPt, lmcRapCasc);
 		fHistAsMCGenEtaXiMinus        ->Fill( lmcEta           );
 		f2dHistAsMCResPtXiMinus       ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResRXiMinus        ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
                 f2dHistAsMCResPhiXiMinus      ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCptProtonMCptXiMinus->Fill(lmcPt,lmcPtPosV0Dghter);
+                fHistV0CosineOfPointingAnglevsPtXi->Fill(lmcPt,lV0CosineOfPointingAngle);
 	}
 	
 	else if( lChargeXi > 0 && lAssoXiPlus){	
@@ -2682,6 +3530,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		f2dHistAsMCResPtXiPlus        ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResRXiPlus         ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
                 f2dHistAsMCResPhiXiPlus       ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCptAntiprotonMCptXiPlus->Fill(lmcPt,lmcPtNegV0Dghter);
+                fHistV0CosineOfPointingAnglevsPtXi->Fill(lmcPt,lV0CosineOfPointingAngle);
 	}
 	
 	else if( lChargeXi < 0 && lAssoOmegaMinus){	
@@ -2692,6 +3542,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		f2dHistAsMCResPtOmegaMinus       ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResROmegaMinus        ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
                 f2dHistAsMCResPhiOmegaMinus      ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCptProtonMCptOmegaMinus->Fill(lmcPt,lmcPtPosV0Dghter);
+                fHistV0CosineOfPointingAnglevsPtOmega->Fill(lmcPt,lV0CosineOfPointingAngle);
 	}
 	
 	else if( lChargeXi > 0 && lAssoOmegaPlus){	
@@ -2702,24 +3554,23 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		f2dHistAsMCResPtOmegaPlus        ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResROmegaPlus         ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
                 f2dHistAsMCResPhiOmegaPlus       ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCptAntiprotonMCptOmegaPlus->Fill(lmcPt,lmcPtNegV0Dghter);
+                fHistV0CosineOfPointingAnglevsPtOmega->Fill(lmcPt,lV0CosineOfPointingAngle);
         }
-        
-        
+
+        fHistV0toXiCosineOfPointingAngle->Fill(lV0CosineOfPointingAngleXi);
+       
         // - Step 6 : Containers = Cascade cuts + PID
 	//-------------	
-      if (fUseCFCont) {
-
-        nTrackWithTPCrefitMultiplicity  = DoESDTrackWithTPCrefitMultiplicity(lESDevent);  // FIXME : variable which is not used anymore at the moment ... 
-                                                                                          //    ->  keep it while the task is still under development.
-        
-        
-        const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
-        if(fAnalysisType == "ESD") lSPDTrackletsMultiplicity       = lAliMult->GetNumberOfTracklets();
-        else if(fAnalysisType == "AOD") lSPDTrackletsMultiplicity = lAODevent->GetTracklets()->GetNumberOfTracklets();
+        if (fAnalysisType == "ESD") {
+          const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
+          lSPDTrackletsMultiplicity       = lAliMult->GetNumberOfTracklets();
+        }
+        else if (fAnalysisType == "AOD") lSPDTrackletsMultiplicity = lAODevent->GetTracklets()->GetNumberOfTracklets();
         
 
         // 6.3 - Filling the AliCFContainer (optimisation of topological selections + systematics)
-        Double_t lContainerCutVars[19] = {0.0};
+        Double_t lContainerCutVars[21] = {0.0};
 
         lContainerCutVars[0]  = lDcaXiDaughters;
         lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
@@ -2735,10 +3586,13 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 
         lContainerCutVars[13] = lmcPt;
 
-        lContainerCutVars[16] = lBestPrimaryVtxPos[2];
-        if (fCollidingSystems) lContainerCutVars[17] = lcentrality;
-        else lContainerCutVars[17] = lSPDTrackletsMultiplicity;       
-        lContainerCutVars[18] = nTrackPrimaryMultiplicity;       
+        if (kIsNaturalPart) lContainerCutVars[16] = 0.;
+        else lContainerCutVars[16] = 1.;
+        lContainerCutVars[17] = lcentrality;
+        lContainerCutVars[18] = lPrimaryTrackMultiplicity;       
+        lContainerCutVars[19] = lctau;
+        lContainerCutVars[20] = lctauV0;
+        lContainerCutVars[21] = distTV0Xi;
 
         // All cases should be covered below
         if( lChargeXi < 0 && lAssoXiMinus    ) {
@@ -2749,7 +3603,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 if ( lIsBachelorPionForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )    
                   fCFContAsCascadeCuts->Fill(lContainerCutVars,0); // for Xi-
         }
-        if( lChargeXi > 0 && lAssoXiPlus     ){
+        if( lChargeXi > 0 && lAssoXiPlus    ) {
                 lContainerCutVars[11] = lInvMassXiPlus;
                 lContainerCutVars[12] = lInvMassOmegaPlus;//1.26;
                 lContainerCutVars[14] = lmcRapCasc;
@@ -2757,7 +3611,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 if ( lIsBachelorPionForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )    
                   fCFContAsCascadeCuts->Fill(lContainerCutVars,1); // for Xi+
         }
-        if( lChargeXi < 0 && lAssoOmegaMinus )  {
+        if( lChargeXi < 0 && lAssoOmegaMinus ) {
                 lContainerCutVars[11] = lInvMassXiMinus;//1.63;
                 lContainerCutVars[12] = lInvMassOmegaMinus;
                 lContainerCutVars[14] = -1.;
@@ -2765,7 +3619,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 if ( lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )    
                   fCFContAsCascadeCuts->Fill(lContainerCutVars,2); // for Omega-
         }
-	if( lChargeXi > 0 && lAssoOmegaPlus  ){
+	if( lChargeXi > 0 && lAssoOmegaPlus  ) {
                 lContainerCutVars[11] = lInvMassXiPlus;//1.26;
                 lContainerCutVars[12] = lInvMassOmegaPlus;
                 lContainerCutVars[14] = -1.;
@@ -2785,8 +3639,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		lContainerPIDVars[0] = lmcPt              ;
 		lContainerPIDVars[1] = lInvMassXiMinus    ;
 		lContainerPIDVars[2] = lmcRapCasc         ;
-		if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
-                else lContainerPIDVars[3] = lSPDTrackletsMultiplicity ;   
+		lContainerPIDVars[3] = lcentrality;
 			
 		// No PID
 			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 0); // No PID
@@ -2811,9 +3664,9 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		    lIsPosInXiProton    )
 			fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 5); // Comb. PID / Bachelor+Baryon
 		
-		if(lIsBachelorPion     && 
-		   lIsPosInXiProton && 
-		   lIsNegInXiPion    )
+		if( lIsBachelorPion     && 
+		    lIsPosInXiProton && 
+		    lIsNegInXiPion    )
 		 	fCFContCascadePIDAsXiMinus->Fill(lContainerPIDVars, 6); // Comb. PID / Bachelor+Baryon+Meson
 	}
 	
@@ -2821,11 +3674,10 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 	
 	// Xi Plus		
 	if( lChargeXi > 0 && lAssoXiPlus ) {
-		lContainerPIDVars[0] = lmcPt              ;
-		lContainerPIDVars[1] = lInvMassXiPlus     ;
-		lContainerPIDVars[2] = lmcRapCasc           ;
-		if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
-                else lContainerPIDVars[3] = lSPDTrackletsMultiplicity ;  
+		lContainerPIDVars[0] = lmcPt         ;
+		lContainerPIDVars[1] = lInvMassXiPlus;
+		lContainerPIDVars[2] = lmcRapCasc    ;
+		lContainerPIDVars[3] = lcentrality   ;
 			
 		// No PID
 			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 0); // No PID
@@ -2850,9 +3702,9 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		    lIsNegInXiProton    )
 			fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 5); // Comb. PID / Bachelor+Baryon
 		
-		if(lIsBachelorPion     && 
-		   lIsNegInXiProton && 
-		   lIsPosInXiPion    )
+		if( lIsBachelorPion     && 
+		    lIsNegInXiProton && 
+		    lIsPosInXiPion    )
 		 	fCFContCascadePIDAsXiPlus->Fill(lContainerPIDVars, 6); // Comb. PID / Bachelor+Baryon+Meson
 	}
 	
@@ -2863,8 +3715,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		lContainerPIDVars[0] = lmcPt              ;
 		lContainerPIDVars[1] = lInvMassOmegaMinus ;
 		lContainerPIDVars[2] = lmcRapCasc         ;
-		if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
-                else lContainerPIDVars[3] = lSPDTrackletsMultiplicity ; 
+		lContainerPIDVars[3] = lcentrality;
 			
 		// No PID
 			fCFContCascadePIDAsOmegaMinus->Fill(lContainerPIDVars, 0); // No PID
@@ -2902,8 +3753,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		lContainerPIDVars[0] = lmcPt              ;
 		lContainerPIDVars[1] = lInvMassOmegaPlus  ;
 		lContainerPIDVars[2] = lmcRapCasc         ;
-		if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
-                else lContainerPIDVars[3] = lSPDTrackletsMultiplicity ; 
+		lContainerPIDVars[3] = lcentrality;
 			
 		// No PID
 			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 0); // No PID
@@ -2928,11 +3778,10 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 		    lIsNegInOmegaProton    )
 			fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 5); // Comb. PID / Bachelor+Baryon
 		
-		if(lIsBachelorKaon     && 
-		   lIsNegInOmegaProton && 
-		   lIsPosInOmegaPion    )
+		if( lIsBachelorKaon     && 
+		    lIsNegInOmegaProton && 
+		    lIsPosInOmegaPion    )
 		 	fCFContCascadePIDAsOmegaPlus->Fill(lContainerPIDVars, 6); // Comb. PID / Bachelor+Baryon+Meson
-	}
         
       }	
 	
@@ -2948,29 +3797,6 @@ fHistnAssoOmegaPlus->Fill(nAssoOmegaPlus);
  PostData(1, fListHistCascade);
 }      
 
-
-Int_t AliAnalysisTaskCheckPerformanceCascadePbPb::DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent) {
-    // Checking the number of tracks with TPCrefit for each event
-    // Needed for a rough assessment of the event multiplicity
-        
-        Int_t nTrackWithTPCrefitMultiplicity = 0;
-        for (Int_t iTrackIdx = 0; iTrackIdx < (InputEvent())->GetNumberOfTracks(); iTrackIdx++) {
-                AliESDtrack *esdTrack	= 0x0;
-                             esdTrack	= lESDevent->GetTrack( iTrackIdx );
-                if (!esdTrack) { AliWarning("Pb / Could not retrieve one track within the track loop for TPCrefit check ..."); continue; }
-
-                ULong_t lTrackStatus    = esdTrack->GetStatus();
-                            if ((lTrackStatus&AliESDtrack::kTPCrefit)    == 0) continue;
-                            else nTrackWithTPCrefitMultiplicity++;
-                    // FIXME :
-                    // The goal here is to get a better assessment of the event multiplicity.
-                    // (InputEvent())->GetNumberOfTracks() takes into account ITS std alone tracks + global tracks
-                    // This may introduce a bias. Hence the number of TPC refit tracks.
-                    // Note : the event multiplicity = analysis on its own... See Jacek's or Jan Fiete's analysis on dN/d(pt) and dN/d(eta)
-
-        }// end loop over all event tracks
-        return  nTrackWithTPCrefitMultiplicity;
-}
 
 //________________________________________________________________________
 void AliAnalysisTaskCheckPerformanceCascadePbPb::Terminate(Option_t *) {

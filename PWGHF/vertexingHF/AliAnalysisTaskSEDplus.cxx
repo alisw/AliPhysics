@@ -905,13 +905,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
       Int_t labDp=-1;
       Bool_t isPrimary=kTRUE;
-      Float_t deltaPx=0.;
-      Float_t deltaPy=0.;
-      Float_t deltaPz=0.;
-      Float_t truePt=0.;
-      Float_t xDecay=0.;
-      Float_t yDecay=0.;
-      Float_t zDecay=0.;
       Float_t pdgCode=-2;
       Float_t trueImpParXY=0.;
       if(fReadMC){
@@ -919,14 +912,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(labDp>=0){
 	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
 	  if(CheckOrigin(arrayMC,partDp)==5) isPrimary=kFALSE;
-	  AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
-	  deltaPx=partDp->Px()-d->Px();
-	  deltaPy=partDp->Py()-d->Py();
-	  deltaPz=partDp->Pz()-d->Pz();
-	  truePt=partDp->Pt();
-	  xDecay=dg0->Xv();	  
-	  yDecay=dg0->Yv();	  
-	  zDecay=dg0->Zv();
 	  pdgCode=TMath::Abs(partDp->GetPdgCode());
 	  if(!isPrimary){
 	    trueImpParXY=GetTrueImpactParameter(mcHeader,arrayMC,partDp)*10000.;
@@ -970,7 +955,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[5]=fRDCutsAnalysis->IsSelectedPID(d);	  
 	tmp[6]=d->PtProng(0);	  
 	tmp[7]=d->PtProng(1);	  
-	tmp[8]=d->PtProng(02);
+	tmp[8]=d->PtProng(2);
 	tmp[9]=sumD02;
 	tmp[10]=ptmax;
 	tmp[11]=cosp;
@@ -1034,36 +1019,11 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
 	    if(isFidAcc){
-	      Float_t factor[3]={1.,1.,1.};
-	      if(fUseStrangeness){
-		for(Int_t iprong=0;iprong<3;iprong++){
-		  AliAODTrack *trad = (AliAODTrack*)d->GetDaughter(iprong);
-		  Int_t labd= trad->GetLabel();
-		  if(labd>=0){
-		    AliAODMCParticle *dau = (AliAODMCParticle*)arrayMC->At(labd);
-		    if(dau){
-		      Int_t labm = dau->GetMother();
-		      if(labm>=0){
-			AliAODMCParticle *mot = (AliAODMCParticle*)arrayMC->At(labm);
-			if(mot){
-			  if(TMath::Abs(mot->GetPdgCode())==310 || TMath::Abs(mot->GetPdgCode())==130 || TMath::Abs(mot->GetPdgCode())==321){ //K0_S, K0_L, K^+-
-			    if(d->PtProng(iprong)<=1)factor[iprong]=1./.7;
-			    else factor[iprong]=1./.6;
-			    //          fNentries->Fill(12);
-			  }
-			  if(TMath::Abs(mot->GetPdgCode())==3122) { //Lambda
-			    factor[iprong]=1./0.25;
-			    //		  fNentries->Fill(13);
-			  }//if 3122
-			}//if(mot)
-		      }//if labm>0
-		    }//if(dau)
-		  }//if labd>=0
-		}//prong loop
-	      }
-	      Float_t fact=1.;for(Int_t k=0;k<3;k++)fact=fact*factor[k];
 	      fMassHist[index]->Fill(invMass);
 	      if(fCutsDistr){
+		Float_t fact=1.;
+		Float_t factor[3];
+		if(fUseStrangeness) fact=GetStrangenessWeights(d,arrayMC,factor);
 		fCosPHist[index]->Fill(cosp,fact);
 		fDLenHist[index]->Fill(dlen,fact);
 		fDLxy[index]->Fill(dlxy);
@@ -1102,37 +1062,11 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
 	    if(isFidAcc){
-	      Float_t factor[3]={1.,1.,1.};
-	      if(fUseStrangeness){
-		for(Int_t iprong=0;iprong<3;iprong++){
-		  AliAODTrack *trad = (AliAODTrack*)d->GetDaughter(iprong);
-		  Int_t labd= trad->GetLabel();
-		  if(labd>=0){
-		    AliAODMCParticle *dau = (AliAODMCParticle*)arrayMC->At(labd);
-		    if(dau){
-		      Int_t labm = dau->GetMother();
-		      if(labm>=0){
-			AliAODMCParticle *mot = (AliAODMCParticle*)arrayMC->At(labm);
-			if(mot){
-			  if(TMath::Abs(mot->GetPdgCode())==310 || TMath::Abs(mot->GetPdgCode())==130 || TMath::Abs(mot->GetPdgCode())==321){ //K0_S, K0_L, K^+-
-			    if(d->PtProng(iprong)<=1)factor[iprong]=1./.7;
-			    else factor[iprong]=1./.6;
-			    //          fNentries->Fill(12);
-			  }
-			  if(TMath::Abs(mot->GetPdgCode())==3122) { //Lambda
-			    factor[iprong]=1./0.25;
-			    //		  fNentries->Fill(13);
-			  }//if 3122
-			}//if(mot)
-		      }//if labm>0
-		    }//if(dau)
-		  }//if labd>=0
-		}//prong loop
-	      }
-	    
-	      Float_t fact=1.;for(Int_t k=0;k<3;k++)fact=fact*factor[k];
 	      fMassHist[index]->Fill(invMass);
 	      if(fCutsDistr){
+		Float_t fact=1.;
+		Float_t factor[3];
+		if(fUseStrangeness) fact=GetStrangenessWeights(d,arrayMC,factor);
 		fCosPHist[index]->Fill(cosp,fact);
 		fDLenHist[index]->Fill(dlen,fact);
 		fDLxy[index]->Fill(dlxy);
@@ -1484,5 +1418,40 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
   Double_t d0dummy[3]={0.,0.,0.};
   AliAODRecoDecayHF aodDplusMC(vtxTrue,origD,3,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
   return aodDplusMC.ImpParXY();
+
+}
+//_________________________________________________________________________________________________
+Float_t AliAnalysisTaskSEDplus::GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const {
+  // Computes weights to adapt strangeness in MC to data
+
+  for(Int_t iprong=0;iprong<3;iprong++){
+    factor[iprong]=1;
+    AliAODTrack *trad = (AliAODTrack*)d->GetDaughter(iprong);
+    Int_t labd= trad->GetLabel();
+    if(labd>=0){
+      AliAODMCParticle *dau = (AliAODMCParticle*)arrayMC->At(labd);
+      if(dau){
+	Int_t labm = dau->GetMother();
+	if(labm>=0){
+	  AliAODMCParticle *mot = (AliAODMCParticle*)arrayMC->At(labm);
+	  if(mot){
+	    if(TMath::Abs(mot->GetPdgCode())==310 || TMath::Abs(mot->GetPdgCode())==130 || TMath::Abs(mot->GetPdgCode())==321){ //K0_S, K0_L, K^+-
+	      if(d->PtProng(iprong)<=1)factor[iprong]=1./.7;
+	      else factor[iprong]=1./.6;
+	      //          fNentries->Fill(12);
+	    }
+	    if(TMath::Abs(mot->GetPdgCode())==3122) { //Lambda
+	      factor[iprong]=1./0.25;
+	      //		  fNentries->Fill(13);
+	    }//if 3122
+	  }//if(mot)
+	}//if labm>0
+      }//if(dau)
+    }//if labd>=0
+  }//prong loop
+
+  Float_t fact=1.;
+  for(Int_t k=0;k<3;k++)fact=fact*factor[k];
+  return fact;
 
 }

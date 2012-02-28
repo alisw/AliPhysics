@@ -1,17 +1,18 @@
 /** 
- * Load the libraries of PWG2/FORWARD/analsysis2
+ * Load the libraries of PWGLF/FORWARD/analsysis2
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwglf_forward_scripts
  */
 void
 LoadLibs()
 {
-  gROOT->LoadClass("TVirtualMC",           "libVMC");
-  gROOT->LoadClass("AliVEvent",            "libSTEERBase");
-  gROOT->LoadClass("AliESDEvent",          "libESD");
-  gROOT->LoadClass("AliAnalysisManager",   "libANALYSIS");
-  gROOT->LoadClass("AliAnalysisTaskSE",    "libANALYSISalice");
-  gROOT->LoadClass("AliAODForwardMult",    "libPWG2forward2");
+  gROOT->LoadClass("TVirtualMC",              "libVMC");
+  gROOT->LoadClass("AliVEvent",               "libSTEERBase");
+  gROOT->LoadClass("AliESDEvent",             "libESD");
+  gROOT->LoadClass("AliAnalysisManager",      "libANALYSIS");
+  gROOT->LoadClass("AliAnalysisTaskSE",       "libANALYSISalice");
+  gROOT->LoadClass("AliOADBPhysicsSelection"  "libOADB");
+  gROOT->LoadClass("AliAODForwardMult",       "libPWGLFforward2");
 }
 //
 // EOF

@@ -4,8 +4,8 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/AliTRDtrackerV1.h"
-#include "TRD/AliTRDtransform.h"
+#include "AliTRDtrackerV1.h"
+#include "AliTRDtransform.h"
 #include "PWGPP/TRD/AliTRDcheckTRK.h"
 #endif
 

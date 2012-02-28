@@ -21,13 +21,13 @@ void RunManager(const char* esddir=".",
   gSystem->Load("libPhysics");
   gSystem->Load("libPWG0base");
   gSystem->Load("libPWG0dep");
-  gSystem->Load("libPWG2forward");
+  gSystem->Load("libPWGLFforward");
 
   // --- Check for proof mode, and possibly upload pars --------------
   if (proof) { 
     TProof::Open("workers=2");
     const char* pkgs[] = { "STEERBase", "ESD", "AOD", "ANALYSIS", 
-			   "ANALYSISalice", "PWG2forward", 0};
+			   "ANALYSISalice", "PWGLFforward", 0};
     const char** pkg = pkgs;
     while (*pkg) { 
       gProof->UploadPackage(Form("${ALICE_ROOT}/%s.par",*pkg));
@@ -88,7 +88,7 @@ void RunManager(const char* esddir=".",
   aodHandler->SetOutputFileName("AliAODs.root");
     
   // --- Add our task -----------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis/AddTaskFMD.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis/AddTaskFMD.C");
   AliFMDAnalysisTaskSE *fmdtask = AddTaskFMD(energy, col, bkG);
   
   // --- Run the analysis --------------------------------------------

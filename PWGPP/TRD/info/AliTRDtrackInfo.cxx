@@ -139,6 +139,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fTRDslices(NULL)
   ,fOP(NULL)
   ,fTPCout(NULL)
+  ,fITSout(NULL)
 {
   //
   // Constructor
@@ -161,6 +162,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fTRDslices(NULL)
   ,fOP(NULL)
   ,fTPCout(NULL)
+  ,fITSout(NULL)
 {
   //
   // Constructor
@@ -175,6 +177,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   }
   if(esd.fOP) fOP = new AliExternalTrackParam(*esd.fOP);
   if(esd.fTPCout) fTPCout = new AliExternalTrackParam(*esd.fTPCout);
+  if(esd.fITSout) fITSout = new AliExternalTrackParam(*esd.fITSout);
 }
 
 
@@ -217,6 +220,7 @@ AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
   }
   if(fOP) delete fOP; fOP = NULL;
   if(fTPCout) delete fTPCout; fTPCout = NULL;
+  if(fITSout) delete fITSout; fITSout = NULL;
 }
 
 //___________________________________________________
@@ -231,6 +235,7 @@ void AliTRDtrackInfo::AliESDinfo::Delete(const Option_t *){
   }
   if(fOP) delete fOP; fOP = NULL;
   if(fTPCout) delete fTPCout; fTPCout = NULL;
+  if(fITSout) delete fITSout; fITSout = NULL;
 }
 
 
@@ -329,6 +334,13 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
       new(fTPCout) AliExternalTrackParam(*esd.fTPCout);
     } else fTPCout = new AliExternalTrackParam(*esd.fTPCout);
   } else { if(fTPCout) delete fTPCout; fTPCout = NULL;}
+  if(esd.fITSout){
+    if(fITSout){
+      fITSout->~AliExternalTrackParam();
+      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
+      new(fITSout) AliExternalTrackParam(*esd.fITSout);
+    } else fITSout = new AliExternalTrackParam(*esd.fITSout);
+  } else { if(fITSout) delete fITSout; fITSout = NULL;}
 
   return *this;
 }
@@ -435,6 +447,20 @@ void  AliTRDtrackInfo::SetOuterParam(const AliExternalTrackParam *op)
     fESD.fOP->~AliExternalTrackParam();
     new(fESD.fOP) AliExternalTrackParam(*op);
   } else fESD.fOP = new AliExternalTrackParam(*op);
+}
+
+//___________________________________________________
+void  AliTRDtrackInfo::SetITSoutParam(const AliExternalTrackParam *op)
+{
+  //
+  // Set TPCout track parameters
+  //
+
+  if(!op) return;
+  if(fESD.fITSout){
+    fESD.fITSout->~AliExternalTrackParam();
+    new(fESD.fITSout) AliExternalTrackParam(*op);
+  } else fESD.fITSout = new AliExternalTrackParam(*op);
 }
 
 //___________________________________________________

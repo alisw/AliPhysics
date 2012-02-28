@@ -80,10 +80,13 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunctionAllCent(
 	UInt_t filterMask,
         Float_t radius,
         int kBackgroundMode,
-        float PtTrackMin,
+        Int_t PtTrackMin,
         TString BrOpt="",
         TString BrOpt2="",
-        Float_t radiusBckg=0.4)
+        TString BrOpt3="",
+        Float_t radiusBckg=0.4,
+	Int_t   FFMaxTrackPt = -1,
+	Float_t FFMinNTracks = 0)
 {
 
   // adds task with  given configuration for all centralities
@@ -104,7 +107,10 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunctionAllCent(
 				      eventClass,
 				      BrOpt,
 				      BrOpt2,
-				      radiusBckg);
+				      BrOpt3,
+				      radiusBckg
+	                              FFMaxTrackPt,
+				      FFMinNTracks);
   }
   
   return ff;
@@ -121,11 +127,14 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
 	UInt_t filterMask,
         Float_t radius,
         int kBackgroundMode,
-        float PtTrackMin,
+        Int_t PtTrackMin,
         Int_t eventClass=0,
         TString BrOpt="",
         TString BrOpt2="",
-        Float_t radiusBckg=0.4)
+        TString BrOpt3="",
+        Float_t radiusBckg=0.4,
+	Int_t FFMaxTrackPt = -1,
+	Int_t FFMinNTracks = 0)
 {
    // Creates a fragmentation function task,
    // configures it and adds it to the analysis manager.
@@ -192,25 +201,29 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    cAdd += Form("%02d",(int)((radius+0.01)*10.));
    cAdd += Form("_B%d",(int)((kBackgroundMode)));
    cAdd += Form("_Filter%05d",filterMask);
-   cAdd += Form("_Cut%05d",(int)((PtTrackMin)));
+   cAdd += Form("_Cut%05d",PtTrackMin);
    cAdd += Form("%s",BrOpt.Data());
    cAdd += Form("%s",BrOpt2.Data());
+
    Printf("%s",cAdd.Data());
 
    TString cAddb = "";
    cAddb += Form("%02d",(int)((radiusBckg+0.01)*10.));
    cAddb += Form("_B%d",(int)((kBackgroundMode)));
    cAddb += Form("_Filter%05d",filterMask);
-   cAddb += Form("_Cut%05d",(int)((PtTrackMin)));
+   cAddb += Form("_Cut%05d",PtTrackMin);
    cAddb += Form("%s",BrOpt.Data());
    cAddb += Form("%s",BrOpt2.Data());
+
    Printf("%s",cAddb.Data());
 
    TString cAddmc = "";
    cAddmc += Form("%02d",(int)((radius+0.01)*10.));
    cAddmc += Form("_B%d",(int)((kBackgroundMode)));
    cAddmc += Form("_Filter%05d",filterMask);
-   cAddmc += Form("_Cut%05d",(int)((PtTrackMin)));
+   cAddmc += Form("_Cut%05d",PtTrackMin);
+   cAddmc += Form("%s",BrOpt3.Data());
+
    Printf("%s",cAddmc.Data());
 
 
@@ -259,26 +272,25 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
   
    // Set default parameters 
    // Cut selection 
-   
-   if((int)PtTrackMin == 2000)      task->SetTrackCuts(2.0, -0.9, 0.9, 0., 2*TMath::Pi());
-   else if((int)PtTrackMin == 1000) task->SetTrackCuts(1.0, -0.9, 0.9, 0., 2*TMath::Pi());
-   else                             task->SetTrackCuts();  // default : pt > 0.150 GeV, |eta|<0.9, full phi acc
+
+   if(PtTrackMin == 150)       task->SetTrackCuts();  // default : pt > 0.150 GeV, |eta|<0.9, full phi acc
+   else if(PtTrackMin == 1000) task->SetTrackCuts(1.0, -0.9, 0.9, 0., 2*TMath::Pi());
+   else if(PtTrackMin == 2000) task->SetTrackCuts(2.0, -0.9, 0.9, 0., 2*TMath::Pi());
+   else                        task->SetTrackCuts(0.001*PtTrackMin,-0.9, 0.9, 0., 2*TMath::Pi());
 
 
-   task->SetJetCuts();         // default: jet pt > 5 GeV, |eta|<0.5, full phi acc
-   task->SetDiJetCuts();       // default: type of cut = 1 (cut in deltaPhi), deltaPhi = 0., cdf = 0.5, fraction of pt = 0.6
-   task->SetKindSlices();      // default: kindSlice = 1 (inv mass)
-   //if(radius <= 0.2) task->SetFFRadius(0.2); // R = 0.2   
-   //else              task->SetFFRadius();    // default: R = 0.4
+   task->SetJetCuts();          // default: jet pt > 5 GeV, |eta|<0.5, full phi acc
+   task->SetDiJetCuts();        // default: type of cut = 1 (cut in deltaPhi), deltaPhi = 0., cdf = 0.5, fraction of pt = 0.6
+   task->SetKindSlices();       // default: kindSlice = 1 (inv mass)
    task->SetFFRadius(radius); 
-   task->SetFFBckgRadius();    // default: R = 0.7
-   task->SetBckgSubMethod();   // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
-   task->SetIJMode(0);         // default: ijMode = 1
-   task->SetQAMode();          // default: qaMode = 3
-   task->SetFFMode();          // default: ffMode = 1
+   task->SetFFBckgRadius();     // default: R = 0.7
+   task->SetBckgSubMethod();    // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
+   task->SetIJMode(0);          // default: ijMode = 1
+   task->SetQAMode();           // default: qaMode = 3
+   task->SetFFMode();           // default: ffMode = 1
    task->SetDJMode(0);          // default: djMode = 1
    task->SetEffMode(0);         // default: effMode = 1
-   task->SetPhiCorrMode(0);     // default: phiCorrMode = 1
+   task->SetPhiCorrMode(1);     // default: phiCorrMode = 1
    task->SetHighPtThreshold();  // default: pt > 5 Gev
    task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
 
@@ -295,18 +307,34 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetDiJetHistoBins();
    task->SetQADiJetHistoBins();
 
+   if(FFMaxTrackPt>0) task->SetFFMaxTrackPt(FFMaxTrackPt);
+   if(FFMinNTracks>0) task->SetFFMinNTracks(FFMinNTracks);
+
    mgr->AddTask(task);
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
 
-   AliAnalysisDataContainer *coutput_FragFunc = mgr->CreateContainer(
-      Form("fracfunc_%s_%s_%s_%s_cl%d", branchRecJets.Data(), branchGenJets.Data(), typeTracks.Data(), typeJets.Data(), eventClass),
-      TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:PWGJE_FragmentationFunction_%s_%s_%s_%s_cl%d", 
-         AliAnalysisManager::GetCommonFileName(), branchRecJets.Data(), branchGenJets. Data(), typeTracks.Data(), typeJets.Data(), eventClass));
+   TString strList(Form("fracfunc_%s_%s_%s_%s_cl%d", branchRecJets.Data(), branchGenJets.Data(), typeTracks.Data(), typeJets.Data(), eventClass));
+   
+   TString strDir(Form("%s:PWGJE_FragmentationFunction_%s_%s_%s_%s_cl%d", 
+		       AliAnalysisManager::GetCommonFileName(), branchRecJets.Data(), branchGenJets. Data(), 
+		       typeTracks.Data(), typeJets.Data(), eventClass));
+
+
+   if(FFMaxTrackPt>0){
+     strList += Form("_FFMaxPt%d", FFMaxTrackPt);
+     strDir  += Form("_FFMaxPt%d", FFMaxTrackPt);
+   }
+   if(FFMinNTracks>0){
+     strList += Form("_minNTr%d",FFMinNTracks);
+     strDir  += Form("_minNTr%d",FFMinNTracks);
+   }
+
+   AliAnalysisDataContainer *coutput_FragFunc = mgr->CreateContainer(strList,TList::Class(),
+								     AliAnalysisManager::kOutputContainer,
+								     strDir);
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());

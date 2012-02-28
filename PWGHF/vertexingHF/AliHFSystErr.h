@@ -62,9 +62,31 @@ class AliHFSystErr : public TNamed
     fIsLowEnergy = flag; 
     AliInfo(" Settings for the low energy run");
   }
+  void SetIsPbPb2010EnergyScan(Bool_t flag) {
+    fIsCentScan = flag;
+    AliInfo(" Settings for the PbPb 2010 energy scan");
+  }
 
   // Function to initialize the variables/histograms
   void Init(Int_t decay);
+
+  void InitD0toKpi2010PbPb010CentScan();
+  void InitD0toKpi2010PbPb1020CentScan();
+  void InitD0toKpi2010PbPb2040CentScan();
+  void InitD0toKpi2010PbPb4060CentScan();
+  void InitD0toKpi2010PbPb6080CentScan();
+
+  void InitDplustoKpipi2010PbPb010CentScan();
+  void InitDplustoKpipi2010PbPb1020CentScan();
+  void InitDplustoKpipi2010PbPb2040CentScan();
+  void InitDplustoKpipi2010PbPb4060CentScan();
+  void InitDplustoKpipi2010PbPb6080CentScan();
+
+  void InitDstartoD0pi2010PbPb010CentScan();
+  void InitDstartoD0pi2010PbPb1020CentScan();
+  void InitDstartoD0pi2010PbPb2040CentScan();
+  void InitDstartoD0pi2010PbPb4060CentScan();
+  void InitDstartoD0pi2010PbPb6080CentScan();
 
  private:
 
@@ -84,11 +106,12 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2010PbPb4080();
   void InitDstartoD0pi2010PbPb4080();
 
+
   void InitD0toKpi2010ppLowEn();
   void InitDplustoKpipi2010ppLowEn();
- void InitDstartoD0pi2010ppLowEn();
+  void InitDstartoD0pi2010ppLowEn();
 
- void InitDstartoD0pi2010PbPb2040();
+  void InitDstartoD0pi2010PbPb2040();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
@@ -106,8 +129,9 @@ class AliHFSystErr : public TNamed
   TString fCentralityClass;  // Centrality class
                            // MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
   Bool_t fIsLowEnergy;     // flag for the low energy (2.76TeV) run
+  Bool_t fIsCentScan;      // flag fot the PbPb centrality scan
 
-  ClassDef(AliHFSystErr,3);  // class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,4);  // class for systematic errors of charm hadrons
 };
 
 #endif

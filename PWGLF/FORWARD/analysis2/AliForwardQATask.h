@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include <AliAnalysisTaskSE.h>
 #include "AliFMDEventInspector.h"
@@ -38,7 +38,7 @@ class TAxis;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_forward_tasks
+ * @ingroup pwglf_forward_tasks
  * 
  */
 class AliForwardQATask : public AliAnalysisTaskSE

@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_central_aod
+ * @ingroup pwglf_central_aod
  */
 #include <AliAnalysisTaskSE.h>
 #include "AliFMDMCEventInspector.h"
@@ -37,9 +37,9 @@ class TList;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_central_tasks
- * @ingroup pwg2_central_mc
- * @ingroup pwg2_central_aod
+ * @ingroup pwglf_central_tasks
+ * @ingroup pwglf_central_mc
+ * @ingroup pwglf_central_aod
  * 
  */
 class AliCentralMCCorrectionsTask : public AliAnalysisTaskSE

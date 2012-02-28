@@ -23,6 +23,10 @@ namespace AliSpectraNameSpace
 {
    enum AODPtHist_t
    {
+     // MF 22/02/2012
+     // Add histograms 2D DCA_xy (-3,3) vs pt (0, 3)
+     // For Rec data/MC, Rec MC primaries, Rec MC secondaries weak decay, Rec MC secondaries material (x6, each particle hypothesis)
+
       // 6 Pt Reconstructed Sigma
       kHistPtRecSigmaProtonPlus = 0,            // Pt histo for protons +, reconstructed tracks, sigma ID
       kHistPtRecSigmaKaonPlus,                  // Pt histo for kaons +, reconsructed tracks, sigma ID

@@ -45,9 +45,7 @@
 
 ClassImp(AliTRDcheckTRK)
 
-Bool_t  AliTRDcheckTRK::fgKalmanUpdate = kTRUE;
-Bool_t  AliTRDcheckTRK::fgTrkltRefit   = kTRUE;
-Bool_t  AliTRDcheckTRK::fgClRecalibrate= kFALSE;
+UChar_t  AliTRDcheckTRK::fgSteer= 0;
 Float_t AliTRDcheckTRK::fgKalmanStep = 2.;
 //__________________________________________________________________________
 AliTRDcheckTRK::AliTRDcheckTRK()
@@ -82,7 +80,7 @@ TObjArray* AliTRDcheckTRK::Histos()
   //fContainer->Expand(AliTRDresolution::kNclasses+1);
 
   THnSparse *H(NULL);
-  if(!(H = (THnSparseI*)gROOT->FindObject("Roads"))){
+  if(!(H = (THnSparseI*)gROOT->FindObject("hRoads"))){
     const Char_t *title[kNdim] = {"layer", "charge", fgkTitle[kPt], fgkTitle[kYrez], fgkTitle[kPrez], "#sigma^{*}/<#sigma_{y}> [a.u.]", "n_{cl}"};
     const Int_t nbins[kNdim]   = {AliTRDgeometry::kNlayer, 2, kNptBins, fgkNbins[kYrez], fgkNbins[kPrez], kNSigmaBins, kNclusters};
     const Double_t min[kNdim]  = {-0.5, -0.5, -0.5, -1., -5., 0., 8.5},
@@ -90,7 +88,7 @@ TObjArray* AliTRDcheckTRK::Histos()
     TString st("Tracking Roads Calib;");
     // define minimum info to be saved in non debug mode
     for(Int_t idim(0); idim<kNdim; idim++){ st += title[idim]; st+=";";}
-    H = new THnSparseI("Roads", st.Data(), kNdim, nbins, min, max);
+    H = new THnSparseI("hRoads", st.Data(), kNdim, nbins, min, max);
   } else H->Reset();
   fContainer->AddAt(H, fContainer->GetEntries()/*AliTRDresolution::kNclasses*/);
   return fContainer;
@@ -108,7 +106,7 @@ TH1* AliTRDcheckTRK::PlotTrack(const AliTRDtrackV1 *track)
   }
   // make a local copy of current track
   AliTRDtrackV1 lt(*fkTrack);
-  if(!PropagateKalman(lt, fkESD->GetTPCoutParam())) return NULL;
+  if(!PropagateKalman(lt, UseITS()?fkESD->GetITSoutParam():fkESD->GetTPCoutParam())) return NULL;
   PlotCluster(&lt);
   PlotTracklet(&lt);
   PlotTrackIn(&lt);
@@ -210,7 +208,7 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
     return kFALSE;
   }
   if(!ref){
-    printf("E - AliTRDcheckTRK::PropagateKalman :: Missing TPC out param.\n");
+    //printf("W - AliTRDcheckTRK::PropagateKalman :: Missing starting param.\n");
     return kFALSE;
   }
   if(ref->Pt()<1.e-3) return kFALSE;
@@ -221,29 +219,32 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
   tt.Set(ref->GetX(), ref->GetAlpha(), ref->GetParameter(), ref->GetCovariance());
   tt.SetMass(t.GetMass());
   tt.SetTrackOut(t.GetTrackOut());
-
+  if(UseITS()){
+    if(!tt.Rotate((Int_t(ref->GetAlpha()/AliTRDgeometry::GetAlpha()) +(ref->GetAlpha()>0.?1:-1)* 0.5)*AliTRDgeometry::GetAlpha()-ref->GetAlpha())) return kFALSE;
+  }
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     if(!(tr = t.GetTracklet(ily))) continue;
     Int_t det(tr->GetDetector());
-    if(fgClRecalibrate){
+    if(HasClRecalibrate()){
       AliTRDtransform trans(det);
       AliTRDcluster *c(NULL);
       Float_t exb, vd, t0, s2, dl, dt; tr->GetCalibParam(exb, vd, t0, s2, dl, dt);
       tr->ResetClusterIter(kFALSE);
       while((c = tr->PrevCluster())){
         if(!trans.Transform(c/*, GetCalib(det)*/)){
-          printf("W - AliTRDcheckTRK::PropagateKalman :: Transform() failed for Det[%03d]\n", det);
+          printf("W - AliTRDcheckTRK::PropagateKalman :: Transform() failed for Det[%03d %02d_%d_%d]\n", det,
+            AliTRDgeometry::GetSector(det), AliTRDgeometry::GetStack(det), AliTRDgeometry::GetLayer(det));
           break;
         }
       }
     }
-    if(fgTrkltRefit){
+    if(HasTrkltRefit()){
       if(!tr->FitRobust(tt.Charge()>0.)) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
     }
     if(!AliTRDtrackerV1::PropagateToX(tt, tr->GetX0(), fgKalmanStep)) continue;
     if(!tt.GetTrackIn()) tt.SetTrackIn();
     tr->Update(&tt);
-    if(fgKalmanUpdate){
+    if(HasKalmanUpdate()){
       Double_t x(tr->GetX0()),
                p[2] = { tr->GetYfit(0), tr->GetZfit(0)},
                covTrklt[3];

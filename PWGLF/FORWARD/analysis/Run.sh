@@ -104,7 +104,7 @@ if test $nodraw -lt 1 ; then
     esac
 	    
     aliroot -l -b -q -x \
-	$ALICE_ROOT/PWG2/FORWARD/analysis/drawdNdeta.C\(\"${base}_hists.root\",$samp,$rebin,$vzmin,$vzmax,1,$cms\)
+	$ALICE_ROOT/PWGLF/FORWARD/analysis/drawdNdeta.C\(\"${base}_hists.root\",$samp,$rebin,$vzmin,$vzmax,1,$cms\)
     tmin=`printf %+03d $vzmin | tr '+-' 'pm'` 
     tmax=`printf %+03d $vzmax | tr '+-' 'pm'` 
     out=`printf "hhd_%04dGeV_%s-%scm_rb%02d_%s.root" $cms $tmin $tmax $rebin $n`

@@ -27,30 +27,21 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    AliAnalysisTaskUE.cxx 
-    AliHistogramsUE.cxx 
-    AliAnalyseUE.cxx 
-    AliAnalysisTaskJetSpectrum.cxx 
-    AliAnalysisTaskJetSpectrum2.cxx 
-    AliAnalysisTaskJetServices.cxx 
-    AliAnalysisTaskPWG4PidDetEx.cxx 
-    AliJetSpectrumUnfolding.cxx 
-    AliAnalysisTaskJFSystematics.cxx 
-    AliAnalysisTaskJetCorrections.cxx 
-    AliAnalysisTaskThreeJets.cxx 
-    AliPWG4HighPtQATPConly.cxx 
-    AliPWG4HighPtQAMC.cxx 
-    AliPWG4HighPtSpectra.cxx 
-    AliPWG4CosmicCandidates.cxx 
-    AliAnalysisTaskJetChem.cxx 
     AliAnalysisTaskFragmentationFunction.cxx
-    AliFragmentationFunctionCorrections.cxx
-    AliAnalysisTaskQGSep.cxx     
+    AliAnalysisTaskJetChem.cxx 
     AliAnalysisTaskJetCore.cxx 	
+    AliAnalysisTaskJetProperties.cxx
+    AliAnalysisTaskJetResponseV2.cxx
+    AliAnalysisTaskJetServices.cxx 
+    AliAnalysisTaskJetSpectrum2.cxx 
     AliAnalysisTaskJetsTM.cxx 
-    AliAnalysisTaskJetResponse.cxx 
+    AliAnalysisTaskPartonDisc.cxx
+    AliFragmentationFunctionCorrections.cxx
+    AliPWG4CosmicCandidates.cxx 
+    AliPWG4HighPtQAMC.cxx 
+    AliPWG4HighPtQATPConly.cxx 
+    AliPWG4HighPtSpectra.cxx 
     AliPWG4HighPtTrackQA.cxx 
-    AliAnalysisTaskJetResponseV2.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

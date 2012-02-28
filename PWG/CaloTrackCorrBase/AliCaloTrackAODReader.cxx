@@ -13,7 +13,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class for reading data (AODs) in order to do prompt gamma
@@ -48,7 +47,6 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
  
 }
 
-
 //_________________________________________________________
 AliCentrality* AliCaloTrackAODReader::GetCentrality() const 
 {
@@ -56,16 +54,19 @@ AliCentrality* AliCaloTrackAODReader::GetCentrality() const
   AliAODEvent* event    = dynamic_cast<AliAODEvent*> (fInputEvent);
   AliAODEvent* orgevent = dynamic_cast<AliAODEvent*> (fOrgInputEvent);
   
-  if(event && !fSelectEmbeddedClusters) {
+  if(event && !fSelectEmbeddedClusters) 
+  {
     //Normal AOD event
     return event->GetHeader()->GetCentralityP() ;
   }
-  else if(fSelectEmbeddedClusters && orgevent) {
+  else if(fSelectEmbeddedClusters && orgevent) 
+  {
     // centrality in AOD from input, not in embedded event
     // temporary fix until this object is copied to the output event in embedding analysis
     return orgevent->GetHeader()->GetCentralityP();
   }
-  else {
+  else 
+  {
     return 0x0 ; 
   }
 }
@@ -82,46 +83,58 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input,
   
   Bool_t tesd = kFALSE ; 
   Bool_t taod = kTRUE ; 
-  if ( strcmp(input->GetName(), "AliMixedEvent") == 0 ) {
+  if ( strcmp(input->GetName(), "AliMixedEvent") == 0 ) 
+  {
     AliMultiEventInputHandler* multiEH = dynamic_cast<AliMultiEventInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     if(multiEH){
-      if (multiEH->GetFormat() == 0 ) {
+      if (multiEH->GetFormat() == 0 ) 
+      {
         tesd = kTRUE ; 
-      } else if (multiEH->GetFormat() == 1) {
+      } else if (multiEH->GetFormat() == 1) 
+      {
         taod = kTRUE ; 
       }
     }
-    else{
+    else
+    {
       printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - MultiEventHandler is NULL");
       abort();
     }
   }
-  if (strcmp(input->GetName(),"AliESDEvent") == 0) {
+  if        (strcmp(input->GetName(),"AliESDEvent") == 0) 
+  {
     tesd = kTRUE ; 
-  } else if (strcmp(input->GetName(),"AliAODEvent") == 0) {
+  } else if (strcmp(input->GetName(),"AliAODEvent") == 0) 
+  {
     taod = kTRUE ; 
   }
   
   
-  if(tesd)   {
+  if(tesd)   
+  {
     SetInputEvent(aod);
     SetOutputEvent(aod);
     fOrgInputEvent = input;
   }
-  else if(taod){
+  else if(taod)
+  {
     AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-	  if (aodIH && aodIH->GetMergeEvents()) {
+    
+	  if (aodIH && aodIH->GetMergeEvents()) 
+    {
 		  //Merged events, use output AOD.
 		  SetInputEvent(aod);
 		  SetOutputEvent(aod);
       fOrgInputEvent = input;
 	  }
-	  else{
+	  else
+    {
 		  SetInputEvent(input);
 		  SetOutputEvent(aod);
 	  }
   }
-  else{ 
+  else
+  { 
     AliFatal(Form("AliCaloTrackAODReader::SetInputOutputMCEvent() - STOP : Wrong data format: %s\n",input->GetName()));
   }
   

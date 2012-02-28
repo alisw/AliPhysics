@@ -69,24 +69,28 @@ class AliHFEtrdPIDqa : public TNamed{
     void ProcessTrack(const AliVTrack *const track, Int_t species);
 
     void Init();
-    void FinishAnalysis();
+    void FinishAnalysis(Int_t fCentrality = -1, Bool_t isGreaterEqual = kFALSE);
     void ShowMessages() { fShowMessage = kTRUE; }
     void SetTotalChargeInSlice0() { fTotalChargeInSlice0 = kTRUE; }
+    void SetCentralityBin(Int_t centrality) { fCentralityBin = centrality; };
     void StoreResults(const Char_t *filename = "HFEtrdPIDqa.root");
-    void SaveThresholdParameters(const Char_t * filename = "TRD.Thresholds.root", Double_t lowerLimit = 0.5, Double_t upperLimit = 3.5);
+    void SaveThresholdParameters(const Char_t * filename = "TRD.Thresholds.root", Double_t lowerLimit = 0.5, Double_t upperLimit = 3.5, Int_t fCentrality = -1);
 
-    TGraphErrors *GetPionEfficiency(Int_t ntracklets, Int_t eleffpercent);
-    TGraphErrors *GetProtonEfficiency(Int_t ntracklets, Int_t eleffpercent);
-    TGraph *GetThreshold(Int_t ntracklets, Int_t eleffpercent);
+    TGraphErrors *GetPionEfficiency(Int_t ntracklets, Int_t eleffpercent, Int_t centrality = -1);
+    TGraphErrors *GetProtonEfficiency(Int_t ntracklets, Int_t eleffpercent, Int_t centrality = -1);
+    TGraph *GetThreshold(Int_t ntracklets, Int_t eleffpercent, Int_t centrality = -1);
 
-    void DrawTracklet(Int_t tracklet, Double_t pmin = -1., Double_t pmax = -1., Bool_t doFit = kFALSE);
+    void DrawTracklet(Int_t tracklet, Double_t pmin = -1., Double_t pmax = -1., Int_t centrality = -1, Bool_t doFit = kFALSE);
+    void DrawTrackletsame(Int_t tracklet, Double_t pmin = -1., Double_t pmax = -1., Bool_t doFit = kFALSE);
     void ClearLists();
 
-    Double_t EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p);
-    Double_t EvalProtonEfficiency(Int_t ntls, Int_t eEff, Double_t p);
-    Double_t EvalThreshold(Int_t ntls, Int_t eEff, Double_t p);
+    Double_t EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p, Int_t centrality = -1);
+    Double_t EvalProtonEfficiency(Int_t ntls, Int_t eEff, Double_t p, Int_t centrality = -1);
+    Double_t EvalThreshold(Int_t ntls, Int_t eEff, Double_t p, Int_t centrality = -1);
 
-    Double_t CalculateIntegratedPionEfficiency(UInt_t nTracklets, Double_t electronEff, Double_t pmin, Double_t pmax, Double_t *error = NULL);
+    Double_t CalculateIntegratedPionEfficiency(UInt_t nTracklets, Double_t electronEff, Double_t pmin, Double_t pmax, Int_t icentrality =-1, Double_t *error = NULL);
+
+
 
     //---------------------------------------------------
     // Getters for Histograms
@@ -115,7 +119,8 @@ class AliHFEtrdPIDqa : public TNamed{
     enum QuantitiesLike_t{
       kElectronLike = 3,
       kNClustersLike = 4,
-      kQuantitiesLike = 5
+      kCentralityBin = 5,
+      kQuantitiesLike = 6
     };
     enum QuantitiesQAtrack_t{
       kNonZeroTrackletCharge = 3,
@@ -141,8 +146,9 @@ class AliHFEtrdPIDqa : public TNamed{
     void FillTRDLikelihoods(const AliESDtrack * const track, Int_t species);
     void FillTRDQAplots(const AliESDtrack *const track, Int_t species);
 
-    void AnalyseNTracklets(Int_t nTracklets);
+    void AnalyseNTracklets(Int_t nTracklets, Int_t fCentrality = -1, Bool_t isGreaterEqual = kFALSE);
     Double_t CalculateHadronEfficiency(const TH1 * const hadron, const TH1 *const electron, Double_t eff, Int_t &threshbin, Double_t &error);
+    Double_t EstimateThresholdError(const TH1 * const electron, Int_t threshbin);
     TF1 *MakeThresholds(TGraph *input, Double_t lowerLimit, Double_t upperLimit);
 
     void CreateLikelihoodHistogram();
@@ -168,9 +174,11 @@ class AliHFEtrdPIDqa : public TNamed{
 
     TList *fThresholds;           //! List for Threshold Graphs
 
-    Bool_t fShowMessage;         // Display debug messages
+    Bool_t fShowMessage;          // Display debug messages
     Bool_t fTotalChargeInSlice0;  // Flag for Foreward/Backward compatibility in TRD total charge calculation
-  
+
+    Int_t  fCentralityBin;         // Centrality Bin
+
   ClassDef(AliHFEtrdPIDqa, 3)     // QA class for TRD PID 
 };
 #endif

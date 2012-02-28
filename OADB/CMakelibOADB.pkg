@@ -1,6 +1,5 @@
 #-*- Mode: CMake -*-
 set ( SRCS  
-  AliOADBPWG2Spectra.cxx 
   AliOADBCentrality.cxx 
   AliOADBPhysicsSelection.cxx 
   AliOADBFillingScheme.cxx 
@@ -16,6 +15,6 @@ set ( EXPORT ${HDRS})
 set ( EINCLUDE ANALYSIS  STEER/STEERBase)
 
 # Install data to destination 
-install (DIRECTORY COMMON PWGPP PWG2 PWG3 PWG4 
+install (DIRECTORY COMMON PWGPP PWGLF PWGJE PWGLF PWGDQ
          DESTINATION OADB 
 	 PATTERN ".svn" EXCLUDE)

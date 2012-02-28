@@ -140,6 +140,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t GetBeta(const AliESDtrack* t);
   Float_t Getdedx(const AliESDtrack* t) const;
   Float_t GetBayesianProb() const {return fProbBayes;};
+  AliFlowBayesianPID* GetBayesianResponse() const {return  fBayesianResponse;}
 
   void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
@@ -204,7 +205,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesESDcuts(AliESDtrack* track);
-  Bool_t PassesAODcuts(const AliAODTrack* track);
+  Bool_t PassesAODcuts(const AliAODTrack* track, Bool_t passFid=kTRUE);
   Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
   Bool_t PassesV0cuts(Int_t id);
   Bool_t PassesCuts(const AliFlowTrackSimple* track);

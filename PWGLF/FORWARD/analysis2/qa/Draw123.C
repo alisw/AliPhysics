@@ -7,7 +7,7 @@
  * double, and triple hits in the FMD as resolved by the sharing
  * filter 
  * 
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 #ifndef __CINT__
 # include <TH1.h>
@@ -35,7 +35,7 @@ class TList;
  * @param r Ring 
  *
  * @deprecated Use the QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawRing123(TList* p, UShort_t d, Char_t r)
@@ -86,7 +86,7 @@ DrawRing123(TList* p, UShort_t d, Char_t r)
  * @param folder   Input folder (TList) in input file
  *
  * @deprecated Use the QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 Draw123(const char* filename="forward.root", 

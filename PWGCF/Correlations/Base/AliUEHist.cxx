@@ -763,7 +763,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     trackMixedAll->GetZaxis()->SetRange(vertexBin, vertexBin);
 
     TH2* tracksSame = (TH2*) trackSameAll->Project3D("yx1");
-    TH2* tracksMixed = (TH2*) trackMixedAll->Project3D("yx1");
+    TH2* tracksMixed = (TH2*) trackMixedAll->Project3D("yx2");
     
     // asssume flat in dphi, gain in statistics
 //     TH1* histMixedproj = mixedTwoD->ProjectionY();
@@ -776,22 +776,36 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 //       delete histMixedproj;
 
     // get mixed event normalization by assuming full acceptance at deta of 0
-    /*
     Double_t mixedNorm = tracksMixed->Integral(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01));
-    mixedNorm /= tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
-    tracksMixed->Scale(1.0 / mixedNorm);
-    */
-    tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
-    
-    tracksSame->Divide(tracksMixed);
-    
-    if (!totalTracks)
-      totalTracks = (TH2*) tracksSame->Clone("totalTracks");
+    mixedNorm /= (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+    if (mixedNorm <= 0)
+    {
+      Printf("ERROR: Skipping vertex bin %d because mixed event is empty at (0,0)", vertexBin);
+    }
     else
-      totalTracks->Add(tracksSame);
+    {
+      tracksMixed->Scale(1.0 / mixedNorm);
 
-    delete tracksSame;
-    delete tracksMixed;
+  //     tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
+      
+      tracksSame->Divide(tracksMixed);
+      
+      // code to draw contributions
+      /*
+      TH1* proj = tracksSame->ProjectionX("projx", tracksSame->GetYaxis()->FindBin(-1.59), tracksSame->GetYaxis()->FindBin(1.59));
+      proj->SetTitle(Form("Bin %d", vertexBin));
+      proj->SetLineColor(vertexBin);
+      proj->DrawCopy((vertexBin > 1) ? "SAME" : "");
+      */
+      
+      if (!totalTracks)
+	totalTracks = (TH2*) tracksSame->Clone("totalTracks");
+      else
+	totalTracks->Add(tracksSame);
+
+      delete tracksSame;
+      delete tracksMixed;
+    }
   }
 
   Int_t totalEvents = eventSameAll->Integral();
@@ -799,6 +813,10 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
     if (totalEvents > 0)
       totalTracks->Scale(1.0 / totalEvents);
+  
+    // normalizate to dphi width
+    Float_t normalization = totalTracks->GetXaxis()->GetBinWidth(1);
+    totalTracks->Scale(1.0 / normalization);
   }
   
   delete trackSameAll;
@@ -822,8 +840,6 @@ TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHi
   //   mixed: AliUEHist containing mixed event corresponding to this object
   //   <other parameters> : check documentation of AliUEHist::GetUEHist
   
-  Int_t multIter = multBinBegin;
-  
   TH2* totalTracks = 0;
   Int_t totalEvents = 0;
   
@@ -846,6 +862,7 @@ TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHi
     }
     
     // multiplicity loop
+    Int_t multIter = multBinBegin;
     while (1)
     {
       Int_t multBinBeginLocal = multBinBegin;
@@ -905,11 +922,10 @@ TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHi
 
   if (useVertexBins)
     totalEvents = vertexAxis->GetNbins();
-  if (totalTracks) {
-    Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
-    if (totalEvents > 0)
-      totalTracks->Scale(1.0 / totalEvents);
-  }
+
+  Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
+  if (totalEvents > 0)
+    totalTracks->Scale(1.0 / totalEvents);
   
   return totalTracks;
 }

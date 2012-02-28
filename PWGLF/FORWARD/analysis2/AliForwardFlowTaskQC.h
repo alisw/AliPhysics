@@ -4,22 +4,24 @@
 #ifndef ALIFORWARDFLOWTASKQC_H
 #define ALIFORWARDFLOWTASKQC_H
 /**
- * @file   AliForwardFlowTaskQC.h
- * @author Alexander Hansen alexander.hansen@cern.ch
- * @date   Fri Mar 25 13:53:00 2011
+ * @file AliForwardFlowTaskQC.h
+ * @author Alexander Hansen
+ * @date   Tue Feb 14 2012
  * 
- * @brief  
+ * @brief
  * 
  * 
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_flow
  */
 #include "AliAnalysisTaskSE.h"
-#include "AliForwardFlowUtil.h"
-class AliAODEvent;
+class AliAODForwardMult;
+class TH1D;
+class TH2D;
+class TH3D;
 
  /**
- * @defgroup pwg2_forward_tasks_flow Flow tasks 
- * @ingroup pwg2_forward_tasks
+ * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ * @ingroup pwglf_forward_tasks
  */
 /**
  * Calculate the flow in the forward regions using the Q cumulants method
@@ -30,10 +32,9 @@ class AliAODEvent;
  * Outputs:
  *   - AnalysisResults.root
  *
- * @ingroup pwg2_forward_tasks_flow
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_tasks_flow
+ * @ingroup pwglf_forward_flow
  *
- * @todo Add centrality stuff
  *
  */
 class AliForwardFlowTaskQC : public AliAnalysisTaskSE
@@ -59,14 +60,12 @@ public:
    */
   /** 
    * Create output objects 
-   * 
    */
   virtual void UserCreateOutputObjects();
   /**
    * Initialize the task
-   *
    */
-  virtual void Init() {}
+  virtual void Init() {} 
   /** 
    * Process each event 
    *
@@ -80,60 +79,148 @@ public:
    */
   virtual void Terminate(Option_t *option);
   /* @} */
-  /*
+  /**
    * Returns the outputlist
-   *
-   */
+   * 
+   * @return TList* 
+  */
   TList* GetOutputList() { return fOutputList; }
-  /* 
-   * Set Number of @f$ \eta@f$ bins to be used in flow analysis
-   *
-   */
-  void SetUseNEtaBins(Int_t nbins) { fEtaBins = nbins; }
-  /*
+ /**
+  * Check AODForwardMult object for trigger, vertex and centrality
+  * returns true if event is OK
+  * 
+  * @param const aodfm
+  * 
+  * @return Bool_t 
+  */
+  Bool_t AODCheck(const AliAODForwardMult* aodfm);
+   /*
    * Set which harmonics to calculate. @f$ v_{1}@f$ to @f$ v_{4}@f$ is
    * available and calculated as default
-   *
-   * @param v1  Do @f$ v_{1}@f$ 
-   * @param v2  Do @f$ v_{2}@f$ 
-   * @param v3  Do @f$ v_{3}@f$ 
-   * @param v4  Do @f$ v_{4}@f$ 
+   * 
+   * @param  v1 Do @f$ v_{1}$f$
+   * @param  v2 Do @f$ v_{2}$f$
+   * @param  v3 Do @f$ v_{3}$f$
+   * @param  v4 Do @f$ v_{4}$f$
+   * @param  v5 Do @f$ v_{5}$f$
+   * @param  v6 Do @f$ v_{6}$f$
+   * 
+   * @return void 
    */
   void SetDoHarmonics(Bool_t v1 = kTRUE, Bool_t v2 = kTRUE, 
 		      Bool_t v3 = kTRUE, Bool_t v4 = kTRUE,
 		      Bool_t v5 = kTRUE, Bool_t v6 = kTRUE) { 
     fv[1] = v1; fv[2] = v2; fv[3] = v3; fv[4] = v4; fv[5] = v5; fv[6] = v6;}
-  /*
-   * Set string to add flow to MC truth particles
-   *
-   * @param type String
-   */
-  void AddFlow(TString type = "") { fAddFlow = type; }
-  /*
-   * Set which function fAddFlow should use
-   *
-   * @param type of AddFlow 
-   */
-  void AddFlowType(Int_t number = 0) { fAddType = number; }
-  /*
-   * Set which order of flow to add
-   *
-   * @param order Flow order 
-   */
-  void AddFlowOrder(Int_t order = 2) { fAddOrder = order; }
-  /*
-   *
-   * Set MC input flag
-   *
-   * @param mc MC input
-   */
-  void SetMCinput(Bool_t mc = kTRUE) { fMC = mc; }
-  /*
-   * Set number of eta bins to be used in reference flow
-   *
-   * @param bins Ref Eta Bins
-   */
-  void SetRefEtaBins(Int_t bins) { fEtaRef = bins; } 
+ /**
+  * Nested class to handle cumulant calculations in vertex bins
+  */
+  class VertexBin : public TNamed
+  {
+    public:
+    /*
+     * Constructor
+     */
+    VertexBin();
+   /**
+    * Constructor
+    * 
+    * @param vLow Min vertex z-coordinate
+    * @param vHigh Max vertex z-coordinate
+    * @param moment Flow moment
+    * @param type Data type (FMD/SPD/FMDTR/SPDTR/MC)
+    */
+    VertexBin(const Int_t vLow, const Int_t vHigh, 
+              const Int_t moment, const Char_t* type);
+   /**
+    * Copy constructor 
+    * 
+    * @param o Object to copy from
+    * 
+    * @return VertexBin
+    */
+    VertexBin(const VertexBin& o);
+   /**
+    * Assignment operator 
+    * 
+    * @param VertexBin&
+    * 
+    * @return VertexBin& 
+    */
+    VertexBin& operator=(const VertexBin&);
+   /**
+    * Destructor 
+    */
+    ~VertexBin(){}
+   /**
+    * Add vertex bin output to list
+    * 
+    * @param list Histograms are added to this list
+    * 
+    * @return void 
+    */
+    virtual void AddOutput(TList* list);
+   /**
+    * Check if vertex vZ is in range for this bin
+    * 
+    * @param vZ z-coordinate of vertex to check
+    * 
+    * @return Bool_t 
+    */
+    Bool_t CheckVertex(Double_t vZ);
+  /**
+    * Fill reference and differential flow histograms for analysis
+    *
+    * @param dNdetadphi 2D data histogram
+    *
+    * @return false if bad event (det. hotspot)
+    */
+    Bool_t FillHists(TH2D* dNdetadphi);
+   /**
+    * Do cumulants calculations for current event with 
+    * centrality cent
+    * 
+    * @param cent Event centrality
+    * 
+    * @return void 
+    */
+    void CumulantsAccumulate(Double_t cent);
+   /**
+    * Finish cumulants calculations. Takes input and
+    * output lists in case Terminate is called separately
+    * 
+    * @param inlist List with input histograms
+    * @param outlist List with output histograms
+    * 
+    * @return void 
+    */
+    void CumulantsTerminate(TList* inlist, TList* outlist);
+
+    protected:
+   /*
+    * Enumeration for ref/diff histograms
+    */
+    enum { kHmult = 1, kHQnRe, kHQnIm, kHQ2nRe, kHQ2nIm };
+   /*
+    * Enumeration for cumulant histogram
+    */
+    enum { kW2Two = 1, kW2, kW4Four, kW4, kQnRe, kQnIm, kM,
+       kCosphi1phi2, kSinphi1phi2, kCosphi1phi2phi3m, kSinphi1phi2phi3m, kMm1m2, 
+       kw2two, kw2, kw4four, kw4, kpnRe, kpnIm, kmp, 
+       kCospsi1phi2, kSinpsi1phi2, kCospsi1phi2phi3m, kSinpsi1phi2phi3m,
+       kmpmq, kCospsi1phi2phi3p, kSinpsi1phi2phi3p };
+
+    const Int_t   fMoment;        // flow moment 
+    const Int_t   fVzMin;         // z-vertex min
+    const Int_t   fVzMax;         // z-vertex max
+    const Char_t* fType;          // data type
+    TH2D*         fCumuRef;       // histogram for reference flow
+    TH2D*         fCumuDiff;      // histogram for differential flow
+    TH3D*         fCumuHist;      // histogram for cumulants calculations
+    TH2D*         fdNdedpAcc;     // Diagnostics histogram to make acc. maps
+
+    ClassDef(VertexBin, 1); // object for cumulants ananlysis in FMD
+  };
+
 protected:
   /** 
    * Copy constructor 
@@ -146,40 +233,37 @@ protected:
    * 
    * @return Reference to this object 
    */
-  AliForwardFlowTaskQC& operator=(const AliForwardFlowTaskQC&) { return *this; }
+  AliForwardFlowTaskQC& operator=(const AliForwardFlowTaskQC&);
   /*
-   * if MC information is available do analysis on Monte Carlo truth
-   * and track references
-   *
+   * Initiate vertex bin objects
    */
-  void ProcessPrimary();
-  /**
-   * Calculate Q cumulant
-   * 
-   * @param type     Determines which histograms should be used
-   *                 - "FMD" = FMD data histograms
-   *                 - "SPD" = SPD data histograms
-   *                 - "TR" = track reference histograms
-   *                 - "MC" = MC truth histograms
-   * @param harmonic Which harmonic to calculate
+  virtual void InitVertexBins();
+  /*
+   * Initiate diagnostics histograms
    */
-  void CumulantsMethod(TString type, Int_t harmonic);
+  virtual void InitHists();
+  /*
+   * Analyze event
+   */
+  virtual Bool_t Analyze();
+  /*
+   * Finalize analysis
+   */
+  virtual void Finalize();
 
-  TList*         fOutputList;   //  Output list
-  AliForwardFlowUtil* fFlowUtil;//  AliForwardFlowUtil
-  AliAODEvent*   fAOD;          //  AOD event
-  Bool_t         fMC;           //  Is MC flags
-  Int_t          fEtaBins;      //  Number of eta bins in histograms
-  Int_t          fEtaRef;       //  Number of eta bins for reference flow
-  Bool_t         fv[7];         //  Calculate v_{n} flag
-  TString        fAddFlow;	//  Add flow string
-  Int_t          fAddType;	//  Add flow type #
-  Int_t          fAddOrder;	//  Add flow order
-  Float_t  	 fZvertex;	//  Z vertex bin
-  Double_t       fCent;         //  Centrality
-  
+  TList          fBinsFMD;        //  list with FMD VertexBin objects 
+  TList          fBinsSPD;        //  list with SPD VertexBin objects
+  TList*         fSumList;        //  sum list
+  TList*         fOutputList;     //  Output list
+  AliAODEvent*   fAOD;            //  AOD event
+  Bool_t         fv[7];           //  Calculate v_{n} flag
+  Float_t  	 fZvertex;        //  Z vertex bin
+  Double_t       fCent;           //  Centrality
+  TH1D*          fHistCent;       //  Diagnostics hist for centrality
+  TH1D*          fHistVertexSel;  //  Diagnostics hist for selected vertices
+  TH1D*          fHistVertexAll;  //  Diagnostics hist for all vertices
 
-  ClassDef(AliForwardFlowTaskQC, 2); // Analysis task for FMD analysis
+  ClassDef(AliForwardFlowTaskQC, 1); // Analysis task for FMD analysis
 };
  
 #endif

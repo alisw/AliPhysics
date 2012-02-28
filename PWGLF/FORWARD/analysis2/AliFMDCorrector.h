@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  * 
  */
 #include <TNamed.h>
@@ -19,9 +19,9 @@
 class TH2D;
 
 /** 
- * @defgroup pwg2_forward_algo Algorithms 
+ * @defgroup pwglf_forward_algo Algorithms 
  *
- * @ingroup pwg2_forward 
+ * @ingroup pwglf_forward 
  */
 /** 
  * This class calculates the exclusive charged particle density
@@ -40,8 +40,8 @@ class TH2D;
  *   - AliFMDCorrVertexBias
  *   - AliFMDCorrMergingEfficiency
  *
- * @ingroup pwg2_forward_algo 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_algo 
+ * @ingroup pwglf_forward_aod
  */
 class AliFMDCorrector : public TNamed
 {

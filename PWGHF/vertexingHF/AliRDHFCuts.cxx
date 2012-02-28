@@ -417,6 +417,8 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   //
   if(!cuts) return kTRUE;
 
+  if(cuts->GetFlagCutTOFdistance()) cuts->SetFlagCutTOFdistance(kFALSE);
+
   Bool_t retval=kTRUE;
 
   // convert to ESD track here
@@ -635,6 +637,25 @@ void AliRDHFCuts::PrintAll() const {
   }
   return;
 }
+
+//--------------------------------------------------------------------------
+void AliRDHFCuts::PrintTrigger() const{
+
+  cout<<" Trigger selection pattern: ";
+  if( fTriggerMask & AliVEvent::kAny ) cout<<" kAny ";
+  if( fTriggerMask & AliVEvent::kAnyINT ) cout<<" kAnyINT ";
+  if( fTriggerMask & AliVEvent::kINT7 ) cout<<" kINT7 ";
+  if( fTriggerMask & AliVEvent::kMB ) cout<<" kMB ";
+  if( fTriggerMask & AliVEvent::kCINT5 ) cout<<" kCINT5 ";
+  if( fTriggerMask & AliVEvent::kCentral ) cout<<" kCentral ";
+  if( fTriggerMask & AliVEvent::kSemiCentral ) cout<<" kSemiCentral ";
+  if( fTriggerMask & AliVEvent::kEMCEGA ) cout<<" kEMCEGA ";
+  if( fTriggerMask & AliVEvent::kHighMult ) cout<<" kHighMult ";
+  if( fTriggerMask & AliVEvent::kFastOnly ) cout<<" kFastOnly ";
+  cout << endl<< endl;
+
+}
+
 //---------------------------------------------------------------------------
 void AliRDHFCuts::GetCuts(Float_t**& cutsRD) const{
   //

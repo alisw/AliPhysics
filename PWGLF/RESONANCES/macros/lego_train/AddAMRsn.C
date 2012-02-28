@@ -1,7 +1,7 @@
 Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
 {
 
-   analysisSource.ToLower();analysisMode.ToLower();
+   analysisSource.ToLower(); analysisMode.ToLower();
 
    if (!RsnLoadMacro("RsnManager.C")) return kFALSE;
    TList *listRsn = RsnManager();
@@ -34,11 +34,15 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    if (eventMixinPar) { AliAnalysisAlien::SetupPar("EventMixing"); myAdditionalLibs += " EventMixing.par"; }
    else { gSystem->Load("libEventMixing.so"); myAdditionalLibs += " libEventMixing.so"; }
 
-   if (rsnPar) { AliAnalysisAlien::SetupPar("PWG2resonances"); myAdditionalLibs += " PWG2resonances.par"; }
-   else { gSystem->Load("libPWG2resonances.so"); myAdditionalLibs += " libPWG2resonances.so"; }
+   TString rsnLibName = "PWGLFresonances";
+   if (gSystem->Getenv("ALICE_ROOT")) {
+      TString alirootVersion = gSystem->GetFromPipe("aliroot --version | awk '{print $3}'");
+      if (alirootVersion<"v5-02-19-AN" && alirootVersion.CompareTo("trunk")) rsnLibName = "PWG2resonances";
+      if (rsnPar) { AliAnalysisAlien::SetupPar(rsnLibName.Data()); myAdditionalLibs += Form(" %s.par",rsnLibName.Data()); }
+      else { gSystem->Load(Form("lib%s.so",rsnLibName.Data())); myAdditionalLibs += Form(" lib%s.so",rsnLibName.Data()); }
+   }
 
    analysisPlugin->SetAdditionalLibs(myAdditionalLibs.Data());
-
 
    AliMultiInputEventHandler *multiInputHandler = mgr->GetInputEventHandler();
    AliRsnInputHandler *rsnIH=0;
@@ -46,7 +50,7 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    if (pidResponse) {
       // add PID Response Handler
       if (!RsnLoadMacro("AddPIDResponseInputHandler.C")) return kFALSE;
-      AddPIDResponseInputHandler(multiInputHandler);
+      AddPIDResponseInputHandler(multiInputHandler,useMC);
    }
 
    if (useRsnIH) {
@@ -75,7 +79,7 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    if (!RsnLoadMacro("RsnConfig.C")) return kFALSE;
    if (!RsnLoadMacro("AddMixingHandler.C")) return kFALSE;
    if (!analysisSource.CompareTo("grid")) {
-      if (!RsnLoadMacro("RsnGirdPlugin.C")) return kFALSE;
+      if (!RsnLoadMacro("RsnGridPlugin.C")) return kFALSE;
       RsnGridPlugin();
    }
 
@@ -129,3 +133,4 @@ Bool_t RsnLoadMacro(TString macro,TString path="") {
 
    return kFALSE;
 }
+

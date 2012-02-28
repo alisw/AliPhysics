@@ -61,7 +61,8 @@ AliAnaPhoton::AliAnaPhoton() :
     fNOriginHistograms(8),        fNPrimaryHistograms(4),
 
     // Histograms
-    fhNCellsE(0),                 fhMaxCellDiffClusterE(0),     fhTimeE(0), // Control histograms
+    fhNCellsE(0),                 fhCellsE(0),   // Control histograms            
+    fhMaxCellDiffClusterE(0),     fhTimeE(0),    // Control histograms
     fhEPhoton(0),                 fhPtPhoton(0),  
     fhPhiPhoton(0),               fhEtaPhoton(0), 
     fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
@@ -688,7 +689,6 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   {
     Float_t dZ  = cluster->GetTrackDz();
     Float_t dR  = cluster->GetTrackDx();
-    
     if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
       dR = 2000., dZ = 2000.;
       GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
@@ -1163,6 +1163,11 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhNCellsE->SetXTitle("E (GeV)");
   fhNCellsE->SetYTitle("# of cells in cluster");
   outputContainer->Add(fhNCellsE);    
+  
+  fhCellsE  = new TH2F ("hCellsE","energy of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nptbins*2,ptmin,ptmax); 
+  fhCellsE->SetXTitle("E_{cluster} (GeV)");
+  fhCellsE->SetYTitle("E_{cell} (GeV)");
+  outputContainer->Add(fhCellsE);    
   
   fhTimeE  = new TH2F ("hTimeE","time of cluster vs E of clusters", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
   fhTimeE->SetXTitle("E (GeV)");
@@ -2010,10 +2015,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0; 
-  if(fCalorimeter == "PHOS")
-    pl = GetPHOSClusters();
+  AliVCaloCells* cells    = 0;  
+  if      (fCalorimeter == "PHOS" )
+  {
+    pl    = GetPHOSClusters();
+    cells = GetPHOSCells();
+  }
   else if (fCalorimeter == "EMCAL")
-    pl = GetEMCALClusters();
+  {
+    pl    = GetEMCALClusters();
+    cells = GetEMCALCells();
+  }
   
   if(!pl) {
     Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
@@ -2127,11 +2139,12 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     //...............................................
     // Data, PID check on
-    if(IsCaloPIDOn()){
+    if(IsCaloPIDOn())
+    {
       // Get most probable PID, 2 options check bayesian PID weights or redo PID
       // By default, redo PID
       
-      aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));
+      aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(calo));
       
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
       
@@ -2142,22 +2155,29 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     //...............................................
     // Data, PID check off
-    else{
+    else
+    {
       //Set PID bits for later selection (AliAnaPi0 for example)
       //GetIdentifiedParticleType already called in SetPIDBits.
       
-      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils(),GetReader()->GetInputEvent());
+      GetCaloPID()->SetPIDBits(calo,&aodph, GetCaloUtils(),GetReader()->GetInputEvent());
       
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PID Bits set \n");		
     }
     
-    if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
+    if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
+                              aodph.Pt(), aodph.GetIdentifiedParticleType());
     
     fhClusterCuts[8]->Fill(calo->E());
     
     // Matching after cuts
     if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,1);
     
+    // Add number of local maxima to AOD, method name in AOD to be FIXED
+    
+    aodph.SetFiducialArea(GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells));
+    
+
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
@@ -2211,12 +2231,14 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
-  for(Int_t iaod = 0; iaod < naod ; iaod++){
+  for(Int_t iaod = 0; iaod < naod ; iaod++)
+  {
     AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ph->GetIdentifiedParticleType();
     
     if(GetDebug() > 3) 
-      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
+      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", 
+             ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
     
     //If PID used, fill histos with photons in Calorimeter fCalorimeter
     if(IsCaloPIDOn() && pdg != AliCaloPID::kPhoton) continue; 
@@ -2256,13 +2278,19 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     
     Int_t iclus = -1;
     AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus); 
-    if(cluster){
+    if(cluster)
+    {
       absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
       
       // Control histograms
       fhMaxCellDiffClusterE->Fill(ph->E(),maxCellFraction);
       fhNCellsE            ->Fill(ph->E(),cluster->GetNCells());
       fhTimeE              ->Fill(ph->E(),cluster->GetTOF()*1.e9);
+      if(cells)
+      {
+      for(Int_t icell = 0; icell <  cluster->GetNCells(); icell++)
+        fhCellsE->Fill(ph->E(),cells->GetCellAmplitude(cluster->GetCellsAbsId()[icell]));
+      }
     }
     
     //.......................................

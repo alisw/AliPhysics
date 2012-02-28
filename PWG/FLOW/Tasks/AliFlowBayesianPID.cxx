@@ -11,12 +11,15 @@
 #include "TDatabasePDG.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
 #include "TH2D.h"
 #include "TSpline.h"
 #include "TF1.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFT0maker.h"
 #include "AliCentrality.h"
+#include "AliAODPid.h"
 
 ClassImp(AliFlowBayesianPID)
   
@@ -26,7 +29,7 @@ AliTOFGeometry* AliFlowBayesianPID::fgTofGeo = NULL; // TOF geometry needed to r
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -250,7 +253,138 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
     fPIDesd->GetTOFResponse().SetTrackParameter(3,40);
   }
 
+  fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
+
+  // reset EP information
+  fPsi=999;
+  fPsiRes=999;
+
   fPIDesd->MakePID(esd,kFALSE);
+}
+//________________________________________________________________________
+void AliFlowBayesianPID::SetDetResponse(AliAODEvent *aod,Float_t centrality){
+  // Set the detector responses (including also TPC dE/dx paramterization vs. centrality)
+  if(!aod){
+    printf("AliFlowBayesianPID::SetDetResponse -> Error -> No valid esd event");
+    return;
+  }
+
+  if(centrality >= 0){
+    // get centrality from VZERO
+    AliCentrality *currCentrality = aod->GetCentrality();
+    centrality = currCentrality->GetCentralityPercentile("V0M");
+    if(centrality <= 0) centrality = 0.001;
+  }
+  fCurrCentrality = centrality;
+
+  // retune BB
+  Double_t alephParameters[5];
+  Float_t mip = 51;
+  
+  if(centrality < 0){
+    alephParameters[0] = 5.36613e-02;
+    alephParameters[1] = 1.44343e+01;
+    alephParameters[2] = 6.93875e-07;
+    alephParameters[3] = 2.17858e+00;
+    alephParameters[4] = 2.57153e+00;
+  }
+  else if(centrality < 10){
+    mip = 53.549869;
+    alephParameters[0] = 0.073740;
+    alephParameters[1] = 10.205724;
+    alephParameters[2] = 0.000009;
+    alephParameters[3] = 2.292470;
+    alephParameters[4] = 2.029191;
+  }
+  else if(centrality < 20){
+    mip = 53.549979;
+    alephParameters[0] = 0.074808;
+    alephParameters[1] = 10.002850;
+    alephParameters[2] = 0.000009;
+    alephParameters[3] = 2.353473;
+    alephParameters[4] = 2.070397;
+  }
+  else if(centrality < 30){
+    mip = 53.550000;
+    alephParameters[0] = 0.076092;
+    alephParameters[1] = 9.911953;
+    alephParameters[2] = 0.000009;
+    alephParameters[3] = 2.316073;
+    alephParameters[4] = 2.026312;
+  }
+  else if(centrality < 40){
+    mip = 53.549172;
+    alephParameters[0] = 0.082482;
+    alephParameters[1] = 9.027005;
+    alephParameters[2] = 0.000013;
+    alephParameters[3] = 2.420034;
+    alephParameters[4] = 1.963044;
+  }
+  else if(centrality < 50){
+    mip = 53.549823;
+    alephParameters[0] = 0.082570;
+    alephParameters[1] = 9.003131;
+    alephParameters[2] = 0.000013;
+    alephParameters[3] = 2.442916;
+    alephParameters[4] = 1.976435;
+  }
+  else if(centrality < 60){
+    mip = 53.521724;
+    alephParameters[0] = 0.082672;
+    alephParameters[1] = 8.974422;
+    alephParameters[2] = 0.000013;
+    alephParameters[3] = 2.462914;
+    alephParameters[4] = 1.986885;
+  }
+  else if(centrality < 70){
+    alephParameters[0] = 8.29615e-02;
+    alephParameters[1] = 9.41909e+00;
+    alephParameters[2] = 1.40230e-05;
+    alephParameters[3] = 2.44894e+00;
+    alephParameters[4] = 2.06676e+00;
+  }
+  else if(centrality < 80){
+    alephParameters[0] = 8.31397e-02;
+    alephParameters[1] = 9.41126e+00;
+    alephParameters[2] = 1.40230e-05;
+    alephParameters[3] = 2.44848e+00;
+    alephParameters[4] = 2.06326e+00;
+  }
+  else{
+    alephParameters[0] = 8.38910e-02;
+    alephParameters[1] = 9.30736e+00;
+    alephParameters[2] = 1.40230e-05;
+    alephParameters[3] = 2.45844e+00;
+    alephParameters[4] = 2.07334e+00;
+  }
+  
+  fPIDesd->GetTPCResponse().SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
+  fPIDesd->GetTPCResponse().SetMip(mip);
+  
+  fBBdata->SetParameter(0, mip);
+  fBBdata->SetParameter(1, alephParameters[0]);
+  fBBdata->SetParameter(2, alephParameters[1]);
+  fBBdata->SetParameter(3, alephParameters[2]);
+  fBBdata->SetParameter(4, alephParameters[3]);
+  fBBdata->SetParameter(5, alephParameters[4]);
+
+
+  /* Set T0 at zero and sigma t0 at zero because already accounted in the AOD*/
+  for(Int_t i=0;i < fPIDesd->GetTOFResponse().GetNmomBins();i++){
+    fPIDesd->GetTOFResponse().SetT0bin(i,0);
+    fPIDesd->GetTOFResponse().SetT0binRes(i,0);
+  }
+
+  if(fNewTrackParam){
+    fPIDesd->GetTOFResponse().SetTrackParameter(0, 0.008);
+    fPIDesd->GetTOFResponse().SetTrackParameter(1,0.008);
+    fPIDesd->GetTOFResponse().SetTrackParameter(2,0.002);
+    fPIDesd->GetTOFResponse().SetTrackParameter(3,40);
+  }
+
+  // reset EP information
+  fPsi=999;
+  fPsiRes=999;
 }
 //________________________________________________________________________
 Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS) const{
@@ -287,6 +421,74 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS) const{
 //   Float_t betagamma = momtpc/fMass[iS];
 //   Float_t bgCorr = 0.01/betagamma/betagamma;
 //   dedxExp *= 1+bgCorr;
+
+// Add correction using the EP information
+  if(fPsi < 10){
+      Float_t corrPhi = 0;
+      Float_t deltaphi = t->Phi() - fPsi;
+      if(fCurrCentrality < 5) corrPhi = 1.29827e-02 - 1.57371e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 10) corrPhi = 1.52380e-02 - 1.45004e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 20) corrPhi = -4.91239e-02 - 1.96066e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 30) corrPhi = -3.37852e-02 - 1.48797e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 40) corrPhi = -8.49345e-02 - 2.29301e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 50) corrPhi = -6.19127e-03 - 1.52834e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 60) corrPhi = -8.90954e-02 - 1.43747e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 70) corrPhi = 1.64934e-02 - 1.43747e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else corrPhi = -1.43593e-02 - 1.43747e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      dedxExp += corrPhi * fPIDesd->GetTPCResponse().GetExpectedSignal(3.0,AliPID::kPion) * 0.07;
+  }
+
+  return dedxExp;
+}
+//________________________________________________________________________
+Float_t AliFlowBayesianPID::GetExpDeDx(const AliAODTrack *t,Int_t iS) const{
+  // tuned dE/dx (vs. eta and centrality)
+  Float_t momtpc=t->GetTPCmomentum();
+
+  Float_t dedxExp=0;
+  if(iS==0) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
+  else if(iS==1) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kMuon);
+  else if(iS==2) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kPion);
+  else if(iS==3) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kKaon);
+  else if(iS==4) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kProton);
+  else if(iS==5) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kDeuteron);
+  else if(iS==6) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kTriton);
+  else if(iS==7) dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5;
+    
+  Float_t eta = t->Eta();
+  Float_t etaCorr = 7.98368e-03 - 1.67208e-02 - 1.89776e-01*eta*eta  -2.90836e-02*eta*eta + 5.96093e-01*eta*eta*eta*eta + 6.06450e-02*eta*eta*eta*eta - 3.55884e-01*eta*eta*eta*eta*eta*eta;
+  if(fCurrCentrality < 0){
+  }
+  else if(fCurrCentrality < 5) etaCorr += 17E-3;
+  else if(fCurrCentrality < 10) etaCorr += 21E-3;
+  else if(fCurrCentrality < 20) etaCorr += 21E-3;
+  else if(fCurrCentrality < 30) etaCorr += 21E-3;
+  else if(fCurrCentrality < 40) etaCorr += 21E-3;
+  else if(fCurrCentrality < 50) etaCorr += 14E-3;
+  else if(fCurrCentrality < 60) etaCorr += 21E-3;
+  else etaCorr += 14E-3;
+
+
+  dedxExp *= 1+etaCorr;
+//   Float_t betagamma = momtpc/fMass[iS];
+//   Float_t bgCorr = 0.01/betagamma/betagamma;
+//   dedxExp *= 1+bgCorr;
+
+// Add correction using the EP information
+  if(fPsi < 10){
+      Float_t corrPhi = 0;
+      Float_t deltaphi = t->Phi() - fPsi;
+      if(fCurrCentrality < 5) corrPhi = 1.29827e-02 - 1.57371e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 10) corrPhi = 1.52380e-02 - 1.45004e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 20) corrPhi = -4.91239e-02 - 1.96066e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 30) corrPhi = -3.37852e-02 - 1.48797e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 40) corrPhi = -8.49345e-02 - 2.29301e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 50) corrPhi = -6.19127e-03 - 1.52834e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 60) corrPhi = -8.90954e-02 - 1.43747e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else if(fCurrCentrality < 70) corrPhi = 1.64934e-02 - 1.43747e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      else corrPhi = -1.43593e-02 - 1.43747e-02*fPsiRes*TMath::Cos(2*deltaphi);
+      dedxExp += corrPhi * fPIDesd->GetTPCResponse().GetExpectedSignal(3.0,AliPID::kPion) * 0.07;
+  }
 
   return dedxExp;
 }
@@ -391,6 +593,122 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
   }  
 }
 //________________________________________________________________________
+void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t){
+  // compute Detector weights for Bayesian probablities
+  Float_t centr = fCurrCentrality;
+
+  Float_t pt = t->Pt();
+  Float_t p = t->P();
+  Float_t momtpc=t->GetTPCmomentum();
+     
+  // TPC
+  Float_t dedx = t->GetTPCsignal();
+  if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
+    for(Int_t iS=0;iS<fgkNspecies;iS++){
+
+      Float_t dedxExp=GetExpDeDx(t,iS);
+
+      Float_t resolutionTPC = 1;
+      if(iS==0) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
+      else if(iS==1) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
+      else if(iS==2) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
+      else if(iS==3) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
+      else if(iS==4) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
+      else if(iS==5) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kDeuteron);
+      else if(iS==6) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
+      else if(iS==7) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
+
+      if(centr < 0) resolutionTPC *= 0.78;
+      if(centr < 10) resolutionTPC *= 1.0;
+      else if(centr < 20) resolutionTPC *= 1.0;
+      else if(centr < 30) resolutionTPC *= 1.0;
+      else if(centr < 40) resolutionTPC *= 0.95;
+      else if(centr < 50) resolutionTPC *= 0.93;
+      else if(centr < 60) resolutionTPC *= 0.91;
+      else if(centr < 70) resolutionTPC *= 0.88;
+      else resolutionTPC *= 0.83;
+      
+      fWeights[0][iS] = fTPCResponseF->Eval((dedx - dedxExp)/resolutionTPC)/resolutionTPC;
+    }
+    fMaskCurrent[0] = kTRUE;
+  }
+  else{
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fWeights[0][iS] = 1;
+    fMaskCurrent[0] = kFALSE;
+  }
+
+  // TOF
+  fWTofMism = 0;
+  if((t->GetStatus() & AliESDtrack::kTOFout) &&  (t->GetStatus() & AliESDtrack::kTIME) && fMaskOR[1]){ // if TOF PID available
+    Float_t invCentr = 0;
+    if(centr >= 0) invCentr = 1 - centr/100;
+    Float_t mismfrac = 0.005 + 0.05*invCentr*invCentr*invCentr;
+
+    Float_t timeTOF = t->GetTOFsignal() - fPIDesd->GetTOFResponse().GetStartTime(p);
+
+    // TOF mismatch weight
+    Int_t det[5];
+    Float_t length, timeextra, pos[3];
+    /* compute length and expected time */
+    Float_t etaAbs = TMath::Abs(t->Eta());
+    Int_t extrapolatedTOFchannel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs);
+    if(t->Eta() < 0) extrapolatedTOFchannel = 8736-1- extrapolatedTOFchannel; 
+    extrapolatedTOFchannel =  (Int_t(extrapolatedTOFchannel) % 8736);
+
+
+    fgTofGeo->GetVolumeIndices(extrapolatedTOFchannel, det);
+    fgTofGeo->GetPosPar(det, pos);
+    length = 0.;
+    for (Int_t i = 0; i < 3; i++) length += pos[i] * pos[i];
+    length = TMath::Sqrt(length);
+    timeextra = length * 33.3564095198152043;
+    Float_t mismweight = TMath::Max(fgMism->Eval(timeTOF - timeextra),0.0000001) * ((0.5 + 0.05/pt/pt/pt)); // mismatch probabilities
+    fWTofMism = mismfrac*mismweight;
+
+    Double_t inttimes[8];
+    t->GetIntegratedTimes(inttimes);
+    inttimes[5] = inttimes[0] / p * fMass[5] * TMath::Sqrt(1+p*p/fMass[5]/fMass[5]);
+    inttimes[6] = inttimes[0] / p * fMass[6] * TMath::Sqrt(1+p*p/fMass[6]/fMass[6]);
+    inttimes[7] = inttimes[0] / p * fMass[7] * TMath::Sqrt(1+p*p/fMass[7]/fMass[7]);
+
+    for(Int_t iS=0;iS<fgkNspecies;iS++){
+      if(iS==0){
+	AliAODPid *pidObj = t->GetDetPid();
+	if (!pidObj) fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
+	else{
+	  Double_t sigmaTOFPidInAOD[10];
+	  pidObj->GetTOFpidResolution(sigmaTOFPidInAOD);
+	  if(sigmaTOFPidInAOD[0] > fTOFresolution)
+	    fPIDesd->GetTOFResponse().SetTimeResolution(sigmaTOFPidInAOD[0]); // use the electron TOF PID sigma as time resolution (including the T0 used)
+	  else 
+	    fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
+	}
+      }
+
+      Float_t expsigma = fPIDesd->GetTOFResponse().GetExpectedSigma(p, inttimes[iS], fMass[iS]);
+      Float_t delta = timeTOF - inttimes[iS];
+      if (TMath::Abs(delta) > 5*expsigma) {
+	fWeights[1][iS] = mismfrac*mismweight;
+      } else
+	fWeights[1][iS] = fTOFResponseF->Eval(delta/expsigma)/expsigma + mismfrac*mismweight;
+    }
+    fMaskCurrent[1] = kTRUE;
+  }
+  else{
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fWeights[1][iS] = 1;    
+    fMaskCurrent[1] = kFALSE;
+  }
+
+  for(Int_t j=0;j < 2;j++){
+    Float_t rcc = 0;
+    for(Int_t iS=0;iS<fgkNspecies;iS++) rcc += fWeights[j][iS];
+    if(rcc <=0 ) rcc = 1;
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fWeights[j][iS] /= rcc;
+
+    if(j==1) fWTofMism /= rcc;
+  }  
+}
+//________________________________________________________________________
 void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t /*centrObsolete*/){
   // compute Bayesian probablities
   ComputeWeights(t);
@@ -453,7 +771,73 @@ void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t /*centrObsole
   }
   
 }
+//________________________________________________________________________
+void AliFlowBayesianPID::ComputeProb(const AliAODTrack *t){
+  // compute Bayesian probablities
+  ComputeWeights(t);
+  Float_t priors[fgkNspecies];
+  fProbTofMism = 0;
 
+  Float_t centr = fCurrCentrality;
+
+  for(Int_t iS=0;iS<fgkNspecies;iS++) priors[iS] = fghPriors[iS]->GetBinContent(fghPriors[iS]->GetXaxis()->FindBin(centr),fghPriors[iS]->GetYaxis()->FindBin(t->Pt()));
+
+
+  if((!fMaskAND[0] || fMaskCurrent[0]) && (!fMaskAND[1] || fMaskCurrent[1])){
+    Float_t rcc = 0;
+    for(Int_t iS=0;iS<fgkNspecies;iS++){
+      rcc += fWeights[0][iS]*fWeights[1][iS]*priors[iS];
+      fProbTofMism += fWeights[0][iS]*fWTofMism*priors[iS]; 
+    }
+    if(rcc > 0){
+      for(Int_t iS=0;iS<fgkNspecies;iS++){
+	fProb[iS] = fWeights[0][iS]*fWeights[1][iS]*priors[iS]/rcc;
+      }
+      fProbTofMism /=rcc;
+    }
+    else{
+      for(Int_t iS=0;iS<fgkNspecies;iS++) fProb[iS] = 0;
+      fProbTofMism = 0;
+    }
+  }
+  else{
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fProb[iS] = 0;
+    fProbTofMism = 0;   
+  }
+
+  /* Track length not written in aod
+     if(t->P() > 0.2 && t->GetTPCsignal() > 40 && (t->GetStatus() & AliESDtrack::kTOFout) && (t->GetStatus() & AliESDtrack::kTIME) && t->GetTOFsignal()> 12000){
+     Float_t momtpc=t->GetTPCmomentum();
+     Int_t signMass = 1;
+     
+     Float_t beta = t->GetIntegratedLength() / (t->GetTOFsignal() - fPIDesd->GetTOFResponse().GetStartTime(t->P()))  * 33.3564095198152043;
+     Float_t gamma = 1;
+     if(beta<1){
+     gamma = 1./TMath::Sqrt(1-beta*beta);
+     }
+     else if(beta>1){
+     gamma = 1./TMath::Sqrt(beta*beta-1);
+     signMass=-1;
+     }
+     fMassTOF = t->P()/beta/gamma;
+     
+     Float_t bb = fBBdata->Eval(momtpc/fMassTOF);
+     fZ = TMath::Power(t->GetTPCsignal()/bb,0.431)*t->GetSign();
+     
+     fMassTOF *= signMass;
+     }
+  */
+  //  else{
+  fZ=0;
+  fMassTOF=0;
+  //  }
+  
+}
+//________________________________________________________________________
+void AliFlowBayesianPID::SetPsiCorrectionDeDx(Float_t psi,Float_t res){
+  fPsi=psi;
+  fPsiRes=res;
+}
 //________________________________________________________________________
 void AliFlowBayesianPID::SetPriors(){
   // set default TOF priors

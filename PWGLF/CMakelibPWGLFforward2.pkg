@@ -39,6 +39,7 @@ set ( SRCS
   FORWARD/analysis2/AliFMDEnergyFitter.cxx
   FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
   FORWARD/analysis2/AliFMDEventInspector.cxx
+  FORWARD/analysis2/AliFMDEventPlaneFinder.cxx
   FORWARD/analysis2/AliFMDHistCollector.cxx
   FORWARD/analysis2/AliFMDSharingFilter.cxx
   FORWARD/analysis2/AliFMDMCEventInspector.cxx
@@ -57,13 +58,15 @@ set ( SRCS
   FORWARD/analysis2/AliCentralMCMultiplicityTask.cxx
   FORWARD/analysis2/AliCentralMCCorrectionsTask.cxx
   FORWARD/analysis2/AliAODCentralMult.cxx
+  FORWARD/analysis2/AliAODForwardEP.cxx
   FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
   FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
   FORWARD/analysis2/AliCentraldNdetaTask.cxx
   FORWARD/analysis2/AliBasedNdetaTask.cxx
   FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
-  FORWARD/analysis2/AliForwardFlowUtil.cxx
   FORWARD/analysis2/AliForwardFlowTaskQC.cxx
+  FORWARD/analysis2/AliForwardMCFlowTaskQC.cxx
+  FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliSPDMCTrackDensity.cxx
   FORWARD/analysis2/AliFMDMultCuts.cxx
   FORWARD/analysis2/AliPoissonCalculator.cxx
@@ -154,11 +157,14 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
   		FORWARD/analysis2/AddTaskCentralTracks.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
+		FORWARD/analysis2/AddTaskFMDEventPlane.C
+		FORWARD/analysis2/AddTaskForwardFlow.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
                 FORWARD/analysis2/AddTaskForwardQA.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
 		FORWARD/analysis2/AddTaskMCTruthdNdeta.C
+		FORWARD/analysis2/AddTaskMCParticleFilter.C
 		FORWARD/analysis2/DrawdNdeta.C
 		FORWARD/analysis2/ForwardAODConfig.C
 		FORWARD/analysis2/CentralAODConfig.C
@@ -166,6 +172,8 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
 		FORWARD/analysis2/MakeEvaluateTriggers.C
+		FORWARD/analysis2/MakeFlow.C
+		FORWARD/analysis2/MakeFMDEventPlane.C
                 FORWARD/analysis2/MakeForwardQA.C
 		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C

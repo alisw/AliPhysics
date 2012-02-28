@@ -26,7 +26,7 @@ const char* AliForwardCorrectionManager::fgkVertexBiasSkel   = "vertexbias";
 const char* AliForwardCorrectionManager::fgkMergingEffSkel   = "merging";
 const char* AliForwardCorrectionManager::fgkAcceptanceSkel   = "acceptance";
 
-#define PREFIX "$(ALICE_ROOT)/PWG2/FORWARD/corrections/"
+#define PREFIX "$(ALICE_ROOT)/PWGLF/FORWARD/corrections/"
 #define ELOSSFIT_DIR   "ELossFits"
 #define MERGING_DIR    "MergingEfficiency"
 #define SECONDARY_DIR  "SecondaryMap"
@@ -971,7 +971,7 @@ AliForwardCorrectionManager::WriteFile(ECorrection what,
     TString dName(GetFileDir(what));
     AliInfo(Form("%s should be copied to %s"
 		 "Do for example\n\n\t"
-		 "aliroot $ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/"
+		 "aliroot $ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/"
 		 "MoveCorrections.C\\(%d\\)\nor\n\t"
 		 "cp %s %s/\n", 
 		 ofName.Data(),dName.Data(),

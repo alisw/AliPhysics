@@ -1,16 +1,16 @@
 /**
  * @file   AddTaskForwardFlow.C
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
- * @date   Wed Mar 23 12:14:17 2011
+ * @author Alexander Hansen alexander.hansen@cern.ch 
+ * @date   Wed Sep 07 12:14:17 2011
  * 
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
- * @defgroup pwg2_forward_flow Flow 
- * @ingroup pwg2_forward_topical
+ * @defgroup pwglf_forward_flow Flow 
+ * @ingroup pwglf_forward_topical
  */
 /** 
  * Add Flow task to train 
@@ -22,10 +22,9 @@
  * @param addFType 
  * @param addFOrder 
  *
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_flow
  */
 void AddTaskForwardFlow(TString type = "", 
-                        Int_t etabins = 48,
                         Bool_t mc = kFALSE,
                         TString addFlow = "",
                         Int_t addFType = 0,
@@ -64,27 +63,36 @@ void AddTaskForwardFlow(TString type = "",
     if (!type.Contains("6")) v6 = kFALSE;
   }
 
-  // --- Create output containers and find input from fmd task --- //
-
-  TString outputFile = AliAnalysisManager::GetCommonFileName();
-  outputFile += ":FlowResults";
-
-  AliAnalysisDataContainer* qcout = mgr->CreateContainer("QCumulants", TList::Class(), AliAnalysisManager::kOutputContainer, outputFile);
+  // --- Create containers for output --- //
+  AliAnalysisDataContainer* sums = 
+    mgr->CreateContainer("FlowQCSums", TList::Class(), 
+			 AliAnalysisManager::kOutputContainer, 
+			 AliAnalysisManager::GetCommonFileName());
+  AliAnalysisDataContainer* output = 
+    mgr->CreateContainer("FlowQCResults", TList::Class(), 
+			 AliAnalysisManager::kParamContainer, 
+			 AliAnalysisManager::GetCommonFileName());
 
   // --- For the selected flow tasks the input and output is set --- //
   
-  AliForwardFlowTaskQC* qc = new AliForwardFlowTaskQC("QCumulants");
+  AliForwardFlowTaskQC* task = 0;
+  if (mc) 
+    task = new AliForwardMCFlowTaskQC("QCumulants");
+  else
+    task = new AliForwardFlowTaskQC("QCumulants");
+  mgr->AddTask(task); 
 
-  qc->SetDoHarmonics(v1, v2, v3, v4, v5, v6);
-  qc->SetUseNEtaBins(etabins);
-  qc->SetMCinput(mc);
-  qc->AddFlow(addFlow);
-  qc->AddFlowType(addFType);
-  qc->AddFlowOrder(addFOrder);
-  qc->SetRefEtaBins(4);
-  
-  mgr->ConnectInput(qc, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(qc, 1, qcout);
+  task->SetDoHarmonics(v1, v2, v3, v4, v5, v6);
+  if (mc) {
+    AliForwardMCFlowTaskQC* mcTask = 
+      static_cast<AliForwardMCFlowTaskQC*>task;
+    mcTask->AddFlow(addFlow);
+    mcTask->AddFlowType(addFType);
+    mcTask->AddFlowOrder(addFOrder);
+  }
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, sums);
+  mgr->ConnectOutput(task, 2, output);
 
   return;
 }

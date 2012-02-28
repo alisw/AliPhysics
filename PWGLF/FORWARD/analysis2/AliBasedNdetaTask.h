@@ -10,7 +10,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_dndeta
  * 
  */
 #include <AliAnalysisTaskSE.h>
@@ -24,21 +24,21 @@ class AliAODForwardMult;
 class TObjArray;
 
 /** 
- * @defgroup pwg2_forward_tasks_dndeta dN/deta tasks 
- * @ingroup pwg2_forward_tasks 
+ * @defgroup pwglf_forward_tasks_dndeta dN/deta tasks 
+ * @ingroup pwglf_forward_tasks 
  */
 /**
- * @defgroup pwg2_forward_dndeta dN/deta
+ * @defgroup pwglf_forward_dndeta dN/deta
  *
  * @f$ dN/d\eta@f$ code 
  *
- * @ingroup pwg2_forward_topical
+ * @ingroup pwglf_forward_topical
  */
 /**
  * Base class for tasks to determine @f$ dN/d\eta@f$ 
  *
- * @ingroup pwg2_forward_tasks_dndeta
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwglf_forward_tasks_dndeta
+ * @ingroup pwglf_forward_dndeta
  */
 class AliBasedNdetaTask : public AliAnalysisTaskSE
 {

@@ -5,7 +5,7 @@
  * 
  * @brief  Generate MC corrections 
  * 
- * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwglf_forward_scripts_makers
  */
 //====================================================================
 /** 
@@ -28,8 +28,8 @@
  * @param name       Name of train - free form.  This will be the name
  *                   of the output directory if the plug-in is used 
  *
- * @ingroup pwg2_forward_corr
- * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwglf_forward_corr
+ * @ingroup pwglf_forward_scripts_makers
  */
 void MakeMCCorr(const char* esddir   = ".", 
 	        Int_t       nEvents  = -1, 
@@ -40,8 +40,8 @@ void MakeMCCorr(const char* esddir   = ".",
 {
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/trains/TrainSetup.C+");
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/trains/MakeMCCorrTrain.C+");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/TrainSetup.C+");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeMCCorrTrain.C+");
 
     MakeMCCorrTrain t(name);
     t.SetDataDir(esddir);
@@ -52,22 +52,22 @@ void MakeMCCorr(const char* esddir   = ".",
     return;
   }
   // --- Libraries to load -------------------------------------------
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
   if (proof> 0) { 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadPars.C");
     LoadPars(proof);
   }
   
   // --- Our data chain ----------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeChain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/MakeChain.C");
   TChain* chain = MakeChain("ESD", esddir,true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
 
   // --- Set the macro path ------------------------------------------
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
 			   "$ALICE_ROOT/ANALYSIS/macros",
 			   gROOT->GetMacroPath()));
 

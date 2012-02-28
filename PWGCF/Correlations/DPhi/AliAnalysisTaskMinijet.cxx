@@ -190,8 +190,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   //----------------------
   //bins for pt in THnSpare
   Double_t ptMin = 0.0, ptMax = 100.;
-  Int_t nPtBins = 39; 
-  Double_t binsPt[]  = {0.0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 
+  Int_t nPtBins = 37; 
+  Double_t binsPt[]  = {0.0, 0.1, 0.2, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 
      			0.9, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 
      			10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 100.0};
   
@@ -201,9 +201,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   //binsPtAll = (Double_t*)CreateLogAxis(nPtBinsAll,ptMinAll,ptMaxAll);
   
   
-  Double_t ptMin2 = 0.0, ptMax2 = 100.;
-  Int_t nPtBins2 = 9; 
-  Double_t binsPt2[]  = {0.1, 0.4, 0.7, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 100.0};
+//   Double_t ptMin2 = 0.0, ptMax2 = 100.;
+//   Int_t nPtBins2 = 9; 
+//   Double_t binsPt2[]  = {0.1, 0.4, 0.7, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 100.0};
   
   //  Int_t nPtBins2 = 10;
   //   Double_t ptMin2 = 0.4, ptMax2 = 100.;
@@ -216,9 +216,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   Double_t maxEffHisto[3] = {fEtaCut,            ptMax,        149.5 };
   
   //5 dim matrix
-  Int_t binsEffHisto5[6]   = {  nPtBins2,  nPtBins2,  Int_t(fEtaCut*10),    180,                   150 ,      2 };
-  Double_t minEffHisto5[6] = {  ptMin2,    ptMin2,    -2*fEtaCut,          -0.5*TMath::Pi(),      -0.5 ,   -0.5 };
-  Double_t maxEffHisto5[6] = {  ptMax2,    ptMax2,     2*fEtaCut,           1.5*TMath::Pi(),     149.5 ,    1.5 };
+  Int_t binsEffHisto5[6]   = {  nPtBins,   nPtBins,    1,                              90,         100 ,      2 };
+  Double_t minEffHisto5[6] = {  ptMin,     ptMin,     -2*fEtaCut,          -0.5*TMath::Pi(),      -0.5 ,   -0.5 };
+  Double_t maxEffHisto5[6] = {  ptMax,     ptMax,      2*fEtaCut,           1.5*TMath::Pi(),      99.5 ,    1.5 };
    
 
   //4 dim matrix
@@ -227,9 +227,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   Double_t maxEvent[4] = { 149.5,        10,   10,    ptMax };
 
   //3 dim matrix
-  Int_t binsAll[3]   = {Int_t(fEtaCut*20),  nPtBins2,       150   };
-  Double_t minAll[3] = {-fEtaCut,           ptMin2,        -0.5 };
-  Double_t maxAll[3] = {fEtaCut,            ptMax2,        149.5 };
+  Int_t binsAll[3]   = {Int_t(fEtaCut*20),  nPtBins,       150   };
+  Double_t minAll[3] = {-fEtaCut,           ptMin,        -0.5 };
+  Double_t maxAll[3] = {fEtaCut,            ptMax,        149.5 };
 
   //--------------------
   TString dataType[2] ={"ESD", "AOD"};
@@ -253,8 +253,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     
     fMapPair[i] = new THnSparseD(Form("fMapPair%s", labels[i].Data()),"pt_trig:pt_assoc:DeltaEta:DeltaPhi:Nrec:likesign",
 				 6,binsEffHisto5,minEffHisto5,maxEffHisto5);
-    fMapPair[i]->SetBinEdges(0,binsPt2);
-    fMapPair[i]->SetBinEdges(1,binsPt2);
+    fMapPair[i]->SetBinEdges(0,binsPt);
+    fMapPair[i]->SetBinEdges(1,binsPt);
     fMapPair[i]->GetAxis(0)->SetTitle("p_{T, trig} (GeV/c)");
     fMapPair[i]->GetAxis(1)->SetTitle("p_{T, assoc} (GeV/c)");
     fMapPair[i]->GetAxis(2)->SetTitle("#Delta #eta");
@@ -275,7 +275,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     
     fMapAll[i] = new THnSparseD(Form("fMapAll%s", labels[i].Data()),"eta:pt:Nrec",
 				3,binsAll,minAll,maxAll);
-    fMapAll[i]->SetBinEdges(1,binsPt2);
+    fMapAll[i]->SetBinEdges(1,binsPt);
     fMapAll[i]->GetAxis(0)->SetTitle("#eta");
     fMapAll[i]->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
     fMapAll[i]->GetAxis(2)->SetTitle("N_{rec}");
@@ -810,7 +810,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDRecMcProp( vector<Float_t> &ptArray,  
     }
 
     //count tracks, if available, use mc particle properties
-    if(vtrack->GetLabel()<0){
+    if(vtrack->GetLabel()<=0){
       if (TMath::Abs(track->Eta())<fEtaCut && track->Pt()>fPtMin && track->Pt()<fPtMax){
 	ptArray.push_back(track->Pt());
 	etaArray.push_back(track->Eta());
@@ -1063,7 +1063,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Fl
 
     //use only tracks from primaries
     if(fAnalysePrimOnly){
-      if(vtrack->GetLabel()<0)continue;
+      if(vtrack->GetLabel()<=0)continue;
       if(!(static_cast<AliAODMCParticle*>(mcArray->At(vtrack->GetLabel()))->IsPhysicalPrimary()))continue;
     }
     
@@ -1157,7 +1157,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
    
     //use only tracks from primaries
     if(fAnalysePrimOnly){
-      if(vtrack->GetLabel()<0)continue;
+      if(vtrack->GetLabel()<=0)continue;
       if(!(static_cast<AliAODMCParticle*>(mcArray->At(vtrack->GetLabel()))->IsPhysicalPrimary()))continue;
     }
 
@@ -1167,7 +1167,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
       nAcceptedTracks++;
 
       //save track properties in vector
-      if(vtrack->GetLabel()<0){ //fake tracks before "label<0", but crash in AOD079 // what is the meaning of label 0
+      if(vtrack->GetLabel()<=0){ //fake tracks before "label<0", but crash in AOD079 // what is the meaning of label 0
 	// 	Printf("Fake track");
 	// 	continue;
 	ptArray.push_back(track->Pt());

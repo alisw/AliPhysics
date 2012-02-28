@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_eloss
  */
 #include <TNamed.h>
 #include <TH1D.h>
@@ -40,8 +40,8 @@ class TArrayD;
  *    - None
  *
  *
- * @ingroup pwg2_forward_algo
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_algo
+ * @ingroup pwglf_forward_eloss
  */
 class AliFMDEnergyFitter : public TNamed
 {

@@ -43,3 +43,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  PWGUDbaseLinkDef.h)
 
 set ( EINCLUDE  PWGUD/base STEER/AOD STEER/STEERBase ANALYSIS)
+
+set (EXPORT base/AliPWG0Helper.h)

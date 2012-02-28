@@ -86,6 +86,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fFilterMask(0),
   fRPMethod(0),
   fCollisionType(kPbPb),
+  fNTrigger(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -101,8 +102,10 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fRPAngle(0),
   fPsiVZEROA(0),
   fPsiVZEROC(0),
+  fTriggerBit(0x0),
   fRandomizer(0),
   fNonStdFile(""),
+  fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -111,7 +114,10 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fh1EventCutInfoESD(0),
   fh1CentralityESD(0),
   fh1Centrality(0),
+  fh1ReducedTrigger(0),
   fh1RP(0),
+  fh2CentralityTriggerESD(0),
+  fh2CentralityTrigger(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -153,6 +159,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fFilterMask(0),
   fRPMethod(0),
   fCollisionType(kPbPb),
+  fNTrigger(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -168,8 +175,10 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fRPAngle(0),
   fPsiVZEROA(0),
   fPsiVZEROC(0),
+  fTriggerBit(0x0),
   fRandomizer(0),
   fNonStdFile(""),
+  fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -178,7 +187,10 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh1EventCutInfoESD(0),
   fh1CentralityESD(0),
   fh1Centrality(0),
+  fh1ReducedTrigger(0),
   fh1RP(0),
+  fh2CentralityTriggerESD(0),
+  fh2CentralityTrigger(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -287,6 +299,21 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
 
   fh1RP = new TH1F("fh1RP","RP;#Psi",440, -1.*TMath::Pi(), 2.*TMath::Pi());
   fHistList->Add(fh1RP);
+
+  fh1ReducedTrigger = new TH1F("fh1ReducedTrigger","red trigger;red trigger",1<<fNTrigger,-0.5,(1<<fNTrigger)-0.5);
+  fHistList->Add(fh1ReducedTrigger);
+
+  fh2CentralityTriggerESD = new TH2F("fh2CentralityTriggerESD",";cent;trigger no",103,-1,102,fNTrigger,-0.5,fNTrigger-0.5);
+  fHistList->Add(fh2CentralityTriggerESD);
+  
+  fh2CentralityTrigger = new TH2F("fh2CentralityTrigger",";cent;trigger no",103,-1,102,fNTrigger,-0.5,fNTrigger-0.5);
+  fHistList->Add(fh2CentralityTrigger);
+
+  for(int i = 0;i<fNTrigger;++i){
+    fh2CentralityTriggerESD->GetYaxis()->SetBinLabel(i+1,fTriggerName[i].Data());
+    fh2CentralityTrigger->GetYaxis()->SetBinLabel(i+1,fTriggerName[i].Data());
+  }
+
 
   fh2TriggerCount = new TH2F("fh2TriggerCount",";Trigger No.;constrained;Count",6,-0.5,5.5,kConstraints,-0.5,kConstraints-0.5); 
   fHistList->Add(fh2TriggerCount);
@@ -456,25 +483,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Bool_t aodVtxValid = false;
   Bool_t aodVtxIn = false;
 
-  if(esd){
-    // trigger analyisis
-    if(!fTriggerAnalysis){
-      fTriggerAnalysis = new AliTriggerAnalysis;
-      fTriggerAnalysis->SetAnalyzeMC(fMC);
-      fTriggerAnalysis->SetSPDGFOThreshhold(1);
-    }
-    //    fTriggerAnalysis->FillTriggerClasses(esd);
-    Bool_t v0A       = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0A);
-    Bool_t v0C       = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0C);
-    Bool_t v0ABG = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0ABG);
-    Bool_t v0CBG = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0CBG);
-    Bool_t spdFO      = fTriggerAnalysis->SPDFiredChips(esd, 0);;
-    if(v0A)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kV0A;
-    if(v0C)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kV0C;
-    if(!(v0ABG||v0CBG))fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kNoV0BG;
-    if(spdFO)fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kSPDFO;
-  }
- 
   // Apply additional constraints
   Bool_t esdEventSelected = IsEventSelected(esd);
   Bool_t esdEventPileUp = IsEventPileUp(esd);
@@ -492,6 +500,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   if(esdEventPileUp)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsPileUp;
   if(esdEventCosmic)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsCosmic;
   if(physicsSelection) fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kPhysicsSelection;
+
+
 
 
   // here we have all selection information, fill histogram
@@ -582,6 +592,14 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	tmpCent = esd->GetCentrality()->GetCentralityPercentile("V0M");
 	if(tmpCent<0)tmpCent = 101;
 	fh1CentralityESD->Fill(tmpCent);
+	UInt_t ir = 0;
+	for(int it = 0;it<fNTrigger;++it){
+	  if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+	    fh2CentralityTriggerESD->Fill(tmpCent,it);
+	    ir |= (1<<it);
+	  }
+	}
+	fh1ReducedTrigger->Fill(ir);
       }
     }
   }
@@ -628,6 +646,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       fh2TriggerCount->Fill(iCl,kSelected);
       fh2TriggerCount->Fill(0.,kSelected);
       fh1Centrality->Fill(cent);
+      for(int it = 0;it<fNTrigger;++it){
+	if(fInputHandler->IsEventSelected()&fTriggerBit[it])fh2CentralityTrigger->Fill(cent,it);
+      }
       AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
       if(aodH&&cand&&fFilterAODCollisions&&!esd){
 	if(fCentrality<=80&&aodVtxIn){
@@ -766,6 +787,8 @@ AliAnalysisTaskJetServices::~AliAnalysisTaskJetServices(){
   delete fp1CalibRPYA;
   delete fp1CalibRPXC;
   delete fp1CalibRPYC;
+  delete [] fTriggerBit;
+  delete [] fTriggerName;
 
 }
 
@@ -1185,3 +1208,30 @@ Int_t  AliAnalysisTaskJetServices::GetListOfTracks(TList *list){
 
 }
 
+void AliAnalysisTaskJetServices::SetNTrigger(Int_t n){
+  if(n>0){
+      fNTrigger = n;
+      delete [] fTriggerName;
+      fTriggerName = new TString [fNTrigger];
+      delete [] fTriggerBit;fTriggerBit = 0;
+      fTriggerBit = new UInt_t [fNTrigger];
+  }
+  else{
+    fNTrigger = 0;
+  }
+}
+
+void AliAnalysisTaskJetServices::SetTrigger(Int_t i,UInt_t it,const char* c){
+  if(i<fNTrigger){
+    Printf("%d",it);
+    Printf("%p",c);
+    Printf("%s",c);    
+    Printf("%p",&fTriggerName[i]);
+
+    fTriggerBit[i] = it;
+    fTriggerName[i] =  c; // placement new
+    //    new(&fTriggerName[i]) TString(c); // placement new
+    Printf("%s",fTriggerName[i].Data());
+    
+  } 
+}

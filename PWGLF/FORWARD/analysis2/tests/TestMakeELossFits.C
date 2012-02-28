@@ -21,9 +21,9 @@ class TH1;
  * Run like					
  *
  * @verbatim 
- * gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
- * gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
- * Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/MakeELossFit.C"); 
+ * gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+ * gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/Compile.C");
+ * Compile("$ALICE_ROOT/PWGLF/FORWARD/analysis2/MakeELossFit.C"); 
  * MakeELossFit mef(sys, cms, field, mc, "AnalysisResults.root"); 
  * mef.Run();
  * @endverbatim 
@@ -41,7 +41,7 @@ class TH1;
  * @endverbatim 
  * in the working directory. This file can be moved to 
  * @verbatim
- * $(ALICE_ROOT)/PWG2/FORWARD/corrections/ELossFits
+ * $(ALICE_ROOT)/PWGLF/FORWARD/corrections/ELossFits
  * @endverbatim 
  * and stored in SVN for later use. 
  *
@@ -49,7 +49,7 @@ class TH1;
  * The class AliFMDELossFitter automatically generates the
  * AliFMDCorrELossFit object.
  *
- * @ingroup pwg2_forward_scripts_tests
+ * @ingroup pwglf_forward_scripts_tests
  */
 
 class MakeELossFit 
@@ -84,7 +84,7 @@ public:
       return;
     }
     TList* forward = static_cast<TList*>(file->Get("Forward"));
-    // static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
+    // static_cast<TList*>(file->Get("PWGLFforwardDnDeta/Forward"));
     if (!forward) { 
       Error("MakeELossFit", "Couldn't get forward list from %s", filename);
       return;

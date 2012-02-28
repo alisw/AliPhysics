@@ -6,7 +6,7 @@
  * @brief  Script to draw the energy loss fits from the output file of 
  * AliFMDELossFitter(Task). 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  * 
  */
 #include <TFile.h>
@@ -56,7 +56,7 @@ bool landscape = true;
  * 
  * @return Pointer to the list of objects 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 TList* OpenFile(const char* fname)
 {
@@ -67,7 +67,7 @@ TList* OpenFile(const char* fname)
   }
     
   TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
-  // static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
+  // static_cast<TList*>(file->Get("PWGLFforwardDnDeta/Forward"));
   if (!forward) { 
     Error("DrawFits", "Couldn't get forward list from %s", fname);
     return 0;
@@ -88,7 +88,7 @@ TList* OpenFile(const char* fname)
  * 
  * @return List of fits 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 TList* CheckFitter(const char* fname="AnalysisResults.root")
 {
@@ -103,7 +103,7 @@ TList* CheckFitter(const char* fname="AnalysisResults.root")
  * 
  * @return Canvas 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 TCanvas* CheckCanvas()
 {
@@ -148,7 +148,7 @@ TCanvas* CheckCanvas()
  *  
  * @param stack Input stack
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void CleanStack(THStack* stack)
 {
@@ -171,7 +171,7 @@ void CleanStack(THStack* stack)
  * 
  * @return The found stack
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 THStack*
 AddToStack(TList* stacks, TList* list, const char* name)
@@ -197,9 +197,9 @@ AddToStack(TList* stacks, TList* list, const char* name)
  * 
  * @param fname 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void DrawSummary(const char* fname="forward_eloss.root", 
 		 bool onlySummary=true)
@@ -315,9 +315,9 @@ void DrawSummary(const char* fname="forward_eloss.root",
  * 
  * @param fname 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void DrawRings(const char* fname="AnalysisResults.root")
 {
@@ -379,9 +379,9 @@ void DrawRings(const char* fname="AnalysisResults.root")
  * 
  * @param fname 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void DrawEtaBins(const char* fname="AnalysisResults.root")
 {
@@ -479,7 +479,7 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
  *
  * @param fname 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 DrawAnaELoss(const char* fname="forward_eloss.root", bool onlySummary=true)

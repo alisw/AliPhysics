@@ -143,7 +143,7 @@ public:
   Species  GetCollisionSystem() const {return fSpecies;}
   void     PrintStatus(Bool_t showPaths=true)  const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
-  const Char_t*  GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
+  const Char_t*  GetDndetaAnalysisName() const {return "PWGLFforwardDnDeta";}
   TH1F*    GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TH1F*    GetEmptyEnergyDistribution(Int_t det, Char_t ring);
   TH1F*    GetRingEnergyDistribution(Int_t det, Char_t ring);

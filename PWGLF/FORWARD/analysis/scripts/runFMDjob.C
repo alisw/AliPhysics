@@ -30,8 +30,8 @@ runFMDjob(const TString& runMode   = "",
   // --- Load libraries needed  -------------------------------------
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libPWG2forward");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG2/FORWARD/analysis");
+  gSystem->Load("libPWGLFforward");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/FORWARD/analysis");
 
   // --- Some initial checks and setup -------------------------------
   TString outFileName = anaName;
@@ -299,7 +299,7 @@ CreateAlienHandler(const TString& runMode,
   plugin->SetRunMode(runMode.Data());
 
   // Add path to our headers 
-  plugin->AddIncludePath("-I$ALICE_ROOT/PWG2/FORWARD/analysis");
+  plugin->AddIncludePath("-I$ALICE_ROOT/PWGLF/FORWARD/analysis");
 
   // Set versions of used packages
   plugin->SetAPIVersion(apiTag);

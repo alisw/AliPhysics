@@ -1,24 +1,22 @@
-void runProofCascadePbPb (
-                          TString  proofCluster      = "mnicassi@alice-caf.cern.ch", //skaf.saske.sk",
-                          TString  alirootVer        = "VO_ALICE@AliRoot::v4-21-16-AN", 
-                          TString  rootVer           = "VO_ALICE@ROOT::v5-27-06d",
-                          TString  dataset           = "/alice/sim/LHC11a7_000137161",
-//                          TString  dataset           = "/alice/data/LHC10h_000137161_p1_5plus",                        
-                          TString  outFileMC         = "CascadePerformance.root",
-                          TString  outFileData       = "CascadeAna.root",
-                          Bool_t   runperformancetask= kFALSE, 
-                          Bool_t   useMC             = kFALSE, 
-                          Bool_t   dataonalien       = kFALSE,
-                          Float_t  centrlowlim       = 0., 
-                          Float_t  centruplim        = 20., 
-                          TString  centrest          = "V0M",
-                          Short_t  lCollidingSystems = 1,       //0 = pp, 1 = AA
-                          Float_t  vtxlim            = 15.,  
-                          Bool_t   usecfcontainers   = kTRUE,
-                          Bool_t   kextrasel         = kTRUE,
-                          Bool_t   acccut            = kFALSE,
-                          Int_t    nEvents           = 5000, 
-                          Int_t    nEventsSkip       = 0) { //1.0*1e7
+void runProofCascadePbPb(
+                     TString  proofCluster      = "mnicassi@alice-caf.cern.ch",//kiaf.sdfarm.kr", //skaf.saske.sk"
+                     TString  alirootVer        = "VO_ALICE@AliRoot::v5-30-01-AN",
+                     TString  rootVer           = "VO_ALICE@ROOT::v5-30-06-1", 
+                     TString  dataset           = "/alice/sim/LHC11f5_000139514", 
+                     TString  outFileMC         = "CascadePerformance.root",
+                     TString  outFileData       = "CascadeAna.root",
+                     Bool_t   runperformancetask= kTRUE, 
+                     Bool_t   useMC             = kTRUE, 
+                     Bool_t   dataonalien       = kFALSE,
+                     Float_t  centrlowlim       = 0., 
+                     Float_t  centruplim        = 90., 
+                     TString  centrest          = "V0M",
+                     Float_t  vtxlim            = 10.,  
+                     Bool_t   kextrasel         = kFALSE,
+                     Bool_t   acccut            = kFALSE,
+                     Bool_t   krelaunchvertexers= kFALSE,
+                     Int_t    nEvents           = 1.0*1e7, 
+                     Int_t    nEventsSkip       = 0) { 
 
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
 
@@ -26,8 +24,7 @@ void runProofCascadePbPb (
   TString extraLibs;
   TList *list = new TList();
   alirootMode="ALIROOT";
-  extraLibs+= "ANALYSIS:ANALYSISalice:CORRFW";  
-
+  extraLibs+= "ANALYSIS:OADB:ANALYSISalice:CORRFW";  
   // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
   list->Add(new TNamed("ALIROOT_MODE", alirootMode.Data()));
   list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
@@ -36,6 +33,7 @@ void runProofCascadePbPb (
   // REM: same version of AliRoot on client!
   TProof::Mgr(proofCluster.Data())->SetROOTVersion(rootVer.Data()); //If not using the default version, do it the first time only
   TProof::Open(proofCluster.Data());
+
   // enable n workers per machine
 //  TProof::Open(proofCluster.Data(),"workers=nx")       
   // enable less workers
@@ -44,13 +42,15 @@ void runProofCascadePbPb (
     Error("runProof.C","Connection to AF failed.");
     return;
   }
+
   gProof->EnablePackage(alirootVer.Data(), list);
+
 
   Analysis(dataset.Data(), outFileMC, outFileData, 
            useMC, nEvents, nEventsSkip,
            centrlowlim, centruplim, centrest, 
-           vtxlim, usecfcontainers, lCollidingSystems, kextrasel,
-           runperformancetask, acccut);
+           vtxlim, kextrasel,
+           runperformancetask, acccut, krelaunchvertexers);
 
 }
 
@@ -58,96 +58,73 @@ void runProofCascadePbPb (
 void Analysis(TString dataset, TString outFileMC, TString outFileData, 
               Bool_t useMC, Int_t nEvents, Int_t nEventsSkip, 
               Float_t centrlowlim, Float_t centruplim, TString centrest,
-              Float_t vtxlim, Bool_t usecfcontainers, Short_t  lCollidingSystems,
-              Bool_t kextrasel, Bool_t runperformancetask, Bool_t acccut) {
+              Float_t vtxlim, 
+              Bool_t kextrasel, Bool_t runperformancetask, Bool_t acccut, Bool_t krelaunchvertexers) {
+
 
   TString format = GetFormatFromDataSet(dataset);
 
   // ALICE stuff
+  // create manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("Test train");
 
-  InputHandlerSetup(format,useMC);
+  InputHandlerSetup(format,runperformancetask);
 
   // compile analysis task
   if (runperformancetask) gProof->Load("AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++");
   else gProof->Load("AliAnalysisTaskCheckCascadePbPb.cxx++");
 
-  // create manager
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) mgr = new AliAnalysisManager("Cascade analysis");
+  // physics selection
+  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(useMC);
+
+  // centrality selection
+  cout<<"Format"<<format.Data()<<endl;
+  if (!format.CompareTo("ESD")) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
+    if (useMC) {
+      taskCentr->SetMCInput();
+      taskCentr->DontUseCleaning(); // for injected MC
+    }
+  }
+
+  
+  // add PID response task
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AliAnalysisTaskPIDResponse *pidTask = AddTaskPIDResponse(useMC);
 
   // create task
   if (runperformancetask) {
     AliAnalysisTaskCheckPerformanceCascadePbPb *task = new AliAnalysisTaskCheckPerformanceCascadePbPb("AliAnalysisTaskCheckPerformanceCascadePbPb");
-    task->SetDebugLevelCascade           (0);
-    task->SetUseCFCont                   (usecfcontainers);
+    task->SetApplyAccCut                 (acccut);
+    task->SetRejectEventPileUp(kFALSE);
+
   } else {
     AliAnalysisTaskCheckCascadePbPb *task = new AliAnalysisTaskCheckCascadePbPb("AliAnalysisTaskCheckCascadePbPb");
-    task->SetUseCFContCascadeCuts       (usecfcontainers);
   }
 
-  task->SetCollidingSystems           (lCollidingSystems); // only for multiplicity binning 
   task->SetAnalysisType               (format);
-  task->SetRelaunchV0CascVertexers    (0);                 // used but code is commented out
+  task->SetRelaunchV0CascVertexers    (krelaunchvertexers);                 
   task->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
   task->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex 
   task->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
   task->SetQualityCut80TPCcls         (kTRUE);             // rejects tracks that have less than 80 clusters in the TPC
   task->SetExtraSelections            (kextrasel);         // used to add other selection cuts 
-  task->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
+  task->SetCentralityLowLim           (centrlowlim);       // setting centrality selection variables
   task->SetCentralityUpLim            (centruplim);
   task->SetCentralityEst              (centrest);
   task->SetVertexRange                (vtxlim);
 
-  // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(useMC,kFALSE);//,kFALSE); // PbPb: use this second flag up to run 133 and for runs with the CMBS2* triggers (from 137135, including 137161) 
-//  task->SelectCollisionCandidates();
-  
-  // for early PbPb runs collected with CMBS1 (up to 137133) manual settings
-  if (!useMC) {
-    AliPhysicsSelection * physSel = physSelTask->GetPhysicsSelection();
-  
-    if (dataset=="/alice/data/LHC10h_000137045_p1_plus") {
-      physSel->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");   // on the web page
-      physSel->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
-      physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
- 
-      // This are needed only to fill the statistics tables
-      physSel->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBS1C-C-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBS1A-C-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBAC-A-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBS1C-A-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBS1A-A-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBAC-E-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBS1C-E-NOPF-ALL");
-      physSel->AddBGTriggerClass("+CMBS1A-E-NOPF-ALL");
-    } else {
-    // we used these manual settings for run137161 (first and second mult paper)
-    physSel->AddCollisionTriggerClass("+CMBS2A-B-NOPF-ALL");
-    physSel->AddCollisionTriggerClass("+CMBS2C-B-NOPF-ALL");
-    physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
-    }
-
-    task->SelectCollisionCandidates(AliVEvent::kUserDefined);
-  } else {
-
-    task->SelectCollisionCandidates(AliVEvent::kMB); 
-  }
-
-  // centrality selection 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-  AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
-  if (useMC) taskCentr->SetMCInput();
-
   // create output container
-  if (runperformancetask) AliAnalysisDataContainer *output = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer, outFileMC);
-  else       AliAnalysisDataContainer *output = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer, outFileData);
+  if (runperformancetask) AliAnalysisDataContainer *output = mgr->CreateContainer("clist", TList::Class(), AliAnalysisManager::kOutputContainer, outFileMC);
+  else       AliAnalysisDataContainer *output = mgr->CreateContainer("clist", TList::Class(), AliAnalysisManager::kOutputContainer, outFileData);
 
   // add task to the manager
   mgr->AddTask(task);
+
+  task->SelectCollisionCandidates();
 
   // connect input and output
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
@@ -157,7 +134,7 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
   mgr->InitAnalysis();
   // process dataset  
   mgr->StartAnalysis("proof", dataset.Data(), nEvents, nEventsSkip);  // single dataset
-//  mgr->StartAnalysis("proof","/alice/sim/LHC11a7_000137161|/alice/sim/LHC11a7_000137162|/alice/sim/LHC11a7_000137430|/alice/sim/LHC11a7_000137431|/alice/sim/LHC11a7_000137432",nEvents, nEventsSkip);  // multiple dataset
+  //mgr->StartAnalysis("proof","/alice/sim/LHC11f5_000139514|/alice/sim/LHC11f5_000139517",nEvents, nEventsSkip);  // multiple dataset
 
 }
 
@@ -221,7 +198,6 @@ Bool_t InputHandlerSetup(TString format = "esd", Bool_t useKine = kTRUE) {
         mgr->SetMCtruthEventHandler(mcInputHandler);
       }
     }
-
   } else if (!format.CompareTo("aod")) {
     AliAODInputHandler *aodInputHandler = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -235,7 +211,5 @@ Bool_t InputHandlerSetup(TString format = "esd", Bool_t useKine = kTRUE) {
     return kFALSE;
   }
 
-  return kTRUE;
-}
-
-//________________________________________________________________________
+  return kTRUE; 
+} 

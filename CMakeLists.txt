@@ -445,7 +445,12 @@ include (CPack)
 # ------------------------------
 install ( DIRECTORY data 
           DESTINATION . )
-
+install ( DIRECTORY OCDB 
+	  DESTINATION . 
+	  PATTERN ".svn" EXCLUDE)
+install ( DIRECTORY QAref 
+	  DESTINATION . 
+	  PATTERN ".svn" EXCLUDE)
 
 #
 # EOF

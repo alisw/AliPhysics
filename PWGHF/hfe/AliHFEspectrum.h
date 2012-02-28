@@ -30,6 +30,7 @@ class TObject;
 class TH1;
 class TF1;
 class TList;
+class TObjArray;
 class AliCFContainer;
 class AliHFEcontainer;
 class AliCFDataGrid;
@@ -46,6 +47,18 @@ class AliHFEspectrum : public TNamed{
       kMCWeightedContainerNonHFEESD =5,
       kMCWeightedContainerConversionESD = 6,
       kDataContainerV0 = 7
+    };
+
+    enum{
+      kElecBgSources = 6,
+      kBgLevels = 3,
+      kBgPtBins = 44
+	};
+
+   enum Chargetype_t{
+     kNegCharge = -1,
+     kPosCharge = 1,
+     kAllCharge = 0
    };
    
     AliHFEspectrum(const char* name);
@@ -84,7 +97,7 @@ class AliHFEspectrum : public TNamed{
     void SetStepBeforeCutsV0(Int_t step) { fStepBeforeCutsV0 = step; };
     void SetStepAfterCutsV0(Int_t step) { fStepAfterCutsV0 = step; };
     void SetNbDimensions(Int_t nbDimensions) { fNbDimensions = nbDimensions; };
-    void SetChargeChoosen(Int_t chargechoosen) {fChargeChoosen = chargechoosen; };
+    void SetChargeChoosen(Chargetype_t chargechoosen) {fChargeChoosen = chargechoosen; };
     void SetEtaRange(Double_t etamin, Double_t etamax) { fEtaRange[0] = etamin; fEtaRange[1] = etamax; fEtaSelected = kTRUE; }
     void SetUnSetCorrelatedErrors(Bool_t unsetcorrelatederrors) {fUnSetCorrelatedErrors = unsetcorrelatederrors;};
     void SetSmoothing(Bool_t setSmoothing) {fSetSmoothing = setSmoothing;};
@@ -95,14 +108,14 @@ class AliHFEspectrum : public TNamed{
     void SetBeautyAnalysis() { fInclusiveSpectrum = kFALSE; };
     void SetHadronEffbyIPcut(THnSparseF* hsHadronEffbyIPcut) { fHadronEffbyIPcut = hsHadronEffbyIPcut;};
     void SetNonHFEBackground2ndMethod() { fNonHFEbgMethod2 = kTRUE; };
-    void SetNonHFEmode(Int_t mode){ fNonHFEmode = mode; };
+    void SetNonHFEsyst(Bool_t syst){ fNonHFEsyst = syst; };
 
     void SetStepGuessedUnfolding(Int_t stepGuessedUnfolding) { fStepGuessedUnfolding = stepGuessedUnfolding; };
     void SetNumberOfIteration(Int_t numberOfIteration) { fNumberOfIterations = numberOfIteration; };
     
     void SetDumpToFile(Bool_t dumpToFile) { fDumpToFile=dumpToFile; }; 
   
-    void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; };
+    void SetDebugLevel(Int_t debugLevel, Bool_t writeToFile = kFALSE) { fDebugLevel = debugLevel; fWriteToFile = writeToFile; };
 
     AliCFDataGrid* GetCharmBackground();
     AliCFDataGrid* GetConversionBackground();
@@ -111,6 +124,7 @@ class AliHFEspectrum : public TNamed{
     THnSparse* GetBeautyIPEff();
     THnSparse* GetCharmEff();
     THnSparse* GetPIDxIPEff(Int_t source);
+    void CalculateNonHFEsyst();
 
     void EnableIPanaHadronBgSubtract() { fIPanaHadronBgSubtract = kTRUE; };
     void EnableIPanaCharmBgSubtract() { fIPanaCharmBgSubtract = kTRUE; };
@@ -120,7 +134,7 @@ class AliHFEspectrum : public TNamed{
   protected:
        
     AliCFContainer *GetContainer(AliHFEspectrum::CFContainer_t contt);
-    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Int_t positivenegative=-1);
+    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge);
     THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions) const;
     TObject* GetSpectrum(const AliCFContainer * const c, Int_t step);
     TObject* GetEfficiency(const AliCFContainer * const c, Int_t step, Int_t step0);
@@ -135,13 +149,16 @@ class AliHFEspectrum : public TNamed{
     AliHFEspectrum(const AliHFEspectrum &);
     AliHFEspectrum &operator=(const AliHFEspectrum &);
  
-    TList *fCFContainers;         // List of Correction Framework Containers
+    TObjArray *fCFContainers;     // List of Correction Framework Containers
     TList *fTemporaryObjects;     // Emulate garbage collection
     THnSparseF *fCorrelation;     // Correlation Matrices
     AliCFDataGrid *fBackground;   // Background Grid
     TF1 *fEfficiencyFunction;     // Efficiency Function
 
     THnSparseF *fWeightCharm;     // Weight for charm bg
+
+    AliCFContainer *fConvSourceContainer[kElecBgSources][kBgLevels]; //container for conversion electrons, divided into different photon sources
+    AliCFContainer *fNonHFESourceContainer[kElecBgSources][kBgLevels];     //container for non-HF electrons, divided into different sources
 
     Bool_t fInclusiveSpectrum;     // Inclusive Spectrum
     Bool_t fDumpToFile;           // Write Result in a file
@@ -155,7 +172,7 @@ class AliHFEspectrum : public TNamed{
     Bool_t fIPanaConversionBgSubtract; // Conversion background subtraction
     Bool_t fIPanaNonHFEBgSubtract;     // nonHFE except for conversion background subtraction
     Bool_t fNonHFEbgMethod2;           // switch for 2nd method to subtract non HFE background
-    Int_t fNonHFEmode;            // choose NonHFE background level (upper, lower, central)
+    Bool_t fNonHFEsyst;            // choose NonHFE background level (upper, lower, central)
 
     Int_t fNbDimensions;          // Number of dimensions for the correction
     Int_t fNEvents[20];           // Number of Events
@@ -168,9 +185,10 @@ class AliHFEspectrum : public TNamed{
     Int_t fStepAfterCutsV0;       // After cuts V0
     Int_t fStepGuessedUnfolding;  // Step for first guessed unfolding
     Int_t fNumberOfIterations;    // Number of iterations
-    Int_t fChargeChoosen;         // Select positive or negative electrons
+    Chargetype_t fChargeChoosen;         // Select positive or negative electrons
 
     Double_t fEtaRange[2];        // Eta range 
+    Double_t fEtaRangeNorm[2];    // Eta range used in the normalization
 
     Int_t fNCentralityBinAtTheEnd; // Number of centrality class at the end
     Int_t fLowBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
@@ -183,6 +201,7 @@ class AliHFEspectrum : public TNamed{
 
 
     Int_t fDebugLevel;            // Debug Level
+    Bool_t fWriteToFile;           // Write plots to eps files
 
     ClassDef(AliHFEspectrum, 1) 
 };

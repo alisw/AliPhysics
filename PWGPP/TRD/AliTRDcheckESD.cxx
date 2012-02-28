@@ -2475,8 +2475,8 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   SetStyle(hTRDEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
   SetStyle(hTRDEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
   SetStyle(hTRDEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
-  hTRDEffPtPosAll->Draw("same"); leg->AddEntry(hTRDEffPtPosAll, "pos. (#geq 1 tracklet)", "p");
-  hTRDEffPtNegAll->Draw("same"); leg->AddEntry(hTRDEffPtNegAll, "neg. (#geq 1 tracklet)", "p");
+  if(hTRDEffPtPosAll) {hTRDEffPtPosAll->Draw("same"); leg->AddEntry(hTRDEffPtPosAll, "pos. (#geq 1 tracklet)", "p");}
+  if(hTRDEffPtNegAll) {hTRDEffPtNegAll->Draw("same"); leg->AddEntry(hTRDEffPtNegAll, "neg. (#geq 1 tracklet)", "p");}
   hTRDEffPtPosTrk4->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk4, "pos. (4 tracklets)", "p");
   hTRDEffPtNegTrk4->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk4, "neg. (4 tracklets)", "p");
   hTRDEffPtPosTrk5->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk5, "pos. (5 tracklets)", "p");
@@ -2504,11 +2504,11 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   SetStyle(hTOFEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
   SetStyle(hTOFEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
   SetStyle(hTOFEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
-  hTOFEffPtPosAll->Draw("same"); 
+  if(hTOFEffPtPosAll) hTOFEffPtPosAll->Draw("same"); 
   hTOFEffPtPosTrk4->Draw("same"); 
   hTOFEffPtPosTrk5->Draw("same"); 
   hTOFEffPtPosTrk6->Draw("same"); 
-  hTOFEffPtNegAll->Draw("same"); 
+  if(hTOFEffPtNegAll) hTOFEffPtNegAll->Draw("same"); 
   hTOFEffPtNegTrk4->Draw("same"); 
   hTOFEffPtNegTrk5->Draw("same"); 
   hTOFEffPtNegTrk6->Draw("same");  

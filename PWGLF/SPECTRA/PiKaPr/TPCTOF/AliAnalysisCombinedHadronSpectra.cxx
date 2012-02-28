@@ -6,10 +6,10 @@
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, proviyaded that the above copyright notice appears in all   *
+ * without fee, proviyaded that the above copyright notice appears in all *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purapose. It is          *
+ * about the suitability of this software for any purapose. It is         *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -157,7 +157,8 @@ void AliAnalysisCombinedHadronSpectra::Initialize()
   //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE); // kTRUE = sel. primaries --> patch for the moment, do TFractionFitter later
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
   fESDtrackCuts->SetMaxDCAToVertexXY(3);
-  fESDtrackCuts->SetMaxDCAToVertexZ(3);
+  fESDtrackCuts->SetMaxDCAToVertexZ(2);
+  fESDtrackCuts->SetEtaRange(-0.9,0.9);
   //
   //
   //
@@ -187,47 +188,37 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   // create the histograms with all necessary information --> it is filled 4x for each particle assumption
   //
   // (0.) assumed particle: 0. pion, 1. kaon, 2. proton, 3. deuteron
-  // (1.) trigger event class: MB, high-mult, etc. / we could also put here a trigger pT-particle
-  // (2.) multiplicity or centrality -- number of accepted ESD tracks per events (deprecated), but now classes from 1 to 10, 0: Min. Bias
-  // (3.) sqrt(s) -- center of mass energy, 0. 900 GeV or 1. 7 TeV, 2, PbPb
-  // (4.) pT
-  // (5.) sign
-  // (6.) mT - m0 (transverse kinetic energy) --> filled 4x // SHADOWED FOR THE MOMENT !!!!
-  // (7.) rapidity --> filled 4x
-  // (8)  pull TPC dEx --> filled 4x
-  // (9.) has valid TOF pid signal
-  // (10.) nsigma TOF --> filled 4x
-  // (11.) dca_xy
-  // (12.) dca_z
-  // (13.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident, 3-second weak, 4-second material 5-unknown
+  // (1.) multiplicity or centrality -- number of accepted ESD tracks per events (deprecated), but now classes from 1 to 10, 0: Min. Bias
+  // (2.) pT
+  // (3.) sign
+  // (4.) rapidity --> filled 4x
+  // (5.)  pull TPC dEx --> filled 4x
+  // (6.) has valid TOF pid signal
+  // (7.) nsigma TOF --> filled 4x
+  // (8..) dca_xy
+  // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident, 3-second weak, 4-second material
   //
-  //                              0,    1,         2,    3,        4,  5,   6,    7,   8,    9,  10,       11, 12
-  Int_t    binsHistReal[13] = {   3,    1, kMultBins,    1,  kPtBins,  2,   1,   10,  50,    2,  50, kDcaBins,  5};
-  Double_t xminHistReal[13] = {-0.5,    2,      -0.5, -0.5,        0, -2,   0, -0.5,  -5,- 0.5,  -5,       -3, -2};
-  Double_t xmaxHistReal[13] = { 2.5,   10,      10.5,  2.5,        3,  2,   3,  0.5,   5,  1.5,   5,        3,  2};
-  fHistRealTracks = new THnSparseL("fHistRealTracks","real tracks",13,binsHistReal,xminHistReal,xmaxHistReal);
+  //                              0,           1,           2,  3,       4,   5,    6,   7,       8
+  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,      10,   50,    2,  80, kDcaBins};
+  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,    -0.5,   -5,- 0.5,  -8,       -3};
+  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,     0.5,    5,  1.5,   8,        3};
+  fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
   //
-  fHistRealTracks->GetAxis(4)->Set(kPtBins, binsPt);
-  //fHistRealTracks->GetAxis(2)->Set(kMultBins, multBins);
-  fHistRealTracks->GetAxis(11)->Set(kDcaBins, binsDca);
+  fHistRealTracks->GetAxis(2)->Set(kPtBins, binsPt);
+  fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDca);
   fListHist->Add(fHistRealTracks);
   //
   //                      0.ptot,1.tpcSig,2.hasTOF, 3. assumed part., 4. nclDedx, 5. nSigmaTPC (4x), 6. nSigmaTOF (4x), 7. centrality
-  Int_t    binsHistQA[8] = {100,     600,       2,                4,  50,  50, 50,   20};
-  Double_t xminHistQA[8] = {0.1,      30,    -0.5,             -0.5,  60,  -5, -5,   0.};
-  Double_t xmaxHistQA[8] = {  4,     500,     1.5,              3.5, 160,   5,  5, 4000};
-  fHistPidQA = new THnSparseL("fHistPidQA","PID QA",8,binsHistQA,xminHistQA,xmaxHistQA);
-  BinLogAxis(fHistPidQA, 0);
+  fHistPidQA = new TH3D("fHistPidQA","PID QA",500,0.1,10,1000,0,1000,2,-2,2);
+  BinLogAxis(fHistPidQA);
   fListHist->Add(fHistPidQA);
-  //                            0,    1,         2,    3,        4,  5,   6,    7,   8,    9,  10,       11, 12,   13
-  Int_t    binsHistMC[14] = {   3,    1, kMultBins,    1,  kPtBins,  2,   1,   10,  50,    2,  50, kDcaBins,  5,    6};
-  Double_t xminHistMC[14] = {-0.5,    2,      -0.5, -0.5,        0, -2,   0, -0.5,  -5,- 0.5,  -5,       -3, -2, -0.5};
-  Double_t xmaxHistMC[14] = { 2.5,   10,      10.5,  2.5,        3,  2,   3,  0.5,   5,  1.5,   5,        3,  2,  5.5};
-  fHistMCparticles = new THnSparseL("fHistMCparticles","MC histogram",14,binsHistMC,xminHistMC,xmaxHistMC);
-  fHistMCparticles->GetAxis(4)->Set(kPtBins, binsPt);
-  fHistMCparticles->GetAxis(11)->Set(kDcaBins, binsDca);
-  //fHistMCparticles->GetAxis(2)->Set(kMultBins, multBins);
-  //fHistMCparticles->GetAxis(6)->Set(kPtBins, binsPt);
+  //                            0,            1,           2,  3,      4,   5,    6,   7,        8,    9
+  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     10,  50,    2,  80, kDcaBins,    5};
+  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -0.5,  -5,- 0.5,  -8,       -3, -0.5};
+  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    0.5,   5,  1.5,   8,        3,  4.5};
+  fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",10,binsHistMC,xminHistMC,xmaxHistMC);
+  fHistMCparticles->GetAxis(2)->Set(kPtBins, binsPt);
+  fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDca);
   fListHist->Add(fHistMCparticles);
   //
   fHistMult = new TH2D("fHistMult", "control histogram to count number of events", 502, -2.5, 499.5,4,-0.5,3.5);
@@ -367,7 +358,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     rootS = 2;
     AliCentrality *esdCentrality = fESD->GetCentrality();
     centrality = esdCentrality->GetCentralityClass10("V0M") + 1; // centrality percentile determined with V0
-    if (centrality == 1) {
+    if (TMath::Abs(centrality - 1) < 1e-5) {
       centrality = esdCentrality->GetCentralityClass5("V0M");
     }
   }
@@ -376,18 +367,27 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
   //
   Int_t processtype = 0;
   Int_t processCode = 0;
+  //
+  // important change: fill generated only after vertex cut in case of heavy-ions
+  //
+  if (!vertex && fESD->GetEventSpecie() == 4) {
+    fHistMult->Fill(-1, processCode);
+    PostData(1, fListHist);
+    return;
+  } else {
+    if (TMath::Abs(vertex->GetZv()) > 10 && fESD->GetEventSpecie() == 4) {
+      fHistMult->Fill(-1, processCode);
+      PostData(1, fListHist);
+      return;
+    }
+  }
+  //
   if (fMCtrue) {
     //
     //
     //
     AliHeader * header = mcEvent->Header();
     processtype = GetPythiaEventProcessType(header);
-    //
-    // HARD DEBUG OF MULTIPLICITY DEPENDENT EFFICIENCY -> CALCULATE EFF. ONLY FOR NON-DIFFRACTIVE EVENTS -- PLEASE REMOVE AS SOON AS POSSIBLE
-    //
-    // DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG
-    if (processtype == 92 || processtype ==93 || processtype == 94) return;
-    // DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG  DEBUG DEBUG 
     // non diffractive
     if (processtype !=92 && processtype !=93 && processtype != 94) processCode = 1;
     // single diffractive
@@ -427,7 +427,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
       if (TMath::Abs(pdg) == 2212) iPart = 2; // select p+/p- only
       if (iPart == -1) continue;
       //
-      Double_t vecHistMC[14] = {iPart, triggerPt, centrality, rootS,  pT, sign, transMass, rap, 0, 1, 0, dxy, 0, 0};
+      Double_t vecHistMC[10] = {iPart, centrality,  pT, sign, rap, 0, 1, 0, dxy, 0};
       if (!fOnlyQA) fHistMCparticles->Fill(vecHistMC);
     }
   }
@@ -480,7 +480,11 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     UInt_t status = track->GetStatus();
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
     Bool_t hasTOFtime = status&AliESDtrack::kTIME;
-    Bool_t hasTOF     = hasTOFout && hasTOFtime;
+    Bool_t hasTOFpid  = status&AliESDtrack::kTOFpid;
+    Bool_t hasTOF     = kFALSE;
+    if (hasTOFout && hasTOFtime && hasTOFpid) hasTOF = kTRUE;
+    Float_t length = track->GetIntegratedLength();
+    if (length < 350.) hasTOF = kFALSE;
     //
     // calculate rapidities and kinematics
     // 
@@ -514,22 +518,17 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     //
     // 3.a. calculate expected signals in nsigma
     //
-    //
-    //
-    // fill the histogram
+    //  
     // (0.) assumed particle: 0. pion, 1. kaon, 2. proton, 3. deuteron
-    // (1.) trigger event class: MB, high-mult, etc.
-    // (2.) multiplicity -- number of accepted ESD tracks per events
-    // (3.) sqrt(s) -- center of mass energy, 0. 900 GeV or 1. 7 TeV
-    // (4.) pT
-    // (5.) sign
-    // (6.) mT - m0 (transverse kinetic energy) --> filled 4x
-    // (7.) rapidity --> filled 4x
-    // (8) pull TPC dEx --> filled 4x
-    // (9.) has valid TOF pid signal
-    // (10.) nsigma TOF --> filled 4x
-    // (11.) dca_xy
-    // (12.) dca_z
+    // (1.) multiplicity or centrality -- number of accepted ESD tracks per events (deprecated), but now classes from 1 to 10, 0: Min. Bias
+    // (2.) pT
+    // (3.) sign
+    // (4.) rapidity --> filled 4x
+    // (5.)  pull TPC dEx --> filled 4x
+    // (6.) has valid TOF pid signal
+    // (7.) nsigma TOF --> filled 4x
+    // (8..) dca_xy
+    // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident, 3-second weak, 4-second material
     //
     Double_t transMass[4] = {transMassPion,transMassKaon,transMassProton,transMassDeuteron};
     Double_t rap[4] = {rapPion,rapKaon,rapProton,rapDeuteron};
@@ -554,8 +553,8 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 			 fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0)};
     //
     for(Int_t iPart = 0; iPart < 3; iPart++) { // loop over assumed particle type
-      //                              0,         1,          2,     3,   4,    5,                6,          7,               8,      9,              10,     11,     12
-      Double_t vecHistReal[13] = {iPart, triggerPt, centrality, rootS,  pT, sign, transMass[iPart], rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], dca[1]};
+      //                              0,           1,    2,    3,           4,               5,      6,              7,     8
+      Double_t vecHistReal[9]  = {iPart,  centrality,   pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0]};
       if (!fOnlyQA) fHistRealTracks->Fill(vecHistReal);
       //
       // using MC truth for precise efficiencies...
@@ -575,26 +574,28 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	if (pdg == assumedPdg && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 1;
 	if (pdg == assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 3;
 	if (pdg == assumedPdg && stack->IsSecondaryFromMaterial(TMath::Abs(track->GetLabel()))) code = 4;
-	/*
-	if (pdg == assumedPdg && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel())) && trackMC->GetFirstMother() > 0) {
-	  TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
-	  Int_t mPdg = TMath::Abs(trackMother->GetPdgCode());
-	  if (mPdg==3122||mPdg==3222||mPdg==3212||mPdg==3112||mPdg==3322||mPdg==3312||mPdg==3332||mPdg==130||mPdg==310) code = 3;
-	  if (mPdg!=3122&&mPdg!=3222&&mPdg!=3212&&mPdg!=3112&&mPdg!=3322&&mPdg!=3312&&mPdg!=3332&&mPdg!=130&&mPdg!=310) code = 4;
-	}
-	*/
-	//                               0,         1,          2,     3,   4,    5,               6,           7, 8,      9,10,     11,     12,   13
+	//
+	// muons need special treatment, because they are indistinguishable from pions
+	//
+	if (iPart == 0 && pdg == 13  && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 1;
+	if (iPart == 0 && pdg == 13  && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 3;
+	//
+	// check TOF mismatch on MC basis with TOF label
+	//
+	Int_t tofLabel[3];
+	track->GetTOFLabel(tofLabel);
+	if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0])) hasTOF = kFALSE;
 	//
 	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!
 	//
-	Double_t vectorHistMC[14] = {iPart, triggerPt, centrality, rootS,  pT, sign, transMass[iPart], rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], dca[1], code};
+	//                              0,           1,   2,    3,           4,               5,      6,               7,      8,   9
+	Double_t vectorHistMC[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], code};
 	if (!fOnlyQA) fHistMCparticles->Fill(vectorHistMC);
       }
       //
       //
-      //                      0.ptot,1.tpcSig, 2.hasTOF, 3. assumed part., 4, nclDedx, 5. nSigmaTPC (4x), 6. nSigmaTOF (4x), 7. evt. mult.
-      Double_t vecHistQA[8] = {ptot, tpcSignal, hasTOF, iPart, track->GetTPCsignalN(), tpcQA[iPart], tofQA[iPart], nContributors};
-      if (TMath::Abs(track->Eta()) < 0.8 && fHistPidQA->GetEntries() < 1e6 && fOnlyQA) fHistPidQA->Fill(vecHistQA);
+      Int_t tpcShared = track->GetTPCnclsS();
+      if (TMath::Abs(track->Eta()) < 0.8 && iPart == 0 && tpcShared < 4) fHistPidQA->Fill(ptot,tpcSignal,sign);
     } // end loop over assumed particle type
     
     
@@ -636,11 +637,11 @@ Bool_t AliAnalysisCombinedHadronSpectra::SelectOnImpPar(AliESDtrack* t) {
 
 
 //________________________________________________________________________
-void AliAnalysisCombinedHadronSpectra::BinLogAxis(const THnSparse *h, Int_t axisNumber) {
+void AliAnalysisCombinedHadronSpectra::BinLogAxis(const TH1 *h) {
   //
   // Method for the correct logarithmic binning of histograms
   //
-  TAxis *axis = h->GetAxis(axisNumber);
+  TAxis *axis = h->GetXaxis();
   int bins = axis->GetNbins();
 
   Double_t from = axis->GetXmin();

@@ -6,7 +6,7 @@
  * @brief  Script to draw most QA stuff 
  * 
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 /** 
  * Draw most QA stuff 
@@ -15,14 +15,14 @@
  * @param full If true, assume output of analysis 
  * 
  * @deprecated Use QATrender instead
- * @ingroup pwg2_forward_scripts_qa
+ * @ingroup pwglf_forward_scripts_qa
  */
 void
 DrawQA(const char* file, bool full=false)
 {
 
-  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
-			   "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
+  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
+			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:%s",
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("DrawBeforeAfter.C+g");
   gROOT->LoadMacro("DrawELossPoisson.C+g");

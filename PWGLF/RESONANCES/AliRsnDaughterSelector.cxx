@@ -17,7 +17,8 @@ AliRsnDaughterSelector::AliRsnDaughterSelector(const char *name, const char *tit
    fCutSetsC("AliRsnCutSet", 0),
    fEntryListsN("TEntryList", 0),
    fEntryListsP("TEntryList", 0),
-   fEntryListsM("TEntryList", 0)
+   fEntryListsM("TEntryList", 0),
+   fUseLabelCheck(kTRUE)
 {
 //
 // Default constructor.
@@ -34,7 +35,8 @@ AliRsnDaughterSelector::AliRsnDaughterSelector(const AliRsnDaughterSelector &cop
    fCutSetsC(copy.fCutSetsC),
    fEntryListsN(copy.fEntryListsN),
    fEntryListsP(copy.fEntryListsP),
-   fEntryListsM(copy.fEntryListsM)
+   fEntryListsM(copy.fEntryListsM),
+   fUseLabelCheck(copy.fUseLabelCheck)
 {
 //
 // Copy constructor.
@@ -61,6 +63,7 @@ AliRsnDaughterSelector &AliRsnDaughterSelector::operator=(const AliRsnDaughterSe
    fEntryListsN = copy.fEntryListsN;
    fEntryListsP = copy.fEntryListsP;
    fEntryListsM = copy.fEntryListsM;
+   fUseLabelCheck = copy.fUseLabelCheck;
 
    AliDebug(AliLog::kDebug + 10, "->");
 
@@ -253,7 +256,9 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
    Int_t nSel, nTot = ev->GetAbsoluteSum();
    AliRsnDaughter check;
    TClonesArray *cutsArray = 0x0, *entryArray = 0x0;
-
+   TEntryList labelList;
+   TEntryList *el = 0;
+   AliRsnCutSet *cuts;
    for (id = 0; id < nTot; id++) {
       ev->SetDaughter(check, id);
       // some checks
@@ -276,16 +281,21 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
          cutsArray = &fCutSetsN;
          entryArray = &fEntryListsN;
       }
+
+      if (fUseLabelCheck && labelList.Contains(check.GetLabel())) continue;
+
       // check with all cuts in that charge
       nSel = cutsArray->GetEntries();
       for (is = 0; is < nSel; is++) {
-         AliRsnCutSet *cuts = (AliRsnCutSet *)cutsArray->At(is);
+         cuts = (AliRsnCutSet *)cutsArray->At(is);
          if (cuts->IsSelected(&check)) {
-            TEntryList *el = (TEntryList *)entryArray->At(is);
+            el = (TEntryList *)entryArray->At(is);
             el->Enter(id);
+            if (fUseLabelCheck) labelList.Enter(check.GetLabel());
          }
       }
    }
 
    //Print();
 }
+

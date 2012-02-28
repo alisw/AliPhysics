@@ -195,7 +195,7 @@ void AliHFEtaggedTrackAnalysis::InitContainer(){
 }
 
 //____________________________________________________________
-void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitioPID){
+void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVTrack *track, Int_t abinitioPID){
   //
   // Filter tracks tagged by V0 PID class
   //

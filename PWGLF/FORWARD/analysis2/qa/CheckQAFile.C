@@ -5,14 +5,14 @@
  * 
  * @brief  Script to check a QA file
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 /** 
  * Script to check a QA file.  Note that this terminates the ROOT session. 
  * 
  * @param filename File to read 
  * 
- * @ingroup pwg2_forward_qa_scripts
+ * @ingroup pwglf_forward_qa_scripts
  */
 void CheckQAFile(const char* filename)
 {

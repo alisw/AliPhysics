@@ -9,7 +9,7 @@
  * 
  * @return 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
 {
@@ -79,7 +79,7 @@ TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
  * @param vtxLow 
  * @param vtxHigh 
  *
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void MakeAcceptanceCorrection(Int_t   runNo=121526, 
 			      Int_t   system = 1,
@@ -91,7 +91,7 @@ void MakeAcceptanceCorrection(Int_t   runNo=121526,
   
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libPWG2forward2");
+  gSystem->Load("libPWGLFforward2");
   
   // Float_t delta = (vtxHigh - vtxLow) / (Float_t)nVtxBins;
   

@@ -1,7 +1,7 @@
 /**
  * Script to draw the energy loss fits 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 #ifndef __CINT__
 #include <TFile.h>
@@ -22,14 +22,14 @@
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * @param mc     Whether this is from MC data or not 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 ExtractELoss(const char* fname="forward_eloss.root", 
 	     UShort_t sys=1, UShort_t sNN=900, Short_t field=5, Bool_t mc=false)
 {
 #ifdef __CINT__
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 #endif
 
   TFile* file = TFile::Open(fname, "READ");
@@ -39,7 +39,7 @@ ExtractELoss(const char* fname="forward_eloss.root",
   }
     
   TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
-  // static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
+  // static_cast<TList*>(file->Get("PWGLFforwardDnDeta/Forward"));
   if (!forward) { 
     Error("ExtractELoss", "Couldn't get forward list from %s", fname);
     return;
@@ -78,7 +78,7 @@ ExtractELoss(const char* fname="forward_eloss.root",
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * @param mc     Whether this is from MC data or not 
  * 
- * @ingroup pwg2_forward_scripts_corr
+ * @ingroup pwglf_forward_scripts_corr
  */
 void
 ExtractELoss(const char* fname="energyFits.root", 

@@ -54,17 +54,26 @@ private:
   TH2F* fLambdaMC;   //! LvsP for Lambdas from the Monte Carlo stack
   TH2F* fLambdaAs;   //! LvsP for Lambdas associated with the Monte Carlo
 
-  TH1F* fCPA;   //! cos(PA) side-band subtructed
-  TH1F* fDCA;   //! DCA daughters side-band subtructed
-
   TH1D* fLambdaEff;  //! Efficiency for Lambda  
   TH1D* fLambdaPt;   //! Pt spectrum for Lambda
+
+  TH2F* fLambdaBarM;  //! Mass for anti-Lambdas
+  TH2F* fLambdaBarSi; //! Side-band subtrated LvsP for anti-Lambda
+  TH2F* fLambdaBarMC; //! LvsP for anti-Lambdas from the Monte Carlo stack
+  TH2F* fLambdaBarAs; //! LvsP for anti-Lambdas associated with the Monte Carlo
+
+  TH1D* fLambdaBarEff;  //! Efficiency for anti-Lambda  
+  TH1D* fLambdaBarPt;   //! Pt spectrum for anti-Lambda
 
   TH3F* fLambdaFromXi;//! LvsPvsPxi for Lambdas from Xis associated with MC 
   TH2F* fXiM;         //! Mass for Xis
   TH1F* fXiSiP;       //! Side-band subtracted Pt for reconstructed Xi
 
-  ClassDef(AliAnalysisTaskCTauPbPb,1);
+  TH3F* fLambdaBarFromXiBar;//! LvsPvsPxi for anti-Lambdas from anti-Xis associated with MC 
+  TH2F* fXiBarM;         //! Mass for anti-Xis
+  TH1F* fXiBarSiP;       //! Side-band subtracted Pt for reconstructed anti-Xi
+
+  ClassDef(AliAnalysisTaskCTauPbPb,3);
 };
 
 #endif

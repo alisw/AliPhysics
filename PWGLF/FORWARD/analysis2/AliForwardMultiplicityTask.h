@@ -11,7 +11,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_aod
  */
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardUtil.h"
@@ -21,7 +21,9 @@
 #include "AliFMDCorrector.h"
 #include "AliFMDHistCollector.h"
 #include "AliAODForwardMult.h"
+#include "AliAODForwardEP.h"
 #include "AliFMDEnergyFitter.h"
+#include "AliFMDEventPlaneFinder.h"
 #include <AliESDFMD.h>
 class AliESDEvent;
 class TH2D;
@@ -40,8 +42,8 @@ class TList;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwg2_forward_tasks
- * @ingroup pwg2_forward_aod
+ * @ingroup pwglf_forward_tasks
+ * @ingroup pwglf_forward_aod
  * 
  */
 class AliForwardMultiplicityTask : public AliForwardMultiplicityBase
@@ -159,9 +161,22 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   const AliFMDHistCollector& GetHistCollector() const { return fHistCollector; }
+ /**
+   * Get reference to the EventPlaneFinder algorithm 
+   * 
+   * @return Reference to AliFMDEventPlaneFinder object 
+   */
+  AliFMDEventPlaneFinder& GetEventPlaneFinder() { return fEventPlaneFinder; }
+  /**
+   * Get reference to the EventPlaneFinder algorithm 
+   * 
+   * @return Reference to AliFMDEventPlaneFinder object 
+   */
+  const AliFMDEventPlaneFinder& GetEventPlaneFinder() const { return fEventPlaneFinder; }
   /** 
    * @} 
    */
+
   /** 
    * Set debug level 
    * 
@@ -179,6 +194,7 @@ protected:
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
+  AliAODForwardEP        fAODEP;        // Output object
   AliForwardUtil::Histos fRingSums;     // Cache histograms 
 
   AliFMDEventInspector    fEventInspector;    // Algorithm
@@ -186,6 +202,7 @@ protected:
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
   AliFMDCorrector         fCorrections;       // Algorithm
   AliFMDHistCollector     fHistCollector;     // Algorithm
+  AliFMDEventPlaneFinder  fEventPlaneFinder;  // Algorithm
 
   TList* fList; // Output list 
 

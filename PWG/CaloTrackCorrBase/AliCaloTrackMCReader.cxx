@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class for reading data (Kinematics) in order to do prompt gamma 
@@ -33,7 +32,6 @@
 #include <TRandom.h>
 #include <TArrayI.h>
 #include "TParticle.h"
-//#include "Riostream.h"
 
 //---- ANALYSIS system ----
 #include "AliCaloTrackMCReader.h" 
@@ -45,51 +43,53 @@
 #include "AliFiducialCut.h"
 #include "AliMCAnalysisUtils.h"
 
-  ClassImp(AliCaloTrackMCReader)
+ClassImp(AliCaloTrackMCReader)
 
-//____________________________________________________________________________
+//____________________________________________
 AliCaloTrackMCReader::AliCaloTrackMCReader() : 
-  AliCaloTrackReader(), fDecayPi0(0), 
-  fNeutralParticlesArray(0x0), fChargedParticlesArray(0x0), 
-  fStatusArray(0x0), fKeepAllStatus(0), fCheckOverlap(0),  
-  fEMCALOverlapAngle(0),fPHOSOverlapAngle(0), fIndex2ndPhoton(0),
-  fOnlyGeneratorParticles(kTRUE)
+AliCaloTrackReader(),        fDecayPi0(0), 
+fNeutralParticlesArray(0x0), fChargedParticlesArray(0x0), 
+fStatusArray(0x0),           fKeepAllStatus(0), 
+fCheckOverlap(0),            fEMCALOverlapAngle(0),fPHOSOverlapAngle(0), 
+fIndex2ndPhoton(0),          fOnlyGeneratorParticles(kTRUE)
 {
   //Ctor
   
   //Initialize parameters
   InitParameters();
 }
-//_________________________________
-AliCaloTrackMCReader::~AliCaloTrackMCReader() {
+//___________________________________________
+AliCaloTrackMCReader::~AliCaloTrackMCReader()
+{
   //Dtor
-
+  
   if(fChargedParticlesArray) delete fChargedParticlesArray ;
   if(fNeutralParticlesArray) delete fNeutralParticlesArray ;
   if(fStatusArray)           delete fStatusArray ;
-
+  
 }
 
-//____________________________________________________________________________
-void AliCaloTrackMCReader::GetVertex(Double_t  v[3]) const {
+//________________________________________________________
+void AliCaloTrackMCReader::GetVertex(Double_t  v[3]) const 
+{
   //Return vertex position
-
+  
   TArrayF pv;
   GetGenEventHeader()->PrimaryVertex(pv);
   v[0]=pv.At(0);
   v[1]=pv.At(1);
   v[2]=pv.At(2);
-
+  
 }
 
-//_______________________________________________________________
+//_________________________________________
 void AliCaloTrackMCReader::InitParameters()
 {
   
   //Initialize the parameters of the analysis.
-
+  
   fDecayPi0 = kFALSE;
-
+  
   fChargedParticlesArray = new TArrayI(1);
   fChargedParticlesArray->SetAt(11,0);  
   //Int_t pdgarray[]={12,14,16};// skip neutrinos
@@ -101,7 +101,7 @@ void AliCaloTrackMCReader::InitParameters()
   
   fOnlyGeneratorParticles = kTRUE;
   fKeepAllStatus          = kTRUE;
-
+  
   fCheckOverlap       = kFALSE;
   fEMCALOverlapAngle  = 2.5 * TMath::DegToRad();
   fPHOSOverlapAngle   = 0.5 * TMath::DegToRad();
@@ -118,55 +118,67 @@ void AliCaloTrackMCReader::InitParameters()
   
 }
 
-//____________________________________________________________________________
-void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg) {
+//_________________________________________________________________________________
+void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t imom, 
+                                         Int_t & iPrimary, Int_t & index, TLorentzVector & mom, 
+                                         Int_t & pdg) 
+{
   //Check overlap of decay photons
-  if( fIndex2ndPhoton==iPrimary ){
+  if( fIndex2ndPhoton==iPrimary )
+  {
     fIndex2ndPhoton=-1;
     return;
   }
-  else fIndex2ndPhoton=-1;
+  else 
+    fIndex2ndPhoton=-1;
   
-
   if(pdg!=22) return;
   
   TLorentzVector ph1, ph2;
   TParticle *meson = GetStack()->Particle(imom);
   Int_t mepdg = meson->GetPdgCode();
   Int_t idaug1 = meson->GetFirstDaughter();
-  if((mepdg == 111 || mepdg == 221 ) && meson->GetNDaughters() == 2){ //Check only decay in 2 photons
+  if((mepdg == 111 || mepdg == 221 ) && meson->GetNDaughters() == 2)
+  { //Check only decay in 2 photons
     TParticle * d1 = GetStack()->Particle(idaug1);
     TParticle  *d2 = GetStack()->Particle(idaug1+1);
-    if(d1->GetPdgCode() == 22 && d2->GetPdgCode() == 22 ){
+    if(d1->GetPdgCode() == 22 && d2->GetPdgCode() == 22 )
+    {
       d1->Momentum(ph1);
       d2->Momentum(ph2);
       //printf("angle %2.2f\n",ph1.Angle(ph2.Vect()));
       
-      if(anglethres >  ph1.Angle(ph2.Vect())){ 	  
-	//Keep the meson
-	pdg=mepdg;
-	index=imom;
-	meson->Momentum(mom);
-	//printf("Overlap:: pt %2.2f, phi %2.2f, eta %2.2f\n",mom.Pt(),mom.Phi(),mom.Eta());
-	if(iPrimary == idaug1) iPrimary++; //skip next photon in list
+      if(anglethres >  ph1.Angle(ph2.Vect()))
+      { 	  
+        //Keep the meson
+        pdg=mepdg;
+        index=imom;
+        meson->Momentum(mom);
+        //printf("Overlap:: pt %2.2f, phi %2.2f, eta %2.2f\n",mom.Pt(),mom.Phi(),mom.Eta());
+        if(iPrimary == idaug1) iPrimary++; //skip next photon in list
       }
-      else{
-	//Do not check overlapping for next decay photon from same meson
-	if(iPrimary == idaug1) {fIndex2ndPhoton = idaug1+1;
-	}
-
+      else
+      {
+        //Do not check overlapping for next decay photon from same meson
+        if(iPrimary == idaug1) {fIndex2ndPhoton = idaug1+1;
+        }
+        
       }
     }
   }//Meson Decay with 2 photon daughters
 }
 
-//____________________________________________________________________________
-void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector &momentum) {
+//____________________________________________________________________
+void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, 
+                                             TParticle* particle, 
+                                             TLorentzVector &momentum)
+{
   //Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
   //In PHOS
-  if(fFillPHOS && momentum.Pt() > fPHOSPtMin){
-	  
-	if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) return;
+  
+  if(fFillPHOS && momentum.Pt() > fPHOSPtMin)
+  {
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) return;
 	  
     Int_t index = iParticle ;
     Int_t pdg = TMath::Abs(particle->GetPdgCode());
@@ -182,14 +194,15 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     SetCaloClusterPID(pdg,calo) ;
     if(fDebug > 3 && momentum.Pt() > 0.2)
       printf("AliCaloTrackMCReader::FillCalorimeters() - PHOS : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-	     particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());			
+             particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());			
     fPHOSClusters->Add(calo);//reference the selected object to the list
   }
   
   //In EMCAL
-  if(fFillEMCAL  && momentum.Pt() > fEMCALPtMin){
+  if(fFillEMCAL  && momentum.Pt() > fEMCALPtMin)
+  {
 	  
-	if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return;
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return;
 	  
     Int_t index = iParticle ;
     Int_t pdg = TMath::Abs(particle->GetPdgCode());
@@ -206,20 +219,24 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     SetCaloClusterPID(pdg,calo) ;
     if(fDebug > 3 && momentum.Pt() > 0.2)
       printf("AliCaloTrackMCReader::FillCalorimeters() - EMCAL : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-	     particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());	
+             particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());	
     fEMCALClusters->Add(calo);//reference the selected object to the list
   }
 }
 
-//____________________________________________________________________________
-Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * /*currentFileName*/){
+//___________________________________________________________________________
+Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, 
+                                            const char * /*currentFileName*/)
+{
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber     = iEntry;
   //fCurrentFileName = TString(currentFileName);
   fTrackMult       = 0;
+  
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
-  if(fComparePtHardAndJetPt && GetStack()) {
+  if(fComparePtHardAndJetPt && GetStack()) 
+  {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
 	
@@ -229,8 +246,11 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * /*c
   Int_t iParticle  = 0 ;
   Double_t charge  = 0.;
   Int_t nparticles = GetStack()->GetNtrack() ;
+  
   if(fOnlyGeneratorParticles) nparticles=GetStack()->GetNprimary();
-  for (iParticle = 0 ; iParticle <  nparticles ; iParticle++) {
+  
+  for (iParticle = 0 ; iParticle <  nparticles ; iParticle++) 
+  {
     TParticle * particle = GetStack()->Particle(iParticle);
     TLorentzVector momentum;
     Float_t p[3];
@@ -238,16 +258,16 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * /*c
     Int_t pdg = particle->GetPdgCode();						
     
     //Keep particles with a given status 
-    if(KeepParticleWithStatus(particle->GetStatusCode()) && (particle->Pt() > 0) ){
-      
+    if(KeepParticleWithStatus(particle->GetStatusCode()) && (particle->Pt() > 0) )
+    {
       //Skip bizarre particles, they crash when charge is calculated
       //	if(TMath::Abs(pdg) == 3124 || TMath::Abs(pdg) > 10000000) continue ;
       
       charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
       particle->Momentum(momentum);
       //---------- Charged particles ----------------------
-      if(charge != 0){
-        
+      if(charge != 0)
+      {
         if(TMath::Abs(momentum.Eta())< fTrackMultEtaCut) fTrackMult++;
         
         if(fFillCTS && (momentum.Pt() > fCTSPtMin)){
@@ -280,18 +300,23 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * /*c
       }//Charged
       
       //-------------Neutral particles ----------------------
-      else if(charge == 0 && (fFillPHOS || fFillEMCAL)){
+      else if(charge == 0 && (fFillPHOS || fFillEMCAL))
+      {
         //Skip neutrinos or other neutral particles
         //if(SkipNeutralParticles(pdg) || particle->IsPrimary()) continue ; // protection added (MG)
         if(SkipNeutralParticles(pdg)) continue ;
         //Fill particle/calocluster arrays
-        if(!fDecayPi0) {
+        if(!fDecayPi0) 
+        {
           FillCalorimeters(iParticle, particle, momentum);
         }
-        else {
+        else 
+        {
           //Sometimes pi0 are stable for the generator, if needed decay it by hand
-          if(pdg == 111 ){
-            if(momentum.Pt() >  fPHOSPtMin || momentum.Pt() >  fEMCALPtMin){
+          if(pdg == 111 )
+          {
+            if(momentum.Pt() >  fPHOSPtMin || momentum.Pt() >  fEMCALPtMin)
+            {
               TLorentzVector lvGamma1, lvGamma2 ;
               //Double_t angle = 0;
               
@@ -320,26 +345,28 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * /*c
   
 }
 
-//________________________________________________________________
-Bool_t AliCaloTrackMCReader::KeepParticleWithStatus(Int_t status) const {
+//_____________________________________________________________________
+Bool_t AliCaloTrackMCReader::KeepParticleWithStatus(Int_t status) const 
+{
   //Check if status is equal to one of the  list
   //These particles will be used in analysis.
-  if(!fKeepAllStatus){
+  if(!fKeepAllStatus)
+  {
     for(Int_t i= 0; i < fStatusArray->GetSize(); i++)
       if(status ==  fStatusArray->At(i)) return kTRUE ;
-
-    return kFALSE; 
     
+    return kFALSE; 
   }
   else
     return kTRUE ;  
 }
 
 //________________________________________________________________
-Bool_t AliCaloTrackMCReader::KeepChargedParticles(Int_t pdg) const {
+Bool_t AliCaloTrackMCReader::KeepChargedParticles(Int_t pdg) const 
+{
   //Check if pdg is equal to one of the charged particles list
   //These particles will be added to the calorimeters lists.
-
+  
   for(Int_t i= 0; i < fChargedParticlesArray->GetSize(); i++)
     if(TMath::Abs(pdg) ==  fChargedParticlesArray->At(i)) return kTRUE ;
   
@@ -347,7 +374,7 @@ Bool_t AliCaloTrackMCReader::KeepChargedParticles(Int_t pdg) const {
   
 }
 
-//________________________________________________________________
+//__________________________________________________________
 void AliCaloTrackMCReader::Print(const Option_t * opt) const
 {
   //Print some relevant parameters set for the analysis
@@ -376,10 +403,10 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
   for(Int_t i= 0; i < fChargedParticlesArray->GetSize(); i++)
     printf(" %d ; ", fChargedParticlesArray->At(i));
   printf("\n");
-
+  
 }
 
-//____________________________________________________________________________
+//________________________________________________________________
 void AliCaloTrackMCReader::MakePi0Decay(const TLorentzVector p0, 
                                         TLorentzVector &p1, 
                                         TLorentzVector &p2) const 
@@ -424,8 +451,11 @@ void AliCaloTrackMCReader::MakePi0Decay(const TLorentzVector p0,
   //cout<<angle<<endl;
 }
 
-//____________________________________________________________________________
-void AliCaloTrackMCReader::SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* aod, AliMCEvent* mc) {
+//__________________________________________________________________
+void AliCaloTrackMCReader::SetInputOutputMCEvent(AliVEvent* /*esd*/, 
+                                                 AliAODEvent* aod, 
+                                                 AliMCEvent* mc) 
+{
   // Connect the data pointer
   SetMC(mc);
   SetOutputEvent(aod);
@@ -433,10 +463,11 @@ void AliCaloTrackMCReader::SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent
 
 
 //________________________________________________________________
-Bool_t AliCaloTrackMCReader::SkipNeutralParticles(Int_t pdg) const {
+Bool_t AliCaloTrackMCReader::SkipNeutralParticles(Int_t pdg) const 
+{
   //Check if pdg is equal to one of the neutral particles list
   //These particles will be skipped from analysis.
-
+  
   for(Int_t i= 0; i < fNeutralParticlesArray->GetSize(); i++)
     if(TMath::Abs(pdg) ==  fNeutralParticlesArray->At(i)) return kTRUE ;
   
@@ -445,449 +476,453 @@ Bool_t AliCaloTrackMCReader::SkipNeutralParticles(Int_t pdg) const {
 }
 
 
-//____________________________________________________________________
-void AliCaloTrackMCReader::SetTrackChargeAndPID(const Int_t pdgCode, AliAODTrack *track) const {
-//Give a PID weight for tracks equal to 1 depending on the particle type
-
+//_______________________________________________________________________
+void AliCaloTrackMCReader::SetTrackChargeAndPID(const Int_t pdgCode, 
+                                                AliAODTrack *track) const 
+{
+  //Give a PID weight for tracks equal to 1 depending on the particle type
+  
   Float_t pid[10] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
-
-  switch (pdgCode) {
-
-  case 22: // gamma
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 11: // e- 
-    track->SetCharge(-1);
-    pid[AliAODTrack::kElectron] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case -11: // e+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kElectron] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 13: // mu- 
-    track->SetCharge(-1);
-    pid[AliAODTrack::kMuon] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case -13: // mu+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kMuon] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 111: // pi0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 211: // pi+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kPion] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case -211: // pi-
-    track->SetCharge(-1);
-    pid[AliAODTrack::kPion] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 130: // K0L
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 321: // K+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kKaon] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case -321: // K- 
-    track->SetCharge(-1);
-    pid[AliAODTrack::kKaon] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 2112: // n
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 2212: // p
-    track->SetCharge(+1);
-    pid[AliAODTrack::kProton] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case -2212: // anti-p
-    track->SetCharge(-1);
-    pid[AliAODTrack::kProton] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 310: // K0S
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 311: // K0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case -311: // anti-K0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-    
-  case 221: // eta
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 3122: // lambda
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 3222: // Sigma+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 3212: // Sigma0
-    track->SetCharge(-1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 3112: // Sigma-
-    track->SetCharge(-1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 3322: // Xi0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 3312: // Xi-
-    track->SetCharge(-1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 3334: // Omega-
-    track->SetCharge(-1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -2112: // n-bar
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -3122: // anti-Lambda
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -3222: // anti-Sigma-
-    track->SetCharge(-1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -3212: // anti-Sigma0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -3112: // anti-Sigma+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -3322: // anti-Xi0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -3312: // anti-Xi+
-    track->SetCharge(+1);
-    break;
-
-  case -3334: // anti-Omega+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 411: // D+
-    track->SetCharge(+1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -411: // D- 
-    track->SetCharge(-1);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case 421: // D0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  case -421: // anti-D0
-    track->SetCharge(0);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
-    break;
-
-  default : // unknown
-    track->SetCharge(-99);
-    pid[AliAODTrack::kUnknown] = 1.;
-    track->SetPID(pid);
- }
-
+  
+  switch (pdgCode) 
+  {
+    case 22: // gamma
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 11: // e- 
+      track->SetCharge(-1);
+      pid[AliAODTrack::kElectron] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -11: // e+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kElectron] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 13: // mu- 
+      track->SetCharge(-1);
+      pid[AliAODTrack::kMuon] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -13: // mu+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kMuon] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 111: // pi0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 211: // pi+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kPion] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -211: // pi-
+      track->SetCharge(-1);
+      pid[AliAODTrack::kPion] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 130: // K0L
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 321: // K+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kKaon] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -321: // K- 
+      track->SetCharge(-1);
+      pid[AliAODTrack::kKaon] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 2112: // n
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 2212: // p
+      track->SetCharge(+1);
+      pid[AliAODTrack::kProton] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -2212: // anti-p
+      track->SetCharge(-1);
+      pid[AliAODTrack::kProton] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 310: // K0S
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 311: // K0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -311: // anti-K0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 221: // eta
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 3122: // lambda
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 3222: // Sigma+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 3212: // Sigma0
+      track->SetCharge(-1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 3112: // Sigma-
+      track->SetCharge(-1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 3322: // Xi0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 3312: // Xi-
+      track->SetCharge(-1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 3334: // Omega-
+      track->SetCharge(-1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -2112: // n-bar
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -3122: // anti-Lambda
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -3222: // anti-Sigma-
+      track->SetCharge(-1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -3212: // anti-Sigma0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -3112: // anti-Sigma+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -3322: // anti-Xi0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -3312: // anti-Xi+
+      track->SetCharge(+1);
+      break;
+      
+    case -3334: // anti-Omega+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 411: // D+
+      track->SetCharge(+1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -411: // D- 
+      track->SetCharge(-1);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case 421: // D0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    case -421: // anti-D0
+      track->SetCharge(0);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+      break;
+      
+    default : // unknown
+      track->SetCharge(-99);
+      pid[AliAODTrack::kUnknown] = 1.;
+      track->SetPID(pid);
+  }
+  
   track->SetPID(pid);
-
+  
   return;
 }
 
 //____________________________________________________________________
-void AliCaloTrackMCReader::SetCaloClusterPID(const Int_t pdgCode, AliVCluster *calo) const {
-//Give a PID weight for CaloClusters equal to 1 depending on the particle type
-
+void AliCaloTrackMCReader::SetCaloClusterPID(const Int_t pdgCode, 
+                                             AliVCluster *calo) const 
+{
+  //Give a PID weight for CaloClusters equal to 1 depending on the particle type
+  
   Float_t pid[13] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
-
-  switch (pdgCode) {
-
-  case 22: // gamma
-    pid[AliVCluster::kPhoton] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 11: // e- 
-    pid[AliVCluster::kElectron] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case -11: // e+
-    pid[AliVCluster::kElectron] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 13: // mu- 
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case -13: // mu+
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 111: // pi0
-    pid[AliVCluster::kPi0] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 211: // pi+
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case -211: // pi-
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 130: // K0L
-    pid[AliVCluster::kKaon0] = 1.;
-    pid[AliVCluster::kNeutral] = 1;
-    calo->SetPID(pid);
-    break;
-    
-  case 321: // K+
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case -321: // K- 
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 2112: // n
-    pid[AliVCluster::kNeutron] = 1.;
-    pid[AliVCluster::kNeutral] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 2212: // p
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case -2212: // anti-p
-    pid[AliVCluster::kCharged] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 310: // K0S
-    pid[AliVCluster::kKaon0] = 1.;
-    pid[AliVCluster::kNeutral] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 311: // K0
-    pid[AliVCluster::kKaon0] = 1.;
-    pid[AliVCluster::kNeutral] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case -311: // anti-K0
-    pid[AliVCluster::kKaon0] = 1.;
-    pid[AliVCluster::kNeutral] = 1.;
-    calo->SetPID(pid);
-    break;
-    
-  case 221: // eta
-    pid[AliVCluster::kNeutral] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 3122: // lambda
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 3222: // Sigma+
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 3212: // Sigma0
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 3112: // Sigma-
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 3322: // Xi0
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 3312: // Xi-
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 3334: // Omega-
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -2112: // n-bar
-    pid[AliVCluster::kNeutron] = 1.;
-    pid[AliVCluster::kNeutral] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -3122: // anti-Lambda
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -3222: // anti-Sigma-
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -3212: // anti-Sigma0
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -3112: // anti-Sigma+
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -3322: // anti-Xi0
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -3312: // anti-Xi+
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -3334: // anti-Omega+
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 411: // D+
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -411: // D- 
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case 421: // D0
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  case -421: // anti-D0
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
-    break;
-
-  default : // unknown
-    pid[AliVCluster::kUnknown] = 1.;
-    calo->SetPID(pid);
- }
-
- 
+  
+  switch (pdgCode) 
+  {
+    case 22: // gamma
+      pid[AliVCluster::kPhoton] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 11: // e- 
+      pid[AliVCluster::kElectron] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -11: // e+
+      pid[AliVCluster::kElectron] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 13: // mu- 
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -13: // mu+
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 111: // pi0
+      pid[AliVCluster::kPi0] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 211: // pi+
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -211: // pi-
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 130: // K0L
+      pid[AliVCluster::kKaon0] = 1.;
+      pid[AliVCluster::kNeutral] = 1;
+      calo->SetPID(pid);
+      break;
+      
+    case 321: // K+
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -321: // K- 
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 2112: // n
+      pid[AliVCluster::kNeutron] = 1.;
+      pid[AliVCluster::kNeutral] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 2212: // p
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -2212: // anti-p
+      pid[AliVCluster::kCharged] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 310: // K0S
+      pid[AliVCluster::kKaon0] = 1.;
+      pid[AliVCluster::kNeutral] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 311: // K0
+      pid[AliVCluster::kKaon0] = 1.;
+      pid[AliVCluster::kNeutral] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -311: // anti-K0
+      pid[AliVCluster::kKaon0] = 1.;
+      pid[AliVCluster::kNeutral] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 221: // eta
+      pid[AliVCluster::kNeutral] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 3122: // lambda
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 3222: // Sigma+
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 3212: // Sigma0
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 3112: // Sigma-
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 3322: // Xi0
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 3312: // Xi-
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 3334: // Omega-
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -2112: // n-bar
+      pid[AliVCluster::kNeutron] = 1.;
+      pid[AliVCluster::kNeutral] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -3122: // anti-Lambda
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -3222: // anti-Sigma-
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -3212: // anti-Sigma0
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -3112: // anti-Sigma+
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -3322: // anti-Xi0
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -3312: // anti-Xi+
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -3334: // anti-Omega+
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 411: // D+
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -411: // D- 
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case 421: // D0
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    case -421: // anti-D0
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+      break;
+      
+    default : // unknown
+      pid[AliVCluster::kUnknown] = 1.;
+      calo->SetPID(pid);
+  }
+  
+  
   return;
 }

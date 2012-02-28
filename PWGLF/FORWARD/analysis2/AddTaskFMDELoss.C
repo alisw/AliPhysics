@@ -6,23 +6,23 @@
  * @brief  
  * 
  * 
- * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwglf_forward_scripts_tasks
  */
 /**
- * @defgroup pwg2_forward_eloss Energy Loss Fits
- * @ingroup pwg2_forward_topical
+ * @defgroup pwglf_forward_eloss Energy Loss Fits
+ * @ingroup pwglf_forward_topical
  */
 
 /**
  * This is the macro to include the FMD energy fitter in a train.  
  * 
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*
 AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
 {
   // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -77,7 +77,7 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
     
   // --- Make the output container and connect it --------------------
   TString outputfile = ;
-  // outputfile += ":PWG2forwardDnDeta"; 
+  // outputfile += ":PWGLFforwardDnDeta"; 
   // Form(":%s",pars->GetDndetaAnalysisName());
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 
