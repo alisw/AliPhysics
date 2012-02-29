@@ -88,6 +88,7 @@ class AliFlowBayesianPID : public AliPIDResponse{
   void ResetDetAND(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskAND[idet] = kFALSE;};
   void ResetDetOR(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskOR[idet] = kFALSE;};
   void SetPsiCorrectionDeDx(Float_t psi,Float_t res);
+  void SetMC(Bool_t flag){fIsMC=flag;};
 
   // getter
   AliESDpid* GetESDpid(){return fPIDesd;};
@@ -111,8 +112,8 @@ class AliFlowBayesianPID : public AliPIDResponse{
   void ComputeWeights(const AliESDtrack *t);
   void ComputeProb(const AliESDtrack *t,Float_t); // obsolete method
   void ComputeProb(const AliESDtrack *t){ComputeProb(t,0.0);}; 
-  void ComputeWeights(const AliAODTrack *t);
-  void ComputeProb(const AliAODTrack *t); // obsolete method
+  void ComputeWeights(const AliAODTrack *t,AliAODEvent *aod=NULL);
+  void ComputeProb(const AliAODTrack *t,AliAODEvent *aod=NULL); // obsolete method
 
   void SetTOFres(Float_t res){fTOFresolution=res;};
 
@@ -152,7 +153,9 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   Float_t fPsi,fPsiRes;    // RP and its resolution for the event (999 if not available) to correct dEdx for p > 1
 
-  ClassDef(AliFlowBayesianPID, 5); // example of analysis
+  Bool_t fIsMC; // switch for MC analysis
+
+  ClassDef(AliFlowBayesianPID, 6); // example of analysis
 };
 
 #endif

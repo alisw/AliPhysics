@@ -20,6 +20,11 @@
 #include "AliTOFT0maker.h"
 #include "AliCentrality.h"
 #include "AliAODPid.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliAnalysisManager.h"
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
 
 ClassImp(AliFlowBayesianPID)
   
@@ -29,7 +34,7 @@ AliTOFGeometry* AliFlowBayesianPID::fgTofGeo = NULL; // TOF geometry needed to r
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -505,6 +510,30 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
      
   // TPC
   Float_t dedx = t->GetTPCsignal();
+	
+  if(fIsMC){
+    AliMCEventHandler* eventHandler=NULL;
+    eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+	if (eventHandler) {
+	  AliMCEvent* mcEvent = eventHandler->MCEvent();
+
+	  if(mcEvent){
+	    AliMCParticle *MCpart = (AliMCParticle *) mcEvent->GetTrack(TMath::Abs(t->GetLabel()));
+	    TParticle *part = MCpart->Particle(); 
+	    
+	    Int_t iS = TMath::Abs(part->GetPdgCode());
+	    Float_t dedxExp=GetExpDeDx(t,iS);
+	    Float_t resolutionTPC = -1;
+	    if(iS==11) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
+	    else if(iS==13) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
+	    else if(iS==221) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
+	    else if(iS==321) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
+	    else if(iS==2212) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
+	    if(resolutionTPC > -1) dedx = fTPCResponseF->GetRandom()*resolutionTPC + dedxExp;
+	  }
+	}
+  }
+
   if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
     for(Int_t iS=0;iS<fgkNspecies;iS++){
       Float_t dedxExp=GetExpDeDx(t,iS);
@@ -593,16 +622,35 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
   }  
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t){
+void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
   // compute Detector weights for Bayesian probablities
   Float_t centr = fCurrCentrality;
 
   Float_t pt = t->Pt();
   Float_t p = t->P();
   Float_t momtpc=t->GetTPCmomentum();
-     
-  // TPC
+
   Float_t dedx = t->GetTPCsignal();
+     
+  if(fIsMC && aod){
+   AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (mcHeader) {
+      
+      TClonesArray *mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+      
+      Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(t->GetLabel())))->GetPdgCode());
+      Float_t dedxExp=GetExpDeDx(t,iS);
+      Float_t resolutionTPC = -1;
+      if(iS==11) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
+      else if(iS==13) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
+      else if(iS==221) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
+      else if(iS==321) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
+      else if(iS==2212) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
+      if(resolutionTPC > -1) dedx = fTPCResponseF->GetRandom()*resolutionTPC + dedxExp;
+    }
+  }
+
+  // TPC
   if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
     for(Int_t iS=0;iS<fgkNspecies;iS++){
 
@@ -709,7 +757,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t){
   }  
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t /*centrObsolete*/){
+void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t,Float_t /*centrObsolete*/){
   // compute Bayesian probablities
   ComputeWeights(t);
   Float_t priors[fgkNspecies];
@@ -772,9 +820,9 @@ void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t /*centrObsole
   
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeProb(const AliAODTrack *t){
+void AliFlowBayesianPID::ComputeProb(const AliAODTrack *t, AliAODEvent *aod){
   // compute Bayesian probablities
-  ComputeWeights(t);
+  ComputeWeights(t,aod);
   Float_t priors[fgkNspecies];
   fProbTofMism = 0;
 
