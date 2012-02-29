@@ -346,6 +346,10 @@ public:
   Int_t GetEMCALcluster() const {return fCaloIndex;}
   void SetEMCALcluster(Int_t index) {fCaloIndex=index;}
   Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
+  
+  Double_t GetTrackPhiOnEMCal() const {return fTrackPhiOnEMCal;}
+  Double_t GetTrackEtaOnEMCal() const {return fTrackEtaOnEMCal;}
+  void SetTrackPhiEtaOnEMCal(Double_t phi,Double_t eta) {fTrackPhiOnEMCal=phi;fTrackEtaOnEMCal=eta;}
 
   Int_t GetPHOScluster() const {return fCaloIndex;}
   void SetPHOScluster(Int_t index) {fCaloIndex=index;}
@@ -518,12 +522,15 @@ protected:
   mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
   mutable Float_t fCacheChi2TPCConstrainedVsGlobal; //! Cache for the chi2 of constrained TPC vs global track
   mutable const AliESDVertex* fCacheChi2TPCConstrainedVsGlobalVertex; //! Vertex for which the cache is valid
+
+  Double_t fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm
+  Double_t fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm
   
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,63)  //ESDtrack 
+  ClassDef(AliESDtrack,64)  //ESDtrack 
 };
 
 

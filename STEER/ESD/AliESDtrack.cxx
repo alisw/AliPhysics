@@ -235,7 +235,9 @@ AliESDtrack::AliESDtrack() :
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
-  fCacheChi2TPCConstrainedVsGlobalVertex(0)
+  fCacheChi2TPCConstrainedVsGlobalVertex(0),
+  fTrackPhiOnEMCal(-999),
+  fTrackEtaOnEMCal(-999)
 {
   //
   // The default ESD constructor 
@@ -345,7 +347,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fESDEvent(track.fESDEvent),
   fCacheNCrossedRows(track.fCacheNCrossedRows),
   fCacheChi2TPCConstrainedVsGlobal(track.fCacheChi2TPCConstrainedVsGlobal),
-  fCacheChi2TPCConstrainedVsGlobalVertex(track.fCacheChi2TPCConstrainedVsGlobalVertex)
+  fCacheChi2TPCConstrainedVsGlobalVertex(track.fCacheChi2TPCConstrainedVsGlobalVertex),
+  fTrackPhiOnEMCal(track.fTrackPhiOnEMCal),
+  fTrackEtaOnEMCal(track.fTrackEtaOnEMCal)
 {
   //
   //copy constructor
@@ -467,7 +471,9 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
-  fCacheChi2TPCConstrainedVsGlobalVertex(0)
+  fCacheChi2TPCConstrainedVsGlobalVertex(0),
+  fTrackPhiOnEMCal(-999),
+  fTrackEtaOnEMCal(-999)
 {
   //
   // ESD track from AliVTrack.
@@ -609,7 +615,9 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
-  fCacheChi2TPCConstrainedVsGlobalVertex(0)  
+  fCacheChi2TPCConstrainedVsGlobalVertex(0),
+  fTrackPhiOnEMCal(-999),
+  fTrackEtaOnEMCal(-999)
 {
   //
   // ESD track from TParticle
@@ -955,6 +963,9 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fCacheNCrossedRows = source.fCacheNCrossedRows;
   fCacheChi2TPCConstrainedVsGlobal = source.fCacheChi2TPCConstrainedVsGlobal;
   fCacheChi2TPCConstrainedVsGlobalVertex = source.fCacheChi2TPCConstrainedVsGlobalVertex;
+
+  fTrackPhiOnEMCal= source.fTrackPhiOnEMCal;
+  fTrackEtaOnEMCal= source.fTrackEtaOnEMCal;
 
   return *this;
 }

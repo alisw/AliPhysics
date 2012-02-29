@@ -255,6 +255,10 @@ class AliAODTrack : public AliVTrack {
   void SetEMCALcluster(Int_t index) {fCaloIndex=index;}
   Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
 
+  Double_t GetTrackPhiOnEMCal() const {return fTrackPhiOnEMCal;}
+  Double_t GetTrackEtaOnEMCal() const {return fTrackEtaOnEMCal;}
+  void SetTrackPhiEtaOnEMCal(Double_t phi,Double_t eta) {fTrackPhiOnEMCal=phi;fTrackEtaOnEMCal=eta;}
+
   Int_t GetPHOScluster() const {return fCaloIndex;}
   void SetPHOScluster(Int_t index) {fCaloIndex=index;}
   Bool_t IsPHOS() const {return fFlags&kPHOSmatch;}
@@ -390,7 +394,10 @@ class AliAODTrack : public AliVTrack {
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack, 15);
+  Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm
+  Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm
+
+  ClassDef(AliAODTrack, 16);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

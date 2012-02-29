@@ -385,7 +385,8 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
 
   AliExternalTrackParam trkParamTmp(*trkParam);
   Float_t eta, phi;
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(), fStep, eta, phi)) return index;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(), fStep, eta, phi))  return index;
+  track->SetTrackPhiEtaOnEMCal(phi,eta);
   if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) return index;
 
   //Perform extrapolation

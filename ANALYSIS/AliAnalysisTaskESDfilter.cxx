@@ -54,60 +54,64 @@
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
 #include "Riostream.h"
+#include "AliExternalTrackParam.h"
+#include "AliTrackerBase.h"
+#include "TVector3.h"
 
 ClassImp(AliAnalysisTaskESDfilter)
 
 ////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
-    AliAnalysisTaskSE(),
-    fTrackFilter(0x0),
-    fKinkFilter(0x0),
-    fV0Filter(0x0),
-    fCascadeFilter(0x0),
-    fHighPthreshold(0),
-    fPtshape(0x0),
-    fEnableFillAOD(kTRUE),
-    fUsedTrack(0x0),
-    fUsedKink(0x0),
-    fUsedV0(0x0),
-    fAODTrackRefs(0x0),
-    fAODV0VtxRefs(0x0),
-    fAODV0Refs(0x0),
-    fMChandler(0x0),
-    fNumberOfTracks(0),
-    fNumberOfPositiveTracks(0),
-    fNumberOfV0s(0),
-    fNumberOfVertices(0),
-    fNumberOfCascades(0),
-    fNumberOfKinks(0),
-    fOldESDformat(kFALSE),
-    fPrimaryVertex(0x0),
+  AliAnalysisTaskSE(),
+  fTrackFilter(0x0),
+  fKinkFilter(0x0),
+  fV0Filter(0x0),
+  fCascadeFilter(0x0),
+  fHighPthreshold(0),
+  fPtshape(0x0),
+  fEnableFillAOD(kTRUE),
+  fUsedTrack(0x0),
+  fUsedKink(0x0),
+  fUsedV0(0x0),
+  fAODTrackRefs(0x0),
+  fAODV0VtxRefs(0x0),
+  fAODV0Refs(0x0),
+  fMChandler(0x0),
+  fNumberOfTracks(0),
+  fNumberOfPositiveTracks(0),
+  fNumberOfV0s(0),
+  fNumberOfVertices(0),
+  fNumberOfCascades(0),
+  fNumberOfKinks(0),
+  fOldESDformat(kFALSE),
+  fPrimaryVertex(0x0),
   fTPCConstrainedFilterMask(0),
   fHybridFilterMaskTPCCG(0),
   fWriteHybridTPCCOnly(kFALSE),
   fGlobalConstrainedFilterMask(0),
   fHybridFilterMaskGCG(0),
   fWriteHybridGCOnly(kFALSE),
-    fIsVZEROEnabled(kTRUE),
-    fIsTZEROEnabled(kTRUE),
-    fIsZDCEnabled(kTRUE),
-    fIsV0CascadeRecoEnabled(kFALSE),
-    fAreCascadesEnabled(kTRUE),
-    fAreV0sEnabled(kTRUE),
-    fAreKinksEnabled(kTRUE),
-    fAreTracksEnabled(kTRUE),
-    fArePmdClustersEnabled(kTRUE),
-    fAreCaloClustersEnabled(kTRUE),
-    fAreEMCALCellsEnabled(kTRUE),
-    fArePHOSCellsEnabled(kTRUE),
-		fAreEMCALTriggerEnabled(kTRUE),
-		fArePHOSTriggerEnabled(kTRUE),
-		fAreTrackletsEnabled(kTRUE),
-    fESDpid(0x0),
-    fIsPidOwner(kFALSE),
-    fTimeZeroType(AliESDpid::kTOF_T0),
-    fTPCaloneTrackCuts(0)
+  fIsVZEROEnabled(kTRUE),
+  fIsTZEROEnabled(kTRUE),
+  fIsZDCEnabled(kTRUE),
+  fIsV0CascadeRecoEnabled(kFALSE),
+  fAreCascadesEnabled(kTRUE),
+  fAreV0sEnabled(kTRUE),
+  fAreKinksEnabled(kTRUE),
+  fAreTracksEnabled(kTRUE),
+  fArePmdClustersEnabled(kTRUE),
+  fAreCaloClustersEnabled(kTRUE),
+  fAreEMCALCellsEnabled(kTRUE),
+  fArePHOSCellsEnabled(kTRUE),
+  fAreEMCALTriggerEnabled(kTRUE),
+  fArePHOSTriggerEnabled(kTRUE),
+  fAreTrackletsEnabled(kTRUE),
+  fESDpid(0x0),
+  fIsPidOwner(kFALSE),
+  fTimeZeroType(AliESDpid::kTOF_T0),
+  fTPCaloneTrackCuts(0),
+  fDoPropagateTrackToEMCal(kTRUE)
 {
   // Default constructor
     fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -177,7 +181,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fESDpid(0x0),
     fIsPidOwner(kFALSE),
     fTimeZeroType(AliESDpid::kTOF_T0),
-    fTPCaloneTrackCuts(0)
+    fTPCaloneTrackCuts(0),
+  fDoPropagateTrackToEMCal(kTRUE)
 {
   // Constructor
 
@@ -249,6 +254,7 @@ void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
 	cout << spaces.Data() << Form("EMCAL triggers are %s",fAreEMCALTriggerEnabled ? "ENABLED":"DISABLED") << endl;
 	cout << spaces.Data() << Form("PHOS triggers  are %s",fArePHOSTriggerEnabled ? "ENABLED":"DISABLED") << endl;
 	cout << spaces.Data() << Form("Tracklets      are %s",fAreTrackletsEnabled ? "ENABLED":"DISABLED") << endl;  
+	cout << spaces.Data() << Form("PropagateTrackToEMCal  is %s", fDoPropagateTrackToEMCal ? "ENABLED":"DISABLED") << endl; 
 }
 
 //______________________________________________________________________________
@@ -1333,6 +1339,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
   const AliESDVertex *vtx = esd.GetPrimaryVertex();
   Double_t p[3] = { 0. };
   Double_t pos[3] = { 0. };
+  Double_t trkPos[3] = {0.,0.,0.};
   Double_t covTr[21] = { 0. };
   Double_t pid[10] = { 0. };
   AliAODTrack* aodTrack(0x0);
@@ -1382,6 +1389,31 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     if(esdTrack->IsEMCAL()) aodTrack->SetEMCALcluster(esdTrack->GetEMCALcluster());
     if(esdTrack->IsPHOS())  aodTrack->SetPHOScluster(esdTrack->GetPHOScluster());
 
+    //Perform progagation of tracks if needed
+    if(fDoPropagateTrackToEMCal)
+      {
+	Double_t EMCalEta, EMCalPhi;
+	Double_t trkphi = esdTrack->Phi()*TMath::RadToDeg();
+	if(TMath::Abs(esdTrack->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+	  {
+	    AliExternalTrackParam *trkParam = const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
+	    if(trkParam)
+	      {
+		AliExternalTrackParam trkParamTmp(*trkParam);
+		if(AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, 430, esdTrack->GetMass(), 20, kTRUE, 0.8, -1))
+		  {
+		    trkParamTmp.GetXYZ(trkPos);
+		    TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+		    EMCalEta = trkPosVec.Eta();
+		    EMCalPhi = trkPosVec.Phi();
+		    if(EMCalPhi<0)  EMCalPhi += 2*TMath::Pi();
+		    esdTrack->SetTrackPhiEtaOnEMCal(EMCalPhi,EMCalEta);
+		  }
+	      }
+	  }
+      }
+    aodTrack->SetTrackPhiEtaOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal());
+
     fAODTrackRefs->AddAt(aodTrack, nTrack);
     
     
@@ -1412,6 +1444,7 @@ void AliAnalysisTaskESDfilter::ConvertPmdClusters(const AliESDEvent& esd)
     new(pmdClusters[jPmdClusters++]) AliAODPmdCluster(iPmd, nLabel, label, pmdTrack->GetClusterADC(), posPmd, pidPmd);
   }
 }
+
 
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
@@ -1461,15 +1494,19 @@ void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
 
     caloCluster->SetTrackDistance(cluster->GetTrackDx(), cluster->GetTrackDz());
     
+    Int_t nMatchCount = 0;
     TArrayI* matchedT = 	cluster->GetTracksMatched();
     if (fNumberOfTracks>0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
       for (Int_t im = 0; im < matchedT->GetSize(); im++) {
         Int_t iESDtrack = matchedT->At(im);;
         if (fAODTrackRefs->At(iESDtrack) != 0) {
           caloCluster->AddTrackMatched((AliAODTrack*)fAODTrackRefs->At(iESDtrack));
+	  nMatchCount++;
         }
       }
     }
+    if(nMatchCount==0)
+      caloCluster->SetTrackDistance(-999,-999);
     
   } 
   caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
