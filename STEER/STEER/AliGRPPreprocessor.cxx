@@ -198,13 +198,13 @@ const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fit
                    "",
                    "(DAQ logbook ERROR)",
                    "(DAQ FXS ERROR)",
-                   "(Trigger Scalers not found in DCS FXS - ERROR)",
+                   "(Trigger Scalers not found in FXS - ERROR)",
                    "(DCS data points ERROR)",
                    "(Trigger Configuration ERROR)",
                    "(DAQ logbook ERROR determining partition of the run)",
                    "(CTP timing ERROR)",
 		   "(SPD Mean Vertex ERROR)",
-		   "(DCS FXS Error for LHC Data)",
+		   "(FXS Error for LHC Data)",
 		   "(LHC Data Error)",
 		   "(LHC Clock Phase Error (from LHC Data))",
 		   "(LTU Configuration Error)",
@@ -353,7 +353,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	if( iDcsFxs == 0 ) {
 		Log(Form("DCS FXS, successful!"));
 	} else  if (iDcsFxs ==1) {
-		Log(Form("DCS FXS, Could not store CTP scalers!!!"));
+		Log(Form("Could not store CTP scalers!!!"));
 		error |= 4;
 	} else{
 		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error without CTP scalers...",partition.Data(),detector.Data()));
@@ -625,9 +625,9 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		UInt_t iLHCData = ProcessLHCData(grpobj);
 		
 		if( iLHCData == 0 ) {
-			Log(Form("LHC Data from DCS FXS, successful!"));
+			Log(Form("LHC Data from FXS, successful!"));
 		} else  if (iLHCData == 1) {
-			Log(Form("LHC Data, problems with DCS FXS!"));
+			Log(Form("LHC Data, problems with FXS!"));
 			error |= 256;
 		} else  if (iLHCData == 2) {
 			Log(Form("LHC Data, problems with DAQ_time_start/DAQ_time_end!"));
@@ -1264,7 +1264,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 	}
 	
 	else {
-		AliError("No LHCData file found in DCS FXS");
+		AliError("No LHCData file found in FXS");
 		return 1;
 	}
 
