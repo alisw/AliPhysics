@@ -197,8 +197,10 @@ AliTRDdigitizer::~AliTRDdigitizer()
 
   // s-digitsmanager will be deleted via list
   fSDigitsManager     = 0;
-  fSDigitsManagerList->Delete();
-  delete fSDigitsManagerList;
+  if (fSDigitsManagerList) {
+    fSDigitsManagerList->Delete();
+    delete fSDigitsManagerList;
+  }
   fSDigitsManagerList = 0;
 
   delete [] fMasks;
