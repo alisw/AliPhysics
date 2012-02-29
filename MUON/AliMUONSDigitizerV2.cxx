@@ -104,7 +104,7 @@ AliMUONSDigitizerV2::Digitize(Option_t*)
   
   AliRunLoader* runLoader = AliRunLoader::Instance();
   AliLoader* loader = runLoader->GetDetectorLoader("MUON");
-
+  
   loader->LoadHits("READ");
   
   AliMUON* muon = static_cast<AliMUON*>(gAlice->GetModule("MUON"));
@@ -121,9 +121,9 @@ AliMUONSDigitizerV2::Digitize(Option_t*)
   }
   
   AliDebug(1,Form("Will use digitStore of type %s",sDigitStore->ClassName()));
-          
+  
   // average arrival time to chambers, for pileup studies
-
+  
   for ( Int_t iEvent = 0; iEvent < nofEvents; ++iEvent ) 
   {    
     // Loop over events.
@@ -132,43 +132,52 @@ AliMUONSDigitizerV2::Digitize(Option_t*)
     
     AliDebug(1,Form("iEvent=%d",iEvent));
     runLoader->GetEvent(iEvent);
-  
+    
     // for pile up studies
     float t0=fgkMaxIntTime;  int aa=0;
     AliHeader* header = runLoader->GetHeader();   
     AliGenCocktailEventHeader* cocktailHeader =
-      dynamic_cast<AliGenCocktailEventHeader*>(header->GenEventHeader());
+    dynamic_cast<AliGenCocktailEventHeader*>(header->GenEventHeader());
     if (cocktailHeader) {
       AliGenCocktailEventHeader* genEventHeader = (AliGenCocktailEventHeader*) (header->GenEventHeader());
       TList* headers = genEventHeader->GetHeaders();
       TIter nextH(headers);
       AliGenEventHeader *entry; 
       while((entry = (AliGenEventHeader*)nextH())) {
-	float t = entry->InteractionTime();	
-	if (TMath::Abs(t)<TMath::Abs(t0)) t0 = t;      
-	aa++;
+        float t = entry->InteractionTime();	
+        if (TMath::Abs(t)<TMath::Abs(t0)) t0 = t;      
+        aa++;
       }
     } else {
       AliGenEventHeader* evtHeader = 
-	(AliGenEventHeader*)(header->GenEventHeader());
-      float t = evtHeader->InteractionTime();		
-      if (TMath::Abs(t)<TMath::Abs(t0)) t0 = t;           
-      aa++;
+      (AliGenEventHeader*)(header->GenEventHeader());
+      if (evtHeader)
+      {  
+        float t = evtHeader->InteractionTime();		
+        if (TMath::Abs(t)<TMath::Abs(t0)) t0 = t;           
+        aa++;
+      }
+      else
+      {
+        // some generators may not offer a header, if which
+        // case we cannot get the interaction time, so we assume zero
+        t0 = 0.;
+      }
     }
-
+    
     loader->MakeSDigitsContainer();
-
+    
     TTree* treeS = loader->TreeS();
-
+    
     if ( !treeS )
     {
       AliFatal("");
     }
-
+    
     sDigitStore->Connect(*treeS);
     
     TTree* treeH = loader->TreeH();
-
+    
     AliMUONVHitStore* hitStore = AliMUONVHitStore::Create(*treeH);
     hitStore->Connect(*treeH);
     
@@ -178,37 +187,37 @@ AliMUONSDigitizerV2::Digitize(Option_t*)
     {
       // Loop over the tracks of this event.
       treeH->GetEvent(iTrack);
-
+      
       AliMUONHit* hit;
       TIter next(hitStore->CreateIterator());
       Int_t ihit(0);
       
       while ( ( hit = static_cast<AliMUONHit*>(next()) ) )       
       {
-	Int_t chamberId = hit->Chamber()-1;
- 	Float_t age = hit->Age()-t0;
-
+        Int_t chamberId = hit->Chamber()-1;
+        Float_t age = hit->Age()-t0;
+        
         AliMUONChamber& chamber = muon->Chamber(chamberId);
         AliMUONResponse* response = chamber.ResponseModel();
         
         // This is the heart of this method : the dis-integration
         TList digits;        
-	if (aa>1){  // if there are pileup events
-	  Float_t chamberTime = AliMUONConstants::AverageChamberT(chamberId);
-	  Float_t timeDif=age-chamberTime;	  
-	  if (timeDif>fgkMaxPosTimeDif || timeDif<fgkMaxNegTimeDif) {
-	    continue;
-	  }
-	  if(TMath::Abs(timeDif)>fgkMinTimeDif){
-	    response->DisIntegrate(*hit,digits,timeDif);
-	  }
-	  else{
-	    response->DisIntegrate(*hit,digits,0.);
-	  }
- 	}
- 	else{
-	  response->DisIntegrate(*hit,digits,0.);
-	}
+        if (aa>1){  // if there are pileup events
+          Float_t chamberTime = AliMUONConstants::AverageChamberT(chamberId);
+          Float_t timeDif=age-chamberTime;	  
+          if (timeDif>fgkMaxPosTimeDif || timeDif<fgkMaxNegTimeDif) {
+            continue;
+          }
+          if(TMath::Abs(timeDif)>fgkMinTimeDif){
+            response->DisIntegrate(*hit,digits,timeDif);
+          }
+          else{
+            response->DisIntegrate(*hit,digits,0.);
+          }
+        }
+        else{
+          response->DisIntegrate(*hit,digits,0.);
+        }
         
         TIter nextd(&digits);
         AliMUONVDigit* d;
@@ -217,7 +226,7 @@ AliMUONSDigitizerV2::Digitize(Option_t*)
           // Update some sdigit information that could not be known
           // by the DisIntegrate method
           d->SetHit(ihit);
-	  d->SetTime(age);
+          d->SetTime(age);
           d->AddTrack(hit->GetTrack(),d->Charge());
           tdlist.Add(d);
         }
@@ -239,7 +248,7 @@ AliMUONSDigitizerV2::Digitize(Option_t*)
         AliError("Could not add digit to digitStore");
       }
     }
-  
+    
     treeS->Fill();
     
     loader->WriteSDigits("OVERWRITE");
@@ -255,5 +264,5 @@ AliMUONSDigitizerV2::Digitize(Option_t*)
   loader->UnloadHits();  
   
   delete sDigitStore;
-
+  
 }
