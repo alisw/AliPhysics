@@ -30,7 +30,7 @@ public:
 
   static const char * fgkCutNames[kNCuts];
 
-  Bool_t IsSelected(TObject * object ) { return AcceptTrack(dynamic_cast<AliAODTrack*>(object)); }
+  Bool_t IsSelected(TObject * object ) { return AcceptTrack(static_cast<AliAODTrack*>(object)); }
   Bool_t IsSelected(TList * /*list*/) { return kFALSE; }
   Bool_t AcceptTrack(AliAODTrack * track);
 

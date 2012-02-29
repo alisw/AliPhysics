@@ -74,6 +74,9 @@ AliConversionTrackCuts::AliConversionTrackCuts() :
   fHistograms(NULL)
 {
   //Constructor
+  fEta[0] = -0.8; fEta[1] = 0.8;
+  fPt[0] = 1.0; fPt[1] = 999.9;
+  
 }
 //________________________________________________________________________
 AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "title") : 
@@ -106,7 +109,9 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fHistograms(NULL)
 {
   //Constructor
-}
+  fEta[0] = -0.8; fEta[1] = 0.8;
+  fPt[0] = 1.0; fPt[1] = 999.9;
+ }
 
 
 //________________________________________________________________________________
