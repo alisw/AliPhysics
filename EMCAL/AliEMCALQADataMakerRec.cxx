@@ -397,12 +397,12 @@ void AliEMCALQADataMakerRec::InitRaws()
   TH2I * hT3 = new TH2I("hTRUEmcalL0hits", "L0 trigger hits: Total number of 2x2 L0 generated",  nTRUCols, -0.5, nTRUCols - 0.5, nTRURows, -0.5, nTRURows-0.5);
   hT3->SetOption("COLZ");
   //hT3->Sumw2();
-  Add2RawsList(hT3, kNL0TRU, !expert, image, !saveCorr);
+  Add2RawsList(hT3, kNL0TRU, expert, image, !saveCorr);
 
   // L0 trigger hits: average time (bins are TRU channels)
   TProfile2D * hT4 = new TProfile2D("hTRUEmcalL0hitsAvgTime", "L0 trigger hits: average time bin", nTRUCols, -0.5, nTRUCols - 0.5, nTRURows, -0.5, nTRURows-0.5, profileOption);
   hT4->SetOption("COLZ");
-  Add2RawsList(hT4, kTimeL0TRU, !expert, image, !saveCorr);
+  Add2RawsList(hT4, kTimeL0TRU, expert, image, !saveCorr);
 
   // L0 trigger hits: first in the event (bins are TRU channels)
   TH1I * hT5 = new TH1I("hTRUEmcalL0hitsFirst", "L0 trigger hits: First hit in the event", nTot2x2, -0.5, nTot2x2);
@@ -474,7 +474,7 @@ void AliEMCALQADataMakerRec::InitRaws()
   h15->GetZaxis()->SetNdivisions(3);
   h15->UseCurrentStyle();
   h15->SetDirectory(0);
-  Add2RawsList(h15, k2DRatioAmp, !expert, image, !saveCorr) ;
+  Add2RawsList(h15, k2DRatioAmp, expert, image, !saveCorr) ;
 
   TH1F * h16 = new TH1F("hRatioDist", "Amplitude_{current run}/Amplitude_{reference run} ratio distribution", nTot, 0., 2.);
   h16->SetMinimum(0.1); 
@@ -495,14 +495,14 @@ void AliEMCALQADataMakerRec::InitRaws()
   hL10->UseCurrentStyle();
   hL10->SetDirectory(0);
 //  hL10->SetOption("E");
-  Add2RawsList(hL10, kLEDMonRatio, !expert, image, !saveCorr) ;
+  Add2RawsList(hL10, kLEDMonRatio, expert, image, !saveCorr) ;
 
   TH1F * hL11 = new TH1F("hMaxMinusMinLEDMonRatioDist", "LEDMon amplitude, Ratio distribution", nTotLEDMon, 0, 2);
   hL11->SetMinimum(0.1) ;
   gStyle->SetOptStat(0);
   hL11->UseCurrentStyle();
   hL11->SetDirectory(0);
-  Add2RawsList(hL11, kLEDMonRatioDist, !expert, image, !saveCorr) ;
+  Add2RawsList(hL11, kLEDMonRatioDist, expert, image, !saveCorr) ;
   
   GetCalibRefFromOCDB();   
 
@@ -519,10 +519,10 @@ void AliEMCALQADataMakerRec::InitRaws()
  Add2RawsList(hS0, kAmpL1, expert, !image, !saveCorr) ;
 	
  TH2F *hS1 = new TH2F("hL1Gamma", "L1 Gamma patch position (FastOR top-left)", nSTUCols, -0.50, nSTUCols-0.5, nSTURows, -0.5, nSTURows-0.5);
- Add2RawsList(hS1, kGL1, expert, image, !saveCorr) ;
+ Add2RawsList(hS1, kGL1, !expert, image, !saveCorr) ;
 	
  TH2F *hS2 = new TH2F("hL1Jet", "L1 Jet patch position (FastOR top-left)", 12, -0.5, nSTUCols-0.5, 16, 0, nSTURows-0.5);
- Add2RawsList(hS2, kJL1, expert, image, !saveCorr) ;
+ Add2RawsList(hS2, kJL1, !expert, image, !saveCorr) ;
 	
  TH2I *hS3 = new TH2I("hL1GV0", "L1 Gamma patch amplitude versus V0 signal", 500, 0, 50000, 1500, 0, 1500);
  Add2RawsList(hS3, kGL1V0, expert, image, !saveCorr) ;
@@ -531,7 +531,7 @@ void AliEMCALQADataMakerRec::InitRaws()
  Add2RawsList(hS4, kJL1V0, expert, !image, !saveCorr) ;
 
  TH1I *hS5 = new TH1I("hFrameR","Link between TRU and STU", 32, 0, 32);
- Add2RawsList(hS5, kSTUTRU, expert, !image, !saveCorr) ;
+ Add2RawsList(hS5, kSTUTRU, !expert, image, !saveCorr) ;
 
  hS0->SetOption("COLZ");
  hS1->SetOption("COLZ");
@@ -1146,11 +1146,11 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
       Int_t sizeL1jpatch = 2+(fw >> 16);
 
       //To check link
-      Int_t mask = inSTU->GetFrameReceived();
+      Int_t mask = inSTU->GetFrameReceived() ^ inSTU->GetRegionEnable();
 
       for (int i = 0; i < 32; i++)
 	{
-	  if ((mask >> i) & 0x1) FillRawsData(kSTUTRU, i);
+		if (!((mask >> i) &  0x1)) FillRawsData(kSTUTRU, i);
 	}
 
       //V0 signal in STU

@@ -41,14 +41,17 @@ public:
     kPedLG,kPedHG,
     k2DRatioAmp,kRatioDist, kLEDMonRatio, kLEDMonRatioDist,
     // then TRU info
-    kNsmodTRU,kTimeTRU,
+    kNsmodTRU,
     kSigTRU,kNtotTRU,
-    kPedTRU,
     kNL0TRU, kTimeL0TRU,
+		kNL0FirstTRU, kTimeL0FirstTRU,
     // and also LED Mon info
     kNsmodLGLEDMon,kNsmodHGLEDMon,kTimeLGLEDMon,kTimeHGLEDMon,
     kSigLGLEDMon,kSigHGLEDMon,kNtotLGLEDMon,kNtotHGLEDMon,
-    kPedLGLEDMon,kPedHGLEDMon
+    kPedLGLEDMon,kPedHGLEDMon,
+		//and STU info
+		kAmpL1, kGL1, kJL1,
+		kGL1V0, kJL1V0, kSTUTRU  
   } ;
 	//Histograms for RecPoints  control
 	enum HRPType_t {kRecPE,kRecPM,kRecPDigM};
@@ -69,6 +72,7 @@ protected:
   void CheckRaws(Double_t* test, TObjArray ** list);
   void CheckRecPoints(Double_t* /*test*/, TObjArray** /*list*/) const {;}
   void CheckESD(Double_t* /*test*/, TObjArray** /*list*/) const {;}
+	void CleanListOfFunctions(TList *list);
   TH1* GetHisto(TObjArray* list, const char* hname, Int_t specie) const;
   Double_t MarkHisto(TH1& histo, Double_t value) const;
 	
@@ -86,6 +90,7 @@ private:
   TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
   TLine *     fLineRow[5]       ; //! line to distinguish the different SM sectors (0-5) 
   TPaveText * fText          ;  //! Information text for the quality of each SM
+	TPaveText * fTextL1[3];       //! Information text for the quality of L1 plots (3 plots in total)
   ClassDef(AliEMCALQAChecker,4)  // description 
 
 };
