@@ -1,6 +1,5 @@
 void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
 {
-
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTENDER");
@@ -9,6 +8,9 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   gSystem->Load("libTPCcalib");
   gSystem->Load("libPWGPP");
   gSystem->Load("libPWGLFspectra");
+
+
+  gRandom->SetSeed(0);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -20,6 +22,8 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   // Switch off all AliInfo (too much output!!!)
   AliLog::SetGlobalLogLevel(AliLog::kError);
   mgr->SetDebugLevel(0);
+
+  
 
   //
   // Create physics trigger selection class
@@ -74,10 +78,10 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   //
   AlidNdPtTrackDumpTask *task = new AlidNdPtTrackDumpTask("AlidNdPtTrackDumpTask");
   task->SetUseMCInfo(hasMC);
-  //task->SetLowPtTrackDownscaligF(1.e6);
-  //task->SetLowPtV0DownscaligF(1.e4);
-  task->SetLowPtTrackDownscaligF(1.e2);
-  task->SetLowPtV0DownscaligF(1.e1);
+  task->SetLowPtTrackDownscaligF(1.e7);
+  task->SetLowPtV0DownscaligF(1.e4);
+  //task->SetLowPtTrackDownscaligF(1.e2);
+  //task->SetLowPtV0DownscaligF(1.e1);
 
   // trigger
   //task->SelectCollisionCandidates(AliVEvent::kMB); 
@@ -104,10 +108,10 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("jotwinow_dNdPtTrackDumpPbPb_TPCITS", TTree::Class(), AliAnalysisManager::kOutputContainer, "jotwinow_dNdPtTrackDumpTaskPbPb_TPCITS.root");
-  mgr->ConnectOutput(task, 0, coutput);
+  //AliAnalysisDataContainer *coutput = mgr->CreateContainer("jotwinow_dNdPtTrackDumpPbPb_TPCITS", TTree::Class(), AliAnalysisManager::kOutputContainer, "jotwinow_dNdPtTrackDumpTaskPbPb_TPCITS.root");
+  //mgr->ConnectOutput(task, 1, coutput);
 
-  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("jotwinow_dNdPtTrackInfoPbPb_TPCITS", TList::Class(), AliAnalysisManager::kOutputContainer, "jotwinow_dNdPtTrackInfoPbPb_TPCITS.root");
-  //mgr->ConnectOutput(task, 1, coutput1);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TrigEvents", TList::Class(), AliAnalysisManager::kOutputContainer, "jotwinow_TrigEvents_Trees.root");
+  mgr->ConnectOutput(task, 0, coutput1);
 }
 
