@@ -23,6 +23,7 @@ class AliMCEvent;
 class AliKFParticle; 
 class AliESDv0; 
 class TList;
+class TObjArray;
 class TTree;
 class TTreeSRedirector;
 
@@ -46,7 +47,7 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Bool_t IsUseMCInfo() const               { return fUseMCInfo; }
   
   // Process events
-  virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  virtual void ProcessdNdPt(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   virtual void ProcessV0(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
 
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
@@ -77,6 +78,7 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   // v0s selection
   Int_t  GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle);
   Bool_t IsV0Downscaled(AliESDv0 *const v0);
+  Bool_t IsHighDeDxParticle(AliESDtrack * const track);
 
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
   void SetLowPtV0DownscaligF(Double_t fact)    { fLowPtV0DownscaligF = fact; }
@@ -98,7 +100,6 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   AliTriggerAnalysis::Trigger fTrigger;    //! trigger settings
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   //! analysis mode TPC only, TPC + ITS
 
-  TTree* fOutputSummary;      //! tree to dump output
   TTreeSRedirector* fTreeSRedirector;      //! temp tree to dump output
 
   TString fCentralityEstimator;     //! use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"

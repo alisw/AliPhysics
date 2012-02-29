@@ -24,6 +24,7 @@
 #include "TH1F.h"
 #include "TCanvas.h"
 #include "TList.h"
+#include "TObjArray.h"
 #include "TFile.h"
 #include "TMatrixD.h"
 #include "TRandom3.h"
@@ -78,7 +79,6 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
   , fEsdTrackCuts(0)
   , fTrigger(AliTriggerAnalysis::kMB1) 
   , fAnalysisMode(AlidNdPtHelper::kTPC) 
-  , fOutputSummary(0)
   , fTreeSRedirector(0)
   , fCentralityEstimator(0)
   , fLowPtTrackDownscaligF(0)
@@ -87,8 +87,7 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
   // Constructor
 
   // Define input and output slots here
-  DefineOutput(0, TTree::Class());
-  //DefineOutput(1, TList::Class());
+  DefineOutput(0, TList::Class());
 
 }
 
@@ -96,7 +95,6 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
 AlidNdPtTrackDumpTask::~AlidNdPtTrackDumpTask()
 {
   if(fOutput) delete fOutput;  fOutput =0; 
-  //if(fOutputSummary) delete fOutputSummary;  fOutputSummary =0; 
   if(fTreeSRedirector) delete fTreeSRedirector;  fTreeSRedirector =0; 
 
   if(fdNdPtEventCuts) delete fdNdPtEventCuts; fdNdPtEventCuts=NULL; 
@@ -128,12 +126,10 @@ void AlidNdPtTrackDumpTask::UserCreateOutputObjects()
   fOutput->SetOwner();
 
   //
-  // create output tree
-  //
-  fTreeSRedirector = new TTreeSRedirector("jotwinow_HighPt_TrackAndV0_Trees.root");
+  // create temporary file for output tree
+  fTreeSRedirector = new TTreeSRedirector("jotwinow_Temp_Trees.root");
 
-  PostData(0, fOutputSummary);
-  //PostData(1, fOutput);
+  PostData(0, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -165,16 +161,15 @@ void AlidNdPtTrackDumpTask::UserExec(Option_t *)
   }
 
   //
-  Process(fESD,fMC,fESDfriend);
+  ProcessdNdPt(fESD,fMC,fESDfriend);
   ProcessV0(fESD,fMC,fESDfriend);
 
   // Post output data.
-  PostData(0, fOutputSummary);
-  //PostData(1, fOutput);
+  PostData(0, fOutput);
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const esdFriend)
+void AlidNdPtTrackDumpTask::ProcessdNdPt(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const esdFriend)
 {
   //
   // Process real and/or simulated events
@@ -279,6 +274,40 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 
   } // end bUseMC
 
+  // laser events 
+  if(esdEvent)
+  {
+    const AliESDHeader* esdHeader = esdEvent->GetHeader();
+    if(esdHeader && esdHeader->GetEventSpecie()==AliRecoParam::kCalib) 
+    {
+      Int_t countLaserTracks = 0;
+      for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+      {
+        AliESDtrack *track = esdEvent->GetTrack(iTrack);
+        if(!track) continue;
+
+        if(track->GetTPCInnerParam()) countLaserTracks++;
+      }
+       
+      if(countLaserTracks > 100) {      
+
+      Double_t runNumber = esdEvent->GetRunNumber();
+      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+
+      if(!fTreeSRedirector) return;
+      (*fTreeSRedirector)<<"Laser"<<
+        "fileName.="<<&fileName<<
+        "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
+        "multTPCtracks="<<countLaserTracks<<
+        "\n";
+     }
+     }
+   }
+
+
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
   const AliESDVertex* vtxESD = 0; 
@@ -298,11 +327,22 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
+
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
-    TRandom3 random;
+    //
+    Double_t vert[3] = {0}; 
+    vert[0] = vtxESD->GetXv();
+    vert[1] = vtxESD->GetYv();
+    vert[2] = vtxESD->GetZv();
+    Int_t mult = vtxESD->GetNContributors();
+    Double_t bz = esdEvent->GetMagneticField();
+    Double_t runNumber = esdEvent->GetRunNumber();
+    Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
 
+    // high pT tracks
     for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
     {
       AliESDtrack *track = esdEvent->GetTrack(iTrack);
@@ -310,10 +350,13 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       if(track->Charge()==0) continue;
       if(!esdTrackCuts->AcceptTrack(track)) continue;
       if(!accCuts->AcceptTrack(track)) continue;
-
+      
       // downscale low-pT tracks
       Double_t scalempt= TMath::Min(track->Pt(),10.);
-      if(TMath::Exp(2*scalempt)<fLowPtTrackDownscaligF*random.Rndm()) continue;
+      Double_t downscaleF = gRandom->Rndm();
+      downscaleF *= fLowPtTrackDownscaligF;
+      if(TMath::Exp(2*scalempt)<downscaleF) continue;
+      //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
       // Dump to the tree 
       // vertex
@@ -620,18 +663,6 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       }
 
       //
-      Double_t vert[3] = {0}; 
-      vert[0] = vtxESD->GetXv();
-      vert[1] = vtxESD->GetYv();
-      vert[2] = vtxESD->GetZv();
-      Int_t mult = vtxESD->GetNContributors();
-      Double_t bz = esdEvent->GetMagneticField();
-      Double_t runNumber = esdEvent->GetRunNumber();
-      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
-      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
-
-      //
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"dNdPtTree"<<
         "fileName.="<<&fileName<<
@@ -685,10 +716,54 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 
 	if(trackInnerC3) delete trackInnerC3;
     }
-  }
 
-  PostData(0, fOutputSummary);
-  //PostData(1, fOutput);
+    // high dEdx
+    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+    {
+      AliESDtrack *track = esdEvent->GetTrack(iTrack);
+      if(!track) continue;
+      if(track->Charge()==0) continue;
+      if(!esdTrackCuts->AcceptTrack(track)) continue;
+      if(!accCuts->AcceptTrack(track)) continue;
+
+      if(!IsHighDeDxParticle(track)) continue;
+      
+      if(!fTreeSRedirector) return;
+      (*fTreeSRedirector)<<"dEdx"<<
+        "fileName.="<<&fileName<<
+        "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
+        "Bz="<<bz<<
+	"vertX="<<vert[0]<<
+	"vertY="<<vert[1]<<
+	"vertZ="<<vert[2]<<
+        "mult="<<mult<<
+        "esdTrack.="<<track<<
+        "\n";
+      }
+  }
+  
+  PostData(0, fOutput);
+}
+
+//_____________________________________________________________________________
+Bool_t AlidNdPtTrackDumpTask::IsHighDeDxParticle(AliESDtrack * track) {
+  //
+  // check if particle is Z > 1 
+  //
+  if (track->GetTPCNcls() < 60) return kFALSE;
+  Double_t mom = track->GetInnerParam()->GetP();
+  if (mom < 0.2) return kFALSE; // protection against unexpected behavior of Aleph parameterization
+  Float_t dca[2], bCov[3];
+  track->GetImpactParameters(dca,bCov);
+  //
+
+  Double_t triggerDeDx = 4*AliExternalTrackParam::BetheBlochAleph((mom*2)/(0.938*3),1.0288,31.9806,5.04114e-11,2.13096,2.38541);
+
+  if (track->GetTPCsignal() > triggerDeDx && track->GetTPCsignal()<1000 && TMath::Abs(dca[0])<3.) return kTRUE;
+
+  return kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -711,9 +786,6 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
     AliDebug(AliLog::kError, "cuts not available");
     return;
   }
-
-
-
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
@@ -784,13 +856,15 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
   //
   // Dump the pt downscaled V0 into the tree
   // 
-  //
   Int_t ntracks = esdEvent->GetNumberOfTracks();
   Int_t nV0s = esdEvent->GetNumberOfV0s();
   Int_t run = esdEvent->GetRunNumber();
   Int_t time= esdEvent->GetTimeStamp();
   Int_t evNr=esdEvent->GetEventNumberInFile();
   
+
+
+
   for (Int_t iv0=0; iv0<nV0s; iv0++){
     AliESDv0 * v0 = esdEvent->GetV0(iv0);
     if (!v0) continue;
@@ -812,10 +886,10 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
     if(!fTreeSRedirector) return;
     (*fTreeSRedirector)<<"V0s"<<
       "isDownscaled="<<isDownscaled<<
-      "run="<<run<<
-      "fname="<<&fileName<<
-      "time="<<time<<
-      "evNr="<<evNr<<
+      "fileName.="<<&fileName<<
+      "runNumber="<<run<<
+      "evtTimeStamp="<<time<<
+      "evtNumberInFile="<<evNr<<
       "type="<<type<<
       "ntracks="<<ntracks<<
       "v0.="<<v0<<
@@ -826,8 +900,9 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
       "\n";
   }
   }
-  PostData(0, fOutputSummary);
+  PostData(0, fOutput);
 }
+
 
 //_____________________________________________________________________________
 Int_t   AlidNdPtTrackDumpTask::GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle)
@@ -963,10 +1038,14 @@ Bool_t AlidNdPtTrackDumpTask::IsV0Downscaled(AliESDv0 *const v0)
   //return kFALSE;
   Double_t maxPt= TMath::Max(v0->GetParamP()->Pt(), v0->GetParamN()->Pt());
   Double_t scalempt= TMath::Min(maxPt,10.);
-  if (TMath::Exp(2*scalempt)<fLowPtV0DownscaligF*gRandom->Rndm()) return kTRUE;
-  return kFALSE;
-  /*
+  Double_t downscaleF = gRandom->Rndm();
+  downscaleF *= fLowPtV0DownscaligF;
   
+  //printf("V0 TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
+  if (TMath::Exp(2*scalempt)<downscaleF) return kTRUE;
+  return kFALSE;
+
+  /*
     TH1F his1("his1","his1",100,0,10);
     TH1F his2("his2","his2",100,0,10);
     {for (Int_t i=0; i<10000; i++){
@@ -1154,19 +1233,59 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   // locally on working node
   //
 
+  // must be deleted to store trees
+  if(fTreeSRedirector)  delete fTreeSRedirector; fTreeSRedirector=0;
+
+  // open temporary file and copy trees to the ouptut container
+
+  TChain* chain = NULL;
+  //
+  chain = new TChain("dNdPtTree");
+  if(!chain) return;
+  chain->Add("jotwinow_Temp_Trees.root");
+  TTree *tree1 = chain->CopyTree("1");
+  if (chain) { delete chain; chain=0; }
+  if(tree1) tree1->Print();
+  //
+  chain = new TChain("V0s");
+  if(!chain) return;
+  chain->Add("jotwinow_Temp_Trees.root");
+  TTree *tree2 = chain->CopyTree("1");
+  if (chain) { delete chain; chain=0; }
+  if(tree2) tree2->Print();
+  //
+  chain = new TChain("dEdx");
+  if(!chain) return;
+  chain->Add("jotwinow_Temp_Trees.root");
+  TTree *tree3 = chain->CopyTree("1");
+  if (chain) { delete chain; chain=0; }
+  if(tree3) tree3->Print();
+  //
+  chain = new TChain("Laser");
+  if(!chain) return;
+  chain->Add("jotwinow_Temp_Trees.root");
+  TTree *tree4 = chain->CopyTree("1");
+  if (chain) { delete chain; chain=0; }
+  if(tree4) tree4->Print();
+
+  OpenFile(0);
+
+  if(tree1) fOutput->Add(tree1);
+  if(tree2) fOutput->Add(tree2);
+  if(tree3) fOutput->Add(tree3);
+  if(tree4) fOutput->Add(tree4);
+  
   // Post output data.
-  PostData(1, fOutput);
-  //PostData(0, fOutputSummary);
+  PostData(0, fOutput);
 }
 
 //_____________________________________________________________________________
 void AlidNdPtTrackDumpTask::Terminate(Option_t *) 
 {
   // Called one at the end 
-  if(fTreeSRedirector)  delete fTreeSRedirector; fTreeSRedirector=0;
-  fOutputSummary = dynamic_cast<TTree*> (GetOutputData(0));
+  /*
+  fOutputSummary = dynamic_cast<TTree*> (GetOutputData(1));
   if(fOutputSummary) delete fOutputSummary; fOutputSummary=0;
-
   TChain* chain = new TChain("dNdPtTree");
   if(!chain) return;
   chain->Add("jotwinow_HighPt_TrackAndV0_Trees.root");
@@ -1177,10 +1296,11 @@ void AlidNdPtTrackDumpTask::Terminate(Option_t *)
   fOutputSummary = tree;
 
   if (!fOutputSummary) {
-    Printf("ERROR: AlidNdPtTrackDumpTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
+    Printf("ERROR: AlidNdPtTrackDumpTask::Terminate(): Output data not avaiable %p \n", GetOutputData(1));
     return;
   }
+  */
 
-  PostData(0, fOutputSummary);
-  //PostData(1, fOutput);
+  PostData(0, fOutput);
+
 }
