@@ -30,6 +30,7 @@
 #include <TSystem.h>
 
 #include "AliGenHalo.h"
+#include "AliGenEventHeader.h"
 #include "AliRun.h"
 #include "AliLog.h"
 
@@ -278,6 +279,7 @@ void AliGenHalo::Generate()
   if (first && (fNskip == 0)) ReadNextParticle();
   first = kFALSE;
   oldID = fLossID;
+  Int_t np = 0;
   
   while(1) {
       // Push particle to stack
@@ -299,7 +301,7 @@ void AliGenHalo::Generate()
       origin[2] = 1950.;
 
       PushTrack(fTrackIt , -1, fPdg , p, origin, polar, fTS - 1950./2.9979e10, kPNoProcess, nt, fWS);
-      
+      np++;
       Int_t nc = ReadNextParticle();
       
       if (fLossID != oldID || nc == 0) {
@@ -307,9 +309,18 @@ void AliGenHalo::Generate()
 	  break;
       }
   }
+
   SetHighWaterMark(nt);
+  AliGenEventHeader* header = new AliGenEventHeader("HALO");
+  header->SetNProduced(np);
+  // Passes header either to the container or to gAlice
+  if (fContainer) {
+      fContainer->AddHeader(header);
+  } else {
+      gAlice->SetGenEventHeader(header);	
+  }
 }
- 
+
 
 Float_t AliGenHalo::GasPressureWeight(Float_t zPrimary)
 {
