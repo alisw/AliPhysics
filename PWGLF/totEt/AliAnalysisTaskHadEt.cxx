@@ -26,6 +26,7 @@
 #include "AliPWG0Helper.h"
 
 #include <iostream>
+#include "AliLog.h"
 
 using namespace std;
 
@@ -174,6 +175,10 @@ if(res == 0 && cent){
   //cout<<"New Event"<<endl;  
 
   AliMCEvent* mcEvent = MCEvent();
+  if(!mcEvent){  
+    AliFatal("ERROR: MC Event does not exist");
+    return;
+  }
   Int_t eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(mcEvent->Header());
   fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
 
@@ -181,7 +186,9 @@ if(res == 0 && cent){
 //   Printf("ERROR: Could not retrieve MC event");
 //  }
   if (mcEvent && fESDEvent && fIsSim){
-      ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
+    ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
+
+    if(AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND || fRecAnalysis->DataSet()==20100){//either non-diffractive or Pb+Pb
       if(fMCAnalysis->Full()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceITS( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITS() );
@@ -191,6 +198,15 @@ if(res == 0 && cent){
 	fMCAnalysis->FillSimHadEtMinusRecoHadEtFullAcceptanceITS( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITS() );
 	fMCAnalysis->FillSimHadEtMinusRecoHadEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceTPCNoPID() );
 	fMCAnalysis->FillSimHadEtMinusRecoHadEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITSNoPID() );
+
+	fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
+	fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceITS( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITS() );
+	fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPCNoPID() );
+	fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITSNoPID() );
+	fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedHadEtFullAcceptanceTPC() );
+	fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceITS( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITS() );
+	fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceTPCNoPID() );
+	fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITSNoPID() );
       }
       if(fMCAnalysis->EMCAL()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtEMCALAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtEMCALAcceptanceTPC() );
@@ -220,9 +236,10 @@ if(res == 0 && cent){
       }
     }
   }
+ }
 //cout<<"End Event"<<endl<<endl;
 // Post output data.
-PostData(1, fOutputList);
+ PostData(1, fOutputList);
 }
 
 //________________________________________________________________________

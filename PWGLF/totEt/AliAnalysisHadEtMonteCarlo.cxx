@@ -1867,6 +1867,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   TString *sEMCAL = new TString("EMCAL");
   TString *sPHOS = new TString("PHOS");
   float etDiff = 1.5;
+  float etDiffLow = etDiff;
+  if(fDataSet!=20100){//If this is p+p
+    etDiffLow = 2.5;
+  }
 
   for(int tpc = 0;tpc<lastcutset;tpc++){
     TString *detector = NULL;
@@ -1904,17 +1908,27 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	  TString *partidstring = NULL;
 	  if(pid==1){partid = sPID; partidstring = sPID;}
 	  else{partid = sNoPID; partidstring = sNoPIDString;}
+
 	  snprintf(histoname,200,"Sim%sMinusReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	  snprintf(histotitle,200,"(Simulated %s - reconstructed %s)/(Simulated %s) with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	  snprintf(ytitle,50,"(Simulated %s - reconstructed %s)/(Simulated %s)",etstring->Data(),etstring->Data(),etstring->Data());
 	  snprintf(xtitle,50,"Simulated %s",etstring->Data());
-	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiffLow,etDiff);
+
+	  if(type==0){
+	    snprintf(histoname,200,"Sim%sVsReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	    snprintf(histotitle,200,"Simulated %s vs reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	    snprintf(ytitle,50,"Simulated %s - reconstructed %s",etstring->Data(),etstring->Data());
+	    snprintf(xtitle,50,"Simulated %s",etstring->Data());
+	    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt*4,minEt,maxEt,nbinsEt*4,minEt,maxEt);
+	  }
+
 	  if(hadet==0 && type==0 && fInvestigatePiKP){//we only want to do this once...  not the most elegant way of coding but hey...
 	    snprintf(histoname,200,"SimPiKPMinusRecoPiKP%sAcceptance%s%s",acceptance->Data(),detector->Data(),partid->Data());
 	    snprintf(histotitle,200,"(Sim PiKP - reco PiKP)/(Sim PiKP) with %s acceptance for p_{T}>%s GeV/c%s",acceptance->Data(),ptstring->Data(),partidstring->Data());
 	    snprintf(ytitle,50,"(Sim PiKP - reco PiKP)/(Sim PiKP)");
 	    snprintf(xtitle,50,"Simulated E_{T}^{#pi,K,p}");
-	    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+	    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiffLow,etDiff);
 	  }
 	}
       }
@@ -2041,7 +2055,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     snprintf(histotitle,200,"Simulated (true-smeared)/true for efficiency smearing");
     snprintf(ytitle,50,"(true-smeared)/true");
     snprintf(xtitle,50,"true p, K, p E_{T}");
-    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*7,etDiff*7);
     snprintf(histoname,200,"SimPiKPEtEfficiencySmeared");
     snprintf(histotitle,200,"Simulated E_{T} for efficiency smearing");
     snprintf(ytitle,50,"Number of events");
