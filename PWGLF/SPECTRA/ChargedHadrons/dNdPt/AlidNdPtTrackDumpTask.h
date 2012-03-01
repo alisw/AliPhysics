@@ -47,7 +47,8 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Bool_t IsUseMCInfo() const               { return fUseMCInfo; }
   
   // Process events
-  virtual void ProcessdNdPt(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  virtual void ProcessAll(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   virtual void ProcessV0(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
 
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
@@ -83,6 +84,8 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
   void SetLowPtV0DownscaligF(Double_t fact)    { fLowPtV0DownscaligF = fact; }
 
+  void SetProcessAll(Bool_t proc) { fProcessAll = proc; }
+
  private:
 
   AliESDEvent *fESD;    //! ESD event
@@ -106,6 +109,7 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
 
   Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
   Double_t fLowPtV0DownscaligF; // low pT V0 downscaling factor
+  Double_t fProcessAll; // Calculate all track properties including MC
 
   AlidNdPtTrackDumpTask(const AlidNdPtTrackDumpTask&); // not implemented
   AlidNdPtTrackDumpTask& operator=(const AlidNdPtTrackDumpTask&); // not implemented
