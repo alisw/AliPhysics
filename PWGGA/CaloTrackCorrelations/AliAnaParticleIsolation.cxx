@@ -56,7 +56,9 @@ ClassImp(AliAnaParticleIsolation)
     // Histograms
     fhEIso(0),                        fhPtIso(0),                       
     fhPhiIso(0),                      fhEtaIso(0),                     fhEtaPhiIso(0), 
-    fhPtNoIso(0),                     fhPtDecayIso(0),                 fhPtDecayNoIso(0), 
+    fhEtaPhiNoIso(0), 
+    fhPtNoIso(0),                     fhPtDecayIso(0),                 fhPtDecayNoIso(0),
+    fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0), 
     fhConeSumPt(0),                   fhPtInCone(0),
     fhFRConeSumPt(0),                 fhPtInFRCone(0),
     // MC histograms
@@ -535,10 +537,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     outputContainer->Add(fhEtaIso) ;
     
     fhEtaPhiIso  = new TH2F
-    ("hEtaPhi","Number of isolated particlesm #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
+    ("hEtaPhiIso","Number of isolated particlesm #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
     fhEtaPhiIso->SetXTitle("#eta");
     fhEtaPhiIso->SetYTitle("#phi");
     outputContainer->Add(fhEtaPhiIso) ;
+
+    fhEtaPhiNoIso  = new TH2F
+    ("hEtaPhiNoIso","Number of not isolated leading particlesm #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaPhiNoIso->SetXTitle("#eta");
+    fhEtaPhiNoIso->SetYTitle("#phi");
+    outputContainer->Add(fhEtaPhiNoIso) ;
     
     fhPtNoIso  = new TH1F("hPtNoIso","Number of not isolated leading particles",nptbins,ptmin,ptmax); 
     fhPtNoIso->SetYTitle("N");
@@ -554,6 +562,18 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtDecayNoIso->SetYTitle("N");
     fhPtDecayNoIso->SetXTitle("p_{T}(GeV/c)");
     outputContainer->Add(fhPtDecayNoIso) ;
+
+    fhEtaPhiDecayIso  = new TH2F
+    ("hEtaPhiDecayIso","Number of isolated Pi0 decay particlesm #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaPhiDecayIso->SetXTitle("#eta");
+    fhEtaPhiDecayIso->SetYTitle("#phi");
+    outputContainer->Add(fhEtaPhiDecayIso) ;
+
+    fhEtaPhiDecayNoIso  = new TH2F
+    ("hEtaPhiDecayNoIso","Number of not isolated leading Pi0 decay particlesm #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaPhiDecayNoIso->SetXTitle("#eta");
+    fhEtaPhiDecayNoIso->SetYTitle("#phi");
+    outputContainer->Add(fhEtaPhiDecayNoIso) ;
     
     if(IsDataMC())
     {
@@ -1198,7 +1218,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhEtaIso    ->Fill(pt,eta);
       fhEtaPhiIso ->Fill(eta,phi);
 
-      if (decay) fhPtDecayIso->Fill(pt);
+      if (decay) 
+	{
+	  fhPtDecayIso->Fill(pt);
+	  fhEtaPhiDecayIso->Fill(eta,phi);
+	}
       
       if(IsDataMC())
       {
@@ -1256,7 +1280,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(!isolation)
     {
       fhPtNoIso  ->Fill(pt);
-      if (decay) fhPtDecayNoIso->Fill(pt);
+      fhEtaPhiNoIso->Fill(eta,phi);
+      if (decay) 
+	{
+	  fhPtDecayNoIso->Fill(pt);
+	  fhEtaPhiDecayNoIso->Fill(eta,phi);
+	}
       
       if(IsDataMC())
       {
