@@ -15,84 +15,106 @@
 
 /* $Id$ */
 
-#include <TChain.h>
-#include <TFile.h>
-#include <TParticle.h>
-
-#include "AliAnalysisTaskESDMCLabelAddition.h"
-#include "AliAnalysisManager.h"
+// STEER includes
 #include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliAODHandler.h"
-#include "AliAnalysisFilter.h"
-#include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"
-#include "AliESDMuonCluster.h"
-#include "AliESDVertex.h"
-#include "AliMultiplicity.h"
 #include "AliLog.h"
-#include "AliStack.h"
-#include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
-#include "AliAODMCParticle.h"
+#include "AliGeomManager.h"
+#include "AliCDBManager.h"
 
+// ANALYSIS includes
+#include "AliAnalysisManager.h"
+
+// MUON includes
+#include "AliMUONCDB.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONESDInterface.h"
 #include "AliMUONTrack.h"
-#include "AliMUONTrackParam.h"
 #include "AliMUONVTrackStore.h"
-#include "AliMUONVCluster.h"
-#include "AliMUONVClusterStore.h"
+#include "AliMUONTriggerTrack.h"
+#include "AliMUONVTriggerTrackStore.h"
+#include "AliMUONLocalTrigger.h"
+
+#include "AliAnalysisTaskESDMCLabelAddition.h"
 
 ClassImp(AliAnalysisTaskESDMCLabelAddition)
 
-// sigma cut applied to match a reconstructed cluster with a trackref
-const Double_t AliAnalysisTaskESDMCLabelAddition::fgkSigmaCut = 10.;
-
 //----------------------------------------------------------------------
 AliAnalysisTaskESDMCLabelAddition::AliAnalysisTaskESDMCLabelAddition():
-  AliAnalysisTaskSE()
+AliAnalysisTaskSE(),
+fDefaultStorage(""),
+fSigmaCut(-1.),
+fSigmaCutTrig(-1.)
 {
-  // Default constructor
+  /// Default constructor
 }
 
 
 //----------------------------------------------------------------------
 AliAnalysisTaskESDMCLabelAddition::AliAnalysisTaskESDMCLabelAddition(const char* name):
-  AliAnalysisTaskSE(name)
+AliAnalysisTaskSE(name),
+fDefaultStorage("raw://"),
+fSigmaCut(-1.),
+fSigmaCutTrig(-1.)
 {
-  // Constructor
+  /// Constructor
 }
 
 
 //----------------------------------------------------------------------
 void AliAnalysisTaskESDMCLabelAddition::UserCreateOutputObjects()
 {
+  /// Create output objects
 }
 
 
 //----------------------------------------------------------------------
-void AliAnalysisTaskESDMCLabelAddition::Init()
+void AliAnalysisTaskESDMCLabelAddition::NotifyRun()
 {
-  AliDebug(2, "Init()");
+  /// Load OCDB inputs
+  
+  // set OCDB location
+  AliCDBManager* cdbm = AliCDBManager::Instance();
+  cdbm->SetDefaultStorage(fDefaultStorage.Data());
+  cdbm->SetRun(fCurrentRunNumber);
+  
+  // load mapping
+  if (!AliMUONCDB::LoadMapping()) return;
+  
+  // load geometry
+  if (!AliGeomManager::GetGeometry()) AliGeomManager::LoadGeometry();
+  if (!AliGeomManager::GetGeometry()) return;
+  
+  // load recoParam
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) {
+    fSigmaCut = -1.;
+    fSigmaCutTrig = -1.;
+    return;
+  }
+  
+  // get sigma cut from recoParam to associate clusters with TrackRefs in case the labels are not used
+  fSigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
+  
+  // get sigma cut from recoParam to associate trigger track to triggerable track
+  fSigmaCutTrig = recoParam->GetSigmaCutForTrigger();
+  
 }
 
 
 //----------------------------------------------------------------------
 void AliAnalysisTaskESDMCLabelAddition::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event					    
-  Long64_t ientry = Entry();
-  AliDebug(1, Form("MCLabel Addition: Analysing event # %5d\n",(Int_t) ientry)); 
-  AddMCLabel();
-}
-
-
-//----------------------------------------------------------------------
-void AliAnalysisTaskESDMCLabelAddition::AddMCLabel() 
-{
-  // Load ESD event
+  /// Execute analysis for current event				
+  
+  AliDebug(1, Form("MCLabel Addition: Analysing event # %5d\n",(Int_t) Entry())); 
+  
+  // make sure necessary information from PCDB have been loaded
+  if (fSigmaCut < 0) return;
+  
+  /// Load ESD event
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliError("Cannot get input event");
@@ -100,12 +122,17 @@ void AliAnalysisTaskESDMCLabelAddition::AddMCLabel()
   }      
   
   // Load MC event 
-  AliMCEventHandler *mcH = 0;
-  if(MCEvent()) mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
+  AliMCEventHandler* mcH = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if ( ! mcH ) {
+    AliError ("MCH event handler not found. Nothing done!");
+    return;
+  }
+  
   
   // Get reference tracks
   AliMUONRecoCheck rc(esd,mcH);
   AliMUONVTrackStore* trackRefStore = rc.TrackRefs(-1);
+  AliMUONVTriggerTrackStore* triggerTrackRefStore = rc.TriggerableTracks(-1);
   
   // Loop over reconstructed tracks
   AliESDMuonTrack *esdTrack = 0x0;
@@ -114,20 +141,37 @@ void AliAnalysisTaskESDMCLabelAddition::AddMCLabel()
     
     esdTrack = esd->GetMuonTrack(nMuTrack);
     
-    // skip ghosts
-    if (!esdTrack->ContainTrackerData()) continue;
-    
-    // convert ESD track to MUON track (without recomputing track parameters at each clusters)
-    AliMUONTrack muonTrack;
-    AliMUONESDInterface::ESDToMUON(*esdTrack, muonTrack, kFALSE);
-    
-    // try to match the reconstructed track with a simulated one
-    Int_t nMatchClusters = 0;
-    AliMUONTrack* matchedTrackRef = rc.FindCompatibleTrack(muonTrack, *trackRefStore, nMatchClusters, kFALSE, fgkSigmaCut);
-    
-    // set the MC label
-    if (matchedTrackRef) esdTrack->SetLabel(matchedTrackRef->GetUniqueID());
-    else esdTrack->SetLabel(-1);
+    // tracker tracks
+    if (esdTrack->ContainTrackerData()) {
+      
+      // convert ESD track to MUON track (without recomputing track parameters at each clusters)
+      AliMUONTrack muonTrack;
+      AliMUONESDInterface::ESDToMUON(*esdTrack, muonTrack, kFALSE);
+      
+      // try to match the reconstructed track with a simulated one
+      Int_t nMatchClusters = 0;
+      AliMUONTrack* matchedTrackRef = rc.FindCompatibleTrack(muonTrack, *trackRefStore, nMatchClusters, kFALSE, fSigmaCut);
+      
+      // set the MC label
+      if (matchedTrackRef) esdTrack->SetLabel(matchedTrackRef->GetUniqueID());
+      else esdTrack->SetLabel(-1);
+      
+    } else { // ghosts
+      
+      // Convert ESD track to trigger track
+      AliMUONLocalTrigger locTrg;
+      AliMUONESDInterface::ESDToMUON(*esdTrack, locTrg);
+      AliMUONTriggerTrack trigTrack;
+      rc.TriggerToTrack(locTrg, trigTrack);
+      
+      // try to match the reconstructed track with a simulated one
+      AliMUONTriggerTrack* matchedTrigTrackRef = rc.FindCompatibleTrack(trigTrack, *triggerTrackRefStore, fSigmaCutTrig);
+      
+      // set the MC label
+      if (matchedTrigTrackRef) esdTrack->SetLabel(matchedTrigTrackRef->GetUniqueID());
+      else esdTrack->SetLabel(-1);
+      
+    }
     
   }
   
@@ -137,8 +181,7 @@ void AliAnalysisTaskESDMCLabelAddition::AddMCLabel()
 //----------------------------------------------------------------------
 void AliAnalysisTaskESDMCLabelAddition::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
-  //
+  /// Terminate analysis
   AliDebug(2, "Terminate()");
 }
 
