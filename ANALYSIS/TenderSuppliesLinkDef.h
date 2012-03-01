@@ -15,4 +15,5 @@
 #pragma link C++ class AliEMCALTenderSupply+;
 #pragma link C++ class AliPHOSTenderSupply+;
 #pragma link C++ class AliHMPIDTenderSupply+;
+#pragma link C++ class AliT0TenderSupply+;
 

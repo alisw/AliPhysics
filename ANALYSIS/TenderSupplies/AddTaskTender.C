@@ -43,6 +43,11 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   tpcSupply->SetDebugLevel(2);
   //tpcSupply->SetMip(50.);
   tender->AddSupply(tpcSupply);
+
+  //========= Attach T0 supply ======
+//  AliT0TenderSupply *t0Tender = new AliT0TenderSupply("T0tender");
+//  tender->AddSupply(t0Tender);
+
   //========= Attach TOF supply ======
   AliTOFTenderSupply *tofTender = new AliTOFTenderSupply("TOFtender");
   tender->AddSupply(tofTender);

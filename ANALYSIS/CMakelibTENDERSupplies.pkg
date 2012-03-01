@@ -36,6 +36,7 @@ set ( SRCS
       TenderSupplies/AliEMCALTenderSupply.cxx 
       TenderSupplies/AliPHOSTenderSupply.cxx
       TenderSupplies/AliHMPIDTenderSupply.cxx
+      TenderSupplies/AliT0TenderSupply.cxx 
 )
 
 string ( REPLACE ".cxx" ".h"  HDRS "${SRCS}")
