@@ -49,15 +49,15 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
 
   AliJetCalTrkEvent JetFinderEvent(0,1);
   TClonesArray *plist = new TClonesArray("TParticle");
-  TClonesArray *aliplist = new TClonesArray("AliMCParticle");
+  TClonesArray aliplist("AliMCParticle",1000);
 
   for (Int_t iEvent = 0; iEvent < nEvent; iEvent++) {
     pythia->GenerateEvent();
 
     pythia->GetParticles(plist);
 
-    aliplist->Clear();
-    JetFinderEvent->Clear();
+    aliplist.Clear();
+    JetFinderEvent.Clear();
 
     Int_t n_part = plist->GetEntries();
     for (Int_t i_part = 0; i_part < n_part; i_part++) {
@@ -66,6 +66,9 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
       if (part->GetStatusCode() >= 10)  // Not a final state particle
 	continue;
 
+      if (i_part >= aliplist.GetSize()) {
+        aliplist.Expand(1.5*aliplist.GetSize());
+      }
       new (aliplist[i_part]) AliMCParticle(part);
 
       JetFinderEvent.AddCalTrkTrackKine((AliMCParticle*)aliplist[i_part],1,1);
@@ -76,7 +79,7 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
     FastJet->SetCalTrkEvent(JetFinderEvent);
     FastJet->ProcessEvent();
     if (aod->GetNJets() > 0) {
-      cout << "event " << i_evt << " " << aod->GetNJets() << " jets found" << endl;
+      cout << "event " << iEvent << " " << aod->GetNJets() << " jets found" << endl;
       for (Int_t iJet = 0; iJet < aod->GetNJets(); iJet++) {
 	jet = aod->GetJet(iJet);
 	cout << "\t jet " << iJet << " pt " << jet->Pt() << " eta " << jet->Eta() << " phi " << jet->Phi() << endl; 
