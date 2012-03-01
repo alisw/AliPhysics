@@ -9,7 +9,7 @@
 // Class with functions useful for different D2H analyses        //
 // - event plane resolution                                      //
 // - <pt> calculation with side band subtraction                 //
-// - tracklet multiplcity calculation                            //
+// - tracklet multiplicity calculation                            //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
@@ -65,6 +65,9 @@ class AliVertexingHFUtils : public TObject{
   Int_t GetNumberOfTrackletsInEtaRange(AliAODEvent* ev) const {
     return GetNumberOfTrackletsInEtaRange(ev,fMinEtaForTracklets,fMaxEtaForTracklets);
   }
+  static Int_t GetGeneratedMultiplicityInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
+  static Int_t GetGeneratedPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
+  static Int_t GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
 
   // Functions for computing average pt 
   static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Int_t rebin=4);
