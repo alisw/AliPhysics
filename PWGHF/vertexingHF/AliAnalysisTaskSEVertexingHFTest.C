@@ -13,7 +13,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   Bool_t useParFiles=kFALSE;
   Bool_t doCentrality=kTRUE;
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
   LoadLibraries(useParFiles);
   gSystem->Load("libPWGmuon");
   TChain *chain = 0;
@@ -104,7 +104,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   }
 
   // Vertexing analysis task    
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/AddTaskVertexingHF.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
   AliAnalysisTaskSEVertexingHF *hfTask = AddTaskVertexingHF(deltaAODfname);
   
   
