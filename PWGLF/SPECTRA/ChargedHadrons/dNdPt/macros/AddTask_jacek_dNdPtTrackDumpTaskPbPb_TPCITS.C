@@ -108,10 +108,7 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  //AliAnalysisDataContainer *coutput = mgr->CreateContainer("jotwinow_dNdPtTrackDumpPbPb_TPCITS", TTree::Class(), AliAnalysisManager::kOutputContainer, "jotwinow_dNdPtTrackDumpTaskPbPb_TPCITS.root");
-  //mgr->ConnectOutput(task, 1, coutput);
-
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TrigEvents", TList::Class(), AliAnalysisManager::kOutputContainer, "jotwinow_TrigEvents_Trees.root");
-  mgr->ConnectOutput(task, 0, coutput1);
+  mgr->ConnectOutput(task, 1, coutput1);
 }
 
