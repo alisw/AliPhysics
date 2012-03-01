@@ -168,7 +168,8 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
       fSumw2 = 0;
     }
     delete [] axisCache;
-    axisCache = 0;
+    axisCache = new TAxis*[fNVars];
+    memcpy(axisCache, c.axisCache, fNVars*sizeof(TAxis**));
   }
   return *this;
 }
