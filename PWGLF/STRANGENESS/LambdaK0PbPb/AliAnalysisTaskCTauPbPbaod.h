@@ -8,6 +8,9 @@ class TH2F;
 class TH3F;
 class TList;
 
+class AliAODEvent;
+class AliAODv0;
+
 //
 //  This is a little task for checking the c*tau of the strange particles 
 //
@@ -21,6 +24,7 @@ public:
 
   void SetCentrality(Double_t min, Double_t max) {fCMin=min;fCMax=max;} 
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
+  void SetCosPA(Double_t cospa) {fCPA=cospa;} 
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -32,13 +36,17 @@ private:
   AliAnalysisTaskCTauPbPbaod(const AliAnalysisTaskCTauPbPbaod&);           //not implemented
   AliAnalysisTaskCTauPbPbaod& operator=(const AliAnalysisTaskCTauPbPbaod&);//not implemented 
 
+  Bool_t AcceptV0(const AliAODv0 *v0, const AliAODEvent *aod); 
+
   Bool_t fIsMC;
   Double_t fCMin;       // Min centrality
   Double_t fCMax;       // Max centrality
+  Double_t fCPA;        // cos(PA) threshold
 
   TList       *fOutput; //! The list of histograms
 
   TH1F *fMult;       //! Track multiplicity
+  TH1F *fCosPA;      //! Track multiplicity
   TH2F* fdEdx;       //! dEdx
   TH2F* fdEdxPid;    //! dEdx with PID
 
@@ -73,7 +81,7 @@ private:
   TH2F* fXiBarM;         //! Mass for anti-Xis
   TH1F* fXiBarSiP;       //! Side-band subtracted Pt for reconstructed anti-Xi
 
-  ClassDef(AliAnalysisTaskCTauPbPbaod,3);
+  ClassDef(AliAnalysisTaskCTauPbPbaod,4);
 };
 
 #endif
