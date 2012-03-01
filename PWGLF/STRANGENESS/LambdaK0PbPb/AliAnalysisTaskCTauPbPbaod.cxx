@@ -41,8 +41,10 @@ AliAnalysisTaskSE(name),
 fIsMC(kFALSE),
 fCMin(0.),
 fCMax(90.),
+fCPA(0.9975),
 fOutput(0),
 fMult(0),
+fCosPA(0),
 fdEdx(0),
 fdEdxPid(0),
 
@@ -92,6 +94,10 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fMult=new TH1F("fMult","Multiplicity",1100,0.,3300);
   fMult->GetXaxis()->SetTitle("N tracks"); 
   fOutput->Add(fMult);
+
+  fCosPA=new TH1F("fCosPA","Cos(PA) distribution",50,0.9975,1.0005);
+  fCosPA->GetXaxis()->SetTitle("Cos(PA)"); 
+  fOutput->Add(fCosPA);
 
   fdEdx=new TH2F("fdEdx","dE/dx",50,0.2,3,50,0.,6.);
   fOutput->Add(fdEdx);
@@ -252,9 +258,13 @@ static Bool_t AcceptTrack(const AliAODTrack *t) {
   return kTRUE;   
 }
 
-static Bool_t AcceptV0(const AliAODv0 *v0, const AliAODEvent *aod) {
-
+Bool_t 
+AliAnalysisTaskCTauPbPbaod::AcceptV0(const AliAODv0 *v0,const AliAODEvent *aod)
+{
   if (v0->GetOnFlyStatus()) return kFALSE;
+
+  Double_t cpa=v0->CosPointingAngle(aod->GetPrimaryVertex());
+  if (cpa < fCPA) return kFALSE;
 
   const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
   if (!AcceptTrack(ntrack)) return kFALSE;
@@ -271,11 +281,6 @@ static Bool_t AcceptV0(const AliAODv0 *v0, const AliAODEvent *aod) {
   if (dca>1.0) return kFALSE;
   //if (dca>0.7) return kFALSE;
   //if (dca>0.4) return kFALSE;
-
-  Double_t cpa=v0->CosPointingAngle(aod->GetPrimaryVertex());
-  if (cpa<0.998) return kFALSE;
-  //if (cpa<0.99875) return kFALSE;
-  //if (cpa<0.9995) return kFALSE;
 
   Double_t xyz[3]; v0->GetSecondaryVtx(xyz);
   Double_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
@@ -507,6 +512,9 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
 
       if (!AcceptV0(v0,aod)) continue;
       
+      Double_t cpa=v0->CosPointingAngle(aod->GetPrimaryVertex());
+      fCosPA->Fill(cpa);
+
       const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
       const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
 
