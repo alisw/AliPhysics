@@ -15,6 +15,7 @@
 
 #include <TMath.h>
 #include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
 #include "AliVertexingHFUtils.h"
 
 /* $Id: $ */
@@ -24,7 +25,7 @@
 // Class with functions useful for different D2H analyses        //
 // - event plane resolution                                      //
 // - <pt> calculation with side band subtraction                 //
-// - tracklet multiplcity calculation                            //
+// - tracklet multiplicity calculation                            //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
@@ -165,6 +166,49 @@ Int_t AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AliAODEvent* ev, Doubl
     if(eta>mineta && eta<maxeta) count++;
   }
   return count;
+}
+//______________________________________________________________________
+Int_t AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta){
+  // counts generated particles in fgiven eta range
+
+  Int_t nChargedMC=0;
+  for(Int_t i=0;i<arrayMC->GetEntriesFast();i++){
+    AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
+    Int_t charge = part->Charge();
+    Double_t eta = part->Eta();
+    if(charge!=0 && eta>mineta && eta<maxeta) nChargedMC++;
+  } 
+  return nChargedMC;
+}
+//______________________________________________________________________
+Int_t AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta){
+  // counts generated primary particles in given eta range
+
+  Int_t nChargedMC=0;
+  for(Int_t i=0;i<arrayMC->GetEntriesFast();i++){
+    AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
+    Int_t charge = part->Charge();
+    Double_t eta = part->Eta();
+    if(charge!=0 && eta>mineta && eta<maxeta){
+      if(part->IsPrimary())nChargedMC++;
+    } 
+  }  
+  return nChargedMC;
+}
+//______________________________________________________________________
+Int_t AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta){
+  // counts generated primary particles in given eta range
+
+  Int_t nChargedMC=0;
+  for(Int_t i=0;i<arrayMC->GetEntriesFast();i++){
+    AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
+    Int_t charge = part->Charge();
+    Double_t eta = part->Eta();
+    if(charge!=0 && eta>mineta && eta<maxeta){
+      if(part->IsPhysicalPrimary())nChargedMC++;
+    } 
+  }
+  return nChargedMC;
 }
 //______________________________________________________________________
 void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Int_t rebin){
