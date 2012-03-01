@@ -193,7 +193,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
 
   if(!evtCuts || !accCuts  || !esdTrackCuts) {
-    AliDebug(AliLog::kError, "cuts not available");
+    Printf("ERROR cuts not available");
     return;
   }
 

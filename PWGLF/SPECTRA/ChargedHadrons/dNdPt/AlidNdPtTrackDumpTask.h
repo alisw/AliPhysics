@@ -94,18 +94,18 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   TList* fOutput;       //! list send on output slot 0
   TIterator *fPitList;  //! iterator over the output objetcs  
 
-  Bool_t fUseMCInfo;        //! use MC information
+  Bool_t fUseMCInfo;        // use MC information
 
-  AlidNdPtEventCuts      *fdNdPtEventCuts;      //! event cuts
-  AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; //! acceptance cuts  
-  AlidNdPtAcceptanceCuts *fdNdPtRecAcceptanceCuts; //! additional recontruction acceptance cuts (not used for MC truth)
-  AliESDtrackCuts *fEsdTrackCuts;          //! esd track cuts
-  AliTriggerAnalysis::Trigger fTrigger;    //! trigger settings
-  AlidNdPtHelper::AnalysisMode fAnalysisMode;   //! analysis mode TPC only, TPC + ITS
+  AlidNdPtEventCuts      *fdNdPtEventCuts;      // event cuts
+  AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; // acceptance cuts  
+  AlidNdPtAcceptanceCuts *fdNdPtRecAcceptanceCuts; // additional recontruction acceptance cuts (not used for MC truth)
+  AliESDtrackCuts *fEsdTrackCuts;          // esd track cuts
+  AliTriggerAnalysis::Trigger fTrigger;    // trigger settings
+  AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
 
   TTreeSRedirector* fTreeSRedirector;      //! temp tree to dump output
 
-  TString fCentralityEstimator;     //! use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
+  TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
 
   Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
   Double_t fLowPtV0DownscaligF; // low pT V0 downscaling factor
