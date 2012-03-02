@@ -1,7 +1,7 @@
 AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID() {
     
-	// AddTask Macro (v08).
-	// Updated: Feb. 17th 2012.
+	// AddTask Macro (v 8.00).
+	// Updated: Mar 2nd. 2012.
 	
 	// Get the current analysis manager.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -13,7 +13,7 @@ AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID() {
     // Add the task to the manager.
     AliAnalysisTaskDiHadronPID *task = new AliAnalysisTaskDiHadronPID("DiHadronPID");
     
-    task->SetVerbose();
+    task->SetVerbose(kFALSE);
     task->SetCalculateMixedEvents();
 	
 	mgr->AddTask(task);
@@ -29,4 +29,7 @@ AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID() {
 	mgr->ConnectOutput (task,  1, coutput1);
 	
 	return task;
+	
 }
+
+
