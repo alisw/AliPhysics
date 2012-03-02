@@ -124,7 +124,7 @@ AliTriggerScalers* AliTriggerScalersRecord::GetTriggerScalersForClassBinary( con
 void AliTriggerScalersRecord::Print( const Option_t* ) const
 {
    // Print
-  cout << "Trigger Scalers Record: " << endl;
+  cout << "Trigger Scalers Record, time group: "<< fTimeGroup << endl;
   fTimestamp.Print();
   for( Int_t i=0; i<fScalers.GetEntriesFast(); ++i ) 
      ((AliTriggerScalers*)fScalers.At(i))->Print();

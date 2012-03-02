@@ -320,7 +320,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    AliTriggerScalersRecord* scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
    AliTriggerScalersRecord* scalers1 = (AliTriggerScalersRecord*)fScalersRecord.At(position-1);
    if (scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1) return 1;
-   
+
    AliTriggerScalersRecordESD* recESD = 0;
    if(correctOverflow){
      recESD = new AliTriggerScalersRecordESD();
@@ -342,16 +342,32 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       for(Int_t i=0;i<5;i++){
          if ((c2[i] - c1[i]) < (c2[i+1] - c1[i+1]) && increase[i] && increase[i+1] ) {
                  if ( ((c2[i+1] - c1[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
-                 else return 3; }
+                 else {
+  		    cout << " 1 pos= " << position << "i= "<< i << endl;
+		    return 3; 
+		 }
+	 }
          else if ( (max1 - c1[i]+c2[i]) < (c2[i+1] - c1[i+1]) && overflow[i][ic] && increase[i+1] ) {
                  if ( ((c2[i+1] - c1[i+1]) - (max1 - c1[i]+c2[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
-                 else return 3; }
+                 else{
+  		    cout << " 2 pos= " << position << "i= "<< i << endl;
+		    return 3; 
+		 }
+	 }
          else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1][ic] ) {
                  if ( ((max1 - c1[i+1] + c2[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
-                 else return 3; }
+                 else{
+  		    cout << " 3 pos= " << position << "i= "<< i << endl;
+		    return 3; 
+		    }
+	 }
          else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i][ic] && overflow[i+1][ic] ) {
                  if ( ((max1 - c1[i+1] + c2[i+1]) - (max1 - c1[i] + c2[i] )) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
-                 else return 3; }
+                 else{
+  		    cout << " 4 pos= " << position << "i= "<< i << endl;
+		    return 3;
+		    }
+       }
       }
       if(correctOverflow){ 
         for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i][ic]; }

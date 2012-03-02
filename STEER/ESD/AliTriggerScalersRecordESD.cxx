@@ -103,6 +103,7 @@ void AliTriggerScalersRecordESD::Print( const Option_t* ) const
 {
    // Print
   cout << "Trigger Scalers Record, time group: "<< fTimeGroup << endl;
+  fTimestamp.Print();
   for( Int_t i=0; i<fScalers.GetEntriesFast(); ++i ) 
      ((AliTriggerScalersESD*)fScalers.At(i))->Print();
 }
