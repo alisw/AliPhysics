@@ -4,7 +4,7 @@
 // ----------------------------------------------------------------------------
 // Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 // Start: July 21st, 2011.
-// Last edit: Feb. 17th 2012. (v08)
+// Last edit: Mar 2nd 2012. (v 8.00)
 // ----------------------------------------------------------------------------
 //
 
@@ -177,10 +177,6 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
 	AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*> (manager->GetInputEventHandler());
 
-	if(!inputHandler) {
-	  AliFatal("Error getting AliInputEventHandler");
-	}
-
 	// Pointers to PID Response objects.	
 	fPIDResponse = inputHandler->GetPIDResponse(); 
 	cout << "PID Response object: " << fPIDResponse << endl;
@@ -273,7 +269,9 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
 	TString finalname, finaltitle;
 	TString species[3] = {"Pion","Kaon","Proton"};
 	TString ptbins[11] = {"0.0","0.5","1.0","1.5","2.0","2.5","3.0","3.5","4.0","4.5","5.0"};
-	
+    
+    // Unzoomed pictures.
+	/*
 	Int_t binsTPC[3][10] = {{100,100,100,100,100,100,100,100,100,100},
                             {100,100,100,100,100,100,100,100,100,100},
                             {100,100,100,100,100,100,100,100,100,100}};
@@ -295,7 +293,31 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
 	Double_t maxTOF[3][10] =    {{ 2000., 2000., 5000., 3000., 2000., 1500., 1500., 1500., 1500., 1500.},
                                  { 2000., 2000., 5000., 2000., 1500., 1500., 1500., 1500., 1500., 1500.},
                                  { 2000., 2000., 2000., 1000., 1000., 1000., 1000., 1000., 1000., 1000.}};
+	*/
+    
+    // Zoomed pictures.
+    Int_t binsTPC[3][10] = {{100,100,100,100,100,100,100,100,100,100},
+                            {100,100,100,100,100,100,100,100,100,100},
+                            {100,100,100,100,100,100,100,100,100,100}};
+    
+	Double_t minTPC[3][10] =    {{   -20., -20.,-20.,-20.,-20.,-20.,-20.,-20.,-20.,-20.},
+                                 {	 -20., -20.,-20.,-20.,-20.,-20.,-20.,-20.,-20.,-20.},
+                                 {   -40., -20.,-20.,-20.,-20.,-20.,-20.,-20.,-20.,-20.}};
+	Double_t maxTPC[3][10] =    {{  20.,  20., 20., 20., 20., 20., 20., 20., 20., 20.},
+                                 {  20.,  20., 20., 20., 20., 20., 20., 20., 20., 20.},
+                                 {  40.,  20., 20., 20., 20., 30., 30., 30., 30., 30.}};
 	
+	Int_t binsTOF[3][10] = {{100,100,100,100,100,100,100,100,100,100},
+                            {100,100,100,100,100,100,100,100,100,100},
+                            {100,100,100,100,100,100,100,100,100,100}};
+	
+	Double_t minTOF[3][10] =    {{-1000.,-1000.,-500.,  -500., -500., -400., -400.,	-400., -400., -400.},
+                                 { -800., -800., -800., -800., -800., -600., -500., -500., -400., -400.},
+                                 {-1000.,-1000.,-1000.,-1000., -800.,-1000.,-1000., -800., -700., -700.}};
+	Double_t maxTOF[3][10] =    {{ 1000., 1000., 1000., 1000., 1000., 1000., 1000.,  900.,  800.,  700.},
+                                 { 1000., 1000.,  500.,  500.,  500.,  900.,  700.,  700.,  600.,  500.},
+                                 { 1000., 1000., 1000.,  500.,  500.,  500.,  500.,  500.,  500.,  500.}};
+    
 	// Recall that AliPID::kPion = 2, AliPID::kKaon = 3, AliPID::kProton = 4.
 	for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 				
@@ -398,21 +420,21 @@ Bool_t AliAnalysisTaskDiHadronPID::SelectEvent(AliAODVertex* vertex)
 	Double_t primVtx[3];
 	vertex->GetXYZ(primVtx);
 	if (TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2])>10.) {
-		cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Vertex Out of Range." << endl;
-        cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Event not selected." << endl;
+		if (fVerbose) cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Vertex Out of Range." << endl;
+        if (fVerbose) cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Event not selected." << endl;
 		return kFALSE;
 	}
-	cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Vertex is OK." << endl;
+	if (fVerbose) cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Vertex is OK." << endl;
     
     // We also wish to make a 0-10% centrality cut.
     if (fAODHeader->GetCentrality()>10.) {
-        cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Non-central event." << endl;
-        cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Event not selected." << endl;
+        if (fVerbose) cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Non-central event." << endl;
+        if (fVerbose) cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Event not selected." << endl;
 		return kFALSE;
     }
-	cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Central Event." << endl;
+	if (fVerbose) cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Central Event." << endl;
     
-    cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Event selected." << endl;
+    if (fVerbose) cout << "AliAnalysisTaskDiHadronPID::SelectEvent: Event selected." << endl;
 	return kTRUE;
 	
 }
@@ -425,7 +447,7 @@ void AliAnalysisTaskDiHadronPID::FillPIDPartnersArray() {
 	//
 	
 	if (!fAODEvent) {
-		cout << "ERROR in CreatePIDPartersArray(): fAODEvent not set." << endl;
+        cout << "ERROR in CreatePIDPartersArray(): fAODEvent not set." << endl;
 		return;
 	}
 	
@@ -518,11 +540,11 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
 	}
 		
 	// Display basic event information.
-	cout << endl;
-	cout << "Event centrality: " << fAODHeader->GetCentrality() << endl;
-	cout << "Event Vertex Z: " << fAODVertex->GetZ() << endl;
-	cout << "Event tracks in AOD: " << fAODEvent->GetNumberOfTracks() << endl;
-	cout << endl;
+	if (fVerbose) cout << endl;
+	if (fVerbose) cout << "Event centrality: " << fAODHeader->GetCentrality() << endl;
+	if (fVerbose) cout << "Event Vertex Z: " << fAODVertex->GetZ() << endl;
+	if (fVerbose) cout << "Event tracks in AOD: " << fAODEvent->GetNumberOfTracks() << endl;
+	if (fVerbose) cout << endl;
 
     if (!SelectEvent(fAODVertex)) return;
 	// Fill the TObjArray which holds PID partners.
@@ -567,7 +589,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
                         
 			// the associateds array contains tracks pT < 5.0 GeV/c && TPC hit.
 			associateds->AddLast(fAODTrack);
-            if (fAODTrack->GetID()>-1) cout<<"Assoc. Track ID: "<<fAODTrack->GetID()<<endl;
+            if (fVerbose&&(fAODTrack->GetID()>-1)) cout<<"Assoc. Track ID: "<<fAODTrack->GetID()<<endl;
 
 			// Make the nSigma plots.
 			Double_t mom, nSigma;
@@ -705,7 +727,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
             
             if (TMath::Abs(fTrigBuffer[iTrig][0]-fAODVertex->GetZ())<2.) {
                 
-                cout<<"AliAnalysisTaskDiHadronPID::UserExec: Mixing with trigger Z: "<<fTrigBuffer[iTrig][0]<<", Pt: "<<fTrigBuffer[iTrig][3]<<endl;
+                if (fVerbose) cout<<"AliAnalysisTaskDiHadronPID::UserExec: Mixing with trigger Z: "<<fTrigBuffer[iTrig][0]<<", Pt: "<<fTrigBuffer[iTrig][3]<<endl;
                 
                 for (Int_t iAssoc = 0; iAssoc < associateds->GetEntriesFast(); iAssoc++) {
                     
