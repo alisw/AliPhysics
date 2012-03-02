@@ -69,6 +69,7 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra()
     fMCtrue(0),
     fOnlyQA(0),
     fUseHBTmultiplicity(0),
+	fUseTPConlyTracks(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -91,6 +92,7 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
     fMCtrue(0),
     fOnlyQA(0),
     fUseHBTmultiplicity(0),
+	fUseTPConlyTracks(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -106,6 +108,7 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
   fMCtrue = kTRUE; 
   fOnlyQA = kFALSE;
   fUseHBTmultiplicity = kTRUE;
+  fUseTPConlyTracks = kFALSE;
   /* real */
   fAlephParameters[0] = 0.0283086;
   fAlephParameters[1] = 2.63394e+01;
@@ -121,7 +124,7 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
   //
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   //
-  Initialize();
+  //Initialize();
   // Output slot #0 writes into a TList container
   DefineOutput(1, TList::Class());
 
@@ -155,10 +158,28 @@ void AliAnalysisCombinedHadronSpectra::Initialize()
   fESDtrackCuts->SetMinNClustersITS(3);
   */
   //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE); // kTRUE = sel. primaries --> patch for the moment, do TFractionFitter later
-  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
-  fESDtrackCuts->SetMaxDCAToVertexXY(3);
-  fESDtrackCuts->SetMaxDCAToVertexZ(2);
-  fESDtrackCuts->SetEtaRange(-0.9,0.9);
+
+
+  if (!fUseTPConlyTracks) {
+	  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
+	  fESDtrackCuts->SetMaxDCAToVertexXY(3);
+	  fESDtrackCuts->SetMaxDCAToVertexZ(2);
+	  fESDtrackCuts->SetEtaRange(-0.9,0.9);
+  }
+  else {
+	  //fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+	  fESDtrackCuts->SetMinNClustersTPC(70);
+	  fESDtrackCuts->SetMaxChi2PerClusterTPC(4);
+	  fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
+	  fESDtrackCuts->SetRequireTPCRefit(kFALSE);
+
+	  fESDtrackCuts->SetMaxDCAToVertexXY(30);
+	  fESDtrackCuts->SetMaxDCAToVertexZ(6);
+	  fESDtrackCuts->SetDCAToVertex2D(kFALSE);
+	  fESDtrackCuts->SetRequireSigmaToVertex(kFALSE);
+
+	  fESDtrackCuts->SetEtaRange(-0.9,0.9);
+  }
   //
   //
   //
@@ -181,9 +202,18 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   const Int_t kPtBins = 35;
   const Int_t kMultBins = 11;
   const Int_t kDcaBins = 76;
+  const Float_t kDcaBinsTPConlyFactor = 10; //need to change binning of DCA plot for tpconly
   // sort pT-bins ..
   Double_t binsPt[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
-  Double_t binsDca[kDcaBins+1] = {-3,-2.85,-2.7,-2.55,-2.4,-2.25,-2.1,-1.95,-1.8,-1.65,-1.5,-1.35,-1.2,-1.05,-0.9,-0.75,-0.6,-0.45,-0.3,-0.285,-0.27,-0.255,-0.24,-0.225,-0.21,-0.195,-0.18,-0.165,-0.15,-0.135,-0.12,-0.105,-0.09,-0.075,-0.06,-0.045,-0.03,-0.015,0,0.015,0.03,0.045,0.06,0.075,0.09,0.105,0.12,0.135,0.15,0.165,0.18,0.195,0.21,0.225,0.24,0.255,0.27,0.285,0.3,0.45,0.6,0.75,0.9,1.05,1.2,1.35,1.5,1.65,1.8,1.95,2.1,2.25,2.4,2.55,2.7,2.85,3};
+
+  Double_t binsDca[kDcaBins+1] =  {-3,-2.85,-2.7,-2.55,-2.4,-2.25,-2.1,-1.95,-1.8,-1.65,-1.5,-1.35,-1.2,-1.05,-0.9,-0.75,-0.6,-0.45,-0.3,-0.285,-0.27,-0.255,-0.24,-0.225,-0.21,-0.195,-0.18,-0.165,-0.15,-0.135,-0.12,-0.105,-0.09,-0.075,-0.06,-0.045,-0.03,-0.015,0,0.015,0.03,0.045,0.06,0.075,0.09,0.105,0.12,0.135,0.15,0.165,0.18,0.195,0.21,0.225,0.24,0.255,0.27,0.285,0.3,0.45,0.6,0.75,0.9,1.05,1.2,1.35,1.5,1.65,1.8,1.95,2.1,2.25,2.4,2.55,2.7,2.85,3};
+
+  // DCA bins borders get multiplied by constant factor for TPConlyTracks
+  Double_t binsDcaTPConly[kDcaBins+1];
+  for (Int_t i = 0; i< kDcaBins+1; i++) {
+  	binsDcaTPConly[i] = kDcaBinsTPConlyFactor * binsDca[i];
+  }
+
   //
   // create the histograms with all necessary information --> it is filled 4x for each particle assumption
   //
@@ -204,8 +234,12 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,     0.5,    5,  1.5,   8,        3};
   fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
   //
+
   fHistRealTracks->GetAxis(2)->Set(kPtBins, binsPt);
-  fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDca);
+
+  if (!fUseTPConlyTracks) fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDca);
+  else  fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
+
   fListHist->Add(fHistRealTracks);
   //
   //                      0.ptot,1.tpcSig,2.hasTOF, 3. assumed part., 4. nclDedx, 5. nSigmaTPC (4x), 6. nSigmaTOF (4x), 7. centrality
@@ -218,7 +252,11 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    0.5,   5,  1.5,   8,        3,  4.5};
   fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",10,binsHistMC,xminHistMC,xmaxHistMC);
   fHistMCparticles->GetAxis(2)->Set(kPtBins, binsPt);
-  fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDca);
+
+  //different DCAxy binning for TPConlyTracks
+  if (!fUseTPConlyTracks) fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDca);
+  else fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
+
   fListHist->Add(fHistMCparticles);
   //
   fHistMult = new TH2D("fHistMult", "control histogram to count number of events", 502, -2.5, 499.5,4,-0.5,3.5);
@@ -463,9 +501,22 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
   //
   for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
-    AliESDtrack *track =fESD->GetTrack(i); 
+	
+	AliESDtrack *track = 0;
+	
+	//normal tracks, if tpconly flag is set, use tpconlytracks
+	if (!fUseTPConlyTracks){
+    	track =fESD->GetTrack(i); 
+	}
+	else {
+   		track = fESDtrackCuts->GetTPCOnlyTrack(fESD,i);
+		if (!track) continue;
+	}
     //
-    if (!track->GetInnerParam()) continue;
+    if (!track->GetInnerParam()) {
+		if (fUseTPConlyTracks) {delete track; track = 0;} //need to delete tpconlytrack
+		continue;
+	}
     Double_t ptot = track->GetInnerParam()->GetP(); // momentum for dEdx determination
     Double_t pT = track->Pt();
     track->GetImpactParameters(dca, cov);
@@ -476,7 +527,11 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     //
     // 2.a) apply some standard track cuts according to general recommendations
     //
-    if (!fESDtrackCuts->AcceptTrack(track)) continue;
+    if (!fESDtrackCuts->AcceptTrack(track)) {
+		if (fUseTPConlyTracks) {delete track; track = 0;} //need to delete tpconlytrack
+		continue;
+	}
+
     UInt_t status = track->GetStatus();
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
     Bool_t hasTOFtime = status&AliESDtrack::kTIME;
@@ -597,8 +652,13 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
       Int_t tpcShared = track->GetTPCnclsS();
       if (TMath::Abs(track->Eta()) < 0.8 && iPart == 0 && tpcShared < 4) fHistPidQA->Fill(ptot,tpcSignal,sign);
     } // end loop over assumed particle type
-    
-    
+
+	  //need to delete tpconlytrack
+	  if (fUseTPConlyTracks){
+ 		delete track; 
+  		track = 0;     
+  	  }
+
   } // end of track loop
   
   // Post output data  
