@@ -36,9 +36,10 @@ public:
    virtual void     Terminate(const Option_t*);
 
    virtual Int_t      GetNInputTracks();
-  
+     
    Double_t RelativePhi(Double_t angle1,Double_t angle2);     
-
+    virtual THnSparse* NewTHnSparseF(const char* name, UInt_t entries);
+   virtual void       GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
    virtual AliVEvent::EOfflineTriggerTypes GetOfflineTrgMask() const { return fOfflineTrgMask; }
    virtual void     GetBranchNames(TString &branch1, TString &branch2) const { branch1 = fJetBranchName[0]; branch2 = fJetBranchName[1]; }
    virtual Bool_t   GetIsPbPb() const { return fIsPbPb; }
@@ -73,6 +74,7 @@ public:
    virtual void     SetNInputTracksMin(Int_t nTr) { fNInputTracksMin = nTr; }
    virtual void     SetNInputTracksMax(Int_t nTr) { fNInputTracksMax = nTr; }
    virtual void     SetAngStructCloseTracks(Int_t yesno){fAngStructCloseTracks=yesno;}
+   virtual void     SetCheckMethods(Int_t yesno){fCheckMethods=yesno;}
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
    virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
@@ -90,6 +92,7 @@ private:
    AliAODEvent *fAOD;    //! AOD event
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
    Int_t   GetListOfTracks(TList *list);
+   Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
    // jets to compare
    TString fJetBranchName[2]; //  name of jet branches to compare
@@ -113,6 +116,7 @@ private:
    Int_t   fNInputTracksMin;  // lower bound of nb. of input tracks
    Int_t   fNInputTracksMax;  // upper bound of nb. of input tracks
    Int_t   fAngStructCloseTracks;//only constituents or all tracks with R<0.8 for the angular structure
+   Int_t fCheckMethods;     //to look into more detail into the core
    Float_t fJetEtaMin;     // lower bound on eta for found jets
    Float_t fJetEtaMax;     // upper bound on eta for found jets
    Float_t fJetPtMin;      // minimum jet pT
@@ -130,231 +134,18 @@ private:
    TList *fOutputList;                        //! output data container
    Bool_t fbEvent;                            // fill fhnEvent
    TH1I  *fHistEvtSelection;                  //! event selection statistic
-   TH1I  *fHistJetSelection;                  //! jet selection statistic
-   TH2F  *fh2JetSelection;                    //! jet selection statistic, with 
-     
+   THnSparse *fhnDeltaR;                     //! variables per jet
+   THnSparse *fhnSumBkg;               //! variables per jet before acceptance cut
+   THnSparse *fhnJetCoreMethod3;               //! variables per jet before acc     
 
    TH2F      *fh2JetCoreMethod1C10;          //Energy fraction in the core C10 method 1
    TH2F      *fh2JetCoreMethod2C10;          //Energy fraction in the core C10 method 2
-   TH2F      *fh2JetCoreMethod3C10;          //Energy fraction in the core C10 method 3
    TH2F      *fh2JetCoreMethod1C20;          //Energy fraction in the core C20 method 1 
    TH2F      *fh2JetCoreMethod2C20;          //Energy fraction in the core C20 method 2
-   TH2F      *fh2JetCoreMethod3C20;          //Energy fraction in the core C20 method 3
    TH2F      *fh2JetCoreMethod1C30;          //Energy fraction in the core C30 method 1
    TH2F      *fh2JetCoreMethod2C30;          //Energy fraction in the core C30 method 2
-   TH2F      *fh2JetCoreMethod3C30;          //Energy fraction in the core C30 method 3
    TH2F      *fh2JetCoreMethod1C60;          //Energy fraction in the core C60 method 1
    TH2F      *fh2JetCoreMethod2C60;          //Energy fraction in the core C60 method 2
-   TH2F      *fh2JetCoreMethod3C60;          //Energy fraction in the core C60 method 3
-   TH2F      *fh2JetCoreMethod3C10lead;          //Energy fraction in the core C30 method 3
-   TH2F      *fh2JetCoreMethod3C20lead;          //Energy fraction in the core C60 method 1
-   TH2F      *fh2JetCoreMethod3C30lead;          //Energy fraction in the core C60 method 2
-   TH2F      *fh2JetCoreMethod3C60lead;          //Energy fraction in the core C60 method 3
-   TH2F      *fh2JetCoreMethod3C10sublead;          //Energy fraction in the core C30 method 3
-   TH2F      *fh2JetCoreMethod3C20sublead;          //Energy fraction in the core C60 method 1
-   TH2F      *fh2JetCoreMethod3C30sublead;          //Energy fraction in the core C60 method 2
-   TH2F      *fh2JetCoreMethod3C60sublead;          //Energy fraction in the core C60 method 3
-
-   TH2F      *fh2SumPtInC10;                  //energy fraction in inner corona C10
-   TH2F      *fh2SumPtInC20;                  //energy fraction in inner corona C20 
-   TH2F      *fh2SumPtInC30;                  //energy fraction in inner corona C30
-   TH2F      *fh2SumPtInC60;                  //energy fraction in inner corona C60
-   TH2F      *fh2SumPtInC10lead;              //energy fraction in inner corona C10 leading
-   TH2F      *fh2SumPtInC20lead;              //energy fraction in inner corona C20 leading
-   TH2F      *fh2SumPtInC30lead;              //energy fraction in inner corona C30 leading
-   TH2F      *fh2SumPtInC60lead;              //energy fraction in inner corona C60 leading
-   TH2F      *fh2SumPtInC10sublead;           //energy fraction in inner corona C10 subleading
-   TH2F      *fh2SumPtInC20sublead;           //energy fraction in inner corona C20 subleading
-   TH2F      *fh2SumPtInC30sublead;           //energy fraction in inner corona C30 subleading
-   TH2F      *fh2SumPtInC60sublead;           //energy fraction in inner corona C60 subleading
-   TH2F      *fh2SumPtOutC10;                 //energy fraction in outer corona C10
-   TH2F      *fh2SumPtOutC20;                 //energy fraction in outer corona C20 
-   TH2F      *fh2SumPtOutC30;                 //energy fraction in outer corona C30
-   TH2F      *fh2SumPtOutC60;                 //energy fraction in outer corona C60
-   TH2F      *fh2SumPtOutC10lead;              //energy fraction in outer corona C10 leading
-   TH2F      *fh2SumPtOutC20lead;              //energy fraction in outer corona C20 leading
-   TH2F      *fh2SumPtOutC30lead;              //energy fraction in outer corona C30 leading
-   TH2F      *fh2SumPtOutC60lead;              //energy fraction in outer corona C60 leading
-   TH2F      *fh2SumPtOutC10sublead;           //energy fraction in outer corona C10 subleading
-   TH2F      *fh2SumPtOutC20sublead;           //energy fraction in outer corona C20 subleading
-   TH2F      *fh2SumPtOutC30sublead;           //energy fraction in outer corona C30 subleading
-   TH2F      *fh2SumPtOutC60sublead;           //energy fraction in outer corona C60 subleading
-   TH2F      *fh2SumPtInC10bkg;        //expected from background inner C10
-   TH2F      *fh2SumPtInC20bkg;        //expected from background inner C20
-   TH2F      *fh2SumPtInC30bkg;        //expected from background inner C30
-   TH2F      *fh2SumPtInC60bkg;        //expected from background inner C60
-   TH2F      *fh2SumPtInC10bkglead;        //expected from background inner C10 lead
-   TH2F      *fh2SumPtInC20bkglead;        //expected from background inner C20 lead
-   TH2F      *fh2SumPtInC30bkglead;        //expected from background inner C30 lead
-   TH2F      *fh2SumPtInC60bkglead;        //expected from background inner C60 lead
-   TH2F      *fh2SumPtInC10bkgsublead;        //expected from background inner C10 sublead
-   TH2F      *fh2SumPtInC20bkgsublead;        //expected from background inner C20 sublead  
-   TH2F      *fh2SumPtInC30bkgsublead;        //expected from background inner C30  sublead
-   TH2F      *fh2SumPtInC60bkgsublead;        //expected from background inner C60 sublead
-
-   TH2F      *fh2SumPtOutC10bkg;       //expected from background outer C10
-   TH2F      *fh2SumPtOutC20bkg;       //expected from background outer C10
-   TH2F      *fh2SumPtOutC30bkg;       //expected from background outer C10
-   TH2F      *fh2SumPtOutC60bkg;       //expected from background outer C10
-   TH2F      *fh2SumPtOutC10bkglead;       //expected from background outer C10 lead
-   TH2F      *fh2SumPtOutC20bkglead;       //expected from background outer C10 lead
-   TH2F      *fh2SumPtOutC30bkglead;       //expected from background outer C10 lead
-   TH2F      *fh2SumPtOutC60bkglead;       //expected from background outer C10 lead
-   TH2F      *fh2SumPtOutC10bkgsublead;       //expected from background outer C10 sublead
-   TH2F      *fh2SumPtOutC20bkgsublead;       //expected from background outer C10 sublead
-   TH2F      *fh2SumPtOutC30bkgsublead;       //expected from background outer C10 sublead
-   TH2F      *fh2SumPtOutC60bkgsublead;       //expected from background outer C10 sublead  
-   
-     TH2F*      fh2DeltaRC10pt1;            //Jet track R distance:C10 pt1
-     TH2F*      fh2DeltaRC20pt1;            //C20 pt1 
-     TH2F*      fh2DeltaRC30pt1;            //C30 pt1
-     TH2F*      fh2DeltaRC60pt1;            //C60 pt1
-     TH2F*      fh2DeltaRC10pt2;            //C10 pt2   
-     TH2F*      fh2DeltaRC20pt2;            //C20 pt2
-     TH2F*      fh2DeltaRC30pt2;            //C30 pt2
-     TH2F*      fh2DeltaRC60pt2;            //C60 pt2 
-     TH2F*      fh2DeltaRC10pt3;            //C10 pt3
-     TH2F*      fh2DeltaRC20pt3;            //C20 pt3
-     TH2F*      fh2DeltaRC30pt3;            //C30 pt3
-     TH2F*      fh2DeltaRC60pt3;            //C60 pt3
-     TH2F*      fh2DeltaRC10pt4;            //C10 pt4
-     TH2F*      fh2DeltaRC20pt4;            //C20 pt4
-     TH2F*      fh2DeltaRC30pt4;            //C30 pt4
-     TH2F*      fh2DeltaRC60pt4;            //C60 pt4 
-     TH2F*      fh2DeltaEtaC10pt1;          //The same but eta distance:C10 pt1
-     TH2F*      fh2DeltaEtaC20pt1;          //C20 pt1
-     TH2F*      fh2DeltaEtaC30pt1;          //C30 pt1
-     TH2F*      fh2DeltaEtaC60pt1;          //C60 pt1
-     TH2F*      fh2DeltaEtaC10pt2;          //C10 pt2  
-     TH2F*      fh2DeltaEtaC20pt2;          //C20 pt2
-     TH2F*      fh2DeltaEtaC30pt2;          //C30 pt2
-     TH2F*      fh2DeltaEtaC60pt2;          //C60 pt2
-     TH2F*      fh2DeltaEtaC10pt3;          //C10 pt3
-     TH2F*      fh2DeltaEtaC20pt3;          //C20 pt3
-     TH2F*      fh2DeltaEtaC30pt3;          //C30 pt3
-     TH2F*      fh2DeltaEtaC60pt3;          //C60 pt3
-     TH2F*      fh2DeltaEtaC10pt4;          //C10 pt4
-     TH2F*      fh2DeltaEtaC20pt4;          //C20 pt4
-     TH2F*      fh2DeltaEtaC30pt4;          //C30 pt4
-     TH2F*      fh2DeltaEtaC60pt4;          //C60 pt4
-     TH2F*      fh2DeltaPhiC10pt1;          //The same but phi distance:C10 pt1
-     TH2F*      fh2DeltaPhiC20pt1;          //C20 pt1
-     TH2F*      fh2DeltaPhiC30pt1;          //C30 pt1
-     TH2F*      fh2DeltaPhiC60pt1;          //C60 pt1
-     TH2F*      fh2DeltaPhiC10pt2;          //C10 pt2
-     TH2F*      fh2DeltaPhiC20pt2;          //C20 pt2 
-     TH2F*      fh2DeltaPhiC30pt2;          //C30 pt2
-     TH2F*      fh2DeltaPhiC60pt2;          //C60 pt2 
-     TH2F*      fh2DeltaPhiC10pt3;          //C10 pt3
-     TH2F*      fh2DeltaPhiC20pt3;          //C20 pt3
-     TH2F*      fh2DeltaPhiC30pt3;          //C30 pt3
-     TH2F*      fh2DeltaPhiC60pt3;          //C60 pt3
-     TH2F*      fh2DeltaPhiC10pt4;          //C10 pt4
-     TH2F*      fh2DeltaPhiC20pt4;          //C20 pt4
-     TH2F*      fh2DeltaPhiC30pt4;          //C30 pt4
-     TH2F*      fh2DeltaPhiC60pt4;          //C60 pt4
-
-     TH2F*      fh2DeltaRC10pt1lead;            //Jet track R distance:C10 pt1
-     TH2F*      fh2DeltaRC20pt1lead;            //C20 pt1 
-     TH2F*      fh2DeltaRC30pt1lead;            //C30 pt1
-     TH2F*      fh2DeltaRC60pt1lead;            //C60 pt1
-     TH2F*      fh2DeltaRC10pt2lead;            //C10 pt2   
-     TH2F*      fh2DeltaRC20pt2lead;            //C20 pt2
-     TH2F*      fh2DeltaRC30pt2lead;            //C30 pt2
-     TH2F*      fh2DeltaRC60pt2lead;            //C60 pt2 
-     TH2F*      fh2DeltaRC10pt3lead;            //C10 pt3
-     TH2F*      fh2DeltaRC20pt3lead;            //C20 pt3
-     TH2F*      fh2DeltaRC30pt3lead;            //C30 pt3
-     TH2F*      fh2DeltaRC60pt3lead;            //C60 pt3
-     TH2F*      fh2DeltaRC10pt4lead;            //C10 pt4
-     TH2F*      fh2DeltaRC20pt4lead;            //C20 pt4
-     TH2F*      fh2DeltaRC30pt4lead;            //C30 pt4
-     TH2F*      fh2DeltaRC60pt4lead;            //C60 pt4 
-     TH2F*      fh2DeltaEtaC10pt1lead;          //The same but eta distance:C10 pt1
-     TH2F*      fh2DeltaEtaC20pt1lead;          //C20 pt1
-     TH2F*      fh2DeltaEtaC30pt1lead;          //C30 pt1
-     TH2F*      fh2DeltaEtaC60pt1lead;          //C60 pt1
-     TH2F*      fh2DeltaEtaC10pt2lead;          //C10 pt2  
-     TH2F*      fh2DeltaEtaC20pt2lead;          //C20 pt2
-     TH2F*      fh2DeltaEtaC30pt2lead;          //C30 pt2
-     TH2F*      fh2DeltaEtaC60pt2lead;          //C60 pt2
-     TH2F*      fh2DeltaEtaC10pt3lead;          //C10 pt3
-     TH2F*      fh2DeltaEtaC20pt3lead;          //C20 pt3
-     TH2F*      fh2DeltaEtaC30pt3lead;          //C30 pt3
-     TH2F*      fh2DeltaEtaC60pt3lead;          //C60 pt3
-     TH2F*      fh2DeltaEtaC10pt4lead;          //C10 pt4
-     TH2F*      fh2DeltaEtaC20pt4lead;          //C20 pt4
-     TH2F*      fh2DeltaEtaC30pt4lead;          //C30 pt4
-     TH2F*      fh2DeltaEtaC60pt4lead;          //C60 pt4
-     TH2F*      fh2DeltaPhiC10pt1lead;          //The same but phi distance:C10 pt1
-     TH2F*      fh2DeltaPhiC20pt1lead;          //C20 pt1
-     TH2F*      fh2DeltaPhiC30pt1lead;          //C30 pt1
-     TH2F*      fh2DeltaPhiC60pt1lead;          //C60 pt1
-     TH2F*      fh2DeltaPhiC10pt2lead;          //C10 pt2
-     TH2F*      fh2DeltaPhiC20pt2lead;          //C20 pt2 
-     TH2F*      fh2DeltaPhiC30pt2lead;          //C30 pt2
-     TH2F*      fh2DeltaPhiC60pt2lead;          //C60 pt2 
-     TH2F*      fh2DeltaPhiC10pt3lead;          //C10 pt3
-     TH2F*      fh2DeltaPhiC20pt3lead;          //C20 pt3
-     TH2F*      fh2DeltaPhiC30pt3lead;          //C30 pt3
-     TH2F*      fh2DeltaPhiC60pt3lead;          //C60 pt3
-     TH2F*      fh2DeltaPhiC10pt4lead;          //C10 pt4
-     TH2F*      fh2DeltaPhiC20pt4lead;          //C20 pt4
-     TH2F*      fh2DeltaPhiC30pt4lead;          //C30 pt4
-     TH2F*      fh2DeltaPhiC60pt4lead;          //C60 pt4
-
-     TH2F*      fh2DeltaRC10pt1sublead;            //Jet track R distance:C10 pt1
-     TH2F*      fh2DeltaRC20pt1sublead;            //C20 pt1 
-     TH2F*      fh2DeltaRC30pt1sublead;            //C30 pt1
-     TH2F*      fh2DeltaRC60pt1sublead;            //C60 pt1
-     TH2F*      fh2DeltaRC10pt2sublead;            //C10 pt2   
-     TH2F*      fh2DeltaRC20pt2sublead;            //C20 pt2
-     TH2F*      fh2DeltaRC30pt2sublead;            //C30 pt2
-     TH2F*      fh2DeltaRC60pt2sublead;            //C60 pt2 
-     TH2F*      fh2DeltaRC10pt3sublead;            //C10 pt3
-     TH2F*      fh2DeltaRC20pt3sublead;            //C20 pt3
-     TH2F*      fh2DeltaRC30pt3sublead;            //C30 pt3
-     TH2F*      fh2DeltaRC60pt3sublead;            //C60 pt3
-     TH2F*      fh2DeltaRC10pt4sublead;            //C10 pt4
-     TH2F*      fh2DeltaRC20pt4sublead;            //C20 pt4
-     TH2F*      fh2DeltaRC30pt4sublead;            //C30 pt4
-     TH2F*      fh2DeltaRC60pt4sublead;            //C60 pt4 
-     TH2F*      fh2DeltaEtaC10pt1sublead;          //The same but eta distance:C10 pt1
-     TH2F*      fh2DeltaEtaC20pt1sublead;          //C20 pt1
-     TH2F*      fh2DeltaEtaC30pt1sublead;          //C30 pt1
-     TH2F*      fh2DeltaEtaC60pt1sublead;          //C60 pt1
-     TH2F*      fh2DeltaEtaC10pt2sublead;          //C10 pt2  
-     TH2F*      fh2DeltaEtaC20pt2sublead;          //C20 pt2
-     TH2F*      fh2DeltaEtaC30pt2sublead;          //C30 pt2
-     TH2F*      fh2DeltaEtaC60pt2sublead;          //C60 pt2
-     TH2F*      fh2DeltaEtaC10pt3sublead;          //C10 pt3
-     TH2F*      fh2DeltaEtaC20pt3sublead;          //C20 pt3
-     TH2F*      fh2DeltaEtaC30pt3sublead;          //C30 pt3
-     TH2F*      fh2DeltaEtaC60pt3sublead;          //C60 pt3
-     TH2F*      fh2DeltaEtaC10pt4sublead;          //C10 pt4
-     TH2F*      fh2DeltaEtaC20pt4sublead;          //C20 pt4
-     TH2F*      fh2DeltaEtaC30pt4sublead;          //C30 pt4
-     TH2F*      fh2DeltaEtaC60pt4sublead;          //C60 pt4
-     TH2F*      fh2DeltaPhiC10pt1sublead;          //The same but phi distance:C10 pt1
-     TH2F*      fh2DeltaPhiC20pt1sublead;          //C20 pt1
-     TH2F*      fh2DeltaPhiC30pt1sublead;          //C30 pt1
-     TH2F*      fh2DeltaPhiC60pt1sublead;          //C60 pt1
-     TH2F*      fh2DeltaPhiC10pt2sublead;          //C10 pt2
-     TH2F*      fh2DeltaPhiC20pt2sublead;          //C20 pt2 
-     TH2F*      fh2DeltaPhiC30pt2sublead;          //C30 pt2
-     TH2F*      fh2DeltaPhiC60pt2sublead;          //C60 pt2 
-     TH2F*      fh2DeltaPhiC10pt3sublead;          //C10 pt3
-     TH2F*      fh2DeltaPhiC20pt3sublead;          //C20 pt3
-     TH2F*      fh2DeltaPhiC30pt3sublead;          //C30 pt3
-     TH2F*      fh2DeltaPhiC60pt3sublead;          //C60 pt3
-     TH2F*      fh2DeltaPhiC10pt4sublead;          //C10 pt4
-     TH2F*      fh2DeltaPhiC20pt4sublead;          //C20 pt4
-     TH2F*      fh2DeltaPhiC30pt4sublead;          //C30 pt4
-     TH2F*      fh2DeltaPhiC60pt4sublead;          //C60 pt4
-
-
-
-
 
      TH2F*      fh2AngStructpt1C10;         //Average two particle correlation function:C10 pt1
      TH2F*      fh2AngStructpt2C10;         //C10 pt2
@@ -372,9 +163,10 @@ private:
      TH2F*      fh2AngStructpt2C60;         //C60 pt2
      TH2F*      fh2AngStructpt3C60;         //C60 pt3
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
-
-
-
+     TH3F*      fh3spectriggered;           //triggered spectra
+     TH3F*      fh3specbiased;              //biased spectra
+     TH3F*      fh3specleadsublead;         //lead/sublead/all spectra
+   
 
    AliAnalysisTaskJetCore(const AliAnalysisTaskJetCore&); // not implemented
    AliAnalysisTaskJetCore& operator=(const AliAnalysisTaskJetCore&); // not implemented

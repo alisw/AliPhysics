@@ -2,7 +2,7 @@
 // ******************************************
 // This task computes several jet observables like 
 // the fraction of energy in inner and outer coronnas,
-// the distance from track to jet axis and a 
+// jet-track correlations,triggered jet shapes and 
 // correlation strength distribution of particles inside jets.    
 // Author: lcunquei@cern.ch
 // *******************************************
@@ -46,7 +46,6 @@
 #include "AliInputEventHandler.h"
 #include "AliAODJetEventBackground.h"
 #include "AliAnalysisTaskFastEmbedding.h"
-
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODJet.h"
@@ -77,6 +76,7 @@ fCentMax(100.),
 fNInputTracksMin(0),
 fNInputTracksMax(-1),
 fAngStructCloseTracks(0),
+fCheckMethods(0),
 fJetEtaMin(-.5),
 fJetEtaMax(.5),
 fJetPtMin(20.),
@@ -90,220 +90,17 @@ fkEvtClasses(12),
 fOutputList(0x0),
 fbEvent(kTRUE),
 fHistEvtSelection(0x0),
-fHistJetSelection(0x0),
-fh2JetSelection(0x0),
+fhnDeltaR(0x0),
+fhnSumBkg(0x0),  
+fhnJetCoreMethod3(0x0),
 fh2JetCoreMethod1C10(0x0),
 fh2JetCoreMethod2C10(0x0),
-fh2JetCoreMethod3C10(0x0),
 fh2JetCoreMethod1C20(0x0),
 fh2JetCoreMethod2C20(0x0),
-fh2JetCoreMethod3C20(0x0),
 fh2JetCoreMethod1C30(0x0),
 fh2JetCoreMethod2C30(0x0),
-fh2JetCoreMethod3C30(0x0),
 fh2JetCoreMethod1C60(0x0),
 fh2JetCoreMethod2C60(0x0),
-fh2JetCoreMethod3C60(0x0),
-fh2JetCoreMethod3C10lead(0x0),
-fh2JetCoreMethod3C20lead(0x0),
-fh2JetCoreMethod3C30lead(0x0),
-fh2JetCoreMethod3C60lead(0x0),
-fh2JetCoreMethod3C10sublead(0x0),
-fh2JetCoreMethod3C20sublead(0x0),
-fh2JetCoreMethod3C30sublead(0x0),
-fh2JetCoreMethod3C60sublead(0x0),
-fh2SumPtInC10(0x0),
-fh2SumPtInC20(0x0),
-fh2SumPtInC30(0x0),
-fh2SumPtInC60(0x0),
-fh2SumPtInC10lead(0x0),
-fh2SumPtInC20lead(0x0),
-fh2SumPtInC30lead(0x0),
-fh2SumPtInC60lead(0x0),
-fh2SumPtInC10sublead(0x0),
-fh2SumPtInC20sublead(0x0),
-fh2SumPtInC30sublead(0x0),
-fh2SumPtInC60sublead(0x0),
-fh2SumPtOutC10(0x0),
-fh2SumPtOutC20(0x0),
-fh2SumPtOutC30(0x0),
-fh2SumPtOutC60(0x0),
-fh2SumPtOutC10lead(0x0),
-fh2SumPtOutC20lead(0x0),
-fh2SumPtOutC30lead(0x0),
-fh2SumPtOutC60lead(0x0),
-fh2SumPtOutC10sublead(0x0),
-fh2SumPtOutC20sublead(0x0),
-fh2SumPtOutC30sublead(0x0),
-fh2SumPtOutC60sublead(0x0),
-fh2SumPtInC10bkg(0x0),
-fh2SumPtInC20bkg(0x0),
-fh2SumPtInC30bkg(0x0),
-fh2SumPtInC60bkg(0x0),
-fh2SumPtInC10bkglead(0x0),
-fh2SumPtInC20bkglead(0x0),
-fh2SumPtInC30bkglead(0x0),
-fh2SumPtInC60bkglead(0x0),
-fh2SumPtInC10bkgsublead(0x0),
-fh2SumPtInC20bkgsublead(0x0),
-fh2SumPtInC30bkgsublead(0x0),
-fh2SumPtInC60bkgsublead(0x0),
-fh2SumPtOutC10bkg(0x0),
-fh2SumPtOutC20bkg(0x0),
-fh2SumPtOutC30bkg(0x0),
-fh2SumPtOutC60bkg(0x0),
-fh2SumPtOutC10bkglead(0x0),
-fh2SumPtOutC20bkglead(0x0),
-fh2SumPtOutC30bkglead(0x0),
-fh2SumPtOutC60bkglead(0x0),
-fh2SumPtOutC10bkgsublead(0x0),
-fh2SumPtOutC20bkgsublead(0x0),
-fh2SumPtOutC30bkgsublead(0x0),
-fh2SumPtOutC60bkgsublead(0x0),
-fh2DeltaRC10pt1(0x0),
-fh2DeltaRC20pt1(0x0),
-fh2DeltaRC30pt1(0x0),
-fh2DeltaRC60pt1(0x0),  
-fh2DeltaRC10pt2(0x0),
-fh2DeltaRC20pt2(0x0),
-fh2DeltaRC30pt2(0x0),
-fh2DeltaRC60pt2(0x0),  
-fh2DeltaRC10pt3(0x0),
-fh2DeltaRC20pt3(0x0),
-fh2DeltaRC30pt3(0x0),
-fh2DeltaRC60pt3(0x0),  
-fh2DeltaRC10pt4(0x0),
-fh2DeltaRC20pt4(0x0),
-fh2DeltaRC30pt4(0x0),
-fh2DeltaRC60pt4(0x0),
-fh2DeltaEtaC10pt1(0x0),
-fh2DeltaEtaC20pt1(0x0),
-fh2DeltaEtaC30pt1(0x0),
-fh2DeltaEtaC60pt1(0x0),  
-fh2DeltaEtaC10pt2(0x0),
-fh2DeltaEtaC20pt2(0x0),
-fh2DeltaEtaC30pt2(0x0),
-fh2DeltaEtaC60pt2(0x0),  
-fh2DeltaEtaC10pt3(0x0),
-fh2DeltaEtaC20pt3(0x0),
-fh2DeltaEtaC30pt3(0x0),
-fh2DeltaEtaC60pt3(0x0),  
-fh2DeltaEtaC10pt4(0x0),
-fh2DeltaEtaC20pt4(0x0),
-fh2DeltaEtaC30pt4(0x0),
-fh2DeltaEtaC60pt4(0x0),
-fh2DeltaPhiC10pt1(0x0),
-fh2DeltaPhiC20pt1(0x0),
-fh2DeltaPhiC30pt1(0x0),
-fh2DeltaPhiC60pt1(0x0),  
-fh2DeltaPhiC10pt2(0x0),
-fh2DeltaPhiC20pt2(0x0),
-fh2DeltaPhiC30pt2(0x0),
-fh2DeltaPhiC60pt2(0x0),  
-fh2DeltaPhiC10pt3(0x0),
-fh2DeltaPhiC20pt3(0x0),
-fh2DeltaPhiC30pt3(0x0),
-fh2DeltaPhiC60pt3(0x0),  
-fh2DeltaPhiC10pt4(0x0),
-fh2DeltaPhiC20pt4(0x0),
-fh2DeltaPhiC30pt4(0x0),
-fh2DeltaPhiC60pt4(0x0),
-fh2DeltaRC10pt1lead(0x0),
-fh2DeltaRC20pt1lead(0x0),
-fh2DeltaRC30pt1lead(0x0),
-fh2DeltaRC60pt1lead(0x0),  
-fh2DeltaRC10pt2lead(0x0),
-fh2DeltaRC20pt2lead(0x0),
-fh2DeltaRC30pt2lead(0x0),
-fh2DeltaRC60pt2lead(0x0),  
-fh2DeltaRC10pt3lead(0x0),
-fh2DeltaRC20pt3lead(0x0),
-fh2DeltaRC30pt3lead(0x0),
-fh2DeltaRC60pt3lead(0x0),  
-fh2DeltaRC10pt4lead(0x0),
-fh2DeltaRC20pt4lead(0x0),
-fh2DeltaRC30pt4lead(0x0),
-fh2DeltaRC60pt4lead(0x0),
-fh2DeltaEtaC10pt1lead(0x0),
-fh2DeltaEtaC20pt1lead(0x0),
-fh2DeltaEtaC30pt1lead(0x0),
-fh2DeltaEtaC60pt1lead(0x0),  
-fh2DeltaEtaC10pt2lead(0x0),
-fh2DeltaEtaC20pt2lead(0x0),
-fh2DeltaEtaC30pt2lead(0x0),
-fh2DeltaEtaC60pt2lead(0x0),  
-fh2DeltaEtaC10pt3lead(0x0),
-fh2DeltaEtaC20pt3lead(0x0),
-fh2DeltaEtaC30pt3lead(0x0),
-fh2DeltaEtaC60pt3lead(0x0),  
-fh2DeltaEtaC10pt4lead(0x0),
-fh2DeltaEtaC20pt4lead(0x0),
-fh2DeltaEtaC30pt4lead(0x0),
-fh2DeltaEtaC60pt4lead(0x0),
-fh2DeltaPhiC10pt1lead(0x0),
-fh2DeltaPhiC20pt1lead(0x0),
-fh2DeltaPhiC30pt1lead(0x0),
-fh2DeltaPhiC60pt1lead(0x0),  
-fh2DeltaPhiC10pt2lead(0x0),
-fh2DeltaPhiC20pt2lead(0x0),
-fh2DeltaPhiC30pt2lead(0x0),
-fh2DeltaPhiC60pt2lead(0x0),  
-fh2DeltaPhiC10pt3lead(0x0),
-fh2DeltaPhiC20pt3lead(0x0),
-fh2DeltaPhiC30pt3lead(0x0),
-fh2DeltaPhiC60pt3lead(0x0),  
-fh2DeltaPhiC10pt4lead(0x0),
-fh2DeltaPhiC20pt4lead(0x0),
-fh2DeltaPhiC30pt4lead(0x0),
-fh2DeltaPhiC60pt4lead(0x0),
-fh2DeltaRC10pt1sublead(0x0),
-fh2DeltaRC20pt1sublead(0x0),
-fh2DeltaRC30pt1sublead(0x0),
-fh2DeltaRC60pt1sublead(0x0),  
-fh2DeltaRC10pt2sublead(0x0),
-fh2DeltaRC20pt2sublead(0x0),
-fh2DeltaRC30pt2sublead(0x0),
-fh2DeltaRC60pt2sublead(0x0),  
-fh2DeltaRC10pt3sublead(0x0),
-fh2DeltaRC20pt3sublead(0x0),
-fh2DeltaRC30pt3sublead(0x0),
-fh2DeltaRC60pt3sublead(0x0),  
-fh2DeltaRC10pt4sublead(0x0),
-fh2DeltaRC20pt4sublead(0x0),
-fh2DeltaRC30pt4sublead(0x0),
-fh2DeltaRC60pt4sublead(0x0),
-fh2DeltaEtaC10pt1sublead(0x0),
-fh2DeltaEtaC20pt1sublead(0x0),
-fh2DeltaEtaC30pt1sublead(0x0),
-fh2DeltaEtaC60pt1sublead(0x0),  
-fh2DeltaEtaC10pt2sublead(0x0),
-fh2DeltaEtaC20pt2sublead(0x0),
-fh2DeltaEtaC30pt2sublead(0x0),
-fh2DeltaEtaC60pt2sublead(0x0),  
-fh2DeltaEtaC10pt3sublead(0x0),
-fh2DeltaEtaC20pt3sublead(0x0),
-fh2DeltaEtaC30pt3sublead(0x0),
-fh2DeltaEtaC60pt3sublead(0x0),  
-fh2DeltaEtaC10pt4sublead(0x0),
-fh2DeltaEtaC20pt4sublead(0x0),
-fh2DeltaEtaC30pt4sublead(0x0),
-fh2DeltaEtaC60pt4sublead(0x0),
-fh2DeltaPhiC10pt1sublead(0x0),
-fh2DeltaPhiC20pt1sublead(0x0),
-fh2DeltaPhiC30pt1sublead(0x0),
-fh2DeltaPhiC60pt1sublead(0x0),  
-fh2DeltaPhiC10pt2sublead(0x0),
-fh2DeltaPhiC20pt2sublead(0x0),
-fh2DeltaPhiC30pt2sublead(0x0),
-fh2DeltaPhiC60pt2sublead(0x0),  
-fh2DeltaPhiC10pt3sublead(0x0),
-fh2DeltaPhiC20pt3sublead(0x0),
-fh2DeltaPhiC30pt3sublead(0x0),
-fh2DeltaPhiC60pt3sublead(0x0),  
-fh2DeltaPhiC10pt4sublead(0x0),
-fh2DeltaPhiC20pt4sublead(0x0),
-fh2DeltaPhiC30pt4sublead(0x0),
-fh2DeltaPhiC60pt4sublead(0x0),
 fh2AngStructpt1C10(0x0),
 fh2AngStructpt2C10(0x0),
 fh2AngStructpt3C10(0x0),
@@ -319,7 +116,11 @@ fh2AngStructpt4C30(0x0),
 fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
-fh2AngStructpt4C60(0x0)
+fh2AngStructpt4C60(0x0),
+fh3spectriggered(0x0),
+fh3specbiased(0x0),
+fh3specleadsublead(0x0)
+ 
 {
    // default Constructor
 
@@ -352,6 +153,7 @@ fCentMax(100.),
 fNInputTracksMin(0),
 fNInputTracksMax(-1),
 fAngStructCloseTracks(0),
+fCheckMethods(0),
 fJetEtaMin(-.5),
 fJetEtaMax(.5),
 fJetPtMin(20.),
@@ -365,220 +167,17 @@ fkEvtClasses(12),
 fOutputList(0x0),
 fbEvent(kTRUE),
 fHistEvtSelection(0x0),
-fHistJetSelection(0x0),
-fh2JetSelection(0x0),
+fhnDeltaR(0x0),
+fhnSumBkg(0x0),  
+fhnJetCoreMethod3(0x0),
 fh2JetCoreMethod1C10(0x0),
 fh2JetCoreMethod2C10(0x0),
-fh2JetCoreMethod3C10(0x0),
 fh2JetCoreMethod1C20(0x0),
 fh2JetCoreMethod2C20(0x0),
-fh2JetCoreMethod3C20(0x0),
 fh2JetCoreMethod1C30(0x0),
 fh2JetCoreMethod2C30(0x0),
-fh2JetCoreMethod3C30(0x0),
 fh2JetCoreMethod1C60(0x0),
 fh2JetCoreMethod2C60(0x0),
-fh2JetCoreMethod3C60(0x0),
-fh2JetCoreMethod3C10lead(0x0),
-fh2JetCoreMethod3C20lead(0x0),
-fh2JetCoreMethod3C30lead(0x0),
-fh2JetCoreMethod3C60lead(0x0),
-fh2JetCoreMethod3C10sublead(0x0),
-fh2JetCoreMethod3C20sublead(0x0),
-fh2JetCoreMethod3C30sublead(0x0),
-fh2JetCoreMethod3C60sublead(0x0),
-fh2SumPtInC10(0x0),
-fh2SumPtInC20(0x0),
-fh2SumPtInC30(0x0),
-fh2SumPtInC60(0x0),
-fh2SumPtInC10lead(0x0),
-fh2SumPtInC20lead(0x0),
-fh2SumPtInC30lead(0x0),
-fh2SumPtInC60lead(0x0),
-fh2SumPtInC10sublead(0x0),
-fh2SumPtInC20sublead(0x0),
-fh2SumPtInC30sublead(0x0),
-fh2SumPtInC60sublead(0x0),
-fh2SumPtOutC10(0x0),
-fh2SumPtOutC20(0x0),
-fh2SumPtOutC30(0x0),
-fh2SumPtOutC60(0x0),
-fh2SumPtOutC10lead(0x0),
-fh2SumPtOutC20lead(0x0),
-fh2SumPtOutC30lead(0x0),
-fh2SumPtOutC60lead(0x0),
-fh2SumPtOutC10sublead(0x0),
-fh2SumPtOutC20sublead(0x0),
-fh2SumPtOutC30sublead(0x0),
-fh2SumPtOutC60sublead(0x0),
-fh2SumPtInC10bkg(0x0),
-fh2SumPtInC20bkg(0x0),
-fh2SumPtInC30bkg(0x0),
-fh2SumPtInC60bkg(0x0),
-fh2SumPtInC10bkglead(0x0),
-fh2SumPtInC20bkglead(0x0),
-fh2SumPtInC30bkglead(0x0),
-fh2SumPtInC60bkglead(0x0),
-fh2SumPtInC10bkgsublead(0x0),
-fh2SumPtInC20bkgsublead(0x0),
-fh2SumPtInC30bkgsublead(0x0),
-fh2SumPtInC60bkgsublead(0x0),
-fh2SumPtOutC10bkg(0x0),
-fh2SumPtOutC20bkg(0x0),
-fh2SumPtOutC30bkg(0x0),
-fh2SumPtOutC60bkg(0x0),
-fh2SumPtOutC10bkglead(0x0),
-fh2SumPtOutC20bkglead(0x0),
-fh2SumPtOutC30bkglead(0x0),
-fh2SumPtOutC60bkglead(0x0),
-fh2SumPtOutC10bkgsublead(0x0),
-fh2SumPtOutC20bkgsublead(0x0),
-fh2SumPtOutC30bkgsublead(0x0),
-fh2SumPtOutC60bkgsublead(0x0),
-fh2DeltaRC10pt1(0x0),
-fh2DeltaRC20pt1(0x0),
-fh2DeltaRC30pt1(0x0),
-fh2DeltaRC60pt1(0x0),  
-fh2DeltaRC10pt2(0x0),
-fh2DeltaRC20pt2(0x0),
-fh2DeltaRC30pt2(0x0),
-fh2DeltaRC60pt2(0x0),  
-fh2DeltaRC10pt3(0x0),
-fh2DeltaRC20pt3(0x0),
-fh2DeltaRC30pt3(0x0),
-fh2DeltaRC60pt3(0x0),  
-fh2DeltaRC10pt4(0x0),
-fh2DeltaRC20pt4(0x0),
-fh2DeltaRC30pt4(0x0),
-fh2DeltaRC60pt4(0x0),
-fh2DeltaEtaC10pt1(0x0),
-fh2DeltaEtaC20pt1(0x0),
-fh2DeltaEtaC30pt1(0x0),
-fh2DeltaEtaC60pt1(0x0),  
-fh2DeltaEtaC10pt2(0x0),
-fh2DeltaEtaC20pt2(0x0),
-fh2DeltaEtaC30pt2(0x0),
-fh2DeltaEtaC60pt2(0x0),  
-fh2DeltaEtaC10pt3(0x0),
-fh2DeltaEtaC20pt3(0x0),
-fh2DeltaEtaC30pt3(0x0),
-fh2DeltaEtaC60pt3(0x0),  
-fh2DeltaEtaC10pt4(0x0),
-fh2DeltaEtaC20pt4(0x0),
-fh2DeltaEtaC30pt4(0x0),
-fh2DeltaEtaC60pt4(0x0),
-fh2DeltaPhiC10pt1(0x0),
-fh2DeltaPhiC20pt1(0x0),
-fh2DeltaPhiC30pt1(0x0),
-fh2DeltaPhiC60pt1(0x0),  
-fh2DeltaPhiC10pt2(0x0),
-fh2DeltaPhiC20pt2(0x0),
-fh2DeltaPhiC30pt2(0x0),
-fh2DeltaPhiC60pt2(0x0),  
-fh2DeltaPhiC10pt3(0x0),
-fh2DeltaPhiC20pt3(0x0),
-fh2DeltaPhiC30pt3(0x0),
-fh2DeltaPhiC60pt3(0x0),  
-fh2DeltaPhiC10pt4(0x0),
-fh2DeltaPhiC20pt4(0x0),
-fh2DeltaPhiC30pt4(0x0),
-fh2DeltaPhiC60pt4(0x0),
-fh2DeltaRC10pt1lead(0x0),
-fh2DeltaRC20pt1lead(0x0),
-fh2DeltaRC30pt1lead(0x0),
-fh2DeltaRC60pt1lead(0x0),  
-fh2DeltaRC10pt2lead(0x0),
-fh2DeltaRC20pt2lead(0x0),
-fh2DeltaRC30pt2lead(0x0),
-fh2DeltaRC60pt2lead(0x0),  
-fh2DeltaRC10pt3lead(0x0),
-fh2DeltaRC20pt3lead(0x0),
-fh2DeltaRC30pt3lead(0x0),
-fh2DeltaRC60pt3lead(0x0),  
-fh2DeltaRC10pt4lead(0x0),
-fh2DeltaRC20pt4lead(0x0),
-fh2DeltaRC30pt4lead(0x0),
-fh2DeltaRC60pt4lead(0x0),
-fh2DeltaEtaC10pt1lead(0x0),
-fh2DeltaEtaC20pt1lead(0x0),
-fh2DeltaEtaC30pt1lead(0x0),
-fh2DeltaEtaC60pt1lead(0x0),  
-fh2DeltaEtaC10pt2lead(0x0),
-fh2DeltaEtaC20pt2lead(0x0),
-fh2DeltaEtaC30pt2lead(0x0),
-fh2DeltaEtaC60pt2lead(0x0),  
-fh2DeltaEtaC10pt3lead(0x0),
-fh2DeltaEtaC20pt3lead(0x0),
-fh2DeltaEtaC30pt3lead(0x0),
-fh2DeltaEtaC60pt3lead(0x0),  
-fh2DeltaEtaC10pt4lead(0x0),
-fh2DeltaEtaC20pt4lead(0x0),
-fh2DeltaEtaC30pt4lead(0x0),
-fh2DeltaEtaC60pt4lead(0x0),
-fh2DeltaPhiC10pt1lead(0x0),
-fh2DeltaPhiC20pt1lead(0x0),
-fh2DeltaPhiC30pt1lead(0x0),
-fh2DeltaPhiC60pt1lead(0x0),  
-fh2DeltaPhiC10pt2lead(0x0),
-fh2DeltaPhiC20pt2lead(0x0),
-fh2DeltaPhiC30pt2lead(0x0),
-fh2DeltaPhiC60pt2lead(0x0),  
-fh2DeltaPhiC10pt3lead(0x0),
-fh2DeltaPhiC20pt3lead(0x0),
-fh2DeltaPhiC30pt3lead(0x0),
-fh2DeltaPhiC60pt3lead(0x0),  
-fh2DeltaPhiC10pt4lead(0x0),
-fh2DeltaPhiC20pt4lead(0x0),
-fh2DeltaPhiC30pt4lead(0x0),
-fh2DeltaPhiC60pt4lead(0x0),
-fh2DeltaRC10pt1sublead(0x0),
-fh2DeltaRC20pt1sublead(0x0),
-fh2DeltaRC30pt1sublead(0x0),
-fh2DeltaRC60pt1sublead(0x0),  
-fh2DeltaRC10pt2sublead(0x0),
-fh2DeltaRC20pt2sublead(0x0),
-fh2DeltaRC30pt2sublead(0x0),
-fh2DeltaRC60pt2sublead(0x0),  
-fh2DeltaRC10pt3sublead(0x0),
-fh2DeltaRC20pt3sublead(0x0),
-fh2DeltaRC30pt3sublead(0x0),
-fh2DeltaRC60pt3sublead(0x0),  
-fh2DeltaRC10pt4sublead(0x0),
-fh2DeltaRC20pt4sublead(0x0),
-fh2DeltaRC30pt4sublead(0x0),
-fh2DeltaRC60pt4sublead(0x0),
-fh2DeltaEtaC10pt1sublead(0x0),
-fh2DeltaEtaC20pt1sublead(0x0),
-fh2DeltaEtaC30pt1sublead(0x0),
-fh2DeltaEtaC60pt1sublead(0x0),  
-fh2DeltaEtaC10pt2sublead(0x0),
-fh2DeltaEtaC20pt2sublead(0x0),
-fh2DeltaEtaC30pt2sublead(0x0),
-fh2DeltaEtaC60pt2sublead(0x0),  
-fh2DeltaEtaC10pt3sublead(0x0),
-fh2DeltaEtaC20pt3sublead(0x0),
-fh2DeltaEtaC30pt3sublead(0x0),
-fh2DeltaEtaC60pt3sublead(0x0),  
-fh2DeltaEtaC10pt4sublead(0x0),
-fh2DeltaEtaC20pt4sublead(0x0),
-fh2DeltaEtaC30pt4sublead(0x0),
-fh2DeltaEtaC60pt4sublead(0x0),
-fh2DeltaPhiC10pt1sublead(0x0),
-fh2DeltaPhiC20pt1sublead(0x0),
-fh2DeltaPhiC30pt1sublead(0x0),
-fh2DeltaPhiC60pt1sublead(0x0),  
-fh2DeltaPhiC10pt2sublead(0x0),
-fh2DeltaPhiC20pt2sublead(0x0),
-fh2DeltaPhiC30pt2sublead(0x0),
-fh2DeltaPhiC60pt2sublead(0x0),  
-fh2DeltaPhiC10pt3sublead(0x0),
-fh2DeltaPhiC20pt3sublead(0x0),
-fh2DeltaPhiC30pt3sublead(0x0),
-fh2DeltaPhiC60pt3sublead(0x0),  
-fh2DeltaPhiC10pt4sublead(0x0),
-fh2DeltaPhiC20pt4sublead(0x0),
-fh2DeltaPhiC30pt4sublead(0x0),
-fh2DeltaPhiC60pt4sublead(0x0),
 fh2AngStructpt1C10(0x0),
 fh2AngStructpt2C10(0x0),
 fh2AngStructpt3C10(0x0),
@@ -594,8 +193,10 @@ fh2AngStructpt4C30(0x0),
 fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
-fh2AngStructpt4C60(0x0)    
-
+fh2AngStructpt4C60(0x0),    
+fh3spectriggered(0x0),
+fh3specbiased(0x0),
+fh3specleadsublead(0x0)
  {
    // Constructor
 
@@ -650,267 +251,27 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
    fHistEvtSelection->GetXaxis()->SetBinLabel(5,"centrality (rejected)");
    fHistEvtSelection->GetXaxis()->SetBinLabel(6,"multiplicity (rejected)");
 
-   fHistJetSelection = new TH1I("fHistJetSelection", "jet selection", 8, -0.5, 7.5);
-   fHistJetSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
-   fHistJetSelection->GetXaxis()->SetBinLabel(2,"probes IN");
-   fHistJetSelection->GetXaxis()->SetBinLabel(3,"no matching jet");
-   fHistJetSelection->GetXaxis()->SetBinLabel(4,"not in list");
-   fHistJetSelection->GetXaxis()->SetBinLabel(5,"fraction cut");
-   fHistJetSelection->GetXaxis()->SetBinLabel(6,"acceptance cut");
-   fHistJetSelection->GetXaxis()->SetBinLabel(7,"p_{T} cut");
-   fHistJetSelection->GetXaxis()->SetBinLabel(8,"trigger exclude mask");
+    UInt_t entries = 0; // bit coded, see GetDimParams() below 
+    
+     entries = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 |1<<7|1<<8; 
+     fhnDeltaR = NewTHnSparseF("fhnDeltaR", entries);
+     // fhnSumBkg = NewTHnSparseF("fhnDeltaR", entries);
 
-   fh2JetSelection = new TH2F("fh2JetSelection", "jet selection", 8, -0.5, 7.5,100,0.,200.);
-   fh2JetSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
-   fh2JetSelection->GetXaxis()->SetBinLabel(2,"probes IN");
-   fh2JetSelection->GetXaxis()->SetBinLabel(3,"no matching jet");
-   fh2JetSelection->GetXaxis()->SetBinLabel(4,"not in list");
-   fh2JetSelection->GetXaxis()->SetBinLabel(5,"fraction cut");
-   fh2JetSelection->GetXaxis()->SetBinLabel(6,"acceptance cut");
-   fh2JetSelection->GetXaxis()->SetBinLabel(7,"p_{T} cut");
-   fh2JetSelection->GetXaxis()->SetBinLabel(8,"trigger exclude mask");
-
-
-   //UInt_t entries = 0; // bit coded, see GetDimParams() below
-   //UInt_t opt = 0;  // bit coded, default (0) or high resolution (1)
-
-   //  Int_t bins[5]={10,10,150,150,15};
-   //Double_t xmin[5]={0.,0.,0.,0.,0.};
-   //Double_t xmax[5]={100.,6.5,150.,1.5,1.5};     
-   //fhnDeltaRjets = new THnSparseF("fhnDeltaRjets", "fhnDeltaRjets",5,bins,xmin,xmax);
-
-
+    if(fCheckMethods){
+      entries = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5  ; 
+     fhnJetCoreMethod3 = NewTHnSparseF("fhnEvent", entries);
 
     fh2JetCoreMethod1C10 = new TH2F("JetCoreMethod1C10","",150, 0., 150.,100, 0., 1.5);
     fh2JetCoreMethod2C10 = new TH2F("JetCoreMethod2C10","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C10 = new TH2F("JetCoreMethod3C10","",150, 0., 150.,100, 0., 1.5); 
     fh2JetCoreMethod1C20 = new TH2F("JetCoreMethod1C20","",150, 0., 150.,100, 0., 1.5);
     fh2JetCoreMethod2C20 = new TH2F("JetCoreMethod2C20","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C20 = new TH2F("JetCoreMethod3C20","",150, 0., 150.,100, 0., 1.5); 
     fh2JetCoreMethod1C30 = new TH2F("JetCoreMethod1C30","",150, 0., 150.,100, 0., 1.5);
     fh2JetCoreMethod2C30 = new TH2F("JetCoreMethod2C30","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C30 = new TH2F("JetCoreMethod3C30","",150, 0., 150.,100, 0., 1.5); 
     fh2JetCoreMethod1C60 = new TH2F("JetCoreMethod1C60","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod2C60 = new TH2F("JetCoreMethod2C60","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C60 = new TH2F("JetCoreMethod3C60","",150, 0., 150.,100, 0., 1.5); 
-    fh2JetCoreMethod3C10lead = new TH2F("JetCoreMethod3C10lead","",150, 0., 150.,100, 0., 1.5); 
-    fh2JetCoreMethod3C20lead = new TH2F("JetCoreMethod3C20lead","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C30lead = new TH2F("JetCoreMethod3C30lead","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C60lead = new TH2F("JetCoreMethod3C60lead","",150, 0., 150.,100, 0., 1.5); 
-    fh2JetCoreMethod3C10sublead = new TH2F("JetCoreMethod3C10sublead","",150, 0., 150.,100, 0., 1.5); 
-    fh2JetCoreMethod3C20sublead = new TH2F("JetCoreMethod3C20sublead","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C30sublead = new TH2F("JetCoreMethod3C30sublead","",150, 0., 150.,100, 0., 1.5);
-    fh2JetCoreMethod3C60sublead = new TH2F("JetCoreMethod3C60sublead","",150, 0., 150.,100, 0., 1.5); 
+    fh2JetCoreMethod2C60 = new TH2F("JetCoreMethod2C60","",150, 0., 150.,100, 0., 1.5);}
+
    
-    fh2SumPtInC10 = new TH2F("PtSumInC10","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC20 = new TH2F("PtSumInC20","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC30 = new TH2F("PtSumInC30","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC60 = new TH2F("PtSumInC60","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC10lead = new TH2F("PtSumInC10lead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC20lead = new TH2F("PtSumInC20lead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC30lead = new TH2F("PtSumInC30lead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC60lead = new TH2F("PtSumInC60lead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC10sublead = new TH2F("PtSumInC10sublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC20sublead = new TH2F("PtSumInC20sublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC30sublead = new TH2F("PtSumInC30sublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC60sublead = new TH2F("PtSumInC60sublead","",150, 0., 150.,5000, 0., 25.); 
-
-    fh2SumPtOutC10 = new TH2F("PtSumOutC10","",150, 0., 150.,5000, 0., 25.);
-    fh2SumPtOutC20 = new TH2F("PtSumOutC20","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC30 = new TH2F("PtSumOutC30","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC60 = new TH2F("PtSumOutC60","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC10lead = new TH2F("PtSumOutC10lead","",150, 0., 150.,5000, 0., 25.);
-    fh2SumPtOutC20lead = new TH2F("PtSumOutC20lead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC30lead = new TH2F("PtSumOutC30lead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC60lead = new TH2F("PtSumOutC60lead","",150, 0., 150.,5000, 0., 25.);      
-    fh2SumPtOutC10sublead = new TH2F("PtSumOutC10sublead","",150, 0., 150.,5000, 0., 25.);
-    fh2SumPtOutC20sublead = new TH2F("PtSumOutC20sublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC30sublead = new TH2F("PtSumOutC30sublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC60sublead = new TH2F("PtSumOutC60sublead","",150, 0., 150.,5000, 0., 25.);      
-
-
-    fh2SumPtInC10bkg = new TH2F("PtSumInC10bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC20bkg = new TH2F("PtSumInC20bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC30bkg = new TH2F("PtSumInC30bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC60bkg = new TH2F("PtSumInC60bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC10bkglead = new TH2F("PtSumInC10bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC20bkglead = new TH2F("PtSumInC20bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC30bkglead = new TH2F("PtSumInC30bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC60bkglead = new TH2F("PtSumInC60bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC10bkgsublead = new TH2F("PtSumInC10bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC20bkgsublead = new TH2F("PtSumInC20bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC30bkgsublead = new TH2F("PtSumInC30bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtInC60bkgsublead = new TH2F("PtSumInC60bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-
-
-    fh2SumPtOutC10bkg = new TH2F("PtSumOutC10bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC20bkg = new TH2F("PtSumOutC20bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC30bkg = new TH2F("PtSumOutC30bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC60bkg = new TH2F("PtSumOutC60bkg","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC10bkglead = new TH2F("PtSumOutC10bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC20bkglead = new TH2F("PtSumOutC20bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC30bkglead = new TH2F("PtSumOutC30bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC60bkglead = new TH2F("PtSumOutC60bkglead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC10bkgsublead = new TH2F("PtSumOutC10bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC20bkgsublead = new TH2F("PtSumOutC20bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC30bkgsublead = new TH2F("PtSumOutC30bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-    fh2SumPtOutC60bkgsublead = new TH2F("PtSumOutC60bkgsublead","",150, 0., 150.,5000, 0., 25.); 
-
-
-
-    fh2DeltaRC10pt1 = new TH2F("DeltaRC10pt1","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt1 = new TH2F("DeltaRC20pt1","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt1 = new TH2F("DeltaRC30pt1","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt1 = new TH2F("DeltaRC60pt1","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt2 = new TH2F("DeltaRC10pt2","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt2 = new TH2F("DeltaRC20pt2","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt2 = new TH2F("DeltaRC30pt2","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt2 = new TH2F("DeltaRC60pt2","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt3 = new TH2F("DeltaRC10pt3","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt3 = new TH2F("DeltaRC20pt3","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt3 = new TH2F("DeltaRC30pt3","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt3 = new TH2F("DeltaRC60pt3","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt4 = new TH2F("DeltaRC10pt4","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt4 = new TH2F("DeltaRC20pt4","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt4 = new TH2F("DeltaRC30pt4","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt4 = new TH2F("DeltaRC60pt4","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaEtaC10pt1 = new TH2F("DeltaEtaC10pt1","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt1 = new TH2F("DeltaEtaC20pt1","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt1 = new TH2F("DeltaEtaC30pt1","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt1 = new TH2F("DeltaEtaC60pt1","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt2 = new TH2F("DeltaEtaC10pt2","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt2 = new TH2F("DeltaEtaC20pt2","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt2 = new TH2F("DeltaEtaC30pt2","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt2 = new TH2F("DeltaEtaC60pt2","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt3 = new TH2F("DeltaEtaC10pt3","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt3 = new TH2F("DeltaEtaC20pt3","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt3 = new TH2F("DeltaEtaC30pt3","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt3 = new TH2F("DeltaEtaC60pt3","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt4 = new TH2F("DeltaEtaC10pt4","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt4 = new TH2F("DeltaEtaC20pt4","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt4 = new TH2F("DeltaEtaC30pt4","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt4 = new TH2F("DeltaEtaC60pt4","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaPhiC10pt1 = new TH2F("DeltaPhiC10pt1","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt1 = new TH2F("DeltaPhiC20pt1","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt1 = new TH2F("DeltaPhiC30pt1","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt1 = new TH2F("DeltaPhiC60pt1","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt2 = new TH2F("DeltaPhiC10pt2","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt2 = new TH2F("DeltaPhiC20pt2","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt2 = new TH2F("DeltaPhiC30pt2","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt2 = new TH2F("DeltaPhiC60pt2","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt3 = new TH2F("DeltaPhiC10pt3","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt3 = new TH2F("DeltaPhiC20pt3","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt3 = new TH2F("DeltaPhiC30pt3","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt3 = new TH2F("DeltaPhiC60pt3","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt4 = new TH2F("DeltaPhiC10pt4","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt4 = new TH2F("DeltaPhiC20pt4","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt4 = new TH2F("DeltaPhiC30pt4","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt4 = new TH2F("DeltaPhiC60pt4","",150, 0., 15.,100,-6.5,6.5); 
-
-    fh2DeltaRC10pt1lead = new TH2F("DeltaRC10pt1lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt1lead = new TH2F("DeltaRC20pt1lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt1lead = new TH2F("DeltaRC30pt1lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt1lead = new TH2F("DeltaRC60pt1lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt2lead = new TH2F("DeltaRC10pt2lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt2lead = new TH2F("DeltaRC20pt2lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt2lead = new TH2F("DeltaRC30pt2lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt2lead = new TH2F("DeltaRC60pt2lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt3lead = new TH2F("DeltaRC10pt3lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt3lead = new TH2F("DeltaRC20pt3lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt3lead = new TH2F("DeltaRC30pt3lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt3lead = new TH2F("DeltaRC60pt3lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt4lead = new TH2F("DeltaRC10pt4lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt4lead = new TH2F("DeltaRC20pt4lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt4lead = new TH2F("DeltaRC30pt4lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt4lead = new TH2F("DeltaRC60pt4lead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaEtaC10pt1lead = new TH2F("DeltaEtaC10pt1lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt1lead = new TH2F("DeltaEtaC20pt1lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt1lead = new TH2F("DeltaEtaC30pt1lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt1lead = new TH2F("DeltaEtaC60pt1lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt2lead = new TH2F("DeltaEtaC10pt2lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt2lead = new TH2F("DeltaEtaC20pt2lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt2lead = new TH2F("DeltaEtaC30pt2lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt2lead = new TH2F("DeltaEtaC60pt2lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt3lead = new TH2F("DeltaEtaC10pt3lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt3lead = new TH2F("DeltaEtaC20pt3lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt3lead = new TH2F("DeltaEtaC30pt3lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt3lead = new TH2F("DeltaEtaC60pt3lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt4lead = new TH2F("DeltaEtaC10pt4lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt4lead = new TH2F("DeltaEtaC20pt4lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt4lead = new TH2F("DeltaEtaC30pt4lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt4lead = new TH2F("DeltaEtaC60pt4lead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaPhiC10pt1lead = new TH2F("DeltaPhiC10pt1lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt1lead = new TH2F("DeltaPhiC20pt1lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt1lead = new TH2F("DeltaPhiC30pt1lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt1lead = new TH2F("DeltaPhiC60pt1lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt2lead = new TH2F("DeltaPhiC10pt2lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt2lead = new TH2F("DeltaPhiC20pt2lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt2lead = new TH2F("DeltaPhiC30pt2lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt2lead = new TH2F("DeltaPhiC60pt2lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt3lead = new TH2F("DeltaPhiC10pt3lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt3lead = new TH2F("DeltaPhiC20pt3lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt3lead = new TH2F("DeltaPhiC30pt3lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt3lead = new TH2F("DeltaPhiC60pt3lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt4lead = new TH2F("DeltaPhiC10pt4lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt4lead = new TH2F("DeltaPhiC20pt4lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt4lead = new TH2F("DeltaPhiC30pt4lead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt4lead = new TH2F("DeltaPhiC60pt4lead","",150, 0., 15.,100,-6.5,6.5); 
-
-
-    fh2DeltaRC10pt1sublead = new TH2F("DeltaRC10pt1sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt1sublead = new TH2F("DeltaRC20pt1sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt1sublead = new TH2F("DeltaRC30pt1sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt1sublead = new TH2F("DeltaRC60pt1sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt2sublead = new TH2F("DeltaRC10pt2sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt2sublead = new TH2F("DeltaRC20pt2sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt2sublead = new TH2F("DeltaRC30pt2sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt2sublead = new TH2F("DeltaRC60pt2sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt3sublead = new TH2F("DeltaRC10pt3sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt3sublead = new TH2F("DeltaRC20pt3sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt3sublead = new TH2F("DeltaRC30pt3sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt3sublead = new TH2F("DeltaRC60pt3sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC10pt4sublead = new TH2F("DeltaRC10pt4sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC20pt4sublead = new TH2F("DeltaRC20pt4sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC30pt4sublead = new TH2F("DeltaRC30pt4sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaRC60pt4sublead = new TH2F("DeltaRC60pt4sublead","",150, 0., 15.,100,0.,1.5); 
-    fh2DeltaEtaC10pt1sublead = new TH2F("DeltaEtaC10pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt1sublead = new TH2F("DeltaEtaC20pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt1sublead = new TH2F("DeltaEtaC30pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt1sublead = new TH2F("DeltaEtaC60pt1sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt2sublead = new TH2F("DeltaEtaC10pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt2sublead = new TH2F("DeltaEtaC20pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt2sublead = new TH2F("DeltaEtaC30pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt2sublead = new TH2F("DeltaEtaC60pt2sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt3sublead = new TH2F("DeltaEtaC10pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt3sublead = new TH2F("DeltaEtaC20pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt3sublead = new TH2F("DeltaEtaC30pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt3sublead = new TH2F("DeltaEtaC60pt3sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC10pt4sublead = new TH2F("DeltaEtaC10pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC20pt4sublead = new TH2F("DeltaEtaC20pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC30pt4sublead = new TH2F("DeltaEtaC30pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaEtaC60pt4sublead = new TH2F("DeltaEtaC60pt4sublead","",150, 0., 15.,100,-1.5,1.5); 
-    fh2DeltaPhiC10pt1sublead = new TH2F("DeltaPhiC10pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt1sublead = new TH2F("DeltaPhiC20pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt1sublead = new TH2F("DeltaPhiC30pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt1sublead = new TH2F("DeltaPhiC60pt1sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt2sublead = new TH2F("DeltaPhiC10pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt2sublead = new TH2F("DeltaPhiC20pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt2sublead = new TH2F("DeltaPhiC30pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt2sublead = new TH2F("DeltaPhiC60pt2sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt3sublead = new TH2F("DeltaPhiC10pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt3sublead = new TH2F("DeltaPhiC20pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt3sublead = new TH2F("DeltaPhiC30pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt3sublead = new TH2F("DeltaPhiC60pt3sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC10pt4sublead = new TH2F("DeltaPhiC10pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC20pt4sublead = new TH2F("DeltaPhiC20pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC30pt4sublead = new TH2F("DeltaPhiC30pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
-    fh2DeltaPhiC60pt4sublead = new TH2F("DeltaPhiC60pt4sublead","",150, 0., 15.,100,-6.5,6.5); 
-
-
-
-
-
-      if(fAngStructCloseTracks>0){
+    if(fAngStructCloseTracks>0){
     fh2AngStructpt1C10 = new TH2F("Ang struct pt1 C10","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt2C10 = new TH2F("Ang struct pt2 C10","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt3C10 = new TH2F("Ang struct pt3 C10","",15,0.,1.5,150,0.,10.);
@@ -927,236 +288,31 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2AngStructpt2C60 = new TH2F("Ang struct pt2 C60","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt3C60 = new TH2F("Ang struct pt3 C60","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt4C60 = new TH2F("Ang struct pt4 C60","",15,0.,1.5,150,0.,10.); }
+    fh3spectriggered = new TH3F("Triggered spectrum","",10,0,100,50,0.,200,50,0.,50.);
+    fh3specbiased = new TH3F("Biased spectrum","",10,0,100,50,0.,200.,50,0.,50.);
+    fh3specleadsublead = new TH3F("Leading/subleading spectrum","",10,0,100,50,0.,200.,3,0,3);
 
    fOutputList->Add(fHistEvtSelection);
-   fOutputList->Add(fHistJetSelection);
-   fOutputList->Add(fh2JetSelection);
 
+   fOutputList->Add(fhnDeltaR);
+   
+   //fOutputList->Add(fhnSumBkg);
+         
+     
+  
+      if(fCheckMethods){
+      fOutputList->Add(fhnJetCoreMethod3);
       fOutputList->Add(fh2JetCoreMethod1C10);
       fOutputList->Add(fh2JetCoreMethod2C10);
-      fOutputList->Add(fh2JetCoreMethod3C10);
       fOutputList->Add(fh2JetCoreMethod1C20);
       fOutputList->Add(fh2JetCoreMethod2C20);
-      fOutputList->Add(fh2JetCoreMethod3C20);
       fOutputList->Add(fh2JetCoreMethod1C30);
       fOutputList->Add(fh2JetCoreMethod2C30);
-      fOutputList->Add(fh2JetCoreMethod3C30);
       fOutputList->Add(fh2JetCoreMethod1C60);
-      fOutputList->Add(fh2JetCoreMethod2C60);
-      fOutputList->Add(fh2JetCoreMethod3C60);
+      fOutputList->Add(fh2JetCoreMethod2C60);}
       
-      fOutputList->Add(fh2JetCoreMethod3C10lead);
-      fOutputList->Add(fh2JetCoreMethod3C20lead);
-      fOutputList->Add(fh2JetCoreMethod3C30lead);
-      fOutputList->Add(fh2JetCoreMethod3C60lead);
-      fOutputList->Add(fh2JetCoreMethod3C10sublead);
-      fOutputList->Add(fh2JetCoreMethod3C20sublead);
-      fOutputList->Add(fh2JetCoreMethod3C30sublead);
-      fOutputList->Add(fh2JetCoreMethod3C60sublead);
-
-      fOutputList->Add(fh2SumPtInC10);
-      fOutputList->Add(fh2SumPtInC20);
-      fOutputList->Add(fh2SumPtInC30);
-      fOutputList->Add(fh2SumPtInC60);
-      fOutputList->Add(fh2SumPtInC10lead);
-      fOutputList->Add(fh2SumPtInC20lead);
-      fOutputList->Add(fh2SumPtInC30lead);
-      fOutputList->Add(fh2SumPtInC60lead);
-      fOutputList->Add(fh2SumPtInC10sublead);
-      fOutputList->Add(fh2SumPtInC20sublead);
-      fOutputList->Add(fh2SumPtInC30sublead);
-      fOutputList->Add(fh2SumPtInC60sublead); 
-
-      fOutputList->Add(fh2SumPtOutC10);
-      fOutputList->Add(fh2SumPtOutC20);
-      fOutputList->Add(fh2SumPtOutC30);
-      fOutputList->Add(fh2SumPtOutC60);
-      fOutputList->Add(fh2SumPtOutC10lead);
-      fOutputList->Add(fh2SumPtOutC20lead);
-      fOutputList->Add(fh2SumPtOutC30lead);
-      fOutputList->Add(fh2SumPtOutC60lead);
-      fOutputList->Add(fh2SumPtOutC10sublead);
-      fOutputList->Add(fh2SumPtOutC20sublead);
-      fOutputList->Add(fh2SumPtOutC30sublead);
-      fOutputList->Add(fh2SumPtOutC60sublead);
       
-      fOutputList->Add(fh2SumPtInC10bkg);
-      fOutputList->Add(fh2SumPtInC20bkg);
-      fOutputList->Add(fh2SumPtInC30bkg);
-      fOutputList->Add(fh2SumPtInC60bkg);
-      fOutputList->Add(fh2SumPtInC10bkglead);
-      fOutputList->Add(fh2SumPtInC20bkglead);
-      fOutputList->Add(fh2SumPtInC30bkglead);
-      fOutputList->Add(fh2SumPtInC60bkglead);
-      fOutputList->Add(fh2SumPtInC10bkgsublead);
-      fOutputList->Add(fh2SumPtInC20bkgsublead);
-      fOutputList->Add(fh2SumPtInC30bkgsublead);
-      fOutputList->Add(fh2SumPtInC60bkgsublead);
-
-      fOutputList->Add(fh2SumPtOutC10bkg);
-      fOutputList->Add(fh2SumPtOutC20bkg);
-      fOutputList->Add(fh2SumPtOutC30bkg);
-      fOutputList->Add(fh2SumPtOutC60bkg);     
-      fOutputList->Add(fh2SumPtOutC10bkglead);
-      fOutputList->Add(fh2SumPtOutC20bkglead);
-      fOutputList->Add(fh2SumPtOutC30bkglead);
-      fOutputList->Add(fh2SumPtOutC60bkglead);     
-      fOutputList->Add(fh2SumPtOutC10bkgsublead);
-      fOutputList->Add(fh2SumPtOutC20bkgsublead);
-      fOutputList->Add(fh2SumPtOutC30bkgsublead);
-      fOutputList->Add(fh2SumPtOutC60bkgsublead);     
-      
-      fOutputList->Add(fh2DeltaRC10pt1);
-      fOutputList->Add(fh2DeltaRC20pt1);
-      fOutputList->Add(fh2DeltaRC30pt1);
-      fOutputList->Add(fh2DeltaRC60pt1); 
-      fOutputList->Add(fh2DeltaRC10pt2);
-      fOutputList->Add(fh2DeltaRC20pt2);
-      fOutputList->Add(fh2DeltaRC30pt2);
-      fOutputList->Add(fh2DeltaRC60pt2); 
-      fOutputList->Add(fh2DeltaRC10pt3);
-      fOutputList->Add(fh2DeltaRC20pt3);
-      fOutputList->Add(fh2DeltaRC30pt3);
-      fOutputList->Add(fh2DeltaRC60pt3); 
-      fOutputList->Add(fh2DeltaRC10pt4);
-      fOutputList->Add(fh2DeltaRC20pt4);
-      fOutputList->Add(fh2DeltaRC30pt4);
-      fOutputList->Add(fh2DeltaRC60pt4);
-      fOutputList->Add(fh2DeltaEtaC10pt1);
-      fOutputList->Add(fh2DeltaEtaC20pt1);
-      fOutputList->Add(fh2DeltaEtaC30pt1);
-      fOutputList->Add(fh2DeltaEtaC60pt1); 
-      fOutputList->Add(fh2DeltaEtaC10pt2);
-      fOutputList->Add(fh2DeltaEtaC20pt2);
-      fOutputList->Add(fh2DeltaEtaC30pt2);
-      fOutputList->Add(fh2DeltaEtaC60pt2); 
-      fOutputList->Add(fh2DeltaEtaC10pt3);
-      fOutputList->Add(fh2DeltaEtaC20pt3);
-      fOutputList->Add(fh2DeltaEtaC30pt3);
-      fOutputList->Add(fh2DeltaEtaC60pt3); 
-      fOutputList->Add(fh2DeltaEtaC10pt4);
-      fOutputList->Add(fh2DeltaEtaC20pt4);
-      fOutputList->Add(fh2DeltaEtaC30pt4);
-      fOutputList->Add(fh2DeltaEtaC60pt4); 
-      fOutputList->Add(fh2DeltaPhiC10pt1);
-      fOutputList->Add(fh2DeltaPhiC20pt1);
-      fOutputList->Add(fh2DeltaPhiC30pt1);
-      fOutputList->Add(fh2DeltaPhiC60pt1); 
-      fOutputList->Add(fh2DeltaPhiC10pt2);
-      fOutputList->Add(fh2DeltaPhiC20pt2);
-      fOutputList->Add(fh2DeltaPhiC30pt2);
-      fOutputList->Add(fh2DeltaPhiC60pt2); 
-      fOutputList->Add(fh2DeltaPhiC10pt3);
-      fOutputList->Add(fh2DeltaPhiC20pt3);
-      fOutputList->Add(fh2DeltaPhiC30pt3);
-      fOutputList->Add(fh2DeltaPhiC60pt3); 
-      fOutputList->Add(fh2DeltaPhiC10pt4);
-      fOutputList->Add(fh2DeltaPhiC20pt4);
-      fOutputList->Add(fh2DeltaPhiC30pt4);
-      fOutputList->Add(fh2DeltaPhiC60pt4);      
-
-      fOutputList->Add(fh2DeltaRC10pt1lead);
-      fOutputList->Add(fh2DeltaRC20pt1lead);
-      fOutputList->Add(fh2DeltaRC30pt1lead);
-      fOutputList->Add(fh2DeltaRC60pt1lead); 
-      fOutputList->Add(fh2DeltaRC10pt2lead);
-      fOutputList->Add(fh2DeltaRC20pt2lead);
-      fOutputList->Add(fh2DeltaRC30pt2lead);
-      fOutputList->Add(fh2DeltaRC60pt2lead); 
-      fOutputList->Add(fh2DeltaRC10pt3lead);
-      fOutputList->Add(fh2DeltaRC20pt3lead);
-      fOutputList->Add(fh2DeltaRC30pt3lead);
-      fOutputList->Add(fh2DeltaRC60pt3lead); 
-      fOutputList->Add(fh2DeltaRC10pt4lead);
-      fOutputList->Add(fh2DeltaRC20pt4lead);
-      fOutputList->Add(fh2DeltaRC30pt4lead);
-      fOutputList->Add(fh2DeltaRC60pt4lead);
-      fOutputList->Add(fh2DeltaEtaC10pt1lead);
-      fOutputList->Add(fh2DeltaEtaC20pt1lead);
-      fOutputList->Add(fh2DeltaEtaC30pt1lead);
-      fOutputList->Add(fh2DeltaEtaC60pt1lead); 
-      fOutputList->Add(fh2DeltaEtaC10pt2lead);
-      fOutputList->Add(fh2DeltaEtaC20pt2lead);
-      fOutputList->Add(fh2DeltaEtaC30pt2lead);
-      fOutputList->Add(fh2DeltaEtaC60pt2lead); 
-      fOutputList->Add(fh2DeltaEtaC10pt3lead);
-      fOutputList->Add(fh2DeltaEtaC20pt3lead);
-      fOutputList->Add(fh2DeltaEtaC30pt3lead);
-      fOutputList->Add(fh2DeltaEtaC60pt3lead); 
-      fOutputList->Add(fh2DeltaEtaC10pt4lead);
-      fOutputList->Add(fh2DeltaEtaC20pt4lead);
-      fOutputList->Add(fh2DeltaEtaC30pt4lead);
-      fOutputList->Add(fh2DeltaEtaC60pt4lead); 
-      fOutputList->Add(fh2DeltaPhiC10pt1lead);
-      fOutputList->Add(fh2DeltaPhiC20pt1lead);
-      fOutputList->Add(fh2DeltaPhiC30pt1lead);
-      fOutputList->Add(fh2DeltaPhiC60pt1lead); 
-      fOutputList->Add(fh2DeltaPhiC10pt2lead);
-      fOutputList->Add(fh2DeltaPhiC20pt2lead);
-      fOutputList->Add(fh2DeltaPhiC30pt2lead);
-      fOutputList->Add(fh2DeltaPhiC60pt2lead); 
-      fOutputList->Add(fh2DeltaPhiC10pt3lead);
-      fOutputList->Add(fh2DeltaPhiC20pt3lead);
-      fOutputList->Add(fh2DeltaPhiC30pt3lead);
-      fOutputList->Add(fh2DeltaPhiC60pt3lead); 
-      fOutputList->Add(fh2DeltaPhiC10pt4lead);
-      fOutputList->Add(fh2DeltaPhiC20pt4lead);
-      fOutputList->Add(fh2DeltaPhiC30pt4lead);
-      fOutputList->Add(fh2DeltaPhiC60pt4lead);      
-
-
-
-      fOutputList->Add(fh2DeltaRC10pt1sublead);
-      fOutputList->Add(fh2DeltaRC20pt1sublead);
-      fOutputList->Add(fh2DeltaRC30pt1sublead);
-      fOutputList->Add(fh2DeltaRC60pt1sublead); 
-      fOutputList->Add(fh2DeltaRC10pt2sublead);
-      fOutputList->Add(fh2DeltaRC20pt2sublead);
-      fOutputList->Add(fh2DeltaRC30pt2sublead);
-      fOutputList->Add(fh2DeltaRC60pt2sublead); 
-      fOutputList->Add(fh2DeltaRC10pt3sublead);
-      fOutputList->Add(fh2DeltaRC20pt3sublead);
-      fOutputList->Add(fh2DeltaRC30pt3sublead);
-      fOutputList->Add(fh2DeltaRC60pt3sublead); 
-      fOutputList->Add(fh2DeltaRC10pt4sublead);
-      fOutputList->Add(fh2DeltaRC20pt4sublead);
-      fOutputList->Add(fh2DeltaRC30pt4sublead);
-      fOutputList->Add(fh2DeltaRC60pt4sublead);
-      fOutputList->Add(fh2DeltaEtaC10pt1sublead);
-      fOutputList->Add(fh2DeltaEtaC20pt1sublead);
-      fOutputList->Add(fh2DeltaEtaC30pt1sublead);
-      fOutputList->Add(fh2DeltaEtaC60pt1sublead); 
-      fOutputList->Add(fh2DeltaEtaC10pt2sublead);
-      fOutputList->Add(fh2DeltaEtaC20pt2sublead);
-      fOutputList->Add(fh2DeltaEtaC30pt2sublead);
-      fOutputList->Add(fh2DeltaEtaC60pt2sublead); 
-      fOutputList->Add(fh2DeltaEtaC10pt3sublead);
-      fOutputList->Add(fh2DeltaEtaC20pt3sublead);
-      fOutputList->Add(fh2DeltaEtaC30pt3sublead);
-      fOutputList->Add(fh2DeltaEtaC60pt3sublead); 
-      fOutputList->Add(fh2DeltaEtaC10pt4sublead);
-      fOutputList->Add(fh2DeltaEtaC20pt4sublead);
-      fOutputList->Add(fh2DeltaEtaC30pt4sublead);
-      fOutputList->Add(fh2DeltaEtaC60pt4sublead); 
-      fOutputList->Add(fh2DeltaPhiC10pt1sublead);
-      fOutputList->Add(fh2DeltaPhiC20pt1sublead);
-      fOutputList->Add(fh2DeltaPhiC30pt1sublead);
-      fOutputList->Add(fh2DeltaPhiC60pt1sublead); 
-      fOutputList->Add(fh2DeltaPhiC10pt2sublead);
-      fOutputList->Add(fh2DeltaPhiC20pt2sublead);
-      fOutputList->Add(fh2DeltaPhiC30pt2sublead);
-      fOutputList->Add(fh2DeltaPhiC60pt2sublead); 
-      fOutputList->Add(fh2DeltaPhiC10pt3sublead);
-      fOutputList->Add(fh2DeltaPhiC20pt3sublead);
-      fOutputList->Add(fh2DeltaPhiC30pt3sublead);
-      fOutputList->Add(fh2DeltaPhiC60pt3sublead); 
-      fOutputList->Add(fh2DeltaPhiC10pt4sublead);
-      fOutputList->Add(fh2DeltaPhiC20pt4sublead);
-      fOutputList->Add(fh2DeltaPhiC30pt4sublead);
-      fOutputList->Add(fh2DeltaPhiC60pt4sublead);      
      
-       
-
 
 
         if(fAngStructCloseTracks>0){
@@ -1176,9 +332,9 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
        fOutputList->Add(fh2AngStructpt2C60);
        fOutputList->Add(fh2AngStructpt3C60);
        fOutputList->Add(fh2AngStructpt4C60);}  
-
-
-
+       fOutputList->Add(fh3spectriggered);
+       fOutputList->Add(fh3specbiased);
+       fOutputList->Add(fh3specleadsublead);
 
    // =========== Switch on Sumw2 for all histos ===========
    for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
@@ -1232,6 +388,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    // physics selection
    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+   cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<endl;
    if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
       if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
       fHistEvtSelection->Fill(2);
@@ -1262,7 +419,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
    // centrality selection
    AliCentrality *cent = 0x0;
-   Float_t centValue = 0.; 
+   Double_t centValue = 0.; 
    if(fESD) cent = fESD->GetCentrality();
    if(cent) centValue = cent->GetCentralityPercentile("V0M");
    if(fDebug) printf("centrality: %f\n", centValue);
@@ -1273,15 +430,6 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    }
 
 
-   // multiplicity due to input tracks
-   //Int_t nInputTracks = GetNInputTracks();
-   //if (nInputTracks < fNInputTracksMin || (fNInputTracksMax > -1 && nInputTracks > fNInputTracksMax)){
-   //   fHistEvtSelection->Fill(5);
-   //   PostData(1, fOutputList);
-   //   return;
-   // }
-
-   
    fHistEvtSelection->Fill(0); 
    // accepted events  
    // -- end event selection --
@@ -1340,7 +488,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Double_t etasmall=0;
    Double_t ptsmall=0;
    Double_t areasmall=0;
-   Double_t distr=0.;
+   //Double_t distr=0.;
    Double_t phismall=0.;
    Int_t indexlead=-1;
    Int_t indexsublead=-1;
@@ -1363,7 +511,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    indexsublead=inord[k];
    break;}}
          
-
+  
    Double_t up1[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
    Double_t up2[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
    Double_t up3[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
@@ -1372,8 +520,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Double_t down2[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
    Double_t down3[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
    Double_t down4[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-
-
+    
+  
 
    for(Int_t i=0; i<fListJets[0]->GetEntries(); ++i){
            AliAODJet* jetbig = (AliAODJet*)(fListJets[0]->At(i));
@@ -1389,38 +537,39 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                    Double_t ptmax=-10.; 
                    Int_t index1=-1;
                    Int_t index2=-1;
-                   Double_t fracin=0.;
-                   Double_t sumPtIn=0.;
-                   Double_t sumPtOut=0.; 
-	   //compute sum of the pt of the tracks in a concentric cone
-           TRefArray *genTrackList = jetbig->GetRefTracks();
-           Int_t nTracksGenJet = genTrackList->GetEntriesFast();
-           AliAODTrack* genTrack;
-             for(Int_t ir=0; ir<nTracksGenJet; ++ir){
-             genTrack = (AliAODTrack*)(genTrackList->At(ir));
-	     Float_t etr=genTrack->Eta();
-             Float_t phir=genTrack->Phi();
-             distr=(etr-etabig)*(etr-etabig)+(phir-phibig)*(phir-phibig);
-             distr=TMath::Sqrt(distr);
-	     if(distr<=fRadioFrac){ fracin=fracin+genTrack->Pt();}}
-    
-	     if(centValue<10) {fh2JetCoreMethod3C10->Fill(ptcorr,fracin/ptbig);
-	       if(i==indexlead) fh2JetCoreMethod3C10lead->Fill(ptcorr,fracin/ptbig);
-               if(i==indexsublead) fh2JetCoreMethod3C10sublead->Fill(ptcorr,fracin/ptbig);}
+                   //Double_t fracin=0.;
+                  
+	       Int_t point=GetHardestTrackBackToJet(jetbig);    
+	       AliVParticle *partback = (AliVParticle*)ParticleList.At(point);                            
+                   if(!partback) continue; 
+        	   fh3spectriggered->Fill(centValue,ptcorr,partback->Pt());
+                    Int_t  flaglead=0;
+                       if(i==indexlead) flaglead=1;
+                       if(i==indexsublead) flaglead=2;
 
-	      
-             if((centValue>20)&&(centValue<40)) {fh2JetCoreMethod3C20->Fill(ptcorr,fracin/ptbig);
-                                                 if(i==indexlead) fh2JetCoreMethod3C20lead->Fill(ptcorr,fracin/ptbig);
-						 if(i==indexsublead) fh2JetCoreMethod3C20sublead->Fill(ptcorr,fracin/ptbig);}
-             if((centValue>30)&&(centValue<60)){ fh2JetCoreMethod3C30->Fill(ptcorr,fracin/ptbig);
-                                                if(i==indexlead) fh2JetCoreMethod3C30lead->Fill(ptcorr,fracin/ptbig);
-                                                if(i==indexsublead) fh2JetCoreMethod3C30sublead->Fill(ptcorr,fracin/ptbig);}
-             if(centValue>60){fh2JetCoreMethod3C60->Fill(ptcorr,fracin/ptbig);
-                                                if(i==indexlead) fh2JetCoreMethod3C60lead->Fill(ptcorr,fracin/ptbig);
-		                        	if(i==indexsublead) fh2JetCoreMethod3C60sublead->Fill(ptcorr,fracin/ptbig);}
-   
-	     
+		       fh3specleadsublead->Fill(centValue,ptcorr,flaglead);
 
+                       AliAODTrack* leadtrack; 
+                       Int_t ippt=0;
+                       Double_t ppt=-10;   
+
+		       	TRefArray *genTrackList = jetbig->GetRefTracks();
+                        Int_t nTracksGenJet = genTrackList->GetEntriesFast();
+                        AliAODTrack* genTrack;
+                       for(Int_t ir=0; ir<nTracksGenJet; ++ir){
+                       genTrack = (AliAODTrack*)(genTrackList->At(ir));
+		       if(genTrack->Pt()>ppt){ppt=genTrack->Pt();
+			 ippt=ir;}}
+	               //Float_t etr=genTrack->Eta();
+                       //Float_t phir=genTrack->Phi();
+                       //distr=(etr-etabig)*(etr-etabig)+(phir-phibig)*(phir-phibig);
+                       //distr=TMath::Sqrt(distr);
+	               //if(distr<=fRadioFrac){ fracin=fracin+genTrack->Pt();}}
+                        leadtrack=(AliAODTrack*)(genTrackList->At(ippt));
+                        fh3specbiased->Fill(centValue,ptcorr,leadtrack->Pt());
+                       //fhnJetCoreMethod3->Fill(centValue,ptcorr,fracin/ptbig,partback->Pt(),flaglead);
+		       if(fCheckMethods){
+       	  
                 for(Int_t j=0; j<fListJets[1]->GetEntries(); ++j){
                   AliAODJet* jetsmall = (AliAODJet*)(fListJets[1]->At(j));
                   etasmall  = jetsmall->Eta();
@@ -1446,274 +595,25 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                   if(centValue<10) fh2JetCoreMethod2C10->Fill(ptcorr,jetmethod2->Pt()/ptbig);
                   if((centValue>20)&&(centValue<40)) fh2JetCoreMethod2C20->Fill(ptcorr,jetmethod2->Pt()/ptbig); 
 		  if((centValue>30)&&(centValue<60)) fh2JetCoreMethod2C30->Fill(ptcorr,jetmethod2->Pt()/ptbig);
-		  if(centValue>60) fh2JetCoreMethod2C60->Fill(ptcorr,jetmethod2->Pt()/ptbig); }  
+		  if(centValue>60) fh2JetCoreMethod2C60->Fill(ptcorr,jetmethod2->Pt()/ptbig); }}  
 
-     Double_t R=fRadioFrac*2.;      
+		   
   
-     for(int it = 0;it<nT;++it){
-
+          for(int it = 0;it<nT;++it){
 	  AliVParticle *part = (AliVParticle*)ParticleList.At(it);
-	  Float_t deltaR = jetbig->DeltaR(part);
-          Float_t deltaEta = part->Eta()-etabig;
-          Float_t deltaPhi = part->Phi()-phibig;  
-      	  if((deltaR>=0.4)&&(deltaR<=0.6))sumPtIn=sumPtIn+part->Pt();                     
-          if((deltaR>=0.8)&&(deltaR<=1.))sumPtOut=sumPtOut+part->Pt();     
-	  if(centValue<10.){
-	    
-	       if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC10pt1->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC10pt1->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC10pt1->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC10pt2->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt2->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC10pt2->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC10pt3->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt3->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC10pt3->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC10pt4->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt4->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC10pt4->Fill(part->Pt(),deltaPhi); }
+     	  Double_t deltaR = jetbig->DeltaR(part);
+          Double_t deltaEta = etabig-part->Eta();
+          Double_t deltaPhi=phibig-part->Phi();
+          if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
+          if(deltaPhi>3./2.*TMath::Pi()) deltaPhi-=2.*TMath::Pi();
 
-	       if(i==indexlead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC10pt1lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC10pt1lead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC10pt1lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC10pt2lead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt2lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC10pt2lead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC10pt3lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt3lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC10pt3lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC10pt4lead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt4lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC10pt4lead->Fill(part->Pt(),deltaPhi); }}
-
-
-               if(i==indexsublead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC10pt1sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC10pt1sublead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC10pt1sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC10pt2sublead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt2sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC10pt2sublead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC10pt3sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt3sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC10pt3sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC10pt4sublead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC10pt4sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC10pt4sublead->Fill(part->Pt(),deltaPhi); }} 
-
- 
-
-
-	  }
-
-          if((centValue>20.)&&(centValue<40.)){
-              if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC20pt1->Fill(part->Pt(),deltaR);
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC20pt1->Fill(part->Pt(),deltaEta);
-	      if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC20pt1->Fill(part->Pt(),deltaPhi);}
-       	      if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC20pt2->Fill(part->Pt(),deltaR);
-              if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt2->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC20pt2->Fill(part->Pt(),deltaPhi); }
-	      if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC20pt3->Fill(part->Pt(),deltaR);
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt3->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC20pt3->Fill(part->Pt(),deltaPhi);}
-	      if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC20pt4->Fill(part->Pt(),deltaR); 
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt4->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC20pt4->Fill(part->Pt(),deltaPhi); }
-
-               if(i==indexlead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC20pt1lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC20pt1lead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC20pt1lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC20pt2lead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt2lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC20pt2lead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC20pt3lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt3lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC20pt3lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC20pt4lead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt4lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC20pt4lead->Fill(part->Pt(),deltaPhi); }}
-                             
-               if(i==indexsublead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC20pt1sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC20pt1sublead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC20pt1sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC20pt2sublead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt2sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC20pt2sublead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC20pt3sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt3sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC20pt3sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC20pt4sublead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC20pt4sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC20pt4sublead->Fill(part->Pt(),deltaPhi); }} 
-
-	  }
-
-	  if((centValue>30.)&&(centValue<60.)){
-
-              if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC30pt1->Fill(part->Pt(),deltaR);
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC30pt1->Fill(part->Pt(),deltaEta);
-	      if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC30pt1->Fill(part->Pt(),deltaPhi);}
-	      if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC30pt2->Fill(part->Pt(),deltaR);
-              if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt2->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC30pt2->Fill(part->Pt(),deltaPhi); }
-	      if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC30pt3->Fill(part->Pt(),deltaR);
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt3->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC30pt3->Fill(part->Pt(),deltaPhi);}
-	      if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC30pt4->Fill(part->Pt(),deltaR); 
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt4->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC30pt4->Fill(part->Pt(),deltaPhi); }
-
-               if(i==indexlead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC30pt1lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC30pt1lead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC30pt1lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC30pt2lead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt2lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC30pt2lead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC30pt3lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt3lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC30pt3lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC30pt4lead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt4lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC30pt4lead->Fill(part->Pt(),deltaPhi); }}
-
-
-                if(i==indexsublead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC30pt1sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC30pt1sublead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC30pt1sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC30pt2sublead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt2sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC30pt2sublead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC30pt3sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt3sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC30pt3sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC30pt4sublead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC30pt4sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC30pt4sublead->Fill(part->Pt(),deltaPhi); }} 
-
-
-
-
-
-	  }
-                 
-
-	  if(centValue>60.){
-              if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC60pt1->Fill(part->Pt(),deltaR);
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC60pt1->Fill(part->Pt(),deltaEta);
-	      if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC60pt1->Fill(part->Pt(),deltaPhi);}
-	      if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC60pt2->Fill(part->Pt(),deltaR);
-              if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt2->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC60pt2->Fill(part->Pt(),deltaPhi); }
-	      if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC60pt3->Fill(part->Pt(),deltaR);
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt3->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC60pt3->Fill(part->Pt(),deltaPhi);}
-	      if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC60pt4->Fill(part->Pt(),deltaR); 
-	      if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt4->Fill(part->Pt(),deltaEta);
-              if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC60pt4->Fill(part->Pt(),deltaPhi);}
-
-               if(i==indexlead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC60pt1lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC60pt1lead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC60pt1lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC60pt2lead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt2lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC60pt2lead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC60pt3lead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt3lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC60pt3lead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC60pt4lead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt4lead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC60pt4lead->Fill(part->Pt(),deltaPhi); }}
-
-                if(i==indexsublead){
-               if((ptcorr>=70.)&&(ptcorr<85.)) {fh2DeltaRC60pt1sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R))fh2DeltaEtaC60pt1sublead->Fill(part->Pt(),deltaEta);
-	       if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC60pt1sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=85.)&&(ptcorr<100.)) {fh2DeltaRC60pt2sublead->Fill(part->Pt(),deltaR);
-               if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt2sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC60pt2sublead->Fill(part->Pt(),deltaPhi); }
-	       if((ptcorr>=100.)&&(ptcorr<120.)) {fh2DeltaRC60pt3sublead->Fill(part->Pt(),deltaR);
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt3sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R)) fh2DeltaPhiC60pt3sublead->Fill(part->Pt(),deltaPhi);}
-	       if((ptcorr>=120.)&&(ptcorr<140.)) {fh2DeltaRC60pt4sublead->Fill(part->Pt(),deltaR); 
-	       if((part->Phi()<=phibig+R)&&(part->Phi()>=phibig-R)) fh2DeltaEtaC60pt4sublead->Fill(part->Pt(),deltaEta);
-               if((part->Eta()<=etabig+R)&&(part->Eta()>=etabig-R))fh2DeltaPhiC60pt4sublead->Fill(part->Pt(),deltaPhi); }} 
-
-	  }
-                 
-     } 
+       	  Double_t jetEntries[9] = {centValue,ptcorr,part->Pt(),deltaR,deltaEta,deltaPhi,flaglead,leadtrack->Pt(),partback->Pt()};            fhnDeltaR->Fill(jetEntries);
+	  }  
      //end of track loop
-     Double_t coronain=rho*TMath::Pi()*(1.-0.8*0.8);
-     Double_t coronaout=rho*TMath::Pi()*(0.6*0.6-0.4*0.4);
-     if(centValue<10.){  
-     fh2SumPtInC10bkg->Fill(ptcorr,coronain/ptbig);       
-     fh2SumPtOutC10bkg->Fill(ptcorr,coronaout/ptbig);           
-     fh2SumPtInC10->Fill(ptcorr,sumPtIn/ptbig);
-     fh2SumPtOutC10->Fill(ptcorr,sumPtOut/ptbig); 
-     if(i==indexlead){  fh2SumPtInC10bkglead->Fill(ptcorr,coronain/ptbig);       
-                        fh2SumPtOutC10bkglead->Fill(ptcorr,coronaout/ptbig);           
-                        fh2SumPtInC10lead->Fill(ptcorr,sumPtIn/ptbig);
-                        fh2SumPtOutC10lead->Fill(ptcorr,sumPtOut/ptbig);}    
-     if(i==indexsublead){ fh2SumPtInC10bkgsublead->Fill(ptcorr,coronain/ptbig);       
-                         fh2SumPtOutC10bkgsublead->Fill(ptcorr,coronaout/ptbig);           
-                         fh2SumPtInC10sublead->Fill(ptcorr,sumPtIn/ptbig);
-                         fh2SumPtOutC10sublead->Fill(ptcorr,sumPtOut/ptbig);}
-     }
-     if((centValue>20.)&&(centValue<40.)){             
-     fh2SumPtInC20bkg->Fill(ptcorr,coronain/ptbig);
-     fh2SumPtOutC20bkg->Fill(ptcorr,coronaout/ptbig);    
-     fh2SumPtInC20->Fill(ptcorr,sumPtIn/ptbig);
-     fh2SumPtOutC20->Fill(ptcorr,sumPtOut/ptbig); 
-      if(i==indexlead){ fh2SumPtInC20bkglead->Fill(ptcorr,coronain/ptbig);       
-                        fh2SumPtOutC20bkglead->Fill(ptcorr,coronaout/ptbig);           
-                        fh2SumPtInC20lead->Fill(ptcorr,sumPtIn/ptbig);
-                        fh2SumPtOutC20lead->Fill(ptcorr,sumPtOut/ptbig);}    
-     if(i==indexsublead){ fh2SumPtInC20bkgsublead->Fill(ptcorr,coronain/ptbig);       
-                         fh2SumPtOutC20bkgsublead->Fill(ptcorr,coronaout/ptbig);           
-                         fh2SumPtInC20sublead->Fill(ptcorr,sumPtIn/ptbig);
-                         fh2SumPtOutC20sublead->Fill(ptcorr,sumPtOut/ptbig);}
-
-
-
-     }
-     if((centValue>30.)&&(centValue<60.)){
-     fh2SumPtInC30bkg->Fill(ptcorr,coronain/ptbig);
-     fh2SumPtOutC30bkg->Fill(ptcorr,coronaout/ptbig);                    
-     fh2SumPtInC30->Fill(ptcorr,sumPtIn/ptbig);
-     fh2SumPtOutC30->Fill(ptcorr,sumPtOut/ptbig); 
-
-     if(i==indexlead){  fh2SumPtInC30bkglead->Fill(ptcorr,coronain/ptbig);       
-                        fh2SumPtOutC30bkglead->Fill(ptcorr,coronaout/ptbig);           
-                        fh2SumPtInC30lead->Fill(ptcorr,sumPtIn/ptbig);
-                        fh2SumPtOutC30lead->Fill(ptcorr,sumPtOut/ptbig);}    
-     if(i==indexsublead){ fh2SumPtInC30bkgsublead->Fill(ptcorr,coronain/ptbig);       
-                         fh2SumPtOutC30bkgsublead->Fill(ptcorr,coronaout/ptbig);           
-                         fh2SumPtInC30sublead->Fill(ptcorr,sumPtIn/ptbig);
-                         fh2SumPtOutC30sublead->Fill(ptcorr,sumPtOut/ptbig);}
-
-     }
-     if(centValue>60.){         
-     fh2SumPtInC60bkg->Fill(ptcorr,coronain/ptbig);
-     fh2SumPtOutC60bkg->Fill(ptcorr,coronaout/ptbig);      
-     fh2SumPtInC60->Fill(ptcorr,sumPtIn/ptbig);
-     fh2SumPtOutC60->Fill(ptcorr,sumPtOut/ptbig);
-
-     if(i==indexlead){  fh2SumPtInC60bkglead->Fill(ptcorr,coronain/ptbig);       
-                        fh2SumPtOutC60bkglead->Fill(ptcorr,coronaout/ptbig);           
-                        fh2SumPtInC60lead->Fill(ptcorr,sumPtIn/ptbig);
-                        fh2SumPtOutC60lead->Fill(ptcorr,sumPtOut/ptbig);}    
-     if(i==indexsublead){ fh2SumPtInC60bkgsublead->Fill(ptcorr,coronain/ptbig);       
-                         fh2SumPtOutC60bkgsublead->Fill(ptcorr,coronaout/ptbig);           
-                         fh2SumPtInC60sublead->Fill(ptcorr,sumPtIn/ptbig);
-                         fh2SumPtOutC60sublead->Fill(ptcorr,sumPtOut/ptbig);}
-
-     }      
-  
+   
+     //fhnSumBkg->Fill(centValue,ptcorr,bkg/jetbig->Pt(),partback->Pt(),flaglead);       
+   
+   
      //////////////////ANGULAR STRUCTURE//////////////////////////////////////
 
      //tracks up to R=0.8 distant from the jet axis
@@ -1753,10 +653,16 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
     
       AliAODTrack* part1;
       AliAODTrack* part2;
-          for(Int_t it=0; it<nTracksGenJet; ++it){
-             part1 = (AliAODTrack*)(genTrackList->At(it));
-           for(Int_t itu=0; itu<nTracksGenJet; ++itu){
-             part2 = (AliAODTrack*)(genTrackList->At(itu));
+
+          TRefArray *genTrackListb = jetbig->GetRefTracks();
+          Int_t nTracksGenJetb = genTrackListb->GetEntriesFast();
+          
+             
+
+          for(Int_t it=0; it<nTracksGenJetb; ++it){
+             part1 = (AliAODTrack*)(genTrackListb->At(it));
+           for(Int_t itu=0; itu<nTracksGenJetb; ++itu){
+             part2 = (AliAODTrack*)(genTrackListb->At(itu));
            Double_t ptm=part1->Pt();
            Double_t ptn=part2->Pt();	
            Double_t Rnm = (part1->Eta()-part2->Eta())*(part1->Eta()-part2->Eta())+(part1->Phi()-part2->Phi())*(part1->Phi()-part2->Phi());
@@ -1790,7 +696,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
      //end loop over R=0.4 jets	
-      if(fAngStructCloseTracks>0){
+     if(fAngStructCloseTracks>0){
      for(Int_t l=0;l<15;l++){
      Double_t rr=l*0.1+0.1;
         if(down1[l]!=0){  
@@ -1821,7 +727,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
    PostData(1, fOutputList);
-     }
+}
 
 void AliAnalysisTaskJetCore::Terminate(const Option_t *)
 {
@@ -1861,6 +767,38 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
   return iCount;
  
 }
+
+   Int_t  AliAnalysisTaskJetCore::GetHardestTrackBackToJet(AliAODJet *jetbig){
+
+   
+    Int_t index=-1;
+    Double_t ptmax=-10;
+    Double_t dphi=0;
+    Double_t dif=0;
+    Int_t iCount=0;
+    for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
+      AliAODTrack *tr = fAOD->GetTrack(it);
+      if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+      if(TMath::Abs(tr->Eta())>0.9)continue;
+      if(tr->Pt()<0.15)continue;
+      iCount=iCount+1;
+      dphi=RelativePhi(tr->Phi(),jetbig->Phi());   
+      if(TMath::Abs(dphi)<TMath::Pi()-0.2) continue;
+      if(tr->Pt()>ptmax){ ptmax=tr->Pt();
+	index=iCount;
+        dif=dphi;  }}
+  
+      return index;
+
+   }
+
+
+
+
+
+
+
+
 
  Int_t  AliAnalysisTaskJetCore::GetListOfTracksCloseToJet(TList *list,AliAODJet *jetbig){
 
@@ -1944,4 +882,126 @@ Double_t AliAnalysisTaskJetCore::RelativePhi(Double_t mphi,Double_t vphi){
 }
 
 
+
+THnSparse* AliAnalysisTaskJetCore::NewTHnSparseF(const char* name, UInt_t entries)
+{
+   // generate new THnSparseF, axes are defined in GetDimParams()
+
+   Int_t count = 0;
+   UInt_t tmp = entries;
+   while(tmp!=0){
+      count++;
+      tmp = tmp &~ -tmp;  // clear lowest bit
+   }
+
+   TString hnTitle(name);
+   const Int_t dim = count;
+   Int_t nbins[dim];
+   Double_t xmin[dim];
+   Double_t xmax[dim];
+
+   Int_t i=0;
+   Int_t c=0;
+   while(c<dim && i<32){
+      if(entries&(1<<i)){
+      
+         TString label("");
+         GetDimParams(i, label, nbins[c], xmin[c], xmax[c]);
+         hnTitle += Form(";%s",label.Data());
+         c++;
+      }
+      
+      i++;
+   }
+   hnTitle += ";";
+
+   return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
+}
+
+void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
+{
+   // stores label and binning of axis for THnSparse
+
+   const Double_t pi = TMath::Pi();
+   
+   switch(iEntry){
+      
+   case 0:
+      label = "V0 centrality (%)";
+     
+         nbins = 10;
+         xmin = 0.;
+         xmax = 100.;
+         break;
+      
+      
+   case 1:
+      label = "corrected jet pt";
+         nbins = 50;
+         xmin = 0.;
+         xmax = 200.;
+          break;
+      
+      
+   case 2:
+      label = "track pT";
+     
+      nbins = 50;
+         xmin = 0.;
+         xmax = 50;
+         break;
+      
+      
+   case 3:
+      label = "deltaR";
+      nbins = 15;
+      xmin = 0.;
+      xmax = 1.5;
+      break;
+      
+   case 4:
+      label = "deltaEta";
+      nbins = 30;
+      xmin = -1.5;
+      xmax = 1.5;
+      break;
+
+
+  case 5:
+      label = "deltaPhi";
+      nbins = 90;
+      xmin = -0.5*pi;
+      xmax = 1.5*pi;
+      break;   
+   
+      
+   case 6:
+      label="flagleadname";
+      nbins=3;
+      xmin=0;
+      xmax=3;
+
+
+
+      
+    case 7:
+    
+      label = "leading track";
+      nbins = 50;
+      xmin = 0;
+      xmax = 50;
+      break;
+           
+     case 8:
+    
+      label = "trigger track";
+      nbins =50;
+      xmin = 0;
+      xmax = 50;
+      break;
+      
+        
+   }
+
+}
 
