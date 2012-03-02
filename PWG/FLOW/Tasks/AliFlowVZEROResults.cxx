@@ -157,14 +157,14 @@ void AliFlowVZEROResults::AddSpecies(const char *name,Int_t nXbin,const Double_t
   }
 
   char nameHisto[200];
-  char title[200];
+  char title[300];
   for(Int_t i=0; i < ncomb;i++){
-    sprintf(nameHisto,"%s_%s_%i",GetName(),name,i);
-    sprintf(title,"%s",name);
+    snprintf(nameHisto,200,"%s_%s_%i",GetName(),name,i);
+    snprintf(title,300,"%s",name);
     Int_t ncombTemp = i;
     for(Int_t j=0;j < GetNvar();j++){
       Int_t ibin = ncombTemp%(*fNbinVar)[j];
-      sprintf(title,"%s_%04.1f<%s<%04.1f",title,(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*ibin,fNameVar->At(j)->GetName(),(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*(ibin+1));
+      snprintf(title,300,"%s_%04.1f<%s<%04.1f",title,(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*ibin,fNameVar->At(j)->GetName(),(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*(ibin+1));
       ncombTemp /= (*fNbinVar)[j];
     }
 
@@ -237,7 +237,7 @@ TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t x[]) const{
 
 TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t xMin[],Float_t xMax[]) const{
   if(GetNvar()){
-    char title[200];
+    char title[300];
     Int_t ncomb = 1;
     for(Int_t i=0;i < GetNvar();i++){
       ncomb *= (*fNbinVar)[i];
@@ -247,7 +247,7 @@ TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t xMin[],Float_t xMax[]
     TProfile *temp = new TProfile(*htemplate);
     temp->SetName("histo");
     temp->Reset();
-    sprintf(title,"%i_",species);
+    snprintf(title,300,"%i_",species);
     for(Int_t i=0;i < GetNvar();i++){
       Int_t imin = GetBin(i,xMin[i]);
       if(imin < 0) imin = 0;
@@ -255,7 +255,7 @@ TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t xMin[],Float_t xMax[]
       Int_t imax = GetBin(i,xMax[i]);
       if(imax < imin) imax = imin;
       else if(imax >= (*fNbinVar)[i]) imax = (*fNbinVar)[i]-1;
-      sprintf(title,"%s_%04.1f<%s<%04.1f",title,
+      snprintf(title,300,"%s_%04.1f<%s<%04.1f",title,
                 (*fXmin)[i] + ((*fXmax)[i]-(*fXmin)[i])/(*fNbinVar)[i]*imin,
                 fNameVar->At(i)->GetName(),
                 (*fXmin)[i] + ((*fXmax)[i]-(*fXmin)[i])/(*fNbinVar)[i]*(imax+1));

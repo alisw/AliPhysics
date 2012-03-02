@@ -1,12 +1,12 @@
 AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kTRUE){
   char fileout[100];
-  sprintf(fileout,"outVZEROv2.root");
+  snprintf(fileout,100,"outVZEROv2.root");
   char fileout2[100];
-  sprintf(fileout2,"outVZEROv3.root");
+  snprintf(fileout2,100,"outVZEROv3.root");
   char fileout3[100];
-  sprintf(fileout3,"outVZEROmc.root");
+  snprintf(fileout3,100,"outVZEROmc.root");
   char fileout4[100];
-  sprintf(fileout4,"outVZEROqa.root");
+  snprintf(fileout4,100,"outVZEROqa.root");
 
   //get the current analysis manager
   //  AnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -22,7 +22,7 @@ AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t 
 
   //========= Add tender to the ANALYSIS manager and set default storage =====
   char mytaskName[100];
-  sprintf(mytaskName,"AliAnalysisTaskVnV0.cxx"); 
+  snprintf(mytaskName,100,"AliAnalysisTaskVnV0.cxx"); 
 
   AliAnalysisTaskVnV0 *task = new AliAnalysisTaskVnV0(mytaskName);
   task->SetV2(kV2);
@@ -57,4 +57,3 @@ AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t 
 
   return task;
 }
-

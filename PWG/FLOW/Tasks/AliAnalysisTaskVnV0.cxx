@@ -526,11 +526,12 @@ void AliAnalysisTaskVnV0::UserExec(Option_t *)
 
 
     //Get the MC object
-
-    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    if (!mcHeader) {
-      AliError("Could not find MC Header in AOD");
-      return;
+    if(fIsMC){
+      AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+      if (!mcHeader) {
+	AliError("Could not find MC Header in AOD");
+	return;
+      }
     }
 
     /*
@@ -1191,13 +1192,13 @@ void AliAnalysisTaskVnV0::OpenInfoCalbration(Int_t run){
 	    for(Int_t i=0;i  < nCentrBin;i++){
 		char namecont[100];
   		if(iside==0 && icoord==0)
-		    sprintf(namecont,"hQxc2_%i",i);
+		  snprintf(namecont,100,"hQxc2_%i",i);
 		else if(iside==1 && icoord==0)
-		    sprintf(namecont,"hQxa2_%i",i);
+		  snprintf(namecont,100,"hQxa2_%i",i);
 		else if(iside==0 && icoord==1)
-		    sprintf(namecont,"hQyc2_%i",i);
+		  snprintf(namecont,100,"hQyc2_%i",i);
 		else if(iside==1 && icoord==1)
-		    sprintf(namecont,"hQya2_%i",i);
+		  snprintf(namecont,100,"hQya2_%i",i);
 
 		cont = (AliOADBContainer*) foadb->Get(namecont);
 		if(!cont){
@@ -1214,13 +1215,13 @@ void AliAnalysisTaskVnV0::OpenInfoCalbration(Int_t run){
 
 		//for v3
 		if(iside==0 && icoord==0)
-		    sprintf(namecont,"hQxc3_%i",i);
+		  snprintf(namecont,100,"hQxc3_%i",i);
 		else if(iside==1 && icoord==0)
-		    sprintf(namecont,"hQxa3_%i",i);
+		  snprintf(namecont,100,"hQxa3_%i",i);
 		else if(iside==0 && icoord==1)
-		    sprintf(namecont,"hQyc3_%i",i);
+		  snprintf(namecont,100,"hQyc3_%i",i);
 		else if(iside==1 && icoord==1)
-		    sprintf(namecont,"hQya3_%i",i);
+		  snprintf(namecont,100,"hQya3_%i",i);
 
 		cont = (AliOADBContainer*) foadb->Get(namecont);
 		if(!cont){
