@@ -3,22 +3,17 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
 #include "AliESDUtils.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
 #include "AliKFParticle.h"
-
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-
-
 #include "AliESDtrackCuts.h"
 #include "AliESDv0.h"
 #include "AliV0vertexer.h"
@@ -28,11 +23,8 @@
 #include "AliEMCALRecoUtils.h"
 #include "TLorentzVector.h"
 #include "AliVCluster.h"
-
-
 #include "AliAnalysisTaskTrgContam.h"
 #include "TFile.h"
-
 
 ClassImp(AliAnalysisTaskTrgContam)
 
@@ -40,20 +32,16 @@ ClassImp(AliAnalysisTaskTrgContam)
 AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name) 
   : AliAnalysisTaskSE(name), 
   fCaloClusters(0),
+  fEMCalCells(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fPeriod("LHC11c"),
   fIsTrain(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
-
-  
   fESD(0),
-  
   fOutputList(0),
-  
   fEvtSel(0),
-
   fClusEt(0),
   fClusEtTM(0),
   fClusEtLead(0),
@@ -67,9 +55,6 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name)
   fM02EtTM(0),
   fM02EtExot(0),
   fM02EtExotTM(0)
-
-
-  
 {
   // Constructor
 
@@ -80,6 +65,7 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name)
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::UserCreateOutputObjects()
 {
@@ -187,6 +173,7 @@ void AliAnalysisTaskTrgContam::UserExec(Option_t *)
   fCaloClusters->Clear();
   PostData(1, fOutputList);
 }      
+
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::FillClusHists()
 {
@@ -195,10 +182,10 @@ void AliAnalysisTaskTrgContam::FillClusHists()
   const Int_t nclus = fCaloClusters->GetEntries();
   if(nclus==0)
     return;
-  Double_t EtArray[nclus];
-  Bool_t isTM[nclus];
-  Bool_t isEx[nclus];
-  Int_t index[nclus];
+  Double_t EtArray[nclus]; memset(EtArray,0,nclus*sizeof(Double_t));
+  Bool_t isTM[nclus]; memset(isTM,0,nclus*sizeof(Bool_t));
+  Bool_t isEx[nclus]; memset(isEx,0,nclus*sizeof(Bool_t));
+  Int_t index[nclus]; memset(index,0,nclus*sizeof(Int_t));
   Int_t nthresholds = 0;
   for(Int_t ic=0;ic<nclus;ic++){
     EtArray[ic]=0;
@@ -253,6 +240,7 @@ void AliAnalysisTaskTrgContam::FillClusHists()
   if(nclus>1)if(isTM[index[1]] && EtArray[index[1]]>0)
     fClusEtSubLeadTM->Fill(EtArray[index[1]]);
 } 
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskTrgContam::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
 {
@@ -301,8 +289,6 @@ Double_t AliAnalysisTaskTrgContam::GetCrossEnergy(const AliVCluster *cluster, Sh
   return crossEnergy;
 }
 
-
-
 //________________________________________________________________________
 Double_t AliAnalysisTaskTrgContam ::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
 {
@@ -326,10 +312,10 @@ Double_t AliAnalysisTaskTrgContam ::GetMaxCellEnergy(const AliVCluster *cluster,
   }
   return maxe;
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::Terminate(Option_t *) 
 {
   // Draw result to the screen
   // Called once at the end of the query
-
 }
