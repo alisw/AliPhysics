@@ -186,6 +186,8 @@ enum EAliAnalysisFlags {
    Bool_t               IsExternalLoop() const {return TObject::TestBit(kExternalLoop);}
    Bool_t               IsEventLoop() const {return TObject::TestBit(kEventLoop);}
    Bool_t               IsSkipTerminate() const {return TObject::TestBit(kSkipTerminate);}
+   Bool_t               MustClean() const {return fMustClean;}
+   void                 SetMustClean(Bool_t flag=kTRUE) {fMustClean = flag;}
    void                 ResetAnalysis();
    void                 ExecAnalysis(Option_t *option="");
    void                 PrintStatus(Option_t *option="all") const;
@@ -217,6 +219,7 @@ private:
    Long64_t                fNSysInfo;            // Event frequency for collecting system information
    EAliAnalysisExecMode    fMode;                // Execution mode
    Bool_t                  fInitOK;              // Initialisation done
+   Bool_t                  fMustClean;           // Flag to let ROOT do cleanup
    Bool_t                  fIsRemote;            //! Flag is set for remote analysis
    UInt_t                  fDebug;               // Debug level
    TString                 fSpecialOutputLocation; // URL/path where the special outputs will be copied
@@ -244,6 +247,6 @@ private:
    TMap                   *fGlobals;             // Map with global variables
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,14)  // Analysis manager class
+   ClassDef(AliAnalysisManager,15)  // Analysis manager class
 };   
 #endif

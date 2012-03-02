@@ -23,6 +23,7 @@
 
 #include <Riostream.h>
 #include <TProcessID.h>
+#include <TROOT.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
@@ -100,6 +101,7 @@ void AliAnalysisSelector::Begin(TTree *)
    RestoreAnalysisManager();
    if (fAnalysis && fAnalysis->GetDebugLevel()>1) {
       cout << "->AliAnalysisSelector->Begin: Analysis manager restored" << endl;
+      gROOT->SetMustClean(fAnalysis->MustClean());
    }
 }
 
@@ -109,6 +111,7 @@ void AliAnalysisSelector::SlaveBegin(TTree *tree)
 // Called on each worker. We "unpack" analysis manager here and call InitAnalysis.
    RestoreAnalysisManager();
    if (fAnalysis) {
+      gROOT->SetMustClean(fAnalysis->MustClean());
       if (fAnalysis->GetDebugLevel()>1) {
          cout << "->AliAnalysisSelector->SlaveBegin() after Restore" << endl;
       }   
@@ -194,6 +197,7 @@ void AliAnalysisSelector::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
+   gROOT->SetMustClean(kTRUE);
    if (fStatus == -1) return;  // TSelector won't abort...
    if (fAnalysis->GetAnalysisType() == AliAnalysisManager::kMixingAnalysis) return;
    if (fAnalysis->GetDebugLevel() > 1) {
@@ -211,6 +215,7 @@ void AliAnalysisSelector::Terminate()
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
+   gROOT->SetMustClean(kTRUE);
    if (fStatus == -1) return;  // TSelector won't abort...
    if (!fAnalysis) {
       Error("Terminate","AliAnalysisSelector::Terminate: No analysis manager!!!");
