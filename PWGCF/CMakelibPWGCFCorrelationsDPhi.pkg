@@ -33,6 +33,8 @@ set ( SRCS
     Correlations/DPhi/AliAnalysisTaskMinijet.cxx
     Correlations/DPhi/AliAnalysisTaskDiHadron.cxx
     Correlations/DPhi/AliAnalysisTaskDiHadronPID.cxx 
+    Correlations/DPhi/FourierDecomposition/AliPool.cxx
+    Correlations/DPhi/FourierDecomposition/AliDhcTask.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -41,4 +43,4 @@ set ( DHDR  PWGCFCorrelationsDPhiLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/Base PWGCF/Correlations/DPhi PWG/Tools STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/Base PWGCF/Correlations/DPhi PWGCF/Correlations/DPhi/FourierDecomposition PWG/Tools STEER/AOD STEER/ESD STEER/STEERBase)
