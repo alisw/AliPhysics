@@ -117,6 +117,8 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   void SetTOFres(Float_t res){fTOFresolution=res;};
 
+  Float_t GetDeDx() const {return fDedx;};
+
  private: 
   void SetPriors();
 
@@ -155,9 +157,12 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   Bool_t fIsMC; // switch for MC analysis
 
+  Float_t fDedx; // dE/dx tuned for MC
+
   ClassDef(AliFlowBayesianPID, 6); // example of analysis
 };
 
 #endif
+
 
 
