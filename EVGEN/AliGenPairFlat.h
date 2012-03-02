@@ -18,7 +18,7 @@ class AliGenPairFlat : public AliGenerator
 {
  public:
   AliGenPairFlat();
-  virtual ~AliGenPairFlat(){ }
+  virtual ~AliGenPairFlat();
   virtual void Generate();
   virtual void Init();
 
@@ -52,8 +52,14 @@ protected:
   Int_t   fLegPdg2;		// pdg code of second daughter
   Float_t fAlpha;		// Polarization factor
   Int_t   fDebug;   		// debug level
+  TF1    *fPol;			// Polarization function
 
-  Bool_t Decay(TLorentzVector& mother, TLorentzVector &dau1, TLorentzVector &dau2 , TF1* fPol);
+  Bool_t Decay(const TLorentzVector& mother, TLorentzVector &dau1, TLorentzVector &dau2 , TF1* fPol);
+
+
+  private:
+  AliGenPairFlat(const AliGenPairFlat &pair);
+  AliGenPairFlat & operator=(const AliGenPairFlat & pair);
 
   ClassDef(AliGenPairFlat,1) // Flat random pair generator
 };
