@@ -11,5 +11,8 @@
 #pragma link C++ class AliAnalysisTaskMinijet+;
 #pragma link C++ class AliAnalysisTaskDiHadron+;
 #pragma link C++ class AliAnalysisTaskDiHadronPID+;
-
+#pragma link C++ class AliEvtPoolManager+;
+#pragma link C++ class AliEvtPool+;
+#pragma link C++ class AliMiniTrack+;
+#pragma link C++ class AliDhcTask+;
 #endif
