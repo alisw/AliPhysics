@@ -1,9 +1,9 @@
 extractFlowVZERO(Int_t icentr,Int_t spec,Int_t arm=2,Bool_t isMC=kFALSE){
   // NUA correction currently are missing
   char name[100];
-  sprintf(name,"outVZEROv%i.root",arm);
+  snprintf(name,100,"outVZEROv%i.root",arm);
   TFile *fo = new TFile(name);
-  sprintf(name,"contVZEROv%i",arm);
+  snprintf(name,100,"contVZEROv%i",arm);
   TList *cont = (TList *) fo->Get(name);
 
   Float_t xMin[5] = {icentr,-1,0,-10,0};
@@ -63,9 +63,9 @@ extractFlowVZERO(Int_t icentr,Int_t spec,Int_t arm=2,Bool_t isMC=kFALSE){
   pp2->Draw("SAME");
 
   if(arm == 2 && isMC){
-    sprintf(name,"outVZEROmc.root");
+    snprintf(name,100,"outVZEROmc.root");
     fo = new TFile(name);
-    sprintf(name,"contVZEROmc");
+    snprintf(name,100,"contVZEROmc");
     cont = (TList *) fo->Get(name);
     AliFlowVZEROResults *c = (AliFlowVZEROResults *) cont->At(0);
     c->GetV2(spec,xMin,xMax)->Draw("SAME");
