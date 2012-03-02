@@ -4,12 +4,12 @@
 
 #include "TCanvas.h"
 #include "TChain.h"
+#include "TFormula.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "THnSparse.h"
+#include "TProfile2D.h"
 #include "TROOT.h"
 #include "TTree.h"
-
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -19,17 +19,17 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
-#include "KiddiePoolClasses.h"
+#include "AliPool.h"
 #include "AliVParticle.h"
 
 ClassImp(AliDhcTask)
 
 //________________________________________________________________________
 AliDhcTask::AliDhcTask(const char *name) 
-: AliAnalysisTaskSE(name), fVerbosity(0), fESD(0), fAOD(0), fOutputList(0), 
-  fHistPt(0), fHEvt(0), fHTrk(0), fHS(0), fHM(0), fPoolMgr(0), 
-  fCentrality(99), fZVertex(99), fZVtxMax(10), fPtMin(0), fPtMax(100), 
-  fInputHandler(0), fEsdTrackCutsTPCOnly(0)
+: AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15), 
+  fESD(0), fAOD(0), fOutputList(0), fHistPt(0), fHEvt(0), fHTrk(0), fHSs(0), fHMs(0), 
+  fIndex(0), fMeanPtTrg(0), fMeanPtAss(0), fMean2PtTrg(0), fMean2PtAss(0),
+  fCentrality(99), fZVertex(99), fEsdTrackCutsTPCOnly(0), fPoolMgr(0)
 {
   // Constructor
 
@@ -40,21 +40,6 @@ AliDhcTask::AliDhcTask(const char *name)
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
 
-  // Initialize cut variables
-  fZVtxMax = 10;    // cm
-  fPtMin   = 0.50;  // GeV/c
-  fPtMax   = 15.;
-
-  /*
-  // Not used for anything now...
-  fInputHandler = (AliInputEventHandler*)
-    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  if (!fInputHandler) {
-    Error("AliDhcTask()", "Did not get input handler");
-  }
-  */
-
-  fEsdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,Tracks "
                "AOD:header,tracks,vertices,";
 }
@@ -65,61 +50,108 @@ void AliDhcTask::UserCreateOutputObjects()
   // Create histograms
   // Called once (per slave on PROOF!)
 
-  BookHistos();
-  InitEventMixer(); 
-
   fOutputList = new TList();
   fOutputList->SetOwner(1);
 
-  fOutputList->Add(fHistPt);
-  fOutputList->Add(fHS);
-  fOutputList->Add(fHM);
-  fOutputList->Add(fHEvt);
-  fOutputList->Add(fHTrk);
+  fEsdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  //fEsdTrackCutsTPCOnly->SetMinNClustersTPC(70);
+  fEsdTrackCutsTPCOnly->SetMinNCrossedRowsTPC(70);
+  fEsdTrackCutsTPCOnly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 
+  BookHistos();
+  InitEventMixer(); 
   PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
 void AliDhcTask::BookHistos()
 {
-  // Setup for THnSparse correlation histos.
-  // Important! Order bins[] according to ePairHistAxes.
+  // Book histograms.
 
-  const Int_t ndims = 6;
-  Int_t nDeta=22, nPtAssc=11, nPtTrig=11, nCent=8, nDphi=36, nZvtx=8;
-  Int_t bins[ndims] = {nDeta, nPtAssc, nPtTrig, nCent, nDphi, nZvtx };
-  Double_t xmin[ndims] = { -2.2, 0.5, 0.5, 0,  -0.5*TMath::Pi(), -10 };
-  Double_t xmax[ndims] = { +2.2, 15., 15., 90, +1.5*TMath::Pi(), +10 };
-  fHS = new THnSparseF("fHS", "Same evt Correlations", 
-		       ndims, bins, xmin, xmax);
+  Int_t nDeta=20, nPtAssc=12, nPtTrig=12, nCent=12, nDphi=36, nZvtx=8;
 
-  // Override the uniform binning for some axes. Keep xmin and xmax
-  // limits the same, but allow variable bin widths inside.
-  Double_t ptt[]  = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 10, 15};
-  Double_t pta[]  = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 10, 15};
-  Double_t cent[] = {0, 2, 10, 20, 30, 40, 50, 60, 90};
+  Double_t ptt[]  = {0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 15};
+  Double_t pta[]  = {0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 15};
+  Double_t cent[] = {0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 90};
   Double_t zvtx[] = {-10, -6, -4, -2, 0, 2, 4, 6, 10};
-  fHS->SetBinEdges(kPtTrig, ptt);
-  fHS->SetBinEdges(kPtAssc, pta);
-  fHS->SetBinEdges(kCent, cent);
-  fHS->SetBinEdges(kZvtx, zvtx); // Match InitEventMixer - no point in going finer
-
-  fHM = (THnSparse*) fHS->Clone("fHM");
-  fHM->SetTitle("Mixed evt Correlations");
 
   // Event histo
-  fHEvt = new TH2F("fHEvt", "Event-level variables", 30, -15, 15, 101, 0, 101);
+  fHEvt = new TH2F("fHEvt", "Event-level variables; Zvtx; Cent", 30, -15, 15, 101, 0, 101);
+  fOutputList->Add(fHEvt);
   // Track histo
   fHTrk = new TH2F("fHTrk", "Track-level variables", 
-		   100, 0, TMath::TwoPi(), 100, -2, +2);
-
+		   100, 0, TMath::TwoPi(), 100, -fEtaMax, +fEtaMax);
+  fOutputList->Add(fHTrk);
+  
   // Left over from the tutorial :)
-  fHistPt = new TH1F("fHistPt", "P_{T} distribution", 200, 0., 20.);
+  fHistPt = new TH1F("fHistPt", "P_{T} distribution", 200, 0., fPtMax);
   fHistPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
   fHistPt->GetYaxis()->SetTitle("dN/dP_{T} (c/GeV)");
   fHistPt->SetMarkerStyle(kFullCircle);
-  
+  fOutputList->Add(fHistPt);
+
+  fHPtAss = new TH1F("fHPtAss","PtAssoc;P_{T} (GeV/c) [GeV/c]",nPtAssc,pta);
+  fOutputList->Add(fHPtAss);
+  fHPtTrg = new TH1F("fHPtTrg","PtTrig;P_{T} (GeV/c) [GeV/c]",nPtTrig,ptt);
+  fOutputList->Add(fHPtTrg);
+  fHCent = new TH1F("fHCent","Cent;bins",nCent,cent);
+  fOutputList->Add(fHCent);
+  fHZvtx = new TH1F("fHZvtx","Zvertex;bins",nZvtx,zvtx);
+  fOutputList->Add(fHZvtx);
+
+  fNbins = nPtTrig*nPtAssc*nCent*nZvtx;
+  fHSs = new TH2*[fNbins];
+  fHMs = new TH2*[fNbins];
+
+  fIndex = new TFormula("GlobIndex","(t-1)*[0]*[1]*[2]+(z-1)*[0]*[1]+(x-1)*[0]+(y-1)+0*[4]");
+  fIndex->SetParameters(nPtTrig,nPtAssc,nZvtx,nCent);
+  fIndex->SetParNames("NTrigBins","NAssocBins", "NZvertexBins", "NCentBins");
+  //fOutputList->Add(fIndex);
+
+  fMeanPtTrg = new TProfile2D*[nPtTrig*nPtAssc];
+  fMeanPtAss = new TProfile2D*[nPtTrig*nPtAssc];
+  fMean2PtTrg = new TProfile2D*[nPtTrig*nPtAssc];
+  fMean2PtAss = new TProfile2D*[nPtTrig*nPtAssc];
+  for (Int_t c=1; c<=nCent; ++c) {
+    TString title(Form("cen=%d (%.1f)",c,fHCent->GetBinCenter(c)));
+    fMeanPtTrg[c-1]  = new TProfile2D(Form("hMeanPtTrgCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
+    fMeanPtAss[c-1]  = new TProfile2D(Form("hMeanPtAssCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
+    fMean2PtTrg[c-1] = new TProfile2D(Form("hMean2PtTrgCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
+    fMean2PtAss[c-1] = new TProfile2D(Form("hMean2PtAssCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
+    fOutputList->Add(fMeanPtTrg[c-1]);
+    fOutputList->Add(fMeanPtAss[c-1]);
+    fOutputList->Add(fMean2PtTrg[c-1]);
+    fOutputList->Add(fMean2PtAss[c-1]);
+  }
+
+  Int_t count = 0;
+  for (Int_t c=1; c<=nCent; ++c) {
+    for (Int_t z=1; z<=nZvtx; ++z) {
+      for (Int_t t=1; t<=nPtTrig; ++t) {
+	for (Int_t a=1; a<=nPtAssc; ++a) {
+	  fHSs[count] = 0;
+	  fHMs[count] = 0;
+	  if (a>t) {
+	    ++count;
+	    continue;
+	  }
+	  TString title(Form("cen=%d (%.1f), zVtx=%d (%.1f), trig=%d (%.1f), assc=%d (%.1f)",
+			     c,fHCent->GetBinCenter(c), z,fHZvtx->GetBinCenter(z),
+			     t,fHPtTrg->GetBinCenter(t),a, fHPtAss->GetBinCenter(a)));
+	  fHSs[count] = new TH2F(Form("hS%d",count), Form("Signal %s",title.Data()),
+				 nDphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),nDeta,-2*fEtaMax,2*fEtaMax);
+	  fHMs[count] = new TH2F(Form("hM%d",count), Form("Signal %s",title.Data()),
+				 nDphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),nDeta,-2*fEtaMax,2*fEtaMax);
+	  fOutputList->Add(fHSs[count]);
+	  fOutputList->Add(fHMs[count]);
+	  if (fVerbosity>5)
+	    cout << count << " " << fIndex->Eval(t,a,z,c) << ": " << title << endl;
+	  ++count;
+	}
+      }
+    }
+  }
+
   return;
 }
 
@@ -135,18 +167,22 @@ void AliDhcTask::InitEventMixer()
   Int_t poolsize   = 200;    // Maximum number of events
 
   // Centrality pools
-  Int_t nCentBins  = 9;
-  Double_t centBins[] = {0,1,2,5,10,20,30,40,60,90.1};
+  Int_t nCentBins  = 12;
+  Double_t centBins[] = {0,1,2,3,4,5,10,20,30,40,50,60,90.1};
  
   //Int_t nCentBins  = 1;
   //Double_t centBins[] = {-1,100.1};
  
   // Z-vertex pools
   Int_t nZvtxBins  = 8;
-  Double_t zvtxbin[] = {-10, -6, -4, -2, 0, 2, 4, 6, 10};
+  Double_t zvtxbin[] = {-10,-6,-4,-2,0,2,4,6,10};
+
+  fPoolMgr = new AliEvtPoolManager();
+  fPoolMgr->SetTargetTrackDepth(trackDepth);
+  if (fVerbosity>4)
+    fPoolMgr->SetDebug(1);
+  fPoolMgr->InitEventPools(poolsize, nCentBins, centBins, nZvtxBins, zvtxbin);
   
-  fPoolMgr = new KiddiePoolManager(poolsize, trackDepth, nCentBins, 
-				   centBins, nZvtxBins, zvtxbin);
   return;
 }
 
@@ -163,7 +199,7 @@ void AliDhcTask::UserExec(Option_t *)
   }
 
   Int_t dType = -1;       // Will be set to kESD or kAOD.
-  MiniEvent* sTracks = 0; // Vector of selected MiniTracks.
+  MiniEvent* sTracks = 0; // Vector of selected AliMiniTracks.
   Double_t centCL1 = -1;
 
   LoadBranches();
@@ -228,9 +264,9 @@ void AliDhcTask::UserExec(Option_t *)
   }
 
   // Get pool containing tracks from other events like this one
-  KiddiePool* pool = fPoolMgr->GetEventPool(fCentrality, fZVertex);
+  AliEvtPool* pool = fPoolMgr->GetEventPool(fCentrality, fZVertex);
   if (!pool) {
-    AliFatal(Form("No pool found. Centrality %f, ZVertex %f", fCentrality, fZVertex));
+    AliWarning(Form("No pool found. Centrality %f, ZVertex %f", fCentrality, fZVertex));
     return;
   }
 
@@ -264,11 +300,6 @@ void AliDhcTask::UserExec(Option_t *)
     }
   }
 
-  if (fVerbosity>4) {
-    cout << "Output of SAME  THnSparse: " << fHS->GetSparseFractionBins() << " " << fHS->GetSparseFractionMem() << endl; 
-    cout << "Output of MIXED THnSparse: " << fHM->GetSparseFractionBins() << " " << fHM->GetSparseFractionMem() << endl; 
-  }
-
   pool->UpdatePool(sTracks);
   PostData(1, fOutputList);
   return;
@@ -279,13 +310,19 @@ MiniEvent* AliDhcTask::GetESDTrax() const
 {
   // Loop twice: 1. Count sel. tracks. 2. Fill vector.
 
-  Int_t nTrax = fESD->GetNumberOfTracks();
-  Int_t nSelTrax = 0;
+  const AliESDVertex *vtxSPD = fESD->GetPrimaryVertexSPD();
+  if (!vtxSPD)
+    return 0;
 
+  Int_t nTrax = fESD->GetNumberOfTracks();
   if (fVerbosity > 2)
     AliInfo(Form("%d tracks in event",nTrax));
 
   // Loop 1.
+  Int_t nSelTrax = 0;
+  TObjArray arr(nTrax);
+  arr.SetOwner(1);
+
   for (Int_t i = 0; i < nTrax; ++i) {
     AliESDtrack* esdtrack = fESD->GetTrack(i);
     if (!esdtrack) {
@@ -300,35 +337,58 @@ MiniEvent* AliDhcTask::GetESDTrax() const
     if (!ptOK)
       continue;
     Double_t eta = esdtrack->Eta();
-    if (TMath::Abs(eta) > 1.0)
+    if (TMath::Abs(eta) > fEtaMax)
       continue;
+
+    // create a tpc only track
+    AliESDtrack *newtrack = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+    if(!newtrack)
+      continue;
+    if (newtrack->Pt()<=0) {
+      delete newtrack;
+      continue;
+    }
+
+    AliExternalTrackParam exParam;
+    Bool_t relate = newtrack->RelateToVertexTPC(vtxSPD,fESD->GetMagneticField(),kVeryBig,&exParam);
+    if (!relate) {
+      delete newtrack;
+      continue;
+    }
+
+    // set the constraint parameters to the track
+    newtrack->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+
+    pt = newtrack->Pt();
+    ptOK = pt >= fPtMin && pt < fPtMax;
+    if (!ptOK) {
+      delete newtrack;
+      continue;
+    }
+    eta  = esdtrack->Eta();
+    if (TMath::Abs(eta) > fEtaMax) {
+      delete newtrack;
+      continue;
+    }
+    arr.Add(newtrack);
     nSelTrax++;
   }
 
   MiniEvent* miniEvt = new MiniEvent(0);
   miniEvt->reserve(nSelTrax);
 
-  // Loop 2.  
-  for (Int_t i = 0; i < nTrax; ++i) {
-    AliESDtrack* esdtrack = fESD->GetTrack(i);
+  // Loop 2.
+  for (Int_t i = 0; i < nSelTrax; ++i) {
+    AliESDtrack* esdtrack = static_cast<AliESDtrack*>(arr.At(i));
     if (!esdtrack) {
       AliError(Form("Couldn't get ESD track %d\n", i));
       continue;
     }
-    Bool_t trkOK = fEsdTrackCutsTPCOnly->AcceptTrack(esdtrack);
-    if (!trkOK)
-      continue;
     Double_t pt = esdtrack->Pt();
-    Bool_t ptOK = pt >= fPtMin && pt < fPtMax;
-    if (!ptOK)
-      continue;
     Double_t eta  = esdtrack->Eta();
-    if (TMath::Abs(eta) > 1.0)
-      continue;
-
     Double_t phi  = esdtrack->Phi();
     Int_t    sign = esdtrack->Charge() > 0 ? 1 : -1;
-    miniEvt->push_back(MiniTrack(pt, eta, phi, sign));
+    miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
   }
   return miniEvt;
 }
@@ -361,7 +421,7 @@ MiniEvent* AliDhcTask::GetAODTrax() const
     if (!ptOK)
       continue;
     Double_t eta = aodtrack->Eta();
-    if (TMath::Abs(eta) > 1.0)
+    if (TMath::Abs(eta) > fEtaMax)
       continue;
     nSelTrax++;
   }
@@ -387,12 +447,12 @@ MiniEvent* AliDhcTask::GetAODTrax() const
     if (!ptOK)
       continue;
     Double_t eta  = aodtrack->Eta();
-    if (TMath::Abs(eta) > 1.0)
+    if (TMath::Abs(eta) > fEtaMax)
       continue;
 
     Double_t phi  = aodtrack->Phi();
     Int_t    sign = aodtrack->Charge() > 0 ? 1 : -1;
-    miniEvt->push_back(MiniTrack(pt, eta, phi, sign));
+    miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
   }
   return miniEvt;
 }
@@ -417,54 +477,84 @@ Double_t AliDhcTask::DeltaPhi(Double_t phia, Double_t phib,
 
 //________________________________________________________________________
 Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, 
-			    Int_t pairing, Double_t weight)
+			    Int_t pairing, Double_t /*weight*/)
 {
   // Triggered angular correlations. If pairing is kSameEvt, particles
   // within evt1 are correlated. If kDiffEvt, correlate triggers from
   // evt1 with partners from evt2.
-  
+
+  Int_t cbin = fHCent->FindBin(fCentrality);
+  if (fHCent->IsBinOverflow(cbin) ||
+      fHCent->IsBinUnderflow(cbin))
+    return 0;
+
+  Int_t zbin = fHZvtx->FindBin(fZVertex);
+  if (fHZvtx->IsBinOverflow(zbin) ||
+      fHZvtx->IsBinUnderflow(zbin))
+    return 0;
+
   Int_t iMax = evt1.size();
   Int_t jMax = evt2.size();
 
-  THnSparse *hist = fHM;
-  if (pairing == kSameEvt)
-    hist = fHS;
+  TH2  **hist = fHMs;
+  if (pairing == kSameEvt) {
+    hist = fHSs;
+    fHCent->AddBinContent(cbin);
+    fHZvtx->AddBinContent(zbin);
+  }
+
+  Int_t nZvtx = fHZvtx->GetNbinsX();
+  Int_t nPtTrig = fHPtTrg->GetNbinsX();
+  Int_t nPtAssc = fHPtAss->GetNbinsX();
+
+  Int_t globIndex = (cbin-1)*nZvtx*nPtTrig*nPtAssc+(zbin-1)*nPtTrig*nPtAssc;
 
   for (Int_t i=0; i<iMax; ++i) {
 
     // Trigger particles
-    const MiniTrack &a(evt1.at(i));
+    const AliMiniTrack &a(evt1.at(i));
+
+    Float_t pta  = a.Pt();
+    Int_t abin = fHPtTrg->FindBin(pta);
+    if (fHPtTrg->IsBinOverflow(abin) ||
+	fHPtTrg->IsBinUnderflow(abin))
+      continue;
 
     if (pairing == kSameEvt) {
-      fHistPt->Fill(a.Pt());
+      fHistPt->Fill(pta);
       fHTrk->Fill(a.Phi(),a.Eta());
+      fHPtTrg->AddBinContent(abin);
     }
 
-    for (int j=0; j<jMax; ++j) {
+    for (Int_t j=0; j<jMax; ++j) {
       // Associated particles
       if (pairing == kSameEvt && i==j)
 	continue;
 
-      const MiniTrack &b(evt2.at(j));
+      const AliMiniTrack &b(evt2.at(j));
       
-      Float_t pta  = a.Pt();
       Float_t ptb  = b.Pt();
       if (pta < ptb) 
+	continue;
+
+      Int_t bbin = fHPtTrg->FindBin(ptb);
+      if (fHPtAss->IsBinOverflow(bbin) ||
+	  fHPtAss->IsBinUnderflow(bbin))
 	continue;
 
       Float_t dphi = DeltaPhi(a.Phi(), b.Phi());
       Float_t deta = a.Eta() - b.Eta();
 
-      Double_t x[6]; // Match ndims in fHS
-      x[kDeta]       = deta;
-      x[kPtAssc]     = ptb;
-      x[kPtTrig]     = pta;
-      x[kCent]       = fCentrality;
-      x[kDphi]       = dphi;
-      x[kZvtx]       = fZVertex;
-      //x[kChargeComb] = a.Sign() * b.Sign(); 
-      
-      hist->Fill(x, weight);
+      Int_t index = globIndex+(abin-1)*nPtAssc+(bbin-1);
+      hist[index]->Fill(dphi,deta);
+
+      if (pairing == kSameEvt) {
+	fHPtAss->AddBinContent(bbin);
+	fMeanPtTrg[cbin-1]->Fill(pta,ptb,pta);
+	fMeanPtAss[cbin-1]->Fill(pta,ptb,ptb);
+	fMean2PtTrg[cbin-1]->Fill(pta,ptb,pta*pta);
+	fMean2PtAss[cbin-1]->Fill(pta,ptb,ptb*ptb);
+      }
     }
   }
 
@@ -476,6 +566,13 @@ void AliDhcTask::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
+
+  delete fPoolMgr;
+
+  fHCent->SetEntries(fHCent->Integral());
+  fHZvtx->SetEntries(fHZvtx->Integral());
+  fHPtTrg->SetEntries(fHPtTrg->Integral());
+  fHPtAss->SetEntries(fHPtAss->Integral());
 
   if (gROOT->IsBatch())
     return;
@@ -526,7 +623,7 @@ Bool_t AliDhcTask::VertexOk(TObject* obj) const
   }
   
   // Reject if TPC-only vertex
-  if (name.CompareTo("TPCVertex"))
+  if (name.CompareTo("TPCVertex")==0)
     return kFALSE;
   
   // Check # contributors and range...
