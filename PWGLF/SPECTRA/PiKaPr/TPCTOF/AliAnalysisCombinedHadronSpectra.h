@@ -40,6 +40,7 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   void           SetAlephParameters(const Double_t * parameters){for(Int_t j=0;j<5;j++) fAlephParameters[j] = parameters[j]; Initialize();};
   void           SetIsMCtrue(Bool_t isMCdata = kTRUE){fMCtrue = isMCdata;};
   void           SetUseHBTmultiplicity(Bool_t useHBTmultiplicity = kTRUE){fUseHBTmultiplicity = useHBTmultiplicity;};
+  void			 SetUseTPConlyTracks(Bool_t useTPConlyTracks = kFALSE){fUseTPConlyTracks = useTPConlyTracks;};
   void           Initialize();
   //
   
@@ -57,6 +58,7 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   Bool_t        fMCtrue;               // flag if real data or MC is processed
   Bool_t        fOnlyQA;               // flag if only QA histograms should be filled
   Bool_t        fUseHBTmultiplicity;   // flag if multiplicity determination should be done as in the HBT paper
+  Bool_t		fUseTPConlyTracks;	   // flag if TPConly-track should be used
   Double_t      fAlephParameters[5];   // Aleph Parameters for Bethe-Bloch
   //
   //
