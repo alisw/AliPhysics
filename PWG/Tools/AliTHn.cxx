@@ -169,7 +169,7 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
     }
     delete [] axisCache;
     axisCache = new TAxis*[fNVars];
-    memcpy(axisCache, c.axisCache, fNVars*sizeof(TAxis**));
+    memcpy(axisCache, c.axisCache, fNVars*sizeof(TAxis*));
   }
   return *this;
 }
