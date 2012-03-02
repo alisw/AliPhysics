@@ -640,11 +640,11 @@ void AliEMCALTenderSupply::InitRecParam()
   const AliESDRun *run = fTender->GetEvent()->GetESDRun();
   TString bt(run->GetBeamType());
   if (bt=="A-A") {
-    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
+    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
     fRecParam->SetClusteringThreshold(0.100);
     fRecParam->SetMinECut(0.050);
   } else {
-    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
+    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
     fRecParam->SetClusteringThreshold(0.100);
     fRecParam->SetMinECut(0.050);
   }
