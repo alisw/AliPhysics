@@ -34,7 +34,7 @@ AliTOFGeometry* AliFlowBayesianPID::fgTofGeo = NULL; // TOF geometry needed to r
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE),fDedx(0.0)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -533,6 +533,8 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
 	  }
 	}
   }
+
+  fDedx = dedx;
 
   if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
     for(Int_t iS=0;iS<fgkNspecies;iS++){
@@ -6968,5 +6970,6 @@ x[4999]=110229.399237; y[4999]=6.896278e-07;
 
   return sp;
 }
+
 
 
