@@ -1,23 +1,21 @@
-// Macro to run AliDhcTask - A. Adare, Apr 2011
+// Macro to run AliDhcTask - A. Adare, Mar 2012
 // Choose dataType = "esd" or "aod".
 // Choose runMode  = "local", "proof", "grid", or "terminate".
 // Choose proofCluster = "skaf.saske.sk" or "alice-caf.cern.ch".
 // When running on proof: use root, not aliroot.
 
 Int_t verbosity      = 0;
-Long64_t nEvents     = 200;
-TString runMode      = "local";
+Long64_t nEvents     = 123456789;
+TString runMode      = "local"; // "proof";
 TString dataType     = "aod";
 TString localDir     = "/Users/adare/esd/alice/data/2010/LHC10h/000139107/ESDs/pass2/";
 TString esdDir       = localDir + TString("10000139107001.120/");
 TString aodDir       = localDir + TString("AOD049/0008/");
 TString proofDataset = "/alice/data/LHC10h_000137848_p2_AOD049";
-//TString proofCluster = "aadare@alice-caf.cern.ch";
-TString proofCluster = "aadare@skaf.saske.sk";
-TString alirootVer   = "VO_ALICE@AliRoot::v4-21-21-AN";
+TString proofCluster = "aadare@skaf.saske.sk"; // or "aadare@alice-caf.cern.ch";
+TString alirootVer   = "VO_ALICE@AliRoot::v4-21-21-AN"; // for PROOF
 TString libsBase     = "Tree:Geom:VMC:STEERBase:ESD:AOD";
-//TString libsExtra    = "ANALYSIS:ANALYSISalice:CORRFW:JETAN:PWG4JetTasks";
-TString libsExtra    = "ANALYSIS:ANALYSISalice";
+TString libsExtra    = "ANALYSIS:ANALYSISalice:PWGCFCorrelationsDPhi";
 TList* libList = new TList();
 TChain* chain = 0;
 
@@ -73,8 +71,8 @@ void LocalSetup()
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   }
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  gROOT->LoadMacro("KiddiePoolClasses.cxx+g");  
-  gROOT->LoadMacro("AliDhcTask.cxx+g");  
+  // gROOT->LoadMacro("AliPool.cxx+g");  
+  // gROOT->LoadMacro("AliDhcTask.cxx+g");  
   
   // Setup chain
   TString chainName = dataType.Contains("aod") ? "aodTree" : "esdTree";
@@ -128,7 +126,7 @@ void ProofSetup()
     proof->Load("AddTaskCentrality.C");
   }
   proof->Load("AddTaskPhysicsSelection.C");
-  proof->Load("KiddiePoolClasses.cxx+g");  
+  proof->Load("AliPool.cxx+g");  
   proof->Load("AliDhcTask.cxx+g", 0);
   return;
 }
