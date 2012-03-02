@@ -27,10 +27,12 @@ class AliGenExtFile : public AliGenMC
     // generate event
     virtual void Generate();
     void SetReader(AliGenReader* reader) {fReader = reader;}
+    void SetStartEvent(Int_t startEvent) {fStartEvent = startEvent;}
  protected:
     void CdEventFile();
     const Text_t     *fFileName;      //! File to read from
     AliGenReader     *fReader;        //! Reader to read the file
+    Int_t  fStartEvent; //! Start event number
 
  private:
     AliGenExtFile(const AliGenExtFile &ext);

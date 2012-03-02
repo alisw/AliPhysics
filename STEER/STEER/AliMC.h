@@ -109,6 +109,12 @@ public:
 // Geometry related
    void           SetGeometryFromCDB();
    Bool_t         IsGeometryFromCDB() const;
+   
+// Random number generator status
+   void           SetSaveRndmStatus(Bool_t value)          { fSaveRndmStatus = value; }  
+   void           SetSaveRndmStatusPerEvent(Bool_t value)  { fSaveRndmEventStatus = value; }  
+   void           SetReadRndmStatus(Bool_t value)          { fReadRndmStatus = value; };   
+   void           SetRndmFileName(const TString& fileName) { fRndmFileName = fileName; };   
 
  private:
    AliMC(const AliMC&); // Not implemented
@@ -118,6 +124,10 @@ public:
  private:
    void RemapHits();
    AliGenerator  *fGenerator;         //  Generator used in the MC
+   Bool_t         fSaveRndmStatus;    //! Options to save random engine status
+   Bool_t         fSaveRndmEventStatus; //! Options to save random engine status for each event
+   Bool_t         fReadRndmStatus;    //! Options to read random engine status
+   TString        fRndmFileName;      //! The file name of random engine status to be read in
    TArrayF        fEventEnergy;       //! Energy deposit for current event
    TArrayF        fSummEnergy;        //! Energy per event in each volume
    TArrayF        fSum2Energy;        //! Energy squared per event in each volume

@@ -58,6 +58,10 @@ ClassImp(AliMC)
 //_______________________________________________________________________
 AliMC::AliMC() :
   fGenerator(0),
+  fSaveRndmStatus(kFALSE),
+  fSaveRndmEventStatus(kFALSE),
+  fReadRndmStatus(kFALSE),
+  fRndmFileName("random.root"),
   fEventEnergy(0),
   fSummEnergy(0),
   fSum2Energy(0),
@@ -83,6 +87,10 @@ AliMC::AliMC() :
 AliMC::AliMC(const char *name, const char *title) :
   TVirtualMCApplication(name, title),
   fGenerator(0),
+  fSaveRndmStatus(kFALSE),
+  fSaveRndmEventStatus(kFALSE),
+  fReadRndmStatus(kFALSE),
+  fRndmFileName("random.root"),
   fEventEnergy(0),
   fSummEnergy(0),
   fSum2Energy(0),
@@ -443,7 +451,7 @@ void AliMC::EnergySummary()
   //  fSummEnergy.Set(0);
   //  fSum2Energy.Set(0);
 }
-
+#include <TFile.h>
 //_____________________________________________________________________________
 void AliMC::BeginEvent()
 {
@@ -457,7 +465,7 @@ void AliMC::BeginEvent()
   AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
   AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
   AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-    
+
   AliRunLoader *runloader=AliRunLoader::Instance();
 
   /*******************************/    
@@ -479,7 +487,30 @@ void AliMC::BeginEvent()
   else
       runloader->MakeStack();//or make a new one
   
+  // Random engine status
+  //
   
+  if ( fSaveRndmStatus || fSaveRndmEventStatus) {
+    TString fileName="random";
+    if ( fSaveRndmEventStatus ) {
+      fileName += "Evt";
+      fileName += gAlice->GetEventNrInRun();
+    }
+    fileName += ".root";
+       
+    // write ROOT random engine status
+    cout << "Saving random engine status in " << fileName.Data() << endl;
+    TFile f(fileName.Data(),"RECREATE");
+    gRandom->Write(fileName.Data());
+  }     
+
+  if ( fReadRndmStatus ) {
+    //read ROOT random engine status
+    cout << "Reading random engine status from " << fRndmFileName.Data() << endl;
+    TFile f(fRndmFileName.Data());
+    gRandom->Read(fRndmFileName.Data());    
+  }       
+
   if(AliSimulation::Instance()->Lego() == 0x0)
   { 
       AliDebug(1, "fRunLoader->MakeTree(K)");
@@ -722,6 +753,7 @@ void AliMC::Init()
 {
   // MC initialization
 
+
    //=================Create Materials and geometry
    gMC->Init();
   // Set alignable volumes for the whole geometry (with old root)
@@ -743,7 +775,6 @@ void AliMC::Init()
 
    // Register MC in configuration 
    AliConfig::Instance()->Add(gMC);
-
 }
 
 //_______________________________________________________________________

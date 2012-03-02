@@ -48,7 +48,8 @@ ClassImp(AliGenExtFile)
 AliGenExtFile::AliGenExtFile()
     :AliGenMC(),
      fFileName(0),
-     fReader(0)
+     fReader(0),
+     fStartEvent(0)
 {
 //  Constructor
 //
@@ -59,7 +60,8 @@ AliGenExtFile::AliGenExtFile()
 AliGenExtFile::AliGenExtFile(Int_t npart)
     :AliGenMC(npart),
      fFileName(0),
-     fReader(0)
+     fReader(0),
+     fStartEvent(0)
 {
 //  Constructor
     fName   = "ExtFile";
@@ -80,7 +82,7 @@ void AliGenExtFile::Init()
     if (fReader) fReader->Init();
 }
 
-    
+//___________________________________________________________
 void AliGenExtFile::Generate()
 {
 // Generate particles
@@ -95,6 +97,19 @@ void AliGenExtFile::Generate()
   //
   //
   if (fVertexSmear == kPerEvent) Vertex();
+
+  // Fast forward up to start Event
+  for (Int_t ie=0; ie<fStartEvent; ++ie ) {
+    Int_t nTracks = fReader->NextEvent(); 	
+    if (nTracks == 0) {
+      // printf("\n No more events !!! !\n");
+      Warning("AliGenExtFile::Generate","\nNo more events in external file!!!\nLast event may be empty or incomplete.\n");
+      return;
+    }
+    TParticle* iparticle = 0x0;
+    while ((iparticle=fReader->NextParticle()) ) ;
+    cout << "Skipping event " << ie << endl;
+  }  
 
   while(1) {
     Int_t nTracks = fReader->NextEvent(); 	
@@ -192,6 +207,7 @@ void AliGenExtFile::Generate()
   CdEventFile();
 }
 
+//___________________________________________________________
 void AliGenExtFile::CdEventFile()
 {
 // CD back to the event file
