@@ -46,7 +46,6 @@
 #include "AliVertexingHFUtils.h"
 ClassImp(AliAnalysisTaskSEDplus)
 
-
 //________________________________________________________________________
 AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
 AliAnalysisTaskSE(),
