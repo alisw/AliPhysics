@@ -122,8 +122,7 @@
 #pragma link C++ class  AliHMPIDTaskQA+;
 // Cosmics QA
 #pragma link C++ class  AliAnalysisTaskCosmic+;
-// Background and luminosity studies
-#pragma link C++ class  AliAnalysisTaskBGvsTime+;
+// Background and luminosity studies. The obsolete task was removed. The list wrapper is still used in other classes.
 #pragma link C++ class  AliHistoListWrapper+;
 // CDB connect
 #pragma link C++ class  AliTaskCDBconnect+;
