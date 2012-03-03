@@ -67,7 +67,6 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void CreateLikeSignHistos();
   void CreateImpactParameterHistos();
 
-
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
