@@ -20,12 +20,12 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
       }
   }
 
-  Bool_t onoff[4]={kTRUE,kTRUE,kTRUE,kTRUE}; //tracks (0), PID (1), centrality (2), event selection(3) 
+  Bool_t onoff[5]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE}; //tracks (0), PID (1), centrality (2), event selection(3), flow observables(4)
   if(system==0) onoff[2]=kFALSE;
 
   AliRDHFCuts *analysiscuts=0x0;
 
-  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",inname="input",suffix="",cutsobjname="",centr="";
+  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",out8name="outputFlowObs",inname="input",suffix="",cutsobjname="",centr="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_QA";
   filename += finDirname.Data();
@@ -101,6 +101,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out5name+=suffix;
   out6name+=suffix;
   out7name+=suffix;
+  out8name+=suffix;
 
   if(!analysiscuts && filecutsname!="none"){
     cout<<"Specific AliRDHFCuts not found"<<endl;
@@ -116,6 +117,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out5name+=centr;
   out6name+=centr;
   out7name+=centr;
+  out8name+=centr;
   inname+= finDirname.Data();
   out1name+= finDirname.Data();
   out2name+= finDirname.Data();
@@ -124,6 +126,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out5name+= finDirname.Data();
   out6name+= finDirname.Data();
   out7name+= finDirname.Data();
+  out8name+= finDirname.Data();
 
  
   AliAnalysisTaskSEHFQA* taskQA=new AliAnalysisTaskSEHFQA(Form("QA%s",suffix.Data()),ch,analysiscuts);
@@ -134,6 +137,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   taskQA->SetPIDOn(onoff[1]);
   taskQA->SetCentralityOn(onoff[2]);
   taskQA->SetEvSelectionOn(onoff[3]);
+  taskQA->SetFlowObsOn(onoff[4]);
   mgr->AddTask(taskQA);
 
   //
@@ -161,6 +165,9 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(out7name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //event selection
   if(onoff[3]) mgr->ConnectOutput(taskQA,7,coutput7);
+
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(out8name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //flow observables
+  if(onoff[4]) mgr->ConnectOutput(taskQA,8,coutput8);
 
  return taskQA;
 }

@@ -19,6 +19,9 @@
 
 class AliRDHFCuts;
 class TH1F;
+class AliAODEvent;
+class AliFlowEvent;
+class AliFlowTrackCuts;
 
 class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
 {
@@ -45,6 +48,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetPIDOn(Bool_t pidon=kTRUE){fOnOff[1]=pidon;}
   void SetCentralityOn(Bool_t centron=kTRUE){fOnOff[2]=centron;}
   void SetEvSelectionOn(Bool_t evselon=kTRUE){fOnOff[3]=evselon;}
+  void SetFlowObsOn(Bool_t flowobson=kTRUE){fOnOff[4]=flowobson;}
 
   //getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -53,10 +57,12 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   Bool_t GetPIDStatus() const {return fOnOff[1];}
   Bool_t GetCentralityStatus() const {return fOnOff[2];}
   Bool_t GetEvSelStatus() const {return fOnOff[3];}
+  Bool_t GetFlowObsStatus() const {return fOnOff[4];}
 
  private:
   AliAnalysisTaskSEHFQA(const AliAnalysisTaskSEHFQA &source);
   AliAnalysisTaskSEHFQA operator=(const AliAnalysisTaskSEHFQA &source);
+  void FillFlowObs(AliAODEvent *aod);
 
  TH1F*  fNEntries;         //! histogram with number of events on output slot 1
  TList* fOutputPID;        //! list sent on output slot 2
@@ -64,13 +70,16 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TList* fOutputCounters;   //! list sent on output slot 5
  TList* fOutputCheckCentrality;   //! list sent on output slot 6
  TList* fOutputEvSelection; //! list sent on output slot 7
+ TList* fOutputFlowObs;    //! list sent on output slot 8
  DecChannel fDecayChannel; //identify the decay channel
- AliRDHFCuts* fCuts;       // object containing cuts
+ AliRDHFCuts* fCuts;       // object containing cuts 
+ AliFlowEvent *fFlowEvent; //! to handle the reusage of the flowEvent object
+ AliFlowTrackCuts *fRFPcuts; //! reference flow particle cuts
  AliRDHFCuts::ECentrality fEstimator; //2nd estimator for centrality
  Bool_t fReadMC;           // flag to read MC
  Bool_t fSimpleMode;       // if true, don't do candidates (much faster in PbPb)
- Bool_t fOnOff[4];         // on-off the QA on tracks (0), PID (1), centrality (2), event selection -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
- ClassDef(AliAnalysisTaskSEHFQA,6); //AnalysisTaskSE for the quality assurance of HF in hadrons
+ Bool_t fOnOff[5];         // on-off the QA on tracks (0), PID (1), centrality (2), event selection -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
+ ClassDef(AliAnalysisTaskSEHFQA,7); //AnalysisTaskSE for the quality assurance of HF in hadrons
 
 };
 
