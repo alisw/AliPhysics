@@ -36,7 +36,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSEDplus();
-  AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplustoKpipi* analysiscuts,AliRDHFCutsDplustoKpipi* productioncuts,Bool_t fillNtuple=kFALSE);
+  AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplustoKpipi* analysiscuts,Bool_t fillNtuple=kFALSE);
   virtual ~AliAnalysisTaskSEDplus();
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
@@ -118,19 +118,19 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH2F *fCorreld0Kd0pi[3]; //!hist. for d0k*d0pi vs. d0k*d0pi (LC)
   TH1F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
   THnSparseF *fHistMassPtImpParTC[5];//! histograms for impact paramter studies
-  TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
+    TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
   TH2F *fPtVsMassTC;  //! hist. of pt vs. mass (analysis cuts)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
   TH2F *fYVsPtTC;     //! hist. of Y vs. Pt (analysis cuts)
   TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
   TH2F *fYVsPtSigTC;    //! hist. of Y vs. Pt (MC, only sig, analysis cuts)
+  TH1F *fSPDMult;    //! hist. of spd mult
   TNtuple *fNtupleDplus; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
   Int_t fNPtBins; //Number of Pt Bins
   Float_t fBinWidth;//width of one bin in output histos
   TList *fListCuts; //list of cuts
-  AliRDHFCutsDplustoKpipi *fRDCutsProduction; //Production D+ Cuts
   AliRDHFCutsDplustoKpipi *fRDCutsAnalysis; //Cuts for Analysis
   AliNormalizationCounter *fCounter;//!Counter for normalization
   Double_t fArrayBinLimits[kMaxPtBins+1]; //limits for the Pt bins
@@ -145,7 +145,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t fHigherImpPar; // higher limit in impact parameter (um)
   Int_t  fDoLS;        // flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,16); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,17); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
