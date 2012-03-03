@@ -397,6 +397,11 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    }
 
    // vertex selection
+   if(!fAOD){
+     PostData(1, fOutputList);
+     if(fDebug) Printf(" No AOD found ... ");
+     return;
+   }
    AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
    Int_t nTracksPrim = primVtx->GetNContributors();
    if ((nTracksPrim < fMinContribVtx) ||
@@ -470,13 +475,13 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
      for (Int_t iJetType = 0; iJetType < 2; iJetType++) {
       fListJets[iJetType]->Clear();
       if (!aodJets[iJetType]) continue;
-
       if(fDebug) Printf("%s: %d jets",fJetBranchName[iJetType].Data(),aodJets[iJetType]->GetEntriesFast());
       
    
       for (Int_t iJet = 0; iJet < aodJets[iJetType]->GetEntriesFast(); iJet++) {
          AliAODJet *jet = dynamic_cast<AliAODJet*>((*aodJets[iJetType])[iJet]);
-         if (jet) fListJets[iJetType]->Add(jet);
+	 if(!jet)continue;
+          fListJets[iJetType]->Add(jet);
          if(iJetType==0){
 	   ptsub[iJet]=jet->Pt()-rho*jet->EffectiveAreaCharged();
 	 }}}
@@ -980,10 +985,8 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
       nbins=3;
       xmin=0;
       xmax=3;
+      break;
 
-
-
-      
     case 7:
     
       label = "leading track";
