@@ -59,7 +59,7 @@ public:
   virtual void  ResetDigits();
   virtual void  SetSens(Int_t sens);
   virtual void  SetSide(Float_t side);
-
+  virtual void SetGEM(Int_t isGEM) {fIsGEM=isGEM; }
 
   virtual void  StepManager()=0;
   AliTPCDigitsArray*  GetDigitsArray() {return fDigitsArray;} //MI change
@@ -138,6 +138,7 @@ protected:
   Float_t    fGainFactor; // scaling factor
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   Int_t fLHCclockPhaseSw; //! lhc clock phase switch
+  Int_t fIsGEM;        // flag isGEM readout
   ClassDef(AliTPC,14)  // Time Projection Chamber class
 };
 
