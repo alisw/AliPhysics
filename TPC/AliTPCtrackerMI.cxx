@@ -79,7 +79,7 @@
 // The systematic errors due to the misalignment and miscalibration are added to the covariance matrix
 // of the tracks (not to the clusters as they are dependent):
 // The parameters form AliTPCRecoParam are used AliTPCRecoParam::GetSystematicError
-// The systematic errors are expressed there in RMS - position (cm), angle (rad), curvature (1/cm)
+// The systematic errors are expressed there in RMS - position (cm), angle (rad), curvature (1/GeV)
 // The default values are 0. 
 //
 // The sytematic errors are added to the covariance matrix in following places:
@@ -7628,8 +7628,8 @@ Bool_t AliTPCtrackerMI::IsFindable(AliTPCseed & track){
 void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){
   //
   // Adding systematic error estimate to the covariance matrix
-  // !!!! the systematic error for element 4 is in 1/cm not in pt 
-  //
+  //                !!!! the systematic error for element 4 is in 1/GeV 
+  // 03.03.2012     MI changed in respect to the previous versions
   const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
   //
   // use only the diagonal part if not specified otherwise
@@ -7637,12 +7637,11 @@ void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){
   //
   Double_t *covarS= (Double_t*)seed->GetCovariance();
   Double_t factor[5]={1,1,1,1,1};
-  Double_t facC =  AliTracker::GetBz()*kB2C;
   factor[0]= TMath::Sqrt(TMath::Abs((covarS[0] + param[0]*param[0])/covarS[0]));
   factor[1]= TMath::Sqrt(TMath::Abs((covarS[2] + param[1]*param[1])/covarS[2]));
   factor[2]= TMath::Sqrt(TMath::Abs((covarS[5] + param[2]*param[2])/covarS[5]));
   factor[3]= TMath::Sqrt(TMath::Abs((covarS[9] + param[3]*param[3])/covarS[9]));
-  factor[4]= TMath::Sqrt(TMath::Abs((covarS[14] + facC*facC*param[4]*param[4])/covarS[14]));
+  factor[4]= TMath::Sqrt(TMath::Abs((covarS[14] +param[4]*param[4])/covarS[14]));
   //
   factor[0]=factor[2];
   factor[4]=factor[2];
@@ -7664,6 +7663,9 @@ void AliTPCtrackerMI::AddCovarianceAdd(AliTPCseed * seed){
   //
   // Adding systematic error - as additive factor without correlation
   //
+  //                !!!! the systematic error for element 4 is in 1/GeV 
+  // 03.03.2012     MI changed in respect to the previous versions
+
   const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
   Double_t *covarIn= (Double_t*)seed->GetCovariance();
   Double_t covar[15];
@@ -7677,8 +7679,7 @@ void AliTPCtrackerMI::AddCovarianceAdd(AliTPCseed * seed){
   covar[2] = param[1]*param[1];
   covar[5] = param[2]*param[2];
   covar[9] = param[3]*param[3];
-  Double_t facC =  AliTracker::GetBz()*kB2C;
-  covar[14]= param[4]*param[4]*facC*facC;
+  covar[14]= param[4]*param[4];
   //
   covar[1]=TMath::Sqrt((covar[0]*covar[2]))*covarIn[1]/TMath::Sqrt((covarIn[0]*covarIn[2]));
   //
