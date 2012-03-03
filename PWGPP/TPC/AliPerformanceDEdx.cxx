@@ -146,11 +146,10 @@ void AliPerformanceDEdx::Init()
     }
    */
 
-   //dedx:alpha:y:z:snp:tgl:ncls:p
-   //dedx:phi:y:z:snp:tgl:ncls:p
    //Int_t binsQA[8]    = {300, 50, 50,  50, 50, 50, 80, nPBins};
    //Double_t xminQA[8] = {0, -4,-20,-250, -1, -2, 0, pMin};
    //Double_t xmaxQA[8] = {300, 4, 20, 250,  1,  2, 160, pMax};
+ // signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
   Int_t binsQA[10]    = {300, 144, 50,  50, 50, 50, 80, nPBins, 80, 80};
   Double_t xminQA[10] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin, 0., 0.};
   Double_t xmaxQA[10] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160., 160.};
@@ -440,7 +439,7 @@ void AliPerformanceDEdx::Analyse()
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 6, 8, 9);
 
   // resolution histograms for mips
-  //dedx:phi:y:z:snp:tgl:ncls:p
+  //-> signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
   fDeDxHisto->GetAxis(2)->SetRangeUser(-15.,14.999);
   fDeDxHisto->GetAxis(3)->SetRangeUser(-120.,119.999);
   fDeDxHisto->GetAxis(4)->SetRangeUser(-0.4, 0.399);
@@ -454,16 +453,16 @@ void AliPerformanceDEdx::Analyse()
   AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
 
   //
-  TObjArray *arr[9] = {0};
-  TF1 *f1[9] = {0};
+  TObjArray *arr[10] = {0};
+  TF1 *f1[10] = {0};
   
-  for(Int_t i=0; i<9; i++) 
+  for(Int_t i=1; i<10; i++) 
   { 
     arr[i] = new TObjArray;
     f1[i] = new TF1("gaus","gaus");
     //printf("i %d \n",i);
 
-    h2D = (TH2F*)fDeDxHisto->Projection(0,i+1);
+    h2D = (TH2F*)fDeDxHisto->Projection(0,i);
 
     f1[i]->SetRange(40,60); // should be pion peak
     h2D->FitSlicesY(f1[i],0,-1,10,"QNR",arr[i]); // gaus fit of pion peak
@@ -492,17 +491,6 @@ void AliPerformanceDEdx::Analyse()
 
     aFolderObj->Add(h1D);
   }
-
-    // select MIPs (version from AliTPCPerfomanceSummary)
-    fDeDxHisto->GetAxis(0)->SetRangeUser(35,60);
-    fDeDxHisto->GetAxis(2)->SetRangeUser(-20,20);
-    fDeDxHisto->GetAxis(3)->SetRangeUser(-250,250);
-    fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 1);
-    fDeDxHisto->GetAxis(5)->SetRangeUser(-1,1);
-    fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
-    fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.55);
-    fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
-    fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
 
     selString = "mips";
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
@@ -539,7 +527,7 @@ void AliPerformanceDEdx::Analyse()
     aFolderObj=0;
 
 
-  for(Int_t i=0;i<9;i++) { 
+  for(Int_t i=0;i<10;i++) { 
     if(f1[i]) delete f1[i]; f1[i]=0;
   }
 
