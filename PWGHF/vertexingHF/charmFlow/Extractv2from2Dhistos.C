@@ -25,7 +25,7 @@
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFMassFitter.h"
-#include "AliEventPlaneResolution.h"
+#include "AliVertexingHFUtils.h"
 #endif
 
 
@@ -602,9 +602,9 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
   for(Int_t iHisC=minCent; iHisC<=maxCent-5; iHisC+=5){    
     TString hisnameEP=Form("hEvPlaneResocentr%d_%d",iHisC,iHisC+5);
     TH1F* hResolSubABsing=(TH1F*)lst->FindObject(hisnameEP.Data());
-    Double_t resolFull=AliEventPlaneResolution::GetFullEvResol(hResolSubABsing,1);
-    Double_t resolFullmin=AliEventPlaneResolution::GetFullEvResolLowLim(hResolSubABsing,1);
-    Double_t resolFullmax=AliEventPlaneResolution::GetFullEvResolHighLim(hResolSubABsing,1);
+    Double_t resolFull=AliVertexingHFUtils::GetFullEvResol(hResolSubABsing,1);
+    Double_t resolFullmin=AliVertexingHFUtils::GetFullEvResolLowLim(hResolSubABsing,1);
+    Double_t resolFullmax=AliVertexingHFUtils::GetFullEvResolHighLim(hResolSubABsing,1);
     grSingle->SetPoint(iPt,iHisC+2.5,resolFull);
     grSingle->SetPointEXlow(iPt,2.5);
     grSingle->SetPointEXhigh(iPt,2.5);
@@ -623,20 +623,16 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
   rcflow=xmin;
   rcfhigh=xmax;
 
-  Double_t resolSub=AliEventPlaneResolution::GetSubEvResol(hResolSubAB);
+  Double_t resolSub=AliVertexingHFUtils::GetSubEvResol(hResolSubAB);
   printf("Resolution on sub event  = %.4f\n",resolSub);
-  Double_t chisub=AliEventPlaneResolution::FindChi(resolSub,1);
+  Double_t chisub=AliVertexingHFUtils::FindChi(resolSub,1);
   printf("Chi Subevent             = %.4f\n",chisub);
   Double_t chifull=chisub*TMath::Sqrt(2);
   printf("Chi Full Event           = %.4f\n",chifull);
-  Double_t resolFull=AliEventPlaneResolution::GetFullEvResol(hResolSubAB,1);
-  Double_t resolFullmin=AliEventPlaneResolution::GetFullEvResolLowLim(hResolSubAB,1);
-  Double_t resolFullmax=AliEventPlaneResolution::GetFullEvResolHighLim(hResolSubAB,1);
+  Double_t resolFull=AliVertexingHFUtils::GetFullEvResol(hResolSubAB,1);
+  Double_t resolFullmin=AliVertexingHFUtils::GetFullEvResolLowLim(hResolSubAB,1);
+  Double_t resolFullmax=AliVertexingHFUtils::GetFullEvResolHighLim(hResolSubAB,1);
 
-  AliEventPlaneResolution *resol=new AliEventPlaneResolution(1);
-  resol->SetSubEventHisto(hResolSubAB);  
-  Double_t resolFull2=resol->GetFullEvResol();
-  printf("Resolution on full event = %.4f %.4f\n",resolFull,resolFull2);
 
   grInteg->SetPoint(0,40.,resolFull);
   grInteg->SetPointEXlow(0,10);
