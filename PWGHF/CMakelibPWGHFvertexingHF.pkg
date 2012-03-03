@@ -74,10 +74,11 @@ set ( SRCS
     vertexingHF/AliAnalysisTaskSEMonitNorm.cxx 
     vertexingHF/AliAnalysisTaskSEBkgLikeSignD0.cxx 
     vertexingHF/AliAnalysisTaskSEImproveITS.cxx 
+    vertexingHF/charmFlow/AliAnalysisTaskSEHFv2.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGHFvertexingHFLinkDef.h)
 
-set ( EINCLUDE   PWGHF/vertexingHF CORRFW STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE   PWGHF/vertexingHF CORRFW STEER/AOD STEER/ESD STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks)
