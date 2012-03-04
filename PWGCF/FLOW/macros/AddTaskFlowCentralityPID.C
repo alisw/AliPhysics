@@ -48,10 +48,12 @@ void AddTaskFlowCentralityPID( Float_t centrMin=0.,
 
   // RUN SETTINGS
   // Flow analysis method can be:(set to kTRUE or kFALSE)
-  Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
-  Bool_t SP       = kFALSE;  // scalar product method (similar to eventplane method)
-  Bool_t GFC      = kFALSE;  // cumulants based on generating function
+  Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
   Bool_t QC       = kTRUE;  // cumulants using Q vectors
+  
+  //these are OBSOLETE, use at own peril
+  Bool_t GFC      = kFALSE;  // cumulants based on generating function
+  Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
   Bool_t FQD      = kFALSE;  // fit of the distribution of the Q vector (only integrated v)
   Bool_t LYZ1SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (integrated v)
   Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
@@ -91,9 +93,6 @@ void AddTaskFlowCentralityPID( Float_t centrMin=0.,
   //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
   cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-7.,7.);
-  cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
-  cutsEvent->SetCutZDCtiming();
-  cutsEvent->SetCutTPCmultiplicityOutliers();
   cutsEvent->SetQA(doQA);
   
   // RP TRACK CUTS:

@@ -7,8 +7,8 @@ Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,6
 
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
-void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
-                                    Bool_t useFlowParFiles = kTRUE,
+void runFlowTaskCentralityPIDTrain( Int_t mode = mLocal,
+                                    Bool_t useFlowParFiles = kFALSE,
                                     Bool_t DATA = kTRUE,
                                     const Char_t* dataDir="fileList",
                                     Int_t nEvents = 1e4,
@@ -27,7 +27,7 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
   // Chains:
   if(mode == mLocal)
   {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGUD/macros/CreateESDChain.C");
     TChain* chain = CreateESDChain(dataDir, nEvents, offset);
     //TChain* chain = CreateAODChain(dataDir, nEvents, offset);
   }
@@ -58,15 +58,14 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
   if (!DATA) centSelTask->SetMCInput();
-  if (DATA) centSelTask->SetPass(1);
 
   //add the PID response task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  AliAnalysisTaskPIDResponse* pidresponsetask = AddTaskPIDResponse(!DATA)
+  AliAnalysisTaskPIDResponse* pidresponsetask = AddTaskPIDResponse(!DATA);
 
   //Add the TOF tender
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/FLOW/macros/AddTaskTenderTOF.C");
-  AddTaskTenderTOF();
+  //gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskTenderTOF.C");
+  //AddTaskTenderTOF();
 
   // Setup analysis per centrality bin:
   gROOT->LoadMacro("AddTaskFlowCentralityPID.C");
