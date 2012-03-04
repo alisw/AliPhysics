@@ -4,7 +4,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
 				     TString filename="",
-				     TString finAnObjname="AnalysisCuts", TString finProdObjname="ProdCuts")
+				     TString finAnObjname="AnalysisCuts", TString finProdObjname="ProduCuts")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
@@ -46,25 +46,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
     }
   }
   else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
-
-  AliRDHFCutsDplustoKpipi* prodcuts=new AliRDHFCutsDplustoKpipi();
-  if(stdcuts)  {
-    if(system==0) prodcuts->SetStandardCutsPP2010();
-    else if(system==1) {
-      prodcuts->SetStandardCutsPbPb2010();
-      prodcuts->SetMinCentrality(minC);
-      prodcuts->SetMaxCentrality(maxC);
-      //      prodcuts->SetUseAOD049(kTRUE);
-      prodcuts->SetUseCentrality(AliRDHFCuts::kCentV0M);
-    }
-  }
-  else prodcuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finProdObjname);
   
-  //AliRDHFCutsDplustoKpipi *prodcuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("ProdCuts");
-  //AliRDHFCutsDplustoKpipi *analysiscuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
-
-  
-  AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",analysiscuts,prodcuts,storeNtuple);
+  AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",analysiscuts,storeNtuple);
   dplusTask->SetReadMC(readMC);
   dplusTask->SetDoLikeSign(kFALSE);
   //  dplusTask->SetUseTPCpid(kTRUE);
@@ -116,7 +99,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   if(storeNtuple){
     AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								   AliAnalysisManager::kOutputContainer,
-								   outputfile.Data());
+								   "InvMassDplus_nt1.root");
     
     coutputDplus2->SetSpecialOutput();
   }
