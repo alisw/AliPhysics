@@ -789,8 +789,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(deltaPhiV0v3 < -TMath::Pi()) deltaPhiV0v3 += 2*TMath::Pi();
 
 	// variable to fill QA container
-	Double_t xQA[7] = {iC,aodTrack->Pt(), 0.0, 4.99, 4.99,deltaPhiV0,x[6]}; // v2
-	Double_t xQA3[7] = {iC,aodTrack->Pt(), 0.0, 4.99, 4.99,deltaPhiV0v3,x[6]}; // v3
+	Double_t xQA[7] = {iC,aodTrack->Pt(), 0.0, 4.99, 4.99,deltaPhiV0,x[4]}; // v2
+	Double_t xQA3[7] = {iC,aodTrack->Pt(), 0.0, 4.99, 4.99,deltaPhiV0v3,x[4]}; // v3
 
 	//pid selection
 	if(!(fPID->GetCurrentMask(0)) || !aodTrack->GetDetPid()){} // TPC PID and PID object strictly required (very important!!!!)
