@@ -18,7 +18,7 @@
 #include "AliAODMCParticle.h"
 #include "AliVertexingHFUtils.h"
 
-/* $Id: $ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
