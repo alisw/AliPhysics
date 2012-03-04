@@ -355,7 +355,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
       }
     }
-  } else {
+  } else if(aod){
     if(fDecChannel==0){
       absPdgMom=411;
       arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
@@ -370,7 +370,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     }
   }
 
-  if(!arrayProng) {
+  if(!!aod ||arrayProng) {
     AliError("AliAnalysisTaskSEHFv2::UserExec:Branch not found!\n");
     return;
   }
@@ -388,7 +388,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
       AliWarning("AliAnalysisTaskSEHFv2::UserExec:MC particles branch not found!\n");
-      //    return;
+      return;
     }
     
     // load MC header
@@ -538,7 +538,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr);
     else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr);
     
-    delete invMass;
+    delete [] invMass;
   }
   
   PostData(1,fhEventsInfo);
