@@ -45,6 +45,9 @@ public:
     return;
   }
   void SetAutomaticSettings(Bool_t flag=kTRUE){fAutomaticSettings=flag;}
+  void SetUserRecoPass(Int_t flag=0){fUserRecoPass=flag;}
+  Int_t GetRecoPass(void){return fRecoPass;}
+  void DetectRecoPass();
   virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
 
   /* theoretical expected time: related stuff for LHC10d patch */
@@ -52,18 +55,33 @@ public:
   static Float_t GetExpTimeTh(Float_t m, Float_t p, Float_t L) {return L / 2.99792457999999984e-02 / GetBetaTh(m, p);}; // get exp time th
   void RecomputeTExp(AliESDEvent *event) const;
   void RecomputeTExp(AliESDtrack *track) const;
+  void FixTRDBug(AliESDEvent *event);
+  void FixTRDBug(AliESDtrack *track);
+  void InitGeom();
+  void FindTRDFix(AliESDtrack *track,Double_t *corr);
+  Double_t EstimateLengthInTRD1(AliESDtrack *track);
+  Double_t EstimateLengthInTRD2(AliESDtrack *track);
+  Double_t EstimateLengthOutTRD(AliESDtrack *track);
+  void CorrectDeltaTimes(Double_t pT, Double_t length, Bool_t isTRDout, Double_t *corrections);
+  Double_t CorrectExpectedProtonTime(Double_t pT,Double_t length, Bool_t isTRDout);
+  Double_t CorrectExpectedKaonTime(Double_t pT,Double_t length, Bool_t isTRDout);
+  Double_t CorrectExpectedPionTime(Double_t pT,Double_t length, Bool_t isTRDout);
+
 
 private:
   AliESDpid          *fESDpid;         //! ESD pid object
 
+  
   Bool_t fIsMC;              // flag for MC data
   Int_t  fTimeZeroType;      // flag to select timeZero type 
   Bool_t fCorrectExpTimes;   // flag to apply Expected Time correction 
+  Bool_t fCorrectTRDBug;     // flag to fix wrong dE/dx inside TRD
   Bool_t fLHC10dPatch;       // flag to apply special patch for LHC10d (reconstructed with wrong geometry)
   Bool_t fT0DetectorAdjust;  // flag to apply offsets to T0 data (works only on some periods)
   Int_t  fDebugLevel;        // debug purposes 0= no output, 1 Info, 2 lot of info....
   Bool_t fAutomaticSettings; // enable/disable automatic (per run) settings
-
+  Int_t  fRecoPass;          // reconstruction pass: the tender applies different recipes depending on the pass
+  Int_t  fUserRecoPass;      // when reco pass is selected by user
 
   // variables for TOF calibrations and timeZero setup
   AliTOFcalib     *fTOFCalib;       // recalibrate TOF signal with OCDB
@@ -76,11 +94,22 @@ private:
   static Float_t fgT0Aresolution;   // T0 resolution A-Side (MC)
   static Float_t fgT0Cresolution;   // T0 resolution C-Side (MC)
 
+  // variables to steer TRD bug fix
+  Bool_t fGeomSet;                 // steer loading GRP entry
+  Bool_t fIsEnteringInTRD;
+  Bool_t fInTRD;
+  Bool_t fIsComingOutTRD;
+  Bool_t fOutTRD;
+  Float_t fRhoTRDin;                // cm
+  Float_t fRhoTRDout;               // cm
+  Float_t fStep;                    // cm
+  Double_t fMagField;               // magnetic field value [kGauss]
+  ULong_t fCDBkey;
 
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 7);
+  ClassDef(AliTOFTenderSupply, 8);
 };
 
 
