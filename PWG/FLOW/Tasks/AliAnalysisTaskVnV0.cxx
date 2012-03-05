@@ -610,11 +610,11 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     Float_t evplaneMC = 0;
     if(fIsMC){
       mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-      evplaneMC = mcHeader->GetReactionPlaneAngle();
-      if(evplaneMC > TMath::Pi()/2 && evplaneMC <=  TMath::Pi()*3/2) evplaneMC-=TMath::Pi(); 
-      else if(evplaneMC > TMath::Pi()*3/2) evplaneMC-=2*TMath::Pi(); 
 
       if (mcHeader) {	
+	evplaneMC = mcHeader->GetReactionPlaneAngle();
+	if(evplaneMC > TMath::Pi()/2 && evplaneMC <=  TMath::Pi()*3/2) evplaneMC-=TMath::Pi(); 
+	else if(evplaneMC > TMath::Pi()*3/2) evplaneMC-=2*TMath::Pi(); 
 	mcArray = (TClonesArray*)fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
       }
     }
