@@ -63,7 +63,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fLCuts(),
     fHCuts(),
     fUseSimpleMerging(false),
-    fThreeStripSharing(true)
+    fThreeStripSharing(true),
+    fRecalculateEta(false)
 {
   // 
   // Default Constructor - do not use 
@@ -84,7 +85,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fLCuts(),
     fHCuts(),
     fUseSimpleMerging(false),
-    fThreeStripSharing(true)
+    fThreeStripSharing(true),
+    fRecalculateEta(false)
 {
   // 
   // Constructor 
@@ -120,7 +122,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fLCuts(o.fLCuts),
     fHCuts(o.fHCuts),
     fUseSimpleMerging(o.fUseSimpleMerging),
-    fThreeStripSharing(o.fThreeStripSharing)
+    fThreeStripSharing(o.fThreeStripSharing),
+    fRecalculateEta(o.fRecalculateEta)
 {
   // 
   // Copy constructor 
@@ -169,6 +172,7 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   fHCuts                        = o.fHCuts;
   fUseSimpleMerging             = o.fUseSimpleMerging;
   fThreeStripSharing            = o.fThreeStripSharing;
+  fRecalculateEta               = o.fRecalculateEta;
   
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -252,7 +256,8 @@ AliFMDSharingFilter::Init()
 Bool_t
 AliFMDSharingFilter::Filter(const AliESDFMD& input, 
 			    Bool_t           lowFlux,
-			    AliESDFMD&       output)
+			    AliESDFMD&       output, 
+			    Double_t         zvtx)
 {
   // 
   // Filter the input AliESDFMD object
@@ -320,6 +325,25 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  Double_t eta = input.Eta(d,r,s,t);
 	  Double_t phi = input.Phi(d,r,s,t) * TMath::Pi() / 180.;
 	  if (s == 0) output.SetEta(d,r,s,t,eta);
+	  
+	  Double_t etaOld  = eta;
+	  Double_t etaCalc = 0;
+	  if(fRecalculateEta) { 
+	    etaCalc = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
+	    eta = etaCalc;
+	  }
+	  if(fRecalculateEta && mult > 0 && mult != AliESDFMD::kInvalidMult ) {
+	    Double_t cosOld = TMath::Cos(2*TMath::ATan(TMath::Exp(-1*TMath::Abs(etaOld))));
+	    Double_t cosNew = TMath::Cos(2*TMath::ATan(TMath::Exp(-1*TMath::Abs(etaCalc))));	    
+	    if(mult > 0) mult = (mult/cosOld)*cosNew;
+	    if(multNext > 0) multNext = (multNext/cosOld)*cosNew;
+	    if(multNextNext > 0) multNextNext = (multNextNext/cosOld)*cosNew;
+	    
+	    //No corrections beyond this point
+	    //  if(eta < -4) {
+	    //  mult = 0; multNext = 0; multNextNext = 0;
+	    // }
+	  }
 	  
 	  // Keep dead-channel information. 
 	  if(mult == AliESDFMD::kInvalidMult)

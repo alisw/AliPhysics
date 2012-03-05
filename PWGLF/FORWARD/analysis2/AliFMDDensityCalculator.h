@@ -106,7 +106,7 @@ public:
    */
   virtual Bool_t Calculate(const AliESDFMD& fmd, 
 			   AliForwardUtil::Histos& hists, 
-			   UShort_t vtxBin, Bool_t lowFlux, Double_t cent=-1);
+			   UShort_t vtxBin, Bool_t lowFlux, Double_t cent=-1, Double_t vz=0);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -148,6 +148,13 @@ public:
    */
   void SetUsePoisson(Bool_t u) { fUsePoisson = u; }
   /** 
+   * In case of a displaced vertices recalculate eta and angle correction
+   * 
+   * @param use recalculate or not
+   * 
+   */
+  void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
+  /** 
    * Set whether to use the phi acceptance correction. 
    * 
    * How the phi acceptance is used depends on the value passed.  
@@ -157,6 +164,7 @@ public:
    *
    * @param u If >0, use the phi acceptance (default is false)
    */
+   
   void SetUsePhiAcceptance(UShort_t u=kPhiCorrectNch) { fUsePhiAcceptance = u; }
   /** 
    * Set the luming factors used in the Poisson method
@@ -394,6 +402,7 @@ protected:
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
   AliFMDMultCuts fCuts;    // Cuts
+  Bool_t fRecalculateEta;  //  //Whether to recalculate eta and angle correction (disp vtx)
 
   ClassDef(AliFMDDensityCalculator,7); // Calculate Nch density 
 };

@@ -145,6 +145,42 @@ AliForwardUtil::MagneticFieldString(Short_t f)
   //
   return Form("%01dkG", f);
 }
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Double_t zvtx)
+{
+  //Calculate eta from strip with vertex (redundant with AliESDFMD::Eta but support displaced vertices)
+  
+  //Get max R of ring
+  Double_t maxR = 0;
+  Double_t minR = 0;
+  Bool_t inner = false;
+  switch (ring) { 
+  case 'i': case 'I': maxR = 17.2; minR =  4.5213; inner = true;  break;
+  case 'o': case 'O': maxR = 28.0; minR = 15.4;    inner = false; break;
+  default: 
+    return -99999;
+  }
+
+  Double_t   rad       =  maxR- minR;
+  Double_t   nStrips   = (ring == 'I' ? 512 : 256);
+  Double_t   segment   = rad / nStrips;
+  Double_t   r         =  minR + segment*strip;
+  Int_t hybrid = sec / 2;
+  
+  Double_t z = 0;
+  switch (det) { 
+  case 1: z = 320.266; break;
+  case 2: z = (inner ? 83.666 : 74.966); break;
+  case 3: z = (inner ? -63.066 : -74.966); break; 
+  default: return -999999;
+  }
+  if ((hybrid % 2) == 0) z -= .5;
+  
+  Double_t   theta = TMath::ATan2(r,z-zvtx);
+  Double_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+  
+  return eta;
+}
 
 
 //====================================================================

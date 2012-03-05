@@ -132,6 +132,15 @@ public:
    * 
    */
   void SetAllow3Strips(Bool_t use) { fThreeStripSharing = use; }
+  
+  /** 
+   * In case of a displaced vertices recalculate eta and angle correction
+   * 
+   * @param use recalculate or not
+   * 
+   */
+  void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
+  
   /** 
    * Filter the input AliESDFMD object
    * 
@@ -143,7 +152,8 @@ public:
    */
   Bool_t Filter(const AliESDFMD& input, 
 		Bool_t           lowFlux, 
-		AliESDFMD&       output);
+		AliESDFMD&       output, 
+		Double_t         zvtx);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -375,6 +385,7 @@ protected:
   AliFMDMultCuts fHCuts;    //Cuts object for high cuts
   Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
+  Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
   ClassDef(AliFMDSharingFilter,4); //
 };
 
