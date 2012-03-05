@@ -34,6 +34,10 @@
 #include <TParameter.h>
 #include <iostream>
 #include <iomanip>
+#include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 
 //====================================================================
 AliFMDEventInspector::AliFMDEventInspector()
@@ -59,7 +63,9 @@ AliFMDEventInspector::AliFMDEventInspector()
     fUseFirstPhysicsVertex(true),
     fUseV0AND(false),
     fMinPileupContrib(3), 
-    fMinPileupDistance(0.8)
+    fMinPileupDistance(0.8),
+    fUseDisplacedVertices(false),
+    fDisplacedVertex()
 {
   // 
   // Constructor 
@@ -90,7 +96,9 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fUseFirstPhysicsVertex(true),
     fUseV0AND(false),
     fMinPileupContrib(3), 
-    fMinPileupDistance(0.8)
+    fMinPileupDistance(0.8),
+    fUseDisplacedVertices(false),
+    fDisplacedVertex()
 {
   // 
   // Constructor 
@@ -124,7 +132,9 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fUseFirstPhysicsVertex(o.fUseFirstPhysicsVertex),
     fUseV0AND(o.fUseV0AND),
     fMinPileupContrib(o.fMinPileupContrib), 
-    fMinPileupDistance(o.fMinPileupDistance)
+    fMinPileupDistance(o.fMinPileupDistance),
+    fUseDisplacedVertices(o.fUseDisplacedVertices),
+    fDisplacedVertex(o.fDisplacedVertex)
 {
   // 
   // Copy constructor 
@@ -180,7 +190,8 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fUseV0AND              = o.fUseV0AND;
   fMinPileupContrib      = o.fMinPileupContrib;
   fMinPileupDistance     = o.fMinPileupDistance;
-  
+  fUseDisplacedVertices  = o.fUseDisplacedVertices;
+  fDisplacedVertex       = o.fDisplacedVertex;
   if (fList) { 
     fList->SetName(GetName());
     if (fHEventsTr)    fList->Add(fHEventsTr);
@@ -534,13 +545,54 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd,
   qual = 0;
   AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
   if (!centObj)  return true;
-
+AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  Bool_t isMC = am->GetMCtruthEventHandler() != 0;
+  
+  //std::cout<<fUseDisplacedVertices<<"  "<<isMC<<std::endl;
+  if(fUseDisplacedVertices && !isMC) {
+    Double_t zvtx = fDisplacedVertex.CheckDisplacedVertex(esd);
+    qual          = 1;
+    if(TMath::Abs(zvtx) < 999) {
+      cent = fDisplacedVertex.CalculateDisplacedVertexCent(esd); //centObj->GetCentralityPercentileUnchecked("ZEMvsZDC");  
+      qual = 0;
+    }
+  }
+  else if(fUseDisplacedVertices && isMC) {
+    
+    
+    AliMCEventHandler* mchandler = static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
+    AliMCEvent* mcevent          = mchandler->MCEvent();
+    
+    AliHeader*               header          = mcevent->Header();
+    AliGenEventHeader*       genHeader       = header->GenEventHeader();
+    AliCollisionGeometry*    colGeometry     = 
+      dynamic_cast<AliCollisionGeometry*>(genHeader);
+    Double_t b              = -1;
+    if (colGeometry)  
+      b     = colGeometry->ImpactParameter();
+    std::cout<<"Hallo!!  "<<b<<std::endl;
+    cent = -1;
+    if(b<3.5 && b >0) cent = 2.5; //0-5%
+    if(b>3.5 && b<4.95) cent = 7.5; //5-10%
+    if(b>4.95 && b<6.98) cent = 15; //10-20%
+    if(b>6.98 && b<8.55) cent = 25; //20-30%
+    if(b>8.55 && b<9.88) cent = 35; //30-40%
+    if(b>9.88 && b<11.04) cent = 45; //40-50%
+    if(b>11.04) cent = 55; //50-60%
+    //cent = 10;
+    qual = 0;
+  }
+  else {
+    cent = centObj->GetCentralityPercentile("V0M");  
+    qual = centObj->GetQuality();
+  }
+  
   // AliInfo(Form("Got centrality object %p with quality %d", 
   //              centObj, centObj->GetQuality()));
   // centObj->Print();
-  cent = centObj->GetCentralityPercentile("V0M");  
+  //cent = centObj->GetCentralityPercentile("V0M");  
   //cent = centObj->GetCentralityPercentile("ZEMvsZDC");  
-  qual = centObj->GetQuality();
+  //qual = centObj->GetQuality();
 
   return true;
 }
@@ -601,7 +653,27 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   
   //If we have the MC input handler,  this must be MC
   Bool_t isMC = am->GetMCtruthEventHandler() != 0;
-
+  
+  if(fUseDisplacedVertices && isMC) {
+    AliMCEventHandler* mchandler = static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
+    AliMCEvent* mcevent          = mchandler->MCEvent();
+    AliHeader* header            = mcevent->Header();
+    AliGenEventHeader* genHeader = header->GenEventHeader();
+    TArrayF vertex;
+    genHeader->PrimaryVertex(vertex);
+    
+    Double_t zvtx = vertex.At(2);
+    if(TMath::Abs(zvtx) > 35)
+      offline = true;
+    else offline = false;
+  }
+  
+  if(fUseDisplacedVertices && !isMC) {
+    Double_t zvtx = fDisplacedVertex.CheckDisplacedVertex(esd);
+    if(TMath::Abs(zvtx) < 999) offline = true;
+    else offline = false;
+    
+  }
   // For the 2.76 TeV p+p run, the FMD ran in the slow partition 
   // so it received no triggers from the fast partition. Therefore
   // the fast triggers are removed here but not for MC where all 
@@ -851,6 +923,41 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd,
   vz = 0;
   vx = 1024;
   vy = 1024;
+  
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  Bool_t isMC = am->GetMCtruthEventHandler() != 0;
+  if(fUseDisplacedVertices && isMC) {
+    
+    AliMCEventHandler* mchandler = static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
+    AliMCEvent* mcevent          = mchandler->MCEvent();
+    AliHeader* header            = mcevent->Header();
+    AliGenEventHeader* genHeader = header->GenEventHeader();
+    TArrayF vertex;
+    genHeader->PrimaryVertex(vertex);
+
+    Double_t zvtx = vertex.At(2);
+    Double_t ratio = zvtx/37.5;
+    if(ratio > 0) ratio = ratio + 0.5;
+    if(ratio < 0) ratio = ratio - 0.5;
+    Int_t ratioInt = (Int_t)ratio;
+    zvtx = 37.5*((Double_t)ratioInt);
+    if(TMath::Abs(zvtx) < 999) {
+      vz = zvtx;
+      return true;
+    }
+    else return false;
+    
+  }
+  if(fUseDisplacedVertices && !isMC) {
+    Double_t zvtx = fDisplacedVertex.CheckDisplacedVertex(esd);
+    
+    if(TMath::Abs(zvtx) < 999) {
+      vz = zvtx;
+      return true;
+    }
+    else return false;
+  }
+
   if(fUseFirstPhysicsVertex) {
     // This is the code used by the 1st physics people 
     const AliESDVertex* vertex    = esd->GetPrimaryVertex();

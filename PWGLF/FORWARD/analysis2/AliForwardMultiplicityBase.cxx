@@ -274,9 +274,12 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
     res->SetTitle(*ptr);
     res->Scale(1., "width");
     copy->Scale(1., "width");
-    proj->Scale(1. / norm->GetMaximum(), "width");
-    norm->Scale(1. / norm->GetMaximum());
-
+    
+    if(norm->GetMaximum() > 0) {
+      proj->Scale(1. / norm->GetMaximum(), "width");
+      norm->Scale(1. / norm->GetMaximum());
+    }
+    
     res->SetMarkerStyle(style);
     norm->SetDirectory(0);
     res->SetDirectory(0);

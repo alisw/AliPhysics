@@ -15,6 +15,7 @@
  */
 #include <TNamed.h>
 #include <TAxis.h>
+#include "AliDisplacedVertexSelection.h"
 class AliESDEvent;
 class TH2D;
 class TH1D;
@@ -200,6 +201,16 @@ public:
     fMinPileupDistance = cm;
   }
   /** 
+   * Enable selection of displaced vertices. 
+   * 
+   * @param use whether to use
+   */
+  void SetUseDisplacedVertices(Bool_t use=true)
+  {
+    fUseDisplacedVertices = use;
+  }  
+  
+  /** 
    * Set the debug level.  The higher the value the more output 
    * 
    * @param dbg Debug level 
@@ -324,6 +335,8 @@ protected:
 			      // pile-up vertex
   Double_t fMinPileupDistance; // Minimum distance of 2nd pile-up
 			       // vertex 
+  Bool_t   fUseDisplacedVertices; //Analyze displaced vertices?
+  AliDisplacedVertexSelection fDisplacedVertex; //Displaced vertex selector
   ClassDef(AliFMDEventInspector,4); // Inspect the event 
 };
 
