@@ -1559,9 +1559,6 @@ void CheckModuleFlags(const char *mode) {
        if( iPWG4CorrectionsUE)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 CorrectionsUE disabled in analysis without MC");
        iPWG4CorrectionsUE = 0;
      }
-     if (iJETAN || iJETANReader || iJETANFinder){
-       iESDfilter=0;
-     }
       if (!iESDfilter){
 	kUseKinefilter = kFALSE;
 	kUseMuonfilter = kFALSE;
