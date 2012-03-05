@@ -95,9 +95,10 @@ AliAnalysisTaskJetProperties *AddTaskJetProperties(Char_t* bJet="clustersAOD",
   task->SetTrackCuts();// default : pt > 0.150 GeV, |eta|<0.9, full phi acc
   Float_t minJetPt  = 10.0; 
   Float_t minJetEta = -0.5; 
-  Float_t maxJetEta =  0.5; 
-  if(radius==0.2){minJetEta=-0.7;maxJetEta=0.7;}
-  if(radius==0.6){minJetEta=-0.3;maxJetEta=0.3;}
+  Float_t maxJetEta =  0.5;
+  Int_t tmpR = (Int_t)10*radius;
+  if(tmpR==2){minJetEta=-0.7;maxJetEta=0.7;}
+  if(tmpR==6){minJetEta=-0.3;maxJetEta=0.3;}
   task->SetJetCuts(minJetPt,minJetEta,maxJetEta);
   
   mgr->AddTask(task);
