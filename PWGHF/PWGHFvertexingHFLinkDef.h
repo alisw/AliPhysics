@@ -53,6 +53,7 @@
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
 #pragma link C++ class AliAnalysisTaskSEImproveITS+;
 #pragma link C++ class AliAnalysisTaskSEHFv2+;
+#pragma link C++ class AliHFAfterBurner+;
 
 #endif
 
