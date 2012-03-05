@@ -38,6 +38,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
+#include "AliVertexerTracks.h"
 #include "AliRDHFCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -73,6 +74,7 @@ fPidHF(0),
 fWhyRejection(0),
 fEvRejectionBits(0),
 fRemoveDaughtersFromPrimary(kFALSE),
+fRecomputePrimVertex(kFALSE),
 fUseMCVertex(kFALSE),
 fUsePhysicsSelection(kTRUE),
 fOptPileup(0),
@@ -122,6 +124,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fWhyRejection(source.fWhyRejection),
   fEvRejectionBits(source.fEvRejectionBits),
   fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
+  fRecomputePrimVertex(source.fRecomputePrimVertex),
   fUseMCVertex(source.fUseMCVertex),
   fUsePhysicsSelection(source.fUsePhysicsSelection),
   fOptPileup(source.fOptPileup),
@@ -182,6 +185,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fWhyRejection=source.fWhyRejection;
   fEvRejectionBits=source.fEvRejectionBits;
   fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
+  fRecomputePrimVertex=source.fRecomputePrimVertex;
   fUseMCVertex=source.fUseMCVertex;
   fUsePhysicsSelection=source.fUsePhysicsSelection;
   fOptPileup=source.fOptPileup;
@@ -256,6 +260,14 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   fWhyRejection=0;
   fEvRejectionBits=0;
   Bool_t accept=kTRUE;
+
+  if(fRecomputePrimVertex){
+    Bool_t vertOK= RecomputePrimaryVertex((AliAODEvent*)event);
+    if(!vertOK){
+      fWhyRejection=6;
+      return kFALSE;
+    }
+  }
 
   // check if it's MC
   Bool_t isMC=kFALSE;
@@ -583,6 +595,7 @@ void AliRDHFCuts::PrintAll() const {
   printf("Min SPD mult %d\n",fMinSPDMultiplicity);
   printf("Use PID %d\n",(Int_t)fUsePID);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
+  printf("Recompute primary vertex %d\n",(Int_t)fRecomputePrimVertex);
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
   if(fOptPileup==1) printf(" -- Reject pileup event");
@@ -1032,3 +1045,44 @@ Bool_t AliRDHFCuts::IsSignalMC(AliAODRecoDecay *d,AliAODEvent *aod,Int_t pdg) co
 }
 
 
+//--------------------------------------------------------------------------
+Bool_t AliRDHFCuts::RecomputePrimaryVertex(AliAODEvent* event) const{
+  // recompute event primary vertex from AOD tracks
+
+   AliVertexerTracks *vertexer = new AliVertexerTracks(event->GetMagneticField());
+   vertexer->SetITSMode();
+   vertexer->SetMinClusters(3);
+
+   AliAODVertex* pvtx=event->GetPrimaryVertex(); 
+   if(strstr(pvtx->GetTitle(),"VertexerTracksWithConstraint")) {
+     Float_t diamondcovxy[3];
+     event->GetDiamondCovXY(diamondcovxy);
+     Double_t pos[3]={event->GetDiamondX(),event->GetDiamondY(),0.};
+     Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+     AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
+     vertexer->SetVtxStart(diamond);
+     delete diamond; diamond=NULL;
+   }
+
+   AliESDVertex* vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(event); 
+   if(!vertexESD) return kFALSE;
+   if(vertexESD->GetNContributors()<=0) { 
+     //AliDebug(2,"vertexing failed"); 
+     delete vertexESD; vertexESD=NULL;
+     return kFALSE;
+   }
+   delete vertexer; vertexer=NULL;
+
+   // convert to AliAODVertex
+   Double_t pos[3],cov[6],chi2perNDF;
+   vertexESD->GetXYZ(pos); // position
+   vertexESD->GetCovMatrix(cov); //covariance matrix
+   chi2perNDF = vertexESD->GetChi2toNDF();
+   delete vertexESD; vertexESD=NULL;
+   
+   pvtx->SetPosition(pos[0],pos[1],pos[2]);
+   pvtx->SetChi2perNDF(chi2perNDF);
+   pvtx->SetCovMatrix(cov);
+
+   return kTRUE;
+}
