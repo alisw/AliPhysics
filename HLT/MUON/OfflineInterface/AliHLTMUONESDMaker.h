@@ -16,7 +16,7 @@
 #include "AliHLTMUONProcessor.h"
 #include <vector>
 
-extern "C" class AliHLTMUONTriggerRecordStruct;
+extern "C" struct AliHLTMUONTriggerRecordStruct;
 class AliESDMuonTrack;
 
 /**
