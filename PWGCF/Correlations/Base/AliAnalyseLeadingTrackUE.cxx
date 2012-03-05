@@ -49,6 +49,7 @@
 //#include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliVParticle.h"
+#include "AliAODMCHeader.h"
 
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
@@ -698,6 +699,15 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
   if (obj->InheritsFrom("AliMCEvent"))
   { 
     if (TMath::Abs(((AliMCEvent*) obj)->GetPrimaryVertex()->GetZ()) > zed)
+    {
+      if (fDebug > 1) AliInfo(" Primary-vertex Selection: event (based on MC) REJECTED ...");
+      return kFALSE;
+    }
+  }
+
+  if (obj->InheritsFrom("AliAODMCHeader"))
+  { 
+    if (TMath::Abs(((AliAODMCHeader*) obj)->GetVtxZ()) > zed)
     {
       if (fDebug > 1) AliInfo(" Primary-vertex Selection: event (based on MC) REJECTED ...");
       return kFALSE;
