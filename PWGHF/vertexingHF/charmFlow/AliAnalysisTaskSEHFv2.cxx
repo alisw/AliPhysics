@@ -370,7 +370,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     }
   }
 
-  if(!!aod ||arrayProng) {
+  if(!aod || !arrayProng) {
     AliError("AliAnalysisTaskSEHFv2::UserExec:Branch not found!\n");
     return;
   }
