@@ -296,12 +296,12 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDPt) ; 
 
   //7
-  TH1F* hTOFmatchedESDeta = new TH1F("hTOFmatchedESDeta", "Matched ESDtracks #eta (p_{T} #geq 0.5 GeV/c); #eta;Counts", 200, -1., 1.) ; 
+  TH1F* hTOFmatchedESDeta = new TH1F("hTOFmatchedESDeta", "Matched ESDtracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts", 200, -1., 1.) ; 
   hTOFmatchedESDeta->Sumw2();
   hTOFmatchedESDeta->SetLineColor(kBlue);
   fHlist->AddLast(hTOFmatchedESDeta) ; 
   //8
-   TH1F* hTOFmatchedESDphi = new TH1F("hTOFmatchedESDphi", "Matched ESDtracks #phi; #phi (deg);Counts", 72, 0., 360.) ; 
+   TH1F* hTOFmatchedESDphi = new TH1F("hTOFmatchedESDphi", "Matched ESDtracks #phi (p_{T} #geq 1.0 GeV/c); #phi (deg);Counts", 72, 0., 360.) ; 
   hTOFmatchedESDphi->Sumw2();
   hTOFmatchedESDphi->SetLineColor(kBlue);
   fHlist->AddLast(hTOFmatchedESDphi) ; 
@@ -325,12 +325,12 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   hESDprimaryTrackPt->SetMarkerColor(kRed);
   fHlist->AddLast(hESDprimaryTrackPt);
   //11
-  TH1F* hTOFprimaryESDeta = new TH1F("hTOFprimaryESDeta", "Primary ESDtracks #eta (p_{T} #geq 0.5 GeV/c); #eta;Counts",200, -1., 1.) ; 
+  TH1F* hTOFprimaryESDeta = new TH1F("hTOFprimaryESDeta", "Primary ESDtracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts",200, -1., 1.) ; 
   hTOFprimaryESDeta->Sumw2();
   hTOFprimaryESDeta->SetLineColor(kRed);
   fHlist->AddLast(hTOFprimaryESDeta) ; 
   //12
-  TH1F* hTOFprimaryESDphi = new TH1F("hTOFprimaryESDphi", "Primary ESDtracks #phi;#phi (deg);Counts", 72, 0., 360.) ; 
+  TH1F* hTOFprimaryESDphi = new TH1F("hTOFprimaryESDphi", "Primary ESDtracks #phi (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
   hTOFprimaryESDphi->Sumw2();
   hTOFprimaryESDphi->SetLineColor(kRed);
   fHlist->AddLast(hTOFprimaryESDphi) ; 
@@ -470,6 +470,37 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   TH2F* hEventV0MeanVsVtx = new TH2F("hEventV0MeanVsVtx", "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 500, -50., 50., 500, -50., 50. ) ; 
   hEventV0MeanVsVtx->Sumw2() ;
   fHlistTimeZero->AddLast(hEventV0MeanVsVtx) ;
+
+  const Double_t startTimeMomBins[13]={ 0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.5, 2., 3., 10.};
+
+  //TimeZero 15
+  TH2F* hStartTimeMaskMatched = new TH2F("hStartTimeMaskMatched","Start Time Mask vs p bin for matched tracks; p(GeV/c);", 12, startTimeMomBins, 8,0.,8.);
+  hStartTimeMaskMatched->Sumw2();
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(1,"fill_t0");
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(2,"tof_t0");
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(3,"T0AC");
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(4,"T0AC & tof_t0");
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(5,"T0A");
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(6,"T0A & tof_t0");
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(7,"T0C");
+  hStartTimeMaskMatched->GetYaxis()->SetBinLabel(8,"T0C & tof_t0");
+  fHlistTimeZero->AddLast(hStartTimeMaskMatched);
+  
+  //TimeZero 15
+  TH2F* hStartTimeMask = new TH2F("hStartTimeMask","Start Time Mask vs p bin for primary tracks; p(GeV/c);", 12, startTimeMomBins, 8,0.,8.);
+  hStartTimeMask->Sumw2();
+  hStartTimeMask->GetYaxis()->SetBinLabel(1,"fill_t0");
+  hStartTimeMask->GetYaxis()->SetBinLabel(2,"tof_t0");
+  hStartTimeMask->GetYaxis()->SetBinLabel(3,"T0AC");
+  hStartTimeMask->GetYaxis()->SetBinLabel(4,"T0AC & tof_t0");
+  hStartTimeMask->GetYaxis()->SetBinLabel(5,"T0A");
+  hStartTimeMask->GetYaxis()->SetBinLabel(6,"T0A & tof_t0");
+  hStartTimeMask->GetYaxis()->SetBinLabel(7,"T0C");
+  hStartTimeMask->GetYaxis()->SetBinLabel(8,"T0C & tof_t0");
+  fHlistTimeZero->AddLast(hStartTimeMask);
+
+
+
 //--------------------------------------------- TOF PID QA plots
   //PID 0
   TH2F* hTOFmatchedESDpVsBeta  = new TH2F("hTOFmatchedESDpVsBeta", "Matched ESDs tracks beta vs. p; p(GeV/c); beta", 500, 0.0, 5.0, 150, 0., 1.5) ; 
@@ -705,13 +736,13 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
     fHpos->AddLast(hTOFmatchedESDPtPos) ; 
 
   //3
-  TH1F* hTOFmatchedESDetaPos = new TH1F("hTOFmatchedESDetaPos", "Matched positive ESD tracks #eta (p_{T} #geq 0.5 GeV/c); eta;Counts", 200, -1., 1.) ; 
+  TH1F* hTOFmatchedESDetaPos = new TH1F("hTOFmatchedESDetaPos", "Matched positive ESD tracks #eta (p_{T} #geq 1.0 GeV/c); eta;Counts", 200, -1., 1.) ; 
   hTOFmatchedESDetaPos->Sumw2();
   hTOFmatchedESDetaPos->SetLineColor(kRed);
     if (fEnableAdvancedCheck)
 fHpos->AddLast(hTOFmatchedESDetaPos) ; 
   //4
-   TH1F* hTOFmatchedESDphiPos = new TH1F("hTOFmatchedESDphiPos", "Matched Positive ESD tracks #phi; #phi (deg);Counts", 72, 0., 360.) ; 
+   TH1F* hTOFmatchedESDphiPos = new TH1F("hTOFmatchedESDphiPos", "Matched Positive ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi (deg);Counts", 72, 0., 360.) ; 
   hTOFmatchedESDphiPos->Sumw2();
   hTOFmatchedESDphiPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
@@ -760,13 +791,13 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hESDprimaryTrackPtPos);
   //9
-  TH1F* hTOFprimaryESDetaPos = new TH1F("hTOFprimaryESDetaPos", "Primary ESD Pos tracks #eta (p_{T} #geq 0.5 GeV/c); #eta;Counts", 200, -1., 1.) ; 
+  TH1F* hTOFprimaryESDetaPos = new TH1F("hTOFprimaryESDetaPos", "Primary ESD Pos tracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts", 200, -1., 1.) ; 
   hTOFprimaryESDetaPos->Sumw2();
   hTOFprimaryESDetaPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFprimaryESDetaPos) ; 
   //10
-  TH1F* hTOFprimaryESDphiPos = new TH1F("hTOFprimaryESDphiPos", "Primary ESD Pos tracks #phi;#phi (deg);Counts", 72, 0., 360.) ; 
+  TH1F* hTOFprimaryESDphiPos = new TH1F("hTOFprimaryESDphiPos", "Primary ESD Pos tracks #phi (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
   hTOFprimaryESDphiPos->Sumw2();
   hTOFprimaryESDphiPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
@@ -795,7 +826,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackPtPosNoTRDout);
 
     //13
-  TH1F* hESDprimaryTrackEtaPosTRDout = new TH1F("hESDprimaryTrackEtaPosTRDout", "ESDs Pos primary tracks #eta with kTRDout distribution; #eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDprimaryTrackEtaPosTRDout = new TH1F("hESDprimaryTrackEtaPosTRDout", "ESDs Pos primary tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
   hESDprimaryTrackEtaPosTRDout->Sumw2();
   hESDprimaryTrackEtaPosTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaPosTRDout->SetMarkerStyle(20);
@@ -806,7 +837,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackEtaPosTRDout);
 
   //14
-  TH1F* hESDprimaryTrackEtaPosNoTRDout = new TH1F("hESDprimaryTrackEtaPosNoTRDout", "ESDs Pos primary tracks #eta with !kTRDout distribution;#eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDprimaryTrackEtaPosNoTRDout = new TH1F("hESDprimaryTrackEtaPosNoTRDout", "ESDs Pos primary tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
   hESDprimaryTrackEtaPosNoTRDout->Sumw2();
   hESDprimaryTrackEtaPosNoTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaPosNoTRDout->SetMarkerStyle(25);
@@ -817,7 +848,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackEtaPosNoTRDout);
 
   //15
-  TH1F* hESDprimaryTrackPhiPosTRDout = new TH1F("hESDprimaryTrackPhiPosTRDout", "ESDs Pos primary tracks #phi with kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiPosTRDout = new TH1F("hESDprimaryTrackPhiPosTRDout", "ESDs Pos primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiPosTRDout->Sumw2();
   hESDprimaryTrackPhiPosTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiPosTRDout->SetMarkerStyle(20);
@@ -828,7 +859,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackPhiPosTRDout);
 
   //16
-  TH1F* hESDprimaryTrackPhiPosNoTRDout = new TH1F("hESDprimaryTrackPhiPosNoTRDout", "ESDs Pos primary tracks #phi with !kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiPosNoTRDout = new TH1F("hESDprimaryTrackPhiPosNoTRDout", "ESDs Pos primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiPosNoTRDout->Sumw2();
   hESDprimaryTrackPhiPosNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiPosNoTRDout->SetMarkerStyle(25);
@@ -857,7 +888,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hTOFmatchedExpTimeProVsPhiTPCPos) ;
 
    //20
-  TH1F* hESDmatchedTrackEtaPosTRDout = new TH1F("hESDmatchedTrackEtaPosTRDout", "ESDs Pos matched tracks #eta with kTRDout distribution; #eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDmatchedTrackEtaPosTRDout = new TH1F("hESDmatchedTrackEtaPosTRDout", "ESDs Pos matched tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
   hESDmatchedTrackEtaPosTRDout->Sumw2();
   hESDmatchedTrackEtaPosTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaPosTRDout->SetMarkerStyle(20);
@@ -868,7 +899,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDmatchedTrackEtaPosTRDout);
 
   //21
-  TH1F* hESDmatchedTrackEtaPosNoTRDout = new TH1F("hESDmatchedTrackEtaPosNoTRDout", "ESDs Pos matched tracks #eta with !kTRDout distribution;#eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDmatchedTrackEtaPosNoTRDout = new TH1F("hESDmatchedTrackEtaPosNoTRDout", "ESDs Pos matched tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
   hESDmatchedTrackEtaPosNoTRDout->Sumw2();
   hESDmatchedTrackEtaPosNoTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaPosNoTRDout->SetMarkerStyle(25);
@@ -879,7 +910,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDmatchedTrackEtaPosNoTRDout);
 
   //22
-  TH1F* hESDmatchedTrackPhiPosTRDout = new TH1F("hESDmatchedTrackPhiPosTRDout", "ESDs Pos matched tracks #phi with kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiPosTRDout = new TH1F("hESDmatchedTrackPhiPosTRDout", "ESDs Pos matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiPosTRDout->Sumw2();
   hESDmatchedTrackPhiPosTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiPosTRDout->SetMarkerStyle(20);
@@ -890,7 +921,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDmatchedTrackPhiPosTRDout);
 
   //23
-  TH1F* hESDmatchedTrackPhiPosNoTRDout = new TH1F("hESDmatchedTrackPhiPosNoTRDout", "ESDs Pos matched tracks #phi with !kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiPosNoTRDout = new TH1F("hESDmatchedTrackPhiPosNoTRDout", "ESDs Pos matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiPosNoTRDout->Sumw2();
   hESDmatchedTrackPhiPosNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiPosNoTRDout->SetMarkerStyle(25);
@@ -942,13 +973,13 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hTOFmatchedESDPtNeg) ; 
 
   //3
-  TH1F* hTOFmatchedESDetaNeg = new TH1F("hTOFmatchedESDetaNeg", "Matched positive ESD tracks #eta (p_{T} #geq 0.5 GeV/c); eta;Counts", 200, -1., 1.) ; 
+  TH1F* hTOFmatchedESDetaNeg = new TH1F("hTOFmatchedESDetaNeg", "Matched positive ESD tracks #eta (p_{T} #geq 1.0 GeV/c); eta;Counts", 200, -1., 1.) ; 
   hTOFmatchedESDetaNeg->Sumw2();
   hTOFmatchedESDetaNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedESDetaNeg) ; 
   //4
-   TH1F* hTOFmatchedESDphiNeg = new TH1F("hTOFmatchedESDphiNeg", "Matched Negitive ESD tracks #phi; #phi (deg);Counts", 72, 0., 360.) ; 
+   TH1F* hTOFmatchedESDphiNeg = new TH1F("hTOFmatchedESDphiNeg", "Matched Negitive ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi (deg);Counts", 72, 0., 360.) ; 
   hTOFmatchedESDphiNeg->Sumw2();
   hTOFmatchedESDphiNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
@@ -997,13 +1028,13 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hESDprimaryTrackPtNeg);
   //9
-  TH1F* hTOFprimaryESDetaNeg = new TH1F("hTOFprimaryESDetaNeg", "Primary ESD Neg tracks #eta (p_{T} #geq 0.5 GeV/c); #eta;Counts", 200, -1., 1.) ; 
+  TH1F* hTOFprimaryESDetaNeg = new TH1F("hTOFprimaryESDetaNeg", "Primary ESD Neg tracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts", 200, -1., 1.) ; 
   hTOFprimaryESDetaNeg->Sumw2();
   hTOFprimaryESDetaNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFprimaryESDetaNeg) ; 
   //10
-  TH1F* hTOFprimaryESDphiNeg = new TH1F("hTOFprimaryESDphiNeg", "Primary ESD Neg tracks #phi;#phi (deg);Counts", 72, 0., 360.) ; 
+  TH1F* hTOFprimaryESDphiNeg = new TH1F("hTOFprimaryESDphiNeg", "Primary ESD Neg tracks #phi (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
   hTOFprimaryESDphiNeg->Sumw2();
   hTOFprimaryESDphiNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
@@ -1032,7 +1063,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackPtNegNoTRDout);
 
   //13
-  TH1F* hESDprimaryTrackEtaNegTRDout = new TH1F("hESDprimaryTrackEtaNegTRDout", "ESDs Neg primary tracks #eta with kTRDout distribution; #eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDprimaryTrackEtaNegTRDout = new TH1F("hESDprimaryTrackEtaNegTRDout", "ESDs Neg primary tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
   hESDprimaryTrackEtaNegTRDout->Sumw2();
   hESDprimaryTrackEtaNegTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaNegTRDout->SetMarkerStyle(20);
@@ -1043,7 +1074,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackEtaNegTRDout);
 
   //14
-  TH1F* hESDprimaryTrackEtaNegNoTRDout = new TH1F("hESDprimaryTrackEtaNegNoTRDout", "ESDs Neg primary tracks #eta with !kTRDout distribution;#eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDprimaryTrackEtaNegNoTRDout = new TH1F("hESDprimaryTrackEtaNegNoTRDout", "ESDs Neg primary tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
   hESDprimaryTrackEtaNegNoTRDout->Sumw2();
   hESDprimaryTrackEtaNegNoTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaNegNoTRDout->SetMarkerStyle(25);
@@ -1054,7 +1085,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackEtaNegNoTRDout);
 
   //15
-  TH1F* hESDprimaryTrackPhiNegTRDout = new TH1F("hESDprimaryTrackPhiNegTRDout", "ESDs Neg primary tracks #phi with kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiNegTRDout = new TH1F("hESDprimaryTrackPhiNegTRDout", "ESDs Neg primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiNegTRDout->Sumw2();
   hESDprimaryTrackPhiNegTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiNegTRDout->SetMarkerStyle(20);
@@ -1065,7 +1096,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackPhiNegTRDout);
 
   //16
-  TH1F* hESDprimaryTrackPhiNegNoTRDout = new TH1F("hESDprimaryTrackPhiNegNoTRDout", "ESDs Neg primary tracks #phi with !kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiNegNoTRDout = new TH1F("hESDprimaryTrackPhiNegNoTRDout", "ESDs Neg primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiNegNoTRDout->Sumw2();
   hESDprimaryTrackPhiNegNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiNegNoTRDout->SetMarkerStyle(25);
@@ -1095,7 +1126,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
 
   //20
-  TH1F* hESDmatchedTrackEtaNegTRDout = new TH1F("hESDmatchedTrackEtaNegTRDout", "ESDs Neg matched tracks #eta with kTRDout distribution; #eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDmatchedTrackEtaNegTRDout = new TH1F("hESDmatchedTrackEtaNegTRDout", "ESDs Neg matched tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
   hESDmatchedTrackEtaNegTRDout->Sumw2();
   hESDmatchedTrackEtaNegTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaNegTRDout->SetMarkerStyle(20);
@@ -1106,7 +1137,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDmatchedTrackEtaNegTRDout);
 
   //21
-  TH1F* hESDmatchedTrackEtaNegNoTRDout = new TH1F("hESDmatchedTrackEtaNegNoTRDout", "ESDs Neg matched tracks #eta with !kTRDout distribution;#eta;tracks", 200, -1.0, 1.0) ;  
+  TH1F* hESDmatchedTrackEtaNegNoTRDout = new TH1F("hESDmatchedTrackEtaNegNoTRDout", "ESDs Neg matched tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
   hESDmatchedTrackEtaNegNoTRDout->Sumw2();
   hESDmatchedTrackEtaNegNoTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaNegNoTRDout->SetMarkerStyle(25);
@@ -1117,7 +1148,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDmatchedTrackEtaNegNoTRDout);
 
   //22
-  TH1F* hESDmatchedTrackPhiNegTRDout = new TH1F("hESDmatchedTrackPhiNegTRDout", "ESDs Neg matched tracks #phi with kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiNegTRDout = new TH1F("hESDmatchedTrackPhiNegTRDout", "ESDs Neg matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiNegTRDout->Sumw2();
   hESDmatchedTrackPhiNegTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiNegTRDout->SetMarkerStyle(20);
@@ -1128,7 +1159,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDmatchedTrackPhiNegTRDout);
 
   //23
-  TH1F* hESDmatchedTrackPhiNegNoTRDout = new TH1F("hESDmatchedTrackPhiNegNoTRDout", "ESDs Neg matched tracks #phi with !kTRDout distribution; #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiNegNoTRDout = new TH1F("hESDmatchedTrackPhiNegNoTRDout", "ESDs Neg matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiNegNoTRDout->Sumw2();
   hESDmatchedTrackPhiNegNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiNegNoTRDout->SetMarkerStyle(25);
@@ -1176,18 +1207,29 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     return;
   }
 
+  //Get vertex info and apply vertex cut
+  fVertex = (AliESDVertex*) fESD->GetPrimaryVertexTracks(); 
+  if(fVertex->GetNContributors()<1) { 
+    // SPD vertex
+    fVertex = (AliESDVertex*) fESD->GetPrimaryVertexSPD(); 
+    if(fVertex->GetNContributors()<1) fVertex = 0x0;
+  }
+  if (!fVertex) return; 
+  if (! (TMath::Abs(fVertex->GetZv())<10.0) ) return;
+
   // info from V0 detector QA 
   AliESDVZERO * vzero = fESD->GetVZEROData();
   Float_t V0Atime = vzero->GetV0ATime();
   Float_t V0Ctime = vzero->GetV0CTime(); 
   ((TH2F*)fHlistTimeZero->FindObject("hEventV0MeanVsVtx"))->Fill((V0Atime-V0Ctime)*0.5,(V0Atime+V0Ctime)*0.5);
 
-  
-  // info from T0 detector QA 
+   // info from T0 detector QA 
   for (Int_t j=0;j<3;j++){
     fT0[j]= (Float_t) fESD->GetT0TOF(j);//ps
     if (fT0[j]>90000.) fT0[j]=99999.;//fix old default values to the new one
   }
+
+  Float_t matchingMomCut = 1.0; //GeV/c
   Float_t t0cut = 90000.; 
   //Float_t t0cut =3 * t0spread; //use this cut to check t0 used in tof response
   // if(t0cut < 500) t0cut = 500;
@@ -1218,7 +1260,8 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
     ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
   }
-
+  //response set to best_t0 by previous loop
+  FillStartTimeMaskHisto();
   //re-set response tof_t0 for all other checks
   fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
   
@@ -1263,20 +1306,20 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
        if (track->GetSign()>0){
  	((TH1F*)fHpos->FindObject("hESDprimaryTrackPPos"))->Fill(mom); 
  	((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPos"))->Fill(pT);	
- 	if (pT>=0.5){
+ 	if (pT>=matchingMomCut){
  	  ((TH1F*)fHpos->FindObject("hTOFprimaryESDetaPos"))->Fill(eta);
  	  ((TH1F*)fHpos->FindObject("hTOFprimaryESDphiPos"))->Fill(phi);
  	}
  	if ( (track->IsOn(AliESDtrack::kTRDout)) && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPosTRDout"))->Fill(pT);
- 	  if (pT>=0.5) {
+ 	  if (pT>=matchingMomCut) {
  	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackEtaPosTRDout"))->Fill(eta);
  	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosTRDout"))->Fill(phi);
  	  }
  	}
  	if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPosNoTRDout"))->Fill(pT);
- 	  if (pT>=0.5) {
+ 	  if (pT>=matchingMomCut) {
  	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackEtaPosNoTRDout"))->Fill(eta);
 	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosNoTRDout"))->Fill(phi);
  	  }
@@ -1285,20 +1328,20 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
        else {
 	       ((TH1F*)fHneg->FindObject("hESDprimaryTrackPNeg"))->Fill(mom); 
  	((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNeg"))->Fill(pT); 
- 	if (pT>=0.5){
+ 	if (pT>=matchingMomCut){
  	  ((TH1F*)fHneg->FindObject("hTOFprimaryESDetaNeg"))->Fill(eta);
  	  ((TH1F*)fHneg->FindObject("hTOFprimaryESDphiNeg"))->Fill(phi);		
  	}
  	if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	  ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNegTRDout"))->Fill(pT);
- 	  if (pT>0.5) {
+ 	  if (pT>=matchingMomCut) {
  	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackEtaNegTRDout"))->Fill(eta);
  	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegTRDout"))->Fill(phi); 
  	  }
  	}
  	if  ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	  ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNegNoTRDout"))->Fill(pT);
- 	  if (pT>0.5){
+ 	  if (pT>=matchingMomCut){
  	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackEtaNegNoTRDout"))->Fill(eta);
  	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegNoTRDout"))->Fill(phi);
  	  }
@@ -1326,7 +1369,7 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       ((TH1F*)fHlist->FindObject("hTOFmatchedESDtrkLength"))->Fill(length);  
       ((TH1F*)fHlist->FindObject("hTOFmatchedESDP"))->Fill(mom);
       ((TH1F*)fHlist->FindObject("hTOFmatchedESDPt"))->Fill(pT);
-      if (pT>=0.5){
+      if (pT>=matchingMomCut){
 	((TH1F*)fHlist->FindObject("hTOFmatchedESDeta"))->Fill(eta);
 	((TH1F*)fHlist->FindObject("hTOFmatchedESDphi"))->Fill(phi);
       }
@@ -1341,20 +1384,20 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
  	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDtrkLengthPos"))->Fill(length);  
  	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDPPos"))->Fill(mom); 
  	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDPtPos"))->Fill(pT); 
- 	  if (pT>=0.5){
+ 	  if (pT>=matchingMomCut){
  	    ((TH1F*)fHpos->FindObject("hTOFmatchedESDetaPos"))->Fill(eta);
  	    ((TH1F*)fHpos->FindObject("hTOFmatchedESDphiPos"))->Fill(phi);
  	  }	
  	  if ( (track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	    ((TH1F*)fHpos->FindObject("hESDmatchedTrackPtPosTRDout"))->Fill(pT);
- 	    if (pT>=0.5){
+ 	    if (pT>=matchingMomCut){
  	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackEtaPosTRDout"))->Fill(eta);
  	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosTRDout"))->Fill(phi);
  	    }
  	  } 
  	  if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	    ((TH1F*)fHpos->FindObject("hESDmatchedTrackPtPosNoTRDout"))->Fill(pT);
- 	    if (pT>=0.5) {
+ 	    if (pT>=matchingMomCut) {
  	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackEtaPosNoTRDout"))->Fill(eta);
  	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosNoTRDout"))->Fill(phi);
  	    }
@@ -1364,20 +1407,20 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
          ((TH1F*)fHneg->FindObject("hTOFmatchedESDtrkLengthNeg"))->Fill(length);  
          ((TH1F*)fHneg->FindObject("hTOFmatchedESDPNeg"))->Fill(mom); 
          ((TH1F*)fHneg->FindObject("hTOFmatchedESDPtNeg"))->Fill(pT); 
-         if (pT>=0.5) {
+         if (pT>=matchingMomCut) {
            ((TH1F*)fHneg->FindObject("hTOFmatchedESDetaNeg"))->Fill(eta);
            ((TH1F*)fHneg->FindObject("hTOFmatchedESDphiNeg"))->Fill(phi);
          }	  
          if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
            ((TH1F*)fHneg->FindObject("hESDmatchedTrackPtNegTRDout"))->Fill(pT);
-           if (pT>=0.5) {
+           if (pT>=matchingMomCut) {
              ((TH1F*)fHneg->FindObject("hESDmatchedTrackEtaNegTRDout"))->Fill(eta);
              ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegTRDout"))->Fill(phi);	    
            }
          }
          if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
            ((TH1F*)fHneg->FindObject("hESDmatchedTrackPtNegNoTRDout"))->Fill(pT);
-           if (pT>=0.5) {
+           if (pT>=matchingMomCut) {
              ((TH1F*)fHneg->FindObject("hESDmatchedTrackEtaNegNoTRDout"))->Fill(eta);
              ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegNoTRDout"))->Fill(phi);
            }
@@ -1592,4 +1635,44 @@ Int_t AliAnalysisTaskTOFqa::GetStripIndex(const Int_t * const in)
     return (stripOffset+istrip);
 }
 
+//-----------------------------------------------------------------
+void AliAnalysisTaskTOFqa::FillStartTimeMaskHisto()
+{
+  /* set pid response to use best_T0 and for each
+     accepted track fills the histogram with the 
+     used start time 
+  */
+
+  //set response best_t0 
+  //fESDpid->SetTOFResponse(fESD,AliESDpid::kBest_T0);
+
+  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
+    AliESDtrack* track = fESD->GetTrack(iTracks);
+    if (!track) {
+      Printf("ERROR: Could not receive track %d", iTracks);
+      continue;
+    }    
+    //primary tracks selection: kTPCrefit and std cuts
+    if (fTrackFilter){
+      if(!fTrackFilter->IsSelected(track)) continue;
+    }
+    else{
+      Printf("No track filter found, skipping the track loop");
+      break;
+    }
+    if (TMath::Abs(track->Eta())>0.8) continue; //cut for acceptance  
+    
+    Int_t StartTimeBit = fESDpid->GetTOFResponse().GetStartTimeMask(track->P());
+    ((TH2F*)fHlistTimeZero->FindObject("hStartTimeMask"))->Fill(track->P(),StartTimeBit);
+    
+    //matched tracks selection: kTOFout and kTIME
+    if ( (track->IsOn(AliESDtrack::kTOFout)) &&
+	 (track->IsOn(AliESDtrack::kTIME)) &&
+	 (track->IsOn(AliESDtrack::kTPCout))  ) {
+      ((TH2F*)fHlistTimeZero->FindObject("hStartTimeMaskMatched"))->Fill(track->P(),StartTimeBit);
+    }
+  }
+  
+  return;
+}
 #endif
