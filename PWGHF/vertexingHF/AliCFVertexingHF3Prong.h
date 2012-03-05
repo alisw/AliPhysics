@@ -44,7 +44,9 @@ class AliCFVertexingHF3Prong : public AliCFVertexingHF{
  
   void SetGeneratedDsOption(Int_t opt) {fGenDsOption=opt;}
   Int_t GetGeneratedDsOption() const {return fGenDsOption;}
-  
+
+  enum EDsSel {kCountAllDsKKpi=0, kCountPhipi=1, kCountK0stK=2, kCountResonant=3, kCountNonResonant=4};
+
  protected:
   
   
@@ -54,7 +56,7 @@ class AliCFVertexingHF3Prong : public AliCFVertexingHF{
   AliCFVertexingHF3Prong& operator= (const AliCFVertexingHF3Prong& other);
   
   Int_t fDecay;   // decay mode id
-  Int_t fGenDsOption;  // 0(default) --> count all Ds->KKpi, 1 --> count Ds->phipi 2--> count Ds->K0*K
+  Int_t fGenDsOption;  // option for selection Ds (see enum)
 
   ClassDef(AliCFVertexingHF3Prong, 2);
   
