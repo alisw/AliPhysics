@@ -29,6 +29,7 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   void SetExpTimeHistoRange(Float_t min, Float_t max){fExpTimeRangeMin=min; fExpTimeRangeMax=max;return;};
   void SetExpTimeHistoSmallRange(Float_t min, Float_t max){fExpTimeSmallRangeMin=min; fExpTimeSmallRangeMax=max;return;};
   void SetExpTimeBinWidth(Float_t width){fExpTimeBinWidth=width;return;};
+  void FillStartTimeMaskHisto();
  private: 
   UInt_t fRunNumber; //run number
   AliESDEvent *fESD;    //ESD object
