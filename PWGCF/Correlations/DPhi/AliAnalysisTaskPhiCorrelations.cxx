@@ -44,6 +44,7 @@
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
 #include "AliStack.h"
+#include "AliAODMCHeader.h"
 
 #include "AliEventPoolManager.h"
 
@@ -247,17 +248,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 //____________________________________________________________________
 void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
 {
-  // array of MC particles
-  if (fMcHandler) {
-    if (fAOD)
-    {
-      fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!fArrayMC)
-	AliFatal("No array of MC particles found !!!");
-    }
-    fMcEvent = fMcHandler->MCEvent();
-  }
-
   // receive ESD pointer if we are not running AOD analysis
   if (!fAOD)
   {
@@ -266,8 +256,23 @@ void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
       fESD = ((AliESDInputHandler*)handler)->GetEvent();
   }
 
-  // Analyse the event
-  if (fMode) AnalyseCorrectionMode();
+  if (fMode)
+  {
+    // correction mode
+    
+    if (fMcHandler)
+      fMcEvent = fMcHandler->MCEvent();
+
+    if (fAOD)
+    {
+      // array of MC particles
+      fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!fArrayMC)
+	AliFatal("No array of MC particles found !!!");
+    }
+    
+    AnalyseCorrectionMode();
+  }
   else AnalyseDataMode();
 }
 
@@ -338,10 +343,18 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   fHistos->FillEvent(centrality, -1);
   
   // Only consider MC events within the vtx-z region used also as cut on the reconstructed vertex
-  if (!fAnalyseUE->VertexSelection(fMcEvent, 0, fZVertex)) 
+  TObject* vertexSupplier = fMcEvent;
+  if (fAOD) // AOD
+    vertexSupplier = fAOD->FindListObject(AliAODMCHeader::StdBranchName());
+    
+  if (!fAnalyseUE->VertexSelection(vertexSupplier, 0, fZVertex)) 
     return;
   
-  Float_t zVtx = fMcEvent->GetPrimaryVertex()->GetZ();
+  Float_t zVtx = 0;
+  if (fAOD)
+    zVtx = ((AliAODMCHeader*) vertexSupplier)->GetVtxZ();
+  else
+    zVtx = fMcEvent->GetPrimaryVertex()->GetZ();
   Float_t weight = 1;
   if (fFillpT)
     weight = -1;
