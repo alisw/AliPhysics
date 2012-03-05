@@ -27,6 +27,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliCFVertexingHF2Prong.h"
+#include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHF.h"
 
 class TH1I;
@@ -118,9 +119,11 @@ public:
 	void SetKeepDsViaPhi(){fDsOption=1;}
 	void SetKeepDsViaK0star(){fDsOption=2;}
 	void SetKeepAllDs(){fDsOption=3;}
-	void SetCountDsViaPhi(){fGenDsOption=1;}
-	void SetCountDsViaK0star(){fGenDsOption=2;}
-	void SetCountAllDs(){fGenDsOption=3;}
+	void SetCountAllDs(){fGenDsOption=AliCFVertexingHF3Prong::kCountAllDsKKpi;}
+	void SetCountDsViaPhi(){fGenDsOption=AliCFVertexingHF3Prong::kCountPhipi;}
+	void SetCountDsViaK0star(){fGenDsOption=AliCFVertexingHF3Prong::kCountK0stK;}
+	void SetCountResonantDs(){fGenDsOption=AliCFVertexingHF3Prong::kCountResonant;}
+	void SetCountNonResonantDs(){fGenDsOption=AliCFVertexingHF3Prong::kCountNonResonant;}
 
 	Bool_t ProcessDs(Int_t returnCodeDs) const;
 
