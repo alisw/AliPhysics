@@ -387,7 +387,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   AliESDFMD*  esdFMD  = esd->GetFMDData();
 
   // Apply the sharing filter (or hit merging or clustering if you like)
-  if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
+  if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
     AliWarning("Sharing filter failed!");
     return;
   }

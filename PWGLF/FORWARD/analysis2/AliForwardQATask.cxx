@@ -371,7 +371,7 @@ AliForwardQATask::UserExec(Option_t*)
   }
     
   //  // Apply the sharing filter (or hit merging or clustering if you like)
-  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
+  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
     AliWarning("Sharing filter failed!");
     return;
   }

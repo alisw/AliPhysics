@@ -45,7 +45,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fEtaLumping(32), 
     fPhiLumping(4),    
     fDebug(0),
-    fCuts()
+    fCuts(),
+    fRecalculateEta(false)
 {
   // 
   // Constructor 
@@ -75,7 +76,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fEtaLumping(32), 
     fPhiLumping(4),
     fDebug(0),
-    fCuts()
+    fCuts(),
+    fRecalculateEta(false)
 {
   // 
   // Constructor 
@@ -140,7 +142,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fEtaLumping(o.fEtaLumping), 
     fPhiLumping(o.fPhiLumping),
     fDebug(o.fDebug),
-    fCuts(o.fCuts)
+    fCuts(o.fCuts),
+    fRecalculateEta(o.fRecalculateEta)
 {
   // 
   // Copy constructor 
@@ -194,6 +197,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fEtaLumping         = o.fEtaLumping;
   fPhiLumping         = o.fPhiLumping;
   fCuts               = o.fCuts;
+  fRecalculateEta     = o.fRecalculateEta;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -288,7 +292,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   AliForwardUtil::Histos& hists,
 				   UShort_t                vtxbin, 
 				   Bool_t                  lowFlux,
-				   Double_t                /* cent */)
+				   Double_t                cent, 
+				   Double_t                zvtx)
 {
   // 
   // Do the calculations 
@@ -327,6 +332,10 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Float_t  mult = fmd.Multiplicity(d,r,s,t);
 	  Float_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t  eta  = fmd.Eta(d,r,s,t);
+	 
+	  
+	  if(fRecalculateEta)  
+	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
 	  
 	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
 	    rh->fPoisson.Fill(t , s, false);
@@ -373,6 +382,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Double_t poissonV = poisson->GetBinContent(t+1,s+1);
 	  Double_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Double_t  eta  = fmd.Eta(d,r,s,t);
+	  if(fRecalculateEta)  
+	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
 	  if (fUsePoisson)
 	    h->Fill(eta,phi,poissonV);
 	  else

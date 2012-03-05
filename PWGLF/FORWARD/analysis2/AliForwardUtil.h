@@ -114,13 +114,21 @@ public:
    */
   static Short_t ParseMagneticField(Float_t field);
   /** 
+   * Get eta from strip
+   * 
+   * @param det, ring, sec, strip, zvtx
+   * 
+   * @return eta
+   */
+  static Double_t GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Double_t zvtx) ;
+  /** 
    * Get a string representation of the magnetic field
    * 
    * @param field Magnetic field in kG
    * 
    * @return String representation of the magnetic field
    */
-  static const char* MagneticFieldString(Short_t field);
+   static const char* MagneticFieldString(Short_t field);
   /* @} */
 
   /** 

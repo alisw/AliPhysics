@@ -289,13 +289,13 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   // Get FMD data 
   AliESDFMD* esdFMD = esd->GetFMDData();
   //  // Apply the sharing filter (or hit merging or clustering if you like)
-  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
+  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
     AliWarning("Sharing filter failed!");
     return;
   }
   
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent)) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent,vz)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
