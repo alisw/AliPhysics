@@ -67,7 +67,7 @@ class AliVertexerTracks : public TObject {
   void  SetITSMode(Double_t dcacut=0.1,
 		   Double_t dcacutIter0=0.1,
 		   Double_t maxd0z0=0.5,
-		   Int_t minCls=5,
+		   Int_t minCls=3,
 		   Int_t mintrks=1,
 		   Double_t nsigma=3.,
 		   Double_t mindetfitter=100.,

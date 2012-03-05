@@ -58,7 +58,7 @@ fNTrksToSkip(0),
 fConstraint(kFALSE),
 fOnlyFitter(kFALSE),
 fMinTracks(1),
-fMinClusters(5),
+fMinClusters(3),
 fDCAcut(0.1),
 fDCAcutIter0(0.1),
 fNSigma(3.),
@@ -111,7 +111,7 @@ fNTrksToSkip(0),
 fConstraint(kFALSE),
 fOnlyFitter(kFALSE),
 fMinTracks(1),
-fMinClusters(5),
+fMinClusters(3),
 fDCAcut(0.1),
 fDCAcutIter0(0.1),
 fNSigma(3.),
@@ -1011,11 +1011,11 @@ void AliVertexerTracks::SetCuts(Double_t *cuts, Int_t ncuts)
   if (ncuts>1) SetDCAcutIter0(cuts[1]);
   if (ncuts>2) SetMaxd0z0(cuts[2]);
   if (ncuts>3) if(fMode==0 && cuts[3]<0) SetITSrefitNotRequired();
-  if (ncuts>4) SetMinClusters((Int_t)(TMath::Abs(cuts[3])));
-  if (ncuts>5) SetMinTracks((Int_t)(cuts[4]));
-  if (ncuts>6) SetNSigmad0(cuts[5]);
-  if (ncuts>7) SetMinDetFitter(cuts[6]);
-  if (ncuts>8) SetMaxTgl(cuts[7]);
+  if (ncuts>3) SetMinClusters((Int_t)(TMath::Abs(cuts[3])));
+  if (ncuts>4) SetMinTracks((Int_t)(cuts[4]));
+  if (ncuts>5) SetNSigmad0(cuts[5]);
+  if (ncuts>6) SetMinDetFitter(cuts[6]);
+  if (ncuts>7) SetMaxTgl(cuts[7]);
   if (ncuts>9) SetFiducialRZ(cuts[8],cuts[9]);
   if (ncuts>10) fAlgo=(Int_t)(cuts[10]);
   if (ncuts>11) fAlgoIter0=(Int_t)(cuts[11]);
