@@ -166,7 +166,7 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
       // compute and store mean DAC values (like pedestals)
       flatFile = Form("%s.ped",fPrefixDA.Data());
       outputFile=flatFile;
-      cout << "\n" << fPrefixDA.Data() << " : Flat file  generated  : " << flatFile.Data() << "\n";
+      cout << "\n" << fPrefixLDC.Data() << " : Flat file  generated  : " << flatFile.Data() << "\n";
       if (!outputFile.IsNull())  
       {
         ofstream out(outputFile.Data());
@@ -260,11 +260,13 @@ TString AliMUONGain::WriteGainData(Int_t BP, Int_t Manu, Int_t ch, Double_t p1, 
 //_______________________________________________________________________________
 void AliMUONGain::MakeGainStore(TString shuttleFile)
 {
+  Int_t status=0;
   /// Store gains in ASCII files
   ofstream fileout;
   ofstream filcouc;
   TString tempstring;	
   TString filename; 
+  char* detail;
 
   Double_t goodA1Min =  0.5;
   Double_t goodA1Max =  2.;
@@ -317,27 +319,23 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   Double_t injChargeErr[11];
   for ( Int_t i=0 ; i<11 ; i++) {injCharge[i]=0.;injChargeErr[i]=1.;};
 
-  // some print
-  cout<<"\n ********  MUONTRKGAINda for Gain computing (Last Run = " << fRunNumber << ") ********\n" << endl;
-  cout<<" * Date          : " << fDate->AsString("l") << "\n" << endl;
-  cout << " Entries = " << nEntries << " DAC values \n" << endl; 
-  for (Int_t i = 0; i < nEntries; ++i) {
-    cout<< " Run = " << run[i]->GetFirst() << "    DAC = " << run[i]->GetSecond() << endl;
-    numrun[i] = run[i]->GetFirst();
-    injCharge[i] = run[i]->GetSecond();
-    injChargeErr[i] = 0.01*injCharge[i];
-    if(injChargeErr[i] <= 1.) injChargeErr[i]=1.;
-  }
-  cout << "" << endl;
-
   //  print out in .log file
-
+  detail=Form("\n%s : ------  MUONTRKGAINda for Gain computing (Last Run = %d) ------\n",fPrefixLDC.Data(),fRunNumber); printf("%s",detail);
   (*fFilcout)<<"\n\n//=================================================" << endl;
   (*fFilcout)<<"//    MUONTRKGAINda: Gain Computing  Run = " << fRunNumber << endl;
   (*fFilcout)<<"//    RootDataFile  = "<< fRootDataFileName.Data() << endl;
   (*fFilcout)<<"//=================================================" << endl;
   (*fFilcout)<<"//* Date          : " << fDate->AsString("l") << "\n" << endl;
 
+  (*fFilcout) << " Entries = " << nEntries << " DAC values \n" << endl; 
+  for (Int_t i = 0; i < nEntries; ++i) {
+    (*fFilcout) << " Run = " << run[i]->GetFirst() << "    DAC = " << run[i]->GetSecond() << endl;
+    numrun[i] = run[i]->GetFirst();
+    injCharge[i] = run[i]->GetSecond();
+    injChargeErr[i] = 0.01*injCharge[i];
+    if(injChargeErr[i] <= 1.) injChargeErr[i]=1.;
+  }
+  detail=Form("%s : .... Fitting .... \n",fPrefixLDC.Data()); printf("%s",detail);
 
 
   // why 2 files ? (Ch. F.)  => second file contains detailed results
@@ -345,7 +343,8 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
     if(fPrintLevel>1)
       {
         filename=Form("%s.param",fPrefixDA.Data());
-        cout << " Second fit parameter file        = " << filename.Data() << "\n";
+	detail=Form("%s : Second fit parameter file        = %s\n",fPrefixLDC.Data(),filename.Data()); printf("%s",detail);
+	//       cout << " Second fit parameter file        = " << filename.Data() << "\n";
         pfilen = fopen (filename.Data(),"w");
 
         fprintf(pfilen,"//===================================================================\n");
@@ -368,7 +367,8 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   if(fPrintLevel>1)
     {
       filename=Form("%s.peak",fPrefixDA.Data());
-      cout << " File containing Peak mean values = " << filename << "\n";
+      detail=Form("%s : File containing Peak mean values = %s\n",fPrefixLDC.Data(),filename.Data()); printf("%s",detail);
+      //      cout << " File containing Peak mean values = " << filename << "\n";
       pfilep = fopen (filename,"w");
 
       fprintf(pfilep,"//==============================================================================================================================\n");
@@ -482,9 +482,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      fprintf(pfilep,"                   sig= %9.3f%9.3f%9.3f%9.3f%9.3f%9.3f%9.3f%9.3f%9.3f%9.3f%9.3f \n",pedSigma[0],pedSigma[1],pedSigma[2],pedSigma[3],pedSigma[4],pedSigma[5],pedSigma[6],pedSigma[7],pedSigma[8],pedSigma[9],pedSigma[10]);
 	    }
 
-	  // makegain 
-
-
+	  // makegain
 	  // Fit Method:  Linear fit over gAlinbpf1 points + parabolic fit  over nbpf2  points) 
 	  // nInit=1 : 1st pt DAC=0 excluded
 
@@ -683,7 +681,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	}
       nmanu++;
       Int_t step=500;
-      if(nmanu % step == 0)std::cout << " Nb manu = " << nmanu << std::endl;
+      if(nmanu % step == 0)printf("%s : Nb manu = %d\n",fPrefixLDC.Data(),nmanu);
     }
 
   //      print in logfile
@@ -706,44 +704,43 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
       (*fFilcout) << " Number of bad calibrated channel = " << uncalcountertotal << endl;
 	
     }
-
-
-  (*fFilcout) << "\n Nb of channels in raw data = " << nmanu*64 << " (" << nmanu << " Manu)" <<  endl;
-  (*fFilcout) << " Nb of calibrated channel   = " << nGoodChannel << " (" << goodA1Min << "<a1<" << goodA1Max 
-	      << " and " << goodA2Min << "<a2<" << goodA2Max << ") " << endl;
-  (*fFilcout) << " Nb of uncalibrated channel = " << nBadChannel << " (" << noFitChannel << " unfitted)" << endl;
-
-  cout << "\n Nb of channels in raw data = " << nmanu*64 << " (" << nmanu << " Manu)" <<  endl;
-  cout << " Nb of calibrated channel   = " << nGoodChannel << " (" << goodA1Min << "<a1<" << goodA1Max 
-       << " and " << goodA2Min << "<a2<" << goodA2Max << ") " << endl;
-  cout << " Nb of uncalibrated channel = " << nBadChannel << " (" << noFitChannel << " unfitted)" << endl;
-
-  if(nGoodChannel)
+  if(nmanu && nGoodChannel) 
     {
+      Double_t ratio_limit=0.25;
+      Double_t ratio=float (nBadChannel)/float (nmanu*64);
+
+      detail=Form("\n%s : Nb of channels in raw data = %d (%d Manu)",fPrefixLDC.Data(),nmanu*64,nmanu); 
+      (*fFilcout) << detail ; printf("%s",detail);
+      detail=Form("\n%s : Nb of calibrated channel   = %d  (%4.2f <a1< %4.2f and %4.2f <a2< %4.2f)",fPrefixLDC.Data(),nGoodChannel,goodA1Min,goodA1Max, goodA2Min,goodA2Max);
+      (*fFilcout) << detail ; printf("%s",detail);
+      detail=Form("\n%s : Nb of uncalibrated channel = %d  [%6.4f] (%d unfitted channels) ",fPrefixLDC.Data(),nBadChannel,ratio,noFitChannel);
+      (*fFilcout) << detail ; printf("%s",detail);
+
+      if(ratio > ratio_limit) { status=-1;
+      	detail=Form("\n%s : !!!!! WARNING : Nb of uncalibrated channels very large : %6.4f > %6.4f (status= %d) ",fPrefixLDC.Data(),ratio,ratio_limit,status);
+      	(*fFilcout) << detail ; printf("%s",detail); 
+      }
+
       Double_t meanA1         = sumA1/(nGoodChannel);
       Double_t meanProbChi2   = sumProbChi2/(nGoodChannel);
       Double_t meanA2         = sumA2/(nGoodChannel);
       Double_t meanProbChi2P2 = sumProbChi2P2/(nGoodChannel);
-
       Double_t capaManu = 0.2; // pF
-      (*fFilcout) << "\n linear fit   : <a1> = " << meanA1 << "\t  <gain>  = " <<  1./(meanA1*capaManu) 
+      (*fFilcout) << "\n linear fit   : <a1> = " << meanA1 << "     Prob(chi2)>  = " <<  meanProbChi2 <<  "    <gain>  = " <<  1./(meanA1*capaManu) 
 		  << " mV/fC (capa= " << capaManu << " pF)" << endl;
-      (*fFilcout) <<   "        Prob(chi2)>  = " <<  meanProbChi2 << endl;
-      (*fFilcout) << "\n parabolic fit: <a2> = " << meanA2  << endl;
-      (*fFilcout) <<   "        Prob(chi2)>  = " <<  meanProbChi2P2 << "\n" << endl;
-
-      cout << "\n  <gain>  = " <<  1./(meanA1*capaManu) 
-	   << " mV/fC (capa= " << capaManu << " pF)" 
-	   <<  "  Prob(chi2)>  = " <<  meanProbChi2 << endl;
+      (*fFilcout)   <<" parabolic fit: <a2> = " << meanA2  << "    Prob(chi2)>  = " <<  meanProbChi2P2 << "\n" <<  endl;
+ 
+      detail=Form("\n%s : <gain>  = %7.5f  mV/fC (capa= %3.1f pF)  Prob(chi2) = %5.3f\n" ,fPrefixLDC.Data(),1./(meanA1*capaManu),capaManu,meanProbChi2);
+      printf("%s",detail);
     }
   else 
-    {
-      (*fFilcout) << "\n !!!!!  BIG PROBLEM:  Nb of calibrated channel = "   << nGoodChannel << " !!!!! \n" << endl;
-      cout        << "\n !!!!!  BIG PROBLEM:  Nb of calibrated channel = "   << nGoodChannel << " !!!!! \n" << endl;
+    { status=-1;
+      detail=Form("\n%s : !!!!! ERROR :  Nb of Manu = %d or Nb calibrated channel = %d !!!!! (status= %d)\n",fPrefixLDC.Data(),nmanu,nGoodChannel,status);
+      (*fFilcout) << detail ; printf("%s",detail);
     }
- 
   pfilew.close();
 
   if(fPlotLevel>0){tg->Write();histoFile->Close();}
   if(fPrintLevel>1){fclose(pfilep); fclose(pfilen);}
+  SetStatusDA(status);
 }

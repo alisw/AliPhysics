@@ -29,7 +29,7 @@
 
 /*
 	-------------------------------------------------------------------------
-        2010-07-09 New version: MUONTRKPEDda.cxx,v 1.7
+        2012-02-16 New version: MUONTRKPEDda.cxx,v 1.8
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -100,14 +100,11 @@ extern "C" {
 // main routine
 int main(Int_t argc, const char **argv) 
 {
-  Int_t status=0;
+  Int_t status=0, status1=0;
   TStopwatch timers;
   timers.Start(kTRUE); 
 
-  const char* prefixDA = "MUONTRKPEDda"; // program prefix
-  printf(" ######## Begin execution : %s ######## \n\n",prefixDA); 
-
-  // needed for streamer application
+  // Needed for streamer application
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
 					"*",
 					"TStreamerInfo",
@@ -124,9 +121,13 @@ int main(Int_t argc, const char **argv)
   Int_t skipEvents = 0;
   Int_t maxEvents  = 1000000;
   Int_t maxDateEvents  = 1000000;
+  Int_t errorDetail  = 1;
+  Int_t checkTokenlost = 0;
+  Int_t flag_histo=1;
   TString inputFile;
 
   Int_t  nDateEvents = 0;
+  Int_t  nDateRejEvents = 0;
   Int_t nGlitchErrors= 0;
   Int_t nParityErrors= 0;
   Int_t nPaddingErrors= 0;
@@ -136,6 +137,7 @@ int main(Int_t argc, const char **argv)
   TString logOutputFile;
 
   Char_t flatFile[256]="";
+  Char_t* detail;
   TString shuttleFile;
 
   Int_t nEventsRecovered = 0;
@@ -143,7 +145,8 @@ int main(Int_t argc, const char **argv)
   UInt_t runNumber   = 0;
   Int_t nConfig = 1;
   Int_t nEvthreshold = 100; //below this nb_evt pedestal are not calculated and forced to 4085 (sigma)
-  Int_t nSorting = 0 ; // pedestal sorting (OFF by default)
+  Int_t nSorting = 1 ; // pedestal sorting (ON by default)
+  Int_t statusDA = 0 ; // DA return code 
   ofstream filcout;
 
   // decode the input line
@@ -161,6 +164,8 @@ int main(Int_t argc, const char **argv)
 	    }
 	  continue;
 	}
+      nConfig=0;
+      //prefixLDC = "LDC"
       switch (arg[1])
 	{
 	case 'f' : 
@@ -184,11 +189,19 @@ int main(Int_t argc, const char **argv)
 	  i++; 
 	  sscanf(argv[i],"%d",&maxEvents);
 	  break;
+	case 'v' :
+	  i++; 
+	  sscanf(argv[i],"%d",&errorDetail);
+	  break;
+	case 't' :
+	  i++; 
+	  sscanf(argv[i],"%d",&checkTokenlost);
+	  break;
 	case 'h' :
 	  i++;
 	  printf("\n******************* %s usage **********************",argv[0]);
 	  printf("\nOnline (called from ECS) : %s <raw data file> (no inline options)\n",argv[0]);
-	  printf("\n%s can be used locally only with options (without DiMuon configuration file)",argv[0]);
+	  printf("\n%s can be used locally only with options (without DiMuon configuration file: nConfig=%d)",argv[0],nConfig);
 	  printf("\n%s -options, the available options are :",argv[0]);
 	  printf("\n-h help                    (this screen)");
 	  printf("\n");
@@ -202,6 +215,8 @@ int main(Int_t argc, const char **argv)
 	  printf("\n-m <max date events>       (default = %d)",maxDateEvents);
 	  printf("\n-s <skip events>           (default = %d)",skipEvents);
 	  printf("\n-n <max events>            (default = %d)",maxEvents);
+	  printf("\n-v <error detail>          (default = %d : 0=low 1=medium 2=high)",errorDetail);
+	  printf("\n-t <token lost check>      (default = %d : 0=no , 1=yes)",checkTokenlost);
 
 	  printf("\n\n");
 	  exit(-1);
@@ -211,31 +226,58 @@ int main(Int_t argc, const char **argv)
 	} // end of switch  
     } // end of for i  
 
-  // decoding the events
-
   UShort_t manuId;  
   UChar_t channelId;
   UShort_t charge;
 
+  const char* prefixDA = "MUONTRKPEDda"; // program prefix
+  const char* prefixLDC = getenv("DATE_ROLE_NAME"); // LDC name
+  if(prefixLDC == NULL)  prefixLDC ="MCH" ;
+  printf("%s : -------- Begin execution : %s --------  \n",prefixLDC,prefixDA); 
+
   //Pedestal object
   AliMUONPedestal* muonPedestal = new AliMUONPedestal();
   muonPedestal->SetprefixDA(prefixDA);
+  muonPedestal->SetprefixLDC(prefixLDC);
+  muonPedestal->SetStatusDA(statusDA);
+
+  // Output log file initialisations
+  sprintf(flatFile,"%s.log",prefixDA);
+  logOutputFile=flatFile;
+  AliLog::SetStreamOutput(&filcout); // Print details on logfile
+  filcout.open(logOutputFile.Data());
+  filcout<<"//=================================================" << endl;
+  filcout<<"//" << prefixLDC << "       " << prefixDA  << endl;
+  filcout<<"//=================================================" << endl;
+  filcout<<"//  * Date  : " << muonPedestal->GetDate()->AsString("l") << "\n" << endl;
+
+  muonPedestal->SetAlifilcout(&filcout);
+  cout<<prefixLDC << " :  Date: " << muonPedestal->GetDate()->AsString("l") << "\n" << endl;
+
 
   Char_t dbfile[256]="";
   // nConfig=1 : Reading configuration (or not) status via "mutrkpedvalues" file located in DetDB
   if(nConfig)
     { 
-//      Int_t maxEvts;
+      Int_t flag_hist, nEvthres,maxEvts;
+      char line[80];
       sprintf(dbfile,"mutrkpedvalues");
       status=daqDA_DB_getFile(dbfile,dbfile);
       if(status) {printf(" !!! Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
       ifstream filein(dbfile,ios::in);
-      filein >> nConfig;
-      filein >> nSorting;
-      //      filein >> maxEvts;
-//      if(maxEvts!=0)maxEvents=maxEvts;
+      filein >> nConfig >> line ; cout << "mutrkpedvalues: " << line << " " << nConfig << "   "  ;
+      filein >> nEvthres >> line ;
+      if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << " " << nEvthreshold << "   " ; 
+      filein >> checkTokenlost >> line ; cout << line << " " << checkTokenlost << "   " ;
+      filein >> flag_histo >> line ;  
+      if(flag_histo !=0)  cout << line << " " << flag_histo << "   " ; 
+      filein >> maxEvts >> line ; 
+      if(maxEvts!=0){maxEvents=maxEvts;  cout << line << " " << maxEvents;}
+      //     filein >> errorDetail >> line ; cout << line << " " << errorDetail << "   " ;
+      //     filein >> nSorting >> line ; cout << line << " " << nSorting << "   " ;
+     cout << endl;
     }
-  else  printf(" ***  Config= %d: no configuration ascii file is used \n",nConfig); 
+  if(!nConfig)  printf("%s : ***  Config= %d: no configuration ascii file is used \n",prefixLDC,nConfig); 
   muonPedestal->SetconfigDA(nConfig);
   muonPedestal->SetnEvthreshold(nEvthreshold);
   muonPedestal->SetnSorting(nSorting);
@@ -246,7 +288,6 @@ int main(Int_t argc, const char **argv)
       sprintf(dbfile,"config_%s",getenv("DATE_ROLE_NAME"));
       status=daqDA_DB_getFile(dbfile,dbfile);
       if(status) {printf(" !!! Failed  : Configuration file %s is missing, status = %d\n",dbfile,status); return -1; }
-      //      else printf(" *** Copy ascii config file: %s from DetDB to working directory and reading ...*** \n",dbfile);
       muonPedestal->LoadConfig(dbfile);  
     } 
 
@@ -255,61 +296,43 @@ int main(Int_t argc, const char **argv)
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
 //	rawStream->DisableWarnings();
   rawStream->EnabbleErrorLogger();
-  //
-  // kLowErrorDetail,     /// Logs minimal information in the error messages.
-  // kMediumErrorDetail,  /// Logs a medium level of detail in the error messages.
-  // kHighErrorDetail     /// Logs maximum information in the error messages.
-  //  rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kLowErrorDetail);
-     rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail);
-  //   rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail);
+ 
+  switch (errorDetail)
+    {
+    case 0: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kLowErrorDetail); break;/// Logs minimal information in the error messages.
+    case 1: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail); break;/// Logs a medium level of detail in the error messages.
+    case 2: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail); break;/// Logs a medium level of detail in the error messages.
+    default: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail); break;
+    }
 
-  printf("\n %s : Reading data from file %s\n",prefixDA,inputFile.Data());
+  printf("\n%s : Reading data from file %s\n",prefixLDC,inputFile.Data());
 
   Int_t tabTokenError[20][14];
   for ( Int_t i=0 ; i<20 ; i++) { for ( Int_t j=0 ; j<14 ; j++) { tabTokenError[i][j]=0;}	}
 
   while (rawReader->NextEvent())
     {
+      Int_t eventType = rawReader->GetType();
+      runNumber = rawReader->GetRunNumber();
+      if(nDateEvents==0)  { filcout<<"//  ---->  RUN = " << runNumber << "\n" << endl;}
       if (nDateEvents >= maxDateEvents) break;
       if (nEvents >= maxEvents) break;
       if (nDateEvents>0 &&  nDateEvents % 100 == 0) 	
-	cout<<"Cumulated:  DATE events = " << nDateEvents << "   Used events = " << nEvents << endl;
+	cout<< prefixLDC << " :  DATE events = " << nDateEvents << "   Used events = " << nEvents << endl;
 
       // check shutdown condition 
-      if (daqDA_checkShutdown()) 
-	break;
+      if (daqDA_checkShutdown())  break;
       //Skip events
       while (skipEvents)
 	{
 	  rawReader->NextEvent();
 	  skipEvents--;
 	}
-      Int_t eventType = rawReader->GetType();
-      runNumber = rawReader->GetRunNumber();
-
-      // Output log file initialisations
-      if(nDateEvents==0)
-	{
-	  sprintf(flatFile,"%s.log",prefixDA);
-	  logOutputFile=flatFile;
-		AliLog::SetStreamOutput(&filcout); // Print details on logfile
-	  filcout.open(logOutputFile.Data());
-	  filcout<<"//=================================================" << endl;
-	  filcout<<"//       " << prefixDA << " for run = " << runNumber << endl;
-	  filcout<<"//=================================================" << endl;
-	  filcout<<"//   * Date          : " << muonPedestal->GetDate()->AsString("l") << "\n" << endl;
-	  cout<<"\n ********  " << prefixDA << " for run = " << runNumber << " ********\n" << endl;
-	  cout<<" * Date          : " << muonPedestal->GetDate()->AsString("l") << "\n" << endl;
-
-	}
-
-      muonPedestal->SetAlifilcout(&filcout);
-
       nDateEvents++;
       if (eventType != PHYSICS_EVENT)
 	continue; // for the moment
 
-      const char* detail = "";
+      //      const char* detail = "";
       // First lopp over DDL's to find good events
       // Error counters per event (counters in the decoding lib are for each DDL)
       Bool_t eventIsErrorMessage = kFALSE;
@@ -325,6 +348,7 @@ int main(Int_t argc, const char **argv)
 	  eventParityErrors += rawStream->GetParityErrors();
 	  eventPaddingErrors += rawStream->GetPaddingErrors();
 	  eventTokenlostErrors += rawStream->GetTokenLostErrors();
+	  //	  cout << nDateEvents << "    "  << rawStream->GetDDL() << "   "  << eventTokenlostErrors << endl;
 	  if (rawStream->GetTokenLostErrors())
 	    {
 	      nTokenlostErrors++;
@@ -374,7 +398,7 @@ int main(Int_t argc, const char **argv)
       else
 	{
 	  // Events with errors
-	  if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
+	  if (recoverParityErrors && eventParityErrors && !eventGlitchErrors && !eventPaddingErrors && !(eventTokenlostErrors && checkTokenlost))
 	    {
 	      filcout << " ----------- Date Event recovered = " << nDateEvents <<  " ----------------" << endl;
 	      // Recover parity errors -> compute pedestal for all good buspatches
@@ -439,6 +463,7 @@ int main(Int_t argc, const char **argv)
 	    {
 	      // Fatal errors reject the event
 	      detail = Form(" ----------- Date Event rejected = %d  ----------------",nDateEvents);
+	      nDateRejEvents++;
 	      filcout << detail << endl;
 	      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
 					  ATTR_ORBIT_BC )) 
@@ -465,8 +490,6 @@ int main(Int_t argc, const char **argv)
       if (eventGlitchErrors)  nGlitchErrors++;
       if (eventParityErrors)  nParityErrors++;
       if (eventPaddingErrors) nPaddingErrors++;
-      //      if (eventTokenlostErrors) nTokenlostErrors++;
-      //      muonPedestal->SetAliNCurrentEvents(nEvents);
 
     } // while (rawReader->NextEvent())
   delete rawReader;
@@ -477,64 +500,23 @@ int main(Int_t argc, const char **argv)
   muonPedestal->SetAliNEvents(nEvents);
   muonPedestal->SetAliRunNumber(runNumber);
   
-  muonPedestal->Finalize();  
-  muonPedestal->MakeControlHistos();  
-  if (!shuttleFile.IsNull())  
-  {
-    ofstream out(shuttleFile.Data());  
-    muonPedestal->MakeASCIIoutput(out);
-    out.close();
-#ifdef ALI_AMORE
-  //
-  //Send objects to the AMORE DB
-  //
-    ostringstream stringout;
-    muonPedestal->MakeASCIIoutput(stringout);
-    
-    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-    TObjString peddata(stringout.str().c_str());
-    Int_t amoreStatus = amoreDA.Send("Pedestals",&peddata);
-    if ( amoreStatus )
-      cout << "Warning: Failed to write Pedestals in the AMORE database : " << amoreStatus << endl;
-    else 
-      cout << "amoreDA.Send(Pedestals) ok" << endl;  
-#else
-    cout << "Warning: MCH DA not compiled with AMORE support" << endl;
-#endif
-    
-  }
-
+  muonPedestal->Finalize();
+  status = muonPedestal->GetStatusDA()  ; 
+ 
   // writing some counters
-  cout << endl;
-  cout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
-  cout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors  << endl;
-  cout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors  << endl;
-  cout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;	
-  cout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
-  cout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;
-  cout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
-  cout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
-
-  filcout << endl;
-  filcout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
-  filcout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors << endl;
-  filcout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors << endl;
-  filcout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;
-  filcout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
-  filcout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;	
-  filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
-  filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
-
-  // ouput files
-  cout << endl;
-  cout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
-  cout << prefixDA << " : Pedestal Histo file    : " << muonPedestal->GetHistoFileName() << endl;
-  cout << prefixDA << " : Ped. file (to SHUTTLE) : " << shuttleFile << endl;   
+  detail=Form("\n%s : Nb of DATE events           = %d",prefixLDC,nDateEvents) ;                             cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Glitch errors         = %d",prefixLDC,nGlitchErrors) ;                           cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Parity errors         = %d",prefixLDC,nParityErrors) ;                           cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Token lost errors     = %d",prefixLDC,nTokenlostErrors) ;                        cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Rejected DATE events  = %d",prefixLDC,nDateRejEvents) ;                          cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of recovered events      = %d",prefixLDC,nEventsRecovered) ;                        cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of events without errors = %d",prefixLDC,nEvents-nEventsRecovered) ;                cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of used events           = %d (threshold= %d)\n\n",prefixLDC,nEvents,nEvthreshold); cout << detail; filcout << detail ;
 
   // Writing Token Error table
   if(nTokenlostErrors)
     {
-      char* detail=Form("\nWarning: Token Lost occurence \n");
+      detail=Form("%s : Warning: Token Lost occurence \n",prefixLDC);
       printf("%s",detail);
       filcout <<  detail ;
       for ( Int_t i=0 ; i<20 ; i++) 
@@ -546,8 +528,8 @@ int main(Int_t argc, const char **argv)
 		  Int_t tab=tabTokenError[i][j];
 		  Int_t frt=j/2-1;
 		  Int_t station = i/4 +1;
-		  if( j % 2 == 0)detail=Form(" in DDL= %d (station %d) and FRT%d ( Up ) => %d Token errors (address = 0x%X0000)",2560+i,station,frt,tab,j);
-		  else detail=Form(" in DDL= %d (station %d) and FRT%d (Down) => %d Token errors (address = 0x%X0000)",2560+i,station,frt,tab,j);
+		  if( j % 2 == 0)detail=Form("%s : in DDL= %d (station %d) and FRT%d ( Up ) => %d Token errors (address = 0x%X0000)",prefixLDC,2560+i,station,frt,tab,j);
+		  else detail=Form("%s : in DDL= %d (station %d) and FRT%d (Down) => %d Token errors (address = 0x%X0000)",prefixLDC,2560+i,station,frt,tab,j);
 		  printf("%s\n",detail);
 		  filcout <<  detail << endl;
 		}
@@ -555,40 +537,79 @@ int main(Int_t argc, const char **argv)
 	}
     }
 
-  filcout << endl;
-  filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
-  filcout << prefixDA << " : Pedestal Histo file    : " << muonPedestal->GetHistoFileName() << endl;
-  filcout << prefixDA << " : Ped. file (to SHUTTLE) : " << shuttleFile << endl;   
+  if (!shuttleFile.IsNull())  
+    {
+      ofstream out(shuttleFile.Data());  
+      muonPedestal->MakeASCIIoutput(out); /// Generate pedestal output file
+      out.close();
+      detail=Form("%s : Pedestal file (to SHUTTLE) : %s\n",prefixLDC,shuttleFile.Data());
+      cout << detail; filcout << detail  ;        
+    }
+  if(flag_histo) /// Generate pedestal histo rootfile
+    {
+      muonPedestal->MakeControlHistos(); 
+      detail=Form("%s : Pedestal Histo file        : %s\n",prefixLDC,muonPedestal->GetHistoFileName());   
+      cout << detail; filcout << detail ; 
+     }       
+  // .log files
+  detail=Form("%s : Output logfile             : %s\n",prefixLDC,logOutputFile.Data());
+  cout << detail; filcout << detail ;        
+
+
+   // Transferring pedestal file to FES  (be sure that env variable DAQDALIB_PATH is set)
+  cout << endl; 
+  status1 = daqDA_FES_storeFile(shuttleFile.Data(),"PEDESTALS");
+  if (status1) { detail=Form("%s: !!! ERROR: Failed to export pedestal file : %s to FES \n",prefixLDC,shuttleFile.Data()); 
+    printf("%s",detail); filcout << detail ; status= -1; }
+  //else { detail=Form("%s : *****  STORE Pedestal FILE in FES : OK ****** \n",prefixLDC); printf("%s",detail); filcout << detail ;}
+
+  // Transferring configuration file to FES  (be sure that env variable DAQDALIB_PATH is set)
+  if(nConfig) 
+    { cout << endl; 
+      status1 = daqDA_FES_storeFile(dbfile,"CONFIG");
+      if (status1) { detail=Form("%s: !!! ERROR: Failed to export configuration file : %s to FES \n",prefixLDC,dbfile); 
+	printf("%s",detail); filcout << detail ; status=-1; }
+      //      else {detail=Form("%s : *****  STORE Configuration FILE in FES : OK  ****** \n",prefixLDC); printf("%s",detail); filcout << detail ;}
+    }
 
  // Copying files to local DB folder defined by DAQ_DETDB_LOCAL
   Char_t *dir;
-  dir= getenv("DAQ_DETDB_LOCAL");
   unsigned int nLastVersions=50;
-  cout << "\n ***  Local DataBase: " << dir << " (Max= " << nLastVersions << ") ***" << endl;
-  status = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
-  if(status)printf(" Store file : %s   status = %d\n",muonPedestal->GetHistoFileName(),status);
-  status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
-  if(status)printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status);
-  status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
-  if(status)printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
+  dir= getenv("DAQ_DETDB_LOCAL");
+  if(dir != NULL)  {
+    unsigned int nLastVersions=50;
+    printf("\n%s : ***  Local DataBase: %s (Max= %d) ***\n",prefixLDC,dir,nLastVersions);
+      if(!shuttleFile.IsNull())status1 = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
+      if(flag_histo)status1 = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
+      status1 = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
+  }
 
+
+    cout << " " << endl; 
+    
+#ifdef ALI_AMORE
+  //
+  //Send objects to the AMORE DB
+  //
+    ostringstream stringout;
+    muonPedestal->MakeASCIIoutput(stringout);
+    
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+    TObjString peddata(stringout.str().c_str());
+    Int_t amoreStatus = amoreDA.Send("Pedestals",&peddata);
+    if ( amoreStatus )
+      cout << prefixLDC << " :  !!! ERROR: Failed to write Pedestals in the AMORE database : " << amoreStatus << endl ; status=-1 ;
+    else 
+      cout << prefixLDC << " : amoreDA.Send(Pedestals) ok" << endl;  
+#else
+    cout << prefixLDC << " : Warning: MCH DA not compiled with AMORE support" << endl;
+#endif
+    
   filcout.close();
 
-  // Transferring to FES  (be sure that env variable DAQDALIB_PATH is set)
-  printf("\n *****  STORE Pedestal FILE in FES ****** \n");
-  status = daqDA_FES_storeFile(shuttleFile.Data(),"PEDESTALS");
-  if (status) { printf(" !!! Failed to export file : %s , status = %d\n",shuttleFile.Data(),status); return -1; }
-  //  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
-
-  // Transferring to FES  (be sure that env variable DAQDALIB_PATH is set)
-  printf("\n *****  STORE Configuration FILE in FES ****** \n");
-  status = daqDA_FES_storeFile(dbfile,"CONFIG");
-  if (status) { printf(" !!! Failed to export file : %s , status = %d\n",dbfile,status); return -1; }
-  //  else printf(" %s successfully exported to FES  \n",dbfile);
-
-
-  printf("\n ######## End execution : %s ######## \n",prefixDA); 
+  if(!status)printf("\n%s : -------- End execution : %s -------- (status= %d) \n",prefixLDC,prefixDA,status);
+  else { printf("\n%s : -------- %s ending in ERROR !!!! -------- (status= %d) \n",prefixLDC,prefixDA,status);}
   timers.Stop();
-  printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
+  printf("\n Execution time : R:%7.2fs C:%7.2fs\n",timers.RealTime(), timers.CpuTime());
   return status;
 }

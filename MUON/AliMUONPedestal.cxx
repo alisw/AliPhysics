@@ -60,6 +60,7 @@ fNChannel(0),
 fNManu(0),
 fNManuConfig(0),
 fConfig(1),
+fStatusDA(0),
 fErrorBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBPoutofconfigTable(new AliMUON2DMap(kFALSE)),
@@ -68,11 +69,11 @@ fFilcout(0),
 fHistoFileName(),
 fPedestalStore(new AliMUON2DMap(kTRUE)),
 fIndex(-1),
-fPrefixDA()
+fPrefixDA(),
+fPrefixLDC()
 {
 /// Default constructor
 }
-
 //______________________________________________________________________________
 AliMUONPedestal::AliMUONPedestal(TRootIOCtor* /*dummy*/)
 : TObject(),
@@ -86,6 +87,7 @@ fNChannel(0),
 fNManu(0),
 fNManuConfig(0),
 fConfig(1),
+fStatusDA(0),
 fErrorBuspatchTable(0),
 fManuBuspatchTable(0),
 fManuBPoutofconfigTable(0),
@@ -94,7 +96,8 @@ fFilcout(0),
 fHistoFileName(),
 fPedestalStore(0),
 fIndex(-1),
-fPrefixDA()
+fPrefixDA(),
+fPrefixLDC()
 {
 /// Root IO constructor
 }
@@ -163,10 +166,10 @@ void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, I
 	{  // Fill out_of_config (buspatch,manu) table
 	  if (!(static_cast<AliMUONErrorCounter*>(fManuBPoutofconfigTable->FindObject(busPatchId,manuId))))
 	    fManuBPoutofconfigTable->Add(new AliMUONErrorCounter(busPatchId,manuId));
-	  if(warn<10) cout << " !!! WARNING  : busPatchId = " << busPatchId << " manuId = " << manuId << " not in the Detector configuration " << endl;
-	  else if(warn==10) cout << " !!! see .log file for an exhaustive list of (busPatchId, manuId) out of Detector configuration \n" << endl; 
+	  if(warn<10) cout << fPrefixLDC.Data() << " : !!! WARNING  : busPatchId = " << busPatchId << " manuId = " << manuId << " not in the Detector configuration " << endl;
+	  else if(warn==10) cout << fPrefixLDC.Data() << " : !!! see .log file for an exhaustive list of (busPatchId, manuId) out of Detector configuration \n" << endl; 
 	   warn++;
-	   (*fFilcout) << " !!! WARNING  : busPatchId = " << busPatchId << " manuId = " << manuId << " not in the Detector configuration " << endl; 
+	   (*fFilcout) <<" !!! WARNING  : busPatchId = " << busPatchId << " manuId = " << manuId << " not in the Detector configuration " << endl; 
 	}
       else {fNManu++;}
       fNChannel+=64;
@@ -213,21 +216,22 @@ void AliMUONPedestal::Finalize()
   Int_t busPatchId;
   Int_t manuId;
   Int_t channelId;
+  Int_t status=0;
 
   // print in logfile
   if (fErrorBuspatchTable->GetSize())
     {
-      cout<<"\nWarning: Buspatches with less statistics (due to parity errors)"<<endl;
+      cout<< "\n" << fPrefixLDC.Data() << " : See list of Buspatches with lower statistics (due to parity errors) in .log or .ped file "<<endl;
       (*fFilcout)<<"\nWarning: Buspatches with less statistics (due to parity errors)"<<endl;
       TIter nextParityError(fErrorBuspatchTable->CreateIterator());
       AliMUONErrorCounter* parityerror;
       while((parityerror = static_cast<AliMUONErrorCounter*>(nextParityError())))
 	{
-	  cout<<"  bp "<<parityerror->BusPatch()<<": events used = "<<fNEvents-parityerror->Events()<<endl;
-	  (*fFilcout)<<"  bp "<<parityerror->BusPatch()<<": events used = "<<fNEvents-parityerror->Events()<<endl;
+	  //	  cout<<"  bp "<<parityerror->BusPatch()<<": used events = "<<fNEvents-parityerror->Events()<<endl;
+	  (*fFilcout)<<"  bp "<<parityerror->BusPatch()<<": used events = "<<fNEvents-parityerror->Events()<<endl;
 	}
     }
-
+  
   Int_t nADC4090=0;
   Int_t nADCmax=0;
   // iterator over pedestal
@@ -240,7 +244,7 @@ void AliMUONPedestal::Finalize()
       manuId                  = ped->ID1();
       if(manuId==0)
 	{
-	  cout << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
+	  cout << fPrefixLDC.Data() << " : Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
 	  (*fFilcout) << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
 	}
       Int_t eventCounter;
@@ -261,20 +265,20 @@ void AliMUONPedestal::Finalize()
       if(eventCounter>0)occupancy = manuCounter->Events()/64/eventCounter;
       if(occupancy>1)
 	{
-	  cout << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy << endl;
+	  cout << fPrefixLDC.Data() << " : Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy << endl;
 	  (*fFilcout) << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy <<endl;
 	}
 
       for (channelId = 0; channelId < ped->Size() ; ++channelId) 
 	{
- 	  pedMean  = ped->ValueAsDouble(channelId, 0);
+	  pedMean  = ped->ValueAsDouble(channelId, 0);
 
 	  if (pedMean >= 0) // connected channels
 	    {
 	      ped->SetValueAsDouble(channelId, 0, pedMean/(Double_t)eventCounter);
 	      pedMean  = ped->ValueAsDouble(channelId, 0);
 	      pedSigma = ped->ValueAsDouble(channelId, 1);
- 	      ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)eventCounter - pedMean*pedMean)));
+	      ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)eventCounter - pedMean*pedMean)));
 
 	      if(eventCounter < fNEvthreshold )
 		{ nADCmax++; ped->SetValueAsDouble(channelId, 0, ADCMax());
@@ -292,19 +296,39 @@ void AliMUONPedestal::Finalize()
 	      ped->SetValueAsDouble(channelId, 1, ADCMax());}
 	}
     }
-  if(nADCmax>0)
-    { char* detail=Form("Warning: Nb of Channels with bad Pedestal (Ped=4095) = %d over %d",nADCmax,fNChannel);
-      printf("%s\n",detail);
-      (*fFilcout) <<  detail << endl; }
-  if(nADC4090>0)
-    { char* detail=Form("Warning: Nb of Channels with PedSigma<0.5 (Ped=4090) = %d over %d",nADC4090,fNChannel);
-      printf("%s\n",detail);
-      (*fFilcout) <<  detail << endl; }
+
+  float frac1=0. , frac2=0. ;
+  float frac_badped = 0.25 ; // maximal acceptable ratio of bad pedestals
+  char* detail;
+ 
+  if(fNChannel)
+    {
+      if(nADCmax>0)
+	{ frac1 = float(nADCmax)/float(fNChannel); 
+	  detail=Form("%s : Warning: Nb of Channels with bad Pedestal (Ped=4095) = %d over %d (%6.4f)",fPrefixLDC.Data(),nADCmax,fNChannel,frac1);
+	  printf("%s\n",detail);
+	  (*fFilcout) <<  detail << endl;}
+
+      if(nADC4090>0)
+	{ frac2 = 1.*nADC4090/fNChannel; 
+	  detail=Form("%s : Warning: Nb of Channels with PedSigma<0.5 (Ped=4090) = %d over %d (%6.4f)",fPrefixLDC.Data(),nADC4090,fNChannel,frac2);
+	  printf("%s\n",detail);
+	  (*fFilcout) <<  detail << endl; }
+
+      if (frac1+frac2 > frac_badped) { status=-1 ;
+	detail=Form("\n%s !!! ERROR : fraction of Channels with Pedestal>=4090 = %6.4f (> %5.3f)  (status= %d) \n",fPrefixLDC.Data(),frac1+frac2,frac_badped,status);
+	(*fFilcout) <<  detail << endl; printf("%s",detail) ;}
+    }
+  else { status= -1;
+    detail=Form("\n%s !!! ERROR : Nb good channel = 0 (all pedestals are forced to 4095) !!! (status= %d)\n",fPrefixLDC.Data(),status); 
+    cout << detail; (*fFilcout) << detail ;}
+   
+  SetStatusDA(status);
 }
 //______________________________________________________________________________
 void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
 {
-  /// put pedestal store in the output stream
+/// put pedestal store in the output stream
 
   out<<"//===========================================================================" << endl;
   out<<"//                 Pedestal file calculated by "<< fPrefixDA.Data() << endl;
@@ -380,7 +404,7 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
   // Sorting 
   if  (fSorting)
     {
-      cout << " ..... sorting pedestal values ....."  << endl;
+      printf("%s : ..... sorting pedestal values .....\n",fPrefixLDC.Data());
       THashList pedtable(100,2);
       while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
       {

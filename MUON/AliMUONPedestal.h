@@ -55,11 +55,17 @@ class AliMUONPedestal : public TObject
     void SetconfigDA(Int_t ind) {fConfig = ind;}
     /// set Nb of evt threshold to calculate pedestal
     void SetnEvthreshold(Int_t ind) {fNEvthreshold = ind;}
+    /// set DA status (return code)
+    void SetStatusDA(Int_t ind) {fStatusDA = ind;}
+    /// get DA status (return code)
+    Int_t GetStatusDA() const {return fStatusDA;}
     /// sorting flag
     void SetnSorting(Int_t ind) {fSorting = ind;}
     /// set specific  DA prefixname
     void SetprefixDA(const char* folder) { fPrefixDA=folder;}
-    /// set the index of calibration runs
+     /// set specific LDC prefixname
+    void SetprefixLDC(const char* folder) { fPrefixLDC=folder;}
+   /// set the index of calibration runs
     void SetAliIndex(Int_t ind) {fIndex = ind;}
     /// Compute the pedestal data (mean, sigma)
     void Finalize();
@@ -68,7 +74,7 @@ class AliMUONPedestal : public TObject
     /// Fill Histograms
     void MakeControlHistos();
 
-  Int_t ADCMax() const { return 4095; }
+    Int_t ADCMax() const { return 4095; }
 
 protected:
     //    Int_t fN; ///<
@@ -81,6 +87,7 @@ protected:
     Int_t fNManu; ///<  Nb of Manu
     Int_t fNManuConfig; ///<  Nb of Manu in the current detector configuration
     Int_t fConfig; ///< flag 1(0) for reading(or not) configuration ascii file
+    Int_t fStatusDA; ///< DA return code (0=OK)
     AliMUONVStore* fErrorBuspatchTable; ///< Table for buspatches with parity errors 
     AliMUONVStore* fManuBuspatchTable; ///< Occupancy rate for each (buspatch, manu)
     AliMUONVStore* fManuBPoutofconfigTable; ///< (buspatch, manu) out of config
@@ -91,6 +98,7 @@ protected:
     AliMUONVStore* fPedestalStore; ///< data container:  (Pedmean,sigma) values for each (BP,manuId)
     Int_t fIndex; ///< calibration run index
     TString fPrefixDA; ///< specific DA prefixname
+    TString fPrefixLDC; ///< specific LDC prefixname
 
   static const Int_t fgkADCMax; ///< max channel count
   

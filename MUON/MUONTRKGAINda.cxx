@@ -41,7 +41,7 @@
 
 /*
  -------------------------------------------------------------------------
- 2010-04-18 New version: MUONTRKGAINda.cxx,v 1.6
+ 2012-02-29 New version: MUONTRKGAINda.cxx,v 1.7
  -------------------------------------------------------------------------
  
  Version for MUONTRKGAINda MUON tracking
@@ -111,12 +111,17 @@ extern "C" {
 // main routine
 int main(Int_t argc, const char** argv) 
 {
-  Int_t status=0;
+  Int_t status=0 , status1=0 ;
   TStopwatch timers;
   timers.Start(kTRUE); 
   
   const char* prefixDA = "MUONTRKGAINda"; // program prefix
-  printf(" ######## Begin execution : %s ######## \n\n",prefixDA); 
+  const char* prefixLDC = getenv("DATE_ROLE_NAME"); // LDC name
+  if(prefixLDC == NULL)  prefixLDC ="MCH" ;
+  printf("%s : -------- Begin execution : %s --------  \n",prefixLDC,prefixDA); 
+
+  // const char* prefixDA = "MUONTRKGAINda"; // program prefix
+  // printf(" ######## Begin execution : %s ######## \n\n",prefixDA); 
   
   TString inputFile;
   // decode the input line
@@ -141,15 +146,18 @@ int main(Int_t argc, const char** argv)
   Int_t maxDateEvents  = 1000000;
   
   Int_t nDateEvents = 0;
+  Int_t nDateRejEvents = 0;
   Int_t nGlitchErrors= 0;
   Int_t nParityErrors= 0;
   Int_t nPaddingErrors= 0;
   Int_t nTokenlostErrors= 0;
   Int_t nEventsRecovered = 0;
   Int_t nEvents = 0;
-  Int_t nEvthreshold = 10; //below this nb_evt the mean of the charge is not calculated and forced to 4085 (sigma)
+  Int_t nEvthreshold = 50; //below this nb_evt the mean of the charge is not calculated and forced to 4085 (sigma)
+  Int_t statusDA = 0 ; // DA return code 
   
   TString logOutputFile;
+  Char_t* detail;
   Char_t flatFile[256]="";
   TString shuttleFile;
   
@@ -159,8 +167,8 @@ int main(Int_t argc, const char** argv)
   
   // For DA Gain
   Int_t nEntries = daqDA_ECS_getTotalIteration(); // usually = 11 = Nb of calibration runs
-  Int_t nInit=1;  // = 0 all DAC values ; = 1 DAC=0 excluded (default=1)
-  Int_t nbpf1=6;  // nb of points for linear fit (default=6) 
+  Int_t nInit=0;  // = 0 all DAC values ; = 1 DAC=0 excluded (default=1)
+  Int_t nbpf1=4;  // nb of points for linear fit (default=6) 
   Int_t printLevel  = 0;  // printout (default=0, =1 =>.ped , => .peak & .param)
   Int_t plotLevel  = 1;  // plotout (default=1 => tree , =2 tree+Tgraph+fit)
   Int_t nbev=0; 
@@ -173,8 +181,25 @@ int main(Int_t argc, const char** argv)
   //Gain object
   AliMUONGain* muonGain = new AliMUONGain();
   muonGain->SetprefixDA(prefixDA);
+  muonGain->SetprefixLDC(prefixLDC);
   muonGain->SetAliRootDataFileName(); // MUONTRKGAINda_data.root
-  
+  muonGain->SetStatusDA(statusDA);
+ 
+  // Output log file initialisations
+  sprintf(flatFile,"%s.log",prefixDA);
+  logOutputFile=flatFile;
+  AliLog::SetStreamOutput(&filcout); // Print details on logfile
+  filcout.open(logOutputFile.Data());
+  filcout<<"//=================================================" << endl;
+  filcout<<"//" << prefixLDC << "       " << prefixDA  << endl;
+  filcout<<"//=================================================" << endl;
+  filcout<<"//  * Date  : " << muonGain->GetDate()->AsString("l") << "\n" << endl;
+
+  muonGain->SetAlifilcout(&filcout);
+  cout<<prefixLDC << " :  Date: " << muonGain->GetDate()->AsString("l") << "\n" << endl;
+
+
+
   UShort_t manuId;  
   UChar_t channelId;
   UShort_t charge;
@@ -184,6 +209,8 @@ int main(Int_t argc, const char** argv)
   Int_t nConfig = 1; // flag to read or not configuration ascii file in detDB
   Int_t vDAC[11]; // DAC values
   Char_t dbfile[256]="";
+  Int_t nEvthres;
+  Char_t line[80];
   sprintf(dbfile,"mutrkcalibvalues");
   status=daqDA_DB_getFile(dbfile,dbfile);
   if(status) {printf(" Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
@@ -192,23 +219,22 @@ int main(Int_t argc, const char** argv)
   while (k<nEntries ) { filein >> kk >> vDAC[k] ; k++; }
   injCharge=vDAC[nIndex-1];
   
-  filein >> nInit; // = 0 all DAC values fitted ; = 1 DAC=0 excluded (default=1)
-  filein >> nbpf1; // nb of points for linear fit (default=6) 
-  filein >> printLevel;  // printout (default=0, =1 =>.ped /run, =2 => .peak & .param)
-  filein >> plotLevel;  // plotout (default=1 => tree , =2 tree+Tgraph+fit)
-  filein >> nConfig;  //nConfig (default=1 => read config in DetDB, otherwise =0)
-  filein >> nbev;  // Nb of events to read  (default = 0 => reading all events)
-  if(nbev>0)maxEvents=nbev;
-  
-  //  printf(" *** Copy: %s from DetDB to working directory  ***      Config= %d\n",dbfile,nConfig);
-  printf(" Input parameters:  nInit= %d   Nb linear pts= %d   Print level= %d   Plot Level= %d    nConfig= %d",nInit,nbpf1,printLevel,plotLevel,nConfig);
-  if(nbev==0)printf("\n");
-  else printf("  Nb_max evt = %d\n",maxEvents);
+  filein >> nInit >> line ; cout << "mutrkcalibvalues: " << line << "=" << nInit << "   " ; // = 0 all DAC values fitted ; = 1 DAC=0 excluded (default=1)
+  filein >> nbpf1 >> line ; cout << line << "=" << nbpf1 << "   " ; // nb of points for linear fit (default=6) 
+  filein >> printLevel >> line;  cout << line << "=" << printLevel << "   " ; // printout (default=0, =1 =>.ped /run, =2 => .peak & .param)
+  filein >> plotLevel >> line;   cout << line << "=" << plotLevel << "   " ; // plotout (default=1 => tree , =2 tree+Tgraph+fit)
+  filein >> nConfig >> line; cout << line << "=" << nConfig << "   " ; //nConfig (default=1 => read config in DetDB, otherwise =0)
+  filein >> nEvthres >> line ;
+  if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << "=" << nEvthreshold << "   " ; // (default = 0 <=> 50) below nEvthreshold calibration not performed 
+  filein >> nbev >> line;  // Nb of events to read  (default = 0 => reading all events)
+  if(nbev !=0){maxEvents=nbev; cout << line << "=" << maxEvents << "   " ;} 
+  cout << endl;
   
   muonGain->SetAliPrintLevel(printLevel);
   muonGain->SetAliPlotLevel(plotLevel);
   muonGain->SetconfigDA(nConfig);
   muonGain->SetnEvthreshold(nEvthreshold);
+  //  muonGain->SetStatusDA(statusDA);
   
   if(nConfig)
   {
@@ -233,17 +259,20 @@ int main(Int_t argc, const char** argv)
      rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail);
   //   rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail);
   
-  cout << "\n" << prefixDA << " : Reading data from file " << inputFile.Data()  << endl;
+  printf("\n%s : Reading data from file %s\n",prefixLDC,inputFile.Data());
 
   Int_t tabTokenError[20][14];
   for ( Int_t i=0 ; i<20 ; i++) { for ( Int_t j=0 ; j<14 ; j++) { tabTokenError[i][j]=0;}	}
   
   while (rawReader->NextEvent())
   {
+    Int_t eventType = rawReader->GetType();
+    runNumber = rawReader->GetRunNumber();
+     if(nDateEvents==0)  { filcout<<"//  ---->  RUN = " << runNumber << "\n" << endl;}
     if (nDateEvents >= maxDateEvents) break;
     if (nEvents >= maxEvents) break;
     if (nDateEvents>0 &&  nDateEvents % 100 == 0) 	
-      cout<<"Cumulated:  DATE events = " << nDateEvents << "   Used events = " << nEvents << endl;
+	cout<< prefixLDC << " :  DATE events = " << nDateEvents << "   Used events = " << nEvents << endl;
     
     // check shutdown condition 
     if (daqDA_checkShutdown()) 
@@ -254,27 +283,6 @@ int main(Int_t argc, const char** argv)
       rawReader->NextEvent();
       skipEvents--;
     }  
-    Int_t eventType = rawReader->GetType();
-    runNumber = rawReader->GetRunNumber();
-    
-    // Output log file initialisations
-    if(nDateEvents==0)
-    {
-      sprintf(flatFile,"%s.log",prefixDA);
-      logOutputFile=flatFile;
-		AliLog::SetStreamOutput(&filcout); // Print details on logfile      
-      filcout.open(logOutputFile.Data());
-      filcout<<"//=================================================" << endl;
-      filcout<<"//       " << prefixDA << " for run = " << runNumber << "  (DAC=" << injCharge << ")" << endl;
-      filcout<<"//=================================================" << endl;
-      filcout<<"//   * Date          : " << muonGain->GetDate()->AsString("l") << "\n" << endl;
-      
-      cout<<"\n ********  " << prefixDA << " for run = " << runNumber << "  (Index= " << nIndex << "/" << nEntries << "  DAC=" << injCharge << ") ********\n" << endl;
-      cout<<" * Date : " << muonGain->GetDate()->AsString("l") << "\n" << endl;
-    }
-    
-    muonGain->SetAlifilcout(&filcout);
-    
     nDateEvents++;
     if (eventType != PHYSICS_EVENT)
       continue; // for the moment
@@ -412,6 +420,7 @@ int main(Int_t argc, const char** argv)
 	  {
 	    // Fatal errors reject the event
 	    detail = Form(" ----------- Date Event rejected = %d  ----------------",nDateEvents);
+	    nDateRejEvents++;
 	    filcout << detail << endl;
 	    if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
 					ATTR_ORBIT_BC )) 
@@ -454,28 +463,16 @@ int main(Int_t argc, const char** argv)
   muonGain->SetAliRunNumber(runNumber);
   muonGain->MakePedStoreForGain(shuttleFile);
   
-  
-  // writing some counters
-  cout << endl;
-  cout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
-  cout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors  << endl;
-  cout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors  << endl;
-  cout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;		
-  cout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
-  cout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;
-  cout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
-  cout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
-  
-  filcout << endl;
-  filcout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
-  filcout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors << endl;
-  filcout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors << endl;
-  filcout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;
-  filcout << prefixDA << " : Nb of Token lost errors     = "   << nTokenlostErrors << endl;
-  filcout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;	
-  filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
-  filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
-  
+   // writing some counters
+  detail=Form("\n%s : Nb of DATE events           = %d",prefixLDC,nDateEvents) ;                             cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Glitch errors         = %d",prefixLDC,nGlitchErrors) ;                           cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Parity errors         = %d",prefixLDC,nParityErrors) ;                           cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Token lost errors     = %d",prefixLDC,nTokenlostErrors) ;                        cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of Rejected DATE events  = %d",prefixLDC,nDateRejEvents) ;                          cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of recovered events      = %d",prefixLDC,nEventsRecovered) ;                        cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of events without errors = %d",prefixLDC,nEvents-nEventsRecovered) ;                cout << detail; filcout << detail ;
+  detail=Form("\n%s : Nb of used events           = %d (threshold= %d)\n\n",prefixLDC,nEvents,nEvthreshold); cout << detail; filcout << detail ;
+ 
   // Writing Token Error table
   if(nTokenlostErrors)
     {
@@ -507,71 +504,66 @@ int main(Int_t argc, const char** argv)
     muonGain->SetAliEntries(nEntries); // fnEntries
     muonGain->SetAliNbpf1(nbpf1); // fnbpf1
     muonGain->MakeGainStore(shuttleFile);
-#ifdef ALI_AMORE  
-    std::ifstream in(shuttleFile.Data());
-    ostringstream stringout;
-    char line[1024];
-    while ( in.getline(line,1024) )
-      stringout << line << "\n";  
-    in.close();
-	  
-    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-    TObjString gaindata(stringout.str().c_str());
-    status = amoreDA.Send("Gains",&gaindata);
-    if ( status )
-      cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
-    else 
-      cout << "amoreDA.Send(Gains) ok" << endl;  
-#else
-    cout << "Warning: MCH DA not compiled with AMORE support" << endl;
-#endif
+    status = muonGain->GetStatusDA()  ; 
   }
   
   // ouput files
-  filcout << endl;
-  filcout << prefixDA << " : Root data file         : " << muonGain->GetRootDataFileName() << endl;
-  filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
-  filcout << prefixDA << " : Gain Histo file        : " << muonGain->GetHistoFileName() << endl;
-  filcout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;
-  
-  //	 Copying files to local DB folder defined by DAQ_DETDB_LOCAL
+  detail=Form("%s : Root data file             : %s\n",prefixLDC,muonGain->GetRootDataFileName()); filcout << detail ;  // cout << detail;
+  detail=Form("%s : Output logfile             : %s\n",prefixLDC,logOutputFile.Data()); filcout << detail ;   // cout << detail;
+  detail=Form("%s : Gain Histo file            : %s\n",prefixLDC,muonGain->GetHistoFileName()); filcout << detail ; //  cout << detail; 
+  detail=Form("%s : Gain file (to SHUTTLE)     : %s\n",prefixLDC,shuttleFile.Data()); filcout << detail ;  //  cout << detail;
+
+ // Copying files to local DB folder defined by DAQ_DETDB_LOCAL
   Char_t *dir;
+  unsigned int nLastVersions=50;
   dir= getenv("DAQ_DETDB_LOCAL");
-  unsigned int nLastVersions = 50;
-  printf("\n ***  Local DataBase: %s  (Max= %d) ***\n",dir,nLastVersions);
-  status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
-  if(status)printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
-  if(nIndex==nEntries)
-  {
-    status = daqDA_localDB_storeFile(muonGain->GetRootDataFileName(),nLastVersions);
-    if(status)printf(" Store file : %s   status = %d\n",muonGain->GetRootDataFileName(),status);
-    status = daqDA_localDB_storeFile(muonGain->GetHistoFileName(),nLastVersions);
-    if(status)printf(" Store file : %s   status = %d\n",muonGain->GetHistoFileName(),status);
-    status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
-    if(status)printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status);
-  }      
-  
-  
-  // ouput files
-  cout << endl;
-  cout << prefixDA << " : Root data file         : " << muonGain->GetRootDataFileName() << endl;
-  cout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
-  cout << prefixDA << " : Gain Histo file        : " << muonGain->GetHistoFileName() << endl;
-  cout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;   
-  
+  if(dir != NULL)  {
+    unsigned int nLastVersions=50;
+    printf("\n%s : ***  Local DataBase: %s (Max= %d) ***\n",prefixLDC,dir,nLastVersions);
+    status1 = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
+
+    if(nIndex==nEntries)
+      {
+	status1 = daqDA_localDB_storeFile(muonGain->GetRootDataFileName(),nLastVersions);
+	status1 = daqDA_localDB_storeFile(muonGain->GetHistoFileName(),nLastVersions);
+	status1 = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);	//   if(status1)printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status1);
+      }  
+  }    
   filcout.close();
   
-  // Transferring to calibration file to  FES
-  // be sure that env variable DAQDALIB_PATH is set in script file
-  //       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-  printf("\n *****  STORE calibration FILE to FES ****** \n");
-  status = daqDA_FES_storeFile(shuttleFile.Data(),"GAINS");
-  if (status) { printf(" Failed to export file : %s , status = %d\n",shuttleFile.Data(),status); return -1; }
-  //  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
-  
-  printf("\n ######## End execution : %s ######## \n",prefixDA); 
+   // Transferring pedestal file to FES  (be sure that env variable DAQDALIB_PATH is set)
+  cout << endl; 
+  status1 = daqDA_FES_storeFile(shuttleFile.Data(),"GAINS");
+  if (status1) { detail=Form("%s: !!! ERROR: Failed to export calibration file : %s to FES \n",prefixLDC,shuttleFile.Data()); 
+    printf("%s",detail); filcout << detail ; status= -1; }
+  //  else { detail=Form("%s : ----  STORE calibration FILE in FES : OK ---- \n",prefixLDC); printf("%s",detail); filcout << detail ;}
+
+  if(nIndex==nEntries)
+    {
+#ifdef ALI_AMORE  
+      std::ifstream in(shuttleFile.Data());
+      ostringstream stringout;
+      char line[1024];
+      while ( in.getline(line,1024) )
+	stringout << line << "\n";  
+      in.close();
+	  
+      amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+      TObjString gaindata(stringout.str().c_str());
+     Int_t amoreStatus = amoreDA.Send("Gains",&gaindata);
+      if ( amoreStatus )
+	cout << prefixLDC << " :  !!! ERROR: Failed to write Gains in the AMORE database : " << amoreStatus << endl ; status=-1 ;
+      else 
+	cout << prefixLDC << " : amoreDA.Send(Gains) ok" << endl;  
+#else
+      cout << prefixLDC << " : Warning: MCH DA not compiled with AMORE support" << endl;
+#endif
+    }
+
+  if(!status)printf("\n%s : -------- End execution : %s -------- (status= %d) \n",prefixLDC,prefixDA,status);
+  else { printf("\n%s : -------- %s ending in ERROR !!!! -------- (status= %d)  \n",prefixLDC,prefixDA,status);}
+
   timers.Stop();
   printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
   return status;
 }
-
