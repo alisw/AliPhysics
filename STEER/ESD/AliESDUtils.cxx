@@ -160,23 +160,32 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo)
   //
   static AliVertexerTracks* vtFinder = 0;
   static int currRun = 0;
+  static int defAlgo = -1;
   static double bkgauss = 0; 
   const Bool_t kVtxConstr = kTRUE;
   //
   if (!vtFinder) { // create vertexer
     vtFinder = new AliVertexerTracks(esdEv->GetMagneticField());
-    printf("Initialized vertexer (algo=%d) for  VertexTracks refit with field %f kG\n",
-	   algo, esdEv->GetMagneticField());
+    printf("Initialized vertexer for VertexTracks refit with field %f kG\n",esdEv->GetMagneticField());
     //
     vtFinder->SetITSMode();
     vtFinder->SetConstraintOff();
+  }
+  if (defAlgo != algo) {
     const int kNCuts=21;
-    double VTCuts[kNCuts] = 
+    double vtCuts[kNCuts] = 
       {1.00e-01,1.00e-01,5.00e-01,3.00e+00,1.00e+00,3.00e+00,1.00e+02,
        1.00e+03,3.00e+00,3.00e+01,6.00e+00,4.00e+00,7.00e+00,1.00e+03,
        5.00e+00,5.00e-02,1.00e-03,2.00e+00,1.00e+01,1.00e+00,5.00e+01};
-    VTCuts[10] = algo;
-    vtFinder->SetCuts((double*)VTCuts,kNCuts);
+    //
+    vtCuts[10] = algo;
+    vtFinder->SetCuts((double*)vtCuts,kNCuts);
+    defAlgo = algo;
+    printf("Setting vertexing algorithm to %d\n",algo);
+  }
+  if (defAlgo<0 || defAlgo>AliVertexerTracks::kMultiVertexer) {
+    printf("Vertexer algorithms 0:%d are supported... \n");
+    return kFALSE;
   }
   //
   if (currRun!=esdEv->GetRunNumber() && kVtxConstr) { // update diamond for this run
