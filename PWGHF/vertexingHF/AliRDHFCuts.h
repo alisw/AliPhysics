@@ -119,6 +119,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     fPidHF=new AliAODPidHF(*pidObj);
   }
   void SetRemoveDaughtersFromPrim(Bool_t removeDaughtersPrim) {fRemoveDaughtersFromPrimary=removeDaughtersPrim;}
+  void SetRecomputePrimaryVertex(Bool_t opt) {fRecomputePrimVertex=opt;}
   void SetMinPtCandidate(Double_t ptCand=-1.) {fMinPtCand=ptCand; return;}
   void SetMaxPtCandidate(Double_t ptCand=1000.) {fMaxPtCand=ptCand; return;}
   void SetOptPileup(Int_t opt=0){
@@ -241,6 +242,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetNVars(Int_t nVars){fnVars=nVars;}
 
   Bool_t IsSignalMC(AliAODRecoDecay *d,AliAODEvent *aod,Int_t pdg) const;
+  Bool_t RecomputePrimaryVertex(AliAODEvent* event) const;
 
   // cuts on the event
   Int_t fMinVtxType; // 0: not cut; 1: SPDZ; 2: SPD3D; 3: Tracks
@@ -270,6 +272,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fWhyRejection; // used to code the step at which candidate was rejected
   UInt_t fEvRejectionBits; //bit map storing the full info about event rejection
   Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
+  Bool_t fRecomputePrimVertex; // flag to recompute primary vertex
   Bool_t fUseMCVertex; // use MC primary vertex 
   Bool_t fUsePhysicsSelection; // use Physics selection criteria
   Int_t  fOptPileup;      // option for pielup selection
@@ -291,7 +294,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
 
-  ClassDef(AliRDHFCuts,21);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,22);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
