@@ -153,7 +153,7 @@ Float_t AliESDUtils::GetCorrSPD2(Float_t spd2raw,Float_t zv)
 }  
 
 //______________________________________________________________________________
-Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo)
+Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const Double_t *cuts)
 {
   // Refit ESD VertexTracks and redo tracks->RelateToVertex
   // Default vertexin algorithm is 6 (multivertexer). To use old vertexed, use algo=1
@@ -171,17 +171,26 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo)
     vtFinder->SetITSMode();
     vtFinder->SetConstraintOff();
   }
-  if (defAlgo != algo) {
-    const int kNCuts=21;
-    double vtCuts[kNCuts] = 
-      {1.00e-01,1.00e-01,5.00e-01,3.00e+00,1.00e+00,3.00e+00,1.00e+02,
-       1.00e+03,3.00e+00,3.00e+01,6.00e+00,4.00e+00,7.00e+00,1.00e+03,
-       5.00e+00,5.00e-02,1.00e-03,2.00e+00,1.00e+01,1.00e+00,5.00e+01};
-    //
-    vtCuts[10] = algo;
-    vtFinder->SetCuts((double*)vtCuts,kNCuts);
-    defAlgo = algo;
-    printf("Setting vertexing algorithm to %d\n",algo);
+  //
+  if ( (cuts && algo>11) || algo!=defAlgo) { 
+    // if cuts array is provided, then interpret algo as the number of parameters in the cuts.
+    // otherwise, interpret it as an algorithm ID for hardwired cuts below
+    if (cuts) {
+      vtFinder->SetCuts((double*)cuts,algo);
+      defAlgo = (Int_t)(cuts[10]);
+    }
+    else {
+      const int kNCuts=21;
+      double vtCuts[kNCuts] = 
+	{1.00e-01,1.00e-01,5.00e-01,3.00e+00,1.00e+00,3.00e+00,1.00e+02,
+	 1.00e+03,3.00e+00,3.00e+01,6.00e+00,4.00e+00,7.00e+00,1.00e+03,
+	 5.00e+00,5.00e-02,1.00e-03,2.00e+00,1.00e+01,1.00e+00,5.00e+01};
+      //
+      vtCuts[10] = algo;    
+      defAlgo = algo;
+      vtFinder->SetCuts(vtCuts,kNCuts);
+      printf("Setting vertexing algorithm to %d\n",defAlgo);
+    }
   }
   if (defAlgo<0 || defAlgo>AliVertexerTracks::kMultiVertexer) {
     printf("Vertexer algorithms 0:%d are supported... \n");
