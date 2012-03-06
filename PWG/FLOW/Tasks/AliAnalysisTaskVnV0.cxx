@@ -760,9 +760,16 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	Float_t tof = -1;
 	Double_t inttimes[8] = {0.,0.,0.,0.,0.,0.,0.,0.};
 	Double_t expTOFsigma[8] = {0.,0.,0.,0.,0.,0.,0.,0.};
+
+	Float_t nsigmaTPC[8];
+	Float_t nsigmaTOF[8];
+
 	if(aodTrack->GetDetPid()){ // check the PID object is available
-	  for(Int_t iS=0;iS < 8;iS++)
+	  for(Int_t iS=0;iS < 8;iS++){
 	    dedxExp[iS] = fPID->GetExpDeDx(aodTrack,iS);
+	    nsigmaTPC[iS] = (dedx - dedxExp[iS])/(dedxExp[iS]*0.07);
+	    //	    printf("TPC %i = %f (%f %f)\n",iS, nsigmaTPC[iS],dedx, dedxExp[iS]);
+	  }
 	  		
 	  if(fPID->GetCurrentMask(1)){ // if TOF is present
 	    Float_t ptrack = aodTrack->P();
@@ -772,7 +779,11 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	    for(Int_t iS=5;iS < 8;iS++) // extra info for light nuclei
 	      inttimes[iS] = inttimes[0] / ptrack * mass[iS] * TMath::Sqrt(1+ptrack*ptrack/mass[iS]/mass[iS]);
 	    
-	    for(Int_t iS=0;iS<8;iS++) expTOFsigma[iS] = fPID->GetESDpid()->GetTOFResponse().GetExpectedSigma(ptrack, inttimes[iS], mass[iS]);
+	    for(Int_t iS=0;iS<8;iS++){
+	      expTOFsigma[iS] = fPID->GetESDpid()->GetTOFResponse().GetExpectedSigma(ptrack, inttimes[iS], mass[iS]);
+	      nsigmaTOF[iS] = (tof - inttimes[iS])/expTOFsigma[iS];
+	      //	      printf("TOF %i = %f\n",iS, nsigmaTOF[iS]);
+	    }
 	  }
 	}
 
@@ -792,111 +803,140 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	Double_t xQA[7] = {iC,aodTrack->Pt(), 0.0, 4.99, 4.99,deltaPhiV0,x[4]}; // v2
 	Double_t xQA3[7] = {iC,aodTrack->Pt(), 0.0, 4.99, 4.99,deltaPhiV0v3,x[4]}; // v3
 
+	// QA fill
+	if(!(fPID->GetCurrentMask(0)) || !aodTrack->GetDetPid() || dedx < 10.){}
+	else if(TMath::Abs(nsigmaTPC[2])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[2])<5))){ //pi
+	  xQA[2] = prob[2];
+	  xQA3[2] = xQA[2];
+	  xQA[3] = nsigmaTPC[2];
+	  xQA3[3] = xQA[3];
+	  if(fPID->GetCurrentMask(1)){
+	    xQA[4] = nsigmaTOF[2];
+	    xQA3[4] = xQA[4];
+	  }
+	  if(fV2) QA[iV0]->Fill(xQA,0);
+	  if(fV3) QAv3[iV0]->Fill(xQA3,0);
+	}
+	else if(TMath::Abs(nsigmaTPC[3])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[3])<5))){ //K
+	  xQA[2] = prob[3];
+	  xQA3[2] = xQA[2];
+	  xQA[3] = nsigmaTPC[3];
+	  xQA3[3] = xQA[3];
+	  if(fPID->GetCurrentMask(1)){
+	    xQA[4] = nsigmaTOF[3];
+	    xQA3[4] = xQA[4];
+	  }
+	  if(fV2) QA[iV0]->Fill(xQA,1);
+	  if(fV3) QAv3[iV0]->Fill(xQA3,1);	  
+	}
+	else if(TMath::Abs(nsigmaTPC[4])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[4])<5))){//p
+	  xQA[2] = prob[4];
+	  xQA3[2] = xQA[2];
+	  xQA[3] = nsigmaTPC[4];
+	  xQA3[3] = xQA[3];
+	  if(fPID->GetCurrentMask(1)){
+	    xQA[4] = nsigmaTOF[4];
+	    xQA3[4] = xQA[4];
+	  }
+	  if(fV2) QA[iV0]->Fill(xQA,2);
+	  if(fV3) QAv3[iV0]->Fill(xQA3,2);	  
+	}
+	else if(TMath::Abs(nsigmaTPC[0])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[0])<5))){//e
+	  xQA[2] = prob[0];
+	  xQA3[2] = xQA[2];
+	  xQA[3] = nsigmaTPC[0];
+	  xQA3[3] = xQA[3];
+	  if(fPID->GetCurrentMask(1)){
+	    xQA[4] = nsigmaTOF[0];
+	    xQA3[4] = xQA[4];
+	  }
+	  if(fV2) QA[iV0]->Fill(xQA,3);
+	  if(fV3) QAv3[iV0]->Fill(xQA3,3);	  
+	}
+	else if(TMath::Abs(nsigmaTPC[5])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[5])<5))){//d
+	  xQA[2] = prob[5];
+	  xQA3[2] = xQA[2];
+	  xQA[3] = nsigmaTPC[5];
+	  xQA3[3] = xQA[3];
+	  if(fPID->GetCurrentMask(1)){
+	    xQA[4] = nsigmaTOF[5];
+	    xQA3[4] = xQA[4];
+	  }
+	  if(fV2) QA[iV0]->Fill(xQA,4);
+	  if(fV3) QAv3[iV0]->Fill(xQA3,4);	  
+	}
+	else if(TMath::Abs(nsigmaTPC[6])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[6])<5))){//t
+	  xQA[2] = prob[6];
+	  xQA3[2] = xQA[2];
+	  xQA[3] = nsigmaTPC[6];
+	  xQA3[3] = xQA[3];
+	  if(fPID->GetCurrentMask(1)){
+	    xQA[4] = nsigmaTOF[6];
+	    xQA3[4] = xQA[4];
+	  }
+	  if(fV2) QA[iV0]->Fill(xQA,5);
+	  if(fV3) QAv3[iV0]->Fill(xQA3,5);	  
+	}
+	else if(TMath::Abs(nsigmaTPC[7])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[7])<5))){//He3
+	  xQA[2] = prob[7];
+	  xQA3[2] = xQA[2];
+	  xQA[3] = nsigmaTPC[7];
+	  xQA3[3] = xQA[3];
+	  if(fPID->GetCurrentMask(1)){
+	    xQA[4] = nsigmaTOF[7];
+	    xQA3[4] = xQA[4];
+	  }
+	  if(fV2) QA[iV0]->Fill(xQA,6);
+	  if(fV3) QAv3[iV0]->Fill(xQA3,6);	  
+	}
+
 	//pid selection
 	if(!(fPID->GetCurrentMask(0)) || !aodTrack->GetDetPid()){} // TPC PID and PID object strictly required (very important!!!!)
 	else if(prob[2] > 0.6){ // pi
 	  phi[3] = prob[2]; // set probability in the container variables
 	  x[2] = prob[2];
-	  xQA[2] = prob[2];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){ // set TPC signal in the QA container variables
-	    xQA[3] = (dedx - dedxExp[2])/(dedxExp[2]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){ // set TOF signal in the QA container variables if present
-	    xQA[4] = (tof - inttimes[2])/expTOFsigma[2]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){ // TPC 5 sigma extra cut to accept the track
+	  if(TMath::Abs(nsigmaTPC[2]) < 5){ // TPC 5 sigma extra cut to accept the track
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,1);
 	    if(fV2) contV0[iV0]->Fill(1,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(1,aodTrack->Pt(),v3V0,x3);
-	    if(fV2) QA[iV0]->Fill(xQA,0);
-	    if(fV3) QAv3[iV0]->Fill(xQA3,0);
 	  }
 	}
 	else if(prob[3] > 0.6){ // K
 	  phi[3] = prob[3];
 	  x[2] = prob[3];
-	  xQA[2] = prob[3];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[3])/(dedxExp[3]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){
-	    xQA[4] = (tof - inttimes[3])/expTOFsigma[3]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[3]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,2);
 	    if(fV2) contV0[iV0]->Fill(2,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(2,aodTrack->Pt(),v3V0,x3);
-	    if(fV2) QA[iV0]->Fill(xQA,1);
-	    if(fV3) QAv3[iV0]->Fill(xQA3,1);
 	  }
 	}
 	else if(prob[4] > 0.6){ // p
 	  phi[3] = prob[4];
 	  x[2] = prob[4];
-	  xQA[2] = prob[4];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[4])/(dedxExp[4]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){
-	    xQA[4] = (tof - inttimes[4])/expTOFsigma[4]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[4]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,3);
 	    if(fV2) contV0[iV0]->Fill(3,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(3,aodTrack->Pt(),v3V0,x3);
-	    if(fV2) QA[iV0]->Fill(xQA,2);
-	    if(fV3) QAv3[iV0]->Fill(xQA3,2);
 	  }
 	}
 	else if(prob[0] > 0.6){ // e
 	  phi[3] = prob[0];
 	  x[2] = prob[0];
-	  xQA[2] = prob[0];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[0])/(dedxExp[0]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){
-	    xQA[4] = (tof - inttimes[0])/expTOFsigma[0]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[0]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,4);
 	    if(fV2) contV0[iV0]->Fill(4,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(4,aodTrack->Pt(),v3V0,x3);
-	    if(fV2) QA[iV0]->Fill(xQA,3);
-	    if(fV3) QAv3[iV0]->Fill(xQA3,3);
 	  }
 	}
 	else if(prob[1] > 0.6){ // mu
 	  phi[3] = prob[1];
 	  x[2] = prob[1];
-	  xQA[2] = prob[1];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[1])/(dedxExp[1]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){
-	    xQA[4] = (tof - inttimes[1])/expTOFsigma[1]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[1]) < 5){
 	    if(fV2) contV0[iV0]->Fill(8,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(8,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -904,68 +944,32 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(prob[5] > 0.6){ // d
 	  phi[3] = prob[5];
 	  x[2] = prob[5];
-	  xQA[2] = prob[5];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[5])/(dedxExp[5]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){
-	    xQA[4] = (tof - inttimes[5])/expTOFsigma[5]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[5]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,5);
 	    if(fV2) contV0[iV0]->Fill(5,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(5,aodTrack->Pt(),v3V0,x3);
-	    if(fV2) QA[iV0]->Fill(xQA,4);
-	    if(fV3) QAv3[iV0]->Fill(xQA3,4);
 	  }
 	}
 	else if(prob[6] > 0.6){ // t
 	  phi[3] = prob[6];
 	  x[2] = prob[6];
-	  xQA[2] = prob[6];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[6])/(dedxExp[6]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){
-	    xQA[4] = (tof - inttimes[6])/expTOFsigma[6]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[6]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,6);
 	    if(fV2) contV0[iV0]->Fill(6,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(6,aodTrack->Pt(),v3V0,x3);
-	    if(fV2) QA[iV0]->Fill(xQA,5);
-	    if(fV3) QAv3[iV0]->Fill(xQA3,5);
 	  }
 	}
 	else if(prob[7] > 0.6){ // He3
 	  phi[3] = prob[7];
 	  phi[1] *= 2;
 	  x[2] = prob[7];
-	  xQA[2] = prob[7];
 	  x3[2] = x[2];
-	  xQA3[2] = xQA[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[7])/(dedxExp[7]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(x[4] > 0.5){
-	    xQA[4] = (tof - inttimes[7])/expTOFsigma[7]; // TOF
-	    xQA3[4] = xQA[4]; // TOF
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[7]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,7);
 	    if(fV2) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v3V0,x3);
-	    if(fV2) QA[iV0]->Fill(xQA,6);
-	    if(fV3) QAv3[iV0]->Fill(xQA3,6);
 	  }
 	  phi[1] *= 0.5;
 	}
@@ -988,11 +992,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[2] > 0.6){ // pi
 	  x[2] = probTPC[2];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[2])/(dedxExp[2]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[2]) < 5){
 	    if(fV2) contV0[iV0]->Fill(1,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(1,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -1000,11 +1000,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[3] > 0.6){ // K
 	  x[2] = probTPC[3];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[3])/(dedxExp[3]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[3]) < 5){
 	    if(fV2) contV0[iV0]->Fill(2,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(2,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -1012,11 +1008,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[4] > 0.6){ // p
 	  x[2] = probTPC[4];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[4])/(dedxExp[4]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[4]) < 5){
 	    if(fV2) contV0[iV0]->Fill(3,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(3,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -1024,11 +1016,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[0] > 0.6){ // e
 	  x[2] = probTPC[0];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[0])/(dedxExp[0]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[0]) < 5){
 	    if(fV2) contV0[iV0]->Fill(4,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(4,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -1036,11 +1024,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[1] > 0.6){ // mu
 	  x[2] = probTPC[1];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[1])/(dedxExp[1]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[1]) < 5){
 	    if(fV2) contV0[iV0]->Fill(8,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(8,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -1048,11 +1032,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[5] > 0.6){ // d
 	  x[2] = probTPC[5];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[5])/(dedxExp[5]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[5]) < 5){
 	    if(fV2) contV0[iV0]->Fill(5,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(5,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -1060,11 +1040,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[6] > 0.6){ // t
 	  x[2] = probTPC[6];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[6])/(dedxExp[6]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[6]) < 5){
 	    if(fV2) contV0[iV0]->Fill(6,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(6,aodTrack->Pt(),v3V0,x3);
 	  }
@@ -1072,11 +1048,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(probTPC[7] > 0.6){ // He3
 	  x[2] = probTPC[7];
 	  x3[2] = x[2];
-	  if(dedx > 10.){
-	    xQA[3] = (dedx - dedxExp[7])/(dedxExp[7]*0.07); // TPC
-	    xQA3[3] = xQA[3]; // TPC
-	  }
-	  if(TMath::Abs(xQA[3]) < 5){
+	  if(TMath::Abs(nsigmaTPC[7]) < 5){
 	    if(fV2) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v2V0,x);
 	    if(fV3) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v3V0,x3);
 	  }
