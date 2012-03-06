@@ -88,7 +88,6 @@ AliT0QAChecker::~AliT0QAChecker(){
 //__________________________________________________________________
 void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
-
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
     
@@ -110,6 +109,7 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
     if(!(AliQAv1::Instance()->IsEventSpecieSet(specie) && list[specie]) || list[specie]->GetEntries() == 0) {
       continue;
     }
+
     if(index == AliQAv1::kRAW){
 
       if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib){//      if (index == AliQAv1::kRAW )
@@ -119,14 +119,18 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
       }
 
       if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib   ||
-         AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault){ 
+         //AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult ||
+         AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult){ 
+         //AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault ||
          
         //check BCID   
         Double_t qaFlag = CheckBCID(list[specie]);
         if(qaFlag < test[specie]) test[specie] = qaFlag;
       }
 
-      if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault){ 
+      if(//AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult ||
+        AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult){ 
+        //AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault ||
         //check physics 
         Double_t qaFlag = CheckRaw(list[specie]);
         if(qaFlag < test[specie]) test[specie] = qaFlag;
@@ -299,6 +303,7 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
       text.AddText(Form("Report problem to the T0 on-call expert")); 
       hTrigger->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
     }
+
   }else{ //Trigger histo empty
 
     qualityFlagTrigger = kT0Error;
@@ -309,11 +314,113 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
     text.AddText(Form("If T0 is READY report")); 
     text.AddText(Form("readout problem to the T0 on-call expert")); 
     hTrigger->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+
   }
+
+  //--------- timing plots ---------
+  Int_t qualityFlagMeanBest = kT0Info; //init quality flag for a given histogram;
+  TH1F *hMeanBest    = (TH1F*) listrec->UncheckedAt(223);  //fhMeanBest  time
+  EraseOldMessages((TH1*) hMeanBest); 
+
+  if(hMeanBest->Integral()<1){
+    qualityFlagMeanBest = kT0Error;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 histogram  %s has NO entries", hMeanBest->GetName() ));
+
+    TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+    text.AddText(Form("NO ENTRIES!!!")); 
+    text.AddText(Form("If T0 is READY and beam is on report")); 
+    text.AddText(Form("the problem to the T0 on-call expert")); 
+    hMeanBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+  }
+
+
+
+
+  //----------- vetext plots ---------
+
+  Int_t qualityFlagVetrexFirst = kT0Info; //init quality flag for a given histogram;
+  Int_t qualityFlagVetrexBest  = kT0Info; //init quality flag for a given histogram;
+ 
+  TH1F *hVertexFirst     = (TH1F*) listrec->UncheckedAt(225);//fhVertex1st
+  TH1F *hVertexBest      = (TH1F*) listrec->UncheckedAt(226);//fhVertexBest
+  TH1F *hOrCminOrATvdcOn = (TH1F*) listrec->UncheckedAt(217);//vertex with TVDC on
+
+  // clean objects added at previous checks
+  EraseOldMessages((TH1*) hVertexFirst); 
+  EraseOldMessages((TH1*) hVertexBest); 
+  float errorLevelDifference   = 200; 
+  float warningLevelDifference = 100; 
+
+  if(hVertexFirst->Integral()>0 && hOrCminOrATvdcOn->Integral()>0){
+    float meanVertexFirst = hVertexFirst->GetMean();
+    float meanVertexTVDC  = hOrCminOrATvdcOn->GetMean();
+    float diff = TMath::Abs(meanVertexFirst - meanVertexTVDC);
+    if(diff > errorLevelDifference){
+      qualityFlagVetrexFirst = kT0Error; //init quality flag for a given histogram;
+
+      TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+      text.AddText(Form("large diff. between TVDC vertex and")); 
+      text.AddText(Form("first vertex. Alert the T0 on-call expert")); 
+      hVertexFirst->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+
+    }else if(diff > warningLevelDifference){
+      qualityFlagVetrexFirst = kT0Warning; //init quality flag for a given histogram;
+
+      TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+      text.AddText(Form("large diff. between TVDC vertex and")); 
+      text.AddText(Form("first vertex. Inform the T0 on-call expert")); 
+      hVertexFirst->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+
+    }
+  }else{
+    qualityFlagVetrexFirst = kT0Error;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 histogram  %s has NO entries", hVertexFirst->GetName() ));
+
+    TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+    text.AddText(Form("NO ENTRIES!!!")); 
+    text.AddText(Form("If T0 is READY and beam is on report")); 
+    text.AddText(Form("the problem to the T0 on-call expert")); 
+    hVertexFirst->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+  }
+
+  if(hVertexBest->Integral()>0 && hOrCminOrATvdcOn->Integral()>0){
+    float meanVertexBest  = hVertexBest->GetMean();
+    float meanVertexTVDC =  hOrCminOrATvdcOn->GetMean();
+    float diff = TMath::Abs(meanVertexBest - meanVertexTVDC);
+    if(diff > errorLevelDifference){
+      qualityFlagVetrexBest = kT0Error; //init quality flag for a given histogram;
+
+      TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+      text.AddText(Form("Large. diff. between TVDC vertex and")); 
+      text.AddText(Form("best vertex. Alert the T0 on-call expert")); 
+      hVertexBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+
+    }else if(diff > warningLevelDifference){
+      qualityFlagVetrexBest = kT0Warning; //init quality flag for a given histogram;
+
+      TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+      text.AddText(Form("Large. diff. between TVDC vertex and")); 
+      text.AddText(Form("best vertex. Infrom the T0 on-call expert")); 
+      hVertexBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+    }
+  }else{
+    qualityFlagVetrexBest = kT0Error;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("T0 histogram  %s has NO entries", hVertexBest->GetName() ));
+
+    TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
+    text.AddText(Form("NO ENTRIES!!!")); 
+    text.AddText(Form("If T0 is READY and beam is on report")); 
+    text.AddText(Form("the problem to the T0 on-call expert")); 
+    hVertexBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
+  }
+
 
   //executive summary
   int lowestQualityFlag = (int) qualityFlagTrigger;
-   
+  if(qualityFlagVetrexBest<lowestQualityFlag)  lowestQualityFlag = qualityFlagVetrexBest;
+  if(qualityFlagVetrexFirst<lowestQualityFlag) lowestQualityFlag = qualityFlagVetrexFirst;
+  if(qualityFlagMeanBest <lowestQualityFlag)   lowestQualityFlag = qualityFlagMeanBest; 
+  
 
   return ConvertQualityFlagToDouble(lowestQualityFlag); 
   
