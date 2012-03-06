@@ -224,15 +224,15 @@ void AliHFEtrdPIDqa::CreateLikelihoodHistogram(){
   Int_t nbins[kQuantitiesLike]; memcpy(nbins, fgkNBinsCommon, sizeof(Int_t) * kQuantitiesCommon);
   nbins[kElectronLike] = 100;
   nbins[kNClustersLike] = 200;
-  nbins[kCentralityBin] = 12;
+  nbins[kCentralityBinLike] = 12;
   Double_t binMin[kQuantitiesLike]; memcpy(binMin, fgkMinBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   Double_t binMax[kQuantitiesLike]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMin[kElectronLike] = 0.;      
   binMin[kNClustersLike] = 0.;
-  binMin[kCentralityBin] = -1.;
+  binMin[kCentralityBinLike] = -1.;
   binMax[kElectronLike] = 1.;
   binMax[kNClustersLike] = 200.;
-  binMax[kCentralityBin] = 11.;
+  binMax[kCentralityBinLike] = 11.;
 
   fHistos->CreateTHnSparse("fLikeTRD","TRD Likelihood Studies", kQuantitiesLike, nbins, binMin, binMax);
   fHistos->BinLogAxis("fLikeTRD", kP);
@@ -247,13 +247,15 @@ void AliHFEtrdPIDqa::CreateQAHistogram(){
   Int_t nbins[kQuantitiesQA]; memcpy(nbins, fgkNBinsCommon, sizeof(Int_t) * kQuantitiesCommon);
   nbins[kNonZeroTrackletCharge] = AliESDtrack::kTRDnPlanes + 1;
   nbins[kNClusters] = 200;
+  nbins[kCentralityBinQA] = 12;
   Double_t binMin[kQuantitiesQA]; memcpy(binMin, fgkMinBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMin[kNonZeroTrackletCharge] = 0.;      
-  binMin[kNClusters] = 0.;      
+  binMin[kNClusters] = 0.;
+  binMin[kCentralityBinQA] = -1.;
   Double_t binMax[kQuantitiesQA]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMax[kNonZeroTrackletCharge] = AliESDtrack::kTRDnPlanes + 1.;
   binMax[kNClusters] = 200.;
-
+  binMax[kCentralityBinQA] = 11.;
   fHistos->CreateTHnSparse("fQAtrack","TRD QA Histogram", kQuantitiesQA, nbins, binMin, binMax);
   fHistos->BinLogAxis("fQAtrack", kP);
 }
@@ -267,15 +269,18 @@ void AliHFEtrdPIDqa::CreatedEdxHistogram(){
   Int_t nbins[kQuantitiesdEdx]; memcpy(nbins, fgkNBinsCommon, sizeof(Int_t) * kQuantitiesCommon);
   nbins[kdEdx] = 100;
   nbins[kNclusters] = 261;
-  nbins[kNonZeroSlices] = 9; 
+  nbins[kNonZeroSlices] = 9;
+  nbins[kCentralityBindEdx] = 12;
   Double_t binMin[kQuantitiesdEdx]; memcpy(binMin, fgkMinBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMin[kdEdx] = 0.;     
   binMin[kNclusters] = 0;
   binMin[kNonZeroSlices] = 0.;
+  binMin[kCentralityBindEdx] = -1.;
   Double_t binMax[kQuantitiesdEdx]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMax[kdEdx] = 10000.;
   binMax[kNclusters] = 260.;
   binMax[kNonZeroSlices] = 8.;
+  binMax[kCentralityBindEdx] = 11.;
 
   fHistos->CreateTHnSparse("fQAdEdx","TRD summed dEdx", kQuantitiesdEdx, nbins, binMin, binMax);
   fHistos->BinLogAxis("fQAdEdx", kP);
@@ -292,14 +297,17 @@ void AliHFEtrdPIDqa::CreateHistoTruncatedMean(){
   nbins[kTPCdEdx] = 600;
   nbins[kTRDdEdxMethod1] = 1000;
   nbins[kTRDdEdxMethod2] = 1000;
+  nbins[kCentralityBinTruncMean] = 12;
   Double_t binMin[kQuantitiesTruncMean]; memcpy(binMin, fgkMinBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMin[kTPCdEdx] = 0.;      
   binMin[kTRDdEdxMethod1] = 0.;      
-  binMin[kTRDdEdxMethod2] = 0.;      
+  binMin[kTRDdEdxMethod2] = 0.;
+  binMin[kCentralityBinTruncMean] = -1.;
   Double_t binMax[kQuantitiesTruncMean]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMax[kTPCdEdx] = 600;
   binMax[kTRDdEdxMethod1] = 20000.;
   binMax[kTRDdEdxMethod2] = 20000.;
+  binMax[kCentralityBinTruncMean] = 11.;
 
   fHistos->CreateTHnSparse("fTRDtruncMean","TRD TruncatedMean studies", kQuantitiesTruncMean, nbins, binMin, binMax);
   fHistos->BinLogAxis("fTRDtruncMean", kP);
@@ -375,12 +383,13 @@ void AliHFEtrdPIDqa::FillTRDLikelihoods(const AliESDtrack * const track, Int_t s
   // p
   // ntracklets
   // Electron Likelihood
+  // Centrality
   quantities[kSpecies] = species;
   quantities[kP] = outerPars ? outerPars->P() : track->P();
   quantities[kNTracklets] = track->GetTRDntrackletsPID();
   quantities[kElectronLike] = likeEle;
   quantities[kNClustersLike] =  track->GetTRDncls();
-  quantities[kCentralityBin] = fCentralityBin;
+  quantities[kCentralityBinLike] = fCentralityBin;
   fHistos->Fill("fLikeTRD", quantities);
 
 }
@@ -455,14 +464,17 @@ void AliHFEtrdPIDqa::FillTRDQAplots(const AliESDtrack * const track, Int_t speci
     quantitiesdEdx[kdEdx] = fTotalChargeInSlice0 ? track->GetTRDslice(iplane, 0) : dEdxSum; // hack by mfasel: In the new reconstruction, the total charge is stored in the first slice, in the old reconstruction it has to be calculated from the slice charges.     
     if(dEdxSum) ntrackletsNonZero++;
     // Fill dEdx histogram
+    quantitiesdEdx[kCentralityBindEdx] = fCentralityBin;
     if(dEdxSum > 1e-1) fHistos->Fill("fQAdEdx", quantitiesdEdx); // Cut out 0 entries
   }
   quantitiesQA[kNonZeroTrackletCharge] = ntrackletsNonZero;
+  quantitiesQA[kCentralityBinQA] = fCentralityBin;
   fHistos->Fill("fQAtrack", quantitiesQA);
 
   quantitiesTruncMean[kTPCdEdx] = track->GetTPCsignal();
   quantitiesTruncMean[kTRDdEdxMethod1] = fTRDpid->GetTRDSignalV1(track, 0.6);
   quantitiesTruncMean[kTRDdEdxMethod2] = fTRDpid->GetTRDSignalV2(track, 0.6);
+  quantitiesTruncMean[kCentralityBinTruncMean] = fCentralityBin;
   fHistos->Fill("fTRDtruncMean", quantitiesTruncMean);
 }
 
@@ -609,8 +621,8 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets, Int_t nCentrality, Bool
   hLikeTRD->GetAxis(kNTracklets)->SetRange(binTracklets, isGreaterEqual ? 7 : binTracklets);
 
   if(isPbPb){
-      Int_t binCentrality = hLikeTRD->GetAxis(kCentralityBin)->FindBin(nCentrality);
-      hLikeTRD->GetAxis(kCentralityBin)->SetRange(binCentrality, isGreaterEqual ? 11 : binCentrality);
+      Int_t binCentrality = hLikeTRD->GetAxis(kCentralityBinLike)->FindBin(nCentrality);
+      hLikeTRD->GetAxis(kCentralityBinLike)->SetRange(binCentrality, isGreaterEqual ? 11 : binCentrality);
       /*
        new TCanvas;
        TH2 *test = hLikeTRD->Projection(kCentralityBin, kP);
@@ -637,7 +649,7 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets, Int_t nCentrality, Bool
   // Undo ranges
   hLikeTRD->GetAxis(kSpecies)->SetRange(0, hLikeTRD->GetAxis(kSpecies)->GetNbins());
   hLikeTRD->GetAxis(kNTracklets)->SetRange(0, hLikeTRD->GetAxis(kNTracklets)->GetNbins());
-  hLikeTRD->GetAxis(kNTracklets)->SetRange(0, hLikeTRD->GetAxis(kCentralityBin)->GetNbins());
+  hLikeTRD->GetAxis(kNTracklets)->SetRange(0, hLikeTRD->GetAxis(kCentralityBinLike)->GetNbins());
 
   // Prepare List for output
   Char_t *listname=Form("%dTracklets", nTracklets);
@@ -842,8 +854,8 @@ Double_t AliHFEtrdPIDqa::CalculateIntegratedPionEfficiency(UInt_t nTracklets, Do
   hLikeTRD->GetAxis(kNTracklets)->SetRange(binTracklets, binTracklets);
 
   if(icentrality!=1){
-      Int_t binCentrality = hLikeTRD->GetAxis(kCentralityBin)->FindBin(icentrality);
-      hLikeTRD->GetAxis(kCentralityBin)->SetRange(binCentrality, binCentrality);
+      Int_t binCentrality = hLikeTRD->GetAxis(kCentralityBinLike)->FindBin(icentrality);
+      hLikeTRD->GetAxis(kCentralityBinLike)->SetRange(binCentrality, binCentrality);
   }
 
   Int_t pbinMin = hLikeTRD->GetAxis(kP)->FindBin(pmax),

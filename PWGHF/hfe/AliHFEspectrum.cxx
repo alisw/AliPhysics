@@ -1,3 +1,4 @@
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -76,11 +77,11 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fIPanaCharmBgSubtract(kFALSE),
   fIPanaConversionBgSubtract(kFALSE),
   fIPanaNonHFEBgSubtract(kFALSE),
-  fNonHFEbgMethod2(kFALSE),
+  fIPParameterizedEff(kFALSE),
   fNonHFEsyst(0),
+  fBeauty2ndMethod(kFALSE),
   fNbDimensions(1),
   fNMCEvents(0),
-  fNMCbgEvents(0),
   fStepMC(-1),
   fStepTrue(-1),
   fStepData(-1),
@@ -91,8 +92,8 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fChargeChoosen(kAllCharge),
   fNCentralityBinAtTheEnd(0),
   fHadronEffbyIPcut(NULL),
-  fConversionEff(NULL),
-  fNonHFEEff(NULL),
+  fBSpectrum2ndMethod(NULL),
+  fkBeauty2ndMethodfilename(""),
   fBeamType(0),
   fDebugLevel(0),
   fWriteToFile(kFALSE)
@@ -102,9 +103,25 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   //
 
   for(Int_t k = 0; k < 20; k++){
-    fNEvents[k] = 0;
-    fLowBoundaryCentralityBinAtTheEnd[k] = 0;
-    fHighBoundaryCentralityBinAtTheEnd[k] = 0;
+      fNEvents[k] = 0;
+      fNMCbgEvents[k] = 0;
+      fLowBoundaryCentralityBinAtTheEnd[k] = 0;
+      fHighBoundaryCentralityBinAtTheEnd[k] = 0;
+      if(k<kCentrality)
+      {
+          fEfficiencyTOFPIDD[k] = 0;
+          fEfficiencyIPCharmD[k] = 0;     
+          fEfficiencyIPBeautyD[k] = 0;    
+          fEfficiencyIPConversionD[k] = 0;
+          fEfficiencyIPNonhfeD[k] = 0;   
+
+	  fConversionEff[k] = 0;
+	  fNonHFEEff[k] = 0;
+	  fCharmEff[k] = 0;
+	  fBeautyEff[k] = 0;
+	  fEfficiencyCharmSigD[k] = 0;
+          fEfficiencyBeautySigD[k] = 0;
+      }
   }
   memset(fEtaRange, 0, sizeof(Double_t) * 2);
   memset(fEtaRangeNorm, 0, sizeof(Double_t) * 2);
@@ -136,9 +153,20 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   // If no inclusive spectrum, then take only efficiency map for beauty electron
   // and the appropriate correlation matrix
   //
+
+
+  if(fBeauty2ndMethod) CallInputFileForBeauty2ndMethod();
+
   Int_t kNdim = 3;
+  Int_t kNcentr =1;
+  Int_t ptpr =0;
   if(fBeamType==0) kNdim=3;
-  if(fBeamType==1) kNdim=4;
+  if(fBeamType==1)
+  {
+      kNdim=4;
+      kNcentr=11;
+      ptpr=1;
+  }
 
   Int_t dims[kNdim];
   // Get the requested format
@@ -183,7 +211,8 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
     datacontainer = datahfecontainer->GetCFContainer("recTrackContReco");
   }
   else{
-    datacontainer = datahfecontainer->MakeMergedCFContainer("sumreco","sumreco","recTrackContReco:recTrackContDEReco");
+
+      datacontainer = datahfecontainer->MakeMergedCFContainer("sumreco","sumreco","recTrackContReco:recTrackContDEReco");
   }
   AliCFContainer *contaminationcontainer = datahfecontainer->GetCFContainer("hadronicBackground");
   if((!datacontainer) || (!contaminationcontainer)) return kFALSE;
@@ -219,10 +248,21 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
       for(Int_t iSource = 0; iSource < kElecBgSources; iSource++){
 	for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
           nonHFEtempContainer =  bghfecontainer->GetCFContainer(Form("mesonElecs%s%s",sourceName[iSource],levelName[iLevel]));
-	  fNonHFESourceContainer[iSource][iLevel] = GetSlicedContainer(nonHFEtempContainer, fNbDimensions, dims, -1, fChargeChoosen);
-          convtempContainer =  bghfecontainer->GetCFContainer(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]));
-	  fConvSourceContainer[iSource][iLevel] = GetSlicedContainer(convtempContainer, fNbDimensions, dims, -1, fChargeChoosen);
-          if((!fConvSourceContainer[iSource][iLevel])||(!fNonHFESourceContainer[iSource][iLevel])) return kFALSE;   
+	  convtempContainer =  bghfecontainer->GetCFContainer(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]));
+	  for(Int_t icentr=0;icentr<kNcentr;icentr++)
+	  {
+	      if(fBeamType==0)
+	      {
+		  fConvSourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(convtempContainer, fNbDimensions, dims, -1, fChargeChoosen);
+		  fNonHFESourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(nonHFEtempContainer, fNbDimensions, dims, -1, fChargeChoosen);
+	      }
+	      if(fBeamType==1)
+	      {
+		  fConvSourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(convtempContainer, fNbDimensions, dims, -1, fChargeChoosen,icentr);
+		  fNonHFESourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(nonHFEtempContainer, fNbDimensions, dims, -1, fChargeChoosen,icentr);
+	      }
+	      if((!fConvSourceContainer[iSource][iLevel][icentr])||(!fNonHFESourceContainer[iSource][iLevel])) return kFALSE;
+	  }
 	}
       }
     }
@@ -248,17 +288,7 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
    mccontainermcD = GetSlicedContainer(mccontainermcbg, fNbDimensions, dims, source, fChargeChoosen);
    SetContainer(mccontainermcD,AliHFEspectrum::kMCContainerCharmMC);
 
-   source = 2; //conversion
-   mccontainermcD = GetSlicedContainer(mccontainermcbg, fNbDimensions, dims, source, fChargeChoosen);
-   AliCFEffGrid* efficiencyConv = new AliCFEffGrid("efficiencyConv","",*mccontainermcD);
-   efficiencyConv->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. be careful with step #
-   fConversionEff = (TH1D*)efficiencyConv->Project(0);
-
-   source = 3; //non HFE except for the conversion
-   mccontainermcD = GetSlicedContainer(mccontainermcbg, fNbDimensions, dims, source, fChargeChoosen);
-   AliCFEffGrid* efficiencyNonhfe= new AliCFEffGrid("efficiencyNonhfe","",*mccontainermcD);
-   efficiencyNonhfe->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. be careful with step #
-   fNonHFEEff = (TH1D*)efficiencyNonhfe->Project(0);
+   SetParameterizedEff(mccontainermc, mccontainermcbg, dims);
 
    if(!fNonHFEsyst){
      AliCFContainer *nonHFEweightedContainerD = GetSlicedContainer(nonHFEweightedContainer, fNbDimensions, dims, -1, fChargeChoosen);
@@ -343,6 +373,17 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
 
 
   return kTRUE;
+}
+
+
+//____________________________________________________________
+void AliHFEspectrum::CallInputFileForBeauty2ndMethod(){
+  //
+  // get spectrum for beauty 2nd method
+  //
+  //
+    TFile *inputfile2ndmethod=TFile::Open(fkBeauty2ndMethodfilename);
+    fBSpectrum2ndMethod = new TH1D(*static_cast<TH1D*>(inputfile2ndmethod->Get("BSpectrum")));
 }
 
 
@@ -708,11 +749,14 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
   AliCFDataGrid *unnormalizedRawSpectrum = 0x0;
   TGraphErrors *gNormalizedRawSpectrum = 0x0;
   if(subtractcontamination) {
-    dataspectrumaftersubstraction = SubtractBackground(kTRUE);
-    unnormalizedRawSpectrum = (AliCFDataGrid*)dataspectrumaftersubstraction->Clone();
-    dataGridAfterFirstSteps = dataspectrumaftersubstraction;
-    gNormalizedRawSpectrum = Normalize(unnormalizedRawSpectrum);
+      if(!fBeauty2ndMethod) dataspectrumaftersubstraction = SubtractBackground(kTRUE);
+      else dataspectrumaftersubstraction = GetRawBspectra2ndMethod();
+      unnormalizedRawSpectrum = (AliCFDataGrid*)dataspectrumaftersubstraction->Clone();
+      dataGridAfterFirstSteps = dataspectrumaftersubstraction;
+      gNormalizedRawSpectrum = Normalize(unnormalizedRawSpectrum);
   }
+
+  printf("after normalize getting IP \n");
 
   /////////////////////////////////////////////////////////////////////////////////////////
   // Correct for IP efficiency for beauty electrons after subtracting all the backgrounds
@@ -724,13 +768,14 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
 
   if(fEfficiencyFunction){
     dataspectrumafterefficiencyparametrizedcorrection = CorrectParametrizedEfficiency(dataGridAfterFirstSteps);
-    dataGridAfterFirstSteps = dataspectrumafterefficiencyparametrizedcorrection;  
+    dataGridAfterFirstSteps = dataspectrumafterefficiencyparametrizedcorrection;
   }
   else if(dataContainerV0){
     dataspectrumafterV0efficiencycorrection = CorrectV0Efficiency(dataspectrumaftersubstraction);
     dataGridAfterFirstSteps = dataspectrumafterV0efficiencycorrection;  
   }  
  
+
 
   ///////////////
   // Unfold
@@ -754,13 +799,19 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
   /////////////////////
   // Simply correct
   ////////////////////
+
   AliCFDataGrid *alltogetherCorrection = CorrectForEfficiency(dataGridAfterFirstSteps);
   
 
   //////////
   // Plot
   //////////
+
   if(fDebugLevel > 0.0) {
+
+    Int_t ptpr = 0;
+    if(fBeamType==0) ptpr=0;
+    if(fBeamType==1) ptpr=1;
   
     TCanvas * ccorrected = new TCanvas("corrected","corrected",1000,700);
     ccorrected->Divide(2,1);
@@ -787,8 +838,8 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
     legcorrected->AddEntry(alltogetherspectrumD,"Alltogether","p");
     legcorrected->Draw("same");
     ccorrected->cd(2);
-    TH1D *correctedTH1D = correctedspectrum->Projection(0);
-    TH1D *alltogetherTH1D = (TH1D *) alltogetherCorrection->Project(0);
+    TH1D *correctedTH1D = correctedspectrum->Projection(ptpr);
+    TH1D *alltogetherTH1D = (TH1D *) alltogetherCorrection->Project(ptpr);
     TH1D* ratiocorrected = (TH1D*)correctedTH1D->Clone();
     ratiocorrected->SetName("ratiocorrected");
     ratiocorrected->SetTitle("");
@@ -799,15 +850,17 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
     ratiocorrected->Draw();
     if(fWriteToFile) ccorrected->SaveAs("CorrectedBeauty.eps");
 
-    if(fNonHFEsyst){
-      CalculateNonHFEsyst();
+    if(fBeamType == 0){
+	if(fNonHFEsyst){
+	    CalculateNonHFEsyst(0);
+	}
     }
-
 
     // Dump to file if needed
 
     if(fDumpToFile) {
-      
+        // to do centrality dependent
+
       TFile *out;
       out = new TFile("finalSpectrum.root","recreate");
       out->cd();
@@ -824,14 +877,71 @@ Bool_t AliHFEspectrum::CorrectBeauty(Bool_t subtractcontamination){
       alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
       alltogetherCorrection->Write();
       //
-      if(unnormalizedRawSpectrum) {
-	unnormalizedRawSpectrum->SetName("beautyAfterIP");
-	unnormalizedRawSpectrum->Write();
-      }
+      unnormalizedRawSpectrum->SetName("beautyAfterIP");
+      unnormalizedRawSpectrum->Write();
       
       if(gNormalizedRawSpectrum){
         gNormalizedRawSpectrum->SetName("normalizedBeautyAfterIP");
         gNormalizedRawSpectrum->Write();
+      }
+
+      if(fBeamType==1) {
+
+	  TGraphErrors* correctedspectrumDc[kCentrality];
+          TGraphErrors* alltogetherspectrumDc[kCentrality];
+	  for(Int_t i=0;i<kCentrality-1;i++)
+	  {
+	      correctedspectrum->GetAxis(0)->SetRange(i+1,i+1);
+	      correctedspectrumDc[i] = Normalize(correctedspectrum,i);
+	      correctedspectrumDc[i]->SetTitle(Form("UnfoldingCorrectedSpectrum_%i",i));
+	      correctedspectrumDc[i]->SetName(Form("UnfoldingCorrectedSpectrum_%i",i));
+	      alltogetherCorrection->GetAxis(0)->SetRange(i+1,i+1);
+	      alltogetherspectrumDc[i] = Normalize(alltogetherCorrection,i);
+	      alltogetherspectrumDc[i]->SetTitle(Form("AlltogetherSpectrum_%i",i));
+	      alltogetherspectrumDc[i]->SetName(Form("AlltogetherSpectrum_%i",i));
+	      correctedspectrumDc[i]->Write();
+	      alltogetherspectrumDc[i]->Write();
+             
+
+	      TH1D *centrcrosscheck = correctedspectrum->Projection(0);
+	      centrcrosscheck->SetTitle(Form("centrality_%i",i));
+	      centrcrosscheck->SetName(Form("centrality_%i",i));
+	      centrcrosscheck->Write();
+
+	      TH1D *correctedTH1Dc = correctedspectrum->Projection(ptpr);
+	      TH1D *alltogetherTH1Dc = (TH1D *) alltogetherCorrection->Project(ptpr);
+
+	      TH1D *centrcrosscheck2 =  (TH1D *) alltogetherCorrection->Project(0);
+	      centrcrosscheck2->SetTitle(Form("centrality2_%i",i));
+	      centrcrosscheck2->SetName(Form("centrality2_%i",i));
+	      centrcrosscheck2->Write();
+
+	      TH1D* ratiocorrectedc = (TH1D*)correctedTH1D->Clone();
+	      ratiocorrectedc->Divide(correctedTH1Dc,alltogetherTH1Dc,1,1);
+	      ratiocorrectedc->SetTitle(Form("RatioUnfoldingAlltogetherSpectrum_%i",i));
+	      ratiocorrectedc->SetName(Form("RatioUnfoldingAlltogetherSpectrum_%i",i));
+              ratiocorrectedc->Write();
+
+              fEfficiencyCharmSigD[i]->SetTitle(Form("IPEfficiencyForBeautySigCent%i",i));
+	      fEfficiencyCharmSigD[i]->SetName(Form("IPEfficiencyForBeautySigCent%i",i));
+              fEfficiencyCharmSigD[i]->Write();
+	      fEfficiencyBeautySigD[i]->SetTitle(Form("IPEfficiencyForCharmSigCent%i",i));
+	      fEfficiencyBeautySigD[i]->SetName(Form("IPEfficiencyForCharmSigCent%i",i));
+              fEfficiencyBeautySigD[i]->Write();
+	      fCharmEff[i]->SetTitle(Form("IPEfficiencyForCharmCent%i",i));
+	      fCharmEff[i]->SetName(Form("IPEfficiencyForCharmCent%i",i));
+              fCharmEff[i]->Write();
+	      fBeautyEff[i]->SetTitle(Form("IPEfficiencyForBeautyCent%i",i));
+	      fBeautyEff[i]->SetName(Form("IPEfficiencyForBeautyCent%i",i));
+              fBeautyEff[i]->Write();
+	      fConversionEff[i]->SetTitle(Form("IPEfficiencyForConversionCent%i",i));
+	      fConversionEff[i]->SetName(Form("IPEfficiencyForConversionCent%i",i));
+              fConversionEff[i]->Write();
+	      fNonHFEEff[i]->SetTitle(Form("IPEfficiencyForNonHFECent%i",i));
+	      fNonHFEEff[i]->SetName(Form("IPEfficiencyForNonHFECent%i",i));
+              fNonHFEEff[i]->Write();
+	  }
+
       }
 
       out->Close(); 
@@ -847,7 +957,20 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
   //
   // Apply background subtraction
   //
-  
+
+    Int_t ptpr = 0;
+    Int_t nbins=1;
+    if(fBeamType==0)
+    {
+	ptpr=0;
+        nbins=1;
+    }
+    if(fBeamType==1)
+    {
+	ptpr=1;
+	nbins=2;
+    }
+
   // Raw spectrum
   AliCFContainer *dataContainer = GetContainer(kDataContainer);
   if(!dataContainer){
@@ -872,27 +995,39 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
 
   if(!fInclusiveSpectrum){
     //Background subtraction for IP analysis
-    TH1D *measuredTH1Draw = (TH1D *) dataspectrumbeforesubstraction->Project(0);
+    TH1D *measuredTH1Draw = (TH1D *) dataspectrumbeforesubstraction->Project(ptpr);
     CorrectFromTheWidth(measuredTH1Draw);
     TCanvas *rawspectra = new TCanvas("rawspectra","rawspectra",600,500);
     rawspectra->cd();
-    rawspectra->SetLogx();
     rawspectra->SetLogy();
     TLegend *lRaw = new TLegend(0.65,0.65,0.95,0.95);
     measuredTH1Draw->SetMarkerStyle(20);
     measuredTH1Draw->Draw();
     lRaw->AddEntry(measuredTH1Draw,"measured raw spectrum");
+    TH1D* htemp;
+    Int_t* bins=new Int_t[1];
     if(fIPanaHadronBgSubtract){
       // Hadron background
-      printf("Hadron background for IP analysis subtracted!\n");
-      Int_t* bins=new Int_t[1];
-      TH1D* htemp  = (TH1D *) fHadronEffbyIPcut->Projection(0);
-      bins[0]=htemp->GetNbinsX();
-      AliCFDataGrid *hbgContainer = new AliCFDataGrid("hbgContainer","hadron bg after IP cut",1,bins);
+	printf("Hadron background for IP analysis subtracted!\n");
+	if(fBeamType==0)
+	{
+
+	    htemp  = (TH1D *) fHadronEffbyIPcut->Projection(0);
+	    bins[0]=htemp->GetNbinsX();
+	}
+	if(fBeamType==1)
+	{
+	    bins=new Int_t[2];
+	    htemp  = (TH1D *) fHadronEffbyIPcut->Projection(0);
+	    bins[0]=htemp->GetNbinsX();
+	    htemp  = (TH1D *) fHadronEffbyIPcut->Projection(1);
+	    bins[1]=htemp->GetNbinsX();
+	}
+      AliCFDataGrid *hbgContainer = new AliCFDataGrid("hbgContainer","hadron bg after IP cut",nbins,bins);
       hbgContainer->SetGrid(fHadronEffbyIPcut);
       backgroundGrid->Multiply(hbgContainer,1);
       // draw raw hadron bg spectra
-      TH1D *hadronbg= (TH1D *) backgroundGrid->Project(0);
+      TH1D *hadronbg= (TH1D *) backgroundGrid->Project(ptpr);
       CorrectFromTheWidth(hadronbg);
       hadronbg->SetMarkerColor(7);
       hadronbg->SetMarkerStyle(20);
@@ -907,7 +1042,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       printf("Charm background for IP analysis subtracted!\n");
       AliCFDataGrid *charmbgContainer = (AliCFDataGrid *) GetCharmBackground();
       // draw charm bg spectra
-      TH1D *charmbg= (TH1D *) charmbgContainer->Project(0);
+      TH1D *charmbg= (TH1D *) charmbgContainer->Project(ptpr);
       CorrectFromTheWidth(charmbg);
       charmbg->SetMarkerColor(3);
       charmbg->SetMarkerStyle(20);
@@ -919,9 +1054,9 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
     }
     if(fIPanaConversionBgSubtract){
       // Conversion background
-      AliCFDataGrid *conversionbgContainer = (AliCFDataGrid *) GetConversionBackground();
+      AliCFDataGrid *conversionbgContainer = (AliCFDataGrid *) GetConversionBackground(); 
       // draw conversion bg spectra
-      TH1D *conversionbg= (TH1D *) conversionbgContainer->Project(0);
+      TH1D *conversionbg= (TH1D *) conversionbgContainer->Project(ptpr);
       CorrectFromTheWidth(conversionbg);
       conversionbg->SetMarkerColor(4);
       conversionbg->SetMarkerStyle(20);
@@ -936,7 +1071,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       // NonHFE background
       AliCFDataGrid *nonHFEbgContainer = (AliCFDataGrid *) GetNonHFEBackground();
       // draw Dalitz/dielectron bg spectra
-      TH1D *nonhfebg= (TH1D *) nonHFEbgContainer->Project(0);
+      TH1D *nonhfebg= (TH1D *) nonHFEbgContainer->Project(ptpr);
       CorrectFromTheWidth(nonhfebg);
       nonhfebg->SetMarkerColor(6);
       nonhfebg->SetMarkerStyle(20);
@@ -947,7 +1082,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
       spectrumSubtracted->Add(nonHFEbgContainer,-1.0);
       printf("Non HFE background subtraction is preliminary!\n");
     }
-    TH1D *rawbgsubtracted = (TH1D *) spectrumSubtracted->Project(0);
+    TH1D *rawbgsubtracted = (TH1D *) spectrumSubtracted->Project(ptpr);
     CorrectFromTheWidth(rawbgsubtracted);
     rawbgsubtracted->SetMarkerStyle(24);
     rawspectra->cd();
@@ -968,16 +1103,16 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
 
   if(fDebugLevel > 0) {
 
-    Int_t ptpr;
-    if(fBeamType==0) ptpr=0;
-    if(fBeamType==1) ptpr=1;
+    Int_t ptprd;
+    if(fBeamType==0) ptprd=0;
+    if(fBeamType==1) ptprd=1;
     
     TCanvas * cbackgroundsubtraction = new TCanvas("backgroundsubtraction","backgroundsubtraction",1000,700);
     cbackgroundsubtraction->Divide(3,1);
     cbackgroundsubtraction->cd(1);
     gPad->SetLogy();
-    TH1D *measuredTH1Daftersubstraction = (TH1D *) spectrumSubtracted->Project(ptpr);
-    TH1D *measuredTH1Dbeforesubstraction = (TH1D *) dataspectrumbeforesubstraction->Project(ptpr);
+    TH1D *measuredTH1Daftersubstraction = (TH1D *) spectrumSubtracted->Project(ptprd);
+    TH1D *measuredTH1Dbeforesubstraction = (TH1D *) dataspectrumbeforesubstraction->Project(ptprd);
     CorrectFromTheWidth(measuredTH1Daftersubstraction);
     CorrectFromTheWidth(measuredTH1Dbeforesubstraction);
     measuredTH1Daftersubstraction->SetStats(0);
@@ -1019,7 +1154,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
     }
     ratiomeasuredcontamination->Draw("P");
     cbackgroundsubtraction->cd(3);
-    TH1D *measuredTH1background = (TH1D *) backgroundGrid->Project(ptpr);
+    TH1D *measuredTH1background = (TH1D *) backgroundGrid->Project(ptprd);
     CorrectFromTheWidth(measuredTH1background);
     measuredTH1background->SetStats(0);
     measuredTH1background->SetTitle("");
@@ -1133,9 +1268,20 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
   //
   // calculate charm background
   //
+    Int_t ptpr = 0;
+    Int_t nDim = 1;
+    if(fBeamType==0)
+    {
+	ptpr=0;
+    }
+    if(fBeamType==1)
+    {
+	ptpr=1;
+	nDim=2;
+    }
 
   Double_t evtnorm=0;
-  if(fNMCbgEvents) evtnorm= double(fNEvents[0])/double(fNMCbgEvents);
+  if(fNMCbgEvents[0]) evtnorm= double(fNEvents[0])/double(fNMCbgEvents[0]);
 
   AliCFContainer *mcContainer = GetContainer(kMCContainerCharmMC);
   if(!mcContainer){
@@ -1150,29 +1296,58 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
 
   AliCFDataGrid *charmBackgroundGrid= 0x0;
   charmBackgroundGrid = new AliCFDataGrid("charmBackgroundGrid","charmBackgroundGrid",*mcContainer, fStepMC-1); // use MC eff. up to right before PID
-  TH1D *charmbgaftertofpid = (TH1D *) charmBackgroundGrid->Project(0);
 
+  TH1D *charmbgaftertofpid = (TH1D *) charmBackgroundGrid->Project(0);
   Int_t* bins=new Int_t[1];
   bins[0]=charmbgaftertofpid->GetNbinsX();
-  AliCFDataGrid *ipWeightedCharmContainer = new AliCFDataGrid("ipWeightedCharmContainer","ipWeightedCharmContainer",1,bins);
+
+  if(fBeamType==1)
+  {
+      charmbgaftertofpid = (TH1D *) charmBackgroundGrid->Project(0);
+      bins=new Int_t[2];
+      bins[0]=charmbgaftertofpid->GetNbinsX();
+      charmbgaftertofpid = (TH1D *) charmBackgroundGrid->Project(1);
+      bins[1]=charmbgaftertofpid->GetNbinsX();
+
+  }
+
+  AliCFDataGrid *ipWeightedCharmContainer = new AliCFDataGrid("ipWeightedCharmContainer","ipWeightedCharmContainer",nDim,bins);
   ipWeightedCharmContainer->SetGrid(GetPIDxIPEff(0)); // get charm efficiency
-  TH1D* parametrizedcharmpidipeff = (TH1D*)ipWeightedCharmContainer->Project(0);
+  TH1D* parametrizedcharmpidipeff = (TH1D*)ipWeightedCharmContainer->Project(ptpr);
 
-  charmBackgroundGrid->Multiply(ipWeightedCharmContainer,evtnorm);
-  TH1D* charmbgafteripcut = (TH1D*)charmBackgroundGrid->Project(0);
+  if(fBeamType==0)charmBackgroundGrid->Multiply(ipWeightedCharmContainer,evtnorm);
+  Double_t contents[2];
+  AliCFDataGrid *eventTemp = new AliCFDataGrid("eventTemp","eventTemp",nDim,bins);
+  if(fBeamType==1)
+  {
+      for(Int_t kCentr=0;kCentr<bins[0];kCentr++)
+      {
+	  for(Int_t kpt=0;kpt<bins[1];kpt++)
+	  {
+	      Double_t evtnormPbPb=0;
+	      if(fNMCbgEvents[kCentr]) evtnormPbPb= double(fNEvents[kCentr])/double(fNMCbgEvents[kCentr]);
+	      contents[0]=kCentr;
+	      contents[1]=kpt;
+              eventTemp->Fill(contents,evtnormPbPb);
+	  }
+      }
+   charmBackgroundGrid->Multiply(eventTemp,1);
+  }
+  TH1D* charmbgafteripcut = (TH1D*)charmBackgroundGrid->Project(ptpr);
 
-  AliCFDataGrid *weightedCharmContainer = new AliCFDataGrid("weightedCharmContainer","weightedCharmContainer",1,bins);
+  AliCFDataGrid *weightedCharmContainer = new AliCFDataGrid("weightedCharmContainer","weightedCharmContainer",nDim,bins);
   weightedCharmContainer->SetGrid(GetCharmWeights()); // get charm weighting factors
-  TH1D* charmweightingfc = (TH1D*)weightedCharmContainer->Project(0);
+  TH1D* charmweightingfc = (TH1D*)weightedCharmContainer->Project(ptpr);
   charmBackgroundGrid->Multiply(weightedCharmContainer,1.);
-  TH1D* charmbgafterweight = (TH1D*)charmBackgroundGrid->Project(0);
+  TH1D* charmbgafterweight = (TH1D*)charmBackgroundGrid->Project(ptpr);
 
   // Efficiency (set efficiency to 1 for only folding) 
   AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainer);
   efficiencyD->CalculateEfficiency(0,0);
 
-  // Folding 
-  Int_t nDim = 1;
+  // Folding
+  if(fBeamType==0)nDim = 1;
+  if(fBeamType==1)nDim = 2;
   AliCFUnfolding folding("unfolding","",nDim,fCorrelation,efficiencyD->GetGrid(),charmBackgroundGrid->GetGrid(),charmBackgroundGrid->GetGrid());
   folding.SetMaxNumberOfIterations(1);
   folding.Unfold();
@@ -1181,7 +1356,7 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
   THnSparse* result1= folding.GetEstMeasured(); // folded spectra
   THnSparse* result=(THnSparse*)result1->Clone();
   charmBackgroundGrid->SetGrid(result);
-  TH1D* charmbgafterfolding = (TH1D*)charmBackgroundGrid->Project(0);
+  TH1D* charmbgafterfolding = (TH1D*)charmBackgroundGrid->Project(ptpr);
 
   //Charm background evaluation plots
 
@@ -1189,7 +1364,18 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
   cCharmBgEval->Divide(3,1);
 
   cCharmBgEval->cd(1);
-  charmbgaftertofpid->Scale(evtnorm);
+
+  if(fBeamType==0)charmbgaftertofpid->Scale(evtnorm);
+  if(fBeamType==1)
+  {
+      Double_t evtnormPbPb=0;
+      for(Int_t kCentr=0;kCentr<bins[0];kCentr++)
+      {
+	  if(fNMCbgEvents[kCentr]) evtnormPbPb= evtnormPbPb+double(fNEvents[kCentr])/double(fNMCbgEvents[kCentr]);
+      }
+      charmbgaftertofpid->Scale(evtnormPbPb);
+  }
+
   CorrectFromTheWidth(charmbgaftertofpid);
   charmbgaftertofpid->SetMarkerStyle(25);
   charmbgaftertofpid->Draw("p");
@@ -1248,15 +1434,15 @@ AliCFDataGrid* AliHFEspectrum::GetConversionBackground(){
   //
   
   Double_t evtnorm[1] = {0.0};
-  if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
+  if(fNMCbgEvents[0]) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents[0]);
   printf("check event!!! %lf \n",evtnorm[0]);
   
   AliCFContainer *backgroundContainer = 0x0;
   
   if(fNonHFEsyst){
-    backgroundContainer = (AliCFContainer*)fConvSourceContainer[0][0]->Clone();
+    backgroundContainer = (AliCFContainer*)fConvSourceContainer[0][0][0]->Clone();
     for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
-      backgroundContainer->Add(fConvSourceContainer[iSource][0]);
+      backgroundContainer->Add(fConvSourceContainer[iSource][0][0]); // make centrality dependent
     }  
   }
   else{    
@@ -1269,22 +1455,46 @@ AliCFDataGrid* AliHFEspectrum::GetConversionBackground(){
   }
   
   Int_t stepbackground = 3;
+  if(TMath::Abs(fEtaRange[0]) < 0.5) stepbackground = 4;
+
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("ConversionBgGrid","ConversionBgGrid",*backgroundContainer,stepbackground);
-  //backgroundGrid->Scale(evtnorm);
-  //workaround for statistical errors: "Scale" method does not work for our errors, since Sumw2 is not defined for AliCFContainer
-  Int_t nBin[1];
-  
-  Int_t bins[1];
-  bins[0]=fConversionEff->GetNbinsX();
-  
-  for(Long_t iBin=1; iBin<= bins[0];iBin++){
-    nBin[0]=iBin;
-    backgroundGrid->SetElementError(nBin, backgroundGrid->GetElementError(nBin)*evtnorm[0]);
-    backgroundGrid->SetElement(nBin,backgroundGrid->GetElement(nBin)*evtnorm[0]);
+  Int_t *nBinpp=new Int_t[1];
+  Int_t* binspp=new Int_t[1];
+  binspp[0]=fConversionEff[0]->GetNbinsX();  // number of pt bins
+
+  Int_t *nBinPbPb=new Int_t[2];
+  Int_t* binsPbPb=new Int_t[2];
+  binsPbPb[1]=fConversionEff[0]->GetNbinsX();  // number of pt bins
+  binsPbPb[0]=12;
+
+  Int_t looppt=binspp[0];
+  if(fBeamType==1) looppt=binsPbPb[1];
+
+  for(Long_t iBin=1; iBin<= looppt;iBin++){
+      if(fBeamType==0)
+      {
+	  nBinpp[0]=iBin;
+	  backgroundGrid->SetElementError(nBinpp, backgroundGrid->GetElementError(nBinpp)*evtnorm[0]);
+	  backgroundGrid->SetElement(nBinpp,backgroundGrid->GetElement(nBinpp)*evtnorm[0]);
+      }
+      if(fBeamType==1)
+      {
+          // loop over centrality
+	  for(Long_t iiBin=1; iiBin<= binsPbPb[0];iiBin++){
+	      nBinPbPb[0]=iiBin;
+	      nBinPbPb[1]=iBin;
+              Double_t evtnormPbPb=0;
+              if(fNMCbgEvents[iiBin]) evtnormPbPb= double(fNEvents[iiBin])/double(fNMCbgEvents[iiBin]);
+	      backgroundGrid->SetElementError(nBinPbPb, backgroundGrid->GetElementError(nBinPbPb)*evtnormPbPb);
+	      backgroundGrid->SetElement(nBinPbPb,backgroundGrid->GetElement(nBinPbPb)*evtnormPbPb);
+	  }
+      }
   }
   //end of workaround for statistical errors
-  
-  AliCFDataGrid *weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,&bins[0]);
+
+  AliCFDataGrid *weightedConversionContainer;
+  if(fBeamType==0) weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,binspp);
+  else weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",2,binsPbPb);
   weightedConversionContainer->SetGrid(GetPIDxIPEff(2));
   backgroundGrid->Multiply(weightedConversionContainer,1.0);
   
@@ -1299,14 +1509,14 @@ AliCFDataGrid* AliHFEspectrum::GetNonHFEBackground(){
   //
 
   Double_t evtnorm[1] = {0.0};
-  if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
+  if(fNMCbgEvents[0]) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents[0]);
   printf("check event!!! %lf \n",evtnorm[0]);
   
   AliCFContainer *backgroundContainer = 0x0;
   if(fNonHFEsyst){
-    backgroundContainer = (AliCFContainer*)fNonHFESourceContainer[0][0]->Clone();
+    backgroundContainer = (AliCFContainer*)fNonHFESourceContainer[0][0][0]->Clone();
     for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
-      backgroundContainer->Add(fNonHFESourceContainer[iSource][0]);
+      backgroundContainer->Add(fNonHFESourceContainer[iSource][0][0]);
     } 
   }
   else{    
@@ -1320,22 +1530,45 @@ AliCFDataGrid* AliHFEspectrum::GetNonHFEBackground(){
   
   
   Int_t stepbackground = 3;
+  if(TMath::Abs(fEtaRange[0]) < 0.5) stepbackground = 4;
+
   AliCFDataGrid *backgroundGrid = new AliCFDataGrid("NonHFEBgGrid","NonHFEBgGrid",*backgroundContainer,stepbackground);
-  //backgroundGrid->Scale(evtnorm);
-  //workaround for statistical errors: "Scale" method does not work for our errors, since Sumw2 is not defined for AliCFContainer
-  Int_t nBin[1];
-  
-  Int_t bins[1];
-  bins[0]=fConversionEff->GetNbinsX();
-  
-  for(Long_t iBin=1; iBin<= bins[0];iBin++){
-    nBin[0]=iBin;
-    backgroundGrid->SetElementError(nBin, backgroundGrid->GetElementError(nBin)*evtnorm[0]);
-    backgroundGrid->SetElement(nBin,backgroundGrid->GetElement(nBin)*evtnorm[0]);
+  Int_t *nBinpp=new Int_t[1];
+  Int_t* binspp=new Int_t[1];
+  binspp[0]=fConversionEff[0]->GetNbinsX();  // number of pt bins
+
+  Int_t *nBinPbPb=new Int_t[2];
+  Int_t* binsPbPb=new Int_t[2];
+  binsPbPb[1]=fConversionEff[0]->GetNbinsX();  // number of pt bins
+  binsPbPb[0]=12;
+
+  Int_t looppt=binspp[0];
+  if(fBeamType==1) looppt=binsPbPb[1];
+
+
+  for(Long_t iBin=1; iBin<= looppt;iBin++){
+      if(fBeamType==0)
+      {
+	  nBinpp[0]=iBin;
+	  backgroundGrid->SetElementError(nBinpp, backgroundGrid->GetElementError(nBinpp)*evtnorm[0]);
+	  backgroundGrid->SetElement(nBinpp,backgroundGrid->GetElement(nBinpp)*evtnorm[0]);
+      }
+      if(fBeamType==1)
+      {
+	  for(Long_t iiBin=1; iiBin<=binsPbPb[0];iiBin++){
+	      nBinPbPb[0]=iiBin;
+	      nBinPbPb[1]=iBin;
+	      Double_t evtnormPbPb=0;
+              if(fNMCbgEvents[iiBin]) evtnormPbPb= double(fNEvents[iiBin])/double(fNMCbgEvents[iiBin]);
+	      backgroundGrid->SetElementError(nBinPbPb, backgroundGrid->GetElementError(nBinPbPb)*evtnormPbPb);
+	      backgroundGrid->SetElement(nBinPbPb,backgroundGrid->GetElement(nBinPbPb)*evtnormPbPb);
+	  }
+      }
   }
   //end of workaround for statistical errors
-  
-  AliCFDataGrid *weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,&bins[0]);
+  AliCFDataGrid *weightedNonHFEContainer;
+  if(fBeamType==0) weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,binspp);
+  else weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",2,binsPbPb);
   weightedNonHFEContainer->SetGrid(GetPIDxIPEff(3));
   backgroundGrid->Multiply(weightedNonHFEContainer,1.0);
 
@@ -1361,16 +1594,13 @@ AliCFDataGrid *AliHFEspectrum::CorrectParametrizedEfficiency(AliCFDataGrid* cons
       AliError("Data Container not available");
       return NULL;
     }
-
     dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainer, fStepData);
   } 
-
   AliCFDataGrid *result = (AliCFDataGrid *) dataGrid->Clone();
   result->SetName("ParametrizedEfficiencyBefore");
   THnSparse *h = result->GetGrid();
   Int_t nbdimensions = h->GetNdimensions();
   //printf("CorrectParametrizedEfficiency::We have dimensions %d\n",nbdimensions);
-
   AliCFContainer *dataContainer = GetContainer(kDataContainer);
   if(!dataContainer){
     AliError("Data Container not available");
@@ -1383,7 +1613,6 @@ AliCFDataGrid *AliHFEspectrum::CorrectParametrizedEfficiency(AliCFDataGrid* cons
   Int_t* coord = new Int_t[nbdimensions];
   memset(coord, 0, sizeof(Int_t) * nbdimensions);
   Double_t* points = new Double_t[nbdimensions];
-
 
   ULong64_t nEntries = h->GetNbins();
   for (ULong64_t i = 0; i < nEntries; ++i) {
@@ -1421,7 +1650,7 @@ AliCFDataGrid *AliHFEspectrum::CorrectParametrizedEfficiency(AliCFDataGrid* cons
   AliCFDataGrid *resultt = new AliCFDataGrid("spectrumEfficiencyParametrized", "Data Grid for spectrum after Efficiency parametrized", *dataContainerbis,fStepData);
 
   if(fDebugLevel > 0) {
-    
+
     TCanvas * cEfficiencyParametrized = new TCanvas("EfficiencyParametrized","EfficiencyParametrized",1000,700);
     cEfficiencyParametrized->Divide(2,1);
     cEfficiencyParametrized->cd(1);
@@ -1458,9 +1687,9 @@ AliCFDataGrid *AliHFEspectrum::CorrectParametrizedEfficiency(AliCFDataGrid* cons
     //ratioefficiency->Draw();
 
     if(fWriteToFile) cEfficiencyParametrized->SaveAs("efficiency.eps");
+
   }
 
-  
   return resultt;
 
 }
@@ -1673,15 +1902,18 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   // Efficiency
   AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainer);
   efficiencyD->CalculateEfficiency(fStepMC,fStepTrue);
-  
-  // Consider parameterized IP cut efficiency
-  if(!fInclusiveSpectrum){
-    Int_t* bins=new Int_t[1];
-    bins[0]=35;
 
-    AliCFEffGrid *beffContainer = new AliCFEffGrid("beffContainer","beffContainer",1,bins);
-    beffContainer->SetGrid(GetBeautyIPEff());
-    efficiencyD->Multiply(beffContainer,1);  
+  if(!fBeauty2ndMethod)
+  {
+      // Consider parameterized IP cut efficiency
+      if(!fInclusiveSpectrum){
+	  Int_t* bins=new Int_t[1];
+	  bins[0]=35;
+
+	  AliCFEffGrid *beffContainer = new AliCFEffGrid("beffContainer","beffContainer",1,bins);
+	  beffContainer->SetGrid(GetBeautyIPEff());
+	  efficiencyD->Multiply(beffContainer,1);
+      }
   }
   
 
@@ -1774,14 +2006,18 @@ AliCFDataGrid *AliHFEspectrum::CorrectForEfficiency(AliCFDataGrid* const bgsubpe
   AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainer);
   efficiencyD->CalculateEfficiency(fStepMC,fStepTrue);
 
-  // Consider parameterized IP cut efficiency
-  if(!fInclusiveSpectrum){
-    Int_t* bins=new Int_t[1];
-    bins[0]=35;
-  
-    AliCFEffGrid *beffContainer = new AliCFEffGrid("beffContainer","beffContainer",1,bins);
-    beffContainer->SetGrid(GetBeautyIPEff());
-    efficiencyD->Multiply(beffContainer,1);
+
+  if(!fBeauty2ndMethod)
+  {
+      // Consider parameterized IP cut efficiency
+      if(!fInclusiveSpectrum){
+	  Int_t* bins=new Int_t[1];
+	  bins[0]=35;
+
+	  AliCFEffGrid *beffContainer = new AliCFEffGrid("beffContainer","beffContainer",1,bins);
+	  beffContainer->SetGrid(GetBeautyIPEff());
+	  efficiencyD->Multiply(beffContainer,1);
+      }
   }
 
   // Data in the right format
@@ -1958,6 +2194,7 @@ TGraphErrors *AliHFEspectrum::Normalize(AliCFDataGrid * const spectrum,Int_t i) 
     TH1D* projection = (TH1D *) spectrum->Project(ptpr);
     CorrectFromTheWidth(projection);
     TGraphErrors *graphError = NormalizeTH1(projection,i);
+
     return graphError;
     
   }
@@ -1990,7 +2227,6 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1(TH1 *input,Int_t i) const {
       dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
       dN = input->GetBinError(ibin);
-
       // New point
       nCorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents[i]) * 1./(2. * TMath::Pi() * p) * n;
       errdN = 1./(2. * TMath::Pi() * p);
@@ -2005,7 +2241,7 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1(TH1 *input,Int_t i) const {
     spectrumNormalized->SetMarkerStyle(22);
     spectrumNormalized->SetMarkerColor(kBlue);
     spectrumNormalized->SetLineColor(kBlue);
-    
+
     return spectrumNormalized;
     
   }
@@ -2038,7 +2274,6 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1N(TH1 *input,Int_t normalization) cons
       dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
       dN = input->GetBinError(ibin);
-
       // New point
       nCorr = chargecoefficient * 1./etarange * 1./(Double_t)(normalization) * 1./(2. * TMath::Pi() * p) * n;
       errdN = 1./(2. * TMath::Pi() * p);
@@ -2080,13 +2315,14 @@ AliCFContainer *AliHFEspectrum::GetContainer(AliHFEspectrum::CFContainer_t type)
   return dynamic_cast<AliCFContainer *>(fCFContainers->At(type));
 }
 //____________________________________________________________
-AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions,Int_t source,Chargetype_t charge) {
+AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions,Int_t source,Chargetype_t charge, Int_t centrality) {
   //
   // Slice bin for a given source of electron
   // nDim is the number of dimension the corrections are done
   // dimensions are the definition of the dimensions
   // source is if we want to keep only one MC source (-1 means we don't cut on the MC source)
   // positivenegative if we want to keep positive (1) or negative (0) or both (-1)
+  // centrality (-1 means we do not cut on centrality)
   //
   
   Double_t *varMin = new Double_t[container->GetNVar()],
@@ -2124,7 +2360,12 @@ AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, In
       fEtaRangeNorm[1] = container->GetAxis(1,0)->GetBinUpEdge(container->GetAxis(1,0)->FindBin(fEtaRange[1]));
       AliInfo(Form("Normalization done in eta range [%f,%f]\n", fEtaRangeNorm[0], fEtaRangeNorm[0]));
     }
-    
+    if(ivar == 5){
+	if((centrality>= 0) && (centrality<container->GetNBins(ivar))) {
+	    varMin[ivar] = binLimits[centrality];
+	    varMax[ivar] = binLimits[centrality];
+	}
+    }
 
     delete[] binLimits;
   }
@@ -2255,28 +2496,256 @@ THnSparse* AliHFEspectrum::GetCharmWeights(){
   // Measured D->e based weighting factors
   //
 
-  const Int_t nDim=1;
-  Int_t nBin[nDim] = {35};
-
+  const Int_t nDimpp=1;
+  Int_t nBinpp[nDimpp] = {35};
   Double_t ptbinning1[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+  const Int_t nDimPbPb=2;
+  Int_t nBinPbPb[nDimPbPb] = {11,35};
+  Double_t kCentralityRange[12] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
+  Int_t loopcentr=1;
+  Int_t looppt=nBinpp[0];
+  if(fBeamType==0)
+  {
+      fWeightCharm = new THnSparseF("weightHisto", "weighting factor; pt[GeV/c]", nDimpp, nBinpp);
+      fWeightCharm->SetBinEdges(0, ptbinning1);
+  }
+  if(fBeamType==1)
+  {
+      fWeightCharm = new THnSparseF("weightHisto", "weighting factor; centrality bin; pt[GeV/c]", nDimPbPb, nBinPbPb);
+      fWeightCharm->SetBinEdges(1, ptbinning1);
+      fWeightCharm->SetBinEdges(0, kCentralityRange);
+      loopcentr=nBinPbPb[0];
+  }
 
-  fWeightCharm = new THnSparseF("weightHisto", "weiting factor; pt[GeV/c]", nDim, nBin);
-  for(Int_t idim = 0; idim < nDim; idim++)
-     fWeightCharm->SetBinEdges(idim, ptbinning1);
+
      Double_t weight[35]={0.859260, 0.872552, 0.847475, 0.823631, 0.839386, 0.874024, 0.916755, 0.942801, 0.965856, 0.933905, 0.933414, 0.931936, 0.847826, 0.810902, 0.796608, 0.727002, 0.659227, 0.583610, 0.549956, 0.512633, 0.472254, 0.412364, 0.353191, 0.319145, 0.305412, 0.290334, 0.269863, 0.254646, 0.230245, 0.200859, 0.275953, 0.276271, 0.227332, 0.197004, 0.474385};
 //{1.11865,1.11444,1.13395,1.15751,1.13412,1.14446,1.15372,1.09458,1.13446,1.11707,1.1352,1.10979,1.08887,1.11164,1.10772,1.10727,1.07027,1.07016,1.04826,1.03248,1.0093,0.973534,0.932574,0.869838,0.799316,0.734015,0.643001,0.584319,0.527147,0.495661,0.470002,0.441129,0.431156,0.417242,0.39246,0.379611,0.390845,0.368857,0.34959,0.387186,0.376364,0.384437,0.349585,0.383225};
   //points
   Double_t pt[1];
-  for(int i=0; i<nBin[0]; i++){
-    pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
-    fWeightCharm->Fill(pt,weight[i]);
+  Double_t contents[2];
+
+  for(int icentr=0; icentr<loopcentr; icentr++)
+  {
+      for(int i=0; i<looppt; i++){
+	  pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
+	  if(fBeamType==1)
+	  {
+	      contents[0]=icentr;
+	      contents[1]=pt[0];
+	  }
+	  if(fBeamType==0)
+	  {
+	      contents[0]=pt[0];
+	  }
+
+	  fWeightCharm->Fill(contents,weight[i]);
+      }
   }
-  Int_t* ibins[nDim];
-  for(Int_t ivar = 0; ivar < nDim; ivar++)
-    ibins[ivar] = new Int_t[nBin[ivar] + 1];
-  fWeightCharm->SetBinError(ibins[0],0);
+
+  Int_t nDimSparse = fWeightCharm->GetNdimensions();
+  Int_t* binsvar = new Int_t[nDimSparse]; // number of bins for each variable
+  Long_t nBins = 1; // used to calculate the total number of bins in the THnSparse
+
+  for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+      binsvar[iVar] = fWeightCharm->GetAxis(iVar)->GetNbins();
+      nBins *= binsvar[iVar];
+  }
+
+  Int_t *binfill = new Int_t[nDimSparse]; // bin to fill the THnSparse (holding the bin coordinates)
+  // loop that sets 0 error in each bin
+  for (Long_t iBin=0; iBin<nBins; iBin++) {
+    Long_t bintmp = iBin ;
+    for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+      binfill[iVar] = 1 + bintmp % binsvar[iVar] ;
+      bintmp /= binsvar[iVar] ;
+    }
+    fWeightCharm->SetBinError(binfill,0.); // put 0 everywhere
+  }
 
   return fWeightCharm;
+}
+
+//____________________________________________________________________________
+void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, Int_t *dimensions){
+
+   // TOF PID efficiencies
+   Int_t ptpr;
+   if(fBeamType==0) ptpr=0;
+   if(fBeamType==1) ptpr=1;
+
+   Int_t loopcentr=1;
+   const Int_t nCentralitybinning=11; //number of centrality bins
+   if(fBeamType==1)
+   {
+     loopcentr=nCentralitybinning;
+   }
+
+   TF1 *fipfit = new TF1("fipfit","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",0.3,20.);
+   TF1 *fipfit2 = new TF1("fipfit2","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",0.5,10.0);
+   TF1 *fittofpid = new TF1("fittofpid","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",1.0,7.);
+
+   TCanvas * cefficiencyParam = new TCanvas("efficiencyParam","efficiencyParam",1200,600);
+   cefficiencyParam->Divide(2,1);
+   cefficiencyParam->cd(1);
+
+   AliCFContainer *mccontainermcD = 0x0;
+   TH1D* efficiencysigTOFPIDD[nCentralitybinning];
+   TH1D* efficiencyTOFPIDD[nCentralitybinning];
+   Int_t source = -1; //get parameterized TOF PID efficiencies
+
+   for(int icentr=0; icentr<loopcentr; icentr++) {
+      // signal sample
+      if(fBeamType==0) mccontainermcD = GetSlicedContainer(container, fNbDimensions, dimensions, source, fChargeChoosen);
+      if(fBeamType==1) mccontainermcD = GetSlicedContainer(container, fNbDimensions, dimensions, source, fChargeChoosen,icentr+1);
+      AliCFEffGrid* efficiencymcsigParamTOFPID= new AliCFEffGrid("efficiencymcsigParamTOFPID","",*mccontainermcD);
+      efficiencymcsigParamTOFPID->CalculateEfficiency(fStepMC,fStepMC-1); // TOF PID efficiencies
+
+      // mb sample for double check
+      if(fBeamType==0)  mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen);
+      if(fBeamType==1)  mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen,icentr+1);
+      AliCFEffGrid* efficiencymcParamTOFPID= new AliCFEffGrid("efficiencymcParamTOFPID","",*mccontainermcD);
+      efficiencymcParamTOFPID->CalculateEfficiency(fStepMC,fStepMC-1); // TOF PID efficiencies
+
+      efficiencysigTOFPIDD[icentr] = (TH1D *) efficiencymcsigParamTOFPID->Project(ptpr);
+      efficiencyTOFPIDD[icentr] = (TH1D *) efficiencymcParamTOFPID->Project(ptpr);
+      efficiencysigTOFPIDD[icentr]->SetName(Form("efficiencysigTOFPIDD%d",icentr));
+      efficiencyTOFPIDD[icentr]->SetName(Form("efficiencyTOFPIDD%d",icentr));
+
+      fittofpid->SetParameters(0.5,0.319,0.0157,0.00664,6.77,2.08);
+      fittofpid->SetLineColor(3);
+      efficiencysigTOFPIDD[icentr]->Fit(fittofpid,"R");
+      efficiencysigTOFPIDD[icentr]->GetYaxis()->SetTitle("Efficiency");
+      fEfficiencyTOFPIDD[icentr] = efficiencysigTOFPIDD[icentr]->GetFunction("fittofpid");
+   }
+
+   // draw (for PbPb, only 1st bin)
+   efficiencysigTOFPIDD[0]->SetTitle("");
+   efficiencysigTOFPIDD[0]->SetStats(0);
+   efficiencysigTOFPIDD[0]->SetMarkerStyle(25);
+   efficiencysigTOFPIDD[0]->SetMarkerColor(2);
+   efficiencysigTOFPIDD[0]->SetLineColor(2);
+   efficiencysigTOFPIDD[0]->Draw();
+
+   fEfficiencyTOFPIDD[0]->Draw("same");
+
+   efficiencyTOFPIDD[0]->SetTitle("");
+   efficiencyTOFPIDD[0]->SetStats(0);
+   efficiencyTOFPIDD[0]->SetMarkerStyle(24);
+   efficiencyTOFPIDD[0]->Draw("same");
+
+
+   cefficiencyParam->cd(2);
+
+   // IP cut efficiencies
+  
+   for(int icentr=0; icentr<loopcentr; icentr++)  {
+     source = 0; //charm
+     if(fBeamType==0) mccontainermcD = GetSlicedContainer(container, fNbDimensions, dimensions, source, fChargeChoosen);
+     if(fBeamType==1) mccontainermcD = GetSlicedContainer(container, fNbDimensions, dimensions, source, fChargeChoosen, icentr+1);
+     AliCFEffGrid* efficiencyCharmSig = new AliCFEffGrid("efficiencyCharmSig","",*mccontainermcD);
+     efficiencyCharmSig->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. 
+
+     source = 1; //beauty
+     if(fBeamType==0) mccontainermcD = GetSlicedContainer(container, fNbDimensions, dimensions, source, fChargeChoosen);
+     if(fBeamType==1) mccontainermcD = GetSlicedContainer(container, fNbDimensions, dimensions, source, fChargeChoosen, icentr+1);
+     AliCFEffGrid* efficiencyBeautySig = new AliCFEffGrid("efficiencyBeautySig","",*mccontainermcD);
+     efficiencyBeautySig->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. 
+
+     source = 0; //charm
+     if(fBeamType==0) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen);
+     if(fBeamType==1) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen, icentr+1);
+     AliCFEffGrid* efficiencyCharm = new AliCFEffGrid("efficiencyCharm","",*mccontainermcD);
+     efficiencyCharm->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. 
+
+     source = 1; //beauty
+     if(fBeamType==0) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen);
+     if(fBeamType==1) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen, icentr+1);
+     AliCFEffGrid* efficiencyBeauty = new AliCFEffGrid("efficiencyBeauty","",*mccontainermcD);
+     efficiencyBeauty->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. 
+
+     source = 2; //conversion
+     if(fBeamType==0) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen);
+     if(fBeamType==1) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen, icentr+1);
+     AliCFEffGrid* efficiencyConv = new AliCFEffGrid("efficiencyConv","",*mccontainermcD);
+     efficiencyConv->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency. 
+
+     source = 3; //non HFE except for the conversion
+     if(fBeamType==0) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen);
+     if(fBeamType==1) mccontainermcD = GetSlicedContainer(containermb, fNbDimensions, dimensions, source, fChargeChoosen, icentr+1);
+     AliCFEffGrid* efficiencyNonhfe= new AliCFEffGrid("efficiencyNonhfe","",*mccontainermcD);
+     efficiencyNonhfe->CalculateEfficiency(AliHFEcuts::kNcutStepsMCTrack + fStepData,AliHFEcuts::kNcutStepsMCTrack + fStepData-1); // ip cut efficiency.
+
+     fEfficiencyCharmSigD[icentr] = (TH1D*)efficiencyCharmSig->Project(ptpr);
+     fEfficiencyBeautySigD[icentr] = (TH1D*)efficiencyBeautySig->Project(ptpr);
+     fCharmEff[icentr] = (TH1D*)efficiencyCharm->Project(ptpr);
+     fBeautyEff[icentr] = (TH1D*)efficiencyBeauty->Project(ptpr);
+     fConversionEff[icentr] = (TH1D*)efficiencyConv->Project(ptpr);
+     fNonHFEEff[icentr] = (TH1D*)efficiencyNonhfe->Project(ptpr);
+   }
+
+   for(int icentr=0; icentr<loopcentr; icentr++)  {
+     fipfit->SetParameters(0.5,0.319,0.0157,0.00664,6.77,2.08);
+     fipfit->SetLineColor(2);
+     fEfficiencyBeautySigD[icentr]->Fit(fipfit,"R");
+     fEfficiencyBeautySigD[icentr]->GetYaxis()->SetTitle("Efficiency");
+     if(fBeauty2ndMethod)fEfficiencyIPBeautyD[icentr] = fEfficiencyBeautySigD[0]->GetFunction("fipfit");
+     else fEfficiencyIPBeautyD[icentr] = fEfficiencyBeautySigD[icentr]->GetFunction("fipfit");
+
+     if(fIPParameterizedEff){
+       fipfit->SetParameters(0.5,0.319,0.0157,0.00664,6.77,2.08);
+       fipfit->SetLineColor(1);
+       fEfficiencyCharmSigD[icentr]->Fit(fipfit,"R");
+       fEfficiencyCharmSigD[icentr]->GetYaxis()->SetTitle("Efficiency");
+       fEfficiencyIPCharmD[icentr] = fEfficiencyCharmSigD[icentr]->GetFunction("fipfit");
+
+       fipfit2->SetParameters(0.5,0.319,0.0157,0.00664,6.77,2.08);
+       fipfit2->SetLineColor(3);
+       fConversionEff[icentr]->Fit(fipfit2,"R");
+       fConversionEff[icentr]->GetYaxis()->SetTitle("Efficiency");
+       fEfficiencyIPConversionD[icentr] = fConversionEff[icentr]->GetFunction("fipfit2");
+
+       fipfit2->SetParameters(0.5,0.319,0.0157,0.00664,6.77,2.08);
+       fipfit2->SetLineColor(4);
+       fNonHFEEff[icentr]->Fit(fipfit2,"R");
+       fNonHFEEff[icentr]->GetYaxis()->SetTitle("Efficiency");
+       fEfficiencyIPNonhfeD[icentr] = fNonHFEEff[icentr]->GetFunction("fipfit2");
+     }
+   }
+
+   // draw (for PbPb, only 1st bin)
+
+   fEfficiencyCharmSigD[0]->SetMarkerStyle(21);
+   fEfficiencyCharmSigD[0]->SetMarkerColor(1);
+   fEfficiencyCharmSigD[0]->SetLineColor(1);
+   fEfficiencyBeautySigD[0]->SetMarkerStyle(21);
+   fEfficiencyBeautySigD[0]->SetMarkerColor(2);
+   fEfficiencyBeautySigD[0]->SetLineColor(2);
+   fCharmEff[0]->SetMarkerStyle(24);
+   fCharmEff[0]->SetMarkerColor(1);
+   fCharmEff[0]->SetLineColor(1);
+   fBeautyEff[0]->SetMarkerStyle(24);
+   fBeautyEff[0]->SetMarkerColor(2);
+   fBeautyEff[0]->SetLineColor(2);
+   fConversionEff[0]->SetMarkerStyle(24);
+   fConversionEff[0]->SetMarkerColor(3);
+   fConversionEff[0]->SetLineColor(3);
+   fNonHFEEff[0]->SetMarkerStyle(24);
+   fNonHFEEff[0]->SetMarkerColor(4);
+   fNonHFEEff[0]->SetLineColor(4);
+
+   fEfficiencyCharmSigD[0]->Draw();
+   fEfficiencyBeautySigD[0]->Draw("same");
+   fCharmEff[0]->Draw("same");
+   fBeautyEff[0]->Draw("same");
+   fConversionEff[0]->Draw("same");
+   fNonHFEEff[0]->Draw("same");
+
+   fEfficiencyIPBeautyD[0]->Draw("same");
+   if(fIPParameterizedEff){
+     fEfficiencyIPCharmD[0]->Draw("same");
+     fEfficiencyIPConversionD[0]->Draw("same");
+     fEfficiencyIPNonhfeD[0]->Draw("same");
+   }
 }
 
 //____________________________________________________________________________
@@ -2285,56 +2754,95 @@ THnSparse* AliHFEspectrum::GetBeautyIPEff(){
   // Return beauty electron IP cut efficiency
   //
 
-  const Int_t nDim=1;
-  Int_t nBin[nDim] = {35};
-
-  Double_t ptbinning1[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
-
-  THnSparseF *ipcut = new THnSparseF("beff", "b eff; pt[GeV/c]", nDim, nBin);
-  for(Int_t idim = 0; idim < nDim; idim++)
-     ipcut->SetBinEdges(idim, ptbinning1);
-  Double_t pt[1];
-  Double_t weight;
-  for(int i=0; i<nBin[0]; i++){
-    pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
-    weight=0.612*(0.385+0.111*log(pt[0])-0.00435*log(pt[0])*log(pt[0]))*tanh(5.42*pt[0]-1.22);  // for 3 sigma cut   
-    //weight=0.786*(0.493+0.0283*log(pt[0])-0.0190*log(pt[0])*log(pt[0]))*tanh(1.84*pt[0]-0.00368);  // for 2 sigma cut   
-    ipcut->Fill(pt,weight);
+  const Int_t nPtbinning1 = 35;//number of pt bins, according to new binning
+  const Int_t nCentralitybinning=11;//number of centrality bins
+  Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
+  Double_t kCentralityRange[nCentralitybinning+1] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
+  Int_t ptpr = 0;
+  Int_t nDim=1;  //dimensions of the efficiency weighting grid
+  if(fBeamType==1)
+  {
+    ptpr=1;
+    nDim=2; //dimensions of the efficiency weighting grid
   }
-  Int_t* ibins[nDim];
-  for(Int_t ivar = 0; ivar < nDim; ivar++)
-    ibins[ivar] = new Int_t[nBin[ivar] + 1];
-  ipcut->SetBinError(ibins[0],0);
+  Int_t nBin[1] = {nPtbinning1};
+  Int_t nBinPbPb[2] = {nCentralitybinning,nPtbinning1};
 
-  return ipcut;
-}
 
-//____________________________________________________________________________
-THnSparse* AliHFEspectrum::GetCharmEff(){
-  //
-  // Return charm electron IP cut efficiency
-  //
-
-  const Int_t nDim=1;
-  Int_t nBin[nDim] = {35};
-
-  Double_t ptbinning1[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
-
-  THnSparseF *ipcut = new THnSparseF("ceff", "c eff; pt[GeV/c]", nDim, nBin);
+  THnSparseF *ipcut;
+  if(fBeamType==0) ipcut = new THnSparseF("beff", "b IP efficiency; p_{t}(GeV/c)", nDim, nBin);
+  else ipcut = new THnSparseF("beff", "b IP efficiency; centrality bin; p_{t}(GeV/c)", nDim, nBinPbPb);
+ 
   for(Int_t idim = 0; idim < nDim; idim++)
-     ipcut->SetBinEdges(idim, ptbinning1);
-  Double_t pt[1];
-  Double_t weight;
-  for(int i=0; i<nBin[0]; i++){
-    pt[0]=(ptbinning1[i]+ptbinning1[i+1])/2.;
-    weight=0.299*(0.307+0.176*log(pt[0])+0.0176*log(pt[0])*log(pt[0]))*tanh(96.3*pt[0]-19.7); // for 3 sigma cut
-    //weight=0.477*(0.3757+0.184*log(pt[0])-0.0013*log(pt[0])*log(pt[0]))*tanh(436.013*pt[0]-96.2137); // for 2 sigma cut
-    ipcut->Fill(pt,weight);
+  {
+    if(nDim==1) ipcut->SetBinEdges(idim, kPtRange);
+    if(nDim==2)
+      {
+        ipcut->SetBinEdges(0, kCentralityRange);
+        ipcut->SetBinEdges(1, kPtRange);
+      }
   }
-  Int_t* ibins[nDim];
-  for(Int_t ivar = 0; ivar < nDim; ivar++)
-    ibins[ivar] = new Int_t[nBin[ivar] + 1];
-  ipcut->SetBinError(ibins[0],0);
+  Double_t pt[1];
+  Double_t weight[nCentralitybinning];
+  Double_t contents[2];
+
+  for(Int_t a=0;a<11;a++)
+  {
+      weight[a] = 1.0;
+  }
+
+
+  Int_t looppt=nBin[0];
+  Int_t loopcentr=1;
+  if(fBeamType==1)
+  {
+      loopcentr=nBinPbPb[0];
+  }
+
+
+  for(int icentr=0; icentr<loopcentr; icentr++)
+  {
+      for(int i=0; i<looppt; i++)
+      {
+	  pt[0]=(kPtRange[i]+kPtRange[i+1])/2.;
+          if(fEfficiencyIPBeautyD[icentr])
+            weight[icentr]=fEfficiencyIPBeautyD[icentr]->Eval(pt[0]);
+          else{
+            printf("Fit failed on beauty IP cut efficiency for centrality %d. Contents in histo used!\n",icentr);
+            weight[icentr] = fEfficiencyBeautySigD[icentr]->GetBinContent(i+1); 
+          }
+
+          if(fBeamType==1){
+              contents[0]=icentr;
+              contents[1]=pt[0];
+          }
+          if(fBeamType==0){
+              contents[0]=pt[0];
+          }
+          ipcut->Fill(contents,weight[icentr]);
+      }
+  } 
+
+
+  Int_t nDimSparse = ipcut->GetNdimensions();
+  Int_t* binsvar = new Int_t[nDimSparse]; // number of bins for each variable
+  Long_t nBins = 1; // used to calculate the total number of bins in the THnSparse
+
+  for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+      binsvar[iVar] = ipcut->GetAxis(iVar)->GetNbins();
+      nBins *= binsvar[iVar];
+  }
+
+  Int_t *binfill = new Int_t[nDimSparse]; // bin to fill the THnSparse (holding the bin coordinates)
+  // loop that sets 0 error in each bin
+  for (Long_t iBin=0; iBin<nBins; iBin++) {
+    Long_t bintmp = iBin ;
+    for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+      binfill[iVar] = 1 + bintmp % binsvar[iVar] ;
+      bintmp /= binsvar[iVar] ;
+    }
+    ipcut->SetBinError(binfill,0.); // put 0 everywhere
+  }
 
   return ipcut;
 }
@@ -2344,54 +2852,255 @@ THnSparse* AliHFEspectrum::GetPIDxIPEff(Int_t source){
   //
   // Return PID x IP cut efficiency
   //
+    const Int_t nPtbinning1 = 35;//number of pt bins, according to new binning
+    const Int_t nCentralitybinning=11;//number of centrality bins
+    Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
+    Double_t kCentralityRange[nCentralitybinning+1] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
+    Int_t ptpr = 0;
+    Int_t nDim=1;  //dimensions of the efficiency weighting grid
+    if(fBeamType==1)
+    {
+	ptpr=1;
+	nDim=2; //dimensions of the efficiency weighting grid
+    }
+    Int_t nBin[1] = {nPtbinning1};
+    Int_t nBinPbPb[2] = {nCentralitybinning,nPtbinning1};
 
-  const Int_t nPtbinning1 = 35;//number of pt bins, according to new binning
- 
-  const Int_t nDim=1;//dimensions of the efficiency weighting grid
-  Int_t nBin[nDim] = {nPtbinning1};
+    THnSparseF *pideff;
+    if(fBeamType==0) pideff = new THnSparseF("pideff", "PID efficiency; p_{t}(GeV/c)", nDim, nBin);
+    else pideff = new THnSparseF("pideff", "PID efficiency; centrality bin; p_{t}(GeV/c)", nDim, nBinPbPb);
+    for(Int_t idim = 0; idim < nDim; idim++)
+    {
 
-  Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
-
-  THnSparseF *pideff = new THnSparseF("pideff", "PID efficiency; p_{t}(GeV/c)", nDim, nBin);
-  for(Int_t idim = 0; idim < nDim; idim++)
-     pideff->SetBinEdges(idim, kPtRange);
+	if(nDim==1) pideff->SetBinEdges(idim, kPtRange);
+	if(nDim==2)
+	{
+	    pideff->SetBinEdges(0, kCentralityRange);
+	    pideff->SetBinEdges(1, kPtRange);
+	}
+    }
 
   Double_t pt[1];
-  Double_t weight = 1.0;
-  Double_t trdtpcPidEfficiency = fEfficiencyFunction->Eval(0); // assume we have constant TRD+TPC PID efficiency
-  for(int i=0; i<nBin[0]; i++){
-    pt[0]=(kPtRange[i]+kPtRange[i+1])/2.;
-    Double_t tofeff = 0.9885*(0.8551+0.0070*log(pt[0])-0.0014*log(pt[0])*log(pt[0]))*tanh(0.8884*pt[0]+0.6061); // parameterized TOF PID eff
+  Double_t weight[nCentralitybinning];
+  Double_t contents[2];
 
-    if(source==0) weight = tofeff*trdtpcPidEfficiency*0.299*(0.307+0.176*log(pt[0])+0.0176*log(pt[0])*log(pt[0]))*tanh(96.3*pt[0]-19.7); // for 3 sigma cut
-    //if(source==0) weight = tofeff*trdtpcPidEfficiency*0.477*(0.3757+0.184*log(pt[0])-0.0013*log(pt[0])*log(pt[0]))*tanh(436.013*pt[0]-96.2137); // for 2 sigma cut
-    //if(source==2) weight = tofeff*trdtpcPidEfficiency*0.5575*(0.3594-0.3051*log(pt[0])+0.1597*log(pt[0])*log(pt[0]))*tanh(8.2436*pt[0]-0.8125);
-    //if(source==3) weight = tofeff*trdtpcPidEfficiency*0.0937*(0.4449-0.3769*log(pt[0])+0.5031*log(pt[0])*log(pt[0]))*tanh(6.4063*pt[0]+3.1425); // multiply ip cut eff for Dalitz/dielectrons
-    if(source==2) weight = tofeff*trdtpcPidEfficiency*fConversionEff->GetBinContent(i+1); // multiply ip cut eff for conversion electrons
-    if(source==3) weight = tofeff*trdtpcPidEfficiency*fNonHFEEff->GetBinContent(i+1); // multiply ip cut eff for Dalitz/dielectrons
-    //printf("tofeff= %lf trdtpcPidEfficiency= %lf conversion= %lf nonhfe= %lf\n",tofeff,trdtpcPidEfficiency,fConversionEff->GetBinContent(i+1),fNonHFEEff->GetBinContent(i+1));
-
-    pideff->Fill(pt,weight);
+  for(Int_t a=0;a<11;a++)
+  {
+      weight[a] = 1.0;
   }
-  Int_t* ibins[nDim];
-  for(Int_t ivar = 0; ivar < nDim; ivar++)
-    ibins[ivar] = new Int_t[nBin[ivar] + 1];
-  pideff->SetBinError(ibins[0],0);
+
+  Int_t looppt=nBin[0];
+  Int_t loopcentr=1;
+  if(fBeamType==1)
+  {
+      loopcentr=nBinPbPb[0];
+  }
+
+  for(int icentr=0; icentr<loopcentr; icentr++)
+  {
+      Double_t trdtpcPidEfficiency = fEfficiencyFunction->Eval(0); // assume we have constant TRD+TPC PID efficiency
+      for(int i=0; i<looppt; i++)
+      {
+	  pt[0]=(kPtRange[i]+kPtRange[i+1])/2.;
+
+          Double_t tofpideff = 0.;
+          if(fEfficiencyTOFPIDD[icentr])
+            tofpideff = fEfficiencyTOFPIDD[icentr]->Eval(pt[0]);
+          else{
+            printf("TOF PID fit failed on conversion for centrality %d. The result is wrong!\n",icentr);
+          }  
+
+          //tof pid eff x tpc pid eff x ip cut eff
+          if(fIPParameterizedEff){
+            if(source==0) {
+              if(fEfficiencyIPCharmD[icentr])
+                weight[icentr] = tofpideff*trdtpcPidEfficiency*fEfficiencyIPCharmD[icentr]->Eval(pt[0]);
+              else{
+                printf("Fit failed on charm IP cut efficiency for centrality %d\n",icentr);
+                weight[icentr] = tofpideff*trdtpcPidEfficiency*fEfficiencyCharmSigD[icentr]->GetBinContent(i+1);
+              }
+            } 
+	    else if(source==2) {
+              if(fEfficiencyIPConversionD[icentr])
+                weight[icentr] = tofpideff*trdtpcPidEfficiency*fEfficiencyIPConversionD[icentr]->Eval(pt[0]); 
+              else{
+                printf("Fit failed on conversion IP cut efficiency for centrality %d\n",icentr);
+                weight[icentr] = tofpideff*trdtpcPidEfficiency*fConversionEff[icentr]->GetBinContent(i+1);
+              }
+            }
+	    else if(source==3) {
+              if(fEfficiencyIPNonhfeD[icentr])
+                weight[icentr] = tofpideff*trdtpcPidEfficiency*fEfficiencyIPNonhfeD[icentr]->Eval(pt[0]); 
+              else{
+                printf("Fit failed on dalitz IP cut efficiency for centrality %d\n",icentr);
+                weight[icentr] = tofpideff*trdtpcPidEfficiency*fNonHFEEff[icentr]->GetBinContent(i+1);
+              }  
+            }
+          }
+          else{
+            if(source==0) weight[icentr] = tofpideff*trdtpcPidEfficiency*fEfficiencyCharmSigD[icentr]->GetBinContent(i+1); //charm
+	    else if(source==2) weight[icentr] = tofpideff*trdtpcPidEfficiency*fConversionEff[icentr]->GetBinContent(i+1); // conversion
+	    else if(source==3) weight[icentr] = tofpideff*trdtpcPidEfficiency*fNonHFEEff[icentr]->GetBinContent(i+1); // Dalitz
+          }
+
+	  if(fBeamType==1){
+	      contents[0]=icentr;
+	      contents[1]=pt[0];
+	  }
+	  if(fBeamType==0){
+	      contents[0]=pt[0];
+	  }
+
+	  pideff->Fill(contents,weight[icentr]);
+      }
+  }
+
+  Int_t nDimSparse = pideff->GetNdimensions();
+  Int_t* binsvar = new Int_t[nDimSparse]; // number of bins for each variable
+  Long_t nBins = 1; // used to calculate the total number of bins in the THnSparse
+
+  for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+      binsvar[iVar] = pideff->GetAxis(iVar)->GetNbins();
+      nBins *= binsvar[iVar];
+  }
+
+  Int_t *binfill = new Int_t[nDimSparse]; // bin to fill the THnSparse (holding the bin coordinates)
+  // loop that sets 0 error in each bin
+  for (Long_t iBin=0; iBin<nBins; iBin++) {
+    Long_t bintmp = iBin ;
+    for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+      binfill[iVar] = 1 + bintmp % binsvar[iVar] ;
+      bintmp /= binsvar[iVar] ;
+    }
+    pideff->SetBinError(binfill,0.); // put 0 everywhere
+  }
+
+
+
 
   return pideff;
 }
+
 //__________________________________________________________________________
-void AliHFEspectrum::CalculateNonHFEsyst(){
+AliCFDataGrid *AliHFEspectrum::GetRawBspectra2ndMethod(){
+ //
+ // retrieve AliCFDataGrid for raw beauty spectra obtained from fit method
+    //
+    Int_t ptpr = 0;
+    Int_t nDim = 1;
+    if(fBeamType==0)
+    {
+	ptpr=0;
+    }
+    if(fBeamType==1)
+    {
+	ptpr=1;
+	nDim=2;
+    }
+
+    const Int_t nPtbinning1 = 35;//number of pt bins, according to new binning
+    const Int_t nCentralitybinning=11;//number of centrality bins
+    Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
+    Double_t kCentralityRange[nCentralitybinning+1] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
+    Int_t nBin[1] = {nPtbinning1};
+    Int_t nBinPbPb[2] = {nCentralitybinning,nPtbinning1};
+    //fBSpectrum2ndMethod->GetNbinsX()
+
+    AliCFDataGrid *rawBeautyContainer;
+    if(fBeamType==0)  rawBeautyContainer = new AliCFDataGrid("rawBeautyContainer","rawBeautyContainer",nDim,nBin);
+    else rawBeautyContainer = new AliCFDataGrid("rawBeautyContainer","rawBeautyContainer",nDim,nBinPbPb);
+    //  printf("number of bins= %d\n",bins[0]);
+
+
+    
+    
+    THnSparseF *brawspectra;
+    if(fBeamType==0) brawspectra= new THnSparseF("brawspectra", "beauty yields ; p_{t}(GeV/c)", nDim, nBin);
+    else brawspectra= new THnSparseF("brawspectra", "beauty yields ; p_{t}(GeV/c)", nDim, nBinPbPb);
+    if(fBeamType==0) brawspectra->SetBinEdges(0, kPtRange);
+    if(fBeamType==1)
+      {
+	//      brawspectra->SetBinEdges(0, centralityBins);
+	brawspectra->SetBinEdges(0, kCentralityRange);
+	brawspectra->SetBinEdges(1, kPtRange);
+      }
+    
+    Double_t pt[1];
+    Double_t yields= 0.;
+    Double_t valuesb[2];
+    
+    //Int_t looppt=nBin[0];
+    Int_t loopcentr=1;
+    if(fBeamType==1)
+      {
+	loopcentr=nBinPbPb[0];
+      }
+    
+    for(int icentr=0; icentr<loopcentr; icentr++)
+      {
+	
+	for(int i=0; i<fBSpectrum2ndMethod->GetNbinsX(); i++){
+	  pt[0]=(kPtRange[i]+kPtRange[i+1])/2.;
+	  
+	  yields = fBSpectrum2ndMethod->GetBinContent(i+1);
+	  
+	  if(fBeamType==1)
+	    {
+	      valuesb[0]=icentr;
+	      valuesb[1]=pt[0];
+	    }
+	  if(fBeamType==0) valuesb[0]=pt[0];
+	  brawspectra->Fill(valuesb,yields);
+	}
+      }
+    
+    
+    
+    Int_t nDimSparse = brawspectra->GetNdimensions();
+    Int_t* binsvar = new Int_t[nDimSparse]; // number of bins for each variable
+    Long_t nBins = 1; // used to calculate the total number of bins in the THnSparse
+    
+    for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+      binsvar[iVar] = brawspectra->GetAxis(iVar)->GetNbins();
+      nBins *= binsvar[iVar];
+    }
+    
+    Int_t *binfill = new Int_t[nDimSparse]; // bin to fill the THnSparse (holding the bin coordinates)
+    // loop that sets 0 error in each bin
+    for (Long_t iBin=0; iBin<nBins; iBin++) {
+      Long_t bintmp = iBin ;
+      for (Int_t iVar=0; iVar<nDimSparse; iVar++) {
+	binfill[iVar] = 1 + bintmp % binsvar[iVar] ;
+	bintmp /= binsvar[iVar] ;
+      }
+      brawspectra->SetBinError(binfill,0.); // put 0 everywhere
+    }
+    
+    
+    rawBeautyContainer->SetGrid(brawspectra); // get charm efficiency
+    TH1D* hRawBeautySpectra = (TH1D*)rawBeautyContainer->Project(ptpr);
+    
+    new TCanvas;
+    fBSpectrum2ndMethod->SetMarkerStyle(24);
+    fBSpectrum2ndMethod->Draw("p");
+    hRawBeautySpectra->SetMarkerStyle(25);
+    hRawBeautySpectra->Draw("samep");
+    
+    return rawBeautyContainer;
+}
+
+//__________________________________________________________________________
+void AliHFEspectrum::CalculateNonHFEsyst(Int_t centrality){
   //
-  //Calculate systematic errors for non-HFE and conversion background,
-  //based on correlated errors from pi0 input and uncorrelated errors 
-  //from m_t scaling
+  // Calculate non HFE sys
   //
+  //
+
   if(!fNonHFEsyst)
     return;
 
   Double_t evtnorm[1] = {0.0};
-  if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
+  if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents[0]);
   
   AliCFDataGrid *convSourceGrid[kElecBgSources][kBgLevels];
   AliCFDataGrid *nonHFESourceGrid[kElecBgSources][kBgLevels];
@@ -2402,22 +3111,23 @@ void AliHFEspectrum::CalculateNonHFEsyst(){
 
   Int_t stepbackground = 3;
   Int_t* bins=new Int_t[1];
-  bins[0]=fConversionEff->GetNbinsX();
+ 
+  bins[0]=fConversionEff[centrality]->GetNbinsX();
+   
   AliCFDataGrid *weightedConversionContainer = new AliCFDataGrid("weightedConversionContainer","weightedConversionContainer",1,bins);
   AliCFDataGrid *weightedNonHFEContainer = new AliCFDataGrid("weightedNonHFEContainer","weightedNonHFEContainer",1,bins);
 
-  for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-   
+  for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){   
     for(Int_t iSource = 0; iSource < kElecBgSources; iSource++){
-      convSourceGrid[iSource][iLevel] = new AliCFDataGrid(Form("convGrid_%d_%d",iSource,iLevel),Form("convGrid_%d_%d",iSource,iLevel),*fConvSourceContainer[iSource][iLevel],stepbackground); 
+      convSourceGrid[iSource][iLevel] = new AliCFDataGrid(Form("convGrid_%d_%d_%d",iSource,iLevel,centrality),Form("convGrid_%d_%d_%d",iSource,iLevel,centrality),*fConvSourceContainer[iSource][iLevel][centrality],stepbackground);
       weightedConversionContainer->SetGrid(GetPIDxIPEff(2));
       convSourceGrid[iSource][iLevel]->Multiply(weightedConversionContainer,1.0);
-
-      nonHFESourceGrid[iSource][iLevel] = new AliCFDataGrid(Form("nonHFEGrid_%d_%d",iSource,iLevel),Form("nonHFEGrid_%d_%d",iSource,iLevel),*fNonHFESourceContainer[iSource][iLevel],stepbackground);
+      
+      nonHFESourceGrid[iSource][iLevel] = new AliCFDataGrid(Form("nonHFEGrid_%d_%d_%d",iSource,iLevel,centrality),Form("nonHFEGrid_%d_%d_%d",iSource,iLevel,centrality),*fNonHFESourceContainer[iSource][iLevel][centrality],stepbackground);
       weightedNonHFEContainer->SetGrid(GetPIDxIPEff(3));
       nonHFESourceGrid[iSource][iLevel]->Multiply(weightedNonHFEContainer,1.0);
     }
-
+    
     bgConvGrid[iLevel] = (AliCFDataGrid*)convSourceGrid[0][iLevel]->Clone();
     for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
       bgConvGrid[iLevel]->Add(convSourceGrid[iSource][iLevel]);
@@ -2427,10 +3137,11 @@ void AliHFEspectrum::CalculateNonHFEsyst(){
     for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){//add other sources to get overall background from all meson decays
       bgNonHFEGrid[iLevel]->Add(nonHFESourceGrid[iSource][iLevel]);
     }
-        
+    
     bgLevelGrid[iLevel] = (AliCFDataGrid*)bgConvGrid[iLevel]->Clone();
     bgLevelGrid[iLevel]->Add(bgNonHFEGrid[iLevel]);
   }
+  
   
   //Now subtract the mean from upper, and lower from mean container to get the error based on the pion yield uncertainty (-> this error sums linearly, since its contribution to all meson yields is correlated)
   AliCFDataGrid *bgErrorGrid[2];
@@ -2588,5 +3299,7 @@ void AliHFEspectrum::CalculateNonHFEsyst(){
   gOverallSystErrLow->Write(); 
 
   output->Close(); 
-  delete output;  
+  delete output;
+  
 }
+

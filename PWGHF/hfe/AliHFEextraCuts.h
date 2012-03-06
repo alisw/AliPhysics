@@ -82,19 +82,19 @@ class AliHFEextraCuts: public AliCFCutBase{
     Bool_t GetCheckITSstatus() const { return fCheck; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
     void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
+    Int_t GetITSstatus(AliVTrack *track, Int_t layer);
+    Bool_t CheckITSstatus(Int_t itsStatus) const;
     
   protected:
     virtual void AddQAHistograms(TList *qaList);
     Bool_t CheckRecCuts(AliVTrack *track);
     Bool_t CheckMCCuts(AliVParticle * /*track*/) const;
-    Bool_t CheckITSstatus(Int_t itsStatus) const;
     void FillQAhistosRec(AliVTrack *track, UInt_t when);
 //     void FillQAhistosMC(AliMCParticle *track, UInt_t when);
     void FillCutCorrelation(ULong64_t survivedCut);
     void PrintBitMap(Int_t bitmap);
     
     // Getter Functions for ESD/AOD compatible mode
-    Int_t GetITSstatus(AliVTrack *track, Int_t layer);
     UInt_t GetTPCncls(AliVTrack *track);
     UInt_t GetTPCnclusdEdx(AliVTrack *track);
     Bool_t GetTPCCountSharedMapBitsAboveThreshold(AliVTrack *track);

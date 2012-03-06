@@ -55,6 +55,7 @@ class AliHFEcollection : public TNamed{
   Bool_t CreateTH1Farray(const char* name, const char* title, Int_t nBin, const Double_t* xbins);
 
   Bool_t CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t logAxis = -1);
+  Bool_t CreateTH2Farray(const char* name, const char* title, Int_t nBin, const Double_t* xbins, Int_t nBinY, Float_t nMinY, Float_t nMaxY);
   Bool_t CreateTH3F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t nBinZ, Float_t minZ, Float_t maxZ, Int_t logAxis = -1);
 
   Bool_t CreateTH1Fvector1(Int_t X, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax, Int_t logAxis = -1);
@@ -62,6 +63,7 @@ class AliHFEcollection : public TNamed{
   Bool_t CreateTH2Fvector1(Int_t X, const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t logAxis = -1);
   Bool_t CreateProfile(const char* name, const char* title, Int_t nbins, Double_t xmin, Double_t xmax);
   Bool_t CreateTHnSparse(const char* name, const char* title, Int_t dim, const Int_t* nbins, const Double_t* xmin, const Double_t* xmax);
+  Bool_t CreateTHnSparseNoLimits(const char* name, const char* title, Int_t dim, const Int_t* nbins);
 
   Bool_t BinLogAxis(const char* name, Int_t dim);
   Bool_t Sumw2(const char*name);

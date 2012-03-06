@@ -25,6 +25,7 @@ class AliHFEcuts;
 class AliHFEsignalCuts;
 class TString;
 class TTreeSRedirector;
+class AliHFEpidTRD;
 
 class AliHFEdebugTreeTask : public AliAnalysisTaskSE{
   public:
@@ -48,6 +49,7 @@ class AliHFEdebugTreeTask : public AliAnalysisTaskSE{
     
     AliHFEcuts *fTrackCuts;           // Track
     AliHFEsignalCuts *fSignalCuts;    // Signal Cuts
+    AliHFEpidTRD *fTRDpid;            // TRD PID
     Int_t fNclustersTPC;              // Min Number of clusters in TPC
     Int_t fNclustersTPCPID;           // Min Number of clusters for TPC PID
     Int_t fNclustersITS;              // Min Number of clusters in ITS

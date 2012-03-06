@@ -119,25 +119,28 @@ class AliHFEtrdPIDqa : public TNamed{
     enum QuantitiesLike_t{
       kElectronLike = 3,
       kNClustersLike = 4,
-      kCentralityBin = 5,
+      kCentralityBinLike = 5,
       kQuantitiesLike = 6
     };
     enum QuantitiesQAtrack_t{
       kNonZeroTrackletCharge = 3,
       kNClusters = 4,
-      kQuantitiesQA = 5
+      kCentralityBinQA = 5,
+      kQuantitiesQA = 6
     };
     enum QuantitiesdEdx_t{
       kNclusters = 3,
       kNonZeroSlices = 4,
       kdEdx = 5,
-      kQuantitiesdEdx = 6
+      kCentralityBindEdx = 6,
+      kQuantitiesdEdx = 7
     };
     enum QuantitiesTruncMean_t{
       kTPCdEdx = 3,
       kTRDdEdxMethod1 = 4,
       kTRDdEdxMethod2 = 5,
-      kQuantitiesTruncMean = 6
+      kCentralityBinTruncMean = 6,
+      kQuantitiesTruncMean = 7
     };
 
     void ProcessTrackESD(const AliESDtrack * const track, Int_t species);

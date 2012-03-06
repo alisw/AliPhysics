@@ -133,13 +133,15 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t ReadCentrality();
     void RejectionPileUpVertexRangeEventCut();  
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
+    void SetDebugStreaming() {SetBit(kTreeStream);};
     
   private:
     enum{
       kHasMCdata = BIT(19),
       kAODanalysis = BIT(20),
       kBeamType = BIT(21),
-      kBackgroundInitialized = BIT(22)
+      kBackgroundInitialized = BIT(22),
+      kTreeStream = BIT(23)
     };
 
     Bool_t FillProductionVertex(const AliVParticle * const track) const;

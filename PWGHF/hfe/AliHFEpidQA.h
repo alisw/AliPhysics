@@ -80,7 +80,7 @@ class AliHFEpidQA : public TObject{
     AliHFEtrdPIDqa *GetTRDQA() const { return fTRDpidQA; }
 
     Int_t GetCentrality(AliVEvent*  const fInputEvent);
-    Int_t GetMultiplicityITS(AliVEvent*  const fInputEvent);
+    Int_t GetMultiplicityITS(AliVEvent*  const fInputEvent) const;
     void SetPbPb() { fIsPbPb = kTRUE; };
     void SetPP() { fIsPbPb = kFALSE; };
     void SetPPMultiBin() { fIsppMultiBin = kFALSE; };

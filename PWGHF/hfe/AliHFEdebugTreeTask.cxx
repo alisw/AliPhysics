@@ -18,7 +18,6 @@
 // Authors:
 //   Markus Fasel <M.Fasel@gsi.de>
 //
-//
 #include <TBits.h>
 #include <TString.h>
 
@@ -37,6 +36,7 @@
 #include "AliMCParticle.h"
 #include "AliPIDResponse.h"
 #include "AliVEvent.h"
+#include "AliHFEpidTRD.h"
 #include "TTreeStream.h"
 
 #include "AliHFEdebugTreeTask.h"
@@ -47,6 +47,7 @@ AliHFEdebugTreeTask::AliHFEdebugTreeTask():
   AliAnalysisTaskSE(),
   fTrackCuts(NULL),
   fSignalCuts(NULL),
+  fTRDpid(NULL),
   fNclustersTPC(70),
   fNclustersTPCPID(0),
   fNclustersITS(2),
@@ -60,6 +61,7 @@ AliHFEdebugTreeTask::AliHFEdebugTreeTask(const char *name):
   AliAnalysisTaskSE(name),
   fTrackCuts(NULL),
   fSignalCuts(NULL),
+  fTRDpid(NULL),
   fNclustersTPC(70),
   fNclustersTPCPID(0),
   fNclustersITS(2),
@@ -70,7 +72,8 @@ AliHFEdebugTreeTask::AliHFEdebugTreeTask(const char *name):
 }
 
 AliHFEdebugTreeTask::~AliHFEdebugTreeTask(){
-  if(fDebugTree) delete fDebugTree;
+    if(fDebugTree) delete fDebugTree;
+    if(fTRDpid) delete fTRDpid;
 }
 
 void AliHFEdebugTreeTask::UserCreateOutputObjects(){
@@ -93,6 +96,9 @@ void AliHFEdebugTreeTask::UserCreateOutputObjects(){
   fTrackCuts->SetUseMixedVertex(kTRUE);
   fTrackCuts->SetVertexRange(10.);
   fTrackCuts->Initialize();
+
+  fTRDpid = new AliHFEpidTRD("QAtrdPID");
+
 }
 
 void AliHFEdebugTreeTask::UserExec(Option_t *){
@@ -281,13 +287,16 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     for(Int_t ibit = 0; ibit < 160; ibit++) if(sharedTPC.TestBitNumber(ibit)) nclustersTPCshared++;
     // TRD clusters and tracklets
     UChar_t nclustersTRD = track->GetTRDncls();
-    UChar_t ntracklets = track->GetTRDntrackletsPID();
+    UChar_t ntrackletsTRDPID = track->GetTRDntrackletsPID();
     // ITS and TRD acceptance maps
     UChar_t hasClusterITS[6], hasTrackletTRD[6];
     UChar_t itsPixel = track->GetITSClusterMap();
     for(Int_t icl = 0; icl < 6; icl++) hasClusterITS[icl] = TESTBIT(itsPixel, icl) ? 1 : 0;
+    Double_t trddEdxSum[6];
+    for(Int_t a=0;a<6;a++) { trddEdxSum[a]= 0.;}
     for(Int_t itl = 0; itl < 6; itl++){
-      Int_t nSliceNonZero = 0;
+	Int_t nSliceNonZero = 0;
+        trddEdxSum[itl] = track->GetTRDslice(itl, 0); // in new reconstruction slice 0 contains the total charge
       for(Int_t islice = 0; islice < 8; islice++){
         if(track->GetTRDslice(itl, islice) > 0.001) nSliceNonZero++;
       }
@@ -298,6 +307,9 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     track->GetTRDpid(pidprobs);
     Double_t likeEleTRD = pidprobs[0];
     Double_t likeEleTRDn = likeEleTRD/(likeEleTRD + pidprobs[2]);
+    Double_t trdtruncmean1 = fTRDpid->GetTRDSignalV1(track, 0.6);
+    Double_t trdtruncmean2 = fTRDpid->GetTRDSignalV2(track, 0.6);
+
     // DCA
     Float_t b[2] = {0.,0.};
     Float_t bCov[3] = {0.,0.,0.};
@@ -326,7 +338,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "pt="                  << transversemomentum
                   << "eta="                 << eta
                   << "phi="                 << phi
-                  << "ntracklets="          << ntracklets
+                  << "ntracklets="          << ntrackletsTRDPID
                   << "nclustersTPC="        << nclustersTPC
                   << "nclustersTPCPID="     << nclustersTPCPID
                   << "nclustersTPCshared="  << nclustersTPCshared
@@ -348,11 +360,19 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "trd3="                << hasTrackletTRD[3]
                   << "trd4="                << hasTrackletTRD[4]
                   << "trd5="                << hasTrackletTRD[5]
+	          << "TRDdEdxl0="           << trddEdxSum[0]
+	          << "TRDdEdxl1="           << trddEdxSum[1]
+	          << "TRDdEdxl2="           << trddEdxSum[2]
+	          << "TRDdEdxl3="           << trddEdxSum[3]
+	          << "TRDdEdxl4="           << trddEdxSum[4]
+	          << "TRDdEdxl5="           << trddEdxSum[5]
                   << "TOFsigmaEl="          << nSigmaTOF
                   << "TPCsigmaEl="          << nSigmaTPC
                   << "TPCdEdx="             << tPCdEdx
                   << "TRDlikeEl="           << likeEleTRD
                   << "TRDlikeEln="          << likeEleTRDn
+	          << "trdtruncmean1="       << trdtruncmean1
+                  << "trdtruncmean2="       << trdtruncmean2
                   << "dcaR="                << b[0]
                   << "dcaZ="                << b[1]
                   << "dca="                 << dca

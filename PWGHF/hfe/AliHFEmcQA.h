@@ -40,6 +40,7 @@ class AliGenEventHeader;
 class AliMCParticle;
 class AliAODMCParticle;
 class AliHFEcollection;
+class TTreeSRedirector;
 
 //________________________________________________________________
 class AliHFEmcQA: public TObject {
@@ -68,7 +69,7 @@ class AliHFEmcQA: public TObject {
     TList *GetList() const { return fQAhistos; };
     void PostAnalyze() const;
     void CreatDefaultHistograms(TList * const qaList); // create default histograms  
-    void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
+    void CreateHistograms(const Int_t kquark); // create histograms for mc qa analysis
     void SetMCEvent(AliMCEvent* const mcEvent){fMCEvent = mcEvent;} 
     void SetGenEventHeader(AliGenEventHeader* const mcHeader){fMCHeader=mcHeader;} // set stack pointer
     void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
@@ -76,16 +77,21 @@ class AliHFEmcQA: public TObject {
 
     void GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
     void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
-    void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
-    void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
+    void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed); // get decay electron kinematics distribution
+    void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed); // get decay electron kinematics for AOD 
     void GetMesonKine(); // get meson and its decay electron pt spectra
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
     Int_t GetSource(const TParticle * const mcpart); // return source id 
     Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
     Int_t GetSource(const AliAODMCParticle * const mcpart); // return electron source id for AOD
     Double_t GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
+    void EnableDebugStreamer() { fIsDebugStreamerON = kTRUE;};
 
     void SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit);
+    void SetContainerStep(Int_t containerStep) { fContainerStep = containerStep;};
+    void SetHFEImpactParameters(Double_t hfeimpactR, Double_t hfeimpactnsigmaR) {fHfeImpactR = hfeimpactR; fHfeImpactnsigmaR = hfeimpactnsigmaR; };
+    void SetTrkKine(Double_t pt, Double_t eta, Double_t phi) {fRecPt = pt; fRecEta = eta; fRecPhi = phi;};
+    void SetITSInfo(Double_t ilyrhit, Double_t ilyrstat) { fLyrhit = ilyrhit; fLyrstat = ilyrstat;};
 
     void SetCentrality(Int_t centrality) { fCentrality = centrality; };
     void SetPbPb() { fIsPbPb = kTRUE; };
@@ -110,6 +116,7 @@ class AliHFEmcQA: public TObject {
     static const Int_t fgkMaxGener=10; // ancester level wanted to be checked 
     static const Int_t fgkMaxIter=100; // number of iteration to find out matching particle 
     static const Int_t fgkqType=7; // number of particle type to be checked
+    static const Int_t fgkEtaRanges=3; // cuts for different eta ranges
 
     struct AliHists{
       TH1F *fPdgCode; // histogram to store particle pdg code
@@ -206,6 +213,19 @@ private:
     Int_t              fCentrality;  // Centrality
     Bool_t             fIsPbPb;        // Analysis Type: pp or PbPb
     Bool_t             fIsppMultiBin;  // pp multiplicity bin analysis
+    Int_t              fContainerStep; // step the weighting factor called
+    Bool_t             fIsDebugStreamerON; // check if the debugstreamer is on
+
+    Double_t           fRecPt;  //reconstructed pt
+    Double_t           fRecEta; //reconstructed eta
+    Double_t           fRecPhi; //reconstructed phi
+    Double_t           fLyrhit; //its layer hit
+    Double_t           fLyrstat; // its layer status
+
+    Double_t fHfeImpactR;              // absolute impact parameter R
+    Double_t fHfeImpactnsigmaR;        // absolute impact parameter sigma R 
+ 
+    TTreeSRedirector *fTreeStream;        //! TreeStream
 
   ClassDef(AliHFEmcQA,1);
 };

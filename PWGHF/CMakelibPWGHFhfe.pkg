@@ -79,10 +79,12 @@ set (SRCS
     hfe/AliHFEpidObject.cxx
     hfe/AliAnalysisTaskElecHadronCorrel.cxx
     hfe/AliHFEdebugTreeTask.cxx
+    hfe/AliHFEVZEROEventPlane.cxx
+    hfe/AliAnalysisTaskHFEFlow.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  PWGHFhfeLinkDef.h)
 
-set ( EINCLUDE  PWGHF/hfe TPC CORRFW STEER/STEERBase)
+set ( EINCLUDE  PWGHF/hfe TPC CORRFW STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks)

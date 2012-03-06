@@ -320,6 +320,7 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
   TClass *tracktype;
   const AliVParticle *mctrack = NULL;
   TParticle *mcpart = NULL;
+  //AliMCParticle *esdmcmother = NULL;
   if((tracktype = track->IsA()) == AliESDtrack::Class() || tracktype == AliAODTrack::Class()){
     mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
   } else  mctrack = track;
@@ -331,6 +332,23 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
     if(esdmc){
       mcpart = esdmc->Particle();
       eSource=fMCQA->GetElecSource(mcpart);
+/* // considering secondary pions
+      if(eSource>=AliHFEmcQA::kGammaPi0) {  // conversion electron, be careful with the enum odering 
+        Int_t glabel=TMath::Abs(esdmc->GetMother()); // gamma label
+        if((esdmcmother= dynamic_cast<AliMCParticle *>(fMC->GetTrack(glabel)))){
+          glabel=TMath::Abs(esdmcmother->GetMother()); // gamma's mother's label
+          if((esdmcmother= dynamic_cast<AliMCParticle *>(fMC->GetTrack(glabel)))){
+            if(glabel>fMC->GetNumberOfPrimaries()) eSource=AliHFEmcQA::kElse;
+          }
+        }
+      }
+      else if(eSource==AliHFEmcQA::kPi0 || (eSource>=AliHFEmcQA::kEta && eSource<=AliHFEmcQA::kRho0) ){ // nonHFE except for the conversion electron
+        Int_t glabel=TMath::Abs(esdmc->GetMother());
+        if((esdmcmother= dynamic_cast<AliMCParticle *>(fMC->GetTrack(glabel)))){
+          if(glabel>fMC->GetNumberOfPrimaries()) eSource=AliHFEmcQA::kElse;
+        }
+      }
+*/
     }
   } else {
     return -1;

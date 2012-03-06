@@ -150,6 +150,23 @@ Bool_t AliHFEcollection::CreateTH1Farray(const char* name, const char* title, In
 }
 
 //___________________________________________________________________
+Bool_t AliHFEcollection::CreateTH2Farray(const char* name, const char* title, Int_t nBin, const Double_t* xbins, Int_t nBinY, Float_t nMinY, Float_t nMaxY){
+
+  //
+  // Creates a TH1F histogram for the collection 2nd version 
+  //
+
+  if(!fList){
+    AliError("No TList pointer ! ");
+    return kFALSE;
+  }
+  else{
+    fList->Add(new TH2F(name, title, nBin, xbins, nBinY, nMinY, nMaxY));
+    return CheckObject(name);
+  }
+}
+
+//___________________________________________________________________
 Bool_t AliHFEcollection::CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t logAxis){
 
   //
@@ -299,6 +316,21 @@ Bool_t AliHFEcollection::CreateTHnSparse(const char* name, const char* title, In
     return kFALSE;
   }
   fList->Add(new THnSparseF(name, title, dim, nbins, xmin, xmax));
+  return CheckObject(name);
+
+}
+//___________________________________________________________________
+Bool_t AliHFEcollection::CreateTHnSparseNoLimits(const char* name, const char* title, Int_t dim, const Int_t* nbins){
+
+  //
+  // create 'dim' dimensional THnSparse without limits
+  //
+
+  if(!fList){
+    AliError("No TList pointer ! ");
+    return kFALSE;
+  }
+  fList->Add(new THnSparseF(name, title, dim, nbins));
   return CheckObject(name);
 
 }
