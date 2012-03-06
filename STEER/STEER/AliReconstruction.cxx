@@ -2286,7 +2286,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliSysInfo::AddStamp(Form("FillVaria_%d",iEvent), 0,0,iEvent); 
 
     // write ESD
-    if (fCleanESD) {
+    UInt_t specie = fesd->GetEventSpecie();
+    Bool_t keepAll = (specie==AliRecoParam::kCosmic || specie==AliRecoParam::kCalib);
+    if (fCleanESD && (!keepAll) ) {
       CleanESD(fesd);
       AliSysInfo::AddStamp(Form("CleanESD_%d",iEvent), 0,0,iEvent); 
     }
