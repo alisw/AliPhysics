@@ -32,6 +32,7 @@ class AliVertex;
 class AliESDVertex;
 class AliMultiplicity;
 class AliRefArray;
+class AliITSRecPoint;
 
 class AliITSMultReconstructor : public AliTrackleter
 {
@@ -74,12 +75,14 @@ public:
   Int_t GetNSingleClusters() const {return fNSingleCluster;}
   Short_t GetNFiredChips(Int_t layer) const {return fNFiredChips[layer];}
 
-  Float_t* GetClusterLayer1(Int_t n) {return &fClustersLay[0][n*kClNPar];}
-  Float_t* GetClusterLayer2(Int_t n) {return &fClustersLay[1][n*kClNPar];}
-  Float_t* GetClusterOfLayer(Int_t lr,Int_t n) {return &fClustersLay[lr][n*kClNPar];}
+  Float_t* GetClusterLayer1(Int_t n) const {return &fClustersLay[0][n*kClNPar];}
+  Float_t* GetClusterLayer2(Int_t n) const {return &fClustersLay[1][n*kClNPar];}
+  Float_t* GetClusterOfLayer(Int_t lr,Int_t n) const {return &fClustersLay[lr][n*kClNPar];}
+  Int_t    GetClusterCopyIndex(Int_t lr,Int_t n) const {return fClusterCopyIndex[lr] ? fClusterCopyIndex[lr][n] : -1;}
+  AliITSRecPoint* GetRecPoint(Int_t lr, Int_t n) const;
   
-  Float_t* GetTracklet(Int_t n) {return fTracklets[n];}
-  Float_t* GetCluster(Int_t n) {return fSClusters[n];}
+  Float_t* GetTracklet(Int_t n) const {return fTracklets[n];}
+  Float_t* GetCluster(Int_t n) const {return fSClusters[n];}
 
   void     SetScaleDThetaBySin2T(Bool_t v=kTRUE)         {fScaleDTBySin2T = v;}
   Bool_t   GetScaleDThetaBySin2T()               const   {return fScaleDTBySin2T;}
@@ -176,6 +179,7 @@ public:
   //
   Float_t*      fClustersLay[2];            //! clusters in the SPD layers of ITS 
   Int_t*        fDetectorIndexClustersLay[2];  //! module index for clusters in ITS layers
+  Int_t*        fClusterCopyIndex[2];         //! when clusters copy is requested, store here the reference on the index
   Bool_t*       fOverlapFlagClustersLay[2];  //! flag for clusters in the overlap regions in ITS layers
 
   Float_t**     fTracklets;            //! tracklets 

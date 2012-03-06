@@ -164,6 +164,7 @@ fhphiClustersLay1(0),
     fClArr[i] = 0;
     for (int j=0;j<2;j++) fUsedClusLay[i][j] = 0;
     fDetectorIndexClustersLay[i] = 0;
+    fClusterCopyIndex[2] = 0;
     fOverlapFlagClustersLay[i] = 0;
     fNClustersLay[i] = 0;
     fClustersLay[i] = 0;
@@ -367,6 +368,7 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
   for (int i=0;i<2;i++) {
     delete[] fClustersLay[i];
     delete[] fDetectorIndexClustersLay[i];
+    delete[] fClusterCopyIndex[2];
     delete[] fOverlapFlagClustersLay[i];
     delete   fClArr[i];
     for (int j=0;j<2;j++) delete fUsedClusLay[i][j];
@@ -648,6 +650,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree, int il)
     branch = itsClusterTree->GetBranch("ITSRecPoints");
     branch->SetAddress(&itsClusters);
     if (!fClArr[il]) fClArr[il] = new TClonesArray("AliITSRecPoint",100);
+    delete[] fClusterCopyIndex[il];
   }    
   //
   // count clusters
@@ -679,6 +682,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree, int il)
   Float_t*   clustersLay              = new Float_t[nclLayer*kClNPar];
   Int_t*     detectorIndexClustersLay = new Int_t[nclLayer];
   Bool_t*    overlapFlagClustersLay   = new Bool_t[nclLayer];
+  if (fCreateClustersCopy) fClusterCopyIndex[il] = new Int_t[nclLayer];
   //
   for (int ic=0;ic<nclLayer;ic++) {
     AliITSRecPoint* cluster = (AliITSRecPoint*)clArr[index[ic]];
@@ -688,6 +692,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree, int il)
     detectorIndexClustersLay[ic] = cluster->GetDetectorIndex(); 
     overlapFlagClustersLay[ic]   = kFALSE;
     for (Int_t i=3;i--;) clPar[kClMC0+i] = cluster->GetLabel(i);
+    if (fCreateClustersCopy) fClusterCopyIndex[il][ic] = index[ic];
   }
   clArr.Clear();
   delete[] z;
@@ -1260,4 +1265,16 @@ Bool_t AliITSMultReconstructor::CanBeElectron(const AliESDtrack* trc) const
     pid[AliPID::kElectron]>fCutMinElectronProbTPC : 
     pid[AliPID::kElectron]>fCutMinElectronProbESD;
   //
+}
+
+//____________________________________________________________________
+AliITSRecPoint* AliITSMultReconstructor::GetRecPoint(Int_t lr, Int_t n) const
+{
+  // return a cluster of lr corresponding to orderer cluster index n
+  if (fClArr[lr] && fClusterCopyIndex[lr] && n<fNClustersLay[lr]) 
+    return (AliITSRecPoint*) fClArr[lr]->At(fClusterCopyIndex[lr][n]);
+  else {
+    AliError("To access the clusters SetCreateClustersCopy should have been called");
+    return 0;
+  }
 }
