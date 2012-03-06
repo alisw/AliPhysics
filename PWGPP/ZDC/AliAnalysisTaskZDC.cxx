@@ -308,19 +308,19 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;
-  if(esdZDC->GetZDCTDCData(10,0)>1e-4){
-    tdcC = esdZDC->GetZDCTDCCorrected(10,0);
-    if(esdZDC->GetZDCTDCData(12,0)>1e-4){
-      tdcA = esdZDC->GetZDCTDCCorrected(12,0);
-      tdcSum = tdcC+tdcA;
-      tdcDiff = tdcC-tdcA;
+  for(int i=0; i<4; i++){
+    if(esdZDC->GetZDCTDCData(10,i) != 0.){
+      tdcC = esdZDC->GetZDCTDCCorrected(10,i);
+      if(esdZDC->GetZDCTDCData(12,i) != 0.){
+        tdcA = esdZDC->GetZDCTDCCorrected(12,i);
+        tdcSum = tdcC+tdcA;
+        tdcDiff = tdcC-tdcA;
+      }
     }
-  }
-  //for(Int_t i=0; i<4; i++){
     if(tdcSum!=999.) fhTDCZNSum->Fill(tdcSum); 
     if(tdcDiff!=999.)fhTDCZNDiff->Fill(tdcDiff); 
     if(tdcSum!=999. && tdcDiff!=999.)  fDebunch->Fill(tdcDiff, tdcSum);  
-  //}
+  }
   
   PostData(1, fOutput);
    
