@@ -13,6 +13,7 @@
 #include <AliAODEvent.h>
 #include <AliCFContainer.h>
 #include "AliFlowBayesianPID.h"
+#include "AliFlowVZEROResults.h"
 
 class TH2F;
 
@@ -37,11 +38,14 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   virtual void SetV2(Bool_t val){fV2 = val;};
   virtual void SetV3(Bool_t val){fV3 = val;};
 
+  virtual void SetMC(Bool_t flag = kTRUE){fIsMC = flag;};
+  virtual void SetQA(Bool_t flag = kTRUE){fQAsw = flag;};
+
   void OpenInfoCalbration(Int_t run);
 
  private:
-  AliAnalysisTaskVnV0(const AliAnalysisTaskVnV0 &);
-  AliAnalysisTaskVnV0 & operator=(const AliAnalysisTaskVnV0 &);
+  AliAnalysisTaskVnV0(const AliAnalysisTaskVnV0 &old);
+  AliAnalysisTaskVnV0& operator=(const AliAnalysisTaskVnV0 &source);
 
   virtual Float_t GetVertex(AliAODEvent* aod) const;
   virtual void Analyze(AliAODEvent* aodEvent, Float_t v0Centr); 
@@ -59,7 +63,7 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   Int_t fRun;                       // current run checked to load VZERO calibrations
 
-  TList *fList,*fList2;             // List for output objects
+  TList *fList,*fList2,*fList3,*fList4;             // List for output objects
   //
   // Output objects
   TProfile *fMultV0;                // object containing VZERO calibration information
@@ -68,11 +72,6 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   Float_t fWidthQ[nCentrBin][2][2];          // ...
   Float_t fMeanQv3[nCentrBin][2][2];         // also for v3
   Float_t fWidthQv3[nCentrBin][2][2];        // ...
-
-  AliCFContainer *fContAllChargesV0A;        // containers for v2 (A nd C) and v3 (A and C)
-  AliCFContainer *fContAllChargesV0C;        // ...
-  AliCFContainer *fContAllChargesV0Av3;      // ...
-  AliCFContainer *fContAllChargesV0Cv3;      // ...
 
   TProfile *fHResTPCv0A2,*fHResTPCv0C2,*fHResv0Cv0A2;   // TProfile for subevent resolution (output)
   TProfile *fHResTPCv0A3,*fHResTPCv0C3,*fHResv0Cv0A3;   // also for v3
@@ -96,7 +95,12 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   Bool_t fV2,fV3; // swith to set the armonics
 
-  ClassDef(AliAnalysisTaskVnV0, 1);    //Analysis task v2 and v3 analysis on AOD
+  AliFlowVZEROResults *fContAllChargesV0A,*fContAllChargesV0C,*fContAllChargesV0Av3,*fContAllChargesV0Cv3,*fContAllChargesMC,*fContAllChargesMCv3;
+
+  Bool_t fIsMC; // if MC
+  Bool_t fQAsw;   // if QA
+
+  ClassDef(AliAnalysisTaskVnV0, 2);    //Analysis task v2 and v3 analysis on AOD
 };
 
 #endif

@@ -1,8 +1,12 @@
-AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE){
+AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kTRUE){
   char fileout[100];
-  sprintf(fileout,"outVZEROv2.root");
+  snprintf(fileout,100,"outVZEROv2.root");
   char fileout2[100];
-  sprintf(fileout2,"outVZEROv3.root");
+  snprintf(fileout2,100,"outVZEROv3.root");
+  char fileout3[100];
+  snprintf(fileout3,100,"outVZEROmc.root");
+  char fileout4[100];
+  snprintf(fileout4,100,"outVZEROqa.root");
 
   //get the current analysis manager
   //  AnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,11 +22,13 @@ AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t kV2=kTRUE,Bool_t kV
 
   //========= Add tender to the ANALYSIS manager and set default storage =====
   char mytaskName[100];
-  sprintf(mytaskName,"AliAnalysisTaskVnV0.cxx"); 
+  snprintf(mytaskName,100,"AliAnalysisTaskVnV0.cxx"); 
 
   AliAnalysisTaskVnV0 *task = new AliAnalysisTaskVnV0(mytaskName);
   task->SetV2(kV2);
   task->SetV3(kV3);
+  if(ismc) task->SetMC();
+  if(qa) task->SetQA();
 
   mgr->AddTask(task);
 
@@ -38,6 +44,14 @@ AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t kV2=kTRUE,Bool_t kV
   if(kV3){
     AliAnalysisDataContainer *cOutputL2= mgr->CreateContainer("contVZEROv3",TList::Class(), AliAnalysisManager::kOutputContainer, fileout2);
     mgr->ConnectOutput(task, 2, cOutputL2);
+  }
+  if(ismc){
+    AliAnalysisDataContainer *cOutputL3= mgr->CreateContainer("contVZEROmc",TList::Class(), AliAnalysisManager::kOutputContainer, fileout3);
+    mgr->ConnectOutput(task, 3, cOutputL3);
+  }
+  if(qa){
+    AliAnalysisDataContainer *cOutputL4= mgr->CreateContainer("contVZEROqa",TList::Class(), AliAnalysisManager::kOutputContainer, fileout4);
+    mgr->ConnectOutput(task, 4, cOutputL4);
   }
   printf("task really added\n");
 
