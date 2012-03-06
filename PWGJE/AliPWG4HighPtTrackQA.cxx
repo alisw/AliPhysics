@@ -987,6 +987,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     20: nClustersTPCShared
     21: Golden Chi2 - global vs TPC constrained
     22: Chi2 between global and global constrained
+    23: #crossed rows from fit map
+    24: (#crossed rows)/(#findable clusters) from fit map
   */
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -1232,7 +1234,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     fVariables->SetAt(0.,8);
     fVariables->SetAt(GetTrackLengthTPC(aodtrack),9);
     fVariables->SetAt(aodtrack->Chi2perNDF(),10);
-    fVariables->SetAt(GetTPCClusterInfo(aodtrack,2,1),11);
+    fVariables->SetAt(GetTPCClusterInfo(aodtrack,2,1,0,159,kFALSE),11);
     Float_t crossedRowsTPCNClsF = 0.;
     if(aodtrack->GetTPCNclsF()>0.) crossedRowsTPCNClsF = fVariables->At(11)/aodtrack->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsF,12);
@@ -1253,17 +1255,19 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     fVariables->SetAt(exParam->GetSigmaTgl2(),16);
     fVariables->SetAt(exParam->GetSigma1Pt2(),17);
 
-    fVariables->SetAt(0.,18);
-    fVariables->SetAt(0.,19);
+    fVariables->SetAt(0.,18); //NClustersTPCIter1
+    fVariables->SetAt(0.,19); //Chi2TPCIter1
 
     TBits sharedClusterMap = aodtrack->GetTPCSharedMap();
     fVariables->SetAt(sharedClusterMap.CountBits(),20);
     
-    fVariables->SetAt(0.,21); //not available in AOD
-    fVariables->SetAt(0.,22); //not available in AOD
+    fVariables->SetAt(0.,21); //not available in AOD golden chi2
+    fVariables->SetAt(0.,22); //not available in AOD  Chi2 between global and global constrained
 
-    fVariables->SetAt(0.,23); //not available in AOD
-    fVariables->SetAt(0.,24); //not available in AOD
+    fVariables->SetAt(GetTPCClusterInfo(aodtrack,2,1,0,159,kTRUE),23); //not available in AOD #crossed rows from fit map
+    Float_t crossedRowsTPCNClsFFit = 0.;
+    if(aodtrack->GetTPCNclsF()>0.) crossedRowsTPCNClsFFit = fVariables->At(23)/aodtrack->GetTPCNclsF();
+    fVariables->SetAt(crossedRowsTPCNClsFFit,24); //(#crossed rows)/(#findable clusters) from fit map
 
     fPtAll->Fill(fVariables->At(0));
 
@@ -1483,7 +1487,7 @@ AliGenPythiaEventHeader*  AliPWG4HighPtTrackQA::GetPythiaEventHeader(const AliMC
 }
 
 //_______________________________________________________________________
-Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
+Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1, Bool_t useFitMap) const
 {
   //MV: copied from AliESDtrack since method is not available in AliAODTrack
 
@@ -1499,7 +1503,12 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNei
   //           effects with a very simple algorithm.
   //
 
-  TBits fTPCClusterMap = tr->GetTPCClusterMap(); 
+  TBits fTPCClusterMap = 0;
+  if(useFitMap)
+    fTPCClusterMap = tr->GetTPCFitMap(); 
+  else
+    fTPCClusterMap = tr->GetTPCClusterMap(); 
+
   if (type==2) return fTPCClusterMap.CountBits();
 
   Int_t found=0;

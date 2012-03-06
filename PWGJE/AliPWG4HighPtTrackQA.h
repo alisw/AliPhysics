@@ -83,7 +83,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void SetNVariables(Int_t nv) {fNVariables = nv;}
 
   Float_t GetPtMax()           {return fPtMax;}
-  Float_t GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Float_t GetTPCClusterInfo(const AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Bool_t useFitMap=kFALSE) const;
   Float_t GetTPCClusterInfoFitMap(const AliESDtrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
   Int_t   GetTrackLengthTPC(const AliESDtrack *track) const;
   Int_t   GetTrackLengthTPC(const AliAODTrack *track) const;

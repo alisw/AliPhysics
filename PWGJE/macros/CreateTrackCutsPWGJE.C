@@ -5,7 +5,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
   // User can select a specific set by indicating cutMode
   // cutMode has 8 digits: first 4 digits additional cuts, last 4 digits standard cuts
   //                       additional cuts are variations of standard cuts (used for hybrid track selection and QA)
-  // Numbering starts from 1000 for standard and additional cut numbers
+  // Numbering starts from 1000 For standard and additional cut numbers
 
   AliESDtrackCuts *trackCuts  = new AliESDtrackCuts("AliESDtrackCuts");
 
@@ -174,6 +174,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     tag = "Global tracks jet analysis with ITSrefit and NclsIter1=70, noSPD requirement, no upper pt cut";
 
   }
+  
   if(stdCutMode == 1006) {
 
     bStdCutsDefined = kTRUE;
@@ -206,6 +207,25 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
 
   }
 
+  if(stdCutMode == 1007) {
+    
+    bStdCutsDefined = kTRUE;
+    
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    //accept secondaries
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+
+    //
+    trackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+
+    trackCuts->SetEtaRange(-0.9,0.9);
+    trackCuts->SetPtRange(0.15, 1E+15.);
+ 
+    tag = "Global tracks with AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE)";
+
+  }
 
 
   if(stdCutMode == 2000) {
