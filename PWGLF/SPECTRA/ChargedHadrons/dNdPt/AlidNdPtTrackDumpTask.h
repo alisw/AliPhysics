@@ -47,7 +47,8 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Bool_t IsUseMCInfo() const               { return fUseMCInfo; }
   
   // Process events
-  virtual void ProcessdNdPt(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  virtual void ProcessAll(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   virtual void ProcessV0(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
 
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
@@ -83,6 +84,8 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
   void SetLowPtV0DownscaligF(Double_t fact)    { fLowPtV0DownscaligF = fact; }
 
+  void SetProcessAll(Bool_t proc) { fProcessAll = proc; }
+
  private:
 
   AliESDEvent *fESD;    //! ESD event
@@ -91,21 +94,22 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   TList* fOutput;       //! list send on output slot 0
   TIterator *fPitList;  //! iterator over the output objetcs  
 
-  Bool_t fUseMCInfo;        //! use MC information
+  Bool_t fUseMCInfo;        // use MC information
 
-  AlidNdPtEventCuts      *fdNdPtEventCuts;      //! event cuts
-  AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; //! acceptance cuts  
-  AlidNdPtAcceptanceCuts *fdNdPtRecAcceptanceCuts; //! additional recontruction acceptance cuts (not used for MC truth)
-  AliESDtrackCuts *fEsdTrackCuts;          //! esd track cuts
-  AliTriggerAnalysis::Trigger fTrigger;    //! trigger settings
-  AlidNdPtHelper::AnalysisMode fAnalysisMode;   //! analysis mode TPC only, TPC + ITS
+  AlidNdPtEventCuts      *fdNdPtEventCuts;      // event cuts
+  AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; // acceptance cuts  
+  AlidNdPtAcceptanceCuts *fdNdPtRecAcceptanceCuts; // additional recontruction acceptance cuts (not used for MC truth)
+  AliESDtrackCuts *fEsdTrackCuts;          // esd track cuts
+  AliTriggerAnalysis::Trigger fTrigger;    // trigger settings
+  AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
 
   TTreeSRedirector* fTreeSRedirector;      //! temp tree to dump output
 
-  TString fCentralityEstimator;     //! use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
+  TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
 
   Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
   Double_t fLowPtV0DownscaligF; // low pT V0 downscaling factor
+  Double_t fProcessAll; // Calculate all track properties including MC
 
   AlidNdPtTrackDumpTask(const AlidNdPtTrackDumpTask&); // not implemented
   AlidNdPtTrackDumpTask& operator=(const AlidNdPtTrackDumpTask&); // not implemented

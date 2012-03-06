@@ -83,11 +83,12 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
   , fCentralityEstimator(0)
   , fLowPtTrackDownscaligF(0)
   , fLowPtV0DownscaligF(0)
+  , fProcessAll(kFALSE)
 {
   // Constructor
 
   // Define input and output slots here
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 
 }
 
@@ -129,7 +130,7 @@ void AlidNdPtTrackDumpTask::UserCreateOutputObjects()
   // create temporary file for output tree
   fTreeSRedirector = new TTreeSRedirector("jotwinow_Temp_Trees.root");
 
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -161,15 +162,268 @@ void AlidNdPtTrackDumpTask::UserExec(Option_t *)
   }
 
   //
-  ProcessdNdPt(fESD,fMC,fESDfriend);
-  ProcessV0(fESD,fMC,fESDfriend);
+  if(fProcessAll) { 
+    ProcessAll(fESD,fMC,fESDfriend);
+    ProcessV0(fESD,fMC,fESDfriend);
+  }
+  else {
+    Process(fESD,fMC,fESDfriend);
+    ProcessV0(fESD,fMC,fESDfriend);
+  }
 
   // Post output data.
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTrackDumpTask::ProcessdNdPt(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const esdFriend)
+void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
+{
+  //
+  // Process real and/or simulated events
+  // Only filtering
+  //
+  if(!esdEvent) {
+    AliDebug(AliLog::kError, "esdEvent not available");
+    return;
+  }
+
+  // get selection cuts
+  AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
+  AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
+  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
+
+  if(!evtCuts || !accCuts  || !esdTrackCuts) {
+    Printf("ERROR cuts not available");
+    return;
+  }
+
+  // trigger selection
+  Bool_t isEventTriggered = kTRUE;
+  AliPhysicsSelection *physicsSelection = NULL;
+  AliTriggerAnalysis* triggerAnalysis = NULL;
+
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+   
+  // get file name
+  TTree *chain = (TChain*)GetInputData(0);
+  if(!chain) { 
+    Printf("ERROR: Could not receive input chain");
+    return;
+  }
+  TObjString fileName(chain->GetCurrentFile()->GetName());
+
+  // trigger
+  if(evtCuts->IsTriggerRequired())  
+  {
+    // always MB
+    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+
+    physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if(!physicsSelection) return;
+    //SetPhysicsTriggerSelection(physicsSelection);
+
+    if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
+      // set trigger (V0AND)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+      if(!triggerAnalysis) return;
+      isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
+    }
+  }
+
+  // centrality determination
+  Float_t centralityF = -1;
+  AliCentrality *esdCentrality = esdEvent->GetCentrality();
+  centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data());
+
+  // use MC information
+  AliHeader* header = 0;
+  AliGenEventHeader* genHeader = 0;
+  AliStack* stack = 0;
+  TArrayF vtxMC(3);
+
+  Int_t multMCTrueTracks = 0;
+  if(IsUseMCInfo())
+  {
+    //
+    if(!mcEvent) {
+      AliDebug(AliLog::kError, "mcEvent not available");
+      return;
+    }
+    // get MC event header
+    header = mcEvent->Header();
+    if (!header) {
+      AliDebug(AliLog::kError, "Header not available");
+      return;
+    }
+    // MC particle stack
+    stack = mcEvent->Stack();
+    if (!stack) {
+      AliDebug(AliLog::kError, "Stack not available");
+      return;
+    }
+
+    // get MC vertex
+    genHeader = header->GenEventHeader();
+    if (!genHeader) {
+      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      return;
+    }
+    genHeader->PrimaryVertex(vtxMC);
+
+    // multipliticy of all MC primary tracks
+    // in Zv, pt and eta ranges)
+    multMCTrueTracks = AlidNdPtHelper::GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
+
+  } // end bUseMC
+
+  // laser events 
+  if(esdEvent)
+  {
+    const AliESDHeader* esdHeader = esdEvent->GetHeader();
+    if(esdHeader && esdHeader->GetEventSpecie()==AliRecoParam::kCalib) 
+    {
+      Int_t countLaserTracks = 0;
+      for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+      {
+        AliESDtrack *track = esdEvent->GetTrack(iTrack);
+        if(!track) continue;
+
+        if(track->GetTPCInnerParam()) countLaserTracks++;
+      }
+       
+      if(countLaserTracks > 100) {      
+
+      Double_t runNumber = esdEvent->GetRunNumber();
+      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+
+      if(!fTreeSRedirector) return;
+      (*fTreeSRedirector)<<"Laser"<<
+        "fileName.="<<&fileName<<
+        "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
+        "multTPCtracks="<<countLaserTracks<<
+        "\n";
+     }
+     }
+   }
+
+
+  // get reconstructed vertex  
+  //const AliESDVertex* vtxESD = 0; 
+  const AliESDVertex* vtxESD = 0; 
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
+        vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+     vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    	return;
+  }
+
+  if(!vtxESD) return;
+
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
+  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
+  //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
+
+
+  // check event cuts
+  if(isEventOK && isEventTriggered)
+  {
+    //
+    Double_t vert[3] = {0}; 
+    vert[0] = vtxESD->GetXv();
+    vert[1] = vtxESD->GetYv();
+    vert[2] = vtxESD->GetZv();
+    Int_t mult = vtxESD->GetNContributors();
+    Double_t bz = esdEvent->GetMagneticField();
+    Double_t runNumber = esdEvent->GetRunNumber();
+    Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+
+    // high pT tracks
+    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+    {
+      AliESDtrack *track = esdEvent->GetTrack(iTrack);
+      if(!track) continue;
+      if(track->Charge()==0) continue;
+      if(!esdTrackCuts->AcceptTrack(track)) continue;
+      if(!accCuts->AcceptTrack(track)) continue;
+      
+      // downscale low-pT tracks
+      Double_t scalempt= TMath::Min(track->Pt(),10.);
+      Double_t downscaleF = gRandom->Rndm();
+      downscaleF *= fLowPtTrackDownscaligF;
+      if(TMath::Exp(2*scalempt)<downscaleF) continue;
+      //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
+
+      // Dump to the tree 
+      // vertex
+      // TPC-ITS tracks
+      //
+      if(!fTreeSRedirector) return;
+      (*fTreeSRedirector)<<"dNdPtTree"<<
+        "fileName.="<<&fileName<<
+        "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
+        "Bz="<<bz<<
+	"vertX="<<vert[0]<<
+	"vertY="<<vert[1]<<
+	"vertZ="<<vert[2]<<
+        "mult="<<mult<<
+        "esdTrack.="<<track<<
+        "centralityF="<<centralityF<<
+        "\n";
+    }
+
+    // high dEdx
+    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+    {
+      AliESDtrack *track = esdEvent->GetTrack(iTrack);
+      if(!track) continue;
+      if(track->Charge()==0) continue;
+      if(!esdTrackCuts->AcceptTrack(track)) continue;
+      if(!accCuts->AcceptTrack(track)) continue;
+
+      if(!IsHighDeDxParticle(track)) continue;
+      
+      if(!fTreeSRedirector) return;
+      (*fTreeSRedirector)<<"dEdx"<<
+        "fileName.="<<&fileName<<
+        "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
+        "Bz="<<bz<<
+	"vertX="<<vert[0]<<
+	"vertY="<<vert[1]<<
+	"vertZ="<<vert[2]<<
+        "mult="<<mult<<
+        "esdTrack.="<<track<<
+        "\n";
+      }
+  }
+  
+  PostData(1, fOutput);
+}
+
+
+
+
+
+
+
+//_____________________________________________________________________________
+void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const esdFriend)
 {
   //
   // Process real and/or simulated events
@@ -744,7 +998,7 @@ void AlidNdPtTrackDumpTask::ProcessdNdPt(AliESDEvent *const esdEvent, AliMCEvent
       }
   }
   
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -900,7 +1154,7 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
       "\n";
   }
   }
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 }
 
 
@@ -1238,37 +1492,49 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
 
   // open temporary file and copy trees to the ouptut container
 
-  TChain* chain = NULL;
+  TChain* chain = 0;
+  TTree* tree1 = 0;
+  TTree* tree2 = 0;
+  TTree* tree3 = 0;
+  TTree* tree4 = 0;
   //
   chain = new TChain("dNdPtTree");
-  if(!chain) return;
-  chain->Add("jotwinow_Temp_Trees.root");
-  TTree *tree1 = chain->CopyTree("1");
-  if (chain) { delete chain; chain=0; }
+  if(chain) { 
+    chain->Add("jotwinow_Temp_Trees.root");
+    tree1 = chain->CopyTree("1");
+    delete chain; chain=0; 
+  }
   if(tree1) tree1->Print();
+
   //
   chain = new TChain("V0s");
-  if(!chain) return;
-  chain->Add("jotwinow_Temp_Trees.root");
-  TTree *tree2 = chain->CopyTree("1");
-  if (chain) { delete chain; chain=0; }
+  if(chain) { 
+    chain->Add("jotwinow_Temp_Trees.root");
+    tree2 = chain->CopyTree("1");
+    delete chain; chain=0; 
+  }
   if(tree2) tree2->Print();
+
   //
   chain = new TChain("dEdx");
-  if(!chain) return;
-  chain->Add("jotwinow_Temp_Trees.root");
-  TTree *tree3 = chain->CopyTree("1");
-  if (chain) { delete chain; chain=0; }
+  if(chain) { 
+    chain->Add("jotwinow_Temp_Trees.root");
+    tree3 = chain->CopyTree("1");
+    delete chain; chain=0; 
+  }
   if(tree3) tree3->Print();
+
   //
   chain = new TChain("Laser");
-  if(!chain) return;
-  chain->Add("jotwinow_Temp_Trees.root");
-  TTree *tree4 = chain->CopyTree("1");
-  if (chain) { delete chain; chain=0; }
+  if(chain) { 
+    chain->Add("jotwinow_Temp_Trees.root");
+    tree4 = chain->CopyTree("1");
+    delete chain; chain=0; 
+  }
   if(tree4) tree4->Print();
 
-  OpenFile(0);
+
+  OpenFile(1);
 
   if(tree1) fOutput->Add(tree1);
   if(tree2) fOutput->Add(tree2);
@@ -1276,7 +1542,7 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   if(tree4) fOutput->Add(tree4);
   
   // Post output data.
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -1301,6 +1567,6 @@ void AlidNdPtTrackDumpTask::Terminate(Option_t *)
   }
   */
 
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 
 }
