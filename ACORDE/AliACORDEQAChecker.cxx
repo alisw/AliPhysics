@@ -115,8 +115,10 @@ void AliACORDEQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/, TO
 				TString hdataName = hdata->GetName();
 				//if (hdata->GetListOfFunctions()->GetEntries() == 0) continue;  
 				if (hdataName.Contains("fhACORDEStatusAMU_DQM")){
-					hdata->GetListOfFunctions()->Add(fTextDQMShifterInfo);
-                                        hdata->GetListOfFunctions()->Add(fMax);
+					if (!hdata->GetListOfFunctions()->Contains(fTextDQMShifterInfo))
+  						hdata->GetListOfFunctions()->Add(fTextDQMShifterInfo);
+					if (!hdata->GetListOfFunctions()->Contains(fMax))
+  						hdata->GetListOfFunctions()->Add(fMax);
 
 				}
 				// Here we use the QAref ACORDE data from fRefOCDBSubDir
