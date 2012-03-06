@@ -4,7 +4,7 @@ AliAnalysisTaskTrgContam *AddTaskTrgContam(Double_t trgThresh=4.8, Double_t exot
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPhiCorrelations", "No analysis manager to connect to.");
+    ::Error("AddTaskTrgContam", "No analysis manager to connect to.");
     return NULL;
   }  
   
