@@ -193,7 +193,7 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const 
     }
   }
   if (defAlgo<0 || defAlgo>AliVertexerTracks::kMultiVertexer) {
-    printf("Vertexer algorithms 0:%d are supported... \n");
+    printf("Vertexer algorithms 0:%d are supported... \n",defAlgo);
     return kFALSE;
   }
   //
@@ -216,13 +216,16 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const 
   ((AliESDVertex*)esdEv->GetPrimaryVertexTracks())->SetNContributors(-1);
   //
   AliESDVertex *pvtx=vtFinder->FindPrimaryVertex(esdEv);
-  if (pvtx && pvtx->GetStatus()) {
-    esdEv->SetPrimaryVertexTracks(pvtx);
-    for (Int_t i=esdEv->GetNumberOfTracks(); i--;) {
-      AliESDtrack *t = esdEv->GetTrack(i);
-      Double_t x[3]; t->GetXYZ(x);
-      t->RelateToVertex(pvtx, bkgauss, kVeryBig);
+  if (pvtx) {
+    if (pvtx->GetStatus()) {
+      esdEv->SetPrimaryVertexTracks(pvtx);
+      for (Int_t i=esdEv->GetNumberOfTracks(); i--;) {
+	AliESDtrack *t = esdEv->GetTrack(i);
+	Double_t x[3]; t->GetXYZ(x);
+	t->RelateToVertex(pvtx, bkgauss, kVeryBig);
+      }
     }
+    delete pvtx;
   }
   else return kFALSE;
   //
