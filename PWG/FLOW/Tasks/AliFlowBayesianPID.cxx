@@ -524,12 +524,28 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
 	    Int_t iS = TMath::Abs(part->GetPdgCode());
 	    Float_t dedxExp=GetExpDeDx(t,iS);
 	    Float_t resolutionTPC = -1;
-	    if(iS==11) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
-	    else if(iS==13) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
-	    else if(iS==221) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
-	    else if(iS==321) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
-	    else if(iS==2212) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
+	    if(iS==11){
+	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
+	      dedxExp = GetExpDeDx(t,0);
+	    }
+	    else if(iS==13){
+	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
+	      dedxExp = GetExpDeDx(t,1);
+	    }
+	    else if(iS==211){
+	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
+	      dedxExp = GetExpDeDx(t,2);
+	    }
+	    else if(iS==321){
+	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
+	      dedxExp = GetExpDeDx(t,3);
+	    }
+	    else if(iS==2212){
+	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
+	      dedxExp = GetExpDeDx(t,4);
+	    }
 	    if(resolutionTPC > -1) dedx = fTPCResponseF->GetRandom()*resolutionTPC + dedxExp;
+	    else dedx = 0;
 	  }
 	}
   }
@@ -539,7 +555,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
   if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
     for(Int_t iS=0;iS<fgkNspecies;iS++){
       Float_t dedxExp=GetExpDeDx(t,iS);
-
+      
       Float_t resolutionTPC = 1;
       if(iS==0) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
       else if(iS==1) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
@@ -549,7 +565,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
       else if(iS==5) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kDeuteron);
       else if(iS==6) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
       else if(iS==7) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
-
+      
       if(centr < 0) resolutionTPC *= 0.78;
       if(centr < 10) resolutionTPC *= 1.0;
       else if(centr < 20) resolutionTPC *= 1.0;
@@ -633,24 +649,42 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
   Float_t momtpc=t->GetTPCmomentum();
 
   Float_t dedx = t->GetTPCsignal();
-     
+          
   if(fIsMC && aod){
    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    if (mcHeader) {
-      
-      TClonesArray *mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-      
-      Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(t->GetLabel())))->GetPdgCode());
-      Float_t dedxExp=GetExpDeDx(t,iS);
-      Float_t resolutionTPC = -1;
-      if(iS==11) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
-      else if(iS==13) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
-      else if(iS==221) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
-      else if(iS==321) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
-      else if(iS==2212) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
-      if(resolutionTPC > -1) dedx = fTPCResponseF->GetRandom()*resolutionTPC + dedxExp;
-    }
+   if (mcHeader) {
+     
+     TClonesArray *mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+     
+     Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(t->GetLabel())))->GetPdgCode());
+     Float_t dedxExp=0;
+     Float_t resolutionTPC = -1;
+     if(iS==11){
+       resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
+       dedxExp = GetExpDeDx(t,0);
+     }
+     else if(iS==13){
+       resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
+       dedxExp = GetExpDeDx(t,1);
+     }
+     else if(iS==211){
+       resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
+       dedxExp = GetExpDeDx(t,2);
+     }
+      else if(iS==321){
+	resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
+	dedxExp = GetExpDeDx(t,3);
+      }
+      else if(iS==2212){
+	resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
+	dedxExp = GetExpDeDx(t,4);
+      }
+     if(resolutionTPC > -1)
+       dedx = fTPCResponseF->GetRandom()*resolutionTPC + dedxExp;
+     else dedx = 0;
+   }
   }
+  fDedx = dedx;
 
   // TPC
   if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
