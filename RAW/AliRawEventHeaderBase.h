@@ -72,7 +72,8 @@ public:
      kStartOfData =      10,   // START_OF_DATA
      kEndOfData =        11,   // END_OF_DATA
      kSystemSoftwareTriggerEvent   = 12, // SYSTEM_SOFTWARE_TRIGGER_EVENT
-     kDetectorSoftwareTriggerEvent = 13  // DETECTOR_SOFTWARE_TRIGGER_EVENT
+     kDetectorSoftwareTriggerEvent = 13, // DETECTOR_SOFTWARE_TRIGGER_EVENT
+     kSyncEvent = 14  // SYNC_EVENT
    };
 
 private:
