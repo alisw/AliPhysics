@@ -1820,6 +1820,9 @@ void AliESDEvent::EstimateMultiplicity(Int_t &tracklets, Int_t &trITSTPC, Int_t 
   // trITSSApure : using ITS standalone tracks + tracklets from clusters not used by tracks
   // if useDCAFlag is true: account for the ESDtrack flag marking the tracks with large DCA
   // if useV0Flag  is true: account for the ESDtrack flag marking conversion and K0's V0s
+
+  AliWarning("This obsolete method will be eliminated soon. Use AliESDtrackCuts::GetReferenceMultiplicity");
+
   tracklets = trITSSApure = trITSTPC = 0;
   int ntr = fSPDMult ? fSPDMult->GetNumberOfTracklets() : 0;
   //
