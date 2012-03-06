@@ -40,7 +40,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
 //AliCFContainer *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -318,7 +318,14 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./Dsto
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ; 
-	
+
+	TString suffixDecayType="";
+	if(decayOption==AliCFVertexingHF3Prong::kCountAllDsKKpi) suffixDecayType="_All";
+	else if(decayOption==AliCFVertexingHF3Prong::kCountPhipi) suffixDecayType="_Phi";
+	else if(decayOption==AliCFVertexingHF3Prong::kCountK0stK) suffixDecayType="_K0star";
+	else if(decayOption==AliCFVertexingHF3Prong::kCountResonant) suffixDecayType="_Reson";
+	else if(decayOption==AliCFVertexingHF3Prong::kCountNonResonant) suffixDecayType="_NonReson";
+
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
@@ -330,6 +337,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./Dsto
 	else  {
 		nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
 	}
+	nameContainer+=suffixDecayType.Data();
 	
 	AliCFContainer* container;
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -517,6 +525,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./Dsto
 	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsDstoKKpi);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetDecayChannel(33);
+	if(decayOption==AliCFVertexingHF3Prong::kCountAllDsKKpi) task->SetCountAllDs();
+	else if(decayOption==AliCFVertexingHF3Prong::kCountPhipi) task->SetCountDsViaPhi();
+	else if(decayOption==AliCFVertexingHF3Prong::kCountK0stK)  task->SetCountDsViaK0star();
+	else if(decayOption==AliCFVertexingHF3Prong::kCountResonant) task->SetCountResonantDs();
+	else if(decayOption==AliCFVertexingHF3Prong::kCountNonResonant) task->SetCountNonResonantDs();
 	task->SetUseWeight(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetSign(isSign);
@@ -589,6 +602,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./Dsto
 	else  {
 		nameCorr="CFHFcorr0allD_3Prong_CommonFramework";		
 	}
+	nameCorr+=suffixDecayType.Data();
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
         Double_t** binEdges = new Double_t[2];
@@ -636,6 +650,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./Dsto
 	}
 
 	output4name= "Cuts_3Prong_CommonFramework";
+	outputfile += suffixDecayType.Data();
+	output1name+= suffixDecayType.Data();
+	output4name+= suffixDecayType.Data();
 
 	//now comes user's output objects :
 	// output TH1I for event counting
