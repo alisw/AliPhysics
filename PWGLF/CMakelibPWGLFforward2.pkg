@@ -72,6 +72,7 @@ set ( SRCS
   FORWARD/analysis2/AliPoissonCalculator.cxx
   FORWARD/analysis2/AliForwardQATask.cxx
   FORWARD/analysis2/AliCopyHeaderTask.cxx
+  FORWARD/analysis2/AliDisplacedVertexSelection.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

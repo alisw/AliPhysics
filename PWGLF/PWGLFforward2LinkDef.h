@@ -92,7 +92,7 @@
 #pragma link C++ class AliPoissonCalculator+;
 #pragma link C++ class AliForwardQATask+;
 #pragma link C++ class AliCopyHeaderTask+;
-
+#pragma link C++ class AliDisplacedVertexSelection+;
 #else
 # error Not for compilation 
 #endif
