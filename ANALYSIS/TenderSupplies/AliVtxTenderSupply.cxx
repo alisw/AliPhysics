@@ -28,6 +28,7 @@
 #include <AliCDBId.h>
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
+#include <AliESDUtils.h>
 
 #include "AliVtxTenderSupply.h"
 
@@ -35,7 +36,8 @@ ClassImp(AliVtxTenderSupply)
 
 AliVtxTenderSupply::AliVtxTenderSupply() :
   AliTenderSupply(),
-  fDiamond(0x0)
+  fDiamond(0x0),
+  fRefitAlgo(-1)
 {
   //
   // default ctor
@@ -45,7 +47,8 @@ AliVtxTenderSupply::AliVtxTenderSupply() :
 //_____________________________________________________
 AliVtxTenderSupply::AliVtxTenderSupply(const char *name, const AliTender *tender) :
   AliTenderSupply(name,tender),
-  fDiamond(0x0)
+  fDiamond(0x0),
+  fRefitAlgo(-1)
 {
   //
   // named ctor
@@ -62,6 +65,11 @@ void AliVtxTenderSupply::ProcessEvent()
   AliESDEvent *event=fTender->GetEvent();
   if (!event) return;
 
+  //
+  if (fRefitAlgo >=0 ) { // refit with user supplied algo and using the diamond stored in ESD
+    AliESDUtils::RefitESDVertexTracks(event, fRefitAlgo);
+    return;
+  }
   //
 
   if (fTender->RunChanged()){
@@ -88,5 +96,6 @@ void AliVtxTenderSupply::ProcessEvent()
     event->SetPrimaryVertexTracks(pvertex);
     // write the diamond parameters
     event->SetDiamond(fDiamond);
+    delete pvertex;
   }  
 }

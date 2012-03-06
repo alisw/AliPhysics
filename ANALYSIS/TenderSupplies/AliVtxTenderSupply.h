@@ -24,13 +24,17 @@ public:
   
   virtual void              Init(){;}
   virtual void              ProcessEvent();
-  
+  //
+  Int_t   GetRefitAlgo()              const {return fRefitAlgo;}
+  void    SetRefitAlgo(Int_t alg=-1)        {fRefitAlgo = alg;}
+  //
 private:
   
   AliVtxTenderSupply(const AliVtxTenderSupply&c);
   AliVtxTenderSupply& operator= (const AliVtxTenderSupply&c);
 
   AliESDVertex *fDiamond;           //!Information about mean vertex  
+  Int_t         fRefitAlgo;         //! optional request for vertex refit 
 
   ClassDef(AliVtxTenderSupply, 1);  // Primary vertex tender task
 };
