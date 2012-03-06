@@ -173,7 +173,7 @@ void AliAnalysisCombinedHadronSpectra::Initialize()
 	  fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
 	  fESDtrackCuts->SetRequireTPCRefit(kFALSE);
 
-	  fESDtrackCuts->SetMaxDCAToVertexXY(30);
+	  fESDtrackCuts->SetMaxDCAToVertexXY(15);
 	  fESDtrackCuts->SetMaxDCAToVertexZ(6);
 	  fESDtrackCuts->SetDCAToVertex2D(kFALSE);
 	  fESDtrackCuts->SetRequireSigmaToVertex(kFALSE);
@@ -202,7 +202,7 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   const Int_t kPtBins = 35;
   const Int_t kMultBins = 11;
   const Int_t kDcaBins = 76;
-  const Float_t kDcaBinsTPConlyFactor = 10; //need to change binning of DCA plot for tpconly
+  const Float_t kDcaBinsTPConlyFactor = 5; //need to change binning of DCA plot for tpconly
   // sort pT-bins ..
   Double_t binsPt[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
 
@@ -234,12 +234,11 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,     0.5,    5,  1.5,   8,        3};
   fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
   //
-
   fHistRealTracks->GetAxis(2)->Set(kPtBins, binsPt);
 
+  //different DCAxy binning for TPConlyTracks
   if (!fUseTPConlyTracks) fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDca);
   else  fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
-
   fListHist->Add(fHistRealTracks);
   //
   //                      0.ptot,1.tpcSig,2.hasTOF, 3. assumed part., 4. nclDedx, 5. nSigmaTPC (4x), 6. nSigmaTOF (4x), 7. centrality
@@ -492,9 +491,11 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
   //cout << "MULTIPLICITY " << trackCounter << " " << fESD->GetEventNumberInFile() <<endl;
   fHistMult->Fill(trackCounter, processCode);
   fHistCentrality->Fill(centrality);
-  //
+
+
+  //***************************************************
   // track loop
-  //
+  //***************************************************
   //const Float_t kNsigmaCut = 3;
   //const Float_t k2sigmaCorr = 1/(0.5*(TMath::Erf(kNsigmaCut/sqrt(2))-TMath::Erf(-kNsigmaCut/sqrt(2))))/*1/0.9545*/;
   //
@@ -503,6 +504,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
   for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
 	
 	AliESDtrack *track = 0;
+    AliESDtrack *trackForTOF = 0; //normal track for all TOF information needed when using tpconly-tracks
 	
 	//normal tracks, if tpconly flag is set, use tpconlytracks
 	if (!fUseTPConlyTracks){
@@ -511,6 +513,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	else {
    		track = fESDtrackCuts->GetTPCOnlyTrack(fESD,i);
 		if (!track) continue;
+		trackForTOF = fESD->GetTrack(i);
 	}
     //
     if (!track->GetInnerParam()) {
@@ -532,13 +535,18 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 		continue;
 	}
 
-    UInt_t status = track->GetStatus();
+	UInt_t status = 0;
+    if (!fUseTPConlyTracks) status = track->GetStatus();
+	else status = trackForTOF->GetStatus();
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
     Bool_t hasTOFtime = status&AliESDtrack::kTIME;
     Bool_t hasTOFpid  = status&AliESDtrack::kTOFpid;
     Bool_t hasTOF     = kFALSE;
     if (hasTOFout && hasTOFtime && hasTOFpid) hasTOF = kTRUE;
-    Float_t length = track->GetIntegratedLength();
+	Float_t length = 0.;
+    if (!fUseTPConlyTracks) length = track->GetIntegratedLength(); 
+    else length = trackForTOF->GetIntegratedLength();
+
     if (length < 350.) hasTOF = kFALSE;
     //
     // calculate rapidities and kinematics
@@ -593,19 +601,40 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 			    0}; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!
     Float_t time0 = fESDpid->GetTOFResponse().GetTimeZero();
     //fESDpid->GetTOFResponse().SetTimeResolution(130.);
-    Double_t pullsTOF[4] =  {fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0),
-			     fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0),
-			     fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0),
-			     0}; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!;
+    Double_t pullsTOF[4] ={0.,0.,0.,0.};
+    if (!fUseTPConlyTracks) {
+    			 pullsTOF[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0);
+			     pullsTOF[1] = fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0);
+			     pullsTOF[2] = fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0);
+			     pullsTOF[3] = 0; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!;
+	}
+	else {
+    			 pullsTOF[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kPion, time0);
+			     pullsTOF[1] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kKaon, time0);
+			     pullsTOF[2] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kProton, time0);
+			     pullsTOF[3] = 0; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!;
+	}
+
     //
     Double_t tpcQA[4] = {fESDpid->NumberOfSigmasTPC(track,AliPID::kElectron),
 			 fESDpid->NumberOfSigmasTPC(track,AliPID::kPion),
 			 fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon),
 			 fESDpid->NumberOfSigmasTPC(track,AliPID::kProton)};
-    Double_t tofQA[4] = {fESDpid->NumberOfSigmasTOF(track,AliPID::kElectron, time0),
-			 fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0),
-			 fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0),
-			 fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0)};
+
+    Double_t tofQA[4] = {0.,0.,0.,0.}; 
+    if (!fUseTPConlyTracks) {
+    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kElectron, time0);
+			 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0);
+    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0);
+    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0);
+	}
+	else{
+    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kElectron, time0);
+			 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kPion, time0);
+    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kKaon, time0);
+    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kProton, time0);
+	}
+
     //
     for(Int_t iPart = 0; iPart < 3; iPart++) { // loop over assumed particle type
       //                              0,           1,    2,    3,           4,               5,      6,              7,     8
@@ -638,7 +667,8 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	// check TOF mismatch on MC basis with TOF label
 	//
 	Int_t tofLabel[3];
-	track->GetTOFLabel(tofLabel);
+	if (!fUseTPConlyTracks) track->GetTOFLabel(tofLabel);
+	else trackForTOF->GetTOFLabel(tofLabel);
 	if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0])) hasTOF = kFALSE;
 	//
 	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!

@@ -1,4 +1,8 @@
-AliAnalysisTask *AddTaskCombinedHadronSpectra(Bool_t isMC=kFALSE, Bool_t tpcOnly = kFALSE){
+
+
+AliAnalysisTask *AddTaskAlex(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
+
+
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -9,23 +13,32 @@ AliAnalysisTask *AddTaskCombinedHadronSpectra(Bool_t isMC=kFALSE, Bool_t tpcOnly
   TString taskName=("AliAnalysisCombinedHadronSpectra.cxx+g");
   //===============================================
   //            Load the task
-  //gROOT->LoadMacro(taskName.Data());
+  gROOT->LoadMacro(taskName.Data());
 
 
   
   //========= Add task to the ANALYSIS manager =====
+
+  //normal tracks
   AliAnalysisCombinedHadronSpectra *task = new AliAnalysisCombinedHadronSpectra("akalweitTaskCombinedHadron");
   task->SelectCollisionCandidates(AliVEvent::kMB);
 
-  
-  if (isMC)  task->SetIsMCtrue();
-  if (tpcOnly) {
-    task->SetUseTPConlyTracks(kTRUE);
-    task->Initialize();
-  }
+  //switches
+  if (isMC) task->SetIsMCtrue(isMC);
+  if (isTPConly)task->SetUseTPConlyTracks(isTPConly);
 
+
+  //initialize task
+  task->Initialize();
+
+  //esd cuts need to be set after initialize or cuts will be replaced by standard cuts in initialize
+  if (setTrackCuts) task->SetESDtrackCuts(ESDtrackCuts);
+
+  //add task to manager
   mgr->AddTask(task);
 
+
+  
 
   //================================================
   //              data containers
@@ -36,17 +49,22 @@ AliAnalysisTask *AddTaskCombinedHadronSpectra(Bool_t isMC=kFALSE, Bool_t tpcOnly
 
   //dumm output container
   AliAnalysisDataContainer *coutput0 =
-      mgr->CreateContainer("akalweit_tree",
+      mgr->CreateContainer(Form("akalweit_tree%i",identifier),
                            TTree::Class(),
                            AliAnalysisManager::kExchangeContainer,
-                           "akalweit_default");
+                           Form("akalweit_default%i",identifier));
+
 
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *coutput1 = 
-      mgr->CreateContainer("akalweit_CombinedHadron", TList::Class(),
-                           AliAnalysisManager::kOutputContainer,"akalweit_CombinedHadron.root");
+      mgr->CreateContainer(Form("akalweit_CombinedHadron%i",identifier), TList::Class(),
+                           AliAnalysisManager::kOutputContainer,Form("akalweit_CombinedHadron%i.root",identifier));
+
+
 
   //connect containers
+
+  //
   mgr->ConnectInput  (task,  0, cinput );
   mgr->ConnectOutput (task,  0, coutput0);
   mgr->ConnectOutput (task,  1, coutput1);
