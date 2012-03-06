@@ -159,8 +159,8 @@ Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
         feopMaxCut = CalEopCutMax(track->GetRecTrack(),1); 
        }
 
-  //printf("eop cuts org; %g; %g \n",feopMim,feopMax);
-  //printf("eop cuts ; %g; %g \n",feopMimCut,feopMaxCut);
+ //printf("eop cuts org; %g; %g \n",feopMim,feopMax);
+ //printf("eop cuts ; %g; %g \n",feopMimCut,feopMaxCut);
 
   Double_t eop = MomentumEnergyMatchV2(track->GetRecTrack()); // get eop (What is GetRecTrack ?)
   AliDebug(2, Form("Energy - Momentum Matching e/p : %f", eop));
@@ -198,20 +198,23 @@ Double_t AliHFEpidEMCAL::CalEopCutMax(const AliVParticle *const track, Int_t fla
 
   if(flageop<0.5)
     { //<--- new para for updated non-liniarity
-     double meanP[3] = {1.02902,1.22293,1.67287e-01}; 
-     double sigP[3] = {5.36355e-02,-3.25999e-02,4.42442e-01}; 
+     double meanP[3] = {1.08833e+00,1.17837e+00,7.47923e-02}; 
+     double sigP[3] = {9.93208e-05,7.13074e-04,2.45145e-04}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
      maxCut = mean+3.0*sig; 
     }
   else
     {
-     double meanP[3] = {0.99,1.299,0.35}; 
-     double sigP[3] = {4.11e-02,1.588e-01,2.664e-01}; 
+     double meanP[3] = {9.94183e-01,1.23952e+00,3.55571e-01}; 
+     double sigP[3] = {4.61207e-02,-3.39978e-02,4.26198e-01}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
      maxCut = mean+3.0*sig; 
     }
+
+  //printf("eop cuts org; %g; %g ; %g\n",feopMim,feopMax,pt);
+
      return maxCut;
 }
 
@@ -226,22 +229,20 @@ Double_t AliHFEpidEMCAL::CalEopCutMim(const AliVParticle *const track, Int_t fla
   if(flageop<0.5) // real
      { 
       //printf("real"); 
-     //double meanP[3] = {1.056,1.169,0.1339}; 
-     //double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
-     double meanP[3] = {1.02902,1.22293,1.67287e-01}; 
-     double sigP[3] = {5.36355e-02,-3.25999e-02,4.42442e-01}; 
+     double meanP[3] = {1.08833e+00,1.17837e+00,7.47923e-02}; 
+     double sigP[3] = {9.93208e-05,7.13074e-04,2.45145e-04}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
-     mimCut = mean+0.0*sig;
+     mimCut = mean-3.0*sig;
     }
    else // MC
     { 
       //printf("MC"); 
-     double meanP[3] = {0.99,1.299,0.35}; 
-     double sigP[3] = {4.11e-02,1.588e-01,2.664e-01}; 
+     double meanP[3] = {9.94183e-01,1.23952e+00,3.55571e-01}; 
+     double sigP[3] = {4.61207e-02,-3.39978e-02,4.26198e-01}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
-     mimCut = mean+0.0*sig;
+     mimCut = mean-3.0*sig;
     }
      return mimCut;
 }

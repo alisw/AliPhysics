@@ -1309,7 +1309,7 @@ Int_t AliHFEpidQA::GetCentrality(AliVEvent*  const fInputEvent){
 }
 
 //___________________________________________________
-Int_t AliHFEpidQA::GetMultiplicityITS(AliVEvent*  const fInputEvent)
+Int_t AliHFEpidQA::GetMultiplicityITS(AliVEvent*  const fInputEvent) const
 {
   //
   // Definition of the Multiplicity according to the JPSI group (F. Kramer)

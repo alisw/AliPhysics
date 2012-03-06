@@ -70,4 +70,7 @@
 
 #pragma link C++ class  AliHFEdebugTreeTask+;
 
+#pragma link C++ class  AliHFEVZEROEventPlane+;
+#pragma link C++ class  AliAnalysisTaskHFEFlow+;
+
 #endif

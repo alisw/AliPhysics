@@ -13,7 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 //
-//
 // The analysis task:
 // Filling an AliCFContainer with the quantities pt, eta and phi
 // for tracks which survivied the particle cuts (MC resp. ESD tracks)
@@ -432,6 +431,9 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fHistMCQA->SetOwner();
     if(IsPbPb()) fMCQA->SetPbPb();
     if(fisppMultiBin) fMCQA->SetPPMultiBin();
+    if(TestBit(kTreeStream)){
+      fMCQA->EnableDebugStreamer();
+    }
     fMCQA->CreatDefaultHistograms(fHistMCQA);
     fMCQA->SetBackgroundWeightFactor(fElecBackgroundFactor[0][0][0],fBinLimit);
     fQA->Add(fHistMCQA);
@@ -711,19 +713,9 @@ void AliAnalysisTaskHFE::ProcessMC(){
           fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kBeauty);
           fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kCharm);
           fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kBeauty);
-          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 0); // no accept cut
-          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 0); // no accept cut
-          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kOthers, AliHFEmcQA::kElectronPDG, 0); // no accept cut
-          if (TMath::Abs(mcpart->Eta()) < 0.9) {
-            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 1); // accept |eta|<0.9
-            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 1); // accept |eta|<0.9
-            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kOthers, AliHFEmcQA::kElectronPDG, 1); // accept |eta|<0.9
-          }
-          if (TMath::Abs(AliHFEtools::GetRapidity(mcpart)) < 0.5) {
-            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 2); // accept |y|<0.5
-            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG, 2); // accept |y|<0.5
-            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kOthers, AliHFEmcQA::kElectronPDG, 2); // accept |y|<0.5
-          }
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG); // no accept cut
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG); // no accept cut
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kOthers, AliHFEmcQA::kElectronPDG); // no accept cut
         }
         //fMCQA->EndOfEventAna(AliHFEmcQA::kCharm);
         //fMCQA->EndOfEventAna(AliHFEmcQA::kBeauty);
@@ -830,6 +822,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   memset(container, 0, sizeof(Double_t) * 10);
   // container for the output THnSparse
   Double_t dataE[6]; // [pT, eta, Phi, type, 'C' or 'B']
+  Double_t dataDca[7]; // [source, pT, dca, dcaSig, centrality]
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
@@ -938,10 +931,22 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(HasMCData()){
       FillProductionVertex(track);
 
-      if(fMCQA){
+      if(fMCQA && signal){
         fMCQA->SetCentrality(fCentralityF);
         if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 11)){
          Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
+         Double_t hfeimpactRtmp=0., hfeimpactnsigmaRtmp=0.;
+         fExtraCuts->GetHFEImpactParameters(track, hfeimpactRtmp, hfeimpactnsigmaRtmp);
+         UChar_t itsPixel = track->GetITSClusterMap();
+         Double_t ilyrhit=0, ilyrstat=0;
+         for(Int_t ilyr=0; ilyr<6; ilyr++){
+           if(TESTBIT(itsPixel, ilyr)) ilyrhit += TMath::Power(2,ilyr);
+           if(fExtraCuts->CheckITSstatus(fExtraCuts->GetITSstatus(track,ilyr))) ilyrstat += TMath::Power(2,ilyr);
+         }
+         fMCQA->SetITSInfo(ilyrhit,ilyrstat);
+         fMCQA->SetHFEImpactParameters(hfeimpactRtmp, hfeimpactnsigmaRtmp);
+         fMCQA->SetTrkKine(track->Pt(),track->Eta(), track->Phi());
+         fMCQA->SetContainerStep(3);
          for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
            if(!fisNonHFEsystematics)break;   
@@ -958,8 +963,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
              if((iSource == AliHFEmcQA::kElse)||(iSource == AliHFEmcQA::kMisID)) continue;
              if(elecSource == iSource){
                for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-                 if(weightElecBgV0[iLevel]>0){ fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);}
-                 else if(weightElecBgV0[iLevel]<0){ fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);}
+                 if(weightElecBgV0[iLevel]>0){ 
+                   fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+                 } 
+                 else if(weightElecBgV0[iLevel]<0){ 
+                   fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+                 }
                }
                break;
              }
@@ -968,15 +977,22 @@ void AliAnalysisTaskHFE::ProcessESD(){
            }
          }
          //else{
-           if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 3, kFALSE, weightElecBgV0[0]);
-           else if(weightElecBgV0[0]<0) fVarManager->FillContainer(fContainer, "mesonElecs", 3, kFALSE, -1*weightElecBgV0[0]);
+           if(weightElecBgV0[0]>0) {
+	     fVarManager->FillContainer(fContainer, "conversionElecs", 3, kFALSE, weightElecBgV0[0]);
+	     fVarManager->FillContainer(fContainer, "conversionElecs", 4, kTRUE, weightElecBgV0[0]);
+	   }
+           else if(weightElecBgV0[0]<0) {
+	     fVarManager->FillContainer(fContainer, "mesonElecs", 3, kFALSE, -1*weightElecBgV0[0]);
+	     fVarManager->FillContainer(fContainer, "mesonElecs", 4, kTRUE, -1*weightElecBgV0[0]);
+	   }
            //}
         }
       }
     }
 
     if(TMath::Abs(track->Eta()) < 0.5){
-      fQACollection->Fill("TPCdEdxBeforePID", track->P(), track->GetTPCsignal());
+      if(track->GetInnerParam())
+        fQACollection->Fill("TPCdEdxBeforePID", track->GetInnerParam()->P(), track->GetTPCsignal());
       fQACollection->Fill("TPCnSigmaBeforePID", track->P(), fInputHandler->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron));
     }
 
@@ -1002,11 +1018,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
 	    if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
 
             Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
-				   fCentralityF,track->GetTPCsignalN(), sharebit, itschi2percluster};
+				   fCentralityF,track->GetTPCsignalN(), sharebit,itschi2percluster};
             fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
     else{
-      
+
       Double_t itschi2percluster = 0.0;
       Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
       if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
@@ -1024,9 +1040,9 @@ void AliAnalysisTaskHFE::ProcessESD(){
         Int_t glabel=TMath::Abs(mctrack->GetMother());
         if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
           if(TMath::Abs(mctrackmother->Particle()->GetPdgCode())==321)
-            fQACollection->Fill("Ke3Kecorr",mctrackmother->Pt(),mctrack->Pt());
+            fQACollection->Fill("Ke3Kecorr",mctrack->Pt(),mctrackmother->Pt());
           else if(TMath::Abs(mctrackmother->Particle()->GetPdgCode())==130)
-            fQACollection->Fill("Ke3K0Lecorr",mctrackmother->Pt(),mctrack->Pt());
+            fQACollection->Fill("Ke3K0Lecorr",mctrack->Pt(),mctrackmother->Pt());
         }
       }
     }
@@ -1107,42 +1123,41 @@ void AliAnalysisTaskHFE::ProcessESD(){
     } // end of electron background analysis
 
 
-
+    Int_t sourceDca =-1;
     if (GetPlugin(kDEstep)) { 
       Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.,};
       Int_t elecSource = 0;
       // minjung for IP QA(temporary ~ 2weeks)
       Double_t hfeimpactR=0., hfeimpactnsigmaR=0.;
       fExtraCuts->GetHFEImpactParameters(track, hfeimpactR, hfeimpactnsigmaR);
-      fQACollection->Fill("dataDca",track->Pt(),hfeimpactR);
-      fQACollection->Fill("dataDcaSig",track->Pt(),hfeimpactnsigmaR);
-      fQACollection->Fill("dataDcaSigDca",hfeimpactR,hfeimpactnsigmaR);
-      if(HasMCData()){
+      sourceDca=0;
+      if(HasMCData())
+      {
         // minjung for IP QA(temporary ~ 2weeks)
-        if(fSignalCuts->IsCharmElectron(track)){
-          fQACollection->Fill("charmDca",track->Pt(),hfeimpactR);
-          fQACollection->Fill("charmDcaSig",track->Pt(),hfeimpactnsigmaR);
+	  if(fSignalCuts->IsCharmElectron(track)){
+	      sourceDca=1;
         }
-        else if(fSignalCuts->IsBeautyElectron(track)){
-          fQACollection->Fill("beautyDca",track->Pt(),hfeimpactR);
-          fQACollection->Fill("beautyDcaSig",track->Pt(),hfeimpactnsigmaR);
+	  else if(fSignalCuts->IsBeautyElectron(track)){
+	      sourceDca=2;
         }
-        else if(fSignalCuts->IsGammaElectron(track)){
-          fQACollection->Fill("conversionDca",track->Pt(),hfeimpactR);
-          fQACollection->Fill("conversionDcaSig",track->Pt(),hfeimpactnsigmaR);
-          fQACollection->Fill("conversionDcaSigDca",hfeimpactR,hfeimpactnsigmaR);
+	  else if(fSignalCuts->IsGammaElectron(track)){
+	      sourceDca=3;
         }
-        else if(fSignalCuts->IsNonHFElectron(track)){
-          fQACollection->Fill("nonhfeDca",track->Pt(),hfeimpactR);
-          fQACollection->Fill("nonhfeDcaSig",track->Pt(),hfeimpactnsigmaR);
+	  else if(fSignalCuts->IsNonHFElectron(track)){
+	      sourceDca=4;
         }
-
-        if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
+	  else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
+	      sourceDca=5;
           fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
           fQACollection->Fill("hadronsBeforeIPcutMC",mctrack->Pt());
         }
-        if(fMCQA) {
+	  else {
+	      sourceDca=6;
+	}
+
+        if(fMCQA && signal) {
           
+          fMCQA->SetContainerStep(0);
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
             weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
             if(!fisNonHFEsystematics)break;        
@@ -1168,19 +1183,45 @@ void AliAnalysisTaskHFE::ProcessESD(){
             }
           }
           //else{
-          if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 0, kFALSE, weightElecBgV0[0]);
-          else if(weightElecBgV0[0]<0) fVarManager->FillContainer(fContainer, "mesonElecs", 0, kFALSE, -1*weightElecBgV0[0]);
+          if(weightElecBgV0[0]>0) {
+	    fVarManager->FillContainer(fContainer, "conversionElecs", 0, kFALSE, weightElecBgV0[0]);
+	    fVarManager->FillContainer(fContainer, "conversionElecs", 5, kTRUE, weightElecBgV0[0]);
+	  }
+          else if(weightElecBgV0[0]<0) {
+	    fVarManager->FillContainer(fContainer, "mesonElecs", 0, kFALSE, -1*weightElecBgV0[0]);
+	    fVarManager->FillContainer(fContainer, "mesonElecs", 5, kTRUE, -1*weightElecBgV0[0]);
+	  }  
           //}
           if(bTagged){ // bg estimation for the secondary vertex tagged signals
             if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 2, kFALSE, weightElecBgV0[0]);
             else if(weightElecBgV0[0]<0) fVarManager->FillContainer(fContainer, "mesonElecs", 2, kFALSE, -1*weightElecBgV0[0]);
           }
         }
-      }
+      } // end of MC
+
+      dataDca[0]=sourceDca;
+      dataDca[1]=track->Pt();
+      dataDca[2]=hfeimpactR;
+      dataDca[3]=hfeimpactnsigmaR;
+      dataDca[4]=fCentralityF;
+      dataDca[5] = 49;
+      Double_t xr[3]={49,49,49};
+      if(HasMCData()) {
+        mctrack->XvYvZv(xr);
+        dataDca[5] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+      } 
+      dataDca[6] = v0pid;
+
+ //     printf("Entries dca: [%.3f|%.3f|%.3f|%f|%f]\n", dataDca[0],dataDca[1],dataDca[2],dataDca[3],dataDca[4]);
+      if (!HasMCData()) fQACollection->Fill("Dca", dataDca);
+      else if(signal) fQACollection->Fill("Dca", dataDca);
+
+
       // Fill Containers for impact parameter analysis
       if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsDca + AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack,track)) continue;
       if(HasMCData()){
-        if(fMCQA) {
+        if(fMCQA && signal) {
+          fMCQA->SetContainerStep(1);
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
             weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
             if(!fisNonHFEsystematics)break;        
@@ -1205,8 +1246,14 @@ void AliAnalysisTaskHFE::ProcessESD(){
             }
           }
           // else{
-            if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 1, kFALSE, weightElecBgV0[0]);
-            else if(weightElecBgV0[0]<0) fVarManager->FillContainer(fContainer, "mesonElecs", 1, kFALSE, -1*weightElecBgV0[0]);
+            if(weightElecBgV0[0]>0) {
+	      fVarManager->FillContainer(fContainer, "conversionElecs", 1, kFALSE, weightElecBgV0[0]);
+	      fVarManager->FillContainer(fContainer, "conversionElecs", 6, kTRUE, weightElecBgV0[0]);
+	    }
+            else if(weightElecBgV0[0]<0) {
+	      fVarManager->FillContainer(fContainer, "mesonElecs", 1, kFALSE, -1*weightElecBgV0[0]);
+	      fVarManager->FillContainer(fContainer, "mesonElecs", 6, kTRUE, -1*weightElecBgV0[0]);
+            }
             //}
         }
       }
@@ -1517,8 +1564,8 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
   fContainer->CreateContainer("recTrackContSecvtxMC", "Container for secondary vertexing analysis with MC information", 1);
 
   if(HasMCData()){
-    fContainer->CreateContainer("conversionElecs", "Container for weighted conversion electrons",4);
-    fContainer->CreateContainer("mesonElecs", "Container for weighted electrons from meson decays",4);
+    fContainer->CreateContainer("conversionElecs", "Container for weighted conversion electrons",7);
+    fContainer->CreateContainer("mesonElecs", "Container for weighted electrons from meson decays",7);
     fContainer->Sumw2("conversionElecs");
     fContainer->Sumw2("mesonElecs");
    
@@ -1588,36 +1635,55 @@ void AliAnalysisTaskHFE::InitContaminationQA(){
   // 
   // Add QA for Impact Parameter cut
   //
-  const Double_t kPtbound[2] = {0.1, 20.};
-  Int_t iBin[1];
-  iBin[0] = 44; // bins in pt
-  fQACollection->CreateTH1F("hadronsBeforeIPcut", "Hadrons before IP cut", iBin[0], kPtbound[0], kPtbound[1], 1);
-  fQACollection->CreateTH1F("hadronsAfterIPcut", "Hadrons after IP cut", iBin[0], kPtbound[0], kPtbound[1], 1);
-  fQACollection->CreateTH1F("hadronsBeforeIPcutMC", "Hadrons before IP cut; MC p_{t}", iBin[0], kPtbound[0], kPtbound[1], 1);
-  fQACollection->CreateTH1F("hadronsAfterIPcutMC", "Hadrons after IP cut; MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
 
-  fQACollection->CreateTH2F("Ke3Kecorr", "Ke3 decay e and K correlation; Ke3K p_{t}; Ke3e p_{t}; ",20,0.,20.,iBin[0],kPtbound[0],kPtbound[1], 1);
-  fQACollection->CreateTH2F("Ke3K0Lecorr", "Ke3 decay e and K0L correlation; Ke3K0L p_{t}; Ke3e p_{t}; ",20,0.,20.,iBin[0],kPtbound[0],kPtbound[1], 1);
-  fQACollection->CreateTH1F("Kptspectra", "Charged Kaons: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
-  fQACollection->CreateTH1F("K0Lptspectra", "K0L: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  TObjArray *array = fVarManager->GetVariables();
+  Int_t nvars = array->GetEntriesFast();
+  for(Int_t v = 0; v < nvars; v++) {
+    AliHFEvarManager::AliHFEvariable *variable = (AliHFEvarManager::AliHFEvariable *) array->At(v);
+    if(!variable) continue;
+    TString name(((AliHFEvarManager::AliHFEvariable *)variable)->GetName());
+    if(!name.CompareTo("pt")) {
+      const Int_t nBinPt  = variable->GetNumberOfBins();
+      const Double_t *kPtRange = variable->GetBinning();
 
-  const Double_t kDCAbound[2] = {-5., 5.};
-  const Double_t kDCAsigbound[2] = {-50., 50.};
+      fQACollection->CreateTH1Farray("hadronsBeforeIPcut", "Hadrons before IP cut", nBinPt, kPtRange);
+      fQACollection->CreateTH1Farray("hadronsAfterIPcut", "Hadrons after IP cut", nBinPt, kPtRange);
+      fQACollection->CreateTH1Farray("hadronsBeforeIPcutMC", "Hadrons before IP cut; MC p_{t}", nBinPt, kPtRange);
+      fQACollection->CreateTH1Farray("hadronsAfterIPcutMC", "Hadrons after IP cut; MC p_{t} ", nBinPt, kPtRange);
 
-  fQACollection->CreateTH2F("dataDcaSig", "data dca significance: dca sig ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAsigbound[0], kDCAsigbound[1], 0);
-  fQACollection->CreateTH2F("charmDcaSig", "charm dca significance: dca sig ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAsigbound[0], kDCAsigbound[1], 0);
-  fQACollection->CreateTH2F("beautyDcaSig", "beauty dca significance: dca sig ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAsigbound[0], kDCAsigbound[1], 0);
-  fQACollection->CreateTH2F("conversionDcaSig", "conversion dca significance: dca sig ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAsigbound[0], kDCAsigbound[1], 0);
-  fQACollection->CreateTH2F("nonhfeDcaSig", "nonhfe dca significance: dca sig ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAsigbound[0], kDCAsigbound[1], 0);
+      fQACollection->CreateTH2Farray("Ke3Kecorr", "Ke3 decay e and K correlation; Ke3K p_{t}; Ke3e p_{t}; ", nBinPt, kPtRange, 20,0.,20.);
+      fQACollection->CreateTH2Farray("Ke3K0Lecorr", "Ke3 decay e and K0L correlation; Ke3K0L p_{t}; Ke3e p_{t}; ", nBinPt, kPtRange, 20,0.,20.);
+      fQACollection->CreateTH1Farray("Kptspectra", "Charged Kaons: MC p_{t} ", nBinPt, kPtRange);
+      fQACollection->CreateTH1Farray("K0Lptspectra", "K0L: MC p_{t} ", nBinPt, kPtRange);
 
-  fQACollection->CreateTH2F("dataDca", "data dca : dca ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAbound[0], kDCAbound[1], 0);
-  fQACollection->CreateTH2F("charmDca", "charm dca : dca ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAbound[0], kDCAbound[1], 0);
-  fQACollection->CreateTH2F("beautyDca", "beauty dca : dca ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAbound[0], kDCAbound[1], 0);
-  fQACollection->CreateTH2F("conversionDca", "conversion dca : dca ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAbound[0], kDCAbound[1], 0);
-  fQACollection->CreateTH2F("nonhfeDca", "nonhfe dca : dca ",iBin[0], kPtbound[0], kPtbound[1], 2000,kDCAbound[0], kDCAbound[1], 0);
+      const Double_t kDCAbound[2] = {-5., 5.};
+      const Double_t kDCAsigbound[2] = {-50., 50.};
 
-  fQACollection->CreateTH2F("dataDcaSigDca", "data dca significance and dca correlation; dca; dca sig ", 2000, kDCAbound[0], kDCAbound[1], 2000, kDCAsigbound[0], kDCAsigbound[1], 0);
-  fQACollection->CreateTH2F("conversionDcaSigDca", "conversion dca significance and dca correlation; dca; dca sig ", 2000, kDCAbound[0], kDCAbound[1], 2000, kDCAsigbound[0], kDCAsigbound[1], 0);
+      const Int_t nDimDca=7;
+      const Int_t nBinDca[nDimDca] = { 8, nBinPt, 2000, 2000, 12, 500, 6};
+      Double_t minimaDca[nDimDca]  = { -1., 0., kDCAbound[0], kDCAsigbound[0], -1., 0, -1};
+      Double_t maximaDca[nDimDca]  = { 7., 20., kDCAbound[1], kDCAsigbound[1], 11., 50, 5};
+
+      Double_t *sourceBins = AliHFEtools::MakeLinearBinning(nBinDca[0], minimaDca[0], maximaDca[0]);
+      Double_t *dcaBins = AliHFEtools::MakeLinearBinning(nBinDca[2], minimaDca[2], maximaDca[2]);
+      Double_t *dcaSigBins = AliHFEtools::MakeLinearBinning(nBinDca[3], minimaDca[3], maximaDca[3]);
+      Double_t *centralityBins = AliHFEtools::MakeLinearBinning(nBinDca[4], minimaDca[4], maximaDca[4]);
+      Double_t *eProdRBins = AliHFEtools::MakeLinearBinning(nBinDca[5], minimaDca[5], maximaDca[5]);
+      Double_t *v0PIDBins = AliHFEtools::MakeLinearBinning(nBinDca[6], minimaDca[6], maximaDca[6]);
+
+      fQACollection->CreateTHnSparseNoLimits("Dca", "Dca; source (0-all, 1-charm,etc); pT [GeV/c]; dca; dcasig; centrality bin; eProdR; v0pid", nDimDca, nBinDca);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(0, sourceBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(1, kPtRange);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(2, dcaBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(3, dcaSigBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(4, centralityBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(5, eProdRBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(6, v0PIDBins);
+
+      break;
+    }  
+  }
+
 }
 
 //____________________________________________________________

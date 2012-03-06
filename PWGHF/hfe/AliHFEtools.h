@@ -26,6 +26,10 @@ class TParticle;
 class AliAODMCParticle;
 class AliPIDResponse;
 class AliVParticle;
+class TGraph;
+class TGraphErrors;
+class TH1D;
+class TString;
 
 class AliHFEtools : public TObject{
   public:
@@ -42,6 +46,10 @@ class AliHFEtools : public TObject{
     static AliPIDResponse *GetDefaultPID(Bool_t isMC = kTRUE, Bool_t isESD = kTRUE);
     static void DestroyDefaultPID();
     static void SetLogLevel(Int_t loglevel) { fgLogLevel = loglevel ;}
+    static TH1D* GraphErrorsToHist(TGraphErrors* g = 0, Double_t firstBinWidth = -1, Bool_t exchange=kFALSE, Int_t markerstyle=8, Int_t markercolor=2, Float_t markersize=0.7);
+    static TH1D* GraphToHist(TGraph* g = 0, Double_t firstBinWidth = -1, Bool_t exchange=kFALSE, Int_t markerstyle=8, Int_t markercolor=2, Float_t markersize=0.7);
+    static Bool_t ExchangeXYGraph(TGraph* g = 0);
+    static Bool_t ExchangeXYGraphErrors(TGraphErrors* g = 0);
 
   private:
       AliHFEtools(const AliHFEtools &);

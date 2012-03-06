@@ -52,7 +52,8 @@ class AliHFEspectrum : public TNamed{
     enum{
       kElecBgSources = 6,
       kBgLevels = 3,
-      kBgPtBins = 44
+      kBgPtBins = 44,
+      kCentrality = 12
 	};
 
    enum Chargetype_t{
@@ -87,10 +88,12 @@ class AliHFEspectrum : public TNamed{
     void SetContainer(AliCFContainer *cont, AliHFEspectrum::CFContainer_t type);
     void SetEfficiencyFunction(TF1 *efficiencyFunction) { fEfficiencyFunction = efficiencyFunction; };
     void SetPbPbAnalysis(Bool_t isPbPb = kFALSE) { fBeamType=(Char_t) isPbPb; };
+
+    void SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, Int_t *dimensions);
     
     void SetNumberOfEvents(Int_t nEvents,Int_t i = 0) { fNEvents[i] = nEvents; };
     void SetNumberOfMCEvents(Int_t nEvents) { fNMCEvents = nEvents; };
-    void SetNumberOfMC2Events(Int_t nEvents) { fNMCbgEvents = nEvents; }; 
+    void SetNumberOfMC2Events(Int_t nEvents,Int_t i = 0) { fNMCbgEvents[i] = nEvents; };
     void SetMCEffStep(Int_t step) { fStepMC = step; };
     void SetMCTruthStep(Int_t step) { fStepTrue = step; };
     void SetStepToCorrect(Int_t step) { fStepData = step; };
@@ -106,8 +109,10 @@ class AliHFEspectrum : public TNamed{
     void SetLowHighBoundaryCentralityBinAtTheEnd(Int_t low, Int_t high, Int_t i) { fLowBoundaryCentralityBinAtTheEnd[i] = low; fHighBoundaryCentralityBinAtTheEnd[i] = high;};
 
     void SetBeautyAnalysis() { fInclusiveSpectrum = kFALSE; };
+    void CallInputFileForBeauty2ndMethod();
+    void SetInputFileForBeauty2ndMethod(const char *filenameb = "BSpectrum2ndmethod.root"){fkBeauty2ndMethodfilename = filenameb; };
+    void SetBeautyAnalysis2ndMethod(Bool_t beauty2ndmethod) { fBeauty2ndMethod = beauty2ndmethod; }
     void SetHadronEffbyIPcut(THnSparseF* hsHadronEffbyIPcut) { fHadronEffbyIPcut = hsHadronEffbyIPcut;};
-    void SetNonHFEBackground2ndMethod() { fNonHFEbgMethod2 = kTRUE; };
     void SetNonHFEsyst(Bool_t syst){ fNonHFEsyst = syst; };
 
     void SetStepGuessedUnfolding(Int_t stepGuessedUnfolding) { fStepGuessedUnfolding = stepGuessedUnfolding; };
@@ -117,24 +122,26 @@ class AliHFEspectrum : public TNamed{
   
     void SetDebugLevel(Int_t debugLevel, Bool_t writeToFile = kFALSE) { fDebugLevel = debugLevel; fWriteToFile = writeToFile; };
 
+
+    AliCFDataGrid* GetRawBspectra2ndMethod();
     AliCFDataGrid* GetCharmBackground();
     AliCFDataGrid* GetConversionBackground();
     AliCFDataGrid* GetNonHFEBackground();
     THnSparse* GetCharmWeights();
     THnSparse* GetBeautyIPEff();
-    THnSparse* GetCharmEff();
     THnSparse* GetPIDxIPEff(Int_t source);
-    void CalculateNonHFEsyst();
+    void CalculateNonHFEsyst(Int_t centrality = 0);
 
     void EnableIPanaHadronBgSubtract() { fIPanaHadronBgSubtract = kTRUE; };
     void EnableIPanaCharmBgSubtract() { fIPanaCharmBgSubtract = kTRUE; };
     void EnableIPanaConversionBgSubtract() { fIPanaConversionBgSubtract = kTRUE; };
     void EnableIPanaNonHFEBgSubtract() { fIPanaNonHFEBgSubtract = kTRUE; };
+    void EnableIPParameterizedEff() { fIPParameterizedEff = kTRUE; };
 
   protected:
        
     AliCFContainer *GetContainer(AliHFEspectrum::CFContainer_t contt);
-    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge);
+    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge,Int_t centrality=-1);
     THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions) const;
     TObject* GetSpectrum(const AliCFContainer * const c, Int_t step);
     TObject* GetEfficiency(const AliCFContainer * const c, Int_t step, Int_t step0);
@@ -154,11 +161,16 @@ class AliHFEspectrum : public TNamed{
     THnSparseF *fCorrelation;     // Correlation Matrices
     AliCFDataGrid *fBackground;   // Background Grid
     TF1 *fEfficiencyFunction;     // Efficiency Function
+    TF1 *fEfficiencyTOFPIDD[kCentrality];       // TOF PID efficiency parameterized
+    TF1 *fEfficiencyIPCharmD[kCentrality];      // IP efficiency parameterized for charm
+    TF1 *fEfficiencyIPBeautyD[kCentrality];     // IP efficiency parameterized for beauty 
+    TF1 *fEfficiencyIPConversionD[kCentrality]; // IP efficiency parameterized for conversion
+    TF1 *fEfficiencyIPNonhfeD[kCentrality];     // IP efficiency parameterized for nonhfe 
 
     THnSparseF *fWeightCharm;     // Weight for charm bg
 
-    AliCFContainer *fConvSourceContainer[kElecBgSources][kBgLevels]; //container for conversion electrons, divided into different photon sources
-    AliCFContainer *fNonHFESourceContainer[kElecBgSources][kBgLevels];     //container for non-HF electrons, divided into different sources
+    AliCFContainer *fConvSourceContainer[kElecBgSources][kBgLevels][kCentrality]; //container for conversion electrons, divided into different photon sources
+    AliCFContainer *fNonHFESourceContainer[kElecBgSources][kBgLevels][kCentrality]; //container for non-HF electrons, divided into different sources
 
     Bool_t fInclusiveSpectrum;     // Inclusive Spectrum
     Bool_t fDumpToFile;           // Write Result in a file
@@ -171,13 +183,14 @@ class AliHFEspectrum : public TNamed{
     Bool_t fIPanaCharmBgSubtract;      // Charm background subtraction 
     Bool_t fIPanaConversionBgSubtract; // Conversion background subtraction
     Bool_t fIPanaNonHFEBgSubtract;     // nonHFE except for conversion background subtraction
-    Bool_t fNonHFEbgMethod2;           // switch for 2nd method to subtract non HFE background
+    Bool_t fIPParameterizedEff;        // switch to use parameterized efficiency for ip analysis
     Bool_t fNonHFEsyst;            // choose NonHFE background level (upper, lower, central)
+    Bool_t fBeauty2ndMethod;      // 2nd method to get beauty spectrum
 
     Int_t fNbDimensions;          // Number of dimensions for the correction
     Int_t fNEvents[20];           // Number of Events
     Int_t fNMCEvents;             // Number of MC Events
-    Int_t fNMCbgEvents;           // Number of BG MC Events
+    Int_t fNMCbgEvents[20];       // Number of BG MC Events
     Int_t fStepMC;                // MC step (for unfolding)
     Int_t fStepTrue;              // MC step of the final spectrum
     Int_t fStepData;              // Data Step (various applications)
@@ -195,8 +208,14 @@ class AliHFEspectrum : public TNamed{
     Int_t fHighBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
 
     THnSparseF *fHadronEffbyIPcut;// container for hadron efficiency by IP cut
-    TH1D *fConversionEff;         // conversion IP cut eff
-    TH1D *fNonHFEEff;             // nonhfe IP cut eff
+    TH1D *fEfficiencyCharmSigD[kCentrality]; // charm IP cut eff from signal enhanced MC
+    TH1D *fEfficiencyBeautySigD[kCentrality]; // beauty IP cut eff from signal enhanced MC
+    TH1D *fConversionEff[kCentrality];     // conversion IP cut eff
+    TH1D *fNonHFEEff[kCentrality];         // nonhfe IP cut eff
+    TH1D *fCharmEff[kCentrality];              // charm IP cut eff
+    TH1D *fBeautyEff[kCentrality];             // beauty IP cut eff
+    TH1D *fBSpectrum2ndMethod;             // beauty spectrum for 2nd method
+    const char *fkBeauty2ndMethodfilename;      // name of file, which contains beauty spectrum for 2ndmethod
     Char_t fBeamType;             // beamtype; default -1; pp =0; PbPb=1
 
 

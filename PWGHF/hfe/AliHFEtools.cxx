@@ -23,9 +23,14 @@
 #include <TMath.h>
 #include <TParticle.h>
 #include "TH1.h"
+#include "TH1D.h"
 #include "TH2.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
 #include "THnSparse.h"
 #include "TAxis.h"
+#include "TMath.h"
+#include "TString.h"
 
 #include "AliAODMCParticle.h"
 #include "AliAODpidUtil.h"
@@ -241,4 +246,160 @@ Int_t AliHFEtools::PDG2AliPID(Int_t pdg){
     default: pid = -1; break;
   };
   return pid;
+}
+
+//__________________________________________
+TH1D* AliHFEtools::GraphErrorsToHist(TGraphErrors* g, Double_t firstBinWidth, Bool_t exchange, Int_t markerstyle,Int_t markercolor,Float_t markersize)
+{
+    // Creates a TH1D from TGraph g. The binwidth of the first bin has to
+    // specified. The others bins are calculated automatically. Supports also Graphs
+    // with non constant x steps. The axis of the Graph can be exchanged if
+    // exchange=kTRUE (modifies the Graph).
+
+    TH1D* result = GraphToHist(g,firstBinWidth,exchange, markerstyle,markercolor,markersize);
+    if( result == 0) return result;
+
+    //------------------------------------------
+    // setup the final hist
+    Int_t nBinX = g->GetN();
+    Double_t* err = g->GetEY();           // error y is still ok even if exchanged
+    for(Int_t i = 0; i < nBinX; i ++){
+	result->SetBinError(i + 1, err[i]);
+    }
+    if(exchange){
+        AliHFEtools::ExchangeXYGraph(g);        // undo  what has been done in GraphToHist
+	AliHFEtools::ExchangeXYGraphErrors(g);  // now exchange including errors
+    }
+
+    return result;
+}
+
+//__________________________________________
+Bool_t AliHFEtools::ExchangeXYGraph(TGraph* g)
+{
+    // exchanges x-values and y-values.
+    if(g==0) return kFALSE;
+    Int_t nbin=g->GetN();
+    Double_t x,y;
+    for(Int_t i = 0; i < nbin; i ++)
+    {
+        g->GetPoint(i,x,y);
+        g->SetPoint(i,y,x);
+    }
+
+    return kTRUE;
+}
+
+//__________________________________________
+Bool_t AliHFEtools::ExchangeXYGraphErrors(TGraphErrors* g)
+{
+    // exchanges x-values and y-values and
+    // corresponding errors.
+    if(g==0) return kFALSE;
+    Int_t nbin=g->GetN();
+    Double_t x,y;
+    Double_t ex,ey;
+    for(Int_t i = 0; i < nbin; i ++)
+    {
+        g->GetPoint(i,x,y);
+        ex = g->GetErrorX(i);
+        ey = g->GetErrorY(i);
+        g->SetPoint(i,y,x);
+        g->SetPointError(i,ey,ex);
+    }
+
+    return kTRUE;
+
+}
+
+//__________________________________________
+TH1D* AliHFEtools::GraphToHist(TGraph* g, Double_t firstBinWidth, Bool_t exchange, Int_t markerstyle,Int_t markercolor,Float_t markersize)
+{
+    // Creates a TH1D from TGraph g. The binwidth of the first bin has to
+    // specified. The others bins are calculated automatically. Supports also Graphs
+    // with non constant x steps. The axis of the Graph can be exchanged if
+    // exchange=kTRUE (modifies the Graph).
+
+
+    TH1D* result = 0;
+    if(g == 0)              return result;
+    if(firstBinWidth == -1) return result;
+    TString myname="";
+    myname = g->GetName();
+    myname += "_graph";
+    if(exchange) AliHFEtools::ExchangeXYGraph(g);
+
+    Int_t nBinX = g->GetN();
+    Double_t* x = g->GetX();
+    Double_t* y = g->GetY();
+
+    if(nBinX < 1) return result;
+
+    //------------------------------------------
+    // create the Matrix for the equation system
+    // and init the values
+
+    Int_t nDim = nBinX - 1;
+    TMatrixD a(nDim,nDim);
+    TMatrixD b(nDim,1);
+
+    Double_t* aA = a.GetMatrixArray();
+    Double_t* aB = b.GetMatrixArray();
+    memset(aA,0,nDim * nDim * sizeof(Double_t));
+    memset(aB,0,nDim * sizeof(Double_t));
+    //------------------------------------------
+
+    //------------------------------------------
+    // setup equation system
+    // width for 1st bin is given therefore
+    // we shift bin parameter (column) by one to the left
+    // to reduce the matrix size
+
+    Double_t* xAxis = new Double_t [nBinX + 1];
+    Double_t* binW  = new Double_t [nBinX ];
+    binW[0] = firstBinWidth;
+
+    aB[0] = x[1] - x[0]  - 0.5 * binW[0];
+    aA[0] = 0.5;
+
+    for(Int_t col = 1; col < nDim ; col ++)
+    {
+	Int_t row = col;
+	aB[col] = x[col + 1] - x[ col ];
+	aA[row * nDim + col - 1 ] = 0.5;
+	aA[row * nDim + col     ] = 0.5;
+    }
+    //------------------------------------------
+
+    //------------------------------------------
+    // solve the equations
+    a.Invert();
+    TMatrixD c = a * b;
+    //------------------------------------------
+
+    //------------------------------------------
+    // calculate the bin boundaries
+    xAxis[0] = x[0] - 0.5 * binW[0];
+    memcpy(&binW[1],c.GetMatrixArray(),nDim * sizeof(Double_t));
+    for(Int_t col = 0; col < nBinX ; col ++) {
+	xAxis[col + 1] = x[col] + 0.5 * binW[col];
+    }
+    //------------------------------------------
+
+    //------------------------------------------
+    // setup the final hist
+    result = new TH1D(myname.Data(),myname.Data(),nBinX, xAxis);
+    for(Int_t i = 0; i < nBinX; i ++){
+	result->SetBinContent(i + 1, y[i]);
+    }
+    result->SetMarkerColor(markercolor);
+    result->SetMarkerStyle(markerstyle);
+    result->SetMarkerSize(markersize);
+    //------------------------------------------
+
+    delete [] xAxis;
+    delete [] binW;
+
+
+    return result;
 }

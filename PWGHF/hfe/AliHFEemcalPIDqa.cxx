@@ -158,15 +158,15 @@ void AliHFEemcalPIDqa::Initialize(){
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, Centrality, select)
-  Int_t nBins[12] = {AliPID::kSPECIES + 1, 500, 500,          400, 630,   200,   600,  300, 125, kCentralityBins, 6, 2};
+  Int_t nBins[12] = {AliPID::kSPECIES + 1, 500, 500,          400, 630,   200,   600,  300, 100, kCentralityBins, 6, 2};
   Double_t min[12] = {-1,               kMinP, kMinP,  kTPCSigMim,  0.,  -1.0,  -8.0,    0,   0,            0, -3.0, 0.};
-  Double_t max[12] = {AliPID::kSPECIES, kMaxP, kMaxP,  kTPCSigMax, 6.3,   1.0,   4.0,  3.0, 0.5,           11., 3.0, 2.};
+  Double_t max[12] = {AliPID::kSPECIES, kMaxP, kMaxP,  kTPCSigMax, 6.3,   1.0,   4.0,  3.0, 0.1,           11., 3.0, 2.};
   fHistos->CreateTHnSparse("EMCAL_TPCdedx", "EMCAL signal; species; p [GeV/c]; pT [GeV/c] ; TPC signal [a.u.]; phi ; eta ; nSig ; E/p ; Rmatch ;Centrality; PID Step; ", 12, nBins, min, max);
 
   //2nd histogram: EMCAL signal - E/p 
-  Int_t nBins2[7] = {AliPID::kSPECIES + 1, 500, 500, 500, 125, 600, 2};
+  Int_t nBins2[7] = {AliPID::kSPECIES + 1, 500, 500, 500, 100, 600, 2};
   Double_t min2[7] = {-1, kMinP, kMinP, 0,  0, -8., 0.};
-  Double_t max2[7] = {AliPID::kSPECIES, kMaxP, kMaxP, 5,  0.5, 4., 2.};
+  Double_t max2[7] = {AliPID::kSPECIES, kMaxP, kMaxP, 5,  0.1, 4., 2.};
   fHistos->CreateTHnSparse("EMCAL_Signal", "EMCAL true signal; species; p [GeV/c]; pT [GeV/c] ; E/p; Rmatch; TPCnsigma; PID Step", 7, nBins2, min2, max2);
     
 }
