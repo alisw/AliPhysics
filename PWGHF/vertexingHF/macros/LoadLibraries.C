@@ -29,8 +29,8 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
     setupPar("OADB");
     setupPar("ANALYSISalice");
     setupPar("CORRFW");  
-    setupPar("PWG3base");
-    setupPar("PWG3vertexingHF");
+    setupPar("PWGHFbase");
+    setupPar("PWGHFvertexingHF");
     //setupPar("PWG3muon");
   }
 
