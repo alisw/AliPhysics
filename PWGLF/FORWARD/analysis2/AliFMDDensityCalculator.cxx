@@ -292,7 +292,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   AliForwardUtil::Histos& hists,
 				   UShort_t                vtxbin, 
 				   Bool_t                  lowFlux,
-				   Double_t                cent, 
+				   Double_t                /*cent*/, 
 				   Double_t                zvtx)
 {
   // 
