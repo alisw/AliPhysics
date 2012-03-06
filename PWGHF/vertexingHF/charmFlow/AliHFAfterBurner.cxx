@@ -42,7 +42,9 @@ AliHFAfterBurner::AliHFAfterBurner():
   fUseNewton(kTRUE),
   fPrecisionNewton(0),
   fDecChannel(0),
-  fSignal(0)
+  fSignal(0),
+  fEventPlane(0.),
+  fMethodEP(0)
 {
   //empty constructor
 }
@@ -53,7 +55,9 @@ AliHFAfterBurner::AliHFAfterBurner(Int_t decChannel):
   fUseNewton(kTRUE),
   fPrecisionNewton(0.0005),
   fDecChannel(decChannel),
-  fSignal(0)
+  fSignal(0),
+  fEventPlane(0.),
+  fMethodEP(0)
 {
   //default constructor
 }
@@ -65,7 +69,9 @@ AliHFAfterBurner::AliHFAfterBurner(const AliHFAfterBurner &source):
   fUseNewton(source.fUseNewton),
   fPrecisionNewton(source.fPrecisionNewton),
   fDecChannel(source.fDecChannel),
-  fSignal(source.fSignal)
+  fSignal(source.fSignal),
+  fEventPlane(source.fEventPlane),
+  fMethodEP(source.fMethodEP)
 {
   //copy constructor
 }
@@ -82,6 +88,8 @@ AliHFAfterBurner &AliHFAfterBurner::operator=(const AliHFAfterBurner &source)
   fPrecisionNewton=source.fPrecisionNewton;
   fDecChannel=source.fDecChannel;
   fSignal=source.fSignal;
+  fEventPlane=source.fEventPlane;
+  fMethodEP=source.fMethodEP;
   return *this;
 }
 //______________________________________________________________________________
@@ -92,7 +100,7 @@ AliHFAfterBurner::~AliHFAfterBurner(){
 Double_t AliHFAfterBurner::GetNewAngle(AliAODRecoDecayHF *d,TClonesArray *mcArray){
   // modify the phi angle of teh tracks
   Int_t lab=-1;
-  Int_t *pdgdaughters;
+  Int_t *pdgdaughters=0x0;
   Int_t pdgmother=0;
   Int_t nProngs=0;
   switch(fDecChannel){
@@ -123,6 +131,8 @@ Double_t AliHFAfterBurner::GetNewAngle(AliAODRecoDecayHF *d,TClonesArray *mcArra
     pdgdaughters[2]=211;//pi (soft?)
     break;
   }
+  if(!pdgdaughters) return 0.;
+
   lab = d->MatchToMC(pdgmother,mcArray,nProngs,pdgdaughters);
   Double_t phi=-999.;
   if(lab>=0){
