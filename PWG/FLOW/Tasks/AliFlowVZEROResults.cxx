@@ -1,6 +1,6 @@
 #include<stdio.h>
 #include "AliFlowVZEROResults.h"
-
+#include "TList.h"
 
 ClassImp(AliFlowVZEROResults);
 
@@ -200,7 +200,7 @@ void AliFlowVZEROResults::SetVarRange(Int_t ivar,Float_t xMin,Float_t xMax){
 
 void AliFlowVZEROResults::Fill(Int_t species,Float_t pt,Float_t v2,Float_t x[]){
   Int_t ncomb = 1;
-  Int_t histo = 1;
+  Int_t histo = 0;
  
   for(Int_t i=0;i < GetNvar();i++){
     Int_t ibin = GetBin(i,x[i]);
@@ -217,7 +217,7 @@ void AliFlowVZEROResults::Fill(Int_t species,Float_t pt,Float_t v2,Float_t x[]){
 
 TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t x[]) const{
   Int_t ncomb = 1;
-  Int_t histo = 1;
+  Int_t histo = 0;
  
   for(Int_t i=0;i < GetNvar();i++){
     Int_t ibin = GetBin(i,x[i]);
@@ -238,6 +238,7 @@ TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t x[]) const{
 TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t xMin[],Float_t xMax[]) const{
   if(GetNvar()){
     char title[300];
+    char title2[300];
     Int_t ncomb = 1;
     for(Int_t i=0;i < GetNvar();i++){
       ncomb *= (*fNbinVar)[i];
@@ -247,7 +248,7 @@ TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t xMin[],Float_t xMax[]
     TProfile *temp = new TProfile(*htemplate);
     temp->SetName("histo");
     temp->Reset();
-    snprintf(title,300,"%i_",species);
+    snprintf(title,300,"%i",species);
     for(Int_t i=0;i < GetNvar();i++){
       Int_t imin = GetBin(i,xMin[i]);
       if(imin < 0) imin = 0;
@@ -255,7 +256,8 @@ TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t xMin[],Float_t xMax[]
       Int_t imax = GetBin(i,xMax[i]);
       if(imax < imin) imax = imin;
       else if(imax >= (*fNbinVar)[i]) imax = (*fNbinVar)[i]-1;
-      snprintf(title,300,"%s_%04.1f<%s<%04.1f",title,
+      snprintf(title2,300,"%s",title);
+      snprintf(title,300,"%s_%04.1f<%s<%04.1f",title2,
                 (*fXmin)[i] + ((*fXmax)[i]-(*fXmin)[i])/(*fNbinVar)[i]*imin,
                 fNameVar->At(i)->GetName(),
                 (*fXmin)[i] + ((*fXmax)[i]-(*fXmin)[i])/(*fNbinVar)[i]*(imax+1));
@@ -295,9 +297,14 @@ Long64_t AliFlowVZEROResults::Merge(TCollection* list){
   Long64_t res=0;
   if (!list) return 0;
   if (list->IsEmpty()) return 0;
-  
-  for(Int_t i=0;i < GetNhistos();i++){
-    res = GetV2(i)->Merge(list);
+
+  TList *listObj = new TList();
+  listObj->AddAll(list);
+
+  for(Int_t i=0;i < listObj->GetEntries();i++){
+    AliFlowVZEROResults *obj = (AliFlowVZEROResults *) listObj->At(i);
+    Add(obj);
+    res++;
   }
   return res;
 }
