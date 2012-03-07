@@ -222,7 +222,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("trackletsVsV0Cent", ";L1 clusters;v0 centrality", 100, -0.5, 9999.5, 101, 0, 101));
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
-  fListOfHistos->Add(new TH1F("mixedDist", ";tracks;events", 200, 0, fMixingTracks * 1.5));
+  fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
   fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   
   PostData(0,fListOfHistos);
@@ -682,7 +682,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 //       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
       
       ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
-      ((TH1F*) fListOfHistos->FindObject("mixedDist"))->Fill(pool->NTracksInPool());
+      ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
       if (pool->IsReady())
 	((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
     
