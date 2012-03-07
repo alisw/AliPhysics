@@ -1,6 +1,3 @@
-#ifndef ALIANALYSISTASKPHIFLOW_H
-#define ALIANALYSISTASKPHIFLOW_H
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
 /* See cxx source for full Copyright notice */
 /* $Id$ */
@@ -8,6 +5,11 @@
 // AliAnalysisTaskPhiFlow:
 // origin: Redmer Alexander Bertens (rbertens@nikhef.nl)
 // analyis task for phi-meson reconstruction and determination of V2
+// handles aod's and esd's transparantly
+
+#ifndef ALIANALYSISTASKPHIFLOW_H
+#define ALIANALYSISTASKPHIFLOW_H
+
 
 class TH1F;
 class TH1F;
@@ -18,6 +20,7 @@ class AliESDtrackCuts;
 class AliFlowTrackCuts;
 class AliFlowEvent;
 class AliFlowCandidateTrack;
+class AliFlowBayesianPID;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -41,90 +44,127 @@ public:
 
    enum PIDtype
    {
-       kTPC = 0,
-       kCombined,
+      kTPC = 0,
+      kCombined,
    };
 
-
-   TH1F*          BookHistogram(const char * name);
-   TH2F*          BookPIDHistogram(const char * name);
-   TProfile*      BookV2Profile(const char * name, Bool_t pt, Bool_t cos);
-   TH1F*          BookPtHistogram(const char* name);
-   void           AddPhiIdentificationOutputObjects();
-   virtual void   UserCreateOutputObjects();
-   void           PairLoss(const AliESDtrack* track1, const AliESDtrack* track2) const;
-   Double_t       InvariantMass(const AliESDtrack* track_1, const AliESDtrack* track_2) const;
-   Double_t       DeltaDipAngle(const AliESDtrack* track1, const AliESDtrack* track2) const;
-   Bool_t         CheckDeltaDipAngle(const AliESDtrack* track1, const AliESDtrack* track2) const;
-   void           SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod);
-   void           SetVertexZ(Float_t z)  { fVertexRange = z; };
-   void           SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) {fDeltaDipAngle = a; fDeltaDipPt = pt; fApplyDeltaDipCut = kTRUE; };
-   void           EventPlanePtCut(Bool_t a = kFALSE) { fSetEventPlanePtCut = a; };
-   void           SetEventPlanePtCut(Float_t c) {fEventPlanePtCut = c; } ;
-   Bool_t         EventCut( AliESDEvent* esd) const;
-   void           PlotVZeroMultiplcities(const AliESDEvent* esd) const;
-   Bool_t         CheckVertex(const AliESDEvent* esd) const ;
-   Bool_t         CheckCentrality(AliESDEvent* esd) const;
-   Bool_t         IsKaon(const AliESDtrack* track) const;
-   Double_t       PhiPt(const AliESDtrack* track_1, const AliESDtrack* track_2) const;
-   void           PtSelector(Int_t _track_type, const AliESDtrack* track_1, const AliESDtrack* track_2) const;
-   void           EventPlane(const AliESDEvent* esd);
-   void           EventPlaneResolution(        Bool_t random,
-                                        Double_t cossumQ1,
-                                        Double_t sinsumQ1,
-                                        Double_t cossumQ2,
-                                        Double_t sinsumQ2,
-                                        Double_t cossum,
-                                        Double_t sinsum,
-                                        Double_t cossumQwest,
-                                        Double_t sinsumQwest,
-                                        Double_t cossumQeast,
-                                        Double_t sinsumQeast) const;
-   Double_t       Chi(Double_t res) const;
-   Double_t       ResolutionAsFunctionOfChi(Double_t chi) const;
-   Double_t       EventPlaneStar(       Bool_t random,
-                                        Double_t cossumQ1,
-                                        Double_t sinsumQ1,
-                                        Double_t cossumQ2,
-                                        Double_t sinsumQ2,
-                                        Double_t cossum,
-                                        Double_t sinsum,
-                                        Double_t cossumQwest,
-                                        Double_t sinsumQwest,
-                                        Double_t cossumQeast,
-                                        Double_t sinsumQeast) const;
-   void           EllipticFlow(Double_t* const v2, const AliESDtrack* track_1, const AliESDtrack* track_2) const;
-   Bool_t         EventPlaneTrack(AliESDtrack* track) const;
-   Bool_t         PhiTrack(AliESDtrack* track) const;
-   void           FlowFinish(Double_t* const v2) const;
-   void           EllipticFlowSin(Double_t* const v2Sin, const AliESDtrack* track_1, const AliESDtrack* track_2) const;
-   void           FlowFinishSin(Double_t* const v2Sin) const;
-   void           SetNullCuts(AliESDEvent* esd);
-   void           PrepareFlowEvent(Int_t iMulti);
-   virtual void   UserExec(Option_t *option);
-   virtual void   Terminate(Option_t *);
-   void           SetRPCuts(AliFlowTrackCuts *cutsRP) { fRPCuts = cutsRP; }
-   void           SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
-   void           SetKaonCuts(AliFlowTrackCuts *cutsKaon) { fKaonCuts = cutsKaon; }
-   void           SetIdentificationType(PIDtype type) {fPIDtype = type;}
-   void           SetMassRanges(Double_t flowBands[2][30]) { for (int i = 0; i != 2; ++i) for (int j = 0; j != 30; ++j) fFlowBands[i][j] = flowBands[i][j]; }
-   void           SetEtaRanges(Double_t mina, Double_t maxa, Double_t minb, Double_t maxb) { fEtaMinA = mina; fEtaMaxA = maxa; fEtaMinB = minb; fEtaMaxB = maxb; }
-   void           SetFlowRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
+   TH1F*                                BookHistogram(const char * name);
+   TH1F*                                BookDPhiPsiHistogram(const char * name);
+   TH2F*                                BookPIDHistogram(const char * name);
+   TH1F*                                InitPtSpectraHistograms(Int_t i);
+   TProfile*                            BookV2Profile(const char * name, Bool_t pt, Bool_t cos);
+   TH1F*                                BookPtHistogram(const char* name);
+   void                                 AddPhiIdentificationOutputObjects();
+   virtual void                         UserCreateOutputObjects();
+   template <typename T> void           PairLoss(const T* track1, const T* track2) const;
+   template <typename T> Double_t       InvariantMass(const T* track1, const T* track2) const;
+   template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
+   template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
+   template <typename T> Bool_t         CheckCandidateEtaPtCut(const T* track1, const T* track2) const;
+   void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod);
+   void                                 SetVertexZ(Float_t z) { fVertexRange = z; };
+   void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
+                                                                                          fDeltaDipPt = pt;
+                                                                                          fApplyDeltaDipCut = kTRUE; };
+   void                                 EventPlanePtCut(Bool_t a = kFALSE) { fSetEventPlanePtCut = a; };
+   void                                 SetEventPlanePtCut(Float_t c) { fEventPlanePtCut = c; };
+   template <typename T> Bool_t         EventCut(T* event);
+   template <typename T> void           PlotVZeroMultiplcities(const T* event) const;
+   template <typename T> Bool_t         CheckVertex(const T* event) const ;
+   template <typename T> Bool_t         CheckCentrality(T* event);
+   void                                 InitializeBayesianPID(AliESDEvent* event);
+   void                                 InitializeBayesianPID(AliAODEvent* event);
+   template <typename T> Bool_t         PassesTPCbayesianCut(T* track) const;
+   Bool_t                               PassesStrictKaonCuts(AliESDtrack* track) const;
+   Bool_t                               PassesStrictKaonCuts(AliAODTrack* track) const;
+   Bool_t                               IsKaon(AliESDtrack* track) const;
+   Bool_t                               IsKaon(AliAODTrack* track) const;
+   template <typename T> Double_t       PhiPt(const T* track_1, const T* track_2) const;
+   template <typename T> void           PtSelector(Int_t _track_type, const T* track_1, const T* track_2) const;
+   void                                 EventPlane(const AliESDEvent* event);
+   void                                 EventPlane(const AliAODEvent* event);
+   void                                 EventPlaneResolution(Bool_t random,
+                                                        Double_t cossumQ1,
+                                                        Double_t sinsumQ1,
+                                                        Double_t cossumQ2,
+                                                        Double_t sinsumQ2,
+                                                        Double_t cossum,
+                                                        Double_t sinsum,
+                                                        Double_t cossumQwest,
+                                                        Double_t sinsumQwest,
+                                                        Double_t cossumQeast,
+                                                        Double_t sinsumQeast) const;
+   Double_t                             Chi(Double_t res) const;
+   Double_t                             ResolutionAsFunctionOfChi(Double_t chi) const;
+   Double_t                             EventPlaneStar(Bool_t random,
+                                                        Double_t cossumQ1,
+                                                        Double_t sinsumQ1,
+                                                        Double_t cossumQ2,
+                                                        Double_t sinsumQ2,
+                                                        Double_t cossum,
+                                                        Double_t sinsum,
+                                                        Double_t cossumQwest,
+                                                        Double_t sinsumQwest,
+                                                        Double_t cossumQeast,
+                                                        Double_t sinsumQeast) const;
+   template <typename T> void           EllipticFlow(Double_t* const v2, const T* track_1, const T* track_2) const;
+   template <typename T> Bool_t         EventPlaneTrack(T* track) const;
+   template <typename T> Bool_t         PhiTrack(T* track) const;
+   void                                 FlowFinish(Double_t* const v2) const;
+   template <typename T> void           EllipticFlowSin(Double_t* const v2Sin, const T* track_1, const T* track_2) const;
+   void                                 FlowFinishSin(Double_t* const v2Sin) const;
+   template <typename T> void           SetNullCuts(T* esd);
+   void                                 PrepareFlowEvent(Int_t iMulti);
+   virtual void                         UserExec(Option_t *option);
+   virtual void                         Terminate(Option_t *);
+   void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fRPCuts = cutsRP; }
+   void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
+   void                                 SetIdentificationType(PIDtype type) { fPIDtype = type; }
+   void                                 SetRequireStrictKaonCuts() { fStrictKaonCuts= kTRUE; }
+   void                                 SetRequireTPCStandAloneKaons() { fRequireTPCStandAlone = kTRUE; }
+   void                                 SetOlderThanPbPbPass2() { fOldTrackParam = kTRUE; }
+   void                                 SetBayesianProbability(Double_t prob) { fParticleProbability = prob; }
+   void                                 SetMassRanges(Double_t flowBands[2][30]) { for (int i = 0; i != 2; ++i) for (int j = 0; j != 30; ++j) fFlowBands[i][j] = flowBands[i][j]; }
+   void                                 SetEtaRanges(Double_t mina, Double_t maxa, Double_t minb, Double_t maxb) { 
+                                                                                        fEtaMinA = mina;
+                                                                                        fEtaMaxA = maxa; 
+                                                                                        fEtaMinB = minb; 
+                                                                                        fEtaMaxB = maxb; }
+   void                                 SetFlowRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
+   void                                 SetCandidateEtaAndPt(Double_t mineta, Double_t maxeta, Double_t minpt, Double_t maxpt) { fCandidateMinEta = mineta, 
+                                                                                                                               fCandidateMaxEta = maxeta,
+                                                                                                                               fCandidateMinPt = minpt, 
+                                                                                                                               fCandidateMaxPt = maxpt,
+                                                                                                                               fCandidateEtaPtCut = kTRUE;}
 
 private:
 
+   Bool_t               fAODAnalysis; // set aod analysis
    Double_t             fFlowBands[2][30]; // Array containing the boundaries (upper , lower) of invariant mass bands, gev / c^2
    Double_t             fEtaMinA, fEtaMaxA, fEtaMinB, fEtaMaxB; // upper and lower bounds of included eta regions
    AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles (event plane method)
    AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
    AliFlowEvent         *fFlowEvent[30]; //! flow events (one for each inv mass band)
+   AliFlowBayesianPID   *fBayesianResponse; //!PID response object
+   Bool_t               fOldTrackParam; // set to true if data is older than pbpb pass 2 production
+   Bool_t               fRequireTPCStandAlone; // set TPC standalone cut for kaon selection
+   Bool_t               fStrictKaonCuts; // require strict kaon cuts
+   Bool_t               fCandidateEtaPtCut; // set eta and pt cut for candidate tracks and combinatorial background
+   Double_t             fCandidateMinEta; // minimum eta for candidates
+   Double_t             fCandidateMaxEta; // maximum eta for candidates
+   Double_t             fCandidateMinPt; // minimum pt for candidates
+   Double_t             fCandidateMaxPt; // maximum pt for candidates
+   Double_t             fParticleProbability; // set cutoff for bayesian probability
+   Double_t             fCentrality; // event centrality
    AliESDEvent          *fESD;    //! ESD object
+   AliAODEvent          *fAOD;    //! AOD oject
    TList                *fOutputList; // ! Output list
    TH1F                 *fEventStats; // ! Histogram for event statistics
    TH1F                 *fCentralityPass; // ! QA histogram of events that pass centrality cut
    TH1F                 *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
    TH2F                 *fNOPID;//! QA histogram of TPC response of all charged particles
    TH2F                 *fPIDk;//! QA histogram of TPC response of kaons
+   TH2F                 *fPIDDeltaDip; //! QA histogram of TPC signal after delta dip cut
    TH1F                 *fInvMNP03; //! Invariant mass of unlike sign kaon pairs
    TH1F                 *fInvMPP03; //! Invariant mass of like sign (++) kaon pairs
    TH1F                 *fInvMNN03; //! Invariant mass of like sign (--) kaon pairs
@@ -179,6 +219,24 @@ private:
    TH1F                 *fInvMNP6570; //! Invariant mass of unlike sign kaon pairs
    TH1F                 *fInvMPP6570; //! Invariant mass of like sign (++) kaon pairs
    TH1F                 *fInvMNN6570; //! Invariant mass of like sign (--) kaon pairs
+   TH1F                 *fDeltaPhiPsiNP03; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP36; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP69; //!  Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP912; //!  Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP1215; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP1518; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP1821; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP2124; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP2427; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP2730; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP3035; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP3540; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP4045; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP4550; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP5055; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP5560; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP6065; //! Delta Phi Psi of unlike sign kaon pairs
+   TH1F                 *fDeltaPhiPsiNP6570; //! Delta Phi Psi of unlike sign kaon pairs
    TProfile             *fProfV2; //! charged particle v2 (cos terms, event plane method)
    TProfile             *fProfV2Sin; //! charged particle v2 (sin terms, event plane method)
    TProfile             *fProfV2InvM03; //! cos component of v2 (event plane method)
@@ -217,6 +275,24 @@ private:
    TProfile             *fProfV2SinInvM5560; //! sin component of v2 (event plane method)
    TProfile             *fProfV2SinInvM6065; //! sin component of v2 (event plane method)
    TProfile             *fProfV2SinInvM6570; //! sin component of v2 (event plane method)
+   TH1F                 *fPtSpectra03; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra36; //! Kaon Pt spectrum 
+   TH1F                 *fPtSpectra69; //!  Kaon Pt spectrum
+   TH1F                 *fPtSpectra912; //!  Kaon Pt spectrum
+   TH1F                 *fPtSpectra1215; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra1518; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra1821; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra2124; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra2427; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra2730; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra3035; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra3540; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra4045; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra4550; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra5055; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra5560; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra6065; //! Kaon Pt spectrum
+   TH1F                 *fPtSpectra6570; //! Kaon Pt spectrum
    TH1F                 *fEventPlaneSTAR; //! Distribution of the orientation of the event plane, taken from STAR
    TProfile             *fEventPlaneResolutionRandom; //! event plane resolution from randomized subevents (event plane method)
    TProfile             *fEventPlaneResolutionEta; //! event plane resolution from eta separated subevents (event plane method)
@@ -236,7 +312,6 @@ private:
    TH1F                 *fPhi; //! QA plot of azimuthal distribution of tracks used for event plane estimation
    TH1F                 *fPt; //! QA plot of p_t sectrum of tracks used for event plane estimation
    TH1F                 *fEta; //! QA plot of eta distribution of tracks used for event plane estimation
-   AliFlowTrackCuts     *fKaonCuts; // dummy flowtrackcuts object for bayesian pid method
    TH1F                 *fVZEROA; //! QA plot vzeroa multiplicity (all tracks in event)
    TH1F                 *fVZEROC; //! QA plot vzeroc multiplicity (all tracks in event)
    TH1F                 *fTPCM; //! QA plot TPC multiplicity (tracks used for event plane estimation)
@@ -248,12 +323,12 @@ private:
    Float_t              fEventPlanePtCut; // Pt cut on tracks used for event plane estimation
    Bool_t               fSetEventPlanePtCut; // kTRUE for Pt cut on event plane estimation tracks
 
-   AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&);
-   AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&);
+   AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
+   AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
 
    AliFlowCandidateTrack*  MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTaskPhiFlow, 1);
+   ClassDef(AliAnalysisTaskPhiFlow, 2);
 
 };
 

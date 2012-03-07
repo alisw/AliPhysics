@@ -16,6 +16,7 @@
 // AliAnalysisTaskPhiFlow:
 // author: Redmer Alexander Bertens (rbertens@nikhef.nl)
 // analyis task for phi-meson reconstruction and determination of V2
+// handles aod's and esd's transparently
 
 #include "TChain.h"
 #include "TTree.h"
@@ -28,13 +29,13 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliCentrality.h"
 #include "AliVEvent.h"
 #include "AliAnalysisTaskPhiFlow.h"
-#include "AliPID.h"
-#include "AliVEvent.h"
-#include "AliPIDResponse.h"
+#include "AliFlowBayesianPID.h"
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
 #include "AliMCEvent.h"
@@ -47,13 +48,14 @@
 #include "TVector3.h"
 #include "TRandom2.h"
 #include "AliESDVZERO.h"
+#include "AliAODVZERO.h"
 
 class AliFlowTrackCuts;
 
 ClassImp(AliAnalysisTaskPhiFlow)
 
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
-   fEtaMinA(0), fEtaMaxA(0), fEtaMinB(0), fEtaMaxB(0), fCutsRP(NULL), fNullCuts(0), fESD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fProfV2(0), fProfV2Sin(0), fProfV2InvM03(0), fProfV2InvM36(0), fProfV2InvM69(0), fProfV2InvM912(0), fProfV2InvM1215(0), fProfV2InvM1518(0), fProfV2InvM1821(0), fProfV2InvM2124(0), fProfV2InvM2427(0), fProfV2InvM2730(0), fProfV2InvM3035(0), fProfV2InvM3540(0), fProfV2InvM4045(0), fProfV2InvM4550(0), fProfV2InvM5055(0), fProfV2InvM5560(0), fProfV2InvM6065(0), fProfV2InvM6570(0), fProfV2SinInvM03(0), fProfV2SinInvM36(0), fProfV2SinInvM69(0), fProfV2SinInvM912(0), fProfV2SinInvM1215(0), fProfV2SinInvM1518(0), fProfV2SinInvM1821(0), fProfV2SinInvM2124(0), fProfV2SinInvM2427(0), fProfV2SinInvM2730(0), fProfV2SinInvM3035(0), fProfV2SinInvM3540(0), fProfV2SinInvM4045(0), fProfV2SinInvM4550(0), fProfV2SinInvM5055(0), fProfV2SinInvM5560(0), fProfV2SinInvM6065(0), fProfV2SinInvM6570(0), fEventPlaneSTAR(0), fEventPlaneResolutionRandom(0), fEventPlaneResolutionEta(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fRPCuts(0), fPOICuts(0), fVertexRange(0), fQx(0), fQy(0), fEventPlane(0), fPhi(0), fPt(0), fEta(0), fKaonCuts(NULL), fVZEROA(0), fVZEROC(0), fTPCM(0), fPIDtype(kCombined), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fPairLoss(0), fEventPlanePtCut(0), fSetEventPlanePtCut(0)
+   fAODAnalysis(0), fEtaMinA(0), fEtaMaxA(0), fEtaMinB(0), fEtaMaxB(0), fCutsRP(NULL), fNullCuts(0), fBayesianResponse(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fParticleProbability(0.5), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDDeltaDip(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fDeltaPhiPsiNP03(0), fDeltaPhiPsiNP36(0), fDeltaPhiPsiNP69(0), fDeltaPhiPsiNP912(0), fDeltaPhiPsiNP1215(0), fDeltaPhiPsiNP1518(0), fDeltaPhiPsiNP1821(0), fDeltaPhiPsiNP2124(0), fDeltaPhiPsiNP2427(0), fDeltaPhiPsiNP2730(0), fDeltaPhiPsiNP3035(0), fDeltaPhiPsiNP3540(0), fDeltaPhiPsiNP4045(0), fDeltaPhiPsiNP4550(0), fDeltaPhiPsiNP5055(0), fDeltaPhiPsiNP5560(0), fDeltaPhiPsiNP6065(0), fDeltaPhiPsiNP6570(0), fProfV2(0), fProfV2Sin(0), fProfV2InvM03(0), fProfV2InvM36(0), fProfV2InvM69(0), fProfV2InvM912(0), fProfV2InvM1215(0), fProfV2InvM1518(0), fProfV2InvM1821(0), fProfV2InvM2124(0), fProfV2InvM2427(0), fProfV2InvM2730(0), fProfV2InvM3035(0), fProfV2InvM3540(0), fProfV2InvM4045(0), fProfV2InvM4550(0), fProfV2InvM5055(0), fProfV2InvM5560(0), fProfV2InvM6065(0), fProfV2InvM6570(0), fProfV2SinInvM03(0), fProfV2SinInvM36(0), fProfV2SinInvM69(0), fProfV2SinInvM912(0), fProfV2SinInvM1215(0), fProfV2SinInvM1518(0), fProfV2SinInvM1821(0), fProfV2SinInvM2124(0), fProfV2SinInvM2427(0), fProfV2SinInvM2730(0), fProfV2SinInvM3035(0), fProfV2SinInvM3540(0), fProfV2SinInvM4045(0), fProfV2SinInvM4550(0), fProfV2SinInvM5055(0), fProfV2SinInvM5560(0), fProfV2SinInvM6065(0), fProfV2SinInvM6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fEventPlaneSTAR(0), fEventPlaneResolutionRandom(0), fEventPlaneResolutionEta(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fRPCuts(0), fPOICuts(0), fVertexRange(0), fQx(0), fQy(0), fEventPlane(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fPIDtype(kCombined), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fPairLoss(0), fEventPlanePtCut(0), fSetEventPlanePtCut(0)
 {
    // Dummy constructor
    fNullCuts = new AliFlowTrackCuts("null_cuts");
@@ -65,10 +67,11 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
          if (i == 0)  fFlowEvent[j] = new AliFlowEvent(10000);
       }
    }
+   if (fPIDtype == kCombined) fBayesianResponse = new AliFlowBayesianPID();
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTaskSE(name),
-   fEtaMinA(0), fEtaMaxA(0), fEtaMinB(0), fEtaMaxB(0), fCutsRP(NULL), fNullCuts(0), fESD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fProfV2(0), fProfV2Sin(0), fProfV2InvM03(0), fProfV2InvM36(0), fProfV2InvM69(0), fProfV2InvM912(0), fProfV2InvM1215(0), fProfV2InvM1518(0), fProfV2InvM1821(0), fProfV2InvM2124(0), fProfV2InvM2427(0), fProfV2InvM2730(0), fProfV2InvM3035(0), fProfV2InvM3540(0), fProfV2InvM4045(0), fProfV2InvM4550(0), fProfV2InvM5055(0), fProfV2InvM5560(0), fProfV2InvM6065(0), fProfV2InvM6570(0), fProfV2SinInvM03(0), fProfV2SinInvM36(0), fProfV2SinInvM69(0), fProfV2SinInvM912(0), fProfV2SinInvM1215(0), fProfV2SinInvM1518(0), fProfV2SinInvM1821(0), fProfV2SinInvM2124(0), fProfV2SinInvM2427(0), fProfV2SinInvM2730(0), fProfV2SinInvM3035(0), fProfV2SinInvM3540(0), fProfV2SinInvM4045(0), fProfV2SinInvM4550(0), fProfV2SinInvM5055(0), fProfV2SinInvM5560(0), fProfV2SinInvM6065(0), fProfV2SinInvM6570(0), fEventPlaneSTAR(0), fEventPlaneResolutionRandom(0), fEventPlaneResolutionEta(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fRPCuts(0), fPOICuts(0), fVertexRange(0), fQx(0), fQy(0), fEventPlane(0), fPhi(0), fPt(0), fEta(0), fKaonCuts(NULL), fVZEROA(0), fVZEROC(0), fTPCM(0), fPIDtype(kCombined), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fPairLoss(0), fEventPlanePtCut(0), fSetEventPlanePtCut(0)
+   fAODAnalysis(0), fEtaMinA(0), fEtaMaxA(0), fEtaMinB(0), fEtaMaxB(0), fCutsRP(NULL), fNullCuts(0), fBayesianResponse(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fParticleProbability(0.5), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDDeltaDip(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fDeltaPhiPsiNP03(0), fDeltaPhiPsiNP36(0), fDeltaPhiPsiNP69(0), fDeltaPhiPsiNP912(0), fDeltaPhiPsiNP1215(0), fDeltaPhiPsiNP1518(0), fDeltaPhiPsiNP1821(0), fDeltaPhiPsiNP2124(0), fDeltaPhiPsiNP2427(0), fDeltaPhiPsiNP2730(0), fDeltaPhiPsiNP3035(0), fDeltaPhiPsiNP3540(0), fDeltaPhiPsiNP4045(0), fDeltaPhiPsiNP4550(0), fDeltaPhiPsiNP5055(0), fDeltaPhiPsiNP5560(0), fDeltaPhiPsiNP6065(0), fDeltaPhiPsiNP6570(0), fProfV2(0), fProfV2Sin(0), fProfV2InvM03(0), fProfV2InvM36(0), fProfV2InvM69(0), fProfV2InvM912(0), fProfV2InvM1215(0), fProfV2InvM1518(0), fProfV2InvM1821(0), fProfV2InvM2124(0), fProfV2InvM2427(0), fProfV2InvM2730(0), fProfV2InvM3035(0), fProfV2InvM3540(0), fProfV2InvM4045(0), fProfV2InvM4550(0), fProfV2InvM5055(0), fProfV2InvM5560(0), fProfV2InvM6065(0), fProfV2InvM6570(0), fProfV2SinInvM03(0), fProfV2SinInvM36(0), fProfV2SinInvM69(0), fProfV2SinInvM912(0), fProfV2SinInvM1215(0), fProfV2SinInvM1518(0), fProfV2SinInvM1821(0), fProfV2SinInvM2124(0), fProfV2SinInvM2427(0), fProfV2SinInvM2730(0), fProfV2SinInvM3035(0), fProfV2SinInvM3540(0), fProfV2SinInvM4045(0), fProfV2SinInvM4550(0), fProfV2SinInvM5055(0), fProfV2SinInvM5560(0), fProfV2SinInvM6065(0), fProfV2SinInvM6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fEventPlaneSTAR(0), fEventPlaneResolutionRandom(0), fEventPlaneResolutionEta(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fRPCuts(0), fPOICuts(0), fVertexRange(0), fQx(0), fQy(0), fEventPlane(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fPIDtype(kCombined), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fPairLoss(0), fEventPlanePtCut(0), fSetEventPlanePtCut(0)
 {
    // Constructor
    fNullCuts = new AliFlowTrackCuts("null_cuts");
@@ -80,6 +83,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTa
          if (i == 0)  fFlowEvent[j] = new AliFlowEvent(10000);
       }
    }
+   if (fPIDtype == kCombined) fBayesianResponse = new AliFlowBayesianPID();
    DefineInput(0, TChain::Class());
    DefineOutput(1, TList::Class());
    for (Int_t i = (0 + 2); i < (30 + 2); i++)
@@ -96,6 +100,7 @@ AliAnalysisTaskPhiFlow::~AliAnalysisTaskPhiFlow()
       delete fFlowEvent[i];
    }
    delete fNullCuts;
+   if (fPIDtype == kCombined) delete fBayesianResponse;
 }
 //_____________________________________________________________________________
 TH1F* AliAnalysisTaskPhiFlow::BookHistogram(const char* name)
@@ -110,12 +115,37 @@ TH1F* AliAnalysisTaskPhiFlow::BookHistogram(const char* name)
    return hist;
 }
 //_____________________________________________________________________________
+TH1F* AliAnalysisTaskPhiFlow::BookDPhiPsiHistogram(const char* name)
+{
+   // Return a pointer to a TH1 with predefined binning
+   TH1F *hist = new TH1F(Form("#phi - #Psi (%s)", name), Form("#phi - #Psi (%s)", name), 60, -7, 7);
+   hist->GetXaxis()->SetTitle("#phi - #Psi (rad)");
+   hist->GetYaxis()->SetTitle("No. of pairs");
+   hist->SetMarkerStyle(kFullCircle);
+   hist->Sumw2();
+   fOutputList->Add(hist);
+   return hist;
+}
+//_____________________________________________________________________________
 TH2F* AliAnalysisTaskPhiFlow::BookPIDHistogram(const char* name)
 {
    // Return a pointer to a TH2 with predefined binning
    TH2F *hist = new TH2F(name, Form("PID (%s)", name), 100, 0, 5, 100, 0, 1000);
    hist->GetXaxis()->SetTitle("P (GeV / c)");
    hist->GetYaxis()->SetTitle("dE/dx (a.u.)");
+   fOutputList->Add(hist);
+   return hist;
+}
+//_____________________________________________________________________________
+TH1F* AliAnalysisTaskPhiFlow::InitPtSpectraHistograms(Int_t i)
+{
+   // intialize p_t histograms for each p_t bin
+   Double_t nmin(0);
+   Double_t nmax(0);
+   (i < 11) ? nmin = 0.3 * (i-1) : nmin = 0.5 * (i-11) + 3;
+   (i < 11) ? nmax = 0.3 * (i-1) + 0.3 : nmax = 0.5 * (i-11) + 3.5;
+   TH1F* hist = new TH1F(Form("%f p_{t} %f", nmin, nmax), Form("%f p_{t} %f", nmin, nmax), 60, nmin, nmax);
+   hist->GetXaxis()->SetTitle("p_{T} GeV / c");
    fOutputList->Add(hist);
    return hist;
 }
@@ -173,8 +203,8 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
    fOutputList->Add(fCentralityPass);
    fOutputList->Add(fCentralityNoPass);
 
-   fEventPlaneSTAR = new TH1F("fEventPlaneSTAR", "Event plane orientation", 200, 0, 4);
-   fEventPlaneSTAR->GetXaxis()->SetTitle("#Psi_{2} (degrees)");
+   fEventPlaneSTAR = new TH1F("fEventPlaneSTAR", "Event plane orientation", 200, -.2, 4);
+   fEventPlaneSTAR->GetXaxis()->SetTitle("#Psi_{2}");
    fEventPlaneSTAR->GetYaxis()->SetTitle("Events");
    fEventPlaneResolutionRandom = new TProfile("fEventPlaneResolutionRandom", "RP kaon pairs, Random", 1, 0.5, 1.5);
    fEventPlaneResolutionEta = new TProfile("fEventPlaneResolutionEta", "RP kaon pairs, Eta", 1, 0.5, 1.5);
@@ -274,13 +304,52 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
    fProfV2SinInvM6065 = BookV2Profile("6.0 < p_{T} < 6.5 GeV", kFALSE, kFALSE);
    fProfV2SinInvM6570 = BookV2Profile("6.5 < p_{T} < 7.0 GeV", kFALSE, kFALSE);
 
+   fDeltaPhiPsiNP03 = BookDPhiPsiHistogram("NP, 0 < p_{T} < 0.3 GeV");
+   fDeltaPhiPsiNP36 = BookDPhiPsiHistogram("NP, 0.3 < p_{T} < 0.6 GeV");
+   fDeltaPhiPsiNP69 = BookDPhiPsiHistogram("NP, 0.6 < p_{T} < 0.9 GeV");
+   fDeltaPhiPsiNP912 = BookDPhiPsiHistogram("NP, 0.9 < p_{T} < 1.2 GeV");
+   fDeltaPhiPsiNP1215 = BookDPhiPsiHistogram("NP, 1.2 < p_{T} < 1.5 GeV");
+   fDeltaPhiPsiNP1518 = BookDPhiPsiHistogram("NP, 1.5 < p_{T} < 1.8 GeV");
+   fDeltaPhiPsiNP1821 = BookDPhiPsiHistogram("NP, 1.8 < p_{T} < 2.1 GeV");
+   fDeltaPhiPsiNP2124 = BookDPhiPsiHistogram("NP, 2.1 < p_{T} < 2.4 GeV");
+   fDeltaPhiPsiNP2427 = BookDPhiPsiHistogram("NP, 2.4 < p_{T} < 2.7 GeV");
+   fDeltaPhiPsiNP2730 = BookDPhiPsiHistogram("NP, 2.7 < p_{T} < 3.0 GeV");
+   fDeltaPhiPsiNP3035 = BookDPhiPsiHistogram("NP, 3.0 < p_{T} < 3.5 GeV");
+   fDeltaPhiPsiNP3540 = BookDPhiPsiHistogram("NP, 3.5 < p_{T} < 4.0 GeV");
+   fDeltaPhiPsiNP4045 = BookDPhiPsiHistogram("NP, 4.0 < p_{T} < 4.5 GeV");
+   fDeltaPhiPsiNP4550 = BookDPhiPsiHistogram("NP, 4.5 < p_{T} < 5.0 GeV");
+   fDeltaPhiPsiNP5055 = BookDPhiPsiHistogram("NP, 5.0 < p_{T} < 5.5 GeV");
+   fDeltaPhiPsiNP5560 = BookDPhiPsiHistogram("NP, 5.5 < p_{T} < 6.0 GeV");
+   fDeltaPhiPsiNP6065 = BookDPhiPsiHistogram("NP, 6.0 < p_{T} < 6.5 GeV");
+   fDeltaPhiPsiNP6570 = BookDPhiPsiHistogram("NP, 6.5 < p_{T} < 7.0 GeV");
+
+
+   fPtSpectra03 = InitPtSpectraHistograms(1);
+   fPtSpectra36 = InitPtSpectraHistograms(2);
+   fPtSpectra69 = InitPtSpectraHistograms(3);
+   fPtSpectra912 = InitPtSpectraHistograms(4);
+   fPtSpectra1215 = InitPtSpectraHistograms(5);
+   fPtSpectra1518 = InitPtSpectraHistograms(6);
+   fPtSpectra1821 = InitPtSpectraHistograms(7);
+   fPtSpectra2124 = InitPtSpectraHistograms(8);
+   fPtSpectra2427 = InitPtSpectraHistograms(9);
+   fPtSpectra2730 = InitPtSpectraHistograms(10);
+   fPtSpectra3035 = InitPtSpectraHistograms(11);
+   fPtSpectra3540 = InitPtSpectraHistograms(12);
+   fPtSpectra4045 = InitPtSpectraHistograms(13);
+   fPtSpectra4550 = InitPtSpectraHistograms(14);
+   fPtSpectra5055 = InitPtSpectraHistograms(15);
+   fPtSpectra5560 = InitPtSpectraHistograms(16);
+   fPtSpectra6065 = InitPtSpectraHistograms(17);
+   fPtSpectra6570 = InitPtSpectraHistograms(18);
+
    fOutputList->Add(fEventPlaneSTAR);
    fPtP = BookPtHistogram("i^{+}");
    fPtN = BookPtHistogram("i^{-}");
    fPtKP = BookPtHistogram("K^{+}");
    fPtKN = BookPtHistogram("K^{-}");
 
-   fEventPlane = new TH1F("fEventPlane", "Event plane", 100, -2., 2.);
+   fEventPlane = new TH1F("fEventPlane", "Event plane", 200, -0.2, 4.);
    fEventPlane->GetXaxis()->SetTitle("#Psi_{2}");
    fEventPlane->GetYaxis()->SetTitle("Events");
    fOutputList->Add(fEventPlane);
@@ -310,6 +379,7 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
    fOutputList->Add(fEventPlaneResolutionRandom);
    fOutputList->Add(fEventPlaneResolutionEta);
    fOutputList->Add(fPairLoss);
+   fPIDDeltaDip = BookPIDHistogram("TPC signal after delta dip cut");
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::UserCreateOutputObjects()
@@ -337,6 +407,9 @@ void AliAnalysisTaskPhiFlow::UserCreateOutputObjects()
    cc->SetQMin(0.0);
    cc->SetQMax(3.0);
 
+   // setup initial state of PID response object
+   if (!fOldTrackParam) fBayesianResponse->SetNewTrackParam();
+
    // Create all output objects and store them to a list
    fOutputList = new TList();
    fOutputList->SetOwner();
@@ -346,25 +419,16 @@ void AliAnalysisTaskPhiFlow::UserCreateOutputObjects()
    PostData(1, fOutputList);
 
    // post flow events (see ctor)
-   for (Int_t i = 0; i < 30; i++)
-   {
-      PostData(2 + i, fFlowEvent[i]); // TODO put flow events in a TList
-   }
+   for (Int_t i = 0; i < 30; i++) PostData(2 + i, fFlowEvent[i]);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::PairLoss(const AliESDtrack* track1, const AliESDtrack* track2) const
+template <typename T> void AliAnalysisTaskPhiFlow::PairLoss(const T* track1, const T* track2) const
 {
-   if (track1->Pt() > track2->Pt())
-   {
-      fPairLoss->Fill((track1->Eta() - track2->Eta()), (track1->Phi() - track2->Phi() + TMath::ASin(0.075 * (1.2 / track2->Pt())) - TMath::ASin(0.075 * (1.2 / track1->Pt()))));
-   }
-   if (track2->Pt() > track1->Pt())
-   {
-      fPairLoss->Fill((track2->Eta() - track1->Eta()), (track2->Phi() - track1->Phi() + TMath::ASin(0.075 * (1.2 / track1->Pt())) - TMath::ASin(0.075 * (1.2 / track2->Pt()))));
-   }
+   if (track1->Pt() > track2->Pt()) fPairLoss->Fill((track1->Eta() - track2->Eta()), (track1->Phi() - track2->Phi() + TMath::ASin(0.075 * (1.2 / track2->Pt())) - TMath::ASin(0.075 * (1.2 / track1->Pt()))));
+   if (track2->Pt() > track1->Pt()) fPairLoss->Fill((track2->Eta() - track1->Eta()), (track2->Phi() - track1->Phi() + TMath::ASin(0.075 * (1.2 / track1->Pt())) - TMath::ASin(0.075 * (1.2 / track2->Pt()))));
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskPhiFlow::InvariantMass(const AliESDtrack* track1, const AliESDtrack* track2) const
+template <typename T> Double_t AliAnalysisTaskPhiFlow::InvariantMass(const T* track1, const T* track2) const
 {
    // Return the invariant mass of two tracks, assuming both tracks are kaons
    if ((!track2) || (!track1)) return 0.;
@@ -376,14 +440,11 @@ Double_t AliAnalysisTaskPhiFlow::InvariantMass(const AliESDtrack* track1, const 
    Double_t e1 = TMath::Sqrt(track1->P() * track1->P() + masss);
    Double_t e2 = TMath::Sqrt(track2->P() * track2->P() + masss);
    Double_t es = TMath::Power((e1 + e2), 2);
-   if ((es - (pxs + pys + pzs)) < 0)
-   {
-      return 0.;
-   }
+   if ((es - (pxs + pys + pzs)) < 0) return 0.;
    return TMath::Sqrt((es - (pxs + pys + pzs)));
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskPhiFlow::DeltaDipAngle(const AliESDtrack* track1, const AliESDtrack* track2) const
+template <typename T> Double_t AliAnalysisTaskPhiFlow::DeltaDipAngle(const T* track1, const T* track2) const
 {
    // Calculate the delta dip angle between two particles (the opening angle of a pair
    // in the p_t p_z plane)
@@ -393,11 +454,24 @@ Double_t AliAnalysisTaskPhiFlow::DeltaDipAngle(const AliESDtrack* track1, const 
    return TMath::ACos(((track1->Pt() * track2->Pt()) + (track1->Pz() * track2->Pz())) / (track1->P() * track2->P()));
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::CheckDeltaDipAngle(const AliESDtrack* track1, const AliESDtrack* track2) const
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckDeltaDipAngle(const T* track1, const T* track2) const
 {
    // Check if pair passes delta dip angle cut within 0 < p_t < fDeltaDipPt
    if ((TMath::Abs(DeltaDipAngle(track1, track2)) < fDeltaDipAngle) && (PhiPt(track1, track2) < fDeltaDipPt)) return kFALSE;
+   fPIDDeltaDip->Fill(track1->P(), track1->GetTPCsignal());
+   fPIDDeltaDip->Fill(track2->P(), track2->GetTPCsignal());
    return kTRUE;
+}
+//_____________________________________________________________________________
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCandidateEtaPtCut(const T* track1, const T* track2) const
+{
+    // Check if pair passes eta and pt cut
+    if (fCandidateMinPt > PhiPt(track1, track2) || fCandidateMaxPt < PhiPt(track1, track2) ) return kFALSE;
+    TVector3 a(track1->Px(), track1->Py(), track1->Pz());
+    TVector3 b(track2->Px(), track2->Py(), track2->Pz());
+    TVector3 c = a + b;
+    if (fCandidateMinEta > c.Eta() || fCandidateMaxEta < c.Eta()) return kFALSE;
+    return kTRUE;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod)
@@ -408,62 +482,106 @@ void AliAnalysisTaskPhiFlow::SetCentralityParameters(Double_t CentralityMin, Dou
    fkCentralityMethod = CentralityMethod;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::EventCut(AliESDEvent* esd) const
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::EventCut(T* event)
 {
    // Impose event cuts
-   if (!esd) return kFALSE;
-   if (!CheckVertex(esd)) return kFALSE;
-   if (!CheckCentrality(esd)) return kFALSE;
-   PlotVZeroMultiplcities(esd);
+   if (!event) return kFALSE;
+   // miminum bias trigger for AOD's
+   if ((fAODAnalysis) && (!(dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected() & AliVEvent::kMB))) return kFALSE;
+   if (!CheckVertex(event)) return kFALSE;
+   if (!CheckCentrality(event)) return kFALSE;
+   PlotVZeroMultiplcities(event);
    return kTRUE;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::PlotVZeroMultiplcities(const AliESDEvent* esd) const
+template <typename T> void AliAnalysisTaskPhiFlow::PlotVZeroMultiplcities(const T* event) const
 {
    // QA multiplicity plots
-   AliESDVZERO* vzero = esd->GetVZEROData();
-   fVZEROA->Fill(vzero->GetMTotV0A());
-   fVZEROC->Fill(vzero->GetMTotV0C());
+   fVZEROA->Fill(event->GetVZEROData()->GetMTotV0A());
+   fVZEROC->Fill(event->GetVZEROData()->GetMTotV0C());
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::CheckVertex(const AliESDEvent* ESD) const
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckVertex(const T* event) const
 {
    // Check if event vertex is within given range
-   const AliESDVertex * vertex = ESD->GetPrimaryVertex();
-   if (!vertex) return 0x0;
-   if (TMath::Abs(vertex->GetZ()) > fVertexRange) return 0x0;
+   if (!event->GetPrimaryVertex()) return 0x0;
+   if (TMath::Abs((event->GetPrimaryVertex())->GetZ()) > fVertexRange) return 0x0;
    return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(AliESDEvent* esd) const
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
 {
    // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
-   if (!fkCentralityMethod)
+   if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
+   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
+   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
    {
-      AliFatal("No centrality method set! FATAL ERROR!");
+      fCentralityNoPass->Fill(fCentrality) ;
+      return kFALSE;
    }
-   AliCentrality* centr = esd->GetCentrality();
-   Double_t centrality = centr->GetCentralityPercentile(fkCentralityMethod);
-   Bool_t pass = kTRUE;
-   if ((centrality <= fCentralityMin) || (centrality > fCentralityMax))
-   {
-      pass = kFALSE;
-      fCentralityNoPass->Fill(centrality) ;
-   }
-   if (pass)
-   {
-      fCentralityPass->Fill(centrality);
-   }
-   return pass;
+   fCentralityPass->Fill(fCentrality);
+   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::IsKaon(const AliESDtrack* track) const
+void AliAnalysisTaskPhiFlow::InitializeBayesianPID(AliESDEvent* event)
+{
+   // Initialize the Bayesian PID object for ESD analysis
+   fBayesianResponse->SetDetResponse(event, fCentrality, AliESDpid::kTOF_T0, kTRUE);
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskPhiFlow::InitializeBayesianPID(AliAODEvent* event)
+{
+   // Initialize the Bayesian PID object for AOD
+   fBayesianResponse->SetDetResponse(event, fCentrality);
+}
+//_____________________________________________________________________________
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::PassesTPCbayesianCut(T* track) const
+{
+   // Check if the particle passes the TPC TOF bayesian cut.
+   if ((!fStrictKaonCuts) && (!PassesStrictKaonCuts(track))) return kFALSE;
+   fBayesianResponse->ComputeProb(track);
+   if (!fBayesianResponse->GetCurrentMask(0)) return kFALSE; // return false if TPC has no response
+   Float_t *probabilities = fBayesianResponse->GetProb();
+   if (probabilities[3] > fParticleProbability)
+   {
+      fPhi->Fill(track->Phi());
+      fPt->Fill(track->Pt());
+      fEta->Fill(track->Eta());
+      return kTRUE;
+   }
+   return kFALSE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPhiFlow::PassesStrictKaonCuts(AliESDtrack* track) const
+{
+   // see if track passes additional kaon selection cuts
+   // with many thanks to francesco noferini
+   Double_t b[2] = { -99., -99.};
+   Double_t bCov[3] = { -99., -99., -99.};
+   if (!track->PropagateToDCA(fESD->GetPrimaryVertex(), fESD->GetMagneticField(), 100., b, bCov)) return kFALSE;
+   if ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4)) return kFALSE;
+   return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPhiFlow::PassesStrictKaonCuts(AliAODTrack* track) const
+{
+   // see if track passes additional kaon selection cuts
+   // with many thanks to francesco noferini
+   Double_t b[2] = { -99., -99.};
+   Double_t bCov[3] = { -99., -99., -99.};
+   if (!track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) return kFALSE;
+   if ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4)) return kFALSE;
+   return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliESDtrack* track) const
 {
    // Check if particle is a kaon according to method set in steering macro
+   if (fRequireTPCStandAlone && (track->GetStatus()&AliESDtrack::kTPCin) == 0) return kFALSE;
    switch (fPIDtype)
    {
       case kTPC:
-         // Check if particle is flagged as Kaon in the ESD (TPC pid)
+         // general tpc pid
          fNOPID->Fill(track->P(), track->GetTPCsignal());
          if (track->GetPID() == AliPID::kKaon)
          {
@@ -474,7 +592,7 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(const AliESDtrack* track) const
       case kCombined:
          // Use null_cuts dummy to check if track passes bayesian TPC TOF pid cut
          fNOPID->Fill(track->P(), track->GetTPCsignal());
-         if (fKaonCuts->PassesESDpidCut(track))
+         if (PassesTPCbayesianCut(track))
          {
             fPIDk->Fill(track->P(), track->GetTPCsignal());
             return kTRUE;
@@ -488,7 +606,39 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(const AliESDtrack* track) const
    return kFALSE;
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskPhiFlow::PhiPt(const AliESDtrack* track1, const AliESDtrack* track2) const
+Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
+{
+   // Check if particle is a kaon according to method set in steering macro
+
+   if (fRequireTPCStandAlone && (!track->TestFilterBit(1))) return kFALSE;
+   switch (fPIDtype)
+   {
+      case kTPC:
+         // general tpc pid
+         fNOPID->Fill(track->P(), track->GetTPCsignal());
+         if (((Int_t)track->GetMostProbablePID()) == ((Int_t)AliPID::kKaon))
+         {
+            fPIDk->Fill(track->P(), track->GetTPCsignal());
+            return kTRUE;
+         }
+         break;
+      case kCombined:
+         fNOPID->Fill(track->P(), track->GetTPCsignal());
+         if (PassesTPCbayesianCut(track))
+         {
+            fPIDk->Fill(track->P(), track->GetTPCsignal());
+            return kTRUE;
+         }
+         break;
+      default:
+         AliFatal("No PID procedure set or available. Analysis will terminate!");
+         return kFALSE;
+         break;
+   }
+   return kFALSE;
+}
+//_____________________________________________________________________________
+template <typename T> Double_t AliAnalysisTaskPhiFlow::PhiPt(const T* track1, const T* track2) const
 {
    // Calculate transverse momentum (p_T) of two tracks
    TVector3 a(track1->Px(), track1->Py(), track1->Pz());
@@ -497,238 +647,76 @@ Double_t AliAnalysisTaskPhiFlow::PhiPt(const AliESDtrack* track1, const AliESDtr
    return c.Pt();
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::PtSelector(Int_t tracktype, const AliESDtrack* track1, const AliESDtrack* track2) const
+template <typename T> void AliAnalysisTaskPhiFlow::PtSelector(Int_t tracktype, const T* track1, const T* track2) const
 {
    // Request transverse momentum (p_T), then fill invariant mass histograms as a function of p_T
    Double_t pt = PhiPt(track1, track2);
    if (tracktype == 0)
    {
-      if ((0 <= pt) && (0.3 > pt))
-      {
-         fInvMNP03->Fill(InvariantMass(track1, track2));
-      }
-      if ((0.3 <= pt) && (0.6 > pt))
-      {
-         fInvMNP36->Fill(InvariantMass(track1, track2));
-      }
-      if ((0.6 <= pt) && (0.9 > pt))
-      {
-         fInvMNP69->Fill(InvariantMass(track1, track2));
-      }
-      if ((0.9 <= pt) && (1.2 > pt))
-      {
-         fInvMNP912->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.2 <= pt) && (1.5 > pt))
-      {
-         fInvMNP1215->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.5 <= pt) && (1.8 > pt))
-      {
-         fInvMNP1518->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.8 <= pt) && (2.1 > pt))
-      {
-         fInvMNP1821->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.1 <= pt) && (2.4 > pt))
-      {
-         fInvMNP2124->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.4 <= pt) && (2.7 > pt))
-      {
-         fInvMNP2427->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.7 <= pt) && (3.0 > pt))
-      {
-         fInvMNP2730->Fill(InvariantMass(track1, track2));
-      }
-      if ((3.0 <= pt) && (3.5 > pt))
-      {
-         fInvMNP3035->Fill(InvariantMass(track1, track2));
-      }
-      if ((3.5 <= pt) && (4.0 > pt))
-      {
-         fInvMNP3540->Fill(InvariantMass(track1, track2));
-      }
-      if ((4.0 <= pt) && (4.5 > pt))
-      {
-         fInvMNP4045->Fill(InvariantMass(track1, track2));
-      }
-      if ((4.5 <= pt) && (5.0 > pt))
-      {
-         fInvMNP4550->Fill(InvariantMass(track1, track2));
-      }
-      if ((5.0 <= pt) && (5.5 > pt))
-      {
-         fInvMNP5055->Fill(InvariantMass(track1, track2));
-      }
-      if ((5.5 <= pt) && (6.0 > pt))
-      {
-         fInvMNP5560->Fill(InvariantMass(track1, track2));
-      }
-      if ((6.0 <= pt) && (6.5 > pt))
-      {
-         fInvMNP6065->Fill(InvariantMass(track1, track2));
-      }
-      if ((6.5 <= pt) && (7.0 > pt))
-      {
-         fInvMNP6570->Fill(InvariantMass(track1, track2));
-      }
+      if ((0.0 <= pt) && (0.3 > pt)) { fInvMNP03->Fill(InvariantMass(track1, track2)); fPtSpectra03->Fill(pt);}
+      if ((0.3 <= pt) && (0.6 > pt)) { fInvMNP36->Fill(InvariantMass(track1, track2)); fPtSpectra36->Fill(pt); }
+      if ((0.6 <= pt) && (0.9 > pt)) { fInvMNP69->Fill(InvariantMass(track1, track2)); fPtSpectra69->Fill(pt); }
+      if ((0.9 <= pt) && (1.2 > pt)) { fInvMNP912->Fill(InvariantMass(track1, track2)); fPtSpectra912->Fill(pt); }
+      if ((1.2 <= pt) && (1.5 > pt)) { fInvMNP1215->Fill(InvariantMass(track1, track2)); fPtSpectra1215->Fill(pt); }
+      if ((1.5 <= pt) && (1.8 > pt)) { fInvMNP1518->Fill(InvariantMass(track1, track2)); fPtSpectra1518->Fill(pt); }
+      if ((1.8 <= pt) && (2.1 > pt)) { fInvMNP1821->Fill(InvariantMass(track1, track2)); fPtSpectra1821->Fill(pt); }
+      if ((2.1 <= pt) && (2.4 > pt)) { fInvMNP2124->Fill(InvariantMass(track1, track2)); fPtSpectra2124->Fill(pt); }
+      if ((2.4 <= pt) && (2.7 > pt)) { fInvMNP2427->Fill(InvariantMass(track1, track2)); fPtSpectra2427->Fill(pt); }
+      if ((2.7 <= pt) && (3.0 > pt)) { fInvMNP2730->Fill(InvariantMass(track1, track2)); fPtSpectra2730->Fill(pt); }
+      if ((3.0 <= pt) && (3.5 > pt)) { fInvMNP3035->Fill(InvariantMass(track1, track2)); fPtSpectra3035->Fill(pt); }
+      if ((3.5 <= pt) && (4.0 > pt)) { fInvMNP3540->Fill(InvariantMass(track1, track2)); fPtSpectra3540->Fill(pt); }
+      if ((4.0 <= pt) && (4.5 > pt)) { fInvMNP4045->Fill(InvariantMass(track1, track2)); fPtSpectra4045->Fill(pt); }
+      if ((4.5 <= pt) && (5.0 > pt)) { fInvMNP4550->Fill(InvariantMass(track1, track2)); fPtSpectra4550->Fill(pt); }
+      if ((5.0 <= pt) && (5.5 > pt)) { fInvMNP5055->Fill(InvariantMass(track1, track2)); fPtSpectra5055->Fill(pt); }
+      if ((5.5 <= pt) && (6.0 > pt)) { fInvMNP5560->Fill(InvariantMass(track1, track2)); fPtSpectra5560->Fill(pt); }
+      if ((6.0 <= pt) && (6.5 > pt)) { fInvMNP6065->Fill(InvariantMass(track1, track2)); fPtSpectra6065->Fill(pt); }
+      if ((6.5 <= pt) && (7.0 > pt)) { fInvMNP6570->Fill(InvariantMass(track1, track2)); fPtSpectra6570->Fill(pt); }
    }
    if (tracktype == 1)
    {
-      if ((0 <= pt) && (0.3 > pt))
-      {
-         fInvMPP03->Fill(InvariantMass(track1, track2));
-      }
-      if ((0.3 <= pt) && (0.6 > pt))
-      {
-         fInvMPP36->Fill(InvariantMass(track1, track2));
-      }
-      if ((.6 <= pt) && (0.9 > pt))
-      {
-         fInvMPP69->Fill(InvariantMass(track1, track2));
-      }
-      if ((0.9 <= pt) && (1.2 > pt))
-      {
-         fInvMPP912->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.2 <= pt) && (1.5 > pt))
-      {
-         fInvMPP1215->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.5 <= pt) && (1.8 > pt))
-      {
-         fInvMPP1518->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.8 <= pt) && (2.1 > pt))
-      {
-         fInvMPP1821->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.1 <= pt) && (2.4 > pt))
-      {
-         fInvMPP2124->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.4 <= pt) && (2.7 > pt))
-      {
-         fInvMPP2427->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.7 <= pt) && (3.0 > pt))
-      {
-         fInvMPP2730->Fill(InvariantMass(track1, track2));
-      }
-      if ((3.0 <= pt) && (3.5 > pt))
-      {
-         fInvMPP3035->Fill(InvariantMass(track1, track2));
-      }
-      if ((3.5 <= pt) && (4.0 > pt))
-      {
-         fInvMPP3540->Fill(InvariantMass(track1, track2));
-      }
-      if ((4.0 <= pt) && (4.5 > pt))
-      {
-         fInvMPP4045->Fill(InvariantMass(track1, track2));
-      }
-      if ((4.5 <= pt) && (5.0 > pt))
-      {
-         fInvMPP4550->Fill(InvariantMass(track1, track2));
-      }
-      if ((5.0 <= pt) && (5.5 > pt))
-      {
-         fInvMPP5055->Fill(InvariantMass(track1, track2));
-      }
-      if ((5.5 <= pt) && (6.0 > pt))
-      {
-         fInvMPP5560->Fill(InvariantMass(track1, track2));
-      }
-      if ((6.0 <= pt) && (6.5 > pt))
-      {
-         fInvMPP6065->Fill(InvariantMass(track1, track2));
-      }
-      if ((6.5 <= pt) && (7.0 > pt))
-      {
-         fInvMPP6570->Fill(InvariantMass(track1, track2));
-      }
+      if ((0.0 <= pt) && (0.3 > pt)) fInvMPP03->Fill(InvariantMass(track1, track2));
+      if ((0.3 <= pt) && (0.6 > pt)) fInvMPP36->Fill(InvariantMass(track1, track2));
+      if ((0.6 <= pt) && (0.9 > pt)) fInvMPP69->Fill(InvariantMass(track1, track2));
+      if ((0.9 <= pt) && (1.2 > pt)) fInvMPP912->Fill(InvariantMass(track1, track2));
+      if ((1.2 <= pt) && (1.5 > pt)) fInvMPP1215->Fill(InvariantMass(track1, track2));
+      if ((1.5 <= pt) && (1.8 > pt)) fInvMPP1518->Fill(InvariantMass(track1, track2));
+      if ((1.8 <= pt) && (2.1 > pt)) fInvMPP1821->Fill(InvariantMass(track1, track2));
+      if ((2.1 <= pt) && (2.4 > pt)) fInvMPP2124->Fill(InvariantMass(track1, track2));
+      if ((2.4 <= pt) && (2.7 > pt)) fInvMPP2427->Fill(InvariantMass(track1, track2));
+      if ((2.7 <= pt) && (3.0 > pt)) fInvMPP2730->Fill(InvariantMass(track1, track2));
+      if ((3.0 <= pt) && (3.5 > pt)) fInvMPP3035->Fill(InvariantMass(track1, track2));
+      if ((3.5 <= pt) && (4.0 > pt)) fInvMPP3540->Fill(InvariantMass(track1, track2));
+      if ((4.0 <= pt) && (4.5 > pt)) fInvMPP4045->Fill(InvariantMass(track1, track2));
+      if ((4.5 <= pt) && (5.0 > pt)) fInvMPP4550->Fill(InvariantMass(track1, track2));
+      if ((5.0 <= pt) && (5.5 > pt)) fInvMPP5055->Fill(InvariantMass(track1, track2));
+      if ((5.5 <= pt) && (6.0 > pt)) fInvMPP5560->Fill(InvariantMass(track1, track2));
+      if ((6.0 <= pt) && (6.5 > pt)) fInvMPP6065->Fill(InvariantMass(track1, track2));
+      if ((6.5 <= pt) && (7.0 > pt)) fInvMPP6570->Fill(InvariantMass(track1, track2));
    }
    if (tracktype == 2)
    {
-      if ((0 <= pt) && (0.3 > pt))
-      {
-         fInvMNN03->Fill(InvariantMass(track1, track2));
-      }
-      if ((0.3 <= pt) && (0.6 > pt))
-      {
-         fInvMNN36->Fill(InvariantMass(track1, track2));
-      }
-      if ((.6 <= pt) && (0.9 > pt))
-      {
-         fInvMNN69->Fill(InvariantMass(track1, track2));
-      }
-      if ((0.9 <= pt) && (1.2 > pt))
-      {
-         fInvMNN912->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.2 <= pt) && (1.5 > pt))
-      {
-         fInvMNN1215->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.5 <= pt) && (1.8 > pt))
-      {
-         fInvMNN1518->Fill(InvariantMass(track1, track2));
-      }
-      if ((1.8 <= pt) && (2.1 > pt))
-      {
-         fInvMNN1821->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.1 <= pt) && (2.4 > pt))
-      {
-         fInvMNN2124->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.4 <= pt) && (2.7 > pt))
-      {
-         fInvMNN2427->Fill(InvariantMass(track1, track2));
-      }
-      if ((2.7 <= pt) && (3.0 > pt))
-      {
-         fInvMNN2730->Fill(InvariantMass(track1, track2));
-      }
-      if ((3.0 <= pt) && (3.5 > pt))
-      {
-         fInvMNN3035->Fill(InvariantMass(track1, track2));
-      }
-      if ((3.5 <= pt) && (4.0 > pt))
-      {
-         fInvMNN3540->Fill(InvariantMass(track1, track2));
-      }
-      if ((4.0 <= pt) && (4.5 > pt))
-      {
-         fInvMNN4045->Fill(InvariantMass(track1, track2));
-      }
-      if ((4.5 <= pt) && (5.0 > pt))
-      {
-         fInvMNN4550->Fill(InvariantMass(track1, track2));
-      }
-      if ((5.0 <= pt) && (5.5 > pt))
-      {
-         fInvMNN5055->Fill(InvariantMass(track1, track2));
-      }
-      if ((5.5 <= pt) && (6.0 > pt))
-      {
-         fInvMNN5560->Fill(InvariantMass(track1, track2));
-      }
-      if ((6.0 <= pt) && (6.5 > pt))
-      {
-         fInvMNN6065->Fill(InvariantMass(track1, track2));
-      }
-      if ((6.5 <= pt) && (7.0 > pt))
-      {
-         fInvMNN6570->Fill(InvariantMass(track1, track2));
-      }
+      if ((0.0 <= pt) && (0.3 > pt)) fInvMNN03->Fill(InvariantMass(track1, track2));
+      if ((0.3 <= pt) && (0.6 > pt)) fInvMNN36->Fill(InvariantMass(track1, track2));
+      if ((0.6 <= pt) && (0.9 > pt)) fInvMNN69->Fill(InvariantMass(track1, track2));
+      if ((0.9 <= pt) && (1.2 > pt)) fInvMNN912->Fill(InvariantMass(track1, track2));
+      if ((1.2 <= pt) && (1.5 > pt)) fInvMNN1215->Fill(InvariantMass(track1, track2));
+      if ((1.5 <= pt) && (1.8 > pt)) fInvMNN1518->Fill(InvariantMass(track1, track2));
+      if ((1.8 <= pt) && (2.1 > pt)) fInvMNN1821->Fill(InvariantMass(track1, track2));
+      if ((2.1 <= pt) && (2.4 > pt)) fInvMNN2124->Fill(InvariantMass(track1, track2));
+      if ((2.4 <= pt) && (2.7 > pt)) fInvMNN2427->Fill(InvariantMass(track1, track2));
+      if ((2.7 <= pt) && (3.0 > pt)) fInvMNN2730->Fill(InvariantMass(track1, track2));
+      if ((3.0 <= pt) && (3.5 > pt)) fInvMNN3035->Fill(InvariantMass(track1, track2));
+      if ((3.5 <= pt) && (4.0 > pt)) fInvMNN3540->Fill(InvariantMass(track1, track2));
+      if ((4.0 <= pt) && (4.5 > pt)) fInvMNN4045->Fill(InvariantMass(track1, track2));
+      if ((4.5 <= pt) && (5.0 > pt)) fInvMNN4550->Fill(InvariantMass(track1, track2));
+      if ((5.0 <= pt) && (5.5 > pt)) fInvMNN5055->Fill(InvariantMass(track1, track2));
+      if ((5.5 <= pt) && (6.0 > pt)) fInvMNN5560->Fill(InvariantMass(track1, track2));
+      if ((6.0 <= pt) && (6.5 > pt)) fInvMNN6065->Fill(InvariantMass(track1, track2));
+      if ((6.5 <= pt) && (7.0 > pt)) fInvMNN6570->Fill(InvariantMass(track1, track2));
    }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::EventPlane(const AliESDEvent* esd)
+void AliAnalysisTaskPhiFlow::EventPlane(const AliESDEvent* event)
 {
    // Calculate Q-vectors and event plane resolution (two different methods)
    fQy = 0;
@@ -741,11 +729,11 @@ void AliAnalysisTaskPhiFlow::EventPlane(const AliESDEvent* esd)
    Double_t eeventcos(0);
    Double_t feventsin(0);
    Double_t feventcos(0);
-   Int_t nTracks = esd->GetNumberOfTracks();
+   Int_t nTracks = event->GetNumberOfTracks();
    Int_t tpcMultiplicity(0);
    for (Int_t i = 0; i < nTracks; i++)
    {
-      AliESDtrack* track = fESD->GetTrack(i);
+      AliESDtrack* track = event->GetTrack(i);
       if (!EventPlaneTrack(track)) continue;
       if (fSetEventPlanePtCut && (track->Pt() > fEventPlanePtCut)) continue;
       tpcMultiplicity++;
@@ -776,20 +764,71 @@ void AliAnalysisTaskPhiFlow::EventPlane(const AliESDEvent* esd)
    fTPCM->Fill(tpcMultiplicity);
    EventPlaneResolution(kTRUE, ceventcos, ceventsin, deventcos, deventsin, fQx, fQy, eeventcos, eeventsin, feventcos, feventsin);
    EventPlaneResolution(kFALSE, ceventcos, ceventsin, deventcos, deventsin, fQx, fQy, eeventcos, eeventsin, feventcos, feventsin);
-   fEventPlane->Fill((TMath::ATan2(fQy, fQx) / 2));
+   fEventPlane->Fill((TMath::ATan2(fQy, fQx) / 2) + TMath::Pi() / 2.);
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskPhiFlow::EventPlane(const AliAODEvent* event)
+{
+   // Overloaded function - see comment at EventPlane(const AliESDEvent* event);
+   fQy = 0;
+   fQx = 0;
+   Double_t ceventsin(0);
+   Double_t ceventcos(0);
+   Double_t deventsin(0);
+   Double_t deventcos(0);
+   Double_t eeventsin(0);
+   Double_t eeventcos(0);
+   Double_t feventsin(0);
+   Double_t feventcos(0);
+   Int_t nTracks = event->GetNumberOfTracks();
+   Int_t tpcMultiplicity(0);
+   for (Int_t i = 0; i < nTracks; i++)
+   {
+      AliAODTrack* track = event->GetTrack(i);
+      if (!EventPlaneTrack(track)) continue;
+      if (fSetEventPlanePtCut && (track->Pt() > fEventPlanePtCut)) continue;
+      tpcMultiplicity++;
+      Double_t r = gRandom->Uniform(0, 1);
+      if (r < 0.5)
+      {
+         ceventsin += TMath::Sin(2 * track->Phi());
+         ceventcos += TMath::Cos(2 * track->Phi());
+      }
+      if (r > 0.5)
+      {
+         deventsin += TMath::Sin(2 * track->Phi());
+         deventcos += TMath::Cos(2 * track->Phi());
+      }
+      if (track->Eta() > 0)
+      {
+         eeventsin += TMath::Sin(2 * track->Phi());
+         eeventcos += TMath::Cos(2 * track->Phi());
+      }
+      if (track->Eta() < 0)
+      {
+         feventsin += TMath::Sin(2 * track->Phi());
+         feventcos += TMath::Cos(2 * track->Phi());
+      }
+      fQy += TMath::Sin(2 * track->Phi());
+      fQx += TMath::Cos(2 * track->Phi());
+   }
+   fTPCM->Fill(tpcMultiplicity);
+   EventPlaneResolution(kTRUE, ceventcos, ceventsin, deventcos, deventsin, fQx, fQy, eeventcos, eeventsin, feventcos, feventsin);
+   EventPlaneResolution(kFALSE, ceventcos, ceventsin, deventcos, deventsin, fQx, fQy, eeventcos, eeventsin, feventcos, feventsin);
+   fEventPlane->Fill((TMath::ATan2(fQy, fQx) / 2 + TMath::Pi() / 2.));
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::EventPlaneResolution(Bool_t random,
-                                            Double_t cossumQ1,
-                                            Double_t sinsumQ1,
-                                            Double_t cossumQ2,
-                                            Double_t sinsumQ2,
-                                            Double_t cossum,
-                                            Double_t sinsum,
-                                            Double_t cossumQwest,
-                                            Double_t sinsumQwest,
-                                            Double_t cossumQeast,
-                                            Double_t sinsumQeast) const
+                                                     Double_t cossumQ1,
+                                                     Double_t sinsumQ1,
+                                                     Double_t cossumQ2,
+                                                     Double_t sinsumQ2,
+                                                     Double_t cossum,
+                                                     Double_t sinsum,
+                                                     Double_t cossumQwest,
+                                                     Double_t sinsumQwest,
+                                                     Double_t cossumQeast,
+                                                     Double_t sinsumQeast) const
 {
    // Calculate the event plane resolution (called twice, for different methods)
    if (random)
@@ -811,16 +850,16 @@ void AliAnalysisTaskPhiFlow::EventPlaneResolution(Bool_t random,
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskPhiFlow::EventPlaneStar(Bool_t random,
-                                          Double_t cossumQ1,
-                                          Double_t sinsumQ1,
-                                          Double_t cossumQ2,
-                                          Double_t sinsumQ2,
-                                          Double_t cossum,
-                                          Double_t sinsum,
-                                          Double_t cossumQwest,
-                                          Double_t sinsumQwest,
-                                          Double_t cossumQeast,
-                                          Double_t sinsumQeast) const
+                                                   Double_t cossumQ1,
+                                                   Double_t sinsumQ1,
+                                                   Double_t cossumQ2,
+                                                   Double_t sinsumQ2,
+                                                   Double_t cossum,
+                                                   Double_t sinsum,
+                                                   Double_t cossumQwest,
+                                                   Double_t sinsumQwest,
+                                                   Double_t cossumQeast,
+                                                   Double_t sinsumQeast) const
 {
    // Calculate subevent resolution
    // This method also calculates the event plane
@@ -848,7 +887,7 @@ Double_t AliAnalysisTaskPhiFlow::EventPlaneStar(Bool_t random,
    if ((qt->Mod()) != 0.0)
    {
       Double_t  eventPlane = 0.5 * qt->Phi();
-      fEventPlaneSTAR->Fill(eventPlane);
+      if (random) fEventPlaneSTAR->Fill(eventPlane);
    }
    if (random)
    {
@@ -894,13 +933,16 @@ Double_t AliAnalysisTaskPhiFlow::ResolutionAsFunctionOfChi(Double_t chi) const
    return res;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::EllipticFlow(Double_t* const v2, const AliESDtrack* track1, const AliESDtrack* track2) const
+template <typename T> void AliAnalysisTaskPhiFlow::EllipticFlow(Double_t* const v2, const T* track1, const T* track2) const
 {
-   // Calculate elliptic flow coefficient v_2 - cos terms
-   // store v_2 in array for further analysis
+   // 1) Calculate elliptic flow coefficient v_2 - cos terms
+   // 2) Store v_2 in array for further analysis
+   // 3) Fill phi - Psi histograms per p_t bin
    Double_t y = fQy - (TMath::Sin(2 * track1->Phi()) + TMath::Sin(2 * track2->Phi()));
    Double_t x = fQx - (TMath::Cos(2 * track1->Phi()) + TMath::Cos(2 * track2->Phi()));
    Double_t psi2 = (TMath::ATan2(y, x)) / 2.;
+   Double_t psi2_sub(0);
+   psi2 > 0 ? psi2_sub = psi2: psi2_sub = psi2 + TMath::Pi();
    Double_t pt = PhiPt(track1, track2);
    // to calculate the angle between the particles, firstly, construct the p_t vector of the phi
    TVector3 a(track1->Px(), track1->Py(), track1->Pz());
@@ -914,113 +956,130 @@ void AliAnalysisTaskPhiFlow::EllipticFlow(Double_t* const v2, const AliESDtrack*
       v2[0] += flow;
       v2[18]++;
       fProfV2InvM03->Fill(invm, flow);
+      fDeltaPhiPsiNP03->Fill(phi - psi2_sub);
    }
    if ((0.3 <= pt) && (0.6 > pt))
    {
       v2[1] += flow;
       v2[19]++;
       fProfV2InvM36->Fill(invm, flow);
+      fDeltaPhiPsiNP36->Fill(phi - psi2_sub);
    }
    if ((0.6 <= pt) && (0.9 > pt))
    {
       v2[2] += flow;
       v2[20]++;
       fProfV2InvM69->Fill(invm, flow);
+      fDeltaPhiPsiNP69->Fill(phi - psi2_sub);
    }
    if ((0.9 <= pt) && (1.2 > pt))
    {
       v2[3] += flow;
       v2[21]++;
       fProfV2InvM912->Fill(invm, flow);
+      fDeltaPhiPsiNP912->Fill(phi - psi2_sub);
    }
    if ((1.2 <= pt) && (1.5 > pt))
    {
       v2[4] += flow;
       v2[22]++;
       fProfV2InvM1215->Fill(invm, flow);
+      fDeltaPhiPsiNP1215->Fill(phi - psi2_sub);
    }
    if ((1.5 <= pt) && (1.8 > pt))
    {
       v2[5] += flow;
       v2[23]++;
       fProfV2InvM1518->Fill(invm, flow);
+      fDeltaPhiPsiNP1518->Fill(phi - psi2_sub);
    }
    if ((1.8 <= pt) && (2.1 > pt))
    {
       v2[6] += flow;
       v2[24]++;
       fProfV2InvM1821->Fill(invm, flow);
+      fDeltaPhiPsiNP1821->Fill(phi - psi2_sub);
    }
    if ((2.1 <= pt) && (2.4 > pt))
    {
       v2[7] += flow;
       v2[25]++;
       fProfV2InvM2124->Fill(invm, flow);
+      fDeltaPhiPsiNP2124->Fill(phi - psi2_sub);
    }
    if ((2.4 <= pt) && (2.7 > pt))
    {
       v2[8] += flow;
       v2[26]++;
       fProfV2InvM2427->Fill(invm, flow);
+      fDeltaPhiPsiNP2427->Fill(phi - psi2_sub);
    }
    if ((2.7 <= pt) && (3.0 > pt))
    {
       v2[9] += flow;
       v2[27]++;
       fProfV2InvM2730->Fill(invm, flow);
+      fDeltaPhiPsiNP2730->Fill(phi - psi2_sub);
    }
-
    if ((3.0 <= pt) && (3.5 > pt))
    {
       v2[10] += flow;
       v2[28]++;
       fProfV2InvM3035->Fill(invm, flow);
+      fDeltaPhiPsiNP3035->Fill(phi - psi2_sub);
    }
    if ((3.5 <= pt) && (4.0 > pt))
    {
       v2[11] += flow;
       v2[29]++;
       fProfV2InvM3540->Fill(invm, flow);
+      fDeltaPhiPsiNP3540->Fill(phi - psi2_sub);
    }
    if ((4.0 <= pt) && (4.5 > pt))
    {
       v2[12] += flow;
       v2[30]++;
       fProfV2InvM4045->Fill(invm, flow);
+      fDeltaPhiPsiNP4045->Fill(phi - psi2_sub);
    }
    if ((4.5 <= pt) && (5.0 > pt))
    {
       v2[13] += flow;
       v2[31]++;
       fProfV2InvM4550->Fill(invm, flow);
+      fDeltaPhiPsiNP4550->Fill(phi - psi2_sub);
    }
    if ((5.0 <= pt) && (5.5 > pt))
    {
       v2[14] += flow;
       v2[32]++;
       fProfV2InvM5055->Fill(invm, flow);
+      fDeltaPhiPsiNP5055->Fill(phi - psi2_sub);
    }
    if ((5.5 <= pt) && (6.0 > pt))
    {
       v2[15] += flow;
       v2[33]++;
       fProfV2InvM5560->Fill(invm, flow);
+      fDeltaPhiPsiNP5560->Fill(phi - psi2_sub);
    }
    if ((6.0 <= pt) && (6.5 > pt))
    {
       v2[16] += flow;
       v2[34]++;
       fProfV2InvM6065->Fill(invm, flow);
+      fDeltaPhiPsiNP6065->Fill(phi - psi2_sub);
    }
    if ((6.5 <= pt) && (7.0 > pt))
    {
       v2[17] += flow;
       v2[35]++;
       fProfV2InvM6570->Fill(invm, flow);
+      fDeltaPhiPsiNP6570->Fill(phi - psi2_sub);
    }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::EllipticFlowSin(Double_t* const v2Sin, const AliESDtrack* track1, const AliESDtrack* track2) const
+template <typename T> void AliAnalysisTaskPhiFlow::EllipticFlowSin(Double_t* const v2Sin, const T* track1, const T* track2) const
 {
    // Calculate elliptic flow coefficient v_2 - sin terms
    // store v_2 in array for further analysis
@@ -1145,22 +1204,14 @@ void AliAnalysisTaskPhiFlow::EllipticFlowSin(Double_t* const v2Sin, const AliESD
    }
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::EventPlaneTrack(AliESDtrack* track) const
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::EventPlaneTrack(T* track) const
 {
    // Check if track is suitable for event plane estimation
    if (!track) return kFALSE;
-   Bool_t sel = fCutsRP->IsSelected(track);
-   if (sel)
-   {
-      fPhi->Fill(track->Phi());
-      fPt->Fill(track->Pt());
-      fEta->Fill(track->Eta());
-      return sel;
-   }
-   return kFALSE;
+   return fCutsRP->IsSelected(track);
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::PhiTrack(AliESDtrack* track) const
+template <typename T> Bool_t AliAnalysisTaskPhiFlow::PhiTrack(T* track) const
 {
    // Check if track is suitable for phi flow analysis
    if (!track) return kFALSE;
@@ -1189,14 +1240,14 @@ void AliAnalysisTaskPhiFlow::FlowFinishSin(Double_t* const v2Sin) const
    }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::SetNullCuts(AliESDEvent* esd)
+template <typename T> void AliAnalysisTaskPhiFlow::SetNullCuts(T* event)
 {
    // Set null cuts
-   fCutsRP->SetEvent(esd, MCEvent());
+   fCutsRP->SetEvent(event, MCEvent());
    fNullCuts->SetParamType(AliFlowTrackCuts::kGlobal);
    fNullCuts->SetPtRange(+1, -1); // select nothing QUICK
    fNullCuts->SetEtaRange(+1, -1); // select nothing VZERO
-   fNullCuts->SetEvent(esd, MCEvent());
+   fNullCuts->SetEvent(event, MCEvent());
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::PrepareFlowEvent(Int_t iMulti)
@@ -1216,133 +1267,264 @@ void AliAnalysisTaskPhiFlow::PrepareFlowEvent(Int_t iMulti)
 void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
 {
    // UserExec: execute for each event. Commented where necessary
-   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-   // Check whether event passes event cuts
-   if (!EventCut(fESD))
+   // check for AOD data type
+
+   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+   if (fAOD)
    {
-      return;
-   }
-   SetNullCuts(fESD);
-   fKaonCuts->SetEvent(fESD, MCEvent());
-   PrepareFlowEvent(fESD->GetNumberOfTracks());
-   // Calculate event plane Q vectors and event plane resolution
-   EventPlane(fESD);
-   fEventStats->Fill(0);
-   Int_t unTracks = fESD->GetNumberOfTracks();
-   AliESDtrack* un[unTracks];
-   AliESDtrack* up[unTracks];
-   Int_t unp(0);
-   Int_t unn(0);
-   Double_t v2[36];
-   Double_t v2Sin[36];
-   // Flush flow arrays
-   for (Int_t i = 0; i < 36; i++)
-   {
-      v2[i] = 0.;
-      v2Sin[i] = 0.;
-   }
-   // Loop through tracks, check for species (Kaons), fill arrays according to charge
-   for (Int_t iTracks = 0; iTracks < unTracks; iTracks++)
-   {
-      AliESDtrack* track = fESD->GetTrack(iTracks);
-      if (!PhiTrack(track))
+      cout << " --> Task received an AOD event " << endl;
+      fAODAnalysis = kTRUE;
+      // Check whether event passes event cuts
+      if (!EventCut(fAOD)) return;
+      InitializeBayesianPID(fAOD);
+      SetNullCuts(fAOD);
+      PrepareFlowEvent(fAOD->GetNumberOfTracks());
+      // Calculate event plane Q vectors and event plane resolution
+      EventPlane(fAOD);
+      fEventStats->Fill(0);
+      Int_t unTracks = fAOD->GetNumberOfTracks();
+      AliAODTrack* un[unTracks];
+      AliAODTrack* up[unTracks];
+      Int_t unp(0);
+      Int_t unn(0);
+      Double_t v2[36];
+      Double_t v2Sin[36];
+      // Flush flow arrays
+      for (Int_t i = 0; i < 36; i++)
       {
-         continue;
+         v2[i] = 0.;
+         v2Sin[i] = 0.;
       }
-      Bool_t charge = kFALSE;
-      if (track->Charge() > 0)
+      // Loop through tracks, check for species (Kaons), fill arrays according to charge
+      for (Int_t iTracks = 0; iTracks < unTracks; iTracks++)
       {
-         charge = kTRUE;
-         fEventStats->Fill(1);
-         fPtP->Fill(track->Pt());
-      }
-      if (track->Charge() < 0)
-      {
-         fEventStats->Fill(2);
-         fPtN->Fill(track->Pt());
-      }
-      if (IsKaon(track))
-      {
-         if (charge)
+         AliAODTrack* track = fAOD->GetTrack(iTracks);
+         if (!PhiTrack(track)) continue;
+         if (fStrictKaonCuts&&(!PassesStrictKaonCuts(track))) continue;
+         Bool_t charge = kFALSE;
+         if (track->Charge() > 0)
          {
-            up[unp] = track;
-            unp++;
-            fEventStats->Fill(3);
-            fPtKP->Fill(track->Pt());
+            charge = kTRUE;
+            fEventStats->Fill(1);
+            fPtP->Fill(track->Pt());
          }
-         if (!charge)
+         if (track->Charge() < 0)
          {
-            un[unn] = track;
-            unn++;
-            fEventStats->Fill(4);
-            fPtKN->Fill(track->Pt());
+            fEventStats->Fill(2);
+            fPtN->Fill(track->Pt());
+         }
+         if (IsKaon(track))
+         {
+            if (charge)
+            {
+               up[unp] = track;
+               unp++;
+               fEventStats->Fill(3);
+               fPtKP->Fill(track->Pt());
+            }
+            if (!charge)
+            {
+               un[unn] = track;
+               unn++;
+               fEventStats->Fill(4);
+               fPtKN->Fill(track->Pt());
+            }
          }
       }
-   }
-   // Calculate invariant mass of like- and unlike sign pairs as a function of p_T, store data in histograms
-   for (Int_t pTracks = 0; pTracks < unp ; pTracks++)
-   {
+      // Calculate invariant mass of like- and unlike sign pairs as a function of p_T, store data in histograms
+      for (Int_t pTracks = 0; pTracks < unp ; pTracks++)
+      {
+         for (Int_t nTracks = 0; nTracks < unn ; nTracks++)
+         {
+            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(up[pTracks], un[nTracks]))) continue;
+            if (fCandidateEtaPtCut && (!CheckCandidateEtaPtCut(up[pTracks], un[nTracks]))) continue;
+            PtSelector(0, up[pTracks], un[nTracks]);
+            EllipticFlow(v2, up[pTracks], un[nTracks]);
+            EllipticFlowSin(v2Sin, up[pTracks], un[nTracks]);
+            Double_t pt = PhiPt(up[pTracks], un[nTracks]);
+            Double_t mass = InvariantMass(up[pTracks], un[nTracks]);
+            TVector3 a(up[pTracks]->Px(), up[pTracks]->Py(), up[pTracks]->Pz());
+            TVector3 b(un[nTracks]->Px(), un[nTracks]->Py(), up[pTracks]->Pz());
+            TVector3 c = a + b;
+            Double_t phi = c.Phi();
+            Double_t eta = c.Eta();
+            Int_t nIDs[2];
+            nIDs[0] = up[pTracks]->GetID();
+            nIDs[1] = un[nTracks]->GetID();
+            for (Int_t r = 0; r != 30; ++r)
+               if ((mass >= fFlowBands[0][r]) && (mass < fFlowBands[1][r]))
+               {
+                  AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*)
+                                                  MakeTrack(mass, pt, phi, eta, 2, nIDs);
+                  for (Int_t iDau = 0; iDau != 2; ++iDau)
+                     for (Int_t iRPs = 0; iRPs != fFlowEvent[r]->NumberOfTracks(); ++iRPs)
+                     {
+                        AliFlowTrack *iRP = (AliFlowTrack*)(fFlowEvent[r]->GetTrack(iRPs));
+                        if (!iRP->InRPSelection()) continue;
+                        if (fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()))
+                        {
+                           sTrack->SetDaughter(iDau, iRP);
+                           iRP->SetForRPSelection(kFALSE);
+                        }
+                     }
+                  fFlowEvent[r]->AddTrack(sTrack);
+               }
+         }
+      }
+      for (Int_t pTracks = 0; pTracks < unp ; pTracks++)
+      {
+         for (Int_t nTracks = pTracks + 1; nTracks < unp ; nTracks++)
+         {
+            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(up[pTracks], up[nTracks]))) continue;
+            if (fCandidateEtaPtCut && (!CheckCandidateEtaPtCut(up[pTracks], up[nTracks]))) continue;
+            PtSelector(1, up[pTracks], up[nTracks]);
+         }
+      }
       for (Int_t nTracks = 0; nTracks < unn ; nTracks++)
       {
-         if(fApplyDeltaDipCut&&(!CheckDeltaDipAngle(up[pTracks], un[nTracks]))) continue;
-         PtSelector(0, up[pTracks], un[nTracks]);
-         EllipticFlow(v2, up[pTracks], un[nTracks]);
-         EllipticFlowSin(v2Sin, up[pTracks], un[nTracks]);
-         Double_t pt = PhiPt(up[pTracks], un[nTracks]);
-         Double_t mass = InvariantMass(up[pTracks], un[nTracks]);
-         TVector3 a(up[pTracks]->Px(), up[pTracks]->Py(), up[pTracks]->Pz());
-         TVector3 b(un[nTracks]->Px(), un[nTracks]->Py(), up[pTracks]->Pz());
-         TVector3 c = a + b;
-         Double_t phi = c.Phi();
-         Double_t eta = c.Eta();
-         int nIDs[2];
-         nIDs[0] = up[pTracks]->GetID();
-         nIDs[1] = un[nTracks]->GetID();
-         for (Int_t r = 0; r != 30; ++r)
-            if ((mass >= fFlowBands[0][r]) && (mass < fFlowBands[1][r]))
-            {
-               AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*)
-                                               MakeTrack(mass, pt, phi, eta, 2, nIDs);
-               if (0) printf("   ᶫInjecting phi candidate on band %d \n", r);
-               for (Int_t iDau = 0; iDau != 2; ++iDau)
-                  for (Int_t iRPs = 0; iRPs != fFlowEvent[r]->NumberOfTracks(); ++iRPs)
-                  {
-                     AliFlowTrack *iRP = (AliFlowTrack*)(fFlowEvent[r]->GetTrack(iRPs));
-                     if (!iRP->InRPSelection()) continue;
-                     if (fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()))
-                     {
-                        sTrack->SetDaughter(iDau, iRP);
-                        iRP->SetForRPSelection(kFALSE);
-                        if (0) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
-                     }
-                  }
-               fFlowEvent[r]->AddTrack(sTrack);
-            }
+         for (Int_t pTracks = nTracks + 1; pTracks < unn ; pTracks++)
+         {
+            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(un[nTracks], un[pTracks]))) continue;
+            if (fCandidateEtaPtCut && (!CheckCandidateEtaPtCut(un[nTracks], un[pTracks]))) continue;
+            PtSelector(2, un[nTracks], un[pTracks]);
+         }
       }
-   }
-   for (Int_t pTracks = 0; pTracks < unp ; pTracks++)
-   {
-      for (Int_t nTracks = pTracks + 1; nTracks < unp ; nTracks++)
-      {
-         if(fApplyDeltaDipCut&&(!CheckDeltaDipAngle(up[pTracks], up[nTracks]))) continue;
-         PtSelector(1, up[pTracks], up[nTracks]);
-      }
-   }
-   for (Int_t nTracks = 0; nTracks < unn ; nTracks++)
-   {
-      for (Int_t pTracks = nTracks + 1; pTracks < unn ; pTracks++)
-      {
-         if(fApplyDeltaDipCut&&(!CheckDeltaDipAngle(un[nTracks], un[pTracks]))) continue;
-         PtSelector(2, un[nTracks], un[pTracks]);
-      }
-   }
-   //Push event averaged track values into flow members
-   FlowFinish(v2);
-   FlowFinishSin(v2Sin);
+      //Push event averaged track values into flow members
+      FlowFinish(v2);
+      FlowFinishSin(v2Sin);
 
-   PostData(1, fOutputList);
-   for (int m = 0; m != 30; ++m)
-      PostData(2 + m, fFlowEvent[m]);
+      PostData(1, fOutputList);
+      for (int m = 0; m != 30; ++m) PostData(2 + m, fFlowEvent[m]);
+   }
+
+   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+   if (fESD)
+   {
+      cout << " --> Task received an ESD event" << endl;
+      fAODAnalysis = kFALSE;
+      // Check whether event passes event cuts
+      if (!EventCut(fESD)) return;
+      InitializeBayesianPID(fESD);
+      SetNullCuts(fESD);
+      PrepareFlowEvent(fESD->GetNumberOfTracks());
+      // Calculate event plane Q vectors and event plane resolution
+      EventPlane(fESD);
+      fEventStats->Fill(0);
+      Int_t unTracks = fESD->GetNumberOfTracks();
+      AliESDtrack* un[unTracks];
+      AliESDtrack* up[unTracks];
+      Int_t unp(0);
+      Int_t unn(0);
+      Double_t v2[36];
+      Double_t v2Sin[36];
+      // Flush flow arrays
+      for (Int_t i = 0; i < 36; i++)
+      {
+         v2[i] = 0.;
+         v2Sin[i] = 0.;
+      }
+      // Loop through tracks, check for species (Kaons), fill arrays according to charge
+      for (Int_t iTracks = 0; iTracks < unTracks; iTracks++)
+      {
+         AliESDtrack* track = fESD->GetTrack(iTracks);
+         if (!PhiTrack(track)) continue;
+         Bool_t charge = kFALSE;
+         if (track->Charge() > 0)
+         {
+            charge = kTRUE;
+            fEventStats->Fill(1);
+            fPtP->Fill(track->Pt());
+         }
+         if (track->Charge() < 0)
+         {
+            fEventStats->Fill(2);
+            fPtN->Fill(track->Pt());
+         }
+         if (IsKaon(track))
+         {
+            if (charge)
+            {
+               up[unp] = track;
+               unp++;
+               fEventStats->Fill(3);
+               fPtKP->Fill(track->Pt());
+            }
+            if (!charge)
+            {
+               un[unn] = track;
+               unn++;
+               fEventStats->Fill(4);
+               fPtKN->Fill(track->Pt());
+            }
+         }
+      }
+      // Calculate invariant mass of like- and unlike sign pairs as a function of p_T, store data in histograms
+      for (Int_t pTracks = 0; pTracks < unp ; pTracks++)
+      {
+         for (Int_t nTracks = 0; nTracks < unn ; nTracks++)
+         {
+            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(up[pTracks], un[nTracks]))) continue;
+            if (fCandidateEtaPtCut && (!CheckCandidateEtaPtCut(up[pTracks], un[nTracks]))) continue;
+            PtSelector(0, up[pTracks], un[nTracks]);
+            EllipticFlow(v2, up[pTracks], un[nTracks]);
+            EllipticFlowSin(v2Sin, up[pTracks], un[nTracks]);
+            Double_t pt = PhiPt(up[pTracks], un[nTracks]);
+            Double_t mass = InvariantMass(up[pTracks], un[nTracks]);
+            TVector3 a(up[pTracks]->Px(), up[pTracks]->Py(), up[pTracks]->Pz());
+            TVector3 b(un[nTracks]->Px(), un[nTracks]->Py(), up[pTracks]->Pz());
+            TVector3 c = a + b;
+            Double_t phi = c.Phi();
+            Double_t eta = c.Eta();
+            int nIDs[2];
+            nIDs[0] = up[pTracks]->GetID();
+            nIDs[1] = un[nTracks]->GetID();
+            for (Int_t r = 0; r != 30; ++r)
+               if ((mass >= fFlowBands[0][r]) && (mass < fFlowBands[1][r]))
+               {
+                  AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*)
+                                                  MakeTrack(mass, pt, phi, eta, 2, nIDs);
+                  if (0) printf("   ᶫInjecting phi candidate on band %d \n", r);
+                  for (Int_t iDau = 0; iDau != 2; ++iDau)
+                     for (Int_t iRPs = 0; iRPs != fFlowEvent[r]->NumberOfTracks(); ++iRPs)
+                     {
+                        AliFlowTrack *iRP = (AliFlowTrack*)(fFlowEvent[r]->GetTrack(iRPs));
+                        if (!iRP->InRPSelection()) continue;
+                        if (fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()))
+                        {
+                           sTrack->SetDaughter(iDau, iRP);
+                           iRP->SetForRPSelection(kFALSE);
+                           if (0) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
+                        }
+                     }
+                  fFlowEvent[r]->AddTrack(sTrack);
+               }
+         }
+      }
+      for (Int_t pTracks = 0; pTracks < unp ; pTracks++)
+      {
+         for (Int_t nTracks = pTracks + 1; nTracks < unp ; nTracks++)
+         {
+            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(up[pTracks], up[nTracks]))) continue;
+            if (fCandidateMinEta && (!CheckCandidateEtaPtCut(up[pTracks], up[nTracks]))) continue;
+            PtSelector(1, up[pTracks], up[nTracks]);
+         }
+      }
+      for (Int_t nTracks = 0; nTracks < unn ; nTracks++)
+      {
+         for (Int_t pTracks = nTracks + 1; pTracks < unn ; pTracks++)
+         {
+            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(un[nTracks], un[pTracks]))) continue;
+            if (fCandidateEtaPtCut && (!CheckCandidateEtaPtCut(un[nTracks], un[pTracks]))) continue;
+            PtSelector(2, un[nTracks], un[pTracks]);
+         }
+      }
+      //Push event averaged track values into flow members
+      FlowFinish(v2);
+      FlowFinishSin(v2Sin);
+
+      PostData(1, fOutputList);
+      for (int m = 0; m != 30; ++m) PostData(2 + m, fFlowEvent[m]);
+   }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::Terminate(Option_t *)
@@ -1351,8 +1533,8 @@ void AliAnalysisTaskPhiFlow::Terminate(Option_t *)
 }
 //______________________________________________________________________________
 AliFlowCandidateTrack*  AliAnalysisTaskPhiFlow::MakeTrack(Double_t mass,
-                                                    Double_t pt, Double_t phi, Double_t eta,
-                                                    Int_t nDau, Int_t iID[]) const
+      Double_t pt, Double_t phi, Double_t eta,
+      Int_t nDau, Int_t iID[]) const
 {
    // Consruct Flow Candidate Track from two selected candidates
    AliFlowCandidateTrack *sTrack = new AliFlowCandidateTrack();
@@ -1367,5 +1549,4 @@ AliFlowCandidateTrack*  AliAnalysisTaskPhiFlow::MakeTrack(Double_t mass,
    return sTrack;
 }
 //_____________________________________________________________________________
-
 
