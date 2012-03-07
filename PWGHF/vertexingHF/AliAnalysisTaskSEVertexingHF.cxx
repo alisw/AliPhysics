@@ -108,8 +108,8 @@ void AliAnalysisTaskSEVertexingHF::Init()
   if(fDebug > 1) printf("AnalysisTaskSEVertexingHF::Init() \n");
 
   if(gROOT->LoadMacro("ConfigVertexingHF.C")) {
-    printf("AnalysisTaskSEVertexingHF::Init() \n Using $ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C\n");
-    gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C");
+    printf("AnalysisTaskSEVertexingHF::Init() \n Using $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C\n");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C");
   }
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
