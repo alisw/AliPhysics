@@ -489,7 +489,7 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
    fList4->Add(fQA2v3);
   }
 
-  fList->Add(fTree); // comment if not needed
+  //  fList->Add(fTree); // comment if not needed
 
   printf("Output creation ok!!\n\n\n\n");
 
@@ -899,7 +899,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[2]) < 5){ // TPC 5 sigma extra cut to accept the track
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,1);
 	    if(fV2) contV0[iV0]->Fill(1,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(1,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(1,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(prob[3] > 0.6){ // K
@@ -909,7 +909,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[3]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,2);
 	    if(fV2) contV0[iV0]->Fill(2,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(2,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(2,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(prob[4] > 0.6){ // p
@@ -919,7 +919,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[4]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,3);
 	    if(fV2) contV0[iV0]->Fill(3,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(3,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(3,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(prob[0] > 0.6){ // e
@@ -929,7 +929,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[0]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,4);
 	    if(fV2) contV0[iV0]->Fill(4,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(4,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(4,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(prob[1] > 0.6){ // mu
@@ -938,7 +938,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[1]) < 5){
 	    if(fV2) contV0[iV0]->Fill(8,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(8,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(8,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(prob[5] > 0.6){ // d
@@ -948,7 +948,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[5]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,5);
 	    if(fV2) contV0[iV0]->Fill(5,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(5,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(5,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(prob[6] > 0.6){ // t
@@ -958,7 +958,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[6]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,6);
 	    if(fV2) contV0[iV0]->Fill(6,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(6,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(6,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(prob[7] > 0.6){ // He3
@@ -969,7 +969,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[7]) < 5){
 	    if(iV0 && fQAsw) fPhiTracks->Fill(phi,7);
 	    if(fV2) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(7,aodTrack->Pt()*2,v3V0,x3);
 	  }
 	  phi[1] *= 0.5;
 	}
@@ -994,7 +994,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[2]) < 5){
 	    if(fV2) contV0[iV0]->Fill(1,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(1,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(1,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(probTPC[3] > 0.6){ // K
@@ -1002,7 +1002,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[3]) < 5){
 	    if(fV2) contV0[iV0]->Fill(2,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(2,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(2,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(probTPC[4] > 0.6){ // p
@@ -1010,7 +1010,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[4]) < 5){
 	    if(fV2) contV0[iV0]->Fill(3,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(3,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(3,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(probTPC[0] > 0.6){ // e
@@ -1018,7 +1018,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[0]) < 5){
 	    if(fV2) contV0[iV0]->Fill(4,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(4,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(4,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(probTPC[1] > 0.6){ // mu
@@ -1026,7 +1026,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[1]) < 5){
 	    if(fV2) contV0[iV0]->Fill(8,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(8,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(8,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(probTPC[5] > 0.6){ // d
@@ -1034,7 +1034,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[5]) < 5){
 	    if(fV2) contV0[iV0]->Fill(5,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(5,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(5,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(probTPC[6] > 0.6){ // t
@@ -1042,7 +1042,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[6]) < 5){
 	    if(fV2) contV0[iV0]->Fill(6,aodTrack->Pt(),v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(6,aodTrack->Pt(),v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(6,aodTrack->Pt(),v3V0,x3);
 	  }
 	}
 	else if(probTPC[7] > 0.6){ // He3
@@ -1050,7 +1050,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 	  if(TMath::Abs(nsigmaTPC[7]) < 5){
 	    if(fV2) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v2V0,x);
-	    if(fV3) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v3V0,x3);
+	    if(fV3) contV0v3[iV0]->Fill(7,aodTrack->Pt()*2,v3V0,x3);
 	  }
 	}
       } // end side loop

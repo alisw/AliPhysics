@@ -1,10 +1,10 @@
-AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kTRUE){
+AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kFALSE){
   char fileout[100];
-  snprintf(fileout,100,"outVZEROv2.root");
+  snprintf(fileout,100,"outVZEROres.root");
   char fileout2[100];
-  snprintf(fileout2,100,"outVZEROv3.root");
+  snprintf(fileout2,100,"outVZEROres.root");
   char fileout3[100];
-  snprintf(fileout3,100,"outVZEROmc.root");
+  snprintf(fileout3,100,"outVZEROres.root");
   char fileout4[100];
   snprintf(fileout4,100,"outVZEROqa.root");
 
