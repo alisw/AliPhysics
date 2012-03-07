@@ -76,8 +76,8 @@ AliHFEVZEROEventPlane::AliHFEVZEROEventPlane(const char *name, const Char_t *tit
   // Constructor
   //
 
-  char namelist[100];
-  sprintf(namelist,"QA_hist_%s",name);
+  TString namelist("QA_hist_");
+  namelist += name;
   fOutputList = new TList();
   fOutputList->SetName((const char*)namelist);
   fOutputList->SetOwner(kTRUE);
@@ -91,30 +91,50 @@ AliHFEVZEROEventPlane::AliHFEVZEROEventPlane(const char *name, const Char_t *tit
   fOutputList->Add(fMultV0After);
 
   // Recentering
-  char namecontbefore[100];
-  char namecontafter[100];    
   for(Int_t k = 0; k < fgknCentrBin; k++) {
     for(Int_t iside = 0; iside < 2; iside++) {
       for(Int_t icoord = 0; icoord < 2; icoord++) {
 	
-	if(iside==0 && icoord==0)
-	  sprintf(namecontbefore,"hQxc2_%i",k);
-	else if(iside==1 && icoord==0)
-	  sprintf(namecontbefore,"hQxa2_%i",k);
-	else if(iside==0 && icoord==1)
-	  sprintf(namecontbefore,"hQyc2_%i",k);
-	else if(iside==1 && icoord==1)
-	  sprintf(namecontbefore,"hQya2_%i",k);
-	//
-	if(iside==0 && icoord==0)
-	  sprintf(namecontafter,"hQxc2_%i_after",k);
-	else if(iside==1 && icoord==0)
-	  sprintf(namecontafter,"hQxa2_%i_after",k);
-	else if(iside==0 && icoord==1)
-	  sprintf(namecontafter,"hQyc2_%i_after",k);
-	else if(iside==1 && icoord==1)
-	  sprintf(namecontafter,"hQya2_%i_after",k);
+	TString namecontbefore("");
+	TString namecontafter("");
 	
+	if(iside==0 && icoord==0) {
+	  namecontbefore += "hQxc2_";
+	  namecontbefore += k;
+	}
+	else if(iside==1 && icoord==0){
+	  namecontbefore += "hQxa2_";
+	  namecontbefore += k;
+	}
+       	else if(iside==0 && icoord==1){
+	  namecontbefore += "hQyc2_";
+	  namecontbefore += k;	  
+	}
+	else if(iside==1 && icoord==1) {
+	  namecontbefore += "hQya2_";
+	  namecontbefore += k;
+	}
+      	//
+	if(iside==0 && icoord==0){
+	  namecontafter += "hQxc2_";
+	  namecontafter += k;
+	  namecontafter += "_after";
+	}
+      	else if(iside==1 && icoord==0){
+	  namecontafter += "hQxa2_";
+	  namecontafter += k;
+	  namecontafter += "_after";
+	}
+	else if(iside==0 && icoord==1) {
+	  namecontafter += "hQyc2_";
+	  namecontafter += k;
+	  namecontafter += "_after";
+	}
+	else if(iside==1 && icoord==1) {
+	  namecontafter += "hQya2_";
+	  namecontafter += k;
+	  namecontafter += "_after";	
+	}
 	//
 	fQBefore[k][iside][icoord] = new TH1F(((const char*)namecontbefore),"",800,-400.0,400.0);
 	fQBefore[k][iside][icoord]->Sumw2();
@@ -371,25 +391,34 @@ Bool_t AliHFEVZEROEventPlane::OpenInfoCalbration(Int_t run)
   for(Int_t iside=0;iside<2;iside++){
     for(Int_t icoord=0;icoord<2;icoord++){
       for(Int_t i=0;i  < fgknCentrBin;i++){
-	char namecont[100];
-	if(iside==0 && icoord==0)
-	  sprintf(namecont,"hQxc2_%i",i);
-	else if(iside==1 && icoord==0)
-	  sprintf(namecont,"hQxa2_%i",i);
-	else if(iside==0 && icoord==1)
-	  sprintf(namecont,"hQyc2_%i",i);
-	else if(iside==1 && icoord==1)
-	  sprintf(namecont,"hQya2_%i",i);
+
+	TString namecont("");
+	if(iside==0 && icoord==0) {
+	  namecont += "hQxc2_";
+	  namecont += i;
+	}
+	else if(iside==1 && icoord==0){
+	  namecont += "hQxa2_";
+	  namecont += i;
+	}
+	else if(iside==0 && icoord==1){
+	  namecont += "hQyc2_";
+	  namecont += i;
+	}
+	else if(iside==1 && icoord==1) {
+	  namecont += "hQya2_";
+	  namecont += i;
+	}
 	
 	cont = (AliOADBContainer*) foadb->Get(namecont);
 	if(!cont){
-	  printf("OADB object %s is not available in the file\n",namecont);
+	  printf("OADB object %s is not available in the file\n",(const char*)namecont);
 	  delete fpol0;
 	  return kFALSE;	
 	}
 	
 	if(!(cont->GetObject(run))){
-	  printf("OADB object %s is not available for run %i\n",namecont,run);
+	  printf("OADB object %s is not available for run %i\n",(const char*)namecont,run);
 	  delete fpol0;
 	  return kFALSE;	
 	}
