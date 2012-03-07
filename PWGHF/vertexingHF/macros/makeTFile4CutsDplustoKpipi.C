@@ -61,28 +61,7 @@ void makeInputAliAnalysisTaskSEDplusPP(){
     const Int_t nvars=14;
     
     
-    Float_t** prodcutsval;
-    prodcutsval=new Float_t*[nvars];
-    for(Int_t ic=0;ic<nvars;ic++){prodcutsval[ic]=new Float_t[nptbins];}  
-    for(Int_t ipt=0;ipt<nptbins;ipt++){
-      prodcutsval[0][ipt]=0.2;
-      prodcutsval[1][ipt]=0.3;
-      prodcutsval[2][ipt]=0.3;
-      prodcutsval[3][ipt]=0.;
-      prodcutsval[4][ipt]=0.;
-      prodcutsval[5][ipt]=0.01;
-      prodcutsval[6][ipt]=0.06;
-      prodcutsval[7][ipt]=0.02;
-      prodcutsval[8][ipt]=0.;
-      prodcutsval[9][ipt]=0.85;
-      prodcutsval[10][ipt]=0.;
-      prodcutsval[11][ipt]=10000000.0;
-      prodcutsval[12][ipt]=0.0;
-      prodcutsval[13][ipt]=0.0;
-      
-    }
-    
-    
+       
     Float_t** anacutsval;
     anacutsval=new Float_t*[nvars];
     
@@ -203,11 +182,6 @@ void makeInputAliAnalysisTaskSEDplusPP(){
     
           
     
-    AliRDHFCutsDplustoKpipi *prodcuts = new AliRDHFCutsDplustoKpipi();
-    prodcuts->SetName("ProdCuts");
-    prodcuts->SetPtBins(nptbins+1,ptbins);
-    prodcuts->SetCuts(nvars,nptbins,prodcutsval);
-    
     
     AliRDHFCutsDplustoKpipi* analysiscuts=new AliRDHFCutsDplustoKpipi();
     analysiscuts->SetName("AnalysisCuts");
@@ -222,7 +196,6 @@ void makeInputAliAnalysisTaskSEDplusPP(){
     analysiscuts->PrintAll();
     TFile* fout=new TFile("DplustoKpipiCuts.root","recreate");   
     fout->cd();
-    prodcuts->Write();
     analysiscuts->Write();
     fout->Close();
     
@@ -273,29 +246,6 @@ void makeInputAliAnalysisTaskSEDplusPbPb(){
     const Int_t nvars=14;
         
         
-    
-    Float_t** prodcutsval;
-    prodcutsval=new Float_t*[nvars];
-    for(Int_t ic=0;ic<nvars;ic++){prodcutsval[ic]=new Float_t[nptbins];}  
-    for(Int_t ipt=0;ipt<nptbins;ipt++){
-      prodcutsval[0][ipt]=0.2;
-      prodcutsval[1][ipt]=0.8;
-      prodcutsval[2][ipt]=0.8;
-      prodcutsval[3][ipt]=0.;
-      prodcutsval[4][ipt]=0.;
-      prodcutsval[5][ipt]=0.01;
-      prodcutsval[6][ipt]=0.06;
-      prodcutsval[7][ipt]=0.02;
-      prodcutsval[8][ipt]=1.;
-      prodcutsval[9][ipt]=0.90;
-      prodcutsval[10][ipt]=0.;
-      prodcutsval[11][ipt]=10000000.0;
-      prodcutsval[12][ipt]=0.0;
-      prodcutsval[13][ipt]=0.0;
-      
-    }
-    
-    
    
 
   Float_t** anacutsval;
@@ -455,11 +405,6 @@ void makeInputAliAnalysisTaskSEDplusPbPb(){
    
 
     
-    AliRDHFCutsDplustoKpipi *prodcuts = new AliRDHFCutsDplustoKpipi();
-    prodcuts->SetName("ProdCuts");
-    prodcuts->SetPtBins(nptbins+1,ptbins);
-    prodcuts->SetCuts(nvars,nptbins,prodcutsval);
-    
     
     AliRDHFCutsDplustoKpipi* analysiscuts=new AliRDHFCutsDplustoKpipi();
     analysiscuts->SetName("AnalysisCuts");
@@ -483,7 +428,6 @@ void makeInputAliAnalysisTaskSEDplusPbPb(){
     analysiscuts->PrintAll();
     TFile* fout=new TFile("DplustoKpipiCuts.root","recreate");   
     fout->cd();
-    prodcuts->Write();
     analysiscuts->Write();
     fout->Close();
     

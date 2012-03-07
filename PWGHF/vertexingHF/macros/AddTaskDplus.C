@@ -4,7 +4,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
 				     TString filename="",
-				     TString finAnObjname="AnalysisCuts", TString finProdObjname="ProduCuts")
+				     TString finAnObjname="AnalysisCuts")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
