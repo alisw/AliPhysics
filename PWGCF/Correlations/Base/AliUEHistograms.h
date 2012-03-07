@@ -72,6 +72,7 @@ class AliUEHistograms : public TNamed
   void SetCombineMinMax(Bool_t flag);
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
+  void SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
   
   void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   void Reset();
@@ -86,6 +87,8 @@ class AliUEHistograms : public TNamed
 protected:
   void FillRegion(AliUEHist::Region region, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity);
   Int_t CountParticles(TList* list, Float_t ptMin);
+  void DeleteContainers();
+  Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0);
   
   static const Int_t fgkUEHists; // number of histograms
 
@@ -113,10 +116,12 @@ protected:
   
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
+  Bool_t fCutConversions;        // cut on conversions (inv mass)
+  Bool_t fCutResonances;         // cut on resonances (inv mass)
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 11)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 12)  // underlying event histogram container
 };
 
 #endif
