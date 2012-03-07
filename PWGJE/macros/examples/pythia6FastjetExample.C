@@ -52,6 +52,9 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
   TClonesArray aliplist("AliMCParticle",1000);
 
   for (Int_t iEvent = 0; iEvent < nEvent; iEvent++) {
+
+    TProcessID::SetObjectCount(0); // Needed for TRefs in AliCalTrkTrack and AliAODJet
+
     pythia->GenerateEvent();
 
     pythia->GetParticles(plist);
@@ -66,9 +69,6 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
       if (part->GetStatusCode() >= 10)  // Not a final state particle
 	continue;
 
-      if (i_part >= aliplist.GetSize()) {
-        aliplist.Expand(1.5*aliplist.GetSize());
-      }
       new (aliplist[i_part]) AliMCParticle(part);
 
       JetFinderEvent.AddCalTrkTrackKine((AliMCParticle*)aliplist[i_part],1,1);
