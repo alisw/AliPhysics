@@ -33,6 +33,7 @@
 #include "TH1F.h"
 #include "TH3F.h"
 #include "TMath.h"
+#include "TLorentzVector.h"
 
 ClassImp(AliUEHistograms)
 
@@ -57,6 +58,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fITSClusterMap(0),
   fSelectCharge(0),
   fTriggerRestrictEta(-1),
+  fCutConversions(kFALSE),
+  fCutResonances(kFALSE),
   fRunNumber(0)
 {
   // Constructor
@@ -155,6 +158,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fITSClusterMap(0),
   fSelectCharge(0),
   fTriggerRestrictEta(-1),
+  fCutConversions(kFALSE),
+  fCutResonances(kFALSE),
   fRunNumber(0)
 {
   //
@@ -172,6 +177,11 @@ AliUEHistograms::~AliUEHistograms()
 {
   // Destructor
   
+  DeleteContainers();
+}
+
+void AliUEHistograms::DeleteContainers()
+{
   if (fNumberDensitypT)
   {
     delete fNumberDensitypT;
@@ -486,6 +496,24 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
             continue;
         }
         
+        // conversions
+	if (fCutConversions && particle->Charge() * triggerParticle->Charge() < 0)
+	{
+	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3);
+
+	  if (mass < 0.04*0.04) 
+	    continue;
+	}
+	
+	// K0s, rhos
+	if (fCutResonances && particle->Charge() * triggerParticle->Charge() < 0)
+	{
+	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396);
+	  
+	  if ((mass > 0.49*0.49 && mass < 0.51*0.51) || (mass > 0.765*0.765 && mass < 0.785*0.785))
+	    continue;
+	}
+        
         Double_t vars[6];
         vars[0] = triggerEta - eta[j];
         vars[1] = particle->Pt();
@@ -643,6 +671,8 @@ AliUEHistograms &AliUEHistograms::operator=(const AliUEHistograms &c)
 {
   // assigment operator
 
+  DeleteContainers();
+
   if (this != &c)
     ((AliUEHistograms &) c).Copy(*this);
 
@@ -707,6 +737,8 @@ void AliUEHistograms::Copy(TObject& c) const
 
   target.fSelectCharge = fSelectCharge;
   target.fTriggerRestrictEta = fTriggerRestrictEta;
+  target.fCutConversions = fCutConversions;
+  target.fCutResonances = fCutResonances;
   target.fRunNumber = fRunNumber;
 }
 
@@ -940,4 +972,31 @@ void AliUEHistograms::TwoTrackEfficiency(TObjArray* tracks, TObjArray* mixed, Fl
 	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, fillPt);
     }
   }
+}
+
+Float_t AliUEHistograms::GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0)
+{
+  // calculate inv mass squared
+  // same can be achieved, but with more computing time with
+  /*TLorentzVector photon, p1, p2;
+  p1.SetPtEtaPhiM(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), 0.510e-3);
+  p2.SetPtEtaPhiM(particle->Pt(), eta[j], particle->Phi(), 0.510e-3);
+  photon = p1+p2;
+  photon.M()*/
+  
+  Float_t tantheta1 = 1e10;
+  
+  if (eta1 < -1e-10 || eta1 > 1e-10)
+    tantheta1 = 2 * TMath::Exp(-eta1) / ( 1 - TMath::Exp(-2*eta1));
+  
+  Float_t tantheta2 = 1e10;
+  if (eta2 < -1e-10 || eta2 > 1e-10)
+    tantheta2 = 2 * TMath::Exp(-eta2) / ( 1 - TMath::Exp(-2*eta2));
+  
+  Float_t e1squ = m0 * m0 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
+  Float_t e2squ = m0 * m0 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
+  
+  Float_t mass2 = 2 * m0 * m0 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( TMath::Cos(phi1 - phi2) + 1.0 / tantheta1 / tantheta2 ) ) );
+  
+  return mass2;
 }

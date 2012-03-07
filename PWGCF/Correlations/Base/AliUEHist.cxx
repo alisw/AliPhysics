@@ -753,6 +753,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   TH1* eventSameAll = 0;
   TH1* eventMixedAll = 0;
   
+  Int_t totalEvents = 0;
+  
   GetHistsZVtx(step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, &trackSameAll, &eventSameAll);
   mixed->GetHistsZVtx(step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, &trackMixedAll, &eventMixedAll);
   
@@ -805,10 +807,11 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 
       delete tracksSame;
       delete tracksMixed;
+      
+      totalEvents += eventSameAll->GetBinContent(vertexBin);
     }
   }
 
-  Int_t totalEvents = eventSameAll->Integral();
   if (totalTracks) {
     Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
     if (totalEvents > 0)

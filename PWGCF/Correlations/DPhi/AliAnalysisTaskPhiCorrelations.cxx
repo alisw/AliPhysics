@@ -112,6 +112,8 @@ fSelectBit(0),
 fUseChargeHadrons(kFALSE),
 fSelectCharge(0),
 fTriggerRestrictEta(-1),
+fCutConversions(kFALSE),
+fCutResonances(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -210,6 +212,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetTriggerRestrictEta(fTriggerRestrictEta);
   fHistosMixed->SetTriggerRestrictEta(fTriggerRestrictEta);
   
+  fHistos->SetPairCuts(fCutConversions, fCutResonances);
+  fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
+  
   // add histograms to list
   fListOfHistos->Add(fHistos);
   fListOfHistos->Add(fHistosMixed);
@@ -218,6 +223,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH1F("mixedDist", ";tracks;events", 200, 0, fMixingTracks * 1.5));
+  fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   
   PostData(0,fListOfHistos);
   
@@ -292,7 +298,9 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
-  settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"SelectCharge/D");
+  settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
+  settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
+  settingsTree->Branch("fCutResonances", &fCutResonances,"CutResonances/O");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
@@ -361,6 +369,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     
   // Get MC primaries
   TObjArray* tracksMC = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+  
+  if (fAOD)
+  {
+    for (Int_t i=0; i<fArrayMC->GetEntriesFast(); i++)
+      ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(((AliAODMCParticle*) fArrayMC->At(i))->PdgCode());
+  }
+  else
+  {
+    for (Int_t i=0; i<fMcEvent->GetNumberOfTracks(); i++)
+      ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(fMcEvent->GetTrack(i)->PdgCode());
+  }
   
   // (MC-true all particles)
   // STEP 0
@@ -456,7 +475,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
         // make list of secondaries (matched with MC)
         TObjArray* tracksRecoMatchedSecondaries = new TObjArray;
-        for (Int_t i=0; i<tracksRecoMatchedAll->GetEntries(); i++)
+        for (Int_t i=0; i<tracksRecoMatchedAll->GetEntriesFast(); i++)
           if (((AliAODMCParticle*)tracksRecoMatchedAll->At(i))->IsPhysicalPrimary() == kFALSE)
             tracksRecoMatchedSecondaries->Add(tracksRecoMatchedAll->At(i));
       
@@ -470,14 +489,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         // trigger particles: primaries in 4 < pT < 10
         // associated particles: secondaries in 1 < pT < 10
         
-        for (Int_t i=0; i<tracksRecoMatchedPrim->GetEntries(); i++)
+        for (Int_t i=0; i<tracksRecoMatchedPrim->GetEntriesFast(); i++)
         {
           AliVParticle* triggerParticle = (AliVParticle*) tracksRecoMatchedPrim->At(i);
           
           if (triggerParticle->Pt() < 4 || triggerParticle->Pt() > 10)
             continue;
           
-          for (Int_t j=0; j<tracksRecoMatchedSecondaries->GetEntries(); j++)
+          for (Int_t j=0; j<tracksRecoMatchedSecondaries->GetEntriesFast(); j++)
           {
             AliAODMCParticle* particle = (AliAODMCParticle*) tracksRecoMatchedSecondaries->At(j);
             
@@ -698,7 +717,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tr
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
   
-  for (Int_t i=0; i<tracks->GetEntries(); i++)
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->At(i);
     tracksClone->Add(new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
