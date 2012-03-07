@@ -596,8 +596,8 @@ Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
    TString lib;
    for (Int_t i=0; i<nlibs; i++) {
       lib = mod->GetLibrary(i);
-      if (fAdditionalLibs.Contains(lib)) continue;
       lib = Form("lib%s.so", lib.Data());
+      if (fAdditionalLibs.Contains(lib)) continue;
       if (!fAdditionalLibs.IsNull()) fAdditionalLibs += " ";
       fAdditionalLibs += lib;
    }

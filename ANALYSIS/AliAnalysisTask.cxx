@@ -265,7 +265,7 @@ Bool_t AliAnalysisTask::CheckPostData() const
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    for (Int_t islot=0; islot<fNoutputs; islot++) {
       coutput = GetOutputSlot(islot)->GetContainer();
-      if (!mgr->GetOutputs()->FindObject(coutput)) continue;
+      if (!mgr->GetOutputs()->FindObject(coutput) || coutput==mgr->GetCommonOutputContainer()) continue;
       if (!coutput->GetData()) {
          Error("CheckPostData", "Data not posted for slot #%d of task %s (%s)", 
                islot, GetName(), ClassName());
