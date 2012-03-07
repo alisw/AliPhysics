@@ -134,6 +134,8 @@ Double_t AliHFAfterBurner::GetNewAngle(AliAODRecoDecayHF *d,TClonesArray *mcArra
   if(!pdgdaughters) return 0.;
 
   lab = d->MatchToMC(pdgmother,mcArray,nProngs,pdgdaughters);
+  delete [] pdgdaughters;
+
   Double_t phi=-999.;
   if(lab>=0){
     fSignal=kTRUE;
