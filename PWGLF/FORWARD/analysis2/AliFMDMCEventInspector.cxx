@@ -29,6 +29,8 @@
 #include "AliGenEposEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
 #include "AliGenGeVSimEventHeader.h"
+#include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
 #include "AliHeader.h"
 #include <TList.h>
 #include <TH2F.h>
@@ -544,13 +546,44 @@ AliFMDMCEventInspector::ReadCentrality(const AliESDEvent* esd,
   qual = 0;
   AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
   if (!centObj) return true;
-
-  qual = centObj->GetQuality();
-  if (qual == 0x8) // Ignore ZDC outliers 
-    cent = centObj->GetCentralityPercentileUnchecked("V0M");  
-  else
-    cent = centObj->GetCentralityPercentile("V0M");        
-
+AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  Bool_t isMC = am->GetMCtruthEventHandler() != 0;
+  
+  //std::cout<<fUseDisplacedVertices<<"  "<<isMC<<std::endl;
+  
+  if(fUseDisplacedVertices && isMC) {
+    
+    
+    AliMCEventHandler* mchandler = static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
+    AliMCEvent* mcevent          = mchandler->MCEvent();
+    
+    AliHeader*               header          = mcevent->Header();
+    AliGenEventHeader*       genHeader       = header->GenEventHeader();
+    AliCollisionGeometry*    colGeometry     = 
+      dynamic_cast<AliCollisionGeometry*>(genHeader);
+    Double_t b              = -1;
+    if (colGeometry)  
+      b     = colGeometry->ImpactParameter();
+    //std::cout<<"Hallo!!  "<<b<<std::endl;
+    cent = -1;
+    if(b<3.5 && b >0) cent = 2.5; //0-5%
+    if(b>3.5 && b<4.95) cent = 7.5; //5-10%
+    if(b>4.95 && b<6.98) cent = 15; //10-20%
+    if(b>6.98 && b<8.55) cent = 25; //20-30%
+    if(b>8.55 && b<9.88) cent = 35; //30-40%
+    if(b>9.88 && b<11.04) cent = 45; //40-50%
+    if(b>11.04) cent = 55; //50-60%
+    //cent = 10;
+    qual = 0;
+  }
+  else {
+    
+    qual = centObj->GetQuality();
+    if (qual == 0x8) // Ignore ZDC outliers 
+      cent = centObj->GetCentralityPercentileUnchecked("V0M");  
+    else
+      cent = centObj->GetCentralityPercentile("V0M");        
+  }
   return true;
 }
 
