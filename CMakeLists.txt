@@ -336,6 +336,8 @@ COMMAND mkdir -p ${ALICE_ROOT}/alimdc-root/opt/alimdc/include
 COMMAND cp ${ALICE_ROOT}/RAW/mdc.h ${ALICE_ROOT}/alimdc-root/opt/alimdc/include
 COMMAND cp ${LIBPATH}/libAliMDC.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
 COMMAND cp ${ROOTALIBDIR}/libRoot.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/liblzma.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libpcre.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
 COMMAND cp ${ROOTALIBDIR}/libfreetype.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
 COMMAND cp ${ROOTALIBDIR}/libpcre.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
 COMMAND rm -rf ${ALICE_ROOT}/RPMS
@@ -405,6 +407,7 @@ COMMAND @echo '%defattr (-,root,root)' >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libAliMDC.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libRoot.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libpcre.a" >> ${ALIMDCSPECFILE}
+COMMAND @echo "%{prefix}/lib/liblzma.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libfreetype.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/include/mdc.h" >> ${ALIMDCSPECFILE}
 )
@@ -427,7 +430,7 @@ COMMAND ar t ${RAWDatabaseALIB} | xargs rm
 COMMAND ar t ${MDCALIB} | xargs rm 
 COMMAND ar t ${ESDALIB} | xargs rm 
 COMMAND ar t ${STEERBaseALIB} | xargs rm 
-COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a -pthread -ldl -lz
+COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a ${ROOTALIBDIR}/liblzma.a -pthread -ldl -lz
 COMMAND @echo "Target alimdc-static made"
 )
 
