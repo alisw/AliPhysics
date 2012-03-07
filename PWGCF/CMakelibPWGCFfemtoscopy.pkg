@@ -131,8 +131,6 @@ set ( HDRS ${HDRS}
     FEMTOSCOPY/AliFemto/AliFemtoPicoEventCollectionVector.h 
     FEMTOSCOPY/AliFemto/AliFemtoEventWriter.h 
     FEMTOSCOPY/AliFemto/AliFemtoEventWriterCollection.h 
-    FEMTOSCOPY/AliFemto/AliFemtoMCTrackCut.h
-    FEMTOSCOPY/AliFemto/AliFemtoEventReaderKinematicsChain.h
     )
 
 set ( FSRCS  FEMTOSCOPY/AliFemto/AliFemtoFsiTools.F FEMTOSCOPY/AliFemto/AliFemtoFsiWeightLednicky.F)
