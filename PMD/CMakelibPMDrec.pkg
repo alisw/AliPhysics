@@ -51,7 +51,7 @@ set ( SRCS
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
-set ( HDRS  ${HDRS} AliPMDClustering.h AliPMDDiscriminator.h AliPMDcludata.h)
+set ( HDRS  ${HDRS} AliPMDClustering.h AliPMDDiscriminator.h)
 
 set ( DHDR PMDrecLinkDef.h)
 
