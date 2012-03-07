@@ -204,18 +204,7 @@ AliHFEVZEROEventPlane::~AliHFEVZEROEventPlane(){
     delete fOutputList;
   }
   fOutputList = 0x0;
-  if(fMultV0Before) delete fMultV0Before;
-  if(fMultV0After) delete fMultV0After;
-
-  for(Int_t k = 0; k < fgknCentrBin; k++) {
-    for(Int_t iside = 0; iside < 2; iside++) {
-      for(Int_t icoord = 0; icoord < 2; icoord++) {
-	if(fQBefore[k][iside][icoord]) delete fQBefore[k][iside][icoord];
-	if(fQAfter[k][iside][icoord]) delete fQAfter[k][iside][icoord];
-      }
-    }
-  }
-
+  
 }
 //______________________________________________________________________________
 void AliHFEVZEROEventPlane::ProcessEvent(AliESDEvent *event) 
