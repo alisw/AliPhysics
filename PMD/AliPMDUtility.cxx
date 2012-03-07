@@ -715,6 +715,55 @@ void AliPMDUtility::CalculateXY(Float_t eta, Float_t phi, Float_t zpos)
   fPy  = ypos;
   fPz  = zpos;
 }
+
+void AliPMDUtility::GetEtaIndexXY(Int_t smn, Int_t row, Int_t col, Float_t &xp, Float_t &yp, Double_t &eta, Int_t &etaindex) {
+  // Takes smn, row, col
+  // Calculates x, y, eta and etabin into 10. 
+  // Use only in raw Data.
+
+  Float_t xx = 0., yy = 0.;
+  Int_t xpad = -1, ypad = -1;
+  
+  if(smn <12) {
+    xpad = col;
+    ypad = row;
+  }
+  else if(smn >=12 && smn < 24) {
+    xpad = row;
+    ypad = col;
+  }
+ 
+ 
+
+  RectGeomCellPos(smn,xpad,ypad,xx,yy); 
+  xp = xx;
+  yp = yy;
+
+  Float_t rpxpy  = TMath::Sqrt(xx*xx + yy*yy);
+  Float_t theta  = TMath::ATan2(rpxpy,365.0);
+  eta    = -TMath::Log(TMath::Tan(0.5*theta));
+
+  Int_t etaBin = -1;  
+
+  if( eta > 2.1 && eta < 2.3) etaBin = 0;
+  else if( eta > 2.3 && eta < 2.5) etaBin = 1;
+  else if( eta > 2.5 && eta < 2.7) etaBin = 2;
+  else if( eta > 2.7 && eta < 2.9) etaBin = 3;
+  else if( eta > 2.9 && eta < 3.1) etaBin = 4;
+  else if( eta > 3.1 && eta < 3.3) etaBin = 5;
+  else if( eta > 3.3 && eta < 3.5) etaBin = 6;
+  else if( eta > 3.5 && eta < 3.7) etaBin = 7;
+  else if( eta > 3.7 && eta < 3.9) etaBin = 8;
+  else if( eta > 3.9 && eta < 4.1) etaBin = 9;
+  else etaBin = 13;
+
+  etaindex = etaBin;
+
+
+}
+
+//_____________________________________________________
+
 Float_t AliPMDUtility::GetTheta() const
 {
   return fTheta;

@@ -36,6 +36,9 @@ class AliPMDUtility:public TObject
   void GenerateBoundaryPoints(Int_t ism, Float_t &x1ism, Float_t &y1ism
 			      , Float_t &x2ism, Float_t &y2ism);
 
+  void GetEtaIndexXY(Int_t smn, Int_t row, Int_t col, 
+		     Float_t &xp, Float_t &yp, Double_t &eta, Int_t &etaindex);
+
   void DrawPMDModule(Int_t idet); 
 
   void ApplyVertexCorrection(Float_t vertex[], 
@@ -66,7 +69,7 @@ class AliPMDUtility:public TObject
   Float_t fSecTr[4][3]; // Sector alignement (translation)
   Int_t   fWriteModule;  // Module number writing 
   
-  ClassDef(AliPMDUtility,7) // Utility class for the detector set:PMD
+  ClassDef(AliPMDUtility,8) // Utility class for the detector set:PMD
 };
 
 #endif

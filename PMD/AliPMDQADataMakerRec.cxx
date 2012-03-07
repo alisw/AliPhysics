@@ -22,7 +22,8 @@
 
 // --- ROOT system ---
 #include <TClonesArray.h>
-#include <TFile.h> 
+#include <TFile.h>
+#include <TH1D.h>  
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h> 
@@ -72,40 +73,61 @@ AliPMDQADataMakerRec& AliPMDQADataMakerRec::operator = (const AliPMDQADataMakerR
  
 
 //____________________________________________________________________________ 
-void AliPMDQADataMakerRec::InitRaws()
-{
+void AliPMDQADataMakerRec::InitRaws() {
   // create Raws histograms in Raws subdir
 
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F *hCellAdcPRE = new TH1F("hCellAdcPRE", "Cell Wise ADC fill for PRE Shower Plane;Cells in SMN-ROW-COL;ADC", 234795, 0, 234795);
- 
-  Add2RawsList(hCellAdcPRE, 0, !expert, image, !saveCorr);  
+
+  TH1F *h0 = new TH1F("hDdl2304","Cell Wise Frequency for PRE Plane DDL 2304;DDL2304;Frequency",50000 ,0,50000.0);
+  TH1F *h1 = new TH1F("hDdl2305","Cell Wise Frequency for PRE Plane DDL 2305;DDL2305;Frequency",50000 ,0,50000.0);
+  TH1F *h2 = new TH1F("hDdl2308","Cell Wise Frequency for CPV Plane DDL 2308;DDL2308;Frequency",50000 ,0,50000.0);
+  TH1F *h3 = new TH1F("hDdl2309","Cell Wise Frequency for CPV Plane DDL 2309;DDL2309;Frequency",50000 ,0,50000.0);
+    
+  for(int i = 0; i < 50; i++ )  {
+    h0->GetXaxis()->SetBinLabel(i*1000+300,Form("%2d",i+1));
+    h1->GetXaxis()->SetBinLabel(i*1000+300,Form("%2d",i+1));
+    h2->GetXaxis()->SetBinLabel(i*1000+300,Form("%2d",i+1));
+    h3->GetXaxis()->SetBinLabel(i*1000+300,Form("%2d",i+1));
+  }
 
 
-  TH1F *hCellAdcCPV = new TH1F("hCellAdcCPV", "Cell Wise ADC fill for CPV Veto Plane;Cells in SMN-ROW-COL;ADC", 234795, 0, 234795);
-  
-  Add2RawsList(hCellAdcCPV, 1, !expert, image, !saveCorr);  
-
-  
-  TH1F *hCalibEntPRE = new TH1F("hCalibEntPRE", "Cell Wise Frequency for PRE Shower Plane;Cells in SMN-ROW-COL;Frequency", 234795, 0, 234795);
-  
-  Add2RawsList(hCalibEntPRE, 2, !expert, image, !saveCorr);  
+  Add2RawsList(h0, 0, expert, image, saveCorr);  
+  Add2RawsList(h1, 1, expert, image, saveCorr);  
+  Add2RawsList(h2, 2, expert, image, saveCorr);  
+  Add2RawsList(h3, 3, expert, image, saveCorr);  
 
 
-  TH1F *hCellEntCPV = new TH1F("hCellEntCPV", "Cell Wise Frequency for CPV Veto Plane;Cells in SMN-ROW-COL;Frequency", 234795, 0, 234795);
-  
-  Add2RawsList(hCellEntCPV, 3, !expert, image, !saveCorr);  
-
-  
   TH2F *hPreXY = new TH2F("hPreXY","PRE plane;X [cm];Y [cm]",200,-100.,100.,200,-100.,100.);
-  Add2RawsList(hPreXY, 4, !expert, !image, saveCorr);
+  Add2RawsList(hPreXY, 4, expert, !image, saveCorr);
   
   TH2F *hCpvXY = new TH2F("hCpvXY","CPV plane;X [cm];Y [cm]",200,-100.,100.,200,-100.,100.);
-  Add2RawsList(hCpvXY, 5, !expert, !image, saveCorr);
-  //  
+  Add2RawsList(hCpvXY, 5, expert, !image, saveCorr);
+  
+  TH1F *hQuality1 = new TH1F("hPmdQualityWAdc","Quality Plot SumWAdc/SumWAdc;#eta Bins (PRE   <--->    CPV);Quality",25,0,25);
+  TH1F *hQuality2 = new TH1F("hPmdQualityHit","Quality Plot Hit/Hit;#eta Bins (PRE  <--->   CPV);Quality",25,0,25);
+
+  for(int i = 0; i < 10; i++ )  {
+    hQuality1->GetXaxis()->SetBinLabel(i+3,Form("%2d",i+1));
+    hQuality2->GetXaxis()->SetBinLabel(i+3,Form("%2d",i+1));
+
+    hQuality1->GetXaxis()->SetBinLabel(i+15,Form("%2d",i+1));
+    hQuality2->GetXaxis()->SetBinLabel(i+15,Form("%2d",i+1));
+  }
+
+  Add2RawsList(hQuality1, 6, !expert, image, saveCorr);
+  Add2RawsList(hQuality2, 7, !expert, image, saveCorr);
+
+  TH1F *hMP = new TH1F("hPmdMultiplicityP"," Cell Hit Distribution with adc>40; Multiplicity; Entries",1000,0,7000); 
+  TH1F *hMC = new TH1F("hPmdMultiplicityC"," Cell Hit Distribution with adc>40; Multiplicity; Entries",1000,0,7000); 
+  Add2RawsList(hMP, 8, expert, !image, saveCorr);
+  Add2RawsList(hMC, 9, expert, !image, saveCorr);
+  
+
+
+
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
@@ -192,6 +214,7 @@ void AliPMDQADataMakerRec::InitRecPoints()
   TH2I *h7 = new TH2I("hPre32","Cluster - DDL3 vs DDL2;DDL2;DDL3", 100,0,200,100,0,200);
   Add2RecPointsList(h7,7, !expert, image);
 
+
   TH2I *h8 = new TH2I("hCpv54","Cluster - DDL5 vs DDL4;DDL4;DDL5", 100,0,200,100,0,200);
   Add2RecPointsList(h8,8, !expert, image);
   //
@@ -239,90 +262,148 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     
     AliPMDddldata *pmdddl = 0x0;
 
-    Int_t   iddl = -1;
-    Int_t   xpad = -1;
-    Int_t   ypad = -1;
+    Int_t   iddl =  1;
+    Int_t   sddl = -1;
     Float_t xx = 0., yy = 0.;
 
+    Double_t eta;
+    Int_t etaindex = 0;
+
+    Float_t nDdl1[10] = {0,0,0,0,0,0,0,0,0,0};
+    Float_t nDdl2[10] = {1,1,1,1,1,1,1,1,1,1};
+    Float_t nDdl3[10] = {0,0,0,0,0,0,0,0,0,0};
+    Float_t nDdl4[10] = {1,1,1,1,1,1,1,1,1,1};
+
+    Float_t nDdl1a[10] = {1,1,1,1,1,1,1,1,1,1};
+    Float_t nDdl2a[10] = {1,1,1,1,1,1,1,1,1,1};
+    Float_t nDdl3a[10] = {1,1,1,1,1,1,1,1,1,1};
+    Float_t nDdl4a[10] = {1,1,1,1,1,1,1,1,1,1};
+    
+    Float_t nDdl11[10] = {1,1,1,1,1,1,1,1,1,1};
+    Float_t nDdl22[10] = {1,1,1,1,1,1,1,1,1,1};
+    Float_t nDdl33[10] = {1,1,1,1,1,1,1,1,1,1};
+    Float_t nDdl44[10] = {1,1,1,1,1,1,1,1,1,1};
+
+    Float_t nddlp = 0;
+    Float_t nddlc  = 0;
+
     AliPMDUtility cc;
+
+       
 
     while ((iddl = stream.DdlData(pmdddlcont)) >=0)
     {
 	Int_t ientries = pmdddlcont->GetEntries();
 	//printf(" ======= DDLNO = %d ientries = %d \n", iddl, ientries);
+	if(iddl == 0 || iddl == 1) sddl = iddl;
+	if(iddl == 4 ) sddl = 2;
+	if(iddl == 5 ) sddl = 3;
 	
 	for (Int_t ient = 0; ient < ientries; ient++)
 	  {
-	      //AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont->UncheckedAt(ient);
 	    pmdddl = (AliPMDddldata*)pmdddlcont->UncheckedAt(ient);
 
-	    Int_t det = pmdddl->GetDetector();
-	    Int_t smn = pmdddl->GetSMN();
-	    Int_t mcm = pmdddl->GetMCM();
-	    //Int_t chno = pmdddl->GetChannel();
-	    Int_t row = pmdddl->GetRow();
-	    Int_t col = pmdddl->GetColumn();
-	    Int_t sig = pmdddl->GetSignal();
-	    
+	    Int_t det  = pmdddl->GetDetector();
+	    Int_t smn  = pmdddl->GetSMN();
+	    Int_t mcm  = pmdddl->GetMCM();
+	    Int_t chno = pmdddl->GetChannel();
+	    Int_t pbus = pmdddl->GetPatchBusId();
+	    Int_t row  = pmdddl->GetRow();
+	    Int_t col  = pmdddl->GetColumn();
+	    Int_t sig  = pmdddl->GetSignal();
+
 	    if (mcm == 0) continue;
+
 	    if (det < 0 || det > 1)  continue;
 	    if (smn < 0 || smn > 23) continue;
 	    if (row < 0 || row > 47) continue;
 	    if (col < 0 || col > 95) continue;
+	    
+	    Int_t rc = pbus*1000 + mcm*64 + chno;
 
-	    Int_t ipp = 10000*smn + 100*row + col;
+	    if(sddl == 0) FillRawsData(0,rc);
+	    else if(sddl == 1) FillRawsData(1,rc);
+	    else if(sddl == 2) FillRawsData(2,rc);
+	    else if(sddl == 3) FillRawsData(3,rc);
 
-	    if (det == 0)
-	    {
-	      FillRawsData(0,ipp, sig);
-	      FillRawsData(2,ipp);
+	    cc.GetEtaIndexXY(smn,row,col,xx,yy,eta,etaindex);
+	    
+	    if(etaindex >= 0 && etaindex <=10) {
 
-		if(smn < 12)
-		{
-		    xpad = col;
-		    ypad = row;
+	      if(sddl == 0) { 
+		nDdl1a[etaindex] += 1; 
+		nDdl1[etaindex] += sig; 
+		if(sig >40) {
+		  nDdl11[etaindex] += 1;
+		  nddlp += 1;
 		}
-		else if(smn >= 12 && smn < 24)
-		{
-		    xpad = row;
-		    ypad = col;
+		  
+	      }
+	      else if(sddl == 1) { 
+		nDdl2a[etaindex] += 1; 
+		nDdl2[etaindex] += sig; 
+		if(sig >40) {
+		  nDdl22[etaindex] += 1;
+		  nddlp += 1;
 		}
+ 
 
+	      }
+	      else if(sddl == 2) { 
+		nDdl3a[etaindex] += 1; 
+		nDdl3[etaindex] += sig; 
+		if(sig >40) {
+		  nDdl33[etaindex] += 1;
+		  nddlc += 1;
+		} 
+	      }
+	      else if(sddl == 3) { 
+		nDdl4a[etaindex] += 1; 
+		nDdl4[etaindex] += sig; 
+		if(sig >40) {
+		  nDdl44[etaindex] += 1; 
+		  nddlc += 1;
+		}
+	      }
 
-		cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
-		FillRawsData(4,xx,yy);
 	    }
-	    if (det == 1)
-	    {
-	      FillRawsData(1,ipp, sig);
-	      FillRawsData(3,ipp);
-	
-		if(smn < 12)
-		{
-		    xpad = col;
-		    ypad = row;
-		}
-		else if(smn >= 12 && smn < 24)
-		{
-		    xpad = row;
-		    ypad = col;
-		}
 
-		cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
-		FillRawsData(5,xx,yy);
-
-	    }
-
+	    if (det == 0) FillRawsData(4,xx,yy);
+	    else if (det == 1) FillRawsData(5,xx,yy);
+	    
 	  }
 
 	pmdddlcont->Delete();
     }
 
+
     delete pmdddlcont;
     pmdddlcont = 0x0;
-    //
+    
+    if(nddlp != 0)   FillRawsData(8,nddlp);
+    if(nddlc != 0)   FillRawsData(9,nddlc);
+   
+
+    ResetRawsData(6);
+    ResetRawsData(7);
+    for (Int_t i = 0; i < 10; i++) {
+     
+      Float_t prerC =  nDdl11[i]/nDdl22[i];
+      Float_t cpvrC = nDdl33[i]/nDdl44[i];
+
+      Float_t prera =(nDdl1[i]/nDdl1a[i])/(nDdl2[i]/nDdl2a[i]);
+      Float_t cpvra =(nDdl3[i]/nDdl3a[i])/(nDdl4[i]/nDdl4a[i]);
+      
+     
+      FillRawsData(6,i+2,prera);
+      FillRawsData(6,i+14,cpvra);
+      FillRawsData(7,i+2,prerC);
+      FillRawsData(7,i+14,cpvrC);
+    }
+
     IncEvCountCycleRaws();
     IncEvCountTotalRaws();
+ 
     //
 }
 //____________________________________________________________________________
