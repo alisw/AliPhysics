@@ -13,6 +13,8 @@ void SETUP()
     CheckLoadLibrary("libAOD");
     CheckLoadLibrary("libCORRFW");
     CheckLoadLibrary("libANALYSISalice");
+    CheckLoadLibrary("libPWGflowBase");
+    CheckLoadLibrary("libPWGflowTasks");
     CheckLoadLibrary("libPWGHFbase");
     CheckLoadLibrary("libPWGHFvertexingHF");
 
