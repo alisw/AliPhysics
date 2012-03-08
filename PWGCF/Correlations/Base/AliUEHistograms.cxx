@@ -58,6 +58,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fITSClusterMap(0),
   fSelectCharge(0),
   fTriggerRestrictEta(-1),
+  fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
   fRunNumber(0)
@@ -158,6 +159,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fITSClusterMap(0),
   fSelectCharge(0),
   fTriggerRestrictEta(-1),
+  fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
   fRunNumber(0)
@@ -466,7 +468,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         
       if (fTriggerRestrictEta > 0 && TMath::Abs(triggerEta) > fTriggerRestrictEta)
 	continue;
-
+      
       for (Int_t j=0; j<jMax; j++)
       {
         if (!mixed && i == j)
@@ -496,6 +498,14 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
             continue;
         }
         
+	if (fEtaOrdering)
+	{
+	  if (triggerEta < 0 && eta[j] < triggerEta)
+	    continue;
+	  if (triggerEta > 0 && eta[j] > triggerEta)
+	    continue;
+	}
+
         // conversions
 	if (fCutConversions && particle->Charge() * triggerParticle->Charge() < 0)
 	{
@@ -737,6 +747,7 @@ void AliUEHistograms::Copy(TObject& c) const
 
   target.fSelectCharge = fSelectCharge;
   target.fTriggerRestrictEta = fTriggerRestrictEta;
+  target.fEtaOrdering = fEtaOrdering;
   target.fCutConversions = fCutConversions;
   target.fCutResonances = fCutResonances;
   target.fRunNumber = fRunNumber;
