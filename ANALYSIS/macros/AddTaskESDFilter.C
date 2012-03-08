@@ -12,7 +12,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                            Int_t  tofTimeZeroType=AliESDpid::kTOF_T0,
                                            Bool_t enableTPCOnlyAODTracks=kFALSE,
                                            Bool_t disableCascades=kFALSE,
-                                           Bool_t disableKinks=kFALSE, Int_t runFlag = 1100)
+                                           Bool_t disableKinks=kFALSE, Int_t runFlag = 1100,
+					   Int_t  muonMCMode = 2)
 {
   // Creates a filter task and adds it to the analysis manager.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -57,7 +58,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // Muons
    Bool_t onlyMuon=kTRUE;
    Bool_t keepAllEvents=kTRUE;
-   Int_t mcMode=(useKineFilter ? 2 : 0); // use 1 instead of 2 to get all MC information instead of just ancestors of mu tracks
+   Int_t mcMode= useKineFilter ? muonMCMode : 0; // use 1 instead of 2 to get all MC information instead of just ancestors of mu tracks
    AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter",onlyMuon,keepAllEvents,mcMode);
    mgr->AddTask(esdmuonfilter);
    if(usePhysicsSelection){
