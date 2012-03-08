@@ -388,7 +388,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	    h->Fill(eta,phi,poissonV);
 	  else
 	    hclone->Fill(eta,phi,poissonV);
-	  rh->fDensity->Fill(eta, phi, poissonV);
+	  if (fUsePoisson) rh->fDensity->Fill(eta, phi, poissonV);
 	}
       }
       
@@ -413,7 +413,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       
     } // for q
   } // for d
-  
+
   return kTRUE;
 }
 
