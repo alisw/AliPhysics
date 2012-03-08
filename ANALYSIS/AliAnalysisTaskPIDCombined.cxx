@@ -132,7 +132,7 @@ void AliAnalysisTaskPIDCombined::UserCreateOutputObjects()
 
   fHistList.Add(new TH1D("nEvents","Number of Evnets;Selection",2,0,2));
 
-  for (Int_t ispec=0; ispec<AliPID::kSPECIES; ++ispec){
+  for (Int_t ispec=0; (Int_t)ispec<AliPID::kSPECIES; ++ispec){
 
  
     fProbTPC[ispec]=new TH2D(Form("prob%s_mom_TPC",AliPID::ParticleName(ispec)),
