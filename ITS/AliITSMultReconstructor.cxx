@@ -164,7 +164,7 @@ fhphiClustersLay1(0),
     fClArr[i] = 0;
     for (int j=0;j<2;j++) fUsedClusLay[i][j] = 0;
     fDetectorIndexClustersLay[i] = 0;
-    fClusterCopyIndex[2] = 0;
+    fClusterCopyIndex[i] = 0;
     fOverlapFlagClustersLay[i] = 0;
     fNClustersLay[i] = 0;
     fClustersLay[i] = 0;
@@ -368,7 +368,7 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
   for (int i=0;i<2;i++) {
     delete[] fClustersLay[i];
     delete[] fDetectorIndexClustersLay[i];
-    delete[] fClusterCopyIndex[2];
+    delete[] fClusterCopyIndex[i];
     delete[] fOverlapFlagClustersLay[i];
     delete   fClArr[i];
     for (int j=0;j<2;j++) delete fUsedClusLay[i][j];
