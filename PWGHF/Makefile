@@ -27,13 +27,22 @@ ifneq ($(ESD_INCLUDE),)
 	ifneq ($(CORRFW_INCLUDE),)
 		ALICEINC += -I../$(CORRFW_INCLUDE)
 	endif
-	ifneq ($(PWGHFbase_INCLUDE),)
-		ALICEINC += -I../$(PWGHFbase_INCLUDE)
+	ifneq ($(CORRFW_INCLUDE),)
+		ALICEINC += -I../$(CORRFW_INCLUDE)
 	endif
+	ifneq ($(PWGHFvertexingHF_INCLUDE),)
+		ALICEINC += -I../$(PWGHFvertexingHF_INCLUDE)
+	endif
+        ifneq ($(PWGflowBase_INCLUDE),)
+                ALICEINC += -I../$(PWGflowBase_INCLUDE)
+        endif
+        ifneq ($(PWGflowTasks_INCLUDE),)
+                ALICEINC += -I../$(PWGflowTasks_INCLUDE)
+        endif
 else
   ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PWGHF/base
-else
+    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PWGHF/base -I$(ALICE_ROOT)/PWGHF/vertexingHF -I$(ALICE_ROOT)/PWG/FLOW/Base -I$(ALICE_ROOT)/PWG/FLOW/Tasks
+  else
   endif
 endif
 
