@@ -478,6 +478,7 @@ void AliTOFTenderSupply::DetectRecoPass()
   
   if (!file) {
     AliFatal("Current file not found");
+    return; // coverity
   }
   
   //find pass from file name (UGLY, but not stored in ESD... )
