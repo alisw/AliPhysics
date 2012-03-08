@@ -1,4 +1,4 @@
-AliAnalysisTaskSELambdac *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF,
+AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF,
 					 Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE)
 {
   //==============================================================================                                                      
@@ -55,35 +55,73 @@ AliAnalysisTaskSELambdac *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool
   // Create containers for input/output
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_InvMassLambdac";
-  AliAnalysisDataContainer *cinputLambdac = mgr->CreateContainer("cinputLambdac",TChain::Class(),
+
+  TString finDirname="First_PbPb";
+  TString inname = "cinputLc";
+  TString outname = "coutputLc";
+  TString cutsname = "coutputLcCuts";
+  TString normname = "coutputLcNorm";
+  TString ntuplename = "coutputLc2";
+  TString nev2 = "coutputNev";
+  TString outname2 = "coutputLambdacMC";
+  TString aPrioriname = "coutputAPriori";
+  TString multiplicityname = "coutputMultiplicity";
+  inname += finDirname.Data();
+  outname += finDirname.Data();
+  cutsname += finDirname.Data();
+  normname += finDirname.Data();
+  ntuplename += finDirname.Data();
+  nev2 += finDirname.Data();
+  outname2 += finDirname.Data();
+  aPrioriname += finDirname.Data();
+  multiplicityname += finDirname.Data();
+
+
+  TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
+  inname += centr;
+  outname += centr;
+  cutsname += centr;
+  normname += centr;
+  ntuplename += centr;
+  nev2 += centr;
+  outname2 += centr;
+  aPrioriname += centr;
+  multiplicityname += centr;
+
+
+  AliAnalysisDataContainer *cinputLambdac = mgr->CreateContainer(inname,TChain::Class(),
 								 AliAnalysisManager::kInputContainer);
   mgr->ConnectInput(lambdacTask,0,mgr->GetCommonInputContainer());
 
-  AliAnalysisDataContainer *coutputLambdacCuts = mgr->CreateContainer("coutputLambdacCuts",TList::Class(),
+  AliAnalysisDataContainer *coutputLambdacCuts = mgr->CreateContainer(cutsname,TList::Class(),
 								      AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(lambdacTask,2,coutputLambdacCuts);
 
-  AliAnalysisDataContainer *coutputLambdac = mgr->CreateContainer("coutputLambdac",TList::Class(),
+  AliAnalysisDataContainer *coutputLambdac = mgr->CreateContainer(outname,TList::Class(),
 								  AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(lambdacTask,1,coutputLambdac);
 
-  AliAnalysisDataContainer *coutputLambdacMC = mgr->CreateContainer("coutputLambdacMC",TList::Class(),
+  AliAnalysisDataContainer *coutputLambdacMC = mgr->CreateContainer(outname2,TList::Class(),
 								    AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(lambdacTask,3,coutputLambdacMC);
 
-  AliAnalysisDataContainer *coutputLambdacNev = mgr->CreateContainer("coutputLambdacNev",TH1F::Class(),
+  AliAnalysisDataContainer *coutputLambdacNev = mgr->CreateContainer(nev2,TH1F::Class(),
 								     AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(lambdacTask,4,coutputLambdacNev);
 
-  AliAnalysisDataContainer *coutputAPriori = mgr->CreateContainer("coutputAPriori",TList::Class(),
+  AliAnalysisDataContainer *coutputAPriori = mgr->CreateContainer(aPrioriname,TList::Class(),
 								  AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(lambdacTask,5,coutputAPriori);
-  AliAnalysisDataContainer *coutputMultiplicity = mgr->CreateContainer("coutputMultiplicity",TList::Class(),
+  AliAnalysisDataContainer *coutputMultiplicity = mgr->CreateContainer(multiplicityname,TList::Class(),
 								       AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(lambdacTask,6,coutputMultiplicity);
 
+  AliAnalysisDataContainer *coutputLambdacNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+
+ mgr->ConnectOutput(lambdacTask,7,coutputLambdacNorm);
+
   if (storeNtuple) {
-    AliAnalysisDataContainer *coutputLambdac2 = mgr->CreateContainer("coutputLambdac2",TNtuple::Class(),
+    AliAnalysisDataContainer *coutputLambdac2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								     AliAnalysisManager::kOutputContainer,"InvMassLambdac_nt1.root");
     coutputLambdac2->SetSpecialOutput();
     mgr->ConnectOutput(lambdacTask,7,coutputLambdac2);
