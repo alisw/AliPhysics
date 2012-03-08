@@ -46,6 +46,7 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
   virtual void SetStandardCutsPbPb2011();
+  void SetStandardCutsPbPb2010Peripherals();
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   Int_t IsSelectedPIDdefault(AliAODRecoDecayHF *rd);
   Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
