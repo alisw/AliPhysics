@@ -41,6 +41,7 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
+	SPECTRA/PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
  )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -49,4 +50,4 @@ set ( DHDR PWGLFspectraLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGLF/SPECTRA/ChargedHadrons/dNdPt TPC PWGUD/base STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGLF/SPECTRA/PiKaPr/TPCTOF PWGLF/SPECTRA/ChargedHadrons/dNdPt TPC PWGUD/base STEER/STEER STEER/ESD STEER/STEERBase)

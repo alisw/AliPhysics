@@ -15,5 +15,6 @@
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
 #pragma link C++ class AliPtResolAnalysisPbPb+;
+#pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 
 #endif

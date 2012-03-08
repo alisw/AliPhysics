@@ -455,8 +455,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
       Double_t rap = trackMC->Y();
       Double_t pT  = trackMC->Pt();
       Int_t sign = pdg < 0 ? -1 : 1; // only works for charged pi,K,p !!
-      Double_t transMass = TMath::Sqrt(trackMC->Pt()*trackMC->Pt() + trackMC->GetMass()*trackMC->GetMass()) 
-	- trackMC->GetMass();
+//      Double_t transMass = TMath::Sqrt(trackMC->Pt()*trackMC->Pt() + trackMC->GetMass()*trackMC->GetMass()) - trackMC->GetMass();
       //
       Int_t iPart = -1;
       if (TMath::Abs(pdg) == 211)  iPart = 0; // select Pi+/Pi- only
@@ -564,14 +563,10 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     Double_t rapProton = 0.5*TMath::Log((energyProton + pvec[2])/(energyProton - pvec[2]));
     Double_t rapDeuteron = 0.5*TMath::Log((energyDeuteron + pvec[2])/(energyDeuteron - pvec[2]));
     //
-    Double_t transMassPion = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kPion)*AliPID::ParticleMass(AliPID::kPion)) 
-      -  AliPID::ParticleMass(AliPID::kPion);
-    Double_t transMassKaon = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kKaon)*AliPID::ParticleMass(AliPID::kKaon)) 
-      -  AliPID::ParticleMass(AliPID::kKaon);
-    Double_t transMassProton = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton)) 
-      -  AliPID::ParticleMass(AliPID::kProton);
-    Double_t transMassDeuteron = TMath::Sqrt(track->Pt()*track->Pt() + 4*AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton))
-      -  2*AliPID::ParticleMass(AliPID::kProton);
+//    Double_t transMassPion = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kPion)*AliPID::ParticleMass(AliPID::kPion))      -  AliPID::ParticleMass(AliPID::kPion);
+//    Double_t transMassKaon = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kKaon)*AliPID::ParticleMass(AliPID::kKaon))     -  AliPID::ParticleMass(AliPID::kKaon);
+ //   Double_t transMassProton = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton))    -  AliPID::ParticleMass(AliPID::kProton);
+//    Double_t transMassDeuteron = TMath::Sqrt(track->Pt()*track->Pt() + 4*AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton))    -  2*AliPID::ParticleMass(AliPID::kProton);
     //
     // 3. make the PID
     //
@@ -593,7 +588,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     // (8..) dca_xy
     // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident, 3-second weak, 4-second material
     //
-    Double_t transMass[4] = {transMassPion,transMassKaon,transMassProton,transMassDeuteron};
+//    Double_t transMass[4] = {transMassPion,transMassKaon,transMassProton,transMassDeuteron};
     Double_t rap[4] = {rapPion,rapKaon,rapProton,rapDeuteron};
     Double_t pullsTPC[4] = {fESDpid->NumberOfSigmasTPC(track,AliPID::kPion),
 			    fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon),
@@ -616,10 +611,10 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	}
 
     //
-    Double_t tpcQA[4] = {fESDpid->NumberOfSigmasTPC(track,AliPID::kElectron),
-			 fESDpid->NumberOfSigmasTPC(track,AliPID::kPion),
-			 fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon),
-			 fESDpid->NumberOfSigmasTPC(track,AliPID::kProton)};
+//    Double_t tpcQA[4] = {fESDpid->NumberOfSigmasTPC(track,AliPID::kElectron),
+//			 fESDpid->NumberOfSigmasTPC(track,AliPID::kPion),
+//			 fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon),
+//			 fESDpid->NumberOfSigmasTPC(track,AliPID::kProton)};
 
     Double_t tofQA[4] = {0.,0.,0.,0.}; 
     if (!fUseTPConlyTracks) {
