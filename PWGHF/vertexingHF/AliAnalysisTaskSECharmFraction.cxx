@@ -629,9 +629,9 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 
   
   // Lxy and CosPointXY study
-  Int_t nbinsSparsCxyLxy[4]={84,fCutsTight->GetNPtBins(),10,25}; 
+  Int_t nbinsSparsCxyLxy[4]={84,fCutsTight->GetNPtBins(),10,20}; 
   Double_t binLowLimitSparseCxyLxy[4]={1.680,fCutsTight->GetPtBinLimits()[0],0.99,0.};// Use OverFlow/UnderFlow to get other cases
-  Double_t binUpLimitSparseCxyLxy[4]={2.100,fCutsTight->GetPtBinLimits()[fCutsTight->GetNPtBins()],1.,50.};
+  Double_t binUpLimitSparseCxyLxy[4]={2.100,fCutsTight->GetPtBinLimits()[fCutsTight->GetNPtBins()],1.,20.};
   Double_t *ptbinlimitsCxyLxy=new Double_t[fCutsTight->GetNPtBins()+1];
   for(Int_t nBins=0;nBins<=fCutsTight->GetNPtBins();nBins++){
     ptbinlimitsCxyLxy[nBins]=fCutsTight->GetPtBinLimits()[nBins];
@@ -1742,7 +1742,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptNCfromDstar;
   TH1F *hInvMassD0NCfromDstar,*hInvMassD0barNCfromDstar;
   TH2F *hInvMassPtNCfromDstar=new TH2F("hInvMassPtNCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseNCfromDstar=new THnSparseF("hSparseNCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseNCfromDstar=new THnSparseF("hSparseNCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseNCfromDstar->SetBinEdges(0,massbins);
   hSparseNCfromDstar->SetBinEdges(1,massbins);
   hSparseNCfromDstar->SetBinEdges(2,ptbinsForNsparse);
@@ -2037,7 +2037,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptNCother;
   TH1F *hInvMassD0NCother,*hInvMassD0barNCother;
   TH2F *hInvMassPtNCother=new TH2F("hInvMassPtNCother","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseNCother=new THnSparseF("hSparseNCother","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseNCother=new THnSparseF("hSparseNCother","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseNCother->SetBinEdges(0,massbins);
   hSparseNCother->SetBinEdges(1,massbins);
   hSparseNCother->SetBinEdges(2,ptbinsForNsparse);
@@ -2339,7 +2339,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCsign;
   TH1F *hInvMassD0LSCsign,*hInvMassD0barLSCsign;
   TH2F *hInvMassPtLSCsign=new TH2F("hInvMassPtLSCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseLSCsign=new THnSparseF("hSparseLSCsign","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseLSCsign=new THnSparseF("hSparseLSCsign","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCsign->SetBinEdges(0,massbins);
   hSparseLSCsign->SetBinEdges(1,massbins);
   hSparseLSCsign->SetBinEdges(2,ptbinsForNsparse);
@@ -2353,7 +2353,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 
 
   
- THnSparseF *hSparseCxyLxyLSCsign=new THnSparseF("hSparseCxyLxyLSCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
+  THnSparseF *hSparseCxyLxyLSCsign=new THnSparseF("hSparseCxyLxyLSCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
   hSparseCxyLxyLSCsign->SetBinEdges(1,ptbinlimitsCxyLxy); 
   hSparseCxyLxyLSCsign->GetAxis(0)->SetName("mass");
   hSparseCxyLxyLSCsign->GetAxis(0)->SetTitle("Invariant Mass (K#pi) [GeV/c^{2}]");
@@ -2673,7 +2673,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCback;
   TH1F *hInvMassD0LSCback,*hInvMassD0barLSCback;
   TH2F *hInvMassPtLSCback=new TH2F("hInvMassPtLSCback","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseLSCback=new THnSparseF("hSparseLSCback","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseLSCback=new THnSparseF("hSparseLSCback","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCback->SetBinEdges(0,massbins);
   hSparseLSCback->SetBinEdges(1,massbins);
   hSparseLSCback->SetBinEdges(2,ptbinsForNsparse);
@@ -2974,7 +2974,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCfromB;
   TH1F *hInvMassD0LSCfromB,*hInvMassD0barLSCfromB;
   TH2F *hInvMassPtLSCfromB=new TH2F("hInvMassPtLSCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseLSCfromB=new THnSparseF("hSparseLSCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseLSCfromB=new THnSparseF("hSparseLSCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCfromB->SetBinEdges(0,massbins);
   hSparseLSCfromB->SetBinEdges(1,massbins);
   hSparseLSCfromB->SetBinEdges(2,ptbinsForNsparse);
@@ -3285,7 +3285,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCfromDstar;
   TH1F *hInvMassD0LSCfromDstar,*hInvMassD0barLSCfromDstar;
   TH2F *hInvMassPtLSCfromDstar=new TH2F("hInvMassPtLSCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseLSCfromDstar=new THnSparseF("hSparseLSCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseLSCfromDstar=new THnSparseF("hSparseLSCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCfromDstar->SetBinEdges(0,massbins);
   hSparseLSCfromDstar->SetBinEdges(1,massbins);
   hSparseLSCfromDstar->SetBinEdges(2,ptbinsForNsparse);
@@ -3583,7 +3583,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCother;
   TH1F *hInvMassD0LSCother,*hInvMassD0barLSCother;
   TH2F *hInvMassPtLSCother=new TH2F("hInvMassPtLSCother","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseLSCother=new THnSparseF("hSparseLSCother","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseLSCother=new THnSparseF("hSparseLSCother","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCother->SetBinEdges(0,massbins);
   hSparseLSCother->SetBinEdges(1,massbins);
   hSparseLSCother->SetBinEdges(2,ptbinsForNsparse);
@@ -3888,22 +3888,13 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptTGHCsign;
   TH1F *hInvMassD0TGHCsign,*hInvMassD0barTGHCsign;
   TH2F *hInvMassPtTGHCsign=new TH2F("hInvMassPtTGHCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseTGHCsign=new THnSparseF("hSparseTGHCsign","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseTGHCsign=new THnSparseF("hSparseTGHCsign","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseTGHCsign->SetBinEdges(0,massbins);
   hSparseTGHCsign->SetBinEdges(1,massbins);
   hSparseTGHCsign->SetBinEdges(2,ptbinsForNsparse);
   hSparseTGHCsign->SetBinEdges(3,impparbins);
   hSparseTGHCsign->SetBinEdges(4,massHypoBins); 
   flistTghCutsSignal->Add(hSparseTGHCsign);
-
-  THnSparseF *hSparseRecoTGHCfromB=new THnSparseF("hSparseRecoTGHCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
-  hSparseRecoTGHCfromB->SetBinEdges(0,massbins);
-  hSparseRecoTGHCfromB->SetBinEdges(1,massbins);
-  hSparseRecoTGHCfromB->SetBinEdges(2,ptbinsForNsparse);
-  hSparseRecoTGHCfromB->SetBinEdges(3,impparbins);
-  hSparseRecoTGHCfromB->SetBinEdges(4,massHypoBins); 
-  flistTghCutsFromB->Add(hSparseRecoTGHCfromB);
-
 
 
   THnSparseF *hSparseCxyLxyTGHCsign=new THnSparseF("hSparseCxyLxyTGHCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
@@ -4234,7 +4225,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptTGHCback;
   TH1F *hInvMassD0TGHCback,*hInvMassD0barTGHCback;
   TH2F *hInvMassPtTGHCback=new TH2F("hInvMassPtTGHCback","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseTGHCback=new THnSparseF("hSparseTGHCback","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseTGHCback=new THnSparseF("hSparseTGHCback","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseTGHCback->SetBinEdges(0,massbins);
   hSparseTGHCback->SetBinEdges(1,massbins);
   hSparseTGHCback->SetBinEdges(2,ptbinsForNsparse);
@@ -4532,13 +4523,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptTGHCfromB;
   TH1F *hInvMassD0TGHCfromB,*hInvMassD0barTGHCfromB;
   TH2F *hInvMassPtTGHCfromB=new TH2F("hInvMassPtTGHCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseTGHCfromB=new THnSparseF("hSparseTGHCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseTGHCfromB=new THnSparseF("hSparseTGHCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseTGHCfromB->SetBinEdges(0,massbins);
   hSparseTGHCfromB->SetBinEdges(1,massbins);
   hSparseTGHCfromB->SetBinEdges(2,ptbinsForNsparse);
   hSparseTGHCfromB->SetBinEdges(3,impparbins);
   hSparseTGHCfromB->SetBinEdges(4,massHypoBins); 
   flistTghCutsFromB->Add(hSparseTGHCfromB);
+
+  
+  THnSparseF *hSparseRecoTGHCfromB=new THnSparseF("hSparseRecoTGHCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  hSparseRecoTGHCfromB->SetBinEdges(0,massbins);
+  hSparseRecoTGHCfromB->SetBinEdges(1,massbins);
+  hSparseRecoTGHCfromB->SetBinEdges(2,ptbinsForNsparse);
+  hSparseRecoTGHCfromB->SetBinEdges(3,impparbins);
+  hSparseRecoTGHCfromB->SetBinEdges(4,massHypoBins); 
+  flistTghCutsFromB->Add(hSparseRecoTGHCfromB);
+
   TH1F *hetaTGHCfromB;
   TH1F *hCosPDPBTGHCfromB;
   TH1F *hCosPcPDTGHCfromB;
@@ -4831,7 +4832,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hInvMassD0TGHCfromDstar,*hInvMassD0barTGHCfromDstar;
   TH1F *hetaTGHCfromDstar;
   TH2F *hInvMassPtTGHCfromDstar=new TH2F("hInvMassPtTGHCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
- THnSparseF *hSparseTGHCfromDstar=new THnSparseF("hSparseTGHCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
+  THnSparseF *hSparseTGHCfromDstar=new THnSparseF("hSparseTGHCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseTGHCfromDstar->SetBinEdges(0,massbins);
   hSparseTGHCfromDstar->SetBinEdges(1,massbins);
   hSparseTGHCfromDstar->SetBinEdges(2,ptbinsForNsparse);
@@ -5627,7 +5628,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     isSideBandD0=kFALSE;
     isSideBandD0bar=kFALSE;
     isSideBand=kFALSE;
-    isinacceptance=kFALSE;
+    isinacceptance=kTRUE;
     okd0tight=0;
     okd0bartight=0;
     okd0tightnopid=0;
@@ -5940,7 +5941,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
     else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==9||signallevel==11)FillHistos(d,flistNoCutsBack,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistNoCutsBack,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistNoCutsOther,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     
 
@@ -6529,7 +6530,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
 
   Bool_t isfromDstar=kFALSE;
   grandmoth1=(AliAODMCParticle*)arrayMC->At(mum1->GetMother());
-  if(TMath::Abs(grandmoth1->GetPdgCode())==413||TMath::Abs(grandmoth1->GetPdgCode())==423)isfromDstar=kTRUE;// D0 COMING FROM A D0*
+  if(TMath::Abs(grandmoth1->GetPdgCode())==413||TMath::Abs(grandmoth1->GetPdgCode())==423)isfromDstar=kTRUE;// D0 COMING FROM A D*
   
   Int_t origin=CheckOrigin(arrayMC,mum1);
   if(origin==4){
