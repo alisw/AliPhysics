@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2, Float_t minC=0., Float_t maxC=20.,Float_t minCloose=40., Float_t maxCloose=80.)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t *switchMC=0x0,Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2, Float_t minC=0., Float_t maxC=7.5,Float_t minCloose=20., Float_t maxCloose=50.)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -7,12 +7,14 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   //
   //==========================================================================
 
-  //######## !!! THE SWITCH FOR MC ANALYSIS IS NOT IMPLEMENTED YET!!! ##########à
-  switchMC[0]=1;
-  switchMC[1]=1;
-  switchMC[2]=1;
-  switchMC[3]=1;
-  switchMC[4]=1;
+  //######## !!! THE SWITCH FOR MC ANALYSIS IS NOT IMPLEMENTED YET!!! ##########
+  if(switchMC!=0x0){
+    switchMC[0]=1;
+    switchMC[1]=1;
+    switchMC[2]=1;
+    switchMC[3]=1;
+    switchMC[4]=1;
+  }
   Int_t last=0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -56,12 +58,15 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
     AliRDHFCutsD0toKpi *cutTight=new AliRDHFCutsD0toKpi("D0toKpiCutsStandard");
     AliRDHFCutsD0toKpi *cutLoose=new AliRDHFCutsD0toKpi("D0toKpiCutsLoose");
     if(ppPbPb==1){
-      cutTight->SetStandardCutsPbPb2010();
+      printf("USING STANDARD CUTS 2011 \n");
+      cutTight->SetStandardCutsPbPb2011();
       cutTight->SetMinCentrality(minC);
       cutTight->SetMaxCentrality(maxC);
-      cutLoose->SetStandardCutsPbPb2010();
+      cutTight->SetMinPtCandidate(0.);
+      cutLoose->SetStandardCutsPbPb2011();
       cutLoose->SetMinCentrality(minCloose);
       cutLoose->SetMaxCentrality(maxCloose);
+      cutLoose->SetMinPtCandidate(0.);
     }
     else {
       cutTight->SetStandardCutsPP2010();
