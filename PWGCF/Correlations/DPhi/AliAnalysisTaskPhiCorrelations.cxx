@@ -112,6 +112,7 @@ fSelectBit(0),
 fUseChargeHadrons(kFALSE),
 fSelectCharge(0),
 fTriggerRestrictEta(-1),
+fEtaOrdering(kFALSE),
 fCutConversions(kFALSE),
 fCutResonances(kFALSE),
 fFillpT(kFALSE)
@@ -212,6 +213,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetTriggerRestrictEta(fTriggerRestrictEta);
   fHistosMixed->SetTriggerRestrictEta(fTriggerRestrictEta);
   
+  fHistos->SetEtaOrdering(fEtaOrdering);
+  fHistosMixed->SetEtaOrdering(fEtaOrdering);
+
   fHistos->SetPairCuts(fCutConversions, fCutResonances);
   fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
   
@@ -299,6 +303,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
+  settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
   settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
   settingsTree->Branch("fCutResonances", &fCutResonances,"CutResonances/O");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");

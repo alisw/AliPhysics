@@ -83,6 +83,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
     void   SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
     void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
+    void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
     void   SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
     void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
     void   SetFillpT(Bool_t flag) { fFillpT = flag; }
@@ -141,12 +142,13 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
     Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
+    Bool_t fEtaOrdering;           // eta ordering, see AliUEHistograms.h for documentation
     Bool_t fCutConversions;        // cut on conversions (inv mass)
     Bool_t fCutResonances;         // cut on resonances (inv mass)
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 5); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 6); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
