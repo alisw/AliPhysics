@@ -1,15 +1,7 @@
-AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kFALSE){
-  char fileout[100];
-  snprintf(fileout,100,"outVZEROres.root");
-  char fileout2[100];
-  snprintf(fileout2,100,"outVZEROres.root");
-  char fileout3[100];
-  snprintf(fileout3,100,"outVZEROres.root");
-  char fileout4[100];
-  snprintf(fileout4,100,"outVZEROqa.root");
+AliAnalysisTask *AddTaskVZERO(Bool_t ismc=kFALSE,Bool_t kV2=kTRUE,Bool_t kV3=kTRUE,Bool_t qa=kFALSE){
 
   //get the current analysis manager
-  //  AnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("No manager found in AddTaskVZERO. Why?");
     return 0;
@@ -38,22 +30,23 @@ AliAnalysisTask *AddTaskVZERO(AliAnalysisManager *mgr,Bool_t ismc=kFALSE,Bool_t 
 
   // Attach output to my tasks
   if(kV2){
-    AliAnalysisDataContainer *cOutputL= mgr->CreateContainer("contVZEROv2",TList::Class(), AliAnalysisManager::kOutputContainer, fileout);
+    AliAnalysisDataContainer *cOutputL= mgr->CreateContainer("contVZEROv2",TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task, 1, cOutputL);
   }
   if(kV3){
-    AliAnalysisDataContainer *cOutputL2= mgr->CreateContainer("contVZEROv3",TList::Class(), AliAnalysisManager::kOutputContainer, fileout2);
+    AliAnalysisDataContainer *cOutputL2= mgr->CreateContainer("contVZEROv3",TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task, 2, cOutputL2);
   }
   if(ismc){
-    AliAnalysisDataContainer *cOutputL3= mgr->CreateContainer("contVZEROmc",TList::Class(), AliAnalysisManager::kOutputContainer, fileout3);
+    AliAnalysisDataContainer *cOutputL3= mgr->CreateContainer("contVZEROmc",TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task, 3, cOutputL3);
   }
   if(qa){
-    AliAnalysisDataContainer *cOutputL4= mgr->CreateContainer("contVZEROqa",TList::Class(), AliAnalysisManager::kOutputContainer, fileout4);
+    AliAnalysisDataContainer *cOutputL4= mgr->CreateContainer("contVZEROqa",TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task, 4, cOutputL4);
   }
   printf("task really added\n");
 
   return task;
 }
+
