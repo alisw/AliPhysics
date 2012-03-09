@@ -733,6 +733,28 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   return kTRUE;
 }
 
+Bool_t AliExternalTrackParam::Invert() {
+  //------------------------------------------------------------------
+  // Transform this track to the local coord. system rotated by 180 deg. 
+  //------------------------------------------------------------------
+  fX = -fX;
+  fAlpha += TMath::Pi();
+  while (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
+  while (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
+  //
+  fP[0] = -fP[0];
+  fP[2] = -fP[2];
+  fP[3] = -fP[3];
+  fP[4] = -fP[4];
+  //
+  fC[1] = -fC[1]; // since the Z coordinate is not inverted, the covariances with Z should be inverted
+  fC[4] = -fC[4];
+  fC[7] = -fC[7];
+  fC[11] = -fC[11]; 
+  //
+  return kTRUE;
+}
+
 Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   //----------------------------------------------------------------
   // Propagate this track to the plane X=xk (cm) in the field "b" (kG)

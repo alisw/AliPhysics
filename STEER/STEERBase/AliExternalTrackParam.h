@@ -186,6 +186,7 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t *GetResiduals(Double_t *p,Double_t *cov,Bool_t updated=kTRUE) const;
   Bool_t Update(Double_t p[2],Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
+  Bool_t Invert();
   Bool_t PropagateTo(Double_t x, Double_t b);
   Bool_t Propagate(Double_t alpha, Double_t x, Double_t b);
   Bool_t PropagateBxByBz(Double_t alpha, Double_t x, Double_t b[3]);
