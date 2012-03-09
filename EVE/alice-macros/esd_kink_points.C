@@ -12,10 +12,10 @@
 #include <TEvePointSet.h>
 #include <TEveManager.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliESDkink.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliESDtrack.h>
+#include <AliESDkink.h>
+#include <AliEveEventManager.h>
 #endif
 
 void esd_kink_fill_pointset(TEvePointSet* ps)

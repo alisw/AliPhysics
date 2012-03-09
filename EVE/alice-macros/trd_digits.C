@@ -18,14 +18,14 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <STEER/STEER/AliCluster.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <TRD/AliTRDarrayADC.h>
-#include <TRD/AliTRDcluster.h>
-#include <TRD/AliTRDgeometry.h>
-#include <TRD/AliTRDdigitsManager.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTRDModuleImp.h>
+#include <AliCluster.h>
+#include <AliRunLoader.h>
+#include <AliTRDarrayADC.h>
+#include <AliTRDcluster.h>
+#include <AliTRDgeometry.h>
+#include <AliTRDdigitsManager.h>
+#include <AliEveEventManager.h>
+#include <AliEveTRDModuleImp.h>
 #else
 class TEvePointSet;
 class TEveElement;

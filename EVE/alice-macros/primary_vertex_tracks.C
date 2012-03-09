@@ -14,11 +14,11 @@
 #include <TEveTrackPropagator.h>
 #include <TEveUtil.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDVertex.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveTrack.h>
+#include <AliESDEvent.h>
+#include <AliESDVertex.h>
+#include <AliESDtrack.h>
+#include <AliEveEventManager.h>
+#include <AliEveTrack.h>
 
 #include "esd_tracks.C"
 #endif

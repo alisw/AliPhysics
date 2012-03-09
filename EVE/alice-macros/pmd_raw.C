@@ -16,11 +16,11 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <PMD/AliPMDRawStream.h>
-#include <RAW/AliRawReaderRoot.h>
-#include <STEER/STEER/AliCluster.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEvePMDModule.h>
+#include <AliPMDRawStream.h>
+#include <AliRawReaderRoot.h>
+#include <AliCluster.h>
+#include <AliEveEventManager.h>
+#include <AliEvePMDModule.h>
 #endif
 
 void pmd_raw(Int_t mode = 0)

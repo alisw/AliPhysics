@@ -1,3 +1,9 @@
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TGeoMatrix.h>
 #include <TStyle.h>
@@ -8,11 +14,11 @@
 #include <TEveTrans.h>
 #include <TEveQuadSet.h>
 
-#include <HMPID/AliHMPIDDigit.h>
-#include <HMPID/AliHMPIDv3.h>
-#include <HMPID/AliHMPIDRawStream.h>
-#include <RAW/AliRawReader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliHMPIDDigit.h>
+#include <AliHMPIDv3.h>
+#include <AliHMPIDRawStream.h>
+#include <AliRawReader.h>
+#include <AliEveEventManager.h>
 #endif
 
 void hmpid_raw()

@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TTree.h>
 #include <TEvePointSet.h>
@@ -13,8 +14,8 @@
 #include <TEveManager.h>
 #include <TEveTreeTools.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <EveBase/AliEveEventManager.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 
 void its_hits_layer_split(const char *varexp    = "fX:fY:fZ:GetLayer()",

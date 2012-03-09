@@ -7,15 +7,15 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TEvePointSet.h>
 
-#include <STEER/STEERBase/AliPID.h>
-#include <TRD/AliTRDhit.h>
-#include <TRD/AliTRDarrayADC.h>
-#include <TRD/AliTRDcluster.h>
-#include <TRD/AliTRDtrackV1.h>
-#include <TRD/AliTRDReconstructor.h>
-#include <TRD/AliTRDrecoParam.h>
-#include <TRD/AliTRDseedV1.h>
-#include <EVE/EveDet/AliEveTRDData.h>
+#include <AliPID.h>
+#include <AliTRDhit.h>
+#include <AliTRDarrayADC.h>
+#include <AliTRDcluster.h>
+#include <AliTRDtrackV1.h>
+#include <AliTRDReconstructor.h>
+#include <AliTRDrecoParam.h>
+#include <AliTRDseedV1.h>
+#include <AliEveTRDData.h>
 #endif
 
 //

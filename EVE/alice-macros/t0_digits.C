@@ -11,11 +11,11 @@
 #include <TTree.h>
 #include <TStyle.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <T0/AliT0digit.h>
-#include <EveBase/AliEveEventManager.h>
-#include <EveDet/AliEveITSDigitsInfo.h>
-#include <EVE/EveDet/AliEveT0Module.h>
+#include <AliRunLoader.h>
+#include <AliT0digit.h>
+#include <AliEveEventManager.h>
+#include <AliEveITSDigitsInfo.h>
+#include <AliEveT0Module.h>
 #endif
 
 void t0_digits()

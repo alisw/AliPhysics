@@ -13,7 +13,7 @@
 #include <TEveManager.h>
 #include <TEveBrowser.h>
 
-#include <TPC/AliTPCCalibViewerGUI.h>
+#include <AliTPCCalibViewerGUI.h>
 #endif
 
 void tpc_calib_viewer(const char* file="CalibTree.root")

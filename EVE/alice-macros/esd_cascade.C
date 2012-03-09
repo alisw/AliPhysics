@@ -12,12 +12,12 @@
 #include <TEveVSDStructs.h>
 #include <TEveTrackPropagator.h>
 
-#include <STEER/STEERBase/AliExternalTrackParam.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDcascade.h>
-#include <STEER/ESD/AliESDVertex.h>
-#include <EVE/EveBase/AliEveCascade.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliExternalTrackParam.h>
+#include <AliESDEvent.h>
+#include <AliESDcascade.h>
+#include <AliESDVertex.h>
+#include <AliEveCascade.h>
+#include <AliEveEventManager.h>
 #endif
 
 void esd_cascade_init_rectrack(TEveRecTrack& rt, const AliExternalTrackParam* tp)

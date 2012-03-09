@@ -5,11 +5,12 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+ 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TEveElement.h>
 
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveLego.h>
+#include <AliEveEventManager.h>
+#include <AliEveLego.h>
 #endif
 
 AliEveLego* lego(){

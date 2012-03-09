@@ -14,7 +14,7 @@
 #include <TEveElement.h>
 #include <TEveGeoNode.h>
 
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 #endif
 
 void geom_acorde()

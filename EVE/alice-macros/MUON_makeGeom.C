@@ -13,8 +13,8 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TGeoManager.h>
 
-#include <MUON/mapping/AliMpCDB.h>
-#include <STEER/STEER/AliRun.h>
+#include <AliMpCDB.h>
+#include <AliRun.h>
 #endif
 
 void MUON_makeGeom()

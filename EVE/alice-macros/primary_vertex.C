@@ -12,9 +12,9 @@
 #include <TEveCompound.h>
 #include <TEveStraightLineSet.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDVertex.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliESDVertex.h>
+#include <AliEveEventManager.h>
 #endif
 
 //==============================================================================

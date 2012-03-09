@@ -20,8 +20,8 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TEveManager.h>
 
-#include <EVE/EveDet/AliEveTRDLoader.h>
-#include <EVE/EveDet/AliEveTRDLoaderImp.h>
+#include <AliEveTRDLoader.h>
+#include <AliEveTRDLoaderImp.h>
 #endif
 
 

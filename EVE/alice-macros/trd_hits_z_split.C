@@ -15,8 +15,8 @@
 #include <TEveManager.h>
 #include <TEveTreeTools.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 
 void trd_hits_z_split(const char *varexp    = "fX:fY:fZ:fZ",

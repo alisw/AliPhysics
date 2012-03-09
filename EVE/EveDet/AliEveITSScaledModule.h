@@ -11,7 +11,7 @@
 #define AliEveITSScaledModule_H
 
 #include <TEveUtil.h>
-#include <EveDet/AliEveITSModule.h>
+#include <AliEveITSModule.h>
 
 #include <TQObject.h>
 

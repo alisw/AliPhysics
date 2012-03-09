@@ -14,23 +14,21 @@
 #include <TEveTrackPropagator.h>
 #include <TEvePointSet.h>
 #include <TEveManager.h>
+#include <TEveUtil.h>
 
-#include <STEER/STEERBase/AliExternalTrackParam.h>
-#include <STEER/STEERBase/AliVVertex.h>
-#include <STEER/AOD/AliAODVertex.h>
-#include <STEER/AOD/AliAODEvent.h>
-#include <STEER/AOD/AliAODTrack.h>
-#include <STEER/AOD/AliAODMCParticle.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliESDEvent.h>
+#include <AliExternalTrackParam.h>
+#include <AliVVertex.h>
+#include <AliAODVertex.h>
+#include <AliAODEvent.h>
+#include <AliAODTrack.h>
+#include <AliAODMCParticle.h>
+#include <AliESDtrack.h>
+#include <AliESDEvent.h>
 #include <PWG3/vertexingHF/AliAODRecoDecayHF.h>
 #include <PWG3/vertexingHF/AliAODRecoDecayHF2Prong.h>
-
-#include <EVE/EveBase/AliEveHF.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-
 #include <PWG3/vertexingHF/macros/LoadLibraries.C>
-
+#include <AliEveHF.h>
+#include <AliEveEventManager.h>
 #else
 class AliAODRecoDecayHF;
 #endif
@@ -81,13 +79,13 @@ AliEveHF* aod_make_HF(TEveTrackPropagator* rnrStyle, AliAODVertex* primAODVtx,
   return myHF;
 }
 
-
 AliEveHFList* aod_HF()
 {
   Bool_t useParFiles=kFALSE;
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
+  
+  TEveUtil::LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C+");
   LoadLibraries(useParFiles);
-
+  
   AliAODEvent* aod = AliEveEventManager::AssertAOD();
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 

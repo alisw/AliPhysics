@@ -11,9 +11,9 @@
 #include <TStyle.h>
 #include <TEveManager.h>
 
-#include <RAW/AliRawReader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveVZEROModule.h>
+#include <AliRawReader.h>
+#include <AliEveEventManager.h>
+#include <AliEveVZEROModule.h>
 #else
 class AliRawReader;
 class AliEveVZEROModule;

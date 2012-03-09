@@ -11,10 +11,10 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 
-#include <TOF/AliTOFGeometry.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTOFDigitsInfo.h>
-#include <EVE/EveDet/AliEveTOFSector.h>
+#include <AliTOFGeometry.h>
+#include <AliEveEventManager.h>
+#include <AliEveTOFDigitsInfo.h>
+#include <AliEveTOFSector.h>
 #endif
 
 void tof_raw(Int_t newDecoder = 2)

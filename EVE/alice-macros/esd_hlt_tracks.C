@@ -19,14 +19,14 @@
 #include <TClass.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TEveManager.h>
 #include <TEveTrack.h>
 #include <TEveUtil.h>
-#include <TEveManager.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliEveEventManager.h>
 
-#include "esd_tracks.C"
+#include <EVE/alice-macros/esd_tracks.C>
 #endif
 
 /**
@@ -63,7 +63,7 @@ TEveTrackList* esd_hlt_tracks()
   }
 
   TEveUtil::LoadMacro("esd_tracks.C");
-
+   
   int eventId=eveManager->GetEventId();
   TFile* esdFile=eveManager->GetESDFile();
   if (!esdFile) {
@@ -79,7 +79,7 @@ TEveTrackList* esd_hlt_tracks()
     return NULL;
   }
   if (pHLTTree->GetEntries()<=eventId) {
-    Warning("esd_hlt_tracks.C", "skiping event %d: out of range %d", eventId, pHLTTree->GetEntries());
+    Warning("esd_hlt_tracks.C", "skiping event %d: out of range %lld", eventId, pHLTTree->GetEntries());
     return NULL;
   }
 

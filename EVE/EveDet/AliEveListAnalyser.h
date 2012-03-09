@@ -64,7 +64,7 @@
 
 #include <TClass.h>
 #include <TEveElement.h>
-#include <EveDet/AliEveTRDData.h>
+#include <AliEveTRDData.h>
 
 #define SIGNATURE_ERROR           -1
 #define NOT_EXIST_ERROR           -2

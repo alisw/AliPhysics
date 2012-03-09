@@ -15,9 +15,9 @@
 #include <TEveTreeTools.h>
 #include <TEvePointSet.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveFMDLoader.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliEveFMDLoader.h>
 #endif
 
 TEvePointSet*

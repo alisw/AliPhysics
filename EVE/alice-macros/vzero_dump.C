@@ -1,6 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <STEER/ESD/AliESDEvent.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliESDVZERO.h>
+#include <AliEveEventManager.h>
 #endif
 
 void vzero_dump()

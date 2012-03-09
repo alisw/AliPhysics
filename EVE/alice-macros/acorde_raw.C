@@ -17,9 +17,9 @@
 #include <TEveTrans.h>
 #include <TEveGeoShape.h>
 
-#include <EveBase/AliEveEventManager.h>
-#include <RAW/AliRawReader.h>
-#include <ACORDE/AliACORDERawStream.h>
+#include <AliEveEventManager.h>
+#include <AliRawReader.h>
+#include <AliACORDERawStream.h>
 #endif
 
 TString acorde_module_path(Int_t module);

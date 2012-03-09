@@ -22,7 +22,7 @@
 #include <TEveManager.h>
 #include <TEveTreeTools.h>
 
-#include <EVE/EveDet/AliEveTRDLoader.h>
+#include <AliEveTRDLoader.h>
 #endif
 
 AliEveTRDLoader* trd_loader(Int_t event=0)

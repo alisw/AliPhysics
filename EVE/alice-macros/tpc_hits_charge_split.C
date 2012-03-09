@@ -13,8 +13,8 @@
 #include <TEvePointSet.h>
 #include <TEveTreeTools.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 
 void tpc_hits_charge_split(const char *varexp    =

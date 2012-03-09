@@ -34,30 +34,29 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <EMCAL/AliEMCAL.h>
-#include <EMCAL/AliEMCALLoader.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliTrackPointArray.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveMultiView.h>
-#include <EVE/EveDet/AliEveEMCALData.h>
-#include <EVE/EveDet/AliEveEMCALSModule.h>
+#include <AliEMCAL.h>
+#include <AliEMCALLoader.h>
+#include <AliESDEvent.h>
+#include <AliESDtrack.h>
+#include <AliTrackPointArray.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliEveMultiView.h>
+#include <AliEveEMCALData.h>
+#include <AliEveEMCALSModule.h>
 #else
 class AliEveEMCALData;
 #endif
 
 AliEveEMCALData     *emcal_data       = 0;
 
-void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0, 
+void emcal_all(const UInt_t evtNum = 0)/*, Bool_t digFile = 0, 
 	       const UInt_t eventsToProcess = 5, TString dirName = "./", 
-	       const TString esdTreeName = "esdTree", const char *  pattern = ".")
+	       const TString esdTreeName = "esdTree", const char *  pattern = ".")*/
 {
 
   Int_t iLoader             = 1;
   Int_t iESD                = 1;
-  Int_t iAOD                = 0;
   Int_t iHits               = 1;
   Int_t iDigits             = 1;
   Int_t iClusters           = 1;
@@ -69,7 +68,7 @@ void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0,
   // esd check already in AssertESD function 
   AliEMCALLoader *emcl = dynamic_cast<AliEMCALLoader*> (rl->GetDetectorLoader("EMCAL"));
   Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
-  if(evtID != evtNum) AliEveEventManager::GetMaster()->GotoEvent(evtNum);
+  if(evtID != (Int_t)evtNum) AliEveEventManager::GetMaster()->GotoEvent(evtNum);
 
   TTree* ht = 0x0; 
   TTree* dt = 0x0; 

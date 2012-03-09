@@ -1,3 +1,9 @@
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TClonesArray.h>
 #include <TBranch.h>
@@ -12,11 +18,11 @@
 #include <TEveTrans.h>
 #include <TEveQuadSet.h>
 
-#include <HMPID/AliHMPIDDigit.h>
-#include <HMPID/AliHMPIDv3.h>
-#include <STEER/STEER/AliCluster3D.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliHMPIDDigit.h>
+#include <AliHMPIDv3.h>
+#include <AliCluster3D.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 
 void hmpid_digits()

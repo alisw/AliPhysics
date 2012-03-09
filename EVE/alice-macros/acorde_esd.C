@@ -13,9 +13,9 @@
 #include <TEveElement.h>
 #include <TEveGeoShape.h>
 
-#include <EveBase/AliEveEventManager.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDACORDE.h>
+#include <AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliESDACORDE.h>
 #endif
 
 TString acorde_module_path(Int_t module);

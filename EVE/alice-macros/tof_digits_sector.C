@@ -14,11 +14,11 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <TOF/AliTOFGeometry.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTOFDigitsInfo.h>
-#include <EVE/EveDet/AliEveTOFSector.h>
+#include <AliRunLoader.h>
+#include <AliTOFGeometry.h>
+#include <AliEveEventManager.h>
+#include <AliEveTOFDigitsInfo.h>
+#include <AliEveTOFSector.h>
 #endif
 
 void tof_digits_sector(Int_t sector=0)

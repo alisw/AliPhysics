@@ -13,13 +13,13 @@
 #include <TEveVSDStructs.h>
 #include <TEveManager.h>
 
-#include <STEER/STEERBase/AliExternalTrackParam.h>
-#include <STEER/STEERBase/AliPID.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliESDkink.h>
-#include <EVE/EveBase/AliEveKink.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliExternalTrackParam.h>
+#include <AliPID.h>
+#include <AliESDEvent.h>
+#include <AliESDtrack.h>
+#include <AliESDkink.h>
+#include <AliEveKink.h>
+#include <AliEveEventManager.h>
 #endif
 
 void esd_kink_init_rectrackMother(TEveRecTrack& rt, const AliExternalTrackParam* tp)

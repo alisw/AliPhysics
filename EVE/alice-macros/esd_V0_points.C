@@ -11,9 +11,9 @@
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDv0.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliESDv0.h>
+#include <AliEveEventManager.h>
 #endif
 
 void esd_VO_fill_pointset(TEvePointSet* ps, Bool_t onFly)

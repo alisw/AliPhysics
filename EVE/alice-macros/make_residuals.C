@@ -1,4 +1,9 @@
-
+/**************************************************************************
+ * Copyright(c) 1998-2009, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+ 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TCanvas.h>
 #include <TGButton.h>
@@ -13,16 +18,16 @@
 #include <TTree.h>
 #include <TEveUtil.h>
 
-#include <STEER/CDB/AliCDBManager.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDfriendTrack.h>
-#include <STEER/STEER/AliGeomManager.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliCDBManager.h>
+#include <AliESDEvent.h>
+#include <AliESDfriendTrack.h>
+#include <AliGeomManager.h>
+#include <AliEveEventManager.h>
 
 /* Not sure which ConfigCalibTrain.C macro ? 
  * From ANALYSIS or from PWGPP?
  */
-#include "ANALYSIS/macros/ConfigCalibTrain.C" 
+#include <ANALYSIS/macros/ConfigCalibTrain.C>
 #endif
 
 class ButtonWindow : public TGMainFrame {
@@ -535,7 +540,7 @@ void ButtonWindow::DrawResiduals()
       Info("make_residuals::DrawResiduals", "nEntries: %f", nEntries->GetNumber());
       Info("make_residuals::DrawResiduals", "firstEntry: %f", firstEntry->GetNumber());
       
-      TEveUtil::LoadMacro("ConfigCalibTrain.C");
+      TEveUtil::LoadMacro("$ALICE_ROOT/ANALYSIS/macros/ConfigCalibTrain.C+");
 
       AliESDEvent *esd = AliEveEventManager::AssertESD();
 

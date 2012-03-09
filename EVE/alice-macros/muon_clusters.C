@@ -23,10 +23,10 @@
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 
-#include <MUON/AliMUONVCluster.h>
-#include <MUON/AliMUONVClusterStore.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliMUONVCluster.h>
+#include <AliMUONVClusterStore.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 class TIter;
 class TEvePointSet;

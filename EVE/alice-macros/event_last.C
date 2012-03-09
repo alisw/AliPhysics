@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 #endif
 
 void event_last()

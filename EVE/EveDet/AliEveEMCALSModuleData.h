@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "AliEveEMCALData.h"
+#include <AliEveEMCALData.h>
 
 class TClonesArray;
 class TGeoNode;

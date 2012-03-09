@@ -13,8 +13,8 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <EveBase/AliEveEventManager.h>
-#include <STEER/STEER/AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliRunLoader.h>
 #endif
 
 TEvePointSet*

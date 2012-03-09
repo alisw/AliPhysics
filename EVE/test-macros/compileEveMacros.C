@@ -22,8 +22,9 @@
 /* Compiles all AliEve macros
  * 
  * Usage: 
- *  1. Launch alieve from terminal
- *  2. ROOT command prompt from terminal execute this script: .x compileEveMacros.C
+ *  1. cd $ALICE_ROOT/EVE/test-macros/
+ *  2. Launch alieve from terminal: alieve
+ *  3. from terminal execute this script: .x compileEveMacros.C
  *  3. Wait for compilation to finish
  * 
  * NOTE:

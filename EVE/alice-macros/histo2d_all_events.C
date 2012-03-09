@@ -25,8 +25,8 @@
 #include <TEveViewer.h>
 #include <TEveWindow.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliEveEventManager.h>
 #endif
 
 double pi = TMath::Pi();

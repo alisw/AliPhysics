@@ -28,20 +28,20 @@
 #include <TEveTrackPropagator.h>
 #include <TEveVSDStructs.h>
 
-#include <MUON/AliMUONESDInterface.h>
-#include <MUON/AliMUONTrack.h>
-#include <MUON/AliMUONTrackExtrap.h>
-#include <MUON/AliMUONTrackParam.h>
-#include <MUON/AliMUONConstants.h>
-#include <MUON/AliMUONCDB.h>
-#include <MUON/AliMUONGeometryTransformer.h>
-#include <MUON/AliMUONTriggerCircuit.h>
-#include <MUON/mapping/AliMpCDB.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDMuonTrack.h>
-#include <EVE/EveBase/AliEveMagField.h>
-#include <EVE/EveBase/AliEveTrack.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliMUONESDInterface.h>
+#include <AliMUONTrack.h>
+#include <AliMUONTrackExtrap.h>
+#include <AliMUONTrackParam.h>
+#include <AliMUONConstants.h>
+#include <AliMUONCDB.h>
+#include <AliMUONGeometryTransformer.h>
+#include <AliMUONTriggerCircuit.h>
+#include <AliMpCDB.h>
+#include <AliESDEvent.h>
+#include <AliESDMuonTrack.h>
+#include <AliEveMagField.h>
+#include <AliEveTrack.h>
+#include <AliEveEventManager.h>
 #endif
 
 //______________________________________________________________________________

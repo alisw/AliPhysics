@@ -31,11 +31,11 @@
 #include <TEveScene.h>
 #include <TEveTrackPropagator.h>
 
-#include <EveBase/AliEveEventManager.h>
-#include <EveBase/AliEveMultiView.h>
-#include <EveBase/AliEveTrack.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliESDEvent.h>
+#include <AliEveEventManager.h>
+#include <AliEveMultiView.h>
+#include <AliEveTrack.h>
+#include <AliESDtrack.h>
+#include <AliESDEvent.h>
 #endif
 
 #include <TGButton.h>

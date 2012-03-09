@@ -11,7 +11,7 @@
 
 #include <TEveQuadSet.h>
 
-#include <EveDet/AliEveITSDigitsInfo.h>
+#include <AliEveITSDigitsInfo.h>
 
 
 class AliEveITSModule : public TEveQuadSet

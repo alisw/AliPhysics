@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TGLViewer.h>
 #include <TTree.h>
@@ -13,10 +14,10 @@
 #include <TEveManager.h>
 #include <TEveTreeTools.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveITSModuleStepper.h>
-#include <EVE/EveDet/AliEveITSDigitsInfo.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliEveITSModuleStepper.h>
+#include <AliEveITSDigitsInfo.h>
 #endif
 
 class AliEveITSModuleStepper;

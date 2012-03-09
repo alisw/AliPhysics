@@ -15,11 +15,11 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <TOF/AliTOFGeometry.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTOFDigitsInfo.h>
-#include <EVE/EveDet/AliEveTOFStrip.h>
+#include <AliRunLoader.h>
+#include <AliTOFGeometry.h>
+#include <AliEveEventManager.h>
+#include <AliEveTOFDigitsInfo.h>
+#include <AliEveTOFStrip.h>
 #endif
 
 void tof_digits_strips(Int_t selectedSector=-1)

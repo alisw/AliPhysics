@@ -10,9 +10,9 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TStyle.h>
 
-#include <RAW/AliRawReader.h>
-#include <EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveT0Module.h>
+#include <AliRawReader.h>
+#include <AliEveEventManager.h>
+#include <AliEveT0Module.h>
 #endif
 
 void t0_raw()

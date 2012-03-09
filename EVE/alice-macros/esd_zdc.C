@@ -9,9 +9,9 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDZDC.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliESDZDC.h>
+#include <AliEveEventManager.h>
 #endif
 
 TEveRGBAPalette *g_zdc_palette = 0;

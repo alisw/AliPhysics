@@ -16,12 +16,12 @@
 #include <TEveScene.h>
 #include <TEvePointSet.h>
 
-#include <STEER/STEER/AliCluster.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDVertex.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <TPC/AliTPCClustersRow.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliCluster.h>
+#include <AliESDEvent.h>
+#include <AliESDVertex.h>
+#include <AliRunLoader.h>
+#include <AliTPCClustersRow.h>
+#include <AliEveEventManager.h>
 #endif
 
 TEveViewer *gVPTPCView   = 0;

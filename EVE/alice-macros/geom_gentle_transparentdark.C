@@ -15,8 +15,8 @@
 #include <TEveGeoShape.h>
 #include <TEveGeoShapeExtract.h>
 
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveMultiView.h>
+#include <AliEveEventManager.h>
+#include <AliEveMultiView.h>
 #endif
 
 void geom_gentle_transparentdark(Bool_t register_as_global=kTRUE)

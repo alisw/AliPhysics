@@ -15,8 +15,8 @@
 #include <TEveManager.h>
 #include <TEveSelection.h>
 
-#include <EVE/EveBase/AliEveTrackFitter.h>
-#include <EVE/EveBase/AliEveCosmicRayFitter.h>
+#include <AliEveTrackFitter.h>
+#include <AliEveCosmicRayFitter.h>
 #endif
 
 void track_fitter(Int_t mode = 1)

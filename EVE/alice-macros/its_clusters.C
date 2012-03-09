@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TClonesArray.h>
 #include <TBranch.h>
@@ -14,18 +15,15 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <EveBase/AliEveEventManager.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <STEER/STEER/AliCluster.h>
+#include <AliRunLoader.h>
+#include <AliCluster.h>
+#include <AliEveEventManager.h>
 #else
 class TEveElement;
 class TEvePointSet;
 class TTree;
 class TBranch;
 #endif
-
-
-
 
 TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
 {

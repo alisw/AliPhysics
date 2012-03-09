@@ -28,8 +28,8 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TEveManager.h>
 
-#include <TRD/AliTRDarrayADC.h>
-#include <EVE/EveDet/AliEveListAnalyser.h>
+#include <AliTRDarrayADC.h>
+#include <AliEveListAnalyser.h>
 #endif
 
 void ana_list(TEveElement *cont = 0)

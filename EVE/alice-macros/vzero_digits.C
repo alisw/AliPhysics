@@ -20,9 +20,9 @@
 #include <TEveQuadSet.h>
 #include <TEveTrans.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <VZERO/AliVZEROdigit.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliRunLoader.h>
+#include <AliVZEROdigit.h>
+#include <AliEveEventManager.h>
 #endif
 
 

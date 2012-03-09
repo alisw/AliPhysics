@@ -6,15 +6,15 @@
 #include <TROOT.h>
 #include <TEveManager.h>
 
+#include <AliCDBManager.h>
+#include <AliTRDarrayADC.h>
+#include <AliTRDReconstructor.h>
+#include <AliTRDrecoParam.h>
+#include <AliTRDtrackV1.h>
 #include <PWGPP/TRD/info/AliTRDtrackInfo.h>
-#include <STEER/CDB/AliCDBManager.h>
-#include <TRD/AliTRDarrayADC.h>
-#include <TRD/AliTRDReconstructor.h>
-#include <TRD/AliTRDrecoParam.h>
-#include <TRD/AliTRDtrackV1.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTRDTrackList.h>
-#include <EVE/EveDet/AliEveTRDData.h>
+#include <AliEveEventManager.h>
+#include <AliEveTRDTrackList.h>
+#include <AliEveTRDData.h>
 #endif
 
 void trd_qaRec()

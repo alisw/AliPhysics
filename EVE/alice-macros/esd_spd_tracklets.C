@@ -13,13 +13,13 @@
 #include <TEveTrack.h>
 #include <TEveTrackPropagator.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDVertex.h>
-#include <STEER/ESD/AliMultiplicity.h>
-#include <STEER/STEERBase/AliMagF.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveTracklet.h>
-#include <EVE/EveBase/AliEveTrackCounter.h>
+#include <AliESDEvent.h>
+#include <AliESDVertex.h>
+#include <AliMultiplicity.h>
+#include <AliMagF.h>
+#include <AliEveEventManager.h>
+#include <AliEveTracklet.h>
+#include <AliEveTrackCounter.h>
 #endif
 
 TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=2,

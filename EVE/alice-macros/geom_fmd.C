@@ -14,7 +14,7 @@
 #include <TEveGeoNode.h>
 #include <TEveElement.h>
 
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 #endif
 
 void geom_fmd()

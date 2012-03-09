@@ -17,17 +17,17 @@
 #include <TEveManager.h>
 #include <TEveTrackPropagator.h>
 
-#include <ANALYSIS/AliESDtrackCuts.h>
-#include <PWGUD/base/AliPWG0Helper.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDfriend.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliESDfriendTrack.h>
-#include <STEER/STEERBase/AliExternalTrackParam.h>
-#include <EVE/EveBase/AliEveTrack.h>
-#include <EVE/EveBase/AliEveTrackCounter.h>
-#include <EVE/EveBase/AliEveMagField.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDtrackCuts.h>
+#include <AliPWG0Helper.h>
+#include <AliESDEvent.h>
+#include <AliESDfriend.h>
+#include <AliESDtrack.h>
+#include <AliESDfriendTrack.h>
+#include <AliExternalTrackParam.h>
+#include <AliEveTrack.h>
+#include <AliEveTrackCounter.h>
+#include <AliEveMagField.h>
+#include <AliEveEventManager.h>
 #endif
 
 

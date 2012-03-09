@@ -15,13 +15,13 @@
 #include <TEvePointSet.h>
 #include <TEveTreeTools.h>
 
-#include <RAW/AliRawReader.h>
-#include <RAW/AliAltroRawStreamV3.h>
-#include <TPC/AliTPCRawStreamV3.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTPCData.h>
-#include <EVE/EveDet/AliEveTPCSector2D.h>
-#include <EVE/EveDet/AliEveTPCSector3D.h>
+#include <AliRawReader.h>
+#include <AliAltroRawStreamV3.h>
+#include <AliTPCRawStreamV3.h>
+#include <AliEveEventManager.h>
+#include <AliEveTPCData.h>
+#include <AliEveTPCSector2D.h>
+#include <AliEveTPCSector3D.h>
 #endif
 
 // Macro to visualise rootified raw-data from TPC.

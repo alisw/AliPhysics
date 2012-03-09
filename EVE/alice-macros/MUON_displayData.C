@@ -23,17 +23,17 @@
 #include <TEveElement.h>
 #include <TEveTrack.h>
 
-#include <MUON/mapping/AliMpSegmentation.h>
-#include <MUON/mapping/AliMpDDLStore.h>
-#include <MUON/mapping/AliMpCDB.h>
-#include <MUON/AliMUONTrackExtrap.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDMuonTrack.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveMUONData.h>
-#include <EVE/EveDet/AliEveMUONChamber.h>
-#include <EVE/EveDet/AliEveMUONTrack.h>
+#include <AliMpSegmentation.h>
+#include <AliMpDDLStore.h>
+#include <AliMpCDB.h>
+#include <AliMUONTrackExtrap.h>
+#include <AliRunLoader.h>
+#include <AliESDEvent.h>
+#include <AliESDMuonTrack.h>
+#include <AliEveEventManager.h>
+#include <AliEveMUONData.h>
+#include <AliEveMUONChamber.h>
+#include <AliEveMUONTrack.h>
 #endif
 
 class AliEveMUONData;

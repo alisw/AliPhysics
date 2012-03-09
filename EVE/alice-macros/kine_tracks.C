@@ -21,13 +21,13 @@
 #include <TEveManager.h>
 #include <TEveTrackPropagator.h>
 
-#include <STEER/STEERBase/AliMagF.h>
-#include <STEER/STEERBase/AliStack.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveMagField.h>
-#include <EVE/EveBase/AliEveTrack.h>
-#include <EVE/EveBase/AliEveKineTools.h>
+#include <AliMagF.h>
+#include <AliStack.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliEveMagField.h>
+#include <AliEveTrack.h>
+#include <AliEveKineTools.h>
 #endif
 
 // Use magnetic-field as retrieved from GRP.

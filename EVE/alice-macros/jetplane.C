@@ -18,11 +18,11 @@
 #include <TEveScene.h>
 #include <TEveTreeTools.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <STEER/AOD/AliAODEvent.h>
-#include <STEER/AOD/AliAODTrack.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveJetPlane.h>
+#include <AliRunLoader.h>
+#include <AliAODEvent.h>
+#include <AliAODTrack.h>
+#include <AliEveEventManager.h>
+#include <AliEveJetPlane.h>
 #endif
 
 TEveViewer *gJPView   = 0;

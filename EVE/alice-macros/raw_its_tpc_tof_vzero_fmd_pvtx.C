@@ -1,4 +1,16 @@
 //Macro generated automatically by AliEveMacroExecutor
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TEveManager.h>
+#include <TEveBrowser.h>
+#include <TEveWindow.h>
+#include <TEvePointSet.h>
+
+#include <AliEveEventManager.h>
+#include <AliEveMacro.h>
+#include <AliEveMacroExecutor.h>
+#include <AliEveMacroExecutorWindow.h>
+#include <AliEveMultiView.h>
+#endif
 
 void raw_its_tpc_tof_vzero_fmd_pvtx(){
 

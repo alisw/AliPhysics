@@ -2,17 +2,16 @@
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 #include <TGeoManager.h>
-#include <EveBase/AliEveEventManager.h>
 
-#include "AliRunLoader.h"
-#include "AliCluster.h"
-#include "AliTracker.h"
-#include "AliReconstruction.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "AliESDfriend.h"
-
-#include "AliITSRecoParam.h"
+#include <AliRunLoader.h>
+#include <AliCluster.h>
+#include <AliTracker.h>
+#include <AliReconstruction.h>
+#include <AliESDEvent.h>
+#include <AliESDtrack.h>
+#include <AliESDfriend.h>
+#include <AliITSRecoParam.h>
+#include <AliEveEventManager.h>
 #endif
 
 void clusters()

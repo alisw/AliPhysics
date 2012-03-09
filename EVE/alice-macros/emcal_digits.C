@@ -7,27 +7,23 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef __CINT__
-
-#include <TEveManager.h>
-#include <TEveQuadSet.h>
+#include <TBranch.h>
+#include <TClonesArray.h>
 #include <TGeoNode.h>
 #include <TGeoBBox.h>
 #include <TGeoManager.h>
 #include <TStyle.h>
-#include <TEveTrans.h>
-#include <TClonesArray.h>
 #include <TTree.h>
-#include <TBranch.h>
-
-#include <EveBase/AliEveEventManager.h>
+#include <TEveManager.h>
+#include <TEveQuadSet.h>
+#include <TEveTrans.h>
 
 #include <AliRunLoader.h>
 #include <AliCluster.h>
 #include <AliEMCALGeometry.h>
 #include <AliEMCALDigit.h>
 #include <AliLog.h>
-
-// #include <Riostream.h>
+#include <AliEveEventManager.h>
 #endif
 
 void emcal_digits()

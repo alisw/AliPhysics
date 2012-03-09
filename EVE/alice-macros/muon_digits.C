@@ -24,15 +24,15 @@
 #include <TEveManager.h>
 #include <TEveQuadSet.h>
 
-#include <MUON/AliMUONGeometryTransformer.h>
-#include <MUON/AliMUONVDigit.h>
-#include <MUON/AliMUONVDigitStore.h>
-#include <MUON/mapping/AliMpPad.h>
-#include <MUON/mapping/AliMpSegmentation.h>
-#include <MUON/mapping/AliMpVSegmentation.h>
-#include <MUON/mapping/AliMpCDB.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliMUONGeometryTransformer.h>
+#include <AliMUONVDigit.h>
+#include <AliMUONVDigitStore.h>
+#include <AliMpPad.h>
+#include <AliMpSegmentation.h>
+#include <AliMpVSegmentation.h>
+#include <AliMpCDB.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 
 //______________________________________________________________________________

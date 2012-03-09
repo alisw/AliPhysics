@@ -6,18 +6,18 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <STEER/STEER/AliLoader.h>
-#include <STEER/STEER/AliDataLoader.h>
-#include <STEER/STEER/AliTreeLoader.h>
-#include <TRD/AliTRDarrayADC.h>
-#include <TRD/AliTRDgeometry.h>
-#include <TRD/AliTRDtrackletWord.h>
-#include <TRD/AliTRDtrackletMCM.h>
-#include <TRD/AliTRDtrackGTU.h>
-#include <TRD/AliTRDtrackletGTU.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTRDData.h>
+#include <AliRunLoader.h>
+#include <AliLoader.h>
+#include <AliDataLoader.h>
+#include <AliTreeLoader.h>
+#include <AliTRDarrayADC.h>
+#include <AliTRDgeometry.h>
+#include <AliTRDtrackletWord.h>
+#include <AliTRDtrackletMCM.h>
+#include <AliTRDtrackGTU.h>
+#include <AliTRDtrackletGTU.h>
+#include <AliEveEventManager.h>
+#include <AliEveTRDData.h>
 #endif
 
 TEveElementList *

@@ -3,7 +3,7 @@
 #include <TStyle.h>
 #include <TEveManager.h>
 
-#include <EVE/EveDet/AliEveFMDLoader.h>
+#include <AliEveFMDLoader.h>
 #endif
 
 void fmd_digits()

@@ -10,9 +10,9 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TParticle.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <STEER/STEERBase/AliStack.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliRunLoader.h>
+#include <AliStack.h>
+#include <AliEveEventManager.h>
 #endif
 
 void print_kine_from_label(Int_t label)

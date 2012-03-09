@@ -30,18 +30,18 @@
 #include <TEveVSDStructs.h>
 #include <TEveTrackPropagator.h>
 
-#include <MUON/AliMUONClusterStoreV2.h>
-#include <MUON/AliMUONRawClusterV2.h>
-#include <MUON/AliMUONVCluster.h>
-#include <MUON/AliMUONConstants.h>
-#include <MUON/AliMUONRecoParam.h>
-#include <MUON/AliMUONCDB.h>
-#include <STEER/STEERBase/AliStack.h>
-#include <STEER/STEERBase/AliTrackReference.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveMagField.h>
-#include <EVE/EveBase/AliEveTrack.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliMUONClusterStoreV2.h>
+#include <AliMUONRawClusterV2.h>
+#include <AliMUONVCluster.h>
+#include <AliMUONConstants.h>
+#include <AliMUONRecoParam.h>
+#include <AliMUONCDB.h>
+#include <AliStack.h>
+#include <AliTrackReference.h>
+#include <AliRunLoader.h>
+#include <AliEveMagField.h>
+#include <AliEveTrack.h>
+#include <AliEveEventManager.h>
 #endif
 
 //______________________________________________________________________________

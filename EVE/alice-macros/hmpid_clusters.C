@@ -17,9 +17,9 @@
 #include <TTree.h>
 #include <TBranch.h>
 
-#include <STEER/STEER/AliCluster3D.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EveBase/AliEveEventManager.h>
+#include <AliCluster3D.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #else
 class TEveElement;
 class TEvePointSet;

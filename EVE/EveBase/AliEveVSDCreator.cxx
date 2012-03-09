@@ -174,7 +174,7 @@ void AliEveVSDCreator::CreateTrees()
   }
   catch(TEveException& exc)
   {
-    Warning(exc, "skipping AliEveV0 extraction.");
+    Warning(kEH, "Executing %s skipping AliEveV0 extraction.", exc.Data());
     goto end_esd_processing;
   }
 

@@ -2,13 +2,13 @@
 #include <TGLViewer.h>
 #include <TEveManager.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDfriend.h>
-#include <TRD/AliTRDarrayADC.h>
-#include <TRD/AliTRDReconstructor.h>
-#include <TRD/AliTRDtrackV1.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTRDTrackList.h>
+#include <AliESDEvent.h>
+#include <AliESDfriend.h>
+#include <AliTRDarrayADC.h>
+#include <AliTRDReconstructor.h>
+#include <AliTRDtrackV1.h>
+#include <AliEveEventManager.h>
+#include <AliEveTRDTrackList.h>
 #endif
 
 void trd_tracks(TEveElement *cont = 0)

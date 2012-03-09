@@ -11,11 +11,11 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliTrackPointArray.h>
-#include <EveBase/AliEveEventManager.h>
-#include <EveBase/AliEveMultiView.h>
+#include <AliESDEvent.h>
+#include <AliESDtrack.h>
+#include <AliTrackPointArray.h>
+#include <AliEveEventManager.h>
+#include <AliEveMultiView.h>
 #endif
 
 TEvePointSet* clusters_from_label(Int_t label=0, TEveElement* cont=0)

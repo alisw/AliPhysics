@@ -13,11 +13,11 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEveTPCData.h>
-#include <EVE/EveDet/AliEveTPCSector2D.h>
-#include <EVE/EveDet/AliEveTPCSector3D.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliEveTPCData.h>
+#include <AliEveTPCSector2D.h>
+#include <AliEveTPCSector3D.h>
 #endif
 
 void tpc_digits(Int_t mode=1)

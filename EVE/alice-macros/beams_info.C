@@ -9,8 +9,8 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TEveElement.h>
 
-#include <EVE/EveBase/AliEveBeamsInfo.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliEveBeamsInfo.h>
+#include <AliEveEventManager.h>
 #endif
 
 AliEveBeamsInfo* beams_info(){

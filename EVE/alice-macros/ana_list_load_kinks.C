@@ -10,16 +10,16 @@
 #include <TEveManager.h>
 #include <TEveTrackPropagator.h>
 
-#include <TRD/AliTRDarrayADC.h>
-#include <TRD/AliTRDReconstructor.h>
-#include <TRD/AliTRDtrackV1.h>
-#include <STEER/ESD/AliESDkink.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDfriend.h>
-#include <EVE/EveDet/AliEveTRDData.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveKink.h>
-#include <EVE/EveDet/AliEveListAnalyser.h>
+#include <AliTRDarrayADC.h>
+#include <AliTRDReconstructor.h>
+#include <AliTRDtrackV1.h>
+#include <AliESDkink.h>
+#include <AliESDEvent.h>
+#include <AliESDfriend.h>
+#include <AliEveTRDData.h>
+#include <AliEveEventManager.h>
+#include <AliEveKink.h>
+#include <AliEveListAnalyser.h>
 #endif
 
 void esd_kink_init_rectrackMother(TEveRecTrack& rt, const AliExternalTrackParam* tp)

@@ -15,9 +15,9 @@
 #include <TEveElement.h>
 #include <TEveUtil.h>
 
-#include <STEER/ESD/AliESDtrack.h>
-#include <EVE/EveBase/AliEveTrack.h>
-#include <EVE/EveBase/AliEveMultiView.h>
+#include <AliESDtrack.h>
+#include <AliEveTrack.h>
+#include <AliEveMultiView.h>
 #endif
 
 void set_momentum_vectors()

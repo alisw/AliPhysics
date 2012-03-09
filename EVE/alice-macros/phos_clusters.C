@@ -16,9 +16,9 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <STEER/STEER/AliCluster.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EveBase/AliEveEventManager.h>
+#include <AliCluster.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 
 TEvePointSet* phos_clusters(TEveElement* cont=0)

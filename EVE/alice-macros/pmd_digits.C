@@ -17,12 +17,12 @@
 #include <TEveRGBAPalette.h>
 #include <TEveTrans.h>
 
-#include <HMPID/AliHMPIDDigit.h>
-#include <HMPID/AliHMPIDv3.h>
-#include <STEER/STEER/AliCluster3D.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveDet/AliEvePMDModule.h>
+#include <AliHMPIDDigit.h>
+#include <AliHMPIDv3.h>
+#include <AliCluster3D.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliEvePMDModule.h>
 #endif
 
 void pmd_digits(Int_t mode = 0)

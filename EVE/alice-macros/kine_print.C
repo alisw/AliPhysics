@@ -13,9 +13,9 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 
-#include <STEER/STEERBase/AliStack.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliStack.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 void
 kine_print(Double_t min_pt = 0, Double_t min_p = 0)

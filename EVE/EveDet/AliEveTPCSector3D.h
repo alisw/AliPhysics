@@ -10,8 +10,8 @@
 #ifndef AliEveTPCSector3D_H
 #define AliEveTPCSector3D_H
 
-#include <EveDet/AliEveTPCSectorViz.h>
-#include <EveDet/AliEveTPCSectorData.h>
+#include <AliEveTPCSectorViz.h>
+#include <AliEveTPCSectorData.h>
 
 #include <TEveBoxSet.h>
 #include <TEvePointSet.h>

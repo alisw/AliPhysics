@@ -12,14 +12,14 @@
 #include <TEveTrackPropagator.h>
 #include <TEveManager.h>
 
-#include <STEER/STEERBase/AliExternalTrackParam.h>
-#include <STEER/STEERBase/AliPID.h>
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDVertex.h>
-#include <STEER/ESD/AliESDtrack.h>
-#include <STEER/ESD/AliESDv0.h>
-#include <EVE/EveBase/AliEveEventManager.h>
-#include <EVE/EveBase/AliEveV0.h>
+#include <AliExternalTrackParam.h>
+#include <AliPID.h>
+#include <AliESDEvent.h>
+#include <AliESDVertex.h>
+#include <AliESDtrack.h>
+#include <AliESDv0.h>
+#include <AliEveEventManager.h>
+#include <AliEveV0.h>
 #endif
 
 

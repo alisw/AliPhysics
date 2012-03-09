@@ -6,16 +6,16 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TStyle.h>
 #include <TEveUtil.h>
 
-#include <RAW/AliRawReader.h>
-#include <EveBase/AliEveEventManager.h>
-#include <EveDet/AliEveITSDigitsInfo.h>
+#include <AliRawReader.h>
+#include <AliEveEventManager.h>
+#include <AliEveITSDigitsInfo.h>
 
 #include "its_common_foos.C"
-
 #endif
 
 // Load ITS raw-data.

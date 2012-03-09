@@ -25,11 +25,11 @@
 #include <TEveUtil.h>
 #include <TEveQuadSet.h>
 
-#include <MUON/AliMUONDigitMaker.h>
-#include <MUON/AliMUONDigitStoreV2R.h>
-#include <MUON/mapping/AliMpCDB.h>
-#include <RAW/AliRawReader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliMUONDigitMaker.h>
+#include <AliMUONDigitStoreV2R.h>
+#include <AliMpCDB.h>
+#include <AliRawReader.h>
+#include <AliEveEventManager.h>
 #endif
 
 void muon_raw()

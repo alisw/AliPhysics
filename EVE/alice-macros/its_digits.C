@@ -12,12 +12,11 @@
 #include <TStyle.h>
 #include <TEveUtil.h>
 
-#include <STEER/STEER/AliRunLoader.h>
-#include <EveBase/AliEveEventManager.h>
-#include <EveDet/AliEveITSDigitsInfo.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
+#include <AliEveITSDigitsInfo.h>
 
 #include "its_common_foos.C"
-
 #endif
 
 // Load ITS digits.

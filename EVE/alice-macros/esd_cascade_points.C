@@ -9,10 +9,10 @@
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 
-#include <STEER/ESD/AliESDEvent.h>
-#include <STEER/ESD/AliESDcascade.h>
-#include <STEER/STEER/AliRunLoader.h>
-#include <EVE/EveBase/AliEveEventManager.h>
+#include <AliESDEvent.h>
+#include <AliESDcascade.h>
+#include <AliRunLoader.h>
+#include <AliEveEventManager.h>
 #endif
 
 void esd_cascade_fill_pointset(TEvePointSet* ps)
