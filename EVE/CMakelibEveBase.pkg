@@ -34,10 +34,25 @@ set ( DHDR  EveBase/EveBaseLinkDef.h)
 
 set ( EINCLUDE  RAW ITS TPC EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
 
-install (FILES 
-  EveBase/AliEveTrack.h 
+set ( EXPORT 
+  EveBase/AliEveBeamsInfo.h
+  EveBase/AliEveCascade.h
   EveBase/AliEveEventManager.h
-  EveBase/AliEveTrackCounter.h
-  EveBase/AliEveMagField.h
+  EveBase/AliEveHF.h
+  EveBase/AliEveJetPlane.h
   EveBase/AliEveKineTools.h
-  DESTINATION EVE/EveBase)
+  EveBase/AliEveKink.h
+  EveBase/AliEveLego.h
+  EveBase/AliEveMacro.h
+  EveBase/AliEveMacroExecutor.h
+  EveBase/AliEveMacroExecutorWindow.h
+  EveBase/AliEveMagField.h
+  EveBase/AliEveMultiView.h
+  EveBase/AliEveTrack.h 
+  EveBase/AliEveTrackCounter.h
+  EveBase/AliEveTracklet.h
+  EveDet/AliEveTRDData.h
+  EveBase/AliEveV0.h
+  
+  
+  )
