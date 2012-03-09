@@ -75,6 +75,7 @@ public:
    virtual void     SetNInputTracksMax(Int_t nTr) { fNInputTracksMax = nTr; }
    virtual void     SetAngStructCloseTracks(Int_t yesno){fAngStructCloseTracks=yesno;}
    virtual void     SetCheckMethods(Int_t yesno){fCheckMethods=yesno;}
+   virtual void     SetEventMixing(Int_t yesno){fDoEventMixing=yesno;}
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
    virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
@@ -83,7 +84,7 @@ public:
    virtual void     SetNMatchJets(Int_t n) { fNMatchJets = n; }
    virtual void     SetFillEvent(Bool_t b) { fbEvent = b; }
    virtual void     SetKeepJets(Bool_t b = kTRUE) { fKeepJets = b; }
-   virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
+   virtual void     SetNonStdFile(char* c){fNonStdFile = c;} 
 
 
 private:
@@ -116,10 +117,14 @@ private:
    Int_t   fNInputTracksMin;  // lower bound of nb. of input tracks
    Int_t   fNInputTracksMax;  // upper bound of nb. of input tracks
    Int_t   fAngStructCloseTracks;//only constituents or all tracks with R<0.8 for the angular structure
-   Int_t fCheckMethods;     //to look into more detail into the core
-   Float_t fJetEtaMin;     // lower bound on eta for found jets
-   Float_t fJetEtaMax;     // upper bound on eta for found jets
-   Float_t fJetPtMin;      // minimum jet pT
+   Int_t   fCheckMethods;     //to look into more detail into the core
+   Int_t   fDoEventMixing;
+   Float_t fJetEtaMin;        // lower bound on eta for found jets
+   Float_t fJetEtaMax;        // upper bound on eta for found jets
+   Int_t   fNevents;          // number of events
+   Int_t   fTindex;           // index reference
+   Int_t   fTrigBufferIndex;  //index for the buffering
+   Float_t fJetPtMin;         // minimum jet pT
    UChar_t fJetTriggerExcludeMask; // mask for jet triggeres to exclude
    Float_t fJetPtFractionMin; // minimum fraction for positiv match of jets
    Int_t   fNMatchJets;       // maximal nb. of jets taken for matching
@@ -135,8 +140,8 @@ private:
    Bool_t fbEvent;                            // fill fhnEvent
    TH1I  *fHistEvtSelection;                  //! event selection statistic
    THnSparse *fhnDeltaR;                     //! variables per jet
-   THnSparse *fhnSumBkg;               //! variables per jet before acceptance cut
-   THnSparse *fhnJetCoreMethod3;               //! variables per jet before acc     
+   THnSparse *fhnMixedEvents;                //!mixed events matrix
+ 
 
    TH2F      *fh2JetCoreMethod1C10;          //Energy fraction in the core C10 method 1
    TH2F      *fh2JetCoreMethod2C10;          //Energy fraction in the core C10 method 2
@@ -165,8 +170,8 @@ private:
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
      TH3F*      fh3spectriggered;           //triggered spectra
      TH3F*      fh3specbiased;              //biased spectra
-     TH3F*      fh3specleadsublead;         //lead/sublead/all spectra
-   
+     TH3F*      fh3spectot;                 //the two combined    
+     Double_t            fTrigBuffer[10][7];      //!buffer for triggers   
 
    AliAnalysisTaskJetCore(const AliAnalysisTaskJetCore&); // not implemented
    AliAnalysisTaskJetCore& operator=(const AliAnalysisTaskJetCore&); // not implemented
