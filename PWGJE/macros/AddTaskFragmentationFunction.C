@@ -306,6 +306,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetIJHistoBins();
    task->SetDiJetHistoBins();
    task->SetQADiJetHistoBins();
+   task->SetPhiCorrHistoBins();
 
    if(FFMaxTrackPt>0) task->SetFFMaxTrackPt(FFMaxTrackPt);
    if(FFMinNTracks>0) task->SetFFMinNTracks(FFMinNTracks);
