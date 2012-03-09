@@ -3737,6 +3737,10 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   TStopwatch timer;" << endl;
       out << "   timer.Start();" << endl << endl;
       // Change temp directory to current one
+      if (!IsLocalTest()) {  
+         out << "// connect to AliEn and make the chain" << endl;
+         out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
+      }   
       out << "// Set temporary merging directory to current one" << endl;
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// Set temporary compilation directory to current one" << endl;
@@ -3886,10 +3890,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       } 
-      if (!IsLocalTest()) {  
-         out << "// connect to AliEn and make the chain" << endl;
-         out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
-      }   
       out << "// read the analysis manager from file" << endl;
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
@@ -4234,12 +4234,12 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }
       // Change temp directory to current one
+      out << "// Connect to AliEn" << endl;
+      out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       out << "// Set temporary merging directory to current one" << endl;
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// Set temporary compilation directory to current one" << endl;
       out << "   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);" << endl << endl;   
-      out << "// Connect to AliEn" << endl;
-      out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       out << "   TString outputDir = dir;" << endl;  
       out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << " " << fRegisterExcludes << "\";" << endl;
