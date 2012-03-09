@@ -26,12 +26,11 @@ ClassImp(AliDhcTask)
 
 //________________________________________________________________________
 AliDhcTask::AliDhcTask(const char *name) 
-  : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), 
-  fPtMin(0.25), fPtMax(15), fESD(0), fAOD(0), fOutputList(0), fHistPt(0), 
-  fHEvt(0), fHTrk(0), fHPtTrg(0), fHCent(0), fHZvtx(0), fNbins(0), 
-  fHSs(0), fHMs(0), fIndex(0), fMeanPtTrg(0), fMeanPtAss(0), 
-  fMean2PtTrg(0), fMean2PtAss(0), fCentrality(99), fZVertex(99), 
-  fEsdTrackCutsTPCOnly(0), fPoolMgr(0)
+: AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
+  fESD(0), fAOD(0), fOutputList(0), fHistPt(0), fHEvt(0), fHTrk(0), fHPtAss(0), fHPtTrg(0),
+  fHCent(0), fHZvtx(0), fNbins(0), fHSs(0), fHMs(0),
+  fIndex(0), fMeanPtTrg(0), fMeanPtAss(0), fMean2PtTrg(0), fMean2PtAss(0),
+  fCentrality(99), fZVertex(99), fEsdTrackCutsTPCOnly(0), fPoolMgr(0)
 {
   // Constructor
 
