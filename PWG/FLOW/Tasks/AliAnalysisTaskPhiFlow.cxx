@@ -487,7 +487,12 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::EventCut(T* event)
    // Impose event cuts
    if (!event) return kFALSE;
    // miminum bias trigger for AOD's
-   if ((fAODAnalysis) && (!(dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected() & AliVEvent::kMB))) return kFALSE;
+   if (fAODAnalysis) 
+   {
+       AliInputEventHandler* eh = dynamic_cast<AliInputEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+       if(!eh) return kFALSE;
+       if(!(eh->IsEventSelected() & AliVEvent::kMB)) return kFALSE;
+   }
    if (!CheckVertex(event)) return kFALSE;
    if (!CheckCentrality(event)) return kFALSE;
    PlotVZeroMultiplcities(event);
@@ -616,11 +621,12 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
       case kTPC:
          // general tpc pid
          fNOPID->Fill(track->P(), track->GetTPCsignal());
-         if (((Int_t)track->GetMostProbablePID()) == ((Int_t)AliPID::kKaon))
-         {
-            fPIDk->Fill(track->P(), track->GetTPCsignal());
-            return kTRUE;
-         }
+         //if (((Int_t)track->GetMostProbablePID()) == ((Int_t)AliPID::kKaon))
+         //{
+         //   fPIDk->Fill(track->P(), track->GetTPCsignal());
+         //   return kTRUE;
+         //}
+         return kFALSE; // curretly not implemented
          break;
       case kCombined:
          fNOPID->Fill(track->P(), track->GetTPCsignal());
