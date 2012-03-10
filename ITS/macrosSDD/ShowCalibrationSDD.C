@@ -444,7 +444,7 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   gbad->GetYaxis()->SetTitle("Anode Status (1=OK, 0=bad)");
 }
 
-void ShowCalibrationSDD(Int_t nrun, Int_t year=2011, Int_t nmod=0){
+void ShowCalibrationSDD(Int_t nrun, Int_t year=2012, Int_t nmod=0){
   TGrid::Connect("alien:",0,0,"t");
   TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/CalibSDD\" \"Run%d*.root\" > run.txt",year,nrun);
   gSystem->Exec(cmd.Data());

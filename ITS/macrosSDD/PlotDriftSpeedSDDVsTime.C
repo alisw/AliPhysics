@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600, 
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -149,8 +149,8 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   UInt_t timeZero;
   if(year==2009) timeZero=1247762992;
   else if(year==2010) timeZero=1262300400;
-  else timeZero=1293836400; // 1/1/2011 at 0:00 CEST
-
+  else if(year==2011) timeZero=1293836400; // 1/1/2011 at 0:00 CEST
+  else timeZero=1325372400;
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
     Char_t directory[100];
@@ -209,7 +209,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
     for(Int_t iHyb=0; iHyb<520;iHyb++){
       if(!goodTime){
 	vdriftarr=(AliITSDriftSpeedArraySDD*)drspSDD->At(iHyb);
-	Int_t statusInj=vdriftarr->GetInjectorStatus();
+	UInt_t statusInj=vdriftarr->GetInjectorStatus();
 	if(statusInj>0){
 	  timest=vdriftarr->GetTimestamp(0);
 	  if(timest>0 && timest>timeZero){
@@ -228,17 +228,17 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
       vdriftarr1=(AliITSDriftSpeedArraySDD*)drspSDD->At(i1);
 
 
-      Int_t statusInj0=vdriftarr0->GetInjectorStatus();
-      Int_t statusInj1=vdriftarr1->GetInjectorStatus();
+      UInt_t statusInj0=vdriftarr0->GetInjectorStatus();
+      UInt_t statusInj1=vdriftarr1->GetInjectorStatus();
       Int_t npt=gstatusinjvsrun[i0]->GetN();
-      gstatusinjvsrun[i0]->SetPoint(npt,(Float_t)nrun,statusInj0);
-      gstatusinjvsrun[i1]->SetPoint(npt,(Float_t)nrun,statusInj1);
+      gstatusinjvsrun[i0]->SetPoint(npt,(Float_t)nrun,(Float_t)statusInj0);
+      gstatusinjvsrun[i1]->SetPoint(npt,(Float_t)nrun,(Float_t)statusInj1);
       gstatusinjvsrun[i0]->SetPointError(npt,0,0);
       gstatusinjvsrun[i1]->SetPointError(npt,0,0);
       if(goodTime){
 	Int_t npt2=gstatusinjvstime[i0]->GetN();
-	gstatusinjvstime[i0]->SetPoint(npt2,timeday,statusInj0);
-	gstatusinjvstime[i1]->SetPoint(npt2,timeday,statusInj1);
+	gstatusinjvstime[i0]->SetPoint(npt2,timeday,(Float_t)statusInj0);
+	gstatusinjvstime[i1]->SetPoint(npt2,timeday,(Float_t)statusInj1);
 	gstatusinjvstime[i0]->SetPointError(npt2,0,0);
 	gstatusinjvstime[i1]->SetPointError(npt2,0,0);
       }
@@ -399,13 +399,13 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   ofil->Close();
 
   //  Int_t mod1=244-240;
-  Int_t mod1 = 243-240;
-  Int_t mod2=277-240;
+  Int_t mod1 = 275-240;
+  Int_t mod2=318-240;
   //  Int_t mod2=259-240;
 //   Int_t mod2=274-240;
-  Int_t mod3=327-240;
+  Int_t mod3=413-240;
   //  Int_t mod4=453-240;
-  Int_t mod4=422-240;
+  Int_t mod4=480-240;
    //  Int_t mod4=497-240;
   Int_t lay1,lad1,det1;
   Int_t lay2,lad2,det2;
@@ -438,8 +438,10 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
     sprintf(title,"Time (days since July 16th 2009)");
   }else if (year==2010){
     sprintf(title,"Time (days since January 1st 2010)");
-  }else{
+  }else if (year==2011){
     sprintf(title,"Time (days since January 1st 2011)");
+  }else{
+    sprintf(title,"Time (days since January 1st 2012)");
   }
   gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
   gvdrvstime[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
@@ -458,6 +460,28 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   lent=leg->AddEntry(gvdrvstime[2*mod4],Form("Lay %d Lad %d Det %d",lay4,lad4,det4),"P");
   lent->SetTextColor(4);
   leg->Draw();
+
+  TCanvas* c0b=new TCanvas("c0b","StatusInj vs. time");
+  c0->SetGridx();
+  c0->SetGridy();
+  gstatusinjvstime[2*mod1]->SetMarkerStyle(20);
+  gstatusinjvstime[2*mod2]->SetMarkerStyle(22);
+  gstatusinjvstime[2*mod2]->SetMarkerColor(2);
+  gstatusinjvstime[2*mod2]->SetLineColor(2);
+  gstatusinjvstime[2*mod3]->SetMarkerStyle(29);
+  gstatusinjvstime[2*mod3]->SetMarkerColor(3);
+  gstatusinjvstime[2*mod3]->SetLineColor(3);
+  gstatusinjvstime[2*mod4]->SetMarkerStyle(27);
+  gstatusinjvstime[2*mod4]->SetMarkerColor(4);
+  gstatusinjvstime[2*mod4]->SetLineColor(4);
+  gstatusinjvstime[2*mod1]->Draw("AP");
+  gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
+  gvdrvstime[2*mod1]->GetYaxis()->SetTitle("Injector Status");
+  gvdrvstime[2*mod2]->Draw("PSAME");
+  gvdrvstime[2*mod3]->Draw("PSAME");
+  gvdrvstime[2*mod4]->Draw("PSAME");
+  leg->Draw();
+
 
   TCanvas* c1=new TCanvas("c1","Vdrift vs. run");
   c1->SetGridx();
@@ -514,9 +538,9 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   TLine* lin=new TLine(0,0,0,23);  
   gStyle->SetPalette(1);
 
-  TCanvas *c0b=new TCanvas("c0b","Percent difference Last Run - Previous Run",900,600);
-  c0b->Divide(2,1);
-  c0b->cd(1);
+  TCanvas *c0c=new TCanvas("c0c","Percent difference Last Run - Previous Run",900,600);
+  c0c->Divide(2,1);
+  c0c->cd(1);
   hlay3->DrawCopy("colz");
   for(Int_t i=0;i<6;i++){
     lin->SetY1(-0.5);
@@ -532,7 +556,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
     lin->SetY2(i+0.5);
     lin->DrawClone();
   }
-  c0b->cd(2);
+  c0c->cd(2);
   hlay4->DrawCopy("colz");
   for(Int_t i=0;i<8;i++){
     lin->SetY1(-0.5);

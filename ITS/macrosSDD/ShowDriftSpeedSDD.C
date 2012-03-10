@@ -390,7 +390,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
 
 
-void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2011, Int_t nv=-1){
+void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2012, Int_t nv=-1){
   TGrid::Connect("alien:",0,0,"t");
   TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run%d*.root\" > run.txt",year,nrun);
   if(nv>0){
