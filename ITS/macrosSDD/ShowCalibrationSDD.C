@@ -16,6 +16,8 @@
 #include "AliITSgeomTGeo.h"
 #endif
 
+/* $Id$ */
+
 // Macro to plot the calibration parameters from the OCDB file 
 // created from PEDESTAL and PULSER runs (OCDB/ITS/Calib/CalibSDD)
 // Two methods ShowCalibrationSDD:
@@ -77,6 +79,15 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   TH2F* hgainmod=new TH2F("hgainmod","",260,239.5,499.5,50,0.,4.);
   TH1F* hchstatus=new TH1F("hchstatus","",2,-0.5,1.5);
 
+  AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
+  dmap->SetJun09Map();
+  TH2I *hddlcarlos=new TH2I("hddlcarlos","",24,-0.5,11.5,24,-0.5,23.5);
+  hddlcarlos->GetXaxis()->SetTitle("Module");
+  hddlcarlos->GetYaxis()->SetTitle("DDL");
+  hddlcarlos->GetXaxis()->SetTickLength(0);
+  hddlcarlos->GetYaxis()->SetTickLength(0);
+  hddlcarlos->SetStats(0);
+  hddlcarlos->SetMinimum(-1.);
 
   AliITSCalibrationSDD *cal;
   Int_t badModCounter3=0;
@@ -100,8 +111,14 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
     Int_t lay,lad,det;
     AliITSgeomTGeo::GetModuleId(i+240,lay,lad,det);
     Int_t index=1+(det-1)*2;
+    Int_t ddl,carlos;
+    dmap->FindInDDLMap(i+240,ddl,carlos);
+    Int_t index2=1+carlos*2;
+    ddl+=1;
     if(cal->IsBad()){ 
       printf("BAD\t");
+      hddlcarlos->SetBinContent(index2,ddl,0);
+      hddlcarlos->SetBinContent(index2+1,ddl,0);
       if(lay==3){ 
 	badModCounter3++;
 	badHybridCounter3+=2;
@@ -121,18 +138,22 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
 	badAnodeCounterGoodMod3+=cal->GetDeadChannels();
 	if(cal->IsChipBad(0) && cal->IsChipBad(1) && cal->IsChipBad(2) && cal->IsChipBad(3)){
 	  hlay3->SetBinContent(index,lad,0);
+	  hddlcarlos->SetBinContent(index2,ddl,0);
 	  badHybridCounter3++;
 	}else{
 	  hlay3->SetBinContent(index,lad,1);
+	  hddlcarlos->SetBinContent(index2,ddl,1);
 	  for(Int_t iAn=0; iAn<256; iAn++){
 	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid3++;
 	  }
 	}
 	if(cal->IsChipBad(4) && cal->IsChipBad(5) && cal->IsChipBad(6) && cal->IsChipBad(7)){
 	  hlay3->SetBinContent(index+1,lad,0);
+	  hddlcarlos->SetBinContent(index2+1,ddl,0);
 	  badHybridCounter3++;
 	}else{
 	  hlay3->SetBinContent(index+1,lad,1);
+	  hddlcarlos->SetBinContent(index2+1,ddl,1);
 	  for(Int_t iAn=256; iAn<512; iAn++){
 	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid3++;
 	  }
@@ -141,18 +162,22 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
 	badAnodeCounterGoodMod4+=cal->GetDeadChannels();
 	if(cal->IsChipBad(0) && cal->IsChipBad(1) && cal->IsChipBad(2) && cal->IsChipBad(3)){
 	  hlay4->SetBinContent(index,lad,0);
+	  hddlcarlos->SetBinContent(index2,ddl,0);
 	  badHybridCounter4++;
 	}else{
 	  hlay4->SetBinContent(index,lad,1);
+	  hddlcarlos->SetBinContent(index2,ddl,1);
 	  for(Int_t iAn=0; iAn<256; iAn++){
 	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid4++;
 	  }
 	}
 	if(cal->IsChipBad(4) && cal->IsChipBad(5) && cal->IsChipBad(6) && cal->IsChipBad(7)){
 	  hlay4->SetBinContent(index+1,lad,0);
+	  hddlcarlos->SetBinContent(index2+1,ddl,0);
 	  badHybridCounter4++;
 	}else{
 	  hlay4->SetBinContent(index+1,lad,1);
+	  hddlcarlos->SetBinContent(index2+1,ddl,1);
 	  for(Int_t iAn=256; iAn<512; iAn++){
 	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid4++;
 	  }
@@ -283,7 +308,25 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   }
 
 
-
+  TCanvas* cddl=new TCanvas("cddl","DDL status",800,800);
+  hddlcarlos->Draw("col");
+  ex1->Draw();
+  hddlcarlos->DrawCopy("col same");
+  for(Int_t i=0;i<12;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(23.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<24;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(11.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+ 
 
   TCanvas *c0b=new TCanvas("c0b","Bad Channels",900,600);
   c0b->Divide(2,1);
