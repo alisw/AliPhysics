@@ -291,21 +291,22 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelectedFromPID(AliAODRecoDecayHF4Prong *d, Int_
 //    trk[2]=aodIn->GetTrack(trkIDtoEntry[d->GetProngID(2)]);
 //    trk[3]=aodIn->GetTrack(trkIDtoEntry[d->GetProngID(3)]);}
 
-  AliAODPidHF* PidObj = new AliAODPidHF();
-  PidObj->SetAsym(kTRUE);
-  PidObj->SetPLimit(ptlimit);
-  PidObj->SetSigma(0,2.);  //TPC sigma, in three pT ranges
-  PidObj->SetSigma(1,1.);
-  PidObj->SetSigma(2,0.);  
-  PidObj->SetSigma(3,2.);  //TOF sigma, whole pT range
-  PidObj->SetTPC(kTRUE);
-  PidObj->SetTOF(kTRUE);
-   
+  AliAODPidHF* pidObj = new AliAODPidHF();
+  pidObj->SetAsym(kTRUE);
+  pidObj->SetPLimit(ptlimit);
+  pidObj->SetSigma(0,2.);  //TPC sigma, in three pT ranges
+  pidObj->SetSigma(1,1.);
+  pidObj->SetSigma(2,0.);  
+  pidObj->SetSigma(3,2.);  //TOF sigma, whole pT range
+  pidObj->SetTPC(kTRUE);
+  pidObj->SetTOF(kTRUE);
+  pidObj->SetMatch(1);
+  pidObj->SetCompat(kTRUE);
   for(Int_t ii=0; ii<4; ii++) {
-    PidObj->SetSigma(0,2.);
-    matchK[ii] = PidObj->MatchTPCTOF(trk[ii],1,3,kTRUE); //arguments: track, mode, particle#, compatibility allowed
-    PidObj->SetSigma(0,2.);
-    matchPi[ii] = PidObj->MatchTPCTOF(trk[ii],1,2,kTRUE); 
+    pidObj->SetSigma(0,2.);
+    matchK[ii] = pidObj->MatchTPCTOF(trk[ii],3); //arguments: track, mode, particle#, compatibility allowed
+    pidObj->SetSigma(0,2.);
+    matchPi[ii] = pidObj->MatchTPCTOF(trk[ii],2); 
   }
 
   //Rho invariant mass under various hypotheses (to be matched with PID infos in order to accet the candidate)

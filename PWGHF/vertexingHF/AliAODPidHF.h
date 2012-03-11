@@ -98,19 +98,24 @@ class AliAODPidHF : public AliAODPid{
  void CombinedProbability(AliAODTrack *track,Bool_t *type) const; //0 = pion, 1 = kaon, 2 = proton
  Bool_t CheckStatus(AliAODTrack *track,TString detectors) const;
 
+ Bool_t CheckITSPIDStatus(AliAODTrack *track) const;
+ Bool_t CheckTPCPIDStatus(AliAODTrack *track) const;
+ Bool_t CheckTOFPIDStatus(AliAODTrack *track) const;
+ Bool_t CheckTRDPIDStatus(AliAODTrack *track) const;
+
  Bool_t TPCRawAsym(AliAODTrack* track,Int_t specie) const;
- Int_t MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t compat);
+ Int_t MatchTPCTOF(AliAODTrack *track,Int_t specie);
 
  Int_t MakeRawPid(AliAODTrack *track,Int_t specie); //general method to perform PID using raw signals
 
  Bool_t IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK);
 
- void SetBetheBloch(AliTPCPIDResponse &tpcResp) const;
-
+ void GetTPCBetheBlochParams(Double_t alephParameters[5]) const;
+ void SetBetheBloch();
   // method for AliPIDCombined object
-  void SetSelectedSpecies(Int_t ispecies = AliPID::kSPECIES){GetPidCombined()->SetSelectedSpecies(ispecies);};
-  void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
-  void DrawPrior(AliPID::EParticleType type);
+ void SetSelectedSpecies(Int_t ispecies = AliPID::kSPECIES){GetPidCombined()->SetSelectedSpecies(ispecies);};
+ void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
+ void DrawPrior(AliPID::EParticleType type);
 
  protected:
 
@@ -151,8 +156,9 @@ class AliAODPidHF : public AliAODPid{
  AliPIDResponse *fPidResponse; //pid response
  AliPIDCombined* fPidCombined; //combined PID object 
 
+ AliTPCPIDResponse* fTPCResponse; // TPC response 
 
- ClassDef(AliAODPidHF,15) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,16) // AliAODPid for heavy flavor PID
 
 };
 
