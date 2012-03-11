@@ -122,13 +122,13 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(Char_t *rdfname) :
 //______________________________________________________________________________
 AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   TObject(ssdadldc),
-  fRawDataFileName(ssdadldc.fRawDataFileName),
+  fRawDataFileName(NULL),
   fNumberOfModules(ssdadldc.fNumberOfModules),
   fModules(NULL),
   fModIndProcessed(ssdadldc.fModIndProcessed),
   fModIndRead(ssdadldc.fModIndRead),
   fModIndex(NULL),
-  fEqIndex(0),
+  fEqIndex(ssdadldc.fEqIndex),
   fNumberOfEvents(ssdadldc.fNumberOfEvents),
   fBadChannelsList(NULL),
   fDDLModuleMap(NULL),
@@ -145,6 +145,10 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   fZsFactor(ssdadldc.fZsFactor)
 {
   // copy constructor
+  if (ssdadldc.fRawDataFileName) {
+    fRawDataFileName = new (nothrow) Char_t[strlen(ssdadldc.fRawDataFileName)+1];
+    if (fRawDataFileName) strncpy(fRawDataFileName, ssdadldc.fRawDataFileName, strlen(ssdadldc.fRawDataFileName)+1);
+  } else fRawDataFileName = NULL;
   if ((ssdadldc.fNumberOfModules > 0) && (ssdadldc.fModules)) {
     fModules = new (nothrow) AliITSModuleDaSSD* [ssdadldc.fNumberOfModules];
     if (fModules) {
@@ -166,10 +170,19 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
       fModules = NULL;
     }
   }
-  if (ssdadldc.fBadChannelsList) AliWarning("fBadChannelsList is not copied by copy constructor, use other methods to init it!");
-  if (ssdadldc.fDDLModuleMap) AliWarning("fDDLModuleMap is not copied by copy constructor, use other methods to init it!");
-}
+  if (ssdadldc.fModIndex) {
+    fModIndex = new (nothrow) Int_t [ssdadldc.fNumberOfModules];
+    if (fModIndex) memcpy(fModIndex, ssdadldc.fModIndex, ssdadldc.fNumberOfModules*sizeof(Int_t));
+  } else fModIndex = NULL;
+  fBadChannelsList = new AliITSBadChannelsSSDv2(*ssdadldc.fBadChannelsList);
+  if (ssdadldc.fDDLModuleMap) {
+    fDDLModuleMap = new (nothrow) Int_t [fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl];
+    if (fDDLModuleMap) memcpy(fDDLModuleMap, ssdadldc.fDDLModuleMap, fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl * sizeof(Int_t)); 
+  } else fDDLModuleMap = NULL;
 
+  //  if (ssdadldc.fBadChannelsList) AliWarning("fBadChannelsList is not copied by copy constructor, use other methods to init it!");
+  //  if (ssdadldc.fDDLModuleMap) AliWarning("fDDLModuleMap is not copied by copy constructor, use other methods to init it!");
+}
 
 //______________________________________________________________________________
 AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdadldc)
@@ -205,17 +218,18 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
       fModules = NULL;
     }
   }
+  if(fRawDataFileName)delete[]fRawDataFileName;
   if (ssdadldc.fRawDataFileName) {
     fRawDataFileName = new (nothrow) Char_t[strlen(ssdadldc.fRawDataFileName)+1];
     if (fRawDataFileName) strncpy(fRawDataFileName, ssdadldc.fRawDataFileName, strlen(ssdadldc.fRawDataFileName)+1);
-  } else fRawDataFileName = ssdadldc.fRawDataFileName;
+  } else fRawDataFileName = NULL;
   fModIndProcessed = ssdadldc.fModIndProcessed;
   fModIndRead = ssdadldc.fModIndRead;
 
   if (ssdadldc.fModIndex) {
     fModIndex = new (nothrow) Int_t [ssdadldc.fNumberOfModules];
     if (fModIndex) memcpy(fModIndex, ssdadldc.fModIndex, ssdadldc.fNumberOfModules*sizeof(Int_t));
-  } else fModIndex = ssdadldc.fModIndex;
+  } else fModIndex = NULL;
 
   fEqIndex = ssdadldc.fEqIndex;
   fNumberOfEvents = ssdadldc.fNumberOfEvents;
@@ -236,10 +250,10 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
   if (ssdadldc.fDDLModuleMap) {
     fDDLModuleMap = new (nothrow) Int_t [fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl];
     if (fDDLModuleMap) memcpy(fDDLModuleMap, ssdadldc.fDDLModuleMap, fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl * sizeof(Int_t)); 
-  } else fDDLModuleMap = 0;
+  } else fDDLModuleMap = NULL;
 
-  if (ssdadldc.fBadChannelsList) AliWarning("fBadChannelsList is not copied by assignment operator, use other methods to init it!");
-  if (ssdadldc.fDDLModuleMap) AliWarning("fDDLModuleMap is not copied by assignment operator, use other methods to init it!");
+  //  if (ssdadldc.fBadChannelsList) AliWarning("fBadChannelsList is not copied by assignment operator, use other methods to init it!");
+  //  if (ssdadldc.fDDLModuleMap) AliWarning("fDDLModuleMap is not copied by assignment operator, use other methods to init it!");
   return *this;
 }
 
@@ -248,6 +262,7 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
 AliITSHandleDaSSD::~AliITSHandleDaSSD()
 {
 // Default destructor 
+  delete []fRawDataFileName;
   if (fModules) 
   {
     for (Int_t i = 0; i < fNumberOfModules; i++)
@@ -282,7 +297,10 @@ void AliITSHandleDaSSD::Reset()
 */
   fALaddersOff.Set(0);
   fCLaddersOff.Set(0);
-  fRawDataFileName = NULL;
+  if(fRawDataFileName){
+    delete []fRawDataFileName;
+    fRawDataFileName = NULL;
+  }
   fModIndProcessed = fModIndRead = 0;
   fNumberOfEvents = 0;
   fLdcId = fRunId = 0;
@@ -347,7 +365,11 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
   if ((physeventind > 0) && (strn > 0))
   {
     fNumberOfEvents = physeventind;
-    fRawDataFileName = rdfname;
+    if(rdfname){
+      delete []fRawDataFileName;
+      fRawDataFileName = new Char_t[strlen(rdfname)+1];
+      strncpy(fRawDataFileName,rdfname,strlen(rdfname)+1);
+    }
     fEqIndex.Set(eqn);
     fEqIndex.Reset(-1);
     fModIndex = new (nothrow) Int_t [fgkNumberOfSSDModulesPerDdl * eqn];

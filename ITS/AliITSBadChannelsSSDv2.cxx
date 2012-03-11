@@ -55,6 +55,7 @@ AliITSBadChannelsSSDv2::~AliITSBadChannelsSSDv2(){
 AliITSBadChannelsSSDv2& AliITSBadChannelsSSDv2::operator=(const AliITSBadChannelsSSDv2 &source) {
  // ass. op.
     if (this == &source)return *this;
+    TObject::operator=(source);
     memcpy(fBadChannels,source.fBadChannels,
 	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Char_t));
     
