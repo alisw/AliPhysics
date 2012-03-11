@@ -176,7 +176,7 @@ class AliAODTrack : public AliVTrack {
   Bool_t  IsTPCConstrained() const { return TestBit(kIsTPCConstrained); }
   Bool_t  IsGlobalConstrained() const { return TestBit(kIsGlobalConstrained); }
   //
-  Int_t   GetTOFBunchCrossing(Double_t b=0) const;
+  Int_t   GetTOFBunchCrossing(Double_t b=0, Bool_t tpcPIDonly=kFALSE) const;
   //
   template <class T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}

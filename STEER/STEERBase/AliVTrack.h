@@ -93,7 +93,7 @@ public:
   virtual Int_t    GetNcls(Int_t /*idet*/) const { return 0; }
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
-  virtual Int_t    GetTOFBunchCrossing(Double_t = 0) const { return kTOFBCNA;}
+  virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
 
   ClassDef(AliVTrack,1)  // base class for tracks
 };

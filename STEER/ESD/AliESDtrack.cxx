@@ -1198,24 +1198,32 @@ void AliESDtrack::MakeMiniESDtrack(){
 } 
 
 //_______________________________________________________________________
-Int_t AliESDtrack::GetPID() const 
+Int_t AliESDtrack::GetPID(Bool_t tpcOnly) const 
 {
   // Returns the particle most probable id
   Int_t i;
-  for (i=0; i<AliPID::kSPECIES-1; i++) if (fR[i] != fR[i+1]) break;
-  //
-  if (i == AliPID::kSPECIES-1) return AliPID::kPion;  // If all the probabilities are equal, return the pion mass
+  const Double32_t *prob = 0;
+  if (tpcOnly) { // check if TPCpid is valid
+    prob = fTPCr;
+    for (i=0; i<AliPID::kSPECIES-1; i++) if (prob[i] != prob[i+1]) break;
+    if (i == AliPID::kSPECIES-1) prob = 0; // not valid, try with combined pid
+  }
+  if (!prob) { // either requested TPCpid is not valid or comb.pid is requested 
+    prob = fR;
+    for (i=0; i<AliPID::kSPECIES-1; i++) if (prob[i] != prob[i+1]) break;
+    if (i == AliPID::kSPECIES-1) return AliPID::kPion;  // If all the probabilities are equal, return the pion mass
+  }
   //
   Float_t max=0.;
   Int_t k=-1;
-  for (i=0; i<AliPID::kSPECIES; i++) if (fR[i]>max) {k=i; max=fR[i];}
+  for (i=0; i<AliPID::kSPECIES; i++) if (prob[i]>max) {k=i; max=prob[i];}
   //
   if (k==0) { // dE/dx "crossing points" in the TPC
     Double_t p=GetP();
     if ((p>0.38)&&(p<0.48))
-      if (fR[0]<fR[3]*10.) return AliPID::kKaon;
+      if (prob[0]<prob[3]*10.) return AliPID::kKaon;
     if ((p>0.75)&&(p<0.85))
-      if (fR[0]<fR[4]*10.) return AliPID::kProton;
+      if (prob[0]<prob[4]*10.) return AliPID::kProton;
     return AliPID::kElectron;
   }
   if (k==1) return AliPID::kMuon; 
@@ -1227,7 +1235,7 @@ Int_t AliESDtrack::GetPID() const
 }
 
 //_______________________________________________________________________
-Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b) const 
+Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b, Bool_t pidTPConly) const 
 {
   // Returns the number of bunch crossings after trigger (assuming 25ns spacing)
   const double kSpacing = 25e3; // min interbanch spacing
@@ -1237,7 +1245,7 @@ Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b) const
   //
   double tdif = fTOFsignal;
   if (IsOn(kTIME)) { // integrated time info is there
-    int pid = GetPID();
+    int pid = GetPID(pidTPConly);
     tdif -= fTrackTime[pid];
   }
   else { // assume integrated time info from TOF radius and momentum
@@ -1245,7 +1253,7 @@ Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b) const
     const double kCSpeed = 3.e-2; // cm/ps
     double p = GetP();
     if (p<0.01) return bcid;
-    double m = GetMass();
+    double m = GetMass(pidTPConly);
     double curv = GetC(b);
     double path = TMath::Abs(curv)>kAlmost0 ? // account for curvature
       2./curv*TMath::ASin(kRTOF*curv/2.)*TMath::Sqrt(1.+GetTgl()*GetTgl()) : kRTOF;

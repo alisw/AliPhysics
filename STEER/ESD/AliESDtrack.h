@@ -84,9 +84,9 @@ public:
 
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
-  Int_t    GetPID()  const;
-  Int_t    GetTOFBunchCrossing(Double_t b=0) const;
-  Double_t GetMass() const {return AliPID::ParticleMass(GetPID());}
+  Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
+  Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
+  Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;

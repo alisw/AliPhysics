@@ -711,7 +711,7 @@ Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
 }
 
 //_______________________________________________________________________
-Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b) const 
+Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b, Bool_t) const 
 {
   // Returns the number of bunch crossings after trigger (assuming 25ns spacing)
   const double kSpacing = 25e3; // min interbanch spacing
