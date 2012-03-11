@@ -1006,7 +1006,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
   AliPIDResponse* respF=pidHF->GetPidResponse();
   AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
-  if(pidHF->GetOldPid()) pidHF->SetBetheBloch(*tpcres);
+  if(pidHF->GetOldPid()){ 
+    Double_t alephParameters[5];
+    pidHF->GetTPCBetheBlochParams(alephParameters);
+    tpcres->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
+  }
   Bool_t oldPID=pidHF->GetOldPid();
 
 

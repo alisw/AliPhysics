@@ -62,7 +62,8 @@ AliAODPidHF::AliAODPidHF():
   fOldPid(kTRUE),
   fPtThresholdTPC(999999.),
   fPidResponse(0),
-  fPidCombined(new AliPIDCombined())
+  fPidCombined(new AliPIDCombined()),
+  fTPCResponse(new AliTPCPIDResponse())
 {
  //
  // Default constructor
@@ -93,6 +94,7 @@ AliAODPidHF::~AliAODPidHF()
  //   if(fPLimit) delete fPLimit;
  //   if(fnSigma)  delete fnSigma;
  //   if(fPriors)  delete fPriors;
+  delete fTPCResponse;
 }
 //------------------------
 AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
@@ -123,7 +125,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fOldPid(pid.fOldPid),
   fPtThresholdTPC(pid.fPtThresholdTPC),
   fPidResponse(pid.fPidResponse),
-  fPidCombined(pid.fPidCombined)
+  fPidCombined(pid.fPidCombined),
+  fTPCResponse(pid.fTPCResponse)
 {
   
   fnSigma = new Double_t[fnNSigma];
@@ -210,7 +213,7 @@ Bool_t AliAODPidHF::IsElectronRaw(AliAODTrack *track, TString detector) const{
 Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
 // n-sigma cut, TPC PID
 
-  if(!CheckStatus(track,"TPC")) return 0;
+  if(!CheckTPCPIDStatus(track)) return 0;
   Int_t pid=-1;
   if(fOldPid){
   AliAODPid *pidObj = track->GetDetPid();
@@ -218,8 +221,6 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
   Double_t dedx=pidObj->GetTPCsignal();
   Double_t mom = pidObj->GetTPCmomentum();
   if(mom>fPtThresholdTPC) return 0;
-  AliTPCPIDResponse tpcResponse;
-  SetBetheBloch(tpcResponse); 
   UShort_t nTPCClus=pidObj->GetTPCsignalN();
   if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
 
@@ -227,7 +228,7 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
    Double_t nsigmaMax=fnSigma[0];
    for(Int_t ipart=0;ipart<5;ipart++){
     AliPID::EParticleType type=AliPID::EParticleType(ipart);
-    Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type));
+    Double_t nsigma = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type));
     if((nsigma<nsigmaMax) && (nsigma<fnSigma[0])) {
      pid=ipart;
      nsigmaMax=nsigma;
@@ -235,7 +236,7 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
    }
   }else{ // asks only for one particle specie
    AliPID::EParticleType type=AliPID::EParticleType(specie);
-    Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type));
+    Double_t nsigma = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type));
    if (nsigma>fnSigma[0]) {
     pid=-1; 
    }else{
@@ -272,7 +273,7 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
 Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
 // truncated mean, ITS PID
 
-  if(!CheckStatus(track,"ITS")) return 0;
+  if(!CheckITSPIDStatus(track)) return 0;
   Int_t pid=-1;
 
   if(fOldPid){
@@ -338,7 +339,7 @@ Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
 Int_t AliAODPidHF::ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const{
 // n-sigma cut, TOF PID
 
- if(!CheckStatus(track,"TOF")) return 0;
+ if(!CheckTOFPIDStatus(track)) return 0;
 
  Double_t time[AliPID::kSPECIESN];
  Double_t sigmaTOFPid[AliPID::kSPECIES];
@@ -488,6 +489,41 @@ void AliAODPidHF::BayesianProbabilityTRD(AliAODTrack *track,Double_t *prob) cons
 
  }
 //--------------------------------
+Bool_t AliAODPidHF::CheckITSPIDStatus(AliAODTrack *track) const{
+  // ITS PID quality cuts
+  if ((track->GetStatus()&AliESDtrack::kITSin)==0) return kFALSE;
+  UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nPointsForPid;
+  }
+  if(nPointsForPid<3) return kFALSE;
+  return kTRUE;
+}
+//--------------------------------
+Bool_t AliAODPidHF::CheckTPCPIDStatus(AliAODTrack *track) const{
+  // TPC PID quality cuts
+  if ((track->GetStatus()&AliESDtrack::kTPCin )==0) return kFALSE;
+  UShort_t nTPCClus=track->GetTPCClusterMap().CountBits();
+  if (nTPCClus<70) return kFALSE;
+  return kTRUE;
+}
+//--------------------------------
+Bool_t AliAODPidHF::CheckTOFPIDStatus(AliAODTrack *track) const{
+  // TOF PID quality cuts
+  if ((track->GetStatus()&AliESDtrack::kTOFout )==0)    return kFALSE;
+  if ((track->GetStatus()&AliESDtrack::kTIME )==0)     return kFALSE;
+  if ((track->GetStatus()&AliESDtrack::kTOFpid )==0)   return kFALSE;
+  if (!(track->GetStatus()&AliESDtrack::kTOFmismatch)==0)    return kFALSE;
+  return kTRUE;
+}
+//--------------------------------
+Bool_t AliAODPidHF::CheckTRDPIDStatus(AliAODTrack *track) const{
+  // TRD PID quality cuts
+  if ((track->GetStatus()&AliESDtrack::kTRDout )==0)   return kFALSE;
+  return kTRUE;
+}
+//--------------------------------
 Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
 
 // Quality cuts on the tracks, detector by detector
@@ -528,255 +564,195 @@ Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
 Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
 // TPC nsigma cut PID, different sigmas in different p bins
 
-  if(!CheckStatus(track,"TPC")) return kFALSE;
+  if(!CheckTPCPIDStatus(track)) return kFALSE;
   AliAODPid *pidObj = track->GetDetPid();
   Double_t mom = pidObj->GetTPCmomentum();
   if(mom>fPtThresholdTPC) return 0;
   Double_t nsigma=999.;
   if(fOldPid){
-  Double_t dedx=pidObj->GetTPCsignal();
-  UShort_t nTPCClus=pidObj->GetTPCsignalN();
-  if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
+    Double_t dedx=pidObj->GetTPCsignal();
+    UShort_t nTPCClus=pidObj->GetTPCsignalN();
+    if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
   
-  AliTPCPIDResponse tpcResponse;
-  SetBetheBloch(tpcResponse); 
-  AliPID::EParticleType type=AliPID::EParticleType(specie);
-  nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type)); 
+    AliPID::EParticleType type=AliPID::EParticleType(specie);
+    nsigma = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type)); 
 
   }else{ //old pid
-  AliPID::EParticleType type=AliPID::EParticleType(specie);
-  nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
- } //new pid
+    AliPID::EParticleType type=AliPID::EParticleType(specie);
+    nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
+  } //new pid
 
   if(mom<fPLimit[0] && nsigma<fnSigma[0]) return kTRUE;
   if(mom<fPLimit[1] && mom>fPLimit[0] && nsigma<fnSigma[1]) return kTRUE;
   if(mom>fPLimit[1] && nsigma<fnSigma[2]) return kTRUE;
 
- return kFALSE;
+  return kFALSE;
 }
 //------------------
-Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t compat){
-// combination of the PID info coming from TPC and TOF
- if(mode==1){
-  //TOF || TPC (a la' Andrea R.)
- // convention: 
- // for the single detectors: -1 = kFALSE, 1 = kTRUE, 0 = compatible
- // the method returns the sum of the response of the 2 detectors
-  if(fTPC && fTOF) {if(!CheckStatus(track,"TPC") && !CheckStatus(track,"TOF")) return 0;}
+Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
+  // combination of the PID info coming from TPC and TOF
 
-  
-  Int_t tTPCinfo=0;
-  if(fTPC){
-  if(CheckStatus(track,"TPC")) {
-   if(fAsym) {
-    if(TPCRawAsym(track,specie)) {
-      tTPCinfo=1;
-     }else{
+  Bool_t okTPC=CheckTPCPIDStatus(track);
+  Bool_t okTOF=CheckTOFPIDStatus(track);
+
+  if(fMatch==1){
+    //TOF || TPC (a la' Andrea R.)
+    // convention: 
+    // for the single detectors: -1 = kFALSE, 1 = kTRUE, 0 = compatible
+    // the method returns the sum of the response of the 2 detectors
+
+    if(fTPC && fTOF) {
+      if(!okTPC && !okTOF) return 0;
+    }
+    
+    Int_t tTPCinfo=0;
+    if(fTPC && okTPC){
       tTPCinfo=-1;
-     }
-   }else{
-    if(specie==2 && IsPionRaw(track,"TPC")) {
-     tTPCinfo=1;
-    }else{
-     tTPCinfo=-1;
-    }
-    if(specie==3 && IsKaonRaw(track,"TPC")) {
-     tTPCinfo=1;
-    }else{
-     tTPCinfo=-1;
-    }
-    if(specie==4 && IsProtonRaw(track,"TPC")) {
-     tTPCinfo=1;
-    }else{
-     tTPCinfo=-1;
+      if(fAsym) {
+	if(TPCRawAsym(track,specie)) tTPCinfo=1;
+      }else{
+	if(ApplyPidTPCRaw(track,specie)==specie) tTPCinfo=1;
+      }
+      if(fCompat && tTPCinfo<0){
+	Double_t sig0tmp=fnSigma[0];
+	SetSigma(0,fnSigmaCompat[0]);
+	if(ApplyPidTPCRaw(track,specie)==specie) tTPCinfo=0;
+	SetSigma(0,sig0tmp);
+      }      
     }
 
-   }
-
-
-   if(compat && tTPCinfo<0){
-    Double_t sig0tmp=fnSigma[0];
-    SetSigma(0,fnSigmaCompat[0]);
-    if(specie==2 && IsPionRaw(track,"TPC")) tTPCinfo=0;
-    if(specie==3 && IsKaonRaw(track,"TPC")) tTPCinfo=0;
-    if(specie==4 && IsProtonRaw(track,"TPC")) tTPCinfo=0;
-    SetSigma(0,sig0tmp);
-   }
-
-  }
- }
-
- Int_t tTOFinfo=0;
- if(fTOF){
-  if(!CheckStatus(track,"TOF") && fTPC) return tTPCinfo;
-
-  tTOFinfo=-1;
- 
-  if(specie==2 && IsPionRaw(track,"TOF")) tTOFinfo=1;
-  if(specie==3 && IsKaonRaw(track,"TOF")) tTOFinfo=1;
-  if(specie==4 && IsProtonRaw(track,"TOF")) tTOFinfo=1;
-
-  if(compat && tTOFinfo>0){
-   Double_t ptrack=track->P();
-   if(ptrack>fPCompatTOF) {
-    Double_t sig0tmp=fnSigma[3];
-    SetSigma(3,fnSigmaCompat[1]);
-    if(specie==2 && IsPionRaw(track,"TOF")) tTOFinfo=0;
-    if(specie==3 && IsKaonRaw(track,"TOF")) tTOFinfo=0;
-    if(specie==4 && IsProtonRaw(track,"TOF")) tTOFinfo=0;
-    SetSigma(3,sig0tmp);
-   }
-  }
- }
+    Int_t tTOFinfo=0;
+    if(fTOF){
+      if(!okTOF && fTPC) return tTPCinfo;
+      tTOFinfo=-1;
+      if(ApplyPidTOFRaw(track,specie)==specie) tTOFinfo=1;
+      if(fCompat && tTOFinfo>0){
+	Double_t ptrack=track->P();
+	if(ptrack>fPCompatTOF) {
+	  Double_t sig0tmp=fnSigma[3];
+	  SetSigma(3,fnSigmaCompat[1]);
+	  if(ApplyPidTOFRaw(track,specie)==specie) tTOFinfo=0;
+	  SetSigma(3,sig0tmp);
+	}
+      }
+    }
 
  
- if(tTPCinfo+tTOFinfo==0 && fTOFdecide){
-  if(!CheckStatus(track,"TOF")) return tTPCinfo;
-  return tTOFinfo;
- }
-
- if(tTPCinfo+tTOFinfo==0 && fITS){
-  if(!CheckStatus(track,"ITS")) return tTPCinfo+tTOFinfo;
-  Int_t tITSinfo = -1;
-  if(specie==2 && IsPionRaw(track,"ITS")) tITSinfo=1;
-  if(specie==3 && IsKaonRaw(track,"ITS")) tITSinfo=1;
-  if(specie==4 && IsProtonRaw(track,"ITS")) tITSinfo=1;
-  return tITSinfo;
- }
-
- return tTPCinfo+tTOFinfo;
-}
- if(mode==2){
-  //TPC & TOF (a la' Yifei)
- // convention: -1 = kFALSE, 1 = kTRUE, 0 = not identified
-  Int_t tTPCinfo=0; 
-  
-  if(fTPC && CheckStatus(track,"TPC")) {
-   tTPCinfo=1;
-   if(fAsym){
-    if(!TPCRawAsym(track,specie)) tTPCinfo=-1;
-   }else{
-    if(specie==2 && !IsPionRaw(track,"TPC")) tTPCinfo=-1;
-    if(specie==3 && !IsKaonRaw(track,"TPC")) tTPCinfo=-1;
-    if(specie==4 && !IsProtonRaw(track,"TPC")) tTPCinfo=-1;
-   }
+    if(tTPCinfo+tTOFinfo==0 && fTOFdecide){
+      if(!okTOF) return tTPCinfo;
+      return tTOFinfo;
+    }
+    
+    if(tTPCinfo+tTOFinfo==0 && fITS){
+      if(!CheckITSPIDStatus(track)) return tTPCinfo+tTOFinfo;
+      Int_t tITSinfo = -1;
+      if(ApplyPidITSRaw(track,specie)==specie) tITSinfo=1;
+      return tITSinfo;
+    }
+    return tTPCinfo+tTOFinfo;
   }
 
-  Int_t tTOFinfo=1;
-  if(fTOF){
-   if(fTPC && !CheckStatus(track,"TOF")) return tTPCinfo;
+  if(fMatch==2){
+    //TPC & TOF (a la' Yifei)
+    // convention: -1 = kFALSE, 1 = kTRUE, 0 = not identified
+    Int_t tTPCinfo=0; 
+  
+    if(fTPC && okTPC) {
+      tTPCinfo=1;
+      if(fAsym){
+	if(!TPCRawAsym(track,specie)) tTPCinfo=-1;
+      }else{
+	if(ApplyPidTPCRaw(track,specie)!=specie) tTPCinfo=-1;
+      }
+    }
 
-   if(specie==2 && !IsPionRaw(track,"TOF")) tTOFinfo=-1;
-   if(specie==3 && !IsKaonRaw(track,"TOF")) tTOFinfo=-1;
-   if(specie==4 && !IsProtonRaw(track,"TOF")) tTOFinfo=-1;
+    Int_t tTOFinfo=1;
+    if(fTOF){
+      if(fTPC && !okTOF) return tTPCinfo;
+      if(ApplyPidTPCRaw(track,specie)!=specie) tTOFinfo=-1;
+    }
+
+    if(tTOFinfo==1 && tTPCinfo==1) return 1;
+
+    if(tTPCinfo+tTOFinfo==0 && fITS){
+      if(!CheckITSPIDStatus(track)) return tTPCinfo+tTOFinfo;
+      Int_t tITSinfo = -1;
+      if(ApplyPidITSRaw(track,specie)==specie) tITSinfo=1;
+      return tITSinfo;
+    }
+    return -1;
   }
 
- if(tTOFinfo==1 && tTPCinfo==1) return 1;
+  if(fMatch==3){
+    //TPC for p<fPLimit[0], TOF for p>=fPLimit[0] (a la' Andrea A.)
+    // convention (temporary): -1 = kFALSE, 1 = kTRUE, 0 = not identified
+    if(fTPC && fTOF) if(!okTPC && !okTOF) return 0;
 
- if(tTPCinfo+tTOFinfo==0 && fITS){
-  if(!CheckStatus(track,"ITS")) return tTPCinfo+tTOFinfo;
-  Int_t tITSinfo = -1;
-  if(specie==2 && IsPionRaw(track,"ITS")) tITSinfo=1;
-  if(specie==3 && IsKaonRaw(track,"ITS")) tITSinfo=1;
-  if(specie==4 && IsProtonRaw(track,"ITS")) tITSinfo=1;
-  return tITSinfo;
- }
+    Double_t ptrack=track->P();
 
-   return -1;
+    Int_t tTPCinfo=-1;
+    if(ptrack>=fPLimit[0] && ptrack<fPLimit[1] && fTPC) {  
+      if(!okTPC) return 0;
+      if(fAsym) {
+	if(TPCRawAsym(track,specie)) tTPCinfo=1;
+      }else{
+	if(ApplyPidTPCRaw(track,specie)==specie) tTPCinfo=1;
+      } 
+      return tTPCinfo;
+    }
+    
+    Int_t tTOFinfo=-1;
+    if(ptrack>=fPLimit[1] && fTOF){
+      if(!okTOF) return 0;
+      if(ApplyPidTOFRaw(track,specie)==specie) tTOFinfo=1;
+      return tTOFinfo;
+    }
+    
+    Int_t tITSinfo=-1;
+    if(ptrack<fPLimit[0] && fITS){
+      if(!CheckITSPIDStatus(track)) return 0;
+      if(ApplyPidITSRaw(track,specie)==specie) tITSinfo=1;
+      return tITSinfo;
+    }
+  }
 
-}
-
- if(mode==3){
- //TPC for p<fPLimit[0], TOF for p>=fPLimit[0] (a la' Andrea A.)
- // convention (temporary): -1 = kFALSE, 1 = kTRUE, 0 = not identified
-  
-  if(fTPC && fTOF) if(!CheckStatus(track,"TPC") && !CheckStatus(track,"TOF")) return 0;
-
-  Double_t ptrack=track->P();
-  
-
-  Int_t tTPCinfo=-1;
-
-   if(ptrack>=fPLimit[0] && ptrack<fPLimit[1] && fTPC) {  
-    if(!CheckStatus(track,"TPC")) return 0;
-    if(fAsym) {
-     if(TPCRawAsym(track,specie)) tTPCinfo=1;
-    }else{
-     if(specie==2 && IsPionRaw(track,"TPC")) tTPCinfo=1;
-     if(specie==3 && IsKaonRaw(track,"TPC")) tTPCinfo=1;
-     if(specie==4 && IsProtonRaw(track,"TPC")) tTPCinfo=1;
-    } 
-    return tTPCinfo;
-   }
-
-   Int_t tTOFinfo=-1;
-   if(ptrack>=fPLimit[1] && fTOF){
-    if(!CheckStatus(track,"TOF")) return 0;
-    if(specie==2 && IsPionRaw(track,"TOF")) tTOFinfo=1;
-    if(specie==3 && IsKaonRaw(track,"TOF")) tTOFinfo=1;
-    if(specie==4 && IsProtonRaw(track,"TOF")) tTOFinfo=1;
-    return tTOFinfo;
-   }
-
-   Int_t tITSinfo=-1;
-   if(ptrack<fPLimit[0] && fITS){
-    if(!CheckStatus(track,"ITS")) return 0;
-    if(specie==2 && IsPionRaw(track,"ITS")) tITSinfo=1;
-    if(specie==3 && IsKaonRaw(track,"ITS")) tITSinfo=1;
-    if(specie==4 && IsProtonRaw(track,"ITS")) tITSinfo=1;
-    return tITSinfo;
-   }
-
- }
-
- return -1;
+  return -1;
 
 }
 //----------------------------------   
 Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
 // general method to compute PID
- if(fMatch>0){
-  return MatchTPCTOF(track,fMatch,specie,fCompat); 
- }else{
-  if(fTPC && !fTOF && !fITS) {
-   Int_t tTPCres=0;
-   if(!fAsym){
-   tTPCres=ApplyPidTPCRaw(track,specie);
-   }else{
-    if(TPCRawAsym(track,specie)) {
-     tTPCres=1;
+  if(fMatch>0){
+    return MatchTPCTOF(track,specie); 
+  }else{
+    if(fTPC && !fTOF && !fITS) {
+      Int_t tTPCres=0;
+      if(!fAsym){
+	tTPCres=ApplyPidTPCRaw(track,specie);
+	if(tTPCres==specie) return 1; 
+	else return tTPCres;
+      }else{
+	if(TPCRawAsym(track,specie)) tTPCres=1;
+	else tTPCres=-1;	
+      }
+      return tTPCres;
+    }else if(fTOF && !fTPC && !fITS) {
+      Int_t tTOFres=ApplyPidTOFRaw(track,specie); 
+      if(tTOFres==specie) return 1; 
+      else return tTOFres;
+    }else if(fITS && !fTPC && !fTOF) {
+      Int_t tITSres=ApplyPidITSRaw(track,specie);
+      if(tITSres==specie) return 1;
+      else return tITSres;
     }else{
-     tTPCres=-1;
+      AliError("You should enable just one detector if you don't want to match");
+      return 0;
     }
-   }
-   if(tTPCres==specie){return 1;}else{return tTPCres;};
-  }else{
-   AliError("You should enable just one detector if you don't want to match");
-   return 0;
-  }
-  if(fTOF && !fTPC && !fITS) {
-   Int_t tTOFres=ApplyPidTOFRaw(track,specie); 
-   if(tTOFres==specie){return 1;}else{return tTOFres;};
-  }else{
-   AliError("You should enable just one detector if you don't want to match");
-   return 0;
-  }
-
-  if(fITS && !fTPC && !fTOF) {
-   Int_t tITSres=ApplyPidITSRaw(track,specie);
-   if(tITSres==specie){return 1;}else{return tITSres;};
-  }else{
-   AliError("You should enable just one detector if you don't want to match");
-   return 0;
-  }
- } 
-  
+  } 
 }
 //--------------------------------------------
-void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
-
- Double_t alephParameters[5];
-
+void AliAODPidHF::GetTPCBetheBlochParams(Double_t alephParameters[5]) const {
+  // TPC bethe bloch parameters
  if(fMC) {  // MC
 
    if(fPbPb) { // PbPb MC
@@ -853,17 +829,23 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
   
  }
 
- tpcResp.SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
+}
 
+//-----------------------
+void AliAODPidHF::SetBetheBloch() {
+  // Set Bethe Bloch Parameters
+
+ Double_t alephParameters[5];
+ GetTPCBetheBlochParams(alephParameters);
+ fTPCResponse->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
 
  return;
-
 }
 //-----------------------
 Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
 
 
- if(!CheckStatus(track,"TOF")) return 0;
+ if(!CheckTOFPIDStatus(track)) return 0;
 
   Double_t time[AliPID::kSPECIESN];
   Double_t sigmaTOFPid[AliPID::kSPECIES];
@@ -903,7 +885,7 @@ void AliAODPidHF::DrawPrior(AliPID::EParticleType type){
 //--------------------------------------------------------------------------
 Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sigma) const{
  
-  if(!CheckStatus(track,"TPC")) return -1;
+  if(!CheckTPCPIDStatus(track)) return -1;
   
   Double_t nsigmaTPC=-999;
   
@@ -912,12 +894,10 @@ Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sig
     Double_t dedx=pidObj->GetTPCsignal();
     Double_t mom = pidObj->GetTPCmomentum();
     if(mom>fPtThresholdTPC) return -2;
-    AliTPCPIDResponse tpcResponse;
-    SetBetheBloch(tpcResponse); 
     UShort_t nTPCClus=pidObj->GetTPCsignalN();
     if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
     AliPID::EParticleType type=AliPID::EParticleType(species);
-    nsigmaTPC = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type));
+    nsigmaTPC = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type));
     sigma=nsigmaTPC;
   } else{
   
@@ -932,7 +912,7 @@ Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sig
 
 Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &sigma) const{
 
-  if(!CheckStatus(track,"TOF")) return -1;
+  if(!CheckTOFPIDStatus(track)) return -1;
  
   Double_t time[AliPID::kSPECIESN];
   Double_t sigmaTOFPid[AliPID::kSPECIES];
