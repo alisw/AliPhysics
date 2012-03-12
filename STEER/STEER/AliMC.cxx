@@ -859,7 +859,7 @@ void AliMC::ReadTransPar()
   char* filtmp;
   Float_t cut[kncuts];
   Int_t flag[knflags];
-  Int_t i, itmed, iret, ktmed, kz;
+  Int_t i, itmed, iret, jret, ktmed, kz;
   FILE *lun;
   //
   // See whether the file is there
@@ -885,7 +885,7 @@ void AliMC::ReadTransPar()
       return;
     }
     // Read the end of line
-    fscanf(lun,"%*c");
+    jret = fscanf(lun,"%*c");
     if(!iret) continue;
     if(line[0]=='*') continue;
     // Read the numbers
