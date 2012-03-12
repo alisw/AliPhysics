@@ -66,7 +66,7 @@ public:
   Double_t CorrectExpectedProtonTime(Double_t pT,Double_t length, Bool_t isTRDout);
   Double_t CorrectExpectedKaonTime(Double_t pT,Double_t length, Bool_t isTRDout);
   Double_t CorrectExpectedPionTime(Double_t pT,Double_t length, Bool_t isTRDout);
-
+  Int_t GetOCDBVersion(Int_t runNumber);
 
 private:
   AliESDpid          *fESDpid;         //! ESD pid object

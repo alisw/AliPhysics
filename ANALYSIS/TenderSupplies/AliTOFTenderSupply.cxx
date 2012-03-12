@@ -300,7 +300,8 @@ void AliTOFTenderSupply::ProcessEvent()
   if (fTender->RunChanged()){ 
 
     Init();            
-
+    Int_t versionNumber = GetOCDBVersion(fTender->GetRun());
+    fTOFCalib->SetRunParamsSpecificVersion(versionNumber);
     fTOFCalib->Init(fTender->GetRun());
     
     if(event->GetT0TOF()){ // read T0 detector correction from OCDB
@@ -1174,3 +1175,19 @@ Double_t AliTOFTenderSupply::EstimateLengthOutTRD(AliESDtrack *track)
 
 }
 
+//________________________________________________________________________
+Int_t AliTOFTenderSupply::GetOCDBVersion(Int_t runNo)
+{
+  Int_t verNo = -1;
+  if ( (runNo>=118503 && runNo <=121040) )  { // LHC10C
+    if (fRecoPass == 2) {                     // on pass2
+      if (runNo >= 119159 && runNo <= 119163) verNo=3;
+      else if (runNo >= 119837 && runNo <= 119934) verNo=4;
+      else if (runNo >= 120067 && runNo <= 120244) verNo=4;
+      else if (runNo >= 120503 && runNo <= 120505) verNo=4;
+      else if (runNo >= 120616 && runNo <= 120671) verNo=4;
+      else if (runNo >= 120741 && runNo <= 120829) verNo=4;
+    }
+  }
+  return verNo;
+}
