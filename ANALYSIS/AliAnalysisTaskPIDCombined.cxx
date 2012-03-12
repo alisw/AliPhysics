@@ -126,13 +126,13 @@ void AliAnalysisTaskPIDCombined::UserCreateOutputObjects()
   fPIDCombined->SetDefaultTPCPriors();
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
 
-  // no light nuclei
-  fPIDCombined->SetSelectedSpecies(AliPID::kSPECIES);
+  // no light nuclei - no need to call it, this is default
+  //  fPIDCombined->SetSelectedSpecies(AliPID::kSPECIES);
 
 
   fHistList.Add(new TH1D("nEvents","Number of Evnets;Selection",2,0,2));
-  Int_t ispecMax = (Int_t)AliPID::kSPECIES; // coverity fix
-  for (Int_t ispec=0; ispec<ispecMax; ++ispec){
+
+  for (Int_t ispec=0; ispec<5; ++ispec){
 
  
     fProbTPC[ispec]=new TH2D(Form("prob%s_mom_TPC",AliPID::ParticleName(ispec)),
