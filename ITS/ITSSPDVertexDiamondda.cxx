@@ -215,6 +215,7 @@ int main(int argc, char **argv) {
 #ifdef ALI_AMORE
  amore::da::AmoreDA vtxAmore(amore::da::AmoreDA::kSender);
 #endif
+ Int_t amore_status = 0;
  /* main loop (infinite) */
  for(;;) {
 
@@ -275,17 +276,20 @@ int main(int argc, char **argv) {
       }
      }
      mv->WriteVertices(OUTPUT_FILE);
-
 #ifdef ALI_AMORE
      // send the histos to AMORE pool
-     printf("AMORE XY send status: %d\n",vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY()));
+     amore_status=vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY());
+     if(amore_status) printf("AMORE XY send status: %d\n",amore_status);
      TH1D *hProj = mv->GetVertexXY()->ProjectionX();
-     printf("AMORE X send status: %d\n",vtxAmore.Send(Form(" %s_ProjX",mv->GetVertexXY()->GetName()),hProj));
+     amore_status=vtxAmore.Send(Form(" %s_ProjX",mv->GetVertexXY()->GetName()),hProj); 
+     if(amore_status) printf("AMORE X send status: %d\n",amore_status);
      if(hProj) delete hProj;
      hProj = mv->GetVertexXY()->ProjectionY();
-     printf("AMORE Y send status: %d\n",vtxAmore.Send(Form(" %s_ProjY",mv->GetVertexXY()->GetName()),hProj));
+     amore_status=vtxAmore.Send(Form(" %s_ProjY",mv->GetVertexXY()->GetName()),hProj); 
+     if(amore_status) printf("AMORE Y send status: %d\n",amore_status);
      if(hProj) hProj->Delete();
-     printf("AMORE Z  send status: %d\n",vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ()));
+     amore_status=vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ());
+     if(amore_status) printf("AMORE Z  send status: %d\n",amore_status);
 #endif
     }
 
@@ -320,14 +324,18 @@ int main(int argc, char **argv) {
 
 #ifdef ALI_AMORE
  // send the histos to AMORE pool
- printf("AMORE XY send status: %d\n",vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY()));
+ amore_status=vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY());  
+ if(amore_status) printf("AMORE XY send status: %d\n",amore_status);
  TH1D *hProj = mv->GetVertexXY()->ProjectionX();
- printf("AMORE X send status: %d\n",vtxAmore.Send(Form(" %s_ProjX",mv->GetVertexXY()->GetName()),hProj));
+ amore_status=vtxAmore.Send(Form(" %s_ProjX",mv->GetVertexXY()->GetName()),hProj);
+ if(amore_status) printf("AMORE X send status: %d\n",amore_status);
  if(hProj) delete hProj;
  hProj = mv->GetVertexXY()->ProjectionY();
- printf("AMORE Y send status: %d\n",vtxAmore.Send(Form(" %s_ProjY",mv->GetVertexXY()->GetName()),hProj));
+ amore_status=vtxAmore.Send(Form(" %s_ProjY",mv->GetVertexXY()->GetName()),hProj);
+ if(amore_status) printf("AMORE Y send status: %d\n",amore_status);
  if(hProj) hProj->Delete();
- printf("AMORE Z  send status: %d\n",vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ()));
+ amore_status=vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ());
+ if(amore_status) printf("AMORE Z  send status: %d\n",amore_status);
 #endif
 
  delete mv;
