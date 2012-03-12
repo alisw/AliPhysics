@@ -163,7 +163,8 @@ AliTOFcalib::AliTOFcalib():
   fRemoveMeanT0(kTRUE),
   fUseLHCClockPhase(kFALSE),
   fCalibrateTOFsignal(kTRUE),
-  fCorrectTExp(kFALSE)
+  fCorrectTExp(kFALSE),
+  fRunParamsSpecificVersion(-1)
 { 
   //TOF Calibration Class ctor
   fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
@@ -202,7 +203,8 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fRemoveMeanT0(calib.fRemoveMeanT0),
   fUseLHCClockPhase(calib.fUseLHCClockPhase),
   fCalibrateTOFsignal(calib.fCalibrateTOFsignal),
-  fCorrectTExp(calib.fCorrectTExp)
+  fCorrectTExp(calib.fCorrectTExp),
+  fRunParamsSpecificVersion(calib.fRunParamsSpecificVersion)
 {
 
   fTOFCalOnline = new TObjArray(fNChannels);
@@ -309,6 +311,7 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
   fUseLHCClockPhase = calib.fUseLHCClockPhase;
   fCalibrateTOFsignal = calib.fCalibrateTOFsignal;
   fCorrectTExp = calib.fCorrectTExp;
+  fRunParamsSpecificVersion = calib.fRunParamsSpecificVersion;
 
   return *this;
 }
@@ -2149,7 +2152,7 @@ AliTOFcalib::ReadRunParamsFromCDB(const Char_t *sel , Int_t nrun)
    */
   
   AliCDBManager *man = AliCDBManager::Instance();
-  AliCDBEntry *entry = man->Get(Form("%s/RunParams", sel),nrun);
+  AliCDBEntry *entry = man->Get(Form("%s/RunParams", sel),nrun, fRunParamsSpecificVersion);
   if (!entry) { 
     AliFatal("No RunParams entry found in CDB");
     exit(0);  

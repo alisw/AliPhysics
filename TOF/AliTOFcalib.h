@@ -167,6 +167,8 @@ public:
   Bool_t IsChannelProblematic(Int_t index); // is channel problematic
   Double_t TuneForMC(AliESDEvent *event, Double_t resolution); // tune for MC
 
+  void SetRunParamsSpecificVersion(Int_t value) {fRunParamsSpecificVersion = value;}; // setter
+
 private:
   Int_t fNChannels; // number of TOF channels
 
@@ -205,6 +207,7 @@ private:
   Bool_t fCalibrateTOFsignal; // calibrate TOF signal
   Bool_t fCorrectTExp; // correct expected time
 
+  Int_t fRunParamsSpecificVersion; // RunParams specific version
   ClassDef(AliTOFcalib,11);
 };
 
