@@ -30,6 +30,7 @@
 set ( SRCS  
     AliZDC.cxx 
     AliZDCv3.cxx 
+    AliZDCv4.cxx 
     AliGenZDC.cxx 
     AliZDCFragment.cxx 
     AliZDCHit.cxx 
