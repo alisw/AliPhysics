@@ -31,7 +31,7 @@ class AliIsolationCut : public TObject {
  
   // Enums 
   
-  enum type       { kPtThresIC, kSumPtIC, kPtFracIC, kSumPtFracIC } ;
+  enum type       { kPtThresIC, kSumPtIC, kPtFracIC, kSumPtFracIC, kSumDensityIC } ;
   
   enum partInCone { kNeutralAndCharged=0, kOnlyNeutral=1, kOnlyCharged=2 } ;
 	
@@ -41,6 +41,9 @@ class AliIsolationCut : public TObject {
   
   TString    GetICParametersList() ; 
   
+  Float_t    GetCellDensity(  const AliAODPWG4ParticleCorrelation * pCandidate, 
+                              const AliCaloTrackReader * reader) const ;
+
   void       MakeIsolationCut(const TObjArray * plCTS, const TObjArray * plNe, 
                               const AliCaloTrackReader * reader, 
                               const AliCaloPID * pid, 
@@ -86,7 +89,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,5)
+  ClassDef(AliIsolationCut,6)
 } ;
 
 
