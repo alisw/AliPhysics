@@ -281,11 +281,11 @@ int main(int argc, char **argv) {
      amore_status=vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY());
      if(amore_status) printf("AMORE XY send status: %d\n",amore_status);
      TH1D *hProj = mv->GetVertexXY()->ProjectionX();
-     amore_status=vtxAmore.Send(Form(" %s_ProjX",mv->GetVertexXY()->GetName()),hProj); 
+     amore_status=vtxAmore.Send(Form("%s_ProjX",mv->GetVertexXY()->GetName()),hProj); 
      if(amore_status) printf("AMORE X send status: %d\n",amore_status);
      if(hProj) delete hProj;
      hProj = mv->GetVertexXY()->ProjectionY();
-     amore_status=vtxAmore.Send(Form(" %s_ProjY",mv->GetVertexXY()->GetName()),hProj); 
+     amore_status=vtxAmore.Send(Form("%s_ProjY",mv->GetVertexXY()->GetName()),hProj); 
      if(amore_status) printf("AMORE Y send status: %d\n",amore_status);
      if(hProj) hProj->Delete();
      amore_status=vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ());
@@ -327,11 +327,11 @@ int main(int argc, char **argv) {
  amore_status=vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY());  
  if(amore_status) printf("AMORE XY send status: %d\n",amore_status);
  TH1D *hProj = mv->GetVertexXY()->ProjectionX();
- amore_status=vtxAmore.Send(Form(" %s_ProjX",mv->GetVertexXY()->GetName()),hProj);
+ amore_status=vtxAmore.Send(Form("%s_ProjX",mv->GetVertexXY()->GetName()),hProj);
  if(amore_status) printf("AMORE X send status: %d\n",amore_status);
  if(hProj) delete hProj;
  hProj = mv->GetVertexXY()->ProjectionY();
- amore_status=vtxAmore.Send(Form(" %s_ProjY",mv->GetVertexXY()->GetName()),hProj);
+ amore_status=vtxAmore.Send(Form("%s_ProjY",mv->GetVertexXY()->GetName()),hProj);
  if(amore_status) printf("AMORE Y send status: %d\n",amore_status);
  if(hProj) hProj->Delete();
  amore_status=vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ());
