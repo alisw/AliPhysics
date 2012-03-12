@@ -49,6 +49,9 @@ class AliMuonPairCuts : public AliAnalysisCuts
   void Print ( Option_t* option = "" ) const;
   
   Double_t MuonMass2() const;
+  
+  /// Apply also sharp pt cut when matching with trigger
+  void ApplySharpPtCutInMatching ( Bool_t sharpPtCut = kTRUE ) { fMuonTrackCuts.ApplySharpPtCutInMatching(sharpPtCut); }
 
  private:
   

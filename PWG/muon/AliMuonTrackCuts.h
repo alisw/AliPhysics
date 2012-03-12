@@ -19,12 +19,9 @@ class AliMuonTrackCuts : public AliAnalysisCuts
     kMuMatchApt = BIT(3),
     kMuMatchLpt = BIT(4),
     kMuMatchHpt = BIT(5),
-    kMuTrackChiSquare = BIT(6),
-    kMuMatchSharpApt = BIT(7),
-    kMuMatchSharpLpt = BIT(8),
-    kMuMatchSharpHpt = BIT(9)
+    kMuTrackChiSquare = BIT(6)
   };
-
+  
   AliMuonTrackCuts();
   AliMuonTrackCuts(const char* name, const char* title, Bool_t isESD);
   AliMuonTrackCuts(const AliMuonTrackCuts& obj);
@@ -97,6 +94,9 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   Double_t GetSharpPtCut ( Int_t trigPtCut, Bool_t warn = kTRUE ) const;
 
   Bool_t StreamParameters ( Int_t runNumber, Int_t maxRun );
+  
+  /// Apply also sharp pt cut when matching with trigger
+  void ApplySharpPtCutInMatching ( Bool_t sharpPtCut = kTRUE ) { fSharpPtCut = sharpPtCut; }
 
  private:
   
@@ -107,10 +107,11 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   Bool_t fIsESD;            ///< Event is ESD
   Bool_t fIsMC;             ///< Monte Carlo analysis
   Bool_t fUseCustomParam;   ///< Use custom parameters (do not search in OADB)
+  Bool_t fSharpPtCut;       ///< Flag to apply sharp pt cut in track-trigger matching
 
   TArrayD fParameters;      ///< List of parameters
 
-  ClassDef(AliMuonTrackCuts, 1); // Class for muon track filters
+  ClassDef(AliMuonTrackCuts, 2); // Class for muon track filters
 };
  
 #endif
