@@ -165,11 +165,37 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
 
 }
 
-
 void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 272) 
-{   
-  AliPWG4HighPtTrackQA *taskTrackQA = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,0,0,0);
-  taskTrackQA->SetFilterMask(filterBit);
+{  
+  UInt_t iPhysicsSelectionFlagMB = AliVEvent::kMB; 
+  UInt_t iPhysicsSelectionFlagCentral = AliVEvent::kCentral;
+  UInt_t iPhysicsSelectionFlagSemiCentral = AliVEvent::kSemiCentral;
+
+  Int_t cent = 10;
+
+  TString strRunPeriod = TString(prodType);
+
+  if(isPbPb) {
+    for(cent=0; cent<4; cent++) {
+      AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
+      taskTrackQAMB->SetFilterMask(filterBit);
+    }
+
+    cent = 10;
+
+    if(strRunPeriod.Contains("LHC11h")) {
+      AliPWG4HighPtTrackQA *taskTrackQAC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagCentral);
+      taskTrackQAC->SetFilterMask(filterBit);
+    
+      AliPWG4HighPtTrackQA *taskTrackQASC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagSemiCentral);
+      taskTrackQASC->SetFilterMask(filterBit);
+    }
+  }
+  else {
+    cent = 10;
+    AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
+    taskTrackQAMB->SetFilterMask(filterBit);
+  }
 }
 
 AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_t isPbPb=kTRUE,Int_t iAODanalysis = 0, Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB)
