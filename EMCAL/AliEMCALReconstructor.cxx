@@ -709,7 +709,7 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
   if(!trkParam) return kFALSE;
 
   AliExternalTrackParam trkParamTmp (*trkParam);
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)) return kFALSE;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)) return kFALSE;
 
   return kTRUE;
 }

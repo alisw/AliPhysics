@@ -385,7 +385,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
 
   AliExternalTrackParam trkParamTmp(*trkParam);
   Float_t eta, phi;
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(), fStep, eta, phi))  return index;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(kTRUE), fStep, eta, phi))  return index;
   track->SetTrackPhiEtaOnEMCal(phi,eta);
   if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) return index;
 
@@ -403,7 +403,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
       AliExternalTrackParam trkParTmp(trkParamTmp);
 
       Float_t tmpEta, tmpPhi;
-      if(!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(), 5, tmpEta, tmpPhi)) continue;
+      if(!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(kTRUE), 5, tmpEta, tmpPhi)) continue;
       if(TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))
         {
           maxPhi=tmpPhi;

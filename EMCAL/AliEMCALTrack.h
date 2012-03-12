@@ -23,6 +23,7 @@ class AliESDtrack;
 
 class AliEMCALTrack : public AliExternalTrackParam
 {
+  
 public:
 
 	AliEMCALTrack();
@@ -30,31 +31,31 @@ public:
 	AliEMCALTrack(const AliEMCALTrack& t);
 	AliEMCALTrack& operator=(const AliEMCALTrack &t);
 	
-	Int_t    Compare(const TObject *o) const;
-	Int_t    GetClusterIndex() const {return fClusterIndex;}
-	Double_t GetClusterDist() const {return fClusterDist;}
-	Double_t GetMass() const {return fMass;}
-	Int_t    GetSeedIndex() const {return fSeedIndex;}
-	Int_t    GetSeedLabel() const {return fSeedLabel;}
-	
-	Bool_t   IsSortable() const {return kTRUE;}
-	Bool_t   PropagateTo(Double_t xr, Double_t d = 0.0, Double_t x0 = 21.82);
-	Double_t StraightPropagateTo(Double_t xk, Double_t &x, Double_t &y, Double_t &z);
-	Bool_t   PropagateToGlobal(Double_t x, Double_t y, Double_t z, Double_t d = 0.0, Double_t x0 = 21.82);
-			
-	void     SetClusterIndex(Int_t idx) {fClusterIndex = idx;}
-	void     SetClusterDist(Double_t dist) {fClusterDist = dist;}
-	void     SetMass(Double_t mass) {fMass = mass;}
-	void     SetSeedIndex(Int_t index) {fSeedIndex = index;}
-	void     SetSeedLabel(Int_t label) {fSeedLabel = label;}
+  Bool_t      PropagateTo(Double_t xr, Double_t d = 0.0, Double_t x0 = 21.82);
+	Double_t    StraightPropagateTo(Double_t xk, Double_t &x, Double_t &y, Double_t &z);
+	Bool_t      PropagateToGlobal(Double_t x, Double_t y, Double_t z, Double_t d = 0.0, Double_t x0 = 21.82);  
+  
+	Int_t       Compare(const TObject *o)        const ;
+	Int_t       GetClusterIndex()                const { return fClusterIndex     ; }
+	Double_t    GetClusterDist()                 const { return fClusterDist      ; }
+	Double_t    GetMass()                        const { return fMass             ; }
+	Int_t       GetSeedIndex()                   const { return fSeedIndex        ; }
+	Int_t       GetSeedLabel()                   const { return fSeedLabel        ; }
+	Bool_t      IsSortable()                     const { return kTRUE             ; }
+  			
+	void        SetClusterIndex(Int_t idx)             { fClusterIndex    = idx   ; }
+	void        SetClusterDist(Double_t dist)          { fClusterDist     = dist  ; }
+	void        SetMass(Double_t mass)                 { fMass            = mass  ; }
+	void        SetSeedIndex(Int_t index)              { fSeedIndex       = index ; }
+	void        SetSeedLabel(Int_t label)              { fSeedLabel       = label ; }
 		
-	static void SetUseOuterParams(Bool_t doit = kTRUE) {fgUseOuterParams = doit;}
-	static void SetCorrectForEL(Bool_t doit = kTRUE) {fgCorrectForEL = doit;}
-	static void SetSortByPt(Bool_t doit = kTRUE) {fgSortByPt = doit;}
+	static void SetUseOuterParams(Bool_t doit = kTRUE) { fgUseOuterParams = doit  ; }
+	static void SetCorrectForEL  (Bool_t doit = kTRUE) { fgCorrectForEL   = doit  ; }
+	static void SetSortByPt      (Bool_t doit = kTRUE) { fgSortByPt       = doit  ; }
 
 protected:
 	
-	Bool_t  SimplePropagation(Double_t xk, Double_t d = 0.0, Double_t x0 = 0.0);
+	Bool_t      SimplePropagation(Double_t xk, Double_t d = 0.0, Double_t x0 = 0.0);
 	
 	static  Bool_t    fgUseOuterParams;    // use outer parameters from AliESDtrack?
 	static  Bool_t    fgCorrectForEL;      // apply corrections for energy loss?

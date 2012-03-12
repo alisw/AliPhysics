@@ -64,7 +64,7 @@ AliEMCALTrack::AliEMCALTrack(const AliESDtrack& t)
   : AliExternalTrackParam(),
     fClusterIndex(-1),
     fClusterDist(1000.0),
-    fMass(t.GetMass()),
+    fMass(t.GetMass(kTRUE)),
     fSeedIndex(-1),
     fSeedLabel(t.GetLabel())
 {
