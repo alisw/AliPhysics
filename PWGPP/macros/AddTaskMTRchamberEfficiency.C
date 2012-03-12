@@ -34,8 +34,8 @@ AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE,
 
   // Create cuts
   AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("StdMuonTrackCuts", "StdMuonTrackCuts", type.Contains("ESD"));
-  muonTrackCuts->SetFilterMask ( AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca | AliMuonTrackCuts::kMuMatchApt );
   muonTrackCuts->SetIsMC(isMC);
+  muonTrackCuts->ApplySharpPtCutInMatching(kTRUE);
 
   // Create task
   AliAnalysisTaskTrigChEff* taskTrigChEff = new AliAnalysisTaskTrigChEff("TriggerChamberEfficiency", *muonTrackCuts);
