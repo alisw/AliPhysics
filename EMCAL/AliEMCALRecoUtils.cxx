@@ -217,50 +217,74 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fCutMaxDCAToVertexZ        = reco.fCutMaxDCAToVertexZ;
   fCutDCAToVertex2D          = reco.fCutDCAToVertex2D;
   
-  if(reco.fResidualEta){
+  if(reco.fResidualEta)
+  {
     // assign or copy construct
-    if(fResidualEta){ 
+    if(fResidualEta)
+    { 
       *fResidualEta = *reco.fResidualEta;
     }
-    else fResidualEta = new TArrayF(*reco.fResidualEta);
+    else 
+    {
+      fResidualEta = new TArrayF(*reco.fResidualEta);
+    }
   }
-  else{
+  else
+  {
     if(fResidualEta)delete fResidualEta;
     fResidualEta = 0;
   }
   
-  if(reco.fResidualPhi){
+  if(reco.fResidualPhi)
+  {
     // assign or copy construct
-    if(fResidualPhi){ 
+    if(fResidualPhi)
+    { 
       *fResidualPhi = *reco.fResidualPhi;
     }
-    else fResidualPhi = new TArrayF(*reco.fResidualPhi);
+    else 
+    {
+      fResidualPhi = new TArrayF(*reco.fResidualPhi);
+    }
   }
-  else{
+  else
+  {
     if(fResidualPhi)delete fResidualPhi;
     fResidualPhi = 0;
   }
   
-  if(reco.fMatchedTrackIndex){
+  if(reco.fMatchedTrackIndex)
+  {
     // assign or copy construct
-    if(fMatchedTrackIndex){ 
+    if(fMatchedTrackIndex)
+    { 
       *fMatchedTrackIndex = *reco.fMatchedTrackIndex;
     }
-    else fMatchedTrackIndex = new TArrayI(*reco.fMatchedTrackIndex);
+    else 
+    { 
+      fMatchedTrackIndex = new TArrayI(*reco.fMatchedTrackIndex);
+    }
   }
-  else{
+  else
+  {
     if(fMatchedTrackIndex)delete fMatchedTrackIndex;
     fMatchedTrackIndex = 0;
   }  
   
-  if(reco.fMatchedClusterIndex){
+  if(reco.fMatchedClusterIndex)
+  {
     // assign or copy construct
-    if(fMatchedClusterIndex){ 
+    if(fMatchedClusterIndex)
+    { 
       *fMatchedClusterIndex = *reco.fMatchedClusterIndex;
     }
-    else fMatchedClusterIndex = new TArrayI(*reco.fMatchedClusterIndex);
+    else 
+    {
+      fMatchedClusterIndex = new TArrayI(*reco.fMatchedClusterIndex);
+    }
   }
-  else{
+  else
+  {
     if(fMatchedClusterIndex)delete fMatchedClusterIndex;
     fMatchedClusterIndex = 0;
   }
@@ -274,17 +298,20 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
 {
   //Destructor.
 	
-  if(fEMCALRecalibrationFactors) { 
+  if(fEMCALRecalibrationFactors) 
+  { 
     fEMCALRecalibrationFactors->Clear();
     delete fEMCALRecalibrationFactors;
   }	
   
-  if(fEMCALTimeRecalibrationFactors) { 
+  if(fEMCALTimeRecalibrationFactors) 
+  { 
     fEMCALTimeRecalibrationFactors->Clear();
     delete fEMCALTimeRecalibrationFactors;
   }	
   
-  if(fEMCALBadChannelMap) { 
+  if(fEMCALBadChannelMap) 
+  { 
     fEMCALBadChannelMap->Clear();
     delete fEMCALBadChannelMap;
   }
@@ -348,7 +375,8 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
 	// Given the list of AbsId of the cluster, get the maximum cell and 
 	// check if there are fNCellsFromBorder from the calorimeter border
 	
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return kFALSE;
   }
@@ -359,9 +387,9 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   Int_t absIdMax	= -1, iSM =-1, ieta = -1, iphi = -1;
   Bool_t shared = kFALSE;
   GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSM, ieta, iphi, shared);
-
+  
   AliDebug(2,Form("Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f, Ncells from border %d, EMCAL eta=0 %d\n", 
-           absIdMax, cells->GetCellAmplitude(absIdMax), cluster->E(), fNCellsFromEMCALBorder, fNoEMCALBorderAtEta0));
+                  absIdMax, cells->GetCellAmplitude(absIdMax), cluster->E(), fNCellsFromEMCALBorder, fNoEMCALBorderAtEta0));
 	
 	if(absIdMax==-1) return kFALSE;
 	
@@ -369,43 +397,53 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
 	Bool_t okrow = kFALSE;
 	Bool_t okcol = kFALSE;
   
-  if(iSM < 0 || iphi < 0 || ieta < 0 ) {
+  if(iSM < 0 || iphi < 0 || ieta < 0 ) 
+  {
     AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
                   iSM,ieta,iphi));
   }
   
   //Check rows/phi
-  if(iSM < 10){
+  if(iSM < 10)
+  {
     if(iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
   }
-  else if (iSM >=10 && ( ( geom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) {
-      if(iphi >= fNCellsFromEMCALBorder && iphi < 8-fNCellsFromEMCALBorder) okrow =kTRUE; //1/3 sm case
-   }
-   else {
-      if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; // half SM case
-   }
+  else if (iSM >=10 && ( ( geom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) 
+  {
+    if(iphi >= fNCellsFromEMCALBorder && iphi < 8-fNCellsFromEMCALBorder) okrow =kTRUE; //1/3 sm case
+  }
+  else 
+  {
+    if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; // half SM case
+  }
   
   //Check columns/eta
-  if(!fNoEMCALBorderAtEta0){
+  if(!fNoEMCALBorderAtEta0)
+  {
     if(ieta  > fNCellsFromEMCALBorder && ieta < 48-fNCellsFromEMCALBorder) okcol =kTRUE; 
   }
-  else{
-    if(iSM%2==0){
+  else
+  {
+    if(iSM%2==0)
+    {
       if(ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;	
     }
-    else {
+    else 
+    {
       if(ieta <  48-fNCellsFromEMCALBorder)  okcol = kTRUE;	
     }
   }//eta 0 not checked
-    
+  
   AliDebug(2,Form("EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d:  column? %d, row? %d\nq",
-           fNCellsFromEMCALBorder, ieta, iphi, iSM, okcol, okrow));
+                  fNCellsFromEMCALBorder, ieta, iphi, iSM, okcol, okrow));
 	
-	if (okcol && okrow) {
+	if (okcol && okrow) 
+  {
     //printf("Accept\n");
     return kTRUE;
   }
-	else  {
+	else  
+  {
     //printf("Reject\n");
     AliDebug(2,Form("Reject cluster in border, max cell : ieta %d, iphi %d, SM %d\n",ieta, iphi, iSM));
     return kFALSE;
@@ -428,14 +466,15 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
   Int_t icol = -1;
   Int_t irow = -1;
   Int_t imod = -1;
-  for(Int_t iCell = 0; iCell<nCells; iCell++){
-		
+  for(Int_t iCell = 0; iCell<nCells; iCell++)
+  {
     //Get the column and row
     Int_t iTower = -1, iIphi = -1, iIeta = -1; 
     geom->GetCellIndex(cellList[iCell],imod,iTower,iIphi,iIeta); 
     if(fEMCALBadChannelMap->GetEntries() <= imod) continue;
     geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
-    if(GetEMCALChannelStatus(imod, icol, irow)){
+    if(GetEMCALChannelStatus(imod, icol, irow))
+    {
       AliDebug(2,Form("Cluster with bad channel: SM %d, col %d, row %d\n",imod, icol, irow));
       return kTRUE;
     }
@@ -452,7 +491,7 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
   // Do before recalibrating the cells
 
   if(!fRejectExoticCells) return kFALSE;
-
+  
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
   Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -460,11 +499,30 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
   
   //Get close cells index, energy and time, not in corners
+  
   Int_t absID1 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
   Int_t absID2 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
-  Int_t absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
-  Int_t absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
   
+  // In case of cell in eta = 0 border, depending on SM shift the cross cell index
+  Int_t absID3 = -1;
+  Int_t absID4 = -1;
+  
+  if     ( ieta == AliEMCALGeoParams::fgkEMCALCols - 1 && !(imod%2) )
+  {
+    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, 0);
+    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
+  }
+  else if( ieta == 0 && imod%2 )
+  {
+    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, AliEMCALGeoParams::fgkEMCALCols-1); 
+  }
+  else
+  {
+    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
+  }
+
   Float_t  ecell  = 0, ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
   Double_t tcell  = 0, tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
   Bool_t   accept = 0, accept1 = 0, accept2 = 0, accept3 = 0, accept4 = 0;
@@ -502,7 +560,8 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
 
   //printf("\t eCell %f, eCross %f, 1-eCross/eCell %f\n",ecell,eCross,1-eCross/ecell);
   
-  if(1-eCross/ecell > fExoticCellFraction) {
+  if(1-eCross/ecell > fExoticCellFraction) 
+  {
     AliDebug(2,Form("AliEMCALRecoUtils::IsExoticCell() - EXOTIC CELL id %d, eCell %f, eCross %f, 1-eCross/eCell %f\n",
                     absID,ecell,eCross,1-eCross/ecell));
     return kTRUE;
@@ -518,7 +577,8 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(const AliVCluster *cluster,
 {
   // Check if the cluster highest energy tower is exotic
   
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return kFALSE;
   }
@@ -530,8 +590,9 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(const AliVCluster *cluster,
   Int_t iSupMod = -1, absId = -1, ieta = -1, iphi = -1;
   Bool_t shared = kFALSE;
   GetMaxEnergyCell(geom, cells, cluster, absId, iSupMod, ieta, iphi, shared);
-
+  
   return IsExoticCell(absId,cells,bc);
+  
 }
 
 //_______________________________________________________________________
@@ -539,14 +600,16 @@ Float_t AliEMCALRecoUtils::SmearClusterEnergy(const AliVCluster* cluster)
 {
   //In case of MC analysis, smear energy to match resolution/calibration in real data
   
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return 0;
   }
   
   Float_t energy    = cluster->E() ;
   Float_t rdmEnergy = energy ;
-  if(fSmearClusterEnergy){
+  if(fSmearClusterEnergy)
+  {
     rdmEnergy = fRandom.Gaus(energy,fSmearClusterParam[0] * TMath::Sqrt(energy) +
                                     fSmearClusterParam[1] * energy +
                                     fSmearClusterParam[2] );
@@ -561,14 +624,16 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
 {
   // Correct cluster energy from non linearity functions
   
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return 0;
   }
   
   Float_t energy = cluster->E();
 
-  switch (fNonLinearityFunction) {
+  switch (fNonLinearityFunction) 
+  {
       
     case kPi0MC:
     {
@@ -647,7 +712,8 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
 {
   //Initialising Non Linearity Parameters
 	
-  if(fNonLinearityFunction == kPi0MC) {
+  if(fNonLinearityFunction == kPi0MC) 
+  {
     fNonLinearityParams[0] = 1.014;
     fNonLinearityParams[1] = -0.03329;
     fNonLinearityParams[2] = -0.3853;
@@ -655,37 +721,44 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[4] = -0.4335;
   }
   
-  if(fNonLinearityFunction == kPi0GammaGamma) {
+  if(fNonLinearityFunction == kPi0GammaGamma) 
+  {
     fNonLinearityParams[0] = 1.04;
     fNonLinearityParams[1] = -0.1445;
     fNonLinearityParams[2] = 1.046;
   }	
 
-  if(fNonLinearityFunction == kPi0GammaConversion) {
+  if(fNonLinearityFunction == kPi0GammaConversion) 
+  {
     fNonLinearityParams[0] = 0.139393;
     fNonLinearityParams[1] = 0.0566186;
     fNonLinearityParams[2] = 0.982133;
   }	
 
-  if(fNonLinearityFunction == kBeamTest) {
-    if(fNonLinearThreshold == 30) {
+  if(fNonLinearityFunction == kBeamTest) 
+  {
+    if(fNonLinearThreshold == 30) 
+    {
       fNonLinearityParams[0] = 1.007; 
       fNonLinearityParams[1] = 0.894; 
       fNonLinearityParams[2] = 0.246; 
     }
-    if(fNonLinearThreshold == 45) {
+    if(fNonLinearThreshold == 45) 
+    {
       fNonLinearityParams[0] = 1.003; 
       fNonLinearityParams[1] = 0.719; 
       fNonLinearityParams[2] = 0.334; 
     }
-    if(fNonLinearThreshold == 75) {
+    if(fNonLinearThreshold == 75) 
+    {
       fNonLinearityParams[0] = 1.002; 
       fNonLinearityParams[1] = 0.797; 
       fNonLinearityParams[2] = 0.358; 
     }
   }
 
-  if(fNonLinearityFunction == kBeamTestCorrected) {
+  if(fNonLinearityFunction == kBeamTestCorrected) 
+  {
     fNonLinearityParams[0] =  0.99078;
     fNonLinearityParams[1] =  0.161499;
     fNonLinearityParams[2] =  0.655166; 
@@ -721,19 +794,23 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy,
     case kHadron:
       // hadron 
       // boxes anc. here
-      if(gGeoManager){
+      if(gGeoManager)
+      {
         gGeoManager->cd("ALIC_1/XEN1_1");
         TGeoNode        *geoXEn1    = gGeoManager->GetCurrentNode();
         TGeoNodeMatrix  *geoSM      = dynamic_cast<TGeoNodeMatrix *>(geoXEn1->GetDaughter(iSM));
-        if(geoSM){
+        if(geoSM)
+        {
           TGeoVolume      *geoSMVol   = geoSM->GetVolume(); 
           TGeoShape       *geoSMShape = geoSMVol->GetShape();
           TGeoBBox        *geoBox     = dynamic_cast<TGeoBBox *>(geoSMShape);
           if(geoBox) depth = 0.5 * geoBox->GetDX()*2 ;
           else AliFatal("Null GEANT box");
-        }else AliFatal("NULL  GEANT node matrix");
+        }
+        else AliFatal("NULL  GEANT node matrix");
       }
-      else{//electron
+      else
+      {//electron
         depth = x0 * (TMath::Log(energy*1000 / ecr)  - 0.5); //Multiply energy by 1000 to transform to MeV
       }
         
@@ -770,30 +847,38 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
   Int_t iIeta   = -1;
   Int_t iSupMod0= -1;
 
-  if(!clu){
+  if(!clu)
+  {
     AliInfo("Cluster pointer null!");
     absId=-1; iSupMod0=-1, ieta = -1; iphi = -1; shared = -1;
     return;
   }
   
-  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
+  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) 
+  {
     cellAbsId = clu->GetCellAbsId(iDig);
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     //printf("a Cell %d, id, %d, amp %f, fraction %f\n",iDig,cellAbsId,cells->GetCellAmplitude(cellAbsId),fraction);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
     geom->GetCellIndex(cellAbsId,iSupMod,iTower,iIphi,iIeta); 
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
-    if(iDig==0) iSupMod0=iSupMod;
-    else if(iSupMod0!=iSupMod) {
+    if     (iDig==0) 
+    {
+      iSupMod0=iSupMod;
+    }
+    else if(iSupMod0!=iSupMod) 
+    {
       shared = kTRUE;
       //printf("AliEMCALRecoUtils::GetMaxEnergyCell() - SHARED CLUSTER\n");
     }
-    if(!fCellsRecalibrated && IsRecalibrationOn()) {
+    if(!fCellsRecalibrated && IsRecalibrationOn()) 
+    {
       recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
     }
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
     //printf("b Cell %d, id, %d, amp %f, fraction %f\n",iDig,cellAbsId,eCell,fraction);
-    if(eCell > eMax)  { 
+    if(eCell > eMax)  
+    { 
       eMax  = eCell; 
       absId = cellAbsId;
       //printf("\t new max: cell %d, e %f, ecell %f\n",maxId, eMax,eCell);
@@ -858,7 +943,8 @@ void AliEMCALRecoUtils::InitParameters()
   
   
   //Misalignment matrices
-  for(Int_t i = 0; i < 15 ; i++) {
+  for(Int_t i = 0; i < 15 ; i++) 
+  {
     fMisalTransShift[i] = 0.; 
     fMisalRotShift[i]   = 0.; 
   }
@@ -901,13 +987,17 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors()
     fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),
                                              Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
   //Init the histograms with 1
-  for (Int_t sm = 0; sm < 12; sm++) {
-    for (Int_t i = 0; i < 48; i++) {
-      for (Int_t j = 0; j < 24; j++) {
+  for (Int_t sm = 0; sm < 12; sm++) 
+  {
+    for (Int_t i = 0; i < 48; i++) 
+    {
+      for (Int_t j = 0; j < 24; j++) 
+      {
         SetEMCALChannelRecalibrationFactor(sm,i,j,1.);
       }
     }
   }
+  
   fEMCALRecalibrationFactors->SetOwner(kTRUE);
   fEMCALRecalibrationFactors->Compress();
 	
@@ -930,7 +1020,8 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
                                                  Form("hAllTimeAvBC%d",i),  
                                                  48*24*12,0.,48*24*12)          );
   //Init the histograms with 1
-  for (Int_t bc = 0; bc < 4; bc++) {
+  for (Int_t bc = 0; bc < 4; bc++) 
+  {
     for (Int_t i = 0; i < 48*24*12; i++) 
       SetEMCALChannelTimeRecalibrationFactor(bc,i,0.);
   }
@@ -953,7 +1044,8 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
   
   fEMCALBadChannelMap = new TObjArray(12);
   //TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
-  for (int i = 0; i < 12; i++) {
+  for (int i = 0; i < 12; i++) 
+  {
     fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
   }
   
@@ -974,7 +1066,8 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   // and the energy of the cells and time that compose the cluster.
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
 	
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return;
   }  
@@ -993,12 +1086,14 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Float_t emax     = 0;
   
   //Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
-  for(Int_t icell = 0; icell < ncells; icell++){
+  for(Int_t icell = 0; icell < ncells; icell++)
+  {
     absId = index[icell];
     frac =  fraction[icell];
     if(frac < 1e-5) frac = 1; //in case of EMCAL, this is set as 0 since unfolding is off
     
-    if(!fCellsRecalibrated && IsRecalibrationOn()) {
+    if(!fCellsRecalibrated && IsRecalibrationOn()) 
+    {
       // Energy  
       Int_t iTower = -1, iIphi = -1, iIeta = -1; 
       geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
@@ -1013,7 +1108,8 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
     
     energy += cells->GetCellAmplitude(absId)*factor*frac;
     
-    if(emax < cells->GetCellAmplitude(absId)*factor*frac){
+    if(emax < cells->GetCellAmplitude(absId)*factor*frac)
+    {
       emax     = cells->GetCellAmplitude(absId)*factor*frac;
       absIdMax = absId;
     }
@@ -1024,14 +1120,15 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Energy before %f, after %f\n",cluster->E(),energy));
 
   // Recalculate time of cluster only for ESDs
-  if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName()))) {
-
+  if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName()))) 
+  {
     // Time
     Double_t weightedTime = 0;
     Double_t weight       = 0;
     Double_t weightTot    = 0;
     Double_t maxcellTime  = 0;
-    for(Int_t icell = 0; icell < ncells; icell++){
+    for(Int_t icell = 0; icell < ncells; icell++)
+    {
       absId = index[icell];
       frac =  fraction[icell];
       if(frac < 1e-5) frac = 1; //in case of EMCAL, this is set as 0 since unfolding is off
@@ -1040,8 +1137,8 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
       RecalibrateCellTime(absId, bc, celltime);
       if(absId == absIdMax) maxcellTime = celltime;
 
-      if(!fCellsRecalibrated){
-      
+      if(!fCellsRecalibrated)
+      {
         Int_t iTower = -1, iIphi = -1, iIeta = -1; 
         geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
         if(fEMCALRecalibrationFactors->GetEntries() <= imod) continue;
@@ -1076,7 +1173,8 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
 
   if(!IsRecalibrationOn() && !IsTimeRecalibrationOn()) return;
   
-  if(!cells){
+  if(!cells)
+  {
     AliInfo("Cells pointer null!");
     return;
   }  
@@ -1087,12 +1185,13 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
   Double_t tcell  = 0;
   
   Int_t nEMcell  = cells->GetNumberOfCells() ;  
-  for (Int_t iCell = 0; iCell < nEMcell; iCell++) { 
-    
+  for (Int_t iCell = 0; iCell < nEMcell; iCell++) 
+  { 
     absId  = cells->GetCellNumber(iCell);
     
     accept = AcceptCalibrateCell(absId, bc, ecell ,tcell ,cells); 
-    if(!accept) {
+    if(!accept) 
+    {
       ecell = 0;
       tcell = 0;
     }
@@ -1110,7 +1209,8 @@ void AliEMCALRecoUtils::RecalibrateCellTime(const Int_t absId, const Int_t bc, D
   // Recalibrate time of cell with absID  considering the recalibration map 
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
   
-  if(!fCellsRecalibrated && IsTimeRecalibrationOn() && bc >= 0){
+  if(!fCellsRecalibrated && IsTimeRecalibrationOn() && bc >= 0)
+  {
     celltime -= GetEMCALChannelTimeRecalibrationFactor(bc%4,absId)*1.e-9;    ;  
   }
 }
@@ -1122,7 +1222,8 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom,
 {
   //For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
   
-  if(!clu){
+  if(!clu)
+  {
     AliInfo("Cluster pointer null!");
     return;
   }
@@ -1158,17 +1259,19 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
   
   //printf("** Cluster energy %f, ncells %d, depth %f\n",clEnergy,clu->GetNCells(),depth);
   
-  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
-    
+  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) 
+  {
     absId = clu->GetCellAbsId(iDig);
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    if (!fCellsRecalibrated){
+    if (!fCellsRecalibrated)
+    {
       geom->GetCellIndex(absId,iSM,iTower,iIphi,iIeta); 
       geom->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);			
       
-      if(IsRecalibrationOn()) {
+      if(IsRecalibrationOn()) 
+      {
         recalFactor = GetEMCALChannelRecalibrationFactor(iSM,ieta,iphi);
       }
     }
@@ -1186,7 +1289,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
     for(int i=0; i<3; i++ ) newPos[i] += (weight*pGlobal[i]);
   }// cell loop
   
-  if(totalWeight>0){
+  if(totalWeight>0)
+  {
     for(int i=0; i<3; i++ )    newPos[i] /= totalWeight;
   }
     
@@ -1195,12 +1299,14 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
   //printf("OldPos  : %2.3f,%2.3f,%2.3f\n",pos[0],pos[1],pos[2]);
   //printf("NewPos  : %2.3f,%2.3f,%2.3f\n",newPos[0],newPos[1],newPos[2]);
   
-  if(iSupModMax > 1) {//sector 1
+  if(iSupModMax > 1) //sector 1
+  {
     newPos[0] +=fMisalTransShift[3];//-=3.093; 
     newPos[1] +=fMisalTransShift[4];//+=6.82;
     newPos[2] +=fMisalTransShift[5];//+=1.635;
     //printf("   +    : %2.3f,%2.3f,%2.3f\n",fMisalTransShift[3],fMisalTransShift[4],fMisalTransShift[5]);
-  } else {//sector 0
+  } else //sector 0
+  {
     newPos[0] +=fMisalTransShift[0];//+=1.134;
     newPos[1] +=fMisalTransShift[1];//+=8.2;
     newPos[2] +=fMisalTransShift[2];//+=1.197;
@@ -1238,7 +1344,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
   Bool_t areInSameSM = kTRUE; //exclude clusters with cells in different SMs for now
   Int_t startingSM = -1;
   
-  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
+  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) 
+  {
     absId = clu->GetCellAbsId(iDig);
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
@@ -1251,8 +1358,10 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
     geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);		
     
-    if (!fCellsRecalibrated){
-      if(IsRecalibrationOn()) {
+    if (!fCellsRecalibrated)
+    {
+      if(IsRecalibrationOn()) 
+      {
         recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
       }
     }
@@ -1269,12 +1378,15 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
   }// cell loop
     
   Float_t xyzNew[]={0.,0.,0.};
-  if(areInSameSM == kTRUE) {
+  if(areInSameSM == kTRUE) 
+  {
     //printf("In Same SM\n");
     weightedCol = weightedCol/totalWeight;
     weightedRow = weightedRow/totalWeight;
     geom->RecalculateTowerPosition(weightedRow, weightedCol, iSupModMax, depth, fMisalTransShift, fMisalRotShift, xyzNew); 
-  } else {
+  } 
+  else 
+  {
     //printf("In Different SM\n");
     geom->RecalculateTowerPosition(iphi,        ieta,        iSupModMax, depth, fMisalTransShift, fMisalRotShift, xyzNew); 
   }
@@ -1291,7 +1403,8 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
   
   if(!fRecalDistToBadChannels) return;
   
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return;
   }  
@@ -1307,8 +1420,10 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
   Float_t  dist    = 0.;
   
   //Loop on tower status map 
-  for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
-    for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++){
+  for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++)
+  {
+    for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++)
+    {
       //Check if tower is bad.
       if(hMap->GetBinContent(icol,irow)==0) continue;
       //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - \n \t Bad channel in SM %d, col %d, row %d, \n \t Cluster max in col %d, row %d\n",
@@ -1317,7 +1432,8 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
       dRrow=TMath::Abs(irowM-irow);
       dRcol=TMath::Abs(icolM-icol);
       dist=TMath::Sqrt(dRrow*dRrow+dRcol*dRcol);
-      if(dist < minDist){
+      if(dist < minDist)
+      {
         //printf("MIN DISTANCE TO BAD %2.2f\n",dist);
         minDist = dist;
       }
@@ -1325,7 +1441,8 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
   }
   
   //In case the cluster is shared by 2 SuperModules, need to check the map of the second Super Module
-  if (shared) {
+  if (shared) 
+  {
     TH2D* hMap2 = 0;
     Int_t iSupMod2 = -1;
     
@@ -1335,17 +1452,21 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
     hMap2  = (TH2D*)fEMCALBadChannelMap->At(iSupMod2);
     
     //Loop on tower status map of second super module
-    for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
-      for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++){
+    for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++)
+    {
+      for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++)
+      {
         //Check if tower is bad.
         if(hMap2->GetBinContent(icol,irow)==0) continue;
         //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels(shared) - \n \t Bad channel in SM %d, col %d, row %d \n \t Cluster max in SM %d, col %d, row %d\n",
         //     iSupMod2,icol, irow,iSupMod,icolM,irowM);
         dRrow=TMath::Abs(irow-irowM);
         
-        if(iSupMod%2) {
+        if(iSupMod%2) 
+        {
           dRcol=TMath::Abs(icol-(AliEMCALGeoParams::fgkEMCALCols+icolM));
-        } else {
+        } else 
+        {
           dRcol=TMath::Abs(AliEMCALGeoParams::fgkEMCALCols+icol-icolM);
         }                    
         
@@ -1364,7 +1485,8 @@ void AliEMCALRecoUtils::RecalculateClusterPID(AliVCluster * cluster)
 {           
   //re-evaluate identification parameters with bayesian
   
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return;
   }
@@ -1387,7 +1509,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
   // and tranfers into global ALICE coordinates
   // Calculates Dispersion and main axis
   
-  if(!cluster){
+  if(!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return;
   }
@@ -1416,8 +1539,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
   Double_t zmean = 0.;
     
   //Loop on cells
-  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) {
-    
+  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) 
+  {
     //Get from the absid the supermodule, tower and eta/phi numbers
     geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta); 
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);        
@@ -1426,21 +1549,24 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    if (!fCellsRecalibrated){
-      if(IsRecalibrationOn()) {
+    if (!fCellsRecalibrated)
+    {
+      if(IsRecalibrationOn()) 
+      {
         recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
       }
     }
     
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
     
-    if(cluster->E() > 0 && eCell > 0){
-      
+    if(cluster->E() > 0 && eCell > 0)
+    {
       w  = GetCellWeight(eCell,cluster->E());
       
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;		
-      if(w > 0.0) {
+      if(w > 0.0) 
+      {
         wtot += w ;
         nstat++;		        
         //Shower shape
@@ -1450,12 +1576,14 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
         zmean+= w * phii ; 
         dxz  += w * etai * phii ; 
       }
-    } else
+    } 
+    else
       AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, cluster->E()));
   }//cell loop
   
   //Normalize to the weight	
-  if (wtot > 0) {
+  if (wtot > 0) 
+  {
     xmean /= wtot ;
     zmean /= wtot ;
   }
@@ -1463,8 +1591,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
     AliError(Form("Wrong weight %f\n", wtot));
   
   //Calculate dispersion	
-  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) {
-    
+  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) 
+  {
     //Get from the absid the supermodule, tower and eta/phi numbers
     geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta); 
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
@@ -1472,13 +1600,14 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
     //Get the cell energy, if recalibration is on, apply factors
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
-    if (IsRecalibrationOn()) {
+    if (IsRecalibrationOn()) 
+    {
       recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
     }
     eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
     
-    if(cluster->E() > 0 && eCell > 0){
-      
+    if(cluster->E() > 0 && eCell > 0)
+    {
       w  = GetCellWeight(eCell,cluster->E());
       
       etai=(Double_t)ieta;
@@ -1490,7 +1619,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
   }// cell loop
   
   //Normalize to the weigth and set shower shape parameters
-  if (wtot > 0 && nstat > 1) {
+  if (wtot > 0 && nstat > 1) 
+  {
     d /= wtot ;
     dxx /= wtot ;
     dzz /= wtot ;
@@ -1501,7 +1631,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
     cluster->SetM02(0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ));
     cluster->SetM20(0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ));
   }
-  else{
+  else
+  {
     d=0. ;
     cluster->SetM20(0.) ;
     cluster->SetM02(0.) ;
@@ -1537,7 +1668,8 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
   
   // init the magnetic field if not already on
-  if(!TGeoGlobalMagField::Instance()->GetField()){
+  if(!TGeoGlobalMagField::Instance()->GetField())
+  {
     AliInfo("Init the magnetic field\n");
     if     (esdevent) 
     {
@@ -1714,12 +1846,14 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   return index;
 }
 
-//________________________________________________________________________________________
-Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, 
+//_______________________________________________________________________________________________
+Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackParam *emcalParam, 
                                                          AliExternalTrackParam *trkParam, 
-                                                         TObjArray * clusterArr, 
+                                                         const TObjArray * clusterArr, 
                                                          Float_t &dEta, Float_t &dPhi)
 {
+  // Find matched cluster in array
+  
   dEta=-999, dPhi=-999;
   Float_t dRMax = fCutR, dEtaMax=fCutEta, dPhiMax=fCutPhi;
   Int_t index = -1;
@@ -1831,7 +1965,7 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkP
 
 //----------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, 
-                                                    AliVCluster *cluster, 
+                                                    const AliVCluster *cluster, 
                                                     const Double_t mass, 
                                                     const Double_t step, 
                                                     Float_t &tmpEta, 
@@ -1852,7 +1986,7 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkPa
 
 //---------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, 
-                                                    AliVCluster *cluster, 
+                                                    const AliVCluster *cluster, 
                                                     Float_t &tmpEta, 
                                                     Float_t &tmpPhi)
 {
@@ -1926,7 +2060,7 @@ Int_t AliEMCALRecoUtils::GetMatchedClusterIndex(Int_t trkIndex)
     return -1; 
 }
 
-//__________________________________________________
+//______________________________________________________________
 Bool_t AliEMCALRecoUtils::IsClusterMatched(Int_t clsIndex) const
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
@@ -1937,7 +2071,7 @@ Bool_t AliEMCALRecoUtils::IsClusterMatched(Int_t clsIndex) const
     return kFALSE;
 }
 
-//__________________________________________________
+//____________________________________________________________
 Bool_t AliEMCALRecoUtils::IsTrackMatched(Int_t trkIndex) const 
 {
   //Given a track index as in AliESDEvent::GetTrack(trkIndex)
@@ -1948,7 +2082,7 @@ Bool_t AliEMCALRecoUtils::IsTrackMatched(Int_t trkIndex) const
     return kFALSE;
 }
 
-//__________________________________________________________
+//______________________________________________________________________
 UInt_t AliEMCALRecoUtils::FindMatchedPosForCluster(Int_t clsIndex) const
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
@@ -1956,20 +2090,24 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForCluster(Int_t clsIndex) const
   Float_t tmpR = fCutR;
   UInt_t pos = 999;
   
-  for(Int_t i=0; i<fMatchedClusterIndex->GetSize(); i++) {
-    if(fMatchedClusterIndex->At(i)==clsIndex) {
+  for(Int_t i=0; i<fMatchedClusterIndex->GetSize(); i++) 
+  {
+    if(fMatchedClusterIndex->At(i)==clsIndex) 
+    {
       Float_t r = TMath::Sqrt(fResidualEta->At(i)*fResidualEta->At(i) + fResidualPhi->At(i)*fResidualPhi->At(i));
-      if(r<tmpR) {
+      if(r<tmpR) 
+      {
         pos=i;
         tmpR=r;
-        AliDebug(3,Form("Matched cluster index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",fMatchedClusterIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
+        AliDebug(3,Form("Matched cluster index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",
+                        fMatchedClusterIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
       }
     }
   }
   return pos;
 }
 
-//__________________________________________________________
+//____________________________________________________________________
 UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
 {
   //Given a track index as in AliESDEvent::GetTrack(trkIndex)
@@ -1977,13 +2115,17 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
   Float_t tmpR = fCutR;
   UInt_t pos = 999;
   
-  for(Int_t i=0; i<fMatchedTrackIndex->GetSize(); i++) {
-    if(fMatchedTrackIndex->At(i)==trkIndex) {
+  for(Int_t i=0; i<fMatchedTrackIndex->GetSize(); i++) 
+  {
+    if(fMatchedTrackIndex->At(i)==trkIndex) 
+    {
       Float_t r = TMath::Sqrt(fResidualEta->At(i)*fResidualEta->At(i) + fResidualPhi->At(i)*fResidualPhi->At(i));
-      if(r<tmpR) {
+      if(r<tmpR) 
+      {
         pos=i;
         tmpR=r;
-        AliDebug(3,Form("Matched track index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",fMatchedTrackIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
+        AliDebug(3,Form("Matched track index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",
+                        fMatchedTrackIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
       }
     }
   }
@@ -1999,7 +2141,7 @@ Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster,
   //
   //
   Bool_t isGood=kTRUE;
-  
+
   if(!cluster || !cluster->IsEMCAL())              return kFALSE;
   
   if(ClusterContainsBadChannel(geom,cluster->GetCellsAbsId(),cluster->GetNCells())) return kFALSE;
@@ -2045,7 +2187,8 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
   Float_t b[2];
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
-  if (bCov[0]<=0 || bCov[2]<=0) {
+  if (bCov[0]<=0 || bCov[2]<=0) 
+  {
     AliDebug(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
   }
@@ -2095,7 +2238,7 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
 
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++)
-    if (cuts[i]) {cut = kTRUE;}
+    if (cuts[i]) { cut = kTRUE ; }
 
     // cut the track
   if (cut) 
@@ -2167,12 +2310,15 @@ void AliEMCALRecoUtils::SetClusterMatchedToTrack(const AliESDEvent *event)
   // Checks if tracks are matched to EMC clusters and set the matched EMCAL cluster index to ESD track. 
   
   Int_t nTracks = event->GetNumberOfTracks();
-  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) 
+  {
     AliESDtrack* track = event->GetTrack(iTrack);
-    if (!track) {
+    if (!track) 
+    {
       AliWarning(Form("Could not receive track %d", iTrack));
       continue;
     }
+    
     Int_t matchClusIndex = GetMatchedClusterIndex(iTrack);		   
     track->SetEMCALcluster(matchClusIndex); //sets -1 if track not matched within residual
     if(matchClusIndex != -1) 
@@ -2189,7 +2335,8 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliESDEvent *event)
   // Checks if EMC clusters are matched to ESD track.
   // Adds track indexes of all the tracks matched to a cluster withing residuals in ESDCalocluster.
   
-  for (Int_t iClus=0; iClus < event->GetNumberOfCaloClusters(); ++iClus) {
+  for (Int_t iClus=0; iClus < event->GetNumberOfCaloClusters(); ++iClus) 
+  {
     AliESDCaloCluster *cluster = event->GetCaloCluster(iClus);
     if (!cluster->IsEMCAL()) 
       continue;
@@ -2200,16 +2347,19 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliESDEvent *event)
     // Get the closest track matched to the cluster
     Int_t nMatched = 0;
     Int_t matchTrackIndex = GetMatchedTrackIndex(iClus);
-    if (matchTrackIndex != -1) {
+    if (matchTrackIndex != -1) 
+    {
       arrayTrackMatched[nMatched] = matchTrackIndex;
       nMatched++;
     }
     
     // Get all other tracks matched to the cluster
-    for(Int_t iTrk=0; iTrk<nTracks; ++iTrk) {
+    for(Int_t iTrk=0; iTrk<nTracks; ++iTrk) 
+    {
       AliESDtrack* track = event->GetTrack(iTrk);
       if(iTrk == matchTrackIndex) continue;
-      if(track->GetEMCALcluster() == iClus){
+      if(track->GetEMCALcluster() == iClus)
+      {
         arrayTrackMatched[nMatched] = iTrk;
         ++nMatched;
       }
@@ -2290,9 +2440,12 @@ void AliEMCALRecoUtils::SetRunDependentCorrections(Int_t runnumber)
   corr->ReadRootInfo(Form("CorrectionFiles/Run%d_Correction.root",runnumber));
   
   SwitchOnRecalibration();
-  for(Int_t ism = 0; ism < 4; ism++){
-    for(Int_t icol = 0; icol < 48; icol++){
-      for(Int_t irow = 0; irow < 24; irow++){
+  for(Int_t ism = 0; ism < 4; ism++)
+  {
+    for(Int_t icol = 0; icol < 48; icol++)
+    {
+      for(Int_t irow = 0; irow < 24; irow++)
+      {
         Float_t orgRecalFactor = GetEMCALChannelRecalibrationFactors(ism)->GetBinContent(icol,irow);
         Float_t newRecalFactor = orgRecalFactor*corr->GetCorrection(ism, icol,irow,0);
         GetEMCALChannelRecalibrationFactors(ism)->SetBinContent(icol,irow,newRecalFactor);

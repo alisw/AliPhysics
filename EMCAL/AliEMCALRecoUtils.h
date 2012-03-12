@@ -251,8 +251,10 @@ public:
   void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, const AliEMCALGeometry *geom=0x0);
   Int_t    FindMatchedClusterInEvent(const AliESDtrack *track, const AliVEvent *event, 
                                      const AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
-  Int_t    FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, AliExternalTrackParam *trkParam, 
-                                          TObjArray * clusterArr, Float_t &dEta, Float_t &dPhi);
+  Int_t    FindMatchedClusterInClusterArr(const AliExternalTrackParam *emcalParam, 
+                                          AliExternalTrackParam *trkParam, 
+                                          const TObjArray * clusterArr, 
+                                          Float_t &dEta, Float_t &dPhi);
   
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                const Double_t emcalR, const Double_t mass, const Double_t step, 
@@ -260,10 +262,10 @@ public:
   static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, const Float_t *clsPos, 
                                            const Double_t mass, const Double_t step, 
                                            Float_t &tmpEta, Float_t &tmpPhi);
-  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, 
+  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
                                            const Double_t mass, const Double_t step,
                                            Float_t &tmpEta, Float_t &tmpPhi);
-  Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, 
+  Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
                                            Float_t &tmpEta, Float_t &tmpPhi);
 
   UInt_t   FindMatchedPosForCluster(const Int_t clsIndex) const;
