@@ -428,7 +428,19 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    }
 
    // vertex selection
+   if(!fAOD){
+     if(fDebug) Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
+     fHistEvtSelection->Fill(3);
+      PostData(1, fOutputList);
+   }
    AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
+
+   if(!primVtx){
+     if(fDebug) Printf("%s:%d No primVtx",(char*)__FILE__,__LINE__);
+     fHistEvtSelection->Fill(3);
+      PostData(1, fOutputList);
+   }
+
    Int_t nTracksPrim = primVtx->GetNContributors();
    if ((nTracksPrim < fMinContribVtx) ||
          (primVtx->GetZ() < fVtxZMin) ||
