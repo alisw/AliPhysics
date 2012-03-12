@@ -12,6 +12,8 @@
 
 #include <TObject.h>
 
+class AliTPCdEdxInfo;
+
 class AliAODPid : public TObject {
 
  public:
@@ -28,6 +30,7 @@ class AliAODPid : public TObject {
   void      SetTPCsignal(Double_t tpc)                         {fTPCsignal=tpc;}
   void      SetTPCsignalN(UShort_t tpcN)                       {fTPCsignalN=tpcN;}
   void      SetTPCmomentum(Double_t tpcMom)                    {fTPCmomentum=tpcMom;}
+  void      SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
   inline void  SetTRDsignal(Int_t nslices, const Double_t * const trdslices);  
   void      SetTRDmomentum(Int_t nplane, Float_t trdMom)       {fTRDmomentum[nplane]=trdMom;}
   inline void  SetTRDncls(UChar_t ncls, Int_t layer = -1);
@@ -48,6 +51,8 @@ class AliAODPid : public TObject {
   }
   Double_t  GetTPCsignal()       const {return  fTPCsignal;}
   UShort_t  GetTPCsignalN()      const {return  fTPCsignalN;}
+  AliTPCdEdxInfo * GetTPCdEdxInfo()const{return fTPCdEdxInfo;}
+
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
   Int_t     GetTRDnSlices()      const {return  fTRDnSlices;}
   Double_t* GetTRDsignal()       const {return  fTRDslices;}
@@ -84,8 +89,9 @@ class AliAODPid : public TObject {
 				 // extrapolated to EMCAL surface
   Double32_t  fEMCALMomentum[3]; // momentum of track
 				 // extrapolated to EMCAL surface
+  AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
 
-  ClassDef(AliAODPid, 8);
+  ClassDef(AliAODPid, 9);
 };
 
 //_____________________________________________________________

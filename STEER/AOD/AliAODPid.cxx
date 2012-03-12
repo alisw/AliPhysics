@@ -24,6 +24,7 @@
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
+#include "AliTPCdEdxInfo.h"
 
 ClassImp(AliAODPid)
 
@@ -38,7 +39,8 @@ AliAODPid::AliAODPid():
     fTRDntls(0),
     fTRDslices(0x0),
     fTOFesdsignal(0),
-    fHMPIDsignal(0)
+    fHMPIDsignal(0),
+    fTPCdEdxInfo(0)
 {
   // default constructor
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]   = 0; 
@@ -58,6 +60,7 @@ AliAODPid::~AliAODPid()
 {
   delete [] fTRDslices;
   fTRDslices = 0;
+  delete fTPCdEdxInfo;
   // destructor
 }
 
@@ -73,7 +76,8 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTRDntls(pid.fTRDntls),
   fTRDslices(0x0),
   fTOFesdsignal(pid.fTOFesdsignal),
-  fHMPIDsignal(pid.fHMPIDsignal)
+  fHMPIDsignal(pid.fHMPIDsignal),
+  fTPCdEdxInfo(new AliTPCdEdxInfo(*pid.fTPCdEdxInfo))
 {
   // Copy constructor
   SetTRDsignal(fTRDnSlices, pid.fTRDslices);
@@ -221,3 +225,19 @@ void AliAODPid::GetITSdEdxSamples(Double_t s[4]) const
   //  
   for (Int_t i=0; i<4; i++) s[i]=fITSdEdxSamples[i];
 }
+//______________________________________________________________________________
+void AliAODPid::SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo)
+{
+  //
+  // Set TPC dEdx info
+  //
+  if (dEdxInfo==0x0){
+    delete fTPCdEdxInfo;
+    fTPCdEdxInfo=0x0;
+    return;
+  }
+  if (!fTPCdEdxInfo) fTPCdEdxInfo=new AliTPCdEdxInfo;
+  (*fTPCdEdxInfo)=(*dEdxInfo);
+}
+
+

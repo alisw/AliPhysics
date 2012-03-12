@@ -57,6 +57,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTrackerBase.h"
 #include "TVector3.h"
+#include "AliTPCdEdxInfo.h"
 
 ClassImp(AliAnalysisTaskESDfilter)
 
@@ -2241,6 +2242,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
 
  aodpid->SetTPCsignal(track->GetTPCsignal());
  aodpid->SetTPCsignalN(track->GetTPCsignalN());
+ if(track->GetTPCdEdxInfo()) aodpid->SetTPCdEdxInfo(track->GetTPCdEdxInfo());
 
  //n TRD planes = 6
  Int_t nslices = track->GetNumberOfTRDslices()*6;
