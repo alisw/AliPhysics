@@ -24,6 +24,7 @@
 #include "TParameter.h"
 #include "TKey.h"
 #include "TVector3.h"
+#include "TSystem.h"
 
 #include "AliLog.h"
 #include "AliVParticle.h"
@@ -42,6 +43,7 @@ AliMuonTrackCuts::AliMuonTrackCuts() :
   fIsESD(kFALSE),
   fIsMC(kFALSE),
   fUseCustomParam(kFALSE),
+  fSharpPtCut(kFALSE),
   fParameters(TArrayD(kNParameters))
 {
   /// Default ctor.
@@ -54,6 +56,7 @@ AliMuonTrackCuts::AliMuonTrackCuts(const char* name, const char* title, Bool_t i
   fIsESD(isESD),
   fIsMC(kFALSE),
   fUseCustomParam(kFALSE),
+  fSharpPtCut(kFALSE),
   fParameters(TArrayD(kNParameters))
 {
   /// Constructor
@@ -68,6 +71,7 @@ AliMuonTrackCuts::AliMuonTrackCuts(const AliMuonTrackCuts& obj) :
   fIsESD(obj.fIsESD),
   fIsMC(obj.fIsMC),
   fUseCustomParam(obj.fUseCustomParam),
+  fSharpPtCut(obj.fSharpPtCut),
   fParameters(obj.fParameters)
 {
   /// Copy constructor
@@ -83,6 +87,7 @@ AliMuonTrackCuts& AliMuonTrackCuts::operator=(const AliMuonTrackCuts& obj)
     fIsESD = obj.fIsESD;
     fIsMC = obj.fIsMC;
     fUseCustomParam = obj.fUseCustomParam;
+    fSharpPtCut = obj.fSharpPtCut;
     fParameters = obj.fParameters;
   }
   return *this;
@@ -281,12 +286,11 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
 
   Int_t matchTrig = ( fIsESD ) ? ((AliESDMuonTrack*)track)->GetMatchTrigger() : ((AliAODTrack*)track)->GetMatchTrigger();
   Int_t cutLevel[3] = {kMuMatchApt, kMuMatchLpt, kMuMatchHpt};
-  Int_t cutLevelSharp[3] = {kMuMatchSharpApt, kMuMatchSharpLpt, kMuMatchSharpHpt};
   Double_t pt = track->Pt();
   for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
     if ( matchTrig < ilevel+1 ) break;
+    if ( fSharpPtCut && pt < GetSharpPtCut(ilevel) ) break;
     selectionMask |= cutLevel[ilevel];
-    if ( pt >= GetSharpPtCut(ilevel) ) selectionMask |= cutLevelSharp[ilevel];
   }
 
   Double_t chi2norm = ( fIsESD ) ? ((AliESDMuonTrack*)track)->GetNormalizedChi2() : ((AliAODTrack*)track)->Chi2perNDF();
@@ -558,7 +562,6 @@ void AliMuonTrackCuts::Print(Option_t* option) const
   if ( sopt.IsNull() || sopt.Contains("*") || sopt.Contains("all") ) sopt = "mask param";
   UInt_t filterMask = GetFilterMask();
   Int_t cutLevel[3] = {kMuMatchApt, kMuMatchLpt, kMuMatchHpt};
-  Int_t cutLevelSharp[3] = {kMuMatchSharpApt, kMuMatchSharpLpt, kMuMatchSharpHpt};
   TString cutLevelName[3] = {"Apt", "Lpt", "Hpt"};
   if ( sopt.Contains("mask") ) {
     printf(" *** Muon track filter mask: *** \n");
@@ -567,12 +570,13 @@ void AliMuonTrackCuts::Print(Option_t* option) const
     if ( filterMask & kMuThetaAbs ) printf("  2 < theta_abs < 10 deg\n");
     if ( filterMask & kMuPdca ) printf("  pxDCA cut\n");
     for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
-      if ( filterMask & cutLevel[ilevel] ) printf("  match %s\n", cutLevelName[ilevel].Data());
+      if ( filterMask & cutLevel[ilevel] ) {
+        printf("  match %s", cutLevelName[ilevel].Data());
+        if ( fSharpPtCut ) printf(" && sharp pt from tracker");
+        printf("\n");
+      }
     }
     if ( filterMask & kMuTrackChiSquare ) printf("  Chi2 cut on track\n");
-    for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
-      if ( filterMask & cutLevelSharp[ilevel] ) printf("  sharp tracker pt cut matching trig. %s cut\n", cutLevelName[ilevel].Data());
-    }
     printf(" ******************** \n");
   }
   if ( sopt.Contains("param") ) {
