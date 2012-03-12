@@ -49,9 +49,6 @@ ifneq ($(PWGflowBase_INCLUDE),)
   ALICEINC += -I../$(PWGflowBase_INCLUDE)
 endif
 
-#needed by flowTasks
-ALICEINC += -I$(ALICE_ROOT)/TOF
-
 ifneq ($(PWGflowTasks_INCLUDE),)
   ALICEINC += -I../$(PWGflowTasks_INCLUDE)
 endif
