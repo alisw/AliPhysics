@@ -39,8 +39,6 @@
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
 
-#include "AliTOFHeader.h"
-
 #include "AliESDVZERO.h"
 #ifdef MFT_UPGRADE
 //#include "AliESDMFT.h"

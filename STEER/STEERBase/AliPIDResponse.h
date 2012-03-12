@@ -76,7 +76,6 @@ public:
 
 
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
-  virtual void SetTOFResponse(AliVEvent */*event*/,EStartTimeType_t /*option*/) {;}
   void SetTRDslicesForPID(UInt_t slice1, UInt_t slice2) {fTRDslicesForPID[0]=slice1;fTRDslicesForPID[1]=slice2;}
   
   void SetOADBPath(const char* path) {fOADBPath=path;}
@@ -95,6 +94,7 @@ public:
 
   // TOF setting
   void SetTOFtail(Float_t tail=1.1){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
+  void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);

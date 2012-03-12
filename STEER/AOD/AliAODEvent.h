@@ -34,7 +34,6 @@
 #include "AliAODTZERO.h"
 #include "AliAODVZERO.h"
 #include "AliAODZDC.h"
-#include "AliTOFHeader.h"
 #ifdef MFT_UPGRADE
 #include "AliAODMFT.h"
 #endif

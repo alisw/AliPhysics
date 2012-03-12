@@ -22,6 +22,7 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "TRefArray.h"
+#include "AliTOFHeader.h"
 class AliCentrality;
 class AliEventplane;
 class AliVVZERO;
@@ -129,6 +130,13 @@ public:
   virtual Int_t        GetNumberOfTracks() const = 0;
   virtual Int_t        GetNumberOfV0s() const = 0;
   virtual Int_t        GetNumberOfCascades() const = 0;
+
+  // TOF header and T0 methods
+  virtual const AliTOFHeader *GetTOFHeader() const {return NULL;}
+  virtual Float_t GetEventTimeSpread() const {return 0.;}
+  virtual Float_t GetTOFTimeResolution() const {return 0.;}
+  virtual Double32_t GetT0TOF(Int_t icase) const {return 0.0*icase;}
+  virtual const Double32_t * GetT0TOF() const {return NULL;}
 
   // Calorimeter Clusters/Cells
   virtual AliVCluster *GetCaloCluster(Int_t)   const {return 0;}

@@ -891,3 +891,212 @@ void AliPIDResponse::InitializeEMCALResponse(){
   fEMCALResponse.SetPIDParams(fEMCALPIDParams);
 
 }
+//_________________________________________________________________________
+void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
+  //
+  // Set TOF response function
+  // Input option for event_time used
+  //
+  
+    Float_t t0spread = 0.; //vevent->GetEventTimeSpread();
+    if(t0spread < 10) t0spread = 80;
+
+    // T0 from TOF algorithm
+
+    Bool_t flagT0TOF=kFALSE;
+    Bool_t flagT0T0=kFALSE;
+    Float_t *startTime = new Float_t[fTOFResponse.GetNmomBins()];
+    Float_t *startTimeRes = new Float_t[fTOFResponse.GetNmomBins()];
+    Int_t *startTimeMask = new Int_t[fTOFResponse.GetNmomBins()];
+
+    // T0-TOF arrays
+    Float_t *estimatedT0event = new Float_t[fTOFResponse.GetNmomBins()];
+    Float_t *estimatedT0resolution = new Float_t[fTOFResponse.GetNmomBins()];
+    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+      estimatedT0event[i]=0.0;
+      estimatedT0resolution[i]=0.0;
+      startTimeMask[i] = 0;
+    }
+
+    Float_t resT0A=75,resT0C=65,resT0AC=55;
+    if(vevent->GetT0TOF()){ // check if T0 detector information is available
+	flagT0T0=kTRUE;
+    }
+
+
+    AliTOFHeader *tofHeader = (AliTOFHeader*)vevent->GetTOFHeader();
+
+    if (tofHeader) { // read global info and T0-TOF
+      fTOFResponse.SetTimeResolution(tofHeader->GetTOFResolution());
+      t0spread = tofHeader->GetT0spread(); // read t0 sprad
+      if(t0spread < 10) t0spread = 80;
+
+      flagT0TOF=kTRUE;
+      for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){ // read T0-TOF default value
+	startTime[i]=tofHeader->GetDefaultEventTimeVal();
+	startTimeRes[i]=tofHeader->GetDefaultEventTimeRes();
+	if(startTimeRes[i] < 1.e-5) startTimeRes[i] = t0spread;
+      }
+
+      TArrayI *ibin=(TArrayI*)tofHeader->GetNvalues();
+      TArrayF *t0Bin=(TArrayF*)tofHeader->GetEventTimeValues();
+      TArrayF *t0ResBin=(TArrayF*)tofHeader->GetEventTimeRes();
+      for(Int_t j=0;j < tofHeader->GetNbins();j++){ // fill T0-TOF in p-bins
+	Int_t icurrent = (Int_t)ibin->GetAt(j);
+	startTime[icurrent]=t0Bin->GetAt(j);
+	startTimeRes[icurrent]=t0ResBin->GetAt(j);
+	if(startTimeRes[icurrent] < 1.e-5) startTimeRes[icurrent] = t0spread;
+      }
+    }
+
+    // for cut of 3 sigma on t0 spread
+    Float_t t0cut = 3 * t0spread;
+    if(t0cut < 500) t0cut = 500;
+
+    if(option == kFILL_T0){ // T0-FILL is used
+	for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	  estimatedT0event[i]=0.0;
+	  estimatedT0resolution[i]=t0spread;
+	}
+	fTOFResponse.SetT0event(estimatedT0event);
+	fTOFResponse.SetT0resolution(estimatedT0resolution);
+    }
+
+    if(option == kTOF_T0){ // T0-TOF is used when available (T0-FILL otherwise) from ESD
+	if(flagT0TOF){
+	    fTOFResponse.SetT0event(startTime);
+	    fTOFResponse.SetT0resolution(startTimeRes);
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	      if(startTimeRes[i]<t0spread) startTimeMask[i]=1;
+	      fTOFResponse.SetT0binMask(i,startTimeMask[i]);
+	    }
+	}
+	else{
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	      estimatedT0event[i]=0.0;
+	      estimatedT0resolution[i]=t0spread;
+	      fTOFResponse.SetT0binMask(i,startTimeMask[i]);
+	    }
+	    fTOFResponse.SetT0event(estimatedT0event);
+	    fTOFResponse.SetT0resolution(estimatedT0resolution);
+	}
+    }
+    else if(option == kBest_T0){ // T0-T0 or T0-TOF are used when available (T0-FILL otherwise) from ESD
+	Float_t t0AC=-10000;
+	Float_t t0A=-10000;
+	Float_t t0C=-10000;
+	if(flagT0T0){
+	    t0AC= vevent->GetT0TOF()[0];
+	    t0A= vevent->GetT0TOF()[1];
+	    t0C= vevent->GetT0TOF()[2];
+	}
+
+	Float_t t0t0Best = 0;
+	Float_t t0t0BestRes = 9999;
+	Int_t t0used=0;
+	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
+	    t0t0Best = t0AC;
+	    t0t0BestRes = resT0AC;
+	    t0used=6;
+	}
+	else if(TMath::Abs(t0C) < t0cut){
+	    t0t0Best = t0C;
+	    t0t0BestRes = resT0C;
+	    t0used=4;
+	}
+	else if(TMath::Abs(t0A) < t0cut){
+	    t0t0Best = t0A;
+	    t0t0BestRes = resT0A;
+	    t0used=2;
+	}
+
+	if(flagT0TOF){ // if T0-TOF info is available
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+		if(t0t0BestRes < 999){
+		  if(startTimeRes[i] < t0spread){
+		    Double_t wtot = 1./startTimeRes[i]/startTimeRes[i] + 1./t0t0BestRes/t0t0BestRes;
+		    Double_t t0best = startTime[i]/startTimeRes[i]/startTimeRes[i] + t0t0Best/t0t0BestRes/t0t0BestRes;
+		    estimatedT0event[i]=t0best / wtot;
+		    estimatedT0resolution[i]=1./TMath::Sqrt(wtot);
+		    startTimeMask[i] = t0used+1;
+		  }
+		  else {
+		    estimatedT0event[i]=t0t0Best;
+		    estimatedT0resolution[i]=t0t0BestRes;
+		    startTimeMask[i] = t0used;
+		  }
+		}
+		else{
+		  estimatedT0event[i]=startTime[i];
+		  estimatedT0resolution[i]=startTimeRes[i];
+		  if(startTimeRes[i]<t0spread) startTimeMask[i]=1;
+		}
+		fTOFResponse.SetT0binMask(i,startTimeMask[i]);
+	    }
+	    fTOFResponse.SetT0event(estimatedT0event);
+	    fTOFResponse.SetT0resolution(estimatedT0resolution);
+	}
+	else{ // if no T0-TOF info is available
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	      fTOFResponse.SetT0binMask(i,t0used);
+	      if(t0t0BestRes < 999){
+		estimatedT0event[i]=t0t0Best;
+		estimatedT0resolution[i]=t0t0BestRes;
+	      }
+	      else{
+		estimatedT0event[i]=0.0;
+		estimatedT0resolution[i]=t0spread;
+	      }
+	    }
+	    fTOFResponse.SetT0event(estimatedT0event);
+	    fTOFResponse.SetT0resolution(estimatedT0resolution);
+	}
+    }
+
+    else if(option == kT0_T0){ // T0-T0 is used when available (T0-FILL otherwise)
+	Float_t t0AC=-10000;
+	Float_t t0A=-10000;
+	Float_t t0C=-10000;
+	if(flagT0T0){
+	    t0AC= vevent->GetT0TOF()[0];
+	    t0A= vevent->GetT0TOF()[1];
+	    t0C= vevent->GetT0TOF()[2];
+	}
+
+	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	      estimatedT0event[i]=t0AC;
+	      estimatedT0resolution[i]=resT0AC;
+	      fTOFResponse.SetT0binMask(i,6);
+	    }
+	}
+	else if(TMath::Abs(t0C) < t0cut){
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	      estimatedT0event[i]=t0C;
+	      estimatedT0resolution[i]=resT0C;
+	      fTOFResponse.SetT0binMask(i,4);
+	    }
+	}
+	else if(TMath::Abs(t0A) < t0cut){
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	      estimatedT0event[i]=t0A;
+	      estimatedT0resolution[i]=resT0A;
+	      fTOFResponse.SetT0binMask(i,2);
+	    }
+	}
+	else{
+	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
+	      estimatedT0event[i]=0.0;
+	      estimatedT0resolution[i]=t0spread;
+	      fTOFResponse.SetT0binMask(i,0);
+	    }
+	}
+	fTOFResponse.SetT0event(estimatedT0event);
+	fTOFResponse.SetT0resolution(estimatedT0resolution);
+    }
+    delete [] startTime;
+    delete [] startTimeRes;
+    delete [] startTimeMask;
+    delete [] estimatedT0event;
+    delete [] estimatedT0resolution;
+}
