@@ -16,8 +16,6 @@
 #include "TH2D.h"
 #include "TSpline.h"
 #include "TF1.h"
-#include "AliTOFGeometry.h"
-#include "AliTOFT0maker.h"
 #include "AliCentrality.h"
 #include "AliAODPid.h"
 #include "AliMCEvent.h"
@@ -25,16 +23,19 @@
 #include "AliAnalysisManager.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
+#include "TH1D.h"
+#include "TFile.h"
+
 
 ClassImp(AliFlowBayesianPID)
   
 TH2D* AliFlowBayesianPID::fghPriors[fgkNspecies] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}; // histo with priors (hardcoded)
 TSpline3* AliFlowBayesianPID::fgMism = NULL; // function for mismatch
-AliTOFGeometry* AliFlowBayesianPID::fgTofGeo = NULL; // TOF geometry needed to reproduce mismatch shape
+TH1D* AliFlowBayesianPID::fgHtofChannelDist=NULL;
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE),fDedx(0.0)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE),fDedx(0.0)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -74,14 +75,11 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   if(redopriors) SetPriors();
 
   if(!fgMism) fgMism = GetMismatch();
-  if(! fgTofGeo) fgTofGeo = new AliTOFGeometry();
 
   if(! esdpid)
     fPIDesd = new AliESDpid();
   else
     fPIDesd = esdpid;
-
-  fTOFmaker = new AliTOFT0maker(fPIDesd);
  
   fProb[0]=0.0;
   fProb[1]=0.0;
@@ -127,17 +125,22 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
     fMaskOR[i] = 1; // all dets if available
     fMaskCurrent[i] = 0; // current mask
   }
+
+  if(!fgHtofChannelDist){
+    TFile *ftofchannel = new TFile("$ALICE_ROOT/TOF/TOFchannelDist.root");
+    fgHtofChannelDist = (TH1D *) ftofchannel->Get("hTOFchanDist");
+  }
+
 }
 //________________________________________________________________________
 AliFlowBayesianPID::~AliFlowBayesianPID(){
   // destrucctor that removes all the PID external (non static) objects
   if(fTOFResponseF) delete fTOFResponseF; 
   if(fTPCResponseF) delete fTPCResponseF;
-  if(fTOFmaker) delete fTOFmaker;
   if(fBBdata) delete fBBdata;
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,EStartTimeType_t flagStart,Bool_t recomputeT0TOF){
+void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,EStartTimeType_t flagStart,Bool_t){
   // Set the detector responses (including also TPC dE/dx paramterization vs. centrality)
   if(!esd){
     printf("AliFlowBayesianPID::SetDetResponse -> Error -> No valid esd event");
@@ -242,12 +245,6 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fBBdata->SetParameter(3, alephParameters[2]);
   fBBdata->SetParameter(4, alephParameters[3]);
   fBBdata->SetParameter(5, alephParameters[4]);
-
-  if(recomputeT0TOF){
-    fTOFmaker->SetTimeResolution(fTOFresolution);     
-    fTOFmaker->ComputeT0TOF(esd);
-    fTOFmaker->WriteInESD(esd);
-  }
 
   fPIDesd->SetTOFResponse(esd,flagStart);
 
@@ -595,14 +592,9 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
     Float_t timeTOF = t->GetTOFsignal() - fPIDesd->GetTOFResponse().GetStartTime(p);
 
     // TOF mismatch weight
-    Int_t det[5];
-    Float_t length, timeextra, pos[3];
+    Float_t length,timeextra;
     /* compute length and expected time */
-    fgTofGeo->GetVolumeIndices(t->GetTOFCalChannel(), det);
-    fgTofGeo->GetPosPar(det, pos);
-    length = 0.;
-    for (Int_t i = 0; i < 3; i++) length += pos[i] * pos[i];
-    length = TMath::Sqrt(length);
+    length = fgHtofChannelDist->GetBinContent(t->GetTOFCalChannel()%8736);
     timeextra = length * 33.3564095198152043;
     Float_t dz =t->GetTOFsignalDz();
     Float_t dx =t->GetTOFsignalDx();
@@ -731,20 +723,14 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
     Float_t timeTOF = t->GetTOFsignal() - fPIDesd->GetTOFResponse().GetStartTime(p);
 
     // TOF mismatch weight
-    Int_t det[5];
-    Float_t length, timeextra, pos[3];
+    Float_t length, timeextra;
     /* compute length and expected time */
     Float_t etaAbs = TMath::Abs(t->Eta());
     Int_t extrapolatedTOFchannel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs);
     if(t->Eta() < 0) extrapolatedTOFchannel = 8736-1- extrapolatedTOFchannel; 
     extrapolatedTOFchannel =  (Int_t(extrapolatedTOFchannel) % 8736);
 
-
-    fgTofGeo->GetVolumeIndices(extrapolatedTOFchannel, det);
-    fgTofGeo->GetPosPar(det, pos);
-    length = 0.;
-    for (Int_t i = 0; i < 3; i++) length += pos[i] * pos[i];
-    length = TMath::Sqrt(length);
+    length = fgHtofChannelDist->GetBinContent(extrapolatedTOFchannel);
     timeextra = length * 33.3564095198152043;
     Float_t mismweight = TMath::Max(fgMism->Eval(timeTOF - timeextra),0.0000001) * ((0.5 + 0.05/pt/pt/pt)); // mismatch probabilities
     fWTofMism = mismfrac*mismweight;

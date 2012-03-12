@@ -19,8 +19,7 @@ class AliAODTrack;
 class TH2D;
 class TSpline3;
 class TF1;
-class AliTOFGeometry;
-class AliTOFT0maker;
+class TH1D;
 
 /*
 HOW TO
@@ -80,7 +79,7 @@ class AliFlowBayesianPID : public AliPIDResponse{
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {if(vtrack) printf("Don't call AliFlowBayesianPID::NumberOfSigmasTOF method (%i)\n",type); return 0.0;} // do not use it
 
   // setter
-  void SetDetResponse(AliESDEvent *esd,Float_t centrality=-1.0,EStartTimeType_t flagStart=AliESDpid::kTOF_T0,Bool_t recomputeT0TOF=kFALSE);
+  void SetDetResponse(AliESDEvent *esd,Float_t centrality=-1.0,EStartTimeType_t flagStart=AliESDpid::kTOF_T0,Bool_t /*recomputeT0TOF*/=kFALSE);
   void SetDetResponse(AliAODEvent *aod,Float_t centrality=-1.0);
   void SetNewTrackParam(Bool_t flag=kTRUE){fNewTrackParam=flag;};
   void SetDetAND(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskAND[idet] = kTRUE;};
@@ -126,7 +125,6 @@ class AliFlowBayesianPID : public AliPIDResponse{
   static const Int_t fgkNspecies = 8;// 0=el, 1=mu, 2=pi, 3=ka, 4=pr, 5=deuteron, 6=triton, 7=He3 
   static TH2D* fghPriors[fgkNspecies]; // histo with priors (hardcoded)
   static TSpline3 *fgMism; // function for mismatch
-  static AliTOFGeometry *fgTofGeo; // TOF geometry needed to reproduce mismatch shape
 
   AliESDpid *fPIDesd;//ESDpid object
   TDatabasePDG *fDB; // Database pdg
@@ -140,8 +138,6 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   TF1 *fTOFResponseF; // TOF Gaussian+tail response function (tail at 1.1 sigma)
   TF1 *fTPCResponseF; // TPC Gaussian+tail response function (tail at 1.8 sigma)
-
-  AliTOFT0maker *fTOFmaker; //TOF-T0 maker object
 
   Float_t fWeights[fgkNdetectors][fgkNspecies]; // weights: 0=tpc,1=tof
   Float_t fProb[fgkNspecies],fWTofMism,fProbTofMism; // Bayesian Combined PID + mismatch weights and probability 
@@ -159,7 +155,9 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   Float_t fDedx; // dE/dx tuned for MC
 
-  ClassDef(AliFlowBayesianPID, 6); // example of analysis
+  static TH1D *fgHtofChannelDist; // channel distance from IP
+
+  ClassDef(AliFlowBayesianPID, 7); // example of analysis
 };
 
 #endif
