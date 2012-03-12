@@ -114,7 +114,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   SetLabel(t.GetLabel());
   SetChi2(0.0);
 
-  SetMass(t.GetMass()/*0.000510*/);
+  SetMass(t.GetMass(kTRUE));
   AliKalmanTrack::SetNumberOfClusters(t.GetTRDncls()); 
   Int_t ti[]={-1, -1, -1, -1, -1, -1}; t.GetTRDtracklets(&ti[0]);
   for(int ip=0; ip<kNplane; ip++){ 
@@ -621,14 +621,14 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
       AddTimeStep(l2);
     }
   }
-  if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0, xrho, GetMass())) return kFALSE;
+  if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0, xrho, fMass)) return kFALSE;
 
 
   {
 
     // Energy losses
     Double_t p2    = (1.0 + GetTgl()*GetTgl()) / (GetSigned1Pt()*GetSigned1Pt());
-    Double_t beta2 = p2 / (p2 + GetMass()*GetMass());
+    Double_t beta2 = p2 / (p2 + fMass*fMass);
     if ((beta2 < 1.0e-10) || 
         ((5940.0 * beta2/(1.0 - beta2 + 1.0e-10) - beta2) < 0.0)) {
       return kFALSE;
@@ -651,7 +651,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
     /*
     // Suspicious ! I.B.
     Double_t sigmade = 0.07 * TMath::Sqrt(TMath::Abs(dE));   // Energy loss fluctuation 
-    Double_t sigmac2 = sigmade*sigmade*fC*fC*(p2+GetMass()*GetMass())/(p2*p2);
+    Double_t sigmac2 = sigmade*sigmade*fC*fC*(p2+fMass*fMass)/(p2*p2);
     fCcc += sigmac2;
     fCee += fX*fX * sigmac2;  
     */
