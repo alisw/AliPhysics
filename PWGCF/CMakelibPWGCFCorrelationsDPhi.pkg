@@ -27,6 +27,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
+    Correlations/DPhi/AliAnalysisTaskDptDptCorrelations.cxx 
     Correlations/DPhi/AliAnalysisTaskPhiCorrelations.cxx 
     Correlations/DPhi/AliPhiCorrelationsQATask.cxx 
     Correlations/DPhi/AliAnalysisTaskLeadingTrackUE.cxx 
