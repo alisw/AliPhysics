@@ -127,7 +127,7 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   }
 
   if(!fgHtofChannelDist){
-    TFile *ftofchannel = new TFile("$ALICE_ROOT/TOF/TOFchannelDist.root");
+    TFile *ftofchannel = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
     fgHtofChannelDist = (TH1D *) ftofchannel->Get("hTOFchanDist");
   }
 

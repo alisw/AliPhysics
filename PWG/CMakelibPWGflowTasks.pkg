@@ -53,6 +53,7 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskFilterFE.cxx
     FLOW/Tasks/AliAnalysisTaskVnV0.cxx
     FLOW/Tasks/AliFlowVZEROResults.cxx
+    FLOW/Tasks/AliFlowVZEROQA.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
