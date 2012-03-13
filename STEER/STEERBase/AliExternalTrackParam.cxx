@@ -691,7 +691,6 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   Double_t x=fX;
   Double_t ca=TMath::Cos(alpha-fAlpha), sa=TMath::Sin(alpha-fAlpha);
   Double_t sf=fP2, cf=TMath::Sqrt((1.- fP2)*(1.+fP2)); // Improve precision
-
   // RS: check if rotation does no invalidate track model (cos(local_phi)>=0, i.e. particle
   // direction in local frame is along the X axis
   if ((cf*ca+sf*sa)<0) {
@@ -700,12 +699,12 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   }
   //
   Double_t tmp=sf*ca - cf*sa;
+
   if (TMath::Abs(tmp) >= kAlmost1) {
      if (TMath::Abs(tmp) > 1.+ Double_t(FLT_EPSILON))  
         AliWarning(Form("Rotation failed ! %.10e",tmp));
      return kFALSE;
   }
-
   fAlpha = alpha;
   fX =  x*ca + fP0*sa;
   fP0= -x*sa + fP0*ca;
@@ -743,14 +742,16 @@ Bool_t AliExternalTrackParam::Invert() {
   while (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
   //
   fP[0] = -fP[0];
-  fP[2] = -fP[2];
+  //fP[2] = -fP[2];
   fP[3] = -fP[3];
   fP[4] = -fP[4];
   //
-  fC[1] = -fC[1]; // since the Z coordinate is not inverted, the covariances with Z should be inverted
-  fC[4] = -fC[4];
+  fC[1] = -fC[1]; // since the fP1 and fP2 are not inverted, their covariances with others change sign
+  fC[3] = -fC[3];
   fC[7] = -fC[7];
+  fC[8] = -fC[8]; 
   fC[11] = -fC[11]; 
+  fC[12] = -fC[12]; 
   //
   return kTRUE;
 }
