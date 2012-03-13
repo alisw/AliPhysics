@@ -57,20 +57,25 @@ fSubDetOffset(0),
   fCalibration(NULL),
   fThresholdForRelativeOccupancy(0.01),
   fThresholdForRecToRawRatio(0.04),
-  fImage(NULL),
+fImage(NULL),
   fESforCheck(0)
 {
 // Default constructor
 	fStepBitSDD=new Double_t[AliQAv1::kNBIT];
 	fLowSDDValue=new Float_t[AliQAv1::kNBIT];
 	fHighSDDValue=new Float_t[AliQAv1::kNBIT];
+
 	for(Int_t ibit=0;ibit<AliQAv1::kNBIT;ibit++)
 	  {
 	    fStepBitSDD[ibit]=0.;
 	    fLowSDDValue[ibit]=0.;
 	    fHighSDDValue[ibit]=0.;
 	  }
-
+	for(Int_t i=0;i<AliRecoParam::kNSpecies;i++) fPaveText[i] = NULL;
+	for(Int_t i=0;i<2; i++) {
+		fPaveTextRaw[i] = NULL;
+		fPaveTextRec[i] = NULL;
+	}
 }          // ctor
 
 
@@ -99,11 +104,30 @@ AliITSQASDDChecker::~AliITSQASDDChecker()
       delete fCalibration;
       fCalibration=NULL;
     }
-  if(fImage)
+	if(fImage)
     {
-      delete []fImage; 
-      fImage=NULL;
+		delete []fImage; 
+		fImage=NULL;
     }
+	for(Int_t i=0;i<AliRecoParam::kNSpecies;i++) {
+		if(fPaveText[i])
+		{
+			delete fPaveText[i]; 
+			fPaveText[i]=NULL;
+		}
+	}
+	for(Int_t i=0;i<2;i++) {
+		if(fPaveTextRaw[i])
+		{
+			delete fPaveTextRaw[i]; 
+			fPaveTextRaw[i]=NULL;
+		}
+		if(fPaveTextRec[i])
+		{
+			delete fPaveTextRec[i]; 
+			fPaveTextRec[i]=NULL;
+		}
+	}
 } // dtor
 
 //__________________________________________________________________
@@ -218,7 +242,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 
       next.Begin();
       while( (hdata = dynamic_cast<TH1* >(next())) ){
-	if (hdata){TString hname=hdata->GetName();
+	if (hdata){
+		TString hname=hdata->GetName();
 	  if(hname.Contains("SDDchargeMap"))continue;
 	  if(hname.Contains("SDDDDLPattern"))continue;
 	  if(hname.Contains("SDDEventSize"))continue;
@@ -281,11 +306,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      Int_t layer1=0;
 	      if(hname.Contains("3"))layer1=0;
 	      else  if(hname.Contains("4"))layer1=1;
-	      TH2* htemp=dynamic_cast<TH2*>(hdata);
-	      if(htemp){
-		hlayer[layer1]=(TH2*)htemp->Clone();
+	      if(dynamic_cast<TH2*>(hdata)){
+		hlayer[layer1]=(TH2*)((dynamic_cast<TH2*>(hdata))->Clone());
 		hlayer[layer1]->SetName(Form("%s_copy",hname.Data()));
-		//hlayer[layer1]->RebinX(2);
 		int modmay=hlayer[layer1]->GetNbinsY();
 		TH1D* hproj= hlayer[layer1]->ProjectionY();
 		Double_t ladcontent=0;
@@ -299,8 +322,10 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      }//end if htemp
 	    }//end else entries !=0
 	  }//end check on phiz	      
+		
 	}//end if hdata	
-      }//end while
+      
+	  }//end while
       for(Int_t ii=0;ii<2;ii++)
 	{
 	  filledmodules[ii]=0;
@@ -499,78 +524,76 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
-	TPaveText *pave[2]={0,0};
+	//TPaveText *pave[2]={0,0};
 	next.Begin();
 
-	while( (hdata=dynamic_cast<TH1* >(next())) )
-	  {
+		  for(Int_t lay=0;lay<2; lay++)	  if(fPaveTextRaw[lay]) { delete fPaveTextRaw[lay]; fPaveTextRaw[lay] = NULL; }
+	while( (hdata=dynamic_cast<TH1* >(next())) ) {
 	    if (hdata){
-	      TString hname=hdata->GetName();
-	      if(hname.Contains("SDDphizL3") || hname.Contains("SDDphizL4")){
-		if(hname.Contains("NORM"))continue;
-		//AliInfo("========================================Found histo 11\n");
-		Int_t lay=0;
-		if(hname.Contains("3"))lay=0;
-		else if(hname.Contains("4"))lay=1;
-		pave[lay]=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
-		pave[lay]->AddText(results1.Data());
-		pave[lay]->AddText(results2.Data());
-		pave[lay]->SetFillColor(color);
-		pave[lay]->SetBorderSize(1);
-		pave[lay]->SetLineWidth(1);
-		hdata->GetListOfFunctions()->Add(pave[lay]);
-	      }
-	      else
-		if(hname.Contains("SDDRawDataCheck"))
-		  {
+			TString hname=hdata->GetName();
+			if(hname.Contains("SDDphizL3") || hname.Contains("SDDphizL4")){
+			  if(hname.Contains("NORM"))continue;
+			  //AliInfo("========================================Found histo 11\n");
+			  Int_t lay=0;
+			  if(hname.Contains("3"))lay=0;
+			  else if(hname.Contains("4"))lay=1;
+			  fPaveTextRaw[lay]=new TPaveText(0.3,0.9,0.9,0.99,"NDC");
+				//fPaveTextRaw[lay]->AddText(hname.Data());
+			  fPaveTextRaw[lay]->AddText(results1.Data());
+			  fPaveTextRaw[lay]->AddText(results2.Data());
+			  fPaveTextRaw[lay]->SetFillColor(color);
+			  fPaveTextRaw[lay]->SetBorderSize(1);
+			  fPaveTextRaw[lay]->SetLineWidth(1);
+			  //hdata->GetListOfFunctions()->Add(pave[lay]);
+	      } else if(hname.Contains("SDDRawDataCheck")) {
 		    
-		    //AliInfo("========================================Found histo\n");
-		    ((TH1F*)hdata)->SetBinContent(5,active);
-		    ((TH1F*)hdata)->SetBinContent(6,filled);
-		    ((TH1F*)hdata)->SetBinContent(7,activedriftregion);
-		    ((TH1F*)hdata)->SetBinContent(8,filleddr);
-		    ((TH1F*)hdata)->SetBinContent(9,excluded);
-		    ((TH1F*)hdata)->SetBinContent(10,empty);
-		    ((TH1F*)hdata)->SetBinContent(11,excludeddriftregion);
-		    ((TH1F*)hdata)->SetBinContent(12,emptydr);
-		    ((TH1F*)hdata)->SetBinContent(13,exactive);
-		    ((TH1F*)hdata)->SetBinContent(14,emptydiff);
-		    ((TH1F*)hdata)->SetBinContent(15,exactivedriftregion);
-		    ((TH1F*)hdata)->SetBinContent(16,emptydrdiff);
+			  //AliInfo("========================================Found histo\n");
+			  ((TH1F*)hdata)->SetBinContent(5,active);
+			  ((TH1F*)hdata)->SetBinContent(6,filled);
+			  ((TH1F*)hdata)->SetBinContent(7,activedriftregion);
+			  ((TH1F*)hdata)->SetBinContent(8,filleddr);
+			  ((TH1F*)hdata)->SetBinContent(9,excluded);
+			  ((TH1F*)hdata)->SetBinContent(10,empty);
+			  ((TH1F*)hdata)->SetBinContent(11,excludeddriftregion);
+			  ((TH1F*)hdata)->SetBinContent(12,emptydr);
+			  ((TH1F*)hdata)->SetBinContent(13,exactive);
+			  ((TH1F*)hdata)->SetBinContent(14,emptydiff);
+			  ((TH1F*)hdata)->SetBinContent(15,exactivedriftregion);
+			  ((TH1F*)hdata)->SetBinContent(16,emptydrdiff);
 		    
-		    //layer 3
-		    ((TH1F*)hdata)->SetBinContent(19,activemoduleperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(20,filledmodules[0]);
-		    ((TH1F*)hdata)->SetBinContent(21,activedrperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(22,filleddriftregion[0]);
-		    ((TH1F*)hdata)->SetBinContent(23,excludedmoduleperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(24,emptymodules[0]);
-		    ((TH1F*)hdata)->SetBinContent(25,excludeddrperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(26,emptydriftregion[0]);
-		    ((TH1F*)hdata)->SetBinContent(27,exactivemoduleperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(28,emptyactivemoduleperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(29,exactivedrperlayer[0]);
-		    ((TH1F*)hdata)->SetBinContent(30,emptyactivedrperlayer[0]);
+			  //layer 3
+			  ((TH1F*)hdata)->SetBinContent(19,activemoduleperlayer[0]);
+			  ((TH1F*)hdata)->SetBinContent(20,filledmodules[0]);
+			  ((TH1F*)hdata)->SetBinContent(21,activedrperlayer[0]);
+			  ((TH1F*)hdata)->SetBinContent(22,filleddriftregion[0]);
+			  ((TH1F*)hdata)->SetBinContent(23,excludedmoduleperlayer[0]);
+			  ((TH1F*)hdata)->SetBinContent(24,emptymodules[0]);
+			  ((TH1F*)hdata)->SetBinContent(25,excludeddrperlayer[0]);
+			  ((TH1F*)hdata)->SetBinContent(26,emptydriftregion[0]);
+			  ((TH1F*)hdata)->SetBinContent(27,exactivemoduleperlayer[0]);
+			  ((TH1F*)hdata)->SetBinContent(28,emptyactivemoduleperlayer[0]);
+			  ((TH1F*)hdata)->SetBinContent(29,exactivedrperlayer[0]);
+			  ((TH1F*)hdata)->SetBinContent(30,emptyactivedrperlayer[0]);
 		    
-		    //layer 4
-		    ((TH1F*)hdata)->SetBinContent(33,activemoduleperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(34,filledmodules[1]);
-		    ((TH1F*)hdata)->SetBinContent(35,activedrperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(36,filleddriftregion[1]);
-		    ((TH1F*)hdata)->SetBinContent(37,excludedmoduleperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(38,emptymodules[1]);
-		    ((TH1F*)hdata)->SetBinContent(39,excludeddrperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(40,emptydriftregion[1]);
-		    ((TH1F*)hdata)->SetBinContent(41,exactivemoduleperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(42,emptyactivemoduleperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(43,exactivedrperlayer[1]);
-		    ((TH1F*)hdata)->SetBinContent(44,emptyactivedrperlayer[1]);
-		    hdata->GetListOfFunctions()->Add(pave[0]);
-		    //break; 
-		  }
-	    }//if hdata
+			  //layer 4
+			  ((TH1F*)hdata)->SetBinContent(33,activemoduleperlayer[1]);
+			  ((TH1F*)hdata)->SetBinContent(34,filledmodules[1]);
+			  ((TH1F*)hdata)->SetBinContent(35,activedrperlayer[1]);
+			  ((TH1F*)hdata)->SetBinContent(36,filleddriftregion[1]);
+			  ((TH1F*)hdata)->SetBinContent(37,excludedmoduleperlayer[1]);
+			  ((TH1F*)hdata)->SetBinContent(38,emptymodules[1]);
+			  ((TH1F*)hdata)->SetBinContent(39,excludeddrperlayer[1]);
+			  ((TH1F*)hdata)->SetBinContent(40,emptydriftregion[1]);
+			  ((TH1F*)hdata)->SetBinContent(41,exactivemoduleperlayer[1]);
+			  ((TH1F*)hdata)->SetBinContent(42,emptyactivemoduleperlayer[1]);
+			  ((TH1F*)hdata)->SetBinContent(43,exactivedrperlayer[1]);
+			  ((TH1F*)hdata)->SetBinContent(44,emptyactivedrperlayer[1]);
+			  //hdata->GetListOfFunctions()->Add(pave[0]);
+			  //break; 
+			}
+		}//if hdata
 	    
-	  }//end while 
+	}//end while 
 	
       }//end else 
       delete hmodule;
@@ -974,8 +997,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
-	TPaveText *pave[2]={0,0};
+	//TPaveText *pave[2]={0,0};
 	next.Begin();
+		  for(Int_t lay=0;lay<2; lay++)	  if(fPaveTextRec[lay]) { delete fPaveTextRec[lay]; fPaveTextRec[lay] = NULL; }
 
 	while( (hdata=dynamic_cast<TH1* >(next())) )
 	  {
@@ -987,13 +1011,13 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		Int_t lay=0;
 		if(hname.Contains("3"))lay=0;
 		else if(hname.Contains("4"))lay=1;
-		pave[lay]=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
-		pave[lay]->AddText(results1.Data());
-		pave[lay]->AddText(results2.Data());
-		pave[lay]->SetFillColor(color);
-		pave[lay]->SetBorderSize(1);
-		pave[lay]->SetLineWidth(1);
-		hdata->GetListOfFunctions()->Add(pave[lay]);
+		fPaveTextRec[lay]=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+		fPaveTextRec[lay]->AddText(results1.Data());
+		fPaveTextRec[lay]->AddText(results2.Data());
+		fPaveTextRec[lay]->SetFillColor(color);
+		fPaveTextRec[lay]->SetBorderSize(1);
+		fPaveTextRec[lay]->SetLineWidth(1);
+		//hdata->GetListOfFunctions()->Add(pave[lay]);
 	      }
 	      else
 		if(hname.Contains("SDDRecPointCheck"))
@@ -1040,7 +1064,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    ((TH1F*)hdata)->SetBinContent(44,emptyactivemoduleperlayer[1]);
 		    ((TH1F*)hdata)->SetBinContent(45,exactivedrperlayer[1]);
 		    ((TH1F*)hdata)->SetBinContent(46,emptyactivedrperlayer[1]);
-		    hdata->GetListOfFunctions()->Add(pave[0]);
+		    //hdata->GetListOfFunctions()->Add(pave[0]);
 		    
 		  }
 	    }//if hadata
@@ -1196,6 +1220,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		}//end adc counts bindistribution
 	      }//end entries !=0
+			
 	    }//end hdata
 	  }//end while
 	}//end else
@@ -1207,9 +1232,6 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
   }//end switch
   
   fCalibration=NULL;
-  if(hdata) delete hdata;
-
-
   return sddQACheckerValue;	
 }
 
@@ -1252,9 +1274,8 @@ Bool_t  AliITSQASDDChecker::MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_
 {
   //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used
   //
-  Bool_t rval=kFALSE;
-  fImage=(TCanvas**)AliQAChecker::Instance()->GetDetQAChecker(0)->GetImage();
-
+	Bool_t rval=kFALSE;
+    fImage=(TCanvas**)AliQAChecker::Instance()->GetDetQAChecker(0)->GetImage();
   switch(task)
     {
     case AliQAv1::kRAWS:{
@@ -1282,66 +1303,82 @@ Bool_t AliITSQASDDChecker::MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 {
   // MakeSDDRawsImage: raw data QA plots
 
-    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
-      //printf("-------------------------> %i \n", esIndex);
-      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
-          {//printf ("Nothing for %s \n", AliRecoParam::GetEventSpecieName(esIndex));
-	 continue;
-	}
-      else{
-	const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
-	if ( !fImage[esIndex] ) {
-	  fImage[esIndex] = new TCanvas(title, title,1280,980) ;
-	}
-	
-	fImage[esIndex]->Clear() ; 
-	fImage[esIndex]->SetTitle(title) ; 
-	fImage[esIndex]->cd();
- 
-	TPaveText someText(0.015, 0.015, 0.98, 0.98);
-	someText.AddText(title);
-	someText.Draw(); 
-	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
-	fImage[esIndex]->Clear() ; 
-	Int_t nx =2;//TMath::Nint(TMath::Sqrt(nImages));//2
-	Int_t ny =3;//nx  ; //2
-	// if (nx < TMath::Sqrt(nImages))
-	// ny++ ;  
-	fImage[esIndex]->Divide(nx, ny) ; 
-	TIter nexthist(list[esIndex]) ; 
-	TH1* hist = NULL ;
-	Int_t npad = 1 ; 
-	fImage[esIndex]->cd(npad); 
-	fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
-	while ( (hist=static_cast<TH1*>(nexthist())) ) {
-	  //gPad=fImage[esIndex]->cd(npad)->GetPad(npad);
-	  TString cln(hist->ClassName()) ; 
-	  if ( ! cln.Contains("TH") )
-	    continue ;
+	for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+		//printf("-------------------------> %i \n", esIndex);
+		if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0)  {
+			//printf ("Nothing for %s \n", AliRecoParam::GetEventSpecieName(esIndex));
+			continue;
+		} else {
+			const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
+			if ( !fImage[esIndex] ) {
+				fImage[esIndex] = new TCanvas(title, title,1280,980) ;
+			}
+			fImage[esIndex]->Clear() ; 
+			fImage[esIndex]->SetTitle(title) ; 
+			fImage[esIndex]->cd();
+			fPaveText[esIndex] = new TPaveText(0.015, 0.015, 0.98, 0.98);
+			fPaveText[esIndex]->AddText(title);
+			fPaveText[esIndex]->Draw(); 
+			fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+			fImage[esIndex]->Clear() ; 
+			Int_t nx =2;//TMath::Nint(TMath::Sqrt(nImages));//2
+			Int_t ny =3;//nx  ; //2
+			// if (nx < TMath::Sqrt(nImages))
+			// ny++ ;  
+			fImage[esIndex]->Divide(nx, ny) ; 
+			TIter nexthist(list[esIndex]) ; 
+			Int_t npad = 1 ; 
+			fImage[esIndex]->cd(npad); 
+			fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
+			Int_t nhist = 0;
+			while ( 1 ) {
+				TH1* hist = static_cast<TH1*>(nexthist());
+				if(hist == NULL) break;
+				nhist++;
+				TString hname(hist->GetName());
+
+				//gPad=fImage[esIndex]->cd(npad)->GetPad(npad);
+				TString cln(hist->ClassName()) ; 
+				if ( ! cln.Contains("TH") )
+					continue ;
 	  
-	  if(hist->TestBit(AliQAv1::GetImageBit())) {
-	    hist->GetXaxis()->SetTitleSize(0.02);
-	    hist->GetYaxis()->SetTitleSize(0.02);
-	    hist->GetXaxis()->SetLabelSize(0.02);
-	    hist->GetYaxis()->SetLabelSize(0.02);
-	    if(cln.Contains("TH2"))
-	      {
-		gPad->SetRightMargin(0.15);
-		gPad->SetLeftMargin(0.05);
-		hist->SetStats(0);
-		hist->SetOption("colz") ;
-		//hist->GetListOfFunctions()->FindObject("palette")->SetLabelSize(0.025);
-		//gPad->Update();
-	      }
-	    hist->DrawCopy() ; 
-	    fImage[esIndex]->cd(++npad) ; 
-	    fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
-	  }
+				if(hist->TestBit(AliQAv1::GetImageBit())) {
+					hist->GetXaxis()->SetTitleSize(0.04);
+					hist->GetYaxis()->SetTitleSize(0.04);
+					hist->GetXaxis()->SetLabelSize(0.02);
+					hist->GetYaxis()->SetLabelSize(0.02);
+					if(cln.Contains("TH2")) {
+						gPad->SetRightMargin(0.15);
+						gPad->SetLeftMargin(0.05);
+						hist->SetStats(0);
+						hist->SetOption("box") ;
+
+						////hist->GetListOfFunctions()->FindObject("palette")->SetLabelSize(0.025);
+						//gPad->Update();
+					}
+					if(hname.Contains("SDDphizL3")) hist->GetListOfFunctions()->Add(fPaveTextRaw[0]);
+					if(hname.Contains("SDDphizL4")) hist->GetListOfFunctions()->Add(fPaveTextRaw[1]);
+					hist->DrawCopy(); 
+					fImage[esIndex]->cd(++npad) ; 
+					fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
+					if(hname.Contains("SDDphizL3")) { 
+						hist->GetListOfFunctions()->Clear(); 
+						hist->GetListOfFunctions()->Delete();
+						delete fPaveTextRaw[0];
+						fPaveTextRaw[0] = NULL;
+					}
+					if(hname.Contains("SDDphizL4")) {
+						hist->GetListOfFunctions()->Clear(); 
+						hist->GetListOfFunctions()->Delete();
+						delete fPaveTextRaw[1];
+						fPaveTextRaw[1] = NULL;
+					}
+				} 
+			}
+			fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+		}
 	}
-	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
-      }
-    }
-   return kTRUE;
+	return kTRUE;
 }
 
 
@@ -1386,12 +1423,13 @@ Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TAS
         TString cln(hist->ClassName()) ;
 
 	TString hname(hist->GetName());
-	//printf("=====================> Class name %s \n",cln.Data()); 
+		  
+		  //printf("=====================> Class name %s \n",cln.Data()); 
         if ( ! cln.Contains("TH") )
           continue ;
         if(hist->TestBit(AliQAv1::GetImageBit())) {
-	    hist->GetXaxis()->SetTitleSize(0.02);
-	    hist->GetYaxis()->SetTitleSize(0.02);
+	    hist->GetXaxis()->SetTitleSize(0.04);
+	    hist->GetYaxis()->SetTitleSize(0.04);
 	    hist->GetXaxis()->SetLabelSize(0.02);
 	    hist->GetYaxis()->SetLabelSize(0.02);
 	  if(cln.Contains("TH1"))
@@ -1405,18 +1443,31 @@ Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TAS
 	      gPad->SetRightMargin(0.15);
 	      gPad->SetLeftMargin(0.05);
 	      hist->SetStats(0);
-	      hist->SetOption("colz") ;
-	      //	      TPaletteAxis *paletta =(TPaletteAxis*)hist->GetListOfFunctions()->FindObject("palette");
+	      hist->SetOption("box") ;
+	      ////	      TPaletteAxis *paletta =(TPaletteAxis*)hist->GetListOfFunctions()->FindObject("palette");
 	      //paletta->SetLabelSize(0.025);
 	      //gPad->Update(); 
 	    }
-	  hist->DrawCopy();
-          fImage[esIndex]->cd(++npad) ; 
-	  fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
-        }
+			if(hname.Contains("SDDModPatternL3RP")) hist->GetListOfFunctions()->Add(fPaveTextRaw[0]);
+			if(hname.Contains("SDDModPatternL4RP")) hist->GetListOfFunctions()->Add(fPaveTextRaw[1]);
+			hist->DrawCopy(); 
+			fImage[esIndex]->cd(++npad) ; 
+			fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
+			if(hname.Contains("SDDModPatternL3RP")) { 
+				hist->GetListOfFunctions()->Clear(); 
+				hist->GetListOfFunctions()->Delete();
+				delete fPaveTextRec[0];
+				fPaveTextRec[0] = NULL;
+			}
+			if(hname.Contains("SDDModPatternL4RP")) {
+				hist->GetListOfFunctions()->Clear(); 
+				hist->GetListOfFunctions()->Delete();
+				delete fPaveTextRec[1];
+				fPaveTextRec[1] = NULL;
+			}
+       }
       }
       fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
     }
-    // }  
    return kTRUE;
 }
