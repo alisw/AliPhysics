@@ -14,10 +14,10 @@ class AliEMCALGeometry;
 class AliVCluster;
 class AliAnalysisTaskEMCALClusterizeFast;
 class TParticle;
-class MyHeaderObj;
-class MyConversionObj;
-class MyClusterObj;
-class MyCellObj;
+class AliPhotonHeaderObj;
+class AliPhotonConvObj;
+class AliPhotonClusterObj;
+class AliPhotonCellObj;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -105,13 +105,13 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   AliESDtrackCuts                       *fPrTrCuts;               // primary track cuts
   TObjArray                             *fSelTracks;             //!pointer to selected inclusive tracks
   TObjArray                             *fSelPrimTracks;         //!pointer to selected primary tracks
-  TClonesArray                          *fPhotConvArray;         //!array of MyConversionObj
-  TClonesArray                          *fMyClusts;              //!array of MyClusterObj
-  TClonesArray                          *fMyAltClusts;           //!array of MyClusterObj from the alternative clusterizer
-  TClonesArray                          *fMyCells;               //!array of MyCellObj
-  TClonesArray                          *fMyTracks;              //!array of MyTrackObj
-  TClonesArray                          *fMyMcParts;             //!array of MyMcPartObj
-  MyHeaderObj                           *fHeader;                //!
+  TClonesArray                          *fPhotConvArray;         //!array of AliPhotonConvObj
+  TClonesArray                          *fMyClusts;              //!array of AliPhotonClusterObj
+  TClonesArray                          *fMyAltClusts;           //!array of AliPhotonClusterObj from the alternative clusterizer
+  TClonesArray                          *fMyCells;               //!array of AliPhotonCellObj
+  TClonesArray                          *fMyTracks;              //!array of AliPhotonTrackObj
+  TClonesArray                          *fMyMcParts;             //!array of AliPhotonMcPartObj
+  AliPhotonHeaderObj                    *fHeader;                //!
   TRefArray                             *fCaloClusters;          //!pointer to EMCal clusters
   TClonesArray                          *fCaloClustersNew;       //!pointer to EMCal clusters v2
   AliESDCaloCells                       *fEMCalCells;            //!pointer to EMCal cells
@@ -154,12 +154,12 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
 
 #endif
 
-#ifndef MyObjs_h
-#define MyObjs_h
+#ifndef AliPhotonObjs_h
+#define AliPhotonObjs_h
 
-class MyHeaderObj : public TObject
+class AliPhotonHeaderObj : public TObject
 {
-  public: MyHeaderObj() :
+  public: AliPhotonHeaderObj() :
         TObject(), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
         fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0)  {;}
   public:
@@ -174,12 +174,12 @@ class MyHeaderObj : public TObject
   Int_t         fNClus;
   Int_t         fNCells;
 
-  ClassDef(MyHeaderObj,2)
+  ClassDef(AliPhotonHeaderObj,2)
 };
 
-class MyConversionObj : public TObject
+class AliPhotonConvObj : public TObject
 {
-  public: MyConversionObj() : 
+  public: AliPhotonConvObj() : 
         TObject(), fPt(0), fEta(0), fPhi(0), fVR(0), fVEta(0), fVPhi(0), fMass(0), fMcLabel(-1),
                fNegPt(0), fNegEta(0), fNegPhi(0), fNegDedx(0), fNegMcLabel(-1),
                fPosPt(0), fPosEta(0), fPosPhi(0), fPosDedx(0), fPosMcLabel(-1) {;}
@@ -207,12 +207,12 @@ class MyConversionObj : public TObject
   Double32_t    fPosDedx;             //[0,0,16] if correctly filled, should be <50 MeV
   Short_t       fPosMcLabel;          //corresponding MC label
 
-  ClassDef(MyConversionObj,1) // conversion class
+  ClassDef(AliPhotonConvObj,1) // conversion class
 
 };
-class MyClusterObj : public TObject
+class AliPhotonClusterObj : public TObject
 {
-  public: MyClusterObj() : 
+  public: AliPhotonClusterObj() : 
   TObject(), fE(0), fEt(0), fR(0), fEta(0), fPhi(0), fN(0),fEmax(0),fTmax(0), fIdmax(0), fEcross(0),fDisp(-1), 
         fM20(-1), fM02(-1),fTrDEta(0), fTrDPhi(0), fTrEp(0), fTrDedx(0), fTrIso01(0), fTrIso02(0), fTrIso03(0), fTrIso04(0), 
         fTrPhiBand01(0), fTrPhiBand02(0), fTrPhiBand03(0), fTrPhiBand04(0), fCellsAbsId(""),fMcLabel(-1)
@@ -248,13 +248,13 @@ class MyClusterObj : public TObject
   
   
   
-  ClassDef(MyClusterObj,6) // cluster class
+  ClassDef(AliPhotonClusterObj,6) // cluster class
 
 };
 
-class MyCellObj : public TObject
+class AliPhotonCellObj : public TObject
 {
-  public: MyCellObj() : 
+  public: AliPhotonCellObj() : 
         TObject(), fAbsID(-1), fE(0), fEt(0), fEta(0), fPhi(0), fTime(0)
         {;}
  public:
@@ -267,13 +267,13 @@ class MyCellObj : public TObject
   
   
   
-  ClassDef(MyCellObj,1) // cell class
+  ClassDef(AliPhotonCellObj,1) // cell class
 
 };
 
-class MyTrackObj : public TObject
+class AliPhotonTrackObj : public TObject
 {
-  public: MyTrackObj() :
+  public: AliPhotonTrackObj() :
         TObject(), fPt(0), fEta(0), fPhi(0), fDedx(0), fCharge(0), fMcLabel(-1) {;}
   public:
   Double32_t fPt;
@@ -283,12 +283,12 @@ class MyTrackObj : public TObject
   Short_t    fCharge;
   Short_t    fMcLabel;
 
-  ClassDef(MyTrackObj,3)
+  ClassDef(AliPhotonTrackObj,3)
 };
 
-class MyMcPartObj : public TObject
+class AliPhotonMcPartObj : public TObject
 {
-  public: MyMcPartObj() :
+  public: AliPhotonMcPartObj() :
         TObject(), fLabel(-1), fPdg(0), fPt(0), fEta(0), fPhi(0), 
         fVR(0), fVEta(0), fVPhi(0), fMother(-1)  {;}
   public:
@@ -302,7 +302,7 @@ class MyMcPartObj : public TObject
   Double32_t fVPhi;
   Short_t    fMother;
 
-  ClassDef(MyMcPartObj,1)
+  ClassDef(AliPhotonMcPartObj,1)
 };
 
 #endif

@@ -104,25 +104,25 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   
   fSelPrimTracks = new TObjArray();
   
-  if (TClass::GetClass("MyHeaderObj"))
-      TClass::GetClass("MyHeaderObj")->IgnoreTObjectStreamer();
-  fHeader = new MyHeaderObj;
+  if (TClass::GetClass("AliPhotonHeaderObj"))
+      TClass::GetClass("AliPhotonHeaderObj")->IgnoreTObjectStreamer();
+  fHeader = new AliPhotonHeaderObj;
 
-  if (TClass::GetClass("MyConversionObj"))
-      TClass::GetClass("MyConversionObj")->IgnoreTObjectStreamer();
-  fPhotConvArray = new TClonesArray("MyConversionObj");
+  if (TClass::GetClass("AliPhotonConvObj"))
+      TClass::GetClass("AliPhotonConvObj")->IgnoreTObjectStreamer();
+  fPhotConvArray = new TClonesArray("AliPhotonConvObj");
   
-  if (TClass::GetClass("MyClusterObj"))
-      TClass::GetClass("MyClusterObj")->IgnoreTObjectStreamer();
-  fMyClusts = new TClonesArray("MyClusterObj");
+  if (TClass::GetClass("AliPhotonClusterObj"))
+      TClass::GetClass("AliPhotonClusterObj")->IgnoreTObjectStreamer();
+  fMyClusts = new TClonesArray("AliPhotonClusterObj");
   
-  if (TClass::GetClass("MyCellObj"))
-      TClass::GetClass("MyCellObj")->IgnoreTObjectStreamer();
-  fMyCells = new TClonesArray("MyCellObj");
+  if (TClass::GetClass("AliPhotonCellObj"))
+      TClass::GetClass("AliPhotonCellObj")->IgnoreTObjectStreamer();
+  fMyCells = new TClonesArray("AliPhotonCellObj");
   
-  if (TClass::GetClass("MyTrackObj"))
-      TClass::GetClass("MyTrackObj")->IgnoreTObjectStreamer();
-  fMyTracks = new TClonesArray("MyTrackObj");
+  if (TClass::GetClass("AliPhotonTrackObj"))
+      TClass::GetClass("AliPhotonTrackObj")->IgnoreTObjectStreamer();
+  fMyTracks = new TClonesArray("AliPhotonTrackObj");
 
   if (fClusterizer || fIsTrain){
     if(fClusterizer)
@@ -133,15 +133,15 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
       else
 	fCaloClustersName = "EmcalClustersv2";
     }
-    if (TClass::GetClass("MyClusterObj"))
-	TClass::GetClass("MyClusterObj")->IgnoreTObjectStreamer();
-    fMyAltClusts = new TClonesArray("MyClusterObj");
+    if (TClass::GetClass("AliPhotonClusterObj"))
+	TClass::GetClass("AliPhotonClusterObj")->IgnoreTObjectStreamer();
+    fMyAltClusts = new TClonesArray("AliPhotonClusterObj");
   }
   cout<<fCaloClustersName<<endl;
   if(fIsMC){
-    if (TClass::GetClass("MyMcPartObj"))
-        TClass::GetClass("MyMcPartObj")->IgnoreTObjectStreamer();
-    fMyMcParts = new TClonesArray("MyMcPartObj");
+    if (TClass::GetClass("AliPhotonMcPartObj"))
+        TClass::GetClass("AliPhotonMcPartObj")->IgnoreTObjectStreamer();
+    fMyMcParts = new TClonesArray("AliPhotonMcPartObj");
   }
  
   fCaloClusters = new TRefArray();
@@ -378,7 +378,7 @@ void AliAnalysisTaskEMCALPhoton::FindConversions()
       vecpos.Phi();
     if(v0Phi<0)
       v0Phi+=TMath::TwoPi();
-    MyConversionObj *myconv = static_cast<MyConversionObj*>(fPhotConvArray->New(iconv++));
+    AliPhotonConvObj *myconv = static_cast<AliPhotonConvObj*>(fPhotConvArray->New(iconv++));
     myconv->fPt = photLV.Pt();
     myconv->fEta = photLV.Eta();
     myconv->fPhi = convPhi;
@@ -419,7 +419,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
   Int_t mcel = 0;
   for(Int_t icell = 0; icell<ncells; icell++){
     Int_t absID = TMath::Abs(fEMCalCells->GetCellNumber(icell));
-    MyCellObj *mycell = static_cast<MyCellObj*>(fMyCells->New(mcel++));
+    AliPhotonCellObj *mycell = static_cast<AliPhotonCellObj*>(fMyCells->New(mcel++));
     Float_t eta=-1, phi=-1;
     if(!fGeom){
       cout<<"+++fGeom not found! MyCells branch will not be filled for this event!+++\n";
@@ -457,7 +457,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
     clus->GetPosition(pos);
     TVector3 cpos(pos);
     TString cellsAbsID;
-    MyClusterObj *myclus = static_cast<MyClusterObj*>(fMyClusts->New(mcl++));
+    AliPhotonClusterObj *myclus = static_cast<AliPhotonClusterObj*>(fMyClusts->New(mcl++));
     myclus->fE       = clus->E();
     myclus->fEt      = clus->E()*TMath::Sin(cpos.Theta());
     myclus->fR       = cpos.Perp();
@@ -533,7 +533,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyAltClusters()
     clus->GetPosition(pos);
     TVector3 cpos(pos);
     TString cellsAbsID;
-    MyClusterObj *myclus = static_cast<MyClusterObj*>(fMyAltClusts->New(mcl++));
+    AliPhotonClusterObj *myclus = static_cast<AliPhotonClusterObj*>(fMyAltClusts->New(mcl++));
     myclus->fE       = clus->E();
     myclus->fEt      = clus->E()*TMath::Sin(cpos.Theta());
     myclus->fR       = cpos.Perp();
@@ -594,7 +594,7 @@ void  AliAnalysisTaskEMCALPhoton::FillHighPtTracks()
       continue;
     if(track->Pt()<3)
       continue;
-    MyTrackObj *mtr = static_cast<MyTrackObj*>(fMyTracks->New(imtr++));
+    AliPhotonTrackObj *mtr = static_cast<AliPhotonTrackObj*>(fMyTracks->New(imtr++));
     mtr->fPt = track->Pt();
     mtr->fEta = track->Eta();
     mtr->fPhi = track->Phi();
@@ -643,7 +643,7 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
       continue;
     bool checkIfAlreadySaved = false;
     for(Int_t imy=0;imy<fMyMcParts->GetEntries();imy++){
-      MyMcPartObj *mymc = static_cast<MyMcPartObj*>(fMyMcParts->At(imy));
+      AliPhotonMcPartObj *mymc = static_cast<AliPhotonMcPartObj*>(fMyMcParts->At(imy));
       if(!mymc)
 	continue;
       if(mymc->fLabel == iTrack)
@@ -671,7 +671,7 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(TParticle *mcP, Int_t ipart, Int_t 
   if(!mcP)
     return;
   TVector3 vmcv(mcP->Vx(),mcP->Vy(), mcP->Vz());
-  MyMcPartObj *mcp = static_cast<MyMcPartObj*>(fMyMcParts->New(ipart));
+  AliPhotonMcPartObj *mcp = static_cast<AliPhotonMcPartObj*>(fMyMcParts->New(ipart));
   mcp->fLabel = itrack ;
   mcp->fPdg = mcP->GetPdgCode() ;
   mcp->fPt = mcP->Pt() ;

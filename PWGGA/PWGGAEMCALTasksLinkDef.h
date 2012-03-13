@@ -30,5 +30,11 @@
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliAnalysisTaskTrgContam+;
 #pragma link C++ class AliAnalysisTaskEMCALPhoton+;
+#pragma link C++ class AliPhotonHeaderObj+;        //stand alone obj for isolated photon analysis
+#pragma link C++ class AliPhotonConvObj+;          //same as above
+#pragma link C++ class AliPhotonClusterObj+;       //same as above
+#pragma link C++ class AliPhotonCellObj+;          //same as above
+#pragma link C++ class AliPhotonTrackObj+;         //same as above
+#pragma link C++ class AliPhotonMcPartObj+;        //same as above
 
 #endif
