@@ -25,6 +25,10 @@
 #include <TNamed.h>
 #endif
 
+#ifndef ROOT_TArrayD
+#include <TArrayD.h>
+#endif
+
 template <class X>
 class THnSparseT;
 class TArrayF;
@@ -87,8 +91,8 @@ public:
 
       UInt_t GetVarCode() const { return fCode; }
       UInt_t GetNumberOfBins() const { return fNBins; }
-      const Double_t* GetBinning() const { return fBinning; }
-      Bool_t HasUserDefinedBinning() const { return fBinning != NULL; }
+      const Double_t* GetBinning() const { return fBinning.GetArray(); }
+      Bool_t HasUserDefinedBinning() const { return fBinning.GetArray() != 0; }
       Double_t GetMinimum() const { return fMin; }
       Double_t GetMaximum() const { return fMax; } 
       Int_t IsLogarithmic() const { return fIsLogarithmic; }
@@ -97,7 +101,7 @@ public:
       UInt_t    fNBins;             // Number of bins
       Double_t  fMin;               // Minimum
       Double_t  fMax;               // Maximum
-      Double_t *fBinning;           // User defined binning
+      TArrayD   fBinning;           // User defined binning
       Bool_t    fIsLogarithmic;     // Logarithmic binning
 
       ClassDef(AliHFEvarManager::AliHFEvariable, 1) // HFE variable definition

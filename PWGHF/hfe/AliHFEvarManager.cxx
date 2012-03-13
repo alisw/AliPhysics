@@ -54,10 +54,10 @@ AliHFEvarManager::AliHFEvarManager():
   fContentMC(NULL),
   fWeightFactor(1.),
   fSignalTrack(kTRUE),
-	fWeighting(kFALSE),
+  fWeighting(kFALSE),
   fSignal(NULL),
-	fWeightFactors(NULL),
-	fWeightFactorsFunction(NULL)
+  fWeightFactors(NULL),
+  fWeightFactorsFunction(NULL)
 {
 	//
 	// Dummy constructor
@@ -73,10 +73,10 @@ AliHFEvarManager::AliHFEvarManager(const Char_t *name):
   fContentMC(NULL),
   fWeightFactor(1.),
   fSignalTrack(kTRUE),
-	fWeighting(kFALSE),
+  fWeighting(kFALSE),
   fSignal(NULL),
-	fWeightFactors(NULL),
-	fWeightFactorsFunction(NULL)
+  fWeightFactors(NULL),
+  fWeightFactorsFunction(NULL)
 {
 	//
 	// Default constructor
@@ -93,10 +93,10 @@ AliHFEvarManager::AliHFEvarManager(const AliHFEvarManager &ref):
   fContentMC(NULL),
   fWeightFactor(ref.fWeightFactor),
   fSignalTrack(ref.fSignalTrack),
-	fWeighting(ref.fWeighting),
+  fWeighting(ref.fWeighting),
   fSignal(NULL),
-	fWeightFactors(NULL),
-	fWeightFactorsFunction(NULL)
+  fWeightFactors(NULL),
+  fWeightFactorsFunction(NULL)
 {
   //
   // Copy Constructor
@@ -453,7 +453,7 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable():
   , fNBins(0)
   , fMin(0)
   , fMax(0)
-  , fBinning(NULL)
+  , fBinning()
   , fIsLogarithmic(kFALSE)
 {
   // 
@@ -468,14 +468,14 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const Char_t *name, const Char_
   , fNBins(nBins)
   , fMin(0.)
   , fMax(0.)
-  , fBinning(NULL)
+  , fBinning()
   , fIsLogarithmic(kFALSE)
 {
   // 
   // Default constructor
   //
-  fBinning = new Double_t[nBins+1];
-  memcpy(fBinning, binning, sizeof(Double_t) * (nBins+1));
+  fBinning.Set(nBins+1);
+  memcpy(fBinning.GetArray(), binning, sizeof(Double_t) * (nBins+1));
 }
 
 //_______________________________________________
@@ -485,7 +485,7 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const Char_t *name, const Char_
   , fNBins(nBins)
   , fMin(min)
   , fMax(max)
-  , fBinning(NULL)
+  , fBinning()
   , fIsLogarithmic(isLogarithmic)
 {
   // 
@@ -500,16 +500,12 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const AliHFEvarManager::AliHFEv
   , fNBins(ref.fNBins)
   , fMin(ref.fMin)
   , fMax(ref.fMax)
-  , fBinning(NULL)
+  , fBinning(ref.fBinning)
   , fIsLogarithmic(ref.fIsLogarithmic)
 {
   // 
   // Copy constructor
   //
-  if(ref.fBinning){
-    fBinning = new Double_t[ref.fNBins + 1];
-    memcpy(fBinning, ref.fBinning, sizeof(Double_t) * (ref.fNBins + 1));
-  }
 }
 
 //_______________________________________________
@@ -520,17 +516,7 @@ AliHFEvarManager::AliHFEvariable& AliHFEvarManager::AliHFEvariable::operator=(co
   
   if(&ref != this){
     TNamed::operator=(ref);
-    if(ref.fBinning){
-      if(fNBins != ref.fNBins){
-        // Resize array with binning when necessary
-        if(fBinning) delete fBinning;
-        fBinning = new Double_t[ref.fNBins + 1];
-      }
-      memcpy(fBinning, ref.fBinning, sizeof(Double_t) * (ref.fNBins + 1));
-    } else {
-      if(fBinning) delete fBinning;
-      fBinning = NULL;
-    }
+    fBinning = ref.fBinning;
     fCode = ref.fCode;
     fNBins = ref.fNBins;
     fMax = ref.fMax;
@@ -545,6 +531,5 @@ AliHFEvarManager::AliHFEvariable::~AliHFEvariable(){
   //
   // Destruktor
   //
-  if(fBinning) delete fBinning;
 }
 
