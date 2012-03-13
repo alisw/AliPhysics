@@ -230,7 +230,7 @@ void AliZDCv4::CreateBeamLine()
   // Create the beam line elements
   //
   
-  Double_t zd1, zd2, zCorrDip, zInnTrip, zD1, zD2;
+  Double_t zd1, zd2, zCorrDip, zInnTrip, zD1;
   Double_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
 
   //-- rotation matrices for the legs
