@@ -1,3 +1,4 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TFile.h>
 #include <TString.h>
@@ -16,31 +17,33 @@
 #include <TParameter.h>
 #include <AliCounterCollection.h>
 #include <AliRDHFCuts.h>
+#endif
 
 TString *periodsname;
 
 //read the file and take list and stat
 
-Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root");
-Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root");
+Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", TString dirname="PWG3_D2H_QA");
+Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", TString dirname="PWG3_D2H_QA");
 void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h*/,TCanvas* cpid, Int_t set);
 void TPCBetheBloch(Int_t set);
 
-Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path,TString filename){
+Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path,TString filename, TString dirname){
 
-  TString hstatname="nEntriesQA",dirname="PWG3_D2H_QA", cutobjname="";
+  TString hstatname="nEntriesQA", cutobjname="";
   filename.Prepend(path);
   listname+=partname;
   hstatname+=partname;
 
   TFile* f=new TFile(filename.Data());
-  if(!f){
+  if(!f->IsOpen()){
     cout<<filename.Data()<<" not found"<<endl;
     return kFALSE;
   }
   TDirectoryFile* dir=(TDirectoryFile*)f->Get(dirname);
-  if(!f){
-    cout<<dirname.Data()<<" not found  in "<<filename.Data()<<endl;
+  if(!dir){
+    cout<<dirname.Data()<<" not found in "<<filename.Data()<<endl;
+    f->ls();
     return kFALSE;
   }
 
@@ -60,9 +63,9 @@ Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TSt
   return kTRUE;
 }
 
-Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path,TString filename){
+Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path,TString filename,TString dirname){
 
-  TString hstatname="nEntriesQA",dirname="PWG3_D2H_QA", cutobjname="";
+  TString hstatname="nEntriesQA", cutobjname="";
   filename.Prepend(path);
   listname+=partname;
   hstatname+=partname;
@@ -85,12 +88,12 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
   }
 
   TFile* f=new TFile(filename.Data());
-  if(!f){
+  if(!f->IsOpen()){
     cout<<filename.Data()<<" not found"<<endl;
     return kFALSE;
   }
   TDirectoryFile* dir=(TDirectoryFile*)f->Get(dirname);
-  if(!f){
+  if(!dir){
     cout<<dirname.Data()<<" not found  in "<<filename.Data()<<endl;
     return kFALSE;
   }
@@ -118,13 +121,13 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
 }
 
 //draw "track related" histograms (list "outputTrack")
-void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE){
+void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE, TString suffixdir="",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputTrack",name1="",name2="",path2="",filename=/*"AnalysisResults.root"*/"PWG3histograms.root",filename2="PWG3histograms.root";
+  TString listname="outputTrack",name1="",name2="",path2="",filename2="PWG3histograms.root";
   TString tmp="y";
 
   if(superimpose){
@@ -147,8 +150,9 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
 
   TList* list;
   TH1F * hstat;
-
-  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename);
+  TString dirname="PWG3_D2H_QA";
+  dirname+=suffixdir;
+  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,dirname);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
@@ -162,7 +166,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
   TList* llist;
   TH1F* hhstat;
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2);
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,dirname);
     if(!isRead) return;
     if(!llist || !hhstat){
       cout<<":-( null pointers..."<<endl;
@@ -210,15 +214,15 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
       //h->SetMinimum(1);
       h->Draw();
       if(superimpose) 
-{
-        hh->Draw("sames");
-		TCanvas* c2=new TCanvas(Form("c2%s",h->GetName()),h->GetName());
-		c2->cd();
-		c2->SetGrid();
-		hr->Draw();
-		c2->SaveAs(Form("%s%s%s%sRatio.png",c->GetName(),name1.Data(),name2.Data(),textleg.Data()));
+	{
+	  hh->Draw("sames");
+	  TCanvas* c2=new TCanvas(Form("c2%s",h->GetName()),h->GetName());
+	  c2->cd();
+	  c2->SetGrid();
+	  hr->Draw();
+	  c2->SaveAs(Form("%s%s%s%sRatio.png",c->GetName(),name1.Data(),name2.Data(),textleg.Data()));
 
-      }
+	}
     } else {
       h->Draw("htext0");
       if(superimpose)hh->Draw("htext0sames");
@@ -245,10 +249,10 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
 
 //draw "pid related" histograms (list "outputPID")
 //period=-999 to draw the pull instead of the cut
-void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsigma*/,TString textleg="",TString path="./"){
+void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsigma*/,TString textleg="",TString path="./",TString suffixdir="", TString filename="AnalysisResults.root"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
-  gStyle->SetStatColor(0);
+  gStyle->SetOptStat(0);
   gStyle->SetPalette(1);
 
   Int_t period=2 ,set=0;
@@ -263,6 +267,8 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
   }
 
   TString listname="outputPid";
+  TString dirname="PWG3_D2H_QA";
+  dirname+=suffixdir;
 
   TList* list;
   TH1F * hstat;
@@ -273,7 +279,7 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
   Double_t nsigmaTPC[3]={},plimTPC[2]={};
 
   if(mode==1){
-    Bool_t isRead=ReadFileMore(list,hstat,cutobj,listname,partname,path);
+    Bool_t isRead=ReadFileMore(list,hstat,cutobj,listname,partname,path,filename,dirname);
     if(!isRead) return;
     if(!list || !hstat){
       cout<<":-( null pointers..."<<endl;
@@ -292,7 +298,7 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
     aodpid->GetPLimit(plimTPC);
 
   }else{
-    Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+    Bool_t isRead=ReadFile(list,hstat,listname,partname,path,filename,dirname);
     if(!isRead) return;
     if(!list || !hstat){
       cout<<":-( null pointers..."<<endl;
@@ -360,9 +366,22 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
 	cout<<"Histogram "<<i<<" not found"<<endl;
 	continue;
       }
-      h->Sumw2();
-      h->Scale(1./h->Integral("width"));
       TString hname=h->GetName();
+      h->Sumw2();
+      if(h->Integral("width")==0) {cout<<"Empty histogram, skip\n"; continue;}
+      h->Scale(1./h->Integral("width"));
+
+      Double_t maxzaxis=h->GetBinContent(h->GetMaximumBin());
+      Double_t minzaxis=h->GetBinContent(h->GetMinimumBin());
+
+      TH2F* hallzrange=(TH2F*)h->Clone(Form("%swholez",hname.Data()));
+      hallzrange->SetAxisRange(1e-07,maxzaxis,"Z");
+
+      TCanvas* cwholez=new TCanvas(Form("c%swholez",hname.Data()),Form("%s down to lowest z",hname.Data()));
+      cwholez->SetLogz();
+      hallzrange->Draw("colz");
+      cwholez->SaveAs(Form("%swholez.png",h->GetName()));
+      cwholez->SaveAs(Form("%swholez.eps",h->GetName()));
 
       if(hname.Contains("hTOFtimeKaonHyptime")){
 	TCanvas* cz=new TCanvas(Form("c%szoom",hname.Data()),Form("%szoom",hname.Data()));
@@ -379,9 +398,14 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
       TCanvas* c=new TCanvas(Form("c%s",hname.Data()),hname.Data());
       c->SetLogz();
       //c->SetLogx();
+      TCanvas* c2=new TCanvas(Form("c2%s",hname.Data()),hname.Data());
+      c2->SetLogz();
+
       c->cd();
-      
+      h->DrawClone("colz");
+
       if (hname.Contains("Sig") || hname.Contains("sigma"))h->SetAxisRange(-5,5,"Y");
+      c2->cd();
       //if (hname.Contains("TOFtime"))h->SetAxisRange(-1500,1500,"Y");
       h->SetAxisRange(0.,5.,"X");
      
@@ -447,9 +471,13 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
       //write
       c->SaveAs(Form("%s%d.png",h->GetName(),mode));
       c->SaveAs(Form("%s%d.eps",h->GetName(),mode));
+      c2->SaveAs(Form("%s2%d.png",h->GetName(),mode));
+      c2->SaveAs(Form("%s2%d.eps",h->GetName(),mode));
+
       TFile* fout=new TFile(Form("%s%d.root",h->GetName(),mode),"recreate");
       fout->cd();
       c->Write();
+      c2->Write();
     }
   }
 }
@@ -623,13 +651,13 @@ void TPCBetheBloch(Int_t set){
   fout->Close();
 }
 
-void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE){
+void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE,TString suffixdir="",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputCentrCheck",name1="",name2="",path2="",filename=/*"AnalysisResults.root"*/"PWG3histograms.root",filename2="PWG3histograms.root";
+  TString listname="outputCentrCheck",name1="",name2="",path2="",filename2="PWG3histograms.root";
 
   // if(superimpose){
   //   cout<<"Enter the names:\n>";
@@ -672,7 +700,10 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   TList* list;
   TH1F * hstat;
 
-  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path);
+  TString dirname="PWG3_D2H_QA";
+  dirname+=suffixdir;
+
+  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,dirname);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
@@ -687,7 +718,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   TList* llist;
   TH1F* hhstat;
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2);
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,dirname);
     if(!isRead) return;
     if(!llist || !hhstat){
       cout<<":-( null pointers..."<<endl;
@@ -776,7 +807,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   
   listname="countersCentrality";
 
-  isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path);
+  isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,dirname);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
@@ -785,7 +816,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 
 
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2);
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,dirname);
     if(!isRead) return;
     if(!llist || !hhstat){
       cout<<":-( null pointers..."<<endl;
@@ -814,155 +845,108 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     AliCounterCollection* colle=0x0;
     if(superimpose) colle=(AliCounterCollection*)llist->At(i);
     coll->SortRubric("run");//sort by run number
-    TString collname=coll->GetName();
 
-    if(!collname.Contains("Estimator")){
-      if(collname!="trigCounter") { 
-	printf("Unexpected counter named %s. Check! I exit...\n",collname.Data());
-	return;
-      }
-      TString keywords=coll->GetKeyWords("triggertype");
-
-      Int_t nkeys=keywords.CountChar(',')+1;
-
-      TString words[nkeys];
-      for(Int_t k=0;k<nkeys;k++) words[k]="";
-      printf("Keywords: ");
-      Int_t count=0;
-      for(Int_t l=0;l<keywords.Length();l++){
-	if(keywords[l] != ',') words[count]+=keywords[l];
-	else {
-	  printf("%s ",words[count].Data());
-	  count++;
-	}
-      }
-      cout<<endl;
-
-      TH1D** htrig=new TH1D*[nkeys]; //each trigger type in one histogram of counts vs run
-      TH1D** htrignorm=new TH1D*[nkeys]; //normalized to the counts in kAny
-      TCanvas* ctrigfraction=new TCanvas("cvtrigfrac","Fraction of given trigger type vs run",1400,800);
-      TLegend* legtr=new TLegend(0.15,0.5,0.35,0.8);
-      legtr->SetBorderSize(0);
-      legtr->SetFillStyle(0);
-      for(Int_t k=0;k<nkeys;k++){
-	htrig[k]=coll->Get("run",Form("triggertype:%s",words[k].Data()));
-	htrig[k]->SetName(Form("h%s",words[k].Data()));
-	htrig[k]->SetTitle("Trigger type;RUN; counts");
-	htrig[k]->SetMarkerColor(k+1);
-	htrig[k]->SetMarkerStyle(k+20);
-	htrig[k]->Sumw2();
-	legtr->AddEntry(htrig[k],Form("%s",words[k].Data()),"P");
-	//drawings
-	//1) counts of a given trigger over counts in kAny
-	htrignorm[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAny",words[k].Data()));
-	htrignorm[k]->SetTitle("Trigger type over ANY trigger;RUN; counts/countsANY");
-	htrignorm[k]->Divide(htrig[k],htrig[0],1.,1.,"B");
-	htrignorm[k]->GetXaxis()->SetRangeUser(0,1.1);
-
-	ctrigfraction->cd();
-	if(k>0)htrignorm[k]->Draw("PEsames");
-	else htrignorm[k]->Draw("PE");
-      } 
-
-      ctrigfraction->cd();
-      legtr->Draw();
-    }
-    else{
-      h020=0x0;
-      h2080=0x0;
-      hh020=0x0;
-      hh2080=0x0;
-     
-      hallcntr=0x0; 
-      hhallcntr=0x0; 
-
-      TH1F* hbad=(TH1F*)coll->Get("run",Form("centralityclass:-990_-980"));
-      cvnocnt->cd(i+1);
-      if(hbad) hbad->Draw();
-
-      ccent=new TCanvas(Form("ccent%s",coll->GetName()),Form("Centrality vs Run (%s)",coll->GetName()),1400,800);
-      ccent->Divide(5,3);
+    h020=0x0;
+    h2080=0x0;
+    hh020=0x0;
+    hh2080=0x0;
     
-      TH1F* hh=0x0;
+    hallcntr=0x0; 
+    hhallcntr=0x0; 
 
-      for(Int_t ic=0;ic<8/*ncentr*/;ic++){ //normalizing to 0-80% as a check
+    TH1F* hbad=(TH1F*)coll->Get("run",Form("centralityclass:-990_-980"));
+    cvnocnt->cd(i+1);
+    if(hbad) hbad->Draw();
 
-	TH1F* h=(TH1F*)coll->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
-	h->SetName(Form("h%d%d",i,ic));
-	if(!hallcntr) {
-	  hallcntr=(TH1F*)h->Clone("hallcntr");
-	  hallcntr->Sumw2();
-	} else {
-	  hallcntr->Add(h);
-	}
+    ccent=new TCanvas(Form("ccent%s",coll->GetName()),Form("Centrality vs Run (%s)",coll->GetName()),1400,800);
+    ccent->SetTicky();
+    ccent->Divide(4,2);
+    
+    TH1F* hh=0x0;
 
-	nevents080+=h->Integral();
+    for(Int_t ic=0;ic<8/*ncentr*/;ic++){ //normalizing to 0-80% as a check
 
-	if(superimpose){
-	  hh=(TH1F*)colle->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
-	  hh->SetName(Form("hh%d%d",i,ic));
-	  if(!hhallcntr) {
-	    hhallcntr=(TH1F*)hh->Clone("hhallcntr");
-	    hhallcntr->Sumw2();
-	  }else hhallcntr->Add(hh);
-	  nnevents080+=hh->Integral();
-
-	}
+      TH1F* h=(TH1F*)coll->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
+      h->SetName(Form("h%d%d",i,ic));
+      if(!hallcntr) {
+	hallcntr=(TH1F*)h->Clone("hallcntr");
+	hallcntr->Sumw2();
+      } else {
+	hallcntr->Add(h);
       }
+      
+      nevents080+=h->Integral();
 
-      for(Int_t ic=0;ic<ncentr;ic++){
-
-	TH1F* h=(TH1F*)coll->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
-	h->SetName(Form("h%d%d",i,ic));
-	h->Sumw2();
-
-	if(ic>=0 && ic<=1){ //0-20
-	  if(!h020) {
-	    h020=(TH1F*)h->Clone(Form("h020%s",coll->GetName()));
-	    h020->SetTitle(Form("Centrality 0-20 %s",coll->GetName()));
-	    if(superimpose){
-	      hh020=(TH1F*)hh->Clone(Form("hh020%s",coll->GetName()));
-	      hh020->SetTitle(Form("Centrality 0-20 %s",coll->GetName()));
-	    }
-	  }
-	  else {
-	    h020->Add(h);
-	    if(superimpose)hh020->Add(hh);
-	  }
-	}
-	if(ic>=2 && ic<=7){ //20-80
-	  if(!h2080) {
-	    h2080=(TH1F*)h->Clone(Form("h2080%s",coll->GetName()));
-	    h2080->SetTitle(Form("Centrality 20-80 %s",coll->GetName()));
-	    if(superimpose){
-	      hh2080=(TH1F*)hh->Clone(Form("hh2080%s",coll->GetName()));
-	      hh2080->SetTitle(Form("Centrality 20-80 %s",coll->GetName()));
-	    }
-	  }
-	  else {
-	    h2080->Add(h);
-	    if(superimpose)hh2080->Add(hh);
-	  }
-
-	}
-
-	h->Divide(hallcntr);
-
-	ccent->cd(ic+1);
-	h->GetYaxis()->SetRangeUser(0.,0.15);
-	h->DrawClone();
-	/*
-	  if(ic==0&&i==0){
-	  spare->cd();
-	  h->Draw();
-	  }
-	*/
-	// ccent->cd(1);
-	// h->SetLineColor(ic+1);
-	// if(ic==0)h->DrawClone();
-	// else h->DrawClone("sames");
+      if(superimpose){
+	hh=(TH1F*)colle->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
+	hh->SetName(Form("hh%d%d",i,ic));
+	if(!hhallcntr) {
+	  hhallcntr=(TH1F*)hh->Clone("hhallcntr");
+	  hhallcntr->Sumw2();
+	}else hhallcntr->Add(hh);
+	nnevents080+=hh->Integral();
+	
       }
     }
+
+    for(Int_t ic=0;ic<ncentr;ic++){
+
+      TH1F* h=(TH1F*)coll->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
+      h->SetName(Form("h%d%d",i,ic));
+      h->Sumw2();
+      
+      if(ic>=0 && ic<=1){ //0-20
+	if(!h020) {
+	  h020=(TH1F*)h->Clone(Form("h020%s",coll->GetName()));
+	  h020->SetTitle(Form("Centrality 0-20 %s",coll->GetName()));
+	  if(superimpose){
+	    hh020=(TH1F*)hh->Clone(Form("hh020%s",coll->GetName()));
+	    hh020->SetTitle(Form("Centrality 0-20 %s",coll->GetName()));
+	  }
+	}
+	else {
+	  h020->Add(h);
+	  if(superimpose)hh020->Add(hh);
+	}
+      }
+      if(ic>=2 && ic<=7){ //20-80
+	if(!h2080) {
+	  h2080=(TH1F*)h->Clone(Form("h2080%s",coll->GetName()));
+	  h2080->SetTitle(Form("Centrality 20-80 %s",coll->GetName()));
+	  if(superimpose){
+	    hh2080=(TH1F*)hh->Clone(Form("hh2080%s",coll->GetName()));
+	    hh2080->SetTitle(Form("Centrality 20-80 %s",coll->GetName()));
+	  }
+	}
+	else {
+	  h2080->Add(h);
+	  if(superimpose)hh2080->Add(hh);
+	}
+	
+      }
+
+      h->Divide(hallcntr);
+
+      if(ic<8){
+	ccent->cd(ic+1);
+	h->GetYaxis()->SetLabelSize(0.05);
+	h->GetYaxis()->SetTitleOffset(1.5);
+	h->SetMinimum(0);
+	//h->GetYaxis()->SetRangeUser(0.,0.15);
+	h->DrawClone();
+      }
+      /*
+	if(ic==0&&i==0){
+	spare->cd();
+	h->Draw();
+	}
+      */
+      // ccent->cd(1);
+      // h->SetLineColor(ic+1);
+      // if(ic==0)h->DrawClone();
+      // else h->DrawClone("sames");
+    }
+    /*//draw 0-20 and 20-80 in the multi pad canvas (increase divisions before uncommenting)
     ccent->cd(ncentr+1);
     h020->Divide(hallcntr);
     h020->DrawClone();
@@ -972,8 +956,10 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       hh020->SetMarkerColor(2);
       hh020->DrawClone("sames");
     }
+    */
     TCanvas* cv020=new TCanvas(Form("cv020-%d",i),"0-20% vs run number",1400,600);
     cv020->cd();
+    cv020->SetTicky();
     h020->GetYaxis()->SetRangeUser(0.,1.);
     h020->DrawClone();
     if(superimpose)hh020->DrawClone("sames");
@@ -992,6 +978,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 
     TCanvas* cv2080=new TCanvas(Form("cv2080-%d",i),"20-80% vs run number",1400,600);
     cv2080->cd();
+    cv2080->SetTicky();
     h2080->GetYaxis()->SetRangeUser(0.,1.);
     h2080->DrawClone();
     if(superimpose)hh2080->DrawClone("sames");
@@ -1004,18 +991,20 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   
 }
 
-void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",Int_t nsteps=0,TString direction="X",TString path="./"){
+void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",Int_t nsteps=0,TString direction="X",TString path="./",TString suffixdir="", TString filename="AnalysisResults.root"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
   TString listname="outputCentrCheck";
+  TString dirname="PWG3_D2H_QA";
+  dirname+=suffixdir;
 
   TList* list;
   TH1F * hstat;
 
-  Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+  Bool_t isRead=ReadFile(list,hstat,listname,partname,path,filename,dirname);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
@@ -1084,19 +1073,21 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
 
 }
 
-void DrawEventSelection(TString partname="D0", TString path="./"){
+void DrawEventSelection(TString partname="D0", TString path="./",TString suffixdir="",TString filename="AnalysisResults.root"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
   gStyle->SetOptStat(0);
 
-   TString listname="outputEvSel";
+  TString listname="outputEvSel";
+  TString dirname="PWG3_D2H_QA";
+  dirname+=suffixdir;
 
   TList* list;
   TH1F * hstat;
 
-  Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+  Bool_t isRead=ReadFile(list,hstat,listname,partname,path,filename,dirname);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
@@ -1120,12 +1111,71 @@ void DrawEventSelection(TString partname="D0", TString path="./"){
 
     if(tpname=="TH2F"){
       TH2F* htmp=(TH2F*)list->At(i);
-      TCanvas* c=new TCanvas(Form("c%s",htmp->GetName()),Form("c%s",htmp->GetName()));
+      TCanvas* c=new TCanvas(Form("c%s",htmp->GetName()),Form("c%s",htmp->GetName()),1200,800);
       c->cd();
       htmp->SetMarkerSize(1.3);
-      htmp->Draw("text0colz");
+      htmp->Draw("colzhtext45");
       c->SaveAs(Form("%s.pdf",htmp->GetName()));
       c->SaveAs(Form("%s.eps",htmp->GetName()));
     }
   }
+
+  AliCounterCollection* coll=(AliCounterCollection*)list->FindObject("trigCounter");
+  if(!coll) {
+    cout<<"Trigger counter not found"<<endl;
+    return;
+  }
+  
+  coll->SortRubric("run");//sort by run number
+
+  TString collname=coll->GetName();
+
+  TString keywords=coll->GetKeyWords("triggertype");
+
+  Int_t nkeys=keywords.CountChar(',')+1;
+
+  TString words[nkeys];
+  for(Int_t k=0;k<nkeys;k++) words[k]="";
+  printf("Keywords: ");
+  Int_t count=0;
+  for(Int_t l=0;l<keywords.Length();l++){
+    if(keywords[l] != ',') words[count]+=keywords[l];
+    else {
+      printf("%s ",words[count].Data());
+      count++;
+    }
+  }
+  cout<<endl;
+
+  TH1D** htrig=new TH1D*[nkeys]; //each trigger type in one histogram of counts vs run
+  TH1D** htrignorm=new TH1D*[nkeys]; //normalized to the counts in kAny
+  TCanvas* ctrigfraction=new TCanvas("cvtrigfrac","Fraction of given trigger type vs run",1400,800);
+  TLegend* legtr=new TLegend(0.15,0.5,0.35,0.8);
+  legtr->SetBorderSize(0);
+  legtr->SetFillStyle(0);
+  for(Int_t k=0;k<nkeys;k++){
+    htrig[k]=coll->Get("run",Form("triggertype:%s",words[k].Data()));
+    htrig[k]->SetName(Form("h%s",words[k].Data()));
+    htrig[k]->SetTitle("Trigger type;RUN; counts");
+    htrig[k]->SetMarkerColor(k+1);
+    htrig[k]->SetMarkerStyle(k+20);
+    htrig[k]->Sumw2();
+    legtr->AddEntry(htrig[k],Form("%s",words[k].Data()),"P");
+    //drawings
+    //1) counts of a given trigger over counts in kAny
+    htrignorm[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAny",words[k].Data()));
+    htrignorm[k]->SetTitle("Trigger type over ANY trigger;RUN; counts/countsANY");
+    htrignorm[k]->Divide(htrig[k],htrig[0],1.,1.,"B");
+    htrignorm[k]->GetXaxis()->SetRangeUser(0,1.1);
+    
+    ctrigfraction->cd();
+    if(k>0)htrignorm[k]->Draw("PEsames");
+    else htrignorm[k]->Draw("PE");
+  } 
+  
+  ctrigfraction->cd();
+  legtr->Draw();
+  ctrigfraction->SaveAs("TrgFractionOverANY.pdf");
+  ctrigfraction->SaveAs("TrgFractionOverANY.eps");
+    
 }
