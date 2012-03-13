@@ -27,10 +27,10 @@
 #-----------------------------------------------------------------------#
 
 set ( SRCS  
-  STRANGENESS/AliAnalysisTaskCheckCascade.cxx
-  STRANGENESS/AliAnalysisTaskCheckCascadePbPb.cxx
-  STRANGENESS/AliAnalysisTaskCheckPerformanceCascade.cxx
-  STRANGENESS/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskCheckCascade.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascade.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx
   STRANGENESS/LambdaK0PbPb/AliAnalysisCentralitySelector.cxx
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskCTauPbPb.cxx
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskCTauPbPbaod.cxx
@@ -45,9 +45,9 @@ set ( DHDR PWGLFSTRANGENESSLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGLF/STRANGENESS PWGLF/STRANGENESS/LambdaK0PbPb STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGLF/STRANGENESS/Cascades PWGLF/STRANGENESS/LambdaK0PbPb STEER/ESD STEER/STEERBase)
 
-#install (DIRECTORY PWGLF/STRANGENESS/macros
+#install (DIRECTORY PWGLF/STRANGENESS/Cascades/macros
 #         DESTINATION PWGLF/STRANGENESS 
 #         PATTERN .svn EXCLUDE)
 #
