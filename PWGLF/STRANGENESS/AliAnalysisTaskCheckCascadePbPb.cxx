@@ -37,7 +37,7 @@
 //                - proper time histos/container added (V0 and Cascades)
 //                - cosine PA V0 wrt Xi vertex in the container  
 //               November2011
-//                - re-run V0's and cascade's vertexers (SetCuts instead SetDefaultCuts!!)
+//                - re-run V0's and cascade's vertexers (SetCuts instead of SetDefaultCuts!!)
 //                - AOD analysis part completed 
 //-----------------------------------------------------------------
 
@@ -1183,6 +1183,8 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
   Int_t    ncascades                      = -1;
   Int_t    nTrackMultiplicity             = -1;
   Int_t    nTrackWithTPCrefitMultiplicity =  0;
+//  Int_t    lSPDTrackletsMultiplicity = -1;
+
   // Primary tracks from ESD/AOD
   Float_t lPrimaryTrackMultiplicity = -1.;
 
@@ -1200,7 +1202,10 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 
   // Connect to the InputEvent	
   // After these lines, we should have an ESD/AOD event + the number of cascades in it.
-		
+	
+  // For AOD or ESD ...
+  nTrackMultiplicity = (InputEvent())->GetNumberOfTracks();
+	
   if (fAnalysisType == "ESD") {
     lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
     if (!lESDevent) {
@@ -1240,7 +1245,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         
     //-------------------------------------------------
     ncascades                      = lESDevent->GetNumberOfCascades();
-    nTrackWithTPCrefitMultiplicity = DoESDTrackWithTPCrefitMultiplicity(lESDevent);  
+    nTrackWithTPCrefitMultiplicity = DoESDTrackWithTPCrefitMultiplicity(lESDevent); 
+
+//    const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
+//    lSPDTrackletsMultiplicity       = lAliMult->GetNumberOfTracklets();
+ 
     centrality = lESDevent->GetCentrality();
     esdV0 = lESDevent->GetVZEROData();
     multV0A=esdV0->GetMTotV0A();
@@ -1253,7 +1262,16 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       return;
     }
     ncascades                      = lAODevent->GetNumberOfCascades();
-    nTrackWithTPCrefitMultiplicity = -1;
+    nTrackWithTPCrefitMultiplicity = 0;
+    lPrimaryTrackMultiplicity = 0;
+    for (Int_t itrack = 0; itrack<nTrackMultiplicity; itrack++) {
+      AliAODTrack* track = lAODevent->GetTrack(itrack);
+      if (track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) lPrimaryTrackMultiplicity++; // kTrkGlobal tight DCA cut --> mult is much lower than the one selectied with standard cuts in ESDs
+      if (track->IsOn(AliAODTrack::kTPCrefit)) nTrackWithTPCrefitMultiplicity++;
+    }
+ 
+//    lSPDTrackletsMultiplicity = lAODevent->GetTracklets()->GetNumberOfTracklets();
+
     centrality = lAODevent->GetCentrality();
     aodV0 = lAODevent->GetVZEROData();
     multV0A=aodV0->GetMTotV0A();
@@ -1277,9 +1295,6 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 
   fV0Ampl->Fill(multV0A+multV0C);
   
-  // For AOD or ESD ...
-  nTrackMultiplicity = (InputEvent())->GetNumberOfTracks();
-
   //-------------------------------------------------
 
   fHistTrackMultiplicityForCentrEvt         ->Fill( nTrackMultiplicity             );
@@ -1327,9 +1342,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     lMagneticField = lESDevent->GetMagneticField( );
     // FIXME if(TMath::Abs(lMagneticField ) < 10e-6) continue;
     lPrimaryTrackMultiplicity = fESDtrackCuts->CountAcceptedTracks(lESDevent);    
-  }// end if(ESD)
-        
-  if (fAnalysisType == "AOD") {
+  } else if (fAnalysisType == "AOD") {
 
     const AliAODVertex *lPrimaryBestAODVtx = lAODevent->GetPrimaryVertex();
     if (!lPrimaryBestAODVtx){
@@ -1348,11 +1361,6 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     lTrkgPrimaryVtxPos[2]   = -100.0;   
     lMagneticField = lAODevent->GetMagneticField();  
 
-    lPrimaryTrackMultiplicity = 0;
-    for (Int_t itrack = 0; itrack<nTrackMultiplicity; itrack++) {
-      AliAODTrack* track = lAODevent->GetTrack(itrack); 
-      if (track->TestFilterBit(AliAODTrack::kTrkGlobal)) lPrimaryTrackMultiplicity++;
-    }
   }
 
   // Quality cut on the z-position of the prim vertex.
@@ -1470,7 +1478,6 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     Double_t lAlphaXi = -200., lPtArmXi  = -200.0;
 	
   	// - 7th part of initialisation : variables for the AliCFContainer dedicated to cascade cut optmisiation
-    Int_t    lSPDTrackletsMultiplicity = -1;
   
     if (fAnalysisType == "ESD") { 
   
@@ -1779,17 +1786,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       //        << endl;
 
 	
-		// II.Step 7 - Complementary info for monitoring the cascade cut variables
-	
-      const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
-      lSPDTrackletsMultiplicity      = lAliMult->GetNumberOfTracklets();
-      
-    }// end of ESD treatment
-  
- 
-    if (fAnalysisType == "AOD") {
-
-      lSPDTrackletsMultiplicity = lAODevent->GetTracklets()->GetNumberOfTracklets();	
+    } else if (fAnalysisType == "AOD") {
 
       // II.AOD - Calculation Part dedicated to Xi vertices 
       	
