@@ -1817,6 +1817,8 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
         // Primary tracks from ESD/AOD
         Float_t lPrimaryTrackMultiplicity= -1.;
 
+//        Int_t    lSPDTrackletsMultiplicity = -1;
+
         AliCentrality* centrality = 0x0;
         AliESDVZERO* esdV0 = 0x0;
         AliAODVZERO* aodV0 = 0x0;
@@ -1862,6 +1864,9 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
 
           lPrimaryTrackMultiplicity = fESDtrackCuts->CountAcceptedTracks(lESDevent);
 
+//          const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
+//          lSPDTrackletsMultiplicity       = lAliMult->GetNumberOfTracklets();
+
           //        nNumberOfMCPrimaries       = lMCstack->GetNprimary();
           nNumberOfMCPrimaries = lMCstack->GetNtrack(); // MN: this stack->GetNtrack(); has to be used to check primaries because in HIJING decay products of D and B mesons are also primaries and produced in HIJING during transport, however this is not the number of primaries!
           // Centrality determination
@@ -1891,8 +1896,10 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
           lPrimaryTrackMultiplicity = 0.;
           for (Int_t itrack = 0; itrack<nTrackMultiplicity; itrack++) {
             AliAODTrack* track = lAODevent->GetTrack(itrack);
-            if (track->TestFilterBit(AliAODTrack::kTrkGlobal)) lPrimaryTrackMultiplicity++;
+            if (track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) lPrimaryTrackMultiplicity++;
           }
+
+//          lSPDTrackletsMultiplicity = lAODevent->GetTracklets()->GetNumberOfTracklets();
 
           nNumberOfMCPrimaries = arrayMC->GetEntries();
 
@@ -2604,9 +2611,6 @@ Double_t lrecoP = -100.;
 Double_t   lmcPtBach = -100.;
 
 Double_t cascadeMass = 0.;
-
-Int_t    lSPDTrackletsMultiplicity       = -1;
-
 
 for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Cascade loop
 
@@ -3562,13 +3566,6 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
        
         // - Step 6 : Containers = Cascade cuts + PID
 	//-------------	
-        if (fAnalysisType == "ESD") {
-          const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
-          lSPDTrackletsMultiplicity       = lAliMult->GetNumberOfTracklets();
-        }
-        else if (fAnalysisType == "AOD") lSPDTrackletsMultiplicity = lAODevent->GetTracklets()->GetNumberOfTracklets();
-        
-
         // 6.3 - Filling the AliCFContainer (optimisation of topological selections + systematics)
         Double_t lContainerCutVars[21] = {0.0};
 
