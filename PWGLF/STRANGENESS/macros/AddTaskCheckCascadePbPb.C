@@ -3,9 +3,7 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Float_t  centrlowlim  
                                                           TString  centrest            = "V0M",
                                                           Float_t  vtxlim              = 10.,
                                                           Bool_t   kextrasel           = kFALSE,
-                                                          Bool_t   krelaunchvertexers  = kFALSE,
-                                                          TString  anatype             = "AOD") 
-{
+                                                          Bool_t   krelaunchvertexers  = kFALSE) {
    // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -26,19 +24,21 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Float_t  centrlowlim  
    // Create and configure the task
 	AliAnalysisTaskCheckCascadePbPb *taskcheckcascadepbpb = new AliAnalysisTaskCheckCascadePbPb("TaskCheckCascadePbPb");
 
-  taskcheckcascadepbpb->SetRelaunchV0CascVertexers    (krelaunchvertexers);
-  taskcheckcascadepbpb->SetAnalysisType               (anatype);
-  taskcheckcascadepbpb->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
-  taskcheckcascadepbpb->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
-  taskcheckcascadepbpb->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
-  taskcheckcascadepbpb->SetQualityCut80TPCcls         (kTRUE);             // rejects tracks that have less than 80 clusters in the TPC
-  taskcheckcascadepbpb->SetExtraSelections            (kextrasel);         // used to add other selection cuts
-  taskcheckcascadepbpb->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
-  taskcheckcascadepbpb->SetCentralityUpLim            (centruplim);
-  taskcheckcascadepbpb->SetCentralityEst              (centrest);
-  taskcheckcascadepbpb->SetVertexRange                (vtxlim);
+   taskcheckcascadepbpb->SetRelaunchV0CascVertexers    (krelaunchvertexers);
+   taskcheckcascadepbpb->SetAnalysisType               (type);
+   taskcheckcascadepbpb->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
+   taskcheckcascadepbpb->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
+   taskcheckcascadepbpb->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
+   taskcheckcascadepbpb->SetQualityCut80TPCcls         (kTRUE);             // rejects tracks that have less than 80 clusters in the TPC
+   taskcheckcascadepbpb->SetExtraSelections            (kextrasel);         // used to add other selection cuts
+   taskcheckcascadepbpb->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
+   taskcheckcascadepbpb->SetCentralityUpLim            (centruplim);
+   taskcheckcascadepbpb->SetCentralityEst              (centrest);
+   taskcheckcascadepbpb->SetVertexRange                (vtxlim);
 
-  mgr->AddTask(taskcheckcascadepbpb);
+   taskcheckcascadepbpb->SelectCollisionCandidates();
+
+   mgr->AddTask(taskcheckcascadepbpb);
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
@@ -48,7 +48,7 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Float_t  centrlowlim  
    
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    
-   outputFileName += ":PWGLFCheckCascadePbPb";
+   outputFileName += ":PWGLFStrangeness.outputCheckCascadePbPb";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    
    Printf("AddTaskCheckCascade - Set OutputFileName : \n %s\n", outputFileName.Data() );

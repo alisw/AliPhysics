@@ -4,9 +4,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
                                                                                 Float_t  vtxlim              = 10.,
                                                                                 Bool_t   kextrasel           = kFALSE,
                                                                                 Bool_t   kacccut             = kFALSE,
-                                                                                Bool_t   krelaunchvertexers  = kFALSE,
-                                                                                TString  anatype             = "AOD")
-{
+                                                                                Bool_t   krelaunchvertexers  = kFALSE) {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -27,7 +25,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    // Create and configure the task
         AliAnalysisTaskCheckPerformanceCascadePbPb *taskCheckPerfCascadePbPb = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskCheckPerfCascadePbPb");
 
-   taskCheckPerfCascadePbPb->SetAnalysisType                (anatype);
+   taskCheckPerfCascadePbPb->SetAnalysisType                (type);
    taskCheckPerfCascadePbPb-> SetRelaunchV0CascVertexers    (krelaunchvertexers);     
    taskCheckPerfCascadePbPb-> SetQualityCutZprimVtxPos      (kTRUE);
    taskCheckPerfCascadePbPb-> SetRejectEventPileUp          (kFALSE);
@@ -40,7 +38,9 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    taskCheckPerfCascadePbPb-> SetCentralityUpLim            (centruplim);
    taskCheckPerfCascadePbPb-> SetCentralityEst              (centrest);
    taskCheckPerfCascadePbPb-> SetVertexRange                (vtxlim);
-   
+ 
+   taskCheckPerfCascadePbPb->SelectCollisionCandidates();   
+ 
    mgr->AddTask(taskCheckPerfCascadePbPb);
 
    // Create ONLY the output containers for the data produced by the task.
@@ -50,7 +50,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    // User file name (if need be)
 
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outputFileName += ":PWGLFCheckPerformanceCascadePbPb";
+   outputFileName += ":PWGLFStrangeness.outputCheckPerformanceCascadePbPb";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    
    Printf("AddTaskCheckPerfCascadePbPb - Set OutputFileName : \n %s\n", outputFileName.Data() );
