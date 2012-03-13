@@ -29,5 +29,6 @@
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliAnalysisTaskTrgContam+;
+#pragma link C++ class AliAnalysisTaskEMCALPhoton+;
 
 #endif
