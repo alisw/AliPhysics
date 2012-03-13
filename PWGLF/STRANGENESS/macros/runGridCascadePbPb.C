@@ -14,6 +14,10 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
                          Bool_t   acccut              = kFALSE,
                          Bool_t   krelaunchvertexers  = kFALSE,
                          TString  anatype             = "AOD",//"ESD",
+                         TString  gridoutputdir       = "LHC10h_AOD086",
+                         //the following are used for the Cascade task only
+                         TString  datadir             = "/alice/data/2010/LHC10h",///alice/data/2011/LHC11h_2",
+                         TString  datapattern         = "ESDs/pass2/AOD086/*/AliAOD.root", // "ESDs/pass2/*/*ESDs.root" // for data
                          const char *plugin_mode      ="full") {
 
   // Load common libraries
@@ -43,7 +47,7 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
   //__________________________________________________________________________
   // Create and configure the alien handler plugin
 //  gROOT->LoadMacro("CreateAlienHandler.C");
-  AliAnalysisGrid *alienHandler = CreateAlienHandler(plugin_mode, runperformancetask, useMC, anatype);
+  AliAnalysisGrid *alienHandler = CreateAlienHandler(plugin_mode, runperformancetask, useMC, anatype, gridoutputdir, datadir, datapattern);
   if (!alienHandler) return;
  
   //__________________________________________________________________________
@@ -67,12 +71,11 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
   //__________________________________________________________________________
   // Add tasks
 
- // Physics selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask *physSel = AddTaskPhysicsSelection(useMC);
-  
-  // Centrality selection
-  if (anatype == "ESD") { 
+  if (anatype=="ESD") {
+    // Physics selection
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    AliPhysicsSelectionTask *physSel = AddTaskPhysicsSelection(useMC);
+    // Centrality selection
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
     if (useMC){
@@ -133,7 +136,7 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
 
 //__________________________________________________________________________
 
-AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperformancetask, Bool_t useMC, TString anatype) {
+AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperformancetask, Bool_t useMC, TString anatype, TString gridoutputdir, TString datadir, TString datapattern) {
   //__________________________________________________________________________
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -152,25 +155,24 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperforman
   //__________________________________________________________________________
   // On GRID - current
   plugin->SetROOTVersion("v5-30-06-1");
-  plugin->SetAliROOTVersion("v5-03-01-AN"); 
+  plugin->SetAliROOTVersion("v5-03-03-AN"); 
 
   //__________________________________________________________________________
   // Declare input data to be processed.
   // Method 1: Create automatically XML collections using alien 'find' command.
   if (useMC) {
-    //plugin->SetGridDataDir("/alice/sim/LHC11a10b_bis");   // Define production directory
+    //plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");   // Define production directory
     //plugin->SetGridDataDir("/alice/sim/LHC11a10b_plus");
     plugin->SetGridDataDir("/alice/sim/2011/LHC11f5");
     // Set data search pattern
     if (anatype == "ESD") plugin->SetDataPattern("*ESDs.root");
-    else plugin->SetDataPattern("AOD081/*AOD.root");  
+    else plugin->SetDataPattern("AOD090/*AOD.root");  
     plugin->AddRunNumber(137124);
 
 
   } else {
-    plugin->SetGridDataDir("/alice/data/2010/LHC10h");   // Define production directory LFN
-    if (anatype == "ESD") plugin->SetDataPattern("ESDs/pass2/*/*ESDs.root");  // Set data search pattern
-    else plugin->SetDataPattern("ESDs/pass2/AOD073/*/*AOD.root"); 
+    plugin->SetGridDataDir(datadir.Data());   // Define production directory LFN
+    plugin->SetDataPattern(datapattern.Data());  // Set data search pattern
     plugin->SetRunPrefix("000");
     //plugin->SetRunRange(80000,80000); // ...then add run numbers to be considered
     plugin->AddRunNumber(138534);
@@ -180,8 +182,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperforman
   //plugin->AddDataFile("/alice/cern.ch/user/m/mnicassi/139105.xml");
   //__________________________________________________________________________
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
-  if (runperformancetask) plugin->SetGridWorkingDir("workperfcentral");
-  else plugin->SetGridWorkingDir("workdata");
+  plugin->SetGridWorkingDir(gridoutputdir.Data());
   plugin->SetGridOutputDir("output");
 
   //__________________________________________________________________________

@@ -75,13 +75,14 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
   if (runperformancetask) gProof->Load("AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++");
   else gProof->Load("AliAnalysisTaskCheckCascadePbPb.cxx++");
 
-  // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(useMC);
-
-  // centrality selection
   cout<<"Format"<<format.Data()<<endl;
+  
   if (!format.CompareTo("ESD")) {
+    // physics selection
+    gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(useMC);
+
+    // centrality selection
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
     if (useMC) {
