@@ -838,8 +838,8 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
       dphi=RelativePhi(tr->Phi(),jetbig->Phi());  
       if(TMath::Abs(dphi)<TMath::Pi()-0.2) continue;
       if(tr->Pt()>ptmax){ ptmax=tr->Pt();
-	index=iCount;
-        dif=dphi;  }}
+      index=iCount-1;
+      dif=dphi;  }}
   
       return index;
 
