@@ -73,4 +73,6 @@
 #pragma link C++ class  AliHFEVZEROEventPlane+;
 #pragma link C++ class  AliAnalysisTaskHFEFlow+;
 
+#pragma link C++ class  AliSelectNonHFE+;
+
 #endif
