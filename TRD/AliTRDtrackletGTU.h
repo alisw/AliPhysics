@@ -43,6 +43,7 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }
+  Int_t GetHCId() const { return fTrackletESD ? fTrackletESD->GetHCId() : fTracklet->GetHCId(); }
   Int_t GetDetector() const { return fTrackletESD ? fTrackletESD->GetDetector() : fTracklet->GetDetector(); }
   Int_t GetIndex() const { return fIndex; }
 

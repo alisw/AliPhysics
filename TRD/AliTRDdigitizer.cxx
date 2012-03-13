@@ -1944,21 +1944,21 @@ void AliTRDdigitizer::RunDigitalProcessing(Int_t det)
     return;
 
   //Call the methods in the mcm class using the temporary array as input  
-  for(Int_t rob = 0; rob < digits->GetNrow() / 2; rob++)
-  {
-    for(Int_t mcm = 0; mcm < 16; mcm++)
-    {
-      fMcmSim->Init(det, rob, mcm); 
-      fMcmSim->SetDataByPad(digits, fDigitsManager);
-      fMcmSim->Filter();
-      if (feeParam->GetTracklet()) {
-        fMcmSim->Tracklet();
-        fMcmSim->StoreTracklets();
+  // process the data in the same order as in hardware
+  for (Int_t side = 0; side <= 1; side++) {
+    for(Int_t rob = side; rob < digits->GetNrow() / 2; rob += 2) {
+      for(Int_t mcm = 0; mcm < 16; mcm++) {
+	fMcmSim->Init(det, rob, mcm); 
+	fMcmSim->SetDataByPad(digits, fDigitsManager);
+	fMcmSim->Filter();
+	if (feeParam->GetTracklet()) {
+	  fMcmSim->Tracklet();
+	  fMcmSim->StoreTracklets();
+	}
+	fMcmSim->ZSMapping();
+	fMcmSim->WriteData(digits);
       }
-      fMcmSim->ZSMapping();
-      fMcmSim->WriteData(digits);
     }
   }
-
 }
 
