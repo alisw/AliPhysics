@@ -328,7 +328,7 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 	    cc.GetEtaIndexXY(smn,row,col,xx,yy,eta,etaindex);
 	    
-	    if(etaindex >= 0 && etaindex <=10) {
+	    if(etaindex >= 0 && etaindex <10) {
 
 	      if(sddl == 0) { 
 		nDdl1a[etaindex] += 1; 
