@@ -894,15 +894,16 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliAODVertex* vtx) con
     return kFALSE;
   }
 
-
+  TString vtxName(vtx->GetName());
   if(fDebug){
     Printf(" n contrib %d",vtx->GetNContributors());
+    Printf("vtxName: %s",vtxName.Data());
     vtx->Print();
   }
   
   //  if(vtx->GetNContributors()<3)return kFALSE;
   // do not want tpc only primary vertex
-  TString vtxName(vtx->GetName());
+
   if(vtxName.Contains("TPCVertex"))return kFALSE;
 
   // no dispersion yet...
