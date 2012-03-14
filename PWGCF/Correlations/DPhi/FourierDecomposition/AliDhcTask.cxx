@@ -267,7 +267,9 @@ void AliDhcTask::UserExec(Option_t *)
   // Get pool containing tracks from other events like this one
   AliEvtPool* pool = fPoolMgr->GetEventPool(fCentrality, fZVertex);
   if (!pool) {
-    AliWarning(Form("No pool found. Centrality %f, ZVertex %f", fCentrality, fZVertex));
+    AliWarning(Form("No pool found. Centrality %f, ZVertex %f", 
+		    fCentrality, fZVertex));
+    sTracks->clear();
     return;
   }
 
@@ -584,12 +586,11 @@ void AliDhcTask::Terminate(Option_t *)
     return;
   }
   
-  fHistPt = dynamic_cast<TH1F*> (fOutputList->At(0));
+  fHistPt = dynamic_cast<TH1F*> (fOutputList->FindObject("fHistPt"));
   if (!fHistPt) {
     AliError("ERROR: fHistPt not available\n");
     return;
   }
-   
   TCanvas *c1 = new TCanvas("AliDhcTask","Pt",10,10,510,510);
   c1->cd(1)->SetLogy();
   fHistPt->DrawCopy("E");
