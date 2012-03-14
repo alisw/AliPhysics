@@ -240,7 +240,7 @@ add_custom_command(TARGET htmldoc
 # ------------------------------
 foreach(MODULE ${MODDIRS})
   set(${MODULE}ALIBS)
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
+#  configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
   add_custom_target(${MODULE}-all ALL)
   add_custom_target(${MODULE}-par-all)
   add_custom_target(test-${MODULE}-par-all)
