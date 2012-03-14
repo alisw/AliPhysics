@@ -16,70 +16,52 @@
 // Author: Carlos Perez (cperez@cern.ch)
 //==============================================================================
 
-class TList;
-class TH2D;
-class TProfile;
-
 class AliAODEvent;
-
-class AliFlowEvent;
-class AliFlowCandidateTrack;
-class AliFlowTrackCuts;
-
 class AliRDHFCuts;
 class AliRDHFCutsD0toKpi;
+class AliFlowEventCuts;
+class AliFlowCandidateTrack;
+class TList;
+class TH1D;
 
 class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
   public:
     AliAnalysisTaskFlowD2H();
-    AliAnalysisTaskFlowD2H( const Char_t *name, AliFlowTrackCuts *cutsRPs, 
-                            AliRDHFCuts *cutsPOIs, Int_t specie );
+    AliAnalysisTaskFlowD2H( const Char_t *name, 
+			    AliFlowEventCuts *cutsEvent,
+			    AliRDHFCuts *cutsPOIs, 
+			    Int_t specie );
     void SetDebug() {fDebugV2 = true;}
-    void SetPOIEtaRange( Double_t minEta, Double_t maxEta )
-                          { fPOIEta[0] = minEta; fPOIEta[1] = maxEta; }
-    void SetFlowEtaRangeAB( Double_t minA, Double_t maxA, Double_t minB, Double_t maxB )
-                          { fFlowEta[0] = minA; fFlowEta[1] = maxA;
-                            fFlowEta[2] = minB; fFlowEta[3] = maxB; }
-    void SetFlowPtRange( Int_t minPt, Int_t maxPt )
-                       { fFlowPts[0] = minPt; fFlowPts[1] = maxPt; }
-    void SetFlowBandRange( Int_t band, Double_t minMass, Double_t maxMass )
-                         { fFlowBands[0][band] = minMass;
-                           fFlowBands[1][band] = maxMass; } //TODO
     virtual ~AliAnalysisTaskFlowD2H();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
-    virtual void Terminate(Option_t *);
-    virtual void NotifyRun();
 
   private:
     AliAnalysisTaskFlowD2H(const AliAnalysisTaskFlowD2H& analysisTask);
     AliAnalysisTaskFlowD2H& operator=(const AliAnalysisTaskFlowD2H& analysisTask);
     void AddHistograms();
-    void FillD0toKpi(      AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillD0toKpipipi(  AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillDStartoKpipi( const AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillDplustoKpipi( const AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillDstoKKpi(     AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillJpsitoee(     AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillLctoV0(       AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillLctopKpi(     AliAODEvent *aod, AliFlowEvent *mb[5]);
-    AliFlowCandidateTrack* MakeTrack( Double_t mass, Double_t pt,
-                                      Double_t phi, Double_t eta,
-                                      Int_t nDaughters, const Int_t *iID );
-    AliFlowTrackCuts *fCutsRP;  // cuts for RPs
-    AliRDHFCuts      *fCutsPOI; // cuts for POIs
-    Int_t  fSource;             // AliRDHFCuts::ESele
-    Bool_t fDebugV2;              // fully talkative task
-    TList *fHList;    // List for histos
-    TProfile *fAnaCuts; // store analysis related cuts
-    TH2D  *fEvent[2]; // Events histogram
-    TH2D  *fMass[2];  // Mass spectra
-    Double_t fPOIEta[2];        // Eta cut for POI
-    Double_t fFlowEta[4];       // SP subEvents
-    Int_t fFlowPts[2];          // Pt range
-    Double_t fFlowBands[2][5];  // Mass bands TODO
+    void FillD0toKpi( const AliAODEvent *aod );
+    void FillD0toKpipipi( const AliAODEvent *aod );
+    void FillDStartoKpipi( const AliAODEvent *aod );
+    void FillDplustoKpipi( const AliAODEvent *aod );
+    void FillDstoKKpi( const AliAODEvent *aod );
+    void FillJpsitoee( const AliAODEvent *aod );
+    void FillLctoV0( const AliAODEvent *aod );
+    void FillLctopKpi( const AliAODEvent *aod );
+    void MakeTrack( Double_t mass, Double_t pt,
+		    Double_t phi, Double_t eta,
+		    Int_t nDaughters, const Int_t *iID );
+    AliFlowEventCuts *fEventCuts;
+    AliRDHFCuts *fCutsPOI; // cuts for POIs
+    Int_t  fSource; // AliRDHFCuts::ESele
+    Bool_t fDebugV2; // fully talkative task
 
-  ClassDef(AliAnalysisTaskFlowD2H, 1);
+    TList *fHList; // List for histos
+    TH1D  *fEvent; // Event counter
+
+    TObjArray *fCandidates; // Array of selected candidates
+
+  ClassDef(AliAnalysisTaskFlowD2H, 2);
 };
 
 #endif
