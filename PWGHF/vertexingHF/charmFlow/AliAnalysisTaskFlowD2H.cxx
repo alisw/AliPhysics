@@ -285,7 +285,7 @@ void AliAnalysisTaskFlowD2H::FillD0toKpi(AliAODEvent *theAOD,
             for(Int_t iRPs=0; iRPs!=theMB[r]->NumberOfTracks(); ++iRPs) {
               AliFlowTrack *iRP = (AliFlowTrack*) (theMB[r]->GetTrack(iRPs));
               if(!iRP->InRPSelection()) continue;
-              if( fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()) ) {
+              if( TMath::Abs(sTrack->GetIDDaughter(iDau)) == TMath::Abs(iRP->GetID()) ) {
                 sTrack->SetDaughter(iDau,iRP);
                 iRP->SetForRPSelection(kFALSE);
                 if(fDebugV2) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
@@ -340,7 +340,7 @@ void AliAnalysisTaskFlowD2H::FillDStartoKpipi(const AliAODEvent *theAOD,
             for(Int_t iRPs=0; iRPs!=theMB[r]->NumberOfTracks(); ++iRPs) {
               AliFlowTrack *iRP = (AliFlowTrack*) (theMB[r]->GetTrack(iRPs));
               if(!iRP->InRPSelection()) continue;
-              if( fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()) ) {
+              if( TMath::Abs(sTrack->GetIDDaughter(iDau)) == TMath::Abs(iRP->GetID()) ) {
                 sTrack->SetDaughter(iDau,iRP);
                 iRP->SetForRPSelection(kFALSE);
                 if(fDebugV2) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
@@ -394,7 +394,7 @@ void AliAnalysisTaskFlowD2H::FillDplustoKpipi(const AliAODEvent *theAOD,
             for(Int_t iRPs=0; iRPs!=theMB[r]->NumberOfTracks(); ++iRPs) {
               AliFlowTrack *iRP = (AliFlowTrack*) (theMB[r]->GetTrack(iRPs));
               if(!iRP->InRPSelection()) continue;
-              if( fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()) ) {
+              if( TMath::Abs(sTrack->GetIDDaughter(iDau)) == TMath::Abs(iRP->GetID()) ) {
                 sTrack->SetDaughter(iDau,iRP);
                 iRP->SetForRPSelection(kFALSE);
                 if(fDebugV2) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
