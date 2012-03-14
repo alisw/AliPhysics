@@ -115,10 +115,21 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   AliFlowVZEROResults *fContAllChargesV0Av3; //! results
   AliFlowVZEROResults *fContAllChargesV0Cv3; //! results
   AliFlowVZEROResults *fContAllChargesMC; //! results
-  AliFlowVZEROResults *fContAllChargesMCv3; //! results
 
+  // MC
+  TProfile *fHResMA2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResMC2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResAC2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResMA3;    //! also for v3
+  TProfile *fHResMC3;   //! also for v3
+  TProfile *fHResAC3;   //! also for v3
 
-  ClassDef(AliAnalysisTaskVnV0, 4);    //Analysis task v2 and v3 analysis on AOD
+  AliFlowVZEROResults *fContAllChargesMCA; //! results
+  AliFlowVZEROResults *fContAllChargesMCC; //! results
+  AliFlowVZEROResults *fContAllChargesMCAv3; //! results
+  AliFlowVZEROResults *fContAllChargesMCCv3; //! results
+
+  ClassDef(AliAnalysisTaskVnV0, 5);    //Analysis task v2 and v3 analysis on AOD
 };
 
 #endif
