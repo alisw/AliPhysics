@@ -152,7 +152,8 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fMuonForwardTracks(0),
   fMatchingMode(-1),
   fGRPData(0),
-  fRunInfo(0)
+  fRunInfo(0),
+  fBransonCorrection(kTRUE)
 
 {
 
@@ -740,6 +741,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
     FillPlanesWithTrackHistory();
     AliMuonForwardTrack *newTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(idBestCandidate);
     newTrack -> SetNWrongClustersMC(newTrack->GetNMFTClusters() - nGoodClustersBestCandidate);
+    newTrack -> SetTrackMCId(fRun*100000+fEv*1000+fCountRealTracksAnalyzedOfEvent);
     new ((*fMuonForwardTracks)[fMuonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);
   }
 
@@ -815,8 +817,14 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     Double_t xExtrap = gRandom->Gaus(0,fVertexErrorX);
     Double_t yExtrap = gRandom->Gaus(0,fVertexErrorY);
     Double_t zExtrap = gRandom->Gaus(0,fVertexErrorZ);
-    AliMUONTrackExtrap::ExtrapToVertex(&currentParamFront, xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
-    AliMUONTrackExtrap::ExtrapToVertex(&currentParamBack,  xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+    if (fBransonCorrection) {
+      AliMUONTrackExtrap::ExtrapToVertex(&currentParamFront, xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+      AliMUONTrackExtrap::ExtrapToVertex(&currentParamBack,  xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+    }
+    else {
+      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamFront, zExtrap);
+      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamBack,  zExtrap);
+    }
     AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchFront, xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
     AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchBack,  xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
   }

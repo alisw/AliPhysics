@@ -56,6 +56,9 @@ public:
   Bool_t AnalyzeMuonPair();
   void BuildMuonPairs();
 
+  Bool_t PassedCutSingleMuon(AliMuonForwardTrack *track);
+  Bool_t PassedCutMuonPair(AliMuonForwardTrackPair *pair);
+
   void SetVertResMC(Double_t xRes, Double_t yRes, Double_t zRes) { fXVertResMC=xRes; fYVertResMC=yRes; fZVertResMC=zRes; }
 
   void SetOption(Int_t option) { fOption = option; }
@@ -66,6 +69,10 @@ public:
   Int_t GetFirstEvent() { return fFirstEvent; }
   Int_t GetLastEvent()  { return fLastEvent; }
 
+  void UseBransonForCut(Bool_t useBranson) { fUseBransonForCut = useBranson; }
+  void UseBransonForKinematics(Bool_t useBranson) { fUseBransonForKinematics = useBranson; }
+  void UseCutOnOffsetChi2(Bool_t useCut) { fCutOnOffsetChi2 = useCut; }
+
 private:
 
   static const Int_t fNPtBinsOffsetSingleMuons  = 10;
@@ -73,12 +80,13 @@ private:
 
   TString fInputDir, fOutputDir;
 
-  TTree *fInputTree;  //!
+  TTree *fInputTreeWithBranson, *fInputTreeWithoutBranson;  //!
 
-  TClonesArray *fMuonForwardTracks, *fMuonForwardTrackPairs;  //!
-  AliMuonForwardTrack *fMFTTrack;                             //!
-  AliMuonForwardTrackPair *fMFTTrackPair;                     //!
-  TParticle *fMCRefTrack;                                     //!
+  TClonesArray *fMuonForwardTracksWithBranson,    *fMuonForwardTrackPairsWithBranson;                //!
+  TClonesArray *fMuonForwardTracksWithoutBranson, *fMuonForwardTrackPairsWithoutBranson;             //!
+  AliMuonForwardTrack *fMFTTrackWithBranson, *fMFTTrackWithoutBranson, *fMFTTrack;                   //!
+  AliMuonForwardTrackPair *fMFTTrackPairWithBranson, *fMFTTrackPairWithoutBranson, *fMFTTrackPair;   //!
+  TParticle *fMCRefTrack;                                                                            //!
 
   Int_t fEv, fFirstEvent, fLastEvent, fNTracksOfEvent, fNTracksAnalyzedOfEvent, fNTracksAnalyzed, fNPairsOfEvent, fNPairsAnalyzedOfEvent;
   
@@ -100,8 +108,13 @@ private:
   Int_t fOption;
 
   Double_t fXVertResMC, fYVertResMC, fZVertResMC;
+  Double_t fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ;
   Int_t fMaxNWrongClustersMC;
   Double_t fPtMinSingleMuons;
+
+  Bool_t fUseBransonForCut, fUseBransonForKinematics, fCutOnOffsetChi2;
+
+  Double_t fCenterOffset, fCenterChi2, fScaleOffset, fScaleChi2, fRadiusCut;
 
   ClassDef(AliMuonForwardTrackAnalysis, 1)
 

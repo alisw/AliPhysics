@@ -140,6 +140,7 @@ public:
   Bool_t SetRunNumber();
 
   void SetMaxNTracksToBeAnalyzed(Int_t nTracks) { fMaxNTracksToBeAnalyzed = nTracks; }
+  void SetBransonCorrection(Bool_t correction) { fBransonCorrection = correction; }
 
 private:
 
@@ -254,12 +255,14 @@ protected:
 
   AliGRPObject *fGRPData;              //! Data from the GRP/GRP/Data CDB folder
   AliRunInfo *fRunInfo;                //!
+  
+  Bool_t fBransonCorrection;    // if TRUE, Branson Correction is applied when extrapolating the MUON tracks to the vertex region
 
   ClassDef(AliMuonForwardTrackFinder, 1); 
 
 };
 
-//======================================================================================================
+//====================================================================================================================================================
  
 #endif
 

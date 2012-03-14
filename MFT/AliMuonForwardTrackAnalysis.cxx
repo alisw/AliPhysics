@@ -33,10 +33,17 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   TObject(),
   fInputDir(0),
   fOutputDir(0),
-  fInputTree(0),
-  fMuonForwardTracks(0),
-  fMuonForwardTrackPairs(0),
+  fInputTreeWithBranson(0x0),
+  fInputTreeWithoutBranson(0x0),
+  fMuonForwardTracksWithBranson(0),
+  fMuonForwardTrackPairsWithBranson(0),
+  fMuonForwardTracksWithoutBranson(0),
+  fMuonForwardTrackPairsWithoutBranson(0),
+  fMFTTrackWithBranson(0),
+  fMFTTrackWithoutBranson(0),
   fMFTTrack(0),
+  fMFTTrackPairWithBranson(0),
+  fMFTTrackPairWithoutBranson(0),
   fMFTTrackPair(0),
   fMCRefTrack(0),
   fEv(0),
@@ -73,8 +80,19 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fXVertResMC(50.e-4),
   fYVertResMC(50.e-4),
   fZVertResMC(50.e-4),
+  fPrimaryVtxX(0.),
+  fPrimaryVtxY(0.),
+  fPrimaryVtxZ(0.),
   fMaxNWrongClustersMC(999),
-  fPtMinSingleMuons(0)
+  fPtMinSingleMuons(0),
+  fUseBransonForCut(kFALSE),
+  fUseBransonForKinematics(kFALSE),
+  fCutOnOffsetChi2(kFALSE),
+  fCenterOffset(0.), 
+  fCenterChi2(1.), 
+  fScaleOffset(250.), 
+  fScaleChi2(4.5),
+  fRadiusCut(1.)
 {
 
   // default constructor
@@ -99,30 +117,39 @@ Bool_t AliMuonForwardTrackAnalysis::Init(Char_t *inputFileName) {
     AliError(Form("Error opening file %s", inputFileName));
     return kFALSE;
   }
-  fInputTree = (TTree*) inputFile->Get("AliMuonForwardTracks");
-  if (!fInputTree) {
+  fInputTreeWithBranson = (TTree*) inputFile->Get("AliMuonForwardTracksWithBranson");
+  if (!fInputTreeWithBranson) {
+    AliError("Error reading input tree");
+    return kFALSE;
+  }
+  fInputTreeWithoutBranson = (TTree*) inputFile->Get("AliMuonForwardTracksWithoutBranson");
+  if (!fInputTreeWithoutBranson) {
     AliError("Error reading input tree");
     return kFALSE;
   }
 
-  if (fFirstEvent<0 || fLastEvent<0 || fFirstEvent>fLastEvent || fFirstEvent>=fInputTree->GetEntries()) {
+  if (fFirstEvent<0 || fLastEvent<0 || fFirstEvent>fLastEvent || fFirstEvent>=fInputTreeWithBranson->GetEntries()) {
     fFirstEvent = 0;
-    fLastEvent  = fInputTree->GetEntries()-1;
+    fLastEvent  = fInputTreeWithBranson->GetEntries()-1;
   }
   else {
-    fLastEvent = TMath::Min(fLastEvent, Int_t(fInputTree->GetEntries()-1));
+    fLastEvent = TMath::Min(fLastEvent, Int_t(fInputTreeWithBranson->GetEntries()-1));
   }
 
   AliInfo(Form("Analysing events %d to %d", fFirstEvent, fLastEvent));
 
-  fMuonForwardTracks = new TClonesArray("AliMuonForwardTrack");
-  fInputTree->SetBranchAddress("tracks", &fMuonForwardTracks);  
+  fMuonForwardTracksWithBranson = new TClonesArray("AliMuonForwardTrack");
+  fInputTreeWithBranson->SetBranchAddress("tracks", &fMuonForwardTracksWithBranson);  
+
+  fMuonForwardTracksWithoutBranson = new TClonesArray("AliMuonForwardTrack");
+  fInputTreeWithoutBranson->SetBranchAddress("tracks", &fMuonForwardTracksWithoutBranson);  
 
   TGeoManager::Import(Form("%s/geometry.root",fInputDir.Data()));
 
   AliMUONTrackExtrap::SetField();
 
-  fMuonForwardTrackPairs = new TClonesArray("AliMuonForwardTrackPair");
+  fMuonForwardTrackPairsWithBranson    = new TClonesArray("AliMuonForwardTrackPair");
+  fMuonForwardTrackPairsWithoutBranson = new TClonesArray("AliMuonForwardTrackPair");
 
   return kTRUE;
 
@@ -134,23 +161,30 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
 
   if (fEv>fLastEvent) return kFALSE;
   if (fEv<fFirstEvent) { fEv++; return kTRUE; }
-  fMuonForwardTracks -> Clear();
-  fInputTree->GetEvent(fEv);
-  AliInfo(Form("**** analyzing event # %4d (%3d tracks) ****", fEv, fMuonForwardTracks->GetEntries()));
+  fMuonForwardTracksWithBranson -> Delete();
+  fMuonForwardTracksWithoutBranson -> Delete();
+  fInputTreeWithBranson->GetEvent(fEv);
+  fInputTreeWithoutBranson->GetEvent(fEv);
+  AliInfo(Form("**** analyzing event # %4d (%3d tracks) ****", fEv, fMuonForwardTracksWithBranson->GetEntries()));
+
+  fPrimaryVtxX = gRandom->Gaus(0., fXVertResMC);
+  fPrimaryVtxY = gRandom->Gaus(0., fYVertResMC);
+  fPrimaryVtxZ = gRandom->Gaus(0., fZVertResMC);
 
   if (fSingleMuonAnalysis) {
     fNTracksAnalyzedOfEvent = 0;
-    fNTracksOfEvent = fMuonForwardTracks->GetEntries();
+    fNTracksOfEvent = fMuonForwardTracksWithBranson->GetEntries();
     while (AnalyzeSingleMuon()) continue;
   }
   
   if (fMuonPairAnalysis) {
-    if (fMuonForwardTrackPairs) {
-      fMuonForwardTrackPairs->Clear();
+    if (fMuonForwardTrackPairsWithBranson) {
+      fMuonForwardTrackPairsWithBranson->Delete();
+      fMuonForwardTrackPairsWithoutBranson->Delete();
     }
     BuildMuonPairs();
     fNPairsAnalyzedOfEvent = 0;
-    fNPairsOfEvent = fMuonForwardTrackPairs->GetEntries();
+    fNPairsOfEvent = fMuonForwardTrackPairsWithBranson->GetEntries();
     while (AnalyzeMuonPair()) continue;
   }
 
@@ -166,29 +200,31 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
 
   if (fNTracksAnalyzedOfEvent>=fNTracksOfEvent) return kFALSE;
 
-  fMFTTrack = (AliMuonForwardTrack*) fMuonForwardTracks->At(fNTracksAnalyzedOfEvent);
+  fMFTTrackWithBranson    = (AliMuonForwardTrack*) fMuonForwardTracksWithBranson->At(fNTracksAnalyzedOfEvent);
+  fMFTTrackWithoutBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithoutBranson->At(fNTracksAnalyzedOfEvent);
+
   fNTracksAnalyzedOfEvent++;
+
+  Bool_t passedCut = kFALSE;
+  if (fUseBransonForCut) passedCut = PassedCutSingleMuon(fMFTTrackWithBranson);
+  else passedCut = PassedCutSingleMuon(fMFTTrackWithoutBranson);
+  if (!passedCut) return kTRUE;
+
+  if (fUseBransonForKinematics) fMFTTrack = fMFTTrackWithBranson;
+  else fMFTTrack = fMFTTrackWithoutBranson;
   if (fMatchTrigger && !fMFTTrack->GetMatchTrigger()) return kTRUE;
   fMCRefTrack = fMFTTrack->GetMCTrackRef();
 
   if (!fMCRefTrack) return kTRUE;
   if (fMFTTrack->GetNWrongClustersMC()>fMaxNWrongClustersMC) return kTRUE;
 
-  Double_t xOrig=gRandom->Gaus(0., fXVertResMC);
-  Double_t yOrig=gRandom->Gaus(0., fYVertResMC);
-//   Double_t xOrig = 0.;
-//   Double_t yOrig = 0.;
-  Double_t zOrig=gRandom->Gaus(0., fZVertResMC);
-
   AliMUONTrackParam *param = fMFTTrack->GetTrackParamAtMFTCluster(0);
-  AliMUONTrackExtrap::ExtrapToZCov(param, zOrig);
+  AliMUONTrackExtrap::ExtrapToZCov(param, fPrimaryVtxZ);
 
   TLorentzVector pMu;
   Double_t mMu = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
   Double_t energy = TMath::Sqrt(param->P()*param->P() + mMu*mMu);
   pMu.SetPxPyPzE(param->Px(), param->Py(), param->Pz(), energy);
-
-  if (fMFTTrack->Pt()<fPtMinSingleMuons) return kTRUE;
 
   TMatrixD cov(5,5);
   cov = param->GetCovariances();
@@ -196,11 +232,11 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
   fHistErrorSingleMuonsX -> Fill(1.e4*TMath::Sqrt(cov(0,0)));
   fHistErrorSingleMuonsY -> Fill(1.e4*TMath::Sqrt(cov(2,2)));
 
-  Double_t dX = fMFTTrack->GetOffsetX(xOrig, zOrig);
-  Double_t dY = fMFTTrack->GetOffsetY(yOrig, zOrig);
+  Double_t dX = fMFTTrack->GetOffsetX(fPrimaryVtxX, fPrimaryVtxZ);
+  Double_t dY = fMFTTrack->GetOffsetY(fPrimaryVtxY, fPrimaryVtxZ);
   
-  Double_t offset = fMFTTrack->GetOffset(xOrig, yOrig, zOrig);
-  Double_t weightedOffset = fMFTTrack->GetWeightedOffset(xOrig, yOrig, zOrig);
+  Double_t offset = fMFTTrack->GetOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ);
+  Double_t weightedOffset = fMFTTrack->GetWeightedOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ);
 
   //  AliDebug(2, Form("pdg code = %d\n", fMCRefTrack->GetPdgCode()));
 
@@ -232,27 +268,32 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair() {
 
   if (fNPairsAnalyzedOfEvent>=fNPairsOfEvent) return kFALSE;
 
-  fMFTTrackPair = (AliMuonForwardTrackPair*) fMuonForwardTrackPairs->At(fNPairsAnalyzedOfEvent);
+  fMFTTrackPairWithBranson    = (AliMuonForwardTrackPair*) fMuonForwardTrackPairsWithBranson->At(fNPairsAnalyzedOfEvent);
+  fMFTTrackPairWithoutBranson = (AliMuonForwardTrackPair*) fMuonForwardTrackPairsWithoutBranson->At(fNPairsAnalyzedOfEvent);
 
-  if (fOption==kResonanceOnly && !fMFTTrackPair->IsResonance()) {
-    fNPairsAnalyzedOfEvent++;
-    return kTRUE;
-  }
+  fNPairsAnalyzedOfEvent++;
 
-  Double_t xOrig=gRandom->Gaus(0., fXVertResMC);
-  Double_t yOrig=gRandom->Gaus(0., fYVertResMC);
-  Double_t zOrig=gRandom->Gaus(0., fZVertResMC);
-  AliDebug(1, Form("origin = (%f, %f, %f)", xOrig, yOrig, zOrig));
+  Bool_t passedCut = kFALSE;
+  if (fUseBransonForCut) passedCut = PassedCutMuonPair(fMFTTrackPairWithBranson);
+  else passedCut = PassedCutMuonPair(fMFTTrackPairWithoutBranson);
 
-  fHistMassMuonPairs           -> Fill(fMFTTrackPair->GetMass(zOrig));
-  fHistWOffsetMuonPairs        -> Fill(fMFTTrackPair->GetWeightedOffset(xOrig, yOrig, zOrig));
-  fHistMassMuonPairsWithoutMFT -> Fill(fMFTTrackPair->GetMassWithoutMFT(xOrig, yOrig, zOrig));
+  if (!passedCut) return kTRUE;
+
+  if (fUseBransonForKinematics) fMFTTrackPair = fMFTTrackPairWithBranson;
+  else fMFTTrackPair = fMFTTrackPairWithoutBranson;
+
+  if ( fMFTTrackPair->GetTrack(0)->GetNWrongClustersMC()>fMaxNWrongClustersMC || 
+       fMFTTrackPair->GetTrack(1)->GetNWrongClustersMC()>fMaxNWrongClustersMC ) return kTRUE;
+
+  if (fOption==kResonanceOnly && !fMFTTrackPair->IsResonance()) return kTRUE;
+
+  fHistMassMuonPairs           -> Fill(fMFTTrackPair->GetMass(fPrimaryVtxZ));
+  fHistWOffsetMuonPairs        -> Fill(fMFTTrackPair->GetWeightedOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
+  fHistMassMuonPairsWithoutMFT -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
   fHistMassMuonPairsMC         -> Fill(fMFTTrackPair->GetMassMC());
   fHistRapidityPtMuonPairsMC   -> Fill(fMFTTrackPair->GetRapidityMC(), fMFTTrackPair->GetPtMC());
 
-  AliDebug(1, Form("mass = %f   MC = %f", fMFTTrackPair->GetMass(zOrig), fMFTTrackPair->GetMassMC()));
-
-  fNPairsAnalyzedOfEvent++;
+  AliDebug(1, Form("mass = %f   MC = %f", fMFTTrackPair->GetMass(fPrimaryVtxZ), fMFTTrackPair->GetMassMC()));
 
   return kTRUE;
 
@@ -262,26 +303,61 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair() {
 
 void AliMuonForwardTrackAnalysis::BuildMuonPairs() {
 
-  for (Int_t iTrack=0; iTrack<fMuonForwardTracks->GetEntries(); iTrack++) {
+  for (Int_t iTrack=0; iTrack<fMuonForwardTracksWithBranson->GetEntries(); iTrack++) {
     for (Int_t jTrack=0; jTrack<iTrack; jTrack++) {
     
-      AliMuonForwardTrack *track0 = (AliMuonForwardTrack*) fMuonForwardTracks->At(iTrack);
-      AliMuonForwardTrack *track1 = (AliMuonForwardTrack*) fMuonForwardTracks->At(jTrack);
+      AliMuonForwardTrack *track0_WithBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithBranson->At(iTrack);
+      AliMuonForwardTrack *track1_WithBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithBranson->At(jTrack);
 
-      if (fMatchTrigger) if (!track0->GetMatchTrigger() || !track1->GetMatchTrigger()) continue;
-      if (!track0->GetMCTrackRef() || !track1->GetMCTrackRef()) continue;
-      if (track0->GetNWrongClustersMC()>fMaxNWrongClustersMC || track1->GetNWrongClustersMC()>fMaxNWrongClustersMC) continue;
-      if (track0->Pt()<fPtMinSingleMuons || track1->Pt()<fPtMinSingleMuons) continue;
+      AliMuonForwardTrack *track0_WithoutBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithoutBranson->At(iTrack);
+      AliMuonForwardTrack *track1_WithoutBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithoutBranson->At(jTrack);
 
-      AliMuonForwardTrackPair *trackPair = new AliMuonForwardTrackPair(track0, track1);
-      if (fOption==kResonanceOnly && !trackPair->IsResonance()) {
-	delete trackPair;
+      if (fMatchTrigger) if (!track0_WithBranson->GetMatchTrigger() || !track1_WithBranson->GetMatchTrigger()) continue;
+      if (!track0_WithBranson->GetMCTrackRef() || !track1_WithBranson->GetMCTrackRef()) continue;
+
+      AliMuonForwardTrackPair *trackPairWithBranson    = new AliMuonForwardTrackPair(track0_WithBranson, track1_WithBranson);
+      AliMuonForwardTrackPair *trackPairWithoutBranson = new AliMuonForwardTrackPair(track0_WithoutBranson, track1_WithoutBranson);
+      if (fOption==kResonanceOnly && !trackPairWithBranson->IsResonance()) {
+	delete trackPairWithBranson;
+	delete trackPairWithoutBranson;
 	continue;
       }
-      new ((*fMuonForwardTrackPairs)[fMuonForwardTrackPairs->GetEntries()]) AliMuonForwardTrackPair(*trackPair);
-
+      new ((*fMuonForwardTrackPairsWithBranson)[fMuonForwardTrackPairsWithBranson->GetEntries()]) AliMuonForwardTrackPair(*trackPairWithBranson);
+      new ((*fMuonForwardTrackPairsWithoutBranson)[fMuonForwardTrackPairsWithoutBranson->GetEntries()]) AliMuonForwardTrackPair(*trackPairWithoutBranson);
     }
   }
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMuonForwardTrackAnalysis::PassedCutSingleMuon(AliMuonForwardTrack *track) {
+
+  AliMUONTrackParam *param = track->GetTrackParamAtMFTCluster(0);
+  AliMUONTrackExtrap::ExtrapToZCov(param, fPrimaryVtxZ);
+
+  if (track->Pt()<fPtMinSingleMuons) return kFALSE;
+  
+  if (fCutOnOffsetChi2) {
+    Double_t offset = 1.e4*track->GetOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ);
+    Double_t chi2OverNdf = track->GetGlobalChi2() / Double_t(track->GetNMFTClusters()+track->GetNMUONClusters()); 
+    offset /= fScaleOffset;
+    chi2OverNdf /= fScaleChi2;
+    offset -= fCenterOffset;
+    chi2OverNdf -= fCenterChi2;
+    //    printf("cut on offset and chi2: returning %d\n", TMath::Sqrt(offset*offset + chi2OverNdf*chi2OverNdf)>fRadiusCut);
+    if (TMath::Sqrt(offset*offset + chi2OverNdf*chi2OverNdf) > fRadiusCut) return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMuonForwardTrackAnalysis::PassedCutMuonPair(AliMuonForwardTrackPair *pair) {
+
+  return PassedCutSingleMuon(pair->GetTrack(0)) && PassedCutSingleMuon(pair->GetTrack(1));
 
 }
 
@@ -401,8 +477,9 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
     
   //--------------------------------------------
 
-  fGraphSingleMuonsOffsetChi2 = new TGraph("fGraphSingleMuonsOffsetChi2");
+  fGraphSingleMuonsOffsetChi2 = new TGraph();
   fGraphSingleMuonsOffsetChi2 -> SetName("fGraphSingleMuonsOffsetChi2");
+  fGraphSingleMuonsOffsetChi2 -> SetTitle("fGraphSingleMuonsOffsetChi2");
 
   //--------------------------------------------
 

@@ -76,6 +76,9 @@ public:
   Int_t GetNWrongClustersMC() { return fNWrongClustersMC; }
 
   Double_t Pt() { return TMath::Sqrt(TMath::Power(GetTrackParamAtMFTCluster(0)->Px(),2)+TMath::Power(GetTrackParamAtMFTCluster(0)->Py(),2)); }
+
+  void SetTrackMCId(Int_t id) { fTrackMCId = id; }
+  Int_t GetTrackMCId() { return fTrackMCId; }
   
 protected:
 
@@ -92,6 +95,8 @@ protected:
   Int_t fParentPDGCode[fgkNParentsMax];    ///< PDG code of parents and grandparents 
 
   Int_t fNWrongClustersMC;    // number of wrong associated MC clusters
+
+  Int_t fTrackMCId;   // this number will identify the track within a MC simulation: run, event, MUON track
 
   ClassDef(AliMuonForwardTrack,1)
     

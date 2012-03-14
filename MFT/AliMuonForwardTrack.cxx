@@ -42,7 +42,8 @@ AliMuonForwardTrack::AliMuonForwardTrack():
   fMUONTrack(0),
   fMCTrackRef(0),
   fMFTClusters(0),
-  fNWrongClustersMC(-1)
+  fNWrongClustersMC(-1),
+  fTrackMCId(-1)
 {
 
   // default constructor
@@ -63,7 +64,8 @@ AliMuonForwardTrack::AliMuonForwardTrack(AliMUONTrack *MUONTrack):
   fMUONTrack(0),
   fMCTrackRef(0),
   fMFTClusters(0),
-  fNWrongClustersMC(-1)
+  fNWrongClustersMC(-1),
+  fTrackMCId(-1)
 {
 
   SetMUONTrack(MUONTrack);
@@ -83,7 +85,8 @@ AliMuonForwardTrack::AliMuonForwardTrack(const AliMuonForwardTrack& track):
   fMUONTrack(0x0),
   fMCTrackRef(0x0),
   fMFTClusters(0x0),
-  fNWrongClustersMC(track.fNWrongClustersMC)
+  fNWrongClustersMC(track.fNWrongClustersMC),
+  fTrackMCId(track.fTrackMCId)
 {
 
   // copy constructor
@@ -117,6 +120,7 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
   if (track.fMCTrackRef) fMCTrackRef = new TParticle(*(track.fMCTrackRef));
   fMFTClusters      = new TClonesArray(*(track.fMFTClusters));
   fNWrongClustersMC = track.fNWrongClustersMC;
+  fTrackMCId        = track.fTrackMCId;
 
   for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) fPlaneExists[iPlane] = (track.fPlaneExists)[iPlane];
   for (Int_t iParent=0; iParent<fgkNParentsMax; iParent++) {

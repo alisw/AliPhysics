@@ -12,7 +12,7 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
 				 Bool_t muonPairAnalysis = kTRUE,
 				 Int_t firstEvent = -1,
 				 Int_t lastEvent = -1, 
-				 Int_t myRandom,
+				 Int_t myRandom = 0,
 				 Int_t maxNWrongClusters = 999,
 				 Double_t ptMinSingleMuons = 0.0) {
   
@@ -35,6 +35,9 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
   myAnalysis->SetMatchTrigger(kTRUE);
   myAnalysis->SetMaxNWrongClustersMC(maxNWrongClusters);
   myAnalysis->SetPtMinSingleMuons(ptMinSingleMuons);
+  myAnalysis->UseCutOnOffsetChi2(kFALSE);
+  myAnalysis->UseBransonForCut(kFALSE);
+  myAnalysis->UseBransonForKinematics(kFALSE);
 
   myAnalysis->Init("MuonGlobalTracks.root");
 

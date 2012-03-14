@@ -1,6 +1,7 @@
 //================================================================================================================================
 
 void AliMuonForwardTrackFinder(Int_t run=0,
+			       Bool_t bransonCorrection = kTRUE,
 			       Double_t zVertexError=0.010,
 			       Int_t matching=0,
 			       const Char_t *readDir= ".",
@@ -28,9 +29,11 @@ void AliMuonForwardTrackFinder(Int_t run=0,
   //  finder -> SetLowPtCut(0.5);
   finder -> SetVertexError(0.015, 0.015, zVertexError);
   finder -> SetMatchingMode(matching);                // 0 -> real matching   1 -> ideal matching
-//  finder -> SetMinResearchRadiusAtPlane(4, 0.0);
+  //  finder -> SetMinResearchRadiusAtPlane(4, 0.0);
+  //  finder -> SetMinResearchRadiusAtPlane(3, 0.0);
   finder -> SetMinResearchRadiusAtPlane(4, 0.50);
   finder -> SetMinResearchRadiusAtPlane(3, 0.05);
+  finder -> SetBransonCorrection(bransonCorrection);
 
   while (finder->LoadNextTrack()) continue;
 
