@@ -49,6 +49,9 @@
 #include "TRandom2.h"
 #include "AliESDVZERO.h"
 #include "AliAODVZERO.h"
+#include "AliPID.h"
+#include "AliESDpid.h"
+#include "AliAODpidUtil.h"
 
 class AliFlowTrackCuts;
 
@@ -71,7 +74,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTaskSE(name),
-   fAODAnalysis(0), fEtaMinA(0), fEtaMaxA(0), fEtaMinB(0), fEtaMaxB(0), fCutsRP(NULL), fNullCuts(0), fBayesianResponse(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fParticleProbability(0.5), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDDeltaDip(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fDeltaPhiPsiNP03(0), fDeltaPhiPsiNP36(0), fDeltaPhiPsiNP69(0), fDeltaPhiPsiNP912(0), fDeltaPhiPsiNP1215(0), fDeltaPhiPsiNP1518(0), fDeltaPhiPsiNP1821(0), fDeltaPhiPsiNP2124(0), fDeltaPhiPsiNP2427(0), fDeltaPhiPsiNP2730(0), fDeltaPhiPsiNP3035(0), fDeltaPhiPsiNP3540(0), fDeltaPhiPsiNP4045(0), fDeltaPhiPsiNP4550(0), fDeltaPhiPsiNP5055(0), fDeltaPhiPsiNP5560(0), fDeltaPhiPsiNP6065(0), fDeltaPhiPsiNP6570(0), fProfV2(0), fProfV2Sin(0), fProfV2InvM03(0), fProfV2InvM36(0), fProfV2InvM69(0), fProfV2InvM912(0), fProfV2InvM1215(0), fProfV2InvM1518(0), fProfV2InvM1821(0), fProfV2InvM2124(0), fProfV2InvM2427(0), fProfV2InvM2730(0), fProfV2InvM3035(0), fProfV2InvM3540(0), fProfV2InvM4045(0), fProfV2InvM4550(0), fProfV2InvM5055(0), fProfV2InvM5560(0), fProfV2InvM6065(0), fProfV2InvM6570(0), fProfV2SinInvM03(0), fProfV2SinInvM36(0), fProfV2SinInvM69(0), fProfV2SinInvM912(0), fProfV2SinInvM1215(0), fProfV2SinInvM1518(0), fProfV2SinInvM1821(0), fProfV2SinInvM2124(0), fProfV2SinInvM2427(0), fProfV2SinInvM2730(0), fProfV2SinInvM3035(0), fProfV2SinInvM3540(0), fProfV2SinInvM4045(0), fProfV2SinInvM4550(0), fProfV2SinInvM5055(0), fProfV2SinInvM5560(0), fProfV2SinInvM6065(0), fProfV2SinInvM6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fEventPlaneSTAR(0), fEventPlaneResolutionRandom(0), fEventPlaneResolutionEta(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fRPCuts(0), fPOICuts(0), fVertexRange(0), fQx(0), fQy(0), fEventPlane(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fPIDtype(kCombined), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fPairLoss(0), fEventPlanePtCut(0), fSetEventPlanePtCut(0)
+   fAODAnalysis(0), fEtaMinA(0), fEtaMaxA(0), fEtaMinB(0), fEtaMaxB(0), fCutsRP(NULL), fNullCuts(0), fBayesianResponse(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fParticleProbability(0.5), fCentrality(0), fESD(0), fAOD(0),fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDDeltaDip(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fDeltaPhiPsiNP03(0), fDeltaPhiPsiNP36(0), fDeltaPhiPsiNP69(0), fDeltaPhiPsiNP912(0), fDeltaPhiPsiNP1215(0), fDeltaPhiPsiNP1518(0), fDeltaPhiPsiNP1821(0), fDeltaPhiPsiNP2124(0), fDeltaPhiPsiNP2427(0), fDeltaPhiPsiNP2730(0), fDeltaPhiPsiNP3035(0), fDeltaPhiPsiNP3540(0), fDeltaPhiPsiNP4045(0), fDeltaPhiPsiNP4550(0), fDeltaPhiPsiNP5055(0), fDeltaPhiPsiNP5560(0), fDeltaPhiPsiNP6065(0), fDeltaPhiPsiNP6570(0), fProfV2(0), fProfV2Sin(0), fProfV2InvM03(0), fProfV2InvM36(0), fProfV2InvM69(0), fProfV2InvM912(0), fProfV2InvM1215(0), fProfV2InvM1518(0), fProfV2InvM1821(0), fProfV2InvM2124(0), fProfV2InvM2427(0), fProfV2InvM2730(0), fProfV2InvM3035(0), fProfV2InvM3540(0), fProfV2InvM4045(0), fProfV2InvM4550(0), fProfV2InvM5055(0), fProfV2InvM5560(0), fProfV2InvM6065(0), fProfV2InvM6570(0), fProfV2SinInvM03(0), fProfV2SinInvM36(0), fProfV2SinInvM69(0), fProfV2SinInvM912(0), fProfV2SinInvM1215(0), fProfV2SinInvM1518(0), fProfV2SinInvM1821(0), fProfV2SinInvM2124(0), fProfV2SinInvM2427(0), fProfV2SinInvM2730(0), fProfV2SinInvM3035(0), fProfV2SinInvM3540(0), fProfV2SinInvM4045(0), fProfV2SinInvM4550(0), fProfV2SinInvM5055(0), fProfV2SinInvM5560(0), fProfV2SinInvM6065(0), fProfV2SinInvM6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fEventPlaneSTAR(0), fEventPlaneResolutionRandom(0), fEventPlaneResolutionEta(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fRPCuts(0), fPOICuts(0), fVertexRange(0), fQx(0), fQy(0), fEventPlane(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fPIDtype(kCombined), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fPairLoss(0), fEventPlanePtCut(0), fSetEventPlanePtCut(0)
 {
    // Constructor
    fNullCuts = new AliFlowTrackCuts("null_cuts");
@@ -588,7 +591,9 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliESDtrack* track) const
       case kTPC:
          // general tpc pid
          fNOPID->Fill(track->P(), track->GetTPCsignal());
-         if (track->GetPID() == AliPID::kKaon)
+         Double_t p[AliPID::kSPECIES];
+         track->GetTPCpid(p);
+         if(p[3] > fParticleProbability)
          {
             fPIDk->Fill(track->P(), track->GetTPCsignal());
             return kTRUE;
@@ -619,14 +624,16 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
    switch (fPIDtype)
    {
       case kTPC:
-         // general tpc pid
          fNOPID->Fill(track->P(), track->GetTPCsignal());
-         //if (((Int_t)track->GetMostProbablePID()) == ((Int_t)AliPID::kKaon))
-         //{
-         //   fPIDk->Fill(track->P(), track->GetTPCsignal());
-         //   return kTRUE;
-         //}
-         return kFALSE; // curretly not implemented
+//        Double_t p[AliPID::kSPECIES];
+//         AliAODpidUtil* pid;
+//         pid->MakeTPCPID(track, p);
+//         if(p[3] > fParticleProbability)
+//         {
+//            fPIDk->Fill(track->P(), track->GetTPCsignal());
+//            return kTRUE;
+//         }
+         return kFALSE;
          break;
       case kCombined:
          fNOPID->Fill(track->P(), track->GetTPCsignal());
@@ -1278,7 +1285,6 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
    if (fAOD)
    {
-      cout << " --> Task received an AOD event " << endl;
       fAODAnalysis = kTRUE;
       // Check whether event passes event cuts
       if (!EventCut(fAOD)) return;
@@ -1406,7 +1412,6 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
    if (fESD)
    {
-      cout << " --> Task received an ESD event" << endl;
       fAODAnalysis = kFALSE;
       // Check whether event passes event cuts
       if (!EventCut(fESD)) return;
