@@ -351,9 +351,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     if (expectedClr<0){      
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDStop);
       continue;
-    }
-
-    if(expectedClr){
+    } else {
       nFound++;  
       // computes PID for track
       track.CookPID();
@@ -368,14 +366,14 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       //update ESD track
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
       track.UpdateESDtrack(seed);
+      //compute MC label 
+      track.CookLabel(1. - AliTRDReconstructor::GetLabelFraction());
     }
 
-    if ((TMath::Abs(track.GetC(track.GetBz()) - p4) / TMath::Abs(p4) < 0.2) ||(track.Pt() > 0.8)) {
-
-      // Make backup for back propagation
+    // Make backup for back propagation
+    if ((TMath::Abs(track.GetC(track.GetBz()) - p4) / TMath::Abs(p4) < 0.2) || (track.Pt() > 0.8)) {
       Int_t foundClr = track.GetNumberOfClusters();
       if (foundClr >= foundMin) {
-        track.CookLabel(1. - AliTRDReconstructor::GetLabelFraction());
         //if(track.GetBackupTrack()) UseClusters(track.GetBackupTrack());
 
         // Sign only gold tracks

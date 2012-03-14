@@ -256,6 +256,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   
   AliTRDclusterizer clusterer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
   clusterer.SetReconstructor(this);
+  clusterer.SetUseLabels(kTRUE);
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
