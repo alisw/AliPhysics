@@ -353,8 +353,10 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       continue;
     } else {
       nFound++;  
-      // computes PID for track
+      // compute PID
       track.CookPID();
+      //compute MC label
+      track.CookLabel(1. - AliTRDReconstructor::GetLabelFraction());
       // update calibration references using this track
       if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(&track);
       // save calibration object
@@ -366,8 +368,6 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       //update ESD track
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
       track.UpdateESDtrack(seed);
-      //compute MC label 
-      track.CookLabel(1. - AliTRDReconstructor::GetLabelFraction());
     }
 
     // Make backup for back propagation
