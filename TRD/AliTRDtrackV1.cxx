@@ -283,55 +283,62 @@ void AliTRDtrackV1::Copy(TObject &t) const
 }
 
 //_______________________________________________________________
-Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
+Int_t AliTRDtrackV1::CookLabel(Float_t wrong, Int_t *labs, Float_t *freq)
 {
-  // set MC label for this track
-  if(!GetNumberOfClusters()) return kFALSE;
+// Set MC label for this track
+// On demand i.e. if arrays "labs" and "freq" are allocated by user returns :
+//   nlabs = the no of distinct labels
+//   labs  = array of distinct labels in decreasing order of frequency
+//   freq  = frequency of each label  in decreasing order
 
-  Int_t s[kMAXCLUSTERSPERTRACK][2];
+  Int_t ncl(0);
+  if(!(ncl = GetNumberOfClusters())) return 0;
+
+  Int_t s[2][kMAXCLUSTERSPERTRACK];
   for (Int_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
-    s[i][0] = -1;
-    s[i][1] =  0;
+    s[0][i] = -1;
+    s[1][i] =  0;
   }
-  
-  Bool_t labelAdded;
-  Int_t label;
-  AliTRDcluster *c    = NULL;
-  for (Int_t ip = 0; ip < kNplane; ip++) {
+
+  Int_t label(-123456789), nlabels(0);
+  AliTRDcluster *c(NULL);
+  for (Int_t ip(0); ip < AliTRDgeometry::kNlayer; ip++) {
     if(fTrackletIndex[ip]<0 || !fTracklet[ip]) continue;
-    for (Int_t ic = 0; ic < AliTRDseedV1::kNclusters; ic++) {
+    for (Int_t ic(0); ic < AliTRDseedV1::kNclusters; ic++) {
       if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
-      for (Int_t k = 0; k < 3; k++) { 
-        label      = c->GetLabel(k);
-        labelAdded = kFALSE; 
-        Int_t j = 0;
-        if (label >= 0) {
-          while ((!labelAdded) && (j < kMAXCLUSTERSPERTRACK)) {
-            if ((s[j][0] == label) || 
-                (s[j][1] ==     0)) {
-              s[j][0] = label; 
-              s[j][1]++; 
-              labelAdded = kTRUE;
-            }
-            j++;
-          }
+      for (Int_t k(0); k < 3; k++) {
+        if ((label = c->GetLabel(k)) < 0) continue;
+        Int_t j(0);
+        while(j < kMAXCLUSTERSPERTRACK){
+          if(s[0][j]!=label && s[1][j]!=0){j++; continue;}
+          if(!s[1][j]) nlabels++;
+          s[0][j] = label; s[1][j]++;
+          break;
         }
       }
     }
   }
-  
-  Int_t max = 0;
-  label = -123456789;
-  for (Int_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
-    if (s[i][1] <= max) continue;
-    max   = s[i][1]; 
-    label = s[i][0];
+  //printf("  Found %4d labels\n", nlabels);
+  Float_t prob(1.);
+  if(!nlabels){
+    AliError(Form("No MC labels found for track %d.", fESDid));
+    return 0;
+  } else if(nlabels==1) {
+    label = s[0][0];
+    if(labs && freq){labs[0]=label; freq[0]=1.;}
+  } else {
+    Int_t idx[kMAXCLUSTERSPERTRACK];
+    TMath::Sort(nlabels, s[1], idx);
+    label = s[0][idx[0]]; prob = s[1][idx[0]]/Float_t(ncl);
+    if(labs && freq){
+      for (Int_t i(0); i<nlabels; i++){
+        labs[i] = s[0][idx[i]];
+        freq[i] = s[1][idx[i]]/Float_t(ncl);
+      }
+    }
   }
-  if ((1. - Float_t(max)/GetNumberOfClusters()) > wrong) label = -label;
-  
-  SetLabel(label); 
-  
-  return kTRUE;
+  SetLabel((1.-prob > wrong)?-label:label);
+  return nlabels;
 }
 
 //_______________________________________________________________

@@ -76,7 +76,7 @@ public:
   virtual void   Copy(TObject &ref) const;
  
   Bool_t         CookPID();
-  Bool_t         CookLabel(Float_t wrong);
+  Int_t          CookLabel(Float_t wrong, Int_t *labs=NULL, Float_t *freq=NULL);
   AliTRDtrackV1* GetBackupTrack() const {return fBackupTrack;}
   Double_t       GetBudget(Int_t i) const { return fBudget[i];}
   AliTRDcluster* GetCluster(Int_t id);
