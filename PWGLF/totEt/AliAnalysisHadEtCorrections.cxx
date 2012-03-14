@@ -196,9 +196,22 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
 
   //TString *type = new TString(mytype);
 
-  if(type.Contains("Full")) acceptance = fAcceptanceCorrectionFull;
+  if(type.Contains("Full") || type.Contains("PiKP")) acceptance = fAcceptanceCorrectionFull;
   if(type.Contains("EMCAL")) acceptance = fAcceptanceCorrectionEMCAL;
   if(type.Contains("PHOS")) acceptance = fAcceptanceCorrectionPHOS;
+
+  if(type.Contains("PiKP")){
+    if(ptcut>0.12){ptcorr = fpTcutCorrectionTPC;}
+    else{ptcorr = fpTcutCorrectionITS;}
+    if(type.Contains("High")){
+      if(ptcut>0.12){ptcorr = ffpTcutCorrectionTPCHigh;}
+      else{ptcorr = ffpTcutCorrectionITSHigh;}
+    }
+    if(type.Contains("Low")){
+      if(ptcut>0.12){ptcorr = ffpTcutCorrectionTPCLow;}
+      else{ptcorr = ffpTcutCorrectionITSLow;}
+    }
+  }
 
   if(type.Contains("High")){//high bound
     if(totEt) neutral = fNotHadronicCorrectionHigh;
