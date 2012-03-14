@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKCHARGEDHADRONSPECTRAMC_H
-#define ALIANALYSISTASKCHARGEDHADRONSPECTRAMC_H
+#ifndef ALIANALYSISTASKCHARGEDHADRONSPECTRA2MC_H
+#define ALIANALYSISTASKCHARGEDHADRONSPECTRA2MC_H
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //

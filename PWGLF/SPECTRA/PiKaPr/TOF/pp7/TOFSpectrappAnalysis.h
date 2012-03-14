@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKCHARGEDHADRONSPECTRA_H
-#define ALIANALYSISTASKCHARGEDHADRONSPECTRA_H
+#ifndef TOFSPECTRAPPANALYSIS_H
+#define TOFSPECTRAPOANALYSIS_H
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
