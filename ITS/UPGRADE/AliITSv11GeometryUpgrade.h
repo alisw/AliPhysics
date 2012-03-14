@@ -61,6 +61,8 @@ class AliITSv11GeometryUpgrade : public AliITSv11Geometry {
     void CreateLayerTurbo(TGeoVolume *moth,
 		    const TGeoManager *mgr=gGeoManager);
 
+    Double_t RadiusOfTurboContainer();
+
     TGeoVolume* CreateLadder(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateModule(const Double_t x, const Double_t y,
 			     const Double_t z,

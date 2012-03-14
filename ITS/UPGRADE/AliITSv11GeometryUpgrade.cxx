@@ -291,12 +291,13 @@ void AliITSv11GeometryUpgrade::CreateLayerTurbo(TGeoVolume *moth,
 // Return:
 //
 // Created:      08 Jul 2011  Mario Sitta
+// Updated:      08 Mar 2012  Mario Sitta  Correct way to compute container R
 //
 
 
   // Local variables
   char volname[30];
-  Double_t rmin, rmax, rladd, d;
+  Double_t rmin, rmax, rladd, rcont, d;
   Double_t xpos, ypos, zpos;
   Double_t alpha, gamma;
 
@@ -311,13 +312,20 @@ void AliITSv11GeometryUpgrade::CreateLayerTurbo(TGeoVolume *moth,
   // First create the ladder container
   // d is half the diagonal of the ladder section
   // rladd is the radius at the ladder's center-of-gravity
-  // alpha here is the angle between the diagonal and the ladder basis
+  // alpha here is the angle between the diagonal and rladd
   d = 0.5*TMath::Sqrt(fLadderThick*fLadderThick + fLadderWidth*fLadderWidth);
   alpha = TMath::ACos(0.5*fLadderThick/d)*TMath::RadToDeg();
-  gamma = 90. - alpha - fLadderTilt;
+  gamma = alpha - fLadderTilt;
   rladd = fLayRadius + 0.5*fLadderThick;
 
+  // rcont is the radius of the air container
+  rcont = RadiusOfTurboContainer();
+
+  if (rcont > 0)
+    rmin = 0.98*rcont;
+  else
   rmin = 0.98*TMath::Sqrt( rladd*rladd + d*d - 2*rladd*d*CosD(gamma) );
+
   rmax = 1.02*TMath::Sqrt( rladd*rladd + d*d + 2*rladd*d*CosD(gamma) );
 
   TGeoTube *layer = new TGeoTube(rmin, rmax, 0.5*fZLength);
@@ -484,6 +492,42 @@ TGeoVolume* AliITSv11GeometryUpgrade::CreateModule(const Double_t xlad,
 
   // Done, return the module
   return modVol;
+}
+
+//________________________________________________________________________
+Double_t AliITSv11GeometryUpgrade::RadiusOfTurboContainer(){
+//
+// Computes the inner radius of the air container for the Turbo configuration
+// as the radius of either the circle tangent to the ladder or the circle
+// passing for the ladder's lower vertex
+//
+// Input:
+//         none (all needed parameters are class members)
+//
+// Output:
+//
+// Return:
+//        the radius of the container if >0, else flag to use the lower vertex
+//
+// Created:      08 Mar 2012  Mario Sitta
+//
+
+  Double_t rr, delta, z, lladd, rladd;
+
+  if (fLadderThick > 89.) // Very big angle: avoid overflows since surely
+    return -1;            // the radius from lower vertex is the right value
+
+  rladd = fLayRadius + 0.5*fLadderThick;
+  delta = (0.5*fLadderThick)/CosD(fLadderTilt);
+  z     = (0.5*fLadderThick)*TanD(fLadderTilt);
+
+  rr = rladd - delta;
+  lladd = (0.5*fLadderWidth) - z;
+
+  if ( (rr*SinD(fLadderTilt) < lladd) )
+    return (rr*CosD(fLadderTilt));
+  else
+    return -1;
 }
 
 //________________________________________________________________________

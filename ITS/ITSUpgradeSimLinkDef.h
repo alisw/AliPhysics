@@ -17,5 +17,6 @@
 #pragma link C++ class  AliITSUpg+;
 #pragma link C++ class  AliITSvUpgrade+;
 #pragma link C++ class  AliITSv11GeometryUpgrade+;
+#pragma link C++ class  AliITSv11GeomBeamPipe+;
 
 #endif

@@ -18,6 +18,7 @@
 #include "AliITSInitGeometryUpg.h"
 
 class  AliITSv11GeometryUpgrade;
+class  AliITSv11GeomBeamPipe;
 class  TGeoVolume;
 class  TGeoVolumeAssembly;
 
@@ -30,6 +31,8 @@ class AliITSvUpgrade : public AliITSUpg {
     virtual       ~AliITSvUpgrade() ;
 
     virtual void   AddAlignableVolumes() const;
+    virtual void   AddBeamPipe(const Double_t rmin, const Double_t rmax,
+			       const Double_t halfzlen=0.);
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual void   DefineLayer(const Int_t nlay, const Double_t r,
@@ -42,6 +45,8 @@ class AliITSvUpgrade : public AliITSUpg {
 				    const Double_t tilt,
 				    const Double_t lthick = 0.,
 				    const Double_t dthick = 0.);
+    virtual void   GetBeamPipeParameters(Double_t &rmin, Double_t &rmax,
+					 Double_t &hzlen);
     virtual void   GetLayerParameters(const Int_t nlay,
 				      Double_t &r, Double_t &zlen,
 				      Int_t &nladd, Int_t &nmod,
@@ -50,6 +55,7 @@ class AliITSvUpgrade : public AliITSUpg {
     virtual Int_t  GetMajorVersion() const {return fMajorVersion;}
     virtual Int_t  GetMinorVersion() const {return fMinorVersion;}
     virtual Int_t  GetNumberOfLayers() const {return fNumberOfLayers;}
+    virtual Bool_t HasBeamPipe() const {return fBeamPipe;}
     virtual void   Init(); 
     virtual Bool_t IsLayerTurbo(const Int_t nlay);
     virtual Int_t  IsVersion() const {// returns the ITS version number 
@@ -81,11 +87,19 @@ class AliITSvUpgrade : public AliITSUpg {
     Double_t *fLadTilt;        // Vector of ladder tilt (only used for turbo)
     Double_t *fDetThick;       // Vector of detector thicknesses
 
+    Bool_t    fBeamPipe;       // True for creating the beam pipe
+    Double_t  fBeamPipeRmin;   // Rmin of beam pipe
+    Double_t  fBeamPipeRmax;   // Rmax of beam pipe
+    Double_t  fBeamPipeZlen;   // Half Z length of beam pipe
+
     AliITSInitGeometryUpg fInitGeom;   //! Get access to decoding and AliITSgeom init functins
 
     AliITSv11GeometryUpgrade **fUpGeom; //! Geometry
+    AliITSv11GeomBeamPipe     *fBPGeom; //! Beam Pipe Geometry
 
   // Parameters for the Upgrade geometry
+
+    static const Double_t fgkBeamPipeHalfZLen;  // Default value for beampipe Z
 
     ClassDef(AliITSvUpgrade,0)                          
 };
