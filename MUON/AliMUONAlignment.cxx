@@ -125,7 +125,33 @@ fSinPhi(0.),
 fTrackRecord(),
 fTransform(0)
 {
-	/// Root IO constructor
+  /// Root IO constructor
+  ResetConstraints();
+  for (Int_t iCh=0; iCh<10; iCh++) { 
+    fChOnOff[iCh] = kFALSE; 
+  }
+  fSpecLROnOff[0] = kFALSE; fSpecLROnOff[1] = kFALSE;
+  for (Int_t iDoF=0; iDoF<4; iDoF++) {
+    fDoF[iDoF] = kFALSE;
+    fAllowVar[iDoF] = kFALSE;
+  }
+  for (Int_t i=0; i<3; i++) {
+    fClustPos[i] = 0;
+    fClustPosLoc[i] = 0;
+    fTrackPos0[i] = 0;  
+    fTrackPos[i] = 0;   
+    fTrackPosLoc[i] = 0;
+  }
+  fTrackSlope0[0]=0;	fTrackSlope0[1]=0;
+  fTrackSlope[0]=0; 	fTrackSlope[1]=0;
+  fMeas[0]=0;	fMeas[1]=0;
+  fSigma[0]=0;	fSigma[1]=0;
+  for (Int_t iLPar=0; iLPar<4; iLPar++) {
+    fLocalDerivatives[iLPar]=0;	
+  }
+  for (Int_t iGPar=0; iGPar<624; iGPar++) {
+    fLocalDerivatives[iGPar]=0;	
+  }
 }
 
 //_____________________________________________________________________
