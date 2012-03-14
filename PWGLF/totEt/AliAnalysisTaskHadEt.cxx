@@ -207,6 +207,11 @@ if(res == 0 && cent){
 	fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceITS( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITS() );
 	fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceTPCNoPID() );
 	fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITSNoPID() );
+
+	fMCAnalysis->FillSimPiKPEtVsRecoPiKPEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceTPC() );
+	fMCAnalysis->FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITS( fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceITS() );
+	fMCAnalysis->FillSimPiKPEtVsRecoPiKPEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceTPCNoPID() );
+	fMCAnalysis->FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceITSNoPID() );//Had
       }
       if(fMCAnalysis->EMCAL()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtEMCALAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtEMCALAcceptanceTPC() );
