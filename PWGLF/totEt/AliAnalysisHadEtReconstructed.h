@@ -29,6 +29,8 @@ public:
     virtual Int_t AnalyseEvent(AliVEvent* event){return AnalyseEvent(event,-1);}
 
     //the "Corrected" variables are only corrected for the track-by-track fCorrections
+    Float_t GetCorrectedPiKPEtFullAcceptanceTPC() const {return fCorrPiKPEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
+    Float_t GetCorrectedPiKPEtFullAcceptanceITS() const {return fCorrPiKPEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPC+fCorrectedHadEtFullAcceptanceITS);}
     Float_t GetCorrectedHadEtFullAcceptanceTPC() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
     Float_t GetCorrectedHadEtFullAcceptanceITS() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPC+fCorrectedHadEtFullAcceptanceITS);}
     Float_t GetCorrectedHadEtFullAcceptanceTPCAssumingPion() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCAssumingPion;}
@@ -53,6 +55,8 @@ public:
     Float_t GetRawEtEMCALAcceptanceITS() const {return fRawEtEMCALAcceptanceITS+fRawEtEMCALAcceptanceTPC;}
     Float_t GetRawEtPHOSAcceptanceTPC() const {return fRawEtPHOSAcceptanceTPC;}
     Float_t GetRawEtPHOSAcceptanceITS()const {return fRawEtPHOSAcceptanceITS+fRawEtPHOSAcceptanceTPC;}
+    Float_t GetCorrectedPiKPEtFullAcceptanceTPCNoPID() const {return fCorrPiKPEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPID;}
+    Float_t GetCorrectedPiKPEtFullAcceptanceITSNoPID() const {return fCorrPiKPEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCNoPID+fCorrectedHadEtFullAcceptanceITSNoPID);}
     Float_t GetCorrectedHadEtFullAcceptanceTPCNoPID() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPID;}
     Float_t GetCorrectedHadEtFullAcceptanceITSNoPID() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCNoPID+fCorrectedHadEtFullAcceptanceITSNoPID);}
     Float_t GetCorrectedHadEtEMCALAcceptanceTPCNoPID() const {return fCorrHadEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPCNoPID;}
@@ -71,10 +75,10 @@ public:
     Float_t GetRawEtEMCALAcceptanceITSNoPID() const {return fRawEtEMCALAcceptanceITSNoPID+fRawEtEMCALAcceptanceTPCNoPID;}
     Float_t GetRawEtPHOSAcceptanceTPCNoPID() const {return fRawEtPHOSAcceptanceTPCNoPID;}
     Float_t GetRawEtPHOSAcceptanceITSNoPID() const {return fRawEtPHOSAcceptanceITSNoPID+fRawEtPHOSAcceptanceTPCNoPID;}
-    Float_t GetCorrectedPiKPEtFullAcceptanceTPC() const {return fCorrectedHadEtFullAcceptanceTPC;}
-    Float_t GetCorrectedPiKPEtFullAcceptanceITS() const {return fCorrectedHadEtFullAcceptanceITS+fCorrectedHadEtFullAcceptanceTPC;}
-    Float_t GetCorrectedPiKPEtFullAcceptanceTPCNoPID() const {return fCorrectedHadEtFullAcceptanceTPCNoPID;}
-    Float_t GetCorrectedPiKPEtFullAcceptanceITSNoPID() const {return fCorrectedHadEtFullAcceptanceITSNoPID+fCorrectedHadEtFullAcceptanceTPCNoPID;}
+/*     Float_t GetCorrectedPiKPEtFullAcceptanceTPC() const {return fCorrectedHadEtFullAcceptanceTPC;} */
+/*     Float_t GetCorrectedPiKPEtFullAcceptanceITS() const {return fCorrectedHadEtFullAcceptanceITS+fCorrectedHadEtFullAcceptanceTPC;} */
+/*     Float_t GetCorrectedPiKPEtFullAcceptanceTPCNoPID() const {return fCorrectedHadEtFullAcceptanceTPCNoPID;} */
+/*     Float_t GetCorrectedPiKPEtFullAcceptanceITSNoPID() const {return fCorrectedHadEtFullAcceptanceITSNoPID+fCorrectedHadEtFullAcceptanceTPCNoPID;} */
     void SetCorrections(AliAnalysisHadEtCorrections *corr){fCorrections = corr;}
     AliAnalysisHadEtCorrections *GetCorrections(){return fCorrections;}
 
@@ -94,6 +98,8 @@ protected:
     Float_t fCorrTotEtFullAcceptanceITS;//get the correction for total et for full acceptance, pt>0.10 GeV/c
     Float_t fCorrHadEtFullAcceptanceTPC;//get the correction for hadronic et for full acceptance, pt>0.15 GeV/c
     Float_t fCorrHadEtFullAcceptanceITS;//get the correction for hadronic et for full acceptance, pt>0.10 GeV/c
+    Float_t fCorrPiKPEtFullAcceptanceTPC;//get the correction for hadronic et for full acceptance, pt>0.15 GeV/c
+    Float_t fCorrPiKPEtFullAcceptanceITS;//get the correction for hadronic et for full acceptance, pt>0.10 GeV/c
     Float_t fCorrTotEtEMCALAcceptanceTPC;//analogous to above for EMCal acceptance
     Float_t fCorrTotEtEMCALAcceptanceITS;//analogous to above for EMCal acceptance
     Float_t fCorrHadEtEMCALAcceptanceTPC;//analogous to above for EMCal acceptance
