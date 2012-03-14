@@ -16,5 +16,7 @@
 #pragma link C++ class AliPtResolAnalysis+;
 #pragma link C++ class AliPtResolAnalysisPbPb+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
+#pragma link C++ class TOFSpectrappAnalysis+;
+#pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
 
 #endif
