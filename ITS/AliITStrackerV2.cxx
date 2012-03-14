@@ -367,7 +367,10 @@ Int_t AliITStrackerV2::PropagateBack(AliESDEvent *event) {
        if (fTrackToFollow.PropagateToVertex(event->GetVertex())) {
           fTrackToFollow.StartTimeIntegral();
        }
-       fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
+       Bool_t okProp=fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
+       if(!okProp){
+	 AliWarning("Propagation to beam pipe radius failed");
+       }
      }
 
      fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
