@@ -44,6 +44,7 @@
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
 #include "TGeoPcon.h"
+#include "TGeoCone.h"
 #include "TGeoTube.h"
 #include "TGeoPgon.h"
 #include "TGeoTrd1.h"
@@ -65,6 +66,7 @@ AliTPCv0::AliTPCv0(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
+
 void AliTPCv0::CreateGeometry()
 {
 
@@ -110,8 +112,8 @@ void AliTPCv0::CreateGeometry()
   tpc->DefineSection(6,-259.6,68.1,278.);
   tpc->DefineSection(7,-253.6,68.1,278.);
   //
-  tpc->DefineSection(8,-253.6,68.,278.);
-  tpc->DefineSection(9,-74.0,60.8,278.);
+  tpc->DefineSection(8,-253.6,67.88,278.);//hs
+  tpc->DefineSection(9,-74.0,60.68,278.);// hs
   //
   tpc->DefineSection(10,-74.0,60.1,278.);
   tpc->DefineSection(11,-73.3,60.1,278.);
@@ -127,8 +129,9 @@ void AliTPCv0::CreateGeometry()
   //
   tpc->DefineSection(18,73.3,60.1,278.);
   tpc->DefineSection(19,74.0,60.1,278.);
-  tpc->DefineSection(20,74.0,60.8,278.);
-  tpc->DefineSection(21,253.6,65.5,278.);
+  //
+  tpc->DefineSection(20,74.0,60.68,278.);// hs
+  tpc->DefineSection(21,253.6,65.38,278.);// hs
   //
   tpc->DefineSection(22,253.6,65.6,278.);
   tpc->DefineSection(23,259.6,65.6,278.);
@@ -209,6 +212,8 @@ void AliTPCv0::CreateGeometry()
   TGeoVolume *tov2 = new TGeoVolume("TPC_OCV2",to2,sm2);
   TGeoVolume *tov3 = new TGeoVolume("TPC_OCV3",to3,sm3);
   TGeoVolume *tov4 = new TGeoVolume("TPC_OCV4",to4,sm4);
+  TGeoMedium *mhs = gGeoManager->GetMedium("TPC_Steel");
+  TGeoMedium *m12 =  gGeoManager->GetMedium("TPC_Water");
   //-------------------------------------------------------
   //  Tpc Outer Field Cage
   //  daughters - composite (sandwich)
@@ -291,6 +296,16 @@ void AliTPCv0::CreateGeometry()
   tcms->DefineSection(9,-71.3,56.9,58.8);
   //
   TGeoVolume *v7 = new TGeoVolume("TPC_ICVM",tcms,m3);
+  //------------------------------------------------
+  //  Heat screen muon side
+  //------------------------------------------------
+ 
+  TGeoCone *thsm = new TGeoCone(89.8,67.88,68.1,60.68,60.9);
+  TGeoCone *thsmw = new TGeoCone(89.8,67.94,68.04,60.74,60.84);
+  TGeoVolume *hvsm = new TGeoVolume("TPC_HSM",thsm,mhs); //steel
+  TGeoVolume *hvsmw = new TGeoVolume("TPC_HSMW",thsmw,m12); //water 
+  // assembly heat screen muon
+  hvsm->AddNode(hvsmw,1);
   //-----------------------------------------------
   // inner containment vessel - shaft side
   //-----------------------------------------------
@@ -312,6 +327,15 @@ void AliTPCv0::CreateGeometry()
   tcss->DefineSection(9,258.1,65.6,74.2);
   //
   TGeoVolume *v8 = new TGeoVolume("TPC_ICVS",tcss,m3);
+  //-------------------------------------------------
+  //  Heat screen shaft side
+  //--------------------------------------------------
+  TGeoCone *thss = new TGeoCone(89.8,60.68,60.9,65.38,65.6);       
+  TGeoCone *thssw = new TGeoCone(89.8,60.74,60.84,65.44,65.54);     
+  TGeoVolume *hvss = new TGeoVolume("TPC_HSS",thss,mhs); //steel
+  TGeoVolume *hvssw = new TGeoVolume("TPC_HSSW",thssw,m12); //water 
+  //assembly heat screen shaft
+  hvss->AddNode(hvssw,1);
   //-----------------------------------------------
   //  Inner field cage
   //  define 4 parts and make an assembly
@@ -371,6 +395,8 @@ void AliTPCv0::CreateGeometry()
   v5->AddNode(v6,1, new TGeoTranslation(0.,0.,-252.1));
   v5->AddNode(v6,2, new TGeoTranslation(0.,0.,252.1));
   v1->AddNode(v5,1); v1->AddNode(v7,1); v1->AddNode(v8,1); 
+  v1->AddNode(hvsm,1,new TGeoTranslation(0.,0.,-163.8)); 
+  v1->AddNode(hvss,1,new TGeoTranslation(0.,0.,163.8)); 
   v9->AddNode(tv100,1);
   //
   // central drum 
@@ -804,7 +830,6 @@ void AliTPCv0::CreateGeometry()
   TGeoMedium *m7=gGeoManager->GetMedium("TPC_Cu");
   TGeoMedium *m10 =  gGeoManager->GetMedium("TPC_Alumina");
   TGeoMedium *m11 =  gGeoManager->GetMedium("TPC_Peek");
-  TGeoMedium *m12 =  gGeoManager->GetMedium("TPC_Water");
   // upper and lower rods differ in length!
   Double_t *upar;
   upar=NULL;
@@ -916,6 +941,7 @@ void AliTPCv0::CreateGeometry()
   
 
 } // end of function
+
 
 
 //_____________________________________________________________________________
