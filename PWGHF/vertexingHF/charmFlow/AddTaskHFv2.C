@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kD0toKpi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=1 /*0=tracks,1=V0*/)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kD0toKpi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=0 /*0=tracks,1=V0*/)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D 
@@ -10,16 +10,22 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
   //          Francesco Prino, prino@to.infn.it
   // Get the pointer to the existing analysis manager via the static access method.
   //============================================================================
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskHFv2", "No analysis manager to connect to.");
     return NULL;
   }
+
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts=new TFile(filename.Data());
-  if(!filecuts->IsOpen()){
-    cout<<"Input file not found:  using std cut object"<<endl;
-    stdcuts=kTRUE;
+  TFile* filecuts;
+  if( filename.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(filename.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	AliFatal("Input file not found : check your cut object");
+      }
   }
   
   AliRDHFCuts *analysiscuts=0x0;
