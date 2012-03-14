@@ -438,7 +438,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    if(!primVtx){
      if(fDebug) Printf("%s:%d No primVtx",(char*)__FILE__,__LINE__);
      fHistEvtSelection->Fill(3);
-      PostData(1, fOutputList);
+     PostData(1, fOutputList);
+     return;
    }
 
    Int_t nTracksPrim = primVtx->GetNContributors();
