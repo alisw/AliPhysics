@@ -604,6 +604,25 @@ Convert_dNdy_1over2pipt_dNdeta(TH1 *hin, Double_t mass, Double_t eta = 0.8)
 }
 
 TH1 *
+Convert_dNdy_1over2pipt_dNdy(TH1 *hin)
+{
+
+  TH1 *hout = hin->Clone("hout");
+  hout->Reset();
+  Double_t pt, mt, conv, val, vale;
+  for (Int_t ibin = 0; ibin < hin->GetNbinsX(); ibin++) {
+    pt = hin->GetBinCenter(ibin + 1);
+    val = hin->GetBinContent(ibin + 1);
+    vale = hin->GetBinError(ibin + 1);
+    val /= (2. * TMath::Pi() * pt);
+    vale /= (2. * TMath::Pi() * pt);
+    hout->SetBinContent(ibin + 1, val);
+    hout->SetBinError(ibin + 1, vale);
+  }
+  return hout;
+}
+
+TH1 *
 Convert_dNdy_dNdeta(TH1 *hin, Double_t mass, Double_t eta = 0.8)
 {
 
@@ -619,6 +638,30 @@ Convert_dNdy_dNdeta(TH1 *hin, Double_t mass, Double_t eta = 0.8)
     vale *= conv;
     hout->SetBinContent(ibin + 1, val);
     hout->SetBinError(ibin + 1, vale);
+  }
+  return hout;
+}
+
+TGraph *
+Convert_dNdy_dNdeta(TGraph *hin, Double_t mass, Double_t eta = 0.8)
+{
+
+  TGraph *hout = hin->Clone("hout");
+  //  hout->Reset();
+  Double_t pt, mt, conv, val, valelo, valehi;
+  for (Int_t ibin = 0; ibin < hin->GetN(); ibin++) {
+    pt = hin->GetX()[ibin];
+    conv = eta2y(pt, mass, eta) / eta;
+    val = hin->GetY()[ibin];
+    valelo = hin->GetEYlow()[ibin];
+    valehi = hin->GetEYhigh()[ibin];
+    val *= conv;
+    valelo *= conv;
+    valehi *= conv;
+    hout->GetX()[ibin] = pt;
+    hout->GetY()[ibin] = val;
+    hout->GetEYlow()[ibin] = valelo;
+    hout->GetEYhigh()[ibin] = valehi;
   }
   return hout;
 }
