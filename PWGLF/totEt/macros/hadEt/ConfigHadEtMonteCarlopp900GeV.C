@@ -6,6 +6,9 @@ AliAnalysisHadEtMonteCarlo * ConfigHadEtMonteCarlo(){
   //Whether or not to investigate the effects of efficiency, momentum resolution, PID, etc.
   hadEtMC->InvestigateSmearing(kFALSE);
 
+  //Turns off O(100) histograms that we do not normally use
+  hadEtMC->RunLightweight(kTRUE);
+
   //Whether or not to look at Et(sim)-Et(reco) for full acceptance
   hadEtMC->InvestigateFull(kTRUE);
 
@@ -16,7 +19,7 @@ AliAnalysisHadEtMonteCarlo * ConfigHadEtMonteCarlo(){
   hadEtMC->InvestigatePHOS(kFALSE);
 
   //Whether or not to look at Et(sim)-Et(reco) for Pi/K/p in full acceptance (full acceptance must be turned on)
-  hadEtMC->InvestigatePiKP(kFALSE);
+  hadEtMC->InvestigatePiKP(kTRUE);
 
   //Look at ITS+TPC tracks
   hadEtMC->RequireITSHits(kTRUE);
