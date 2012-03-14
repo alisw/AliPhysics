@@ -1014,7 +1014,7 @@ void  AliAnalysisTaskDptDptCorrelations::finalizeHistograms()
 //--------------//
 
 
-void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option)
+void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 {
   
   int    k1,k2;
@@ -1034,13 +1034,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option)
   const  AliAODVertex*	vertex;
   int    nClus;
   bool   bitOK;
-  
-  //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - Starting." << endl;
-  
+    
   // count all events looked at here
   _eventCount++;
   if (!_eventAccounting)
+  {
     cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - !_eventAccounting" << endl;
+    cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - Skip this task" << endl;
+    return;
+  }
   _eventAccounting->Fill(0);// count all calls to this function
   
   //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 1" << endl;
@@ -1694,13 +1696,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option)
 
 void   AliAnalysisTaskDptDptCorrelations::FinishTaskOutput()
 {
+  cout << "AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Starting." << endl;
   finalizeHistograms();
   PostData(0,_outputHistoList);
+  cout << "AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Done." << endl;
 }
 
-void   AliAnalysisTaskDptDptCorrelations::Terminate(Option_t* )
+void   AliAnalysisTaskDptDptCorrelations::Terminate(Option_t* /*option*/)
 {
-  
+  // no ops
 }
 
 
