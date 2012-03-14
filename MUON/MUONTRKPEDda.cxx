@@ -265,16 +265,13 @@ int main(Int_t argc, const char **argv)
       status=daqDA_DB_getFile(dbfile,dbfile);
       if(status) {printf(" !!! Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
       ifstream filein(dbfile,ios::in);
-      filein >> nConfig >> line ; cout << "mutrkpedvalues: " << line << " " << nConfig << "   "  ;
-      filein >> nEvthres >> line ;
-      if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << " " << nEvthreshold << "   " ; 
-      filein >> checkTokenlost >> line ; cout << line << " " << checkTokenlost << "   " ;
-      filein >> flag_histo >> line ;  
-      if(flag_histo !=0)  cout << line << " " << flag_histo << "   " ; 
-      filein >> maxEvts >> line ; 
-      if(maxEvts!=0){maxEvents=maxEvts;  cout << line << " " << maxEvents;}
-      //     filein >> errorDetail >> line ; cout << line << " " << errorDetail << "   " ;
-      //     filein >> nSorting >> line ; cout << line << " " << nSorting << "   " ;
+      filein >> line >> nConfig ; cout << "mutrkpedvalues: " << line << nConfig << "  "  ;
+      filein >> line >> nEvthres ; if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << nEvthreshold << "  " ; 
+      filein >> line >> checkTokenlost ; cout << line << checkTokenlost << "  " ;
+      filein >> line >> flag_histo ;  if(flag_histo !=0)  cout << line << flag_histo << "  " ; 
+      filein >> line >> maxEvts ;  if(maxEvts!=0){maxEvents=maxEvts;  cout << line << maxEvents;}
+      //     filein >> line >> errorDetail ; cout << line << errorDetail << "  " ;
+      //     filein >> line >> nSorting ; cout << line << nSorting << "  " ;
      cout << endl;
     }
   if(!nConfig)  printf("%s : ***  Config= %d: no configuration ascii file is used \n",prefixLDC,nConfig); 
@@ -578,7 +575,7 @@ int main(Int_t argc, const char **argv)
   dir= getenv("DAQ_DETDB_LOCAL");
   if(dir != NULL)  {
     unsigned int nLastVersions=50;
-    printf("\n%s : ***  Local DataBase: %s (Max= %d) ***\n",prefixLDC,dir,nLastVersions);
+    printf("\n%s : ---  Local DataBase: %s (Max= %d) ---\n",prefixLDC,dir,nLastVersions);
       if(!shuttleFile.IsNull())status1 = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
       if(flag_histo)status1 = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
       status1 = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
@@ -598,7 +595,7 @@ int main(Int_t argc, const char **argv)
     TObjString peddata(stringout.str().c_str());
     Int_t amoreStatus = amoreDA.Send("Pedestals",&peddata);
     if ( amoreStatus )
-      cout << prefixLDC << " :  !!! ERROR: Failed to write Pedestals in the AMORE database : " << amoreStatus << endl ; status=-1 ;
+      {cout << prefixLDC << " :  !!! ERROR: Failed to write Pedestals in the AMORE database : " << amoreStatus << endl ; status=-1 ;}
     else 
       cout << prefixLDC << " : amoreDA.Send(Pedestals) ok" << endl;  
 #else

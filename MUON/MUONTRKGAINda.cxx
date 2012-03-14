@@ -144,6 +144,7 @@ int main(Int_t argc, const char** argv)
   Int_t skipEvents = 0;
   Int_t maxEvents  = 1000000;
   Int_t maxDateEvents  = 1000000;
+  Int_t errorDetail  = 0;
   
   Int_t nDateEvents = 0;
   Int_t nDateRejEvents = 0;
@@ -219,22 +220,19 @@ int main(Int_t argc, const char** argv)
   while (k<nEntries ) { filein >> kk >> vDAC[k] ; k++; }
   injCharge=vDAC[nIndex-1];
   
-  filein >> nInit >> line ; cout << "mutrkcalibvalues: " << line << "=" << nInit << "   " ; // = 0 all DAC values fitted ; = 1 DAC=0 excluded (default=1)
-  filein >> nbpf1 >> line ; cout << line << "=" << nbpf1 << "   " ; // nb of points for linear fit (default=6) 
-  filein >> printLevel >> line;  cout << line << "=" << printLevel << "   " ; // printout (default=0, =1 =>.ped /run, =2 => .peak & .param)
-  filein >> plotLevel >> line;   cout << line << "=" << plotLevel << "   " ; // plotout (default=1 => tree , =2 tree+Tgraph+fit)
-  filein >> nConfig >> line; cout << line << "=" << nConfig << "   " ; //nConfig (default=1 => read config in DetDB, otherwise =0)
-  filein >> nEvthres >> line ;
-  if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << "=" << nEvthreshold << "   " ; // (default = 0 <=> 50) below nEvthreshold calibration not performed 
-  filein >> nbev >> line;  // Nb of events to read  (default = 0 => reading all events)
-  if(nbev !=0){maxEvents=nbev; cout << line << "=" << maxEvents << "   " ;} 
+  filein >> line >> nInit ; cout << "mutrkcalibvalues: " << line << nInit << " " ; // = 0 all DAC values fitted ; = 1 DAC=0 excluded (default=1)
+  filein >> line >> nbpf1; cout << line << nbpf1 << " " ; // nb of points for linear fit (default=6) 
+  filein >> line >> printLevel;  cout << line << printLevel << " " ; // printout (default=0, =1 =>.ped /run, =2 => .peak & .param)
+  filein >> line >> plotLevel;   cout << line << plotLevel << " " ; // plotout (default=1 => tree , =2 tree+Tgraph+fit)
+  filein >> line >> nConfig ; cout << line << nConfig << " " ; //nConfig (default=1 => read config in DetDB, otherwise =0)
+  filein >> line >> nEvthres ; if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << nEvthreshold << " " ; // (default = 0 <=> 50) below nEvthreshold calibration not performed 
+  filein >> line >> nbev ;  if(nbev !=0){maxEvents=nbev; cout << line << maxEvents << " " ;} // Nb of events to read  (default = 0 => reading all events)
   cout << endl;
   
   muonGain->SetAliPrintLevel(printLevel);
   muonGain->SetAliPlotLevel(plotLevel);
   muonGain->SetconfigDA(nConfig);
   muonGain->SetnEvthreshold(nEvthreshold);
-  //  muonGain->SetStatusDA(statusDA);
   
   if(nConfig)
   {
@@ -251,13 +249,13 @@ int main(Int_t argc, const char** argv)
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
   //  rawStream->DisableWarnings();
   rawStream->EnabbleErrorLogger();
-  //
-  // kLowErrorDetail,     /// Logs minimal information in the error messages.
-  // kMediumErrorDetail,  /// Logs a medium level of detail in the error messages.
-  // kHighErrorDetail     /// Logs maximum information in the error messages.
-  //  rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kLowErrorDetail);
-     rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail);
-  //   rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail);
+  switch (errorDetail)
+    {
+    case 0: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kLowErrorDetail); break;/// Logs minimal information in the error messages.
+    case 1: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail); break;/// Logs a medium level of detail in the error messages.
+    case 2: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail); break;/// Logs a medium level of detail in the error messages.
+    default: rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail); break;
+    }
   
   printf("\n%s : Reading data from file %s\n",prefixLDC,inputFile.Data());
 
@@ -519,7 +517,7 @@ int main(Int_t argc, const char** argv)
   dir= getenv("DAQ_DETDB_LOCAL");
   if(dir != NULL)  {
     unsigned int nLastVersions=50;
-    printf("\n%s : ***  Local DataBase: %s (Max= %d) ***\n",prefixLDC,dir,nLastVersions);
+    printf("\n%s : ---  Local DataBase: %s (Max= %d) ---\n",prefixLDC,dir,nLastVersions);
     status1 = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
 
     if(nIndex==nEntries)
@@ -552,7 +550,7 @@ int main(Int_t argc, const char** argv)
       TObjString gaindata(stringout.str().c_str());
      Int_t amoreStatus = amoreDA.Send("Gains",&gaindata);
       if ( amoreStatus )
-	cout << prefixLDC << " :  !!! ERROR: Failed to write Gains in the AMORE database : " << amoreStatus << endl ; status=-1 ;
+	{cout << prefixLDC << " :  !!! ERROR: Failed to write Gains in the AMORE database : " << amoreStatus << endl ; status=-1 ;}
       else 
 	cout << prefixLDC << " : amoreDA.Send(Gains) ok" << endl;  
 #else
