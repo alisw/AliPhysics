@@ -442,17 +442,9 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
              tilt(fTracklet->GetTilt());
     // correct for tilt rotation
     val[kYrez] = dyt - dzt*tilt;
-    val[kZrez] = dzt + dyt*tilt;
+    val[kZrez] = fTracklet->IsRowCross()?(dzt + dyt*tilt):(fTracklet->GetdQdl()*3.e-4-1.5);
     dydx+= tilt*fTracklet->GetZref(1);
     val[kPrez] = TMath::ATan((dydx - fTracklet->GetYref(1))/(1.+ fTracklet->GetYref(1)*dydx)) * TMath::RadToDeg();
-    if(fTracklet->IsRowCross()){
-      val[kSpeciesChgRC]= 0.;
-//      val[kPrez] = fkTrack->Charge(); // may be better defined
-    }/* else {
-      Float_t exb, vd, t0, s2, dl, dt;
-      fTracklet->GetCalibParam(exb, vd, t0, s2, dl, dt);
-      val[kZrez] = TMath::ATan((fTracklet->GetYref(1) - exb)/(1+fTracklet->GetYref(1)*exb));
-    }*/
     val[kNdim] = fTracklet->GetdQdl()*2.e-3;
     val[kNdim+1] = 1.e2*fTracklet->GetTBoccupancy()/AliTRDseedV1::kNtb;
     Int_t n = fTracklet->GetChargeGaps(sz, pos, ntbGap);
@@ -583,7 +575,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies;
   val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
   val[kYrez]        = dy;
-  val[kZrez]        = dz;
+  val[kZrez]        = fTracklet->IsRowCross()?dz:(fTracklet->GetdQdl()*5.e-4 - 2.5);
   val[kPrez]        = dphi*TMath::RadToDeg();
   val[kNdim]        = fTracklet->GetDetector();
   val[kNdim+1]      = dx;
@@ -721,7 +713,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       else{
         val[kBC]          = (bc>=kNbunchCross)?(kNbunchCross-1):bc;
         val[kYrez]        = tin->GetY()-ymc;
-        val[kZrez]        = tin->GetZ()-zmc;
+        val[kZrez]        = rc?(tin->GetZ()-zmc):(fTracklet->GetdQdl()*1.8e-4 - 0.9);
         val[kPrez]        = (TMath::ASin(tin->GetSnp())-TMath::ATan(dydx0))*TMath::RadToDeg();
         if((H = (THnSparseI*)fContainer->At(kMCtrackIn))) H->Fill(val);
       }
@@ -793,7 +785,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     dz = z - zmc;
     val[kYrez] = dy - dz*tilt;
     val[kPrez] = TMath::ATan((dydx - dydx0)/(1.+ dydx*dydx0))*TMath::RadToDeg();
-    val[kZrez] = dz + dy*tilt;
+    val[kZrez] = rc?(dz + dy*tilt):(fTracklet->GetdQdl()*3.e-4 - 1.5);
 //      val[kNdim] = pt/pt0-1.;
     if((H = (THnSparse*)fContainer->At(kMCtracklet))) H->Fill(val);
 
