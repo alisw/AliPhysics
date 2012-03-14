@@ -1,3 +1,85 @@
+TH1 *
+HistoUtils_weightedmean(TH1 *h1, TH1 *h2)
+{
+
+  TH1 *ho = (TH1 *)h1->Clone("ho");
+  ho->Reset();
+  Double_t val1, val2, w1, w2, mean, meane;
+  for (Int_t i = 0; i < ho->GetNbinsX(); i++) {
+    val1 = h1->GetBinContent(i + 1);
+    w1 = 1. / (h1->GetBinError(i + 1) * h1->GetBinError(i + 1));
+    val2 = h2->GetBinContent(i + 1);
+    w2 = 1. / (h2->GetBinError(i + 1) * h2->GetBinError(i + 1));
+
+    if (val1 == 0 && val2 == 0) continue;
+
+    mean = (w1 * val1 + w2 * val2) / (w1 + w2);
+    meane = TMath::Sqrt(1. / (w1 + w2));
+
+    ho->SetBinContent(i + 1, mean);
+    ho->SetBinError(i + 1, meane);
+  }
+
+  return ho;
+}
+
+//__________________________________________________________________
+
+TH1 *
+HistoUtils_smartdifference(TH1 *hnum, TH1 *hden)
+{
+
+  TH1 *hr = (TH1 *)hnum->Clone("hr");
+  hr->Reset();
+  Double_t ref;
+  for (Int_t i = 0; i < hr->GetNbinsX(); i++) {
+    if (hnum->GetBinError(i + 1) <= 0.) continue;
+    ref = hden->Interpolate(hr->GetBinCenter(i + 1));
+    if (ref <= 0.) continue;
+    hr->SetBinContent(i + 1, (hnum->GetBinContent(i + 1) - ref) / ref);
+    hr->SetBinError(i + 1, hnum->GetBinError(i + 1) / ref);
+  }
+  return hr;
+}
+
+//__________________________________________________________________
+
+TH1 *
+HistoUtils_smartratio(TH1 *hnum, TH1 *hden)
+{
+
+  TH1 *hr = (TH1 *)hnum->Clone("hr");
+  hr->Reset();
+  Double_t ref;
+  for (Int_t i = 0; i < hr->GetNbinsX(); i++) {
+    if (hnum->GetBinError(i + 1) <= 0.) continue;
+    ref = hden->Interpolate(hr->GetBinCenter(i + 1));
+    if (ref <= 0.) continue;
+    hr->SetBinContent(i + 1, hnum->GetBinContent(i + 1) / ref);
+    hr->SetBinError(i + 1, hnum->GetBinError(i + 1) / ref);
+  }
+  return hr;
+}
+
+//__________________________________________________________________
+
+TH1 *
+HistoUtils_smartratio(TH1 *hnum, TGraph *hden)
+{
+
+  TH1 *hr = (TH1 *)hnum->Clone("hr");
+  hr->Reset();
+  Double_t ref;
+  for (Int_t i = 0; i < hr->GetNbinsX(); i++) {
+    if (hnum->GetBinError(i + 1) <= 0.) continue;
+    ref = hden->Eval(hr->GetBinCenter(i + 1));
+    if (ref <= 0.) continue;
+    hr->SetBinContent(i + 1, hnum->GetBinContent(i + 1) / ref);
+    hr->SetBinError(i + 1, hnum->GetBinError(i + 1) / ref);
+  }
+  return hr;
+}
+
 //__________________________________________________________________
 
 HistoUtils_drawthemall(const Char_t *filename, Int_t sleepms = 100)
