@@ -1682,7 +1682,7 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliESDEvent* 
   }
 
   if (fMC)
-    if( esdT0->GetT0zVertex()>-10 && esdT0->GetT0zVertex() < 10) return kT0BB; 
+    if( esdT0->GetT0zVertex()>-12.3 && esdT0->GetT0zVertex() < 10.3) return kT0BB; 
  
   return kT0Empty;
 }
