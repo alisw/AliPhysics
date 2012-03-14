@@ -32,30 +32,35 @@ public:
     Float_t GetSimulatedHadronicEt() const {return fSimHadEt;}
     Float_t GetSimulatedTotalEt() const {return fSimTotEt;}
 
-    void FillSimTotEtVsRecoTotEtFullAcceptanceTPC(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPC",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtFullAcceptanceITS(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITS",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtEMCALAcceptanceTPC(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPC",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtEMCALAcceptanceITS(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITS",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtPHOSAcceptanceTPC(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPC",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtPHOSAcceptanceITS(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITS",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtFullAcceptanceTPCNoPID(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPCNoPID",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITSNoPID",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtEMCALAcceptanceTPCNoPID(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPCNoPID",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtEMCALAcceptanceITSNoPID(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITSNoPID",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtPHOSAcceptanceTPCNoPID(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPCNoPID",fSimTotEt,et,1.0);}
-    void FillSimTotEtVsRecoTotEtPHOSAcceptanceITSNoPID(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITSNoPID",fSimTotEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtFullAcceptanceTPC(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPC",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtFullAcceptanceITS(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITS",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtEMCALAcceptanceTPC(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPC",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtEMCALAcceptanceITS(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITS",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtPHOSAcceptanceTPC(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPC",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtPHOSAcceptanceITS(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITS",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtFullAcceptanceTPCNoPID(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPCNoPID",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITSNoPID",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtEMCALAcceptanceTPCNoPID(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPCNoPID",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID",fSimHadEt,et,1.0);}
-    void FillSimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID(Float_t et){if(fGoodEvent && fSimHadEt>0.0&&et>0.0)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID",fSimHadEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtFullAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPC",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtFullAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITS",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtEMCALAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPC",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtEMCALAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITS",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtPHOSAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPC",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtPHOSAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITS",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtFullAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPCNoPID",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITSNoPID",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtEMCALAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPCNoPID",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtEMCALAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITSNoPID",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtPHOSAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPCNoPID",fSimTotEt,et,1.0);}
+    void FillSimTotEtVsRecoTotEtPHOSAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITSNoPID",fSimTotEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtFullAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPC",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtFullAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITS",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtEMCALAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPC",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtEMCALAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITS",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtPHOSAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPC",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtPHOSAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITS",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtFullAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPCNoPID",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITSNoPID",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtEMCALAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPCNoPID",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID",fSimHadEt,et,1.0);}
+    void FillSimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID",fSimHadEt,et,1.0);}
+    //PiKP histograms
+    void FillSimPiKPEtVsRecoPiKPEtFullAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimPiKPEtVsRecoPiKPEtFullAcceptanceTPC",fSimPiKPEt,et,1.0);}
+    void FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimPiKPEtVsRecoPiKPEtFullAcceptanceITS",fSimPiKPEt,et,1.0);}
+    void FillSimPiKPEtVsRecoPiKPEtFullAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimPiKPEtVsRecoPiKPEtFullAcceptanceTPCNoPID",fSimPiKPEt,et,1.0);}
+    void FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimPiKPEtVsRecoPiKPEtFullAcceptanceITSNoPID",fSimPiKPEt,et,1.0);}
 
     void FillSimTotEtMinusRecoTotEtFullAcceptanceTPC(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceTPC",et,(fSimTotEt-et)/fSimTotEt,1.0);}
     void FillSimTotEtMinusRecoTotEtFullAcceptanceITS(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceITS",et,(fSimTotEt-et)/fSimTotEt,1.0);}
@@ -102,6 +107,7 @@ public:
     void FillSimPiKPMinusRecoPiKPFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent && fSimPiKPEt>0.0)FillHisto2D("SimPiKPMinusRecoPiKPFullAcceptanceITSNoPID",et,(fSimPiKPEt-et)/fSimPiKPEt,1.0);}
 
     void InvestigateSmearing(Bool_t val){fInvestigateSmearing=val;}
+    void RunLightweight(Bool_t val){fRunLightweight=val;}//Switches off O(100) histograms that aren't regularly used.
     void InvestigateFull(Bool_t val){fInvestigateFull=val;}
     void InvestigateEMCAL(Bool_t val){fInvestigateEMCal=val;}
     void InvestigatePHOS(Bool_t val){fInvestigatePHOS=val;}
@@ -132,6 +138,7 @@ public:
     Float_t fSimPiKPEtShouldBeRecoK;//simulated Et for k event by event
     Float_t fSimPiKPEtShouldBeRecoP;//simulated Et for p event by event
 
+    Bool_t fRunLightweight;//Turns off O(100) histograms that are not regularly used to reduce the size & complexity of the output
     Bool_t fInvestigateSmearing;//Turns on and off functions and histos for investigating momentum, efficiency, pid smearing
     Bool_t fInvestigateFull;//Turns on and off functions and histos for investigating event-by-event et for the full acceptance
     Bool_t fInvestigateEMCal;//Turns on and off functions and histos for investigating event-by-event et for the full acceptance
