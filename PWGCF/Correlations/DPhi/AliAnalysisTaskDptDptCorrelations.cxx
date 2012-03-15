@@ -1037,6 +1037,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     
   // count all events looked at here
   _eventCount++;
+
+  /*
   if (!_eventAccounting)
   {
     cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - !_eventAccounting" << endl;
@@ -1044,7 +1046,19 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     return;
   }
   _eventAccounting->Fill(0);// count all calls to this function
-  
+  */
+
+  // A. Adare - Fix from above to avoid coverity complaint about null dereference 
+  if (_eventAccounting)
+    {
+      _eventAccounting->Fill(0);// count all calls to this function
+    }
+  else {
+    cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - !_eventAccounting" << endl;
+    cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - Skip this task" << endl;
+    return;
+  }
+    
   //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 1" << endl;
   
   //Get pointer to current event
