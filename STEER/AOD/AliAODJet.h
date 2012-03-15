@@ -104,9 +104,13 @@ class AliAODJet : public AliVParticle {
 
     // first only one bit for EMCAL and TRD, leave space for more
     // trigger types and/or other detectors
+    // use some of the bits to flag jets with high pT track
+    // and good high pT cut
     enum {kEMCALTriggered = 1<<0,
 	  kTRDTriggered =   1<<2,
-	  kHighTrackPtTriggered = 1<<7};
+	  kHighTrackPtTriggered = 1<<7,
+	  kHighTrackPtBest = 1<<8
+    };
 
 
  private:
@@ -120,7 +124,7 @@ class AliAODJet : public AliVParticle {
     TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,11);
+    ClassDef(AliAODJet,12);
 
 };
 
