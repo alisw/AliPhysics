@@ -322,10 +322,10 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 
 				Int_t badLink[32] = {0};
 				Int_t nBadLink = 0;
-				for(Int_t ix = 0; ix <= hFrameR->GetNbinsX(); ix++) {
+				for(Int_t ix = 1; ix <= hFrameR->GetNbinsX(); ix++) {
 					Double_t binContent = hFrameR->GetBinContent(ix) ; 
 					if (binContent == 0) {
-						badLink[ix] += 1;
+						badLink[ix-1] += 1;
 						nBadLink += 1;
 					}
 				}
