@@ -387,7 +387,10 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   angle = -1.;
   
   //If too small or big E or low number of cells, or close to a bad channel skip it
-  if( l0 < fSplitM02MinCut || l0 > fSplitM02MaxCut || nc < fSplitMinNCells) return kNeutralUnknown ; 
+  if( l0 < fSplitM02MinCut || l0 > fSplitM02MaxCut || nc < fSplitMinNCells) 
+  {
+    return kNeutralUnknown ; 
+  }
   
   // Get Number of local maxima
   nMax      = caloutils->GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ;  
