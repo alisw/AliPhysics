@@ -74,7 +74,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
-    virtual void SetJetTriggerExclude(UChar_t i){fJetTriggerExcludeMask = i;}
+    virtual void SetJetTriggerExclude(UInt_t i){fJetTriggerExcludeMask = i;}
+    virtual void SetJetTriggerBest(UInt_t i){fJetTriggerBestMask = i;}
     virtual void SetMatching(Bool_t b = kTRUE){fDoMatching = b;}
     virtual void SetRPMethod(Int_t i){fRPMethod = i;}
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
@@ -157,7 +158,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fDoMatching;            // switch on the matching between rec and gen
     Short_t       fNMatchJets;            // number of leading jets considered from the list
     Short_t       fNRPBins;               // number of bins with respect to RP
-    UChar_t       fJetTriggerExcludeMask; // mask for jet triggers to exclude
+    UInt_t        fJetTriggerExcludeMask; // mask for jet triggers to exclude
+    UInt_t        fJetTriggerBestMask; // mask for best jet triggers
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fEventSelectionMask;    // Selection information used to filter events
     Int_t         fNTrigger;              // number of triggers for selection
@@ -207,6 +209,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtIn[kJetTypes][kMaxJets+1];  //! Jet pt  
     TH1F*         fh1PtJetsIn[kJetTypes];       //! Jet pt for all jets
     TH1F*         fh1PtJetsInRej[kJetTypes];    //! Jet pt for all rejected jets
+    TH1F*         fh1PtJetsInBest[kJetTypes];    //! Jet pt for all rejected jets
     TH1F*         fh1PtTracksIn[kJetTypes];     //! track pt for all tracks
     TH1F*         fh1PtTracksInLow[kJetTypes];  //! track pt for all tracks
     
@@ -231,7 +234,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 18); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 19); // Analysis task for standard jet analysis
 };
  
 #endif

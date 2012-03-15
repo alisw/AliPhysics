@@ -94,6 +94,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fNMatchJets(5),
   fNRPBins(3),
   fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
+  fJetTriggerBestMask(AliAODJet::kHighTrackPtBest),
   fFilterMask(0),
   fEventSelectionMask(0),
   fNTrigger(0),
@@ -189,6 +190,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fNMatchJets(5),
   fNRPBins(3),
   fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
+  fJetTriggerBestMask(AliAODJet::kHighTrackPtBest),
   fFilterMask(0),
   fEventSelectionMask(0),
   fNTrigger(0),
@@ -457,6 +459,9 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
     fh1PtJetsInRej[ij]  = new TH1F(Form("fh1PtJets%sInRej",cAdd.Data()),Form("%s jets p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
     fHistList->Add(fh1PtJetsInRej[ij]);
+
+    fh1PtJetsInBest[ij]  = new TH1F(Form("fh1PtJets%sInBest",cAdd.Data()),Form("%s jets p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+    fHistList->Add(fh1PtJetsInBest[ij]);
     
     fh1PtTracksIn[ij] = new TH1F(Form("fh1PtTracks%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
     fHistList->Add(fh1PtTracksIn[ij]);
@@ -912,6 +917,9 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
     AliAODJet *jet = (AliAODJet*)jetsList.At(ij);
     Float_t ptJet = jet->Pt();
     if(ptJet<0.150)ptJet = jet->GetPtSubtracted(0);
+    if(jet->Trigger()&fJetTriggerBestMask){
+      fh1PtJetsInBest[iType]->Fill(ptJet);
+    }
     if(jet->Trigger()&fJetTriggerExcludeMask){
       fh1PtJetsInRej[iType]->Fill(ptJet);
       continue;
