@@ -42,6 +42,7 @@ AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t read
   lambdacTask->SetFillVarHists(fillVarHists);
   lambdacTask->SetPriorsHists(priorsHists);
   lambdacTask->SetMultiplicityHists(multiplicityHists);
+  lambdacTask->SetAnalysis(kTRUE);
 
   lambdacTask->SetDebugLevel(0);
   if(useKF) {
