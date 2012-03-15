@@ -1126,7 +1126,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
         fhDeltaPhiAssocPtBin    [assocBin]->Fill(ptTrig, deltaPhi);
         if(track->GetHMPIDsignal()>0)
         {
-          printf("Track pt %f with HMPID signal %f \n",pt,track->GetHMPIDsignal());
+          //printf("Track pt %f with HMPID signal %f \n",pt,track->GetHMPIDsignal());
           fhDeltaPhiAssocPtBinHMPID[assocBin]->Fill(ptTrig, deltaPhi);        
         }
         

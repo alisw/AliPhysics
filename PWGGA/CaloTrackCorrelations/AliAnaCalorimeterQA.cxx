@@ -417,11 +417,17 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 
         Int_t icols = icol;
         Int_t irows = irow;
-        if(fCalorimeter=="EMCAL"){
+        
+        if(fCalorimeter=="EMCAL")
+        {
           icols = (nModule % 2) ? icol + fNMaxCols : icol;				
-          irows = irow + fNMaxRows * Int_t(nModule / 2);
+          if(nModule < 10 ) 
+            irows = irow + fNMaxRows       * Int_t(nModule / 2);
+          else // 1/3 SM
+            irows = irow + (fNMaxRows / 3) * Int_t(nModule / 2);
         }
-        else {
+        else 
+        {
           irows = irow + fNMaxRows * nModule;
         }
                 
@@ -2501,7 +2507,8 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
   Int_t icol =-1, irow=-1,iRCU = -1;   
   Int_t imod = GetModuleNumberCellIndexes(absID, fCalorimeter, icol, irow, iRCU);
   
-  if(fCalorimeter=="EMCAL"){
+  if(fCalorimeter=="EMCAL")
+  {
     //Get close cells index, energy and time, not in corners
     Int_t absID1 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow+1, icol);
     Int_t absID2 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow-1, icol);
@@ -2549,7 +2556,8 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
     
     return ecell1+ecell2+ecell3+ecell4;
   }
-  else { //PHOS
+  else //PHOS
+  { 
     
     Int_t absId1 = -1, absId2 = -1, absId3 = -1, absId4 = -1;
     
