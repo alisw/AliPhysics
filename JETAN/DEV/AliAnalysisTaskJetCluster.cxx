@@ -103,6 +103,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fUseBackgroundCalc(kFALSE),
   fEventSelection(kFALSE),     
   fFilterMask(0),
+  fFilterMaskBestPt(0),
   fFilterType(0),
   fJetTypes(kJet),
   fTrackTypeRec(kTrackUndef),
@@ -233,8 +234,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseBackgroundCalc(kFALSE),
-  fEventSelection(kFALSE),							
-  fFilterMask(0),
+  fEventSelection(kFALSE),							  fFilterMask(0),
+  fFilterMaskBestPt(0),
   fFilterType(0),
   fJetTypes(kJet),
   fTrackTypeRec(kTrackUndef),
@@ -1119,16 +1120,32 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh2NConstPt->Fill(tmpPt,constituents.size());
       // loop over constiutents and fill spectrum
    
+      AliVParticle *partLead = 0;
+      Float_t ptLead = -1;
+
       for(unsigned int ic = 0; ic < constituents.size();ic++){
 	AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
 	if(!part) continue;
-	
 	fh1PtJetConstRec->Fill(part->Pt());
 	if(aodOutJet){
 	  if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
-	  if(part->Pt()>fMaxTrackPtInJet)aodOutJet->SetTrigger(AliAODJet::kHighTrackPtTriggered);
+	  if(part->Pt()>fMaxTrackPtInJet){
+	    aodOutJet->SetTrigger(AliAODJet::kHighTrackPtTriggered);
+	  }
+	}
+	if(part->Pt()>ptLead){
+	  partLead = part;
 	}
 	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
+      }
+
+      AliAODTrack *aodT = 0;
+      if(partLead){
+	if(aodT = dynamic_cast<AliAODTrack*>(partLead)){
+	  if(aodT->TestFilterBit(fFilterMaskBestPt)){
+	    aodOutJet->SetTrigger(AliAODJet::kHighTrackPtBest);
+	  }
+	}
       }
       
      // correlation
@@ -1560,6 +1577,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	if(fDebug>2)Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
 	return iCount;
       }
+
       for(int it = 0;it < aod->GetNumberOfTracks();++it){
 	AliAODTrack *tr = aod->GetTrack(it);
 	Bool_t bGood = false;
