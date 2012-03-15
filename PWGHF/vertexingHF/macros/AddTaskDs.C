@@ -1,16 +1,16 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
-                     Int_t storeNtuple=0,Bool_t readMC=kFALSE,
-				     TString filename="")
+			       Int_t storeNtuple=0,Bool_t readMC=kFALSE,
+			       TString filename="", TString postname="")
 {
-  //                                                                                                                                    
+  //
   // Test macro for the AliAnalysisTaskSE for Ds candidates 
 
   //Invariant mass histogram and                                                 
-  // association with MC truth (using MC info in AOD)                                                                                   
+  // association with MC truth (using MC info in AOD) 
   // Origin: R. Bala, bala@to.infn.it         
   // Modified for Ds meson: G.M. Innocenti innocent@to.infn.it
-  // Get the pointer to the existing analysis manager via the static access method.                                                     
-  //==============================================================================                                                      
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -54,28 +54,33 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   mgr->AddTask(dsTask);
   
   // Create containers for input/output 
-  
-  AliAnalysisDataContainer *cinputDs = mgr->CreateContainer("cinputDs",TChain::Class(),
-							       AliAnalysisManager::kInputContainer);
+  TString name="cinputDs";
+  name+=postname;
+  AliAnalysisDataContainer *cinputDs = mgr->CreateContainer(name,TChain::Class(),
+							    AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_InvMassDs";
+  outputfile+=postname;
   
-  AliAnalysisDataContainer *coutputDsCuts = mgr->CreateContainer("coutputDsCuts",TList::Class(),
-								    AliAnalysisManager::kOutputContainer,
-								    outputfile.Data());
+  name="coutputDsCuts"; name+=postname;
+  AliAnalysisDataContainer *coutputDsCuts = mgr->CreateContainer(name,TList::Class(),
+								 AliAnalysisManager::kOutputContainer,
+								 outputfile.Data());
   
-  AliAnalysisDataContainer *coutputDs = mgr->CreateContainer("coutputDs",TList::Class(),
+  name="coutputDs"; name+=postname;
+  AliAnalysisDataContainer *coutputDs = mgr->CreateContainer(name,TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputfile.Data());
+  name="coutputDsNorm"; name+=postname;
+  AliAnalysisDataContainer *coutputDsNorm = mgr->CreateContainer(name,AliNormalizationCounter::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
-  AliAnalysisDataContainer *coutputDsNorm = mgr->CreateContainer("coutputDsNorm",AliNormalizationCounter::Class(),
+  
+  name="coutputDs2"; name+=postname;
+  if(storeNtuple){
+    AliAnalysisDataContainer *coutputDs2 = mgr->CreateContainer(name,TNtuple::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
-  
-   if(storeNtuple){
-    AliAnalysisDataContainer *coutputDs2 = mgr->CreateContainer("coutputDs2",TNtuple::Class(),
-								   AliAnalysisManager::kOutputContainer,
-								   outputfile.Data());
-    
     coutputDs2->SetSpecialOutput();
   }
   
