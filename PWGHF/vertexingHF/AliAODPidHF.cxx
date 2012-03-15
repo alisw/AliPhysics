@@ -126,7 +126,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPtThresholdTPC(pid.fPtThresholdTPC),
   fPidResponse(pid.fPidResponse),
   fPidCombined(pid.fPidCombined),
-  fTPCResponse(pid.fTPCResponse)
+  fTPCResponse(0x0)
 {
   
   fnSigma = new Double_t[fnNSigma];
@@ -142,7 +142,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
     fPLimit[i]=pid.fPLimit[i];
   }
 
-    
+  if(pid.fTPCResponse) fTPCResponse = new AliTPCPIDResponse(*(pid.fTPCResponse));
   //fPidResponse = new AliPIDResponse(*(pid.fPidResponse));
   //fPidCombined = new AliPIDCombined(*(pid.fPidCombined));  
     
