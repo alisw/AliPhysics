@@ -126,6 +126,9 @@ public:
   void SetSecInAverage(int secInAverage) {fSecInAverage = secInAverage;}; // length of the interval that should be used for the average calculation (determines number of bins in TProfile)
   int GetSecInAverage() const {return fSecInAverage;}; //!
 
+  void SetDownscale(int i) {fDownscale = i;}; //!
+  int GetDownscale() const {return fDownscale;}; //!
+
   // Info on time since start of run
   double GetHour() const { return fHour; }; // time info for current event
   double GetCurrentHour() const { return fHour; }; // time info for current event (same as GetHour(), just more explicitly named)
@@ -180,6 +183,8 @@ public:
   bool fUseAverage; // flag to average graph points into over a time interval
   int fSecInAverage; // time interval for the graph averaging
 
+  int fDownscale; // to select 1 out every N (fDownscale) events
+
   // status counters
   int fNEvents; // # events processed
   int fNAcceptedEvents; // # events accepted
@@ -209,7 +214,7 @@ public:
   int fNLowGain[fgkMaxTowers]; // same, for low gain
   int fNRef[fgkMaxRefs * 2]; // same, for LED refs; *2 for both gains
   
-  ClassDef(AliCaloCalibSignal, 6) // don't forget to change version if you change class member list..
+  ClassDef(AliCaloCalibSignal, 7) // don't forget to change version if you change class member list..
     
 };
     

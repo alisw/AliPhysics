@@ -76,6 +76,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fLatestHour(0),
   fUseAverage(kTRUE),
   fSecInAverage(1800), 
+  fDownscale(10), 
   fNEvents(0),
   fNAcceptedEvents(0),
   fTreeAmpVsTime(NULL),
@@ -153,6 +154,7 @@ void AliCaloCalibSignal::DeleteTrees()
 //  fLatestHour(sig.GetLatestHour()),
 //  fUseAverage(sig.GetUseAverage()),
 //  fSecInAverage(sig.GetSecInAverage()),
+//  fDownscale(sig.GetDownscale()),
 //  fNEvents(sig.GetNEvents()),
 //  fNAcceptedEvents(sig.GetNAcceptedEvents()),
 //  fTreeAmpVsTime(),
@@ -369,7 +371,8 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
 
       // if the key matches with something we expect, we assign the new value
       if ( (key == "fAmpCut") || (key == "fReqFractionAboveAmpCutVal") ||
-	   (key == "fAmpCutLEDRef") || (key == "fSecInAverage") ) {
+	   (key == "fAmpCutLEDRef") || (key == "fSecInAverage") || 
+	   (key == "fDownscale") ) {
 	istringstream iss(value);
 	printf("AliCaloCalibSignal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
 
@@ -384,6 +387,9 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
 	}
 	else if (key == "fSecInAverage") { 
 	  iss >> fSecInAverage; 
+	}
+	else if (key == "fDownscale") { 
+	  iss >> fDownscale; 
 	}
       } // some match found/expected
 
@@ -404,6 +410,7 @@ void AliCaloCalibSignal::WriteParametersToFile(const char *parameterFile)
   out << "fReqFractionAboveAmpCutVal" << "::" << fReqFractionAboveAmpCutVal << endl;
   out << "fAmpCutLEDRef" << "::" << fAmpCutLEDRef << endl;
   out << "fSecInAverage" << "::" << fSecInAverage << endl;
+  out << "fDownscale" << "::" << fDownscale << endl;
 
   out.close();
   return;
@@ -485,6 +492,7 @@ Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
   fLatestHour = sig->GetLatestHour();
   fUseAverage = sig->GetUseAverage();
   fSecInAverage = sig->GetSecInAverage();
+  fDownscale = sig->GetDownscale();
   fNEvents = sig->GetNEvents();
   fNAcceptedEvents = sig->GetNAcceptedEvents();
 
@@ -509,6 +517,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   if (!in) return kFALSE; //Return right away if there's a null pointer
   
   fNEvents++; // one more event
+
+  if ( (fNEvents%fDownscale)!=0 ) return kFALSE; // mechanism to skip some of the input events, if we want
 
   // use maximum numbers to set array sizes
   int iAmpValHighGain[fgkMaxTowers];
