@@ -16,7 +16,7 @@ void AddTaskPWG4HighPtTrackQA(TString year = "2010", TString prodType = "LHC10h"
     }
   }
   else if(iAODanalysis==1) {
-    AddTaskPWG4HighPtTrackQAAOD(prodType.Data,isPbPb,iAODanalysis,filterBit); 
+    AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
   }
 
 }
