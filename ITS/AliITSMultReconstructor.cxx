@@ -100,6 +100,7 @@ fTracklets(0),
 fSClusters(0),
 fNTracklets(0),
 fNSingleCluster(0),
+fNSingleClusterSPD2(0),
 fDPhiWindow(0),
 fDThetaWindow(0),
 fPhiShift(0),
@@ -156,6 +157,7 @@ fhphiClustersLay1(0),
   fClustersLoaded(0),
   fRecoDone(0),
   fBuildRefs(kTRUE),
+  fStoreSPD2SingleCl(kFALSE),
   fSPDSeg()
 {
   // default c-tor
@@ -185,6 +187,7 @@ fhphiClustersLay1(0),
     SetNStdDev(AliITSReconstructor::GetRecoParam()->GetTrackleterNStdDevCut());
     SetScaleDThetaBySin2T(AliITSReconstructor::GetRecoParam()->GetTrackleterScaleDThetaBySin2T());
     SetBuildRefs(AliITSReconstructor::GetRecoParam()->GetTrackleterBuildCl2TrkRefs());
+    SetStoreSPD2SingleCl(AliITSReconstructor::GetRecoParam()->GetTrackleterStoreSPD2SingleCl());
     //
     SetCutPxDrSPDin(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDin());
     SetCutPxDrSPDout(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDout());
@@ -272,6 +275,7 @@ fTracklets(0),
 fSClusters(0),
 fNTracklets(0),
 fNSingleCluster(0),
+fNSingleClusterSPD2(0),
 fDPhiWindow(0),
 fDThetaWindow(0),
 fPhiShift(0),
@@ -327,6 +331,7 @@ fCreateClustersCopy(0),
 fClustersLoaded(0),
 fRecoDone(0),
 fBuildRefs(kTRUE),
+fStoreSPD2SingleCl(kFALSE),
 fSPDSeg()
  {
   // Copy constructor :!!! RS ATTENTION: old c-tor reassigned the pointers instead of creating a new copy -> would crash on delete
@@ -393,6 +398,7 @@ void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP)
   fNClustersLay[1] = 0;
   fNTracklets = 0; 
   fNSingleCluster = 0;
+  fNSingleClusterSPD2 = 0;
   //
   fESDEvent = esd;
   fTreeRP = treeRP;
@@ -436,6 +442,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   fNClustersLay[1] = 0;
   fNTracklets = 0; 
   fNSingleCluster = 0;
+  fNSingleClusterSPD2 = 0;
   //
   if (!clusterTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
   //
@@ -458,6 +465,7 @@ void AliITSMultReconstructor::ReconstructMix(TTree* clusterTree, TTree* clusterT
   fNClustersLay[1] = 0;
   fNTracklets = 0; 
   fNSingleCluster = 0;
+  fNSingleClusterSPD2 = 0;
   //
   if (!clusterTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
   if (!clusterTreeMix) { AliError(" Invalid ITS cluster tree 2nd event !\n"); return; }
@@ -512,7 +520,7 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
   // Step2: store tracklets; remove used clusters 
   for (Int_t iC2=0; iC2<fNClustersLay[1]; iC2++) StoreTrackletForL2Cluster(iC2);
   //
-  // store unused single clusters of L1
+  // store unused single clusters of L1 (optionally for L2 too)
   StoreL1Singles();
   //
   AliDebug(1,Form("%d tracklets found", fNTracklets));
@@ -531,6 +539,8 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
   //
   fMult = new AliMultiplicity(fNTracklets,fNSingleCluster,fNFiredChips[0],fNFiredChips[1],fastOrFiredMap);
   fMult->SetMultTrackRefs( fBuildRefs );
+  fMult->SetSPD2SinglesStored(fStoreSPD2SingleCl);
+  fMult->SetNumberOfSingleClustersSPD2(fNSingleClusterSPD2);
   // store some details of reco:
   fMult->SetScaleDThetaBySin2T(fScaleDTBySin2T);
   fMult->SetDPhiWindow2(fDPhiWindow2);
@@ -576,15 +586,17 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
     fMult->SetSingleClusterData(i,clInfo); 
     //
     if (!fBuildRefs) continue; // do we need references?
+    int ilr = i>=(fNSingleCluster-fNSingleClusterSPD2) ? 1:0;
     int clID = int(clInfo[kSCID]);
     for (int itp=0;itp<2;itp++) {
-      if (!fStoreRefs[0][itp]) continue;
-      int nref = fUsedClusLay[0][itp]->GetReferences(clID,shared,100);
+      if (!fStoreRefs[ilr][itp]) continue;
+      int nref = fUsedClusLay[ilr][itp]->GetReferences(clID,shared,100);
       if (!nref) continue;
       else if (nref==1) refsc[itp]->AddReference(i,shared[0]);
       else refsc[itp]->AddReferences(i,shared,nref);
     }
   }
+  //
   if (fBuildRefs) fMult->AttachCluster2TrackRefs(refsc[0],refsc[1]); 
   fMult->CompactBits();
   //
@@ -605,8 +617,9 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* tree, TTree* treeMix)
   memset(fTracklets,0,nmaxT*sizeof(Float_t*));
   //
   if (fSClusters) delete[] fSClusters;
-  fSClusters = new Float_t*[fNClustersLay[0]]; 
-  memset(fSClusters,0,fNClustersLay[0]*sizeof(Float_t*));
+  int nSlots = GetStoreSPD2SingleCl() ? fNClustersLay[0]+fNClustersLay[1] : fNClustersLay[0];
+  fSClusters = new Float_t*[nSlots]; 
+  memset(fSClusters,0,nSlots*sizeof(Float_t*));
   //
   AliDebug(1,Form("(clusters in layer 1 : %d,  layer 2: %d)",fNClustersLay[0],fNClustersLay[1]));
   AliDebug(1,Form("(cluster-fired chips in layer 1 : %d,  layer 2: %d)",fNFiredChips[0],fNFiredChips[1]));
@@ -1070,6 +1083,23 @@ void AliITSMultReconstructor::StoreL1Singles()
       AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)",
 		      fNSingleCluster, iC1));
       fNSingleCluster++;
+    }
+  }
+  //
+  if (GetStoreSPD2SingleCl()) {
+    for (Int_t iC2=0; iC2<fNClustersLay[1]; iC2++) {
+      if (fPartners[iC2]<0 || (fOverlapFlagClustersLay[0][fPartners[iC2]] || fOverlapFlagClustersLay[1][iC2])) {
+	float* clPar2 = GetClusterLayer2(iC2);
+	fSClusters[fNSingleCluster] = new Float_t[kClNPar];
+	fSClusters[fNSingleCluster][kSCTh] = clPar2[kClTh];
+	fSClusters[fNSingleCluster][kSCPh] = clPar2[kClPh];
+	fSClusters[fNSingleCluster][kSCLab] = clPar2[kClMC0]; 
+	fSClusters[fNSingleCluster][kSCID] = iC2;
+	AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 2)",
+			fNSingleCluster, iC2));
+	fNSingleCluster++;
+	fNSingleClusterSPD2++;
+      }
     }
   }
   //

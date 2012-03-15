@@ -10,6 +10,7 @@ AliMultiplicity::AliMultiplicity():
   TObject(),
   fNtracks(0),
   fNsingle(0),
+  fNsingleSPD2(0),
 //
   fDPhiWindow2(0.08*0.08),  
   fDThetaWindow2(0.025*0.025),
@@ -42,6 +43,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
   TObject(),
   fNtracks(ntr),
   fNsingle(ns),
+  fNsingleSPD2(0),
   //
   fDPhiWindow2(0.08*0.08),  
   fDThetaWindow2(0.025*0.025),
@@ -101,6 +103,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
   TObject(),
   fNtracks(ntr),
   fNsingle(ns),
+  fNsingleSPD2(0),
   //
   fDPhiWindow2(0.08*0.08),  
   fDThetaWindow2(0.025*0.025),
@@ -152,6 +155,7 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   TObject(m),
   fNtracks(m.fNtracks),
   fNsingle(m.fNsingle),
+  fNsingleSPD2(m.fNsingleSPD2),
   //
   fDPhiWindow2(0.08*0.08),  
   fDThetaWindow2(0.025*0.025),
@@ -248,6 +252,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     fLabelsL2 = 0;
   }
   fNsingle = m.fNsingle;
+  fNsingleSPD2 = m.fNsingleSPD2;
   if(fNsingle>0){
     fThsingle = new Double_t[fNsingle];
     fPhisingle = new Double_t[fNsingle];
@@ -594,3 +599,44 @@ void AliMultiplicity::Print(Option_t *opt) const
   }
   //
 }
+
+Int_t AliMultiplicity::GetLabelSingleLr(Int_t i, Int_t lr) const 
+{
+  if (lr==1) {
+    if (!AreSPD2SinglesStored()) return -1;
+    else i += GetNumberOfSingleClustersLr(0);
+  }
+  if(i>=0 && i<fNsingle) {
+      return fLabelssingle[i];
+  } else {
+    Error("GetLabelSingle","Invalid cluster number %d",i); return -9999;
+  }
+  return -9999;
+}
+
+Float_t AliMultiplicity::GetPhiAll(int icl, int lr) const
+{
+  // return phi of the cluster out of total tracklets + singles
+  if (lr<0||lr>1) return -999;
+  if (icl<0||icl>(int)GetNumberOfITSClusters(lr)) {Error("GetPhiAll","Wrong cluster ID=%d for SPD%d",icl,lr); return -999;}
+  if (lr==0) return (icl<fNtracks) ? GetPhi(icl) : GetPhiSingle(icl-fNtracks);
+  return (icl<fNtracks) ? (GetPhi(icl) + GetDeltaPhi(icl)) : GetPhiSingleLr(icl-fNtracks, 1);
+} 
+
+Float_t AliMultiplicity::GetThetaAll(int icl, int lr) const
+{
+  // return theta of the cluster out of total tracklets + singles
+  if (lr<0||lr>1) return -999;
+  if (icl<0||icl>(int)GetNumberOfITSClusters(lr)) {Error("GetPhiAll","Wrong cluster ID=%d for SPD%d",icl,lr); return -999;}
+  if (lr==0) return (icl<fNtracks) ? GetTheta(icl) : GetThetaSingle(icl-fNtracks);
+  return (icl<fNtracks) ?  (GetTheta(icl) + GetDeltaTheta(icl)) : GetThetaSingleLr(icl-fNtracks, 1);
+} 
+
+Int_t AliMultiplicity::GetLabelAll(int icl, int lr) const
+{
+  // return label of the cluster out of total tracklets + singles
+  if (lr<0||lr>1) return -99999;
+  if (icl<0||icl>(int)GetNumberOfITSClusters(lr)) {Error("GetPhiAll","Wrong cluster ID=%d for SPD%d",icl,lr); return -99999;}
+  if (lr==0) return (icl<fNtracks) ? GetLabel(icl,0) : GetLabelSingle(icl-fNtracks);
+  return (icl<fNtracks) ?  GetLabel(icl,1) : GetLabelSingleLr(icl-fNtracks, 1);
+} 

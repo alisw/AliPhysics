@@ -73,6 +73,7 @@ public:
   Int_t GetNClustersLayer(Int_t i) const {return fNClustersLay[i];}
   Int_t GetNTracklets() const {return fNTracklets;}
   Int_t GetNSingleClusters() const {return fNSingleCluster;}
+  Int_t GetNSingleClustersLr(int lr) const {return lr==0 ? fNSingleCluster-fNSingleClusterSPD2:(GetStoreSPD2SingleCl() ? fNSingleClusterSPD2 : -1) ;}
   Short_t GetNFiredChips(Int_t layer) const {return fNFiredChips[layer];}
 
   Float_t* GetClusterLayer1(Int_t n) const {return &fClustersLay[0][n*kClNPar];}
@@ -95,7 +96,10 @@ public:
   //
   void   SetBuildRefs(Bool_t v=kTRUE)                    {fBuildRefs = v;}
   Bool_t GetBuildRefs()                          const   {return fBuildRefs;}
-
+  //
+  void   SetStoreSPD2SingleCl(Bool_t v)                  {fStoreSPD2SingleCl = v;}
+  Bool_t GetStoreSPD2SingleCl()                  const   {return fStoreSPD2SingleCl;}
+  //
   AliITSDetTypeRec *GetDetTypeRec() const {return fDetTypeRec;}
   void SetDetTypeRec(AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
   //
@@ -188,6 +192,7 @@ public:
   Int_t         fNClustersLay[2];      // Number of clusters on each layer
   Int_t         fNTracklets;           // Number of tracklets
   Int_t         fNSingleCluster;       // Number of unassociated clusters
+  Int_t         fNSingleClusterSPD2;   // Number of unassociated clusters on 2nd lr
   Short_t       fNFiredChips[2];       // Number of fired chips in the two SPD layers
   //
   // Following members are set via AliITSRecoParam
@@ -260,6 +265,7 @@ public:
   Bool_t        fClustersLoaded;       // flag of clusters loaded
   Bool_t        fRecoDone;             // flag that reconstruction is done
   Bool_t        fBuildRefs;            // build cluster to tracks references
+  Bool_t        fStoreSPD2SingleCl;    // do we store SPD2 singles
   //
   AliITSsegmentationSPD fSPDSeg;       // SPD segmentation model
   //

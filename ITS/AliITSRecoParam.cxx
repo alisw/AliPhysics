@@ -179,6 +179,7 @@ fTrackleterZetaOverlapCut(0.05),
 fTrackleterPhiRotationAngle(0.0),
 fTrackleterNStdDev(1.5),
 fScaleDTBySin2T(kFALSE),
+fTrackleterStoreSPD2SingleCl(kFALSE),
 fTrackleterBuildCl2TrkRefs(kTRUE),
 //
 fUseCosmicRunShiftsSSD(kFALSE),

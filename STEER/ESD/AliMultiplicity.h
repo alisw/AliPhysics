@@ -15,8 +15,9 @@ class AliMultiplicity : public TObject {
 
  public:
   //
-  enum {kMultTrackRefs  =BIT(14),// in new format (old is default for bwd.comp.) multiple cluster->track references are allowed
-	kScaleDThtbySin2=BIT(15) // scale Dtheta by 1/sin^2(theta). Default is DON'T scale, for bwd.comp.
+  enum {kMultTrackRefs  =BIT(14), // in new format (old is default for bwd.comp.) multiple cluster->track references are allowed
+	kScaleDThtbySin2=BIT(15), // scale Dtheta by 1/sin^2(theta). Default is DON'T scale, for bwd.comp.
+	kSPD2Sng        =BIT(16)  // are SPD2 singles stored?
   };   
   AliMultiplicity();               // default constructor
   // standard constructor
@@ -58,10 +59,14 @@ class AliMultiplicity : public TObject {
   }
 
   Double_t  CalcDist(Int_t it)  const;
+  Float_t GetThetaAll(int icl, int lr) const;
+  Float_t GetPhiAll(int icl, int lr) const;
+  Int_t   GetLabelAll(int icl, int lr) const;
 
   Int_t GetLabel(Int_t i, Int_t layer) const;
   void  SetLabel(Int_t i, Int_t layer, Int_t label);
   Int_t GetLabelSingle(Int_t i) const;
+  Int_t GetLabelSingleLr(Int_t i, Int_t layer) const;
   void  SetLabelSingle(Int_t i, Int_t label);
 
   Bool_t FreeClustersTracklet(Int_t i, Int_t mode) const;
@@ -69,13 +74,36 @@ class AliMultiplicity : public TObject {
 
   
 // methods to access single cluster information
+  Int_t SetNumberOfSingleClustersSPD2(Int_t n) {return fNsingleSPD2 = n;}
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}
+  Int_t GetNumberOfSingleClustersLr(Int_t lr) const;
+  Bool_t AreSPD2SinglesStored()         const {return TestBit(kSPD2Sng);}
+  void   SetSPD2SinglesStored(Bool_t v=kTRUE) {return SetBit(kSPD2Sng,v);}
+
   Double_t GetThetaSingle(Int_t i) const { 
     if(i>=0 && i<fNsingle) return fThsingle[i];
     Error("GetThetaSingle","Invalid cluster number %d",i); return -9999.;
   }
 
+  Double_t GetThetaSingleLr(Int_t i, Int_t lr) const { 
+    if (lr==1) {
+      if (!AreSPD2SinglesStored()) {Error("GetThetaSingle","Invalid cluster number %d for lr %d",i,lr); return -9999.;}
+      else i += GetNumberOfSingleClustersLr(0);
+    }
+    if(i>=0 && i<fNsingle) return fThsingle[i];
+    Error("GetThetaSingle","Invalid cluster number %d",i); return -9999.;
+  }
+
   Double_t GetPhiSingle(Int_t i) const { 
+    if(i>=0 && i<fNsingle) return fPhisingle[i];
+    Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;
+  }
+
+  Double_t GetPhiSingleLr(Int_t i, Int_t lr) const { 
+    if (lr==1) {
+      if (!AreSPD2SinglesStored()) {Error("GetPhiSingle","Invalid cluster number %d for lr %d",i,lr); return -9999.;}
+      else i += GetNumberOfSingleClustersLr(0);
+    }
     if(i>=0 && i<fNsingle) return fPhisingle[i];
     Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;
   }
@@ -139,7 +167,8 @@ class AliMultiplicity : public TObject {
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
 
   Int_t fNtracks;            // Number of tracklets
-  Int_t fNsingle;            // Number of clusters on SPD layer 1, not associated with a tracklet on SPD layer 2
+  Int_t fNsingle;            // Number of clusters on SPD layer 1 and 2 (if storage of spd2 singles requested), not associated with a tracklet on otherSPD 
+  Int_t fNsingleSPD2;        // Number of clusters on SPD layer 2 not associated (if stored)
   //
   Float_t fDPhiWindow2;      // sigma^2 in dphi used in reco
   Float_t fDThetaWindow2;    // sigma^2 in dtheta used in reco
@@ -164,7 +193,7 @@ class AliMultiplicity : public TObject {
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
   TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
 
-  ClassDef(AliMultiplicity,18);
+  ClassDef(AliMultiplicity,19);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
@@ -212,6 +241,13 @@ inline Double_t AliMultiplicity::CalcDist(Int_t i) const
     dtheta /= sinTI>1.e-6 ? sinTI : 1.e-6;
   }
   return dphi*dphi/fDPhiWindow2 + dtheta*dtheta/fDThetaWindow2;
+}
+
+inline Int_t AliMultiplicity::GetNumberOfSingleClustersLr(Int_t lr) const
+{
+  // return number of singles at given layer
+  if (lr==0) return fNsingle - fNsingleSPD2;
+  return AreSPD2SinglesStored() ? fNsingleSPD2 : -1;
 }
 
 

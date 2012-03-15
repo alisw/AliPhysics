@@ -375,6 +375,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t GetTrackleterZetaOverlapCut() const {return fTrackleterZetaOverlapCut;}
   void    SetTrackleterPhiRotationAngle(Float_t w=0.0) {fTrackleterPhiRotationAngle=w;}
   Float_t GetTrackleterPhiRotationAngle() const {return fTrackleterPhiRotationAngle;}
+  Bool_t  GetTrackleterStoreSPD2SingleCl()      const {return fTrackleterStoreSPD2SingleCl;}
+  void    SetTrackleterStoreSPD2SingleCl(Bool_t v=kTRUE) {fTrackleterStoreSPD2SingleCl = v;}
   //
   void    SetTrackleterNStdDevCut(Float_t f=1.)          {fTrackleterNStdDev = f<0.01 ? 0.01 : f;}
   Float_t GetTrackleterNStdDevCut()               const  {return fTrackleterNStdDev;}
@@ -688,6 +690,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterPhiRotationAngle;             // Angle to rotate cluster in the SPD inner layer for combinatorial reco only
   Float_t fTrackleterNStdDev;      // cut on the number of standard deviations
   Bool_t  fScaleDTBySin2T;         // scale Dtheta by 1/sin^2(theta)
+  Bool_t  fTrackleterStoreSPD2SingleCl;            // request storing of L2 singles
   //
   Bool_t  fTrackleterBuildCl2TrkRefs;           // build cluster to track references in AliMultiplicity
   //
@@ -761,7 +764,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,50) // ITS reco parameters
+  ClassDef(AliITSRecoParam,51) // ITS reco parameters
 };
 
 #endif
