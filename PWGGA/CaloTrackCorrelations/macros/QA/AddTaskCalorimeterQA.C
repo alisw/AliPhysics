@@ -50,12 +50,15 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
-  if(kUseKinematics){
-    if(inputDataType == "ESD"){
+  if(kUseKinematics)
+  {
+    if(inputDataType == "ESD")
+    {
       reader->SwitchOnStack();          
       reader->SwitchOffAODMCParticles(); 
     }
-    else if(inputDataType == "AOD"){
+    else if(inputDataType == "AOD")
+    {
       reader->SwitchOffStack();          
       reader->SwitchOnAODMCParticles(); 
     }
@@ -63,16 +66,15 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
+  reader->SetImportGeometryFromFile(kFALSE);
+  
   if(kPrintSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
-  if     (year==2010) cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
-  else if(year==2011) cu->SetEMCALGeometryName("EMCAL_COMPLETEV1"); 
-  else                cu->SetEMCALGeometryName("EMCAL_COMPLETE12SMV1"); 
-  
+
   AliEMCALRecoUtils* reco = cu->GetEMCALRecoUtils();
   reco->SwitchOnRejectExoticCell() ; // reject exotic cells, fill different histograms for exotic clusters and good clusters
   reco->SetExoticCellDiffTimeCut(10000); // Open  

@@ -23,7 +23,7 @@ enum anaModes {mLocal=0, mPROOF=1, mPlugin=2, mGRID=3};
 
 char * kInDir   = "/user/data/files/"; 
 char * kPattern = ""; // Data are in files kInDir/kPattern+i 
-Int_t  kFile    = 1; 
+Int_t  kFile    = 3; 
 
 //---------------------------------------------------------------------------
 // Dataset for proof analysis, mode=mPROOF
@@ -182,7 +182,7 @@ void ana(Int_t mode=mGRID)
   TString outputFile = AliAnalysisManager::GetCommonFileName(); 
   
   //-------------------------------------------------------------------------
-  //Define task, put here any other task that you want to use.
+  // Define task, put here any other task that you want to use.
   //-------------------------------------------------------------------------
   
   // Physics selection
@@ -199,12 +199,23 @@ void ana(Int_t mode=mGRID)
   // Simple event counting tasks
   AddTaskCounter("");   // All
   //AddTaskCounter("MB"); // Min Bias
+  AddTaskCounter("Any"); 
+  AddTaskCounter("AnyINT");// Min Bias
+
   if(!kMC)
   {
-    AddTaskCounter("INT7"); // Min Bias
-    //AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
+    AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
     AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
-    AddTaskCounter("PHOS"); //  
+    AddTaskCounter("EMCEGA"); 
+    AddTaskCounter("EMCEJE"); 
+    if(kCollision=="PbPb")
+    {
+      AddTaskCounter("Central"); 
+      AddTaskCounter("SemiCentral"); 
+      AddTaskCounter("PHOSPb"); 
+    }
+    else AddTaskCounter("PHOS"); 
+
   }
     
   // -----------------
@@ -214,7 +225,7 @@ void ana(Int_t mode=mGRID)
   if(kInputData=="ESD"){
     printf("* Configure photon conversion analysis in macro \n");
     TString arguments = "-run-on-train -use-own-xyz  -force-aod -mc-off ";
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/GammaConv/macros/ConfigGammaConversion.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/GammaConversion/macros/ConfigGammaConversion.C");
     AliAnalysisTaskGammaConversion * taskGammaConversion = 
     ConfigGammaConversion(arguments,mgr->GetCommonInputContainer());
     taskGammaConversion->SelectCollisionCandidates();
@@ -228,108 +239,137 @@ void ana(Int_t mode=mGRID)
   }
 */  
   
+  
+  
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
   gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros  
   
+ // gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
+ // AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
   
-  // ------
-  // Tracks
-  // ------  
+  if(kCollision=="pp")
+  {
+    printf("==================================== \n");
+    printf("CONFIGURE ANALYSIS FOR PP COLLISIONS \n");
+    printf("==================================== \n");
+    
+    Bool_t  clTM      = kTRUE;
+    Bool_t  reTM      = kFALSE; // Recalculate matches if not already done in clusterizer
+    Bool_t  anTM      = kTRUE;  // Remove matched
+    Bool_t  exo       = kTRUE;  // Remove exotic cells
+    Bool_t  annonlin  = kFALSE; // Apply non linearity (analysis)
+    Int_t   minEcell  = 50;     // 50  MeV (10 MeV used in reconstruction)
+    Int_t   minEseed  = 100;    // 100 MeV
+    Int_t   dTime     = 0;      // default, 250 ns
+    Int_t   wTime     = 0;      // default 425 < T < 825 ns
+    TString clTrigger = "EMC7";   
+    TString anTrigger = "EMC7";  
+    if(kMC) 
+    {
+      clTrigger = "";
+      anTrigger = "";
+    }
+    
+    Bool_t  selectEvents = kFALSE; // Select events depending on V0, pile-up and vertex quality
+    Bool_t  qa     = kTRUE; // Do besides calorimeter QA analysis
+    Bool_t  hadron = kTRUE; // Do besides charged track correlations analysis    
+    
+    //Analysis with clusterizer V1
+    
+    TString arrayNameV1 = "";
+    AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
+                                                                   minEcell,minEseed,dTime,wTime);    
+    
+    printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
+    
+    AliAnalysisTaskCaloTrackCorrelation *anav1   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                        kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM, 
+                                                                        -1,-1, qa, hadron,deltaAOD,kPrint);
+    
+    
+    //Analysis with clusterizer V2
+    TString arrayNameV2 = "";
+    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
+                                                                   minEcell,minEseed,dTime,wTime);    
 
-  // Track isolation-correlation analysis and EMCAL QA analysis
-  AliAnalysisTaskCaloTrackCorrelation *anamb  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                               kYear,kRun,kCollision,"INT7","");   // PHOS trigger
+    printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
+    
+    hadron = kFALSE;
+    AliAnalysisTaskCaloTrackCorrelation *anav2   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                        kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM, 
+                                                                        -1,-1,qa,hadron,deltaAOD,kPrint);
   
-  AliAnalysisTaskCaloTrackCorrelation *anatr  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                               kYear,kRun,kCollision,"EMC7","");  
+  }
   
- 
-  // -----
-  // EMCAL
-  // -----  
-  
-  Bool_t  bTrackMatch = kTRUE;
-  Int_t   minEcell    = 50;  // 50  MeV (10 MeV used in reconstruction)
-  Int_t   minEseed    = 100; // 100 MeV
-  Int_t   dTime       = 0;   // default, 250 ns
-  Int_t   wTime       = 0;   // default 425 < T < 825 ns
-  TString clTrigger   = "";  // Do not select, do Min Bias and triggered
-  
-  //Analysis with clusterizer V1
-  AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,"V1",clTrigger,kRun,kPass, bTrackMatch,
-                                                                 minEcell,minEseed,dTime,wTime);    
-  
-  TString arrayNameV1(Form("V1_Ecell%d_Eseed%d_DT%d_WT%d",minEcell,minEseed, dTime,wTime));
-  printf("Name of clusterizer array: %s\n",arrayNameV1.Data());
-  
-  if(!kMC)
+  if(kCollision=="PbPb")
   {
+    printf("====================================== \n");
+    printf("CONFIGURE ANALYSIS FOR PbPb COLLISIONS \n");
+    printf("====================================== \n");
     
-    AliAnalysisTaskCaloTrackCorrelation *anav1tr  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                   kYear,kRun,kCollision,"EMC7",arrayNameV1);
+    Bool_t  clTM      = kTRUE;
+    Bool_t  reTM      = kFALSE; // Recalculate matches if not already done in clusterizer
+    Bool_t  anTM      = kTRUE;  // Remove matched
+    Bool_t  exo       = kTRUE;  // Remove exotic cells
+    Bool_t  annonlin  = kFALSE; // Apply non linearity (analysis)
+    Int_t   minEcell  = 100;    // 50  MeV (10 MeV used in reconstruction)
+    Int_t   minEseed  = 200;    // 100 MeV
+    Int_t   dTime     = 0;      // default, 250 ns
+    Int_t   wTime     = 0;      // default 425 < T < 825 ns
+    TString clTrigger = "EMCGA"; 
+    TString anTrigger = "EMCGA";  
+    if(kMC) 
+    {
+      clTrigger = "";
+      anTrigger = "";
+    }
     
-    AliAnalysisTaskCaloTrackCorrelation *anav1mb  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                   kYear,kRun,kCollision,"INT7",arrayNameV1);
-  }
-  else 
-  {// No trigger (should be MB, but for single particle productions it does not work)
+    Bool_t  selectEvents = kFALSE; // Select events depending on V0, pile-up and vertex quality
+    Bool_t  qa     = kTRUE; // Do besides calorimeter QA analysis
+    Bool_t  hadron = kTRUE; // Do besides charged track correlations analysis    
     
-    AliAnalysisTaskCaloTrackCorrelation *anav1  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                 kYear,kRun,kCollision,"",arrayNameV1);
-  }
+    //Analysis with clusterizer V1
+    
+    TString arrayNameV1 = "";
+    AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
+                                                                   minEcell,minEseed,dTime,wTime);    
+    
+    
+    printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
+    
+    AliAnalysisTaskCaloTrackCorrelation *anav1c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                         kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM, 
+                                                                         0,20,qa,hadron,deltaAOD,kPrint);
+    AliAnalysisTaskCaloTrackCorrelation *anav1m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                        kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
+                                                                         20,40,qa,hadron,deltaAOD,kPrint);
+    AliAnalysisTaskCaloTrackCorrelation *anav1p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC,  selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                        kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
+                                                                         60,80,qa,hadron,deltaAOD,kPrint);
   
-  
-  
-  //Analysis with clusterizer V2
-  AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,"V2",clTrigger,kRun,kPass, bTrackMatch,
-                                                                 minEcell,minEseed,dTime,wTime);    
-  
-  TString arrayNameV2(Form("V2_Ecell%d_Eseed%d_DT%d_WT%d",minEcell,minEseed, dTime,wTime));
-  printf("Name of clusterizer array: %s\n",arrayNameV2.Data());
-  
-  if(!kMC)
-  {
-    
-    AliAnalysisTaskCaloTrackCorrelation *anav2tr  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                   kYear,kRun,kCollision,"EMC7",arrayNameV2);
-    
-    AliAnalysisTaskCaloTrackCorrelation *anav2mb  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                   kYear,kRun,kCollision,"INT7",arrayNameV2);
-  }
-  else 
-  {// No trigger (should be MB, but for single particle productions it does not work)
-    AliAnalysisTaskCaloTrackCorrelation *anav2  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                 kYear,kRun,kCollision,"",arrayNameV2);    
-  }
- 
-  /*
-  // -----
-  // PHOS
-  // -----
-  
-  //Add here PHOS tender or whatever is needed
-  
-  if(!kMC)
-  {
-    
-    AliAnalysisTaskCaloTrackCorrelation *anav1tr = AddTaskCaloTrackCorr(kInputData, "PHOS", kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                  kYear,kRun,kCollision,"PHOS",""); // PHOS trigger
-    
-    AliAnalysisTaskCaloTrackCorrelation *anav1mb = AddTaskCaloTrackCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                  kYear,kRun,kCollision,"INT7","");
-    
-  }
-  else 
-  {// No trigger
-    
-    AliAnalysisTaskCaloTrackCorrelation *anav1mb = AddTaskCaloTrackCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                  kYear,kRun,kCollision,"","");
-    
-  }
+    //Analysis with clusterizer V2
 
-  */
+    TString arrayNameV2 = "";
+    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
+                                                                   minEcell,minEseed,dTime,wTime);        
+    
+    printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
+    
+    hadron = kFALSE;
+    
+    AliAnalysisTaskCaloTrackCorrelation *anav2c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                         kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM, 
+                                                                         0,20,qa,hadron,deltaAOD,kPrint);
+    AliAnalysisTaskCaloTrackCorrelation *anav2m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                         kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM,
+                                                                         20,40,qa,hadron,deltaAOD,kPrint);
+    AliAnalysisTaskCaloTrackCorrelation *anav2p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                         kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM,
+                                                                         60,80,qa,hadron,deltaAOD,kPrint);
+  }
+  
   //-----------------------
   // Run the analysis
   //-----------------------    
@@ -366,7 +406,7 @@ void  LoadLibraries(Int_t mode)
     //     //proof->UploadPackage("JETAN");
     //     proof->UploadPackage("PHOSUtils");
     //     proof->UploadPackage("EMCALUtils");
-    //     proof->UploadPackage("PWGCaloTrackBase");
+    //     proof->UploadPackage("PWGCaloTrackCorrBase");
     //     proof->UploadPackage("PWGGACaloTrackCorrelations");
     //     proof->UploadPackage("PWGGAEMCALTasks");
     
@@ -380,7 +420,7 @@ void  LoadLibraries(Int_t mode)
     //     //proof->EnablePackage("JETAN");
     //     proof->EnablePackage("PHOSUtils");
     //     proof->EnablePackage("EMCALUtils");
-    //     proof->EnablePackage("PWGCaloTrackBase");
+    //     proof->EnablePackage("PWGCaloTrackCorrBase");
     //     proof->EnablePackage("PWGGACaloTrackCorrelations");
     //     proof->EnablePackage("PWGGAEMCALTasks");
     return;
@@ -404,6 +444,7 @@ void  LoadLibraries(Int_t mode)
   gSystem->Load("libAOD.so");
   gSystem->Load("libRAWDatabase.so"); // Root + libraries to if reclusterization is done
   gSystem->Load("libProof.so"); 
+  gSystem->Load("libOADB");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libSTEER.so"); // Root + libraries to if reclusterization is done
   
@@ -436,12 +477,13 @@ void  LoadLibraries(Int_t mode)
   //SetupPar("PWGGACaloTrackCorrelations");
   //SetupPar("PWGGAEMCALTasks");
   
+ 
   //gSystem->Load("libJETAN");
   //gSystem->Load("FASTJETAN");
   //gSystem->Load("PWGJE");
 
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGGAGammaConv.so"); 
+  //gSystem->Load("libCORRFW.so");
+  //gSystem->Load("libPWGGAGammaConv.so"); 
   //SetupPar("PWGGAGammaConv"); 
   
   // needed for plugin?
@@ -953,12 +995,20 @@ void CheckEnvironmentVariables()
   }// args loop
   
   if(!sRun.Contains("LHC10")){
-    if ( kRun < 140000) {
+    if     ( kRun < 140000) 
+    {
       kYear = 2010;
       if( kRun >= 136851 ) kCollision = "PbPb";
     }
-    else{
+    else if( kRun < 170600)
+    {
       kYear = 2011;
+      if( kRun >= 166500 ) kCollision = "PbPb";
+    }
+    else 
+    {
+      kYear = 2012;
+
     }
   }
   
@@ -1008,6 +1058,43 @@ void AddTaskCounter(const TString trigger = "MB")
     printf("counter trigger PHOS\n");
     counter->SelectCollisionCandidates(AliVEvent::kPHI7);
   }
+  else if(trigger=="PHOSPb")
+  {
+    printf("counter trigger PHOSPb\n");
+    counter->SelectCollisionCandidates(AliVEvent::kPHOSPb);
+  }
+  else if(trigger=="AnyINT")
+  {
+    printf("counter trigger AnyINT\n");
+    counter->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  }  
+  else if(trigger=="INT")
+  {
+    printf("counter trigger AnyINT\n");
+    counter->SelectCollisionCandidates(AliVEvent::kAny);
+  }
+  else if(trigger=="EMCEGA")
+  {
+    printf("counter trigger EMC Gamma\n");
+    counter->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  } 
+  else if(trigger=="EMCEJE")
+  {
+    printf("counter trigger EMC Jet\n");
+    counter->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+  }
+  else if(trigger=="Central")
+  {
+    printf("counter trigger Central\n");
+    counter->SelectCollisionCandidates(AliVEvent::kCentral);
+  } 
+  else if(trigger=="SemiCentral")
+  {
+    printf("counter trigger SemiCentral\n");
+    counter->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  }
+  
+  
   
   TString outputFile = AliAnalysisManager::GetCommonFileName(); 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
