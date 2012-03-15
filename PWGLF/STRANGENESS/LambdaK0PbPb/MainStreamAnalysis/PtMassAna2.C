@@ -337,7 +337,7 @@ qback->DrawCopy("SAME");
    
 
     //Integrate the signal+background (i.e. original histo)
-    sigBkgd[NArray]=hMassSlice[N]->Integral(massBinLo,massBinHi);
+    sigBkgd[NArray]=hMassSlice[N]->Integral(massBinLo,massBinHi-1);
     errSigBkgd[NArray]=TMath::Sqrt(sigBkgd[NArray]);
     //Integrate background - better to do this analytically ?
     bkgd[NArray]=qback->Integral(xxlo,xxhi)/gausQuad->GetParameter(6);//Divide by bin width
