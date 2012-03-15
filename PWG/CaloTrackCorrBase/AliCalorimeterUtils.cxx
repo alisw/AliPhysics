@@ -28,6 +28,7 @@
 #include <TCanvas.h>
 #include <TStyle.h>
 #include <TPad.h>
+#include <TFile.h>
 
 // --- ANALYSIS system ---
 #include "AliCalorimeterUtils.h"
@@ -39,6 +40,8 @@
 #include "AliVCaloCells.h"
 #include "AliMixedEvent.h"
 #include "AliAODCaloCluster.h"
+#include "AliOADBContainer.h"
+#include "AliAnalysisManager.h"
 
 // --- Detector ---
 #include "AliEMCALGeometry.h"
@@ -65,7 +68,9 @@ ClassImp(AliCalorimeterUtils)
     fCutR(20),                        fCutZ(20),
     fCutEta(20),                      fCutPhi(20),
     fLocMaxCutE(0),                   fLocMaxCutEDiff(0),
-    fPlotCluster(0)
+    fPlotCluster(0),                  fOADBSet(kFALSE),
+    fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
+    fOADBFilePathEMCAL(""),           fOADBFilePathPHOS("")
 {
   //Ctor
   
@@ -96,6 +101,352 @@ AliCalorimeterUtils::~AliCalorimeterUtils()
 	
   if(fEMCALRecoUtils)   delete fEMCALRecoUtils ;
   if(fNMaskCellColumns) delete [] fMaskCellColumns;
+  
+}
+
+//____________________________________________________
+void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
+{
+  // Set the AODB calibration, bad channels etc. parameters at least once
+  // alignment matrices from OADB done in SetGeometryMatrices
+  
+  //Set it only once
+  if(fOADBSet) return ; 
+  
+  Int_t   runnumber = event->GetRunNumber() ;
+  TString pass      = GetPass();
+  
+  // EMCAL
+  if(fOADBForEMCAL)
+  {
+    printf("AliCalorimeterUtils::SetOADBParameters() - Get AODB parameters from EMCAL in %s for run %d, and <%s> \n",fOADBFilePathEMCAL.Data(),runnumber,pass.Data());
+    
+    Int_t nSM = fEMCALGeo->GetNumberOfSuperModules();
+    
+    // Bad map
+    if(fRemoveBadChannels)
+    {
+      AliOADBContainer *contBC=new AliOADBContainer("");
+      contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePathEMCAL.Data()),"AliEMCALBadChannels"); 
+      
+      TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+      
+      if(arrayBC)
+      {
+        
+        TObjArray * arrayBCpass = 0x0; 
+        if(pass!="")arrayBCpass = (TObjArray*)arrayBC->FindObject(pass);
+        // There are no passes for simulation, in order to get the bad map put pass1
+        else        arrayBCpass = (TObjArray*)arrayBC->FindObject("pass1");
+        
+        if(arrayBCpass)
+        {
+          SwitchOnDistToBadChannelRecalculation();
+          printf("AliCalorimeterUtils::SetOADBParameters() - Remove EMCAL bad cells \n");
+          
+          for (Int_t i=0; i<nSM; ++i) 
+          {
+            TH2I *hbm = GetEMCALChannelStatusMap(i);
+            
+            if (hbm)
+              delete hbm;
+            
+            hbm=(TH2I*)arrayBCpass->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+            
+            if (!hbm) 
+            {
+              AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+              continue;
+            }
+            
+            hbm->SetDirectory(0);
+            SetEMCALChannelStatusMap(i,hbm);
+            
+          } // loop
+        } else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT remove EMCAL bad channels 1\n"); // pass array
+      } else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT remove EMCAL bad channels 2\n"); // run array
+    }  // Remove bad
+    
+    // Energy Recalibration
+    if(fRecalibration)
+    {
+      AliOADBContainer *contRF=new AliOADBContainer("");
+      
+      contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRecalib");
+      
+      TObjArray *recal=(TObjArray*)contRF->GetObject(runnumber); 
+      
+      if(recal)
+      {
+        TObjArray *recalpass=(TObjArray*)recal->FindObject(pass);
+        
+        if(recalpass)
+        {
+          TObjArray *recalib=(TObjArray*)recalpass->FindObject("Recalib");
+          
+          if(recalib)
+          {
+            printf("AliCalorimeterUtils::SetOADBParameters() - Recalibrate EMCAL \n");
+            for (Int_t i=0; i<nSM; ++i) 
+            {
+              TH2F *h = GetEMCALChannelRecalibrationFactors(i);
+              
+              if (h)
+                delete h;
+              
+              h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+              
+              if (!h) 
+              {
+                AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+                continue;
+              }
+              
+              h->SetDirectory(0);
+              
+              SetEMCALChannelRecalibrationFactors(i,h);
+            } // SM loop
+          }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate EMCAL 1\n"); // array ok
+        }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate EMCAL 2\n"); // array pass ok
+      }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate EMCAL 3\n");  // run number array ok
+      
+      // once set, apply run dependent corrections if requested
+      fEMCALRecoUtils->SetRunDependentCorrections(runnumber);
+      
+    } // Recalibration on
+    
+    
+    // Time Recalibration
+    if(fEMCALRecoUtils->IsTimeRecalibrationOn())
+    {
+      AliOADBContainer *contTRF=new AliOADBContainer("");
+      
+      contTRF->InitFromFile(Form("%s/EMCALTimeRecalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeRecalib");
+      
+      TObjArray *trecal=(TObjArray*)contTRF->GetObject(runnumber); 
+      
+      if(trecal)
+      {
+        TObjArray *trecalpass=(TObjArray*)trecal->FindObject(pass);
+        
+        if(trecalpass)
+        {
+          TObjArray *trecalib=(TObjArray*)trecalpass->FindObject("TimeRecalib");
+          
+          if(trecalib)
+          {
+            printf("AliCalorimeterUtils::SetOADBParameters() - Time Recalibrate EMCAL \n");
+            for (Int_t ibc = 0; ibc < 4; ++ibc) 
+            {
+              TH1F *h = GetEMCALChannelTimeRecalibrationFactors(ibc);
+              
+              if (h)
+                delete h;
+              
+              h = (TH1F*)trecalib->FindObject(Form("hAllTimeAvBC%d",ibc));
+              
+              if (!h) 
+              {
+                AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+                continue;
+              }
+              
+              h->SetDirectory(0);
+              
+              SetEMCALChannelTimeRecalibrationFactors(ibc,h);
+            } // bunch crossing loop
+          }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 1\n"); // array ok
+        }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 2\n"); // array pass ok
+      }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 3\n");  // run number array ok
+      
+    } // Recalibration on    
+    
+  }// EMCAL
+  
+  // PHOS
+  if(fOADBForPHOS)
+  {
+    printf("AliCalorimeterUtils::SetOADBParameters() - Get AODB parameters from PHOS in %s for run %d, and <%s> \n",fOADBFilePathPHOS.Data(),runnumber,pass.Data());
+    
+    // Bad map
+    if(fRemoveBadChannels)
+    {
+      AliOADBContainer badmapContainer(Form("phosBadMap"));
+      TString fileName="$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root";
+      badmapContainer.InitFromFile(Form("%s/PHOSBadMaps.root",fOADBFilePathPHOS.Data()),"phosBadMap");
+      
+      //Use a fixed run number from year 2010, this year not available yet.
+      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(139000,"phosBadMap");
+      if(!maps)
+      {
+        printf("AliCalorimeterUtils::SetOADBParameters() - Can not read PHOS bad map for run %d.\n",runnumber) ;    
+      }
+      else
+      {
+        printf("AliCalorimeterUtils::SetOADBParameters() - Setting PHOS bad map with name %s \n",maps->GetName()) ;
+        for(Int_t mod=1; mod<5;mod++)
+        {
+          TH2I *hbmPH = GetPHOSChannelStatusMap(mod);
+          
+          if(hbmPH) 
+            delete hbmPH ;  
+          
+          hbmPH = (TH2I*)maps->At(mod);
+          
+          if(hbmPH) hbmPH->SetDirectory(0);
+          
+          SetPHOSChannelStatusMap(mod-1,hbmPH);
+          
+        } // modules loop  
+      } // maps exist
+    } // Remove bad channels
+  } // PHOS
+  
+  // Parameters already set once, so do not it again
+  fOADBSet = kTRUE;
+  
+}  
+
+//_____________________________________________________________
+void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent) 
+{
+  //Set the calorimeters transformation matrices and init geometry
+  
+  // First init the geometry, a priory not done before
+  Int_t runnumber = inputEvent->GetRunNumber() ;
+  InitPHOSGeometry (runnumber);
+  InitEMCALGeometry(runnumber);
+  
+  //Get the EMCAL transformation geometry matrices from ESD 
+  if(!fEMCALGeoMatrixSet && fEMCALGeo)
+  {
+    if(fLoadEMCALMatrices)
+    {
+      printf("AliCalorimeterUtils::AccessGeometry() - Load user defined EMCAL geometry matrices\n");
+      
+      // OADB if available
+      AliOADBContainer emcGeoMat("AliEMCALgeo");
+      emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePathEMCAL.Data()),"AliEMCALgeo");
+      TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+      
+      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+      {
+        if (!fEMCALMatrix[mod]) // Get it from OADB
+        {
+          if(fDebug > 1 ) 
+            printf("AliCalorimeterUtils::AccessGeometry() - EMCAL matrices SM %d, %p\n",
+                   mod,((TGeoHMatrix*) matEMCAL->At(mod)));
+          //((TGeoHMatrix*) matEMCAL->At(mod))->Print();
+          
+          fEMCALMatrix[mod] = (TGeoHMatrix*) matEMCAL->At(mod) ;
+        }
+        
+        if(fEMCALMatrix[mod])
+        {
+          if(fDebug > 1) 
+            fEMCALMatrix[mod]->Print();
+          
+          fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod) ;  
+        }
+      }//SM loop
+      
+      fEMCALGeoMatrixSet = kTRUE;//At least one, so good
+      
+    }//Load matrices
+    else if (!gGeoManager) 
+    { 
+      if(fDebug > 1) 
+        printf(" AliCalorimeterUtils::AccessGeometry() - Load EMCAL misalignment matrices. \n");
+      if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  
+      {
+        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+        { 
+          //printf("Load ESD matrix %d, %p\n",mod,((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
+          if(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod)) 
+          {
+            fEMCALGeo->SetMisalMatrix(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod),mod) ;
+          }
+        }// loop over super modules	
+        
+        fEMCALGeoMatrixSet = kTRUE;//At least one, so good
+        
+      }//ESD as input
+      else 
+      {
+        if(fDebug > 1)
+          printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
+      }//AOD as input
+    }//Get matrix from data
+    else if(gGeoManager)
+    {
+      fEMCALGeoMatrixSet = kTRUE;
+    }
+  }//EMCAL geo && no geoManager
+  
+	//Get the PHOS transformation geometry matrices from ESD 
+  if(!fPHOSGeoMatrixSet && fPHOSGeo)
+  {
+    if(fLoadPHOSMatrices)
+    {
+      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined PHOS geometry matrices\n");
+      
+      // OADB if available
+      AliOADBContainer geomContainer("phosGeo");
+      geomContainer.InitFromFile(Form("%s/PHOSGeometry.root",fOADBFilePathPHOS.Data()),"PHOSRotationMatrixes");
+      TObjArray *matPHOS = (TObjArray*)geomContainer.GetObject(139000,"PHOSRotationMatrixes");    
+      
+      for(Int_t mod = 0 ; mod < 5 ; mod++)
+      {
+        if (!fPHOSMatrix[mod]) // Get it from OADB
+        {
+          if(fDebug > 1 ) 
+            printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - PHOS matrices module %d, %p\n",
+                   mod,((TGeoHMatrix*) matPHOS->At(mod)));
+          //((TGeoHMatrix*) matPHOS->At(mod))->Print();
+          
+          fPHOSMatrix[mod] = (TGeoHMatrix*) matPHOS->At(mod) ;
+        }
+        
+        // Set it, if it exists
+        if(fPHOSMatrix[mod])
+        {
+          if(fDebug > 1 ) 
+            fPHOSMatrix[mod]->Print();
+          
+          fPHOSGeo->SetMisalMatrix(fPHOSMatrix[mod],mod) ;  
+        }      
+      }// SM loop
+      
+      fPHOSGeoMatrixSet = kTRUE;//At least one, so good
+      
+    }//Load matrices
+    else if (!gGeoManager) 
+    { 
+      if(fDebug > 1) 
+        printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load PHOS misalignment matrices. \n");
+			if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  
+      {
+				for(Int_t mod = 0; mod < 5; mod++)
+        { 
+					if( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod)) 
+          {
+						//printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod));
+						fPHOSGeo->SetMisalMatrix( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod),mod) ;
+					}
+				}// loop over modules
+        fPHOSGeoMatrixSet  = kTRUE; //At least one so good
+			}//ESD as input
+			else 
+      {
+				if(fDebug > 1) 
+					printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
+      }//AOD as input
+    }// get matrix from data
+    else if(gGeoManager)
+    {
+      fPHOSGeoMatrixSet = kTRUE;
+    }
+	}//PHOS geo	and  geoManager was not set
   
 }
 
@@ -443,7 +794,8 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
              particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
-	else if(particle->GetDetector()=="PHOS"){
+	else if(particle->GetDetector()=="PHOS")
+  {
     // In case we use the MC reader, the input are TParticles, 
     // in this case use the corresponing method in PHOS Geometry to get the particle.
     if(strcmp(inputEvent->ClassName(), "AliMCEvent") == 0 )
@@ -486,10 +838,12 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 	//Get the EMCAL/PHOS module number that corresponds to this cluster
 	TLorentzVector lv;
 	Double_t v[]={0.,0.,0.}; //not necessary to pass the real vertex.
-  if(!cluster){
+  if(!cluster)
+  {
     if(fDebug > 1) printf("AliCalorimeterUtils::GetModuleNumber() - NUL Cluster, please check!!!");
     return -1;
   }
+  
 	cluster->GetMomentum(lv,v);
 	Float_t phi = lv.Phi();
 	if(phi < 0) phi+=TMath::TwoPi();	
@@ -501,9 +855,11 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
              lv.Eta(), phi*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
-	else if(cluster->IsPHOS()) {
+	else if(cluster->IsPHOS()) 
+  {
 		Int_t    relId[4];
-		if ( cluster->GetNCells() > 0) {
+		if ( cluster->GetNCells() > 0) 
+    {
 			absId = cluster->GetCellAbsId(0);
 			if(fDebug > 2) 
 				printf("AliCalorimeterUtils::GetModuleNumber() - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
@@ -511,7 +867,8 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 		}
 		else return -1;
 		
-		if ( absId >= 0) {
+		if ( absId >= 0) 
+    {
 			fPHOSGeo->AbsToRelNumbering(absId,relId);
 			if(fDebug > 2) 
 			  printf("AliCalorimeterUtils::GetModuleNumber() - PHOS: Module %d\n",relId[0]-1);
@@ -529,32 +886,47 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 {
 	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
 	Int_t imod = -1;
-	if ( absId >= 0) {
-		if(calo=="EMCAL"){
+	if ( absId >= 0) 
+  {
+		if(calo=="EMCAL")
+    {
 			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
 			fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
 			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
-      if(imod < 0 || irow < 0 || icol < 0 ) {
+      if(imod < 0 || irow < 0 || icol < 0 ) 
+      {
         Fatal("GetModuleNumberCellIndexes()","Negative value for super module: %d, or cell icol: %d, or cell irow: %d, check EMCAL geometry name\n",imod,icol,irow);
       }
       
 			//RCU0
-			if (0<=irow&&irow<8) iRCU=0; // first cable row
-			else if (8<=irow&&irow<16 && 0<=icol&&icol<24) iRCU=0; // first half; 
-			//second cable row
-			//RCU1
-			else if(8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half; 
-			//second cable row
-			else if(16<=irow&&irow<24) iRCU=1; // third cable row
-			
-			if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
-			if (iRCU<0) {
+      if(imod < 10 )
+      {
+        if      (0<=irow&&irow<8)                       iRCU=0; // first cable row
+        else if (8<=irow&&irow<16 &&  0<=icol&&icol<24) iRCU=0; // first half; 
+        //second cable row
+        //RCU1
+        else if (8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half; 
+        //second cable row
+        else if (16<=irow&&irow<24)                     iRCU=1; // third cable row
+        
+        if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
+      }
+      else 
+      {
+        // Last 2 SM have one single SRU, just assign RCU 0
+        iRCU = 0 ;
+      }
+
+			if (iRCU<0) 
+      {
 				Fatal("GetModuleNumberCellIndexes()","Wrong EMCAL RCU number = %d\n", iRCU);
 			}			
 			
 			return imod ;
+      
 		}//EMCAL
-		else{//PHOS
+		else //PHOS
+    {
 			Int_t    relId[4];
 			fPHOSGeo->AbsToRelNumbering(absId,relId);
 			irow = relId[2];
@@ -562,7 +934,8 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 			imod = relId[0]-1;
 			iRCU= (Int_t)(relId[2]-1)/16 ;
 			//Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
-			if (iRCU >= 4) {
+			if (iRCU >= 4) 
+      {
 				Fatal("GetModuleNumberCellIndexes()","Wrong PHOS RCU number = %d\n", iRCU);
 			}			
 			return imod;
@@ -715,6 +1088,34 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
   
 }
 
+//____________________________________
+TString AliCalorimeterUtils::GetPass()
+{
+  // Get passx from filename.
+    
+  if (!AliAnalysisManager::GetAnalysisManager()->GetTree()) 
+  {
+    AliError("AliCalorimeterUtils::GetPass() - Pointer to tree = 0, returning null\n");
+    return TString("");
+  }
+  
+  if (!AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()) 
+  {
+    AliError("AliCalorimeterUtils::GetPass() - Null pointer input file, returning null\n");
+    return TString("");
+  }
+  
+  TString pass(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+  if      (pass.Contains("ass1")) return TString("pass1");
+  else if (pass.Contains("ass2")) return TString("pass2");
+  else if (pass.Contains("ass3")) return TString("pass3");
+
+  // No condition fullfilled, give a default value
+  printf("AliCalorimeterUtils::GetPass() - Pass number string not found \n");
+  return TString("");            
+  
+}
+
 //________________________________________
 void AliCalorimeterUtils::InitParameters()
 {
@@ -739,6 +1140,13 @@ void AliCalorimeterUtils::InitParameters()
   //  fMaskCellColumns[6] = 12+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[7] = 13+AliEMCALGeoParams::fgkEMCALCols;
   //  fMaskCellColumns[8] = 40+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[9] = 41+AliEMCALGeoParams::fgkEMCALCols; 
   //  fMaskCellColumns[10]= 42+AliEMCALGeoParams::fgkEMCALCols; 
+  
+  fOADBSet      = kFALSE;
+  fOADBForEMCAL = kTRUE ;            
+  fOADBForPHOS  = kFALSE;
+  
+  fOADBFilePathEMCAL = "$ALICE_ROOT/OADB/EMCAL" ;          
+  fOADBFilePathPHOS  = "$ALICE_ROOT/OADB/PHOS"  ;     
   
 }
 
@@ -789,32 +1197,72 @@ void AliCalorimeterUtils::InitPHOSRecalibrationFactors()
 }
 
 
-//___________________________________________
-void AliCalorimeterUtils::InitEMCALGeometry()
+//__________________________________________________________
+void AliCalorimeterUtils::InitEMCALGeometry(Int_t runnumber)
 {
 	//Initialize EMCAL geometry if it did not exist previously
-	if (!fEMCALGeo){
+  
+	if (!fEMCALGeo)
+  {
+    if(fEMCALGeoName=="")
+    {
+      if     (runnumber < 140000) fEMCALGeoName = "EMCAL_FIRSTYEARV1";
+      else if(runnumber < 171000) fEMCALGeoName = "EMCAL_COMPLETEV1";
+      else                        fEMCALGeoName = "EMCAL_COMPLETE12SMV1";  
+      printf("AliCalorimeterUtils::InitEMCALGeometry() - Set EMCAL geometry name to <%s> for run %d\n",fEMCALGeoName.Data(),runnumber);
+    }
+    
 		fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
-		if(fDebug > 0){
-			printf("AliCalorimeterUtils::InitEMCALGeometry()");
+    
+		if(fDebug > 0)
+    {
+			printf("AliCalorimeterUtils::InitEMCALGeometry(run=%d)",runnumber);
 			if (!gGeoManager) printf(" - Careful!, gGeoManager not loaded, load misalign matrices");
 			printf("\n");
 		}
 	}
 }
 
-//__________________________________________
-void AliCalorimeterUtils::InitPHOSGeometry()
+//_________________________________________________________
+void AliCalorimeterUtils::InitPHOSGeometry(Int_t runnumber)
 {
 	//Initialize PHOS geometry if it did not exist previously
-	if (!fPHOSGeo){
+  
+	if (!fPHOSGeo)
+  {
+    if(fPHOSGeoName=="") fPHOSGeoName = "PHOSgeo";
+      
 		fPHOSGeo = new AliPHOSGeoUtils(fPHOSGeoName); 
-		if(fDebug > 0){
-			printf("AliCalorimeterUtils::InitPHOSGeometry()");
+    
+		if(fDebug > 0)
+    {
+			printf("AliCalorimeterUtils::InitPHOSGeometry(run=%d)",runnumber);
 			if (!gGeoManager) printf(" - Careful!, gGeoManager not loaded, load misalign matrices");
 			printf("\n");
 		}	
 	}	
+}
+
+//__________________________________________________________________
+Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  
+                                             const Int_t ieta) const 
+{
+  //Check if cell is in one of the regions where we have significant amount 
+  //of material in front. Only EMCAL
+  
+  Int_t icol = ieta;
+  if(iSM%2) icol+=48; // Impair SM, shift index [0-47] to [48-96]
+  
+  if (fNMaskCellColumns && fMaskCellColumns) 
+  {
+    for (Int_t imask = 0; imask < fNMaskCellColumns; imask++) 
+    {
+      if(icol==fMaskCellColumns[imask]) return kTRUE;
+    }
+  }
+  
+  return kFALSE;
+  
 }
 
 //_________________________________________________________
@@ -840,26 +1288,6 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   
   printf("    \n") ;
 } 
-
-//__________________________________________________________________
-Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  
-                                             const Int_t ieta) const 
-{
-  //Check if cell is in one of the regions where we have significant amount 
-  //of material in front. Only EMCAL
-  
-  Int_t icol = ieta;
-  if(iSM%2) icol+=48; // Impair SM, shift index [0-47] to [48-96]
-  
-  if (fNMaskCellColumns && fMaskCellColumns) {
-    for (Int_t imask = 0; imask < fNMaskCellColumns; imask++) {
-      if(icol==fMaskCellColumns[imask]) return kTRUE;
-    }
-  }
-  
-  return kFALSE;
-  
-}
 
 //__________________________________________________________________________________________
 void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp,
@@ -897,7 +1325,6 @@ void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time,
   }
   
 }
-
 
 //__________________________________________________________________________
 Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, 
@@ -951,89 +1378,6 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
 	return energy;
 }
 
-//________________________________________________________________________________
-void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEvent) 
-{
-  //Set the calorimeters transformation matrices
-  
-  //Get the EMCAL transformation geometry matrices from ESD 
-  if(!fEMCALGeoMatrixSet && fEMCALGeo){
-    if(fLoadEMCALMatrices){
-      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined EMCAL geometry matrices\n");
-      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-        if(fEMCALMatrix[mod]){
-          if(fDebug > 1) 
-            fEMCALMatrix[mod]->Print();
-          fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod) ;  
-        }
-      }//SM loop
-      fEMCALGeoMatrixSet = kTRUE;//At least one, so good
-      
-    }//Load matrices
-    else if (!gGeoManager) { 
-      
-      if(fDebug > 1) 
-        printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load EMCAL misalignment matrices. \n");
-      if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
-        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-          //printf("Load ESD matrix %d, %p\n",mod,((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
-          if(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod)) {
-            fEMCALGeo->SetMisalMatrix(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod),mod) ;
-          }
-        }// loop over super modules	
-        
-        fEMCALGeoMatrixSet = kTRUE;//At least one, so good
-        
-      }//ESD as input
-      else {
-        if(fDebug > 1)
-          printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-      }//AOD as input
-    }//Get matrix from data
-    else if(gGeoManager){
-      fEMCALGeoMatrixSet = kTRUE;
-    }
-  }//EMCAL geo && no geoManager
-  
-	//Get the PHOS transformation geometry matrices from ESD 
-  if(!fPHOSGeoMatrixSet && fPHOSGeo){
-
-    if(fLoadPHOSMatrices){
-      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined PHOS geometry matrices\n");
-      for(Int_t mod = 0 ; mod < 5 ; mod++){
-        if(fPHOSMatrix[mod]){
-          if(fDebug > 1 ) 
-            fPHOSMatrix[mod]->Print();
-          fPHOSGeo->SetMisalMatrix(fPHOSMatrix[mod],mod) ;  
-        }
-      }//SM loop
-      fPHOSGeoMatrixSet = kTRUE;//At least one, so good
-
-    }//Load matrices
-    else if (!gGeoManager) { 
-      if(fDebug > 1) 
-        printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load PHOS misalignment matrices. \n");
-			if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
-				for(Int_t mod = 0; mod < 5; mod++){ 
-					if( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod)) {
-						//printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod));
-						fPHOSGeo->SetMisalMatrix( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod),mod) ;
-					}
-				}// loop over modules
-        fPHOSGeoMatrixSet  = kTRUE; //At least one so good
-			}//ESD as input
-			else {
-				if(fDebug > 1) 
-					printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-      }//AOD as input
-    }// get matrix from data
-    else if(gGeoManager){
-      fPHOSGeoMatrixSet = kTRUE;
-    }
-	}//PHOS geo	and  geoManager was not set
-  
-}
-
 //__________________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu)
 {
@@ -1042,6 +1386,23 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
   
   fEMCALRecoUtils->RecalculateClusterPosition((AliEMCALGeometry*)fEMCALGeo, cells,clu);
   
+}
+
+//________________________________________________________________________________
+void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 
+                                                          TObjArray* clusterArray) 
+{ 
+  //Recalculate track matching
+  
+  if (fRecalculateMatching) 
+  {
+    fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo)   ; 
+    //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
+    //if(esdevent){
+    //  fEMCALRecoUtils->SetClusterMatchedToTrack(esdevent)  ;
+    //  fEMCALRecoUtils->SetTracksMatchedToCluster(esdevent) ; 
+    //}
+  }
 }
 
 //___________________________________________________________________________
@@ -1303,19 +1664,3 @@ void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
   }
 }
 
-//________________________________________________________________________________
-void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 
-                                                          TObjArray* clusterArray) 
-{ 
-  //Recalculate track matching
-  
-  if (fRecalculateMatching) 
-  {
-    fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo)   ; 
-    //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
-    //if(esdevent){
-    //  fEMCALRecoUtils->SetClusterMatchedToTrack(esdevent)  ;
-    //  fEMCALRecoUtils->SetTracksMatchedToCluster(esdevent) ; 
-    //}
-  }
-}
