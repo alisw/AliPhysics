@@ -1385,16 +1385,15 @@ if( !fPaveTextBookKeeping){
     }
 
     if (! fHistV0CosineOfPointingAnglevsPtXi) {
-        fHistV0CosineOfPointingAnglevsPtXi = new TH2F("fHistV0CosineOfPointingAnglevsPtXi", "Cos. of V0 Ptng Angl vs cascade Pt ;Cos(V0 Point. Angl); Counts",100, 0., 10., 200, 0.95, 1.0001);
+        fHistV0CosineOfPointingAnglevsPtXi = new TH2F("fHistV0CosineOfPointingAnglevsPtXi", "Cos. of V0 Ptng Angl vs cascade Pt ;Cascade p_{T} (GeV/c); Cos(V0PA) wrt Xi vtx",100, 0., 10., 251, 0.95, 1.0002);
         fListHistCascade->Add(fHistV0CosineOfPointingAnglevsPtXi);
     }
     if (! fHistV0CosineOfPointingAnglevsPtOmega) {
-        fHistV0CosineOfPointingAnglevsPtOmega = new TH2F("fHistV0CosineOfPointingAnglevsPtOmega", "Cos. of V0 Ptng Angl vs cascade Pt ;Cos(V0 Point. Angl); Counts",100, 0., 10., 200, 0.95, 1.0001);
+        fHistV0CosineOfPointingAnglevsPtOmega = new TH2F("fHistV0CosineOfPointingAnglevsPtOmega", "Cos. of V0 Ptng Angl vs cascade Pt ;Cascade p_{T} (GeV/c); Cos(V0PA) wrt Omega vtx",100, 0., 10., 251, 0.95, 1.0002);
         fListHistCascade->Add(fHistV0CosineOfPointingAnglevsPtOmega);
     }
-
-  
-                // - PID container
+                
+    // - PID container
 if(! fCFContCascadePIDAsXiMinus)  {
   const	Int_t  lNbSteps      =  7 ;
   const Int_t  lNbVariables  =  4 ;
@@ -1625,16 +1624,16 @@ if(! fCFContAsCascadeCuts){
    fCFContAsCascadeCuts -> SetBinLimits(1,  lBinLim1 );
   delete [] lBinLim1;                                            // DcaBachToPrimVertexXi : 0.0 to 0.5
   //2
-  fCFContAsCascadeCuts->SetBinLimits(2, .9988, 1.);                // XiCosineOfPointingAngle : 0.99 to 1.0        
+  fCFContAsCascadeCuts->SetBinLimits(2, .9988, 1.);              // XiCosineOfPointingAngle : 0.99 to 1.0        
   //3
   fCFContAsCascadeCuts -> SetBinLimits(3, 0., 110. );            // XiRadius : 0.0 to 110.0
 
   //4
-  fCFContAsCascadeCuts->SetBinLimits(4, 1.1, 1.13);               // InvMassLambdaAsCascDghter
+  fCFContAsCascadeCuts->SetBinLimits(4, 1.1, 1.13);              // InvMassLambdaAsCascDghter
   //5
-  fCFContAsCascadeCuts->SetBinLimits(5, 0., 2.);                  // DcaV0DaughtersXi : 0.0 to 2.0        
+  fCFContAsCascadeCuts->SetBinLimits(5, 0., 2.);                 // DcaV0DaughtersXi : 0.0 to 2.0        
   //6
-  fCFContAsCascadeCuts->SetBinLimits(6, 0.95, 1.0005);                // V0CosineOfPointingAngleXi : 0.99 to 1.0      // temporary test 1.1
+  fCFContAsCascadeCuts->SetBinLimits(6, 0.98, 1.0002);           // V0CosineOfPointingAngleXi : 0.98 to 1.0     
   //7
   Double_t *lBinLim7  = new Double_t[ lNbBinsPerVar[7]+1 ];
   for(Int_t i=0; i< lNbBinsPerVar[7]-1;i++)   lBinLim7[i]  = (Double_t)0.0   + (100.  - 0.0 )/(lNbBinsPerVar[7]-2)  * (Double_t)i ;
@@ -2581,8 +2580,8 @@ Double_t lXiRadius                  = -1000. ;
 Double_t lInvMassLambdaAsCascDghter = 0.;
 Double_t lDcaV0DaughtersXi          = -1.;
 // Double_t lV0Chi2Xi               = -1. ;
-Double_t lV0CosineOfPointingAngleXi = -1.;
-Double_t lV0CosineOfPointingAngle   = -1.;
+Double_t lV0CosineOfPointingAngle = -1.;
+Double_t lV0toXiCosineOfPointingAngle   = -1.;
 Double_t lPosV0Xi[3]                = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
 Double_t lV0RadiusXi                = -1000.;
 Double_t lDcaV0ToPrimVertexXi       = -1.;
@@ -2766,7 +2765,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                                         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
         lDcaV0DaughtersXi               = xiESD->GetDcaV0Daughters();
         // lV0Chi2Xi                    = xiESD->GetChi2V0();
-        lV0CosineOfPointingAngleXi      = xiESD->GetV0CosineOfPointingAngle( lPosXi[0],    
+        lV0toXiCosineOfPointingAngle    = xiESD->GetV0CosineOfPointingAngle( lPosXi[0],    
                                                                              lPosXi[1],
                                                                              lPosXi[2] );
 
@@ -2774,8 +2773,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                                                                            lBestPrimaryVtxPos[1],
                                                                            lBestPrimaryVtxPos[2]); 
 
-        //if (lV0CosineOfPointingAngleXi==1.) cout << "Cosine V0 PA wrt Xi pos ==1!" <<endl;
-        //else if (lV0CosineOfPointingAngleXi>1.) cout <<"Cosine V0 PA wrt Xi pos >1!"<<endl;
+        //if (lV0toXiCosineOfPointingAngle==1.) cout << "Cosine V0 PA wrt Xi pos ==1!" <<endl;
+        //else if (lV0toXiCosineOfPointingAngle>1.) cout <<"Cosine V0 PA wrt Xi pos >1!"<<endl;
         xiESD->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
 
         lDcaV0ToPrimVertexXi            = xiESD->GetD( lBestPrimaryVtxPos[0],
@@ -3208,7 +3207,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                                         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
         lDcaV0DaughtersXi               = xiAOD->DcaV0Daughters();
         // lV0Chi2Xi                    = xiAOD->GetChi2V0();
-        lV0CosineOfPointingAngleXi      = xiAOD->CosPointingAngle( lPosXi );
+        lV0toXiCosineOfPointingAngle    = xiAOD->CosPointingAngle( lPosXi );
 
         lV0CosineOfPointingAngle        = xiAOD->CosPointingAngle( lBestPrimaryVtxPos );
 
@@ -3459,7 +3458,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 ////      if (TMath::Abs(lInvMassLambdaAsCascDghter-1.11568) > 0.006 ) continue;  // in AliCascadeVertexer
 
         if (lDcaV0DaughtersXi > 1.) continue; // in AliV0vertexer
-        if (lV0CosineOfPointingAngleXi < 0.998) continue; // in AliV0vertexer
+        if (lV0toXiCosineOfPointingAngle < 0.998) continue; // in AliV0vertexer
         if (lDcaPosToPrimVertexXi < 0.1) continue; // in AliV0vertexer
         if (lDcaNegToPrimVertexXi < 0.1) continue; // in AliV0vertexer
 
@@ -3562,7 +3561,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 fHistV0CosineOfPointingAnglevsPtOmega->Fill(lmcPt,lV0CosineOfPointingAngle);
         }
 
-        fHistV0toXiCosineOfPointingAngle->Fill(lV0CosineOfPointingAngleXi);
+        fHistV0toXiCosineOfPointingAngle->Fill(lV0toXiCosineOfPointingAngle);
        
         // - Step 6 : Containers = Cascade cuts + PID
 	//-------------	
@@ -3575,7 +3574,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         lContainerCutVars[3]  = lXiRadius;
         lContainerCutVars[4]  = lInvMassLambdaAsCascDghter;
         lContainerCutVars[5]  = lDcaV0DaughtersXi;
-        lContainerCutVars[6]  = lV0CosineOfPointingAngleXi;
+        lContainerCutVars[6]  = lV0CosineOfPointingAngle;
         lContainerCutVars[7]  = lV0RadiusXi;
         lContainerCutVars[8]  = lDcaV0ToPrimVertexXi;	
         lContainerCutVars[9]  = lDcaPosToPrimVertexXi;
