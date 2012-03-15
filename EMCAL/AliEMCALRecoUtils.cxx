@@ -2425,7 +2425,7 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
   printf("DCSToVertex2D = %d, MaxDCAToVertexXY = %2.2f, MaxDCAToVertexZ = %2.2f\n",fCutDCAToVertex2D,fCutMaxDCAToVertexXY,fCutMaxDCAToVertexZ);
 }
 
-//_____________________________________________________________________
+//_________________________________________________________________
 void AliEMCALRecoUtils::SetRunDependentCorrections(Int_t runnumber)
 {
   //Get EMCAL time dependent corrections from file and put them in the recalibration histograms
@@ -2440,7 +2440,10 @@ void AliEMCALRecoUtils::SetRunDependentCorrections(Int_t runnumber)
   corr->ReadRootInfo(Form("CorrectionFiles/Run%d_Correction.root",runnumber));
   
   SwitchOnRecalibration();
-  for(Int_t ism = 0; ism < 4; ism++)
+  
+  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  
+  for(Int_t ism = 0; ism < geom->GetNumberOfSuperModules(); ism++)
   {
     for(Int_t icol = 0; icol < 48; icol++)
     {
@@ -2455,5 +2458,7 @@ void AliEMCALRecoUtils::SetRunDependentCorrections(Int_t runnumber)
       }
     }
   }
+  
   fRunCorrectionFactorsSet = kTRUE;
+  
 }
