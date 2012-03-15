@@ -1,3 +1,4 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
 #include "TH1.h"
 #include "TH1D.h"
@@ -9,10 +10,12 @@
 #include "TMath.h"
 #include "TROOT.h"
 #include "TStyle.h"
-
 #include "AliHFSystErr.h"
-
 #include <Riostream.h>
+#endif
+
+/* $Id$ */ 
+
 
 //_________________________________________________________________________________________
 //
@@ -74,12 +77,16 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   TGraphAsymmErrors * thD0KpifromBprediction = (TGraphAsymmErrors*)thfile->Get("D0Kpiprediction");
   TGraphAsymmErrors * thDpluskpipiprediction = (TGraphAsymmErrors*)thfile->Get("Dpluskpipiprediction");
   TGraphAsymmErrors * thDstarD0piprediction = (TGraphAsymmErrors*)thfile->Get("DstarD0piprediction");
+  TGraphAsymmErrors * thDsKKpiprediction = (TGraphAsymmErrors*)thfile->Get("DsKkpiprediction");
+
   thD0KpifromBprediction->SetLineColor(4);
   thD0KpifromBprediction->SetFillColor(kAzure+9);
   thDpluskpipiprediction->SetLineColor(4);
   thDpluskpipiprediction->SetFillColor(kAzure+9);
   thDstarD0piprediction->SetLineColor(4);
   thDstarD0piprediction->SetFillColor(kAzure+9);
+  thDsKKpiprediction->SetLineColor(4);
+  thDsKKpiprediction->SetFillColor(kAzure+9);
 
   //
   // Get the spectra bins & limits
@@ -349,6 +356,13 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
     thDstarD0piprediction->Draw("3CA");
     thDstarD0piprediction->Draw("CX");
   }
+  else if ( decay==4 ) {
+    thDsKKpiprediction->SetLineColor(kGreen+2);
+    thDsKKpiprediction->SetLineWidth(3);
+    thDsKKpiprediction->SetFillColor(kGreen-6);
+    thDsKKpiprediction->Draw("3CA");
+    thDsKKpiprediction->Draw("CX");
+  }
   //
   gSigmaCorr->SetLineColor(kRed);
   gSigmaCorr->SetLineWidth(1);
@@ -367,6 +381,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   if ( decay==1 ) leg->AddEntry(thD0KpifromBprediction,"FONLL ","fl");
   else if ( decay==2 ) leg->AddEntry(thDpluskpipiprediction,"FONLL ","fl");
   else if ( decay==3 ) leg->AddEntry(thDstarD0piprediction,"FONLL ","fl");
+  else if ( decay==4 ) leg->AddEntry(thDsKKpiprediction,"FONLL ","fl");
   leg->AddEntry(histoSigmaCorr,"data stat. unc.","pl");
   leg->AddEntry(gSigmaCorr,"data syst. unc.","f");
   leg->Draw();

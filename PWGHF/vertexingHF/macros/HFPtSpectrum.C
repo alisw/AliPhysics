@@ -1,10 +1,4 @@
-//
-// Macro to use the AliHFPtSpectrum class
-//  to compute the feed-down corrections for heavy-flavor
-//
-//  Z.Conesa, September 2010 (zconesa@in2p3.fr)
-//
-
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include "TH1D.h"
 #include "TH1.h"
@@ -17,8 +11,19 @@
 #include "TStyle.h"
 #include "TLegend.h"
 #include "AliHFSystErr.h"
-
 #include "AliHFPtSpectrum.h"
+#endif
+
+/* $Id$ */ 
+
+//
+// Macro to use the AliHFPtSpectrum class
+//  to compute the feed-down corrections for heavy-flavor
+//
+//  Z.Conesa, September 2010 (zconesa@in2p3.fr)
+//
+
+
 
 //
 // Macro execution parameters: 
@@ -50,11 +55,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   Bool_t asym = true;
 
   // Set the meson and decay
-  // (only D0 -> K pi, D+--> K pi pi & D* --> D0 pi implemented here)
+  // (only D0 -> K pi, D+--> K pi pi & D* --> D0 pi & D+s -->KKpi implemented here)
   Bool_t isD0Kpi = true;
   Bool_t isDplusKpipi = false;
   Bool_t isDstarD0pi = false;
-  if (isD0Kpi && isDplusKpipi && isDstarD0pi) {
+  Bool_t isDsKKpi = false;
+  if (isD0Kpi && isDplusKpipi && isDstarD0pi && isDsKKpi) {
     cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
     return;
   }
@@ -147,6 +153,15 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hDstarD0pifromBpred_max_corr");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDstarD0pifromBpred_min_corr");
     //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("DstarD0piprediction");
+  }
+  else if (isDsKKpi){
+    decay = 4;
+    hDirectMCpt = (TH1D*)mcfile->Get("hDsKkpipred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hDsKkpifromBpred_central");
+    hDirectMCptMax = (TH1D*)mcfile->Get("hDsKkpipred_max");
+    hDirectMCptMin = (TH1D*)mcfile->Get("hDsKkpipred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hDsKkpifromBpred_max");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hDsKkpifromBpred_min");
   }
   //
   hDirectMCpt->SetNameTitle("hDirectMCpt","direct MC spectra");
