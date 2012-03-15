@@ -130,7 +130,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
     fHistV0Chi2Xi(0), 
     fHistDcaV0DaughtersXi(0),
     fHistDcaV0ToPrimVertexXi(0), 
-    fHistV0CosineOfPointingAngleXi(0),
+    fHistV0CosineOfPointingAngle(0),
     fHistV0RadiusXi(0),
     fHistDcaPosToPrimVertexXi(0), fHistDcaNegToPrimVertexXi(0), 
 
@@ -217,7 +217,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
     fHistV0Chi2Xi(0),
     fHistDcaV0DaughtersXi(0),
     fHistDcaV0ToPrimVertexXi(0), 
-    fHistV0CosineOfPointingAngleXi(0),
+    fHistV0CosineOfPointingAngle(0),
     fHistV0RadiusXi(0),
     fHistDcaPosToPrimVertexXi(0), fHistDcaNegToPrimVertexXi(0), 
 
@@ -624,9 +624,9 @@ if (! fHistDcaV0ToPrimVertexXi) {
 	fListHistCascade->Add(fHistDcaV0ToPrimVertexXi);
 }
 
-if (! fHistV0CosineOfPointingAngleXi) {
-	fHistV0CosineOfPointingAngleXi = new TH1F("fHistV0CosineOfPointingAngleXi", "Cosine of V0 Pointing Angle, in cascade;Cos(V0 Point. Angl); Counts", 200, 0.95, 1.0001);
-	fListHistCascade->Add(fHistV0CosineOfPointingAngleXi);
+if (! fHistV0CosineOfPointingAngle) {
+	fHistV0CosineOfPointingAngle = new TH1F("fHistV0CosineOfPointingAngle", "Cosine of V0 Pointing Angle, in cascade;Cos(V0 Point. Angl); Counts", 200, 0.95, 1.0001);
+	fListHistCascade->Add(fHistV0CosineOfPointingAngle);
 }
 
 if (! fHistV0RadiusXi) {
@@ -1052,7 +1052,7 @@ if(! fCFContCascadeCuts) {
   //5
   fCFContCascadeCuts->SetBinLimits(5, 0., 2.);                 // DcaV0DaughtersXi : 0.0 to 2.0	
   //6 
-  fCFContCascadeCuts->SetBinLimits(6, .95, 1.0005);            // V0CosineOfPointingAngleXi : 0.99 to 1.0	
+  fCFContCascadeCuts->SetBinLimits(6, .98, 1.0002);            // V0CosineOfPointingAngleXi : 0.99 to 1.0	
   //7
   Double_t *lBinLim7  = new Double_t[ lNbBinsPerVar[7]+1 ];
   for(Int_t i=0; i< lNbBinsPerVar[7]-1;i++)   lBinLim7[i]  = (Double_t)0.0   + (100.  - 0.0 )/(lNbBinsPerVar[7]-2)  * (Double_t)i ;
@@ -1424,7 +1424,9 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     Double_t lDcaBachToPrimVertexXi = -1., lDcaV0ToPrimVertexXi = -1.;
     Double_t lDcaPosToPrimVertexXi  = -1.;
     Double_t lDcaNegToPrimVertexXi  = -1.;
-    Double_t lV0CosineOfPointingAngleXi = -1. ;
+    Double_t lV0CosineOfPointingAngle = -1. ;
+    Double_t lV0toXiCosineOfPointingAngle = 0. ;
+
     Double_t lPosV0Xi[3] = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
     Double_t lV0RadiusXi = -1000.0;
     Double_t lV0quality  = 0.;
@@ -1472,7 +1474,6 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     Double_t lBachTotMom     = 0.;
 	
     Short_t  lChargeXi = -2;
-    Double_t lV0toXiCosineOfPointingAngle = 0. ;
 	
     Double_t lRapXi   = -20.0, lRapOmega = -20.0,  lEta = -20.0, lTheta = 360., lPhi = 720. ;
     Double_t lAlphaXi = -200., lPtArmXi  = -200.0;
@@ -1588,10 +1589,9 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lDcaV0DaughtersXi 		= xi->GetDcaV0Daughters(); 
       lV0Chi2Xi 			= xi->GetChi2V0();
 	
-      lV0CosineOfPointingAngleXi 	= xi->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],
+      lV0CosineOfPointingAngle 	= xi->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],
                                                                          lBestPrimaryVtxPos[1],
                                                                          lBestPrimaryVtxPos[2] );
-      //if (lV0CosineOfPointingAngleXi==1.) cout << "Cosine V0 PA wrt Xi pos ==1!" <<endl;
  
       lDcaV0ToPrimVertexXi 		= xi->GetD( lBestPrimaryVtxPos[0], 
 						    lBestPrimaryVtxPos[1], 
@@ -1625,7 +1625,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         // if (TMath::Abs(lInvMassLambdaAsCascDghter-1.11568) > 0.006 ) continue;  // in AliCascadeVertexer 
 
         if (lDcaV0DaughtersXi > 1.) continue; // in AliV0vertexer 
-        if (lV0CosineOfPointingAngleXi < 0.998) continue; // in AliV0vertexer
+        if (lV0toXiCosineOfPointingAngle < 0.998) continue; // in AliV0vertexer
         if (lDcaPosToPrimVertexXi < 0.1) continue; // in AliV0vertexer
         if (lDcaNegToPrimVertexXi < 0.1) continue; // in AliV0vertexer
 
@@ -1891,7 +1891,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lPosV0Xi[2] = xi->DecayVertexV0Z(); 
       lV0RadiusXi	= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
 
-      lV0CosineOfPointingAngleXi        = xi->CosPointingAngle( lBestPrimaryVtxPos ); 
+      lV0CosineOfPointingAngle        = xi->CosPointingAngle( lBestPrimaryVtxPos ); 
 
       lDcaPosToPrimVertexXi		= xi->DcaPosToPrimVertex(); 
       lDcaNegToPrimVertexXi		= xi->DcaNegToPrimVertex(); 
@@ -2078,7 +2078,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       fHistMassLambdaAsCascDghter	->Fill( lInvMassLambdaAsCascDghter );	// Flag CascadeVtxer: Cut Variable c
       fHistV0Chi2Xi			->Fill( lV0Chi2Xi                  );	
       fHistDcaV0DaughtersXi		->Fill( lDcaV0DaughtersXi          );
-      fHistV0CosineOfPointingAngleXi	->Fill( lV0CosineOfPointingAngleXi ); 
+      fHistV0CosineOfPointingAngle	->Fill( lV0CosineOfPointingAngle   ); 
       fHistV0RadiusXi			->Fill( lV0RadiusXi                );
                 
       fHistDcaV0ToPrimVertexXi	->Fill( lDcaV0ToPrimVertexXi       );	// Flag CascadeVtxer: Cut Variable b
@@ -2315,7 +2315,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
        lContainerCutVars[3]  = lXiRadius;
        lContainerCutVars[4]  = lInvMassLambdaAsCascDghter;
        lContainerCutVars[5]  = lDcaV0DaughtersXi;
-       lContainerCutVars[6]  = lV0toXiCosineOfPointingAngle;
+       lContainerCutVars[6]  = lV0CosineOfPointingAngle;//lV0toXiCosineOfPointingAngle;
        lContainerCutVars[7]  = lV0RadiusXi;
        lContainerCutVars[8]  = lDcaV0ToPrimVertexXi;	
        lContainerCutVars[9]  = lDcaPosToPrimVertexXi;
