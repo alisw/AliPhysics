@@ -139,6 +139,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
     fh1PtJetsInRej[ij] = 0;
+    fh1PtJetsInBest[ij] = 0;
     fh1PtTracksIn[ij] = 0;
     fh1PtTracksInLow[ij] = 0;
     fh2NJetsPt[ij]  = 0;
@@ -235,6 +236,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
     fh1PtJetsInRej[ij] = 0;
+    fh1PtJetsInBest[ij] = 0;
     fh1PtTracksIn[ij] = 0;
     fh1PtTracksInLow[ij] = 0;
     fh2NJetsPt[ij]  = 0;
