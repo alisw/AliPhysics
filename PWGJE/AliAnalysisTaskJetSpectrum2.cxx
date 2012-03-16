@@ -486,17 +486,21 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fp2CentRPPhiTrackPt[ij] = new TProfile2D(Form("fp2CentRPPhiTrackPt%s",cAdd.Data()),"RP phi vs cent;# cent;#Delta#phi_{RP}; <p_{T}>",10,0,100,181,-1./180.*TMath::Pi(),TMath::Pi(),"S");
     fHistList->Add(fp2CentRPPhiTrackPt[ij]);    
 
-    // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger total bins = 4.5M
-    const Int_t nBinsSparse1 = 7;
-    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 10,fNTrigger};
+    // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger, leading track pT total bins = 4.5M/10*6
+    const Int_t nBinsSparse1 = 8;
+    const Int_t nBinsLeadingTrackPt = 6;
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 1,fNTrigger,nBinsLeadingTrackPt};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
       nBins1[5] = 1;
     }
-    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5};
-    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0,fNTrigger-0.5};
+    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5,0.};
+    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.};
     
+    const Double_t binArrayLeadingTrackPt[nBinsLeadingTrackPt+1] = {xmin1[7],1.,2.,3.,4.,5.,xmax1[7]}; //store pT of leading track in jet
+
     fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger",nBinsSparse1,nBins1,xmin1,xmax1);
+    fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
     fHistList->Add(fhnJetPt[ij]);
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
@@ -908,7 +912,8 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   Int_t ij0 = -1;
   Int_t ij1 = -1;
 
-  Double_t var1[7] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area
+  Double_t var1[8] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leadingTrackPt
+
   var1[2] = fCentrality; 
   var1[3] = refMult;
 
@@ -965,6 +970,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       var1[1] = ptJet;
       var1[4] = phiBin;
       var1[5] = jet->EffectiveAreaCharged();
+      var1[7] = leadTrack->Pt();//pT of leading jet
 
       var2[1] = ptJet;
       var2[3] = etaJet;
