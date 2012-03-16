@@ -20,13 +20,14 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
 
   AliPDG::AddParticlesToPdgDataBase(); // to add some PDF codes to TDatabasePDG
 
+  // Create random number generator and set seed
+  AliPythiaRndm::SetPythiaRandom(new TRandom3());
+  AliPythiaRndm::GetPythiaRandom()->SetSeed(clock()+gSystem->GetPid());
+
   AliPythia6 *pythia=AliPythia6::Instance();
 
   pythia->SetCKIN(3,10);   // minimum hard pt
   pythia->SetCKIN(4,1000);  // maximum hard pt
-
-  pythia->SetMRPY(1,clock()+gSystem->GetPid());  // set random seed
-  pythia->SetMRPY(2,0);   // Set to 0 to pick up seed
 
   pythia->SetMDCY(pythia->Pycomp(111),1,0);  // switch off pi0 decay
 
