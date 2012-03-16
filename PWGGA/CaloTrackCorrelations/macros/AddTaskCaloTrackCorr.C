@@ -119,7 +119,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
   
   maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
   maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay    
-  //maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, and photon tagging from decay
+  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, and photon tagging from decay
 
   maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType), n++); // Photon isolation   
   maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0", partInCone,thresType), n++);    // Pi0 isolation   
@@ -178,6 +178,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
   AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Cuts_%s",kName.Data()), TList::Class(), 
                                                              AliAnalysisManager::kParamContainer, 
                                                              Form("%s",outputfile.Data()));
+  
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
@@ -502,13 +503,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   caloPID->SetPHOSDispersionCut(2.5);
   caloPID->SetPHOSRCut(2.);
   if(kData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
-  
-  if(kCalorimeter=="PHOS")
-  {
-    caloPID->SetHistoDEtaRangeAndNBins(-200, 200, 200); // dZ
-    caloPID->SetHistoDPhiRangeAndNBins(-200, 200, 200); // dX
-  }
-  
+    
   //caloPID->SetTOFCut(10000000); // Not used, only to set PID bits
   
   ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
@@ -586,7 +581,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   
   // selection cuts
   
-  ana->SetMinPt(8.);
+  ana->SetMinPt(4.);
   ana->SwitchOnFiducialCut();
   ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360) ; //more restrictive cut in reader and after in isolation
 
@@ -763,7 +758,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
       ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 0, 360) ;    
   }
   
-  ana->SetMinPt(8);
+  ana->SetMinPt(4);
   
   // Input / output delta AOD settings
   
@@ -850,7 +845,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
   ana->SetDebug(kDebug);
   
-  ana->SetMinimumTriggerPt(8);
+  ana->SetMinimumTriggerPt(4);
   ana->SetAssociatedPtRange(0.2,200); 
   
   //Avoid borders of EMCal, same as for isolation
