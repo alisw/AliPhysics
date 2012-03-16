@@ -142,7 +142,7 @@ Float_t AliIsolationCut::GetCellDensity(const AliAODPWG4ParticleCorrelation * pC
     if (coneCells > 0.) 
     {
       cellDensity = (coneCells-coneCellsBad)/coneCells;
-      printf("Energy density = %f\n", cellDensity);
+      //printf("Energy density = %f\n", cellDensity);
     }
   }
 
@@ -334,8 +334,9 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       if(calo->GetID() == pCandidate->GetCaloLabel(0) || 
          calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;      
       
-      //Skip matched clusters with tracks
-      if( pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+      //Skip matched clusters with tracks in case of neutral+charged analysis
+      if( fPartInCone == kNeutralAndCharged && 
+          pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
     
       //Assume that come from vertex in straight line
       calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
