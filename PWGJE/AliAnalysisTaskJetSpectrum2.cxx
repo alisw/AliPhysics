@@ -486,9 +486,9 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fp2CentRPPhiTrackPt[ij] = new TProfile2D(Form("fp2CentRPPhiTrackPt%s",cAdd.Data()),"RP phi vs cent;# cent;#Delta#phi_{RP}; <p_{T}>",10,0,100,181,-1./180.*TMath::Pi(),TMath::Pi(),"S");
     fHistList->Add(fp2CentRPPhiTrackPt[ij]);    
 
-    // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger, leading track pT total bins = 4.5M/10*6
+    // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger, leading track pT total bins = 4.5M
     const Int_t nBinsSparse1 = 8;
-    const Int_t nBinsLeadingTrackPt = 6;
+    const Int_t nBinsLeadingTrackPt = 10;
     Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 1,fNTrigger,nBinsLeadingTrackPt};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
@@ -497,7 +497,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5,0.};
     const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.};
     
-    const Double_t binArrayLeadingTrackPt[nBinsLeadingTrackPt+1] = {xmin1[7],1.,2.,3.,4.,5.,xmax1[7]}; //store pT of leading track in jet
+    const Double_t binArrayLeadingTrackPt[nBinsLeadingTrackPt+1] = {xmin1[7],1.,2.,3.,4.,5.,6.,8.,10.,12.,xmax1[7]}; //store pT of leading track in jet
 
     fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger",nBinsSparse1,nBins1,xmin1,xmax1);
     fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
