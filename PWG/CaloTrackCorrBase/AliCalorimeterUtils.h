@@ -208,7 +208,7 @@ class AliCalorimeterUtils : public TObject {
   void         SwitchOnTimeRecalibration()                               { fEMCALRecoUtils->SwitchOnTimeRecalibration()    ; }
   
   Float_t      GetEMCALChannelTimeRecalibrationFactor(const Int_t bc, const Int_t absID) const 
-  { fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactor(bc, absID) ; } 
+  { return fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactor(bc, absID) ; } 
 	
   void         SetEMCALChannelTimeRecalibrationFactor(const Int_t bc, const Int_t absID, Double_t c = 0) 
   { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactor(bc, absID, c) ; }  
