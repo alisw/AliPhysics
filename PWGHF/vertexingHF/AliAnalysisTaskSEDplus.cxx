@@ -932,7 +932,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
 
       Double_t  dlen=0,cosp=0,maxdca=0,sigvert=0,sumD02=0,ptmax=0,dlxy=0,cxy=0;
-      if(fCutsDistr||fFillNtuple){
+      if(fCutsDistr||fFillNtuple||fDoImpPar){
 	dlen=d->DecayLength();
 	cosp=d->CosPointingAngle();
 	sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
