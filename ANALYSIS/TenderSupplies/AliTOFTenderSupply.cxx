@@ -144,10 +144,18 @@ void AliTOFTenderSupply::Init()
   if (run == 0) return;                // to skip first init, when we don't have yet a run number
 
   fGeomSet=kFALSE;                         
+  // Even if the user didn't set fIsMC, we force it on if we find the MC handler  
+  AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
+  if (mgr->GetMCtruthEventHandler() && !(fIsMC) ) {
+    AliWarning("This ESD is MC, fIsMC found OFF: fIsMC turned ON");
+    fIsMC=kTRUE;
+  }
 
   if (fAutomaticSettings) {
-    if (fUserRecoPass == 0) DetectRecoPass();
-    else fRecoPass = fUserRecoPass;
+    if (!fIsMC) {
+      if (fUserRecoPass == 0) DetectRecoPass();
+      else fRecoPass = fUserRecoPass;
+    }
     if (run<114737) {
       tenderUnsupported = kTRUE;
     }
@@ -246,12 +254,6 @@ void AliTOFTenderSupply::Init()
     fTender->GetESDhandler()->SetESDpid(fESDpid);
   }
 
-  // Even if the user didn't set fIsMC, we force it on if we find the MC handler 
-  AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
-  if (mgr->GetMCtruthEventHandler() && !(fIsMC) ) {
-    AliWarning("This ESD is MC, fIsMC found OFF: fIsMC turned ON");
-    fIsMC=kTRUE;
-  }
 
   // Configure TOF calibration class
   if (!fTOFCalib)fTOFCalib=new AliTOFcalib();  // create if needed
