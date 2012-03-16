@@ -4145,11 +4145,10 @@ Int_t AliITSv11GeometrySDD::CreateLVCard() {
 }
 
 //________________________________________________________________________
-TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(Int_t iLay){
+TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(Int_t /* iLay */){
   // 
   // return an assembly containing the HV card
   //
-  iLay = iLay;
 
   TGeoMedium *ceramic          = GetMedium("CERAMICS$"); // ceramicHVcard
   TGeoMedium *medSMDcapaMiddle = GetMedium("SDD X7R capacitors$"); // check if different
@@ -4426,7 +4425,6 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(Int_t iLay){
 
   return highVCard;
 }
-
 
 //________________________________________________________________________
 TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
