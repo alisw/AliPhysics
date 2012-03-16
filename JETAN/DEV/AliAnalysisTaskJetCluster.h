@@ -141,7 +141,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t        fUseBackgroundCalc;     // switches on background calculations
     Bool_t        fEventSelection;        // use the event selection of this task, otherwise analyse all
     UInt_t        fFilterMask;            // filter bit for slecected tracks
-   UInt_t        fFilterMaskBestPt;      // filter bit to mark jets with high quality leading tracks
+    UInt_t        fFilterMaskBestPt;      // filter bit to mark jets with high quality leading tracks
 
     UInt_t        fFilterType;            // filter type 0 = all, 1 = ITSTPC, 2 = TPC
     UInt_t        fJetTypes;              // 1<<0 regular jets, 1<<1 << randomized event 1<<2 random cones 1<<3 random cones randomiuzed event

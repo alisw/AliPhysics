@@ -1141,7 +1141,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
       AliAODTrack *aodT = 0;
       if(partLead){
-	if(aodT = dynamic_cast<AliAODTrack*>(partLead)){
+	aodT = dynamic_cast<AliAODTrack*>(partLead);
+	if(aodT){
 	  if(aodT->TestFilterBit(fFilterMaskBestPt)){
 	    aodOutJet->SetTrigger(AliAODJet::kHighTrackPtBest);
 	  }
