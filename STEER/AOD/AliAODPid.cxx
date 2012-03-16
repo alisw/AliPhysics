@@ -77,7 +77,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTRDslices(0x0),
   fTOFesdsignal(pid.fTOFesdsignal),
   fHMPIDsignal(pid.fHMPIDsignal),
-  fTPCdEdxInfo(new AliTPCdEdxInfo(*pid.fTPCdEdxInfo))
+  fTPCdEdxInfo(0x0)
 {
   // Copy constructor
   SetTRDsignal(fTRDnSlices, pid.fTRDslices);
@@ -95,6 +95,8 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
 
     for(Int_t i=0; i<4; i++) fITSdEdxSamples[i]=pid.fITSdEdxSamples[i];
+
+    if (pid.fTPCdEdxInfo) fTPCdEdxInfo=new AliTPCdEdxInfo(*pid.fTPCdEdxInfo);
 }
 
 //______________________________________________________________________________
@@ -141,6 +143,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
 	fEMCALPosition[i]=pid.fEMCALPosition[i];
 	fEMCALMomentum[i]=pid.fEMCALMomentum[i];
     }
+    SetTPCdEdxInfo(pid.fTPCdEdxInfo);
   }
 
   return *this;
