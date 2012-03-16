@@ -118,6 +118,7 @@ AliEvtPool::UpdatePool(MiniEvent* miniEvt)
   }
   if (removeFirstEvent) {
     MiniEvent* oldestEvent = fEvents.front();
+    oldestEvent->clear();
     delete oldestEvent;
     fEvents.pop_front();         // remove first track array 
     fNTracksInEvent.pop_front(); // remove first int
