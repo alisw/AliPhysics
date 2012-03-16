@@ -42,8 +42,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
 
   void         BookHistos();
   void         InitEventMixer();
-  MiniEvent*   GetESDTrax() const;
-  MiniEvent*   GetAODTrax() const;
+  void         GetESDTracks(MiniEvent*);
+  void         GetAODTracks(MiniEvent*);
   Bool_t       VertexOk(TObject* obj) const;
   Double_t     DeltaPhi(Double_t phia, Double_t phib, 
 			Double_t rangeMin = -TMath::Pi()/2, 

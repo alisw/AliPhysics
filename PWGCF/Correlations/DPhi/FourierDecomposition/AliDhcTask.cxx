@@ -200,7 +200,7 @@ void AliDhcTask::UserExec(Option_t *)
   }
 
   Int_t dType = -1;       // Will be set to kESD or kAOD.
-  MiniEvent* sTracks = 0; // Vector of selected AliMiniTracks.
+  MiniEvent* sTracks = new MiniEvent(0); // deleted by pool mgr.
   Double_t centCL1 = -1;
 
   LoadBranches();
@@ -258,10 +258,10 @@ void AliDhcTask::UserExec(Option_t *)
 
   // Get array of selected tracks
   if (dType == kESD) {
-    sTracks = GetESDTrax();
+    GetESDTracks(sTracks);
   }
   if (dType == kAOD) {
-    sTracks = GetAODTrax();
+    GetAODTracks(sTracks);
   }
 
   // Get pool containing tracks from other events like this one
@@ -269,7 +269,6 @@ void AliDhcTask::UserExec(Option_t *)
   if (!pool) {
     AliWarning(Form("No pool found. Centrality %f, ZVertex %f", 
 		    fCentrality, fZVertex));
-    sTracks->clear();
     return;
   }
 
@@ -309,13 +308,13 @@ void AliDhcTask::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-MiniEvent* AliDhcTask::GetESDTrax() const
+void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
 {
   // Loop twice: 1. Count sel. tracks. 2. Fill vector.
 
   const AliESDVertex *vtxSPD = fESD->GetPrimaryVertexSPD();
   if (!vtxSPD)
-    return 0;
+    return;
 
   Int_t nTrax = fESD->GetNumberOfTracks();
   if (fVerbosity > 2)
@@ -377,8 +376,12 @@ MiniEvent* AliDhcTask::GetESDTrax() const
     nSelTrax++;
   }
 
-  MiniEvent* miniEvt = new MiniEvent(0);
-  miniEvt->reserve(nSelTrax);
+  if (miniEvt)
+    miniEvt->reserve(nSelTrax);
+  else {
+    AliError("!miniEvt");
+    return;
+  }
 
   // Loop 2.
   for (Int_t i = 0; i < nSelTrax; ++i) {
@@ -393,11 +396,11 @@ MiniEvent* AliDhcTask::GetESDTrax() const
     Int_t    sign = esdtrack->Charge() > 0 ? 1 : -1;
     miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
   }
-  return miniEvt;
+  //  return miniEvt;
 }
 
 //________________________________________________________________________
-MiniEvent* AliDhcTask::GetAODTrax() const
+void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
 {
   // Loop twice: 1. Count sel. tracks. 2. Fill vector.
 
@@ -429,9 +432,13 @@ MiniEvent* AliDhcTask::GetAODTrax() const
     nSelTrax++;
   }
 
-  MiniEvent* miniEvt = new MiniEvent(0);
-  miniEvt->reserve(nSelTrax);
-
+  if (miniEvt)
+    miniEvt->reserve(nSelTrax);
+  else {
+    AliError("!miniEvt");
+    return;
+  }
+  
   // Loop 2.  
   for (Int_t i = 0; i < nTrax; ++i) {
     AliAODTrack* aodtrack = fAOD->GetTrack(i);
@@ -457,7 +464,7 @@ MiniEvent* AliDhcTask::GetAODTrax() const
     Int_t    sign = aodtrack->Charge() > 0 ? 1 : -1;
     miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
   }
-  return miniEvt;
+  //  return miniEvt;
 }
 
 //________________________________________________________________________
