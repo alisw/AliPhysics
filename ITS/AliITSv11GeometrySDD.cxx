@@ -1059,7 +1059,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
 
   fLadderFoot = CreateLadderFoot();
   CreateLVCard();
-  fCardHV     = CreateHVCard(0);
+  fCardHV     = CreateHVCard();
   fCardCarlos = CreateCarlosCard(0);
 
   //==================
@@ -1181,7 +1181,7 @@ void AliITSv11GeometrySDD::ShowOnePiece(TGeoVolume *moth) {
 //   TGeoVolumeAssembly *highVCard = CreateHVCard( 4 );
 //   moth->AddNode(highVCard, 1, 0);
 
-//   TGeoVolumeAssembly *supportRing = CreateSupportRing( 4 );
+//   TGeoVolumeAssembly *supportRing = CreateSupportRing();
 //   moth->AddNode(supportRing, 1, 0);
 
 //   TGeoVolume *endLadderCards = CreateEndLadderCardsV( 4 );
@@ -4145,7 +4145,7 @@ Int_t AliITSv11GeometrySDD::CreateLVCard() {
 }
 
 //________________________________________________________________________
-TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(Int_t /* iLay */){
+TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(){
   // 
   // return an assembly containing the HV card
   //
@@ -4934,13 +4934,12 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
 }
 
 //________________________________________________________________________
-TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateSupportRing(Int_t iLay) {
+TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateSupportRing() {
 //
 // return an assembly of the support rings, attaching the ladders to the cone 
 //
 
 
-  iLay = iLay;
 
   TGeoMedium *stainless = GetMedium("INOX$"); // To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TGeoVolumeAssembly *supportRing = new TGeoVolumeAssembly("supportRing");

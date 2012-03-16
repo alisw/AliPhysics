@@ -82,7 +82,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual TGeoVolumeAssembly*  CreateEndLadder(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateEndLadderCards(Int_t iLay);
   virtual TGeoVolume*          CreateEndLadderCardsV(Int_t iLay);
-  virtual TGeoVolumeAssembly*  CreateSupportRing(Int_t iLay);
+  virtual TGeoVolumeAssembly*  CreateSupportRing();
 
   // Create some basic objects : 
   virtual void                 CreateSDDsensor();
@@ -95,7 +95,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual TGeoVolumeAssembly*  CreateLadderFoot();
   virtual TGeoVolumeAssembly*  CreateCarlosCard(Int_t iLay);
   virtual Int_t                CreateLVCard();
-  virtual TGeoVolumeAssembly*  CreateHVCard(Int_t /* iLay */);
+  virtual TGeoVolumeAssembly*  CreateHVCard();
 
   void                         CreateBasicObjects();
   Double_t                     GetConeZ(Double_t r, Double_t refR1, Double_t refR2,
