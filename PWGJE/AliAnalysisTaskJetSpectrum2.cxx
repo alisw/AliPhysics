@@ -970,7 +970,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       var1[1] = ptJet;
       var1[4] = phiBin;
       var1[5] = jet->EffectiveAreaCharged();
-      var1[7] = leadTrack->Pt();//pT of leading jet
+      var1[7] = (leadTrack?leadTrack->Pt():0);//pT of leading jet
 
       var2[1] = ptJet;
       var2[3] = etaJet;
