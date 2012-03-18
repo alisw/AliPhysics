@@ -56,8 +56,6 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   
   if( kNonLinearity ) 
   { 
-    printf("Apply non linearity to EMCAL\n");
-    cu->SwitchOnCorrectClusterLinearity();
     if(!kSimulation) reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
     else             reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
   }
