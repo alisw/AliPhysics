@@ -171,6 +171,8 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
   if (lResCut>0)     fResCut     = lResCut;
   if (lNStdDev>0)    fNStdDev    = lNStdDev;
   //
+  AliInfo(Form("NLoc: %d NGlo: %d",fNLocPar,fNGloPar));
+
   fNGloSize = fNGloPar;
   //
   if (fgIsMatGloSparse) {fMatCGlo = new AliMatrixSparse(fNGloPar); fMatCGlo->SetSymmetric(kTRUE);}
@@ -410,6 +412,7 @@ void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas,
     fRecord->AddIndexValue(i,dergb[i]); dergb[i] = 0.0;
     fRecord->MarkGroup(fParamGrID[i]);
   }
+  //  fRecord->Print();
   //
 }
 

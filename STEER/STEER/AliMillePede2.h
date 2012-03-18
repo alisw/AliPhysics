@@ -201,28 +201,28 @@ class AliMillePede2: public TObject
   Int_t                 fMinPntValid;                    // min number of points for global to vary
   //
   Int_t                 fNGroupsSet;                     // number of groups set
-  Int_t                *fParamGrID;                      // group id for the every parameter
-  Int_t                *fProcPnt;                        // N of processed points per global variable
-  Double_t             *fVecBLoc;                        // Vector B local (parameters) 
-  Double_t             *fDiagCGlo;                       // Initial diagonal elements of C global matrix
-  Double_t             *fVecBGlo;                        // Vector B global (parameters)
+  Int_t                *fParamGrID;                      //[fNGloPar] group id for the every parameter
+  Int_t                *fProcPnt;                        //[fNGloPar] N of processed points per global variable
+  Double_t             *fVecBLoc;                        //[fNLocPar] Vector B local (parameters) 
+  Double_t             *fDiagCGlo;                       //[fNGloPar] Initial diagonal elements of C global matrix
+  Double_t             *fVecBGlo;                        //! Vector B global (parameters)
   //
-  Double_t             *fInitPar;                        // Initial global parameters
-  Double_t             *fDeltaPar;                       // Variation of global parameters
-  Double_t             *fSigmaPar;                       // Sigma of allowed variation of global parameter
+  Double_t             *fInitPar;                        //[fNGloPar] Initial global parameters
+  Double_t             *fDeltaPar;                       //[fNGloPar] Variation of global parameters
+  Double_t             *fSigmaPar;                       //[fNGloPar] Sigma of allowed variation of global parameter
   //
-  Bool_t               *fIsLinear;                       // Flag for linear parameters
-  Bool_t               *fConstrUsed;                     // Flag for used constraints
+  Bool_t               *fIsLinear;                       //[fNGloPar] Flag for linear parameters
+  Bool_t               *fConstrUsed;                     //! Flag for used constraints
   //
-  Int_t                *fGlo2CGlo;                       // global ID to compressed ID buffer
-  Int_t                *fCGlo2Glo;                       // compressed ID to global ID buffer
+  Int_t                *fGlo2CGlo;                       //[fNGloPar] global ID to compressed ID buffer
+  Int_t                *fCGlo2Glo;                       //[fNGloPar] compressed ID to global ID buffer
   //
   // Matrices
   AliSymMatrix         *fMatCLoc;                        // Matrix C local
   AliMatrixSq          *fMatCGlo;                        // Matrix C global
   AliRectMatrix        *fMatCGloLoc;                     // Rectangular matrix C g*l 
-  Int_t                *fFillIndex;                      // auxilary index array for fast matrix fill
-  Double_t             *fFillValue;                      // auxilary value array for fast matrix fill
+  Int_t                *fFillIndex;                      //[fNGloPar] auxilary index array for fast matrix fill
+  Double_t             *fFillValue;                      //[fNGloPar] auxilary value array for fast matrix fill
   //
   // processed data record bufferization   
   TString               fRecDataTreeName;                // Name of data records tree
@@ -237,8 +237,8 @@ class AliMillePede2: public TObject
   Int_t                 fRecFileStatus;                  // state of the record file (0-no, 1-read, 2-rw)
   //
   TString               fConstrRecFName;                 // Name of File for constraints records               
-  TTree                *fTreeConstr;                     // Tree of constraint records
-  TFile                *fConsRecFile;                    // File of processed constraints records
+  TTree                *fTreeConstr;                     //! Tree of constraint records
+  TFile                *fConsRecFile;                    //! File of processed constraints records
   Long_t                fCurrRecDataID;                  // ID of the current data record
   Long_t                fCurrRecConstrID;                // ID of the current constraint record
   Bool_t                fLocFitAdd;                      // Add contribution of carrent track (and not eliminate it)
@@ -256,7 +256,7 @@ class AliMillePede2: public TObject
   static Int_t          fgIterSol;                       // type of iterative solution: MinRes or FGMRES
   static Int_t          fgNKrylovV;                      // size of Krylov vectors buffer in FGMRES
   //
-  ClassDef(AliMillePede2,0)
+  ClassDef(AliMillePede2,1)
 };
 
 //_____________________________________________________________________________________________
