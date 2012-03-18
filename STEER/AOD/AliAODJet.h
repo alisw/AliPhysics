@@ -45,7 +45,7 @@ class AliAODJet : public AliVParticle {
     virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }  
     virtual Bool_t   IsTriggeredEMCAL(){return (fTrigger&kEMCALTriggered)==kEMCALTriggered;}
     virtual Bool_t   IsTriggeredTRD(){return (fTrigger&kTRDTriggered)==kTRDTriggered;}
-    virtual UChar_t  Trigger(){return fTrigger;}
+    virtual UInt_t  Trigger(){return fTrigger;}
     
     virtual void     AddTrack(TObject *tr);
     
@@ -65,8 +65,8 @@ class AliAODJet : public AliVParticle {
 	}
     virtual void     SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e);
     virtual void     SetPtEtaPhiM(Double_t pt, Double_t eta, Double_t phi, Double_t m);
-    virtual void     SetTrigger(UChar_t f){fTrigger |= f;}
-    virtual void     ResetTrigger(UChar_t f){fTrigger &= ~f;}
+    virtual void     SetTrigger(UInt_t f){fTrigger |= f;}
+    virtual void     ResetTrigger(UInt_t f){fTrigger &= ~f;}
     virtual void     SetNEF(Double_t nef) {fNeutralFraction=nef;}
     virtual Double_t GetNEF() const {return fNeutralFraction;}
 
@@ -119,12 +119,12 @@ class AliAODJet : public AliVParticle {
     Double32_t      fEffectiveAreaError[2];  //[0,1,10] relative error of jet areas, 10 bit precision
     Double32_t      fNeutralFraction;        //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
     Double32_t      fPtSubtracted[2];        //[0,0,12] pT after subtraction can be negative four momentum close to 0 in this case, 12 bit precision
-    UChar_t         fTrigger;                // Bit mask to flag jets triggered by a certain detector  
+    UInt_t         fTrigger;                // Bit mask to flag jets triggered by a certain detector  
     TLorentzVector* fMomentum;               // Jet 4-momentum vector
     TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,12);
+    ClassDef(AliAODJet,13);
 
 };
 
