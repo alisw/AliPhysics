@@ -425,6 +425,12 @@ AliCalorimeterUtils* ConfigureCaloUtils()
                           bCalib, 
                           bBadMap);   
   
+  if( kNonLinearity ) 
+  { 
+    printf("ConfigureCaloUtils() - Apply non linearity to EMCAL\n");
+    cu->SwitchOnCorrectClusterLinearity();
+  }
+    
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
   
@@ -622,7 +628,7 @@ AliAnaPi0* ConfigurePi0Analysis()
   ana->SetDebug(kDebug);//10 for lots of messages
   
   // Input delta AOD settings
-  ana->SetInputAODName(Form("Photon",kName.Data()));
+  ana->SetInputAODName(Form("Photon%s",kName.Data()));
   
   // Calorimeter settings
   ana->SetCalorimeter(kCalorimeter);
