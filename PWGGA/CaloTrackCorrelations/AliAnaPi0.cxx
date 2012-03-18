@@ -1587,6 +1587,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //if (GetReader()->GetEventNumber()%10000 == 0) 
   // printf("--- Event %d ---\n",GetReader()->GetEventNumber());
   
+  if(!GetInputAODBranch())
+  {
+    printf("AliAnaPi0::MakeAnalysisFillHistograms() - No input aod photons in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
+    abort();
+  }
+  
   //Init some variables
   Int_t   nPhot    = GetInputAODBranch()->GetEntriesFast() ;
   Int_t   nClus    = 0;

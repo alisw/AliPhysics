@@ -1,370 +1,813 @@
-AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, 
-                                                Bool_t outputAOD=kFALSE, TString outputfile = "", Int_t year = 2010,TString col = "pp",
-                                                Bool_t withQA = kFALSE)
+
+Bool_t  kPrint         = kFALSE;
+Bool_t  kSimulation    = kFALSE;
+Bool_t  kUseKinematics = kFALSE;
+Bool_t  kOutputAOD     = kFALSE;
+Bool_t  kEventSelection= kFALSE;
+Bool_t  kExotic        = kTRUE;
+Bool_t  kNonLinearity  = kFALSE;
+Int_t   kYears         = 2011;
+TString kCollisions    = "pp";
+TString kTrig          = "EMC7" ;
+TString kClusterArray  = "";
+TString kData          = "ESD";
+TString kInputDataType = "ESD";
+TString kCalorimeter   = "EMCAL";
+Bool_t  kTM            = kTRUE;
+Bool_t  kRecalTM       = kTRUE;
+Int_t   kMinCen        = -1;
+Int_t   kMaxCen        = -1;
+TString kName          = "";
+Int_t   kDebug         = -1; 
+AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = "AOD",
+                                                const TString calorimeter   = "EMCAL", 
+                                                const Bool_t  simulation    = kFALSE,
+                                                const Bool_t  eventsel      = kFALSE,
+                                                const Bool_t  exotic        = kTRUE,
+                                                const Bool_t  nonlin        = kFALSE,
+                                                TString       outputfile    = "",
+                                                const Int_t   year          = 2010,
+                                                const TString col           = "pp", 
+                                                const TString trigger       = "MB", 
+                                                const TString clustersArray = "V1",
+                                                const Bool_t  recaltm       = kTRUE,
+                                                const Bool_t  tm            = kTRUE,
+                                                const Int_t   minCen        = -1,
+                                                const Int_t   maxCen        = -1,
+                                                const Bool_t  qaan          = kFALSE,
+                                                const Bool_t  splitan       = kFALSE,
+                                                const Bool_t  outputAOD     = kFALSE, 
+                                                const Bool_t  printSettings = kFALSE
+                                                )
 {
-  // Creates a PartCorr task, configures it and adds it to the analysis manager.
+  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+  
+  kPrint         = printSettings;
+  kSimulation    = simulation;
+  kYears         = year;
+  kCollisions    = col;
+  kExotic        = exotic;
+  kNonLinearity  = nonlin;
+  kTrig          = trigger;
+  kClusterArray  = clustersArray;
+  kData          = data;
+  kCalorimeter   = calorimeter;
+  kOutputAOD     = outputAOD;
+  kTM            = tm;
+  kRecalTM       = recaltm;
+  kMinCen        = minCen;
+  kMaxCen        = maxCen;
+  kEventSelection= eventsel;
   
   // Get the pointer to the existing analysis manager via the static access method.
-  //==============================================================================
+  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    ::Error("AddTaskPi0", "No analysis manager to connect to.");
+  if (!mgr) 
+  {
+    ::Error("AddTask", "No analysis manager to connect to.");
     return NULL;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
-  //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPi0", "This task requires an input event handler");
+  
+  if (!mgr->GetInputEventHandler()) 
+  {
+    ::Error("AddTask", "This task requires an input event handler");
     return NULL;
   }
-  TString inputDataType = "AOD";
-  if(!data.Contains("delta"))
-    inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  //cout<<"DATA TYPE :: "<<inputDataType<<endl;
-  // inputDataType: data managed by the input handler
-  // data: can be same as one managed by input handler, or the output AOD created by the filter. By default use AOD
   
-  Bool_t kUseKinematics = kFALSE; 
-  if(kSimulation) { 
+  kInputDataType = "AOD";
+  if(!kData.Contains("delta"))
+    kInputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  
+  if(kSimulation) 
+  { 
     kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
-    if (!kUseKinematics && data=="AOD" && inputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
+    if (!kUseKinematics && data=="AOD" && kInputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
   } 
   
   cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
   
-  // Configure analysis
-  //===========================================================================
+  // Name for containers
   
-  // *** Reader ***
-  AliCaloTrackReader * reader = ;
-  if(data.Contains("AOD")) reader = new AliCaloTrackAODReader();
-  else if(data=="ESD") reader = new AliCaloTrackESDReader();
-  else if(data=="MC" && inputDataType == "ESD") reader = new AliCaloTrackMCReader();
-  reader->SetDebug(-1);//10 for lots of messages
-  reader->SwitchOnCTS();
+  kName = Form("%s_Trig%s_Cl%s_TM%d",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data(),kTM);
+
+  if(kCollisions=="PbPb" && kMaxCen>=0) kName+=Form("Cen%d_%d",kMinCen,kMaxCen);
+    
+  printf("<<<< NAME: %s >>>>>\n",kName.Data());
+  
+  // #### Configure analysis ####
+    
+  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
+  
+  // General frame setting and configuration
+  maker->SetReader   (ConfigureReader()   ); 
+  maker->SetCaloUtils(ConfigureCaloUtils()); 
+  
+  // Analysis tasks setting and configuration
+  Int_t n = 0;//Analysis number, order is important  
+  
+  maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
+  maker->AddAnalysis(ConfigurePi0Analysis(), n++); // Pi0 invariant mass accumulate 
+  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay    
+
+  if(qaan)                  maker->AddAnalysis(ConfigureQAAnalysis(),n++);
+  if(splitan && 
+     kCalorimeter=="EMCAL") maker->AddAnalysis(ConfigureInClusterIMAnalysis(0.5,3), n++); 
+  
+  maker->SetAnaDebug(kDebug)  ;
+  maker->SwitchOnHistogramsMaker()  ;
+  if(kData.Contains("delta")) maker->SwitchOffAODsMaker() ;
+  else                        maker->SwitchOnAODsMaker()  ;
+  
+  if(kPrint) maker->Print("");
+  
+  printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, kCalorimeter.Data());
+  // CAREFUL
+  //kName = Form("%s_Trig%s_Cl%s_TM%d",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data(),kFALSE);
+  kName = Form("%s_Trig%s_Cl%s",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data());
+  if(kCollisions=="PbPb" && kMaxCen>=0) kName+=Form("Cen%d_%d",kMinCen,kMaxCen);
+
+  // Create task
+  
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("CaloTrackCorr%s",kName.Data()));
+  task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
+  task->SetDebugLevel(kDebug);
+  task->SetBranches("ESD:AliESDRun.,AliESDHeader"); 
+  task->SetAnalysisMaker(maker);
+  mgr->AddTask(task);
+  
+  //Create containers
+  
+  if(outputfile.Length()==0) outputfile = AliAnalysisManager::GetCommonFileName(); 
+  
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(kName, TList::Class(), 
+                                                             AliAnalysisManager::kOutputContainer, 
+                                                             Form("%s",outputfile.Data()));
+	
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Cuts_%s",kName.Data()), TList::Class(), 
+                                                             AliAnalysisManager::kParamContainer, 
+                                                             Form("%s",outputfile.Data()));
+  
+  // Create ONLY the output containers for the data produced by the task.
+  // Get and connect other common input/output containers via the manager as below
+  //==============================================================================
+  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
+  // AOD output slot will be used in a different way in future
+  if(!kData.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
+  mgr->ConnectOutput (task, 1, cout_pc);
+  mgr->ConnectOutput (task, 2, cout_cuts);
+  
+  
+  if(kTrig=="EMC7"){
+    printf("CaloTrackCorr trigger EMC7\n");
+    task->SelectCollisionCandidates(AliVEvent::kEMC7);
+  }
+  else if (kTrig=="INT7"){
+    printf("CaloTrackCorr trigger INT7\n");
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+  }
+  else if(kTrig=="EMC1"){
+    printf("CaloTrackCorr trigger EMC1\n");
+    task->SelectCollisionCandidates(AliVEvent::kEMC1);
+  }
+  else if(kTrig=="MB"){
+    printf("CaloTrackCorr trigger MB\n");
+    task->SelectCollisionCandidates(AliVEvent::kMB);
+  }  
+  else if(kTrig=="PHOS"){
+    printf("CaloTrackCorr trigger PHOS\n");
+    task->SelectCollisionCandidates(AliVEvent::kPHI7);
+  }  
+  else if(kTrig=="PHOSPb"){
+    printf("CaloTrackCorr trigger PHOSPb\n");
+    task->SelectCollisionCandidates(AliVEvent::kPHOSPb);
+  }
+  else if(kTrig=="AnyINT")
+  {
+    printf("CaloTrackCorr trigger AnyINT\n");
+    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  }  
+  else if(kTrig=="INT")
+  {
+    printf("CaloTrackCorr trigger AnyINT\n");
+    task->SelectCollisionCandidates(AliVEvent::kAny);
+  }
+  else if(kTrig=="EMCEGA")
+  {
+    printf("CaloTrackCorr trigger EMC Gamma\n");
+    task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  } 
+  else if(kTrig=="EMCEJE")
+  {
+    printf("CaloTrackCorr trigger EMC Jet\n");
+    task->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+  }
+  else if(kTrig=="Central")
+  {
+    printf("CaloTrackCorr trigger Central\n");
+    task->SelectCollisionCandidates(AliVEvent::kCentral);
+  } 
+  else if(kTrig=="SemiCentral")
+  {
+    printf("CaloTrackCorr trigger SemiCentral\n");
+    task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  }
+  
+  return task;
+}
+
+//____________________________________
+AliCaloTrackReader * ConfigureReader()
+{
+  
+  AliCaloTrackReader * reader = 0;
+  if     (kData.Contains("AOD"))   reader = new AliCaloTrackAODReader();
+  else if(kData=="ESD")            reader = new AliCaloTrackESDReader();
+  else if(kData=="MC" && 
+          kInputDataType == "ESD") reader = new AliCaloTrackMCReader();
+  
+  reader->SetDebug(kDebug);//10 for lots of messages
+  
+  //Delta AOD?
   //reader->SetDeltaAODFileName("");
-  //if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
-  if(calorimeter == "EMCAL") {
+  if(kOutputAOD) reader->SwitchOnWriteDeltaAOD()  ;
+  
+  // MC settings
+  if(kUseKinematics){
+    if(kInputDataType == "ESD"){
+      reader->SwitchOnStack();          
+      reader->SwitchOffAODMCParticles(); 
+    }
+    else if(kInputDataType == "AOD"){
+      reader->SwitchOffStack();          
+      reader->SwitchOnAODMCParticles(); 
+    }
+  }  
+  
+  //------------------------
+  // Detector input filling
+  //------------------------
+  
+  //Min cluster/track E
+  reader->SetEMCALEMin(0.3); 
+  reader->SetEMCALEMax(1000); 
+  reader->SetPHOSEMin(0.3);
+  reader->SetPHOSEMax(1000);
+  reader->SetCTSPtMin(0.1);
+  reader->SetCTSPtMax(1000);
+  
+  reader->SwitchOnFiducialCut();
+  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
+
+  // Tracks
+  reader->SwitchOnCTS();
+  if(kInputDataType=="ESD")
+  {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
+    reader->SetTrackCuts(esdTrackCuts);
+  }
+  else if(kInputDataType=="AOD")
+  {
+    reader->SetTrackFilterMask(128); // Filter bit, not mask
+  }
+  
+  // Calorimeter
+  
+  reader->SetEMCALClusterListName(kClusterArray);
+  if(kClusterArray == "") 
+  {
+    printf("**************** Standard EMCAL clusters branch analysis **************** \n");
+    reader->SwitchOnClusterRecalculation();
+    // Check in ConfigureCaloUtils that the recalibration and bad map are ON 
+  }
+  else 
+  {
+    printf("**************** Input for analysis is Clusterizer %s **************** \n", kClusterArray.Data());
+    reader->SwitchOffClusterRecalculation();
+  }  
+  
+  //if(kCalorimeter == "EMCAL") {
     reader->SwitchOnEMCALCells();  
     reader->SwitchOnEMCAL();
-  }
-  if(calorimeter == "PHOS") { 
+  //}
+  //if(kCalorimeter == "PHOS") { 
     reader->SwitchOnPHOSCells();  
     reader->SwitchOnPHOS();
-  }
+  //}
   
   // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
-  if(data.Contains("delta")){
+  if(kData.Contains("delta")){
     reader->SwitchOffEMCAL();
     reader->SwitchOffPHOS();
     reader->SwitchOffEMCALCells(); 
     reader->SwitchOffPHOSCells(); 
   }
   
-  if(kUseKinematics){
-    if(inputDataType == "ESD"){
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(inputDataType == "AOD"){
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
+  //-----------------
+  // Event selection
+  //-----------------
+  
+  //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
+  
+  reader->SetZvertexCut(10.);                // Open cut
+  
+  if(kEventSelection)
+  {
+    reader->SwitchOnEventSelection();         // remove pileup by default
+    reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
   }
+  else 
+  {
+    reader->SwitchOffEventSelection();         // remove pileup by default
+    reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex    
+  }
+    
+  if(kCollisions=="PbPb") 
+  {
+    // Centrality
+    reader->SetCentralityClass("V0M");
+    reader->SetCentralityOpt(10);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
+    reader->SetCentralityBin(kMinCen,kMaxCen); // Accept all events, if not select range
+    
+    // Event plane (only used in AliAnaPi0 for the moment)
+    reader->SetEventPlaneMethod("Q");
+  }
+  
+  reader->SetImportGeometryFromFile(kTRUE);
+  
+  if(kPrint) reader->Print("");
+  
+  return reader;
+  
+}
 
-  //In case of AODs created only for calorimeters, and track information filtered
-  //CTS is off when calling this method
-  //reader->SwitchOnCaloFilterPatch();
-  //Event selection
-  if     (col=="pp"  ) {
-    reader->SwitchOnEventSelection(); //remove pileup by default
-    reader->SwitchOffV0ANDSelection() ; // and besides v0 AND
-    reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex
-  }
-  else if(col=="PbPb") {
-    reader->SwitchOffEventSelection(); //remove pileup by default
-    reader->SwitchOffV0ANDSelection() ; // and besides v0 AND
-    reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex
-  }
+//_______________________________________
+AliCalorimeterUtils* ConfigureCaloUtils()
+{
   
-  if     (col=="pp"  )   reader->SetZvertexCut(50.);  //Open cut
-  else if(col=="PbPb")   reader->SetZvertexCut(10.);  //Centrality defined in this range.
-  
-  //Min particle pT
-  reader->SetEMCALPtMin(0.5); 
-  reader->SetEMCALPtMax(30); 
-  reader->SetPHOSPtMin(0.);
-  reader->SetCTSPtMin(0.);
-  if(outputAOD)  reader->SwitchOnWriteDeltaAOD()  ;
-  if(kPrintSettings) reader->Print("");
-  
-  // *** Calorimeters Utils	***
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
-  if(year==2010) cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
-  else           cu->SetEMCALGeometryName("EMCAL_COMPLETEV1");
+  cu->SetDebug(kDebug);
+  
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder(2);
   
-  if     (col=="pp"  ) {
+  // Search of local maxima in cluster
+  if(kCollisions=="pp")
+  {
+    cu->SetLocalMaximaCutE(0.1);
+    cu->SetLocalMaximaCutEDiff(0.03);
+  }
+  else 
+  {
+    cu->SetLocalMaximaCutE(0.2);
+    cu->SetLocalMaximaCutEDiff(0.03);
+  }
+  
+  cu->SwitchOffClusterPlot();
+
+  if(kRecalTM) cu->SwitchOnRecalculateClusterTrackMatching(); // Done in clusterization
+  else         cu->SwitchOffRecalculateClusterTrackMatching();
+  
+  cu->SwitchOnBadChannelsRemoval() ;
+  
+  //EMCAL settings
+
+  if(!kSimulation)
+    cu->SwitchOnLoadOwnEMCALGeometryMatrices();
+  
+  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+  
+  Bool_t bCalib = kTRUE;
+  Bool_t bBadMap= kTRUE;
+  cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
+  
+  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  ConfigureEMCALRecoUtils(recou,
+                          kSimulation,                             
+                          kExotic,
+                          kNonLinearity,
+                          bCalib, 
+                          bBadMap);   
+  
+  if( kNonLinearity ) 
+  { 
+    printf("ConfigureCaloUtils() - Apply non linearity to EMCAL\n");
     cu->SwitchOnCorrectClusterLinearity();
-    AliEMCALRecoUtils * reco = cu->GetEMCALRecoUtils();
-    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
-    reco->SwitchOnRejectExoticCluster();
   }
   
-  // Remove EMCAL hottest channels for first LHC10 periods 	
-  //  cu->SwitchOnBadChannelsRemoval();
-  //  cu->SwitchOnDistToBadChannelRecalculation();
+  
+  printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
+  printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
+  
+    
+  // PHOS 
+  cu->SwitchOffLoadOwnPHOSGeometryMatrices();
+    
+  if(kPrint) cu->Print("");
+  
+  return cu;
+  
+}
 
-//   TFile * fbad = new TFile("BadChannels.root","read");
-//   TH2I * hbad0 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod0");
-//   TH2I * hbad1 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod1");
-//   TH2I * hbad2 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod2");
-//   TH2I * hbad3 = (TH2I*)fbad->Get("EMCALBadChannelMap_Mod3");
-//   cu->SetEMCALChannelStatusMap(0,hbad0);
-//   cu->SetEMCALChannelStatusMap(1,hbad1);
-//   cu->SetEMCALChannelStatusMap(2,hbad2);
-//   cu->SetEMCALChannelStatusMap(3,hbad3);
+//_____________________________________
+AliAnaPhoton* ConfigurePhotonAnalysis()
+{
   
+  AliAnaPhoton *ana = new AliAnaPhoton();
+  ana->SetDebug(kDebug); //10 for lots of messages
   
-  //Recalibration
-  //cu->SwitchOnRecalibration();
-  //TFile * f = new TFile("RecalibrationFactors.root","read");
-  //cu->SetEMCALChannelRecalibrationFactors(0,(TH2F*)f->Get("EMCALRecalFactors_SM0"));
-  //cu->SetEMCALChannelRecalibrationFactors(1,(TH2F*)f->Get("EMCALRecalFactors_SM1"));
-  //cu->SetEMCALChannelRecalibrationFactors(2,(TH2F*)f->Get("EMCALRecalFactors_SM2"));
-  //cu->SetEMCALChannelRecalibrationFactors(3,(TH2F*)f->Get("EMCALRecalFactors_SM3"));
-  //f->Close();	
+  // cluster selection cuts
   
-  cu->SetDebug(-1);
-  if(kPrintSettings) cu->Print("");
-  
-  
-  // ##### Analysis algorithm settings ####
-  
-  // -------------------------------------------------
-  // --- Photon/Pi0/Omega/Electron Analysis ---
-  // -------------------------------------------------
-  
-  AliAnaPhoton *anaphoton = new AliAnaPhoton();
-  anaphoton->SetDebug(-1); //10 for lots of messages
-  if(calorimeter == "PHOS"){
-    anaphoton->SetNCellCut(2);// At least 2 cells
-    anaphoton->SetMinPt(3.);
-    anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
-  }
-  else {//EMCAL
-    anaphoton->SetNCellCut(1);// At least 2 cells
-    anaphoton->SetMinPt(0.5); // no effect minium EMCAL cut.
-    anaphoton->SetMaxPt(30); 
-    //if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
-    //anaphoton->SetMinDistanceToBadChannel(6, 12, 18);//For officially produced ESDs/AODs
-    anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For filtered AODs, new releases.
-  }
-  anaphoton->SetCalorimeter(calorimeter);
-  if(kUseKinematics) anaphoton->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  else  anaphoton->SwitchOffDataMC() ;
-  anaphoton->SwitchOffCaloPID();
-  anaphoton->SwitchOffFiducialCut();
-  if(kSimulation){
-    anaphoton->SwitchOnFiducialCut();
-    AliFiducialCut * fidCut1stYear = anaphoton->GetFiducialCut();
-    fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
-    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
-    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
-    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
-    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
-  }
-  
-  if(!data.Contains("delta")) {
-    anaphoton->SetOutputAODName(Form("Photons%s",calorimeter.Data()));
-    anaphoton->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-  }
-  else anaphoton->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-  anaphoton->AddToHistogramsName("AnaPhotonCorr_");
-  //Set Histograms bins and ranges
-  anaphoton->SetHistoPtRangeAndNBins(0, 30, 150) ;
-  if(year==2010)anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
-  else          anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
-  anaphoton->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
-  if(kPrintSettings) anaphoton->Print("");
-  
-  // -----------------------------------
-  // --- Pi0 Invariant Mass Analysis ---
-  // -----------------------------------
-  
-  AliAnaPi0 *anapi0 = new AliAnaPi0();
-  anapi0->SetDebug(-1);//10 for lots of messages
-  anapi0->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-  anapi0->SetCalorimeter(calorimeter);
-  anapi0->SwitchOffMultipleCutAnalysis(); 
-  //anapi0->SetNPtCuts(2);
-  //anapi0->SetNAsymCuts(2);
-  //anapi0->SetNNCellCuts(2);
-  //anapi0->SetNPIDBits(1);
-  
-  //anapi0->SetPtCutsAt(0,0.3); anapi0->SetPtCutsAt(1,0.5);
-  //anapi0->SetAsymCutsAt(0,0.1);anapi0->SetAsymCutsAt(1,0.5);
-  //anapi0->SetNCellCutsAt(0,1); anapi0->SetNCellCutsAt(1,2);
-  //anapi0->SetPIDBitsAt(0,0); //No Cut
-  //anapi0->SetPIDBitsAt(1,2); //Dispersion Cut
+  ana->SwitchOffFiducialCut();
 
+  ana->SetCalorimeter(kCalorimeter);
   
-  if(kSimulation){
-    anapi0->SwitchOnFiducialCut();
-    AliFiducialCut * fidCut1stYear = anapi0->GetFiducialCut();
-    fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
-    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
-    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
-    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
-    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
-  }  
-	
+  if(kCalorimeter == "PHOS")
+  {
+    ana->SetNCellCut(2);// At least 3 cells
+    ana->SetMinPt(0.3);
+    ana->SetMinDistanceToBadChannel(2, 4, 5);
+    ana->SetTimeCut(-2000,2000); // open cut
+  }
+  else 
+  {//EMCAL
+    ana->SetNCellCut(1);// At least 2 cells
+    ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
+    ana->SetMaxEnergy(1000); 
+    ana->SetTimeCut(-1000,1000); // open cut, usual time window of [425-825] ns if time recalibration is off 
+    // restrict to less than 100 ns when time calibration is on 
+    ana->SetMinDistanceToBadChannel(2, 4, 6); 
+  }
+  
+  if(kTM)
+  {
+    ana->SwitchOnTrackMatchRejection() ;
+    ana->SwitchOffTMHistoFill() ;
+  }
+  else
+  {
+    ana->SwitchOffTrackMatchRejection() ;
+    ana->SwitchOnTMHistoFill() ;
+  }
+  
+  //PID cuts (shower shape)
+  ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
+  AliCaloPID* caloPID = ana->GetCaloPID();
+  //Not used in bayesian
+  
+  //EMCAL
+  caloPID->SetEMCALLambda0CutMax(0.50); // Mild cut
+  caloPID->SetEMCALLambda0CutMin(0.10);
+  
+  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDPhiCut(0.030);
+  
+//  // In case of official AODs when dX and dZ was not stored, open the cuts 
+//  // and rely on having a match recorded. In case of reclusterization, try.
+//  if(kData=="AOD" && kClusterArray=="")
+//  {
+//    caloPID->SetEMCALDEtaCut(2000);  
+//    caloPID->SetEMCALDPhiCut(2000); 
+//  }
+  
+  //PHOS
+  caloPID->SetPHOSDispersionCut(2.5);
+  caloPID->SetPHOSRCut(2.);
+  if(kData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
+    
+  //caloPID->SetTOFCut(10000000); // Not used, only to set PID bits
+  
+  ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
+  
+  // Input / output delta AOD settings
+  
+  if(!kData.Contains("delta")) 
+  {
+    ana->SetOutputAODName(Form("Photon%s",kName.Data()));
+    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+  }
+  else ana->SetInputAODName(Form("Photon%s",kName.Data()));
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaPhoton_TM%d_",kTM));
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  // Number of particle type MC histograms
+  ana->FillNOriginHistograms(8);
+  ana->FillNPrimaryHistograms(4);
+  
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
+//__________________________________________________________________________________________
+AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Float_t l0max)
+{
+
+  AliAnaInsideClusterInvariantMass *ana = new AliAnaInsideClusterInvariantMass();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  // selection cuts
+  
+  ana->SetMinEnergy(5); 
+  ana->SetMaxEnergy(200.);   
+  ana->SetMinNCells(3);
+  ana->SetM02Cut(l0min,l0max);
+  ana->SetCalorimeter(kCalorimeter);
+  
+  //ana->AddToHistogramsName(Form("AnaInClusterIM_%1.2f_%1.2f_",l0min,l0max));
+  ana->AddToHistogramsName("AnaInClusterIM_");
+
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  if(kSimulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            ana->SwitchOffDataMC() ;
+  
+  AliCaloPID* caloPID = ana->GetCaloPID();
+  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDPhiCut(0.030);
+  caloPID->SetClusterSplittingM02Cut(0,100); // Do the selection in the analysis class and not in the PID method to fill SS histograms
+
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
+//_______________________________
+AliAnaPi0* ConfigurePi0Analysis()
+{
+  
+  AliAnaPi0 *ana = new AliAnaPi0();
+  
+  ana->SetDebug(kDebug);//10 for lots of messages
+  
+  // Input delta AOD settings
+  ana->SetInputAODName(Form("Photon%s",kName.Data()));
+  
+  // Calorimeter settings
+  ana->SetCalorimeter(kCalorimeter);
+  if(kCalorimeter=="PHOS") ana->SetNumberOfModules(3); //PHOS first year
+  else 
+  {                   
+    if     (kYears == 2010) ana->SetNumberOfModules( 4); // EMCAL first year
+    else if(kYears == 2011) ana->SetNumberOfModules(10); // Second year
+    else                    ana->SetNumberOfModules(12);
+  }
+  
   //settings for pp collision mixing
-  anapi0->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
-  if     (col=="pp"  ) {
-    anapi0->SetNCentrBin(1);
-    anapi0->SetNZvertBin(10);
-    anapi0->SetNRPBin(1);
-    anapi0->SetNMaxEvMix(100);    
-    anapi0->SwitchOnSMCombinations();
-  }
-  else if(col=="PbPb") {
-    anapi0->SetNCentrBin(10);
-    anapi0->SetNZvertBin(10);
-    anapi0->SetNRPBin(4);
-    anapi0->SetNMaxEvMix(10);
-    anapi0->SwitchOffSMCombinations();
-  }
-
+  ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   
-  if(kUseKinematics)anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  else              anapi0->SwitchOffDataMC() ;
-  if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
-  else {                   
-     if(year==2010) anapi0->SetNumberOfModules(4); //EMCAL first year
-    else            anapi0->SetNumberOfModules(10);
+  // Cuts 
+  if(kCalorimeter=="EMCAL") ana->SetPairTimeCut(70);
+  
+  ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect. 
+  //In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
+  
+  if     (kCollisions=="pp"  ) 
+  {
+    ana->SetNCentrBin(1);
+    ana->SetNZvertBin(10);
+    ana->SetNRPBin(1);
+    ana->SetNMaxEvMix(100);    
+    ana->SwitchOffSMCombinations();
+    ana->SwitchOffMultipleCutAnalysis();
   }
-  anapi0->SetHistoPtRangeAndNBins(0, 30, 150) ;    
-  anapi0->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
-  if(year==2010)anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
-  else          anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+  else if(kCollisions=="PbPb") 
+  {
+    ana->SetNCentrBin(10);
+    ana->SetNZvertBin(10);
+    ana->SetNRPBin(4);
+    ana->SetNMaxEvMix(10);
+    ana->SwitchOffSMCombinations();
+  }
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaPi0_TM%d_",kTM));
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
 
-  anapi0->SetHistoMassRangeAndNBins(0., 1., 200) ;
-  anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
-  anapi0->SetHistoTrackMultiplicityRangeAndNBins(0, 200, 20); 
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
 
-  if(kPrintSettings) anapi0->Print("");
+//_____________________________________________________
+AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle, 
+                                      Int_t analysis)
+{
+  
+  AliAnaPi0EbE *ana = new AliAnaPi0EbE();
+  ana->SetDebug(kDebug);//10 for lots of messages
+  
+  ana->SetAnalysisType(analysis);
+  TString opt = "";
+  if(analysis==AliAnaPi0EbE::kIMCaloTracks) opt = "Conv";
+  if(analysis==AliAnaPi0EbE::kSSCalo)       opt = "SS";
+  
+  ana->SetMinPt(0.5);
+  
+  if(kCalorimeter=="EMCAL")ana->SetPairTimeCut(15); // More strict than in pi0 inv mass analysis
+  
+  ana->SetCalorimeter(kCalorimeter);
+  
+  // Input / output delta AOD settings
+  
+  ana->SetInputAODName(Form("Photon%s",kName.Data()));
+  if(!kInputDataType.Contains("delta")) 
+  {
+    ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kName.Data()));
+    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else  
+    ana->SetInputAODName(Form("%s%s%s",particle.Data(),opt.Data(),kName.Data()));
+  
+  if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
+  
+  if(analysis!=AliAnaPi0EbE::kSSCalo)
+  {
+    AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
+    nms->SetParticle(particle);
+    nms->SwitchOnAngleSelection();
+    nms->KeepNeutralMesonSelectionHistos(kTRUE);
+    //nms->SetAngleMaxParam(2,0.2);
+    nms->SetHistoERangeAndNBins(0, 20, 80) ;
+    //nms->SetHistoIMRangeAndNBins(0, 1, 400);
+  }
+  
+  ana->SwitchOffSelectedClusterHistoFill(); 
+  ana->SwitchOffFillWeightHistograms();
+  
+  if(!kTM) ana->SwitchOnTMHistoFill();
+  else     ana->SwitchOffTMHistoFill();
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),kTM));
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return  ana;
+  
+}
 
-  //QA
-  if (withQA) {
-    AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
-    //emcalQA->SetDebug(10); //10 for lots of messages
-    emcalQA->SetCalorimeter("EMCAL");
-    if(kUseKinematics) emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
-    else  emcalQA->SwitchOffDataMC() ;
-    emcalQA->AddToHistogramsName("QA_"); //Begining of histograms name
-    //emcalQA->SetFiducialCut(fidCut);
-    emcalQA->SwitchOffFiducialCut();
-    emcalQA->SwitchOffPlotsMaking();
-    emcalQA->SwitchOffCorrelation();
-    //  if(!kUseKinematics)emcalQA->SetTimeCut(400,850);//Open for the moment
-    //Set Histrograms bins and ranges
-    emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
-    emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-    emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 142) ;
+//________________________________________
+AliAnaCalorimeterQA* ConfigureQAAnalysis()
+{
+  
+  AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  ana->SetCalorimeter(kCalorimeter);
+  
+  ana->SetTimeCut(-1000,1000); // Open time cut
+  
+  // Study inter detector correlation (PHOS, EMCAL, Tracks, V0)
+  if(kCalorimeter=="PHOS" && kTrig=="PHOS"){
+    ana->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
+  }
+  if(kCalorimeter=="EMCAL" && kClusterArray==""){
+    ana->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
+  }
+  else {
+    ana->SwitchOffCorrelation();
+  }
+  
+  // Study exotic clusters PHOS and EMCAL
+  if(kClusterArray==""){
+    ana->SwitchOnStudyBadClusters() ; 
+  }
+  else {
+    ana->SwitchOffStudyBadClusters() ;
+  }
+  
+  ana->SwitchOffFiducialCut();
+  ana->SwitchOffFillAllTH3Histogram();
+  ana->SwitchOffFillAllPositionHistogram();
+  ana->SwitchOffFillAllPositionHistogram2();
+  if(!kExotic)ana->SwitchOnStudyBadClusters();
+  else        ana->SwitchOffStudyBadClusters();
+  ana->SwitchOffStudyClustersAsymmetry();
+  ana->SwitchOffStudyWeight();
+  ana->SwitchOnFillAllTrackMatchingHistogram();
+  
+  if(kCalorimeter=="EMCAL")
+  {
+    if     (kYears==2010)  ana->SetNumberOfModules(4); 
+    else if(kYears==2011)  ana->SetNumberOfModules(10);
+    else                   ana->SetNumberOfModules(12); 
+  }
+  else 
+  {//PHOS
+    ana->SetNumberOfModules(3); 
+  }
+  
+  ana->AddToHistogramsName("QA_"); //Begining of histograms name
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");	
+  
+  return ana;
+  
+}
+
+//________________________________________________________
+void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana)
+{
+  if(kSimulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            ana->SwitchOffDataMC() ;
+
+  //Set here generator name, default pythia
+  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
+}  
+
+//________________________________________________________
+void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
+{
+  // Set common bins for all analysis and MC histograms filling
     
-    if(year==2010){  
-      emcalQA->SetNumberOfModules(4); 
-      emcalQA->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
-      emcalQA->SetHistoXRangeAndNBins(-230,90,60);
-      emcalQA->SetHistoYRangeAndNBins(370,450,20);
+  histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
+  
+  if(kCalorimeter=="EMCAL")
+  {
+    if(kYears==2010)
+    {
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
+      histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
+      histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
     }
-    else{            
-      emcalQA->SetNumberOfModules(10); 
-      emcalQA->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
-      emcalQA->SetHistoXRangeAndNBins(-600,90,100);
-      emcalQA->SetHistoYRangeAndNBins(100,450,50);
+    else if(kYears==2011)
+    {           
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+      histoRanges->SetHistoXRangeAndNBins(-600,90,200); // QA
+      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA
     }
-    
-    emcalQA->SwitchOffFillAllPi0Histogram();
-    emcalQA->SwitchOffFillAllTrackMatchingHistogram();
-    emcalQA->SwitchOffFillAllTH3Histogram();
-    emcalQA->SwitchOffFillAllPositionHistogram2();
-    
-    emcalQA->SetHistoMassRangeAndNBins(0., 1, 100) ;
-    emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
-    emcalQA->SetHistoPOverERangeAndNBins(0,10.,50);
-    emcalQA->SetHistodEdxRangeAndNBins(0.,200.,50);
-    emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),75);
-    emcalQA->SetHistoTimeRangeAndNBins(300.,900,150);
-    emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
-    emcalQA->SetHistoVertexDistRangeAndNBins(0.,100.,100);
-    emcalQA->SetHistoNClusterCellRangeAndNBins(0,500,500);
-    emcalQA->SetHistoZRangeAndNBins(-400,400,100);
-    emcalQA->SetHistoRRangeAndNBins(400,450,25);
-    emcalQA->SetHistoV0SignalRangeAndNBins(0,5000,100);
-    emcalQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,100);
-    emcalQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,100);
-  }//withQA
-  
-  // #### Configure Maker ####
-  AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
-  maker->SetReader(reader);//pointer to reader
-  maker->SetCaloUtils(cu); //pointer to calorimeter utils
-  Int_t n = 0;//Analysis number, order is important
-  // Particle selection analysis
-  maker->AddAnalysis(anaphoton,n++);
-  maker->AddAnalysis(anapi0,n++);
-  if(withQA)maker->AddAnalysis(emcalQA,n++);  
-  maker->SetAnaDebug(-1)  ;
-  maker->SwitchOnHistogramsMaker()  ;
-  if(data.Contains("delta")) maker->SwitchOffAODsMaker()  ;
-  else                       maker->SwitchOnAODsMaker()  ;
-	
-  if(kPrintSettings) maker->Print("");
-  
-  printf("======================== \n");
-  printf(" End Configuration of Pi0 analysis with detector %s \n",calorimeter.Data());
-  printf("======================== \n");
-  
-  // Create task
-  //===========================================================================
-  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("PartCorr%s",calorimeter.Data()));
-  task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
-  //task->SetDebugLevel(-1);
-  task->SetBranches("ESD:AliESDRun.,AliESDHeader"); //just a trick to get Constantin's analysis to work
-  if(data=="ESD")task->SelectCollisionCandidates();
-  task->SetAnalysisMaker(maker);
-  //if(!kSimulation)task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
-  mgr->AddTask(task);
-  
-  //Create containers
-  char name[128];
-  sprintf(name,"PartCorr_%s",calorimeter.Data());
-  cout<<"Name of task "<<name<<endl;
-  
-  if(outputfile.Length()==0)outputfile = AliAnalysisManager::GetCommonFileName(); 
+    else
+    {
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 190*TMath::DegToRad(), 122) ;
+      histoRanges->SetHistoXRangeAndNBins(-100,90,200); // QA
+      histoRanges->SetHistoYRangeAndNBins(50,450,100);  // QA
+    }
 
-  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(calorimeter.Data(), TList::Class(), 
-                                                              AliAnalysisManager::kOutputContainer, 
-                                                              Form("%s:Pi0",outputfile.Data()));
-	
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("%sCuts",calorimeter.Data()), TList::Class(), 
-                                                              AliAnalysisManager::kParamContainer, 
-                                                              Form("%s:Pi0Cuts",outputfile.Data()));
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
-  //==============================================================================
-  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-  // AOD output slot will be used in a different way in future
-  if(!data.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
-  mgr->ConnectOutput (task, 1, cout_pc);
-  mgr->ConnectOutput (task, 2, cout_cuts);
+    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+  }
+  else
+  {
+    histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 320*TMath::DegToRad(), 60) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
+  }
   
-  return task;
+  histoRanges->SetHistoShowerShapeRangeAndNBins(0, 5, 500);
+  
+  // Invariant mass histoRangeslysis
+  histoRanges->SetHistoMassRangeAndNBins(0., 1., 200) ;
+  histoRanges->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
+  
+  // check if time calibration is on
+  histoRanges->SetHistoTimeRangeAndNBins(-1000.,1000,1000);
+  histoRanges->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
+  
+  // track-cluster residuals
+  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.15,0.15,300);
+  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.15,0.15,300);
+
+  // QA, electron, charged
+  histoRanges->SetHistoPOverERangeAndNBins(0,10.,100);
+  histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
+  
+  // QA
+  histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
+  histoRanges->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
+  histoRanges->SetHistoRatioRangeAndNBins(0.,2.,100);
+  histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
+  histoRanges->SetHistoNClusterCellRangeAndNBins(0,500,500);
+  histoRanges->SetHistoZRangeAndNBins(-400,400,200);
+  histoRanges->SetHistoRRangeAndNBins(400,450,25);
+  histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
+  histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
+  histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
+  
 }
 
 
