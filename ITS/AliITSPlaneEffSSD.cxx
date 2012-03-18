@@ -143,6 +143,8 @@ AliITSPlaneEffSSD&  AliITSPlaneEffSSD::operator=(const
     // Return:
  
     if(this==&s) return *this;
+    this->~AliITSPlaneEffSSD();
+    new(this) AliITSPlaneEffSSD();
     s.Copy(*this);
     return *this;
 }
