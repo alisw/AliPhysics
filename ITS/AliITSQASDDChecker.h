@@ -69,15 +69,13 @@ public:
     
     TCanvas **    fImage          ; //[AliRecoParam::kNSpecies] 
     TPaveText *    fPaveText[AliRecoParam::kNSpecies]         ; //[AliRecoParam::kNSpecies] 
-    TPaveText *    fPaveTextRaw[2]         ; // PaveText for Raw Data
-    TPaveText *    fPaveTextRec[2]         ; // PaveText for RecPoints
 
     Int_t fESforCheck; //eventspecie of the list to check
 
     static const Int_t fgknSDDmodules = 260; // number of SDD modules
     static const Int_t fgkmodoffset = 240;   // number of SPD modules
 
-    ClassDef(AliITSQASDDChecker,7)  // description 
+    ClassDef(AliITSQASDDChecker,8)  // description 
       
 };
 

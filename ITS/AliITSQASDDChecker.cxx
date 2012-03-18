@@ -72,10 +72,6 @@ fImage(NULL),
 	    fHighSDDValue[ibit]=0.;
 	  }
 	for(Int_t i=0;i<AliRecoParam::kNSpecies;i++) fPaveText[i] = NULL;
-	for(Int_t i=0;i<2; i++) {
-		fPaveTextRaw[i] = NULL;
-		fPaveTextRec[i] = NULL;
-	}
 }          // ctor
 
 
@@ -114,18 +110,6 @@ AliITSQASDDChecker::~AliITSQASDDChecker()
 		{
 			delete fPaveText[i]; 
 			fPaveText[i]=NULL;
-		}
-	}
-	for(Int_t i=0;i<2;i++) {
-		if(fPaveTextRaw[i])
-		{
-			delete fPaveTextRaw[i]; 
-			fPaveTextRaw[i]=NULL;
-		}
-		if(fPaveTextRec[i])
-		{
-			delete fPaveTextRec[i]; 
-			fPaveTextRec[i]=NULL;
 		}
 	}
 } // dtor
@@ -306,20 +290,21 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      Int_t layer1=0;
 	      if(hname.Contains("3"))layer1=0;
 	      else  if(hname.Contains("4"))layer1=1;
-	      if(dynamic_cast<TH2*>(hdata)){
-		hlayer[layer1]=(TH2*)((dynamic_cast<TH2*>(hdata))->Clone());
-		hlayer[layer1]->SetName(Form("%s_copy",hname.Data()));
-		int modmay=hlayer[layer1]->GetNbinsY();
-		TH1D* hproj= hlayer[layer1]->ProjectionY();
-		Double_t ladcontent=0;
-		for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
-		  ladcontent=hproj->GetBinContent(i);
-		  if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)) emptyladders[layer1]++;
-		  else filledladders[layer1]++;}//end for
-		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer1], filledladders[layer1]));//end else layer 3
-		delete hproj;
-		hproj=NULL;
-	      }//end if htemp
+			TH2* htemp=dynamic_cast<TH2*>(hdata);
+			if(htemp){
+				hlayer[layer1]=(TH2*)((dynamic_cast<TH2*>(hdata))->Clone());
+				hlayer[layer1]->SetName(Form("%s_copy",hname.Data()));
+				int modmay=hlayer[layer1]->GetNbinsY();
+				TH1D* hproj= hlayer[layer1]->ProjectionY();
+				Double_t ladcontent=0;
+				for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
+					ladcontent=hproj->GetBinContent(i);
+					if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)) emptyladders[layer1]++;
+					else filledladders[layer1]++;}//end for
+					AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer1], filledladders[layer1]));//end else layer 3
+					delete hproj;
+					hproj=NULL;
+			}//end if htemp
 	    }//end else entries !=0
 	  }//end check on phiz	      
 		
@@ -527,24 +512,16 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	//TPaveText *pave[2]={0,0};
 	next.Begin();
 
-		  for(Int_t lay=0;lay<2; lay++)	  if(fPaveTextRaw[lay]) { delete fPaveTextRaw[lay]; fPaveTextRaw[lay] = NULL; }
 	while( (hdata=dynamic_cast<TH1* >(next())) ) {
 	    if (hdata){
 			TString hname=hdata->GetName();
 			if(hname.Contains("SDDphizL3") || hname.Contains("SDDphizL4")){
 			  if(hname.Contains("NORM"))continue;
 			  //AliInfo("========================================Found histo 11\n");
-			  Int_t lay=0;
-			  if(hname.Contains("3"))lay=0;
-			  else if(hname.Contains("4"))lay=1;
-			  fPaveTextRaw[lay]=new TPaveText(0.3,0.9,0.9,0.99,"NDC");
-				//fPaveTextRaw[lay]->AddText(hname.Data());
-			  fPaveTextRaw[lay]->AddText(results1.Data());
-			  fPaveTextRaw[lay]->AddText(results2.Data());
-			  fPaveTextRaw[lay]->SetFillColor(color);
-			  fPaveTextRaw[lay]->SetBorderSize(1);
-			  fPaveTextRaw[lay]->SetLineWidth(1);
-			  //hdata->GetListOfFunctions()->Add(pave[lay]);
+				TPaveText *ptext = ((TPaveText *)hdata->GetListOfFunctions()->FindObject("TPave"));
+				ptext->Clear();
+				ptext->AddText(results1.Data());
+				ptext->AddText(results2.Data());
 	      } else if(hname.Contains("SDDRawDataCheck")) {
 		    
 			  //AliInfo("========================================Found histo\n");
@@ -588,7 +565,6 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 			  ((TH1F*)hdata)->SetBinContent(42,emptyactivemoduleperlayer[1]);
 			  ((TH1F*)hdata)->SetBinContent(43,exactivedrperlayer[1]);
 			  ((TH1F*)hdata)->SetBinContent(44,emptyactivedrperlayer[1]);
-			  //hdata->GetListOfFunctions()->Add(pave[0]);
 			  //break; 
 			}
 		}//if hdata
@@ -999,7 +975,6 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 
 	//TPaveText *pave[2]={0,0};
 	next.Begin();
-		  for(Int_t lay=0;lay<2; lay++)	  if(fPaveTextRec[lay]) { delete fPaveTextRec[lay]; fPaveTextRec[lay] = NULL; }
 
 	while( (hdata=dynamic_cast<TH1* >(next())) )
 	  {
@@ -1008,16 +983,10 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      if(hname.Contains("SDDModPatternL3RP") || hname.Contains("SDDModPatternL4RP")){
 		if(hname.Contains("NORM"))continue;
 		//AliInfo("========================================Found histo 11\n");
-		Int_t lay=0;
-		if(hname.Contains("3"))lay=0;
-		else if(hname.Contains("4"))lay=1;
-		fPaveTextRec[lay]=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
-		fPaveTextRec[lay]->AddText(results1.Data());
-		fPaveTextRec[lay]->AddText(results2.Data());
-		fPaveTextRec[lay]->SetFillColor(color);
-		fPaveTextRec[lay]->SetBorderSize(1);
-		fPaveTextRec[lay]->SetLineWidth(1);
-		//hdata->GetListOfFunctions()->Add(pave[lay]);
+			  TPaveText *ptext = ((TPaveText *)hdata->GetListOfFunctions()->FindObject("TPave"));
+			  ptext->Clear();
+			  ptext->AddText(results1.Data());
+			  ptext->AddText(results2.Data());
 	      }
 	      else
 		if(hname.Contains("SDDRecPointCheck"))
@@ -1351,28 +1320,14 @@ Bool_t AliITSQASDDChecker::MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 						gPad->SetRightMargin(0.15);
 						gPad->SetLeftMargin(0.05);
 						hist->SetStats(0);
-						hist->SetOption("box") ;
+						hist->SetOption("colz") ;
 
 						////hist->GetListOfFunctions()->FindObject("palette")->SetLabelSize(0.025);
 						//gPad->Update();
 					}
-					if(hname.Contains("SDDphizL3")) hist->GetListOfFunctions()->Add(fPaveTextRaw[0]);
-					if(hname.Contains("SDDphizL4")) hist->GetListOfFunctions()->Add(fPaveTextRaw[1]);
 					hist->DrawCopy(); 
 					fImage[esIndex]->cd(++npad) ; 
 					fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
-					if(hname.Contains("SDDphizL3")) { 
-						hist->GetListOfFunctions()->Clear(); 
-						hist->GetListOfFunctions()->Delete();
-						delete fPaveTextRaw[0];
-						fPaveTextRaw[0] = NULL;
-					}
-					if(hname.Contains("SDDphizL4")) {
-						hist->GetListOfFunctions()->Clear(); 
-						hist->GetListOfFunctions()->Delete();
-						delete fPaveTextRaw[1];
-						fPaveTextRaw[1] = NULL;
-					}
 				} 
 			}
 			fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
@@ -1443,29 +1398,16 @@ Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TAS
 	      gPad->SetRightMargin(0.15);
 	      gPad->SetLeftMargin(0.05);
 	      hist->SetStats(0);
-	      hist->SetOption("box") ;
+	      hist->SetOption("colz") ;
 	      ////	      TPaletteAxis *paletta =(TPaletteAxis*)hist->GetListOfFunctions()->FindObject("palette");
 	      //paletta->SetLabelSize(0.025);
 	      //gPad->Update(); 
 	    }
-			if(hname.Contains("SDDModPatternL3RP")) hist->GetListOfFunctions()->Add(fPaveTextRaw[0]);
-			if(hname.Contains("SDDModPatternL4RP")) hist->GetListOfFunctions()->Add(fPaveTextRaw[1]);
+
 			hist->DrawCopy(); 
 			fImage[esIndex]->cd(++npad) ; 
 			fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
-			if(hname.Contains("SDDModPatternL3RP")) { 
-				hist->GetListOfFunctions()->Clear(); 
-				hist->GetListOfFunctions()->Delete();
-				delete fPaveTextRec[0];
-				fPaveTextRec[0] = NULL;
-			}
-			if(hname.Contains("SDDModPatternL4RP")) {
-				hist->GetListOfFunctions()->Clear(); 
-				hist->GetListOfFunctions()->Delete();
-				delete fPaveTextRec[1];
-				fPaveTextRec[1] = NULL;
-			}
-       }
+		}
       }
       fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
     }

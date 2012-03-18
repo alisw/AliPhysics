@@ -32,6 +32,7 @@
 #include <TBranch.h>
 #include <TTree.h>
 #include <TMath.h>
+#include <TPaveText.h>
 //#include <TObjArray.h>
 
 // --- Standard library ---
@@ -421,32 +422,58 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   fSDDhRawsTask = 0;
   if(fkOnline){AliInfo("Book Online Histograms for SDD\n");}
   else {AliInfo("Book Offline Histograms for SDD\n ");}
-  TH1F *h0 = new TH1F("SDDModPattern","HW Modules pattern",fgknSDDmodules,239.5,499.5); //0
+
+	TPaveText *PaveText0=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+	PaveText0->AddText("");
+	PaveText0->SetFillColor(kMagenta+2);
+	PaveText0->SetTextColor(kWhite);
+	PaveText0->SetBorderSize(1);
+	PaveText0->SetLineWidth(1);	
+	
+	TH1F *h0 = new TH1F("SDDModPattern","HW Modules pattern",fgknSDDmodules,239.5,499.5); //0
   h0->GetXaxis()->SetTitle("Module Number");
   h0->GetYaxis()->SetTitle("Counts");
   h0->SetOption("bar1");
   h0->SetBarOffset(0.01);
   h0->SetBarWidth(0.95);
   h0->SetFillColor(45);
+  h0->GetListOfFunctions()->Add(PaveText0);
+	
   rv = fAliITSQADataMakerRec->Add2RawsList(h0,0+offsRW, expert, !image, !saveCorr);
   fSDDhRawsTask++;
-  
+        
+	TPaveText *PaveText1=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+	PaveText1->AddText("");
+	PaveText1->SetFillColor(kMagenta+2);
+	PaveText1->SetTextColor(kWhite);
+	PaveText1->SetBorderSize(1);
+	PaveText1->SetLineWidth(1);
+
   //zPhi distribution using ladder and modules numbers
   TH2F *hphil3 = new TH2F("SDDphizL3","SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);//1
   hphil3->GetXaxis()->SetTitle("z[Module Number L3 ]");
   hphil3->GetYaxis()->SetTitle("#varphi[ Ladder Number L3]");
   hphil3->SetStats(0);
+	hphil3->GetListOfFunctions()->Add(PaveText1);
   rv = fAliITSQADataMakerRec->Add2RawsList(hphil3,1+offsRW, !expert, image, !saveCorr); 
   fSDDhRawsTask++;
-  
+ 
+	TPaveText *PaveText2=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+	PaveText2->AddText("");
+	PaveText2->SetFillColor(kMagenta+2);
+	PaveText2->SetTextColor(kWhite);
+	PaveText2->SetBorderSize(1);
+	PaveText2->SetLineWidth(1);
+
   TH2F *hphil4 = new TH2F("SDDphizL4","SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5); //2
   hphil4->GetXaxis()->SetTitle("z[Module Number L4]");
   hphil4->GetYaxis()->SetTitle("#varphi[Ladder Number L4]");
   hphil4->SetStats(0);
+	hphil4->GetListOfFunctions()->Add(PaveText2);
    rv = fAliITSQADataMakerRec->Add2RawsList(hphil4,2+offsRW, !expert, image, !saveCorr); 
   fSDDhRawsTask++;
-  
-  //normalized histograms
+  	
+	//normalized histograms
   TH1F *h0norm = new TH1F("SDDModPatternNORM","NORM HW Modules pattern",fgknSDDmodules,239.5,499.5); //3
   h0norm->GetXaxis()->SetTitle("Module Number");
   h0norm->GetYaxis()->SetTitle("Counts");
@@ -910,16 +937,32 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h6,6 +offsRP, expert, !image);// expert NO image
   fSDDhRecPointsTask++;
 
-  
+  	TPaveText *PaveText7=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+	PaveText7->AddText("");
+	PaveText7->SetFillColor(kMagenta+2);
+	PaveText7->SetTextColor(kWhite);
+	PaveText7->SetBorderSize(1);
+	PaveText7->SetLineWidth(1);	
+	
+	
   TH2F *h7 = new TH2F("SDDModPatternL3RP","Modules pattern L3 RP",12,0.5,6.5,14,0.5,14.5);  //position number 7
   h7->GetXaxis()->SetTitle("z[#Module L3 ]");
   h7->GetYaxis()->SetTitle("#varphi[#Ladder L3]");
+	h7->GetListOfFunctions()->Add(PaveText7);
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h7,7 +offsRP, !expert, image);// expert NO image
   fSDDhRecPointsTask++;
 
-  TH2F *h8 = new TH2F("SDDModPatternL4RP","Modules pattern L4 RP",16,0.5,8.5,22,0.5,22.5); //position number 8
+	TPaveText *PaveText8=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+	PaveText8->AddText("");
+	PaveText8->SetFillColor(kMagenta+2);
+	PaveText8->SetTextColor(kWhite);
+	PaveText8->SetBorderSize(1);
+	PaveText8->SetLineWidth(1);	
+	
+	TH2F *h8 = new TH2F("SDDModPatternL4RP","Modules pattern L4 RP",16,0.5,8.5,22,0.5,22.5); //position number 8
   h8->GetXaxis()->SetTitle("[#Module L3 ]");
   h8->GetYaxis()->SetTitle("#varphi[#Ladder L4]");
+	h8->GetListOfFunctions()->Add(PaveText8);
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h8,8 +offsRP, !expert, image);// expert NO image
   fSDDhRecPointsTask++;
 
