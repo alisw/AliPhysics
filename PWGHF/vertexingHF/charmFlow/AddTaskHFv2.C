@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kD0toKpi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=0 /*0=tracks,1=V0*/)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=1 /*0=tracks,1=V0*/)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D 
@@ -10,91 +10,53 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
   //          Francesco Prino, prino@to.infn.it
   // Get the pointer to the existing analysis manager via the static access method.
   //============================================================================
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskHFv2", "No analysis manager to connect to.");
     return NULL;
   }
-
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts;
-  if( filename.EqualTo("") ) {
-    stdcuts=kTRUE; 
-  } else {
-      filecuts=TFile::Open(filename.Data());
-      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
-      }
+  TFile* filecuts=new TFile(filename.Data());
+  if(!filecuts->IsOpen()){
+    cout<<"Input file not found:  using std cut object"<<endl;
+    stdcuts=kTRUE;
   }
   
   AliRDHFCuts *analysiscuts=0x0;
   TString suffix="";
 
-  TString cutsobjname="loosercuts";
+  TString cutsobjname="AnalysisCuts";
   //Analysis cuts
-  switch (decCh){
-  case 0:
-    cutsobjname="AnalysisCuts"; 
-    if(stdcuts){
-      analysiscuts = new AliRDHFCutsDplustoKpipi();
-      analysiscuts->SetStandardCutsPbPb2010();
-    }
-    else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
-    suffix="Dplus";
-    break;
-  case 1:
-    cutsobjname="D0toKpiCuts";
-    if(stdcuts) {
-      analysiscuts = new AliRDHFCutsD0toKpi();
-      analysiscuts->SetStandardCutsPbPb2010();
-    }
-    else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
-    suffix="D0";
-    break;
-  case 2:
-    cutsobjname="DStartoKpipiCuts";
-    if(stdcuts) {
-      analysiscuts = new AliRDHFCutsDStartoKpipi();
-      analysiscuts->SetStandardCutsPbPb2010();
-    }
-    else analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsobjname);
-    suffix="Dstar";
-    break;
-  default:
-    cout<<"Not available"<<endl;
-    break;
-  }
-
+  analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
+  
   if(!analysiscuts){
     cout<<"Specific AliRDHFCuts not found"<<endl;
     return;
   }
 
-  suffix+=name;
-  const Int_t nphibins=4;
-  const Int_t nphibinlimits=nphibins+1;
-  Float_t pi=TMath::Pi();
-  Float_t philimits[nphibinlimits]={0., pi/4.,pi/2., 3./4.*pi, pi};
-
+  analysiscuts->SetUseCentrality(AliRDHFCuts::kCentV0M);
+  analysiscuts->SetRemoveDaughtersFromPrim(kFALSE);
+  analysiscuts->SetTriggerClass("");
+  analysiscuts->ResetMaskAndEnableMBTrigger();
+  analysiscuts->EnableCentralTrigger();
+  analysiscuts->EnableSemiCentralTrigger();
+  analysiscuts->SetMinCentrality(30.);
+  analysiscuts->SetMaxCentrality(80.);
+  ((AliRDHFCutsDplustoKpipi*)analysiscuts)->SetMinPtCandidate(3.);
+  ((AliRDHFCutsDplustoKpipi*)analysiscuts)->SetUseImpParProdCorrCut(kFALSE);
+  AliAODPidHF *pid = analysiscuts->GetPidHF();
+  pid->SetOldPid(kFALSE);
+  analysiscuts->SetPidHF(pid);
   // Analysis task    
-  AliAnalysisTaskSEHFv2 *v2Task = new AliAnalysisTaskSEHFv2("HFv2Analysis",analysiscuts,decCh,nphibinlimits,philimits);
-  v2Task->SetReadMC(readMC);
-
-  v2Task->SetEtaGapFeatureForEventplaneFromTracks(kTRUE);
-  
+  AliAnalysisTaskSEHFv2 *v2Task = new AliAnalysisTaskSEHFv2("HFv2Analysis",analysiscuts,decCh);
+  v2Task->SetReadMC(kFALSE);
+  v2Task->SetEtaGapFeatureForEventplaneFromTracks(kFALSE);
+  v2Task->SetNMassBins(104);
+  v2Task->SetMassLimits(0.2,411);
   v2Task->SetDebugLevel(0);
-  
-  if(flagep){
-    //histogram for V0
-    TFile *fpar = TFile::Open("VZEROParHist.root");
-    TH2D *hh[6];
-    for(Int_t i=0;i<6;i++){
-      TString hhname;hhname.Form("parhist%d_%d",(i+2)*10,(i+3)*10);
-      hh[i]=(TH2D*)fpar->Get(hhname.Data());
-    } 
-    v2Task->SetVZEROParHist(hh);
-  }
+  v2Task->SetV0EventPlaneOrder(2);
+  v2Task->SetTPCEP();//SetVZEROEPOnly();
+
   mgr->AddTask(v2Task);
 
   // Create containers for input/output
@@ -122,11 +84,5 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
 
   mgr->ConnectOutput(v2Task,3,cutobj);
  
-  if(flagep){
-    contname=Form("coutputVZEROpar%s",suffix.Data());
-    AliAnalysisDataContainer *coutputpar = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    mgr->ConnectOutput(v2Task,4,coutputpar);
-  }
-
   return v2Task;
 }
