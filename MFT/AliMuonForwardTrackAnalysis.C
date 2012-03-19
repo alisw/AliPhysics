@@ -29,14 +29,16 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
   myAnalysis->SetInputDir(readDir);
   myAnalysis->SetOutputDir(outDir);
   myAnalysis->SetMassRange(nMassBin, massMin, massMax);
-  myAnalysis->SetPtDimuRange(6, 0., 3.);
+  myAnalysis->SetPtDimuRange(10, 0., 5.);
   myAnalysis->SetSingleMuonAnalysis(singleMuonAnalysis);
   myAnalysis->SetMuonPairAnalysis(muonPairAnalysis);
   myAnalysis->SetOption(option);
   myAnalysis->SetMatchTrigger(kTRUE);
   myAnalysis->SetMaxNWrongClustersMC(maxNWrongClusters);
   myAnalysis->SetPtMinSingleMuons(ptMinSingleMuons);
-  myAnalysis->UseCutOnOffsetChi2(kFALSE);
+
+  myAnalysis->UseCutOnOffsetChi2(kFALSE);        // cut on the single muons
+
   myAnalysis->UseBransonForCut(kFALSE);
   myAnalysis->UseBransonForKinematics(kFALSE);
 
