@@ -37,6 +37,7 @@ class AliFMDAnalysisTaskGenerateCorrection : public AliAnalysisTaskSE
     void SetZvtxCut(Float_t vtxcut) {fZvtxCut = vtxcut;}
     void SetNvtxBins(Int_t nvtxbins) {fNvtxBins = nvtxbins;}
     void SetNbinsEta(Int_t netabins) {fNbinsEta = netabins;}
+    void SetEtaLimits(Double_t low, Double_t high) {fEtaLow = low; fEtaHigh = high;}
     void ReadFromFile(const Char_t* filename = "background.root", Bool_t storeInOCDB = kFALSE, Int_t runNo=0);
  private:
     
@@ -53,7 +54,8 @@ class AliFMDAnalysisTaskGenerateCorrection : public AliAnalysisTaskSE
     Int_t fNbinsEta;
     AliFMDAnaCalibBackgroundCorrection* fBackground;
     AliFMDAnaCalibEventSelectionEfficiency*     fEventSelectionEff;
-    
+    Double_t fEtaLow;
+    Double_t fEtaHigh;
     ClassDef(AliFMDAnalysisTaskGenerateCorrection, 1);
 
 };
