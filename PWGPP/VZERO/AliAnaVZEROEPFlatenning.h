@@ -30,14 +30,17 @@ class AliAnaVZEROEPFlatenning : public AliAnalysisTaskSE {
   TString fMBTrigName; // MB trigger name (for evt sel)
   Bool_t  fUsePhysSel; // Use or not phys sel
 
-  TProfile *fX2[8]; //! Profile histogram for Q^2_x
-  TProfile *fY2[8]; //! Profile histogram for Q^2_y
-  TProfile *fX2Y2[8]; //! Profile histogram for Q^2_x*Q^2_y
-  TProfile *fCos8Psi[8]; //! Profile histogram for Cos(8*Psi)
+  TProfile *fX2[11]; //! Profile histogram for Q^2_x
+  TProfile *fY2[11]; //! Profile histogram for Q^2_y
+  TProfile *fX2Y2[11]; //! Profile histogram for Q^2_x*Q^2_y
+  TProfile *fCos8Psi[11]; //! Profile histogram for Cos(8*Psi)
   TProfile *fC2[8]; //! Profile histogram for Cos(2*phi)
   TProfile *fS2[8]; //! Profile histogram for Sin(2*phi)
   TProfile *fC4[8]; //! Profile histogram for Cos(4*phi)
   TProfile *fS4[8]; //! Profile histogram for Sin(4*phi)
+  TProfile *fX2Corr[11]; //! Profile histogram for Q^2_x
+  TProfile *fY2Corr[11]; //! Profile histogram for Q^2_y
+  TProfile *fX2Y2Corr[11]; //! Profile histogram for Q^2_x*Q^2_y
 
   TProfile *fX2In[8]; // Profile histogram for Q^2_x (read from input file)
   TProfile *fY2In[8]; // Profile histogram for Q^2_y (read from input file)
@@ -47,9 +50,12 @@ class AliAnaVZEROEPFlatenning : public AliAnalysisTaskSE {
   TH2F *fPsiRingRawCentr[8]; //! Raw VZERO event plane vs centrality (ring-by-ring)
   TH2F *fPsiRingFlatCentr[8]; //! Flatenned with corrections on cumulants VZERO event plane vs centrality (ring-by-ring)
   TH2F *fPsiRingFlatFinalCentr[8]; //! Flatenned with corrections on cumulants and fourier VZERO event plane vs centrality (ring-by-ring)
-
-  TH2F *fPsiAC; //! Correlation between V0A and V0C event-plane angles
-  TH2F *fPsiACOrg; //! Correlation between V0A and V0C event-plane angles with all weight equal 1
+  TH2F *fPsiARawCentr; //! Raw VZEROA event plane vs centrality
+  TH2F *fPsiAFlatCentr; //! Flatenned with corrections on cumulants VZEROA event plane vs centrality 
+  TH2F *fPsiCRawCentr; //! Raw VZEROC event plane vs centrality
+  TH2F *fPsiCFlatCentr; //! Flatenned with corrections on cumulants VZEROC event plane vs centrality 
+  TH2F *fPsiACRawCentr; //! Raw VZERO event plane vs centrality
+  TH2F *fPsiACFlatCentr; //! Flatenned with corrections on cumulants VZERO event plane vs centrality 
 
   AliAnaVZEROEPFlatenning(const AliAnaVZEROEPFlatenning&); // not implemented
   AliAnaVZEROEPFlatenning& operator=(const AliAnaVZEROEPFlatenning&); // not implemented
