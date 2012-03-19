@@ -283,11 +283,25 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
      UInt_t entries = 0; // bit coded, see GetDimParams() below 
      entries = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 |1<<7; 
      fhnDeltaR = NewTHnSparseF("fhnDeltaR", entries);
+
+     Double_t *xPt3 = new Double_t[15];
+     xPt3[0] = 0.;
+     for(int i = 1; i<=14;i++){
+      if(xPt3[i-1]<1)xPt3[i] = xPt3[i-1] + 0.2; // 1 - 5
+      else if(xPt3[i-1]<15)xPt3[i] = xPt3[i-1] + 2; // 5 - 12
+      else xPt3[i] = xPt3[i-1] + 50.; // 18 
+     }
+    fhnDeltaR->SetBinEdges(2,xPt3);
+    delete [] xPt3;
+
+
+
+
    
-    
+     if(fDoEventMixing){    
      UInt_t cifras = 0; // bit coded, see GetDimParams() below 
      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 |1<<7; 
-     fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
+     fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);}
 
     if(fCheckMethods){
 
@@ -568,6 +582,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	       AliVParticle *partback = (AliVParticle*)ParticleList.At(point);                            
                if(!partback) continue; 
         	   fh3spectriggered->Fill(centValue,ptcorr,partback->Pt());
+		   if(partback->Pt()<6.) continue;
                        AliAODTrack* leadtrack; 
                        Int_t ippt=0;
                        Double_t ppt=-10;   
@@ -991,7 +1006,7 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
       
    case 1:
       label = "corrected jet pt";
-         nbins = 50;
+         nbins = 20;
          xmin = 0.;
          xmax = 200.;
           break;
@@ -1000,9 +1015,9 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
    case 2:
       label = "track pT";
      
-         nbins = 1000;
+         nbins = 14;
          xmin = 0.;
-         xmax = 50;
+         xmax = 150;
          break;
       
       
@@ -1034,15 +1049,15 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
         
     case 6:
       label = "leading track";
-      nbins = 50;
+      nbins = 10;
       xmin = 0;
-      xmax = 50;
+      xmax = 10;
       break;
            
      case 7:
     
       label = "trigger track";
-      nbins =50;
+      nbins =5;
       xmin = 0;
       xmax = 50;
       break;
