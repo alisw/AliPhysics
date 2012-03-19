@@ -347,6 +347,10 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDSD",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
   }
   if(fGoodEvent){
+    FillHisto1D("RecoPiKPEtFullAcceptanceTPC",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoPiKPEtFullAcceptanceITS",GetCorrectedPiKPEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoPiKPEtFullAcceptanceTPCNoPID",GetCorrectedPiKPEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoPiKPEtFullAcceptanceITSNoPID",GetCorrectedPiKPEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingPion",GetCorrectedHadEtFullAcceptanceTPCAssumingPion(),1.0);
@@ -641,6 +645,8 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
+  Float_t minEtPiKP = 0.0;
+  Float_t maxEtPiKP = 50.0;
   if(fDataSet==20100) maxEt=4000.0;
   Int_t nbinsEt = 200;
   char histoname[200];
@@ -715,16 +721,22 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
 
 
+
+	  snprintf(histoname,200,"Reco%s%sAcceptance%s%s",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	  snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	  snprintf(xtitle,50,"Reconstructed %s",sPiKPEtString->Data());
+	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);
+
 	    snprintf(xtitle,50,"Reconstructed %s",sPiKPEt->Data());
 	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sND",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	    snprintf(histotitle,200,"Reconstructed non-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);
 	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sDD",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	    snprintf(histotitle,200,"Reconstructed doubly-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);
 	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sSD",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	    snprintf(histotitle,200,"Reconstructed singly-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);//et
+	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);//et
 
 	  }
 	  if(fDataSet==20100 && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid

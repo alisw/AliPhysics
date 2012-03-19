@@ -1976,6 +1976,8 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
+  Float_t minEtPiKP = 0.0;
+  Float_t maxEtPiKP = 50.0;
   if(fDataSet==20100) maxEt=4000.0;
   Int_t nbinsEt = 100;
   char histoname[200];
@@ -2058,7 +2060,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	      snprintf(histotitle,200,"Simulated %s vs reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	      snprintf(ytitle,50,"Reconstructed %s",sPiKPEtString->Data());
 	      snprintf(xtitle,50,"Simulated %s",sPiKPEtString->Data());
-	      CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt*4,minEt,maxEt,nbinsEt*4,minEt,maxEt);
+	      CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt*4,minEtPiKP,maxEtPiKP,nbinsEt*4,minEtPiKP,maxEtPiKP);
 	    }
 	  }
 
@@ -2073,10 +2075,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
       }
     }
   }
-  CreateHisto1D("SimPiKPEt","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEt*4,maxEt*4);
-  CreateHisto1D("SimPiKPEtND","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEt*4,maxEt*4);
-  CreateHisto1D("SimPiKPEtDD","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEt*4,maxEt*4);
-  CreateHisto1D("SimPiKPEtSD","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEt*4,maxEt*4);
+  CreateHisto1D("SimPiKPEt","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimPiKPEtND","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimPiKPEtDD","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimPiKPEtSD","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
   CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtND","Simulated Total E_{T}","Simulated Total E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
