@@ -83,7 +83,7 @@ AliMUONAlignment::AliMUONAlignment()
     fTrackRecord(),
     fTransform(0)
 {
-
+  /// Default constructor	
   fSigma[0] = 1.5e-1;
   fSigma[1] = 1.0e-2;
 
@@ -141,6 +141,7 @@ fTransform(0)
     fTrackPos0[i] = 0;  
     fTrackPos[i] = 0;   
     fTrackPosLoc[i] = 0;
+	fDetElemPos[i] = 0;
   }
   fTrackSlope0[0]=0;	fTrackSlope0[1]=0;
   fTrackSlope[0]=0; 	fTrackSlope[1]=0;
@@ -150,7 +151,7 @@ fTransform(0)
     fLocalDerivatives[iLPar]=0;	
   }
   for (Int_t iGPar=0; iGPar<624; iGPar++) {
-    fLocalDerivatives[iGPar]=0;	
+    fGlobalDerivatives[iGPar]=0;	
   }
 }
 
@@ -773,7 +774,14 @@ void AliMUONAlignment::ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
 void AliMUONAlignment::ResetConstraints(){
   /// Reset all constraint equations
   for (Int_t i = 0; i < fgNDetElem; i++){
-    fConstraintX[i*fgNParCh+0]=0.0;
+	fConstraintX3[i*fgNParCh+0]=0.0; 
+	fConstraintY3[i*fgNParCh+0]=0.0; 
+	fConstraintX4[i*fgNParCh+0]=0.0; 
+	fConstraintY4[i*fgNParCh+0]=0.0; 
+	fConstraintP4[i*fgNParCh+0]=0.0; 
+	fConstraintX5[i*fgNParCh+0]=0.0; 
+	fConstraintY5[i*fgNParCh+0]=0.0; 
+	fConstraintX[i*fgNParCh+0]=0.0;
     fConstraintX[i*fgNParCh+1]=0.0;
     fConstraintX[i*fgNParCh+2]=0.0;
     fConstraintY[i*fgNParCh+0]=0.0;
@@ -1146,7 +1154,7 @@ void AliMUONAlignment::FillDetElemData()
 //_____________________________________________________
 AliMUONAlignmentTrackRecord* AliMUONAlignment::ProcessTrack( AliMUONTrack* track, Bool_t doAlignment )
 {
-
+  /// Process track and set Local Equations
   // store current track in running member.
   fTrack = track;
 
@@ -1227,7 +1235,7 @@ AliMUONAlignmentTrackRecord* AliMUONAlignment::ProcessTrack( AliMUONTrack* track
 //______________________________________________________________________________
 void AliMUONAlignment::ProcessTrack( AliMUONAlignmentTrackRecord* track, Bool_t doAlignment )
 {
-
+  /// Process track (from record) and set Local Equations
   if( !( track && doAlignment ) ) return;
 
   // loop over clusters

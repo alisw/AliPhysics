@@ -46,7 +46,7 @@ class AliMUONAlignment:public TObject
   AliMUONAlignmentTrackRecord* ProcessTrack(AliMUONTrack *track, Bool_t doAlignment );
 
   /// process track record
-  void ProcessTrack( AliMUONAlignmentTrackRecord*, Bool_t doAlignment = kTRUE );
+  void ProcessTrack( AliMUONAlignmentTrackRecord* track, Bool_t doAlignment = kTRUE );
 
   /// returns current track record
   AliMUONAlignmentTrackRecord* GetTrackRecord( void )
@@ -82,7 +82,7 @@ class AliMUONAlignment:public TObject
 
   void FixHalfSpectrometer(const Bool_t* bChOnOff, const Bool_t* bSpecLROnOff);
 
-  void AllowVariations( const Bool_t* );
+  void AllowVariations(const Bool_t* bChOnOff);
 
   void SetNonLinear(const Bool_t *bChOnOff, const Bool_t *bVarXYT);
 
@@ -155,46 +155,34 @@ class AliMUONAlignment:public TObject
   void LocalEquationY( Bool_t doAlignment = kTRUE );
 
   /// local equation using cluster alignment record
-  void LocalEquation( const AliMUONAlignmentClusterRecord& );
+  void LocalEquation( const AliMUONAlignmentClusterRecord& clusterRecord);
 
   TGeoCombiTrans ReAlign(const TGeoCombiTrans& transform, const double *detElemMisAlignment) const;
 
-  /// Flag for Magnetic filed On/Off
-  Bool_t fBFieldOn;
+  Bool_t fBFieldOn; ///< Flag for Magnetic filed On/Off
 
-  /// Flags for chamber On/Off
-  Bool_t fChOnOff[10];
+  Bool_t fChOnOff[10];  ///< Flags for chamber On/Off
 
-  /// Flags for left right On/Off
-  Bool_t fSpecLROnOff[2];
+  Bool_t fSpecLROnOff[2];  ///< Flags for left right On/Off
 
-  /// Flags degrees of freedom to align (x,y,phi)
-  Bool_t fDoF[4];
+  Bool_t fDoF[4];  ///< Flags degrees of freedom to align (x,y,phi)
 
-  /// "Encouraged" variation for degrees of freedom
-  Double_t fAllowVar[4];
+  Double_t fAllowVar[4];  ///< "Encouraged" variation for degrees of freedom
 
-  /// Initial value for chi2 cut
   /** if > 1 Iterations in AliMillepede are turned on */
-  Double_t fStartFac;
+  Double_t fStartFac;   ///< Initial value for chi2 cut
 
-  /// Cut on residual for first iteration
-  Double_t fResCutInitial;
+  Double_t fResCutInitial;  ///< Cut on residual for first iteration
 
-  /// Cut on residual for other iterations
-  Double_t fResCut;
+  Double_t fResCut;  ///< Cut on residual for other iterations
 
-  /// Detector independent alignment class
-  AliMillepede *fMillepede;
+  AliMillepede *fMillepede;   ///< Detector independent alignment class
 
-  /// AliMUONTrack
-  AliMUONTrack *fTrack;
+  AliMUONTrack *fTrack;   //!< AliMUONTrack
 
-  /// AliMUONVCluster
-  AliMUONVCluster *fCluster;
+  AliMUONVCluster *fCluster;  //!< AliMUONVCluster
 
-  ///< Track parameters
-  AliMUONTrackParam *fTrackParam;
+  AliMUONTrackParam *fTrackParam;  //!< Track parameters
 
   Int_t fNGlobal;  ///< Number of global parameters
   Int_t fNLocal;   ///< Number of local parameters
@@ -266,11 +254,9 @@ class AliMUONAlignment:public TObject
   Double_t fSinPhi;        ///< Sine of fPhi
   Double_t fDetElemPos[3]; ///< Position of detection element
 
-  /// running Track record
-  AliMUONAlignmentTrackRecord fTrackRecord;
+  AliMUONAlignmentTrackRecord fTrackRecord;  //!< running Track record
 
-  /// Geometry transformation
-  AliMUONGeometryTransformer *fTransform;
+  AliMUONGeometryTransformer *fTransform;  ///< Geometry transformation
 
   static Int_t fgNSt;            ///< Number tracking stations
   static Int_t fgNCh;            ///< Number tracking chambers
