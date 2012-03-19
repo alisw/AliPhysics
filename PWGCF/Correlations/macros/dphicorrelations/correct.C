@@ -546,7 +546,7 @@ void DrawExample(const char* fileName, const char* fileNamePbPbMix)
   gpTMin = 1.01;
   gpTMax = 1.99;
   
- loadlibs();
+  loadlibs();
   
   AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
   hMixed = (AliUEHistograms*) GetUEHistogram(fileNamePbPbMix, 0, kTRUE);
@@ -556,10 +556,15 @@ void DrawExample(const char* fileName, const char* fileNamePbPbMix)
 
   TH1* hist1 = 0;
   
-  GetDistAndFlow(h, 0, &hist1,  0, 6, 0,  20, 2.01, 3.99, 1, kTRUE, 0, kFALSE); 
+  GetDistAndFlow(h, hMixed, &hist1,  0, 0, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+/*  ((TH2*)hist1)->ProjectionY()->DrawCopy();
+  GetDistAndFlow(hMixed, 0, &hist1,  0, 0, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+  ((TH2*) hist1)->ProjectionY()->DrawCopy("SAME")->SetLineColor(2);
+
+  return;*/
   
-  ((TH2*) hist1)->Rebin2D(2, 2);
-  hist1->Scale(0.25);
+//   ((TH2*) hist1)->Rebin2D(2, 2);
+//   hist1->Scale(0.25);
   
   new TCanvas("c", "c", 800, 800);
   gPad->SetLeftMargin(0.15);
@@ -570,6 +575,18 @@ void DrawExample(const char* fileName, const char* fileNamePbPbMix)
   hist1->SetStats(kFALSE);
   hist1->Draw("SURF1");
   
+  return;
+  
+  GetSumOfRatios(h, hMixed, &hist1,  6, 60,  90, 8.01, 9.99, kTRUE); 
+  new TCanvas("c2", "c2", 800, 800);
+  gPad->SetLeftMargin(0.15);
+  hist1->SetTitle("");
+  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist1->GetXaxis()->SetTitleOffset(1.5);
+  hist1->GetYaxis()->SetTitleOffset(2);
+  hist1->SetStats(kFALSE);
+  hist1->Draw("SURF1");
+
   return;
   
   latex = new TLatex(0.82, 0.74, "ALICE performance");
@@ -5437,8 +5454,7 @@ void GetDistAndFlow(void* hVoid, void* hMixedVoid, TH1** hist, Float_t* v2, Int_
     {
       // No centrality, nor pT associated dep of the mixed event observed. Use a larger range to get more statistics
       
-      // TODO HACK. mixed event is not propagated to step0
-      Int_t stepMixed = 6;
+      Int_t stepMixed = step;
       
       Int_t cacheId = -1;
       
@@ -5472,8 +5488,7 @@ void GetDistAndFlow(void* hVoid, void* hMixedVoid, TH1** hist, Float_t* v2, Int_
     {
       // use same bin for mixing
       
-      // TODO HACK. mixed event is not propagated to step0
-      Int_t stepMixed = 6;
+      Int_t stepMixed = step;
       TH2* mixedTwoD = (TH2*) hMixed->GetUEHist(2)->GetUEHist(stepMixed, 0, ptBegin, ptEnd, centralityBeginBin, centralityEndBin, 1, kFALSE);
     }
     
@@ -6254,11 +6269,12 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
   
   Int_t leadingPtOffset = 1;
     
-  Int_t maxLeadingPt = 5;
-  Int_t maxAssocPt = 6;
+  Int_t maxLeadingPt = 3;
+  Int_t maxAssocPt = 7;
   if (1)
   {
-    Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
+//     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
+    Float_t leadingPtArr[] = { 2.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
   else
@@ -6301,6 +6317,8 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       TH1* hist2 = 0;
       TH1* hist3 = 0;
       TH1* hist4 = 0;
+      TH1* hist5 = 0;
+      TH1* hist6 = 0;
       
       Bool_t equivMixedBin = 1; //kFALSE; // TODO ?
       Bool_t scaleToPairs = kTRUE;
@@ -6310,7 +6328,9 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       if (1)
       {
 	GetSumOfRatios(h, hMixed, &hist1,  step, 0,  5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist5,  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist4,  step, 20,  30, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist6,  step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist2,  step, 60,  90, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
       }
@@ -6345,6 +6365,18 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 	hist4->Write();
       }
 
+      if (hist5)
+      {
+	hist5->SetName(Form("dphi_%d_%d_%d", i, j, 4));
+	hist5->Write();
+      }
+      
+      if (hist6)
+      {
+	hist6->SetName(Form("dphi_%d_%d_%d", i, j, 5));
+	hist6->Write();
+      }
+      
       if (hist3)
       {
 	hist3->SetName(Form("dphi_%d_%d_%d", i, j, 2));
@@ -11264,4 +11296,90 @@ void GaussToyFit2()
 
   new TCanvas;
   hist->ProjectionY()->Fit("gaus");
+}
+
+void AcceptanceToy()
+{
+  // study a la Jan Rak presented in Corr PAG on 06.03.12
+  
+  hist = new TH1F("hist", "", 200, -1.5, 1.5);
+  
+  Float_t sigma = 0.3;
+  for (Int_t i=0; i<1000000; i++)
+  {
+    // randomize mean
+    Float_t mean = gRandom->Uniform(-5, 5);
+    
+    Float_t trig = gRandom->Gaus(mean, sigma);
+    Float_t assoc = gRandom->Gaus(mean, sigma);
+    
+//     Float_t trig = gRandom->Uniform(-5, 5);
+//     Float_t assoc = gRandom->Uniform(-5, 5);
+
+/*    if (trig < 0 && assoc < trig)
+      continue;
+    if (trig > 0 && assoc > trig)
+      continue;*/
+    
+    if (TMath::Abs(trig) < 1 && TMath::Abs(assoc) < 1)
+//       hist->Fill(trig - assoc);
+      hist->Fill(trig - assoc, 1.0 / (1.0 - TMath::Abs(trig-assoc) / 2));
+  }
+  
+  hist->Draw();
+  hist->Fit("gaus", "", "", -1.5, 1.5);
+  Printf("%f %f %f", sigma, hist->GetFunction("gaus")->GetParameter(2), hist->GetFunction("gaus")->GetParameter(2) / TMath::Sqrt(2));
+  hist->GetFunction("gaus")->SetLineColor(2);
+}
+
+void DrawEfficiency(const char* fileName, Int_t step1, Int_t step2)
+{
+  gpTMin = 1.01;
+  gpTMax = 1.99;
+  
+  loadlibs();
+  
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);
+  
+  SetupRanges(h);
+  SetupRanges(hMixed);
+
+  TH1* hist1 = 0;
+  TH1* hist2 = 0;
+  
+  GetDistAndFlow(h, hMixed, &hist1,  0, step1, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+  GetDistAndFlow(h, hMixed, &hist2,  0, step2, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+  
+  ((TH2*)hist1)->Rebin2D(2, 2);
+  ((TH2*)hist2)->Rebin2D(2, 2);
+  
+  new TCanvas("c", "c", 800, 800);
+  gPad->SetLeftMargin(0.15);
+  hist1->SetTitle("");
+  hist1->GetYaxis()->SetRangeUser(-1.39, 1.39);
+  hist1->GetXaxis()->SetTitleOffset(1.5);
+  hist1->GetYaxis()->SetTitleOffset(2);
+  hist1->SetStats(kFALSE);
+  hist1->DrawCopy("SURF1");
+  
+  new TCanvas("c2", "c2", 800, 800);
+  gPad->SetLeftMargin(0.15);
+  hist2->SetTitle("");
+  hist2->GetYaxis()->SetRangeUser(-1.39, 1.39);
+  hist2->GetXaxis()->SetTitleOffset(1.5);
+  hist2->GetYaxis()->SetTitleOffset(2);
+  hist2->SetStats(kFALSE);
+  hist2->DrawCopy("SURF1");
+  
+  hist2->Divide(hist1);
+
+  new TCanvas("c3", "c3", 800, 800);
+  gPad->SetLeftMargin(0.15);
+  hist2->SetTitle("");
+  hist2->GetYaxis()->SetRangeUser(-1.39, 1.39);
+  hist2->GetXaxis()->SetTitleOffset(1.5);
+  hist2->GetYaxis()->SetTitleOffset(2);
+  hist2->SetStats(kFALSE);
+  hist2->Draw("SURF1");
 }
