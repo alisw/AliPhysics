@@ -60,19 +60,17 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fHistWOffsetSingleMuons(0x0),
   fHistErrorSingleMuonsX(0x0),
   fHistErrorSingleMuonsY(0x0),
-  fHistOffsetSingleMuonsX_vsPtRapidity(0x0),
-  fHistOffsetSingleMuonsY_vsPtRapidity(0x0),
   fHistSingleMuonsPtRapidity(0x0),
   fHistSingleMuonsOffsetChi2(0x0),
-  fHistWOffsetMuonPairs(0x0),
-  fHistMassMuonPairs(0x0),
-  fHistMassMuonPairsWithoutMFT(0x0),
-  fHistMassMuonPairsMC(0x0),
-  fHistRapidityPtMuonPairsMC(0x0),
   fGraphSingleMuonsOffsetChi2(0x0),
-  fNMassBins(1000),
+  fHistRapidityPtMuonPairsMC(0x0),
+  fNMassBins(10),
+  fNPtDimuBins(1000),
   fMassMin(0),
   fMassMax(10),
+  fPtDimuMin(0),
+  fPtDimuMax(5),
+  fPtAxisDimuons(0),
   fSingleMuonAnalysis(1),
   fMuonPairAnalysis(1),
   fMatchTrigger(0),
@@ -97,11 +95,11 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
 
   // default constructor
 
-  for (Int_t rapBin=0; rapBin<fNRapBinsOffsetSingleMuons; rapBin++) {
-    for (Int_t ptBin=0; ptBin<fNPtBinsOffsetSingleMuons; ptBin++) {
-      fHistOffsetSingleMuonsX_tmp[rapBin][ptBin] = 0x0;
-      fHistOffsetSingleMuonsY_tmp[rapBin][ptBin] = 0x0;
-    }
+  for (Int_t iPtBin=0; iPtBin<fNMaxPtBinsDimuons+1; iPtBin++) {
+    fHistWOffsetMuonPairs[iPtBin]        = NULL;
+    fHistMassMuonPairs[iPtBin]           = NULL;
+    fHistMassMuonPairsWithoutMFT[iPtBin] = NULL;
+    fHistMassMuonPairsMC[iPtBin]         = NULL;
   }
 
 }
@@ -109,6 +107,8 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
 //====================================================================================================================================================
 
 Bool_t AliMuonForwardTrackAnalysis::Init(Char_t *inputFileName) {
+
+  fPtAxisDimuons = new TAxis(fNPtDimuBins, fPtDimuMin, fPtDimuMax);
 
   BookHistos();
 
@@ -242,13 +242,7 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
 
   fHistOffsetSingleMuonsX -> Fill(1.e4*dX);
   fHistOffsetSingleMuonsY -> Fill(1.e4*dY);
-  Int_t rapBin = fHistOffsetSingleMuonsX_vsPtRapidity->GetXaxis()->FindBin(pMu.Rapidity());
-  Int_t ptBin  = fHistOffsetSingleMuonsX_vsPtRapidity->GetYaxis()->FindBin(pMu.Pt());
-  //  AliDebug(1, Form("pt = %f (%d), rap = %f (%d)\n", pMu.Pt(), pMu.Rapidity(), ptBin, rapBin));
-  if (0<rapBin && rapBin<=fNRapBinsOffsetSingleMuons && 0<ptBin && ptBin<=fNPtBinsOffsetSingleMuons) {
-    fHistOffsetSingleMuonsX_tmp[rapBin-1][ptBin-1]->Fill(1.e4*dX);
-    fHistOffsetSingleMuonsY_tmp[rapBin-1][ptBin-1]->Fill(1.e4*dY);
-  }
+
   fHistSingleMuonsPtRapidity  -> Fill(pMu.Rapidity(), pMu.Pt());
   fHistOffsetSingleMuons      -> Fill(1.e4*offset);
   fHistWOffsetSingleMuons     -> Fill(weightedOffset);
@@ -287,11 +281,20 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair() {
 
   if (fOption==kResonanceOnly && !fMFTTrackPair->IsResonance()) return kTRUE;
 
-  fHistMassMuonPairs           -> Fill(fMFTTrackPair->GetMass(fPrimaryVtxZ));
-  fHistWOffsetMuonPairs        -> Fill(fMFTTrackPair->GetWeightedOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
-  fHistMassMuonPairsWithoutMFT -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
-  fHistMassMuonPairsMC         -> Fill(fMFTTrackPair->GetMassMC());
-  fHistRapidityPtMuonPairsMC   -> Fill(fMFTTrackPair->GetRapidityMC(), fMFTTrackPair->GetPtMC());
+  Int_t ptBin = fPtAxisDimuons->FindBin(fMFTTrackPair->GetPtMC());
+
+  if (1<=ptBin && ptBin<=fNPtDimuBins) {
+    fHistMassMuonPairs[ptBin]           -> Fill(fMFTTrackPair->GetMass(fPrimaryVtxZ));
+    fHistWOffsetMuonPairs[ptBin]        -> Fill(fMFTTrackPair->GetWeightedOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
+    fHistMassMuonPairsWithoutMFT[ptBin] -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
+    fHistMassMuonPairsMC[ptBin]         -> Fill(fMFTTrackPair->GetMassMC());
+  }
+  fHistMassMuonPairs[0]           -> Fill(fMFTTrackPair->GetMass(fPrimaryVtxZ));
+  fHistWOffsetMuonPairs[0]        -> Fill(fMFTTrackPair->GetWeightedOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
+  fHistMassMuonPairsWithoutMFT[0] -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ));
+  fHistMassMuonPairsMC[0]         -> Fill(fMFTTrackPair->GetMassMC());
+
+  fHistRapidityPtMuonPairsMC          -> Fill(fMFTTrackPair->GetRapidityMC(), fMFTTrackPair->GetPtMC());
 
   AliDebug(1, Form("mass = %f   MC = %f", fMFTTrackPair->GetMass(fPrimaryVtxZ), fMFTTrackPair->GetMassMC()));
 
@@ -365,25 +368,6 @@ Bool_t AliMuonForwardTrackAnalysis::PassedCutMuonPair(AliMuonForwardTrackPair *p
 
 void AliMuonForwardTrackAnalysis::Terminate(Char_t *outputFileName) {
 
-  for (Int_t rapBin=0; rapBin<fNRapBinsOffsetSingleMuons; rapBin++) {
-    for (Int_t ptBin=0; ptBin<fNPtBinsOffsetSingleMuons; ptBin++) {
-      Int_t binMin_x = fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->FindBin(-3*fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->GetRMS());
-      Int_t binMax_x = fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->FindBin(+3*fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->GetRMS());
-      for (Int_t bin=1; bin<=fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->GetNbinsX(); bin++) {
-	if (bin<binMin_x || bin>binMax_x) fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->SetBinContent(bin, 0);
-      }
-      Int_t binMin_y = fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->FindBin(-3*fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->GetRMS());
-      Int_t binMax_y = fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->FindBin(+3*fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->GetRMS());
-      for (Int_t bin=1; bin<=fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->GetNbinsX(); bin++) {
-	if (bin<binMin_y || bin>binMax_y) fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->SetBinContent(bin, 0);
-      }
-      fHistOffsetSingleMuonsX_vsPtRapidity->SetBinContent(rapBin+1, ptBin+1, fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->GetRMS());
-      fHistOffsetSingleMuonsX_vsPtRapidity->SetBinError(rapBin+1, ptBin+1, fHistOffsetSingleMuonsX_tmp[rapBin][ptBin]->GetRMSError());
-      fHistOffsetSingleMuonsY_vsPtRapidity->SetBinContent(rapBin+1, ptBin+1, fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->GetRMS());
-      fHistOffsetSingleMuonsY_vsPtRapidity->SetBinError(rapBin+1, ptBin+1, fHistOffsetSingleMuonsY_tmp[rapBin][ptBin]->GetRMSError());
-    }
-  }
-
   TFile *fileOut = new TFile(Form("%s/%s",fOutputDir.Data(),outputFileName), "recreate");
 
   printf("Writing output objects to file %s\n", fileOut->GetName());
@@ -395,26 +379,19 @@ void AliMuonForwardTrackAnalysis::Terminate(Char_t *outputFileName) {
   fHistErrorSingleMuonsX  -> Write();
   fHistErrorSingleMuonsY  -> Write();
 
-  fHistOffsetSingleMuonsX_vsPtRapidity -> Write();
-  fHistOffsetSingleMuonsY_vsPtRapidity -> Write();
-
-//   for (Int_t rapBin=0; rapBin<fNRapBinsOffsetSingleMuons; rapBin++) {
-//     for (Int_t ptBin=0; ptBin<fNPtBinsOffsetSingleMuons; ptBin++) {
-//       fHistOffsetSingleMuonsX_tmp[rapBin][ptBin] -> Write();
-//       fHistOffsetSingleMuonsY_tmp[rapBin][ptBin] -> Write();
-//     }
-//   }
-
   fHistSingleMuonsPtRapidity -> Write();
   fHistSingleMuonsOffsetChi2 -> Write();
 
   fGraphSingleMuonsOffsetChi2 -> Write();
 
-  fHistWOffsetMuonPairs        -> Write();
-  fHistMassMuonPairs	       -> Write();
-  fHistMassMuonPairsWithoutMFT -> Write();
-  fHistMassMuonPairsMC         -> Write();
-  fHistRapidityPtMuonPairsMC   -> Write();
+  for (Int_t iPtBin=0; iPtBin<fNPtDimuBins+1; iPtBin++) {
+    fHistWOffsetMuonPairs[iPtBin]        -> Write();
+    fHistMassMuonPairs[iPtBin]           -> Write();
+    fHistMassMuonPairsWithoutMFT[iPtBin] -> Write();
+    fHistMassMuonPairsMC[iPtBin]         -> Write();
+  }
+
+  fHistRapidityPtMuonPairsMC -> Write();
 
   fileOut -> Close();
 
@@ -431,18 +408,6 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   fHistOffsetSingleMuons  = new TH1D("fHistOffsetSingleMuons",  "Offset for single muons",          200, 0, 2000);
   fHistWOffsetSingleMuons = new TH1D("fHistWOffsetSingleMuons", "Weighted Offset for single muons", 300, 0, 15);  
 
-  fHistOffsetSingleMuonsX_vsPtRapidity = new TH2D("fHistOffsetSingleMuonsX_vsPtRapidity", "Offset for single muons along X", 
-						  10, -4, -2.5, 10, 0.5, 5.5);
-  fHistOffsetSingleMuonsY_vsPtRapidity = new TH2D("fHistOffsetSingleMuonsY_vsPtRapidity", "Offset for single muons along Y", 
-						  10, -4, -2.5, 10, 0.5, 5.5);
-
-  for (Int_t rapBin=0; rapBin<fNRapBinsOffsetSingleMuons; rapBin++) {
-    for (Int_t ptBin=0; ptBin<fNPtBinsOffsetSingleMuons; ptBin++) {
-      fHistOffsetSingleMuonsX_tmp[rapBin][ptBin] = new TH1D(Form("fHistOffsetSingleMuonsX_tmp_%02d_%02d",rapBin,ptBin), "",  1000, -1000, 1000);
-      fHistOffsetSingleMuonsY_tmp[rapBin][ptBin] = new TH1D(Form("fHistOffsetSingleMuonsY_tmp_%02d_%02d",rapBin,ptBin), "",  1000, -1000, 1000);
-    }
-  }
-
   fHistSingleMuonsPtRapidity = new TH2D("fHistSingleMuonsPtRapidity", "Phase Space for single muons", 10, -4, -2.5, 10, 0.5, 5.5);
   fHistSingleMuonsOffsetChi2 = new TH2D("fHistSingleMuonsOffsetChi2", "Offset vs #chi^{2}/ndf for single muons", 400, 0, 4000, 100, 0, 20);
 
@@ -452,11 +417,6 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   fHistErrorSingleMuonsY  -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
   fHistOffsetSingleMuons  -> SetXTitle("Offset  [#mum]");
   fHistWOffsetSingleMuons -> SetXTitle("Weighted Offset");
-
-  fHistOffsetSingleMuonsX_vsPtRapidity -> SetXTitle("y^{#mu}");
-  fHistOffsetSingleMuonsY_vsPtRapidity -> SetXTitle("y^{#mu}");
-  fHistOffsetSingleMuonsX_vsPtRapidity -> SetYTitle("p_{T}^{#mu}  [GeV/c]");
-  fHistOffsetSingleMuonsY_vsPtRapidity -> SetYTitle("p_{T}^{#mu}  [GeV/c]");
 
   fHistSingleMuonsPtRapidity -> SetXTitle("y^{#mu}");
   fHistSingleMuonsPtRapidity -> SetYTitle("p_{T}^{#mu}  [GeV/c]");
@@ -470,10 +430,8 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   fHistOffsetSingleMuons  -> Sumw2();
   fHistWOffsetSingleMuons -> Sumw2();
 
-  fHistOffsetSingleMuonsX_vsPtRapidity -> Sumw2();
-  fHistOffsetSingleMuonsY_vsPtRapidity -> Sumw2();
-  fHistSingleMuonsPtRapidity           -> Sumw2();
-  fHistSingleMuonsOffsetChi2           -> Sumw2();
+  fHistSingleMuonsPtRapidity -> Sumw2();
+  fHistSingleMuonsOffsetChi2 -> Sumw2();
     
   //--------------------------------------------
 
@@ -483,23 +441,55 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
 
   //--------------------------------------------
 
-  fHistWOffsetMuonPairs        = new TH1D("fHistWOffsetMuonPairs",        "Weighted Offset for Muon Pairs", 300, 0, 60);
-  fHistMassMuonPairs	       = new TH1D("fHistMassMuonPairs",           "Dimuon Mass (MUON+MFT)",  fNMassBins, fMassMin, fMassMax);
-  fHistMassMuonPairsWithoutMFT = new TH1D("fHistMassMuonPairsWithoutMFT", "Dimuon Mass (MUON only)", fNMassBins, fMassMin, fMassMax);
-  fHistMassMuonPairsMC         = new TH1D("fHistMassMuonPairsMC",         "Dimuon Mass (MC)",        fNMassBins, fMassMin, fMassMax);
-  fHistRapidityPtMuonPairsMC   = new TH2D("fHistRapidityPtMuonPairsMC",   "Dimuon Phase Space (MC)", 100, -4.5, -2., 100, 0., 10.); 
+  for (Int_t iPtBin=0; iPtBin<=fNPtDimuBins+1; iPtBin++) {
 
-  fHistWOffsetMuonPairs        -> SetXTitle("Weighted Offset");
-  fHistMassMuonPairs	       -> SetXTitle("Mass  [GeV/c^{2}]");
-  fHistMassMuonPairsWithoutMFT -> SetXTitle("Mass  [GeV/c^{2}]");
-  fHistMassMuonPairsMC         -> SetXTitle("Mass  [GeV/c^{2}]");
+    if (!iPtBin) {
+      fHistWOffsetMuonPairs[iPtBin]        = new TH1D(Form("fHistWOffsetMuonPairs_%d",iPtBin),        
+						      "Weighted Offset for Muon Pairs (All p_{T}^{#mu#mu})",
+						      300, 0, 60);
+      fHistMassMuonPairs[iPtBin]	   = new TH1D(Form("fHistMassMuonPairs_%d",iPtBin),           
+						      "Dimuon Mass (MUON+MFT) (All p_{T}^{#mu#mu})",
+						      fNMassBins, fMassMin, fMassMax);
+      fHistMassMuonPairsWithoutMFT[iPtBin] = new TH1D(Form("fHistMassMuonPairsWithoutMFT_%d",iPtBin), 
+						      "Dimuon Mass (MUON only) (All p_{T}^{#mu#mu})",
+						      fNMassBins, fMassMin, fMassMax);
+      fHistMassMuonPairsMC[iPtBin]         = new TH1D(Form("fHistMassMuonPairsMC_%d",iPtBin),         
+						      "Dimuon Mass (MC) (All p_{T}^{#mu#mu})",
+						      fNMassBins, fMassMin, fMassMax);
+    }
+
+    else {
+      Double_t ptMin = fPtAxisDimuons->GetBinLowEdge(iPtBin);
+      Double_t ptMax = fPtAxisDimuons->GetBinUpEdge(iPtBin);
+      fHistWOffsetMuonPairs[iPtBin]        = new TH1D(Form("fHistWOffsetMuonPairs_%d",iPtBin),        
+						      Form("Weighted Offset for Muon Pairs ( %3.1f < p_{T}^{#mu#mu} < %3.1f GeV/c)",ptMin,ptMax), 
+						      300, 0, 60);
+      fHistMassMuonPairs[iPtBin]	   = new TH1D(Form("fHistMassMuonPairs_%d",iPtBin),           
+						      Form("Dimuon Mass (MUON+MFT) (%3.1f < p_{T}^{#mu#mu} < %3.1f GeV/c)",ptMin,ptMax), 
+						      fNMassBins, fMassMin, fMassMax);
+      fHistMassMuonPairsWithoutMFT[iPtBin] = new TH1D(Form("fHistMassMuonPairsWithoutMFT_%d",iPtBin), 
+						      Form("Dimuon Mass (MUON only) (%3.1f < p_{T}^{#mu#mu} < %3.1f GeV/c)",ptMin,ptMax), 
+						      fNMassBins, fMassMin, fMassMax);
+      fHistMassMuonPairsMC[iPtBin]         = new TH1D(Form("fHistMassMuonPairsMC_%d",iPtBin),         
+						      Form("Dimuon Mass (MC) (%3.1f < p_{T}^{#mu#mu} < %3.1f GeV/c)",ptMin,ptMax), 
+						      fNMassBins, fMassMin, fMassMax);      
+    }
+    
+    fHistWOffsetMuonPairs[iPtBin]        -> SetXTitle("Weighted Offset");
+    fHistMassMuonPairs[iPtBin]           -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistMassMuonPairsWithoutMFT[iPtBin] -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistMassMuonPairsMC[iPtBin]         -> SetXTitle("Mass  [GeV/c^{2}]");    
+
+    fHistWOffsetMuonPairs[iPtBin]        -> Sumw2();
+    fHistMassMuonPairs[iPtBin]           -> Sumw2();
+    fHistMassMuonPairsWithoutMFT[iPtBin] -> Sumw2();
+    fHistMassMuonPairsMC[iPtBin]         -> Sumw2();    
+
+  }
+  
+  fHistRapidityPtMuonPairsMC   = new TH2D("fHistRapidityPtMuonPairsMC", "Dimuon Phase Space (MC)", 100, -4.5, -2., 100, 0., 10.); 
   fHistRapidityPtMuonPairsMC   -> SetXTitle("Rapidity");
   fHistRapidityPtMuonPairsMC   -> SetYTitle("p_{T}  [GeV/c]");
-
-  fHistWOffsetMuonPairs        -> Sumw2();
-  fHistMassMuonPairs	       -> Sumw2();
-  fHistMassMuonPairsWithoutMFT -> Sumw2();
-  fHistMassMuonPairsMC         -> Sumw2();
   fHistRapidityPtMuonPairsMC   -> Sumw2();
 
 }

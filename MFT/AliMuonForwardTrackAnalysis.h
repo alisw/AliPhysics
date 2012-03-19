@@ -23,6 +23,7 @@
 #include "AliMUONTrackExtrap.h"
 #include "TDatabasePDG.h"
 #include "TGraph.h"
+#include "TAxis.h"
 
 //====================================================================================================================================================
 
@@ -48,6 +49,7 @@ public:
   Int_t GetNTracksAnalyzed() { return fNTracksAnalyzed; }
 
   void SetMassRange(Int_t nBins, Double_t min, Double_t max) { fNMassBins=nBins; fMassMin=min; fMassMax=max; }
+  void SetPtDimuRange(Int_t nBins, Double_t min, Double_t max) { fNPtDimuBins=TMath::Min(nBins,fNMaxPtBinsDimuons) ; fPtDimuMin=min; fPtDimuMax=max; }
   void SetSingleMuonAnalysis(Bool_t singleMuonAnalysis) { fSingleMuonAnalysis = singleMuonAnalysis; }
   void SetMuonPairAnalysis(Bool_t muonPairAnalysis) { fMuonPairAnalysis = muonPairAnalysis; }
   void SetMatchTrigger(Bool_t matchTrigger) { fMatchTrigger = matchTrigger; }
@@ -75,8 +77,7 @@ public:
 
 private:
 
-  static const Int_t fNPtBinsOffsetSingleMuons  = 10;
-  static const Int_t fNRapBinsOffsetSingleMuons = 10;
+  static const Int_t fNMaxPtBinsDimuons = 50;
 
   TString fInputDir, fOutputDir;
 
@@ -92,17 +93,18 @@ private:
   
   TH1D *fHistOffsetSingleMuonsX, *fHistOffsetSingleMuonsY, *fHistOffsetSingleMuons, *fHistWOffsetSingleMuons;      //!
   TH1D *fHistErrorSingleMuonsX, *fHistErrorSingleMuonsY;                                                           //!
-  TH2D *fHistOffsetSingleMuonsX_vsPtRapidity, *fHistOffsetSingleMuonsY_vsPtRapidity, *fHistSingleMuonsPtRapidity;  //!
-  TH1D *fHistOffsetSingleMuonsX_tmp[fNRapBinsOffsetSingleMuons][fNPtBinsOffsetSingleMuons];			   //!
-  TH1D *fHistOffsetSingleMuonsY_tmp[fNRapBinsOffsetSingleMuons][fNPtBinsOffsetSingleMuons];			   //!
-  TH2D *fHistSingleMuonsOffsetChi2;                                                                                //!
-  TH1D *fHistWOffsetMuonPairs, *fHistMassMuonPairs, *fHistMassMuonPairsWithoutMFT, *fHistMassMuonPairsMC;          //!
-  TH2D *fHistRapidityPtMuonPairsMC;
- 
-  TGraph *fGraphSingleMuonsOffsetChi2;     //!
+  TH2D *fHistSingleMuonsPtRapidity, *fHistSingleMuonsOffsetChi2;                                                   //!
+  TGraph *fGraphSingleMuonsOffsetChi2;                                                                             //!
 
-  Int_t fNMassBins;
-  Double_t fMassMin, fMassMax;
+  TH1D *fHistWOffsetMuonPairs[fNMaxPtBinsDimuons+1];          //!
+  TH1D *fHistMassMuonPairs[fNMaxPtBinsDimuons+1];             //!
+  TH1D *fHistMassMuonPairsWithoutMFT[fNMaxPtBinsDimuons+1];   //!
+  TH1D *fHistMassMuonPairsMC[fNMaxPtBinsDimuons+1];           //!
+  TH2D *fHistRapidityPtMuonPairsMC;                           //!
+ 
+  Int_t fNMassBins, fNPtDimuBins;
+  Double_t fMassMin, fMassMax, fPtDimuMin, fPtDimuMax;
+  TAxis *fPtAxisDimuons;
 
   Bool_t fSingleMuonAnalysis, fMuonPairAnalysis, fMatchTrigger;
   Int_t fOption;

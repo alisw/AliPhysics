@@ -29,6 +29,7 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
   myAnalysis->SetInputDir(readDir);
   myAnalysis->SetOutputDir(outDir);
   myAnalysis->SetMassRange(nMassBin, massMin, massMax);
+  myAnalysis->SetPtDimuRange(6, 0., 3.);
   myAnalysis->SetSingleMuonAnalysis(singleMuonAnalysis);
   myAnalysis->SetMuonPairAnalysis(muonPairAnalysis);
   myAnalysis->SetOption(option);
