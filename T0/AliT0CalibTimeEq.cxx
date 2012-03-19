@@ -161,7 +161,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  }
 	  if(cfd) {
 	    nent = Int_t(cfd->GetEntries());
-	    if( nent<=50) {
+	    if( nent<=500) {
 	      okdiff++;
 	      //	      printf(" pmt %i nent %i cfd->GetRMS() %f cfd->GetMean() %f \n",
 	      //     i, nent, cfd->GetRMS(), cfd->GetMean() );
@@ -193,7 +193,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  
 	  if(cfdtime) {
 	    nent = Int_t(cfdtime->GetEntries());
-	    if( nent<=50 ) {
+	    if( nent<=500 ) {
 	      oktime++;
 	      if(oktime<4) {
 		meancfdtime = 0;
@@ -204,7 +204,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		  ok = false; 
 		}
 	    }
-	    if(nent > 50  )  { //!!!!!!!!!!
+	    if(nent > 500  )  { //!!!!!!!!!!
 	      if(cfdtime->GetRMS()>1.5 )
 		GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
 	      if(cfdtime->GetRMS()<=1.5) 
@@ -369,7 +369,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 		}
 	      
 		  
-	      if(nent<100 && nent>0 ) 
+	      if(nent<500 && nent>0 ) 
 		{
 		AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
 		if(okcfd<4) {
@@ -388,7 +388,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 
 	      }
 
-	      if( nent>100 && cfdtime->GetRMS() != 0 )    { //!!!!!
+	      if( nent>500 && cfdtime->GetRMS() != 0 )    { //!!!!!
 		if(cfdtime->GetRMS()>1.5 )
 		  GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
 		if(cfdtime->GetRMS()<=1.5) 
@@ -419,17 +419,17 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 //________________________________________________________________________
 void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
   
-  const double window = 2.;  //fit window 
+  const double window = 5.;  //fit window 
   
   double meanEstimate, sigmaEstimate; 
   int maxBin;
   maxBin        =  hist->GetMaximumBin(); //position of maximum
   meanEstimate  =  hist->GetBinCenter( maxBin); // mean of gaussian sitting in maximum
-  // sigmaEstimate = hist->GetRMS();
-  sigmaEstimate = 10;
+  sigmaEstimate = hist->GetRMS();
+  // sigmaEstimate = 10;
   TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
   fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
-  hist->Fit("fit","RQ","Q");
+  hist->Fit("fit","R","");
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
