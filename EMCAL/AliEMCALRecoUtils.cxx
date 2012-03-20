@@ -1040,8 +1040,7 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
   AliDebug(2,"AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()");
   //In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-  
+
   fEMCALBadChannelMap = new TObjArray(12);
   //TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
   for (int i = 0; i < 12; i++) 
@@ -1115,52 +1114,21 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
     }
   }
 	
+  AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Energy before %f, after %f \n",cluster->E(),energy));
+
   cluster->SetE(energy);
 
-  AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Energy before %f, after %f\n",cluster->E(),energy));
-
-  // Recalculate time of cluster only for ESDs
-  if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName()))) 
+  // Recalculate time of cluster   
+  Double_t timeorg = cluster->GetTOF();
+  if(!fCellsRecalibrated && IsTimeRecalibrationOn())
   {
-    // Time
-    Double_t weightedTime = 0;
-    Double_t weight       = 0;
-    Double_t weightTot    = 0;
-    Double_t maxcellTime  = 0;
-    for(Int_t icell = 0; icell < ncells; icell++)
-    {
-      absId = index[icell];
-      frac =  fraction[icell];
-      if(frac < 1e-5) frac = 1; //in case of EMCAL, this is set as 0 since unfolding is off
+    Double_t time = timeorg;
+    RecalibrateCellTime(absIdMax,bc,time);
+    cluster->SetTOF(time);
+  } 
 
-      Double_t celltime = cells->GetCellTime(absId);
-      RecalibrateCellTime(absId, bc, celltime);
-      if(absId == absIdMax) maxcellTime = celltime;
+  AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Time before %f, after %f \n",timeorg,cluster->GetTOF()));
 
-      if(!fCellsRecalibrated)
-      {
-        Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-        geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-        if(fEMCALRecalibrationFactors->GetEntries() <= imod) continue;
-        geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
-        factor = GetEMCALChannelRecalibrationFactor(imod,icol,irow);
-        
-        AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - recalibrate cell:"
-                        " module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n",
-                        imod,icol,irow,frac,factor,cells->GetCellTime(absId)));
-        
-      } 
-      
-      weight        = GetCellWeight(cells->GetCellAmplitude(absId)*factor*frac , energy );
-      weightTot    += weight;
-      weightedTime += celltime * weight;
-    }
-    
-    if(weightTot > 0)
-      cluster->SetTOF(weightedTime/weightTot);
-    else 
-      cluster->SetTOF(maxcellTime);
-  }
 }
 
 //_____________________________________________________________
