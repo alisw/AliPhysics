@@ -2,7 +2,7 @@
 // $Id$
 #ifndef ALIHLTTPCCLUSTERACCESSHLTOUT_H
 #define ALIHLTTPCCLUSTERACCESSHLTOUT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE Project            * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -106,23 +106,6 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /// process the cluster data block of various formats from HLTOUT
   int ProcessClusters(const char* params);
 
-  /// process the cluster mc data block {CLMCINFO:TPC } from HLTOUT
-  int ReadAliHLTTPCClusterMCData(AliHLTOUT* pHLTOUT, AliHLTTPCClusterMCDataList &tpcClusterLabels) const;
-
-  /// process the cluster data block {CLUSTERS:TPC } from HLTOUT
-  int ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels=NULL) const;
-
-  /// process the cluster data block {CLUSTRAW:TPC } from HLTOUT
-  int ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels);
-
-  /// process the clusters of type {REMCLSCM:TPC } from HLTOUT
-  int ReadRemainingClustersCompressed(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels);
-
-  /// process clusters encoded by AliHLTDataDeflaterSimple
-  int ReadAliHLTTPCRawClusterDataDeflateSimple(const AliHLTUInt8_t* pData, int dataSize,
-					       int nofClusters, AliHLTUInt32_t specification,
-					       TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels);
-
   /**
    * @class AliTPCclusterMIContainer
    * Cluster read interface for offline.
@@ -142,12 +125,12 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
 
     class iterator {
     public:
-      iterator() : fClusterNo(-1), fData(NULL), fCluster(NULL), fClusterId(kAliHLTVoidDataSpec), fRowOffset(0) {}
-      iterator(AliTPCclusterMIContainer* pData) : fClusterNo(-1), fData(pData), fCluster(NULL), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec), fRowOffset(0) {}
-      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fCluster(other.fCluster), fClusterId(other.fClusterId), fRowOffset(other.fRowOffset) {}
+      iterator() : fClusterNo(-1), fData(NULL), fCluster(NULL), fRowOffset(0) {}
+      iterator(AliTPCclusterMIContainer* pData) : fClusterNo(-1), fData(pData), fCluster(NULL), fRowOffset(0) {}
+      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fCluster(other.fCluster), fRowOffset(other.fRowOffset) {}
       iterator& operator=(const iterator& other) {
 	if (this==&other) return *this;
-	fClusterNo=other.fClusterNo; fData=other.fData; fCluster=other.fCluster, fClusterId=other.fClusterId; fRowOffset=other.fRowOffset; return *this;
+	fClusterNo=other.fClusterNo; fData=other.fData; fCluster=other.fCluster; fRowOffset=other.fRowOffset; return *this;
       }
       ~iterator() {}
 
@@ -170,7 +153,6 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       int fClusterNo; //! cluster no in the current block
       AliTPCclusterMIContainer* fData; //! pointer to actual data
       AliTPCclusterMI* fCluster; //! pointer to current cluster
-      AliHLTUInt32_t fClusterId; //! id of the cluster, from optional cluster id blocks
       int fRowOffset;  //! row offset for current partition
     };
 
@@ -178,13 +160,6 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
     iterator& BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification);
     /// iterator of track model clusters
     iterator& BeginTrackModelClusterBlock(int count);
-
-    /// add cluster mc data block
-    int AddClusterMCData(const AliHLTComponentBlockData* pDesc);
-    /// add cluster id block for remaining or track model clusters
-    int AddClusterIds(const AliHLTComponentBlockData* pDesc);
-    /// get the cluster id from the current cluster id block (optional)
-    AliHLTUInt32_t GetClusterId(int clusterNo) const;
 
     /// internal cleanup
     virtual void  Clear(Option_t * option="");
@@ -196,8 +171,6 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   protected:
     /// load next cluster from array of the sepcific sector
     AliTPCclusterMI* NextCluster(int slice, int partition);
-    /// set MC data for the cluster
-    int SetMC(AliTPCclusterMI* cluster, AliHLTUInt32_t clusterId);
 
   private:
     AliTPCclusterMIContainer(const AliTPCclusterMIContainer&);
