@@ -276,7 +276,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
   {
     AliOADBContainer *contTRF=new AliOADBContainer("");
     
-    contTRF->InitFromFile(Form("%s/EMCALTimeRecalib.root",fOADBFilePath.Data()),"AliEMCALTimeRecalib");
+    contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePath.Data()),"AliEMCALTimeCalib");
     
     TObjArray *trecal=(TObjArray*)contTRF->GetObject(runnumber); 
     
@@ -286,33 +286,28 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       
       if(trecalpass)
       {
-        TObjArray *trecalib=(TObjArray*)trecalpass->FindObject("TimeRecalib");
-        
-        if(trecalib)
+        printf("AliCalorimeterUtils::SetOADBParameters() - Time Recalibrate EMCAL \n");
+        for (Int_t ibc = 0; ibc < 4; ++ibc) 
         {
-          printf("AliCalorimeterUtils::SetOADBParameters() - Time Recalibrate EMCAL \n");
-          for (Int_t ibc = 0; ibc < 4; ++ibc) 
+          TH1F *h = fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(ibc);
+          
+          if (h)
+            delete h;
+          
+          h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+          
+          if (!h) 
           {
-            TH1F *h = fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(ibc);
-            
-            if (h)
-              delete h;
-            
-            h = (TH1F*)trecalib->FindObject(Form("hAllTimeAvBC%d",ibc));
-            
-            if (!h) 
-            {
-              AliError(Form("Could not load hAllTimeAvBC%d",ibc));
-              continue;
-            }
-            
-            h->SetDirectory(0);
-            
-            fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
-          } // bunch crossing loop
-        }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 1\n"); // array ok
-      }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 2\n"); // array pass ok
-    }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 3\n");  // run number array ok
+            AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+            continue;
+          }
+          
+          h->SetDirectory(0);
+          
+          fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
+        } // bunch crossing loop
+      }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 1\n"); // array pass ok
+    }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 2\n");  // run number array ok
     
   } // Time recalibration on    
   
@@ -486,13 +481,15 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     
     if(!clus) return;
     
-    if(clus->IsEMCAL()){   
+    if(clus->IsEMCAL())
+    {   
       Int_t label = clus->GetLabel();
       Int_t label2 = -1 ;
       //printf("Org cluster E %f, Time  %e, Id = ", clus->E(), clus->GetTOF() );
       if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
       UShort_t * index    = clus->GetCellsAbsId() ;
-      for(Int_t icell=0; icell < clus->GetNCells(); icell++ ){
+      for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
+      {
         fCellLabels[index[icell]]       = label;
         fCellSecondLabels[index[icell]] = label2;
         fCellTime[index[icell]]         = clus->GetTOF();    
@@ -533,8 +530,9 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     if (time*1e9 < 1.) 
     { 
       time = fCellTime[id];
-      //printf("cell %d time cluster %e\n",id, time);
+      //printf("cell %d time org %f - ",id, time*1.e9);
       fRecoUtils->RecalibrateCellTime(id,bc,time);
+      //printf("recal %f\n",time*1.e9);
     }
     
     if(  accept && fRecoUtils->IsExoticCell(id,cells,bc))
@@ -542,13 +540,15 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       accept = kFALSE;
     }
 
-    if( !accept ){
+    if( !accept )
+    {
       fCellLabels[id]      =-1; //reset the entry in the array for next event
       fCellSecondLabels[id]=-1; //reset the entry in the array for next event
       fCellTime[id]        = 0.; 
       fCellMatchdEta[id]   =-999;
       fCellMatchdPhi[id]   =-999;
-      if( DebugLevel() > 2 ) printf("AliAnalysisTaksEMCALClusterize::ClusterizeCells() - Remove channel absId %d, index %d of %d, amp %f, time %f\n",
+      if( DebugLevel() > 2 )
+        printf("AliAnalysisTaksEMCALClusterize::ClusterizeCells() - Remove channel absId %d, index %d of %d, amp %f, time %f\n",
                                     id,icell, cells->GetNumberOfCells(), amp, time*1.e9);
       continue;
     }
@@ -1169,7 +1169,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     
     Float_t clusterE = 0; 
-    for (Int_t c = 0; c < ncells; c++) {
+    for (Int_t c = 0; c < ncells; c++) 
+    {
       AliEMCALDigit *digit = (AliEMCALDigit*) digitsArr->At(recPoint->GetDigitsList()[c]);
       
       absIds[ncellsTrue] = digit->GetId();
@@ -1177,9 +1178,10 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       
       // In case of unfolding, remove digits with unfolded energy too low      
       if(fSelectCell){
-        if     (recPoint->GetEnergiesList()[c] < fSelectCellMinE || ratios[ncellsTrue] < fSelectCellMinFrac)  {
-          
-          if(DebugLevel() > 1)  {
+        if     (recPoint->GetEnergiesList()[c] < fSelectCellMinE || ratios[ncellsTrue] < fSelectCellMinFrac)  
+        {
+          if(DebugLevel() > 1)  
+          {
             printf("AliAnalysisTaksEMCALClusterize::RecPoints2Clusters() - Too small energy in cell of cluster: cluster cell %f, digit %f\n",
                    recPoint->GetEnergiesList()[c],digit->GetAmplitude());
           }
@@ -1194,8 +1196,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       clusterE  +=recPoint->GetEnergiesList()[c];
       
       // In case of embedding, fill ratio with amount of signal, 
-      if (aodIH && aodIH->GetMergeEvents()) {
-        
+      if (aodIH && aodIH->GetMergeEvents()) 
+      {
         //AliVCaloCells* inEMCALCells = InputEvent()->GetEMCALCells();
         AliVCaloCells* meEMCALCells = aodIH->GetEventToMerge()->GetEMCALCells();
         AliVCaloCells* ouEMCALCells = AODEvent()->GetEMCALCells();
@@ -1212,7 +1214,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       
     }// cluster cell loop
     
-    if (ncellsTrue < 1) {
+    if (ncellsTrue < 1) 
+    {
       if (DebugLevel() > 1) 
         printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Skipping cluster with no cells avobe threshold E = %f, ncells %d\n",
                recPoint->GetEnergy(), ncells);
@@ -1221,7 +1224,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     
     //if(ncellsTrue != ncells) printf("Old E %f, ncells %d; New E %f, ncells %d\n",recPoint->GetEnergy(),ncells,clusterE,ncellsTrue);
     
-    if(clusterE <  fRecParam->GetClusteringThreshold()) {
+    if(clusterE <  fRecParam->GetClusteringThreshold()) 
+    {
       if (DebugLevel()>1)
         printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Remove cluster with energy below seed threshold %f\n",clusterE);
       continue;
@@ -1250,16 +1254,20 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     clus->SetNExMax(recPoint->GetNExMax()); //number of local maxima
     clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
 
-    if(ncells == ncellsTrue){
+    if(ncells == ncellsTrue)
+    {
       Float_t elipAxis[2];
       recPoint->GetElipsAxis(elipAxis);
       clus->SetM02(elipAxis[0]*elipAxis[0]) ;
       clus->SetM20(elipAxis[1]*elipAxis[1]) ;
       clus->SetDispersion(recPoint->GetDispersion());
     }
-    else if(fSelectCell){
+    else if(fSelectCell)
+    {
       // In case some cells rejected, in unfolding case, recalculate
       // shower shape parameters and position
+      //if(DebugLevel() > 1) 
+        printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Cells removed from cluster (ncells %d, ncellsTrue %d), recalculate Shower Shape\n",ncells,ncellsTrue);
       AliVCaloCells* cells = 0x0; 
       if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
       else                                  cells = InputEvent()->GetEMCALCells();
@@ -1276,7 +1284,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     
     //Write the second major contributor to each MC cluster.
     Int_t iNewLabel ;
-    for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ ){
+    for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ )
+    {
       
       Int_t idCell = clus->GetCellAbsId(iLoopCell) ;
       if(idCell>=0){
@@ -1289,7 +1298,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
         if (iNewLabel == 1) 
         {
           Int_t * newLabelArray = new Int_t[clus->GetNLabels()+1] ;
-          for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ ){
+          for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ )
+          {
             newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
           }
           
