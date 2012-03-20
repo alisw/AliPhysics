@@ -1266,7 +1266,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     {
       // In case some cells rejected, in unfolding case, recalculate
       // shower shape parameters and position
-      //if(DebugLevel() > 1) 
+      if(DebugLevel() > 1) 
         printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Cells removed from cluster (ncells %d, ncellsTrue %d), recalculate Shower Shape\n",ncells,ncellsTrue);
       AliVCaloCells* cells = 0x0; 
       if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
