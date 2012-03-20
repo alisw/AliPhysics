@@ -19,6 +19,7 @@ class AliFlowTrackCuts;
 class AliFlowEventSimpleMaker;
 class AliFlowEvent;
 class TList;
+class TF1;
 class TRandom3;
 class AliAnalysisTaskSE;
 class TString;
@@ -99,6 +100,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   // setters for adding by hand flow values (afterburner)
   void SetAfterburnerOn(Bool_t b=kTRUE) {fAfterburnerOn=b;}
   void SetNonFlowNumberOfTrackClones(Int_t n) {fNonFlowNumberOfTrackClones=n;}
+  void SetPtDifferentialV2( TF1 *gPtV2) {
+    fDifferentialV2 = gPtV2;}
   void SetFlow( Double_t v1, Double_t v2, Double_t v3=0.0, Double_t v4=0.0, Double_t v5=0.0)
                {fV1=v1;fV2=v2;fV3=v3;fV4=v4;fV5=v5;}
   // end setters afterburner
@@ -171,6 +174,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fV3;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV4;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV5;        // Add Flow. Must be in range [0,0.5].
+  TF1 *fDifferentialV2; // pt-differential v2
 
   AliFlowEvent* fFlowEvent; //flowevent
     
