@@ -810,7 +810,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
                                                  const Int_t iclus) 
 {
   //Fill the EMCAL data in the array, do it
-  
+    
   Int_t vindex = 0 ;  
   if (fMixedEvent) 
     vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
@@ -838,6 +838,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
   
+
+  
   if(fRecalculateClusters){
     //Recalibrate the cluster energy 
     if(GetCaloUtils()->IsRecalibrationOn()) {
@@ -861,24 +863,24 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
       //clus->GetPosition(pos);
       //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
     }
+    
+    // Recalculate TOF
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) {
+      
+      Double_t tof      = clus->GetTOF();
+      Float_t  frac     =-1;
+      Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
+      
+      if(fDataType==AliCaloTrackReader::kESD){ 
+        tof = fEMCALCells->GetCellTime(absIdMax);
+      }
+      
+      GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+      
+      clus->SetTOF(tof);
+      
+    }// Time recalibration    
   }
-  
-  // Recalculate TOF
-  if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) {
-    
-    Double_t tof      = clus->GetTOF();
-    Float_t  frac     =-1;
-    Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
-    
-    if(fDataType==AliCaloTrackReader::kESD){ 
-      tof = fEMCALCells->GetCellTime(absIdMax);
-    }
-    
-    GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
-    
-    clus->SetTOF(tof);
-    
-  }// Time recalibration    
   
   //Correct non linearity
   if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){
@@ -907,7 +909,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
     clus->SetID(iclus) ; 
   
   fEMCALClusters->Add(clus);	
-  
+    
 }
 
 //_______________________________________
