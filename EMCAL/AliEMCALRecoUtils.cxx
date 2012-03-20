@@ -1040,7 +1040,8 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
   AliDebug(2,"AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()");
   //In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
-
+  TH1::AddDirectory(kFALSE);
+  
   fEMCALBadChannelMap = new TObjArray(12);
   //TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
   for (int i = 0; i < 12; i++) 
