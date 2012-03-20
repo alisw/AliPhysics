@@ -26,7 +26,9 @@ class AliFMDAnalysisTaskGenerateCorrection : public AliAnalysisTaskSE
       fNvtxBins(o.fNvtxBins),
       fNbinsEta(o.fNbinsEta),
       fBackground(o.fBackground),
-      fEventSelectionEff(o.fEventSelectionEff)
+      fEventSelectionEff(o.fEventSelectionEff),
+      fEtaLow(o.fEtaLow),
+      fEtaHigh(o.fEtaHigh)
       {}
     AliFMDAnalysisTaskGenerateCorrection& operator=(const AliFMDAnalysisTaskGenerateCorrection&) { return *this; }
     
