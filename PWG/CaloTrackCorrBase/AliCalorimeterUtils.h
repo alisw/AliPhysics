@@ -61,12 +61,12 @@ class AliCalorimeterUtils : public TObject {
   Int_t         GetMaxEnergyCell(AliVCaloCells* cells, const AliVCluster* clu, Float_t & fraction) const ;
   
   void          SplitEnergy(const Int_t absId1, const Int_t absId2, 
-                           AliVCluster *cluster, 
-                           AliVCaloCells* cells,
-                           //Float_t & e1, Float_t & e2,
-                           AliAODCaloCluster *cluster1, 
-                           AliAODCaloCluster *cluster2, 
-                           const Int_t nMax, const Int_t eventNumber = 0);//, Int_t *absIdList, Float_t *maxEList,
+                            AliVCluster *cluster, 
+                            AliVCaloCells* cells,
+                            //Float_t & e1, Float_t & e2,
+                            AliAODCaloCluster *cluster1, 
+                            AliAODCaloCluster *cluster2, 
+                            const Int_t nMax, const Int_t eventNumber = 0);//, Int_t *absIdList, Float_t *maxEList,
   
   void          SwitchOnClusterPlot()                      { fPlotCluster = kTRUE         ; }
   void          SwitchOffClusterPlot()                     { fPlotCluster = kFALSE        ; }
@@ -75,16 +75,16 @@ class AliCalorimeterUtils : public TObject {
   AliEMCALGeometry * GetEMCALGeometry()              const { return fEMCALGeo             ; }
   TString       EMCALGeometryName()                  const { return fEMCALGeoName         ; }  
   void          SetEMCALGeometryName(TString name)         { fEMCALGeoName = name         ; }
-  void          InitEMCALGeometry() ; 
+  void          InitEMCALGeometry(Int_t runnumber = 180000) ; 
   Bool_t        IsEMCALGeoMatrixSet()                const { return fEMCALGeoMatrixSet    ; }
 	
   AliPHOSGeoUtils * GetPHOSGeometry()                const { return fPHOSGeo              ; }	
   TString       PHOSGeometryName()                   const { return fPHOSGeoName          ; }  
   void          SetPHOSGeometryName(TString name)          { fPHOSGeoName = name          ; }
-  void          InitPHOSGeometry() ; 
+  void          InitPHOSGeometry(Int_t runnumber = 180000) ; 
   Bool_t        IsPHOSGeoMatrixSet()                 const { return fPHOSGeoMatrixSet     ; }
 
-  void          SetGeometryTransformationMatrices(AliVEvent* inputEvent) ;
+  void          AccessGeometry(AliVEvent* inputEvent) ;
 	
   void          SwitchOnLoadOwnEMCALGeometryMatrices()     { fLoadEMCALMatrices = kTRUE   ; }
   void          SwitchOffLoadOwnEMCALGeometryMatrices()    { fLoadEMCALMatrices = kFALSE  ; }
@@ -196,6 +196,27 @@ class AliCalorimeterUtils : public TObject {
   void          RecalibrateCellAmplitude(Float_t  & amp,  const TString calo, const Int_t absId) const ;
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
 
+  // Run dependent energy calibrations (EMCAL)
+  
+  void          SwitchOffRunDepCorrection()                              { fEMCALRecoUtils->SwitchOffRunDepCorrection()    ; }
+  void          SwitchOnRunDepCorrection()                               { fEMCALRecoUtils->SwitchOnRunDepCorrection()     ; }
+  
+  // Time Recalibration (EMCAL)
+  
+  Bool_t       IsTimeRecalibrationOn()                             const { return fEMCALRecoUtils->IsTimeRecalibrationOn() ; }
+  void         SwitchOffTimeRecalibration()                              { fEMCALRecoUtils->SwitchOffTimeRecalibration()   ; }
+  void         SwitchOnTimeRecalibration()                               { fEMCALRecoUtils->SwitchOnTimeRecalibration()    ; }
+  
+  Float_t      GetEMCALChannelTimeRecalibrationFactor(const Int_t bc, const Int_t absID) const 
+  { return fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactor(bc, absID) ; } 
+	
+  void         SetEMCALChannelTimeRecalibrationFactor(const Int_t bc, const Int_t absID, Double_t c = 0) 
+  { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactor(bc, absID, c) ; }  
+  
+  TH1F *       GetEMCALChannelTimeRecalibrationFactors(const Int_t bc)const       { return fEMCALRecoUtils-> GetEMCALChannelTimeRecalibrationFactors(bc) ; }	
+  void         SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)            { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(map)        ; }
+  void         SetEMCALChannelTimeRecalibrationFactors(const Int_t bc , TH1F* h)  { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(bc , h)     ; }
+  
   //EMCAL specific utils for the moment
   void          SetEMCALRecoUtils(AliEMCALRecoUtils * ru)  { fEMCALRecoUtils = ru          ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()             const { return fEMCALRecoUtils        ; }
@@ -247,6 +268,21 @@ class AliCalorimeterUtils : public TObject {
   Float_t       GetCutPhi()                               const { return fCutPhi                ; } // EMCAL only
   void          SetCutPhi(Float_t p)                            { fCutPhi = p                   ;   // EMCAL only
                                                                   fEMCALRecoUtils->SetCutPhi(p) ; }
+  // OADB options settings
+  
+  void          AccessOADB(AliVEvent * event) ;
+  
+  TString       GetPass() ;
+  
+  void          SwitchOnEMCALOADB()                             { fOADBForEMCAL = kTRUE         ; }
+  void          SwitchOffEMCALOADB()                            { fOADBForEMCAL = kFALSE        ; }
+
+  void          SwitchOnPHOSOADB()                              { fOADBForPHOS  = kTRUE         ; }
+  void          SwitchOffPHOSOADB()                             { fOADBForPHOS  = kFALSE        ; }
+
+  void          SetEMCALOADBFilePath(TString path)              { fOADBFilePathEMCAL  = path    ; }
+  void          SetPHOSOADBFilePath (TString path)              { fOADBFilePathPHOS   = path    ; }
+
   
  private:
 
@@ -279,11 +315,16 @@ class AliCalorimeterUtils : public TObject {
   Float_t            fLocMaxCutE;            //  Local maxima cut must have more than this energy
   Float_t            fLocMaxCutEDiff;        //  Local maxima cut, when aggregating cells, next can be a bit higher
   Bool_t             fPlotCluster;           //  Plot cluster in splitting method
-
+  Bool_t             fOADBSet ;              //  AODB parameters already set
+  Bool_t             fOADBForEMCAL ;         //  Get calibration from OADB for EMCAL
+  Bool_t             fOADBForPHOS ;          //  Get calibration from OADB for PHOS
+  TString            fOADBFilePathEMCAL ;    //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
+  TString            fOADBFilePathPHOS ;     //  Default path $ALICE_ROOT/OADB/PHOS, if needed change
+  
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,12)
+  ClassDef(AliCalorimeterUtils,13)
 } ;
 
 

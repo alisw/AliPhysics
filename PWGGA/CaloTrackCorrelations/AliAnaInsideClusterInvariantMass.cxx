@@ -592,7 +592,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
                                                                     
     if (nMax <= 0) 
     {
-      printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found! n Local Max = %d\n",nMax);
+      if(GetDebug() > 0 )
+        printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found! It did not pass CaloPID selection criteria \n");
       
       return;
     }

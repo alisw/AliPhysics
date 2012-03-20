@@ -280,7 +280,7 @@ public:
   virtual Double_t GetBField()                       const { return fInputEvent->GetMagneticField()  ; } 
   
   void    SetImportGeometryFromFile(Bool_t import, 
-                                    TString path = ".")    { 
+                                    TString path = "")     { 
                                                              fImportGeometryFromFile = import    ; 
                                                              fImportGeometryFilePath = path      ; }      
   

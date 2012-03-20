@@ -159,8 +159,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   // Fill the output list of histograms during the CreateOutputObjects stage.
   
   //Initialize calorimeters  geometry pointers
-  GetCaloUtils()->InitPHOSGeometry();
-  GetCaloUtils()->InitEMCALGeometry();
+  //GetCaloUtils()->InitPHOSGeometry();
+  //GetCaloUtils()->InitEMCALGeometry();
   
   //General event histograms
   
@@ -326,7 +326,11 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   }
   
   //Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
-  fCaloUtils->SetGeometryTransformationMatrices(fReader->GetInputEvent());	
+  fCaloUtils->AccessGeometry(fReader->GetInputEvent());	
+  
+  //Set the AODB calibration, bad channels etc. parameters at least once
+  fCaloUtils->AccessOADB(fReader->GetInputEvent());	
+
   
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);

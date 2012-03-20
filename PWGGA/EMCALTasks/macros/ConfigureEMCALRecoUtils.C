@@ -1,203 +1,65 @@
 
-void ConfigureEMCALRecoUtils(
-                             AliEMCALRecoUtils* reco,
-                             Bool_t  bMC   = kFALSE,
-                             TGeoHMatrix* matrix[12],
-                             TString path  = "",
-                             Int_t   run   = 0, 
-                             TString pass  = "pass2",
-                             Bool_t bRecalE= kTRUE,
-                             Bool_t bBad   = kTRUE,
-                             Bool_t bRecalT= kFALSE
-                             )
+void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
+                             Bool_t  bMC    = kFALSE,
+                             Bool_t  bExotic= kTRUE,
+                             Bool_t  bNonLin= kFALSE,
+                             Bool_t  bRecalE= kTRUE,
+                             Bool_t  bBad   = kTRUE,
+                             Bool_t  bRecalT= kFALSE)
 {  
 
   // Configure RecoUtils with OADB objects
   
-  printf("**** Configure AliEMCALRecoUtils, LOAD AODB ***\n");
-  printf("\t run %d, pass %s\n",run,pass.Data());
-  
+  printf("**** Configure AliEMCALRecoUtils ***\n");
   
   // Exotic cells removal
   
-  reco->SwitchOnRejectExoticCell() ;
-  reco->SetExoticCellDiffTimeCut(10000); // Open  
-  reco->SetExoticCellFractionCut(0.95);  // 1-Ecross/Ecell > 0.95 -> out
-  reco->SetExoticCellMinAmplitudeCut(0.75); // 750 MeV    
-  
-  gSystem->Load("libOADB");
-  
-  // Geometry settings, matrices
-  
-  // Instantiate EMCAL geometry for the first time
-  
-  AliEMCALGeometry*   geom = 0; 
-  if     (run < 140000) geom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
-  else if(run < 171000) geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
-  else                  geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1");
-
-  Int_t nSM = geom->GetNumberOfSuperModules();
-
-  // Alignment matrices
-
-  TString fileName="$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root";
-  if(path!="") fileName=path+"EMCALlocal2master.root";
-
-  AliOADBContainer EMCALgeoCont("AliEMCALgeo");
-  EMCALgeoCont.InitFromFile((char*)fileName.Data(),"AliEMCALgeo");
-  TObjArray *mobj=(TObjArray*)EMCALgeoCont.GetObject(run,"EmcalMatrices");
-  for (Int_t mod=0;mod<nSM;mod++)
-    {
-      matrix[mod] = (TGeoHMatrix*) mobj->At(mod);
-      //matrix[mod]->Print();
-    }
-      
-  reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
-  
-  
-  // *** Energy recalibration settings ***
-  
-  if(pass == "pass3"){
-    bRecalE = kFALSE;
-    bBad   = kFALSE;
-  }
-  
-  if(bMC){
-    bRecalE = kFALSE;
-  }
+  if(bExotic)
+  {
+    printf("Remove exotics in EMCAL\n");
+    reco->SwitchOnRejectExoticCell() ;
+    reco->SwitchOnRejectExoticCluster(); 
+    
+    reco->SetExoticCellDiffTimeCut(10000);    // Open  
+    reco->SetExoticCellFractionCut(0.95);     // 1-Ecross/Ecell > 0.95 -> out
+    reco->SetExoticCellMinAmplitudeCut(0.75); // 750 MeV    
+  }  
   
   //Recalibration factors
-  if(bRecalE){
-    
-    fileName="$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root";
-    if(path!="") fileName=path+"EMCALRecalib.root";
-    
-    AliOADBContainer *contRF=new AliOADBContainer("");
-    contRF->InitFromFile((char*)fileName.Data(),"AliEMCALRecalib");
-    
-    TObjArray *recal=(TObjArray*)contRF->GetObject(run); 
-    if(recal){
-      TObjArray *recalpass=(TObjArray*)recal->FindObject(pass);
-      if(recalpass){
-        TObjArray *recalib=(TObjArray*)recalpass->FindObject("Recalib");
-        if(recalib){
-          reco->SwitchOnRecalibration();
-          printf("AliEMCALRecoUtils - RECALIBRATE \n");
-          for (Int_t i=0; i<nSM; ++i) {
-            TH2F *h = reco->GetEMCALChannelRecalibrationFactors(i);
-            if (h)
-              delete h;
-            h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
-            if (!h) {
-              AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
-              continue;
-            }
-            h->SetDirectory(0);
-            reco->SetEMCALChannelRecalibrationFactors(i,h);
-          } 
-        }else printf("AliEMCALRecoUtils ---Do NOT recalibrate 1\n");
-      }else printf("AliEMCALRecoUtils ---Do NOT recalibrate 2\n");
-    }else printf("AliEMCALRecoUtils ---Do NOT recalibrate 3\n");
-    
-    //TFile * f = new TFile("RecalibrationFactors.root","read");
-    //for(Int_t i =0; i< 12; i++)  reco->SetEMCALChannelRecalibrationFactors( i, (TH2F*) f->Get(Form("EMCALRecalFactors_SM%d",i)));									 
-    // //  reco->SwitchOnTimeDepCorrection();
-    // //  //char cmd[200] ; 
-    // //  //sprintf(cmd, ".!tar xvfz CorrectionFiles.tgz") ; 
-    // //  //gROOT->ProcessLine(cmd) ; 
-    // //  	
-    
-  } else printf("AliEMCALRecoUtils ---Do NOT recalibrate\n");
-
-  // *** Remove EMCAL hot channels *** 
   
-  if(bBad){
-    
-    fileName="$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root";
-    if(path!="") fileName=path+"EMCALBadChannels.root";
-    
-    AliOADBContainer *contBC=new AliOADBContainer("");
-    contBC->InitFromFile((char*)fileName.Data(),"AliEMCALBadChannels"); 
-    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(run);
-    if(arrayBC){
-      TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
-      if(arrayBCpass){
-        
-        reco->SwitchOnBadChannelsRemoval();
-        reco->SwitchOnDistToBadChannelRecalculation();
-        printf("AliEMCALRecoUtils - REMOVE bad cells \n");
+  if(bRecalE && ! bMC)
+  {
+    reco->SwitchOnRecalibration();
+  } 
 
-        for (Int_t i=0; i<nSM; ++i) {
-          TH2I *hbm = reco->GetEMCALChannelStatusMap(i);
-          if (hbm)
-            delete hbm;
-          hbm=(TH2I*)arrayBCpass->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
-          
-          if (!hbm) {
-            AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
-            continue;
-          }
-          
-          hbm->SetDirectory(0);
-          reco->SetEMCALChannelStatusMap(i,hbm);
-        }
-      } else printf("AliEMCALRecoUtils ---Do NOT remove bad channels 1\n");
-    }  else printf("AliEMCALRecoUtils ---Do NOT remove bad channels 2\n");
-  } else printf("AliEMCALRecoUtils ---Do NOT remove bad channels 3 \n");
-
-  /*  
-    Int_t iCol = -1, iRow = -1, iSM =-1, iMod = -1,iIphi =-1,iIeta = -1;
-    Int_t badAbsID[]={74, 103};
-    
-    for(Int_t i=0;i < sizeof(badAbsID)/sizeof(Int_t); i++){
-      geom->GetCellIndex(badAbsID[i],iSM,iMod,iIphi,iIeta); 
-      // Gives SuperModule and Tower numbers
-      geom->GetCellPhiEtaIndexInSModule(iSM,iMod,
-					iIphi, iIeta,iRow,iCol);
-      //printf("bad ID %d, col %d, row %d, sm %d\n",badAbsID[i],iCol,iRow,iSM);
-      reco->SetEMCALChannelStatus(iSM , iCol, iRow,1);
-    }
-
-    }
-   */
+  // Remove EMCAL hot channels 
+  
+  if(bBad)
+  {
+    reco->SwitchOnBadChannelsRemoval();
+    reco->SwitchOnDistToBadChannelRecalculation();
+  }
  
   // *** Time recalibration settings ***
   
-  if(bRecalT){
-    
+  if(bRecalT)
+  {
     reco->SwitchOnTimeRecalibration();
+  }
     
-    //Waiting for OADB, meanwhile
+  // position
     
-    TFile * ftime = 0;
-    TString path ="./"; 
-    //TString path = "alien:///alice/cern.ch/user/g/germain/RecalDB/Time";
-    //TGrid::Connect("alien://");
-    
-    if     (run > 140000 && run < 146500 )
-      ftime = TFile::Open(Form("%s/RefLHC11apass1-7TeV.root",path.Data()));
-    else if(run > 146500 && run <= 146860 )
-      ftime = TFile::Open(Form("%s/RefLHC11apass3-2.76TeV.root",path.Data()));
-    else if(run > 146860 && run < 156477 )
-      ftime = TFile::Open(Form("%s/RefLHC11cpass1-7TeV.root",path.Data()));
-    else if(run >= 156477)
-      ftime = TFile::Open(Form("%s/RefLHC11dpass1-7TeV.root",path.Data()));
-    else if(run <  140000 && run > 136850)
-      ftime = TFile::Open(Form("%s/RefLHC10hpass2PbPb2.76TeV.root",path.Data()));
-    else if(run < 136850)
-      ftime = TFile::Open(Form("%s/RefLHC10dpass2-7TeV.root",path.Data()));
-    else printf("Run %d, not considered for time calibration\n",run);
-    
-    if(ftime){
-      printf("AliEMCALRecoUtils - Time recalibration ON\n");
-      
-      for(Int_t i =0; i< 4; i++)  reco->SetEMCALChannelTimeRecalibrationFactors( i, (TH1F*) ftime->Get(Form("hAllTimeAvBC%d",i)));	
-    }
-    else printf("AliEMCALRecoUtils --- Time recalibration OFF\n");
-    
-  }    else printf("AliEMCALRecoUtils --- Time recalibration OFF 2\n");
+  reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
 
-    
+  
+  // Non linearity
+  
+  if( kNonLinearity ) 
+  { 
+    if(!kSimulation) reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+    else             reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
+  }
+  
 }
 
 

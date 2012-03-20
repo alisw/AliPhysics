@@ -35,6 +35,9 @@
 // --- AliRoot system --- 
 #include "AliIsolationCut.h" 
 #include "AliAODPWG4ParticleCorrelation.h"
+#include "AliEMCALGeometry.h"
+#include "AliEMCALGeoParams.h"
+#include "AliCalorimeterUtils.h"
 #include "AliAODTrack.h"
 #include "AliVCluster.h"
 #include "AliCaloTrackReader.h"
@@ -58,6 +61,92 @@ fDebug(-1)
   
   //Initialize parameters
   InitParameters();
+  
+}
+
+
+//__________________________________________________________________________________
+Float_t AliIsolationCut::GetCellDensity(const AliAODPWG4ParticleCorrelation * pCandidate, 
+                                        const AliCaloTrackReader * reader) const 
+{
+  // Get good cell density (number of active cells over all cells in cone)
+  
+  Double_t coneCells    = 0.; //number of cells in cone with radius fConeSize
+  Double_t coneCellsBad = 0.; //number of bad cells in cone with radius fConeSize
+  Double_t cellDensity  = 1.;
+
+  Float_t phiC  = pCandidate->Phi() ;
+  if(phiC<0) phiC+=TMath::TwoPi();
+  Float_t etaC  = pCandidate->Eta() ;
+  
+  if(pCandidate->GetDetector()=="EMCAL")
+  {
+    AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
+    AliCalorimeterUtils *cu = reader->GetCaloUtils();
+    
+    Int_t absId = -999;
+    if (eGeom->GetAbsCellIdFromEtaPhi(etaC,phiC,absId))
+    {
+      //Get absolute (col,row) of candidate
+      Int_t iEta=-1, iPhi=-1, iRCU = -1;      
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(), iEta, iPhi, iRCU);
+      
+      Int_t colC = iEta;
+      if (nSupMod % 2) colC =  AliEMCALGeoParams::fgkEMCALCols + iEta ;
+      Int_t rowC = iPhi + AliEMCALGeoParams::fgkEMCALRows*int(nSupMod/2);
+      
+      Int_t sqrSize = int(fConeSize/0.0143) ; // Size of cell in radians
+      //loop on cells in a square of side fConeSize to check cells in cone    
+      for(Int_t icol = colC-sqrSize; icol < colC+sqrSize;icol++)
+      {
+        for(Int_t irow = rowC-sqrSize; irow < rowC+sqrSize; irow++)
+        {
+          if (Radius(colC, rowC, icol, irow) < sqrSize)
+          {
+            coneCells += 1.;
+            
+            Int_t cellSM  = -999;
+            Int_t cellEta = -999;
+            Int_t cellPhi = -999;
+            if(icol > AliEMCALGeoParams::fgkEMCALCols-1) 
+            {
+              cellSM = 0+int(irow/AliEMCALGeoParams::fgkEMCALRows)*2;
+              cellEta = icol-AliEMCALGeoParams::fgkEMCALCols;
+              cellPhi = irow-AliEMCALGeoParams::fgkEMCALRows*int(cellSM/2);
+            }
+            if(icol < AliEMCALGeoParams::fgkEMCALCols) 
+            {
+              cellSM = 1+int(irow/AliEMCALGeoParams::fgkEMCALRows)*2;
+              cellEta = icol;
+              cellPhi = irow-AliEMCALGeoParams::fgkEMCALRows*int(cellSM/2);
+            }
+            
+            //Count as bad "cells" out of EMCAL acceptance
+            if(icol < 0 || icol > AliEMCALGeoParams::fgkEMCALCols*2 || 
+               irow < 0 || irow > AliEMCALGeoParams::fgkEMCALRows*16./3) //5*nRows+1/3*nRows
+            {
+              coneCellsBad += 1.;
+            }
+            //Count as bad "cells" marked as bad in the DataBase
+            else if (cu->GetEMCALChannelStatus(cellSM,cellEta,cellPhi)==1) 
+            {
+              coneCellsBad += 1. ;
+            }
+          }
+        }
+      }//end of cells loop
+    }
+    
+    else if(fDebug>0) printf("cluster with bad (eta,phi) in EMCal for energy density calculation\n");
+    
+    if (coneCells > 0.) 
+    {
+      cellDensity = (coneCells-coneCellsBad)/coneCells;
+      //printf("Energy density = %f\n", cellDensity);
+    }
+  }
+
+  return cellDensity;
   
 }
 
@@ -245,8 +334,9 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       if(calo->GetID() == pCandidate->GetCaloLabel(0) || 
          calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;      
       
-      //Skip matched clusters with tracks
-      if( pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+      //Skip matched clusters with tracks in case of neutral+charged analysis
+      if( fPartInCone == kNeutralAndCharged && 
+          pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
     
       //Assume that come from vertex in straight line
       calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
@@ -358,6 +448,14 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
     if(fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
     if(fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
+  }
+  else if( fICMethod == kSumDensityIC)
+  {    
+    // Get good cell density (number of active cells over all cells in cone)
+    // and correct energy in cone
+    Float_t cellDensity = GetCellDensity(pCandidate,reader);
+    if(coneptsum < fSumPtThreshold*cellDensity)
+      isolated = kTRUE;
   }
   
 }

@@ -27,7 +27,6 @@
 // --- ROOT system ---
 #include <TFile.h>
 #include <TGeoManager.h>
-#include <TGeoGlobalMagField.h>
 
 // ---- ANALYSIS system ----
 #include "AliMCEvent.h"
@@ -43,7 +42,6 @@
 #include "AliTriggerAnalysis.h"
 #include "AliESDVZERO.h"
 #include "AliVCaloCells.h"
-#include "AliMagF.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -80,7 +78,7 @@ fTaskName(""),               fCaloUtils(0x0),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL), 
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
-fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kFALSE), 
+fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE), 
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
 fTriggerAnalysis (0x0), 
 fCentralityClass(""),        fCentralityOpt(0),
@@ -283,16 +281,18 @@ void AliCaloTrackReader::Init()
 
   //printf(" AliCaloTrackReader::Init() %p \n",gGeoManager);
 
-  if(fReadStack && fReadAODMCParticles){
+  if(fReadStack && fReadAODMCParticles)
+  {
     printf("AliCaloTrackReader::Init() - Cannot access stack and mcparticles at the same time, change them \n");
     fReadStack          = kFALSE;
     fReadAODMCParticles = kFALSE;
   }
   
   // Init geometry, I do not like much to do it like this ...
-  if(fImportGeometryFromFile && !gGeoManager) {
-    printf("AliCaloTrackReader::Init() - Import geometry.root file\n");
-    TGeoManager::Import(Form("%s/geometry.root", fImportGeometryFilePath.Data())) ; // default need file "geometry.root" in local dir!!!!
+  if(fImportGeometryFromFile && !gGeoManager) 
+  {
+    printf("AliCaloTrackReader::Init() - Import %s\n",fImportGeometryFilePath.Data());
+    TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
   }
 
 }
@@ -356,7 +356,7 @@ void AliCaloTrackReader::InitParameters()
   fAODBranchList   = new TList ;
 
   fImportGeometryFromFile = kFALSE;
-  fImportGeometryFilePath = ".";
+  fImportGeometryFilePath = "$ALICE_ROOT/PWGGA/EMCALTasks/macros/geometry.root"; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
   
 }
 
@@ -407,16 +407,19 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     
   fEventNumber = iEntry;
   //fCurrentFileName = TString(currentFileName);
-  if(!fInputEvent) {
+  if(!fInputEvent)
+  {
 	  if(fDebug >= 0) printf("AliCaloTrackReader::FillInputEvent() - Input event not available, skip event analysis\n");
 	  return kFALSE;
   }
+  
   //Select events only fired by a certain trigger configuration if it is provided
   Int_t eventType = 0;
   if(fInputEvent->GetHeader())
 	  eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
   
-  if (GetFiredTriggerClasses().Contains("FAST")  && !GetFiredTriggerClasses().Contains("ALL") && !fAcceptFastCluster) {
+  if (GetFiredTriggerClasses().Contains("FAST")  && !GetFiredTriggerClasses().Contains("ALL") && !fAcceptFastCluster) 
+  {
     if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent - Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data());
     return kFALSE;
   }
@@ -426,14 +429,17 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
   // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
-  if(fRemoveLEDEvents){
-    
+  Int_t run = fInputEvent->GetRunNumber();
+  if( fRemoveLEDEvents && run > 140000  && run <= 146860 )
+  {
     //printf("Event %d\n",GetEventNumber());
     for (Int_t i = 0; i < fInputEvent->GetNumberOfCaloClusters(); i++)
     {
       AliVCluster *clus = fInputEvent->GetCaloCluster(i);
-      if(clus->IsEMCAL()){               
-        if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200) {
+      if(clus->IsEMCAL())
+      {               
+        if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200) 
+        {
           Int_t absID = clus->GetCellsAbsId()[0];
           Int_t sm = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
           if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent - reject event %d with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",GetEventNumber(),clus->E(),  clus->GetNCells(),absID, sm);
@@ -445,9 +451,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     // Count number of cells with energy larger than 0.1 in SM3, cut on this number
     Int_t ncellsSM3 = 0;
     Int_t ncellsSM4 = 0;
-    for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++){
+    for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
+    {
       Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
-      Int_t sm = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
+      Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
       if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
       if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==4) ncellsSM4++;
     }
@@ -455,14 +462,16 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     Int_t ncellcut = 21;
     if(fFiredTriggerClassName.Contains("EMC")) ncellcut = 35;
     
-    if(ncellsSM3 >= ncellcut || ncellsSM4 >= 100) {
+    if(ncellsSM3 >= ncellcut || ncellsSM4 >= 100)
+    {
       if(fDebug > 0) printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3 %d and SM4 %d\n",ncellsSM3, ncellsSM4);
       return kFALSE;
     }
   }// Remove LED events
   
   // Reject pure LED events?
-  if( fFiredTriggerClassName  !="" && !fAnaLED){
+  if( fFiredTriggerClassName  !="" && !fAnaLED)
+  {
     if(eventType!=7)
       return kFALSE; //Only physics event, do not use for simulated events!!!
     if(fDebug > 0) 
@@ -471,7 +480,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
     else if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Accepted triggered event\n");
   }
-  else if(fAnaLED){
+  else if(fAnaLED)
+  {
     //	  kStartOfRun =       1,    // START_OF_RUN
     //	  kEndOfRun =         2,    // END_OF_RUN
     //	  kStartOfRunFiles =  3,    // START_OF_RUN_FILES
@@ -491,7 +501,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   }
   
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
-  if(fComparePtHardAndJetPt && GetStack()) {
+  if(fComparePtHardAndJetPt && GetStack()) 
+  {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
   
@@ -503,14 +514,17 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   //------------------------------------------------------
   //Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
-  if(fDoEventSelection){
-    if(!fCaloFilterPatch){
+  if(fDoEventSelection)
+  {
+    if(!fCaloFilterPatch)
+    {
       //Do not analyze events with pileup
       Bool_t bPileup = fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
       //Bool_t bPileup = event->IsPileupFromSPD(); 
       if(bPileup) return kFALSE;
       
-      if(fDoV0ANDEventSelection){
+      if(fDoV0ANDEventSelection)
+      {
         Bool_t bV0AND = kTRUE; 
         AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
         if(esd) 
@@ -522,8 +536,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
       if(fUseEventsWithPrimaryVertex && !CheckForPrimaryVertex()) return kFALSE;
       
     }//CaloFilter patch
-    else{ 
-      if(fInputEvent->GetNumberOfCaloClusters() > 0) {
+    else
+    { 
+      if(fInputEvent->GetNumberOfCaloClusters() > 0) 
+      {
         AliVCluster * calo = fInputEvent->GetCaloCluster(0);
         if(calo->GetNLabels() == 4){
           Int_t * selection = calo->GetLabels();
@@ -561,7 +577,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   
   //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
   //If we need a centrality bin, we select only those events in the corresponding bin.
-  if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100){
+  if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100)
+  {
     Int_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
   }

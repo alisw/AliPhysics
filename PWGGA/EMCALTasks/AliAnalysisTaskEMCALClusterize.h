@@ -15,8 +15,8 @@ class AliEMCALCalibData;
 class AliCaloCalibPedestal;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
-class AliEMCALRecParam;
-class AliEMCALRecoUtils;
+#include "AliEMCALRecParam.h"
+#include "AliEMCALRecoUtils.h"
 
 
 #include "AliAnalysisTaskSE.h"
@@ -39,7 +39,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnExoticEventsRemoval()                  { fRemoveExoticEvents= kTRUE   ; }
   void           SwitchOffExoticEventsRemoval()                 { fRemoveExoticEvents= kFALSE  ; } 
   
-  Bool_t         IsLEDEvent();
+  Bool_t         IsLEDEvent(const Int_t run);
   void           SwitchOnLEDEventsRemoval()                     { fRemoveLEDEvents   = kTRUE   ; }
   void           SwitchOffLEDEventsRemoval()                    { fRemoveLEDEvents   = kFALSE  ; } 
   
@@ -58,8 +58,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fGeomMatrix[i]    = m        ; }
 
   void           SetImportGeometryFromFile(Bool_t  im, 
-                                           TString pa = ".")    { 
-                                                                  fImportGeometryFromFile = im ; 
+                                           TString pa = "")     { fImportGeometryFromFile = im ; 
                                                                   fImportGeometryFilePath = pa ; }    
   
   //AOD methods
@@ -73,15 +72,18 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffFillAODCaloCells()                    { fFillAODCaloCells  = kFALSE  ; } 
   
   //Algorithms settings
-  AliEMCALRecParam * GetRecParam()                       const  { return fRecParam             ; }
+  
+  AliEMCALRecParam * GetRecParam()                              { if(!fRecParam)  fRecParam  = new AliEMCALRecParam  ;
+                                                                  return fRecParam             ; }
+  
+  AliEMCALRecoUtils* GetRecoUtils()                             { if(!fRecoUtils) fRecoUtils = new AliEMCALRecoUtils ;  
+                                                                  return fRecoUtils            ; }
+
   void           InitClusterization();
   void           ClusterizeCells();
   void           ClusterUnfolding();
   void           JustUnfold(Bool_t yesno)                       { fJustUnfold        = yesno   ; }
-  
-  void           SetEMCALRecoUtils(AliEMCALRecoUtils * ru)      { fRecoUtils         = ru      ; }
-  AliEMCALRecoUtils* GetRecoUtils()                      const  { return fRecoUtils            ; }
-  
+    
   void           SetConfigFileName(TString name)                { fConfigName        = name    ; }
   void           SetMaxEvent(Int_t max)                         { fMaxEvent          = max     ; }
   
@@ -93,10 +95,20 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffCellEnergySelection()                 { fSelectCell        = kFALSE  ; } 
   void           SetCellCuts(Float_t e, Float_t frac)           { fSelectCellMinE    = e       ; 
                                                                   fSelectCellMinFrac = frac    ; }  
+  // OADB options settings
+  
+  void           AccessOADB() ;
+  
+  TString        GetPass()    ;
+  
+  void           SwitchOnEMCALOADB()                            { fAccessOCDB         = kTRUE   ; }
+  void           SwitchOffEMCALOADB()                           { fAccessOCDB         = kFALSE  ; }
+    
+  void           SetOADBFilePath(TString path)                  { fOADBFilePath  = path    ; }
   
  private:
     
-  virtual void  RecPoints2Clusters(TClonesArray *fdigitsArr, TObjArray *fRecPoints, TObjArray *clusArray);
+  virtual void   RecPoints2Clusters(TClonesArray *fdigitsArr, TObjArray *fRecPoints, TObjArray *clusArray);
   
   AliVEvent             *fEvent;                   // Event 
   
@@ -155,10 +167,15 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
   TString                fImportGeometryFilePath;  // path fo geometry.root file
 
+  Bool_t                 fOADBSet ;                //  AODB parameters already set
+  Bool_t                 fAccessOADB ;             //  Get calibration from OADB for EMCAL
+  TString                fOADBFilePath ;           //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
+  
+  
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 18);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 19);
 
 };
 

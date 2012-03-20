@@ -1126,7 +1126,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
         fhDeltaPhiAssocPtBin    [assocBin]->Fill(ptTrig, deltaPhi);
         if(track->GetHMPIDsignal()>0)
         {
-          printf("Track pt %f with HMPID signal %f \n",pt,track->GetHMPIDsignal());
+          //printf("Track pt %f with HMPID signal %f \n",pt,track->GetHMPIDsignal());
           fhDeltaPhiAssocPtBinHMPID[assocBin]->Fill(ptTrig, deltaPhi);        
         }
         
@@ -1563,16 +1563,18 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
       return;
     }
     
-    eprim    = primary->Energy();
-    ptprim   = primary->Pt();
-    phiprim  = primary->Phi();
-    etaprim  = primary->Eta();
-    pxprim   = primary->Px();
-    pyprim   = primary->Py();
-    pzprim   = primary->Pz(); 
-    
     if(primary)
     {
+      eprim    = primary->Energy();
+      ptprim   = primary->Pt();
+      phiprim  = primary->Phi();
+      etaprim  = primary->Eta();
+      pxprim   = primary->Px();
+      pyprim   = primary->Py();
+      pzprim   = primary->Pz(); 
+      
+      if(ptprim < 0.01 || eprim < 0.01) return ;
+      
       for (iParticle = 0 ; iParticle <  nTracks ; iParticle++) 
       {
         TParticle * particle = stack->Particle(iParticle);
@@ -1672,14 +1674,17 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
       return;
     }
     
-    ptprim  = aodprimary->Pt();
-    phiprim = aodprimary->Phi();
-    etaprim = aodprimary->Eta();
-    pxprim  = aodprimary->Px();
-    pyprim  = aodprimary->Py();
-    pzprim  = aodprimary->Pz();  
     if(aodprimary)
     {
+      ptprim  = aodprimary->Pt();
+      phiprim = aodprimary->Phi();
+      etaprim = aodprimary->Eta();
+      pxprim  = aodprimary->Px();
+      pyprim  = aodprimary->Py();
+      pzprim  = aodprimary->Pz();  
+      
+      if(ptprim < 0.01 || eprim < 0.01) return ;
+      
       mcparticles= GetReader()->GetAODMCParticles();
       for (Int_t i=0; i<nTracks;i++) 
       {
