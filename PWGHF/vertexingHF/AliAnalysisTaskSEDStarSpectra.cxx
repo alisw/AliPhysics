@@ -430,8 +430,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     Int_t isSelectedNoPID=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate); //selected
     fCuts->SetUsePID(kTRUE);
 
-    FillSpectrum(dstarD0pi,isDStar,fCuts,isSelectedNoPID,fOutputPID);
-    SideBandBackground(dstarD0pi,fCuts,isSelectedNoPID, fOutputPID);
+    FillSpectrum(dstarD0pi,isDStar,fCuts,isSelectedNoPID,fOutputAll);
+    SideBandBackground(dstarD0pi,fCuts,isSelectedNoPID, fOutputAll);
 
     // rare D search ------ 
     if(fDoSearch){
