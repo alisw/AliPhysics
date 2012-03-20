@@ -30,6 +30,7 @@
 #include "TTree.h"
 #include "TFile.h" //needed as include
 #include "TList.h"
+#include "TF1.h"
 #include "TH2F.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
@@ -127,6 +128,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fV3(0.),
   fV4(0.),
   fV5(0.),
+  fDifferentialV2(0),
   fFlowEvent(NULL),
   fMyTRandom3(NULL)
 {
@@ -186,6 +188,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV3(0.),
   fV4(0.),
   fV5(0.),
+  fDifferentialV2(0),
   fFlowEvent(NULL),
   fMyTRandom3(NULL)
 {
@@ -532,7 +535,10 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     if (!fFlowEvent->IsSetMCReactionPlaneAngle())
       fFlowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
 
-    fFlowEvent->AddFlow(fV1,fV2,fV3,fV4,fV5);     //add flow
+    if(fDifferentialV2)
+      fFlowEvent->AddV2(fDifferentialV2);
+    else 
+      fFlowEvent->AddFlow(fV1,fV2,fV3,fV4,fV5);     //add flow
     fFlowEvent->CloneTracks(fNonFlowNumberOfTrackClones); //add nonflow by cloning tracks
   }
   //////////////////////////////////////////////////////////////////////////////
