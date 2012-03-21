@@ -51,20 +51,22 @@ Trigger Types Used: different trigger types are used
 
 int main(int argc, char **argv) {
 
+  // needed for streamer application
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-					"*",
-					"TStreamerInfo",
-					"RIO",
-					"TStreamerInfo()"); 
+                                        "*",
+                                        "TStreamerInfo",
+                                        "RIO",
+                                        "TStreamerInfo()"); 
+  // needed for Minuit plugin
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer",
+                                        "Minuit",
+                                        "TMinuitMinimizer",
+                                        "Minuit",
+                                        "TMinuitMinimizer(const char*)");
 
-  TMinuitMinimizer m; 
-  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", "Minuit","TMinuitMinimizer",
-      "Minuit", "TMinuitMinimizer(const char *)");
+  //TMinuitMinimizer m; 
   TVirtualFitter::SetDefaultFitter("Minuit");
 
-  //const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
-  //monitorDeclareTable(const_cast<char**>(tableSOD));
-  
   char *monitor_table[] = { "ALL", "no", "PHY", "yes", "SOD", "all", NULL };
   int err = monitorDeclareTable(monitor_table);
   if(err){
@@ -110,14 +112,13 @@ int main(int argc, char **argv) {
   }
  
   TH1F * hTDC[6]={0x0,0x0,0x0,0x0,0x0,0x0};
-  char ntdchist[20];
-  for(Int_t it=0; it<6; it++){
-    if(it==0)      hTDC[it] = new TH1F("TDCZNC", "TDC ZNC", 200, -200., 200.);
-    else if(it==1) hTDC[it] = new TH1F("TDCZNA", "TDC ZNA", 200, -200., 200.);
-    else if(it==2) hTDC[it] = new TH1F("TDCZPC", "TDC ZPC", 200, -200., 200.);
-    else if(it==3) hTDC[it] = new TH1F("TDCZPA", "TDC ZPA", 200, -200., 200.);
-    else if(it==4) hTDC[it] = new TH1F("TDCZEM1","TDC ZEM1",200, -200., 200.);
-    else if(it==5) hTDC[it] = new TH1F("TDCZEM2","TDC ZEM2",200, -200., 200.);
+  for(int it=0; it<6; it++){
+    if(it==0) hTDC[it] = new TH1F("TDCZEM1","TDC ZEM1",200, -200., 200.);
+    else if(it==1) hTDC[it] = new TH1F("TDCZEM2","TDC ZEM2",200, -200., 200.);
+    else if(it==2) hTDC[it] = new TH1F("TDCZNC", "TDC ZNC", 200, -200., 200.);
+    else if(it==3) hTDC[it] = new TH1F("TDCZPC", "TDC ZPC", 200, -200., 200.);
+    else if(it==4) hTDC[it] = new TH1F("TDCZNA", "TDC ZNA", 200, -200., 200.);
+    else if(it==5) hTDC[it] = new TH1F("TDCZPA", "TDC ZPA", 200, -200., 200.);
   }
   
   /* log start of process */
@@ -125,7 +126,7 @@ int main(int argc, char **argv) {
   signal(SIGSEGV, SIG_DFL);
 
   /* check that we got some arguments = list of files */
-  if (argc<2) {
+  if(argc<2) {
     printf("Wrong number of arguments\n");
     return -1;
   }
@@ -133,8 +134,7 @@ int main(int argc, char **argv) {
   FILE *mapFile4Shuttle;
 
   /* read the data files */
-  int n;
-  for(n=1;n<argc;n++){
+  for(int n=1;n<argc;n++){
    
     status=monitorSetDataSource( argv[n] );
     if (status!=0) {
@@ -268,7 +268,7 @@ int main(int argc, char **argv) {
 	rawStreamZDC->SetSODReading(kTRUE);
 
   	// ----- Setting ch. mapping -----
-	for(Int_t jk=0; jk<2*kNChannels; jk++){
+	for(int jk=0; jk<2*kNChannels; jk++){
 	  rawStreamZDC->SetMapADCMod(jk, adcMod[jk]);
 	  rawStreamZDC->SetMapADCCh(jk, adcCh[jk]);
 	  rawStreamZDC->SetMapADCSig(jk, sigCode[jk]);
@@ -286,24 +286,22 @@ int main(int argc, char **argv) {
              else ihittdc=0;
              iprevtdc=itdc;
 	     //
-	     //if(ihittdc==0) printf("   TDC%d %1.0f ns  \n",itdc, 0.025*rawStreamZDC->GetZDCTDCDatum());
-	     //
-	     if(((itdc>=8 && itdc<=13) || itdc==15) && ihittdc<1){
+	     if(((itdc>=8 && itdc<=13) || itdc==15) && ihittdc==0){
                if(itdc!=15){
 	         tdcData[itdc-8] = 0.025*rawStreamZDC->GetZDCTDCDatum();
 	         //
-	         //printf("   **** TDC%d %1.0f ns  \n",itdc, tdcData[itdc-8]);
+	         //printf("   ev.%d **** TDC%d %1.0f ns  \n",nphys,itdc, tdcData[itdc-8]);
 	       }
 	       //
 	       else if(itdc==15){
 	          tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
 	          //
-		  //printf("   ++++ TDCL0 %1.0f ns  \n",tdcL0);
+		  //printf("   ev.%d ++++ TDCL0 %1.0f ns  \n",nphys,tdcL0);
 		  //
 		  for(int ic=0; ic<6; ic++){
 		    if(tdcData[ic]!=-999. && tdcL0!=-999.){
 		      hTDC[ic]->Fill(tdcData[ic]-tdcL0);
-		      //printf(" -> Filling histo%d: %f ns\n",ic, tdcData[ic]-tdcL0);
+		      //printf(" ev.%d -> Filling histo%d: %f ns\n",nphys,ic, tdcData[ic]-tdcL0);
 		    }
 		  }
                }
@@ -311,19 +309,16 @@ int main(int argc, char **argv) {
 	  }
         }
 	
-        /*for(int ic=0; ic<6; ic++){
-          if(tdcData[ic]!=-999. && tdcL0!=-999.) hTDC[ic]->Fill(tdcData[ic]-tdcL0);
-        }*/
-	nphys++;
-	
+ 	nphys++;
+      
+        delete rawStreamZDC;
+        rawStreamZDC = 0x0;	
+
       }//(if PHYSICS_EVENT) 
       else if(eventT==END_OF_RUN){
         printf("End Of Run detected\n");
         break;
       }
-      
-      delete rawStreamZDC;
-      rawStreamZDC = 0x0;
       
       iev++; 
 
@@ -344,7 +339,7 @@ int main(int argc, char **argv) {
   Int_t binMax=0, nBinsx=0;
   Float_t mean[6]={0.,0.,0.,0.,0.,0.}, sigma[6]={0.,0.,0.,0.,0.,0.};
   TF1 *fitfun[6]={0x0,0x0,0x0,0x0,0x0,0x0};
-  for(Int_t k=0; k<6; k++){
+  for(int k=0; k<6; k++){
     if(hTDC[k]->GetEntries()!=0){
        binMax = hTDC[k]->GetMaximumBin();
        if(binMax<=1){

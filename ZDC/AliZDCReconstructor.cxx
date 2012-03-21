@@ -1358,7 +1358,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   // we try to keep the TDC oscillations as low as possible!
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
-      if(TMath::Abs(tdcValues[jk][lk])>1e-10){
+      if(tdcValues[jk][lk]!=0.){
         tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[15][0])+fMeanPhase;
         // Sep 2011: TDC ch. from 8 to 13 centered around 0 using OCDB 
 	if(jk>=8 && jk<=13) tdcCorrected[jk][lk] =  tdcCorrected[jk][lk] - tdcOffset[jk-8];
