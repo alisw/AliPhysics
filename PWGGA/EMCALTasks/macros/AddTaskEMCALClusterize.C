@@ -10,7 +10,10 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Int_t   maxDeltaT  = 250,
                                                        const Int_t   timeWindow = 1000,
                                                        const Int_t   minEUnf    = 15, 
-                                                       const Int_t   minFrac    = 1
+                                                       const Int_t   minFrac    = 1,
+                                                       const Bool_t  bRecalE    = kTRUE,
+                                                       const Bool_t  bBad       = kTRUE,
+                                                       const Bool_t  bRecalT    = kTRUE
                                                        )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -84,10 +87,20 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
       params->SetTimeMax(timeWindow*1.e-9);
     }
     else
-    { // same as in reco
-      params->SetTimeMin(425*1.e-9);
-      params->SetTimeMax(825*1.e-9);
-      printf("default time window 425 ns < T < 825 ns\n");
+    { 
+      if(bRecalT && !bMC)
+      {
+        params->SetTimeMin(-250*1.e-9);
+        params->SetTimeMax( 250*1.e-9);
+        printf("default time window for calibrated time -250 ns < T < 250 ns\n");
+      }
+      else 
+      {
+        // same as in reco, USE IF NO TIME RECALIBRATION
+        params->SetTimeMin(425*1.e-9);
+        params->SetTimeMax(825*1.e-9);
+        printf("default time window 425 ns < T < 825 ns\n");
+      }
     }
   }
 
@@ -131,7 +144,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
 
   AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros
-  ConfigureEMCALRecoUtils(reco,bMC,exotic);
+  ConfigureEMCALRecoUtils(reco,bMC,exotic,bRecalE,bBad,bRecalT);
   
   //-------------------------------------------------------
   //Alignment matrices
@@ -139,7 +152,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
 
   clusterize->SetImportGeometryFromFile(kTRUE); // import geometry.root file
   
-  if(!kMC)
+  if(!bMC)
   {    
     clusterize->SwitchOnLoadOwnGeometryMatrices();
   }
