@@ -48,7 +48,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   //dsTask->SetDoLikeSign(kTRUE);
   //  dsTask->SetUseTPCpid(kTRUE);
   //dsTask->SetUseTOFpid(kTRUE);
-  dsTask->SetDebugLevel(10);
+  dsTask->SetDebugLevel(0);
   dsTask->SetUseSelectionBit(kTRUE);
   //dsTask->SetMassLimits(0.2);
   mgr->AddTask(dsTask);
