@@ -892,7 +892,7 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   AliTrackPoint points[6];
   Float_t xyz[3];
   memset(xyz, 0, sizeof(Float_t) * 3);
-  if(((fkESD->GetStatus() & AliESDtrack::kTRDout) > 0) && !((fkESD->GetStatus() & AliESDtrack::kTRDin) > 0)){
+  if(fkESD && ((fkESD->GetStatus() & AliESDtrack::kTRDout) > 0) && !((fkESD->GetStatus() & AliESDtrack::kTRDin) > 0)){
     // stand alone track
     for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
       xyz[0] = xAnode[il];
@@ -1230,6 +1230,7 @@ void AliTRDcheckDET::GetEtaPhiAt(const AliExternalTrackParam *track, Double_t x,
   //
   // Get phi and eta at a given radial position
   // 
+  if(!fEvent) return;
   AliExternalTrackParam workpar(*track);
 
   Double_t posLocal[3];
