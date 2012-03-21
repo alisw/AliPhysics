@@ -546,7 +546,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
     trigCounter->AddRubric("run",500000);
-    trigCounter->AddRubric("triggerType","Any/MB/Cent/SemiCent/EMCAL");
+    trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL");
     trigCounter->Init();
 
     fOutputEvSelection->Add(evselection);
@@ -840,6 +840,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
     hTrigC->Fill(-1.,centrality);
     hTrigM->Fill(-1.,multiplicity);
+    trigCount->Count(Form("triggerType:All/Run:%d",runNumber));
     
     if(evSelMask & AliVEvent::kAny){
       hTrigC->Fill(0.,centrality);
