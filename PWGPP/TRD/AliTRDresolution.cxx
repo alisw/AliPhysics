@@ -389,7 +389,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       if((cc = fTracklet->GetClusters(tb-2))) {val[kZrez] += TMath::Abs(cc->GetQ()); ic++;}
       if(ic) val[kZrez] /= (ic*q);
       val[kSpeciesChgRC]= fTracklet->IsRowCross()?0.:(TMath::Max(q*corr, Float_t(3.)));
-      val[kNdim]   = fEvent->GetMultiplicity();
+      val[kNdim]   = fEvent?fEvent->GetMultiplicity():0.;
       val[kNdim+1] = c->IsFivePad()?1:c->GetNPads();
       H->Fill(val);
 /*      // tilt rotation of covariance for clusters
@@ -666,8 +666,8 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 
   if(!track) return NULL;
   // special care for EVE usage
-    if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
-    return H->Projection(kYrez);
+  if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+  return H->Projection(kYrez);
 }
 
 /*
@@ -941,7 +941,10 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     }
   }
   if(clInfoArr) delete clInfoArr;
-  return h;
+  if(!track) return NULL;
+  // special care for EVE usage
+  if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+  return H->Projection(kYrez);
 }
 
 
