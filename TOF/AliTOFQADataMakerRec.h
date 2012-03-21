@@ -17,6 +17,7 @@
 #include "AliQAv1.h"
 #include "AliTOFcalib.h"
 #include "AliTOFTrigger.h"
+#include "AliTOFRawStream.h"
 class AliCDBManager;
 class AliCDBEntry;
 class AliCDBStorage;
@@ -40,6 +41,8 @@ public:
   void SetDefaultMultiHistogramRange();
   void SetDefaultTimeHistogramRange();
   void SetDefaultCutNmaxFiredMacropad();
+  Float_t GetRangeMinTime(){return fgRangeMinTime;}//range min in time plot
+  Float_t GetRangeMaxTime(){return fgRangeMaxTime;}; //range max in time plot
 
 protected: 
   AliTOFChannelOnlineStatusArray * fCalibData;        //! calibration data
@@ -80,9 +83,9 @@ private:
 	  TLine* fLineExpTimeMax;
 	  TLine* fLineExpTotMin;
 	  TLine* fLineExpTotMax;
-	  TLine* fLineSMid[17];
-	  TLine* fLineLTMid[71];
-	  TLine* fLineLTMbitId[22];
+	  /* TLine* fLineSMid[17]; */
+	  /* TLine* fLineLTMid[71]; */
+	  /* TLine* fLineLTMbitId[22]; */
 
 	  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable 
 	  AliTOFDecoderSummaryData * fDecoderSummary; //pointer to decoder summary data object

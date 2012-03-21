@@ -23,6 +23,10 @@
 
 /*
 Modified by fbellini on 01/11/2011
+- removed TLines as functions
+- changed shifters plots for 2012 DQM
+
+Modified by fbellini on 01/11/2011
 - added histograms for LTM monitoring
 - fix for coverity
 
@@ -116,7 +120,7 @@ Int_t AliTOFQADataMakerRec::fgNbinsTime=250;//number of bins in time plot
 const Float_t AliTOFQADataMakerRec::fgkNbinsWidthTime=2.44;//width of bins in time plot
 Float_t AliTOFQADataMakerRec::fgRangeMinTime=0.0;//range min in time plot
 Float_t AliTOFQADataMakerRec::fgRangeMaxTime=620.0; //range max in time plot
-Int_t AliTOFQADataMakerRec::fgCutNmaxFiredMacropad=5;//cut on number of max fired macropad
+Int_t AliTOFQADataMakerRec::fgCutNmaxFiredMacropad=50;//cut on number of max fired macropad
 const Int_t AliTOFQADataMakerRec::fgkFiredMacropadLimit=50;//cut on number of max fired macropad
 
 
@@ -143,7 +147,8 @@ const Int_t AliTOFQADataMakerRec::fgkFiredMacropadLimit=50;//cut on number of ma
   // fLineExpTimeMax = new TLine(250., 0., 250., 0.);
   // fLineExpTotMin = new TLine(5., 0., 5., 0.);
   // fLineExpTotMax = new TLine(20., 0., 20., 0.);
-  for (Int_t sm=0;sm<17;sm++){
+  /*
+    for (Int_t sm=0;sm<17;sm++){
     fLineSMid[sm] = new TLine( sm+1, 0., sm+1, 91.);
   }
 
@@ -154,7 +159,7 @@ const Int_t AliTOFQADataMakerRec::fgkFiredMacropadLimit=50;//cut on number of ma
   for (Int_t sm=0;sm<22;sm++){
     fLineLTMbitId[sm] = new TLine( 0., sm+1, 72. ,sm+1);
   }
-  
+  */
 }
 
 //____________________________________________________________________________ 
@@ -178,7 +183,7 @@ AliTOFQADataMakerRec::AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) :
   //
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
-   
+  /*
   for (Int_t sm=0;sm<17;sm++){
     fLineSMid[sm]=qadm.fLineSMid[sm];
   }
@@ -190,6 +195,7 @@ AliTOFQADataMakerRec::AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) :
   for (Int_t sm=0;sm<22;sm++){
     fLineLTMbitId[sm] = qadm.fLineLTMbitId[sm];
   }
+  */
 }
 
 //__________________________________________________________________
@@ -217,7 +223,8 @@ AliTOFQADataMakerRec::~AliTOFQADataMakerRec()
     delete fLineExpTotMin;
   if (fLineExpTotMax)
     delete fLineExpTotMax;
-  for (Int_t sm=0;sm<17;sm++){
+  /*
+    for (Int_t sm=0;sm<17;sm++){
     if (fLineSMid[sm])
       delete fLineSMid[sm];
   }
@@ -229,6 +236,7 @@ for (Int_t sm=0;sm<22;sm++){
     if (fLineLTMbitId[sm])
       delete fLineLTMbitId[sm];
   }
+  */
 }
 //----------------------------------------------------------------------------
 AliTOFChannelOnlineStatusArray* AliTOFQADataMakerRec::GetCalibData() 
@@ -380,9 +388,9 @@ void AliTOFQADataMakerRec::InitRaws()
 
   //add lines for DQM shifter
   fLineExpTimeMin = new TLine(200., 0., 200., 0.);
-  fLineExpTimeMax = new TLine(250., 0., 250., 0.);
-  fLineExpTotMin = new TLine(5., 0., 5., 0.);
-  fLineExpTotMax = new TLine(20., 0., 20., 0.);
+  fLineExpTimeMax = new TLine(300., 0., 300., 0.);
+  fLineExpTotMin = new TLine(10., 0., 10., 0.);
+  fLineExpTotMax = new TLine(15., 0., 15., 0.);
 
   fLineExpTimeMin->SetLineColor(kGreen);
   fLineExpTimeMin->SetLineWidth(2);
@@ -396,21 +404,21 @@ void AliTOFQADataMakerRec::InitRaws()
   fLineExpTotMax->SetLineColor(kGreen);
   fLineExpTotMax->SetLineWidth(2);
   
-  for (Int_t sm=0;sm<17;sm++){
+  /*
+    for (Int_t sm=0;sm<17;sm++){
     fLineSMid[sm]->SetLineColor(kMagenta);
     fLineSMid[sm]->SetLineWidth(2);
   }
-  
+  */
   h5->GetListOfFunctions()->Add(fLineExpTimeMin);
   h5->GetListOfFunctions()->Add(fLineExpTimeMax);
   h10->GetListOfFunctions()->Add(fLineExpTotMin);
   h10->GetListOfFunctions()->Add(fLineExpTotMax);
-  
+  /*
   for (Int_t sm=0;sm<17;sm++){
     h16->GetListOfFunctions()->Add(fLineSMid[sm]);
     h17->GetListOfFunctions()->Add(fLineSMid[sm]);
   }
-  
   for (Int_t sm=0;sm<71;sm++){
     fLineLTMid[sm]->SetLineColor(kBlack);
     fLineLTMid[sm]->SetLineWidth(1);
@@ -423,7 +431,7 @@ void AliTOFQADataMakerRec::InitRaws()
     h26->GetListOfFunctions()->Add(fLineLTMbitId[sm]);
     h25->GetListOfFunctions()->Add(fLineLTMbitId[sm]);
   }
- 
+  */
   TPaveText *phosHoleBox=new TPaveText(13,38,16,53,"b");	
   phosHoleBox->SetFillStyle(0);
   phosHoleBox->SetFillColor(kWhite);
@@ -438,35 +446,35 @@ void AliTOFQADataMakerRec::InitRaws()
   // h10->SetDrawOption("logy");
 
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
-  Add2RawsList(h1,   1,  expert,  !image, !saveCorr) ;
-  Add2RawsList(h2,   2,  expert,  !image, !saveCorr) ;
-  Add2RawsList(h3,   3,  expert,  !image, !saveCorr) ;
-  Add2RawsList(h4,   4,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h1,   1,  expert, !image, !saveCorr) ;
+  Add2RawsList(h2,   2,  expert, !image, !saveCorr) ;
+  Add2RawsList(h3,   3,  expert, !image, !saveCorr) ;
+  Add2RawsList(h4,   4,  expert, !image, !saveCorr) ;
   Add2RawsList(h5,   5, !expert,  image, !saveCorr) ;
-  Add2RawsList(h6,   6,  expert,  !image, !saveCorr) ;
-  Add2RawsList(h7,   7,  expert,  !image, !saveCorr) ;
-  Add2RawsList(h8,   8,  expert,  !image, !saveCorr) ;
-  Add2RawsList(h9,   9,  expert,  !image, !saveCorr) ;
+  Add2RawsList(h6,   6,  expert, !image, !saveCorr) ;
+  Add2RawsList(h7,   7,  expert, !image, !saveCorr) ;
+  Add2RawsList(h8,   8,  expert, !image, !saveCorr) ;
+  Add2RawsList(h9,   9,  expert, !image, !saveCorr) ;
   Add2RawsList(h10, 10, !expert,  image, !saveCorr) ;
   Add2RawsList(h11, 11,  expert, !image, !saveCorr) ;
   Add2RawsList(h12, 12,  expert, !image, !saveCorr) ;
   Add2RawsList(h13, 13,  expert, !image, !saveCorr) ;
   Add2RawsList(h14, 14,  expert, !image, !saveCorr) ;
   Add2RawsList(h15, 15,  expert, !image, !saveCorr) ;
-  Add2RawsList(h16, 16,  !expert,  image, !saveCorr) ;
-  Add2RawsList(h17, 17,  !expert,  image, !saveCorr) ;
-  Add2RawsList(h18, 18,   expert, !image, !saveCorr) ;
-  Add2RawsList(h19, 19,   expert, !image, !saveCorr) ;
-  Add2RawsList(h20, 20,   expert, !image, !saveCorr) ;
-  Add2RawsList(h21, 21,   expert, !image, !saveCorr) ;
-  Add2RawsList(h22, 22,  !expert,  image, !saveCorr) ;
-  Add2RawsList(h23, 23,  !expert, !image, !saveCorr) ;
-  Add2RawsList(h24, 24,  !expert, !image, !saveCorr) ;
-  Add2RawsList(h25, 25,  !expert, !image, !saveCorr) ;
-  Add2RawsList(h26, 26,  !expert,  image, !saveCorr) ;
-  Add2RawsList(h27, 27,  !expert,  image, !saveCorr) ;
-  Add2RawsList(h28, 28,  !expert,  !image, !saveCorr) ;
-  Add2RawsList(h29, 29,  !expert,  !image, !saveCorr) ;
+  Add2RawsList(h16, 16, !expert,  image, !saveCorr) ;
+  Add2RawsList(h17, 17, !expert,  image, !saveCorr) ;
+  Add2RawsList(h18, 18,  expert, !image, !saveCorr) ;
+  Add2RawsList(h19, 19,  expert, !image, !saveCorr) ;
+  Add2RawsList(h20, 20,  expert, !image, !saveCorr) ;
+  Add2RawsList(h21, 21,  expert, !image, !saveCorr) ;
+  Add2RawsList(h22, 22,  expert, !image, !saveCorr) ;
+  Add2RawsList(h23, 23,  expert, !image, !saveCorr) ;
+  Add2RawsList(h24, 24,  expert, !image, !saveCorr) ;
+  Add2RawsList(h25, 25,  expert, !image, !saveCorr) ;
+  Add2RawsList(h26, 26,  expert,  image, !saveCorr) ;
+  Add2RawsList(h27, 27,  expert, !image, !saveCorr) ;
+  Add2RawsList(h28, 28,  expert, !image, !saveCorr) ;
+  Add2RawsList(h29, 29,  expert, !image, !saveCorr) ;
   
 //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
@@ -1494,7 +1502,7 @@ void AliTOFQADataMakerRec::SetDefaultCutNmaxFiredMacropad()
   //
   // set default cut on fired macropad 
   // 
-  SetCutNmaxFiredMacropad(5); 
+  SetCutNmaxFiredMacropad(50); 
   AliInfo(Form("Setting cut on fired macropad to default values: NfiredMacropad = %i", fgCutNmaxFiredMacropad));
   return;
 }
