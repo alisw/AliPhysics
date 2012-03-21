@@ -403,8 +403,6 @@ void AliMFTPlane::DrawPlane(Option_t *opt) {
     TCanvas *cnv = new TCanvas("cnv", GetName(), 900, 900);
     cnv->Draw();
 
-    //    printf("Created Canvas\n");
-
     TH2D *h = new TH2D("tmp", GetName(), 
 		       1, 1.1*GetSupportElement(0)->GetAxis(0)->GetXmin(), 1.1*GetSupportElement(0)->GetAxis(0)->GetXmax(), 
 		       1, 1.1*GetSupportElement(0)->GetAxis(1)->GetXmin(), 1.1*GetSupportElement(0)->GetAxis(1)->GetXmax());
@@ -420,10 +418,7 @@ void AliMFTPlane::DrawPlane(Option_t *opt) {
     supportExt -> Draw("same");
     supportInt -> Draw("same");
 
-    //    printf("Created Ellipses\n");
-
     for (Int_t iEl=0; iEl<GetNActiveElements(); iEl++) {
-      //      printf("Active element %d\n", iEl);
       if (!IsFront(GetActiveElement(iEl))) continue;
       TPave *pave = new TPave(GetActiveElement(iEl)->GetAxis(0)->GetXmin(), 
 			      GetActiveElement(iEl)->GetAxis(1)->GetXmin(), 
@@ -434,7 +429,6 @@ void AliMFTPlane::DrawPlane(Option_t *opt) {
     }
 
     for (Int_t iEl=0; iEl<GetNReadoutElements(); iEl++) {
-      //      printf("Readout element %d\n", iEl);
       if (!IsFront(GetReadoutElement(iEl))) continue;
       TPave *pave = new TPave(GetReadoutElement(iEl)->GetAxis(0)->GetXmin(), 
 			      GetReadoutElement(iEl)->GetAxis(1)->GetXmin(), 
@@ -619,3 +613,28 @@ void AliMFTPlane::DrawPlane(Option_t *opt) {
 
 //====================================================================================================================================================
 
+Int_t AliMFTPlane::GetNumberOfChips(Option_t *opt) {
+
+  Int_t nChips = 0;
+
+  if (!strcmp(opt, "front")) {
+    for (Int_t iEl=0; iEl<GetNActiveElements(); iEl++) {
+      if (!IsFront(GetActiveElement(iEl))) continue;
+      Double_t length = GetActiveElement(iEl)->GetAxis(0)->GetXmax() - GetActiveElement(iEl)->GetAxis(0)->GetXmin();
+      nChips += Int_t (length/AliMFTConstants::fWidthChip) + 1;
+    }
+  }
+
+  else if (!strcmp(opt, "back")) {
+    for (Int_t iEl=0; iEl<GetNActiveElements(); iEl++) {
+      if (IsFront(GetActiveElement(iEl))) continue;
+      Double_t length = GetActiveElement(iEl)->GetAxis(0)->GetXmax() - GetActiveElement(iEl)->GetAxis(0)->GetXmin();
+      nChips += Int_t (length/AliMFTConstants::fWidthChip) + 1;
+    }
+  }
+
+  return nChips;
+
+}
+
+//====================================================================================================================================================

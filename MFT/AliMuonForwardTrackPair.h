@@ -33,7 +33,7 @@ public:
   AliMuonForwardTrackPair(const AliMuonForwardTrackPair&);
   AliMuonForwardTrackPair &operator=(const AliMuonForwardTrackPair&);
   
-  virtual ~AliMuonForwardTrackPair() {}
+  virtual ~AliMuonForwardTrackPair() { fMuonForwardTracks->Delete(); delete fMuonForwardTracks; }
 
   void SetTrack(Int_t iTrack, AliMuonForwardTrack *track);
   AliMuonForwardTrack* GetTrack(Int_t iTrack) { 

@@ -87,9 +87,9 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fUseBransonForKinematics(kFALSE),
   fCutOnOffsetChi2(kFALSE),
   fCenterOffset(0.), 
-  fCenterChi2(1.), 
+  fCenterChi2(0.), 
   fScaleOffset(250.), 
-  fScaleChi2(4.5),
+  fScaleChi2(9.0),
   fRadiusCut(1.)
 {
 
@@ -408,7 +408,7 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   fHistOffsetSingleMuons  = new TH1D("fHistOffsetSingleMuons",  "Offset for single muons",          200, 0, 2000);
   fHistWOffsetSingleMuons = new TH1D("fHistWOffsetSingleMuons", "Weighted Offset for single muons", 300, 0, 15);  
 
-  fHistSingleMuonsPtRapidity = new TH2D("fHistSingleMuonsPtRapidity", "Phase Space for single muons", 10, -4, -2.5, 10, 0.5, 5.5);
+  fHistSingleMuonsPtRapidity = new TH2D("fHistSingleMuonsPtRapidity", "Phase Space for single muons", 100, -4.5, -2., 100, 0., 10.);
   fHistSingleMuonsOffsetChi2 = new TH2D("fHistSingleMuonsOffsetChi2", "Offset vs #chi^{2}/ndf for single muons", 400, 0, 4000, 100, 0, 20);
 
   fHistOffsetSingleMuonsX -> SetXTitle("Offset(X)  [#mum]");

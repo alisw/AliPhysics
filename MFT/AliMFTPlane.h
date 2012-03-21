@@ -78,6 +78,8 @@ public:
   Double_t GetEquivalentSilicon()            const { return fEquivalentSilicon; }
   Double_t GetEquivalentSiliconBeforeFront() const { return fEquivalentSiliconBeforeFront; }
   Double_t GetEquivalentSiliconBeforeBack()  const { return fEquivalentSiliconBeforeBack; }
+
+  Int_t GetNumberOfChips(Option_t *opt);
   
 private:
 

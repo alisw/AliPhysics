@@ -134,6 +134,17 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
 
 //====================================================================================================================================================
 
+AliMuonForwardTrack::~AliMuonForwardTrack() {
+
+  delete fMUONTrack;
+  delete fMCTrackRef;
+  fMFTClusters->Delete();
+  delete fMFTClusters;
+  
+}
+
+//====================================================================================================================================================
+
 void AliMuonForwardTrack::SetMUONTrack(AliMUONTrack *MUONTrack) {
 
   if (fMUONTrack) {
