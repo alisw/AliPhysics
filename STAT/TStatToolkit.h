@@ -46,7 +46,7 @@ class TStatToolkit : public TObject
   //
   // Graph tools
   //
-  static TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1");
+  static TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1);
   //
   // Fitting function
   //

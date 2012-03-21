@@ -32,6 +32,7 @@
 #include "TLinearFitter.h"
 #include "TGraph2D.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 
 //
 // includes neccessary for test functions
@@ -1186,13 +1187,17 @@ TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param
 }
 
 
-TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut){
+TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor){
   //
   // Make a sparse draw of the variables
-  //
+  // Writen by Weilin.Yu
   const Int_t entries =  tree->Draw(expr,cut,"goff");
   //  TGraph * graph = (TGraph*)gPad->GetPrimitive("Graph"); // 2D
-  TGraph * graph = new TGraph (entries, tree->GetV2(),tree->GetV1());
+  TGraph * graph = 0;
+  if (tree->GetV3()) graph = new TGraphErrors (entries, tree->GetV2(),tree->GetV1(),0,tree->GetV3());
+  graph =  new TGraphErrors (entries, tree->GetV2(),tree->GetV1(),0,0);
+  graph->SetMarkerStyle(mstyle); 
+  graph->SetMarkerColor(mcolor);
   //
   Int_t *index = new Int_t[entries];
   TMath::Sort(entries,graph->GetX(),index,kFALSE);
@@ -1222,7 +1227,10 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
     newBins[i] = i;
   }
   
-  TGraph *graphNew = new TGraph(entries,tempArray,graph->GetY());
+  TGraph *graphNew = 0;
+  if (tree->GetV3()) graphNew = new TGraphErrors(entries,tempArray,graph->GetY(),0,tree->GetV3());
+  else
+    graphNew = new TGraphErrors(entries,tempArray,graph->GetY(),0,0);
   graphNew->GetXaxis()->Set(newNbins,newBins);
   
   Char_t xName[50];
@@ -1231,7 +1239,8 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
     graphNew->GetXaxis()->SetBinLabel(i+1,xName);
   }
   graphNew->GetHistogram()->SetTitle("");
-  
+  graphNew->SetMarkerStyle(mstyle); 
+  graphNew->SetMarkerColor(mcolor);
   delete [] tempArray;
   delete [] index;
   delete [] newBins;
