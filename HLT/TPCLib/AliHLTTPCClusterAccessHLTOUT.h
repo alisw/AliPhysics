@@ -15,15 +15,15 @@
 #include "TObject.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTTPCClusterMCData.h"
-#include "AliTPCclusterMI.h"
+#include "AliHLTTPCRawCluster.h"
 #include <map>
 
+class AliTPCParam;
 class AliTPCClustersRow;
+class AliTPCclusterMI;
 class AliHLTOUT;
 class TClonesArray;
 class AliHLTTPCDataCompressionDecoder;
-
-typedef std::map<AliHLTUInt32_t, AliHLTTPCClusterMCLabel> AliHLTTPCClusterMCDataList;
 
 /**
  * @class AliHLTTPCClusterAccessHLTOUT
@@ -97,6 +97,9 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /// inherited from TObject: return the cluster array if name id "clusterarray"
   virtual TObject    *FindObject(const char *name) const;
 
+  /// inherited from TObject: supports writing of data to AliTPCClustersRow
+  virtual void Copy(TObject &object) const;
+
   /// inherited from TObject: cleanup
   virtual void        Clear(Option_t * option ="");
 
@@ -106,16 +109,33 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /// process the cluster data block of various formats from HLTOUT
   int ProcessClusters(const char* params);
 
+  /// helper struct to store cluster pointers in a map together with MC info
+  struct AliRawClusterEntry {
+    AliRawClusterEntry() : fCluster(NULL), fMC(NULL) {}
+    AliRawClusterEntry(AliHLTTPCRawCluster* pCluster) : fCluster(pCluster), fMC(NULL) {}
+    AliRawClusterEntry(const AliRawClusterEntry& other) : fCluster(other.fCluster), fMC(other.fMC) {}
+    AliRawClusterEntry& operator=(const AliRawClusterEntry& other) {
+      if (&other==this) return *this;
+      fCluster=other.fCluster; fMC=other.fMC;
+      return *this;
+    }
+    AliHLTTPCRawCluster* fCluster; //! pointer to cluster in the array of all clusters
+    const AliHLTTPCClusterMCLabel* fMC; //! pointer to corresponding MC data in HLTOUT block 
+  };
+  
+  typedef vector<AliHLTTPCRawCluster> AliHLTTPCRawClusterVector;
+  typedef vector<AliRawClusterEntry> AliRawClusterEntryVector;
+
   /**
-   * @class AliTPCclusterMIContainer
+   * @class AliRawClusterContainer
    * Cluster read interface for offline.
    * The class implements the interface to be used in the decoding
    * of compressed TPC data.
    */
-  class AliTPCclusterMIContainer {
+  class AliRawClusterContainer {
   public:
-    AliTPCclusterMIContainer();
-    virtual ~AliTPCclusterMIContainer();
+    AliRawClusterContainer();
+    virtual ~AliRawClusterContainer();
 
     struct AliClusterIdBlock {
       AliClusterIdBlock() : fIds(NULL), fSize(0) {}
@@ -125,25 +145,24 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
 
     class iterator {
     public:
-      iterator() : fClusterNo(-1), fData(NULL), fCluster(NULL), fRowOffset(0) {}
-      iterator(AliTPCclusterMIContainer* pData) : fClusterNo(-1), fData(pData), fCluster(NULL), fRowOffset(0) {}
-      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fCluster(other.fCluster), fRowOffset(other.fRowOffset) {}
+      iterator() : fClusterNo(-1), fData(NULL), fEntry(NULL), fRowOffset(0) {}
+      iterator(AliRawClusterContainer* pData) : fClusterNo(-1), fData(pData), fEntry(NULL), fRowOffset(0) {}
+      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fEntry(other.fEntry), fRowOffset(other.fRowOffset) {}
       iterator& operator=(const iterator& other) {
 	if (this==&other) return *this;
-	fClusterNo=other.fClusterNo; fData=other.fData; fCluster=other.fCluster; fRowOffset=other.fRowOffset; return *this;
+	fClusterNo=other.fClusterNo; fData=other.fData; fEntry=other.fEntry; fRowOffset=other.fRowOffset; return *this;
       }
       ~iterator() {}
 
-      void SetPadRow(int row)          {if (fCluster) fCluster->SetRow(row-fRowOffset);}
-      void SetPad(float pad) 	       {if (fCluster) fCluster->SetPad(pad);}
-      void SetTime(float time) 	       {if (fCluster) fCluster->SetTimeBin(time);}
-      void SetSigmaY2(float sigmaY2)   {if (fCluster) fCluster->SetSigmaY2(sigmaY2);}
-      void SetSigmaZ2(float sigmaZ2)   {if (fCluster) fCluster->SetSigmaZ2(sigmaZ2);}
-      void SetCharge(unsigned charge)  {if (fCluster) fCluster->SetQ(charge);}
-      void SetQMax(unsigned qmax)      {if (fCluster) fCluster->SetMax(qmax);}
+      void SetPadRow(int row)          {if (fEntry && fEntry->fCluster) fEntry->fCluster->SetPadRow(row-fRowOffset);}
+      void SetPad(float pad) 	       {if (fEntry && fEntry->fCluster) fEntry->fCluster->SetPad(pad);}
+      void SetTime(float time) 	       {if (fEntry && fEntry->fCluster) fEntry->fCluster->SetTime(time);}
+      void SetSigmaY2(float sigmaY2)   {if (fEntry && fEntry->fCluster) fEntry->fCluster->SetSigmaY2(sigmaY2);}
+      void SetSigmaZ2(float sigmaZ2)   {if (fEntry && fEntry->fCluster) fEntry->fCluster->SetSigmaZ2(sigmaZ2);}
+      void SetCharge(unsigned charge)  {if (fEntry && fEntry->fCluster) fEntry->fCluster->SetCharge(charge);}
+      void SetQMax(unsigned qmax)      {if (fEntry && fEntry->fCluster) fEntry->fCluster->SetQMax(qmax);}
       void SetMC(const AliHLTTPCClusterMCLabel* pMC) {
-	if (!fCluster || !pMC) return;
-	for (int k=0; k<3; k++) fCluster->SetLabel(pMC->fClusterID[k].fMCID, k);
+	if (fEntry) fEntry->fMC=pMC;
       }
 
       // switch to next cluster
@@ -151,8 +170,8 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
 
     private:
       int fClusterNo; //! cluster no in the current block
-      AliTPCclusterMIContainer* fData; //! pointer to actual data
-      AliTPCclusterMI* fCluster; //! pointer to current cluster
+      AliRawClusterContainer* fData; //! pointer to actual data
+      AliRawClusterEntry* fEntry; //! pointer to current cluster
       int fRowOffset;  //! row offset for current partition
     };
 
@@ -165,22 +184,24 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
     virtual void  Clear(Option_t * option="");
     /// get the cluster array for a sector
     TObjArray* GetSectorArray(unsigned sector) const;
+    /// fill the cluster array for a sector and specific row if specified
+    int FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row=-1) const;
     /// print info
     virtual void Print(Option_t *option=NULL) const;
 
   protected:
     /// load next cluster from array of the sepcific sector
-    AliTPCclusterMI* NextCluster(int slice, int partition);
+    AliRawClusterEntry* NextCluster(int slice, int partition);
 
   private:
-    AliTPCclusterMIContainer(const AliTPCclusterMIContainer&);
-    AliTPCclusterMIContainer& operator=(const AliTPCclusterMIContainer&);
+    /// copy constructor prohibited
+    AliRawClusterContainer(const AliRawClusterContainer&);
+    /// assignment operator prohibited
+    AliRawClusterContainer& operator=(const AliRawClusterContainer&);
 
-    vector<TClonesArray*> fClusterArrays; //! cluster arrays per sector (offline notation 0-71)
-    vector<AliClusterIdBlock> fRemainingClusterIds; //! clusters ids for remaining cluster ids
-    AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
-    AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
-    vector<const AliHLTTPCClusterMCData*> fClusterMCData; //! references to MC data blocks
+    vector<AliHLTTPCRawClusterVector*> fClusterVectors; //! instances of cluster arrays
+    vector<AliRawClusterEntryVector*> fClusterMaps; //! cluster pointer vectors per sector (offline notation 0-71)
+    TClonesArray* fSectorArray; //! current sector array of clusters provided to caller
     iterator fIterator; //!
   };
 
@@ -198,9 +219,10 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   };
 
   int fVerbosity; //! verbosity level
-  AliTPCclusterMIContainer* fClusters; //! cluster container
+  AliRawClusterContainer* fClusters; //! cluster container
   int fCurrentSector; //! current sector
   AliHLTTPCDataCompressionDecoder* fpDecoder; //! decoder instance
+  AliTPCParam* fTPCParam; //! pointer to TPC param
 
   ClassDef(AliHLTTPCClusterAccessHLTOUT, 0)
 };
