@@ -130,6 +130,25 @@ class AliTRDmcmSim : public TObject {
 	  void PrintAdcDatXml(ostream& os) const;
 	  void PrintAdcDatDatx(ostream& os, Bool_t broadcast=kFALSE, Int_t timeBinOffset = -1) const;
 
+  static  Bool_t ReadPackedConfig(AliTRDtrapConfig *cfg, Int_t det, UInt_t *data, Int_t size);
+
+  // DMEM addresses
+  static const Int_t fgkDmemAddrLUTcor0       = 0xC02A;
+  static const Int_t fgkDmemAddrLUTcor1       = 0xC028;
+  static const Int_t fgkDmemAddrLUTnbins      = 0xC029;
+
+  static const Int_t fgkDmemAddrLUTStart      = 0xC100; // LUT start address
+  static const Int_t fgkDmemAddrLUTEnd        = 0xC3FF; // maximum possible end address for the LUT table
+  static const Int_t fgkDmemAddrLUTLength     = 0xC02B; // address where real size of the LUT table is stored
+
+  static const Int_t fgkDmemAddrTrackletStart = 0xC0E0; // Storage area for tracklets, start address
+  static const Int_t fgkDmemAddrTrackletEnd   = 0xC0E3; // Storage area for tracklets, end address
+
+  static const Int_t fgkDmemAddrDeflCorr      = 0xc022; // DMEM address of deflection correction
+  static const Int_t fgkDmemAddrNdrift        = 0xc025; // DMEM address of Ndrift
+  static const Int_t fgkDmemAddrDeflCutStart  = 0xc030; // DMEM start address of deflection cut
+  static const Int_t fgkDmemAddrDeflCutEnd    = 0xc055; // DMEM end address of deflection cut
+
  protected:
 	  Bool_t    CheckInitialized() const;           // Check whether the class is initialized
 
@@ -145,7 +164,6 @@ class AliTRDmcmSim : public TObject {
  static const Int_t fgkNHitsMC = 100;                   // maximum number of hits for which MC information is kept
 
  static const UShort_t fgkFPshifts[4];                  // shifts for pedestal filter
-
 
 	  Bool_t    fInitialized;                       // memory is allocated if initialized
 	  Int_t     fDetector;                          // Chamber ID

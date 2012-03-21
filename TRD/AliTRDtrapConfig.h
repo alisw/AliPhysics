@@ -3,27 +3,43 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+// Configuration of the TRD TRAcklet Processor
+// (TRD Front-End Electronics)
 //
-// Class holding the configuration of the tracklet processor
-// in the TRD FEE
-//
-
+// TRAP registers
+// TRAP data memory (DMEM)
 
 #include <TObject.h>
+#include <TNamed.h>
 #include <TString.h>
 #include <fstream>
 
-class AliTRDtrapConfig : public TObject
+class AliTRDtrapConfig : public TNamed
 {
  public:
+  AliTRDtrapConfig(const TString &name = "", const TString &title = "");
   ~AliTRDtrapConfig();
 
-  static AliTRDtrapConfig* Instance();
+  // allocation
+  enum Alloc_t {
+    kAllocNone,
+    kAllocGlobal,
+    kAllocByDetector,
+    kAllocByHC,
+    kAllocByMCM,
+    kAllocByMergerType,
+    kAllocByLayer,
+    kAllocByMCMinSM,
+    kAllocLast
+  }; // possible granularities for allocation
+     // common to registers and DMEM
 
+  // registers
   enum TrapReg_t { kSML0,
 		  kSML1,
 		  kSML2,
 		  kSMMODE,
+		  kSMCMD,
 		  kNITM0,
 		  kNITM1,
 		  kNITM2,
@@ -455,38 +471,39 @@ class AliTRDtrapConfig : public TObject
 		  kDMDELS,
 		  kLastReg };   // enum of all TRAP registers, to be used for access to them
 
-  const char* GetRegName(TrapReg_t reg)       const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fName.Data() : ""; }
-  UShort_t    GetRegAddress(TrapReg_t reg)    const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fAddr : 0; }
-  UShort_t    GetRegNBits(TrapReg_t reg)      const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fNbits : 0; }
-  UInt_t      GetRegResetValue(TrapReg_t reg) const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fResetValue : 0; }
-
-  TrapReg_t          GetRegByAddress(Int_t address) const;
-
-  Int_t  GetTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
-  Bool_t PrintTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
-  Bool_t PrintTrapAddr(Int_t addr, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
-
-  Bool_t SetTrapReg(TrapReg_t reg, Int_t value);
+  Bool_t SetTrapRegAlloc(TrapReg_t reg, Alloc_t mode) { return fRegisterValue[reg].Allocate(mode); }
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det);
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t rob, Int_t mcm);
 
+  Int_t  GetTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
+
+  void ResetRegs();
+
+  // data memory (DMEM)
+  Bool_t SetDmemAlloc(Int_t addr, Alloc_t mode);
+  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det);
+  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm);
+  Bool_t SetDmem(Int_t addr, Int_t value) { return SetDmem(addr, (UInt_t) value); }
+  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm) { return SetDmem(addr, (UInt_t) value, det, rob, mcm); }
+
+  UInt_t GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const;
+
+  void ResetDmem();
+
+  // access by 16-bit address
   UInt_t Peek(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const;
   Bool_t Poke(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm);
 
-  void InitRegs();
-  void ResetRegs();
-  void ResetDmem();
+  // helper methods
+  const char* GetRegName(TrapReg_t reg)       const { return ((reg >= 0) && (reg < kLastReg)) ? fRegisterValue[reg].GetName() : ""; }
+  UShort_t    GetRegAddress(TrapReg_t reg)    const { return ((reg >= 0) && (reg < kLastReg)) ? fRegisterValue[reg].GetAddr() : 0; }
+  UShort_t    GetRegNBits(TrapReg_t reg)      const { return ((reg >= 0) && (reg < kLastReg)) ? fRegisterValue[reg].GetNbits() : 0; }
+  UInt_t      GetRegResetValue(TrapReg_t reg) const { return ((reg >= 0) && (reg < kLastReg)) ? fRegisterValue[reg].GetResetValue() : 0; }
 
-  // DMEM
-  Bool_t SetDmem(Int_t addr, UInt_t value);
-  //  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det);
-  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm);
-  Bool_t SetDmem(Int_t addr, Int_t value) { return SetDmem(addr, (UInt_t) value); }
-  //  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det) { return SetDmem(addr, (UInt_t) value, det); }
-  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm) { return SetDmem(addr, (UInt_t) value, det, rob, mcm); }
+  TrapReg_t   GetRegByAddress(Int_t address) const;
 
-  UInt_t GetDmemUnsigned(Int_t addr) const;
-  UInt_t GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const;
+  Bool_t PrintTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
+  Bool_t PrintTrapAddr(Int_t addr, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
 
   void PrintMemDatx(ostream &os, Int_t addr) const;
   void PrintMemDatx(ostream &os, Int_t addr, Int_t det, Int_t rob, Int_t mcm) const;
@@ -494,110 +511,124 @@ class AliTRDtrapConfig : public TObject
   void PrintMemDatx(ostream &os, TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm) const;
   void PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t rob, Int_t mcm) const;
 
-  // configuration handling
-  Bool_t ReadPackedConfig(Int_t det, UInt_t *data, Int_t size);
+  static const Int_t fgkDmemStartAddress  = 0xc000; // start address in TRAP GIO
+  static const Int_t fgkDmemWords = 0x400;          // number of words in DMEM
 
-  Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data);
+  static const Int_t fgkImemStartAddress = 0xe000;  // start address in TRAP GIO
+  static const Int_t fgkImemWords = 0x1000;         // number of words in IMEM
 
-  // DMEM addresses
-  static const Int_t fgkDmemAddrLUTcor0       = 0xC02A; // address for correction factor 0
-  static const Int_t fgkDmemAddrLUTcor1       = 0xC028; // address for correction factor 1
-  static const Int_t fgkDmemAddrLUTnbins      = 0xC029; // address for number of timebins
-
-  static const Int_t fgkDmemAddrLUTStart      = 0xC100; // LUT start address
-  static const Int_t fgkDmemAddrLUTEnd        = 0xC3FF; // maximum possible end address for the LUT table
-  static const Int_t fgkDmemAddrLUTLength     = 0xC02B; // address where real size of the LUT table is stored
-
-  static const Int_t fgkDmemAddrTrackletStart = 0xC0E0; // Storage area for tracklets, start address
-  static const Int_t fgkDmemAddrTrackletEnd   = 0xC0E3; // Storage area for tracklets, end address
-
-  static const Int_t fgkDmemAddrDeflCorr      = 0xc022; // DMEM address of deflection correction
-  static const Int_t fgkDmemAddrNdrift        = 0xc025; // DMEM address of Ndrift
-  static const Int_t fgkDmemAddrDeflCutStart  = 0xc030; // DMEM start address of deflection cut
-  static const Int_t fgkDmemAddrDeflCutEnd    = 0xc055; // DMEM end address of deflection cut
-
-  // DMEM memory in simulation;
-  static const Int_t fgkDmemStartAddress;           // start address in TRAP GIO
-  static const Int_t fgkDmemWords = 0xc400;         // number of words in DMEM
+  static const Int_t fgkDbankStartAddress = 0xf000; // start address in TRAP GIO
+  static const Int_t fgkDbankWords = 0x0100;        // number of words in DBANK
 
  protected:
-  static AliTRDtrapConfig *fgInstance;  // pointer to instance (singleton)
+  void InitRegs();
 
-  struct SimpleReg_t {
-    TString   fName;       // Name of the register
-    UShort_t  fAddr;       // Address in GIO of TRAP
-    UShort_t  fNbits;      // Number of bits, from 1 to 32
-    UInt_t    fResetValue; // reset value
-    SimpleReg_t(const char *nnn = 0, UShort_t a = 0, UShort_t n = 0, UInt_t r = 0) :
-      fName(nnn), fAddr(a), fNbits(n), fResetValue(r) {}
+  class AliTRDtrapValue : public TObject {
+  public:
+    AliTRDtrapValue();
+    virtual ~AliTRDtrapValue() {}
+
+    virtual Bool_t Allocate(Alloc_t mode);
+
+  protected:
+    Bool_t SetData(Int_t value);
+    Bool_t SetData(Int_t value, Int_t det);
+    Bool_t SetData(Int_t value, Int_t det, Int_t rob, Int_t mcm);
+
+    Int_t  GetData(Int_t det, Int_t rob, Int_t mcm) const;
+
+    Int_t  GetIdx(Int_t det, Int_t rob, Int_t mcm) const;
+
+  private:
+    AliTRDtrapValue(const AliTRDtrapValue &rhs); // not implemented
+    AliTRDtrapValue& operator=(const AliTRDtrapValue &rhs); // not implemented
+
+    Alloc_t  fAllocMode;	// allocation mode
+    Int_t    fSize;		// array size
+    UInt_t  *fData;		//[fSize] data array
+    Bool_t  *fValid;		//[fSize] valid flag
+
+    static const Int_t fgkSize[kAllocLast]; // required array dimension for different allocation modes
+
+    ClassDef(AliTRDtrapValue, 1);
   };
 
-  struct RegValue_t {
-    enum {
-      kInvalid = 0,
-      kGlobal,
-      kIndividual
-    } state; // mode of storage (global or per MCM)
-    union {
-      Int_t globalValue;
-      Int_t *individualValue;
-    };
+  class AliTRDtrapRegister : public AliTRDtrapValue {
+  public:
+    AliTRDtrapRegister();
+    virtual ~AliTRDtrapRegister();
+
+    void    Init(const char* name, Int_t addr, Int_t nBits, Int_t resetValue);
+    void    Reset() { SetData(fResetValue); }
+
+    Bool_t  SetValue(Int_t value, Int_t det) { return SetData(value, det); }
+    Bool_t  SetValue(Int_t value, Int_t det, Int_t rob, Int_t mcm) { return SetData(value, det, rob, mcm); }
+
+    Int_t   GetValue(Int_t det, Int_t rob, Int_t mcm) const { return GetData(det, rob, mcm); }
+
+    const char*  GetName() const { return fName.Data(); }
+    UShort_t GetAddr() const { return fAddr; }
+    UShort_t GetNbits() const { return fNbits; }
+    UInt_t   GetResetValue() const { return fResetValue; }
+
+  protected:
+    AliTRDtrapRegister(const AliTRDtrapRegister &rhs);
+    AliTRDtrapRegister& operator=(const AliTRDtrapRegister &rhs);
+
+    // fixed properties of the register
+    // which do not need to be stored
+    TString   fName;            //! Name of the register
+    UShort_t  fAddr;            //! Address in GIO of TRAP
+    UShort_t  fNbits;           //! Number of bits, from 1 to 32
+    UInt_t    fResetValue;      //! reset value
+
+    ClassDef(AliTRDtrapRegister, 1);
+  };
+
+  class AliTRDtrapDmemWord : public AliTRDtrapValue {
+  public:
+    AliTRDtrapDmemWord() : AliTRDtrapValue(), fName(""), fAddr(0) {}
+    virtual ~AliTRDtrapDmemWord() {}
+
+    void    Reset() { SetData(0); }
+
+    Bool_t  SetValue(UInt_t value, Int_t det) { return SetData(value, det); }
+    Bool_t  SetValue(UInt_t value, Int_t det, Int_t rob, Int_t mcm) { return SetData(value, det, rob, mcm); }
+
+    UInt_t  GetValue(Int_t det, Int_t rob, Int_t mcm) const { return GetData(det, rob, mcm); }
+
+    void    SetAddress(UShort_t addr) { fAddr = addr; fName.Form("DMEM 0x%04x", fAddr); }
+    const char* GetName() const { return fName.Data(); }
+
+  protected:
+    AliTRDtrapDmemWord(const AliTRDtrapDmemWord &rhs); // not implemented
+    AliTRDtrapDmemWord& operator=(const AliTRDtrapDmemWord &rhs); // not implemented
+
+    TString  fName;
+    UShort_t fAddr;		//! address
+
+    ClassDef(AliTRDtrapDmemWord, 1);
   };
 
   // configuration registers
-  SimpleReg_t fRegs[kLastReg];          // array of TRAP registers
-  RegValue_t fRegisterValue[kLastReg];  // array of TRAP register values in use
+  AliTRDtrapRegister fRegisterValue[kLastReg];  // array of TRAP register values in use
 
-  static const UInt_t fgkScsnCmdWrite=10;  // Command number for the write command
-  static const Int_t fgkMaxLinkPairs=4;    // number of linkpairs used during configuration
+  // DMEM
+  AliTRDtrapDmemWord fDmem[fgkDmemWords]; // TRAP data memory
+
   static const Int_t fgkMaxMcm;            // max. no. of MCMs to be treated
   static const Int_t fgkMcmlistSize=256;     // list of MCMs to which a value has to be written
 
-  // DMEM
-  UInt_t* fDmem[fgkDmemWords]; // DMEM storage
-  Int_t fDmemDepth[fgkDmemWords]; // memory space indicator for fDmem
-
-  static const Int_t fgkDmemSizeEmpty=0; // size if no value stored
-  static const   Int_t fgkDmemSizeUniform = 1; // size for global values
-  static const   Int_t fgkDmemSizeSmIndividual = 30*8*16;   // storage for each MCM within one supermodule
-  static const   Int_t fgkDmemSizeTotalIndividual = 540*6*8*16;  // one individual value for each and every MCM in the TRD
-  static const   Int_t fgkDmemSizeSmRocIndividual = 540; // one individual value for each chamber in TRD
-
-  // Online PID
-  Double_t fScaleQ0;  // scaling factor for the x-axis of the PID table
-  Double_t fScaleQ1;  // scaling factor for the y-axis of the PID table
-
-  AliTRDtrapConfig(); // private constructor due to singleton implementation
-
-/* not yet used
-  struct BlockDescr_t {
-    UShort_t addr;
-    UShort_t nregs;
-    UShort_t nbits;
-    UShort_t step;
-  };
-
-  struct CmdReg_t {
-    char *name;
-    UShort_t addr;
-  };
-
-  enum DbankProp_t { kDBankEmpty = 0,
-		    kDBankHeader,
-		    kDBankData,
-		    kDBankNoB,
-		    kDBankCRC,
-		    kDBankEHeader,
-		    kDBankSCSNData };
-*/
-
+  static Bool_t    fgRegAddressMapInitialized;
+  static TrapReg_t fgRegAddressMap[0x400 + 0x200 + 0x3];
+  static const Int_t fgkRegisterAddressBlockStart[];
+  static const Int_t fgkRegisterAddressBlockSize[];
 
  private:
   AliTRDtrapConfig& operator=(const AliTRDtrapConfig &rhs); // not implemented
   AliTRDtrapConfig(const AliTRDtrapConfig& cfg); // not implemented
 
-  ClassDef(AliTRDtrapConfig, 2);
+  ClassDef(AliTRDtrapConfig, 3);
 };
 
 #endif
-

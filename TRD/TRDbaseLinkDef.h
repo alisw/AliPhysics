@@ -91,6 +91,9 @@
 #pragma link C++ class  AliTRDtrapConfigHandler+;
 #pragma link C++ class  AliTRDltuParam+;
 #pragma link C++ class  AliTRDtrapConfig+;
+#pragma link C++ class  AliTRDtrapConfig::AliTRDtrapValue+;
+#pragma link C++ class  AliTRDtrapConfig::AliTRDtrapRegister+;
+#pragma link C++ class  AliTRDtrapConfig::AliTRDtrapDmemWord+;
 #pragma link C++ class  AliTRDtrackletBase+;
 #pragma link C++ class  AliTRDtrackletGTU+;
 #pragma link C++ class  AliTRDtrackletMCM+;

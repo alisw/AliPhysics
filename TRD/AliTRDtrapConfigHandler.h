@@ -13,14 +13,14 @@
 #include <TObject.h>
 #include "AliTRDltuParam.h"
 #include "AliTRDCalOnlineGainTable.h"
-
-class AliTRDtrapConfig;
+#include "AliTRDtrapConfig.h"
 
 class AliTRDtrapConfigHandler : public TObject {
  public:
-                    AliTRDtrapConfigHandler();
+                    AliTRDtrapConfigHandler(AliTRDtrapConfig *cfg);
   virtual          ~AliTRDtrapConfigHandler();
 
+  void Init();                                                // Set DMEM allocation modes
   void ResetMCMs();                                           // Reset all trap registers and DMEM of the MCMs
   Int_t LoadConfig();                                         // load a default configuration suitable for simulation
   Int_t LoadConfig(TString filename);                         // load a TRAP configuration from a file
@@ -33,6 +33,8 @@ class AliTRDtrapConfigHandler : public TObject {
   // Int_t poke(Int_t rob, Int_t mcm, Int_t addr, UInt_t value);   // not implemented yet
 
  private:
+  Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data);
+
   void  ConfigureDyCorr(Int_t det);                             // deflection length correction due to Lorentz angle and tilted pad correction
   void  ConfigureDRange(Int_t det);                             // deflection range LUT,  range calculated according to B-field (in T) and pt_min (in GeV/c)
   void  ConfigureNTimebins(Int_t det);                          // timebins in the drift region
@@ -64,11 +66,35 @@ class AliTRDtrapConfigHandler : public TObject {
   static const Int_t fgkPadsPerMCM = 18;   // readout pads per MCM
   static const Int_t fgkMCMperROBRow = 4;  // MCMs per ROB row
 
+  static const Int_t fgkMaxLinkPairs=4;    // number of linkpairs used during configuration
+  static const Int_t fgkMcmlistSize=256;     // list of MCMs to which a value has to be written
+
   AliTRDltuParam     ltuParam;             // ltuParam class for the actual calculation of the parameters
 
   UInt_t fRestrictiveMask;                 // mask to restrict subsequent commands to specified chambers
 
+  AliTRDtrapConfig *fTrapConfig;           // pointer to TRAP config in use
   AliTRDCalOnlineGainTable fGtbl;          // gain table
+
+  // to be moved to AliTRDcalibDB:
+public:
+  static AliTRDtrapConfig* GetTrapConfig() {
+    if (fgActiveTrapConfig) {
+      printf("returning existing TRAP config\n");
+      return fgActiveTrapConfig;
+    }
+    else {
+      printf("creating new TRAP config\n");
+      fgActiveTrapConfig = new AliTRDtrapConfig();
+      AliTRDtrapConfigHandler cfgHandler(fgActiveTrapConfig);
+      cfgHandler.Init();
+      cfgHandler.LoadConfig();
+      return fgActiveTrapConfig;
+    }
+  }
+  // static void SetTrapConfig(AliTRDtrapConfig *trapcfg) { fgActiveTrapConfig = trapcfg; }
+protected:
+  static AliTRDtrapConfig* fgActiveTrapConfig;
 
   ClassDef(AliTRDtrapConfigHandler,0)
 };

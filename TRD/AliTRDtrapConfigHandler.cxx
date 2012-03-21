@@ -29,7 +29,9 @@
 
 #include "AliLog.h"
 
+#include "AliTRDfeeParam.h"
 #include "AliTRDtrapConfig.h"
+#include "AliTRDmcmSim.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 
@@ -43,11 +45,12 @@
 
 using namespace std;
 
-ClassImp(AliTRDtrapConfigHandler)
+AliTRDtrapConfig* AliTRDtrapConfigHandler::fgActiveTrapConfig = 0x0;
 
-AliTRDtrapConfigHandler::AliTRDtrapConfigHandler() :
+AliTRDtrapConfigHandler::AliTRDtrapConfigHandler(AliTRDtrapConfig *cfg) :
      ltuParam()
      , fRestrictiveMask((0x3ffff << 11) | (0x1f << 6) | 0x3f)
+     , fTrapConfig(cfg)
      , fGtbl()
 {
 
@@ -59,15 +62,72 @@ AliTRDtrapConfigHandler::~AliTRDtrapConfigHandler()
 
 }
 
+void AliTRDtrapConfigHandler::Init()
+{
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return;
+  }
+
+  // setup of register allocation
+  // I/O configuration which we don't care about
+  fTrapConfig->SetTrapRegAlloc(AliTRDtrapConfig::kSEBDOU, AliTRDtrapConfig::kAllocNone);
+  // position look-up table by layer
+  for (Int_t iBin = 0; iBin < 128; iBin++)
+    fTrapConfig->SetTrapRegAlloc((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iBin), AliTRDtrapConfig::kAllocByLayer);
+  // ... individual
+  fTrapConfig->SetTrapRegAlloc(AliTRDtrapConfig::kC14CPUA, AliTRDtrapConfig::kAllocByMCM);
+  fTrapConfig->SetTrapRegAlloc(AliTRDtrapConfig::kC15CPUA, AliTRDtrapConfig::kAllocByMCM);
+
+  // setup of DMEM allocation
+  for(Int_t iAddr = AliTRDtrapConfig::fgkDmemStartAddress;
+            iAddr < (AliTRDtrapConfig::fgkDmemWords + AliTRDtrapConfig::fgkDmemStartAddress); iAddr++) {
+
+    if(iAddr == AliTRDmcmSim::fgkDmemAddrDeflCorr)
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocByMCMinSM);
+
+    else if(iAddr == AliTRDmcmSim::fgkDmemAddrNdrift)
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocByDetector);
+
+    else if((iAddr >= AliTRDmcmSim::fgkDmemAddrDeflCutStart) && (iAddr <= AliTRDmcmSim::fgkDmemAddrDeflCutEnd))
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocByMCMinSM);
+
+    else if((iAddr >= AliTRDmcmSim::fgkDmemAddrTrackletStart) && (iAddr <= AliTRDmcmSim::fgkDmemAddrTrackletEnd))
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocByMCM);
+
+    else if((iAddr >= AliTRDmcmSim::fgkDmemAddrLUTStart) && (iAddr <= AliTRDmcmSim::fgkDmemAddrLUTEnd))
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocGlobal);
+
+    else if(iAddr == AliTRDmcmSim::fgkDmemAddrLUTcor0)
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocByMCMinSM);
+
+    else if(iAddr == AliTRDmcmSim::fgkDmemAddrLUTcor1)
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocByMCMinSM);
+
+    else if(iAddr == AliTRDmcmSim::fgkDmemAddrLUTnbins)
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocGlobal);
+
+    else if(iAddr == AliTRDmcmSim::fgkDmemAddrLUTLength)
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocGlobal);
+
+    else
+      fTrapConfig->SetDmemAlloc(iAddr, AliTRDtrapConfig::kAllocGlobal);
+  }
+}
+
 void AliTRDtrapConfigHandler::ResetMCMs()
 {
    //
    // Reset all MCM registers and DMEM
    //
 
-   AliTRDtrapConfig *cfg = AliTRDtrapConfig::Instance();
-   cfg->ResetRegs();
-   cfg->ResetDmem();
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return;
+  }
+
+   fTrapConfig->ResetRegs();
+   fTrapConfig->ResetDmem();
 }
 
 
@@ -77,48 +137,12 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
   // for a detailed description of the registers see the TRAP manual
   // if you want to resimulate tracklets on real data use the appropriate config instead
 
-  AliTRDtrapConfig *cfg = AliTRDtrapConfig::Instance();
-
-  // HC header configuration bits
-  cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, 0x2102); // zs, deh
-
-  // no. of timebins
-  cfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 24);
-
-  // pedestal filter
-  cfg->SetTrapReg(AliTRDtrapConfig::kFPNP, 4*10);
-  cfg->SetTrapReg(AliTRDtrapConfig::kFPTC, 0);
-  cfg->SetTrapReg(AliTRDtrapConfig::kFPBY, 0); // bypassed!
-
-  // gain filter
-  for (Int_t adc = 0; adc < 20; adc++) {
-    cfg->SetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGA0+adc), 40);
-    cfg->SetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGF0+adc), 15);
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return -1;
   }
-  cfg->SetTrapReg(AliTRDtrapConfig::kFGTA, 20);
-  cfg->SetTrapReg(AliTRDtrapConfig::kFGTB, 2060);
-  cfg->SetTrapReg(AliTRDtrapConfig::kFGBY, 0);  // bypassed!
 
-  // tail cancellation
-  cfg->SetTrapReg(AliTRDtrapConfig::kFTAL, 200);
-  cfg->SetTrapReg(AliTRDtrapConfig::kFTLL, 0);
-  cfg->SetTrapReg(AliTRDtrapConfig::kFTLS, 200);
-  cfg->SetTrapReg(AliTRDtrapConfig::kFTBY, 0);
-
-  // tracklet calculation
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPQS0, 5);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 10);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 11);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 20);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPFS, 5);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPFE, 20);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPFP, 40);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPCL, 1);
-  cfg->SetTrapReg(AliTRDtrapConfig::kTPCT, 10);
-
+  // prepare ltuParam
   // ndrift (+ 5 binary digits)
   ltuParam.SetNtimebins(20 << 5);
   // deflection + tilt correction
@@ -134,12 +158,64 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
   ltuParam.SetRawLengthCorrectionEnable(kFALSE);
   ltuParam.SetRawTiltCorrectionEnable(kFALSE);
 
-  // apply ltuParams to all detectors
-  for(Int_t det=0; det<AliTRDgeometry::Ndet(); det++) {
-     ConfigureDyCorr(det);
-     ConfigureDRange(det); // deflection range
-     ConfigureNTimebins(det);  // timebins in the drift region
-     ConfigurePIDcorr(det);  // scaling parameters for the PID
+  for (Int_t iDet = 0; iDet < 540; iDet++) {
+    // HC header configuration bits
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC15CPUA, 0x2102, iDet); // zs, deh
+
+    // no. of timebins
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 24, iDet);
+
+    // pedestal filter
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFPNP, 4*10, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFPTC, 0, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFPBY, 0, iDet); // bypassed!
+
+    // gain filter
+    for (Int_t adc = 0; adc < 20; adc++) {
+      fTrapConfig->SetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGA0+adc), 40, iDet);
+      fTrapConfig->SetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGF0+adc), 15, iDet);
+    }
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFGTA, 20, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFGTB, 2060, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFGBY, 0, iDet);  // bypassed!
+
+    // tail cancellation
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFTAL, 200, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFTLL, 0, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFTLS, 200, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kFTBY, 0, iDet);
+
+    // tracklet calculation
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPQS0, 5, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPQE0, 10, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPQS1, 11, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPQE1, 20, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPFS, 5, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPFE, 20, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPVT, 10, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPHT, 150, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPFP, 40, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPCL, 1, iDet);
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kTPCT, 10, iDet);
+
+    // apply ltuParams
+    ConfigureDyCorr(iDet);
+    ConfigureDRange(iDet); // deflection range
+    ConfigureNTimebins(iDet);  // timebins in the drift region
+    ConfigurePIDcorr(iDet);  // scaling parameters for the PID
+
+    // event buffer
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBSF, 1, iDet);  // 0: store filtered; 1: store unfiltered
+
+    // zs applied to data stored in event buffer (sel. by EBSF)
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIS, 15 << 2, iDet); // single indicator threshold (plus two digits)
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIT, 30 << 2, iDet); // sum indicator threshold (plus two digits)
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIL, 0xf0, iDet);   // lookup table
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIN, 0, iDet);      // neighbour sensitivity
+
+    // raw data
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kNES, (0x0000 << 16) | 0x1000, iDet);
   }
 
   // ****** hit position LUT
@@ -150,9 +226,6 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
   Double_t padResponse[3]; // pad response left, central, right
   Double_t padResponseR[3]; // pad response left, central, right
   Double_t padResponseL[3]; // pad response left, central, right
-
-  for (Int_t iBin = 0; iBin < 128; iBin++)
-    cfg->SetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iBin), 0, 0, 0, 0);
 
   for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
     TGraph gr(128);
@@ -169,23 +242,11 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
       else if (corr > 31)
         corr = 31;
       for (Int_t iStack = 0; iStack < 540/6; iStack++) {
-        cfg->SetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iBin), corr, 6*iStack + iLayer);
+        fTrapConfig->SetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iBin), corr, 6*iStack + iLayer);
       }
     }
   }
   // ****** hit position LUT configuration end
-
-  // event buffer
-  cfg->SetTrapReg(AliTRDtrapConfig::kEBSF, 1);  // 0: store filtered; 1: store unfiltered
-
-  // zs applied to data stored in event buffer (sel. by EBSF)
-  cfg->SetTrapReg(AliTRDtrapConfig::kEBIS, 15 << 2); // single indicator threshold (plus two digits)
-  cfg->SetTrapReg(AliTRDtrapConfig::kEBIT, 30 << 2); // sum indicator threshold (plus two digits)
-  cfg->SetTrapReg(AliTRDtrapConfig::kEBIL, 0xf0);   // lookup table
-  cfg->SetTrapReg(AliTRDtrapConfig::kEBIN, 0);      // neighbour sensitivity
-
-  // raw data
-  cfg->SetTrapReg(AliTRDtrapConfig::kNES, (0x0000 << 16) | 0x1000);
 
   return 0;
 }
@@ -201,12 +262,15 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
    // which are two tools to inspect/export configurations from wingDB
    //
 
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return -1;
+  }
+
    Int_t ignoredLines=0;
    Int_t ignoredCmds=0;
    Int_t readLines=0;
 
-
-   AliTRDtrapConfig *cfg = AliTRDtrapConfig::Instance();
 
    AliDebug(5, Form("Processing file %s", filename.Data()));
    std::ifstream infile;
@@ -242,7 +306,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
 	       AliDebug(1, Form("checking restriction: mask=0x%08x, rocpos=0x%08x", fRestrictiveMask, rocpos));
 	       if ((fRestrictiveMask & rocpos) == rocpos) {
 		 AliDebug(1, Form("match: %i %i %i %i", cmd, extali, addr, data));
-		  cfg->AddValues(det, cmd, extali, addr, data);
+		  AddValues(det, cmd, extali, addr, data);
 	       }
 	    }
 	 }
@@ -258,7 +322,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
 
 	 else if((cmd == fgkScsnCmdReset) ||
 		 (cmd == fgkScsnCmdRobReset)) {
-	   cfg->ResetRegs();
+	   fTrapConfig->ResetRegs();
 	 }
 
 	 else if (cmd == fgkScsnCmdSetHC) {
@@ -269,17 +333,17 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
 
 	     for (Int_t iRob = 0; iRob < 8; iRob++) {
 	       // HC mergers
-	       cfg->SetTrapReg(AliTRDtrapConfig::kC14CPUA, 0xc << 16, iDet, iRob, 17);
-	       cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, 17);
+	       fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC14CPUA, 0xc << 16, iDet, iRob, 17);
+	       fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, 17);
 
 	       // board mergers
-	       cfg->SetTrapReg(AliTRDtrapConfig::kC14CPUA, 0, iDet, iRob, 16);
-	       cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, 16);
+	       fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC14CPUA, 0, iDet, iRob, 16);
+	       fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, 16);
 
 	       // and now for the others
 	       for (Int_t iMcm = 0; iMcm < 16; iMcm++) {
-		 cfg->SetTrapReg(AliTRDtrapConfig::kC14CPUA, iMcm | (iRob << 4) | (3 << 16), iDet, iRob, iMcm);
-		 cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, iMcm);
+		 fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC14CPUA, iMcm | (iRob << 4) | (3 << 16), iDet, iRob, iMcm);
+		 fTrapConfig->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, iMcm);
 	       }
 	     }
 	   }
@@ -381,7 +445,13 @@ void AliTRDtrapConfigHandler::ConfigureNTimebins(Int_t det)
    //
    // Set timebins in the drift region
    //
-  AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, 127, AliTRDtrapConfig::fgkDmemAddrNdrift, ltuParam.GetNtimebins());
+
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return;
+  }
+
+  AddValues(det, fgkScsnCmdWrite, 127, AliTRDmcmSim::fgkDmemAddrNdrift, ltuParam.GetNtimebins());
 }
 
 
@@ -394,13 +464,18 @@ void AliTRDtrapConfigHandler::ConfigureDyCorr(Int_t det)
    //  This correction is in units of padwidth / (256*32)
    //
 
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return;
+  }
+
    Int_t nRobs = AliTRDgeometry::GetStack(det) == 2 ? 6 : 8;
 
   for (Int_t r = 0; r < nRobs; r++) {
     for (Int_t m = 0; m < 16; m++) {
       Int_t dest =  1<<10 | r<<7 | m;
       Int_t dyCorrInt = ltuParam.GetDyCorrection(det, r, m);
-      AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, AliTRDtrapConfig::fgkDmemAddrDeflCorr, dyCorrInt);
+      AddValues(det, fgkScsnCmdWrite, dest, AliTRDmcmSim::fgkDmemAddrDeflCorr, dyCorrInt);
     }
   }
 }
@@ -418,6 +493,11 @@ void AliTRDtrapConfigHandler::ConfigureDRange(Int_t det)
    // deflection (-64..63) is used
    //
 
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return;
+  }
+
   Int_t nRobs = AliTRDgeometry::GetStack(det) == 2 ? 6 : 8;
 
   Int_t dyMinInt;
@@ -431,10 +511,10 @@ void AliTRDtrapConfigHandler::ConfigureDRange(Int_t det)
 	   // cout << "r " << r << ", m" << m << ", c " << c << ", min angle: " << localPhi-maxDeflAngle << ", max: " << localPhi+maxDeflAngle
 	   // 	<< ", min int: " << dyMinInt << ", max int: " << dyMaxInt << endl;
 	   Int_t dest =  1<<10 | r<<7 | m;
-	   Int_t lutAddr = AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 2*c;
+	   Int_t lutAddr = AliTRDmcmSim::fgkDmemAddrDeflCutStart + 2*c;
 	   ltuParam.GetDyRange(det, r, m, c, dyMinInt, dyMaxInt);
-	   AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, lutAddr+0, dyMinInt);
-	   AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, lutAddr+1, dyMaxInt);
+	   AddValues(det, fgkScsnCmdWrite, dest, lutAddr+0, dyMinInt);
+	   AddValues(det, fgkScsnCmdWrite, dest, lutAddr+1, dyMaxInt);
 	 }
       }
    }
@@ -475,8 +555,13 @@ void AliTRDtrapConfigHandler::ConfigurePIDcorr(Int_t det)
    // and transfer them to AliTRDtrapConfig
    //
 
-   static const Int_t addrLUTcor0 = AliTRDtrapConfig::fgkDmemAddrLUTcor0;
-   static const Int_t addrLUTcor1 = AliTRDtrapConfig::fgkDmemAddrLUTcor1;
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return;
+  }
+
+   static const Int_t addrLUTcor0 = AliTRDmcmSim::fgkDmemAddrLUTcor0;
+   static const Int_t addrLUTcor1 = AliTRDmcmSim::fgkDmemAddrLUTcor1;
 
    UInt_t cor0;
    UInt_t cor1;
@@ -490,8 +575,85 @@ void AliTRDtrapConfigHandler::ConfigurePIDcorr(Int_t det)
 	    ltuParam.GetCorrectionFactors(det, r, m, 9, cor0, cor1, fGtbl.GetGainTableROC(det)->GetGainTableMCM(r, m)->GetMCMGain());
 	 else
 	    ltuParam.GetCorrectionFactors(det, r, m, 9, cor0, cor1);
-	 AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor0, cor0);
-	 AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor1, cor1);
+	 AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor0, cor0);
+	 AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor1, cor1);
     }
+  }
+}
+
+
+Bool_t AliTRDtrapConfigHandler::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data)
+{
+   // transfer the informations provided by LoadConfig to the internal class variables
+
+  if (!fTrapConfig) {
+    AliError("No TRAPconfig given");
+    return kFALSE;
+  }
+
+  if(cmd != fgkScsnCmdWrite) {
+    AliError(Form("Invalid command received: %i", cmd));
+    return kFALSE;
+  }
+
+  AliTRDtrapConfig::TrapReg_t mcmReg = fTrapConfig->GetRegByAddress(addr);
+  Int_t rocType = AliTRDgeometry::GetStack(det) == 2 ? 0 : 1;
+
+  static const int mcmListSize=40;  // 40 is more or less arbitrary
+  Int_t mcmList[mcmListSize];
+
+  // configuration registers
+  if(mcmReg >= 0 && mcmReg < AliTRDtrapConfig::kLastReg) {
+
+    for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
+      if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
+	Int_t i=0;
+        while(mcmList[i] != -1 && i<mcmListSize) {
+          if(mcmList[i]==127) {
+	    AliDebug(1, Form("broadcast write to %s: 0x%08x",
+			     fTrapConfig->GetRegName((AliTRDtrapConfig::TrapReg_t) mcmReg), data));
+            fTrapConfig->SetTrapReg( (AliTRDtrapConfig::TrapReg_t) mcmReg, data, det);
+	  }
+          else {
+	    AliDebug(1, Form("individual write to %s (%i, %i): 0x%08x",
+			     fTrapConfig->GetRegName((AliTRDtrapConfig::TrapReg_t) mcmReg), (mcmList[i]>>7), (mcmList[i]&0x7F), data));
+            fTrapConfig->SetTrapReg( (AliTRDtrapConfig::TrapReg_t) mcmReg, data, det, (mcmList[i]>>7)&0x7, (mcmList[i]&0x7F));
+	  }
+          i++;
+        }
+      }
+    }
+    return kTRUE;
+  }
+  // DMEM
+  else if ( (addr >= AliTRDtrapConfig::fgkDmemStartAddress) &&
+	    (addr < (AliTRDtrapConfig::fgkDmemStartAddress + AliTRDtrapConfig::fgkDmemWords))) {
+    for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
+      if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
+        Int_t i=0;
+        while(mcmList[i] != -1 && i < mcmListSize) {
+          if(mcmList[i] == 127)
+	     fTrapConfig->SetDmem(addr, data, det, 0, 127);
+          else
+	     fTrapConfig->SetDmem(addr, data, det, mcmList[i] >> 7, mcmList[i] & 0x7f);
+          i++;
+        }
+      }
+    }
+    return kTRUE;
+  }
+  else if ( (addr >= AliTRDtrapConfig::fgkImemStartAddress) &&
+	    (addr < (AliTRDtrapConfig::fgkImemStartAddress + AliTRDtrapConfig::fgkImemWords))) {
+    // IMEM is ignored for now
+    ;
+  }
+  else if ( (addr >= AliTRDtrapConfig::fgkDbankStartAddress) &&
+	    (addr < (AliTRDtrapConfig::fgkDbankStartAddress + AliTRDtrapConfig::fgkImemWords))) {
+    // DBANK is ignored for now
+    ;
+  }
+  else {
+    AliError(Form("Writing to unhandled address 0x%04x", addr));
+    return kFALSE;
   }
 }

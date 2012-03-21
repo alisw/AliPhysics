@@ -42,6 +42,7 @@
 #include "AliLoader.h"
 
 #include "AliTRDfeeParam.h"
+#include "AliTRDtrapConfigHandler.h"
 #include "AliTRDtrapConfig.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDarrayADC.h"
@@ -136,7 +137,7 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
 
   if (!fInitialized) {
     fFeeParam      = AliTRDfeeParam::Instance();
-    fTrapConfig    = AliTRDtrapConfig::Instance();
+    fTrapConfig    = AliTRDtrapConfigHandler::GetTrapConfig();
   }
 
   fDetector      = det;
@@ -478,7 +479,7 @@ void AliTRDmcmSim::Draw(Option_t* const option)
       AliTRDtrackletMCM *trkl = (AliTRDtrackletMCM*) (*fTrackletArray)[iTrkl];
       Float_t padWidth = 0.635 + 0.03 * (fDetector % 6);
       Float_t offset   = padWidth/256. * ((((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) - ((18*4*2 - 18*2 - 3) << 7)); // revert adding offset in FitTracklet
-      Int_t   ndrift   = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos) >> 5;
+      Int_t   ndrift   = fTrapConfig->GetDmemUnsigned(fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos) >> 5;
       Float_t slope    = 0;
       if (ndrift)
 	slope = trkl->GetdY() * 140e-4 / ndrift;
@@ -1217,7 +1218,9 @@ void AliTRDmcmSim::CalcFitreg()
   //??? to be clarified:
   UInt_t adcMask = 0xffffffff;
 
-  UShort_t timebin, adcch, adcLeft, adcCentral, adcRight, hitQual, timebin1, timebin2, qtotTemp;
+  Bool_t hitQual;
+  Int_t adcLeft, adcCentral, adcRight;
+  UShort_t timebin, adcch, timebin1, timebin2, qtotTemp;
   Short_t ypos, fromLeft, fromRight, found;
   UShort_t qTotal[19+1]; // the last is dummy
   UShort_t marked[6], qMarked[6], worse1, worse2;
@@ -1255,11 +1258,21 @@ void AliTRDmcmSim::CalcFitreg()
         adcLeft  = fADCF[adcch  ][timebin];
         adcCentral  = fADCF[adcch+1][timebin];
         adcRight = fADCF[adcch+2][timebin];
-        if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVBY, fDetector, fRobPos, fMcmPos) == 1)
+
+        if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVBY, fDetector, fRobPos, fMcmPos) == 0) {
+	  // bypass the cluster verification
+          hitQual = kTRUE;
+	}
+        else {
           hitQual = ( (adcLeft * adcRight) <
-                       (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT, fDetector, fRobPos, fMcmPos) * adcCentral) );
-        else
-          hitQual = 1;
+		      ((fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT, fDetector, fRobPos, fMcmPos) * adcCentral*adcCentral) >> 10) );
+	  if (hitQual)
+	    AliDebug(5, Form("cluster quality cut passed with %3i, %3i, %3i - threshold %3i -> %i",
+			     adcLeft, adcCentral, adcRight,
+			     fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT, fDetector, fRobPos, fMcmPos),
+			     fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT, fDetector, fRobPos, fMcmPos) * adcCentral*adcCentral));
+	}
+
         // The accumulated charge is with the pedestal!!!
         qtotTemp = adcLeft + adcCentral + adcRight;
         if ( (hitQual) &&
@@ -1539,8 +1552,8 @@ void AliTRDmcmSim::FitTracklet()
   UInt_t scaleY = (UInt_t) ((0.635 + 0.03 * layer)/(256.0 * 160.0e-4) * shift);
   UInt_t scaleD = (UInt_t) ((0.635 + 0.03 * layer)/(256.0 * 140.0e-4) * shift);
 
-  Int_t deflCorr = (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCorr, fDetector, fRobPos, fMcmPos);
-  Int_t ndrift   = (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos);
+  Int_t deflCorr = (Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrDeflCorr, fDetector, fRobPos, fMcmPos);
+  Int_t ndrift   = (Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos);
 
   // local variables for calculation
   Long64_t mult, temp, denom; //???
@@ -1612,8 +1625,8 @@ void AliTRDmcmSim::FitTracklet()
 
       AliDebug(5, Form("Det: %3i, ROB: %i, MCM: %2i: deflection: %i, min: %i, max: %i",
                        fDetector, fRobPos, fMcmPos, slope,
-                       (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos),
-                       (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)));
+                       (Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos),
+                       (Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)));
 
       AliDebug(5, Form("Fit sums: x = %i, X = %i, y = %i, Y = %i, Z = %i",
 		       sumX, sumX2, sumY, sumY2, sumXY));
@@ -1632,8 +1645,8 @@ void AliTRDmcmSim::FitTracklet()
 
       Bool_t rejected = kFALSE;
       // deflection range table from DMEM
-      if ((slope < ((Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))) ||
-          (slope > ((Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))))
+      if ((slope < ((Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))) ||
+          (slope > ((Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))))
         rejected = kTRUE;
 
       if (rejected && GetApplyCut())
@@ -1891,13 +1904,13 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
    ULong64_t addrQ0;
    ULong64_t addr;
 
-   UInt_t nBinsQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTnbins);  // number of bins in q0 / 4 !!
-   UInt_t pidTotalSize = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength);
+   UInt_t nBinsQ0 = fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTnbins, fDetector, fRobPos, fMcmPos);  // number of bins in q0 / 4 !!
+   UInt_t pidTotalSize = fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTLength, fDetector, fRobPos, fMcmPos);
    if(nBinsQ0==0 || pidTotalSize==0)  // make sure we don't run into trouble if the value for Q0 is not configured
      return 0;                        // Q1 not configured is ok for 1D LUT
 
-   ULong_t corrQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTcor0, fDetector, fRobPos, fMcmPos);
-   ULong_t corrQ1 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTcor1, fDetector, fRobPos, fMcmPos);
+   ULong_t corrQ0 = fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTcor0, fDetector, fRobPos, fMcmPos);
+   ULong_t corrQ1 = fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTcor1, fDetector, fRobPos, fMcmPos);
    if(corrQ0==0)  // make sure we don't run into trouble if one of the values is not configured
       return 0;
 
@@ -1920,7 +1933,7 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
 
    // For a LUT with 11 input and 8 output bits, the first memory address is set to  LUT[0] | (LUT[1] << 8) | (LUT[2] << 16) | (LUT[3] << 24)
    // and so on
-   UInt_t result = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTStart+(addr/4));
+   UInt_t result = fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTStart+(addr/4), fDetector, fRobPos, fMcmPos);
    return (result>>((addr%4)*8)) & 0xFF;
 }
 
@@ -2401,20 +2414,169 @@ void AliTRDmcmSim::PrintPidLutHuman()
 
    UInt_t result;
 
-   UInt_t addrEnd = AliTRDtrapConfig::fgkDmemAddrLUTStart + fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength)/4; // /4 because each addr contains 4 values
-   UInt_t nBinsQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTnbins);
+   UInt_t addrEnd = fgkDmemAddrLUTStart + fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTLength, fDetector, fRobPos, fMcmPos)/4; // /4 because each addr contains 4 values
+   UInt_t nBinsQ0 = fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTnbins, fDetector, fRobPos, fMcmPos);
 
    std::cout << "nBinsQ0: " << nBinsQ0 << std::endl;
-   std::cout << "LUT table length: " << fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength) << std::endl;
+   std::cout << "LUT table length: " << fTrapConfig->GetDmemUnsigned(fgkDmemAddrLUTLength, fDetector, fRobPos, fMcmPos) << std::endl;
 
    if (nBinsQ0>0) {
-     for(UInt_t addr=AliTRDtrapConfig::fgkDmemAddrLUTStart; addr< addrEnd; addr++) {
-       result = fTrapConfig->GetDmemUnsigned(addr);
-       std::cout << addr << " # x: " << ((addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)%((nBinsQ0)/4))*4 << ", y: " <<(addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)/(nBinsQ0/4)
+     for(UInt_t addr=fgkDmemAddrLUTStart; addr< addrEnd; addr++) {
+       result = fTrapConfig->GetDmemUnsigned(addr, fDetector, fRobPos, fMcmPos);
+       std::cout << addr << " # x: " << ((addr-fgkDmemAddrLUTStart)%((nBinsQ0)/4))*4 << ", y: " <<(addr-fgkDmemAddrLUTStart)/(nBinsQ0/4)
 		 << "  #  " <<((result>>0)&0xFF)
 		 << " | "  << ((result>>8)&0xFF)
 		 << " | "  << ((result>>16)&0xFF)
 		 << " | "  << ((result>>24)&0xFF) << std::endl;
      }
    }
+}
+
+
+Bool_t AliTRDmcmSim::ReadPackedConfig(AliTRDtrapConfig *cfg, Int_t hc, UInt_t *data, Int_t size)
+{
+  // Read the packed configuration from the passed memory block
+  //
+  // To be used to retrieve the TRAP configuration from the
+  // configuration as sent in the raw data.
+
+  AliDebugClass(1, "Reading packed configuration");
+
+  Int_t det = hc/2;
+
+  Int_t idx = 0;
+  Int_t err = 0;
+  Int_t step, bwidth, nwords, exitFlag, bitcnt;
+
+  UShort_t caddr;
+  UInt_t dat, msk, header, dataHi;
+
+  while (idx < size && *data != 0x00000000) {
+
+    Int_t rob = (*data >> 28) & 0x7;
+    Int_t mcm = (*data >> 24) & 0xf;
+
+    AliDebugClass(1, Form("Config of det. %3i MCM %i:%02i (0x%08x)", det, rob, mcm, *data));
+    data++;
+
+    while (idx < size && *data != 0x00000000) {
+
+      header = *data;
+      data++;
+      idx++;
+
+      AliDebugClass(5, Form("read: 0x%08x", header));
+
+      if (header & 0x01) // single data
+	{
+	  dat   = (header >>  2) & 0xFFFF;       // 16 bit data
+	  caddr = (header >> 18) & 0x3FFF;    // 14 bit address
+
+	  if (caddr != 0x1FFF)  // temp!!! because the end marker was wrong
+	    {
+	      if (header & 0x02) // check if > 16 bits
+		{
+		  dataHi = *data;
+		  AliDebugClass(5, Form("read: 0x%08x", dataHi));
+		  data++;
+		  idx++;
+		  err += ((dataHi ^ (dat | 1)) & 0xFFFF) != 0;
+		  dat = (dataHi & 0xFFFF0000) | dat;
+		}
+	      AliDebugClass(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, cfg->GetRegName(cfg->GetRegByAddress(caddr)), dat));
+	      if ( ! cfg->Poke(caddr, dat, det, rob, mcm) )
+		AliDebugClass(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
+	      if (idx > size)
+		{
+		  AliDebugClass(5, Form("(single-write): no more data, missing end marker\n"));
+		  return -err;
+		}
+	    }
+	  else
+	    {
+	      AliDebugClass(5, Form("(single-write): address 0x%04x => old endmarker?\n", caddr));
+	      return err;
+	    }
+	}
+
+      else               // block of data
+	{
+	  step   =  (header >>  1) & 0x0003;
+	  bwidth = ((header >>  3) & 0x001F) + 1;
+	  nwords =  (header >>  8) & 0x00FF;
+	  caddr  =  (header >> 16) & 0xFFFF;
+	  exitFlag = (step == 0) || (step == 3) || (nwords == 0);
+
+	  if (exitFlag)
+	    break;
+
+	  switch (bwidth)
+	    {
+	    case    15:
+	    case    10:
+	    case     7:
+	    case     6:
+	    case     5:
+	      {
+		msk = (1 << bwidth) - 1;
+		bitcnt = 0;
+		while (nwords > 0)
+		  {
+		    nwords--;
+		    bitcnt -= bwidth;
+		    if (bitcnt < 0)
+		      {
+			header = *data;
+			AliDebugClass(5, Form("read 0x%08x", header));
+			data++;
+			idx++;
+			err += (header & 1);
+			header = header >> 1;
+			bitcnt = 31 - bwidth;
+		      }
+		    AliDebugClass(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, cfg->GetRegName(cfg->GetRegByAddress(caddr)), header & msk));
+		    if ( ! cfg->Poke(caddr, header & msk, det, rob, mcm) )
+		      AliDebugClass(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
+
+		    caddr += step;
+		    header = header >> bwidth;
+		    if (idx >= size)
+		      {
+			AliDebugClass(5, Form("(block-write): no end marker! %d words read\n", idx));
+			return -err;
+		      }
+		  }
+		break;
+	      } // end case 5-15
+	    case 31:
+	      {
+		while (nwords > 0)
+		  {
+		    header = *data;
+		    AliDebugClass(5, Form("read 0x%08x", header));
+		    data++;
+		    idx++;
+		    nwords--;
+		    err += (header & 1);
+
+		    AliDebugClass(5, Form("addr=0x%04x (%s) data=0x%08x", caddr, cfg->GetRegName(cfg->GetRegByAddress(caddr)), header >> 1));
+		    if ( ! cfg->Poke(caddr, header >> 1, det, rob, mcm) )
+		      AliDebugClass(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
+
+		    caddr += step;
+		    if (idx >= size)
+		      {
+			AliDebugClass(5, Form("no end marker! %d words read", idx));
+			return -err;
+		      }
+		  }
+		break;
+	      }
+	    default: return err;
+	    } // end switch
+	} // end block case
+    }
+  } // end while
+  AliDebugClass(5, Form("no end marker! %d words read", idx));
+  return -err; // only if the max length of the block reached!
 }

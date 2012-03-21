@@ -26,598 +26,526 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDtrapConfig.h"
-#include "AliTRDtrapConfigHandler.h"
 
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 
-ClassImp(AliTRDtrapConfig)
-
-AliTRDtrapConfig* AliTRDtrapConfig::fgInstance = 0x0;
 const Int_t AliTRDtrapConfig::fgkMaxMcm = AliTRDfeeParam::GetNmcmRob() + 2;
-const Int_t AliTRDtrapConfig::fgkDmemStartAddress = 0xc000;
+const Int_t AliTRDtrapConfig::AliTRDtrapValue::fgkSize[] = {
+  0,
+  1,
+  540,
+  1080,
+  8*18*540,
+  4,
+  6,
+  8*18*30
+};
+Bool_t AliTRDtrapConfig::fgRegAddressMapInitialized = kFALSE;
+AliTRDtrapConfig::TrapReg_t AliTRDtrapConfig::fgRegAddressMap[] = { };
+const Int_t AliTRDtrapConfig::fgkRegisterAddressBlockStart[] = { 0x0a00, 0x3000, 0xd000 };
+const Int_t AliTRDtrapConfig::fgkRegisterAddressBlockSize[]  = { 0x0400, 0x0200, 0x0004 };
 
-AliTRDtrapConfig::AliTRDtrapConfig() :
-  TObject(), fScaleQ0(0), fScaleQ1(0)
+AliTRDtrapConfig::AliTRDtrapConfig(const TString &name, const TString &title) :
+  TNamed(name, title)
 {
-  // default constructor, initializing array of TRAP registers
+  // default constructor
 
-  //                              Name          Address  Nbits   Reset Value
-  fRegs[kSML0]    =   SimpleReg_t("SML0",        0x0A00, 15,     0x4050     );  // Global state machine
-  fRegs[kSML1]    =   SimpleReg_t("SML1",        0x0A01, 15,     0x4200     );
-  fRegs[kSML2]    =   SimpleReg_t("SML2",        0x0A02, 15,     0x4384     );
-  fRegs[kSMMODE]  =   SimpleReg_t("SMMODE",      0x0A03, 16,     0xF0E2     );
-  fRegs[kNITM0]   =   SimpleReg_t("NITM0",       0x0A08, 14,     0x3FFF     );
-  fRegs[kNITM1]   =   SimpleReg_t("NITM1",       0x0A09, 14,     0x3FFF     );
-  fRegs[kNITM2]   =   SimpleReg_t("NITM2",       0x0A0A, 14,     0x3FFF     );
-  fRegs[kNIP4D]   =   SimpleReg_t("NIP4D",       0x0A0B, 7,      0x7F       );
-  fRegs[kCPU0CLK] =   SimpleReg_t("CPU0CLK",     0x0A20, 5,      0x07       );
-  fRegs[kCPU1CLK] =   SimpleReg_t("CPU1CLK",     0x0A22, 5,      0x07       );
-  fRegs[kCPU2CLK] =   SimpleReg_t("CPU2CLK",     0x0A24, 5,      0x07       );
-  fRegs[kCPU3CLK] =   SimpleReg_t("CPU3CLK",     0x0A26, 5,      0x07       );
-  fRegs[kNICLK]   =   SimpleReg_t("NICLK",       0x0A28, 5,      0x07       );
-  fRegs[kFILCLK]  =   SimpleReg_t("FILCLK",      0x0A2A, 5,      0x07       );
-  fRegs[kPRECLK]  =   SimpleReg_t("PRECLK",      0x0A2C, 5,      0x07       );
-  fRegs[kADCEN]   =   SimpleReg_t("ADCEN",       0x0A2E, 5,      0x07       );
-  fRegs[kNIODE]   =   SimpleReg_t("NIODE",       0x0A30, 5,      0x07       );
-  fRegs[kNIOCE]   =   SimpleReg_t("NIOCE",       0x0A32, 6,      0x21       );  // bit 5 is status bit (read-only)!
-  fRegs[kNIIDE]   =   SimpleReg_t("NIIDE",       0x0A34, 5,      0x07       );
-  fRegs[kNIICE]   =   SimpleReg_t("NIICE",       0x0A36, 5,      0x07       );
-  fRegs[kARBTIM]  =   SimpleReg_t("ARBTIM",      0x0A3F, 4,      0x0        );  // Arbiter
-  fRegs[kIA0IRQ0] =   SimpleReg_t("IA0IRQ0",     0x0B00, 12,     0x000      );  // IVT of CPU0
-  fRegs[kIA0IRQ1] =   SimpleReg_t("IA0IRQ1",     0x0B01, 12,     0x000      );
-  fRegs[kIA0IRQ2] =   SimpleReg_t("IA0IRQ2",     0x0B02, 12,     0x000      );
-  fRegs[kIA0IRQ3] =   SimpleReg_t("IA0IRQ3",     0x0B03, 12,     0x000      );
-  fRegs[kIA0IRQ4] =   SimpleReg_t("IA0IRQ4",     0x0B04, 12,     0x000      );
-  fRegs[kIA0IRQ5] =   SimpleReg_t("IA0IRQ5",     0x0B05, 12,     0x000      );
-  fRegs[kIA0IRQ6] =   SimpleReg_t("IA0IRQ6",     0x0B06, 12,     0x000      );
-  fRegs[kIA0IRQ7] =   SimpleReg_t("IA0IRQ7",     0x0B07, 12,     0x000      );
-  fRegs[kIA0IRQ8] =   SimpleReg_t("IA0IRQ8",     0x0B08, 12,     0x000      );
-  fRegs[kIA0IRQ9] =   SimpleReg_t("IA0IRQ9",     0x0B09, 12,     0x000      );
-  fRegs[kIA0IRQA] =   SimpleReg_t("IA0IRQA",     0x0B0A, 12,     0x000      );
-  fRegs[kIA0IRQB] =   SimpleReg_t("IA0IRQB",     0x0B0B, 12,     0x000      );
-  fRegs[kIA0IRQC] =   SimpleReg_t("IA0IRQC",     0x0B0C, 12,     0x000      );
-  fRegs[kIRQSW0]  =   SimpleReg_t("IRQSW0",      0x0B0D, 13,     0x1FFF     );
-  fRegs[kIRQHW0]  =   SimpleReg_t("IRQHW0",      0x0B0E, 13,     0x0000     );
-  fRegs[kIRQHL0]  =   SimpleReg_t("IRQHL0",      0x0B0F, 13,     0x0000     );
-  fRegs[kIA1IRQ0] =   SimpleReg_t("IA1IRQ0",     0x0B20, 12,     0x000      );  // IVT of CPU1
-  fRegs[kIA1IRQ1] =   SimpleReg_t("IA1IRQ1",     0x0B21, 12,     0x000      );
-  fRegs[kIA1IRQ2] =   SimpleReg_t("IA1IRQ2",     0x0B22, 12,     0x000      );
-  fRegs[kIA1IRQ3] =   SimpleReg_t("IA1IRQ3",     0x0B23, 12,     0x000      );
-  fRegs[kIA1IRQ4] =   SimpleReg_t("IA1IRQ4",     0x0B24, 12,     0x000      );
-  fRegs[kIA1IRQ5] =   SimpleReg_t("IA1IRQ5",     0x0B25, 12,     0x000      );
-  fRegs[kIA1IRQ6] =   SimpleReg_t("IA1IRQ6",     0x0B26, 12,     0x000      );
-  fRegs[kIA1IRQ7] =   SimpleReg_t("IA1IRQ7",     0x0B27, 12,     0x000      );
-  fRegs[kIA1IRQ8] =   SimpleReg_t("IA1IRQ8",     0x0B28, 12,     0x000      );
-  fRegs[kIA1IRQ9] =   SimpleReg_t("IA1IRQ9",     0x0B29, 12,     0x000      );
-  fRegs[kIA1IRQA] =   SimpleReg_t("IA1IRQA",     0x0B2A, 12,     0x000      );
-  fRegs[kIA1IRQB] =   SimpleReg_t("IA1IRQB",     0x0B2B, 12,     0x000      );
-  fRegs[kIA1IRQC] =   SimpleReg_t("IA1IRQC",     0x0B2C, 12,     0x000      );
-  fRegs[kIRQSW1]  =   SimpleReg_t("IRQSW1",      0x0B2D, 13,     0x1FFF     );
-  fRegs[kIRQHW1]  =   SimpleReg_t("IRQHW1",      0x0B2E, 13,     0x0000     );
-  fRegs[kIRQHL1]  =   SimpleReg_t("IRQHL1",      0x0B2F, 13,     0x0000     );
-  fRegs[kIA2IRQ0] =   SimpleReg_t("IA2IRQ0",     0x0B40, 12,     0x000      );  // IVT of CPU2
-  fRegs[kIA2IRQ1] =   SimpleReg_t("IA2IRQ1",     0x0B41, 12,     0x000      );
-  fRegs[kIA2IRQ2] =   SimpleReg_t("IA2IRQ2",     0x0B42, 12,     0x000      );
-  fRegs[kIA2IRQ3] =   SimpleReg_t("IA2IRQ3",     0x0B43, 12,     0x000      );
-  fRegs[kIA2IRQ4] =   SimpleReg_t("IA2IRQ4",     0x0B44, 12,     0x000      );
-  fRegs[kIA2IRQ5] =   SimpleReg_t("IA2IRQ5",     0x0B45, 12,     0x000      );
-  fRegs[kIA2IRQ6] =   SimpleReg_t("IA2IRQ6",     0x0B46, 12,     0x000      );
-  fRegs[kIA2IRQ7] =   SimpleReg_t("IA2IRQ7",     0x0B47, 12,     0x000      );
-  fRegs[kIA2IRQ8] =   SimpleReg_t("IA2IRQ8",     0x0B48, 12,     0x000      );
-  fRegs[kIA2IRQ9] =   SimpleReg_t("IA2IRQ9",     0x0B49, 12,     0x000      );
-  fRegs[kIA2IRQA] =   SimpleReg_t("IA2IRQA",     0x0B4A, 12,     0x000      );
-  fRegs[kIA2IRQB] =   SimpleReg_t("IA2IRQB",     0x0B4B, 12,     0x000      );
-  fRegs[kIA2IRQC] =   SimpleReg_t("IA2IRQC",     0x0B4C, 12,     0x000      );
-  fRegs[kIRQSW2]  =   SimpleReg_t("IRQSW2",      0x0B4D, 13,     0x1FFF     );
-  fRegs[kIRQHW2]  =   SimpleReg_t("IRQHW2",      0x0B4E, 13,     0x0000     );
-  fRegs[kIRQHL2]  =   SimpleReg_t("IRQHL2",      0x0B4F, 13,     0x0000     );
-  fRegs[kIA3IRQ0] =   SimpleReg_t("IA3IRQ0",     0x0B60, 12,     0x000      );  // IVT of CPU3
-  fRegs[kIA3IRQ1] =   SimpleReg_t("IA3IRQ1",     0x0B61, 12,     0x000      );
-  fRegs[kIA3IRQ2] =   SimpleReg_t("IA3IRQ2",     0x0B62, 12,     0x000      );
-  fRegs[kIA3IRQ3] =   SimpleReg_t("IA3IRQ3",     0x0B63, 12,     0x000      );
-  fRegs[kIA3IRQ4] =   SimpleReg_t("IA3IRQ4",     0x0B64, 12,     0x000      );
-  fRegs[kIA3IRQ5] =   SimpleReg_t("IA3IRQ5",     0x0B65, 12,     0x000      );
-  fRegs[kIA3IRQ6] =   SimpleReg_t("IA3IRQ6",     0x0B66, 12,     0x000      );
-  fRegs[kIA3IRQ7] =   SimpleReg_t("IA3IRQ7",     0x0B67, 12,     0x000      );
-  fRegs[kIA3IRQ8] =   SimpleReg_t("IA3IRQ8",     0x0B68, 12,     0x000      );
-  fRegs[kIA3IRQ9] =   SimpleReg_t("IA3IRQ9",     0x0B69, 12,     0x000      );
-  fRegs[kIA3IRQA] =   SimpleReg_t("IA3IRQA",     0x0B6A, 12,     0x000      );
-  fRegs[kIA3IRQB] =   SimpleReg_t("IA3IRQB",     0x0B6B, 12,     0x000      );
-  fRegs[kIA3IRQC] =   SimpleReg_t("IA3IRQC",     0x0B6C, 12,     0x000      );
-  fRegs[kIRQSW3]  =   SimpleReg_t("IRQSW3",      0x0B6D, 13,     0x1FFF     );
-  fRegs[kIRQHW3]  =   SimpleReg_t("IRQHW3",      0x0B6E, 13,     0x0000     );
-  fRegs[kIRQHL3]  =   SimpleReg_t("IRQHL3",      0x0B6F, 13,     0x0000     );
-  fRegs[kCTGDINI] =   SimpleReg_t("CTGDINI",     0x0B80, 32,     0x00000000 );  // Global Counter/Timer
-  fRegs[kCTGCTRL] =   SimpleReg_t("CTGCTRL",     0x0B81, 12,     0xE3F      );
-  fRegs[kC08CPU0] =   SimpleReg_t("C08CPU0",     0x0C00, 32,     0x00000000 );  // CPU constants
-  fRegs[kC09CPU0] =   SimpleReg_t("C09CPU0",     0x0C01, 32,     0x00000000 );
-  fRegs[kC10CPU0] =   SimpleReg_t("C10CPU0",     0x0C02, 32,     0x00000000 );
-  fRegs[kC11CPU0] =   SimpleReg_t("C11CPU0",     0x0C03, 32,     0x00000000 );
-  fRegs[kC12CPUA] =   SimpleReg_t("C12CPUA",     0x0C04, 32,     0x00000000 );
-  fRegs[kC13CPUA] =   SimpleReg_t("C13CPUA",     0x0C05, 32,     0x00000000 );
-  fRegs[kC14CPUA] =   SimpleReg_t("C14CPUA",     0x0C06, 32,     0x00000000 );
-  fRegs[kC15CPUA] =   SimpleReg_t("C15CPUA",     0x0C07, 32,     0x00000000 );
-  fRegs[kC08CPU1] =   SimpleReg_t("C08CPU1",     0x0C08, 32,     0x00000000 );
-  fRegs[kC09CPU1] =   SimpleReg_t("C09CPU1",     0x0C09, 32,     0x00000000 );
-  fRegs[kC10CPU1] =   SimpleReg_t("C10CPU1",     0x0C0A, 32,     0x00000000 );
-  fRegs[kC11CPU1] =   SimpleReg_t("C11CPU1",     0x0C0B, 32,     0x00000000 );
-  fRegs[kC08CPU2] =   SimpleReg_t("C08CPU2",     0x0C10, 32,     0x00000000 );
-  fRegs[kC09CPU2] =   SimpleReg_t("C09CPU2",     0x0C11, 32,     0x00000000 );
-  fRegs[kC10CPU2] =   SimpleReg_t("C10CPU2",     0x0C12, 32,     0x00000000 );
-  fRegs[kC11CPU2] =   SimpleReg_t("C11CPU2",     0x0C13, 32,     0x00000000 );
-  fRegs[kC08CPU3] =   SimpleReg_t("C08CPU3",     0x0C18, 32,     0x00000000 );
-  fRegs[kC09CPU3] =   SimpleReg_t("C09CPU3",     0x0C19, 32,     0x00000000 );
-  fRegs[kC10CPU3] =   SimpleReg_t("C10CPU3",     0x0C1A, 32,     0x00000000 );
-  fRegs[kC11CPU3] =   SimpleReg_t("C11CPU3",     0x0C1B, 32,     0x00000000 );
-  fRegs[kNMOD]    =   SimpleReg_t("NMOD",        0x0D40, 6,      0x08       );  // NI interface
-  fRegs[kNDLY]    =   SimpleReg_t("NDLY",        0x0D41, 30,     0x24924924 );
-  fRegs[kNED]     =   SimpleReg_t("NED",         0x0D42, 16,     0xA240     );
-  fRegs[kNTRO]    =   SimpleReg_t("NTRO",        0x0D43, 18,     0x3FFFC    );
-  fRegs[kNRRO]    =   SimpleReg_t("NRRO",        0x0D44, 18,     0x3FFFC    );
-  fRegs[kNES]     =   SimpleReg_t("NES",         0x0D45, 32,     0x00000000 );
-  fRegs[kNTP]     =   SimpleReg_t("NTP",         0x0D46, 32,     0x0000FFFF );
-  fRegs[kNBND]    =   SimpleReg_t("NBND",        0x0D47, 16,     0x6020     );
-  fRegs[kNP0]     =   SimpleReg_t("NP0",         0x0D48, 11,     0x44C      );
-  fRegs[kNP1]     =   SimpleReg_t("NP1",         0x0D49, 11,     0x44C      );
-  fRegs[kNP2]     =   SimpleReg_t("NP2",         0x0D4A, 11,     0x44C      );
-  fRegs[kNP3]     =   SimpleReg_t("NP3",         0x0D4B, 11,     0x44C      );
-  fRegs[kNCUT]    =   SimpleReg_t("NCUT",        0x0D4C, 32,     0xFFFFFFFF );
-  fRegs[kTPPT0]   =   SimpleReg_t("TPPT0",       0x3000, 7,      0x01       );  // Filter and Preprocessor
-  fRegs[kTPFS]    =   SimpleReg_t("TPFS",        0x3001, 7,      0x05       );
-  fRegs[kTPFE]    =   SimpleReg_t("TPFE",        0x3002, 7,      0x14       );
-  fRegs[kTPPGR]   =   SimpleReg_t("TPPGR",       0x3003, 7,      0x15       );
-  fRegs[kTPPAE]   =   SimpleReg_t("TPPAE",       0x3004, 7,      0x1E       );
-  fRegs[kTPQS0]   =   SimpleReg_t("TPQS0",       0x3005, 7,      0x00       );
-  fRegs[kTPQE0]   =   SimpleReg_t("TPQE0",       0x3006, 7,      0x0A       );
-  fRegs[kTPQS1]   =   SimpleReg_t("TPQS1",       0x3007, 7,      0x0B       );
-  fRegs[kTPQE1]   =   SimpleReg_t("TPQE1",       0x3008, 7,      0x14       );
-  fRegs[kEBD]     =   SimpleReg_t("EBD",         0x3009, 3,      0x0        );
-  fRegs[kEBAQA]   =   SimpleReg_t("EBAQA",       0x300A, 7,      0x00       );
-  fRegs[kEBSIA]   =   SimpleReg_t("EBSIA",       0x300B, 7,      0x20       );
-  fRegs[kEBSF]    =   SimpleReg_t("EBSF",        0x300C, 1,      0x1        );
-  fRegs[kEBSIM]   =   SimpleReg_t("EBSIM",       0x300D, 1,      0x1        );
-  fRegs[kEBPP]    =   SimpleReg_t("EBPP",        0x300E, 1,      0x1        );
-  fRegs[kEBPC]    =   SimpleReg_t("EBPC",        0x300F, 1,      0x1        );
-  fRegs[kEBIS]    =   SimpleReg_t("EBIS",        0x3014, 10,     0x005      );
-  fRegs[kEBIT]    =   SimpleReg_t("EBIT",        0x3015, 12,     0x028      );
-  fRegs[kEBIL]    =   SimpleReg_t("EBIL",        0x3016, 8,      0xF0       );
-  fRegs[kEBIN]    =   SimpleReg_t("EBIN",        0x3017, 1,      0x1        );
-  fRegs[kFLBY]    =   SimpleReg_t("FLBY",        0x3018, 1,      0x0        );
-  fRegs[kFPBY]    =   SimpleReg_t("FPBY",        0x3019, 1,      0x0        );
-  fRegs[kFGBY]    =   SimpleReg_t("FGBY",        0x301A, 1,      0x0        );
-  fRegs[kFTBY]    =   SimpleReg_t("FTBY",        0x301B, 1,      0x0        );
-  fRegs[kFCBY]    =   SimpleReg_t("FCBY",        0x301C, 1,      0x0        );
-  fRegs[kFPTC]    =   SimpleReg_t("FPTC",        0x3020, 2,      0x3        );
-  fRegs[kFPNP]    =   SimpleReg_t("FPNP",        0x3021, 9,      0x078      );
-  fRegs[kFPCL]    =   SimpleReg_t("FPCL",        0x3022, 1,      0x1        );
-  fRegs[kFGTA]    =   SimpleReg_t("FGTA",        0x3028, 12,     0x014      );
-  fRegs[kFGTB]    =   SimpleReg_t("FGTB",        0x3029, 12,     0x80C      );
-  fRegs[kFGCL]    =   SimpleReg_t("FGCL",        0x302A, 1,      0x1        );
-  fRegs[kFTAL]    =   SimpleReg_t("FTAL",        0x3030, 10,     0x0F6      );
-  fRegs[kFTLL]    =   SimpleReg_t("FTLL",        0x3031, 9,      0x11D      );
-  fRegs[kFTLS]    =   SimpleReg_t("FTLS",        0x3032, 9,      0x0D3      );
-  fRegs[kFCW1]    =   SimpleReg_t("FCW1",        0x3038, 8,      0x1E       );
-  fRegs[kFCW2]    =   SimpleReg_t("FCW2",        0x3039, 8,      0xD4       );
-  fRegs[kFCW3]    =   SimpleReg_t("FCW3",        0x303A, 8,      0xE6       );
-  fRegs[kFCW4]    =   SimpleReg_t("FCW4",        0x303B, 8,      0x4A       );
-  fRegs[kFCW5]    =   SimpleReg_t("FCW5",        0x303C, 8,      0xEF       );
-  fRegs[kTPFP]    =   SimpleReg_t("TPFP",        0x3040, 9,      0x037      );
-  fRegs[kTPHT]    =   SimpleReg_t("TPHT",        0x3041, 14,     0x00A0     );
-  fRegs[kTPVT]    =   SimpleReg_t("TPVT",        0x3042, 6,      0x00       );
-  fRegs[kTPVBY]   =   SimpleReg_t("TPVBY",       0x3043, 1,      0x0        );
-  fRegs[kTPCT]    =   SimpleReg_t("TPCT",        0x3044, 5,      0x08       );
-  fRegs[kTPCL]    =   SimpleReg_t("TPCL",        0x3045, 5,      0x01       );
-  fRegs[kTPCBY]   =   SimpleReg_t("TPCBY",       0x3046, 1,      0x1        );
-  fRegs[kTPD]     =   SimpleReg_t("TPD",         0x3047, 4,      0xF        );
-  fRegs[kTPCI0]   =   SimpleReg_t("TPCI0",       0x3048, 5,      0x00       );
-  fRegs[kTPCI1]   =   SimpleReg_t("TPCI1",       0x3049, 5,      0x00       );
-  fRegs[kTPCI2]   =   SimpleReg_t("TPCI2",       0x304A, 5,      0x00       );
-  fRegs[kTPCI3]   =   SimpleReg_t("TPCI3",       0x304B, 5,      0x00       );
-  fRegs[kADCMSK]  =   SimpleReg_t("ADCMSK",      0x3050, 21,     0x1FFFFF   );
-  fRegs[kADCINB]  =   SimpleReg_t("ADCINB",      0x3051, 2,      0x2        );
-  fRegs[kADCDAC]  =   SimpleReg_t("ADCDAC",      0x3052, 5,      0x10       );
-  fRegs[kADCPAR]  =   SimpleReg_t("ADCPAR",      0x3053, 18,     0x195EF    );
-  fRegs[kADCTST]  =   SimpleReg_t("ADCTST",      0x3054, 2,      0x0        );
-  fRegs[kSADCAZ]  =   SimpleReg_t("SADCAZ",      0x3055, 1,      0x1        );
-  fRegs[kFGF0]    =   SimpleReg_t("FGF0",        0x3080, 9,      0x000      );
-  fRegs[kFGF1]    =   SimpleReg_t("FGF1",        0x3081, 9,      0x000      );
-  fRegs[kFGF2]    =   SimpleReg_t("FGF2",        0x3082, 9,      0x000      );
-  fRegs[kFGF3]    =   SimpleReg_t("FGF3",        0x3083, 9,      0x000      );
-  fRegs[kFGF4]    =   SimpleReg_t("FGF4",        0x3084, 9,      0x000      );
-  fRegs[kFGF5]    =   SimpleReg_t("FGF5",        0x3085, 9,      0x000      );
-  fRegs[kFGF6]    =   SimpleReg_t("FGF6",        0x3086, 9,      0x000      );
-  fRegs[kFGF7]    =   SimpleReg_t("FGF7",        0x3087, 9,      0x000      );
-  fRegs[kFGF8]    =   SimpleReg_t("FGF8",        0x3088, 9,      0x000      );
-  fRegs[kFGF9]    =   SimpleReg_t("FGF9",        0x3089, 9,      0x000      );
-  fRegs[kFGF10]   =   SimpleReg_t("FGF10",       0x308A, 9,      0x000      );
-  fRegs[kFGF11]   =   SimpleReg_t("FGF11",       0x308B, 9,      0x000      );
-  fRegs[kFGF12]   =   SimpleReg_t("FGF12",       0x308C, 9,      0x000      );
-  fRegs[kFGF13]   =   SimpleReg_t("FGF13",       0x308D, 9,      0x000      );
-  fRegs[kFGF14]   =   SimpleReg_t("FGF14",       0x308E, 9,      0x000      );
-  fRegs[kFGF15]   =   SimpleReg_t("FGF15",       0x308F, 9,      0x000      );
-  fRegs[kFGF16]   =   SimpleReg_t("FGF16",       0x3090, 9,      0x000      );
-  fRegs[kFGF17]   =   SimpleReg_t("FGF17",       0x3091, 9,      0x000      );
-  fRegs[kFGF18]   =   SimpleReg_t("FGF18",       0x3092, 9,      0x000      );
-  fRegs[kFGF19]   =   SimpleReg_t("FGF19",       0x3093, 9,      0x000      );
-  fRegs[kFGF20]   =   SimpleReg_t("FGF20",       0x3094, 9,      0x000      );
-  fRegs[kFGA0]    =   SimpleReg_t("FGA0",        0x30A0, 6,      0x00       );
-  fRegs[kFGA1]    =   SimpleReg_t("FGA1",        0x30A1, 6,      0x00       );
-  fRegs[kFGA2]    =   SimpleReg_t("FGA2",        0x30A2, 6,      0x00       );
-  fRegs[kFGA3]    =   SimpleReg_t("FGA3",        0x30A3, 6,      0x00       );
-  fRegs[kFGA4]    =   SimpleReg_t("FGA4",        0x30A4, 6,      0x00       );
-  fRegs[kFGA5]    =   SimpleReg_t("FGA5",        0x30A5, 6,      0x00       );
-  fRegs[kFGA6]    =   SimpleReg_t("FGA6",        0x30A6, 6,      0x00       );
-  fRegs[kFGA7]    =   SimpleReg_t("FGA7",        0x30A7, 6,      0x00       );
-  fRegs[kFGA8]    =   SimpleReg_t("FGA8",        0x30A8, 6,      0x00       );
-  fRegs[kFGA9]    =   SimpleReg_t("FGA9",        0x30A9, 6,      0x00       );
-  fRegs[kFGA10]   =   SimpleReg_t("FGA10",       0x30AA, 6,      0x00       );
-  fRegs[kFGA11]   =   SimpleReg_t("FGA11",       0x30AB, 6,      0x00       );
-  fRegs[kFGA12]   =   SimpleReg_t("FGA12",       0x30AC, 6,      0x00       );
-  fRegs[kFGA13]   =   SimpleReg_t("FGA13",       0x30AD, 6,      0x00       );
-  fRegs[kFGA14]   =   SimpleReg_t("FGA14",       0x30AE, 6,      0x00       );
-  fRegs[kFGA15]   =   SimpleReg_t("FGA15",       0x30AF, 6,      0x00       );
-  fRegs[kFGA16]   =   SimpleReg_t("FGA16",       0x30B0, 6,      0x00       );
-  fRegs[kFGA17]   =   SimpleReg_t("FGA17",       0x30B1, 6,      0x00       );
-  fRegs[kFGA18]   =   SimpleReg_t("FGA18",       0x30B2, 6,      0x00       );
-  fRegs[kFGA19]   =   SimpleReg_t("FGA19",       0x30B3, 6,      0x00       );
-  fRegs[kFGA20]   =   SimpleReg_t("FGA20",       0x30B4, 6,      0x00       );
-  fRegs[kFLL00]   =   SimpleReg_t("FLL00",       0x3100, 6,      0x00       );  // non-linearity table, 64 x 6 bits
-  fRegs[kFLL01]   =   SimpleReg_t("FLL01",       0x3101, 6,      0x00       );
-  fRegs[kFLL02]   =   SimpleReg_t("FLL02",       0x3102, 6,      0x00       );
-  fRegs[kFLL03]   =   SimpleReg_t("FLL03",       0x3103, 6,      0x00       );
-  fRegs[kFLL04]   =   SimpleReg_t("FLL04",       0x3104, 6,      0x00       );
-  fRegs[kFLL05]   =   SimpleReg_t("FLL05",       0x3105, 6,      0x00       );
-  fRegs[kFLL06]   =   SimpleReg_t("FLL06",       0x3106, 6,      0x00       );
-  fRegs[kFLL07]   =   SimpleReg_t("FLL07",       0x3107, 6,      0x00       );
-  fRegs[kFLL08]   =   SimpleReg_t("FLL08",       0x3108, 6,      0x00       );
-  fRegs[kFLL09]   =   SimpleReg_t("FLL09",       0x3109, 6,      0x00       );
-  fRegs[kFLL0A]   =   SimpleReg_t("FLL0A",       0x310A, 6,      0x00       );
-  fRegs[kFLL0B]   =   SimpleReg_t("FLL0B",       0x310B, 6,      0x00       );
-  fRegs[kFLL0C]   =   SimpleReg_t("FLL0C",       0x310C, 6,      0x00       );
-  fRegs[kFLL0D]   =   SimpleReg_t("FLL0D",       0x310D, 6,      0x00       );
-  fRegs[kFLL0E]   =   SimpleReg_t("FLL0E",       0x310E, 6,      0x00       );
-  fRegs[kFLL0F]   =   SimpleReg_t("FLL0F",       0x310F, 6,      0x00       );
-  fRegs[kFLL10]   =   SimpleReg_t("FLL10",       0x3110, 6,      0x00       );
-  fRegs[kFLL11]   =   SimpleReg_t("FLL11",       0x3111, 6,      0x00       );
-  fRegs[kFLL12]   =   SimpleReg_t("FLL12",       0x3112, 6,      0x00       );
-  fRegs[kFLL13]   =   SimpleReg_t("FLL13",       0x3113, 6,      0x00       );
-  fRegs[kFLL14]   =   SimpleReg_t("FLL14",       0x3114, 6,      0x00       );
-  fRegs[kFLL15]   =   SimpleReg_t("FLL15",       0x3115, 6,      0x00       );
-  fRegs[kFLL16]   =   SimpleReg_t("FLL16",       0x3116, 6,      0x00       );
-  fRegs[kFLL17]   =   SimpleReg_t("FLL17",       0x3117, 6,      0x00       );
-  fRegs[kFLL18]   =   SimpleReg_t("FLL18",       0x3118, 6,      0x00       );
-  fRegs[kFLL19]   =   SimpleReg_t("FLL19",       0x3119, 6,      0x00       );
-  fRegs[kFLL1A]   =   SimpleReg_t("FLL1A",       0x311A, 6,      0x00       );
-  fRegs[kFLL1B]   =   SimpleReg_t("FLL1B",       0x311B, 6,      0x00       );
-  fRegs[kFLL1C]   =   SimpleReg_t("FLL1C",       0x311C, 6,      0x00       );
-  fRegs[kFLL1D]   =   SimpleReg_t("FLL1D",       0x311D, 6,      0x00       );
-  fRegs[kFLL1E]   =   SimpleReg_t("FLL1E",       0x311E, 6,      0x00       );
-  fRegs[kFLL1F]   =   SimpleReg_t("FLL1F",       0x311F, 6,      0x00       );
-  fRegs[kFLL20]   =   SimpleReg_t("FLL20",       0x3120, 6,      0x00       );
-  fRegs[kFLL21]   =   SimpleReg_t("FLL21",       0x3121, 6,      0x00       );
-  fRegs[kFLL22]   =   SimpleReg_t("FLL22",       0x3122, 6,      0x00       );
-  fRegs[kFLL23]   =   SimpleReg_t("FLL23",       0x3123, 6,      0x00       );
-  fRegs[kFLL24]   =   SimpleReg_t("FLL24",       0x3124, 6,      0x00       );
-  fRegs[kFLL25]   =   SimpleReg_t("FLL25",       0x3125, 6,      0x00       );
-  fRegs[kFLL26]   =   SimpleReg_t("FLL26",       0x3126, 6,      0x00       );
-  fRegs[kFLL27]   =   SimpleReg_t("FLL27",       0x3127, 6,      0x00       );
-  fRegs[kFLL28]   =   SimpleReg_t("FLL28",       0x3128, 6,      0x00       );
-  fRegs[kFLL29]   =   SimpleReg_t("FLL29",       0x3129, 6,      0x00       );
-  fRegs[kFLL2A]   =   SimpleReg_t("FLL2A",       0x312A, 6,      0x00       );
-  fRegs[kFLL2B]   =   SimpleReg_t("FLL2B",       0x312B, 6,      0x00       );
-  fRegs[kFLL2C]   =   SimpleReg_t("FLL2C",       0x312C, 6,      0x00       );
-  fRegs[kFLL2D]   =   SimpleReg_t("FLL2D",       0x312D, 6,      0x00       );
-  fRegs[kFLL2E]   =   SimpleReg_t("FLL2E",       0x312E, 6,      0x00       );
-  fRegs[kFLL2F]   =   SimpleReg_t("FLL2F",       0x312F, 6,      0x00       );
-  fRegs[kFLL30]   =   SimpleReg_t("FLL30",       0x3130, 6,      0x00       );
-  fRegs[kFLL31]   =   SimpleReg_t("FLL31",       0x3131, 6,      0x00       );
-  fRegs[kFLL32]   =   SimpleReg_t("FLL32",       0x3132, 6,      0x00       );
-  fRegs[kFLL33]   =   SimpleReg_t("FLL33",       0x3133, 6,      0x00       );
-  fRegs[kFLL34]   =   SimpleReg_t("FLL34",       0x3134, 6,      0x00       );
-  fRegs[kFLL35]   =   SimpleReg_t("FLL35",       0x3135, 6,      0x00       );
-  fRegs[kFLL36]   =   SimpleReg_t("FLL36",       0x3136, 6,      0x00       );
-  fRegs[kFLL37]   =   SimpleReg_t("FLL37",       0x3137, 6,      0x00       );
-  fRegs[kFLL38]   =   SimpleReg_t("FLL38",       0x3138, 6,      0x00       );
-  fRegs[kFLL39]   =   SimpleReg_t("FLL39",       0x3139, 6,      0x00       );
-  fRegs[kFLL3A]   =   SimpleReg_t("FLL3A",       0x313A, 6,      0x00       );
-  fRegs[kFLL3B]   =   SimpleReg_t("FLL3B",       0x313B, 6,      0x00       );
-  fRegs[kFLL3C]   =   SimpleReg_t("FLL3C",       0x313C, 6,      0x00       );
-  fRegs[kFLL3D]   =   SimpleReg_t("FLL3D",       0x313D, 6,      0x00       );
-  fRegs[kFLL3E]   =   SimpleReg_t("FLL3E",       0x313E, 6,      0x00       );
-  fRegs[kFLL3F]   =   SimpleReg_t("FLL3F",       0x313F, 6,      0x00       );
-  fRegs[kPASADEL] =   SimpleReg_t("PASADEL",     0x3158, 8,      0xFF       );  // end of non-lin table
-  fRegs[kPASAPHA] =   SimpleReg_t("PASAPHA",     0x3159, 6,      0x3F       );
-  fRegs[kPASAPRA] =   SimpleReg_t("PASAPRA",     0x315A, 6,      0x0F       );
-  fRegs[kPASADAC] =   SimpleReg_t("PASADAC",     0x315B, 8,      0x80       );
-  fRegs[kPASACHM] =   SimpleReg_t("PASACHM",     0x315C, 19,     0x7FFFF    );
-  fRegs[kPASASTL] =   SimpleReg_t("PASASTL",     0x315D, 8,      0xFF       );
-  fRegs[kPASAPR1] =   SimpleReg_t("PASAPR1",     0x315E, 1,      0x0        );
-  fRegs[kPASAPR0] =   SimpleReg_t("PASAPR0",     0x315F, 1,      0x0        );
-  fRegs[kSADCTRG] =   SimpleReg_t("SADCTRG",     0x3161, 1,      0x0        );
-  fRegs[kSADCRUN] =   SimpleReg_t("SADCRUN",     0x3162, 1,      0x0        );
-  fRegs[kSADCPWR] =   SimpleReg_t("SADCPWR",     0x3163, 3,      0x7        );
-  fRegs[kL0TSIM]  =   SimpleReg_t("L0TSIM",      0x3165, 14,     0x0050     );
-  fRegs[kSADCEC]  =   SimpleReg_t("SADCEC",      0x3166, 7,      0x00       );
-  fRegs[kSADCMC]  =   SimpleReg_t("SADCMC",      0x3170, 8,      0xC0       );
-  fRegs[kSADCOC]  =   SimpleReg_t("SADCOC",      0x3171, 8,      0x19       );
-  fRegs[kSADCGTB] =   SimpleReg_t("SADCGTB",     0x3172, 32,     0x37737700 );
-  fRegs[kSEBDEN]  =   SimpleReg_t("SEBDEN",      0x3178, 3,      0x0        );
-  fRegs[kSEBDOU]  =   SimpleReg_t("SEBDOU",      0x3179, 3,      0x0        );
-  fRegs[kTPL00]   =   SimpleReg_t("TPL00",       0x3180, 5,      0x00       );  // pos table, 128 x 5 bits
-  fRegs[kTPL01]   =   SimpleReg_t("TPL01",       0x3181, 5,      0x00       );
-  fRegs[kTPL02]   =   SimpleReg_t("TPL02",       0x3182, 5,      0x00       );
-  fRegs[kTPL03]   =   SimpleReg_t("TPL03",       0x3183, 5,      0x00       );
-  fRegs[kTPL04]   =   SimpleReg_t("TPL04",       0x3184, 5,      0x00       );
-  fRegs[kTPL05]   =   SimpleReg_t("TPL05",       0x3185, 5,      0x00       );
-  fRegs[kTPL06]   =   SimpleReg_t("TPL06",       0x3186, 5,      0x00       );
-  fRegs[kTPL07]   =   SimpleReg_t("TPL07",       0x3187, 5,      0x00       );
-  fRegs[kTPL08]   =   SimpleReg_t("TPL08",       0x3188, 5,      0x00       );
-  fRegs[kTPL09]   =   SimpleReg_t("TPL09",       0x3189, 5,      0x00       );
-  fRegs[kTPL0A]   =   SimpleReg_t("TPL0A",       0x318A, 5,      0x00       );
-  fRegs[kTPL0B]   =   SimpleReg_t("TPL0B",       0x318B, 5,      0x00       );
-  fRegs[kTPL0C]   =   SimpleReg_t("TPL0C",       0x318C, 5,      0x00       );
-  fRegs[kTPL0D]   =   SimpleReg_t("TPL0D",       0x318D, 5,      0x00       );
-  fRegs[kTPL0E]   =   SimpleReg_t("TPL0E",       0x318E, 5,      0x00       );
-  fRegs[kTPL0F]   =   SimpleReg_t("TPL0F",       0x318F, 5,      0x00       );
-  fRegs[kTPL10]   =   SimpleReg_t("TPL10",       0x3190, 5,      0x00       );
-  fRegs[kTPL11]   =   SimpleReg_t("TPL11",       0x3191, 5,      0x00       );
-  fRegs[kTPL12]   =   SimpleReg_t("TPL12",       0x3192, 5,      0x00       );
-  fRegs[kTPL13]   =   SimpleReg_t("TPL13",       0x3193, 5,      0x00       );
-  fRegs[kTPL14]   =   SimpleReg_t("TPL14",       0x3194, 5,      0x00       );
-  fRegs[kTPL15]   =   SimpleReg_t("TPL15",       0x3195, 5,      0x00       );
-  fRegs[kTPL16]   =   SimpleReg_t("TPL16",       0x3196, 5,      0x00       );
-  fRegs[kTPL17]   =   SimpleReg_t("TPL17",       0x3197, 5,      0x00       );
-  fRegs[kTPL18]   =   SimpleReg_t("TPL18",       0x3198, 5,      0x00       );
-  fRegs[kTPL19]   =   SimpleReg_t("TPL19",       0x3199, 5,      0x00       );
-  fRegs[kTPL1A]   =   SimpleReg_t("TPL1A",       0x319A, 5,      0x00       );
-  fRegs[kTPL1B]   =   SimpleReg_t("TPL1B",       0x319B, 5,      0x00       );
-  fRegs[kTPL1C]   =   SimpleReg_t("TPL1C",       0x319C, 5,      0x00       );
-  fRegs[kTPL1D]   =   SimpleReg_t("TPL1D",       0x319D, 5,      0x00       );
-  fRegs[kTPL1E]   =   SimpleReg_t("TPL1E",       0x319E, 5,      0x00       );
-  fRegs[kTPL1F]   =   SimpleReg_t("TPL1F",       0x319F, 5,      0x00       );
-  fRegs[kTPL20]   =   SimpleReg_t("TPL20",       0x31A0, 5,      0x00       );
-  fRegs[kTPL21]   =   SimpleReg_t("TPL21",       0x31A1, 5,      0x00       );
-  fRegs[kTPL22]   =   SimpleReg_t("TPL22",       0x31A2, 5,      0x00       );
-  fRegs[kTPL23]   =   SimpleReg_t("TPL23",       0x31A3, 5,      0x00       );
-  fRegs[kTPL24]   =   SimpleReg_t("TPL24",       0x31A4, 5,      0x00       );
-  fRegs[kTPL25]   =   SimpleReg_t("TPL25",       0x31A5, 5,      0x00       );
-  fRegs[kTPL26]   =   SimpleReg_t("TPL26",       0x31A6, 5,      0x00       );
-  fRegs[kTPL27]   =   SimpleReg_t("TPL27",       0x31A7, 5,      0x00       );
-  fRegs[kTPL28]   =   SimpleReg_t("TPL28",       0x31A8, 5,      0x00       );
-  fRegs[kTPL29]   =   SimpleReg_t("TPL29",       0x31A9, 5,      0x00       );
-  fRegs[kTPL2A]   =   SimpleReg_t("TPL2A",       0x31AA, 5,      0x00       );
-  fRegs[kTPL2B]   =   SimpleReg_t("TPL2B",       0x31AB, 5,      0x00       );
-  fRegs[kTPL2C]   =   SimpleReg_t("TPL2C",       0x31AC, 5,      0x00       );
-  fRegs[kTPL2D]   =   SimpleReg_t("TPL2D",       0x31AD, 5,      0x00       );
-  fRegs[kTPL2E]   =   SimpleReg_t("TPL2E",       0x31AE, 5,      0x00       );
-  fRegs[kTPL2F]   =   SimpleReg_t("TPL2F",       0x31AF, 5,      0x00       );
-  fRegs[kTPL30]   =   SimpleReg_t("TPL30",       0x31B0, 5,      0x00       );
-  fRegs[kTPL31]   =   SimpleReg_t("TPL31",       0x31B1, 5,      0x00       );
-  fRegs[kTPL32]   =   SimpleReg_t("TPL32",       0x31B2, 5,      0x00       );
-  fRegs[kTPL33]   =   SimpleReg_t("TPL33",       0x31B3, 5,      0x00       );
-  fRegs[kTPL34]   =   SimpleReg_t("TPL34",       0x31B4, 5,      0x00       );
-  fRegs[kTPL35]   =   SimpleReg_t("TPL35",       0x31B5, 5,      0x00       );
-  fRegs[kTPL36]   =   SimpleReg_t("TPL36",       0x31B6, 5,      0x00       );
-  fRegs[kTPL37]   =   SimpleReg_t("TPL37",       0x31B7, 5,      0x00       );
-  fRegs[kTPL38]   =   SimpleReg_t("TPL38",       0x31B8, 5,      0x00       );
-  fRegs[kTPL39]   =   SimpleReg_t("TPL39",       0x31B9, 5,      0x00       );
-  fRegs[kTPL3A]   =   SimpleReg_t("TPL3A",       0x31BA, 5,      0x00       );
-  fRegs[kTPL3B]   =   SimpleReg_t("TPL3B",       0x31BB, 5,      0x00       );
-  fRegs[kTPL3C]   =   SimpleReg_t("TPL3C",       0x31BC, 5,      0x00       );
-  fRegs[kTPL3D]   =   SimpleReg_t("TPL3D",       0x31BD, 5,      0x00       );
-  fRegs[kTPL3E]   =   SimpleReg_t("TPL3E",       0x31BE, 5,      0x00       );
-  fRegs[kTPL3F]   =   SimpleReg_t("TPL3F",       0x31BF, 5,      0x00       );
-  fRegs[kTPL40]   =   SimpleReg_t("TPL40",       0x31C0, 5,      0x00       );
-  fRegs[kTPL41]   =   SimpleReg_t("TPL41",       0x31C1, 5,      0x00       );
-  fRegs[kTPL42]   =   SimpleReg_t("TPL42",       0x31C2, 5,      0x00       );
-  fRegs[kTPL43]   =   SimpleReg_t("TPL43",       0x31C3, 5,      0x00       );
-  fRegs[kTPL44]   =   SimpleReg_t("TPL44",       0x31C4, 5,      0x00       );
-  fRegs[kTPL45]   =   SimpleReg_t("TPL45",       0x31C5, 5,      0x00       );
-  fRegs[kTPL46]   =   SimpleReg_t("TPL46",       0x31C6, 5,      0x00       );
-  fRegs[kTPL47]   =   SimpleReg_t("TPL47",       0x31C7, 5,      0x00       );
-  fRegs[kTPL48]   =   SimpleReg_t("TPL48",       0x31C8, 5,      0x00       );
-  fRegs[kTPL49]   =   SimpleReg_t("TPL49",       0x31C9, 5,      0x00       );
-  fRegs[kTPL4A]   =   SimpleReg_t("TPL4A",       0x31CA, 5,      0x00       );
-  fRegs[kTPL4B]   =   SimpleReg_t("TPL4B",       0x31CB, 5,      0x00       );
-  fRegs[kTPL4C]   =   SimpleReg_t("TPL4C",       0x31CC, 5,      0x00       );
-  fRegs[kTPL4D]   =   SimpleReg_t("TPL4D",       0x31CD, 5,      0x00       );
-  fRegs[kTPL4E]   =   SimpleReg_t("TPL4E",       0x31CE, 5,      0x00       );
-  fRegs[kTPL4F]   =   SimpleReg_t("TPL4F",       0x31CF, 5,      0x00       );
-  fRegs[kTPL50]   =   SimpleReg_t("TPL50",       0x31D0, 5,      0x00       );
-  fRegs[kTPL51]   =   SimpleReg_t("TPL51",       0x31D1, 5,      0x00       );
-  fRegs[kTPL52]   =   SimpleReg_t("TPL52",       0x31D2, 5,      0x00       );
-  fRegs[kTPL53]   =   SimpleReg_t("TPL53",       0x31D3, 5,      0x00       );
-  fRegs[kTPL54]   =   SimpleReg_t("TPL54",       0x31D4, 5,      0x00       );
-  fRegs[kTPL55]   =   SimpleReg_t("TPL55",       0x31D5, 5,      0x00       );
-  fRegs[kTPL56]   =   SimpleReg_t("TPL56",       0x31D6, 5,      0x00       );
-  fRegs[kTPL57]   =   SimpleReg_t("TPL57",       0x31D7, 5,      0x00       );
-  fRegs[kTPL58]   =   SimpleReg_t("TPL58",       0x31D8, 5,      0x00       );
-  fRegs[kTPL59]   =   SimpleReg_t("TPL59",       0x31D9, 5,      0x00       );
-  fRegs[kTPL5A]   =   SimpleReg_t("TPL5A",       0x31DA, 5,      0x00       );
-  fRegs[kTPL5B]   =   SimpleReg_t("TPL5B",       0x31DB, 5,      0x00       );
-  fRegs[kTPL5C]   =   SimpleReg_t("TPL5C",       0x31DC, 5,      0x00       );
-  fRegs[kTPL5D]   =   SimpleReg_t("TPL5D",       0x31DD, 5,      0x00       );
-  fRegs[kTPL5E]   =   SimpleReg_t("TPL5E",       0x31DE, 5,      0x00       );
-  fRegs[kTPL5F]   =   SimpleReg_t("TPL5F",       0x31DF, 5,      0x00       );
-  fRegs[kTPL60]   =   SimpleReg_t("TPL60",       0x31E0, 5,      0x00       );
-  fRegs[kTPL61]   =   SimpleReg_t("TPL61",       0x31E1, 5,      0x00       );
-  fRegs[kTPL62]   =   SimpleReg_t("TPL62",       0x31E2, 5,      0x00       );
-  fRegs[kTPL63]   =   SimpleReg_t("TPL63",       0x31E3, 5,      0x00       );
-  fRegs[kTPL64]   =   SimpleReg_t("TPL64",       0x31E4, 5,      0x00       );
-  fRegs[kTPL65]   =   SimpleReg_t("TPL65",       0x31E5, 5,      0x00       );
-  fRegs[kTPL66]   =   SimpleReg_t("TPL66",       0x31E6, 5,      0x00       );
-  fRegs[kTPL67]   =   SimpleReg_t("TPL67",       0x31E7, 5,      0x00       );
-  fRegs[kTPL68]   =   SimpleReg_t("TPL68",       0x31E8, 5,      0x00       );
-  fRegs[kTPL69]   =   SimpleReg_t("TPL69",       0x31E9, 5,      0x00       );
-  fRegs[kTPL6A]   =   SimpleReg_t("TPL6A",       0x31EA, 5,      0x00       );
-  fRegs[kTPL6B]   =   SimpleReg_t("TPL6B",       0x31EB, 5,      0x00       );
-  fRegs[kTPL6C]   =   SimpleReg_t("TPL6C",       0x31EC, 5,      0x00       );
-  fRegs[kTPL6D]   =   SimpleReg_t("TPL6D",       0x31ED, 5,      0x00       );
-  fRegs[kTPL6E]   =   SimpleReg_t("TPL6E",       0x31EE, 5,      0x00       );
-  fRegs[kTPL6F]   =   SimpleReg_t("TPL6F",       0x31EF, 5,      0x00       );
-  fRegs[kTPL70]   =   SimpleReg_t("TPL70",       0x31F0, 5,      0x00       );
-  fRegs[kTPL71]   =   SimpleReg_t("TPL71",       0x31F1, 5,      0x00       );
-  fRegs[kTPL72]   =   SimpleReg_t("TPL72",       0x31F2, 5,      0x00       );
-  fRegs[kTPL73]   =   SimpleReg_t("TPL73",       0x31F3, 5,      0x00       );
-  fRegs[kTPL74]   =   SimpleReg_t("TPL74",       0x31F4, 5,      0x00       );
-  fRegs[kTPL75]   =   SimpleReg_t("TPL75",       0x31F5, 5,      0x00       );
-  fRegs[kTPL76]   =   SimpleReg_t("TPL76",       0x31F6, 5,      0x00       );
-  fRegs[kTPL77]   =   SimpleReg_t("TPL77",       0x31F7, 5,      0x00       );
-  fRegs[kTPL78]   =   SimpleReg_t("TPL78",       0x31F8, 5,      0x00       );
-  fRegs[kTPL79]   =   SimpleReg_t("TPL79",       0x31F9, 5,      0x00       );
-  fRegs[kTPL7A]   =   SimpleReg_t("TPL7A",       0x31FA, 5,      0x00       );
-  fRegs[kTPL7B]   =   SimpleReg_t("TPL7B",       0x31FB, 5,      0x00       );
-  fRegs[kTPL7C]   =   SimpleReg_t("TPL7C",       0x31FC, 5,      0x00       );
-  fRegs[kTPL7D]   =   SimpleReg_t("TPL7D",       0x31FD, 5,      0x00       );
-  fRegs[kTPL7E]   =   SimpleReg_t("TPL7E",       0x31FE, 5,      0x00       );
-  fRegs[kTPL7F]   =   SimpleReg_t("TPL7F",       0x31FF, 5,      0x00       );
-  fRegs[kMEMRW]   =   SimpleReg_t("MEMRW",       0xD000, 7,      0x79       );  // end of pos table
-  fRegs[kMEMCOR]  =   SimpleReg_t("MEMCOR",      0xD001, 9,      0x000      );
-  fRegs[kDMDELA]  =   SimpleReg_t("DMDELA",      0xD002, 4,      0x8        );
-  fRegs[kDMDELS]  =   SimpleReg_t("DMDELS",      0xD003, 4,      0x8        );
-
-
-
-  for(Int_t iAddr = 0; iAddr < fgkDmemWords; iAddr++) {
-
-     if(iAddr == fgkDmemAddrDeflCorr - fgkDmemStartAddress) {
-	fDmem[iAddr] = new UInt_t[fgkDmemSizeSmIndividual];
-	fDmemDepth[iAddr] = fgkDmemSizeSmIndividual;
-     }
-
-     else if(iAddr == fgkDmemAddrNdrift - fgkDmemStartAddress) {
-	fDmem[iAddr] = new UInt_t[fgkDmemSizeSmRocIndividual];
-	fDmemDepth[iAddr] = fgkDmemSizeSmRocIndividual;
-     }
-
-     else if(iAddr >= fgkDmemAddrDeflCutStart-fgkDmemStartAddress && iAddr <= fgkDmemAddrDeflCutEnd-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];
-	fDmemDepth[iAddr] = fgkDmemSizeSmIndividual;
-     }
-
-     else if(iAddr >= fgkDmemAddrTrackletStart-fgkDmemStartAddress && iAddr <= fgkDmemAddrTrackletEnd-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t[fgkDmemSizeTotalIndividual];
-	fDmemDepth[iAddr] = fgkDmemSizeTotalIndividual;
-     }
-
-     else if(iAddr >= fgkDmemAddrLUTStart-fgkDmemStartAddress && iAddr <= fgkDmemAddrLUTEnd-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t;   // same value for all MCMs
- 	fDmemDepth[iAddr] = fgkDmemSizeUniform;
-    }
-
-     else if(iAddr == fgkDmemAddrLUTcor0-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];
-	fDmemDepth[iAddr]  = fgkDmemSizeSmIndividual;
-     }
-
-     else if(iAddr == fgkDmemAddrLUTcor1-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];
-	fDmemDepth[iAddr]  = fgkDmemSizeSmIndividual;
-     }
-
-     else if(iAddr == fgkDmemAddrLUTnbins-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t;   // same value for all MCMs
-	fDmemDepth[iAddr] = fgkDmemSizeUniform;
-     }
-
-     else if(iAddr == fgkDmemAddrLUTLength-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t;   // same value for all MCMs
-	fDmemDepth[iAddr] = fgkDmemSizeUniform;
-     }
-
-     else {
-	fDmem[iAddr] = NULL;
-	fDmemDepth[iAddr] = fgkDmemSizeEmpty;
-     }
-
-  }
-
+  // initialize and reset the TRAP registers
   InitRegs();
-  ResetDmem();
-}
+  ResetRegs();
 
-
-AliTRDtrapConfig* AliTRDtrapConfig::Instance()
-{
-  // return a pointer to an instance of this class
-
-  if (!fgInstance) {
-    fgInstance = new AliTRDtrapConfig();
-    AliTRDtrapConfigHandler cfgHandler;
-    cfgHandler.LoadConfig();
+  for (Int_t iWord = 0; iWord < fgkDmemWords; ++iWord) {
+    fDmem[iWord].SetAddress(iWord + fgkDmemStartAddress);
   }
 
-  return fgInstance;
+  // initialize the map from address to register
+  if (!fgRegAddressMapInitialized) {
+    for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
+      Int_t addr = fRegisterValue[iReg].GetAddr();
+      if (addr < fgkRegisterAddressBlockStart[0]) {
+	AliError(Form("Register address 0x%04x not handled in register map", addr));
+      }
+      else if (addr < fgkRegisterAddressBlockStart[0] + fgkRegisterAddressBlockSize[0]) {
+	fgRegAddressMap[addr - fgkRegisterAddressBlockStart[0]] = (TrapReg_t) iReg;
+      }
+      else if (addr < fgkRegisterAddressBlockStart[1]) {
+	AliError(Form("Register address 0x%04x not handled in register map", addr));
+      }
+      else if (addr < fgkRegisterAddressBlockStart[1] + fgkRegisterAddressBlockSize[1]) {
+	fgRegAddressMap[addr - fgkRegisterAddressBlockStart[1] + fgkRegisterAddressBlockSize[0]] = (TrapReg_t) iReg;
+      }
+      else if (addr < fgkRegisterAddressBlockStart[2]) {
+	AliError(Form("Register address 0x%04x not handled in register map", addr));
+      }
+      else if (addr < fgkRegisterAddressBlockStart[2] + fgkRegisterAddressBlockSize[2]) {
+	fgRegAddressMap[addr - fgkRegisterAddressBlockStart[2] + fgkRegisterAddressBlockSize[1] + fgkRegisterAddressBlockSize[0]] = (TrapReg_t) iReg;
+      }
+      else {
+	AliError(Form("Register address 0x%04x not handled in register map", addr));
+      }
+    }
+    fgRegAddressMapInitialized = kTRUE;
+  }
 }
 
 
 AliTRDtrapConfig::~AliTRDtrapConfig()
 {
   // destructor
-
-  for(Int_t iAddr = 0; iAddr < fgkDmemWords; iAddr++) {
-     if(iAddr == fgkDmemAddrDeflCorr - fgkDmemStartAddress)
-	delete [] fDmem[iAddr];
-
-     else if(iAddr == fgkDmemAddrNdrift - fgkDmemStartAddress)
-	delete [] fDmem[iAddr];
-
-     else if(iAddr >= fgkDmemAddrDeflCutStart-fgkDmemStartAddress && iAddr <= fgkDmemAddrDeflCutEnd-fgkDmemStartAddress)
-	delete [] fDmem[iAddr];
-
-     else if(iAddr >= fgkDmemAddrTrackletStart-fgkDmemStartAddress && iAddr <= fgkDmemAddrTrackletEnd-fgkDmemStartAddress)
-	delete [] fDmem[iAddr];
-
-     else if(iAddr >= fgkDmemAddrLUTStart-fgkDmemStartAddress && iAddr <= fgkDmemAddrLUTEnd-fgkDmemStartAddress)
-	delete fDmem[iAddr];
-
-     else if(iAddr == fgkDmemAddrLUTcor0-fgkDmemStartAddress)
-	delete [] fDmem[iAddr];
-
-     else if(iAddr == fgkDmemAddrLUTcor1-fgkDmemStartAddress)
-	delete [] fDmem[iAddr];
-
-     else if(iAddr == fgkDmemAddrLUTnbins-fgkDmemStartAddress)
-	delete fDmem[iAddr];
-
-     else if(iAddr == fgkDmemAddrLUTLength-fgkDmemStartAddress)
-	delete fDmem[iAddr];
-  }
 }
 
 
 void AliTRDtrapConfig::InitRegs()
 {
-   // Reset the content of all TRAP registers to the reset values (see TRAP User Manual)
+  // initialize all TRAP registers
 
-   for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
-
-     fRegisterValue[iReg].individualValue = 0x0;
-
-     fRegisterValue[iReg].globalValue = GetRegResetValue((TrapReg_t) iReg);
-     fRegisterValue[iReg].state = RegValue_t::kGlobal;
-   }
+  //                              Name          Address  Nbits   Reset Value
+  fRegisterValue[kSML0]    .Init("SML0",        0x0A00, 15,     0x4050     );  // Global state machine
+  fRegisterValue[kSML1]    .Init("SML1",        0x0A01, 15,     0x4200     );
+  fRegisterValue[kSML2]    .Init("SML2",        0x0A02, 15,     0x4384     );
+  fRegisterValue[kSMMODE]  .Init("SMMODE",      0x0A03, 16,     0xF0E2     );
+  fRegisterValue[kSMCMD]   .Init("SMCMD",       0x0A04, 16,     0x0000     );
+  fRegisterValue[kNITM0]   .Init("NITM0",       0x0A08, 14,     0x3FFF     );
+  fRegisterValue[kNITM1]   .Init("NITM1",       0x0A09, 14,     0x3FFF     );
+  fRegisterValue[kNITM2]   .Init("NITM2",       0x0A0A, 14,     0x3FFF     );
+  fRegisterValue[kNIP4D]   .Init("NIP4D",       0x0A0B, 7,      0x7F       );
+  fRegisterValue[kCPU0CLK] .Init("CPU0CLK",     0x0A20, 5,      0x07       );
+  fRegisterValue[kCPU1CLK] .Init("CPU1CLK",     0x0A22, 5,      0x07       );
+  fRegisterValue[kCPU2CLK] .Init("CPU2CLK",     0x0A24, 5,      0x07       );
+  fRegisterValue[kCPU3CLK] .Init("CPU3CLK",     0x0A26, 5,      0x07       );
+  fRegisterValue[kNICLK]   .Init("NICLK",       0x0A28, 5,      0x07       );
+  fRegisterValue[kFILCLK]  .Init("FILCLK",      0x0A2A, 5,      0x07       );
+  fRegisterValue[kPRECLK]  .Init("PRECLK",      0x0A2C, 5,      0x07       );
+  fRegisterValue[kADCEN]   .Init("ADCEN",       0x0A2E, 5,      0x07       );
+  fRegisterValue[kNIODE]   .Init("NIODE",       0x0A30, 5,      0x07       );
+  fRegisterValue[kNIOCE]   .Init("NIOCE",       0x0A32, 6,      0x21       );  // bit 5 is status bit (read-only)!
+  fRegisterValue[kNIIDE]   .Init("NIIDE",       0x0A34, 5,      0x07       );
+  fRegisterValue[kNIICE]   .Init("NIICE",       0x0A36, 5,      0x07       );
+  fRegisterValue[kARBTIM]  .Init("ARBTIM",      0x0A3F, 4,      0x0        );  // Arbiter
+  fRegisterValue[kIA0IRQ0] .Init("IA0IRQ0",     0x0B00, 12,     0x000      );  // IVT of CPU0
+  fRegisterValue[kIA0IRQ1] .Init("IA0IRQ1",     0x0B01, 12,     0x000      );
+  fRegisterValue[kIA0IRQ2] .Init("IA0IRQ2",     0x0B02, 12,     0x000      );
+  fRegisterValue[kIA0IRQ3] .Init("IA0IRQ3",     0x0B03, 12,     0x000      );
+  fRegisterValue[kIA0IRQ4] .Init("IA0IRQ4",     0x0B04, 12,     0x000      );
+  fRegisterValue[kIA0IRQ5] .Init("IA0IRQ5",     0x0B05, 12,     0x000      );
+  fRegisterValue[kIA0IRQ6] .Init("IA0IRQ6",     0x0B06, 12,     0x000      );
+  fRegisterValue[kIA0IRQ7] .Init("IA0IRQ7",     0x0B07, 12,     0x000      );
+  fRegisterValue[kIA0IRQ8] .Init("IA0IRQ8",     0x0B08, 12,     0x000      );
+  fRegisterValue[kIA0IRQ9] .Init("IA0IRQ9",     0x0B09, 12,     0x000      );
+  fRegisterValue[kIA0IRQA] .Init("IA0IRQA",     0x0B0A, 12,     0x000      );
+  fRegisterValue[kIA0IRQB] .Init("IA0IRQB",     0x0B0B, 12,     0x000      );
+  fRegisterValue[kIA0IRQC] .Init("IA0IRQC",     0x0B0C, 12,     0x000      );
+  fRegisterValue[kIRQSW0]  .Init("IRQSW0",      0x0B0D, 13,     0x1FFF     );
+  fRegisterValue[kIRQHW0]  .Init("IRQHW0",      0x0B0E, 13,     0x0000     );
+  fRegisterValue[kIRQHL0]  .Init("IRQHL0",      0x0B0F, 13,     0x0000     );
+  fRegisterValue[kIA1IRQ0] .Init("IA1IRQ0",     0x0B20, 12,     0x000      );  // IVT of CPU1
+  fRegisterValue[kIA1IRQ1] .Init("IA1IRQ1",     0x0B21, 12,     0x000      );
+  fRegisterValue[kIA1IRQ2] .Init("IA1IRQ2",     0x0B22, 12,     0x000      );
+  fRegisterValue[kIA1IRQ3] .Init("IA1IRQ3",     0x0B23, 12,     0x000      );
+  fRegisterValue[kIA1IRQ4] .Init("IA1IRQ4",     0x0B24, 12,     0x000      );
+  fRegisterValue[kIA1IRQ5] .Init("IA1IRQ5",     0x0B25, 12,     0x000      );
+  fRegisterValue[kIA1IRQ6] .Init("IA1IRQ6",     0x0B26, 12,     0x000      );
+  fRegisterValue[kIA1IRQ7] .Init("IA1IRQ7",     0x0B27, 12,     0x000      );
+  fRegisterValue[kIA1IRQ8] .Init("IA1IRQ8",     0x0B28, 12,     0x000      );
+  fRegisterValue[kIA1IRQ9] .Init("IA1IRQ9",     0x0B29, 12,     0x000      );
+  fRegisterValue[kIA1IRQA] .Init("IA1IRQA",     0x0B2A, 12,     0x000      );
+  fRegisterValue[kIA1IRQB] .Init("IA1IRQB",     0x0B2B, 12,     0x000      );
+  fRegisterValue[kIA1IRQC] .Init("IA1IRQC",     0x0B2C, 12,     0x000      );
+  fRegisterValue[kIRQSW1]  .Init("IRQSW1",      0x0B2D, 13,     0x1FFF     );
+  fRegisterValue[kIRQHW1]  .Init("IRQHW1",      0x0B2E, 13,     0x0000     );
+  fRegisterValue[kIRQHL1]  .Init("IRQHL1",      0x0B2F, 13,     0x0000     );
+  fRegisterValue[kIA2IRQ0] .Init("IA2IRQ0",     0x0B40, 12,     0x000      );  // IVT of CPU2
+  fRegisterValue[kIA2IRQ1] .Init("IA2IRQ1",     0x0B41, 12,     0x000      );
+  fRegisterValue[kIA2IRQ2] .Init("IA2IRQ2",     0x0B42, 12,     0x000      );
+  fRegisterValue[kIA2IRQ3] .Init("IA2IRQ3",     0x0B43, 12,     0x000      );
+  fRegisterValue[kIA2IRQ4] .Init("IA2IRQ4",     0x0B44, 12,     0x000      );
+  fRegisterValue[kIA2IRQ5] .Init("IA2IRQ5",     0x0B45, 12,     0x000      );
+  fRegisterValue[kIA2IRQ6] .Init("IA2IRQ6",     0x0B46, 12,     0x000      );
+  fRegisterValue[kIA2IRQ7] .Init("IA2IRQ7",     0x0B47, 12,     0x000      );
+  fRegisterValue[kIA2IRQ8] .Init("IA2IRQ8",     0x0B48, 12,     0x000      );
+  fRegisterValue[kIA2IRQ9] .Init("IA2IRQ9",     0x0B49, 12,     0x000      );
+  fRegisterValue[kIA2IRQA] .Init("IA2IRQA",     0x0B4A, 12,     0x000      );
+  fRegisterValue[kIA2IRQB] .Init("IA2IRQB",     0x0B4B, 12,     0x000      );
+  fRegisterValue[kIA2IRQC] .Init("IA2IRQC",     0x0B4C, 12,     0x000      );
+  fRegisterValue[kIRQSW2]  .Init("IRQSW2",      0x0B4D, 13,     0x1FFF     );
+  fRegisterValue[kIRQHW2]  .Init("IRQHW2",      0x0B4E, 13,     0x0000     );
+  fRegisterValue[kIRQHL2]  .Init("IRQHL2",      0x0B4F, 13,     0x0000     );
+  fRegisterValue[kIA3IRQ0] .Init("IA3IRQ0",     0x0B60, 12,     0x000      );  // IVT of CPU3
+  fRegisterValue[kIA3IRQ1] .Init("IA3IRQ1",     0x0B61, 12,     0x000      );
+  fRegisterValue[kIA3IRQ2] .Init("IA3IRQ2",     0x0B62, 12,     0x000      );
+  fRegisterValue[kIA3IRQ3] .Init("IA3IRQ3",     0x0B63, 12,     0x000      );
+  fRegisterValue[kIA3IRQ4] .Init("IA3IRQ4",     0x0B64, 12,     0x000      );
+  fRegisterValue[kIA3IRQ5] .Init("IA3IRQ5",     0x0B65, 12,     0x000      );
+  fRegisterValue[kIA3IRQ6] .Init("IA3IRQ6",     0x0B66, 12,     0x000      );
+  fRegisterValue[kIA3IRQ7] .Init("IA3IRQ7",     0x0B67, 12,     0x000      );
+  fRegisterValue[kIA3IRQ8] .Init("IA3IRQ8",     0x0B68, 12,     0x000      );
+  fRegisterValue[kIA3IRQ9] .Init("IA3IRQ9",     0x0B69, 12,     0x000      );
+  fRegisterValue[kIA3IRQA] .Init("IA3IRQA",     0x0B6A, 12,     0x000      );
+  fRegisterValue[kIA3IRQB] .Init("IA3IRQB",     0x0B6B, 12,     0x000      );
+  fRegisterValue[kIA3IRQC] .Init("IA3IRQC",     0x0B6C, 12,     0x000      );
+  fRegisterValue[kIRQSW3]  .Init("IRQSW3",      0x0B6D, 13,     0x1FFF     );
+  fRegisterValue[kIRQHW3]  .Init("IRQHW3",      0x0B6E, 13,     0x0000     );
+  fRegisterValue[kIRQHL3]  .Init("IRQHL3",      0x0B6F, 13,     0x0000     );
+  fRegisterValue[kCTGDINI] .Init("CTGDINI",     0x0B80, 32,     0x00000000 );  // Global Counter/Timer
+  fRegisterValue[kCTGCTRL] .Init("CTGCTRL",     0x0B81, 12,     0xE3F      );
+  fRegisterValue[kC08CPU0] .Init("C08CPU0",     0x0C00, 32,     0x00000000 );  // CPU constants
+  fRegisterValue[kC09CPU0] .Init("C09CPU0",     0x0C01, 32,     0x00000000 );
+  fRegisterValue[kC10CPU0] .Init("C10CPU0",     0x0C02, 32,     0x00000000 );
+  fRegisterValue[kC11CPU0] .Init("C11CPU0",     0x0C03, 32,     0x00000000 );
+  fRegisterValue[kC12CPUA] .Init("C12CPUA",     0x0C04, 32,     0x00000000 );
+  fRegisterValue[kC13CPUA] .Init("C13CPUA",     0x0C05, 32,     0x00000000 );
+  fRegisterValue[kC14CPUA] .Init("C14CPUA",     0x0C06, 32,     0x00000000 );
+  fRegisterValue[kC15CPUA] .Init("C15CPUA",     0x0C07, 32,     0x00000000 );
+  fRegisterValue[kC08CPU1] .Init("C08CPU1",     0x0C08, 32,     0x00000000 );
+  fRegisterValue[kC09CPU1] .Init("C09CPU1",     0x0C09, 32,     0x00000000 );
+  fRegisterValue[kC10CPU1] .Init("C10CPU1",     0x0C0A, 32,     0x00000000 );
+  fRegisterValue[kC11CPU1] .Init("C11CPU1",     0x0C0B, 32,     0x00000000 );
+  fRegisterValue[kC08CPU2] .Init("C08CPU2",     0x0C10, 32,     0x00000000 );
+  fRegisterValue[kC09CPU2] .Init("C09CPU2",     0x0C11, 32,     0x00000000 );
+  fRegisterValue[kC10CPU2] .Init("C10CPU2",     0x0C12, 32,     0x00000000 );
+  fRegisterValue[kC11CPU2] .Init("C11CPU2",     0x0C13, 32,     0x00000000 );
+  fRegisterValue[kC08CPU3] .Init("C08CPU3",     0x0C18, 32,     0x00000000 );
+  fRegisterValue[kC09CPU3] .Init("C09CPU3",     0x0C19, 32,     0x00000000 );
+  fRegisterValue[kC10CPU3] .Init("C10CPU3",     0x0C1A, 32,     0x00000000 );
+  fRegisterValue[kC11CPU3] .Init("C11CPU3",     0x0C1B, 32,     0x00000000 );
+  fRegisterValue[kNMOD]    .Init("NMOD",        0x0D40, 6,      0x08       );  // NI interface
+  fRegisterValue[kNDLY]    .Init("NDLY",        0x0D41, 30,     0x24924924 );
+  fRegisterValue[kNED]     .Init("NED",         0x0D42, 16,     0xA240     );
+  fRegisterValue[kNTRO]    .Init("NTRO",        0x0D43, 18,     0x3FFFC    );
+  fRegisterValue[kNRRO]    .Init("NRRO",        0x0D44, 18,     0x3FFFC    );
+  fRegisterValue[kNES]     .Init("NES",         0x0D45, 32,     0x00000000 );
+  fRegisterValue[kNTP]     .Init("NTP",         0x0D46, 32,     0x0000FFFF );
+  fRegisterValue[kNBND]    .Init("NBND",        0x0D47, 16,     0x6020     );
+  fRegisterValue[kNP0]     .Init("NP0",         0x0D48, 11,     0x44C      );
+  fRegisterValue[kNP1]     .Init("NP1",         0x0D49, 11,     0x44C      );
+  fRegisterValue[kNP2]     .Init("NP2",         0x0D4A, 11,     0x44C      );
+  fRegisterValue[kNP3]     .Init("NP3",         0x0D4B, 11,     0x44C      );
+  fRegisterValue[kNCUT]    .Init("NCUT",        0x0D4C, 32,     0xFFFFFFFF );
+  fRegisterValue[kTPPT0]   .Init("TPPT0",       0x3000, 7,      0x01       );  // Filter and Preprocessor
+  fRegisterValue[kTPFS]    .Init("TPFS",        0x3001, 7,      0x05       );
+  fRegisterValue[kTPFE]    .Init("TPFE",        0x3002, 7,      0x14       );
+  fRegisterValue[kTPPGR]   .Init("TPPGR",       0x3003, 7,      0x15       );
+  fRegisterValue[kTPPAE]   .Init("TPPAE",       0x3004, 7,      0x1E       );
+  fRegisterValue[kTPQS0]   .Init("TPQS0",       0x3005, 7,      0x00       );
+  fRegisterValue[kTPQE0]   .Init("TPQE0",       0x3006, 7,      0x0A       );
+  fRegisterValue[kTPQS1]   .Init("TPQS1",       0x3007, 7,      0x0B       );
+  fRegisterValue[kTPQE1]   .Init("TPQE1",       0x3008, 7,      0x14       );
+  fRegisterValue[kEBD]     .Init("EBD",         0x3009, 3,      0x0        );
+  fRegisterValue[kEBAQA]   .Init("EBAQA",       0x300A, 7,      0x00       );
+  fRegisterValue[kEBSIA]   .Init("EBSIA",       0x300B, 7,      0x20       );
+  fRegisterValue[kEBSF]    .Init("EBSF",        0x300C, 1,      0x1        );
+  fRegisterValue[kEBSIM]   .Init("EBSIM",       0x300D, 1,      0x1        );
+  fRegisterValue[kEBPP]    .Init("EBPP",        0x300E, 1,      0x1        );
+  fRegisterValue[kEBPC]    .Init("EBPC",        0x300F, 1,      0x1        );
+  fRegisterValue[kEBIS]    .Init("EBIS",        0x3014, 10,     0x005      );
+  fRegisterValue[kEBIT]    .Init("EBIT",        0x3015, 12,     0x028      );
+  fRegisterValue[kEBIL]    .Init("EBIL",        0x3016, 8,      0xF0       );
+  fRegisterValue[kEBIN]    .Init("EBIN",        0x3017, 1,      0x1        );
+  fRegisterValue[kFLBY]    .Init("FLBY",        0x3018, 1,      0x0        );
+  fRegisterValue[kFPBY]    .Init("FPBY",        0x3019, 1,      0x0        );
+  fRegisterValue[kFGBY]    .Init("FGBY",        0x301A, 1,      0x0        );
+  fRegisterValue[kFTBY]    .Init("FTBY",        0x301B, 1,      0x0        );
+  fRegisterValue[kFCBY]    .Init("FCBY",        0x301C, 1,      0x0        );
+  fRegisterValue[kFPTC]    .Init("FPTC",        0x3020, 2,      0x3        );
+  fRegisterValue[kFPNP]    .Init("FPNP",        0x3021, 9,      0x078      );
+  fRegisterValue[kFPCL]    .Init("FPCL",        0x3022, 1,      0x1        );
+  fRegisterValue[kFGTA]    .Init("FGTA",        0x3028, 12,     0x014      );
+  fRegisterValue[kFGTB]    .Init("FGTB",        0x3029, 12,     0x80C      );
+  fRegisterValue[kFGCL]    .Init("FGCL",        0x302A, 1,      0x1        );
+  fRegisterValue[kFTAL]    .Init("FTAL",        0x3030, 10,     0x0F6      );
+  fRegisterValue[kFTLL]    .Init("FTLL",        0x3031, 9,      0x11D      );
+  fRegisterValue[kFTLS]    .Init("FTLS",        0x3032, 9,      0x0D3      );
+  fRegisterValue[kFCW1]    .Init("FCW1",        0x3038, 8,      0x1E       );
+  fRegisterValue[kFCW2]    .Init("FCW2",        0x3039, 8,      0xD4       );
+  fRegisterValue[kFCW3]    .Init("FCW3",        0x303A, 8,      0xE6       );
+  fRegisterValue[kFCW4]    .Init("FCW4",        0x303B, 8,      0x4A       );
+  fRegisterValue[kFCW5]    .Init("FCW5",        0x303C, 8,      0xEF       );
+  fRegisterValue[kTPFP]    .Init("TPFP",        0x3040, 9,      0x037      );
+  fRegisterValue[kTPHT]    .Init("TPHT",        0x3041, 14,     0x00A0     );
+  fRegisterValue[kTPVT]    .Init("TPVT",        0x3042, 6,      0x00       );
+  fRegisterValue[kTPVBY]   .Init("TPVBY",       0x3043, 1,      0x0        );
+  fRegisterValue[kTPCT]    .Init("TPCT",        0x3044, 5,      0x08       );
+  fRegisterValue[kTPCL]    .Init("TPCL",        0x3045, 5,      0x01       );
+  fRegisterValue[kTPCBY]   .Init("TPCBY",       0x3046, 1,      0x1        );
+  fRegisterValue[kTPD]     .Init("TPD",         0x3047, 4,      0xF        );
+  fRegisterValue[kTPCI0]   .Init("TPCI0",       0x3048, 5,      0x00       );
+  fRegisterValue[kTPCI1]   .Init("TPCI1",       0x3049, 5,      0x00       );
+  fRegisterValue[kTPCI2]   .Init("TPCI2",       0x304A, 5,      0x00       );
+  fRegisterValue[kTPCI3]   .Init("TPCI3",       0x304B, 5,      0x00       );
+  fRegisterValue[kADCMSK]  .Init("ADCMSK",      0x3050, 21,     0x1FFFFF   );
+  fRegisterValue[kADCINB]  .Init("ADCINB",      0x3051, 2,      0x2        );
+  fRegisterValue[kADCDAC]  .Init("ADCDAC",      0x3052, 5,      0x10       );
+  fRegisterValue[kADCPAR]  .Init("ADCPAR",      0x3053, 18,     0x195EF    );
+  fRegisterValue[kADCTST]  .Init("ADCTST",      0x3054, 2,      0x0        );
+  fRegisterValue[kSADCAZ]  .Init("SADCAZ",      0x3055, 1,      0x1        );
+  fRegisterValue[kFGF0]    .Init("FGF0",        0x3080, 9,      0x000      );
+  fRegisterValue[kFGF1]    .Init("FGF1",        0x3081, 9,      0x000      );
+  fRegisterValue[kFGF2]    .Init("FGF2",        0x3082, 9,      0x000      );
+  fRegisterValue[kFGF3]    .Init("FGF3",        0x3083, 9,      0x000      );
+  fRegisterValue[kFGF4]    .Init("FGF4",        0x3084, 9,      0x000      );
+  fRegisterValue[kFGF5]    .Init("FGF5",        0x3085, 9,      0x000      );
+  fRegisterValue[kFGF6]    .Init("FGF6",        0x3086, 9,      0x000      );
+  fRegisterValue[kFGF7]    .Init("FGF7",        0x3087, 9,      0x000      );
+  fRegisterValue[kFGF8]    .Init("FGF8",        0x3088, 9,      0x000      );
+  fRegisterValue[kFGF9]    .Init("FGF9",        0x3089, 9,      0x000      );
+  fRegisterValue[kFGF10]   .Init("FGF10",       0x308A, 9,      0x000      );
+  fRegisterValue[kFGF11]   .Init("FGF11",       0x308B, 9,      0x000      );
+  fRegisterValue[kFGF12]   .Init("FGF12",       0x308C, 9,      0x000      );
+  fRegisterValue[kFGF13]   .Init("FGF13",       0x308D, 9,      0x000      );
+  fRegisterValue[kFGF14]   .Init("FGF14",       0x308E, 9,      0x000      );
+  fRegisterValue[kFGF15]   .Init("FGF15",       0x308F, 9,      0x000      );
+  fRegisterValue[kFGF16]   .Init("FGF16",       0x3090, 9,      0x000      );
+  fRegisterValue[kFGF17]   .Init("FGF17",       0x3091, 9,      0x000      );
+  fRegisterValue[kFGF18]   .Init("FGF18",       0x3092, 9,      0x000      );
+  fRegisterValue[kFGF19]   .Init("FGF19",       0x3093, 9,      0x000      );
+  fRegisterValue[kFGF20]   .Init("FGF20",       0x3094, 9,      0x000      );
+  fRegisterValue[kFGA0]    .Init("FGA0",        0x30A0, 6,      0x00       );
+  fRegisterValue[kFGA1]    .Init("FGA1",        0x30A1, 6,      0x00       );
+  fRegisterValue[kFGA2]    .Init("FGA2",        0x30A2, 6,      0x00       );
+  fRegisterValue[kFGA3]    .Init("FGA3",        0x30A3, 6,      0x00       );
+  fRegisterValue[kFGA4]    .Init("FGA4",        0x30A4, 6,      0x00       );
+  fRegisterValue[kFGA5]    .Init("FGA5",        0x30A5, 6,      0x00       );
+  fRegisterValue[kFGA6]    .Init("FGA6",        0x30A6, 6,      0x00       );
+  fRegisterValue[kFGA7]    .Init("FGA7",        0x30A7, 6,      0x00       );
+  fRegisterValue[kFGA8]    .Init("FGA8",        0x30A8, 6,      0x00       );
+  fRegisterValue[kFGA9]    .Init("FGA9",        0x30A9, 6,      0x00       );
+  fRegisterValue[kFGA10]   .Init("FGA10",       0x30AA, 6,      0x00       );
+  fRegisterValue[kFGA11]   .Init("FGA11",       0x30AB, 6,      0x00       );
+  fRegisterValue[kFGA12]   .Init("FGA12",       0x30AC, 6,      0x00       );
+  fRegisterValue[kFGA13]   .Init("FGA13",       0x30AD, 6,      0x00       );
+  fRegisterValue[kFGA14]   .Init("FGA14",       0x30AE, 6,      0x00       );
+  fRegisterValue[kFGA15]   .Init("FGA15",       0x30AF, 6,      0x00       );
+  fRegisterValue[kFGA16]   .Init("FGA16",       0x30B0, 6,      0x00       );
+  fRegisterValue[kFGA17]   .Init("FGA17",       0x30B1, 6,      0x00       );
+  fRegisterValue[kFGA18]   .Init("FGA18",       0x30B2, 6,      0x00       );
+  fRegisterValue[kFGA19]   .Init("FGA19",       0x30B3, 6,      0x00       );
+  fRegisterValue[kFGA20]   .Init("FGA20",       0x30B4, 6,      0x00       );
+  fRegisterValue[kFLL00]   .Init("FLL00",       0x3100, 6,      0x00       );  // non-linearity table, 64 x 6 bits
+  fRegisterValue[kFLL01]   .Init("FLL01",       0x3101, 6,      0x00       );
+  fRegisterValue[kFLL02]   .Init("FLL02",       0x3102, 6,      0x00       );
+  fRegisterValue[kFLL03]   .Init("FLL03",       0x3103, 6,      0x00       );
+  fRegisterValue[kFLL04]   .Init("FLL04",       0x3104, 6,      0x00       );
+  fRegisterValue[kFLL05]   .Init("FLL05",       0x3105, 6,      0x00       );
+  fRegisterValue[kFLL06]   .Init("FLL06",       0x3106, 6,      0x00       );
+  fRegisterValue[kFLL07]   .Init("FLL07",       0x3107, 6,      0x00       );
+  fRegisterValue[kFLL08]   .Init("FLL08",       0x3108, 6,      0x00       );
+  fRegisterValue[kFLL09]   .Init("FLL09",       0x3109, 6,      0x00       );
+  fRegisterValue[kFLL0A]   .Init("FLL0A",       0x310A, 6,      0x00       );
+  fRegisterValue[kFLL0B]   .Init("FLL0B",       0x310B, 6,      0x00       );
+  fRegisterValue[kFLL0C]   .Init("FLL0C",       0x310C, 6,      0x00       );
+  fRegisterValue[kFLL0D]   .Init("FLL0D",       0x310D, 6,      0x00       );
+  fRegisterValue[kFLL0E]   .Init("FLL0E",       0x310E, 6,      0x00       );
+  fRegisterValue[kFLL0F]   .Init("FLL0F",       0x310F, 6,      0x00       );
+  fRegisterValue[kFLL10]   .Init("FLL10",       0x3110, 6,      0x00       );
+  fRegisterValue[kFLL11]   .Init("FLL11",       0x3111, 6,      0x00       );
+  fRegisterValue[kFLL12]   .Init("FLL12",       0x3112, 6,      0x00       );
+  fRegisterValue[kFLL13]   .Init("FLL13",       0x3113, 6,      0x00       );
+  fRegisterValue[kFLL14]   .Init("FLL14",       0x3114, 6,      0x00       );
+  fRegisterValue[kFLL15]   .Init("FLL15",       0x3115, 6,      0x00       );
+  fRegisterValue[kFLL16]   .Init("FLL16",       0x3116, 6,      0x00       );
+  fRegisterValue[kFLL17]   .Init("FLL17",       0x3117, 6,      0x00       );
+  fRegisterValue[kFLL18]   .Init("FLL18",       0x3118, 6,      0x00       );
+  fRegisterValue[kFLL19]   .Init("FLL19",       0x3119, 6,      0x00       );
+  fRegisterValue[kFLL1A]   .Init("FLL1A",       0x311A, 6,      0x00       );
+  fRegisterValue[kFLL1B]   .Init("FLL1B",       0x311B, 6,      0x00       );
+  fRegisterValue[kFLL1C]   .Init("FLL1C",       0x311C, 6,      0x00       );
+  fRegisterValue[kFLL1D]   .Init("FLL1D",       0x311D, 6,      0x00       );
+  fRegisterValue[kFLL1E]   .Init("FLL1E",       0x311E, 6,      0x00       );
+  fRegisterValue[kFLL1F]   .Init("FLL1F",       0x311F, 6,      0x00       );
+  fRegisterValue[kFLL20]   .Init("FLL20",       0x3120, 6,      0x00       );
+  fRegisterValue[kFLL21]   .Init("FLL21",       0x3121, 6,      0x00       );
+  fRegisterValue[kFLL22]   .Init("FLL22",       0x3122, 6,      0x00       );
+  fRegisterValue[kFLL23]   .Init("FLL23",       0x3123, 6,      0x00       );
+  fRegisterValue[kFLL24]   .Init("FLL24",       0x3124, 6,      0x00       );
+  fRegisterValue[kFLL25]   .Init("FLL25",       0x3125, 6,      0x00       );
+  fRegisterValue[kFLL26]   .Init("FLL26",       0x3126, 6,      0x00       );
+  fRegisterValue[kFLL27]   .Init("FLL27",       0x3127, 6,      0x00       );
+  fRegisterValue[kFLL28]   .Init("FLL28",       0x3128, 6,      0x00       );
+  fRegisterValue[kFLL29]   .Init("FLL29",       0x3129, 6,      0x00       );
+  fRegisterValue[kFLL2A]   .Init("FLL2A",       0x312A, 6,      0x00       );
+  fRegisterValue[kFLL2B]   .Init("FLL2B",       0x312B, 6,      0x00       );
+  fRegisterValue[kFLL2C]   .Init("FLL2C",       0x312C, 6,      0x00       );
+  fRegisterValue[kFLL2D]   .Init("FLL2D",       0x312D, 6,      0x00       );
+  fRegisterValue[kFLL2E]   .Init("FLL2E",       0x312E, 6,      0x00       );
+  fRegisterValue[kFLL2F]   .Init("FLL2F",       0x312F, 6,      0x00       );
+  fRegisterValue[kFLL30]   .Init("FLL30",       0x3130, 6,      0x00       );
+  fRegisterValue[kFLL31]   .Init("FLL31",       0x3131, 6,      0x00       );
+  fRegisterValue[kFLL32]   .Init("FLL32",       0x3132, 6,      0x00       );
+  fRegisterValue[kFLL33]   .Init("FLL33",       0x3133, 6,      0x00       );
+  fRegisterValue[kFLL34]   .Init("FLL34",       0x3134, 6,      0x00       );
+  fRegisterValue[kFLL35]   .Init("FLL35",       0x3135, 6,      0x00       );
+  fRegisterValue[kFLL36]   .Init("FLL36",       0x3136, 6,      0x00       );
+  fRegisterValue[kFLL37]   .Init("FLL37",       0x3137, 6,      0x00       );
+  fRegisterValue[kFLL38]   .Init("FLL38",       0x3138, 6,      0x00       );
+  fRegisterValue[kFLL39]   .Init("FLL39",       0x3139, 6,      0x00       );
+  fRegisterValue[kFLL3A]   .Init("FLL3A",       0x313A, 6,      0x00       );
+  fRegisterValue[kFLL3B]   .Init("FLL3B",       0x313B, 6,      0x00       );
+  fRegisterValue[kFLL3C]   .Init("FLL3C",       0x313C, 6,      0x00       );
+  fRegisterValue[kFLL3D]   .Init("FLL3D",       0x313D, 6,      0x00       );
+  fRegisterValue[kFLL3E]   .Init("FLL3E",       0x313E, 6,      0x00       );
+  fRegisterValue[kFLL3F]   .Init("FLL3F",       0x313F, 6,      0x00       );
+  fRegisterValue[kPASADEL] .Init("PASADEL",     0x3158, 8,      0xFF       );  // end of non-lin table
+  fRegisterValue[kPASAPHA] .Init("PASAPHA",     0x3159, 6,      0x3F       );
+  fRegisterValue[kPASAPRA] .Init("PASAPRA",     0x315A, 6,      0x0F       );
+  fRegisterValue[kPASADAC] .Init("PASADAC",     0x315B, 8,      0x80       );
+  fRegisterValue[kPASACHM] .Init("PASACHM",     0x315C, 19,     0x7FFFF    );
+  fRegisterValue[kPASASTL] .Init("PASASTL",     0x315D, 8,      0xFF       );
+  fRegisterValue[kPASAPR1] .Init("PASAPR1",     0x315E, 1,      0x0        );
+  fRegisterValue[kPASAPR0] .Init("PASAPR0",     0x315F, 1,      0x0        );
+  fRegisterValue[kSADCTRG] .Init("SADCTRG",     0x3161, 1,      0x0        );
+  fRegisterValue[kSADCRUN] .Init("SADCRUN",     0x3162, 1,      0x0        );
+  fRegisterValue[kSADCPWR] .Init("SADCPWR",     0x3163, 3,      0x7        );
+  fRegisterValue[kL0TSIM]  .Init("L0TSIM",      0x3165, 14,     0x0050     );
+  fRegisterValue[kSADCEC]  .Init("SADCEC",      0x3166, 7,      0x00       );
+  fRegisterValue[kSADCMC]  .Init("SADCMC",      0x3170, 8,      0xC0       );
+  fRegisterValue[kSADCOC]  .Init("SADCOC",      0x3171, 8,      0x19       );
+  fRegisterValue[kSADCGTB] .Init("SADCGTB",     0x3172, 32,     0x37737700 );
+  fRegisterValue[kSEBDEN]  .Init("SEBDEN",      0x3178, 3,      0x0        );
+  fRegisterValue[kSEBDOU]  .Init("SEBDOU",      0x3179, 3,      0x0        );
+  fRegisterValue[kTPL00]   .Init("TPL00",       0x3180, 5,      0x00       );  // pos table, 128 x 5 bits
+  fRegisterValue[kTPL01]   .Init("TPL01",       0x3181, 5,      0x00       );
+  fRegisterValue[kTPL02]   .Init("TPL02",       0x3182, 5,      0x00       );
+  fRegisterValue[kTPL03]   .Init("TPL03",       0x3183, 5,      0x00       );
+  fRegisterValue[kTPL04]   .Init("TPL04",       0x3184, 5,      0x00       );
+  fRegisterValue[kTPL05]   .Init("TPL05",       0x3185, 5,      0x00       );
+  fRegisterValue[kTPL06]   .Init("TPL06",       0x3186, 5,      0x00       );
+  fRegisterValue[kTPL07]   .Init("TPL07",       0x3187, 5,      0x00       );
+  fRegisterValue[kTPL08]   .Init("TPL08",       0x3188, 5,      0x00       );
+  fRegisterValue[kTPL09]   .Init("TPL09",       0x3189, 5,      0x00       );
+  fRegisterValue[kTPL0A]   .Init("TPL0A",       0x318A, 5,      0x00       );
+  fRegisterValue[kTPL0B]   .Init("TPL0B",       0x318B, 5,      0x00       );
+  fRegisterValue[kTPL0C]   .Init("TPL0C",       0x318C, 5,      0x00       );
+  fRegisterValue[kTPL0D]   .Init("TPL0D",       0x318D, 5,      0x00       );
+  fRegisterValue[kTPL0E]   .Init("TPL0E",       0x318E, 5,      0x00       );
+  fRegisterValue[kTPL0F]   .Init("TPL0F",       0x318F, 5,      0x00       );
+  fRegisterValue[kTPL10]   .Init("TPL10",       0x3190, 5,      0x00       );
+  fRegisterValue[kTPL11]   .Init("TPL11",       0x3191, 5,      0x00       );
+  fRegisterValue[kTPL12]   .Init("TPL12",       0x3192, 5,      0x00       );
+  fRegisterValue[kTPL13]   .Init("TPL13",       0x3193, 5,      0x00       );
+  fRegisterValue[kTPL14]   .Init("TPL14",       0x3194, 5,      0x00       );
+  fRegisterValue[kTPL15]   .Init("TPL15",       0x3195, 5,      0x00       );
+  fRegisterValue[kTPL16]   .Init("TPL16",       0x3196, 5,      0x00       );
+  fRegisterValue[kTPL17]   .Init("TPL17",       0x3197, 5,      0x00       );
+  fRegisterValue[kTPL18]   .Init("TPL18",       0x3198, 5,      0x00       );
+  fRegisterValue[kTPL19]   .Init("TPL19",       0x3199, 5,      0x00       );
+  fRegisterValue[kTPL1A]   .Init("TPL1A",       0x319A, 5,      0x00       );
+  fRegisterValue[kTPL1B]   .Init("TPL1B",       0x319B, 5,      0x00       );
+  fRegisterValue[kTPL1C]   .Init("TPL1C",       0x319C, 5,      0x00       );
+  fRegisterValue[kTPL1D]   .Init("TPL1D",       0x319D, 5,      0x00       );
+  fRegisterValue[kTPL1E]   .Init("TPL1E",       0x319E, 5,      0x00       );
+  fRegisterValue[kTPL1F]   .Init("TPL1F",       0x319F, 5,      0x00       );
+  fRegisterValue[kTPL20]   .Init("TPL20",       0x31A0, 5,      0x00       );
+  fRegisterValue[kTPL21]   .Init("TPL21",       0x31A1, 5,      0x00       );
+  fRegisterValue[kTPL22]   .Init("TPL22",       0x31A2, 5,      0x00       );
+  fRegisterValue[kTPL23]   .Init("TPL23",       0x31A3, 5,      0x00       );
+  fRegisterValue[kTPL24]   .Init("TPL24",       0x31A4, 5,      0x00       );
+  fRegisterValue[kTPL25]   .Init("TPL25",       0x31A5, 5,      0x00       );
+  fRegisterValue[kTPL26]   .Init("TPL26",       0x31A6, 5,      0x00       );
+  fRegisterValue[kTPL27]   .Init("TPL27",       0x31A7, 5,      0x00       );
+  fRegisterValue[kTPL28]   .Init("TPL28",       0x31A8, 5,      0x00       );
+  fRegisterValue[kTPL29]   .Init("TPL29",       0x31A9, 5,      0x00       );
+  fRegisterValue[kTPL2A]   .Init("TPL2A",       0x31AA, 5,      0x00       );
+  fRegisterValue[kTPL2B]   .Init("TPL2B",       0x31AB, 5,      0x00       );
+  fRegisterValue[kTPL2C]   .Init("TPL2C",       0x31AC, 5,      0x00       );
+  fRegisterValue[kTPL2D]   .Init("TPL2D",       0x31AD, 5,      0x00       );
+  fRegisterValue[kTPL2E]   .Init("TPL2E",       0x31AE, 5,      0x00       );
+  fRegisterValue[kTPL2F]   .Init("TPL2F",       0x31AF, 5,      0x00       );
+  fRegisterValue[kTPL30]   .Init("TPL30",       0x31B0, 5,      0x00       );
+  fRegisterValue[kTPL31]   .Init("TPL31",       0x31B1, 5,      0x00       );
+  fRegisterValue[kTPL32]   .Init("TPL32",       0x31B2, 5,      0x00       );
+  fRegisterValue[kTPL33]   .Init("TPL33",       0x31B3, 5,      0x00       );
+  fRegisterValue[kTPL34]   .Init("TPL34",       0x31B4, 5,      0x00       );
+  fRegisterValue[kTPL35]   .Init("TPL35",       0x31B5, 5,      0x00       );
+  fRegisterValue[kTPL36]   .Init("TPL36",       0x31B6, 5,      0x00       );
+  fRegisterValue[kTPL37]   .Init("TPL37",       0x31B7, 5,      0x00       );
+  fRegisterValue[kTPL38]   .Init("TPL38",       0x31B8, 5,      0x00       );
+  fRegisterValue[kTPL39]   .Init("TPL39",       0x31B9, 5,      0x00       );
+  fRegisterValue[kTPL3A]   .Init("TPL3A",       0x31BA, 5,      0x00       );
+  fRegisterValue[kTPL3B]   .Init("TPL3B",       0x31BB, 5,      0x00       );
+  fRegisterValue[kTPL3C]   .Init("TPL3C",       0x31BC, 5,      0x00       );
+  fRegisterValue[kTPL3D]   .Init("TPL3D",       0x31BD, 5,      0x00       );
+  fRegisterValue[kTPL3E]   .Init("TPL3E",       0x31BE, 5,      0x00       );
+  fRegisterValue[kTPL3F]   .Init("TPL3F",       0x31BF, 5,      0x00       );
+  fRegisterValue[kTPL40]   .Init("TPL40",       0x31C0, 5,      0x00       );
+  fRegisterValue[kTPL41]   .Init("TPL41",       0x31C1, 5,      0x00       );
+  fRegisterValue[kTPL42]   .Init("TPL42",       0x31C2, 5,      0x00       );
+  fRegisterValue[kTPL43]   .Init("TPL43",       0x31C3, 5,      0x00       );
+  fRegisterValue[kTPL44]   .Init("TPL44",       0x31C4, 5,      0x00       );
+  fRegisterValue[kTPL45]   .Init("TPL45",       0x31C5, 5,      0x00       );
+  fRegisterValue[kTPL46]   .Init("TPL46",       0x31C6, 5,      0x00       );
+  fRegisterValue[kTPL47]   .Init("TPL47",       0x31C7, 5,      0x00       );
+  fRegisterValue[kTPL48]   .Init("TPL48",       0x31C8, 5,      0x00       );
+  fRegisterValue[kTPL49]   .Init("TPL49",       0x31C9, 5,      0x00       );
+  fRegisterValue[kTPL4A]   .Init("TPL4A",       0x31CA, 5,      0x00       );
+  fRegisterValue[kTPL4B]   .Init("TPL4B",       0x31CB, 5,      0x00       );
+  fRegisterValue[kTPL4C]   .Init("TPL4C",       0x31CC, 5,      0x00       );
+  fRegisterValue[kTPL4D]   .Init("TPL4D",       0x31CD, 5,      0x00       );
+  fRegisterValue[kTPL4E]   .Init("TPL4E",       0x31CE, 5,      0x00       );
+  fRegisterValue[kTPL4F]   .Init("TPL4F",       0x31CF, 5,      0x00       );
+  fRegisterValue[kTPL50]   .Init("TPL50",       0x31D0, 5,      0x00       );
+  fRegisterValue[kTPL51]   .Init("TPL51",       0x31D1, 5,      0x00       );
+  fRegisterValue[kTPL52]   .Init("TPL52",       0x31D2, 5,      0x00       );
+  fRegisterValue[kTPL53]   .Init("TPL53",       0x31D3, 5,      0x00       );
+  fRegisterValue[kTPL54]   .Init("TPL54",       0x31D4, 5,      0x00       );
+  fRegisterValue[kTPL55]   .Init("TPL55",       0x31D5, 5,      0x00       );
+  fRegisterValue[kTPL56]   .Init("TPL56",       0x31D6, 5,      0x00       );
+  fRegisterValue[kTPL57]   .Init("TPL57",       0x31D7, 5,      0x00       );
+  fRegisterValue[kTPL58]   .Init("TPL58",       0x31D8, 5,      0x00       );
+  fRegisterValue[kTPL59]   .Init("TPL59",       0x31D9, 5,      0x00       );
+  fRegisterValue[kTPL5A]   .Init("TPL5A",       0x31DA, 5,      0x00       );
+  fRegisterValue[kTPL5B]   .Init("TPL5B",       0x31DB, 5,      0x00       );
+  fRegisterValue[kTPL5C]   .Init("TPL5C",       0x31DC, 5,      0x00       );
+  fRegisterValue[kTPL5D]   .Init("TPL5D",       0x31DD, 5,      0x00       );
+  fRegisterValue[kTPL5E]   .Init("TPL5E",       0x31DE, 5,      0x00       );
+  fRegisterValue[kTPL5F]   .Init("TPL5F",       0x31DF, 5,      0x00       );
+  fRegisterValue[kTPL60]   .Init("TPL60",       0x31E0, 5,      0x00       );
+  fRegisterValue[kTPL61]   .Init("TPL61",       0x31E1, 5,      0x00       );
+  fRegisterValue[kTPL62]   .Init("TPL62",       0x31E2, 5,      0x00       );
+  fRegisterValue[kTPL63]   .Init("TPL63",       0x31E3, 5,      0x00       );
+  fRegisterValue[kTPL64]   .Init("TPL64",       0x31E4, 5,      0x00       );
+  fRegisterValue[kTPL65]   .Init("TPL65",       0x31E5, 5,      0x00       );
+  fRegisterValue[kTPL66]   .Init("TPL66",       0x31E6, 5,      0x00       );
+  fRegisterValue[kTPL67]   .Init("TPL67",       0x31E7, 5,      0x00       );
+  fRegisterValue[kTPL68]   .Init("TPL68",       0x31E8, 5,      0x00       );
+  fRegisterValue[kTPL69]   .Init("TPL69",       0x31E9, 5,      0x00       );
+  fRegisterValue[kTPL6A]   .Init("TPL6A",       0x31EA, 5,      0x00       );
+  fRegisterValue[kTPL6B]   .Init("TPL6B",       0x31EB, 5,      0x00       );
+  fRegisterValue[kTPL6C]   .Init("TPL6C",       0x31EC, 5,      0x00       );
+  fRegisterValue[kTPL6D]   .Init("TPL6D",       0x31ED, 5,      0x00       );
+  fRegisterValue[kTPL6E]   .Init("TPL6E",       0x31EE, 5,      0x00       );
+  fRegisterValue[kTPL6F]   .Init("TPL6F",       0x31EF, 5,      0x00       );
+  fRegisterValue[kTPL70]   .Init("TPL70",       0x31F0, 5,      0x00       );
+  fRegisterValue[kTPL71]   .Init("TPL71",       0x31F1, 5,      0x00       );
+  fRegisterValue[kTPL72]   .Init("TPL72",       0x31F2, 5,      0x00       );
+  fRegisterValue[kTPL73]   .Init("TPL73",       0x31F3, 5,      0x00       );
+  fRegisterValue[kTPL74]   .Init("TPL74",       0x31F4, 5,      0x00       );
+  fRegisterValue[kTPL75]   .Init("TPL75",       0x31F5, 5,      0x00       );
+  fRegisterValue[kTPL76]   .Init("TPL76",       0x31F6, 5,      0x00       );
+  fRegisterValue[kTPL77]   .Init("TPL77",       0x31F7, 5,      0x00       );
+  fRegisterValue[kTPL78]   .Init("TPL78",       0x31F8, 5,      0x00       );
+  fRegisterValue[kTPL79]   .Init("TPL79",       0x31F9, 5,      0x00       );
+  fRegisterValue[kTPL7A]   .Init("TPL7A",       0x31FA, 5,      0x00       );
+  fRegisterValue[kTPL7B]   .Init("TPL7B",       0x31FB, 5,      0x00       );
+  fRegisterValue[kTPL7C]   .Init("TPL7C",       0x31FC, 5,      0x00       );
+  fRegisterValue[kTPL7D]   .Init("TPL7D",       0x31FD, 5,      0x00       );
+  fRegisterValue[kTPL7E]   .Init("TPL7E",       0x31FE, 5,      0x00       );
+  fRegisterValue[kTPL7F]   .Init("TPL7F",       0x31FF, 5,      0x00       );
+  fRegisterValue[kMEMRW]   .Init("MEMRW",       0xD000, 7,      0x79       );  // end of pos table
+  fRegisterValue[kMEMCOR]  .Init("MEMCOR",      0xD001, 9,      0x000      );
+  fRegisterValue[kDMDELA]  .Init("DMDELA",      0xD002, 4,      0x8        );
+  fRegisterValue[kDMDELS]  .Init("DMDELS",      0xD003, 4,      0x8        );
 }
 
 
 void AliTRDtrapConfig::ResetRegs()
 {
-   // Reset the content of all TRAP registers to the reset values (see TRAP User Manual)
+  // Reset the content of all TRAP registers to the reset values (see TRAP User Manual)
 
-   for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
-      if(fRegisterValue[iReg].state == RegValue_t::kIndividual) {
-	if (fRegisterValue[iReg].individualValue) {
-	  delete [] fRegisterValue[iReg].individualValue;
-	  fRegisterValue[iReg].individualValue = 0x0;
-	}
-      }
-
-      fRegisterValue[iReg].globalValue = GetRegResetValue((TrapReg_t) iReg);
-      fRegisterValue[iReg].state = RegValue_t::kGlobal;
-      //    printf("%-8s: 0x%08x\n", GetRegName((TrapReg_t) iReg), fRegisterValue[iReg].globalValue);
-   }
+  for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
+    fRegisterValue[iReg].Reset();
+  }
 }
 
 
@@ -625,13 +553,8 @@ void AliTRDtrapConfig::ResetDmem()
 {
   // reset the data memory
 
-     for(Int_t iAddr = 0; iAddr < fgkDmemWords; iAddr++) {
-	if(fDmemDepth[iAddr] == 0)
-	   continue;
-	for(Int_t j=0; j < fDmemDepth[iAddr]; j++) {
-	   fDmem[iAddr][j]=0;
-	}
-     }
+  for(Int_t iAddr = 0; iAddr < fgkDmemWords; iAddr++)
+    fDmem[iAddr].Reset();
 }
 
 
@@ -645,84 +568,16 @@ Int_t AliTRDtrapConfig::GetTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mc
     return 0;
   }
   else {
-    if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-      return fRegisterValue[reg].globalValue;
-    }
-    else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-       if((det >= 0 && det < AliTRDgeometry::Ndet()) &&
-          (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
-          (mcm >= 0 && mcm < fgkMaxMcm)) {
-         return fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm];
-       }
-       else {
-         AliError("Invalid MCM specified or register is individual");
-         return 0;
-       }
-    }
-    else {  // should never be reached
-      AliError("MCM register status neither kGlobal nor kIndividual");
-      return 0;
-    }
+    return fRegisterValue[reg].GetValue(det, rob, mcm);
   }
-}
-
-
-Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value)
-{
-  // set a global value for the given TRAP register,
-  // i.e. the same value for all TRAPs
-
-   if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-      fRegisterValue[reg].globalValue = value;
-      return kTRUE;
-   }
-   else {
-      AliError(Form("Register %s has individual values", AliTRDtrapConfig::GetRegName(reg)));
-   }
-   return kFALSE;
 }
 
 
 Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det)
 {
-  // set a global value for the given TRAP register,
-  // i.e. the same value for all TRAPs
+  // set a value for the given TRAP register on all chambers,
 
-  if( (det>=0 && det<AliTRDgeometry::Ndet())) {
-    if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-      Int_t defaultValue = fRegisterValue[reg].globalValue;
-
-      fRegisterValue[reg].state = RegValue_t::kIndividual;
-      fRegisterValue[reg].individualValue = new Int_t[AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm];
-
-      for(Int_t i = 0; i < AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm; i++)
-	fRegisterValue[reg].individualValue[i] = defaultValue; // set the requested register of all MCMs to the value previously stored
-
-      for(Int_t rob=0; rob<AliTRDfeeParam::GetNrobC1(); rob++) {
-	for(Int_t mcm=0; mcm<fgkMaxMcm; mcm++)
-	  fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
-      }
-    }
-    else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-      // if the register is in idividual mode but a broadcast is requested, the selected register is
-      // set to value for all MCMs on the chamber
-
-      for(Int_t rob=0; rob<AliTRDfeeParam::GetNrobC1(); rob++) {
-	for(Int_t mcm=0; mcm<fgkMaxMcm; mcm++)
-	  fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
-      }
-    }
-    else {  // should never be reached
-      AliError("MCM register status neither kGlobal nor kIndividual");
-      return kFALSE;
-    }
-  }
-  else {
-    AliError(Form("Invalid detector number: %i\n", det));
-    return kFALSE;
-  }
-
-  return kFALSE;
+  return fRegisterValue[reg].SetValue(value, det);
 }
 
 
@@ -730,37 +585,7 @@ Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t
 {
   // set the value for the given TRAP register of an individual MCM
 
-  //std::cout << "-- reg: 0x" << std::hex << fRegs[reg].addr <<
-  //std::dec << ", data " << value << ", det " << det << ", rob " << rob << ", mcm " << mcm << std::endl;
-
-   if( (det >= 0 && det < AliTRDgeometry::Ndet()) &&
-       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
-       (mcm >= 0 && mcm < fgkMaxMcm) ) {
-     if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-	Int_t defaultValue = fRegisterValue[reg].globalValue;
-
-	fRegisterValue[reg].state = RegValue_t::kIndividual;
-	fRegisterValue[reg].individualValue = new Int_t[AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm];
-
-	for(Int_t i = 0; i < AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm; i++)
-	   fRegisterValue[reg].individualValue[i] = defaultValue; // set the requested register of all MCMs to the value previously stored
-
-	fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
-     }
-     else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-	fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
-     }
-     else {  // should never be reached
-	AliError("MCM register status neither kGlobal nor kIndividual");
-	return kFALSE;
-     }
-  }
-   else {
-      AliError(Form("Invalid value for det, ROB or MCM selected: %i, %i, %i", det, rob, mcm));
-     return kFALSE;
-   }
-
-  return kTRUE;
+  return fRegisterValue[reg].SetValue(value, det, rob, mcm);
 }
 
 
@@ -779,6 +604,7 @@ UInt_t AliTRDtrapConfig::Peek(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const
     }
   }
 
+  AliError(Form("peek for invalid addr: 0x%04x", addr));
   return 0;
 }
 
@@ -790,383 +616,88 @@ Bool_t AliTRDtrapConfig::Poke(Int_t addr, UInt_t value, Int_t det, Int_t rob, In
   if ( (addr >= fgkDmemStartAddress) &&
        (addr < (fgkDmemStartAddress + fgkDmemWords)) ) {
     AliDebug(2, Form("DMEM 0x%08x : %i", addr, value));
-    SetDmem(addr, value, det, rob, mcm);
-    return kTRUE;
+    return SetDmem(addr, value, det, rob, mcm);
   }
   else {
     TrapReg_t mcmReg = GetRegByAddress(addr);
     if ( mcmReg >= 0 && mcmReg < kLastReg) {
       AliDebug(2, Form("Register: %s : %i\n", GetRegName(mcmReg), value));
-      SetTrapReg(mcmReg, (UInt_t) value, det, rob, mcm);
-      return kTRUE;
+      return SetTrapReg(mcmReg, (UInt_t) value, det, rob, mcm);
     }
   }
 
+  AliError(Form("poke for invalid address: 0x%04x", addr));
   return kFALSE;
 }
 
 
-Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value)
+Bool_t AliTRDtrapConfig::SetDmemAlloc(Int_t addr, Alloc_t mode)
+{
+  addr = addr - fgkDmemStartAddress;
+
+  if(addr < 0 || addr >=  fgkDmemWords) {
+    AliError(Form("Invalid DMEM address: 0x%04x", addr+fgkDmemStartAddress));
+    return kFALSE;
+  }
+  else {
+    fDmem[addr].Allocate(mode);
+    return kTRUE;
+  }
+}
+
+
+Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det)
 {
   // Set the content of the given DMEM address
 
-   addr = addr - fgkDmemStartAddress;
+  addr = addr - fgkDmemStartAddress;
 
-   if(addr < 0 || addr >=  fgkDmemWords) {
-      AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
-      return kFALSE;
-   }
+  if(addr < 0 || addr >=  fgkDmemWords) {
+    AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
+    return kFALSE;
+  }
 
-   switch(fDmemDepth[addr]) {
-   case fgkDmemSizeEmpty:
-      AliDebug(4, Form("DMEM address %i not active", addr));
-      return kFALSE;
-      break;
-   case fgkDmemSizeUniform:
-      if(fDmem[addr][0]!=0)
-	 AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-      fDmem[addr][0] = value;
-      break;
-   case fgkDmemSizeSmIndividual:
-      for(Int_t i=0; i<fgkDmemSizeSmIndividual; i++) {
-	 if(fDmem[addr][i]!=0)
-	    AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-	 fDmem[addr][i]=value;
-      }
-      break;
-   case fgkDmemSizeTotalIndividual:
-      for(Int_t i=0; i<fgkDmemSizeTotalIndividual; i++) {
-	 if(fDmem[addr][i]!=0)
-	    AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-	 fDmem[addr][i]=value;
-      }
-      break;
-   case fgkDmemSizeSmRocIndividual:
-      for(Int_t i=0; i<fgkDmemSizeSmRocIndividual; i++) {
-	 if(fDmem[addr][i]!=0)
-	    AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-	 fDmem[addr][i]=value;
-      }
-      break;
-   default:
-      AliError(Form("Invalid selection type"));
-      break;
-   }
-
-   return kTRUE;
+  if (!fDmem[addr].SetValue(value, det)) {
+    AliError(Form("Problem writing to DMEM address 0x%04x", addr));
+    return kFALSE;
+  }
+  else
+    return kTRUE;
 }
 
 
 Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm)
 {
   // Set the content of the given DMEM address
+  addr = addr - fgkDmemStartAddress;
 
-   addr = addr - fgkDmemStartAddress;
-   Int_t roc = det%30;
-   Int_t loc;
-
-   if(addr < 0 || addr >=  fgkDmemWords) {
+  if(addr < 0 || addr >=  fgkDmemWords) {
       AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
       return kFALSE;
    }
 
-   Int_t detFactor=8*16;
-   Int_t robFactor=16;
-
-   switch(fDmemDepth[addr]) {
-   case fgkDmemSizeEmpty:
-      AliDebug(4, Form("DMEM address 0x%08x not active", addr+fgkDmemStartAddress));
-      return kFALSE;
-      break;
-   case fgkDmemSizeUniform:
-      if(fDmem[addr][0]!=0)
-	 AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-      fDmem[addr][0] = value;
-      break;
-   case fgkDmemSizeSmIndividual:
-      loc = detFactor*roc + robFactor*rob + mcm;
-      if(loc < fgkDmemSizeSmIndividual) {
-	 if(fDmem[addr][loc]!=0)
-	    AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-	 fDmem[addr][loc] = value;
-      }
-      else {
-	 AliError(Form("DMEM sub-address %i out of scope", loc));
-	 return kFALSE;
-      }
-      break;
-   case fgkDmemSizeTotalIndividual:
-      loc = detFactor*det + robFactor*rob + mcm;
-      if(loc < fgkDmemSizeTotalIndividual) {
-	 if(fDmem[addr][loc]!=0)
-	    AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-	 fDmem[addr][loc]=value;
-      }
-      else {
-	 AliError(Form("DMEM sub-address %i out of scope", loc));
-	 return kFALSE;
-      }
-      break;
-   case fgkDmemSizeSmRocIndividual:
-      if(det < fgkDmemSizeSmRocIndividual) {
-	 if(fDmem[addr][det]!=0)
-	    AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-
-	 fDmem[addr][det]=value;
-      }
-      else {
-	 AliError(Form("DMEM sub-address %i out of scope", det));
-	 return kFALSE;
-      }
-
-      break;
-   default:
-      AliError(Form("Invalid selection type"));
-      return kFALSE;
-      break;
-   }
-
-   return kTRUE;
+  if (!fDmem[addr].SetValue(value, det, rob, mcm)) {
+    AliError(Form("Problem writing to DMEM address 0x%04x", addr));
+    return kFALSE;
+  }
+  else
+    return kTRUE;
 }
 
 
-UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr) const
+UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const
 {
   // get the content of the data memory at the given address
   // (only if the value is the same for all MCMs)
 
    addr = addr - fgkDmemStartAddress;
-   if(addr < 0 || addr >=  fgkDmemWords) {
-      AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
-      return 0;
-   }
 
-   if(fDmemDepth[addr] == fgkDmemSizeUniform)
-      return fDmem[addr][0];
-   else {
-      AliError(Form("No global DMEM value at 0x%08x", addr+fgkDmemStartAddress));
-      return 0;
-   }
-   return 0;
-}
+  if(addr < 0 || addr >=  fgkDmemWords) {
+    AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
+    return 0;
+  }
 
-UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const
-{
-  // get the content of the data memory at the given address
-  // for a given MCM
-
-   addr = addr - fgkDmemStartAddress;
-   Int_t roc = det%30;
-   Int_t loc;
-
-   if(addr < 0 || addr >=  fgkDmemWords) {
-      AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
-      return 0;
-   }
-
-   Int_t detFactor=8*16;
-   Int_t robFactor=16;
-
-   switch(fDmemDepth[addr]) {
-   case fgkDmemSizeEmpty:
-      AliDebug(4, Form("DMEM address 0x%08x not active", addr+fgkDmemStartAddress));
-      return 0;
-      break;
-   case fgkDmemSizeUniform:
-      return fDmem[addr][0];
-      break;
-   case fgkDmemSizeSmIndividual:
-      loc = detFactor*roc + robFactor*rob + mcm;
-      if(loc < fgkDmemSizeSmIndividual) {
-	 return fDmem[addr][loc];
-      }
-      else {
-	 AliError(Form("DMEM sub-address %i out of scope", loc));
-	 return 0;
-      }
-      break;
-   case fgkDmemSizeTotalIndividual:
-      loc = detFactor*det + robFactor*rob + mcm;
-      if(loc < fgkDmemSizeTotalIndividual) {
-	 return fDmem[addr][loc];
-      }
-      else {
-	 AliError(Form("DMEM sub-address %i out of scope", loc));
-	 return 0;
-      }
-      break;
-   case fgkDmemSizeSmRocIndividual:
-      if(det < fgkDmemSizeSmRocIndividual) {
-	 return fDmem[addr][det];
-      }
-      else {
-	 AliError(Form("DMEM sub-address %i out of scope", det));
-	 return 0;
-      }
-      break;
-   default:
-      AliError(Form("Invalid selection type"));
-      return 0;
-      break;
-   }
-
-   return 0;
-}
-
-
-Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
-{
-  // Read the packed configuration from the passed memory block
-  //
-  // To be used to retrieve the TRAP configuration from the
-  // configuration as sent in the raw data.
-
-  AliDebug(1, "Reading packed configuration");
-
-  Int_t det = hc/2;
-
-  Int_t idx = 0;
-  Int_t err = 0;
-  Int_t step, bwidth, nwords, exitFlag, bitcnt;
-
-  UShort_t caddr;
-  UInt_t dat, msk, header, dataHi;
-
-  while (idx < size && *data != 0x00000000) {
-
-    Int_t rob = (*data >> 28) & 0x7;
-    Int_t mcm = (*data >> 24) & 0xf;
-
-    AliDebug(1, Form("Config of det. %3i MCM %i:%02i (0x%08x)", det, rob, mcm, *data));
-    data++;
-
-    while (idx < size && *data != 0x00000000) {
-
-      header = *data;
-      data++;
-      idx++;
-
-      AliDebug(5, Form("read: 0x%08x", header));
-
-      if (header & 0x01) // single data
-	{
-	  dat   = (header >>  2) & 0xFFFF;       // 16 bit data
-	  caddr = (header >> 18) & 0x3FFF;    // 14 bit address
-
-	  if (caddr != 0x1FFF)  // temp!!! because the end marker was wrong
-	    {
-	      if (header & 0x02) // check if > 16 bits
-		{
-		  dataHi = *data;
-		  AliDebug(5, Form("read: 0x%08x", dataHi));
-		  data++;
-		  idx++;
-		  err += ((dataHi ^ (dat | 1)) & 0xFFFF) != 0;
-		  dat = (dataHi & 0xFFFF0000) | dat;
-		}
-	      AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), dat));
-	      if ( ! Poke(caddr, dat, det, rob, mcm) )
-		AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-	      if (idx > size)
-		{
-		  AliDebug(5, Form("(single-write): no more data, missing end marker\n"));
-		  return -err;
-		}
-	    }
-	  else
-	    {
-	      AliDebug(5, Form("(single-write): address 0x%04x => old endmarker?\n", caddr));
-	      return err;
-	    }
-	}
-
-      else               // block of data
-	{
-	  step   =  (header >>  1) & 0x0003;
-	  bwidth = ((header >>  3) & 0x001F) + 1;
-	  nwords =  (header >>  8) & 0x00FF;
-	  caddr  =  (header >> 16) & 0xFFFF;
-	  exitFlag = (step == 0) || (step == 3) || (nwords == 0);
-
-	  if (exitFlag)
-	    break;
-
-	  switch (bwidth)
-	    {
-	    case    15:
-	    case    10:
-	    case     7:
-	    case     6:
-	    case     5:
-	      {
-		msk = (1 << bwidth) - 1;
-		bitcnt = 0;
-		while (nwords > 0)
-		  {
-		    nwords--;
-		    bitcnt -= bwidth;
-		    if (bitcnt < 0)
-		      {
-			header = *data;
-			AliDebug(5, Form("read 0x%08x", header));
-			data++;
-			idx++;
-			err += (header & 1);
-			header = header >> 1;
-			bitcnt = 31 - bwidth;
-		      }
-		    AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), header & msk));
-		    if ( ! Poke(caddr, header & msk, det, rob, mcm) )
-		      AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-
-		    caddr += step;
-		    header = header >> bwidth;
-		    if (idx >= size)
-		      {
-			AliDebug(5, Form("(block-write): no end marker! %d words read\n", idx));
-			return -err;
-		      }
-		  }
-		break;
-	      } // end case 5-15
-	    case 31:
-	      {
-		while (nwords > 0)
-		  {
-		    header = *data;
-		    AliDebug(5, Form("read 0x%08x", header));
-		    data++;
-		    idx++;
-		    nwords--;
-		    err += (header & 1);
-
-		    AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x", caddr, GetRegName(GetRegByAddress(caddr)), header >> 1));
-		    if ( ! Poke(caddr, header >> 1, det, rob, mcm) )
-		      AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-
-		    caddr += step;
-		    if (idx >= size)
-		      {
-			AliDebug(5, Form("no end marker! %d words read", idx));
-			return -err;
-		      }
-		  }
-		break;
-	      }
-	    default: return err;
-	    } // end switch
-	} // end block case
-    }
-  } // end while
-  AliDebug(5, Form("no end marker! %d words read", idx));
-  return -err; // only if the max length of the block reached!
+  return fDmem[addr].GetValue(det, rob, mcm);
 }
 
 
@@ -1175,34 +706,21 @@ Bool_t AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t
   // print the value stored in the given register
   // if it is individual a valid MCM has to be specified
 
-  if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-    printf("%10s (%2i bits) at 0x%04x is 0x%08x and resets to: 0x%08x (currently global mode)\n",
-           GetRegName((TrapReg_t) reg),
-           GetRegNBits((TrapReg_t) reg),
-           GetRegAddress((TrapReg_t) reg),
-           fRegisterValue[reg].globalValue,
-           GetRegResetValue((TrapReg_t) reg));
+  if((det >= 0 && det < AliTRDgeometry::Ndet()) &&
+     (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
+     (mcm >= 0 && mcm < fgkMaxMcm)) {
+    printf("%10s (%2i bits) at 0x%04x is 0x%08x and resets to: 0x%08x (currently individual mode)\n",
+	   GetRegName((TrapReg_t) reg),
+	   GetRegNBits((TrapReg_t) reg),
+	   GetRegAddress((TrapReg_t) reg),
+	   fRegisterValue[reg].GetValue(det, rob, mcm),
+	   GetRegResetValue((TrapReg_t) reg));
   }
-  else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-    if((det >= 0 && det < AliTRDgeometry::Ndet()) &&
-       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
-       (mcm >= 0 && mcm < fgkMaxMcm)) {
-      printf("%10s (%2i bits) at 0x%04x is 0x%08x and resets to: 0x%08x (currently individual mode)\n",
-             GetRegName((TrapReg_t) reg),
-             GetRegNBits((TrapReg_t) reg),
-             GetRegAddress((TrapReg_t) reg),
-             fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm],
-             GetRegResetValue((TrapReg_t) reg));
-    }
-    else {
-      AliError("Register value is MCM-specific: Invalid detector, ROB or MCM requested");
-      return kFALSE;
-    }
-  }
-  else {  // should never be reached
-    AliError("MCM register status neither kGlobal nor kIndividual");
+  else {
+    AliError("Register value is MCM-specific: Invalid detector, ROB or MCM requested");
     return kFALSE;
   }
+
   return kTRUE;
 }
 
@@ -1221,80 +739,25 @@ Bool_t AliTRDtrapConfig::PrintTrapAddr(Int_t addr, Int_t det, Int_t rob, Int_t m
 }
 
 
-Bool_t AliTRDtrapConfig::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data)
-{
-   // transfer the informations provided by LoadConfig to the internal class variables
-
-  if(cmd != fgkScsnCmdWrite) {
-    AliError(Form("Invalid command received: %i", cmd));
-    return kFALSE;
-  }
-
-  TrapReg_t mcmReg = GetRegByAddress(addr);
-  Int_t rocType = AliTRDgeometry::GetStack(det) == 2 ? 0 : 1;
-
-  static const int mcmListSize=40;  // 40 is more or less arbitrary
-  Int_t mcmList[mcmListSize];
-
-  // configuration registers
-  if(mcmReg >= 0 && mcmReg < kLastReg) {
-
-    for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
-      if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
-	Int_t i=0;
-        while(mcmList[i] != -1 && i<mcmListSize) {
-          if(mcmList[i]==127) {
-	    AliDebug(1, Form("broadcast write to %s: 0x%08x",
-			     GetRegName((TrapReg_t) mcmReg), data));
-            SetTrapReg( (TrapReg_t) mcmReg, data, det);
-	  }
-          else {
-	    AliDebug(1, Form("individual write to %s (%i, %i): 0x%08x",
-			     GetRegName((TrapReg_t) mcmReg), (mcmList[i]>>7), (mcmList[i]&0x7F), data));
-            SetTrapReg( (TrapReg_t) mcmReg, data, det, (mcmList[i]>>7)&0x7, (mcmList[i]&0x7F));
-	  }
-          i++;
-        }
-      }
-    }
-    return kTRUE;
-  }
-  // DMEM
-  else if ( (addr >= fgkDmemStartAddress) &&
-	    (addr < (fgkDmemStartAddress + fgkDmemWords))) {
-    for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
-      if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
-        Int_t i=0;
-        while(mcmList[i] != -1 && i < mcmListSize) {
-          if(mcmList[i] == 127)
-	     SetDmem(addr, data, det, 0, 127);
-          else
-	     SetDmem(addr, data, det, mcmList[i] >> 7, mcmList[i] & 0x7f);
-          i++;
-        }
-      }
-    }
-    return kTRUE;
-  }
-  else
-    return kFALSE;
-}
-
-
 AliTRDtrapConfig::TrapReg_t AliTRDtrapConfig::GetRegByAddress(Int_t address) const
 {
   // get register by its address
   // used for reading of configuration data as sent to real FEE
 
-  TrapReg_t mcmReg = kLastReg;
-  Int_t reg  = 0;
-  do {
-    if(fRegs[reg].fAddr == address)
-      mcmReg = (TrapReg_t) reg;
-    reg++;
-  }  while (mcmReg == kLastReg && reg < kLastReg);
-
-  return mcmReg;
+  if (address < fgkRegisterAddressBlockStart[0])
+    return kLastReg;
+  else if (address < fgkRegisterAddressBlockStart[0] + fgkRegisterAddressBlockSize[0])
+    return fgRegAddressMap[address - fgkRegisterAddressBlockStart[0]];
+  else if (address < fgkRegisterAddressBlockStart[1])
+    return kLastReg;
+  else if (address < fgkRegisterAddressBlockStart[1] + fgkRegisterAddressBlockSize[1])
+    return fgRegAddressMap[address - fgkRegisterAddressBlockStart[1] + fgkRegisterAddressBlockSize[0]];
+  else if (address < fgkRegisterAddressBlockStart[2])
+    return kLastReg;
+  else if (address < fgkRegisterAddressBlockStart[2] + fgkRegisterAddressBlockSize[2])
+    return fgRegAddressMap[address - fgkRegisterAddressBlockStart[2] + fgkRegisterAddressBlockSize[1] + fgkRegisterAddressBlockSize[0]];
+  else
+    return kLastReg;
 }
 
 
@@ -1351,3 +814,210 @@ void AliTRDtrapConfig::PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t ro
 
    os << std::endl;
 }
+
+
+AliTRDtrapConfig::AliTRDtrapValue::AliTRDtrapValue() :
+  TObject(),
+  fAllocMode(kAllocGlobal),
+  fSize(1),
+  fData(new UInt_t[1]),
+  fValid(new Bool_t[1])
+{
+  fData[0] = 0;
+  fValid[0] = kTRUE;
+}
+
+
+Bool_t AliTRDtrapConfig::AliTRDtrapValue::Allocate(Alloc_t alloc)
+{
+  // allocate memory for the specified granularity
+
+  delete [] fData;
+  delete [] fValid;
+
+  fAllocMode = alloc;
+  fSize = fgkSize[fAllocMode];
+
+  if (fSize > 0) {
+    fData = new UInt_t[fSize];
+    fValid = new Bool_t[fSize];
+    for (Int_t i = 0; i < fSize; ++i) {
+      fData[i] = 0;
+      fValid[i] = kFALSE;
+    }
+  }
+  else {
+    fData = 0x0;
+    fValid = 0x0;
+  }
+
+  return kTRUE;
+}
+
+
+Int_t AliTRDtrapConfig::AliTRDtrapValue::GetIdx(Int_t det, Int_t rob, Int_t mcm) const
+{
+  // return Idx to access the data for the given position
+
+  Int_t idx = -1;
+
+  switch (fAllocMode) {
+  case kAllocNone:
+    idx = -1;
+    break;
+  case kAllocGlobal:
+    idx = 0;
+    break;
+  case kAllocByDetector:
+    idx = det;
+    break;
+  case kAllocByHC:
+    idx = det + (rob % 2);
+    break;
+  case kAllocByMCM:
+    idx = 18*8*det + 18*rob + mcm;
+    break;
+  case kAllocByLayer:
+    idx = det % 6;
+    break;
+  case kAllocByMCMinSM:
+    idx = 18*8*(det%30) + 18*rob + mcm;
+    break;
+  default:
+    idx = -1;
+    AliError("Invalid allocation mode");
+  }
+  if (idx < fSize) {
+    return idx;
+  }
+  else {
+    AliError(Form("Index too large %i (size %i) for %s", idx, fSize, this->GetName()));
+    return  -1;
+  }
+}
+
+
+Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value)
+{
+  // set the given value everywhere
+
+  for (Int_t i = 0; i < fSize; ++i) {
+    fData[i] = value;
+    fValid[i] = kFALSE;
+  }
+
+  return kTRUE;
+}
+
+
+Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value, Int_t det)
+{
+  // set the data for a given detector
+
+  Int_t idx = GetIdx(det, 0, 0);
+
+  if (idx >= 0) {
+    // short cut for detector-wise allocation
+    if (fAllocMode == kAllocByDetector) {
+      if (fValid[idx] && (fData[idx] != value)) {
+	AliDebug(1, Form("Overwriting previous value %i of %s with %i for %i!",
+			 fData[idx], this->GetName(), value, det));
+      }
+      fData[idx] = value;
+      fValid[idx] = kTRUE;
+      return kTRUE;
+    }
+    else {
+      for (Int_t rob = 0; rob < 8; ++rob) {
+	for (Int_t mcm = 0; mcm < 18; ++mcm) {
+	  idx = GetIdx(det, rob, mcm);
+	  if (fValid[idx] && (fData[idx] != value)) {
+	    AliDebug(1, Form("Overwriting previous value %i of %s with %i for %i %i:%02i!",
+			     fData[idx], this->GetName(), value, det, rob, mcm));
+	  }
+	  fData[idx] = value;
+	  fValid[idx] = kTRUE;
+	}
+      }
+      return kTRUE;
+    }
+  }
+
+  if (fAllocMode == kAllocNone) {
+    // assume nobody cares
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value, Int_t det, Int_t rob, Int_t mcm)
+{
+  // set data for an individual MCM
+
+  Int_t idx = GetIdx(det, rob, mcm);
+
+  if (idx >= 0) {
+    if (fValid[idx] && (fData[idx] != value)) {
+      AliDebug(1, Form("Overwriting previous value %i of %s with %i for %i %i:%02i (idx: %i)!",
+		       fData[idx], this->GetName(), value, det, rob, mcm, idx));
+    }
+    fData[idx] = value;
+    fValid[idx] = kTRUE;
+    return kTRUE;
+  }
+  else if (fAllocMode == kAllocNone) {
+    return kTRUE;
+  }
+  else {
+    AliError(Form("setting failed"));
+    return kFALSE;
+  }
+}
+
+Int_t AliTRDtrapConfig::AliTRDtrapValue::GetData(Int_t det, Int_t rob, Int_t mcm) const
+{
+  // read data for the given MCM
+
+  Int_t idx = GetIdx(det, rob, mcm);
+  if (idx >= 0) {
+    if (!fValid[idx])
+      AliDebug(1,Form("reading from unwritten address: %s at idx %i: %i", this->GetName(), idx, fValid[idx]));
+    return fData[idx];
+  }
+  else {
+    AliError("read from invalid address");
+    return 0;
+  }
+}
+
+AliTRDtrapConfig::AliTRDtrapRegister::AliTRDtrapRegister() :
+  AliTRDtrapValue(),
+  fName("invalid"),
+  fAddr(0),
+  fNbits(0),
+  fResetValue(0)
+{
+  // default constructor
+
+}
+
+AliTRDtrapConfig::AliTRDtrapRegister::~AliTRDtrapRegister()
+{
+  // destructor
+
+}
+
+void AliTRDtrapConfig::AliTRDtrapRegister::Init(const char* name, Int_t addr, Int_t nBits, Int_t resetValue)
+{
+  // init the TRAP register
+
+  if (fAddr == 0) {
+    fName = name;
+    fAddr = addr;
+    fNbits = nBits;
+    fResetValue = resetValue;
+  }
+  else
+    AliFatal("Re-initialising an existing TRAP register");
+}
+
