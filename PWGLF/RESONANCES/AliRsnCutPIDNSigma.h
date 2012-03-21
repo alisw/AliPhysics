@@ -18,6 +18,7 @@
 #include "AliESDtrack.h"
 
 #include "AliRsnCut.h"
+#include "AliRsnPIDRange.h"
 
 class AliVTrack;
 class AliPIDResponse;
@@ -31,32 +32,6 @@ public:
       kTOF,
       kDetectors
    };
-
-   //
-   // This allows to define several intervals
-   //
-   class AliRsnPIDRange : public TObject {
-   public:
-
-      AliRsnPIDRange(Double_t nsigma, Double_t pmin, Double_t pmax)
-         : fPMin(pmin), fPMax(pmax), fNSigmaCut(nsigma) { }
-
-      Double_t &PMin()      {return fPMin;}
-      Double_t &PMax()      {return fPMax;}
-      Double_t &NSigmaCut() {return fNSigmaCut;}
-
-      Bool_t IsInRange(Double_t mom)  {return (mom >= fPMin && mom <= fPMax);}
-      Bool_t CutPass(Double_t nsigma) {return (nsigma <= fNSigmaCut);}
-
-   private:
-
-      Double_t fPMin;      // lower bound of momentum range
-      Double_t fPMax;      // upper bound of momentum range
-      Double_t fNSigmaCut; // cut in number of sigmas
-
-      ClassDef(AliRsnCutPIDNSigma::AliRsnPIDRange,1)
-   };
-
    AliRsnCutPIDNSigma();
    AliRsnCutPIDNSigma(const char *name, AliPID::EParticleType species, EDetector det);
    AliRsnCutPIDNSigma(const AliRsnCutPIDNSigma &copy);

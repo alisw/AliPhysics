@@ -132,13 +132,18 @@ void AliRsnAnalysisTask::UserCreateOutputObjects()
    if (fInputEHMain) {
       TObjArrayIter nextIH(fInputEHMain->InputEventHandlers());
       TObject *obj = 0x0;
+      AliRsnInputHandler *rsnIH;
+      AliRsnDaughterSelector *s;
+      TClonesArray *c;
+      AliRsnCutSet *cuts;
       while ( (obj = nextIH()) ) {
          if (obj->IsA() == AliRsnInputHandler::Class()) {
-            AliRsnInputHandler *rsnIH = (AliRsnInputHandler *) obj;
-            AliRsnDaughterSelector *s = rsnIH->GetSelector();
-            TClonesArray *c = s->GetCutSetC();
+            rsnIH = (AliRsnInputHandler *) obj;
+            s = rsnIH->GetSelector();
+            s->InitActions(fOutput);
+            c = s->GetCutSetC();
             for (Int_t is = 0; is < c->GetEntries(); is++) {
-               AliRsnCutSet *cuts = (AliRsnCutSet *)c->At(is);
+               cuts = (AliRsnCutSet *)c->At(is);
                cuts->Init(fOutput);
             }
          }

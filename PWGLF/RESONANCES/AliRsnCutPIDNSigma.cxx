@@ -22,7 +22,6 @@
 
 #include "AliRsnCutPIDNSigma.h"
 
-ClassImp(AliRsnCutPIDNSigma::AliRsnPIDRange)
 ClassImp(AliRsnCutPIDNSigma)
 
 //_________________________________________________________________________________________________
@@ -34,7 +33,7 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() :
    fTrackNSigma(0.0),
    fTrackMom(0.0),
    fMyPID(0x0),
-   fRanges("AliRsnCutPIDNSigma::AliRsnPIDRange", 0)
+   fRanges("AliRsnPIDRange", 0)
 {
 //
 // Main constructor.
@@ -51,7 +50,7 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
    fTrackNSigma(0.0),
    fTrackMom(0.0),
    fMyPID(0x0),
-   fRanges("AliRsnCutPIDNSigma::AliRsnPIDRange", 0)
+   fRanges("AliRsnPIDRange", 0)
 {
 //
 // Main constructor.
