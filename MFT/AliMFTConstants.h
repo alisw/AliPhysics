@@ -20,7 +20,7 @@ public:
   
   static const Int_t fNMaxPlanes = 20; 
 
-  static const Int_t fNMaxDigitsPerCluster = 12;       ///< max number of digits per cluster
+  static const Int_t fNMaxDigitsPerCluster = 12;  ///< max number of digits per cluster
   static const Double_t fCutForAvailableDigits;   ///<
   static const Double_t fCutForAttachingDigits;   ///<
 
@@ -45,12 +45,14 @@ public:
 
   static const Double_t fRadLengthSi;    ///< expressed in cm
 
+  static const Double_t fWidthChip;      ///< expressed in cm
+
 protected:
 
   AliMFTConstants() : TObject() {}
   virtual ~AliMFTConstants(){}
 
-  ClassDef(AliMFTConstants, 0)   // MFT global constants 
+  ClassDef(AliMFTConstants, 2)    // MFT global constants 
 
 };
 	

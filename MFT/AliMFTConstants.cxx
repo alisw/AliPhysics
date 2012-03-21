@@ -42,4 +42,6 @@ const Double_t AliMFTConstants::fSupportExtMargin = fHeightReadout + 0.3;
 
 const Double_t AliMFTConstants::fRadLengthSi = 9.37;
 
+const Double_t AliMFTConstants::fWidthChip = 1.0;
+
 //====================================================================================================================================================
