@@ -409,7 +409,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   if(fFillNtuple>0){
     OpenFile(4); // 4 is the slot number of the ntuple
     
-    fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:P0:P1:P2:PidTrackBit0:PidTrackBit1:PidTrackBit2:PointingAngle:PointingAngleXY:DecLeng:DecLengXY:NorDecLeng:NorDecLengXY:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:InvMassK0starKKpi:InvMassK0starpiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK:centrality"); 
+    fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:P0:P1:P2:PidTrackBit0:PidTrackBit1:PidTrackBit2:PointingAngle:PointingAngleXY:DecLeng:DecLengXY:NorDecLeng:NorDecLengXY:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:InvMassK0starKKpi:InvMassK0starpiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK:centrality:runNumber"); 
     
   }
   
@@ -470,7 +470,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   if(fAnalysisCuts->IsEventRejectedDueToCentrality())fHistNEvents->Fill(7);
   
   Float_t centrality=fAnalysisCuts->GetCentrality(aod);
-  //Int_t runNumber=aod->GetRunNumber();
+  Int_t runNumber=aod->GetRunNumber();
 
   if(!isEvSel)return;
   
@@ -699,7 +699,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
    
     }
     
-    Float_t tmp[36];
+    Float_t tmp[37];
     if(fFillNtuple>0){
       
       if ((fFillNtuple==1 && (isPhiKKpi || isPhipiKK)) || (fFillNtuple==2 && (isK0starKKpi || isK0starpiKK)) || (fFillNtuple==3 && (isKKpi || ispiKK))){
@@ -748,9 +748,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    tmp[33]=d->CosPiKPhiRFrameKKpi();	   
 	    tmp[34]=d->CosPiKPhiRFramepiKK();	
 	    tmp[35]=(Float_t)(centrality);
+	    tmp[36]=(Float_t)(runNumber);	
 	
-	
- 	
 	    fNtupleDs->Fill(tmp);
 	    PostData(4,fNtupleDs);
       }  
