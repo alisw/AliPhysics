@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=1 /*0=tracks,1=V0*/)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE,TString name="",Int_t flagep=1 /*0=tracks,1=V0*/)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D 
@@ -25,13 +25,17 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",
   AliRDHFCuts *analysiscuts=0x0;
   TString suffix="";
 
-  TString cutsobjname="AnalysisCuts";
   //Analysis cuts
-  analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
-  
+  if(decCh==AliAnalysisTaskSEHFv2::kDplustoKpipi){
+    analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
+  }else if(decCh==AliAnalysisTaskSEHFv2::kD0toKpi){
+    analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
+  }else if(decCh==AliAnalysisTaskSEHFv2::kDstartoKpipi){
+    analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsobjname);
+  }
+
   if(!analysiscuts){
-    cout<<"Specific AliRDHFCuts not found"<<endl;
-    return;
+    AliFatal("Specific AliRDHFCuts not found");
   }
 
   analysiscuts->SetUseCentrality(AliRDHFCuts::kCentV0M);
