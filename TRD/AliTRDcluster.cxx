@@ -862,21 +862,26 @@ void AliTRDcluster::Print(Option_t *o) const
   //
 
   if(strcmp(o, "a")==0) {
+    Char_t mcInfo[100]; if(IsMCcluster()) snprintf(mcInfo, 100, "\n         MC[%5d %5d %5d]", GetLabel(0), GetLabel(1), GetLabel(2));
     AliInfo(Form(
-    "\nDet[%3d] LTrC[%+6.2f %+6.2f %+6.2f] Q[%5.1f] FLAG[in(%c) use(%c) sh(%c)] Y[%s]"
+    "\nDet[%3d] LTrC[%+6.2f %+6.2f %+6.2f] Q[%6.2f] Qr[%4d] FLAG[in(%c) use(%c) sh(%c)] Y[%s]"
     "\n         LChC[c(%3d) r(%2d) t(%2d)] t-t0[%2d] Npad[%d] cen[%5.3f] mask[%d]"
-    "\n         QS[%3d %3d %3d %3d %3d %3d %3d] S2[%e %e]"
-    , fDetector, GetX(), GetY(), GetZ(), fQ, 
+    "\n         QS[%s][%3d %3d %3d %3d %3d %3d %3d]"
+    "\n         S2Y[%e] S2Z[%e]"
+    "%s"
+    , fDetector, GetX(), GetY(), GetZ(), fQ, GetRawQ(),  
     IsInChamber() ? 'y' : 'n', 
     IsUsed() ? 'y' : 'n', 
     IsShared() ? 'y' : 'n',
     IsRPhiMethod(kGAUS)?"GAUS":(IsRPhiMethod(kLUT)?"LUT":"COG")
     , fPadCol, fPadRow, fPadTime, fLocalTimeBin, fNPads, fCenter, fClusterMasking
-    , fSignals[0], fSignals[1], fSignals[2], fSignals[3]
+    , TestBit(kRawSignals)?"raw":"cal", fSignals[0], fSignals[1], fSignals[2], fSignals[3]
     , fSignals[4], fSignals[5], fSignals[6]
-    , GetSigmaY2(), GetSigmaZ2()));
+    , GetSigmaY2(), GetSigmaZ2()
+    , IsMCcluster()?mcInfo:""
+    ));
   } else { 
-    AliInfo(Form("Det[%3d] LTrC[%+6.2f %+6.2f %+6.2f] Q[%5.1f] FLAG[in(%c) use(%c) sh(%c)] Y[%s]", 
+    AliInfo(Form("Det[%3d] LTrC[%+6.2f %+6.2f %+6.2f] Q[%6.2f] FLAG[in(%c) use(%c) sh(%c)] Y[%s]",
     fDetector, GetX(), GetY(), GetZ(), fQ, 
     IsInChamber() ? 'y' : 'n', 
     IsUsed() ? 'y' : 'n', 

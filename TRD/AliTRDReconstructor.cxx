@@ -221,6 +221,7 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
 
   fClusterizer->OpenOutput(clusterTree);
   fClusterizer->SetUseLabels(kFALSE);
+  fClusterizer->SetStoreRawSignals(kTRUE);
   fClusterizer->Raw2ClustersChamber(rawReader);
   
   fgNTimeBins = fClusterizer->GetNTimeBins();
@@ -257,6 +258,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   AliTRDclusterizer clusterer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
   clusterer.SetReconstructor(this);
   clusterer.SetUseLabels(kTRUE);
+  clusterer.SetStoreRawSignals(kTRUE);
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();

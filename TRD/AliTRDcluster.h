@@ -27,6 +27,7 @@ public:
    ,kGAUS      = BIT(19)
    ,kCOG       = BIT(20)
    ,kXcorr     = BIT(21)  // steer efficient vd corrections
+   ,kRawSignals= BIT(22)  // toggle raw digits storage
   };
   enum ETRDclusterMask { 
     kMaskedLeft   = 0
@@ -55,13 +56,16 @@ public:
           Bool_t    IsUsed() const                  { return IsClusterUsed();      }
           Bool_t    IsFivePad() const               { return TestBit(kFivePad);    }
   inline  Bool_t    IsRPhiMethod(ETRDclusterStatus m) const;
+  inline  Bool_t    IsMCcluster() const;
           Bool_t    HasXcorr() const                { return TestBit(kXcorr);      }
+          Bool_t    HasRawSignals() const           { return TestBit(kRawSignals); }
 
           UChar_t   GetPadMaskedPosition() const    { return fClusterMasking & 7;  }
           UChar_t   GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
           Int_t     GetDetector() const             { return fDetector;            }
           Int_t     GetLocalTimeBin() const         { return fLocalTimeBin;        }
           Float_t   GetQ() const                    { return fQ;                   }
+          Short_t   GetRawQ() const                 { return TestBit(kRawSignals)?(Short_t)GetSumS():0;}
           Int_t     GetNPads() const                { return fNPads;               }
           Float_t   GetCenter() const               { return fCenter;              }
           Int_t     GetPadCol() const               { return fPadCol;              }
@@ -98,6 +102,7 @@ public:
   void        SetPadMaskedPosition(UChar_t position);
   void        SetPadMaskedStatus(UChar_t status);
   void        SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x0, Float_t z=-1., Float_t tgp=0.);
+  void        SetSignals(Short_t sig[7], Bool_t raw=kTRUE){ memcpy(fSignals, sig, 7*sizeof(Short_t)); SetBit(kRawSignals, raw);}
   inline void SetRPhiMethod(ETRDclusterStatus m);
   void        SetXcorr(Bool_t xc = kTRUE)                 { SetBit(kXcorr,xc);                  }
 
@@ -112,11 +117,9 @@ protected:
   UChar_t fNPads;          //  Number of pads in cluster
   UChar_t fClusterMasking; //  Bit field containing cluster status information;
   Short_t fDetector;       //  TRD detector number
-  Short_t fSignals[7];     //  Signals in the cluster
-  Float_t fQ;              //  Amplitude 
+  Short_t fSignals[7];     //  Raw signals if HasRawSignals() returns true. Otherwise calibrated.
+  Float_t fQ;              //  Calibrated cluster charge
   Float_t fCenter;         //  Center of the cluster relative to the pad 
-
-  inline void Update(Short_t adc[7]);
 
 private:
 
@@ -132,13 +135,13 @@ private:
 
 };
 
-//___________________________________________________
-inline void AliTRDcluster::Update(Short_t adc[7]) 
+//________________________________________________
+inline  Bool_t AliTRDcluster::IsMCcluster() const
 {
-  memcpy(fSignals, adc, 7*sizeof(Short_t));
-  fQ = Float_t(adc[2]+adc[3]+adc[4]);
-  if(IsRPhiMethod(AliTRDcluster::kLUT)) GetDYlut();
-  else GetDYcog();
+  if( GetLabel(0) == fPadRow &&
+      GetLabel(1) == fPadCol &&
+      GetLabel(2) == fPadTime) return kFALSE;
+  return kTRUE;
 }
 
 //________________________________________________

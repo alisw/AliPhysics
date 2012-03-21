@@ -53,6 +53,7 @@ class AliTRDclusterizer : public TNamed
     ,kGAUS   = BIT(19)  //  using gauss approx. for cluster's r-phi position
     ,knewDM  = BIT(20)  //  was the digitsmanger created by raw2clusters?
     ,kTracksOwner = BIT(21) //  toggle GTU track ownership
+    ,kRawSignal = BIT(22) //  toggle storage of raw signals in clusters
   };
 
   struct MaxStruct
@@ -60,11 +61,11 @@ class AliTRDclusterizer : public TNamed
     Int_t       row;           // row of the current cluster candidate
     Int_t       col;           // col of the current cluster candidate
     Int_t       time;          // time -"-
-    Short_t     signals[3];    // signals of the maximum pad and it's twon neigbours
+    Float_t     signals[3];    // signals of the maximum pad and it's twon neigbours
     UChar_t     padStatus;     // padStatus of the current cluster candidate
     Bool_t      fivePad;       // is this cluster candidate part of a 5 pad cluster (two overlaping clusters)?
   MaxStruct():row(-1),col(0),time(0),padStatus(0),fivePad(kFALSE)
-      {memset(signals, 0, 3*sizeof(Short_t));}
+      {memset(signals, 0, 3*sizeof(Float_t));}
     MaxStruct &operator=(const MaxStruct &a)
     {memcpy(this, &a, sizeof(MaxStruct)); return *this;}
   };
@@ -114,6 +115,7 @@ class AliTRDclusterizer : public TNamed
   void             SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
   void             SetTracksOwner(Bool_t own=kTRUE) {SetBit(kTracksOwner, own); if(!own) {fTracks = 0x0; } }
   void             SetSkipTransform(Bool_t b=kTRUE) {SetBit(kSkipTrafo, b); }
+  void             SetStoreRawSignals(Bool_t b=kTRUE) {SetBit(kRawSignal, b); }
 
   UInt_t   GetTriggerFlags(const Int_t sector) const { return fTrgFlags[sector]; }
 
@@ -130,7 +132,7 @@ protected:
   UChar_t          GetPadStatus(UChar_t encoding) const;
   Int_t            GetCorruption(UChar_t encoding) const;
 
-  Bool_t           IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Short_t *const Signals);       //for const correctness reasons not const parameters are given separately
+  Bool_t           IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Float_t *const Signals);       //for const correctness reasons not const parameters are given separately
   Bool_t           FivePadCluster(MaxStruct &ThisMax, MaxStruct &NeighbourMax);
   void             CreateCluster(const MaxStruct &Max); 
 
@@ -156,10 +158,11 @@ protected:
   AliTRDtransform     *fTransform;                //! Transforms the reconstructed space points
 
   AliTRDarrayADC      *fDigits;                   // Array holding the digits
+  AliTRDarrayADC      *fDigitsRaw;                // Array holding the raw digits if requested
   AliTRDSignalIndex   *fIndexes;                  // Array holding the indexes to the digits
-  Short_t              fMaxThresh;                // Threshold value for the maximum
-  Short_t              fMaxThreshTest;            // Threshold value for the maximum to test agains
-  Short_t              fSigThresh;                // Threshold value for the digit signal
+  Float_t              fMaxThresh;                // Threshold value for the maximum
+  Float_t              fMaxThreshTest;            // Threshold value for the maximum to test agains
+  Float_t              fSigThresh;                // Threshold value for the digit signal
   Float_t              fMinMaxCutSigma;           // Threshold value for the maximum (cut noise)
   Float_t              fMinLeftRightCutSigma;     // Threshold value for the sum pad (cut noise)
   Int_t                fLayer;                    // Current layer of the detector
