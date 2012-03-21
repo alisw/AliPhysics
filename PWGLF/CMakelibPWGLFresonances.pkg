@@ -33,6 +33,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnPairDef.cxx
            RESONANCES/AliRsnTarget.cxx
            RESONANCES/AliRsnValue.cxx
+           RESONANCES/AliRsnAction.cxx
            RESONANCES/AliRsnCut.cxx
            RESONANCES/AliRsnValueDaughter.cxx
            RESONANCES/AliRsnValuePair.cxx
@@ -45,6 +46,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnCutPIDITS.cxx
            RESONANCES/AliRsnCutPIDTPC.cxx
            RESONANCES/AliRsnCutPIDTOF.cxx
+           RESONANCES/AliRsnPIDRange.cxx
            RESONANCES/AliRsnCutPIDNSigma.cxx
            RESONANCES/AliRsnCutMomentumComparison.cxx
            RESONANCES/AliRsnCutKaonForPhi2010.cxx
@@ -89,4 +91,8 @@ set ( DHDR PWGLFresonancesLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PYTHIA6 PWGLF/RESONANCES CORRFW ANALYSIS/EventMixing STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PYTHIA6 PWGLF/RESONANCES CORRFW ANALYSIS/EventMixing STEER/AOD STEER/ESD STEER/STEERBase ${EXTRA_INCLUDE})
+
+set ( PARINCLUDE PWGLF/RESONANCES )
+set ( EXPORT ${HDRS})
+set ( EXPORT ${HDRS})

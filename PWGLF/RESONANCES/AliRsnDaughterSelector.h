@@ -3,11 +3,14 @@
 
 #include <TNamed.h>
 #include <TClonesArray.h>
+#include <TObjArray.h>
 
 class TEntryList;
+class TList;
 
 class AliRsnCutSet;
 class AliRsnEvent;
+class AliRsnAction;
 
 class AliRsnDaughterSelector : public TNamed {
 
@@ -19,17 +22,22 @@ public:
    virtual ~AliRsnDaughterSelector();
 
    void          Init();
+   void          InitActions(TList *list);
    void          Reset();
    Int_t         Add(AliRsnCutSet *cuts, Bool_t charged);
    Int_t         GetID(const char *cutSetName, Bool_t charged);
    TEntryList   *GetSelected(Int_t i, Char_t charge);
    TEntryList   *GetSelected(Int_t i, Short_t charge);
    void          ScanEvent(AliRsnEvent *ev);
+   void          ExecActions(AliRsnEvent *ev);
 
    virtual void  Print(Option_t *option = "") const;
 
    TClonesArray *GetCutSetC() {return &fCutSetsC;}
    TClonesArray *GetCutSetN() {return &fCutSetsN;}
+   
+   void          AddAction(AliRsnAction *action);
+   TObjArray    *GetActions() { return &fActions; }
    
    void SetLabelCheck(Bool_t useLabelCheck = kTRUE) { fUseLabelCheck = useLabelCheck;}
 
@@ -43,8 +51,10 @@ private:
    TClonesArray fEntryListsM;     // entry lists for charged (one per sign)
    
    Bool_t       fUseLabelCheck;   // flag is reapiting of label should be checked
+   
+   TObjArray    fActions;
 
-   ClassDef(AliRsnDaughterSelector, 2)
+   ClassDef(AliRsnDaughterSelector, 3)
 };
 
 #endif

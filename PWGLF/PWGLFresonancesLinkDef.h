@@ -9,6 +9,8 @@
 
 #pragma link C++ class AliRsnTarget+;
 #pragma link C++ class AliRsnValue+;
+#pragma link C++ class AliRsnAction+;
+
 #pragma link C++ class AliRsnCut+;
 
 #pragma link C++ class AliRsnValueDaughter+;
@@ -23,7 +25,7 @@
 #pragma link C++ class AliRsnCutPIDITS+;
 #pragma link C++ class AliRsnCutPIDTPC+;
 #pragma link C++ class AliRsnCutPIDTOF+;
-#pragma link C++ class AliRsnCutPIDNSigma::AliRsnPIDRange+;
+#pragma link C++ class AliRsnPIDRange+;
 #pragma link C++ class AliRsnCutPIDNSigma+;
 #pragma link C++ class AliRsnCutMomentumComparison+;
 #pragma link C++ class AliRsnCutKaonForPhi2010+;

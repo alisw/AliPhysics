@@ -1,6 +1,6 @@
 TList *RsnManager() {
 
-   Int_t isPP           = 1; // in GRID case it will be overwriten
+   Int_t isPP           = 1; // in GRID case it will be overwriten (look bellow)
    Int_t useRsnMini     = 1;
 
    Int_t useMixing      = 0;
@@ -12,10 +12,11 @@ TList *RsnManager() {
 
    Int_t useEventMixPar = 0;
    Int_t useRsnPar      = 0;
+   Int_t useRsnParDev   = -1;
 
-   TString rootver = "v5-30-06-1";
+   TString rootver = "v5-32-01";
    TString alirootver = "";
-   //   alirootver = "v5-02-17-AN";
+//      alirootver = "v5-03-07-AN";
 
    TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
 //    legoTrainPath = "$HOME/git/AliRsn/PWGLF/RESONANCES/macros/lego_train";
@@ -32,55 +33,43 @@ TList *RsnManager() {
    //    listRsn->Add(new TNamed("<Name>:mon","<CutName>:<opt>"));
 
    TString commonCutOption="";
-//    commonCutOption="mon_eta";
+   commonCutOption="mon_eta";
 
+   // PHI
    listRsn->Add(new TNamed("Phi","Phi2010"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:pdg"));
-//
-//    listRsn->Add(new TNamed("Phi","Phi2010:trackPtMax18"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:trackPtMax18_pdg"));
-//
-//    listRsn->Add(new TNamed("Phi","Phi2010:usePP"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:usePP_pdg"));
-//
-//    listRsn->Add(new TNamed("Phi","Phi2010:usePP_trackPtMax18"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:usePP_trackPtMax18_pdg"));
-//
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma1"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma2"));
+//    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma1"));
+//    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma2"));
 //    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma3"));
+//    listRsn->Add(new TNamed("Phi","Phi2010:pdg"));
+//    listRsn->Add(new TNamed("Phi","Phi2010:usePP_pdg"));
+
+//    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma1_pdg"));
+//    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma2_pdg"));
 //    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_TPCsigma3_pdg"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tofonly_TOFsigma1"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tofonly_TOCsigma2"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tofonly_TOCsigma3"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tofonly_TOCsigma3_pdg"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tofonly_TOCsigma3_trackPtMax18"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tofonly_TOCsigma3_trackPtMax18_pdg"));
+
+//    listRsn->Add(new TNamed("Phi","BPID"));
 //
-//
-// //   listRsn->Add(new TNamed("Phi","BPID"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:qualityonly"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tpcptMax05"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tpcptMax06"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tpcptMax07"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:tpcptMax08"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:TPCsigma1_tpcptMax06"));
-// //   listRsn->Add(new TNamed("Phi","Phi2010:TPCsigma1_tpcptMax08"));
-//
-//    //
-//    //    // in case you have MC
-//    //   listRsn->Add(new TNamed("Phi","PDG"));
-//    listRsn->Add(new TNamed("Phi","PDG:NoTOFSIGMA"));
-//    //
-//    //    listRsn->Add(new TNamed("KStar","KStar2010:mon"));
-//    //    listRsn->Add(new TNamed("KStar","BPID:mon"));
-//
-//    //    listRsn->Add(new TNamed("KStar","KStar:mon"));
-//    //    listRsn->Add(new TNamed("KStar","KStar:TPCTOFpidDefaultKstarPP2010_mon"));
-//    //    listRsn->Add(new TNamed("KStar","KStar:FastTPCpid1point5sigma_mon"));
-//    //    listRsn->Add(new TNamed("KStar","KStar:FastTPCpid2sigma_mon"));
+
+   // RHO
+//    listRsn->Add(new TNamed("Rho","Rho"));
+//    listRsn->Add(new TNamed("Rho","Rho:tpconly_TPCsigma1"));
 
 
+   // KStar
+//
+//    listRsn->Add(new TNamed("KStar","KStar2010:mon"));
+//    listRsn->Add(new TNamed("KStar","BPID:mon"));
+//    listRsn->Add(new TNamed("KStar","KStar:mon"));
+//    listRsn->Add(new TNamed("KStar","KStar:TPCTOFpidDefaultKstarPP2010_mon"));
+//    listRsn->Add(new TNamed("KStar","KStar:FastTPCpid1point5sigma_mon"));
+//    listRsn->Add(new TNamed("KStar","KStar:FastTPCpid2sigma_mon"));
+
+
+   // Lambda
+//    listRsn->Add(new TNamed("Lambda","Lambda"));
+//    listRsn->Add(new TNamed("Lambda","Lambda:TPCPsigma2_TPCKsigma1"));
+
+   
    //============= ONLY for GRID ====================
    TString dsConfig;
 
@@ -124,7 +113,7 @@ TList *RsnManager() {
    // use parfiles instead of libs
    AliAnalysisManager::SetGlobalInt("rsnUseEventMixingPar",useEventMixPar);
    AliAnalysisManager::SetGlobalInt("rsnUseRSNPar",useRsnPar);
-
+   AliAnalysisManager::SetGlobalInt("rsnUseRSNParDev",useRsnParDev);
    // common options
    AliAnalysisManager::SetGlobalInt("rsnUsePhysSel",0);
    AliAnalysisManager::SetGlobalInt("rsnUsePIDResponse",1);
@@ -162,9 +151,7 @@ TList *RsnManager() {
    AliAnalysisManager::SetGlobalStr("rsnLegoTrainROOTversion",rootver.Data());
    AliAnalysisManager::SetGlobalStr("rsnLegoTrainAliROOTversion",alirootver.Data());
 
-
    AliAnalysisManager::SetGlobalStr("rsnLegoTrainCommonCutOption",commonCutOption.Data());
-
 
    return listRsn;
 }

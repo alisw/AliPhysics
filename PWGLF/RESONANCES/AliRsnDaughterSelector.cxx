@@ -5,6 +5,7 @@
 
 #include "AliRsnCutSet.h"
 #include "AliRsnDaughterDef.h"
+#include "AliRsnAction.h"
 
 #include "AliRsnDaughterSelector.h"
 
@@ -18,7 +19,8 @@ AliRsnDaughterSelector::AliRsnDaughterSelector(const char *name, const char *tit
    fEntryListsN("TEntryList", 0),
    fEntryListsP("TEntryList", 0),
    fEntryListsM("TEntryList", 0),
-   fUseLabelCheck(kTRUE)
+   fUseLabelCheck(kTRUE),
+   fActions()
 {
 //
 // Default constructor.
@@ -36,7 +38,8 @@ AliRsnDaughterSelector::AliRsnDaughterSelector(const AliRsnDaughterSelector &cop
    fEntryListsN(copy.fEntryListsN),
    fEntryListsP(copy.fEntryListsP),
    fEntryListsM(copy.fEntryListsM),
-   fUseLabelCheck(copy.fUseLabelCheck)
+   fUseLabelCheck(copy.fUseLabelCheck),
+   fActions(copy.fActions)
 {
 //
 // Copy constructor.
@@ -64,6 +67,7 @@ AliRsnDaughterSelector &AliRsnDaughterSelector::operator=(const AliRsnDaughterSe
    fEntryListsP = copy.fEntryListsP;
    fEntryListsM = copy.fEntryListsM;
    fUseLabelCheck = copy.fUseLabelCheck;
+   fActions = copy.fActions;
 
    AliDebug(AliLog::kDebug + 10, "->");
 
@@ -84,6 +88,8 @@ AliRsnDaughterSelector::~AliRsnDaughterSelector()
    fEntryListsN.Delete();
    fEntryListsP.Delete();
    fEntryListsM.Delete();
+
+   fActions.Delete();
 
    AliDebug(AliLog::kDebug + 10, "->");
 }
@@ -151,6 +157,56 @@ void AliRsnDaughterSelector::Init()
       AliInfo(Form("Adding 2 entry lists for charged --> cut set '%s' [scheme = '%s']", set->GetName(), set->GetCutScheme().Data()));
    }
 }
+
+//__________________________________________________________________________________________________
+void AliRsnDaughterSelector::AddAction(AliRsnAction *action)
+{
+//
+// Adding action
+//
+   if (!action) return;
+
+   fActions.Add(action);
+}
+
+
+//__________________________________________________________________________________________________
+void AliRsnDaughterSelector::InitActions(TList *list)
+{
+//
+// Initialize output for post actiosn
+//
+   if (!list) return;
+   TObjArray objects;
+   objects.Add(this);
+
+   TIter next(&fActions);
+   AliRsnAction *action;
+   while ((action = (AliRsnAction *)next())) {
+      action->InitAction(list,&objects);
+   }
+
+}
+
+//__________________________________________________________________________________________________
+void AliRsnDaughterSelector::ExecActions(AliRsnEvent *ev)
+{
+//
+// Exec Actions
+//
+
+   if (!ev) return;
+   
+   TObjArray objects;
+   objects.Add(ev);
+
+   TIter next(&fActions);
+   AliRsnAction *action;
+   while ((action = (AliRsnAction *)next())) {
+      action->ExecAction(&objects);
+   }
+}
+
 
 //__________________________________________________________________________________________________
 void AliRsnDaughterSelector::Reset()
@@ -253,6 +309,7 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
 //
 
    Int_t id, is;
+   Int_t label;
    Int_t nSel, nTot = ev->GetAbsoluteSum();
    AliRsnDaughter check;
    TClonesArray *cutsArray = 0x0, *entryArray = 0x0;
@@ -282,7 +339,11 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
          entryArray = &fEntryListsN;
       }
 
-      if (fUseLabelCheck && labelList.Contains(check.GetLabel())) continue;
+      // gets label for later use
+      label = check.GetLabel();
+
+      // check if label was not in labelList
+      if (fUseLabelCheck && labelList.Contains(label)) continue;
 
       // check with all cuts in that charge
       nSel = cutsArray->GetEntries();
@@ -291,11 +352,9 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
          if (cuts->IsSelected(&check)) {
             el = (TEntryList *)entryArray->At(is);
             el->Enter(id);
-            if (fUseLabelCheck) labelList.Enter(check.GetLabel());
+            if (fUseLabelCheck && label >= 0) labelList.Enter(label);
          }
       }
    }
-
-   //Print();
 }
 

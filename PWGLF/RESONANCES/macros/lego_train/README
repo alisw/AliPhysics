@@ -5,3 +5,70 @@ root 'RunALICE.C("proof","test","aod","",1e10,0,"my_local_data.txt","AddAMRsn")'
 root 'RunALICE.C("local","full","aod","",1e10,0,"my_local_data.txt","AddAMRsn")'
 
 root 'RunALICE.C("proof","full","aod","",1e10,0,"datasets-proof/LHC11a_p3_SSD_AOD072.txt","AddAMRsn")'
+
+
+
+##### Init working direcotry to be able use lego_train stuff #####
+
+# get source from RSN git (readonly version) [please install git]
+
+mkdir -p $HOME/ALICE/
+cd $HOME/ALICE/
+git clone git://github.com/mvala/AliRsn.git
+
+# to get latest source
+cd $HOME/ALICE/AliRsn
+git pull
+
+# Let's create working direcotry (any directory you want)
+mkdir -p /tmp/my_wk_dir
+cd /tmp/my_wk_dir
+$HOME/ALICE/AliRsn/scripts/alirsn-create-wk-dir.sh
+# now you should have .C files needed to run analysis
+
+# modify RsnManager.C to set your RSN you want to study
+# for example line
+
+listRsn->Add(new TNamed("Phi","Phi2010"));
+
+# will use 
+# AddRsnPairsPhi.C
+# AddRsnDaughterCutsPhi2010.C
+# more info in 'RsnManager.C'
+# NOTE: ORDER of loading macros 
+# 1. Looks for macro in local direcotry
+# 2. Looks in direcotry defined in RsnManager.C as variable 'legoTrainPath'
+#    Default is '$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train'
+
+# if you want to use latest macros, which are not even in aliroot, but they are in RSN git, you can do
+# in 'RsnManager.C' change legoTrainPath
+# for example (my RSN git copy is located /home/mvala/ALICE/AliRsn)
+legoTrainPath = "/home/mvala/ALICE/AliRsn/PWGLF/RESONANCES/macros/lego_train";
+
+# and you can do for example , where 'my_local_data.txt' has
+# list of files localy saved
+
+root 'RunALICE.C("proof","test","aod","",1e10,0,"my_local_data.txt","AddAMRsn")'
+
+##### END Init working direcotry to be able use lego_train stuff #####
+
+
+###### EXTRA STUFF ###############################
+
+# <1> #
+# Create latest PWGLFresonances.par from RSN git
+cd $HOME/ALICE/AliRsn
+mkdir build
+cd build
+../scripts/alirsn-make.sh PWGLFresonances.par
+# and now PWGLFresonances.par is saved in build direcotry
+
+# to use PWGLFresonances.par in lego_train macros
+# just set 
+
+Int_t useRsnPar = 1;
+
+# and run as usual, for example
+root 'RunALICE.C("proof","test","aod","",1e10,0,"my_local_data.txt","AddAMRsn")'
+
+###### END EXTRA STUFF ###############################

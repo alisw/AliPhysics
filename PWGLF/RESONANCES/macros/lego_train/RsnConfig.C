@@ -75,6 +75,21 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
             AddRsnPairsKStar(task,isMC,isMixing,AliPID::kKaon,cutIndex,AliPID::kPion,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             cutIndex+=numOfCuts;
          }
+      } else if (!rsnName.CompareTo("rho")) {
+         numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kPion,AliPID::kPion,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),isRsnMini,rsnIH,task));
+         if (numOfCuts) {
+            if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_pi",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            AddRsnPairsRho(task,isMC,isMixing,AliPID::kPion,cutIndex,AliPID::kPion,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            cutIndex+=numOfCuts;
+         }
+      } else if (!rsnName.CompareTo("lambda")) {
+         numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kProton,AliPID::kKaon,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),isRsnMini,rsnIH,task));
+         if (numOfCuts) {
+            if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_p",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s_K",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            AddRsnPairsLambda(task,isMC,isMixing,AliPID::kProton,cutIndex,AliPID::kKaon,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            cutIndex+=numOfCuts;
+         }
       } else {
          Printf("Error : Particle %s is not supported !!!!",rsnName.Data());
          return kFALSE;

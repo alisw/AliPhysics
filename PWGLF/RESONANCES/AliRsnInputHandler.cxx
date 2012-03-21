@@ -150,6 +150,7 @@ Bool_t AliRsnInputHandler::BeginEvent(Long64_t entry)
             // reject event if needed
             if (fRsnEventCuts) if (!fRsnEventCuts->IsSelected(fRsnEvent)) return kTRUE;
             fRsnSelector.ScanEvent(fRsnEvent);
+            fRsnSelector.ExecActions(fRsnEvent);
          }
       }
    }
