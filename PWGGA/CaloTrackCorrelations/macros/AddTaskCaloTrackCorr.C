@@ -21,6 +21,10 @@ TString kName          = "";
 Int_t   kDebug         = -1; 
 Bool_t  kQA            = kFALSE;
 Bool_t  kHadronAN      = kFALSE;
+Bool_t  kCalibE        = kTRUE;
+Bool_t  kCalibT        = kTRUE;
+Bool_t  kBadMap        = kTRUE;
+
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data          = "AOD",
                                                           const TString calorimeter   = "EMCAL", 
                                                           const Bool_t  simulation    = kFALSE,
@@ -38,6 +42,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
                                                           const Int_t   maxCen        = -1,
                                                           const Bool_t  qaan          = kFALSE,
                                                           const Bool_t  hadronan      = kFALSE,
+                                                          const Bool_t  calibE        = kTRUE,
+                                                          const Bool_t  badmap        = kTRUE,
+                                                          const Bool_t  calibT        = kTRUE,
                                                           const Bool_t  outputAOD     = kFALSE, 
                                                           const Bool_t  printSettings = kFALSE
                                                           )
@@ -62,6 +69,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
   kEventSelection= eventsel;
   kQA            = qaan;
   kHadronAN      = hadronan;
+  kCalibE        = calibE;
+  kCalibT        = calibT;
+  kBadMap        = badmap;
   
   // Get the pointer to the existing analysis manager via the static access method.
   
@@ -412,8 +422,7 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   
   AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   
-  Bool_t bCalib = kTRUE;
-  Bool_t bBadMap= kTRUE;
+
   cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
   
   
@@ -422,8 +431,9 @@ AliCalorimeterUtils* ConfigureCaloUtils()
                           kSimulation,                             
                           kExotic,
                           kNonLinearity,
-                          bCalib, 
-                          bBadMap);   
+                          kCalibE, 
+                          kBadMap,
+                          kCalibT);   
   
   if( kNonLinearity ) 
   { 
@@ -880,6 +890,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffNeutralCorr();
   ana->SwitchOffEventSelection();
   ana->SetDeltaPhiCutRange(1.5,4.5);
+  
+  ana->SwitchOnAbsoluteLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
   ana->SwitchOnSeveralUECalculation();
   ana->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);

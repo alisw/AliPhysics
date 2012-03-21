@@ -5,7 +5,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bNonLin= kFALSE,
                              Bool_t  bRecalE= kTRUE,
                              Bool_t  bBad   = kTRUE,
-                             Bool_t  bRecalT= kFALSE)
+                             Bool_t  bRecalT= kTRUE)
 {  
 
   // Configure RecoUtils with OADB objects
@@ -42,7 +42,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
  
   // *** Time recalibration settings ***
   
-  if(bRecalT)
+  if(bRecalT && ! bMC)
   {
     reco->SwitchOnTimeRecalibration();
   }
@@ -51,7 +51,6 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
     
   reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
 
-  
   // Non linearity
   
   if( kNonLinearity ) 
