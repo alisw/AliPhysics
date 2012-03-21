@@ -200,7 +200,9 @@ class AliAODTrack : public AliVTrack {
 
   Bool_t GetXYZ(Double_t *p) const {
     return GetPosition(p); }
-
+  
+  Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
+  
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
     return GetCovMatrix(cv);}
 
@@ -240,6 +242,7 @@ class AliAODTrack : public AliVTrack {
   UInt_t  GetFilterMap() const {return fFilterMap;}
 
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
+  const TBits* GetTPCClusterMapPtr() const {return &fTPCClusterMap;}
   const TBits& GetTPCFitMap() const {return fTPCFitMap;}
   Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Int_t /*type*/=0) const;
   

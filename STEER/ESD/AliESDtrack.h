@@ -220,7 +220,7 @@ public:
   }
   void  SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
 
-  AliTPCdEdxInfo * GetTPCdEdxInfo(){return fTPCdEdxInfo;}
+  AliTPCdEdxInfo * GetTPCdEdxInfo() const {return fTPCdEdxInfo;}
   Double_t GetTPCsignal() const {return fTPCsignal;}
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}
   UShort_t GetTPCsignalN() const {return fTPCsignalN;}
@@ -234,6 +234,7 @@ public:
   Int_t   GetV0Index(Int_t i) const { return fV0Indexes[i];}
   const TBits& GetTPCFitMap() const {return fTPCFitMap;}
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
+  const TBits* GetTPCClusterMapPtr() const {return &fTPCClusterMap;}
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCFitMap(const TBits &amap) {fTPCFitMap = amap;}
   void    SetTPCClusterMap(const TBits &amap) {fTPCClusterMap = amap;}

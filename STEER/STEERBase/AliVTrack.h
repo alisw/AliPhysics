@@ -52,8 +52,9 @@ public:
 
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
+  virtual const TBits* GetTPCClusterMapPtr() const {return NULL;}
   virtual Float_t  GetTPCClusterInfo(Int_t /*nNeighbours*/, Int_t /*type*/, Int_t /*row0*/=0, Int_t /*row1*/=159, Int_t /*type*/= 0) const {return 0.;}
-  virtual AliTPCdEdxInfo * GetTPCdEdxInfo() {return 0x0;}
+  virtual AliTPCdEdxInfo * GetTPCdEdxInfo() const {return 0x0;}
   virtual UShort_t GetTPCNcls() const { return 0;}
   virtual UShort_t GetTPCNclsF() const { return 0;}
   virtual Double_t GetTRDslice(Int_t /*plane*/, Int_t /*slice*/) const { return -1.; }
@@ -85,11 +86,13 @@ public:
     
   virtual ULong_t  GetStatus() const = 0;
   virtual Bool_t   GetXYZ(Double_t *p) const = 0;
+  virtual Bool_t   GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const {return kFALSE;}
   virtual Double_t GetBz() const;
   virtual void     GetBxByBz(Double_t b[3]) const;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const = 0;
   virtual Bool_t   PropagateToDCA(const AliVVertex *vtx,Double_t b,Double_t maxd,Double_t dz[2],Double_t covar[3]) = 0;
   virtual const    AliExternalTrackParam * GetOuterParam() const { return NULL; }
+  virtual const    AliExternalTrackParam * GetInnerParam() const { return NULL; }
   virtual Int_t    GetNcls(Int_t /*idet*/) const { return 0; }
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}

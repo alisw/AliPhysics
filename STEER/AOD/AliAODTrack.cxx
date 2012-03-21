@@ -21,6 +21,7 @@
 //     Markus.Oldenburg@cern.ch
 //-------------------------------------------------------------------------
 
+#include <TVector3.h>
 #include "AliLog.h"
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
@@ -745,3 +746,79 @@ Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b, Bool_t) const
   bcid = TMath::Nint((tdif - kShift)/kSpacing);
   return bcid;
 }
+
+//_____________________________________________________________________________
+Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
+{
+  //---------------------------------------------------------------------
+  // This function returns the global track position extrapolated to
+  // the radial position "x" (cm) in the magnetic field "b" (kG)
+  //---------------------------------------------------------------------
+
+  //conversion of track parameter representation is
+  //based on the implementation of AliExternalTrackParam::Set(...)
+  //maybe some of this code can be moved to AliVTrack to avoid code duplication
+  const double kSafe = 1e-5;
+  Double_t alpha=0.0;
+  Double_t radPos2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];  
+  Double_t radMax  = 45.; // approximately ITS outer radius
+  if (radPos2 < radMax*radMax) { // inside the ITS     
+     alpha = TMath::ATan2(fMomentum[1],fMomentum[0]);
+  } else { // outside the ITS
+     Float_t phiPos = TMath::Pi()+TMath::ATan2(-fPosition[1], -fPosition[0]);
+     alpha = 
+     TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+  }
+  //
+  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
+  // protection:  avoid alpha being too close to 0 or +-pi/2
+  if (TMath::Abs(sn)<kSafe) {
+    alpha = kSafe;
+    cs=TMath::Cos(alpha);
+    sn=TMath::Sin(alpha);
+  }
+  else if (cs<kSafe) {
+    alpha -= TMath::Sign(kSafe, alpha);
+    cs=TMath::Cos(alpha);
+    sn=TMath::Sin(alpha);    
+  }
+  
+  // Get the vertex of origin and the momentum
+  TVector3 ver(fPosition[0],fPosition[1],fPosition[2]);
+  TVector3 mom(fMomentum[0],fMomentum[1],fMomentum[2]);
+  //
+  // avoid momenta along axis
+  if (TMath::Abs(mom[0])<kSafe) mom[0] = TMath::Sign(kSafe*TMath::Abs(mom[1]), mom[0]);
+  if (TMath::Abs(mom[1])<kSafe) mom[1] = TMath::Sign(kSafe*TMath::Abs(mom[0]), mom[1]);
+
+  // Rotate to the local coordinate system
+  ver.RotateZ(-alpha);
+  mom.RotateZ(-alpha);
+
+  Double_t param0 = ver.Y();
+  Double_t param1 = ver.Z();
+  Double_t param2 = TMath::Sin(mom.Phi());
+  Double_t param3 = mom.Pz()/mom.Pt();
+  Double_t param4 = TMath::Sign(1/mom.Pt(),(Double_t)fCharge);
+
+  //calculate the propagated coordinates
+  //this is based on AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r)
+  Double_t dx=x-ver.X();
+  if(TMath::Abs(dx)<=kAlmost0) return GetXYZ(r);
+
+  Double_t f1=param2;
+  Double_t f2=f1 + dx*param4*b*kB2C;
+
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+  
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  r[0] = x;
+  r[1] = param0 + dx*(f1+f2)/(r1+r2);
+  r[2] = param1 + dx*(r2 + f2*(f1+f2)/(r1+r2))*param3;//Thanks to Andrea & Peter
+
+  return Local2GlobalPosition(r,alpha);
+}
+
+
+
