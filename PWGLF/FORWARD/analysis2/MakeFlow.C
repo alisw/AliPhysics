@@ -21,10 +21,10 @@
  * @par Outputs: 
  * - 
  *
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_flow
  */
-void MakeFlow(TString data      = "", 
-	      Int_t   nEvents   = 0, 
+void MakeFlow(const char* data  = "", 
+	      Int_t   nEvents   = -1, 
 	      TString type      = "", 
               Bool_t  mc        = kFALSE,
 	      const char* name  = 0,
@@ -43,12 +43,32 @@ void MakeFlow(TString data      = "",
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/TrainSetup.C+");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeFlowTrain.C+");
 
-    MakeFlowTrain t(name, type.Data(), mc, addFlow.Data(), addFType, addFOrder, false);
-    t.SetDataDir(data.Data());
-    t.SetDataSet("");
-    t.SetProofServer(Form("workers=%d", proof));
+    char* tok = strtok(name, " ,:");
+    TString server = "", dataset = "", datadir = "", jobname = "";
+    if (tok[0] == NULL) Fatal("Input name invalid!");
+    if (strcmp(tok, "hehi00.nbi.dk") == 0) {
+      server = tok;
+      dataset = data;
+      datadir = "";
+      tok = strtok(NULL, " ,:");
+      jobname = tok;
+    } else {
+      server = Form("workers=%d", proof);
+      dataset = "";
+      datadir = data;
+      jobname = tok;
+    }
+    printf("Making flow train on server: %s\t with datadir: %s\t on dataset: %s\n", 
+	    server.Data(), datadir.Data(), dataset.Data());
+
+    MakeFlowTrain t(jobname.Data(), type.Data(), mc, addFlow.Data(), addFType, addFOrder, false);
+    t.SetProofServer(server.Data());
+    t.SetDataDir(datadir.Data());
+    t.SetDataSet(dataset.Data());
+    t.SetDebugLevel(1);
     t.SetUseGDB(gdb);
-    t.Run(proof > 0 ? "proof" : "local", "full", nEvents, proof > 0);
+    t.Run("proof", "full", nEvents, proof > 0);
+
     return;
   }
 
@@ -58,12 +78,12 @@ void MakeFlow(TString data      = "",
 			   gROOT->GetMacroPath()));
 
   // --- Add to chain either AOD ------------------------------------
-  if (data.IsNull()) {
+  if (data == '\0') {
     AliError("You didn't add a data file");
     return;
   }
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/MakeChain.C");
-  TChain* chain = MakeChain("AOD", data.Data(), true);
+  TChain* chain = MakeChain("AOD", data, true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
 
@@ -78,6 +98,7 @@ void MakeFlow(TString data      = "",
   // --- Add the tasks ---------------------------------------------
   gROOT->LoadMacro("AddTaskForwardFlow.C");
   AddTaskForwardFlow(type, mc, addFlow, addFType, addFOrder);
+  mgr->SetDebugLevel(1);
 
   // --- Run the analysis --------------------------------------------
   TStopwatch t;

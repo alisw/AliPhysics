@@ -16,8 +16,8 @@
  * t.Run("LOCAL", "FULL", -1, false, false);
  * @endcode 
  *
- * @ingroup pwg2_forward_flow
- * @ingroup pwg2_forward_trains
+ * @ingroup pwglf_forward_flow
+ * @ingroup pwglf_forward_trains
  */
 class MakeFlowTrain : public TrainSetup
 {
@@ -65,7 +65,7 @@ public:
   void Run(const char* mode, const char* oper, 
 	   Int_t nEvents=-1, Bool_t usePar=false)
   {
-    Exec("AOD", mode, oper, nEvents, false, usePar);
+    Exec("AOD", mode, oper, nEvents, false, usePar, fDebug);
   }
   /** 
    * Run this analysis 
@@ -78,8 +78,9 @@ public:
   void Run(EMode mode, EOper oper, Int_t nEvents=-1, 
 	   Bool_t usePar=false)
   {
-    Exec(kAOD, mode, oper, nEvents, false, usePar);
+    Exec(kAOD, mode, oper, nEvents, false, usePar, fDebug);
   }
+  void SetDebugLevel(Int_t dbg = 0) { fDebug = dbg; }
 protected:
   /** 
    * Create the tasks 
@@ -118,6 +119,7 @@ protected:
   char* fAddFlow;
   Int_t fAddFType;
   Int_t fAddFOrder;
+  Int_t fDebug;
 };
 //
 // EOF

@@ -31,6 +31,7 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC() :
   fAlicePt4th3040(),     // Alice QC4 vs. pT data points
   fAlicePt4th4050(),     // Alice QC4 vs. pT data points
   fImpactParToCent(),    // Impact parameter to centrality graph
+  fUseImpactPar(0),      // Use impact par for centrality
   fAddFlow(0),           // Add flow to MC truth
   fAddType(0),           // Add type of flow to MC truth
   fAddOrder(0)           // Add order of flow to MC truth        
@@ -50,6 +51,7 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const char* name) :
   fAlicePt4th3040(),     // Alice QC4 vs. pT data points
   fAlicePt4th4050(),     // Alice QC4 vs. pT data points
   fImpactParToCent(),    // Impact parameter to centrality graph
+  fUseImpactPar(0),      // Use impact par for centrality
   fAddFlow(0),           // Add flow to MC truth
   fAddType(0),           // Add type of flow to MC truth
   fAddOrder(0)           // Add order of flow to MC truth        
@@ -92,8 +94,10 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const char* name) :
   Int_t nPointsCumulant4th4050ALICE = sizeof(xCumulant4th4050ALICE)/sizeof(Double_t);   
   fAlicePt4th4050 = new TGraph(nPointsCumulant4th4050ALICE, xCumulant4th4050ALICE, yCumulant4th4050ALICE);
 
-  Double_t impactParam[] = {0.,1.75,4.225,5.965,7.765,9.215,10.46,11.565,12.575,13.515,16.679};
-  Double_t centrality[] = {0.,2.5,7.5,15,25,35,45,55,65,75,90};
+//  Double_t impactParam[] = {0.,1.75,4.225,5.965,7.765,9.215,10.46,11.565,12.575,13.515,16.679};
+//  Double_t centrality[] = {0.,2.5,7.5,15,25,35,45,55,65,75,90};
+  Double_t impactParam[] = {0., 3.72, 5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.51, 16.679};
+  Double_t centrality[] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 100.};
 
   Int_t nPoints = sizeof(impactParam)/sizeof(Double_t);
   fImpactParToCent = new TGraph(nPoints, impactParam, centrality);
@@ -111,6 +115,7 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const AliForwardMCFlowTaskQC& o) 
   fAlicePt4th3040(o.fAlicePt4th3040),    // Alice QC4 vs. pT data points
   fAlicePt4th4050(o.fAlicePt4th4050),    // Alice QC4 vs. pT data points
   fImpactParToCent(o.fImpactParToCent),  // Impact parameter to centrality graph
+  fUseImpactPar(o.fUseImpactPar),        // Use impact par for centrality
   fAddFlow(o.fAddFlow),                  // Add flow to MC truth
   fAddType(o.fAddType),                  // Add type of flow to MC truth
   fAddOrder(o.fAddOrder)                 // Add order of flow to MC truth        
@@ -134,6 +139,7 @@ AliForwardMCFlowTaskQC::operator=(const AliForwardMCFlowTaskQC& o)
   fAlicePt4th3040  = o.fAlicePt4th3040;
   fAlicePt4th4050  = o.fAlicePt4th4050;
   fImpactParToCent = o.fImpactParToCent;
+  fUseImpactPar    = o.fUseImpactPar;
   fAddFlow         = o.fAddFlow;
   fAddType         = o.fAddType;
   fAddOrder        = o.fAddOrder;
@@ -147,12 +153,12 @@ void AliForwardMCFlowTaskQC::InitVertexBins()
   //
   AliForwardFlowTaskQC::InitVertexBins();
 
-  for(Int_t n = 1; n <= 6; n++) {
+  for(UShort_t n = 1; n <= 6; n++) {
     if (!fv[n]) continue;
-    for (Int_t v = -10; v < 10; v++) {
-      fBinsFMDTR.Add(new VertexBin(v, v+1, n, "FMDTR"));
-      fBinsSPDTR.Add(new VertexBin(v, v+1, n, "SPDTR"));
-      fBinsMC.Add(new VertexBin(v, v+1, n, "MC"));
+      for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
+      fBinsFMDTR.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, "FMDTR"));
+      fBinsSPDTR.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, "SPDTR"));
+      fBinsMC.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, "MC"));
     }
   }
 
@@ -190,41 +196,22 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
   if (!AliForwardFlowTaskQC::Analyze()) return kFALSE;
 
   // Run analysis on trackrefs from FMD and SPD
-  AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("ForwardMC"));
-  if (!aodfmult) return kFALSE;
-  TH2D fmdTRdNdetadphi = aodfmult->GetHistogram();
-
-  AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClustersMC"));
-  if (!aodcmult) return kFALSE;
-  TH2D spdTRdNdetadphi = aodcmult->GetHistogram();
+  const AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("ForwardMC"));
+  const AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClustersMC"));
+  if (!aodfmult || !aodcmult) return kFALSE;
   
-  TIter nextFMDTR(&fBinsFMDTR);
-  VertexBin* bin = 0;
-  while ((bin = static_cast<VertexBin*>(nextFMDTR()))) {
-    if (bin->CheckVertex(fZvertex)) {
-      if (!bin->FillHists(&fmdTRdNdetadphi)) return kFALSE;
-      bin->CumulantsAccumulate(fCent);
-    }
-  }
+  // if objects are present, get histograms
+  const TH2D& fmdTRdNdetadphi = aodfmult->GetHistogram();
+  const TH2D& spdTRdNdetadphi = aodcmult->GetHistogram();
 
-  TIter nextSPDTR(&fBinsSPDTR);
-  while ((bin = static_cast<VertexBin*>(nextSPDTR()))) {
-    if (bin->CheckVertex(fZvertex)) {
-      if (!bin->FillHists(&spdTRdNdetadphi)) return kFALSE;
-      bin->CumulantsAccumulate(fCent);
-    }
-  }
+  // Run analysis on tr refs
+  Int_t vtx = fVtxAxis->FindBin(fVtx)-1;
+  if (!FillVtxBinList(fBinsFMDTR, fmdTRdNdetadphi, vtx)) return kFALSE;
+  if (!FillVtxBinList(fBinsSPDTR, spdTRdNdetadphi, vtx)) return kFALSE;
 
   // Run analysis on MC branch
   if (!LoopAODMC()) return kFALSE;
-
-  TIter nextMC(&fBinsMC);
-  while ((bin = static_cast<VertexBin*>(nextMC()))) {
-    if (bin->CheckVertex(fZvertex)) {
-      if (!bin->FillHists(&fdNdedpMC)) return kFALSE;
-      bin->CumulantsAccumulate(fCent);
-    }
-  }
+  if (!FillVtxBinList(fBinsMC, fdNdedpMC, vtx)) return kFALSE;
 
   return kTRUE;
 }
@@ -236,48 +223,30 @@ void AliForwardMCFlowTaskQC::Finalize()
   //
   AliForwardFlowTaskQC::Finalize();
 
-  TIter nextFMDTR(&fBinsFMDTR);
-  VertexBin* bin = 0;
-  while ((bin = static_cast<VertexBin*>(nextFMDTR()))) {
-    bin->CumulantsTerminate(fSumList, fOutputList);
+  EndVtxBinList(fBinsFMDTR);
+  EndVtxBinList(fBinsSPDTR);
+  EndVtxBinList(fBinsMC);
+
+  return;
+}
+//_____________________________________________________________________
+Bool_t AliForwardMCFlowTaskQC::GetCentrality(const AliAODForwardMult* aodfm)
+{
+  // 
+  // Function to use centrality parametrization from impact parameter
+  // if flag is not set call AliForwardFlowTaskQC::GetCentrality
+  //
+  // Parameters:
+  //  AliAODForwardMult: forward mult object with trigger and vertex info
+  //
+  // Returns true when centrality is set.
+  //
+  if (fUseImpactPar) {
+    fCent = GetCentFromB();
+    fHistCent->Fill(fCent);
+    return kTRUE;
   }
-  TIter nextSPDTR(&fBinsSPDTR);
-  while ((bin = static_cast<VertexBin*>(nextSPDTR()))) {
-    bin->CumulantsTerminate(fSumList, fOutputList);
-  }
-  TIter nextMC(&fBinsMC);
-  while ((bin = static_cast<VertexBin*>(nextMC()))) {
-    bin->CumulantsTerminate(fSumList, fOutputList);
-  }
-
-  TProfile2D* fmdHist = 0;
-  TProfile2D* spdHist = 0;
-  TProfile2D* mcHist = 0;
-
-  for (Int_t i = 2; i <= 4; i += 2) {
-    for (Int_t n = 1; n <= 6; n++) {
-      if (!fv[n]) continue;
-      fmdHist = (TProfile2D*)fOutputList->FindObject(Form("FMDQC%d_v%d_unCorr", i, n))
-		  ->Clone(Form("FMDQC%d_v%d_Correction", i, n));
-      spdHist = (TProfile2D*)fOutputList->FindObject(Form("SPDQC%d_v%d_unCorr", i, n))
-		  ->Clone(Form("SPDQC%d_v%d_Correction", i, n));
-      mcHist = (TProfile2D*)fOutputList->FindObject(Form("MCQC%d_v%d_unCorr", i, n));
-     
-      if (!fmdHist || !spdHist || !mcHist) {
-	AliError(Form("Histogram missing, correction object not created for v%d", n));
-	continue;
-      }
-
-      fmdHist->Divide(mcHist);
-      spdHist->Divide(mcHist);
-      fmdHist->SetTitle(Form("FMD QC{%d} v_{%d} Correction Object", i, n));
-      fmdHist->SetTitle(Form("SPD QC{%d} v_{%d} Correction Object", i, n));
-
-      fOutputList->Add(fmdHist);
-      fOutputList->Add(spdHist);
-    }
-  }
-
+  else  return AliForwardFlowTaskQC::GetCentrality(aodfm);
 }
 //_____________________________________________________________________
 Bool_t AliForwardMCFlowTaskQC::LoopAODMC()  
@@ -319,7 +288,7 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
     Double_t pT = particle->Pt();
     Double_t eta = particle->Eta();
     Double_t phi = particle->Phi();
-    if (TMath::Abs(eta) < 6.) {
+    if (eta > -4. && eta < 5.) {
       // Add flow if it is in the argument
       if (fAddFlow.Length() > 1) {
         if (fAddFlow.Contains("pt"))
@@ -420,7 +389,6 @@ Double_t AliForwardMCFlowTaskQC::GetCentFromB() const
 {
   //
   // Get centrality from MC impact parameter.
-  // Values taken from: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
   //
   Double_t cent = -1.;
   Double_t b = -1.;
