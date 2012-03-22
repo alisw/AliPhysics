@@ -52,18 +52,23 @@ public:
    * Destructor 
    */
   virtual ~AliForwardMCFlowTaskQC() {}
-  /** 
-   * @{ 
-   * @name Task interface methods 
-   */
   /**
-   * Loop over AliAODMCParticle branch object and fill d^2N/detadphi histograms
-   * add flow if arguments are set
+   * Check for centrality in AliAODForwardMult object, 
+   * if present return true - also sets fCent value
+   * can be used to get centrality from impact parameter
+   *
+   * @param aodfm AliAODForwardMultObject
    * 
-   * @return true on success
+   * @return Bool_t 
    */
-  Bool_t LoopAODMC();
-    /*
+  virtual Bool_t GetCentrality(const AliAODForwardMult* aodfm);
+  /*
+   * Set use parametrization from impact parameter for centrality
+   *
+   * @param use Use impact par
+   */
+  void SetUseImpactParameter(Bool_t use) { fUseImpactPar = use; }
+  /*
    * Set string to add flow to MC truth particles
    *
    * @param type String
@@ -112,6 +117,13 @@ protected:
    */
   void Finalize();
   /**
+   * Loop over AliAODMCParticle branch object and fill d^2N/detadphi histograms
+   * add flow if arguments are set
+   * 
+   * @return true on success
+   */
+  Bool_t LoopAODMC();
+  /**
    * Add pt dependent flow factor
    *
    * @param Pt   @f$ p_T@f$
@@ -146,6 +158,7 @@ protected:
   TGraph*       fAlicePt4th3040;    //  Parametrization of ALICE QC4 vs. pT data
   TGraph*       fAlicePt4th4050;    //  Parametrization of ALICE QC4 vs. pT data
   TGraph*       fImpactParToCent;   //  Parametrization of b to centrality datapoints
+  Bool_t       fUseImpactPar;      //  Flag to use impact parameter for cent
   TString       fAddFlow;           //  Add flow string
   Int_t         fAddType;           //  Add flow type #
   Int_t         fAddOrder;          //  Add flow order

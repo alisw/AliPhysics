@@ -82,10 +82,18 @@ void AddTaskForwardFlow(TString type = "",
     task = new AliForwardFlowTaskQC("QCumulants");
   mgr->AddTask(task); 
 
+  // Set which harmonics to do
   task->SetDoHarmonics(v1, v2, v3, v4, v5, v6);
+  // Set non-default axis for vertices
+  TAxis* a = new TAxis(20, -10, 10);
+  task->SetVertexAxis(a);
+  // Set debug flag
+  task->SetDebugLevel(0);
+  // Set up adding flow to MC input
   if (mc) {
     AliForwardMCFlowTaskQC* mcTask = 
       static_cast<AliForwardMCFlowTaskQC*>task;
+    mcTask->SetUseImpactParameter(true);
     mcTask->AddFlow(addFlow);
     mcTask->AddFlowType(addFType);
     mcTask->AddFlowOrder(addFOrder);
