@@ -271,7 +271,7 @@ class AliAODTrack : public AliVTrack {
   Double_t  GetITSsignal()       const { return fDetPid?fDetPid->GetITSsignal():0.;    }
   Double_t  GetTPCsignal()       const { return fDetPid?fDetPid->GetTPCsignal():0.;    }
   UShort_t  GetTPCsignalN()      const { return fDetPid?fDetPid->GetTPCsignalN():0;    }
-  virtual AliTPCdEdxInfo* GetTPCdEdxInfo() {return fDetPid?fDetPid->GetTPCdEdxInfo():0;}
+  virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;}
   Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
   Double_t  GetTOFsignal()       const { return fDetPid?fDetPid->GetTOFsignal():0.;    }
   Double_t  GetHMPIDsignal()     const { return fDetPid?fDetPid->GetHMPIDsignal():0.;  }
