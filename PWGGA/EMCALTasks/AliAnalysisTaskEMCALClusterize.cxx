@@ -23,14 +23,14 @@
 //_________________________________________________________________________
 
 // --- Root ---
-#include "TString.h"
-#include "TRefArray.h"
-#include "TClonesArray.h"
-#include "TTree.h"
-#include "TGeoManager.h"
-#include "TROOT.h"
-#include "TInterpreter.h"
-#include "TFile.h"
+#include <TString.h>
+#include <TRefArray.h>
+#include <TClonesArray.h>
+#include <TTree.h>
+#include <TGeoManager.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
+#include <TFile.h>
 
 // --- AliRoot Analysis Steering
 #include "AliAnalysisTask.h"
@@ -510,15 +510,10 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
   Double_t time   = -1; 
   
   AliVCaloCells *cells   = fEvent->GetEMCALCells();
-  
-  TFile* file = new TFile("tmpTree.root","recreate"); // Trick to avoid annoying messages FIXME
-  TTree *digitsTree = new TTree("digitstree","digitstree");
-  digitsTree->Branch("EMCAL","TClonesArray", &fDigitsArr, 32000);
 
   Int_t bc = InputEvent()->GetBunchCrossNumber();
   for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
   {
-    
     // Get cell values, recalibrate and not include bad channels found in analysis, nor cells with too low energy, nor exotic cell
     id = cells->GetCellNumber(icell);
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
@@ -556,35 +551,23 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     //Create the digit, put a fake primary deposited energy to trick the clusterizer when checking the most likely primary
     new((*fDigitsArr)[idigit]) AliEMCALDigit( fCellLabels[id], fCellLabels[id],id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1); 
  
-    fCellLabels[id]      =-1; //reset the entry in the array for next event
+    fCellLabels[id] =-1; //reset the entry in the array for next event
     
     idigit++;
   }
   
-  //Fill the tree with digits
-  digitsTree->Fill();
-  
+  fDigitsArr->Sort();
+    
   //-------------------------------------------------------------------------------------
   //Do the clusterization
   //-------------------------------------------------------------------------------------        
-  TTree *clustersTree = new TTree("clustertree","clustertree");
-  
-  fClusterizer->SetInput(digitsTree);
-  fClusterizer->SetOutput(clustersTree);
+ 
   fClusterizer->Digits2Clusters("");
   
   //-------------------------------------------------------------------------------------
   //Transform the recpoints into AliVClusters
   //-------------------------------------------------------------------------------------
   
-  clustersTree->SetBranchStatus("*",0); //disable all branches
-  clustersTree->SetBranchStatus("EMCALECARP",1); //Enable only the branch we need
-  
-  TBranch *branch = clustersTree->GetBranch("EMCALECARP");
-  branch->SetAddress(&fClusterArr);
-
-  branch->GetEntry(0);
-
   RecPoints2Clusters(fDigitsArr, fClusterArr, fCaloClusterArr);
   
   if(!fCaloClusterArr)
@@ -606,18 +589,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
   
   //Reset the array with second labels for this event
   memset(fCellSecondLabels, -1, sizeof(fCellSecondLabels));
-  
-  //---CLEAN UP-----
-  fClusterizer->Clear();
-  fDigitsArr  ->Clear("C");
-  fClusterArr ->Delete(); // Do not Clear(), it leaks, why?
-  
-  clustersTree->Delete("all");  
-  digitsTree  ->Delete("all");  
-  
-  // Trick to avoid annoying messages FIXME
-  file->Close();
-  delete file;
+
 }
 
 //_____________________________________________________
@@ -864,8 +836,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
   fOADBSet           = kFALSE;
   if(fOADBFilePath == "") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;          
   
-  fDigitsArr         = new TClonesArray("AliEMCALDigit",12000);
-  fClusterArr        = new TObjArray(10000);
+  //fClusterArr        = new TObjArray(10000);
   fCaloClusterArr    = new TObjArray(10000);
   fBranchNames       = "ESD:AliESDHeader.,EMCALCells.";
   
@@ -913,7 +884,8 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
 {
   //Select clusterization/unfolding algorithm and set all the needed parameters
   
-  if (fJustUnfold){
+  if (fJustUnfold)
+  {
     // init the unfolding afterburner 
     delete fUnfolder;
     fUnfolder =  new AliEMCALAfterBurnerUF(fRecParam->GetW0(),fRecParam->GetLocMaxCut(),fRecParam->GetMinECut());
@@ -930,7 +902,9 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
     fClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
     fClusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
     fClusterizer->SetNColDiff(fRecParam->GetNColDiff());
-  } else {
+  } 
+  else 
+  {
     AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
   }
   
@@ -945,13 +919,23 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
   fClusterizer->SetTimeMax               ( fRecParam->GetTimeMax()             );
   fClusterizer->SetInputCalibrated       ( kTRUE                               );
   fClusterizer->SetJustClusters          ( kTRUE                               );  
+  
+  // Initialize the cluster rec points and digits arrays and get them.
+  fClusterizer->SetOutput(0);
+  fClusterArr = const_cast<TObjArray *>(fClusterizer->GetRecPoints());
+  fDigitsArr  = fClusterizer->GetDigits();
+  
   //In case of unfolding after clusterization is requested, set the corresponding parameters
-  if(fRecParam->GetUnfold()){
+  if(fRecParam->GetUnfold())
+  {
     Int_t i=0;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++) 
+    {
       fClusterizer->SetSSPars(i, fRecParam->GetSSPars(i));
     }//end of loop over parameters
-    for (i = 0; i < 3; i++) {
+    
+    for (i = 0; i < 3; i++) 
+    {
       fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
       fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
     }//end of loop over parameters
@@ -1331,9 +1315,7 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
   {
     AliFatal("fOutputAODBranchName not set\n");
   }
-  
-  //PostData(0,fOutputAODBranch);
-  
+    
 }
 
 //_______________________________________________________
