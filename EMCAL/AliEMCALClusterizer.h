@@ -14,13 +14,12 @@
 //_________________________________________________________________________
 
 // --- ROOT system ---
-#include "AliLog.h"
-#include "TObject.h" 
+#include <TObject.h>
+#include <TClonesArray.h>
 class TTree;
 
-// --- Standard library ---
-
 // --- AliRoot header files ---
+#include "AliLog.h"
 class AliEMCALGeometry;
 class AliEMCALCalibData;
 class AliCaloCalibPedestal;
@@ -48,12 +47,12 @@ public:
   virtual void    InitParameters();
   virtual void    InitParameters(const AliEMCALRecParam* recParam);
 
-  virtual void    Print         (Option_t *option) const ;
+  virtual void    Print         (Option_t *option)   const ;
   virtual void    PrintRecPoints(Option_t *option);
   virtual void    PrintRecoInfo();
 
-  virtual const char *Version() const { Warning("Version", "Not Defined"); return 0; } 
-
+  virtual const char *Version()                      const { Warning("Version", "Not Defined"); 
+                                                             return 0 ;                        } 
 
   //Getters-Setters
 
@@ -73,9 +72,9 @@ public:
   virtual Float_t GetECALogWeight()                   const { return fECAW0;                   }
   virtual Float_t GetMinECut()                        const { return fMinECut;                 } 
 
-  virtual void    SetTimeMin(Float_t t)		            { fTimeMin = t;                    }
-  virtual void    SetTimeMax(Float_t t)		            { fTimeMax = t;                    }
-  virtual void    SetTimeCut(Float_t t)		            { fTimeCut = t;                    }
+  virtual void    SetTimeMin(Float_t t)		                  { fTimeMin = t;                    }
+  virtual void    SetTimeMax(Float_t t)		                  { fTimeMax = t;                    }
+  virtual void    SetTimeCut(Float_t t)		                  { fTimeCut = t;                    }
   virtual void    SetECAClusteringThreshold(Float_t th)     { fECAClusteringThreshold = th;    }
   virtual void    SetMinECut(Float_t mine)                  { fMinECut      = mine;            }
   virtual void    SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut;             }
@@ -93,20 +92,23 @@ public:
 
   //NxN (only used in NxN clusterizer)
   
-  virtual void    SetNRowDiff(Int_t )    { ; }
-  virtual void    SetNColDiff(Int_t )    { ; }
-  virtual void    SetEnergyGrad(Bool_t ) { ; }
+  virtual void    SetNRowDiff(Int_t )                       { ; }
+  virtual void    SetNColDiff(Int_t )                       { ; }
+  virtual void    SetEnergyGrad(Bool_t )                    { ; }
 
-  virtual Int_t   GetNRowDiff()   const { return -1 ; }
-  virtual Int_t   GetNColDiff()   const { return -1 ; } 
-  virtual Bool_t  GetEnergyGrad() const { return -1 ; }
+  virtual Int_t   GetNRowDiff()                       const { return -1 ; }
+  virtual Int_t   GetNColDiff()                       const { return -1 ; } 
+  virtual Bool_t  GetEnergyGrad()                     const { return -1 ; }
 
   // add for clusterizing task
 
-  virtual void              SetDigitsArr(TClonesArray *arr) { fDigitsArr = arr;                }
-  virtual const TObjArray  *GetRecPoints()            const { return fRecPoints;               }
-  void                      SetInputCalibrated(Bool_t val);
-  void                      SetJustClusters   (Bool_t val);
+  virtual void                SetDigitsArr(TClonesArray *arr) { fDigitsArr = arr  ;            }
+  virtual TClonesArray *GetDigits()                           { if (!fDigitsArr)
+                                                                  fDigitsArr = new TClonesArray("AliEMCALDigit",12000);
+                                                                return fDigitsArr ;            }
+  virtual const TObjArray    *GetRecPoints()            const { return fRecPoints ;            }
+  void                        SetInputCalibrated(Bool_t val);
+  void                        SetJustClusters   (Bool_t val);
   
 
 protected:
@@ -146,9 +148,10 @@ protected:
   Double_t fPar6[3];                    // shower shape parameter 6
 
  private:
-  AliEMCALClusterizer(const AliEMCALClusterizer &);
+  AliEMCALClusterizer(              const AliEMCALClusterizer &);
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
   ClassDef(AliEMCALClusterizer,7)  // Clusterization algorithm class 
+  
 };
 #endif // AliEMCALCLUSTERIZER_H
