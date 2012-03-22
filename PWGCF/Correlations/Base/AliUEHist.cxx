@@ -86,10 +86,12 @@ AliUEHist::AliUEHist(const char* reqHist) :
   trackAxisTitle[0] = "#eta";
   
   // delta eta
-  const Int_t kNDeltaEtaBins = 40;
-  Double_t deltaEtaBins[kNDeltaEtaBins+1];
-  for (Int_t i=0; i<=kNDeltaEtaBins; i++)
-    deltaEtaBins[i] = -2.0 + 0.1 * i;
+  const Int_t kNDeltaEtaBins = 40+4;
+  Double_t deltaEtaBins[kNDeltaEtaBins+1] = { -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
+					      -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 
+					      -0.05, -0.025, 0, 0.025, 0.05, 
+					      0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
+					      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
   
   // pT
   iTrackBin[1] = 22;
@@ -108,10 +110,18 @@ AliUEHist::AliUEHist(const char* reqHist) :
   Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
   
   // phi,lead; this binning starts at -pi/2 and is modulo 3
-  const Int_t kNLeadingPhiBins = 72;
-  Double_t leadingPhiBins[kNLeadingPhiBins+1];
-  for (Int_t i=0; i<=kNLeadingPhiBins; i++)
-    leadingPhiBins[i] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiBins * i * TMath::TwoPi();
+  const Int_t kNLeadingPhiSpacing = 72;
+  const Int_t kNLeadingPhiBins = kNLeadingPhiSpacing+4;
+  Double_t leadingPhiBins[kNLeadingPhiBins+4+1];
+  for (Int_t i=0; i<=17; i++)
+    leadingPhiBins[i] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
+  leadingPhiBins[18] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2;
+  leadingPhiBins[19] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 1.5;
+  leadingPhiBins[20] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2; // = 0
+  leadingPhiBins[21] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2.5;
+  leadingPhiBins[22] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 3;
+  for (Int_t i=19; i<=kNLeadingPhiSpacing; i++)
+    leadingPhiBins[i+4] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
     
   // multiplicity
   const Int_t kNMultiplicityBins = 15;

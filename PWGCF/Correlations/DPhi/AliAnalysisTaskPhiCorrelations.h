@@ -65,7 +65,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual	void    SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
     virtual	void	SetCompareCentralities(Bool_t flag) { fCompareCentralities = flag; }
     virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
+    virtual	void	SetTwoTrackEfficiencyCut(Bool_t flag) { fTwoTrackEfficiencyCut = flag; }
     virtual	void	SetUseVtxAxis(Bool_t flag) { fUseVtxAxis = flag; }
+    virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
     
     // histogram settings
     void SetTrackingEfficiency( const TH1D* hist) { fkTrackingEfficiency = hist; }
@@ -107,7 +109,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t  		fMixingTracks;		// size of track buffer for event mixing
     Bool_t		fCompareCentralities;	// use the z vtx axis for a centrality comparison
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
+    Bool_t		fTwoTrackEfficiencyCut;   // enable two-track efficiency cut
     Bool_t		fUseVtxAxis;              // use z vtx as axis (needs 7 times more memory!)
+    Bool_t		fSkipTrigger;		  // skip trigger selection
     
     // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
@@ -148,7 +152,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 6); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 7); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

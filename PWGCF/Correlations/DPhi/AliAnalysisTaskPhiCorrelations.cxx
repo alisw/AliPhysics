@@ -84,7 +84,9 @@ fFillMixed(kTRUE),
 fMixingTracks(50000),
 fCompareCentralities(kFALSE),
 fTwoTrackEfficiencyStudy(kFALSE),
+fTwoTrackEfficiencyCut(kFALSE),
 fUseVtxAxis(kFALSE),
+fSkipTrigger(kFALSE),
 // pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
@@ -309,6 +311,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
+  settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
+  
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
 }  
@@ -401,8 +405,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     pool->UpdatePool(CloneAndReduceTrackList(tracksMC));
   }
   
+//   Printf("trigger: %d", ((AliInputEventHandler*)fInputHandler)->IsEventSelected());
+  
   // Trigger selection ************************************************
-  if (fAnalyseUE->TriggerSelection(fInputHandler))
+  if (fSkipTrigger || fAnalyseUE->TriggerSelection(fInputHandler))
   {  
     // (MC-true all particles)
     // STEP 1
@@ -595,6 +601,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (!inputEvent)
     inputEvent = fESD;
 
+  Float_t bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
+
   fHistos->SetRunNumber(inputEvent->GetRunNumber());
   
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
@@ -617,6 +625,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
 
   TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+  // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
+  TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
+  delete tracks;
+  
   //Printf("Accepted %d tracks", tracks->GetEntries());
   
   const AliVVertex* vertex = inputEvent->GetPrimaryVertex();
@@ -634,23 +646,23 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0)
   {
-    fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
+    fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight);
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
+    
+    if (fTwoTrackEfficiencyCut)
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, 0, weight, kTRUE, bSign);
   }
 
   // Two-track effect study
   if (fTwoTrackEfficiencyStudy)
-  {
-    Float_t bSign = (fESD->GetMagneticField() > 0) ? 1 : -1;
-    fHistos->TwoTrackEfficiency(tracks, 0, bSign);
-  }
+    fHistos->TwoTrackEfficiency(tracksClone, 0, bSign);
   
   // fill second time with SPD centrality
   if (fCompareCentralities && centralityObj)
   {
     centrality = centralityObj->GetCentralityPercentile("CL1");
     if (centrality >= 0)
-      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
+      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight);
   }
     
   if (fFillMixed)
@@ -697,22 +709,21 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 	TObjArray* bgTracks = pool->GetEvent(jMix);
 	
 	if (fTwoTrackEfficiencyStudy)
-	{
-	  Float_t bSign = (fESD->GetMagneticField() > 0) ? 1 : -1;
-	  fHistos->TwoTrackEfficiency(tracks, bgTracks, bSign);
-	}
+	  fHistos->TwoTrackEfficiency(tracksClone, bgTracks, bSign);
 
-	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
+	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0));
+
+	if (fTwoTrackEfficiencyCut)
+	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign);
       }
     }
     
-    // create a list of reduced objects (to reduce memory consumption) and give ownership to event pool
-    TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
+    // ownership is with the pool now
     pool->UpdatePool(tracksClone);
     //pool->PrintInfo();
   }
-
-  delete tracks;
+  else
+    delete tracksClone;
 }
 
 TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tracks)
