@@ -13,7 +13,8 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
 				       Float_t ptMax       =  50.0,
 				       Bool_t  checkSDD    = false,
 				       Int_t   checkOption =     1,
-				       Bool_t  onlyPrim    = false)
+				       Bool_t  onlyPrim    = false,
+				       Bool_t corrStrange  = true)
 {
   
   // Get the pointer to the existing analysis manager via the static access method
@@ -40,6 +41,7 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
   // taskMB->SelectCollisionCandidates(AliVEvent::kMB);//MB  //now inside task
   taskMB->SetFilterBit(filterBit); // used only in AOD case
   taskMB->SetCheckSDD(checkSDD, checkOption);
+  taskMB->SetCorrStrangeness(corrStrange);
   taskMB->SetDebugLevel(debugLevel);
 
   //use this only for correction map plots -> Split contmaintion and rec efficiency
@@ -68,6 +70,7 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
     //taskHM->SelectCollisionCandidates(AliVEvent::kHighMult); // now inside task
     taskHM->SetFilterBit(filterBit); // used only in AOD case
     taskHM->SetCheckSDD(checkSDD, checkOption);
+    taskHM->SetCorrStrangeness(corrStrange);
     taskHM->SetDebugLevel(debugLevel);
 
     if(!format.CompareTo("esd")){
