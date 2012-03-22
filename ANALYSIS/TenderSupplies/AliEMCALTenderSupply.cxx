@@ -61,36 +61,47 @@ AliTenderSupply()
 ,fEMCALRecoUtils(0)
 ,fConfigName("")
 ,fDebugLevel(0)
-,fNonLinearFunc(AliEMCALRecoUtils::kNoCorrection) 
-,fNonLinearThreshold(30)      	
-,fReCalibCluster(kFALSE)	
+,fNonLinearFunc(-1) 
+,fNonLinearThreshold(-1)
+,fReCalibCluster(kFALSE)
 ,fUpdateCell(kFALSE)  
+,fCalibrateEnergy(kFALSE)
+,fCalibrateTime(kFALSE)
+,fDoNonLinearity(kFALSE)
+,fBadCellRemove(kFALSE)
+,fRejectExoticCells(kFALSE)
+,fRejectExoticClusters(kFALSE)
+,fClusterBadChannelCheck(kFALSE)
 ,fRecalClusPos(kFALSE)
 ,fFiducial(kFALSE) 
-,fNCellsFromEMCALBorder(1)	
-,fRecalDistToBadChannels(kFALSE)	
-,fInputTree(0)	
+,fNCellsFromEMCALBorder(-1)
+,fRecalDistToBadChannels(kFALSE)
+,fRecalShowerShape(kFALSE)
+,fInputTree(0)
 ,fInputFile(0)
 ,fFilepass(0) 
-,fMass(0.139)
-,fStep(20)
+,fMass(-1)
+,fStep(-1)
 ,fCutEtaPhiSum(kTRUE)
 ,fCutEtaPhiSeparate(kFALSE)
-,fRcut(0.05)	
-,fEtacut(0.025)	
-,fPhicut(0.05)	
+,fRcut(-1)
+,fEtacut(-1)
+,fPhicut(-1)
 ,fBasePath("")
 ,fReClusterize(kFALSE)
 ,fClusterizer(0)
 ,fGeomMatrixSet(kFALSE)
 ,fLoadGeomMatrices(kFALSE)
 ,fRecParam(0x0)
-,fDoTrackMatch(kTRUE)
+,fDoTrackMatch(kFALSE)
 ,fDoUpdateOnly(kFALSE)
 ,fUnfolder(0)
 ,fDigitsArr(0)
 ,fClusterArr(0)
-,fMisalignSurvey(kdefault)	
+,fMisalignSurvey(kdefault)  
+,fExoticCellFraction(-1)
+,fExoticCellDiffTime(-1)
+,fExoticCellMinAmplitude(-1)
 {
   // Default constructor.
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
@@ -102,38 +113,49 @@ AliTenderSupply(name,tender)
 ,fEMCALGeo(0x0)
 ,fEMCALGeoName("EMCAL_COMPLETEV1")
 ,fEMCALRecoUtils(0)
-,fConfigName("") 
+,fConfigName("")
 ,fDebugLevel(0)
-,fNonLinearFunc(AliEMCALRecoUtils::kNoCorrection)      	
-,fNonLinearThreshold(30)      	
-,fReCalibCluster(kFALSE)	
+,fNonLinearFunc(-1) 
+,fNonLinearThreshold(-1)        
+,fReCalibCluster(kFALSE)  
 ,fUpdateCell(kFALSE)  
+,fCalibrateEnergy(kFALSE)
+,fCalibrateTime(kFALSE)
+,fDoNonLinearity(kFALSE)
+,fBadCellRemove(kFALSE)
+,fRejectExoticCells(kFALSE)
+,fRejectExoticClusters(kFALSE)
+,fClusterBadChannelCheck(kFALSE)
 ,fRecalClusPos(kFALSE)
 ,fFiducial(kFALSE) 
-,fNCellsFromEMCALBorder(1)	
-,fRecalDistToBadChannels(kFALSE)	
-,fInputTree(0)	
+,fNCellsFromEMCALBorder(-1)  
+,fRecalDistToBadChannels(kFALSE)  
+,fRecalShowerShape(kFALSE)
+,fInputTree(0)  
 ,fInputFile(0)
-,fFilepass(0)
-,fMass(0.139)
-,fStep(20)
+,fFilepass(0) 
+,fMass(-1)
+,fStep(-1)
 ,fCutEtaPhiSum(kTRUE)
 ,fCutEtaPhiSeparate(kFALSE)
-,fRcut(0.05)
-,fEtacut(0.025)	
-,fPhicut(0.05)	
+,fRcut(-1)  
+,fEtacut(-1)  
+,fPhicut(-1)  
 ,fBasePath("")
 ,fReClusterize(kFALSE)
 ,fClusterizer(0)
 ,fGeomMatrixSet(kFALSE)
 ,fLoadGeomMatrices(kFALSE)
 ,fRecParam(0x0)
-,fDoTrackMatch(kTRUE)
+,fDoTrackMatch(kFALSE)
 ,fDoUpdateOnly(kFALSE)
 ,fUnfolder(0)
 ,fDigitsArr(0)
 ,fClusterArr(0)
-,fMisalignSurvey(kdefault)	
+,fMisalignSurvey(kdefault)  
+,fExoticCellFraction(-1)
+,fExoticCellDiffTime(-1)
+,fExoticCellMinAmplitude(-1)
 {
   // Named constructor
   
@@ -165,7 +187,7 @@ void AliEMCALTenderSupply::Init()
   // Initialise EMCAL tender.
 
   if (fDebugLevel>0) 
-    AliInfo("Init EMCAL Tender supply");	
+    AliInfo("Init EMCAL Tender supply"); 
   
   if (fConfigName.Length()>0 && gROOT->LoadMacro(fConfigName) >=0) {
     AliDebug(1, Form("Loading settings from macro %s", fConfigName.Data()));
@@ -177,39 +199,83 @@ void AliEMCALTenderSupply::Init()
     fNonLinearFunc          = tender->fNonLinearFunc;
     fNonLinearThreshold     = tender->fNonLinearThreshold;
     fReCalibCluster         = tender->fReCalibCluster;
+    fUpdateCell             = tender->fUpdateCell;
     fRecalClusPos           = tender->fRecalClusPos;
-    fFiducial	            = tender->fFiducial;
+    fCalibrateEnergy        = tender->fCalibrateEnergy;
+    fCalibrateTime          = tender->fCalibrateTime;
+    fFiducial               = tender->fFiducial;
     fNCellsFromEMCALBorder  = tender->fNCellsFromEMCALBorder;
     fRecalDistToBadChannels = tender->fRecalDistToBadChannels;    
+    fRecalShowerShape       = tender->fRecalShowerShape;
+    fClusterBadChannelCheck = tender->fClusterBadChannelCheck;
+    fBadCellRemove          = tender->fBadCellRemove;
+    fRejectExoticCells      = tender->fRejectExoticCells;
+    fRejectExoticClusters   = tender->fRejectExoticClusters;
     fMass                   = tender->fMass;
     fStep                   = tender->fStep;
+    fCutEtaPhiSum           = tender->fCutEtaPhiSum;
+    fCutEtaPhiSeparate      = tender->fCutEtaPhiSeparate;
     fRcut                   = tender->fRcut;
     fEtacut                 = tender->fEtacut;
     fPhicut                 = tender->fPhicut;
     fReClusterize           = tender->fReClusterize;
     fLoadGeomMatrices       = tender->fLoadGeomMatrices;
     fRecParam               = tender->fRecParam;
+    fDoNonLinearity         = tender->fDoNonLinearity;
+    fDoTrackMatch           = tender->fDoTrackMatch;
+    fDoUpdateOnly           = tender->fDoUpdateOnly;
+    fMisalignSurvey         = tender->fMisalignSurvey;
+    fExoticCellFraction     = tender->fExoticCellFraction;
+    fExoticCellDiffTime     = tender->fExoticCellDiffTime;
+    fExoticCellMinAmplitude = tender->fExoticCellMinAmplitude;
+
     for(Int_t i = 0; i < 10; i++) 
       fEMCALMatrix[i] = tender->fEMCALMatrix[i] ;
   }
 
-  // Init geometry	
+  // Init geometry  
   fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
   
   // Initialising non-linearity parameters
-  fEMCALRecoUtils->SetNonLinearityThreshold(fNonLinearThreshold);
-  fEMCALRecoUtils->SetNonLinearityFunction(fNonLinearFunc);
+  if( fNonLinearThreshold != -1 )
+    fEMCALRecoUtils->SetNonLinearityThreshold(fNonLinearThreshold);
+  if( fNonLinearFunc != -1 )
+    fEMCALRecoUtils->SetNonLinearityFunction(fNonLinearFunc);
+
+  // missalignment function
+  fEMCALRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
+
+  // fiducial cut
+  // do not do the eta0 fiducial cut
+  if( fNCellsFromEMCALBorder != -1 )
+    fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(fNCellsFromEMCALBorder);
+  fEMCALRecoUtils->SwitchOnNoFiducialBorderInEMCALEta0();
+    
+  // exotic cell rejection
+  if( fExoticCellFraction != -1 )
+    fEMCALRecoUtils->SetExoticCellFractionCut( fExoticCellFraction );
+  if( fExoticCellDiffTime != -1 )
+    fEMCALRecoUtils->SetExoticCellDiffTimeCut( fExoticCellDiffTime );
+  if( fExoticCellMinAmplitude != -1 )
+    fEMCALRecoUtils->SetExoticCellMinAmplitudeCut( fExoticCellMinAmplitude );
+
+  // Setting track matching parameters ... mass, step size and residual cut
+  if( fMass != -1 )
+    fEMCALRecoUtils->SetMass(fMass);
+  if( fStep != -1 )
+    fEMCALRecoUtils->SetStep(fStep);
   
-  // Setting mass, step size and residual cut
-  fEMCALRecoUtils->SetMass(fMass);
-  fEMCALRecoUtils->SetStep(fStep);
+  // spatial cut based on separate eta/phi or common processing
   if(fCutEtaPhiSum){ 
     fEMCALRecoUtils->SwitchOnCutEtaPhiSum(); 
-    fEMCALRecoUtils->SetCutR(fRcut);
+    if( fRcut != -1 )
+      fEMCALRecoUtils->SetCutR(fRcut);
   } else if (fCutEtaPhiSeparate) {
     fEMCALRecoUtils->SwitchOnCutEtaPhiSeparate();
-    fEMCALRecoUtils->SetCutEta(fEtacut);
-    fEMCALRecoUtils->SetCutPhi(fPhicut);
+    if( fEtacut != -1 )
+      fEMCALRecoUtils->SetCutEta(fEtacut);
+    if( fPhicut != -1 )
+      fEMCALRecoUtils->SetCutPhi(fPhicut);
   }
 }
 
@@ -227,33 +293,52 @@ void AliEMCALTenderSupply::ProcessEvent()
   // Initialising parameters once per run number
   if (fTender->RunChanged()){ 
 
+    // initiate default reco params if not supplied by user
     if (!fRecParam)
       InitRecParam();
 
+    // get pass
     GetPass();
 
+    // define what recalib parameters are needed for various switches
+    // this is based on implementation in AliEMCALRecoUtils
+    Bool_t needBadChannels = fBadCellRemove   | fClusterBadChannelCheck | fRecalDistToBadChannels | fReClusterize;
+    Bool_t needRecalib     = fCalibrateEnergy | fReClusterize;
+    Bool_t needTimecalib   = fCalibrateTime   | fReClusterize;
+    Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
+    Bool_t needClusterizer = fReClusterize;
+
     // Init bad channels
-    Int_t fInitBC = InitBadChannels();
-    if (fInitBC==0)
+    if( needBadChannels )
     {
-      AliError("InitBadChannels returned false, returning");
-      return;
+      Int_t fInitBC = InitBadChannels();
+      if (fInitBC==0)
+      {
+        AliError("InitBadChannels returned false, returning");
+        return;
+      }
+      if (fInitBC==1)
+      {
+        AliInfo("InitBadChannels OK");
+      }
+      if (fInitBC>1)
+      {
+        AliInfo(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+      }
     }
 
-    if (fInitBC>1)
-    {
-      AliInfo(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
-    }
-
-    if (fInitBC) 
-      fUpdateCell = kTRUE;
-
-    if (fReCalibCluster || fUpdateCell) { 
+    // init recalibration factors
+    if( needRecalib ) 
+    { 
       Int_t fInitRecalib = InitRecalib();
       if (fInitRecalib==0)
       {
         AliError("InitRecalib returned false, returning");
         return;
+      }
+      if (fInitRecalib==1)
+      {
+        AliInfo("InitRecalib OK");
       }
       if (fInitRecalib>1)
       {
@@ -262,27 +347,114 @@ void AliEMCALTenderSupply::ProcessEvent()
       }
     }
     
-    if (fRecalClusPos || fReClusterize || fUpdateCell) { 
-      if (!InitMisalignMatrix()) { 
+    // init time calibration
+    if( needTimecalib )
+    {
+      Int_t initTC = InitTimeCalibration();
+      if ( !initTC ) 
+      {
+        AliError("InitTimeCalibration returned false, returning");
+        return;
+      }
+      if (initTC==1)
+      {
+        AliInfo("InitTimeCalib OK");
+      }
+      if( initTC > 1 )
+      {
+        AliInfo(Form("No external time calibration set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+      }
+    }
+
+    // init misalignment matrix
+    if( needMisalign ) 
+    { 
+      if (!InitMisalignMatrix()) {
+        
         AliError("InitMisalignmentMatrix returned false, returning");
         return;
       }
+      else
+        AliInfo("InitMisalignMatrix OK");
     }
     
-    if (fReClusterize || fUpdateCell) {
-      if (!InitClusterization()) {
+    // init clusterizer
+    if( needClusterizer ) 
+    {
+      if (!InitClusterization()) 
+      {
         AliError("InitClusterization returned false, returning");
         return;
       }
+      else
+        AliInfo("InitClusterization OK");
     }
     
     if(fDebugLevel>1) 
       fEMCALRecoUtils->Print("");
   }
   
+  // disable implied switches -------------------------------------------------
+  // AliEMCALRecoUtils or clusterizer functions alredy include some
+  // recalibration so based on those implied callibration te switches
+  // here are disabled to avoid duplication
+    
+  // clusterizer does cluster energy recalibration, position recomputation
+  // and shower shape
+  if( fReClusterize )
+  {
+    fReCalibCluster   = kFALSE;
+    fRecalClusPos     = kFALSE;
+    fRecalShowerShape = kFALSE;
+  }
+  
+  // CONFIGURE THE RECO UTILS -------------------------------------------------
+  // configure the reco utils
+  // this option does energy recalibration
+  if( fCalibrateEnergy )
+    fEMCALRecoUtils->SwitchOnRecalibration();
+  else
+    fEMCALRecoUtils->SwitchOffRecalibration();
+  
+  // allows time calibration
+  if( fCalibrateTime )
+    fEMCALRecoUtils->SwitchOnTimeRecalibration();
+  else
+    fEMCALRecoUtils->SwitchOffTimeRecalibration();
+
+  // allows to zero bad cells
+  if( fBadCellRemove )
+    fEMCALRecoUtils->SwitchOnBadChannelsRemoval();
+  else
+    fEMCALRecoUtils->SwitchOffBadChannelsRemoval();
+  
+  // distance to bad channel recalibration
+  if( fRecalDistToBadChannels )
+    fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation();
+  else
+    fEMCALRecoUtils->SwitchOffDistToBadChannelRecalculation();
+
+  // exclude exotic cells
+  if( fRejectExoticCells )
+    fEMCALRecoUtils->SwitchOnRejectExoticCell();
+  else
+    fEMCALRecoUtils->SwitchOffRejectExoticCell();
+  
+  // exclude clusters with exotic cells
+  if( fRejectExoticClusters )
+    fEMCALRecoUtils->SwitchOnRejectExoticCluster();
+  else
+    fEMCALRecoUtils->SwitchOffRejectExoticCluster();
+
+  // TODO: not implemented switches
+  // SwitchOnClusterEnergySmearing
+  // SwitchOnRunDepCorrection
+
+  // START PROCESSING ---------------------------------------------------------
   // Test if cells present
   AliESDCaloCells *cells= event->GetEMCALCells();
-  if (cells->GetNumberOfCells()<=0) {
+  if (cells->GetNumberOfCells()<=0) 
+  {
     if(fDebugLevel>1) 
       AliWarning(Form("Number of EMCAL cells = %d, returning", cells->GetNumberOfCells()));
     return;
@@ -290,22 +462,36 @@ void AliEMCALTenderSupply::ProcessEvent()
   
   if (fDebugLevel>2)
     AliInfo(Form("Re-calibrate cluster %d\n",fReCalibCluster));
- 
-  // Recalibrate cells
-  if (fUpdateCell)
+
+  // mark the cells not recalibrated in case of selected
+  // time, energy recalibration or bad channel removal
+  if( fCalibrateEnergy || fCalibrateTime || fBadCellRemove )
+    fEMCALRecoUtils->ResetCellsCalibrated();
+  
+  // CELL RECALIBRATION -------------------------------------------------------
+  // cell objects will be updated
+  // the cell calibrations are also processed locally any time those are needed
+  // in case that the cell objects are not to be updated here for later use
+  if( fUpdateCell )
   {
+    // do the update
+    // includes exotic cell check in the UpdateCells function - is not provided
+    // by the reco utils
     UpdateCells();
+
+    // switch off recalibrations so those are not done multiple times
+    // this is just for safety, the recalibrated flag of cell object
+    // should not allow for farther processing anyways
+    fEMCALRecoUtils->SwitchOffRecalibration();
+    fEMCALRecoUtils->SwitchOffTimeRecalibration();  
+  
     if (fDoUpdateOnly)
       return;
-    if (!fReCalibCluster||!fRecalDistToBadChannels||!fRecalClusPos)
-      fReClusterize  = kTRUE;
   }
 
-  // Reclusterize
+  // RECLUSTERIZATION ---------------------------------------------------------
   if (fReClusterize)
   {
-    fRecalClusPos  = kFALSE; // Done in reclusterization, do nothing
-    fReCalibCluster= kFALSE; // Done in reclusterization, do nothing
     FillDigitsArray();
     Clusterize();
     UpdateClusters();
@@ -319,35 +505,105 @@ void AliEMCALTenderSupply::ProcessEvent()
     AliWarning(Form("No cluster array, number of cells in event = %d, returning", cells->GetNumberOfCells()));
     return;
   }
-  
+
+  // PROCESS SINGLE CLUSTER RECALIBRATION -------------------------------------
+  // now go through clusters one by one and process separate correction
+  // as those were defined or not
   Int_t nclusters = clusArr->GetEntriesFast();
-  for (Int_t icluster=0; icluster < nclusters; ++icluster) { 
+  for (Int_t icluster=0; icluster < nclusters; ++icluster) 
+  { 
     AliVCluster *clust = static_cast<AliVCluster*>(clusArr->At(icluster));
     if (!clust) 
       continue;
     if  (!clust->IsEMCAL()) 
       continue;
-    if (fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo, clust->GetCellsAbsId(), clust->GetNCells())) {
-      delete clusArr->RemoveAt(icluster);
-      continue; //todo is it really needed to remove it? Or should we flag it?
-    }
-    
-    if (fFiducial){
-      if (!fEMCALRecoUtils->CheckCellFiducialRegion(fEMCALGeo, clust, cells)){
+
+    // REMOVE CLUSTERS WITH BAD CELLS -----------------------------
+    if( fClusterBadChannelCheck )
+    {
+      // careful, the the ClusterContainsBadChannel is dependent on
+      // SwitchOnBadChannelsRemoval, switching it ON automatically
+      // and returning to original value after processing
+      Bool_t badRemoval = fEMCALRecoUtils->IsBadChannelsRemovalSwitchedOn();
+      fEMCALRecoUtils->SwitchOnBadChannelsRemoval();
+      
+      Bool_t badResult = fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo, clust->GetCellsAbsId(), clust->GetNCells());
+
+      // switch the bad channels removal back
+      if( ! badRemoval )
+        fEMCALRecoUtils->SwitchOffBadChannelsRemoval();
+      
+      if( badResult )
+      {
         delete clusArr->RemoveAt(icluster);
-        continue; // todo it would be nice to store the distance
+        continue; //TODO is it really needed to remove it? Or should we flag it?
       }
     }
     
-    if(fRecalDistToBadChannels) 
-      fEMCALRecoUtils->RecalculateClusterDistanceToBadChannel(fEMCALGeo, cells, clust);  
-    if(fReCalibCluster) 
+    // REMOVE EXOTIC CLUSTERS -------------------------------------
+    // does process local cell recalibration energy and time without replacing
+    // the global cell values, in case of no cell recalib done yet
+    if( fRejectExoticClusters )
+    {
+      // careful, the IsExoticCluster is dependent on
+      // SwitchOnRejectExoticCell, switching it ON automatically
+      // and returning to original value after processing
+      Bool_t exRemoval = fEMCALRecoUtils->IsRejectExoticCell();
+      fEMCALRecoUtils->SwitchOnRejectExoticCell();
+
+      // get bunch crossing
+      Int_t bunchCrossNo = fTender->GetEvent()->GetBunchCrossNumber();
+
+      Bool_t exResult = fEMCALRecoUtils->IsExoticCluster(clust, cells, bunchCrossNo );
+
+      // switch the exotic channels removal back
+      if( ! exRemoval )
+        fEMCALRecoUtils->SwitchOffRejectExoticCell();
+      
+      if( exResult )
+      {
+        delete clusArr->RemoveAt(icluster);
+        continue; //TODO is it really needed to remove it? Or should we flag it?
+      }
+    }
+    
+    // FIDUCIAL CUT -----------------------------------------------
+    if (fFiducial)
+    {
+      // depends on SetNumberOfCellsFromEMCALBorder
+      // SwitchOnNoFiducialBorderInEMCALEta0
+      if (!fEMCALRecoUtils->CheckCellFiducialRegion(fEMCALGeo, clust, cells)){
+        delete clusArr->RemoveAt(icluster);
+        continue; //TODO it would be nice to store the distance
+      }
+    }
+    
+    // CLUSTER ENERGY ---------------------------------------------
+    // does process local cell recalibration energy and time without replacing
+    // the global cell values, in case of no cell recalib done yet
+    if( fReCalibCluster ) 
       fEMCALRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, clust, cells);
-    if(fRecalClusPos) 
+
+    // CLUSTER POSITION -------------------------------------------
+    // does process local cell energy recalibration, if enabled and cells
+    // not calibratied yet
+    if( fRecalClusPos ) 
       fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, cells, clust);
     
-    Float_t correctedEnergy = fEMCALRecoUtils->CorrectClusterEnergyLinearity(clust);
-    clust->SetE(correctedEnergy);
+    // SHOWER SHAPE -----------------------------------------------
+    if( fRecalShowerShape )
+      fEMCALRecoUtils->RecalculateClusterShowerShapeParameters(fEMCALGeo, cells, clust);  
+
+    // NONLINEARITY -----------------------------------------------
+    if( fDoNonLinearity )
+    {
+      Float_t correctedEnergy = fEMCALRecoUtils->CorrectClusterEnergyLinearity(clust);
+      clust->SetE(correctedEnergy);
+    }
+
+    // DISTANCE TO BAD CHANNELS -----------------------------------
+    if( fRecalDistToBadChannels )
+      fEMCALRecoUtils->RecalculateClusterDistanceToBadChannel(fEMCALGeo, cells, clust);  
   }
 
   clusArr->Compress();
@@ -355,8 +611,9 @@ void AliEMCALTenderSupply::ProcessEvent()
   if (!fDoTrackMatch)
     return;
 
-  // Track matching
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
+  // TRACK MATCHING -----------------------------------------------------------
+  if (!TGeoGlobalMagField::Instance()->GetField()) 
+  {
     event->InitMagneticField();
   }
   
@@ -374,18 +631,18 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   if (!event) 
     return kFALSE;
   
-  if (fGeomMatrixSet) {
-    AliInfo("Misalignment matrix already set");	
+  if (fGeomMatrixSet) 
+  {
+    AliInfo("Misalignment matrix already set");  
     return kTRUE;
   }
   
   if (fDebugLevel>0) 
-    AliInfo("Initialising misalignment matrix");	
-  
-  fEMCALRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
+    AliInfo("Initialising misalignment matrix");  
   
   if (fLoadGeomMatrices) {
-    for(Int_t mod=0; mod < fEMCALGeo->GetNumberOfSuperModules(); ++mod) {
+    for(Int_t mod=0; mod < fEMCALGeo->GetNumberOfSuperModules(); ++mod)
+    {
       if (fEMCALMatrix[mod]){
         if(fDebugLevel > 2) 
           fEMCALMatrix[mod]->Print();
@@ -399,45 +656,51 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   Int_t runGM = event->GetRunNumber();
   TObjArray *mobj = 0;
 
- if(fMisalignSurvey == kdefault){ //take default alignment corresponding to run no
+ if(fMisalignSurvey == kdefault)
+ { //take default alignment corresponding to run no
     AliOADBContainer emcalgeoCont(Form("emcal"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(runGM,"EmcalMatrices");
  }
 
- if(fMisalignSurvey == kSurveybyS){ //take alignment at sector level
+ if(fMisalignSurvey == kSurveybyS)
+ { //take alignment at sector level
   if (runGM <= 140000) { //2010 data
     AliOADBContainer emcalgeoCont(Form("emcal2010"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
     
-  } else if (runGM>140000) { // 2011 LHC11a pass1 data
+  } else if (runGM>140000)
+  { // 2011 LHC11a pass1 data
     AliOADBContainer emcalgeoCont(Form("emcal2011"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
-    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");			
+    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");      
   }
  }
 
- if(fMisalignSurvey == kSurveybyM){ //take alignment at module level
+ if(fMisalignSurvey == kSurveybyM)
+ { //take alignment at module level
   if (runGM <= 140000) { //2010 data
     AliOADBContainer emcalgeoCont(Form("emcal2010"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
     
-  } else if (runGM>140000) { // 2011 LHC11a pass1 data
-    
+  } else if (runGM>140000) 
+  { // 2011 LHC11a pass1 data
     AliOADBContainer emcalgeoCont(Form("emcal2011"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
-    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byM");			
+    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byM");      
   }
  }
 
-  if(!mobj){
+  if(!mobj)
+  {
     AliFatal("Geometry matrix array not found");
     return kFALSE;
   }
   
- for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+ for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+ {
    fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
    fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
    fEMCALMatrix[mod]->Print();
@@ -457,23 +720,20 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   if (fDebugLevel>0) 
     AliInfo("Initialising Bad channel map");
   
-  if (fFiducial){
-    fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(fNCellsFromEMCALBorder);
-    fEMCALRecoUtils->SwitchOnNoFiducialBorderInEMCALEta0();
-  }
-  
-  fEMCALRecoUtils->SwitchOnBadChannelsRemoval();
-  if (fRecalDistToBadChannels) 
-    fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation();
+  // init default maps first
+  if( !fEMCALRecoUtils->GetEMCALBadChannelStatusMapArray() )
+    fEMCALRecoUtils->InitEMCALBadChannelStatusMap() ;
   
   Int_t runBC = event->GetRunNumber();
   
   AliOADBContainer *contBC = new AliOADBContainer("");
-  if (fBasePath!=""){ //if fBasePath specified in the ->SetBasePath()
+  if (fBasePath!="")
+  { //if fBasePath specified in the ->SetBasePath()
     if (fDebugLevel>0) AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
     
     TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
-    if (!fbad || fbad->IsZombie()){
+    if (!fbad || fbad->IsZombie())
+    {
       AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
       return 0;
     }  
@@ -481,11 +741,14 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     if (fbad) delete fbad;
     
     contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");    
-  } else { // Else choose the one in the $ALICE_ROOT directory
+  } 
+  else 
+  { // Else choose the one in the $ALICE_ROOT directory
     if (fDebugLevel>0) AliInfo("Loading Bad Channels OADB from $ALICE_ROOT/OADB/EMCAL");
     
     TFile *fbad=new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root","read");
-    if (!fbad || fbad->IsZombie()){
+    if (!fbad || fbad->IsZombie())
+    {
       AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root was not found");
       return 0;
     }  
@@ -496,13 +759,15 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   }
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
-  if (!arrayBC){
+  if (!arrayBC)
+  {
     AliError(Form("No external hot channel set for run number: %d", runBC));
     return 2; 
   }
   
   TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); // Here, it looks for a specific pass
-  if (!arrayBCpass){
+  if (!arrayBCpass)
+  {
     AliError(Form("No external hot channel set for: %d -%s", runBC,fFilepass.Data()));
     return 2; 
   }
@@ -510,13 +775,15 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   if (fDebugLevel>0) arrayBCpass->Print();
 
   Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i) {
+  for (Int_t i=0; i<sms; ++i) 
+  {
     TH2I *h = fEMCALRecoUtils->GetEMCALChannelStatusMap(i);
     if (h)
       delete h;
     h=(TH2I*)arrayBCpass->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
 
-    if (!h) {
+    if (!h) 
+    {
       AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
       continue;
     }
@@ -538,15 +805,20 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (fDebugLevel>0) 
     AliInfo("Initialising recalibration factors");
   
-  fEMCALRecoUtils->SwitchOnRecalibration();
+  // init default maps first
+  if( !fEMCALRecoUtils->GetEMCALRecalibrationFactorsArray() )
+    fEMCALRecoUtils->InitEMCALRecalibrationFactors() ;
+
   Int_t runRC = event->GetRunNumber();
       
   AliOADBContainer *contRF=new AliOADBContainer("");
-  if (fBasePath!="") { //if fBasePath specified in the ->SetBasePath()
-    if (fDebugLevel>0)	AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
+  if (fBasePath!="") 
+  { //if fBasePath specified in the ->SetBasePath()
+    if (fDebugLevel>0)  AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
     
     TFile *fRecalib= new TFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read");
-    if (!fRecalib || fRecalib->IsZombie()) {
+    if (!fRecalib || fRecalib->IsZombie()) 
+    {
       AliFatal(Form("EMCALRecalib.root not found in %s",fBasePath.Data()));
       return 0;
     }
@@ -555,11 +827,13 @@ Int_t AliEMCALTenderSupply::InitRecalib()
     
     contRF->InitFromFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"AliEMCALRecalib");
   }
-    else{ // Else choose the one in the $ALICE_ROOT directory
-      if (fDebugLevel>0)	AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
+    else
+    { // Else choose the one in the $ALICE_ROOT directory
+      if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
       
       TFile *fRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","read");
-      if (!fRecalib || fRecalib->IsZombie()) {
+      if (!fRecalib || fRecalib->IsZombie()) 
+      {
         AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root was not found");
         return 0;
       }
@@ -570,19 +844,22 @@ Int_t AliEMCALTenderSupply::InitRecalib()
     }
 
   TObjArray *recal=(TObjArray*)contRF->GetObject(runRC); //GetObject(int runnumber)
-  if (!recal){
+  if (!recal)
+  {
     AliError(Form("No Objects for run: %d",runRC));
     return 2;
   } 
 
   TObjArray *recalpass=(TObjArray*)recal->FindObject(fFilepass);
-  if (!recalpass){
+  if (!recalpass)
+  {
     AliError(Form("No Objects for run: %d - %s",runRC,fFilepass.Data()));
     return 2;
   }
 
   TObjArray *recalib=(TObjArray*)recalpass->FindObject("Recalib");
-  if (!recalib){
+  if (!recalib)
+  {
     AliError(Form("No Recalib histos found for  %d - %s",runRC,fFilepass.Data())); 
     return 2;
   }
@@ -590,12 +867,14 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (fDebugLevel>0) recalib->Print();
 
   Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i) {
+  for (Int_t i=0; i<sms; ++i) 
+  {
     TH2F *h = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(i);
     if (h)
       delete h;
     h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
-    if (!h) {
+    if (!h) 
+    {
       AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
       continue;
     }
@@ -603,6 +882,90 @@ Int_t AliEMCALTenderSupply::InitRecalib()
     fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
   }
   return 1;
+}
+
+//_____________________________________________________
+Int_t AliEMCALTenderSupply::InitTimeCalibration()
+{
+  // Initialising bad channel maps
+  AliESDEvent *event = fTender->GetEvent();
+  if (!event) 
+    return 0;
+  
+  if (fDebugLevel>0) 
+    AliInfo("Initialising time calibration map");
+  
+  // init default maps first
+  if( !fEMCALRecoUtils->GetEMCALTimeRecalibrationFactorsArray() )
+    fEMCALRecoUtils->InitEMCALTimeRecalibrationFactors() ;
+
+  Int_t runBC = event->GetRunNumber();
+  
+  AliOADBContainer *contBC = new AliOADBContainer("");
+  if (fBasePath!="")
+  { //if fBasePath specified in the ->SetBasePath()
+    if (fDebugLevel>0) AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
+    
+    TFile *fbad=new TFile(Form("%s/EMCALTimeCalib.root",fBasePath.Data()),"read");
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal(Form("EMCALTimeCalib.root was not found in the path provided: %s",fBasePath.Data()));
+      return 0;
+    }  
+    
+    if (fbad) delete fbad;
+    
+    contBC->InitFromFile(Form("%s/EMCALTimeCalib.root",fBasePath.Data()),"AliEMCALTimeCalib");    
+  } 
+  else 
+  { // Else choose the one in the $ALICE_ROOT directory
+    if (fDebugLevel>0) AliInfo("Loading time calibration OADB from $ALICE_ROOT/OADB/EMCAL");
+    
+    TFile *fbad=new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALTimeCalib.root","read");
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALTimeCalib.root was not found");
+      return 0;
+    }  
+      
+    if (fbad) delete fbad;
+    
+    contBC->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALTimeCalib.root","AliEMCALTimeCalib"); 
+  }
+  
+  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
+  if (!arrayBC)
+  {
+    AliError(Form("No external time calibration set for run number: %d", runBC));
+    return 2; 
+  }
+  
+  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); // Here, it looks for a specific pass
+  if (!arrayBCpass)
+  {
+    AliError(Form("No external time calibration set for: %d -%s", runBC,fFilepass.Data()));
+    return 2; 
+  }
+
+  if (fDebugLevel>0) arrayBCpass->Print();
+
+  for( Int_t i = 0; i < 4; i++ )
+  {
+    TH1F *h = fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactors( i );
+    if( h )
+      delete h;
+    
+    h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
+    
+    if (!h)
+    {
+      AliError(Form("Can not get hAllTimeAvBC%d",i));
+      continue;
+    }
+    h->SetDirectory(0);
+    fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+  }
+  return 1;  
 }
 
 //_____________________________________________________
@@ -615,14 +978,27 @@ void AliEMCALTenderSupply::UpdateCells()
   AliESDCaloCells *cells = fTender->GetEvent()->GetEMCALCells();
   Int_t bunchCrossNo = fTender->GetEvent()->GetBunchCrossNumber();
 
-  fEMCALRecoUtils->ResetCellsCalibrated();
-  fEMCALRecoUtils->SwitchOnRecalibration();
-  fEMCALRecoUtils->SwitchOnTimeRecalibration();
-
-  fEMCALRecoUtils->RecalibrateCells(cells, bunchCrossNo);    
-
-  fEMCALRecoUtils->SwitchOffRecalibration();
-  fEMCALRecoUtils->SwitchOffTimeRecalibration();
+  fEMCALRecoUtils->RecalibrateCells(cells, bunchCrossNo); 
+  
+  // remove exotic cells - loop through cells and zero the exotic ones
+  // just like with bad cell rejection in reco utils (inside RecalibrateCells)
+  if( fRejectExoticCells )
+  {
+    Int_t    absId  =-1;
+    Bool_t   isExot = kFALSE;
+  
+    // loop through cells
+    Int_t nEMcell  = cells->GetNumberOfCells() ;  
+    for (Int_t iCell = 0; iCell < nEMcell; iCell++) 
+    { 
+      absId  = cells->GetCellNumber(iCell);
+    
+      isExot = fEMCALRecoUtils->IsExoticCell( absId, cells, bunchCrossNo ); 
+      // zero if exotic
+      if( isExot )
+        cells->SetCell( iCell, absId, 0.0, 0.0 );
+    } // cell loop
+  } // reject exotic cells
 
   cells->Sort();
 }
@@ -639,11 +1015,14 @@ void AliEMCALTenderSupply::InitRecParam()
   fRecParam = new AliEMCALRecParam;
   const AliESDRun *run = fTender->GetEvent()->GetESDRun();
   TString bt(run->GetBeamType());
-  if (bt=="A-A") {
+  if (bt=="A-A") 
+  {
     fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
     fRecParam->SetClusteringThreshold(0.100);
     fRecParam->SetMinECut(0.050);
-  } else {
+  } 
+  else 
+  {
     fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
     fRecParam->SetClusteringThreshold(0.100);
     fRecParam->SetMinECut(0.050);
@@ -668,12 +1047,15 @@ Bool_t AliEMCALTenderSupply::InitClusterization()
     fClusterizer = new AliEMCALClusterizerv1 (fEMCALGeo);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
     fClusterizer = new AliEMCALClusterizerv2(fEMCALGeo);
-  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) {
+  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) 
+  {
     AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(fEMCALGeo);
     clusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
     clusterizer->SetNColDiff(fRecParam->GetNColDiff());
     fClusterizer = clusterizer;
-  } else {
+  } 
+  else 
+  {
     AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
     return kFALSE;
   }
@@ -691,11 +1073,14 @@ Bool_t AliEMCALTenderSupply::InitClusterization()
   fClusterizer->SetJustClusters          ( kTRUE                               );  
   
   // In case of unfolding after clusterization is requested, set the corresponding parameters
-  if (fRecParam->GetUnfold()) {
-    for (Int_t i = 0; i < 8; ++i) {
+  if (fRecParam->GetUnfold()) 
+  {
+    for (Int_t i = 0; i < 8; ++i) 
+    {
       fClusterizer->SetSSPars(i, fRecParam->GetSSPars(i));
     }
-    for (Int_t i = 0; i < 3; ++i) {
+    for (Int_t i = 0; i < 3; ++i)
+    {
       fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
       fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
     }
@@ -720,7 +1105,8 @@ void AliEMCALTenderSupply::FillDigitsArray()
   fDigitsArr->Clear("C");
   AliESDCaloCells *cells = event->GetEMCALCells();
   Int_t ncells = cells->GetNumberOfCells();
-  for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
+  for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) 
+  {
     Double_t cellAmplitude=0, cellTime=0;
     Short_t  cellNumber=0;
 
@@ -766,21 +1152,26 @@ void AliEMCALTenderSupply::UpdateClusters()
   TClonesArray *clus = dynamic_cast<TClonesArray*>(event->FindListObject("caloClusters"));
   if (!clus) 
     clus = dynamic_cast<TClonesArray*>(event->FindListObject("CaloClusters"));
-  if (!clus) {
+  if (!clus) 
+  {
     AliError(" Null pointer to calo clusters array, returning");
     return;
   }
   
   Int_t nents = clus->GetEntriesFast();
-  for (Int_t i=0; i < nents; ++i) {
+  for (Int_t i=0; i < nents; ++i) 
+  {
     AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->At(i));
     if (!c)
       continue;
     if (c->IsEMCAL())
       delete clus->RemoveAt(i);
   }
+  
   clus->Compress();
+  
   RecPoints2Clusters(clus);
+  
 }
 
 //_____________________________________________________
@@ -794,7 +1185,8 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     return;
 
   Int_t ncls = fClusterArr->GetEntriesFast();
-  for(Int_t i=0, nout=clus->GetEntriesFast(); i < ncls; ++i) {
+  for(Int_t i=0, nout=clus->GetEntriesFast(); i < ncls; ++i) 
+  {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
     
     Int_t ncellsTrue = 0;
@@ -803,7 +1195,8 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     Double32_t ratios[ncells];
     Int_t *dlist = recpoint->GetDigitsList();
     Float_t *elist = recpoint->GetEnergiesList();
-    for (Int_t c = 0; c < ncells; ++c) {
+    for (Int_t c = 0; c < ncells; ++c) 
+    {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncellsTrue] = digit->GetId();
       ratios[ncellsTrue] = elist[c]/digit->GetAmplitude();
@@ -812,7 +1205,8 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
       ++ncellsTrue;
     }
     
-    if (ncellsTrue < 1) {
+    if (ncellsTrue < 1) 
+    {
       AliWarning("Skipping cluster with no cells");
       continue;
     }
@@ -852,7 +1246,8 @@ void AliEMCALTenderSupply::GetPass()
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   fInputTree = mgr->GetTree();
   
-  if (!fInputTree) {
+  if (!fInputTree) 
+  {
     AliError("Pointer to tree = 0, returning");
     return;
   }
@@ -867,7 +1262,8 @@ void AliEMCALTenderSupply::GetPass()
   if      (fname.Contains("pass1")) fFilepass = TString("pass1");
   else if (fname.Contains("pass2")) fFilepass = TString("pass2");
   else if (fname.Contains("pass3")) fFilepass = TString("pass3");
-  else {
+  else 
+  {
     AliError(Form("Pass number string not found: %s", fname.Data()));
     return;            
   }

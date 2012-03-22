@@ -56,23 +56,29 @@ public:
   void     SetNonLinearityThreshold(Int_t threshold)      { fNonLinearThreshold = threshold  ;} //only for Alexei's non linearity correction
   Int_t    GetNonLinearityThreshold()               const { return fNonLinearThreshold       ;}
 
+  void     SwitchOnNonLinearityCorrection()               { fDoNonLinearity = kTRUE          ;}
+  void     SwitchOffNonLinearityCorrection()              { fDoNonLinearity = kFALSE         ;}
+
   void     SwitchOnReCalibrateCluster()                   { fReCalibCluster = kTRUE          ;}
   void     SwitchOffReCalibrateCluster()                  { fReCalibCluster = kFALSE         ;}
 
   void     SwitchOnRecalculateClusPos()                   { fRecalClusPos = kTRUE            ;}
   void     SwitchOffRecalculateClusPos()                  { fRecalClusPos = kFALSE           ;}
 
-  void 	   SetMisalignmentMatrixSurvey(Int_t misalignSurvey) { fMisalignSurvey = misalignSurvey ;}
-  Int_t	   GetMisalignmentMatrixSurvey() const               { return fMisalignSurvey           ;}	  
+  void      SetMisalignmentMatrixSurvey(Int_t misalignSurvey) { fMisalignSurvey = misalignSurvey ;}
+  Int_t     GetMisalignmentMatrixSurvey() const               { return fMisalignSurvey           ;}    
 
   void     SwitchOnCellFiducialRegion()                   { fFiducial = kTRUE                ;}
   void     SwitchOffCellFiducialRegion()                  { fFiducial = kFALSE               ;}
 
-  void     SetNumberOfcellsFromEMCALBorder(Int_t n)       { fNCellsFromEMCALBorder = n       ;}
-  Int_t    GetNumberOfcellsFromEMCALBorder()        const { return fNCellsFromEMCALBorder    ;}
+  void     SetNumberOfCellsFromEMCALBorder(Int_t n)       { fNCellsFromEMCALBorder = n       ;}
+  Int_t    GetNumberOfCellsFromEMCALBorder()        const { return fNCellsFromEMCALBorder    ;}
 
   void     SwitchOnRecalDistBadChannel()                  { fRecalDistToBadChannels = kTRUE  ;}
   void     SwitchOffRecalDistBadChannel()                 { fRecalDistToBadChannels = kFALSE ;}
+
+  void     SwitchOnRecalShowerShape()                     { fRecalShowerShape = kTRUE        ;}
+  void     SwitchOffRecalShowerShape()                    { fRecalShowerShape = kFALSE       ;}
 
   Float_t  GetRCut()                                const { return fRcut                     ;}
   void     SetRCut(Float_t rcut)                          { fRcut = rcut                     ;}
@@ -84,10 +90,19 @@ public:
   void     SetStep(Double_t step)                         { fStep = step                     ;}
 
   Double_t GetEtaCut()                              const { return fEtacut                   ;}
-  void	   SetEtaCut(Double_t eta)                        { fEtacut = eta                    ;}
+  void     SetEtaCut(Double_t eta)                        { fEtacut = eta                    ;}
 
-  Double_t GetPhiCut() 	                            const { return fPhicut                   ;}
-  void	   SetPhiCut(Double_t phi)                        { fPhicut = phi                    ;}
+  Double_t GetPhiCut()                              const { return fPhicut                   ;}
+  void     SetPhiCut(Double_t phi)                        { fPhicut = phi                    ;}
+
+  Float_t  GetExoticCellFraction()                  const { return fExoticCellFraction       ;}
+  void     SetExoticCellFraction(Float_t f)               { fExoticCellFraction = f          ;}
+
+  Float_t  GetExoticCellDiffTime()                  const { return fExoticCellDiffTime       ;}
+  void     SetExoticCellDiffTime(Float_t f)               { fExoticCellDiffTime = f          ;}
+
+  Float_t  GetExoticCellMinAmplitude()              const { return fExoticCellMinAmplitude   ;}
+  void     SetExoticCellMinAmplitude(Float_t f)           { fExoticCellMinAmplitude = f      ;}
 
   void     SwitchOnReclustering()                         { fReClusterize = kTRUE            ;}
   void     SwitchOffReclustering()                        { fReClusterize = kFALSE           ;}
@@ -104,15 +119,33 @@ public:
  
   AliEMCALRecoUtils  *GetRecoUtils() const                { return fEMCALRecoUtils           ;}
 
-  //Will update cell list by removing bad channels and recalibration + reclusterize	
+  //Will update cell list by removing bad channels and recalibration + reclusterize  
   void     SwitchOnUpdateCell()                           { fUpdateCell = kTRUE              ;} 
-  void     SwitchOffUpdateCell()                          { fUpdateCell = kFALSE             ;}	
+  void     SwitchOffUpdateCell()                          { fUpdateCell = kFALSE             ;}  
+
+  void     SwitchOnBadCellRemove()                        { fBadCellRemove = kTRUE           ;} 
+  void     SwitchOffBadCellRemove()                       { fBadCellRemove = kFALSE          ;}  
+
+  void     SwitchOnClusterBadChannelCheck()               { fClusterBadChannelCheck = kTRUE  ;} 
+  void     SwitchOffClusterBadChannelCheck()              { fClusterBadChannelCheck = kFALSE ;}  
+
+  void     SwitchOnExoticCellRemove()                     { fRejectExoticCells = kTRUE       ;} 
+  void     SwitchOffExoticCellRemove()                    { fRejectExoticCells = kFALSE      ;}  
+
+  void     SwitchOnClusterExoticChannelCheck()            { fRejectExoticClusters = kTRUE    ;} 
+  void     SwitchOffClusterExoticChannelCheck()           { fRejectExoticClusters = kFALSE   ;}  
+
+  void     SwitchOnCalibrateEnergy()                      { fCalibrateEnergy = kTRUE         ;} 
+  void     SwitchOffCalibrateEnergy()                     { fCalibrateEnergy = kFALSE        ;}  
+
+  void     SwitchOnCalibrateTime()                        { fCalibrateTime = kTRUE           ;} 
+  void     SwitchOffCalibrateTime()                       { fCalibrateTime = kFALSE          ;}  
 
   void     SwitchOnUpdateCellOnly()                       { fDoUpdateOnly = kTRUE            ;} 
-  void     SwitchOffUpdateCellOnly()                      { fDoUpdateOnly = kFALSE           ;}	
+  void     SwitchOffUpdateCellOnly()                      { fDoUpdateOnly = kFALSE           ;}  
 
   void     SwitchOnTrackMatch()                           { fDoTrackMatch = kTRUE            ;} 
-  void     SwitchOffTrackMatch()                          { fDoTrackMatch = kFALSE           ;}	
+  void     SwitchOffTrackMatch()                          { fDoTrackMatch = kFALSE           ;}  
  
 private:
 
@@ -125,6 +158,8 @@ private:
   Bool_t   InitMisalignMatrix();
 
   Int_t    InitRecalib();
+  
+  Int_t    InitTimeCalibration();
 
   void     Clusterize();
 
@@ -149,11 +184,19 @@ private:
   Int_t                  fNonLinearThreshold;     //  non linearity threshold value for kBeamTesh non linearity function   
   Bool_t                 fReCalibCluster;         //  switch for Recalibrate clusters
   Bool_t                 fUpdateCell;             //  Flag cell update
+  Bool_t                 fCalibrateEnergy;        //  Flag cell energy clibration
+  Bool_t                 fCalibrateTime;          //  Flag cell time clSibration
+  Bool_t                 fDoNonLinearity;         //  Non linearity correction flag
+  Bool_t                 fBadCellRemove;          // Zero bad cells
+  Bool_t                 fRejectExoticCells;      // reject exotic cells
+  Bool_t                 fRejectExoticClusters;   // recect clusters with exotic cells
+  Bool_t                 fClusterBadChannelCheck; // Check clusters for bad channels
   TGeoHMatrix           *fEMCALMatrix[10];        //  geometry matrices with misalignments
   Bool_t                 fRecalClusPos;           //  switch for applying missalignment
   Bool_t                 fFiducial;               //  switch for checking cells in the fiducial region
-  Int_t                  fNCellsFromEMCALBorder;  //  number os cells from EMCAL border	
-  Bool_t                 fRecalDistToBadChannels; //  switch for recalculation cluster position from bad channel	  
+  Int_t                  fNCellsFromEMCALBorder;  //  number os cells from EMCAL border  
+  Bool_t                 fRecalDistToBadChannels; //  switch for recalculation cluster position from bad channel    
+  Bool_t                 fRecalShowerShape;       //  switch for recalculation of the shower shape
   TTree                 *fInputTree;              //! input data tree
   TFile                 *fInputFile;              //! input data file 
   TString                fFilepass;               //! input data pass number
@@ -175,12 +218,17 @@ private:
   AliEMCALAfterBurnerUF *fUnfolder;               //! unfolding procedure
   TClonesArray          *fDigitsArr;              //! digits array
   TObjArray             *fClusterArr;             //! recpoints array
-  Int_t                  fMisalignSurvey;         //! misalignment matrix survey	
+  Int_t                  fMisalignSurvey;         //! misalignment matrix survey  
+  Float_t                fExoticCellFraction;     // Good cell if fraction < 1-ecross/ecell
+  Float_t                fExoticCellDiffTime;     // If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
+  Float_t                fExoticCellMinAmplitude; // Check for exotic only if amplitud is larger than this value
+
+
 
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 8); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 9); // EMCAL tender task
 };
 
 #endif

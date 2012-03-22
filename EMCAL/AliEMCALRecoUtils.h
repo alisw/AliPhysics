@@ -147,6 +147,7 @@ public:
   void     SwitchOnRecalibration()                       { fRecalibration = kTRUE  ; 
                                                            if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors() ; }
   void     InitEMCALRecalibrationFactors() ;
+  TObjArray* GetEMCALRecalibrationFactorsArray()   const { return fEMCALRecalibrationFactors ; }
 
   TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
   void     SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecalibrationFactors = map                  ; }
@@ -175,7 +176,8 @@ public:
   void     SwitchOnTimeRecalibration()                   { fTimeRecalibration = kTRUE  ; 
     if(!fEMCALTimeRecalibrationFactors)InitEMCALTimeRecalibrationFactors() ; }
   void     InitEMCALTimeRecalibrationFactors() ;
-  
+  TObjArray* GetEMCALTimeRecalibrationFactorsArray() const { return fEMCALTimeRecalibrationFactors ; }
+
   Float_t  GetEMCALChannelTimeRecalibrationFactor(const Int_t bc, const Int_t absID) const { 
     if(fEMCALTimeRecalibrationFactors) 
       return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->GetBinContent(absID); 
@@ -217,6 +219,7 @@ public:
   void     SwitchOnDistToBadChannelRecalculation()       { fRecalDistToBadChannels = kTRUE  ; 
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
   
+  TObjArray* GetEMCALBadChannelStatusMapArray()     const { return fEMCALBadChannelMap ; }
   void     InitEMCALBadChannelStatusMap() ;
 	
   Int_t    GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
@@ -310,6 +313,7 @@ public:
   Bool_t   IsExoticCell(const Int_t absId, AliVCaloCells* cells, const Int_t bc =-1) ;
   void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
   void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
+  Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells    ; }
    
   void     SetExoticCellFractionCut(Float_t f)        { fExoticCellFraction     = f    ; }
   void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
@@ -439,7 +443,7 @@ private:
   Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
   Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made.
   
-  ClassDef(AliEMCALRecoUtils, 17)
+  ClassDef(AliEMCALRecoUtils, 18)
   
 };
 
