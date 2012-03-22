@@ -906,12 +906,12 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
     static UInt_t zpa  = 0x02;
     static UInt_t zna  = 0x01;
    
-    fHistZDC->Fill(1, quality & zna);
-    fHistZDC->Fill(2, quality & zpa);
-    fHistZDC->Fill(3, quality & zem2);
-    fHistZDC->Fill(4, quality & zem1);
-    fHistZDC->Fill(5, quality & znc);
-    fHistZDC->Fill(6, quality & zpc);
+    fHistZDC->Fill(1, (quality & zna)  ? 1 : 0);
+    fHistZDC->Fill(2, (quality & zpa)  ? 1 : 0);
+    fHistZDC->Fill(3, (quality & zem2) ? 1 : 0);
+    fHistZDC->Fill(4, (quality & zem1) ? 1 : 0);
+    fHistZDC->Fill(5, (quality & znc)  ? 1 : 0);
+    fHistZDC->Fill(6, (quality & zpc)  ? 1 : 0);
   }
   else
   {

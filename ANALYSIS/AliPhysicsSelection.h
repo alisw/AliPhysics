@@ -125,7 +125,7 @@ protected:
   TH2F* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
   TH1F* fHistTriggerPattern;  // Pattern of the individual detectors in the MB1 trigger. Can reveal inconsistencies/inefficiencies in the trigger 
     
-  Bool_t fSkipTriggerClassSelection;  // flag that determines if the trigger classs selection is skipped
+  Bool_t fSkipTriggerClassSelection;  // flag that determines if the trigger class selection is skipped
   Bool_t fUsingCustomClasses;         // flag that is set if costum trigger classes are defined
   Bool_t fSkipV0;                     // ignore information from v0
 
