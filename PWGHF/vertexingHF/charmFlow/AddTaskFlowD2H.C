@@ -4,7 +4,8 @@ class AliFlowEventTrackCuts;
 class AliRDHFCutsD0toKpi;
 class AliRDHFCutsDStartoKpipi; 
 
-void AddTaskFlowD2H(TString fileNameCuts, Int_t nDmeson, Int_t myCentrality, Int_t myHarmonic, Int_t ptBinWidth ) {
+void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int_t myCentrality, Int_t myHarmonic, 
+		    Bool_t bDoQC, Bool_t bDoSPTPC, Bool_t bDoSPVZERO, Bool_t bDoEPAlso, Int_t ptBinWidth ) {
   TFile *filecuts = TFile::Open( fileNameCuts.Data() );
   if( (!filecuts) || ( filecuts && !filecuts->IsOpen()) ){
     AliFatal("Could not open cuts file.");
@@ -16,8 +17,7 @@ void AddTaskFlowD2H(TString fileNameCuts, Int_t nDmeson, Int_t myCentrality, Int
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
 
-  TString thecuts = fileNameCuts;
-  thecuts.ReplaceAll(".root","");
+  TString thecuts = folderName;
   
   TString sgn = DMesonName( nDmeson ) + Form("w%d",ptBinWidth);
 
@@ -125,14 +125,20 @@ void AddTaskFlowD2H(TString fileNameCuts, Int_t nDmeson, Int_t myCentrality, Int
     // * HANGING ANALYSIS TASKS ********************************************
     for(int harm=myHarmonic; harm!=myHarmonic+1; ++harm)
       for(int mb=0; mb!=NumberOfMassBins(nDmeson); ++mb) {
-    	AddQCmethod( Form("%sQCTPCMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), harm, exc_TPC, filterPOIQC[mb]);
-	AddSPmethod( Form("%sSPVZEMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), -6, -2, +2, +6,
-		     "QaQb", harm, exc_VZE, 0, filterPOIQC[mb]);
-	for(int eg=0; eg!=2; ++eg) {
-	  AddSPmethod( Form("%sSPTPCMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), -0.8, -0.4*eg, +0.4*eg, +0.8,
-		       "Qa", harm, exc_TPC, eg, filterPOISP[mb][1] );
-	  AddSPmethod( Form("%sSPTPCMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), -0.8, -0.4*eg, +0.4*eg, +0.8,
-		       "Qb", harm, exc_TPC, eg, filterPOISP[mb][0] );
+	if(bDoQC) {
+	  AddQCmethod( Form("%sQCTPCMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), harm, exc_TPC, filterPOIQC[mb]);
+	}
+	if(bDoSPVZERO) {
+	  AddSPmethod( Form("%sSPVZEMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), -6, -2, +2, +6,
+		       "QaQb", harm, exc_VZE, 0, filterPOIQC[mb], NULL, bDoEPAlso );
+	}
+	if(bDoSPTPC) {
+	  for(int eg=0; eg!=2; ++eg) {
+	    AddSPmethod( Form("%sSPTPCMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), -0.8, -0.4*eg, +0.4*eg, +0.8,
+			 "Qa", harm, exc_TPC, eg, filterPOISP[mb][1], NULL, bDoEPAlso );
+	    AddSPmethod( Form("%sSPTPCMB%d",sgn.Data(),mb), ccName.Data(), fileName.Data(), thecuts.Data(), -0.8, -0.4*eg, +0.4*eg, +0.8,
+			 "Qb", harm, exc_TPC, eg, filterPOISP[mb][0], NULL, bDoEPAlso );
+	  }
 	}
       }
   }
@@ -141,7 +147,8 @@ void AddTaskFlowD2H(TString fileNameCuts, Int_t nDmeson, Int_t myCentrality, Int
 void AddSPmethod(char *name, char *ccName, char *fileName, char *thecuts,
 		 double minEtaA, double maxEtaA, double minEtaB, double maxEtaB,
 		 char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, int eg,
-		 AliFlowTrackSimpleCuts *cutsPOI=NULL, AliFlowTrackSimpleCuts *cutsRFP=NULL) {
+		 AliFlowTrackSimpleCuts *cutsPOI=NULL, AliFlowTrackSimpleCuts *cutsRFP=NULL,
+		 bool bEP ) {
   TString myFolder = Form("%sv%d_%s",ccName,harmonic,thecuts);
   TString myNameSP = Form("%s%sSPv%d%sGAP%d",name,ccName,harmonic,Qvector,eg);
   TString myNameEP = Form("%s%sEPv%d%sGAP%d",name,ccName,harmonic,Qvector,eg);
@@ -167,19 +174,22 @@ void AddSPmethod(char *name, char *ccName, char *fileName, char *thecuts,
   mgr->AddTask(tskSP);
   mgr->ConnectInput( tskSP,0,flowEvent2);
   mgr->ConnectOutput(tskSP,1,outSP);
+
   //EP
-  AliAnalysisDataContainer *outEP = mgr->CreateContainer( myNameEP.Data(),
-							  TList::Class(),AliAnalysisManager::kOutputContainer,
-							  Form("%s.root:FlowD2H_EP_%s",fileName,myFolder.Data()) );
-  AliAnalysisTaskScalarProduct *tskEP = new AliAnalysisTaskScalarProduct( Form("TaskEventsPlane_%s",
-									       myNameEP.Data()),kFALSE);
-  tskEP->SetApplyCorrectionForNUA(kTRUE);
-  tskEP->SetHarmonic(harmonic);
-  tskEP->SetTotalQvector(Qvector);
-  tskEP->SetBehaveAsEP();
-  mgr->AddTask(tskEP);
-  mgr->ConnectInput( tskEP,0,flowEvent2);
-  mgr->ConnectOutput(tskEP,1,outEP);
+  if(bEP) {
+    AliAnalysisDataContainer *outEP = mgr->CreateContainer( myNameEP.Data(),
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s.root:FlowD2H_EP_%s",fileName,myFolder.Data()) );
+    AliAnalysisTaskScalarProduct *tskEP = new AliAnalysisTaskScalarProduct( Form("TaskEventsPlane_%s",
+										 myNameEP.Data()),kFALSE);
+    tskEP->SetApplyCorrectionForNUA(kTRUE);
+    tskEP->SetHarmonic(harmonic);
+    tskEP->SetTotalQvector(Qvector);
+    tskEP->SetBehaveAsEP();
+    mgr->AddTask(tskEP);
+    mgr->ConnectInput( tskEP,0,flowEvent2);
+    mgr->ConnectOutput(tskEP,1,outEP);
+  }
 }
 
 void AddQCmethod(char *name, char *ccName, char *fileName, char *thecuts,
