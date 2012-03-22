@@ -423,7 +423,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -522,6 +522,41 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  
 	  if ((mass > 0.49*0.49 && mass < 0.51*0.51) || (mass > 0.765*0.765 && mass < 0.785*0.785))
 	    continue;
+	}
+	
+	if (twoTrackEfficiencyCut)
+	{
+	  Float_t phi1 = triggerParticle->Phi();
+	  Float_t pt1 = triggerParticle->Pt();
+	  Float_t charge1 = triggerParticle->Charge();
+	    
+	  Float_t phi2 = particle->Phi();
+	  Float_t pt2 = particle->Pt();
+	  Float_t charge2 = particle->Charge();
+	      
+	  Float_t deta = triggerEta - eta[j];
+	      
+	  // optimization
+	  if (TMath::Abs(deta) < 0.02)
+	  {
+	    Float_t dphistarmin = 1e5;
+	    Float_t dphistarminabs = 1e5;
+
+	    for (Double_t rad=0.8; rad<2.51; rad+=0.05) 
+	    {
+	      Float_t dphistar = phi1 - phi2 - TMath::ASin(charge1 * 0.075 * bSign * rad / pt1) + TMath::ASin(charge2 * 0.075 * bSign * rad / pt2);
+	      Float_t dphistarabs = TMath::Abs(dphistar);
+	      
+	      if (dphistarabs < dphistarminabs)
+	      {
+		dphistarmin = dphistar;
+		dphistarminabs = dphistarabs;
+	      }
+	    }
+	    
+	    if (dphistarminabs < 0.02)
+	      continue;
+	  }
 	}
         
         Double_t vars[6];
