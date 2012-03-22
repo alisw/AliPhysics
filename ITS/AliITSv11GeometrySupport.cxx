@@ -88,9 +88,9 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   const Double_t kInnerRadialCone = 37.3*fgkcm;
   const Double_t kOuterRadialCone = 39.0*fgkcm;
   const Double_t kInnerACone = 14.2344*fgkcm;
-  //  const Double_t kInnerBCone =  9.0915*fgkcm;
+  const Double_t kInnerBCone =  9.0915*fgkcm;
   const Double_t kOuterACone =  9.5058*fgkcm;
-  //  const Double_t kOuterBCone = 14.8831*fgkcm;
+  const Double_t kOuterBCone = 14.8831*fgkcm;
   // Dimensions of the Flange's Ring and Wing
   const Double_t kHalfLengthRing  = 7.5*fgkmm;
   const Double_t kThicknessRing   = 0.3*fgkmm;
@@ -104,10 +104,10 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   const Double_t kThicknessOmega = 0.3*fgkmm;
 
   // Local variables
-  Double_t x, y;
   Double_t zpos;
   Double_t xshld[24], yshld[24];
-  Double_t xair[24] , yair[24];
+  Double_t xair[24] , yair[24];  // Coord. of whole air shape
+  Double_t xair1[4] , yair1[4];  // Coord. of every single air volume
   Double_t xomega[48], yomega[48];
   //  Double_t *xyarb8;
 
@@ -119,8 +119,8 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   TGeoVolumeAssembly *vM = new TGeoVolumeAssembly("ITSspdThermalShield");
 
   // The central half shield: a half tube of carbon fiber,
-  // a similar but proportionally smaller half tube of air inside it,
-  // and a Omega-shaped carbon fiber insert inside the air.
+  // filled with air volumes, which together make the whole shield
+  // (i.e. the tube and the Omega-shaped insert).
   // They are all XTru shapes
 
   TGeoXtru *centralshape = new TGeoXtru(2);
@@ -149,34 +149,104 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 		xshld[ 0], yshld[ 0], kThicknessCentral,
 		xair[23], yair[23]);
 
-  // Create the air shape
-  TGeoXtru *centralairshape = new TGeoXtru(2);
-
-  centralairshape->DefinePolygon(24,xair,yair);
-  centralairshape->DefineSection(0,-kHalfLengthCentral);
-  centralairshape->DefineSection(1, kHalfLengthCentral);
-
-  // Create the Omega insert
-  TGeoXtru *centralomegashape = new TGeoXtru(2);
-
+  // Then use them to determine the Omega shape points
   CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
-  // Temporary fix for awkward extrusions seen only with Root v5.32
-  yomega[ 1] += 0.0001;
-  yomega[ 2] += 0.0001;
-  yomega[ 5] += 0.0001;
-  yomega[ 6] += 0.0001;
-  xomega[15] -= 0.0001;
-  xomega[16] -= 0.0001;
-  yomega[28] -= 0.0001;
-  yomega[29] -= 0.0001;
 
-  centralomegashape->DefinePolygon(48,xomega,yomega);
-  centralomegashape->DefineSection(0,-kHalfLengthCentral);
-  centralomegashape->DefineSection(1, kHalfLengthCentral);
+  // Finally create the single air volumes
+  TGeoXtru *centralair1shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[1];
+  yair1[0] = yomega[1];
+  xair1[1] = xomega[0];
+  yair1[1] = yomega[0];
+  xair1[2] = -xair1[1];
+  yair1[2] =  yair1[1];
+  xair1[3] = -xair1[0];
+  yair1[3] =  yair1[0];
+
+  centralair1shape->DefinePolygon(4,xair1,yair1);
+  centralair1shape->DefineSection(0,-kHalfLengthCentral);
+  centralair1shape->DefineSection(1, kHalfLengthCentral);
+
+  TGeoXtru *centralair2shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[21];
+  yair1[0] = yomega[21];
+  xair1[1] = xomega[20];
+  yair1[1] = yomega[20];
+  xair1[2] = xomega[23];
+  yair1[2] = yomega[23];
+  xair1[3] = xomega[22];
+  yair1[3] = yomega[22];
+
+  centralair2shape->DefinePolygon(4,xair1,yair1);
+  centralair2shape->DefineSection(0,-kHalfLengthCentral);
+  centralair2shape->DefineSection(1, kHalfLengthCentral);
+
+  TGeoXtru *centralair3shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[2];
+  yair1[0] = yomega[2];
+  xair1[1] = xomega[3];
+  yair1[1] = yomega[3];
+  xair1[2] = xomega[4];
+  yair1[2] = yomega[4];
+  xair1[3] = xomega[5];
+  yair1[3] = yomega[5];
+
+  centralair3shape->DefinePolygon(4,xair1,yair1);
+  centralair3shape->DefineSection(0,-kHalfLengthCentral);
+  centralair3shape->DefineSection(1, kHalfLengthCentral);
+
+  TGeoXtru *centralair4shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[16];
+  yair1[0] = yomega[16];
+  xair1[1] = xomega[17];
+  yair1[1] = yomega[17];
+  xair1[2] = xomega[18];
+  yair1[2] = yomega[18];
+  xair1[3] = xomega[19];
+  yair1[3] = yomega[19];
+
+  centralair4shape->DefinePolygon(4,xair1,yair1);
+  centralair4shape->DefineSection(0,-kHalfLengthCentral);
+  centralair4shape->DefineSection(1, kHalfLengthCentral);
+
+  TGeoXtru *centralair5shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[6];
+  yair1[0] = yomega[6];
+  xair1[1] = xomega[7];
+  yair1[1] = yomega[7];
+  xair1[2] = xomega[8];
+  yair1[2] = yomega[8];
+  xair1[3] = xomega[9];
+  yair1[3] = yomega[9];
+
+  centralair5shape->DefinePolygon(4,xair1,yair1);
+  centralair5shape->DefineSection(0,-kHalfLengthCentral);
+  centralair5shape->DefineSection(1, kHalfLengthCentral);
+
+  TGeoXtru *centralair6shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[12];
+  yair1[0] = yomega[12];
+  xair1[1] = xomega[13];
+  yair1[1] = yomega[13];
+  xair1[2] = xomega[14];
+  yair1[2] = yomega[14];
+  xair1[3] = xomega[15];
+  yair1[3] = yomega[15];
+
+  centralair6shape->DefinePolygon(4,xair1,yair1);
+  centralair6shape->DefineSection(0,-kHalfLengthCentral);
+  centralair6shape->DefineSection(1, kHalfLengthCentral);
+
 
   // The end cap half shield: a half tube of carbon fiber,
-  // a similar but proportionally smaller half tube of air inside it,
-  // and a Omega-shaped carbon fiber insert inside the air.
+  // filled with air volumes, which together make the whole shield
+  // (i.e. the tube and the Omega-shaped insert).
   // They are all XTru shapes
 
   TGeoXtru *endcapshape = new TGeoXtru(2);
@@ -205,29 +275,99 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 		xshld[ 0], yshld[ 0], kThicknessEndCap,
 		xair[23], yair[23]);
 
-  // Create the air shape
-  TGeoXtru *endcapairshape = new TGeoXtru(2);
-
-  endcapairshape->DefinePolygon(24,xair,yair);
-  endcapairshape->DefineSection(0,-kHalfLengthEndCap);
-  endcapairshape->DefineSection(1, kHalfLengthEndCap);
-
-  // Create the Omega insert
-  TGeoXtru *endcapomegashape = new TGeoXtru(2);
-
+  // Then use them to determine the Omega shape points
   CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
-  // Temporary fix for awkward extrusions seen only with Root v5.32
-  yomega[19] -= 0.0001;
-  yomega[20] -= 0.0001;
-  yomega[31] -= 0.0001;
-  yomega[42] += 0.0001;
-  yomega[43] += 0.0001;
-  yomega[46] += 0.0001;
-  yomega[47] += 0.0001;
 
-  endcapomegashape->DefinePolygon(48,xomega,yomega);
-  endcapomegashape->DefineSection(0,-kHalfLengthEndCap);
-  endcapomegashape->DefineSection(1, kHalfLengthEndCap);
+  // Finally create the single air volumes
+  TGeoXtru *endcapair1shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[1];
+  yair1[0] = yomega[1];
+  xair1[1] = xomega[0];
+  yair1[1] = yomega[0];
+  xair1[2] = -xair1[1];
+  yair1[2] =  yair1[1];
+  xair1[3] = -xair1[0];
+  yair1[3] =  yair1[0];
+
+  endcapair1shape->DefinePolygon(4,xair1,yair1);
+  endcapair1shape->DefineSection(0,-kHalfLengthEndCap);
+  endcapair1shape->DefineSection(1, kHalfLengthEndCap);
+
+  TGeoXtru *endcapair2shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[21];
+  yair1[0] = yomega[21];
+  xair1[1] = xomega[20];
+  yair1[1] = yomega[20];
+  xair1[2] = xomega[23];
+  yair1[2] = yomega[23];
+  xair1[3] = xomega[22];
+  yair1[3] = yomega[22];
+
+  endcapair2shape->DefinePolygon(4,xair1,yair1);
+  endcapair2shape->DefineSection(0,-kHalfLengthEndCap);
+  endcapair2shape->DefineSection(1, kHalfLengthEndCap);
+
+  TGeoXtru *endcapair3shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[2];
+  yair1[0] = yomega[2];
+  xair1[1] = xomega[3];
+  yair1[1] = yomega[3];
+  xair1[2] = xomega[4];
+  yair1[2] = yomega[4];
+  xair1[3] = xomega[5];
+  yair1[3] = yomega[5];
+
+  endcapair3shape->DefinePolygon(4,xair1,yair1);
+  endcapair3shape->DefineSection(0,-kHalfLengthEndCap);
+  endcapair3shape->DefineSection(1, kHalfLengthEndCap);
+
+  TGeoXtru *endcapair4shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[16];
+  yair1[0] = yomega[16];
+  xair1[1] = xomega[17];
+  yair1[1] = yomega[17];
+  xair1[2] = xomega[18];
+  yair1[2] = yomega[18];
+  xair1[3] = xomega[19];
+  yair1[3] = yomega[19];
+
+  endcapair4shape->DefinePolygon(4,xair1,yair1);
+  endcapair4shape->DefineSection(0,-kHalfLengthEndCap);
+  endcapair4shape->DefineSection(1, kHalfLengthEndCap);
+
+  TGeoXtru *endcapair5shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[6];
+  yair1[0] = yomega[6];
+  xair1[1] = xomega[7];
+  yair1[1] = yomega[7];
+  xair1[2] = xomega[8];
+  yair1[2] = yomega[8];
+  xair1[3] = xomega[9];
+  yair1[3] = yomega[9];
+
+  endcapair5shape->DefinePolygon(4,xair1,yair1);
+  endcapair5shape->DefineSection(0,-kHalfLengthEndCap);
+  endcapair5shape->DefineSection(1, kHalfLengthEndCap);
+
+  TGeoXtru *endcapair6shape = new TGeoXtru(2);
+
+  xair1[0] = xomega[12];
+  yair1[0] = yomega[12];
+  xair1[1] = xomega[13];
+  yair1[1] = yomega[13];
+  xair1[2] = xomega[14];
+  yair1[2] = yomega[14];
+  xair1[3] = xomega[15];
+  yair1[3] = yomega[15];
+
+  endcapair6shape->DefinePolygon(4,xair1,yair1);
+  endcapair6shape->DefineSection(0,-kHalfLengthEndCap);
+  endcapair6shape->DefineSection(1, kHalfLengthEndCap);
 
   // The cone half shield is more complex since there is no basic
   // TGeo shape to describe it correctly. So it is made of a series
@@ -235,23 +375,191 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   // the cone AND its internal insert. Part of the following code is
   // adapted from SPDThermalSheald method.
 
-  // Filled portions
-  TGeoArb8 *sC1 = new TGeoArb8(kHalfLengthCone);
-  TGeoArb8 *sC2 = new TGeoArb8(kHalfLengthCone);
+  // sCn : Filled portions, sChn : Air holes
+  TGeoArb8 *sC1  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC2  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC3  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC4  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC5  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC6  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC7  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC8  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC9  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC10 = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC11 = new TGeoArb8(kHalfLengthCone);
 
+  sC1->SetName("sC1");
+  sC2->SetName("sC2");
+  sC3->SetName("sC3");
+  sC4->SetName("sC4");
+  sC5->SetName("sC5");
+  sC6->SetName("sC6");
+  sC7->SetName("sC7");
+  sC8->SetName("sC8");
+  sC9->SetName("sC9");
+  sC10->SetName("sC10");
+  sC11->SetName("sC11");
+
+  TGeoArb8 *sCh1  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh2  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh3  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh4  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh5  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh6  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh7  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh8  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh9  = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh10 = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh11 = new TGeoArb8(kHalfLengthCone);
+
+  sCh1->SetName("sCh1");
+  sCh2->SetName("sCh2");
+  sCh3->SetName("sCh3");
+  sCh4->SetName("sCh4");
+  sCh5->SetName("sCh5");
+  sCh6->SetName("sCh6");
+  sCh7->SetName("sCh7");
+  sCh8->SetName("sCh8");
+  sCh9->SetName("sCh9");
+  sCh10->SetName("sCh10");
+  sCh11->SetName("sCh11");
+
+  // Smaller end: determine the coordinates of the points of carbon fiber
   CreateSPDThermalShape(kInnerACentral,kInnerBCentral,kInnerRadiusCentral,
 			kOuterACentral,kOuterBCentral,kOuterRadiusCentral,
 			kTheta,xshld,yshld);
 
-  sC1->SetVertex(0,xshld[12],yshld[12]);
-  sC1->SetVertex(1,xshld[11],yshld[11]);
-  sC1->SetVertex(2,xshld[ 0],yshld[ 0]);
-  sC1->SetVertex(3,xshld[23],yshld[23]);
+  sC1->SetVertex(0, xshld[12], yshld[12]);
+  sC1->SetVertex(1, xshld[11], yshld[11]);
+  sC1->SetVertex(2, xshld[ 0], yshld[ 0]);
+  sC1->SetVertex(3, xshld[23], yshld[23]);
 
-  sC2->SetVertex(0,xshld[11],yshld[11]);
-  sC2->SetVertex(1,xshld[10],yshld[10]);
-  sC2->SetVertex(2,xshld[ 1],yshld[ 1]);
-  sC2->SetVertex(3,xshld[ 0],yshld[ 0]);
+  sC2->SetVertex(0, xshld[11], yshld[11]);
+  sC2->SetVertex(1, xshld[10], yshld[10]);
+  sC2->SetVertex(2, xshld[ 1], yshld[ 1]);
+  sC2->SetVertex(3, xshld[ 0], yshld[ 0]);
+
+  sC3->SetVertex(0, xshld[10], yshld[10]);
+  sC3->SetVertex(1, xshld[ 9], yshld[ 9]);
+  sC3->SetVertex(2, xshld[ 2], yshld[ 2]);
+  sC3->SetVertex(3, xshld[ 1], yshld[ 1]);
+
+  sC4->SetVertex(0, xshld[ 9], yshld[ 9]);
+  sC4->SetVertex(1, xshld[ 8], yshld[ 8]);
+  sC4->SetVertex(2, xshld[ 3], yshld[ 3]);
+  sC4->SetVertex(3, xshld[ 2], yshld[ 2]);
+
+  sC5->SetVertex(0, xshld[ 8], yshld[ 8]);
+  sC5->SetVertex(1, xshld[ 7], yshld[ 7]);
+  sC5->SetVertex(2, xshld[ 4], yshld[ 4]);
+  sC5->SetVertex(3, xshld[ 3], yshld[ 3]);
+
+  sC6->SetVertex(0, xshld[ 7], yshld[ 7]);
+  sC6->SetVertex(1, xshld[ 6], yshld[ 6]);
+  sC6->SetVertex(2, xshld[ 5], yshld[ 5]);
+  sC6->SetVertex(3, xshld[ 4], yshld[ 4]);
+
+  sC7->SetVertex(0,-xshld[10], yshld[10]);
+  sC7->SetVertex(1,-xshld[11], yshld[11]);
+  sC7->SetVertex(2,-xshld[ 0], yshld[ 0]);
+  sC7->SetVertex(3,-xshld[ 1], yshld[ 1]);
+
+  sC8->SetVertex(0,-xshld[ 9], yshld[ 9]);
+  sC8->SetVertex(1,-xshld[10], yshld[10]);
+  sC8->SetVertex(2,-xshld[ 1], yshld[ 1]);
+  sC8->SetVertex(3,-xshld[ 2], yshld[ 2]);
+
+  sC9->SetVertex(0,-xshld[ 8], yshld[ 8]);
+  sC9->SetVertex(1,-xshld[ 9], yshld[ 9]);
+  sC9->SetVertex(2,-xshld[ 2], yshld[ 2]);
+  sC9->SetVertex(3,-xshld[ 3], yshld[ 3]);
+
+  sC10->SetVertex(0,-xshld[ 7], yshld[ 7]);
+  sC10->SetVertex(1,-xshld[ 8], yshld[ 8]);
+  sC10->SetVertex(2,-xshld[ 3], yshld[ 3]);
+  sC10->SetVertex(3,-xshld[ 4], yshld[ 4]);
+
+  sC11->SetVertex(0,-xshld[ 6], yshld[ 6]);
+  sC11->SetVertex(1,-xshld[ 7], yshld[ 7]);
+  sC11->SetVertex(2,-xshld[ 4], yshld[ 4]);
+  sC11->SetVertex(3,-xshld[ 5], yshld[ 5]);
+
+  // Then rescale to get the air volume dimensions
+    InsidePoint(xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0],
+		xshld[ 1], yshld[ 1], kThicknessCone,
+		xair[0], yair[0]);
+  for (Int_t i=1; i<23; i++) {
+    InsidePoint(xshld[i-1], yshld[i-1],
+		xshld[ i ], yshld[ i ],
+		xshld[i+1], yshld[i+1], kThicknessCone,
+		xair[i], yair[i]);
+  }
+    InsidePoint(xshld[22], yshld[22],
+		xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0], kThicknessCone,
+		xair[23], yair[23]);
+
+  // Then use them to determine the Omega shape points
+  CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
+
+  // Finally fill the small end coordinates of the air shapes
+  sCh1->SetVertex(0, xomega[ 0], yomega[ 0]);
+  sCh1->SetVertex(1, xomega[ 1], yomega[ 1]);
+  sCh1->SetVertex(2,-xomega[ 1], yomega[ 1]);
+  sCh1->SetVertex(3,-xomega[ 0], yomega[ 0]);
+
+  sCh2->SetVertex(0, xomega[20], yomega[20]);
+  sCh2->SetVertex(1, xomega[21], yomega[21]);
+  sCh2->SetVertex(2, xomega[22], yomega[22]);
+  sCh2->SetVertex(3, xomega[23], yomega[23]);
+
+  sCh3->SetVertex(0, xomega[ 2], yomega[ 2]);
+  sCh3->SetVertex(1, xomega[ 3], yomega[ 3]);
+  sCh3->SetVertex(2, xomega[ 4], yomega[ 4]);
+  sCh3->SetVertex(3, xomega[ 5], yomega[ 5]);
+
+  sCh4->SetVertex(0, xomega[16], yomega[16]);
+  sCh4->SetVertex(1, xomega[17], yomega[17]);
+  sCh4->SetVertex(2, xomega[18], yomega[18]);
+  sCh4->SetVertex(3, xomega[19], yomega[19]);
+
+  sCh5->SetVertex(0, xomega[ 6], yomega[ 6]);
+  sCh5->SetVertex(1, xomega[ 7], yomega[ 7]);
+  sCh5->SetVertex(2, xomega[ 8], yomega[ 8]);
+  sCh5->SetVertex(3, xomega[ 9], yomega[ 9]);
+
+  sCh6->SetVertex(0, xomega[12], yomega[12]);
+  sCh6->SetVertex(1, xomega[13], yomega[13]);
+  sCh6->SetVertex(2, xomega[14], yomega[14]);
+  sCh6->SetVertex(3, xomega[15], yomega[15]);
+
+  sCh7->SetVertex(0,-xomega[21], yomega[21]);
+  sCh7->SetVertex(1,-xomega[20], yomega[20]);
+  sCh7->SetVertex(2,-xomega[23], yomega[23]);
+  sCh7->SetVertex(3,-xomega[22], yomega[22]);
+
+  sCh8->SetVertex(0,-xomega[ 3], yomega[ 3]);
+  sCh8->SetVertex(1,-xomega[ 2], yomega[ 2]);
+  sCh8->SetVertex(2,-xomega[ 5], yomega[ 5]);
+  sCh8->SetVertex(3,-xomega[ 4], yomega[ 4]);
+
+  sCh9->SetVertex(0,-xomega[17], yomega[17]);
+  sCh9->SetVertex(1,-xomega[16], yomega[16]);
+  sCh9->SetVertex(2,-xomega[19], yomega[19]);
+  sCh9->SetVertex(3,-xomega[18], yomega[18]);
+
+  sCh10->SetVertex(0,-xomega[ 7], yomega[ 7]);
+  sCh10->SetVertex(1,-xomega[ 6], yomega[ 6]);
+  sCh10->SetVertex(2,-xomega[ 9], yomega[ 9]);
+  sCh10->SetVertex(3,-xomega[ 8], yomega[ 8]);
+
+  sCh11->SetVertex(0,-xomega[13], yomega[13]);
+  sCh11->SetVertex(1,-xomega[12], yomega[12]);
+  sCh11->SetVertex(2,-xomega[15], yomega[15]);
+  sCh11->SetVertex(3,-xomega[14], yomega[14]);
+
+  // Bigger end: determine the coordinates of the points of carbon fiber
 
   // Drawings give only the radius, convert it to the apothegm
   Double_t kInnerRadiusCone = TMath::Sqrt(kInnerRadialCone*kInnerRadialCone
@@ -259,34 +567,141 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   Double_t kOuterRadiusCone = TMath::Sqrt(kOuterRadialCone*kOuterRadialCone
 					  - 0.25*kOuterACone*kOuterACone);
 
-  Double_t xco[4], yco[4], xci[4], yci[4];
+  CreateSPDThermalShape(kInnerACone,kInnerBCone,kInnerRadiusCone,
+			kOuterACone,kOuterBCone,kOuterRadiusCone,
+			kTheta,xshld,yshld);
 
-  for (Int_t i=0; i<2; i++) {
-    Double_t th = i*kTheta*TMath::RadToDeg();
-    xco[2*i  ] = kOuterRadiusCone*SinD(th) - 0.5*kOuterACone*CosD(th);
-    yco[2*i  ] = kOuterRadiusCone*CosD(th) + 0.5*kOuterACone*SinD(th);
-    xci[2*i  ] = kInnerRadiusCone*SinD(th) - 0.5*kInnerACone*CosD(th);
-    yci[2*i  ] = kInnerRadiusCone*CosD(th) + 0.5*kInnerACone*SinD(th);
-    xco[2*i+1] = kOuterRadiusCone*SinD(th) + 0.5*kOuterACone*CosD(th);
-    yco[2*i+1] = kOuterRadiusCone*CosD(th) - 0.5*kOuterACone*SinD(th);
-    xci[2*i+1] = kInnerRadiusCone*SinD(th) + 0.5*kInnerACone*CosD(th);
-    yci[2*i+1] = kInnerRadiusCone*CosD(th) - 0.5*kInnerACone*SinD(th);
+  sC1->SetVertex(4, xshld[12], yshld[12]);
+  sC1->SetVertex(5, xshld[11], yshld[11]);
+  sC1->SetVertex(6, xshld[ 0], yshld[ 0]);
+  sC1->SetVertex(7, xshld[23], yshld[23]);
+
+  sC2->SetVertex(4, xshld[11], yshld[11]);
+  sC2->SetVertex(5, xshld[10], yshld[10]);
+  sC2->SetVertex(6, xshld[ 1], yshld[ 1]);
+  sC2->SetVertex(7, xshld[ 0], yshld[ 0]);
+
+  sC3->SetVertex(4, xshld[10], yshld[10]);
+  sC3->SetVertex(5, xshld[ 9], yshld[ 9]);
+  sC3->SetVertex(6, xshld[ 2], yshld[ 2]);
+  sC3->SetVertex(7, xshld[ 1], yshld[ 1]);
+
+  sC4->SetVertex(4, xshld[ 9], yshld[ 9]);
+  sC4->SetVertex(5, xshld[ 8], yshld[ 8]);
+  sC4->SetVertex(6, xshld[ 3], yshld[ 3]);
+  sC4->SetVertex(7, xshld[ 2], yshld[ 2]);
+
+  sC5->SetVertex(4, xshld[ 8], yshld[ 8]);
+  sC5->SetVertex(5, xshld[ 7], yshld[ 7]);
+  sC5->SetVertex(6, xshld[ 4], yshld[ 4]);
+  sC5->SetVertex(7, xshld[ 3], yshld[ 3]);
+
+  sC6->SetVertex(4, xshld[ 7], yshld[ 7]);
+  sC6->SetVertex(5, xshld[ 6], yshld[ 6]);
+  sC6->SetVertex(6, xshld[ 5], yshld[ 5]);
+  sC6->SetVertex(7, xshld[ 4], yshld[ 4]);
+
+  sC7->SetVertex(4,-xshld[10], yshld[10]);
+  sC7->SetVertex(5,-xshld[11], yshld[11]);
+  sC7->SetVertex(6,-xshld[ 0], yshld[ 0]);
+  sC7->SetVertex(7,-xshld[ 1], yshld[ 1]);
+
+  sC8->SetVertex(4,-xshld[ 9], yshld[ 9]);
+  sC8->SetVertex(5,-xshld[10], yshld[10]);
+  sC8->SetVertex(6,-xshld[ 1], yshld[ 1]);
+  sC8->SetVertex(7,-xshld[ 2], yshld[ 2]);
+
+  sC9->SetVertex(4,-xshld[ 8], yshld[ 8]);
+  sC9->SetVertex(5,-xshld[ 9], yshld[ 9]);
+  sC9->SetVertex(6,-xshld[ 2], yshld[ 2]);
+  sC9->SetVertex(7,-xshld[ 3], yshld[ 3]);
+
+  sC10->SetVertex(4,-xshld[ 7], yshld[ 7]);
+  sC10->SetVertex(5,-xshld[ 8], yshld[ 8]);
+  sC10->SetVertex(6,-xshld[ 3], yshld[ 3]);
+  sC10->SetVertex(7,-xshld[ 4], yshld[ 4]);
+
+  sC11->SetVertex(4,-xshld[ 6], yshld[ 6]);
+  sC11->SetVertex(5,-xshld[ 7], yshld[ 7]);
+  sC11->SetVertex(6,-xshld[ 4], yshld[ 4]);
+  sC11->SetVertex(7,-xshld[ 5], yshld[ 5]);
+
+  // Then rescale to get the air volume dimensions
+    InsidePoint(xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0],
+		xshld[ 1], yshld[ 1], kThicknessCone,
+		xair[0], yair[0]);
+  for (Int_t i=1; i<23; i++) {
+    InsidePoint(xshld[i-1], yshld[i-1],
+		xshld[ i ], yshld[ i ],
+		xshld[i+1], yshld[i+1], kThicknessCone,
+		xair[i], yair[i]);
   }
+    InsidePoint(xshld[22], yshld[22],
+		xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0], kThicknessCone,
+		xair[23], yair[23]);
 
-  sC1->SetVertex(4,xco[0],yco[0]);
-  sC1->SetVertex(5,xco[1],yco[1]);
-  sC1->SetVertex(6,xci[1],yci[1]);
-  sC1->SetVertex(7,xci[0],yci[0]);
+  // Then use them to determine the Omega shape points
+  CreateSPDOmegaShape(xair,yair,kThicknessOmega,xomega,yomega);
 
-  sC2->SetVertex(4,xco[1],yco[1]);
-  sC2->SetVertex(5,xco[2],yco[2]);
-  sC2->SetVertex(6,xci[2],yci[2]);
-  sC2->SetVertex(7,xci[1],yci[1]);
+  // Finally fill the big end coordinates of the air shapes
+  sCh1->SetVertex(4, xomega[ 0], yomega[ 0]);
+  sCh1->SetVertex(5, xomega[ 1], yomega[ 1]);
+  sCh1->SetVertex(6,-xomega[ 1], yomega[ 1]);
+  sCh1->SetVertex(7,-xomega[ 0], yomega[ 0]);
 
-  // Air holes
-  TGeoArb8 *sCh1 = new TGeoArb8(kHalfLengthCone);
-  TGeoArb8 *sCh2 = new TGeoArb8(kHalfLengthCone);
+  sCh2->SetVertex(4, xomega[20], yomega[20]);
+  sCh2->SetVertex(5, xomega[21], yomega[21]);
+  sCh2->SetVertex(6, xomega[22], yomega[22]);
+  sCh2->SetVertex(7, xomega[23], yomega[23]);
 
+  sCh3->SetVertex(4, xomega[ 2], yomega[ 2]);
+  sCh3->SetVertex(5, xomega[ 3], yomega[ 3]);
+  sCh3->SetVertex(6, xomega[ 4], yomega[ 4]);
+  sCh3->SetVertex(7, xomega[ 5], yomega[ 5]);
+
+  sCh4->SetVertex(4, xomega[16], yomega[16]);
+  sCh4->SetVertex(5, xomega[17], yomega[17]);
+  sCh4->SetVertex(6, xomega[18], yomega[18]);
+  sCh4->SetVertex(7, xomega[19], yomega[19]);
+
+  sCh5->SetVertex(4, xomega[ 6], yomega[ 6]);
+  sCh5->SetVertex(5, xomega[ 7], yomega[ 7]);
+  sCh5->SetVertex(6, xomega[ 8], yomega[ 8]);
+  sCh5->SetVertex(7, xomega[ 9], yomega[ 9]);
+
+  sCh6->SetVertex(4, xomega[12], yomega[12]);
+  sCh6->SetVertex(5, xomega[13], yomega[13]);
+  sCh6->SetVertex(6, xomega[14], yomega[14]);
+  sCh6->SetVertex(7, xomega[15], yomega[15]);
+
+  sCh7->SetVertex(4,-xomega[21], yomega[21]);
+  sCh7->SetVertex(5,-xomega[20], yomega[20]);
+  sCh7->SetVertex(6,-xomega[23], yomega[23]);
+  sCh7->SetVertex(7,-xomega[22], yomega[22]);
+
+  sCh8->SetVertex(4,-xomega[ 3], yomega[ 3]);
+  sCh8->SetVertex(5,-xomega[ 2], yomega[ 2]);
+  sCh8->SetVertex(6,-xomega[ 5], yomega[ 5]);
+  sCh8->SetVertex(7,-xomega[ 4], yomega[ 4]);
+
+  sCh9->SetVertex(4,-xomega[17], yomega[17]);
+  sCh9->SetVertex(5,-xomega[16], yomega[16]);
+  sCh9->SetVertex(6,-xomega[19], yomega[19]);
+  sCh9->SetVertex(7,-xomega[18], yomega[18]);
+
+  sCh10->SetVertex(4,-xomega[ 7], yomega[ 7]);
+  sCh10->SetVertex(5,-xomega[ 6], yomega[ 6]);
+  sCh10->SetVertex(6,-xomega[ 9], yomega[ 9]);
+  sCh10->SetVertex(7,-xomega[ 8], yomega[ 8]);
+
+  sCh11->SetVertex(4,-xomega[13], yomega[13]);
+  sCh11->SetVertex(5,-xomega[12], yomega[12]);
+  sCh11->SetVertex(6,-xomega[15], yomega[15]);
+  sCh11->SetVertex(7,-xomega[14], yomega[14]);
+
+/*
   for(Int_t i=0; i<4; i++){
     InsidePoint(sC1->GetVertices()[((i+3)%4)*2+0],
 		sC1->GetVertices()[((i+3)%4)*2+1],
@@ -320,7 +735,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 		sC2->GetVertices()[((i+1)%4 +4)*2+1],-kThicknessCone,x,y);
     sCh2->SetVertex(i+4,x,y);
   }
-
+*/
   // Finally the carbon fiber Ring with its Wings and their
   // stesalite inserts. They are Tube and TubeSeg shapes
 
@@ -354,23 +769,68 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   centralshield->SetVisibility(kTRUE);
   centralshield->SetLineColor(7);
   centralshield->SetLineWidth(1);
+  centralshield->SetFillColor(centralshield->GetLineColor());
+  centralshield->SetFillStyle(4090); // 90% transparent
 
-  TGeoVolume *centralairshield = new TGeoVolume("SPDcentralairshield",
-						centralairshape,medSPDair);
-  centralairshield->SetVisibility(kTRUE);
-  centralairshield->SetLineColor(5); // Yellow
-  centralairshield->SetLineWidth(1);
-  centralairshield->SetFillColor(centralairshield->GetLineColor());
-  centralairshield->SetFillStyle(4090); // 90% transparent
+  TGeoVolume *centralair1 = new TGeoVolume("SPDcentralair1shield",
+					   centralair1shape,medSPDair);
+  centralair1->SetVisibility(kTRUE);
+  centralair1->SetLineColor(5); // Yellow
+  centralair1->SetLineWidth(1);
+  centralair1->SetFillColor(centralair1->GetLineColor());
+  centralair1->SetFillStyle(4090); // 90% transparent
 
-  TGeoVolume *centralomega = new TGeoVolume("SPDcentralomega",
-					     centralomegashape,medSPDcf);
-  centralomega->SetVisibility(kTRUE);
-  centralomega->SetLineColor(7);
-  centralomega->SetLineWidth(1);
+  TGeoVolume *centralair2 = new TGeoVolume("SPDcentralair2shield",
+					   centralair2shape,medSPDair);
+  centralair2->SetVisibility(kTRUE);
+  centralair2->SetLineColor(5); // Yellow
+  centralair2->SetLineWidth(1);
+  centralair2->SetFillColor(centralair2->GetLineColor());
+  centralair2->SetFillStyle(4090); // 90% transparent
 
-  centralairshield->AddNode(centralomega,1,0);
-  centralshield->AddNode(centralairshield,1,0);
+  TGeoVolume *centralair3 = new TGeoVolume("SPDcentralair3shield",
+					   centralair3shape,medSPDair);
+  centralair3->SetVisibility(kTRUE);
+  centralair3->SetLineColor(5); // Yellow
+  centralair3->SetLineWidth(1);
+  centralair3->SetFillColor(centralair3->GetLineColor());
+  centralair3->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *centralair4 = new TGeoVolume("SPDcentralair4shield",
+					   centralair4shape,medSPDair);
+  centralair4->SetVisibility(kTRUE);
+  centralair4->SetLineColor(5); // Yellow
+  centralair4->SetLineWidth(1);
+  centralair4->SetFillColor(centralair4->GetLineColor());
+  centralair4->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *centralair5 = new TGeoVolume("SPDcentralair5shield",
+					   centralair5shape,medSPDair);
+  centralair5->SetVisibility(kTRUE);
+  centralair5->SetLineColor(5); // Yellow
+  centralair5->SetLineWidth(1);
+  centralair5->SetFillColor(centralair5->GetLineColor());
+  centralair5->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *centralair6 = new TGeoVolume("SPDcentralair6shield",
+					   centralair6shape,medSPDair);
+  centralair6->SetVisibility(kTRUE);
+  centralair6->SetLineColor(5); // Yellow
+  centralair6->SetLineWidth(1);
+  centralair6->SetFillColor(centralair6->GetLineColor());
+  centralair6->SetFillStyle(4090); // 90% transparent
+
+  centralshield->AddNode(centralair1,1,0);
+  centralshield->AddNode(centralair2,1,0);
+  centralshield->AddNode(centralair2,2,new TGeoRotation("",90,180,-90));
+  centralshield->AddNode(centralair3,1,0);
+  centralshield->AddNode(centralair3,2,new TGeoRotation("",90,180,-90));
+  centralshield->AddNode(centralair4,1,0);
+  centralshield->AddNode(centralair4,2,new TGeoRotation("",90,180,-90));
+  centralshield->AddNode(centralair5,1,0);
+  centralshield->AddNode(centralair5,2,new TGeoRotation("",90,180,-90));
+  centralshield->AddNode(centralair6,1,0);
+  centralshield->AddNode(centralair6,2,new TGeoRotation("",90,180,-90));
 
   TGeoVolume *endcapshield = new TGeoVolume("SPDendcapshield",
 					     endcapshape,medSPDcf);
@@ -378,30 +838,74 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   endcapshield->SetLineColor(7);
   endcapshield->SetLineWidth(1);
 
-  TGeoVolume *endcapairshield = new TGeoVolume("SPDendcapairshield",
-						endcapairshape,medSPDair);
-  endcapairshield->SetVisibility(kTRUE);
-  endcapairshield->SetLineColor(5); // Yellow
-  endcapairshield->SetLineWidth(1);
-  endcapairshield->SetFillColor(endcapairshield->GetLineColor());
-  endcapairshield->SetFillStyle(4090); // 90% transparent
+  TGeoVolume *endcapair1 = new TGeoVolume("SPDendcapair1shield",
+					  endcapair1shape,medSPDair);
+  endcapair1->SetVisibility(kTRUE);
+  endcapair1->SetLineColor(5); // Yellow
+  endcapair1->SetLineWidth(1);
+  endcapair1->SetFillColor(endcapair1->GetLineColor());
+  endcapair1->SetFillStyle(4090); // 90% transparent
 
-  TGeoVolume *endcapomega = new TGeoVolume("SPDendcapomega",
-					   endcapomegashape,medSPDcf);
-  endcapomega->SetVisibility(kTRUE);
-  endcapomega->SetLineColor(7);
-  endcapomega->SetLineWidth(1);
+  TGeoVolume *endcapair2 = new TGeoVolume("SPDendcapair2shield",
+					  endcapair2shape,medSPDair);
+  endcapair2->SetVisibility(kTRUE);
+  endcapair2->SetLineColor(5); // Yellow
+  endcapair2->SetLineWidth(1);
+  endcapair2->SetFillColor(endcapair2->GetLineColor());
+  endcapair2->SetFillStyle(4090); // 90% transparent
 
-  endcapairshield->AddNode(endcapomega,1,0);
-  endcapshield->AddNode(endcapairshield,1,0);
+  TGeoVolume *endcapair3 = new TGeoVolume("SPDendcapair3shield",
+					  endcapair3shape,medSPDair);
+  endcapair3->SetVisibility(kTRUE);
+  endcapair3->SetLineColor(5); // Yellow
+  endcapair3->SetLineWidth(1);
+  endcapair3->SetFillColor(endcapair3->GetLineColor());
+  endcapair3->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *endcapair4 = new TGeoVolume("SPDendcapair4shield",
+					  endcapair4shape,medSPDair);
+  endcapair4->SetVisibility(kTRUE);
+  endcapair4->SetLineColor(5); // Yellow
+  endcapair4->SetLineWidth(1);
+  endcapair4->SetFillColor(endcapair4->GetLineColor());
+  endcapair4->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *endcapair5 = new TGeoVolume("SPDendcapair5shield",
+					  endcapair5shape,medSPDair);
+  endcapair5->SetVisibility(kTRUE);
+  endcapair5->SetLineColor(5); // Yellow
+  endcapair5->SetLineWidth(1);
+  endcapair5->SetFillColor(endcapair5->GetLineColor());
+  endcapair5->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *endcapair6 = new TGeoVolume("SPDendcapair6shield",
+					  endcapair6shape,medSPDair);
+  endcapair6->SetVisibility(kTRUE);
+  endcapair6->SetLineColor(5); // Yellow
+  endcapair6->SetLineWidth(1);
+  endcapair6->SetFillColor(endcapair6->GetLineColor());
+  endcapair6->SetFillStyle(4090); // 90% transparent
+
+  endcapshield->AddNode(endcapair1,1,0);
+  endcapshield->AddNode(endcapair2,1,0);
+  endcapshield->AddNode(endcapair2,2,new TGeoRotation("",90,180,-90));
+  endcapshield->AddNode(endcapair3,1,0);
+  endcapshield->AddNode(endcapair3,2,new TGeoRotation("",90,180,-90));
+  endcapshield->AddNode(endcapair4,1,0);
+  endcapshield->AddNode(endcapair4,2,new TGeoRotation("",90,180,-90));
+  endcapshield->AddNode(endcapair5,1,0);
+  endcapshield->AddNode(endcapair5,2,new TGeoRotation("",90,180,-90));
+  endcapshield->AddNode(endcapair6,1,0);
+  endcapshield->AddNode(endcapair6,2,new TGeoRotation("",90,180,-90));
 
   TGeoVolume *vC1 = new TGeoVolume("SPDconeshieldV1",sC1,medSPDcf);
   vC1->SetVisibility(kTRUE);
   vC1->SetLineColor(7);
   vC1->SetLineWidth(1);
+  vC1->SetFillColor(vC1->GetLineColor());
+  vC1->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh1 = new TGeoVolume("SPDconeshieldH1",sCh1,medSPDair);
-
   vCh1->SetVisibility(kTRUE);
   vCh1->SetLineColor(5); // Yellow
   vCh1->SetLineWidth(1);
@@ -411,13 +915,13 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vC1->AddNode(vCh1,1,0);
 
   TGeoVolume *vC2 = new TGeoVolume("SPDconeshieldV2",sC2,medSPDcf);
-
   vC2->SetVisibility(kTRUE);
   vC2->SetLineColor(7);
   vC2->SetLineWidth(1);
+  vC2->SetFillColor(vC2->GetLineColor());
+  vC2->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh2 = new TGeoVolume("SPDconeshieldH2",sCh2,medSPDair);
-
   vCh2->SetVisibility(kTRUE);
   vCh2->SetLineColor(5); // Yellow
   vCh2->SetLineWidth(1);
@@ -425,6 +929,150 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vCh2->SetFillStyle(4090); // 90% transparent
 
   vC2->AddNode(vCh2,1,0);
+
+  TGeoVolume *vC3 = new TGeoVolume("SPDconeshieldV3",sC3,medSPDcf);
+  vC3->SetVisibility(kTRUE);
+  vC3->SetLineColor(7);
+  vC3->SetLineWidth(1);
+  vC3->SetFillColor(vC3->GetLineColor());
+  vC3->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh3 = new TGeoVolume("SPDconeshieldH3",sCh3,medSPDair);
+  vCh3->SetVisibility(kTRUE);
+  vCh3->SetLineColor(5); // Yellow
+  vCh3->SetLineWidth(1);
+  vCh3->SetFillColor(vCh3->GetLineColor());
+  vCh3->SetFillStyle(4090); // 90% transparent
+
+  vC3->AddNode(vCh3,1,0);
+
+  TGeoVolume *vC4 = new TGeoVolume("SPDconeshieldV4",sC4,medSPDcf);
+  vC4->SetVisibility(kTRUE);
+  vC4->SetLineColor(7);
+  vC4->SetLineWidth(1);
+  vC4->SetFillColor(vC4->GetLineColor());
+  vC4->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh4 = new TGeoVolume("SPDconeshieldH4",sCh4,medSPDair);
+  vCh4->SetVisibility(kTRUE);
+  vCh4->SetLineColor(5); // Yellow
+  vCh4->SetLineWidth(1);
+  vCh4->SetFillColor(vCh4->GetLineColor());
+  vCh4->SetFillStyle(4090); // 90% transparent
+
+  vC4->AddNode(vCh4,1,0);
+
+  TGeoVolume *vC5 = new TGeoVolume("SPDconeshieldV5",sC5,medSPDcf);
+  vC5->SetVisibility(kTRUE);
+  vC5->SetLineColor(7);
+  vC5->SetLineWidth(1);
+  vC5->SetFillColor(vC5->GetLineColor());
+  vC5->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh5 = new TGeoVolume("SPDconeshieldH5",sCh5,medSPDair);
+  vCh5->SetVisibility(kTRUE);
+  vCh5->SetLineColor(5); // Yellow
+  vCh5->SetLineWidth(1);
+  vCh5->SetFillColor(vCh5->GetLineColor());
+  vCh5->SetFillStyle(4090); // 90% transparent
+
+  vC5->AddNode(vCh5,1,0);
+
+  TGeoVolume *vC6 = new TGeoVolume("SPDconeshieldV6",sC6,medSPDcf);
+  vC6->SetVisibility(kTRUE);
+  vC6->SetLineColor(7);
+  vC6->SetLineWidth(1);
+  vC6->SetFillColor(vC6->GetLineColor());
+  vC6->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh6 = new TGeoVolume("SPDconeshieldH6",sCh6,medSPDair);
+  vCh6->SetVisibility(kTRUE);
+  vCh6->SetLineColor(5); // Yellow
+  vCh6->SetLineWidth(1);
+  vCh6->SetFillColor(vCh6->GetLineColor());
+  vCh6->SetFillStyle(4090); // 90% transparent
+
+  vC6->AddNode(vCh6,1,0);
+
+  TGeoVolume *vC7 = new TGeoVolume("SPDconeshieldV7",sC7,medSPDcf);
+  vC7->SetVisibility(kTRUE);
+  vC7->SetLineColor(7);
+  vC7->SetLineWidth(1);
+  vC7->SetFillColor(vC7->GetLineColor());
+  vC7->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh7 = new TGeoVolume("SPDconeshieldH7",sCh7,medSPDair);
+  vCh7->SetVisibility(kTRUE);
+  vCh7->SetLineColor(5); // Yellow
+  vCh7->SetLineWidth(1);
+  vCh7->SetFillColor(vCh7->GetLineColor());
+  vCh7->SetFillStyle(4090); // 90% transparent
+
+  vC7->AddNode(vCh7,1,0);
+
+  TGeoVolume *vC8 = new TGeoVolume("SPDconeshieldV8",sC8,medSPDcf);
+  vC8->SetVisibility(kTRUE);
+  vC8->SetLineColor(7);
+  vC8->SetLineWidth(1);
+  vC8->SetFillColor(vC8->GetLineColor());
+  vC8->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh8 = new TGeoVolume("SPDconeshieldH8",sCh8,medSPDair);
+  vCh8->SetVisibility(kTRUE);
+  vCh8->SetLineColor(5); // Yellow
+  vCh8->SetLineWidth(1);
+  vCh8->SetFillColor(vCh8->GetLineColor());
+  vCh8->SetFillStyle(4090); // 90% transparent
+
+  vC8->AddNode(vCh8,1,0);
+
+  TGeoVolume *vC9 = new TGeoVolume("SPDconeshieldV9",sC9,medSPDcf);
+  vC9->SetVisibility(kTRUE);
+  vC9->SetLineColor(7);
+  vC9->SetLineWidth(1);
+  vC9->SetFillColor(vC9->GetLineColor());
+  vC9->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh9 = new TGeoVolume("SPDconeshieldH9",sCh9,medSPDair);
+  vCh9->SetVisibility(kTRUE);
+  vCh9->SetLineColor(5); // Yellow
+  vCh9->SetLineWidth(1);
+  vCh9->SetFillColor(vCh9->GetLineColor());
+  vCh9->SetFillStyle(4090); // 90% transparent
+
+  vC9->AddNode(vCh9,1,0);
+
+  TGeoVolume *vC10 = new TGeoVolume("SPDconeshieldV10",sC10,medSPDcf);
+  vC10->SetVisibility(kTRUE);
+  vC10->SetLineColor(7);
+  vC10->SetLineWidth(1);
+  vC10->SetFillColor(vC10->GetLineColor());
+  vC10->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh10 = new TGeoVolume("SPDconeshieldH10",sCh10,medSPDair);
+  vCh10->SetVisibility(kTRUE);
+  vCh10->SetLineColor(5); // Yellow
+  vCh10->SetLineWidth(1);
+  vCh10->SetFillColor(vCh10->GetLineColor());
+  vCh10->SetFillStyle(4090); // 90% transparent
+
+  vC10->AddNode(vCh10,1,0);
+
+  TGeoVolume *vC11 = new TGeoVolume("SPDconeshieldV11",sC11,medSPDcf);
+  vC11->SetVisibility(kTRUE);
+  vC11->SetLineColor(7);
+  vC11->SetLineWidth(1);
+  vC11->SetFillColor(vC11->GetLineColor());
+  vC11->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *vCh11 = new TGeoVolume("SPDconeshieldH11",sCh11,medSPDair);
+  vCh11->SetVisibility(kTRUE);
+  vCh11->SetLineColor(5); // Yellow
+  vCh11->SetLineWidth(1);
+  vCh11->SetFillColor(vCh11->GetLineColor());
+  vCh11->SetFillStyle(4090); // 90% transparent
+
+  vC11->AddNode(vCh11,1,0);
 
   TGeoVolume *ring = new TGeoVolume("SPDshieldring",ringshape,medSPDcf);
   ring->SetVisibility(kTRUE);
@@ -474,21 +1122,86 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
               0, 0,-zpos-kLittleZTrans, new TGeoRotation("",180,0,0) ) );
 
   zpos = kHalfLengthCentral+2*kHalfLengthEndCap+kHalfLengthCone;
-  for (Int_t i=0; i<10; i++) {
-    Double_t thetaC12 = kTheta*TMath::RadToDeg();
-    vM->AddNode(vC1,2*i+1, new TGeoCombiTrans(
-               0, 0,  zpos-kLittleZTrans,
-	       new TGeoRotation("",0,  0,i*thetaC12)   ) );
-    vM->AddNode(vC1,2*i+2, new TGeoCombiTrans(
-               0, 0, -zpos-kLittleZTrans,
-	       new TGeoRotation("",0,180,i*thetaC12)   ) );
-    vM->AddNode(vC2,2*i+1, new TGeoCombiTrans(
-               0, 0,  zpos-kLittleZTrans,
-	       new TGeoRotation("",0,  0,i*thetaC12)   ) );
-    vM->AddNode(vC2,2*i+2, new TGeoCombiTrans(
-               0, 0, -zpos-kLittleZTrans,
-	       new TGeoRotation("",0,180,i*thetaC12)   ) );
-  }
+  vM->AddNode(vC1 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC2 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC3 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC4 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC5 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC6 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC7 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC8 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC9 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC10,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vC11,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+
+  vM->AddNode(vC1 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC2 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC3 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC4 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC5 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC6 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC7 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC8 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC9 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC10,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+  vM->AddNode(vC11,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 0, 180)   ));
+
+  vM->AddNode(vC1 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC2 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC3 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC4 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC5 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC6 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC7 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC8 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC9 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC10,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+  vM->AddNode(vC11,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 0)   ));
+
+  vM->AddNode(vC1 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC2 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC3 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC4 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC5 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC6 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC7 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC8 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC9 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC10,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
+  vM->AddNode(vC11,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+				new TGeoRotation("", 0, 180, 180)   ));
 
   zpos = kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
        + kHalfLengthRing;
