@@ -40,34 +40,41 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   void         SetSelectParticles(Int_t selectParticles)             {fSelectParticles = selectParticles;}
   void         SetSelectParticlesAssoc(Int_t selectParticlesAssoc)   {fSelectParticlesAssoc = selectParticlesAssoc;}
   void         SetCheckSDD (Bool_t checkSDD, Int_t selOption)        {fCheckSDD = checkSDD; fSelOption = selOption;}
-
+  void         SetCorrStrangeness (Bool_t corrStrangeness)            {fCorrStrangeness = corrStrangeness;}
 
  private:
 
   Int_t ReadEventESD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Float_t> &strangnessWeight,
 			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   Int_t ReadEventESDRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Float_t> &strangnessWeight,
 			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   Int_t ReadEventESDMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Float_t> &strangnessWeight,
 			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   
   Int_t ReadEventAOD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Float_t> &strangnessWeight,
 			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   Int_t ReadEventAODRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Float_t> &strangnessWeight,
 			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   Int_t ReadEventAODMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Float_t> &strangnessWeight,
 			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   
   void  Analyse         (const std::vector<Float_t> &pt, 
 			 const std::vector<Float_t> &eta, 
 			 const std::vector<Float_t> &phi, 
 			 const std::vector<Short_t> &charge, 
+			 const std::vector<Float_t> &strangnessWeight,
 			 const Int_t ntacks, const Int_t ntacklets=0, 
 			 const Int_t nAll=0, const Int_t step=0);
   
@@ -96,12 +103,14 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Int_t        fSelectParticles;            // only in cas of MC: use also neutral particles or not 
   Int_t        fSelectParticlesAssoc;       // only in cas of MC: use also neutral particles or not 
   Bool_t       fCheckSDD;                   // check if SDD was in read out partition (needed for LHC11a)
+  Bool_t       fCorrStrangeness;            // for data correction -> Pythia simulations underestimate contamination from strangness
   Int_t        fSelOption;                  // 0 = use hit in SDD for event selection, 1 = use trigger for event selection
 
   AliESDEvent *fESDEvent;                   //! esd event
   AliAODEvent *fAODEvent;                   //! aod event
   Int_t        fNMcPrimAccept;              // global variable for mc multiplucity
   Int_t        fNRecAccept;                 // global variable for rec multiplucity
+  Float_t      fNRecAcceptStrangeCorr;                 // global variable for rec multiplucity
   Int_t        fNMcPrimAcceptTracklet;      // global variable for mc multiplucity
   Int_t        fNRecAcceptTracklet;         // global variable for rec multiplucity
   Float_t      fVzEvent;                    // global variable for rec vertex position
@@ -118,6 +127,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH2F       *fNmcNch;                      // N mc - N ch rec
   TProfile   *fPNmcNch;                     // N mc - N ch rec
   TH2F       *fNmcNchVtx;                   // N mc - N ch rec for events with reconstructed vertex
+  TH2F       *fNmcNchVtxStrangeCorr;        // N mc - N ch rec for events with reconstructed vertex + strangeness correction
   TProfile   *fPNmcNchVtx;                  // N mc - N ch rec for events with reconstructed vertex
   TH2F       *fNmcNchTracklet;              // N mc - N ch rec
   TProfile   *fPNmcNchTracklet;             // N mc - N ch rec
@@ -126,43 +136,43 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH2F       *fChargedPi0;                  // charged versus charged+Pi0
   TH1F       *fVertexCheck;                 // check which fraction of events has vtx_rec but no good vtx_mc
 
-  THnSparse  *fMapSingleTrig[6];            //! multi-dim histo for trigger track properties
-  THnSparse  *fMapPair[6];                  //! multi-dim histo for pair properties
-  THnSparse  *fMapEvent[6];                 //! multi-dim histo for event properties
-  THnSparse  *fMapAll[6];                   //! multi-dim histo for properties of all analysed tracks
+  THnSparse  *fMapSingleTrig[8];            //! multi-dim histo for trigger track properties
+  THnSparse  *fMapPair[8];                  //! multi-dim histo for pair properties
+  THnSparse  *fMapEvent[8];                 //! multi-dim histo for event properties
+  THnSparse  *fMapAll[8];                   //! multi-dim histo for properties of all analysed tracks
   
-  TH1F       * fVertexZ[6];                 // z of vertex
-  TH1F       * fNcharge[6];                 // pt
-  TH1F       * fPt[6];                      // pt
-  TH1F       * fEta[6];                     // eta
-  TH1F       * fPhi[6];                     // phi
-  TH1F       * fDcaXY[6];                   // dca xy direction
-  TH1F       * fDcaZ[6];                    // dca z direction
+  TH1F       * fVertexZ[8];                 // z of vertex
+  TH1F       * fNcharge[8];                 // pt
+  TH1F       * fPt[8];                      // pt
+  TH1F       * fEta[8];                     // eta
+  TH1F       * fPhi[8];                     // phi
+  TH1F       * fDcaXY[8];                   // dca xy direction
+  TH1F       * fDcaZ[8];                    // dca z direction
 
-  TH1F       * fPtSeed[6];                  // pt of seed (event axis)
-  TH1F       * fEtaSeed[6];                 // eta of seed 
-  TH1F       * fPhiSeed[6];                 // phi of seed
+  TH1F       * fPtSeed[8];                  // pt of seed (event axis)
+  TH1F       * fEtaSeed[8];                 // eta of seed 
+  TH1F       * fPhiSeed[8];                 // phi of seed
 
-  TH1F       * fPtOthers[6];                // pt of all other particels used in dEtadPhi
-  TH1F       * fEtaOthers[6];               // eta of all other particels used in dEtadPhi
-  TH1F       * fPhiOthers[6];               // phi of all other particels used in dEtadPhi
-  TH2F       * fPtEtaOthers[6];             // pt-eta of all other particels used in dEtadPhi
+  TH1F       * fPtOthers[8];                // pt of all other particels used in dEtadPhi
+  TH1F       * fEtaOthers[8];               // eta of all other particels used in dEtadPhi
+  TH1F       * fPhiOthers[8];               // phi of all other particels used in dEtadPhi
+  TH2F       * fPtEtaOthers[8];             // pt-eta of all other particels used in dEtadPhi
 
 
-  TH2F       * fPhiEta[6];                  // eta - phi
-  TH2F       * fDPhiDEtaEventAxis[6];       // correlation dEta-dPhi towards event axis
-  TH2F       * fDPhiDEtaEventAxisSeeds[6];  // correlation dEta-dPhi towards event axis of trigger particles
-  TH1F       * fTriggerNch[6];              // number of triggers with accepted-track number
-  TH2F       * fTriggerNchSeeds[6];         // number of triggers with accepted-track number
-  TH1F       * fTriggerTracklet[6];         // number of triggers with accepted-tracklet number
-  TH2F       * fNch07Nch[6];                // nCharged with pT>fTriggerPtCut vs nCharged
-  TProfile   * fPNch07Nch[6];               // nCharged with pT>fTriggerPtCut vs nCharged
+  TH2F       * fPhiEta[8];                  // eta - phi
+  TH2F       * fDPhiDEtaEventAxis[8];       // correlation dEta-dPhi towards event axis
+  TH2F       * fDPhiDEtaEventAxisSeeds[8];  // correlation dEta-dPhi towards event axis of trigger particles
+  TH1F       * fTriggerNch[8];              // number of triggers with accepted-track number
+  TH2F       * fTriggerNchSeeds[8];         // number of triggers with accepted-track number
+  TH1F       * fTriggerTracklet[8];         // number of triggers with accepted-tracklet number
+  TH2F       * fNch07Nch[8];                // nCharged with pT>fTriggerPtCut vs nCharged
+  TProfile   * fPNch07Nch[8];               // nCharged with pT>fTriggerPtCut vs nCharged
   
-  TH2F       * fNch07Tracklet[6];           // nCharged with pT>fTriggerPtCut vs nTracklet
-  TH2F       * fNchTracklet[6];             // nCharged vs nTracklet
-  TProfile   * fPNch07Tracklet[6];           // nCharged with pT>fTriggerPtCut vs nTracklet
+  TH2F       * fNch07Tracklet[8];           // nCharged with pT>fTriggerPtCut vs nTracklet
+  TH2F       * fNchTracklet[8];             // nCharged vs nTracklet
+  TProfile   * fPNch07Tracklet[8];           // nCharged with pT>fTriggerPtCut vs nTracklet
 
-  TH1F       * fDPhiEventAxis[6];           // delta phi of associate tracks to event axis
+  TH1F       * fDPhiEventAxis[8];           // delta phi of associate tracks to event axis
  
   AliAnalysisTaskMinijet(const AliAnalysisTaskMinijet&); // not implemented
   AliAnalysisTaskMinijet& operator=(const AliAnalysisTaskMinijet&); // not implemented
