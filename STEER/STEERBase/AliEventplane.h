@@ -53,6 +53,7 @@ class AliEventplane : public TNamed
   Double_t  GetQsubRes();
   Bool_t    IsEventInEventplaneClass(Double_t a, Double_t b, const char *method);
   Double_t  CalculateVZEROEventPlane(const AliVEvent *event, Int_t firstRing, Int_t lastRing, Int_t harmonic, Double_t &qxTot, Double_t &qyTot) const;
+  Double_t  CalculateVZEROEventPlane(const AliVEvent *  event, Int_t ring, Int_t harmonic, Double_t &qx, Double_t &qy) const;
   void      SetVZEROEPParams(Int_t ring,
 			     Double_t meanX2, Double_t meanY2,
 			     Double_t aPlus, Double_t aMinus,
@@ -73,14 +74,14 @@ class AliEventplane : public TNamed
    TVector2* fQsub1;		 // Q-Vector of subevent 1
    TVector2* fQsub2;		 // Q-Vector of subevent 2
    Double_t fQsubRes;		 // Difference of EP angles of subevents
-   Double_t fMeanX2[8];          // Mean Q^2_X for VZERO EP
-   Double_t fMeanY2[8];          // Mean Q^2_Y for VZERO EP
-   Double_t fAPlus[8];           // Q^2_X rescaling parameter for VZERO EP
-   Double_t fAMinus[8];          // Q^2_Y rescaling parameter for VZERO EP
-   Double_t fLambdaPlus[8];      // Q^2_X twisting parameter for VZERO EP
-   Double_t fLambdaMinus[8];     // Q^2_Y twisting parameter for VZERO EP 
-   Double_t fCos8Psi[8];         // 4th Fourier momenta used to flatten VZERO EP within a sector 
+   Double_t fMeanX2[11];         // Mean Q^2_X for VZERO EP
+   Double_t fMeanY2[11];         // Mean Q^2_Y for VZERO EP
+   Double_t fAPlus[11];          // Q^2_X rescaling parameter for VZERO EP
+   Double_t fAMinus[11];         // Q^2_Y rescaling parameter for VZERO EP
+   Double_t fLambdaPlus[11];     // Q^2_X twisting parameter for VZERO EP
+   Double_t fLambdaMinus[11];    // Q^2_Y twisting parameter for VZERO EP 
+   Double_t fCos8Psi[11];        // 4th Fourier momenta used to flatten VZERO EP within a sector 
 
-  ClassDef(AliEventplane, 4)
+  ClassDef(AliEventplane, 5)
 };
 #endif //ALIEVENTPLANE_H

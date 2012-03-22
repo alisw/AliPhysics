@@ -50,7 +50,7 @@ AliEventplane::AliEventplane() : TNamed("Eventplane", "Eventplane"),
   fQContributionYsub1 = new TArrayF(0);
   fQContributionXsub2 = new TArrayF(0);
   fQContributionYsub2 = new TArrayF(0);
-  for(Int_t i = 0; i < 8; ++i) {
+  for(Int_t i = 0; i < 11; ++i) {
     fMeanX2[i]=fMeanY2[i]=0.;
     fAPlus[i]=fAMinus[i]=1.;
     fLambdaPlus[i]=fLambdaMinus[i]=0.;
@@ -112,7 +112,7 @@ void AliEventplane::CopyEP(AliEventplane& ep) const
   if (fQsubRes)
       target.fQsubRes = fQsubRes;
 
-  for(Int_t i = 0; i < 8; ++i) {
+  for(Int_t i = 0; i < 11; ++i) {
     target.fMeanX2[i]=fMeanX2[i];
     target.fMeanY2[i]=fMeanY2[i];
     target.fAPlus[i]=fAPlus[i];
@@ -174,15 +174,17 @@ Double_t AliEventplane::GetEventplane(const char *x, const AliVEvent *event, Int
   TString method = x;
   Double_t qx = 0, qy = 0;
   if(method.CompareTo("Q")==0)      return fEventplaneQ;
-  else if(method.CompareTo("V0A")==0) return CalculateVZEROEventPlane(event, 4, 7, harmonic, qx, qy);
-  else if(method.CompareTo("V0C")==0) return CalculateVZEROEventPlane(event, 0, 3, harmonic, qx, qy);
-  else if(method.CompareTo("V0")==0)  return CalculateVZEROEventPlane(event, 0, 7, harmonic, qx, qy);
+  else if(method.CompareTo("V0A")==0) return CalculateVZEROEventPlane(event, 8, harmonic, qx, qy);
+  else if(method.CompareTo("V0C")==0) return CalculateVZEROEventPlane(event, 9, harmonic, qx, qy);
+  else if(method.CompareTo("V0")==0)  return CalculateVZEROEventPlane(event,10, harmonic, qx, qy);
 
   return -1000.;
 }
 
 Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t firstRing, Int_t lastRing, Int_t harmonic, Double_t &qxTot, Double_t &qyTot) const
 {
+  // Calculate the VZERO event-plane by summing rings
+  // The flatenning is done on every ring separately
   if(!event) {
     AliError("No Event received");
     return -1000.;
@@ -202,11 +204,6 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
   Double_t totMult = 0.;
   for(Int_t ring = firstRing; ring <=lastRing; ++ring) {
     qx=qy=0.;
-    Double_t trans[2][2];
-    trans[0][0] = 1./(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
-    trans[0][1] = -fLambdaMinus[ring]/(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
-    trans[1][0] = -fLambdaPlus[ring]/(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
-    trans[1][1] = 1./(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
     Double_t multRing = 0.;
     for(Int_t iCh = ring*8; iCh < (ring+1)*8; ++iCh) {
       Double_t phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
@@ -224,6 +221,11 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
       Double_t qxPrime = qx - fMeanX2[ring];
       Double_t qyPrime = qy - fMeanY2[ring];
       // Twist
+      Double_t trans[2][2];
+      trans[0][0] = 1./(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
+      trans[0][1] = -fLambdaMinus[ring]/(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
+      trans[1][0] = -fLambdaPlus[ring]/(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
+      trans[1][1] = 1./(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
       Double_t qxSeconde = trans[0][0]*qxPrime + trans[0][1]*qyPrime;
       Double_t qySeconde = trans[1][0]*qxPrime + trans[1][1]*qyPrime;
       // Rescaling
@@ -249,6 +251,65 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
   return (TMath::ATan2(qyTot,qxTot)/harmonic);
 }
 
+Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t ring, Int_t harmonic, Double_t &qx, Double_t &qy) const
+{
+  // Calculate the VZERO event-plane from an individual ring
+  // Ring 8 - total V0A (rings 4-7), Ring 9 - total V0C (rings 0-3)
+  // Ring 10 - total V0 (rings 0-7)
+  if(!event) {
+    AliError("No Event received");
+    return -1000.;
+  }
+  AliVVZERO *vzeroData = event->GetVZEROData();
+  if(!vzeroData) {
+    AliError("Enable to get VZERO Data");
+    return -1000.;
+  }
+  if(harmonic <= 0) {
+    AliError("Required harmonic is less or equal to 0");
+    return -1000.;
+  }
+
+  qx=qy=0.;
+  Double_t multRing = 0.;
+  for(Int_t iCh = ring*8; iCh < (ring+1)*8; ++iCh) {
+    Double_t phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
+    Double_t mult = event->GetVZEROEqMultiplicity(iCh);
+    qx += mult*TMath::Cos(harmonic*phi);
+    qy += mult*TMath::Sin(harmonic*phi);
+    multRing += mult;
+  }
+
+  // In case of no hits return an invalid event-plane angle
+  if (multRing < 1e-6) return -999;
+
+  if (harmonic == 2) {
+    // Recentering
+    Double_t qxPrime = qx - fMeanX2[ring];
+    Double_t qyPrime = qy - fMeanY2[ring];
+    // Twist
+    Double_t trans[2][2];
+    trans[0][0] = 1./(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
+    trans[0][1] = -fLambdaMinus[ring]/(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
+    trans[1][0] = -fLambdaPlus[ring]/(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
+    trans[1][1] = 1./(1.-fLambdaPlus[ring]*fLambdaMinus[ring]);
+    Double_t qxSeconde = trans[0][0]*qxPrime + trans[0][1]*qyPrime;
+    Double_t qySeconde = trans[1][0]*qxPrime + trans[1][1]*qyPrime;
+    // Rescaling
+    Double_t qxTierce = qxSeconde/fAPlus[ring];
+    Double_t qyTierce = qySeconde/fAMinus[ring];
+    // 4th Fourier momenta in order to flatten the EP within a sector
+    Double_t psi = TMath::ATan2(qyTierce,qxTierce)/harmonic;
+    Double_t deltaPsi = (fCos8Psi[ring]*TMath::Sin(2.*4.*psi))/2.;
+    Double_t qxQuarte = qxTierce*TMath::Cos(2.*deltaPsi) - qyTierce*TMath::Sin(2.*deltaPsi);
+    Double_t qyQuarte = qxTierce*TMath::Sin(2.*deltaPsi) + qyTierce*TMath::Cos(2.*deltaPsi);
+    qx = qxQuarte;
+    qy = qyQuarte;
+  }
+
+  return (TMath::ATan2(qy,qx)/harmonic);
+}
+
 void AliEventplane::SetVZEROEPParams(Int_t ring,
 				     Double_t meanX2, Double_t meanY2,
 				     Double_t aPlus, Double_t aMinus,
@@ -257,7 +318,7 @@ void AliEventplane::SetVZEROEPParams(Int_t ring,
 {
   // Set the VZERO event-plane
   // flatenning parameters
-  if (ring < 0 || ring >=8) AliFatal(Form("Bad ring index (%d)",ring));
+  if (ring < 0 || ring >= 11) AliFatal(Form("Bad ring index (%d)",ring));
 
   fMeanX2[ring] = meanX2;
   fMeanY2[ring] = meanY2;

@@ -173,6 +173,7 @@ public:
   virtual AliVVZERO *GetVZEROData() const = 0;   
   virtual const Float_t* GetVZEROEqFactors() const {return NULL;}
   virtual Float_t        GetVZEROEqMultiplicity(Int_t /* i */) const {return -1;}
+  virtual void           SetVZEROEqFactors(Float_t /* factors */[64]) const {return;}
   virtual AliVZDC   *GetZDCData() const = 0;
 
   ClassDef(AliVEvent,2)  // base class for AliEvent data

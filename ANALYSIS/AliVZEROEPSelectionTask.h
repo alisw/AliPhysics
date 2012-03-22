@@ -48,12 +48,12 @@ class AliVZEROEPSelectionTask : public AliAnalysisTaskSE {
   Bool_t   fUseVZEROCentrality;         // use VZERO centrality estimator instead of SPD
   AliOADBContainer* fVZEROEPContainer;	// VZERO event-plane OADB Container
 
-  TProfile *fX2In[8];                   // Profile histogram for Q^2_x (read from input file)
-  TProfile *fY2In[8];                   // Profile histogram for Q^2_y (read from input file)
-  TProfile *fX2Y2In[8];                 // Profile histogram for Q^2_x*Q^2_y (read from input file)
-  TProfile *fCos8PsiIn[8];              // Profile histogram for Cos(8*Psi) (read from input file)
+  TProfile *fX2In[11];                   // Profile histogram for Q^2_x (read from input file)
+  TProfile *fY2In[11];                   // Profile histogram for Q^2_y (read from input file)
+  TProfile *fX2Y2In[11];                 // Profile histogram for Q^2_x*Q^2_y (read from input file)
+  TProfile *fCos8PsiIn[11];              // Profile histogram for Cos(8*Psi) (read from input file)
 
-  ClassDef(AliVZEROEPSelectionTask,1) 
+  ClassDef(AliVZEROEPSelectionTask,2) 
 };
 
 #endif

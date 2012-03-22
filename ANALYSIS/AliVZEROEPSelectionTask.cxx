@@ -50,7 +50,7 @@ AliAnalysisTaskSE(),
   // Default constructor
   // Initialize pointers
   AliInfo("VZERO Event Plane Selection enabled.");
-  for(Int_t i = 0; i < 8; ++i) fX2In[i] = fY2In[i] = fX2Y2In[i] = fCos8PsiIn[i] = NULL;
+  for(Int_t i = 0; i < 11; ++i) fX2In[i] = fY2In[i] = fX2Y2In[i] = fCos8PsiIn[i] = NULL;
 }   
 
 //________________________________________________________________________
@@ -64,7 +64,7 @@ AliVZEROEPSelectionTask::AliVZEROEPSelectionTask(const char *name):
   // Default constructor
   // Initialize pointers
   AliInfo("Event Plane Selection enabled.");
-  for(Int_t i = 0; i < 8; ++i) fX2In[i] = fY2In[i] = fX2Y2In[i] = fCos8PsiIn[i] = NULL;
+  for(Int_t i = 0; i < 11; ++i) fX2In[i] = fY2In[i] = fX2Y2In[i] = fCos8PsiIn[i] = NULL;
 }
  
 //________________________________________________________________________
@@ -73,7 +73,7 @@ AliVZEROEPSelectionTask::~AliVZEROEPSelectionTask()
   // Destructor
   // ...
   if (fUserParams) {
-    for(Int_t i = 0; i < 8; ++i) {
+    for(Int_t i = 0; i < 11; ++i) {
       delete fX2In[i];
       fX2In[i] = NULL;
       delete fY2In[i];
@@ -146,11 +146,11 @@ void AliVZEROEPSelectionTask::SetEventplaneParams(AliEventplane *esdEP,Float_t p
     AliFatal("No event plane received");
 
   if (percentile < 0 || percentile > 100) {
-    for(Int_t ring = 0; ring < 8; ++ring) esdEP->SetVZEROEPParams(ring,0.,0.,1.,1.,0.,0.,0.);
+    for(Int_t ring = 0; ring < 11; ++ring) esdEP->SetVZEROEPParams(ring,0.,0.,1.,1.,0.,0.,0.);
     return;
   }
 
-  for(Int_t ring = 0; ring < 8; ++ring) {
+  for(Int_t ring = 0; ring < 11; ++ring) {
     Int_t ibin = fX2In[ring]->FindBin(percentile);
     if (fX2In[ring]->GetBinEntries(ibin) == 0) {
       esdEP->SetVZEROEPParams(ring,0.,0.,1.,1.,0.,0.,0.);
@@ -208,7 +208,7 @@ void AliVZEROEPSelectionTask::SetHistograms(TList *list)
   // Set the flatenning parameters
   // histograms from a given list
 
-  for(Int_t i = 0; i < 8; ++i) {
+  for(Int_t i = 0; i < 11; ++i) {
     fX2In[i] = (TProfile*)list->FindObject(Form("fX2_%d",i))->Clone(Form("fX2In_%d",i));
     fX2In[i]->SetDirectory(0);
     fY2In[i] = (TProfile*)list->FindObject(Form("fY2_%d",i))->Clone(Form("fY2In_%d",i));
