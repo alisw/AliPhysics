@@ -172,7 +172,5 @@ void AliGenBox::Init()
     Fatal("Init","You should only set the range of one of these variables: y, eta or theta\n");
   if((!TestBit(kYRange)) && (!TestBit(kEtaRange)) && (!TestBit(kThetaRange)) )
     Fatal("Init","You should set the range of one of these variables: y, eta or theta\n");
-
-  AliPDG::AddParticlesToPdgDataBase();
 }
 
