@@ -138,7 +138,6 @@ AliMuonForwardTrack::~AliMuonForwardTrack() {
 
   delete fMUONTrack;
   delete fMCTrackRef;
-  fMFTClusters->Delete();
   delete fMFTClusters;
   
 }

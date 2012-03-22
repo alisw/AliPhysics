@@ -30,10 +30,13 @@ void MergeAllClusters();
 			       
 //====================================================================================================================================================
 
-void MergeClustersMFT(Int_t option = 9999,
+void MergeClustersMFT(Int_t seed = 12345,
+		      Int_t option = 9999,
 		      Int_t nEvents = 9999,
 		      Int_t maxPileUp = 9999) {
   
+  gRandom->SetSeed(seed);
+
   if (option==kMergePileUpClusters_pp) {
 
     Int_t runs_pp[fNRunsPileUp_pp] = {0};

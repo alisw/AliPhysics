@@ -510,8 +510,8 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   
   // the track we are going to build, starting from fMuonTrackReco and adding the MFT clusters
   AliMuonForwardTrack *track = new ((*fCandidateTracks)[0]) AliMuonForwardTrack();
-  track -> SetMUONTrack(fMuonTrackReco);
-  if (fLabelMC>=0 && fStack->Particle(fLabelMC)) track->SetMCTrackRef(fStack->Particle(fLabelMC));
+  track -> SetMUONTrack(new AliMUONTrack(*fMuonTrackReco));
+  if (fLabelMC>=0 && fStack->Particle(fLabelMC)) track->SetMCTrackRef(new TParticle(*(fStack->Particle(fLabelMC))));
   track -> SetMCLabel(fMuonTrackReco->GetMCLabel());
   track -> SetMatchTrigger(fMuonTrackReco->GetMatchTrigger());
 
@@ -915,7 +915,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
       AliDebug(3, Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
       newTrack->AddTrackParamAtMFTCluster(currentParamFront, *cluster);    // creating new track param and attaching the cluster
-      AliDebug(1, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
+      AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
       newTrack->SetPlaneExists(planeId);
       AliDebug(2, Form("current muon is trackable: %d\n", fIsCurrentMuonTrackable));
@@ -968,7 +968,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
       AliDebug(3,Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
       newTrack->AddTrackParamAtMFTCluster(currentParamBack, *cluster);    // creating new track param and attaching the cluster
-      AliDebug(1, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
+      AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
       newTrack->SetPlaneExists(planeId);
       AliDebug(2, Form("current muon is trackable: %d\n", fIsCurrentMuonTrackable));
@@ -1395,12 +1395,13 @@ void AliMuonForwardTrackFinder::PrintParticleHistory() {
   TParticle *part = 0;
   if (fLabelMC>=0) part = fStack->Particle(fLabelMC);
 
-  AliDebug(1, Form("fStack->Particle(fLabelMC) = %p", part));
+  AliDebug(1, Form("fStack->Particle(%d) = %p", fLabelMC, part));
+  AliDebug(1, Form("fStack->Particle(%d)->GetPdgCode() = %d", fLabelMC, part->GetPdgCode()));
 
   if (part) {
     if (part->GetFirstMother() != -1) {
       TParticle *partMother = fStack->Particle(part->GetFirstMother());
-      AliDebug(1, Form("fStack->Particle(part->GetFirstMother() = %p", partMother));
+      AliDebug(1, Form("fStack->Particle(%d) = %p", part->GetFirstMother(), partMother));
       if (partMother) {
 	Char_t newName[100];
 	if (partMother->GetFirstMother() != -1) history += "...  #rightarrow ";
@@ -1409,6 +1410,8 @@ void AliMuonForwardTrackFinder::PrintParticleHistory() {
       }
     }
     Char_t newName[100];
+    AliDebug(1, Form("fStack->Particle(%d)->GetPdgCode() = %d", fLabelMC, part->GetPdgCode()));
+    AliDebug(1, Form("fStack->Particle(%d)->GetName() = %s", fLabelMC, part->GetName()));
     PDGNameConverter(part->GetName(), newName);
     history += Form("%s  at  z = %5.1f cm", newName, part->Vz());
     //  printf("%s", history.Data());

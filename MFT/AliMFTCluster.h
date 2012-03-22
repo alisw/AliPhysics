@@ -29,7 +29,7 @@ public:
   AliMFTCluster(const AliMFTCluster&);
   AliMFTCluster& operator=(const AliMFTCluster&);
 
-  virtual ~AliMFTCluster() { fDigitsInCluster->Delete(); delete fDigitsInCluster; }  // destructor
+  virtual ~AliMFTCluster() { ; }  // destructor
 
   void SetXYZ(Double_t x, Double_t y, Double_t z) { fX=x; fY=y; fZ=z; }
 
