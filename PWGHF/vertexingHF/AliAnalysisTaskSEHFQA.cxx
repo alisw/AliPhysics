@@ -564,11 +564,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fFlowEvent = new AliFlowEvent(3000);
     fRFPcuts = new AliFlowTrackCuts("rfpCuts");
 
-    TH1F *hFEvents = new TH1F("hFlowEvents","FlowEvent Selection",4,0,4);
+    TH2F *hFEvents = new TH2F("hFlowEvents","FlowEvent Selection",7,0,7,7,-10,60);
     hFEvents->GetXaxis()->SetBinLabel(1,"REACHED");
     hFEvents->GetXaxis()->SetBinLabel(2,"TRIGGERED");
-    hFEvents->GetXaxis()->SetBinLabel(3,"-7<Zvtx<7 + CC(0-60)");
-    hFEvents->GetXaxis()->SetBinLabel(4,"UnexpectedBehaviour");
+    hFEvents->GetXaxis()->SetBinLabel(3,"kMB");
+    hFEvents->GetXaxis()->SetBinLabel(4,"kCent");
+    hFEvents->GetXaxis()->SetBinLabel(5,"kSemiC");
+    hFEvents->GetXaxis()->SetBinLabel(6,"Triggered + vtx cut");
+    hFEvents->GetXaxis()->SetBinLabel(7,"UnexpectedBehaviour");
     fOutputFlowObs->Add(hFEvents);
 
     TProfile2D *hQ[3];
@@ -597,7 +600,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       hPhiEta[i] = new TH3F( Form("h%s_PhiEta",ref[i].Data()),
 			     Form("Eta vs Phi for %s",ref[i].Data()),
-			     72,0,TMath::Pi(),etabin[i],-1.0*etamax[i],+1.0*etamax[i],12,0,60);
+			     144,0,TMath::TwoPi(),etabin[i],-1.0*etamax[i],+1.0*etamax[i],12,0,60);
       hPhiEta[i]->GetXaxis()->SetTitle("Phi");
       hPhiEta[i]->GetYaxis()->SetTitle("Eta");
       hPhiEta[i]->GetZaxis()->SetTitle("Centrality");
@@ -609,6 +612,11 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hTPCVZE_AngleQ->GetYaxis()->SetTitle("#Psi_{2}^{VZE}");
     hTPCVZE_AngleQ->GetZaxis()->SetTitle("Centrality");
     fOutputFlowObs->Add(hTPCVZE_AngleQ);
+
+    TH2F *hCentVsMultRPS = new TH2F("hCentVsMultRPS", " Centrality Vs. Multiplicity RPs",5000, 0, 5000.,12,0,60 );
+    hCentVsMultRPS->GetXaxis()->SetTitle("Multiplicity RPs");
+    hCentVsMultRPS->GetYaxis()->SetTitle("Centrality");
+    fOutputFlowObs->Add(hCentVsMultRPS);
   }
 //  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 //  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1252,27 +1260,29 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 //____________________________________________________________________________
 void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
   //fills the flow observables
-  ((TH1F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(0);
+  Double_t cc;
+  cc = fCuts->GetCentrality(aod);
+  ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(0., cc);
 
   UInt_t mask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   UInt_t trigger=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-  Double_t cc;
   if(mask & trigger) {
-    ((TH1F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(1); // fired
+    ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(1.,cc); // fired
+    if (mask & AliVEvent::kMB) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(2.,cc);
+    if (mask & AliVEvent::kCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(3.,cc);
+    if (mask & AliVEvent::kSemiCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(4.,cc);
     Bool_t rejected=false;
-    cc = fCuts->GetCentrality(aod);
     if(cc<0 || cc>60) rejected=true;
     const AliVVertex *vertex = aod->GetPrimaryVertex();
     Double_t zvtx=vertex->GetZ();
-    if(TMath::Abs(zvtx)>7.) rejected=true;
+    if(TMath::Abs(zvtx)>fCuts->GetMaxVtxZ()) rejected=true;
     if(rejected) return; //not interesting for flow QA
   } else {
     return;
   }
 
   // event accepted
-  ((TH1F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(2);
-
+  ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(5.,cc);
   fRFPcuts->SetParamType(AliFlowTrackCuts::kGlobal);
   fRFPcuts->SetPtRange(0.2,5.);
   fRFPcuts->SetEtaRange(-0.8,0.8);
@@ -1300,14 +1310,14 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
     }
     fFlowEvent->Fill(fRFPcuts,fRFPcuts);
     fFlowEvent->TagSubeventsInEta(-5,0,0,+5);
-    // getting information
+    // getting informationt
     AliFlowVector vQ, vQaQb[2];
     fFlowEvent->Get2Qsub(vQaQb,2);
     vQ = vQaQb[0]+vQaQb[1];
     Double_t dMa=vQaQb[0].GetMult();
     Double_t dMb=vQaQb[1].GetMult();
     if( dMa<2 || dMb<2 ) {
-      ((TH1F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(3); //???
+      ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(6.,cc); //???
       continue;
     }
     psi[i] = vQ.Phi()/2;
@@ -1324,6 +1334,11 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
       if(!track->InRPSelection()) continue;
       ((TH3F*) fOutputFlowObs->FindObject( Form("h%s_PhiEta",ref[i].Data()) ))->Fill(track->Phi(),track->Eta(),cc,track->Weight()); //PhiEta
     }
+  
+  //histo filled only for TPCFB1
+  if (i==0) {
+    ((TH2F*) fOutputFlowObs->FindObject("hCentVsMultRPS"))->Fill(fFlowEvent->GetNumberOfRPs(),cc);
+  }
   }
   // TPC vs VZERO
   ((TH3F*) fOutputFlowObs->FindObject( "hTPCVZE_AngleQ" ))->Fill(psi[0],psi[2],cc);
