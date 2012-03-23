@@ -12,14 +12,20 @@
 #include <TGeoNode.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_emcal()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
-
+  if (!node) {
+    Warning("geom_emcal()", "Node XEN1_1 not found.");
+    return;
+  }
+  
   TEveGeoTopNode* emcal_re = new TEveGeoTopNode(gGeoManager, node);
   gEve->AddGlobalElement(emcal_re);
   gEve->Redraw3D();

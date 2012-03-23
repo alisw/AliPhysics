@@ -24,7 +24,7 @@
 void tof_digits_sector(Int_t sector=0)
 {
   
-  TGeoManager *localGeoManager = gEve->GetGeometry("./geometry.root");//  gGeoManager = gEve->GetDefaultGeometry();
+  TGeoManager *localGeoManager = AliEveEventManager::AssertGeometry(); //gEve->GetGeometry("./geometry.root");
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }

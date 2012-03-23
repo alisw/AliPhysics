@@ -13,13 +13,15 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_vzero()
 {
   static const TEveException kEH("geom_vzero() ");
 
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TEveElementList* list = new TEveElementList("VZero");
   gEve->AddGlobalElement(list);

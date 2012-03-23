@@ -13,11 +13,13 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_zdc()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TEveElementList* list = new TEveElementList("ZDC");
   gEve->AddGlobalElement(list);

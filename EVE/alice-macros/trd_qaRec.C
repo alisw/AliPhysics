@@ -20,7 +20,8 @@
 void trd_qaRec()
 {
   gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libTRDqaRec.so");
+  gSystem->Load("libTENDER.so");
+  gSystem->Load("libPWGPP.so");
 
   if(!TFile::Open("TRD.DebugInfoGen.root")){
     printf("No debug file for InfoGen task.\n");

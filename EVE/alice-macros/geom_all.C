@@ -12,11 +12,13 @@
 #include <TGeoNode.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_all()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TEveGeoTopNode* topn_re = new TEveGeoTopNode(gGeoManager, gGeoManager->GetTopNode());
   gEve->AddGlobalElement(topn_re);

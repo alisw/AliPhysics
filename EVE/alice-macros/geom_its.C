@@ -11,11 +11,13 @@
 #include <TGeoManager.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_its()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
 
@@ -25,7 +27,7 @@ void geom_its()
 
 void geom_its_spd()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
   node = node->GetVolume()->FindNode("ITSSPD_1");
@@ -37,7 +39,7 @@ void geom_its_spd()
 
 void geom_its_sdd()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   //TEveGeoTopNode *its_re;
   TGeoNode       *n1, *n2;
@@ -55,7 +57,7 @@ void geom_its_sdd()
 
 void geom_its_ssd()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   //TEveGeoTopNode *its_re;
   TGeoNode       *n1, *n2;

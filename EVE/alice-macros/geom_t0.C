@@ -13,11 +13,13 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_t0()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TEveElementList* list = new TEveElementList("T0");
   gEve->AddGlobalElement(list);

@@ -12,13 +12,19 @@
 #include <TGeoNode.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_ddip()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("DDIP_1");
+  if (!node) {
+    Warning("geom_ddip()", "Node DDIP_1 not found.");
+    return;
+  }  
 
   TEveGeoTopNode* re = new TEveGeoTopNode(gGeoManager, node);
   re->UseNodeTrans();

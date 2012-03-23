@@ -11,11 +11,13 @@
 #include <TGeoManager.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_pmd()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   for(Int_t i=1; i<=4; ++i) {
     //PH The line below is replaced waiting for a fix in Root

@@ -11,11 +11,13 @@
 #include <TGeoManager.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_hmpid()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TEveElementList* list = new TEveElementList("HMPID");
   gEve->AddGlobalElement(list);

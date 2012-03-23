@@ -24,9 +24,9 @@
 #include <AliAODMCParticle.h>
 #include <AliESDtrack.h>
 #include <AliESDEvent.h>
-#include <PWG3/vertexingHF/AliAODRecoDecayHF.h>
-#include <PWG3/vertexingHF/AliAODRecoDecayHF2Prong.h>
-#include <PWG3/vertexingHF/macros/LoadLibraries.C>
+#include <PWGHF/vertexingHF/AliAODRecoDecayHF.h>
+#include <PWGHF/vertexingHF/AliAODRecoDecayHF2Prong.h>
+#include <PWGHF/vertexingHF/macros/LoadLibraries.C>
 #include <AliEveHF.h>
 #include <AliEveEventManager.h>
 #else
@@ -83,7 +83,7 @@ AliEveHFList* aod_HF()
 {
   Bool_t useParFiles=kFALSE;
   
-  TEveUtil::LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C+");
+  TEveUtil::LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C+");
   LoadLibraries(useParFiles);
   
   AliAODEvent* aod = AliEveEventManager::AssertAOD();

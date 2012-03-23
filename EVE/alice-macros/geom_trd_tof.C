@@ -12,11 +12,13 @@
 #include <TGeoNode.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+
+#include <AliEveEventManager.h>
 #endif
 
 void geom_trd_tof()
 {
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("B077_1");
 

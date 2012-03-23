@@ -26,7 +26,7 @@ void tof_digits()
 {  
   TClonesArray *array = 0x0;
 
-  TGeoManager *localGeoManager = gEve->GetGeometry("./geometry.root");//  gGeoManager = gEve->GetDefaultGeometry();
+  TGeoManager *localGeoManager = AliEveEventManager::AssertGeometry();
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }
