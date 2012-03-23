@@ -108,7 +108,10 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
  private:
     
-  virtual void   RecPoints2Clusters(TClonesArray *fdigitsArr, TObjArray *fRecPoints, TObjArray *clusArray);
+  virtual void   FillCaloClusterInAOD();
+  
+  virtual void   RecPoints2Clusters();
+  
   
   AliVEvent             *fEvent;                   // Event 
   
@@ -175,7 +178,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 19);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 20);
 
 };
 
