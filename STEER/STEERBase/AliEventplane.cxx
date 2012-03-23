@@ -270,9 +270,26 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
     return -1000.;
   }
 
+  Int_t firstCh=-1,lastCh=-1;
+  if (ring < 8) {
+    firstCh = ring*8;
+    lastCh = (ring+1)*8;
+  }
+  else if (ring == 8) {
+    firstCh = 32;
+    lastCh = 64;
+  }
+  else if (ring == 9) {
+    firstCh = 0;
+    lastCh = 32;
+  }
+  else if (ring == 10) {
+    firstCh = 0;
+    lastCh = 64;
+  }
   qx=qy=0.;
   Double_t multRing = 0.;
-  for(Int_t iCh = ring*8; iCh < (ring+1)*8; ++iCh) {
+  for(Int_t iCh = firstCh; iCh < lastCh; ++iCh) {
     Double_t phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
     Double_t mult = event->GetVZEROEqMultiplicity(iCh);
     qx += mult*TMath::Cos(harmonic*phi);
