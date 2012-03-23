@@ -96,7 +96,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fNmcNchVtxTracklet(0),
       fPNmcNchVtxTracklet(0),
       fChargedPi0(0),
-      fVertexCheck(0)
+      fVertexCheck(0),
+      fPropagateDca(0)
 {
 
   //Constructor
@@ -189,7 +190,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 
   fChargedPi0  = new TH2F("fChargedPi0", "fChargedPi0", 200, -0.5, 199.5, 200, -0.5, 199.5);
   fVertexCheck = new TH1F("fVertexCheck", "fVertexCheck", 100, -0.5, 99.5);
-    
+  fPropagateDca = new TH1F("fPropagateDca", "fPropagateDca", 2, -0.5, 1.5);
 
   //----------------------
   //bins for pt in THnSpare
@@ -393,6 +394,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   }
   fHists->Add(fChargedPi0);
   fHists->Add(fVertexCheck);
+  fHists->Add(fPropagateDca);
   
   for(Int_t i=0;i<8;i++){
     fHists->Add(fMapSingleTrig[i]);
@@ -569,7 +571,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 	  
 	  // analyse
 	  if(pt.size()){ //(internally ntracks=fNRecAccept)
-	    Analyse(pt, eta, phi, charge, strangenessWeight, fNRecAcceptStrangeCorr, nTracksTracklets[1], nTracksTracklets[2], 7);//step 7 = TrigVtxRecNrecStrangeCorr
+	    Analyse(pt, eta, phi, charge, strangenessWeight, TMath::Nint(fNRecAcceptStrangeCorr), nTracksTracklets[1], nTracksTracklets[2], 7);//step 7 = TrigVtxRecNrecStrangeCorr
 	  }
 	}
 	  
@@ -597,7 +599,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 	    
 	    //analyse
 	    if(pt.size()){//(internally ntracks=fNRecAccept)
-	      Analyse(pt, eta, phi, charge, strangenessWeight, fNRecAcceptStrangeCorr, nTracksTracklets[1], nTracksTracklets[2], 6); //step 6 = TrigVtxRecMcPropNrecStrangeCorr
+	      Analyse(pt, eta, phi, charge, strangenessWeight, TMath::Nint(fNRecAcceptStrangeCorr), nTracksTracklets[1], nTracksTracklets[2], 6); //step 6 = TrigVtxRecMcPropNrecStrangeCorr
 	    }
 	  }
 	  // step 3 = TrigVtxMcNrec
@@ -702,7 +704,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventESD( vector<Float_t> &ptArray,  vector<Fl
   //first loop to check how many tracks are accepted
   //------------------
   Int_t nAcceptedTracks=0;
-  Float_t nAcceptedTracksStrange=0;
+  //Float_t nAcceptedTracksStrange=0;
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
  
     AliESDtrack *esdTrack = (AliESDtrack *)fESDEvent->GetTrack(iTracks);
@@ -1121,7 +1123,8 @@ Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Fl
     
     Double_t save= track->Pt();
     Double_t d0rphiz[2],covd0[3];
-    track->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
+    Bool_t isDca= track->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
+    fPropagateDca->Fill(Int_t(isDca));
     if(TMath::Abs(save - track->Pt())>1e-6) Printf("Before pt=%f, After pt=%f",save, track->Pt());
 
     if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut  
