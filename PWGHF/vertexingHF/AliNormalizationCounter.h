@@ -58,7 +58,7 @@ class AliNormalizationCounter : public TNamed
   void Init();
   void Add(const AliNormalizationCounter*);
   void SetESD(Bool_t flag){fESD=flag;}
-  void SetStudyMultiplicity(Bool_t flag){ fMultiplicity=flag; }
+  void SetStudyMultiplicity(Bool_t flag, Float_t etaRange){ fMultiplicity=flag; fMultiplicityEtaRange=etaRange; }
   void StoreEvent(AliVEvent*,AliRDHFCuts *,Bool_t mc=kFALSE);
   void StoreCandidates(AliVEvent*, Int_t nCand=0,Bool_t flagFilter=kTRUE);
   TH1D* DrawAgainstRuns(TString candle="candid(filter)",Bool_t drawHist=kTRUE);
@@ -69,6 +69,7 @@ class AliNormalizationCounter : public TNamed
   Double_t GetNEventsForNorm();
   Double_t GetNEventsForNorm(Int_t runnumber);
   Bool_t GetStudyMultiplicity(){ return fMultiplicity; }
+  Float_t GetStudyMultplicityEtaRange() { return fMultiplicityEtaRange; }
   Double_t GetNEventsForNorm(Int_t minmultiplicity, Int_t maxmultiplicity);
   TH1D* DrawNEventsForNorm(Bool_t drawRatio=kFALSE);
 
@@ -79,12 +80,13 @@ class AliNormalizationCounter : public TNamed
   AliCounterCollection fCounters; //internal counter
   Bool_t fESD; //flag for ESD vs AOD
   Bool_t fMultiplicity; //flag for multiplicity
+  Float_t fMultiplicityEtaRange;
   TH2F *fHistTrackFilterEvMult; //hist to store no of filter candidates vs no of tracks in the event 
   TH2F *fHistTrackAnaEvMult;//hist to store no of analysis candidates vs no of tracks in the event 
   TH2F *fHistTrackFilterSpdMult; //hist to store no of filter candidates vs  SPD multiplicity 
   TH2F *fHistTrackAnaSpdMult;//hist to store no of analysis candidates vs SPD multiplicity 
 
-  ClassDef(AliNormalizationCounter,5);
+  ClassDef(AliNormalizationCounter,6);
 
 };
 #endif

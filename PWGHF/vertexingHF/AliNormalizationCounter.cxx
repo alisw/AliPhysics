@@ -47,6 +47,7 @@ TNamed(),
 fCounters(),
 fESD(kFALSE),
 fMultiplicity(kFALSE),
+fMultiplicityEtaRange(1.0),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -61,6 +62,7 @@ TNamed(name,name),
 fCounters(name),
 fESD(kFALSE),
 fMultiplicity(kFALSE),
+fMultiplicityEtaRange(1.0),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -488,7 +490,7 @@ Int_t AliNormalizationCounter::Multiplicity(AliVEvent* event){
   for(Int_t i=0;i<ntracklets; i++){
     Double_t theta = aodTracklets->GetTheta(i);
     Double_t eta = -TMath::Log( TMath::Tan(theta/2.) ); // check the formula
-    if(TMath::Abs(eta)<1.6){ // set the proper cut on eta
+    if(TMath::Abs(eta)<fMultiplicityEtaRange){ // set the proper cut on eta
       multiplicity++;
     }
   }
