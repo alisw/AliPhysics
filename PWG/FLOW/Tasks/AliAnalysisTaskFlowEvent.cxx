@@ -517,7 +517,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
   //check final event cuts
   Int_t mult = fFlowEvent->NumberOfTracks();
-  AliInfo(Form("FlowEvent has %i tracks",mult));
+  //  AliInfo(Form("FlowEvent has %i tracks",mult));
   if (mult<fMinMult || mult>fMaxMult)
   {
     AliWarning("FlowEvent cut on multiplicity"); return;
