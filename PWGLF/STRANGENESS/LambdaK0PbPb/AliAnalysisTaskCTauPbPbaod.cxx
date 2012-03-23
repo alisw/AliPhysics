@@ -42,9 +42,11 @@ fIsMC(kFALSE),
 fCMin(0.),
 fCMax(90.),
 fCPA(0.9975),
+fDCA(1.0),
 fOutput(0),
 fMult(0),
 fCosPA(0),
+fDtrDCA(0),
 fdEdx(0),
 fdEdxPid(0),
 
@@ -98,6 +100,10 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fCosPA=new TH1F("fCosPA","Cos(PA) distribution",50,0.9975,1.0005);
   fCosPA->GetXaxis()->SetTitle("Cos(PA)"); 
   fOutput->Add(fCosPA);
+
+  fDtrDCA=new TH1F("fDtrDCA","DCA between V0 daughters",50,0.0,1.5);
+  fDtrDCA->GetXaxis()->SetTitle("DCA (rel. u.)"); 
+  fOutput->Add(fDtrDCA);
 
   fdEdx=new TH2F("fdEdx","dE/dx",50,0.2,3,50,0.,6.);
   fOutput->Add(fdEdx);
@@ -266,6 +272,9 @@ AliAnalysisTaskCTauPbPbaod::AcceptV0(const AliAODv0 *v0,const AliAODEvent *aod)
   Double_t cpa=v0->CosPointingAngle(aod->GetPrimaryVertex());
   if (cpa < fCPA) return kFALSE;
 
+  Double_t dca=v0->DcaV0Daughters();
+  if (dca > fDCA) return kFALSE;
+
   const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
   if (!AcceptTrack(ntrack)) return kFALSE;
 
@@ -276,11 +285,6 @@ AliAnalysisTaskCTauPbPbaod::AcceptV0(const AliAODv0 *v0,const AliAODEvent *aod)
   if (TMath::Abs(xy)<0.1) return kFALSE;
   xy=v0->DcaPosToPrimVertex();
   if (TMath::Abs(xy)<0.1) return kFALSE;
-
-  Double_t dca=v0->DcaV0Daughters();
-  if (dca>1.0) return kFALSE;
-  //if (dca>0.7) return kFALSE;
-  //if (dca>0.4) return kFALSE;
 
   Double_t xyz[3]; v0->GetSecondaryVtx(xyz);
   Double_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
@@ -514,6 +518,9 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
       
       Double_t cpa=v0->CosPointingAngle(aod->GetPrimaryVertex());
       fCosPA->Fill(cpa);
+
+      Double_t dca=v0->DcaV0Daughters();
+      fDtrDCA->Fill(dca);
 
       const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
       const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);

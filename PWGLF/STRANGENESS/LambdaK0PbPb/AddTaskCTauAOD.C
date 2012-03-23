@@ -1,6 +1,6 @@
 AliAnalysisTaskCTauPbPbaod* 
 AddTaskCTauAOD(Double_t min=0., Double_t max=90., Double_t cpa=0.9975, 
-TString name="cTau_0090aod", Bool_t isMC=kFALSE) 
+Double_t dca=1.5, TString name="cTau_0090aod", Bool_t isMC=kFALSE) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -14,8 +14,9 @@ TString name="cTau_0090aod", Bool_t isMC=kFALSE)
   }
 
   AliAnalysisTaskCTauPbPbaod *task = new AliAnalysisTaskCTauPbPbaod(name);
-  task->SetCosPA(cpa);
   task->SetCentrality(min,max);
+  task->SetCosPA(cpa);
+  task->SetDtrDCA(dca);
   task->SetMC(isMC);
   mgr->AddTask(task);
   
