@@ -128,15 +128,17 @@ TString Setup
    //
    // === CENTRALITY/PLANE (ESD only) ==============================================================
    //
-
    if (isESD && !isPP) {
-      ::Info("AnalysisSetup", "Add centrality and event plane computation tasks");
+     ::Info("AnalysisSetup", "Add centrality and event plane computation tasks");
       gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskCentrality.C");
       gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskEventplane.C");
-      AddTaskCentrality();
+      AliCentralitySelectionTask* taskCentrality = (AliCentralitySelectionTask*)AddTaskCentrality();
+      if (isMC) {
+	::Info("AnalysisSetup", "Setting centrality computation for MC");
+	taskCentrality->SetMCInput();
+      }
       AddTaskEventplane();
    }
-
    //
    // === PID RESPONSE =============================================================================
    //
