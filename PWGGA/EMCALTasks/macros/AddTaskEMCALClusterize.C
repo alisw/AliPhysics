@@ -13,7 +13,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Int_t   minFrac    = 1,
                                                        const Bool_t  bRecalE    = kTRUE,
                                                        const Bool_t  bBad       = kTRUE,
-                                                       const Bool_t  bRecalT    = kTRUE
+                                                       const Bool_t  bRecalT    = kTRUE,
+                                                       const Bool_t  bNonLine   = kFALSE
                                                        )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -144,7 +145,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
 
   AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros
-  ConfigureEMCALRecoUtils(reco,bMC,exotic,bRecalE,bBad,bRecalT);
+  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
   //-------------------------------------------------------
   //Alignment matrices

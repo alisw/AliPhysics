@@ -291,7 +291,8 @@ void ana(Int_t mode=mGRID)
     
     TString arrayNameV1 = "";
     AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,calibEE,badMap,calibTT);    
+                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   calibEE,badMap,calibTT,annonlin);    
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
     
@@ -302,7 +303,8 @@ void ana(Int_t mode=mGRID)
     //Analysis with clusterizer V2
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,calibEE,badMap,calibTT);    
+                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   calibEE,badMap,calibTT,annonlin);    
 
     printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
     
@@ -352,7 +354,8 @@ void ana(Int_t mode=mGRID)
     
     TString arrayNameV1 = "";
     AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,calibEE,badMap,calibTT);    
+                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   calibEE,badMap,calibTT,annonlin);    
     
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
@@ -371,7 +374,8 @@ void ana(Int_t mode=mGRID)
 
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,calibEE,badMap,calibTT);        
+                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   calibEE,badMap,calibTT,annonlin);        
     
     printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
     
