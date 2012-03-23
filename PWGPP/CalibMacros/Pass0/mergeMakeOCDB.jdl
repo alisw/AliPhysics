@@ -1,6 +1,6 @@
 Executable="/alice/cern.ch/user/j/jotwinow/bin/mergeMakeOCDB.sh";
 
-Packages= { "VO_ALICE@AliRoot::v4-19-Rev-11", "VO_ALICE@ROOT::v5-27-06-1", "VO_ALICE@APISCONFIG::V1.1x" };
+Packages= { "VO_ALICE@AliRoot::v5-01-Rev-19", "VO_ALICE@ROOT::v5-30-03-1", "VO_ALICE@APISCONFIG::V1.1x" };
 
 Jobtag = { "Merging Calibration Objects from calib train and make OCDB params" };
 
@@ -8,7 +8,7 @@ GUIDFILE="guid.txt";
 TTL = "28000";
 Price = 1;
 
-Validationcommand ="/alice/cern.ch/user/j/jotwinow/bin/validationMerging.sh";
+Validationcommand ="/alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/validationMerging.sh";
 
 JDLVariables={"Packages", "OutputDir"};
 GUIDFILE="guid.txt";
