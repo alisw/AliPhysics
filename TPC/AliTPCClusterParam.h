@@ -19,6 +19,7 @@
 class TTree;
 class TObjArray;
 class TH1;
+class THnBase;
 //_____________________________________________________________________________
 class AliTPCClusterParam : public TObject {
  public:
@@ -40,6 +41,8 @@ class AliTPCClusterParam : public TObject {
   Double_t  GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const;
   TMatrixD *GetQnormCorrMatrix(){return fQNormCorr;};
   void ResetQnormCorr(); 
+  void SetWaveCorrectionMap( THnBase *WaveCorrectionMap);
+  void SetResolutionYMap( THnBase *ResolutionYMap);
   //
   // Charge parameterization
   //
@@ -69,6 +72,13 @@ class AliTPCClusterParam : public TObject {
   Float_t GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
   Float_t GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
   Float_t GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM) const;
+  // 
+  // Correction and resolution maps
+  //
+  const THnBase *GetWaveCorrectionMap() const { return fWaveCorrectionMap; }
+  const THnBase *GetResolutionYMap() const { return  fResolutionYMap; }
+  Float_t GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ) const;
+  static Float_t SGetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ){return fgInstance->SGetWaveCorrection(Type,Z,QMax,Pad,angleY);}
   //
   //
   //
@@ -181,8 +191,19 @@ protected:
   TVectorD  *fPosYcor[3];       //  position correction parameterization 
   TVectorD  *fPosZcor[3];       //  position correction parameterization
   //
+  // Wave Correction Map 
+  //
+  THnBase* fWaveCorrectionMap; //dY with respect to the distance to the center of the pad
+  Bool_t   fWaveCorrectionMirroredPad;   // flag is the cog axis mirrored at 0.5
+  Bool_t   fWaveCorrectionMirroredZ;     // flag is the Z axis mirrored at 0
+  Bool_t   fWaveCorrectionMirroredAngle; // flag is the Angle axis mirrored at 0
+  //
+  // Resolution Map
+  //
+  THnBase* fResolutionYMap; // Map of resolution in Y
+  //
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
-  ClassDef(AliTPCClusterParam,6)    //  TPC Cluster parameter class
+  ClassDef(AliTPCClusterParam,7)    //  TPC Cluster parameter class
 };
 
 #endif

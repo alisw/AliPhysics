@@ -20,6 +20,8 @@
 
 
 #include <AliTPCcalibBase.h>
+#include "THnSparse.h"
+
 class TF2;
 class TH3F;
 class TH1F;
@@ -81,7 +83,13 @@ public :
   AliTPCCalPad*          GetfCalPadClusterPerPadRaw() const {return fCalPadClusterPerPadRaw;}
   AliTPCcalibTracksCuts* GetCuts() {return fCuts;}
   void MakeHistos();  //make THnSparse
+  int UpdateClusterParam( AliTPCClusterParam *cParam, Bool_t MirrorZ=1, Bool_t MirrorPad=1, Bool_t MirrorAngle=1, Int_t MinStat=10 );
+
   static void MakeSummaryTree(THnSparse *hisInput, TTreeSRedirector *pcstream, Int_t ptype);
+  static int GetTHnStat( const  THnBase *H, THnBase *&Mean, THnBase *&Sigma, THnBase *&Entr );
+  static int CreateWaveCorrection( const  THnBase *DeltaY, THnBase *&MeanY, THnBase *&SigmaY, THnBase *&EntrY,
+				   Bool_t MirrorZ=1, Bool_t MirrorPad=1, Bool_t MirrorAngle=1, Int_t MinStat=10 );
+ 
 protected:         
   
 private:

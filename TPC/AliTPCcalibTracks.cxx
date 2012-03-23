@@ -577,6 +577,18 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
    // and to avoid redundant data
    // 
 
+  /*  {//SG
+    static long n=0;
+    if( n==0 ){
+      if( fClusterParam && fClusterParam->GetWaveCorrectionMap() ){
+	cout<<"Map found "<<endl; 
+      }else{
+	cout<<"Can't find the map "<<endl;    
+      }
+    }
+    if( n%100 ==0 )cout<<n<<" Tracks processed"<<endl;
+    n++;
+  }*/
   static TLinearFitter fFitterParY(3,"pol2");    // 
   static TLinearFitter fFitterParZ(3,"pol2");    //
   static TLinearFitter fFitterParYWeight(3,"pol2");    // 
@@ -675,6 +687,26 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
     // add covariance matrixes and calculate chi2 of this difference
     // if this chi2 is bigger than a given threshold, assume that the current cluster is
     // a kink an goto next padrow    
+
+    // first fit the track angle for wave correction
+
+    AliRieman riemanFitAngle( 2*kDelta ); //SG
+
+    if( fClusterParam && fClusterParam->GetWaveCorrectionMap() ){
+      for (Int_t idelta = -kDelta; idelta <= kDelta; idelta++){
+	// loop over irow +- kDelta rows (neighboured rows)
+	if (idelta + irow < 0 || idelta + irow > 159) continue;   // don't go out of ROC
+	AliTPCclusterMI * currentCluster = track->GetClusterPointer(irow + idelta);
+	if (!currentCluster) continue;
+	if (currentCluster->GetType() < 0) continue;
+	if (currentCluster->GetDetector() != sector) continue;      
+	riemanFitAngle.AddPoint(currentCluster->GetX(), currentCluster->GetY(),currentCluster->GetZ(), csigmaY,csigmaZ);
+      }
+      if( riemanFitAngle.GetN()>3 ) riemanFitAngle.Update();    
+    }
+
+    // do fit
+
     AliRieman riemanFit(2*kDelta);
     AliRieman riemanFitW(2*kDelta);
     for (Int_t idelta = -kDelta; idelta <= kDelta; idelta++){
@@ -694,8 +726,23 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       if (idelta > 0){
 	ncl1++;
       }
-      riemanFit.AddPoint(currentCluster->GetX(), currentCluster->GetY(),currentCluster->GetZ(), csigmaY,csigmaZ);
-      riemanFitW.AddPoint(currentCluster->GetX(), currentCluster->GetY(),currentCluster->GetZ(), csigmaY*TMath::Sqrt(1+TMath::Abs(idelta)),csigmaZ*TMath::Sqrt(1+TMath::Abs(idelta)));
+      //SG!!!
+      double dY = 0;
+      if( fClusterParam ){
+	Int_t padSize = 0;                          // short pads
+	if (currentCluster->GetDetector() >= 36) {
+	  padSize = 1;                              // medium pads 
+	  if (currentCluster->GetRow() > 63) padSize = 2; // long pads
+	}
+	dY = fClusterParam->GetWaveCorrection( padSize, 
+					       currentCluster->GetZ(), 
+					       currentCluster->GetMax(),
+					       currentCluster->GetPad(),
+					       riemanFitAngle.GetDYat(currentCluster->GetX())
+					       );	
+      }
+     riemanFit.AddPoint(currentCluster->GetX(), currentCluster->GetY()-dY,currentCluster->GetZ(), csigmaY,csigmaZ);
+      riemanFitW.AddPoint(currentCluster->GetX(), currentCluster->GetY()-dY,currentCluster->GetZ(), csigmaY*TMath::Sqrt(1+TMath::Abs(idelta)),csigmaZ*TMath::Sqrt(1+TMath::Abs(idelta)));
     }  // loop over neighbourhood for fitter filling 
     if (nclFound < kDelta * kMinRatio) fRejectedTracksHisto->Fill(10);
     if (nclFound < kDelta * kMinRatio) fClusterCutHisto->Fill(1, irow);
@@ -815,9 +862,14 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
     xvar[3]=cluster0->GetMax();
     
     xvar[0]=deltay;
-    xvar[4]=cluster0->GetPad()-Int_t(cluster0->GetPad());// distance to the center of the pad       
-    xvar[5]=angley;
-    fHisDeltaY->Fill(xvar);
+    double cog = cluster0->GetPad()-Int_t(cluster0->GetPad());// distance to the center of the pad       
+    xvar[4] = cog;
+    xvar[5]=angley;    
+
+    if( TMath::Abs(cog-0.5)<1.e-8 ) xvar[4]=-1; // fill one-pad clusters in the underflow bin
+    fHisDeltaY->Fill(xvar);       
+
+    xvar[4]=cog;
     xvar[0]=TMath::Sqrt(cluster0->GetSigmaY2());
     fHisRMSY->Fill(xvar);
     
@@ -1618,4 +1670,392 @@ void AliTPCcalibTracks::MakeSummaryTree(THnSparse *hisInput, TTreeSRedirector *p
     }//loop local angle
     delete his5;
   }
+}
+
+
+int AliTPCcalibTracks::GetTHnStat(const  THnBase *H, THnBase *&Mean, THnBase *&Sigma, THnBase *&Entr )
+{
+  // H is THnSparse:
+  //
+  // OBJ: TAxis     var     var
+  // OBJ: TAxis     axis 1
+  // OBJ: TAxis     axis 2
+  // ...  
+
+  // Output: 
+
+  // Mean, Sigma and Entr is THnF of mean, RMS and entries of var:
+  //
+  // OBJ: TAxis     axis 1
+  // OBJ: TAxis     axis 2
+  // ..
+    
+  Mean = 0;
+  Sigma = 0;
+  Entr = 0;
+  if( !H ) return -1;
+
+  Bool_t ok = kTRUE;
+  
+  int nDim = H->GetNdimensions();
+  Long64_t nFilledBins = H->GetNbins();
+  Long64_t nStatBins = 0;
+
+  Int_t *nBins = new Int_t [nDim];
+  Double_t *xMin = new Double_t [nDim]; 
+  Double_t *xMax = new Double_t [nDim];
+  Int_t *idx = new Int_t [nDim];
+
+  TString nameMean = H->GetName();
+  TString nameSigma = H->GetName();
+  TString nameEntr = H->GetName();
+  nameMean+="_Mean";
+  nameSigma+="_Sigma";
+  nameEntr+="_Entr";
+
+  ok = ok && ( nBins && xMin && xMax && idx );
+
+  if( ok ){
+    for( int i=0; i<nDim; i++){
+      xMin[i] = H->GetAxis(i)->GetXmin();
+      xMax[i] = H->GetAxis(i)->GetXmax();
+      nBins[i] = H->GetAxis(i)->GetNbins();
+    }
+  
+    Mean  = new THnSparseF( nameMean.Data(),  nameMean.Data(),  nDim-1, nBins+1, xMin+1, xMax+1 );
+    Sigma = new THnSparseF( nameSigma.Data(), nameSigma.Data(), nDim-1, nBins+1, xMin+1, xMax+1 );
+    Entr  = new THnSparseF( nameEntr.Data(),  nameEntr.Data(),  nDim-1, nBins+1, xMin+1, xMax+1 );
+  }
+ 
+  ok = ok && ( Mean && Sigma && Entr );
+
+  if( ok ){
+    for( int i=0; i<nDim-1; i++){
+      const TAxis *ax = H->GetAxis(i+1);
+      Mean->GetAxis(i)->SetName(ax->GetName());
+      Mean->GetAxis(i)->SetTitle(ax->GetTitle());
+      Sigma->GetAxis(i)->SetName(ax->GetName());
+      Sigma->GetAxis(i)->SetTitle(ax->GetTitle());
+      Entr->GetAxis(i)->SetName(ax->GetName());
+      Entr->GetAxis(i)->SetTitle(ax->GetTitle());
+      if( ax->GetXbins()->fN>0 ){
+	Mean->GetAxis(i)->Set(ax->GetNbins(), ax->GetXbins()->GetArray());
+	Sigma->GetAxis(i)->Set(ax->GetNbins(), ax->GetXbins()->GetArray());
+	Entr->GetAxis(i)->Set(ax->GetNbins(), ax->GetXbins()->GetArray());
+      }
+    } 
+ 
+    // Allocate bins
+ 
+    for( Long64_t binS=0; binS<nFilledBins; binS++){   
+      H->GetBinContent(binS,idx);
+      Mean->GetBin(idx+1,kTRUE);
+      Sigma->GetBin(idx+1,kTRUE);
+      Entr->GetBin(idx+1,kTRUE);
+    }
+  
+    nStatBins = Mean->GetNbins();
+      
+  }
+
+ 
+  Long64_t *hMap = new Long64_t[nFilledBins];
+  Double_t *hVal  = new Double_t[nFilledBins];
+  Double_t *hEntr = new Double_t[nFilledBins];
+  Double_t *meanD = new Double_t[nStatBins];
+  Double_t *sigmaD = new Double_t[nStatBins];
+
+  ok = ok && ( hMap && hVal && hEntr && meanD && sigmaD );
+
+  // Map bins to Stat bins
+
+  if( ok ){ 
+    for( Long64_t binS=0; binS<nFilledBins; binS++){   
+      double val = H->GetBinContent(binS,idx);
+      Long64_t bin = Mean->GetBin(idx+1,kFALSE);
+      ok = ok && ( bin>=0 && bin<nStatBins && bin==Sigma->GetBin(idx+1,kFALSE) && bin== Entr->GetBin(idx+1,kFALSE) );
+      if( !ok ) break;      
+      if( val < 0 ){
+	cout << "AliTPCcalibTracks: GetSparseStat : Unexpected content of the input THn"<<endl;
+	bin = -1;
+      }
+      if( idx[0]<1 || idx[0]>nBins[0] ) bin = -1;
+      hMap[binS] = bin;      
+      hVal[binS] = idx[0];
+      hEntr[binS] = val;
+    }
+  }
+  
+  // do 2 iteration with cut at 4 Sigma
+
+  for( int iter=0; ok && iter<2; iter++ ){
+    
+    // clean up entries
+    
+    for( Long64_t bin=0; bin < nStatBins; bin++){
+      Entr->SetBinContent(bin, 0); 
+      meanD[bin]=0;
+      sigmaD[bin]=0;
+    }
+
+    // get Entries and Mean
+
+    for( Long64_t binS=0; binS<nFilledBins; binS++){   
+      Long64_t bin = hMap[binS];
+      Double_t val  = hVal[binS];
+      Double_t entr = hEntr[binS];
+      if( bin < 0 ) continue;
+      if( iter!=0 ){ // cut
+	double s2 = Sigma->GetBinContent(bin);
+	double d = val - Mean->GetBinContent(bin);
+	if( d*d>s2*16 ) continue;
+      } 
+      meanD[bin]+= entr*val;
+      Entr->AddBinContent(bin,entr);    
+    }
+  
+    for( Long64_t bin=0; bin<nStatBins; bin++){
+      double val = meanD[bin];
+      double sum = Entr->GetBinContent(bin);
+      if( sum>=1 ){
+	Mean->SetBinContent(bin, val/sum );
+      }
+      else Mean->SetBinContent(bin, 0);
+      Entr->SetBinContent(bin, 0); 
+    }
+
+    // get RMS
+
+    for( Long64_t binS=0; binS<nFilledBins; binS++){   
+      Long64_t bin = hMap[binS];
+      Double_t val  = hVal[binS];
+      Double_t entr = hEntr[binS];
+      if( bin < 0 ) continue;  
+      double d2 = val - Mean->GetBinContent(bin);
+      d2 *= d2;
+      if( iter!=0 ){ // cut
+	double s2 = Sigma->GetBinContent(bin);
+	if( d2>s2*16 ) continue;
+      }
+      sigmaD[bin] += entr*d2;
+      Entr->AddBinContent(bin,entr);    
+    }
+
+    for( Long64_t bin=0; bin<nStatBins; bin++ ){
+      double val = sigmaD[bin];
+      double sum = Entr->GetBinContent(bin);
+      if( sum>=1 && val>=0 ){
+	Sigma->SetBinContent(bin, val/sum );
+      }
+      else Sigma->SetBinContent(bin, 0);    
+    }
+  }
+  
+  // scale the Mean and the Sigma
+
+  if( ok ){
+    double v0 = H->GetAxis(0)->GetBinCenter(1);
+    double vscale = H->GetAxis(0)->GetBinWidth(1);
+  
+    for( Long64_t bin=0; bin<nStatBins; bin++){
+      double m = Mean->GetBinContent(bin);
+      double s2 = Sigma->GetBinContent(bin);
+      double sum = Entr->GetBinContent(bin);
+      if( sum>0 && s2>=0 ){
+	Mean->SetBinContent(bin, v0 + (m-1)*vscale );
+	Sigma->SetBinContent(bin, sqrt(s2)*vscale );
+      }
+      else{
+	Mean->SetBinContent(bin, 0);
+	Sigma->SetBinContent(bin, 0);
+	Entr->SetBinContent(bin, 0);
+      }
+    }
+  }
+
+  delete nBins;
+  delete xMin;
+  delete xMax;
+  delete idx; 
+  delete hMap;
+  delete hVal;
+  delete hEntr;
+  delete meanD;
+  delete sigmaD;
+
+  if( !ok ){
+    cout << "AliTPCcalibTracks: GetSparseStat : No memory or internal Error "<<endl;
+    delete Mean;
+    delete Sigma;
+    delete Entr;
+    Mean =0;
+    Sigma = 0;
+    Entr = 0;
+    return -1;
+  }
+  
+  return 0;
+}
+
+
+
+int AliTPCcalibTracks::CreateWaveCorrection(const  THnBase *DeltaY, THnBase *&MeanY, THnBase *&SigmaY, THnBase *&EntrY, 
+					    Bool_t MirrorZ, Bool_t MirrorPad, Bool_t MirrorAngle, Int_t MinStat  )
+{
+  // DeltaY is THnSparse:
+  //
+  // OBJ: TAxis 0    var     var
+  // OBJ: TAxis 1    pad type        pad type
+  // OBJ: TAxis 2    z       z
+  // OBJ: TAxis 3    Qmax    Qmax
+  // OBJ: TAxis 4    cog     cog
+  // OBJ: TAxis 5    tan(angle)      tan(angle)
+  // ...  
+
+  MeanY = 0;
+  SigmaY = 0;
+  EntrY = 0;
+
+  int nDim = DeltaY->GetNdimensions();
+  
+  Int_t nBins[20];
+  Int_t nBinsNew[20];
+  Double_t xMin[20]; 
+  Double_t xMax[20];
+  Int_t idx[20];
+
+  for( int i=0; i<nDim; i++){
+    xMin[i] = DeltaY->GetAxis(i)->GetXmin();
+    xMax[i] = DeltaY->GetAxis(i)->GetXmax();
+    nBins[i] = DeltaY->GetAxis(i)->GetNbins();
+    nBinsNew[i] = nBins[i];
+  }
+  
+  // Merge cog axis
+  if( MirrorPad ){ 
+    Int_t centralBin = DeltaY->GetAxis(4)->FindFixBin(0.5);
+    xMin[4] = DeltaY->GetAxis(4)->GetBinLowEdge(centralBin);
+    nBinsNew[4] = nBinsNew[4]-centralBin+1;   
+  }
+
+  // Merge Z axis
+  if( MirrorZ ){ 
+    Int_t centralBin = DeltaY->GetAxis(2)->FindFixBin(0.0);
+    xMin[2] = DeltaY->GetAxis(2)->GetBinLowEdge(centralBin)-0.0;
+    nBinsNew[2] = nBinsNew[2]-centralBin+1;
+  }
+
+  // Merge Angle axis
+  if( MirrorAngle ){ 
+    Int_t centralBin = DeltaY->GetAxis(5)->FindFixBin(0.0);
+    xMin[5] = DeltaY->GetAxis(5)->GetBinLowEdge(centralBin)-0.0;
+    nBinsNew[5] = nBinsNew[5]-centralBin+1;
+  }
+
+  // Merge Sparse 
+ 
+  THnSparseD *mergedDeltaY = new THnSparseD("mergedDeltaY", "mergedDeltaY",nDim, nBinsNew, xMin, xMax );
+  
+  if( !mergedDeltaY ){
+    cout << "AliTPCcalibTracks: CreateWaveCorrection: Can not copy a Sparse"<<endl;
+    return 0;
+  }
+  
+  for( int i=0; i<nDim; i++){
+    const TAxis *ax = DeltaY->GetAxis(i);
+    mergedDeltaY->GetAxis(i)->SetName(ax->GetName());
+    mergedDeltaY->GetAxis(i)->SetTitle(ax->GetTitle());
+    if( ax->GetXbins()->fN>0 ){
+      mergedDeltaY->GetAxis(i)->Set(ax->GetNbins(), ax->GetXbins()->GetArray());
+    }
+  }
+
+  for( Long64_t binS=0; binS<DeltaY->GetNbins(); binS++){   
+    Double_t stat = DeltaY->GetBinContent(binS,idx); 
+    if( stat < 1 ) continue;
+    bool swap0=0;
+
+    if( MirrorPad && idx[4]>0){ // underflow reserved for contains one-pad clusters, don't mirror
+      Double_t v = DeltaY->GetAxis(4)->GetBinCenter(idx[4]);
+      if( v < 0.5 ) swap0 = !swap0;
+      idx[4] = mergedDeltaY->GetAxis(4)->FindFixBin( 0.5 + TMath::Abs(0.5 - v) );
+    }
+
+    if( MirrorZ ){
+      Double_t v = DeltaY->GetAxis(2)->GetBinCenter(idx[2]);
+      if( v < 0.0 ) swap0 = !swap0;
+      if( idx[2]<=0 ) idx[2] = nBinsNew[2]+1;
+      else idx[2] = mergedDeltaY->GetAxis(2)->FindFixBin( TMath::Abs(v) );
+    }
+     
+    if( MirrorAngle ){   
+      Double_t v = DeltaY->GetAxis(5)->GetBinCenter(idx[5]);
+      if( idx[5]<=0 ) idx[5] = nBinsNew[5]+1;
+      else idx[5] = mergedDeltaY->GetAxis(5)->FindFixBin( TMath::Abs(v) );
+    }
+   
+    if( swap0 ){
+      if( idx[0]<=0 ) idx[0] = nBinsNew[0]+1;
+      else if( idx[0] >= nBins[0]+1 ) idx[0] = 0;
+      else {
+	Double_t v = DeltaY->GetAxis(0)->GetBinCenter(idx[0]); 
+	idx[0] = mergedDeltaY->GetAxis(0)->FindFixBin(-v);
+      }
+    }
+
+    Long64_t bin = mergedDeltaY->GetBin(idx,kTRUE);
+    if( bin<0 ){
+      cout << "AliTPCcalibTracks: CreateWaveCorrection : wrong bining"<<endl;
+      continue;
+    }
+    mergedDeltaY->AddBinContent(bin,stat);
+  }
+
+
+  int ret = GetTHnStat(mergedDeltaY, MeanY, SigmaY, EntrY );
+  if( ret<0 ) return ret;
+
+  MeanY->SetName("TPCWaveCorrectionMap");
+  MeanY->SetTitle("TPCWaveCorrectionMap");
+  SigmaY->SetName("TPCResolutionMap");
+  SigmaY->SetTitle("TPCResolutionMap");
+  EntrY->SetName("TPCWaveCorrectionEntr");
+  EntrY->SetTitle("TPCWaveCorrectionEntr");
+ 
+  for( Long64_t bin=0; bin<MeanY->GetNbins(); bin++){
+    Double_t stat = EntrY->GetBinContent(bin,idx);
+
+    // Normalize : Set no correction for one pad clusters
+
+    if( idx[3]<=0 ) MeanY->SetBinContent(bin,0);
+
+    // Suppress bins with low statistic
+    
+    if( stat<MinStat ){
+      EntrY->SetBinContent(bin,0);
+      MeanY->SetBinContent(bin,0);
+      SigmaY->SetBinContent(bin,-1);
+    }
+  }
+  
+ 
+  delete mergedDeltaY;
+  return 0;
+}
+
+int AliTPCcalibTracks::UpdateClusterParam( AliTPCClusterParam *cParam, Bool_t MirrorZ, Bool_t MirrorPad, Bool_t MirrorAngle, Int_t MinStat )
+{
+  if( !cParam || !fHisDeltaY) return -1;
+
+  THnBase *meanY  = 0; 
+  THnBase *sigmaY = 0;
+  THnBase *entrY  = 0; 
+  int ret = CreateWaveCorrection(fHisDeltaY, meanY, sigmaY, entrY,  MirrorZ, MirrorAngle, MirrorPad, MinStat  );
+  if( ret<0 ) return ret;
+  cParam->SetWaveCorrectionMap(meanY);
+  cParam->SetResolutionYMap(sigmaY);
+  delete meanY;
+  delete sigmaY;
+  delete entrY;
+  return 0;
 }

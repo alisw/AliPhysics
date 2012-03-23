@@ -97,6 +97,7 @@ AliTPCClusterParam::SetInstance(param);
 #include <TObjArray.h>
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
+#include "THnBase.h"
 
 #include "AliMathBase.h"
 
@@ -153,7 +154,12 @@ AliTPCClusterParam::AliTPCClusterParam():
   fQNormCorr(0),
   fQNormHis(0),
   fQpadTnorm(0),           // q pad normalization - Total charge
-  fQpadMnorm(0)            // q pad normalization - Max charge
+  fQpadMnorm(0),           // q pad normalization - Max charge
+  fWaveCorrectionMap(0),
+  fWaveCorrectionMirroredPad( kFALSE ),
+  fWaveCorrectionMirroredZ( kFALSE ),
+  fWaveCorrectionMirroredAngle( kFALSE ),
+  fResolutionYMap(0)
   //
 {
   //
@@ -174,8 +180,12 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
   fQNormCorr(0),
   fQNormHis(0),
   fQpadTnorm(new TVectorD(*(param.fQpadTnorm))),           // q pad normalization - Total charge
-  fQpadMnorm(new TVectorD(*(param.fQpadMnorm)))            // q pad normalization - Max charge
-
+  fQpadMnorm(new TVectorD(*(param.fQpadMnorm))),           // q pad normalization - Max charge
+  fWaveCorrectionMap(0),
+  fWaveCorrectionMirroredPad( kFALSE ),
+  fWaveCorrectionMirroredZ( kFALSE ),
+  fWaveCorrectionMirroredAngle( kFALSE ),
+  fResolutionYMap(0)
 {
   //
   // copy constructor
@@ -202,7 +212,8 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
     fPosZcor[1] = new TVectorD(*(param.fPosZcor[1]));
     fPosZcor[2] = new TVectorD(*(param.fPosZcor[2]));
   }
-  
+  SetWaveCorrectionMap( param.fWaveCorrectionMap );
+  SetResolutionYMap( param.fResolutionYMap );
 }
 
 
@@ -232,6 +243,8 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
       fPosZcor[1] = new TVectorD(*(param.fPosZcor[1]));
       fPosZcor[2] = new TVectorD(*(param.fPosZcor[2]));
     }
+    SetWaveCorrectionMap( param.fWaveCorrectionMap );
+    SetResolutionYMap( param.fResolutionYMap );
   }
   return *this;
 }
@@ -264,6 +277,8 @@ AliTPCClusterParam::~AliTPCClusterParam(){
     delete fPosZcor[1];
     delete fPosZcor[2];
   }
+  delete fWaveCorrectionMap;
+  delete fResolutionYMap;
 }
 
 
@@ -1798,7 +1813,70 @@ Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cp
 
 
 
+void AliTPCClusterParam::SetWaveCorrectionMap( THnBase *Map)
+{
+  //
+  // Set Correction Map for Y
+  //
+  delete fWaveCorrectionMap;
+  fWaveCorrectionMap = 0;
+  fWaveCorrectionMirroredPad = kFALSE;
+  fWaveCorrectionMirroredZ = kFALSE;
+  fWaveCorrectionMirroredAngle = kFALSE;
+  if( Map ){
+    fWaveCorrectionMap = dynamic_cast<THnBase*>( Map->Clone(Map->GetName()));
+    if( fWaveCorrectionMap ){
+      fWaveCorrectionMirroredPad = ( fWaveCorrectionMap->GetAxis(3)->GetXmin()>0.01 );        // cog axis is mirrored at 0.5
+      fWaveCorrectionMirroredZ = ( fWaveCorrectionMap->GetAxis(1)->GetXmin() > -200.00 ); // Z axis is mirrored at 0
+      fWaveCorrectionMirroredAngle = ( fWaveCorrectionMap->GetAxis(4)->GetXmin() > -0.5 );// Angle axis is mirrored at 0
+    }
+  }
+}
+
+void AliTPCClusterParam::SetResolutionYMap( THnBase *Map)
+{
+  //
+  // Set Resolution Map for Y
+  //
+  delete fResolutionYMap;
+  fResolutionYMap = 0;
+  if( Map ){
+    fResolutionYMap = dynamic_cast<THnBase*>( Map->Clone(Map->GetName()));
+  }
+}
 
 
+Float_t AliTPCClusterParam::GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ) const
+{
+  //
+  // Correct Y cluster coordinate using a map
+  //
 
+  if( !fWaveCorrectionMap ) return 0;
+  Bool_t swapY = kFALSE;
+  Pad = Pad-(Int_t)Pad;
+
+  if( TMath::Abs(Pad-0.5)<1.e-8 ){// one pad clusters a stored in underflow bins
+    Pad = -1.; 
+  } else {
+    if( fWaveCorrectionMirroredPad && (Pad<0.5) ){ // cog axis is mirrored at 0.5
+	swapY = !swapY;
+	Pad = 1.0 - Pad;
+    }
+  }
+
+  if( fWaveCorrectionMirroredZ && (Z<0) ){ // Z axis is mirrored at 0
+    swapY = !swapY;
+    Z = -Z;
+  }
+  if( fWaveCorrectionMirroredAngle && (angleY<0) ){ // Angle axis is mirrored at 0
+    angleY = -angleY;
+  }
+
+  double var[5] = { Type, Z, QMax, Pad, angleY };
+  Long64_t bin = fWaveCorrectionMap->GetBin(var, kFALSE );
+  if( bin<0 ) return 0;
+  Double_t dY = fWaveCorrectionMap->GetBinContent(bin);
+  return (swapY ?-dY :dY);
+}
 
