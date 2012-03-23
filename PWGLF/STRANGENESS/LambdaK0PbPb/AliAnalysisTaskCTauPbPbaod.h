@@ -25,6 +25,7 @@ public:
   void SetCentrality(Double_t min, Double_t max) {fCMin=min;fCMax=max;} 
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
   void SetCosPA(Double_t cospa) {fCPA=cospa;} 
+  void SetDtrDCA(Double_t cospa){fDCA=cospa;} 
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -42,11 +43,13 @@ private:
   Double_t fCMin;       // Min centrality
   Double_t fCMax;       // Max centrality
   Double_t fCPA;        // cos(PA) threshold
+  Double_t fDCA;        // threshold for the DCA between V0 daughters
 
   TList       *fOutput; //! The list of histograms
 
   TH1F *fMult;       //! Track multiplicity
-  TH1F *fCosPA;      //! Track multiplicity
+  TH1F *fCosPA;      //! cos(PA)
+  TH1F *fDtrDCA;     //! DCA between V0 daughters
   TH2F* fdEdx;       //! dEdx
   TH2F* fdEdxPid;    //! dEdx with PID
 
@@ -81,7 +84,7 @@ private:
   TH2F* fXiBarM;         //! Mass for anti-Xis
   TH1F* fXiBarSiP;       //! Side-band subtracted Pt for reconstructed anti-Xi
 
-  ClassDef(AliAnalysisTaskCTauPbPbaod,4);
+  ClassDef(AliAnalysisTaskCTauPbPbaod,5);
 };
 
 #endif
