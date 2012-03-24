@@ -6,7 +6,7 @@ const Double_t centralityArray[nrOfCentralities+1] = {0.,5.,10.,20.,30.,40.,50.,
 const Double_t cent[nrOfCentralities]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
 const Double_t centE[nrOfCentralities] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
 
-void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,TString centEst = "V0M",Double_t etaWindow = -1) {
+void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,Int_t fStartBinBFWidthPhi = 2, Int_t fRebinPhi = 2,TString centEst = "V0M",Double_t etaWindow = -1) {
   // Macro to read the output of the BF analysis:  MW: CHANGE THIS!!!!
   //i) Prints and draws the final BF output
   //ii) Plots the QA part of the analysis
@@ -19,7 +19,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
   gSystem->Load("libPWGCFebye.so");
 
   //Draw BF       
-  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,centEst, "",  etaWindow);    
+  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centEst, "",  etaWindow);    
   
 
   //Merge the output
@@ -27,7 +27,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
 }
 
 //___________________________________________________________//
-void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1) {
+void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, Int_t fStartBinBFWidthPhi = 1, Int_t fRebinPhi = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1) {
   //Function to draw the BF objects and write them into the output file
 
   Int_t maximumCanvases = 13;
@@ -94,9 +94,9 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
   Double_t WMS[13][10];     // weighted mean for eta (recalculated from fStartBin) (shuffled)
   Double_t WMSE[13][10];    // error (shuffled)
 
-  Double_t WMP[13][10];     // weighted mean for phi 
+  Double_t WMP[13][10];     // weighted mean for phi (recalculated from fStartBinPhi)
   Double_t WMPE[13][10];    // error
-  Double_t WMPS[13][10];     // weighted mean for phi (shuffled)
+  Double_t WMPS[13][10];     // weighted mean for phi (recalculated from fStartBin) (shuffled)
   Double_t WMPSE[13][10];    // error (shuffled)
 
   Double_t integ[13][10];     // integral for eta (calculated from bin 1)
@@ -232,7 +232,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
     // ----------------------------------------------------
     // calculate and plot BF 
-    if(listName.Contains("BF_")){
+    if(listName.Contains("BF_")&&listName.Contains(centEst.Data())){
 
       for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
 	
@@ -258,12 +258,12 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
     	// rebin histograms (be careful with divider!)
 	if(a==6){
-	  fHistP[iList][a]->RebinY(5);
-	  fHistN[iList][a]->RebinY(5);
-	  fHistPP[iList][a]->RebinY(5);
-	  fHistPN[iList][a]->RebinY(5);
-	  fHistNP[iList][a]->RebinY(5);
-	  fHistNN[iList][a]->RebinY(5);
+	  fHistP[iList][a]->RebinY(fRebinPhi);
+	  fHistN[iList][a]->RebinY(fRebinPhi);
+	  fHistPP[iList][a]->RebinY(fRebinPhi);
+	  fHistPN[iList][a]->RebinY(fRebinPhi);
+	  fHistNP[iList][a]->RebinY(fRebinPhi);
+	  fHistNN[iList][a]->RebinY(fRebinPhi);
 	}
 	else{
 	  fHistP[iList][a]->RebinY(fRebin);
@@ -300,11 +300,11 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
     	  if(!bHistos){
     	    gbf[iList][iCanvas][a]->DrawCopy("AP");
     	    if(a==1){
-	      GetWeightedMean(gbf[iList][iCanvas][a],fStartBinBFWidth,WM[iList][iCanvas],WME[iList][iCanvas]); // for eta recalculate width (from 0.1 only!)
+	      GetWeightedMean(gbf[iList][iCanvas][a],fStartBinBFWidth,WM[iList][iCanvas],WME[iList][iCanvas]); // for eta recalculate width 
 	      GetIntegral(gbf[iList][iCanvas][a],integ[iList][iCanvas],integE[iList][iCanvas]);
 	    }
 	    else if(a==6){
-	      GetWeightedMean(gbf[iList][iCanvas][a],1,WMP[iList][iCanvas],WMPE[iList][iCanvas]); // for phi calculate width 
+	      GetWeightedMean(gbf[iList][iCanvas][a],fStartBinBFWidthPhi,WMP[iList][iCanvas],WMPE[iList][iCanvas]); // for phi calculate width 
 	      GetIntegral(gbf[iList][iCanvas][a],integP[iList][iCanvas],integPE[iList][iCanvas]);
 	    }
 	  }
@@ -325,7 +325,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
     // ----------------------------------------------------
     // calculate and plot BF (shuffled)
-    if(listName.Contains("BFShuffled")&&listName.Contains(extraString.Data())){
+    if(listName.Contains("BFShuffled")&&listName.Contains(centEst.Data())&&listName.Contains(extraString.Data())){
 
       for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
 	
@@ -348,12 +348,12 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
   	// rebin histograms (be careful with divider!)
 	if(a==6){
-	  fHistPS[iList][a]->RebinY(5);
-	  fHistNS[iList][a]->RebinY(5);
-	  fHistPPS[iList][a]->RebinY(5);
-	  fHistPNS[iList][a]->RebinY(5);
-	  fHistNPS[iList][a]->RebinY(5);
-	  fHistNNS[iList][a]->RebinY(5);
+	  fHistPS[iList][a]->RebinY(fRebinPhi);
+	  fHistNS[iList][a]->RebinY(fRebinPhi);
+	  fHistPPS[iList][a]->RebinY(fRebinPhi);
+	  fHistPNS[iList][a]->RebinY(fRebinPhi);
+	  fHistNPS[iList][a]->RebinY(fRebinPhi);
+	  fHistNNS[iList][a]->RebinY(fRebinPhi);
 	}
 	else{
 	  fHistPS[iList][a]->RebinY(fRebin);
@@ -393,7 +393,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 	      GetIntegral(gbfs[iList][iCanvas][a],integS[iList][iCanvas],integSE[iList][iCanvas]); 
 	    }
 	    else if(a==6){
-	      GetWeightedMean(gbfs[iList][iCanvas][a],1,WMPS[iList][iCanvas],WMPSE[iList][iCanvas]); // for phi calculate width 
+	      GetWeightedMean(gbfs[iList][iCanvas][a],fStartBinBFWidthPhi,WMPS[iList][iCanvas],WMPSE[iList][iCanvas]); // for phi calculate width 
 	      GetIntegral(gbfs[iList][iCanvas][a],integPS[iList][iCanvas],integPSE[iList][iCanvas]); 
 	    }
   	  }
@@ -468,10 +468,12 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
     }
   }
 
-  TFile *fOut = TFile::Open(Form("Histograms_WMstart%d_rebin%d_%s", fStartBinBFWidth, fRebin,inFile.Data()),"RECREATE");
+  TFile *fOut = TFile::Open(Form("Histograms_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
   fOut->cd();
   for(Int_t i = 0; i < iList+1; i++){
+    cout<<"PROCESS LIST "<<i<<" NOW!"<<endl;
     for(Int_t a = 0; a < 7; a++){
+    cout<<"PROCESS VARIABLE "<<a<<" NOW!"<<endl;
       
       if(fHistPN[i][a]){
 	(fHistPN[i][a]->ProjectionY(Form("hPN_%s_%d",gBFAnalysisType[a].Data(),i)))->Write();
@@ -490,109 +492,123 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 	(fHistPS[i][a]->ProjectionY(Form("hPS_%s_%d",gBFAnalysisType[a].Data(),i)))->Write();
 	(fHistNS[i][a]->ProjectionY(Form("hNS_%s_%d",gBFAnalysisType[a].Data(),i)))->Write();
       }
-      
+
+      //printout in text format for delta eta      
       for(Int_t j = 0; j < iCanvas; j++){
+	cout<<"//=========================Centrality "<<centralityArray[j]<<"-"<<centralityArray[j+1]<<"%==================//"<<endl;
 	
 	if(gbf[i][j][a]){
-	  //printout in text format for delta eta
 	  if(a==1){
-	    cout<<"Balance Function "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX();k++) cout<<gbf[i][j][a]->GetBinContent(k+1)<<", ";
-	    cout<<endl;
-	    cout<<"Balance Function error "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX();k++) cout<<gbf[i][j][a]->GetBinError(k+1)<<", ";
-	    cout<<endl;
+	    cout<<"Double_t gALICEDataBalanceFunctionInDeltaEtaCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"[nBinsInDeltaEta] = {";
+	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX()-1;k++) cout<<gbf[i][j][a]->GetBinContent(k+1)<<", ";
+	    cout<<gbf[i][j][a]->GetBinContent(k+1)<<"};"<<endl;
+	    cout<<"Double_t gALICEDataBalanceFunctionInDeltaEtaCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"Error[nBinsInDeltaEta] = {";
+	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX()-1;k++) cout<<gbf[i][j][a]->GetBinError(k+1)<<", ";
+	    cout<<gbf[i][j][a]->GetBinError(k+1)<<"};"<<endl;
 	  } 
 	  else if(a==6){
-	    cout<<"Balance Function Phi "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX();k++) cout<<gbf[i][j][a]->GetBinContent(k+1)<<", ";
-	    cout<<endl;
-	    cout<<"Balance Function Phi error "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX();k++) cout<<gbf[i][j][a]->GetBinError(k+1)<<", ";
-	    cout<<endl;
+	    cout<<"Double_t gALICEDataBalanceFunctionInDeltaPhiCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"[nBinsInDeltaPhi] = {";
+	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX()-1;k++) cout<<gbf[i][j][a]->GetBinContent(k+1)<<", ";
+	    cout<<gbf[i][j][a]->GetBinContent(k+1)<<"};"<<endl;
+	    cout<<"Double_t gALICEDataBalanceFunctionInDeltaPhiCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"Error[nBinsInDeltaPhi] = {";
+	    for(Int_t k = 0; k < gbf[i][j][a]->GetNbinsX()-1;k++) cout<<gbf[i][j][a]->GetBinError(k+1)<<", ";
+	    cout<<gbf[i][j][a]->GetBinError(k+1)<<"};"<<endl;
 	  } 
 	  gbf[i][j][a]->Write();
 	  gbf[i][j][a]->Delete();
 	}
 	if(gbfs[i][j][a]){
 	  if(a==1){
-	    cout<<"Balance Function (shuffled) "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX();k++) cout<<gbfs[i][j][a]->GetBinContent(k+1)<<", ";
-	    cout<<endl;
-	    cout<<"Balance Function error (shuffled) "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX();k++) cout<<gbfs[i][j][a]->GetBinError(k+1)<<", ";
-	    cout<<endl;
+	    cout<<"Double_t gALICEShuffledDataBalanceFunctionInDeltaEtaCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"[nBinsInDeltaEta] = {";
+	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX()-1;k++) cout<<gbfs[i][j][a]->GetBinContent(k+1)<<", ";
+	    cout<<gbfs[i][j][a]->GetBinContent(k+1)<<"};"<<endl;
+	    cout<<"Double_t gALICEShuffledDataBalanceFunctionInDeltaEtaCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"Error[nBinsInDeltaEta] = {";
+	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX()-1;k++) cout<<gbfs[i][j][a]->GetBinError(k+1)<<", ";
+	    cout<<gbfs[i][j][a]->GetBinError(k+1)<<"};"<<endl;
 	  } 
 	  else if(a==6){
-	    cout<<"Balance Function Phi (shuffled) "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX();k++) cout<<gbfs[i][j][a]->GetBinContent(k+1)<<", ";
-	    cout<<endl;
-	    cout<<"Balance Function Phi error (shuffled) "<<i<<" "<<j<<" : ";
-	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX();k++) cout<<gbfs[i][j][a]->GetBinError(k+1)<<", ";
-	    cout<<endl;
+	    cout<<"Double_t gALICEShuffledDataBalanceFunctionInDeltaPhiCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"[nBinsInDeltaPhi] = {";
+	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX()-1;k++) cout<<gbfs[i][j][a]->GetBinContent(k+1)<<", ";
+	    cout<<gbfs[i][j][a]->GetBinContent(k+1)<<"};"<<endl;
+	    cout<<"Double_t gALICEShuffledDataBalanceFunctionInDeltaPhiCentrality"<<centralityArray[j]<<"to"<<centralityArray[j+1]<<"Error[nBinsInDeltaPhi] = {";
+	    for(Int_t k = 0; k < gbfs[i][j][a]->GetNbinsX()-1;k++) cout<<gbfs[i][j][a]->GetBinError(k+1)<<", ";
+	    cout<<gbfs[i][j][a]->GetBinError(k+1)<<"};"<<endl;
 	  } 
 	  gbfs[i][j][a]->Write();
 	  gbfs[i][j][a]->Delete();
 	}
+	cout<<"//=========================Centrality "<<centralityArray[j]<<"-"<<centralityArray[j+1]<<"%==================//"<<endl;
+	cout<<endl;
       }
     }
 
     Double_t x,y;
-      
+
+    cout<<"//================================ALICE================================//"<<endl;
     if(gWM[i]){
-      cout<<"Balance Function WM "<<i<<" : ";
-      for(Int_t k = 0; k < gWM[i]->GetN();k++){
+      cout<<"Double_t gWeightedMeanInEtaAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWM[i]->GetN()-1;k++){
 	gWM[i]->GetPoint(k,x,y);
 	cout<<y<<", ";      
       }
-      cout<<endl;
-      cout<<"Balance Function WM error "<<i<<" : ";
-      for(Int_t k = 0; k < gWM[i]->GetN();k++){
+      gWM[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;    
+      
+      cout<<"Double_t gWeightedMeanInEtaAliceError[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWM[i]->GetN()-1;k++){
 	cout<<gWM[i]->GetErrorY(k)<<", ";      
       }
-      cout<<endl;
+      cout<<gWM[i]->GetErrorY(k)<<"};"<<endl;
       gWM[i]->Write();
     } 
     if(gWMS[i]){
-      cout<<"Balance Function WM (shuffled) "<<i<<" : ";
-      for(Int_t k = 0; k < gWMS[i]->GetN();k++){
+      cout<<"Double_t gShuffledWeightedMeanInEtaAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWMS[i]->GetN()-1;k++){
 	gWMS[i]->GetPoint(k,x,y);
 	cout<<y<<", ";      
       }
-      cout<<endl;
-      cout<<"Balance Function WM error (shuffled) "<<i<<" : ";
-      for(Int_t k = 0; k < gWMS[i]->GetN();k++){
+      gWMS[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;    
+      
+      cout<<"Double_t gShuffledWeightedMeanInEtaAliceError[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWMS[i]->GetN()-1;k++){
 	cout<<gWMS[i]->GetErrorY(k)<<", ";      
       }
+      cout<<gWMS[i]->GetErrorY(k)<<"};"<<endl;
       cout<<endl;
       gWMS[i]->Write();
     } 
 
-   if(gWMP[i]){
-      cout<<"Balance Function Phi WMP "<<i<<" : ";
-      for(Int_t k = 0; k < gWMP[i]->GetN();k++){
+    if(gWMP[i]){
+      cout<<"Double_t gWeightedMeanInPhiAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWMP[i]->GetN()-1;k++){
 	gWMP[i]->GetPoint(k,x,y);
 	cout<<y<<", ";      
       }
-      cout<<endl;
-      cout<<"Balance Function Phi WMP error "<<i<<" : ";
-      for(Int_t k = 0; k < gWMP[i]->GetN();k++){
+      gWMP[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;    
+      
+      cout<<"Double_t gWeightedMeanInPhiAliceError[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWMP[i]->GetN()-1;k++){
 	cout<<gWMP[i]->GetErrorY(k)<<", ";      
       }
-      cout<<endl;
+      cout<<gWMP[i]->GetErrorY(k)<<"};"<<endl;
       gWMP[i]->Write();
     } 
     if(gWMPS[i]){
-      cout<<"Balance Function Phi WMP (shuffled) "<<i<<" : ";
-      for(Int_t k = 0; k < gWMPS[i]->GetN();k++){
+      cout<<"Double_t gShuffledWeightedMeanInPhiAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWMPS[i]->GetN()-1;k++){
 	gWMPS[i]->GetPoint(k,x,y);
 	cout<<y<<", ";      
       }
-      cout<<endl;
-      cout<<"Balance Function Phi WMP error (shuffled) "<<i<<" : ";
-      for(Int_t k = 0; k < gWMPS[i]->GetN();k++){
+      gWMPS[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;    
+      
+      cout<<"Double_t gShuffledWeightedMeanInPhiAliceError[nCentralityBins] = {";
+      for(Int_t k = 0; k < gWMPS[i]->GetN()-1;k++){
 	cout<<gWMPS[i]->GetErrorY(k)<<", ";      
       }
+      cout<<gWMPS[i]->GetErrorY(k)<<"};"<<endl;
       cout<<endl;
       gWMPS[i]->Write();
     } 

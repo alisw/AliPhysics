@@ -23,4 +23,6 @@
 #pragma link C++ class AliAnalysisTaskPtFluc+;
 #pragma link C++ class AliAnalysisTaskPtFlucPbPb+;
 
+#pragma link C++ class AliAnalysisTaskPIDFluctuation+;
+
 #endif
