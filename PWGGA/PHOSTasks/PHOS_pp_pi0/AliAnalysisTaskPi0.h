@@ -1,8 +1,12 @@
 #ifndef AliAnalysisTaskPi0_cxx
 #define AliAnalysisTaskPi0_cxx
 
-// example of an analysis task creating a p_t spectrum
-// Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice     */
+/* $Id$ */
+
+// Analysis task for pi0 and eta meson analysis in pp collisions
+// Authors: Yuri Kharlov, Dmitri Peressounko
 
 class TObjArray;
 class TH1F;
