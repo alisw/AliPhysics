@@ -2,7 +2,7 @@
 #define ALICALOPHOTON_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: $ */
+/* $Id$ */
  
 //_________________________________________________________________________
 // Class to fill two-photon invariant mass hisograms

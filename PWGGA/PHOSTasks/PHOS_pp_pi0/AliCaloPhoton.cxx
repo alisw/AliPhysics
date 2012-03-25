@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
+/* $Id$ */
  
 //_________________________________________________________________________
 // Minimal class to store photon infomation for pi0, tagged and isolated photon analysis
