@@ -292,7 +292,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      else  if(hname.Contains("4"))layer1=1;
 			TH2* htemp=dynamic_cast<TH2*>(hdata);
 			if(htemp){
-				hlayer[layer1]=(TH2*)((dynamic_cast<TH2*>(hdata))->Clone());
+			  hlayer[layer1]=(TH2*)htemp->Clone();
 				hlayer[layer1]->SetName(Form("%s_copy",hname.Data()));
 				int modmay=hlayer[layer1]->GetNbinsY();
 				TH1D* hproj= hlayer[layer1]->ProjectionY();
