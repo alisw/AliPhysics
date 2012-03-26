@@ -15,6 +15,9 @@ void SETUP()
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("PWGUDbase_INCLUDE", "PWGUDbase/base");
+
+   TString lib = TString::Format("-L%s -lPWGUDbase", gSystem->WorkingDirectory());
+   gSystem->Setenv("PWGUDbase_LIBS", lib.Data());
 }
 
 Int_t CheckLoadLibrary(const char* library)
