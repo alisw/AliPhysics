@@ -34,7 +34,9 @@ AddAnalysisTaskPIDFluctuation(Int_t aodFilterBit, Float_t ptMin, Float_t ptMax, 
   }
    
   /* create output data container */
-  AliAnalysisDataContainer *outputc1 = mgr->CreateContainer(analysisName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, "PIDFluctuation.root");
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  outputFileName += ":PWGCFEbyE.outputPIDFunctionAnalysis";
+  AliAnalysisDataContainer *outputc1 = mgr->CreateContainer(analysisName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
   if (!outputc1) {
     Error("", "cannot create output container \"Histos\"");
     return NULL;
