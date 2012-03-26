@@ -1615,12 +1615,13 @@ Int_t AliTPCclustererMI::ReadHLTClusters()
       AliError("HLT Clusters can not be found");
     }
 
-    if (pClusterAccess->FindObject("clusterarray")==NULL) {
+    TObject* pObj=pClusterAccess->FindObject("clusterarray");
+    if (pObj==NULL) {
       AliError("HLT clusters requested, but not cluster array not present");
       return -4;
     }
 
-    TClonesArray* clusterArray=dynamic_cast<TClonesArray*>(pClusterAccess->FindObject("clusterarray"));
+    TObjArray* clusterArray=dynamic_cast<TClonesArray*>(pObj);
     if (!clusterArray) {
       AliError("HLT cluster array is not of class type TClonesArray");
       return -5;
