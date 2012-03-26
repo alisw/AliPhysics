@@ -39,6 +39,16 @@ endif
   endif
 #endif
 
+ifeq ($(PLATFORM),macosx)
+ROOTLIBDIR     := $(shell $(RC) --libdir)
+ifeq ($(PACKAGE),ANALYSIS)
+   PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) -L$(ROOTLIBDIR)
+endif
+ifeq ($(PACKAGE),ANALYSISalice) 
+   PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) $(ANALYSIS_LIBS) $(OADB_LIBS) -L$(ROOTLIBDIR) -lXMLIO -lEG -lTreePlayer
+endif
+endif
+
 CHECKXML      := $(shell root-config --has-xml)
 
 ifeq ($(CHECKXML),yes)
@@ -63,7 +73,11 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_ANALYSIS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+ifeq ($(PLATFORM),macosx)
+	$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+else
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+endif
 	@chmod a+x $@
 	@echo "done"
 

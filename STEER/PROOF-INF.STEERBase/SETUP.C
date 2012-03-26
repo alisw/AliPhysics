@@ -8,8 +8,7 @@ void SETUP()
    gSystem->Load("libMinuit");
 
    // Load the STEERBase library
-   TString dypath = gSystem->GetDynamicPath();
-   dypath.Prepend(".:");
+   TString dypath = TString::Format("%s:%s", gSystem->WorkingDirectory(), gSystem->GetDynamicPath());
    gSystem->SetDynamicPath(dypath);
    gSystem->Load("libSTEERBase");
 
@@ -18,4 +17,8 @@ void SETUP()
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("STEERBase_INCLUDE", "STEERBase/STEERBase");
+
+   // Set our lib coordinates, so that other packages can link to us
+   TString lib = TString::Format("-L%s -lSTEERBase", gSystem->WorkingDirectory());
+   gSystem->Setenv("STEERBase_LIBS", lib.Data());
 }

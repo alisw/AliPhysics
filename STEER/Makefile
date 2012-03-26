@@ -33,7 +33,21 @@ endif
   endif
 #endif
 
-
+ifeq ($(PLATFORM),macosx)
+ROOTLIBDIR     := $(shell $(RC) --libdir)
+ifeq ($(PACKAGE),STEERBase)
+   PACKLDFLAGS = -L$(ROOTLIBDIR)  -lVMC -lMinuit -lEG -lGeom
+endif
+ifeq ($(PACKAGE),ESD)
+   PACKLDFLAGS = $(STEERBase_LIBS) -L$(ROOTLIBDIR) -lVMC -lEG -lGeom
+endif
+ifeq ($(PACKAGE),AOD)
+   PACKLDFLAGS = $(STEERBase_LIBS) -L$(ROOTLIBDIR) -lEG -lGeom
+endif
+ifeq ($(PACKAGE),CDB)
+   PACKLDFLAGS = $(STEERBase_LIBS) -L$(ROOTLIBDIR) -lMinuit -lTree -lXMLParser
+endif
+endif
 
 
 CXXFLAGS += $(ALICEINC) -g
@@ -44,7 +58,11 @@ OBJS          = $(SRCS:.cxx=.o)
 lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+ifeq ($(PLATFORM),macosx)
+	$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+else
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+endif
 	@chmod a+x $@
 	@echo "done"
 
