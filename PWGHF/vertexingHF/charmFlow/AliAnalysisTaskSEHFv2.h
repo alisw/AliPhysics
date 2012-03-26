@@ -34,7 +34,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
  public:
 
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi}; //more particles can be added
-  enum EventPlaneMeth{kTPC,kVZERO,kTPCVZERO,kVZEROTPC}; //Event plane to be calculated in the task
+  enum EventPlaneMeth{kTPC,kVZERO,kTPCVZERO}; //Event plane to be calculated in the task
 
   AliAnalysisTaskSEHFv2();
   AliAnalysisTaskSEHFv2(const char *name, AliRDHFCuts *rdCuts, Int_t decaychannel);
@@ -53,9 +53,8 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetEtaGapFeatureForEventplaneFromTracks (Bool_t etaGap) {fEtaGap = etaGap;}
   void SetEventPlaneMethod(Int_t epmethod);
   void SetTPCEPOnly(){SetEventPlaneMethod(kTPC);}
-  void SetVZEROEPOnly(){SetEventPlaneMethod(kVZERO);}
+  void SetVZEROEP(){SetEventPlaneMethod(kVZERO);}
   void SetTPCEP(){SetEventPlaneMethod(kTPCVZERO);}
-  void SetVZEROEP(){SetEventPlaneMethod(kVZEROTPC);}
   void SetEventPlanesCompatibility(Float_t comp) {fEventPlanesComp=comp;}
 
   Int_t GetEventPlaneMethod()const {return fEventPlaneMeth;}
