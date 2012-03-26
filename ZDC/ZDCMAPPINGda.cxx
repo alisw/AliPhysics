@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
   } 
   
   int status=0, nphys=0;
-  int const kNModules = 10;
+  int const kNModules = 9;
   int const kNChannels = 24;
   int const kNScChannels = 32;  
   int const kZDCTDCGeo = 4;
@@ -238,25 +238,25 @@ int main(int argc, char **argv) {
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
 	       is,adcMod[is],adcCh[is],sigCode[is],det[is],sec[is]);
     	     //printf("  Mapping DA -> %d ADC: mod %d ch %d, code %d det %d, sec %d\n",
-	     //  is,adcMod[is],adcCh[is],sigCode[is],det[is],sec[is]);
+	       //is,adcMod[is],adcCh[is],sigCode[is],det[is],sec[is]);
 	  }
 	  for(Int_t is=0; is<kNScChannels; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
 	       is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
  	     //if(scMod[is]!=-1) printf("  Mapping DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
-	     //  is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
+	       //is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
 	  }
 	  for(Int_t is=0; is<kNScChannels; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\n",
 	       is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
  	     //if(tdcMod[is]!=-1) printf("  Mapping DA -> %d TDC: mod %d ch %d, code %d\n",
-	     //  is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
+	       //is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
 	  }
 	  for(Int_t is=0; is<kNModules; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\n",
 	     modGeo[is],modType[is],modNCh[is]);
 	     //printf("  Mapping DA -> Module mapping: geo %d type %d #ch %d\n",
-	     //  modGeo[is],modType[is],modNCh[is]);
+	       //modGeo[is],modType[is],modNCh[is]);
 	  }
 	  
 	//} //if (rawstream)
@@ -356,7 +356,7 @@ int main(int argc, char **argv) {
        fitfun[k] = hTDC[k]->GetFunction("gaus");
        mean[k] = (Float_t) (fitfun[k]->GetParameter(1));
        sigma[k] = (Float_t) (fitfun[k]->GetParameter(2));
-       //printf("\t Mean value from fit = %1.2f\n", mean[k]);
+       //printf("\t Mean value from fit = %1.2f ns\n", mean[k]);
        //
        fprintf(fileShuttle,"\t%f\t%f\n",mean[k], sigma[k]);
      }

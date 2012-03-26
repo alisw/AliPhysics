@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
   TVirtualFitter::SetDefaultFitter("Minuit");
 
   int status = 0;
-  int const kNModules = 10;
+  int const kNModules = 9;
   int const kNChannels = 24;
   int const kNScChannels = 32;
   Int_t kFirstADCGeo=0, kLastADCGeo=3;
