@@ -14,10 +14,24 @@ endif
 ALICEINC = -I.
 ALICEINC += -I./$(PACKAGE)/
 
+ifneq ($(STEERBase_INCLUDE),)
+   ALICEINC += -I../$(STEERBase_INCLUDE) 
+endif
+ifneq ($(ESD_INCLUDE),)
+   ALICEINC += -I../$(ESD_INCLUDE) 
+endif
+ifneq ($(AOD_INCLUDE),)
+   ALICEINC += -I../$(AOD_INCLUDE) 
+endif
+ifneq ($(ANALYSIS_INCLUDE),)
+   ALICEINC += -I../$(ANALYSIS_INCLUDE) 
+endif
+ifneq ($(ANALYSISalice_INCLUDE),)
+   ALICEINC += -I../$(ANALYSISalice_INCLUDE) 
+endif
 ifneq ($(PWGUDbase_INCLUDE),)
    ALICEINC += -I../$(PWGUDbase_INCLUDE) 
 endif
-
 ifneq ($(PWGUDdep_INCLUDE),)
    ALICEINC += -I../$(PWGUDdep_INCLUDE) 
 endif
@@ -29,8 +43,12 @@ endif
   endif
 #endif
 
-
-
+ifeq ($(PLATFORM),macosx)
+ROOTLIBDIR     := $(shell $(RC) --libdir)
+ifeq ($(PACKAGE),PWGUDbase) 
+   PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) $(ANALYSIS_LIBS) $(OADB_LIBS) $(ANALYSISalice_LIBS) -L$(ROOTLIBDIR) -lEG
+endif
+endif
 
 CXXFLAGS += $(ALICEINC) -g
 
@@ -40,7 +58,11 @@ OBJS          = $(SRCS:.cxx=.o)
 lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+ifeq ($(PLATFORM),macosx)
+	$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+else
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+endif
 	@chmod a+x $@
 	@echo "done"
 
