@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  EMCAL tender, apply corrections to EMCAl clusters                        //
+//  EMCAL tender, apply corrections to EMCAL clusters                        //
 //  and do track matching.                                                   //
 //  Author: Deepa Thomas (Utrecht University)                                // 
 //                                                                           //
@@ -105,6 +105,7 @@ AliTenderSupply()
 {
   // Default constructor.
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
+  fEMCALRecoUtils  = new AliEMCALRecoUtils;
 }
 
 //_____________________________________________________
@@ -161,7 +162,6 @@ AliTenderSupply(name,tender)
   
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
   fEMCALRecoUtils  = new AliEMCALRecoUtils;
-  fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
 }
 
 //_____________________________________________________
@@ -187,7 +187,7 @@ void AliEMCALTenderSupply::Init()
   // Initialise EMCAL tender.
 
   if (fDebugLevel>0) 
-    AliInfo("Init EMCAL Tender supply"); 
+    AliWarning("Init EMCAL Tender supply"); 
   
   if (fConfigName.Length()>0 && gROOT->LoadMacro(fConfigName) >=0) {
     AliDebug(1, Form("Loading settings from macro %s", fConfigName.Data()));
@@ -232,10 +232,52 @@ void AliEMCALTenderSupply::Init()
     for(Int_t i = 0; i < 10; i++) 
       fEMCALMatrix[i] = tender->fEMCALMatrix[i] ;
   }
+  
+  if (fDebugLevel>0){
+    AliInfo( "Emcal Tender settings: ======================================" ); 
+    AliInfo( "------------ Switches --------------------------" ); 
+    AliInfo( Form( "BadCellRemove : %d", fBadCellRemove )); 
+    AliInfo( Form( "ExoticCellRemove : %d", fRejectExoticCells )); 
+    AliInfo( Form( "CalibrateEnergy : %d", fCalibrateEnergy )); 
+    AliInfo( Form( "CalibrateTime : %d", fCalibrateTime )); 
+    AliInfo( Form( "UpdateCell : %d", fUpdateCell )); 
+    AliInfo( Form( "DoUpdateOnly : %d", fDoUpdateOnly )); 
+    AliInfo( Form( "Reclustering : %d", fReClusterize )); 
+    AliInfo( Form( "ClusterBadChannelCheck : %d", fClusterBadChannelCheck )); 
+    AliInfo( Form( "ClusterExoticChannelCheck : %d", fRejectExoticClusters )); 
+    AliInfo( Form( "CellFiducialRegion : %d", fFiducial )); 
+    AliInfo( Form( "ReCalibrateCluster : %d", fReCalibCluster )); 
+    AliInfo( Form( "RecalculateClusPos : %d", fRecalClusPos )); 
+    AliInfo( Form( "RecalShowerShape : %d", fRecalShowerShape )); 
+    AliInfo( Form( "NonLinearityCorrection : %d", fDoNonLinearity )); 
+    AliInfo( Form( "RecalDistBadChannel : %d", fRecalDistToBadChannels )); 
+    AliInfo( Form( "TrackMatch : %d", fDoTrackMatch )); 
+    AliInfo( "------------ Variables -------------------------" ); 
+    AliInfo( Form( "DebugLevel : %d", fDebugLevel )); 
+    AliInfo( Form( "BasePath : %s", fBasePath.Data() )); 
+    AliInfo( Form( "ConfigFileName : %s", fConfigName.Data() )); 
+    AliInfo( Form( "EMCALGeometryName : %s", fEMCALGeoName.Data() )); 
+    AliInfo( Form( "NonLinearityFunction : %d", fNonLinearFunc )); 
+    AliInfo( Form( "NonLinearityThreshold : %d", fNonLinearThreshold )); 
+    AliInfo( Form( "MisalignmentMatrixSurvey : %d", fMisalignSurvey )); 
+    AliInfo( Form( "NumberOfCellsFromEMCALBorder : %d", fNCellsFromEMCALBorder )); 
+    AliInfo( Form( "RCut : %f", fRcut )); 
+    AliInfo( Form( "Mass : %f", fMass )); 
+    AliInfo( Form( "Step : %f", fStep )); 
+    AliInfo( Form( "EtaCut : %f", fEtacut )); 
+    AliInfo( Form( "PhiCut : %f", fPhicut )); 
+    AliInfo( Form( "ExoticCellFraction : %f", fExoticCellFraction )); 
+    AliInfo( Form( "ExoticCellDiffTime : %f", fExoticCellDiffTime )); 
+    AliInfo( Form( "ExoticCellMinAmplitude : %f", fExoticCellMinAmplitude )); 
+    AliInfo( "=============================================================" ); 
+  }
 
   // Init geometry  
   fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
-  
+
+  // digits array
+  fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
+
   // Initialising non-linearity parameters
   if( fNonLinearThreshold != -1 )
     fEMCALRecoUtils->SetNonLinearityThreshold(fNonLinearThreshold);
@@ -319,11 +361,11 @@ void AliEMCALTenderSupply::ProcessEvent()
       }
       if (fInitBC==1)
       {
-        AliInfo("InitBadChannels OK");
+        AliWarning("InitBadChannels OK");
       }
       if (fInitBC>1)
       {
-        AliInfo(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+        AliWarning(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
       }
     }
 
@@ -338,11 +380,11 @@ void AliEMCALTenderSupply::ProcessEvent()
       }
       if (fInitRecalib==1)
       {
-        AliInfo("InitRecalib OK");
+        AliWarning("InitRecalib OK");
       }
       if (fInitRecalib>1)
       {
-        AliInfo(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+        AliWarning(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
         fReCalibCluster = kFALSE;
       }
     }
@@ -358,11 +400,11 @@ void AliEMCALTenderSupply::ProcessEvent()
       }
       if (initTC==1)
       {
-        AliInfo("InitTimeCalib OK");
+        AliWarning("InitTimeCalib OK");
       }
       if( initTC > 1 )
       {
-        AliInfo(Form("No external time calibration set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+        AliWarning(Form("No external time calibration set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
       }
     }
 
@@ -375,7 +417,7 @@ void AliEMCALTenderSupply::ProcessEvent()
         return;
       }
       else
-        AliInfo("InitMisalignMatrix OK");
+        AliWarning("InitMisalignMatrix OK");
     }
     
     // init clusterizer
@@ -387,7 +429,7 @@ void AliEMCALTenderSupply::ProcessEvent()
         return;
       }
       else
-        AliInfo("InitClusterization OK");
+        AliWarning("InitClusterization OK");
     }
     
     if(fDebugLevel>1) 
