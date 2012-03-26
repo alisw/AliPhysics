@@ -243,13 +243,14 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
  
   if(fDebug > 1) printf("AnalysisTaskSEHFv2::UserCreateOutputObjects() \n");
 
-  fhEventsInfo=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",6,-0.5,5.5);
+  fhEventsInfo=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",7,-0.5,6.5);
   fhEventsInfo->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fhEventsInfo->GetXaxis()->SetBinLabel(2,"nEvSelected");
   fhEventsInfo->GetXaxis()->SetBinLabel(3,"nCandidatesSelected");
   fhEventsInfo->GetXaxis()->SetBinLabel(4,"out of pt bounds");
   fhEventsInfo->GetXaxis()->SetBinLabel(5,Form("Ev Sel in Centr %.0f-%.0f%s",fRDCuts->GetMinCentrality(),fRDCuts->GetMaxCentrality(),"%"));
   fhEventsInfo->GetXaxis()->SetBinLabel(6,"mismatch lab");
+  fhEventsInfo->GetXaxis()->SetBinLabel(7,"non valid TPC EP");
   fhEventsInfo->GetXaxis()->SetNdivisions(1,kFALSE);
 
 
@@ -296,17 +297,23 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     TH2F* hEvPlane=new TH2F(Form("hEvPlane%s",centrname.Data()),Form("VZERO/TPC Event plane angle %s;#phi Ev Plane (TPC);#phi Ev Plane (VZERO);Entries",centrname.Data()),200,0.,TMath::Pi(),200,0.,TMath::Pi());
     fOutput->Add(hEvPlane);
 
-    TH1F* hEvPlaneneg=new TH1F(Form("hEvPlaneneg%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
-    fOutput->Add(hEvPlaneneg);
-	
-    TH1F* hEvPlanepos=new TH1F(Form("hEvPlanepos%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
-    fOutput->Add(hEvPlanepos);
+    TH1F* hEvPlaneA=new TH1F(Form("hEvPlaneA%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
+    fOutput->Add(hEvPlaneA);
+
+    TH1F* hEvPlaneB=new TH1F(Form("hEvPlaneB%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
+    fOutput->Add(hEvPlaneB);
 
     TH1F* hEvPlaneCand=new TH1F(Form("hEvPlaneCand%s",centrname.Data()),Form("Event plane angle - Event plane angle per candidate %s;#phi(Ev Plane Candidate);Entries",centrname.Data()),200,-TMath::Pi(),TMath::Pi());
     fOutput->Add(hEvPlaneCand);
 
     TH1F* hEvPlaneReso=new TH1F(Form("hEvPlaneReso%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
     fOutput->Add(hEvPlaneReso);
+    if(fEventPlaneMeth==kVZERO){
+      TH1F* hEvPlaneReso2=new TH1F(Form("hEvPlaneReso2%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
+      fOutput->Add(hEvPlaneReso2);
+      TH1F* hEvPlaneReso3=new TH1F(Form("hEvPlaneReso3%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
+      fOutput->Add(hEvPlaneReso3);
+    }
   }
   
   PostData(1,fhEventsInfo);
@@ -425,8 +432,8 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   Double_t rpangleVZERO=0;
   Double_t planereso=0;
   Double_t deltaPsi=0;
-  Double_t rpangleeventneg=0;
-  Double_t rpangleeventpos=0;
+  Double_t rpangleeventB=0;
+  Double_t rpangleeventA=0;
 
   //For candidate removal from TPC EP
   TVector2* q=0x0;
@@ -445,59 +452,71 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   TString centrbinname=Form("centr%d_%d",icentr-5,icentr);
 
   if(fReadMC){
-    fEventPlaneMeth=kVZERO;
     TRandom3 *g = new TRandom3(0);
-    rpangleVZERO=g->Rndm()*TMath::Pi();
+    eventplane=g->Rndm()*TMath::Pi();
     delete g;g=0x0;
-    eventplane=rpangleVZERO;
     if(fUseAfterBurner)fAfterBurner->SetEventPlane((Double_t)eventplane);
   }else{
     if(fEventPlaneMeth!=kTPC){
       //VZERO EP and resolution
-      rpangleVZERO=pl->GetEventplane("V0",aod,fV0EPorder);
-      if(fEventPlaneMeth!=kTPCVZERO){
-	//Using V0A/C to determine resolution
-	rpangleeventneg= pl->GetEventplane("V0A",aod,fV0EPorder);
-	rpangleeventpos= pl->GetEventplane("V0C",aod,fV0EPorder);
-	deltaPsi =rpangleeventneg-rpangleeventpos;
-	if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){// difference of subevents reaction plane angle cannot be bigger than phi/2
-	  if(deltaPsi>0.) deltaPsi-=TMath::Pi();
-	  else deltaPsi +=TMath::Pi();
-	} 
+      rpangleVZERO=GetPhi0Pi(pl->GetEventplane("V0",aod,fV0EPorder));
+      if(fEventPlaneMeth==kVZERO){
+	//Using V0A/C for VZERO resolution
+	rpangleeventA= GetPhi0Pi(pl->GetEventplane("V0A",aod,fV0EPorder));
+	rpangleeventB= GetPhi0Pi(pl->GetEventplane("V0C",aod,fV0EPorder));
+
+	deltaPsi =rpangleeventA-rpangleeventB;
 	eventplane=rpangleVZERO;
       }
     }
+    // TPC event plane
+    rpangleTPC = pl->GetEventplane("Q");
+    if(rpangleTPC<0){
+      fhEventsInfo->Fill(6);
+      return;
+    }
     if(fEventPlaneMeth!=kVZERO){
-      // TPC event plane and resolution 
-
-      // extracting Q vectors and calculating v2 + resolution
+      // TPC resolution 
+      q = pl->GetQVector();
       if(fEtaGap){
-        qsub1 = pl->GetQsub1();
-   	qsub2 = pl->GetQsub2();
-	rpangleeventpos = qsub1->Phi()/2.;
-	rpangleeventneg = qsub2->Phi()/2.;
+	qsub1 = pl->GetQsub1();
+	qsub2 = pl->GetQsub2();
+	rpangleeventA = qsub1->Phi()/2.;
+	rpangleeventB = qsub2->Phi()/2.;
       }
-      else if(!fEtaGap){
-	q = pl->GetQVector();
-        rpangleTPC = pl->GetEventplane("Q");
-      } 
-      if(fEventPlaneMeth!=kVZEROTPC){
-	deltaPsi = pl->GetQsubRes();
-	if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){
-	  if(deltaPsi>0.) deltaPsi-=TMath::Pi();
-	  else deltaPsi +=TMath::Pi();
-	} // difference of subevents reaction plane angle cannot be bigger than phi/2
-	planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
-      }
+      deltaPsi = pl->GetQsubRes();
+      //	planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
     }
   }
-  if(TMath::Abs(rpangleTPC-rpangleVZERO)>fEventPlanesComp)return;
-  //Filling EP-related histograms
+  
+  if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){
+    if(deltaPsi>0.) deltaPsi-=TMath::Pi();
+    else deltaPsi +=TMath::Pi();
+  } // difference of subevents reaction plane angle cannot be bigger than phi/2
   planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
+  if(TMath::Abs(rpangleTPC-rpangleVZERO)>fEventPlanesComp)return;
+
+  //Filling EP-related histograms
   ((TH2F*)fOutput->FindObject(Form("hEvPlane%s",centrbinname.Data())))->Fill(rpangleTPC,rpangleVZERO); // reaction plane angle without autocorrelations removal
   ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso); //RP resolution   
-  ((TH1F*)fOutput->FindObject(Form("hEvPlanepos%s",centrbinname.Data())))->Fill(rpangleeventpos); //Angle of first subevent
-  ((TH1F*)fOutput->FindObject(Form("hEvPlaneneg%s",centrbinname.Data())))->Fill(rpangleeventneg); //Angle of second subevent
+  if(fEventPlaneMeth==kVZERO||fEtaGap){
+    ((TH1F*)fOutput->FindObject(Form("hEvPlaneA%s",centrbinname.Data())))->Fill(rpangleeventA); //Angle of first subevent
+    ((TH1F*)fOutput->FindObject(Form("hEvPlaneB%s",centrbinname.Data())))->Fill(rpangleeventB); //Angle of second subevent
+  }
+  if(fEventPlaneMeth==kVZERO){
+    Double_t deltaSub =rpangleTPC-rpangleeventA;
+    if(TMath::Abs(deltaSub)>TMath::Pi()/2.){// difference of subevents reaction plane angle cannot be bigger than phi/2
+      if(deltaSub>0.) deltaSub-=TMath::Pi();
+      else deltaSub +=TMath::Pi();
+    } 
+    ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso2%s",centrbinname.Data())))->Fill(TMath::Cos(2.*deltaSub)); //RP resolution   
+    deltaSub =rpangleTPC-rpangleeventB;
+    if(TMath::Abs(deltaSub)>TMath::Pi()/2.){// difference of subevents reaction plane angle cannot be bigger than phi/2
+      if(deltaSub>0.) deltaSub-=TMath::Pi();
+      else deltaSub +=TMath::Pi();
+    } 
+    ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso3%s",centrbinname.Data())))->Fill(TMath::Cos(2.*deltaSub)); //RP resolution   
+  }
 
   //Loop on D candidates
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
