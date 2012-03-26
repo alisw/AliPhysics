@@ -134,36 +134,39 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	
 	Float_t meanHitsSL0 = 0.;
 	Float_t meanHitsAMU = 0.;
-	if ((indexActiveModuleSL0==0) || (indexActiveModuleAMU == 0)) continue;
+	//if ((indexActiveModuleSL0==0) || (indexActiveModuleAMU == 0)) continue;
+	if ((indexActiveModuleAMU == 0)) continue;
 
 	meanHitsSL0 = h0->Integral()/indexActiveModuleSL0;
 	meanHitsAMU = h2->Integral()/indexActiveModuleAMU;
 
 	TH1* h6 = (TH1*)harr[6];
-	TH1* h7 = (TH1*)harr[7];
+	//TH1* h7 = (TH1*)harr[7];
 
-	Int_t goodModulesSL0 = 0;
-	Int_t badModulesSL0 = 0;
+	//Int_t goodModulesSL0 = 0;
+	//Int_t badModulesSL0 = 0;
 	Int_t goodModulesAMU = 0;
 	Int_t badModulesAMU = 0;
 
 	for (Int_t imod = 0; imod < 60; imod++)
 	{
-		if (TMath::Abs(h0->GetBinContent(imod)/meanHitsSL0-1) < 0.65) goodModulesSL0++;
-		else badModulesSL0++;
-		if (TMath::Abs(h2->GetBinContent(imod)/meanHitsAMU-1) < 0.65) goodModulesAMU++;
-		else badModulesAMU++;
+		//if (TMath::Abs(h0->GetBinContent(imod)/meanHitsSL0-1) < 0.65) goodModulesSL0++;
+		//else badModulesSL0++;
+		if (meanHitsAMU!=0)
+		{
+			if (TMath::Abs(h2->GetBinContent(imod)/meanHitsAMU-1) <= 0.90) goodModulesAMU++;
+			else badModulesAMU++;
+		}
 
 	}
-	h6->SetMaximum(60);
-	h6->SetMinimum(0);
-	h6->Fill(1,goodModulesSL0);
-	h6->Fill(2,badModulesSL0);
+	h6->Fill(1,goodModulesAMU);
+	h6->Fill(2,badModulesAMU);
 
-	h7->SetMaximum(60);
-	h7->SetMinimum(0);
-	h7->Fill(1,goodModulesAMU);
-	h7->Fill(2,badModulesAMU);
+	Float_t maxMod = 1*h6->GetMaximum();
+	Float_t scaleMaxMod = 0;
+	if (maxMod!=0) scaleMaxMod = 1./maxMod;
+	else scaleMaxMod = 0;
+	h6->Scale(scaleMaxMod);
 
         TH1* h4 = (TH1*)harr[4];
         TH1* h5 = (TH1*)harr[5];
@@ -209,20 +212,15 @@ void AliACORDEQADataMakerRec::InitRaws()
 
 
 
-	TH1F * fhACORDEStatusSL0_DQM = new TH1F("fhACORDEStatusSL0_DQM","Status of rate for ACORDE's modules (SL0 mode)",2,1,3);
 	TH1F * fhACORDEStatusAMU_DQM = new TH1F("fhACORDEStatusAMU_DQM","Status of rate for ACORDE's modules (AMU mode)",2,1,3);
   	for (Int_t i=0;i<2;i++) 
 	{
-		fhACORDEStatusSL0_DQM->GetXaxis()->SetBinLabel(i+1,acoStatus[i]); 
 		fhACORDEStatusAMU_DQM->GetXaxis()->SetBinLabel(i+1,acoStatus[i]); 
 	}
-	fhACORDEStatusSL0_DQM->SetYTitle("No. of modules");
-	fhACORDEStatusAMU_DQM->SetYTitle("No. of modules");
+	fhACORDEStatusAMU_DQM->SetYTitle("No. of modules (Norm.)");
 
-	Add2RawsList(fhACORDEStatusSL0_DQM,6,expert,image,!saveCorr);
-	Add2RawsList(fhACORDEStatusAMU_DQM,7,!expert,image,!saveCorr);
+	Add2RawsList(fhACORDEStatusAMU_DQM,6,!expert,image,!saveCorr);
 
-	fhACORDEStatusSL0_DQM->SetFillColor(kAzure-5);
 	fhACORDEStatusAMU_DQM->SetFillColor(kAzure-7);
 
 
