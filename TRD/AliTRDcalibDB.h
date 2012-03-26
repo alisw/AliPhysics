@@ -59,7 +59,7 @@ class AliTRDcalibDB : public TObject {
   Float_t                             GetVdriftAverage(Int_t det);
         AliTRDCalROC                 *GetVdriftROC(Int_t det);
   const AliTRDCalDet                 *GetVdriftDet();
-
+  TObjArray                          *GetPHQ();
   const AliTRDCalDet                 *GetExBDet();
 
   Float_t                             GetT0(Int_t det, Int_t col, Int_t row);
@@ -146,6 +146,7 @@ class AliTRDcalibDB : public TObject {
        , kIDPadStatus
        , kIDDCS
        , kIDAttach
+       , kIDPHQ
        , kCDBCacheSize };         // IDs of cached objects
 
   const TObject *GetCachedCDBObject(Int_t id);

@@ -321,6 +321,9 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
     case kIDAttach : 
       return CacheCDBEntry(kIDAttach            ,"TRD/Calib/TrkAttach"); 
       break;
+    case kIDPHQ :
+      return CacheCDBEntry(kIDPHQ               ,"TRD/Calib/PHQ");
+      break;
   }
 
   return 0;
@@ -545,6 +548,16 @@ const AliTRDCalDet *AliTRDcalibDB::GetVdriftDet()
     return calChamber;
   }
 
+}
+
+//_____________________________________________________________________________
+TObjArray * AliTRDcalibDB::GetPHQ()
+{
+  //
+  //return PHQ calibration object
+  //
+  TObjArray *arr = (TObjArray *) (GetCachedCDBObject(kIDPHQ));
+  return arr;
 }
 
 //_____________________________________________________________________________

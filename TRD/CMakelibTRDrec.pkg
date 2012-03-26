@@ -33,6 +33,7 @@ set ( SRCS
     AliTRDtransform.cxx
     AliTRDtrackletOflHelper.cxx
     AliTRDpidUtil.cxx
+    AliTRDdEdxUtils.cxx
     AliTRDpidESD.cxx
     AliTRDReconstructor.cxx
     AliTRDseedV1.cxx AliTRDtrackV1.cxx

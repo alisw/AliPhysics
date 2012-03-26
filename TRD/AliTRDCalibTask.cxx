@@ -78,6 +78,7 @@ using namespace std;
 #include "AliLog.h"
 
 #include "AliTRDCalibChamberStatus.h"
+#include "AliTRDdEdxUtils.h"
 
 #include "AliTRDCalibTask.h"
 
@@ -220,6 +221,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
   if(fCH2dTest) delete fCH2dTest;
   if(fPH2dTest) delete fPH2dTest;
   if(fLinearVdriftTest) delete fLinearVdriftTest;
+  AliTRDdEdxUtils::DeleteCalibHist();
   if(fCalDetGain) delete fCalDetGain;
   
   if(fSelectedTrigger) {
@@ -340,6 +342,8 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fAbsoluteGain->Sumw2();
   fListHist->Add(fAbsoluteGain);
   
+  AliTRDdEdxUtils::PrintControl();
+  AliTRDdEdxUtils::IniCalibHist(fListHist, kTRUE);
   /////////////////////////////////////////
   // First debug level
   ///////////////////////////////////////
@@ -561,7 +565,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
   //cout << "event = " << fCounter << endl;
   
   //printf("Counter %d\n",fCounter);
-  
+
   ///////////////////
   // Check trigger
   ///////////////////
@@ -669,7 +673,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
   Int_t nbtrackTPC = 0;
   
 
-  
+
   if (nbTracks <= 0.0) {
     
     if(fDebug > 1) {
@@ -680,8 +684,8 @@ void AliTRDCalibTask::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   }
-  
-  
+
+
   fESDfriend = dynamic_cast<AliESDfriend*> (fESD->FindListObject("AliESDfriend"));
   if(!fESDfriend){
     AliError("fESDfriend not available");
@@ -693,7 +697,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   }
-  
+
   //printf("has friends\n");
 
   /////////////////////////////////////
@@ -759,7 +763,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
       //printf("Not a good track\n");
       continue;
     }
-    
+
     // First Absolute gain calibration
     Int_t trdNTracklets = (Int_t) fkEsdTrack->GetTRDntracklets();
     Int_t trdNTrackletsPID = (Int_t) fkEsdTrack->GetTRDntrackletsPID(); 
@@ -784,9 +788,14 @@ void AliTRDCalibTask::UserExec(Option_t *)
       fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack,fkEsdTrack);
       //printf("Fill fTRDCalibraFillHisto\n");
     }
-      
-      
-	  
+
+    const Double_t mag = AliTRDdEdxUtils::IsExBOn() ? fESD->GetMagneticField() : -1;
+    const Int_t charge = AliTRDdEdxUtils::IsExBOn() ? fkEsdTrack->Charge() : -1;
+    const Double_t toTPCscale = AliTRDdEdxUtils::GetCalibTPCscale(fkEsdTrack->GetTPCncls(), fkEsdTrack->GetTPCsignal());
+    if(toTPCscale>0){
+      AliTRDdEdxUtils::FillCalibHist(fTrdTrack, 0, mag, charge, toTPCscale);
+    }
+
     //////////////////////////////////
     // Debug 
     ////////////////////////////////
