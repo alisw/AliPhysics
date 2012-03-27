@@ -89,7 +89,7 @@ private:
    Long64_t fCurrentEntryMix;    //! current mixed entry in chain of processed files
    Int_t    fCurrentBinIndex;    //! current bin index
 
-   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
+   ULong64_t fOfflineTriggerMask;   //  Task processes collision candidates only
 
    virtual Bool_t          MixStd();
    virtual Bool_t          MixBuffer();
@@ -101,7 +101,7 @@ private:
    AliMixInputEventHandler(const AliMixInputEventHandler &handler);
    AliMixInputEventHandler &operator=(const AliMixInputEventHandler &handler);
 
-   ClassDef(AliMixInputEventHandler, 3)
+   ClassDef(AliMixInputEventHandler, 4)
 };
 
 #endif
