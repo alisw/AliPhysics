@@ -1,0 +1,14 @@
+
+Change your local files locations in files.txt 
+
+And run
+
+root 'RunALICE.C(<plugin source>,<plugin mode>,"<data type>","<mc or null>")'
+
+root 'RunALICE.C("proof","test","aod","")'
+
+root 'RunALICE.C("proof","test","aod","mc")'
+
+root 'RunALICE.C("proof","test","esd")'
+
+root 'RunALICE.C("proof","test","esd","mc")'
