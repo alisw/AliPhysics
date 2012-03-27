@@ -1,4 +1,4 @@
-# Script for testing of the mergemakeOCDB for user purposes
+# Script for testing of the mergemakeOCDB on the grid for user purposes
 # To be used in case the standard production failed or was not automatically validated
 # Output objects are writn to the predefined path:
 
@@ -9,7 +9,9 @@
 # 3  -   run number                          - e.g run number 169926
 # 4  -   OCDB output path                    - alien://folder=/alice/cern.ch/user/m/miranov/Pass0/169926
 # Example:
-# $ALICE_ROOT/PWGPP/CalibMacros/Pass0/test/mergeMakeOCDBUser.sh /m/miranov/ /alice/data/2011/LHC11h/000169926/cpass0_HLT/  169926 alien://folder=/alice/cern.ch/user/m/miranov/Pass0/169926
+# run=170572
+# AlienName=/m/miranov/
+# $ALICE_ROOT/PWGPP/CalibMacros/Pass0/test/mergeMakeOCDBUser.sh $AlienName /alice/data/2011/LHC11h/000$run/cpass0_HLT/  $run alien://folder=/alice/cern.ch/user/m/miranov/Pass0/$run
 #
 # authors:   marian.ivanov#cern.ch, mikolaj.krzewicki@cern.ch 
 
@@ -34,7 +36,7 @@ echo xxxxxxxxxxxxxxxxxxxxxxxxxx
 OutputMacros=`echo /alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/ | sed s_\/j\/jotwinow\/_$AlienName\_ `
 alien_mkdir  $OutputMacros
 
-for lfile in `ls $InputMacros/{*C,*sh} | grep -v AddTask`; do
+for lfile in `ls $InputMacros/{*C,*sh,*jdl} | grep -v AddTask`; do
     bname=`basename $lfile`  
     echo  Copping alien_cp $lfile alien://$OutputMacros/$bname 
     alien_rm   $OutputMacros/$bname   
@@ -53,11 +55,10 @@ alien_cp $InputMacros/mergeMakeOCDB.sh  alien://$OutputBin/mergeMakeOCDB.sh
 cat $InputMacros/validationMerging.sh |  sed "s_exit \$error_exit 0_" > validationMerging.sh
 alien_rm  $OutputMacros/validationMerging.sh
 alien_cp  validationMerging.sh  alien:///$OutputMacros/validationMerging.sh
-
 #
 # 4. Submit job
 #
 echo alien_submit alien:///$OutputMacros/mergeMakeOCDB.jdl $InputDataDir $Run $OCDBPath
-alien_submit $OutputMacros/mergeMakeOCDB.jdl $InputDataDir $Run $OCDBPath &
+alien_submit alien:///$OutputMacros/mergeMakeOCDB.jdl $InputDataDir $Run $OCDBPath &
 echo Alien job submitted $!
-return $!
+
