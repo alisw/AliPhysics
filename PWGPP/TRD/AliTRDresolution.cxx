@@ -943,8 +943,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   if(clInfoArr) delete clInfoArr;
   if(!track) return NULL;
   // special care for EVE usage
-  if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
-  return H->Projection(kYrez);
+  if(H && (h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+  return H?H->Projection(kYrez):NULL;
 }
 
 
