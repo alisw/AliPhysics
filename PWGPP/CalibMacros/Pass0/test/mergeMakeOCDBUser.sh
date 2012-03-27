@@ -38,23 +38,25 @@ alien_mkdir  $OutputMacros
 
 for lfile in `ls $InputMacros/{*C,*sh,*jdl} | grep -v AddTask`; do
     bname=`basename $lfile`  
-    echo  Copping alien_cp $lfile alien://$OutputMacros/$bname 
-    alien_rm   $OutputMacros/$bname   
-    alien_cp   $lfile alien://$OutputMacros/$bname 
+    echo  Copping alien_cp -n $lfile alien://$OutputMacros/$bname 
+    alien_cp -n $lfile alien://$OutputMacros/$bname
 done
 #
 # 2. Copy shell script and jdl
 #
 OutputBin=`echo  /alice/cern.ch/user/j/jotwinow/bin/ | sed s_\/j\/jotwinow\/_$AlienName\_ `
-alien_rm /$OutputBin/mergeMakeOCDB.sh
-echo alien_cp $InputMacros/mergeMakeOCDB.sh  alien://$OutputBin/mergeMakeOCDB.sh
-alien_cp $InputMacros/mergeMakeOCDB.sh  alien://$OutputBin/mergeMakeOCDB.sh
+echo alien_cp -n $InputMacros/mergeMakeOCDB.sh  alien://$OutputBin/mergeMakeOCDB.sh
+alien_cp -n  $InputMacros/mergeMakeOCDB.sh  alien://$OutputBin/mergeMakeOCDB.sh
+cat $InputMacros/mergeMakeOCDB.jdl | sed "s_/j/jotwinow/_${AlienName}_g" > mergeMakeOCDB.jdl
+echo alien_cp -n mergeMakeOCDB.jdl alien://$OutputMacros/mergeMakeOCDB.jdl
+alien_cp -n mergeMakeOCDB.jdl alien://$OutputMacros/mergeMakeOCDB.jdl
+
 #
 # 3. Copy validation switch off return value - job will alway finish
 #
 cat $InputMacros/validationMerging.sh |  sed "s_exit \$error_exit 0_" > validationMerging.sh
-alien_rm  $OutputMacros/validationMerging.sh
-alien_cp  validationMerging.sh  alien:///$OutputMacros/validationMerging.sh
+echo alien_cp  -n validationMerging.sh  alien:///$OutputMacros/validationMerging.sh
+alien_cp  -n validationMerging.sh  alien:///$OutputMacros/validationMerging.sh
 #
 # 4. Submit job
 #
