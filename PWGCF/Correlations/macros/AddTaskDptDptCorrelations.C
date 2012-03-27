@@ -219,7 +219,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly 
       taskOutputContainer = analysisManager->CreateContainer(listName, 
                                                              TList::Class(),    
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:%s", AliAnalysisManager::GetCommonFileName(), listName)); //outputHistogramFileName);
+                                                             Form("%s:Histos", AliAnalysisManager::GetCommonFileName()));
       cout << "Add task to analysis manager and connect it to input and output containers" << endl;
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
