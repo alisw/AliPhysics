@@ -16,7 +16,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
 						   Float_t minC=0, Float_t maxC=100,
 
-						   const char * cutsfile="",
+						   TString cutsfile="",
 
 						   Bool_t theMCon=kFALSE)
 
