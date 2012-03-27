@@ -10,9 +10,9 @@
 
 // Functions
 Float_t EtaToTheta(Float_t arg);
-AliGenerator* GeneratorFactory();
+AliGenerator* GeneratorFactory(Int_t startEvent);
 
-void genExtFileConfig(const TString& srun)
+void genExtFileConfig(const TString& srun, Int_t startEvent=0)
 {
   cout << "Running genExtFileConfig.C ... " << endl;
 
@@ -79,7 +79,7 @@ void genExtFileConfig(const TString& srun)
   //=======================================================================
 
   // External generator configuration
-  AliGenerator* gener = GeneratorFactory();
+  AliGenerator* gener = GeneratorFactory(startEvent);
   gener->SetOrigin(0, 0, 0);    // vertex position
   //gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
   //gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
@@ -94,14 +94,15 @@ Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
 
-AliGenerator* GeneratorFactory() {
+AliGenerator* GeneratorFactory(Int_t startEvent) {
 
   AliGenExtFile *gener = new AliGenExtFile(-1);
   AliGenReaderTreeK * reader = new AliGenReaderTreeK();
 
   reader->SetFileName("galice.root");
-  reader->AddDir("$ALICE_ROOT/test/vmctest/ppbench/gen");
+  reader->AddDir("gen");
   gener->SetReader(reader);
+  gener->SetStartEvent(startEvent);
      
   return gener; 
 }

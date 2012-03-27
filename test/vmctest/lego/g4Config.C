@@ -40,11 +40,11 @@ void Config(const TString& det)
   if ( ! gMC ) {
     TG4RunConfiguration* runConfiguration 
       = new TG4RunConfiguration("geomRoot", 
-                                "QGSP_BERT_EMV+optical", 
+                                "FTFP_BERT_EMV+optical", 
                                 "specialCuts+stackPopper+stepLimiter",
                                  true);
 //      = new TG4RunConfiguration("geomRootToGeant4",
-//                                "emStandard+optical", 
+//                                "FTFP_BERT_EMV+optical", 
 //                                "specialCuts+specialControls+stackPopper+stepLimiter",
 //                                 true);
       
@@ -68,10 +68,30 @@ void Config(const TString& det)
     geant4->ProcessGeantCommand("/mcVerbose/opGeometryManager 1");  
     geant4->ProcessGeantCommand("/mcTracking/loopVerbose 0");     
     geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 0.01 mm"); 
-    geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
-    geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
     geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
     geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
+    // for Geant4 <= 9.4.p03
+    //geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
+    //geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
+    // for Geant4 >= 9.5
+    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess Scintillation");
+    geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
+    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess OpWLS");
+    geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
+    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess OpMieHG");
+    geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
+    
+    // Activate saving random engine status
+    // (the file per event will be re-written with each new event)
+    //gAlice->GetMCApp()->SetSaveRndmStatus(kTRUE);
+    //geant4->ProcessGeantCommand("/mcRun/saveRandom true");
+
+    // Activate saving random engine status for each event
+    // (a new file will be written for each event)
+    //gAlice->GetMCApp()->SetSaveRndmStatusPerEvent(kTRUE);
+    //geant4->ProcessGeantCommand("/mcRun/saveRandom true");
+    //geant4->ProcessGeantCommand("/mcEvent/saveRandom true");
+
 
   // Uncomment this line to get a detail info from each step 
   //geant4->ProcessGeantCommand("/tracking/verbose 1");  

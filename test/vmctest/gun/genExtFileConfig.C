@@ -1,7 +1,7 @@
 // $Id$
 //
 // AliRoot Configuration for running aliroot with Monte Carlo.
-// ConfigCommon2() includes the common setting for all MCs
+// genExtFileConfig() includes the common setting for all MCs
 // which has to be called after MC is instantiated.
 // Called from MC specific configs (g3Config.C, g4Config.C).
 //
@@ -10,9 +10,9 @@
 
 // Functions
 Float_t EtaToTheta(Float_t arg);
-AliGenerator* GeneratorFactory();
+AliGenerator* GeneratorFactory(Int_t startEvent);
 
-void genExtFileConfig()
+void genExtFileConfig(Int_t startEvent=0)
 {
   cout << "Running genExtFileConfig.C ... " << endl;
 
@@ -78,7 +78,7 @@ void genExtFileConfig()
   //=======================================================================
 
   // External generator configuration
-  AliGenerator* gener = GeneratorFactory();
+  AliGenerator* gener = GeneratorFactory(startEvent);
   gener->SetOrigin(0, 0, 0);    // vertex position
   //gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
   //gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
@@ -93,7 +93,7 @@ Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
 
-AliGenerator* GeneratorFactory() {
+AliGenerator* GeneratorFactory(Int_t startEvent) {
 
   AliGenExtFile *gener = new AliGenExtFile(-1);
   AliGenReaderTreeK * reader = new AliGenReaderTreeK();
@@ -101,6 +101,7 @@ AliGenerator* GeneratorFactory() {
   reader->SetFileName("galice.root");
   reader->AddDir("gen");
   gener->SetReader(reader);
+  gener->SetStartEvent(startEvent);
      
   return gener; 
 }

@@ -3,9 +3,10 @@
 
 # Before running this script, you should run rungen.sh first.
 
-NEVENTS=20
+NEVENTS=5
 G3CONFIG="$ALICE_ROOT/test/vmctest/gun/g3Config.C" 
 G4CONFIG="$ALICE_ROOT/test/vmctest/gun/g4Config.C" 
+
 G3OUTDIR=g3
 G4OUTDIR=g4
 
@@ -28,6 +29,6 @@ if [ "$RUNG4" = "1" ]; then
   aliroot -b -q rec.C      2>&1 | tee rec.log
   rm -fr $G4OUTDIR
   mkdir $G4OUTDIR
-  mv *.root *.log GRP $G4OUTDIR
+  mv *.root *.log *.rndm GRP $G4OUTDIR
   cp g4Config.C $G4OUTDIR
 fi

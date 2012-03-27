@@ -36,6 +36,6 @@ if [ "$RUNG4" = "1" ]; then
   aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C 2>&1 | tee aod.log
   rm -fr $G4OUTDIR
   mkdir $G4OUTDIR
-  mv *.root *.log *.ps GRP $G4OUTDIR
+  mv *.root *.log *.rndm *.ps GRP $G4OUTDIR
   cp g4Config.C $G4OUTDIR
 fi
