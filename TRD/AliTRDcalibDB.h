@@ -23,9 +23,6 @@
 #include "AliTRDPIDResponse.h"
 #endif
 
-#include "AliTRDCalTrapConfig.h"
-#include "AliTRDtrapConfig.h"
-
 class TString;
 
 class AliCDBEntry;
@@ -122,9 +119,6 @@ class AliTRDcalibDB : public TObject {
   Int_t                               PadResponse(Double_t signal, Double_t dist
                                                 , Int_t layer, Double_t *pad) const;
 
-  AliTRDtrapConfig*                   GetTrapConfig();
-  AliTRDtrapConfig*                   LoadTrapConfig(const TString &name = "", const TString &version = "");
-
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
@@ -140,7 +134,6 @@ class AliTRDcalibDB : public TObject {
        , kIDNoisePad
        , kIDPRFWidth
        , kIDFEE
-       , kIDTrapConfig
        , kIDChamberPos
        , kIDStackPos
        , kIDSuperModulePos
@@ -182,8 +175,6 @@ class AliTRDcalibDB : public TObject {
   AliTRDPIDResponse    *fPIDResponse;               //  TRD PID Response function
 
   Int_t                 fOnlineGainTableID;         //  ID for online gain table 
-
-  AliTRDtrapConfig*     fTrapConfig;                //  TRAP configuration
   
  private:
 
