@@ -66,3 +66,14 @@ mv syswatch.log syswatch_rec.log
 echo ">>>>>>> Running AliRoot to make calibration..."
 aliroot -l -b -q  runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log
+
+
+
+if [ -f QAtrain.C ]; then
+    echo ">>>>>>> Running the QA train..."
+    time aliroot -b -q QAtrain.C\($runstripped\) 2>&1 | tee qa.log
+
+    for file in *.stat; do
+        mv $file $file.qa
+    done
+fi
