@@ -11,9 +11,10 @@ void runProofCascadePbPb(
                      Float_t  centrlowlim       = 0., 
                      Float_t  centruplim        = 90., 
                      TString  centrest          = "V0M",
-                     Float_t  vtxlim            = 10.,  
+                     Float_t  vtxlim            = 10., 
+                     Int_t    minnTPCcls        = 70,     
                      Bool_t   kextrasel         = kFALSE,
-                     Bool_t   acccut            = kFALSE,
+                     Bool_t   kacccut            = kFALSE,
                      Bool_t   krelaunchvertexers= kFALSE,
                      Int_t    nEvents           = 1.0*1e7, 
                      Int_t    nEventsSkip       = 0) { 
@@ -48,18 +49,18 @@ void runProofCascadePbPb(
 
   Analysis(dataset.Data(), outFileMC, outFileData, 
            useMC, nEvents, nEventsSkip,
-           centrlowlim, centruplim, centrest, 
+           minnTPCcls, centrlowlim, centruplim, centrest, 
            vtxlim, kextrasel,
-           runperformancetask, acccut, krelaunchvertexers);
+           runperformancetask, kacccut, krelaunchvertexers);
 
 }
 
 //________________________________________________________________________
 void Analysis(TString dataset, TString outFileMC, TString outFileData, 
               Bool_t useMC, Int_t nEvents, Int_t nEventsSkip, 
-              Float_t centrlowlim, Float_t centruplim, TString centrest,
+              Int_t minnTPCcls, Float_t centrlowlim, Float_t centruplim, TString centrest,
               Float_t vtxlim, 
-              Bool_t kextrasel, Bool_t runperformancetask, Bool_t acccut, Bool_t krelaunchvertexers) {
+              Bool_t kextrasel, Bool_t runperformancetask, Bool_t kacccut, Bool_t krelaunchvertexers) {
 
 
   TString format = GetFormatFromDataSet(dataset);
@@ -98,25 +99,16 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
 
   // create task
   if (runperformancetask) {
-    AliAnalysisTaskCheckPerformanceCascadePbPb *task = new AliAnalysisTaskCheckPerformanceCascadePbPb("AliAnalysisTaskCheckPerformanceCascadePbPb");
-    task->SetApplyAccCut                 (acccut);
-    task->SetRejectEventPileUp(kFALSE);
-
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
+    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest,vtxlim,kextrasel ,kacccut ,krelaunchvertexers);
+  
   } else {
-    AliAnalysisTaskCheckCascadePbPb *task = new AliAnalysisTaskCheckCascadePbPb("AliAnalysisTaskCheckCascadePbPb");
-  }
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
+    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest,vtxlim,kextrasel ,krelaunchvertexers);
 
-  task->SetAnalysisType               (format);
-  task->SetRelaunchV0CascVertexers    (krelaunchvertexers);                 
-  task->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
-  task->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex 
-  task->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
-  task->SetQualityCut80TPCcls         (kTRUE);             // rejects tracks that have less than 80 clusters in the TPC
-  task->SetExtraSelections            (kextrasel);         // used to add other selection cuts 
-  task->SetCentralityLowLim           (centrlowlim);       // setting centrality selection variables
-  task->SetCentralityUpLim            (centruplim);
-  task->SetCentralityEst              (centrest);
-  task->SetVertexRange                (vtxlim);
+  }
 
   // create output container
   if (runperformancetask) AliAnalysisDataContainer *output = mgr->CreateContainer("clist", TList::Class(), AliAnalysisManager::kOutputContainer, outFileMC);
@@ -124,8 +116,6 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
 
   // add task to the manager
   mgr->AddTask(task);
-
-  task->SelectCollisionCandidates();
 
   // connect input and output
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

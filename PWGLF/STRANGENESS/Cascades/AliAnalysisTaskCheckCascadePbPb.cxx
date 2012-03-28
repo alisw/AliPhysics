@@ -26,19 +26,20 @@
 //              Adapted to PbPb analysis: M. Nicassio, maria.nicassio@ba.infn.it
 //               Feb-August2011
 //                - Physics selection moved to the run.C macro
-//                - Centrality selection added (+ setters) and histos
-//                - flag and setters added (CF container usage, vertex range)
+//                - Centrality selection added (+ setters) 
+//                - setters added (vertex range)
 //                - histo added and histo/container binning changed 
 //                - protection in the destructor for CAF usage          
 //                - AliWarning disabled
-//                - number of tracklets from AOD also          
 //                - automatic settings for PID
 //               September2011
 //                - proper time histos/container added (V0 and Cascades)
-//                - cosine PA V0 wrt Xi vertex in the container  
 //               November2011
 //                - re-run V0's and cascade's vertexers (SetCuts instead of SetDefaultCuts!!)
+//               Genuary2012 
 //                - AOD analysis part completed 
+//               March2012
+//                - min number of TPC clusters for track selection as a parameter      
 //-----------------------------------------------------------------
 
 class TTree;
@@ -99,7 +100,8 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
     fkQualityCutTPCrefit        (kTRUE),
-    fkQualityCut80TPCcls        (kTRUE),
+    fkQualityCutnTPCcls         (kTRUE),
+    fMinnTPCcls                 (0),  
     fkExtraSelections           (0),
     fCentrLowLim                (0),
     fCentrUpLim                 (0),
@@ -188,7 +190,8 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
     fkQualityCutTPCrefit        (kTRUE),
-    fkQualityCut80TPCcls        (kTRUE),
+    fkQualityCutnTPCcls         (kTRUE),
+    fMinnTPCcls                 (0), 
     fkExtraSelections           (0),
     fCentrLowLim                (0),
     fCentrUpLim                 (0),
@@ -402,8 +405,8 @@ if( !fPaveTextBookKeeping){
         else                             fPaveTextBookKeeping->AddText("C. Quality Cut(No TPC prim. vtx) = Off ");
         if(fkQualityCutTPCrefit)         fPaveTextBookKeeping->AddText("D. Quality Cut(TPCrefit)               = ON  ");
         else                             fPaveTextBookKeeping->AddText("D. Quality Cut(TPCrefit)               = Off ");
-        if(fkQualityCut80TPCcls)         fPaveTextBookKeeping->AddText("E. Quality Cut(80 TPC clusters)   = ON  ");
-        else                             fPaveTextBookKeeping->AddText("E. Quality Cut(80 TPC clusters)   = Off ");
+        if(fkQualityCutnTPCcls)          fPaveTextBookKeeping->AddText("E. Quality Cut(min n TPC clusters)   = ON  ");
+        else                             fPaveTextBookKeeping->AddText("E. Quality Cut(min n TPC clusters)   = Off ");
         if(fkExtraSelections)            fPaveTextBookKeeping->AddText("F. Extra Analysis Selections         = ON  ");
         else                             fPaveTextBookKeeping->AddText("F. Extra Analysis Selections         = Off ");
 
@@ -1559,11 +1562,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
         if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
       }
-      if (fkQualityCut80TPCcls) {
+      if (fkQualityCutnTPCcls) {
                 // 2 - Poor quality related to TPC clusters
-        if (lPosTPCClusters  < 80) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
-        if (lNegTPCClusters  < 80) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
-        if (lBachTPCClusters < 80) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+        if (lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than minn TPC clusters ... continue!"); continue; }
+        if (lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than minn TPC clusters ... continue!"); continue; }
+        if (lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than minn TPC clusters ... continue!"); continue; }
       }
         
       const AliExternalTrackParam *pExtTrack    = pTrackXi    ->GetInnerParam();
@@ -1856,13 +1859,13 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         if (!(nTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
         if (!(bachTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
       }
-      if (fkQualityCut80TPCcls) {
+      if (fkQualityCutnTPCcls) {
                 // 2 - Poor quality related to TPC clusters
-        if (lPosTPCClusters  < 80) { //AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!");
+        if (lPosTPCClusters  < fMinnTPCcls) { //AliWarning("Pb / V0 Pos. track has less than minn TPC clusters ... continue!");
           continue; }
-        if (lNegTPCClusters  < 80) { //AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!");
+        if (lNegTPCClusters  < fMinnTPCcls) { //AliWarning("Pb / V0 Neg. track has less than minn TPC clusters ... continue!");
           continue; }
-        if (lBachTPCClusters < 80) { //AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!");
+        if (lBachTPCClusters < fMinnTPCcls) { //AliWarning("Pb / Bach.   track has less than minn TPC clusters ... continue!");
           continue; }
       }
 

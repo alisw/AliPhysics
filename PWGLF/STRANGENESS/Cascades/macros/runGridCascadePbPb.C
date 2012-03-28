@@ -10,8 +10,9 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
                          Float_t  centruplim          = 90.,
                          TString  centrest            = "V0M",
                          Float_t  vtxlim              = 10.,
+                         Int_t minnTPCcls             = 70, 
                          Bool_t   kextrasel           = kFALSE,
-                         Bool_t   acccut              = kFALSE,
+                         Bool_t   kacccut              = kFALSE,
                          Bool_t   krelaunchvertexers  = kFALSE,
                          TString  anatype             = "AOD",//"ESD",
                          TString  gridoutputdir       = "LHC10h_AOD086",
@@ -88,29 +89,18 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
   AliAnalysisTaskPIDResponse *pidTask = AddTaskPIDResponse(useMC);
 
   if (runperformancetask) {
-    gROOT->LoadMacro("AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
-    AliAnalysisTaskCheckPerformanceCascadePbPb *task = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskPerformanceCascade");
-    task->SetApplyAccCut                (acccut);
-    task->SetRejectEventPileUp          (kFALSE);            // selects pile up
-  } else {
-    gROOT->LoadMacro("AliAnalysisTaskCheckCascadePbPb.cxx++g");
-    AliAnalysisTaskCheckCascadePbPb *task = new AliAnalysisTaskCheckCascadePbPb("TaskCascade");
-  }
-  task->SetRelaunchV0CascVertexers    (krelaunchvertexers); 
-  task->SetAnalysisType               (anatype);
-  task->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
-  task->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
-  task->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
-  task->SetQualityCut80TPCcls         (kTRUE);             // rejects tracks that have less than 80 clusters in the TPC
-  task->SetExtraSelections            (kextrasel);         // used to add other selection cuts
-  task->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
-  task->SetCentralityUpLim            (centruplim);
-  task->SetCentralityEst              (centrest);
-  task->SetVertexRange                (vtxlim);
- 
-  mgr->AddTask(task);
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
+    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest,vtxlim,kextrasel ,kacccut ,krelaunchvertexers);
 
-  task->SelectCollisionCandidates();
+  } else {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
+    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest,vtxlim,kextrasel ,krelaunchvertexers);
+
+  }
+ 
+
 
   //Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();

@@ -40,13 +40,14 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   void SetRejectEventPileUp          (Bool_t rejectPileUp               = kTRUE) { fkRejectEventPileUp            =  rejectPileUp;              }
   void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx   =  qualityCutNoTPConlyPrimVtx;}
   void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit           =  qualityCutTPCrefit;        }
-  void SetQualityCut80TPCcls         (Bool_t qualityCut80TPCcls         = kTRUE) { fkQualityCut80TPCcls           =  qualityCut80TPCcls;        }
+  void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls            = qualityCutnTPCcls;          }
+  void SetQualityCutMinnTPCcls       (Int_t minnTPCcls                  = 70   ) { fMinnTPCcls                    = minnTPCcls;                 }
   void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections              =  extraSelections;           }
   void SetCentralityLowLim           (Float_t centrlowlim               = 0.   ) { fCentrLowLim                   = centrlowlim;                }
   void SetCentralityUpLim            (Float_t centruplim                = 100. ) { fCentrUpLim                    = centruplim;                 }
   void SetCentralityEst              (TString centrest                  = "V0M") { fCentrEstimator                = centrest;                   }  
-  void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                    = vtxrange;                     }
-  void SetApplyAccCut                (Bool_t acccut                     = kFALSE) { fApplyAccCut = acccut;}    
+  void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                      = vtxrange;                   }
+  void SetApplyAccCut                (Bool_t acccut                     = kFALSE){ fApplyAccCut                   = acccut;                     }    
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -63,7 +64,8 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         Bool_t          fkRejectEventPileUp;            // Boolean : kTRUE = enable the rejection of events tagged as pile-up by SPD (AliESDEvent::IsPileupFromSPD)
         Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
         Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
-        Bool_t          fkQualityCut80TPCcls;           // Boolean : kTRUE = ask for 80 TPC clusters for each daughter track
+        Bool_t          fkQualityCutnTPCcls;            // Boolean : kTRUE = ask forat least n TPC clusters for each daughter track
+        Int_t           fMinnTPCcls;                    // Minimum number of TPC clusters for each daughter track
         Bool_t          fkExtraSelections;              // Boolean : kTRUE = apply tighter selections, before starting the analysis
         Float_t         fCentrLowLim;                   // Lower limit for centrality percentile selection
         Float_t         fCentrUpLim;                    // Upper limit for centrality percentile selection
@@ -308,7 +310,7 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascadePbPb(const AliAnalysisTaskCheckPerformanceCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascadePbPb& operator=(const AliAnalysisTaskCheckPerformanceCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 3);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 4);
 };
 
 #endif

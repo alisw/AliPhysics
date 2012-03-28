@@ -54,7 +54,8 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
   void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx = qualityCutNoTPConlyPrimVtx; }
   void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit         = qualityCutTPCrefit;         }
-  void SetQualityCut80TPCcls         (Bool_t qualityCut80TPCcls         = kTRUE) { fkQualityCut80TPCcls         = qualityCut80TPCcls;         }
+  void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls          = qualityCutnTPCcls;          }
+  void SetQualityCutMinnTPCcls       (Int_t minnTPCcls                  = 70   ) { fMinnTPCcls                  = minnTPCcls;                 }
   void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections            = extraSelections;            }
   void SetCentralityLowLim           (Float_t centrlowlim               = 0.   ) { fCentrLowLim                 = centrlowlim;                }  
   void SetCentralityUpLim            (Float_t centruplim                = 100. ) { fCentrUpLim                  = centruplim;                 }
@@ -76,7 +77,8 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
         Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
         Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
-        Bool_t          fkQualityCut80TPCcls;           // Boolean : kTRUE = ask for 80 TPC clusters for each daughter track
+        Bool_t          fkQualityCutnTPCcls;            // Boolean : kTRUE = ask for at least n TPC clusters for each daughter track
+        Int_t           fMinnTPCcls;                    // minimum number of TPC cluster for daughter tracks
         Bool_t          fkExtraSelections;              // Boolean : kTRUE = apply tighter selections, before starting the analysis
         Float_t         fCentrLowLim;                   // Lower limit for centrality percentile selection
         Float_t         fCentrUpLim;                    // Upper limit for centrality percentile selection
@@ -234,7 +236,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadePbPb(const AliAnalysisTaskCheckCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckCascadePbPb& operator=(const AliAnalysisTaskCheckCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadePbPb, 3);
+  ClassDef(AliAnalysisTaskCheckCascadePbPb, 4);
 };
 
 #endif

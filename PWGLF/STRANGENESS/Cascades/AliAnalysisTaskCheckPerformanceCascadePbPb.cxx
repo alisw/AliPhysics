@@ -89,7 +89,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fkRejectEventPileUp            (kTRUE),
     fkQualityCutNoTPConlyPrimVtx   (kTRUE),
     fkQualityCutTPCrefit           (kTRUE),
-    fkQualityCut80TPCcls           (kTRUE),
+    fkQualityCutnTPCcls            (kTRUE),
+    fMinnTPCcls                    (0), 
     fkExtraSelections              (0),
     fCentrLowLim(0),    fCentrUpLim(0), fCentrEstimator(0),
     fVtxRange                      (0),
@@ -324,7 +325,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fkRejectEventPileUp            (kTRUE),
     fkQualityCutNoTPConlyPrimVtx   (kTRUE),
     fkQualityCutTPCrefit           (kTRUE),
-    fkQualityCut80TPCcls           (kTRUE),
+    fkQualityCutnTPCcls            (kTRUE),
+    fMinnTPCcls                    (0),
     fkExtraSelections              (0),
     fCentrLowLim(0), fCentrUpLim(0), fCentrEstimator(0),
     fVtxRange                      (0),
@@ -665,8 +667,8 @@ if( !fPaveTextBookKeeping){
         else                             fPaveTextBookKeeping->AddText("C. Quality Cut(No TPC prim. vtx) = Off ");
         if(fkQualityCutTPCrefit)         fPaveTextBookKeeping->AddText("D. Quality Cut(TPCrefit)               = ON  ");
         else                             fPaveTextBookKeeping->AddText("D. Quality Cut(TPCrefit)               = Off ");
-        if(fkQualityCut80TPCcls)         fPaveTextBookKeeping->AddText("E. Quality Cut(80 TPC clusters)   = ON  ");
-        else                             fPaveTextBookKeeping->AddText("E. Quality Cut(80 TPC clusters)   = Off ");
+        if(fkQualityCutnTPCcls)          fPaveTextBookKeeping->AddText("E. Quality Cut(n TPC clusters)   = ON  ");
+        else                             fPaveTextBookKeeping->AddText("E. Quality Cut(n TPC clusters)   = Off ");
         if(fkExtraSelections)            fPaveTextBookKeeping->AddText("F. Extra Analysis Selections         = ON  ");
         else                             fPaveTextBookKeeping->AddText("F. Extra Analysis Selections         = Off ");
 
@@ -2701,11 +2703,11 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
                 if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
         }
-        if(fkQualityCut80TPCcls){
+        if(fkQualityCutnTPCcls){
                 // 2 - Poor quality related to TPC clusters
-                if(lPosTPCClusters  < 80) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
-                if(lNegTPCClusters  < 80) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
-                if(lBachTPCClusters < 80) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than n TPC clusters ... continue!"); continue; }
+                if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than n TPC clusters ... continue!"); continue; }
+                if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than n TPC clusters ... continue!"); continue; }
         }
 	
 	// - Step II.2 : Info over reconstructed cascades
@@ -3168,11 +3170,11 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
           if (!(bachTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
 
         }
-        if (fkQualityCut80TPCcls) {
+        if (fkQualityCutnTPCcls) {
                 // 2 - Poor quality related to TPC clusters
-                if(lPosTPCClusters  < 80) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
-                if(lNegTPCClusters  < 80) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
-                if(lBachTPCClusters < 80) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+                if(lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than n TPC clusters ... continue!"); continue; }
+                if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than n TPC clusters ... continue!"); continue; }
+                if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than n TPC clusters ... continue!"); continue; }
         }
 
         // - Step II.2 : Info over reconstructed cascades
