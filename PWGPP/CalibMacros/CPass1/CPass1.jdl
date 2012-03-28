@@ -8,7 +8,7 @@ Packages= { "VO_ALICE@AliRoot::v5-02-Rev-04",
 Jobtag = { "Test CPass1 Calibration Train" };
 
 GUIDFILE="guid.txt";
-TTL = "86400";
+TTL = "50000";
 Price = 1;
 
 Validationcommand ="/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/validation.sh";
@@ -28,8 +28,10 @@ InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/recCPass1.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskTPCCalib.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskTRDCalib.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskT0Calib.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskSDDCalib.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskMeanVertexCalib.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTOFAnalysisTaskCalibPass0.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/LoadLibraries.C"
+           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/LoadLibraries.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/QAtrain.C"
 };
 

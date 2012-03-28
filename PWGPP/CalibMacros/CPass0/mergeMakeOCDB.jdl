@@ -7,7 +7,7 @@ Packages= { "VO_ALICE@AliRoot::v5-02-Rev-04",
 Jobtag = { "Merging Calibration Objects from calib train and make OCDB params" };
 
 GUIDFILE="guid.txt";
-TTL = "28000";
+TTL = "50000";
 Price = 1;
 
 Validationcommand ="/alice/cern.ch/user/j/jotwinow/CPass0/MergeCalibration/validationMerging.sh";

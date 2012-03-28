@@ -59,7 +59,7 @@ alien_cp  -n validation.sh  alien:///$OutputMacros/validation.sh
 #
 # 4. Submit job
 #
-echo nohup alien_submit alien:///$OutputMacros/CPass0.jdl $Run  >submitJob$Run.txt
-#nohup alien_submit alien:///$OutputMacros/CPass0.jdl $Run  >submitJob$Run.txt
+echo nohup alien_submit alien:///$OutputMacros/CPass0.jdl $Run 
+nohup alien_submit alien:///$OutputMacros/CPass0.jdl $Run  >submitJob$Run.txt
 #echo Alien job submitted $!
 
