@@ -84,7 +84,7 @@ class TObjString;
 class TList;
 class TMap;
 class TPair;
-class TTreeSRedirector;
+//class TTree;//SRedirector;
 
 class AliEveTRDTrackList: public TEveElementList
 {
@@ -143,7 +143,7 @@ protected:
 
   TMap*  fMacroList;                 // Stores the names, paths, types and commands of all macros added to this list
 
-  TTreeSRedirector *fDataTree;       // Tree containing data for histograms
+  static TFile *fgData;              //! File containing processed data
 
   Int_t fHistoDataSelected;          // Stores the selection for the data of the histograms
   Int_t fMacroListSelected;          // Stores the selection of the macro list

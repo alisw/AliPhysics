@@ -144,8 +144,8 @@ private:
   TGCheckButton** fCheckButtons;            // Check buttons for histograms
 
   // Help functions
-  void SetDrawingToHistoCanvasTab();        
-  void UpdateHistoCanvasTab();              
+  void SetDrawingToHistoCanvasTab(Int_t canvas=1);        
+  void UpdateHistoCanvasTab(Int_t canvas=1);              
 
   ClassDef(AliEveTRDTrackListEditor, 0);    // Editor for AliEveTRDTrackList.
 };

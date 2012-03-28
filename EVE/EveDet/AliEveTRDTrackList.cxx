@@ -60,6 +60,7 @@
 // Uncomment to display debugging infos
 //#define ALIEVETRDTRACKLIST_DEBUG
 
+#include <AliLog.h>
 #include <TFile.h>
 #include <TFunction.h>
 #include <TH1.h>
@@ -69,7 +70,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TTree.h>
-#include <TTreeStream.h>
+//#include <TTreeStream.h>
 #include <TMethodCall.h>
 
 #include <AliTRDReconstructor.h>
@@ -81,16 +82,16 @@
 #include <../PWGPP/TRD/AliTRDpwgppHelper.h>
 
 ClassImp(AliEveTRDTrackList)
+TFile *AliEveTRDTrackList::fgData(NULL);
 
 ///////////////////////////////////////////////////////////
 /////////////   AliEveTRDTrackList ////////////////////////
 ///////////////////////////////////////////////////////////
 AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t doColor):
   TEveElementList(n, t, doColor),
-  fEditor(0x0),
-  fDataFromMacroList(0x0),
-  fMacroList(0x0),
-  fDataTree(0x0),
+  fEditor(NULL),
+  fDataFromMacroList(NULL),
+  fMacroList(NULL),
   fHistoDataSelected(0),
   fMacroListSelected(0),
   fSelectedTab(1),                              // Standard tab: "Apply macros" (index 1)
@@ -133,11 +134,6 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
     fDataFromMacroList->Delete();
     delete fDataFromMacroList;
     fDataFromMacroList = 0;
-  } 
-  if (fDataTree != 0)
-  {
-    delete fDataTree;
-    fDataTree = 0;
   } 
   if (fMacroList != 0)
   {
@@ -184,10 +180,10 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool
   for (UInt_t ind = 0; ind < fkMaxMacroNameLength && ind < strlen(nameC) - 2; ind++)  name[ind] = nameC[ind];
 
   // Check, if files exists
-  FILE* fp = 0x0;
+  FILE* fp = NULL;
   if((fp = fopen(pathname, "rb"))){
     fclose(fp);
-    fp = 0x0;
+    fp = NULL;
   } else  return NOT_EXIST_ERROR;
   
   // Clean up root, load the desired macro and then check the type of the macro
@@ -327,12 +323,22 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   // A.B. gROOT->Reset();
   
   // Clear old data and re-allocate
-  if (!fDataTree){
+  TTree *treeSingle(NULL), *treeCorrel(NULL);
+  Double_t singleTrackOut[100][10], correlTrackOut[100][10];
+//  if (!fgData){
     TDirectory *cwd = gDirectory;
-    fDataTree = new TTreeSRedirector(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")));
+    fgData = TFile::Open(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")), "RECREATE");
+    treeSingle = new TTree("sTrack", "Data from single track processing");
+    treeCorrel = new TTree("cTrack", "Data from correlated track processing");
     cwd->cd();
-  }
-  if (!fDataTree){
+/*  } else {
+    TDirectory *cwd = gDirectory;
+    fgData = TFile::Open(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")), "APPEND");
+    treeSingle = (TTree*)fgData->Get("sTrack");
+    treeCorrel = (TTree*)fgData->Get("cTrack");
+    cwd->cd();
+  }*/
+  if (!treeSingle || !treeCorrel){
     Error("Apply process macros", "File \"/tmp/TRD.TrackListMacroData_%s.root\" could not be accessed properly!", gSystem->Getenv("USER"));
     return kFALSE;
   }
@@ -349,6 +355,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
 
   TMacroData* macro(NULL);
 
+  TString* procName = new TString[procIterator->GetEntries()];
   TString* procCmds = new TString[procIterator->GetEntries()];
   AliEveTRDTrackListMacroType* mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
 
@@ -390,16 +397,15 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
       numHistoMacros++;
       // Create the command 
       procCmds[i] = macro->GetCmd();
+      procName[i] = macro->GetName();
 
       // Add to "data-from-list" -> Mark as a histo macro with the substring "(histo macro)"
-      fDataFromMacroList->Add(new TObjString(Form("%s (histo macro)", macro->GetName())));
+      //fDataFromMacroList->Add(new TObjString(Form("%s (histo macro)", macro->GetName())));
     } else if (macroType == kSingleTrackAnalyse || macroType == kCorrelTrackAnalyse) {
       mProcType[i] = macroType;
       // Create the command 
       procCmds[i] = macro->GetCmd();
-
-      // Add to "data-from-list"
-      fDataFromMacroList->Add(new TObjString(macro->GetName()));
+      procName[i] = macro->GetName();
     } else {
       Error("Apply process macros", 
         "Macro list corrupted: Macro \"%s/%s.C\" is not registered as a process macro!",
@@ -413,9 +419,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     macro = (TMacroData*)fMacroList->GetValue(selIterator->At(i)->GetTitle());
 
     if (!macro){
-      Error("Apply process macros", 
-        "Macro list is corrupted: Macro \"%s\" is not registered!",
-        selIterator->At(i)->GetTitle());
+      AliError(Form("Macro list is corrupted: Macro \"%s\" is not registered!", selIterator->At(i)->GetTitle()));
       continue;
     }
 
@@ -468,9 +472,14 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     for (Int_t i = 0, histoIndex = 0; i < procIterator->GetEntries(); i++){
       // Single track histo
       if (mProcType[i] == kSingleTrackHisto){
-        if(histos) histos[histoIndex++] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
-        // Correlated tracks histo
-      } else if (mProcType[i] == kCorrelTrackHisto) {
+        if(!histos) continue;
+        histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
+        if(!fDataFromMacroList->FindObject(histos[histoIndex]->GetName())) {
+          AliInfo(Form("Registering histo[%s] for cmd[%s]", histos[histoIndex]->GetName(), procName[i].Data()));
+          fDataFromMacroList->Add(new TObjString(histos[histoIndex]->GetName()));
+        }
+        histoIndex++;
+      } else if (mProcType[i] == kCorrelTrackHisto) {                              // CORRELATED TRACKS HISTO
         // Loop over all pairs behind the current one - together with the other loop this will be a loop
         // over all pairs. We have a pair of tracks, if and only if both tracks of the pair are selected (Rnr-state)
         // and are not equal.
@@ -478,8 +487,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
         // all correlated tracks selection macros.
         TEveElement::List_i iter2 = iter;
         iter2++;
-        for ( ; iter2 != this->EndChildren(); ++iter2)
-        {
+        for ( ; iter2 != this->EndChildren(); ++iter2){
           if(!(track2 = dynamic_cast<AliEveTRDTrack*>(*iter2))) continue;
 
           // Skip tracks that have not been selected
@@ -502,31 +510,34 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           if (!selectedByCorrSelMacro) continue;
           
           if(histos) histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
-        }
+        } // End loop correl tracks
         histoIndex++;
-      }
-      // Single track analyse
-      else if (mProcType[i] == kSingleTrackAnalyse) {
+      } else if (mProcType[i] == kSingleTrackAnalyse) {                         // SINGLE TRACK ANALYSE
         // Create data pointers in CINT, execute the macro and get the data
-        gROOT->ProcessLineSync("Double_t* results = 0;");
+        gROOT->ProcessLineSync("Double_t results[10] = {0}, *presults=&results[0];");
         gROOT->ProcessLineSync("Int_t n = 0;");
         gROOT->ProcessLineSync(procCmds[i]);
-        Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
         Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
-        
-        if (results == 0) {
-          Error("Apply macros", "Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle());
+        if (!nResults) {
+          AliError(Form("Error reading data from macro \"%s\"", procName[i].Data()));
           continue;
         }
-        for (Int_t resInd = 0; resInd < nResults; resInd++){
-          (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << results[resInd] << (Char_t*)"\n";   
+        if(nResults>10){
+          AliWarning(Form("Macro \"%s\" returns %d values. Limit set to 10.", procName[i].Data(), nResults));
+          nResults=10;
         }
-
-        delete results;
-        results = 0;
-      }
-      // Correlated tracks analyse
-      else if (mProcType[i] == kCorrelTrackAnalyse){
+        TBranch *b(treeSingle->GetBranch(procName[i].Data()));
+        if(!b) {
+          AliInfo(Form("Building branch[%s]", procName[i].Data()));
+          b = treeSingle->Branch(procName[i].Data(), singleTrackOut[i], Form("%s[%d]/D", procName[i].Data(), nResults));
+          // Add to "data-from-list"
+          for(Int_t ir(0); ir<nResults; ir++) fDataFromMacroList->Add(new TObjString(Form("%s[%d]", procName[i].Data(), ir)));
+        }
+        for (Int_t resInd = 0; resInd < nResults; resInd++, gROOT->ProcessLineSync("presults++;")){
+          Double_t *pres = (Double_t*)gROOT->ProcessLineSync("presults;");
+          singleTrackOut[i][resInd] = *pres;
+        }
+      } else if (mProcType[i] == kCorrelTrackAnalyse){                         // CORRELATED TRACKS ANALYSE
         // Loop over all pairs behind the current one - together with the other loop this will be a loop
         // over all pairs. We have a pair of tracks, if and only if both tracks of the pair are selected (Rnr-state)
         // and are not equal.
@@ -558,52 +569,56 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           if (!selectedByCorrSelMacro) continue;
           
           // Create data pointers in CINT, execute the macro and get the data
-          gROOT->ProcessLineSync("Double_t* results = 0;");
+          gROOT->ProcessLineSync("Double_t results[10] = {0}, *presults=&results[0];");
           gROOT->ProcessLineSync("Int_t n = 0;");
           gROOT->ProcessLineSync(procCmds[i]);
-          Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
           Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
-     
-          if (results == 0) {
-            Error("Apply macros", "Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle());
+          if (!nResults) {
+            AliError(Form("Error reading data from macro \"%s\"", procName[i].Data()));
             continue;
           }
-          for (Int_t resInd = 0; resInd < nResults; resInd++) {
-            (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << results[resInd] << (Char_t*)"\n";   
+          if(nResults>10){
+            AliWarning(Form("Macro \"%s\" returns %d values. Limit set to 10.", procName[i].Data(), nResults));
+            nResults=10;
           }
+          TBranch *b(treeCorrel->GetBranch(procName[i].Data()));
+          if(!b) {
+            AliInfo(Form("Building branch[%s]", procName[i].Data()));
+            b = treeCorrel->Branch(procName[i].Data(), correlTrackOut[i], Form("%s[%d]/D", procName[i].Data(), nResults));
+            // Add to "data-from-list"
+            for(Int_t ir(0); ir<nResults; ir++) fDataFromMacroList->Add(new TObjString(Form("%s[%d]", procName[i].Data(), ir)));
+          }
+          for (Int_t resInd = 0; resInd < nResults; resInd++, gROOT->ProcessLineSync("presults++;")){
+            Double_t *pres = (Double_t*)gROOT->ProcessLineSync("presults;");
+            correlTrackOut[i][resInd] = *pres;
+          }
+          b->Fill();
+        } // End loop correl tracks
+      } // End if correl macros
+    } // End loop all macro
+    treeSingle->Fill();
+    treeCorrel->Fill();
+  } // End loop single tracks
 
-          delete results;
-          results = 0;
-        }
-      }
-    }
-  }    
-
+  fgData->cd();
   for (Int_t i = 0, histoIndex = 0; i < procIterator->GetEntries() && histoIndex < numHistoMacros; i++) {
-    if (mProcType[i] == kSingleTrackHisto || mProcType[i] == kCorrelTrackHisto) {
-      // Might be empty (e.g. no tracks have been selected)!
-      if (histos[histoIndex]) {
-        (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << histos[histoIndex] << (Char_t*)"\n";
-      }
-      histoIndex++;
-    }
+    if (mProcType[i] != kSingleTrackHisto && mProcType[i] != kCorrelTrackHisto) continue;
+    // Might be empty (e.g. no tracks have been selected)!
+    if(histos[histoIndex]) histos[histoIndex]->Write();
+    histoIndex++;
   }
+  treeSingle->Write();
+  treeCorrel->Write();
+  fgData->Close();
 
-  if (fDataTree) delete fDataTree;
-  fDataTree = NULL;
+  if (procName)  delete [] procName; procName = NULL;
+  if (procCmds)  delete [] procCmds; procCmds = NULL;
+  if (mProcType)  delete [] mProcType; mProcType = NULL;
 
-  if (procCmds)  delete [] procCmds;
-  procCmds = NULL;
-  if (mProcType)  delete [] mProcType;
-  mProcType = NULL;
+  if (selCmds)  delete [] selCmds; selCmds = NULL;
+  if (mSelType)  delete [] mSelType; mSelType = NULL;
 
-  if (selCmds)  delete [] selCmds;
-  selCmds = NULL;
-  if (mSelType)  delete [] mSelType;
-  mSelType = NULL;
-
-  if (histos)  delete [] histos;
-  histos = NULL;
+  if (histos)  delete [] histos; histos = NULL;
 
   // Clear root
   // A.B. gROOT->Reset();
@@ -705,10 +720,10 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
   if (!UseList){
     // Single track select macro or single track histo macro?
     TFunction* f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*", kTRUE);
-    if (f != 0x0)
+    if (f != NULL)
     {
       // Some additional check (is the parameter EXACTLY of the desired type?)
-      if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0)
+      if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != NULL)
       {
         // Single track select macro?
         if (!strcmp(f->GetReturnTypeName(), "Bool_t")) 
@@ -723,15 +738,15 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
       }
     }
     // Single track analyse macro?
-    else if ((f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*, Double_t*&, Int_t&", kTRUE)) 
-             != 0x0)
+    else if ((f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*, Double_t*, Int_t&", kTRUE))
+             != NULL)
     {
       if (!strcmp(f->GetReturnTypeName(), "void"))
       {
         // Some additional check (are the parameters EXACTLY of the desired type?)
-        if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0 &&
-            strstr(f->GetMangledName(), "cODouble_tmUaNsP") != 0x0 &&
-            strstr(f->GetMangledName(), "cOInt_taNsP") != 0x0)
+        if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != NULL &&
+            strstr(f->GetMangledName(), "cODouble_tmUsP") != NULL &&
+            strstr(f->GetMangledName(), "cOInt_taNsP") != NULL)
         {
           type = kSingleTrackAnalyse;
         }
@@ -739,11 +754,11 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
     }    
     // Correlated tracks select macro or correlated tracks histo macro?
     else if ((f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*, const AliTRDtrackV1*", kTRUE)) 
-             != 0x0)
+             != NULL)
     {
       // Some additional check (is the parameter EXACTLY of the desired type?)
-      if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0 &&
-          strstr(f->GetMangledName(), "cOconstsPAliTRDtrackV1mUsP") != 0x0)
+      if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != NULL &&
+          strstr(f->GetMangledName(), "cOconstsPAliTRDtrackV1mUsP") != NULL)
       {
         // Correlated track select macro?
         if (!strcmp(f->GetReturnTypeName(), "Bool_t")) 
@@ -759,16 +774,16 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
     }    
     // Correlated tracks analyse macro?
     else if ((f = gROOT->GetGlobalFunctionWithPrototype(name, 
-                              "const AliTRDtrackV1*, const AliTRDtrackV1*, Double_t*&, Int_t&", kTRUE)) 
-             != 0x0)
+                              "const AliTRDtrackV1*, const AliTRDtrackV1*, Double_t*, Int_t&", kTRUE))
+             != NULL)
     {
       if (!strcmp(f->GetReturnTypeName(), "void"))
       {
         // Some additional check (is the parameter EXACTLY of the desired type?)
-        if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0 &&
-            strstr(f->GetMangledName(), "cOconstsPAliTRDtrackV1mUsP") != 0x0 &&
-            strstr(f->GetMangledName(), "cODouble_tmUaNsP") != 0x0 &&
-            strstr(f->GetMangledName(), "cOInt_taNsP") != 0x0)
+        if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != NULL &&
+            strstr(f->GetMangledName(), "cOconstsPAliTRDtrackV1mUsP") != NULL &&
+            strstr(f->GetMangledName(), "cODouble_tmUsP") != NULL &&
+            strstr(f->GetMangledName(), "cOInt_taNsP") != NULL)
         {
           type = kCorrelTrackAnalyse;
         }
@@ -887,7 +902,7 @@ void AliEveTRDTrackList::UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s,
 
 
   // Walk through the list of tracks     
-  AliEveTRDTrack* track = 0x0;
+  AliEveTRDTrack* track = NULL;
   for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter) 
   {
     if (!(track = dynamic_cast<AliEveTRDTrack*>(*iter)))  continue;
