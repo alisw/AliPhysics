@@ -466,14 +466,17 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH1F* hMultOut=new TH1F(hname.Data(),"Multiplicity out of Centrality range;multiplicity;Entries",10000,-0.5,9999.5);
 
     hname="hMultvsPercentile";
-    TH2F* hMultvsPercentile=new TH2F(hname.Data(),"Multiplicity vs Percentile;multiplicity;percentile",10000,-0.5,9999.5,12,-10.,110);
+    TH2F* hMultvsPercentile=new TH2F(hname.Data(),"Multiplicity vs Percentile;multiplicity;percentile",10000,-0.5,9999.5,240,-10.,110);
 
+    hname="hntrklvsPercentile";
+    TH2F* hntrklvsPercentile=new TH2F(hname.Data(),"N tracklets vs Percentile;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
     fOutputCheckCentrality->Add(hNtrackletsIn);
     fOutputCheckCentrality->Add(hNtrackletsOut);
     fOutputCheckCentrality->Add(hMultIn);
     fOutputCheckCentrality->Add(hMultOut);
     fOutputCheckCentrality->Add(hMultvsPercentile);
+    fOutputCheckCentrality->Add(hntrklvsPercentile);
 
     PostData(6,fOutputCheckCentrality);
   
@@ -1000,6 +1003,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	((TH1F*)fOutputCheckCentrality->FindObject("hMultIn"))->Fill(aod->GetHeader()->GetRefMultiplicity());
       }
       ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(aod->GetHeader()->GetRefMultiplicity(),stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile"))->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
 
       PostData(6,fOutputCheckCentrality);
 
