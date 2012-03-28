@@ -15,8 +15,6 @@
 
 
 // --- ROOT system ---
-#include <TH1.h> 
-#include <TProfile.h> 
 
 // --- Standard library ---
 
@@ -30,7 +28,7 @@
 class AliTPCQADataMakerRec: public AliQADataMakerRec {
 
 public:
-  enum HRawsType_t         {kRawsOccupancyVsSector=0, kRawsQVsSector, kRawsQmaxVsSector} ; 
+  enum HRawsType_t         {kRawsOccupancyVsSector=0, kRawsQVsSector, kRawsQmaxVsSector, kRawsOccupancy2dVsSector} ; 
   enum HDigitType_t        {kDigitsADC=0} ; 
   enum HRECPOINTsType_t    {kClusters=0, kRatio, kPt} ; 
   enum HESDsType_t         {kQmaxShort=0, kQmaxMedium, kQmaxLong, kQShort, kQMedium, kQLong, kRow} ; 

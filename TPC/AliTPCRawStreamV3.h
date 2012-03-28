@@ -32,6 +32,7 @@ class AliTPCRawStreamV3: public AliAltroRawStreamV3 {
     inline Int_t GetPad()        const { return fPad; }        // Provide index of current pad
     inline Int_t GetPrevPad()    const { return fPrevPad; }    // Provide index of previous pad
     inline Bool_t  IsNewPad()    const {return (fPad != fPrevPad) || IsNewRow();};
+    inline Int_t GetPatchIndex() const { return fPatchIndex; }        // Provide index of current patch
 
 
   protected :

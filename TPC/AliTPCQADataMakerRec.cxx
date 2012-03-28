@@ -79,6 +79,9 @@
 #include <TBox.h>
 #include <TLine.h>
 #include <TAxis.h>
+#include <TH1.h> 
+#include <TProfile.h> 
+#include <TProfile2D.h> 
 
 // --- Standard library ---
 
@@ -92,6 +95,7 @@
 #include "AliTPCClustersRow.h"
 #include "AliTPCclusterMI.h"
 #include "AliSimDigits.h"
+#include <AliDetectorRecoParam.h>
 
 
 ClassImp(AliTPCQADataMakerRec)
@@ -215,8 +219,11 @@ void AliTPCQADataMakerRec::InitRaws()
   histRawsOccupancyVsSector->SetMarkerStyle(20);
   histRawsOccupancyVsSector->SetOption("P");
   histRawsOccupancyVsSector->SetStats(kFALSE);
-  Add2RawsList(histRawsOccupancyVsSector, kRawsOccupancyVsSector, !expert, image, !saveCorr);
-  
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib )
+    Add2RawsList(histRawsOccupancyVsSector, kRawsOccupancyVsSector, expert, image, !saveCorr);
+  else
+    Add2RawsList(histRawsOccupancyVsSector, kRawsOccupancyVsSector, !expert, image, !saveCorr);
+    
   TProfile * histRawsQVsSector = 
     new TProfile("hRawsQVsSector", "<Q> vs sector; Sector; <Q>",
 	     72, 0, 72);
@@ -228,7 +235,21 @@ void AliTPCQADataMakerRec::InitRaws()
   histRawsQmaxVsSector->SetMarkerStyle(20);
   histRawsQmaxVsSector->SetOption("P");
   histRawsQmaxVsSector->SetStats(kFALSE);
-  Add2RawsList(histRawsQmaxVsSector, kRawsQmaxVsSector, !expert, image, !saveCorr);
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib )
+    Add2RawsList(histRawsQmaxVsSector, kRawsQmaxVsSector, expert, image, !saveCorr);
+  else
+    Add2RawsList(histRawsQmaxVsSector, kRawsQmaxVsSector, !expert, image, !saveCorr);
+
+  TProfile2D * histRawsOccupancy2dVsSector = 
+    new TProfile2D("hRawsOccupancy2dVsSector", "Occupancy vs sector; Sector; Patch",
+		   72, 0, 36, 6, 0, 6);
+  histRawsOccupancy2dVsSector->SetOption("COLZ");
+  histRawsOccupancy2dVsSector->SetStats(kFALSE);
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib )
+    Add2RawsList(histRawsOccupancy2dVsSector, kRawsOccupancy2dVsSector, expert, image, !saveCorr);
+  else
+    Add2RawsList(histRawsOccupancy2dVsSector, kRawsOccupancy2dVsSector, !expert, image, !saveCorr);
+    
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
@@ -357,6 +378,11 @@ void AliTPCQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       for (int ih=arrRW->GetEntriesFast();ih--;) {
 	TProfile* hRawsOccupancyVsSector = dynamic_cast<TProfile*>(arrRW->At(ih));
 	if (hRawsOccupancyVsSector) hRawsOccupancyVsSector->Add(fTPCdataQA->GetHistOccVsSector());
+      }
+      arrRW = GetMatchingRawsData(kRawsOccupancy2dVsSector);
+      for (int ih=arrRW->GetEntriesFast();ih--;) {
+	TProfile2D* hRawsOccupancy2dVsSector = dynamic_cast<TProfile2D*>(arrRW->At(ih));
+	if (hRawsOccupancy2dVsSector) hRawsOccupancy2dVsSector->Add(fTPCdataQA->GetHistOcc2dVsSector());
       }
       arrRW = GetMatchingRawsData(kRawsQVsSector);
       for (int ih=arrRW->GetEntriesFast();ih--;) {

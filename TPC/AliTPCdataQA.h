@@ -6,7 +6,8 @@
 
 
 #include <TH1F.h>
-class TProfile;
+#include <TProfile.h>
+#include <TProfile2D.h>
 #include "AliRecoParam.h"
 
 #include <TArray.h>
@@ -74,6 +75,7 @@ public:
 
   // DQM output
   TProfile* GetHistOccVsSector()  const { return fHistOccVsSector; }
+  TProfile2D* GetHistOcc2dVsSector() const { return fHistOcc2dVsSector; }
   TProfile* GetHistQVsSector()    const { return fHistQVsSector; }
   TProfile* GetHistQmaxVsSector() const { return fHistQmaxVsSector; }
 
@@ -106,7 +108,8 @@ public:
 
 private:
   Int_t Update(const Int_t iSector, const Int_t iRow, const Int_t iPad,
-	       const Int_t iTimeBin, Float_t signal);
+	       const Int_t iTimeBin, Float_t signal,
+	       const Int_t iPatch=-1, const Int_t iBranch=-1);
   void  FindLocalMaxima(const Int_t iSector);
 
   void MakeArrays();                // Create arrays for random data acces
@@ -168,10 +171,13 @@ private:
   // DQM variables
   Bool_t fIsDQM;                   //!  Is DQM -> Simple output (no 2D!)
   TProfile* fHistOccVsSector;      //!  Occ vs sector (for DQM only)
+  TProfile2D* fHistOcc2dVsSector;  //!  Occ vs sector 2D (for DQM only)
   TProfile* fHistQVsSector;        //!  Q vs sector (for DQM only)
   TProfile* fHistQmaxVsSector;     //!  QMax vs sector (for DQM only)
   TArrayD* fOccVec;                //!  Occupancy help counter for DQM
   TArrayD* fOccMaxVec;             //!  Occupancy help normlization for DQM
+  TArrayD* fOccVecFine;            //!  "2D" occupancy help counter for DQM
+  TArrayD* fOccMaxVecFine;         //!  "2D" occupancy help normlization for DQM
   
 
   ClassDef(AliTPCdataQA, 5)  // Implementation of the TPC Raw QA

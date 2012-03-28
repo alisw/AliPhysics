@@ -123,6 +123,7 @@
 #include "AliTPCdataQA.h"
 #include "AliLog.h"
 
+
 ClassImp(AliTPCdataQA)
 
 AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/  
@@ -163,10 +164,13 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   fTimeBinsMax(0),
   fIsDQM(kFALSE),
   fHistOccVsSector(0x0),
+  fHistOcc2dVsSector(0x0),
   fHistQVsSector(0x0),
   fHistQmaxVsSector(0x0),
   fOccVec(0x0),
-  fOccMaxVec(0x0)
+  fOccMaxVec(0x0),
+  fOccVecFine(0x0),
+  fOccMaxVecFine(0x0)
 {
   //
   // default constructor
@@ -213,10 +217,13 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   fTimeBinsMax(0),
   fIsDQM(ped.GetIsDQM()),
   fHistOccVsSector(0x0),
+  fHistOcc2dVsSector(0x0),
   fHistQVsSector(0x0),
   fHistQmaxVsSector(0x0),
   fOccVec(0x0),
-  fOccMaxVec(0x0)
+  fOccMaxVec(0x0),
+  fOccVecFine(0x0),
+  fOccMaxVecFine(0x0)
 {
   //
   // copy constructor
@@ -307,10 +314,13 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   fTimeBinsMax(0),
   fIsDQM(kFALSE),
   fHistOccVsSector(0x0),
+  fHistOcc2dVsSector(0x0),
   fHistQVsSector(0x0),
   fHistQmaxVsSector(0x0),
   fOccVec(0x0),
-  fOccMaxVec(0x0)
+  fOccMaxVec(0x0),
+  fOccVecFine(0x0),
+  fOccMaxVecFine(0x0)
 {
   //
   // default constructor
@@ -366,10 +376,13 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
 
   // DQM
   delete fHistOccVsSector;
+  delete fHistOcc2dVsSector;
   delete fHistQVsSector;
   delete fHistQmaxVsSector;
   delete fOccVec;
   delete fOccMaxVec;
+  delete fOccVecFine;
+  delete fOccMaxVecFine;
   
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
     delete [] fAllBins[iRow];
@@ -500,6 +513,8 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
       Int_t iSector = rawStreamV3->GetSector(); //  current sector
       Int_t iRow    = rawStreamV3->GetRow();    //  current row
       Int_t iPad    = rawStreamV3->GetPad();    //  current pad
+      Int_t iPatch  = rawStreamV3->GetPatchIndex(); //  current patch
+      Int_t iBranch = rawStreamV3->GetBranch();    //  current branch
       if (iRow<0 || iPad<0) continue;
       // Call local maxima finder if the data is in a new sector
       if(iSector != lastSector) {
@@ -520,7 +535,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
         
         for (Int_t iTimeBin = 0; iTimeBin<bunchlength; iTimeBin++){
           Float_t signal=(Float_t)sig[iTimeBin];
-          nSignals += Update(iSector,iRow,iPad,startTbin--,signal);
+          nSignals += Update(iSector,iRow,iPad,startTbin--,signal, iPatch, iBranch);
           withInput = kTRUE;
         }
       }
@@ -539,7 +554,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *const rawReader)
   //
   //  Event processing loop - AliRawReader
   //
-  AliTPCRawStreamV3 rawStreamV3(rawReader, (AliAltroMapping**)fMapping);
+  AliTPCRawStreamV3 rawStreamV3(rawReader,(AliAltroMapping**)fMapping);
   Bool_t res=ProcessEvent(&rawStreamV3);
   if(res) {
     fEventCounter++; // only increment event counter if there is TPC data
@@ -661,7 +676,9 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
 			   const Int_t iRow,
 			   const Int_t iPad,
 			   const Int_t iTimeBin,
-			   Float_t signal)
+			   Float_t signal,
+			   const Int_t iPatch,
+			   const Int_t iBranch)
 {
   //
   // Signal filling method
@@ -706,6 +723,9 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
       fHistOccVsSector  = new TProfile("hOccVsSector", "Occupancy vs sector; Sector; Occupancy", 72, 0, 72);
       fHistOccVsSector->SetDirectory(0);
 
+      fHistOcc2dVsSector  = new TProfile2D("hOcc2dVsSector", "Occupancy vs sector and patch; Sector; Patch", 72, 0, 36, 6, 0, 6);
+      fHistOcc2dVsSector->SetDirectory(0);
+
       fHistQVsSector  = new TProfile("hQVsSector", "Q vs sector; Sector; Q [ADC ch]", 72, 0, 72);
       fHistQVsSector->SetDirectory(0);
 
@@ -717,13 +737,40 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
 	fOccVec->GetArray()[i] = 0;
 
       fOccMaxVec = new TArrayD(72);
-      Double_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
+      const Double_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
       for(Int_t i = 0; i < 72; i++)
 	
 	if(i<36) // IROCs (5504 pads)
 	  fOccMaxVec->GetArray()[i] = nTimeBins*5504;
 	else     // OROCs (9984 pads)
 	  fOccMaxVec->GetArray()[i] = nTimeBins*9984;
+
+      // 12 branches for each full sector
+      const Int_t nBranches = 36*12;
+      fOccVecFine = new TArrayD(nBranches);
+      for(Int_t i = 0; i < nBranches; i++)
+	fOccVecFine->GetArray()[i] = 0;
+
+      // Pads per patch same for all sectors
+      Int_t nPads0[6] = {1152, 1536, 1152, 1280, 1280, 1280};
+      Int_t nPads1[6] = {1152, 1664, 1152, 1280, 1280, 1280};
+
+      fOccMaxVecFine = new TArrayD(nBranches);
+      for(Int_t i = 0; i < nBranches; i++) {
+	
+	const Int_t fullSector = Int_t(i/12);
+	Int_t branch = i - fullSector*12;
+	R__ASSERT(branch>=0 && branch<12);
+	
+	const Int_t patch = Int_t(branch/2);
+	branch -= patch*2;
+	
+	R__ASSERT(branch>=0 && branch<2);
+	if(branch == 0)
+	  fOccMaxVecFine->GetArray()[i] = nTimeBins*nPads0[patch];
+	else     // OROCs (9984 pads)
+	  fOccMaxVecFine->GetArray()[i] = nTimeBins*nPads1[patch];
+      }
     }
   }
   // Make the arrays for expanding the data
@@ -768,6 +815,9 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
   if(fIsDQM) {
 
     fOccVec->GetArray()[iSector] += 1.0;
+    // To change before committing
+    if(iPatch>=0 && iBranch>=0 && iPatch<=5 && iBranch <= 1)
+      fOccVecFine->GetArray()[(iSector%36)*12+iPatch*2+iBranch] += 1.0;
   } else {
     // In fNoThreshold we fill all data to estimate the ZS volume
     Float_t count = fNoThreshold->GetCalROC(iSector)->GetValue(iRow, iPad);
@@ -1190,6 +1240,21 @@ void AliTPCdataQA::FillOccupancyProfile()
     fOccVec->GetArray()[i] /= fOccMaxVec->GetArray()[i];
     fHistOccVsSector->Fill(i, fOccVec->GetArray()[i]);
   }
+
+  const Int_t nBranches = 36*12;
+  for(Int_t i = 0; i < nBranches; i++) {
+
+    fOccVecFine->GetArray()[i] /= fOccMaxVecFine->GetArray()[i];
+
+    const Int_t fullSector = Int_t(i/12);
+
+    Int_t branch = i - fullSector*12;
+    const Int_t patch = Int_t(branch/2);
+
+    branch -= patch*2;
+
+    fHistOcc2dVsSector->Fill(fullSector+0.5*branch+0.1, patch+0.5, fOccVecFine->GetArray()[i]);
+  }
 }
 
 //____________________________________________________________________________________________
@@ -1204,8 +1269,13 @@ void AliTPCdataQA::ResetProfiles()
     fHistQmaxVsSector->Reset();
   if(fHistOccVsSector)
     fHistOccVsSector->Reset();
+  if(fHistOcc2dVsSector)
+    fHistOcc2dVsSector->Reset();
 
   if(fOccVec)
     for(Int_t i = 0; i < 72; i++)
       fOccVec->GetArray()[i] = 0.0;
+  if(fOccVecFine)
+    for(Int_t i = 0; i < 36*12; i++)
+      fOccVecFine->GetArray()[i] = 0.0;
 }
