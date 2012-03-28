@@ -40,9 +40,9 @@ void muon_raw()
   // load raw data
   AliRawReader* reader = AliEveEventManager::AssertRawReader();
   if ( reader->GetEventHeader() ) 
-    cout << "RUN " << reader->GetRunNumber() << " EVENT " << reader->GetEventIndex() << endl;
+    AliInfo(Form("RUN %d EVENT %d", reader->GetRunNumber(),reader->GetEventIndex()) );
   else
-    cout << "NO EVENT HEADER ?" << endl;
+    AliInfo("NO EVENT HEADER ?");
   
   // convert raw to digits
   AliMUONDigitMaker digitMaker;

@@ -63,7 +63,7 @@ void add_muon_digits(TIter* next, TEveQuadSet* bending, TEveQuadSet* nonBending,
       AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(digit->Cathode()));
     if (!vseg) 
     {
-      cout << Form("Could not get segmentation for DE %4d MANU %4d",detElemId,manuId) << endl;
+      AliInfo(Form("Could not get segmentation for DE %4d MANU %4d",detElemId,manuId));
       continue; // should not happen, unless we got a readout error and thus a bad de,manu pair
     }
     

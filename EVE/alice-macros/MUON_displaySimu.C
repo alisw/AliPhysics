@@ -102,16 +102,16 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
     rl->LoadDigits("MUON");
     dt = rl->GetTreeD("MUON", false);
     if (dt == 0) {
-      cout << "No digits produced!" << endl;
+      AliInfo("No digits produced!");
     } else {
-      cout << "With aliroot digits!" << endl;
+      AliInfo("With aliroot digits!");
       g_muon_data->LoadDigits(dt);
     }
   } else {
     if (gSystem->AccessPathName(dataPath.Data(),kFileExists)) {
-      cout << "No raw data produced!" << endl;
+      AliInfo("No raw data produced!");
     } else {
-      cout << "With raw digits!" << endl;
+      AliInfo("With raw digits!");
       g_muon_data->LoadRaw(dataPath.Data());
     }
   }
@@ -253,7 +253,7 @@ void MUON_MC_tracks()
   {
     index = g_muon_data->GetTrack(i);
     if (index >= nTracks) {
-      cout << "TEveHit track index larger than number in stack!" << endl;
+      AliInfo("TEveHit track index larger than number in stack!");
       continue;
     }
 
