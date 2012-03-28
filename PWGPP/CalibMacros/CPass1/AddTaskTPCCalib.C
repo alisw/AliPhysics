@@ -1,7 +1,7 @@
 /*
 
  This macros setup the TPC calibration task AddTaskTPCCalib
- for CPass0.
+ for CPass1.
  - the run number is required to config TPC OCDB
  
  The following calibration components are added to the AliTPCAnalysisTaskcalib task:

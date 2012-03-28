@@ -5,7 +5,7 @@
 #    2. calibration and friend track filtering
 #
 # Files assumed to be in working directory:
-# recCPass0.C          - reconstruction macro
+# recCPass1.C          - reconstruction macro
 # runCalibTrain.C     - calibration/filtering macro
 # Arguments (run locally):
 #    1  - raw data file name
@@ -13,7 +13,7 @@
 #    3  - run number 
 
 # example:
-# runCPass0.sh raw.root  50  104892
+# runCPass1.sh raw.root  50  104892
 
 #ALIEN setting
 # $1 = raw input filename
@@ -33,7 +33,7 @@ if [ $# -eq 4 ] ; then
 fi
 
 echo xxxxxxxxxxxxxxxxxxxxxxxxxxx
-echo runCPass0.sh Input arguments
+echo runCPass1.sh Input arguments
 echo fileName=$fileName
 echo nEvents=$nEvents
 echo runNum=$runNum
@@ -54,13 +54,13 @@ echo ">>>>>>>>> PATH is..."
 echo $PATH
 echo ">>>>>>>>> LD_LIBRARY_PATH is..."
 echo $LD_LIBRARY_PATH
-echo ">>>>>>>>> recCPass0.C is..."
-#cat recCPass0.C
+echo ">>>>>>>>> recCPass1.C is..."
+#cat recCPass1.C
 echo
 
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runNum..."
 
-aliroot -l -b -q recCPass0.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec.log
+aliroot -l -b -q recCPass1.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec.log
 mv syswatch.log syswatch_rec.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
