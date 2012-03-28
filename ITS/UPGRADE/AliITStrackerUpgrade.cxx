@@ -79,44 +79,6 @@ AliITStrackerUpgrade::AliITStrackerUpgrade(Int_t nLay):
   Init();
  
 }
-  
-//________________________________________________________________________
-AliITStrackerUpgrade::AliITStrackerUpgrade(const AliITStrackerUpgrade& tracker):
-  AliITStrackerMI(),
-  fNLayers(tracker.fNLayers), fPhiEstimate(tracker.fPhiEstimate),
-  fITSStandAlone(tracker.fITSStandAlone), fLambdac(tracker.fLambdac),
-  fPhic(tracker.fPhic), fCoef1(tracker.fCoef1), fCoef2(tracker.fCoef2),
-  fCoef3(tracker.fCoef3), fNloop(tracker.fNloop), fPhiWin(tracker.fPhiWin),
-  fLambdaWin(tracker.fLambdaWin), fVert(tracker.fVert), fVertexer(tracker.fVertexer),
-  fListOfTracks(tracker.fListOfTracks), fListOfUTracks(tracker.fListOfUTracks),
-  fITSclusters(tracker.fITSclusters), fInwardFlag(tracker.fInwardFlag),
-  fOuterStartLayer(tracker.fOuterStartLayer), fInnerStartLayer(tracker.fInnerStartLayer),
-  fMinNPoints(tracker.fMinNPoints), fMinQ(tracker.fMinQ), fTrackToFollow(tracker.fTrackToFollow), fLayers(tracker.fLayers),
-  fSegmentation(tracker.fSegmentation), fCluLayer(tracker.fCluLayer), fCluCoord(tracker.fCluCoord) 
-{
-  //									
-  // Copy constructor
-  for(Int_t i=0;i<2;i++){
-    fPoint1[i]=tracker.fPoint1[i];
-    fPoint2[i]=tracker.fPoint2[i];
-    fPoint3[i]=tracker.fPoint3[i];
-    fPointc[i]=tracker.fPointc[i];
-  }
-  for(Int_t i=0;i<fNLayers;i++){
-    fCluLayer[i] = tracker.fCluLayer[i];
-    fCluCoord[i] = tracker.fCluCoord[i];
-  }
-}
-//______________________________________________________________________
-/*
-AliITStrackerUpgrade& AliITStrackerUpgrade::operator=(const AliITStrackerUpgrade& source){
-  // Assignment operator. 
-  this->~AliITStrackerUpgrade();
-  new(this) AliITStrackerUpgrade(source);
-  return *this;
- 
-}
-*/
 //____________________________________________________________________________
 AliITStrackerUpgrade::~AliITStrackerUpgrade(){
   // destructor
