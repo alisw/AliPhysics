@@ -546,7 +546,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
     trigCounter->AddRubric("run",500000);
-    trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL");
+    trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL/MUON/NoPhysSelMUON/NoPhysSelEvNot7/NoPhysSelCMUP1/NoPhysSelMB/NoPhysSelCent/NoPhysSelSemiCent");
     trigCounter->Init();
 
     fOutputEvSelection->Add(evselection);
@@ -837,6 +837,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Double_t centrality=fCuts->GetCentrality(aod);
   Double_t multiplicity=aod->GetHeader()->GetRefMultiplicity();
   Int_t runNumber = aod->GetRunNumber();
+  TString trigClass=aod->GetFiredTriggerClasses();
   if(fOnOff[4]) {
     FillFlowObs(aod);
     PostData(8,fOutputFlowObs);
@@ -849,7 +850,21 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     hTrigC->Fill(-1.,centrality);
     hTrigM->Fill(-1.,multiplicity);
     trigCount->Count(Form("triggerType:All/Run:%d",runNumber));
-    
+    if(evSelMask==0){
+      if(aod->GetEventType()!=7){
+	trigCount->Count(Form("triggerType:NoPhysSelEvNot7/Run:%d",runNumber));
+      }else if(trigClass.Contains("CMUP1")){
+	trigCount->Count(Form("triggerType:NoPhysSelCMUP1/Run:%d",runNumber));
+      }else if(trigClass.Contains("MUON")){
+	trigCount->Count(Form("triggerType:NoPhysSelMUON/Run:%d",runNumber));
+      }else if(trigClass.Contains("CPBI2_B1-B") || trigClass.Contains(" CPBI2WU_B1-B")){
+	trigCount->Count(Form("triggerType:NoPhysSelMB/Run:%d",runNumber));
+      }else if(trigClass.Contains("CCENT") || trigClass.Contains("CVHN")){
+	trigCount->Count(Form("triggerType:NoPhysSelCent/Run:%d",runNumber));
+      }else if(trigClass.Contains("CSEMI") || trigClass.Contains("CVLN")){
+	trigCount->Count(Form("triggerType:NoPhysSelSemiCent/Run:%d",runNumber));
+      }
+    }
     if(evSelMask & AliVEvent::kAny){
       hTrigC->Fill(0.,centrality);
       hTrigM->Fill(0.,multiplicity);
@@ -890,6 +905,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
       hTrigC->Fill(8.,centrality);
       hTrigM->Fill(8.,multiplicity);
+      trigCount->Count(Form("triggerType:MUON/Run:%d",runNumber));
     }
     if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){ 
       hTrigC->Fill(9.,centrality);
