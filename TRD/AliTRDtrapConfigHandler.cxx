@@ -645,12 +645,12 @@ Bool_t AliTRDtrapConfigHandler::AddValues(UInt_t det, UInt_t cmd, UInt_t extali,
   else if ( (addr >= AliTRDtrapConfig::fgkImemStartAddress) &&
 	    (addr < (AliTRDtrapConfig::fgkImemStartAddress + AliTRDtrapConfig::fgkImemWords))) {
     // IMEM is ignored for now
-    ;
+    return kTRUE;
   }
   else if ( (addr >= AliTRDtrapConfig::fgkDbankStartAddress) &&
 	    (addr < (AliTRDtrapConfig::fgkDbankStartAddress + AliTRDtrapConfig::fgkImemWords))) {
     // DBANK is ignored for now
-    ;
+    return kTRUE;
   }
   else {
     AliError(Form("Writing to unhandled address 0x%04x", addr));

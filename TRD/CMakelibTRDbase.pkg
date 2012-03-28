@@ -69,6 +69,7 @@ set ( SRCS
     Cal/AliTRDCalOnlineGainTableROC.cxx
     Cal/AliTRDCalOnlineGainTableMCM.cxx
     Cal/AliTRDCalOnlineGainTableROC.h
+    Cal/AliTRDCalTrapConfig.cxx
     AliTRDCalibraFit.cxx
     AliTRDCalibraMode.cxx
     AliTRDCalibraVector.cxx

@@ -531,11 +531,11 @@ class AliTRDtrapConfig : public TNamed
     virtual Bool_t Allocate(Alloc_t mode);
 
   protected:
-    Bool_t SetData(Int_t value);
-    Bool_t SetData(Int_t value, Int_t det);
-    Bool_t SetData(Int_t value, Int_t det, Int_t rob, Int_t mcm);
+    Bool_t SetData(UInt_t value);
+    Bool_t SetData(UInt_t value, Int_t det);
+    Bool_t SetData(UInt_t value, Int_t det, Int_t rob, Int_t mcm);
 
-    Int_t  GetData(Int_t det, Int_t rob, Int_t mcm) const;
+    UInt_t GetData(Int_t det, Int_t rob, Int_t mcm) const;
 
     Int_t  GetIdx(Int_t det, Int_t rob, Int_t mcm) const;
 

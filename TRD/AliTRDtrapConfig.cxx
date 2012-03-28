@@ -897,7 +897,7 @@ Int_t AliTRDtrapConfig::AliTRDtrapValue::GetIdx(Int_t det, Int_t rob, Int_t mcm)
 }
 
 
-Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value)
+Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(UInt_t value)
 {
   // set the given value everywhere
 
@@ -910,7 +910,7 @@ Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value)
 }
 
 
-Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value, Int_t det)
+Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(UInt_t value, Int_t det)
 {
   // set the data for a given detector
 
@@ -950,7 +950,7 @@ Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value, Int_t det)
   return kFALSE;
 }
 
-Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value, Int_t det, Int_t rob, Int_t mcm)
+Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(UInt_t value, Int_t det, Int_t rob, Int_t mcm)
 {
   // set data for an individual MCM
 
@@ -974,7 +974,7 @@ Bool_t AliTRDtrapConfig::AliTRDtrapValue::SetData(Int_t value, Int_t det, Int_t 
   }
 }
 
-Int_t AliTRDtrapConfig::AliTRDtrapValue::GetData(Int_t det, Int_t rob, Int_t mcm) const
+UInt_t AliTRDtrapConfig::AliTRDtrapValue::GetData(Int_t det, Int_t rob, Int_t mcm) const
 {
   // read data for the given MCM
 
