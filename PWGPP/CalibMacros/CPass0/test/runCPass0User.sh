@@ -10,7 +10,7 @@
 # Run=000146807
 # AlienName=/m/miranov/
 # RawPath=/alice/data/2011/LHC11a/
-# $ALICE_ROOT/PWGPP/CalibMacros/Pass0/test/runPass0User.sh  $AlienName $RawPath  $Run 
+# $ALICE_ROOT/PWGPP/CalibMacros/CPass0/test/runCPass0User.sh  $AlienName $RawPath  $Run 
 #
 # authors:   marian.ivanov#cern.ch, mikolaj.krzewicki@cern.ch 
 
