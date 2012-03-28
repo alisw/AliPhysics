@@ -1,0 +1,30 @@
+Executable="/alice/cern.ch/user/j/jotwinow/bin/mergeMakeOCDB.sh";
+
+Packages= { "VO_ALICE@AliRoot::v5-01-Rev-19", "VO_ALICE@ROOT::v5-30-03-1", "VO_ALICE@APISCONFIG::V1.1x" };
+
+Jobtag = { "Merging Calibration Objects from calib train and make OCDB params" };
+
+GUIDFILE="guid.txt";
+TTL = "28000";
+Price = 1;
+
+Validationcommand ="/alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/validationMerging.sh";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+Arguments = "$1 $2 $3";
+
+Workdirectorysize={"6000MB"}; 
+
+InputFile={"LF:/alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/ConfigCalibTrain.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/LoadLibraries.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/makeOCDB.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/merge.C"
+};
+
+OutputDir="/alice/cern.ch/user/j/jotwinow/Pass0/output/$2/";
+
+OutputArchive={"log_archive:*.log@disk=1",
+              "root_archive.zip:CalibObjects.root,meanITSVertex.root,fitITSVertex.root@disk=1"};
+
