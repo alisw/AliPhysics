@@ -1094,8 +1094,8 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   if(TestBit(kRawSignal) && fDigitsRaw){
     Short_t rawSignal[7] = {0, 0, 0, fDigitsRaw->GetData(Max.row, Max.col, Max.time), 0, 0, 0};
     for(Int_t ipad(1); ipad<=3; ipad++){
-      rawSignal[3 - ipad] = fDigitsRaw->GetData(Max.row, Max.col-ipad, Max.time); // Look to the left
-      rawSignal[3 + ipad] = fDigitsRaw->GetData(Max.row, Max.col+ipad, Max.time); // Look to the right
+      rawSignal[3 - ipad] = (Max.col-ipad>=0)?fDigitsRaw->GetData(Max.row, Max.col-ipad, Max.time):0; // Look to the left
+      rawSignal[3 + ipad] = (Max.col+ipad<fColMax)?fDigitsRaw->GetData(Max.row, Max.col+ipad, Max.time):0; // Look to the right
     }
     cluster.SetSignals(rawSignal, kTRUE);
   }
