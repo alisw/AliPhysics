@@ -3,12 +3,12 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   Bool_t checkEvtSelection = useV0;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_tender_Tender", "No analysis manager found.");
+    Error("AddTaskTender", "No analysis manager found.");
     return 0;
   }
   // currently don't accept AOD input
-  if (!mgr->GetInputEventHandler()->InheritsFrom(AliESDInputHandler::Class())) {
-    Error("AddTask_tender_Tender","The analysis tender only works with ESD input!");
+  if (!mgr->GetInputEventHandler() || !mgr->GetInputEventHandler()->InheritsFrom(AliESDInputHandler::Class())) {
+    Error("AddTaskTender","The analysis tender only works with ESD input!");
     return 0;
   }
 
@@ -17,17 +17,17 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   AliTender *tender=new AliTender("AnalysisTender");
   tender->SetCheckEventSelection(checkEvtSelection);
   tender->SetDefaultCDBStorage("raw://");
+  mgr->AddTask(tender);
   if (checkEvtSelection) {
     if (mgr->GetTasks()->First() != (TObject*)tender ) {
       TString firstName(mgr->GetTasks()->First()->GetName());
       Bool_t isSecond=(mgr->GetTasks()->At(1) == (TObject*)tender);
       if (! (firstName=="PIDResponseTask" && isSecond )){
-        ::Error("When setting the tender to check the event selection, it has to be the first wagon, or the first after the Physics selection ! Aborting.");
+        Fatal("AddTaskTender","When setting the tender to check the event selection, it has to be the first wagon, or the first after the PID Response!");
         return NULL;
       }
     }
   }
-  mgr->AddTask(tender);
   
   //========= Attach VZERO supply ======
 
