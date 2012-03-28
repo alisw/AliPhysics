@@ -4,17 +4,17 @@
 #include <TRD/AliTRDtrackV1.h>
 #endif
 
-void nclusters(const TObject* object, Double_t* &res, Int_t& n)
+void nclusters(const AliTRDtrackV1* track, Double_t* res, Int_t& n)
 {
-  if (!object) return;
-  if (object->IsA() != AliTRDtrackV1::Class()) return;
-
-  const AliTRDtrackV1* track = dynamic_cast<const AliTRDtrackV1*>(object); 
-  if (!track)  return;
-
-  n = 1;
-  res = new Double_t[n];
+  if (!track){
+    Error("nclusters()", "Missing track.");
+    return;
+  }
+  n = 3;
   res[0] = track->GetNumberOfClusters();
+  res[1] = track->GetNumberOfTracklets();
+  res[2] = track->Pt();
+  //printf("-> ncl = %3d ntrklt[%d] pt[%f]\n", Int_t(res[0]), Int_t(res[1]), res[2]);
   return;
 }
 
