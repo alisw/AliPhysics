@@ -1554,6 +1554,7 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 	AliRawEventHeaderV3_9::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_9 - temporary fix 
 	AliRawEventHeaderV3_11::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_11 - temporary fix 
 	AliRawEventHeaderV3_12::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_12 - temporary fix 
+	AliRawEventHeaderV3_13::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_13 - temporary fix 
 	Log("Processing DAQ FXS");
 	TList* list = GetFileSources(kDAQ);  	
 	if (!list) {
