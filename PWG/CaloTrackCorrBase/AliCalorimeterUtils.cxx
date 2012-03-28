@@ -570,25 +570,35 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
     
 		//Check rows/phi
     Int_t nborder = fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder();
-		if(iSM < 10){
+		if(iSM < 10)
+    {
 			if(iphi >= nborder && iphi < 24-nborder) okrow =kTRUE; 
     }
-		else{
-			if(iphi >= nborder && iphi < 12-nborder) okrow =kTRUE; 
+		else
+    {
+      if(fEMCALGeoName.Contains("12SM")) // 1/3 SM
+        if(iphi >= nborder && iphi < 8-nborder) okrow =kTRUE; 
+      else // 1/2 SM
+        if(iphi >= nborder && iphi <12-nborder) okrow =kTRUE; 
 		}
 		
 		//Check columns/eta
-		if(!fEMCALRecoUtils->IsEMCALNoBorderAtEta0()){
+		if(!fEMCALRecoUtils->IsEMCALNoBorderAtEta0())
+    {
 			if(ieta  > nborder && ieta < 48-nborder) okcol =kTRUE; 
 		}
-		else{
-			if(iSM%2==0){
+		else
+    {
+			if(iSM%2==0)
+      {
 				if(ieta >= nborder)     okcol = kTRUE;	
 			}
-			else {
+			else 
+      {
 				if(ieta <  48-nborder)  okcol = kTRUE;	
 			}
 		}//eta 0 not checked
+    
 		if(fDebug > 1)
 		{
 			printf("AliCalorimeterUtils::CheckCellFiducialRegion() - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d ?",
@@ -1201,9 +1211,11 @@ void AliCalorimeterUtils::InitEMCALGeometry(Int_t runnumber)
   {
     if(fEMCALGeoName=="")
     {
-      if     (runnumber < 140000) fEMCALGeoName = "EMCAL_FIRSTYEARV1";
-      else if(runnumber < 171000) fEMCALGeoName = "EMCAL_COMPLETEV1";
-      else                        fEMCALGeoName = "EMCAL_COMPLETE12SMV1";  
+      if     (runnumber <  140000 && 
+              runnumber >= 100000)   fEMCALGeoName = "EMCAL_FIRSTYEARV1";
+      else if(runnumber >= 140000 &&
+              runnumber <  171000)   fEMCALGeoName = "EMCAL_COMPLETEV1";
+      else                           fEMCALGeoName = "EMCAL_COMPLETE12SMV1";  
       printf("AliCalorimeterUtils::InitEMCALGeometry() - Set EMCAL geometry name to <%s> for run %d\n",fEMCALGeoName.Data(),runnumber);
     }
     
