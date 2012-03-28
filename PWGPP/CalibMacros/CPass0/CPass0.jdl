@@ -22,7 +22,7 @@ GUIDFILE="guid.txt";
 SplitArguments = {"/alice/data/2010/LHC10d/$1/raw/#alienfilename#"};
 Workdirectorysize={"6000MB"};
 
-InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/recPass0.C",
+InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/recCPass0.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/ConfigCalibTrain.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/runCalibTrain.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/AddTaskTPCCalib.C",

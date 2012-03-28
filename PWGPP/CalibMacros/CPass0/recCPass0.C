@@ -6,10 +6,10 @@
    - default OCDB storage set to "raw://"
 
    Example:
-   aliroot -b -q 'recPass0.C("raw.root",100)'
+   aliroot -b -q 'recCPass0.C("raw.root",100)'
 */
 
-void recPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://")
+void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://")
 {
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location

@@ -1,4 +1,4 @@
-Calibration entries to be modified in Pass0
+Calibration entries to be modified in CPass0
 
 TPC        - TPC/Calib/TimeDrift, TPC/Calib/TimeGain
 TOF        - TOF/Calib/RunParams

@@ -1,4 +1,4 @@
-# Script for testing of the Pass0.jdl  on the grid for user purposes
+# Script for testing of the CPass0.jdl  on the grid for user purposes
 # To be used for validation of modified user code before asking for porting
 
 # 
