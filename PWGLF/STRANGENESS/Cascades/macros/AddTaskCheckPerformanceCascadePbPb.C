@@ -1,4 +1,5 @@
-AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( Float_t  centrlowlim         = 0.,
+AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( Int_t    minnTPCcls          = 70,
+                                                                                Float_t  centrlowlim         = 0.,
                                                                                 Float_t  centruplim          = 90.,
                                                                                 TString  centrest            = "V0M",
                                                                                 Float_t  vtxlim              = 10.,
@@ -25,13 +26,14 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    // Create and configure the task
         AliAnalysisTaskCheckPerformanceCascadePbPb *taskCheckPerfCascadePbPb = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskCheckPerfCascadePbPb");
 
-   taskCheckPerfCascadePbPb->SetAnalysisType                (type);
+   taskCheckPerfCascadePbPb-> SetAnalysisType                (type);
    taskCheckPerfCascadePbPb-> SetRelaunchV0CascVertexers    (krelaunchvertexers);     
    taskCheckPerfCascadePbPb-> SetQualityCutZprimVtxPos      (kTRUE);
    taskCheckPerfCascadePbPb-> SetRejectEventPileUp          (kFALSE);
    taskCheckPerfCascadePbPb-> SetQualityCutNoTPConlyPrimVtx (kTRUE);
    taskCheckPerfCascadePbPb-> SetQualityCutTPCrefit         (kTRUE);
-   taskCheckPerfCascadePbPb-> SetQualityCut80TPCcls         (kTRUE);
+   taskCheckPerfCascadePbPb-> SetQualityCutnTPCcls          (kTRUE);             
+   taskCheckPerfCascadePbPb-> SetQualityCutMinnTPCcls       (minnTPCcls);    
    taskCheckPerfCascadePbPb-> SetExtraSelections            (kextrasel);
    taskCheckPerfCascadePbPb-> SetApplyAccCut                (kacccut);
    taskCheckPerfCascadePbPb-> SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
@@ -51,11 +53,10 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
 
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWGLFStrangeness.outputCheckPerformanceCascadePbPb";
-   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    
    Printf("AddTaskCheckPerfCascadePbPb - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
-   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascMC",
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascPerf",
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );

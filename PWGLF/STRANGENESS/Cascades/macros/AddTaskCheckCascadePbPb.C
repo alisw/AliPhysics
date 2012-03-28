@@ -1,4 +1,5 @@
-AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Float_t  centrlowlim         = 0.,
+AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls          = 70,
+                                                          Float_t  centrlowlim         = 0.,
                                                           Float_t  centruplim          = 90.,
                                                           TString  centrest            = "V0M",
                                                           Float_t  vtxlim              = 10.,
@@ -29,7 +30,8 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Float_t  centrlowlim  
    taskcheckcascadepbpb->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
    taskcheckcascadepbpb->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
    taskcheckcascadepbpb->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
-   taskcheckcascadepbpb->SetQualityCut80TPCcls         (kTRUE);             // rejects tracks that have less than 80 clusters in the TPC
+   taskcheckcascadepbpb->SetQualityCutnTPCcls          (kTRUE);             // rejects tracks that have less than n clusters in the TPC
+   taskcheckcascadepbpb->SetQualityCutMinnTPCcls       (minnTPCcls);        // minimum number of TPC clusters to accept daughter tracks
    taskcheckcascadepbpb->SetExtraSelections            (kextrasel);         // used to add other selection cuts
    taskcheckcascadepbpb->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
    taskcheckcascadepbpb->SetCentralityUpLim            (centruplim);
@@ -49,7 +51,6 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Float_t  centrlowlim  
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    
    outputFileName += ":PWGLFStrangeness.outputCheckCascadePbPb";
-   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    
    Printf("AddTaskCheckCascade - Set OutputFileName : \n %s\n", outputFileName.Data() );
 
