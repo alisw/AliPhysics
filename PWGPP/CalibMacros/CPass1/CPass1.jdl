@@ -8,7 +8,7 @@ Packages= { "VO_ALICE@AliRoot::v5-02-Rev-04",
 Jobtag = { "Test CPass1 Calibration Train" };
 
 GUIDFILE="guid.txt";
-TTL = "28000";
+TTL = "86400";
 Price = 1;
 
 Validationcommand ="/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/validation.sh";
@@ -30,12 +30,16 @@ InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/recCPass1.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskT0Calib.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTOFAnalysisTaskCalibPass0.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/LoadLibraries.C"
+           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/QAtrain.C"
 };
 
 InputDataCollection="LF:/alice/data/2010/LHC10d/$1/collection,nodownload";
 
 OutputDir="/alice/cern.ch/user/j/jotwinow/CPass1/output/$1/#alienfilename/.root//#";
 
-OutputArchive={"log_archive:*.log@disk=1",
-              "root_archive.zip:AliESDfriends_v1.root,@disk=1"};
+
+OutputArchive={"log_archive:stderr.log,stdout.log,qa.log,sys*.log@disk=1",
+              "root_archive.zip:AliESDs.root,AliESDfriends.root,AliESDfriends_v1.root,Merged.QA.Data*.root,RecoQAresults.root@disk=3",
+              "QA_archive.zip:QAresults.root,*.stat.qa@disk=2"
+};
 
