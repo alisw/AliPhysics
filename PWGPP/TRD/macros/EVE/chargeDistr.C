@@ -1,55 +1,60 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TRD/AliTRDcluster.h>
-#include <TRD/AliTRDseed.h>
 #include <TRD/AliTRDseedV1.h>
 #include <TRD/AliTRDtrackV1.h>
 #endif
 
-void chargeDistr(const TObject* object, Double_t* &results, Int_t& nResults)
+void chargeDistr(const AliTRDtrackV1* track, Double_t* results, Int_t& nResults)
 {
-  if (!object) return;
-  if (object->IsA() != AliTRDtrackV1::Class()) return;
-
-  const AliTRDtrackV1* track = dynamic_cast<const AliTRDtrackV1*>(object); 
-  if (!track)  return;
-  
+  if (!track){
+    Error("chargeDistr()", "Missing track.");
+    return;
+  }
   Int_t Nt = track->GetNumberOfTracklets();
-  AliTRDcluster* cls = 0;
-  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDcluster* cls(NULL);
+  AliTRDseedV1 *tracklet(NULL);
 
   // Count clusters
-  nResults = 0;
-  for (Int_t trackletInd = 0; trackletInd < Nt; trackletInd++)
-  {
-    if(!(tracklet = track->GetTracklet(trackletInd))) continue;
-    if(!tracklet->IsOK()) continue;
-    
-    for (Int_t clusterInd = 0; clusterInd < AliTRDseed::knTimebins; clusterInd++) 
-    {
-      if(!(cls = tracklet->GetClusters(clusterInd))) continue;
-            
-	    nResults++;
-	  }
+  Int_t nCls = 0;
+  for (Int_t ily = 0; ily < 6; ily++) {
+    if(!(tracklet = track->GetTracklet(ily))){
+      //Warning("chargeDistr()", "Missing tracklet in ly[%d]", ily);
+      continue;
+    }
+    if(!tracklet->IsOK()){
+      //Warning("chargeDistr()", "Bad tracklet in ly[%d]", ily);
+      continue;
+    }
+    for (Int_t icl = 0; icl < AliTRDseedV1::kNclusters; icl++) {
+      if(!(cls = tracklet->GetClusters(icl))){
+        //Warning("chargeDistr()", "Missing cls[%2d] tracklet in ly[%d]", icl, ily);
+        continue;
+      }
+      nCls++;
+    }
   }
   
   // Nothing to do?
-  if (nResults == 0)  return;
+  if(!nCls){
+    Warning("chargeDistr()", "Missing clusters.");
+    return;
+  }
+  //Info("chargeDistr()", "Found %3d clusters.", nCls);
 
   // Allocate memory for the results (AliEveTRDAnalyseObjectList will clean this memory automatically)
-  results = new Double_t[nResults];
-  for (Int_t i = 0; i < nResults; i++)  results[i] = -100;
+  //results = new Double_t[nResults];
+  nResults = 2;
+  for (Int_t i = 0; i < nResults; i++)  results[i] = 0.;
   Int_t currentIndex = 0;
 
-  for (Int_t trackletInd = 0; trackletInd < Nt && currentIndex < nResults; trackletInd++)
-  {
+  for (Int_t trackletInd = 0; trackletInd < Nt && currentIndex < nResults; trackletInd++){
     if(!(tracklet = track->GetTracklet(trackletInd))) continue;
     if(!tracklet->IsOK()) continue;
-    
-    for (Int_t clusterInd = 0; clusterInd < AliTRDseed::knTimebins; clusterInd++) 
-    {
+    for (Int_t clusterInd = 0; clusterInd < AliTRDseedV1::kNclusters; clusterInd++){
       if(!(cls = tracklet->GetClusters(clusterInd))) continue;
-            
-	    results[currentIndex++] = cls->GetQ();
-	  }
+      results[1] += cls->GetQ();
+    }
   }
+  results[0] =nCls;
+  results[1]/=nCls;
 }
