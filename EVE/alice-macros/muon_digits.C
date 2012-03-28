@@ -24,6 +24,7 @@
 #include <TEveManager.h>
 #include <TEveQuadSet.h>
 
+#include <AliLog.h>
 #include <AliMUONGeometryTransformer.h>
 #include <AliMUONVDigit.h>
 #include <AliMUONVDigitStore.h>
@@ -63,7 +64,7 @@ void add_muon_digits(TIter* next, TEveQuadSet* bending, TEveQuadSet* nonBending,
       AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(digit->Cathode()));
     if (!vseg) 
     {
-      AliInfo(Form("Could not get segmentation for DE %4d MANU %4d",detElemId,manuId));
+      AliInfoGeneral("muon_digits.C", Form("Could not get segmentation for DE %4d MANU %4d",detElemId,manuId));
       continue; // should not happen, unless we got a readout error and thus a bad de,manu pair
     }
     

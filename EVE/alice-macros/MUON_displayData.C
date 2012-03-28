@@ -23,6 +23,7 @@
 #include <TEveElement.h>
 #include <TEveTrack.h>
 
+#include <AliLog.h>
 #include <AliMpSegmentation.h>
 #include <AliMpDDLStore.h>
 #include <AliMpCDB.h>
@@ -96,16 +97,16 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
     rl->LoadDigits("MUON");
     dt = rl->GetTreeD("MUON", false);
     if (dt == 0) {
-      AliInfo("No digits produced!");
+      AliInfoGeneral("MUON_displayData.C", "No digits produced!");
     } else {
-      AliInfo("With aliroot digits!");
+      AliInfoGeneral("MUON_displayData.C", "With aliroot digits!");
       g_muon_data->LoadDigits(dt);
     }
   } else {
     if (gSystem->AccessPathName(dataPath.Data(),kFileExists)) {
-      AliInfo("No raw data produced!");
+      AliInfoGeneral("MUON_displayData.C", "No raw data produced!");
     } else {
-      AliInfo("With raw digits!");
+      AliInfoGeneral("MUON_displayData.C", "With raw digits!");
       g_muon_data->LoadRaw(dataPath.Data());
     }
   }

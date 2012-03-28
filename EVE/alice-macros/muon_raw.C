@@ -25,6 +25,7 @@
 #include <TEveUtil.h>
 #include <TEveQuadSet.h>
 
+#include <AliLog.h>
 #include <AliMUONDigitMaker.h>
 #include <AliMUONDigitStoreV2R.h>
 #include <AliMpCDB.h>
@@ -40,9 +41,9 @@ void muon_raw()
   // load raw data
   AliRawReader* reader = AliEveEventManager::AssertRawReader();
   if ( reader->GetEventHeader() ) 
-    AliInfo(Form("RUN %d EVENT %d", reader->GetRunNumber(),reader->GetEventIndex()) );
+    AliInfoGeneral("muon_raw.C", Form("RUN %d EVENT %d", reader->GetRunNumber(),reader->GetEventIndex()) );
   else
-    AliInfo("NO EVENT HEADER ?");
+    AliInfoGeneral("muon_raw.C", "NO EVENT HEADER ?");
   
   // convert raw to digits
   AliMUONDigitMaker digitMaker;
