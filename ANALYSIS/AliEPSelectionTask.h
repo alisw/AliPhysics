@@ -1,5 +1,5 @@
-#ifndef ALIEPSELECTIONTASK_H
-#define ALIEPSELECTIONTASK_H
+#ifndef AliEPSELECTIONTASK_H
+#define AliEPSELECTIONTASK_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -23,6 +23,8 @@ class AliESDtrackCuts;
 class AliESDtrack;
 class AliEventplane;
 class AliOADBContainer;
+class AliVTrack;
+class THnSparse;
 
 class AliEPSelectionTask : public AliAnalysisTaskSE {
 
@@ -64,9 +66,13 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   AliEPSelectionTask& operator= (const AliEPSelectionTask& ep); 
 
   TObjArray* GetAODTracksAndMaxID(AliAODEvent* aod, Int_t& maxid);
+  void SetOADBandPeriod();
+  TH1F* SelectPhiDist(AliVTrack *track);
+  TObjArray* GetTracksForLHC11h(AliESDEvent* esd);
 
   TString  fAnalysisInput; 		// "ESD", "AOD"
   TString  fTrackType;			// "GLOBAL", "TPC"
+  TString  fPeriod;	                // "LHC11h","LHC10h"
   Bool_t   fUseMCRP;			// i.e. usable for Therminator, when MC RP is provided
   Bool_t   fUsePhiWeight;		// use of phi weights
   Bool_t   fUsePtWeight;		// use of pT weights
@@ -82,7 +88,9 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   AliESDtrackCuts* fESDtrackCuts;       // track cuts
   
   AliOADBContainer* fEPContainer;	//! OADB Container
-  TH1F*	 fPhiDist;			// Phi distribution used to calculate phi weights
+  TH1F*	 fPhiDist[4];			// array of Phi distributions used to calculate phi weights
+  THnSparse *fSparseDist;               //! THn for eta-charge phi-weighting
+  TH1F *fHruns;                         // information about runwise statistics of phi-weights
 
   TVector2* fQVector;			//! Q-Vector of the event  
   Double_t* fQContributionX;		//! array of the tracks' contributions to X component of Q-Vector - index = track ID

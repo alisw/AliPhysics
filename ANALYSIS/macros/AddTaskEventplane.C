@@ -16,7 +16,7 @@ AliEPSelectionTask *AddTaskEventplane()
  
   
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB);
+  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
   if (inputDataType == "AOD"){
     eventplaneTask->SetInput("AOD");
   }
