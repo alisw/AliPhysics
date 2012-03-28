@@ -1,6 +1,6 @@
 void LoadLibraries() {
     //
-    // load libraries needed for CPass0
+    // load libraries needed for CPass1
     //
     gSystem->Load("libSTAT");
     gSystem->Load("libANALYSIS");
