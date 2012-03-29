@@ -95,7 +95,14 @@ AliAnalysisTaskPIDFluctuation::AliAnalysisTaskPIDFluctuation(const Char_t *name)
   fPtMin(0.3),
   fPtMax(1.5),
   fPID(NULL),
-  fHistoList(NULL)
+  fHistoList(NULL),
+  fHistoEventCounter(NULL),
+  fHistoAcceptedTracks(NULL),
+  fHistoTOFMatchedTracks(NULL),
+  fHistoTPCdEdx(NULL),
+  fHistoTPCdEdx_inclusive(NULL),
+  fHistoTOFbeta(NULL),
+  fHistoCorrelation(NULL)
 {
   
   /*
