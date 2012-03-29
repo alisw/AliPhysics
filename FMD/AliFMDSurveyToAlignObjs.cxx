@@ -86,7 +86,7 @@ AliFMDSurveyToAlignObjs::CalculatePlane(const     TVector3& a,
 
   // Vector a->b, b->c, and normal to plane defined by these two
   // vectors. 
-  TVector3 ab(b-a), bc(c-b);
+  TVector3 ab(b-a), bc(c-a);
   
   // Normal vector to the plane of the fiducial marks obtained
   // as cross product of the two vectors on the plane d0^d1
@@ -116,8 +116,10 @@ AliFMDSurveyToAlignObjs::CalculatePlane(const     TVector3& a,
   // The center of the square with the fiducial marks as the
   // corners.  The mid-point of one diagonal - md.  Used to get the
   // center of the surveyd box. 
-  TVector3 md(a + c);
-  md *= 1/2.;
+  // TVector3 md(a + c);
+  // md *= 1/2.;
+  TVector3 md(c + b);
+  md *= 1./2;
 
   // The center of the box. 
   TVector3 orig(md - depth * n);
@@ -130,8 +132,10 @@ AliFMDSurveyToAlignObjs::CalculatePlane(const     TVector3& a,
   TVector3 ubc(bc.Unit());
   
   for (size_t i = 0; i < 3; i++) { 
-    rot[i * 3 + 0] = ubc[i];
-    rot[i * 3 + 1] = uab[i];
+    // rot[i * 3 + 0] = ubc[i];
+    // rot[i * 3 + 1] = uab[i];
+    rot[i * 3 + 0] = uab[i];
+    rot[i * 3 + 1] = ubc[i];
     rot[i * 3 + 2] = n[i];
   }
   return kTRUE;
@@ -341,9 +345,10 @@ AliFMDSurveyToAlignObjs::GetFMD1Plane(Double_t* rot, Double_t* trans) const
   Double_t        off  = 0;
 #endif
 
-  if (!CalculatePlane(ocb, icb, ict, off, trans, rot)) return kFALSE;
-  // PrintRotation("FMD1 rotation:",  rot);
-  // PrintVector("FMD1 translation:", trans);
+  // if (!CalculatePlane(ocb, icb, ict, off, trans, rot)) return kFALSE;
+  if (!CalculatePlane(ocb, icb, oct, off, trans, rot)) return kFALSE;
+  PrintRotation("FMD1 rotation:",  rot);
+  PrintVector("FMD1 translation:", trans);
 
   return kTRUE;
 }
@@ -375,8 +380,24 @@ AliFMDSurveyToAlignObjs::DoFMD1()
   Double_t rot[9], trans[3];
   if (!GetFMD1Plane(rot, trans)) return kFALSE;
   // const char* path = "/ALIC_1/F1MT_1/FMD1_lid_0";
-  
+
+#if 0  
   // TGeoHMatrix delta;
+  Double_t gRot[9], gTrans[3];
+  TVector3 ocb(-127, -220, 324.67);
+  TVector3 oct(-127, +220, 324.67);
+  TVector3 icb(+127, -220, 324.67);
+  TVector3 ict(+127, +220, 324.67);
+  if (!CalculatePlane(ocb, icb, oct, 0, gTrans, gRot)) { 
+    Warning("DoFMD1", "Failed to make reference plane");
+    return kFALSE;
+  }
+  PrintRotation("FMD1 ref rotation:",  gRot);
+  PrintVector("FMD1 ref translation:", gTrans);
+  TGeoRotation ggRot; ggRot.SetMatrix(gRot);
+  TGeoCombiTrans global(gTrans[0], gTrans[1], gTrans[2], &ggRot);
+#endif
+
   TGeoTranslation global(0,0,324.670);
   if (!MakeDelta(&global, rot, trans, fFMD1Delta)) 
     return kFALSE;
@@ -463,14 +484,16 @@ AliFMDSurveyToAlignObjs::DoFMD2()
   // Do the FMD2 stuff
   Double_t rot[9], trans[3];
   if (!GetFMD2Plane(rot, trans)) return kFALSE;
-  // PrintRotation("FMD2 rotation:",  rot);
-  // PrintVector("FMD2 translation:", trans);
+  PrintRotation("FMD2 rotation:",  rot);
+  PrintVector("FMD2 translation:", trans);
 
+#if 0
   for (int i = 0; i < 3; i++) { 
     for (int j = 0; j < 3; j++) { 
       rot[i*3+j] = (i == j ? 1 : 0);
     }
   }
+#endif
   trans[0] = trans[1] = 0;
   trans[2] += 0.015;
   // PrintRotation("FMD2 rotation:",  rot);
@@ -504,6 +527,117 @@ AliFMDSurveyToAlignObjs::Run()
 }
 
 //____________________________________________________________________
+void
+AliFMDSurveyToAlignObjs::Run(const char** files)
+{
+  // 
+  // Run the task.
+  // 
+  //  
+
+  AliFMDGeometry* geom = AliFMDGeometry::Instance();
+  geom->Init();
+  geom->InitTransformations();
+
+  const char** file = files; 
+  while (*file) { 
+    if ((*file)[0] == '\0') { 
+      Warning("Run", "no file specified");
+      file++;
+      continue;
+    }
+    if (!LoadSurveyFromLocalFile(*file)) { 
+      Warning("Run", "Failed to load %s", *file);
+      file++;
+      continue;
+    }
+    TString sDet(fSurveyObj->GetDetector());
+    Int_t   d    = Int_t(sDet[sDet.Length()-1] - '0');
+    Info("Run", "Making alignment for %s (%d)", sDet.Data(), d);
+    Bool_t ret = true;
+    switch (d) { 
+    case 1: ret = DoFMD1(); break;
+    case 2: ret = DoFMD2(); break;
+    default: 
+      Warning("Run", "Do not know how to deal with %s", sDet.Data());
+      break;
+    }
+    if (!ret) { 
+      Warning("Run", "Calculation for %s failed", sDet.Data());
+    }
+    file++;
+  }
+  CreateAlignObjs();
+  FillDefaultAlignObjs();
+}
+
+//____________________________________________________________________
+AliAlignObjParams*
+AliFMDSurveyToAlignObjs::CreateDefaultAlignObj(const TString& path, 
+					       Int_t id)
+{
+  Int_t nAlign = fAlignObjArray->GetEntries();
+  AliAlignObjParams* obj = 
+    new ((*fAlignObjArray)[nAlign]) AliAlignObjParams(path.Data(),
+						      id,0,0,0,0,0,0,kTRUE);
+  if (!obj) {
+    AliError(Form("Failed to create alignment object for %s", path.Data()));
+    return 0;
+  }
+  if (!obj->SetLocalPars(0, 0, 0, 0, 0, 0)) {
+    AliError(Form("Failed to set local transforms on %s", path.Data()));
+    return obj;
+  }
+  return obj;
+}
+
+//____________________________________________________________________
+AliAlignObjParams*
+AliFMDSurveyToAlignObjs::FindAlignObj(const TString& path) const 
+{
+  AliAlignObjParams* p = 0;
+  for (int i = 0; i < fAlignObjArray->GetEntries(); i++) { 
+    p = static_cast<AliAlignObjParams*>(fAlignObjArray->At(i));
+    if (path.EqualTo(p->GetSymName())) return p;
+  }
+  return 0;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDSurveyToAlignObjs::FillDefaultAlignObjs()
+{
+  for (int d = 1; d <= 3; d++) { 
+    const char sides[] = { 'T', 'B', 0 };
+    const char* side   = sides;
+    while (*side) { 
+      TString path = TString::Format("FMD/FMD%d_%c", d, *side);
+      AliAlignObjParams* p = FindAlignObj(path);
+      if (!p) 
+	p = CreateDefaultAlignObj(path, 0);
+      else 
+	Info("FillDefaultAlignObjs", "Alignment object %s exists", path.Data());
+      const char halves[] = { 'I', d == 1 ? '\0' : 'O', 0 };
+      const char*  half = halves;
+      while (*half) { 
+	int nsec  = *half == 'I' ? 10 : 20;
+	int start = *side == 'T' ? 0      : nsec/2;
+	int end   = *side == 'T' ? nsec/2 : nsec;
+	for (int s=start; s < end; s++) {
+	  path = TString::Format("FMD/FMD%d_%c/FMD%c_%02d", 
+				 d, *side, *half, s);
+	  CreateDefaultAlignObj(path, 0);
+	}
+	half++;
+      }
+      side++;
+    }
+    
+  }
+  return true;
+}
+
+//____________________________________________________________________
 Bool_t 
 AliFMDSurveyToAlignObjs::CreateAlignObjs()
 {
@@ -518,12 +652,12 @@ AliFMDSurveyToAlignObjs::CreateAlignObjs()
   Int_t         n     = array.GetEntriesFast();
 
   if (!fFMD1Delta.IsIdentity()) { 
-    new (array[n++]) AliAlignObjParams("FMD1/FMD1_T", 0, fFMD1Delta, kTRUE);
-    new (array[n++]) AliAlignObjParams("FMD1/FMD1_B", 0, fFMD1Delta, kTRUE);
+    new (array[n++]) AliAlignObjParams("FMD/FMD1_T", 0, fFMD1Delta, kTRUE);
+    new (array[n++]) AliAlignObjParams("FMD/FMD1_B", 0, fFMD1Delta, kTRUE);
   }
   if (!fFMD2Delta.IsIdentity()) { 
-    new (array[n++]) AliAlignObjParams("FMD2/FMD2_T", 0, fFMD2Delta, kTRUE);
-    new (array[n++]) AliAlignObjParams("FMD2/FMD2_B", 0, fFMD2Delta, kTRUE);
+    new (array[n++]) AliAlignObjParams("FMD/FMD2_T", 0, fFMD2Delta, kTRUE);
+    new (array[n++]) AliAlignObjParams("FMD/FMD2_B", 0, fFMD2Delta, kTRUE);
   }
   // array.Print();
   

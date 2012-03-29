@@ -6,7 +6,7 @@
 // Forward decl
 class TVector3;
 class TGeoMatrix;
-
+class AliAlignObjParams;
 
 /**
  * Class to take survey data and transform that to alignment objects. 
@@ -27,6 +27,7 @@ public:
    * 
    */  
   void Run();
+  void Run(const char** files);
   /** 
    * 
    * Method to create the alignment objects
@@ -184,6 +185,30 @@ protected:
 		   const Double_t*    rot, 
 		   const Double_t*    trans,
 		   TGeoHMatrix& delta) const;
+  /** 
+   * Create a default (i.e., no rotation or translation) alignment object. 
+   * 
+   * @param path Path to volume 
+   * @param id   Id of volume
+   * 
+   * @return Created object
+   */
+  AliAlignObjParams* CreateDefaultAlignObj(const TString& path, Int_t id=0);
+  /** 
+   * Check if we have an alignment object for the given path alread 
+   * 
+   * @param path PAth to check 
+   * 
+   * @return Pointer to object if found, otherwise 0
+   */
+  AliAlignObjParams* FindAlignObj(const TString& path) const;
+  /** 
+   * Fill In default alignmen objects 
+   * 
+   * @return true on sucess
+   */
+  Bool_t FillDefaultAlignObjs();
+
   /** 
    * Service member function to print a vector
    * 
