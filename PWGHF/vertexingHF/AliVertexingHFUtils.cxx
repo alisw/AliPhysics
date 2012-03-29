@@ -15,8 +15,15 @@
 
 #include <TMath.h>
 #include <TRandom.h>
+#include <TProfile.h>
+#include <TClonesArray.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TF1.h>
 #include "AliAODEvent.h"
+#include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
+#include "AliAODRecoDecayHF.h"
 #include "AliVertexingHFUtils.h"
 
 /* $Id$ */
@@ -288,6 +295,92 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
   delete hMptSig;
 
 }
+//____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD) {
+  // true impact parameter calculation for Dplus
+
+  if(!partD || !arrayMC || !mcHeader) return 99999.;
+  Int_t code=partD->GetPdgCode();
+  if(TMath::Abs(code)!=411) return 99999.;
+
+  Double_t vtxTrue[3];
+  mcHeader->GetVertex(vtxTrue);
+  Double_t origD[3];
+  partD->XvYvZv(origD);
+  Short_t charge=partD->Charge();
+  Double_t pXdauTrue[3],pYdauTrue[3],pZdauTrue[3];
+  for(Int_t iDau=0; iDau<3; iDau++){
+    pXdauTrue[iDau]=0.;
+    pYdauTrue[iDau]=0.;
+    pZdauTrue[iDau]=0.;
+  }
+
+  Int_t nDau=partD->GetNDaughters();
+  Int_t labelFirstDau = partD->GetDaughter(0); 
+  if(nDau==3){
+    for(Int_t iDau=0; iDau<3; iDau++){
+      Int_t ind = labelFirstDau+iDau;
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      if(!part){
+	printf("Daughter particle not found in MC array");
+	return 99999.;
+      } 
+      pXdauTrue[iDau]=part->Px();
+      pYdauTrue[iDau]=part->Py();
+      pZdauTrue[iDau]=part->Pz();
+    }
+  }else if(nDau==2){
+    Int_t theDau=0;
+    for(Int_t iDau=0; iDau<2; iDau++){
+      Int_t ind = labelFirstDau+iDau;
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      if(!part){
+	printf("Daughter particle not found in MC array");
+	return 99999.;
+      } 
+      Int_t pdgCode=TMath::Abs(part->GetPdgCode());
+      if(pdgCode==211 || pdgCode==321){
+	pXdauTrue[theDau]=part->Px();
+	pYdauTrue[theDau]=part->Py();
+	pZdauTrue[theDau]=part->Pz();
+	++theDau;
+      }else{
+	Int_t nDauRes=part->GetNDaughters();
+	if(nDauRes==2){
+	  Int_t labelFirstDauRes = part->GetDaughter(0); 	
+	  for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
+	    Int_t indDR = labelFirstDauRes+iDauRes;
+	    AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));
+	    if(!partDR){
+	      printf("Daughter particle not found in MC array");
+	      return 99999.;
+	    } 
+	    
+	    Int_t pdgCodeDR=TMath::Abs(partDR->GetPdgCode());
+ 	    if(pdgCodeDR==211 || pdgCodeDR==321){
+	      pXdauTrue[theDau]=partDR->Px();
+	      pYdauTrue[theDau]=partDR->Py();
+	      pZdauTrue[theDau]=partDR->Pz();
+	      ++theDau;
+	    }
+	  }
+	}
+      }
+    }
+    if(theDau!=3){
+      printf("Wrong number of decay prongs");
+      return 99999.;
+    }
+  }
+
+  Double_t d0dummy[3]={0.,0.,0.};
+  AliAODRecoDecayHF aodDvsMC(vtxTrue,origD,3,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
+  return aodDvsMC.ImpParXY();
+
+}
+
+
+
 //____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult) {
   //
