@@ -15,10 +15,14 @@
 ///////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "TProfile.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TF1.h"
+
+class AliAODMCParticle;
+class AliAODMCHeader;
+class TProfile;
+class TClonesArray;
+class TH1F;
+class TH2F;
+class TF1;
 
 class AliVertexingHFUtils : public TObject{
  public:
@@ -72,6 +76,9 @@ class AliVertexingHFUtils : public TObject{
 
   // Functions for computing average pt 
   static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Int_t rebin=4);
+
+  // Functions for computing true impact parameter of D meson
+  static Double_t GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
 
   static Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
