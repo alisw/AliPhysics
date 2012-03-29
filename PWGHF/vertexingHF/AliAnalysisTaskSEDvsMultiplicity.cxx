@@ -318,7 +318,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     nDau=3;
     selbit=AliRDHFCuts::kDstarCuts;
   }
-  printf("Get delta AOD\n");
+
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
     // event in memory rather than the input (ESD) event.    
@@ -335,7 +335,6 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   } else if(aod) {
     arrayCand=(TClonesArray*)aod->GetList()->FindObject(arrayName.Data());
   }
-  printf("delta AOD OK\n");
 
   if(!aod || !arrayCand) {
     printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: Charm3Prong branch not found!\n");
