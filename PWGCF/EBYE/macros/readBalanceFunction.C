@@ -439,31 +439,31 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
   if(!bHistos){
     for(Int_t i = 0; i < iList+1; i++){
       gWM[i] = new TGraphErrors(iCanvas,cent,WM[i],centE,WME[i]);
-      if(iList==1) gWM[i]->SetName("gCentrality");  
+      if(iList==0) gWM[i]->SetName("gCentrality");  
       else gWM[i]->SetName(Form("gCentrality_%d",i));
       gWMS[i] = new TGraphErrors(iCanvas,cent,WMS[i],centE,WMSE[i]); 
-      if(iList==1) gWMS[i]->SetName("gCentralityS");  
+      if(iList==0) gWMS[i]->SetName("gCentralityS");  
       else gWMS[i]->SetName(Form("gCentralityS_%d",i)); 
 
       gWMP[i] = new TGraphErrors(iCanvas,cent,WMP[i],centE,WMPE[i]);
-      if(iList==1) gWMP[i]->SetName("gCentralityPhi");  
+      if(iList==0) gWMP[i]->SetName("gCentralityPhi");  
       else gWMP[i]->SetName(Form("gCentralityPhi_%d",i));
       gWMPS[i] = new TGraphErrors(iCanvas,cent,WMPS[i],centE,WMPSE[i]); 
-      if(iList==1) gWMPS[i]->SetName("gCentralityPhiS");  
+      if(iList==0) gWMPS[i]->SetName("gCentralityPhiS");  
       else gWMPS[i]->SetName(Form("gCentralityPhiS_%d",i)); 
 
       ginteg[i] = new TGraphErrors(iCanvas,cent,integ[i],centE,integE[i]);
-      if(iList==1) ginteg[i]->SetName("gIntegral");  
+      if(iList==0) ginteg[i]->SetName("gIntegral");  
       else ginteg[i]->SetName(Form("gIntegral_%d",i));
       gintegS[i] = new TGraphErrors(iCanvas,cent,integS[i],centE,integSE[i]); 
-      if(iList==1) gintegS[i]->SetName("gIntegralS");  
+      if(iList==0) gintegS[i]->SetName("gIntegralS");  
       else gintegS[i]->SetName(Form("gIntegralS_%d",i)); 
 
       gintegP[i] = new TGraphErrors(iCanvas,cent,integP[i],centE,integPE[i]);
-      if(iList==1) gintegP[i]->SetName("gIntegraPhil");  
+      if(iList==0) gintegP[i]->SetName("gIntegraPhil");  
       else gintegP[i]->SetName(Form("gIntegralPhi_%d",i));
       gintegPS[i] = new TGraphErrors(iCanvas,cent,integPS[i],centE,integPSE[i]); 
-      if(iList==1) gintegPS[i]->SetName("gIntegralPhiS");  
+      if(iList==0) gintegPS[i]->SetName("gIntegralPhiS");  
       else gintegPS[i]->SetName(Form("gIntegralPhiS_%d",i)); 
     }
   }
