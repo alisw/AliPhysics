@@ -80,7 +80,7 @@ AliAnalysisTaskEx01::~AliAnalysisTaskEx01()
     if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
         delete fOutput;
     }
-    if (fTrackCuts) delete fTrackCuts;
+    delete fTrackCuts;
 }
 
 //________________________________________________________________________

@@ -141,8 +141,8 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
 
     // Set versions of used packages
     plugin->SetAPIVersion("V1.1x");
-    plugin->SetROOTVersion("v5-28-00d");
-    plugin->SetAliROOTVersion("v4-21-25-AN-1");
+    plugin->SetROOTVersion("v5-30-06-1");
+    plugin->SetAliROOTVersion("v5-03-08-AN");
 
     // Declare input data to be processed.
 //    plugin->SetCheckCopy(kFALSE);
@@ -155,8 +155,8 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     // Set data search pattern
     //plugin->SetDataPattern("*ESDs.root"); // THIS CHOOSES ALL PASSES
     // Data pattern for reconstructed data
-//    plugin->SetDataPattern("*ESDs/pass2/*ESDs.root"); // CHECK LATEST PASS OF DATA SET IN ALIENSH
-    plugin->SetDataPattern("ESDs/pass2/AOD038/*AliAOD.root"); // CHECK LATEST PASS OF DATA SET IN ALIENSH
+    plugin->SetDataPattern("*ESDs/pass2/*ESDs.root"); // CHECK LATEST PASS OF DATA SET IN ALIENSH
+    //    plugin->SetDataPattern("ESDs/pass2/AOD038/*AliAOD.root"); // CHECK LATEST PASS OF DATA SET IN ALIENSH
     plugin->SetRunPrefix("000");   // real data
     // ...then add run numbers to be considered
     Int_t runlist[15]={117039, 146859, 146858, 146856, 146824, 146817, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746};  
