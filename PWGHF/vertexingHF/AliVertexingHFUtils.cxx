@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <TMath.h>
+#include <TRandom.h>
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliVertexingHFUtils.h"
@@ -287,3 +288,29 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
   delete hMptSig;
 
 }
+//____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult) {
+  //
+  // Correct the number of accepted tracklets based on a TProfile Hist
+  //
+  //
+
+  if(TMath::Abs(vtxZ)>10.0){
+    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
+    return uncorrectedNacc;
+  }
+
+  if(!estimatorAvg){
+    printf("ERROR: Missing TProfile for correction of multiplicity\n");
+    return uncorrectedNacc;
+  }
+
+  Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+
+  Double_t deltaM = uncorrectedNacc*(refMult/localAvg - 1);
+
+  Double_t correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->Poisson(TMath::Abs(deltaM));
+
+  return correctedNacc;
+}
+
