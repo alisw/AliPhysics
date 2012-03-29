@@ -51,6 +51,7 @@
 #include "AliLog.h"
 #include <Riostream.h>
 #include <string>
+#include <TString.h>
 
 ClassImp(AliTPCMonitorMappingHandler)
 
@@ -339,19 +340,19 @@ void  AliTPCMonitorMappingHandler::ReadRowMappingGlob(const char* fpathtoMapping
   // column 1:        number of pads in this row (npads)
   // column 2-npads:  hardware addresses for these pads
  
-  char readcarry[256];
-  char readcarry2[256];
+  TString readcarry;
+  TString readcarry2;
   ifstream in(fpathtoMappingRowfile,ios::in);
   
   for(Int_t i = 0; i < 159 ; i++) {
     in >> readcarry;   // row number
     in >> readcarry2;  // numof pads
-    fmappingChannelinRow[i][0] = atoi(readcarry2);
-    fmappingChannelinRow[i][1] = TMath::Min(TMath::Abs(atoi(readcarry)),140); //maximum number of pads is 140
+    fmappingChannelinRow[i][0] = readcarry2.Atoi();
+    fmappingChannelinRow[i][1] = TMath::Min(TMath::Abs(readcarry.Atoi()),140); //maximum number of pads is 140
     
     for(Int_t j = 2 ; j < fmappingChannelinRow[i][0]+2 ; j++) {
       in >> readcarry;
-      fmappingChannelinRow[i][j] = atoi(readcarry);
+      fmappingChannelinRow[i][j] = readcarry.Atoi();
     }
   }
   in.close();
