@@ -151,7 +151,7 @@ Stores the variables used for normalization as function of run number
 returns kTRUE if the event is to be counted for normalization
 (pass event selection cuts OR has no primary vertex)
  */
-void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Bool_t mc){
+void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Bool_t mc, Int_t multiplicity){
   //
 
   Bool_t isEventSelected = rdCut->IsEventSelected(event);
@@ -168,7 +168,7 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   Int_t runNumber = event->GetRunNumber();
  
   // Evaluate the multiplicity
-  Int_t multiplicity = Multiplicity(event);
+  if(multiplicity==-9999) Multiplicity(event);
 
   //Find CINT1B
   AliESDEvent *eventESD = (AliESDEvent*)event;
