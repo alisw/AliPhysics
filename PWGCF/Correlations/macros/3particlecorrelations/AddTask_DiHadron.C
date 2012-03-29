@@ -47,14 +47,16 @@ AliAnalysisTask *AddTask_DiHadron(Int_t IncludeLowPtBins=0){
   Int_t nBinsPhiEtaPhi=20;//Number of bins for #Delta#phi-#Delta#eta in #Delta#phi
   Int_t nBinsPhiEtaEta=18;//Number of bins for #Delta#phi-#Delta#eta in #Delta#phi
   Int_t nBinsPhiPhi=30;//Number of bins for #Delta#phi-#Delta#phi
-  Int_t nBinsEtaEta=27;//Number of bins for #Delta#eta-#Delta#eta
+  Int_t nBinsEtaEta=27;//Number of bins for #Delta#eta-#Delta#eta  
   const Float_t fPi=3.1415926535898;
   Float_t PhiPlotMin=-fPi/3;//Min bin edge in #Delta#phi
   Float_t PhiPlotMax=2*fPi+PhiPlotMin;//Max bin edge
   
   //Size of some arrays change array contents below
-  if(IncludeLowPtBins)const Int_t NTriggerPtBins=11;
-  else const Int_t NTriggerPtBins=8;//max=20
+  const Int_t NTriggerPtBins2=11;//max20
+  const Int_t NTriggerPtBins1=8;//max=20
+  Int_t NTriggerPtBins=NTriggerPtBins1;
+  if(IncludeLowPtBins)NTriggerPtBins=NTriggerPtBins2;
   const Int_t NEventsToMix=10;//max=100
   const Int_t NCentralityBins=7;//max=10  //6
   const Int_t PercentageCentralityBins=1;//0 or 1
@@ -161,8 +163,8 @@ Float_t FitLowParamV4[NCentralityBins*NParamV4FitLow]={
 
 
 
-  if(IncludeLowPtBins) Float_t TriggerPtBins[(NTriggerPtBins+1)]={0.75,1,2,2.5,3,4,6,8,10,15,20,25};
-  else  Float_t TriggerPtBins[(NTriggerPtBins+1)]={2.5,3,4,6,8,10,15,20,25};
+  if(IncludeLowPtBins){ Float_t TriggerPtBins[(NTriggerPtBins2+1)]={0.75,1,2,2.5,3,4,6,8,10,15,20,25};}
+  else{  Float_t TriggerPtBins[(NTriggerPtBins1+1)]={2.5,3,4,6,8,10,15,20,25};}
 
   Float_t AssociatedPtBins[(NAssociatedPtBins+1)]={0.25,0.5,0.75,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,9,10,12,15,20,25,30,40,50,70,100};
  
