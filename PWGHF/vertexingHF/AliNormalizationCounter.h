@@ -59,7 +59,7 @@ class AliNormalizationCounter : public TNamed
   void Add(const AliNormalizationCounter*);
   void SetESD(Bool_t flag){fESD=flag;}
   void SetStudyMultiplicity(Bool_t flag, Float_t etaRange){ fMultiplicity=flag; fMultiplicityEtaRange=etaRange; }
-  void StoreEvent(AliVEvent*,AliRDHFCuts *,Bool_t mc=kFALSE);
+  void StoreEvent(AliVEvent*,AliRDHFCuts *,Bool_t mc=kFALSE, Int_t multiplicity=-9999);
   void StoreCandidates(AliVEvent*, Int_t nCand=0,Bool_t flagFilter=kTRUE);
   TH1D* DrawAgainstRuns(TString candle="candid(filter)",Bool_t drawHist=kTRUE);
   TH1D* DrawRatio(TString candle1="candid(filter)",TString candle2="triggered");
