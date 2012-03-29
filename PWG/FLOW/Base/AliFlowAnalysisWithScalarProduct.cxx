@@ -126,9 +126,9 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
   fHistList->Add(fCommonHists);
 
-  fCommonHistsuQ = new AliFlowCommonHist("AliFlowCommonHist_uQ");
-  (fCommonHistsuQ->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
-  fHistList->Add(fCommonHistsuQ);
+  //  fCommonHistsuQ = new AliFlowCommonHist("AliFlowCommonHist_uQ");
+  //  (fCommonHistsuQ->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
+  //  fHistList->Add(fCommonHistsuQ);
 
   fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResults_SP","",fHarmonic);
   fHistList->Add(fCommonHistsRes);
@@ -467,7 +467,7 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
   fHistList = outputListHistos;
 
   fCommonHists = (AliFlowCommonHist*) fHistList->FindObject("AliFlowCommonHist_SP");
-  fCommonHistsuQ = (AliFlowCommonHist*) fHistList->FindObject("AliFlowCommonHist_uQ");
+  //  fCommonHistsuQ = (AliFlowCommonHist*) fHistList->FindObject("AliFlowCommonHist_uQ");
   fCommonHistsRes = (AliFlowCommonHistResults*) fHistList->FindObject("AliFlowCommonHistResults_SP");
   fHistProConfig = (TProfile*) fHistList->FindObject("FlowPro_Flags_SP");
   if(!fHistProConfig) printf("Error loading fHistProConfig\n");
