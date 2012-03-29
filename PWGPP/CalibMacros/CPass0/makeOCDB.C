@@ -10,6 +10,10 @@
 
 */
 
+void PrintDetectoStatus();
+
+
+
 void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 {
   //
@@ -37,19 +41,19 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 
   // TPC part
   TFile fcalib("CalibObjects.root");
-  AliTPCPreprocessorOffline proces;
+  AliTPCPreprocessorOffline procesTPC;
 
   // switch on parameter validation
-  proces.SetTimeGainRange(0.5,3.0);
-  proces.SwitchOnValidation();
+  procesTPC.SetTimeGainRange(0.5,3.0);
+  procesTPC.SwitchOnValidation();
 
   // Make timegain calibration
   //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
-  proces.CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbStorage);
+  procesTPC.CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbStorage);
 
   // Make vdrift calibration
   //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
-  proces.CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbStorage);
+  procesTPC.CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbStorage);
   //
   // TOF part
   //
@@ -86,12 +90,43 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
    printf("version and subversion gain %d and %d\n",versionGainUsed,subversionGainUsed);
    printf("version and subversion exb %d and %d\n",versionExBUsed,subversionExBUsed);
    procestrd.Process("CalibObjects.root",runNumber,runNumber,ocdbStorage);
-   Int_t trdstatus = procestrd.GetStatus();
   
   
-  //Mean Vertex
-  AliMeanVertexPreprocessorOffline procesMeanVtx;
-  procesMeanVtx.ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
-	
-  return;
+   //Mean Vertex
+   AliMeanVertexPreprocessorOffline procesMeanVtx;
+   procesMeanVtx.ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
+
+   //
+   // Print calibration status into the stdout
+   //
+   Int_t trdStatus = procestrd.GetStatus();
+   Int_t tofStatus = calibTask.GetStatus();
+   Int_t tpcStatus = (processTPC.ValidateTimeDrift() || processTPC.ValidateTimeDrift());
+   //
+   printf("\n\n\n\n");
+   printf("CPass0 calibration status\n");
+   printf("TRD calibration status=%d\n",trdStatus);
+   printf("TOF calibration status=%d\n",tofStatus);
+   printf("TPC calibration status=%d\n",tpcStatus);
+   PrintDetectorStatus();
+   return;
+}
+
+
+
+
+void PrintDetectoStatus(){
+  //
+  // GetStatus for the detector which did not implement GetStatus function: 
+  //
+  // AliTOFAnalysisTaskCalibPass0 calibTask;            // GetStatus implemented
+  // AliTRDPreprocessorOffline procestrd;               // GetStatus implemented 
+  // AliTPCPreprocessorOffline proces;                  // GetStatus not implemented (next release)
+  //                                                    // Logical or of the Validation function used instead
+  //
+  // AliMeanVertexPreprocessorOffline procesMeanVtx;    // GetStatus not implemented 
+  // AliT0PreprocessorOffline procesT0;                 // GetStatus not implemented 
+  // SDDcalib                                           // Not automatic update - Not needed 
+  //
+  // CODE TO BE WRITTEN HERE FOR DETECTOT WITHOUT STATUS 
 }
