@@ -1199,7 +1199,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   graph->SetMarkerStyle(mstyle); 
   graph->SetMarkerColor(mcolor);
   //
-  Int_t *index = new Int_t[entries];
+  Int_t *index = new Int_t[entries*4];
   TMath::Sort(entries,graph->GetX(),index,kFALSE);
   
   Double_t *tempArray = new Double_t[entries];
