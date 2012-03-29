@@ -577,9 +577,13 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
 		else
     {
       if(fEMCALGeoName.Contains("12SM")) // 1/3 SM
+      {
         if(iphi >= nborder && iphi < 8-nborder) okrow =kTRUE; 
+      }
       else // 1/2 SM
+      {
         if(iphi >= nborder && iphi <12-nborder) okrow =kTRUE; 
+      }
 		}
 		
 		//Check columns/eta
