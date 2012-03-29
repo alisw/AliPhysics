@@ -1356,9 +1356,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
 	// replace esd track parameters with TPCinner
         AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(track->GetTPCInnerParam()));
-	if (!tpcTrack) return;
-        track->Set(tpcTrack->GetX(),tpcTrack->GetAlpha(),tpcTrack->GetParameter(),tpcTrack->GetCovariance());
-
+	if (tpcTrack) {
+          track->Set(tpcTrack->GetX(),tpcTrack->GetAlpha(),tpcTrack->GetParameter(),tpcTrack->GetCovariance());
+        }
         if(tpcTrack) delete tpcTrack; 
       } 
 
@@ -1407,7 +1407,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
    if(IsUseMCInfo())  
    {
-     if(!mcEvent) return; 
+     if(mcEvent) {
 
      if(evtCuts->IsEventSelectedRequired()) 
      { 
@@ -1417,7 +1417,15 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
        Bool_t isMCEventSelected = AlidNdPtHelper::SelectMCEvent(mcEvent);
        //printf("isMCEventSelected %d \n", isMCEventSelected);
-       if(!isMCEventSelected) return;  
+       if(!isMCEventSelected) { 
+
+        if(allChargedTracks) delete allChargedTracks; allChargedTracks = 0;
+        if(labelsAll) delete [] labelsAll; labelsAll = 0;
+        if(labelsAcc) delete [] labelsAcc; labelsAcc = 0;
+        if(labelsRec) delete [] labelsRec; labelsRec = 0;
+
+        return;  
+       }
      }
 
      Double_t vMultTrueEventMatrix[3] = { multRec, multMCTrueTracks, multMBTracks};
@@ -1658,10 +1666,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        }
 
        if(countRecCandle>0) fRecCandleEventMatrix->Fill(vEventMatrix);
-     }
-
-
-   } // end bUseMC
+      }
+    }
+  }// end bUseMC
 
   if(allChargedTracks) delete allChargedTracks; allChargedTracks = 0;
   if(labelsAll) delete [] labelsAll; labelsAll = 0;
