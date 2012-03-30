@@ -284,12 +284,12 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
   Bool_t eventV0AND       = kFALSE;
 
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
-  Int_t eventNumberInFile = event->GetEventNumberInFile();
   if (!event) {
      Printf("ERROR: Could not retrieve event");
      return;
   }
 
+  Int_t eventNumberInFile = event->GetEventNumberInFile();
   if(fPHOSEvent)
     fPHOSEvent->Clear() ;
   else
