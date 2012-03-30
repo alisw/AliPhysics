@@ -54,7 +54,8 @@ AliAnalysisTaskElecHadronCorrel2* ConfigHFEElecHadronCorl(Bool_t useMC){
 	  cutmodel = "pol0";
 	  //params[0] = -0.0015;
 	  //params[0] = -3.0;
-	  params[0] = -0.05; //sigma min
+	  //params[0] = -0.05; //sigma min
+	  params[0] = -1.0; //sigma min
   }
   pid->ConfigureTPCdefaultCut(cutmodel, params,3.0); 
 
