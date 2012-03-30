@@ -397,7 +397,7 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 //____________________________________________________________________
 Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard, 
                                        const TArrayS* xyPattern,
-                                       AliMUONVDigitStore& digitStore) const
+                                       AliMUONVDigitStore& digitStore, Bool_t warn) const
 {
   /// make digits for trigger from pattern, and add them to digitStore
 
@@ -433,7 +433,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
             Int_t offset = 0;
             if (iCath && localBoard->GetSwitch(AliMpLocalBoard::kZeroAllYLSB)) offset = -8;
             
-            AliMpPad pad = seg->PadByLocation(nBoard,ibitxy+offset,kTRUE);
+            AliMpPad pad = seg->PadByLocation(nBoard,ibitxy+offset,warn);
                         
             if (!pad.IsValid()) 
             {

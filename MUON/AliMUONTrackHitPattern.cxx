@@ -82,7 +82,7 @@ fkRecoParam(recoParam),
 fkTransformer(transformer),
 fkDigitStore(digitStore),
 fkTriggerUtilities(triggerUtilities),
-fkMaxDistance(99999.)
+fkMaxDistance(99999.) // obsolete
 {
   /// Default constructor
   AliMUONTrackExtrap::SetField();
@@ -93,6 +93,24 @@ fkMaxDistance(99999.)
 AliMUONTrackHitPattern::~AliMUONTrackHitPattern(void)
 {
   /// Destructor
+}
+
+
+//______________________________________________________________________________
+void 
+AliMUONTrackHitPattern::ApplyMCSCorrections(AliMUONTrackParam& trackParam) const
+{
+  //
+  /// Returns uncertainties on extrapolated position.
+  /// Takes into account Branson plane corrections in the iron wall.
+  //
+  
+  const Float_t kZFilterOut = AliMUONConstants::MuonFilterZEnd();
+  const Float_t kFilterThickness = kZFilterOut-AliMUONConstants::MuonFilterZBeg(); // cm
+  
+  AliMUONTrackExtrap::ExtrapToZCov(&trackParam, kZFilterOut); // Extrap to muon filter end
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam, kFilterThickness, AliMUONConstants::MuonFilterX0()); // Add MCS effects
+  return;
 }
 
 
@@ -111,11 +129,17 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
   AliMUONTriggerTrack* triggerTrack;
   TIter itTriggerTrack(triggerTrackStore.CreateIterator());
   while ( ( triggerTrack = static_cast<AliMUONTriggerTrack*>(itTriggerTrack() ) ) ){
-    UShort_t pattern = GetHitPattern(triggerTrack);
-    triggerTrack->SetHitsPatternInTrigCh(pattern);
-    AliDebug(1, Form("Hit pattern: hits 0x%x  slat %2i  board %3i  effFlag %i",
-		     pattern & 0xFF, AliESDMuonTrack::GetSlatOrInfo(pattern),
-		     triggerTrack->GetLoTrgNum(), AliESDMuonTrack::GetEffFlag(pattern)));
+    AliMUONTrackParam trackParam;
+    trackParam.SetNonBendingCoor(triggerTrack->GetX11());
+    trackParam.SetBendingCoor(triggerTrack->GetY11());
+    trackParam.SetZ(triggerTrack->GetZ11());
+    trackParam.SetNonBendingSlope(triggerTrack->GetSlopeX());
+    trackParam.SetBendingSlope(triggerTrack->GetSlopeY());
+    trackParam.SetInverseBendingMomentum(1.);
+    UInt_t pattern = GetHitPattern(trackParam, kTRUE);
+    triggerTrack->SetHitsPatternInTrigCh(pattern);    
+    AliDebug(1, Form("Hit pattern (MTR): hits 0x%x  slat %2i  board %3i  effFlag %i",
+                     pattern & 0xFF, AliESDMuonTrack::GetSlatOrInfo(pattern),triggerTrack->GetLoTrgNum(), AliESDMuonTrack::GetEffFlag(pattern)));
   }
 
   // Match tracker tracks with trigger tracks.
@@ -132,16 +156,328 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
     AliMUONTrackExtrap::ExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(kFirstTrigCh)); // extrap to 1st trigger chamber
 
     AliMUONTriggerTrack *matchedTriggerTrack = MatchTriggerTrack(track, trackParam, triggerTrackStore, triggerStore);
+    if ( matchedTriggerTrack ) track->SetHitsPatternInTrigCh(matchedTriggerTrack->GetHitsPatternInTrigCh());
 
-    // Copy trigger tracks hit pattern if there is matching,
-    // otherwise calculate the hit pattern directly from tracker track:
-    // the obtained pattern is good for check, but not good for efficiency determination.
-    UShort_t pattern = matchedTriggerTrack ?
-      matchedTriggerTrack->GetHitsPatternInTrigCh() : 
-      GetHitPattern(&trackParam);
-
-    track->SetHitsPatternInTrigCh(pattern);
+    UInt_t pattern = GetHitPattern(trackParam, kFALSE);
+    track->SetHitsPatternInTrigChTrk(pattern);
+    AliDebug(1, Form("Hit pattern (MTK): hits 0x%x  slat %2i  board %3i  effFlag %i",
+                     pattern & 0xFF, AliESDMuonTrack::GetSlatOrInfo(pattern), AliESDMuonTrack::GetCrossedBoard(pattern), AliESDMuonTrack::GetEffFlag(pattern)));
   }
+}
+
+
+//______________________________________________________________________________
+Bool_t AliMUONTrackHitPattern::FindMatchingPads(const AliMUONTrackParam* trackParam,
+                                                TArrayI& matchedDetElemId, TObjArray& pads,
+                                                const AliMUONVDigitStore& digitStore,
+                                                Bool_t isTriggerTrack) const
+{
+  //
+  /// Search for matching digits in trigger chamber
+  //
+  enum {kBending, kNonBending};
+  
+  Double_t minMatchDist[2];
+  Int_t padsInCheckArea[2];
+  
+  AliMUONTrackParam trackParamAtPadZ(*trackParam);
+  
+  Int_t inputDetElemId = matchedDetElemId[0];
+  
+  for(Int_t cath=0; cath<2; cath++){
+    minMatchDist[cath] = 99999.;
+    padsInCheckArea[cath] = 0;
+  }
+  
+  Int_t iChamber = AliMpDEManager::GetChamberId(inputDetElemId);  
+  Int_t iSlat = inputDetElemId%100;
+  
+  TIter next(digitStore.CreateTriggerIterator());
+  AliMUONVDigit* mDigit;
+  
+  Double_t xPad = 0., yPad = 0., zPad = 0.;
+  Double_t sigmaX = 0., sigmaY = 0.;
+  
+  Double_t nSigmas = ( isTriggerTrack ) ? GetRecoParam()->GetStripCutForTrigger() : GetRecoParam()->GetSigmaCutForTrigger();
+  Bool_t goodForEff = kTRUE;
+  
+  while ( ( mDigit = static_cast<AliMUONVDigit*>(next()) ) )
+  {
+    Int_t currDetElemId = mDigit->DetElemId();
+    Int_t currCh = AliMpDEManager::GetChamberId(currDetElemId);
+    if ( currCh != iChamber ) continue;
+    Int_t currSlat = currDetElemId%100;
+    Int_t slatDiff = TMath::Abs(currSlat-iSlat);
+    if ( slatDiff>1 && slatDiff<17 ) continue; // Check neighbour slats
+    
+    Int_t cathode = mDigit->Cathode();
+    Int_t ix = mDigit->PadX();
+    Int_t iy = mDigit->PadY();
+    const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
+    ->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(cathode));
+    AliMpPad pad = seg->PadByIndices(ix,iy,kTRUE);
+    
+    // Get local pad coordinates
+    Double_t xPadLocal = pad.GetPositionX();
+    Double_t yPadLocal = pad.GetPositionY();
+    Double_t dpx = pad.GetDimensionX();
+    Double_t dpy = pad.GetDimensionY();
+    Double_t xWidth = 2. * dpx;
+    Double_t yWidth = 2. * dpy;
+    
+    // Get global pad coordinates
+    fkTransformer.Local2Global(currDetElemId, xPadLocal, yPadLocal, 0., xPad, yPad, zPad);
+    
+    // Get track parameters at pad z
+    if ( trackParamAtPadZ.CovariancesExist() ) AliMUONTrackExtrap::LinearExtrapToZCov(&trackParamAtPadZ, zPad);
+    else AliMUONTrackExtrap::LinearExtrapToZ(&trackParamAtPadZ, zPad);
+    
+    Double_t deltaX = TMath::Abs(xPad-trackParamAtPadZ.GetNonBendingCoor()) - dpx;
+    Double_t deltaY = TMath::Abs(yPad-trackParamAtPadZ.GetBendingCoor()) - dpy;
+    
+    
+    // Get sigmas
+    if ( isTriggerTrack ) {
+      Double_t checkWidth = TMath::Min(xWidth, yWidth);
+      Double_t maxCheckArea = GetRecoParam()->GetMaxStripAreaForTrigger() * checkWidth;
+      Double_t sigma = TMath::Max(checkWidth, 2.);
+      sigmaX = sigma; // in cm
+      sigmaY = sigma; // in cm
+      if ( deltaX <= maxCheckArea && deltaY <= maxCheckArea ) {
+        padsInCheckArea[cathode]++;
+        if ( padsInCheckArea[cathode] > 2 ) {
+          goodForEff = kFALSE;
+          AliDebug(2, Form("padsInCheckArea[%i] = %i\n",cathode,padsInCheckArea[cathode]));
+        }
+      }
+    }
+    else {
+      const TMatrixD& kCovParam = trackParamAtPadZ.GetCovariances();
+      sigmaX = TMath::Sqrt(kCovParam(0,0)); // in cm
+      sigmaY = TMath::Sqrt(kCovParam(2,2)); // in cm
+    }
+    
+    AliDebug(2, Form("\nDetElemId %i  Cath %i  Dim = (%.2f,%.2f)  Pad (%i,%i) = (%.2f,%.2f)  Track = (%.2f,%.2f)  Delta (%.2f,%.2f)  Sigma (%.2f,%.2f)  p %g\n",
+                      currDetElemId,cathode,dpx,dpy,ix,iy,xPad,yPad,trackParamAtPadZ.GetNonBendingCoor(),trackParamAtPadZ.GetBendingCoor(),deltaX,deltaY,sigmaX,sigmaY,trackParamAtPadZ.P()));
+    //if ( deltaX <= maxCheckArea && deltaY <= maxCheckArea ) padsInCheckArea[cathode]++;
+    if ( deltaX > nSigmas * sigmaX || deltaY > nSigmas * sigmaY ) continue;
+    Double_t matchDist = TMath::Max(deltaX, deltaY);
+    if ( matchDist > minMatchDist[cathode] ) continue;
+    if ( pads.At(cathode) ) delete pads.RemoveAt(cathode);
+    pads.AddAt((AliMpPad*)pad.Clone(),cathode);
+    minMatchDist[cathode] = matchDist;
+    matchedDetElemId[cathode] = currDetElemId; // Set the input detection element id to the matched one
+  } // loop on digits
+  
+//  // If track matches many pads, it is not good for effciency determination.
+//  // However we still want to calculate the hit pattern.
+//  for ( Int_t cath=0; cath<2; cath++ ){
+//    if ( padsInCheckArea[cath] > 2 ) {
+//      AliDebug(2, Form("padsInCheckArea[%i] = %i\n",cath,padsInCheckArea[cath]));
+//      return kFALSE;
+//    }
+//  }
+  
+  return goodForEff;
+}
+
+
+//_____________________________________________________________________________
+UInt_t AliMUONTrackHitPattern::GetHitPattern(const AliMUONTrackParam& trackParam, Bool_t isTriggerTrack) const
+{
+  //
+  /// Searches for matching digits around the track.
+  //
+  
+  AliCodeTimerAuto("",0);
+  
+  TArrayI digitPerTrack(2);
+  digitPerTrack.Reset();
+  
+  UInt_t pattern = 0;
+  
+  TObjArray trackParamList, matchedPads(2), maskedPads(2), padsFromPos(4), validPads(2);
+  trackParamList.SetOwner(); matchedPads.SetOwner(); maskedPads.SetOwner(); padsFromPos.SetOwner();
+  
+  Int_t firstSlat = -1, firstBoard = -1;
+  AliESDMuonTrack::EAliTriggerChPatternFlag goodForEff = AliESDMuonTrack::kBoardEff;
+  TArrayI matchedDetElemId(2), maskedDetElemId(2), detElemIdFromTrack(2), validDetElemId(2);
+  
+  for(Int_t ich=0; ich<AliMUONConstants::NTriggerCh(); ich++) { // chamber loop
+    
+    trackParamList.Delete(); matchedPads.Delete(); maskedPads.Delete(); padsFromPos.Delete(); validPads.Clear();
+    
+    Int_t nFound = GetTrackParamAtChamber(trackParam, 11+ich, trackParamList, detElemIdFromTrack, padsFromPos);
+    if ( nFound == 0 ) {
+      // track is rejected since the extrapolated track
+      // does not match a slat (border effects)
+      AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackOutsideGeometry);
+      goodForEff = AliESDMuonTrack::kNoEff;
+      AliDebug(2, "Warning: trigger track outside trigger chamber\n");
+      continue;
+    }
+    
+    // Search for masked pads
+    maskedDetElemId.Reset(detElemIdFromTrack[0]);
+    FindMatchingPads((AliMUONTrackParam*)trackParamList.At(0), maskedDetElemId, maskedPads, *(fkTriggerUtilities->GetMaskedDigits()), isTriggerTrack);
+    if ( maskedPads.GetEntries() > 0 ) {
+      AliESDMuonTrack::AddEffInfo(pattern,AliESDMuonTrack::kTrackMatchesMasks); // pad is masked
+      goodForEff = AliESDMuonTrack::kNoEff;
+      for ( Int_t icath=0; icath<2; icath++ ) {
+        AliMpPad* currPad = (AliMpPad*)maskedPads.UncheckedAt(icath);
+        if ( ! currPad ) continue;
+        AliDebug(2,Form("DetElemId %i  cath %i  board %i  strip %i is masked: effFlag 0", matchedDetElemId[icath], icath, currPad->GetLocalBoardId(0), currPad->GetLocalBoardChannel(0)));
+      }
+      //      continue;
+      // We want to calculate the hit pattern in any case, so we do not "continue"
+      // However we set the flag in such a way not to use the track for efficiency calculations
+    }
+    
+    // If no masked pads matched, search for active pads
+    matchedDetElemId.Reset(detElemIdFromTrack[0]);
+    if ( ! FindMatchingPads((AliMUONTrackParam*)trackParamList.At(0), matchedDetElemId, matchedPads, fkDigitStore, isTriggerTrack) ) {
+      // if ! FindPadMatchingTrig => too many digits matching pad =>
+      //                          => Event not clear => Do not use for efficiency calculation
+      AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackMatchesManyPads);
+      goodForEff = AliESDMuonTrack::kNoEff;
+      AliDebug(2, Form("Warning: track in %i matches many pads. Rejected!\n", matchedDetElemId[0]));
+    }
+    
+    Int_t nMatched = 0;
+    
+    Int_t mostProbDEmatched = detElemIdFromTrack[0];
+    for ( Int_t icath=0; icath<2; icath++ ) {
+      if ( matchedPads.UncheckedAt(icath) ) {
+        nMatched++;
+        // Fill pattern anyway
+        AliESDMuonTrack::SetFiredChamber(pattern, icath, ich);
+        digitPerTrack[icath]++;
+        mostProbDEmatched = matchedDetElemId[icath];
+      }
+    }
+    Int_t mostProbDEindex = 0;
+    for ( Int_t ifound=0; ifound<nFound; ifound++ ) {
+      if ( detElemIdFromTrack[ifound] == mostProbDEmatched ) {
+        mostProbDEindex = ifound;
+        break;
+      }
+    }
+    
+    if ( goodForEff == AliESDMuonTrack::kNoEff ) continue;
+    
+    for ( Int_t icath=0; icath<2; icath++ ) {
+      if ( matchedPads.UncheckedAt(icath) ) {
+        validPads.AddAt(matchedPads.UncheckedAt(icath),icath);
+        validDetElemId[icath] = matchedDetElemId[icath];
+      }
+      else {
+        validPads.AddAt(padsFromPos.UncheckedAt(2*mostProbDEindex + icath),icath);
+        validDetElemId[icath] = detElemIdFromTrack[mostProbDEindex];
+      }
+    }
+        
+    Int_t currSlat = mostProbDEmatched%100;
+    if ( firstSlat < 0 ) firstSlat = currSlat;
+    
+    if ( currSlat != firstSlat || validDetElemId[0] != validDetElemId[1] ) {
+      goodForEff = AliESDMuonTrack::kChEff;
+      firstSlat = AliESDMuonTrack::kCrossDifferentSlats;
+    }
+    
+    if ( firstBoard < 0 ) firstBoard = ((AliMpPad*)validPads.UncheckedAt(0))->GetLocalBoardId(0);
+    
+    for ( Int_t icath=0; icath<2; icath++ ){      
+      
+      if ( goodForEff == AliESDMuonTrack::kBoardEff) {
+        Bool_t atLeastOneLoc = kFALSE;
+        AliMpPad* currPad = (AliMpPad*)validPads.UncheckedAt(icath);
+        for ( Int_t iloc=0; iloc<currPad->GetNofLocations(); iloc++) {
+          if ( currPad->GetLocalBoardId(iloc) == firstBoard ) {
+            atLeastOneLoc = kTRUE;
+            break;
+          }
+        } // loop on locations
+        if ( ! atLeastOneLoc ) goodForEff = AliESDMuonTrack::kSlatEff;
+      }
+    } // loop on cathodes
+    //    } // if track good for efficiency
+  } // end chamber loop
+  
+  if ( goodForEff == AliESDMuonTrack::kNoEff ) return pattern;
+  
+  for(Int_t cath=0; cath<2; cath++){
+    if(digitPerTrack[cath]<3) {
+      // track is rejected since the number of associated
+      // digits found is less than 3.
+      AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackMatchesFewPads);
+      goodForEff = AliESDMuonTrack::kNoEff;
+      AliDebug(2, Form("Warning: found %i digits for trigger track cathode %i.\nRejecting event\n", digitPerTrack[cath],cath));
+    }
+  } // loop on cathodes 
+  
+  if ( goodForEff == AliESDMuonTrack::kNoEff ) return pattern;
+  
+  AliESDMuonTrack::AddEffInfo(pattern, firstSlat, firstBoard, goodForEff);
+  return pattern;
+}
+
+
+
+//_____________________________________________________________________________
+Int_t AliMUONTrackHitPattern::GetTrackParamAtChamber(const AliMUONTrackParam& inputTrackParam, Int_t chamber,
+                                                     TObjArray& trackParamList, TArrayI& foundDetElemId,
+                                                     TObjArray& padsFromPos) const
+{
+  //
+  /// Return the extrapolated the track parameter at the given chamber
+  /// and returns the matching DetElemId
+  /// CAVEAT: at the border the result is not univoque
+  //
+  
+  Int_t nFound = 0;
+  foundDetElemId[0] = foundDetElemId[1] = 0;
+  AliMUONTrackParam trackParamCopy(inputTrackParam);
+  TVector3 globalPoint1(trackParamCopy.GetNonBendingCoor(), trackParamCopy.GetBendingCoor(), trackParamCopy.GetZ());
+  AliMUONTrackExtrap::LinearExtrapToZ(&trackParamCopy, trackParamCopy.GetZ() + 20.);
+  TVector3 globalPoint2(trackParamCopy.GetNonBendingCoor(), trackParamCopy.GetBendingCoor(), trackParamCopy.GetZ());
+  TVector3 localCoor;
+  
+  //  AliMpArea pointArea(x, y, 2.*AliMpConstants::LengthTolerance(), 2.*AliMpConstants::LengthTolerance());
+  AliMpDEIterator it;
+  Double_t xGlobal, yGlobal, zGlobal;
+  for ( it.First(chamber-1); ! it.IsDone(); it.Next() ){
+    Int_t detElemId = it.CurrentDEId();
+    PosInDetElemIdLocal(localCoor, globalPoint1, globalPoint2, detElemId);
+    fkTransformer.Local2Global(detElemId, localCoor.X(), localCoor.Y(), localCoor.Z(), xGlobal, yGlobal, zGlobal);
+    AliMpArea pointArea(xGlobal, yGlobal, 2.*AliMpConstants::LengthTolerance(), 2.*AliMpConstants::LengthTolerance());
+    AliMpArea* deArea = fkTransformer.GetDEArea(detElemId);
+    if ( deArea->Contains(pointArea) ) {
+      // Check if track matches valid pads
+      // (this is not trivial for cut RPC)
+      Int_t validPads = 0;
+      for ( Int_t icath=0; icath<2; icath++ ) {
+        const AliMpVSegmentation* seg = 
+        AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId,AliMp::GetCathodType(icath));
+        AliMpPad pad = seg->PadByPosition(localCoor.X(),localCoor.Y(),kFALSE);
+        if ( pad.IsValid() ) {
+          padsFromPos.AddAt(pad.Clone(), 2*nFound + icath);
+          validPads++;
+        }
+      }
+      if ( validPads < 2 ) continue;
+      AliMUONTrackParam* extrapTrackParam = new AliMUONTrackParam(inputTrackParam);
+      if ( extrapTrackParam->CovariancesExist() ) AliMUONTrackExtrap::LinearExtrapToZCov(extrapTrackParam, zGlobal);
+      else AliMUONTrackExtrap::LinearExtrapToZ(extrapTrackParam, zGlobal);
+      trackParamList.AddAt(extrapTrackParam,nFound);
+      foundDetElemId[nFound] = detElemId;
+      nFound++;
+      if ( nFound == 2 ) break;
+    }
+    else if ( nFound > 0 ) break;
+  } // loop on detElemId
+  
+  return nFound;
 }
 
 
@@ -275,28 +611,48 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
 }
 
 
+//_____________________________________________________________________________
+Bool_t AliMUONTrackHitPattern::PosInDetElemIdLocal(TVector3& localCoor, const TVector3& globalPoint1,
+                                                   const TVector3& globalPoint2, Int_t detElemId) const
+{
+  /// Given two points belonging to a line (global coordinates)
+  /// it returns the intersection point with the detElemId (local coordinates)
+  
+  Double_t xloc, yloc, zloc;
+  fkTransformer.Global2Local(detElemId, globalPoint1.X(), globalPoint1.Y(), globalPoint1.Z(), xloc, yloc, zloc);
+  TVector3 localPoint1(xloc, yloc, zloc);
+  fkTransformer.Global2Local(detElemId, globalPoint2.X(), globalPoint2.Y(), globalPoint2.Z(), xloc, yloc, zloc);
+  TVector3 localPoint2(xloc, yloc, zloc);
+  localCoor = localPoint1 - ( localPoint1.Z() / ( localPoint2.Z() - localPoint1.Z() ) ) * ( localPoint2 - localPoint1 );
+  
+  return kTRUE;
+}
+
+
+// THE FOLLOWING METHODS ARE OBSOLETE
+
 //______________________________________________________________________________
-UShort_t AliMUONTrackHitPattern::GetHitPattern(const AliMUONTriggerTrack* matchedTriggerTrack) const
+UInt_t AliMUONTrackHitPattern::GetHitPattern(const AliMUONTriggerTrack* matchedTriggerTrack) const
 {
   //
   /// Get hit pattern on trigger chambers for the current trigger track
   //
-  UShort_t pattern = 0;
+  UInt_t pattern = 0;
   PerformTrigTrackMatch(pattern, matchedTriggerTrack);
   return pattern;
 }
 
 
 //______________________________________________________________________________
-UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam* trackParam) const
+UInt_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam* trackParam) const
 {
   //
   /// Get hit pattern on trigger chambers for the current tracker track
   //
-  UShort_t pattern = 0;
+  UInt_t pattern = 0;
   Bool_t isMatch[2];
   const Int_t kNTrackingCh = AliMUONConstants::NTrackingCh();
-
+  
   for(Int_t ch=0; ch<4; ++ch)
   {
     Int_t iChamber = kNTrackingCh+ch;
@@ -307,29 +663,12 @@ UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam* trackParam) co
       if(isMatch[cath]) AliESDMuonTrack::SetFiredChamber(pattern, cath, ch);
     }
   }
-
+  
   // pattern obtained by propagation of tracker track
   // when it does not match the trigger.
   AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackerTrackPattern);
-
+  
   return pattern;
-}
-
-//______________________________________________________________________________
-void 
-AliMUONTrackHitPattern::ApplyMCSCorrections(AliMUONTrackParam& trackParam) const
-{
-  //
-  /// Returns uncertainties on extrapolated position.
-  /// Takes into account Branson plane corrections in the iron wall.
-  //
-
-  const Float_t kZFilterOut = AliMUONConstants::MuonFilterZEnd();
-  const Float_t kFilterThickness = kZFilterOut-AliMUONConstants::MuonFilterZBeg(); // cm
-
-  AliMUONTrackExtrap::ExtrapToZCov(&trackParam, kZFilterOut); // Extrap to muon filter end
-  AliMUONTrackExtrap::AddMCSEffect(&trackParam, kFilterThickness, AliMUONConstants::MuonFilterX0()); // Add MCS effects
-  return;
 }
 
 
@@ -467,7 +806,7 @@ Bool_t AliMUONTrackHitPattern::FindPadMatchingTrig(const TVector3& vec11, const 
       previousDetElemId = currDetElemId;
     }
     
-    AliDebug(2, Form("\nDetElemId = %i  Cathode = %i  Pad = (%i,%i) = (%.2f,%.2f)  Dim = (%.2f,%.2f)  Track = (%.2f,%.2f)\n",
+    AliDebug(11, Form("\nDetElemId = %i  Cathode = %i  Pad = (%i,%i) = (%.2f,%.2f)  Dim = (%.2f,%.2f)  Track = (%.2f,%.2f)\n",
                      currDetElemId,cathode,ix,iy,pad.GetPositionX(),pad.GetPositionY(),pad.GetDimensionX(),pad.GetDimensionY(),localExtrap.X(),localExtrap.Y()));
     Float_t matchDist = PadMatchTrack(pad, localExtrap);
     if ( matchDist < fkMaxDistance/2. ) padsInCheckArea[cathode]++;
@@ -482,7 +821,7 @@ Bool_t AliMUONTrackHitPattern::FindPadMatchingTrig(const TVector3& vec11, const 
   // However we still want to calculate the hit pattern.
   for ( Int_t cath=0; cath<2; cath++ ){
     if ( padsInCheckArea[cath] > 2 ) {
-      AliDebug(1, Form("padsInCheckArea[%i] = %i\n",cath,padsInCheckArea[cath]));
+      AliDebug(10, Form("padsInCheckArea[%i] = %i\n",cath,padsInCheckArea[cath]));
       return kFALSE;
     }
   }
@@ -579,24 +918,6 @@ Bool_t AliMUONTrackHitPattern::PadsFromPos(const TVector3& vec11, const TVector3
 
 
 //_____________________________________________________________________________
-Bool_t AliMUONTrackHitPattern::PosInDetElemIdLocal(TVector3& localCoor, const TVector3& globalPoint1,
-                                                   const TVector3& globalPoint2, Int_t detElemId) const
-{
-  /// Given two points belonging to a line (global coordinates)
-  /// it returns the intersection point with the detElemId (local coordinates)
-  
-  Double_t xloc, yloc, zloc;
-  fkTransformer.Global2Local(detElemId, globalPoint1.X(), globalPoint1.Y(), globalPoint1.Z(), xloc, yloc, zloc);
-  TVector3 localPoint1(xloc, yloc, zloc);
-  fkTransformer.Global2Local(detElemId, globalPoint2.X(), globalPoint2.Y(), globalPoint2.Z(), xloc, yloc, zloc);
-  TVector3 localPoint2(xloc, yloc, zloc);
-  localCoor = localPoint1 - ( localPoint1.Z() / ( localPoint2.Z() - localPoint1.Z() ) ) * ( localPoint2 - localPoint1 );
-  
-  return kTRUE;
-}
-
-
-//_____________________________________________________________________________
 Bool_t AliMUONTrackHitPattern::IsCloseToAccEdge(TObjArray& pads, Int_t detElemId, Float_t coor[2]) const
 {
   AliMpArea* deArea = fkTransformer.GetDEArea(detElemId);
@@ -679,7 +1000,7 @@ Bool_t AliMUONTrackHitPattern::IsMasked(const AliMpPad& pad, Int_t detElemId, In
 
 
 //_____________________________________________________________________________
-Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
+Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UInt_t &pattern,
 						     const AliMUONTriggerTrack* matchedTrigTrack) const
 {
   //
@@ -712,7 +1033,6 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
   Float_t y21 = y11 + slopeY * (z21-z11);
   TVector3 vec11(x11, y11, z11), vec21(x21, y21, z21);
   
-  
   Int_t firstSlat = -1, firstBoard = -1;
   AliESDMuonTrack::EAliTriggerChPatternFlag goodForEff = AliESDMuonTrack::kBoardEff;
   TObjArray matchedPads(2), padsFromPos(2), validPads(2);
@@ -731,7 +1051,7 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
       // does not match a slat (border effects)
       AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackOutsideGeometry);
       goodForEff = AliESDMuonTrack::kNoEff;
-      AliDebug(1, "Warning: trigger track outside trigger chamber\n");
+      AliDebug(10, "Warning: trigger track outside trigger chamber\n");
       continue;
     }
     
@@ -742,7 +1062,7 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
       //                          => Event not clear => Do not use for efficiency calculation
       AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackMatchesManyPads);
       goodForEff = AliESDMuonTrack::kNoEff;
-      AliDebug(1, Form("Warning: track = %p (%i) matches many pads. Rejected!\n",(void *)matchedTrigTrack, matchedDetElemId[0]));
+      AliDebug(10, Form("Warning: track = %p (%i) matches many pads. Rejected!\n",(void *)matchedTrigTrack, matchedDetElemId[0]));
     }
     
     Int_t nMatched = 0;
@@ -776,8 +1096,8 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
         validPads.AddAt(currPad,cath);
         if ( IsMasked(*currPad, mostProbDEfromTrack, cath, vec11, vec21) ) {
           // Check if strip was masked (if inefficient strip is found)
-          AliESDMuonTrack::AddEffInfo(pattern,25,AliESDMuonTrack::kNoEff); // pad is masked
-          AliDebug(1,Form("DetElemId %i  cath %i  strip %i is masked: effFlag 0", mostProbDEfromTrack, cath, currPad->GetLocalBoardId(0)));
+          AliESDMuonTrack::AddEffInfo(pattern,AliESDMuonTrack::kTrackMatchesMasks); // pad is masked
+          AliDebug(10,Form("DetElemId %i  cath %i  board %i  strip %i is masked: effFlag 0", mostProbDEfromTrack, cath, currPad->GetLocalBoardId(0), currPad->GetLocalBoardChannel(0)));
           goodForEff = AliESDMuonTrack::kNoEff;
         }
       }
@@ -792,7 +1112,7 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
         // it could be a problem of acceptance 
         AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackOutsideGeometry);
         goodForEff = AliESDMuonTrack::kNoEff;
-        AliDebug(1, "Warning: trigger track at the edge of the chamber\n");
+        AliDebug(10, "Warning: trigger track at the edge of the chamber\n");
       }
       
       Int_t currSlat = mostProbDEmatched%100;
@@ -831,12 +1151,12 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
       // digits found is less than 3.
       AliESDMuonTrack::AddEffInfo(pattern, AliESDMuonTrack::kTrackMatchesFewPads);
       goodForEff = AliESDMuonTrack::kNoEff;
-      AliDebug(1, Form("Warning: found %i digits for trigger track cathode %i.\nRejecting event\n", digitPerTrack[cath],cath));
+      AliDebug(10, Form("Warning: found %i digits for trigger track cathode %i.\nRejecting event\n", digitPerTrack[cath],cath));
     }
   } // loop on cathodes 
 
   if ( goodForEff == AliESDMuonTrack::kNoEff ) return kFALSE;
   
-  AliESDMuonTrack::AddEffInfo(pattern, firstSlat, goodForEff);
+  AliESDMuonTrack::AddEffInfo(pattern, firstSlat, firstBoard, goodForEff);
   return kTRUE;
 }

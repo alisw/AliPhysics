@@ -332,6 +332,10 @@ class AliAODTrack : public AliVTrack {
   void SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) { fITSMuonClusterMap = (fITSMuonClusterMap&0xffff00ff)|((((UInt_t)hitsPatternInTrigCh)&0xff)<<8); }
   void SetMuonClusterMap(UInt_t muonClusMap)                { fITSMuonClusterMap = (fITSMuonClusterMap&0xfc00ffff)|((muonClusMap&0x3ff)<<16); }
   void SetITSMuonClusterMap(UInt_t itsMuonClusMap)          { fITSMuonClusterMap = itsMuonClusMap; }
+  void SetMUONtrigHitsMapTrg(UInt_t muonTrigHitsMap) { fMUONtrigHitsMapTrg = muonTrigHitsMap; }
+  UInt_t GetMUONTrigHitsMapTrg() { return fMUONtrigHitsMapTrg; }
+  void SetMUONtrigHitsMapTrk(UInt_t muonTrigHitsMap) { fMUONtrigHitsMapTrk = muonTrigHitsMap; }
+  UInt_t GetMUONTrigHitsMapTrk() { return fMUONtrigHitsMapTrk; }
 
   Int_t GetMatchTrigger() const {return fITSMuonClusterMap>>30;}
 					//  0 Muon track does not match trigger
@@ -379,6 +383,8 @@ class AliAODTrack : public AliVTrack {
   
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer
                                     // (ITS: bit 1-8, muon trigger: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
+  UInt_t        fMUONtrigHitsMapTrg; // Muon trigger hits map from trigger
+  UInt_t        fMUONtrigHitsMapTrk; // Muon trigger hits map from tracker track extrapolation
   UInt_t        fFilterMap;         // filter information, one bit per set of cuts
 
   TBits         fTPCFitMap;      // Map of clusters, one bit per padrow; if has a cluster on given padrow which is used in the fit   

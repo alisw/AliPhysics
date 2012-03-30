@@ -243,6 +243,17 @@ AliMUONDigitizerV3::ApplyResponseToTriggerDigit(AliMUONVDigit& digit)
   Int_t cathode = digit.Cathode();
   Int_t trigCh = detElemId/100 - 11;
   
+  // Masked channels
+  Bool_t isMasked = fTriggerUtilities->IsMasked(digit);
+  AliDebug(1,Form("detElemId %i  cath %i  board %i  strip %i  is masked %i\n", detElemId, cathode, localCircuit, strip, isMasked));
+  if ( isMasked ) {
+    digit.SetCharge(0);
+    digit.SetADC(0);
+    //AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  masked\n", trigCh, cathode, localCircuit, strip));
+    return;
+  }
+  
+  
   Int_t arrayIndex = GetArrayIndex(cathode, trigCh, localCircuit);
   
   // Trigger chamber efficiency
@@ -255,24 +266,14 @@ AliMUONDigitizerV3::ApplyResponseToTriggerDigit(AliMUONVDigit& digit)
       fEfficiencyResponse[arrayIndexBend] = isTrig[0];
       fEfficiencyResponse[arrayIndexNonBend] = isTrig[1];
     }
-    AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  efficiency %i\n", trigCh, cathode, localCircuit, strip, fEfficiencyResponse[arrayIndex]));
+    AliDebug(1,Form("detElemId %i  cath %i  board %i  strip %i  efficiency %i\n", detElemId, cathode, localCircuit, strip, fEfficiencyResponse[arrayIndex]));
     if ( fEfficiencyResponse[arrayIndex] == 0 ) {
       digit.SetCharge(0);
       digit.SetADC(0);
       //AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  NOT efficient\n", trigCh, cathode, localCircuit, strip));
       return;
     }
-  }
-  
-  // Masked channels
-  Bool_t isMasked = fTriggerUtilities->IsMasked(digit);
-  AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  mask %i\n", trigCh, cathode, localCircuit, strip, !isMasked));
-  if ( isMasked ) {
-    digit.SetCharge(0);
-    digit.SetADC(0);
-    //AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  masked\n", trigCh, cathode, localCircuit, strip));
-    return;
-  }
+  }  
 }
 
 
@@ -361,7 +362,7 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   Float_t pedestalMean = pedestals.ValueAsFloat(channel,0);
   Float_t pedestalSigma = pedestals.ValueAsFloat(channel,1);
   
-  AliDebugClass(1,Form("DE %04d MANU %04d CH %02d PEDMEAN %7.2f PEDSIGMA %7.2f",
+  AliDebugClass(2,Form("DE %04d MANU %04d CH %02d PEDMEAN %7.2f PEDSIGMA %7.2f",
 		       pedestals.ID0(),pedestals.ID1(),channel,pedestalMean,pedestalSigma));
   
   if ( qual <= 0 ) return 0;

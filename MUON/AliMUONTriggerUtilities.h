@@ -16,6 +16,7 @@
 class AliMUONCalibrationData;
 class AliMUONVDigit;
 class AliMpPad;
+class AliMUONVDigitStore;
 
 class AliMUONTriggerUtilities : public TObject
 {
@@ -25,6 +26,8 @@ public:
   
   Bool_t IsMasked(const AliMUONVDigit& digit) const;
   Bool_t IsMasked(const AliMpPad& pad, Int_t detElemId, Int_t cathode) const;
+  Bool_t IsMasked(Int_t detElemId, Int_t cathode, Int_t localCircuit, Int_t strip) const;
+  AliMUONVDigitStore* GetMaskedDigits() const { return fMaskedDigitsStore; }
 
 private:
   /// Not implemented
@@ -37,6 +40,7 @@ private:
   
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
   TArrayI fTriggerStatusMap; //!< Trigger masks
+  AliMUONVDigitStore* fMaskedDigitsStore; //!< Masked digits store
   
   ClassDef(AliMUONTriggerUtilities,0) // MUON Trigger utilities
 };

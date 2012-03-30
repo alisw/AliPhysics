@@ -52,7 +52,7 @@ class AliMUONDigitMaker : public TObject
   Int_t  ReadTriggerDDL(AliRawReader* rawReader);
   
   Int_t TriggerDigits(Int_t nBoard, const TArrayS* xyPattern, 
-                      AliMUONVDigitStore& digitStore) const;
+                      AliMUONVDigitStore& digitStore, Bool_t warn = kTRUE) const;
 
   Bool_t TriggerToDigitsStore(const AliMUONVTriggerStore& triggerStore, 
                               AliMUONVDigitStore& digitStore) const;

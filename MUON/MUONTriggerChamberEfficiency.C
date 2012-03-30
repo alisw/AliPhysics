@@ -194,3 +194,88 @@ void BuildDefaultMap(TString outFilename="/tmp/defTrigChEff.root", Double_t glob
   histoList->Write("triggerChamberEff",TObject::kSingleKey);
   outFile->Close();
 }
+
+
+//____________________________________________________________
+void CompleteEfficiency(TString effFileWithHoles, TString effFileCompatible, TString outFilename)
+{
+  //
+  /// When a local board or RPC is missing, the efficiency of other boards cannot be calculated
+  /// If an efficiency file of the same period is available, it could be used to fill the missing information
+  //
+  
+  TList* histoList[2] = {0x0, 0x0};
+  TString filenames[2] = {effFileWithHoles, effFileCompatible};
+  for ( Int_t ifile=0; ifile<2; ifile++ ) {
+    TFile* file = TFile::Open(filenames[ifile].Data());
+    if ( ! file ) {
+      printf("Fatal: cannot find %s\n", filenames[ifile].Data());
+      return;
+    }
+    histoList[ifile] = static_cast<TList*> (file->FindObjectAny("triggerChamberEff"));
+    if ( ! histoList[ifile] ) {
+      printf("Cannot find histo list in file %s\n", filenames[ifile].Data());
+      return;
+    }
+  }
+  
+  TString detElemName[2] = {"Slat", "Board"};
+  enum { kBendingEff, kNonBendingEff, kBothPlanesEff, kAllTracks, kNcounts};
+  TString countTypeName[kNcounts] = {"bendPlane", "nonBendPlane","bothPlanes", "allTracks"};
+  
+  Bool_t isChanged = kFALSE;
+  TString histoName = "";
+  for ( Int_t idet=0; idet<2; idet++ ) {
+    for ( Int_t ich=11; ich<=14; ich++ ) {
+      histoName = Form("%sCount%sCh%i", countTypeName[kAllTracks].Data(), detElemName[idet].Data(), ich);
+      TH1* allTracksHisto = static_cast<TH1*> (histoList[0]->FindObject(histoName.Data()));
+      for ( Int_t ibin=1; ibin<=allTracksHisto->GetXaxis()->GetNbins(); ibin++ ) {
+        if ( allTracksHisto->GetBinContent(ibin) > 0. ) continue;
+        isChanged = kTRUE;
+        printf("Modifying info for Ch %i %s %3i\n", ich, detElemName[idet].Data(), (Int_t)allTracksHisto->GetXaxis()->GetBinCenter(ibin));
+        // If allTracks has no entries, it means that efficiency could not be calculated for this bin:
+        // fill information from the compatible histogram
+        
+        // Check the statistics collected by the switched off detection element
+        Double_t nTracks = 0;
+        for ( Int_t jch=11; jch<=14; jch++ ) {
+          histoName = Form("%sCount%sCh%i", countTypeName[kAllTracks].Data(), detElemName[idet].Data(), jch);
+          TH1* allTracksOtherCh = static_cast<TH1*> (histoList[0]->FindObject(histoName.Data()));
+          nTracks = allTracksOtherCh->GetBinContent(ibin);
+          if ( nTracks > 0. ) {
+            //printf("Statistics for %s : %g\n", histoName.Data(), nTracks); // REMEMBER TO CUT
+            break;
+          }
+        }
+        
+        histoName = Form("%sCount%sCh%i", countTypeName[kAllTracks].Data(), detElemName[idet].Data(), ich);
+        TH1* allTracksHistoAux = static_cast<TH1*> (histoList[1]->FindObject(histoName.Data()));
+        Double_t nTracksNew = allTracksHistoAux->GetBinContent(ibin);
+        if ( nTracksNew == 0.) {
+          printf("Warning: new histogram has no entries for Ch %i %s %3i\n", ich, detElemName[idet].Data(), (Int_t)allTracksHisto->GetXaxis()->GetBinCenter(ibin));
+          continue;
+        }
+        Double_t scaleFactor = TMath::Min(nTracksNew, nTracks) / nTracksNew;
+        //printf("Statistics ineff %g  new %g  scaleFactor %g\n", nTracks, nTracksNew, scaleFactor); // REMEMBER TO CUT
+        
+        for ( Int_t icount=0; icount<kNcounts; icount++ ) {
+          histoName = Form("%sCount%sCh%i", countTypeName[icount].Data(), detElemName[idet].Data(), ich);
+          TH1* auxHisto = static_cast<TH1*> (histoList[1]->FindObject(histoName.Data()));
+          TH1* histo = static_cast<TH1*> (histoList[0]->FindObject(histoName.Data()));
+          histo->SetBinContent(ibin, auxHisto->GetBinContent(ibin) * scaleFactor);
+          if ( histo->GetSumw2N() > 0 ) histo->SetBinError(ibin, auxHisto->GetBinError(ibin)*scaleFactor);
+        } // loop on cont types
+      } // loop on histogram bins
+    } // loop on chamber
+  } // loop on detection element (slat or board)
+  
+  if ( ! isChanged ) {
+    printf("Input histograms not modified\n");
+    return;
+  }
+  TFile* outFile = TFile::Open(outFilename,"create");
+  histoList[0]->Write("triggerChamberEff",TObject::kSingleKey);
+  outFile->Close();  
+}
+
+

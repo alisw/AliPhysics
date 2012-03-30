@@ -69,6 +69,7 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fY4Pattern(0),
   fMuonClusterMap(0),
   fHitsPatternInTrigCh(0),
+  fHitsPatternInTrigChTrk(0),
   fNHit(0),
   fClusters(0x0),
   fClustersId(0x0),
@@ -117,6 +118,7 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
   fY4Pattern(muonTrack.fY4Pattern),
   fMuonClusterMap(muonTrack.fMuonClusterMap),
   fHitsPatternInTrigCh(muonTrack.fHitsPatternInTrigCh),
+  fHitsPatternInTrigChTrk(muonTrack.fHitsPatternInTrigChTrk),
   fNHit(muonTrack.fNHit),
   fClusters(0x0),
   fClustersId(0x0),
@@ -194,6 +196,7 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
   fChi2MatchTrigger       = muonTrack.fChi2MatchTrigger; 
 
   fHitsPatternInTrigCh    = muonTrack.fHitsPatternInTrigCh;
+  fHitsPatternInTrigChTrk    = muonTrack.fHitsPatternInTrigChTrk;
  
   fMuonClusterMap	  = muonTrack.fMuonClusterMap;
 
@@ -295,6 +298,7 @@ void AliESDMuonTrack::Reset()
   fY4Pattern = 0;
   fMuonClusterMap = 0;
   fHitsPatternInTrigCh = 0;
+  fHitsPatternInTrigChTrk = 0;
   fNHit = 0;
   delete fClusters; fClusters = 0x0;
   delete fClustersId; fClustersId = 0x0;
@@ -580,14 +584,15 @@ Int_t AliESDMuonTrack::GetMatchTrigger() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliESDMuonTrack::MatchTriggerDigits() const
+Bool_t AliESDMuonTrack::MatchTriggerDigits(Bool_t fromTrack) const
 {
   // return kTRUE if the track matches a digit on both planes of at least 2 trigger chambers
   
+  UShort_t pattern = ( fromTrack ) ? fHitsPatternInTrigChTrk : fHitsPatternInTrigCh;
   Int_t nMatchedChambers = 0;
   for (Int_t ich=0; ich<4; ich++)
-    if (IsChamberHit(fHitsPatternInTrigCh, 0, ich) &&
-	IsChamberHit(fHitsPatternInTrigCh, 1, ich)) nMatchedChambers++;
+    if (IsChamberHit(pattern, 0, ich) &&
+	IsChamberHit(pattern, 1, ich)) nMatchedChambers++;
   
   return (nMatchedChambers >= 2);
 }
@@ -619,37 +624,45 @@ void AliESDMuonTrack::MoveClustersToESD(AliESDEvent &esd)
 }
 
 //_____________________________________________________________________________
-void AliESDMuonTrack::SetFiredChamber(UShort_t& pattern, Int_t cathode, Int_t chamber)
+void AliESDMuonTrack::SetFiredChamber(UInt_t& pattern, Int_t cathode, Int_t chamber)
 {
   /// Turn on the bit corresponding to fired chameber
   pattern |= (0x1 << ( 7 - ( 4*cathode + chamber )));
 }
 
 //_____________________________________________________________________________
-void AliESDMuonTrack::AddEffInfo(UShort_t& pattern, Int_t slatOrInfo, EAliTriggerChPatternFlag effType)
+void AliESDMuonTrack::AddEffInfo(UInt_t& pattern, Int_t slatOrInfo, Int_t board, EAliTriggerChPatternFlag effType)
 {
   /// Add efficiency flag and crossed RPC or info on rejected track
   pattern |= effType << 8;
   pattern |= slatOrInfo << 10;
+  pattern |= board << 15;
 }
 
 //_____________________________________________________________________________
-Bool_t AliESDMuonTrack::IsChamberHit(UShort_t pattern, Int_t cathode, Int_t chamber)
+Bool_t AliESDMuonTrack::IsChamberHit(UInt_t pattern, Int_t cathode, Int_t chamber)
 { 
   /// Check if chamber was was hit
   return (pattern >> (7 - ( 4*cathode + chamber ))) & 0x1;
 }
 
 //_____________________________________________________________________________
-Int_t AliESDMuonTrack::GetEffFlag(UShort_t pattern)
+Int_t AliESDMuonTrack::GetEffFlag(UInt_t pattern)
 {
   /// Get Efficiency flag
   return (pattern >> 8) & 0x03;
 }
 
 //_____________________________________________________________________________
-Int_t AliESDMuonTrack::GetSlatOrInfo(UShort_t pattern) 
+Int_t AliESDMuonTrack::GetSlatOrInfo(UInt_t pattern) 
 {
   /// Getting crossed slat or info
   return (pattern >> 10) & 0x1F;
+}
+
+//_____________________________________________________________________________
+Int_t AliESDMuonTrack::GetCrossedBoard(UInt_t pattern) 
+{
+  /// Getting crossed board
+  return ( pattern >> 15 ) & 0xFF;
 }

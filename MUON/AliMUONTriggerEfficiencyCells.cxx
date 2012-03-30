@@ -15,16 +15,17 @@
 
 // $Id$
 
+#include "AliMUONTriggerEfficiencyCells.h"
+
 #include "AliLog.h"
 #include "AliMpConstants.h"
 
-#include "TH1F.h"
+#include "TH1.h"
+#include "TList.h"
 #include "TFile.h"
 
 #include <fstream>
 #include <cassert>
-
-#include "AliMUONTriggerEfficiencyCells.h"
 
 
 //-----------------------------------------------------------------------------

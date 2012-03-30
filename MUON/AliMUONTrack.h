@@ -102,6 +102,10 @@ class AliMUONTrack : public TObject
   UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
   /// set word telling which trigger chambers where hit by track
   void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
+  /// set word telling which trigger chambers where hit by track (from tracker track extrapolation)
+  UInt_t GetHitsPatternInTrigChTrk() const {return fHitsPatternInTrigChTrk;}
+  /// set word telling which trigger chambers where hit by track (from tracker track extrapolation)
+  void     SetHitsPatternInTrigChTrk(UInt_t hitsPatternInTrigChTrk) {fHitsPatternInTrigChTrk = hitsPatternInTrigChTrk;}
 
   /// set local trigger information for the matched trigger track
   void  SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt, UChar_t respWithoutChamber=0);
@@ -176,6 +180,7 @@ class AliMUONTrack : public TObject
   AliMUONTrackParam* fTrackParamAtVertex; //!< Track parameters at vertex
   
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
+  UInt_t fHitsPatternInTrigChTrk; ///< Word containing info on the hits left in trigger chambers (calculated from extrapolated tracker track)
 
   Int_t fLocalTrigger;    ///< packed local trigger information
   
@@ -187,7 +192,7 @@ class AliMUONTrack : public TObject
   void   ComputeMCSCovariances(TMatrixD& mcsCovariances) const;
   
   
-  ClassDef(AliMUONTrack, 10) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 11) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif

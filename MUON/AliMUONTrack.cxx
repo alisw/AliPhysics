@@ -61,6 +61,7 @@ AliMUONTrack::AliMUONTrack()
     fTrackID(-1),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(0),
+    fHitsPatternInTrigChTrk(0),
     fLocalTrigger(0),
     fConnected(kFALSE)
 {
@@ -85,6 +86,7 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment, Double_t bendingVertexDis
     fTrackID(-1),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(0),
+    fHitsPatternInTrigChTrk(0),
     fLocalTrigger(0),
     fConnected(kFALSE)
 {
@@ -196,6 +198,7 @@ AliMUONTrack::AliMUONTrack(const AliMUONTrack& track)
     fTrackID(track.fTrackID),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(track.fHitsPatternInTrigCh),
+    fHitsPatternInTrigChTrk(track.fHitsPatternInTrigChTrk),
     fLocalTrigger(track.fLocalTrigger),
     fConnected(track.fConnected)
 {
@@ -276,6 +279,7 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& track)
   fChi2MatchTrigger   =  track.fChi2MatchTrigger;
   fTrackID            =  track.fTrackID; 
   fHitsPatternInTrigCh = track.fHitsPatternInTrigCh;
+  fHitsPatternInTrigChTrk = track.fHitsPatternInTrigChTrk;
   fLocalTrigger        = track.fLocalTrigger;
   fConnected          =  track.fConnected;
 
@@ -317,6 +321,7 @@ void AliMUONTrack::Reset()
   fChi2MatchTrigger = 0.;
   fTrackID = -1;
   fHitsPatternInTrigCh = 0;
+  fHitsPatternInTrigChTrk = 0;
   fLocalTrigger = 0;
   fConnected = kFALSE;
   delete fTrackParamAtCluster; fTrackParamAtCluster = 0x0;
@@ -1183,7 +1188,7 @@ void AliMUONTrack::Print(Option_t*) const
       ", Match2Trig=" << setw(1) << GetMatchTrigger()  << 
       ", LoTrgNum=" << setw(3) << LoCircuit()  << 
     ", Chi2-tracking-trigger=" << setw(8) << setprecision(5) <<  GetChi2MatchTrigger();
-  cout << Form(" HitTriggerPattern %x",fHitsPatternInTrigCh);
+  cout << Form(" HitTriggerPattern trig %x  track %x",fHitsPatternInTrigCh, fHitsPatternInTrigChTrk);
   cout << Form(" MClabel=%d",fTrackID) << endl;
   if (fTrackParamAtCluster) fTrackParamAtCluster->First()->Print("FULL");
   cout.width(curW);

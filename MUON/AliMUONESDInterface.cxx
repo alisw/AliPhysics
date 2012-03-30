@@ -717,6 +717,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
   track.SetMatchTrigger(esdTrack.GetMatchTrigger());
   track.SetChi2MatchTrigger(esdTrack.GetChi2MatchTrigger());
   track.SetHitsPatternInTrigCh(esdTrack.GetHitsPatternInTrigCh());
+  track.SetHitsPatternInTrigChTrk(esdTrack.GetHitsPatternInTrigChTrk());
   track.SetLocalTrigger(esdTrack.LoCircuit(), esdTrack.LoStripX(), esdTrack.LoStripY(),
 			esdTrack.LoDev(), esdTrack.LoLpt(), esdTrack.LoHpt(),
 			esdTrack.GetTriggerWithoutChamber());
@@ -958,6 +959,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
   esdTrack.SetLocalTrigger(track.GetLocalTrigger());
   esdTrack.SetChi2MatchTrigger(track.GetChi2MatchTrigger());
   esdTrack.SetHitsPatternInTrigCh(track.GetHitsPatternInTrigCh());
+  esdTrack.SetHitsPatternInTrigChTrk(track.GetHitsPatternInTrigChTrk());
   if (locTrg) {
     esdTrack.SetTriggerX1Pattern(locTrg->GetX1Pattern());
     esdTrack.SetTriggerY1Pattern(locTrg->GetY1Pattern());
@@ -1018,6 +1020,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuo
   esdTrack.SetTriggerX4Pattern(locTrg.GetX4Pattern());
   esdTrack.SetTriggerY4Pattern(locTrg.GetY4Pattern());
   UShort_t hitPattern = 0;
+  esdTrack.SetHitsPatternInTrigChTrk(hitPattern);
   if(triggerTrack){
     hitPattern = triggerTrack->GetHitsPatternInTrigCh();
     esdTrack.SetHitsPatternInTrigCh(hitPattern);

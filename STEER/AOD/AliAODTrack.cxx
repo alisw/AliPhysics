@@ -38,6 +38,8 @@ AliAODTrack::AliAODTrack() :
   fFlags(0),
   fLabel(-999),
   fITSMuonClusterMap(0),
+  fMUONtrigHitsMapTrg(0),
+  fMUONtrigHitsMapTrk(0),
   fFilterMap(0),
   fTPCFitMap(),
   fTPCClusterMap(),
@@ -86,6 +88,8 @@ AliAODTrack::AliAODTrack(Short_t id,
   fFlags(0),
   fLabel(label),
   fITSMuonClusterMap(0),
+  fMUONtrigHitsMapTrg(0),
+  fMUONtrigHitsMapTrk(0),
   fFilterMap(selectInfo),
   fTPCFitMap(),
   fTPCClusterMap(),
@@ -138,6 +142,8 @@ AliAODTrack::AliAODTrack(Short_t id,
   fFlags(0),
   fLabel(label),
   fITSMuonClusterMap(0),
+  fMUONtrigHitsMapTrg(0),
+  fMUONtrigHitsMapTrk(0),
   fFilterMap(selectInfo),
   fTPCFitMap(),
   fTPCClusterMap(),
@@ -184,6 +190,8 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fFlags(trk.fFlags),
   fLabel(trk.fLabel),
   fITSMuonClusterMap(trk.fITSMuonClusterMap),
+  fMUONtrigHitsMapTrg(trk.fMUONtrigHitsMapTrg),
+  fMUONtrigHitsMapTrk(trk.fMUONtrigHitsMapTrk),
   fFilterMap(trk.fFilterMap),
   fTPCFitMap(trk.fTPCFitMap),
   fTPCClusterMap(trk.fTPCClusterMap),
@@ -231,6 +239,8 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fFlags             = trk.fFlags;
     fLabel             = trk.fLabel;    
     fITSMuonClusterMap = trk.fITSMuonClusterMap;
+    fMUONtrigHitsMapTrg = trk.fMUONtrigHitsMapTrg;
+    fMUONtrigHitsMapTrk = trk.fMUONtrigHitsMapTrk;
     fFilterMap         = trk.fFilterMap;
     fTPCFitMap         = trk.fTPCFitMap;
     fTPCClusterMap     = trk.fTPCClusterMap;

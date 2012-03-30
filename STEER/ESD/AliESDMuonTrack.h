@@ -102,11 +102,13 @@ public:
   
   // Get and Set methods for trigger matching
   Int_t    GetMatchTrigger() const;
-  Bool_t   MatchTriggerDigits() const;
+  Bool_t   MatchTriggerDigits(Bool_t fromTrack) const;
   Double_t GetChi2MatchTrigger() const {return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger;}
   UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
   void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
+  UInt_t   GetHitsPatternInTrigChTrk() const {return fHitsPatternInTrigChTrk;}
+  void     SetHitsPatternInTrigChTrk(UInt_t hitsPatternInTrigChTrk) {fHitsPatternInTrigChTrk = hitsPatternInTrigChTrk;}
   void     SetLocalTrigger(Int_t locTrig) { fLocalTrigger = locTrig; }
   Int_t    LoCircuit(void) const { return fLocalTrigger & 0xFF;       }
   Int_t    LoStripX(void) const  { return fLocalTrigger >>  8 & 0x1F; }
@@ -220,18 +222,21 @@ public:
     kTrackMatchesManyPads = 21, ///< Track not good for effciency calculation since it matches many pads
     kTrackMatchesFewPads  = 22, ///< Track not good for effciency calculation since it matches pads in less than 3/4 chambers
     kTrackOutsideGeometry = 23, ///< Problems in pattern determination since track extrapolation is outside trigger chambers
-    kTrackerTrackPattern  = 24  ///< The pattern was calculated from a tracker track not matching trigger track
+    kTrackerTrackPattern  = 24, ///< The pattern was calculated from a tracker track not matching trigger track
+    kTrackMatchesMasks    = 25  ///< Track not good for effciency calculation since it matches masked pads
   };
   /// Set hits pattern
-  static void SetFiredChamber(UShort_t& pattern, Int_t cathode, Int_t chamber);
+  static void SetFiredChamber(UInt_t& pattern, Int_t cathode, Int_t chamber);
   /// Add efficiency flag and crossed RPC or info on rejected track
-  static void AddEffInfo(UShort_t& pattern, Int_t slatOrInfo, EAliTriggerChPatternFlag effType = kNoEff);
+  static void AddEffInfo(UInt_t& pattern, Int_t slatOrInfo, Int_t board = 0, EAliTriggerChPatternFlag effType = kNoEff);
   /// Chamber was hit
-  static Bool_t IsChamberHit(UShort_t pattern, Int_t cathode, Int_t chamber);
+  static Bool_t IsChamberHit(UInt_t pattern, Int_t cathode, Int_t chamber);
   /// Get Efficiency flag
-  static Int_t GetEffFlag(UShort_t pattern);
+  static Int_t GetEffFlag(UInt_t pattern);
   /// Getting crossed slat or info
-  static Int_t GetSlatOrInfo(UShort_t pattern);
+  static Int_t GetSlatOrInfo(UInt_t pattern);
+  /// Getting crossed board
+  static Int_t GetCrossedBoard(UInt_t pattern);
 
   AliESDEvent* GetESDEvent() const {return fESDEvent;}
   void         SetESDEvent(AliESDEvent* evt) {fESDEvent = evt;}  
@@ -287,6 +292,7 @@ protected:
   
   UInt_t   fMuonClusterMap;        ///< Map of clusters in tracking chambers
   UShort_t fHitsPatternInTrigCh;   ///< Word containing info on the hits left in trigger chambers
+  UInt_t  fHitsPatternInTrigChTrk; ///< Trigger hit map from tracker track extrapolation
   UChar_t  fNHit;                  ///< number of clusters attached to the track
   
   mutable TClonesArray* fClusters; ///< Array of clusters attached to the track -- deprecated
@@ -297,7 +303,7 @@ protected:
 
   AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
-  ClassDef(AliESDMuonTrack,14) // MUON ESD track class 
+  ClassDef(AliESDMuonTrack,15) // MUON ESD track class 
 };
 
 #endif 
