@@ -296,6 +296,49 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
 
 }
 //____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD) {
+  // true impact parameter calculation for Dzero
+
+  if(!partD || !arrayMC || !mcHeader) return 99999.;
+  Int_t code=partD->GetPdgCode();
+  if(TMath::Abs(code)!=421) return 99999.;
+
+  Double_t vtxTrue[3];
+  mcHeader->GetVertex(vtxTrue);
+  Double_t origD[3];
+  partD->XvYvZv(origD);
+  Short_t charge=partD->Charge();
+  Double_t pXdauTrue[2],pYdauTrue[2],pZdauTrue[2];
+  for(Int_t iDau=0; iDau<2; iDau++){
+    pXdauTrue[iDau]=0.;
+    pYdauTrue[iDau]=0.;
+    pZdauTrue[iDau]=0.;
+  }
+
+  Int_t nDau=partD->GetNDaughters();
+  Int_t labelFirstDau = partD->GetDaughter(0); 
+  if(nDau==2){
+    for(Int_t iDau=0; iDau<2; iDau++){
+      Int_t ind = labelFirstDau+iDau;
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      if(!part){
+	printf("Daughter particle not found in MC array");
+	return 99999.;
+      } 
+      pXdauTrue[iDau]=part->Px();
+      pYdauTrue[iDau]=part->Py();
+      pZdauTrue[iDau]=part->Pz();
+    }
+  }else{
+    return 99999.;
+  }
+
+  Double_t d0dummy[3]={0.,0.,0.};
+  AliAODRecoDecayHF aodDvsMC(vtxTrue,origD,2,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
+  return aodDvsMC.ImpParXY();
+
+}
+//____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD) {
   // true impact parameter calculation for Dplus
 
