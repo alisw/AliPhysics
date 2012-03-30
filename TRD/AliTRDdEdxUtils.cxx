@@ -677,7 +677,9 @@ Bool_t AliTRDdEdxUtils::ReadCalibHist(const TString filename, const TString list
     if(!tmph){
       printf("AliTRDdEdxUtils::ReadCalibHist warning calib hist not found! %s %s\n", filename.Data(), listname.Data());
       fcalib.ls();
-      array->ls();
+      if(array){
+        array->ls();
+      }
       return kFALSE;
     }
     THnSparseD *hi = (THnSparseD*)tmph->Clone();
@@ -1223,7 +1225,7 @@ Int_t AliTRDdEdxUtils::GetArrayClusterQ(const Bool_t kinvq, TVectorD *arrayQ, TV
   if(!arrayQ || arrayQ->GetNrows()< (AliTRDseedV1::kNtb*AliTRDtrackV1::kNplane)){
     printf("AliTRDdEdxUtils::GetArrayClusterQ error arrayQ null or size too small! %d\n", arrayQ? arrayQ->GetNrows() : -999); exit(1);
   }
-  if(!arrayX && arrayX->GetNrows()< (AliTRDseedV1::kNtb*AliTRDtrackV1::kNplane)){
+  if(!arrayX || arrayX->GetNrows()< (AliTRDseedV1::kNtb*AliTRDtrackV1::kNplane)){
     printf("AliTRDdEdxUtils::GetArrayClusterQ error arrayX null or size too small! %d\n", arrayX? arrayX->GetNrows() : -999); exit(1);
   }
 
@@ -1269,7 +1271,7 @@ Int_t AliTRDdEdxUtils::GetArrayClusterQ(const Bool_t kinvq, TVectorD *arrayQ, TV
     ncls++;
   }
 
-  Int_t kprint = 100;
+  static Int_t kprint = 100;
   if(kprint<0){
     printf("\nAliTRDdEdxUtils::GetArrayClusterQ raw cluster-Q\n");
     for(Int_t iq=0; iq<ncls; iq++){
@@ -1283,6 +1285,7 @@ Int_t AliTRDdEdxUtils::GetArrayClusterQ(const Bool_t kinvq, TVectorD *arrayQ, TV
     }
     printf("\n");
   }
+  kprint++;
 
   return ncls;
 }
