@@ -51,7 +51,9 @@ TNamed("AliT0PreprocessorOffline","AliT0PreprocessorOffline"),
   startTime(0),    
   endTime(0),     
   ocdbStorage(""),
-  fNewDArun(9999999)
+  fNewDArun(9999999),
+  fStatusDelay(0),
+  fStatusAdjust(0)
   
 {
   //constructor
@@ -66,7 +68,7 @@ AliT0PreprocessorOffline::~AliT0PreprocessorOffline()
 //____________________________________________________
 void AliT0PreprocessorOffline::Process(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
 {
-  if ( ustartRun < fNewDArun)
+  if ( ustartRun < fNewDArun) 
     CalibOffsetChannels(filePhysName, ustartRun, uendRun, pocdbStorage);
   CalibT0sPosition(filePhysName, ustartRun, uendRun, pocdbStorage);
 }
@@ -92,6 +94,7 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Alla Maevskaya");
   metaData.SetComment("Time equalizing result with slew");
+  fStatusDelay = writeok;
   if (writeok<=0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeDelay", ustartRun, uendRun );
@@ -123,7 +126,7 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Alla Maevskaya");
   metaData.SetComment("Time equalizing result with slew");
-  
+  fStatusAdjust = writeok;
   if (writeok <= 0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeAdjust", ustartRun, uendRun);
@@ -131,4 +134,15 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
     gStorage->Put(offline, (*id1), &metaData);
   }
 
+}
+//_____________________________________________________________________________
+Int_t AliT0PreprocessorOffline::GetStatus() const
+{
+  //
+  // Checks the status
+  // fStatusPos: errors
+  // fStatusNeg: only info
+  //
+
+  return   fStatusAdjust ;
 }

@@ -113,7 +113,13 @@ Bool_t  AliT0CalibSeasonTimeShift::SetT0Par(Float_t par[4],Float_t spar[4])
 //________________________________________________________________
 Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime)
 {
-  // compute online equalized time
+  // compute shifts fo T0A, T0C, T0AC and resolution
+  //Status : writeok:
+  // 0 OK
+  // 2000 - no data file
+  // 300 no one histogram or it is empty
+  //-100 peak is very narrow
+
   Float_t mean, sigma;
   Int_t ok = 0;
   TH1F *cfd = NULL;
@@ -169,7 +175,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 //________________________________________________________________________
 void AliT0CalibSeasonTimeShift::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
 
-  const double window =2.;  //fit window 
+  const double window =3.;  //fit window 
  
   double meanEstimate, sigmaEstimate; 
   int maxBin;
@@ -178,7 +184,7 @@ void AliT0CalibSeasonTimeShift::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Floa
   sigmaEstimate = hist->GetRMS();
   TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
   fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
-  hist->Fit("fit","RQ","Q");
+  hist->Fit("fit","R","");
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
