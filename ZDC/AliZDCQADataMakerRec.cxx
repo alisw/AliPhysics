@@ -196,7 +196,7 @@ void AliZDCQADataMakerRec::InitRaws()
   TH2F *hZNArawCentr  = new TH2F("hZNArawCentr", "ZNA centroid;X (cm);Y(cm)", 100,-3.5,3.5,100,-3.5,3.5);
   Add2RawsList(hZNArawCentr, 21, expert, image);
   
-  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;Z_{vertex}/c (ns);time (ns)", 60,-30.,30.,120,-60,-60);
+  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;(ZNC-ZNA) (ns);(ZNC+ZNA) (ns)", 120,-100.,-460.,120,-60.,60.);
   Add2RawsList(hTimeZDC, 22, !expert, image);
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
@@ -406,14 +406,8 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     Float_t zncpmC=0., znapmC=0., zpcpmC=0., zpapmC=0.;
     Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
     Int_t  indZNC=0, indZNA=0, indZPC=0, indZPA=0;
-    Float_t zncTDC[10], zpcTDC[10], zem1TDC[10], zem2TDC[10], znaTDC[10], zpaTDC[10];
-    Float_t zncSumTDC[10], znaSumTDC[10];
-    for(Int_t i=0; i<10; i++){
-       zncTDC[i]=zpcTDC[i]=zem1TDC[i]=zem2TDC[i]=znaTDC[i]=zpaTDC[i]=zncSumTDC[i]=znaSumTDC[i]=-999.;
-    }
-    Float_t tdcGate=-999., l0=-999.;
-    Int_t iMultZNCTDC=0, iMultZPCTDC=0, iMultZEM1TDC=0, iMultZEM2TDC=0, iMultZNATDC=0, iMultZPATDC=0;
-    Int_t iMultTDCC=0, iMultTDCA=0;
+    Float_t zncTDC=0., zpcTDC=0., zem1TDC=0., zem2TDC=0., znaTDC=0., zpaTDC=0.;
+    Float_t zncSumTDC=0., znaSumTDC=0., tdcGate=0., l0=0.;
     
     const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
     const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
@@ -594,86 +588,72 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	 
       } //IsADCDataWord && signal ADCs
       else if(stream.IsZDCTDCDatum()){
-	 if(stream.GetChannel()==1){
-	    zncTDC[iMultZNCTDC] = (0.025*stream.GetZDCTDCDatum());
-	    iMultZNCTDC++;
+         Float_t tdcValue = 0.025*stream.GetZDCTDCDatum();
+	 if(stream.GetChannel()==1 && tdcValue!=0.){
+	    zncTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==3){
-	    zpcTDC[iMultZPCTDC] = (0.025*stream.GetZDCTDCDatum());
-	    iMultZPCTDC++;
+	 else if(stream.GetChannel()==3 && tdcValue!=0.){
+	    zpcTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==5){
-	    znaTDC[iMultZNATDC] = (0.025*stream.GetZDCTDCDatum());
-	    iMultZNATDC++;
+	 else if(stream.GetChannel()==5 && tdcValue!=0.){
+	    znaTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==7){
-	    zpaTDC[iMultZPATDC] = (0.025*stream.GetZDCTDCDatum());
-	    iMultZPATDC++;
+	 else if(stream.GetChannel()==7 && tdcValue!=0.){
+	    zpaTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==8){
-	    zem1TDC[iMultZEM1TDC] = (0.025*stream.GetZDCTDCDatum());
-	    iMultZEM1TDC++;
+	 else if(stream.GetChannel()==8 && tdcValue!=0.){
+	    zem1TDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==9){
-	    zem2TDC[iMultZEM2TDC] = (0.025*stream.GetZDCTDCDatum());
-	    iMultZEM2TDC++;
+	 else if(stream.GetChannel()==9 && tdcValue!=0.){
+	    zem2TDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==10){
-	    zncSumTDC[iMultTDCC] = (0.025*stream.GetZDCTDCDatum());
-	    iMultTDCC++;
+	 else if(stream.GetChannel()==10 && tdcValue!=0.){
+	    zncSumTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==12){
-	    znaSumTDC[iMultTDCA] = (0.025*stream.GetZDCTDCDatum());
-	    iMultTDCA++;
+	 else if(stream.GetChannel()==12 && tdcValue!=0.){
+	    znaSumTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==14) tdcGate = (0.025*stream.GetZDCTDCDatum());
-	 else if(stream.GetChannel()==15) l0 = (0.025*stream.GetZDCTDCDatum());
+	 else if(stream.GetChannel()==14 && tdcValue!=0.) tdcGate = tdcValue;
+	 else if(stream.GetChannel()==15 && tdcValue!=0.) l0 = tdcValue;
 	 
-	 if(stream.GetChannel()==16 && tdcGate!=-999.){
-	   for(Int_t iHit=0; iHit<10; iHit++){
-	      if(zncTDC[iHit]!=-999.){
-	        if(zncTDC[iHit]-tdcGate>-340. && zncTDC[iHit]-tdcGate<-300.) 
-		   FillRawsData(17,1, zncTDC[iHit]-tdcGate);
+	 if(stream.GetChannel()==16 && tdcGate!=0. && l0!=0.){
+	      if(zncTDC!=0.){
+	        Float_t znc = zncTDC-tdcGate;
+	        if(znc>-340. && znc<-300.) FillRawsData(17,1, znc);
 	      }
-	      if(zpcTDC[iHit]!=-999.){
-	        Float_t diffZPC = zpcTDC[iHit]-tdcGate;
-	        FillRawsData(15,diffZPC);
-	        if(diffZPC>-340. && diffZPC<-300.) FillRawsData(17,2, diffZPC);
+	      if(zpcTDC!=0.){
+	        Float_t zpc = zpcTDC-tdcGate;
+	        FillRawsData(15,zpc);
+	        if(zpc>-340. && zpc<-300.) FillRawsData(17,2, zpc);
 	      }
-	      if(znaTDC[iHit]!=-999.){
-	        if(znaTDC[iHit]-tdcGate>-340. && znaTDC[iHit]-tdcGate<-300.) 
-	          FillRawsData(17,3, znaTDC[iHit]-tdcGate);
+	      if(znaTDC!=0.){
+	        Float_t zna = znaTDC-tdcGate;
+	        if(zna>-340. && zna<-300.) FillRawsData(17,3, zna);
 	      }
-	      if(zpaTDC[iHit]!=-999.){
-	        if(zpaTDC[iHit]-tdcGate>-340. && zpaTDC[iHit]-tdcGate<-300.) 
-	          FillRawsData(17,4, zpaTDC[iHit]-tdcGate);
+	      if(zpaTDC!=0.){
+	        Float_t zpa = zpaTDC-tdcGate;
+	        if(zpa>-340. && zpa<-300.) FillRawsData(17,4, zpa);
 	      }
-	      if(zem1TDC[iHit]!=-999.){
-	        Float_t diffZEM1 = zem1TDC[iHit]-tdcGate;
-	        FillRawsData(14,diffZEM1);
-		if(diffZEM1>-340. && diffZEM1<-300.) FillRawsData(17,5, diffZEM1);
+	      if(zem1TDC!=0.){
+	        Float_t zem1 = zem1TDC-tdcGate;
+	        FillRawsData(14,zem1);
+		if(zem1>-340. && zem1<-300.) FillRawsData(17,5, zem1);
 	      }
-	      if(zem2TDC[iHit]!=-999.){
-	        if(zem2TDC[iHit]-tdcGate>-340. && zem2TDC[iHit]-tdcGate<-300.) 
-	          FillRawsData(17,6, zem2TDC[iHit]-tdcGate);
+	      if(zem2TDC!=0.){
+	        Float_t zem2 = zem2TDC-tdcGate;
+	        if(zem2TDC-tdcGate>-340. && zem2<-300.) 
+	          FillRawsData(17,6, zem2-tdcGate);
               }
-	      if(zncSumTDC[iHit]!=-999.){
-	         Float_t tdcC = zncSumTDC[iHit]-l0;
-		 if(znaSumTDC[iHit]!=-999.){
-		    Float_t tdcA = znaSumTDC[iHit]-l0;
-	            //if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
-	                //(tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
+	      if(zncSumTDC!=0.){
+	         Float_t tdcC = zncSumTDC-l0;
+		 if(znaSumTDC!=0.){
+		    Float_t tdcA = znaSumTDC-l0;
 			FillRawsData(22,tdcC-tdcA,tdcC+tdcA);
-		    
 		 }
               }
-	   }
 	   //
-	   tdcGate = -999.;
-           for(Int_t i=0; i<10; i++){
-              zncTDC[i] = zpcTDC[i] = zem1TDC[i] = zem2TDC[i] = znaTDC[i] = zpaTDC[i] = -999.;
-	      zncSumTDC[i] = znaSumTDC[i] = -999.;
-           } 
+	   tdcGate = zncTDC = zpcTDC = zem1TDC = zem2TDC = znaTDC = zpaTDC = 0.;
+	      zncSumTDC = znaSumTDC = 0.;
 	 }
       }
     
