@@ -25,7 +25,7 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   gROOT->LoadMacro("AddTaskTRDCalib.C");
   gROOT->LoadMacro("AddTOFAnalysisTaskCalibPass0.C");
   gROOT->LoadMacro("AddTaskT0Calib.C");
-  gROOT->LoadMacro("AddTaskMeanVertexCalib.C");
+  //  gROOT->LoadMacro("AddTaskMeanVertexCalib.C");
   gROOT->LoadMacro("AddTaskSDDCalib.C"); 
 
   // switch off debug 
@@ -65,7 +65,7 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   AliAnalysisTask* tTRD = AddTaskTRDCalib(runNumber);
   AliTOFAnalysisTaskCalibPass0 *thisTask = AddTOFAnalysisTaskCalibPass0();
   AliAnalysisTask* tT0 = AddTaskT0Calib(runNumber);
-  AliMeanVertexCalibTask *tMeanVtx = AddTaskMeanVertexCalib();
+  //AliMeanVertexCalibTask *tMeanVtx = AddTaskMeanVertexCalib();
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib();
 
   // Run the analysis
