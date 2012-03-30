@@ -49,14 +49,14 @@ AliAnalysisTask *AddTaskHFECalPbPb(){
   //find input container
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGHF_hfe";
+  containerName += ":PWGHF_hfeCalPbPbEGA";
   
-  TString outname = Form("HFEtaskCalPbPb.root");
+  //TString outname = Form("HFEtaskCalPbPb.root");
 
   hfetask->ConnectOutput(1, mgr->CreateContainer("HFE_Results_EMCAL", TList::Class(),
-						 AliAnalysisManager::kOutputContainer, outname.Data()));
+						 AliAnalysisManager::kOutputContainer, containerName.Data()));
   hfetask->ConnectOutput(2, mgr->CreateContainer("HFE_QA_EMCAL", TList::Class(),
-					      AliAnalysisManager::kOutputContainer, outname.Data()));
+					      AliAnalysisManager::kOutputContainer, containerName.Data()));
 
   mgr->ConnectInput  (hfetask,  0, cinput );
   
