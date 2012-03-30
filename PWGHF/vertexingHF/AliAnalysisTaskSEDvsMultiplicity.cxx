@@ -403,7 +403,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   }
   
   Int_t nCand = arrayCand->GetEntriesFast(); 
-  Int_t nSelectedNoPID=0,nSelectedPID=0;
+  Int_t nSelectedNoPID=0,nSelectedPID=0,nSelectedInMassPeak=0;
+  Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
+  Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
 
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
@@ -434,16 +437,19 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     if(fPdgMeson==411){
       mass[0]=d->InvMass(nDau,pdgDau);
       mass[1]=-1.;
+      if(TMath::Abs(mass[0]-mDplusPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
     }else if(fPdgMeson==421){
       UInt_t pdgdaughtersD0[2]={211,321};//pi,K 
       UInt_t pdgdaughtersD0bar[2]={321,211};//K,pi 
       mass[0]=d->InvMass(2,pdgdaughtersD0);
       mass[1]=d->InvMass(2,pdgdaughtersD0bar);
+      if(TMath::Abs(mass[0]-mD0PDG)<0.02 || TMath::Abs(mass[1]-mD0PDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
     }else if(fPdgMeson==413){
       // FIXME
       AliAODRecoCascadeHF* temp = (AliAODRecoCascadeHF*)d;
       mass[0]=temp->DeltaInvMass();
       mass[1]=-1.;
+      if(TMath::Abs(mass[0]-(mDstarPDG-mD0PDG))<0.001) nSelectedInMassPeak++; //1 MeV for now... FIXME
     }
     for(Int_t iHyp=0; iHyp<2; iHyp++){
       if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
@@ -516,8 +522,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   }
   fCounter->StoreCandidates(aod,nSelectedNoPID,kTRUE);
   fCounter->StoreCandidates(aod,nSelectedPID,kFALSE);
-  
-    
+  if(nSelectedPID>0)  ((TH2F*)(fOutput->FindObject("hspdmultCand")))->Fill(countTreta1corr);
+  if(nSelectedInMassPeak)  ((TH2F*)(fOutput->FindObject("hspdmultD")))->Fill(countTreta1corr);
+
   PostData(1,fOutput); 
   PostData(2,fListCuts);
   PostData(3,fOutput);
