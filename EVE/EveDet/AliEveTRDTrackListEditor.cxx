@@ -431,7 +431,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
                  kMBIconExclamation, kMBOk);
     return;
   }
-  TTree *ts(NULL), *tc(NULL);
+  TTree *ts(NULL);//, *tc(NULL);
   if (!(ts=(TTree*)file->Get("sTrack"))) {
     AliError(Form("Cannot find tree \"sTrack\" in file \"/tmp/TRD.TrackListMacroData_%s.root\"",
                                   gSystem->Getenv("USER")));
@@ -440,14 +440,14 @@ void AliEveTRDTrackListEditor::DrawHistos()
                  kMBIconExclamation, kMBOk);
     return;
   }
-  if (!(tc=(TTree*)file->Get("cTrack"))) {
-    AliError(Form("Cannot find tree \"cTrack\" in file \"/tmp/TRD.TrackListMacroData_%s.root\"",
-                                  gSystem->Getenv("USER")));
-    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms",
-                 Form("Cannot find tree \"cTrack\" in file \"/tmp/TRD.TrackListMacroData_%s.root\"", gSystem->Getenv("USER")),
-                 kMBIconExclamation, kMBOk);
-    return;
-  }
+//   if (!(tc=(TTree*)file->Get("cTrack"))) {
+//     AliError(Form("Cannot find tree \"cTrack\" in file \"/tmp/TRD.TrackListMacroData_%s.root\"",
+//                                   gSystem->Getenv("USER")));
+//     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms",
+//                  Form("Cannot find tree \"cTrack\" in file \"/tmp/TRD.TrackListMacroData_%s.root\"", gSystem->Getenv("USER")),
+//                  kMBIconExclamation, kMBOk);
+//     return;
+//   }
 
   // Close any potential tab left from previous plottings
   TGTab *tab(gEve->GetBrowser()->GetTab(1)); TGTabElement *tt(NULL);
@@ -458,7 +458,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
   }
   // Check, if a histo macro shall be drawn
   canvas=0;
-  TH1* myHist(NULL); TBranch *b(NULL);
+  TH1* myHist(NULL);
   for (Int_t j = 0; j < fM->fDataFromMacroList->GetEntries(); j++) {
     if (fCheckButtons[j]->TGButton::GetState() != kButtonDown) continue;
     TString s(fCheckButtons[j]->GetTitle()); Int_t idx(s.Index('['));
@@ -475,7 +475,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
       }
     } else {
       TString ss=s(0, idx);
-      if (!(b = ts->GetBranch(ss.Data()))) {
+      if (!ts->GetBranch(ss.Data())) {
         AliError(Form("No data for macro \"%s\" found !", ss.Data()));
         new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw tree",
                     Form("No data for macro \"%s\" found !",

@@ -526,10 +526,9 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           AliWarning(Form("Macro \"%s\" returns %d values. Limit set to 10.", procName[i].Data(), nResults));
           nResults=10;
         }
-        TBranch *b(treeSingle->GetBranch(procName[i].Data()));
-        if(!b) {
+        if(!treeSingle->GetBranch(procName[i].Data())) {
           AliInfo(Form("Building branch[%s]", procName[i].Data()));
-          b = treeSingle->Branch(procName[i].Data(), singleTrackOut[i], Form("%s[%d]/D", procName[i].Data(), nResults));
+          treeSingle->Branch(procName[i].Data(), singleTrackOut[i], Form("%s[%d]/D", procName[i].Data(), nResults));
           // Add to "data-from-list"
           for(Int_t ir(0); ir<nResults; ir++) fDataFromMacroList->Add(new TObjString(Form("%s[%d]", procName[i].Data(), ir)));
         }
