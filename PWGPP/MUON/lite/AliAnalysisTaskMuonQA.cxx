@@ -535,11 +535,10 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     for (Int_t ich=0; ich<10; ich++) if (esdTrack->IsInMuonClusterMap(ich)) nChamberHit++;
     ((TH1F*)fList->UncheckedAt(kNChamberHitPerTrack))->Fill(nChamberHit);
     
-    // what follows concern clusters
-    if(!esdTrack->ClustersStored()) continue;
-    
-    AliESDMuonCluster *esdCluster = (AliESDMuonCluster*) esdTrack->GetClusters().First();
-    while (esdCluster) {
+    // loop over clusters
+    for (Int_t icl=0; icl<esdTrack->GetNClusters(); icl++) {
+      
+      AliESDMuonCluster* esdCluster = esdTrack->GetESDEvent()->FindMuonCluster(esdTrack->GetClusterId(icl));
       
       Int_t chId = esdCluster->GetChamberId();
       Int_t deId = esdCluster->GetDetElemId();
@@ -557,7 +556,6 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
 	((TH1F*)fListExpert->UncheckedAt(kClusterSizePerDE))->Fill(deId, esdCluster->GetNPads());
       }
       
-      esdCluster = (AliESDMuonCluster*) esdTrack->GetClusters().After(esdCluster);
     }
     
   }

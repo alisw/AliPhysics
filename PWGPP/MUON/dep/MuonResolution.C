@@ -54,8 +54,6 @@
 #include "AliMUONPainterDataRegistry.h"
 #include "AliMUONTrackerDataWrapper.h"
 
-#include "AddTaskPhysicsSelection.C"
-#include "AddTaskCentrality.C"
 #include "AddTaskMuonResolution.C"
 
 #endif
@@ -272,25 +270,24 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   AliESDInputHandler* esdH = new AliESDInputHandler();
   esdH->SetReadFriends(kFALSE);
   esdH->SetInactiveBranches("*");
-  esdH->SetActiveBranches("MuonTracks AliESDRun. AliESDHeader. AliMultiplicity. AliESDFMD. AliESDVZERO. SPDVertex. PrimaryVertex. AliESDZDC.");
+  esdH->SetActiveBranches("MuonTracks MuonClusters MuonPads AliESDRun. AliESDHeader. AliMultiplicity. AliESDFMD. AliESDVZERO. SPDVertex. PrimaryVertex. AliESDZDC.");
   mgr->SetInputEventHandler(esdH);
   
   // event selection
   if (selectPhysics) {
-    AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection();
-    if (!physicsSelection) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    if (!gROOT->ProcessLineFast("AddTaskPhysicsSelection()")) {
       Error("CreateAnalysisTrain","AliPhysicsSelectionTask not created!");
       return 0x0;
     }
   }
   
   // centrality selection
-  AliCentralitySelectionTask* centralityTask = AddTaskCentrality();
-  if (!centralityTask) {
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  if (!gROOT->ProcessLineFast("AddTaskCentrality()")) {
     Error("CreateAnalysisTrain","AliCentralitySelectionTask not created!");
     return 0x0;
   }
-  centralityTask->SetPass(1);
   
   // Muon Resolution analysis
   TString outputFileName = Form("chamberResolution_step%d.root", iStep);
@@ -300,8 +297,8 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
     Error("CreateAnalysisTrain","AliAnalysisTaskMuonResolution not created!");
     return 0x0;
   }
-  //if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  muonResolution->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
+  if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  else muonResolution->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
   if (mode != kProof) muonResolution->ShowProgressBar();
   muonResolution->PrintClusterRes(kTRUE, kTRUE);
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);

@@ -47,7 +47,7 @@ private:
   
   void FillHistosForTrack(const char* physics, const char* triggerClassName, const char* centrality, const AliESDMuonTrack& track, const char* runNumber);
   
-  void FillHistos(const char* physics, const char* triggerClassName, const char* centrality, const AliESDEvent& esd);
+  void FillHistos(const char* physics, const char* triggerClassName, const char* centrality, AliESDEvent& esd);
 
   Double_t CorrectedDCA(const AliESDMuonTrack& track) const;
 

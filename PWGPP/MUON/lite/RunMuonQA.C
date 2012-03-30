@@ -31,10 +31,12 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kT
   }
   
   // Load common libraries
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
   gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
+  gSystem->Load("libTree.so");
+  gSystem->Load("libPhysics.so");
+  gSystem->Load("libMinuit.so");
+  gSystem->Load("libXMLParser.so");
+  gSystem->Load("libGui.so");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
@@ -42,6 +44,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kT
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGmuon");
+  gSystem->Load("libPWGPPMUONlite");
   
   // Create input chain
   TChain* chain = CreateChain(inputFileName);
@@ -64,7 +67,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kT
   }
   
   // Muon QA analysis
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddTaskMuonQA.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
   AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(selectPhysics, selectTrigger, selectMatched, selectCharge);
   if(!muonQA) {
     Error("RunMuonQA","AliAnalysisTaskMuonQA not created!");
