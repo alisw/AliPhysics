@@ -118,24 +118,30 @@ AliFMDSurveyToAlignObjs::CalculatePlane(const     TVector3& a,
   // center of the surveyd box. 
   // TVector3 md(a + c);
   // md *= 1/2.;
+  //Info("CalculatePlane", "corner=(%8f,%8f,%8f)", c.X(),c.Y(),c.Z());
+  //Info("CalculatePlane", "corner=(%8f,%8f,%8f)", b.X(),b.Y(),b.Z());
   TVector3 md(c + b);
   md *= 1./2;
+  //Info("CalculatePlane", "mid=(%8f,%8f,%8f)", md.X(),md.Y(),md.Z());
+  //Info("CalculatePlane", "normal=(%8f,%8f,%8f)", n.X(),n.Y(),n.Z());
 
   // The center of the box. 
   TVector3 orig(md - depth * n);
+  // Info("CalculatePlane", "orig=(%8f,%8f,%8f)", orig.X(),orig.Y(),orig.Z());
   trans[0] = orig[0];
   trans[1] = orig[1];
   trans[2] = orig[2];
+  //Info("CalculatePlane", "trans=(%8f,%8f,%8f)", trans[0],trans[1],trans[2]);
   
   // Normalize the spanning vectors 
   TVector3 uab(ab.Unit());
   TVector3 ubc(bc.Unit());
   
   for (size_t i = 0; i < 3; i++) { 
-    // rot[i * 3 + 0] = ubc[i];
-    // rot[i * 3 + 1] = uab[i];
-    rot[i * 3 + 0] = uab[i];
-    rot[i * 3 + 1] = ubc[i];
+    rot[i * 3 + 0] = ubc[i];
+    rot[i * 3 + 1] = uab[i];
+    // rot[i * 3 + 0] = uab[i];
+    // rot[i * 3 + 1] = ubc[i];
     rot[i * 3 + 2] = n[i];
   }
   return kTRUE;
@@ -184,6 +190,7 @@ AliFMDSurveyToAlignObjs::FitPlane(const TObjArray& points,
     
     g.SetPoint(i, p->X(), p->Y(), p->Z());
     g.SetPointError(i, e->X(), e->Y(), e->Z());
+
   }
 
   // Check that we have enough points
@@ -292,11 +299,41 @@ AliFMDSurveyToAlignObjs::MakeDelta(const TGeoMatrix*  global,
   TGeoHMatrix* geoM = new TGeoHMatrix;
   geoM->SetTranslation(trans);
   geoM->SetRotation(rot);
+  // Info("MakeDelta", "The HMatrix from survey");
+  // geoM->Print();
+  // Info("MakeDelta", "The global matrix");
+  // global->Print();
 
   delta = global->Inverse();
+  // Info("MakeDelta", "The inverse global matrix");
+  // delta.Print();
   delta.MultiplyLeft(geoM);
-  
+  // Info("MakeDelta", "The delta matrix");
+  // delta.Print();
   return true;
+}
+
+namespace {
+  Double_t getFMD1Offset()
+  {
+    static Double_t off = 0;
+    return off;
+    if (off != 0) return off;
+    
+    const char* lidN = "FMD1_lid_mat0";
+    TGeoMatrix* lidM = static_cast<TGeoMatrix*>(gGeoManager->GetListOfMatrices()
+						->FindObject(lidN));
+    if (!lidM) { 
+      Error("getFMD1Offset", "Couldn't find FMD1 lid transformation %s", lidN);
+      return 0;
+    }
+
+    const Double_t* lidT = lidM->GetTranslation();
+    Double_t        lidZ = lidT[2];
+    off                  = lidZ-3.3;
+    
+    return off;
+  }
 }
 
 //____________________________________________________________________
@@ -315,12 +352,12 @@ AliFMDSurveyToAlignObjs::GetFMD1Plane(Double_t* rot, Double_t* trans) const
   //
 
   // The possile survey points 
-  TVector3  icb, ict, ocb, oct, dummy;
+  TVector3  icb, ict, ocb, oct, eicb, eict, eocb, eoct;
   Int_t     missing = 0;
-  if (!GetPoint("V0L_ICB", icb, dummy)) missing++;
-  if (!GetPoint("V0L_ICT", ict, dummy)) missing++;
-  if (!GetPoint("V0L_OCB", ocb, dummy)) missing++;
-  if (!GetPoint("V0L_OCT", oct, dummy)) missing++;
+  if (!GetPoint("V0L_ICB", icb, eicb)) missing++;
+  if (!GetPoint("V0L_ICT", ict, eict)) missing++;
+  if (!GetPoint("V0L_OCB", ocb, eocb)) missing++;
+  if (!GetPoint("V0L_OCT", oct, eoct)) missing++;
 
   // Check that we have enough points
   if (missing > 1) { 
@@ -328,29 +365,36 @@ AliFMDSurveyToAlignObjs::GetFMD1Plane(Double_t* rot, Double_t* trans) const
 		    4-missing));
     return kFALSE;
   }
-
 #if 0
-  const char* lidN = "FMD1_lid_mat0";
-  TGeoMatrix* lidM = static_cast<TGeoMatrix*>(gGeoManager->GetListOfMatrices()
-					      ->FindObject(lidN));
-  if (!lidM) { 
-    AliError(Form("Couldn't find FMD1 lid transformation %s", lidN));
-    return kFALSE;
+  TObjArray points;
+  TObjArray errors;
+  points.Add(&icb); errors.Add(&eicb);
+  points.Add(&ict); errors.Add(&eict);
+  points.Add(&oct); errors.Add(&eoct);
+  points.Add(&ocb); errors.Add(&eocb);
+  
+  Bool_t ret = FitPlane(points, errors, 0, trans, rot);
+  if (!ret) { 
+    Warning("GetFMD1Plane", "fit to plane failed");
   }
-
-  const Double_t* lidT = lidM->GetTranslation();
-  Double_t        lidZ = lidT[2];
-  Double_t        off  = lidZ-3.3;
+  for (Int_t i = 0; i < 4; i++) { 
+    TVector3* v = static_cast<TVector3*>(points.At(i));
+    TVector3* e = static_cast<TVector3*>(errors.At(i));
+    Info("GetFMD1Plane", "p%d=(%8f,%8f,%8f)+/-(%8f,%8f,%8f)", 
+	 i, v->X(), v->Y(), v->Z(), e->X(), e->Y(), e->Z());
+  }
 #else
-  Double_t        off  = 0;
-#endif
+  Double_t off = getFMD1Offset();
+  Info("GetFMD1Plane", "Lid offset is %f", off);
 
   // if (!CalculatePlane(ocb, icb, ict, off, trans, rot)) return kFALSE;
-  if (!CalculatePlane(ocb, icb, oct, off, trans, rot)) return kFALSE;
+  // Bool_t ret = CalculatePlane(ocb, icb, oct, off, trans, rot);
+  Bool_t ret = CalculatePlane(oct, ocb, ict, off, trans, rot);
+#endif
   PrintRotation("FMD1 rotation:",  rot);
   PrintVector("FMD1 translation:", trans);
 
-  return kTRUE;
+  return ret;
 }
 
 //____________________________________________________________________
@@ -397,8 +441,10 @@ AliFMDSurveyToAlignObjs::DoFMD1()
   TGeoRotation ggRot; ggRot.SetMatrix(gRot);
   TGeoCombiTrans global(gTrans[0], gTrans[1], gTrans[2], &ggRot);
 #endif
+  Double_t off = getFMD1Offset();
+  Info("DoFMD1", "Lid offset is %f", off);
 
-  TGeoTranslation global(0,0,324.670);
+  TGeoTranslation global(0,0,324.670-off);
   if (!MakeDelta(&global, rot, trans, fFMD1Delta)) 
     return kFALSE;
   
@@ -436,12 +482,23 @@ AliFMDSurveyToAlignObjs::GetFMD2Plane(Double_t* rot, Double_t* trans) const
   TObjArray errors;
   
   // Loop and fill graph 
+  int i = 0;
   while (*name) {
     TVector3 p, e;
-    if (!GetPoint(*name++, p, e)) continue;
+    if (!GetPoint(*name, p, e)) {
+      name++;
+      i++;
+      continue;
+    }
     
+    if (i == 5) {
+      Warning("GetFMD2plane", "Setting error on %d, %s to 0.4", i, *name);
+      e.SetXYZ(0.4, 0.4, 0.4); // OBOT
+    }
     points.Add(new TVector3(p));
     errors.Add(new TVector3(e));
+    name++;
+    i++;
   }
   if (points.GetEntries() < 4) { 
     AliWarning(Form("Only got %d survey points - no good for FMD2 plane",
@@ -568,6 +625,7 @@ AliFMDSurveyToAlignObjs::Run(const char** files)
     file++;
   }
   CreateAlignObjs();
+  GetAlignObjArray()->Print();
   FillDefaultAlignObjs();
 }
 
@@ -613,10 +671,8 @@ AliFMDSurveyToAlignObjs::FillDefaultAlignObjs()
     while (*side) { 
       TString path = TString::Format("FMD/FMD%d_%c", d, *side);
       AliAlignObjParams* p = FindAlignObj(path);
-      if (!p) 
-	p = CreateDefaultAlignObj(path, 0);
-      else 
-	Info("FillDefaultAlignObjs", "Alignment object %s exists", path.Data());
+      if (!p) p = CreateDefaultAlignObj(path, 0);
+
       const char halves[] = { 'I', d == 1 ? '\0' : 'O', 0 };
       const char*  half = halves;
       while (*half) { 
