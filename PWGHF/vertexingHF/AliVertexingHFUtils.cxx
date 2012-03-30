@@ -333,7 +333,7 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDzero(AliAODMCHeader *mcHead
     return 99999.;
   }
 
-  Double_t d0dummy[3]={0.,0.,0.};
+  Double_t d0dummy[2]={0.,0.};
   AliAODRecoDecayHF aodDvsMC(vtxTrue,origD,2,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
   return aodDvsMC.ImpParXY();
 
