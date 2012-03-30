@@ -38,7 +38,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  PWGPPMUONliteLinkDef.h)
 
 set ( EINCLUDE
-  MUON
+  PWG/muon
   PWGPP/MUON/lite
   ANALYSIS
   ANALYSISalice
