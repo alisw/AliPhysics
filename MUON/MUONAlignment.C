@@ -216,7 +216,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
       if (!event%100) cout << " there are " << nTracks << " tracks in event " << event << endl;
       for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
 	AliESDMuonTrack* esdTrack = esdEvent->GetMuonTrack(iTrack);
-	if (!esdTrack->ClustersStored()) continue;
+	if (!esdTrack->ContainTrackerData()) continue;
 	Double_t invBenMom = esdTrack->GetInverseBendingMomentum();
 	fInvBenMom->Fill(invBenMom);
 	fBenMom->Fill(1./invBenMom);

@@ -224,7 +224,7 @@ The AliESDMuonTrack objects contain:
 - Tracker track parameters at first cluster
 - Tracker track parameter covariances at first cluster
 - Tracker track global informations (track ID, chi2, number of clusters, cluster map, MC label if any)
-- TClonesArray of associated clusters stored in AliESDMuonCluster objects
+- Array of Ids of associated clusters (clusters are stored in a separate TClonesArray in ESD)
 - Trigger track informations (local trigger decision, strip pattern, hit pattern, ...)
 - Chi2 of tracker/trigger track matching
 
@@ -235,7 +235,7 @@ The AliESDMuonCluster objects contain:
 - Charge
 - Chi2
 - MC label if any
-- TClonesArray of associated pads stored in AliESDMuonPad objects for a given fraction of events
+- Array of IDs of associated pads for a given fraction of events (pads are stored in a separate TClonesArray in ESD)
 
 The AliESDMuonPad objects contain:
 - Digit ID providing information about the location of the digit (DE ID, Manu ID, Manu channel and cathode)

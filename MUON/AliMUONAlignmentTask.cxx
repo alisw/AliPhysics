@@ -429,7 +429,7 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
     {
 
       AliESDMuonTrack* esdTrack = lESD->GetMuonTrack(iTrack);
-      if (!esdTrack->ClustersStored()) continue;
+      if (!esdTrack->ContainTrackerData()) continue;
       if (!esdTrack->ContainTriggerData()) continue;
 
       Double_t invBenMom = esdTrack->GetInverseBendingMomentum();

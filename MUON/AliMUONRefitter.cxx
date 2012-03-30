@@ -69,7 +69,8 @@ AliMUONRefitter::AliMUONRefitter(const AliMUONRecoParam* recoParam)
   fkESDInterface(0x0),
   fGeometryTransformer(0x0),
   fClusterServer(0x0),
-  fTracker(0x0)
+  fTracker(0x0),
+  nextClusterIndex(0)
 {
   /// Default constructor
   CreateGeometryTransformer();
@@ -216,6 +217,12 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t trackId, UInt_t clust
   fClusterServer->UseDigits(next,fkESDInterface->GetDigits());
   fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),fkRecoParam);
   
+  // set the uniqueID of the new clusters
+  TIter nextCl(clusterStore->CreateIterator());
+  AliMUONVCluster* newCluster = 0x0;
+  while ((newCluster = static_cast<AliMUONVCluster*>(nextCl())))
+    newCluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(cluster->GetChamberId(), cluster->GetDetElemId(), nextClusterIndex++));
+  
   return clusterStore;
 }
 
@@ -250,6 +257,12 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t clusterId)
   fClusterServer->UseDigits(next,fkESDInterface->GetDigits());
   fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),fkRecoParam);
   
+  // set the uniqueID of the new clusters
+  TIter nextCl(clusterStore->CreateIterator());
+  AliMUONVCluster* newCluster = 0x0;
+  while ((newCluster = static_cast<AliMUONVCluster*>(nextCl())))
+    newCluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(cluster->GetChamberId(), cluster->GetDetElemId(), nextClusterIndex++));
+  
   return clusterStore;
 }
 
@@ -280,7 +293,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
   
   // check if digits exist
   UInt_t trackId = track.GetUniqueID();
-  if (fkESDInterface->GetNDigits(trackId) == 0) {
+  if (!fkESDInterface->DigitsStored(trackId)) {
     AliError(Form("no digit attached to track #%d",trackId));
     return 0x0;
   }
@@ -317,6 +330,12 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
       cluster->Print("FULL");
       continue;
     }
+    
+    // set the uniqueID of the new clusters
+    TIter nextCl(newClusterStore->CreateIterator());
+    AliMUONVCluster* newCluster = 0x0;
+    while ((newCluster = static_cast<AliMUONVCluster*>(nextCl())))
+      newCluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(cluster->GetChamberId(), cluster->GetDetElemId(), nextClusterIndex++));
     
     // add the new cluster(s) to the tracks
     if (!AddClusterToTracks(*newClusterStore, *newTrackStore)) {

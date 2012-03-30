@@ -45,6 +45,7 @@
 #include "AliESDMuonPad.h"
 #include "AliLog.h"
 
+#include <TROOT.h>
 #include <TClass.h>
 #include <TIterator.h>
 #include <TMath.h>
@@ -152,9 +153,12 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent, Bool_t refit)
   // reset data members
   Reset();
   
+  // loop over ESD pads and fill the digit store
+  for (Int_t iPad = 0; iPad < esdEvent.GetNumberOfMuonPads(); iPad++)
+    Add(*(esdEvent.GetMuonPad(iPad)), *fDigits);
+  
   // loop over ESD tracks and fill the stores
-  Int_t nTracks = (Int_t) esdEvent.GetNumberOfMuonTracks(); 
-  for (Int_t iTrack = 0; iTrack <  nTracks; iTrack++) {
+  for (Int_t iTrack = 0; iTrack < esdEvent.GetNumberOfMuonTracks(); iTrack++) {
     
     // get ESD track
     AliESDMuonTrack* esdTrack = esdEvent.GetMuonTrack(iTrack);
@@ -178,15 +182,11 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent, Bool_t refit)
     dMaps->SetOwner(kTRUE);
     fDigitMap->Add(esdTrack->GetUniqueID(), dMaps);
     
-    // loop over ESD clusters
-    Int_t nClusters = esdTrack->GetNClusters();
-    for (Int_t iCluster = 0; iCluster <  nClusters; iCluster++) {
+    // loop over clusters
+    for (Int_t iCluster = 0; iCluster < track->GetNClusters(); iCluster++) {
       
-      // get ESD cluster
-      AliESDMuonCluster *esdCluster = (AliESDMuonCluster*) esdTrack->GetClusters().UncheckedAt(iCluster);
-      
-      // get the corresponding MUON cluster
-      AliMUONVCluster* cluster = FindClusterInTrack(*track, esdCluster->GetUniqueID());
+      // get cluster
+      AliMUONVCluster* cluster = ((AliMUONTrackParam*)track->GetTrackParamAtCluster()->UncheckedAt(iCluster))->GetClusterPtr();
       
       // fill cluster map
       cMap->Add(cluster->GetUniqueID(), cluster);
@@ -194,21 +194,17 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent, Bool_t refit)
       // prepare digit map
       AliMpExMap* dMap =new AliMpExMap;
       dMap->SetOwner(kFALSE);
-      dMaps->Add(esdCluster->GetUniqueID(), dMap);
+      dMaps->Add(cluster->GetUniqueID(), dMap);
       
-      // loop over ESD pads
-      Int_t nPads = esdCluster->GetNPads();
-      for (Int_t iPad = 0; iPad < nPads; iPad++) {
+      // loop over digits
+      for (Int_t iDigit = 0; iDigit < cluster->GetNDigits(); iDigit++) {
 	
-	// get ESD pad
-	AliESDMuonPad *esdPad = (AliESDMuonPad*) esdCluster->GetPads().UncheckedAt(iPad);
-	
-	// add it to digit store
-	AliMUONVDigit* digit = Add(*esdPad, *fDigits);
+	// find the digit
+	AliMUONVDigit* digit = fDigits->FindObject(cluster->GetDigitId(iDigit));
 	
 	// fill digit map
-	if (digit) dMap->Add(esdPad->GetUniqueID(), digit);
-	else dMap->Add(esdPad->GetUniqueID(), fDigits->FindObject(esdPad->GetUniqueID()));
+	if (digit) dMap->Add(digit->GetUniqueID(), digit);
+	else AliError("a digit is missing");
 	
       } // end of loop over pads
       
@@ -283,6 +279,17 @@ Int_t AliMUONESDInterface::GetNTriggers() const
 {
   /// return the number of triggers
   return fTriggers ? fTriggers->GetSize() : 0;
+}
+
+//___________________________________________________________________________
+Bool_t AliMUONESDInterface::DigitsStored(UInt_t trackId) const
+{
+  /// return kTRUE if digits have been stored for all clusters of track "trackId"
+  AliMUONVCluster *cluster;
+  TIter next(CreateClusterIterator(trackId));
+  while ((cluster = static_cast<AliMUONVCluster*>(next())))
+    if (cluster->GetNDigits() == 0) return kFALSE;
+  return kTRUE;
 }
 
 //___________________________________________________________________________
@@ -418,22 +425,6 @@ TIterator* AliMUONESDInterface::CreateLocalTriggerIterator() const
   return fTriggers ? fTriggers->CreateLocalIterator() : 0x0;
 }
 
-//___________________________________________________________________________
-AliMUONVCluster* AliMUONESDInterface::FindClusterInTrack(const AliMUONTrack& track, UInt_t clusterId) const
-{
-  /// find the cluster with the given Id into the track
-  
-  Int_t nClusters = track.GetNClusters();
-  for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-    
-    AliMUONVCluster* cluster = ((AliMUONTrackParam*) track.GetTrackParamAtCluster()->UncheckedAt(iCluster))->GetClusterPtr();
-    if (cluster->GetUniqueID() == clusterId) return cluster;
-    
-  }
-  
-  return 0x0;
-}
-
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //                                static methods                               //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -486,7 +477,7 @@ AliMUONVTrackStore* AliMUONESDInterface::NewTrackStore()
     cout<<"E-AliMUONESDInterface::NewTrackStore: Unable to create store of type "<<fgTrackStoreName.Data()<<endl;
     return 0x0;
   }
-  return reinterpret_cast<AliMUONVTrackStore*>(classPtr->New());
+  return reinterpret_cast<AliMUONVTrackStore*>(gROOT->ProcessLineFast(Form("new %s()",fgTrackStoreName.Data())));
 }
 
 //_____________________________________________________________________________
@@ -498,7 +489,22 @@ AliMUONVClusterStore* AliMUONESDInterface::NewClusterStore()
     cout<<"E-AliMUONESDInterface::NewClusterStore: Unable to create store of type "<<fgClusterStoreName.Data()<<endl;
     return 0x0;
   }
-  return reinterpret_cast<AliMUONVClusterStore*>(classPtr->New());
+  return reinterpret_cast<AliMUONVClusterStore*>(gROOT->ProcessLineFast(Form("new %s()",fgClusterStoreName.Data())));
+}
+
+//_____________________________________________________________________________
+AliMUONVCluster* AliMUONESDInterface::NewCluster()
+{
+  /// Create an empty cluster of type associated to the cluster store of type fgClusterStoreName
+  TClass* classPtr = TClass::GetClass(fgClusterStoreName);
+  if (!classPtr || !classPtr->InheritsFrom("AliMUONVClusterStore")) {
+    cout<<"E-AliMUONESDInterface::NewCluster: Unable to create store of type "<<fgClusterStoreName.Data()<<endl;
+    return 0x0;
+  }
+  AliMUONVClusterStore* cStore = reinterpret_cast<AliMUONVClusterStore*>(classPtr->New());
+  AliMUONVCluster* cluster = cStore->CreateCluster(0,0,0);
+  delete cStore;
+  return cluster;
 }
 
 //_____________________________________________________________________________
@@ -510,7 +516,22 @@ AliMUONVDigitStore* AliMUONESDInterface::NewDigitStore()
     cout<<"E-AliMUONESDInterface::NewDigitStore: Unable to create store of type "<<fgDigitStoreName.Data()<<endl;
     return 0x0;
   }
-  return reinterpret_cast<AliMUONVDigitStore*>(classPtr->New());
+  return reinterpret_cast<AliMUONVDigitStore*>(gROOT->ProcessLineFast(Form("new %s()",fgDigitStoreName.Data())));
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* AliMUONESDInterface::NewDigit()
+{
+  /// Create an empty digit of type associated to the digit store of type fgDigitStoreName
+  TClass* classPtr = TClass::GetClass(fgDigitStoreName);
+  if (!classPtr || !classPtr->InheritsFrom("AliMUONVDigitStore")) {
+    cout<<"E-AliMUONESDInterface::NewDigitStore: Unable to create store of type "<<fgDigitStoreName.Data()<<endl;
+    return 0x0;
+  }
+  AliMUONVDigitStore* dStore = reinterpret_cast<AliMUONVDigitStore*>(classPtr->New());
+  AliMUONVDigit* digit = dStore->CreateDigit(0,0,0,0);
+  delete dStore;
+  return digit;
 }
 
 //_____________________________________________________________________________
@@ -522,7 +543,7 @@ AliMUONVTriggerStore* AliMUONESDInterface::NewTriggerStore()
     cout<<"E-AliMUONESDInterface::NewTriggerStore: Unable to create store of type "<<fgTriggerStoreName.Data()<<endl;
     return 0x0;
   }
-  return reinterpret_cast<AliMUONVTriggerStore*>(classPtr->New());
+  return reinterpret_cast<AliMUONVTriggerStore*>(gROOT->ProcessLineFast(Form("new %s()",fgTriggerStoreName.Data())));
 }
 
 //_____________________________________________________________________________
@@ -534,7 +555,7 @@ AliMUONVTriggerTrackStore* AliMUONESDInterface::NewTriggerTrackStore()
     cout<<"E-AliMUONESDInterface::NewTriggerTrackStore: Unable to create store of type "<<fgTriggerTrackStoreName.Data()<<endl;
     return 0x0;
   }
-  return reinterpret_cast<AliMUONVTriggerTrackStore*>(classPtr->New());
+  return reinterpret_cast<AliMUONVTriggerTrackStore*>(gROOT->ProcessLineFast(Form("new %s()",fgTriggerTrackStoreName.Data())));
 }
 
 //_________________________________________________________________________
@@ -670,6 +691,7 @@ void AliMUONESDInterface::SetParamCov(const AliMUONTrackParam& trackParam, AliES
 void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track, Bool_t refit)
 {
   /// Transfert data from ESDMuon track to MUON track.
+  /// ESDMuon track must hold the pointer to the ESD event otherwise we cannot recover the clusters.
   /// If refit = kTRUE, the track parameters at each cluster are obtained by refitting the track
   /// or by extrapolating the parameters at the first one if the refit failed.
   /// If refit = kFALSE, only the track parameters at first cluster are valid.
@@ -711,17 +733,22 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
   GetParamCov(esdTrack, param);
   
   // create empty cluster
-  AliMUONVClusterStore* cStore = NewClusterStore();
-  if (!cStore) return;
-  AliMUONVCluster* cluster = cStore->CreateCluster(0,0,0);
+  AliMUONVCluster* cluster = NewCluster();
   
   // fill TrackParamAtCluster with track parameters at each cluster if available
-  // or with only track parameters at first (fake) cluster if not
-  if(esdTrack.ClustersStored()) {
+  Bool_t clusterFound = kFALSE;
+  if(esdTrack.GetESDEvent()) {
     
-    // loop over ESD clusters
-    AliESDMuonCluster *esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().First();
-    while (esdCluster) {
+    // loop over cluster Id
+    for (Int_t i = 0; i < esdTrack.GetNClusters(); i++) {
+      
+      // recover the ESDMuon cluster
+      AliESDMuonCluster *esdCluster = esdTrack.GetESDEvent()->FindMuonCluster(esdTrack.GetClusterId(i));
+      if (esdCluster) clusterFound = kTRUE;
+      else {
+	cout<<"E-AliMUONESDInterface::ESDToMUON: a cluster is missing in ESD"<<endl;
+	continue;
+      }
       
       // copy cluster information
       ESDToMUON(*esdCluster, *cluster);
@@ -732,11 +759,10 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
       // add common track parameters at current cluster
       track.AddTrackParamAtCluster(param, *cluster, kTRUE);
       
-      esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().After(esdCluster);
     }
     
     // refit the track to get better parameters and covariances at each cluster (temporary disable track improvement)
-    if (refit) {
+    if (clusterFound && refit) {
       
       AliMUONTrackParam *firstTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->First();
       AliMUONTrackParam paramSave(*firstTrackParam);
@@ -750,7 +776,10 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
       
     }
     
-  } else {
+  }
+  
+  // fill TrackParamAtCluster with only track parameters at first (fake) cluster if no cluster found in ESD
+  if (!clusterFound) {
     
     // get number of the first hit chamber according to the MUONClusterMap
     Int_t firstCh = 0;
@@ -770,7 +799,6 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
   track.SetMCLabel(esdTrack.GetLabel());
   
   delete cluster;
-  delete cStore;
   
 }
 
@@ -820,11 +848,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonCluster& esdCluster, AliMUON
   cluster.SetChi2(esdCluster.GetChi2());
   cluster.SetMCLabel(esdCluster.GetLabel());
   
-  if (esdCluster.PadsStored()) {
-    Int_t nPads = esdCluster.GetNPads();
-    for (Int_t iPad = 0; iPad < nPads; iPad++)
-      cluster.AddDigitId(((AliESDMuonPad*)esdCluster.GetPads().UncheckedAt(iPad))->GetUniqueID());
-  }
+  cluster.SetDigitsId(esdCluster.GetNPads(), esdCluster.GetPadsId());
   
 }
 
@@ -852,11 +876,30 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& 
 }
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& esdTrack, const Double_t vertex[3],
+void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDEvent& esd, const Double_t vertex[3],
 				    const AliMUONVDigitStore* digits, const AliMUONLocalTrigger* locTrg)
 {
-  /// Transfert data from MUON track to ESDMuon track
+  /// Transfert data from MUON track to ESD event (ESDTrack + ESDClusters)
   /// Incorporate the ESDPads if the digits are provided
+  /// Add trigger info if the MUON track is matched with a trigger track
+  
+  // transfert track info
+  AliESDMuonTrack *esdTrack = esd.NewMuonTrack();
+  MUONToESD(track, *esdTrack, vertex, locTrg);
+  
+  // transfert cluster info if any
+  for (Int_t i = 0; i < track.GetNClusters(); i++) {
+    AliMUONTrackParam *param = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->UncheckedAt(i));
+    MUONToESD(*(param->GetClusterPtr()), esd, digits);
+  }
+  
+}
+
+//_____________________________________________________________________________
+void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& esdTrack,
+				    const Double_t vertex[3], const AliMUONLocalTrigger* locTrg)
+{
+  /// Transfert data from MUON track to ESDMuon track (ESDMuon track only contains clusters'Id, not cluster themselves)
   /// Add trigger info if the MUON track is matched with a trigger track
   
   // empty MUON track -> produce a ghost ESDMuon track if trigger info are available otherwise produce an empty track
@@ -875,7 +918,6 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
   // set global info
   esdTrack.SetUniqueID(track.GetUniqueID());
   esdTrack.SetChi2(track.GetGlobalChi2());
-  esdTrack.SetNHit(track.GetNClusters());
   esdTrack.SetLabel(track.GetMCLabel());
   
   // set param at first cluster
@@ -901,12 +943,11 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
   SetParamAtDCA(trackParamAtDCA, esdTrack);
   
   // set muon cluster info
-  AliESDMuonCluster esdCluster;
   esdTrack.SetMuonClusterMap(0);
   while (trackParam) {
-    MUONToESD(*(trackParam->GetClusterPtr()), esdCluster, digits);
-    esdTrack.AddCluster(esdCluster);
-    esdTrack.AddInMuonClusterMap(esdCluster.GetChamberId());
+    AliMUONVCluster *cluster = trackParam->GetClusterPtr();
+    esdTrack.AddClusterId(cluster->GetUniqueID());
+    esdTrack.AddInMuonClusterMap(cluster->GetChamberId());
     trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->After(trackParam));
   }
   
@@ -937,6 +978,15 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
     esdTrack.SetTriggerY4Pattern(0);
   }
   
+}
+
+//_____________________________________________________________________________
+void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDEvent& esd,
+				    UInt_t trackId, const AliMUONTriggerTrack* triggerTrack)
+{
+  /// Add in ESD event a ghost ESDMuon track containing only informations about trigger track
+  AliESDMuonTrack *esdTrack = esd.NewMuonTrack();
+  MUONToESD(locTrg, *esdTrack, trackId, triggerTrack);
 }
 
 //_____________________________________________________________________________
@@ -980,10 +1030,41 @@ void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuo
 }
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCluster& esdCluster, const AliMUONVDigitStore* digits)
+void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDEvent& esd, const AliMUONVDigitStore* digits)
+{
+  /// Transfert data from MUON cluster to ESD event if it does not already exist
+  /// Also transfert digits'Id to cluster and digits to ESD if they are provided
+  
+  AliESDMuonCluster *esdCluster = esd.FindMuonCluster(cluster.GetUniqueID());
+  if (!esdCluster) esdCluster = esd.NewMuonCluster();
+  else if (!digits || esdCluster->GetNPads() > 0) return;
+  
+  if (digits) {
+    
+    MUONToESD(cluster, *esdCluster, kTRUE);
+    
+    for (Int_t i=0; i<cluster.GetNDigits(); i++) {
+      AliMUONVDigit* digit = digits->FindObject(cluster.GetDigitId(i));
+      if (!digit) {
+	cout<<"E-AliMUONESDInterface::MUONToESD: digit "<<cluster.GetDigitId(i)<<" not found"<<endl;
+	continue;
+      }
+      MUONToESD(*digit, esd);
+    }
+    
+  } else {
+    
+    MUONToESD(cluster, *esdCluster, kFALSE);
+    
+  }
+  
+}
+
+//_____________________________________________________________________________
+void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCluster& esdCluster, Bool_t copyPadsId)
 {
   /// Transfert data from MUON cluster to ESDMuon cluster
-  /// Incorporate the ESDPads if the digits are provided
+  /// Also transfert digits'Is if required
   
   esdCluster.Clear("C");
   
@@ -994,21 +1075,17 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCl
   esdCluster.SetChi2(cluster.GetChi2());
   esdCluster.SetLabel(cluster.GetMCLabel());
   
-  if (digits) { // transfert all data if required
-    
-    AliESDMuonPad esdPad;
-    for (Int_t i=0; i<cluster.GetNDigits(); i++) {
-      AliMUONVDigit* digit = digits->FindObject(cluster.GetDigitId(i));
-      if (!digit) {
-	cout<<"E-AliMUONESDInterface::MUONToESD: digit "<<cluster.GetDigitId(i)<<" not found"<<endl;
-	continue;
-      }
-      MUONToESD(*digit, esdPad);
-      esdCluster.AddPad(esdPad);
-    }
-    
-  }
+  if (copyPadsId) esdCluster.SetPadsId(cluster.GetNDigits(), cluster.GetDigitsId());
   
+}
+
+//_____________________________________________________________________________
+void AliMUONESDInterface::MUONToESD(const AliMUONVDigit& digit, AliESDEvent& esd)
+{
+  /// Transfert data from MUON digit to ESD event if it does not already exist
+  if (esd.FindMuonPad(digit.GetUniqueID())) return;
+  AliESDMuonPad *esdPad = esd.NewMuonPad();
+  MUONToESD(digit, *esdPad);
 }
 
 //_____________________________________________________________________________

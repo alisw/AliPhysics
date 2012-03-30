@@ -44,6 +44,8 @@
 #include "AliESDFMD.h"
 #include "AliESD.h"
 #include "AliESDMuonTrack.h"
+#include "AliESDMuonCluster.h"
+#include "AliESDMuonPad.h"
 #include "AliESDPmdTrack.h"
 #include "AliESDTrdTrack.h"
 #include "AliESDVertex.h"
@@ -98,6 +100,8 @@ ClassImp(AliESDEvent)
 							"TrkPileupVertices",
 							"Tracks",
 							"MuonTracks",
+							"MuonClusters",
+							"MuonPads",
 							"PmdTracks",
 							"AliESDTrdTrigger",
 							"TrdTracks",
@@ -139,6 +143,8 @@ AliESDEvent::AliESDEvent():
   fTrkPileupVertices(0),
   fTracks(0),
   fMuonTracks(0),
+  fMuonClusters(0),
+  fMuonPads(0),
   fPmdTracks(0),
   fTrdTracks(0),
   fTrdTracklets(0),
@@ -149,6 +155,7 @@ AliESDEvent::AliESDEvent():
   fEMCALCells(0), fPHOSCells(0),
   fCosmicTracks(0),
   fErrorLogs(0),
+  fOldMuonStructure(kFALSE),
   fESDOld(0),
   fESDFriendOld(0),
   fConnected(kFALSE),
@@ -184,6 +191,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fTrkPileupVertices(new TClonesArray(*esd.fTrkPileupVertices)),
   fTracks(new TClonesArray(*esd.fTracks)),
   fMuonTracks(new TClonesArray(*esd.fMuonTracks)),
+  fMuonClusters(new TClonesArray(*esd.fMuonClusters)),
+  fMuonPads(new TClonesArray(*esd.fMuonPads)),
   fPmdTracks(new TClonesArray(*esd.fPmdTracks)),
   fTrdTracks(new TClonesArray(*esd.fTrdTracks)),
   fTrdTracklets(new TClonesArray(*esd.fTrdTracklets)),
@@ -195,6 +204,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fPHOSCells(new AliESDCaloCells(*esd.fPHOSCells)),
   fCosmicTracks(new TClonesArray(*esd.fCosmicTracks)),
   fErrorLogs(new TClonesArray(*esd.fErrorLogs)),
+  fOldMuonStructure(esd.fOldMuonStructure),
   fESDOld(esd.fESDOld ? new AliESD(*esd.fESDOld) : 0),
   fESDFriendOld(esd.fESDFriendOld ? new AliESDfriend(*esd.fESDFriendOld) : 0),
   fConnected(esd.fConnected),
@@ -241,6 +251,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fErrorLogs);
   AddObject(fESDACORDE);
   AddObject(fTOFHeader);
+  AddObject(fMuonClusters);
+  AddObject(fMuonPads);
   #ifdef MFT_UPGRADE
 //  AddObject(fESDMFT);
   #endif
@@ -335,6 +347,8 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
     }
   }
 
+  fOldMuonStructure = source.fOldMuonStructure;
+  
   fCentrality = source.fCentrality;
   fEventplane = source.fEventplane;
 
@@ -504,7 +518,9 @@ void AliESDEvent::ResetStdContent()
   if(fSPDPileupVertices)fSPDPileupVertices->Delete();
   if(fTrkPileupVertices)fTrkPileupVertices->Delete();
   if(fTracks)fTracks->Delete();
-  if(fMuonTracks)fMuonTracks->Delete();
+  if(fMuonTracks)fMuonTracks->Clear("C");
+  if(fMuonClusters)fMuonClusters->Clear("C");
+  if(fMuonPads)fMuonPads->Clear("C");
   if(fPmdTracks)fPmdTracks->Delete();
   if(fTrdTracks)fTrdTracks->Delete();
   if(fTrdTracklets)fTrdTracklets->Delete();
@@ -577,6 +593,8 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
   printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
   printf("                 VZERO     %s\n", (fESDVZERO ? "yes" : "no"));
+  printf("                 muClusters %d\n", fMuonClusters ? fMuonClusters->GetEntriesFast() : 0);
+  printf("                 muPad     %d\n", fMuonPads ? fMuonPads->GetEntriesFast() : 0);
   if (fCosmicTracks) printf("                 Cosmics   %d\n",  GetNumberOfCosmicTracks());
   #ifdef MFT_UPGRADE
   //printf("                 MFT     %s\n", (fESDMFT ? "yes" : "no"));
@@ -987,10 +1005,151 @@ AliESDtrack*  AliESDEvent::NewTrack()
     return  track;
 }
 
- void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) 
+//______________________________________________________________________________
+Bool_t AliESDEvent::MoveMuonObjects() 
 {
-    TClonesArray &fmu = *fMuonTracks;
-    new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack(*t);
+  // move MUON clusters and pads to the new ESD structure in needed.
+  // to ensure backward compatibility
+  
+  if (!fOldMuonStructure) return kTRUE;
+  
+  if (!fMuonTracks || !fMuonClusters || !fMuonPads) return kFALSE;
+  
+  Bool_t reset = kTRUE;
+  Bool_t containTrackerData = kFALSE;
+  for (Int_t i = 0; i < fMuonTracks->GetEntriesFast(); i++) {
+    
+    AliESDMuonTrack *track = (AliESDMuonTrack*) fMuonTracks->UncheckedAt(i);
+    
+    if (track->ContainTrackerData()) containTrackerData = kTRUE;
+    else continue;
+    
+    if (!track->IsOldTrack()) continue;
+    
+    // remove objects connected to previous event if needed
+    if (reset) {
+      if (fMuonClusters->GetEntriesFast() > 0) fMuonClusters->Clear("C");
+      if (fMuonPads->GetEntriesFast() > 0) fMuonPads->Clear("C");
+      reset = kFALSE;
+    }
+    
+    track->MoveClustersToESD(*this);
+    
+  }
+  
+  // remove objects connected to previous event if needed
+  if (!containTrackerData) {
+    if (fMuonClusters->GetEntriesFast() > 0) fMuonClusters->Clear("C");
+    if (fMuonPads->GetEntriesFast() > 0) fMuonPads->Clear("C");
+  }
+  
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+AliESDMuonTrack* AliESDEvent::GetMuonTrack(Int_t i)
+{
+  // get the MUON track at the position i in the internal array of track
+  if (!fMuonTracks) return 0x0;
+  if (!MoveMuonObjects()) return 0x0;
+  AliESDMuonTrack *track = (AliESDMuonTrack*) fMuonTracks->UncheckedAt(i);
+  track->SetESDEvent(this);
+  return track;
+}
+
+//______________________________________________________________________________
+void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) 
+{
+  // add a MUON track
+  TClonesArray &fmu = *fMuonTracks;
+  AliESDMuonTrack *track = new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack(*t);
+  track->MoveClustersToESD(*this);
+}
+
+//______________________________________________________________________________
+AliESDMuonTrack* AliESDEvent::NewMuonTrack() 
+{
+  // create a new MUON track at the end of the internal array of track
+  TClonesArray &fmu = *fMuonTracks;
+  return new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack();
+}
+
+//______________________________________________________________________________
+Int_t AliESDEvent::GetNumberOfMuonClusters()
+{
+  // get the number of MUON clusters
+  if (!fMuonClusters) return 0;
+  if (!MoveMuonObjects()) return 0;
+  return fMuonClusters->GetEntriesFast();
+}
+
+//______________________________________________________________________________
+AliESDMuonCluster* AliESDEvent::GetMuonCluster(Int_t i)
+{
+  // get the MUON cluster at the position i in the internal array of cluster
+  if (!fMuonClusters) return 0x0;
+  if (!MoveMuonObjects()) return 0x0;
+  return (AliESDMuonCluster*) fMuonClusters->UncheckedAt(i);
+}
+
+//______________________________________________________________________________
+AliESDMuonCluster* AliESDEvent::FindMuonCluster(UInt_t clusterId)
+{
+  // find the MUON cluster with this Id in the internal array of cluster
+  if (!fMuonClusters) return 0x0;
+  if (!MoveMuonObjects()) return 0x0;
+  for (Int_t i = 0; i < fMuonClusters->GetEntriesFast(); i++) {
+    AliESDMuonCluster *cluster = (AliESDMuonCluster*) fMuonClusters->UncheckedAt(i);
+    if (cluster->GetUniqueID() == clusterId) return cluster;
+  }
+  return 0x0;
+}
+
+//______________________________________________________________________________
+AliESDMuonCluster* AliESDEvent::NewMuonCluster() 
+{
+  // create a new MUON cluster at the end of the internal array of cluster
+  TClonesArray &fmu = *fMuonClusters;
+  return new(fmu[fMuonClusters->GetEntriesFast()]) AliESDMuonCluster();
+}
+
+//______________________________________________________________________________
+Int_t AliESDEvent::GetNumberOfMuonPads()
+{
+  // get the number of MUON pads
+  if (!fMuonPads) return 0;
+  if (!MoveMuonObjects()) return 0;
+  return fMuonPads->GetEntriesFast();
+}
+
+//______________________________________________________________________________
+AliESDMuonPad* AliESDEvent::GetMuonPad(Int_t i)
+{
+  // get the MUON pad at the position i in the internal array of pad
+  if (!fMuonPads) return 0x0;
+  if (!MoveMuonObjects()) return 0x0;
+  return (AliESDMuonPad*) fMuonPads->UncheckedAt(i);
+}
+
+//______________________________________________________________________________
+AliESDMuonPad* AliESDEvent::FindMuonPad(UInt_t padId)
+{
+  // find the MUON pad with this Id in the internal array of pad
+  if (!fMuonPads) return 0x0;
+  if (!MoveMuonObjects()) return 0x0;
+  for (Int_t i = 0; i < fMuonPads->GetEntriesFast(); i++) {
+    AliESDMuonPad *pad = (AliESDMuonPad*) fMuonPads->UncheckedAt(i);
+    if (pad->GetUniqueID() == padId) return pad;
+  }
+  return 0x0;
+}
+
+//______________________________________________________________________________
+AliESDMuonPad* AliESDEvent::NewMuonPad() 
+{
+  // create a new MUON pad at the end of the internal array of pad
+  TClonesArray &fmu = *fMuonPads;
+  return new(fmu[fMuonPads->GetEntriesFast()]) AliESDMuonPad();
 }
 
 void AliESDEvent::AddPmdTrack(const AliESDPmdTrack *t) 
@@ -1232,6 +1391,8 @@ void AliESDEvent::GetStdContent()
   fTrkPileupVertices = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrkPileupVertices]);
   fTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTracks]);
   fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonTracks]);
+  fMuonClusters = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonClusters]);
+  fMuonPads = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonPads]);
   fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kPmdTracks]);
   fTrdTrigger = (AliESDTrdTrigger*)fESDObjects->FindObject(fgkESDListName[kTrdTrigger]);
   fTrdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracks]);
@@ -1297,6 +1458,8 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliESDVertex",0));
   AddObject(new TClonesArray("AliESDtrack",0));
   AddObject(new TClonesArray("AliESDMuonTrack",0));
+  AddObject(new TClonesArray("AliESDMuonCluster",0));
+  AddObject(new TClonesArray("AliESDMuonPad",0));
   AddObject(new TClonesArray("AliESDPmdTrack",0));
   AddObject(new AliESDTrdTrigger());
   AddObject(new TClonesArray("AliESDTrdTrack",0));
@@ -1321,6 +1484,25 @@ void AliESDEvent::CreateStdContent()
   SetStdNames();
   // read back pointers
   GetStdContent();
+}
+
+void AliESDEvent::CompleteStdContent() 
+{
+  // create missing standard objects and add them to the TList of objects
+  
+  // add new MUON containers if missing (for backward compatibility)
+  if (!fESDObjects->FindObject(fgkESDListName[kMuonClusters])) {
+    TClonesArray* muonClusters = new TClonesArray("AliESDMuonCluster",0);
+    muonClusters->SetName(fgkESDListName[kMuonClusters]);
+    fESDObjects->AddAt(muonClusters, kMuonClusters);
+    fESDObjects->SetOwner(kTRUE);
+  }
+  if (!fESDObjects->FindObject(fgkESDListName[kMuonPads])) {
+    TClonesArray* muonPads = new TClonesArray("AliESDMuonPad",0);
+    muonPads->SetName(fgkESDListName[kMuonPads]);
+    fESDObjects->AddAt(muonPads, kMuonPads);
+    fESDObjects->SetOwner(kTRUE);
+  }
 }
 
 TObject* AliESDEvent::FindListObject(const char *name) const {
@@ -1412,6 +1594,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 
   // if we find the "ESD" branch on the tree we do have the old structure
   if(tree->GetBranch("ESD")) {
+    fOldMuonStructure = kFALSE;
     char ** address  = (char **)(tree->GetBranch("ESD")->GetAddress());
     // do we have the friend branch
     TBranch * esdFB = tree->GetBranch("ESDfriend.");
@@ -1495,6 +1678,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       fESDObjects->Delete();
       fESDObjects = connectedList;
       GetStdContent(); 
+      fOldMuonStructure = fESDObjects->TestBit(BIT(23));
       fConnected = true;
       return;
     }
@@ -1517,12 +1701,14 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     // in principle
     // we only need new things in the list if we do no already have it..
     // TODO just add new entries
+    CompleteStdContent();
 
     if(fESDObjects->GetEntries()<kESDListN){
       AliWarning(Form("AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
 		      fESDObjects->GetEntries(),kESDListN));
     }
     // set the branch addresses
+    fOldMuonStructure = kFALSE;
     TIter next(fESDObjects);
     TNamed *el;
     while((el=(TNamed*)next())){
@@ -1546,6 +1732,9 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
           }
           else{
             AliWarning(Form("AliESDEvent::ReadFromTree() No Branch found with Name %s or %s.",bname.Data(),bname.Data()));
+	    if (bname == fgkESDListName[kMuonClusters]) {
+	      fOldMuonStructure = kTRUE;
+	    }
           }
 
 	}
@@ -1556,6 +1745,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     // must not delete it
     fESDObjects->SetOwner(kTRUE);
     fESDObjects->SetName("ESDObjectsConnectedToTree");
+    fESDObjects->SetBit(BIT(23), fOldMuonStructure);
     // we are not owner of the list objects 
     // must not delete it
     tree->GetUserInfo()->Add(fESDObjects);
@@ -1566,6 +1756,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     // we can't get the list from the user data, create standard content
     // and set it by hand (no ESDfriend at the moment
     CreateStdContent();
+    fOldMuonStructure = kFALSE;
     TIter next(fESDObjects);
     TNamed *el;
     while((el=(TNamed*)next())){
@@ -1578,6 +1769,9 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 	br = tree->GetBranch(Form("%s.",bname.Data()));
 	if(br){
 	  tree->SetBranchAddress(Form("%s.",bname.Data()),fESDObjects->GetObjectRef(el));
+	}
+	else if (bname == fgkESDListName[kMuonClusters]) {
+	  fOldMuonStructure = kTRUE;
 	}
       }
     }

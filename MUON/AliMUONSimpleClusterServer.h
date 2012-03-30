@@ -16,7 +16,6 @@
 #  include "AliMUONVClusterServer.h"
 #endif
 
-class AliESDMuonPad;
 class AliMUONGeometryTransformer;
 class AliMUONTriggerTrackToTrackerClusters;
 class AliMUONVClusterFinder;

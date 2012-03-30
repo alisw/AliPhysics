@@ -30,12 +30,15 @@
 
 #include "TEveVSDStructs.h"
 #include "TGeoGlobalMagField.h"
-#include "AliESDMuonTrack.h"
-#include "AliESDMuonCluster.h"
+#include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONESDInterface.h"
+#include "AliMUONVTrackReconstructor.h"
 #include "AliEveMUONTrack.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONUtils.h"
 #include "AliMUONVCluster.h"
+#include "AliMUONVClusterStore.h"
 #include "AliMUONConstants.h"
 #include "TEveTrackPropagator.h"
 
@@ -250,7 +253,7 @@ void AliHLTEveMuon::ProcessTracks(AliHLTHOMERBlockDesc * block, TEveStraightLine
   }
 }
 
-int AliHLTEveMuon::MakeMUONESDTrack(AliESDMuonTrack *muonESDTrack, const AliHLTMUONTrackStruct *muonHLTTrack)
+int AliHLTEveMuon::MakeMUONTrack(AliMUONTrack *muonTrack, const AliHLTMUONTrackStruct *muonHLTTrack)
 {
   // See header for documentation
   AliHLTUInt32_t clusterIndex = 0;  // for the cluster unique ID.			
@@ -259,23 +262,29 @@ int AliHLTEveMuon::MakeMUONESDTrack(AliESDMuonTrack *muonESDTrack, const AliHLTM
   AliHLTMUONUtils::UnpackTrackFlags(
   				    muonHLTTrack->fFlags, sign, hitset
   				    );
-			
+  
+  // add track parameters at vertex
   TVector3 mom(muonHLTTrack->fPx, muonHLTTrack->fPy, muonHLTTrack->fPz);
+  AliMUONTrackParam paramAtVtx;
   if (mom.Mag() != 0)
-    muonESDTrack->SetInverseBendingMomentum(muonHLTTrack->fInverseBendingMomentum);
+    paramAtVtx.SetInverseBendingMomentum(muonHLTTrack->fInverseBendingMomentum);
   else
-    muonESDTrack->SetInverseBendingMomentum(0.);
-  muonESDTrack->SetThetaX(muonHLTTrack->fThetaX);
-  muonESDTrack->SetThetaY(muonHLTTrack->fThetaY);
-  muonESDTrack->SetZ(muonHLTTrack->fZ);
-  muonESDTrack->SetBendingCoor(muonHLTTrack->fY);
-  muonESDTrack->SetNonBendingCoor(muonHLTTrack->fX);
+    paramAtVtx.SetInverseBendingMomentum(0.);
+  paramAtVtx.SetNonBendingSlope(TMath::Tan(muonHLTTrack->fThetaX));
+  paramAtVtx.SetBendingSlope(TMath::Tan(muonHLTTrack->fThetaY));
+  paramAtVtx.SetZ(muonHLTTrack->fZ);
+  paramAtVtx.SetBendingCoor(muonHLTTrack->fY);
+  paramAtVtx.SetNonBendingCoor(muonHLTTrack->fX);
+  muonTrack->SetTrackParamAtVertex(&paramAtVtx);
 
   //printf("(X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",muonHLTTrack->fX,muonHLTTrack->fY,muonHLTTrack->fZ);
 
-  muonESDTrack->SetChi2(muonHLTTrack->fChi2);
-
+  // add clusters
   Int_t nHits = 0;
+  AliMUONVClusterStore* cStore = AliMUONESDInterface::NewClusterStore();
+  if (!cStore) return -1;
+  AliMUONVCluster* cluster = cStore->CreateCluster(0,0,0);
+  AliMUONTrackParam trackParam;
   for (int i = 0; i < 16; i++)
     {
       if (not hitset[i]) continue;
@@ -284,22 +293,33 @@ int AliHLTEveMuon::MakeMUONESDTrack(AliESDMuonTrack *muonESDTrack, const AliHLTM
       AliHLTUInt16_t detElemId;
       AliHLTMUONUtils::UnpackRecHitFlags((muonHLTTrack->fHit[i]).fFlags, chamber, detElemId);
       
-      AliESDMuonCluster cluster;
-      cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, clusterIndex++));
-      cluster.SetXYZ((muonHLTTrack->fHit[i]).fX, (muonHLTTrack->fHit[i]).fY, (muonHLTTrack->fHit[i]).fZ);
-      cluster.SetErrXY(    // Use nominal values.
-		       AliHLTMUONConstants::DefaultNonBendingReso(),
-		       AliHLTMUONConstants::DefaultBendingReso()
-			   );
-      cluster.SetCharge(-1.);   // Indicate no total charge calculated.
-      cluster.SetChi2(-1.);   // Indicate no fit made.
-      muonESDTrack->AddCluster(cluster);
+      cluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, clusterIndex++));
+      cluster->SetXYZ((muonHLTTrack->fHit[i]).fX, (muonHLTTrack->fHit[i]).fY, (muonHLTTrack->fHit[i]).fZ);
+      cluster->SetErrXY(    // Use nominal values.
+			AliHLTMUONConstants::DefaultNonBendingReso(),
+			AliHLTMUONConstants::DefaultBendingReso()
+			);
+      cluster->SetCharge(-1.);   // Indicate no total charge calculated.
+      cluster->SetChi2(-1.);   // Indicate no fit made.
+      trackParam.SetZ(cluster->GetZ());
+      muonTrack->AddTrackParamAtCluster(trackParam, *cluster, kTRUE);
       nHits++;
-      muonESDTrack->AddInMuonClusterMap(chamber);
     }
   
-  muonESDTrack->SetNHit(nHits);
+  // compute track parameters at each cluster
+  if (nHits > 0) {
+    AliMUONTrackParam *firstTrackParam = (AliMUONTrackParam*) muonTrack->GetTrackParamAtCluster()->First();
+    trackParam = (*firstTrackParam);
+    if (!AliMUONESDInterface::GetTracker()) AliMUONESDInterface::ResetTracker();
+    if (!AliMUONESDInterface::GetTracker()->RefitTrack(*muonTrack, kFALSE) &&
+	muonTrack->GetGlobalChi2() < AliMUONTrack::MaxChi2()) {
+      *firstTrackParam = trackParam;
+      muonTrack->UpdateCovTrackParamAtCluster();
+    }
+  }
 
+  muonTrack->SetGlobalChi2(muonHLTTrack->fChi2);
+  
   return 0;
 }
 
@@ -333,16 +353,16 @@ Int_t AliHLTEveMuon::ProcessFullTracks(AliHLTHOMERBlockDesc * block, TEveTrackLi
   //cout<<"NofTracks : "<<muontrackblock.Nentries()<<endl;
   for(AliHLTUInt32_t ientry = 0; ientry < muontrackblock.Nentries(); ientry++){
     
-    AliESDMuonTrack *muonESDTrack = new AliESDMuonTrack();
-    MakeMUONESDTrack(muonESDTrack,mtrack);
-    if(muonESDTrack->GetNHit()==0){
-      muonESDTrack->Delete();
+    AliMUONTrack *muonTrack = new AliMUONTrack();
+    MakeMUONTrack(muonTrack,mtrack);
+    if(muonTrack->GetNClusters()==0){
+      delete muonTrack;
       continue;
     }
     
     rt.fLabel = ientry;
     AliEveMUONTrack* track = new AliEveMUONTrack(&rt, fullTracks->GetPropagator());
-    track->MakeESDTrack(muonESDTrack);
+    track->MakeMUONTrack(muonTrack);
     //track->SetTitle(Form("HLT Track : %d, pt : %lf",ientry,TMath::Sqrt(((mtrack->fPx * mtrack->fPx) + (mtrack->fPy * mtrack->fPy)))));
     track->SetName(Form("HLT Track : %d, pt : %lf",ientry,TMath::Sqrt(((mtrack->fPx * mtrack->fPx) + (mtrack->fPy * mtrack->fPy)))));
     fullTracks->AddElement(track);

@@ -66,14 +66,19 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
   TFile* esdFile = TFile::Open(esdFileNameIn);
   TTree* esdTree = GetESDTree(esdFile);
   
-  // create the ESD output file and tree
-  TFile* newESDFile = TFile::Open(esdFileNameOut, "RECREATE");
-  newESDFile->SetCompressionLevel(2);
-  TTree* newESDTree = esdTree->CloneTree(0);
-  
   // connect ESD event to the ESD tree
   AliESDEvent* esd = new AliESDEvent();
   esd->ReadFromTree(esdTree);
+  
+  // create the ESD output file and tree
+  TFile* newESDFile = TFile::Open(esdFileNameOut, "RECREATE");
+  newESDFile->SetCompressionLevel(2);
+  
+  // connect ESD event to the ESD tree (recreate track branch for backward compatibility)
+  esdTree->SetBranchStatus("*MuonTracks*",0);
+  TTree* newESDTree = esdTree->CloneTree(0);
+  esdTree->SetBranchStatus("*MuonTracks*",1);
+  esd->WriteToTree(newESDTree);
   
   // get run number
   if (esdTree->GetEvent(0) <= 0) {
@@ -131,7 +136,11 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
     // load the current event
     esdInterface.LoadEvent(*esd, kFALSE);
     
-    // loop over digit to modify their charge
+    // remove digits and clusters from ESD
+    esd->FindListObject("MuonClusters")->Clear("C");
+    esd->FindListObject("MuonPads")->Clear("C");
+    
+    // loop over digits to modify their charge
     AliMUONVDigit *digit;
     TIter next(esdInterface.CreateDigitIterator());
     while ((digit = static_cast<AliMUONVDigit*>(next()))) {
@@ -140,6 +149,7 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
     }
     
     // refit the tracks from digits
+    refitter.SetFirstClusterIndex(0);
     AliMUONVTrackStore* newTrackStore = refitter.ReconstructFromDigits();
     
     //----------------------------------------------//
@@ -162,12 +172,19 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
       AliMUONTrack* newTrack = (AliMUONTrack*) newTrackStore->FindObject(esdTrack->GetUniqueID());
       
       // replace the content of the current ESD track or remove it if the refitting has failed
-      if (newTrack) {
+      if (newTrack && (!recoParam->ImproveTracks() || newTrack->IsImproved())) {
+	
+	// fill the track info
 	Double_t vertex[3] = {esdTrack->GetNonBendingCoor(), esdTrack->GetBendingCoor(), esdTrack->GetZ()};
-	AliMUONESDInterface::MUONToESD(*newTrack, *esdTrack, vertex, esdInterface.GetDigits());
-      } else {
-	esdTracks->Remove(esdTrack);
-      }
+	AliMUONESDInterface::MUONToESD(*newTrack, *esdTrack, vertex);
+	
+	// add the clusters (and the digits if previously there)
+	for (Int_t i = 0; i < newTrack->GetNClusters(); i++) {
+	  AliMUONTrackParam *param = static_cast<AliMUONTrackParam*>(newTrack->GetTrackParamAtCluster()->UncheckedAt(i));
+	  AliMUONESDInterface::MUONToESD(*(param->GetClusterPtr()), *esd, esdInterface.GetDigits());
+	}
+	
+      } else esdTracks->Remove(esdTrack);
       
       // print initial and re-fitted track parameters at first cluster if any
       if (printLevel>0) {

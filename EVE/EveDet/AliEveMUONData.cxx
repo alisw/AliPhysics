@@ -280,7 +280,7 @@ void AliEveMUONData::LoadRecPointsFromESD(const Char_t *fileName)
   Int_t nTracks = Int_t(esdEvent->GetNumberOfMuonTracks());
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     esdTrack = esdEvent->GetMuonTrack(iTrack);
-    if (!esdTrack->ClustersStored()) continue;
+    if (!esdTrack->ContainTrackerData()) continue;
     AliMUONESDInterface::ESDToMUON(*esdTrack,muonTrack);
     nTrackParam = muonTrack.GetTrackParamAtCluster()->GetEntries();
     for(Int_t iCluster = 0; iCluster < nTrackParam; iCluster++) {

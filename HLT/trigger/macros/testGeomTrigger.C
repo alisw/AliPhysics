@@ -56,9 +56,8 @@ void CreateInput(
   }
   for (int i = 0; i < numOfMuonTracks; i++)
   {
-    AliESDMuonTrack mutrack;
-    CreateTrack(mutrack, minMuonPt, maxMuonPt, (i%2==0) ? -1 : 1);
-    event.AddMuonTrack(&mutrack);
+    AliESDMuonTrack *mutrack = event.NewMuonTrack();
+    CreateTrack(*mutrack, minMuonPt, maxMuonPt, (i%2==0) ? -1 : 1);
   }
   event.Write();
   delete file;

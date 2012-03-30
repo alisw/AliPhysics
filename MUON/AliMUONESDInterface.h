@@ -64,6 +64,9 @@ public: // methods to play with internal objects
   Int_t GetNDigitsInCluster(UInt_t clusterId) const;
   Int_t GetNTriggers() const;
   
+  // Check that all digits have been stored for a given track
+  Bool_t DigitsStored(UInt_t trackId) const;
+  
   // Find internal MUON objects
   AliMUONTrack*        FindTrack(UInt_t trackId) const;
   AliMUONVCluster*     FindCluster(UInt_t clusterId) const;
@@ -101,7 +104,9 @@ public: // static methods
   // Create empty stores (use the version defined in this interface)
   static AliMUONVTrackStore* NewTrackStore();
   static AliMUONVClusterStore* NewClusterStore();
+  static AliMUONVCluster* NewCluster();
   static AliMUONVDigitStore* NewDigitStore();
+  static AliMUONVDigit* NewDigit();
   static AliMUONVTriggerStore* NewTriggerStore();
   static AliMUONVTriggerTrackStore* NewTriggerTrackStore();
   
@@ -124,11 +129,17 @@ public: // static methods
   static void ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& digit);
   
   // MUON objects --> ESDMuon objects conversion
-  static void MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& esdTrack, const Double_t vertex[3],
+  static void MUONToESD(const AliMUONTrack& track, AliESDEvent& esd, const Double_t vertex[3],
 			const AliMUONVDigitStore* digits = 0x0, const AliMUONLocalTrigger* locTrg = 0x0);
+  static void MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& esdTrack, const Double_t vertex[3],
+			const AliMUONLocalTrigger* locTrg = 0x0);
+  static void MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDEvent& esd, UInt_t trackId,
+			const AliMUONTriggerTrack* triggerTrack = 0x0);
   static void MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuonTrack& esdTrack, UInt_t trackId,
 			const AliMUONTriggerTrack* triggerTrack = 0x0);
-  static void MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCluster& esdCluster, const AliMUONVDigitStore* digits = 0x0);
+  static void MUONToESD(const AliMUONVCluster& cluster, AliESDEvent& esd, const AliMUONVDigitStore* digits = 0x0);
+  static void MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCluster& esdCluster, Bool_t copyPadsId = kFALSE);
+  static void MUONToESD(const AliMUONVDigit& digit, AliESDEvent& esd);
   static void MUONToESD(const AliMUONVDigit& digit, AliESDMuonPad& esdPad);
   
   // Add ESD object into the corresponding MUON store
@@ -148,7 +159,6 @@ protected:
 private:
   
   void Reset();
-  AliMUONVCluster* FindClusterInTrack(const AliMUONTrack& track, UInt_t clusterId) const;
   
   
 private:

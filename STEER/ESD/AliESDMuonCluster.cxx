@@ -23,6 +23,7 @@
 /// \author Philippe Pillot, Subatech
 //-----------------------------------------------------------------------------
 
+#include "AliESDEvent.h"
 #include "AliESDMuonCluster.h"
 #include "AliESDMuonPad.h"
 
@@ -41,6 +42,8 @@ AliESDMuonCluster::AliESDMuonCluster()
   fCharge(0.),
   fChi2(0.),
   fPads(0x0),
+  fNPads(0),
+  fPadsId(0x0),
   fLabel(-1)
 {
   /// default constructor
@@ -54,6 +57,8 @@ AliESDMuonCluster::AliESDMuonCluster (const AliESDMuonCluster& cluster)
   fCharge(cluster.fCharge),
   fChi2(cluster.fChi2),
   fPads(0x0),
+  fNPads(cluster.fNPads),
+  fPadsId(0x0),
   fLabel(cluster.fLabel)
 {
   /// Copy constructor
@@ -71,6 +76,8 @@ AliESDMuonCluster::AliESDMuonCluster (const AliESDMuonCluster& cluster)
       pad = (AliESDMuonPad*) cluster.fPads->After(pad);
     }
   }
+  
+  if (cluster.fPadsId) fPadsId = new TArrayI(*(cluster.fPadsId));
 }
 
 //_____________________________________________________________________________
@@ -101,6 +108,8 @@ AliESDMuonCluster& AliESDMuonCluster::operator=(const AliESDMuonCluster& cluster
     }
   } else fPads = 0x0;
   
+  SetPadsId(cluster.fNPads, cluster.GetPadsId());
+  
   return *this;
 }
 
@@ -109,50 +118,62 @@ AliESDMuonCluster::~AliESDMuonCluster()
 {
   /// Destructor
   delete fPads;
+  delete fPadsId;
 }
 
 //__________________________________________________________________________
-void AliESDMuonCluster::Clear(Option_t* /*opt*/)
+void AliESDMuonCluster::Clear(Option_t* opt)
 {
   /// Clear arrays
+  if (opt && opt[0] == 'C') {
+    if (fPads) fPads->Clear("C");
+  } else {
+    delete fPads; fPads = 0x0;
+  }
+  delete fPadsId; fPadsId = 0x0;
+  fNPads = 0;
+}
+
+//_____________________________________________________________________________
+void AliESDMuonCluster::AddPadId(UInt_t padId)
+{
+  /// Add the given pad Id to the list associated to the cluster
+  if (!fPadsId) fPadsId = new TArrayI(10);
+  if (fPadsId->GetSize() <= fNPads) fPadsId->Set(fNPads+10);
+  fPadsId->AddAt(static_cast<Int_t>(padId), fNPads++);
+}
+
+//_____________________________________________________________________________
+void AliESDMuonCluster::SetPadsId(Int_t nPads, const UInt_t *padsId)
+{
+  /// Fill the list pads'Id associated to the cluster with the given list
+  
+  if (nPads <= 0 || !padsId) {
+    delete fPadsId;
+    fPadsId = 0x0;
+    fNPads = 0;
+    return;
+  }
+  
+  if (!fPadsId) fPadsId = new TArrayI(nPads, reinterpret_cast<const Int_t*>(padsId));
+  else fPadsId->Set(nPads, reinterpret_cast<const Int_t*>(padsId));
+  fNPads = nPads;
+  
+}
+
+//_____________________________________________________________________________
+void AliESDMuonCluster::MovePadsToESD(AliESDEvent &esd)
+{
+  /// move the pads to the new ESD structure
+  if (!fPads) return;
+  for (Int_t i = 0; i < fPads->GetEntriesFast(); i++) {
+    AliESDMuonPad *pad = static_cast<AliESDMuonPad*>(fPads->UncheckedAt(i));
+    AliESDMuonPad *newPad = esd.NewMuonPad();
+    *newPad = *pad;
+    AddPadId(newPad->GetUniqueID());
+  }
   delete fPads;
   fPads = 0x0;
-}
-
-//_____________________________________________________________________________
-Int_t AliESDMuonCluster::GetNPads() const
-{
-  // return the number of pads associated to the cluster
-  if (!fPads) return 0;
-  
-  return fPads->GetEntriesFast();
-}
-
-//_____________________________________________________________________________
-TClonesArray& AliESDMuonCluster::GetPads() const
-{
-  // return the array of pads associated to the cluster
-  if (!fPads) fPads = new TClonesArray("AliESDMuonPad",10);
-  
-  return *fPads;
-}
-
-//_____________________________________________________________________________
-void AliESDMuonCluster::AddPad(const AliESDMuonPad &pad)
-{
-  // add a pad to the TClonesArray of pads associated to the cluster
-  if (!fPads) fPads = new TClonesArray("AliESDMuonPad",10);
-  
-  new ((*fPads)[fPads->GetEntriesFast()]) AliESDMuonPad(pad);
-}
-
-//_____________________________________________________________________________
-Bool_t AliESDMuonCluster::PadsStored() const
-{
-  // return kTRUE if the pads associated to the cluster are registered
-  if (GetNPads() == 0) return kFALSE;
-  
-  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -171,10 +192,7 @@ void AliESDMuonCluster::Print(Option_t */*option*/) const
   
   if (PadsStored()) {
     cout<<"  pad infos:"<<endl;
-    for (Int_t iPad=0; iPad<GetNPads(); iPad++) {
-      cout<<"  ";
-      ( (AliESDMuonPad*) fPads->UncheckedAt(iPad) )->Print();
-    }
+    for (Int_t iPad=0; iPad<GetNPads(); iPad++) cout<<"  "<<GetPadId(iPad)<<endl;
   }
 }
 

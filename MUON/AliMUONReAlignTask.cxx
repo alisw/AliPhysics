@@ -310,14 +310,6 @@ void AliMUONReAlignTask::Exec(Option_t *)
     // Find the corresponding re-fitted MUON track
     AliMUONTrack* newTrack = (AliMUONTrack*) newTrackStore->FindObject(esdTrack->GetUniqueID());
     
-//     // replace the content of the current ESD track or remove it if the refitting has failed
-//     if (newTrack) {
-//       Double_t vertex[3] = {esdTrack->GetNonBendingCoor(), esdTrack->GetBendingCoor(), esdTrack->GetZ()};
-//       AliMUONESDInterface::MUONToESD(*newTrack, *esdTrack, vertex, esdInterface.GetDigits());
-//       } else {
-//       esdTracks->Remove(esdTrack);
-//       }
-      
     // print initial and re-fitted track parameters at first cluster if any
     if (fPrintLevel>0) {
       cout<<"            ----------------track #"<<iTrack+1<<"----------------"<<endl;

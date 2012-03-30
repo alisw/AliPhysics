@@ -18,6 +18,7 @@
 
 extern "C" struct AliHLTMUONTriggerRecordStruct;
 class AliESDMuonTrack;
+class AliESDEvent;
 
 /**
  * @class AliHLTMUONESDMaker
@@ -99,13 +100,12 @@ private:
 	 * \param [in] trackId  The track ID of the track structure where the trigger
 	 *                     record ID comes from.
 	 * \param [out] muTrack  The track structure to fill.
-	 * \param [in,out] nHits  The number of hits added. Will increment this value
-	 *                        for every new hit added.
+	 * \param [in,out] event  The ESD event to store the new hits
 	 */
 	void FillTriggerInfo(
 			const AliTriggerRecordList& triggerRecords,
 			AliHLTInt32_t trigRecId, AliHLTInt32_t trackId,
-			AliESDMuonTrack& muTrack, Int_t& nHits
+			AliESDMuonTrack& muTrack, AliESDEvent& event
 		);
 	
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.

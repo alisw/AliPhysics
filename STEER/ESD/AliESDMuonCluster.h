@@ -12,8 +12,9 @@
 
 
 #include <TObject.h>
+#include <TArrayI.h>
 
-class AliESDMuonPad;
+class AliESDEvent;
 class TClonesArray;
 
 class AliESDMuonCluster : public TObject {
@@ -62,11 +63,21 @@ public:
   /// Return the index of this cluster (0..), part of the uniqueID
   Int_t    GetClusterIndex() const {return (GetUniqueID() & 0x0001FFFF);}
   
-  // Methods to get, fill and check the array of associated pads
-  Int_t         GetNPads() const;
-  TClonesArray& GetPads() const;
-  void          AddPad(const AliESDMuonPad &pad);
-  Bool_t        PadsStored() const;
+  // Add the given pad Id to the list associated to the cluster
+  void     AddPadId(UInt_t padId);
+  // Fill the list pads'Id associated to the cluster with the given list
+  void     SetPadsId(Int_t nPads, const UInt_t *padsId);
+  /// Return the number of pads associated to this cluster
+  Int_t    GetNPads() const {return fNPads;}
+  /// Return the Id of pad i
+  UInt_t   GetPadId(Int_t i) const {return (fPadsId && i >= 0 && i < fNPads) ? static_cast<UInt_t>(fPadsId->At(i)) : 0;}
+  /// Return the array of pads'Id
+  const UInt_t* GetPadsId() const {return fPadsId ? reinterpret_cast<UInt_t*>(fPadsId->GetArray()) : 0x0;}
+  /// Return kTrue if the pads'Id are stored
+  Bool_t   PadsStored() const {return (fNPads > 0);}
+  
+  // Transfer pads to the new ESD structure
+  void     MovePadsToESD(AliESDEvent &esd);
   
   /// Set the corresponding MC track number
   void  SetLabel(Int_t label) {fLabel = label;}
@@ -82,12 +93,15 @@ protected:
   Double32_t fCharge;   ///< cluster charge
   Double32_t fChi2;     ///< cluster chi2
   
-  mutable TClonesArray* fPads; ///< Array of pads attached to the cluster
+  mutable TClonesArray* fPads;  ///< Array of pads attached to the cluster -- deprecated
+  
+  Int_t    fNPads;  ///< number of pads attached to the cluster
+  TArrayI* fPadsId; ///< array of Ids of pads attached to the cluster
   
   Int_t fLabel; ///< point to the corresponding MC track
   
   
-  ClassDef(AliESDMuonCluster, 3) // MUON ESD cluster class
+  ClassDef(AliESDMuonCluster, 4) // MUON ESD cluster class
 };
 
 #endif

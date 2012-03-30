@@ -14,10 +14,10 @@
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <TDatabasePDG.h>
+#include <TArrayI.h>
 
 #include "AliVParticle.h"
 
-class AliESDMuonCluster;
 class AliESDEvent;
 class TClonesArray;
 class TLorentzVector;
@@ -97,7 +97,6 @@ public:
   Double_t GetChi2(void) const {return fChi2;}
   void     SetChi2(Double_t Chi2) {fChi2 = Chi2;}
   UChar_t  GetNHit(void) const {return fNHit;}
-  void     SetNHit(UInt_t NHit) {fNHit = NHit;}
   Int_t    GetNDF() const;
   Double_t GetNormalizedChi2() const;
   
@@ -146,11 +145,14 @@ public:
   void     Connected(Bool_t flag = kTRUE) {flag ? SETBIT(fMuonClusterMap,31) : CLRBIT(fMuonClusterMap,31);}
   Bool_t   IsConnected() const {return TESTBIT(fMuonClusterMap,31);}
   
-  // Methods to get, fill and check the array of associated clusters
-  Int_t         GetNClusters() const;
-  TClonesArray& GetClusters() const;
-  void          AddCluster(const AliESDMuonCluster &cluster);
-  Bool_t        ClustersStored() const;
+  // Methods to fill and get the Id of associated clusters
+  void     AddClusterId(UInt_t clusterId);
+  Int_t    GetNClusters() const {return static_cast<Int_t>(fNHit);}
+  UInt_t   GetClusterId(Int_t i) const {return (fClustersId && i >= 0 && i < fNHit) ? static_cast<UInt_t>(fClustersId->At(i)) : 0;}
+  
+  // Method to transfer clusters to the new ESD structure
+  Bool_t   IsOldTrack() {return (fClusters);}
+  void     MoveClustersToESD(AliESDEvent &esd);
   
   // Methods to compute track momentum
   Double_t Px() const;
@@ -285,15 +287,17 @@ protected:
   
   UInt_t   fMuonClusterMap;        ///< Map of clusters in tracking chambers
   UShort_t fHitsPatternInTrigCh;   ///< Word containing info on the hits left in trigger chambers
-  UChar_t  fNHit;                  ///< number of hit in the track
+  UChar_t  fNHit;                  ///< number of clusters attached to the track
   
-  mutable TClonesArray* fClusters; ///< Array of clusters attached to the track
+  mutable TClonesArray* fClusters; ///< Array of clusters attached to the track -- deprecated
+  
+  TArrayI* fClustersId;            ///< Array of clusters'Id attached to the track
   
   Int_t fLabel;                    ///< point to the corresponding MC track
 
   AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
-  ClassDef(AliESDMuonTrack,13) // MUON ESD track class 
+  ClassDef(AliESDMuonTrack,14) // MUON ESD track class 
 };
 
 #endif 

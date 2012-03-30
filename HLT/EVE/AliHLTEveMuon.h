@@ -15,7 +15,7 @@ class AliHLTHOMERBlockDesc;
 class TEveStraightLineSet;
 class TEvePointSet;
 class TEveTrackList;
-class AliESDMuonTrack;
+class AliMUONTrack;
 class AliHLTMUONTrackStruct;
 
 class AliHLTEveMuon : public AliHLTEveBase {
@@ -54,8 +54,8 @@ private:
   /** Process block containing Full Tracks **/
   Int_t ProcessFullTracks(AliHLTHOMERBlockDesc * block, TEveTrackList * tracks);
   
-  /** Convert muon Full Tracks block to Muon ESD tracks **/
-  int MakeMUONESDTrack(AliESDMuonTrack *muonESDTrack, const AliHLTMUONTrackStruct *muonHLTTrack);
+  /** Convert muon Full Tracks block to Muon tracks **/
+  int MakeMUONTrack(AliMUONTrack *muonTrack, const AliHLTMUONTrackStruct *muonHLTTrack);
 
   /** create the cluster pointset**/
   TEvePointSet * CreateClusters();

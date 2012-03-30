@@ -429,9 +429,7 @@ void AliMUONRecoCheck::MakeTrackRefs()
   TParticle* particle;
   TClonesArray* trackRefs;
   Int_t nTrackRef = fMCEventHandler->MCEvent()->GetNumberOfTracks();
-  AliMUONVClusterStore* cStore = AliMUONESDInterface::NewClusterStore();
-  if (!cStore) return;
-  AliMUONVCluster* hit = cStore->CreateCluster(0,0,0);
+  AliMUONVCluster* hit = AliMUONESDInterface::NewCluster();
   
   // loop over simulated tracks
   for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; ++iTrackRef) {
@@ -539,7 +537,6 @@ void AliMUONRecoCheck::MakeTrackRefs()
   CleanMuonTrackRef(tmpTrackRefStore);
   
   delete hit;
-  delete cStore;
   delete tmpTrackRefStore;
 }
 
@@ -669,9 +666,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
   Double_t maxGasGap = 1.; // cm 
   Double_t x, y, z, pX, pY, pZ, x1, y1, z1, pX1, pY1, pZ1, z2;
   Double_t bendingSlope,nonBendingSlope,inverseBendingMomentum;
-  AliMUONVClusterStore* cStore = AliMUONESDInterface::NewClusterStore();
-  if (!cStore) return;
-  AliMUONVCluster* hit = cStore->CreateCluster(0,0,0);
+  AliMUONVCluster* hit = AliMUONESDInterface::NewCluster();
   
   // create iterator
   TIter next(tmpTrackRefStore->CreateIterator());
@@ -771,7 +766,6 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
   }
   
   delete hit;
-  delete cStore;
 }
 
 //_____________________________________________________________________________

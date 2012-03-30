@@ -288,7 +288,6 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
   // fill ESD event including all info in ESD cluster if required and only for the given fraction of events
   AliMUONTrack* track;
   AliMUONLocalTrigger* locTrg;
-  AliESDMuonTrack esdTrack;
   TIter next(trackStore.CreateIterator());
   if (GetRecoParam()->SaveFullClusterInESD() && 
       gRandom->Uniform(100.) <= GetRecoParam()->GetPercentOfFullClusterInESD()) {
@@ -297,10 +296,9 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
       
       if (track->GetMatchTrigger() > 0) {
 	locTrg = static_cast<AliMUONLocalTrigger*>(fTriggerStore->FindLocal(track->LoCircuit()));
-	AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fkDigitStore, locTrg);
-      } else AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fkDigitStore);
+	AliMUONESDInterface::MUONToESD(*track, *esd, vertex, &fkDigitStore, locTrg);
+      } else AliMUONESDInterface::MUONToESD(*track, *esd, vertex, &fkDigitStore);
       
-      esd->AddMuonTrack(&esdTrack);
     }
     
   } else {
@@ -309,10 +307,9 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
       
       if (track->GetMatchTrigger() > 0) {
 	locTrg = static_cast<AliMUONLocalTrigger*>(fTriggerStore->FindLocal(track->LoCircuit()));
-	AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, 0x0, locTrg);
-      } else AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex);
+	AliMUONESDInterface::MUONToESD(*track, *esd, vertex, 0x0, locTrg);
+      } else AliMUONESDInterface::MUONToESD(*track, *esd, vertex);
       
-      esd->AddMuonTrack(&esdTrack);
     }
     
   }
@@ -334,9 +331,8 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
     }
     if (matched) continue;
 
-    AliMUONESDInterface::MUONToESD(*locTrg, esdTrack, ghostId, triggerTrack);
+    AliMUONESDInterface::MUONToESD(*locTrg, *esd, ghostId, triggerTrack);
     
-    esd->AddMuonTrack(&esdTrack);
     ghostId -= 1;
   }
   

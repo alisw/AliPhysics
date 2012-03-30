@@ -46,6 +46,8 @@ public:
   AliMUONVClusterStore* ReClusterize(UInt_t trackId, UInt_t clusterId);
   AliMUONVClusterStore* ReClusterize(UInt_t clusterId);
   
+  // set the first index of clusters produced by this refitter (to build its uniqueID)
+  void SetFirstClusterIndex(Int_t index) {nextClusterIndex = (index >= 0) ? index : 0;}
   
 protected:
   
@@ -70,6 +72,7 @@ private:
   AliMUONVClusterServer*      fClusterServer;       ///< clusterizer (owner)
   AliMUONVTrackReconstructor* fTracker;             ///< tracker (owner)
   
+  Int_t nextClusterIndex; ///< Index of the next cluster produced by this refitter (to build its uniqueID)
   
   ClassDef(AliMUONRefitter,0)
 };

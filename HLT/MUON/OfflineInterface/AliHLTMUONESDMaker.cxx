@@ -230,6 +230,9 @@ int AliHLTMUONESDMaker::DoEvent(
 		TClonesArray* muonTracks = new TClonesArray("AliESDMuonTrack",2);
 		muonTracks->SetName("MuonTracks");
 		event.AddObject(muonTracks);
+		TClonesArray* muonClusters = new TClonesArray("AliESDMuonCluster",0);
+		muonClusters->SetName("MuonClusters");
+		event.AddObject(muonClusters);
 		event.GetStdContent();
 	}
 	else
@@ -324,7 +327,7 @@ int AliHLTMUONESDMaker::DoEvent(
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 		{
 			const AliHLTMUONMansoTrackStruct& t = inblock[n];
-			AliESDMuonTrack muTrack;
+			AliESDMuonTrack *muTrack = event.NewMuonTrack();
 			
 			AliHLTMUONParticleSign sign;
 			bool hitset[4];
@@ -342,41 +345,40 @@ int AliHLTMUONESDMaker::DoEvent(
 			
 			TVector3 mom(t.fPx, t.fPy, t.fPz);
 			if (mom.Mag() != 0)
-				muTrack.SetInverseBendingMomentum(signVal/mom.Mag());
+				muTrack->SetInverseBendingMomentum(signVal/mom.Mag());
 			else
-				muTrack.SetInverseBendingMomentum(0.);
-			muTrack.SetThetaX(atan2(t.fPx, t.fPz));
-			muTrack.SetThetaY(atan2(t.fPy, t.fPz));
-			muTrack.SetZ(0.);
-			muTrack.SetBendingCoor(0.);
-			muTrack.SetNonBendingCoor(0.);
+				muTrack->SetInverseBendingMomentum(0.);
+			muTrack->SetThetaX(atan2(t.fPx, t.fPz));
+			muTrack->SetThetaY(atan2(t.fPy, t.fPz));
+			muTrack->SetZ(0.);
+			muTrack->SetBendingCoor(0.);
+			muTrack->SetNonBendingCoor(0.);
 			
 			// The Manso algorithm assumes the information at the
 			// Distance of Closest Approach and chamber 1 is the same
 			// as the vertex.
 			if (mom.Mag() != 0)
-				muTrack.SetInverseBendingMomentumAtDCA(1./mom.Mag());
+				muTrack->SetInverseBendingMomentumAtDCA(1./mom.Mag());
 			else
-				muTrack.SetInverseBendingMomentumAtDCA(0.);
-			muTrack.SetThetaXAtDCA(atan2(t.fPx, t.fPz));
-			muTrack.SetThetaYAtDCA(atan2(t.fPy, t.fPz));
-			muTrack.SetBendingCoorAtDCA(0.);
-			muTrack.SetNonBendingCoorAtDCA(0.);
+				muTrack->SetInverseBendingMomentumAtDCA(0.);
+			muTrack->SetThetaXAtDCA(atan2(t.fPx, t.fPz));
+			muTrack->SetThetaYAtDCA(atan2(t.fPy, t.fPz));
+			muTrack->SetBendingCoorAtDCA(0.);
+			muTrack->SetNonBendingCoorAtDCA(0.);
 			
 			if (mom.Mag() != 0)
-				muTrack.SetInverseBendingMomentumUncorrected(1./mom.Mag());
+				muTrack->SetInverseBendingMomentumUncorrected(1./mom.Mag());
 			else
-				muTrack.SetInverseBendingMomentumUncorrected(0.);
-			muTrack.SetThetaXUncorrected(atan2(t.fPx, t.fPz));
-			muTrack.SetThetaYUncorrected(atan2(t.fPy, t.fPz));
-			muTrack.SetZUncorrected(0.);
-			muTrack.SetBendingCoorUncorrected(0.);
-			muTrack.SetNonBendingCoorUncorrected(0.);
+				muTrack->SetInverseBendingMomentumUncorrected(0.);
+			muTrack->SetThetaXUncorrected(atan2(t.fPx, t.fPz));
+			muTrack->SetThetaYUncorrected(atan2(t.fPy, t.fPz));
+			muTrack->SetZUncorrected(0.);
+			muTrack->SetBendingCoorUncorrected(0.);
+			muTrack->SetNonBendingCoorUncorrected(0.);
 			
-			muTrack.SetChi2(t.fChi2);
+			muTrack->SetChi2(t.fChi2);
 			
 			// Fill in the track hit points.
-			Int_t nHits = 0;
 			for (int i = 0; i < 4; i++)
 			{
 				if (not hitset[i]) continue;
@@ -385,23 +387,20 @@ int AliHLTMUONESDMaker::DoEvent(
 				AliHLTUInt16_t detElemId;
 				AliHLTMUONUtils::UnpackRecHitFlags(t.fHit[i].fFlags, chamber, detElemId);
 				
-				AliESDMuonCluster cluster;
-				cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
-				cluster.SetXYZ(t.fHit[i].fX, t.fHit[i].fY, t.fHit[i].fZ);
-				cluster.SetErrXY(    // Use nominal values.
-						AliHLTMUONConstants::DefaultNonBendingReso(),
-						AliHLTMUONConstants::DefaultBendingReso()
-					);
-				cluster.SetCharge(-1.);   // Indicate no total charge calculated.
-				cluster.SetChi2(-1.);   // Indicate no fit made.
-				muTrack.AddCluster(cluster);
-				nHits++;
-				muTrack.AddInMuonClusterMap(i+6);
+				AliESDMuonCluster *cluster = event.NewMuonCluster();
+				cluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
+				cluster->SetXYZ(t.fHit[i].fX, t.fHit[i].fY, t.fHit[i].fZ);
+				cluster->SetErrXY(    // Use nominal values.
+						  AliHLTMUONConstants::DefaultNonBendingReso(),
+						  AliHLTMUONConstants::DefaultBendingReso()
+						  );
+				cluster->SetCharge(-1.);   // Indicate no total charge calculated.
+				cluster->SetChi2(-1.);   // Indicate no fit made.
+				muTrack->AddClusterId(cluster->GetUniqueID());
+				muTrack->AddInMuonClusterMap(i+6);
 			}
 			
-			FillTriggerInfo(triggerRecords, t.fTrigRec, t.fId, muTrack, nHits);
-			muTrack.SetNHit(nHits);
-			event.AddMuonTrack(&muTrack);
+			FillTriggerInfo(triggerRecords, t.fTrigRec, t.fId, *muTrack, event);
 		}
 	}
 
@@ -421,39 +420,38 @@ int AliHLTMUONESDMaker::DoEvent(
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 		{
 			const AliHLTMUONTrackStruct& t = inblock[n];
-			AliESDMuonTrack muTrack;
+			AliESDMuonTrack *muTrack = event.NewMuonTrack();
 			
 			AliHLTMUONParticleSign sign;
 			bool hitset[16];
 			AliHLTMUONUtils::UnpackTrackFlags(t.fFlags, sign, hitset);
 			
-			muTrack.SetInverseBendingMomentum(t.fInverseBendingMomentum);
-			muTrack.SetThetaX(t.fThetaX);
-			muTrack.SetThetaY(t.fThetaY);
-			muTrack.SetZ(t.fZ);
-			muTrack.SetBendingCoor(t.fY);
-			muTrack.SetNonBendingCoor(t.fX);
+			muTrack->SetInverseBendingMomentum(t.fInverseBendingMomentum);
+			muTrack->SetThetaX(t.fThetaX);
+			muTrack->SetThetaY(t.fThetaY);
+			muTrack->SetZ(t.fZ);
+			muTrack->SetBendingCoor(t.fY);
+			muTrack->SetNonBendingCoor(t.fX);
 			
 			// The full tracker assumes the information at the
 			// Distance of Closest Approach and chamber 1 is the same
 			// as the vertex.
-			muTrack.SetInverseBendingMomentumAtDCA(t.fInverseBendingMomentum);
-			muTrack.SetThetaXAtDCA(t.fThetaX);
-			muTrack.SetThetaYAtDCA(t.fThetaY);
-			muTrack.SetBendingCoorAtDCA(t.fY);
-			muTrack.SetNonBendingCoorAtDCA(t.fX);
+			muTrack->SetInverseBendingMomentumAtDCA(t.fInverseBendingMomentum);
+			muTrack->SetThetaXAtDCA(t.fThetaX);
+			muTrack->SetThetaYAtDCA(t.fThetaY);
+			muTrack->SetBendingCoorAtDCA(t.fY);
+			muTrack->SetNonBendingCoorAtDCA(t.fX);
 				
-			muTrack.SetInverseBendingMomentumUncorrected(t.fInverseBendingMomentum);
-			muTrack.SetThetaXUncorrected(t.fThetaX);
-			muTrack.SetThetaYUncorrected(t.fThetaY);
-			muTrack.SetZUncorrected(t.fZ);
-			muTrack.SetBendingCoorUncorrected(t.fY);
-			muTrack.SetNonBendingCoorUncorrected(t.fX);
+			muTrack->SetInverseBendingMomentumUncorrected(t.fInverseBendingMomentum);
+			muTrack->SetThetaXUncorrected(t.fThetaX);
+			muTrack->SetThetaYUncorrected(t.fThetaY);
+			muTrack->SetZUncorrected(t.fZ);
+			muTrack->SetBendingCoorUncorrected(t.fY);
+			muTrack->SetNonBendingCoorUncorrected(t.fX);
 				
-			muTrack.SetChi2(t.fChi2);
+			muTrack->SetChi2(t.fChi2);
 			
 			// Fill in the track hit points.
-			Int_t nHits = 0;
 			for (int i = 0; i < 16; i++)
 			{
 				if (not hitset[i]) continue;
@@ -462,23 +460,20 @@ int AliHLTMUONESDMaker::DoEvent(
 				AliHLTUInt16_t detElemId;
 				AliHLTMUONUtils::UnpackRecHitFlags(t.fHit[i].fFlags, chamber, detElemId);
 				
-				AliESDMuonCluster cluster;
-				cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
-				cluster.SetXYZ(t.fHit[i].fX, t.fHit[i].fY, t.fHit[i].fZ);
-				cluster.SetErrXY(    // Use nominal values.
-						AliHLTMUONConstants::DefaultNonBendingReso(),
-						AliHLTMUONConstants::DefaultBendingReso()
-					);
-				cluster.SetCharge(-1.);   // Indicate no total charge calculated.
-				cluster.SetChi2(-1.);   // Indicate no fit made.
-				muTrack.AddCluster(cluster);
-				nHits++;
-				muTrack.AddInMuonClusterMap(chamber);
+				AliESDMuonCluster *cluster = event.NewMuonCluster();
+				cluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
+				cluster->SetXYZ(t.fHit[i].fX, t.fHit[i].fY, t.fHit[i].fZ);
+				cluster->SetErrXY(    // Use nominal values.
+						  AliHLTMUONConstants::DefaultNonBendingReso(),
+						  AliHLTMUONConstants::DefaultBendingReso()
+						  );
+				cluster->SetCharge(-1.);   // Indicate no total charge calculated.
+				cluster->SetChi2(-1.);   // Indicate no fit made.
+				muTrack->AddClusterId(cluster->GetUniqueID());
+				muTrack->AddInMuonClusterMap(chamber);
 			}
 			
-			FillTriggerInfo(triggerRecords, t.fTrigRec, t.fId, muTrack, nHits);
-			muTrack.SetNHit(nHits);
-			event.AddMuonTrack(&muTrack);
+			FillTriggerInfo(triggerRecords, t.fTrigRec, t.fId, *muTrack, event);
 		}
 	}
 
@@ -489,6 +484,11 @@ int AliHLTMUONESDMaker::DoEvent(
 			kAliHLTDataTypeTObject | kAliHLTDataOriginMUON,
 			specification
 		);
+	        PushBack(
+			 event.GetList()->FindObject("MuonClusters"),
+			 kAliHLTDataTypeTObject | kAliHLTDataOriginMUON,
+			 specification
+			 );
 	}
 	if (fMakeESDDataBlock)
 	{
@@ -501,7 +501,7 @@ int AliHLTMUONESDMaker::DoEvent(
 void AliHLTMUONESDMaker::FillTriggerInfo(
 		const AliTriggerRecordList& triggerRecords,
 		AliHLTInt32_t trigRecId, AliHLTInt32_t trackId,
-		AliESDMuonTrack& muTrack, Int_t& nHits
+		AliESDMuonTrack& muTrack, AliESDEvent& event
 	)
 {
 	/// Finds the trigger record with ID = 'id' and fills the output ESD track structure.
@@ -533,21 +533,20 @@ void AliHLTMUONESDMaker::FillTriggerInfo(
 			AliHLTUInt16_t detElemId;
 			AliHLTMUONUtils::UnpackRecHitFlags(trigrec->fHit[i].fFlags, chamber, detElemId);
 		
-			AliESDMuonCluster cluster;
-			cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
-			cluster.SetXYZ(
+			AliESDMuonCluster *cluster = event.NewMuonCluster();
+			cluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, fClusterIndex++));
+			cluster->SetXYZ(
 					trigrec->fHit[i].fX,
 					trigrec->fHit[i].fY,
 					trigrec->fHit[i].fZ
-				);
-			cluster.SetErrXY(    // Use nominal values.
-					AliMUONConstants::TriggerNonBendingReso(),
-					AliMUONConstants::TriggerBendingReso()
-				);
-			cluster.SetCharge(-1.);   // Indicate no total charge calculated.
-			cluster.SetChi2(-1.);   // Indicate no fit made.
-			muTrack.AddCluster(cluster);
-			nHits++;
+					);
+			cluster->SetErrXY(    // Use nominal values.
+					  AliMUONConstants::TriggerNonBendingReso(),
+					  AliMUONConstants::TriggerBendingReso()
+					  );
+			cluster->SetCharge(-1.);   // Indicate no total charge calculated.
+			cluster->SetChi2(-1.);   // Indicate no fit made.
+			muTrack.AddClusterId(cluster->GetUniqueID());
 			muTrack.AddInMuonClusterMap(i+10);
 		}
 	}

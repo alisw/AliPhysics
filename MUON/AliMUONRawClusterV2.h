@@ -67,6 +67,8 @@ class AliMUONRawClusterV2 : public AliMUONVCluster {
   virtual Int_t    GetNDigits() const {return fNDigits;}
            /// Return Id of digits i
   virtual UInt_t   GetDigitId(Int_t i) const {return (i < fNDigits && fDigitsId) ? fDigitsId[i] : 0;}
+           /// Return the array of digits'id
+  virtual const UInt_t* GetDigitsId() const {return fDigitsId;}
   
            /// Set chi2 of cluster
   virtual void     SetChi2( Double_t chi2) {fChi2 = chi2;}

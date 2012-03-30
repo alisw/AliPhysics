@@ -71,6 +71,8 @@ class AliMUONVCluster : public TObject {
   virtual Int_t    GetNDigits() const = 0;
            /// Return Id of digits i
   virtual UInt_t   GetDigitId(Int_t i) const = 0;
+           /// Return the array of digits'id
+  virtual const UInt_t* GetDigitsId() const {return 0x0;}
   
            /// Set chi2 of cluster
   virtual void     SetChi2(Double_t chi2) = 0;

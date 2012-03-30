@@ -71,6 +71,7 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fHitsPatternInTrigCh(0),
   fNHit(0),
   fClusters(0x0),
+  fClustersId(0x0),
   fLabel(-1),
   fESDEvent(0)
 
@@ -118,6 +119,7 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
   fHitsPatternInTrigCh(muonTrack.fHitsPatternInTrigCh),
   fNHit(muonTrack.fNHit),
   fClusters(0x0),
+  fClustersId(0x0),
   fLabel(muonTrack.fLabel),
   fESDEvent(muonTrack.fESDEvent)
 {
@@ -136,6 +138,10 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
       cluster = (AliESDMuonCluster*) muonTrack.fClusters->After(cluster);
     }
   }
+  
+  // copy of cluster Ids
+  if (muonTrack.fClustersId) fClustersId = new TArrayI(*(muonTrack.fClustersId));
+  
 }
 
 //_____________________________________________________________________________
@@ -206,9 +212,19 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
     }
   } else fClusters = 0x0;
   
+  // copy of cluster Ids
+  if (muonTrack.fClustersId) {
+    if (fClustersId) *fClustersId = *(muonTrack.fClustersId);
+    else fClustersId = new TArrayI(*(muonTrack.fClustersId));
+  } else {
+    delete fClustersId;
+    fClustersId = 0x0;
+  }
+  
   return *this;
 }
 
+//__________________________________________________________________________
 void AliESDMuonTrack::Copy(TObject &obj) const {
   
   /// This overwrites the virtual TOBject::Copy()
@@ -222,19 +238,25 @@ void AliESDMuonTrack::Copy(TObject &obj) const {
 
 }
 
-
 //__________________________________________________________________________
 AliESDMuonTrack::~AliESDMuonTrack()
 {
   /// Destructor
   delete fClusters;
+  delete fClustersId;
 }
 
 //__________________________________________________________________________
 void AliESDMuonTrack::Clear(Option_t* opt)
 {
   /// Clear arrays
-  if (fClusters) fClusters->Clear(opt);
+  if (opt && opt[0] == 'C') {
+    if (fClusters) fClusters->Clear("C");
+  } else {
+    delete fClusters; fClusters = 0x0;
+  }
+  delete fClustersId; fClustersId = 0x0;
+  fNHit = 0;
 }
 
 //__________________________________________________________________________
@@ -275,6 +297,7 @@ void AliESDMuonTrack::Reset()
   fHitsPatternInTrigCh = 0;
   fNHit = 0;
   delete fClusters; fClusters = 0x0;
+  delete fClustersId; fClustersId = 0x0;
   for (Int_t i = 0; i < 15; i++) fCovariances[i] = 0.;
   fLabel = -1;
   fESDEvent = 0;
@@ -570,39 +593,29 @@ Bool_t AliESDMuonTrack::MatchTriggerDigits() const
 }
 
 //_____________________________________________________________________________
-Int_t AliESDMuonTrack::GetNClusters() const
+void AliESDMuonTrack::AddClusterId(UInt_t clusterId)
 {
-  /// return the number of clusters associated to the track
-  if (!fClusters) return 0;
-  
-  return fClusters->GetEntriesFast();
+  /// add the given cluster Id to the list associated to the track
+  if (!fClustersId) fClustersId = new TArrayI(5);
+  if (fClustersId->GetSize() <= fNHit) fClustersId->Set(fNHit+1);
+  fClustersId->AddAt(static_cast<Int_t>(clusterId), fNHit++);
 }
 
 //_____________________________________________________________________________
-TClonesArray& AliESDMuonTrack::GetClusters() const
+void AliESDMuonTrack::MoveClustersToESD(AliESDEvent &esd)
 {
-  /// return the array of clusters associated to the track
-  if (!fClusters) fClusters = new TClonesArray("AliESDMuonCluster",10);
-  
-  return *fClusters;
-}
-
-//_____________________________________________________________________________
-void AliESDMuonTrack::AddCluster(const AliESDMuonCluster &cluster)
-{
-  /// add a cluster to the TClonesArray of clusters associated to the track
-  if (!fClusters) fClusters = new TClonesArray("AliESDMuonCluster",10);
-  
-  new ((*fClusters)[fClusters->GetEntriesFast()]) AliESDMuonCluster(cluster);
-}
-
-//_____________________________________________________________________________
-Bool_t AliESDMuonTrack::ClustersStored() const
-{
-  /// return kTRUE if the clusters associated to the track are registered
-  if (GetNClusters() == 0) return kFALSE;
-  
-  return kTRUE;
+  /// move the clusters (and attached pads) to the new ESD structure
+  if (!fClusters) return;
+  fNHit = 0;
+  for (Int_t i = 0; i < fClusters->GetEntriesFast(); i++) {
+    AliESDMuonCluster *cluster = static_cast<AliESDMuonCluster*>(fClusters->UncheckedAt(i));
+    cluster->MovePadsToESD(esd);
+    AliESDMuonCluster *newCluster = esd.NewMuonCluster();
+    *newCluster = *cluster;
+    AddClusterId(newCluster->GetUniqueID());
+  }
+  delete fClusters;
+  fClusters = 0x0;
 }
 
 //_____________________________________________________________________________
