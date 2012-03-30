@@ -35,7 +35,7 @@ void ConfigCalibTrain(Int_t run, const char *ocdb="raw://"){
   // geometry
   printf("Loading geometry...\n");
   AliGeomManager::LoadGeometry();
-  if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC") ) {
+  if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD TOF HMPID") ) {
     printf("Problem with align objects\n"); 
   }
 
