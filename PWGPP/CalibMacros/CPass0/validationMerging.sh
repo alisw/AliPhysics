@@ -49,18 +49,18 @@ if [ "$sv" = "" ]
 		        bf=`grep -i "busy flag cleared" *.log`
 		        if [ "$bf" = "" ]
                             then
-                               es=`grep -i "E-AliCDBGrid::PutEntry:" *.log`
-                                if [ "$es" = "" ]
-                                  then
-                                   fg=`grep -i "F-AliCDBGrid::" *.log`
-                                    if [ "$fg" = "" ]
-                                      then
+#                               es=`grep -i "E-AliCDBGrid::PutEntry:" *.log`
+#                                if [ "$es" = "" ]
+#                                  then
+#                                   fg=`grep -i "F-AliCDBGrid::" *.log`
+#                                    if [ "$fg" = "" ]
+#                                      then
 			            echo "* ----------------   Job Validated  ------------------*" >> stdout;
 			            error="0";
                                   else
                                     echo "* #             Check Macro failed !                  #" >> stdout;
-                               fi
-                            fi
+#                               fi
+#                            fi
                         fi
 		    fi
 	        fi
