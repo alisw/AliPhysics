@@ -23,15 +23,19 @@ AliAnalysisTask AddTaskHFEElecHadronCorrl()
   }
 
   //analysis task 
-  gROOT->LoadMacro("AliAnalysisTaskElecHadronCorrel2.cxx++g");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/AliAnalysisTaskElecHadronCorrel.cxx++g");
   //gROOT->LoadMacro("ConfigHFEemcalMod.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecHadronCorl.C");
-  AliAnalysisTaskElecHadronCorrel2 *taskHFE = ConfigHFEemcalMod(MCthere);
+  AliAnalysisTaskElecHadronCorrel *taskHFE = ConfigHFEElecHadronCorl(MCthere);
 
   // output list of histos
-  TString foutputName = "ElecHadronCorrelAna.root";
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer0",TList::Class(),AliAnalysisManager::kOutputContainer,foutputName.Data());
+  //TString foutputName = "ElecHadronCorrelAna.root";
+  //AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer0",TList::Class(),AliAnalysisManager::kOutputContainer,foutputName.Data());
 
+    TString containerName = mgr->GetCommonFileName();
+	containerName += ":PWGHF_hfeCalPbPbeh";
+	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer0",TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
+	
   mgr->ConnectInput(taskHFE,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskHFE,1,coutput3);
 
