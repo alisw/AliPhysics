@@ -60,11 +60,11 @@ void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs
   /// - nevents = maximum number of processed events
   
   // Load libraries locally
-  TString extraLibs = "RAWDatabase:CDB:STEER:MUONcore:MUONmapping:MUONcalib:MUONgeometry:MUONtrigger:MUONraw:MUONbase:MUONrec:CORRFW:PWG3base:PWG3muondep";
+  TString extraLibs = "RAWDatabase:CDB:STEER:MUONcore:MUONmapping:MUONcalib:MUONgeometry:MUONtrigger:MUONraw:MUONbase:MUONrec:CORRFW:PWGPPMUONdep";
   LoadAlirootLocally(extraLibs);
   
   // compile analysis macro locally
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/muondep/MuonResolution.C++g");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/MUON/dep/MuonResolution.C++g");
   MuonResolution(smode, inputFileName, alirootVersion, nSteps, selectPhysics, selectTrigger, matchTrig,
 		 applyAccCut, minMomentum, correctForSystematics, extrapMode, nevents, extraLibs);
   

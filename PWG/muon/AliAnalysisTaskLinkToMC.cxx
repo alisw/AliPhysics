@@ -840,7 +840,7 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 	
 	for (Int_t i = 0; i < esdTrack->GetNClusters(); i++)
 	{
-		AliESDMuonCluster* cluster = static_cast<AliESDMuonCluster*>( esdTrack->GetClusters()[i] );
+		AliESDMuonCluster* cluster = esdTrack->GetESDEvent()->FindMuonCluster(esdTrack->GetClusterId(i));
 		Double_t varX = cluster->GetErrX2();
 		Double_t varY = cluster->GetErrY2();
 		// If the variance is zero then use the default one or just 1

@@ -17,6 +17,7 @@
 
 // ROOT includes
 #include <TString.h>
+#include <TList.h>
 #include <TGeoManager.h>
 
 // STEER includes
@@ -38,8 +39,10 @@
 #include "AliMUONESDInterface.h"
 #include "AliMUONRefitter.h"
 #include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVTrackStore.h"
+#include "AliMUONLocalTrigger.h"
 #include "AliMUONGeometryTransformer.h"
 
 #ifndef SafeDelete
@@ -115,8 +118,15 @@ void AliAnalysisTaskMuonRefit::UserExec(Option_t *)
   Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks();
   if (nTracks < 1) return;
   
+  TList newGhosts;
+  newGhosts.SetOwner(kFALSE);
+  UInt_t firstGhostId = 0xFFFFFFFF - 1;
+  
   // load the current event
   fESDInterface->LoadEvent(*esd, kFALSE);
+  
+  // remove clusters from ESD (keep digits as they will not change, just eventually not used anymore)
+  esd->FindListObject("MuonClusters")->Clear("C");
   
   // modify clusters
   AliMUONVCluster* cluster = 0x0;
@@ -134,33 +144,51 @@ void AliAnalysisTaskMuonRefit::UserExec(Option_t *)
     AliESDMuonTrack* esdTrack = (AliESDMuonTrack*) esdTracks->UncheckedAt(iTrack);
     
     // skip ghost tracks (leave them unchanged)
-    if (!esdTrack->ContainTrackerData()) continue;
+    if (!esdTrack->ContainTrackerData()) {
+      if (esdTrack->GetUniqueID() <= firstGhostId) firstGhostId = esdTrack->GetUniqueID()-1;
+      continue;
+    }
     
     // Find the corresponding re-fitted MUON track
     AliMUONTrack* newTrack = (AliMUONTrack*) newTrackStore->FindObject(esdTrack->GetUniqueID());
     
+    // Find the corresponding locaTrigger if any
+    AliMUONLocalTrigger *locTrg = (esdTrack->ContainTriggerData()) ? fESDInterface->FindLocalTrigger(esdTrack->LoCircuit()) : 0x0;
+    if (locTrg && locTrg->IsNull()) locTrg = 0x0;
+    
     // replace the content of the current ESD track or remove it
     if (newTrack && (!fImproveTracks || newTrack->IsImproved())) {
-      Double_t vertex[3] = {esdTrack->GetNonBendingCoor(), esdTrack->GetBendingCoor(), esdTrack->GetZ()};
-      AliMUONESDInterface::MUONToESD(*newTrack, *esdTrack, vertex, fESDInterface->GetDigits());
       
       // eventually remove the trigger part if matching chi2 do not pass the new cut
-      if (newTrack->GetChi2MatchTrigger() > fSigmaCutForTrigger*fSigmaCutForTrigger) {
-	esdTrack->SetLocalTrigger(0);
-	esdTrack->SetChi2MatchTrigger(0.);
-	esdTrack->SetHitsPatternInTrigCh(0);
-	esdTrack->SetTriggerX1Pattern(0);
-	esdTrack->SetTriggerY1Pattern(0);
-	esdTrack->SetTriggerX2Pattern(0);
-	esdTrack->SetTriggerY2Pattern(0);
-	esdTrack->SetTriggerX3Pattern(0);
-	esdTrack->SetTriggerY3Pattern(0);
-	esdTrack->SetTriggerX4Pattern(0);
-	esdTrack->SetTriggerY4Pattern(0);
+      if (locTrg && newTrack->GetChi2MatchTrigger() > fSigmaCutForTrigger*fSigmaCutForTrigger) {
+	newTrack->SetMatchTrigger(0);
+	newTrack->SetLocalTrigger(0,0,0,0,0,0,0);
+	newTrack->SetChi2MatchTrigger(0.);
+	newTrack->SetHitsPatternInTrigCh(0);
+	newGhosts.AddLast(locTrg);
+	locTrg = 0x0;
+      }
+      
+      // fill the track info
+      Double_t vertex[3] = {esdTrack->GetNonBendingCoor(), esdTrack->GetBendingCoor(), esdTrack->GetZ()};
+      AliMUONESDInterface::MUONToESD(*newTrack, *esdTrack, vertex, locTrg);
+      
+      // add the clusters if not already there
+      for (Int_t i = 0; i < newTrack->GetNClusters(); i++) {
+	AliMUONVCluster *cl = static_cast<AliMUONTrackParam*>(newTrack->GetTrackParamAtCluster()->UncheckedAt(i))->GetClusterPtr();
+	if (esd->FindMuonCluster(cl->GetUniqueID())) continue;
+	AliESDMuonCluster *esdCl = esd->NewMuonCluster();
+	AliMUONESDInterface::MUONToESD(*cl, *esdCl, kTRUE);
       }
       
     } else {
+      
+      // keep the trigger part if any
+      if (locTrg) newGhosts.AddLast(locTrg);
+      
+      // remove the track
       esdTracks->Remove(esdTrack);
+      
     }
     
   }
@@ -170,6 +198,19 @@ void AliAnalysisTaskMuonRefit::UserExec(Option_t *)
   
   // compress the array of ESD tracks
   esdTracks->Compress();
+  
+  // add new ghosts if not already there
+  TIter nextGhost(&newGhosts);
+  AliMUONLocalTrigger *locTrg = 0x0;
+  while ((locTrg = static_cast<AliMUONLocalTrigger*>(nextGhost()))) {
+    Bool_t alreadyThere = kFALSE;
+    for (Int_t iTrack = 0; iTrack < esdTracks->GetEntriesFast(); iTrack++) {
+      AliESDMuonTrack* esdTrack = (AliESDMuonTrack*) esdTracks->UncheckedAt(iTrack);
+      alreadyThere = (esdTrack->LoCircuit() == locTrg->LoCircuit());
+      if (alreadyThere) break;
+    }
+    if (!alreadyThere) AliMUONESDInterface::MUONToESD(*locTrg, *esd, firstGhostId--);
+  }
   
 }
 

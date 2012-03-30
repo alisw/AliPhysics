@@ -436,7 +436,7 @@ void AliAnalysisMuMuFromESD::FillHistosForTrack(const char* physics,
 void AliAnalysisMuMuFromESD::FillHistos(const char* physics, 
                                         const char* triggerClassName, 
                                         const char* centrality,
-                                        const AliESDEvent& esd)
+                                        AliESDEvent& esd)
 {
   /// Fill histograms for /physics/triggerClassName/centrality
   
