@@ -38,6 +38,8 @@
 
 // ANALYSIS includes
 #include "AliAnalysisManager.h"
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 
 // PWG3 includes
 #include "AliVAnalysisMuon.h"
@@ -56,6 +58,7 @@ AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff() :
   fTrackSelKeys(0x0),
   fCountTypeKeys(0x0),
   fHistoTypeKeys(0x0),
+  fEffMethodKeys(0x0),
   fUseGhosts(kFALSE),
   fList(0x0)
 {
@@ -68,6 +71,7 @@ AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff(const char *name, const AliMu
   fTrackSelKeys(0x0),
   fCountTypeKeys(0x0),
   fHistoTypeKeys(0x0),
+  fEffMethodKeys(0x0),
   fUseGhosts(kFALSE),
   fList(0x0)
 {
@@ -90,6 +94,7 @@ AliAnalysisTaskTrigChEff::~AliAnalysisTaskTrigChEff()
   delete fTrackSelKeys;
   delete fCountTypeKeys;
   delete fHistoTypeKeys;
+  delete fEffMethodKeys;
   if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
     delete fList;
   }
@@ -122,7 +127,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   TH1* histo = 0x0;
   Bool_t isOk = kTRUE;
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-    histoName = GetHistoName(kHchamberEff, icount, -1, -1);
+    histoName = GetHistoName(kHchamberEff, icount, -1, -1, -1);
     histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
     histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
     if ( histo ) {
@@ -135,7 +140,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
-      histoName = GetHistoName(kHslatEff, icount, ich, -1);
+      histoName = GetHistoName(kHslatEff, icount, ich, -1, -1);
       histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
       histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
       if ( histo ) {
@@ -149,7 +154,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
-      histoName = GetHistoName(kHboardEff, icount, ich, -1);
+      histoName = GetHistoName(kHboardEff, icount, ich, -1, -1);
       histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
       histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
       if ( histo ) {
@@ -162,7 +167,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
     }
   }
   
-  histoName = GetHistoName(kHcheckBoard, -1, -1, -1);
+  histoName = GetHistoName(kHcheckBoard, -1, -1, -1, -1);
   histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
   histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
   if ( histo ) {
@@ -188,24 +193,26 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
   for ( Int_t isel=0; isel<kNselections; ++isel ) {
     for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); ++itrig ) {
       for ( Int_t icent=1; icent<=fCentralityClasses->GetNbins(); ++icent ) {
-        for ( Int_t itype=0; itype<kNhistoTypes; ++itype ) {
-          for ( Int_t icount=-1; icount<kNcounts; ++icount ) {
-            for ( Int_t ich=-1; ich<4; ++ich ) {
-              for ( Int_t imatch=kMatchApt; imatch<kMatchHpt; ++imatch ) {
-                TH1* histo = 0x0;
-                for ( Int_t jmatch=imatch+1; jmatch<=kMatchHpt; ++jmatch ) {
-                  histoName = GetHistoName(itype, icount, ich, jmatch);
-                  TH1* histoAdd = (TH1*)fMergeableCollection->GetObject(Form("/%s/%s/%s/",fPhysSelKeys->At(isel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent)), histoName);
-                  if ( ! histoAdd ) continue;
-                  histoName = GetHistoName(itype, icount, ich, imatch);
-                  if ( ! histo ) histo = (TH1*)GetMergeableObject(fPhysSelKeys->At(isel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent), histoName);
-                  AliDebug(2,Form("Adding %s (%g) to %s (%g)", histoAdd->GetName(), histoAdd->Integral(), histo->GetName(), histo->Integral()));
-                  histo->Add(histoAdd);
-                } // loop on higher pt matching
-              } // loop on match trigger
-            } // loop on chamber
-          } // loop on count type
-        } // loop on histo type
+        for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
+          for ( Int_t itype=0; itype<kNhistoTypes; ++itype ) {
+            for ( Int_t icount=-1; icount<kNcounts; ++icount ) {
+              for ( Int_t ich=-1; ich<4; ++ich ) {
+                for ( Int_t imatch=kMatchApt; imatch<kMatchHpt; ++imatch ) {
+                  TH1* histo = 0x0;
+                  for ( Int_t jmatch=imatch+1; jmatch<=kMatchHpt; ++jmatch ) {
+                    histoName = GetHistoName(itype, icount, ich, jmatch, imethod);
+                    TH1* histoAdd = (TH1*)fMergeableCollection->GetObject(Form("/%s/%s/%s/",fPhysSelKeys->At(isel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent)), histoName);
+                    if ( ! histoAdd ) continue;
+                    histoName = GetHistoName(itype, icount, ich, imatch, imethod);
+                    if ( ! histo ) histo = (TH1*)GetMergeableObject(fPhysSelKeys->At(isel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent), histoName);
+                    AliDebug(2,Form("Adding %s (%g) to %s (%g)", histoAdd->GetName(), histoAdd->Integral(), histo->GetName(), histo->Integral()));
+                    histo->Add(histoAdd);
+                  } // loop on higher pt matching
+                } // loop on match trigger
+              } // loop on chamber
+            } // loop on count type
+          } // loop on histo type
+        } // loop on eff method
       } // loop on centrality
     } // loop on trigger classes
   } // loop on physics selection
@@ -213,16 +220,7 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
   TString physSel = fPhysSelKeys->At(kPhysSelPass)->GetName();
   TString trigClass = "ANY";
   TString centrality = "all";
-  TString histoPattern = fTrackSelKeys->At(kMatchApt)->GetName();
-  
-  //  for ( Int_t isel=0; isel<kNselections; ++isel ) {
-  //    if ( ! physSel.IsNull() ) physSel.Append(",");
-  //    physSel += ((TObjString*)fPhysSelKeys->At(isel))->GetString();
-  //  }
-  //  for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); ++itrig ) {
-  //    if ( ! trigClass.IsNull() ) trigClass.Append(",");
-  //    trigClass += ((TObjString*)fTriggerClasses->At(itrig))->GetString();
-  //  }
+  TString histoPattern = Form("%s&%s",fTrackSelKeys->At(kMatchApt)->GetName(),fEffMethodKeys->At(kEffFromTrack)->GetName());
   
   FillEffHistoList(physSel, trigClass, centrality, histoPattern, fList);
 
@@ -245,6 +243,9 @@ void AliAnalysisTaskTrigChEff::InitLocalKeys()
   
   TString histoTypeKeys = "Chamber Slat Board checkRejectedBoard";
   fHistoTypeKeys = histoTypeKeys.Tokenize(" ");
+  
+  TString effMethodKeys = "FromTrk FromTrg";
+  fEffMethodKeys = effMethodKeys.Tokenize(" ");
 }
 
 //___________________________________________________________________________
@@ -273,49 +274,51 @@ void AliAnalysisTaskTrigChEff::MyUserCreateOutputObjects()
   TH1* histo;
   TH2F* histo2D;
   
-  for ( Int_t itrackSel = 0; itrackSel<kNtrackSel; ++itrackSel ) {
-    for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-      histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel);
-      histo = new TH1F(histoName, histoName,
-                       nChamberBins, chamberLow, chamberHigh);
-      histo->GetXaxis()->SetTitle(chamberName);
-      histo->GetYaxis()->SetTitle(yAxisTitle);
-      AddObjectToCollection(histo);
-    } // loop on counts
-    
-    for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-      for ( Int_t ich=0; ich<4; ++ich ) {
-        histoName = GetHistoName(kHslatEff, icount, ich, itrackSel);
+  for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
+    for ( Int_t itrackSel = 0; itrackSel<kNtrackSel; ++itrackSel ) {
+      for ( Int_t icount=0; icount<kNcounts; ++icount ) {
+        histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imethod);
         histo = new TH1F(histoName, histoName,
-                         nSlatBins, slatLow, slatHigh);
-        histo->GetXaxis()->SetTitle(slatName);
+                         nChamberBins, chamberLow, chamberHigh);
+        histo->GetXaxis()->SetTitle(chamberName);
         histo->GetYaxis()->SetTitle(yAxisTitle);
         AddObjectToCollection(histo);
-      } // loop on chamber
-    } // loop on counts
-    
-    for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-      for ( Int_t ich=0; ich<4; ++ich ) {
-        histoName = GetHistoName(kHboardEff, icount, ich, itrackSel);
-        histo = new TH1F(histoName, histoName,
-                         nBoardBins, boardLow, boardHigh);
-        histo->GetXaxis()->SetTitle(boardName);
-        histo->GetYaxis()->SetTitle(yAxisTitle);
-        AddObjectToCollection(histo);
-      } // loop on chamber
-    } // loop on counts
-    
-    histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel);
-    histo2D = new TH2F(histoName.Data(), "Rejected tracks motivation", 
-                       5, 20.5, 25.5, nBoardBins, boardLow, boardHigh);
-    histo2D->GetXaxis()->SetBinLabel(1,"Many pads");
-    histo2D->GetXaxis()->SetBinLabel(2,"Few pads");
-    histo2D->GetXaxis()->SetBinLabel(3,"Outside geom");
-    histo2D->GetXaxis()->SetBinLabel(4,"Tracker track");
-    histo2D->GetXaxis()->SetBinLabel(5,"Masked board");
-    histo2D->GetYaxis()->SetTitle(boardName);
-    AddObjectToCollection(histo2D);
-  } // loop on track selection
+      } // loop on counts
+      
+      for ( Int_t icount=0; icount<kNcounts; ++icount ) {
+        for ( Int_t ich=0; ich<4; ++ich ) {
+          histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, imethod);
+          histo = new TH1F(histoName, histoName,
+                           nSlatBins, slatLow, slatHigh);
+          histo->GetXaxis()->SetTitle(slatName);
+          histo->GetYaxis()->SetTitle(yAxisTitle);
+          AddObjectToCollection(histo);
+        } // loop on chamber
+      } // loop on counts
+      
+      for ( Int_t icount=0; icount<kNcounts; ++icount ) {
+        for ( Int_t ich=0; ich<4; ++ich ) {
+          histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, imethod);
+          histo = new TH1F(histoName, histoName,
+                           nBoardBins, boardLow, boardHigh);
+          histo->GetXaxis()->SetTitle(boardName);
+          histo->GetYaxis()->SetTitle(yAxisTitle);
+          AddObjectToCollection(histo);
+        } // loop on chamber
+      } // loop on counts
+      
+      histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imethod);
+      histo2D = new TH2F(histoName.Data(), "Rejected tracks motivation", 
+                         5, 20.5, 25.5, nBoardBins, boardLow, boardHigh);
+      histo2D->GetXaxis()->SetBinLabel(1,"Many pads");
+      histo2D->GetXaxis()->SetBinLabel(2,"Few pads");
+      histo2D->GetXaxis()->SetBinLabel(3,"Outside geom");
+      histo2D->GetXaxis()->SetBinLabel(4,"Tracker track");
+      histo2D->GetXaxis()->SetBinLabel(5,"Masked board");
+      histo2D->GetYaxis()->SetTitle(boardName);
+      AddObjectToCollection(histo2D);
+    } // loop on track selection
+  } // loop on eff method
 
   fMuonTrackCuts->Print("mask");
   
@@ -326,7 +329,7 @@ void AliAnalysisTaskTrigChEff::MyUserCreateOutputObjects()
 }
 
 //___________________________________________________________________________
-TString AliAnalysisTaskTrigChEff::GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel)
+TString AliAnalysisTaskTrigChEff::GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imethod)
 {
   /// Get histogram index
   TString histoName = "";
@@ -334,6 +337,7 @@ TString AliAnalysisTaskTrigChEff::GetHistoName(Int_t itype, Int_t icount, Int_t 
   histoName += ((TObjString*)fHistoTypeKeys->At(itype))->GetString();
   if ( ichamber >= 0 ) histoName += Form("Ch%i", 11+ichamber);
   if ( itrackSel >= 0 ) histoName += ((TObjString*)fTrackSelKeys->At(itrackSel))->GetString();
+  if ( imethod >= 0 ) histoName += ((TObjString*)fEffMethodKeys->At(imethod))->GetString();
   return histoName;
 }
 
@@ -344,13 +348,8 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
   /// Fill histogram
   //
 
-  if ( fAODEvent ) {
-    AliError("Analysis can be done on AliESD only!!!!");
-    return;
-  }
-
   Int_t slat = 0, board = 0;
-  UShort_t pattern = 0;
+  UInt_t pattern = 0;
   TString histoName = "";
 
   TArrayI othersEfficient(4);
@@ -374,82 +373,91 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
     if ( matchTrig == 2 && ( ( selection & AliMuonTrackCuts::kMuMatchLpt ) == 0 ) ) isSelected = kFALSE;
     if ( matchTrig == 3 && ( ( selection & AliMuonTrackCuts::kMuMatchHpt ) == 0 ) ) isSelected = kFALSE;
     if ( ! isSelected ) itrackSel = kNoSelCutApt;
-        
-    pattern = ( fAODEvent ) ? ((AliAODTrack*)track)->GetHitsPatternInTrigCh() :  ((AliESDMuonTrack*)track)->GetHitsPatternInTrigCh();
-    Int_t effFlag = AliESDMuonTrack::GetEffFlag(pattern);
 
-    board = ( fAODEvent ) ? 0 : ((AliESDMuonTrack*)track)->LoCircuit();
-
-    if ( effFlag < AliESDMuonTrack::kChEff ) {
-      for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
-        TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
-
-        histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel);
-        ((TH2F*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(AliESDMuonTrack::GetSlatOrInfo(pattern), board);
+    for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
+      if ( imethod == kEffFromTrack ) {
+        if ( track->P() < 10. ) continue;
+        pattern = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMUONTrigHitsMapTrk() :  ((AliESDMuonTrack*)track)->GetHitsPatternInTrigChTrk();
+        board = AliESDMuonTrack::GetCrossedBoard(pattern);
       }
-      continue; // Track not good for efficiency calculation
-    }
-
-    othersEfficient.Reset(1);
-    for ( Int_t cath=0; cath<2; ++cath ) {
-      for ( Int_t ich=0; ich<4; ++ich ) {
-        if ( ! AliESDMuonTrack::IsChamberHit(pattern, cath, ich) ) {
-          for ( Int_t jch=0; jch<4; jch++ ) {
-            if ( jch != ich ) othersEfficient[jch] = 0;
-          } // loop on other chambers
-          break;
-        } // if chamber not efficient
-      } // loop on chambers
-    } // loop on cathodes
-
-    Bool_t rejectTrack = kTRUE;
-    for ( Int_t ich=0; ich<4; ++ich ) {
-      if ( othersEfficient[ich] > 0 ) {
-        rejectTrack = kFALSE;
-        break;
+      else {
+        pattern = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMUONTrigHitsMapTrg() :  ((AliESDMuonTrack*)track)->GetHitsPatternInTrigCh();
+        board = ( fAODEvent ) ? AliESDMuonTrack::GetCrossedBoard(pattern) : ((AliESDMuonTrack*)track)->LoCircuit();
       }
-    }
-    
-    if ( rejectTrack ) continue;
-
-    slat = AliESDMuonTrack::GetSlatOrInfo(pattern);
-
-    for ( Int_t ich=0; ich<4; ++ich ) {
-      if ( ! othersEfficient[ich] )
-        continue; // Reject track if the info of the chamber under study 
-                  // is necessary to create the track itself
       
-      Int_t iChamber = 11 + ich;
+      Int_t effFlag = AliESDMuonTrack::GetEffFlag(pattern);
       
-      Bool_t hitsBend = AliESDMuonTrack::IsChamberHit(pattern, 0, ich);
-      Bool_t hitsNonBend = AliESDMuonTrack::IsChamberHit(pattern, 1, ich);
-      
-      Bool_t fillHisto[kNcounts] = {
-        hitsBend,
-        hitsNonBend,
-        ( hitsBend && hitsNonBend ),
-        kTRUE
-      };
-      
-      for (Int_t icount=0; icount<kNcounts; ++icount){
-        if ( ! fillHisto[icount] ) continue;
+      if ( effFlag < AliESDMuonTrack::kChEff ) {
         for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
           TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
           
-          histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel);
-          ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(iChamber);
-          
-          if ( effFlag < AliESDMuonTrack::kSlatEff ) continue; // Track crossed different slats
-          histoName = GetHistoName(kHslatEff, icount, ich, itrackSel);
-          ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(slat);
-          
-          if ( effFlag < AliESDMuonTrack::kBoardEff ) continue; // Track crossed different boards
-          histoName = GetHistoName(kHboardEff, icount, ich, itrackSel);
-          ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(board);
-        } // loop on trigger classes
-      } // loop on chambers
-    } // loop on count types
-  } // loop on tracks
+          histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imethod);
+          ((TH2F*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(AliESDMuonTrack::GetSlatOrInfo(pattern), board);
+        }
+        continue; // Track not good for efficiency calculation
+      }
+      
+      othersEfficient.Reset(1);
+      for ( Int_t cath=0; cath<2; ++cath ) {
+        for ( Int_t ich=0; ich<4; ++ich ) {
+          if ( ! AliESDMuonTrack::IsChamberHit(pattern, cath, ich) ) {
+            for ( Int_t jch=0; jch<4; jch++ ) {
+              if ( jch != ich ) othersEfficient[jch] = 0;
+            } // loop on other chambers
+            break;
+          } // if chamber not efficient
+        } // loop on chambers
+      } // loop on cathodes
+      
+      Bool_t rejectTrack = kTRUE;
+      for ( Int_t ich=0; ich<4; ++ich ) {
+        if ( othersEfficient[ich] > 0 ) {
+          rejectTrack = kFALSE;
+          break;
+        }
+      }
+      
+      if ( rejectTrack ) continue;
+      
+      slat = AliESDMuonTrack::GetSlatOrInfo(pattern);
+      
+      for ( Int_t ich=0; ich<4; ++ich ) {
+        if ( ! othersEfficient[ich] )
+          continue; // Reject track if the info of the chamber under study 
+        // is necessary to create the track itself
+        
+        Int_t iChamber = 11 + ich;
+        
+        Bool_t hitsBend = AliESDMuonTrack::IsChamberHit(pattern, 0, ich);
+        Bool_t hitsNonBend = AliESDMuonTrack::IsChamberHit(pattern, 1, ich);
+        
+        Bool_t fillHisto[kNcounts] = {
+          hitsBend,
+          hitsNonBend,
+          ( hitsBend && hitsNonBend ),
+          kTRUE
+        };
+        
+        for (Int_t icount=0; icount<kNcounts; ++icount){
+          if ( ! fillHisto[icount] ) continue;
+          for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
+            TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
+            
+            histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imethod);
+            ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(iChamber);
+            
+            if ( effFlag < AliESDMuonTrack::kSlatEff ) continue; // Track crossed different slats
+            histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, imethod);
+            ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(slat);
+            
+            if ( effFlag < AliESDMuonTrack::kBoardEff ) continue; // Track crossed different boards
+            histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, imethod);
+            ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(board);
+          } // loop on trigger classes
+        } // loop on chambers
+      } // loop on count types
+    } // loop on tracks
+  } // loop on eff methods
   
   PostData(2, fList);
 }
@@ -481,15 +489,20 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
 
   TString currName = "";
   TObjArray* optArr = furtherOpt.Tokenize(" ");
-  TObjArray trackSel;
+  TObjArray trackSel, methodSel;
   trackSel.SetOwner();
+  methodSel.SetOwner();
   TString outFileOpt = "";
   for ( Int_t iopt=0; iopt<optArr->GetEntries(); iopt++ ) {
     currName = optArr->At(iopt)->GetName();
     if ( currName.Contains(".root") ) outFileOpt = currName;
     else if ( currName.Contains("Match") ) trackSel.Add(new TObjString(currName));
+    else if ( currName.Contains("From") ) methodSel.Add(new TObjString(currName));
   }
   delete optArr;
+  
+  if ( trackSel.GetEntries() == 0 ) trackSel.Add(new TObjString(fTrackSelKeys->At(kMatchApt)->GetName()));
+  if ( methodSel.GetEntries() == 0 ) methodSel.Add(new TObjString(fEffMethodKeys->At(kEffFromTrack)->GetName()));
 
   furtherOpt.ToUpper();
   
@@ -523,78 +536,80 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
       for ( Int_t isel=0; isel<physSel->GetEntries(); ++isel ) {
         for ( Int_t itrig=0; itrig<trigClasses->GetEntries(); ++itrig ) {
           for ( Int_t icent=0; icent<centrality->GetEntries(); ++icent ) {
-            for ( Int_t itrackSel=0; itrackSel<trackSel.GetEntries(); ++itrackSel ) {
-              histoName = GetHistoName(chosenType, kAllTracks, ich, -1); // partial name
-              histoName += Form("&%s",trackSel.At(itrackSel)->GetName());
-              den = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
-              if ( ! den ) continue;
-              histoName = GetHistoName(chosenType, icount, ich, -1); // partial name
-              histoName += Form("&%s",trackSel.At(itrackSel)->GetName());
-              num = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
-              if ( ! num ) continue;
-              effGraph = new TGraphAsymmErrors(num, den);
-              currName = Form("%s_%s_%s_%s", physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), trackSel.At(itrackSel)->GetName());
-              effGraph->SetTitle(currName.Data());
+            for ( Int_t imethodSel=0; imethodSel<methodSel.GetEntries(); ++imethodSel ) {
+              for ( Int_t itrackSel=0; itrackSel<trackSel.GetEntries(); ++itrackSel ) {
+                histoName = GetHistoName(chosenType, kAllTracks, ich, -1, -1); // partial name
+                histoName += Form("&%s&%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
+                den = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
+                if ( ! den ) continue;
+                histoName = GetHistoName(chosenType, icount, ich, -1, -1); // partial name
+                histoName += Form("&%s&%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
+                num = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
+                if ( ! num ) continue;
+                effGraph = new TGraphAsymmErrors(num, den);
+                currName = Form("%s_%s_%s_%s_%s", physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), trackSel.At(itrackSel)->GetName(), methodSel.At(imethodSel)->GetName());
+                effGraph->SetTitle(currName.Data());
 
-              Double_t ymin = 0.;
-              Double_t ymax = 1.1;
-              yAxisTitle = "Efficiency";
+                Double_t ymin = 0.;
+                Double_t ymax = 1.1;
+                yAxisTitle = "Efficiency";
 
-              if ( furtherOpt.Contains("DIFF") || furtherOpt.Contains("PULL") ) {
-                if ( ! refGraph ) {
-                  refGraph = effGraph;
-                  continue;
+                if ( furtherOpt.Contains("DIFF") || furtherOpt.Contains("PULL") ) {
+                  if ( ! refGraph ) {
+                    refGraph = effGraph;
+                    continue;
+                  }
+                  Double_t currX, currY, baseX, baseY, errYlow = 0., errYhigh = 0., newY = 0.;
+                  Double_t refVal = 1., errY = 0.; 
+                  for ( Int_t ipoint=0; ipoint<effGraph->GetN(); ipoint++ ) {
+                    refGraph->GetPoint(ipoint, baseX, baseY);
+                    effGraph->GetPoint(ipoint, currX, currY);
+                    Double_t errX = effGraph->GetErrorXlow(ipoint);
+                    if ( furtherOpt.Contains("DIFF") ) {
+                      refVal = ( baseY > 0. ) ? baseY : 1.;
+                      newY = ( currY - baseY ) / refVal;
+                      Double_t errYlow1 = effGraph->GetErrorYlow(ipoint);
+                      Double_t errYlow2 = refGraph->GetErrorYlow(ipoint);
+                      Double_t errYhigh1 = effGraph->GetErrorYhigh(ipoint);
+                      Double_t errYhigh2 = refGraph->GetErrorYhigh(ipoint);
+                      errYlow = TMath::Sqrt(errYlow1*errYlow1 + errYlow2*errYlow2) / refVal;
+                      errYhigh = TMath::Sqrt(errYhigh1*errYhigh1 + errYhigh2*errYhigh2) / refVal;
+                      //yAxisTitle = Form("(%s - %s) / %s", effGraph->GetTitle(), refGraph->GetTitle(), refGraph->GetTitle());
+                      yAxisTitle = "(eff - ref ) / ref";
+                      effGraph->SetTitle(Form("Rel. diff. w.r.t. %s", refGraph->GetTitle()));
+                      ymin = -0.1;
+                      ymax = 0.1;
+                    }
+                    else if ( furtherOpt.Contains("PULL") ) {
+                      errY = 0.5 * ( effGraph->GetErrorYlow(ipoint) + effGraph->GetErrorYhigh(ipoint));
+                      newY = ( errY > 0. ) ? ( currY - baseY ) / errY : 0.;
+                      errYlow = 1.;
+                      errYhigh = 1.;
+                      //yAxisTitle = Form("( %s - %s ) / err", effGraph->GetTitle(), refGraph->GetTitle());
+                      yAxisTitle = "(eff - ref ) / err";
+                      effGraph->SetTitle(Form("Pull w.r.t. %s", refGraph->GetTitle()));
+                      ymin = -4.;
+                      ymax = 4.;
+                    }
+                    effGraph->SetPoint(ipoint, currX, newY);
+                    effGraph->SetPointError(ipoint, errX, errX, errYlow, errYhigh);
+                  } // loop on points
                 }
-                Double_t currX, currY, baseX, baseY, errYlow = 0., errYhigh = 0., newY = 0.;
-                Double_t refVal = 1., errY = 0.; 
-                for ( Int_t ipoint=0; ipoint<effGraph->GetN(); ipoint++ ) {
-                  refGraph->GetPoint(ipoint, baseX, baseY);
-                  effGraph->GetPoint(ipoint, currX, currY);
-                  Double_t errX = effGraph->GetErrorXlow(ipoint);
-                  if ( furtherOpt.Contains("DIFF") ) {
-                    refVal = ( baseY > 0. ) ? baseY : 1.;
-                    newY = ( currY - baseY ) / refVal;
-                    Double_t errYlow1 = effGraph->GetErrorYlow(ipoint);
-                    Double_t errYlow2 = refGraph->GetErrorYlow(ipoint);
-                    Double_t errYhigh1 = effGraph->GetErrorYhigh(ipoint);
-                    Double_t errYhigh2 = refGraph->GetErrorYhigh(ipoint);
-                    errYlow = TMath::Sqrt(errYlow1*errYlow1 + errYlow2*errYlow2) / refVal;
-                    errYhigh = TMath::Sqrt(errYhigh1*errYhigh1 + errYhigh2*errYhigh2) / refVal;
-                    //yAxisTitle = Form("(%s - %s) / %s", effGraph->GetTitle(), refGraph->GetTitle(), refGraph->GetTitle());
-                    yAxisTitle = "(eff - ref ) / ref";
-                    effGraph->SetTitle(Form("Rel. diff. w.r.t. %s", refGraph->GetTitle()));
-                    ymin = -0.1;
-                    ymax = 0.1;
-                  }
-                  else if ( furtherOpt.Contains("PULL") ) {
-                    errY = 0.5 * ( effGraph->GetErrorYlow(ipoint) + effGraph->GetErrorYhigh(ipoint));
-                    newY = ( errY > 0. ) ? ( currY - baseY ) / errY : 0.;
-                    errYlow = 1.;
-                    errYhigh = 1.;
-                    //yAxisTitle = Form("( %s - %s ) / err", effGraph->GetTitle(), refGraph->GetTitle());
-                    yAxisTitle = "(eff - ref ) / err";
-                    effGraph->SetTitle(Form("Pull w.r.t. %s", refGraph->GetTitle()));
-                    ymin = -4.;
-                    ymax = 4.;
-                  }
-                  effGraph->SetPoint(ipoint, currX, newY);
-                  effGraph->SetPointError(ipoint, errX, errX, errYlow, errYhigh);
-                } // loop on points
-              }
-              effGraph->GetYaxis()->SetRangeUser(ymin, ymax);
-              effGraph->GetYaxis()->SetTitle(yAxisTitle.Data());
-              effGraph->SetLineColor(icolor);
-              effGraph->SetMarkerColor(icolor);
-              effGraph->SetMarkerStyle(20 + istyle);
-              //effGraph->SetMarkerSize(0.3);
-              icolor++;
-              if ( icolor == 5 || icolor == 10 ) icolor++;
-              istyle++;
-              effGraph->Draw(drawOpt.Data());
-              drawOpt = "P";
-              if ( ich < 3 ) continue;
-              leg->AddEntry(effGraph, currName.Data(), "lp");
-            } // loop on match trigger
+                effGraph->GetYaxis()->SetRangeUser(ymin, ymax);
+                effGraph->GetYaxis()->SetTitle(yAxisTitle.Data());
+                effGraph->SetLineColor(icolor);
+                effGraph->SetMarkerColor(icolor);
+                effGraph->SetMarkerStyle(20 + istyle);
+                //effGraph->SetMarkerSize(0.3);
+                icolor++;
+                if ( icolor == 5 || icolor == 10 ) icolor++;
+                istyle++;
+                effGraph->Draw(drawOpt.Data());
+                drawOpt = "P";
+                if ( ich < 3 ) continue;
+                leg->AddEntry(effGraph, currName.Data(), "lp");
+              } // loop on match trigger
+            } // loop on eff method
           } // loop on centrality
         } // loop on trigger classes
       } // loop on physics selection
@@ -627,9 +642,9 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
           can->Divide(2,2);
         
         for ( Int_t ich=-1; ich<4; ich++ ) {
-          histoName = GetHistoName(baseIndex[itype], icount, ich, -1);
+          histoName = GetHistoName(baseIndex[itype], icount, ich, -1, -1);
           num = (TH1*)fList->FindObject(histoName.Data());
-          histoName = GetHistoName(baseIndex[itype], kNcounts-1, ich, -1);
+          histoName = GetHistoName(baseIndex[itype], kNcounts-1, ich, -1, -1);
           den = (TH1*)fList->FindObject(histoName.Data());
           if ( ! num || ! den ) continue;
           effGraph = new TGraphAsymmErrors(num, den);
@@ -649,9 +664,9 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
     TObjArray* outFileOptList = outFileOpt.Tokenize("?");
     AliInfo(Form("Creating file %s", outFileOptList->At(0)->GetName()));
     TList* effList = GetEffHistoList(outFileOptList->At(1)->GetName(), outFileOptList->At(2)->GetName(), outFileOptList->At(3)->GetName(), outFileOptList->At(4)->GetName());
-    effList->SetName("triggerChamberEff");
+    effList->SetName(GetOutputSlot(2)->GetContainer()->GetName());
     TFile* outFile = TFile::Open(outFileOptList->At(0)->GetName(), "RECREATE");
-    effList->Write(fList->GetName(),TObject::kSingleKey);
+    effList->Write(effList->GetName(),TObject::kSingleKey);
     outFile->Close();
     delete effList;
     delete outFileOptList;

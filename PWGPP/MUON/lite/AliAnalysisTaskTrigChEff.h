@@ -63,19 +63,26 @@ class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
     kMatchHpt,      ///< Match High Pt
     kNtrackSel      ///< Total number of selection types
   };
+  
+  enum {
+    kEffFromTrack,  ///< Hit pattern from tracker track extrapolation
+    kEffFromTrig,   ///< Hit pattern from trigger
+    kNeffMethods    ///< Total number of efficiency methods
+  };
 
-  TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t imatch);
+  TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t imatch, Int_t imethod);
   Bool_t FillEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection, TList* outList = 0x0);
   void InitLocalKeys();
  
   TObjArray* fTrackSelKeys;  ///< Selection names
   TObjArray* fCountTypeKeys; ///< Count type keys
   TObjArray* fHistoTypeKeys; ///< Base histogram name
+  TObjArray* fEffMethodKeys; ///< Efficiency methods keys
 
   Bool_t fUseGhosts; ///< Flag to use also the trigger tracks not matching the tracker in eff. calculation
   TList*  fList;     //!<TList output object
 
-  ClassDef(AliAnalysisTaskTrigChEff, 2); // Trigger chamber efficiencies
+  ClassDef(AliAnalysisTaskTrigChEff, 3); // Trigger chamber efficiencies
 };
 
 #endif

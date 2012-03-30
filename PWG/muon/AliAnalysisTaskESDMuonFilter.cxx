@@ -332,6 +332,10 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     aodTrack->SetChi2perNDF(esdMuTrack->GetChi2() / (2.*esdMuTrack->GetNHit() - 5.));
     aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
     aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
+    UInt_t pattern = esdMuTrack->GetHitsPatternInTrigCh();
+    AliESDMuonTrack::AddEffInfo(pattern, 0, esdMuTrack->LoCircuit(), (AliESDMuonTrack::EAliTriggerChPatternFlag)0);
+    aodTrack->SetMUONtrigHitsMapTrg(pattern);
+    aodTrack->SetMUONtrigHitsMapTrk(esdMuTrack->GetHitsPatternInTrigChTrk());
     aodTrack->SetMuonClusterMap(esdMuTrack->GetMuonClusterMap());
     aodTrack->SetMatchTrigger(esdMuTrack->GetMatchTrigger());
     aodTrack->Connected(esdMuTrack->IsConnected());
