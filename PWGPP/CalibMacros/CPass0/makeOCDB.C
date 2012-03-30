@@ -66,6 +66,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 // T0 part
   AliT0PreprocessorOffline procesT0;
   // Make  calibration of channels offset
+   procesT0.setDArun(175000);
    procesT0.Process("CalibObjects.root",runNumber, runNumber, ocdbStorage);
 
 
@@ -101,7 +102,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
    //
    Int_t trdStatus = procestrd.GetStatus();
    Int_t tofStatus = calibTask.GetStatus();
-   Int_t tpcStatus = (processTPC.ValidateTimeDrift() || processTPC.ValidateTimeDrift());
+   Int_t tpcStatus = ((processTPC.ValidateTimeDrift() || processTPC.ValidateTimeGain())==kFALSE);
    //
    printf("\n\n\n\n");
    printf("CPass0 calibration status\n");
