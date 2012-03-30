@@ -55,7 +55,8 @@ Float_t AliUnfolding::fgRegularizationWeight = 10000;
 Int_t AliUnfolding::fgSkipBinsBegin = 0;
 Float_t AliUnfolding::fgMinuitStepSize = 0.1;                 // (usually not needed to be changed) step size in minimization
 Float_t AliUnfolding::fgMinuitPrecision = 1e-6;               // minuit precision
-Int_t   AliUnfolding::fgMinuitMaxIterations = 1e6;           // minuit maximum number of iterations
+Int_t   AliUnfolding::fgMinuitMaxIterations = 1e6;            // minuit maximum number of iterations
+Double_t AliUnfolding::fgMinuitStrategy = 1.;                 // minuit strategy
 Bool_t AliUnfolding::fgMinimumInitialValue = kFALSE;          // set all initial values at least to the smallest value among the initial values
 Float_t AliUnfolding::fgMinimumInitialValueFix = -1;
 Bool_t AliUnfolding::fgNormalizeInput = kFALSE;               // normalize input spectrum
@@ -393,6 +394,8 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
   minuit->SetPrecision(fgMinuitPrecision);
 
   minuit->SetMaxIterations(fgMinuitMaxIterations);
+
+  minuit->ExecuteCommand("SET STRATEGY",&fgMinuitStrategy,1);
 
   for (Int_t i=0; i<fgMaxParams; i++)
     (*fgEntropyAPriori)[i] = 1;
