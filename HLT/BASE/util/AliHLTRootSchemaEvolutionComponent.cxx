@@ -1,11 +1,10 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE                    * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -16,11 +15,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTRootSchemaEvolutionComponent.cxx
-    @author Matthias Richter
-    @date   2009-10-18
-    @brief  Handler component for ROOT schema evolution of streamed objects
-*/
+/// @file   AliHLTRootSchemaEvolutionComponent.cxx
+/// @author Matthias Richter
+/// @date   2009-10-18
+/// @brief  Handler component for ROOT schema evolution of streamed objects
+///
 
 #include "AliHLTRootSchemaEvolutionComponent.h"
 #include "AliHLTMessage.h"
@@ -63,7 +62,7 @@ ClassImp(AliHLTRootSchemaEvolutionComponent)
 AliHLTRootSchemaEvolutionComponent::AliHLTRootSchemaEvolutionComponent()
   : AliHLTCalibrationProcessor()
   , fList()
-  , fFlags(kFXS)
+  , fPropertyFlags(kFXS)
   , fpStreamerInfos(NULL)
   , fpEventTimer(NULL)
   , fpCycleTimer(NULL)
@@ -575,7 +574,7 @@ TObject* AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Extract(const 
   return pObj;
 }
 
-int AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Stream(TObject* obj, AliHLTMessage& msg)
+int AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Stream(const TObject* obj, AliHLTMessage& msg)
 {
   /// stream object and update performance parameters
   if (!obj) return -EINVAL;

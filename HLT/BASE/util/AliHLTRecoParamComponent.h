@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTRECOPARAMCOMPONENT_H
 #define ALIHLTRECOPARAMCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE                    * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -63,20 +63,20 @@ class AliHLTRecoParamComponent : public AliHLTCalibrationProcessor
   /// inherited from AliHLTComponent: return id of the component.
   virtual const char* GetComponentID() {return "RecoParamGenerator";};
   /// inherited from AliHLTComponent: input data types
-  virtual void GetInputDataTypes(AliHLTComponentDataTypeList&);
+  virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   /// inherited from AliHLTComponent: output data types
   virtual AliHLTComponentDataType GetOutputDataType();
   /// inherited from AliHLTComponent: output data size
   virtual void GetOutputDataSize(unsigned long&, double&);
   /// inherited from AliHLTComponent: description of required CDB objects
-  void GetOCDBObjectDescription( TMap* const targetArray);
+  virtual void GetOCDBObjectDescription( TMap* const targetArray);
 
   /// inherited from AliHLTComponent: spawn function, create an instance.
   virtual AliHLTComponent* Spawn() {return new AliHLTRecoParamComponent;}
 
  protected:
   /// inherited from AliHLTCalibrationProcessor: custom initialization
-  int InitCalibration();
+  virtual int InitCalibration();
   /// inherited from AliHLTCalibrationProcessor: custom argument scan
   /// the AliHLTCalibrationProcessor so far does not use the base class
   /// methods for argument scan.
@@ -84,7 +84,7 @@ class AliHLTRecoParamComponent : public AliHLTCalibrationProcessor
     int result=ScanConfigurationArgument(argc, argv); return result>0?result-1:result;
   }
   /// inherited from AliHLTCalibrationProcessor: cleanup
-  int DeinitCalibration();
+  virtual int DeinitCalibration();
 
   /// inherited from AliHLTCalibrationProcessor processing
   virtual int ProcessCalibration( const AliHLTComponentEventData& evtData,
@@ -93,7 +93,7 @@ class AliHLTRecoParamComponent : public AliHLTCalibrationProcessor
   using AliHLTCalibrationProcessor::ProcessCalibration;
 
   /// inherited from AliHLTCalibrationProcessor processing
-  int ShipDataToFXS( const AliHLTComponentEventData& evtData,
+  virtual int ShipDataToFXS( const AliHLTComponentEventData& evtData,
 		     AliHLTComponentTriggerData& trigData);
 
   using AliHLTCalibrationProcessor::ShipDataToFXS;
@@ -111,10 +111,10 @@ private:
   /** assignment operator prohibited */
   AliHLTRecoParamComponent& operator=(const AliHLTRecoParamComponent&);
 
-  static const char* fgkConfigurationObject; //! configuration object
+  static const char* fgkConfigurationObject; //! component configuration object
   
-  AliHLTOnlineConfiguration fOnlineConfig;
-  int fOutputSize;
+  AliHLTOnlineConfiguration fOnlineConfig; //! online configuration object
+  int fOutputSize; //! output size estimator
 
   ClassDef(AliHLTRecoParamComponent, 0) // Online HLT RecoParam generator component
 };

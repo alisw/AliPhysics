@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTROOTSCHEMAEVOLUTIONCOMPONENT_H
 #define ALIHLTROOTSCHEMAEVOLUTIONCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE                    * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTRootSchemaEvolutionComponent.h
-    @author Matthias Richter
-    @date   2009-10-18
-    @brief  Handler component for ROOT schema evolution of streamed objects
-*/
+/// @file   AliHLTRootSchemaEvolutionComponent.h
+/// @author Matthias Richter
+/// @date   2009-10-18
+/// @brief  Handler component for ROOT schema evolution of streamed objects
+///
 
 #include "AliHLTCalibrationProcessor.h"
 #include "TString.h"
@@ -86,7 +86,7 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTCalibrationProcessor
   /// inherited from AliHLTComponent: return id of the component.
   virtual const char* GetComponentID() {return "ROOTSchemaEvolutionComponent";};
   /// inherited from AliHLTComponent: input data types
-  virtual void GetInputDataTypes(AliHLTComponentDataTypeList&);
+  virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   /// inherited from AliHLTComponent: output data types
   virtual AliHLTComponentDataType GetOutputDataType();
   /// inherited from AliHLTComponent: output data size
@@ -131,13 +131,12 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTCalibrationProcessor
     TObject* Extract(const AliHLTComponentBlockData* bd);
 
     /// stream object and update performance parameters
-    int Stream(TObject* obj, AliHLTMessage& msg);
+    int Stream(const TObject* obj, AliHLTMessage& msg);
 
     bool IsObject() const {return fIsObject;}
-    bool operator==(AliHLTDataBlockItem& i) const {return fDt==i.fDt && fSpecification==i.fSpecification;}
+    bool operator==(const AliHLTDataBlockItem& i) const {return fDt==i.fDt && fSpecification==i.fSpecification;}
     bool operator==(AliHLTComponentDataType dt) const {return fDt==dt;}
     bool operator==(AliHLTUInt32_t spec) const {return fSpecification==spec;}
-    int operator+(AliHLTDataBlockItem& b) const;
     operator const AliHLTComponentDataType&() const {return fDt;}
     AliHLTUInt32_t GetSpecification() const {return fSpecification;}
     
@@ -208,9 +207,9 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTCalibrationProcessor
    */
   virtual int ScanConfigurationArgument(int argc, const char** argv);
 
-  void SetBits(AliHLTUInt32_t b) {fFlags|=b;}
-  void ClearBits(AliHLTUInt32_t b) {fFlags&=~b;}
-  bool TestBits(AliHLTUInt32_t b) {return (fFlags&b) != 0;}
+  void SetBits(AliHLTUInt32_t b) {fPropertyFlags|=b;}
+  void ClearBits(AliHLTUInt32_t b) {fPropertyFlags&=~b;}
+  bool TestBits(AliHLTUInt32_t b) const {return (fPropertyFlags&b) != 0;}
   int WriteToFile(const char* filename, const TObjArray* infos) const;
 
 private:
@@ -221,7 +220,7 @@ private:
 
   vector<AliHLTDataBlockItem> fList; //! list of block properties
 
-  AliHLTUInt32_t fFlags; //! property flags
+  AliHLTUInt32_t fPropertyFlags; //! property flags
 
   TObjArray* fpStreamerInfos; //! array of streamer infos
   TStopwatch* fpEventTimer; //! stopwatch for event processing
