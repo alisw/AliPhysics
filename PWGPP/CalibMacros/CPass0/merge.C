@@ -20,11 +20,28 @@ void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
   //
   printf("Merging with chunks copying turned %s\n",copyLocal ? "ON":"OFF");
   gROOT->Macro("LoadLibraries.C");
-  //
-  cpTimeOut(outputDir, pattern,10, copyLocal);
+  
+  //if pattern is empty and outputDir is a local file assume it contains the list of files to merge
+  //otherwise fall back to old behaviour: search alien and process those files
+  TString listFileName("file.list");
+  TString patternStr(pattern);
+  Long_t id, size, flags, modtime;
+  Bool_t outputDirFailure = gSystem->GetPathInfo(outputDir, &id, &size, &flags, &modtime);
+  printf("st: %i, flags: %i, patt: %s\n",outputDirFailure,flags,patternStr.Data());
+  if (!outputDirFailure && (flags==0) && patternStr.IsNull()) 
+  { 
+    printf("### processing local fileList: %s\n",outputDir);
+    listFileName=outputDir;
+  }
+  else
+  {
+    cpTimeOut(outputDir, pattern, 10, copyLocal);
+    listFileName="calib.list";
+  }
+
   //
   // local
-  mergeInChunksTXT("calib.list","CalibObjects.root");
+  mergeInChunksTXT(listFileName.Data(),"CalibObjects.root");
   //  AliFileMerger merger;
   //  merger.AddReject("esdFriend"); // do not merge
   //  merger.SetMaxFilesOpen(700);
