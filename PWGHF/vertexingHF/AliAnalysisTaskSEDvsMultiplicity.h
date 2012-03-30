@@ -37,25 +37,24 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSEDvsMultiplicity();
-  AliAnalysisTaskSEDvsMultiplicity(const char *name, AliRDHFCuts* cuts);
+  AliAnalysisTaskSEDvsMultiplicity(const char *name, Int_t pdgMeson, AliRDHFCuts* cuts);
   virtual ~AliAnalysisTaskSEDvsMultiplicity();
 
-  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
 
-  void SetMassLimits(Float_t lowlimit, Float_t uplimit);
-  Float_t GetUpperMassLimit(){return fUpmasslimit;}
-  Float_t GetLowerMassLimit(){return fLowmasslimit;}
-  Int_t GetNMassBins() const;
+  void SetMassLimits(Double_t lowlimit, Double_t uplimit);
+  void SetMassLimits(Int_t pdg, Double_t range);
+  Double_t GetUpperMassLimit() const {return fUpmasslimit;}
+  Double_t GetLowerMassLimit() const {return fLowmasslimit;}
+  void SetNMassBins(Int_t nbins){fNMassBins=nbins;}
+  Int_t GetNMassBins() const{return fNMassBins;}
 
-  void SetBinWidth(Float_t w);
-  Float_t GetBinWidth(){return fBinWidth;}
-
-  void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
+  void SetImpactParameterBinning(Int_t nbins, Double_t dmin, Double_t dmax){
     fNImpParBins=nbins;
     fLowerImpPar=dmin;
     fHigherImpPar=dmax;
   }
 
+  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetUseBit(Bool_t use=kTRUE){fUseBit=use;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
 
@@ -105,9 +104,9 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   THnSparseF *fHistMassPtImpPar[5];//! histograms for impact paramter studies
 
-  Float_t fUpmasslimit;  //upper inv mass limit for histos
-  Float_t fLowmasslimit; //lower inv mass limit for histos
-  Float_t fBinWidth;//width of one bin in output histos
+  Double_t fUpmasslimit;  //upper inv mass limit for histos
+  Double_t fLowmasslimit; //lower inv mass limit for histos
+  Int_t   fNMassBins;    // nbins for invariant mass histos
 
   AliRDHFCuts *fRDCutsAnalysis; // Cuts for Analysis
   AliNormalizationCounter *fCounter;  //!Counter for normalization
@@ -115,8 +114,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   Bool_t fDoImpPar;  //swicth for D impact parameter THnSparse
   Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
-  Float_t fLowerImpPar;  // lower limit in impact parameter (um)
-  Float_t fHigherImpPar; // higher limit in impact parameter (um)
+  Double_t fLowerImpPar;  // lower limit in impact parameter (um)
+  Double_t fHigherImpPar; // higher limit in impact parameter (um)
 
   Bool_t fReadMC;    //flag for access to MC
   Int_t  fMCOption;  // 0=keep all cand, 1=keep only signal, 2= keep only back

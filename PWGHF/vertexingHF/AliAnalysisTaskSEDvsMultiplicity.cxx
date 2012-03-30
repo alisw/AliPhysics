@@ -64,7 +64,7 @@ AliAnalysisTaskSE(),
   fPtVsMassVsMultAntiPart(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
-  fBinWidth(0.002),
+  fNMassBins(200),
   fRDCutsAnalysis(0),
   fCounter(0),
   fCounterU(0),
@@ -84,7 +84,7 @@ AliAnalysisTaskSE(),
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *name,AliRDHFCuts *cuts):
+AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *name, Int_t pdgMeson,AliRDHFCuts *cuts):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fListCuts(0),
@@ -97,7 +97,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fPtVsMassVsMultAntiPart(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
-  fBinWidth(0.002),
+  fNMassBins(200),
   fRDCutsAnalysis(cuts),
   fCounter(0),
   fCounterU(0),
@@ -109,23 +109,28 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fMCOption(0),
   fUseBit(kTRUE),
   fRefMult(9.5),
-  fPdgMeson(411)
+  fPdgMeson(pdgMeson)
 {
   // 
   // Standard constructor
   //
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
-
+  if(fPdgMeson==413){
+    fNMassBins=200; // FIXME
+    SetMassLimits(0.,0.2); // FIXME
+  }else{ 
+    fNMassBins=200; 
+    SetMassLimits(fPdgMeson,0.1);
+  }
   // Default constructor
    // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
   // Output slot #2 writes cut to private output
   DefineOutput(2,TList::Class());
   // Output slot #3 writes cut to private output
-  DefineOutput(3,TList::Class());
- 
- }
+  DefineOutput(3,TList::Class()); 
+}
 //________________________________________________________________________
 AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
 {
@@ -144,29 +149,20 @@ AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
 }  
 
 //_________________________________________________________________
-void  AliAnalysisTaskSEDvsMultiplicity::SetMassLimits(Float_t lowlimit, Float_t uplimit){
+void  AliAnalysisTaskSEDvsMultiplicity::SetMassLimits(Double_t lowlimit, Double_t uplimit){
   // set invariant mass limits
   if(uplimit>lowlimit){
-    Float_t bw=GetBinWidth();
     fUpmasslimit = lowlimit;
     fLowmasslimit = uplimit;
-    SetBinWidth(bw);
+  }else{
+    AliError("Wrong mass limits: upper value should be larger than lower one");
   }
 }
-//________________________________________________________________
-void AliAnalysisTaskSEDvsMultiplicity::SetBinWidth(Float_t w){
-  Float_t width=w;
-  Int_t nbins=(Int_t)((fUpmasslimit-fLowmasslimit)/width+0.5);
-  Int_t missingbins=4-nbins%4;
-  nbins=nbins+missingbins;
-  width=(fUpmasslimit-fLowmasslimit)/nbins;
-  if(missingbins!=0){
-    printf("AliAnalysisTaskSEDvsMultiplicity::SetBinWidth: W-bin width of %f will produce histograms not rebinnable by 4. New width set to %f\n",w,width);
-  }
-  else{
-    if(fDebug>1) printf("AliAnalysisTaskSEDvsMultiplicity::SetBinWidth: width set to %f\n",width);
-  }
-  fBinWidth=width;
+//_________________________________________________________________
+void  AliAnalysisTaskSEDvsMultiplicity::SetMassLimits(Int_t pdg, Double_t range){
+  // set invariant mass limits
+  Double_t mass=TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg))->Mass();
+  SetMassLimits(mass-range,mass+range);
 }
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::Init(){
@@ -242,15 +238,15 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fPtVsMassVsMult=new TH3F("hPtVsMassvsMult", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,200,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMult=new TH3F("hPtVsMassvsMult", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
  
-  fPtVsMassVsMultNoPid=new TH3F("hPtVsMassvsMultNoPid", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,200,fLowmasslimit,fUpmasslimit,48,0.,24.); 
+  fPtVsMassVsMultNoPid=new TH3F("hPtVsMassvsMultNoPid", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.); 
 
-  fPtVsMassVsMultUncorr=new TH3F("hPtVsMassvsMultUncorr", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,-0.5,199.5,200,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultUncorr=new TH3F("hPtVsMassvsMultUncorr", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,-0.5,199.5,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
-  fPtVsMassVsMultPart=new TH3F("hPtVsMassvsMultPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,200,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultPart=new TH3F("hPtVsMassvsMultPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
-  fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,200,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
   fOutput->Add(fPtVsMassVsMult);
   fOutput->Add(fPtVsMassVsMultUncorr);
@@ -470,7 +466,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	    if(fPdgMeson==411){
 	      trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDplus(mcHeader,arrayMC,partD)*10000.;
 	    }else if(fPdgMeson==421){
-	      trueImpParXY=0.; /// FIXME
+	      trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDzero(mcHeader,arrayMC,partD)*10000.;
 	    }else if(fPdgMeson==413){
 	      trueImpParXY=0.; /// FIXME
 	    }
@@ -532,18 +528,14 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   
   return;
 }
-//_________________________________________________________________
-Int_t AliAnalysisTaskSEDvsMultiplicity::GetNMassBins() const {
-  return (Int_t)((fUpmasslimit-fLowmasslimit)/fBinWidth+0.5);
-}
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::CreateImpactParameterHistos(){
   // Histos for impact paramter study
+  // mass . pt , impact parameter , decay length , multiplicity
 
-  Int_t nmassbins=GetNMassBins();
-  Int_t nbins[5]={nmassbins,200,fNImpParBins,50,100};
-  Double_t xmin[5]={fLowmasslimit,0.,fLowerImpPar,0.,-0.5};
-  Double_t xmax[5]={fUpmasslimit,20.,fHigherImpPar,1.,99.5};
+  Int_t nbins[5]={fNMassBins,200,fNImpParBins,50,100};
+  Double_t xmin[5]={fLowmasslimit,0.,fLowerImpPar,0.,0.};
+  Double_t xmax[5]={fUpmasslimit,20.,fHigherImpPar,1.,100.};
 
   fHistMassPtImpPar[0]=new THnSparseF("hMassPtImpParAll",
 					"Mass vs. pt vs.imppar - All",
