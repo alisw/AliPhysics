@@ -229,7 +229,7 @@ void AliAnalysisTaskPIDFluctuation::UserExec(Option_t *)
   Float_t cent_trk = centrality->GetCentralityPercentileUnchecked("TRK");
 
   /* init PID */
-  InitPID(event);
+  if (!InitPID(event)) return;
 
   Bool_t pidFlag[AliPID::kSPECIES];
   Int_t icharge;
@@ -307,11 +307,13 @@ AliAnalysisTaskPIDFluctuation::AcceptEvent(AliVEvent *event) const
     /* get ESD vertex SPD */
     if (event->InheritsFrom("AliESDEvent")) {
       AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
+      if (!esdevent) return kFALSE;
       vertex = esdevent->GetPrimaryVertexSPD();
     }
     /* get AOD vertex SPD */
     else if (event->InheritsFrom("AliAODEvent")) {
       AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(event);
+      if (!aodevent) return kFALSE;
       vertex = aodevent->GetPrimaryVertexSPD();
     }
     if (vertex->GetNContributors() < 1) return kFALSE;
@@ -345,11 +347,13 @@ AliAnalysisTaskPIDFluctuation::AcceptTrack(AliVTrack *track) const
   /* check ESD track cuts */
   if (track->InheritsFrom("AliESDtrack")) {
     AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    if (!esdtrack) return kFALSE;
     if (!fESDtrackCuts->AcceptTrack(esdtrack)) return kFALSE;
   }
   /* check AOD filter bit */
   else if (track->InheritsFrom("AliAODTrack")) {
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+    if (!aodtrack) return kFALSE;
     if (!aodtrack->TestFilterBit(fAODfilterBit)) return kFALSE;
   }
 
@@ -548,7 +552,7 @@ AliAnalysisTaskPIDFluctuation::MakePID(AliVTrack *track, Bool_t *pidFlag, Float_
 
 //___________________________________________________________
 
-void
+Bool_t
 AliAnalysisTaskPIDFluctuation::InitPID(AliVEvent *event)
 {
   /*
@@ -564,7 +568,9 @@ AliAnalysisTaskPIDFluctuation::InitPID(AliVEvent *event)
       fPID = new AliESDpid(mcFlag);
     else if (event->InheritsFrom("AliAODEvent"))
       fPID = new AliAODpidUtil(mcFlag);
-
+    else 
+      return kFALSE;
+    
     /* set OADB path */
     fPID->SetOADBPath("$ALICE_ROOT/OADB");
   }
@@ -584,6 +590,7 @@ AliAnalysisTaskPIDFluctuation::InitPID(AliVEvent *event)
   fPID->GetTOFResponse().SetTrackParameter(2, 0.0);
   fPID->GetTOFResponse().SetTrackParameter(3, 30);
   
+  return kTRUE;
 }
 
 //___________________________________________________________

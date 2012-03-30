@@ -95,7 +95,7 @@ public AliAnalysisTaskSE
   Double_t MakeTPCPID(AliVTrack *track, Double_t *nSigma) const; // make TPC PID
   Double_t MakeTOFPID(AliVTrack *track, Double_t *nSigma) const; // make TOF PID
   void MakePID(AliVTrack *track, Bool_t *pidFlag, Float_t centrality) const; // make PID
-  void InitPID(AliVEvent *event); // init PID
+  Bool_t InitPID(AliVEvent *event); // init PID
 
   /*** PID objects and flags ***/
   Int_t fPIDMethod; // PID method
