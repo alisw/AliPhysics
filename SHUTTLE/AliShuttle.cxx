@@ -1417,7 +1417,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 		Log("SHUTTLE", Form("\t\t\t****** run %d - %s: START  ******",
 						GetCurrentRun(), aDetector->GetName()));
 
-		for(Int_t iSys=0;iSys<3;iSys++) fFXSCalled[iSys]=kFALSE;
+		for(Int_t iSys=0;iSys<4;iSys++) fFXSCalled[iSys]=kFALSE;
 		
 		Int_t initialMem = GetMem(getpid());
 		Log("SHUTTLE", Form("Memory consumption before forking is %d", initialMem));
@@ -1626,7 +1626,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 						GetCurrentRun(), aDetector->GetName()));
 			}
 
-			for (UInt_t iSys=0; iSys<3; iSys++)
+			for (UInt_t iSys=0; iSys<4; iSys++)
 			{
 				if (fFXSCalled[iSys]) fFXSlist[iSys].Clear();
 			}
@@ -2663,7 +2663,7 @@ Bool_t AliShuttle::UpdateTable()
 
 	Bool_t result = kTRUE;
 
-	for (UInt_t system=0; system<3; system++)
+	for (UInt_t system=0; system<4; system++)
 	{
 		if(!fFXSCalled[system]) continue;
 
@@ -2748,7 +2748,7 @@ Bool_t AliShuttle::UpdateTableSkippedCase(const char* detector)
 
 	TString detName(detector);
 
-	for (UInt_t system=0; system<3; system++)
+	for (UInt_t system=0; system<4; system++)
 	{
 
 		// check connection, in case connect
@@ -2800,7 +2800,7 @@ Bool_t AliShuttle::UpdateTableFailCase()
 
 	Bool_t result = kTRUE;
 
-	for (UInt_t system=0; system<3; system++)
+	for (UInt_t system=0; system<4; system++)
 	{
 		// check connection, in case connect
 		if (!Connect(system))
