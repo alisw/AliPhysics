@@ -236,7 +236,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
    rv = fAliITSQADataMakerRec->Add2RawsList(hSPDChipsMEB, 5+shift, !expert, image, !saveCorr);
    fSPDhRawsTask++;  
 // 6
-  TH2F *hFastOrCorrelation = new TH2F("SPDFastOrCorrelation_OnlineSPD","Fast Or multiplicity correlation - SPD",100,0.,100.,100,0,100);
+  TH2F *hFastOrCorrelation = new TH2F("SPDFastOrCorrelation_OnlineSPD","Fast Or multiplicity correlation - SPD",350,0,350,700,0,700);
   hFastOrCorrelation->GetXaxis()->SetTitle("Layer 1");
   hFastOrCorrelation->GetYaxis()->SetTitle("Layer 2");
   hFastOrCorrelation->SetOption("COLZ");
