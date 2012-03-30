@@ -127,7 +127,7 @@ class AliAODTrack : public AliVTrack {
   Double_t Chi2perNDF()  const { return fChi2perNDF; }
   UShort_t GetTPCNcls()  const { 
     UShort_t cl = fTPCFitMap.CountBits();
-    if(cl==0)return fTPCClusterMap.CountBits();// backward compatibility
+    if(cl==0)cl = fTPCClusterMap.CountBits();// backward compatibility
     return cl;
   }
   
