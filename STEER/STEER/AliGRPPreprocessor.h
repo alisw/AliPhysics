@@ -87,6 +87,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
               UInt_t   ProcessSPDMeanVertex();
               UInt_t   ProcessLHCData(AliGRPObject* grpobj);
               UInt_t   ProcessDcsFxs(TString partition="", TString detector="");
+	   THashList*  ProcessAliases(const char* aliasesFile);
                Int_t   ProcessDcsDPs(TMap* valueSet, AliGRPObject* grpobj);
                Int_t   ProcessL3DPs(const TMap* valueSet, AliGRPObject* grpobj);
                Int_t   ProcessDipoleDPs(const TMap* valueSet, AliGRPObject* grpobj);

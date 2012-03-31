@@ -26,6 +26,7 @@
 #include <TChain.h>
 #include <TList.h>
 #include <TMap.h>
+#include <THashList.h>
 #include <TObjString.h>
 #include <TObjArray.h>
 #include <TGraph.h>
@@ -1665,6 +1666,8 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 	// coming from the trigger
 
 	// Get the CTP counters information
+	//              +
+	// Get the CTP counters information
 
 	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
 		Log("STANDALONE partition for current run, using Trigger Scalers dummy value");
@@ -1718,6 +1721,35 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 			}
 			delete scalers;
 		}
+
+
+
+		TString aliasesFile = GetFile(kDCS, "CTP_aliases","");
+		if (aliasesFile.IsNull()) {
+			Log("No CTP aliases files has been found: empty source!");
+			return 1;
+		}
+		else {
+			Log(Form("File with Id CTP_aliases found in DCS FXS! Copied to %s",aliasesFile.Data()));
+			// We build the THashList of TNamed("triggerclass","comma_separated_list_of_corresponding_aliases")
+			THashList* trClasses2Aliases = ProcessAliases(aliasesFile);
+			if (!trClasses2Aliases) {
+				Log("Bad CTP aliases file! The corresponding CDB entry will not be filled!");
+				return 1;
+			}
+			else {
+				AliCDBMetaData metaData;
+				metaData.SetBeamPeriod(0);
+				metaData.SetResponsible("Evgeny Kryshen");
+				metaData.SetComment("CTP mapping of trigger classes to trigger aliases");
+				if (!Store("CTP","Aliases", trClasses2Aliases, &metaData, 0, 0)) {
+					Log("Unable to store the CTP aliases object to OCDB!");
+					delete trClasses2Aliases;					
+					return 1;
+				}
+			}
+			delete trClasses2Aliases;
+		}
 	}
 	
 
@@ -1729,8 +1761,59 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 	return 0;
 
 }
-//_______________________________________________________________
 
+//_______________________________________________________________
+THashList* AliGRPPreprocessor::ProcessAliases(const char* aliasesFile)
+{
+
+	//
+	// build the THashList of triggerclasses-to-triggeraliases from text file  
+	// each line of the file is supposed to be a string composed by
+	// a triggerclass+spaces+commaseparatedlistofcorrespondingaliases
+	// it will a TNamed("triggerclass","commaseparatedlistofcorrespondingaliases")
+	// to the hashlist
+	//
+
+	if (gSystem->AccessPathName(aliasesFile)) {
+		Printf("file (%s) not found", aliasesFile);
+		return 0;
+	}
+
+	ifstream *file = new ifstream(aliasesFile);
+	if (!*file) {
+		Printf("Error opening file (%s) !",aliasesFile);
+		file->close();
+		delete file;
+		return 0;
+	}
+
+	THashList *hList = new THashList(10);
+	hList->SetName("List of trigger classes to trigger aliases strings");
+
+	TString strLine;
+	while (strLine.ReadLine(*file)) {
+
+		//if (strLine.BeginsWith("#")) continue;
+		if (strLine.IsNull()) continue;
+
+		TObjArray* arr = strLine.Tokenize(' ');
+		if(arr->GetEntries() != 2){
+			Printf("The line:\n%s\nunexpectedly contains %d tokens, instead of two.",strLine.Data(),arr->GetEntries());
+			return 0;
+		}
+		TObjString *osTC = (TObjString*) arr->At(0);
+		TObjString *osTAlist = (TObjString*) arr->At(1);
+		TNamed *ctoa = new TNamed(osTC->GetName(),osTAlist->GetName());
+		hList->Add(ctoa);
+	}
+
+	file->close();
+	delete file;
+
+	return hList;
+}
+
+//_______________________________________________________________
 Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, AliGRPObject* grpObj)
 {
 
