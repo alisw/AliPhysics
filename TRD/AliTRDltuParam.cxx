@@ -18,7 +18,7 @@ Float_t AliTRDltuParam::fgTiltingAngle[6] =
   {-2., 2., -2., 2., -2., 2.};
 Int_t   AliTRDltuParam::fgDyMax =  63;
 Int_t   AliTRDltuParam::fgDyMin = -64;
-Float_t AliTRDltuParam::fgBinDy = 140e-6;
+Float_t AliTRDltuParam::fgBinDy = 140e-4;
 Float_t AliTRDltuParam::fgWidthPad[6] =
   {0.635, 0.665, 0.695, 0.725, 0.755, 0.785};
 Float_t AliTRDltuParam::fgLengthInnerPadC1[6] =
@@ -77,35 +77,54 @@ void AliTRDltuParam::GetDyRange(Int_t det, Int_t rob, Int_t mcm, Int_t ch,
   dyMinInt = fgDyMin;
   dyMaxInt = fgDyMax;
 
+  // deflection cut is considered for |B| > 0.1 T only
   if (TMath::Abs(fMagField) < 0.1)
     return;
 
   Float_t e = 0.30;
 
-  Float_t maxDeflTemp = GetPerp(det, rob, mcm, ch)/2. *         // Sekante/2
-    (e * TMath::Abs(fMagField) / fPtMin);   // 1/R
+  Float_t maxDeflTemp = GetPerp(det, rob, mcm, ch)/2. * // Sekante/2 (cm)
+    (e * 1e-2 * TMath::Abs(fMagField) / fPtMin);   // 1/R (1/cm)
 
   Float_t maxDeflAngle = 0.;
 
-  if (maxDeflTemp < 1.) {
+  Float_t phi = GetPhi(det, rob, mcm, ch);
+  if (maxDeflTemp < TMath::Cos(phi)) {
     maxDeflAngle = TMath::ASin(maxDeflTemp);
 
     Float_t dyMin = ( fgDriftLength *
-		      tan(GetPhi(det, rob, mcm, ch) - maxDeflAngle) );
+		      TMath::Tan(phi - maxDeflAngle) );
 
     dyMinInt = Int_t(dyMin / fgBinDy);
+    // clipping to allowed range
     if (dyMinInt < fgDyMin)
       dyMinInt = fgDyMin;
+    else if (dyMinInt > fgDyMax)
+      dyMinInt = fgDyMax;
 
     Float_t dyMax = ( fgDriftLength *
-  		      TMath::Tan(GetPhi(det, rob, mcm, ch) + maxDeflAngle) );
+  		      TMath::Tan(phi + maxDeflAngle) );
 
     dyMaxInt = Int_t(dyMax / fgBinDy);
+    // clipping to allowed range
     if (dyMaxInt > fgDyMax)
       dyMaxInt = fgDyMax;
+    else if (dyMaxInt < fgDyMin)
+      dyMaxInt = fgDyMin;
   }
+  else if (maxDeflTemp < 0.) {
+    // this must not happen
+    printf("Inconsistent calculation of sin(alpha): %f\n", maxDeflTemp);
+  }
+  else {
+    // TRD is not reached at the given pt threshold
+    // max range
+  }
+
   if ((dyMaxInt - dyMinInt) <= 0) {
-    printf("strange dy range: [%i,%i]\n", dyMinInt, dyMaxInt);
+    printf("strange dy range: [%i,%i], using max range now\n", dyMinInt, dyMaxInt);
+    dyMaxInt = fgDyMax;
+    dyMinInt = fgDyMin;
   }
 }
 
