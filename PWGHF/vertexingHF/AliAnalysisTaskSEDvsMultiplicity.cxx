@@ -57,6 +57,13 @@ AliAnalysisTaskSE(),
   fListCuts(0),
   fOutputCounters(0),
   fHistNEvents(0),
+  fHistNtrEta16vsNtrEta1(0),
+  fHistNtrCorrEta1vsNtrRawEta1(0),
+  fHistNtrVsZvtx(0),
+  fHistNtrCorrVsZvtx(0),
+  fHistNtrCorrEvSel(0),
+  fHistNtrCorrEvWithCand(0),
+  fHistNtrCorrEvWithD(0),
   fPtVsMassVsMult(0),
   fPtVsMassVsMultNoPid(0),
   fPtVsMassVsMultUncorr(0),
@@ -90,6 +97,13 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fListCuts(0),
   fOutputCounters(0),
   fHistNEvents(0),
+  fHistNtrEta16vsNtrEta1(0),
+  fHistNtrCorrEta1vsNtrRawEta1(0),
+  fHistNtrVsZvtx(0),
+  fHistNtrCorrVsZvtx(0),
+  fHistNtrCorrEvSel(0),
+  fHistNtrCorrEvWithCand(0),
+  fHistNtrCorrEvWithD(0),
   fPtVsMassVsMult(0),
   fPtVsMassVsMultNoPid(0),
   fPtVsMassVsMultUncorr(0),
@@ -203,22 +217,26 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-
-  TH1F *hspdmultCand = new TH1F("hspdmultCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",200,0.,200.);// Total multiplicity
-  TH1F *hspdmultD = new TH1F("hspdmultD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",200,0.,200.); // 
-  TH2F *heta16vseta1 = new TH2F("heta16vseta1","Uncorrected Eta1.6 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<1.6",200,-0.5,199.5,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
-  TH2F *hNtrkvsVtxZ = new TH2F("hNtrkvsVtxZ","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
-  TH2F *hNtrkvsVtxZCorr = new TH2F("hNtrkvsVtxZCorr","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
+  fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Tracklets multiplicity for selected events; Tracklets ; Entries",200,0.,200.);
+  fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",200,0.,200.);// Total multiplicity
+  fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",200,0.,200.); // 
+  fHistNtrEta16vsNtrEta1 = new TH2F("hNtrEta16vsNtrEta1","Uncorrected Eta1.6 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<1.6",200,-0.5,199.5,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
+  fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",200,-0.,200.,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
+  fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
+  fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
   
 
-  hspdmultCand->Sumw2();
-  hspdmultD->Sumw2();
+  fHistNtrCorrEvSel->Sumw2();
+  fHistNtrCorrEvWithCand->Sumw2();
+  fHistNtrCorrEvWithD->Sumw2();
 
-  fOutput->Add(hspdmultCand);
-  fOutput->Add(hspdmultD);
-  fOutput->Add(heta16vseta1);
-  fOutput->Add(hNtrkvsVtxZ); 
-  fOutput->Add(hNtrkvsVtxZCorr); 
+  fOutput->Add(fHistNtrCorrEvSel);
+  fOutput->Add(fHistNtrCorrEvWithCand);
+  fOutput->Add(fHistNtrCorrEvWithD);
+  fOutput->Add(fHistNtrEta16vsNtrEta1);
+  fOutput->Add(fHistNtrCorrEta1vsNtrRawEta1);
+  fOutput->Add(fHistNtrVsZvtx);
+  fOutput->Add(fHistNtrCorrVsZvtx);
 
   
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
@@ -284,8 +302,6 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
-
-  printf("UserExec\n");
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
@@ -361,25 +377,24 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
   }
    
-  fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countTreta1corr);
+  fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countTreta1corr);
 
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
 
   if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
   if(fRDCutsAnalysis->GetWhyRejection()==7) fHistNEvents->Fill(4); 
-  if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(5);
-  if(fRDCutsAnalysis->GetWhyRejection()==1)fHistNEvents->Fill(6);
-
+  if(fRDCutsAnalysis->GetWhyRejection()==6) fHistNEvents->Fill(5);
+  if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(6);
+  
   
   if(!isEvSel)return;
-  fHistNEvents->Fill(2); // count events selected
- 
-  ((TH2F*)(fOutput->FindObject("heta16vseta1")))->Fill(countTreta1,countTr);
-  ((TH2F*)(fOutput->FindObject("heta1corrvseta1")))->Fill(countTreta1,countTreta1corr);
-  ((TH2F*)(fOutput->FindObject("hNtrkvsVtxZ")))->Fill(vtx1->GetZ(),countTreta1);
-  ((TH2F*)(fOutput->FindObject("hNtrkvsVtxZCorr")))->Fill(vtx1->GetZ(),countTreta1corr);
- 
-  
+  fHistNtrEta16vsNtrEta1->Fill(countTreta1,countTr);
+  fHistNtrCorrEta1vsNtrRawEta1->Fill(countTreta1,countTreta1corr);
+  if(vtx1){
+    fHistNtrVsZvtx->Fill(vtx1->GetZ(),countTreta1);
+    fHistNtrCorrVsZvtx->Fill(vtx1->GetZ(),countTreta1corr);
+  }
+
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
@@ -519,8 +534,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   }
   fCounter->StoreCandidates(aod,nSelectedNoPID,kTRUE);
   fCounter->StoreCandidates(aod,nSelectedPID,kFALSE);
-  if(nSelectedPID>0)  ((TH2F*)(fOutput->FindObject("hspdmultCand")))->Fill(countTreta1corr);
-  if(nSelectedInMassPeak)  ((TH2F*)(fOutput->FindObject("hspdmultD")))->Fill(countTreta1corr);
+  fHistNtrCorrEvSel->Fill(countTreta1corr);
+  if(nSelectedPID>0) fHistNtrCorrEvWithCand->Fill(countTreta1corr);
+  if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countTreta1corr);
 
   PostData(1,fOutput); 
   PostData(2,fListCuts);
@@ -571,7 +587,7 @@ void AliAnalysisTaskSEDvsMultiplicity::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
-
+  printf("Number of Analyzed Events = %d\n",(Int_t)fHistNEvents->GetBinContent(3));
 
  
   return;
