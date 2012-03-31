@@ -349,14 +349,15 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countTreta1);
   fHistNEvents->Fill(0); // count event
 
-  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  TString primTitle = vtx1->GetTitle();
   Double_t countTreta1corr=countTreta1;
-  if(vtx1 && vtx1->GetNContributors()>0){    
-    fHistNEvents->Fill(1); 
-    TProfile* estimatorAvg = GetEstimatorHistogram(aod);
-    if(estimatorAvg){
-      countTreta1corr=AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTreta1,vtx1->GetZ(),fRefMult); 
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  if(vtx1){
+    if(vtx1->GetNContributors()>0){    
+      fHistNEvents->Fill(1); 
+      TProfile* estimatorAvg = GetEstimatorHistogram(aod);
+      if(estimatorAvg){
+	countTreta1corr=AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTreta1,vtx1->GetZ(),fRefMult); 
+      }
     }
   }
    
