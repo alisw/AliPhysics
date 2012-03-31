@@ -1764,6 +1764,8 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
     pinfo2->AddText(str);
     str=Form("B (%.0f#sigma) %.0f #pm %.0f",nsigma,bkg,errbkg);
     pinfo2->AddText(str);
+    str=Form("S/B (%.0f#sigma) %.4f ",nsigma,signal/bkg);
+    pinfo2->AddText(str);
 
     pd->cd();
     pinfo2->Draw();
