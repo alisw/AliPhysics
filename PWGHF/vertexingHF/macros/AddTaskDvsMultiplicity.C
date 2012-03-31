@@ -5,7 +5,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 TString finDirname="Loose",
 							 TString filename="",
 							 TString finAnObjname="AnalysisCuts", 
-							 TString estimatorFilename="estimators.root")
+							 TString estimatorFilename="")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
@@ -34,15 +34,6 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   
 
                                       
- //  TProfile* fMultEstimatorAvg[4];                       
-//   const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
-//    fileEstimator=TFile::Open(estimatorFilename.Data());
-//   if(!fileEstimator)  {AliFatal("File with multiplicity estimator not found\n"); return;}
-//   for(Int_t ip=0; ip<4; ip++) {
-//     fMultEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
-//     // cout<< fMultEstimatorAvg[ip][ie]->GetTitle()<<endl;  
-
-// }
 
   
   //Analysis Task
@@ -87,7 +78,27 @@ Name="DStar";
   dMultTask->SetUseBit(kTRUE);
 
   dMultTask->SetDoImpactParameterHistos(kFALSE);
-  //dMultTask->SetMultiplVsZProfileLHC10b(SPDmult10_LHC10b_clone);
+
+  if( filename.EqualTo("") ) {
+    printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+  }else{
+     const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+     TProfile* multEstimatorAvg[4];                       
+     TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+     if(!fileEstimator)  {
+       AliFatal("File with multiplicity estimator not found\n"); 
+       return;
+     }
+     for(Int_t ip=0; ip<4; ip++) {
+       multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
+    
+
+     }
+     SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+     SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+     SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+     SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+  }
   mgr->AddTask(dMultTask);
   
   // Create containers for input/output 
