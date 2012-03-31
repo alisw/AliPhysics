@@ -95,7 +95,17 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TList  *fListCuts; //list of cuts
   TList  *fOutputCounters; //! list send on output slot 3
 
-  TH1F *fHistNEvents; //!hist. for No. of events
+  TH1F *fHistNEvents;     //!hist. for No. of events
+
+  TH2F* fHistNtrEta16vsNtrEta1; //!hist. for Ntracklets in eta<1.6 vs. eta<1.
+  TH2F* fHistNtrCorrEta1vsNtrRawEta1; //!hist. for Ntracklets in eta<1 with and w/o corrections 
+  TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
+  TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
+
+  TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
+  TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
+  TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
+
   TH3F *fPtVsMassVsMult;  //! hist. of Pt vs Mult vs. mass (
   TH3F *fPtVsMassVsMultNoPid;  //! hist. of Pt vs Mult vs. mass (no pid)
   TH3F *fPtVsMassVsMultUncorr;  //! hist. of Pt vs Mult vs. mass (raw mult)
