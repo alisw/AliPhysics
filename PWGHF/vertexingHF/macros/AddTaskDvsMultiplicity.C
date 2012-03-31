@@ -21,7 +21,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   }
 
   Bool_t stdcuts=kFALSE;
-  TFile* filecuts,fileEstimator;
+  TFile* filecuts;
   if( filename.EqualTo("") ) {
     stdcuts=kTRUE; 
   } else {
@@ -79,7 +79,7 @@ Name="DStar";
 
   dMultTask->SetDoImpactParameterHistos(kFALSE);
 
-  if( filename.EqualTo("") ) {
+  if(estimatorFilename.EqualTo("") ) {
     printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
   }else{
      const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
@@ -94,10 +94,10 @@ Name="DStar";
     
 
      }
-     SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
-     SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
-     SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
-     SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+     dMultTask->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+     dMultTask->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+     dMultTask->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+     dMultTask->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
   }
   mgr->AddTask(dMultTask);
   
