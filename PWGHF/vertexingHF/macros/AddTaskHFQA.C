@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname=""){
+AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname="",Bool_t trackon=kTRUE,Bool_t pidon=kTRUE,Bool_t centralityon=kTRUE, Bool_t eventselon=kTRUE, Bool_t flowobson=kFALSE){
   //
   // Test macro for the AliAnalysisTaskSE for HF mesons quality assurance
   //Author: C.Bianchin chiara.bianchin@pd.infn.it
@@ -19,9 +19,8 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 	AliFatal("Input file not found : check your cut object");
       }
   }
-
-  Bool_t onoff[5]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE}; //tracks (0), PID (1), centrality (2), event selection(3), flow observables(4)
-  if(system==0) onoff[2]=kFALSE;
+ 
+  if(system==0) centralityon=kFALSE;
 
   AliRDHFCuts *analysiscuts=0x0;
 
@@ -133,11 +132,11 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   taskQA->SetReadMC(readMC);
   taskQA->SetSimpleMode(simplemode); // set to kTRUE to go faster in PbPb
-  taskQA->SetTrackOn(onoff[0]);
-  taskQA->SetPIDOn(onoff[1]);
-  taskQA->SetCentralityOn(onoff[2]);
-  taskQA->SetEvSelectionOn(onoff[3]);
-  taskQA->SetFlowObsOn(onoff[4]);
+  taskQA->SetTrackOn(trackon);
+  taskQA->SetPIDOn(pidon);
+  taskQA->SetCentralityOn(centralityon);
+  taskQA->SetEvSelectionOn(eventselon);
+  taskQA->SetFlowObsOn(flowobson);
   mgr->AddTask(taskQA);
 
   //
@@ -149,25 +148,25 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   mgr->ConnectOutput(taskQA,1,coutput1);
 
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(out2name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //PID
-  if(onoff[1]) mgr->ConnectOutput(taskQA,2,coutput2);
+  if(pidon) mgr->ConnectOutput(taskQA,2,coutput2);
 
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(out3name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of tracks
-  if(onoff[0]) mgr->ConnectOutput(taskQA,3,coutput3);
+  if(trackon) mgr->ConnectOutput(taskQA,3,coutput3);
 
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(out4name,AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
   mgr->ConnectOutput(taskQA,4,coutput4);
 
   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(out5name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of centrality
-  if(onoff[2]) mgr->ConnectOutput(taskQA,5,coutput5);
+  if(centralityon) mgr->ConnectOutput(taskQA,5,coutput5);
 
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of centrality
-  if(onoff[2]) mgr->ConnectOutput(taskQA,6,coutput6);
+  if(centralityon) mgr->ConnectOutput(taskQA,6,coutput6);
 
   AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(out7name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //event selection
-  if(onoff[3]) mgr->ConnectOutput(taskQA,7,coutput7);
+  if(eventselon) mgr->ConnectOutput(taskQA,7,coutput7);
 
   AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(out8name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //flow observables
-  if(onoff[4]) mgr->ConnectOutput(taskQA,8,coutput8);
+  if(flowobson) mgr->ConnectOutput(taskQA,8,coutput8);
 
  return taskQA;
 }
