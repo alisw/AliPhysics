@@ -60,16 +60,20 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
 
   void SetMultiplVsZProfileLHC10b(TProfile* hprof){
-    fMultEstimatorAvg[0]=hprof;
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
   }
   void SetMultiplVsZProfileLHC10c(TProfile* hprof){
-    fMultEstimatorAvg[1]=hprof;
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
   }
   void SetMultiplVsZProfileLHC10d(TProfile* hprof){
-    fMultEstimatorAvg[2]=hprof;
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
   }
   void SetMultiplVsZProfileLHC10e(TProfile* hprof){
-    fMultEstimatorAvg[3]=hprof;
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
   }
 
 

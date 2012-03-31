@@ -157,6 +157,7 @@ AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
   delete fRDCutsAnalysis;
   delete fCounter;
   delete fCounterU;
+  for(Int_t i=0; i<4; i++) delete fMultEstimatorAvg[i];
   for(Int_t i=0; i<5; i++){
     delete fHistMassPtImpPar[i];
   }
