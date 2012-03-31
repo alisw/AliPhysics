@@ -555,7 +555,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       //
       //
       //
-      Double_t phase[2][2]={0.,0.,0.,0.};
+      Double_t phase[2][2]={{0.,0.},{0.,0.}};
       Double_t radius[2]={0.,0.};
       Int_t  points = h1.GetRPHIintersections(h2, phase, radius);
       if    (points==0) {
