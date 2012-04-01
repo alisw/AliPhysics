@@ -75,6 +75,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   void           SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
                   fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                               ; }
+  
+  void           SetTimeCut(Double_t min, Double_t max)      { fTimeCutMin = min; 
+                                                               fTimeCutMax = max              ; }
+  Double_t       GetTimeCutMin()                       const { return fTimeCutMin             ; }
+  Double_t       GetTimeCutMax()                       const { return fTimeCutMax             ; }	
 
   void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms = kTRUE  ; }
   void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms = kFALSE ; }  
@@ -98,6 +103,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Float_t        fMinDist ;                // Minimal distance to bad channel to accept cluster
   Float_t        fMinDist2;                // Cuts on Minimal distance to study acceptance evaluation
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
+  Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
+  Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
   
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
@@ -128,6 +135,15 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhETime;                  //! E vs Time of selected cluster 
   TH2F         * fhEPairDiffTime;          //! E vs Pair of clusters time difference vs E
   
+  TH2F         * fhDispEtaE ;              //! shower dispersion in eta direction
+  TH2F         * fhDispPhiE ;              //! shower dispersion in phi direction
+  TH2F         * fhSumEtaE ;               //! shower dispersion in eta direction
+  TH2F         * fhSumPhiE ;               //! shower dispersion in phi direction
+  TH2F         * fhSumEtaPhiE ;            //! shower dispersion in eta and phi direction
+  TH2F         * fhDispEtaPhiDiffE ;       //! shower dispersion eta - phi
+  TH2F         * fhSphericityE ;           //! shower sphericity in eta vs phi
+  TH2F         * fhDispEtaDispPhiEBin[5] ; //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  
   //MC histograms
   
   TH2F         * fhEMCLambda0[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
@@ -136,6 +152,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEMCLambda0NoTRD[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle, not behind TRD
   TH2F         * fhEMCLambda0FracMaxCellCut[6] ;//! E vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
   TH2F         * fhEMCFracMaxCell[6] ;     //! E vs fraction of max cell 
+  
+  TH2F         * fhMCEDispEta[6] ;         //! shower dispersion in eta direction
+  TH2F         * fhMCEDispPhi[6] ;         //! shower dispersion in phi direction
+  TH2F         * fhMCESumEtaPhi[6] ;       //! shower dispersion in eta vs phi direction
+  TH2F         * fhMCEDispEtaPhiDiff[6] ;  //! shower dispersion in eta -phi direction
+  TH2F         * fhMCESphericity[6] ;      //! shower sphericity, eta vs phi
+  TH2F         * fhMCDispEtaDispPhiEBin[5][6] ; //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
   
   TH1F         * fhPtMCNo;                 //! Number of identified pi0, not coming from pi0/eta
   TH2F         * fhPhiMCNo;                //! Phi of identified pi0, not coming from pi0/eta
@@ -169,18 +192,21 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   // Local maxima
   TH2F         * fhNLocMax;                //! number of maxima in selected clusters
-  TH2F         * fhELambda0LocMax1 ;       //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
-  TH2F         * fhELambda1LocMax1 ;       //! E vs lambda1 of selected cluster, 1 local maxima in cluster 
-  TH2F         * fhELambda0LocMax2 ;       //! E vs lambda0 of selected cluster, 2 local maxima in cluster 
-  TH2F         * fhELambda1LocMax2 ;       //! E vs lambda1 of selected cluster, 2 local maxima in cluster
-  TH2F         * fhELambda0LocMaxN ;       //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
-  TH2F         * fhELambda1LocMaxN ;       //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
+  TH2F         * fhELambda0LocMax[3] ;     //! E vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhELambda1LocMax[3] ;     //! E vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhEDispersionLocMax[3] ;  //! E vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhEDispEtaLocMax[3] ;     //! E vs eta dispersion of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhEDispPhiLocMax[3] ;     //! E vs phi dispersion of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhESumEtaPhiLocMax[3] ;   //! E vs dispersion in eta and phi direction
+  TH2F         * fhEDispEtaPhiDiffLocMax[3] ; //! E vs dispersion eta - phi
+  TH2F         * fhESphericityLocMax[3] ;  //! E vs sphericity in eta vs phi  
+  
   TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
 
   AliAnaPi0EbE(              const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,15)
+  ClassDef(AliAnaPi0EbE,16)
 } ;
 
 

@@ -160,13 +160,22 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaLam0HighE[2];                    //! cluster eta vs lambda0, E>2
   TH2F * fhPhiLam0HighE[2];                    //! cluster phi vs lambda0, E>2
     
+  TH2F * fhDispEtaE[2] ;                       //! shower dispersion in eta direction
+  TH2F * fhDispPhiE[2] ;                       //! shower dispersion in phi direction
+  TH2F * fhSumEtaE[2] ;                        //! shower dispersion in eta direction
+  TH2F * fhSumPhiE[2] ;                        //! shower dispersion in phi direction
+  TH2F * fhSumEtaPhiE[2] ;                     //! shower dispersion in eta and phi direction
+  TH2F * fhDispEtaPhiDiffE[2] ;                //! shower dispersion eta - phi
+  TH2F * fhSphericityE[2] ;                    //! shower sphericity in eta vs phi
+  TH2F * fhDispEtaDispPhiEBin[2][5] ;          //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+
   // Weight studies
   
   TH2F * fhECellClusterRatio;                  //! e cell / e cluster vs e cluster for selected electrons
   TH2F * fhECellClusterLogRatio;               //! log (e cell / e cluster)  vs e cluster for selected electrons
   TH2F * fhEMaxCellClusterRatio;               //! e max cell / e cluster vs e cluster for selected electrons
   TH2F * fhEMaxCellClusterLogRatio;            //! log (e max cell / e cluster) vs e cluster for selected electrons
-  TH2F * fhLambda0ForW0[14];                    //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected electrons
+  TH2F * fhLambda0ForW0[14];                   //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected electrons
   //TH2F * fhLambda1ForW0[14];                    //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected electrons
   
   //Fill MC dependent histograms, Origin of this cluster is ...
@@ -181,11 +190,18 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   // Shower Shape MC
 
-  TH2F * fhMCELambda0[2][6] ;                   //! E vs Lambda0     from MC particle
+  TH2F * fhMCELambda0[2][6] ;                   //! E vs Lambda0 from MC particle
   
-  TH2F * fhMCElectronELambda0NoOverlap ;        //! E vs Lambda0     from MC electrons, no overlap
-  TH2F * fhMCElectronELambda0TwoOverlap ;       //! E vs Lambda0     from MC electrons, 2 particles overlap
-  TH2F * fhMCElectronELambda0NOverlap ;         //! E vs Lambda0     from MC electrons, N particles overlap
+  TH2F * fhMCEDispEta[2][6] ;                   //! shower dispersion in eta direction from MC particle
+  TH2F * fhMCEDispPhi[2][6] ;                   //! shower dispersion in phi direction from MC particle
+  TH2F * fhMCESumEtaPhi[2][6] ;                 //! shower dispersion in eta vs phi direction from MC particle
+  TH2F * fhMCEDispEtaPhiDiff[2][6] ;            //! shower dispersion in eta -phi direction from MC particle
+  TH2F * fhMCESphericity[2][6] ;                //! shower sphericity, eta vs phi from MC particle
+  TH2F * fhMCDispEtaDispPhiEBin[2][6][5] ;      //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+
+  TH2F * fhMCElectronELambda0NoOverlap ;        //! E vs Lambda0 from MC electrons, no overlap
+  TH2F * fhMCElectronELambda0TwoOverlap ;       //! E vs Lambda0 from MC electrons, 2 particles overlap
+  TH2F * fhMCElectronELambda0NOverlap ;         //! E vs Lambda0 from MC electrons, N particles overlap
   
   //Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;       //! Fraction of electron energy of embedded signal vs cluster energy
@@ -195,10 +211,10 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbedElectronELambda0MostlyBkg ;     //!  Lambda0 vs E for embedded electrons with 50%<fraction<10% 
   TH2F * fhEmbedElectronELambda0FullBkg ;       //!  Lambda0 vs E for embedded electrons with less than 10% of the cluster energy
   
-  AliAnaElectron(const AliAnaElectron & g) ;               // cpy ctor  
+  AliAnaElectron(              const AliAnaElectron & g) ; // cpy ctor  
   AliAnaElectron & operator = (const AliAnaElectron & g) ; // cpy assignment
   
-  ClassDef(AliAnaElectron,2)
+  ClassDef(AliAnaElectron,3)
 
 } ;
  

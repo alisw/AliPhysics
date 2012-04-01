@@ -4,14 +4,13 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Example class on how to read AODCaloClusters, ESDCaloCells and AODTracks and how 
-// fill AODs with PWG4CaloTrackCorr analysis frame
-// Select the type of detector information that you want to analyze, CTS (tracking), PHOS or EMCAL
-// Select the PID custer type of the calorimeters
-// Set min momentum of the cluster/tracks
-// Fill few histograms
+//
+// Class for track selection and identification (not done now)
+// Tracks from the CTS are kept in the AOD.
+// Few histograms produced.
 //
 //-- Author: Gustavo Conesa (INFN-LNF)
+
 // Root system
 class TH2F; 
 
@@ -74,8 +73,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPhiUnknown;  //! phi distribution vs pT
   TH2F * fhEtaUnknown;  //! eta distribution vs pT
   
-  AliAnaChargedParticles(const AliAnaChargedParticles & g) ; // cpy ctor
-  AliAnaChargedParticles & operator = (const AliAnaChargedParticles & g) ;//cpy assignment
+  AliAnaChargedParticles(              const AliAnaChargedParticles & ch) ; // cpy ctor
+  AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ; // cpy assignment
   
   ClassDef(AliAnaChargedParticles,3)
 
