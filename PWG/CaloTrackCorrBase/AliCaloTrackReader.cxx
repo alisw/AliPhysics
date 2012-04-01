@@ -291,6 +291,9 @@ void AliCaloTrackReader::Init()
   // Init geometry, I do not like much to do it like this ...
   if(fImportGeometryFromFile && !gGeoManager) 
   {
+    if(fImportGeometryFilePath=="") // If not specified, set a default location
+    fImportGeometryFilePath = "$ALICE_ROOT/PWGGA/EMCALTasks/macros/geometry.root"; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
+
     printf("AliCaloTrackReader::Init() - Import %s\n",fImportGeometryFilePath.Data());
     TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
   }
@@ -356,7 +359,6 @@ void AliCaloTrackReader::InitParameters()
   fAODBranchList   = new TList ;
 
   fImportGeometryFromFile = kFALSE;
-  fImportGeometryFilePath = "$ALICE_ROOT/PWGGA/EMCALTasks/macros/geometry.root"; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
   
 }
 
