@@ -111,7 +111,8 @@ set ( SRCS
     AliITSQASSDChecker.cxx 
     AliITSQASSDRefData.cxx 
     AliITSTrackleterSPDEff.cxx 
-    AliITSRecPointContainer.cxx 
+    AliITSRecPointContainer.cxx
+    AliITSSumTP.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

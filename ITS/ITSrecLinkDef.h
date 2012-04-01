@@ -107,6 +107,7 @@
 #pragma link C++ class AliITSAlignMilleData+;
 #pragma link C++ class AliITSTPArrayFit+;
 #pragma link C++ class AliITSRealignTracks+;
+#pragma link C++ class AliITSSumTP+;
 // Classes for QA
 #pragma link C++ class AliITSQAChecker+;
 #pragma link C++ class AliITSQADataMakerRec+;
