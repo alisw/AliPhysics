@@ -1,4 +1,4 @@
-Executable="/alice/cern.ch/user/j/jotwinow/bin/runCPass0.sh";
+Executable="runCPass0.sh";
 
 Packages= { "VO_ALICE@AliRoot::v5-02-Rev-04",
 	    "VO_ALICE@ROOT::v5-30-06-1",	
@@ -8,10 +8,10 @@ Packages= { "VO_ALICE@AliRoot::v5-02-Rev-04",
 Jobtag = { "Test CPass0 Calibration Train" };
 
 GUIDFILE="guid.txt";
-TTL = "50000";
+TTL = "28000";
 Price = 1;
 
-Validationcommand ="/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/validation.sh";
+Validationcommand ="/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/validation.sh";
 
 Split="file";
 
@@ -19,24 +19,24 @@ JDLVariables={"Packages", "OutputDir"};
 GUIDFILE="guid.txt";
 
 
-SplitArguments = {"/alice/data/2010/LHC10d/$1/raw/#alienfilename#"};
+SplitArguments = {"/alice/data/2011/LHC11a/$1/raw/#alienfilename#"};
 Workdirectorysize={"6000MB"};
 
-InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/recCPass0.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/ConfigCalibTrain.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/runCalibTrain.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/AddTaskTPCCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/AddTaskTRDCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/AddTaskT0Calib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/AddTaskSDDCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/AddTaskMeanVertexCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/AddTOFAnalysisTaskCalibPass0.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/LoadLibraries.C"
+InputFile={"LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/recCPass0.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/ConfigCalibTrain.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/runCalibTrain.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/AddTaskTPCCalib.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/AddTaskTRDCalib.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/AddTaskT0Calib.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/AddTaskSDDCalib.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/AddTaskMeanVertexCalib.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/AddTOFAnalysisTaskCalibPass0.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CPass0/CalibMacros/LoadLibraries.C"
 };
 
-InputDataCollection="LF:/alice/data/2010/LHC10d/$1/collection,nodownload";
+InputDataCollection="LF:/alice/data/2011/LHC11a/$1/collection,nodownload";
 
-OutputDir="/alice/cern.ch/user/j/jotwinow/CPass0/output/$1/#alienfilename/.root//#";
+OutputDir="/alice/cern.ch/user/z/zampolli/CPass0/output/$1/#alienfilename/.root//#";
 
 OutputArchive={"log_archive:*.log@disk=1",
               "root_archive.zip:AliESDfriends_v1.root,@disk=1"};
