@@ -175,7 +175,7 @@ AliEPSelectionTask::~AliEPSelectionTask()
       delete fEPContainer;
       fEPContainer = 0;
   }
-  if (fPhiDist && fPeriod.CompareTo("LHC11h")==0){
+  if (fPeriod.CompareTo("LHC11h")==0){
       for(Int_t i = 0; i < 4; i++) {
         if(fPhiDist[i]){
           delete fPhiDist[i];
@@ -613,7 +613,8 @@ Double_t AliEPSelectionTask::GetPhiWeight(TObject* track1)
   Double_t phiweight=1;
   AliVTrack* track = dynamic_cast<AliVTrack*>(track1);
 
-  TH1F *phiDist = SelectPhiDist(track);
+  TH1F *phiDist = 0x0;
+  if(track) phiDist = SelectPhiDist(track);
   
   if (fUsePhiWeight && phiDist && track) {
     Double_t nParticles = phiDist->Integral();
