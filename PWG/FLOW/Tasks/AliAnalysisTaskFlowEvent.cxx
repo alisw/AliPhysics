@@ -133,7 +133,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fMyTRandom3(NULL)
 {
   // Constructor
-  cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent()"<<endl;
+  AliDebug(2,"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent()");
 }
 
 //________________________________________________________________________
@@ -193,7 +193,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fMyTRandom3(NULL)
 {
   // Constructor
-  cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed)"<<endl;
+  AliDebug(2,"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed)");
   fMyTRandom3 = new TRandom3(iseed);
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
 
@@ -247,7 +247,7 @@ void AliAnalysisTaskFlowEvent::NotifyRun()
 void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
 {
   // Called at every worker node to initialize
-  cout<<"AliAnalysisTaskFlowEvent::CreateOutputObjects()"<<endl;
+  AliDebug(2,"AliAnalysisTaskFlowEvent::CreateOutputObjects()");
 
   if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC" || fAnalysisType == "AUTOMATIC"))
   {

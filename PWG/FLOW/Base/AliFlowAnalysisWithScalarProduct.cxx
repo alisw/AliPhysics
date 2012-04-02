@@ -94,8 +94,8 @@ AliFlowAnalysisWithScalarProduct::~AliFlowAnalysisWithScalarProduct()
 //-----------------------------------------------------------------------
 void AliFlowAnalysisWithScalarProduct::Init() {
   //Define all histograms
-  printf("---Analysis with the Scalar Product Method--- Init\n");
-  printf("--- fNormalizationType %d ---\n", fNormalizationType);
+  //printf("---Analysis with the Scalar Product Method--- Init\n");
+  //printf("--- fNormalizationType %d ---\n", fNormalizationType);
   //save old value and prevent histograms from being added to directory
   //to avoid name clashes in case multiple analaysis objects are used
   //in an analysis
