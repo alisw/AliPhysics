@@ -1,11 +1,10 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -61,6 +60,7 @@ AliHLTReconstructor::AliHLTReconstructor()
   , fpEsdManager(NULL)
   , fpPluginBase(new AliHLTPluginBase)
   , fFlags(0)
+  , fProcessingStep(kProcessingStepUndefined)
 { 
   //constructor
 }
@@ -70,6 +70,7 @@ AliHLTReconstructor::AliHLTReconstructor(const char* options)
   , fpEsdManager(NULL)
   , fpPluginBase(new AliHLTPluginBase)
   , fFlags(0)
+  , fProcessingStep(kProcessingStepUndefined)
 { 
   //constructor
   if (options) Init(options);
@@ -204,16 +205,44 @@ void AliHLTReconstructor::Init()
 
 void AliHLTReconstructor::Terminate() const
 {
+  /// overloaded from AliReconstructor: terminate event processing
+
+  // indicate step 'Terminate'
+  SetProcessingStep(kProcessingStepTerminate);
+
   AliInfo("terminating");
   if (fpPluginBase) {
-  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
-  if (pSystem) {
-    AliDebug(0, Form("terminate HLT system: status %#x", pSystem->GetStatusFlags()));
-    if (pSystem->CheckStatus(AliHLTSystem::kStarted)) {
-      // send specific 'event' to execute the stop sequence
-      pSystem->Reconstruct(0, NULL, NULL);
+    AliHLTSystem* pSystem=fpPluginBase->GetInstance();
+    if (pSystem) {
+      AliDebug(0, Form("terminate HLT system: status %#x", pSystem->GetStatusFlags()));
+      if (pSystem->CheckStatus(AliHLTSystem::kStarted)) {
+	// send specific 'event' to execute the stop sequence
+	pSystem->Reconstruct(0, NULL, NULL);
+      }
     }
   }
+}
+
+void AliHLTReconstructor::FinishEvent()
+{
+  /// overloaded from AliReconstructor: finish current event
+  if (!fpPluginBase) return;
+
+  // indicate step 'FinishEvent'
+  SetProcessingStep(kProcessingStepFinishEvent);
+
+  AliInfo("finishing event");
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
+  if (pSystem) {
+    // this is the end of the lifetime of the HLTOUT instance
+    // called after all other modules have been reconstructed
+    AliHLTOUT* pHLTOUT=NULL;
+    pSystem->InvalidateHLTOUT(&pHLTOUT);
+    if (pHLTOUT) {
+      pHLTOUT->Reset();
+      delete pHLTOUT;
+      pHLTOUT=NULL;
+    }
   }
 }
 
@@ -238,6 +267,9 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
     AliHLTOUT* pHLTOUT=NULL;
     pSystem->InvalidateHLTOUT(&pHLTOUT);
     if (pHLTOUT) {
+      // at this stage we always have a new event, regardless state of
+      // fProcessingStep; build the HLTOUT instance from scratch
+      pHLTOUT->Reset();
       delete pHLTOUT;
       pHLTOUT=NULL;
     }
@@ -249,6 +281,9 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
       AliError("HLT system in wrong state");
       return;
     }
+
+    // indicate the local reconstruction step
+    SetProcessingStep(kProcessingStepLocal);
 
     // init the HLTOUT instance for the current event
     // not nice. Have to query the global run loader to get the current event no.
@@ -313,6 +348,14 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
     // the processing
     AliHLTOUT* pHLTOUT=NULL;
     pSystem->InvalidateHLTOUT(&pHLTOUT);
+    if (pHLTOUT && fProcessingStep!=kProcessingStepLocal) {
+      // this is a new event, if local reconstruction would have been executed
+      // the HLTOUT instance would have been created for the current event already,
+      // in all other cases one has to create the HLTOUT instance here
+      pHLTOUT->Reset();
+      delete pHLTOUT;
+      pHLTOUT=NULL;
+    }
     if (!pHLTOUT) {
       AliRawReader* input=NULL;
       if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
@@ -320,9 +363,18 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
       }
       pHLTOUT=new AliHLTOUTRawReader(input, esd->GetEventNumberInFile(), fpEsdManager);
     }
+
+    // indicate step 'ESD filling'
+    SetProcessingStep(kProcessingStepESD);
+
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd, (pSystem->GetGlobalLoggingLevel()&kHLTLogDebug)!=0);
-      delete pHLTOUT;
+      // 2012-03-30: a change in the module sequence of AliReconstruction is soon
+      // going to be applied: HLT reconstruction is executed fully (i.e. both local
+      // reconstruction and FillESD) before all the other modules. In order to make the
+      // HLTOUT data available for other modules it is kept here and released in the method
+      // FinishEvent
+      pSystem->InitHLTOUT(pHLTOUT);
     } else {
       AliError("error creating HLTOUT handler");
     }
@@ -341,9 +393,15 @@ void AliHLTReconstructor::Reconstruct(TTree* /*digitsTree*/, TTree* /*clustersTr
     AliHLTOUT* pHLTOUT=NULL;
     pSystem->InvalidateHLTOUT(&pHLTOUT);
     if (pHLTOUT) {
+      // at this stage we always have a new event, regardless state of
+      // fProcessingStep; build the HLTOUT instance from scratch
+      pHLTOUT->Reset();
       delete pHLTOUT;
       pHLTOUT=NULL;
     }
+
+    // indicate the local reconstruction step
+    SetProcessingStep(kProcessingStepLocal);
 
     // not nice. Have to query the global run loader to get the current event no.
     // This is related to the missing AliLoader for HLT.
@@ -426,6 +484,14 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
     // the processing
     AliHLTOUT* pHLTOUT=NULL;
     pSystem->InvalidateHLTOUT(&pHLTOUT);
+    if (pHLTOUT && fProcessingStep!=kProcessingStepLocal) {
+      // this is a new event, if local reconstruction would have been executed
+      // the HLTOUT instance would have been created for the current event already,
+      // in all other cases one has to create the HLTOUT instance here
+      pHLTOUT->Reset();
+      delete pHLTOUT;
+      pHLTOUT=NULL;
+    }
     if (!pHLTOUT) {
       const char* digitfile=NULL;
       if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
@@ -434,9 +500,17 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
       pHLTOUT=new AliHLTOUTDigitReader(esd->GetEventNumberInFile(), fpEsdManager, digitfile);
     }
 
+    // indicate step 'ESD filling'
+    SetProcessingStep(kProcessingStepESD);
+
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd, (pSystem->GetGlobalLoggingLevel()&kHLTLogDebug)!=0);
-      delete pHLTOUT;
+      // 2012-03-30: a change in the module sequence of AliReconstruction is soon
+      // going to be applied: HLT reconstruction is executed fully (i.e. both local
+      // reconstruction and FillESD) before all the other modules. In order to make the
+      // HLTOUT data available for other modules it is kept here and released in the method
+      // FinishEvent
+      pSystem->InitHLTOUT(pHLTOUT);
     } else {
       AliError("error creating HLTOUT handler");
     }
@@ -495,7 +569,6 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bo
     AliInfo("HLT ESD content:");
     esd->Print();
   }
-  pHLTOUT->Reset();
 }
 
 void AliHLTReconstructor::ProcessHLTOUT(const char* digitFile, AliESDEvent* pEsd) const

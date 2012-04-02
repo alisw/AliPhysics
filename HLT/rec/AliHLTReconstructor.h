@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTRECONSTRUCTOR_H
 #define ALIHLTRECONSTRUCTOR_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -220,13 +220,24 @@ public:
   /** destructor */
   virtual ~AliHLTReconstructor();
 
+  enum {
+    kProcessingStepUndefined=0,
+    kProcessingStepLocal,
+    kProcessingStepESD,
+    kProcessingStepFinishEvent,
+    kProcessingStepTerminate
+  };
+
   /** init the reconstructor */
   void Init();
 
   /** init the reconstructor */
   void Init(const char* options);
 
-  void Terminate() const;
+  /// overloaded from AliReconstructor: terminate event processing
+  virtual void Terminate() const;
+  /// overloaded from AliReconstructor: finish current event
+  virtual void FinishEvent();
 
   /**
    * Build the CTP_TRIGGER_CLASSES string from CTP trigger configuration
@@ -317,6 +328,12 @@ private:
   /** assignment operator prohibited */
   AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
 
+  void SetProcessingStep(int step) const {
+    // want to use this function from const functions (which should not
+    // have been declared const at all in the base class
+    const_cast<AliHLTReconstructor*>(this)->fProcessingStep=step;
+  }
+
   /** ESD manger instance for this reconstruction */
   AliHLTEsdManager* fpEsdManager; //!transient
 
@@ -324,10 +341,11 @@ private:
   AliHLTPluginBase* fpPluginBase;                                     //!transient
 
   UInt_t fFlags; //! transient
+  Int_t fProcessingStep; //! store the last processing step
 
   static const char* fgkCalibStreamerInfoEntry; //! OCDB path
 
-  ClassDef(AliHLTReconstructor, 8)   // class for the HLT reconstruction
+  ClassDef(AliHLTReconstructor, 0)   // class for the HLT reconstruction
 
 };
 
