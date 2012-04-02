@@ -51,12 +51,13 @@ Int_t maxPtBin[nptbinsnew]={-1,-1,-1};
 Double_t mass;
 //methods
 //Bool_t ReadFile(TList* &list,TH1F* &hstat,AliRDHFCuts* &cutobj,TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root");
+TList *LoadMassHistos(TList *inputlist,Int_t minCent,Int_t maxCent,Bool_t inoutanis);
 Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value);
-// void InOutPic(TVirtualPad *c,Int_t inout=0,TString where="tr");//inout: 0=IN, 1=OUT 
-// void PhiBinPic(TVirtualPad *c,Int_t angle,TString where);
 void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs,Bool_t inoutanis);
-void DrawEventPlane(Int_t mincentr=0,Int_t maxcentr=0,TString filename="AnalysisResults.root",TString dirname="PWG3_D2H_HFv2",TString listname="coutputv2");
-void DrawEventPlane(TList *list,Int_t mincentr=0,Int_t maxcentr=0);
+void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE,Int_t minC=30,Int_t maxC=50,TString partname="Dplus",Int_t evPlane=2);
+void DrawEventPlane(Int_t mincentr=0,Int_t maxcentr=0,TString filename="AnalysisResults.root",TString dirname="PWG3_D2H_HFv2",TString listname="coutputv2",Int_t evPlane=2);
+Double_t DrawEventPlane(TList *list,Int_t mincentr=0,Int_t maxcentr=0,Int_t evPlane=2);
+void DrawEventPlaneAllCentralities(TList *list,Int_t startCentr=20,Int_t endCentr=80,Int_t evPlane=2);
 //Aggiungere <pt> method
 
 //methods implementation
@@ -66,7 +67,7 @@ TList *LoadMassHistos(TList *inputlist,Int_t minCent,Int_t maxCent,Bool_t inouta
   //  const Int_t nptbins=cutobj->GetNPtBins();
   TList *outlist = new TList();
   outlist->SetName("azimuthalhistoslist");
-
+  
   Int_t nphi=nphibins;
   if(inoutanis)nphi=2;
 
@@ -210,7 +211,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
  
 }
 //______________________________________________________________
-void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE,Int_t minC=30,Int_t maxC=50,TString partname="Dplus"){
+void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname,Int_t evPlane){
   TString filename="AnalysisResults.root";
   TString dirname="PWG3_D2H_HFv2";
   TString listname="coutputv2";
@@ -252,24 +253,45 @@ void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE,Int_t minC=30,Int_t maxC=50,TStr
   //Load mass histograms corresponding to the required centrality, pt range and phi binning
   printf("Load mass histos \n");
   TList *histlist=LoadMassHistos(list,minC,maxC,inoutanis);
-  TString anisstr="";
-  if(inoutanis)anisstr+="anis";
-  histlist->SaveAs(Form("v2Histograms_%d_%d_%s.root",minC,maxC,anisstr.Data()),"RECREATE");
+  TString aniss="";
+  if(inoutanis)aniss+="anis";
+  histlist->SaveAs(Form("v2Histograms_%d_%d_%s.root",minC,maxC,aniss.Data()),"RECREATE");
 
   Int_t nphi=nphibins;
   if(inoutanis)nphi=2;
+  Int_t nSubRes=1;
+  if(evPlane<2)nSubRes=3;//3 sub-events method for VZERO EP
 
   //EP resolution
   TH1F* hevplresos=(TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",minC,minC+5));
-  for(Int_t icent=minC+5;icent<maxC;icent++)hevplresos->Add((TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",icent,icent+5)));
-  //Double_t resolSub=TMath::Sqrt(hevplresos->GetMean());
-  Double_t resol=AliVertexingHFUtils::GetFullEvResol(hevplresos);//ComputeResol(resolSub,1);
+  TH1F* hevplresos2=0;
+  TH1F* hevplresos3=0;
+  if(evPlane<2){
+    hevplresos2=(TH1F*)list->FindObject(Form("hEvPlaneReso2centr%d_%d",minC,minC+5));
+    hevplresos3=(TH1F*)list->FindObject(Form("hEvPlaneReso3centr%d_%d",minC,minC+5));
+  }
+  Double_t resol=0;
+  for(Int_t icent=minC+5;icent<maxC;icent=icent+5){
+    hevplresos->Add((TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",icent,icent+5)));
+    if(evPlane<2){
+      hevplresos2->Add((TH1F*)list->FindObject(Form("hEvPlaneReso2centr%d_%d",icent,icent+5)));
+      hevplresos3->Add((TH1F*)list->FindObject(Form("hEvPlaneReso3centr%d_%d",icent,icent+5)));
+    }
+  }
+  if(evPlane>=2){
+    resol=AliVertexingHFUtils::GetFullEvResol(hevplresos);
+  }else{
+    Double_t resolSub[3]={hevplresos->GetMean(),hevplresos2->GetMean(),hevplresos3->GetMean()};
+    Double_t subEventResos=resolSub[1]*resolSub[2]/resolSub[0];
+    if(evPlane!=0)resol=AliVertexingHFUtils::GetFullEvResol(subEventResos);
+    else resol=AliVertexingHFUtils::GetFullEvResol(TMath::Sqrt(0.5)*subEventResos);//Full TPC, double multiplicity
+  }
 
   printf("average pt for pt bin \n");
   //average pt for pt bin
   AliVertexingHFUtils *utils=new AliVertexingHFUtils();
   TH2F* hmasspt=(TH2F*)list->FindObject(Form("hMPtCandcentr%d_%d",minC,minC+5));
-  for(Int_t icent=minC+5;icent<maxC;icent=icent+5)hmasspt->Add((TH2F*)list->FindObject(Form("hMPtCandCentr%d_%d",icent,icent+5)));
+  for(Int_t icent=minC+5;icent<maxC;icent=icent+5)hmasspt->Add((TH2F*)list->FindObject(Form("hMPtCandcentr%d_%d",icent,icent+5)));
   Float_t averagePt[nptbinsnew];
   Float_t errorPt[nptbinsnew];
   for(Int_t ipt=0;ipt<nptbinsnew;ipt++){
@@ -281,6 +303,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE,Int_t minC=30,Int_t maxC=50,TStr
     TF1* funcB2=fitter.GetBackgroundRecalcFunc();
     utils->AveragePt(averagePt[ipt],errorPt[ipt],ptbinsnew[ipt],ptbinsnew[ipt+1],hmasspt,massFromFit,sigmaFromFit,funcB2);
   }
+
   printf("Fill TGraphs for signal \n");
   //Fill TGraphs for signal
   TGraphAsymmErrors *gSignal[nptbinsnew];
@@ -309,7 +332,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE,Int_t minC=30,Int_t maxC=50,TStr
   gv2fs->SetTitle("v_{2}(p_{t}) (fit with fixed sigma)");
 
   //Prepare output file
-  TFile *fout=new TFile(Form("v2Output_%d_%d_%s.root",minC,maxC,anisstr.Data()),"RECREATE");
+  TFile *fout=new TFile(Form("v2Output_%d_%d_%s.root",minC,maxC,aniss.Data()),"RECREATE");
 
   for(Int_t ipt=0;ipt<nptbinsnew;ipt++){
     fout->cd();
@@ -388,7 +411,7 @@ Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value){
 }
 
 //_______________________________________________________________________________________________________________________________
-void DrawEventPlane(Int_t mincentr,Int_t maxcentr,TString filename,TString dirname,TString listname){
+void DrawEventPlane(Int_t mincentr,Int_t maxcentr,TString filename,TString dirname,TString listname,Int_t evPlane){
   TFile *f = TFile::Open(filename.Data());
   if(!f){
     printf("file %s not found, please check file name\n",filename.Data());return;
@@ -401,129 +424,130 @@ void DrawEventPlane(Int_t mincentr,Int_t maxcentr,TString filename,TString dirna
   if(!list){
     printf("list %s not found in file, please check list name\n",listname.Data());return;
   }
-  DrawEventPlane(list,mincentr,maxcentr);
+  DrawEventPlane(list,mincentr,maxcentr,evPlane);
 }
 //_______________________________________________________________________________________________________________________________
-void DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr){
-
- //draw the histograms correlated to the event plane
-
+Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane){
+  
+  //draw the histograms correlated to the event plane, returns event plane resolution
+  
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   //gStyle->SetPalette(1);
   gStyle->SetOptFit(1);
- 
-  if(!(mincentr==0 && maxcentr==0)){ //draw the total in mincentr-maxcentr
-    TString suffixcentr=Form("centr%d_%d",mincentr,maxcentr);
-    TH2F* hevpls=(TH2F*)list->FindObject(Form("hEvPlanecentr%d_%d",mincentr,mincentr+5));
-    hevpls->SetName(Form("hEvPlane%s",suffixcentr.Data()));
-    hevpls->SetTitle(Form("Event Plane angle %s",suffixcentr.Data()));
-    TH1F* hevplresos=(TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",mincentr,mincentr+5));
-    hevplresos->SetName(Form("hEvPlaneReso%s",suffixcentr.Data()));
-    hevplresos->SetTitle(Form("Event Plane Resolution %s",suffixcentr.Data()));
 
-    for(Int_t icentr=mincentr+5;icentr<maxcentr;icentr=icentr+5){
-      TH2F* h=(TH2F*)list->FindObject(Form("hEvPlanecentr%d_%d",icentr,icentr+5));
-      if(h)hevpls->Add(h);
-      else cout<<"skipping ev plane "<<icentr<<"_"<<icentr+5<<endl;
-      TH1F *hr=(TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",icentr,icentr+5));
-      if(hr)hevplresos->Add(hr);
+  Double_t resolFull=0; 
+  Int_t nSubRes=1;
+  if(evPlane<2)nSubRes=3;//3 sub-events method for VZERO EP
+  TString namereso[3]={"Reso","Reso2","Reso3"};
+  TString suffixcentr=Form("centr%d_%d",mincentr,maxcentr);
+  TH2F* hevpls=(TH2F*)list->FindObject(Form("hEvPlanecentr%d_%d",mincentr,mincentr+5));
+  hevpls->SetName(Form("hEvPlane%s",suffixcentr.Data()));
+  hevpls->SetTitle(Form("Event Plane angle %s",suffixcentr.Data()));
+    //    TH1F* hevplresos=(TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",mincentr,mincentr+5));QUI!!!
+  TH1F* hevplresos[3];
+  for(Int_t ires=0;ires<nSubRes;ires++){
+    hevplresos[ires]=(TH1F*)list->FindObject(Form("hEvPlane%scentr%d_%d",namereso[ires].Data(),mincentr,mincentr+5));
+    hevplresos[ires]->SetName(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
+    hevplresos[ires]->SetTitle(Form("Event Plane Resolution %s%s",namereso[ires].Data(),suffixcentr.Data()));
+  }
+  
+  for(Int_t icentr=mincentr+5;icentr<maxcentr;icentr=icentr+5){
+    TH2F* h=(TH2F*)list->FindObject(Form("hEvPlanecentr%d_%d",icentr,icentr+5));
+    if(h)hevpls->Add(h);
+    else cout<<"skipping ev plane "<<icentr<<"_"<<icentr+5<<endl;
+    for(Int_t ires=0;ires<nSubRes;ires++){
+      TH1F *hr=(TH1F*)list->FindObject(Form("hEvPlane%scentr%d_%d",namereso[ires].Data(),icentr,icentr+5));
+      if(hr)hevplresos[ires]->Add(hr);
       else cout<<"skipping ev pl reso "<<icentr<<"_"<<icentr+5<<endl;
     }
-
-    TCanvas* cvtotevpl=new TCanvas("cvtotevpl",Form("Ev plane %s",suffixcentr.Data()),1200,400);
-    cvtotevpl->Divide(3,1);
-    cvtotevpl->cd(1);
-    hevpls->Draw("COLZ");
-    TH1F* htpc = (TH1F*)hevpls->ProjectionX();
-    cvtotevpl->cd(2);
-    htpc->Draw();
-    htpc->Fit("pol0");
-    TH1F* hv0 = (TH1F*)hevpls->ProjectionY();
-    cvtotevpl->cd(3);
-    hv0->Draw();
-    hv0->Fit("pol0");
-
-    TCanvas* cvtotevplreso=new TCanvas("cvtotevplreso",Form("Ev plane Resolution %s",suffixcentr.Data()));
-    cvtotevplreso->cd();
-    hevplresos->Draw();
-    //AliVertexingHFUtils::SetSubEventHisto(hevplresos);
-    //Double_t resolSub=TMath::Sqrt(hevplresos->GetMean());
-    Double_t resolFull=AliVertexingHFUtils::GetFullEvResol(hevplresos);//ComputeResol(resolSub,1);
-
-    TPaveText* pvreso=new TPaveText(0.1,0.1,0.6,0.2,"NDC");
-    pvreso->SetBorderSize(0);
-    pvreso->SetFillStyle(0);
-    pvreso->AddText(Form("Resolution on full event = %.4f\n",resolFull));
-    pvreso->Draw();
-
-    TFile* fout=new TFile(Form("EvPlanecentr%d-%d.root",mincentr,maxcentr),"recreate");
-    fout->cd();
-    hevpls->Write();
-    hevplresos->Write();
   }
-  else{ //draw all in 5% centrality bins
-
-    TGraph* gresovscentr=new TGraph(0);
-    gresovscentr->SetName("gresovscentr");
-    gresovscentr->SetTitle(Form("Resolution vs Centrality;centrality (%s);Resolution","%"));
-    Int_t ic=0;
-    for(Int_t i=0;i<list->GetEntries();i++){
-       TClass* objtype=list->At(i)->IsA();
-       TString tpname=objtype->GetName();
-       if(tpname=="TH2F"){
-	 TH2F* h=(TH2F*)list->At(i);
-	 // if(!h){
-	 //   cout<<"Histogram "<<i<<" not found"<<endl;
-	 //   continue;
-	 // }
-	 TString hname=h->GetName();
-	 if(hname.Contains("EvPlane")){
-	   TString fixedname="hEvPlanecentr";
-	   TString scentr=hname.Copy();
-	   //printf("%s\n",scentr.Data());
-	   scentr.Remove(0,fixedname.Length());
-	   printf("%s\n",scentr.Data());
-	   TCanvas* cv=new TCanvas(Form("cv%s",hname.Data()),hname.Data());
-	   cv->cd();
-	   TH1F* htpc = (TH1F*)h->ProjectionX();
-	   htpc->SetTitle(Form("TPC event plane (%s)",scentr.Data()));
-	   htpc->Draw();
-	   htpc->Fit("pol0");
-	 }
-       }else{ //it is a TH1F
-	 TH1F* h=(TH1F*)list->At(i);
-	 TString hname=h->GetName();
-	 if(hname.Contains("Reso")){
-	 //Double_t resolSub=TMath::Sqrt(h->GetMean());
-	   Double_t resolFull=AliVertexingHFUtils::GetFullEvResol(h);//ComputeResol(resolSub,1);
-	   TString smaxc=hname.Copy();
-	   smaxc.Remove(0,hname.Length()-2);
-	   Int_t maxc=smaxc.Atoi();
-	   gresovscentr->SetPoint(ic,maxc-2.5,resolFull);
-	   ic++;
-	   TPaveText* pvreso=new TPaveText(0.1,0.1,0.6,0.2,"NDC");
-	   pvreso->SetBorderSize(0);
-	   pvreso->SetFillStyle(0);
-	   pvreso->AddText(Form("Resolution on full event = %.4f\n",resolFull));
-	   pvreso->Draw();
-	}
-      }
-    }//loop on centrality
-    TCanvas* cresovscentr=new TCanvas("cresovscentr", "Resolution vs Centrality");
-    cresovscentr->cd();
-    gresovscentr->SetMarkerStyle(20);
-    gresovscentr->Draw("AP");
-    if(!gnopng) gresovscentr->SaveAs(Form("%s.png",gresovscentr->GetName()));
-    gresovscentr->SaveAs(Form("%s.eps",gresovscentr->GetName()));
-    TFile* fout=new TFile(Form("%s.root",gresovscentr->GetName()),"recreate");
-    fout->cd();
-    gresovscentr->Write();
+  
+  TCanvas* cvtotevpl=new TCanvas("cvtotevpl",Form("Ev plane %s",suffixcentr.Data()),1200,400);
+  cvtotevpl->Divide(3,1);
+  cvtotevpl->cd(1);
+  hevpls->Draw("COLZ");
+  TH1F* htpc = (TH1F*)hevpls->ProjectionX();
+  cvtotevpl->cd(2);
+  htpc->Draw();
+  htpc->Fit("pol0");
+  TH1F* hv0 = (TH1F*)hevpls->ProjectionY();
+  cvtotevpl->cd(3);
+  hv0->Draw();
+  hv0->Fit("pol0");
+  
+  TCanvas* cvtotevplreso=new TCanvas("cvtotevplreso",Form("Ev plane Resolution %s",suffixcentr.Data()));
+  cvtotevplreso->cd();
+  hevplresos[0]->SetTitle("TPC cos2(#Psi_{A}-#Psi_{B})");
+  hevplresos[0]->Draw();
+  gStyle->SetOptStat(0);
+  if(nSubRes>1){
+    hevplresos[1]->SetLineColor(2);
+    hevplresos[2]->SetLineColor(3);
+    hevplresos[0]->SetTitle("cos2(#Psi_{V0A}-#Psi_{V0B})");
+    hevplresos[1]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0A})");
+    hevplresos[2]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0B})");
+    hevplresos[1]->Draw("SAME");
+    hevplresos[2]->Draw("SAME");
   }
+  TLegend *leg = cvtotevplreso->BuildLegend();
+  leg->SetLineColor(0);
+  leg->SetFillColor(0);
+  
+  if(nSubRes<=1) resolFull=AliVertexingHFUtils::GetFullEvResol(hevplresos[0]);
+  else{
+    Double_t resolSub[3];
+    for(Int_t ires=0;ires<nSubRes;ires++)resolSub[ires]=hevplresos[ires]->GetMean();
+    Double_t subEventResos=resolSub[1]*resolSub[2]/resolSub[0];
+    if(evPlane!=0) resolFull=AliVertexingHFUtils::GetFullEvResol(subEventResos);
+    else{
+      //Full TPC, double multiplicity, check the computation!
+      resolFull=AliVertexingHFUtils::GetFullEvResol(TMath::Sqrt(0.5)*subEventResos);
+    }
+  }
+  
+  TPaveText* pvreso=new TPaveText(0.1,0.1,0.6,0.2,"NDC");
+  pvreso->SetBorderSize(0);
+  pvreso->SetFillStyle(0);
+  pvreso->AddText(Form("Resolution on full event = %.4f\n",resolFull));
+  pvreso->Draw();
+  
+  TFile* fout=new TFile(Form("EvPlanecentr%d-%d.root",mincentr,maxcentr),"recreate");
+  fout->cd();
+  hevpls->Write();
+  for(Int_t ires=0;ires<nSubRes;ires++)hevplresos[ires]->Write();
 
+  return resolFull;
 }
-//D^{0}#rightarrow K^{-}#pi^{+}
+
+//_______________________________________________________________________________________________________________________________
+void DrawEventPlaneAllCentralities(TList *list,Int_t startCentr,Int_t endCentr,Int_t evPlane){
+  TGraph* gresovscentr=new TGraph(0);
+  gresovscentr->SetName("gresovscentr");
+  gresovscentr->SetTitle(Form("Resolution vs Centrality;centrality (%s);Resolution","%"));
+
+  Int_t iPoint=0;
+  Int_t step=5;//5% centrality step
+  //  Int_t nCC=(endCentr-startCentr)/step;
+
+  for(Int_t i=startCentr;i<endCentr;i=i+step){
+    Double_t resolFull=DrawEventPlane(list,i,i+step,evPlane);
+    gresovscentr->SetPoint(iPoint,i+(Float_t)step/2.,resolFull);
+    iPoint++;
+  }
+
+  TCanvas* cresovscentr=new TCanvas("cresovscentr", "Resolution vs Centrality");
+  cresovscentr->cd();
+  gresovscentr->SetMarkerStyle(20);
+  gresovscentr->Draw("AP");
+  if(!gnopng) gresovscentr->SaveAs(Form("%s.png",gresovscentr->GetName()));
+  gresovscentr->SaveAs(Form("%s.eps",gresovscentr->GetName()));
+  TFile* fout=new TFile(Form("%s.root",gresovscentr->GetName()),"recreate");
+  fout->cd();
+  gresovscentr->Write();
+}
+//_______________________________________________________________________________________________________________________________
 void DrawPaveStat(TVirtualPad* c,Int_t nev,Int_t mincentr,Int_t maxcentr,TString string,TString string2){
 
   TPaveText* txtoff=new TPaveText(0.2,0.3,0.6,0.5,"NDC");
@@ -542,10 +566,10 @@ void DrawPaveStat(TVirtualPad* c,Int_t nev,Int_t mincentr,Int_t maxcentr,TString
   c->cd();
   txtoff->Draw();
 }
-
+//_______________________________________________________________________________________________________________________________
 void ALICEPerformance2(TVirtualPad *c,TString today,Double_t* where,TString type){
  
- //date must be in the form: 04/05/2010
+  //date must be in the form: 04/05/2010
   if(today=="today"){
     TDatime startt;                                                        
     int date=startt.GetDate();
@@ -585,7 +609,7 @@ void ALICEPerformance2(TVirtualPad *c,TString today,Double_t* where,TString type
   t1->SetFillStyle(0);
   t1->SetBorderSize(0);
   //t1->AddText(0.,0.,Form("%s%s",type.Data(),(type=="Performace") ? today.Data() : ""));
-t1->AddText(0.,0.,Form("%s",type.Data()));
+  t1->AddText(0.,0.,Form("%s",type.Data()));
   t1->SetTextColor(kRed);
   t1->SetTextFont(42);
   
