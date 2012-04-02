@@ -1,26 +1,26 @@
 
 
-AliAnalysisTask *AddTaskAlex(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
+AliAnalysisTask *AddTaskAlex(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
 
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_akalweit_CombinedHadron", "No analysis manager found.");
+    Error("AddTask_janielsk_CombinedHadron", "No analysis manager found.");
     return 0;
   }
   //============= Set Task Name ===================
-  TString taskName=("AliAnalysisCombinedHadronSpectra.cxx+g");
+  //TString taskName=("AliAnalysisCombinedHadronSpectra.cxx+g");
   //===============================================
   //            Load the task
-  gROOT->LoadMacro(taskName.Data());
+  //gROOT->LoadMacro(taskName.Data());
 
 
   
   //========= Add task to the ANALYSIS manager =====
 
   //normal tracks
-  AliAnalysisCombinedHadronSpectra *task = new AliAnalysisCombinedHadronSpectra("akalweitTaskCombinedHadron");
+  AliAnalysisCombinedHadronSpectra *task = new AliAnalysisCombinedHadronSpectra("janielskTaskCombinedHadron");
   task->SelectCollisionCandidates(AliVEvent::kMB);
 
   //switches
@@ -47,6 +47,7 @@ AliAnalysisTask *AddTaskAlex(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t 
   //below the trunk version
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
+/*
   //dumm output container
   AliAnalysisDataContainer *coutput0 =
       mgr->CreateContainer(Form("akalweit_tree%i",identifier),
@@ -59,6 +60,13 @@ AliAnalysisTask *AddTaskAlex(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t 
   AliAnalysisDataContainer *coutput1 = 
       mgr->CreateContainer(Form("akalweit_CombinedHadron%i",identifier), TList::Class(),
                            AliAnalysisManager::kOutputContainer,Form("akalweit_CombinedHadron%i.root",identifier));
+*/
+  if (!writeOwnFile) {
+  	AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer(Form("janielsk_CombinedHadron%i",identifier), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:janielsk_CombinedHadron", AliAnalysisManager::GetCommonFileName())); 
+	}
+  else {
+	AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer(Form("janielsk_CombinedHadron%i",identifier), TList::Class(), AliAnalysisManager::kOutputContainer, Form("janielsk_CombinedHadron.root"));
+	}
 
 
 
@@ -66,7 +74,7 @@ AliAnalysisTask *AddTaskAlex(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t 
 
   //
   mgr->ConnectInput  (task,  0, cinput );
-  mgr->ConnectOutput (task,  0, coutput0);
+  //mgr->ConnectOutput (task,  0, coutput0);
   mgr->ConnectOutput (task,  1, coutput1);
 
   return task;
