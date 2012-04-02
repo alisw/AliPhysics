@@ -22,6 +22,7 @@ class AliESDEvent;
 class AliESDfriend;
 class AliITSTPArrayFit;
 class AliTrackPointArray;
+class AliITSSumTP;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -36,6 +37,9 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   Terminate(Option_t *option);
 
+  void SetDoFillTPTree(Bool_t opt){
+    fDoFillTPTree=opt;
+  }
   void SetDoSPDResiduals(Bool_t opt){
     fDoSPDResiduals=opt;
   }
@@ -79,17 +83,22 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void SetMinPt(Float_t minpt=1.0){
     fMinPt=minpt;
   }
+  void SetUseTPCMomentum(Bool_t v=kTRUE)    { fUseTPCMomentum = v;}
+  //
   void SetMinVtxContributors(Int_t n=5)     { fMinVtxContributors = n; }
   void SetUseVertex(Bool_t v=kTRUE)         { fUseVertex = v; }
   void SetUseVertexForZOnly(Bool_t v=kTRUE) { fUseVertexForZOnly = v; } // Use the vertex for SDD Z residuals only
   void SetRemovePileupWithSPD(Bool_t opt=kTRUE) { fRemovePileupWithSPD = opt; }
   void SetMinMaxMult(Double_t mn=0,Double_t mx=1e9) {fMinMult=mn; fMaxMult=mx;} 
+  void SetCutDCA(double xy, double z) {fCutDCAXY = xy; fCutDCAZ = z;}
+
   void SetOCDBInfo(UInt_t runNb, const char *location) {
     fRunNb=runNb; 
     fOCDBLocation=location;
   }
 
-  Bool_t   AcceptTrack(const AliESDtrack * track);
+  Bool_t   GetUseTPCMomentum()                    const {return fUseTPCMomentum;}
+  Bool_t   AcceptTrack(const AliESDtrack * track, const AliESDVertex* vtx=0);
   Bool_t   AcceptVertex(const AliESDVertex * vtx, const AliESDVertex * vtxSPD);
   Bool_t   AcceptCentrality(const AliESDEvent *esd) const;
   void     CreateSPDHistos();
@@ -108,6 +117,8 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void     LoadGeometryFromOCDB();
   AliTrackPointArray* PrepareTrack(const AliTrackPointArray* inp, const AliESDVertex* vtx=0);
   void                PrepareVertexConstraint(const AliESDVertex* vtx, AliTrackPoint &point);
+  //
+  void    CreateUserInfo();
  private:
   AliAnalysisTaskITSAlignQA(const AliAnalysisTaskITSAlignQA &source);
   AliAnalysisTaskITSAlignQA& operator=(const AliAnalysisTaskITSAlignQA &source);
@@ -150,10 +161,12 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Bool_t   fDoSDDdEdxCalib;   // Flag to enable histos for SDD dE/dx calibration
   Bool_t   fDoSDDVDriftCalib; // Flag to enable histos for SDD VDrift calibration
   Bool_t   fDoSDDDriftTime;   // Flag to enable histos for SDD Drift times
+  Bool_t   fDoFillTPTree;     // Flag to enable tree with trackpoints
   Bool_t   fUseITSsaTracks;   // Flag for using standalone ITS tracks
   Bool_t   fLoadGeometry;     // Flag to control the loading of geometry from OCDB
   Bool_t   fUseVertex;        // Use the vertex as an extra point
   Bool_t   fUseVertexForZOnly; // Use the vertex for SDD Z residuals only
+  Bool_t   fUseTPCMomentum;   // for the curv. constraint use TPC momentum rather than global
   Int_t    fMinVtxContributors; // min N contributors to accept vertex if fUseVertex is on
   Bool_t   fRemovePileupWithSPD; // Use/not use pileup rejection with SPD
   Int_t    fMinITSpts;        // Minimum number of ITS points per track
@@ -163,12 +176,13 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Double_t fMinMult;          // min centrality cut
   Double_t fMaxMult;          // max centrality cut
   Double_t fPtBinLimits[kMaxPtBins+1];  // limits of Pt bins
-
+  Double_t fCutDCAXY;        // apply rough XY DCA cut in case of vtx constraint, in terms of standard deviations
+  Double_t fCutDCAZ;         // apply rough Z  DCA cut in case of vtx constraint  in terms of standard deviations
   AliITSTPArrayFit* fFitter;  // Track Point fitter
+  AliITSSumTP* fITSSumTP;     // TracPoints summary objects
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
-
-  ClassDef(AliAnalysisTaskITSAlignQA,5);
+  ClassDef(AliAnalysisTaskITSAlignQA,6);
 };
 
 
