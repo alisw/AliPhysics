@@ -100,11 +100,14 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   // 
   // setup calibration component
   //
+
+  Bool_t useQmax = (grpData->GetBeamType()).Contains("Pb-Pb");
+
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain(name,"calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 10*60);
   calibTimeGain->SetIsCosmic(isCosmic);
   calibTimeGain->SetUseCookAnalytical(kTRUE);
-  calibTimeGain->SetUseMax(kTRUE);
+  calibTimeGain->SetUseMax(useQmax);
   calibTimeGain->SetDebugLevel(0);
   calibTimeGain->SetStreamLevel(0);
   calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //reject laser
@@ -114,7 +117,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   myTask->AddJob(calibTimeGain);
 
   AliTPCcalibGainMult *calibGainMult = new AliTPCcalibGainMult("calibGainMult","calibGainMult");
-  calibGainMult->SetUseMax(kTRUE);
+  calibGainMult->SetUseMax(useQmax);
   calibGainMult->SetDebugLevel(0);
   calibGainMult->SetStreamLevel(0);
   calibGainMult->SetTriggerMask(-1,-1,kTRUE);        //reject laser

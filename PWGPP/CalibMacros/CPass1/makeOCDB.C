@@ -78,8 +78,8 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
    procestrd.SetMinStatsVdriftT0PH(600*10);
    procestrd.SetMinStatsVdriftLinear(50);
    procestrd.SetMinStatsGain(600);
-   procestrd.SetLimitValidateNoData(40);
-   procestrd.SetLimitValidateBadCalib(40);
+   procestrd.SetLimitValidateNoData(60);
+   procestrd.SetLimitValidateBadCalib(60);
    procestrd.SetAlternativeDriftVelocityFit(kTRUE);
    procestrd.Init("CalibObjects.root");
    Int_t versionVdriftUsed = procestrd.GetVersionVdriftUsed();
