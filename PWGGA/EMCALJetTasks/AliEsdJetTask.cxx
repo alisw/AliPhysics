@@ -11,7 +11,6 @@
 
 ClassImp(AliEsdJetTask)
 
-#ifdef __HAVE_FJINTERFACE__
 //________________________________________________________________________
 AliEsdJetTask::AliEsdJetTask(const char *name) : 
   AliAnalysisTaskSE("AliEsdJetTask"),
@@ -178,49 +177,4 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
     jetCount++;
   }
 }
-#else
-//________________________________________________________________________
-AliEsdJetTask::AliEsdJetTask(const char */*name*/) : 
-  AliAnalysisTaskSE("AliEsdJetTask"),
-  fTracksName("Tracks"),
-  fCaloName("CaloClusters"),
-  fJetsName("Jets"),
-  fAlgo(1),
-  fRadius(0.4),
-  fType(0),
-  fHadCorr(0),
-  fJets(0)
-{
-  // Standard constructor.
-  AliFatal("Compiled without FASTJET package. Task cannot be used!");
-}
 
-//________________________________________________________________________
-AliEsdJetTask::~AliEsdJetTask()
-{
-  // Destructor
-}
-
-//________________________________________________________________________
-void AliEsdJetTask::UserCreateOutputObjects()
-{
-  // Create user objects.
-}
-
-//________________________________________________________________________
-void AliEsdJetTask::UserExec(Option_t *) 
-{
-}
-
-//________________________________________________________________________
-void AliEsdJetTask::Terminate(Option_t *) 
-{
-  // Called once at the end of the analysis.
-}
-
-//________________________________________________________________________
-void AliEsdJetTask::FindJets(TObjArray *, TObjArray *, Int_t, Double_t)
-{
-  // Find jets.
-}
-#endif

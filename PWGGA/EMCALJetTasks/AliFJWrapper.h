@@ -3,7 +3,7 @@
 
 // $Id$
 
-#if !defined(__CINT__) && !defined(__MAKECINT__) &&defined(__HAVE_FJINTERFACE__)
+#if !defined(__CINT__) && !defined(__MAKECINT__)
 
 #include <vector>
 #include <TNamed.h>

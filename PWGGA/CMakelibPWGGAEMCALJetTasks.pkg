@@ -26,7 +26,6 @@
 
 set ( SRCS 
  EMCALJetTasks/AliEsdJetTask.cxx
- EMCALJetTasks/AliFJWrapper.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -35,7 +34,9 @@ set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set(FASTJET_ROOT $ENV{FASTJET_ROOT})
+set ( SRCS ${SRCS}  EMCALJetTasks/AliFJWrapper.cxx )
+
+set ( FASTJET_ROOT $ENV{FASTJET_ROOT} )
 if(FASTJET_ROOT)
   set ( EDEFINE -isystem${FASTJET_ROOT}/include)
 else()
@@ -47,4 +48,4 @@ else()
   endif(FASTJET)
 endif(FASTJET_ROOT)
 
-set ( EINCLUDE PWGGA/EMCALJetTasks EMCAL OADB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE PWGGA/EMCALJetTasks EMCAL OADB STEER/ESD STEER/STEERBase )
