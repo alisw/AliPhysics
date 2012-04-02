@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTESDMANAGERIMPLEMENTATION_H
 #define ALIHLTESDMANAGERIMPLEMENTATION_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE                    * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -137,7 +137,7 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
      * @param pESD        ESD to write
      * @param eventno     optional event no for tree synchronization
      */
-    int WriteESD(AliESDEvent* pESD, int eventno=-1);
+    int WriteESD(const AliESDEvent* pESD, int eventno=-1);
 
     /**
      * Set the target directory for the ESD file.

@@ -1,11 +1,10 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -34,6 +33,8 @@
 #include "AliESDCaloCells.h"
 #include "AliMultiplicity.h"
 #include "AliESDACORDE.h"
+#include "AliESDTrdTrigger.h"
+#include "AliTOFHeader.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TClass.h"
@@ -66,7 +67,7 @@ AliHLTEsdManagerImplementation::AliHLTEsdManagerImplementation()
 
 AliHLTEsdManagerImplementation::~AliHLTEsdManagerImplementation()
 {
-  // see header file for class documentation
+  // destructor
   for (unsigned int i=0; i<fESDs.size(); i++) {
     if (fESDs[i]) {
       delete fESDs[i];
@@ -77,7 +78,7 @@ AliHLTEsdManagerImplementation::~AliHLTEsdManagerImplementation()
 
 int AliHLTEsdManagerImplementation::SetOption(const char* option)
 {
-  // see header file for class documentation
+  // set options
   int iResult=0;
   TString strOptions=option;
   TObjArray* pTokens=strOptions.Tokenize(" ");
@@ -109,7 +110,7 @@ int AliHLTEsdManagerImplementation::SetOption(const char* option)
 
 AliHLTEsdManagerImplementation::AliHLTEsdListEntry* AliHLTEsdManagerImplementation::Find(AliHLTComponentDataType dt) const
 {
-  // see header file for class documentation
+  // find a list entry
   AliHLTEsdListEntry* pEntry=NULL;
   for (unsigned int i=0; i<fESDs.size(); i++) {
     if (fESDs[i] && *(fESDs[i])==dt) {
@@ -122,7 +123,7 @@ AliHLTEsdManagerImplementation::AliHLTEsdListEntry* AliHLTEsdManagerImplementati
 int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
 			       AliHLTComponentDataType dt, AliESDEvent* tgtesd, int eventno)
 {
-  // see header file for class documentation
+  // main funtion: write the ESD object
   if (pBuffer==NULL || size<4) return -EINVAL;
   int iResult=0;
   AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);
@@ -201,7 +202,7 @@ int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHL
 
 int AliHLTEsdManagerImplementation::PadESDs(int eventno)
 {
-  // see header file for class documentation
+  // insert a number of empty ESDs to keep event no synchronized
   int iResult=0;
   for (unsigned int i=0; i<fESDs.size(); i++) {
     if (fESDs[i]) {
@@ -214,7 +215,7 @@ int AliHLTEsdManagerImplementation::PadESDs(int eventno)
 
 void AliHLTEsdManagerImplementation::SetDirectory(const char* directory)
 {
-  // see header file for class documentation
+  // set the target directory for ESD files
   if (!directory) return;
   fDirectory=directory;
   for (unsigned int i=0; i<fESDs.size(); i++) {
@@ -226,6 +227,7 @@ void AliHLTEsdManagerImplementation::SetDirectory(const char* directory)
 
 TString AliHLTEsdManagerImplementation::GetFileNames(AliHLTComponentDataType dt) const
 {
+  // get a list of file names matching the data type
   TString result;
   for (unsigned int i=0; i<fESDs.size(); i++) {
     if (fESDs[i] && *(fESDs[i])==dt) {
@@ -238,7 +240,7 @@ TString AliHLTEsdManagerImplementation::GetFileNames(AliHLTComponentDataType dt)
 
 TTree* AliHLTEsdManagerImplementation::EmbedIntoTree(AliESDEvent* pESD, const char* name, const char* title)
 {
-  // see header file for class documentation
+  // create a new TTree object and embed the ESD
   TTree* pTree=new TTree(name, title);
   if (pTree) {
     pESD->WriteToTree(pTree);
@@ -260,12 +262,12 @@ AliHLTEsdManagerImplementation::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTCom
   fPrefix(),
   fTreeName("esdTree")
 {
-  // see header file for class documentation
+  // consructor
 }
 
 AliHLTEsdManagerImplementation::AliHLTEsdListEntry::~AliHLTEsdListEntry()
 {
-  // see header file for class documentation
+  // destructor
   if (fpEsd) delete fpEsd;
   fpEsd=NULL;
 
@@ -281,13 +283,13 @@ AliHLTEsdManagerImplementation::AliHLTEsdListEntry::~AliHLTEsdListEntry()
 
 bool AliHLTEsdManagerImplementation::AliHLTEsdListEntry::operator==(AliHLTComponentDataType dt) const
 {
-  // see header file for class documentation
+  // comparison operator
   return fDt==dt;
 }
 
-int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eventno)
+int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(const AliESDEvent* pSrcESD, int eventno)
 {
-  // see header file for class documentation
+  // write ESD object
   int iResult=0;
 
   if (fName.IsNull()) {
@@ -387,7 +389,7 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
 
 void AliHLTEsdManagerImplementation::AliHLTEsdListEntry::SetDirectory(const char* directory)
 {
-  // see header file for class documentation
+  // set the target directory
   if (!directory) return;
   if (!fName.IsNull()) {
     HLTWarning("ESD entry already in writing mode (%s), ignoring directory", fName.Data());
@@ -398,13 +400,13 @@ void AliHLTEsdManagerImplementation::AliHLTEsdListEntry::SetDirectory(const char
 
 const char* AliHLTEsdManagerImplementation::AliHLTEsdListEntry::GetFileName() const
 {
-  // see header file for class documentation
+  // get the file name
   return fName.Data();
 }
 
 const char* AliHLTEsdManagerImplementation::AliHLTEsdListEntry::GetPrefix()
 {
-  // see header file for class documentation
+  // get prefix from data origin
   if (fPrefix.IsNull()) {
     fPrefix.Insert(0, fDt.fOrigin, kAliHLTComponentDataTypefOriginSize);
     fPrefix.Remove(TString::kTrailing, ' ');
@@ -418,7 +420,11 @@ const char* AliHLTEsdManagerImplementation::AliHLTEsdListEntry::GetPrefix()
 
 int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) const
 {
-  // see header file for class documentation
+  // merge two ESDs, this method implements specifc handling for different
+  // types of ESD content in order to avoid overwriting of data in the target ESD
+  // by empty/default data of the source ESD
+  // - arrays: just check if there are entries
+  // - other objects: see below
   int iResult=0;
   if (!pTgt || !pSrc) return -EINVAL;
 
@@ -475,6 +481,11 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
       } else if (pSrcObject->IsA()==AliESDACORDE::Class()) {
 	AliESDACORDE* pESDACORDE=dynamic_cast<AliESDACORDE*>(pSrcObject);
 	copy=(pESDACORDE && false); // have to find an easy valid condition
+      } else if (pSrcObject->IsA()==AliESDTrdTrigger::Class()) {
+	AliESDTrdTrigger* pESDTrdTrigger=dynamic_cast<AliESDTrdTrigger*>(pSrcObject);
+	copy=(pESDTrdTrigger && false); // have to find an easy valid condition
+      } else if (pSrcObject->IsA()==AliTOFHeader::Class()) {
+	copy=false; // no TOF in HLT (there are no links)
       } else if (!AliHLTESDEventHelper::IsStdContent(name)) {
 	// this is likely to be ok as long as it is not any object of the std content.
 	copy=true;
