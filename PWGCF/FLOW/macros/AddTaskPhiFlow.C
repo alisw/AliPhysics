@@ -9,29 +9,31 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
                                        Int_t harmonic = 2,
                                        Float_t centrMin = 30.,
                                        Float_t centrMax = 40.,
-                                       Float_t vertexZ = 10.,
                                        Float_t bayesThresholdP = 0.5,
-                                       Bool_t strictKaonCuts = kTRUE,
-                                       Bool_t TPCStandAloneTracks = kTRUE,
+                                       TString suffixName = "",
+                                       Bool_t bCentralTrigger = kFALSE,
                                        Float_t RPEtaMinA = -0.8,
                                        Float_t RPEtaMaxA = 0.0,
                                        Float_t RPEtaMinB = 0.0,
                                        Float_t RPEtaMaxB = 0.8,
-                                       Float_t RPEtaMax = 0.8,
                                        Float_t POIEtaMin = -0.8,
                                        Float_t POIEtaMax = 0.8,
                                        Float_t POIPtMin = 0.15,
                                        Float_t POIPtMax = 10.,
-                                       Float_t deltaDip = 0.0,
-                                       Float_t deltaDipMaxPt = 0.0,
-                                       AliAnalysisTaskPhiFlow::PIDtype pidtype = AliAnalysisTaskPhiFlow::kCombined)
+                                       Float_t deltaDip = 0.04,
+                                       Float_t deltaDipMaxPt = 1.2,
+                                       AliAnalysisTaskPhiFlow::PIDtype pidtype = AliAnalysisTaskPhiFlow::kCombined,
+                                       Bool_t strictKaonCuts = kFALSE,
+                                       Bool_t TPCStandAloneTracks = kFALSE,
+                                       Float_t vertexZ = 10.)
 {
+   // set up main output container's name
    TString centralityName("");
    centralityName += Form("%.0f", centrMin);
    centralityName += "-";
    centralityName += Form("%.0f", centrMax);
    centralityName += "_";
-   centralityName += Form("vZ%.1f", vertexZ);
+   centralityName += Form("vZ%.f", vertexZ);
    centralityName += "_";
    centralityName += Form("bayP%.1f", bayesThresholdP);
    centralityName += "_";
@@ -48,13 +50,18 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
    centralityName += "-";
    centralityName += Form("%.1f", RPEtaMaxB);
    centralityName += "-";
-   centralityName += Form("dDip%.f", deltaDip);
+   centralityName += Form("dDip%.2f", deltaDip);
    centralityName += "-";
-   centralityName += Form("dDipPt%.f", deltaDipMaxPt);
+   centralityName += Form("dDipPt%.2f", deltaDipMaxPt);
    if (strictKaonCuts)
    {
       centralityName += "-";
       centralityName += "StrictKaonCuts";
+   }
+   if (bCentralTrigger)
+   {
+       centralityName += "-";
+       centralityName += "kMBkCkSC";
    }
 
    TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -75,15 +82,18 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
 
    // create the main task
    AliAnalysisTaskPhiFlow *task = new AliAnalysisTaskPhiFlow("TaskPhiFlow");
-   task->SelectCollisionCandidates(AliVEvent::kMB);
+
+    // set triggers
+   if(bCentralTrigger) task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+   else                task->SelectCollisionCandidates(AliVEvent::kMB);
 
    // set RP cuts for EP method
    AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("GlobalRP");
-   cutsRP->GetStandardTPCStandaloneTrackCuts();
+   AliFlowTrackCuts* cutsRP = cutsRP->GetStandardTPCStandaloneTrackCuts();
 
-   // set POI cuts for EP method
+   // set POI cuts for kaon selection
    AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("GlobalPOI");
-   cutsPOI->GetStandardGlobalTrackCuts2010();
+   AliFlowTrackCuts* cutsPOI = cutsPOI->GetStandardGlobalTrackCuts2010();
 
    // set some more cuts ...
    task->EventPlanePtCut(kFALSE); // set to true to enforce pt cut on event plane tracks
@@ -139,6 +149,11 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
       mgr->ConnectOutput(task, 2 + r, coutputCandidates[r]);
    }
 
+   // set, if necessary, a suffixname as a unique identifier for each wagon
+   if(suffixName == "") {
+       suffixName += Form("%.0f", centrMin);
+       suffixName += Form("%.0f", centrMax);
+   }
 
    if (SP) // set up scalar product (SP) tasks
    {
@@ -146,12 +161,12 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
       AliAnalysisDataContainer *coutputSP[30];
       for (int r = 0; r != 30; ++r)
       {
-         taskSP[r] = new AliAnalysisTaskScalarProduct(Form("SP_MassBand_%d", r), kFALSE);
+         taskSP[r] = new AliAnalysisTaskScalarProduct(Form("SP_MassBand_%d_%s", r, suffixName.Data()), kFALSE);
          taskSP[r]->SetHarmonic(harmonic);
          taskSP[r]->SetRelDiffMsub(1.0);
          taskSP[r]->SetApplyCorrectionForNUA(kTRUE);
          mgr->AddTask(taskSP[r]);
-         coutputSP[r] = mgr->CreateContainer(Form("cobjSP_MassBand_%d", r), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+         coutputSP[r] = mgr->CreateContainer(Form("cobjSP_MassBand_%d_%s", r, suffixName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
          mgr->ConnectInput(taskSP[r], 0, coutputCandidates[r]);
          mgr->ConnectOutput(taskSP[r], 1, coutputSP[r]);
       }
@@ -163,13 +178,13 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
       AliAnalysisDataContainer *coutputEP[30];
       for (int r = 0; r != 30; ++r)
       {
-         taskEP[r] = new AliAnalysisTaskScalarProduct(Form("EP_MassBand_%d", r), kFALSE);
+         taskEP[r] = new AliAnalysisTaskScalarProduct(Form("EP_MassBand_%d_%s", r, suffixName.Data()), kFALSE);
          taskEP[r]->SetBehaveAsEP();
          taskEP[r]->SetHarmonic(harmonic);
          taskEP[r]->SetRelDiffMsub(1.0);
          taskEP[r]->SetApplyCorrectionForNUA(kTRUE);
          mgr->AddTask(taskEP[r]);
-         coutputEP[r] = mgr->CreateContainer(Form("cobjEP_MassBand_%d", r), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+         coutputEP[r] = mgr->CreateContainer(Form("cobjEP_MassBand_%d_%s", r, suffixName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
          mgr->ConnectInput(taskEP[r], 0, coutputCandidates[r]);
          mgr->ConnectOutput(taskEP[r], 1, coutputEP[r]);
       }
@@ -181,7 +196,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
       AliAnalysisDataContainer *coutputQC[30];
       for (int r = 0; r != 30; ++r)
       {
-         taskQC[r] = new AliAnalysisTaskQCumulants(Form("QC_MassBand_%d", r), kFALSE);
+         taskQC[r] = new AliAnalysisTaskQCumulants(Form("QC_MassBand_%d_%s", r, suffixName.Data()), kFALSE);
          taskQC[r]->SetHarmonic(harmonic);
          taskQC[r]->SetCalculateCumulantsVsM(kFALSE);
          taskQC[r]->SetnBinsMult(10000);
@@ -190,7 +205,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
          taskQC[r]->SetApplyCorrectionForNUA(kTRUE);
          taskQC[r]->SetFillMultipleControlHistograms(kFALSE);
          mgr->AddTask(taskQC[r]);
-         coutputQC[r] = mgr->CreateContainer(Form("cobjQC_MassBand_%d", r), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+         coutputQC[r] = mgr->CreateContainer(Form("cobjQC_MassBand_%d_%s", r, suffixName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
          mgr->ConnectInput(taskQC[r], 0, coutputCandidates[r]);
          mgr->ConnectOutput(taskQC[r], 1, coutputQC[r]);
       }
