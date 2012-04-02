@@ -154,6 +154,8 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   else{
     Printf("Error: no track cuts!");
   }
+
+ PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
@@ -175,7 +177,7 @@ if(res == 0 && cent){
   //cout<<"New Event"<<endl;  
 
   AliMCEvent* mcEvent = MCEvent();
-  if(!mcEvent){  
+  if(!mcEvent && fIsSim){  
     AliFatal("ERROR: MC Event does not exist");
     return;
   }
