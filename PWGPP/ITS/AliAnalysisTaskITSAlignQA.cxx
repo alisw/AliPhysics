@@ -20,7 +20,10 @@
 #include <TProfile.h>
 #include <TChain.h>
 #include <TGeoGlobalMagField.h>
+#include "AliAODHandler.h"
 #include "AliESDInputHandlerRP.h"
+#include "AliITSSumTP.h"
+#include "AliMagF.h"
 
 /**************************************************************************
  * Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
@@ -60,10 +63,12 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fDoSDDdEdxCalib(kTRUE),
   fDoSDDVDriftCalib(kTRUE),
   fDoSDDDriftTime(kTRUE),
+  fDoFillTPTree(kFALSE),
   fUseITSsaTracks(kFALSE),
   fLoadGeometry(kFALSE),
   fUseVertex(kFALSE),
   fUseVertexForZOnly(kFALSE),
+  fUseTPCMomentum(kFALSE),
   fMinVtxContributors(5),
   fRemovePileupWithSPD(kTRUE),
   fMinITSpts(3),
@@ -72,7 +77,10 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fNPtBins(8),
   fMinMult(0),
   fMaxMult(1e9),
+  fCutDCAXY(1.e10),
+  fCutDCAZ(1.e10),
   fFitter(0),
+  fITSSumTP(),
   fRunNb(0),
   fOCDBLocation("local://$ALICE_ROOT/OCDB")
 {
@@ -87,14 +95,10 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
 //___________________________________________________________________________
 AliAnalysisTaskITSAlignQA::~AliAnalysisTaskITSAlignQA(){
   //
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutput;
-    fOutput = 0;
-  }
-  if(fFitter){
-    delete fFitter;
-    fFitter=0;
-  }
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutput;
+  delete fFitter;
+  delete fITSSumTP;
+  //
 }
 //___________________________________________________________________________
 void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
@@ -124,7 +128,17 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   if(fDoSPDResiduals) CreateSPDHistos();
   if(fDoSDDResiduals || fDoSDDdEdxCalib || fDoSDDVDriftCalib || fDoSDDDriftTime) CreateSDDHistos();
   if(fDoSSDResiduals) CreateSSDHistos();
-
+  //
+  if (fDoFillTPTree) {
+    fITSSumTP = new AliITSSumTP();
+    AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
+    if (!handler) AliFatal("TP tree requested but AOD handler is not available");
+    handler->AddBranch("AliITSSumTP",&fITSSumTP);
+    handler->SetFillAOD(kFALSE); // manual fill
+    CreateUserInfo();
+    //
+  }
+  //
   PostData(1,fOutput);
 }
 
@@ -285,14 +299,15 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
 {
   //
   static AliTrackPointArray* arrayITS = 0;
+  AliTrackPointArray* arrayITSNoVtx = 0;
   //
   AliESDEvent *esd = (AliESDEvent*) (InputEvent());
+  if (fITSSumTP) fITSSumTP->Reset();
 
   if(!esd) {
     printf("AliAnalysisTaskITSAlignQA::Exec(): bad ESD\n");
     return;
   } 
-
 
   if(!ESDfriend()) {
     printf("AliAnalysisTaskITSAlignQA::Exec(): bad ESDfriend\n");
@@ -304,9 +319,10 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
 
   const AliESDVertex* vtx=0,*vtxSPD=0;
   fHistNEvents->Fill(kEvAll);
+  vtx    = esd->GetPrimaryVertex();
+  vtxSPD = esd->GetPrimaryVertexSPD();
+  //
   if (fUseVertex) {  // check the vertex if it is requested as an extra point
-    vtx = esd->GetPrimaryVertex();
-    vtxSPD = esd->GetPrimaryVertexSPD();
     if (!AcceptVertex(vtx,vtxSPD)) return;
   }
 
@@ -326,13 +342,19 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
   for (Int_t itrack=0; itrack < ntracks; itrack++) {
     //
     if (arrayITS) {delete arrayITS; arrayITS = 0;}  // reset points from previous tracks 
+    arrayITSNoVtx = 0;
     //
     AliESDtrack * track = esd->GetTrack(itrack);
     if(!track) continue;
-    if(!AcceptTrack(track)) continue;
+    if(!AcceptTrack(track, vtx)) continue;
     array = track->GetTrackPointArray();
     if(!array) continue;
     arrayITS = PrepareTrack(array, vtx);
+    if (fITSSumTP) {
+      arrayITSNoVtx = PrepareTrack(array, 0);
+      arrayITSNoVtx->SetUniqueID(itrack);
+      fITSSumTP->AddTrack(arrayITSNoVtx);
+    }
     //
     fHistNEvents->Fill(kNTracks);
     //
@@ -355,13 +377,41 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
       FitAndFillSSD(6,arrayITS,npts1,track);
     }
   }
+  //
+  if (fITSSumTP) { // store vertex and mometum info
+    fITSSumTP->SetVertex(vtx);
+    TObjArray& tps = fITSSumTP->GetTracks();
+    int ntp = tps.GetEntriesFast();
+    fITSSumTP->BookNTracks(ntp);
+    for (int it=ntp;it--;) {
+      AliTrackPointArray* tp = (AliTrackPointArray*)tps[it];
+      if (!tp) continue;
+      AliESDtrack* esdTr = esd->GetTrack(tp->GetUniqueID());
+      double crv =  esdTr->GetC(esd->GetMagneticField());
+      double crve = TMath::Sqrt(esdTr->GetSigma1Pt2()) * esd->GetMagneticField()*kB2C;
+      fITSSumTP->SetCrvGlo(it,crv);
+      fITSSumTP->SetCrvGloErr(it,crve);
+      const AliExternalTrackParam* inTPC =  esdTr->GetTPCInnerParam();
+      if (inTPC) {
+	 crv =  inTPC->GetC(esd->GetMagneticField());
+	 crve = TMath::Sqrt(inTPC->GetSigma1Pt2()) * esd->GetMagneticField()*kB2C;
+	 fITSSumTP->SetCrvTPC(it,crv);
+	 fITSSumTP->SetCrvTPCErr(it,crve);
+      }
+    }
+    fITSSumTP->SetUniqueID(fCurrentRunNumber);
+    AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
+    if (!ntp) handler->FillTree();
+  }
 
+  //
   PostData(1,fOutput);
   
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track){
+Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track, const AliESDVertex* vtx)
+{
   // track selection cuts
   Bool_t accept=kTRUE;
   if(fUseITSsaTracks){ 
@@ -372,8 +422,24 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track){
   if(track->GetNcls(0) < fMinITSpts) accept=kFALSE;
   Int_t trstatus=track->GetStatus();
   if(!(trstatus&AliESDtrack::kITSrefit)) accept=kFALSE;
-  Float_t pt=track->Pt();
+  Float_t pt = 0;
+  if (fUseTPCMomentum) {
+    if (track->GetTPCInnerParam()) pt = track->GetTPCInnerParam()->Pt();
+    else                           pt = track->Pt();
+  }
   if(pt<fMinPt) accept=kFALSE;
+  //
+  // if vertex constraint is used, apply soft DCA cut
+  if (vtx) {
+    Double_t dz[2],cov[3];
+    AliExternalTrackParam trc = *track;
+    if (!trc.PropagateToDCA(vtx, fFitter->GetBz(), 3.0, dz, cov)) accept = kFALSE;
+    else {
+      if (dz[0]*dz[0]/(1e-4+cov[0])>fCutDCAXY) accept = kFALSE;
+      if (dz[1]*dz[1]/(4e-4+cov[2])>fCutDCAZ)  accept = kFALSE;
+    }
+  }
+  //
   if(accept) fHistPtAccept->Fill(pt);
   return accept;
 }
@@ -411,7 +477,8 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSPD(Int_t iLayer, const AliTrackPointA
     }
   }
   if(nPtSPD>0){
-    fFitter->Fit(track->Charge(),track->Pt(),0.);
+    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
     for (Int_t ip=0; ip<nPtSPD;ip++) {
@@ -419,8 +486,8 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSPD(Int_t iLayer, const AliTrackPointA
       TGeoHMatrix *mcurr = AliITSgeomTGeo::GetMatrix(modIdSPD[ip]);
       mcurr->MasterToLocalVect(resGlo,resLoc);
       Int_t index=modIdSPD[ip];
-      fHistSPDResidX[index]->Fill(track->Pt(),resLoc[0]);
-      fHistSPDResidZ[index]->Fill(track->Pt(),resLoc[2]);
+      fHistSPDResidX[index]->Fill(pt,resLoc[0]);
+      fHistSPDResidZ[index]->Fill(pt,resLoc[2]);
     }
   }    
 }
@@ -474,7 +541,8 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
     }
   }
   if(nPtSDD>0 && nPtSSDSPD>=2){
-    fFitter->Fit(track->Charge(),track->Pt(),0.);
+    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
     for (Int_t ip=0; ip<nPtSDD;ip++) {
@@ -483,7 +551,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
       mcurr->MasterToLocalVect(resGlo,resLoc);
       Int_t index=modIdSDD[ip]-kNSPDmods;
       if (fDoSDDResiduals) {
-	fHistSDDResidX[index]->Fill(track->Pt(),resLoc[0]);
+	fHistSDDResidX[index]->Fill(pt,resLoc[0]);
 	fHistSDDResidXvsX[index]->Fill(xLocSDD[ip],resLoc[0]);
 	fHistSDDResidXvsZ[index]->Fill(zLocSDD[ip],resLoc[0]);
       }
@@ -534,7 +602,8 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDz(Int_t iLayer, const AliTrackPoint
     }
   }
   if(nPtSDD>0){
-    fFitter->Fit(track->Charge(),track->Pt(),0.);
+    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
     for (Int_t ip=0; ip<nPtSDD;ip++) {
@@ -542,7 +611,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDz(Int_t iLayer, const AliTrackPoint
       TGeoHMatrix *mcurr = AliITSgeomTGeo::GetMatrix(modIdSDD[ip]);
       mcurr->MasterToLocalVect(resGlo,resLoc);
       Int_t index=modIdSDD[ip]-kNSPDmods;
-      fHistSDDResidZ[index]->Fill(track->Pt(),resLoc[2]);
+      fHistSDDResidZ[index]->Fill(pt,resLoc[2]);
       fHistSDDResidZvsX[index]->Fill(xLocSDD[ip],resLoc[2]);
       fHistSDDResidZvsZ[index]->Fill(zLocSDD[ip],resLoc[2]);
     }
@@ -571,7 +640,8 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSSD(Int_t iLayer, const AliTrackPointA
     }  
   }
   if(nPtSSD>0){
-    fFitter->Fit(track->Charge(),track->Pt(),0.);
+    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
     for (Int_t ip=0; ip<nPtSSD;ip++) {
@@ -579,8 +649,8 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSSD(Int_t iLayer, const AliTrackPointA
       TGeoHMatrix *mcurr = AliITSgeomTGeo::GetMatrix(modIdSSD[ip]);
       mcurr->MasterToLocalVect(resGlo,resLoc);
       Int_t index=modIdSSD[ip]-kNSPDmods-kNSDDmods;
-      fHistSSDResidX[index]->Fill(track->Pt(),resLoc[0]);
-      fHistSSDResidZ[index]->Fill(track->Pt(),resLoc[2]);
+      fHistSSDResidX[index]->Fill(pt,resLoc[0]);
+      fHistSSDResidZ[index]->Fill(pt,resLoc[2]);
     }
   }
 }
@@ -687,4 +757,52 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptCentrality(const AliESDEvent *esd) const
   if(nclsSPDouter<fMinMult || nclsSPDouter>fMaxMult) return kFALSE;
   //
   return kTRUE;
+}
+
+//_______________________________________________________________________________________
+void AliAnalysisTaskITSAlignQA::CreateUserInfo()
+{
+  // if needed, set user info of the output tree
+  AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
+  if (!handler) return;
+  TTree* outTree = handler->GetTree();
+  //
+  const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();	 
+  const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();	 
+  //
+  TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());	 
+  cdbMapCopy->SetOwner(1);	 
+  cdbMapCopy->SetName("cdbMap");	 
+  TIter iter(cdbMap->GetTable());	 
+  //
+  TPair* pair = 0;	 
+  while((pair = dynamic_cast<TPair*> (iter.Next()))){	 
+    TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
+    TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
+    if (keyStr && valStr) cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+  }	 
+  
+  TList *cdbListCopy = new TList();	 
+  cdbListCopy->SetOwner(1);	 
+  cdbListCopy->SetName("cdbList");	 
+  // 
+  TIter iter2(cdbList);	  	 
+  AliCDBId* id=0;
+  while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){	 
+    cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
+  }	 
+  // 
+  outTree->GetUserInfo()->Add(cdbMapCopy);	 
+  outTree->GetUserInfo()->Add(cdbListCopy);  
+  //
+  AliMagF *fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  Double_t bz = fld ? fld->SolenoidField() : 0;
+  TString bzString; bzString+=bz;
+  TObjString *bzObjString = new TObjString(bzString);
+  TList *bzList = new TList();	 
+  bzList->SetOwner(1);	 
+  bzList->SetName("BzkGauss");	 
+  bzList->Add(bzObjString);
+  outTree->GetUserInfo()->Add(bzList);
+  //
 }
