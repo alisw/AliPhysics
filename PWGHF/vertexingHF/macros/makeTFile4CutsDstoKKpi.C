@@ -51,7 +51,7 @@ void makeInputAliAnalysisTaskSEDsPP(){
     ptbins[4]=12.;
     
     
-    const Int_t nvars=16;
+    const Int_t nvars=20;
     
     Float_t** anacutsval;
     anacutsval=new Float_t*[nvars];
@@ -75,6 +75,11 @@ void makeInputAliAnalysisTaskSEDsPP(){
       anacutsval[13][ipt]=0.1;
       anacutsval[14][ipt]=0.;
       anacutsval[15][ipt]=1.;
+      anacutsval[16][ipt]=0.;
+      anacutsval[17][ipt]=0.;
+      anacutsval[18][ipt]=0.;
+      anacutsval[19][ipt]=-1.;
+      
       
    
     }
@@ -113,6 +118,11 @@ void makeInputAliAnalysisTaskSEDsPP(){
     analysiscuts->SetPidOption(1);
     analysiscuts->SetOptPileup(kTRUE);
     analysiscuts->SetRemoveDaughtersFromPrim(kTRUE);
+    
+    // To be set only in case of strong pid
+    //analysiscuts->SetMaxPtStrongPid(9999.);
+    //analysiscuts->SetMaxPStrongPidK(1.5);
+    //analysiscuts->SetMaxPStrongPidpi(1.5);
     cout<<"This is the odject I'm going to save:"<<nptbins<<endl;
     
     analysiscuts->PrintAll();
@@ -154,7 +164,7 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
     ptbins[4]=12.;
     
     
-    const Int_t nvars=16;
+    const Int_t nvars=20;
     
     Float_t** anacutsval;
     anacutsval=new Float_t*[nvars];
@@ -178,6 +188,10 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
       anacutsval[13][ipt]=0.1;
       anacutsval[14][ipt]=0.;
       anacutsval[15][ipt]=1.;
+      anacutsval[16][ipt]=0.;
+      anacutsval[17][ipt]=0.;
+      anacutsval[18][ipt]=0.;
+      anacutsval[19][ipt]=-1.;
       
    
     }
@@ -228,6 +242,10 @@ void makeInputAliAnalysisTaskSEDsPbPb(){
     analysiscuts->SetMinPtCandidate(3.);
     analysiscuts->SetMaxPtCandidate(1000.);
     analysiscuts->SetRemoveDaughtersFromPrim(kFALSE);
+    // To be set only in case of strong pid
+    //analysiscuts->SetMaxPtStrongPid(9999.);
+    //analysiscuts->SetMaxPStrongPidK(1.5);
+    //analysiscuts->SetMaxPStrongPidpi(1.5);
     
     cout<<"This is the odject I'm going to save:"<<nptbins<<endl;
       
@@ -267,7 +285,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   RDHFDstoKKpi->SetOptPileup(kTRUE);
   RDHFDstoKKpi->SetRemoveDaughtersFromPrim(kTRUE);
 
-  const Int_t nvars=16;
+  const Int_t nvars=20;
 
   const Int_t nptbins=4;
   Float_t* ptbins;
@@ -303,7 +321,11 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
       prodcutsval[13][ipt]=0.1;
       prodcutsval[14][ipt]=0.;
       prodcutsval[15][ipt]=1.;
-  
+      prodcutsval[16][ipt]=0.;
+      prodcutsval[17][ipt]=0.;
+      prodcutsval[18][ipt]=0.;
+      prodcutsval[19][ipt]=-1.;
+      
   }
 
   RDHFDstoKKpi->SetCuts(nvars,nptbins,prodcutsval);
