@@ -39,5 +39,5 @@ InputDataCollection="LF:/alice/data/2011/LHC11a/$1/collection,nodownload";
 OutputDir="/alice/cern.ch/user/j/jotwinow/CPass0/output/$1/#alienfilename/.root//#";
 
 OutputArchive={"log_archive:*.log@disk=1",
-              "root_archive.zip:AliESDfriends_v1.root,@disk=1"};
+              "root_archive.zip:AliESDfriends_v1.root,AODtpITS.root,@disk=1"};
 

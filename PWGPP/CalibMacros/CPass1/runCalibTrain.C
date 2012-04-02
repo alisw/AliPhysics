@@ -66,7 +66,10 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   AliTOFAnalysisTaskCalibPass0 *thisTask = AddTOFAnalysisTaskCalibPass0();
   AliAnalysisTask* tT0 = AddTaskT0Calib(runNumber);
   //AliMeanVertexCalibTask *tMeanVtx = AddTaskMeanVertexCalib();
-  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib();
+  //
+  Bool_t useTPCcrv=kFALSE;
+  Bool_t writeITSTP = kTRUE;
+  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv);
 
   // Run the analysis
   if (!mgr->InitAnalysis()) {
