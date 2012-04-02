@@ -504,8 +504,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	}
       }
       
-      if(iHyp==0 && !(passTopolCuts&1)) continue; // candidate not passing as D0
-      if(iHyp==1 && !(passTopolCuts&2)) continue; // candidate not passing as D0bar
+      if(fPdgMeson==421){
+	if(iHyp==0 && !(passTopolCuts&1)) continue; // candidate not passing as D0
+	if(iHyp==1 && !(passTopolCuts&2)) continue; // candidate not passing as D0bar
+      }
 
       if(isFidAcc){
 	fPtVsMassVsMultNoPid->Fill(countTreta1corr,invMass,ptCand);
@@ -541,7 +543,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 
   PostData(1,fOutput); 
   PostData(2,fListCuts);
-  PostData(3,fOutput);
+  PostData(3,fOutputCounters);
   
   
   return;
