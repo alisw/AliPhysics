@@ -10,7 +10,7 @@
 
 */
 
-void PrintDetectoStatus();
+void PrintDetectorStatus();
 
 
 
@@ -102,7 +102,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
    //
    Int_t trdStatus = procestrd.GetStatus();
    Int_t tofStatus = calibTask.GetStatus();
-   Int_t tpcStatus = ((processTPC.ValidateTimeDrift() || processTPC.ValidateTimeGain())==kFALSE);
+   Int_t tpcStatus = ((procesTPC.ValidateTimeDrift() || procesTPC.ValidateTimeGain())==kFALSE);
    //
    printf("\n\n\n\n");
    printf("CPass0 calibration status\n");
@@ -116,7 +116,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 
 
 
-void PrintDetectoStatus(){
+void PrintDetectorStatus(){
   //
   // GetStatus for the detector which did not implement GetStatus function: 
   //
