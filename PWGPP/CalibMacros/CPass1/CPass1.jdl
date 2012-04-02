@@ -41,7 +41,7 @@ OutputDir="/alice/cern.ch/user/j/jotwinow/CPass1/output/$1/#alienfilename/.root/
 
 
 OutputArchive={"log_archive:stderr.log,stdout.log,qa.log,sys*.log@disk=1",
-              "root_archive.zip:AliESDs.root,AliESDfriends.root,AliESDfriends_v1.root,Merged.QA.Data*.root,RecoQAresults.root@disk=3",
+              "root_archive.zip:AliESDs.root,AliESDfriends.root,AliESDfriends_v1.root,Merged.QA.Data*.root,RecoQAresults.root,AODtpITS.root@disk=3",
               "QA_archive.zip:QAresults.root,*.stat.qa@disk=2"
 };
 

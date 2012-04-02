@@ -1,4 +1,4 @@
-AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0) 
+AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE) 
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,6 +18,13 @@ AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0)
     return NULL;
   }
   
+  if (writeITSTP) {
+    AliAODHandler* aodHandler = new AliAODHandler();
+    aodHandler->SetOutputFileName( "AODtpITS.root" );
+    aodHandler->SetCreateNonStandardAOD();
+    mgr->SetOutputEventHandler(aodHandler);
+  }
+
   // Create and configure the task
   AliAnalysisTaskITSAlignQA *taskali = new AliAnalysisTaskITSAlignQA();
   //  taskali->SelectCollisionCandidates();
@@ -32,7 +39,9 @@ AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0)
   taskali->SetDoSSDResiduals(kFALSE);
   taskali->SetDoSDDDriftTime(kFALSE);
   taskali->SetMinMaxMult(20.,1070.);
+  taskali->SetUseTPCMomentum(useTPCcrv);
   //
+  taskali->SetDoFillTPTree(writeITSTP);
   //
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   
