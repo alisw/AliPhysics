@@ -374,6 +374,10 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
   Double_t eMean = 0;
       
   AliDCSValue *pVal;
+  
+  Double_t aCorrFactor[] = {0.937575212,0.93805688,0.938527113,0.938986068,0.939433897,0.939870746,0.940296755,0.94071206,0.941116795,0.941511085,0.941895054,0.942268821,0.942632502,
+                            0.942986208,0.943330047,0.943664126,0.943988544,0.944303401,0.944608794,0.944904814,0.945191552,0.945469097,0.945737533,0.945996945,0.946247412,
+                            0.946489015,0.94672183,0.946945933,0.947161396,0.947368291}; 
 
   for(Int_t i=0; i<30; i++){
 
@@ -446,7 +450,7 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
     Double_t aR2               = ((aN2 - aN3)*(aN2 - aN3))/((aN2 + aN3)*(aN2 + aN3));
     Double_t aT1               = (1 - aR1);
     Double_t aT2               = (1 - aR2);
-    Double_t aCorrFactor       = (aT1*aT1)/(aT2*aT2);
+   // Double_t aCorrFactor       = (aT1*aT1)/(aT2*aT2);
 
     // evaluate 15 mm of thickness C6F14 Trans
     Double_t aTransRad;
@@ -454,7 +458,7 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
     Double_t aConvFactor = 1.0 - 0.3/1.8;         
         
     if(aRefFreon*aRefArgon>0) {
-      aTransRad  = TMath::Power((aCellFreon/aRefFreon)/(aCellArgon/aRefArgon)*aCorrFactor,aConvFactor);
+      aTransRad  = TMath::Power((aCellFreon/aRefFreon)/(aCellArgon/aRefArgon)*aCorrFactor[i],aConvFactor);
     } else {
       return DefaultEMean();
     }
