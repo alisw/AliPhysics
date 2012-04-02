@@ -35,14 +35,17 @@ ClassImp(AliRDHFCutsDstoKKpi)
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) : 
 AliRDHFCuts(name),
-fPidOption(0)
+fPidOption(0),
+fMaxPtStrongPid(0.),
+fMaxPStrongPidK(0.),
+fMaxPStrongPidpi(0.)
 {
   //
   // Default Constructor
   //
-  Int_t nvars=16;
+  Int_t nvars=20;
   SetNVars(nvars);
-  TString varNames[16]={"inv. mass [GeV]",   
+  TString varNames[20]={"inv. mass [GeV]",
 			"pTK [GeV/c]",
 			"pTPi [GeV/c]",
 			"d0K [cm]",
@@ -57,9 +60,13 @@ fPidOption(0)
 			"inv. mass (Mphi-MKK) [GeV]",
 			"inv. mass (MKo*-MKpi) [GeV]",
 			"Abs(CosineKpiPhiRFrame)^3",
-			"CosPiDsLabFrame"};
+			"CosPiDsLabFrame",
+			"decLenXY [cm]"
+			"NormdecLen",
+			"NormdecLenXY [cm]",
+			"cosThetaPointXY"};
 			
-  Bool_t isUpperCut[16]={kTRUE,
+  Bool_t isUpperCut[20]={kTRUE,
 			 kFALSE,
 			 kFALSE,
 			 kFALSE,
@@ -74,9 +81,13 @@ fPidOption(0)
 			 kTRUE,
 			 kTRUE,
 			 kFALSE,
-			 kTRUE};
-  SetVarNames(16,varNames,isUpperCut);
-  Bool_t forOpt[16]={kFALSE,
+			 kTRUE,
+			 kFALSE,
+			 kFALSE,
+			 kFALSE,
+			 kFALSE};
+  SetVarNames(20,varNames,isUpperCut);
+  Bool_t forOpt[20]={kFALSE,
 		    kFALSE,
 		    kFALSE,
 		    kFALSE,
@@ -91,8 +102,13 @@ fPidOption(0)
 		    kTRUE,
 		    kTRUE,
 		    kFALSE,
-		    kFALSE};
-  SetVarsForOpt(7,forOpt);
+		    kFALSE,
+		    kTRUE,
+		    kTRUE,
+		    kTRUE,
+		    kTRUE};
+		    
+  SetVarsForOpt(11,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
   if(fPidHF)delete fPidHF;
@@ -114,7 +130,10 @@ fPidOption(0)
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi &source) :
   AliRDHFCuts(source),
-  fPidOption(source.fPidOption)
+  fPidOption(source.fPidOption),
+  fMaxPtStrongPid(source.fMaxPtStrongPid),
+  fMaxPStrongPidK(source.fMaxPStrongPidK),
+  fMaxPStrongPidpi(source.fMaxPStrongPidpi)
 {
   //
   // Copy constructor
@@ -132,6 +151,9 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
   AliRDHFCuts::operator=(source);
 
   fPidOption=source.fPidOption;
+  fMaxPtStrongPid=source.fMaxPtStrongPid;
+  fMaxPStrongPidK=source.fMaxPStrongPidK;
+  fMaxPStrongPidpi=source.fMaxPStrongPidpi;
 
   return *this;
 }
@@ -286,6 +308,26 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
       vars[iter]=dd->CosPiDsLabFramepiKK();
     }
   }
+  
+  if(fVarsForOpt[16]){
+    iter++;
+    vars[iter]=dd->DecayLengthXY();
+  }
+  
+  if(fVarsForOpt[17]){
+    iter++;
+    vars[iter]=dd->NormalizedDecayLength();
+  }
+  
+  if(fVarsForOpt[18]){
+    iter++;
+    vars[iter]=dd->NormalizedDecayLengthXY();
+  }
+  
+  if(fVarsForOpt[19]){
+    iter++;
+    vars[iter]=dd->CosPointingAngleXY();
+  }
 
   if(cleanvtx)CleanOwnPrimaryVtx(dd,aod,origownvtx); 
   return;
@@ -333,7 +375,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
     fPidHF->SetPtThresholdTPC(999999.);
   }
 
-
   Int_t nKaons=0;
   Int_t nNotKaons=0;
   Int_t sign= rd->GetCharge(); 
@@ -355,28 +396,40 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
 	fPidHF->SetPtThresholdTPC(origThreshTPC);
 	return 0;
       }
-      if(fPidOption==kStrong && isKaon<=0){
+      if(fPidOption==kStrong && rd->Pt()<fMaxPtStrongPid && isKaon<=0){
 	fPidHF->SetPCompatTOF(origCompatTOF);
 	fPidHF->SetPtThresholdTPC(origThreshTPC);
 	return 0;
       }
+      if(fPidOption==kStrongPDep && rd->Pt()<fMaxPtStrongPid){
+	if(isKaon<=0 && track->P()<fMaxPStrongPidK) return 0;
+      }
     }
+    
     if(isKaon>0 && isPion<0) nKaons++;
     if(isKaon<0) nNotKaons++;
     if(iDaught==0){
       if(isKaon<0) okKKpi=kFALSE;
       if(isPion<0) okpiKK=kFALSE;      
-      if(fPidOption==kStrong){
+      if(fPidOption==kStrong && rd->Pt()<fMaxPtStrongPid){
 	if(isKaon<=0) okKKpi=kFALSE;
 	if(isPion<=0) okpiKK=kFALSE;
+      }
+      if(fPidOption==kStrongPDep && rd->Pt()<fMaxPtStrongPid){
+	if(isKaon<=0 && track->P()<fMaxPStrongPidK) okKKpi=kFALSE;
+	if(isPion<=0 && track->P()<fMaxPStrongPidpi) okpiKK=kFALSE;
       }
     }
     else if(iDaught==2){
       if(isKaon<0) okpiKK=kFALSE;
       if(isPion<0) okKKpi=kFALSE;
-       if(fPidOption==kStrong){
-	if(isKaon<=0) okpiKK=kFALSE;
-	if(isPion<=0) okKKpi=kFALSE;
+       if(fPidOption==kStrong && rd->Pt()<fMaxPtStrongPid){
+	 if(isKaon<=0) okpiKK=kFALSE;
+	 if(isPion<=0) okKKpi=kFALSE;
+      }
+      if(fPidOption==kStrongPDep && rd->Pt()<fMaxPtStrongPid){
+	if(isKaon<=0 && track->P()<fMaxPStrongPidK) okpiKK=kFALSE;  
+	if(isPion<=0 && track->P()<fMaxPStrongPidpi) okKKpi=kFALSE; 
       }
     }
   }
@@ -571,6 +624,31 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
+    
+    // decay length XY
+    if(d->DecayLengthXY()<fCutsRD[GetGlobalIndex(16,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
+      return 0;
+    }
+    
+    //norm decay length
+    if(d->NormalizedDecayLength()<fCutsRD[GetGlobalIndex(17,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
+      return 0;
+    }
+    
+    //norm decay length XY
+    if(d->NormalizedDecayLengthXY()<fCutsRD[GetGlobalIndex(18,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
+      return 0;
+    }
+    
+    //cos pointing XY
+    if(d->CosPointingAngleXY()<fCutsRD[GetGlobalIndex(19,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
+      return 0;
+    }
+    
 
     if(okDsKKpi){
       Double_t cosPiKPhiRFKKpi=d->CosPiKPhiRFrameKKpi();
@@ -788,7 +866,7 @@ void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
   ptbins[3]=8.;
   ptbins[4]=12.;
   
-  const Int_t nvars=16;
+  const Int_t nvars=20;
       
   Float_t** anacutsval;
   anacutsval=new Float_t*[nvars];
@@ -806,6 +884,12 @@ void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
     anacutsval[10][ipt]=0.;
     anacutsval[11][ipt]=1000.0;
     anacutsval[13][ipt]=0.1;
+    anacutsval[16][ipt]=0.;
+    anacutsval[17][ipt]=0.;
+    anacutsval[18][ipt]=0.;
+    anacutsval[19][ipt]=-1.;
+    
+    
   }
  
   //sigmavertex
@@ -853,6 +937,7 @@ void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
   
   SetUsePID(kTRUE); 
   SetPidOption(1);
+  SetMaxPtStrongPid(9999.);
   SetGlobalIndex(nvars,nptbins);
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);

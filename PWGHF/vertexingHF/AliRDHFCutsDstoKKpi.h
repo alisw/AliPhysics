@@ -54,15 +54,22 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
                    kTOFProtonLess1,kTOFProtonMore1Less2,kTOFProtonMore2Less3,kTOFProtonMore3};
                 
                  
-  enum EDsPid {kConservative, kStrong};
+  enum EDsPid {kConservative, kStrong, kStrongPDep};
   void SetPidOption(Int_t opt){
     fPidOption=opt;
   }
+  void SetMaxPtStrongPid(Float_t spid){fMaxPtStrongPid=spid;}
+  void SetMaxPStrongPidK(Float_t spid){fMaxPStrongPidK=spid;}
+  void SetMaxPStrongPidpi(Float_t spid){fMaxPStrongPidpi=spid;}
+  
   Int_t GetPidOption() const {return fPidOption;}
   
  protected:
+ 
   Int_t fPidOption;         //pid option
-
+  Float_t fMaxPtStrongPid;//Maximum pt of candidate to apply strong Pid p dependent
+  Float_t fMaxPStrongPidK;//Maximum P of track to apply strong Pid on K
+  Float_t fMaxPStrongPidpi;//Maximum P of track to apply strong Pid on pi
 
   ClassDef(AliRDHFCutsDstoKKpi,2);  // class for cuts on AOD reconstructed Ds->KKpi
 };
