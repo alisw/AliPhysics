@@ -37,6 +37,7 @@ class AliAnalysisTaskSE;
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 
+#include "AliLog.h"
 ClassImp(AliAnalysisTaskScalarProduct)
 
 //________________________________________________________________________
@@ -54,7 +55,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fTotalQvector(NULL) 
 {
   // Constructor
-  cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
+  AliDebug(2,"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)");
 
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
@@ -84,7 +85,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fTotalQvector(NULL) 
   {
   // Constructor
-  cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
+    AliDebug(2,"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()");
 }
 
 //________________________________________________________________________
@@ -107,7 +108,7 @@ AliAnalysisTaskScalarProduct::~AliAnalysisTaskScalarProduct()
 void AliAnalysisTaskScalarProduct::UserCreateOutputObjects() 
 {
   // Called at every worker node to initialize
-  cout<<"AliAnalysisTaskScalarProduct::CreateOutputObjects()"<<endl;
+  AliDebug(2,"AliAnalysisTaskScalarProduct::CreateOutputObjects()");
   
   //Analyser
   fSP = new AliFlowAnalysisWithScalarProduct();
@@ -117,7 +118,7 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
     
   //apply automatic correction for non-uniform acceptance:
   if (fApplyCorrectionForNUA) {
-    cout<<"Corrections for non-uniform acceptance applied in the Scalar Product method"<<endl;
+    AliDebug(2,"Corrections for non-uniform acceptance applied in the Scalar Product method");
   }
   fSP->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
   // harmonic: 

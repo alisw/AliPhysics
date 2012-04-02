@@ -25,6 +25,7 @@
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliAnalysisTaskFilterFE.h"
+#include "AliLog.h"
 
 ClassImp(AliAnalysisTaskFilterFE)
 
@@ -40,7 +41,7 @@ AliAnalysisTaskFilterFE::AliAnalysisTaskFilterFE() :
   fFlowEvent(NULL)
 {
   // Constructor
-  cout<<"AliAnalysisTaskFilterFE::AliAnalysisTaskFilterFE()"<<endl;
+  AliDebug(2,"AliAnalysisTaskFilterFE::AliAnalysisTaskFilterFE()");
 }
 
 //________________________________________________________________________
@@ -55,7 +56,7 @@ AliAnalysisTaskFilterFE::AliAnalysisTaskFilterFE(const char *name, AliFlowTrackS
   fFlowEvent(NULL)
 {
   // Constructor
-  cout<<"AliAnalysisTaskFilterFE::AliAnalysisTaskFilterFE(const char *name, ...)"<<endl;
+  AliDebug(2,"AliAnalysisTaskFilterFE::AliAnalysisTaskFilterFE(const char *name, ...)");
   DefineInput( 0, AliFlowEventSimple::Class());
   DefineOutput(1, AliFlowEventSimple::Class());
 }
@@ -71,7 +72,7 @@ AliAnalysisTaskFilterFE::~AliAnalysisTaskFilterFE()
 void AliAnalysisTaskFilterFE::UserCreateOutputObjects()
 {
   // Called at every worker node to initialize
-  cout<<"AliAnalysisTaskFilterFE::CreateOutputObjects()"<<endl;
+  AliDebug(2,"AliAnalysisTaskFilterFE::CreateOutputObjects()");
   PostData(1,fFlowEvent);
 }
 

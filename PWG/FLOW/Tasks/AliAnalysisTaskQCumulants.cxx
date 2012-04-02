@@ -34,6 +34,8 @@ class AliAnalysisTaskSE;
 #include "AliAnalysisTaskQCumulants.h"
 #include "AliFlowAnalysisWithQCumulants.h"
 
+#include "AliLog.h"
+
 ClassImp(AliAnalysisTaskQCumulants)
 
 //================================================================================================================
@@ -70,7 +72,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fMultiplicityWeight(NULL)
 {
  // constructor
- cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights)"<<endl;
+  AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t useParticleWeights)");
  
  // Define input and output slots here
  // Input slot #0 works with an AliFlowEventSimple
@@ -127,7 +129,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fMultiplicityWeight(NULL)
 {
  // Dummy constructor
- cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()"<<endl;
+  AliDebug(2,"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants()");
  
  // Store phi distribution for one event to illustrate flow:
  for(Int_t p=0;p<4;p++) // [v_min,v_max,refMult_min,refMult_max]
@@ -142,7 +144,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
 void AliAnalysisTaskQCumulants::UserCreateOutputObjects() 
 {
  // Called at every worker node to initialize
- cout<<"AliAnalysisTaskQCumulants::UserCreateOutputObjects()"<<endl;
+  AliDebug(2,"AliAnalysisTaskQCumulants::UserCreateOutputObjects()");
 
  // Analyser:
  fQC = new AliFlowAnalysisWithQCumulants();

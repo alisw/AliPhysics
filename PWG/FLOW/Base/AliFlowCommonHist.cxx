@@ -205,13 +205,13 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   Double_t  dMassMax = AliFlowCommonConstants::GetMaster()->GetMassMax();
 
   
-  cout<<"The settings for the common histograms are as follows:"<<endl;
-  cout<<"Multiplicity: "<<iNbinsMult<<" bins between "<<dMultMin<<" and "<<dMultMax<<endl;
-  cout<<"Pt: "<<iNbinsPt<<" bins between "<<dPtMin<<" and "<<dPtMax<<endl;
-  cout<<"Phi: "<<iNbinsPhi<<" bins between "<<dPhiMin<<" and "<<dPhiMax<<endl;
-  cout<<"Eta: "<<iNbinsEta<<" bins between "<<dEtaMin<<" and "<<dEtaMax<<endl;
-  cout<<"Q: "<<iNbinsQ<<" bins between "<<dQMin<<" and "<<dQMax<<endl;
-  cout<<"Mass: "<<iNbinsMass<<" bins between "<<dMassMin<<" and "<<dMassMax<<endl;
+  //  cout<<"The settings for the common histograms are as follows:"<<endl;
+  //  cout<<"Multiplicity: "<<iNbinsMult<<" bins between "<<dMultMin<<" and "<<dMultMax<<endl;
+  //  cout<<"Pt: "<<iNbinsPt<<" bins between "<<dPtMin<<" and "<<dPtMax<<endl;
+  //  cout<<"Phi: "<<iNbinsPhi<<" bins between "<<dPhiMin<<" and "<<dPhiMax<<endl;
+  //  cout<<"Eta: "<<iNbinsEta<<" bins between "<<dEtaMin<<" and "<<dEtaMax<<endl;
+  //  cout<<"Q: "<<iNbinsQ<<" bins between "<<dQMin<<" and "<<dQMax<<endl;
+  //  cout<<"Mass: "<<iNbinsMass<<" bins between "<<dMassMin<<" and "<<dMassMax<<endl;
 
   //Multiplicity
   sName = "Control_Flow_MultRP_";
