@@ -214,6 +214,20 @@ void AliHLTReconstructor::Terminate() const
   if (fpPluginBase) {
     AliHLTSystem* pSystem=fpPluginBase->GetInstance();
     if (pSystem) {
+      // 2012-04-02
+      // clean up the HLTOUT instance if still existing, currently FinishEvent
+      // is not called at the end of the event processing and the cleanup
+      // needs to be done here to avoid a warning message. Later it can be
+      // declared a malfunction if the HLTOUT instance is still existing at
+      // this point.
+      AliHLTOUT* pHLTOUT=NULL;
+      pSystem->InvalidateHLTOUT(&pHLTOUT);
+      if (pHLTOUT) {
+	pHLTOUT->Reset();
+	delete pHLTOUT;
+	pHLTOUT=NULL;
+      }
+
       AliDebug(0, Form("terminate HLT system: status %#x", pSystem->GetStatusFlags()));
       if (pSystem->CheckStatus(AliHLTSystem::kStarted)) {
 	// send specific 'event' to execute the stop sequence
