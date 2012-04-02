@@ -276,9 +276,9 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     return;
   }
   //
-  ProcessV0s(event);   // 
-  ProcessTOF(event);   //
-  ProcessKinks(event); // not relyable
+  //ProcessV0s(event);   // 
+  //ProcessTOF(event);   //
+  //ProcessKinks(event); // not relyable
   DumpHPT(event);      // 
   UInt_t runNumber = event->GetRunNumber();
   Int_t nContributors = event->GetNumberOfTracks();
@@ -323,7 +323,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }    
-    if (seed) DumpTrack(track, friendTrack,seed,i); // MI implementation for the identified particles
+    //if (seed) DumpTrack(track, friendTrack,seed,i); // MI implementation for the identified particles
     //
     if (seed) { // seed the container with track parameters and the clusters
       // 
