@@ -128,10 +128,10 @@ AliAnaElectron::AliAnaElectron() :
       fhMCESphericity    [index][i] = 0;
     }
     
-    for(Int_t i = 0; i < 6; i++)
+    for(Int_t i = 0; i < 5; i++)
     {
       fhDispEtaDispPhiEBin[index][i] = 0 ;
-      for(Int_t j = 0; j < 5; j++)
+      for(Int_t j = 0; j < 6; j++)
       {
         fhMCDispEtaDispPhiEBin[index][i][j] = 0;
       }
@@ -413,11 +413,11 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
       fhMCEDispEtaPhiDiff [pidIndex][index]-> Fill(energy,dPhi-dEta);
       if(dEta+dPhi>0)fhMCESphericity     [pidIndex][index]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));  
       
-      if      (energy < 2 ) fhMCDispEtaDispPhiEBin[pidIndex][index][0]->Fill(dEta,dPhi);
-      else if (energy < 4 ) fhMCDispEtaDispPhiEBin[pidIndex][index][1]->Fill(dEta,dPhi);
-      else if (energy < 6 ) fhMCDispEtaDispPhiEBin[pidIndex][index][2]->Fill(dEta,dPhi);
-      else if (energy < 10) fhMCDispEtaDispPhiEBin[pidIndex][index][3]->Fill(dEta,dPhi);
-      else                  fhMCDispEtaDispPhiEBin[pidIndex][index][4]->Fill(dEta,dPhi);
+      if      (energy < 2 ) fhMCDispEtaDispPhiEBin[pidIndex][0][index]->Fill(dEta,dPhi);
+      else if (energy < 4 ) fhMCDispEtaDispPhiEBin[pidIndex][1][index]->Fill(dEta,dPhi);
+      else if (energy < 6 ) fhMCDispEtaDispPhiEBin[pidIndex][2][index]->Fill(dEta,dPhi);
+      else if (energy < 10) fhMCDispEtaDispPhiEBin[pidIndex][3][index]->Fill(dEta,dPhi);
+      else                  fhMCDispEtaDispPhiEBin[pidIndex][4][index]->Fill(dEta,dPhi);
     }
     
     
