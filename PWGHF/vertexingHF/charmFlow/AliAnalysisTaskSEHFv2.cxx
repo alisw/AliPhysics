@@ -308,7 +308,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
 
     TH1F* hEvPlaneReso=new TH1F(Form("hEvPlaneReso%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
     fOutput->Add(hEvPlaneReso);
-    if(fEventPlaneMeth==kVZERO){
+    if(fEventPlaneMeth>kTPCVZERO){
       TH1F* hEvPlaneReso2=new TH1F(Form("hEvPlaneReso2%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
       fOutput->Add(hEvPlaneReso2);
       TH1F* hEvPlaneReso3=new TH1F(Form("hEvPlaneReso3%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
@@ -460,7 +460,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fEventPlaneMeth!=kTPC){
       //VZERO EP and resolution
       rpangleVZERO=GetPhi0Pi(pl->GetEventplane("V0",aod,fV0EPorder));
-      if(fEventPlaneMeth==kVZERO){
+      if(fEventPlaneMeth>kTPCVZERO){
 	//Using V0A/C for VZERO resolution
 	rpangleeventA= GetPhi0Pi(pl->GetEventplane("V0A",aod,fV0EPorder));
 	rpangleeventB= GetPhi0Pi(pl->GetEventplane("V0C",aod,fV0EPorder));
@@ -471,22 +471,43 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     }
     // TPC event plane
     rpangleTPC = pl->GetEventplane("Q");
-    if(rpangleTPC<0){
-      fhEventsInfo->Fill(6);
-      return;
-    }
-    if(fEventPlaneMeth!=kVZERO){
+    if(fEventPlaneMeth<=kTPCVZERO){
       // TPC resolution 
       q = pl->GetQVector();
       if(fEtaGap){
 	qsub1 = pl->GetQsub1();
 	qsub2 = pl->GetQsub2();
+	if(!qsub1 || !qsub2){
+	  fhEventsInfo->Fill(6);
+	  return;
+	}
 	rpangleeventA = qsub1->Phi()/2.;
 	rpangleeventB = qsub2->Phi()/2.;
       }
       deltaPsi = pl->GetQsubRes();
       //	planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
     }
+  }
+
+  //verify TPC EP
+  Double_t rpsubTPC=rpangleTPC;
+  if(fEventPlaneMeth==kVZEROpos||fEventPlaneMeth==kVZEROneg){
+    TVector2 *qsub=0x0;
+    if(fEventPlaneMeth==kVZEROneg)qsub=pl->GetQsub2();
+    else qsub=pl->GetQsub1();
+    if(!qsub){
+      fhEventsInfo->Fill(6);
+      return;
+    }
+    if(qsub->X()==0 && qsub->Y()==0){
+      fhEventsInfo->Fill(6);
+      return;
+    }
+    rpsubTPC=qsub->Phi()/2.;
+  }
+  if(rpsubTPC<0){
+    fhEventsInfo->Fill(6);
+    return;
   }
   
   if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){
@@ -496,21 +517,22 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
   if(TMath::Abs(rpangleTPC-rpangleVZERO)>fEventPlanesComp)return;
 
+  if(fDebug>2)printf("Filling EP-related histograms\n");
   //Filling EP-related histograms
   ((TH2F*)fOutput->FindObject(Form("hEvPlane%s",centrbinname.Data())))->Fill(rpangleTPC,rpangleVZERO); // reaction plane angle without autocorrelations removal
   ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso); //RP resolution   
-  if(fEventPlaneMeth==kVZERO||fEtaGap){
+  if(fEventPlaneMeth>kTPCVZERO||fEtaGap){
     ((TH1F*)fOutput->FindObject(Form("hEvPlaneA%s",centrbinname.Data())))->Fill(rpangleeventA); //Angle of first subevent
     ((TH1F*)fOutput->FindObject(Form("hEvPlaneB%s",centrbinname.Data())))->Fill(rpangleeventB); //Angle of second subevent
   }
-  if(fEventPlaneMeth==kVZERO){
-    Double_t deltaSub =rpangleTPC-rpangleeventA;
+  if(fEventPlaneMeth>kTPCVZERO){
+    Double_t deltaSub=rpsubTPC-rpangleeventA;
     if(TMath::Abs(deltaSub)>TMath::Pi()/2.){// difference of subevents reaction plane angle cannot be bigger than phi/2
       if(deltaSub>0.) deltaSub-=TMath::Pi();
       else deltaSub +=TMath::Pi();
     } 
     ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso2%s",centrbinname.Data())))->Fill(TMath::Cos(2.*deltaSub)); //RP resolution   
-    deltaSub =rpangleTPC-rpangleeventB;
+    deltaSub =rpsubTPC-rpangleeventB;
     if(TMath::Abs(deltaSub)>TMath::Pi()/2.){// difference of subevents reaction plane angle cannot be bigger than phi/2
       if(deltaSub>0.) deltaSub-=TMath::Pi();
       else deltaSub +=TMath::Pi();
@@ -518,6 +540,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso3%s",centrbinname.Data())))->Fill(TMath::Cos(2.*deltaSub)); //RP resolution   
   }
 
+  if(fDebug>2)printf("Loop on D candidates\n");
   //Loop on D candidates
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
@@ -543,7 +566,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     Int_t nmasses;
     CalculateInvMasses(d,invMass,nmasses);
 
-    if(fEventPlaneMeth%2==0){
+    if(fEventPlaneMeth<=kTPCVZERO){
       eventplane = GetEventPlaneForCandidate(d,q,pl,qsub1,qsub2); // remove autocorrelations
       ((TH1F*)fOutput->FindObject(Form("hEvPlaneCand%s",centrbinname.Data())))->Fill(rpangleTPC-eventplane);
     }
@@ -746,7 +769,7 @@ void AliAnalysisTaskSEHFv2::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 
 //________________________________________________________________________
 void AliAnalysisTaskSEHFv2::SetEventPlaneMethod(Int_t method){
-  if(method>3||method<0){
+  if(method>kVZEROpos||method<0){
     AliWarning("No EP method associated to the selection, setting to TPC EP\n");
     method=kTPCVZERO;
   }
