@@ -587,9 +587,13 @@ void AliAnalysisTaskSEDvsMultiplicity::Terminate(Option_t */*option*/)
     printf("ERROR: fOutput not available\n");
     return;
   }
-  fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
-  printf("Number of Analyzed Events = %d\n",(Int_t)fHistNEvents->GetBinContent(3));
 
+  fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
+  if(!fHistNEvents){
+    printf("ERROR: fHistNEvents not available\n");
+    return;    
+  }
+  printf("Number of Analyzed Events = %d\n",(Int_t)fHistNEvents->GetBinContent(3));
  
   return;
 }
