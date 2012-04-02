@@ -165,7 +165,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
     fhSumPhiE         -> Fill(e,sPhi);
     fhSumEtaPhiE      -> Fill(e,sEtaPhi);
     fhDispEtaPhiDiffE -> Fill(e,dPhi-dEta);
-    if(dEta+dPhi>0)fhSphericityE     -> Fill(e,(dPhi-dEta)/(dEta+dPhi));
+    if(dEta+dPhi>0)fhSphericityE -> Fill(e,(dPhi-dEta)/(dEta+dPhi));
     
     if      (e < 2 ) fhDispEtaDispPhiEBin[0]->Fill(dEta,dPhi);
     else if (e < 4 ) fhDispEtaDispPhiEBin[1]->Fill(dEta,dPhi);
@@ -317,16 +317,15 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
       fhMCEDispPhi        [mcIndex]-> Fill(e,dPhi);
       fhMCESumEtaPhi      [mcIndex]-> Fill(e,sEtaPhi);
       fhMCEDispEtaPhiDiff [mcIndex]-> Fill(e,dPhi-dEta);
-      if(dEta+dPhi>0)fhMCESphericity     [mcIndex]-> Fill(e,(dPhi-dEta)/(dEta+dPhi));  
-      
-      if      (e < 2 ) fhDispEtaDispPhiEBin[0]->Fill(dEta,dPhi);
-      else if (e < 4 ) fhDispEtaDispPhiEBin[1]->Fill(dEta,dPhi);
-      else if (e < 6 ) fhDispEtaDispPhiEBin[2]->Fill(dEta,dPhi);
-      else if (e < 10) fhDispEtaDispPhiEBin[3]->Fill(dEta,dPhi);
-      else             fhDispEtaDispPhiEBin[4]->Fill(dEta,dPhi);
+      if(dEta+dPhi>0)fhMCESphericity[mcIndex]-> Fill(e,(dPhi-dEta)/(dEta+dPhi));  
+
+      if      (e < 2 ) fhMCDispEtaDispPhiEBin[0][mcIndex]->Fill(dEta,dPhi);
+      else if (e < 4 ) fhMCDispEtaDispPhiEBin[1][mcIndex]->Fill(dEta,dPhi);
+      else if (e < 6 ) fhMCDispEtaDispPhiEBin[2][mcIndex]->Fill(dEta,dPhi);
+      else if (e < 10) fhMCDispEtaDispPhiEBin[3][mcIndex]->Fill(dEta,dPhi);
+      else             fhMCDispEtaDispPhiEBin[4][mcIndex]->Fill(dEta,dPhi);
       
     }
-    
     
   }//MC
 }
@@ -1573,9 +1572,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(IsDataMC())
     {
       if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
-          GetReader()->GetDataType() != AliCaloTrackReader::kMC){
+          GetReader()->GetDataType() != AliCaloTrackReader::kMC)
+      {
         //aodpi0.SetInputFileIndex(input);
-        tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(),GetReader(), aodpi0.GetInputFileIndex());
+        tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodpi0.GetInputFileIndex());
         //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
         aodpi0.SetTag(tag);
         if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",aodpi0.GetTag());
