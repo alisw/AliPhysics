@@ -16,7 +16,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
 						   Float_t minC=0, Float_t maxC=100,
 
-						   TString cutsfile="",
+						   TString cutsfile="", TString usercomment = "username",
 
 						   Bool_t theMCon=kFALSE)
 
@@ -122,39 +122,45 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   // Create and connect containers for input/output
 
-  
+  usercomment = "_" + usercomment;  
 
   TString outputfile = AliAnalysisManager::GetCommonFileName();
 
   outputfile += ":PWG3_D2H_DStarSpectra";
-
+  outputfile += usercomment;
   
 
   // ------ input data ------
-
-
+  TString input = "indstar";
+  input += usercomment;
+  TString output1 = "chist1";
+  output1 += usercomment;
+  TString output2 = "DStarAll";
+  output2 += usercomment;
+  TString output3 = "DStarPID";
+  output3 += usercomment;
+  TString output4 = "cuts";
+  output4 += usercomment;
+  TString output5 = "coutputDstarNorm";
+  output5 += usercomment;
 
   //AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
 
-  AliAnalysisDataContainer *cinput0  =  mgr->CreateContainer("indstar",TChain::Class(), 
+  AliAnalysisDataContainer *cinput0  =  mgr->CreateContainer(input,TChain::Class(), 
 
 							     AliAnalysisManager::kInputContainer);
 
-
-
-
-
  // ----- output data -----
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("chist1%d%d",minC,maxC),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(output1,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
-  AliAnalysisDataContainer *coutputDStar1 = mgr->CreateContainer(Form("DStarAll%d%d",minC,maxC),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutputDStar1 = mgr->CreateContainer(output2,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
-  AliAnalysisDataContainer *coutputDStar2 = mgr->CreateContainer(Form("DStarPID%d%d",minC,maxC),TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutputDStar2 = mgr->CreateContainer(output3,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
-  AliAnalysisDataContainer *coutputDStar3 = mgr->CreateContainer(Form("cuts%d%d",minC,maxC),AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts
+  AliAnalysisDataContainer *coutputDStar3 = mgr->CreateContainer(output4,AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts
 
-  AliAnalysisDataContainer *coutputDstarNorm = mgr->CreateContainer(Form("coutputDstarNorm%d%d",minC,maxC),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutputDstarNorm = mgr->CreateContainer(output5,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 
 
