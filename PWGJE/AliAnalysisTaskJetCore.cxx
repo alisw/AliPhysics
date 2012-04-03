@@ -120,10 +120,25 @@ fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),
+fh2JetsumHT1R2(0x0),
+fh2JetsumHT4R2(0x0),
+fh2JetsumHT8R2(0x0),
+fh2JetsumHT1R4(0x0),
+fh2JetsumHT4R4(0x0),
+fh2JetsumHT8R4(0x0),
+fh2JetsumHT1R6(0x0),
+fh2JetsumHT4R6(0x0),
+fh2JetsumHT8R6(0x0),
+fh2JetsumHT1R8(0x0),
+fh2JetsumHT4R8(0x0),
+fh2JetsumHT8R8(0x0),
+fh2JetsumHT1R10(0x0),
+fh2JetsumHT4R10(0x0),
+fh2JetsumHT8R10(0x0),
 fh3spectriggered(0x0),
 fh3specbiased(0x0),
-fh3spectot(0x0)
-
+fh3spectot(0x0),
+fh3spectotb(0x0)
  
 {
    // default Constructor
@@ -213,10 +228,25 @@ fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),    
+fh2JetsumHT1R2(0x0),
+fh2JetsumHT4R2(0x0),
+fh2JetsumHT8R2(0x0),
+fh2JetsumHT1R4(0x0),
+fh2JetsumHT4R4(0x0),
+fh2JetsumHT8R4(0x0),
+fh2JetsumHT1R6(0x0),
+fh2JetsumHT4R6(0x0),
+fh2JetsumHT8R6(0x0),
+fh2JetsumHT1R8(0x0),
+fh2JetsumHT4R8(0x0),
+fh2JetsumHT8R8(0x0),
+fh2JetsumHT1R10(0x0),
+fh2JetsumHT4R10(0x0),
+fh2JetsumHT8R10(0x0),
 fh3spectriggered(0x0),
 fh3specbiased(0x0),
-fh3spectot(0x0)
-
+fh3spectot(0x0),
+fh3spectotb(0x0)
  {
    // Constructor
 
@@ -284,15 +314,29 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
      entries = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 |1<<7; 
      fhnDeltaR = NewTHnSparseF("fhnDeltaR", entries);
 
-     Double_t *xPt3 = new Double_t[15];
+     //change binning in pTtrack
+     Double_t *xPt3 = new Double_t[10];
      xPt3[0] = 0.;
-     for(int i = 1; i<=14;i++){
+     for(int i = 1; i<=9;i++){
       if(xPt3[i-1]<1)xPt3[i] = xPt3[i-1] + 0.2; // 1 - 5
-      else if(xPt3[i-1]<15)xPt3[i] = xPt3[i-1] + 2; // 5 - 12
-      else xPt3[i] = xPt3[i-1] + 50.; // 18 
+      else if(xPt3[i-1]<10)xPt3[i] = xPt3[i-1] + 3; // 5 - 12
+      else xPt3[i] = xPt3[i-1] + 150.; // 18 
      }
     fhnDeltaR->SetBinEdges(2,xPt3);
     delete [] xPt3;
+
+    //change binning in HTI
+     Double_t *xPt4 = new Double_t[14];
+     xPt4[0] = 0.;
+     for(int i = 1; i<=13;i++){
+      if(xPt4[i-1]<10)xPt4[i] = xPt4[i-1] + 1; // 1 - 10
+      else if(xPt4[i-1]<20)xPt4[i] = xPt4[i-1] + 5; // 10 - 12
+      else xPt4[i] = xPt4[i-1] + 30.; // 13
+     }
+    fhnDeltaR->SetBinEdges(6,xPt4);
+    delete [] xPt4;
+
+    
 
 
 
@@ -333,10 +377,26 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2AngStructpt2C60 = new TH2F("Ang struct pt2 C60","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt3C60 = new TH2F("Ang struct pt3 C60","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt4C60 = new TH2F("Ang struct pt4 C60","",15,0.,1.5,150,0.,10.); }
+
+    fh2JetsumHT1R2 = new TH2F("Pt sum R02 HT1","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT4R2 = new TH2F("Pt sum R02 HT4","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT8R2 = new TH2F("Pt sum R02 HT8","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT1R4 = new TH2F("Pt sum R04 HT1","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT4R4 = new TH2F("Pt sum R04 HT4","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT8R4 = new TH2F("Pt sum R04 HT8","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT1R6 = new TH2F("Pt sum R06 HT1","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT4R6 = new TH2F("Pt sum R06 HT4","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT8R6 = new TH2F("Pt sum R06 HT8","",20,0.,200.,100,0.,10.); 
+    fh2JetsumHT1R8 = new TH2F("Pt sum R08 HT1","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT4R8 = new TH2F("Pt sum R08 HT4","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT8R8 = new TH2F("Pt sum R08 HT8","",20,0.,200.,100,0.,10.); 
+    fh2JetsumHT1R10 = new TH2F("Pt sum R10 HT1","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT4R10 = new TH2F("Pt sum R10 HT4","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT8R10 = new TH2F("Pt sum R10 HT8","",20,0.,200.,100,0.,10.);  
     fh3spectriggered = new TH3F("Triggered spectrum","",10,0,100,50,0.,200,50,0.,50.);
     fh3specbiased = new TH3F("Biased spectrum","",10,0,100,50,0.,200.,50,0.,50.);
-    fh3spectot = new TH3F("Total spectrum","",50,0.,200.,50,0.,50.,50,0.,50.);
-
+    fh3spectot = new TH3F("Total spectrum 0-10","",50,0.,200.,50,0.,50.,50,0.,50.);
+    fh3spectotb = new TH3F("Total spectrum 0-20","",50,0.,200.,50,0.,50.,50,0.,50.);    
    fOutputList->Add(fHistEvtSelection);
 
    fOutputList->Add(fhnDeltaR);
@@ -377,10 +437,32 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
        fOutputList->Add(fh2AngStructpt2C60);
        fOutputList->Add(fh2AngStructpt3C60);
        fOutputList->Add(fh2AngStructpt4C60);}  
+
+
+	fOutputList->Add(fh2JetsumHT1R2);
+        fOutputList->Add(fh2JetsumHT4R2);
+       	fOutputList->Add(fh2JetsumHT8R2);
+
+       	fOutputList->Add(fh2JetsumHT1R4);
+        fOutputList->Add(fh2JetsumHT4R4);
+       	fOutputList->Add(fh2JetsumHT8R4);
+
+        fOutputList->Add(fh2JetsumHT1R6);
+        fOutputList->Add(fh2JetsumHT4R6);
+       	fOutputList->Add(fh2JetsumHT8R6);
+
+       	fOutputList->Add(fh2JetsumHT1R8);
+        fOutputList->Add(fh2JetsumHT4R8);
+       	fOutputList->Add(fh2JetsumHT8R8);
+
+        fOutputList->Add(fh2JetsumHT1R10);
+        fOutputList->Add(fh2JetsumHT4R10);
+       	fOutputList->Add(fh2JetsumHT8R10); 
+
        fOutputList->Add(fh3spectriggered);
        fOutputList->Add(fh3specbiased);
        fOutputList->Add(fh3spectot);
-
+       fOutputList->Add(fh3spectotb); 
    // =========== Switch on Sumw2 for all histos ===========
    for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
       TH1 *h1 = dynamic_cast<TH1*>(fOutputList->At(i));
@@ -478,8 +560,10 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    // centrality selection
    AliCentrality *cent = 0x0;
    Double_t centValue = 0.; 
-   if(fESD) cent = fESD->GetCentrality();
-   if(cent) centValue = cent->GetCentralityPercentile("V0M");
+   if(fESD) {cent = fESD->GetCentrality();
+     if(cent) centValue = cent->GetCentralityPercentile("V0M");}
+   else     centValue=fAOD->GetHeader()->GetCentrality();
+   
    if(fDebug) printf("centrality: %f\n", centValue);
    if (centValue < fCentMin || centValue > fCentMax){
       fHistEvtSelection->Fill(4);
@@ -597,6 +681,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                         if(!leadtrack) continue;
                         fh3specbiased->Fill(centValue,ptcorr,leadtrack->Pt());
                         if(centValue<10)fh3spectot->Fill(ptcorr,leadtrack->Pt(),partback->Pt());
+                        if(centValue<20)fh3spectotb->Fill(ptcorr,leadtrack->Pt(),partback->Pt()); 
 			//store one trigger info                   
                         if((partback->Pt()>10.)&&(iCount==0)){                        
 			  trigJet=i;
@@ -632,10 +717,45 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                   if((centValue>20)&&(centValue<40)) fh2JetCoreMethod2C20->Fill(ptcorr,jetmethod2->Pt()/ptbig); 
 		  if((centValue>30)&&(centValue<60)) fh2JetCoreMethod2C30->Fill(ptcorr,jetmethod2->Pt()/ptbig);
 		  if(centValue>60) fh2JetCoreMethod2C60->Fill(ptcorr,jetmethod2->Pt()/ptbig); }}  
+		  Double_t sumpt2a=0.;
+                  Double_t sumpt2b=0.;
+                  Double_t sumpt2d=0.;
+                  Double_t sumpt4a=0.;
+                  Double_t sumpt4b=0.;
+                  Double_t sumpt4d=0.;
+                  Double_t sumpt6a=0.;
+                  Double_t sumpt6b=0.;
+                  Double_t sumpt6d=0.;
+                  Double_t sumpt8a=0.;
+                  Double_t sumpt8b=0.;
+                  Double_t sumpt8d=0.;  
+                  Double_t sumpt10a=0.;
+                  Double_t sumpt10b=0.;
+                  Double_t sumpt10d=0.;  
 
           for(int it = 0;it<nT;++it){
 	  AliVParticle *part = (AliVParticle*)ParticleList.At(it);
        	  Double_t deltaR = jetbig->DeltaR(part);
+          if(partback->Pt()>10.){
+            if(centValue<10){
+
+                             if(deltaR<0.2){if(leadtrack->Pt()>1.) sumpt2a=sumpt2a+part->Pt();
+                                            if(leadtrack->Pt()>4.) sumpt2b=sumpt2b+part->Pt(); 
+                                            if(leadtrack->Pt()>8.) sumpt2d=sumpt2d+part->Pt();}    
+	       if(deltaR>=0.2 && deltaR<0.4){if(leadtrack->Pt()>1.) sumpt4a=sumpt4a+part->Pt();
+                                            if(leadtrack->Pt()>4.) sumpt4b=sumpt4b+part->Pt(); 
+                                            if(leadtrack->Pt()>8.) sumpt4d=sumpt4d+part->Pt();}                                                    if(deltaR>=0.4 && deltaR<0.6){if(leadtrack->Pt()>1.) sumpt6a=sumpt6a+part->Pt();
+                                            if(leadtrack->Pt()>4.) sumpt6b=sumpt6b+part->Pt(); 
+                                            if(leadtrack->Pt()>8.) sumpt6d=sumpt6d+part->Pt();}      
+               if(deltaR>=0.6 && deltaR<0.8){if(leadtrack->Pt()>1.) sumpt8a=sumpt8a+part->Pt();
+                                            if(leadtrack->Pt()>4.) sumpt8b=sumpt8b+part->Pt(); 
+                                            if(leadtrack->Pt()>8.) sumpt8d=sumpt8d+part->Pt();}      
+ 
+               if(deltaR>=0.8 && deltaR<1.2){if(leadtrack->Pt()>1.)sumpt10a=sumpt10a+part->Pt();
+                                            if(leadtrack->Pt()>4.) sumpt10b=sumpt10b+part->Pt(); 
+                                            if(leadtrack->Pt()>8.) sumpt10d=sumpt10d+part->Pt();}   }}
+ 
+
           Double_t deltaEta = etabig-part->Eta();
           Double_t deltaPhi=phibig-part->Phi();
           if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
@@ -643,7 +763,36 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
        	  Double_t jetEntries[8] = {centValue,ptcorr,part->Pt(),deltaR,deltaEta,deltaPhi,leadtrack->Pt(),partback->Pt()};                     fhnDeltaR->Fill(jetEntries);
           }
           //end of track loop
-          }
+            Double_t rhoin2=rho*TMath::Pi()*0.2*0.2; 
+            Double_t rhoin4=rho*TMath::Pi()*(0.4*0.4-0.2*0.2);
+            Double_t rhoin6=rho*TMath::Pi()*(0.6*0.6-0.4*0.4);
+            Double_t rhoin8=rho*TMath::Pi()*(0.8*0.8-0.6*0.6);
+            Double_t rhoin10=rho*TMath::Pi()*(1.2*1.2-0.8*0.8); 
+           
+              
+          if(rho!=0){
+         
+          fh2JetsumHT1R2->Fill(ptcorr,sumpt2a/rhoin2);
+          fh2JetsumHT4R2->Fill(ptcorr,sumpt2b/rhoin2);
+          fh2JetsumHT8R2->Fill(ptcorr,sumpt2d/rhoin2);
+         
+          fh2JetsumHT1R4->Fill(ptcorr,sumpt4a/rhoin4);
+          fh2JetsumHT4R4->Fill(ptcorr,sumpt4b/rhoin4);
+          fh2JetsumHT8R4->Fill(ptcorr,sumpt4d/rhoin4);
+         
+          fh2JetsumHT1R6->Fill(ptcorr,sumpt6a/rhoin6);
+          fh2JetsumHT4R6->Fill(ptcorr,sumpt6b/rhoin6);
+          fh2JetsumHT8R6->Fill(ptcorr,sumpt6d/rhoin6);
+         
+          fh2JetsumHT1R8->Fill(ptcorr,sumpt8a/rhoin8);
+          fh2JetsumHT4R8->Fill(ptcorr,sumpt8b/rhoin8);
+          fh2JetsumHT8R8->Fill(ptcorr,sumpt8d/rhoin8);
+         
+          fh2JetsumHT1R10->Fill(ptcorr,sumpt10a/rhoin10);
+          fh2JetsumHT4R10->Fill(ptcorr,sumpt10b/rhoin10);
+          fh2JetsumHT8R10->Fill(ptcorr,sumpt10d/rhoin10);}
+
+   }
           //end of jet loop
 
 
@@ -664,7 +813,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	    if (TMath::Abs(fTrigBuffer[fTindex][6]-centValue<10)){  
 	      
                         for(int it = 0;it<nT;++it){
-	                AliVParticle *part = (AliVParticle*)ParticleList.At(it);                        Double_t DPhi = fTrigBuffer[fTindex][1] - part->Phi();
+	                AliVParticle *part = (AliVParticle*)ParticleList.At(it);         
+                        Double_t DPhi = fTrigBuffer[fTindex][1] - part->Phi();
                         Double_t DEta = fTrigBuffer[fTindex][2] - part->Eta();
                         Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
                         if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
@@ -1015,7 +1165,7 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
    case 2:
       label = "track pT";
      
-         nbins = 14;
+         nbins = 10;
          xmin = 0.;
          xmax = 150;
          break;
@@ -1032,7 +1182,7 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
 
    case 4:
       label = "deltaEta";
-      nbins = 30;
+      nbins = 15;
       xmin = -1.5;
       xmax = 1.5;
       break;
@@ -1049,9 +1199,9 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
         
     case 6:
       label = "leading track";
-      nbins = 10;
+      nbins = 14;
       xmin = 0;
-      xmax = 10;
+      xmax = 50;
       break;
            
      case 7:
