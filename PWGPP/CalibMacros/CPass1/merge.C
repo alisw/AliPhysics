@@ -19,7 +19,7 @@ void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
   // load libraries
   //
   printf("Merging with chunks copying turned %s\n",copyLocal ? "ON":"OFF");
-  gROOT->Macro("LoadLibraries.C");
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   
   //if pattern is empty and outputDir is a local file assume it contains the list of files to merge
   //otherwise fall back to old behaviour: search alien and process those files

@@ -23,15 +23,7 @@ SplitArguments = {"/alice/data/2011/LHC11a/$1/raw/#alienfilename#"};
 Workdirectorysize={"6000MB"};
 
 InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/recCPass1.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/ConfigCalibTrain.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/runCalibTrain.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskTPCCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskTRDCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskT0Calib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskSDDCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTaskMeanVertexCalib.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/AddTOFAnalysisTaskCalibPass0.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/LoadLibraries.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/QAtrain.C"
 };
 

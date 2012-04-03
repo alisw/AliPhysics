@@ -24,8 +24,8 @@ void makeOCDB(const Char_t *filename, TString component, TString runNumberString
   //
   // extract TPC OCDB entries
   //
-  gROOT->Macro("LoadLibraries.C");
-  gROOT->LoadMacro("ConfigCalibTrain.C");
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
 
   // switch off log info
   AliLog::SetClassDebugLevel("AliESDEvent",0);
