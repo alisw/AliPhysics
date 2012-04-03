@@ -23,6 +23,7 @@ class AliITSSumTP : public TObject
   AliITSSumTP(const AliITSSumTP& src);
   virtual ~AliITSSumTP() {Reset();}
   AliITSSumTP &operator=(const  AliITSSumTP& src);
+  virtual void Print(Option_t* opt="") const;
   //
   AliESDVertex& GetVertex()             const {return (AliESDVertex&)fVertex;}
   AliTrackPointArray* GetTrack(Int_t i) const {return (AliTrackPointArray*)fTracks[i];}

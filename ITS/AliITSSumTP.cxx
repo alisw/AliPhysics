@@ -44,10 +44,12 @@ AliITSSumTP& AliITSSumTP::operator=(const AliITSSumTP& src)
 void AliITSSumTP::BookNTracks(Int_t n)
 {
   // book space for tracks info
-  delete[] fCrvVars; 
+  delete[] fCrvVars; fCrvVars = 0;
   fNVars = n*kNVarPerTrack; 
-  fCrvVars = fNVars>0 ? new Double32_t[fNVars] : 0;
-  for (int i=fNVars;i--;) fCrvVars[i]=0; 
+  if (fNVars>0) {
+    fCrvVars = new Double32_t[fNVars];
+    for (int i=fNVars;i--;) fCrvVars[i]=0; 
+  }
 }
 
 //__________________________________________
@@ -60,3 +62,20 @@ void AliITSSumTP::Reset()
   fNVars = 0;
   SetUniqueID(0);
 }
+
+//__________________________________________
+void AliITSSumTP::Print(Option_t *) const
+{
+  // reset object
+  printf("Vertex: "); fVertex.Print();
+  int ntr = GetNTracks();
+  printf("Number of tracks: %d\n",ntr);
+  for (int itr=0;itr<ntr;itr++) {
+    AliTrackPointArray* tr = GetTrack(itr);
+    printf("#%2d : %d hits CrvGlo: %+.2e/%+.2e CrvTPC: %+.2e/%+.2e\n",itr,tr->GetNPoints(),
+	   GetCrvGlo(itr),GetCrvGloErr(itr),
+	   GetCrvTPC(itr),GetCrvTPCErr(itr));
+  }
+  //
+}
+
