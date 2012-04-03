@@ -208,6 +208,7 @@ class AliRawReader: public TObject {
     UShort_t SwapShort(UShort_t x) const;
 
     Bool_t           fIsValid;              // is raw-reader created successfully
+    Bool_t           fIsTriggerClassLoaded; // flags the call to LoadTriggerClass
 
     ClassDef(AliRawReader, 0) // base class for reading raw digits
 };

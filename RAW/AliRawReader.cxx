@@ -72,7 +72,8 @@ AliRawReader::AliRawReader() :
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
   fHeaderSwapped(NULL),
-  fIsValid(kTRUE)
+  fIsValid(kTRUE),
+  fIsTriggerClassLoaded(kFALSE)
 {
 // default constructor: initialize data members
 // Allocate the swapped header in case of Mac
@@ -131,7 +132,8 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
   fHeaderSwapped(NULL),
-  fIsValid(rawReader.fIsValid)
+  fIsValid(rawReader.fIsValid),
+  fIsTriggerClassLoaded(rawReader.fIsTriggerClassLoaded)
 {
 // copy constructor
 // Allocate the swapped header in case of Mac
@@ -164,6 +166,7 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fErrorLogs = *((TClonesArray*)rawReader.fErrorLogs.Clone());
 
   fIsValid = rawReader.fIsValid;
+  fIsTriggerClassLoaded = rawReader.fIsTriggerClassLoaded;
 
   return *this;
 }
@@ -422,6 +425,8 @@ void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
 
   if (fSelectTriggerExpr.IsNull()) return;
 
+  fIsTriggerClassLoaded = kTRUE;
+
   if (index >= 0)
     fSelectTriggerExpr.ReplaceAll(name,Form("[%d]",index));
   else
@@ -468,7 +473,7 @@ Bool_t AliRawReader::IsEventSelected() const
     if ((GetClassMask() & fSelectTriggerMask) != fSelectTriggerMask) return kFALSE;
   }
 
-  if (!fSelectTriggerExpr.IsNull()) {
+  if (  fIsTriggerClassLoaded && !fSelectTriggerExpr.IsNull()) {
     TString expr(fSelectTriggerExpr);
     ULong64_t mask = GetClassMask();
     for(Int_t itrigger = 0; itrigger < 50; itrigger++) {
