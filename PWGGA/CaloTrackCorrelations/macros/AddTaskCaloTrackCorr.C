@@ -150,6 +150,23 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kTRUE) , n++);       // Isolated track-track correlation
   }
   
+  // Analysis with ghost triggers, only for Min Bias like events
+  if(kTrig.Contains("INT") || kTrig.Contains("Central") || kTrig.Contains("MB")  )
+  {
+    maker->AddAnalysis(ConfigureRandomTriggerAnalysis(), n++); 
+    maker->AddAnalysis(ConfigureIsolationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType), n++); // Ghost trigger isolation   
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()),kFALSE), n++); // Ghost trigger hadron correlation
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()),kTRUE) , n++); // Isolated ghost hadron correlation
+    
+    if(kHadronAN)
+    {
+      maker->AddAnalysis(ConfigureRandomTriggerAnalysis("CTS"), n++);                                // track selection
+      maker->AddAnalysis(ConfigureIsolationAnalysis("RandomTriggerCTS",AliIsolationCut::kOnlyCharged,thresType), n++); // track isolation
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("RandomTriggerCTS",kFALSE), n++);       // track-track correlation
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("RandomTriggerCTS",kTRUE) , n++);       // Isolated track-track correlation
+    }
+  }
+  
   //maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType,kTRUE), n++); // Photon multi isolation   
   //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0",    partInCone,thresType,kTRUE), n++); // Pi0 multi isolation   
   //if(kHadronAN) 
@@ -506,22 +523,12 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
-  
-//  // In case of official AODs when dX and dZ was not stored, open the cuts 
-//  // and rely on having a match recorded. In case of reclusterization, try.
-//  if(kData=="AOD" && kClusterArray=="")
-//  {
-//    caloPID->SetEMCALDEtaCut(2000);  
-//    caloPID->SetEMCALDPhiCut(2000); 
-//  }
-  
+    
   //PHOS
   caloPID->SetPHOSDispersionCut(2.5);
   caloPID->SetPHOSRCut(2.);
   if(kData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
-    
-  //caloPID->SetTOFCut(10000000); // Not used, only to set PID bits
-  
+      
   ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
   
   // Input / output delta AOD settings
@@ -551,10 +558,129 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   
 }
 
+//________________________________________________________________________________
+AliAnaElectron* ConfigureElectronAnalysis()
+{
+  
+  AliAnaElectron *ana = new AliAnaElectron();
+  ana->SetDebug(kDebug); //10 for lots of messages
+    
+  if(kCalorimeter == "PHOS")
+  {
+    ana->SetNCellCut(2);// At least 2 cells
+    ana->SetMinPt(0.3);
+    ana->SetMinDistanceToBadChannel(2, 4, 5);
+  }
+  else 
+  {//EMCAL
+    ana->SetNCellCut(1);// At least 2 cells
+    ana->SetMinPt(0.5); // no effect minium EMCAL cut.
+    ana->SetMaxPt(100); 
+    //ana->SetTimeCut(400,900);// Time window of [400-900] ns
+    ana->SetMinDistanceToBadChannel(2, 4, 6);
+  }
+  
+  //Electron selection cuts with tracks
+  ana->SetEOverP(0.8, 1.2);
+  // TO DO, find a more suitable way to set this
+  if(kSimulation)
+  { // LHC11a
+    ana->SetdEdxCut(76, 85);
+  }
+  else // LHC11c
+  {
+    ana->SetdEdxCut(56, 64);
+  }
+  
+  ana->SetCalorimeter(kCalorimeter);
+  
+  ana->SwitchOffCaloPID();
+  ana->SwitchOffFillShowerShapeHistograms();  
+  ana->SwitchOffFillWeightHistograms()  ;
+  ana->SwitchOffFiducialCut();
+  
+  if(!kData.Contains("delta")) 
+  {
+    ana->SetOutputAODName(Form("Electron%s",kName.Data()));
+    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else ana->SetInputAODName(Form("Electron%s",kName.Data()));
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaElectron_TM%d_",kTM));
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return ana ;
+  
+}
+
+//__________________________________________________________________________________________
+AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
+{
+  
+  AliAnaRandomTrigger *ana = new AliAnaRandomTrigger();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  if(detector=="") detector = kCalorimeter;
+  ana->SetDetector(detector);
+
+  // selection cuts
+  ana->SetMinPt(4.); 
+  ana->SetMaxPt(51.);   
+  
+  if     (detector=="EMCAL")
+  {
+    ana->SetEtaCut(-0.71,0.71);
+    ana->SetPhiCut(100*TMath::DegToRad(), 160*TMath::DegToRad());
+  }
+  else if(detector=="PHOS")
+  {
+    ana->SetEtaCut(-0.13,0.13);
+    ana->SetPhiCut(260*TMath::DegToRad(), 320*TMath::DegToRad());
+  }
+  else if(detector=="CTS")
+  {
+    ana->SetEtaCut(-0.9,0.9);
+    ana->SetPhiCut(0, TMath::TwoPi());
+  }
+  
+  // AOD branch
+  if(!kData.Contains("delta")) 
+  {
+    ana->SetOutputAODName(Form("RandomTrigger%s%s",detector.Data(),kName.Data()));
+    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else 
+    ana->SetInputAODName(Form("RandomTrigger%s%s",detector.Data(),kName.Data()));
+  
+  printf("Set RandomTrigger%s%s\n",detector.Data(),kName.Data());
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaRandomTrigger%s_",detector.Data()));
+  
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  if(detector=="CTS")
+  {
+    ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+    ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
+  }
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
 //__________________________________________________________________________________________
 AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Float_t l0max)
 {
-
   AliAnaInsideClusterInvariantMass *ana = new AliAnaInsideClusterInvariantMass();
   ana->SetDebug(kDebug); //10 for lots of messages
   
@@ -570,10 +696,7 @@ AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Fl
   ana->AddToHistogramsName("AnaInClusterIM_");
 
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
-  
-  if(kSimulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
-  else            ana->SwitchOffDataMC() ;
-  
+    
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
@@ -586,7 +709,6 @@ AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Fl
   return ana;
   
 }
-
 
 //_______________________________________________
 AliAnaChargedParticles* ConfigureChargedAnalysis()
@@ -662,8 +784,7 @@ AliAnaPi0* ConfigurePi0Analysis()
     ana->SetNZvertBin(10);
     ana->SetNRPBin(1);
     ana->SetNMaxEvMix(100);    
-    ana->SwitchOffSMCombinations();
-    ana->SwitchOffMultipleCutAnalysis();
+    ana->SwitchOnSMCombinations();
   }
   else if(kCollisions=="PbPb") 
   {
@@ -673,7 +794,9 @@ AliAnaPi0* ConfigurePi0Analysis()
     ana->SetNMaxEvMix(10);
     ana->SwitchOffSMCombinations();
   }
-  
+
+  ana->SwitchOffMultipleCutAnalysis();
+
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName(Form("AnaPi0_TM%d_",kTM));
@@ -723,6 +846,11 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   {
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
     nms->SetParticle(particle);
+    
+    // Tighten a bit mass cut with respect to default window
+    if(particle=="Pi0") nms->SetInvMassCutRange(0.120,0.150);
+    if(particle=="Eta") nms->SetInvMassCutRange(0.520,0.580);    
+    
     nms->SwitchOnAngleSelection();
     nms->KeepNeutralMesonSelectionHistos(kTRUE);
     //nms->SetAngleMaxParam(2,0.2);
@@ -766,7 +894,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
 
   // Same Eta as EMCal, cut in phi if EMCAL was triggering
-  if(particle=="Hadron")
+  if(particle=="Hadron"  || particle.Contains("CTS"))
   {
     if(kTrig.Contains("EMC"))
       ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 190, 360+70) ;
@@ -838,7 +966,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   ana->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   ana->SetHistoPtSumRangeAndNBins   (0, 100, 250);
   
-  if(particle=="Hadron")
+  if(particle=="Hadron"  || particle.Contains("CTS"))
   {
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
@@ -869,7 +997,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
   
   // Same Eta as EMCal, cut in phi if EMCAL was triggering
-  if(particle=="Hadron")
+  if(particle=="Hadron" || particle.Contains("CTS"))
   {
     if(kTrig.Contains("EMC"))
       ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 190, 360+70) ;
@@ -907,7 +1035,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_TM%d_",particle.Data(),bIsolated,kTM));
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
-  if(particle=="Hadron")
+  if(particle=="Hadron"  || particle.Contains("CTS"))
   {
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
@@ -1028,7 +1156,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
     histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
   }
   
-  histoRanges->SetHistoShowerShapeRangeAndNBins(0, 5, 500);
+  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 4.9, 500);
   
   // Invariant mass histoRangeslysis
   histoRanges->SetHistoMassRangeAndNBins(0., 1., 200) ;
