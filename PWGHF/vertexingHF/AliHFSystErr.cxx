@@ -446,15 +446,15 @@ void AliHFSystErr::InitDstoKKpi2010pp() {
 
 // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
-  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.035); // 7% error on sigmaV0and
+  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.035); // 3.5% error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.05); // 5% PDG2010
+  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.06); // 0.14/2.32 PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track)
 
 
   // Raw yield extraction
@@ -480,9 +480,13 @@ void AliHFSystErr::InitDstoKKpi2010pp() {
   fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
   for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.07); // 7%
 
-  // MC dN/dpt  (copied from D0 : will update later)
-  //fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
-  //for(Int_t i=1;i<=12;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  // MC dN/dpt 
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
+  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,1.);
+  for(Int_t i=3; i<=4; i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=5; i<=6; i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=7; i<=8; i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=9; i<=12; i++) fMCPtShape->SetBinContent(i,0.02);
 
 
   // particle-antiparticle
