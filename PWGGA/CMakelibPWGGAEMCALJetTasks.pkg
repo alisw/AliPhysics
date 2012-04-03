@@ -37,15 +37,11 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 set ( SRCS ${SRCS}  EMCALJetTasks/AliFJWrapper.cxx )
 
 set ( FASTJET_ROOT $ENV{FASTJET_ROOT} )
+
 if(FASTJET_ROOT)
-  set ( EDEFINE -isystem${FASTJET_ROOT}/include)
+  set ( EDEFINE -isystem${FASTJET_ROOT}/include )
 else()
-  set(FASTJET $ENV{FASTJET})
-  if(FASTJET)
-    set ( EDEFINE -isystem${FASTJET}/include)
-  else()
-    set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
-  endif(FASTJET)
+  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet )
 endif(FASTJET_ROOT)
 
 set ( EINCLUDE PWGGA/EMCALJetTasks EMCAL OADB STEER/ESD STEER/STEERBase )
