@@ -139,7 +139,7 @@ BGBlastWave(const Char_t *name, Double_t mass, Double_t beta_max = 0.9, Double_t
   fBGBlastWave->FixParameter(0, mass);
   fBGBlastWave->SetParLimits(1, 0.01, 0.99);
   fBGBlastWave->SetParLimits(2, 0.01, 1.);
-  fBGBlastWave->SetParLimits(3, 0.1, 10.);
+  fBGBlastWave->SetParLimits(3, 0.01, 10.);
   return fBGBlastWave;
 }
 
@@ -280,7 +280,7 @@ TF1 *fBGBW[1000];
 TGraphErrors *gBW[1000];
 
 TObjArray *
-BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = 1., Bool_t fixProfile = kFALSE)
+BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = .7, Bool_t fixProfile = kFALSE)
 {
 
   /* get data */
@@ -316,8 +316,8 @@ BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = 1., Bo
   minuit->mnexcm("SET ERR", arglist, 1, ierflg);
   for (Int_t idata = 0; idata < nBW; idata++)
     minuit->mnparm(idata, Form("norm%d", idata), 1.e6, 1., 0., 0., ierflg);
-  minuit->mnparm(nBW + 0, "<beta>", 0.5, 0.1, 0., 1., ierflg);
-  minuit->mnparm(nBW + 1, "T", 0.2, 0.1, 0., 1., ierflg);
+  minuit->mnparm(nBW + 0, "<beta>", 0.65, 0.01, 0., 1., ierflg);
+  minuit->mnparm(nBW + 1, "T", 0.1, 0.01, 0., 1., ierflg);
   minuit->mnparm(nBW + 2, "n", profile, 0.1, 0., 10., ierflg);
   if (fixProfile) minuit->FixParameter(nBW + 2);
 
@@ -379,7 +379,7 @@ BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = 1., Bo
   /* 1-sigma contour */
   minuit->SetErrorDef(1);
   TGraph *gCont1 = NULL;
-  gCont1 = (TGraph *) minuit->Contour(50, nBW + 0, nBW + 1);
+  //  gCont1 = (TGraph *) minuit->Contour(50, nBW + 0, nBW + 1);
   if (gCont1) gCont1->SetName("gCont1");
 
   /* 2-sigma contour */
@@ -481,7 +481,38 @@ BGBlastWave_FCN(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 
 /*****************************************************************/
 
-GetYieldAndMean(TH1 *h, TF1 *f, Double_t &yield, Double_t &yielderr, Double_t &mean, Double_t &meanerr, Double_t min, Double_t max, Double_t *partyield, Double_t *partyielderr)
+IntegratedProduction(TH1 *h, Double_t mass, Option_t *opt = "")
+{
+
+  Double_t yield, yielderr, yielderrcorr, mean, meanerr, meanerrcorr, partyield[3], partyielderr[3], partyielderrcorr[3];
+  TF1 *f = BGBlastWave_SingleFit(h, mass, opt);
+  GetYieldAndMean(h, f, yield, yielderr, yielderrcorr, mean, meanerr, meanerrcorr, 0., 10., partyield, partyielderr, partyielderrcorr);
+
+  //  Double_t fint = f->Integral(0.,10.);
+  //  Double_t finte = f->IntegralError(0.,10.);
+  //  Double_t fmean = f->Mean(0., 10.);
+
+  printf("dN/dy        = %f +- %f (%f)\n", yield, yielderr, yielderrcorr);
+  printf("<pt>         = %f +- %f (%f)\n", mean, meanerr, meanerrcorr);
+  printf("dN/dy (data) = %f +- %f (%f)\n", partyield[0], partyielderr[0], partyielderrcorr[0]);
+  printf("dN/dy (low)  = %f +- %f (%f)\n", partyield[1], partyielderr[1], partyielderrcorr[1]);
+  printf("dN/dy (high) = %f +- %f (%f)\n", partyield[2], partyielderr[2], partyielderrcorr[2]);
+  //  printf("----\n");
+  //  printf("dN/dy (func) = %f +- %f\n", fint, finte);
+  //  printf("<pT> (func)  = %f +- %f\n", fmean, 0.);
+  
+  //  TH1 *hr = (TH1 *)h->Clone("hr");
+  //  hr->Divide(f);
+  //  new TCanvas;
+  //  hr->Draw();
+
+  //  TProfile *p = new TProfile("p", "", 100, 0., 10.);
+  //  gROOT->LoadMacro("HistoUtils.C");
+  //  HistoUtils_Function2Profile(f, p);
+  //  p->Draw();
+}
+
+GetYieldAndMean(TH1 *h, TF1 *f, Double_t &yield, Double_t &yielderr, Double_t &yielderrcorr, Double_t &mean, Double_t &meanerr, Double_t &meanerrcorr, Double_t min, Double_t max, Double_t *partyield, Double_t *partyielderr, Double_t *partyielderrcorr)
 {
   
   /* find lowest edge in histo */
@@ -507,7 +538,7 @@ GetYieldAndMean(TH1 *h, TF1 *f, Double_t &yield, Double_t &yielderr, Double_t &m
   }
   
   /* integrate the data */
-  Double_t cont, err, width, cent, integral_data = 0., integralerr_data = 0., meanintegral_data = 0., meanintegralerr_data = 0.;
+  Double_t cont, err, width, cent, integral_data = 0., integralerr_data = 0., integralerrcorr_data = 0., meanintegral_data = 0., meanintegralerr_data = 0., meanintegralerrcorr_data = 0.;
   for (Int_t ibin = binlo; ibin < binhi; ibin++) {
     cent = h->GetBinCenter(ibin);
     width = h->GetBinWidth(ibin);
@@ -518,8 +549,10 @@ GetYieldAndMean(TH1 *h, TF1 *f, Double_t &yield, Double_t &yielderr, Double_t &m
       /* all right, use data */
       integral_data += cont * width;
       integralerr_data += err * err * width * width;
+      integralerrcorr_data += err * width;
       meanintegral_data += cont * width * cent;
       meanintegralerr_data += err * err * width * width * cent * cent;
+      meanintegralerrcorr_data += err * width * cent;
     }
     else {
       /* missing data-point, complain and use function */
@@ -551,20 +584,29 @@ GetYieldAndMean(TH1 *h, TF1 *f, Double_t &yield, Double_t &yielderr, Double_t &m
   yielderr = TMath::Sqrt(integralerr_data * integralerr_data + 
 			 integralerr_lo * integralerr_lo + 
 			 integralerr_hi * integralerr_hi);
+  yielderrcorr = TMath::Sqrt(integralerrcorr_data * integralerrcorr_data + 
+			     integralerr_lo * integralerr_lo + 
+			     integralerr_hi * integralerr_hi);
   
   /* compute integrated mean */
   mean = (meanintegral_data + meanintegral_lo + meanintegral_hi) / yield;
   meanerr = TMath::Sqrt(meanintegralerr_data * meanintegralerr_data + 
 			meanintegralerr_lo * meanintegralerr_lo + 
 			meanintegralerr_hi * meanintegralerr_hi) / yield;
+  meanerrcorr = TMath::Sqrt(meanintegralerrcorr_data * meanintegralerrcorr_data + 
+			    meanintegralerr_lo * meanintegralerr_lo + 
+			    meanintegralerr_hi * meanintegralerr_hi) / yield;
 
   /* set partial yields */
   partyield[0] = integral_data;
   partyielderr[0] = integralerr_data;
+  partyielderrcorr[0] = integralerrcorr_data;
   partyield[1] = integral_lo;
   partyielderr[1] = integralerr_lo;
+  partyielderrcorr[1] = integralerr_lo;
   partyield[2] = integral_hi;
   partyielderr[2] = integralerr_hi;
+  partyielderrcorr[2] = integralerr_hi;
 
 }
 
