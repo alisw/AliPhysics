@@ -159,9 +159,6 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   AliPHOSGeoUtils  * fPHOSGeom; //phos geometry matrix 
 
 
-  // TPC
-  Double32_t    fTPCTrack[3];
-
   ClassDef(AliJCORRANTask, 1); 
 };
 #endif // AliJCORRANTask_H
