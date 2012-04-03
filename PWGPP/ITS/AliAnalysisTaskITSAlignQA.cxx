@@ -136,7 +136,6 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
     handler->AddBranch("AliITSSumTP",&fITSSumTP);
     handler->SetFillAOD(kFALSE); // manual fill
     CreateUserInfo();
-    //
   }
   //
   PostData(1,fOutput);
@@ -401,7 +400,7 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     }
     fITSSumTP->SetUniqueID(fCurrentRunNumber);
     AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
-    if (!ntp) handler->FillTree();
+    if (ntp) handler->FillTree();
   }
 
   //
@@ -415,7 +414,7 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track, const A
   // track selection cuts
   Bool_t accept=kTRUE;
   if(fUseITSsaTracks){ 
-      if(track->GetNcls(1)>0) accept=kFALSE;
+    if(track->GetNcls(1)>0) accept=kFALSE;
   }else{
     if(track->GetNcls(1)<fMinTPCpts) accept=kFALSE;
   }
@@ -423,20 +422,19 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track, const A
   Int_t trstatus=track->GetStatus();
   if(!(trstatus&AliESDtrack::kITSrefit)) accept=kFALSE;
   Float_t pt = 0;
-  if (fUseTPCMomentum) {
-    if (track->GetTPCInnerParam()) pt = track->GetTPCInnerParam()->Pt();
-    else                           pt = track->Pt();
-  }
+  if (fUseTPCMomentum && track->IsOn(AliESDtrack::kTPCrefit)) pt = track->GetTPCInnerParam()->Pt();
+  else pt = track->Pt();
+  //
   if(pt<fMinPt) accept=kFALSE;
   //
   // if vertex constraint is used, apply soft DCA cut
   if (vtx) {
     Double_t dz[2],cov[3];
     AliExternalTrackParam trc = *track;
-    if (!trc.PropagateToDCA(vtx, fFitter->GetBz(), 3.0, dz, cov)) accept = kFALSE;
+    if (!trc.PropagateToDCA(vtx, fFitter->GetBz(), 3.0, dz, cov)) accept=kFALSE;
     else {
-      if (dz[0]*dz[0]/(1e-4+cov[0])>fCutDCAXY) accept = kFALSE;
-      if (dz[1]*dz[1]/(4e-4+cov[2])>fCutDCAZ)  accept = kFALSE;
+      if (dz[0]*dz[0]/(1e-4+cov[0])>fCutDCAXY) accept=kFALSE;
+      if (dz[1]*dz[1]/(4e-4+cov[2])>fCutDCAZ)  accept=kFALSE;
     }
   }
   //
@@ -477,7 +475,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSPD(Int_t iLayer, const AliTrackPointA
     }
   }
   if(nPtSPD>0){
-    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    double pt = (fUseTPCMomentum && track->IsOn(AliESDtrack::kTPCrefit)) ? track->GetTPCInnerParam()->Pt() : track->Pt();
     fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
@@ -541,7 +539,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
     }
   }
   if(nPtSDD>0 && nPtSSDSPD>=2){
-    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    double pt = (fUseTPCMomentum && track->IsOn(AliESDtrack::kTPCrefit)) ? track->GetTPCInnerParam()->Pt() : track->Pt();
     fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
@@ -602,7 +600,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDz(Int_t iLayer, const AliTrackPoint
     }
   }
   if(nPtSDD>0){
-    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    double pt = (fUseTPCMomentum && track->IsOn(AliESDtrack::kTPCrefit)) ? track->GetTPCInnerParam()->Pt() : track->Pt();
     fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
@@ -640,7 +638,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSSD(Int_t iLayer, const AliTrackPointA
     }  
   }
   if(nPtSSD>0){
-    double pt = fUseTPCMomentum ? track->GetTPCInnerParam()->Pt() : track->Pt();
+    double pt = (fUseTPCMomentum && track->IsOn(AliESDtrack::kTPCrefit)) ? track->GetTPCInnerParam()->Pt() : track->Pt();
     fFitter->Fit(track->Charge(),pt,0.);
     Double_t chi2=fFitter->GetChi2NDF();
     if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
