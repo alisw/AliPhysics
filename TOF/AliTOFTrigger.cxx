@@ -227,6 +227,7 @@ void AliTOFTrigger::CreateInputs()
   fInputs.AddLast(new AliTriggerInput("0OM2","TOF",0)); // was "TOF_PbPb_MB2_L0"
   fInputs.AddLast(new AliTriggerInput("0OM3","TOF",0)); // was "TOF_PbPb_MB3_L0"
   fInputs.AddLast(new AliTriggerInput("0OUP","TOF",0)); // was "TOF_UltraPer_Coll_L0"
+  fInputs.AddLast(new AliTriggerInput("0OMU","TOF",0)); // new trigger (150 < DeltaPhi < 180) and 2 <= N_pad <= 6
 
   fInputs.AddLast(new AliTriggerInput("0OHM","TOF",0)); // was "TOF_High_Mult_L0"
   fInputs.AddLast(new AliTriggerInput("TOF_Jet_L1","TOF",0));
@@ -431,8 +432,15 @@ void AliTOFTrigger::Trigger() {
 			  //printf("trigger On with AntiDeSlot \n");
 		      }	
 		      
-		  } 
-		  
+		      if(nchonTot >= 2 && nchonTot <= 6){
+			if(DeSlots >= mindeltaro && DeSlots <= maxdeltaro){
+			  SetInput("0OMU");
+			}
+			else if(AntiDeSlots >= mindeltaro && AntiDeSlots <= maxdeltaro){
+			  SetInput("0OMU");
+			}	
+		      }		      
+		  }
 	      }    
 	  }
       }
