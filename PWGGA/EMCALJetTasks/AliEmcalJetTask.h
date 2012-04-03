@@ -1,5 +1,5 @@
-#ifndef ALIESDJETTASK_H
-#define ALIESDJETTASK_H
+#ifndef ALIEMCALJETTASK_H
+#define ALIEMCALJETTASK_H
 
 // $Id$
 
@@ -11,11 +11,11 @@ class TH2;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliEsdJetTask : public AliAnalysisTaskSE {
+class AliEmcalJetTask : public AliAnalysisTaskSE {
  public:
-  AliEsdJetTask(const char *name); //was set to 0
-  AliEsdJetTask();//=0);
-  virtual ~AliEsdJetTask();
+  AliEmcalJetTask();
+  AliEmcalJetTask(const char *name);
+  virtual ~AliEmcalJetTask();
 
   void         UserCreateOutputObjects();
   void         UserExec(Option_t *option);
@@ -25,12 +25,13 @@ class AliEsdJetTask : public AliAnalysisTaskSE {
   void         SetClusName(const char *n)       { fCaloName      = n;  }
   void         SetJetsName(const char *n)       { fJetsName      = n;  }
   void         SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min;}
+  void         SetMinJetClusPt(Double_t min)    { fMinJetClusPt  = min;}
   void         SetRadius(Double_t r)            { fRadius        = r;  }
   void         SetTracksName(const char *n)     { fTracksName    = n;  }
   void         SetType(Int_t t)                 { fType          = t;  }
 
  protected:
-  void FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t fCent);
+  void FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t cent);
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
@@ -39,12 +40,13 @@ class AliEsdJetTask : public AliAnalysisTaskSE {
   Double_t               fRadius;                 // jet radius
   Int_t                  fType;                   // jet type (0=all, 1=ch, 2=neutral)
   Double_t               fMinJetTrackPt;          // min jet track momentum
+  Double_t               fMinJetClusPt;           // min jet cluster momentum
   TClonesArray          *fJets;                   //!jet collection
 
  private:
-  AliEsdJetTask(const AliEsdJetTask&);            // not implemented
-  AliEsdJetTask &operator=(const AliEsdJetTask&); // not implemented
+  AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
+  AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEsdJetTask, 2) // Jet producing task
+  ClassDef(AliEmcalJetTask, 1) // Jet producing task
 };
 #endif

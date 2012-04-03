@@ -1,11 +1,11 @@
 // $Id$
 
-#include "AliESDJet.h"
+#include "AliEmcalJet.h"
 
-ClassImp(AliESDJet)
+ClassImp(AliEmcalJet)
 
 //__________________________________________________________________________________________________
-AliESDJet::AliESDJet(Double_t px, Double_t py, Double_t pz) 
+AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) 
   : AliVParticle(), 
     fPt(TMath::Sqrt(px*px+py*py)), 
     fEta(TMath::ASinH(pz/fPt)),
@@ -23,7 +23,7 @@ AliESDJet::AliESDJet(Double_t px, Double_t py, Double_t pz)
 }
 
 //_________________________________________________________________________________________________
-AliESDJet::AliESDJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
+AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   AliVParticle(), 
   fPt(pt), fEta(eta), fPhi(phi), 
   fM(m), fNEF(0), fArea(0), 
@@ -37,7 +37,7 @@ AliESDJet::AliESDJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
 }
 
 //_________________________________________________________________________________________________
-AliESDJet::AliESDJet(const AliESDJet &jet) :
+AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   AliVParticle(jet),
   fPt(jet.fPt), fEta(jet.fEta), fPhi(jet.fPhi), 
   fM(jet.fM), fNEF(jet.fNEF), fArea(jet.fArea), 
@@ -48,7 +48,7 @@ AliESDJet::AliESDJet(const AliESDJet &jet) :
 }
 
 //_________________________________________________________________________________________________
-AliESDJet &AliESDJet::operator=(const AliESDJet &jet)
+AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
 {
   // Assignment operator.
 
@@ -70,7 +70,7 @@ AliESDJet &AliESDJet::operator=(const AliESDJet &jet)
 }
 
 //__________________________________________________________________________________________________
-void AliESDJet::GetMom(TLorentzVector &vec) const
+void AliEmcalJet::GetMom(TLorentzVector &vec) const
 {
   // Return momentum as four vector.
 
@@ -79,7 +79,7 @@ void AliESDJet::GetMom(TLorentzVector &vec) const
 }
 
 //__________________________________________________________________________________________________
-void AliESDJet::Print(Option_t* /*option*/) const
+void AliEmcalJet::Print(Option_t* /*option*/) const
 {
   // Print jet information.
 
