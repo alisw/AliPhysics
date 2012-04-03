@@ -5,7 +5,9 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliBalance+;
+#pragma link C++ class AliBalancePsi+;
 #pragma link C++ class AliAnalysisTaskBF+;
+#pragma link C++ class AliAnalysisTaskBFPsi+;
 
 #pragma link C++ class AliAnalysisTaskToyModel+;
 
