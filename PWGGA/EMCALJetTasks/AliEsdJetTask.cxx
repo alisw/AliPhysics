@@ -1,15 +1,37 @@
 // $Id$
 
 #include "AliEsdJetTask.h"
+#include <TChain.h>
 #include <TClonesArray.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TList.h>
+#include <TLorentzVector.h>
 #include <TParticle.h>
-#include "AliESDJet.h"
 #include "AliAnalysisManager.h"
+#include "AliCentrality.h"
+#include "AliESDCaloCluster.h"
+#include "AliESDJet.h"
 #include "AliESDtrack.h"
 #include "AliFJWrapper.h"
-#include "AliESDCaloCluster.h"
 
 ClassImp(AliEsdJetTask)
+
+//________________________________________________________________________
+AliEsdJetTask::AliEsdJetTask() : 
+  AliAnalysisTaskSE("AliEsdJetTask"),
+  fTracksName("Tracks"),
+  fCaloName("CaloClusters"),
+  fJetsName("Jets"),
+  fAlgo(1),
+  fRadius(0.4),
+  fType(0),
+  fJets(0)
+{
+  // Default constructor.
+
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
+}
 
 //________________________________________________________________________
 AliEsdJetTask::AliEsdJetTask(const char *name) : 
@@ -20,7 +42,7 @@ AliEsdJetTask::AliEsdJetTask(const char *name) :
   fAlgo(1),
   fRadius(0.4),
   fType(0),
-  fHadCorr(0),
+  fMinJetTrackPt(0.15),
   fJets(0)
 {
   // Standard constructor.
@@ -30,6 +52,9 @@ AliEsdJetTask::AliEsdJetTask(const char *name) :
 
   SetName(name);
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
+
+  DefineInput(0,TChain::Class());
+  DefineOutput(1,TList::Class());
 }
 
 //________________________________________________________________________
@@ -60,6 +85,12 @@ void AliEsdJetTask::UserExec(Option_t *)
   TClonesArray *tracks = 0;
   TClonesArray *clus   = 0;
   TList *l = InputEvent()->GetList();
+
+  Float_t cent=100; 
+  AliCentrality *centrality = dynamic_cast<AliCentrality*>(l->FindObject("Centrality"));
+  if(centrality)
+    cent = centrality->GetCentralityPercentile("V0M");
+
   if ((fType==0)||(fType==1)) {
     if (fTracksName == "Tracks")
       am->LoadBranch("Tracks");
@@ -79,18 +110,17 @@ void AliEsdJetTask::UserExec(Option_t *)
     }
   }
       
-  FindJets(tracks, clus, fAlgo, fRadius);
+  FindJets(tracks, clus, fAlgo, fRadius, cent);
 }
 
 //________________________________________________________________________
 void AliEsdJetTask::Terminate(Option_t *) 
 {
   // Called once at the end of the analysis.
-
 }
 
 //________________________________________________________________________
-void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius)
+void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t cent)
 {
   // Find jets.
 
@@ -103,7 +133,7 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
 
   AliFJWrapper fjw(name, name);
   fjw.SetR(radius);
-  fjw.SetAlgorithm(jalgo);
+  fjw.SetAlgorithm(jalgo);  
   fjw.SetMaxRap(0.9);
   fjw.Clear();
 
@@ -113,68 +143,66 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
       AliVTrack *t = static_cast<AliVTrack*>(tracks->At(iTracks));
       if (!t)
         continue;
+      if(t->Pt()<fMinJetTrackPt) continue;
       fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks);
     }
   }
+
   if (clus) {
     Double_t vertex[3] = {0, 0, 0};
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     const Int_t Nclus = clus->GetEntries();
-    for (Int_t iClus = 0, iN = 0; iClus < Nclus; ++iClus) {
+    for (Int_t iClus = 0, iN = 0, clusCount=0; iClus < Nclus; ++iClus) {
       AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
       if (!c->IsEMCAL())
         continue;
       TLorentzVector nPart;
       c->GetMomentum(nPart, vertex);
       Double_t energy = nPart.P();
-      if (fHadCorr>0) {
-        Int_t imin = static_cast<Int_t>(c->GetEmcCpvDistance());
-        if (imin>=0) {
-          Double_t dPhiMin = c->GetTrackDx();
-          Double_t dEtaMin = c->GetTrackDz();
-          if (dPhiMin<0.05 && dEtaMin<0.025) { // pp cuts!!!
-            AliVTrack *t = dynamic_cast<AliESDtrack*>(tracks->At(imin));
-            if (t) {
-              energy -= fHadCorr*t->P();
-              if (energy<0)
-                continue;
-            }
-          }
-        }
+      if(energy<fMinJetTrackPt) continue;
+
+      Int_t imin = static_cast<Int_t>(c->GetEmcCpvDistance());
+      if (imin>=0) {
+	Double_t dPhiMin = c->GetTrackDx();
+	Double_t dEtaMin = c->GetTrackDz();
       }
-      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), energy, -iN-1);
+    
+      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), energy, -iClus-1);
     }
   }
 
   // run jet finder
   fjw.Run();
-
+  
   std::vector<fastjet::PseudoJet> jets_incl = fjw.GetInclusiveJets();
   for(UInt_t ij=0, jetCount=0; ij<jets_incl.size(); ++ij) {
     if (jets_incl[ij].perp()<1) 
       continue;
-    //cout << jets_incl[ij].perp() << " " << jets_incl[ij].eta() << " " << jets_incl[ij].phi() << " " <<  jets_incl[ij].m() << endl;
     AliESDJet *jet = new ((*fJets)[jetCount]) 
       AliESDJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
     jet->SetArea(fjw.GetJetArea(ij));
-#if 0 /*tobedone*/
-    jet->GetRefTracks()->Clear();
+    Double_t vertex[3] = {0, 0, 0};
+    InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     vector<fastjet::PseudoJet> constituents = fjw.GetJetConstituents(ij);
-    Double_t neutralE = 0;
+    Double_t neutralE = 0;Double_t maxTrack = 0;Double_t maxCluster=0;
     for(UInt_t ic=0; ic<constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
-      if (uid>=0)
-        jet->AddTrack(tracks->At(uid));
-      else {
-        TLorentzVector *nP = static_cast<TLorentzVector*>(fNeutrals->At(-(uid+1)));
-        neutralE += nP->E();
-        jet->AddTrack(nP);
+      if (uid>=0){
+        AliVTrack *t = static_cast<AliVTrack*>(tracks->At(uid));
+        if (t->Pt()>maxTrack)
+          maxTrack=t->Pt();
+      } else {
+        AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(-(uid+1)));
+        TLorentzVector nP;
+        c->GetMomentum(nP, vertex);
+        neutralE += nP.P();
+        if (nP.P()>maxCluster)
+          maxCluster=nP.P();
       }
     }
+    jet->SetMaxTrackPt(maxTrack);
+    jet->SetMaxClusterPt(maxCluster);
     jet->SetNEF(neutralE/jet->E());
-#endif
-    //jet->Print("");
     jetCount++;
   }
 }
-
