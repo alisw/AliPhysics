@@ -20,5 +20,6 @@
 #pragma link C++ class AliAnaOmegaToPi0Gamma+;
 #pragma link C++ class AliAnaPhotonConvInCalo+;
 #pragma link C++ class AliAnaInsideClusterInvariantMass+;
+#pragma link C++ class AliAnaRandomTrigger+;
 
 #endif

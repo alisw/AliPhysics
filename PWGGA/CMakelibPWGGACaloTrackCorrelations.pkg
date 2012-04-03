@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWGGACaloTrackCorrelations                                               #
+# Package File for PWGGACaloTrackCorrelations                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -43,6 +43,7 @@ set ( SRCS
     CaloTrackCorrelations/AliAnaOmegaToPi0Gamma.cxx 
     CaloTrackCorrelations/AliAnaPhotonConvInCalo.cxx 
     CaloTrackCorrelations/AliAnaInsideClusterInvariantMass.cxx
+    CaloTrackCorrelations/AliAnaRandomTrigger.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
