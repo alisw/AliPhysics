@@ -124,7 +124,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   calibGainMult->SetLowerTrunc(0.02);
   calibGainMult->SetUpperTrunc(0.6);
 
-  //myTask->AddJob(calibGainMult);
+  myTask->AddJob(calibGainMult);
 
 }
 
