@@ -1,7 +1,7 @@
-// $Id$
-
 #ifndef AliESDJet_H
 #define AliESDJet_H
+
+// $Id$
 
 #include "AliVParticle.h"
 #include <TLorentzVector.h>
@@ -40,11 +40,17 @@ class AliESDJet : public AliVParticle
   const Double_t *PID()                    const { return 0;       }
   void        GetMom(TLorentzVector &vec)  const;
   void        Print(Option_t* option = "") const;
+
   Double_t    Area()                       const { return fArea;   }
   Double_t    NEF()                        const { return fNEF;    }
   UShort_t    N()                          const { return fNch+fNn;}
-  void        SetArea(Double_t a)                { fArea = a;  }
-  void        SetNEF(Double_t nef)               { fNEF = nef; }
+  Double32_t  MaxTrackPt()                 const { return fMaxCPt; }
+  Double32_t  MaxClusterPt()               const { return fMaxNPt; }
+
+  void        SetArea(Double_t a)                { fArea   = a;    }
+  void        SetNEF(Double_t nef)               { fNEF    = nef;  }
+  void        SetMaxTrackPt(Double32_t t)        { fMaxCPt = t;    }
+  void        SetMaxClusterPt(Double32_t t)      { fMaxNPt = t;    }
 
  protected:
   Double32_t  fPt;           //[0,0,12]   pt 
