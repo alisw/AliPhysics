@@ -46,7 +46,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   void           FillSelectedClusterHistograms(AliVCluster* cluster, 
                                                const Int_t nLocMax,
-                                               const Int_t tag);
+                                               const Int_t tag,
+                                               const Float_t asy = 0);
     
   void           FillWeightHistograms(AliVCluster *clus);
     
@@ -137,13 +138,19 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F         * fhDispEtaE ;              //! shower dispersion in eta direction
   TH2F         * fhDispPhiE ;              //! shower dispersion in phi direction
+  TH2F         * fhLambda0DispEta[5] ;     //! shower shape correlation l0 vs disp eta
+  TH2F         * fhLambda0DispPhi[5] ;     //! shower shape correlation l0 vs disp phi
   TH2F         * fhSumEtaE ;               //! shower dispersion in eta direction
   TH2F         * fhSumPhiE ;               //! shower dispersion in phi direction
   TH2F         * fhSumEtaPhiE ;            //! shower dispersion in eta and phi direction
   TH2F         * fhDispEtaPhiDiffE ;       //! shower dispersion eta - phi
   TH2F         * fhSphericityE ;           //! shower sphericity in eta vs phi
-  TH2F         * fhDispEtaDispPhiEBin[5] ; //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  
+  TH2F         * fhDispEtaDispPhi[5] ;     //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F         * fhAsymmetryE ;            //! E asymmetry of 2 splitted clusters vs cluster E
+  TH2F         * fhAsymmetryLambda0[5] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhAsymmetryDispEta[5] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhAsymmetryDispPhi[5] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+
   //MC histograms
   
   TH2F         * fhEMCLambda0[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
@@ -155,10 +162,16 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F         * fhMCEDispEta[6] ;         //! shower dispersion in eta direction
   TH2F         * fhMCEDispPhi[6] ;         //! shower dispersion in phi direction
+  TH2F         * fhMCLambda0DispEta[5][6] ;//! shower shape correlation l0 vs disp eta
+  TH2F         * fhMCLambda0DispPhi[5][6] ;//! shower shape correlation l0 vs disp phi
   TH2F         * fhMCESumEtaPhi[6] ;       //! shower dispersion in eta vs phi direction
   TH2F         * fhMCEDispEtaPhiDiff[6] ;  //! shower dispersion in eta -phi direction
   TH2F         * fhMCESphericity[6] ;      //! shower sphericity, eta vs phi
-  TH2F         * fhMCDispEtaDispPhiEBin[5][6] ; //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F         * fhMCDispEtaDispPhi[5][6] ;//! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F         * fhMCEAsymmetry[6] ;          //! E asymmetry of 2 splitted clusters vs cluster E
+  TH2F         * fhMCAsymmetryLambda0[5][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhMCAsymmetryDispEta[5][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhMCAsymmetryDispPhi[5][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   
   TH1F         * fhPtMCNo;                 //! Number of identified pi0, not coming from pi0/eta
   TH2F         * fhPhiMCNo;                //! Phi of identified pi0, not coming from pi0/eta
@@ -200,13 +213,14 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhESumEtaPhiLocMax[3] ;   //! E vs dispersion in eta and phi direction
   TH2F         * fhEDispEtaPhiDiffLocMax[3] ; //! E vs dispersion eta - phi
   TH2F         * fhESphericityLocMax[3] ;  //! E vs sphericity in eta vs phi  
-  
+  TH2F         * fhEAsymmetryLocMax[3] ;   //! E asymmetry of 2 splitted clusters vs cluster E for different NLM
+
   TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
 
-  AliAnaPi0EbE(              const AliAnaPi0EbE & g) ; // cpy ctor
-  AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
+  AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
+  AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,16)
+  ClassDef(AliAnaPi0EbE,17)
 } ;
 
 
