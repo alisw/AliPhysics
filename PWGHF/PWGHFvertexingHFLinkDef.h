@@ -34,6 +34,7 @@
 #pragma link C++ class AliAnalysisTaskSED0Mass+;
 #pragma link C++ class AliAnalysisTaskSECharmFraction+;
 #pragma link C++ class AliAnalysisTaskSEDvsMultiplicity+;
+#pragma link C++ class AliAnalysisTaskCheckHFMCProd+;
 #pragma link C++ class AliCFVertexingHF+;
 #pragma link C++ class AliCFVertexingHF2Prong+;
 #pragma link C++ class AliCFVertexingHF3Prong+;
