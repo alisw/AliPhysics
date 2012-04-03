@@ -286,8 +286,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fQARefUri(),
   fSpecCDBUri(), 
   fInitCDBCalled(kFALSE),
-  fFromCDBSnapshot(kFALSE),
-  fSnapshotFileName(""),
+  fCDBSnapshotMode(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fQADetectors("ALL"), 
   fQATasks("ALL"), 
@@ -412,8 +411,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fQARefUri(rec.fQARefUri),
   fSpecCDBUri(), 
   fInitCDBCalled(rec.fInitCDBCalled),
-  fFromCDBSnapshot(rec.fFromCDBSnapshot),
-  fSnapshotFileName(rec.fSnapshotFileName),
+  fCDBSnapshotMode(rec.fCDBSnapshotMode),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
   fQADetectors(rec.fQADetectors), 
   fQATasks(rec.fQATasks), 
@@ -586,8 +584,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fQARefUri      = rec.fQARefUri;
   fSpecCDBUri.Delete();
   fInitCDBCalled               = rec.fInitCDBCalled;
-  fFromCDBSnapshot             = rec.fFromCDBSnapshot;
-  fSnapshotFileName            = rec.fSnapshotFileName;
+  fCDBSnapshotMode             = rec.fCDBSnapshotMode;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
   fQADetectors                 = rec.fQADetectors;
   fQATasks                     = rec.fQATasks; 
@@ -781,6 +778,7 @@ void AliReconstruction::InitCDB()
 
 //_____________________________________________________________________________
 void AliReconstruction::SetCDBSnapshotMode(const char* snapshotFileName) {
+    fCDBSnapshotMode = kTRUE;
     AliCDBManager::Instance()->SetSnapshotMode(snapshotFileName);
 }
 
@@ -1497,11 +1495,6 @@ void AliReconstruction::InitRun(const char* input)
     return;
   }
 
-  if(fFromCDBSnapshot){
-      AliDebug(2,"Initializing from a CDB snapshot");
-      if(!AliCDBManager::Instance()->InitFromSnapshot(fSnapshotFileName.Data()))
-	  AliFatal("Was not able to initialize from the snapshot!");
-  }
   // Set CDB lock: from now on it is forbidden to reset the run number
   // or the default storage or to activate any further storage!
   SetCDBLock();
@@ -1571,12 +1564,12 @@ void AliReconstruction::Begin(TTree *)
   AliSysInfo::AddStamp("InitGRP");
   if(!toCDBSnapshot) AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
 
-  if(!fFromCDBSnapshot){
+  if(!fCDBSnapshotMode || toCDBSnapshot){
       if (!LoadCDB()) {
 	  Abort("LoadCDB", TSelector::kAbortProcess);
 	  return;
       }
-      AliSysInfo::AddStamp("LoadCDB");
+      AliSysInfo::AddStamp("LoadCDB"); 
   }
 
   if (!LoadTriggerScalersCDB()) {
@@ -1604,9 +1597,11 @@ void AliReconstruction::Begin(TTree *)
   AliSysInfo::AddStamp("InitRecoParams");
 
   if(toCDBSnapshot)
+  {
       AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data(),kFALSE);
-  AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
-  AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
+      AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
+      AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
+  }
 
   if (fInput && gProof) {
     if (reco) *reco = *this;

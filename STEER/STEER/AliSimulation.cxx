@@ -194,8 +194,6 @@ AliSimulation::AliSimulation(const char* configFileName,
   fRun(-1),
   fSeed(0),
   fInitCDBCalled(kFALSE),
-  fFromCDBSnapshot(kFALSE),
-  fSnapshotFileName(""),
   fInitRunNumberCalled(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fEmbeddingFlag(kFALSE),
@@ -760,8 +758,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   AliSysInfo::AddStamp("RunQA");
 
-  TString snapshotFileOut(""); // we could use fSnapshotFileName if we are not interested 
-  // in reading from and writing to a snapshot file at the same time 
+  TString snapshotFileOut("");
   if(TString(gSystem->Getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE")){ 
       AliInfo(" ******** Creating the snapshot! *********");
       TString snapshotFile(gSystem->Getenv("OCDB_SNAPSHOT_FILENAME")); 
@@ -992,10 +989,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   InitCDB();
   AliSysInfo::AddStamp("RunSimulation_InitCDB");
   InitRunNumber();
-  if(fFromCDBSnapshot){
-      AliDebug(2,Form("Initializing from the CDB snapshot \"%s\"",fSnapshotFileName.Data()));
-      AliCDBManager::Instance()->InitFromSnapshot(fSnapshotFileName.Data());
-  }
 
   SetCDBLock();
   AliSysInfo::AddStamp("RunSimulation_SetCDBLock");

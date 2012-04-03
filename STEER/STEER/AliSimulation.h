@@ -81,9 +81,7 @@ public:
   // CDB storage activation
   void SetDefaultStorage(const char* uri);
   void SetSpecificStorage(const char* calibType, const char* uri);
-  void SetFromCDBSnapshot(const char* snapshotFileName) {fFromCDBSnapshot = kTRUE; fSnapshotFileName=snapshotFileName;}
   void SetCDBSnapshotMode(const char* snapshotFileName) {AliCDBManager::Instance()->SetSnapshotMode(snapshotFileName);}
-  void UnSetFromCDBSnapshot() {fFromCDBSnapshot = kFALSE;}
 
   virtual Bool_t Run(Int_t nEvents = 0);
   virtual Bool_t RunLego(const char *setup="Config.C",Int_t nc1=60,Float_t c1min=2,Float_t c1max=178,
@@ -187,8 +185,6 @@ private:
   Int_t 	   fRun; 		                     //! Run number, will be passed to CDB and gAlice!!
   Int_t 	   fSeed;                        //! Seed for random number generator 
   Bool_t 	   fInitCDBCalled;               //! flag to check if CDB storages are already initialized
-  Bool_t 	 fFromCDBSnapshot;             //! flag to check if we are loading the CDB from a snapshot
-  TString        fSnapshotFileName;	       //! string for the file containing the CDB snapshot
   Bool_t 	   fInitRunNumberCalled;         //! flag to check if run number is already initialized
   Bool_t 	   fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
   
