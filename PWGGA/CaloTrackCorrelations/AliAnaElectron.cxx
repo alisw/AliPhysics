@@ -131,10 +131,6 @@ AliAnaElectron::AliAnaElectron() :
     for(Int_t i = 0; i < 5; i++)
     {
       fhDispEtaDispPhiEBin[index][i] = 0 ;
-      for(Int_t j = 0; j < 6; j++)
-      {
-        fhMCDispEtaDispPhiEBin[index][i][j] = 0;
-      }
     }
   }
   
@@ -413,11 +409,6 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
       fhMCEDispEtaPhiDiff [pidIndex][index]-> Fill(energy,dPhi-dEta);
       if(dEta+dPhi>0)fhMCESphericity     [pidIndex][index]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));  
       
-      if      (energy < 2 ) fhMCDispEtaDispPhiEBin[pidIndex][0][index]->Fill(dEta,dPhi);
-      else if (energy < 4 ) fhMCDispEtaDispPhiEBin[pidIndex][1][index]->Fill(dEta,dPhi);
-      else if (energy < 6 ) fhMCDispEtaDispPhiEBin[pidIndex][2][index]->Fill(dEta,dPhi);
-      else if (energy < 10) fhMCDispEtaDispPhiEBin[pidIndex][3][index]->Fill(dEta,dPhi);
-      else                  fhMCDispEtaDispPhiEBin[pidIndex][4][index]->Fill(dEta,dPhi);
     }
     
     
@@ -756,18 +747,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
             fhMCESphericity[pidIndex][i]->SetXTitle("E (GeV)");
             fhMCESphericity[pidIndex][i]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
             outputContainer->Add(fhMCESphericity[pidIndex][i]);
-            
-            Int_t bin[] = {0,2,4,6,10,1000};
-            for(Int_t ie = 0; ie < 5; ie++)
-            {
-              fhMCDispEtaDispPhiEBin[pidIndex][i][ie] = new TH2F (Form("h%sMCDispEtaDispPhi_EBin%d_MC%s",pidParticle[pidIndex].Data(),ie,pnamess[i].Data()),
-                                                                  Form("cluster from %s : %s like, #sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pnamess[i].Data(),pidParticle[pidIndex].Data(),bin[ie],bin[ie+1]), 
-                                                                  ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
-              fhMCDispEtaDispPhiEBin[pidIndex][i][ie]->SetXTitle("#sigma^{2}_{#eta #eta}");
-              fhMCDispEtaDispPhiEBin[pidIndex][i][ie]->SetYTitle("#sigma^{2}_{#phi #phi}");
-              outputContainer->Add(fhMCDispEtaDispPhiEBin[pidIndex][i][ie]); 
-            }
-            
+                      
           }
           
         }// loop    

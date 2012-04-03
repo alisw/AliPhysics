@@ -197,7 +197,6 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCESumEtaPhi[2][6] ;                 //! shower dispersion in eta vs phi direction from MC particle
   TH2F * fhMCEDispEtaPhiDiff[2][6] ;            //! shower dispersion in eta -phi direction from MC particle
   TH2F * fhMCESphericity[2][6] ;                //! shower sphericity, eta vs phi from MC particle
-  TH2F * fhMCDispEtaDispPhiEBin[2][5][6] ;      //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
 
   TH2F * fhMCElectronELambda0NoOverlap ;        //! E vs Lambda0 from MC electrons, no overlap
   TH2F * fhMCElectronELambda0TwoOverlap ;       //! E vs Lambda0 from MC electrons, 2 particles overlap
