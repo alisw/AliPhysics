@@ -18,6 +18,7 @@
 #include "AliRawDataErrorLog.h"
 #include "AliRawDataHeader.h"
 
+class THashList;
 class TChain;
 class AliRawEventHeaderBase;
 class AliRawVEvent;
@@ -173,6 +174,7 @@ class AliRawReader: public TObject {
     Bool_t           IsRawReaderValid() const { return fIsValid; }
 
     void             LoadTriggerClass(const char* name, Int_t index);
+    void             LoadTriggerAlias(const THashList *lst);
 
     virtual AliRawReader* CloneSingleEvent() const { return NULL; }
 

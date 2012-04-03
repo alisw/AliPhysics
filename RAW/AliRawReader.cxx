@@ -42,6 +42,7 @@
 #include <TInterpreter.h>
 #include <TSystem.h>
 #include <TPRegexp.h>
+#include <THashList.h>
 
 #include <Riostream.h>
 #include "AliRawReader.h"
@@ -431,6 +432,60 @@ void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
     fSelectTriggerExpr.ReplaceAll(name,Form("[%d]",index));
   else
     fSelectTriggerExpr.ReplaceAll(name,"0");
+}
+
+void AliRawReader::LoadTriggerAlias(const THashList *lst)
+{
+  // Loads the list of trigger aliases defined.
+  // Replaces the alias by the OR of the triggers included in it.
+  // The subsiquent call to LoadTriggerClass is needed
+  // to obtain the final expression in
+  // fSelectedTriggerExpr
+
+  if (fSelectTriggerExpr.IsNull()) return;
+
+  // Make a THashList alias -> trigger classes
+
+  THashList alias2trig;
+  TIter iter(lst);
+  TNamed *nmd = 0;
+
+  // Loop on triggers
+
+  while((nmd = dynamic_cast<TNamed*>(iter.Next()))){
+
+    TString aliasList(nmd->GetTitle());
+    TObjArray* arrAliases = aliasList.Tokenize(',');
+    Int_t nAliases = arrAliases->GetEntries();
+
+    // Loop on aliases for the current trigger
+    for(Int_t i=0; i<nAliases; i++){
+
+      TObjString *alias = (TObjString*) arrAliases->At(i);
+
+      // Find the current alias in the hash list. If it is not there, add TNamed entry
+      TNamed * inlist = (TNamed*)alias2trig.FindObject((alias->GetString()).Data());
+      if (!inlist) {
+	inlist = new TNamed((alias->GetString()).Data(),nmd->GetName());
+	alias2trig.Add(inlist);
+      }
+      else {
+	TString tt(inlist->GetTitle());
+	tt += " || ";
+	tt += nmd->GetName();
+	inlist->SetTitle(tt.Data());
+      }
+    }
+    
+    delete arrAliases;
+  }
+  alias2trig.Sort(kSortDescending);
+
+  // Replace all the aliases by the OR of triggers
+  TIter iter1(&alias2trig);
+  while((nmd = dynamic_cast<TNamed*>(iter1.Next()))){
+    fSelectTriggerExpr.ReplaceAll(nmd->GetName(),nmd->GetTitle());
+  }
 }
 
 Bool_t AliRawReader::IsSelected() const

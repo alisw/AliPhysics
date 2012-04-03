@@ -131,6 +131,7 @@
 #include <TMessage.h>
 #include <TUrl.h>
 #include <TRandom.h>
+#include <THashList.h>
 
 #include "AliAlignObj.h"
 #include "AliAnalysisManager.h"
@@ -4009,6 +4010,29 @@ Bool_t AliReconstruction::GetEventInfo()
     return kFALSE;
   }
 
+  // Load trigger aliases and declare the trigger classes included in aliases
+  AliCDBEntry * entry = AliCDBManager::Instance()->Get("GRP/CTP/Aliases");
+  if (entry) {
+    THashList * lst = dynamic_cast<THashList*>(entry->GetObject());
+    lst->Sort(kSortDescending); // to avoid problems with substrungs
+    if (lst) {
+      if (fRawReader) fRawReader->LoadTriggerAlias(lst);
+      // Now declare all the triggers present in the aliases
+      TIter iter(lst);
+      TNamed *nmd = 0;
+      while((nmd = dynamic_cast<TNamed*>(iter.Next()))){
+	fDeclTriggerClasses += " ";
+	fDeclTriggerClasses += nmd->GetName();
+      }
+    }
+    else {
+      AliError("Cannot cast the object with trigger aliases to THashList!");
+    }
+  }
+  else {
+    AliError("No OCDB ebtry for the trigger aliases!");
+  }
+  // Load trigger classes for this run
   UChar_t clustmask = 0;
   TString trclasses;
   ULong64_t trmask = fEventInfo.GetTriggerMask();
