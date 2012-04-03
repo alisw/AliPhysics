@@ -583,12 +583,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
     //       en,GetMinEnergy(), GetMaxEnergy(), nc, fMinNCells, bd, fMinBadDist);
     
-   
     Int_t    nMax = 0;
-    Double_t mass = 0;
-    Double_t angle= 0;
+    Double_t mass = 0., angle = 0.;
+    Double_t e1   = 0., e2    = 0.;
     Int_t pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(cluster,cells,GetCaloUtils(),
-                                                                               GetVertex(0), nMax, mass, angle);
+                                                                               GetVertex(0), nMax, mass, angle,e1,e2);
                                                                     
     if (nMax <= 0) 
     {

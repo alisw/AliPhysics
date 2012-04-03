@@ -371,7 +371,8 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
                                                                 AliCalorimeterUtils * caloutils,
                                                                 Double_t   vertex[3],
                                                                 Int_t    & nMax,
-                                                                Double_t & mass, Double_t & angle) 
+                                                                Double_t & mass, Double_t & angle,
+                                                                Double_t & e1  , Double_t & e2    ) 
 {
   // Split the cluster in 2, do invariant mass, get the mass and decide 
   // if this is a photon, pi0, eta, ...
@@ -475,7 +476,9 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   
   mass  = (cellMom1+cellMom2).M();
   angle = cellMom2.Angle(cellMom1.Vect());
-
+  e1    = cluster1.E();
+  e2    = cluster2.E();
+  
   if     (mass < fMassPhoMax && mass > fMassPhoMin) return kPhoton;
   else if(mass < fMassPi0Max && mass > fMassPi0Min) return kPi0;
   else if(mass < fMassEtaMax && mass > fMassEtaMin) return kEta;

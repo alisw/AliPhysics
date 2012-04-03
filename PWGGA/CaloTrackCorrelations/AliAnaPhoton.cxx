@@ -130,6 +130,9 @@ AliAnaPhoton::AliAnaPhoton() :
     fhMCEDispersion [i]                  = 0;
     fhMCNCellsE     [i]                  = 0; 
     fhMCMaxCellDiffClusterE[i]           = 0; 
+    fhLambda0DispEta[i]                  = 0;
+    fhLambda0DispPhi[i]                  = 0;
+
     fhMCLambda0vsClusterMaxCellDiffE0[i] = 0;
     fhMCLambda0vsClusterMaxCellDiffE2[i] = 0;
     fhMCLambda0vsClusterMaxCellDiffE6[i] = 0;
@@ -147,9 +150,13 @@ AliAnaPhoton::AliAnaPhoton() :
    for(Int_t i = 0; i < 5; i++) 
    {
      fhClusterCuts[i]        = 0;
-     fhDispEtaDispPhiEBin[i] = 0;
+     fhDispEtaDispPhi[i] = 0;
      for(Int_t j = 0; j < 6; j++)
-       fhMCDispEtaDispPhiEBin[i][j] = 0;
+     {
+       fhMCDispEtaDispPhi[i][j] = 0;
+       fhMCLambda0DispEta    [i][j] = 0;
+       fhMCLambda0DispPhi    [i][j] = 0;
+     }
    }
   
    // Track matching residuals
@@ -625,12 +632,17 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
     if(dEta+sEta>0)fhDispSumEtaDiffE -> Fill(energy,(dEta-sEta)/((dEta+sEta)/2.));
     if(dPhi+sPhi>0)fhDispSumPhiDiffE -> Fill(energy,(dPhi-sPhi)/((dPhi+sPhi)/2.));  
     
-    if      (energy < 2 ) fhDispEtaDispPhiEBin[0]->Fill(dEta,dPhi);
-    else if (energy < 4 ) fhDispEtaDispPhiEBin[1]->Fill(dEta,dPhi);
-    else if (energy < 6 ) fhDispEtaDispPhiEBin[2]->Fill(dEta,dPhi);
-    else if (energy < 10) fhDispEtaDispPhiEBin[3]->Fill(dEta,dPhi);
-    else                  fhDispEtaDispPhiEBin[4]->Fill(dEta,dPhi);
-
+    Int_t ebin = -1;
+    if      (energy < 2 ) ebin = 0;
+    else if (energy < 4 ) ebin = 1;
+    else if (energy < 6 ) ebin = 2;
+    else if (energy < 10) ebin = 3;
+    else                  ebin = 4;  
+    
+    fhDispEtaDispPhi[ebin]->Fill(dEta   ,dPhi);
+    fhLambda0DispEta[ebin]->Fill(lambda0,dEta);
+    fhLambda0DispPhi[ebin]->Fill(lambda0,dPhi);
+    
   }
   
   // if track-matching was of, check effect of track-matching residual cut 
@@ -861,14 +873,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
       fhMCEDispPhi        [mcIndex]-> Fill(energy,dPhi);
       fhMCESumEtaPhi      [mcIndex]-> Fill(energy,sEtaPhi);
       fhMCEDispEtaPhiDiff [mcIndex]-> Fill(energy,dPhi-dEta);
-      if(dEta+dPhi>0)fhMCESphericity     [mcIndex]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));  
+      if(dEta+dPhi>0)fhMCESphericity[mcIndex]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));  
       
-      if      (energy < 2 ) fhDispEtaDispPhiEBin[0]->Fill(dEta,dPhi);
-      else if (energy < 4 ) fhDispEtaDispPhiEBin[1]->Fill(dEta,dPhi);
-      else if (energy < 6 ) fhDispEtaDispPhiEBin[2]->Fill(dEta,dPhi);
-      else if (energy < 10) fhDispEtaDispPhiEBin[3]->Fill(dEta,dPhi);
-      else                  fhDispEtaDispPhiEBin[4]->Fill(dEta,dPhi);
+      Int_t ebin = -1;
+      if      (energy < 2 ) ebin = 0;
+      else if (energy < 4 ) ebin = 1;
+      else if (energy < 6 ) ebin = 2;
+      else if (energy < 10) ebin = 3;
+      else                  ebin = 4;  
       
+      fhMCDispEtaDispPhi[ebin][mcIndex]->Fill(dEta   ,dPhi);
+      fhMCLambda0DispEta[ebin][mcIndex]->Fill(lambda0,dEta);
+      fhMCLambda0DispPhi[ebin][mcIndex]->Fill(lambda0,dPhi);      
     }
     
   }//MC data
@@ -1327,11 +1343,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       Int_t bin[] = {0,2,4,6,10,1000};
       for(Int_t i = 0; i < 5; i++)
       {
-        fhDispEtaDispPhiEBin[i] = new TH2F (Form("hDispEtaDispPhi_EBin%d",i),Form("#sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",bin[i],bin[i+1]), 
+        fhDispEtaDispPhi[i] = new TH2F (Form("hDispEtaDispPhi_EBin%d",i),Form("#sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",bin[i],bin[i+1]), 
                                             ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
-        fhDispEtaDispPhiEBin[i]->SetXTitle("#sigma^{2}_{#eta #eta}");
-        fhDispEtaDispPhiEBin[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
-        outputContainer->Add(fhDispEtaDispPhiEBin[i]); 
+        fhDispEtaDispPhi[i]->SetXTitle("#sigma^{2}_{#eta #eta}");
+        fhDispEtaDispPhi[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+        outputContainer->Add(fhDispEtaDispPhi[i]); 
+        
+        fhLambda0DispEta[i] = new TH2F (Form("hLambda0DispEta_EBin%d",i),Form("#lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",bin[i],bin[i+1]), 
+                                        ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+        fhLambda0DispEta[i]->SetXTitle("#lambda^{2}_{0}");
+        fhLambda0DispEta[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+        outputContainer->Add(fhLambda0DispEta[i]);       
+        
+        fhLambda0DispPhi[i] = new TH2F (Form("hLambda0DispPhi_EBin%d",i),Form("#lambda^{2}_{0}} vs #sigma^{2}_{#phi #phi} for %d < E < %d GeV",bin[i],bin[i+1]), 
+                                        ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+        fhLambda0DispPhi[i]->SetXTitle("#lambda^{2}_{0}");
+        fhLambda0DispPhi[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+        outputContainer->Add(fhLambda0DispPhi[i]);         
       }
     }
   } // Shower shape
@@ -1865,12 +1893,26 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           Int_t bin[] = {0,2,4,6,10,1000};
           for(Int_t ie = 0; ie < 5; ie++)
           {
-            fhMCDispEtaDispPhiEBin[ie][i] = new TH2F (Form("hMCDispEtaDispPhi_EBin%d_MC%s",ie,pnamess[i].Data()),
+            fhMCDispEtaDispPhi[ie][i] = new TH2F (Form("hMCDispEtaDispPhi_EBin%d_MC%s",ie,pnamess[i].Data()),
                                                       Form("cluster from %s : #sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]), 
                                                       ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
-            fhMCDispEtaDispPhiEBin[ie][i]->SetXTitle("#sigma^{2}_{#eta #eta}");
-            fhMCDispEtaDispPhiEBin[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
-            outputContainer->Add(fhMCDispEtaDispPhiEBin[ie][i]); 
+            fhMCDispEtaDispPhi[ie][i]->SetXTitle("#sigma^{2}_{#eta #eta}");
+            fhMCDispEtaDispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+            outputContainer->Add(fhMCDispEtaDispPhi[ie][i]); 
+            
+            fhMCLambda0DispEta[ie][i] = new TH2F (Form("hMCLambda0DispEta_EBin%d_MC%s",ie,pname[i].Data()),
+                                                  Form("cluster from %s : #lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
+                                                  ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+            fhMCLambda0DispEta[ie][i]->SetXTitle("#lambda^{2}_{0}");
+            fhMCLambda0DispEta[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+            outputContainer->Add(fhMCLambda0DispEta[ie][i]);       
+            
+            fhMCLambda0DispPhi[ie][i] = new TH2F (Form("hMCLambda0DispPhi_EBin%d_MC%s",ie,pname[i].Data()),
+                                                  Form("cluster from %s :#lambda^{2}_{0} vs #sigma^{2}_{#phi #phi} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
+                                                  ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+            fhMCLambda0DispPhi[ie][i]->SetXTitle("#lambda^{2}_{0}");
+            fhMCLambda0DispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+            outputContainer->Add(fhMCLambda0DispPhi[ie][i]); 
           }
           
         }
