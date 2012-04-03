@@ -45,6 +45,9 @@ AliJTrack::AliJTrack() :
   for( int i=0;i<kNAliJTrkPID;i++ ) SetPID( AliJTrkPID(i), 0, kTPC);
   for( int i=0;i<kNAliJTrkPID;i++ ) SetPID( AliJTrkPID(i), 0, kTPCTOF);
   for( int i=0;i<kNAliJTrkPID;i++) fExpTOFbeta[i]= 0;
+  for( int i=0;i<kNAliJTrkPID;i++) fExpTPCdEdx[i]= 0;
+  for( int i=0;i<kNAliJTrkPID;i++) fTPCsigma[i]= 0;
+  for( int i=0;i<kNAliJTrkPID;i++) fTOFsigma[i]= 0;
   for( int i=0;i<3;i++) fTPCTrack[i] = 0;
 
 }
@@ -62,6 +65,9 @@ AliJTrack::AliJTrack(const AliJTrack& a):
   for(Int_t i=0;i<kNAliJTrkPID;i++) fTrkPID[i][kTPC] = a.fTrkPID[i][kTPC];
   for(Int_t i=0;i<kNAliJTrkPID;i++) fTrkPID[i][kTPCTOF] = a.fTrkPID[i][kTPCTOF];
   for(Int_t i=0;i<kNAliJTrkPID;i++) fExpTOFbeta[i]= a.fExpTOFbeta[i];
+  for( int i=0;i<kNAliJTrkPID;i++) fExpTPCdEdx[i]= a.fExpTPCdEdx[i];
+  for( int i=0;i<kNAliJTrkPID;i++) fTPCsigma[i]= a.fTPCsigma[i];
+  for( int i=0;i<kNAliJTrkPID;i++) fTOFsigma[i]= a.fTOFsigma[i];
   for( int i=0;i<3;i++) fTPCTrack[i] = a.fTPCTrack[i];
 }
 
@@ -76,6 +82,9 @@ AliJTrack&  AliJTrack::operator=(const AliJTrack& trk){
       fTrkPID[i][kTPC] = trk.fTrkPID[i][kTPC];
       fTrkPID[i][kTPCTOF] = trk.fTrkPID[i][kTPCTOF];
       fExpTOFbeta[i]= trk.fExpTOFbeta[i];
+      fExpTPCdEdx[i] = trk.fExpTPCdEdx[i];
+      fTPCsigma[i]  = trk.fTPCsigma[i];
+      fTOFsigma[i]  = trk.fTOFsigma[i];
     }
     for( int i=0;i<3;i++) fTPCTrack[i] = trk.fTPCTrack[i];
     fFilterMap  = trk.fFilterMap;

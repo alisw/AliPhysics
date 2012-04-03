@@ -87,7 +87,7 @@ AliJPhoton& AliJPhoton::operator=(const AliJPhoton& photon){
     fProbPhot = photon.fProbPhot;
     fTrackDx  = photon.fTrackDx;
     fTrackDz  = photon.fTrackDz;
-     fCaloType = photon.fCaloType;
+    fCaloType = photon.fCaloType;
     for(Int_t i=0; i<kUnknownAli+1; i++){
       fCaloPID[i] = photon.fCaloPID[i];
     }
@@ -98,8 +98,8 @@ AliJPhoton& AliJPhoton::operator=(const AliJPhoton& photon){
     fEmcCpvDist    = photon.fEmcCpvDist;
     fNCells        = photon.fNCells;
     fSuperModuleId =  photon.fSuperModuleId;
-    fCellsAbsId    = photon.fCellsAbsId;
-    fCellsAmpFraction = photon.fCellsAmpFraction;
+    SetCellsAbsId( photon.fCellsAbsId );
+    SetCellsAmplitudeFraction( photon.fCellsAmpFraction );
 
   }
 

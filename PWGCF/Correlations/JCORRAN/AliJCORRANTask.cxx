@@ -337,6 +337,7 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
     //FOR ESD
     if(fInputFormat=="ESD"){
       AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+      if(!esd) return;
       if(esd->GetCurrentL3() >0) l3MgFieldPolarity =  1;
       if(esd->GetCurrentL3() <0) l3MgFieldPolarity = -1;
       fAliRunHeader->SetL3Field(l3MgFieldPolarity, esd->GetMagneticField());
@@ -354,6 +355,7 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
   if(fInputFormat=="ESD"){   //Reading ESD  
     if(fDebug > 5) cout << "\t------- Start ESD "<<endl;
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+    if(!esd) return;
     ReadESDHeader(esd);
     ReadESDTracks(esd);
     //ReadESDCaloClusters(esd);
@@ -361,6 +363,7 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
   }else if( fInputFormat == "AOD") {
     if(fDebug > 5) cout << "\t------- Start AOD "<<endl;
     AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
+    if(!aod) return;
     ReadAODHeader(aod);
     ReadAODTracks(aod);
     //ReadAODCaloClusters(aod);
@@ -706,6 +709,7 @@ AliJEventHeader* AliJCORRANTask::ReadCommonHeader(AliVEvent *event){
 void AliJCORRANTask::ReadESDHeader(AliESDEvent *esd)
 {
   // Read the AliESDEvent and fill the list of AliJEventHeader containers
+  if(!esd) return;
   AliESDUtils::RefitESDVertexTracks( esd ); // TODO only for LHC11a right?
   AliJEventHeader *hdr = ReadCommonHeader( esd );
   //create a header and fill it
