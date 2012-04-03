@@ -1828,7 +1828,7 @@ void AliReconstruction::SlaveBegin(TTree*)
     }
     // Set the event and other data pointers
     fRecoHandler = new AliRecoInputHandler();
-    fRecoHandler->Init(ftree, "LOCAL");
+//    fRecoHandler->Init(ftree, "LOCAL");
     fRecoHandler->SetEvent(fesd);
     fRecoHandler->SetESDfriend(fesdf);
     fRecoHandler->SetHLTEvent(fhltesd);
@@ -1837,6 +1837,7 @@ void AliReconstruction::SlaveBegin(TTree*)
     // Enter external loop mode
     fAnalysis->SetExternalLoop(kTRUE);
     // Initialize analysis
+    fAnalysis->SlaveBegin(ftree);
     fAnalysis->StartAnalysis("local", (TTree*)0);
     // Connect ESD tree with the input container
     fAnalysis->GetCommonInputContainer()->SetData(ftree);
