@@ -234,8 +234,13 @@ public:
   /** init the reconstructor */
   void Init(const char* options);
 
+  /// temporary solution until https://savannah.cern.ch/bugs/?93309 is solved
+  /// function qualifier to be changed in base class
+  virtual void Terminate() const {
+    const_cast<AliHLTReconstructor*>(this)->Terminate();
+  }
   /// overloaded from AliReconstructor: terminate event processing
-  virtual void Terminate() const;
+  virtual void Terminate();
   /// overloaded from AliReconstructor: finish current event
   virtual void FinishEvent();
 

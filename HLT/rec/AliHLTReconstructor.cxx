@@ -203,7 +203,7 @@ void AliHLTReconstructor::Init()
   AliHLTMisc::Instance().InitStreamerInfos(fgkCalibStreamerInfoEntry);
 }
 
-void AliHLTReconstructor::Terminate() const
+void AliHLTReconstructor::Terminate()
 {
   /// overloaded from AliReconstructor: terminate event processing
 
