@@ -1758,13 +1758,16 @@ AliTRDtrapConfig* AliTRDcalibDB::GetTrapConfig()
   if (fTrapConfig)
     return fTrapConfig;
   else {
-    // query the configuration to be used
-    TString configName;
-    this->GetGlobalConfiguration(configName);
-    TString configVersion;
-    this->GetGlobalConfigurationVersion(configVersion);
+    if ((fTrapConfigName.Length() <= 0) || (fTrapConfigVersion.Length() <= 0)) {
+      // query the configuration to be used
+      TString configName;
+      this->GetGlobalConfiguration(configName);
+      TString configVersion;
+      this->GetGlobalConfigurationVersion(configVersion);
+    }
 
-    this->LoadTrapConfig(configName, configVersion);
+    // try to load the requested configuration
+    this->LoadTrapConfig(fTrapConfigName, fTrapConfigVersion);
 
     // if we still don't have a valid TRAPconfig, create a default one
     if (!fTrapConfig) {

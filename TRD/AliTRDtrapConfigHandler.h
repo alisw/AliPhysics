@@ -76,26 +76,6 @@ class AliTRDtrapConfigHandler : public TObject {
   AliTRDtrapConfig *fTrapConfig;           // pointer to TRAP config in use
   AliTRDCalOnlineGainTable fGtbl;          // gain table
 
-  // to be moved to AliTRDcalibDB:
-public:
-  static AliTRDtrapConfig* GetTrapConfig() {
-    if (fgActiveTrapConfig) {
-      printf("returning existing TRAP config\n");
-      return fgActiveTrapConfig;
-    }
-    else {
-      printf("creating new TRAP config\n");
-      fgActiveTrapConfig = new AliTRDtrapConfig();
-      AliTRDtrapConfigHandler cfgHandler(fgActiveTrapConfig);
-      cfgHandler.Init();
-      cfgHandler.LoadConfig();
-      return fgActiveTrapConfig;
-    }
-  }
-  // static void SetTrapConfig(AliTRDtrapConfig *trapcfg) { fgActiveTrapConfig = trapcfg; }
-protected:
-  static AliTRDtrapConfig* fgActiveTrapConfig;
-
   ClassDef(AliTRDtrapConfigHandler,0)
 };
 

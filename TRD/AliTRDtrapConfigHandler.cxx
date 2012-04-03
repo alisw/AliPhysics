@@ -45,8 +45,6 @@
 
 using namespace std;
 
-AliTRDtrapConfig* AliTRDtrapConfigHandler::fgActiveTrapConfig = 0x0;
-
 AliTRDtrapConfigHandler::AliTRDtrapConfigHandler(AliTRDtrapConfig *cfg) :
      ltuParam()
      , fRestrictiveMask((0x3ffff << 11) | (0x1f << 6) | 0x3f)

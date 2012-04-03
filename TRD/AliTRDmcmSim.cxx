@@ -42,7 +42,7 @@
 #include "AliLoader.h"
 
 #include "AliTRDfeeParam.h"
-#include "AliTRDtrapConfigHandler.h"
+#include "AliTRDcalibDB.h"
 #include "AliTRDtrapConfig.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDarrayADC.h"
@@ -137,7 +137,7 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
 
   if (!fInitialized) {
     fFeeParam      = AliTRDfeeParam::Instance();
-    fTrapConfig    = AliTRDtrapConfigHandler::GetTrapConfig();
+    fTrapConfig    = AliTRDcalibDB::Instance()->GetTrapConfig();
   }
 
   fDetector      = det;
