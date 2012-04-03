@@ -25,7 +25,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
- EMCALJetTasks/AliEsdJetTask.cxx
+ EMCALJetTasks/AliEmcalJetTask.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

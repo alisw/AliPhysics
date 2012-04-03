@@ -34,11 +34,11 @@ set ( SRCS
  EMCALTasks/AliEmcalClusTrackMatcherTask.cxx
  EMCALTasks/AliEmcalCompatTask.cxx
  EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
+ EMCALTasks/AliEmcalJet.cxx
  EMCALTasks/AliEmcalPhysicsSelection.cxx
  EMCALTasks/AliEmcalPhysicsSelectionTask.cxx
  EMCALTasks/AliEmcalSetupTask.cxx
  EMCALTasks/AliEmcalTrackPropagatorTask.cxx
- EMCALTasks/AliESDJet.cxx
  EMCALTasks/AliEsdSkimTask.cxx
  EMCALTasks/AliEsdTrackExt.cxx
  EMCALTasks/AliPicoTrack.cxx

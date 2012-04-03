@@ -1,6 +1,6 @@
 // $Id$
 
-#include "AliEsdJetTask.h"
+#include "AliEmcalJetTask.h"
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
@@ -11,21 +11,23 @@
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliESDCaloCluster.h"
-#include "AliESDJet.h"
 #include "AliESDtrack.h"
+#include "AliEmcalJet.h"
 #include "AliFJWrapper.h"
 
-ClassImp(AliEsdJetTask)
+ClassImp(AliEmcalJetTask)
 
 //________________________________________________________________________
-AliEsdJetTask::AliEsdJetTask() : 
-  AliAnalysisTaskSE("AliEsdJetTask"),
+AliEmcalJetTask::AliEmcalJetTask() : 
+  AliAnalysisTaskSE("AliEmcalJetTask"),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
   fAlgo(1),
   fRadius(0.4),
   fType(0),
+  fMinJetTrackPt(0.15),
+  fMinJetClusPt(0.15),
   fJets(0)
 {
   // Default constructor.
@@ -34,8 +36,8 @@ AliEsdJetTask::AliEsdJetTask() :
 }
 
 //________________________________________________________________________
-AliEsdJetTask::AliEsdJetTask(const char *name) : 
-  AliAnalysisTaskSE("AliEsdJetTask"),
+AliEmcalJetTask::AliEmcalJetTask(const char *name) : 
+  AliAnalysisTaskSE("AliEmcalJetTask"),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
@@ -43,6 +45,7 @@ AliEsdJetTask::AliEsdJetTask(const char *name) :
   fRadius(0.4),
   fType(0),
   fMinJetTrackPt(0.15),
+  fMinJetClusPt(0.15),
   fJets(0)
 {
   // Standard constructor.
@@ -58,22 +61,22 @@ AliEsdJetTask::AliEsdJetTask(const char *name) :
 }
 
 //________________________________________________________________________
-AliEsdJetTask::~AliEsdJetTask()
+AliEmcalJetTask::~AliEmcalJetTask()
 {
   // Destructor
 }
 
 //________________________________________________________________________
-void AliEsdJetTask::UserCreateOutputObjects()
+void AliEmcalJetTask::UserCreateOutputObjects()
 {
   // Create user objects.
 
-  fJets = new TClonesArray("AliESDJet");
+  fJets = new TClonesArray("AliEmcalJet");
   fJets->SetName(fJetsName);
 }
 
 //________________________________________________________________________
-void AliEsdJetTask::UserExec(Option_t *) 
+void AliEmcalJetTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
   // Add jets to event if not yet there
@@ -114,13 +117,13 @@ void AliEsdJetTask::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliEsdJetTask::Terminate(Option_t *) 
+void AliEmcalJetTask::Terminate(Option_t *) 
 {
   // Called once at the end of the analysis.
 }
 
 //________________________________________________________________________
-void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t cent)
+void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t /*cent*/)
 {
   // Find jets.
 
@@ -143,7 +146,8 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
       AliVTrack *t = static_cast<AliVTrack*>(tracks->At(iTracks));
       if (!t)
         continue;
-      if(t->Pt()<fMinJetTrackPt) continue;
+      if (t->Pt()<fMinJetTrackPt) 
+        continue;
       fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks);
     }
   }
@@ -152,21 +156,15 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
     Double_t vertex[3] = {0, 0, 0};
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     const Int_t Nclus = clus->GetEntries();
-    for (Int_t iClus = 0, iN = 0, clusCount=0; iClus < Nclus; ++iClus) {
+    for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
       AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
       if (!c->IsEMCAL())
         continue;
       TLorentzVector nPart;
       c->GetMomentum(nPart, vertex);
       Double_t energy = nPart.P();
-      if(energy<fMinJetTrackPt) continue;
-
-      Int_t imin = static_cast<Int_t>(c->GetEmcCpvDistance());
-      if (imin>=0) {
-	Double_t dPhiMin = c->GetTrackDx();
-	Double_t dEtaMin = c->GetTrackDz();
-      }
-    
+      if (energy<fMinJetClusPt) 
+        continue;
       fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), energy, -iClus-1);
     }
   }
@@ -178,8 +176,8 @@ void AliEsdJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Dou
   for(UInt_t ij=0, jetCount=0; ij<jets_incl.size(); ++ij) {
     if (jets_incl[ij].perp()<1) 
       continue;
-    AliESDJet *jet = new ((*fJets)[jetCount]) 
-      AliESDJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
+    AliEmcalJet *jet = new ((*fJets)[jetCount]) 
+      AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
     jet->SetArea(fjw.GetJetArea(ij));
     Double_t vertex[3] = {0, 0, 0};
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);

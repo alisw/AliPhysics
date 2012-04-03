@@ -1,5 +1,5 @@
-#ifndef AliESDJet_H
-#define AliESDJet_H
+#ifndef AliEmcalJet_H
+#define AliEmcalJet_H
 
 // $Id$
 
@@ -7,15 +7,15 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 
-class AliESDJet : public AliVParticle
+class AliEmcalJet : public AliVParticle
 {
  public:
-  AliESDJet() : AliVParticle(), fPt(0), fEta(0), fPhi(0), fM(0), fNEF(0), fArea(0), 
+  AliEmcalJet() : AliVParticle(), fPt(0), fEta(0), fPhi(0), fM(0), fNEF(0), fArea(0), 
                 fNch(0), fNn(0), fMaxCPt(0), fMaxNPt(0) {;}
-  AliESDJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
-  AliESDJet(Double_t px, Double_t py, Double_t pz);
-  AliESDJet(const AliESDJet &jet); 
-  AliESDJet& operator=(const AliESDJet &jet);
+  AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
+  AliEmcalJet(Double_t px, Double_t py, Double_t pz);
+  AliEmcalJet(const AliEmcalJet &jet); 
+  AliEmcalJet& operator=(const AliEmcalJet &jet);
 
   Double_t    Px()                         const { return fPt*TMath::Cos(fPhi);  }
   Double_t    Py()                         const { return fPt*TMath::Cos(fPhi);  }
@@ -64,6 +64,6 @@ class AliESDJet : public AliVParticle
   Double32_t  fMaxCPt;       //[0,0,12]   pt of maximum track
   Double32_t  fMaxNPt;       //[0,0,12]   pt of maximum cluster
 
-  ClassDef(AliESDJet,1) // ESD jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,1) // ESD jet class in cylindrical coordinates
 };
 #endif

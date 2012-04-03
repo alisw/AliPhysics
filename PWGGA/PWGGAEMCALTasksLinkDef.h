@@ -10,10 +10,10 @@
 #pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
 #pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
 #pragma link C++ class AliAnalysisTaskESDfilterEMCALEventSelect+;
-#pragma link C++ class AliESDJet+;
 #pragma link C++ class AliEmcalClusTrackMatcherTask+;
 #pragma link C++ class AliEmcalCompatTask+;
 #pragma link C++ class AliEmcalEsdTpcTrackTask+;
+#pragma link C++ class AliEmcalJet+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
 #pragma link C++ class AliEmcalPhysicsSelectionTask+;
 #pragma link C++ class AliEmcalSetupTask+;
