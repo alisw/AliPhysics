@@ -17,16 +17,16 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   // macro to run TPC calibration train 
   //
   AliLog::SetGlobalLogLevel(AliLog::kError); 
-  gROOT->Macro("LoadLibraries.C");
-  gROOT->LoadMacro("ConfigCalibTrain.C");
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C");
 
   // detector tasks
-  gROOT->LoadMacro("AddTaskTPCCalib.C");
-  gROOT->LoadMacro("AddTaskTRDCalib.C");
-  gROOT->LoadMacro("AddTOFAnalysisTaskCalibPass0.C");
-  gROOT->LoadMacro("AddTaskT0Calib.C");
-  gROOT->LoadMacro("AddTaskMeanVertexCalib.C");
-  gROOT->LoadMacro("AddTaskSDDCalib.C"); 
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTRDCalib.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskT0Calib.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskMeanVertexCalib.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskSDDCalib.C"); 
 
   // switch off debug 
   AliLog::SetClassDebugLevel("AliESDEvent",0);

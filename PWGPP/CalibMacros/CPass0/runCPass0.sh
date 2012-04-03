@@ -64,5 +64,5 @@ aliroot -l -b -q recCPass0.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | 
 mv syswatch.log syswatch_rec.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
-aliroot -l -b -q  runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
+aliroot -l -b -q runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log

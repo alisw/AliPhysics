@@ -19,9 +19,7 @@ Arguments = "$1 $2 $3";
 
 Workdirectorysize={"6000MB"}; 
 
-InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass0/MergeCalibration/ConfigCalibTrain.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/MergeCalibration/LoadLibraries.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/MergeCalibration/makeOCDB.C",
+InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass0/MergeCalibration/makeOCDB.C",
            "LF:/alice/cern.ch/user/j/jotwinow/CPass0/MergeCalibration/merge.C"
 };
 

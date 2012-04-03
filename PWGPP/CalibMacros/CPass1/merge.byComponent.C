@@ -4,7 +4,7 @@ void merge(TString component, const Char_t *inputstring)
 {
 
   /* load libs */
-  gROOT->Macro("LoadLibraries.C");
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   TH1::AddDirectory(0);
 
   /* copy only */
