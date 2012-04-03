@@ -305,11 +305,11 @@ public:
   Bool_t RemoveTrack(Int_t i)  const;
 
   const AliESDVertex *GetPileupVertexSPD(Int_t i) const {
-    return (const AliESDVertex *)(fSPDPileupVertices?fSPDPileupVertices->UncheckedAt(i):0x0);
+    return (const AliESDVertex *)(fSPDPileupVertices?fSPDPileupVertices->At(i):0x0);
   }
   Char_t  AddPileupVertexSPD(const AliESDVertex *vtx);
   const AliESDVertex *GetPileupVertexTracks(Int_t i) const {
-    return (const AliESDVertex *)(fTrkPileupVertices?fTrkPileupVertices->UncheckedAt(i):0x0);
+    return (const AliESDVertex *)(fTrkPileupVertices?fTrkPileupVertices->At(i):0x0);
   }
   Char_t  AddPileupVertexTracks(const AliESDVertex *vtx);
   TClonesArray* GetPileupVerticesTracks() const {return (TClonesArray*)fTrkPileupVertices;}
@@ -325,8 +325,8 @@ public:
 
   AliESDtrack *GetTrack(Int_t i) const {
     if (!fTracks) return 0;
-    AliESDtrack* track = (AliESDtrack*) fTracks->UncheckedAt(i);
-    track->SetESDEvent(this);
+    AliESDtrack* track = (AliESDtrack*) fTracks->At(i);
+    if (track) track->SetESDEvent(this);
     return track;
   }
   Int_t  AddTrack(const AliESDtrack *t);
@@ -335,7 +335,7 @@ public:
   AliESDtrack* NewTrack();
   
   AliESDHLTtrack *GetHLTConfMapTrack(Int_t /*i*/) const {
-    //    return (AliESDHLTtrack *)fHLTConfMapTracks->UncheckedAt(i);
+    //    return (AliESDHLTtrack *)fHLTConfMapTracks->At(i);
     return 0;
   }
   void AddHLTConfMapTrack(const AliESDHLTtrack */*t*/) {
@@ -346,7 +346,7 @@ public:
   
 
   AliESDHLTtrack *GetHLTHoughTrack(Int_t /*i*/) const {
-    //    return (AliESDHLTtrack *)fHLTHoughTracks->UncheckedAt(i);
+    //    return (AliESDHLTtrack *)fHLTHoughTracks->At(i);
     return 0;
   }
   void AddHLTHoughTrack(const AliESDHLTtrack */*t*/) {
@@ -369,14 +369,14 @@ public:
   AliESDMuonPad* NewMuonPad();
   
   AliESDPmdTrack *GetPmdTrack(Int_t i) const {
-    return (AliESDPmdTrack *)(fPmdTracks?fPmdTracks->UncheckedAt(i):0x0);
+    return (AliESDPmdTrack *)(fPmdTracks?fPmdTracks->At(i):0x0);
   }
 
   void AddPmdTrack(const AliESDPmdTrack *t);
 
 
   AliESDTrdTrack *GetTrdTrack(Int_t i) const {
-    return (AliESDTrdTrack *)(fTrdTracks?fTrdTracks->UncheckedAt(i):0x0);
+    return (AliESDTrdTrack *)(fTrdTracks?fTrdTracks->At(i):0x0);
   }
 
   
@@ -389,29 +389,29 @@ public:
   void AddTrdTrack(const AliESDTrdTrack *t);
 
   AliESDTrdTracklet* GetTrdTracklet(Int_t idx) const {
-    return (AliESDTrdTracklet*)(fTrdTracklets?fTrdTracklets->UncheckedAt(idx):0x0);
+    return (AliESDTrdTracklet*)(fTrdTracklets?fTrdTracklets->At(idx):0x0);
   }
 
   void AddTrdTracklet(const AliESDTrdTracklet *trkl);
 
   AliESDv0 *GetV0(Int_t i) const {
-    return (AliESDv0*)(fV0s?fV0s->UncheckedAt(i):0x0);
+    return (AliESDv0*)(fV0s?fV0s->At(i):0x0);
   }
   Int_t AddV0(const AliESDv0 *v);
 
   AliESDcascade *GetCascade(Int_t i) const {
-    return (AliESDcascade *)(fCascades?fCascades->UncheckedAt(i):0x0);
+    return (AliESDcascade *)(fCascades?fCascades->At(i):0x0);
   }
 
   void AddCascade(const AliESDcascade *c);
 
   AliESDkink *GetKink(Int_t i) const {
-    return (AliESDkink *)(fKinks?fKinks->UncheckedAt(i):0x0);
+    return (AliESDkink *)(fKinks?fKinks->At(i):0x0);
   }
   Int_t AddKink(const AliESDkink *c);
 
   AliESDCaloCluster *GetCaloCluster(Int_t i) const {
-    return (AliESDCaloCluster *)(fCaloClusters?fCaloClusters->UncheckedAt(i):0x0);
+    return (AliESDCaloCluster *)(fCaloClusters?fCaloClusters->At(i):0x0);
   }
 
   Int_t AddCaloCluster(const AliESDCaloCluster *c);
@@ -427,14 +427,14 @@ public:
   }
 
   AliESDCosmicTrack *GetCosmicTrack(Int_t i) const {
-    return fCosmicTracks ? (AliESDCosmicTrack*) fCosmicTracks->UncheckedAt(i) : 0;
+    return fCosmicTracks ? (AliESDCosmicTrack*) fCosmicTracks->At(i) : 0;
   }
   const TClonesArray * GetCosmicTracks() const{ return fCosmicTracks;}
 
   void  AddCosmicTrack(const AliESDCosmicTrack *t);
 	
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
-    return (AliRawDataErrorLog *)(fErrorLogs?fErrorLogs->UncheckedAt(i):0x0);
+    return (AliRawDataErrorLog *)(fErrorLogs?fErrorLogs->At(i):0x0);
   }
   void  AddRawDataErrorLog(const AliRawDataErrorLog *log) const;
 
