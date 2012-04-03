@@ -9,7 +9,8 @@ AliESDJet::AliESDJet(Double_t px, Double_t py, Double_t pz)
   : AliVParticle(), 
     fPt(TMath::Sqrt(px*px+py*py)), 
     fEta(TMath::ASinH(pz/fPt)),
-    fPhi(0), fM(0), fNEF(0), fArea(0), fNch(0), fNn(0),
+    fPhi(0), fM(0), fNEF(0), 
+    fArea(0), fNch(0), fNn(0),
     fMaxCPt(0), fMaxNPt(0)
 {    
   // Constructor.
@@ -84,4 +85,3 @@ void AliESDJet::Print(Option_t* /*option*/) const
 
   printf("Jet pt=%.2f, eta=%.2f, phi=%.2f, area=%.2f, NEF=%.2f\n", fPt, fEta, fPhi, fArea, fNEF);
 }
-
