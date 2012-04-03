@@ -44,7 +44,8 @@ public:
 	      Double_t pixelSizeY, 
 	      Double_t thicknessActive, 
 	      Double_t thicknessSupport, 
-	      Double_t thicknessReadout);
+	      Double_t thicknessReadout,
+	      Bool_t   hasPixelRectangularPatternAlongY);
   
   Bool_t CreateStructure();
 
@@ -80,6 +81,7 @@ public:
   Double_t GetEquivalentSiliconBeforeBack()  const { return fEquivalentSiliconBeforeBack; }
 
   Int_t GetNumberOfChips(Option_t *opt);
+  Bool_t HasPixelRectangularPatternAlongY() { return fHasPixelRectangularPatternAlongY; }
   
 private:
 
@@ -100,6 +102,8 @@ private:
   Double_t fZCenterActiveFront, fZCenterActiveBack, fEquivalentSilicon, fEquivalentSiliconBeforeFront, fEquivalentSiliconBeforeBack;
 
   TClonesArray *fActiveElements, *fReadoutElements, *fSupportElements;
+
+  Bool_t fHasPixelRectangularPatternAlongY;
 
   ClassDef(AliMFTPlane, 1)
 

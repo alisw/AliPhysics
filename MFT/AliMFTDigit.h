@@ -60,7 +60,7 @@ public:
   Double_t  GetPixelWidthX()   const { return fPixelWidthX; }
   Double_t  GetPixelWidthY()   const { return fPixelWidthY; }
   Double_t  GetPixelWidthZ()   const { return fPixelWidthZ; }
-    
+
 protected:
     
   static const Double_t fElossPerElectron;

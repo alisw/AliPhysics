@@ -39,7 +39,9 @@ ClassImp(AliMuonForwardTrackPair)
 AliMuonForwardTrackPair::AliMuonForwardTrackPair():
   TObject(),
   fMuonForwardTracks(0),
-  fKinemMC(0,0,0,0)
+  fKinemMC(0,0,0,0),
+  fKinem(0,0,0,0),
+  fIsKinemSet(kFALSE)
 {
 
   // default constructor
@@ -53,7 +55,9 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair():
 AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, AliMuonForwardTrack *track1):
   TObject(),
   fMuonForwardTracks(0),
-  fKinemMC(0,0,0,0)
+  fKinemMC(0,0,0,0),
+  fKinem(0,0,0,0),
+  fIsKinemSet(kFALSE)
 {
 
   fMuonForwardTracks = new TClonesArray("AliMuonForwardTrack", 2);
@@ -70,7 +74,9 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, Al
 AliMuonForwardTrackPair::AliMuonForwardTrackPair(const AliMuonForwardTrackPair& trackPair): 
   TObject(trackPair),
   fMuonForwardTracks(trackPair.fMuonForwardTracks),
-  fKinemMC(trackPair.fKinemMC)
+  fKinemMC(trackPair.fKinemMC),
+  fKinem(trackPair.fKinem),
+  fIsKinemSet(trackPair.fIsKinemSet)
 {
 
   // copy constructor
@@ -93,6 +99,9 @@ AliMuonForwardTrackPair& AliMuonForwardTrackPair::operator=(const AliMuonForward
   Clear();
   
   fMuonForwardTracks = trackPair.fMuonForwardTracks;
+  fKinemMC = trackPair.fKinemMC;
+  fKinem = trackPair.fKinem;
+  fIsKinemSet = trackPair.fIsKinemSet;
 
   return *this;
 
@@ -120,55 +129,6 @@ Double_t AliMuonForwardTrackPair::GetWeightedOffset(Double_t x, Double_t y, Doub
   Double_t weightedOffsetDimuon = TMath::Sqrt(0.5 * (weightedOffset[0]*weightedOffset[0] + weightedOffset[1]*weightedOffset[1]));
 
   return weightedOffsetDimuon;
-
-}
-
-//====================================================================================================================================================
-
-Double_t AliMuonForwardTrackPair::GetMass(Double_t z, Int_t nClusters) {
-
-  Int_t idCluster[2] = {0};
-  if (nClusters>0) {
-    idCluster[0] = ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetNMFTClusters() - nClusters;
-    idCluster[1] = ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetNMFTClusters() - nClusters;
-  }
-  if (idCluster[0]<0) idCluster[0] = 0;
-  if (idCluster[1]<0) idCluster[1] = 0;
-
-  Double_t momentum[2] = {0};
-  
-  AliMUONTrackParam *param0 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMFTCluster(idCluster[0]);
-  AliMUONTrackParam *param1 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMFTCluster(idCluster[1]);
-
-  AliDebug(2, Form("MFT before extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
-		   param0->Px(), param0->Py(), param0->Pz(), 
-		   param1->Px(), param1->Py(), param1->Pz()));
-
-  if (TMath::Abs(z)<1e6) {
-    AliDebug(2, Form("Extrapolating 1st muon from z = %f to z = %f", param0->GetZ(), z));
-    AliMUONTrackExtrap::ExtrapToZCov(param0, z);
-    AliDebug(2, Form("Extrapolating 2nd muon from z = %f to z = %f", param1->GetZ(), z));
-    AliMUONTrackExtrap::ExtrapToZCov(param1, z);
-  }
-
-  AliDebug(2, Form("MFT after extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
-		   param0->Px(), param0->Py(), param0->Pz(), 
-		   param1->Px(), param1->Py(), param1->Pz()));
-
-  momentum[0] = (param0->P());
-  momentum[1] = (param1->P());
-
-  Double_t mMu = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
-
-  TLorentzVector dimu;
-
-  dimu.SetE(TMath::Sqrt(mMu*mMu + momentum[0]*momentum[0]) + TMath::Sqrt(mMu*mMu + momentum[1]*momentum[1]));
-
-  dimu.SetPx(param0->Px() + param1->Px());
-  dimu.SetPy(param0->Py() + param1->Py());
-  dimu.SetPz(param0->Pz() + param1->Pz());
-
-  return dimu.M();
 
 }
 
@@ -223,6 +183,9 @@ Double_t AliMuonForwardTrackPair::GetMassWithoutMFT(Double_t x, Double_t y, Doub
 
 void AliMuonForwardTrackPair::SetKinemMC() {
 
+  if ( !(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()) || 
+       !(((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()) ) return;
+
   AliDebug(2, Form("MC: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
 		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Px(),
 		   ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Py(),
@@ -242,6 +205,57 @@ void AliMuonForwardTrackPair::SetKinemMC() {
   
   fKinemMC.SetPz(((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetMCTrackRef()->Pz() +
 		 ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetMCTrackRef()->Pz());
+
+}
+
+//====================================================================================================================================================
+
+void AliMuonForwardTrackPair::SetKinem(Double_t z, Int_t nClusters) {
+
+//   if (!fMuonForwardTracks) return kFALSE;
+//   if (!fMuonForwardTracks->At(0) || !fMuonForwardTracks->At(1)) return kFALSE;
+
+  Int_t idCluster[2] = {0};
+  if (nClusters>0) {
+    idCluster[0] = ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetNMFTClusters() - nClusters;
+    idCluster[1] = ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetNMFTClusters() - nClusters;
+  }
+  if (idCluster[0]<0) idCluster[0] = 0;
+  if (idCluster[1]<0) idCluster[1] = 0;
+
+  Double_t momentum[2] = {0};
+  
+  AliMUONTrackParam *param0 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMFTCluster(idCluster[0]);
+  AliMUONTrackParam *param1 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMFTCluster(idCluster[1]);
+
+  AliDebug(2, Form("MFT before extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
+		   param0->Px(), param0->Py(), param0->Pz(), 
+		   param1->Px(), param1->Py(), param1->Pz()));
+
+  if (TMath::Abs(z)<1e6) {
+    AliDebug(2, Form("Extrapolating 1st muon from z = %f to z = %f", param0->GetZ(), z));
+    AliMUONTrackExtrap::ExtrapToZCov(param0, z);
+    AliDebug(2, Form("Extrapolating 2nd muon from z = %f to z = %f", param1->GetZ(), z));
+    AliMUONTrackExtrap::ExtrapToZCov(param1, z);
+  }
+
+  AliDebug(2, Form("MFT after extrap: 1st muon = (%f, %f, %f) 2nd muon = (%f, %f, %f)", 
+		   param0->Px(), param0->Py(), param0->Pz(), 
+		   param1->Px(), param1->Py(), param1->Pz()));
+
+  momentum[0] = (param0->P());
+  momentum[1] = (param1->P());
+
+  Double_t mMu = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
+
+  fKinem.SetE(TMath::Sqrt(mMu*mMu + momentum[0]*momentum[0]) + TMath::Sqrt(mMu*mMu + momentum[1]*momentum[1]));
+  fKinem.SetPx(param0->Px() + param1->Px());
+  fKinem.SetPy(param0->Py() + param1->Py());
+  fKinem.SetPz(param0->Pz() + param1->Pz());
+
+  fIsKinemSet = kTRUE;
+
+  //  return fKinem.M();
 
 }
 

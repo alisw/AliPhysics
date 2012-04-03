@@ -42,20 +42,25 @@ public:
   }
 
   void SetKinemMC();
+  void SetKinem(Double_t z, Int_t nClusters=-1);
+  Bool_t IsKinemSet() { return fIsKinemSet; }
 
   Double_t GetWeightedOffset(Double_t x, Double_t y, Double_t z);
-  Double_t GetMass(Double_t z, Int_t nClusters=-1);
   Double_t GetMassWithoutMFT(Double_t x, Double_t y, Double_t z, Int_t nClusters=-1);
   Double_t GetMassMC()     { return fKinemMC.M(); }
   Double_t GetRapidityMC() { return fKinemMC.Rapidity(); }
   Double_t GetPtMC()       { return fKinemMC.Pt(); }
+  Double_t GetMass()     { return fKinem.M(); }
+  Double_t GetRapidity() { return fKinem.Rapidity(); }
+  Double_t GetPt()       { return fKinem.Pt(); }
 
   Bool_t IsResonance();
 
 protected:
 
   TClonesArray *fMuonForwardTracks;
-  TLorentzVector fKinemMC;
+  TLorentzVector fKinemMC, fKinem;
+  Bool_t fIsKinemSet;
 
   ClassDef(AliMuonForwardTrackPair,1)
     

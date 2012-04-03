@@ -499,13 +499,62 @@ void AliMFT::Hits2SDigitsLocal(TClonesArray *hits, const TObjArray *pSDig, Int_t
     }
 
     for (Int_t iSideDigit=0; iSideDigit<fSideDigits->GetEntries(); iSideDigit++) {
-      AliMFTDigit *newDigit = (AliMFTDigit*) fSideDigits->At(iSideDigit);
-      new ((*pSDigList[sDigit.GetPlane()])[pSDigList[sDigit.GetPlane()]->GetEntries()]) AliMFTDigit(*newDigit);
+      AliMFTDigit *newSDigit = (AliMFTDigit*) fSideDigits->At(iSideDigit);
+      new ((*pSDigList[sDigit.GetPlane()])[pSDigList[sDigit.GetPlane()]->GetEntries()]) AliMFTDigit(*newSDigit);
     }
 
-    fSideDigits->Clear();    
+    fSideDigits->Delete();  
 
   }
+
+  // ------------ In case we should simulate a rectangular pattern of pixel...
+  
+  for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) { 
+    if (fSegmentation->GetPlane(iPlane)->HasPixelRectangularPatternAlongY()) {
+      Int_t nSDigits = pSDigList[iPlane]->GetEntries();
+      for (Int_t iSDigit=0; iSDigit<nSDigits; iSDigit++) {
+	AliMFTDigit *mySDig = (AliMFTDigit*) (pSDigList[iPlane]->At(iSDigit));
+	if (mySDig->GetPixelX()%2 == mySDig->GetPixelY()%2) {   // both pair or both odd
+	  Int_t xPixelNew = mySDig->GetPixelX();
+	  Int_t yPixelNew = mySDig->GetPixelY()+1;
+	  if (fSegmentation->DoesPixelExist(mySDig->GetDetElemID(), xPixelNew, yPixelNew)) {
+	    AliMFTDigit newSDigit;
+	    newSDigit.SetEloss(0.);
+	    newSDigit.SetDetElemID(mySDig->GetDetElemID());
+	    newSDigit.SetPlane(iPlane);
+	    newSDigit.SetPixID(xPixelNew, yPixelNew, 0);
+	    newSDigit.SetPixWidth(fSegmentation->GetPixelSizeX(newSDigit.GetDetElemID()), 
+				  fSegmentation->GetPixelSizeY(newSDigit.GetDetElemID()),
+				  fSegmentation->GetPixelSizeZ(newSDigit.GetDetElemID()));  
+	    newSDigit.SetPixCenter(fSegmentation->GetPixelCenterX(newSDigit.GetDetElemID(), xPixelNew), 
+				   fSegmentation->GetPixelCenterY(newSDigit.GetDetElemID(), yPixelNew),
+				   fSegmentation->GetPixelCenterZ(newSDigit.GetDetElemID(), 0)); 
+	    new ((*pSDigList[iPlane])[pSDigList[iPlane]->GetEntries()]) AliMFTDigit(newSDigit);
+	  }
+	}
+	else {   // pair-odd
+	  Int_t xPixelNew = mySDig->GetPixelX();
+	  Int_t yPixelNew = mySDig->GetPixelY()-1;
+	  if (fSegmentation->DoesPixelExist(mySDig->GetDetElemID(), xPixelNew, yPixelNew)) {
+	    AliMFTDigit newSDigit;
+	    newSDigit.SetEloss(0.);
+	    newSDigit.SetDetElemID(mySDig->GetDetElemID());
+	    newSDigit.SetPlane(iPlane);
+	    newSDigit.SetPixID(xPixelNew, yPixelNew, 0);
+	    newSDigit.SetPixWidth(fSegmentation->GetPixelSizeX(newSDigit.GetDetElemID()), 
+				  fSegmentation->GetPixelSizeY(newSDigit.GetDetElemID()),
+				  fSegmentation->GetPixelSizeZ(newSDigit.GetDetElemID()));  
+	    newSDigit.SetPixCenter(fSegmentation->GetPixelCenterX(newSDigit.GetDetElemID(), xPixelNew), 
+				   fSegmentation->GetPixelCenterY(newSDigit.GetDetElemID(), yPixelNew),
+				   fSegmentation->GetPixelCenterZ(newSDigit.GetDetElemID(), 0)); 
+	    new ((*pSDigList[iPlane])[pSDigList[iPlane]->GetEntries()]) AliMFTDigit(newSDigit);
+	  }
+	}
+      }
+    }
+  }
+
+  //------------------------------------------------------------------------
   
   AliDebug(1,"Stop Hits2SDigitsLocal");
 

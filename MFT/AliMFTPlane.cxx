@@ -63,7 +63,8 @@ AliMFTPlane::AliMFTPlane():
   fEquivalentSiliconBeforeBack(0),
   fActiveElements(0),
   fReadoutElements(0),
-  fSupportElements(0)
+  fSupportElements(0),
+  fHasPixelRectangularPatternAlongY(kFALSE)
 {
 
   // default constructor
@@ -91,7 +92,8 @@ AliMFTPlane::AliMFTPlane(const Char_t *name, const Char_t *title):
   fEquivalentSiliconBeforeBack(0),
   fActiveElements(new TClonesArray("THnSparseC")),
   fReadoutElements(new TClonesArray("THnSparseC")),
-  fSupportElements(new TClonesArray("THnSparseC"))
+  fSupportElements(new TClonesArray("THnSparseC")),
+  fHasPixelRectangularPatternAlongY(kFALSE)
 {
 
   // constructor
@@ -119,7 +121,8 @@ AliMFTPlane::AliMFTPlane(const AliMFTPlane& plane):
   fEquivalentSiliconBeforeBack(plane.fEquivalentSiliconBeforeBack),
   fActiveElements(new TClonesArray("THnSparseC")),
   fReadoutElements(new TClonesArray("THnSparseC")),
-  fSupportElements(new TClonesArray("THnSparseC"))
+  fSupportElements(new TClonesArray("THnSparseC")),
+  fHasPixelRectangularPatternAlongY(plane.fHasPixelRectangularPatternAlongY)
 {
 
   // copy constructor
@@ -142,24 +145,25 @@ AliMFTPlane& AliMFTPlane::operator=(const AliMFTPlane& plane) {
     // base class assignement
     TNamed::operator=(plane);
     
-    fPlaneNumber                  = plane.fPlaneNumber;
-    fZCenter                      = plane.fZCenter; 
-    fRMinSupport                  = plane.fRMinSupport; 
-    fRMax                         = plane.fRMax;
-    fRMaxSupport                  = plane.fRMaxSupport;
-    fPixelSizeX                   = plane.fPixelSizeX;
-    fPixelSizeY                   = plane.fPixelSizeY; 
-    fThicknessActive              = plane.fThicknessActive; 
-    fThicknessSupport             = plane.fThicknessSupport; 
-    fThicknessReadout             = plane.fThicknessReadout;
-    fZCenterActiveFront           = plane.fZCenterActiveFront;
-    fZCenterActiveBack            = plane.fZCenterActiveBack;
-    fEquivalentSilicon            = plane.fEquivalentSilicon;
-    fEquivalentSiliconBeforeFront = plane.fEquivalentSiliconBeforeFront;
-    fEquivalentSiliconBeforeBack  = plane.fEquivalentSiliconBeforeBack;
-    *fActiveElements              = *plane.fActiveElements;
-    *fReadoutElements             = *plane.fReadoutElements;
-    *fSupportElements             = *plane.fSupportElements;
+    fPlaneNumber                      = plane.fPlaneNumber;
+    fZCenter                          = plane.fZCenter; 
+    fRMinSupport                      = plane.fRMinSupport; 
+    fRMax                             = plane.fRMax;
+    fRMaxSupport                      = plane.fRMaxSupport;
+    fPixelSizeX                       = plane.fPixelSizeX;
+    fPixelSizeY                       = plane.fPixelSizeY; 
+    fThicknessActive                  = plane.fThicknessActive; 
+    fThicknessSupport                 = plane.fThicknessSupport; 
+    fThicknessReadout                 = plane.fThicknessReadout;
+    fZCenterActiveFront               = plane.fZCenterActiveFront;
+    fZCenterActiveBack                = plane.fZCenterActiveBack;
+    fEquivalentSilicon                = plane.fEquivalentSilicon;
+    fEquivalentSiliconBeforeFront     = plane.fEquivalentSiliconBeforeFront;
+    fEquivalentSiliconBeforeBack      = plane.fEquivalentSiliconBeforeBack;
+    *fActiveElements                  = *plane.fActiveElements;
+    *fReadoutElements                 = *plane.fReadoutElements;
+    *fSupportElements                 = *plane.fSupportElements;
+    fHasPixelRectangularPatternAlongY = plane.fHasPixelRectangularPatternAlongY;
   }
 
   return *this;
@@ -176,7 +180,8 @@ Bool_t AliMFTPlane::Init(Int_t    planeNumber,
 			 Double_t pixelSizeY, 
 			 Double_t thicknessActive, 
 			 Double_t thicknessSupport, 
-			 Double_t thicknessReadout) {
+			 Double_t thicknessReadout,
+			 Bool_t   hasPixelRectangularPatternAlongY) {
 
   AliDebug(1, Form("Initializing Plane Structure for Plane %s", GetName()));
 
@@ -189,6 +194,8 @@ Bool_t AliMFTPlane::Init(Int_t    planeNumber,
   fThicknessActive  = thicknessActive;
   fThicknessSupport = thicknessSupport;
   fThicknessReadout = thicknessReadout;
+
+  fHasPixelRectangularPatternAlongY = hasPixelRectangularPatternAlongY;
 
   fZCenterActiveFront = fZCenter - 0.5*fThicknessSupport - 0.5*fThicknessActive;
   fZCenterActiveBack  = fZCenter + 0.5*fThicknessSupport + 0.5*fThicknessActive;

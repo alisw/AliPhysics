@@ -42,11 +42,12 @@ AliMFTClusterQA::AliMFTClusterQA():
   // default constructor
 
   for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) {
-    fHistNClustersPerEvent[iPlane] = 0;
-    fHistNPixelsPerCluster[iPlane] = 0;
-    fHistClusterSizeX[iPlane] = 0; 
-    fHistClusterSizeY[iPlane] = 0;
-    fClusterScatterPlotXY[iPlane] = 0;
+    fHistNClustersPerEvent[iPlane]     = 0;
+    fHistNPixelsPerCluster[iPlane]     = 0;
+    fHistClusterSizeX[iPlane]          = 0; 
+    fHistClusterSizeY[iPlane]          = 0;
+    fHistClusterRadialPosition[iPlane] = 0;
+    fClusterScatterPlotXY[iPlane]      = 0;
   }
 
 }
@@ -96,7 +97,8 @@ Bool_t AliMFTClusterQA::LoadNextEvent() {
       fHistNPixelsPerCluster[iPlane] -> Fill(cluster->GetSize());
       fHistClusterSizeX[iPlane]      -> Fill(cluster->GetErrX()*1.e4);   // converted in microns
       fHistClusterSizeY[iPlane]      -> Fill(cluster->GetErrY()*1.e4);   // converted in microns
-      fClusterScatterPlotXY[iPlane]  -> Fill(cluster->GetX(), cluster->GetY());
+      fHistClusterRadialPosition[iPlane] -> Fill(TMath::Sqrt(cluster->GetX()*cluster->GetX()+cluster->GetY()*cluster->GetY()));
+      fClusterScatterPlotXY[iPlane]      -> Fill(cluster->GetX(), cluster->GetY());
     }
   }
 
@@ -140,12 +142,22 @@ void AliMFTClusterQA::BookHistos() {
 
     //------------------------------------------------------------
 
-    Int_t rMax = Int_t(10.*(fMFT->GetSegmentation()->GetPlane(iPlane)->GetRMaxSupport()));
+    Int_t rMax = Int_t(10.*(fMFT->GetSegmentation()->GetPlane(iPlane)->GetRMaxSupport()));  // expressed in mm
+
+    fHistClusterRadialPosition[iPlane] = new TH1D(Form("fHistClusterRadialPosition_Pl%02d",iPlane),
+						  Form("Cluster radial position (Plane%02d)",iPlane),
+						  rMax, 0, Double_t(rMax)/10.);
+
     fClusterScatterPlotXY[iPlane] = new TH2D(Form("fClusterScatterPlotXY_Pl%02d",iPlane),
 					     Form("Cluster scatter plot (Plane%02d)",iPlane),
 					     2*rMax+1, (-rMax-0.5)/10., (rMax+0.5)/10., 2*rMax+1, (-rMax-0.5)/10., (rMax+0.5)/10.);
     
-    fClusterScatterPlotXY[iPlane] -> Sumw2();
+    fHistClusterRadialPosition[iPlane] -> SetXTitle("R  [cm]");
+    fClusterScatterPlotXY[iPlane]      -> SetXTitle("X  [cm]");
+    fClusterScatterPlotXY[iPlane]      -> SetYTitle("Y  [cm]");
+
+    fHistClusterRadialPosition[iPlane] -> Sumw2();
+    fClusterScatterPlotXY[iPlane]      -> Sumw2();
     
   }
   
@@ -157,14 +169,31 @@ void AliMFTClusterQA::Terminate() {
 
   AliInfo("Writing QA histos...");
 
+  // ---- equalize radial clusters distribution ----------------------
+
+  for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
+    for (Int_t iBin=1; iBin<=fHistClusterRadialPosition[iPlane]->GetNbinsX(); iBin++) {
+      Double_t rMin = fHistClusterRadialPosition[iPlane]->GetBinLowEdge(iBin);        // in cm
+      Double_t rMax = fHistClusterRadialPosition[iPlane]->GetBinWidth(iBin) + rMin;   // in cm
+      Double_t area = 100.*TMath::Pi()*(rMax*rMax - rMin*rMin);                       // in mm^2
+      Double_t density = fHistClusterRadialPosition[iPlane]->GetBinContent(iBin)/area;
+      fHistClusterRadialPosition[iPlane]->SetBinContent(iBin, density);
+      fHistClusterRadialPosition[iPlane]->SetBinError(iBin, fHistClusterRadialPosition[iPlane]->GetBinError(iBin)/area);
+    }
+    fHistClusterRadialPosition[iPlane] -> SetBinContent(1, fEv);      // "scaler" bin
+  }
+
+  // -----------------------------------------------------------------
+
   fFileOut->cd();
 
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
-    fHistNClustersPerEvent[iPlane] -> Write();
-    fHistNPixelsPerCluster[iPlane] -> Write();
-    fHistClusterSizeX[iPlane]      -> Write();
-    fHistClusterSizeY[iPlane]      -> Write();
-    fClusterScatterPlotXY[iPlane]  -> Write();
+    fHistNClustersPerEvent[iPlane]     -> Write();
+    fHistNPixelsPerCluster[iPlane]     -> Write();
+    fHistClusterSizeX[iPlane]          -> Write();
+    fHistClusterSizeY[iPlane]          -> Write();
+    fHistClusterRadialPosition[iPlane] -> Write();
+    fClusterScatterPlotXY[iPlane]      -> Write();
   }
 
   fFileOut -> Close();

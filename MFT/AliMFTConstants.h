@@ -20,7 +20,7 @@ public:
   
   static const Int_t fNMaxPlanes = 20; 
 
-  static const Int_t fNMaxDigitsPerCluster = 12;  ///< max number of digits per cluster
+  static const Int_t fNMaxDigitsPerCluster = 50;  ///< max number of digits per cluster
   static const Double_t fCutForAvailableDigits;   ///<
   static const Double_t fCutForAttachingDigits;   ///<
 

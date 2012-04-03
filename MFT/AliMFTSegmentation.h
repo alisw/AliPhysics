@@ -48,6 +48,8 @@ public:
   Int_t GetNPlanes() const { return fMFTPlanes->GetEntries(); }
 
   AliMFTPlane* GetPlane(Int_t iPlane) const { if (iPlane>=0 && iPlane<fMFTPlanes->GetEntries()) return (AliMFTPlane*) fMFTPlanes->At(iPlane); else return NULL; }
+
+  Bool_t DoesPixelExist(Int_t detElemID, Int_t xPixel, Int_t yPixel);
  
 protected:
 

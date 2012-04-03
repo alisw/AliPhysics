@@ -51,7 +51,7 @@ AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile):
   // constructor
 
   Float_t zCenter, rMin, rMax, pixelSizeX, pixelSizeY, thicknessActive, thicknessSupport, thicknessReadout;
-  Float_t equivalentSilicon, equivalentSiliconBeforeFront, equivalentSiliconBeforeBack;
+  Float_t equivalentSilicon, equivalentSiliconBeforeFront, equivalentSiliconBeforeBack, hasPixelRectangularPatternAlongY;
 
   TFile *geomFile = new TFile(nameGeomFile);
   TNtuple *geomNtuple = (TNtuple*) geomFile->Get("AliMFTGeometry");
@@ -67,6 +67,10 @@ AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile):
   geomNtuple -> SetBranchAddress("equivalentSilicon",            &equivalentSilicon);
   geomNtuple -> SetBranchAddress("equivalentSiliconBeforeFront", &equivalentSiliconBeforeFront);
   geomNtuple -> SetBranchAddress("equivalentSiliconBeforeBack",  &equivalentSiliconBeforeBack);
+  if (geomNtuple -> GetBranch("hasPixelRectangularPatternAlongY")) {
+    geomNtuple -> SetBranchAddress("hasPixelRectangularPatternAlongY", &hasPixelRectangularPatternAlongY);
+  }
+  else hasPixelRectangularPatternAlongY = 0.;
   
   Int_t nPlanes = geomNtuple->GetEntries();
 
@@ -80,7 +84,18 @@ AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile):
     zCenter = TMath::Abs(zCenter);
 
     AliMFTPlane *plane = new AliMFTPlane(Form("MFTPlane_%02d", iPlane), Form("MFTPlane_%02d", iPlane));
-    plane -> Init(iPlane, zCenter, rMin, rMax, pixelSizeX, pixelSizeY, thicknessActive, thicknessSupport, thicknessReadout);
+
+    plane -> Init(iPlane, 
+		  zCenter, 
+		  rMin, 
+		  rMax, 
+		  pixelSizeX, 
+		  pixelSizeY, 
+		  thicknessActive, 
+		  thicknessSupport, 
+		  thicknessReadout, 
+		  (hasPixelRectangularPatternAlongY>0.5));
+
     plane -> SetEquivalentSilicon(equivalentSilicon);
     plane -> SetEquivalentSiliconBeforeFront(equivalentSiliconBeforeFront);
     plane -> SetEquivalentSiliconBeforeBack(equivalentSiliconBeforeBack);
@@ -115,6 +130,8 @@ THnSparseC* AliMFTSegmentation::GetDetElem(Int_t detElemID) const {
 
 Bool_t AliMFTSegmentation::Hit2PixelID(Double_t xHit, Double_t yHit, Int_t detElemID, Int_t &xPixel, Int_t &yPixel) {
 
+  // xPixel and yPixel start from 0
+
   THnSparseC *detElem = GetDetElem(detElemID);
 
   if ( xHit<detElem->GetAxis(0)->GetXmin() ||
@@ -131,3 +148,14 @@ Bool_t AliMFTSegmentation::Hit2PixelID(Double_t xHit, Double_t yHit, Int_t detEl
 
 //====================================================================================================================================================
 
+Bool_t AliMFTSegmentation::DoesPixelExist(Int_t detElemID, Int_t xPixel, Int_t yPixel) {
+
+  THnSparseC *detElem = GetDetElem(detElemID);
+
+  if (xPixel>=0 && xPixel<detElem->GetAxis(0)->GetNbins() && yPixel>=0 && yPixel<detElem->GetAxis(1)->GetNbins()) return kTRUE;
+  else return kFALSE;
+
+}
+
+//====================================================================================================================================================
+   

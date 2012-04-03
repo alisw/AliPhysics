@@ -45,7 +45,7 @@ protected:
   static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;
 
   TH1D *fHistNClustersPerEvent[fNMaxPlanes], *fHistNPixelsPerCluster[fNMaxPlanes];
-  TH1D *fHistClusterSizeX[fNMaxPlanes], *fHistClusterSizeY[fNMaxPlanes];
+  TH1D *fHistClusterSizeX[fNMaxPlanes], *fHistClusterSizeY[fNMaxPlanes], *fHistClusterRadialPosition[fNMaxPlanes];
   TH2D *fClusterScatterPlotXY[fNMaxPlanes];
 
   AliLoader *fMFTLoader;
@@ -62,7 +62,7 @@ protected:
 
 };
 
-//======================================================================================================
+//====================================================================================================================================================
  
 #endif
 

@@ -26,7 +26,9 @@ void SetMFTGeometry() {
   const Float_t equivalentSiliconBeforeFront[nPlanes] = {   0.e-4,   0.e-4,   0.e-4,   0.e-4,   0.e-4};    // expressed in cm
   const Float_t equivalentSiliconBeforeBack[nPlanes]  = { 250.e-4, 250.e-4, 250.e-4, 250.e-4, 250.e-4};    // expressed in cm
 
-  TNtuple *geomMFT = new TNtuple("AliMFTGeometry", "ALICE MFT Geometry", "zCenter:rMin:rMax:pixelSizeX:pixelSizeY:thicknessActive:thicknessSupport:thicknessReadout:equivalentSilicon:equivalentSiliconBeforeFront:equivalentSiliconBeforeBack");
+  const Float_t hasPixelRectangularPatternAlongY[nPlanes] = {0., 0., 0., 0., 0.};
+
+  TNtuple *geomMFT = new TNtuple("AliMFTGeometry", "ALICE MFT Geometry", "zCenter:rMin:rMax:pixelSizeX:pixelSizeY:thicknessActive:thicknessSupport:thicknessReadout:equivalentSilicon:equivalentSiliconBeforeFront:equivalentSiliconBeforeBack:hasPixelRectangularPatternAlongY");
 
   for (Int_t iPlane=0; iPlane<nPlanes; iPlane++) geomMFT -> Fill(zCenter[iPlane],
 								 rMin[iPlane],
@@ -38,7 +40,8 @@ void SetMFTGeometry() {
 								 thicknessReadout[iPlane],
 								 equivalentSilicon[iPlane],
 								 equivalentSiliconBeforeFront[iPlane],
-								 equivalentSiliconBeforeBack[iPlane]);
+								 equivalentSiliconBeforeBack[iPlane],
+								 hasPixelRectangularPatternAlongY[iPlane]);
 
   TFile *fileGeomMFT = new TFile("AliMFTGeometry.root", "recreate");
   geomMFT -> Write();

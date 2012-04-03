@@ -7,13 +7,14 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
 				 Int_t nMassBin = 100, 
 				 Double_t massMin = 0.,
 				 Double_t massMax = 10.,
+				 Bool_t useCutOnOffsetChi2 = kFALSE,
+				 Int_t maxNWrongClusters = 999,
 				 const Char_t *outDir = ".",
 				 Bool_t singleMuonAnalysis = kTRUE,
 				 Bool_t muonPairAnalysis = kTRUE,
 				 Int_t firstEvent = -1,
 				 Int_t lastEvent = -1, 
 				 Int_t myRandom = 0,
-				 Int_t maxNWrongClusters = 999,
 				 Double_t ptMinSingleMuons = 0.0) {
   
   gROOT -> LoadMacro("./AliMuonForwardTrackAnalysis.cxx+");
@@ -29,16 +30,15 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
   myAnalysis->SetInputDir(readDir);
   myAnalysis->SetOutputDir(outDir);
   myAnalysis->SetMassRange(nMassBin, massMin, massMax);
-  myAnalysis->SetPtDimuRange(10, 0., 5.);
   myAnalysis->SetSingleMuonAnalysis(singleMuonAnalysis);
   myAnalysis->SetMuonPairAnalysis(muonPairAnalysis);
   myAnalysis->SetOption(option);
-  myAnalysis->SetMatchTrigger(kTRUE);
   myAnalysis->SetMaxNWrongClustersMC(maxNWrongClusters);
   myAnalysis->SetPtMinSingleMuons(ptMinSingleMuons);
+  myAnalysis->UseCutOnOffsetChi2(useCutOnOffsetChi2);
 
-  myAnalysis->UseCutOnOffsetChi2(kFALSE);        // cut on the single muons
-
+  myAnalysis->SetPtDimuRange(10, 0., 5.);
+  myAnalysis->SetMatchTrigger(kTRUE);
   myAnalysis->UseBransonForCut(kFALSE);
   myAnalysis->UseBransonForKinematics(kFALSE);
 
