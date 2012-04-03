@@ -11,12 +11,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliBalancePsi.cxx 54125 2012-01-24 21:07:41Z miweber $ */
 
 //-----------------------------------------------------------------
 //           Balance Function class
-//   This is the class to deal with the Balance Function analysis
-//   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//   This is the class to deal with the Balance Function wrt Psi analysis
+//   Origin: Panos Christakoglou, Nikhef, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
 
@@ -25,6 +25,7 @@
 #include <TMath.h>
 #include <TAxis.h>
 #include <TH2D.h>
+#include <TH3D.h>
 #include <TLorentzVector.h>
 #include <TObjArray.h>
 #include <TGraphErrors.h>
@@ -35,20 +36,21 @@
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 
-#include "AliBalance.h"
+#include "AliBalancePsi.h"
 
-ClassImp(AliBalance)
+ClassImp(AliBalancePsi)
 
 //____________________________________________________________________//
-AliBalance::AliBalance() :
+AliBalancePsi::AliBalancePsi() :
   TObject(), 
   bShuffle(kFALSE),
   fAnalysisLevel("ESD"),
   fAnalyzedEvents(0) ,
   fCentralityId(0) ,
   fCentStart(0.),
-  fCentStop(0.)
-{
+  fCentStop(0.),
+  fPsiInterval(15.),
+  fPsiNumberOfBins(24) {
   // Default constructor
  
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
@@ -71,42 +73,41 @@ AliBalance::AliBalance() :
     fCentStart = 0.;
     fCentStop  = 0.;
 
-    fNn[i] = 0.0;
-    fNp[i] = 0.0;
+    for(Int_t k = 0; k < MAXIMUM_STEPS_IN_PSI; k++) {
+      fNn[i][k] = 0.0;
+      fNp[i][k] = 0.0;
 
-    for(Int_t j = 0; j < MAXIMUM_NUMBER_OF_STEPS; j++) {
-      fNpp[i][j] = .0;
-      fNnn[i][j] = .0;
-      fNpn[i][j] = .0;
-      fNnp[i][j] = .0;
-      fB[i][j] = 0.0;
-      ferror[i][j] = 0.0;
+      for(Int_t j = 0; j < MAXIMUM_NUMBER_OF_STEPS; j++) {
+	fNpp[i][k][j] = .0;
+	fNnn[i][k][j] = .0;
+	fNpn[i][k][j] = .0;
+	fNnp[i][k][j] = .0;
+	fB[i][k][j] = 0.0;
+	ferror[i][k][j] = 0.0;
+      }
     }
-
     fHistP[i]  = NULL;
     fHistN[i]  = NULL;
     fHistPP[i] = NULL;
     fHistPN[i] = NULL;
     fHistNP[i] = NULL;
     fHistNN[i] = NULL;
-
   }
 }
 
 
 //____________________________________________________________________//
-AliBalance::AliBalance(const AliBalance& balance):
+AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   TObject(balance), bShuffle(balance.bShuffle), 
   fAnalysisLevel(balance.fAnalysisLevel),
   fAnalyzedEvents(balance.fAnalyzedEvents), 
   fCentralityId(balance.fCentralityId),
   fCentStart(balance.fCentStart),
-  fCentStop(balance.fCentStop) {
+  fCentStop(balance.fCentStop),
+  fPsiInterval(balance.fPsiInterval),
+  fPsiNumberOfBins(balance.fPsiNumberOfBins) {
   //copy constructor
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
-    fNn[i] = balance.fNn[i];
-    fNp[i] = balance.fNp[i];
-
     fP1Start[i]      = balance.fP1Start[i];
     fP1Stop[i]       = balance.fP1Stop[i];
     fNumberOfBins[i] = balance.fNumberOfBins[i];
@@ -123,40 +124,45 @@ AliBalance::AliBalance(const AliBalance& balance):
     fHistPP[i]        = balance.fHistPP[i];
     fHistNN[i]        = balance.fHistNN[i];
 
-    for(Int_t j = 0; j < MAXIMUM_NUMBER_OF_STEPS; j++) {
-      fNpp[i][j] = .0;
-      fNnn[i][j] = .0;
-      fNpn[i][j] = .0;
-      fNnp[i][j] = .0;
-      fB[i][j] = 0.0;
-      ferror[i][j] = 0.0;
-    } 
+    for(Int_t k = 0; k < MAXIMUM_STEPS_IN_PSI; k++) {
+      fNn[i][k] = balance.fNn[i][k];
+      fNp[i][k] = balance.fNp[i][k];
+      
+      for(Int_t j = 0; j < MAXIMUM_NUMBER_OF_STEPS; j++) {
+        fNpp[i][k][j] = balance.fNpp[i][k][j];
+	fNnn[i][k][j] = balance.fNnn[i][k][j];
+	fNpn[i][k][j] = balance.fNpn[i][k][j];
+	fNnp[i][k][j] = balance.fNnp[i][k][j];
+	fB[i][k][j] = balance.fB[i][k][j];
+	ferror[i][k][j] = balance.ferror[i][k][j];
+      } 
+    }
   }
- }
- 
+}
 
 //____________________________________________________________________//
-AliBalance::~AliBalance() {
+AliBalancePsi::~AliBalancePsi() {
   // Destructor
-
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
- 
     delete fHistP[i];
     delete fHistN[i];
     delete fHistPN[i];
     delete fHistNP[i];
     delete fHistPP[i];
     delete fHistNN[i];
-  
   }
 }
 
 //____________________________________________________________________//
-void AliBalance::SetInterval(Int_t iAnalysisType,
-			     Double_t p1Start, Double_t p1Stop,
-			     Int_t ibins, Double_t p2Start, Double_t p2Stop) {
+void AliBalancePsi::SetInterval(Int_t iAnalysisType,
+				Double_t p1Start, Double_t p1Stop,
+				Int_t ibins, 
+				Double_t p2Start, Double_t p2Stop,
+				Double_t psiInterval) {
   // Sets the analyzed interval. 
   // Set the same Information for all analyses
+  fPsiInterval = psiInterval;
+  fPsiNumberOfBins = (Int_t)(360./fPsiInterval);
 
   if(iAnalysisType == -1){             
     for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
@@ -183,44 +189,44 @@ void AliBalance::SetInterval(Int_t iAnalysisType,
 }
 
 //____________________________________________________________________//
-void AliBalance::InitHistograms() {
+void AliBalancePsi::InitHistograms() {
   //Initialize the histograms
   TString histName;
   for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
-    histName = "fHistP"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName = "fHistP"; histName += gBFPsiAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
+    fHistP[iAnalysisType] = new TH3D(histName.Data(),"",(Int_t)(fCentStop-fCentStart),fCentStart,fCentStop,fPsiNumberOfBins,-fPsiInterval/2.,360.-fPsiInterval/2.,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
 
-    histName = "fHistN"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName = "fHistN"; histName += gBFPsiAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
+    fHistN[iAnalysisType] = new TH3D(histName.Data(),"",(Int_t)(fCentStop-fCentStart),fCentStart,fCentStop,fPsiNumberOfBins,-fPsiInterval/2.,360.-fPsiInterval/2.,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
   
-    histName = "fHistPN"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName = "fHistPN"; histName += gBFPsiAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistPN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistPN[iAnalysisType] = new TH3D(histName.Data(),"",(Int_t)(fCentStop-fCentStart),fCentStart,fCentStop,fPsiNumberOfBins,-fPsiInterval/2.,360.-fPsiInterval/2.,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
-    histName = "fHistNP"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName = "fHistNP"; histName += gBFPsiAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistNP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistNP[iAnalysisType] = new TH3D(histName.Data(),"",(Int_t)(fCentStop-fCentStart),fCentStart,fCentStop,fPsiNumberOfBins,-fPsiInterval/2.,360.-fPsiInterval/2.,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
-    histName = "fHistPP"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName = "fHistPP"; histName += gBFPsiAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistPP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistPP[iAnalysisType] = new TH3D(histName.Data(),"",(Int_t)(fCentStop-fCentStart),fCentStart,fCentStop,fPsiNumberOfBins,-fPsiInterval/2.,360.-fPsiInterval/2.,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
-    histName = "fHistNN"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName = "fHistNN"; histName += gBFPsiAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistNN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistNN[iAnalysisType] = new TH3D(histName.Data(),"",(Int_t)(fCentStop-fCentStart),fCentStart,fCentStop,fPsiNumberOfBins,-fPsiInterval/2.,360.-fPsiInterval/2.,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
   }
 }
 
 //____________________________________________________________________//
-void AliBalance::PrintAnalysisSettings() {
+void AliBalancePsi::PrintAnalysisSettings() {
   
   Printf("======================================");
   Printf("Analysis level: %s",fAnalysisLevel.Data());
@@ -237,7 +243,9 @@ void AliBalance::PrintAnalysisSettings() {
 }
 
 //____________________________________________________________________//
-void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeVector) {
+void AliBalancePsi::CalculateBalance(Float_t fCentrality, 
+				     Double_t gReactionPlane, 
+				     vector<Double_t> **chargeVector) {
   // Calculates the balance function
   fAnalyzedEvents++;
   Int_t i = 0 , j = 0;
@@ -251,57 +259,61 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
   }
 
   Int_t gNtrack = chargeVector[0]->size();
-  //Printf("(AliBalance) Number of tracks: %d",gNtrack);
-
+  //Printf("(AliBalancePsi) Number of tracks: %d",gNtrack);
+  Double_t gPsiMinusPhi = 0., gPsiMinusPhiPrime = 0.;
+  Int_t gPsiBin = -10;
   for(i = 0; i < gNtrack;i++){
     Double_t charge          = chargeVector[0]->at(i);
-      Double_t rapidity       = chargeVector[1]->at(i);
-      Double_t pseudorapidity = chargeVector[2]->at(i);
-      Double_t phi            = chargeVector[3]->at(i);
-      
-      //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
-      for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
-	if(iAnalysisType == kEta) {
-	  if((pseudorapidity >= fP1Start[iAnalysisType]) && (pseudorapidity <= fP1Stop[iAnalysisType])) {
-	    if(charge > 0) {
-	      fNp[iAnalysisType] += 1.;
-	      fHistP[iAnalysisType]->Fill(fCentrality,pseudorapidity);
-	    }//charge > 0
-	    if(charge < 0) {
-	      fNn[iAnalysisType] += 1.;
-	      fHistN[iAnalysisType]->Fill(fCentrality,pseudorapidity);
-	    }//charge < 0
-	  }//p1 interval check
-	}//analysis type: eta
-	else if(iAnalysisType == kPhi) {
-	  if((phi >= fP1Start[iAnalysisType]) && (phi <= fP1Stop[iAnalysisType])) {
-	    if(charge > 0) {
-	      fNp[iAnalysisType] += 1.;
-	      fHistP[iAnalysisType]->Fill(fCentrality,phi);
-	    }//charge > 0
-	    if(charge < 0) {
-	      fNn[iAnalysisType] += 1.;
-	      fHistN[iAnalysisType]->Fill(fCentrality,phi);
-	    }//charge < 0
-	  }//p1 interval check
-	}//analysis type: phi
-	else {
-	  if((rapidity >= fP1Start[iAnalysisType]) && (rapidity <= fP1Stop[iAnalysisType])) {
-	    if(charge > 0) {
-	      fNp[iAnalysisType] += 1.;
-	      fHistP[iAnalysisType]->Fill(fCentrality,rapidity);
-	    }//charge > 0
-	    if(charge < 0) {
-	      fNn[iAnalysisType] += 1.;
-	      fHistN[iAnalysisType]->Fill(fCentrality,rapidity);
-	    }//charge < 0
-	  }//p1 interval check
-	}//analysis type: y, qside, qout, qlong, qinv
-      }//analysis type loop
+    Double_t rapidity       = chargeVector[1]->at(i);
+    Double_t pseudorapidity = chargeVector[2]->at(i);
+    Double_t phi            = chargeVector[3]->at(i);
+    gPsiMinusPhi   = gReactionPlane - phi;
+    gPsiMinusPhiPrime = gPsiMinusPhi;
+    if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhiPrime = 360. - gPsiMinusPhiPrime;
+    gPsiBin = (Int_t)((gPsiMinusPhiPrime + 360./fPsiNumberOfBins/2.)/(360./fPsiNumberOfBins));
+    //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
+    for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
+      if(iAnalysisType == kEta) {
+	if((pseudorapidity >= fP1Start[iAnalysisType]) && (pseudorapidity <= fP1Stop[iAnalysisType])) {
+	  if(charge > 0) {
+	    fNp[iAnalysisType][gPsiBin] += 1.;
+	    fHistP[iAnalysisType]->Fill(fCentrality,gPsiMinusPhi,pseudorapidity);
+	  }//charge > 0
+	  if(charge < 0) {
+	    fNn[iAnalysisType][gPsiBin] += 1.;
+	    fHistN[iAnalysisType]->Fill(fCentrality,gPsiMinusPhi,pseudorapidity);
+	  }//charge < 0
+	}//p1 interval check
+      }//analysis type: eta
+      else if(iAnalysisType == kPhi) {
+	if((phi >= fP1Start[iAnalysisType]) && (phi <= fP1Stop[iAnalysisType])) {
+	  if(charge > 0) {
+	    fNp[iAnalysisType][gPsiBin] += 1.;
+	    fHistP[iAnalysisType]->Fill(fCentrality,gPsiMinusPhi,phi);
+	  }//charge > 0
+	  if(charge < 0) {
+	    fNn[iAnalysisType][gPsiBin] += 1.;
+	    fHistN[iAnalysisType]->Fill(fCentrality,gPsiMinusPhi,phi);
+	  }//charge < 0
+	}//p1 interval check
+      }//analysis type: phi
+      else {
+	if((rapidity >= fP1Start[iAnalysisType]) && (rapidity <= fP1Stop[iAnalysisType])) {
+	  if(charge > 0) {
+	    fNp[iAnalysisType][gPsiBin] += 1.;
+	    fHistP[iAnalysisType]->Fill(fCentrality,gPsiMinusPhi,rapidity);
+	  }//charge > 0
+	  if(charge < 0) {
+	    fNn[iAnalysisType][gPsiBin] += 1.;
+	    fHistN[iAnalysisType]->Fill(fCentrality,gPsiMinusPhi,rapidity);
+	  }//charge < 0
+	}//p1 interval check
+      }//analysis type: y, qside, qout, qlong, qinv
+    }//analysis type loop
   }
-
+  
   //Printf("Np: %lf - Nn: %lf",fNp[0],fNn[0]);
-
+  
   Double_t dy = 0., deta = 0.;
   Double_t qLong = 0., qOut = 0., qSide = 0., qInv = 0.;
   Double_t dphi = 0.;
@@ -331,27 +343,31 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
       pz1     = chargeVector[6]->at(i);
       pt1     = chargeVector[7]->at(i);
       energy1 = chargeVector[8]->at(i);
-    
-    for(j = 0; j < i; j++) {
-   
-      charge2 = chargeVector[0]->at(j);
-      rap2    = chargeVector[1]->at(j);
-      eta2    = chargeVector[2]->at(j);
-      phi2    = chargeVector[3]->at(j);
-      px2     = chargeVector[4]->at(j);
-      py2     = chargeVector[5]->at(j);
-      pz2     = chargeVector[6]->at(j);
-      pt2     = chargeVector[7]->at(i);
-      energy2 = chargeVector[8]->at(j);
-    
+      gPsiMinusPhi   = gReactionPlane - phi1;
+      phi1 -= 360.;
+      gPsiMinusPhiPrime = gPsiMinusPhi;
+      if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhiPrime = 360. - gPsiMinusPhiPrime;
+      gPsiBin = (Int_t)((gPsiMinusPhiPrime + 360./fPsiNumberOfBins/2.)/(360./fPsiNumberOfBins));
+
+      for(j = 0; j < i; j++) {
+	charge2 = chargeVector[0]->at(j);
+	rap2    = chargeVector[1]->at(j);
+	eta2    = chargeVector[2]->at(j);
+	phi2    = chargeVector[3]->at(j);
+	px2     = chargeVector[4]->at(j);
+	py2     = chargeVector[5]->at(j);
+	pz2     = chargeVector[6]->at(j);
+	pt2     = chargeVector[7]->at(i);
+	energy2 = chargeVector[8]->at(j);
+	phi2 -= 360.;
+	
 	// filling the arrays
-
 	// RAPIDITY 
-        dy = TMath::Abs(rap1 - rap2);
-
+	dy = rap1 - rap2;
+	
 	// Eta
-	deta = TMath::Abs(eta1 - eta2);
-
+	deta = eta1 - eta2;
+	
 	//qlong
 	Double_t eTot = energy1 + energy2;
 	Double_t pxTot = px1 + px2;
@@ -361,7 +377,7 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	Double_t qxTot = px1 - px2;
 	Double_t qyTot = py1 - py2;
 	Double_t qzTot = pz1 - pz2;
-
+	
 	Double_t eTot2 = eTot*eTot;
 	Double_t pTot2 = pxTot*pxTot + pyTot*pyTot + pzTot*pzTot;
 	Double_t pzTot2 = pzTot*pzTot;
@@ -385,8 +401,8 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	qInv = TMath::Sqrt(TMath::Abs(-q0Tot2 + qTot2 ));
 	
 	//phi
-	dphi = TMath::Abs(phi1 - phi2);
-	if(dphi>180) dphi = 360 - dphi;  //dphi should be between 0 and 180!
+	dphi = phi1 - phi2;
+	if(dphi < -180) dphi = 360 - dphi;  //dphi should be between -180 and 180!
 
 	//0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
 	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
@@ -397,20 +413,20 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
 	      
 	      if((charge1 > 0)&&(charge2 > 0)) {
-		fNpp[kRapidity][iBin] += 1.;
-		fHistPP[kRapidity]->Fill(fCentrality,dy);
+		fNpp[kRapidity][gPsiBin][iBin] += 1.;
+		fHistPP[kRapidity]->Fill(fCentrality,gPsiMinusPhi,dy);
 	      }
 	      else if((charge1 < 0)&&(charge2 < 0)) {
-		fNnn[kRapidity][iBin] += 1.;
-		fHistNN[kRapidity]->Fill(fCentrality,dy);
+		fNnn[kRapidity][gPsiBin][iBin] += 1.;
+		fHistNN[kRapidity]->Fill(fCentrality,gPsiMinusPhi,dy);
 	      }
 	      else if((charge1 > 0)&&(charge2 < 0)) {
-		fNpn[kRapidity][iBin] += 1.;
-		fHistPN[kRapidity]->Fill(fCentrality,dy);
+		fNpn[kRapidity][gPsiBin][iBin] += 1.;
+		fHistPN[kRapidity]->Fill(fCentrality,gPsiMinusPhi,dy);
 	      }
 	      else if((charge1 < 0)&&(charge2 > 0)) {
-		fNpn[kRapidity][iBin] += 1.;
-		    fHistPN[kRapidity]->Fill(fCentrality,dy);
+		fNpn[kRapidity][gPsiBin][iBin] += 1.;
+		fHistPN[kRapidity]->Fill(fCentrality,gPsiMinusPhi,dy);
 	      }
 	    }//BF binning check
 	  }//p2 interval check
@@ -422,20 +438,20 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	    iBin = Int_t((deta-fP2Start[kEta])/fP2Step[kEta]);	
 	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
 	      if((charge1 > 0)&&(charge2 > 0)) {
-		fNpp[kEta][iBin] += 1.;
-		fHistPP[kEta]->Fill(fCentrality,deta);
+		fNpp[kEta][gPsiBin][iBin] += 1.;
+		fHistPP[kEta]->Fill(fCentrality,gPsiMinusPhi,deta);
 	      }
 	      if((charge1 < 0)&&(charge2 < 0)) {
-		fNnn[kEta][iBin] += 1.;
-	   	    fHistNN[kEta]->Fill(fCentrality,deta);
+		fNnn[kEta][gPsiBin][iBin] += 1.;
+		fHistNN[kEta]->Fill(fCentrality,gPsiMinusPhi,deta);
 	      }
 	      if((charge1 > 0)&&(charge2 < 0)) {
-		fNpn[kEta][iBin] += 1.;
-		fHistPN[kEta]->Fill(fCentrality,deta);
+		fNpn[kEta][gPsiBin][iBin] += 1.;
+		fHistPN[kEta]->Fill(fCentrality,gPsiMinusPhi,deta);
 	      }
 	      if((charge1 < 0)&&(charge2 > 0)) {
-		fNpn[kEta][iBin] += 1.;
-	   	    fHistPN[kEta]->Fill(fCentrality,deta);
+		fNpn[kEta][gPsiBin][iBin] += 1.;
+		fHistPN[kEta]->Fill(fCentrality,gPsiMinusPhi,deta);
 	      }
 	    }//BF binning check
 	  }//p2 interval check
@@ -448,20 +464,20 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	    iBin = Int_t((qLong-fP2Start[kQlong])/fP2Step[kQlong]);	
 	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
 	      if((charge1 > 0)&&(charge2 > 0)) {
-		fNpp[kQlong][iBin] += 1.;
-		fHistPP[kQlong]->Fill(fCentrality,qLong);
+		fNpp[kQlong][gPsiBin][iBin] += 1.;
+		fHistPP[kQlong]->Fill(fCentrality,gPsiMinusPhi,qLong);
 	      }
 	      if((charge1 < 0)&&(charge2 < 0)) {
-		fNnn[kQlong][iBin] += 1.;
-		fHistNN[kQlong]->Fill(fCentrality,qLong);
+		fNnn[kQlong][gPsiBin][iBin] += 1.;
+		fHistNN[kQlong]->Fill(fCentrality,gPsiMinusPhi,qLong);
 	      }
 	      if((charge1 > 0)&&(charge2 < 0)) {
-		fNpn[kQlong][iBin] += 1.;
-		fHistPN[kQlong]->Fill(fCentrality,qLong);
+		fNpn[kQlong][gPsiBin][iBin] += 1.;
+		fHistPN[kQlong]->Fill(fCentrality,gPsiMinusPhi,qLong);
 	      }
 	      if((charge1 < 0)&&(charge2 > 0)) {
-		fNpn[kQlong][iBin] += 1.;
-		fHistPN[kQlong]->Fill(fCentrality,qLong);
+		fNpn[kQlong][gPsiBin][iBin] += 1.;
+		fHistPN[kQlong]->Fill(fCentrality,gPsiMinusPhi,qLong);
 	      }
 	    }//BF binning check
 	  }//p2 interval check
@@ -472,20 +488,20 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	    iBin = Int_t((qOut-fP2Start[kQout])/fP2Step[kQout]);	
 	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
 	      if((charge1 > 0)&&(charge2 > 0)) {
-		fNpp[kQout][iBin] += 1.;
-		fHistPP[kQout]->Fill(fCentrality,qOut);
+		fNpp[kQout][gPsiBin][iBin] += 1.;
+		fHistPP[kQout]->Fill(fCentrality,gPsiMinusPhi,qOut);
 	  	  }
 	      if((charge1 < 0)&&(charge2 < 0)) {
-		fNnn[kQout][iBin] += 1.;
-		fHistNN[kQout]->Fill(fCentrality,qOut);
+		fNnn[kQout][gPsiBin][iBin] += 1.;
+		fHistNN[kQout]->Fill(fCentrality,gPsiMinusPhi,qOut);
 	      }
 	      if((charge1 > 0)&&(charge2 < 0)) {
-		fNpn[kQout][iBin] += 1.;
-		fHistPN[kQout]->Fill(fCentrality,qOut);
+		fNpn[kQout][gPsiBin][iBin] += 1.;
+		fHistPN[kQout]->Fill(fCentrality,gPsiMinusPhi,qOut);
 	      }
 	      if((charge1 < 0)&&(charge2 > 0)) {
-		fNpn[kQout][iBin] += 1.;
-		fHistPN[kQout]->Fill(fCentrality,qOut);
+		fNpn[kQout][gPsiBin][iBin] += 1.;
+		fHistPN[kQout]->Fill(fCentrality,gPsiMinusPhi,qOut);
 	      }
 	    }//BF binning check
 	  }//p2 interval check
@@ -496,20 +512,20 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	    iBin = Int_t((qSide-fP2Start[kQside])/fP2Step[kQside]);	
 	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
 	      if((charge1 > 0)&&(charge2 > 0)) {
-		fNpp[kQside][iBin] += 1.;
-		fHistPP[kQside]->Fill(fCentrality,qSide);
+		fNpp[kQside][gPsiBin][iBin] += 1.;
+		fHistPP[kQside]->Fill(fCentrality,gPsiMinusPhi,qSide);
 	      }
 	      if((charge1 < 0)&&(charge2 < 0)) {
-		fNnn[kQside][iBin] += 1.;
-		fHistNN[kQside]->Fill(fCentrality,qSide);
+		fNnn[kQside][gPsiBin][iBin] += 1.;
+		fHistNN[kQside]->Fill(fCentrality,gPsiMinusPhi,qSide);
 	      }
 	      if((charge1 > 0)&&(charge2 < 0)) {
-		fNpn[kQside][iBin] += 1.;
-		fHistPN[kQside]->Fill(fCentrality,qSide);
+		fNpn[kQside][gPsiBin][iBin] += 1.;
+		fHistPN[kQside]->Fill(fCentrality,gPsiMinusPhi,qSide);
 	      }
 	      if((charge1 < 0)&&(charge2 > 0)) {
-		fNpn[kQside][iBin] += 1.;
-		fHistPN[kQside]->Fill(fCentrality,qSide);
+		fNpn[kQside][gPsiBin][iBin] += 1.;
+		fHistPN[kQside]->Fill(fCentrality,gPsiMinusPhi,qSide);
 		  	  }
 	    }//BF binning check
 	  }//p2 interval check
@@ -520,20 +536,20 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	    iBin = Int_t((qInv-fP2Start[kQinv])/fP2Step[kQinv]);	
 	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
 	      if((charge1 > 0)&&(charge2 > 0)) {
-		fNpp[kQinv][iBin] += 1.;
-		fHistPP[kQinv]->Fill(fCentrality,qInv);
+		fNpp[kQinv][gPsiBin][iBin] += 1.;
+		fHistPP[kQinv]->Fill(fCentrality,gPsiMinusPhi,qInv);
 	      }
 	      if((charge1 < 0)&&(charge2 < 0)) {
-		fNnn[kQinv][iBin] += 1.;
-		fHistNN[kQinv]->Fill(fCentrality,qInv);
+		fNnn[kQinv][gPsiBin][iBin] += 1.;
+		fHistNN[kQinv]->Fill(fCentrality,gPsiMinusPhi,qInv);
 	      }
 	      if((charge1 > 0)&&(charge2 < 0)) {
-		fNpn[kQinv][iBin] += 1.;
-		fHistPN[kQinv]->Fill(fCentrality,qInv);
+		fNpn[kQinv][gPsiBin][iBin] += 1.;
+		fHistPN[kQinv]->Fill(fCentrality,gPsiMinusPhi,qInv);
 	      }
 	      if((charge1 < 0)&&(charge2 > 0)) {
-		fNpn[kQinv][iBin] += 1.;
-		fHistPN[kQinv]->Fill(fCentrality,qInv);
+		fNpn[kQinv][gPsiBin][iBin] += 1.;
+		fHistPN[kQinv]->Fill(fCentrality,gPsiMinusPhi,qInv);
 	      }
 	    }//BF binning check
 	  }//p2 interval check
@@ -545,20 +561,20 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	    iBin = Int_t((dphi-fP2Start[kPhi])/fP2Step[kPhi]);	
 	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
 	      if((charge1 > 0)&&(charge2 > 0)) {
-		fNpp[kPhi][iBin] += 1.;
-		fHistPP[kPhi]->Fill(fCentrality,dphi);
+		fNpp[kPhi][gPsiBin][iBin] += 1.;
+		fHistPP[kPhi]->Fill(fCentrality,gPsiMinusPhi,dphi);
 	      }
 	      if((charge1 < 0)&&(charge2 < 0)) {
-		fNnn[kPhi][iBin] += 1.;
-		fHistNN[kPhi]->Fill(fCentrality,dphi);
+		fNnn[kPhi][gPsiBin][iBin] += 1.;
+		fHistNN[kPhi]->Fill(fCentrality,gPsiMinusPhi,dphi);
 	      }
 	      if((charge1 > 0)&&(charge2 < 0)) {
-		fNpn[kPhi][iBin] += 1.;
-		fHistPN[kPhi]->Fill(fCentrality,dphi);
+		fNpn[kPhi][gPsiBin][iBin] += 1.;
+		fHistPN[kPhi]->Fill(fCentrality,gPsiMinusPhi,dphi);
 	      }
 	      if((charge1 < 0)&&(charge2 > 0)) {
-		fNpn[kPhi][iBin] += 1.;
-		fHistPN[kPhi]->Fill(fCentrality,dphi);
+		fNpn[kPhi][gPsiBin][iBin] += 1.;
+		fHistPN[kPhi]->Fill(fCentrality,gPsiMinusPhi,dphi);
 	      }
 	    }//BF binning check
 	  }//p2 interval check
@@ -571,48 +587,41 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 
 
 //____________________________________________________________________//
-Double_t AliBalance::GetBalance(Int_t iAnalysisType, Int_t p2) {
+Double_t AliBalancePsi::GetBalance(Int_t iAnalysisType, Int_t gPsiBin, 
+				   Int_t p2) {
   // Returns the value of the balance function in bin p2
-  fB[iAnalysisType][p2] = 0.5*(((fNpn[iAnalysisType][p2] - 2.*fNnn[iAnalysisType][p2])/fNn[iAnalysisType]) + ((fNpn[iAnalysisType][p2] - 2.*fNpp[iAnalysisType][p2])/fNp[iAnalysisType]))/fP2Step[iAnalysisType];
+  fB[iAnalysisType][gPsiBin][p2] = 0.5*(((fNpn[iAnalysisType][gPsiBin][p2] - 2.*fNnn[iAnalysisType][gPsiBin][p2])/fNn[iAnalysisType][gPsiBin]) + ((fNpn[iAnalysisType][gPsiBin][p2] - 2.*fNpp[iAnalysisType][gPsiBin][p2])/fNp[iAnalysisType][gPsiBin]))/fP2Step[iAnalysisType];
   
-  return fB[iAnalysisType][p2];
+  return fB[iAnalysisType][gPsiBin][p2];
 }
     
 //____________________________________________________________________//
-Double_t AliBalance::GetError(Int_t iAnalysisType, Int_t p2) {        
+Double_t AliBalancePsi::GetError(Int_t iAnalysisType, Int_t gPsiBin, 
+				 Int_t p2) {        
   // Returns the error on the BF value for bin p2
   // The errors for fNn and fNp are neglected here (0.1 % of total error)
-  /*ferror[iAnalysisType][p2] = TMath::Sqrt(Double_t(fNpp[iAnalysisType][p2])/(Double_t(fNp[iAnalysisType])*Double_t(fNp[iAnalysisType]))
-			      + Double_t(fNnn[iAnalysisType][p2])/(Double_t(fNn[iAnalysisType])*Double_t(fNn[iAnalysisType]))
-			      + Double_t(fNpn[iAnalysisType][p2])/(Double_t(fNp[iAnalysisType])*Double_t(fNp[iAnalysisType])) 
-			      + Double_t(fNnp[iAnalysisType][p2])/(Double_t(fNp[iAnalysisType])*Double_t(fNp[iAnalysisType]))
-			      //+ TMath::Power(fNpn[iAnalysisType][p2]-fNpp[iAnalysisType][p2],2)/TMath::Power(Double_t(fNp[iAnalysisType]),3)
-			      //+ TMath::Power(fNnp[iAnalysisType][p2]-fNnn[iAnalysisType][p2],2)/TMath::Power(Double_t(fNn[iAnalysisType]),3) 
-			       ) /fP2Step[iAnalysisType];*/
-
-  ferror[iAnalysisType][p2] = TMath::Sqrt( Double_t(fNpp[iAnalysisType][p2])/(Double_t(fNp[iAnalysisType])*Double_t(fNp[iAnalysisType])) + 
-					   Double_t(fNnn[iAnalysisType][p2])/(Double_t(fNn[iAnalysisType])*Double_t(fNn[iAnalysisType])) + 
-					   Double_t(fNpn[iAnalysisType][p2])*TMath::Power((0.5/Double_t(fNp[iAnalysisType]) + 0.5/Double_t(fNn[iAnalysisType])),2))/fP2Step[iAnalysisType];
+  ferror[iAnalysisType][gPsiBin][p2] = TMath::Sqrt( Double_t(fNpp[iAnalysisType][gPsiBin][p2])/(Double_t(fNp[iAnalysisType][gPsiBin])*Double_t(fNp[iAnalysisType][gPsiBin])) + 
+					   Double_t(fNnn[iAnalysisType][gPsiBin][p2])/(Double_t(fNn[iAnalysisType][gPsiBin])*Double_t(fNn[iAnalysisType][gPsiBin])) + 
+					   Double_t(fNpn[iAnalysisType][gPsiBin][p2])*TMath::Power((0.5/Double_t(fNp[iAnalysisType][gPsiBin]) + 0.5/Double_t(fNn[iAnalysisType][gPsiBin])),2))/fP2Step[iAnalysisType];
   
-  return ferror[iAnalysisType][p2];
+  return ferror[iAnalysisType][gPsiBin][p2];
 }
 //____________________________________________________________________//
-TGraphErrors *AliBalance::DrawBalance(Int_t iAnalysisType) {
-
+TGraphErrors *AliBalancePsi::DrawBalance(Int_t iAnalysisType, Int_t gPsiBin) {
   // Draws the BF
   Double_t x[MAXIMUM_NUMBER_OF_STEPS];
   Double_t xer[MAXIMUM_NUMBER_OF_STEPS];
   Double_t b[MAXIMUM_NUMBER_OF_STEPS];
   Double_t ber[MAXIMUM_NUMBER_OF_STEPS];
 
-  if((fNp[iAnalysisType] == 0)||(fNn[iAnalysisType] == 0)) {
+  if((fNp[iAnalysisType][gPsiBin] == 0)||(fNn[iAnalysisType][gPsiBin] == 0)) {
     cerr<<"Couldn't find any particles in the analyzed interval!!!"<<endl;
     return NULL;
   }
   
   for(Int_t i = 0; i < fNumberOfBins[iAnalysisType]; i++) {
-    b[i] = GetBalance(iAnalysisType,i);
-    ber[i] = GetError(iAnalysisType,i);
+    b[i] = GetBalance(iAnalysisType,gPsiBin,i);
+    ber[i] = GetError(iAnalysisType,gPsiBin,i);
     x[i] = fP2Start[iAnalysisType] + fP2Step[iAnalysisType]*i + fP2Step[iAnalysisType]/2;
     xer[i] = 0.0;
   }
@@ -659,7 +668,7 @@ TGraphErrors *AliBalance::DrawBalance(Int_t iAnalysisType) {
 }
 
 //____________________________________________________________________//
-void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
+void AliBalancePsi::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   //Prints the calculated width of the BF and its error
   Double_t x[MAXIMUM_NUMBER_OF_STEPS];
   Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
@@ -693,7 +702,7 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   
   Double_t delta = gSumBiXi / gSumBi;
   Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
-  cout<<"Analysis type: "<<gBFAnalysisType[iAnalysisType].Data()<<endl;
+  cout<<"Analysis type: "<<gBFPsiAnalysisType[iAnalysisType].Data()<<endl;
   cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
   cout<<"New error: "<<deltaErrorNew<<endl;
   cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
@@ -701,33 +710,29 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
 }
  
 //____________________________________________________________________//
-TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow) {
+TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t psiMin, Double_t psiMax) {
   //Returns the BF histogram, extracted from the 6 TH2D objects 
-  //(private members) of the AliBalance class.
-  //
-  // Acceptance correction: 
-  // - only for analysis type = kEta
-  // - only if etaWindow > 0 (default = -1.)
-  // - calculated as proposed by STAR 
+  //(private members) of the AliBalancePsi class.
   //
   TString gAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
   TString histName = "gHistBalanceFunctionHistogram";
   histName += gAnalysisType[iAnalysisType];
 
-  SetInterval(iAnalysisType, fHistP[iAnalysisType]->GetYaxis()->GetXmin(),
-	      fHistP[iAnalysisType]->GetYaxis()->GetXmin(),
-	      fHistPP[iAnalysisType]->GetNbinsY(),
-	      fHistPP[iAnalysisType]->GetYaxis()->GetXmin(),
-	      fHistPP[iAnalysisType]->GetYaxis()->GetXmax());
+  SetInterval(iAnalysisType, fHistP[iAnalysisType]->GetZaxis()->GetXmin(),
+	      fHistP[iAnalysisType]->GetZaxis()->GetXmin(),
+	      fHistPP[iAnalysisType]->GetNbinsZ(),
+	      fHistPP[iAnalysisType]->GetZaxis()->GetXmin(),
+	      fHistPP[iAnalysisType]->GetZaxis()->GetXmax(),
+	      psiMax-psiMin);
 
   // determine the projection thresholds
   Int_t binMinX, binMinY, binMinZ;
   Int_t binMaxX, binMaxY, binMaxZ;
 
-  fHistPP[iAnalysisType]->GetBinXYZ(fHistPP[iAnalysisType]->FindBin(centrMin),binMinX,binMinY,binMinZ);
-  fHistPP[iAnalysisType]->GetBinXYZ(fHistPP[iAnalysisType]->FindBin(centrMax),binMaxX,binMaxY,binMaxZ);
+  fHistPP[iAnalysisType]->GetBinXYZ(fHistPP[iAnalysisType]->FindBin(centrMin,psiMin),binMinX,binMinY,binMinZ);
+  fHistPP[iAnalysisType]->GetBinXYZ(fHistPP[iAnalysisType]->FindBin(centrMax,psiMax),binMaxX,binMaxY,binMaxZ);
 
-  TH1D *gHistBalanceFunctionHistogram = new TH1D(histName.Data(),"",fHistPP[iAnalysisType]->GetNbinsY(),fHistPP[iAnalysisType]->GetYaxis()->GetXmin(),fHistPP[iAnalysisType]->GetYaxis()->GetXmax());
+  TH1D *gHistBalanceFunctionHistogram = new TH1D(histName.Data(),"",fHistPP[iAnalysisType]->GetNbinsZ(),fHistPP[iAnalysisType]->GetZaxis()->GetXmin(),fHistPP[iAnalysisType]->GetZaxis()->GetXmax());
   switch(iAnalysisType) {
   case kRapidity:
     gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta y");
@@ -761,12 +766,12 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     break;
   }
 
-  TH1D *hTemp1 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistPN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
-  TH1D *hTemp2 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f_copy",fHistPN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
-  TH1D *hTemp3 = dynamic_cast<TH1D *>(fHistNN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistNN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
-  TH1D *hTemp4 = dynamic_cast<TH1D *>(fHistPP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistPP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
-  TH1D *hTemp5 = dynamic_cast<TH1D *>(fHistN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
-  TH1D *hTemp6 = dynamic_cast<TH1D *>(fHistP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
+  TH1D *hTemp1 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->ProjectionZ(Form("%s_Cent_%.0f_%.0f_Psi_%.0f_%.0f",fHistPN[iAnalysisType]->GetName(),centrMin,centrMax,psiMin,psiMax),binMinX,binMaxX,binMinY,binMaxY));
+  TH1D *hTemp2 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->ProjectionZ(Form("%s_Cent_%.0f_%.0f_Psi_%.0f_%.0f_copy",fHistPN[iAnalysisType]->GetName(),centrMin,centrMax,psiMin,psiMax),binMinX,binMaxX,binMinY,binMaxY));
+  TH1D *hTemp3 = dynamic_cast<TH1D *>(fHistNN[iAnalysisType]->ProjectionZ(Form("%s_Cent_%.0f_%.0f_Psi_%.0f_%.0f",fHistNN[iAnalysisType]->GetName(),centrMin,centrMax,psiMin,psiMax),binMinX,binMaxX,binMinY,binMaxY));
+  TH1D *hTemp4 = dynamic_cast<TH1D *>(fHistPP[iAnalysisType]->ProjectionZ(Form("%s_Cent_%.0f_%.0f_Psi_%.0f_%.0f",fHistPP[iAnalysisType]->GetName(),centrMin,centrMax,psiMin,psiMax),binMinX,binMaxX,binMinY,binMaxY));
+  TH1D *hTemp5 = dynamic_cast<TH1D *>(fHistN[iAnalysisType]->ProjectionZ(Form("%s_Cent_%.0f_%.0f_Psi_%.0f_%.0f",fHistN[iAnalysisType]->GetName(),centrMin,centrMax,psiMin,psiMax),binMinX,binMaxX,binMinY,binMaxY));
+  TH1D *hTemp6 = dynamic_cast<TH1D *>(fHistP[iAnalysisType]->ProjectionZ(Form("%s_Cent_%.0f_%.0f_Psi_%.0f_%.0f",fHistP[iAnalysisType]->GetName(),centrMin,centrMax,psiMin,psiMax),binMinX,binMaxX,binMinY,binMaxY));
 
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)) {
     hTemp1->Sumw2();
@@ -781,17 +786,6 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     gHistBalanceFunctionHistogram->Scale(0.5/fP2Step[iAnalysisType]);
   }
 
-  // do the acceptance correction (only for Eta and etaWindow > 0)
-  if(iAnalysisType == kEta && etaWindow > 0){
-    for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
-      
-      Double_t notCorrected = gHistBalanceFunctionHistogram->GetBinContent(iBin+1);
-      Double_t corrected    = notCorrected / (1 - (gHistBalanceFunctionHistogram->GetBinCenter(iBin+1))/ etaWindow );
-      gHistBalanceFunctionHistogram->SetBinContent(iBin+1, corrected);
-      
-    }
-  }
-  
   PrintResults(iAnalysisType,gHistBalanceFunctionHistogram);
 
   return gHistBalanceFunctionHistogram;
