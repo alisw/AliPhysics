@@ -650,13 +650,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
     
     if (fTwoTrackEfficiencyCut)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, 0, weight, kTRUE, bSign);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, 0, weight, kTRUE, kTRUE, bSign);
   }
 
-  // Two-track effect study
-  if (fTwoTrackEfficiencyStudy)
-    fHistos->TwoTrackEfficiency(tracksClone, 0, bSign);
-  
   // fill second time with SPD centrality
   if (fCompareCentralities && centralityObj)
   {
@@ -664,7 +660,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     if (centrality >= 0)
       fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight);
   }
-    
+  
   if (fFillMixed)
   {
     // event mixing
@@ -708,9 +704,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       {
 	TObjArray* bgTracks = pool->GetEvent(jMix);
 	
-	if (fTwoTrackEfficiencyStudy)
-	  fHistos->TwoTrackEfficiency(tracksClone, bgTracks, bSign);
-
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0));
 
 	if (fTwoTrackEfficiencyCut)

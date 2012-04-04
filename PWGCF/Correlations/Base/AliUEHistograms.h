@@ -10,6 +10,7 @@
 
 #include "TNamed.h"
 #include "AliUEHist.h"
+#include "TMath.h"
 
 class AliVParticle;
 
@@ -32,8 +33,6 @@ class AliUEHistograms : public TNamed
   void FillEvent(Int_t eventType, Int_t step);
   void FillEvent(Double_t centrality, Int_t step);
   void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality = 0);
-  
-  void TwoTrackEfficiency(TObjArray* tracks, TObjArray* mixed, Float_t bSign);
   
   void CopyReconstructedData(AliUEHistograms* from);
   
@@ -90,6 +89,7 @@ protected:
   Int_t CountParticles(TList* list, Float_t ptMin);
   void DeleteContainers();
   Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0);
+  inline Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
   
   static const Int_t fgkUEHists; // number of histograms
 
@@ -125,5 +125,31 @@ protected:
   
   ClassDef(AliUEHistograms, 13)  // underlying event histogram container
 };
+
+Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
+{ 
+  //
+  // calculates dphistar
+  //
+  
+  Float_t dphistar = phi1 - phi2 - charge1 * bSign * TMath::ASin(0.075 * radius / pt1) + charge2 * bSign * TMath::ASin(0.075 * radius / pt2);
+  
+  static const Double_t kPi = TMath::Pi();
+  
+  // circularity
+//   if (dphistar > 2 * kPi)
+//     dphistar -= 2 * kPi;
+//   if (dphistar < -2 * kPi)
+//     dphistar += 2 * kPi;
+  
+  if (dphistar > kPi)
+    dphistar = kPi * 2 - dphistar;
+  if (dphistar < -kPi)
+    dphistar = -kPi * 2 - dphistar;
+  if (dphistar > kPi) // might look funny but is needed
+    dphistar = kPi * 2 - dphistar;
+  
+  return dphistar;
+}
 
 #endif
