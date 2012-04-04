@@ -117,6 +117,7 @@ class AliTrackPointArray : public TObject {
   const UShort_t* GetVolumeID() const { return &fVolumeID[0]; }
 
   Bool_t    HasVolumeID(UShort_t volid) const;
+  void      Print(Option_t *) const;
 
   void Sort(Bool_t down=kTRUE);
 

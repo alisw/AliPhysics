@@ -271,6 +271,18 @@ void AliTrackPointArray::Sort(Bool_t down)
   fSorted=kTRUE;
 }
 
+//_____________________________________________________________________________
+void AliTrackPointArray::Print(Option_t *) const
+{
+  // Print the space-point coordinates and modules info
+  for (int i=0;i<fNPoints;i++) {
+    printf("#%3d VID %5d XYZ:%+9.3f/%+9.3f/%+9.3f |q: %+7.2f |DT: %+8.1f| ChR: %+.2e |Cl: %d %s\n",
+	   i,fVolumeID[i],fX[i],fY[i],fZ[i],fCharge[i],fDriftTime[i],
+	   fChargeRatio[i],fClusterType[i],fIsExtra[i] ? "|E":"");
+  }
+}
+
+
 ClassImp(AliTrackPoint)
 
 //______________________________________________________________________________
