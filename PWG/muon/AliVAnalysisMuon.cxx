@@ -52,6 +52,7 @@
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliCounterCollection.h"
+#include "AliVVertex.h"
 
 // ANALYSIS includes
 #include "AliAnalysisManager.h"
@@ -88,6 +89,7 @@ AliVAnalysisMuon::AliVAnalysisMuon() :
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
+  fMinNvtxContirbutors(0),
   fSelectedTrigPattern(0x0),
   fRejectedTrigPattern(0x0),
   fSelectedTrigLevel(0x0),
@@ -112,6 +114,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
+  fMinNvtxContirbutors(1),
   fSelectedTrigPattern(new TObjArray()),
   fRejectedTrigPattern(new TObjArray()),
   fSelectedTrigLevel(new TObjArray()),
@@ -145,6 +148,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
+  fMinNvtxContirbutors(1),
   fSelectedTrigPattern(new TObjArray()),
   fRejectedTrigPattern(new TObjArray()),
   fSelectedTrigLevel(new TObjArray()),
@@ -179,6 +183,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pair
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
+  fMinNvtxContirbutors(1),
   fSelectedTrigPattern(new TObjArray()),
   fRejectedTrigPattern(new TObjArray()),
   fSelectedTrigLevel(new TObjArray()),
@@ -575,6 +580,19 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
   
   return motherType;
 }
+
+
+//________________________________________________________________________
+AliVVertex* AliVAnalysisMuon::GetVertexSPD() const
+{
+  //
+  /// Get vertex SPD
+  //
+  
+  AliVVertex* primaryVertex = ( fAODEvent ) ? (AliVVertex*)fAODEvent->GetPrimaryVertexSPD() : (AliVVertex*)fESDEvent->GetPrimaryVertexSPD();
+  return primaryVertex;
+}
+
 
 //________________________________________________________________________
 Bool_t AliVAnalysisMuon::AddObjectToCollection(TObject* object, Int_t index)

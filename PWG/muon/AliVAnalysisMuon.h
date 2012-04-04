@@ -24,6 +24,7 @@ class AliESDEvent;
 class AliCFGridSparse;
 class AliMuonTrackCuts;
 class AliMuonPairCuts;
+class AliVVertex;
 
 class AliVAnalysisMuon : public AliAnalysisTaskSE {
  public:
@@ -104,6 +105,11 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   Bool_t TrackPtCutMatchTrigClass(AliVParticle* track, TString trigClassName);
   Int_t GetTrigClassPtCutLevel(TString trigClassName);
   
+  // Methods for event information
+  AliVVertex* GetVertexSPD() const;
+  /// Set minimum number of vertex contributors
+  void SetMinNvtxContributors(Int_t minNvtxContributors) { fMinNvtxContirbutors = minNvtxContributors; }
+  
   enum {
     kPhysSelPass,    ///< Physics selected events
     kPhysSelReject,  ///< Events non-passing selection
@@ -136,6 +142,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   AliCounterCollection* fEventCounters;  //!< event counters
   AliMergeableCollection* fMergeableCollection; //!< collection of mergeable objects
   TObjArray* fOutputList;  //!< List of outputs  
+  Int_t fMinNvtxContirbutors;  ///< Minimum number of vertex contributors
 
  private:
   AliVAnalysisMuon(const AliVAnalysisMuon&);
@@ -150,7 +157,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   TObjArray* fSelectedTrigLevel;   ///< Track-trigger pt cut for selected trigger class
   TObjArray* fOutputPrototypeList; //!< List of prototype object to be used in collection
 
-  ClassDef(AliVAnalysisMuon, 2);
+  ClassDef(AliVAnalysisMuon, 3);
 };
 
 #endif
