@@ -46,6 +46,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fEvent(NULL),
   fSP(NULL),
   fListHistos(NULL),
+  fMinimalBook(kFALSE),
   fUsePhiWeights(usePhiWeights),
   fListWeights(NULL),
   fRelDiffMsub(1.0),
@@ -76,6 +77,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fEvent(NULL),
   fSP(NULL),
   fListHistos(NULL),
+  fMinimalBook(kFALSE),
   fUsePhiWeights(kFALSE),
   fListWeights(NULL),
   fRelDiffMsub(1.0),
@@ -112,6 +114,7 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
   
   //Analyser
   fSP = new AliFlowAnalysisWithScalarProduct();
+  fSP->SetBookOnlyBasicCCH(fMinimalBook);
 
   //set the allowed relative difference in the subevent multiplicities
   //fSP->SetRelDiffMsub(fRelDiffMsub); 

@@ -44,6 +44,7 @@ class AliFlowAnalysisWithScalarProduct {
    void SetApplyCorrectionForNUA(Bool_t iVal) { fApplyCorrectionForNUA = iVal?1:0; }
    void SetNormalizationType(Int_t iVal)      { fNormalizationType = iVal; }
    void SetDebug(Bool_t bVal)                 { fDebug = bVal; }
+   void SetBookOnlyBasicCCH(Bool_t bVal)           { fMinimalBook = bVal; }
    void SetTotalQvector(Int_t iVal)           { fTotalQvector = iVal; }
 
    void SetUsePhiWeights(Bool_t bVal)        { fUsePhiWeights = bVal; }
@@ -70,6 +71,7 @@ class AliFlowAnalysisWithScalarProduct {
 
       
    Int_t fDebug ;                // flag for analysis: more print statements
+   Bool_t fMinimalBook;          // flag to turn off QA and minimize FlowCommonHist
    Int_t fUsePhiWeights;         // use phi weights
    Int_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance
    Int_t fHarmonic;              // harmonic 

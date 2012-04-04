@@ -46,6 +46,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
 //-----------------------------------------------------------------------
 AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
 fDebug(0),
+fMinimalBook(kFALSE),
 fUsePhiWeights(0),
 fApplyCorrectionForNUA(0),
 fHarmonic(2),
@@ -122,7 +123,7 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   tQARelated->SetName("QA");
   tQARelated->SetOwner();
 
-  fCommonHists = new AliFlowCommonHist("AliFlowCommonHist_SP");
+  fCommonHists = new AliFlowCommonHist("AliFlowCommonHist_SP","AliFlowCommonHist",fMinimalBook);
   (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
   fHistList->Add(fCommonHists);
 
@@ -235,55 +236,56 @@ void AliFlowAnalysisWithScalarProduct::Init() {
     nuaRelated->Add( fPhiWeightsSub[1] );
   }
 
+  if(!fMinimalBook) {
+    fHistProQNorm = new TProfile("FlowPro_QNorm_SP","FlowPro_QNorm_SP",       1,0.5,1.5,"s");
+    fHistProQNorm->SetYTitle("<|Qa+Qb|>");
+    tQARelated->Add(fHistProQNorm);
 
-  fHistProQNorm = new TProfile("FlowPro_QNorm_SP","FlowPro_QNorm_SP",       1,0.5,1.5,"s");
-  fHistProQNorm->SetYTitle("<|Qa+Qb|>");
-  tQARelated->Add(fHistProQNorm);
+    fHistProQaQb  = new TProfile("FlowPro_QaQb_SP","FlowPro_QaQb_SP",         1,0.5,1.5,"s");
+    fHistProQaQb->SetYTitle("<QaQb>");
+    tQARelated->Add(fHistProQaQb);
 
-  fHistProQaQb  = new TProfile("FlowPro_QaQb_SP","FlowPro_QaQb_SP",         1,0.5,1.5,"s");
-  fHistProQaQb->SetYTitle("<QaQb>");
-  tQARelated->Add(fHistProQaQb);
+    fHistProQaQbM = new TProfile("FlowPro_QaQbvsM_SP","FlowPro_QaQbvsM_SP",1000,0.0,10000);
+    fHistProQaQbM->SetYTitle("<QaQb>");
+    fHistProQaQbM->SetXTitle("M");
+    fHistProQaQbM->Sumw2();
+    tQARelated->Add(fHistProQaQbM);
 
-  fHistProQaQbM = new TProfile("FlowPro_QaQbvsM_SP","FlowPro_QaQbvsM_SP",1000,0.0,10000);
-  fHistProQaQbM->SetYTitle("<QaQb>");
-  fHistProQaQbM->SetXTitle("M");
-  fHistProQaQbM->Sumw2();
-  tQARelated->Add(fHistProQaQbM);
+    fHistMaMb = new TH2D("Flow_MavsMb_SP","Flow_MavsMb_SP",100,0.,100.,100,0.,100.);
+    fHistMaMb->SetYTitle("Ma");
+    fHistMaMb->SetXTitle("Mb");
+    tQARelated->Add(fHistMaMb);
 
-  fHistMaMb = new TH2D("Flow_MavsMb_SP","Flow_MavsMb_SP",100,0.,100.,100,0.,100.);
-  fHistMaMb->SetYTitle("Ma");
-  fHistMaMb->SetXTitle("Mb");
-  tQARelated->Add(fHistMaMb);
+    fHistQNormQaQbNorm = new TH2D("Flow_QNormvsQaQbNorm_SP","Flow_QNormvsQaQbNorm_SP",88,-1.1,1.1,22,0.,1.1);
+    fHistQNormQaQbNorm->SetYTitle("|Q/Mq|");
+    fHistQNormQaQbNorm->SetXTitle("QaQb/MaMb");
+    tQARelated->Add(fHistQNormQaQbNorm);
 
-  fHistQNormQaQbNorm = new TH2D("Flow_QNormvsQaQbNorm_SP","Flow_QNormvsQaQbNorm_SP",88,-1.1,1.1,22,0.,1.1);
-  fHistQNormQaQbNorm->SetYTitle("|Q/Mq|");
-  fHistQNormQaQbNorm->SetXTitle("QaQb/MaMb");
-  tQARelated->Add(fHistQNormQaQbNorm);
+    fHistQaNormMa = new TH2D("Flow_QaNormvsMa_SP","Flow_QaNormvsMa_SP",100,0.,100.,22,0.,1.1);
+    fHistQaNormMa->SetYTitle("|Qa/Ma|");
+    fHistQaNormMa->SetXTitle("Ma");
+    tQARelated->Add(fHistQaNormMa);
 
-  fHistQaNormMa = new TH2D("Flow_QaNormvsMa_SP","Flow_QaNormvsMa_SP",100,0.,100.,22,0.,1.1);
-  fHistQaNormMa->SetYTitle("|Qa/Ma|");
-  fHistQaNormMa->SetXTitle("Ma");
-  tQARelated->Add(fHistQaNormMa);
+    fHistQbNormMb = new TH2D("Flow_QbNormvsMb_SP","Flow_QbNormvsMb_SP",100,0.,100.,22,0.,1.1);
+    fHistQbNormMb->SetYTitle("|Qb/Mb|");
+    fHistQbNormMb->SetXTitle("Mb");
+    tQARelated->Add(fHistQbNormMb);
 
-  fHistQbNormMb = new TH2D("Flow_QbNormvsMb_SP","Flow_QbNormvsMb_SP",100,0.,100.,22,0.,1.1);
-  fHistQbNormMb->SetYTitle("|Qb/Mb|");
-  fHistQbNormMb->SetXTitle("Mb");
-  tQARelated->Add(fHistQbNormMb);
+    fResolution = new TH1D("Flow_resolution_SP","Flow_resolution_SP",100,-1.0,1.0);
+    fResolution->SetYTitle("dN/d(Cos2(#phi_a - #phi_b))");
+    fResolution->SetXTitle("Cos2(#phi_a - #phi_b)");
+    tQARelated->Add(fResolution);
 
-  fResolution = new TH1D("Flow_resolution_SP","Flow_resolution_SP",100,-1.0,1.0);
-  fResolution->SetYTitle("dN/d(Cos2(#phi_a - #phi_b))");
-  fResolution->SetXTitle("Cos2(#phi_a - #phi_b)");
-  tQARelated->Add(fResolution);
+    fHistQaQb = new TH1D("Flow_QaQb_SP","Flow_QaQb_SP",200,-100.,100.);
+    fHistQaQb->SetYTitle("dN/dQaQb");
+    fHistQaQb->SetXTitle("dQaQb");
+    tQARelated->Add(fHistQaQb);
 
-  fHistQaQb = new TH1D("Flow_QaQb_SP","Flow_QaQb_SP",200,-100.,100.);
-  fHistQaQb->SetYTitle("dN/dQaQb");
-  fHistQaQb->SetXTitle("dQaQb");
-  tQARelated->Add(fHistQaQb);
-
-  fHistQaQbCos = new TH1D("Flow_QaQbCos_SP","Flow_QaQbCos_SP",63,0.,TMath::Pi());
-  fHistQaQbCos->SetYTitle("dN/d#phi");
-  fHistQaQbCos->SetXTitle("#phi");
-  tQARelated->Add(fHistQaQbCos);
+    fHistQaQbCos = new TH1D("Flow_QaQbCos_SP","Flow_QaQbCos_SP",63,0.,TMath::Pi());
+    fHistQaQbCos->SetYTitle("dN/d#phi");
+    fHistQaQbCos->SetXTitle("#phi");
+    tQARelated->Add(fHistQaQbCos);
+  }
 
   fHistList->Add(uQRelated);
   fHistList->Add(nuaRelated);
@@ -421,16 +423,18 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     dWq = fNormalizationType ? dMq : 1;
 
     //Filling QA (for compatibility with previous version)
-    fHistProQaQb->Fill(1,vQa*vQb,1);
-    fHistProQaQbM->Fill(anEvent->GetNumberOfRPs()+0.5,(vQa*vQb)/dMa/dMb,dMa*dMb);
-    fHistQaQbCos->Fill(TMath::ACos((vQa*vQb)/vQa.Mod()/vQb.Mod()));
-    fResolution->Fill( TMath::Cos( vQa.Phi()-vQb.Phi() ) );
-    fHistQaQb->Fill(vQa*vQb);
-    fHistMaMb->Fill(dMb,dMa);
-    fHistProQNorm->Fill(1,vQm.Mod()/dMq,dMq);
-    fHistQNormQaQbNorm->Fill((vQa*vQb)/dMa/dMb,vQm.Mod()/dMq);
-    fHistQaNormMa->Fill(dMa,vQa.Mod()/dMa);
-    fHistQbNormMb->Fill(dMb,vQb.Mod()/dMb);
+    if(!fMinimalBook) {
+      fHistProQaQb->Fill(1,vQa*vQb,1);
+      fHistProQaQbM->Fill(anEvent->GetNumberOfRPs()+0.5,(vQa*vQb)/dMa/dMb,dMa*dMb);
+      fHistQaQbCos->Fill(TMath::ACos((vQa*vQb)/vQa.Mod()/vQb.Mod()));
+      fResolution->Fill( TMath::Cos( vQa.Phi()-vQb.Phi() ) );
+      fHistQaQb->Fill(vQa*vQb);
+      fHistMaMb->Fill(dMb,dMa);
+      fHistProQNorm->Fill(1,vQm.Mod()/dMq,dMq);
+      fHistQNormQaQbNorm->Fill((vQa*vQb)/dMa/dMb,vQm.Mod()/dMq);
+      fHistQaNormMa->Fill(dMa,vQa.Mod()/dMa);
+      fHistQbNormMb->Fill(dMb,vQb.Mod()/dMb);
+    }
 
     Double_t dUQ = vU*vQm;
 

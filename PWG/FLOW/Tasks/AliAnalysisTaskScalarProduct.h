@@ -46,6 +46,8 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   
   void SetTotalQvector(const char *tqv) {*this->fTotalQvector = tqv;}; 
 
+  void SetBookOnlyBasicCCH(Bool_t const aMB) {this->fMinimalBook = aMB;}
+
  private:
 
   AliAnalysisTaskScalarProduct(const AliAnalysisTaskScalarProduct& aAnalysisTask);
@@ -55,6 +57,7 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   AliFlowAnalysisWithScalarProduct* fSP;            // analysis object
   TList*                            fListHistos;    // collection of output
 
+  Bool_t    fMinimalBook;   // flag to turn off QA and minimize FlowCommonHist                                                                                                                                                
   Bool_t    fUsePhiWeights; // use phi weights
   TList*    fListWeights;   // list with weights
 
@@ -67,7 +70,7 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
 
   TString   *fTotalQvector;      // total Q-vector is: "QaQb" (means Qa+Qb), "Qa"  or "Qb"  
   
-  ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
+  ClassDef(AliAnalysisTaskScalarProduct, 2); // example of analysis
 };
 
 //==================================================================
