@@ -54,13 +54,6 @@ void AddAnalysisTasks(Bool_t writeITSTP, Bool_t useTPCcrv)
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->SetCommonFileName("RecoQAresults.root");
   //
-  if (writeITSTP) {
-    AliAODHandler* aodHandler = new AliAODHandler();
-    aodHandler->SetOutputFileName( "AODtpITS.root" );
-    aodHandler->SetCreateNonStandardAOD();
-    mgr->SetOutputEventHandler(aodHandler);
-  }
-  //
   // Event Statistics (Jan Fiete)
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
@@ -75,6 +68,14 @@ void AddAnalysisTasks(Bool_t writeITSTP, Bool_t useTPCcrv)
   itsAlign->SetDoSDDDriftTime(kFALSE);
   itsAlign->SetMinMaxMult(20.,1070.);
   itsAlign->SetUseTPCMomentum(useTPCcrv);
-  //
   itsAlign->SetDoFillTPTree(writeITSTP);
+  //
+  if (writeITSTP) {
+    AliAnalysisDataContainer *coutputTP = mgr->CreateContainer("ITSSumTP",
+							       TTree::Class(),
+							       AliAnalysisManager::kOutputContainer,
+							       "AODtpITS.root" );
+    mgr->ConnectOutput(itsAlign, 2, coutputTP);
+  }
+  //
 }
