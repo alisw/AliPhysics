@@ -190,11 +190,8 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
 
   ofstream outFile(outFilename.Data());
 
-  // if ( outTaskFilename.Contains("QAresults.root") ) {
   const Int_t kNlibs = 5; // 1
-  //TString loadLibs[kNlibs] = {"libPWGHFbase.so"};
-  //TString loadLibs[kNlibs] = {"libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWGPP.so", "libPWGHFbase.so"};
-  TString loadLibs[kNlibs] = {"libANALYSIS.so", "libOADB.so", "libANALYSISalice.so", "libCORRFW.so", "libPWGHFbase.so"};
+  TString loadLibs[kNlibs] = {"libANALYSIS.so", "libOADB.so", "libANALYSISalice.so", "libCORRFW.so", "libPWGmuon.so"};
   for ( Int_t ilib=0; ilib<kNlibs; ilib++ ) {
     Int_t exitVal = gSystem->Load(loadLibs[ilib].Data());
     if ( exitVal < 0 ) {
@@ -202,7 +199,6 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
       return;
     }
   }
-  //}
 
   if ( ! gGrid )
     TGrid::Connect("alien://");
