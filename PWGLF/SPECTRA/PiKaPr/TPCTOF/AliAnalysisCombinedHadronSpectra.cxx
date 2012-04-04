@@ -69,7 +69,8 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra()
     fMCtrue(0),
     fOnlyQA(0),
     fUseHBTmultiplicity(0),
-	fUseTPConlyTracks(0),
+    fUseTPConlyTracks(0),
+    fSaveMotherPDG(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -92,7 +93,8 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
     fMCtrue(0),
     fOnlyQA(0),
     fUseHBTmultiplicity(0),
-	fUseTPConlyTracks(0),
+    fUseTPConlyTracks(0),
+    fSaveMotherPDG(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -226,7 +228,7 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   // (6.) has valid TOF pid signal
   // (7.) nsigma TOF --> filled 4x
   // (8..) dca_xy
-  // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident, 3-second weak, 4-second material
+  // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident prim, 3-second weak, 4-second material, 5-misident sec, 6-sec. K0, 7-sec. lambda, 8-sec sigma+
   //
   //                              0,           1,           2,  3,       4,   5,    6,   7,       8
   Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,      10,   50,    2,  80, kDcaBins};
@@ -245,10 +247,18 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   fHistPidQA = new TH3D("fHistPidQA","PID QA",500,0.1,10,1000,0,1000,2,-2,2);
   BinLogAxis(fHistPidQA);
   fListHist->Add(fHistPidQA);
+  
   //                            0,            1,           2,  3,      4,   5,    6,   7,        8,    9
-  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     10,  50,    2,  80, kDcaBins,    5};
+  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     10,  50,    2,  80, kDcaBins,    6};
   Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -0.5,  -5,- 0.5,  -8,       -3, -0.5};
-  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    0.5,   5,  1.5,   8,        3,  4.5};
+  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    0.5,   5,  1.5,   8,        3,  5.5};
+
+  //different binning for CODE axis, if we want to save motherPDG
+  if (fSaveMotherPDG) {
+    binsHistMC[9] = 9;
+    xmaxHistMC[9] = 8.5;
+  }
+
   fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",10,binsHistMC,xminHistMC,xmaxHistMC);
   fHistMCparticles->GetAxis(2)->Set(kPtBins, binsPt);
 
@@ -639,8 +649,9 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
       // using MC truth for precise efficiencies...
       //
       if (fMCtrue && !fOnlyQA) {
-	Int_t code = 5; // code: 0-generated, 1-true rec. primaries, 2-misident, 3-second weak, 4-second material
+	Int_t code = 9; // code: 0-generated, 1-true rec. primaries, 2-misident, 3-second weak, 4-second material
 	Int_t assumedPdg = 0;//2212(proton); 321(Kaon); 211(pion);
+	Int_t motherCode = -1;
 	if (iPart == 0) assumedPdg = 211;
 	if (iPart == 1) assumedPdg = 321;
 	if (iPart == 2) assumedPdg = 2212;
@@ -649,10 +660,19 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
 	Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
 	//
-	if (pdg != assumedPdg) code = 2;
+	if (pdg != assumedPdg && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 2;
+	if (pdg != assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 5;
 	if (pdg == assumedPdg && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 1;
 	if (pdg == assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 3;
-	if (pdg == assumedPdg && stack->IsSecondaryFromMaterial(TMath::Abs(track->GetLabel()))) code = 4;
+	if (pdg == assumedPdg && stack->IsSecondaryFromMaterial(TMath::Abs(track->GetLabel()))){
+	  code = 4;
+	  if (fSaveMotherPDG){
+	    TParticle *trackMother =  stack->Particle(TMath::Abs(trackMC->GetFirstMother()));
+	    if (trackMother->GetPdgCode() == 310) motherCode = 6; //K0
+	    if (trackMother->GetPdgCode() == 3122) motherCode = 7; //Lambda
+	    if (trackMother->GetPdgCode() == 3222) motherCode = 8; //Sigma+
+	  }
+	}
 	//
 	// muons need special treatment, because they are indistinguishable from pions
 	//
@@ -670,7 +690,13 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	//
 	//                              0,           1,   2,    3,           4,               5,      6,               7,      8,   9
 	Double_t vectorHistMC[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], code};
-	if (!fOnlyQA) fHistMCparticles->Fill(vectorHistMC);
+	if (!fOnlyQA) { 
+	  fHistMCparticles->Fill(vectorHistMC);
+	  if (motherCode != -1 && fSaveMotherPDG) { //if mother of weak decay is K0, lambda or sigma+ add track again with this information
+	    Double_t vectorHistMCmother[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], motherCode};
+	    fHistMCparticles->Fill(vectorHistMCmother);
+	  }
+	}
       }
       //
       //
