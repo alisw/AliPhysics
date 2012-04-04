@@ -20,7 +20,6 @@
 #include <TProfile.h>
 #include <TChain.h>
 #include <TGeoGlobalMagField.h>
-#include "AliAODHandler.h"
 #include "AliESDInputHandlerRP.h"
 #include "AliITSSumTP.h"
 #include "AliMagF.h"
@@ -81,6 +80,7 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fCutDCAZ(1.e10),
   fFitter(0),
   fITSSumTP(),
+  fTPTree(),
   fRunNb(0),
   fOCDBLocation("local://$ALICE_ROOT/OCDB")
 {
@@ -95,9 +95,12 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
 //___________________________________________________________________________
 AliAnalysisTaskITSAlignQA::~AliAnalysisTaskITSAlignQA(){
   //
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutput;
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    delete fOutput;
+    delete fITSSumTP;
+  }
   delete fFitter;
-  delete fITSSumTP;
+  delete fTPTree;
   //
 }
 //___________________________________________________________________________
@@ -130,12 +133,16 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   if(fDoSSDResiduals) CreateSSDHistos();
   //
   if (fDoFillTPTree) {
+    TFile* troutf = OpenFile(2);
+    if (!troutf) {
+      AliFatal("Failed to open output file for AliITSSumTP tree");
+      exit(1);
+    }
     fITSSumTP = new AliITSSumTP();
-    AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
-    if (!handler) AliFatal("TP tree requested but AOD handler is not available");
-    handler->AddBranch("AliITSSumTP",&fITSSumTP);
-    handler->SetFillAOD(kFALSE); // manual fill
+    fTPTree = new TTree("ITSSumTP","ITS TP Summary");
+    fTPTree->Branch("AliITSSumTP","AliITSSumTP",&fITSSumTP);
     CreateUserInfo();
+    PostData(2,fTPTree);
   }
   //
   PostData(1,fOutput);
@@ -399,8 +406,7 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
       }
     }
     fITSSumTP->SetUniqueID(fCurrentRunNumber);
-    AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
-    if (ntp) handler->FillTree();
+    if (ntp) fTPTree->Fill();
   }
 
   //
@@ -664,8 +670,8 @@ void AliAnalysisTaskITSAlignQA::Terminate(Option_t */*option*/)
 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
   if(fHistNEvents){
-    printf("Number of analyzed events = %d, %d tracks accepted\n",
-	   (Int_t)fHistNEvents->GetBinContent(kEvAcc+1),(Int_t)fHistNEvents->GetBinContent(kNTracks+1));
+    AliInfo(Form("Number of analyzed events = %d, %d tracks accepted",
+		 (Int_t)fHistNEvents->GetBinContent(kEvAcc+1),(Int_t)fHistNEvents->GetBinContent(kNTracks+1)));
   }else{
     printf("Warning: pointer to fHistNEvents is NULL\n");
   }
@@ -761,9 +767,10 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptCentrality(const AliESDEvent *esd) const
 void AliAnalysisTaskITSAlignQA::CreateUserInfo()
 {
   // if needed, set user info of the output tree
-  AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
-  if (!handler) return;
-  TTree* outTree = handler->GetTree();
+  if (!fTPTree) {
+    AliError("TrackPoints summary tree does not exist"); 
+    return;
+  }
   //
   const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();	 
   const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();	 
@@ -790,8 +797,8 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
     cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
   }	 
   // 
-  outTree->GetUserInfo()->Add(cdbMapCopy);	 
-  outTree->GetUserInfo()->Add(cdbListCopy);  
+  fTPTree->GetUserInfo()->Add(cdbMapCopy);	 
+  fTPTree->GetUserInfo()->Add(cdbListCopy);  
   //
   AliMagF *fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   Double_t bz = fld ? fld->SolenoidField() : 0;
@@ -801,6 +808,6 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
   bzList->SetOwner(1);	 
   bzList->SetName("BzkGauss");	 
   bzList->Add(bzObjString);
-  outTree->GetUserInfo()->Add(bzList);
+  fTPTree->GetUserInfo()->Add(bzList);
   //
 }

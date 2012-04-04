@@ -18,13 +18,6 @@ AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALS
     return NULL;
   }
   
-  if (writeITSTP) {
-    AliAODHandler* aodHandler = new AliAODHandler();
-    aodHandler->SetOutputFileName( "AODtpITS.root" );
-    aodHandler->SetCreateNonStandardAOD();
-    mgr->SetOutputEventHandler(aodHandler);
-  }
-
   // Create and configure the task
   AliAnalysisTaskITSAlignQA *taskali = new AliAnalysisTaskITSAlignQA();
   //  taskali->SelectCollisionCandidates();
@@ -52,5 +45,15 @@ AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALS
   
   mgr->ConnectInput(taskali, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskali, 1, coutput1);
+  //
+  if (writeITSTP) { // if the TPtree to be written, create separate container
+    AliAnalysisDataContainer *coutputTP = mgr->CreateContainer("ITSSumTP",
+							       TTree::Class(),
+							       AliAnalysisManager::kOutputContainer,
+							       "AODtpITS.root" );
+    mgr->ConnectOutput(taskali, 2, coutputTP);
+  }
+  //
+
   return taskali;
 }

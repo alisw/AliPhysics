@@ -39,6 +39,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
 
   void SetDoFillTPTree(Bool_t opt){
     fDoFillTPTree=opt;
+    if (fDoFillTPTree) DefineOutput(2,TTree::Class());
   }
   void SetDoSPDResiduals(Bool_t opt){
     fDoSPDResiduals=opt;
@@ -179,7 +180,8 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Double_t fCutDCAXY;        // apply rough XY DCA cut in case of vtx constraint, in terms of standard deviations
   Double_t fCutDCAZ;         // apply rough Z  DCA cut in case of vtx constraint  in terms of standard deviations
   AliITSTPArrayFit* fFitter;  // Track Point fitter
-  AliITSSumTP* fITSSumTP;     // TracPoints summary objects
+  AliITSSumTP* fITSSumTP;     // !TracPoints summary objects
+  TTree*   fTPTree;           // !output tree for trackpoints
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
   ClassDef(AliAnalysisTaskITSAlignQA,6);
