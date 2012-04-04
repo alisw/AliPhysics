@@ -69,8 +69,11 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", const char
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosTrgContam", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s", AliAnalysisManager::GetCommonFileName()));
-  
+  AliAnalysisDataContainer *coutput1 = 
+    mgr->CreateContainer("tender_event", 
+                         AliESDEvent::Class(), 
+                         AliAnalysisManager::kExchangeContainer,
+                         "default_tender");
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 1, coutput1 );
    
