@@ -235,7 +235,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistVz);
 
   //Event plane
-  fHistEventPlane = new TH1F("fHistEventPlane",";#Psi_{2} [rad];Counts",100,0,2.*TMath::Pi());
+  fHistEventPlane = new TH1F("fHistEventPlane",";#Psi_{2} [deg.];Counts",100,0,360.);
   fList->Add(fHistEventPlane);
 
   // QA histograms
@@ -444,7 +444,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gESD,10,2,qxTot,qyTot);
 		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
 		  fHistEventPlane->Fill(gVZEROEventPlane);
-		  gReactionPlane = gVZEROEventPlane;
+		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
 		  //========Get the VZERO event plane========//
 
 		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
@@ -711,7 +711,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gAOD,10,2,qxTot,qyTot);
 		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
 		  fHistEventPlane->Fill(gVZEROEventPlane);
-		  gReactionPlane = gVZEROEventPlane;
+		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
 		  //========Get the VZERO event plane========//
 
       		  //Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
@@ -865,7 +865,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gESD,10,2,qxTot,qyTot);
 		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
 		  fHistEventPlane->Fill(gVZEROEventPlane);
-		  gReactionPlane = gVZEROEventPlane;
+		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
 		  //========Get the VZERO event plane========//
 
 		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
@@ -984,7 +984,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	fCentrality = gImpactParameter;
       }
       fCentrality = gImpactParameter;
-      fHistEventPlane->Fill(gReactionPlane);
+      fHistEventPlane->Fill(gReactionPlane*TMath::RadToDeg());
 
       // take only events inside centrality class (DIDN'T CHANGE THIS UP TO NOW)
       if((fImpactParameterMin > gImpactParameter) || (fImpactParameterMax < gImpactParameter))
@@ -1147,9 +1147,9 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   
   // calculate balance function
   if(fUseMultiplicity) 
-    fBalance->CalculateBalance(gNumberOfAcceptedTracks,gReactionPlane,chargeVector);
+    fBalance->CalculateBalance(gNumberOfAcceptedTracks,gReactionPlane*TMath::RadToDeg(),chargeVector);
   else                 
-    fBalance->CalculateBalance(fCentrality,gReactionPlane,chargeVector);
+    fBalance->CalculateBalance(fCentrality,gReactionPlane*TMath::RadToDeg(),chargeVector);
 
   if(fRunShuffling) {
     // shuffle charges

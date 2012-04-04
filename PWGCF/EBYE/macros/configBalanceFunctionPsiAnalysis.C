@@ -13,9 +13,9 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 
   //Set all analyses separately
   //Rapidity
-  gBalance->SetInterval(AliBalance::kRapidity,-0.8,0.8,16,-0.8,0.8,15.);  
+  gBalance->SetInterval(AliBalance::kRapidity,-0.8,0.8,32,-1.6,1.6,15.);  
   //Eta
-  gBalance->SetInterval(AliBalance::kEta,-0.8,0.8,16,-0.8,0.8,15);
+  gBalance->SetInterval(AliBalance::kEta,-0.8,0.8,32,-1.6,1.6,15);
   //Qlong
   gBalance->SetInterval(AliBalance::kQlong,-1,1,200,0.0,4.0,15);
   //Qout
