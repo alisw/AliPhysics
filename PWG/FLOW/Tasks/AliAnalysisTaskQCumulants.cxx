@@ -45,7 +45,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fEvent(NULL),
  fQC(NULL), 
  fListHistos(NULL),
- fBookOnlyBasicCCH(kFALSE),
+ fBookOnlyBasicCCH(kTRUE),
  fFillMultipleControlHistograms(kFALSE),
  fHarmonic(2),  
  fApplyCorrectionForNUA(kFALSE), 
