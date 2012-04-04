@@ -193,7 +193,7 @@ void runBalanceFunctionPsi(
 
     //Add the BF task (all centralities)
     gROOT->LoadMacro("AddTaskBalancePsiCentralityTrain.C"); 
-    AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(0,100,0,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID);
+    AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(0,100,1,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID);
     
     // enable debug printouts
     //mgr->SetDebugLevel(2);
