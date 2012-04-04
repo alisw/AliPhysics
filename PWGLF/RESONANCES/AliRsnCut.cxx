@@ -110,7 +110,7 @@ AliRsnCut &AliRsnCut::operator=(const AliRsnCut &copy)
 }
 
 //______________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(TObject* /*object*/)
+Bool_t AliRsnCut::IsSelected(TObject * /*object*/)
 {
 //
 // Virtual cut-checking method.

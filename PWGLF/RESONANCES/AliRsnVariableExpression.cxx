@@ -15,7 +15,7 @@
 ClassImp(AliRsnVariableExpression)
 
 //______________________________________________________________________________
-Bool_t AliRsnVariableExpression::Value(TObjArray& /*pgm*/)
+Bool_t AliRsnVariableExpression::Value(TObjArray & /*pgm*/)
 {
 
 //   Int_t indexx = fgCutSet->GetIndexByCutName ( fVname.Data() );

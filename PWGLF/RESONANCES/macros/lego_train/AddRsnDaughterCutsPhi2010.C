@@ -37,7 +37,7 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
    Double_t nSigmaTPC=3.0;
    Double_t nSigmaTOF=3.0;
    Double_t ptTPCMax=0.6;
-   Double_t etaRange=0.8;
+   Double_t etaRange=0.5;
 //     etaRange=0.1;
 
    if (opt.Contains("trackPt")) {
@@ -50,6 +50,8 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
    if (opt.Contains("TPCsigma1")) nSigmaTPC = 1.0;
    if (opt.Contains("TPCsigma2")) nSigmaTPC = 2.0;
    if (opt.Contains("TPCsigma3")) nSigmaTPC = 3.0;
+   if (opt.Contains("TPCsigma1.5")) nSigmaTPC = 1.5;
+   if (opt.Contains("TPCsigma2.5")) nSigmaTPC = 2.5;
 
    if (opt.Contains("TOFsigma1")) nSigmaTOF = 1.0;
    if (opt.Contains("TOFsigma2")) nSigmaTOF = 2.0;

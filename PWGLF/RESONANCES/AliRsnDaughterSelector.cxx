@@ -196,7 +196,7 @@ void AliRsnDaughterSelector::ExecActions(AliRsnEvent *ev)
 //
 
    if (!ev) return;
-   
+
    TObjArray objects;
    objects.Add(ev);
 

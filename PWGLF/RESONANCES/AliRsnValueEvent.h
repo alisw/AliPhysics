@@ -39,7 +39,7 @@ public:
 
    virtual Bool_t   Eval(TObject *object);
    void             ApplyCentralityPatchAOD049(TObject *object);
-   
+
 protected:
 
    EType           fType;         //  type from enumeration

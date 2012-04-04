@@ -70,6 +70,7 @@ AliRsnEvent &AliRsnEvent::operator= (const AliRsnEvent &event)
 //
 // Works in the same way as the copy constructor.
 //
+
    TObject::operator=(event);
    if (this == &event)
       return *this;
@@ -110,37 +111,38 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t index, Bool_t fromMC)
    if (!InputOK()) return;
    Bool_t inputESD = IsESD();
 
-
-   Int_t trueIndex;
-   AliRsnDaughter::ERefType type;
-   if (!ConvertAbsoluteIndex(index, trueIndex, type)) {
-      AliError(Form("Failed to convert absolute index %d", index));
-      return;
-   }
-   switch (type) {
-      case AliRsnDaughter::kTrack:
-         if (inputESD) {
-            SetDaughterESDtrack(out, trueIndex);
-
-         } else {
-            SetDaughterAODtrack(out, trueIndex);
-         }
-         break;
-      case AliRsnDaughter::kV0:
-         if (inputESD) SetDaughterESDv0(out, trueIndex); else SetDaughterAODv0(out, trueIndex);
-         break;
-      case AliRsnDaughter::kCascade:
-         if (inputESD) SetDaughterESDcascade(out, trueIndex); else SetDaughterAODcascade(out, trueIndex);
-         break;
-      default:
-         AliError("Unrecognized daughter type");
-         return;
-   }
-
    // if it is pure MC, the index tells what particle
    // to be read in the stack of MC particles, otherwise
    // it is converted into a real collection index
-   if (fromMC) out.SetRef(out.GetRefMC());
+   if (fromMC) {
+      out.SetLabel(index);
+      Bool_t ok = (inputESD ? SetMCInfoESD(out) : SetMCInfoAOD(out));
+      if (ok) {
+         out.SetGood();
+         out.SetRef(out.GetRefMC());
+      }
+   } else {
+      Int_t trueIndex;
+      AliRsnDaughter::ERefType type;
+      if (!ConvertAbsoluteIndex(index, trueIndex, type)) {
+         AliError(Form("Failed to convert absolute index %d", index));
+         return;
+      }
+      switch (type) {
+         case AliRsnDaughter::kTrack:
+            if (inputESD) SetDaughterESDtrack(out, trueIndex); else SetDaughterAODtrack(out, trueIndex);
+            break;
+         case AliRsnDaughter::kV0:
+            if (inputESD) SetDaughterESDv0(out, trueIndex); else SetDaughterAODv0(out, trueIndex);
+            break;
+         case AliRsnDaughter::kCascade:
+            if (inputESD) SetDaughterESDcascade(out, trueIndex); else SetDaughterAODcascade(out, trueIndex);
+            break;
+         default:
+            AliError("Unrecognized daughter type");
+            return;
+      }
+   }
 }
 
 //_____________________________________________________________________________
@@ -384,7 +386,7 @@ Bool_t AliRsnEvent::SetMCInfoESD(AliRsnDaughter &out)
    if (imum >= 0 && imum < nMC) {
       AliMCParticle *mcMother = (AliMCParticle *)mc->GetTrack(imum);
       if (mcMother) {
-         out.SetMotherPDG(TMath::Abs(mcMother->Particle()->GetPdgCode()));
+         out.SetMotherPDG(mcMother->Particle()->GetPdgCode());
       } else {
          AliWarning(Form("Stack discontinuity: label mother %d refers to a NULL object", imum));
       }
@@ -435,7 +437,7 @@ Bool_t AliRsnEvent::SetMCInfoAOD(AliRsnDaughter &out)
    if (imum >= 0 && imum < nMC) {
       AliAODMCParticle *mcMother = (AliAODMCParticle *)mcArray->At(imum);
       if (mcMother) {
-         out.SetMotherPDG(TMath::Abs(mcMother->GetPdgCode()));
+         out.SetMotherPDG(mcMother->GetPdgCode());
       } else {
          AliWarning(Form("Stack discontinuity: label mother %d refers to a NULL object", imum));
       }
