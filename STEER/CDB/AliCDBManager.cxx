@@ -301,8 +301,6 @@ AliCDBManager::AliCDBManager():
   fLock(kFALSE),
   fSnapshotMode(kFALSE),
   fSnapshotFile(0),
-//  fSnapshotCache(0),
-//  fSnapshotIdsList(0),
   fRaw(kFALSE),
   fStartRunLHCPeriod(-1),
   fEndRunLHCPeriod(-1),
@@ -856,7 +854,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 		// all the map would be charged in memory from the snapshot anyway.
 		entry = GetEntryFromSnapshot(query.GetPath());
 	    if(entry) {
-		AliDebug(2, Form("Object %s retrieved from the snapshot !!",query.GetPath().Data()));
+		AliInfo(Form("Object \"%s\" retrieved from the snapshot.",query.GetPath().Data()));
 		if(query.GetFirstRun() == fRun) // no need to check fCache, fSnapshotMode not possible otherwise
 		    CacheEntry(query.GetPath(), entry);
 
@@ -941,6 +939,7 @@ Bool_t AliCDBManager::SetSnapshotMode(const char* snapshotFileName) {
 	return kFALSE;
     }
 
+    Printf("The CDB manager is set in snapshot mode: cache->snapshot->defaultstorage");
     fSnapshotMode = kTRUE;
     return kTRUE;
 
