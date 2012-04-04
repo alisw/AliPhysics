@@ -121,6 +121,16 @@ AliAnaPhoton::AliAnaPhoton() :
     fhEPrimMCAcc  [i] = 0;
     fhPhiPrimMCAcc[i] = 0;
     fhYPrimMCAcc  [i] = 0;
+    
+    fhDispEtaDispPhi[i] = 0;
+    fhLambda0DispPhi[i] = 0;
+    fhLambda0DispEta[i] = 0;
+    for(Int_t j = 0; j < 6; j++)
+    {
+      fhMCDispEtaDispPhi[i][j] = 0;
+      fhMCLambda0DispEta[i][j] = 0;
+      fhMCLambda0DispPhi[i][j] = 0;
+    }
   }  
   
   for(Int_t i = 0; i < 6; i++)
@@ -150,13 +160,6 @@ AliAnaPhoton::AliAnaPhoton() :
    for(Int_t i = 0; i < 5; i++) 
    {
      fhClusterCuts[i]        = 0;
-     fhDispEtaDispPhi[i] = 0;
-     for(Int_t j = 0; j < 6; j++)
-     {
-       fhMCDispEtaDispPhi[i][j] = 0;
-       fhMCLambda0DispEta    [i][j] = 0;
-       fhMCLambda0DispPhi    [i][j] = 0;
-     }
    }
   
    // Track matching residuals
@@ -637,7 +640,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
     else if (energy < 4 ) ebin = 1;
     else if (energy < 6 ) ebin = 2;
     else if (energy < 10) ebin = 3;
-    else                  ebin = 4;  
+    else if (energy < 15) ebin = 4;  
+    else if (energy < 20) ebin = 5;  
+    else                  ebin = 6;  
     
     fhDispEtaDispPhi[ebin]->Fill(dEta   ,dPhi);
     fhLambda0DispEta[ebin]->Fill(lambda0,dEta);
@@ -880,7 +885,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
       else if (energy < 4 ) ebin = 1;
       else if (energy < 6 ) ebin = 2;
       else if (energy < 10) ebin = 3;
-      else                  ebin = 4;  
+      else if (energy < 15) ebin = 4;  
+      else if (energy < 20) ebin = 5;  
+      else                  ebin = 6;  
       
       fhMCDispEtaDispPhi[ebin][mcIndex]->Fill(dEta   ,dPhi);
       fhMCLambda0DispEta[ebin][mcIndex]->Fill(lambda0,dEta);
@@ -1067,6 +1074,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Int_t   nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       
   Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();       
   Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
+  
+  Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
   
   TString cut[] = {"Open","Reader","E","Time","NCells","Fidutial","Matching","Bad","PID"};
   for (Int_t i = 0; i < 9 ;  i++) 
@@ -1339,9 +1348,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhDispSumPhiDiffE->SetYTitle("#sigma^{2}_{#phi #phi} - #sigma'^{2}_{#phi #phi} / average");
       outputContainer->Add(fhDispSumPhiDiffE);  
       
-      
-      Int_t bin[] = {0,2,4,6,10,1000};
-      for(Int_t i = 0; i < 5; i++)
+      for(Int_t i = 0; i < 7; i++)
       {
         fhDispEtaDispPhi[i] = new TH2F (Form("hDispEtaDispPhi_EBin%d",i),Form("#sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",bin[i],bin[i+1]), 
                                             ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
@@ -1890,8 +1897,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhMCESphericity[i]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
           outputContainer->Add(fhMCESphericity[i]);
           
-          Int_t bin[] = {0,2,4,6,10,1000};
-          for(Int_t ie = 0; ie < 5; ie++)
+          for(Int_t ie = 0; ie < 7; ie++)
           {
             fhMCDispEtaDispPhi[ie][i] = new TH2F (Form("hMCDispEtaDispPhi_EBin%d_MC%s",ie,pnamess[i].Data()),
                                                       Form("cluster from %s : #sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]), 

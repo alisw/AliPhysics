@@ -180,9 +180,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhSphericityE ;                  //! shower sphericity in eta vs phi
   TH2F * fhDispSumEtaDiffE ;              //! difference of 2 eta dispersions
   TH2F * fhDispSumPhiDiffE ;              //! difference of 2 phi dispersions
-  TH2F * fhDispEtaDispPhi[5] ;            //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  TH2F * fhLambda0DispEta[5] ;            //! shower shape correlation l0 vs disp eta
-  TH2F * fhLambda0DispPhi[5] ;            //! shower shape correlation l0 vs disp phi
+  TH2F * fhDispEtaDispPhi[7] ;            //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F * fhLambda0DispEta[7] ;            //! shower shape correlation l0 vs disp eta
+  TH2F * fhLambda0DispPhi[7] ;            //! shower shape correlation l0 vs disp phi
   
   //Fill MC dependent histograms, Origin of this cluster is ...
 
@@ -230,9 +230,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCESumEtaPhi[6] ;                    //! shower dispersion in eta vs phi direction
   TH2F * fhMCEDispEtaPhiDiff[6] ;               //! shower dispersion in eta -phi direction
   TH2F * fhMCESphericity[6] ;                   //! shower sphericity, eta vs phi
-  TH2F * fhMCDispEtaDispPhi[5][6] ;             //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  TH2F * fhMCLambda0DispEta[5][6] ;             //! shower shape correlation l0 vs disp eta
-  TH2F * fhMCLambda0DispPhi[5][6] ;             //! shower shape correlation l0 vs disp phi
+  TH2F * fhMCDispEtaDispPhi[7][6] ;             //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F * fhMCLambda0DispEta[7][6] ;             //! shower shape correlation l0 vs disp eta
+  TH2F * fhMCLambda0DispPhi[7][6] ;             //! shower shape correlation l0 vs disp phi
 
   //Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;       //! Fraction of photon energy of embedded signal vs cluster energy

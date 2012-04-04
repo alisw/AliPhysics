@@ -63,6 +63,7 @@ fFiducialCut(0x0),           fCheckFidCut(kFALSE),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0), 
+fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
@@ -83,7 +84,6 @@ fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrim
 fTriggerAnalysis (0x0), 
 fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
-
 {
   //Ctor
 
@@ -98,31 +98,37 @@ AliCaloTrackReader::~AliCaloTrackReader()
   
   delete fFiducialCut ;
 	
-  if(fAODBranchList){
+  if(fAODBranchList)
+  {
     fAODBranchList->Delete();
     delete fAODBranchList ;
   }  
   
-  if(fCTSTracks){
+  if(fCTSTracks)
+  {
     if(fDataType!=kMC)fCTSTracks->Clear() ; 
     else              fCTSTracks->Delete() ; 
     delete fCTSTracks ;
   }
   
-  if(fEMCALClusters){
+  if(fEMCALClusters)
+  {
     if(fDataType!=kMC)fEMCALClusters->Clear("C") ; 
     else              fEMCALClusters->Delete() ; 
     delete fEMCALClusters ;
   }
   
-  if(fPHOSClusters){
+  if(fPHOSClusters
+     ){
     if(fDataType!=kMC)fPHOSClusters->Clear("C") ; 
     else              fPHOSClusters->Delete() ; 
     delete fPHOSClusters ;
   }
   
-  if(fVertex){
-    for (Int_t i = 0; i < fNMixedEvent; i++) {
+  if(fVertex)
+  {
+    for (Int_t i = 0; i < fNMixedEvent; i++) 
+    {
       delete [] fVertex[i] ;
       
     }
@@ -148,7 +154,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
   // Only for PYTHIA.
   if(!fReadStack) return kTRUE; //Information not filtered to AOD
   
-  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader")){
+  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  {
     TParticle * jet =  0;
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
     Int_t nTriggerJets =  pygeh->NTriggerJets();
@@ -156,12 +163,14 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
     
     //if(fDebug > 1) printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
     Float_t tmpjet[]={0,0,0,0};
-    for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+    for(Int_t ijet = 0; ijet< nTriggerJets; ijet++)
+    {
       pygeh->TriggerJet(ijet, tmpjet);
       jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
       //Compare jet pT and pt Hard
       //if(fDebug > 1) printf("AliMCAnalysisUtils:: %d pycell jet pT %f\n",ijet, jet->Pt());
-      if(jet->Pt() > fPtHardAndJetPtFactor * ptHard) {
+      if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
+      {
         printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
                nTriggerJets, ptHard, jet->Pt(), fPtHardAndJetPtFactor);
         return kFALSE;
@@ -180,7 +189,8 @@ AliStack* AliCaloTrackReader::GetStack() const
   //Return pointer to stack
   if(fMC)
     return fMC->Stack();
-  else{
+  else
+  {
     if(fDebug > 1) printf("AliCaloTrackReader::GetStack() - Stack is not available\n"); 
     return 0x0 ;
   }
@@ -253,21 +263,23 @@ TClonesArray* AliCaloTrackReader::GetAODMCParticles(Int_t input) const
 AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const 
 {
   //Return MC header in AOD. Do it for the corresponding input event.
+  
   AliAODMCHeader *mch = NULL;
-  if(fDataType == kAOD){
+  
+  if(fDataType == kAOD)
+  {
     //Normal input AOD
-    if(input == 0) {
+    if(input == 0) 
+    {
       mch = (AliAODMCHeader*)((AliAODEvent*)fInputEvent)->FindListObject("mcheader");
     }
-    //		//Second input AOD
-    //		else if(input == 1){ 
-    //       mch = (AliAODMCHeader*) fSecondInputAODEvent->FindListObject("mcheader");
-    //  }
-    else {
+    else 
+    {
       printf("AliCaloTrackReader::GetAODMCHeader() - wrong AOD input index, %d\n",input);
     }
   }
-  else {
+  else 
+  {
     printf("AliCaloTrackReader::GetAODMCHeader() - Input are not AODs\n");
   }
   
@@ -379,6 +391,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("CTS Max pT     : %2.1f GeV/c\n", fCTSPtMax) ;
   printf("EMCAL Max pT   : %2.1f GeV/c\n", fEMCALPtMax) ;
   printf("PHOS Max pT    : %2.1f GeV/c\n", fPHOSPtMax) ;
+  printf("EMCAL Time Cut: %3.1f < TOF  < %3.1f\n", fEMCALTimeCutMin, fEMCALTimeCutMax);
   printf("Use CTS         =     %d\n", fFillCTS) ;
   printf("Use EMCAL       =     %d\n", fFillEMCAL) ;
   printf("Use PHOS        =     %d\n", fFillPHOS) ;
@@ -516,6 +529,15 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   //------------------------------------------------------
   //Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
+
+  if(fUseEventsWithPrimaryVertex)
+  {
+    if( !CheckForPrimaryVertex() )              return kFALSE;
+    if( TMath::Abs(fVertex[0][0] ) < 1.e-6 && 
+        TMath::Abs(fVertex[0][1] ) < 1.e-6 && 
+        TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
+  }
+  
   if(fDoEventSelection)
   {
     if(!fCaloFilterPatch)
@@ -534,9 +556,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
         //else bV0AND = //FIXME FOR AODs
         if(!bV0AND) return kFALSE;
       }
-      
-      if(fUseEventsWithPrimaryVertex && !CheckForPrimaryVertex()) return kFALSE;
-      
     }//CaloFilter patch
     else
     { 
@@ -692,44 +711,55 @@ void AliCaloTrackReader::FillVertexArray()
   //In case of Mixed event, multiple vertices
   
   //Delete previous vertex
-  if(fVertex){
-    for (Int_t i = 0; i < fNMixedEvent; i++) {
+  if(fVertex)
+  {
+    for (Int_t i = 0; i < fNMixedEvent; i++) 
+    {
       delete [] fVertex[i] ; 
     }
     delete [] fVertex ;  
   }
   
   fVertex = new Double_t*[fNMixedEvent] ; 
-  for (Int_t i = 0; i < fNMixedEvent; i++) {
+  for (Int_t i = 0; i < fNMixedEvent; i++) 
+  {
     fVertex[i] = new Double_t[3] ; 
     fVertex[i][0] = 0.0 ; 
     fVertex[i][1] = 0.0 ; 
     fVertex[i][2] = 0.0 ; 
   }          
   
-  if (!fMixedEvent) { //Single event analysis
-    if(fDataType!=kMC){
+  if (!fMixedEvent) 
+  { //Single event analysis
+    if(fDataType!=kMC)
+    {
       
-      if(fInputEvent->GetPrimaryVertex()){
+      if(fInputEvent->GetPrimaryVertex())
+      {
         fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
       }
-      else {
+      else 
+      {
         printf("AliCaloTrackReader::FillVertexArray() - NULL primary vertex\n");
         fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
       }//Primary vertex pointer do not exist
       
-    } else {//MC read event 
+    } else
+    {//MC read event 
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }
     
     if(fDebug > 1)
       printf("AliCaloTrackReader::FillVertexArray() - Single Event Vertex : %f,%f,%f\n",fVertex[0][0],fVertex[0][1],fVertex[0][2]);
     
-  } else { // MultiEvent analysis
-    for (Int_t iev = 0; iev < fNMixedEvent; iev++) {
+  } else 
+  { // MultiEvent analysis
+    for (Int_t iev = 0; iev < fNMixedEvent; iev++) 
+    {
       if (fMixedEvent->GetVertexOfEvent(iev))
         fMixedEvent->GetVertexOfEvent(iev)->GetXYZ(fVertex[iev]);
-      else { // no vertex found !!!!
+      else
+      { // no vertex found !!!!
         AliWarning("No vertex found");
       }
       
@@ -752,7 +782,8 @@ void AliCaloTrackReader::FillInputCTS()
   Double_t p[3];
   fTrackMult = 0;
   Int_t nstatus = 0;
-  for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
+  for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
+  {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
     
     //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
@@ -768,11 +799,12 @@ void AliCaloTrackReader::FillInputCTS()
     else if(fDataType==kAOD)
     {
       AliAODTrack *aodtrack = dynamic_cast <AliAODTrack*>(track);
-      if(aodtrack){
+      if(aodtrack)
+      {
         if(fDebug > 2 ) 
           printf("AliCaloTrackReader::FillInputCTS():AOD track type: %c \n", aodtrack->GetType());
         if (fDataType!=kMC && aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue;
-        if(aodtrack->GetType()!=AliAODTrack::kPrimary) continue;
+        if (aodtrack->GetType()!=AliAODTrack::kPrimary)                          continue;
       }
     }
     
@@ -783,8 +815,8 @@ void AliCaloTrackReader::FillInputCTS()
     track->GetPxPyPz(p) ;
     TLorentzVector momentum(p[0],p[1],p[2],0);
     
-    if(fCTSPtMin < momentum.Pt() && fCTSPtMax > momentum.Pt()){
-      
+    if(fCTSPtMin < momentum.Pt() && fCTSPtMax > momentum.Pt())
+    {
       if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) 
         continue;
       
@@ -792,7 +824,8 @@ void AliCaloTrackReader::FillInputCTS()
         printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
                momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
       
-      if (fMixedEvent) {
+      if (fMixedEvent) 
+      {
         track->SetID(itrack);
       }
       
@@ -801,7 +834,6 @@ void AliCaloTrackReader::FillInputCTS()
     }//Pt and Fiducial cut passed. 
   }// track loop
 	
-  //fCTSTracksNormalInputEntries = fCTSTracks->GetEntriesFast();
   if(fDebug > 1) 
     printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fCTSTracksNormalInputEntries);
   
@@ -821,7 +853,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells(),fInputEvent->GetBunchCrossNumber())) return;
   
   //Mask all cells in collumns facing ALICE thick material if requested
-  if(GetCaloUtils()->GetNMaskCellColumns()){
+  if(GetCaloUtils()->GetNMaskCellColumns())
+  {
     Int_t absId   = -1;
     Int_t iSupMod = -1;
     Int_t iphi    = -1;
@@ -840,12 +873,11 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
   
-
-  
-  if(fRecalculateClusters){
+  if(fRecalculateClusters)
+  {
     //Recalibrate the cluster energy 
-    if(GetCaloUtils()->IsRecalibrationOn()) {
-      
+    if(GetCaloUtils()->IsRecalibrationOn())
+    {
       Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
       
       clus->SetE(energy);
@@ -860,20 +892,22 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
     GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
     
     //Recalculate cluster position
-    if(GetCaloUtils()->IsRecalculationOfClusterPositionOn()){
+    if(GetCaloUtils()->IsRecalculationOfClusterPositionOn())
+    {
       GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus); 
       //clus->GetPosition(pos);
       //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
     }
     
     // Recalculate TOF
-    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) {
-      
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) 
+    {
       Double_t tof      = clus->GetTOF();
       Float_t  frac     =-1;
       Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
       
-      if(fDataType==AliCaloTrackReader::kESD){ 
+      if(fDataType==AliCaloTrackReader::kESD)
+      { 
         tof = fEMCALCells->GetCellTime(absIdMax);
       }
       
@@ -885,7 +919,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   }
   
   //Correct non linearity
-  if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){
+  if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn())
+  {
     GetCaloUtils()->CorrectClusterEnergy(clus) ;
     //printf("Linearity Corrected Energy %f\n",clus->E());  
     
@@ -902,6 +937,9 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return;
   
   if(fEMCALPtMin > momentum.E() || fEMCALPtMax < momentum.E())         return;
+  
+  Double_t tof = clus->GetTOF()*1e9;
+  if(tof < fEMCALTimeCutMin     || tof > fEMCALTimeCutMax)             return;
   
   if(fDebug > 2 && momentum.E() > 0.1) 
     printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
@@ -930,9 +968,11 @@ void AliCaloTrackReader::FillInputEMCAL()
   //Loop to select clusters in fiducial cut and fill container with aodClusters
   if(fEMCALClustersListName==""){
     Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
-    for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
+    for (Int_t iclus =  0; iclus <  nclusters; iclus++) 
+    {
       AliVCluster * clus = 0;
-      if ( (clus = fInputEvent->GetCaloCluster(iclus)) ) {
+      if ( (clus = fInputEvent->GetCaloCluster(iclus)) ) 
+      {
         if (IsEMCALCluster(clus)){          
           FillInputEMCALAlgorithm(clus, iclus);
         }//EMCAL cluster
@@ -943,26 +983,29 @@ void AliCaloTrackReader::FillInputEMCAL()
     GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent);
     
   }//Get the clusters from the input event
-  else {
+  else
+  {
     TClonesArray * clusterList = 0x0; 
     if(fOutputEvent) clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
-    if(!clusterList){
+    if(!clusterList)
+    {
       //printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters? Try input event <%s>\n",fEMCALClustersListName.Data());
       //List not in output event, try input event
       clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
-      if(!clusterList){
+      if(!clusterList)
+      {
         printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters?  <%s>\n",fEMCALClustersListName.Data());
         return;
       }
     }
     
     Int_t nclusters = clusterList->GetEntriesFast();
-    for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
+    for (Int_t iclus =  0; iclus <  nclusters; iclus++) 
+    {
       AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
       //printf("E %f\n",clus->E());
       if (clus) FillInputEMCALAlgorithm(clus, iclus);
       else printf("AliCaloTrackReader::FillInputEMCAL() - Null cluster in list!\n");
-      
     }// cluster loop
     
     // Recalculate track matching, not necessary if already done in the reclusterization task.
@@ -984,9 +1027,11 @@ void AliCaloTrackReader::FillInputPHOS()
   
   //Loop to select clusters in fiducial cut and fill container with aodClusters
   Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
-  for (Int_t iclus = 0; iclus < nclusters; iclus++) {
+  for (Int_t iclus = 0; iclus < nclusters; iclus++) 
+  {
     AliVCluster * clus = 0;
-    if ( (clus = fInputEvent->GetCaloCluster(iclus)) ) {
+    if ( (clus = fInputEvent->GetCaloCluster(iclus)) ) 
+    {
       if (IsPHOSCluster(clus)){
         //Check if the cluster contains any bad channel and if close to calorimeter borders
         Int_t vindex = 0 ;  
@@ -997,14 +1042,14 @@ void AliCaloTrackReader::FillInputPHOS()
         if(!GetCaloUtils()->CheckCellFiducialRegion(clus, fInputEvent->GetPHOSCells(), fInputEvent, vindex)) 
           continue;
         
-        if(fRecalculateClusters){
-          
+        if(fRecalculateClusters)
+        {
           //Recalibrate the cluster energy 
-          if(GetCaloUtils()->IsRecalibrationOn()) {
+          if(GetCaloUtils()->IsRecalibrationOn()) 
+          {
             Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetPHOSCells());
             clus->SetE(energy);
           }
-          
         }
         
         TLorentzVector momentum ;
@@ -1020,7 +1065,8 @@ void AliCaloTrackReader::FillInputPHOS()
                  momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());        
         
         
-        if (fMixedEvent) {
+        if (fMixedEvent) 
+        {
           clus->SetID(iclus) ; 
         }              
         
@@ -1128,18 +1174,22 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (fInputEvent);
   if(!event) return kTRUE;
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) 
+  {
     return kTRUE;
   }
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) {
+  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) 
+  {
     // SPD vertex
-    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) 
+    {
       //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       return kTRUE;
       
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) {
+    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    {
       //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
       return kFALSE;
     }
