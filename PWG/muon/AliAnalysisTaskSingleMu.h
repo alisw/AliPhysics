@@ -31,20 +31,16 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
 
   void MyUserCreateOutputObjects();
   void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
-  
-  /// Set minimum number of vertex contributors
-  void SetMinNvtxContributors(Int_t minNvtxContributors) { fMinNvtxContirbutors = minNvtxContributors; }
 
  private:
 
   AliAnalysisTaskSingleMu(const AliAnalysisTaskSingleMu&);
   AliAnalysisTaskSingleMu& operator=(const AliAnalysisTaskSingleMu&);
 
-  // Histograms to extract average DCA position
   enum {
     kIPVz,           ///< Interaction point vertex distribution
     kTrackContainer, ///< CF container for tracks
-    kNhistoTypes     ///< Number of histograms
+    kNobjectTypes    ///< Number of objects
   };
 
   enum {
@@ -69,12 +65,10 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
     kHvarMotherType, ///< Mother type (MC only)
     kNvars           ///< THnSparse dimensions
   };
-  
-  Int_t fMinNvtxContirbutors;  ///< Minimum number of vertex contributors
 
   TObjArray* fThetaAbsKeys;    ///< Name of theta at absorber end
 
-  ClassDef(AliAnalysisTaskSingleMu, 2); // Single muon analysis
+  ClassDef(AliAnalysisTaskSingleMu, 3); // Single muon analysis
 };
 
 #endif

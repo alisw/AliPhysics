@@ -43,9 +43,9 @@
 #include "TF1.h"
 #include "TStyle.h"
 //#include "TMCProcess.h"
-#include "TMinuit.h"
 #include "TArrayI.h"
 #include "TPaveStats.h"
+#include "TFitResultPtr.h"
 
 // STEER includes
 #include "AliAODEvent.h"
@@ -82,7 +82,6 @@ ClassImp(AliAnalysisTaskSingleMu) // Class implementation in ROOT context
 //________________________________________________________________________
 AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu() :
   AliVAnalysisMuon(),
-  fMinNvtxContirbutors(0),
   fThetaAbsKeys(0x0)
 {
   /// Default ctor.
@@ -91,7 +90,6 @@ AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu() :
 //________________________________________________________________________
 AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name, const AliMuonTrackCuts& cuts) :
   AliVAnalysisMuon(name, cuts),
-  fMinNvtxContirbutors(1),
   fThetaAbsKeys(0x0)
 {
   //
@@ -138,7 +136,7 @@ void AliAnalysisTaskSingleMu::MyUserCreateOutputObjects()
   TString etaName("Eta"), etaTitle("#eta"), etaUnits("");
   
   Int_t nPhiBins = 36;
-  Double_t phiMin = 0.; Double_t phiMax = 2*TMath::Pi();
+  Double_t phiMin = 0.; Double_t phiMax = 2.*TMath::Pi();
   TString phiName("Phi"), phiTitle("#phi"), phiUnits("rad");
     
   Int_t nChargeBins = 2;
@@ -194,10 +192,9 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
   /// Fill output objects
   //
 
-  AliVVertex* primaryVertex = ( fAODEvent ) ? (AliVVertex*)fAODEvent->GetPrimaryVertexSPD() : (AliVVertex*)fESDEvent->GetPrimaryVertexSPD();
-  if ( primaryVertex->GetNContributors() < fMinNvtxContirbutors ) return;
+  if ( GetVertexSPD()->GetNContributors() < fMinNvtxContirbutors ) return;
 
-  Double_t ipVz = primaryVertex->GetZ();
+  Double_t ipVz = GetVertexSPD()->GetZ();
   Double_t ipVzMC = 0;
   if ( IsMC() ) {
     if ( fMCEvent ) ipVzMC = fMCEvent->GetPrimaryVertex()->GetZ();
@@ -291,6 +288,16 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   TString trigClassName = fTerminateOptions->At(1)->GetName();
   TString centralityRange = fTerminateOptions->At(2)->GetName();
   TString furtherOpt = fTerminateOptions->At(3)->GetName();
+  
+  TString minBiasTrig = "";
+  TObjArray* optArr = furtherOpt.Tokenize(" ");
+  TString currName = "";
+  for ( Int_t iopt=0; iopt<optArr->GetEntries(); iopt++ ) {
+    currName = optArr->At(iopt)->GetName();
+    if ( currName.Contains("-B-") ) minBiasTrig = currName;
+  }
+  delete optArr;
+
   furtherOpt.ToUpper();
   
   AliCFContainer* cfContainer = static_cast<AliCFContainer*> ( GetSum(physSel,trigClassName,centralityRange,"SingleMuContainer") );
@@ -320,7 +327,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   Int_t lastSrc  = ( isMC ) ? kNtrackSources - 1 : kUnidentified;
   if ( ! isMC ) srcColors[kUnidentified] = 1;
 
-  TString histoName = "", currName = "", histoPattern = "", drawOpt = "";
+  TString histoName = "", histoPattern = "", drawOpt = "";
   ////////////////
   // Kinematics //
   ////////////////
@@ -406,12 +413,12 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   if ( ! furtherOpt.Contains("VERTEX") ) return;
   Int_t firstMother = kUnidentified, lastMother = kUnidentified;
   igroup1++;
-  TH1* eventVertex = (TH1*)GetSum(physSel, "CINT7-I-NOPF-ALLNOTRD", centralityRange, "hIpVtx");
+  TH1* eventVertex = (TH1*)GetSum(physSel, minBiasTrig, centralityRange, "hIpVtx");
   if ( ! eventVertex ) return;
   Double_t minZ = -9.99, maxZ = 9.99;
   Double_t meanZ = 0., sigmaZ = 4.;
   Double_t nSigma = 2.;
-  TString fitOpt = "R0";
+  TString fitOpt = "R0S";
   Bool_t fixFitRange = kFALSE;
   TString fitFormula = Form("[0]+[1]*(x+[2])");
     
@@ -465,7 +472,9 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   
   Double_t slope = 0.;
   Double_t limitNorm = 0., limitSlope = 0.;
-  Int_t firstPtBin = 0, lastPtBin = 0;  
+  Int_t firstPtBin = 0, lastPtBin = 0;
+  
+  gStyle->SetOptFit(1111);
 
   for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
     igroup2++;
@@ -517,9 +526,10 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
           fitFunc->SetParLimits(1, 0., limitSlope); // REMEMBER TO CHECK
           printf("Norm 0. < %f < %f  slope  0. < %f < %f\n", norm, limitNorm, slope, limitSlope);
         }
-        histo->Fit(fitFunc, fitOpt.Data(), "", minZfit, maxZfit);
+        TFitResultPtr fitRes = histo->Fit(fitFunc, fitOpt.Data(), "", minZfit, maxZfit);
         
-        if ( gMinuit->fCstatu.Contains("CONVERGED") && 
+//      if ( gMinuit->fCstatu.Contains("CONVERGED") && 
+        if ( ((Int_t)fitRes) == 0 &&
             fitFunc->GetParameter(0) > 0. && 
             fitFunc->GetParameter(1) > 0. )
           break;
@@ -556,8 +566,6 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       currDraw++;
     } // loop on pt bins
     SetSparseRange(gridSparse, kHvarMotherType, "", firstMother+1, lastMother+1, "USEBIN");
-    TH1* totalPtDistrib =  gridSparse->Project(kHvarPt);
-    totalPtDistrib->SetName(Form("totalPtDistrib_%s", fThetaAbsKeys->GetName()));
     currName = Form("recoPt_%s",fThetaAbsKeys->At(itheta)->GetName());
     can = new TCanvas(currName.Data(),currName.Data(),(igroup1+1)*xshift,igroup2*yshift,600,600);
     TLegend* leg = new TLegend(0.6, 0.6, 0.8, 0.8);
