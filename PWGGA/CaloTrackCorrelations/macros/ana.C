@@ -270,7 +270,9 @@ void ana(Int_t mode=mGRID)
     Int_t   minEseed  = 100;    // 100 MeV
     Int_t   dTime     = 0;      // default, 250 ns
     Int_t   wTime     = 0;      // default 425 < T < 825 ns, careful if time calibration is on
-    
+    Int_t   unfMinE   = 15;     // Remove cells with less than 15 MeV from cluster after unfolding
+    Int_t   unfFrac   = 1;      // Remove cells with less than 1% of cluster energy after unfolding
+
     
     //Trigger
     TString clTrigger   = "EMC7";   
@@ -291,7 +293,7 @@ void ana(Int_t mode=mGRID)
     
     TString arrayNameV1 = "";
     AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);    
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
@@ -303,7 +305,7 @@ void ana(Int_t mode=mGRID)
     //Analysis with clusterizer V2
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);    
 
     printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
@@ -336,7 +338,9 @@ void ana(Int_t mode=mGRID)
     Int_t   minEseed  = 200;    // 100 MeV
     Int_t   dTime     = 0;      // default, 250 ns
     Int_t   wTime     = 0;      // default 425 < T < 825 ns
-    
+    Int_t   unfMinE   = 15;     // Remove cells with less than 15 MeV from cluster after unfolding
+    Int_t   unfFrac   = 1;      // Remove cells with less than 1% of cluster energy after unfolding
+
     // Trigger
     TString clTrigger = "EMCGA"; 
     TString anTrigger = "EMCGA";  
@@ -354,7 +358,7 @@ void ana(Int_t mode=mGRID)
     
     TString arrayNameV1 = "";
     AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);    
     
     
@@ -374,7 +378,7 @@ void ana(Int_t mode=mGRID)
 
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,
+                                                                   minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);        
     
     printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
