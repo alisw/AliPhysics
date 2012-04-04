@@ -15,23 +15,23 @@ Bool_t kUseBayesianPID = kTRUE;
 Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
-AliAnalysisTaskBF *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
-						    Double_t centrMax=100.,
-						    Bool_t gRunShuffling=kFALSE,
-						    TString centralityEstimator="V0M",
-						    Double_t vertexZ=10.,
-						    Double_t DCAxy=-1,
-						    Double_t DCAz=-1,
-						    Double_t ptMin=0.3,
-						    Double_t ptMax=1.5,
-						    Double_t etaMin=-0.8,
-						    Double_t etaMax=0.8,
-						    Double_t maxTPCchi2 = -1, 
-						    Int_t minNClustersTPC = -1,
-						    Bool_t kUsePID = kFALSE,
-						    Int_t AODfilterBit = 128,
-						    Bool_t bCentralTrigger = kFALSE,
-						    TString fileNameBase="AnalysisResults") {
+AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
+						       Double_t centrMax=100.,
+						       Bool_t gRunShuffling=kFALSE,
+						       TString centralityEstimator="V0M",
+						       Double_t vertexZ=10.,
+						       Double_t DCAxy=-1,
+						       Double_t DCAz=-1,
+						       Double_t ptMin=0.3,
+						       Double_t ptMax=1.5,
+						       Double_t etaMin=-0.8,
+						       Double_t etaMax=0.8,
+						       Double_t maxTPCchi2 = -1, 
+						       Int_t minNClustersTPC = -1,
+						       Bool_t kUsePID = kFALSE,
+						       Int_t AODfilterBit = 128,
+						       Bool_t bCentralTrigger = kFALSE,
+						       TString fileNameBase="AnalysisResults") {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString centralityName("");
@@ -86,8 +86,8 @@ AliAnalysisTaskBF *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
 
   // for local changed BF configuration
-  //gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("./configBalanceFunctionPsiAnalysis.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
   AliBalancePsi *bf  = 0;  // Balance Function object
   AliBalancePsi *bfs = 0;  // shuffled Balance function object
 

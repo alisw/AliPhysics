@@ -344,7 +344,7 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
       pt1     = chargeVector[7]->at(i);
       energy1 = chargeVector[8]->at(i);
       gPsiMinusPhi   = phi1 - gReactionPlane;
-      if(phi1 > 180.) phi1 -= 360.;
+      //if(phi1 > 180.) phi1 -= 360.;
       if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhi = 360. + gPsiMinusPhi;
       gPsiBin = (Int_t)((gPsiMinusPhi + 360./fPsiNumberOfBins/2.)/(360./fPsiNumberOfBins));
 
@@ -358,7 +358,7 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
 	pz2     = chargeVector[6]->at(j);
 	pt2     = chargeVector[7]->at(i);
 	energy2 = chargeVector[8]->at(j);
-	if(phi2 > 180.) phi2 -= 360.;
+	//if(phi2 > 180.) phi2 -= 360.;
 	
 	// filling the arrays
 	// RAPIDITY 
@@ -401,7 +401,8 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
 	
 	//phi
 	dphi = phi1 - phi2;
-	if(dphi < -180) dphi = 360 - dphi;  //dphi should be between -180 and 180!
+	if(dphi < -180.) dphi = 360. + dphi;  //dphi should be between -180 and 180!
+	else if(dphi > 180.) dphi = -360. + dphi;  //dphi should be between -180 and 180!
 
 	//0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
 	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
