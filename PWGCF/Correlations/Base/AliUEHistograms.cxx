@@ -436,6 +436,12 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   if (weight < 0)
     fillpT = kTRUE;
   
+  if (twoTrackEfficiencyCut && !fTwoTrackDistancePt[0])
+  {
+    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 100, -0.05, 0.05, 20, 0, 10);
+    fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
+  }
+
   // Eta() is extremely time consuming, therefore cache it for the inner loop here:
   TObjArray* input = (mixed) ? mixed : particles;
   TArrayF eta(input->GetEntriesFast());
@@ -526,6 +532,9 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	
 	if (twoTrackEfficiencyCut)
 	{
+	  // the variables & cuthave been developed by the HBT group 
+	  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
+
 	  Float_t phi1 = triggerParticle->Phi();
 	  Float_t pt1 = triggerParticle->Pt();
 	  Float_t charge1 = triggerParticle->Charge();
@@ -537,25 +546,41 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  Float_t deta = triggerEta - eta[j];
 	      
 	  // optimization
-	  if (TMath::Abs(deta) < 0.02)
+	  if (TMath::Abs(deta) < 0.05)
 	  {
-	    Float_t dphistarmin = 1e5;
-	    Float_t dphistarminabs = 1e5;
-
-	    for (Double_t rad=0.8; rad<2.51; rad+=0.05) 
-	    {
-	      Float_t dphistar = phi1 - phi2 - TMath::ASin(charge1 * 0.075 * bSign * rad / pt1) + TMath::ASin(charge2 * 0.075 * bSign * rad / pt2);
-	      Float_t dphistarabs = TMath::Abs(dphistar);
-	      
-	      if (dphistarabs < dphistarminabs)
-	      {
-		dphistarmin = dphistar;
-		dphistarminabs = dphistarabs;
-	      }
-	    }
+	    // check first boundaries to see if is worth to loop and find the minimum
+	    Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
+	    Float_t dphistar2 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 2.5, bSign);
 	    
-	    if (dphistarminabs < 0.02)
-	      continue;
+	    const Float_t kLimit = 0.06;
+
+	    Float_t dphistarminabs = 1e5;
+	    Float_t dphistarmin = 1e5;
+	    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0)
+	    {
+	      for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
+	      {
+		Float_t dphistar = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, rad, bSign);
+
+		Float_t dphistarabs = TMath::Abs(dphistar);
+		
+		if (dphistarabs < dphistarminabs)
+		{
+		  dphistarmin = dphistar;
+		  dphistarminabs = dphistarabs;
+		}
+	      }
+	      
+	      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));
+	      
+	      if (dphistarminabs < 0.02 && TMath::Abs(deta) < 0.02)
+	      {
+// 		Printf("Removed track pair %d %d with %f %f %f %f %f %f %f %f %f", i, j, deta, dphistarminabs, phi1, pt1, charge1, phi2, pt2, charge2, bSign);
+		continue;
+	      }
+
+    	      fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));
+	    }
 	  }
 	}
         
@@ -927,97 +952,6 @@ void AliUEHistograms::Reset()
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->Reset();
-}
-
-void AliUEHistograms::TwoTrackEfficiency(TObjArray* tracks, TObjArray* mixed, Float_t bSign)
-{
-  // takes the input list <tracks> and fills histograms to study two two-track efficiency effects
-  // fTwoTrackDistancePt[i] (i = 0 same, i = 1 mixed)
-  //
-  // the variables have been developed by the HBT group 
-  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
-  
-  if (!fTwoTrackDistancePt[0])
-  {
-    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 400, -0.2, 0.2, 20, 0, 10);
-    fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
-  }
-
-  // Eta() is extremely time consuming, therefore cache it for the inner loop here:
-  TArrayF eta1(tracks->GetEntriesFast());
-  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
-    eta1[i] = ((AliVParticle*) tracks->At(i))->Eta();
-  
-  Int_t jMax = tracks->GetEntriesFast();
-  if (mixed)
-    jMax = mixed->GetEntriesFast();
-  
-  TArrayF eta2(jMax);
-  if (!mixed)
-    eta2 = eta1;
-  else
-    for (Int_t i=0; i<mixed->GetEntriesFast(); i++)
-      eta2[i] = ((AliVParticle*) mixed->At(i))->Eta();
-
-  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
-  {
-    AliVParticle* particle1 = (AliVParticle*) tracks->At(i);
-    Float_t phi1 = particle1->Phi();
-    Float_t pt1 = particle1->Pt();
-    Float_t charge1 = particle1->Charge();
-    
-    for (Int_t j=0; j<jMax; j++)
-    {
-      if (!mixed && i == j)
-	continue;
-      
-      AliVParticle* particle2 = 0;
-      if (mixed)
-	particle2 = (AliVParticle*) mixed->At(j);
-      else
-	particle2 = (AliVParticle*) tracks->At(j);
-      Float_t phi2 = particle2->Phi();
-      Float_t pt2 = particle2->Pt();
-      Float_t charge2 = particle2->Charge();
-      
-      if (pt2 > pt1)
-	continue;
-      
-//       Double_t dpt = TMath::Abs(pt1 - pt2);
-      Float_t deta = eta1[i] - eta2[j];
-      Float_t detaabs = TMath::Abs(deta);
-      
-      // optimization
-      if (detaabs > 0.05 && (pt1 < 8 || pt1 > 15))
-	continue;
-      
-      Float_t dphistarmin = 1e5;
-      Float_t dphistarminabs = 1e5;
-
-      for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
-      {
-	Float_t dphistar = phi1 - phi2 - TMath::ASin(charge1 * 0.075 * bSign * rad / pt1) + TMath::ASin(charge2 * 0.075 * bSign * rad / pt2);
-	Float_t dphistarabs = TMath::Abs(dphistar);
-	
-	if (dphistarabs < dphistarminabs)
-	{
-	  dphistarmin = dphistar;
-	  dphistarminabs = dphistarabs;
-	}
-      }
-
-      Float_t fillPt = pt2;
-      
-      // analyze region for IAA paper
-      if (pt1 < 8 || pt1 > 15)
-	fillPt = 0.25;
-    
-      if (!mixed)
-	fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, fillPt);
-      else
-	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, fillPt);
-    }
-  }
 }
 
 Float_t AliUEHistograms::GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0)
