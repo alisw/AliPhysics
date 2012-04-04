@@ -252,10 +252,7 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
     }
     else
     {   //at least one cluster
-        //printf("AliAnalysisTaskCounter::UserExec() - No clusters in event\n");
-        //Remove events with  vertex (0,0,0), bad vertex reconstruction
-        if(TMath::Abs(v[0]) < 1.e-6 && TMath::Abs(v[1]) < 1.e-6 && TMath::Abs(v[2]) < 1.e-6) bGoodV = kFALSE;
-      
+
         //First filtered AODs, track multiplicity stored there.  
         trackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
     }
@@ -283,7 +280,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //--------------------------------------------------
   // At least one track
   //--------------------------------------------------
-  if (trackMult > 0) {
+  if (trackMult > 0) 
+  {
     bSelectTrack = kTRUE; 
                   fhNEvents->Fill(3.5);
     if(bSelectVZ) fhNEvents->Fill(4.5);
@@ -319,7 +317,13 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //---------------------------------
   // Good vertex
   //---------------------------------
-  if(esdevent && !fCaloFilterPatch) bGoodV = CheckForPrimaryVertex();
+  if(!fCaloFilterPatch) bGoodV = CheckForPrimaryVertex();
+  
+  //Remove events with  vertex (0,0,0), bad vertex reconstruction
+  if(TMath::Abs(v[0]) < 1.e-6 && 
+     TMath::Abs(v[1]) < 1.e-6 && 
+     TMath::Abs(v[2]) < 1.e-6) bGoodV = kFALSE;
+
   if(bGoodV) 
   {
     fhXGoodVertex->Fill(v[0]);
@@ -393,7 +397,7 @@ Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
   //It only works for ESDs
   
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
-  if(!event) return 0;
+  if(!event) return 1;
   
   if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) 
   {

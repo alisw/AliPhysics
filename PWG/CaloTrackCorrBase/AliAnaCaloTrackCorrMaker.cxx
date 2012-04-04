@@ -46,8 +46,8 @@ fReader(0),                   fCaloUtils(0),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE), 
 fAnaDebug(0),                 fCuts(new TList), 
-fhNEvents(0x0),               fhTrackMult(0x0),
-fhCentrality(0x0)
+fhNEvents(0x0),               fhZVertex(0),
+fhTrackMult(0x0),             fhCentrality(0x0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
@@ -64,8 +64,8 @@ fCaloUtils(),//(new AliCalorimeterUtils(*maker.fCaloUtils)),
 fOutputContainer(new TList()), fAnalysisContainer(new TList()), 
 fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
-fhNEvents(maker.fhNEvents),    fhTrackMult(maker.fhTrackMult),
-fhCentrality(maker.fhCentrality)
+fhNEvents(maker.fhNEvents),    fhZVertex(maker.fhZVertex),
+fhTrackMult(maker.fhTrackMult),fhCentrality(maker.fhCentrality)
 {
   // cpy ctor
 }
@@ -167,6 +167,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents        = new TH1I("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
+  
+  fhZVertex     = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
+  fhZVertex->SetXTitle("v_{z} (cm)");
+  fOutputContainer->Add(fhZVertex);
   
   fhTrackMult      = new TH1I("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
   fhTrackMult->SetXTitle("# tracks");
@@ -368,6 +372,10 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   fhTrackMult ->Fill(fReader->GetTrackMultiplicity()); 
   fhCentrality->Fill(fReader->GetEventCentrality());
   
+  Double_t v[3];
+  fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
+  fhZVertex->Fill(v[2]);
+
   fReader->ResetLists();
   
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");

@@ -58,7 +58,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   TH1F *  fhYGoodVertex;  //! Y Vertex good distribution
   TH1F *  fhZGoodVertex;  //! Z Vertex good distribution  
 
-  AliAnalysisTaskCounter(const AliAnalysisTaskCounter&); // not implemented  
+  AliAnalysisTaskCounter(           const AliAnalysisTaskCounter&); // not implemented  
   AliAnalysisTaskCounter& operator=(const AliAnalysisTaskCounter&); // not implemented
   
   ClassDef(AliAnalysisTaskCounter, 1);

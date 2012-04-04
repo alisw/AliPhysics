@@ -216,27 +216,33 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
   mgr->ConnectOutput (task, 2, cout_cuts);
   
   
-  if(kTrig=="EMC7"){
+  if(kTrig=="EMC7")
+  {
     printf("CaloTrackCorr trigger EMC7\n");
     task->SelectCollisionCandidates(AliVEvent::kEMC7);
   }
-  else if (kTrig=="INT7"){
+  else if (kTrig=="INT7")
+  {
     printf("CaloTrackCorr trigger INT7\n");
     task->SelectCollisionCandidates(AliVEvent::kINT7);
   }
-  else if(kTrig=="EMC1"){
+  else if(kTrig=="EMC1")
+  {
     printf("CaloTrackCorr trigger EMC1\n");
     task->SelectCollisionCandidates(AliVEvent::kEMC1);
   }
-  else if(kTrig=="MB"){
+  else if(kTrig=="MB")
+  {
     printf("CaloTrackCorr trigger MB\n");
     task->SelectCollisionCandidates(AliVEvent::kMB);
   }  
-  else if(kTrig=="PHOS"){
+  else if(kTrig=="PHOS")
+  {
     printf("CaloTrackCorr trigger PHOS\n");
     task->SelectCollisionCandidates(AliVEvent::kPHI7);
   }  
-  else if(kTrig=="PHOSPb"){
+  else if(kTrig=="PHOSPb")
+  {
     printf("CaloTrackCorr trigger PHOSPb\n");
     task->SelectCollisionCandidates(AliVEvent::kPHOSPb);
   }
@@ -307,13 +313,16 @@ AliCaloTrackReader * ConfigureReader()
   //------------------------
   
   //Min cluster/track E
-  reader->SetEMCALEMin(0.5); 
+  reader->SetEMCALEMin(0.3); 
   reader->SetEMCALEMax(1000); 
   reader->SetPHOSEMin(0.3);
   reader->SetPHOSEMax(1000);
   reader->SetCTSPtMin(0.1);
   reader->SetCTSPtMax(1000);
-  
+
+  if(!kSimulation && kCalibT) reader->SetEMCALTimeCut(-30,30); 
+  else                        reader->SetEMCALTimeCut(-1000,1000); // Open time cut
+
   reader->SwitchOnFiducialCut();
   reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
 
@@ -369,18 +378,17 @@ AliCaloTrackReader * ConfigureReader()
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
   reader->SetZvertexCut(10.);                // Open cut
-  
+  reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
+
   if(kEventSelection)
   {
     reader->SwitchOnEventSelection();         // remove pileup by default
     reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
-    reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
   }
   else 
   {
     reader->SwitchOffEventSelection();         // remove pileup by default
     reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
-    reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex    
   }
     
   if(kCollisions=="PbPb") 
@@ -581,7 +589,7 @@ AliAnaElectron* ConfigureElectronAnalysis()
   }
   
   //Electron selection cuts with tracks
-  ana->SetEOverP(0.8, 1.2);
+  ana->SetEOverP(0.85, 1.2);
   // TO DO, find a more suitable way to set this
   if(kSimulation)
   { // LHC11a
@@ -702,6 +710,10 @@ AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Fl
   caloPID->SetEMCALDPhiCut(0.030);
   caloPID->SetClusterSplittingM02Cut(0,100); // Do the selection in the analysis class and not in the PID method to fill SS histograms
 
+  caloPID->SetPi0MassRange(0.10, 0.18);
+  caloPID->SetEtaMassRange(0.40, 0.60);
+  caloPID->SetPhotonMassRange(0.00, 0.08);
+  
   ConfigureMC(ana);
   
   if(kPrint) ana->Print("");
@@ -856,6 +868,15 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     //nms->SetAngleMaxParam(2,0.2);
     nms->SetHistoERangeAndNBins(0, 20, 80) ;
     //nms->SetHistoIMRangeAndNBins(0, 1, 400);
+  }
+  else
+  { // cluster splitting settings
+    ana->SetTimeCut(-1000,1000); // Open time cut
+    AliCaloPID* caloPID = ana->GetCaloPID();
+    caloPID->SetPi0MassRange(0.10, 0.18);
+    caloPID->SetEtaMassRange(0.40, 0.60);
+    caloPID->SetPhotonMassRange(0.00, 0.08);
+    caloPID->SetClusterSplittingM02Cut(0.5,100); // Do the selection in the analysis class and not in the PID method to fill SS histograms
   }
   
   ana->SwitchOffSelectedClusterHistoFill(); 
@@ -1060,23 +1081,17 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SetTimeCut(-1000,1000); // Open time cut
   
   // Study inter detector correlation (PHOS, EMCAL, Tracks, V0)
-  if(kCalorimeter=="PHOS" && kTrig=="PHOS"){
+  if(kCalorimeter=="PHOS"  && kTrig=="PHOS")
     ana->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
-  }
-  if(kCalorimeter=="EMCAL" && kClusterArray==""){
+  if(kCalorimeter=="EMCAL" && kClusterArray=="")
     ana->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
-  }
-  else {
+  else 
     ana->SwitchOffCorrelation();
-  }
   
   // Study exotic clusters PHOS and EMCAL
-  if(kClusterArray==""){
-    ana->SwitchOnStudyBadClusters() ; 
-  }
-  else {
-    ana->SwitchOffStudyBadClusters() ;
-  }
+  if(kClusterArray=="") ana->SwitchOnStudyBadClusters() ; 
+  else                  ana->SwitchOffStudyBadClusters() ;
+  
   
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();

@@ -76,6 +76,30 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassM02NLocMax2Ebin[4] ; //! Mass of 2 cells local maxima, vs M02, 4 E bins, neutral clusters
   TH2F       * fhMassM02NLocMaxNEbin[4] ; //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
   
+  TH2F       * fhMassDispEtaNLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 7 GeV, 1-6 for different MC particle types 
+  TH2F       * fhMassDispEtaNLocMax2[7][2]  ; //! Mass of 2 cells local maxima, vs M02, for E > 7 GeV,  1-6 for different MC particle types
+  TH2F       * fhMassDispEtaNLocMaxN[7][2]  ; //! Mass of >2 cells local maxima, vs M02, for E > 7 GeV, 1-6 for different MC particle types  
+  
+  TH2F       * fhMassDispEtaNLocMax1Ebin[4] ; //! Mass of 2 highest energy cells when 1 local max, vs M02, 4 E bins, neutral clusters 
+  TH2F       * fhMassDispEtaNLocMax2Ebin[4] ; //! Mass of 2 cells local maxima, vs M02, 4 E bins, neutral clusters
+  TH2F       * fhMassDispEtaNLocMaxNEbin[4] ; //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
+  
+  TH2F       * fhMassDispPhiNLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 7 GeV, 1-6 for different MC particle types 
+  TH2F       * fhMassDispPhiNLocMax2[7][2]  ; //! Mass of 2 cells local maxima, vs M02, for E > 7 GeV,  1-6 for different MC particle types
+  TH2F       * fhMassDispPhiNLocMaxN[7][2]  ; //! Mass of >2 cells local maxima, vs M02, for E > 7 GeV, 1-6 for different MC particle types  
+  
+  TH2F       * fhMassDispPhiNLocMax1Ebin[4] ; //! Mass of 2 highest energy cells when 1 local max, vs M02, 4 E bins, neutral clusters 
+  TH2F       * fhMassDispPhiNLocMax2Ebin[4] ; //! Mass of 2 cells local maxima, vs M02, 4 E bins, neutral clusters
+  TH2F       * fhMassDispPhiNLocMaxNEbin[4] ; //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
+  
+  TH2F       * fhMassDispAsyNLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 7 GeV, 1-6 for different MC particle types 
+  TH2F       * fhMassDispAsyNLocMax2[7][2]  ; //! Mass of 2 cells local maxima, vs M02, for E > 7 GeV,  1-6 for different MC particle types
+  TH2F       * fhMassDispAsyNLocMaxN[7][2]  ; //! Mass of >2 cells local maxima, vs M02, for E > 7 GeV, 1-6 for different MC particle types  
+  
+  TH2F       * fhMassDispAsyNLocMax1Ebin[4] ; //! Mass of 2 highest energy cells when 1 local max, vs M02, 4 E bins, neutral clusters 
+  TH2F       * fhMassDispAsyNLocMax2Ebin[4] ; //! Mass of 2 cells local maxima, vs M02, 4 E bins, neutral clusters
+  TH2F       * fhMassDispAsyNLocMaxNEbin[4] ; //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
+  
   TH2F       * fhNLocMax      [7][2] ; //! Number of maxima in cluster vs E, 1-6 for different MC particle types
   TH2F       * fhNLocMaxM02Cut[7][2] ; //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
 
@@ -117,7 +141,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,11)
+  ClassDef(AliAnaInsideClusterInvariantMass,12)
   
 } ;
 
