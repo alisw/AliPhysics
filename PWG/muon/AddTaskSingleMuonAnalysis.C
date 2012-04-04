@@ -35,7 +35,7 @@ AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t isMC = kFALSE)
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SingleMuOut",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
   // Create cuts
-  AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("TestStandardMuonTrackCuts", "TestStandardMuonTrackCuts", type.Contains("ESD"));
+  AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("TestStandardMuonTrackCuts", "TestStandardMuonTrackCuts");
   muonTrackCuts->SetIsMC(isMC);
 
   // Create task
