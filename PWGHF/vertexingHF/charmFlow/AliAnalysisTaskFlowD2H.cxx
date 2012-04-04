@@ -15,7 +15,7 @@
 
 //==============================================================================
 // FlowD2H main task:
-// >> Select candidates and passes the array to the daughter tasks.
+// >> Select candidates and passes flowevents to the daughter tasks.
 // >> The POIcuts are polymorphic based on the AliRDHFCuts class allowing the 
 //    use of all charmed candidates reconstructed in the central barrel.
 // Author: Carlos Perez (cperez@cern.ch)
@@ -46,7 +46,9 @@
 
 #include "TMath.h"
 
-#include "AliFlowEventCuts.h"
+#include "AliFlowCommonConstants.h"
+#include "AliFlowEvent.h"
+#include "AliFlowTrackCuts.h"
 #include "AliFlowCandidateTrack.h"
 
 #include "TObjArray.h"
@@ -59,29 +61,42 @@ ClassImp(AliAnalysisTaskFlowD2H)
 
 //_____________________________________________________________________________
 AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H() :
-AliAnalysisTaskSE(), fEventCuts(NULL), fCutsPOI(NULL), fSource(0),
-  fDebugV2(kFALSE), fHList(NULL), fEvent(NULL), fCandidates(NULL)
+  AliAnalysisTaskSE(), fTPCEvent(NULL), fVZEEvent(NULL), 
+  fCutsTPC(NULL), fCutsVZE(NULL), fNoPOIs(NULL), fCutsPOI(NULL),
+  fSource(0), fDebugV2(kFALSE), fMassBins(0), fMinMass(0.),
+  fMaxMass(0.), fPtBinWidth(0), fHList(NULL), fEvent(NULL), 
+  fCC(NULL), fRFPMTPC(NULL), fRFPPhiTPC(NULL), fCandidates(NULL)
 {
 // Default constructor
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H(const char *name,
-					       AliFlowEventCuts *eventCuts,
+AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H(const char *name,	
+					       AliFlowTrackCuts *cutsTPC,
+					       AliFlowTrackCuts *cutsVZE,
 					       AliRDHFCuts *cutsPOIs,
 					       Int_t specie) :
-  AliAnalysisTaskSE(name), fEventCuts(eventCuts), fCutsPOI(cutsPOIs),
-  fSource(specie), fDebugV2(kFALSE), fHList(NULL), fEvent(NULL), fCandidates(NULL)
+  AliAnalysisTaskSE(name), fTPCEvent(NULL), fVZEEvent(NULL), 
+  fCutsTPC(cutsTPC), fCutsVZE(cutsVZE), fNoPOIs(NULL), fCutsPOI(cutsPOIs),
+  fSource(specie), fDebugV2(kFALSE), fMassBins(0), fMinMass(0.),
+  fMaxMass(0.), fPtBinWidth(0), fHList(NULL), fEvent(NULL),
+  fCC(NULL), fRFPMTPC(NULL), fRFPPhiTPC(NULL), fCandidates(NULL)
 {
 // Standard constructor
   DefineInput( 0,TChain::Class());
   DefineOutput(1,TList::Class());
-  DefineOutput(2,TObjArray::Class());
+  DefineOutput(2,AliFlowEventSimple::Class());
+  DefineOutput(3,AliFlowEventSimple::Class());
 }
 
 //_____________________________________________________________________________
 AliAnalysisTaskFlowD2H::~AliAnalysisTaskFlowD2H(){
   // delete objects
+  if(fTPCEvent) delete fTPCEvent;
+  if(fVZEEvent) delete fVZEEvent;
+  if(fCutsTPC) delete fCutsTPC;
+  if(fCutsVZE) delete fCutsVZE;
+  if(fNoPOIs) delete fNoPOIs;
   if(fCutsPOI) delete fCutsPOI;
   if(fHList) delete fHList;
   if(fCandidates) delete fCandidates;
@@ -99,12 +114,46 @@ void AliAnalysisTaskFlowD2H::UserCreateOutputObjects(){
   fEvent->GetXaxis()->SetBinLabel(2,"SELECTED");
   fEvent->GetXaxis()->SetBinLabel(3,"DELTA AOD REACHED");
   fHList->Add( fEvent );
+  fCC = new TH1D("CentralityClass","Centrality Class",50,0,100);
+  fHList->Add( fCC );
+  fRFPMTPC = new TH1D("RFPMultiplicityTPC","RFP Multiplicity TPC",300,0,3000);
+  fHList->Add( fRFPMTPC );
+  fRFPPhiTPC = new TH1D("RFPPhiTPC","RFP Phi TPC",180,0,TMath::TwoPi());
+  fHList->Add( fRFPPhiTPC );
 
-  fCandidates = new TObjArray(300);
+  fCandidates = new TObjArray(100);
   fCandidates->SetOwner();
 
+  AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
+  cc->SetNbinsMult(1);
+  cc->SetNbinsPt(24/fPtBinWidth);
+  cc->SetNbinsPhi(1);
+  cc->SetNbinsEta(15);
+  cc->SetNbinsQ(1);
+  cc->SetNbinsMass( fMassBins );
+  cc->SetMultMin(1);
+  cc->SetMultMax(2);
+  cc->SetPtMin(0);
+  cc->SetPtMax(24);
+  cc->SetPhiMin(0);
+  cc->SetPhiMax(TMath::TwoPi());
+  cc->SetEtaMin(-3.9);
+  cc->SetEtaMax(+5.1);
+  cc->SetQMin(0);
+  cc->SetQMax(1);
+  cc->SetMassMin( fMinMass );
+  cc->SetMassMax( fMaxMass );
+
+  fTPCEvent = new AliFlowEvent(3000);
+  fVZEEvent = new AliFlowEvent(170);
+
+  fNoPOIs = new AliFlowTrackCuts( "noPOIs" );
+  fNoPOIs->SetParamType(AliFlowTrackCuts::kGlobal);
+  fNoPOIs->SetPtRange(+1,-1);
+
   PostData(1,fHList);
-  PostData(2,fCandidates);
+  PostData(2,fTPCEvent);
+  PostData(3,fVZEEvent);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
@@ -115,8 +164,28 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
   if(!fAOD) return;
   fEvent->Fill( 0 );
 
-  if(!fEventCuts->IsSelected(fAOD)) return;
+  // floweventcuts::isselected() and alirdhfcuts::iseventselected() cut on the same 
+  // values in the same way BUT the latter also loads the PIDresponse object from the 
+  // event header!!! 
+  //  if(!fEventCuts->IsSelected(fAOD)) return;
+  if(!fCutsPOI->IsEventSelected(fAOD)) return;
   fEvent->Fill( 1 );
+
+  fCC->Fill( fCutsPOI->GetCentrality(fAOD) );
+
+  fCutsTPC->SetEvent( fAOD, MCEvent() );
+  fCutsVZE->SetEvent( fAOD, MCEvent() );
+  fNoPOIs->SetEvent( fAOD, MCEvent() );
+  fTPCEvent->Fill( fCutsTPC, fNoPOIs );
+  fVZEEvent->Fill( fCutsVZE, fNoPOIs );
+
+  Int_t rfps = fTPCEvent->GetNumberOfRPs();
+  fRFPMTPC->Fill( rfps );
+  for(int iRPs=0; iRPs!=rfps; ++iRPs ) {
+    AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fTPCEvent->GetTrack( iRPs ));
+    if (!iRP) continue;
+    fRFPPhiTPC->Fill( iRP->Phi() );
+  }
 
   if (fDebugV2) printf("Event selected\n");
   fCandidates->SetLast(-1); // resets the array
@@ -130,10 +199,36 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
       FillDplustoKpipi(fAOD); break;
   }
 
-  if (fDebugV2) printf("Candidates inserted: %d\n", fCandidates->GetEntriesFast() );
-  PostData(1,fHList);
-  PostData(2,fCandidates);
+  if(fDebugV2) printf("TPCevent %d | VZEevent %d\n", fTPCEvent->NumberOfTracks(), fVZEEvent->NumberOfTracks() );
+  //inject candidates
+  if (fDebugV2)  printf("I received %d candidates\n",fCandidates->GetEntriesFast());
+  for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
+    AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
+    if (!cand) continue;
+    if (fDebugV2) printf(" >Checking at candidate %d with %d daughters: mass %f\n",iCand,cand->GetNDaughters(),cand->Mass());
+    for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
+      if(fDebugV2) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
+      for(int iRPs=0; iRPs!=fTPCEvent->NumberOfTracks(); ++iRPs ) {
+	AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fTPCEvent->GetTrack( iRPs ));
+	if (!iRP) continue;
+	if( !iRP->InRPSelection() ) continue;
+	if( cand->GetIDDaughter(iDau) == iRP->GetID() ) {
+	  if(fDebugV2) printf(" was in RP set");
+	  iRP->SetForRPSelection(kFALSE);
+	  fTPCEvent->SetNumberOfRPs( fTPCEvent->GetNumberOfRPs() -1 );
+	}
+      }
+      if(fDebugV2) printf("\n");
+    }
+    cand->SetForPOISelection(kTRUE);
+    fTPCEvent->InsertTrack( ((AliFlowTrack*) cand) );
+    fVZEEvent->InsertTrack( ((AliFlowTrack*) cand) );
+  }
+  if(fDebugV2) printf("TPCevent %d | VZEevent %d\n", fTPCEvent->NumberOfTracks(), fVZEEvent->NumberOfTracks() );
 
+  PostData(1,fHList);
+  PostData(2,fTPCEvent);
+  PostData(3,fVZEEvent);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskFlowD2H::FillD0toKpi(const AliAODEvent *theAOD)
@@ -269,4 +364,11 @@ void AliAnalysisTaskFlowD2H::MakeTrack( Double_t mass, Double_t pt, Double_t phi
     fCandidates->AddLast(oTrack);
   }
   return;
+}
+
+void AliAnalysisTaskFlowD2H::SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass, Int_t ptWidth) {
+  fMassBins = massBins;
+  fMinMass = minMass;
+  fMaxMass = maxMass;
+  fPtBinWidth = ptWidth;
 }

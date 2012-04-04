@@ -20,7 +20,9 @@ class AliAODEvent;
 class AliRDHFCuts;
 class AliRDHFCutsD0toKpi;
 class AliFlowEventCuts;
+class AliFlowEvent;
 class AliFlowCandidateTrack;
+class AliFlowTrackCuts;
 class TList;
 class TH1D;
 
@@ -28,13 +30,15 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
   public:
     AliAnalysisTaskFlowD2H();
     AliAnalysisTaskFlowD2H( const Char_t *name, 
-			    AliFlowEventCuts *cutsEvent,
+			    AliFlowTrackCuts *cutsTPC,
+			    AliFlowTrackCuts *cutsVZE,
 			    AliRDHFCuts *cutsPOIs, 
 			    Int_t specie );
     void SetDebug() {fDebugV2 = true;}
     virtual ~AliAnalysisTaskFlowD2H();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
+    void SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass, Int_t ptWidth);
 
   private:
     AliAnalysisTaskFlowD2H(const AliAnalysisTaskFlowD2H& analysisTask);
@@ -51,17 +55,31 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     void MakeTrack( Double_t mass, Double_t pt,
 		    Double_t phi, Double_t eta,
 		    Int_t nDaughters, const Int_t *iID );
-    AliFlowEventCuts *fEventCuts;
+
+    AliFlowEvent *fTPCEvent;
+    AliFlowEvent *fVZEEvent;
+    AliFlowTrackCuts *fCutsTPC;
+    AliFlowTrackCuts *fCutsVZE;
+    AliFlowTrackCuts *fNoPOIs;
+
     AliRDHFCuts *fCutsPOI; // cuts for POIs
     Int_t  fSource; // AliRDHFCuts::ESele
     Bool_t fDebugV2; // fully talkative task
 
+    Int_t fMassBins; // configures mass bins for the analysis
+    Double_t fMinMass; // configures mass range for the analysis
+    Double_t fMaxMass; // configures mass range for the analysis
+    Int_t fPtBinWidth; // configures pt bin width for the analysis
+
     TList *fHList; // List for histos
-    TH1D  *fEvent; // Event counter
+    TH1D *fEvent;  // Event counter
+    TH1D *fCC;     // CC histogram
+    TH1D *fRFPMTPC; // Multiplicity RFPTPC
+    TH1D *fRFPPhiTPC; // Phi RFPTPC
 
     TObjArray *fCandidates; // Array of selected candidates
 
-  ClassDef(AliAnalysisTaskFlowD2H, 2);
+  ClassDef(AliAnalysisTaskFlowD2H, 3);
 };
 
 #endif
