@@ -34,6 +34,7 @@
 #include "TFile.h"
 #include "TList.h" 
 #include "TF1.h"
+#include "TH2D.h"
 #include "TParticle.h"
 #include "TProfile.h"
 #include "AliFlowEventSimple.h"
@@ -58,6 +59,7 @@ ClassImp(AliFlowAnalysisWithFittingQDistribution)
 
 AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution():  
  fHistList(NULL),
+ fBookOnlyBasicCCH(kTRUE),
  fCommonHists(NULL),
  fCommonHistsResults(NULL),
  fnBinsPhi(0),
@@ -85,8 +87,13 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
  fSumOfParticleWeights(NULL),
  fqDistribution(NULL),
  fqMin(0.),
- fqMax(1000.),
+ fqMax(100.),
  fqNbins(10000),
+ fStoreqDistributionVsMult(kFALSE),
+ fqDistributionVsMult(NULL),
+ fMinMult(0.),
+ fMaxMult(10000.),
+ fnBinsMult(1000),
  fFittingParameters(NULL), 
  fTreshold(5.),
  fvStart(0.05),
@@ -113,7 +120,7 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
 
   // initialize all arrays:  
   this->InitializeArrays();
-
+ 
  } // end of constructor
  
 //================================================================================================================
@@ -195,13 +202,14 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
                                           // nRP   = # of particles used to determine the reaction plane;
                                           // nPOI  = # of particles of interest for a detailed flow analysis;
                                           // rest  = # of particles which are not niether RPs nor POIs.   
+                                                                                    
  // Start loop over particles:
  for(Int_t i=0;i<nPrim;i++) 
  { 
   aftsTrack=anEvent->GetTrack(i);
   if(aftsTrack)
   {
-   if(!(aftsTrack->InRPSelection())) continue; // consider only tracks which are RPs    
+   if(!(aftsTrack->InRPSelection())){continue;} // consider only tracks which are RPs    
    dPhi = aftsTrack->Phi();
    dPt  = aftsTrack->Pt();
    dEta = aftsTrack->Eta();
@@ -228,11 +236,12 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
                                            
  // d) Fill the histogram for q-distribution and sum of particle weights:
  Double_t q = 0.; // q = Q\sqrt{sum of particle weights}                                         
- if(dSumOfParticleWeights)
+ if(dSumOfParticleWeights > 0.)
  {
   q = pow(dReQ*dReQ+dImQ*dImQ,0.5)/pow(dSumOfParticleWeights,0.5);
   fqDistribution->Fill(q,1.);
   fSumOfParticleWeights->Fill(dSumOfParticleWeights,1.);
+  if(fStoreqDistributionVsMult){fqDistributionVsMult->Fill(q,dSumOfParticleWeights);}
  } else
    {
     cout<<endl;
@@ -618,7 +627,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookCommonHistograms()
  // common control histogram: 
  TString commonHistName = "AliFlowCommonHistFQD";
  commonHistName += fAnalysisLabel->Data();
- fCommonHists = new AliFlowCommonHist(commonHistName.Data());
+ fCommonHists = new AliFlowCommonHist(commonHistName.Data(),commonHistName.Data(),fBookOnlyBasicCCH);
  fHistList->Add(fCommonHists);  
 
  // common histograms for final results:
@@ -750,7 +759,18 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
  fqDistribution = new TH1D(Form("%s",fqDistributionName.Data()),"q-distribution",fqNbins,fqMin,fqMax);  
  fqDistribution->SetXTitle("q_{n}=|Q_{n}|/#sqrt{M}");
  fqDistribution->SetYTitle("Counts");
- fHistList->Add(fqDistribution);
+ fHistList->Add(fqDistribution); 
+ // q-distribution vs multiplicity:
+ if(fStoreqDistributionVsMult)
+ {
+  TString fqDistributionVsMultName = "fqDistributionVsMult";
+  fqDistributionVsMultName += fAnalysisLabel->Data();
+  fqDistributionVsMult = new TH2D(Form("%s",fqDistributionVsMultName.Data()),"q-distribution vs M",fqNbins,fqMin,fqMax,fnBinsMult,fMinMult,fMaxMult);  
+  fqDistributionVsMult->GetXaxis()->SetTitle("q_{n}=|Q_{n}|/#sqrt{M}");
+  fqDistributionVsMult->GetYaxis()->SetTitle("multiplicity");
+  fqDistributionVsMult->GetZaxis()->SetTitle("Counts");
+  fHistList->Add(fqDistributionVsMult);
+ } // end of if(fStoreqDistributionVsMult)
  // Sum of particle weights: 
  TString fSumOfParticleWeightsName = "fSumOfParticleWeights";
  fSumOfParticleWeightsName += fAnalysisLabel->Data();
@@ -817,9 +837,9 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
 void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t sigma2Fitted)
 {
  // Do the final fit of q-distribution.
- 
+  
  Int_t s2F = (Int_t)(sigma2Fitted); // shortcut
- Double_t dAvM = fSumOfParticleWeights->GetMean(1); // average multiplicity
+ Double_t AvM = fSumOfParticleWeights->GetMean(1); // average multiplicity
  //Int_t nEvts = (Int_t)fSumOfParticleWeights->GetEntries(); // number of events:
  
  // Start fitting from the bin with at least fTreshold entries, 
@@ -841,12 +861,13 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t sigma2Fitted)
  {
   ent += fqDistribution->GetBinContent(b);
  }
+ 
  Double_t norm = binWidth*ent; // norm (assuming that all bins have the same width)
  // Fitting function:
  fFittingFunction[s2F]->SetRange(qmin,qmax); 
  fFittingFunction[s2F]->SetParNames("v*sqrt{sum of particle weights}","sigma^2","norm");
- fFittingFunction[s2F]->SetParameters(fvStart*pow(dAvM,0.5),fSigma2Start,norm);         
- fFittingFunction[s2F]->SetParLimits(0,fvMin*pow(dAvM,0.5),fvMax*pow(dAvM,0.5)); 
+ fFittingFunction[s2F]->SetParameters(fvStart*pow(AvM,0.5),fSigma2Start,norm);         
+ fFittingFunction[s2F]->SetParLimits(0,fvMin*pow(AvM,0.5),fvMax*pow(AvM,0.5)); 
  if(s2F == 0)
  {
   fFittingFunction[s2F]->FixParameter(1,0.5);
@@ -861,6 +882,7 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t sigma2Fitted)
  {
   fqDistribution->Fit(fFittingFunction[s2F]->GetName(),"NQ","",qmin,qmax);
  }
+
  // Final results:
  Double_t v = 0.; // reference flow
  Double_t vError = 0.; // error of reference flow 
@@ -868,16 +890,16 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t sigma2Fitted)
  Double_t sigma2Error = 0.; // error of sigma^2
  Double_t chi2 = 0; // chi^2 from Minuit
  // Reference flow:
- if(dAvM > 0.)
+ if(AvM)
  { 
-  v = fFittingFunction[s2F]->GetParameter(0)/pow(dAvM,0.5);
-  vError = fFittingFunction[s2F]->GetParError(0)/pow(dAvM,0.5);
+  v = fFittingFunction[s2F]->GetParameter(0)/pow(AvM,0.5);
+  vError = fFittingFunction[s2F]->GetParError(0)/pow(AvM,0.5);
   fIntFlow[s2F]->SetBinContent(1,v); // s2F is shortcut for "sigma^2 fitted"
   fIntFlow[s2F]->SetBinError(1,vError); // s2F is shortcut for "sigma^2 fitted"
  } else
    {
     cout<<endl;
-    cout<<"WARNING (FQD): dAvM == 0 in AFAWFQD::DoFit()"<<endl;
+    cout<<"WARNING (FQD): AvM == 0 in AFAWFQD::DoFit()"<<endl;
     cout<<endl;
    }    
  // sigma^2:: 
@@ -915,8 +937,8 @@ void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResults(Bool_t sigma
  Double_t vError = fIntFlow[s2F]->GetBinError(1);
  fCommonHistsResults->FillIntegratedFlow(v,vError);   
  // Resolution:
- Double_t dAvM = fSumOfParticleWeights->GetMean(1);
- Double_t chi2 = dAvM*pow(v,2.); // chi^2
+ Double_t AvM = fSumOfParticleWeights->GetMean(1);
+ Double_t chi2 = AvM*pow(v,2.); // chi^2
  if(chi2>=0.)
  {
   fCommonHistsResults->FillChi(pow(chi2,0.5));   

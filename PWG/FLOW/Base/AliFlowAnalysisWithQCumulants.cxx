@@ -70,7 +70,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  // 0.) base:
  fHistList(NULL),
  // 1.) common:
- fBookOnlyBasicCCH(kFALSE),
+ fBookOnlyBasicCCH(kTRUE),
  fCommonHists(NULL),
  fCommonHists2nd(NULL), 
  fCommonHists4th(NULL),
@@ -2866,6 +2866,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  Double_t dQ3nQ2nQ3nstarQ2nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.));
  // |Q_{5n}|^2 |Q_{n}|^2
  Double_t dQ5nQ1nQ5nstarQ1nstar = (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.));
+ // |Q_{3n}|^2 |Q_{n}|^2
+ Double_t dQ3nQ1nQ3nstarQ1nstar = (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.));
  // Re[Q_{2n}Q_{n}Q_{n}^*Q_{n}^*Q_{n}^*]
  Double_t reQ2nQ1nQ1nstarQ1nstarQ1nstar = (dReQ2n*dReQ1n-dImQ2n*dImQ1n)*(pow(dReQ1n,3)-3.*dReQ1n*pow(dImQ1n,2))
                                         + (dReQ2n*dImQ1n+dReQ1n*dImQ2n)*(3.*dImQ1n*pow(dReQ1n,2)-pow(dImQ1n,3)); 
@@ -2927,7 +2929,30 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  // Re[Q_{2n}Q_{n}Q_{n}Q_{n}^*Q_{n}^*Q_{n}^*Q_{n}^*]
  Double_t reQ2nQ1nQ1nQ1nstarQ1nstarQ1nstarQ1nstar = pow((pow(dReQ1n,2.)+pow(dImQ1n,2.)),2.)
                                                   * (pow(dReQ1n,2.)*dReQ2n-dReQ2n*pow(dImQ1n,2.)
-                                                  + 2.*dReQ1n*dImQ1n*dImQ2n);
+                                                  + 2.*dReQ1n*dImQ1n*dImQ2n);                                                  
+ // Re[Q_{6n}Q_{2n}^*Q_{2n}^*Q_{n}^*Q_{n}^*]
+ Double_t reQ6nQ2nstarQ2nstarQ1nstarQ1nstar = pow(dReQ1n*dReQ2n,2.)*dReQ6n-pow(dReQ2n*dImQ1n,2.)*dReQ6n
+                                            - 4.*dReQ1n*dReQ2n*dReQ6n*dImQ1n*dImQ2n 
+                                            - pow(dReQ1n*dImQ2n,2.)*dReQ6n+pow(dImQ1n*dImQ2n,2.)*dReQ6n
+                                            + 2.*dReQ1n*pow(dReQ2n,2.)*dImQ1n*dImQ6n
+                                            + 2.*pow(dReQ1n,2.)*dReQ2n*dImQ2n*dImQ6n 
+                                            - 2.*dReQ2n*pow(dImQ1n,2.)*dImQ2n*dImQ6n 
+                                            - 2.*dReQ1n*dImQ1n*pow(dImQ2n,2.)*dImQ6n;       
+ // Re[Q_{4n}Q_{1n}Q_{1n}Q_{3n}^*Q_{3n}^*]
+ Double_t reQ4nQ1nQ1nQ3nstarQ3nstar = pow(dReQ1n*dReQ3n,2.)*dReQ4n-pow(dReQ3n*dImQ1n,2.)*dReQ4n  
+                                    + 4.*dReQ1n*dReQ3n*dReQ4n*dImQ1n*dImQ3n 
+                                    - pow(dReQ1n*dImQ3n,2.)*dReQ4n+pow(dImQ1n*dImQ3n,2.)*dReQ4n  
+                                    - 2.*dReQ1n*pow(dReQ3n,2.)*dImQ1n*dImQ4n 
+                                    + 2.*pow(dReQ1n,2.)*dReQ3n*dImQ3n*dImQ4n 
+                                    - 2.*dReQ3n*pow(dImQ1n,2.)*dImQ3n*dImQ4n 
+                                    + 2.*dReQ1n*dImQ1n*pow(dImQ3n,2.)*dImQ4n;
+ // Re[Q_{3n}Q_{3n}Q_{2n}^*Q_{2n}^*Q_{1n}^*Q_{1n}^*]
+ Double_t reQ3nQ3nQ2nstarQ2nstarQ1nstarQ1nstar = (dReQ1n*dReQ2n*dReQ3n-dReQ2n*dReQ3n*dImQ1n-dReQ1n*dReQ3n*dImQ2n 
+                                               - dReQ3n*dImQ1n*dImQ2n+dReQ1n*dReQ2n*dImQ3n+dReQ2n*dImQ1n*dImQ3n 
+                                               + dReQ1n*dImQ2n*dImQ3n-dImQ1n*dImQ2n*dImQ3n)*(dReQ1n*dReQ2n*dReQ3n 
+                                               + dReQ2n*dReQ3n*dImQ1n+dReQ1n*dReQ3n*dImQ2n-dReQ3n*dImQ1n*dImQ2n 
+                                               - dReQ1n*dReQ2n*dImQ3n+dReQ2n*dImQ1n*dImQ3n+dReQ1n*dImQ2n*dImQ3n 
+                                               + dImQ1n*dImQ2n*dImQ3n);
     
  // Results for multiparticle azimuthal correlations:
  // 2-particle:
@@ -3528,14 +3553,15 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   four5n1n5n1n = (dQ5nQ1nQ5nstarQ1nstar-2.*reQ6nQ5nstarQ1nstar-2.*reQ5nQ4nstarQ1nstar
                + pow(dReQ6n,2.)+pow(dImQ6n,2.)-(dMult-4.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
                + pow(dReQ4n,2.)+pow(dImQ4n,2.)-(dMult-4.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))+dMult*(dMult-6.))  
-               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));                  
-  
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));    
+                              
+  // TBI: Recursive formula needed:
   four6n4n1n1n = (reQ6nQ4nstarQ1nstarQ1nstar
                - dMult*(dMult-1.)*(dMult-2.)*(three2n1n1n+2.*three5n4n1n+2.*three6n5n1n+three6n4n2n)
                - dMult*(dMult-1.)*(2.*two1n1n+1.*two4n4n+1.*two6n6n+1.*two2n2n+2.*two5n5n)
                - 1.*dMult)
                / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
- 
+  
   four6n2n2n2n = (reQ6nQ2nstarQ2nstarQ2nstar-3.*reQ6nQ4nstarQ2nstar-3.*reQ4nQ2nstarQ2nstar
                + 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))+3.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
                + 6.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-6.*dMult)
@@ -3633,9 +3659,42 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
                  + (dMult-10.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*(dMult-7.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
                  - 2.*dMult*(dMult-12.))
                  / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));      
+ 
+  // Peter Jochumzsen:
+  five6n2n2n1n1n = (reQ6nQ2nstarQ2nstarQ1nstarQ1nstar
+                 - 12.*pow(dReQ1n,2.)-12.*pow(dImQ1n,2.)
+                 - 14.*pow(dReQ2n,2.)-14.*pow(dImQ2n,2.)
+                 - 8.*pow(dReQ3n,2.)-8.*pow(dImQ3n,2.)
+                 - 6.*pow(dReQ4n,2.)-6.*pow(dImQ4n,2.)
+                 - 4.*pow(dReQ5n,2.)-4.*pow(dImQ5n,2.)
+                 - 6.*pow(dReQ6n,2.)-6.*pow(dImQ6n,2.)
+                 + 2.*reQ2nQ1nstarQ1nstar + 8.*reQ3nQ2nstarQ1nstar
+                 + 5.*reQ6nQ4nstarQ2nstar - reQ6nQ4nstarQ1nstarQ1nstar
+                 + 2.*reQ6nQ3nstarQ3nstar - reQ6nQ2nstarQ2nstarQ2nstar 
+                 + 4.*reQ4nQ2nstarQ2nstar - 2.*reQ4nQ2nstarQ1nstarQ1nstar 
+                 + 2.*reQ5nQ4nstarQ1nstar - 2.*reQ5nQ2nstarQ2nstarQ1nstar 
+                 + 4.*reQ4nQ3nstarQ1nstar + 4.*reQ5nQ3nstarQ2nstar
+                 + 4.*reQ6nQ5nstarQ1nstar - 4.*reQ6nQ3nstarQ2nstarQ1nstar + 24.*dMult)
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
   
-  // five6n2n2n1n1n = ;
-  // five4n1n1n3n3n = ; 
+  // Peter Jochumzsen:
+  /*
+  five4n1n1n3n3n = (reQ6nQ2nstarQ2nstarQ1nstarQ1nstar
+                 - 12.*pow(dReQ1n,2.)-12.*pow(dImQ1n,2.)
+                 - 14.*pow(dReQ2n,2.)-14.*pow(dImQ2n,2.)
+                 - 8.*pow(dReQ3n,2.)-8.*pow(dImQ3n,2.)
+                 - 6.*pow(dReQ4n,2.)-6.*pow(dImQ4n,2.)
+                 - 4.*pow(dReQ5n,2.)-4.*pow(dImQ5n,2.)
+                 - 6.*pow(dReQ6n,2.)-6.*pow(dImQ6n,2.)
+                 + 2.*reQ2nQ1nstarQ1nstar + 8.*reQ3nQ2nstarQ1nstar
+                 + 5.*reQ6nQ4nstarQ2nstar - reQ6nQ4nstarQ1nstarQ1nstar
+                 + 2.*reQ6nQ3nstarQ3nstar - reQ6nQ2nstarQ2nstarQ2nstar
+                 + 4.*reQ4nQ2nstarQ2nstar - 2.*reQ4nQ2nstarQ1nstarQ1nstar
+                 + 2.*reQ5nQ4nstarQ1nstar - 2.*reQ5nQ2nstarQ2nstarQ1nstar
+                 + 4.*reQ4nQ3nstarQ1nstar + 4.*reQ5nQ3nstarQ2nstar
+                 + 4.*reQ6nQ5nstarQ1nstar - 4.*reQ6nQ3nstarQ2nstarQ1nstar + 24.*dMult)
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  */
   
   // Average 5-particle correlations for all events:      
   fIntFlowCorrelationsAllPro->Fill(52.5,five3n3n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
@@ -3688,8 +3747,36 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
                   + (dMult*dMult-20.*dMult+80.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
                   - dMult*(dMult-12.)*(dMult-10.))
                   / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));   
-
-  // six3n3n2n2n1n1n = ;
+  
+  // Peter Jochumzsen:
+  six3n3n2n2n1n1n = (reQ3nQ3nQ2nstarQ2nstarQ1nstarQ1nstar
+                  + (80.-16.*dMult)*pow(dReQ1n,2.)+(80.-16.*dMult)*pow(dImQ1n,2.)
+                  + (78.-16.*dMult)*pow(dReQ2n,2.)+(78.-16.*dMult)*pow(dImQ2n,2.)
+                  + (72.-16.*dMult)*pow(dReQ3n,2.)+(72.-16.*dMult)*pow(dImQ3n,2.)
+                  + 14.*pow(dReQ4n,2.)+14.*pow(dImQ4n,2.)
+                  + 8.*pow(dReQ5n,2.)+8.*pow(dImQ5n,2.)
+                  + 6.*pow(dReQ6n,2.)+6.*pow(dImQ6n,2.)
+                  + 1.*reQ6nQ2nstarQ2nstarQ2nstar - 1.*reQ6nQ2nstarQ2nstarQ1nstarQ1nstar
+                  - 76.*reQ3nQ2nstarQ1nstar + 4.*reQ3nQ1nstarQ1nstarQ1nstar
+                  - 8.*reQ3nQ2nstarQ1nstar + 8.*dQ2nQ1nQ2nstarQ1nstar
+                  + 4.*reQ5nQ2nstarQ2nstarQ1nstar - 2.*reQ6nQ3nstarQ3nstar
+                  + 4.*reQ6nQ3nstarQ2nstarQ1nstar - 4.*reQ5nQ4nstarQ1nstar
+                  + 16.*dMult*reQ3nQ2nstarQ1nstar - 2.*reQ4nQ2nstarQ2nstar
+                  - 4.*reQ3nQ3nQ3nstarQ2nstarQ1nstar -8.*reQ4nQ3nstarQ1nstar
+                  - 10.*reQ4nQ2nstarQ2nstar + 4.*reQ4nQ2nstarQ1nstarQ1nstar
+                  - 12.*reQ4nQ3nstarQ1nstar + 8.*dQ3nQ1nQ3nstarQ1nstar
+                  + 8.*reQ3nQ1nQ2nstarQ2nstar - 4.*reQ3nQ1nQ2nstarQ1nstarQ1nstar
+                  + 5.*reQ4nQ2nQ3nstarQ3nstar+2.*pow(pow(dReQ2n,2.)+pow(dImQ2n,2.),2.)
+                  + 4.*reQ5nQ1nQ3nstarQ3nstar+2.*pow(pow(dReQ3n,2.)+pow(dImQ3n,2.),2.)
+                  - 6.*reQ6nQ3nstarQ3nstar - 14.*reQ2nQ1nstarQ1nstar
+                  - 1.*reQ3nQ3nQ2nstarQ2nstarQ2nstar-4.*reQ3nQ2nQ2nstarQ2nstarQ1nstar
+                  - 1.*reQ4nQ1nQ1nQ3nstarQ3nstar-8.*reQ5nQ3nstarQ2nstar
+                  + 2.*pow(pow(dReQ1n,2.)+pow(dImQ1n,2.),2.) - 10.*reQ2nQ1nstarQ1nstar
+                  - 4.*reQ6nQ5nstarQ1nstar-5.*reQ6nQ4nstarQ2nstar
+                  + 1.*reQ6nQ4nstarQ1nstarQ1nstar-8.*reQ5nQ3nstarQ2nstar
+                  + 4.*reQ4nQ1nQ3nstarQ2nstar+8.*dQ3nQ2nQ3nstarQ2nstar
+                  - 120.*dMult + 16.*dMult*dMult)
+                  / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
 
   // Average 6-particle correlations for all events:      
   fIntFlowCorrelationsAllPro->Fill(57.5,six3n2n1n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
@@ -9915,14 +10002,14 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
  // Calculate generalized Q-cumulants (cumulants corrected for non-unifom acceptance).
  
  // Isotropic cumulants:
- Double_t qc2 = fIntFlowQcumulants->GetBinContent(1);
- Double_t qc2Error = fIntFlowQcumulants->GetBinError(1);
- Double_t qc4 = fIntFlowQcumulants->GetBinContent(2);
- Double_t qc4Error = fIntFlowQcumulants->GetBinError(2);
- //Double_t qc6 = fIntFlowQcumulants->GetBinContent(3);
- //Double_t qc6Error = fIntFlowQcumulants->GetBinError(3);
- //Double_t qc8 = fIntFlowQcumulants->GetBinContent(4);
- //Double_t qc8Error = fIntFlowQcumulants->GetBinError(4);
+ Double_t QC2 = fIntFlowQcumulants->GetBinContent(1);
+ Double_t QC2Error = fIntFlowQcumulants->GetBinError(1);
+ Double_t QC4 = fIntFlowQcumulants->GetBinContent(2);
+ Double_t QC4Error = fIntFlowQcumulants->GetBinError(2);
+ //Double_t QC6 = fIntFlowQcumulants->GetBinContent(3);
+ //Double_t QC6Error = fIntFlowQcumulants->GetBinError(3);
+ //Double_t QC8 = fIntFlowQcumulants->GetBinContent(4);
+ //Double_t QC8Error = fIntFlowQcumulants->GetBinError(4);
  
  // Measured 2-, 4-, 6- and 8-particle correlations:
  Double_t two = fIntFlowCorrelationsHist->GetBinContent(1); // <<2>>
@@ -10047,18 +10134,18 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
     }   
  } // end of if(fApplyCorrectionForNUA && fPropagateErrorAlsoFromNIT)
  // Quantify detector bias to QC{2}:
- if(TMath::Abs(qc2)>0.)
+ if(TMath::Abs(QC2)>0.)
  {
-  fIntFlowDetectorBias->SetBinContent(1,gQC2/qc2); 
-  if(qc2Error>0.)
+  fIntFlowDetectorBias->SetBinContent(1,gQC2/QC2); 
+  if(QC2Error>0.)
   {
-   Double_t errorSquared = gQC2ErrorSquared/pow(qc2,2.)+pow(gQC2,2.)*pow(qc2Error,2.)/pow(qc2,4.);
+   Double_t errorSquared = gQC2ErrorSquared/pow(QC2,2.)+pow(gQC2,2.)*pow(QC2Error,2.)/pow(QC2,4.);
    if(errorSquared>0.)
    {
     fIntFlowDetectorBias->SetBinError(1,pow(errorSquared,0.5));  
    }
   }
- } // end of if(TMath::Abs(qc2)>0.)
+ } // end of if(TMath::Abs(QC2)>0.)
 
  // Calculating generalized QC{4}:
  //  Generalized QC{4}:
@@ -10099,18 +10186,18 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
     }   
  } // end of if(fApplyCorrectionForNUA && fPropagateErrorAlsoFromNIT)
  // Quantify detector bias to QC{4}:
- if(TMath::Abs(qc4)>0.)
+ if(TMath::Abs(QC4)>0.)
  {
-  fIntFlowDetectorBias->SetBinContent(2,gQC4/qc4); 
-  if(qc4Error>0.)
+  fIntFlowDetectorBias->SetBinContent(2,gQC4/QC4); 
+  if(QC4Error>0.)
   {
-   Double_t errorSquared = gQC4ErrorSquared/pow(qc4,2.)+pow(gQC4,2.)*pow(qc4Error,2.)/pow(qc4,4.);
+   Double_t errorSquared = gQC4ErrorSquared/pow(QC4,2.)+pow(gQC4,2.)*pow(QC4Error,2.)/pow(QC4,4.);
    if(errorSquared>0.)
    {
     fIntFlowDetectorBias->SetBinError(2,pow(errorSquared,0.5));  
    }
   }
- } // end of if(TMath::Abs(qc4)>0.)
+ } // end of if(TMath::Abs(QC4)>0.)
 
 
  // .... to be improved (continued for 6th and 8th order) ....            
@@ -10130,8 +10217,8 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
    two = fIntFlowCorrelationsVsMHist[0]->GetBinContent(b); // <<2>> vs M
    four = fIntFlowCorrelationsVsMHist[1]->GetBinContent(b); // <<4>> vs M
    // Isotropic cumulants:
-   qc2 = two;
-   qc4 = four-2.*pow(two,2.);
+   QC2 = two;
+   QC4 = four-2.*pow(two,2.);
    // Non-isotropic terms:
    c1 = fIntFlowCorrectionTermsForNUAVsMPro[1][0]->GetBinContent(b); // <<cos(n*phi1)>>
    c2 = fIntFlowCorrectionTermsForNUAVsMPro[1][1]->GetBinContent(b); // <<cos(n*(phi1+phi2))>>
@@ -10149,14 +10236,14 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
                  + 8.*two*(pow(c1,2.)+pow(s1,2.))-6.*pow((pow(c1,2.)+pow(s1,2.)),2.);
    if(fApplyCorrectionForNUAVsM){fIntFlowQcumulantsVsM[1]->SetBinContent(b,gQC4);}   
    // Detector bias vs M:
-   if(TMath::Abs(qc2)>0.)
+   if(TMath::Abs(QC2)>0.)
    {
-    fIntFlowDetectorBiasVsM[0]->SetBinContent(b,gQC2/qc2); 
-   } // end of if(TMath::Abs(qc2)>0.)
-   if(TMath::Abs(qc4)>0.)
+    fIntFlowDetectorBiasVsM[0]->SetBinContent(b,gQC2/QC2); 
+   } // end of if(TMath::Abs(QC2)>0.)
+   if(TMath::Abs(QC4)>0.)
    {
-    fIntFlowDetectorBiasVsM[1]->SetBinContent(b,gQC4/qc4); 
-   } // end of if(TMath::Abs(qc4)>0.)  
+    fIntFlowDetectorBiasVsM[1]->SetBinContent(b,gQC4/QC4); 
+   } // end of if(TMath::Abs(QC4)>0.)  
    // Rebin in M:
    for(Int_t co=0;co<4;co++)
    {

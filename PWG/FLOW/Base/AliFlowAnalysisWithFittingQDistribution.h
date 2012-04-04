@@ -18,6 +18,8 @@
 #ifndef ALIFLOWANALYSISWITHFITTINGQDISTRIBUTION_H
 #define ALIFLOWANALYSISWITHFITTINGQDISTRIBUTION_H
 
+#include "AliFlowCommonConstants.h"
+
 class TObjArray;
 class TList;
 class TFile;
@@ -25,12 +27,12 @@ class TDirectoryFile;
 
 class TH1F;
 class TH1D;
+class TH2D;
 class TProfile;
 class TF1;
 
 class AliFlowEventSimple;
 class AliFlowTrackSimple;
-class AliFlowCommonConstants;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 class AliFlowVector;
@@ -71,6 +73,8 @@ class AliFlowAnalysisWithFittingQDistribution{
   // 0.) base:                                                                                              
   TList* GetHistList() const {return this->fHistList;} 
   // 1.) common:
+  void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
+  Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};  
   void SetCommonHists(AliFlowCommonHist* const ch) {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists;};
   void SetCommonHistsResults(AliFlowCommonHistResults* const chr) {this->fCommonHistsResults = chr;};
@@ -106,7 +110,17 @@ class AliFlowAnalysisWithFittingQDistribution{
   void SetqMax(Double_t const qmax) {this->fqMax = qmax;};
   Double_t GetqMax() const {return this->fqMax;};
   void SetqNbins(Int_t const qNbins) {this->fqNbins = qNbins;};
-  Int_t GetqNbins() const {return this->fqNbins;};  
+  Int_t GetqNbins() const {return this->fqNbins;};
+  void SetStoreqDistributionVsMult(Bool_t const sqdvm) {this->fStoreqDistributionVsMult = sqdvm;};
+  Bool_t GetStoreqDistributionVsMult() const {return this->fStoreqDistributionVsMult;};  
+  void SetqDistributionVsMult(TH2D* const qdvm) {this->fqDistributionVsMult = qdvm;};
+  TH2D* GetqDistributionVsMult() const {return this->fqDistributionVsMult;};
+  void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
+  Double_t GetMinMult() const {return this->fMinMult;};
+  void SetMaxMult(Double_t const maxm) {this->fMaxMult = maxm;};
+  Double_t GetMaxMult() const {return this->fMaxMult;};
+  void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
+  Int_t GetnBinsMult() const {return this->fnBinsMult;};  
   // 4.) final results of fitting:
   void SetIntFlow(TH1D* const intFlow, Int_t sigmaFitted) {this->fIntFlow[sigmaFitted] = intFlow;};
   TH1D* GetIntFlow(Int_t sigmaFitted) const {return this->fIntFlow[sigmaFitted];};
@@ -144,6 +158,7 @@ class AliFlowAnalysisWithFittingQDistribution{
   // 0.) base:
   TList *fHistList; // base list to hold all output object
   // 1.) common:
+  Bool_t fBookOnlyBasicCCH; // book only basis common control histrograms (TRUE by default)  
   AliFlowCommonHist *fCommonHists; // common control histograms 
   AliFlowCommonHistResults *fCommonHistsResults; // final results in common histograms
   Int_t fnBinsPhi; // number of phi bins
@@ -171,10 +186,15 @@ class AliFlowAnalysisWithFittingQDistribution{
   TH1D *fEtaWeights; // histogram holding eta weights 
   // 3.) distributions:
   TH1D *fSumOfParticleWeights; // distribution of sum of particle weights (for unit weights this equals to multiplicity)
-  TH1D *fqDistribution; // distribution of Q/sqrt{sum of phi weights}
+  TH1D *fqDistribution; // distribution of Q/sqrt{M}
   Double_t fqMin; // lower boundary of TH1D *fqDistribution
   Double_t fqMax; // upper boundary of TH1D *fqDistribution
   Int_t fqNbins; // number of bins of TH1D *fqDistribution
+  Bool_t fStoreqDistributionVsMult; // store q-distributions vs M 
+  TH2D *fqDistributionVsMult; // distribution of Q/sqrt{M} vs multiplicity
+  Double_t fMinMult; // minimum multiplicity
+  Double_t fMaxMult; // maximum multiplicity
+  Int_t fnBinsMult; // number of multiplicity bins
   // 4.) final results of fitting:
   TH1D *fIntFlow[2]; // final result for integrated flow [0=sigma^2 not fitted, 1=sigma^2 fitted]  
   TH1D *fSigma2[2]; // final results for sigma^2 [0=sigma^2 not fitted, 1=sigma^2 fitted]

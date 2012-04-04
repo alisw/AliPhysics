@@ -34,6 +34,7 @@ class AliAnalysisTaskSE;
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskFittingQDistribution.h"
 #include "AliFlowAnalysisWithFittingQDistribution.h"
+#include "TH2D.h"
 
 ClassImp(AliAnalysisTaskFittingQDistribution)
 
@@ -44,13 +45,19 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  fEvent(NULL),
  fFQD(NULL),
  fListHistos(NULL),
+ fBookOnlyBasicCCH(kTRUE), 
  fUseWeights(useWeights),
  fUsePhiWeights(kFALSE),
  fListWeights(NULL),
  fHarmonic(2), 
  fqMin(0.),
- fqMax(1000.),
- fqNbins(10000)
+ fqMax(100.),
+ fqNbins(10000),
+ fStoreqDistributionVsMult(kFALSE),
+ fqDistributionVsMult(NULL),
+ fMinMult(0.),
+ fMaxMult(10000.),
+ fnBinsMult(1000) 
  {
   //constructor
   cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name, Bool_t useWeights)"<<endl;
@@ -73,14 +80,20 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution():
  AliAnalysisTaskSE(),
  fEvent(NULL),
  fFQD(NULL),
- fListHistos(NULL),  
+ fListHistos(NULL), 
+ fBookOnlyBasicCCH(kFALSE),   
  fUseWeights(kFALSE),
  fUsePhiWeights(kFALSE),
  fListWeights(NULL),
  fHarmonic(0), 
  fqMin(0.),
  fqMax(0.),
- fqNbins(0)
+ fqNbins(0),
+ fStoreqDistributionVsMult(kFALSE),
+ fqDistributionVsMult(NULL),
+ fMinMult(0.),
+ fMaxMult(0.),
+ fnBinsMult(0) 
  {
   // Dummy constructor
   cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution()"<<endl;
@@ -96,6 +109,7 @@ void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
   // Analyser:
   fFQD = new AliFlowAnalysisWithFittingQDistribution();
   
+  fFQD->SetBookOnlyBasicCCH(fBookOnlyBasicCCH);
   // Particle weights:
   if(fUseWeights) 
   {
@@ -114,6 +128,11 @@ void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
   fFQD->SetqMin(fqMin);
   fFQD->SetqMax(fqMax);
   fFQD->SetqNbins(fqNbins); 
+  fFQD->SetStoreqDistributionVsMult(fStoreqDistributionVsMult);
+  fFQD->SetqDistributionVsMult(fqDistributionVsMult);
+  fFQD->SetMinMult(fMinMult);
+  fFQD->SetMaxMult(fMaxMult);
+  fFQD->SetnBinsMult(fnBinsMult);
 
   fFQD->Init();
   
