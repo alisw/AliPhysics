@@ -260,17 +260,17 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
 
   Int_t gNtrack = chargeVector[0]->size();
   //Printf("(AliBalancePsi) Number of tracks: %d",gNtrack);
-  Double_t gPsiMinusPhi = 0., gPsiMinusPhiPrime = 0.;
+  Double_t gPsiMinusPhi = 0.;
   Int_t gPsiBin = -10;
   for(i = 0; i < gNtrack;i++){
     Double_t charge          = chargeVector[0]->at(i);
     Double_t rapidity       = chargeVector[1]->at(i);
     Double_t pseudorapidity = chargeVector[2]->at(i);
     Double_t phi            = chargeVector[3]->at(i);
-    gPsiMinusPhi   = gReactionPlane - phi;
-    gPsiMinusPhiPrime = gPsiMinusPhi;
-    if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhiPrime = 360. - gPsiMinusPhiPrime;
-    gPsiBin = (Int_t)((gPsiMinusPhiPrime + 360./fPsiNumberOfBins/2.)/(360./fPsiNumberOfBins));
+    gPsiMinusPhi   = phi - gReactionPlane;
+    if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhi = 360. + gPsiMinusPhi;
+    gPsiBin = (Int_t)((gPsiMinusPhi + 360./fPsiNumberOfBins/2.)/(360./fPsiNumberOfBins));
+    //Printf("Psi: %lf - phi%lf - Delta phi: %lf - bin: %d",gReactionPlane,phi,gPsiMinusPhi,gPsiBin);
     //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
     for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
       if(iAnalysisType == kEta) {
@@ -343,11 +343,10 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
       pz1     = chargeVector[6]->at(i);
       pt1     = chargeVector[7]->at(i);
       energy1 = chargeVector[8]->at(i);
-      gPsiMinusPhi   = gReactionPlane - phi1;
-      phi1 -= 360.;
-      gPsiMinusPhiPrime = gPsiMinusPhi;
-      if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhiPrime = 360. - gPsiMinusPhiPrime;
-      gPsiBin = (Int_t)((gPsiMinusPhiPrime + 360./fPsiNumberOfBins/2.)/(360./fPsiNumberOfBins));
+      gPsiMinusPhi   = phi1 - gReactionPlane;
+      if(phi1 > 180.) phi1 -= 360.;
+      if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhi = 360. + gPsiMinusPhi;
+      gPsiBin = (Int_t)((gPsiMinusPhi + 360./fPsiNumberOfBins/2.)/(360./fPsiNumberOfBins));
 
       for(j = 0; j < i; j++) {
 	charge2 = chargeVector[0]->at(j);
@@ -359,7 +358,7 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
 	pz2     = chargeVector[6]->at(j);
 	pt2     = chargeVector[7]->at(i);
 	energy2 = chargeVector[8]->at(j);
-	phi2 -= 360.;
+	if(phi2 > 180.) phi2 -= 360.;
 	
 	// filling the arrays
 	// RAPIDITY 
