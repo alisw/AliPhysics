@@ -44,6 +44,9 @@
 #include "AliAnalysisTaskMuonQA.h"
 #include "AliCounterCollection.h"
 
+// PWG includes
+#include "AliMuonTrackCuts.h"
+
 ClassImp(AliAnalysisTaskMuonQA)
 
 const Int_t AliAnalysisTaskMuonQA::nCh = 10;
@@ -67,7 +70,9 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fSelectMatched(kFALSE),
   fApplyAccCut(kFALSE),
   fTriggerClass(0x0),
-  fSelectTriggerClass(0x0)
+  fSelectTriggerClass(0x0),
+  fTrackCuts(0x0),
+  fMuonTrigIndex()
 {
   // Dummy constructor
 }
@@ -87,7 +92,9 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   fSelectMatched(kFALSE),
   fApplyAccCut(kFALSE),
   fTriggerClass(0x0),
-  fSelectTriggerClass(0x0)
+  fSelectTriggerClass(0x0),
+  fTrackCuts(new AliMuonTrackCuts("stdMuonCuts","stdMuonCuts")),
+  fMuonTrigIndex()
 {
   /// Constructor
   
@@ -101,6 +108,8 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   DefineOutput(4,AliCounterCollection::Class());
   // Output slot #5 writes normalized histograms
   DefineOutput(5,TObjArray::Class());
+  
+  fTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca );
 }
 
 //________________________________________________________________________
@@ -116,7 +125,26 @@ AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
   }
   delete fTriggerClass;
   delete fSelectTriggerClass;
+  delete fTrackCuts;
 }
+
+
+//___________________________________________________________________________
+void AliAnalysisTaskMuonQA::NotifyRun()
+{
+  /// Notify run
+  fTrackCuts->SetRun(fCurrentRunNumber);
+}
+
+
+//___________________________________________________________________________
+void AliAnalysisTaskMuonQA::SetTrackCuts(AliMuonTrackCuts* trackCuts)
+{
+  /// Set track cuts
+  if ( fTrackCuts ) delete fTrackCuts;
+  fTrackCuts = new AliMuonTrackCuts(*trackCuts);
+}
+
 
 //___________________________________________________________________________
 void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
@@ -197,10 +225,21 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fListExpert = new TObjArray(2000);
   fListExpert->SetOwner();
   
-  // track info
+  // event info
   TH1F* hNTracks = new TH1F("hNTracks", "number of tracks;n_{tracks}", 20, 0., 20.);
   fList->AddAtAndExpand(hNTracks, kNTracks);
   
+  Int_t muonTrigIndex[] = { AliVEvent::kMuonUnlikePB, AliVEvent::kMuonLikePB, AliVEvent::kMUSHPB, AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB,
+                            AliVEvent::kMuonUnlikePB | AliVEvent::kMUSHPB, AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB,
+                            AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB};
+  const Int_t nTrigIndexes = sizeof(muonTrigIndex)/sizeof(muonTrigIndex[0]);
+  fMuonTrigIndex.Set(nTrigIndexes, muonTrigIndex);
+  TString label[nTrigIndexes] = {"Unlike","Like", "Single Hpt","Like&Unlike","Unlike&Hpt","Like&Hpt","Unlike&Like&Hpt"};
+  TH1I* hMuonTriggers = new TH1I("hMuonTriggers", "Muon triggers", nTrigIndexes, -0.5, -0.5+(Double_t)nTrigIndexes);
+  for(Int_t ibin=0; ibin<nTrigIndexes; ibin++) hMuonTriggers->GetXaxis()->SetBinLabel(ibin+1,label[ibin].Data());
+  fList->AddAtAndExpand(hMuonTriggers, kMuonTrig);
+
+  //track info
   TH1F* hMatchTrig = new TH1F("hMatchTrig", "number of tracks matched with trigger;n_{tracks}", 20, 0., 20.);
   fList->AddAtAndExpand(hMatchTrig, kMatchTrig);
   
@@ -316,6 +355,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fTrackCounters->AddRubric("charge", "pos/neg/any");
   fTrackCounters->AddRubric("pt", "low/high/any");
   fTrackCounters->AddRubric("acc", "in/out");
+  fTrackCounters->AddRubric("tagTrack", "beamGas/good");
   fTrackCounters->Init();
   
   // initialize event counters
@@ -346,16 +386,25 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     return;
   }
   
+  UInt_t geomAccMask = ( AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs );
+  
   // check physics selection
   UInt_t triggerWord = (fInputHandler) ? fInputHandler->IsEventSelected() : 0;
   Bool_t isPhysicsSelected = (triggerWord != 0);
   TString selected = isPhysicsSelected ? "selected:yes" : "selected:no";
+
+  // fill muon trigger cases
+  for ( Int_t idx=0; idx<fMuonTrigIndex.GetSize(); idx++ ) {
+    UInt_t currMask = (UInt_t)fMuonTrigIndex[idx];
+    if ( ( triggerWord & currMask ) == currMask ) ((TH1I*)fList->UncheckedAt(kMuonTrig))->Fill(idx);
+  }
   
   // check trigger selection 
   TString FiredTriggerClasses = fESD->GetFiredTriggerClasses();
   if (!fSelectPhysics) triggerWord = BuildTriggerWord(FiredTriggerClasses);
   Bool_t isTriggerSelected = ((triggerWord & fTriggerMask) != 0);
   
+
   // get the V0 multiplicity (except for p-p)
   AliESDVZERO* v0Data = fESD->GetVZEROData();
   Float_t v0Mult = 0.;
@@ -417,35 +466,42 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
     // define the key words
     TString trackKey = "track:";
-    TString chargeKey = "charge:";
     TString accKey = "acc:";
-    Bool_t lowPt = kFALSE;
-    Bool_t highPt = kFALSE;
+    Bool_t isBeamGas = kFALSE;
+    TList chargeKeyList;
+    chargeKeyList.SetOwner();
+    chargeKeyList.Add(new TObjString("charge:any"));
+    TList ptKeyList;
+    ptKeyList.SetOwner();
+    ptKeyList.Add(new TObjString("pt:any"));
     if (esdTrack->ContainTrackerData()) {
       
       if (esdTrack->ContainTriggerData()) trackKey += "matched";
       else  trackKey += "trackeronly";
       
       Short_t trackCharge = esdTrack->Charge();
-      if (trackCharge < 0) chargeKey += "neg";
-      else chargeKey += "pos";
+      TString chargeKey = "charge:";
+      chargeKey += ( trackCharge < 0 ) ? "neg" : "pos";
+      chargeKeyList.Add(new TObjString(chargeKey));
       
-      Double_t thetaTrackAbsEnd = TMath::ATan(esdTrack->GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
-      Double_t trackPt = esdTrack->Pt();
-      Double_t eta = esdTrack->Eta();
-      if (trackPt > 1. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 10. && eta > -4. && eta < -2.5) lowPt = kTRUE;
-      if (trackPt > 2. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 10. && eta > -4. && eta < -2.5) highPt = kTRUE;
-      
-      if (thetaTrackAbsEnd < 2. || thetaTrackAbsEnd > 10. || eta < -4. || eta > -2.5) accKey += "out";
-      else accKey += "in";
-      
+      UInt_t mask = fTrackCuts->GetSelectionMask(esdTrack);
+      Bool_t passGeomAccCuts = ( ( mask & geomAccMask ) == geomAccMask );
+      accKey += ( passGeomAccCuts ) ? "in" : "out";
+      if ( passGeomAccCuts && nPVTracks>0 ) {
+        Double_t trackPt = esdTrack->Pt();
+        if ( trackPt > 1. ) ptKeyList.Add(new TObjString("pt:low"));
+        if ( trackPt > 2. ) ptKeyList.Add(new TObjString("pt:high"));;
+      }
+      if ( ( mask & AliMuonTrackCuts::kMuPdca ) == 0 ) isBeamGas = kTRUE;
     } else {
       
       trackKey += "triggeronly";
-      chargeKey = ""; // ghost have no charge specified
       accKey += "out"; // ghost are labelled out of the acceptance
-      
+    
     }
+    
+    TString tagKey = "tagTrack:";
+    tagKey += ( isBeamGas ) ? "beamGas" : "good";
     
     // loop over trigger cases and fill counters
     nextTriggerCase.Reset();
@@ -456,24 +512,13 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
       nextV0MultKey.Reset();
       while ((v0MultKey = static_cast<TObjString*>(nextV0MultKey()))) {
 	
-	// any charge / any pt
-	fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:any/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName(), accKey.Data()));
-	
-	// any charge / specific pt
-	if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:low/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName(), accKey.Data()));
-	if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:high/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName(), accKey.Data()));
-	
-	if (!chargeKey.IsNull()) {
-	  
-	  // specific charge / any pt
-	  fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:any/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data(), v0MultKey->GetName(), accKey.Data()));
-	  
-	  // specific charge / specific pt
-	  if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:low/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data(), v0MultKey->GetName(), accKey.Data()));
-	  if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:high/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data(), v0MultKey->GetName(), accKey.Data()));
-	  
-	}
-	
+        for ( Int_t icharge=0; icharge<chargeKeyList.GetEntries(); icharge++ ) {
+          for ( Int_t ipt=0; ipt<ptKeyList.GetEntries(); ipt++ ) {
+            fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/%s/%s/%s/%s", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber,
+                                       selected.Data(), chargeKeyList.At(icharge)->GetName(), ptKeyList.At(ipt)->GetName(),
+                                       triggerRO.Data(), v0MultKey->GetName(), accKey.Data(), tagKey.Data()));
+          }
+        }	
       }
       
     }
@@ -563,7 +608,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   if ((!fSelectPhysics || isPhysicsSelected) && (!fSelectTrigger || isTriggerSelected)) {
     ((TH1F*)fList->UncheckedAt(kNTracks))->Fill(nSelectedTrackerTracks);
     ((TH1F*)fList->UncheckedAt(kMatchTrig))->Fill(nSelectedTrackMatchTrig);
-  }
+  } 
   
   // clean memory
   delete triggerCases;
@@ -726,6 +771,7 @@ Double_t AliAnalysisTaskMuonQA::ChangeThetaRange(Double_t theta)
   else if(theta > 2.5) return (theta / TMath::Pi() - 1.) * 180.;
   else return theta / TMath::Pi() * 180.;
 }
+
 
 //________________________________________________________________________
 UInt_t AliAnalysisTaskMuonQA::BuildTriggerWord(TString& FiredTriggerClasses)

@@ -11,11 +11,13 @@
 //Author: Philippe Pillot - SUBATECH Nantes
 
 #include "AliAnalysisTaskSE.h"
+#include "TArrayI.h"
 
 class TMap;
 class TList;
 class TObjArray;
 class AliCounterCollection;
+class AliMuonTrackCuts;
 
 class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
  public:
@@ -27,6 +29,7 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
+  virtual void   NotifyRun();
   
   /// Select negative (<0), positive (>0) or all (==0) tracks to fill histograms
   void SelectCharge(Short_t charge = 0) {fSelectCharge = charge;}
@@ -45,6 +48,11 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   /// Use only tracks passing the acceptance cuts (Rabs, eta)
   void ApplyAccCut(Bool_t flag = kTRUE) { fApplyAccCut = flag; }
   
+  // Set track cuts
+  void SetTrackCuts ( AliMuonTrackCuts* trackCuts );
+  /// Get track cuts
+  AliMuonTrackCuts* GetTrackCuts() { return fTrackCuts; }
+  
  private:
   
   /// Not implemented
@@ -53,7 +61,7 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   AliAnalysisTaskMuonQA& operator = (const AliAnalysisTaskMuonQA& rhs);
   
   Double_t ChangeThetaRange(Double_t theta);
-  
+
   UInt_t BuildTriggerWord(TString& FiredTriggerClasses);
   
   TList* BuildListOfTriggerCases(TString& FiredTriggerClasses);
@@ -85,7 +93,8 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
     kPtMuPlusMatchLpt        = 19,  ///< Pt distribution of mu+ match Lpt
     kPtMuPlusMatchHpt        = 20,  ///< Pt distribution of mu+ match Hpt
     kPtMuMinusMatchLpt       = 21,  ///< Pt distribution of mu- match Lpt
-    kPtMuMinusMatchHpt       = 22   ///< Pt distribution of mu- match Hpt
+    kPtMuMinusMatchHpt       = 22,   ///< Pt distribution of mu- match Hpt
+    kMuonTrig                = 23   ///< Muon triggers
   };
   
   enum eListExpert {
@@ -127,12 +136,14 @@ class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
   
   TMap*  fTriggerClass;       //!< map of trigger class name associated to short name
   TList* fSelectTriggerClass; //!< list of trigger class that can be selected to fill histograms
+  AliMuonTrackCuts* fTrackCuts; ///< Track cuts
+  TArrayI fMuonTrigIndex; ///< Combined muon trigger index
   
   static const Int_t nCh;       ///< number of tracking chambers
   static const Int_t nDE;       ///< number of DE
   static const Float_t dMax[5]; ///< maximum diameter of each station
   
-  ClassDef(AliAnalysisTaskMuonQA, 6);
+  ClassDef(AliAnalysisTaskMuonQA, 7);
 };
 
 #endif
