@@ -28,7 +28,7 @@ class AliMuonPairCuts : public AliAnalysisCuts
   };
 
   AliMuonPairCuts();
-  AliMuonPairCuts(const char* name, const char* title, Bool_t isESD);
+  AliMuonPairCuts(const char* name, const char* title);
   AliMuonPairCuts(const char* name, const char* title, const AliMuonTrackCuts& trackCuts);
   AliMuonPairCuts(const AliMuonPairCuts& obj);
   AliMuonPairCuts& operator=(const AliMuonPairCuts& obj);

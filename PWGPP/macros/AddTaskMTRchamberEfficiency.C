@@ -33,7 +33,7 @@ AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE,
   }
 
   // Create cuts
-  AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("StdMuonTrackCuts", "StdMuonTrackCuts", type.Contains("ESD"));
+  AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("StdMuonTrackCuts", "StdMuonTrackCuts");
   muonTrackCuts->SetIsMC(isMC);
   muonTrackCuts->ApplySharpPtCutInMatching(kTRUE);
 

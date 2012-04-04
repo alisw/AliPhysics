@@ -23,7 +23,8 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   };
   
   AliMuonTrackCuts();
-  AliMuonTrackCuts(const char* name, const char* title, Bool_t isESD);
+  AliMuonTrackCuts(const char* name, const char* title);
+  AliMuonTrackCuts(const char* name, const char* title, Bool_t isESD); // Obsolete
   AliMuonTrackCuts(const AliMuonTrackCuts& obj);
   AliMuonTrackCuts& operator=(const AliMuonTrackCuts& obj);
 
@@ -90,7 +91,7 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   void SetSlopeResolution ( Double_t slopeResolution );
   Double_t GetSlopeResolution () const;
   
-  void SetSharpPtCut ( Int_t trigPtCut, Double_t ptCutValue );
+  void SetSharpPtCut ( Double_t valueApt, Double_t valueLpt, Double_t valueHpt );
   Double_t GetSharpPtCut ( Int_t trigPtCut, Bool_t warn = kTRUE ) const;
 
   Bool_t StreamParameters ( Int_t runNumber, Int_t maxRun );
@@ -102,7 +103,8 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   
   Int_t GetThetaAbsBin ( Double_t rAtAbsEnd ) const;
   Bool_t SetParameter ( Int_t iparam, Float_t value );
-  Bool_t RunMatchesRange ( Int_t runNumber, const Char_t* objName );
+  Bool_t RunMatchesRange ( Int_t runNumber, const Char_t* objName ) const;
+  Bool_t IsESDTrack ( const AliVParticle* track ) const;
 
   Bool_t fIsESD;            ///< Event is ESD
   Bool_t fIsMC;             ///< Monte Carlo analysis
