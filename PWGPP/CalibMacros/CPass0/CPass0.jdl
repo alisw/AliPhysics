@@ -23,7 +23,7 @@ SplitArguments = {"/alice/data/2011/LHC11a/$1/raw/#alienfilename#"};
 Workdirectorysize={"6000MB"};
 
 InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/recCPass0.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/runCalibTrain.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/CPass0/CalibMacros/runCalibTrain.C"
 };
 
 InputDataCollection="LF:/alice/data/2011/LHC11a/$1/collection,nodownload";
