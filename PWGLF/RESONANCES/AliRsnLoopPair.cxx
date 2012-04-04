@@ -101,7 +101,7 @@ AliRsnLoopPair::~AliRsnLoopPair()
 }
 
 //_____________________________________________________________________________
-void AliRsnLoopPair::Print(Option_t* /*option*/) const
+void AliRsnLoopPair::Print(Option_t * /*option*/) const
 {
 //
 // Prints info about pair
@@ -124,10 +124,9 @@ Bool_t AliRsnLoopPair::Init(const char *prefix, TList *list)
    AliInfo(Form("[%s] Initialization", GetName()));
 
    TString name(prefix);
-   name += '_';
+   name += '.';
    name += GetName();
-//    if (IsMixed()) name.Prepend("mix_");
-   if (IsMixed()) name.Append("_mix");
+//    if (IsMixed()) name.Append("_mix");
 
    return AliRsnLoop::Init(name.Data(), list);
 }

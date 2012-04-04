@@ -1,3 +1,5 @@
+#ifndef __CINT__
+#endif
 Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
 {
 
@@ -14,10 +16,11 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    Int_t rsnParDev = AliAnalysisManager::GetGlobalInt("rsnUseRSNParDev",valid);
    if (eventMixinPar) rsnPar = 1;
    if (rsnPar&&rsnParDev>=0) rsnParDev=1;
-   
+
    Int_t pidResponse = AliAnalysisManager::GetGlobalInt("rsnUsePIDResponse",valid);
    Int_t useRsnIH = AliAnalysisManager::GetGlobalInt("rsnUseRsnInputHandler",valid);
    Int_t physSel = AliAnalysisManager::GetGlobalInt("rsnUsePhysSel",valid);
+   Int_t useCentralityTask = AliAnalysisManager::GetGlobalInt("rsnUseCentralityTask",valid);
    Int_t splitMgrByTask = AliAnalysisManager::GetGlobalInt("rsnSplitMgrByTasks",valid);
 
    Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
@@ -43,25 +46,30 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
       if (rsnPar) { AliAnalysisAlien::SetupPar(rsnLibName.Data()); myAdditionalLibs += Form(" %s.par",rsnLibName.Data()); }
       else { gSystem->Load(Form("lib%s.so",rsnLibName.Data())); myAdditionalLibs += Form(" lib%s.so",rsnLibName.Data()); }
    }
-   
 
-   
    if (rsnParDev>=0) {
-     if (rsnParDev) { AliAnalysisAlien::SetupPar("PWGLFresonancesdev"); myAdditionalLibs += " PWGLFresonancesdev.par"; }
-     else { gSystem->Load("libPWGLFresonancesdev.so"); myAdditionalLibs += " libPWGLFresonancesdev.so"; }
+      if (rsnParDev) { AliAnalysisAlien::SetupPar("PWGLFresonancesdev"); myAdditionalLibs += " PWGLFresonancesdev.par"; }
+      else { gSystem->Load("libPWGLFresonancesdev.so"); myAdditionalLibs += " libPWGLFresonancesdev.so"; }
    }
    analysisPlugin->SetAdditionalLibs(myAdditionalLibs.Data());
 
-   AliMultiInputEventHandler *multiInputHandler = mgr->GetInputEventHandler();
+   AliMultiInputEventHandler *multiInputHandler = 0;
+   AliInputEventHandler *inputHandler = mgr->GetInputEventHandler();
+   
+   TString className = inputHandler->ClassName();
+   if (!className.CompareTo("AliMultiInputEventHandler")) {
+      multiInputHandler = (AliMultiInputEventHandler*)inputHandler;
+   }
+
    AliRsnInputHandler *rsnIH=0;
 
-   if (pidResponse) {
+   if (multiInputHandler && pidResponse) {
       // add PID Response Handler
       if (!RsnLoadMacro("AddPIDResponseInputHandler.C")) return kFALSE;
       AddPIDResponseInputHandler(multiInputHandler,useMC);
    }
 
-   if (useRsnIH) {
+   if (multiInputHandler && useRsnIH) {
       // add Rsn input handler (it has to be after ESD,MC,Tender input handler, but before Mixing)
       AliRsnInputHandler *rsnIH = new AliRsnInputHandler();
       multiInputHandler->AddInputEventHandler(rsnIH);
@@ -72,15 +80,17 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
       AddTaskPhysicsSelection(useMC);
 
       // maybe we can put it in $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C
-      AliMultiInputEventHandler *multiIH = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-      if (multiIH) {
-         AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler *>(multiIH->GetFirstInputEventHandler());
-         if (esdIH) esdIH->SetEventSelection(multiIH->GetEventSelection());
-         AliAODInputHandler *aodIH = dynamic_cast<AliAODInputHandler *>(multiIH->GetFirstInputEventHandler());
-         if (aodIH) aodIH->SetEventSelection(multiIH->GetEventSelection());
+      if (multiInputHandler) {
+         AliInputEventHandler *ih = multiInputHandler->GetFirstInputEventHandler();
+         ih->SetEventSelection(multiIH->GetEventSelection());
       }
    }
-   
+
+   if (useCentralityTask) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kFALSE);
+   }
+
    // load and run AddTask macro
    if (!RsnLoadMacro("AddRsnAnalysisTask.C")) return kFALSE;
    if (!RsnLoadMacro("RsnConfig.C")) return kFALSE;

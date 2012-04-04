@@ -56,11 +56,11 @@ Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType ty
       scheme += cutEta1->GetName();
    }
    if (useQuality) {
-      AliRsnCutKaonForPhi2010 *cutQuality1 = new AliRsnCutKaonForPhi2010("cutKaonPhi2010",nSigmaTPC,nSigmaTOF,ptTPCMax);
-      cutQuality1->SetMode(AliRsnCutKaonForPhi2010::kQuality);
-      cuts1->AddCut(cutQuality1);
+      AliRsnCutTrackQuality *qualityCut1 = new AliRsnCutTrackQuality("cutQuatityPDG1");
+      qualityCut1->SetDefaults2010();
+      cuts1->AddCut(qualityCut1);
       if (!scheme.IsNull()) scheme += "&";
-      scheme += cutQuality1->GetName();
+      scheme += qualityCut1->GetName();
    }
    cuts1->SetCutScheme(scheme.Data());
    sel->Add(cuts1, kTRUE);
@@ -75,11 +75,11 @@ Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType ty
       if (!scheme.IsNull()) scheme += "&";
       scheme += cut2->GetName();
       if (useQuality) {
-         AliRsnCutKaonForPhi2010 *cutQuality2 = new AliRsnCutKaonForPhi2010("cutKaonPhi2010",nSigmaTPC,nSigmaTOF,ptTPCMax);
-         cutQuality2->SetMode(AliRsnCutKaonForPhi2010::kQuality);
-         cuts2->AddCut(cutQuality2);
+         AliRsnCutTrackQuality *qualityCut2 = new AliRsnCutTrackQuality("cutQuatityPDG2");
+         qualityCut2->SetDefaults2010();
+         cuts2->AddCut(qualityCut2);
          if (!scheme.IsNull()) scheme += "&";
-         scheme += cutQuality2->GetName();
+         scheme += qualityCut2->GetName();
       }
       if (useEta) {
          AliRsnCutValue *cutEta2 = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type2),opt.Data()),-etaRange,etaRange);

@@ -78,7 +78,7 @@ AliRsnLoopDaughter::~AliRsnLoopDaughter()
 }
 
 //_____________________________________________________________________________
-void AliRsnLoopDaughter::Print(Option_t* /*option*/) const
+void AliRsnLoopDaughter::Print(Option_t * /*option*/) const
 {
 //
 // Prints info about pair

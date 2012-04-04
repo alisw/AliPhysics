@@ -64,7 +64,7 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
          numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kKaon,AliPID::kKaon,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),isRsnMini,rsnIH, task));
          if (numOfCuts) {
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_K",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
-            AddRsnPairsPhi(task,isMC,isMixing,AliPID::kKaon,cutIndex,AliPID::kKaon,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            AddRsnPairsPhi(task,isMC,isMixing,AliPID::kKaon,cutIndex,AliPID::kKaon,cutIndex,commonEventCuts,commonPairCuts,Form("%s.%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             cutIndex+=numOfCuts;
          }
       } else if (!rsnName.CompareTo("kstar")) {
@@ -72,14 +72,14 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
          if (numOfCuts) {
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_K",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s_pi",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
-            AddRsnPairsKStar(task,isMC,isMixing,AliPID::kKaon,cutIndex,AliPID::kPion,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            AddRsnPairsKStar(task,isMC,isMixing,AliPID::kKaon,cutIndex,AliPID::kPion,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s.%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             cutIndex+=numOfCuts;
          }
       } else if (!rsnName.CompareTo("rho")) {
          numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kPion,AliPID::kPion,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),isRsnMini,rsnIH,task));
          if (numOfCuts) {
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_pi",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
-            AddRsnPairsRho(task,isMC,isMixing,AliPID::kPion,cutIndex,AliPID::kPion,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            AddRsnPairsRho(task,isMC,isMixing,AliPID::kPion,cutIndex,AliPID::kPion,cutIndex,commonEventCuts,commonPairCuts,Form("%s.%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             cutIndex+=numOfCuts;
          }
       } else if (!rsnName.CompareTo("lambda")) {
@@ -87,7 +87,7 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
          if (numOfCuts) {
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_p",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s_K",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
-            AddRsnPairsLambda(task,isMC,isMixing,AliPID::kProton,cutIndex,AliPID::kKaon,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
+            AddRsnPairsLambda(task,isMC,isMixing,AliPID::kProton,cutIndex,AliPID::kKaon,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s.%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             cutIndex+=numOfCuts;
          }
       } else {
@@ -147,10 +147,9 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
 
    Bool_t valid;
    Int_t useMCMomentum = AliAnalysisManager::GetGlobalInt("rsnUseMCMomentum",valid);
-
    Bool_t typeSame = (pType1 == pType2);
 
-   //    Printf("------------- id1=%d id2=%d",listID1,listID2);
+   Printf("------------- id1=%d id2=%d",pType1,pType2);
 
    TList *listLoops = new TList;
 
@@ -164,61 +163,61 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
    AliRsnLoopPair *lp = 0;
 
    // sets +-
-   lp = new AliRsnLoopPair(Form("%s_PM", name.Data()), pairDefPM, kFALSE);
+   lp = new AliRsnLoopPair(Form("%s.RecPM", name.Data()), pairDefPM, kFALSE);
    listLoops->Add(lp);
 
    if (!typeSame) {
-      lp = new AliRsnLoopPair(Form("%s_MP", name.Data()), pairDefMP, kFALSE);
+      lp = new AliRsnLoopPair(Form("%s.RecMP", name.Data()), pairDefMP, kFALSE);
       listLoops->Add(lp);
    }
 
    // sets +- TRUE pairs
    if (isMC) {
-      lp = new AliRsnLoopPair(Form("%s_PM_TRUE", name.Data()), pairDefPM, kFALSE);
+      lp = new AliRsnLoopPair(Form("%s.RecPM_RecMother", name.Data()), pairDefPM, kFALSE);
       lp->SetOnlyTrue(kTRUE);
       lp->SetCheckDecay(kTRUE);
       listLoops->Add(lp);
       if (!typeSame) {
-         lp = new AliRsnLoopPair(Form("%s_MP_TRUE", name.Data()), pairDefMP, kFALSE);
+         lp = new AliRsnLoopPair(Form("%s.RecMP_RecMother", name.Data()), pairDefMP, kFALSE);
          lp->SetOnlyTrue(kTRUE);
          lp->SetCheckDecay(kTRUE);
          listLoops->Add(lp);
       }
       // sets +- TRUE paris (MC is used for momentum)
-      lp = new AliRsnLoopPair(Form("%s_PM_TRUE_MC", name.Data()), pairDefPM, kFALSE);
+      lp = new AliRsnLoopPair(Form("%s.GenPM_RecMother", name.Data()), pairDefPM, kFALSE);
       lp->SetTrueMC(kTRUE);
       listLoops->Add(lp);
       if (!typeSame) {
          // sets +- TRUE paris (MC is used for momentum)
-         lp = new AliRsnLoopPair(Form("%s_MP_TRUE_MC", name.Data()), pairDefMP, kFALSE);
+         lp = new AliRsnLoopPair(Form("%s.GenMP_RecMother", name.Data()), pairDefMP, kFALSE);
          lp->SetTrueMC(kTRUE);
          listLoops->Add(lp);
       }
    }
 
    // sets ++
-   lp = new AliRsnLoopPair(Form("%s_PP", name.Data()), pairDefPP, kFALSE);
+   lp = new AliRsnLoopPair(Form("%s.RecPP", name.Data()), pairDefPP, kFALSE);
    listLoops->Add(lp);
 
    // sets --
-   lp = new AliRsnLoopPair(Form("%s_MM", name.Data()), pairDefMM, kFALSE);
+   lp = new AliRsnLoopPair(Form("%s.RecMM", name.Data()), pairDefMM, kFALSE);
    listLoops->Add(lp);
 
    if (isMixing) {
       // sets +- Mixing (NOT mini)
-      lp = new AliRsnLoopPair(Form("%s_PM", name.Data()), pairDefPM, kTRUE);
+      lp = new AliRsnLoopPair(Form("%s.RecPM_mix", name.Data()), pairDefPM, kTRUE);
       listLoops->Add(lp);
 
       // sets -+ Mixing (NOT mini)
-      lp = new AliRsnLoopPair(Form("%s_MP", name.Data()), pairDefMP, kTRUE);
+      lp = new AliRsnLoopPair(Form("%s.RecMP_mix", name.Data()), pairDefMP, kTRUE);
       listLoops->Add(lp);
 
       // sets ++ Mixing (NOT mini)
-      lp = new AliRsnLoopPair(Form("%s_PP", name.Data()), pairDefPP, kTRUE);
+      lp = new AliRsnLoopPair(Form("%s.RecPP_mix", name.Data()), pairDefPP, kTRUE);
       listLoops->Add(lp);
 
       // sets -- Mixing (NOT mini)
-      lp = new AliRsnLoopPair(Form("%s_MM", name.Data()), pairDefMM, kTRUE);
+      lp = new AliRsnLoopPair(Form("%s.RecMM_mix", name.Data()), pairDefMM, kTRUE);
       listLoops->Add(lp);
    }
 
@@ -233,6 +232,9 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
       if (commonEventCuts) lp->SetEventCuts(commonEventCuts);
       if (name.Contains("phi")) AddPairOutputPhi(lp);
       else if (name.Contains("kstar")) AddPairOutputKStar(lp);
+      else if (name.Contains("rho")) AddPairOutputRho(lp);
+      else if (name.Contains("lambda")) AddPairOutputLambda(lp);
+      else if (name.Contains("sigma")) AddPairOutputSigma(lp);
       else continue;
       ((AliRsnAnalysisTask *)task)->AddLoop(lp);
    }
@@ -445,7 +447,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
    if (mon) mon->Add(outMonitorPTvsMult);
    if (lm) lm->AddOutput(outMonitorPTvsMult);
 
-   
+
 //    if (lm) lm->SetTrueMC(kTRUE);
 }
 

@@ -18,7 +18,8 @@ ClassImp(AliRsnCutDaughterSigmaStar2010PP)
 AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *name, AliPID::EParticleType pid) :
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fPID(pid),
-   fCutQuality(Form("%sQuality", name))
+   fCutQuality(Form("%sQuality", name)),
+   fPIDCut(3.0)
 {
 //
 // Constructor
@@ -76,9 +77,9 @@ Bool_t AliRsnCutDaughterSigmaStar2010PP::IsSelected(TObject *obj)
    //Bool_t   isTOF  = MatchTOF(track);
    //Double_t pTPC   = track->GetTPCmomentum();
    //Double_t p      = track->P();
-   //*Double_t nsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(track, fPID));
+   Double_t nsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(track, fPID));
    //Double_t nsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(track, fPID));
-   //*Double_t maxTPC = 1E20;
+   Double_t maxTPC = 1E20;
    //Double_t maxTOF = 1E20;
 
    // applies the cut differently depending on the PID and the momentum
@@ -108,8 +109,9 @@ Bool_t AliRsnCutDaughterSigmaStar2010PP::IsSelected(TObject *obj)
       maxTPC = 2.0;
    else
       return kFALSE;*/
-   //* maxTPC = 3.0;
-   //*return (nsTPC <= maxTPC);
+   //maxTPC = 3.0;
+   maxTPC = fPIDCut;
+   return (nsTPC <= maxTPC);
 
    AliDebugClass(2, "Good Pion (hallelujah)");
    return kTRUE;

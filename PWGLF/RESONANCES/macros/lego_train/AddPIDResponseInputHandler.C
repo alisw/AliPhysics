@@ -5,8 +5,8 @@
 void AddPIDResponseInputHandler(AliMultiInputEventHandler *multiInputHandler,Bool_t isMC=kFALSE)
 {
    if (multiInputHandler) {
-      AliPIDResponseInputHandler *pidResponseIH = new AliPIDResponseInputHandler();
-      pidResponseIH->SetIsMC(isMC);
-      multiInputHandler->AddInputEventHandler(pidResponseIH);
+        AliPIDResponseInputHandler *pidResponseIH = new AliPIDResponseInputHandler();
+        pidResponseIH->SetIsMC(isMC);
+        multiInputHandler->AddInputEventHandler(pidResponseIH);
    }
 }

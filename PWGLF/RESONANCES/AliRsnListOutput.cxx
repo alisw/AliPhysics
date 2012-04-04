@@ -33,7 +33,6 @@
 
 #include "AliRsnListOutput.h"
 
-
 ClassImp(AliRsnListOutput)
 
 //________________________________________________________________________________________
@@ -164,8 +163,17 @@ Bool_t AliRsnListOutput::Init(const char *prefix, TList *list)
    // resize the output array
    fArray.Set(fNValues);
 
+
+   Bool_t isPair=kFALSE;
+
    // create the name
-   TString name(Form("%s_%s", prefix, GetName()));
+   TString name(GetName());
+   if (!name.CompareTo("pair")) isPair = kTRUE;
+   if (isPair) name = "";
+   else name.Prepend(".");
+   name.Prepend(prefix);
+
+//    TString name(Form("%s.%s", prefix, GetName()));
    AliRsnValue *val = 0x0;
    for (i = 0; i < fNValues; i++) {
       val = GetValue(i);
@@ -173,8 +181,10 @@ Bool_t AliRsnListOutput::Init(const char *prefix, TList *list)
          AliError(Form("Slot %d in value list is NULL", i));
          return kFALSE;
       }
-      name += '_';
-      name += val->GetName();
+      if (!isPair) {
+         name += '_';
+         name += val->GetName();
+      }
    }
 
    // allowed objects
@@ -184,15 +194,15 @@ Bool_t AliRsnListOutput::Init(const char *prefix, TList *list)
    // and, if successful, insert into the list
    switch (fType) {
       case kHistoDefault:
-         name.Append("_hist");
+//          name.Append("_hist");
          object = CreateHistogram(name.Data());
          break;
       case kHistoSparse:
-         name.Append("_hsparse");
+//          name.Append("_hsparse");
          object = CreateHistogramSparse(name.Data());
          break;
       case kCFContainer:
-         name.Append("_cf");
+//          name.Append("_cf");
          object = CreateCFContainer(name.Data());
          break;
       default:
@@ -276,7 +286,10 @@ THnSparseF *AliRsnListOutput::CreateHistogramSparse(const char *name)
    hist->Sumw2();
 
    // update the various axes using the definitions given in the array of axes here
+   AliRsnValue *val = 0x0;
    for (i = 0; i < fNValues; i++) {
+      val = GetValue(i);
+      if (val) hist->GetAxis(i)->SetName(val->GetName());
       hist->GetAxis(i)->Set(nbins[i], array[i].GetArray());
    }
 

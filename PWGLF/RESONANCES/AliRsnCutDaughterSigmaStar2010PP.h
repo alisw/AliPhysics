@@ -19,17 +19,23 @@ public:
    AliRsnCutDaughterSigmaStar2010PP(const char *name = "", AliPID::EParticleType pid = AliPID::kPion);
    virtual ~AliRsnCutDaughterSigmaStar2010PP() { }
 
-   void                   SetPID(AliPID::EParticleType type) {fPID = type;}
+   //void                   SetPID(AliPID::EParticleType type) {fPID = type;}
    AliRsnCutTrackQuality *CutQuality()                       {return &fCutQuality;}
    Bool_t                 MatchTOF(const AliVTrack *vtrack);
    virtual Bool_t         IsSelected(TObject *obj);
+
+   void           SetPIDCut(Double_t value)                  {fPIDCut = value;}
 
 private:
 
    AliPID::EParticleType fPID;              // PID for track
    AliRsnCutTrackQuality fCutQuality;       // track quality cut
 
-   ClassDef(AliRsnCutDaughterSigmaStar2010PP,1) // cut definitions for Sigma*
+   ClassDef(AliRsnCutDaughterSigmaStar2010PP,2) // cut definitions for Sigma*
+
+protected:
+
+   Double_t         fPIDCut;          // nsigmas for pions
 
 };
 

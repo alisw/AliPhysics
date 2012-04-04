@@ -30,14 +30,21 @@
 ClassImp(AliRsnCutV0)
 
 //_________________________________________________________________________________________________
-AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis) :
+//AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis) :
+AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleType pid, AliPID::EParticleType pid2) :
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fHypothesis(0),
    fMass(0.0),
-   fTolerance(0.2),
+   fTolerance(0.01),
    fMaxDCAVertex(0.3),
    fMinCosPointAngle(0.95),
-   fMaxDaughtersDCA(0.1),
+   fMaxDaughtersDCA(0.5),
+   fMaxRapidity(0.8),
+   fPID(pid),
+   fPID2(pid2),
+   fPIDCut1(4.0),
+   fPIDCut2(3.0),
+   fPIDCut3(3.0),
    fESDtrackCuts(0x0)
 {
 //
@@ -57,6 +64,12 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDCAVertex(copy.fMaxDCAVertex),
    fMinCosPointAngle(copy.fMinCosPointAngle),
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
+   fMaxRapidity(copy.fMaxRapidity),
+   fPID(copy.fPID),
+   fPID2(copy.fPID2),
+   fPIDCut1(copy.fPIDCut1),
+   fPIDCut2(copy.fPIDCut2),
+   fPIDCut3(copy.fPIDCut3),
    fESDtrackCuts(copy.fESDtrackCuts)
 {
 //
@@ -75,13 +88,18 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
 
    if (this == &copy)
       return *this;
-
    fHypothesis = copy.fHypothesis;
    fMass = copy.fMass;
    fTolerance = copy.fTolerance;
    fMaxDCAVertex = copy.fMaxDCAVertex;
    fMinCosPointAngle = copy.fMinCosPointAngle;
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
+   fMaxRapidity = copy.fMaxRapidity;
+   fPID = copy.fPID;
+   fPID2 = copy.fPID2;
+   fPIDCut1 = copy.fPIDCut1;
+   fPIDCut2 = copy.fPIDCut2;
+   fPIDCut3 = copy.fPIDCut3;
    fESDtrackCuts = copy.fESDtrackCuts;
 
    return (*this);
@@ -157,10 +175,11 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    }
 
    // filter like-sign V0
-   //if ((TMath::Abs(pTrack->GetSign()) - TMath::Abs(nTrack->GetSign()) ) < 0.1) {
-   //   AliDebugClass(2, "Failed like-sign V0 check");
-   //   return kFALSE;
-   //}
+   if ( TMath::Abs( ((pTrack->GetSign()) - (nTrack->GetSign())) ) < 0.1) {
+      AliDebugClass(2, "Failed like-sign V0 check");
+      return kFALSE;
+   }
+
 
    // check compatibility with expected species hypothesis
    v0->ChangeMassHypothesis(fHypothesis);
@@ -182,6 +201,104 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       AliDebugClass(2, "Failed check on DCA between daughters");
       return kFALSE;
    }
+   if (TMath::Abs(v0->Y(fHypothesis)) > fMaxRapidity) {
+      AliDebugClass(2, "Failed check on V0 rapidity");
+      return kFALSE;
+   }
+
+
+   // check PID on proton or antiproton from V0
+
+   // check initialization of PID object
+   AliPIDResponse *pid = fEvent->GetPIDResponse();
+   if (!pid) {
+      AliFatal("NULL PID response");
+      return kFALSE;
+   }
+
+   // check if TOF is matched
+   // and computes all values used in the PID cut
+   //Bool_t   isTOFpos  = MatchTOF(ptrack);
+   //Bool_t   isTOFneg  = MatchTOF(ntrack);
+   Double_t pospTPC   = pTrack->GetTPCmomentum();
+   Double_t negpTPC   = nTrack->GetTPCmomentum();
+   //Double_t posp      = pTrack->P();
+   //Double_t negp      = nTrack->P();
+   Double_t posnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID));
+   Double_t posnsTPC2  = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID2));
+   //Double_t posnsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(ptrack, fPID));
+   Double_t negnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID));
+   Double_t negnsTPC2  = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID2));
+   //Double_t negnsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(ntrack, fPID));
+   Double_t maxTPC = 1E20;
+   Double_t maxTPC2 = 1E20;
+   //Double_t maxTOF = 1E20;
+
+   // applies the cut differently depending on the PID and the momentum
+
+   if(fHypothesis==kLambda0) {
+      //if (isTOFpos) {
+      // TPC: 5sigma cut for all
+      //if (posnsTPC > 5.0) return kFALSE;
+      // TOF: 3sigma
+      // maxTOF = 3.0;
+      //return (posnsTOF <= maxTOF);
+      //} else {
+      // TPC:
+      // below 600 MeV: 4sigma
+      // above 600 MeV: 3sigma
+
+      if (pospTPC <= 0.6 && fPID==AliPID::kProton)
+         //maxTPC = 4.0;
+         maxTPC = fPIDCut1;
+      else if (pospTPC > 0.6 && fPID==AliPID::kProton)
+         //maxTPC = 3.0;
+         maxTPC = fPIDCut2;
+      //else
+      //return kFALSE;
+
+      //maxTPC2 = 3.0;
+      maxTPC2 = fPIDCut3;
+
+      if (! ((posnsTPC <= maxTPC) && (negnsTPC2 <= maxTPC2)) ) {
+         AliDebugClass(2, "Failed check on V0 PID");
+         return kFALSE;
+      }
+   }
+
+   //}
+
+   if(fHypothesis==kLambda0Bar) {
+      //if (isTOFneg) {
+      // TPC: 5sigma cut for all
+      //if (negnsTPC > 5.0) return kFALSE;
+      // TOF: 3sigma
+      // maxTOF = 3.0;
+      //return (negnsTOF <= maxTOF);
+      //} else {
+      // TPC:
+      // below 600 MeV: 4sigma
+      // above 600 MeV: 3sigma
+
+      if (negpTPC <= 0.6 && fPID==AliPID::kProton)
+         //maxTPC = 4.0;
+         maxTPC = fPIDCut1;
+      else if (negpTPC > 0.6 && fPID==AliPID::kProton)
+         //maxTPC = 3.0;
+         maxTPC = fPIDCut2;
+      else
+         return kFALSE;
+
+      //maxTPC2 = 3.0;
+      maxTPC2 = fPIDCut3;
+
+      if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
+         AliDebugClass(2, "Failed check on V0 PID");
+         return kFALSE;
+      }
+   }
+   //}
+
 
    // if we reach this point, all checks were successful
    AliDebugClass(2, "Good V0 (hallelujah)");

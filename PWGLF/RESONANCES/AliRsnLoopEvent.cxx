@@ -52,7 +52,7 @@ AliRsnLoopEvent::~AliRsnLoopEvent()
 }
 
 //_____________________________________________________________________________
-void AliRsnLoopEvent::Print(Option_t* /*option*/) const
+void AliRsnLoopEvent::Print(Option_t * /*option*/) const
 {
 //
 // Prints info about pair
