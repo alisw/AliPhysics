@@ -1,17 +1,17 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTOUTRAWREADER_H
 #define ALIHLTOUTRAWREADER_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
-//* See cxx source for full Copyright notice                               */
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTRawReader.h
-    @author Matthias Richter
-    @date   
-    @brief  HLTOUT data wrapper for AliRawReader.
-*/
+/// @file   AliHLTOUTRawReader.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLTOUT data wrapper for AliRawReader.
+///
 
 #include "AliHLTOUTHomerCollection.h"
 

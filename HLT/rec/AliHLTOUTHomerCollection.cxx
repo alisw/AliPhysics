@@ -1,11 +1,10 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -16,11 +15,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTHomerCollection.cxx
-    @author Matthias Richter
-    @date   
-    @brief  General collection for HLTOUT data in DDL format.
-*/
+/// @file   AliHLTOUTHomerCollection.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  General collection for HLTOUT data in DDL format.
+///
 
 #include "AliHLTOUTHomerCollection.h"
 #include "AliHLTHOMERLibManager.h"
@@ -35,22 +34,22 @@ ClassImp(AliHLTOUTHomerCollection)
 AliHLTOUTHomerCollection::AliHLTOUTHomerCollection(int event, AliHLTEsdManager* pEsdManager)
   :
   AliHLTOUTHomerBuffer(NULL, 0),
-  fpCurrent(NULL),
   fEvent(event),
+  fpCurrent(NULL),
   fpEsdManager(pEsdManager)
 {
+  // constructor
+  //
+  // General collection for HLTOUT data in DDL format
+  // 
   // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 const int AliHLTOUTHomerCollection::fgkIdShift=16;
 
 AliHLTOUTHomerCollection::~AliHLTOUTHomerCollection()
 {
-  // see header file for class documentation
+  // destructor
   if (fpManager) {
     if (fpCurrent) fpManager->DeleteReader(fpCurrent);
     fpCurrent=NULL;
@@ -59,7 +58,7 @@ AliHLTOUTHomerCollection::~AliHLTOUTHomerCollection()
 
 int AliHLTOUTHomerCollection::GenerateIndex()
 {
-  // see header file for class documentation
+  // Overloaded from AliHLTOUT
   // step through all HLT ddls, create HOMER readers and
   // scan data block
   int iResult=0;
@@ -91,7 +90,7 @@ int AliHLTOUTHomerCollection::GenerateIndex()
 int AliHLTOUTHomerCollection::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
 				      AliHLTUInt32_t& size)
 {
-  // see header file for class documentation
+  // Overloaded from AliHLTOUT: get data buffer at specified index
   int iResult=0;
   pBuffer=NULL;
   size=0;
@@ -138,7 +137,7 @@ int AliHLTOUTHomerCollection::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUI
 
 AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned int size)
 {
-  // see header file for class documentation
+  // open HOMER reader for buffer
   unsigned int offset=sizeof(AliHLTOUTEventHeader);
   const AliRawDataHeader* pCDH=GetDataHeader();
   AliHLTUInt32_t id=(GetEquipmentId());
@@ -198,7 +197,7 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
 
 int AliHLTOUTHomerCollection::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size, AliHLTComponentDataType dt, AliESDEvent* tgtesd) const
 {
-  // see header file for class documentation
+  // write ESD
   if (!pBuffer && size<=0) return -EINVAL;
   int iResult=0;
   if (fpEsdManager) {

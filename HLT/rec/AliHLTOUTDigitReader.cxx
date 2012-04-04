@@ -1,11 +1,10 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -16,11 +15,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTDigitReader.cxx
-    @author Matthias Richter
-    @date   
-    @brief  HLTOUT data wrapper for simulated AliRoot HLT digit data.
-*/
+/// @file   AliHLTOUTDigitReader.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLTOUT data wrapper for simulated AliRoot HLT digit data.
+///
 
 #include "AliHLTOUTDigitReader.h"
 #include "AliRawDataHeader.h"
@@ -46,18 +45,18 @@ AliHLTOUTDigitReader::AliHLTOUTDigitReader(int event, AliHLTEsdManager* pEsdMana
   fppDigitArrays(NULL),
   fpEquipments(NULL),
   fNofDDLs(0),
-  fCurrent(-1)
+  fCurrentLink(-1)
 {
+  // constructor
+  //
+  // HLTOUT data wrapper for simulated AliRoot HLT digit data
+  // 
   // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTOUTDigitReader::~AliHLTOUTDigitReader()
 {
-  // see header file for class documentation
+  // destructor
   CloseTree();
 
   if (fpDigitFile) {
@@ -69,18 +68,18 @@ AliHLTOUTDigitReader::~AliHLTOUTDigitReader()
 
 Bool_t AliHLTOUTDigitReader::ReadNextData(UChar_t*& data)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: switch to next DDL
   if (!fppDigitArrays && (!ReadArrays() || !fppDigitArrays))
     return kFALSE;
 
-  if (fCurrent>=fNofDDLs)
+  if (fCurrentLink>=fNofDDLs)
     return kFALSE;
 
-  while (++fCurrent<fNofDDLs) {
-    if (fMinDDL>-1 && fMinDDL>fpEquipments[fCurrent]) continue;
-    if (fMaxDDL>-1 && fMaxDDL<fpEquipments[fCurrent]) continue;
-    if (fppDigitArrays[fCurrent]->GetSize()>(int)sizeof(AliRawDataHeader)) {
-      data=reinterpret_cast<UChar_t*>(fppDigitArrays[fCurrent]->GetArray());
+  while (++fCurrentLink<fNofDDLs) {
+    if (fMinDDL>-1 && fMinDDL>fpEquipments[fCurrentLink]) continue;
+    if (fMaxDDL>-1 && fMaxDDL<fpEquipments[fCurrentLink]) continue;
+    if (fppDigitArrays[fCurrentLink]->GetSize()>(int)sizeof(AliRawDataHeader)) {
+      data=reinterpret_cast<UChar_t*>(fppDigitArrays[fCurrentLink]->GetArray());
       data+=sizeof(AliRawDataHeader);
       return kTRUE;
     }
@@ -90,48 +89,51 @@ Bool_t AliHLTOUTDigitReader::ReadNextData(UChar_t*& data)
 
 int AliHLTOUTDigitReader::Reset()
 {
-  // see header file for class documentation
-  fCurrent=-1;
+  // overloaded from AliHLTOUTHomerCollection: reset DDL position
+  fCurrentLink=-1;
   return 0;
 }
 
 int AliHLTOUTDigitReader::GetDataSize()
 {
-  // see header file for class documentation
-  if (fCurrent>=0 && fCurrent<fNofDDLs && fppDigitArrays) {
-    return fppDigitArrays[fCurrent]->GetSize()-sizeof(AliRawDataHeader);
+  // overloaded from AliHLTOUTHomerCollection: get size of current DDL
+  if (fCurrentLink>=0 && fCurrentLink<fNofDDLs && fppDigitArrays) {
+    return fppDigitArrays[fCurrentLink]->GetSize()-sizeof(AliRawDataHeader);
   }
   return 0;
 }
 
 const AliRawDataHeader* AliHLTOUTDigitReader::GetDataHeader()
 {
-  // see header file for class documentation
-  if (fCurrent>=0 && fCurrent<fNofDDLs && fppDigitArrays) {
-    return reinterpret_cast<AliRawDataHeader*>(fppDigitArrays[fCurrent]->GetArray());
+  // overloaded from AliHLTOUTHomerCollection: get data header of current DDL
+  if (fCurrentLink>=0 && fCurrentLink<fNofDDLs && fppDigitArrays) {
+    return reinterpret_cast<AliRawDataHeader*>(fppDigitArrays[fCurrentLink]->GetArray());
   }
   return NULL;
 }
 
 void AliHLTOUTDigitReader::SelectEquipment(int /*equipmentType*/, int minEquipmentId, int maxEquipmentId)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: select equipment range
   fMinDDL=minEquipmentId;
   fMaxDDL=maxEquipmentId;
 }
 
 int AliHLTOUTDigitReader::GetEquipmentId()
 {
-  // see header file for class documentation
-  if (fCurrent>=0 && fCurrent<fNofDDLs && fpEquipments) {
-    return fpEquipments[fCurrent];
+  // overloaded from AliHLTOUTHomerCollection: get id of current DDL
+  if (fCurrentLink>=0 && fCurrentLink<fNofDDLs && fpEquipments) {
+    return fpEquipments[fCurrentLink];
   }
   return -1;
 }
 
 bool AliHLTOUTDigitReader::ReadArrays()
 {
-  // see header file for class documentation
+  // Read the data from the root file and HLTOUT raw tree.
+  // Retrieve the number of branches and allocate arrays acording
+  // to that. After initialization of the arrays and variables, the
+  // event fEnvent is read.
   bool result=false;
 
   if (GetCurrentEventNo()<0) {
@@ -203,7 +205,7 @@ bool AliHLTOUTDigitReader::ReadArrays()
 
 int AliHLTOUTDigitReader::CloseTree()
 {
-  // see header file for class documentation
+  // Cleanup tree and data arrays.
   int iResult=0;
   for (int i=0; i<fNofDDLs; i++) {
     if (fppDigitArrays[i]) delete fppDigitArrays[i];
@@ -216,14 +218,16 @@ int AliHLTOUTDigitReader::CloseTree()
   if (fpDigitTree) delete fpDigitTree;
   fpDigitTree=NULL;
   fNofDDLs=0;
-  fCurrent=-1;
+  fCurrentLink=-1;
 
   return iResult;
 }
 
 void AliHLTOUTDigitReader::SetParam(TTree* /*pDigitTree*/, int event)
 {
-  // see header file for class documentation
+  // set parameter for this HLTOUT instance
+  // The function is for internal use only in conjunction with the
+  // AliHLTOUT::New() functions.
 
   // TODO: here we have the implemented to correct loading of
   // the digit file from the run loader. At time of writing
@@ -234,7 +238,9 @@ void AliHLTOUTDigitReader::SetParam(TTree* /*pDigitTree*/, int event)
 
 void AliHLTOUTDigitReader::SetParam(const char* filename, int event)
 {
-  // see header file for class documentation
+  // set parameter for this HLTOUT instance
+  // The function is for internal use only in conjunction with the
+  // AliHLTOUT::New() functions.
 
   if (filename && filename[0]!=0) {
     fDigitFileName=filename;

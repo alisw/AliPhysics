@@ -1,11 +1,10 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -16,11 +15,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTRawReader.cxx
-    @author Matthias Richter
-    @date   
-    @brief  HLTOUT data wrapper for AliRawReader.                         
-*/
+/// @file   AliHLTOUTRawReader.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLTOUT data wrapper for AliRawReader.
+///
 
 #include "AliHLTOUTRawReader.h"
 #include "AliRawReader.h"
@@ -33,11 +32,11 @@ AliHLTOUTRawReader::AliHLTOUTRawReader()
   AliHLTOUTHomerCollection(),
   fpRawreader(NULL)
 {
+  // constructor
+  //
+  // HLTOUT data wrapper for AliRawReader
+  // 
   // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTOUTRawReader::AliHLTOUTRawReader(AliRawReader* pRawreader, int event, AliHLTEsdManager* pEsdManager)
@@ -54,46 +53,46 @@ AliHLTOUTRawReader::AliHLTOUTRawReader(AliRawReader* pRawreader, int event, AliH
 
 AliHLTOUTRawReader::~AliHLTOUTRawReader()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 Bool_t AliHLTOUTRawReader::ReadNextData(UChar_t*& data)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: switch to next DDL
   if (!fpRawreader) return kFALSE;
   return fpRawreader->ReadNextData(data);
 }
 
 int AliHLTOUTRawReader::Reset()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: reset DDL position
   if (fpRawreader) return fpRawreader->Reset();
   return 0;
 }
 
 int AliHLTOUTRawReader::GetDataSize()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: get size of current DDL
   if (fpRawreader) return fpRawreader->GetDataSize();
   return 0;
 }
 
 const AliRawDataHeader* AliHLTOUTRawReader::GetDataHeader()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: get data header of current DDL
   if (fpRawreader) return fpRawreader->GetDataHeader();
   return NULL;
 }
 
 void AliHLTOUTRawReader::SelectEquipment(int equipmentType, int minEquipmentId, int maxEquipmentId)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: select equipment range
   if (fpRawreader) fpRawreader->SelectEquipment(equipmentType, minEquipmentId, maxEquipmentId);
 }
 
 int AliHLTOUTRawReader::GetEquipmentId()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTOUTHomerCollection: get id of current DDL
   if (fpRawreader) return fpRawreader->GetEquipmentId();
   return -1;
 }

@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTOUTHOMERCOLLECTION_H
 #define ALIHLTOUTHOMERCOLLECTION_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTHomerCollection.h
-    @author Matthias Richter
-    @date   
-    @brief  General collection for HLTOUT data in DDL format.
-*/
+/// @file   AliHLTOUTHomerCollection.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  General collection for HLTOUT data in DDL format.
+///
 #include "AliHLTOUTHomerBuffer.h"
 
 class AliHLTHOMERReader;
@@ -84,6 +84,11 @@ class AliHLTOUTHomerCollection : public AliHLTOUTHomerBuffer {
   // interface function of AliHLTOUT
   int WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size, AliHLTComponentDataType dt, AliESDEvent* tgtesd=NULL) const;
 
+  /** current event no */
+  int fEvent; //!transient
+
+private:
+
  private:
   /** copy constructor prohibited */
   AliHLTOUTHomerCollection(const AliHLTOUTHomerCollection&);
@@ -97,6 +102,7 @@ class AliHLTOUTHomerCollection : public AliHLTOUTHomerBuffer {
 
   /**
    * Get the data buffer
+   * Overloaded from AliHLTOUT
    * @param [in]  index   index of the block
    * @param [out] pBuffer buffer of the selected data block
    * @param [out] size    size of the selected data block
@@ -118,11 +124,6 @@ class AliHLTOUTHomerCollection : public AliHLTOUTHomerBuffer {
   /** current instance of the HOMER reader */
   AliHLTHOMERReader* fpCurrent;  //!transient
 
-protected:
-  /** current event no */
-  int fEvent; //!transient
-
-private:
   /** instance of the ESD manager for writing and merging */
   AliHLTEsdManager* fpEsdManager; //!transient
 

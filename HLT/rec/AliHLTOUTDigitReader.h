@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTOUTDIGITREADER_H
 #define ALIHLTOUTDIGITREADER_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
-//* See cxx source for full Copyright notice                               */
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTDigitReader.h
-    @author Matthias Richter
-    @date   
-    @brief  HLTOUT data wrapper for simulated AliRoot HLT digit data.
-*/
+/// @file   AliHLTOUTDigitReader.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLTOUT data wrapper for simulated AliRoot HLT digit data.
+///
 
 #include "AliHLTOUTHomerCollection.h"
 #include "TString.h"
@@ -98,8 +98,8 @@ class AliHLTOUTDigitReader : public AliHLTOUTHomerCollection {
   /** number of DDL objects -> size of the arrays */
   int fNofDDLs; //!transient
 
-  /** current position in the array */
-  int fCurrent; //!transient
+  /** current position in the array of DDLs*/
+  int fCurrentLink; //!transient
 
   ClassDef(AliHLTOUTDigitReader, 0)
 };
