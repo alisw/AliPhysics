@@ -21,7 +21,7 @@ Float_t vZ[numberOfSyst]     = {10.,12.,6.,8.,10.,10.,10.,10.,10.,10.,10.,10.,10
 Float_t DCAxy[numberOfSyst]  = {-1.,2.4,2.4,2.4,2.2,2.0,1.8,2.4,2.4,2.4,2.4,2.4,2.4};   // DCA xy cut (afterburner, -1 = w/o additional cut)
 Float_t DCAz[numberOfSyst]   = {-1.,3.2,3.2,3.2,3.0,2.8,2.6,3.2,3.2,3.2,3.2,3.2,3.2};   // DCA z cut (afterburner, -1 = w/o additional cut)
 Float_t ptMin[numberOfSyst]  = {0.3,0.3,0.3,0.3,0.3,0.3,0.3,1.5,5.0,0.3,0.3,0.3,0.3};   // pt cuts
-Float_t ptMax[numberOfSyst]  = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,5.0,10.0,10.0,1.5,1.5,1.5}; // pt cuts
+Float_t ptMax[numberOfSyst]  = {5.,1.5,1.5,1.5,1.5,1.5,1.5,5.0,10.0,10.0,1.5,1.5,1.5}; // pt cuts
 Float_t etaMin[numberOfSyst] = {-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-1.0,-0.6,-0.4}; // eta cuts
 Float_t etaMax[numberOfSyst] = {0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.0,0.6,0.4};   // eta cuts
 
@@ -43,7 +43,7 @@ void runBalanceFunctionPsi(
          )
 {
     // check run type
-    if(runtype != "local" && runtype != "proof" && runtype != "grid"){
+    if(runtype != "local" && runtype != "proof" && runtype != "grid") {
         Printf("\n\tIncorrect run option, check first argument of run macro");
         Printf("\tint runtype = local, proof or grid\n");
         return;
@@ -79,9 +79,35 @@ void runBalanceFunctionPsi(
     AliAnalysisManager* mgr = new AliAnalysisManager(Form("%s%i",taskname,bunchN));
     
     // create the alien handler and attach it to the manager
-    AliAnalysisGrid *plugin = CreateAlienHandler(bAOD,bunchN,Form("%s%i",taskname,bunchN), gridmode, proofcluster, Form("%s_%d.txt",proofdataset.Data(),bunchN)); 
-    mgr->SetGridHandler(plugin);
-    
+    if(runtype == "grid") {
+      AliAnalysisGrid *plugin = CreateAlienHandler(bAOD,bunchN,Form("%s%i",taskname,bunchN), gridmode, proofcluster, Form("%s_%d.txt",proofdataset.Data(),bunchN)); 
+      mgr->SetGridHandler(plugin);
+    }
+    else if(runtype == "local") {
+      TString filename;
+      TChain* chain = 0x0;
+      if((!bAOD)&&(!bMCtruth)) {
+	chain = new TChain("esdTree");
+	for(Int_t i = 0; i < 8; i++) {
+	  filename = "/data/alice2/pchrist/HeavyIons/Data/2011/Set";
+	  filename += i; filename += "/AliESDs.root";
+	  chain->Add(filename.Data());
+	}
+      }
+      else if((bAOD)&&(!bMCtruth)) {
+	chain = new TChain("aodTree");
+	for(Int_t i = 0; i < 8; i++) {
+	  filename = "/data/alice2/pchrist/HeavyIons/Data/2011/Set";
+	  filename += i; filename += "/AliAOD.root";
+	  chain->Add(filename.Data());
+	}
+      }
+      else if(bMCtruth) {
+	chain = new TChain("TE");
+	filename = "galice.root";
+	chain->Add(filename.Data());
+      }
+    }//local mode
 
     // input handler (ESD or AOD)
     AliVEventHandler* inputH = NULL;
@@ -95,12 +121,12 @@ void runBalanceFunctionPsi(
     
     // mc event handler
     if(bMCtruth) {
-        AliMCEventHandler* mchandler = new AliMCEventHandler();
-        // Not reading track references
-        mchandler->SetReadTR(kFALSE);
-        mgr->SetMCtruthEventHandler(mchandler);
+      AliMCEventHandler* mchandler = new AliMCEventHandler();
+      // Not reading track references
+      mchandler->SetReadTR(kFALSE);
+      mgr->SetMCtruthEventHandler(mchandler);
     }   
-
+    
     // AOD output handler
     //AliAODHandler* aodoutHandler = new AliAODHandler();
     //aodoutHandler->SetOutputFileName("aod.root");
@@ -177,7 +203,10 @@ void runBalanceFunctionPsi(
   
     // start analysis
     Printf("Starting Analysis....");
-    mgr->StartAnalysis(runtype,nentries,firstentry);
+    if(runtype == "local") 
+      mgr->StartAnalysis("local",chain);
+    else
+      mgr->StartAnalysis(runtype,nentries,firstentry);
 }
 
 //______________________________________________________________________________
