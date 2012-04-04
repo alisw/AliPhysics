@@ -112,6 +112,8 @@ AliTRDcalibDB::AliTRDcalibDB()
   ,fPIDResponse(NULL)
   ,fOnlineGainTableID(0)
   ,fTrapConfig(0x0)
+  ,fTrapConfigName("")
+  ,fTrapConfigVersion("")
 {
   //
   // Default constructor
@@ -144,6 +146,8 @@ AliTRDcalibDB::AliTRDcalibDB(const AliTRDcalibDB &c)
   ,fPIDResponse(NULL)
   ,fOnlineGainTableID(0)
   ,fTrapConfig(0x0)
+  ,fTrapConfigName("")
+  ,fTrapConfigVersion("")
 {
   //
   // Copy constructor (not that it make any sense for a singleton...)
