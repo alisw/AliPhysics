@@ -44,7 +44,8 @@ fUseSpecialCuts(kFALSE),
 fLowPt(kTRUE),
 fDefaultPID(kFALSE),
 fUseKF(kFALSE),
-fPtLowPID(2.)
+fPtLowPID(2.),
+fPtMaxSpecialCuts(9999.)
 {
   //
   // Default Constructor
@@ -97,7 +98,8 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   fLowPt(source.fLowPt),
   fDefaultPID(source.fDefaultPID),
   fUseKF(source.fUseKF),
-  fPtLowPID(source.fPtLowPID)
+  fPtLowPID(source.fPtLowPID),
+  fPtMaxSpecialCuts(source.fPtMaxSpecialCuts)
 {
   //
   // Copy constructor
@@ -118,6 +120,7 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   fDefaultPID=source.fDefaultPID;
   fUseKF=source.fUseKF;
   fPtLowPID=source.fPtLowPID;
+  fPtMaxSpecialCuts=source.fPtMaxSpecialCuts;
 
   return *this;
 }
@@ -344,7 +347,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
 
       // call special cuts
       Int_t special=1;
-      if(fUseSpecialCuts) special=IsSelectedSpecialCuts(d);
+      if(fUseSpecialCuts && (pt<fPtMaxSpecialCuts)) special=IsSelectedSpecialCuts(d);
       if(!special) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
       // unset recalculated primary vertex when not needed any more
