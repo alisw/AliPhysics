@@ -1,4 +1,4 @@
-AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE, const char* outputFileName = 0, Bool_t eventMixing = kTRUE, Bool_t zVtxAxis = kFALSE)
+AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE, const char* outputFileName = 0, Bool_t eventMixing = kTRUE, Bool_t zVtxAxis = kFALSE, const char* containerName = "histosPhiCorrelations", const char* folderName = "PWG4_PhiCorrelations")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -10,7 +10,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
   // Create the task and configure it.
   //===========================================================================
-  AliAnalysisTaskPhiCorrelations* ana = new  AliAnalysisTaskPhiCorrelations("PhiCorrelations");
+  AliAnalysisTaskPhiCorrelations* ana = new  AliAnalysisTaskPhiCorrelations(containerName);
   ana->SetMode(analysisMode);// data or corrections mode
   
 //  if (analysisMode == 0) // data
@@ -40,10 +40,15 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
   ana->SetEventMixing(eventMixing);
   ana->SetUseVtxAxis(zVtxAxis);
-  ana->SetTriggerRestrictEta(0.5);
+  
+//   ana->SetSkipTrigger(kTRUE);
+//   ana->SetTriggerRestrictEta(0.5);
+//   ana->SetEtaOrdering(kTRUE);
+  
+//   ana->SetPairCuts(kTRUE, kTRUE);
   
 //   ana->SetCompareCentralities(kTRUE);
-//   ana->SetTwoTrackEfficiencyStudy(kTRUE);
+//   ana->SetTwoTrackEfficiencyCut(kTRUE);
   
 //   ana->SetFillpT(kTRUE);
   
@@ -76,7 +81,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   if (!outputFileName)
     outputFileName = AliAnalysisManager::GetCommonFileName();
   
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosPhiCorrelations", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_PhiCorrelations", outputFileName));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 0, coutput1 );
