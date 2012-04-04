@@ -10,15 +10,14 @@ void MakeSTRUCTZeroMisAlignment(){
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy vol id
 
-  const char* basepath ="ALIC_1/B077_1/BSEGMO";
-  TString segmpath;
+  const char* baseSymName ="FRAME/Sector"; //base of symbolic name corresponding to base of path "ALIC_1/B077_1/BSEGMO";
+  TString symname;
 
   for(Int_t sm=0; sm<18; sm++){
-    segmpath=basepath;
-    segmpath+=sm;
-    segmpath+="_1";
-    cout<<segmpath.Data()<<endl;
-    new((*array)[sm]) AliAlignObjParams(segmpath.Data(),dvoluid,0.,0.,0.,0.,0.,0.,kTRUE);
+    symname = baseSymName;
+    symname += sm;
+    cout<<symname.Data()<<endl;
+    new((*array)[sm]) AliAlignObjParams(symname.Data(),dvoluid,0.,0.,0.,0.,0.,0.,kTRUE);
   }
 
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
