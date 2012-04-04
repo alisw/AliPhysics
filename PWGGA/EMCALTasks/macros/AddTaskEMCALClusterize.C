@@ -14,7 +14,9 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Bool_t  bRecalE    = kTRUE,
                                                        const Bool_t  bBad       = kTRUE,
                                                        const Bool_t  bRecalT    = kTRUE,
-                                                       const Bool_t  bNonLine   = kFALSE
+                                                       const Bool_t  bNonLine   = kFALSE,
+                                                       const Int_t   nRowDiff   = 1,
+                                                       const Int_t   nColDiff   = 1
                                                        )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -34,6 +36,10 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     return NULL;
   }
   
+  printf("Passed Settings : mc %d, exo %d, name %s, trigger %s, tm %d\n",bMC,exotic,name.Data(),trigger.Data(),tm);
+  printf("                  Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
+  printf("                  recalE %d, bad %d, recalT %d, nonlin %d, rowDiff %d, colDiff %d \n",bRecalE,bBad,bRecalT,bNonLine,nRowDiff,nColDiff);
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
@@ -41,12 +47,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   AliAnalysisTaskEMCALClusterize* clusterize = new AliAnalysisTaskEMCALClusterize(Form("EMCALClusterize%s_Ecell%d_Eseed%d_DT%d_WT%d",
                                                                                        name.Data(),minEcell,minEseed,maxDeltaT,timeWindow));
 
-  // Set clusters branch name, make sure the analysis after this one read this name
-  
-  arrayName = Form("%s_Ecell%d_Eseed%d_DT%d_WT%d",name.Data(),minEcell,minEseed,maxDeltaT,timeWindow);
-  clusterize->SetAODBranchName(arrayName);
 
-  printf("Created Branch Name: \n",arrayName.Data());
   //clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
 
   // Some general settings to create AOD file in case we want to keep it
@@ -112,7 +113,12 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Clusterizer type
   if(name.Contains("V2")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
   if(name.Contains("V1")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
-  if(name.Contains("NxN"))params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
+  if(name.Contains("NxN"))
+  {
+    params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
+    printf("Set NxN cluster size to %dx%d (row diff %d, col diff %d)\n",2*nRowDiff+1,2*nColDiff+1,nRowDiff,nColDiff);
+    params->SetNxM(nRowDiff, nColDiff);
+  }
 
   //-------------------------------------------------------
   // Unfolding, 2 options :
@@ -162,27 +168,33 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Trigger options
   //-------------------------------------------------------
 
-  if(trigger=="EMC7"){
+  if(trigger=="EMC7")
+  {
     printf("Clusterizing task trigger EMC7\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kEMC7);
   }
-  else if (trigger=="INT7"){
+  else if (trigger=="INT7")
+  {
     printf("Clusterizing task trigger INT7\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kINT7);
   }
-  else if(trigger=="EMC1"){
+  else if(trigger=="EMC1")
+  {
     printf("Clusterizing task trigger EMC1\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kEMC1);
   }
-  else if(trigger=="MB"){
+  else if(trigger=="MB")
+  {
     printf("Clusterizing task trigger MB\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kMB);
   }  
-  else if(trigger=="PHOS"){
+  else if(trigger=="PHOS")
+  {
     printf("Clusterizing task trigger PHOS\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kPHI7);
   }  
-  else if(trigger=="PHOSPb"){
+  else if(trigger=="PHOSPb")
+  {
     printf("Clusterizing task trigger PHOSPb\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kPHOSPb);
   }
@@ -216,6 +228,15 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     printf("Clusterizing task trigger SemiCentral\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   }
+  
+  // Set clusters branch name, make sure the analysis after this one reads this name
+  
+  if(name.Contains("NxN")) arrayName = Form("%dx%d_Ecell%d_Eseed%d_DT%d_WT%d",2*nRowDiff+1,2*nColDiff+1,minEcell,minEseed,maxDeltaT,timeWindow);
+  else                     arrayName = Form(   "%s_Ecell%d_Eseed%d_DT%d_WT%d",              name.Data(),minEcell,minEseed,maxDeltaT,timeWindow);
+  
+  clusterize->SetAODBranchName(arrayName);
+  
+  printf("Created Branch Name: \n",arrayName.Data());
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
