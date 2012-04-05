@@ -32,6 +32,8 @@
 #include "AliRawReader.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdigitsParam.h"
+#include "AliTRDcalibDB.h"
+#include "AliTRDmcmSim.h"
 #include "AliTRDtrapConfig.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDarrayDictionary.h"
@@ -1220,8 +1222,8 @@ Int_t AliTRDrawStream::ReadLinkData()
 	count += fPayloadCurr - startPos;
 
 	// feeding TRAP config
-// 	AliTRDtrapConfig *trapcfg = AliTRDcalibDB::Instance()->GetTrapConfig();
-// 	trapcfg->ReadPackedConfig(fCurrHC, startPos, fPayloadCurr - startPos);
+	AliTRDtrapConfig *trapcfg = AliTRDcalibDB::Instance()->GetTrapConfig();
+	AliTRDmcmSim::ReadPackedConfig(trapcfg, fCurrHC, startPos, fPayloadCurr - startPos);
       }
       else {
 	Int_t tpmode = fCurrMajor & 0x7;

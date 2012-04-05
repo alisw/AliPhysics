@@ -130,7 +130,7 @@ class AliTRDmcmSim : public TObject {
 	  void PrintAdcDatXml(ostream& os) const;
 	  void PrintAdcDatDatx(ostream& os, Bool_t broadcast=kFALSE, Int_t timeBinOffset = -1) const;
 
-  static  Bool_t ReadPackedConfig(AliTRDtrapConfig *cfg, Int_t det, UInt_t *data, Int_t size);
+  static  Bool_t ReadPackedConfig(AliTRDtrapConfig *cfg, Int_t hc, UInt_t *data, Int_t size);
 
   // DMEM addresses
   static const Int_t fgkDmemAddrLUTcor0       = 0xC02A;
