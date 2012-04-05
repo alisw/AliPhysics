@@ -706,7 +706,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			  kppError[(error&512)?10:0],
 			  kppError[(error&1024)?11:0],
 			  kppError[(error&2048)?12:0],
-			  kppError[(error&4096)?12:0]
+			  kppError[(error&4096)?13:0]
 			  ));
 		return error;
 	}
