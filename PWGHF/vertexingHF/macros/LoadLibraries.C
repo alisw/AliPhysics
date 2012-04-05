@@ -15,9 +15,9 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWGHFbase.so");
-  gSystem->Load("libPWGHFvertexingHF.so");
   gSystem->Load("libPWGflowBase.so");
   gSystem->Load("libPWGflowTasks.so");
+  gSystem->Load("libPWGHFvertexingHF.so");
   //gSystem->Load("libPWGmuon.so");
  
 
