@@ -520,7 +520,8 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
     Int_t indexLTM[2] = {-1,-1};
     GetLTMIndex(detind,indexLTM);
 
-    Float_t timedigit = digit->GetTdc()*AliTOFGeometry::TdcBinWidth()*1E-3; // time digit in ns
+    //Float_t timedigit = digit->GetTdc()*AliTOFGeometry::TdcBinWidth()*1E-3; // decalibrated time digit in ns
+    Float_t timedigit = digit->GetTdcND()*AliTOFGeometry::TdcBinWidth()*1E-3; // time digit in ns
 
     Float_t pos[3];
     fgTofGeo->GetPosPar(detind, pos);
