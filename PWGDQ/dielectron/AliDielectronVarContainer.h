@@ -158,6 +158,27 @@ public:
     kNTrk,                   // number of tracks
     kNacc,                   // Number of accepted tracks
     kNaccTrcklts,            // Number of accepted tracklets (MUON definition)
+    kNaccTrckltsCorr,        // Number of corrected accepted tracklets (correction based on flattening the average number of tracklets as a function of event vertex)
+    kNaccTrcklts05,          // As in kNaccTrcklts but |eta|<0.5 instead of |eta|<1.6
+    kNaccTrcklts10,          // As in kNaccTrcklts but |eta|<1.0 instead of |eta|<1.6
+    kNaccTrckltsEsd05,       // SPD tracklets from AliESDEvent::EstimateMultiplicity() in |eta|<0.5
+    kNaccTrckltsEsd10,       // SPD tracklets from AliESDEvent::EstimateMultiplicity() in |eta|<1.0
+    kNaccTrckltsEsd16,       // SPD tracklets from AliESDEvent::EstimateMultiplicity() in |eta|<1.6
+    kNaccItsTpcEsd05,        // TPC/ITS tracks + ITS SA complementary tracks + tracklets from clusters not used in tracks from AliESDEvent::EstimateMultiplicity() in |eta|<0.5
+    kNaccItsTpcEsd10,        // TPC/ITS tracks + ITS SA complementary tracks + tracklets from clusters not used in tracks from AliESDEvent::EstimateMultiplicity() in |eta|<1.0
+    kNaccItsTpcEsd16,        // TPC/ITS tracks + ITS SA complementary tracks + tracklets from clusters not used in tracks from AliESDEvent::EstimateMultiplicity() in |eta|<1.6
+    kNaccItsPureEsd05,       // ITS SA tracks + tracklets from clusters not used in tracks from AliESDEvent::EstimateMultiplicity() in |eta|<0.5
+    kNaccItsPureEsd10,       // ITS SA tracks + tracklets from clusters not used in tracks from AliESDEvent::EstimateMultiplicity() in |eta|<1.0
+    kNaccItsPureEsd16,       // ITS SA tracks + tracklets from clusters not used in tracks from AliESDEvent::EstimateMultiplicity() in |eta|<1.6
+
+
+    kMultV0A,                // VZERO multiplicity and ADC amplitudes
+    kMultV0C,
+    kMultV0,
+    kAdcV0A,
+    kAdcV0C,
+    kAdcV0,
+
     kCentrality,             // event centrality fraction
     kNevents,                // event counter
     kNMaxValues              // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
@@ -216,7 +237,9 @@ public:
     kXvPrimMC = kPairMaxMC,   // prim vertex x
     kYvPrimMC,                 // prim vertex y
     kZvPrimMC,                 // prim vertex z
-    kNch,                       // Number of charged MC tracks
+    kNch,                    // Number of charged MC tracks in |eta|<1.6
+    kNch05,                  // Number of charged MC tracks in |eta|<0.5
+    kNch10,                  // Number of charged MC tracks in |eta|<1.0
     kCentralityMC,             // event centrality fraction
     kNeventsMC,                // event counter
     kNMaxValuesMC              // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
@@ -232,12 +255,10 @@ public:
   static void InitESDpid(Int_t type=0);
   static void InitAODpidUtil(Int_t type=0);
 
-  static void SetESDpid(AliESDpid * const pid)            { fgPIDResponse=pid;                                   }
   static void SetPIDResponse(AliPIDResponse *pidResponse) { fgPIDResponse=pidResponse;                           }
   static void SetEvent(AliVEvent * const event); // TODO: needed?
 
-  static AliESDpid* GetESDpid()                           { return (AliESDpid*)fgPIDResponse;                    }
-  static AliAODpidUtil* GetAODpidUtil()                   { return (AliAODpidUtil*)fgPIDResponse;                }
+  static AliPIDResponse* GetPIDResponse()                 { return fgPIDResponse;                                }
   static const AliKFVertex* GetKFVertex()                 { return fgKFVertex;                                   }
   static const char* GetValueName(Int_t i)                { return (i>=0&&i<kNMaxValues)?fgkParticleNames[i]:""; }
   static const Double_t* GetData()                        { return fgData;                                       }
@@ -718,7 +739,10 @@ inline void AliDielectronVarContainer::FillVarVEvent(const AliVEvent *event)
   fgData[AliDielectronVarContainer::kNTrk]         = event->GetNumberOfTracks();
   fgData[AliDielectronVarContainer::kBzkG]         = event->GetMagneticField();
   fgData[AliDielectronVarContainer::kNacc]         = AliDielectronHelper::GetNacc(event);
-  fgData[AliDielectronVarContainer::kNaccTrcklts]  = AliDielectronHelper::GetNaccTrcklts(event);
+  fgData[AliDielectronVarContainer::kNaccTrcklts]  = AliDielectronHelper::GetNaccTrcklts(event,1.6);
+  fgData[AliDielectronVarContainer::kNaccTrcklts05]   = AliDielectronHelper::GetNaccTrcklts(event, 0.5);
+  fgData[AliDielectronVarContainer::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event, 1.0);
+  fgData[AliDielectronVarContainer::kNaccTrckltsCorr] = AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarContainer::kNaccTrcklts], values[AliDielectronVarContainer::kZvPrim]);
 }
 
 
@@ -741,6 +765,37 @@ inline void AliDielectronVarContainer::FillVarESDEvent(const AliESDEvent *event)
   fgData[AliDielectronVarContainer::kYRes]       = esdVtx->GetYRes();
   fgData[AliDielectronVarContainer::kZRes]       = esdVtx->GetZRes();
   fgData[AliDielectronVarContainer::kCentrality] = centralityF;
+
+  // Event multiplicity estimators
+  Int_t nTrSPD=0; Int_t nTrITSTPC=0; Int_t nTrITSSA=0;
+  event->EstimateMultiplicity(nTrSPD, nTrITSTPC, nTrITSSA, 0.5);
+  fgData[AliDielectronVarContainer::kNaccTrckltsEsd05] = nTrSPD;
+  fgData[AliDielectronVarContainer::kNaccItsTpcEsd05] = nTrITSTPC;
+  fgData[AliDielectronVarContainer::kNaccItsPureEsd05] = nTrITSSA;
+  event->EstimateMultiplicity(nTrSPD, nTrITSTPC, nTrITSSA, 1.0);
+  fgData[AliDielectronVarContainer::kNaccTrckltsEsd10] = nTrSPD;
+  fgData[AliDielectronVarContainer::kNaccItsTpcEsd10] = nTrITSTPC;
+  fgData[AliDielectronVarContainer::kNaccItsPureEsd10] = nTrITSSA;
+  event->EstimateMultiplicity(nTrSPD, nTrITSTPC, nTrITSSA, 1.6);
+  fgData[AliDielectronVarContainer::kNaccTrckltsEsd16] = nTrSPD;
+  fgData[AliDielectronVarContainer::kNaccItsTpcEsd16] = nTrITSTPC;
+  fgData[AliDielectronVarContainer::kNaccItsPureEsd16] = nTrITSSA;
+  
+  // ESD VZERO information
+  AliESDVZERO* vzeroData = event->GetVZEROData();
+  fgData[AliDielectronVarContainer::kMultV0A] = 0.0;
+  fgData[AliDielectronVarContainer::kMultV0C] = 0.0;
+  fgData[AliDielectronVarContainer::kAdcV0A]  = 0.0;
+  fgData[AliDielectronVarContainer::kAdcV0C]  = 0.0;
+  for(Int_t i=0; i<32; ++i) {
+    fgData[AliDielectronVarContainer::kMultV0A] += vzeroData->GetMultiplicityV0A(i);
+    fgData[AliDielectronVarContainer::kMultV0C] += vzeroData->GetMultiplicityV0C(i);
+    fgData[AliDielectronVarContainer::kAdcV0A] += vzeroData->GetAdcV0A(i);
+    fgData[AliDielectronVarContainer::kAdcV0C] += vzeroData->GetAdcV0C(i);
+  }
+  fgData[AliDielectronVarContainer::kMultV0] = fgData[AliDielectronVarContainer::kMultV0A] + fgData[AliDielectronVarContainer::kMultV0C];
+  fgData[AliDielectronVarContainer::kAdcV0] = fgData[AliDielectronVarContainer::kAdcV0A] + fgData[AliDielectronVarContainer::kAdcV0C];
+
 }
 
 
@@ -760,6 +815,19 @@ inline void AliDielectronVarContainer::FillVarAODEvent(const AliAODEvent *event)
   if (!event->GetPrimaryVertex()) return;
   fgAODVertex = new AliAODVertex(*event->GetPrimaryVertex());
 
+  // AOD VZERO information
+  AliAODVZERO* vzeroData = event->GetVZEROData();
+  fgData[AliDielectronVarContainer::kMultV0A] = 0.0;
+  fgData[AliDielectronVarContainer::kMultV0C] = 0.0;
+  for(Int_t i=0; i<32; ++i) {
+    fgData[AliDielectronVarContainer::kMultV0A] += vzeroData->GetMultiplicityV0A(i);
+    fgData[AliDielectronVarContainer::kMultV0C] += vzeroData->GetMultiplicityV0C(i);
+  }
+  fgData[AliDielectronVarContainer::kMultV0] = fgData[AliDielectronVarContainer::kMultV0A] + fgData[AliDielectronVarContainer::kMultV0C];
+  // adc amplitides not available in aods
+  fgData[AliDielectronVarContainer::kAdcV0] = 0.0;
+  fgData[AliDielectronVarContainer::kAdcV0A]  = 0.0;
+  fgData[AliDielectronVarContainer::kAdcV0C]  = 0.0;
 }
 
 
@@ -774,6 +842,8 @@ inline void AliDielectronVarContainer::FillVarMCEvent(const AliMCEvent *event)
 
   // Fill AliMCEvent interface specific information
   fgDataMC[AliDielectronVarContainer::kNch] = AliDielectronHelper::GetNch(event, 1.6);
+  fgDataMC[AliDielectronVarContainer::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
+  fgDataMC[AliDielectronVarContainer::kNch10] = AliDielectronHelper::GetNch(event, 1.0);
 } 
 
 

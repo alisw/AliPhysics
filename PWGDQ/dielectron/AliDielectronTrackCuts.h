@@ -26,15 +26,11 @@ class AliDielectronTrackCuts : public AliAnalysisCuts {
 public:
   enum ITSClusterRequirement { kOff = 0, kNone, kAny, kFirst, kOnlyFirst, kSecond, kOnlySecond, kBoth };
   enum Detector { kSPD = 0, kSDD, kSSD };
+  enum ITScluster { kSPD0=0x0001, kSPD1=0x0002,
+                    kSDD0=0x0004, kSDD1=0x0008,
+                    kSSD0=0x0010, kSSD1=0x0020};
+  enum ITSclusterCutType { kOneOf=0, kAtLeast, kExact };
 
-  enum {
-    kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
-      kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
-      kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
-      kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-      kHMPIDout=0x10000,kHMPIDpid=0x20000
-  };
-  
   AliDielectronTrackCuts();
   AliDielectronTrackCuts(const char*name, const char* title);
 
@@ -50,7 +46,8 @@ public:
   
   Int_t GetV0DaughterCut() const { return fV0DaughterCut; }
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
-  
+
+  void SetITSclusterCut(ITSclusterCutType type, UChar_t map) { fITSclusterBitMap=map; fITSclusterCutType=type; }
   //
   //Analysis cuts interface
   //
@@ -67,14 +64,18 @@ private:
   Bool_t fNegateV0DauterCut;                           // If to negate the V0 daughter cut
   ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
 
+  UChar_t fITSclusterBitMap;                           // map of requested ITS clusters
+  ITSclusterCutType fITSclusterCutType;                // logic of requested ITS clusters
+  
   Bool_t fRequireITSRefit;                             // require ITS refit
   Bool_t fRequireTPCRefit;                             // require TPC refit
 
-  Int_t fTPCNclRobustCut;                            // TPC Ncl cut, Robust
+  Int_t fTPCNclRobustCut;                              // TPC Ncl cut, Robust
   
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
+  Bool_t CheckITSClusterCut(UChar_t itsBits) const;
   
-  ClassDef(AliDielectronTrackCuts,1)         // Dielectron TrackCuts
+  ClassDef(AliDielectronTrackCuts,2)         // Dielectron TrackCuts
 };
 
 

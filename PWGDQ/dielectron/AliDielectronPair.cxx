@@ -334,23 +334,23 @@ Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) 
   }
 }
 
-//______________________________________________
-Double_t AliDielectronPair::GetLXY(const AliVVertex * const vtx) const
-{
-  //
-  // Calculate the decay length in XY taking into account the primary vertex position
-  //
-  if(!vtx) return 0;
-  return ( (Xv()-vtx->GetX()) * Px() + (Yv()-vtx->GetY()) * Py() )/Pt()  ;
-}
+// //______________________________________________
+// Double_t AliDielectronPair::GetLXY(const AliVVertex * const vtx) const
+// {
+//   //
+//   // Calculate the decay length in XY taking into account the primary vertex position
+//   //
+//   if(!vtx) return 0;
+//   return ( (Xv()-vtx->GetX()) * Px() + (Yv()-vtx->GetY()) * Py() )/Pt()  ;
+// }
 
-//______________________________________________
-Double_t AliDielectronPair::GetPseudoProperTime(const AliVVertex * const vtx) const
-{
-  //
-  // Calculate the pseudo proper time
-  //
-  Double_t lxy=GetLXY(vtx);
-  Double_t psProperDecayLength = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/Pt();
-  return psProperDecayLength;
-}
+// //______________________________________________
+// Double_t AliDielectronPair::GetPseudoProperTime(const AliVVertex * const vtx) const
+// {
+//   //
+//   // Calculate the pseudo proper time
+//   //
+//   Double_t lxy=GetLXY(vtx);
+//   Double_t psProperDecayLength = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/Pt();
+//   return psProperDecayLength;
+// }

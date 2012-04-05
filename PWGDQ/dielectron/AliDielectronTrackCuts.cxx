@@ -26,10 +26,10 @@ Detailed description
 ///////////////////////////////////////////////////////////////////////////
 
 
+#include <TMath.h>
 
 #include "AliDielectronTrackCuts.h"
 #include "AliVTrack.h"
-#include "AliESDtrack.h"
 
 ClassImp(AliDielectronTrackCuts)
 
@@ -37,6 +37,8 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
   AliAnalysisCuts(),
   fV0DaughterCut(0),
   fNegateV0DauterCut(kFALSE),
+  fITSclusterBitMap(0),
+  fITSclusterCutType(kOneOf),
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1)
@@ -55,6 +57,8 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
   AliAnalysisCuts(name, title),
   fV0DaughterCut(0),
   fNegateV0DauterCut(kFALSE),
+  fITSclusterBitMap(0),
+  fITSclusterCutType(kOneOf),
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1)
@@ -94,21 +98,23 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
     accept*=isV0;
   }
 
+  //ESD track cut like ITS cluster cut
   for (Int_t i=0;i<3;++i){
     Bool_t layer1=TESTBIT(vtrack->GetITSClusterMap(),i*2);
     Bool_t layer2=TESTBIT(vtrack->GetITSClusterMap(),i*2+1);
     accept*=CheckITSClusterRequirement(fCutClusterRequirementITS[i], layer1, layer2);
   }
 
-  if (fRequireITSRefit) accept*=(vtrack->GetStatus()&kITSrefit)>0;
-  if (fRequireTPCRefit) accept*=(vtrack->GetStatus()&kTPCrefit)>0;
+  //more flexible ITS cluster cut
+  if (fITSclusterBitMap) accept*=CheckITSClusterCut(vtrack->GetITSClusterMap());
+
+  //its and tpc refit
+  if (fRequireITSRefit) accept*=(vtrack->GetStatus()&AliVTrack::kITSrefit)>0;
+  if (fRequireTPCRefit) accept*=(vtrack->GetStatus()&AliVTrack::kTPCrefit)>0;
 
   if (fTPCNclRobustCut>0){
-    AliESDtrack *tr=dynamic_cast<AliESDtrack*>(track);
-    if (tr){
-      Int_t nclr=TMath::Nint(tr->GetTPCClusterInfo(2,1));
-      accept*=(nclr>fTPCNclRobustCut);
-    }
+    Int_t nclr=TMath::Nint(vtrack->GetTPCClusterInfo(2,1));
+    accept*=(nclr>fTPCNclRobustCut);
   }
   return accept;
 }
@@ -144,3 +150,14 @@ Bool_t AliDielectronTrackCuts::CheckITSClusterRequirement(ITSClusterRequirement 
   return kFALSE;
 }
 
+//______________________________________________
+Bool_t AliDielectronTrackCuts::CheckITSClusterCut(UChar_t itsBits) const
+{
+  // check the its cluster cut
+  switch (fITSclusterCutType){
+  case kOneOf:   return itsBits & fITSclusterBitMap;
+  case kAtLeast: return (itsBits & fITSclusterBitMap)==fITSclusterBitMap;
+  case kExact:   return (itsBits==fITSclusterBitMap);
+  }
+  return kTRUE;  
+}

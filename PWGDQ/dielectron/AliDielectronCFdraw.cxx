@@ -396,11 +396,12 @@ TH1* AliDielectronCFdraw::Project(const Option_t* var, Int_t slice)
     delete arrVars;
     return 0x0;
   }
-  
+
+  TIter next(arrVars);
   TObjString *ostr=0x0;
   Int_t ivar[3]={-1,-1,-1};
   for (Int_t i=entries-1; i>=0; --i){
-    ostr=static_cast<TObjString*>(arrVars->At(i));
+    ostr=static_cast<TObjString*>(next());
     if (ostr->GetString().IsDigit()){
       ivar[i]=ostr->GetString().Atoi();
     } else {
@@ -431,7 +432,7 @@ void AliDielectronCFdraw::DrawEfficiency(const char* varnames, const char* numer
   TIter next(arrVars);
   TObjString *ostr=0x0;
   Int_t ivar[3]={-1,-1,-1};
-  for (Int_t i=0; i<entries; ++i){
+  for (Int_t i=entries-1; i>=0; --i){
     ostr=static_cast<TObjString*>(next());
     if (ostr->GetString().IsDigit()){
       ivar[i]=ostr->GetString().Atoi();
@@ -444,7 +445,7 @@ void AliDielectronCFdraw::DrawEfficiency(const char* varnames, const char* numer
   TString optStr(opt);
   if (optStr.Contains("2")) type=1;
   
-  DrawEfficiency(ivar[2],ivar[1],ivar[0],numerators, denominator,opt,type);
+  DrawEfficiency(ivar[0],ivar[1],ivar[2],numerators, denominator,opt,type);
   delete arrVars;
 }
 

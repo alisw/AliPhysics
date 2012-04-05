@@ -15,7 +15,7 @@
 
 #include <TNamed.h>
 #include <TDatabasePDG.h>
-#include <TH1F.h>
+#include "TH1F.h"
 
 class TRandom3;
 class TF1;
@@ -39,7 +39,7 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		virtual ~AliDielectronBtoJPSItoEleCDFfitFCN();
 
 		Double_t EvaluateLikelihood(const Double_t* pseudoproperdecaytime,
-				const Double_t* invariantmass, const Int_t ncand) const;
+				const Double_t* invariantmass, const Int_t* type, const Int_t ncand) const;
 
 		Double_t GetResWeight()                    const { return fParameters[0]; }
 		Double_t GetFPlus()                        const { return fParameters[1]; }
@@ -59,21 +59,39 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		Double_t GetBkgInvMassMean()               const { return fParameters[15]; }
 		Double_t GetBkgInvMassSlope()              const { return fParameters[16]; }  
 		Double_t GetBkgInvMassConst()              const { return fParameters[17]; } 
-		Double_t GetNormGaus1ResFunc()             const { return fParameters[18]; }
-		Double_t GetNormGaus2ResFunc()             const { return fParameters[19]; }
+		Double_t GetNormGaus1ResFunc(Int_t type)   const { return fParameters[18+(2-type)*9]; }
+		Double_t GetNormGaus2ResFunc(Int_t type)   const { return fParameters[19+(2-type)*9]; }
 		Double_t GetIntegralMassSig()              const { return fintmMassSig; }
 		Double_t GetIntegralMassBkg()              const { return fintmMassBkg; }
-		const Double_t* GetResolutionConstants()   const { return fResolutionConstants; }
-		Bool_t GetCrystalBallParam()               const { return fCrystalBallParam; }
+                Double_t GetResMean1(Int_t type)           const { return fParameters[20+(2-type)*9]; } 
+                Double_t GetResSigma1(Int_t type)          const { return fParameters[21+(2-type)*9]; }
+                Double_t GetResMean2(Int_t type)           const { return fParameters[22+(2-type)*9]; }
+                Double_t GetResSigma2(Int_t type)          const { return fParameters[23+(2-type)*9]; }
+                
+                Double_t GetResAlfa(Int_t type)            const { return fParameters[24+(2-type)*9]; }   
+                Double_t GetResLambda(Int_t type)          const { return fParameters[25+(2-type)*9]; } 
+                Double_t GetResNormExp(Int_t type)         const { return fParameters[26+(2-type)*9]; }
+
+                Bool_t GetCrystalBallParam()               const { return fCrystalBallParam; }
 		TH1F * GetCsiMcHisto()                     const { return fhCsiMC; }
+                Double_t GetResWeight(Int_t iW)            const { return fWeightType[iW]; }
 
 		// return pointer to likelihood functions  
-		TF1* GetCsiMC(Double_t xmin, Double_t xmax);
-		TF1* GetResolutionFunc(Double_t xmin, Double_t xmax);
-		TF1* GetEvaluateCDFDecayTimeBkgDistr(Double_t xmin, Double_t xmax);
-		TF1* GetEvaluateCDFDecayTimeSigDistr(Double_t xmin, Double_t xmax);
+		TF1* GetCsiMC(Double_t xmin, Double_t xmax,Double_t normalization);
+		TF1* GetResolutionFunc(Double_t xmin, Double_t xmax,Double_t normalization, Double_t type=2);
+	        TF1* GetResolutionFuncAllTypes(Double_t xmin, Double_t xmax,Double_t normalization);
+         	TF1* GetFunB(Double_t xmin, Double_t xmax, Double_t normalization, Double_t type=2);
+                TF1* GetFunBAllTypes(Double_t xmin, Double_t xmax, Double_t normalization);
+                TF1* GetEvaluateCDFDecayTimeBkgDistr(Double_t xmin, Double_t xmax, Double_t normalization,Double_t type = 2);
+		TF1* GetEvaluateCDFDecayTimeBkgDistrAllTypes(Double_t xmin, Double_t xmax, Double_t normalization);
+                TF1* GetEvaluateCDFDecayTimeSigDistr(Double_t xmin, Double_t xmax, Double_t normalization, Double_t type);
+                TF1* GetEvaluateCDFInvMassBkgDistr(Double_t mMin, Double_t mMax, Double_t normalization);
+                TF1* GetEvaluateCDFInvMassSigDistr(Double_t mMin, Double_t mMax, Double_t normalization);
+                TF1* GetEvaluateCDFInvMassTotalDistr(Double_t mMin, Double_t mMax, Double_t normalization);
+                TF1* GetEvaluateCDFDecayTimeTotalDistr(Double_t xMin, Double_t xMax, Double_t normalization, Double_t type=2);
+                TF1 *GetEvaluateCDFDecayTimeTotalDistrAllTypes(Double_t xMin, Double_t xMax, Double_t normalization);
 
-		void SetResWeight (Double_t resWgt) {fParameters[0] = resWgt;}
+		void SetResWeight(Double_t resWgt) {fParameters[0] = resWgt;}
 		void SetFPlus(Double_t plus) {fParameters[1] = plus;}
 		void SetFMinus(Double_t minus) {fParameters[2]  = minus;}
 		void SetFSym(Double_t sym) {fParameters[3] = sym;}
@@ -98,11 +116,12 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		void SetIntegralMassBkg(Double_t integral) { fintmMassBkg = integral; }
 		void SetCsiMC(const TH1F* MCtemplate) {fhCsiMC = (TH1F*)MCtemplate->Clone("fhCsiMC");}
 
-		void SetResolutionConstants(Double_t* resolutionConst);
+		void SetResolutionConstants(Double_t* resolutionConst, Int_t type);
 		void SetMassWndHigh(Double_t limit) { fMassWndHigh = TDatabasePDG::Instance()->GetParticle(443)->Mass() + limit ;}
 		void SetMassWndLow(Double_t limit) { fMassWndLow = TDatabasePDG::Instance()->GetParticle(443)->Mass() - limit ;}
 		void SetCrystalBallFunction(Bool_t okCB) {fCrystalBallParam = okCB;}
-
+ 
+                void SetWeightType(Double_t wFF, Double_t wFS, Double_t wSS) {fWeightType[0]= wSS; fWeightType[1]= wFS; fWeightType[2]= wFF;}
 		void ComputeMassIntegral(); 
 
 		void ReadMCtemplates(Int_t BinNum);
@@ -110,9 +129,8 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		void PrintStatus();
 
 	private:  
-		//
-		Double_t fParameters[20];        /*  par[0]  = weightRes;                
-						     par[1]  = fPos;
+		Double_t fParameters[45];        /*  par[0]  = weightRes;                
+                 				     par[1]  = fPos;
 						     par[2]  = fNeg;
 						     par[3]  = fSym
 						     par[4]  = fOneOvLamPlus;
@@ -129,9 +147,34 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 						     par[15] = fBkgMean; 
 						     par[16] = fBkgSlope;
 						     par[17] = fBkgConst;
-						     par[18] = norm1Gaus;
-						     par[19] = norm2Gaus;*/
-
+						     par[18] = norm1Gaus; // resolution param used for First-First
+						     par[19] = norm2Gaus;
+                                                     par[20] = fMean1ResFunc;
+                                                     par[21] = fSigma1ResFunc;
+                                                     par[22] = fMean2ResFunc;
+                                                     par[23] = fSigma2ResFunc;
+                                                     par[24] = fResAlfa;  
+                                                     par[25] = fResLambda;
+						     par[26] = fResNormExp;
+                                                     par[27] = norm1Gaus;    // resolution param used for First-Second
+                                                     par[28] = norm2Gaus;
+                                                     par[29] = fMean1ResFunc;
+                                                     par[30] = fSigma1ResFunc;
+                                                     par[31] = fMean2ResFunc;
+                                                     par[32] = fSigma2ResFunc;
+                                                     par[33] = fResAlfa;  
+                                                     par[34] = fResLambda;
+                                                     par[35] = fResNormExp;
+                                                     par[36] = norm1Gaus;    // resolution param used for Second-Second
+                                                     par[37] = norm2Gaus;
+                                                     par[38] = fMean1ResFunc;
+                                                     par[39] = fSigma1ResFunc;
+                                                     par[40] = fMean2ResFunc;
+                                                     par[41] = fSigma2ResFunc;
+                                                     par[42] = fResAlfa; 
+                                                     par[43] = fResLambda;
+                                                     par[44] = fResNormExp;
+                                                     */
 
 		Double_t fFPlus;                     // parameters of the log-likelihood function
 		Double_t fFMinus;                    // Slopes of the x distributions of the background 
@@ -141,38 +184,48 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		Double_t fintmMassBkg;               // integral of invariant mass distribution for the bkg
 
 		TH1F *fhCsiMC;                       // X distribution used as MC template for JPSI from B
-		Double_t fResolutionConstants[4];    // constants for the parametrized resolution function R(X)
 		Double_t fMassWndHigh;               // JPSI Mass window higher limit
 		Double_t fMassWndLow;                // JPSI Mass window lower limit
 		Bool_t fCrystalBallParam;            // Boolean to switch to Crystall Ball parameterisation
 
+                Double_t fWeightType[3];             // vector with weights of candidates types (used to draw functions)            
+                ////
+
+		Double_t EvaluateCDFfunc(Double_t x, Double_t m, Int_t type) const ;
+		Double_t EvaluateCDFfuncNorm(Double_t x, Double_t m, Int_t type) const ;
+
 		////
 
-		Double_t EvaluateCDFfunc(Double_t x, Double_t m) const ;
-		Double_t EvaluateCDFfuncNorm(Double_t x, Double_t m) const ;
-
-		////
-
-		Double_t EvaluateCDFfuncSignalPart(Double_t x, Double_t m) const ;      // Signal part 
-		Double_t EvaluateCDFDecayTimeSigDistr(Double_t x) const ;
-		Double_t EvaluateCDFDecayTimeSigDistrFunc(const Double_t* x, const Double_t */*par*/) const { return EvaluateCDFDecayTimeSigDistr(x[0]);}
+		Double_t EvaluateCDFfuncSignalPart(Double_t x, Double_t m, Int_t type) const ;      // Signal part 
+		Double_t EvaluateCDFDecayTimeSigDistr(Double_t x, Int_t type) const ;
+		Double_t EvaluateCDFDecayTimeSigDistrFunc(const Double_t* x, const Double_t *par) const { return par[0]*EvaluateCDFDecayTimeSigDistr(x[0],(Int_t)par[1]);}
 		Double_t EvaluateCDFInvMassSigDistr(Double_t m) const ;
-		Double_t EvaluateCDFfuncBkgPart(Double_t x,Double_t m) const ;          // Background part
-		Double_t EvaluateCDFDecayTimeBkgDistr(Double_t x) const ;
-		Double_t EvaluateCDFDecayTimeBkgDistrFunc(const Double_t* x, const Double_t */*par*/) const { return EvaluateCDFDecayTimeBkgDistr(x[0]);}
-		Double_t EvaluateCDFInvMassBkgDistr(Double_t m) const ;
+                Double_t EvaluateCDFInvMassSigDistrFunc(const Double_t* x, const Double_t *par) const {return par[0]*EvaluateCDFInvMassSigDistr(x[0])/fintmMassSig;}
+		Double_t EvaluateCDFfuncBkgPart(Double_t x,Double_t m,Int_t type) const ;          // Background part
+		Double_t EvaluateCDFDecayTimeBkgDistr(Double_t x, Int_t type) const ;
+		Double_t EvaluateCDFDecayTimeBkgDistrFunc(const Double_t* x, const Double_t *par) const { return EvaluateCDFDecayTimeBkgDistr(x[0],(Int_t)par[1])*par[0];}
+                Double_t EvaluateCDFDecayTimeBkgDistrFuncAllTypes(const Double_t* x, const Double_t *par) const {return (fWeightType[2]*EvaluateCDFDecayTimeBkgDistr(x[0],2)+fWeightType[1]*EvaluateCDFDecayTimeBkgDistr(x[0],1)+fWeightType[0]*EvaluateCDFDecayTimeBkgDistr(x[0],0))*par[0];}
+		Double_t EvaluateCDFInvMassBkgDistr(Double_t m) const;
+                Double_t EvaluateCDFInvMassBkgDistrFunc(const Double_t* x, const Double_t *par) const {return par[0]*EvaluateCDFInvMassBkgDistr(x[0])/fintmMassBkg;} 
+                  
+                Double_t EvaluateCDFInvMassTotalDistr(const Double_t* x, const Double_t *par) const;
+	        Double_t EvaluateCDFDecayTimeTotalDistr(const Double_t* x, const Double_t *par) const;	
+                ////
+                Double_t EvaluateCDFDecayTimeTotalDistrAllTypes(const Double_t* x, const Double_t *par) const;
 
-		////
-
-		Double_t FunB(Double_t x) const;
-		Double_t FunP(Double_t x) const ;
+		Double_t FunB(Double_t x, Int_t type) const;
+		Double_t FunBfunc(const Double_t *x, const Double_t *par) const {return FunB(x[0],(Int_t)par[1])*par[0];}
+                Double_t FunBfuncAllTypes(const Double_t *x, const Double_t *par) const {return (fWeightType[2]*FunB(x[0],2)+fWeightType[1]*FunB(x[0],1)+fWeightType[0]*FunB(x[0],0))*par[0];}
+                Double_t FunP(Double_t x, Int_t type) const ;
 		Double_t CsiMC(Double_t x) const;
-		Double_t CsiMCfunc(const Double_t* x, const Double_t */*par*/) const {  return CsiMC(x[0]);}
-		Double_t FunBkgPos(Double_t x) const ;
-		Double_t FunBkgNeg(Double_t x) const ;
-		Double_t FunBkgSym(Double_t x) const ;
-		Double_t ResolutionFunc(Double_t x) const ;
-		Double_t ResolutionFuncf(const Double_t* x, const Double_t */*par*/) const { return ResolutionFunc(x[0]);}
+		Double_t CsiMCfunc(const Double_t* x, const Double_t *par) const {  return CsiMC(x[0])*par[0];}
+		Double_t FunBkgPos(Double_t x, Int_t type) const ;
+		Double_t FunBkgNeg(Double_t x, Int_t type) const ;
+		Double_t FunBkgSym(Double_t x, Int_t type) const ;
+		Double_t ResolutionFunc(Double_t x, Int_t type) const;
+		Double_t ResolutionFuncf(const Double_t* x, const Double_t *par) const { return ResolutionFunc(x[0],(Int_t)par[1])*par[0];}
+                Double_t ResolutionFuncAllTypes(const Double_t* x, const Double_t *par) const { return (fWeightType[2]*ResolutionFunc(x[0],2)+fWeightType[1]*ResolutionFunc(x[0],1)+fWeightType[0]*ResolutionFunc(x[0],0))*par[0]; }                 
+ 
 
 		ClassDef (AliDielectronBtoJPSItoEleCDFfitFCN,1);         // Unbinned log-likelihood fit 
 

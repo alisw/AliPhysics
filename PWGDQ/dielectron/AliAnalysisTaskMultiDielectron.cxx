@@ -29,11 +29,14 @@
 #include <AliAnalysisManager.h>
 #include <AliVEvent.h>
 #include <AliTriggerAnalysis.h>
+#include <AliPIDResponse.h>
+#include <AliTPCPIDResponse.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
 #include "AliDielectronCF.h"
 #include "AliDielectronMC.h"
+#include "AliDielectronMixingHandler.h"
 #include "AliAnalysisTaskMultiDielectron.h"
 
 ClassImp(AliAnalysisTaskMultiDielectron)
@@ -46,8 +49,10 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fListCF(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
+  fExcludeTriggerMask(0),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
+  fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fEventFilter(0x0),
   fEventStat(0x0)
@@ -65,8 +70,10 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fListCF(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
+  fExcludeTriggerMask(0),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
+  fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fEventFilter(0x0),
   fEventStat(0x0)
@@ -85,7 +92,20 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fListCF.SetOwner();
 }
 
+//_________________________________________________________________________________
+AliAnalysisTaskMultiDielectron::~AliAnalysisTaskMultiDielectron()
+{
+  //
+  // Destructor
+  //
 
+  //histograms and CF are owned by the dielectron framework.
+  //however they are streamed to file, so in the first place the
+  //lists need to be owner...
+  fListHistos.SetOwner(kFALSE);
+  fListCF.SetOwner(kFALSE);
+  
+}
 //_________________________________________________________________________________
 void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
 {
@@ -95,8 +115,8 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
 
   if (!fListHistos.IsEmpty()||!fListCF.IsEmpty()) return; //already initialised
 
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+//   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+//   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
 //   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
   
   TIter nextDie(&fListDielectron);
@@ -119,7 +139,7 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
     fEventStat->GetXaxis()->SetBinLabel(4,"Bin4 not used");
     fEventStat->GetXaxis()->SetBinLabel(5,"Bin5 not used");
     
-    if (fTriggerOnV0AND&&isESD) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
+    if(fTriggerOnV0AND) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
     if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(4,"After Event Filter");
     if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(5,"After Pileup rejection");
     
@@ -154,45 +174,31 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if (!inputHandler) return;
   
+//   AliPIDResponse *pidRes=inputHandler->GetPIDResponse();
   if ( inputHandler->GetPIDResponse() ){
+    // for the 2.76 pass2 MC private train. Together with a sigma shift of -0.169
+//    pidRes->GetTPCResponse().SetSigma(4.637e-3,2.41332105409873257e+04);
     AliDielectronVarManager::SetPIDResponse( inputHandler->GetPIDResponse() );
   } else {
-    //load esd pid bethe bloch parameters depending on the existance of the MC handler
-    // yes: MC parameters
-    // no:  data parameters
-
-    //ESD case
-    if (isESD){
-      if (!AliDielectronVarManager::GetESDpid()){
-        
-        if (AliDielectronMC::Instance()->HasMC()) {
-          AliDielectronVarManager::InitESDpid();
-        } else {
-          AliDielectronVarManager::InitESDpid(1);
-        }
-      }
-    }
-    //AOD case
-    if (isAOD){
-      if (!AliDielectronVarManager::GetAODpidUtil()){
-        if (AliDielectronMC::Instance()->HasMC()) {
-          AliDielectronVarManager::InitAODpidUtil();
-        } else {
-          AliDielectronVarManager::InitAODpidUtil(1);
-        }
-      }
-    }
-  } 
-  // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
-  if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
-    isSelected = inputHandler->IsEventSelected();
-    isSelected&=fTriggerMask;
+    AliFatal("This task needs the PID response attached to the input event handler!");
   }
   
+  // Was event selected ?
+  ULong64_t isSelected = AliVEvent::kAny;
+  Bool_t isRejected = kFALSE;
+  if( fSelectPhysics && inputHandler){
+    if((isESD && inputHandler->GetEventSelection()) || isAOD){
+      isSelected = inputHandler->IsEventSelected();
+      if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
+      if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
+      else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
+    }
+   }
+ 
+ 
   //Before physics selection
   fEventStat->Fill(kAllEvents);
-  if (isSelected==0) {
+  if (isSelected==0||isRejected) {
     PostData(3,fEventStat);
     return;
   }
@@ -200,10 +206,40 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   fEventStat->Fill(kSelectedEvents);
 
   //V0and
-  if (fTriggerOnV0AND&&isESD){
-    if (!fTriggerAnalysis->IsOfflineTriggerFired(static_cast<AliESDEvent*>(InputEvent()), AliTriggerAnalysis::kV0AND)) return;
-  }
+  if(fTriggerOnV0AND){
+  if(isESD){if (!fTriggerAnalysis->IsOfflineTriggerFired(static_cast<AliESDEvent*>(InputEvent()), AliTriggerAnalysis::kV0AND))
+            return;}
+  if(isAOD){if(!((static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0ADecision() == AliVVZERO::kV0BB &&
+            (static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0CDecision() == AliVVZERO::kV0BB) )
+            return;}
+   }
+  
+
   fEventStat->Fill(kV0andEvents);
+
+  //Fill Event histograms before the event filter
+  TIter nextDie(&fListDielectron);
+  AliDielectron *die=0;
+  Double_t values[AliDielectronVarManager::kNMaxValues]={0};
+  Double_t valuesMC[AliDielectronVarManager::kNMaxValues]={0};
+  AliDielectronVarManager::Fill(InputEvent(),values);
+  AliDielectronVarManager::Fill(InputEvent(),valuesMC);
+  Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
+  if (hasMC) {
+    if (AliDielectronMC::Instance()->ConnectMCEvent())
+      AliDielectronVarManager::Fill(AliDielectronMC::Instance()->GetMCEvent(),valuesMC);
+  }
+
+  while ( (die=static_cast<AliDielectron*>(nextDie())) ){
+    AliDielectronHistos *h=die->GetHistoManager();
+    if (h){
+      if (h->GetHistogramList()->FindObject("Event_noCuts"))
+        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,values);
+      if (hasMC && h->GetHistogramList()->FindObject("MCEvent_noCuts"))
+        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,valuesMC);
+    }
+  }
+  nextDie.Reset();
   
   //event filter
   if (fEventFilter) {
@@ -224,8 +260,8 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
   
   //Process event in all AliDielectron instances
-  TIter nextDie(&fListDielectron);
-  AliDielectron *die=0;
+  //   TIter nextDie(&fListDielectron);
+  //   AliDielectron *die=0;
   Int_t idie=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
     die->Process(InputEvent());
@@ -252,6 +288,11 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
   AliDielectron *die=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
     die->SaveDebugTree();
+    AliDielectronMixingHandler *mix=die->GetMixingHandler();
+//    printf("\n\n\n===============\ncall mix in Terminate: %p (%p)\n=================\n\n",mix,die);
+    if (mix) mix->MixRemaining(die);
   }
+  PostData(1, &fListHistos);
+  PostData(2, &fListCF);
 }
 

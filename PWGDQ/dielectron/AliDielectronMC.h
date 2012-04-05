@@ -68,12 +68,14 @@ public:
   Int_t GetMothersLabel(Int_t daughterLabel) const;
   Int_t GetPdgFromLabel(Int_t label) const;
 
+  Bool_t IsPhysicalPrimary(Int_t label) const;  // checks if a particle is physical primary
+
   Bool_t HaveSameMother(const AliDielectronPair *pair) const;
   
   Int_t GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Int_t GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
-  AliVParticle* GetMCTrackFromMCEvent(AliVParticle *track);   // return MC track directly from MC event
+//   AliVParticle* GetMCTrackFromMCEvent(const AliVParticle *track);   // return MC track directly from MC event
   AliVParticle* GetMCTrackFromMCEvent(Int_t itrk) const;           // return MC track directly from MC event
   TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from stack
   AliMCParticle* GetMCTrack(const AliESDtrack* _track);             // return MC track associated with reco track
@@ -116,7 +118,7 @@ private:
   Int_t GetLabelMotherWithPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Int_t GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
-  Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t checkBothCharges) const;
+  Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t pdgExclusion, Bool_t checkBothCharges) const;
   Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const;
   ClassDef(AliDielectronMC, 0)
 };

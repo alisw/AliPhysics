@@ -27,37 +27,40 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-      dielectron/AliDielectron.cxx 
-      dielectron/AliDielectronPair.cxx 
-      dielectron/AliDielectronHistos.cxx 
-      dielectron/AliDielectronCF.cxx 
-      dielectron/AliDielectronCFdraw.cxx 
-      dielectron/AliDielectronMC.cxx 
-      dielectron/AliDielectronVarManager.cxx 
-      dielectron/AliAnalysisTaskDielectronSE.cxx 
-      dielectron/AliAnalysisTaskDielectronME.cxx 
-      dielectron/AliAnalysisTaskDielectronFilter.cxx 
-      dielectron/AliAnalysisTaskDielectronEfficiency.cxx 
-      dielectron/AliAnalysisTaskMultiDielectron.cxx 
-      dielectron/AliDielectronVarCuts.cxx 
-      dielectron/AliDielectronTrackCuts.cxx 
-      dielectron/AliDielectronPairLegCuts.cxx 
-      dielectron/AliDielectronSignalBase.cxx 
-      dielectron/AliDielectronSignalFunc.cxx 
-      dielectron/AliDielectronSignalExt.cxx 
-      dielectron/AliDielectronSpectrum.cxx 
-      dielectron/AliDielectronDebugTree.cxx 
-      dielectron/AliDielectronTrackRotator.cxx 
-      dielectron/AliDielectronPID.cxx 
-      dielectron/AliDielectronCutGroup.cxx 
-      dielectron/AliDielectronEventCuts.cxx 
+      dielectron/AliDielectron.cxx
+      dielectron/AliDielectronPair.cxx
+      dielectron/AliDielectronHistos.cxx
+      dielectron/AliDielectronCF.cxx
+      dielectron/AliDielectronCFdraw.cxx
+      dielectron/AliDielectronMC.cxx
+      dielectron/AliDielectronVarManager.cxx
+      dielectron/AliAnalysisTaskDielectronSE.cxx
+      dielectron/AliAnalysisTaskDielectronME.cxx
+      dielectron/AliAnalysisTaskDielectronFilter.cxx
+      dielectron/AliAnalysisTaskDielectronEfficiency.cxx
+      dielectron/AliAnalysisTaskMultiDielectron.cxx
+      dielectron/AliAnalysisTaskDielectronReadAODBranch.cxx
+      dielectron/AliAnalysisTaskSingleParticle.cxx
+      dielectron/AliDielectronVarCuts.cxx
+      dielectron/AliDielectronTrackCuts.cxx
+      dielectron/AliDielectronPairLegCuts.cxx
+      dielectron/AliDielectronSignalBase.cxx
+      dielectron/AliDielectronSignalFunc.cxx
+      dielectron/AliDielectronSignalExt.cxx
+      dielectron/AliDielectronSpectrum.cxx
+      dielectron/AliDielectronDebugTree.cxx
+      dielectron/AliDielectronTrackRotator.cxx
+      dielectron/AliDielectronPID.cxx
+      dielectron/AliDielectronCutGroup.cxx
+      dielectron/AliDielectronEventCuts.cxx
       dielectron/AliDielectronHelper.cxx
       dielectron/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
       dielectron/AliDielectronBtoJPSItoEleCDFfitHandler.cxx
       dielectron/AliDielectronBtoJPSItoEle.cxx
-      dielectron/AliAnalysisTaskDielectronReadAODBranch.cxx
       dielectron/AliDielectronTRDpidCut.cxx
       dielectron/AliDielectronSignalMC.cxx
+      dielectron/AliDielectronEvent.cxx
+      dielectron/AliDielectronMixingHandler.cxx
 )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

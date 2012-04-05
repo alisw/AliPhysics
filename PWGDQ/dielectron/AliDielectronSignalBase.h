@@ -32,7 +32,8 @@ class TH1F;
 class AliDielectronSignalBase : public TNamed {
 public:
   enum EBackgroundMethod {
-    kFitted = 0,
+    kFittedMC = 0,
+	kFitted,
     kLikeSign,
     kLikeSignArithm,
     kEventMixing,
@@ -66,7 +67,7 @@ public:
   Double_t GetMassError()            const { return fErrors(4);}
   Double_t GetMassWidth()            const { return fValues(5);}
   Double_t GetMassWidthError()       const { return fErrors(5);}
-
+ 
   TH1* GetSignalHistogram()      const {return fHistSignal;}
   TH1* GetBackgroundHistogram()  const {return fHistBackground;}
   TH1* GetUnlikeSignHistogram()  const {return fHistDataPM;}
@@ -95,24 +96,25 @@ protected:
   TH1 *fHistDataPM;                  // histogram of selected +- pair candidates
   TH1 *fHistDataPP;                  // histogram of selected ++ pair candidates
   TH1 *fHistDataMM;                  // histogram of selected -- pair candidates
+  TH1 *fHistDataME;                  // histogram of selected +- pair candidates from mixed event
 
-  TVectorD fValues;                   // values
-  TVectorD fErrors;                   // value errors
+  TVectorD fValues;                  // values
+  TVectorD fErrors;                  // value errors
 
-  Double_t fIntMin;                   // signal extraction range min
-  Double_t fIntMax;                   // signal extraction range max
-  Double_t fFitMin;                   // fit range lowest inv. mass
-  Double_t fFitMax;                   // fit range highest inv. mass
+  Double_t fIntMin;                  // signal extraction range min
+  Double_t fIntMax;                  // signal extraction range max
+  Double_t fFitMin;                  // fit range lowest inv. mass
+  Double_t fFitMax;                  // fit range highest inv. mass
 
-  Int_t fRebin;                       // histogram rebin factor
-  EBackgroundMethod fMethod;          // method for background substraction
-  Double_t fScaleMin;                 // min for scaling of raw and background histogram
-  Double_t fScaleMax;                 // max for scaling of raw and background histogram
-  Double_t fScaleFactor;              // scale factor of raw to background histogram scaling
+  Int_t fRebin;                      // histogram rebin factor
+  EBackgroundMethod fMethod;         // method for background substraction
+  Double_t fScaleMin;                // min for scaling of raw and background histogram
+  Double_t fScaleMax;                // max for scaling of raw and background histogram
+  Double_t fScaleFactor;             // scale factor of raw to background histogram scaling
   
-  Bool_t fProcessed;                  // flag
+  Bool_t fProcessed;                 // flag
   
-  void SetSignificanceAndSOB();       // calculate the significance and S/B
+  void SetSignificanceAndSOB();      // calculate the significance and S/B
   TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
 
   AliDielectronSignalBase(const AliDielectronSignalBase &c);
