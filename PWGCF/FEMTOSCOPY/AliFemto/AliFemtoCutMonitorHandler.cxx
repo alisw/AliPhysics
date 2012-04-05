@@ -180,7 +180,7 @@ void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoParticleCollection*
 // ------------------------------------Gael/19/06/02-------------------------
 void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event,const AliFemtoParticleCollection* partColl) {
   // Fill event particle collection
-  cout<<"In AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, AliFemtoPicoEvent* picoEvent)"<<endl;
+  //cout<<"In AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, AliFemtoPicoEvent* picoEvent)"<<endl;
   if (fCollectionsEmpty) return;
   AliFemtoCutMonitorIterator iter;
   AliFemtoCutMonitor* tCM;
@@ -190,6 +190,20 @@ void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event,const 
     tCM->Fill(event,partColl);
   }
 }
+
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoParticleCollection* partColl1, const AliFemtoParticleCollection* partColl2) {
+  // Fill event particle collection
+  //cout<<"***In AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, AliFemtoPicoEvent* picoEvent)"<<endl;
+  if (fCollectionsEmpty) return;
+  AliFemtoCutMonitorIterator iter;
+  AliFemtoCutMonitor* tCM;
+  
+  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
+    tCM = *iter;
+    tCM->Fill(partColl1,partColl2);
+  }
+}
+
 // ---------------------------------------------------------------------------
 void AliFemtoCutMonitorHandler::Finish() { 
   // Perform finish operations on cut monitors

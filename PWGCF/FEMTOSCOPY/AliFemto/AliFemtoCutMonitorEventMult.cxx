@@ -67,6 +67,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
   snprintf(name, 200, "EvMultTotPt%s", aName);
   fMultSumPt = new TH2D(name,"Event Multiplicity vs Total pT",501,-0.5,500.5,1000,0.0,100.0);
 
+
+
   if(faddhists)
     {
       snprintf(name, 200, "EvMultEstITSTPC%s", aName);
@@ -163,6 +165,7 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
       if (fEst3Norm) delete fEst3Norm;
       fEst3Norm = new TH2D(*aCut.fEst3Norm);
     }
+
 }
 
 AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
@@ -186,7 +189,7 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
       delete fEst1Norm;
       delete fEst2Norm;
       delete fEst3Norm;
-    }      
+    }   
 }
 
 AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFemtoCutMonitorEventMult& aCut)
@@ -320,7 +323,6 @@ TList *AliFemtoCutMonitorEventMult::GetOutputList()
       tOutputList->Add(fEst2Norm);
       tOutputList->Add(fEst3Norm);
     }
-  
   return tOutputList;
 }
 

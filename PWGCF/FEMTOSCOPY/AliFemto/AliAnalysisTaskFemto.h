@@ -18,7 +18,8 @@
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 
-#include "AliAnalysisTask.h"
+//#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 
@@ -33,9 +34,9 @@
 #include "AliAODpidUtil.h"
 
 
-class AliAnalysisTaskFemto : public AliAnalysisTask {
+class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
  public:
-  AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
+  AliAnalysisTaskFemto() : AliAnalysisTaskSE(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
   AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams);
   AliAnalysisTaskFemto(const char *name, const char *aConfigMacro);
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);

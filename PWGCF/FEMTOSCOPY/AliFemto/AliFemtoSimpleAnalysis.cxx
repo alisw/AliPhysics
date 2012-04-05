@@ -89,6 +89,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
 	}
       }
       pCut->FillCutMonitor(hbtEvent,partCollection);// Gael 19/06/02
+      
       break;
     }
   case hbtKink:          // cut is cutting on Kinks  -- mal 25May2001
@@ -340,6 +341,9 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
     cout << "#particles in Collection 1, 2: " <<
       fPicoEvent->FirstParticleCollection()->size() << " " <<
       fPicoEvent->SecondParticleCollection()->size() << endl;
+
+    fEventCut->FillCutMonitor(fPicoEvent->FirstParticleCollection(),fPicoEvent->SecondParticleCollection()); //MJ!
+    
     
     // mal - implement a switch which allows only using events with ParticleCollections containing a minimum
     // number of entries (jun2002)

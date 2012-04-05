@@ -38,9 +38,9 @@ public:
   unsigned long TopologyMap(const int word) const;
   int NumberOfHits() const;
 
-  unsigned long TrackId() const;         // only for particles from tracks 
-  unsigned short   NegTrackId() const;   // only for particles from v0 
-  unsigned short   PosTrackId() const;   // only for particles from v0 
+  int TrackId() const;         // only for particles from tracks 
+  int   NegTrackId() const;   // only for particles from v0 
+  int   PosTrackId() const;   // only for particles from v0 
 
   AliFemtoTrack* Track() const;
   AliFemtoV0* V0() const;
@@ -131,7 +131,7 @@ private:
 };
 
 inline AliFemtoTrack* AliFemtoParticle::Track() const { return fTrack; }
-inline unsigned long  AliFemtoParticle::TrackId() const { return fTrack->TrackId(); }
+inline int  AliFemtoParticle::TrackId() const { return fTrack->TrackId(); }
 inline const AliFemtoLorentzVector& AliFemtoParticle::FourMomentum() const {return fFourMomentum;}
 inline AliFmPhysicalHelixD& AliFemtoParticle::Helix() {return fHelix;}
 //inline unsigned long AliFemtoParticle::TopologyMap(const int word) const {return fMap[word];}
@@ -142,8 +142,8 @@ inline unsigned long AliFemtoParticle::TopologyMap(const int /* word */) const {
 inline int AliFemtoParticle::NumberOfHits() const {return 1;}
 
 inline AliFemtoV0* AliFemtoParticle::V0() const { return fV0; }
-inline unsigned short AliFemtoParticle::NegTrackId() const { return fV0->IdNeg(); }
-inline unsigned short AliFemtoParticle::PosTrackId() const { return fV0->IdPos(); }
+inline int AliFemtoParticle::NegTrackId() const { return fV0->IdNeg(); }
+inline int AliFemtoParticle::PosTrackId() const { return fV0->IdPos(); }
 inline const AliFemtoThreeVector AliFemtoParticle::DecayVertexPosition() const {return fV0->DecayVertexV0(); }
 // ***
 inline AliFemtoHiddenInfo* AliFemtoParticle::GetHiddenInfo() const

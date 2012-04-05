@@ -445,7 +445,7 @@ void AliFemtoEvent::SetReactionPlaneAngle(const float& a) { fReactionPlaneAngle 
 float AliFemtoEvent::ReactionPlaneAngle() const { return fReactionPlaneAngle; }
 void AliFemtoEvent::SetEP(AliEventplane* ep) { fEP = ep;}
 AliEventplane* AliFemtoEvent::EP() const {return fEP; }
-
+ //fV0perEvent->Sumw2();
 //----------------------------- below here is only for star
 
 int AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
@@ -456,6 +456,11 @@ int AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
 int AliFemtoEvent::SPDMultiplicity() const
 {
   return fSPDMult;
+}
+
+int AliFemtoEvent::NumberOfV0s() const
+{
+  return V0Collection()->size();
 }
 
 int AliFemtoEvent::UncorrectedNumberOfPrimaries() const

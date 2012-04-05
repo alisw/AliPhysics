@@ -36,6 +36,9 @@ ClassImp(AliFemtoEventReaderAOD)
 #endif
 
 using namespace std;
+
+double fV1[3];
+
 //____________________________
 //constructor with 0 parameters , look at default settings 
 AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
@@ -47,7 +50,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fFilterBit(0),
   //  fPWG2AODTracks(0x0),
   fReadMC(0),
+  fReadV0(0),
   fUsePreCent(0),
+  fNoCentrality(0),
   fAODpidUtil(0),
   fInputFile(" "),
   fFileName(" "),
@@ -71,7 +76,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fFilterBit(0),
   //  fPWG2AODTracks(0x0),
   fReadMC(0),
+  fReadV0(0),
   fUsePreCent(0),
+  fNoCentrality(0),
   fAODpidUtil(0),
   fInputFile(" "),
   fFileName(" "),
@@ -79,6 +86,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAodFile(0x0)
 {
   // copy constructor
+  fReadMC = aReader.fReadMC;
+  fReadV0 = aReader.fReadV0;
   fInputFile = aReader.fInputFile;
   fFileName  = aReader.fFileName;
   fNumberofEvent = aReader.fNumberofEvent;
@@ -92,6 +101,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAODpidUtil = aReader.fAODpidUtil;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
+  fNoCentrality = aReader.fNoCentrality;
+  fUsePreCent = aReader.fUsePreCent;
 }
 //__________________
 //Destructor
@@ -130,6 +141,8 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAODpidUtil = aReader.fAODpidUtil;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
+  fUsePreCent = aReader.fUsePreCent;
+  fNoCentrality = aReader.fNoCentrality;
 
   return *this;
 }
@@ -275,7 +288,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   }
 
   // Primary Vertex position
-  double fV1[3];
+  //  double fV1[3];
   fEvent->GetPrimaryVertex()->GetPosition(fV1);
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
@@ -291,9 +304,10 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     nofTracks=fEvent->GetNumberOfTracks();
   cout<<"nofTracks: "<<nofTracks<<endl;
 
-  AliCentrality *cent = fEvent->GetCentrality();
+  if (!fNoCentrality)
+    AliCentrality *cent = fEvent->GetCentrality();
  
-  if (cent && fUsePreCent) {
+  if (!fNoCentrality && cent && fUsePreCent) {
     if ((cent->GetCentralityPercentile("V0M")*10 < fCentRange[0]) ||
 	(cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
       {
@@ -313,6 +327,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   for (int i=0;i<nofTracks;i++) {
     const AliAODTrack *aodtrack=fEvent->GetTrack(i);
     if (!aodtrack->TestFilterBit(fFilterBit)) {
+      if(aodtrack->GetID() < 0) continue;
       labels[aodtrack->GetID()] = i;
     }
   }
@@ -456,14 +471,14 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	  delete trackCopy;
 	  continue;
 	}
-
+	
 	CopyAODtoFemtoTrack(aodtrack, trackCopy);
 
 	// copying PID information from the correspondent track
 	//	const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 	AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 	CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
-		
+	
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
 	  //	  Int_t pLabel = aodtrack->GetLabel();
@@ -584,21 +599,40 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   tEvent->SetNormalizedMult(tracksPrim);
 
-  //  AliCentrality *cent = fEvent->GetCentrality();
-  if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
-  //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
-
-  if (cent) {
-    tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
-    //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
-    tEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
-    //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+  if (!fNoCentrality) {
+    //  AliCentrality *cent = fEvent->GetCentrality();
+    if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
+    //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
+    
+    if (cent) {
+      tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
+      //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
+      tEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
+      //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+    }
   }
-  
 
   if (mcP) delete [] motherids;
 
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
+
+  if(fReadV0)
+    {
+
+      for (Int_t i = 0; i < fEvent->GetNumberOfV0s(); i++) {
+	AliAODv0* aodv0 = fEvent->GetV0(i);
+	if (!aodv0) continue;
+	if(aodv0->GetNDaughters()>2) continue;
+	if(aodv0->GetNProngs()>2) continue;
+	if(aodv0->GetCharge()!=0) continue;
+	if(aodv0->ChargeProng(0)==aodv0->ChargeProng(1)) continue;
+	AliFemtoV0* trackCopyV0 = new AliFemtoV0();
+	CopyAODtoFemtoV0(aodv0, trackCopyV0);
+	tEvent->V0Collection()->push_back(trackCopyV0);
+	//cout<<"Pushback v0 to v0collection"<<endl;
+      }
+    }
+
 }
 
 void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack, 
@@ -610,7 +644,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   // If it exists, use the additional information from the PWG2 AOD
 
   // Primary Vertex position
-  double fV1[3];
+  
   fEvent->GetPrimaryVertex()->GetPosition(fV1);
   //  fEvent->GetPrimaryVertex()->GetXYZ(fV1);
 
@@ -647,7 +681,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   } 
   else {
     tFemtoTrack->SetImpactD(impact[0]);
-    tFemtoTrack->SetImpactZ(impact[1]);
+    tFemtoTrack->SetImpactZ(impact[1]+fV1[2]);
   }
 
   //   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
@@ -680,11 +714,11 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetCdd(covmat[0]);
   tFemtoTrack->SetCdz(covmat[1]);
   tFemtoTrack->SetCzz(covmat[2]);
-  tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());    
-  tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());     
-  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());       
-  tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());       
-  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());      
+  tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());
+  tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());
+  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
+  tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
+  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());
   tFemtoTrack->SetTPCsignalN(1); 
   tFemtoTrack->SetTPCsignalS(1); 
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
@@ -720,6 +754,139 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetKinkIndexes(indexes);
 }
 
+void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0)
+{
+  //tFemtoV0->SetdecayLengthV0(tAODv0->DecayLengthV0()); //wrocic do tego
+  tFemtoV0->SetdecayVertexV0X(tAODv0->DecayVertexV0X());
+  tFemtoV0->SetdecayVertexV0Y(tAODv0->DecayVertexV0Y());
+  tFemtoV0->SetdecayVertexV0Z(tAODv0->DecayVertexV0Z());
+  AliFemtoThreeVector decayvertex(tAODv0->DecayVertexV0X(),tAODv0->DecayVertexV0Y(),tAODv0->DecayVertexV0Z());
+  tFemtoV0->SetdecayVertexV0(decayvertex);
+  tFemtoV0->SetdcaV0Daughters(tAODv0->DcaV0Daughters());
+  tFemtoV0->SetdcaV0ToPrimVertex(tAODv0->DcaV0ToPrimVertex());
+  tFemtoV0->SetdcaPosToPrimVertex(tAODv0->DcaPosToPrimVertex());
+  tFemtoV0->SetdcaNegToPrimVertex(tAODv0->DcaNegToPrimVertex());
+  tFemtoV0->SetmomPosX(tAODv0->MomPosX());
+  tFemtoV0->SetmomPosY(tAODv0->MomPosY());
+  tFemtoV0->SetmomPosZ(tAODv0->MomPosZ());
+  AliFemtoThreeVector mompos(tAODv0->MomPosX(),tAODv0->MomPosY(),tAODv0->MomPosZ());
+  tFemtoV0->SetmomPos(mompos);
+  tFemtoV0->SetmomNegX(tAODv0->MomNegX());
+  tFemtoV0->SetmomNegY(tAODv0->MomNegY());
+  tFemtoV0->SetmomNegZ(tAODv0->MomNegZ());
+  AliFemtoThreeVector momneg(tAODv0->MomNegX(),tAODv0->MomNegY(),tAODv0->MomNegZ());
+  tFemtoV0->SetmomNeg(momneg);
+
+  //jest cos takiego w AliFemtoV0.h czego nie ma w AliAODv0.h
+  //void SettpcHitsPos(const int& i);      
+  //void SettpcHitsNeg(const int& i);      
+
+  //void SetTrackTopologyMapPos(unsigned int word, const unsigned long& m);
+  //void SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m);
+
+  tFemtoV0->SetmomV0X(tAODv0->MomV0X());
+  tFemtoV0->SetmomV0Y(tAODv0->MomV0Y());
+  tFemtoV0->SetmomV0Z(tAODv0->MomV0Z());
+  AliFemtoThreeVector momv0(tAODv0->MomV0X(),tAODv0->MomV0Y(),tAODv0->MomV0Z());
+  tFemtoV0->SetmomV0(momv0);
+  tFemtoV0->SetalphaV0(tAODv0->AlphaV0());
+  tFemtoV0->SetptArmV0(tAODv0->PtArmV0());
+  tFemtoV0->SeteLambda(tAODv0->ELambda());
+  tFemtoV0->SeteK0Short(tAODv0->EK0Short());
+  tFemtoV0->SetePosProton(tAODv0->EPosProton());
+  tFemtoV0->SeteNegProton(tAODv0->ENegProton());
+  tFemtoV0->SetmassLambda(tAODv0->MassLambda());
+  tFemtoV0->SetmassAntiLambda(tAODv0->MassAntiLambda());
+  tFemtoV0->SetmassK0Short(tAODv0->MassK0Short());
+  tFemtoV0->SetrapLambda(tAODv0->RapLambda());
+  tFemtoV0->SetrapK0Short(tAODv0->RapK0Short());
+  
+  //void SetcTauLambda( float x);   
+  //void SetcTauK0Short( float x); 
+  
+  tFemtoV0->SetptV0(::sqrt(tAODv0->Pt2V0())); //!
+  tFemtoV0->SetptotV0(::sqrt(tAODv0->Ptot2V0()));
+  tFemtoV0->SetptPos(::sqrt(tAODv0->MomPosX()*tAODv0->MomPosX()+tAODv0->MomPosY()*tAODv0->MomPosY()));
+  tFemtoV0->SetptotPos(::sqrt(tAODv0->Ptot2Pos()));
+  tFemtoV0->SetptNeg(::sqrt(tAODv0->MomNegX()*tAODv0->MomNegX()+tAODv0->MomNegY()*tAODv0->MomNegY()));
+  tFemtoV0->SetptotNeg(::sqrt(tAODv0->Ptot2Neg()));
+  
+  tFemtoV0->SetidNeg(tAODv0->GetNegID());
+  //cout<<"tAODv0->GetNegID(): "<<tAODv0->GetNegID()<<endl;
+  //cout<<"tFemtoV0->IdNeg(): "<<tFemtoV0->IdNeg()<<endl;
+  tFemtoV0->SetidPos(tAODv0->GetPosID());
+
+  tFemtoV0->SetEtaV0(tAODv0->Eta());
+  tFemtoV0->SetPhiV0(tAODv0->Phi());
+  tFemtoV0->SetCosPointingAngle(tAODv0->CosPointingAngle(fV1));
+  //tFemtoV0->SetYV0(tAODv0->Y());
+
+  //void SetdedxNeg(float x);
+  //void SeterrdedxNeg(float x);//Gael 04Fev2002
+  //void SetlendedxNeg(float x);//Gael 04Fev2002
+  //void SetdedxPos(float x);
+  //void SeterrdedxPos(float x);//Gael 04Fev2002
+  //void SetlendedxPos(float x);//Gael 04Fev2002
+
+  tFemtoV0->SetEtaPos(tAODv0->PseudoRapPos());
+  tFemtoV0->SetEtaNeg(tAODv0->PseudoRapNeg());
+
+  AliAODTrack *trackpos = (AliAODTrack*)tAODv0->GetDaughter(0);
+  AliAODTrack *trackneg = (AliAODTrack*)tAODv0->GetDaughter(1);
+
+  if(trackpos && trackneg)
+    {
+      //tFemtoV0->SetEtaPos(trackpos->Eta()); //tAODv0->PseudoRapPos()
+      //tFemtoV0->SetEtaNeg(trackneg->Eta()); //tAODv0->PseudoRapNeg()
+      tFemtoV0->SetTPCNclsPos(trackpos->GetTPCNcls());
+      tFemtoV0->SetTPCNclsNeg(trackneg->GetTPCNcls());
+      tFemtoV0->SetTPCclustersPos(trackpos->GetTPCClusterMap());
+      tFemtoV0->SetTPCclustersNeg(trackneg->GetTPCClusterMap());
+      tFemtoV0->SetTPCsharingPos(trackpos->GetTPCSharedMap());
+      tFemtoV0->SetTPCsharingNeg(trackneg->GetTPCSharedMap());
+      tFemtoV0->SetNdofPos(trackpos->Chi2perNDF());
+      tFemtoV0->SetNdofNeg(trackneg->Chi2perNDF());
+      tFemtoV0->SetStatusPos(trackpos->GetStatus());
+      tFemtoV0->SetStatusNeg(trackneg->GetStatus());
+
+      tFemtoV0->SetPosNSigmaTPCK(fAODpidUtil->NumberOfSigmasTPC(trackpos,AliPID::kKaon));
+      tFemtoV0->SetNegNSigmaTPCK(fAODpidUtil->NumberOfSigmasTPC(trackneg,AliPID::kKaon));
+      tFemtoV0->SetPosNSigmaTPCP(fAODpidUtil->NumberOfSigmasTPC(trackpos,AliPID::kProton));
+      tFemtoV0->SetNegNSigmaTPCP(fAODpidUtil->NumberOfSigmasTPC(trackneg,AliPID::kProton));
+      tFemtoV0->SetPosNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackpos,AliPID::kPion));
+      tFemtoV0->SetNegNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackneg,AliPID::kPion));
+
+
+      if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFmismatch)>0)
+	{
+	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFmismatch)>0)
+	    {
+	      tFemtoV0->SetPosNSigmaTOFK(-9999);
+	      tFemtoV0->SetNegNSigmaTOFK(-9999);
+	      tFemtoV0->SetPosNSigmaTOFP(-9999);
+	      tFemtoV0->SetNegNSigmaTOFP(-9999);
+	      tFemtoV0->SetPosNSigmaTOFPi(-9999);
+	      tFemtoV0->SetNegNSigmaTOFPi(-9999);
+	    }
+	}
+      else
+	{
+	  tFemtoV0->SetPosNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kKaon));
+	  tFemtoV0->SetNegNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kKaon));
+	  tFemtoV0->SetPosNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kProton));
+	  tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kProton));
+	  tFemtoV0->SetPosNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kPion));
+	  tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kPion));
+	}
+    }
+  else
+    {
+      tFemtoV0->SetStatusPos(999);
+      tFemtoV0->SetStatusNeg(999);
+    }
+  tFemtoV0->SetOnFlyStatusV0(tAODv0->GetOnFlyStatus());
+}
+
 void AliFemtoEventReaderAOD::SetFilterBit(UInt_t ibit)
 {
   fFilterBit = (1 << (ibit));
@@ -728,6 +895,12 @@ void AliFemtoEventReaderAOD::SetFilterBit(UInt_t ibit)
 void AliFemtoEventReaderAOD::SetReadMC(unsigned char a)
 {
   fReadMC = a;
+}
+
+
+void AliFemtoEventReaderAOD::SetReadV0(unsigned char a)
+{
+  fReadV0 = a;
 }
 
 AliAODMCParticle* AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel)
@@ -851,8 +1024,14 @@ void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
   fCentRange[0] = min; fCentRange[1] = max;
   fUsePreCent = 1; 
+  fNoCentrality = 0;
 }
 
+void AliFemtoEventReaderAOD::SetNoCentrality(bool anocent)
+{
+  fNoCentrality = anocent;
+  if (fNoCentrality) fUsePreCent = 0;
+}
 
 void AliFemtoEventReaderAOD::SetAODpidUtil(AliAODpidUtil *aAODpidUtil)
 {

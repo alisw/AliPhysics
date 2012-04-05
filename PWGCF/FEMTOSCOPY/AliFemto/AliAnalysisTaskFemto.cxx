@@ -13,7 +13,8 @@
 #include "TFile.h"
 #include "TInterpreter.h"
 
-#include "AliAnalysisTask.h"
+//#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
 #include "AliESDEvent.h"
 
@@ -32,7 +33,7 @@ ClassImp(AliAnalysisTaskFemto)
 
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams):
-    AliAnalysisTask(name,""), 
+    AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
     fESD(0), 
     fESDpid(0),
     fAOD(0),
@@ -57,7 +58,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
 }
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro="ConfigFemtoAnalysis.C"): 
-    AliAnalysisTask(name,""), 
+    AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
     fESD(0), 
     fESDpid(0),
     fAOD(0),
@@ -82,7 +83,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
 }
 
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask):
-    AliAnalysisTask(aFemtoTask), 
+    AliAnalysisTaskSE(aFemtoTask), //AliAnalysisTask(aFemtoTask), 
     fESD(0), 
     fESDpid(0),
     fAOD(0),

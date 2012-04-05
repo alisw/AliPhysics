@@ -60,4 +60,9 @@ inline void AliFemtoCutMonitor::Fill(const AliFemtoEvent* /* aEvent */,const Ali
   cout << " *** no user defined Fill(const AliFemtoEvent*,const AliFemtoParticleCollection*), take from base class" << endl;
 #endif
 }
-
+inline void AliFemtoCutMonitor::Fill(const AliFemtoParticleCollection* /* aCollection */,const AliFemtoParticleCollection* /* aCollection */) {
+  // cut event and particle collection
+  #ifdef STHBTDEBUG
+  cout << " *** no user defined Fill(const AliFemtoParticleCollection*,const AliFemtoParticleCollection*), take from base class" << endl;
+  #endif
+}

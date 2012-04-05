@@ -104,6 +104,7 @@ public:
   int UncorrectedNumberOfNegativePrimaries() const;
   int UncorrectedNumberOfPrimaries() const;
   int SPDMultiplicity() const;
+  int NumberOfV0s() const;
 
   unsigned short MultiplicityEstimateITSTPC() const;
   unsigned short MultiplicityEstimateTracklets() const;
