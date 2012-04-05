@@ -304,9 +304,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     nofTracks=fEvent->GetNumberOfTracks();
   cout<<"nofTracks: "<<nofTracks<<endl;
 
-  if (!fNoCentrality)
-    AliCentrality *cent = fEvent->GetCentrality();
- 
+  AliCentrality *cent = fEvent->GetCentrality();
+
   if (!fNoCentrality && cent && fUsePreCent) {
     if ((cent->GetCentralityPercentile("V0M")*10 < fCentRange[0]) ||
 	(cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
