@@ -58,11 +58,12 @@ public:
       kSemiCentral  = BIT(17), // PbPb semicentral collision trigger
       kDG5          = BIT(18), // Double gap diffractive
       kZED          = BIT(19), // ZDC electromagnetic dissociation
+      kSPI          = BIT(20), // Power interaction trigger
       kUserDefined  = BIT(27), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
       // Bits 28 and above are reserved for FLAGS
       kFastOnly     = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
       kAny          = 0xffffffff, // to accept any trigger
-      kAnyINT       = kMB | kINT7 | kCINT5 // to accept any interaction (aka minimum bias) trigger
+      kAnyINT       = kMB | kINT7 | kCINT5 | kSPI // to accept any interaction (aka minimum bias) trigger
   };
 
   AliVEvent() { }
