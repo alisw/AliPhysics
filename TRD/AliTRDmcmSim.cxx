@@ -1225,11 +1225,20 @@ void AliTRDmcmSim::CalcFitreg()
   UShort_t qTotal[19+1]; // the last is dummy
   UShort_t marked[6], qMarked[6], worse1, worse2;
 
+  // find first timebin to be looked at
   timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS, fDetector, fRobPos, fMcmPos);
   if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos)
       < timebin1)
     timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos);
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos)
+      < timebin1)
+    timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos);
+
+  // find last timebin to be looked at
   timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE, fDetector, fRobPos, fMcmPos);
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos)
+      > timebin2)
+    timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos);
   if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos)
       > timebin2)
     timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos);
