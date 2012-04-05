@@ -39,7 +39,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 	     Int_t nJetPt = 0, Float_t jetPtMin = 0, Float_t jetPtMax = 0,
 	     Int_t nPt = 0, Float_t ptMin = 0, Float_t ptMax = 0,
 	     Int_t nXi = 0, Float_t xiMin = 0, Float_t xiMax = 0,
-	     Int_t nZ  = 0, Float_t zMin  = 0, Float_t zMax  = 0);
+             Int_t nZ  = 0, Float_t zMin  = 0, Float_t zMax  = 0, 
+	     Bool_t useLogZBins = kTRUE);
+
     AliFragFuncHistos(const AliFragFuncHistos& copy);
     AliFragFuncHistos& operator=(const AliFragFuncHistos &o);
     virtual ~AliFragFuncHistos();
@@ -62,6 +64,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     Int_t   fNBinsZ;     // FF histos bins
     Float_t fZMin;       // FF histos limits
     Float_t fZMax;       // FF histos limits
+    Bool_t  fLogZBins;   // lin/log binning in z 
   
     TH2F*   fh2TrackPt;   //! FF: track transverse momentum 
     TH2F*   fh2Xi;        //! FF: xi 
@@ -361,6 +364,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   UseAODInputJets(Bool_t b) {fUseAODInputJets = b;}  
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
   virtual void   UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;}
+  virtual void   SetEventSelectionMask(UInt_t i){fEvtSelectionMask = i;}
   virtual void   SetEventClass(Int_t i){fEventClass = i;}
   virtual void   SetMaxVertexZ(Float_t z){fMaxVertexZ = z;}
   virtual void   SetJetCuts(Float_t jetPt = 5., Float_t jetEtaMin = -0.5, Float_t jetEtaMax = 0.5, 
@@ -406,6 +410,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fFFNBinsXi = nXi; fFFXiMin = xiMin; fFFXiMax = xiMax;
     fFFNBinsZ  = nZ;  fFFZMin  = zMin;  fFFZMax  = zMax; }
   
+  void   SetFFLogZBins(Bool_t flag = kTRUE) { fFFLogZBins = flag; }
+
+
   void  SetQAJetHistoBins(Int_t nPt = 300, Float_t ptMin = 0., Float_t ptMax = 300.,
 			  Int_t nEta = 20, Float_t etaMin = -1.0, Float_t etaMax = 1.0,
 			  Int_t nPhi = 60, Float_t phiMin = 0., Float_t phiMax = 2*TMath::Pi())
@@ -531,7 +538,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Bool_t  fUseAODInputJets;     // take jets from in/output - only relevant if AOD event both in input AND output and we want to use output
   UInt_t  fFilterMask;	        // filter bit for selected tracks
   Bool_t  fUsePhysicsSelection; // switch for event selection
-  Int_t   fEventClass;          // event class to be looked at for this instace of the task
+  UInt_t  fEvtSelectionMask;    // trigger class selection
+  Int_t   fEventClass;          // centrality class selection
   Float_t fMaxVertexZ;          // maximum abs(z) position of primiary vertex [cm]
 
   // track cuts
@@ -660,6 +668,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Int_t   fFFNBinsZ;        // FF histos bins
   Float_t fFFZMin;          // FF histos limits
   Float_t fFFZMax;          // FF histos limits
+
+  Bool_t  fFFLogZBins;      // use lin/log binning for FF dN/dz 
 
   Int_t   fQAJetNBinsPt;    // jet QA histos bins
   Float_t fQAJetPtMin;      // jet QA histos limits

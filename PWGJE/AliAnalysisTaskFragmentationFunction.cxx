@@ -72,6 +72,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fUseAODInputJets(kTRUE)
    ,fFilterMask(0)
    ,fUsePhysicsSelection(kTRUE)
+   ,fEvtSelectionMask(0)
    ,fEventClass(0)
    ,fMaxVertexZ(10)
    ,fTrackPtCut(0)
@@ -166,7 +167,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fFFXiMax(0)        
    ,fFFNBinsZ(0)       
    ,fFFZMin(0)         
-   ,fFFZMax(0)         
+   ,fFFZMax(0)
+   ,fFFLogZBins(kTRUE)         
    ,fQAJetNBinsPt(0)   
    ,fQAJetPtMin(0)     
    ,fQAJetPtMax(0)     
@@ -376,6 +378,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fUseAODInputJets(kTRUE)
   ,fFilterMask(0)
   ,fUsePhysicsSelection(kTRUE)
+  ,fEvtSelectionMask(0)
   ,fEventClass(0)
   ,fMaxVertexZ(10)
   ,fTrackPtCut(0)
@@ -471,6 +474,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fFFNBinsZ(0)       
   ,fFFZMin(0)         
   ,fFFZMax(0)         
+  ,fFFLogZBins(kTRUE)         
   ,fQAJetNBinsPt(0)   
   ,fQAJetPtMin(0)     
   ,fQAJetPtMax(0)     
@@ -684,6 +688,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fUseAODInputJets(copy.fUseAODInputJets)
   ,fFilterMask(copy.fFilterMask)
   ,fUsePhysicsSelection(copy.fUsePhysicsSelection)
+  ,fEvtSelectionMask(copy.fEvtSelectionMask)
   ,fEventClass(copy.fEventClass)
   ,fMaxVertexZ(copy.fMaxVertexZ)
   ,fTrackPtCut(copy.fTrackPtCut)
@@ -779,6 +784,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fFFNBinsZ(copy.fFFNBinsZ)       
   ,fFFZMin(copy.fFFZMin)         
   ,fFFZMax(copy.fFFZMax)         
+  ,fFFLogZBins(copy.fFFLogZBins)         
   ,fQAJetNBinsPt(copy.fQAJetNBinsPt)   
   ,fQAJetPtMin(copy.fQAJetPtMin)     
   ,fQAJetPtMax(copy.fQAJetPtMax)     
@@ -993,6 +999,7 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fUseAODInputJets              = o.fUseAODInputJets;
     fFilterMask                   = o.fFilterMask;
     fUsePhysicsSelection          = o.fUsePhysicsSelection;
+    fEvtSelectionMask             = o.fEvtSelectionMask;
     fEventClass                   = o.fEventClass;
     fMaxVertexZ                   = o.fMaxVertexZ;
     fTrackPtCut                   = o.fTrackPtCut;
@@ -1093,6 +1100,7 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fFFNBinsZ                     = o.fFFNBinsZ;       
     fFFZMin                       = o.fFFZMin;         
     fFFZMax                       = o.fFFZMax;         
+    fFFLogZBins                   = o.fFFLogZBins;         
     fQAJetNBinsPt                 = o.fQAJetNBinsPt;   
     fQAJetPtMin                   = o.fQAJetPtMin;     
     fQAJetPtMax                   = o.fQAJetPtMax;     
@@ -1307,7 +1315,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AliFragFuncHistos(const
 							 Int_t nJetPt, Float_t jetPtMin, Float_t jetPtMax,  
 							 Int_t nPt, Float_t ptMin, Float_t ptMax,
 							 Int_t nXi, Float_t xiMin, Float_t xiMax,
-							 Int_t nZ , Float_t zMin , Float_t zMax )
+							 Int_t nZ , Float_t zMin , Float_t zMax, Bool_t useLogZBins)
   : TObject()
   ,fNBinsJetPt(nJetPt)
   ,fJetPtMin(jetPtMin)
@@ -1320,7 +1328,8 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AliFragFuncHistos(const
   ,fXiMax(xiMax)   
   ,fNBinsZ(nZ)  
   ,fZMin(zMin)    
-  ,fZMax(zMax)    
+  ,fZMax(zMax)
+  ,fLogZBins(useLogZBins)
   ,fh2TrackPt(0)
   ,fh2Xi(0)
   ,fh2Z(0)
@@ -1345,7 +1354,8 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AliFragFuncHistos(const
   ,fXiMax(copy.fXiMax)   
   ,fNBinsZ(copy.fNBinsZ)  
   ,fZMin(copy.fZMin)    
-  ,fZMax(copy.fZMax)    
+  ,fZMax(copy.fZMax)
+  ,fLogZBins(copy.fLogZBins)
   ,fh2TrackPt(copy.fh2TrackPt)
   ,fh2Xi(copy.fh2Xi)
   ,fh2Z(copy.fh2Z)
@@ -1374,6 +1384,7 @@ AliAnalysisTaskFragmentationFunction::AliFragFuncHistos& AliAnalysisTaskFragment
     fNBinsZ     = o.fNBinsZ;  
     fZMin       = o.fZMin;    
     fZMax       = o.fZMax;    
+    fLogZBins   = o.fLogZBins;
     fh2TrackPt  = o.fh2TrackPt;
     fh2Xi       = o.fh2Xi;
     fh2Z        = o.fh2Z;
@@ -1403,7 +1414,30 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::DefineHistos()
   fh1JetPt   = new TH1F(Form("fh1FFJetPt%s", fNameFF.Data()),"",fNBinsJetPt,fJetPtMin,fJetPtMax);
   fh2TrackPt = new TH2F(Form("fh2FFTrackPt%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsPt, fPtMin, fPtMax);
   fh2Xi      = new TH2F(Form("fh2FFXi%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsXi, fXiMin, fXiMax);
-  fh2Z       = new TH2F(Form("fh2FFZ%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, fZMin, fZMax);
+
+  if(!fLogZBins) fh2Z       = new TH2F(Form("fh2FFZ%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, fZMin, fZMax);
+  else{ // logartihmic z binning
+
+    Double_t binLimsZ[fNBinsXi+1];	
+    
+    Int_t binZ = 0;
+    for(Int_t binXi = fh2Xi->GetYaxis()->GetNbins(); binXi>0; binXi--){
+      
+      Double_t xiLo = fh2Xi->GetYaxis()->GetBinLowEdge(binXi);
+      Double_t xiUp = fh2Xi->GetYaxis()->GetBinUpEdge(binXi);
+      
+      Double_t zUp = TMath::Exp(-1*xiLo);	
+      Double_t zLo = TMath::Exp(-1*xiUp);	
+      
+      if(binZ == 0) binLimsZ[binZ] = zLo;
+      binLimsZ[binZ+1] = zUp;
+      
+      binZ++;
+    }
+    
+    fNBinsZ = binZ;
+    fh2Z    = new TH2F(Form("fh2FFZ%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, binLimsZ);
+  }
 
   AliAnalysisTaskFragmentationFunction::SetProperties(fh1JetPt, "p_{T} [GeV/c]", "entries"); 
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2TrackPt,"jet p_{T} [GeV/c]","p_{T} [GeV/c]","entries");
@@ -2437,8 +2471,6 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   fJetsEmbedded = new TList();
   fJetsEmbedded->SetOwner(kFALSE);
 
-  // fJetsKine = new TList();
-  // fJetsKine->SetOwner(kTRUE); // delete AOD jets using mom from Kine Tree via TList::Clear()
 
   if(fBckgMode && 
      (fBckgType[0]==kBckgClusters || fBckgType[1]==kBckgClusters || fBckgType[2]==kBckgClusters ||  fBckgType[3]==kBckgClusters || fBckgType[4]==kBckgClusters ||
@@ -2461,7 +2493,8 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 
   OpenFile(1);
   fCommonHistList = new TList();
-  
+  fCommonHistList->SetOwner(kTRUE);
+
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
@@ -2586,30 +2619,31 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   } // end: QA
 
   if(fFFMode){
+
     fFFHistosRecCuts   	     = new AliFragFuncHistos("RecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
 						     fFFNBinsXi, fFFXiMin, fFFXiMax,  
-						     fFFNBinsZ , fFFZMin , fFFZMax);
+						     fFFNBinsZ , fFFZMin , fFFZMax , fFFLogZBins);
     fFFHistosRecLeading        = new AliFragFuncHistos("RecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						       fFFNBinsPt, fFFPtMin, fFFPtMax, 
 						       fFFNBinsXi, fFFXiMin, fFFXiMax,  
-						       fFFNBinsZ , fFFZMin , fFFZMax);
+						       fFFNBinsZ , fFFZMin , fFFZMax, fFFLogZBins);
     fFFHistosRecLeadingTrack   = new AliFragFuncHistos("RecLeadingTrack", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						       fFFNBinsPt, fFFPtMin, fFFPtMax, 
 						       fFFNBinsXi, fFFXiMin, fFFXiMax,  
-						       fFFNBinsZ , fFFZMin , fFFZMax);
+						       fFFNBinsZ , fFFZMin , fFFZMax, fFFLogZBins);
     fFFHistosGen   	     = new AliFragFuncHistos("Gen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
 						     fFFNBinsXi, fFFXiMin, fFFXiMax,  
-						     fFFNBinsZ , fFFZMin , fFFZMax);
+						     fFFNBinsZ , fFFZMin , fFFZMax, fFFLogZBins);
     fFFHistosGenLeading        = new AliFragFuncHistos("GenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						       fFFNBinsPt, fFFPtMin, fFFPtMax, 
 						       fFFNBinsXi, fFFXiMin, fFFXiMax,  
-						       fFFNBinsZ , fFFZMin , fFFZMax);
+						       fFFNBinsZ , fFFZMin , fFFZMax, fFFLogZBins);
     fFFHistosGenLeadingTrack   = new AliFragFuncHistos("GenLeadingTrack", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						       fFFNBinsPt, fFFPtMin, fFFPtMax, 
 						       fFFNBinsXi, fFFXiMin, fFFXiMax,  
-						       fFFNBinsZ , fFFZMin , fFFZMax);
+						       fFFNBinsZ , fFFZMin , fFFZMax, fFFLogZBins);
   } // end: FF
 
   if(fIJMode)
@@ -3414,6 +3448,7 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   TH1::AddDirectory(oldStatus);
 
   PostData(1, fCommonHistList);
+
 }
 
 //_______________________________________________
@@ -3433,19 +3468,18 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	
 
   if(fDebug > 1) Printf("Analysis event #%5d", (Int_t) fEntry);
+
   // Trigger selection
- 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
-    if(inputHandler->InheritsFrom("AliESDInputHandler") && fUsePhysicsSelection){ // PhysicsSelection only with ESD input
+
+  if(!(inputHandler->IsEventSelected() & fEvtSelectionMask)){
       fh1EvtSelection->Fill(1.);
       if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
       PostData(1, fCommonHistList);
       return;
-    }
   }
-
+   
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESD){
     if(fDebug>3) Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
@@ -3566,9 +3600,11 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
   //___ get MC information __________________________________________________________________
 
+  fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+
   Double_t ptHard = 0.;
   Double_t nTrials = 1; // trials for MC trigger weight for real data
-  
+
   if(fMCEvent){
     AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
 
@@ -3598,7 +3634,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	}
       }
       
-      fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+      //fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
     }
 
   }
@@ -4971,7 +5007,6 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
       sumPt += track->Pt();
 
       if(maxPt>0 && track->Pt()>maxPt) isBadMaxPt = kTRUE;
-      if(maxPt>0 && track->Pt()>maxPt) std::cout<<" found bad jet, track pt "<<track->Pt()<<" max Pt "<<maxPt<<std::endl;
     }
   }
 
