@@ -264,6 +264,9 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
+      
+        pCandidate->SetLeadingParticle(kFALSE);
+        
         if(bFillAOD && reftracks) 
         {
           reftracks->Clear(); 
@@ -357,6 +360,8 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
+        
+        pCandidate->SetLeadingParticle(kFALSE);
         
         if(bFillAOD)
         {

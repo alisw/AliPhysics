@@ -1050,7 +1050,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   if(idLeading < 0) return;
   
   AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(idLeading));
-  aodinput->SetLeadingParticle(kTRUE);
   
   // Check isolation only of clusters in fiducial region
   if(IsFiducialCutOn())
@@ -1058,6 +1057,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodinput->Momentum(),fCalorimeter) ;
     if(! in ) return ;
   }
+  
+  aodinput->SetLeadingParticle(kTRUE);
   
   //After cuts, study isolation
   n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
@@ -1151,7 +1152,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       AliVTrack* track = (AliVTrack *) trackList->At(itrack);
       //fill the histograms at forward range
-      if(!track){
+      if(!track)
+      {
         printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Track not available?");
         continue;
       }
@@ -1219,10 +1221,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhEtaPhiIso ->Fill(eta,phi);
 
       if (decay) 
-	{
-	  fhPtDecayIso->Fill(pt);
-	  fhEtaPhiDecayIso->Fill(eta,phi);
-	}
+      {
+        fhPtDecayIso->Fill(pt);
+        fhEtaPhiDecayIso->Fill(eta,phi);
+      }
       
       if(IsDataMC())
       {
@@ -1281,11 +1283,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       fhPtNoIso  ->Fill(pt);
       fhEtaPhiNoIso->Fill(eta,phi);
+      
       if (decay) 
-	{
-	  fhPtDecayNoIso->Fill(pt);
-	  fhEtaPhiDecayNoIso->Fill(eta,phi);
-	}
+      {
+        fhPtDecayNoIso->Fill(pt);
+        fhEtaPhiDecayNoIso->Fill(eta,phi);
+      }
       
       if(IsDataMC())
       {
