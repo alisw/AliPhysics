@@ -23,7 +23,8 @@
 #include <TLorentzVector.h>
 #include <TH2.h>
 #include <TList.h>
- 
+#include <TString.h>
+
 //---- AliRoot system ----
 #include "AliNeutralMesonSelection.h" 
 
@@ -32,13 +33,21 @@ ClassImp(AliNeutralMesonSelection)
   
 //______________________________________________________
   AliNeutralMesonSelection::AliNeutralMesonSelection() : 
-    TObject(),             fAsymmetryCut(1),                fUseAsymmetryCut(0),
-    fM(0),                 fInvMassMaxCut(0.),              fInvMassMinCut(0.),           fInvMassMaxCutParam(),
-    fAngleMaxParam(),      fUseAngleCut(0),                 
-    fShiftMinAngle(),      fKeepNeutralMesonHistos(0), 
-    fhAnglePairNoCut(0),   fhAnglePairOpeningAngleCut(0),   fhAnglePairAsymmetryCut(0),   fhAnglePairAllCut(0), 
-    fhInvMassPairNoCut(0), fhInvMassPairOpeningAngleCut(0), fhInvMassPairAsymmetryCut(0), fhInvMassPairAllCut(0),
-    fhAsymmetryNoCut(0),   fhAsymmetryOpeningAngleCut(0),   fhAsymmetryAllCut(0),
+    TObject(),             fAsymmetryCut(1),                
+    fUseAsymmetryCut(0),   fM(0),                 
+    fInvMassMaxCut(0.),    fInvMassMinCut(0.),   
+    fLeftBandMinCut(0.),   fLeftBandMaxCut(0.),            
+    fRightBandMinCut(0.),  fRightBandMaxCut(0.),              
+    fAngleMaxParam(),      fUseAngleCut(0),       
+    fKeepNeutralMesonHistos(0), fParticle(""),
+    // histograms 
+    fhAnglePairNoCut(0),          fhAnglePairOpeningAngleCut(0),   
+    fhAnglePairAsymmetryCut(0),   fhAnglePairAllCut(0), 
+    fhInvMassPairNoCut(0),        fhInvMassPairOpeningAngleCut(0), 
+    fhInvMassPairAsymmetryCut(0), fhInvMassPairAllCut(0),
+    fhAsymmetryNoCut(0),          fhAsymmetryOpeningAngleCut(0),   
+    fhAsymmetryAllCut(0),
+    // histogram ranges and bins
     fHistoNEBins(0),       fHistoEMax(0.),                  fHistoEMin(0.),
     fHistoNAngleBins(0),   fHistoAngleMax(0.),              fHistoAngleMin(0.),
     fHistoNIMBins(0),      fHistoIMMax(0.),                 fHistoIMMin(0.)
@@ -270,21 +279,49 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
     //       e,invmassmaxcut,fInvMassMaxCut,fInvMassMaxCutParam[0],fInvMassMaxCutParam[1],fInvMassMaxCutParam[2]);
   }
   
-  if( (invmass > fInvMassMinCut) && (invmass < invmassmaxcut) )
-  { 
-    if(fKeepNeutralMesonHistos)
+  // normal case, invariant mass selection around pi0/eta peak
+  if( !fParticle.Contains("SideBand") )
+  {
+    if( invmass > fInvMassMinCut && invmass < invmassmaxcut )
+    { 
+      if(fKeepNeutralMesonHistos)
+      {
+        fhInvMassPairAllCut->Fill(e,invmass);
+        fhAnglePairAllCut  ->Fill(e,angle);
+        fhAsymmetryAllCut  ->Fill(e,asy);
+      }      
+      
+      //AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
+      return kTRUE;
+      
+    }//(invmass>0.125) && (invmass<0.145)
+    else 
     {
-      fhInvMassPairAllCut->Fill(e,invmass);
-      fhAnglePairAllCut  ->Fill(e,angle);
-      fhAsymmetryAllCut  ->Fill(e,asy);
-    }      
-    
-    //AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
-    return kTRUE;
-    
-  }//(invmass>0.125) && (invmass<0.145)
-  else 
-    return kFALSE;
+      return kFALSE;
+    }
+  }// normal selection
+ 
+  else // select a band around pi0/eta
+  {
+    if((invmass > fLeftBandMinCut  && invmass < fLeftBandMaxCut ) ||  
+       (invmass > fRightBandMinCut && invmass < fRightBandMaxCut)   )
+    { 
+      if(fKeepNeutralMesonHistos)
+      {
+        fhInvMassPairAllCut->Fill(e,invmass);
+        fhAnglePairAllCut  ->Fill(e,angle);
+        fhAsymmetryAllCut  ->Fill(e,asy);
+      }      
+      
+      //AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
+      return kTRUE;
+      
+    }//(invmass>0.125) && (invmass<0.145)
+    else 
+    {
+      return kFALSE;
+    }
+  }
   
 }
 
@@ -292,8 +329,10 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
 void  AliNeutralMesonSelection::SetParticle(TString particleName)
 {
   // Set some default parameters for selection of pi0 or eta
+
+  fParticle = particleName ;
   
-  if(particleName=="Pi0")
+  if(particleName.Contains("Pi0"))
   {
     fHistoNIMBins          = 150 ;
     fHistoIMMax            = 0.3 ;
@@ -302,6 +341,11 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
     fM                     = 0.135 ; // GeV
     fInvMassMaxCut         = 0.16  ; // GeV
     fInvMassMinCut         = 0.11  ; // GeV
+
+    fLeftBandMinCut        = 0.05  ; // GeV
+    fLeftBandMaxCut        = 0.09  ; // GeV
+    fRightBandMinCut       = 0.160 ; // GeV
+    fRightBandMaxCut       = 0.165 ; // GeV
 
     fInvMassMaxCutParam[0] = 0.0   ;
     fInvMassMaxCutParam[1] =-7.e-5 ;
@@ -315,8 +359,8 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
     fAngleMaxParam.AddAt( 0.09, 2) ; //for pi0 shift, for eta maybe 0.09 
     fAngleMaxParam.AddAt(-2.e-3,3) ;
   
-  }
-  else if(particleName=="Eta")
+  }  
+  else if(particleName.Contains("Eta"))
   {
     fHistoNIMBins          = 200  ; // GeV
     fHistoIMMax            = 0.75 ; // GeV
@@ -326,12 +370,17 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
     fInvMassMaxCut         = 0.590 ; // GeV
     fInvMassMinCut         = 0.510 ; // GeV
     
-    fInvMassMaxCutParam[0] = 0.0 ;
-    fInvMassMaxCutParam[1] = 0.0 ;
-    fInvMassMaxCutParam[2] = 0.0 ;
+    fLeftBandMinCut        = 0.450 ; // GeV
+    fLeftBandMaxCut        = 0.500 ; // GeV
+    fRightBandMinCut       = 0.600 ; // GeV
+    fRightBandMaxCut       = 0.650 ; // GeV
     
-    fShiftMinAngle[0]      =-0.03  ;
-    fShiftMinAngle[0]      = 0.00  ;
+    fInvMassMaxCutParam[0] = 0.00 ;
+    fInvMassMaxCutParam[1] = 0.00 ;
+    fInvMassMaxCutParam[2] = 0.00 ;
+    
+    fShiftMinAngle[0]      =-0.03 ;
+    fShiftMinAngle[0]      = 0.00 ;
     
     fAngleMaxParam.AddAt( 0.80,  0) ; // Same as pi0
     fAngleMaxParam.AddAt(-0.25,  1) ; // Same as pi0
@@ -355,13 +404,14 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
 
-  printf("mass : %f  \n", fM );
+  printf("Particle %s, mass : %f  \n", fParticle.Data(), fM );
   printf("Invariant mass limits : %f < m < %f \n", fInvMassMinCut , fInvMassMinCut );
   
   printf("Use asymmetry cut? : %d ; A < %f \n", fUseAngleCut, fAsymmetryCut );
   
   printf("Use angle cut? : %d  \n", fUseAngleCut );
-  if(fUseAngleCut){
+  if(fUseAngleCut)
+  {
     printf("Angle selection param: \n");
     printf("p0 :     %f\n", fAngleMaxParam.At(0));
     printf("p1 :     %f\n", fAngleMaxParam.At(1));
@@ -372,7 +422,8 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   
   printf("Keep Neutral Meson Histos = %d\n",fKeepNeutralMesonHistos);
   
-  if(fKeepNeutralMesonHistos){
+  if(fKeepNeutralMesonHistos)
+  {
     printf("Histograms: %3.1f < E  < %3.1f,  Nbin = %d\n",   fHistoEMin,     fHistoEMax,     fHistoNEBins);
     printf("Histograms: %3.1f < angle < %3.1f, Nbin = %d\n", fHistoAngleMin, fHistoAngleMax, fHistoNAngleBins);
     printf("Histograms: %3.1f < IM < %3.1f, Nbin = %d\n",    fHistoIMMin,    fHistoIMMax,    fHistoNIMBins);    

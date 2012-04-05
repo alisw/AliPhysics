@@ -13,12 +13,12 @@
 // --- ROOT system ---
 #include<TObject.h>
 #include<TArrayD.h>
+#include<TString.h>
 
 class TLorentzVector ;
-class TList ;
-class TH2F ;
-
-//--- ANALYSIS system ---
+class TList   ;
+class TH2F    ;
+class TString ;
 
 class AliNeutralMesonSelection : public TObject {
   
@@ -70,6 +70,11 @@ class AliNeutralMesonSelection : public TObject {
   void     SetInvMassCutRange(Double_t invmassmin, Double_t invmassmax)
             { fInvMassMaxCut =invmassmax;  fInvMassMinCut =invmassmin                    ; }	
   
+  void     SetSideBandCutRanges( Double_t lmin, Double_t lmax, 
+                                 Double_t rmin, Double_t rmax )
+            { fLeftBandMinCut  = lmin ; fLeftBandMaxCut  = lmax ; 
+              fRightBandMinCut = rmin ; fRightBandMaxCut = rmax ; }	
+  
   void     SetInvMassCutMaxParameters(Float_t a, Float_t b, Float_t c)
             { fInvMassMaxCutParam[0] = a ; 
               fInvMassMaxCutParam[1] = b ; 
@@ -115,17 +120,23 @@ class AliNeutralMesonSelection : public TObject {
   
   Float_t  fAsymmetryCut  ;               // Asymmetry cut
   Bool_t   fUseAsymmetryCut;              // Use the asymmetry cut
-  
+
   Double_t fM ;                           // Mass of the neutral meson
   Double_t fInvMassMaxCut ;               // Invariant Mass cut maximum
   Double_t fInvMassMinCut ;               // Invariant Masscut minimun
   Double_t fInvMassMaxCutParam[3];        // Variable invariant mass max cut, for pi0 in EMCAL
+  
+  Double_t fLeftBandMinCut  ;             // Side Band selection, min left  band cut
+  Double_t fLeftBandMaxCut  ;             // Side Band selection, max left  band cut
+  Double_t fRightBandMinCut ;             // Side Band selection, min right band cut
+  Double_t fRightBandMaxCut ;             // Side Band selection, max right band cut
   
   TArrayD  fAngleMaxParam ;               // Max opening angle selection parameters
   Bool_t   fUseAngleCut   ;               // Select pairs depending on their opening angle
   Float_t  fShiftMinAngle[2] ;            // Correction shift for min angle from true kinematic limit, resolution effects
   
   Bool_t   fKeepNeutralMesonHistos ;      // Keep neutral meson selection histograms
+  TString  fParticle ;                    // neutral meson name (Pi0, Eta, +SideBand)
 
   //Histograms
   TH2F *   fhAnglePairNoCut ;             //! Aperture angle of decay photons, no cuts
@@ -158,7 +169,7 @@ class AliNeutralMesonSelection : public TObject {
   AliNeutralMesonSelection(              const AliNeutralMesonSelection & g) ; // cpy ctor
   AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ; // cpy assignment
   
-  ClassDef(AliNeutralMesonSelection,6)
+  ClassDef(AliNeutralMesonSelection,7)
     
 } ;
 
