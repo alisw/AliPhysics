@@ -1,6 +1,7 @@
 AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Float_t minC=0, Float_t maxC=100,
 				     Bool_t storeNtuple=kFALSE,
+				     Bool_t doSparse=kFALSE,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
 				     TString filename="",
@@ -56,7 +57,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   dplusTask->SetMassLimits(0.2);
   dplusTask->SetUseBit(kTRUE);
 
-  if (system==0) dplusTask->SetDoImpactParameterHistos(kTRUE);
+  if (doSparse) dplusTask->SetDoImpactParameterHistos(kTRUE);
 
   mgr->AddTask(dplusTask);
   
