@@ -663,9 +663,8 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	if (pdg != assumedPdg && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 2;
 	if (pdg != assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 5;
 	if (pdg == assumedPdg && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 1;
-	if (pdg == assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 3;
-	if (pdg == assumedPdg && stack->IsSecondaryFromMaterial(TMath::Abs(track->GetLabel()))){
-	  code = 4;
+	if (pdg == assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) {
+	  code = 3;
 	  if (fSaveMotherPDG){
 	    TParticle *trackMother =  stack->Particle(TMath::Abs(trackMC->GetFirstMother()));
 	    if (trackMother->GetPdgCode() == 310) motherCode = 6; //K0
@@ -673,6 +672,8 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	    if (trackMother->GetPdgCode() == 3222) motherCode = 8; //Sigma+
 	  }
 	}
+	if (pdg == assumedPdg && stack->IsSecondaryFromMaterial(TMath::Abs(track->GetLabel()))) code = 4;
+	
 	//
 	// muons need special treatment, because they are indistinguishable from pions
 	//
