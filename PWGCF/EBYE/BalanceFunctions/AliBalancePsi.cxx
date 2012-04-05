@@ -400,7 +400,7 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
 	qInv = TMath::Sqrt(TMath::Abs(-q0Tot2 + qTot2 ));
 	
 	//phi
-	dphi = phi1 - phi2;
+	dphi = phi2 - phi1;
 	if(dphi < -180.) dphi = 360. + dphi;  //dphi should be between -180 and 180!
 	else if(dphi > 180.) dphi = -360. + dphi;  //dphi should be between -180 and 180!
 

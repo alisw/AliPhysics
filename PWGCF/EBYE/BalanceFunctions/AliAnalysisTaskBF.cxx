@@ -61,9 +61,12 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fHistChi2(0),
   fHistPt(0),
   fHistEta(0),
+  fHistRapidity(0),
   fHistPhi(0),
   fHistPhiBefore(0),
   fHistPhiAfter(0),
+  fHistPhiPos(0),
+  fHistPhiNeg(0),
   fHistV0M(0),
   fHistRefTracks(0),
   fHistdEdxVsPTPCbeforePID(NULL),
@@ -242,12 +245,18 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   fList->Add(fHistPt);
   fHistEta  = new TH1F("fHistEta","#eta distribution",200,-2,2);
   fList->Add(fHistEta);
+  fHistRapidity  = new TH1F("fHistRapidity","y distribution",200,-2,2);
+  fList->Add(fHistRapidity);
   fHistPhi  = new TH1F("fHistPhi","#phi distribution",200,-20,380);
   fList->Add(fHistPhi);
   fHistPhiBefore  = new TH1F("fHistPhiBefore","#phi distribution",200,0.,2*TMath::Pi());
   fList->Add(fHistPhiBefore);
   fHistPhiAfter  = new TH1F("fHistPhiAfter","#phi distribution",200,0.,2*TMath::Pi());
   fList->Add(fHistPhiAfter);
+  fHistPhiPos  = new TH1F("fHistPhiPos","#phi distribution for positive particles",200,-20,380);
+  fList->Add(fHistPhiPos);
+  fHistPhiNeg  = new TH1F("fHistPhiNeg","#phi distribution for negative particles",200,-20,380);
+  fList->Add(fHistPhiNeg);
   fHistV0M  = new TH2F("fHistV0M","V0 Multiplicity C vs. A",500, 0, 20000, 500, 0, 20000);
   fList->Add(fHistV0M);
   TString gRefTrackName[6] = {"tracks","tracksPos","tracksNeg","tracksTPConly","clusITS0","clusITS1"};
@@ -576,6 +585,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    fHistPt->Fill(v_pt);
 		    fHistEta->Fill(v_eta);
 		    fHistPhi->Fill(v_phi);
+		    fHistRapidity->Fill(v_y);
+		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
+		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
 
 		    // fill charge vector
 		    chargeVector[0]->push_back(v_charge);
@@ -713,8 +725,13 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    
       		    // Kinematics cuts from ESD track cuts
       		    if( v_pt < fPtMin || v_pt > fPtMax)      continue;
-      		    if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
-		    
+		    if (!fUsePID) {
+		      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+		    }
+		    else if (fUsePID){
+		      if( v_y < fEtaMin || v_y > fEtaMax)  continue;
+		    }
+
       		    // Extra DCA cuts (for systematic studies [!= -1])
       		    if( fDCAxyCut != -1 && fDCAxyCut != -1){
       		      if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
@@ -737,6 +754,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       		    fHistPt->Fill(v_pt);
       		    fHistEta->Fill(v_eta);
       		    fHistPhi->Fill(v_phi);
+		    fHistRapidity->Fill(v_y);
+		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
+		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
 
       		    // fill charge vector
       		    chargeVector[0]->push_back(v_charge);
@@ -882,6 +902,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    fHistPt->Fill(v_pt);
 		    fHistEta->Fill(v_eta);
 		    fHistPhi->Fill(v_phi);
+		    fHistRapidity->Fill(v_y);
+		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
+		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
 
 		    // fill charge vector
 		    chargeVector[0]->push_back(v_charge);
@@ -980,12 +1003,17 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 
 	    v_eta    = track->Eta();
 	    v_pt     = track->Pt();
-	    
+	    v_y      = track->Y();
+
 	    if( v_pt < fPtMin || v_pt > fPtMax)      
 	      continue;
-	    if( v_eta < fEtaMin || v_eta > fEtaMax)  
-	      continue;
-	    
+	    if (!fUsePID) {
+	      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+	    }
+	    else if (fUsePID){
+	      if( v_y < fEtaMin || v_y > fEtaMax)  continue;
+	    }
+
 	    //analyze one set of particles
 	    if(fUseMCPdgCode) {
 	      TParticle *particle = track->Particle();
@@ -1029,7 +1057,6 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    }
 
 	    v_charge = track->Charge();
-	    v_y      = track->Y();
 	    v_phi    = track->Phi();
 	    v_E      = track->E();
 	    track->PxPyPz(v_p);
@@ -1038,6 +1065,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    fHistPt->Fill(v_pt);
 	    fHistEta->Fill(v_eta);
 	    fHistPhi->Fill(v_phi);
+	    fHistRapidity->Fill(v_y);
+	    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
+	    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
 
 	    //Flow after burner
 	    if(fUseFlowAfterBurner) {
