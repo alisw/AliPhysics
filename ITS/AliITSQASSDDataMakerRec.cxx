@@ -364,7 +364,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	      //occupancy per module - no threshold
 	      if ( (h2t=(TH2*)harr[offs+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1]) ) h2t->SetBinContent(gModule,lLadderLocationY-1,occupancy);
 	      //occupancy per module - threshold @ 3%
-	      if ( (h2t=(TH2*)harr[offs+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3]) ) h2t->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
+  if ( (h2t=(TH2*)harr[offs+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3]) ) h2t->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
 	      //average occupancy per module
 	      if ( (h2t=(TH2*)harr[offs+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5]) ) h2t->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
 	    }
@@ -383,7 +383,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
     } //  RS Loop over all trigger classes (+ global counter, -1)
     //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
     //
-    ResetRawsMonitoredObjects();
+    if (specie==4) ResetRawsMonitoredObjects();
   }//raw data end of cycle
   //
       
