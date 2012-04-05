@@ -153,9 +153,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistChi2;//
   TH1F *fHistPt;//
   TH1F *fHistEta;//
+  TH1F *fHistRapidity;//
   TH1F *fHistPhi;//
   TH1F *fHistPhiBefore;//
   TH1F *fHistPhiAfter;//
+  TH1F *fHistPhiPos;//
+  TH1F *fHistPhiNeg;//
   TH2F *fHistV0M;//
   TH2F *fHistRefTracks;//
 
