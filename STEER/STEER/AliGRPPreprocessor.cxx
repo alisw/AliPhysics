@@ -1795,6 +1795,8 @@ THashList* AliGRPPreprocessor::ProcessAliases(const char* aliasesFile)
 
 		//if (strLine.BeginsWith("#")) continue;
 		if (strLine.IsNull()) continue;
+		strLine.Remove(TString::kLeading,' ');
+		strLine.Remove(TString::kTrailing,' ');
 
 		TObjArray* arr = strLine.Tokenize(' ');
 		if(arr->GetEntries() != 2){
