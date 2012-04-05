@@ -364,7 +364,6 @@ Int_t AliAnalysisTaskCheckHFMCProd::CheckD0Decay(Int_t labD0, AliStack* stack) c
   TParticle* dp = (TParticle*)stack->Particle(labD0);
   Int_t pdgdp=dp->GetPdgCode();
   Int_t nDau=dp->GetNDaughters();
-  if(nDau>4 || nDau<2) return -1;
 
   if(nDau==2){
     Int_t nKaons=0;
@@ -443,7 +442,6 @@ Int_t AliAnalysisTaskCheckHFMCProd::CheckDplusDecay(Int_t labDplus, AliStack* st
   TParticle* dp = (TParticle*)stack->Particle(labDplus);
   Int_t pdgdp=dp->GetPdgCode();
   Int_t nDau=dp->GetNDaughters();
-  if(nDau!=3 && nDau!=2) return -1;
 
   if(nDau==3){
     Int_t nKaons=0;
@@ -520,7 +518,6 @@ Int_t AliAnalysisTaskCheckHFMCProd::CheckDsDecay(Int_t labDs, AliStack* stack) c
   TParticle* dp = (TParticle*)stack->Particle(labDs);
   Int_t pdgdp=dp->GetPdgCode();
   Int_t nDau=dp->GetNDaughters();
-  if(nDau!=3 && nDau!=2) return -1;
 
   if(nDau==3){
     Int_t nKaons=0;
@@ -576,7 +573,7 @@ Int_t AliAnalysisTaskCheckHFMCProd::CheckDsDecay(Int_t labDs, AliStack* stack) c
 	for(Int_t resDau=dau->GetFirstDaughter(); resDau<=dau->GetLastDaughter(); resDau++){
 	  if(resDau<0) return -1;	  
 	  TParticle* resdau=(TParticle*)stack->Particle(resDau);
-	  if(resDau<0) return -1;
+	  if(!resdau) return -1;
 	  Int_t pdgresdau=resdau->GetPdgCode();	  
 	  if(TMath::Abs(pdgresdau)==321){
 	    nKaons++;
@@ -660,7 +657,6 @@ Int_t AliAnalysisTaskCheckHFMCProd::CheckLcDecay(Int_t labLc, AliStack* stack) c
   TParticle* dp = (TParticle*)stack->Particle(labLc);
   Int_t pdgdp=dp->GetPdgCode();
   Int_t nDau=dp->GetNDaughters();
-  if(nDau!=3 && nDau!=2) return -1;
 
   if(nDau==3){
     Int_t nKaons=0;
