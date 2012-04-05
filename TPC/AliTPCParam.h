@@ -459,6 +459,9 @@ protected :
 private:
   AliTPCParam(const AliTPCParam &);
   AliTPCParam & operator=(const AliTPCParam &);
+
+  void CleanGeoMatrices();
+
   ClassDef(AliTPCParam,4)  //parameter  object for set:TPC
 };
 

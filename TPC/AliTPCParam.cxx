@@ -143,28 +143,9 @@ AliTPCParam::~AliTPCParam()
   if (fResponseWeight!=0) delete [] fResponseWeight;
   if (fRotAngle      !=0) delete [] fRotAngle;
 
-  if (fTrackingMatrix) {
-    for(Int_t i = 0; i < fNSector; i++)
-      delete fTrackingMatrix[i];
-    delete [] fTrackingMatrix;
-  }
-
-  if (fClusterMatrix) {
-    for(Int_t i = 0; i < fNSector; i++)
-      delete fClusterMatrix[i];
-    delete [] fClusterMatrix;
-  }
-
-  if (fGlobalMatrix) {
-    for(Int_t i = 0; i < fNSector; i++)
-      delete fGlobalMatrix[i];
-    delete [] fGlobalMatrix;
-  }
+  CleanGeoMatrices();
 
 }
-
-
-
 
 Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
 {
@@ -607,7 +588,31 @@ Bool_t AliTPCParam::Update()
   return kTRUE;
 }
 
+void AliTPCParam::CleanGeoMatrices(){
+  //
+  // clean geo matrices
+  //
 
+  if (fTrackingMatrix) {
+    for(Int_t i = 0; i < fNSector; i++)
+      delete fTrackingMatrix[i];
+    delete [] fTrackingMatrix;
+  }
+  
+  if (fClusterMatrix) {
+    for(Int_t i = 0; i < fNSector; i++)
+      delete fClusterMatrix[i];
+    delete [] fClusterMatrix;
+  }
+  
+  if (fGlobalMatrix) {
+    for(Int_t i = 0; i < fNSector; i++)
+      delete fGlobalMatrix[i];
+    delete [] fGlobalMatrix;
+  }
+  
+  return;
+}
 
 Bool_t AliTPCParam::ReadGeoMatrices(){
   //
@@ -618,11 +623,13 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
   }
   AliAlignObjParams o;
   //
-  if (fTrackingMatrix) delete [] fTrackingMatrix;
+
+  // clean geo matrices
+  CleanGeoMatrices();
+
+  // create new geo matrices
   fTrackingMatrix = new TGeoHMatrix*[fNSector];
-  if (fClusterMatrix) delete [] fClusterMatrix;
   fClusterMatrix = new TGeoHMatrix*[fNSector];
-  if (fGlobalMatrix) delete [] fGlobalMatrix;
   fGlobalMatrix = new TGeoHMatrix*[fNSector];
   for (Int_t isec=0; isec<fNSector; isec++) {
     fGlobalMatrix[isec] = 0;
