@@ -209,7 +209,8 @@ const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fit
 		   "(LHC Data Error)",
 		   "(LHC Clock Phase Error (from LHC Data))",
 		   "(LTU Configuration Error)",
-		   "(DQM Failure)"
+		   "(DQM Failure)",
+                   "(Trigger Aliases wrong or not found in DCS FXS - ERROR)"
   };
 
 //_______________________________________________________________
@@ -356,6 +357,9 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	} else  if (iDcsFxs ==1) {
 		Log(Form("Could not store CTP scalers!!!"));
 		error |= 4;
+	} else  if (iDcsFxs == 2) {
+		Log(Form("Could not store CTP aliases!!!"));
+		error |= 8192;
 	} else{
 		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error without CTP scalers...",partition.Data(),detector.Data()));
 		error |= 32;
@@ -706,7 +710,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			  kppError[(error&512)?10:0],
 			  kppError[(error&1024)?11:0],
 			  kppError[(error&2048)?12:0],
-			  kppError[(error&4096)?13:0]
+			  kppError[(error&4096)?13:0],
+			  kppError[(error&8192)?14:0]
 			  ));
 		return error;
 	}
@@ -1670,14 +1675,15 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 	// Get the CTP counters information
 
 	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
-		Log("STANDALONE partition for current run, using Trigger Scalers dummy value");
-		AliCDBEntry *cdbEntry = GetFromOCDB("CTP","DummyScalers");
-		if (!cdbEntry) {
+		Log("STANDALONE partition for current run, using Trigger Scalers and Trigger Aliases dummy values");
+
+		AliCDBEntry *cdbEntryScalers = GetFromOCDB("CTP","DummyScalers");
+		if (!cdbEntryScalers) {
 			Log(Form("No dummy CTP scalers entry found, going into error..."));
 			return 1;
 		}
 		else{
-			AliTriggerRunScalers *scalers = (AliTriggerRunScalers*)cdbEntry->GetObject();
+			AliTriggerRunScalers *scalers = (AliTriggerRunScalers*)cdbEntryScalers->GetObject();
 			if (!scalers){
 				Log(Form("CTP dummy scalers not found in OCDB entry, going into error..."));
 				return 1;
@@ -1688,7 +1694,31 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 				metaData.SetComment("CTP scalers from dummy entry in OCDB");
 				if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
 					Log("Unable to store the dummy CTP scalers object to OCDB!");
+					delete scalers;
 					return 1;
+				}
+			}
+		}
+
+		AliCDBEntry *cdbEntryAliases = GetFromOCDB("CTP","DummyAliases");
+		if (!cdbEntryAliases) {
+			Log(Form("No dummy CTP aliases entry found, going into error..."));
+			return 2;
+		}
+		else{
+			THashList *aliases = dynamic_cast<THashList*>(cdbEntryAliases->GetObject());
+			if (!aliases){
+				Log(Form("CTP dummy aliases not found in OCDB entry, going into error..."));
+				return 2;
+			}
+			else {
+				AliCDBMetaData metaData;
+				metaData.SetResponsible("Evgeny Kryshen");
+				metaData.SetComment("CTP mapping of trigger classes to trigger aliases");
+				if (!Store("CTP","Aliases", aliases, &metaData, 0, 0)) {
+					Log("Unable to store the dummy CTP aliases object to OCDB!");
+					delete aliases;					
+					return 2;
 				}
 			}
 		}
@@ -1727,7 +1757,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 		TString aliasesFile = GetFile(kDCS, "CTP_aliases","");
 		if (aliasesFile.IsNull()) {
 			Log("No CTP aliases files has been found: empty source!");
-			return 1;
+			return 2;
 		}
 		else {
 			Log(Form("File with Id CTP_aliases found in DCS FXS! Copied to %s",aliasesFile.Data()));
@@ -1735,7 +1765,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 			THashList* trClasses2Aliases = ProcessAliases(aliasesFile);
 			if (!trClasses2Aliases) {
 				Log("Bad CTP aliases file! The corresponding CDB entry will not be filled!");
-				return 1;
+				return 2;
 			}
 			else {
 				AliCDBMetaData metaData;
@@ -1745,7 +1775,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 				if (!Store("CTP","Aliases", trClasses2Aliases, &metaData, 0, 0)) {
 					Log("Unable to store the CTP aliases object to OCDB!");
 					delete trClasses2Aliases;					
-					return 1;
+					return 2;
 				}
 			}
 			delete trClasses2Aliases;
@@ -1755,7 +1785,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 
 	else{	
 		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error...",partition.Data(),detector.Data()));
-		return 2;
+		return 3;
 	}
 
 	return 0;
