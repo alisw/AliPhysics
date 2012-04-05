@@ -3,12 +3,10 @@ void LoadLibraries();
 void AddAnalysisTasks(); 
 void QAmerge(const char *, Int_t);
 
-Int_t iCollisionType = 1; // 0=pp, 1=PbPb
+Int_t iCollisionType = 0; // 0=pp, 1=PbPb
 // Trigger mask.
 
 UInt_t kTriggerInt = AliVEvent::kAnyINT;
-UInt_t kTriggerMuonAll = AliVEvent::kMUL7 | AliVEvent::kMUSH7 | AliVEvent::kMUU7 | AliVEvent::kMUS7
-                       | AliVEvent::kMUSPB | AliVEvent::kMUSHPB | AliVEvent::kMuonLikePB | AliVEvent::kMuonUnlikePB;
 UInt_t kTriggerMuonBarell = AliVEvent::kMUU7;
 UInt_t kTriggerEMC   = AliVEvent::kEMC7 | AliVEvent::kEMCEJE | AliVEvent::kEMCEGA;
 UInt_t kTriggerHM   = AliVEvent::kHighMult;
@@ -22,7 +20,7 @@ Bool_t doEventStat    = 1;
 Bool_t doCentrality   = 1;
 Bool_t doQAsym        = 1;
 Bool_t doVZERO        = 1;   // there is a 2nd file
-Bool_t doVZEROPbPb    = 1; 
+Bool_t doVZEROPbPb    = 0; 
 Bool_t doVertex       = 1;
 Bool_t doSPD          = 1;   // needs RP   
 Bool_t doTPC          = 1;
@@ -195,10 +193,6 @@ void AddAnalysisTasks()
   if (doVZEROPbPb && iCollisionType==1) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/VZERO/AddTaskVZEROPbPb.C");
     AliAnaVZEROPbPb* taskV0PbPb = (AliAnaVZEROPbPb*)AddTaskVZEROPbPb(0);
-//    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVLNWU-,CVLN-");
-//    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU,CPBI2,CPBI1WU-,CPBI1-,CVHNWU,CVHN,CVLNWU,CVLN");
-//    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_B2-,CVLNWU_B2-");
-//    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_R1-,CVLN_B2-,CVLNWU_R1-,CVLNWU_B2-");
     taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_R1-,CVLN_B2-,CVLNWU_R1-,CVLNWU_B2-,CSEMI_R1-,CSEMIWU_R1-,CCENT_R2-,CCENTWU_R2-");
   }
   //
@@ -473,7 +467,7 @@ void QAmerge(const char *dir, Int_t stage)
     }
     if (mergeExcludes.Contains(outputFile.Data())) continue;
     merged = AliAnalysisAlien::MergeOutput(outputFile, outputDir, 10, stage);
-    if (!merged) {
+    if (!merged && outputFile!="RecoQAresults.root") {
        printf("ERROR: Cannot merge %s\n", outputFile.Data());
        return;
     }
