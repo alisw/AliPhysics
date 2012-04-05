@@ -54,8 +54,6 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   AliT0CalibOffsetChannelsTask *mytask = (AliT0CalibOffsetChannelsTask*)task1;
 
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
-  man->SetRun(runNumber);
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
   if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
   AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
