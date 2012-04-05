@@ -286,7 +286,7 @@ protected:
   Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,const AliITStrackMI *track,
 			  Float_t &xloc,Float_t &zloc) const;
 // method to be used for Plane Efficiency evaluation
-  Bool_t IsOKForPlaneEff(const AliITStrackMI* track, const Int_t *clusters, Int_t ilayer) const; // Check if a track is usable
+  Bool_t IsOKForPlaneEff(const AliITStrackMI* track, const Int_t *clusters, Int_t ilayer); // Check if a track is usable
                                                                                            // for Plane Eff evaluation
   void UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilayer);                            // Use this track for Plane Eff
 // 

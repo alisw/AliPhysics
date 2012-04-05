@@ -4868,7 +4868,7 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
 }
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t *clusters, Int_t ilayer) const {
+Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t *clusters, Int_t ilayer){
 //
 // Method to be optimized further: 
 // Aim: decide whether a track can be used for PlaneEff evaluation
@@ -4973,6 +4973,28 @@ if(index[lay]>=0)nclout++;
        (locx+dx > blockXmx-boundaryWidth) ||
        (locz-dz < blockZmn+boundaryWidth) ||
        (locz+dz > blockZmx-boundaryWidth) ) return kFALSE;
+
+  if(ilayer==0){
+       const AliESDEvent *myesd = ((AliESDtrack*)tmp.GetESDtrack())->GetESDEvent();
+       //The beam pipe
+       if (CorrectForPipeMaterial(&tmp,"inward")) {
+          const AliESDVertex* vtx = myesd->GetVertex();
+          if(!vtx) return kFALSE;
+          Double_t ddz[2],cov[3];
+          Double_t maxD=3.;
+          if(!tmp.PropagateToDCA(vtx,AliTracker::GetBz(),maxD,ddz,cov)) return kFALSE;
+          if(TMath::Abs(ddz[0])>=AliITSReconstructor::GetRecoParam()->GetDCACutPlaneEff()) return kFALSE;
+
+          Double_t covar[6]; vtx->GetCovMatrix(covar);
+          Double_t p[2]={tmp.GetParameter()[0]-ddz[0],tmp.GetParameter()[1]-ddz[1]};
+          Double_t c[3]={covar[2],0.,covar[5]};
+          Double_t chi2= ((AliESDtrack*)tmp.GetESDtrack())->GetPredictedChi2(p,c);
+          if (chi2>AliITSReconstructor::GetRecoParam()->GetVertexChi2CutPlaneEff()) return kFALSE;  // Use this to cut on chi^2
+
+       } else return kFALSE;
+    }
+
+
   return kTRUE;
 }
 //------------------------------------------------------------------------

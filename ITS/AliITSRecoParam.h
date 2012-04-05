@@ -269,6 +269,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t GetNSigXFromBoundaryPlaneEff() const {return fNSigXFromBoundaryPlaneEff;}
   void SetNSigZFromBoundaryPlaneEff(Double_t nsigz=1.) {fNSigZFromBoundaryPlaneEff=nsigz;}
   Double_t GetNSigZFromBoundaryPlaneEff() const {return fNSigZFromBoundaryPlaneEff;}
+  void SetDCACutPlaneEff(Double_t dcacpe=999.) {fDCACutPlaneEff=dcacpe;}
+  Double_t GetDCACutPlaneEff() const {return fDCACutPlaneEff;}
+  void SetVertexChi2CutPlaneEff(Double_t vtxchipe=999999999.) {fVertexChi2CutPlaneEff=vtxchipe;}
+  Double_t GetVertexChi2CutPlaneEff() const {return fVertexChi2CutPlaneEff;}
+
   //
   void   SetImproveWithVertex(Bool_t impr=kFALSE) { fImproveWithVertex=impr; return; }
   Bool_t GetImproveWithVertex() const { return fImproveWithVertex; }
@@ -637,6 +642,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fOnlyConstraintPlaneEff;  // if kTRUE, use only constrained tracks at primary vertex for Plane Eff.
   Double_t fNSigXFromBoundaryPlaneEff;  // accept one track for PlaneEff if distance from border (in loc x or z)
   Double_t fNSigZFromBoundaryPlaneEff;  // is greater than fNSigXFromBoundaryPlaneEff * Track_precision
+  Double_t fDCACutPlaneEff;  // this set the cut on DCA in rphi plane when evaluating PlaneEff(SPD0)
+  Double_t fVertexChi2CutPlaneEff; // and also with a cut on the chi2
 
   Bool_t fImproveWithVertex;    // use the method AliITStrackV2::Improve() to point to the vertex during prolongation
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
@@ -764,7 +771,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,51) // ITS reco parameters
+  ClassDef(AliITSRecoParam,52) // ITS reco parameters
 };
 
 #endif
