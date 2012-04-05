@@ -41,6 +41,7 @@ class AliFemtoCutMonitorHandler{
   void FillCutMonitor(const AliFemtoPair* pair, bool pass);//Gael 11/04/02
   void FillCutMonitor(const AliFemtoParticleCollection* partColl);// Gael 19/06/02
   void FillCutMonitor(const AliFemtoEvent* event, const AliFemtoParticleCollection* partColl);// Gael 19/06/02
+  void FillCutMonitor(const AliFemtoParticleCollection* partColl1, const AliFemtoParticleCollection* partColl2);
   void Finish();
 
   virtual TList *GetOutputList();

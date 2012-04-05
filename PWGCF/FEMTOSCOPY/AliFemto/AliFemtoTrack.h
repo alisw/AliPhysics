@@ -51,7 +51,7 @@ public:
   AliFemtoThreeVector P() const;
   float Pt() const;
   const AliFmPhysicalHelixD& Helix() const;
-  short TrackId() const;
+  int TrackId() const;
   long int Flags() const;
   int Label()const;
   float ImpactD()const;
@@ -83,6 +83,10 @@ public:
   float TOFkaonTime() const;
   float TOFprotonTime() const;
 
+  double XatDCA() const;
+  double YatDCA() const;
+  double ZatDCA() const;
+
   const TBits& TPCclusters() const;
   const TBits& TPCsharing()  const;
   
@@ -97,7 +101,7 @@ public:
   void SetP(const AliFemtoThreeVector& p);
   void SetPt(const float& x);
   void SetHelix(const AliFmPhysicalHelixD& h);
-  void SetTrackId(const short& s);
+  void SetTrackId(const int& s);
   void SetFlags(const long int& i);
   void SetLabel(const int& i);
   void SetImpactD(const float& x);
@@ -150,6 +154,10 @@ public:
   void SetNominalTPCExitPoint(double *aXTPC);
   void SetSigmaToVertex(const float& Sigma);
   float SigmaToVertex() const;
+
+  void SetXatDCA(const double& x);
+  void SetYatDCA(const double& x);
+  void SetZatDCA(const double& x);
  
   //Alice stuff
   enum {
@@ -171,7 +179,7 @@ public:
   float fPidProbKaon;     // kaon pid 
   float fPidProbProton;   // proton pid
   float fPidProbMuon;     // muon pid
-  unsigned int fTrackId;  // track unique id
+  int fTrackId;  // track unique id
   float fTofPionTime;     // TOF time - pion expected time
   float fTofKaonTime;     // TOF time - kaon expected time
   float fTofProtonTime;   // TOF time - proton expected time
@@ -210,7 +218,13 @@ public:
   AliFemtoThreeVector fNominalTpcEntrancePoint; // Nominal track entrance point into TPC
   AliFemtoThreeVector fNominalTpcExitPoint;     // Nominal track exit point from TPC
 
+
+
   int   fKinkIndexes[3]; // Kink Index list
+
+  double fXatDCA;
+  double fYatDCA;
+  double fZatDCA;
   /* Th stuff */
   // Fab private : add mutable
   //  mutable 

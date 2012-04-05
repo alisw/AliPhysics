@@ -1,56 +1,57 @@
 ////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoCutMonitorParticlePID - the cut monitor for particles to study   ///
-/// various aspects of the PID determination                                 ///
-///                                                                          ///
+//                                                                            //
+// AliFemtoCutMonitorV0 -                                                     //
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoCutMonitorParticlePID_hh
-#define AliFemtoCutMonitorParticlePID_hh
+#ifndef AliFemtoCutMonitorV0_H
+#define AliFemtoCutMonitorV0_H
 
 class AliFemtoEvent;
 class AliFemtoTrack;
 class AliFemtoV0;
 class AliFemtoKink;
 class AliFemtoPair; // Gael 12/04/02
-class TH1D;
-class TH2D;
+class TH1F;
 class TList;
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoCutMonitor.h"
 
-class AliFemtoCutMonitorParticlePID : public AliFemtoCutMonitor{
+class AliFemtoCutMonitorV0 : public AliFemtoCutMonitor{
   
 public:
-  AliFemtoCutMonitorParticlePID();
-  AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle);
-  AliFemtoCutMonitorParticlePID(const AliFemtoCutMonitorParticlePID &aCut);
-  virtual ~AliFemtoCutMonitorParticlePID();
+  AliFemtoCutMonitorV0();
+  AliFemtoCutMonitorV0(const char *aName);
+  AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut);
+  virtual ~AliFemtoCutMonitorV0();
 
-  AliFemtoCutMonitorParticlePID& operator=(const AliFemtoCutMonitorParticlePID& aCut);
+  AliFemtoCutMonitorV0& operator=(const AliFemtoCutMonitorV0& aCut);
 
   virtual AliFemtoString Report();
   virtual void Fill(const AliFemtoEvent* aEvent) {AliFemtoCutMonitor::Fill(aEvent);}
-  virtual void Fill(const AliFemtoTrack* aTrack);
-  virtual void Fill(const AliFemtoV0* aV0) {AliFemtoCutMonitor::Fill(aV0);}
+  virtual void Fill(const AliFemtoTrack* aTrack){AliFemtoCutMonitor::Fill(aTrack);}
+  virtual void Fill(const AliFemtoV0* aV0);
   virtual void Fill(const AliFemtoKink* aKink) {AliFemtoCutMonitor::Fill(aKink);}
   virtual void Fill(const AliFemtoPair* aPair) {AliFemtoCutMonitor::Fill(aPair);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aCollection);}
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection)
   {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection1,const AliFemtoParticleCollection* aCollection2) {AliFemtoCutMonitor::Fill(aCollection1, aCollection2);}
-  void SetTOFParticle(Int_t ipart);
-
   void Write();
 
   virtual TList *GetOutputList();
 
 private:
-  TH2D *fTPCdEdx;     // TPC dEdx information
-  Int_t fTOFParticle; // Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
-  TH2D *fTOFTime;     // TOF time
-  TH2D* ftofHist;     // TOF hist with vp
-
+  TH1F *fLambdaMass;     // Mass assuming lambda hypothesis	
+  TH1F *fAntiLambdaMass; // Mass assuming antilambda hypothesis
+  TH1F *fK0ShortMass;    // Mass assuming k-short hypothesis	
+  TH1F *fDcaDaughters;   // DCA of v0 daughters at Decay vertex
+  TH1F *fDcaV0ToPrimVertex;// DCA of v0 to primary vertex
+  TH1F *fCosPointingAngle; 
+  TH1F *fEtaV0;
+  TH1F *fPtV0;
+  TH1F *fPtPosDaughter;
+  TH1F *fPtNegDaughter;
 };
 
 #endif

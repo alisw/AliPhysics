@@ -16,13 +16,13 @@ AliFemtoV0::AliFemtoV0():
   fDcaV0Daughters(0), fDcaV0ToPrimVertex(0),
   fDcaPosToPrimVertex(0), fDcaNegToPrimVertex(0),
   fMomPos(0), fMomNeg(0),
-  fTpcHitsPos(0), fTpcHitsNeg(0),
-  fChi2V0(0),  fClV0(0),  fChi2Pos(0),  fClPos(0),  fChi2Neg(0),  fClNeg(0),
+  fTpcHitsPos(0), fTpcHitsNeg(0), fOnFlyStatusV0(0),
+  fChi2V0(0),  fClV0(0),  fChi2Pos(0),  fClPos(0),  fChi2Neg(0),  fClNeg(0), fCosPointingAngle(0),
   fDedxPos(0),  fErrDedxPos(0),  fLenDedxPos(0),
   fDedxNeg(0),  fErrDedxNeg(0),  fLenDedxNeg(0),
   fNufDedxPos(0), fNufDedxNeg(0),
   fHelixPos(), fHelixNeg(), 
-  fMomV0(0),
+  fMomV0(0), fEtaV0(0), fPhiV0(0), fYV0(0),
   fAlphaV0(0),  fPtArmV0(0),
   fELambda(0),  fEK0Short(0),  
   fEPosProton(0),  fEPosPion(0),
@@ -33,7 +33,12 @@ AliFemtoV0::AliFemtoV0():
   fCTauK0Short(0),  fPtV0(0),  fPtotV0(0),
   fPtPos(0),  fPtotPos(0),
   fPtNeg(0),  fPtotNeg(0),
+  fEtaPos(0), fEtaNeg(0), fTPCNclsPos(0), fTPCNclsNeg(0), fClustersPos(0), fClustersNeg(0), fSharingPos(0), fSharingNeg(0), fNdofPos(0), fNdofNeg(0), fStatusPos(0), fStatusNeg(0),
+  fPosNSigmaTPCK(0), fPosNSigmaTPCPi(0), fPosNSigmaTPCP(0), fNegNSigmaTPCK(0), fNegNSigmaTPCPi(0), fNegNSigmaTPCP(0),
+  fPosNSigmaTOFK(0), fPosNSigmaTOFPi(0), fPosNSigmaTOFP(0), fNegNSigmaTOFK(0), fNegNSigmaTOFPi(0), fNegNSigmaTOFP(0),
   fKeyNeg(0),   fKeyPos(0),
+  fNominalTpcEntrancePointPos(0,0,0),fNominalTpcExitPointPos(0,0,0),
+  fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
   fHiddenInfo(0)  /***/
 { 
   // Default empty constructor
@@ -41,7 +46,6 @@ AliFemtoV0::AliFemtoV0():
   fTrackTopologyMapPos[1] = 0;
   fTrackTopologyMapNeg[0] = 0;
   fTrackTopologyMapNeg[1] = 0;
-
 }
 // -----------------------------------------------------------------------
 AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
@@ -49,13 +53,13 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fDcaV0Daughters(0), fDcaV0ToPrimVertex(0),
   fDcaPosToPrimVertex(0), fDcaNegToPrimVertex(0),
   fMomPos(0), fMomNeg(0),
-  fTpcHitsPos(0), fTpcHitsNeg(0),
-  fChi2V0(0),  fClV0(0),  fChi2Pos(0),  fClPos(0),  fChi2Neg(0),  fClNeg(0),
+  fTpcHitsPos(0), fTpcHitsNeg(0), fOnFlyStatusV0(0),
+  fChi2V0(0),  fClV0(0),  fChi2Pos(0),  fClPos(0),  fChi2Neg(0),  fClNeg(0), fCosPointingAngle(0),
   fDedxPos(0),  fErrDedxPos(0),  fLenDedxPos(0),
   fDedxNeg(0),  fErrDedxNeg(0),  fLenDedxNeg(0),
   fNufDedxPos(0), fNufDedxNeg(0),
   fHelixPos(), fHelixNeg(), 
-  fMomV0(0),
+  fMomV0(0), fEtaV0(0), fPhiV0(0), fYV0(0),
   fAlphaV0(0),  fPtArmV0(0),
   fELambda(0),  fEK0Short(0),  
   fEPosProton(0),  fEPosPion(0),
@@ -66,7 +70,12 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fCTauK0Short(0),  fPtV0(0),  fPtotV0(0),
   fPtPos(0),  fPtotPos(0),
   fPtNeg(0),  fPtotNeg(0),
+  fEtaPos(0), fEtaNeg(0), fTPCNclsPos(0), fTPCNclsNeg(0), fClustersPos(0), fClustersNeg(0), fSharingPos(0), fSharingNeg(0), fNdofPos(0), fNdofNeg(0), fStatusPos(0), fStatusNeg(0),
+  fPosNSigmaTPCK(0), fPosNSigmaTPCPi(0), fPosNSigmaTPCP(0), fNegNSigmaTPCK(0), fNegNSigmaTPCPi(0), fNegNSigmaTPCP(0),
+  fPosNSigmaTOFK(0), fPosNSigmaTOFPi(0), fPosNSigmaTOFP(0), fNegNSigmaTOFK(0), fNegNSigmaTOFPi(0), fNegNSigmaTOFP(0),
   fKeyNeg(0),   fKeyPos(0),
+  fNominalTpcEntrancePointPos(0,0,0),fNominalTpcExitPointPos(0,0,0),
+  fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
   fHiddenInfo(0)  /***/
 { 
   // copy constructor
@@ -79,6 +88,11 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fMomPos = v.fMomPos;
   fMomNeg = v.fMomNeg;
 
+  fEtaV0 = v.fEtaV0;
+  fPhiV0 = v.fPhiV0;
+  fYV0 = v.fYV0;
+  fCosPointingAngle = v.fCosPointingAngle;
+
   fTrackTopologyMapPos[0] = v.fTrackTopologyMapPos[0];
   fTrackTopologyMapPos[1] = v.fTrackTopologyMapPos[1];
   fTrackTopologyMapNeg[0] = v.fTrackTopologyMapNeg[0];
@@ -86,7 +100,34 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
    
   fKeyPos = v.fKeyPos;
   fKeyNeg = v.fKeyNeg;
-     
+  fEtaPos = v.fEtaPos; 
+  fEtaNeg = v.fEtaNeg; 
+  fTPCNclsPos = v.fTPCNclsPos; 
+  fTPCNclsNeg = v.fTPCNclsNeg; 
+  fClustersPos = v.fClustersPos;
+  fClustersNeg = v.fClustersNeg;
+  fSharingPos = v.fSharingPos;
+  fSharingNeg = v.fSharingNeg;
+  fNdofPos = v.fNdofPos; 
+  fNdofNeg = v.fNdofNeg; 
+  fStatusPos = v.fStatusPos; 
+  fStatusNeg = v.fStatusNeg;
+  fOnFlyStatusV0 = v.fOnFlyStatusV0;
+
+  fPosNSigmaTPCK =  v.fPosNSigmaTPCK;
+  fPosNSigmaTPCPi = v.fPosNSigmaTPCPi ; 
+  fPosNSigmaTPCP = v.fPosNSigmaTPCP ; 
+  fNegNSigmaTPCK = v.fNegNSigmaTPCK ; 
+  fNegNSigmaTPCPi = v.fNegNSigmaTPCPi ; 
+  fNegNSigmaTPCP = v.fNegNSigmaTPCP ;
+  fPosNSigmaTOFK = v.fPosNSigmaTOFK ; 
+  fPosNSigmaTOFPi = v.fPosNSigmaTOFPi ; 
+  fPosNSigmaTOFP = v.fPosNSigmaTOFP ; 
+  fNegNSigmaTOFK = v.fNegNSigmaTOFK ; 
+  fNegNSigmaTOFPi = v.fNegNSigmaTOFPi ; 
+  fNegNSigmaTOFP = v.fNegNSigmaTOFP ;
+
+
   fTpcHitsPos = v.fTpcHitsPos;
   fTpcHitsNeg = v.fTpcHitsNeg;
 
@@ -108,6 +149,12 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
 
   fHelixPos = v.fHelixPos;// Gael 12 Sept
   fHelixNeg = v.fHelixNeg;// Gael 12 Sept
+
+  fNominalTpcEntrancePointPos = v.fNominalTpcEntrancePointPos;
+  fNominalTpcExitPointPos = v.fNominalTpcExitPointPos;
+  fNominalTpcEntrancePointNeg = v.fNominalTpcEntrancePointNeg;
+  fNominalTpcExitPointNeg = v.fNominalTpcExitPointNeg;
+
   fHiddenInfo = v.fHiddenInfo? v.fHiddenInfo->Clone() : 0;// GR 11 DEC 02
   UpdateV0();
 }
@@ -132,6 +179,38 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
    
   fKeyPos = aV0.fKeyPos;
   fKeyNeg = aV0.fKeyNeg;
+
+  fEtaPos = aV0.fEtaPos; 
+  fEtaNeg = aV0.fEtaNeg; 
+  fTPCNclsPos = aV0.fTPCNclsPos; 
+  fTPCNclsNeg = aV0.fTPCNclsNeg;
+  fClustersPos = aV0.fClustersPos;
+  fClustersNeg = aV0.fClustersNeg;
+  fSharingPos = aV0.fSharingPos;
+  fSharingNeg = aV0.fSharingNeg;
+  fNdofPos = aV0.fNdofPos; 
+  fNdofNeg = aV0.fNdofNeg; 
+  fStatusPos = aV0.fStatusPos; 
+  fStatusNeg = aV0.fStatusNeg;
+  fOnFlyStatusV0 = aV0.fOnFlyStatusV0;
+
+  fPosNSigmaTPCK =  aV0.fPosNSigmaTPCK;
+  fPosNSigmaTPCPi = aV0.fPosNSigmaTPCPi ; 
+  fPosNSigmaTPCP = aV0.fPosNSigmaTPCP ; 
+  fNegNSigmaTPCK = aV0.fNegNSigmaTPCK ; 
+  fNegNSigmaTPCPi = aV0.fNegNSigmaTPCPi ; 
+  fNegNSigmaTPCP = aV0.fNegNSigmaTPCP ;
+  fPosNSigmaTOFK = aV0.fPosNSigmaTOFK ; 
+  fPosNSigmaTOFPi = aV0.fPosNSigmaTOFPi ; 
+  fPosNSigmaTOFP = aV0.fPosNSigmaTOFP ; 
+  fNegNSigmaTOFK = aV0.fNegNSigmaTOFK ; 
+  fNegNSigmaTOFPi = aV0.fNegNSigmaTOFPi ; 
+  fNegNSigmaTOFP = aV0.fNegNSigmaTOFP ;
+
+  fEtaV0 = aV0.fEtaV0;
+  fPhiV0 = aV0.fPhiV0;
+  fYV0 = aV0.fYV0;
+  fCosPointingAngle = aV0.fCosPointingAngle;
      
   fTpcHitsPos = aV0.fTpcHitsPos;
   fTpcHitsNeg = aV0.fTpcHitsNeg;
@@ -154,6 +233,14 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
 
   fHelixPos = aV0.fHelixPos;// Gael 12 Sept
   fHelixNeg = aV0.fHelixNeg;// Gael 12 Sept
+
+  fNominalTpcEntrancePointPos = aV0.fNominalTpcEntrancePointPos;
+  fNominalTpcExitPointPos = aV0.fNominalTpcExitPointPos;
+  fNominalTpcEntrancePointPos = aV0.fNominalTpcEntrancePointPos;
+  fNominalTpcExitPointPos = aV0.fNominalTpcExitPointPos;
+  fNominalTpcEntrancePointNeg = aV0.fNominalTpcEntrancePointNeg;
+  fNominalTpcExitPointNeg = aV0.fNominalTpcExitPointNeg;
+
   if (fHiddenInfo) delete fHiddenInfo;
   fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->Clone() : 0;// GR 11 DEC 02
   UpdateV0();
@@ -183,13 +270,21 @@ void AliFemtoV0::UpdateV0(){
    tMomNegAlongV0 =  fMomNeg*fMomV0 / ::sqrt(::pow(fPtotV0,2));
    tMomPosAlongV0 =  fMomPos*fMomV0 / ::sqrt(::pow(fPtotV0,2));
 
+   if(tMomPosAlongV0+tMomNegAlongV0!=0)
    fAlphaV0 = (tMomPosAlongV0-tMomNegAlongV0)/(tMomPosAlongV0+tMomNegAlongV0);
-   fPtArmV0 =  ::sqrt(fPtotPos*fPtotPos - tMomPosAlongV0*tMomPosAlongV0);
+
+   //printf("%1.15f\n",fPtotPos);
+   //printf("%1.15f\n",tMomPosAlongV0);   
+   
+   if(fPtotPos<tMomPosAlongV0) fPtArmV0=0; else
+     { 
+       fPtArmV0 =  ::sqrt(fPtotPos*fPtotPos - tMomPosAlongV0*tMomPosAlongV0);
+     }
    fMassLambda = ::sqrt(::pow(fEPosProton+fENegPion,2)-::pow(fPtotV0,2));
    fMassAntiLambda = ::sqrt(::pow(fENegProton+fEPosPion,2)-::pow(fPtotV0,2));
    fMassK0Short = ::sqrt(::pow(fENegPion+fEPosPion,2)-::pow(fPtotV0,2));
-
    fRapLambda = 0.5*::log( (fELambda+fMomV0.z()) / (fELambda-fMomV0.z()) );
+
    fCTauLambda = kMLAMBDA*(fDecayLengthV0) / ::sqrt( ::pow((double)fMomV0.Mag(),2.) );
    
    fRapK0Short = 0.5*::log( (fEK0Short+fMomV0.z()) / (fEK0Short-fMomV0.z()) );

@@ -51,6 +51,9 @@ private:
   TH2D *fDCosPtNumerator;            // Numerator of colinearity correlation vs. Pt min
   TH2D *fDCosPtDenominator;          // Denominator of colinearity correlation vs. Pt min
 
+  TH1D *fPhi;
+  TH1D *fEta;
+
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhi, 1)
 #endif

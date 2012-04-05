@@ -36,7 +36,7 @@ AliFemtoPairCutAntiGamma::AliFemtoPairCutAntiGamma():
   fMaxEEMinv(0.0),
   fMaxDTheta(0.0),
   fDTPCMin(0),
-  fUseAOD(kFALSE)
+  fDataType(kESD)
 {
 }
 //__________________
@@ -45,12 +45,12 @@ AliFemtoPairCutAntiGamma::AliFemtoPairCutAntiGamma(const AliFemtoPairCutAntiGamm
   fMaxEEMinv(0.0),
   fMaxDTheta(0.0),
   fDTPCMin(0),
-  fUseAOD(kFALSE)
+  fDataType(kESD)
 { 
   fMaxEEMinv = c.fMaxEEMinv;
   fMaxDTheta = c.fMaxDTheta;
   fDTPCMin = c.fDTPCMin;
-  fUseAOD = c.fUseAOD;
+  fDataType = c.fDataType;
 }
 
 AliFemtoPairCutAntiGamma& AliFemtoPairCutAntiGamma::operator=(const AliFemtoPairCutAntiGamma& c)
@@ -59,7 +59,7 @@ AliFemtoPairCutAntiGamma& AliFemtoPairCutAntiGamma::operator=(const AliFemtoPair
     fMaxEEMinv = c.fMaxEEMinv;
     fMaxDTheta = c.fMaxDTheta;
     fDTPCMin = c.fDTPCMin;
-    fUseAOD = c.fUseAOD;
+    fDataType = c.fDataType;
   }
 
   return *this;
@@ -74,6 +74,9 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair){
   // Accept pairs based on their TPC entrance separation and
   // quality and sharity
   bool temp = true;
+
+  if(fDataType==kKine)
+    return true;
 
   double me = 0.000511;
 
@@ -95,7 +98,7 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair){
 
   bool tempTPCEntrance = true;
  
-  if(!fUseAOD)
+  if(fDataType==kAOD)
     {
       double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
       double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
@@ -104,7 +107,7 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair){
 
       tempTPCEntrance = dist > fDTPCMin;
     }
-
+ 
 
   if (temp && tempTPCEntrance) {
     temp = AliFemtoShareQualityPairCut::Pass(pair);
@@ -159,7 +162,7 @@ void AliFemtoPairCutAntiGamma::SetTPCEntranceSepMinimum(double dtpc)
   fDTPCMin = dtpc;
 }
 
-void AliFemtoPairCutAntiGamma::SetUseAOD(Bool_t UseAOD)
+void AliFemtoPairCutAntiGamma::SetDataType(AliFemtoDataType type)
 {
-  fUseAOD = UseAOD;
+  fDataType = type;
 }

@@ -20,7 +20,7 @@
 #include <list>
 //#include "AliPWG2AODTrack.h"
 #include "AliAODMCParticle.h"
-
+#include "AliFemtoV0.h"
 #include "AliAODpidUtil.h"
 
 class AliFemtoEvent;
@@ -40,7 +40,9 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetInputFile(const char* inputFile);
   void SetFilterBit(UInt_t ibit);
   void SetReadMC(unsigned char a);
+  void SetReadV0(unsigned char a);
   void SetCentralityPreSelection(double min, double max);
+  void SetNoCentrality(bool anocent);
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
 
  protected:
@@ -49,6 +51,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
 				    AliFemtoTrack *tFemtoTrack
 				    //				    AliPWG2AODTrack *tPWG2AODTrack
 				    ); 
+  virtual void CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0);			    
   virtual void CopyPIDtoFemtoTrack( AliAODTrack *tAodTrack, 
 				   AliFemtoTrack *tFemtoTrack);
 
@@ -61,8 +64,10 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   //  TClonesArray*  fPWG2AODTracks;    // Link to PWG2 specific AOD information (if it exists)
   
   unsigned char  fReadMC;           // Attempt to read the MC information from the AOD
+  unsigned char  fReadV0;           // Read V0 information from the AOD and put it into V0Collection
   unsigned char  fUsePreCent;       // Use centrality pre-selection to speed up analysis
   double         fCentRange[2];     // Centrality pre-selection range
+  unsigned char  fNoCentrality;     // Do not use centrality determination (for pp)
   AliAODpidUtil* fAODpidUtil;
 
  private:

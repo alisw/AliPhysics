@@ -36,8 +36,8 @@ class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor{
   virtual void Fill(const AliFemtoKink* aKink) {AliFemtoCutMonitor::Fill(aKink);}
   virtual void Fill(const AliFemtoPair* aPair) {AliFemtoCutMonitor::Fill(aPair);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aCollection);}
-  virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection)
-  {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
+  virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
+  virtual void Fill(const AliFemtoParticleCollection* aCollection1,const AliFemtoParticleCollection* aCollection2) {AliFemtoCutMonitor::Fill(aCollection1, aCollection2);}
 
   void SetReadMC(Bool_t mc);
   void AdditionalMultHistsOn(Bool_t addhists);

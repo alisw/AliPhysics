@@ -35,7 +35,9 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
-  fDCosPtDenominator(0)
+  fDCosPtDenominator(0),
+  fPhi(0),
+  fEta(0)
 {
   // set up numerator
   char tTitNumD[101] = "NumDPhiDEta";
@@ -64,6 +66,15 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   strncat(tTitDenDCos,title, 100);
   fDCosDenominator = new TH1D(tTitDenDCos,title,aPhiBins*2,-1.0,1.0);
 
+  char tTitPhi[101] = "Phi";
+  strncat(tTitPhi,title, 100);
+  fPhi = new TH1D(tTitPhi,title,90,-TMath::Pi(),TMath::Pi());
+
+  char tTitEta[101] = "Eta";
+  strncat(tTitEta,title, 100);
+  fEta = new TH1D(tTitEta,title,90,-1.2,1.2);
+  
+
   // to enable error bar calculation...
   fDPhiDEtaNumerator->Sumw2();
   fDPhiDEtaDenominator->Sumw2();
@@ -71,6 +82,8 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   fDPhiDenominator->Sumw2();
   fDCosNumerator->Sumw2();
   fDCosDenominator->Sumw2();
+  fPhi->Sumw2();
+  fEta->Sumw2();
 }
 
 //____________________________
@@ -86,7 +99,9 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
-  fDCosPtDenominator(0)
+  fDCosPtDenominator(0),
+  fPhi(0),
+  fEta(0)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)
@@ -133,6 +148,14 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
     fDCosPtDenominator = new TH2D(*aCorrFctn.fDCosPtDenominator);
   else
     fDCosPtDenominator = 0;
+ if (aCorrFctn.fPhi)
+    fPhi = new TH1D(*aCorrFctn.fPhi);
+  else
+    fPhi = 0;
+ if (aCorrFctn.fEta)
+    fEta = new TH1D(*aCorrFctn.fEta);
+  else
+    fEta = 0;
 
 }
 //____________________________
@@ -150,6 +173,8 @@ AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
     delete fDCosPtNumerator;
     delete fDCosPtDenominator;
   }
+  delete fPhi;
+  delete fEta;
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorrFctnDEtaDPhi& aCorrFctn)
@@ -202,6 +227,14 @@ AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorr
     fDCosPtDenominator = new TH2D(*aCorrFctn.fDCosPtDenominator);
   else
     fDCosPtDenominator = 0;
+  if (aCorrFctn.fPhi)
+    fPhi = new TH1D(*aCorrFctn.fPhi);
+  else
+    fPhi = 0;
+  if (aCorrFctn.fEta)
+    fEta = new TH1D(*aCorrFctn.fEta);
+  else
+    fEta = 0;
 
   return *this;
 }
@@ -236,10 +269,15 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   if (fPairCut)
     if (!fPairCut->Pass(pair)) return;
 
-  double phi1 = pair->Track1()->Track()->P().Phi();
+  /*double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
+
+  double phi1 = pair->Track1()->FourMomentum().Phi();
+  double phi2 = pair->Track2()->FourMomentum().Phi();
+  double eta1 = pair->Track1()->FourMomentum().PseudoRapidity();
+  double eta2 = pair->Track2()->FourMomentum().PseudoRapidity();
 
   double dphi = phi1 - phi2;
   while (dphi<-PIH) dphi+=PIT;
@@ -272,6 +310,9 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
 //     fDCosPtNumerator->Fill(cosphi, ptmin);
   }
 
+  fPhi->Fill(phi1);
+  fEta->Fill(eta1);
+
 }
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
@@ -279,10 +320,15 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
   if (fPairCut)
     if (!fPairCut->Pass(pair)) return;
 
-  double phi1 = pair->Track1()->Track()->P().Phi();
+  /*double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
+
+  double phi1 = pair->Track1()->FourMomentum().Phi();
+  double phi2 = pair->Track2()->FourMomentum().Phi();
+  double eta1 = pair->Track1()->FourMomentum().PseudoRapidity();
+  double eta2 = pair->Track2()->FourMomentum().PseudoRapidity();
 
   double dphi = phi1 - phi2;
   while (dphi<-PIH) dphi+=PIT;
@@ -322,7 +368,7 @@ void AliFemtoCorrFctnDEtaDPhi::WriteHistos()
   // Write out result histograms
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
-  fDPhiNumerator->Write();
+  /*fDPhiNumerator->Write();
   fDPhiDenominator->Write();
   fDCosNumerator->Write();
   fDCosDenominator->Write();
@@ -331,7 +377,9 @@ void AliFemtoCorrFctnDEtaDPhi::WriteHistos()
     fDPhiPtDenominator->Write();
     fDCosPtNumerator->Write();
     fDCosPtDenominator->Write();
-  }
+    }*/
+  fPhi->Write();
+  fEta->Write();
 }
 
 TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
@@ -341,7 +389,7 @@ TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
 
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
-  tOutputList->Add(fDPhiNumerator);
+  /*tOutputList->Add(fDPhiNumerator);
   tOutputList->Add(fDPhiDenominator);
   tOutputList->Add(fDCosNumerator);
   tOutputList->Add(fDCosDenominator);
@@ -350,7 +398,9 @@ TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
     tOutputList->Add(fDPhiPtDenominator);
     tOutputList->Add(fDCosPtNumerator);
     tOutputList->Add(fDCosPtDenominator);
-  }
+    }*/
+  tOutputList->Add(fPhi);
+  tOutputList->Add(fEta);
 
   return tOutputList;
 

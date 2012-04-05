@@ -182,7 +182,6 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   int tNormMult = 0;
   for (int i=0;i<nofTracks;i++)
     {
-
       //take only primaries
       if(!fStack->IsPhysicalPrimary(i)) {continue;}
 	  	  
@@ -257,7 +256,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	if (v.Mag() < 0.0001) {
-	  //	  cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
+	  //cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  delete trackCopy;
 	  continue;
 	}
@@ -268,17 +267,53 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
 
 	//label
-    trackCopy->SetLabel(i);
+	trackCopy->SetLabel(i);
 
 
 	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
-	
+	//cout<<"Track added: "<<i<<endl;
 		
     }
   
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
   hbtEvent->SetNormalizedMult(tNormMult);
   fCurEvent++;	
+
+
+  //V0 analysis code - no V0 finder for Kinematics, we can only check if it is primary and if it has at least 2 daughters.
+
+  for (int i=0;i<nofTracks;i++)
+    {
+      //do not take primaries
+      if(!fStack->IsPhysicalPrimary(i)) {continue;}
+      //getting next track
+      TParticle *kinetrack= fStack->Particle(i);
+      if (!kinetrack) continue;
+      
+      if(kinetrack->GetPDG()->Charge()!=0) continue; //charge - neutral
+      //if(kinetrack->GetPDG()->Stable()==1) continue; //particle is not stable
+      if(kinetrack->GetDaughter(0)<1) continue; //has 1'st daughter
+      if(kinetrack->GetDaughter(1)<1) continue;  //has 2'nd daughter
+ 
+      //we want one positive, one negative particle. Or two neutral.
+      // if((fStack->Particle(kinetrack->GetDaughter(0)))->GetPDG()->Charge()>=0)
+      // 	if((fStack->Particle(kinetrack->GetDaughter(1)))->GetPDG()->Charge()>0)
+      // 	  continue;
+      // if((fStack->Particle(kinetrack->GetDaughter(0)))->GetPDG()->Charge()<=0)
+      // 	if((fStack->Particle(kinetrack->GetDaughter(0)))->GetPDG()->Charge()<0)
+      // 	  continue;
+      
+      if(kinetrack->Pt()<0.00001)
+	continue;
+      
+      AliFemtoV0* trackCopyV0 = new AliFemtoV0();
+      CopyAODtoFemtoV0(kinetrack, trackCopyV0);
+      hbtEvent->V0Collection()->push_back(trackCopyV0);
+    //cout<<"Pushback v0 to v0collection"<<endl;
+    }
+
+
+  cout<<"Number of tracks: "<<realnofTracks<<endl;
 
   return hbtEvent; 
 }
@@ -344,4 +379,121 @@ Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, dou
 
   d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
   return d;
+}
+
+
+
+ void AliFemtoEventReaderKinematicsChain::CopyAODtoFemtoV0(TParticle *tv0, AliFemtoV0 *tFemtoV0 )
+{
+  tFemtoV0->SetEtaV0(tv0->Eta());
+  tFemtoV0->SetEtaV0(tv0->Phi());
+  tFemtoV0->SetptV0(tv0->Pt()); 
+  tFemtoV0->SetptotV0(tv0->P());
+
+  tFemtoV0->SetmomV0X(tv0->Px());
+  tFemtoV0->SetmomV0Y(tv0->Py());
+  tFemtoV0->SetmomV0Z(tv0->Pz());
+  AliFemtoThreeVector momv0(tv0->Px(),tv0->Py(),tv0->Pz());
+  tFemtoV0->SetmomV0(momv0);
+
+
+  TParticle *trackpos;
+  TParticle *trackneg;
+
+  //daughters
+  if(fStack->Particle(tv0->GetDaughter(0))->GetPDG()->Charge()>=0) //first positive, second negative
+    {
+      trackpos = (TParticle*)(fStack->Particle(tv0->GetDaughter(0)));
+      trackneg = (TParticle*)(fStack->Particle(tv0->GetDaughter(1)));
+      tFemtoV0->SetidPos(tv0->GetDaughter(0));
+      tFemtoV0->SetidNeg(tv0->GetDaughter(1));
+    }
+  else //first negative, second positive
+    {
+      trackpos = (TParticle*)(fStack->Particle(tv0->GetDaughter(1)));
+      trackneg = (TParticle*)(fStack->Particle(tv0->GetDaughter(0)));
+      tFemtoV0->SetidPos(tv0->GetDaughter(1));
+      tFemtoV0->SetidNeg(tv0->GetDaughter(0));
+    }
+
+  tFemtoV0->SetEtaPos(trackpos->Eta());
+  tFemtoV0->SetEtaNeg(trackneg->Eta());
+  
+  tFemtoV0->SetptPos(trackpos->Pt());
+  tFemtoV0->SetptNeg(trackneg->Pt());
+   
+  tFemtoV0->SetptotPos(trackpos->P());
+  tFemtoV0->SetptotNeg(trackneg->P());
+
+  tFemtoV0->SetmomPosX(trackpos->Px());
+  tFemtoV0->SetmomPosY(trackpos->Py());
+  tFemtoV0->SetmomPosZ(trackpos->Pz());
+  AliFemtoThreeVector mompos(trackpos->Px(),trackpos->Py(),trackpos->Pz());
+  tFemtoV0->SetmomPos(mompos);
+
+  tFemtoV0->SetmomNegX(trackneg->Px());
+  tFemtoV0->SetmomNegY(trackneg->Py());
+  tFemtoV0->SetmomNegZ(trackneg->Pz());
+  AliFemtoThreeVector momneg(trackneg->Px(),trackneg->Py(),trackneg->Pz());
+  tFemtoV0->SetmomNeg(momneg);
+
+    
+  tFemtoV0->SetmassLambda(tv0->GetMass());
+  tFemtoV0->SetmassAntiLambda(tv0->GetMass());
+  tFemtoV0->SetmassK0Short(tv0->GetMass());
+
+  tFemtoV0->SetYV0(tv0->Y());
+
+  tFemtoV0->SetdecayVertexV0X(trackpos->Vx()); //vertex of the decay is set as the vertex of creation of daughters
+  tFemtoV0->SetdecayVertexV0Y(trackpos->Vy());
+  tFemtoV0->SetdecayVertexV0Z(trackpos->Vz());
+  AliFemtoThreeVector decayvertex(trackpos->Vx(),trackpos->Vy(),trackpos->Vz());
+  tFemtoV0->SetdecayVertexV0(decayvertex);
+
+  tFemtoV0->SetdcaV0Daughters(0);
+  tFemtoV0->SetCosPointingAngle(1);
+
+
+  tFemtoV0->SetStatusPos(1);
+  tFemtoV0->SetStatusNeg(1);
+
+  
+  if(trackpos->GetPdgCode()==2212) //proton
+    {
+      tFemtoV0->SetPosNSigmaTPCK(1000);
+      tFemtoV0->SetPosNSigmaTPCPi(1000);
+      tFemtoV0->SetPosNSigmaTPCP(0);
+    }
+  if(trackneg->GetPdgCode()==-2212) //antiproton
+    {
+      tFemtoV0->SetNegNSigmaTPCK(1000);
+      tFemtoV0->SetNegNSigmaTPCPi(1000);
+      tFemtoV0->SetNegNSigmaTPCP(0);
+    }
+  if(trackpos->GetPdgCode()==211) //pion plus
+    {
+      tFemtoV0->SetPosNSigmaTPCK(1000);
+      tFemtoV0->SetPosNSigmaTPCPi(0);
+      tFemtoV0->SetPosNSigmaTPCP(1000);
+    }
+  if(trackneg->GetPdgCode()==-211) //pion minus
+    {
+      tFemtoV0->SetNegNSigmaTPCK(1000);
+      tFemtoV0->SetNegNSigmaTPCPi(0);
+      tFemtoV0->SetNegNSigmaTPCP(1000);
+    }
+  if(trackpos->GetPdgCode()==321) //K+
+    {
+      tFemtoV0->SetPosNSigmaTPCK(0);
+      tFemtoV0->SetPosNSigmaTPCPi(1000);
+      tFemtoV0->SetPosNSigmaTPCP(1000);
+    }
+  if(trackneg->GetPdgCode()==-321) //K-
+    {
+      tFemtoV0->SetNegNSigmaTPCK(0);
+      tFemtoV0->SetNegNSigmaTPCPi(1000);
+      tFemtoV0->SetNegNSigmaTPCP(1000);
+    }
+
+  
 }

@@ -11,6 +11,8 @@
 
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEnumeration.h"
+#include "AliFemtoV0.h"
+#include "AliESDv0.h"
 
 #include <string>
 #include <vector>
@@ -46,6 +48,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   void SetReadTPCInner(const bool readinner);
   void SetUseTPCOnly(const bool usetpconly);
 
+  virtual void CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 *tFemtoV0, AliESDEvent *fESDevent);
+ void SetReadV0(bool a);
+
   void SetUsePhysicsSelection(const bool usephysics);
   void SetUseMultiplicity(EstEventMult aType);
   void SetEventTrigger(UInt_t eventtrig); //trigger
@@ -79,6 +84,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   UInt_t         fEventTrig;     //event trigger
 
+
 /*   list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared */
 /*   list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow */
 		
@@ -87,6 +93,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 
   AliESDpid *fESDpid;
   Bool_t fIsPidOwner;
+  bool           fReadV0;           // Read V0 information from the AOD and put it into V0Collection
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)

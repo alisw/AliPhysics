@@ -34,6 +34,7 @@ public:
   virtual void Fill(const AliFemtoPair* aPair);
   virtual void Fill(const AliFemtoParticleCollection* aCollection);
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection);
+  virtual void Fill(const AliFemtoParticleCollection* aCollection1,const AliFemtoParticleCollection* aCollection2);
   virtual void Finish() { 
 #ifdef STHBTDEBUG
     cout << " *** no user defined Finish(), take from base class" << endl;

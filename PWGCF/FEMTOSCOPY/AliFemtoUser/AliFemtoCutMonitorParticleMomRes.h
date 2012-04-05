@@ -39,6 +39,7 @@ public:
   virtual void Fill(const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aCollection);}
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection)
   {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
+  virtual void Fill(const AliFemtoParticleCollection* aCollection1,const AliFemtoParticleCollection* aCollection2) {AliFemtoCutMonitor::Fill(aCollection1, aCollection2);}
   void Write();
 
   virtual TList *GetOutputList();

@@ -33,7 +33,7 @@ AliFemtoBasicEventCut::~AliFemtoBasicEventCut(){
   // Default destructor
 }
 //------------------------------
-bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
+bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){  
   // Pass events if they fall within the multiplicity and z-vertex
   // position range. Fail otherwise
   //  int mult =  event->NumberOfTracks();

@@ -63,6 +63,9 @@ AliFemtoTrack::AliFemtoTrack():
   fShared(159),
   fNominalTpcEntrancePoint(0,0,0),
   fNominalTpcExitPoint(0,0,0),
+  fXatDCA(0),
+  fYatDCA(0),
+  fZatDCA(0),
   fHiddenInfo(0)
 {
   // Default constructor
@@ -115,6 +118,9 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fShared(159),
   fNominalTpcEntrancePoint(0,0,0),
   fNominalTpcExitPoint(0,0,0),
+  fXatDCA(0),
+  fYatDCA(0),
+  fZatDCA(0),
   fHiddenInfo(0)
  { 
    // copy constructor
@@ -165,6 +171,11 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fKinkIndexes[0] = t.fKinkIndexes[0];
   fKinkIndexes[1] = t.fKinkIndexes[1];
   fKinkIndexes[2] = t.fKinkIndexes[2];
+
+  fXatDCA=t.fXatDCA;
+  fYatDCA=t.fYatDCA;
+  fZatDCA=t.fZatDCA;
+
   //  cout << "Created track " << this << endl;
 }
 
@@ -215,6 +226,11 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fKinkIndexes[0] = aTrack.fKinkIndexes[0];
   fKinkIndexes[1] = aTrack.fKinkIndexes[1];
   fKinkIndexes[2] = aTrack.fKinkIndexes[2];
+
+  fXatDCA=aTrack.fXatDCA;
+  fYatDCA=aTrack.fYatDCA;
+  fZatDCA=aTrack.fZatDCA;
+
   if (ValidHiddenInfo())
     delete fHiddenInfo;
   if (aTrack.ValidHiddenInfo())
@@ -237,7 +253,7 @@ void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, cons
 void AliFemtoTrack::SetP(const AliFemtoThreeVector& p){fP = p;}
 void AliFemtoTrack::SetPt(const float& pt){fPt = pt;} 
 void AliFemtoTrack::SetHelix(const AliFmPhysicalHelixD& h){fHelix = h;}
-void AliFemtoTrack::SetTrackId(const short & id) { fTrackId=id;}
+void AliFemtoTrack::SetTrackId(const int & id) { fTrackId=id;}
 void AliFemtoTrack::SetFlags(const long int &flags) {fFlags=flags;}
 void AliFemtoTrack::SetLabel(const int &label) {fLabel=label;}
 void AliFemtoTrack::SetImpactD(const float& aImpactD){fImpactD=aImpactD;}
@@ -262,12 +278,16 @@ void AliFemtoTrack::SetNSigmaTOFK(const float& aNSigmaTOFK){fNSigmaTOFK=aNSigmaT
 void AliFemtoTrack::SetNSigmaTOFP(const float& aNSigmaTOFP){fNSigmaTOFP=aNSigmaTOFP;}
 void AliFemtoTrack::SetSigmaToVertex(const float& aSigma){fSigmaToVertex=aSigma;} 
 
+void AliFemtoTrack::SetXatDCA(const double& x) {fXatDCA=x;}
+void AliFemtoTrack::SetYatDCA(const double& x) {fYatDCA=x;}
+void AliFemtoTrack::SetZatDCA(const double& x) {fZatDCA=x;}
+
 
 short AliFemtoTrack::Charge() const {return fCharge;}  
 AliFemtoThreeVector AliFemtoTrack::P() const {return fP;}
 float AliFemtoTrack::Pt() const {return fPt;}              
 const AliFmPhysicalHelixD& AliFemtoTrack::Helix() const {return fHelix;}
-short AliFemtoTrack::TrackId() const { return fTrackId; }
+int AliFemtoTrack::TrackId() const { return fTrackId; }
 long int AliFemtoTrack::Flags() const {return fFlags;}
 int AliFemtoTrack::Label()const {return fLabel;}
 float AliFemtoTrack::ImpactD()const{return fImpactD;}
@@ -295,6 +315,9 @@ float AliFemtoTrack::TOFpionTime() const{return fTofPionTime;}
 float AliFemtoTrack::TOFkaonTime() const{return fTofKaonTime;}
 float AliFemtoTrack::TOFprotonTime() const{return fTofProtonTime;}
 
+double AliFemtoTrack::XatDCA() const {return fXatDCA;}
+double AliFemtoTrack::YatDCA() const {return fYatDCA;}
+double AliFemtoTrack::ZatDCA() const {return fZatDCA;}
 
 void AliFemtoTrack::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
 bool AliFemtoTrack::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }

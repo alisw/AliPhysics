@@ -14,6 +14,7 @@
 
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEnumeration.h"
+#include "AliFemtoV0.h"
 
 #include <string>
 #include <vector>
@@ -42,6 +43,7 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   void SetStackSource(AliStack *aStack);
   void SetGenEventHeader(AliGenEventHeader *aGenHeader);
   void SetRotateToEventPlane(short dorotate);
+  void CopyAODtoFemtoV0(TParticle *tv0, AliFemtoV0 *tFemtoV0 );
 
  protected:
 
