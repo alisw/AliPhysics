@@ -153,7 +153,7 @@ void AliT0QADataMakerRec::InitRaws()
   Float_t low[500];
   Float_t high[500];
   //triggers
-  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
+  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","semi-central","central"};
    
   
   for (Int_t i=0; i<500; i++){
@@ -296,14 +296,14 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList(fhHitsOrC ,216, expert, !image, !saveCorr);
   
   
-  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","T0_OR C - T0_OR A [cm]",10000,-5000,5000);
+  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","(T0_OR C - T0_OR A)/2 [cm]",10000,-5000,5000);
   Add2RawsList( fhOrCminOrA,219, !expert, image, !saveCorr); //FK
 
-  TH1F* fhOrCminOrATvdcOn= new TH1F("fhOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on [cm]",10000,-5000,5000);
+  TH1F* fhOrCminOrATvdcOn= new TH1F("fhOrCminOrATvdcOn","(T0_OR C - T0_OR A)/2 TVDC on [cm]",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOn,217, !expert, image, !saveCorr);//FK
   
 
-  TH1F* fhOrCminOrATvdcOff= new TH1F("fhOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off [cm]",10000,-5000,5000);
+  TH1F* fhOrCminOrATvdcOff= new TH1F("fhOrCminOrATvdcOff","(T0_OR C - T0_OR A)/2 TVDC off [cm]",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOff,218, !expert, image, !saveCorr);//FK
 
    //satellite  & beam background
@@ -539,17 +539,17 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]>0) {
       AliDebug(10,Form("orA-orC phys tvdc 1  %i  data %s", 217+shift,  GetRawsData(shift+217)->GetName()));
       
-      FillRawsData(217+shift,(allData[52][iHt] - allData[51][iHt])*ch2cm);
+      FillRawsData(217+shift,(allData[52][iHt] - allData[51][iHt])*0.5*ch2cm);
     }
     //orA-orC phys tvdc 0 
     if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]<=0) {
       AliDebug(10,Form("orA-orC phys tvdc 0  %i  data %s", 218+shift,  GetRawsData(shift+218)->GetName()));
 	
-      FillRawsData(218+shift,(allData[52][iHt] - allData[51][iHt])*ch2cm);
+      FillRawsData(218+shift,(allData[52][iHt] - allData[51][iHt])*0.5*ch2cm);
     }
     if(allData[51][iHt]>0 && allData[52][iHt]>0) {
       AliDebug(50,Form("orA-orC phys tvdc all  %i  data %s", 219+shift,  GetRawsData(shift+219)->GetName()));
-      FillRawsData(219+shift,(allData[52][iHt] - allData[51][iHt])*ch2cm);
+      FillRawsData(219+shift,(allData[52][iHt] - allData[51][iHt])*0.5*ch2cm);
     }
     for (Int_t itr=0; itr<6; itr++) {
       if (allData[trChannel[itr]][iHt] >0) {
