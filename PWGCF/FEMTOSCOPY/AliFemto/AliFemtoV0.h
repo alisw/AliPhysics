@@ -62,8 +62,8 @@ public:
   const TBits& TPCsharingNeg() const;
   int NdofPos() const;
   int NdofNeg() const;
-  ulong StatusPos() const;
-  ulong StatusNeg() const;
+  unsigned long StatusPos() const;
+  unsigned long StatusNeg() const;
   
   
   int   TpcHitsPos() const;          // Number of TPC hits on pos. daughter				 
@@ -182,8 +182,8 @@ public:
   void SetTPCsharingNeg(const TBits& x);
   void SetNdofPos(const int x);
   void SetNdofNeg(const int x);
-  void SetStatusPos(const ulong x);
-  void SetStatusNeg(const ulong x);
+  void SetStatusPos(const unsigned long x);
+  void SetStatusNeg(const unsigned long x);
 
   void SettpcHitsPos(const int& i);      
   void SettpcHitsNeg(const int& i);      
