@@ -268,6 +268,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    else task->SetJetTypeRecEff(0);
 
    task->SetFilterMask(filterMask);
+   task->SetEventSelectionMask(AliVEvent::kMB);
    task->SetEventClass(eventClass);
   
    // Set default parameters 
@@ -300,6 +301,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
 
    // Define histo bins
    task->SetFFHistoBins(23, 5, 120, 480, 0., 120.,70,  0., 7.,22,  0.,  1.1);
+   task->SetFFLogZBins();
 
    task->SetQAJetHistoBins();
    task->SetQATrackHistoBins();

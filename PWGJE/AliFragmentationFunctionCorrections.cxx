@@ -933,7 +933,7 @@ void AliFragmentationFunctionCorrections::ReadRawFF(TString strfile, TString str
 { 
   // read raw FF - standard dir/list name
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   ReadRawFF(strfile,strdir,strlist,strFFID);
@@ -1045,7 +1045,7 @@ void AliFragmentationFunctionCorrections::ReadRawBgr(TString strfile, TString st
 { 
   // read raw FF - standard dir/list name
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   ReadRawBgr(strfile,strdir,strlist,strBgrID,strFFID);
@@ -1177,7 +1177,7 @@ void AliFragmentationFunctionCorrections::ReadRawBgrEmbedding(TString strfile, T
 { 
   // read raw FF - standard dir/list name
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   ReadRawBgrEmbedding(strfile,strdir,strlist,strFFID);
@@ -2046,7 +2046,7 @@ void AliFragmentationFunctionCorrections::WriteSingleTrackEff(TString strInfile,
 { 
   // read task ouput from MC and write single track eff - standard dir/list 
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   WriteSingleTrackEff(strInfile,strdir,strlist,strOutfile,updateOutfile,strOutDir,strPostfix);
@@ -2201,7 +2201,7 @@ void AliFragmentationFunctionCorrections::WriteSingleTrackSecCorr(TString strInf
 { 
   // read task ouput from MC and write single track eff - standard dir/list 
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   WriteSingleTrackSecCorr(strInfile,strdir,strlist,strOutfile,updateOutfile,strOutDir);
@@ -2340,7 +2340,7 @@ void AliFragmentationFunctionCorrections::WriteSingleResponse(TString strInfile,
 { 
   // read task ouput from MC and write single track eff - standard dir/list 
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   WriteSingleResponse(strInfile,strdir,strlist,strOutfile,updateOutfile,strOutDir);
@@ -2432,7 +2432,7 @@ void AliFragmentationFunctionCorrections::WriteJetTrackEff(TString strInfile, TS
 { 
   // read task ouput from MC and write single track eff - standard dir/list 
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   WriteJetTrackEff(strInfile,strdir,strlist,strOutfile,updateOutfile);
@@ -2651,7 +2651,7 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
 { 
   // read task ouput from MC and write secondary correction - standard dir/list 
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   WriteJetSecCorr(strInfile,strdir,strlist,strOutfile,updateOutfile);
@@ -2864,7 +2864,7 @@ void AliFragmentationFunctionCorrections::WriteJetResponse(TString strInfile, TS
 { 
   // read task ouput from MC and write single track eff - standard dir/list 
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   WriteJetResponse(strInfile,strdir,strlist,strOutfile,updateOutfile);
@@ -3840,7 +3840,7 @@ void AliFragmentationFunctionCorrections::ReadRawPtSpec(TString strInfile, TStri
 { 
   // read track pt spec from task ouput - standard dir/list 
      
-  TString strdir  = "PWG4_FragmentationFunction_" + strID;
+  TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
   ReadRawPtSpec(strInfile,strdir,strlist);
