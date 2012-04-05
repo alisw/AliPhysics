@@ -172,23 +172,22 @@ Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the ph
 
 AliCentrality *cent = GetCentralityObject();
 
-if(res == 0 && cent){
+//if(res == 0 && cent){
+//if(cent){
   
-  //cout<<"New Event"<<endl;  
-
-  AliMCEvent* mcEvent = MCEvent();
-  if(!mcEvent && fIsSim){  
-    AliFatal("ERROR: MC Event does not exist");
-    return;
+  Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
+  if(!fIsSim){
+    fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
   }
-  Int_t eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(mcEvent->Header());
-  fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
-
-// if (!mcEvent) {
-//   Printf("ERROR: Could not retrieve MC event");
-//  }
-  if (mcEvent && fESDEvent && fIsSim){
-    ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
+  else{
+    AliMCEvent* mcEvent = MCEvent();
+    if(!mcEvent){  
+      AliFatal("ERROR: MC Event does not exist");
+      return;
+    }
+    eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(mcEvent->Header());
+    if (fESDEvent){
+      ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
 
     if(AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND || fRecAnalysis->DataSet()==20100){//either non-diffractive or Pb+Pb
       if(fMCAnalysis->Full()){
@@ -243,7 +242,8 @@ if(res == 0 && cent){
       }
     }
   }
- }
+  }
+  //}
 //cout<<"End Event"<<endl<<endl;
 // Post output data.
  PostData(1, fOutputList);
