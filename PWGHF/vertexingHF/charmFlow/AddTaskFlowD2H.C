@@ -130,7 +130,7 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
 		   "Qb", harm, exc_VZE, 0, filterPOIQC[mb], NULL, false, shrinkSP );
     }
     if(bDoEPVZERO) {
-      AddEPmethod( Form("%sEPVZEMB%d",sgn.Data(),mb), fileName.Data(), thecuts.Data(), etaVZERO1, etaVZERO2, etaVZERO3, etaVZERO4,
+      AddSPmethod( Form("%sEPVZEMB%d",sgn.Data(),mb), fileName.Data(), thecuts.Data(), etaVZERO1, etaVZERO2, etaVZERO3, etaVZERO4,
 		   "QaQb", harm, exc_VZE, 0, filterPOIQC[mb], NULL, true, shrinkSP );
     }
     if(bDoSPTPC) {
@@ -143,7 +143,7 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
     }
     if(bDoEPTPC) {
       AddSPmethod( Form("%sEPTPCMB%d",sgn.Data(),mb), fileName.Data(), thecuts.Data(), -0.8, -0.0, +0.0, +0.8,
-		   "QaQb", harm, exc_TPC, 0, filterPOIQC[mb][0], NULL, true, shrinkSP );
+		   "QaQb", harm, exc_TPC, 0, filterPOIQC[mb], NULL, true, shrinkSP );
     }
   }
 }
@@ -213,7 +213,7 @@ int MassBands( int nDmeson, bool bOldApproach=false ) {
     if(bOldApproach) return 5;
     else return 26;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 25;
+    return 15;
   }
 }
 
@@ -226,11 +226,10 @@ double MassBandLowEdge( int nDmeson, int mb, bool bOldApproach=false ) {
 			     1.94, 1.95, 1.96, 2.01, 2.06, 2.11, 2.16 };
     if(bOldApproach) return lowEdgeMinimal[mb];
     else return lowEdge[mb];
-  case ( AliRDHFCuts::kDstarCuts ): // symmetric mass bands (TOTUNE)
-    int bins = MassBands( nDmeson );
-    double min = 0.138;
-    double max = 0.158;
-    return min+mb*(max-min)/bins;
+  case ( AliRDHFCuts::kDstarCuts ): // 2 + 10 + 3
+    double lowEdge[15+1] = { 0.138, 0.140, 0.142, 0.143, 0.144, 0.145, 0.146, 0.147, 1.148, 0.149,
+			     0.150, 0.151, 0.152, 0.154, 0.156, 0.158 };
+    return lowEdge[mb];
   }
 }
 
@@ -239,7 +238,7 @@ double MinMass( int nDmeson ) {
   case ( AliRDHFCuts::kD0toKpiCuts ):
     return 1.66;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 1.38;
+    return 0.138;
   }
 }
 
@@ -248,7 +247,7 @@ double MaxMass( int nDmeson ) {
   case ( AliRDHFCuts::kD0toKpiCuts ):
     return 2.16;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 1.58;
+    return 0.158;
   }
 }
 
@@ -257,7 +256,7 @@ int MassBins( int nDmeson ) {
   case ( AliRDHFCuts::kD0toKpiCuts ):
     return 50;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 25;
+    return 20;
   }
 }
 
