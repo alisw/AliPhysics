@@ -55,6 +55,9 @@ const char *  AliOADBFillingScheme::GetBXIDs(const char * beamSide) const
 {
   //  Returns the bunch crossing numbers for the different beam classes. By default this is empty
 
+  if( !strcmp(beamSide,"ACE") && !(TObjString*)fBXIds->GetValue(beamSide)) 
+    AliWarning("Beware, no correction for the BXIDs for ACE");
+
   if (!strcmp(beamSide, "AC") && !(TObjString*)fBXIds->GetValue(beamSide)) {
 
     TString  &bxa =  ((TObjString*)fBXIds->GetValue("A"))->String(); 
