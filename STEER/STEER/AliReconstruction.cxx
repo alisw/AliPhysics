@@ -4014,8 +4014,8 @@ Bool_t AliReconstruction::GetEventInfo()
   AliCDBEntry * entry = AliCDBManager::Instance()->Get("GRP/CTP/Aliases");
   if (entry) {
     THashList * lst = dynamic_cast<THashList*>(entry->GetObject());
-    lst->Sort(kSortDescending); // to avoid problems with substrungs
     if (lst) {
+      lst->Sort(kSortDescending); // to avoid problems with substrungs
       if (fRawReader) fRawReader->LoadTriggerAlias(lst);
       // Now declare all the triggers present in the aliases
       TIter iter(lst);
