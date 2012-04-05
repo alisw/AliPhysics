@@ -282,9 +282,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname
     resol=AliVertexingHFUtils::GetFullEvResol(hevplresos);
   }else{
     Double_t resolSub[3]={hevplresos->GetMean(),hevplresos2->GetMean(),hevplresos3->GetMean()};
-    Double_t subEventResos=resolSub[1]*resolSub[2]/resolSub[0];
-    if(evPlane!=0)resol=AliVertexingHFUtils::GetFullEvResol(subEventResos);
-    else resol=AliVertexingHFUtils::GetFullEvResol(TMath::Sqrt(0.5)*subEventResos);//Full TPC, double multiplicity
+    resol=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
   }
 
   printf("average pt for pt bin \n");
@@ -464,7 +462,7 @@ Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane)
     }
   }
   
-  TCanvas* cvtotevpl=new TCanvas("cvtotevpl",Form("Ev plane %s",suffixcentr.Data()),1200,400);
+  TCanvas* cvtotevpl=new TCanvas(Form("cvtotevpl%s",suffixcentr.Data()),Form("Ev plane %s",suffixcentr.Data()),1200,400);
   cvtotevpl->Divide(3,1);
   cvtotevpl->cd(1);
   hevpls->Draw("COLZ");
@@ -477,7 +475,7 @@ Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane)
   hv0->Draw();
   hv0->Fit("pol0");
   
-  TCanvas* cvtotevplreso=new TCanvas("cvtotevplreso",Form("Ev plane Resolution %s",suffixcentr.Data()));
+  TCanvas* cvtotevplreso=new TCanvas(Form("cvtotevplreso%s",suffixcentr.Data()),Form("Ev plane Resolution %s",suffixcentr.Data()));
   cvtotevplreso->cd();
   hevplresos[0]->SetTitle("TPC cos2(#Psi_{A}-#Psi_{B})");
   hevplresos[0]->Draw();
@@ -499,12 +497,7 @@ Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane)
   else{
     Double_t resolSub[3];
     for(Int_t ires=0;ires<nSubRes;ires++)resolSub[ires]=hevplresos[ires]->GetMean();
-    Double_t subEventResos=resolSub[1]*resolSub[2]/resolSub[0];
-    if(evPlane!=0) resolFull=AliVertexingHFUtils::GetFullEvResol(subEventResos);
-    else{
-      //Full TPC, double multiplicity, check the computation!
-      resolFull=AliVertexingHFUtils::GetFullEvResol(TMath::Sqrt(0.5)*subEventResos);
-    }
+    resolFull=TMath::Sqrt(resolSub[2]*resolSub[0]/resolSub[1]);
   }
   
   TPaveText* pvreso=new TPaveText(0.1,0.1,0.6,0.2,"NDC");

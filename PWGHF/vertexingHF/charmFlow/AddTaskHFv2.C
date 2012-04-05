@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0*/)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D 
@@ -71,11 +71,17 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",
   v2Task->SetDebugLevel(0);
   v2Task->SetV0EventPlaneOrder(2);
   if(flagep==0){
-    v2Task->SetTPCEP();//SetVZEROEPOnly();
+    v2Task->SetTPCEP();
     suffix+="TPC";
-  }else{
+  }else if(flagep==1){
     v2Task->SetVZEROEP();
     suffix+="VZERO";
+  }else if(flagep==2){
+    v2Task->SetVZEROAEP();
+    suffix+="VZEROA";
+  }else if(flagep==3){
+    v2Task->SetVZEROCEP();
+    suffix+="VZEROC";
   }
   mgr->AddTask(v2Task);
 

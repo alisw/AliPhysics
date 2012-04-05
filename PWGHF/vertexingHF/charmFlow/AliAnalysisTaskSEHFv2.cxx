@@ -420,6 +420,8 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   }
 
   fhEventsInfo->Fill(1);
+  fhEventsInfo->Fill(4);
+ 
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
     AliError("AliAnalysisTaskSEHFv2::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
@@ -464,7 +466,8 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 	//Using V0A/C for VZERO resolution
 	rpangleeventA= GetPhi0Pi(pl->GetEventplane("V0A",aod,fV0EPorder));
 	rpangleeventB= GetPhi0Pi(pl->GetEventplane("V0C",aod,fV0EPorder));
-
+	if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventA;
+	else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventB;
 	deltaPsi =rpangleeventA-rpangleeventB;
 	eventplane=rpangleVZERO;
       }
@@ -491,20 +494,20 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 
   //verify TPC EP
   Double_t rpsubTPC=rpangleTPC;
-  if(fEventPlaneMeth==kVZEROpos||fEventPlaneMeth==kVZEROneg){
-    TVector2 *qsub=0x0;
-    if(fEventPlaneMeth==kVZEROneg)qsub=pl->GetQsub2();
-    else qsub=pl->GetQsub1();
-    if(!qsub){
-      fhEventsInfo->Fill(6);
-      return;
-    }
-    if(qsub->X()==0 && qsub->Y()==0){
-      fhEventsInfo->Fill(6);
-      return;
-    }
-    rpsubTPC=qsub->Phi()/2.;
-  }
+  // if(fEventPlaneMeth==kVZEROpos||fEventPlaneMeth==kVZEROneg){
+  //   TVector2 *qsub=0x0;
+  //   if(fEventPlaneMeth==kVZEROneg)qsub=pl->GetQsub2();
+  //   else qsub=pl->GetQsub1();
+  //   if(!qsub){
+  //     fhEventsInfo->Fill(6);
+  //     return;
+  //   }
+  //   if(qsub->X()==0 && qsub->Y()==0){
+  //     fhEventsInfo->Fill(6);
+  //     return;
+  //   }
+  //   rpsubTPC=qsub->Phi()/2.;
+  // }
   if(rpsubTPC<0){
     fhEventsInfo->Fill(6);
     return;
@@ -769,7 +772,7 @@ void AliAnalysisTaskSEHFv2::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 
 //________________________________________________________________________
 void AliAnalysisTaskSEHFv2::SetEventPlaneMethod(Int_t method){
-  if(method>kVZEROpos||method<0){
+  if(method>kVZEROC||method<0){
     AliWarning("No EP method associated to the selection, setting to TPC EP\n");
     method=kTPCVZERO;
   }
