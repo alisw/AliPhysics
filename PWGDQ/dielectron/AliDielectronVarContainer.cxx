@@ -116,7 +116,26 @@ const char* AliDielectronVarContainer::fgkParticleNames[AliDielectronVarContaine
   "BzkG",
   "NTrk",
   "Nacc",
-  "kNaccTrcklts",
+  "NaccTrcklts",
+  "NaccTrckltsCorr",
+  "NaccTrcklts05",
+  "NaccTrcklts10",
+  "NaccTrckltsEsd05",
+  "NaccTrckltsEsd10",
+  "NaccTrckltsEsd16",
+  "NaccItsTpcEsd05",
+  "NaccItsTpcEsd10",
+  "NaccItsTpcEsd16",
+  "NaccItsPureEsd05",
+  "NaccItsPureEsd10",
+  "NaccItsPureEsd16",
+  
+  "MultV0A", 
+  "MultV0C",
+  "MultV0",
+  "AdcV0A",
+  "AdcV0C",
+  "AdcV0",
   "Centrality",
   "Nevents"
 };
@@ -167,7 +186,9 @@ const char* AliDielectronVarContainer::fgkParticleNamesMC[AliDielectronVarContai
   "X_MC",
   "Y_MC",
   "Z_MC",
-  "kNch",
+  "Nch_MC",
+  "Nch05_MC",
+  "Nch10_MC",
   "Centrality_MC",
   "Nevents"
 };

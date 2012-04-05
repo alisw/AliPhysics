@@ -51,6 +51,10 @@ public:
   void SetDielectron(AliDielectron * const die) { fDielectron = die; }
 
   void SetStoreLikeSignCandidates(Bool_t storeLS) { fStoreLikeSign = storeLS; }
+  void SetStoreRotatedPairs(Bool_t storeTR) { fStoreRotatedPairs = storeTR; }
+
+  void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
+
 private:
   
   AliDielectron *fDielectron;             // J/psi framework object
@@ -59,7 +63,11 @@ private:
   UInt_t fTriggerMask;               // Event trigger mask
 
   TH1D *fEventStat;                  //! Histogram with event statistics
+  
   Bool_t fStoreLikeSign;        // flag to store like-sign candidates
+  Bool_t fStoreRotatedPairs;    // flag to store rotation
+
+  AliAnalysisCuts *fEventFilter;     // event filter
   
   AliAnalysisTaskDielectronFilter(const AliAnalysisTaskDielectronFilter &c);
   AliAnalysisTaskDielectronFilter& operator= (const AliAnalysisTaskDielectronFilter &c);

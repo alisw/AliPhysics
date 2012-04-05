@@ -30,6 +30,9 @@
 #include <TObjString.h>
 #include <TObjArray.h>
 #include <TVectorD.h>
+#include <TF1.h>
+#include <TRandom.h>
+#include <TProfile.h>
 
 #include <AliVEvent.h>
 #include <AliVParticle.h>
@@ -42,6 +45,7 @@
 #include <AliMultiplicity.h>
 #include <AliStack.h>
 
+#include "AliDielectronVarManager.h"
 #include "AliDielectronHelper.h"
 
 //_____________________________________________________________________________
@@ -153,7 +157,7 @@ Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange){
 
 
 //_____________________________________________________________________________
-Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev){
+Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev, Double_t etaRange){
   // Compute the collision multiplicity based on AOD or ESD tracklets
   // Code taken from: AliAnalysisTaskMuonCollisionMultiplicity::ComputeMultiplicity()
 
@@ -161,7 +165,6 @@ Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev){
 
   Int_t nTracklets = 0;
   Int_t nAcc = 0;
-  Double_t etaRange = 1.6;
   
   if (ev->IsA() == AliAODEvent::Class()) {
     AliAODTracklets *tracklets = ((AliAODEvent*)ev)->GetTracklets();
@@ -182,6 +185,49 @@ Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev){
   return nAcc;
 }
 
+
+
+//________________________________________________________________
+Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Double_t uncorrectedNacc, Double_t vtxZ, Int_t type) {
+  //
+  // Correct the number of accepted tracklets based on the period and event vertex
+  //
+
+  Int_t runNo = event->GetRunNumber();
+
+  Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  Double_t refMult = 0.0;   // reference multiplicity
+  
+  if(runNo>114930 && runNo<117223) period = 0;
+  if(runNo>119158 && runNo<120830) period = 1;
+  if(runNo>122373 && runNo<126438) period = 2;
+  if(runNo>127711 && runNo<130841) period = 3;
+  if(period<0 || period>3) return uncorrectedNacc;
+
+  if(type<0 || type>8) return uncorrectedNacc;
+  if(type == 0) refMult = 5.0;         // SPD tracklets in |eta|<0.5 
+  if(type == 1) refMult = 9.5;         // SPD tracklets in |eta|<1.0
+  if(type == 2) refMult = 13.0;        // SPD tracklets in |eta|<1.6
+  if(type == 3) refMult = 6.0;         // ITSTPC+ in |eta|<0.5
+  if(type == 4) refMult = 12.0;        // ITSTPC+ in |eta|<1.0
+  if(type == 5) refMult = 16.0;        // ITSTPC+ in |eta|<1.6
+  if(type == 6) refMult = 6.0;         // ITSSA+ in |eta|<0.5
+  if(type == 7) refMult = 12.0;        // ITSSA+ in |eta|<1.0
+  if(type == 8) refMult = 15.0;        // ITSSA+ in |eta|<1.6
+
+  if(TMath::Abs(vtxZ)>10.0) return uncorrectedNacc;
+
+  TProfile* estimatorAvg = AliDielectronVarManager::GetEstimatorHistogram(period, type);
+  if(!estimatorAvg) return uncorrectedNacc;
+
+  Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+
+  Double_t deltaM = uncorrectedNacc*(refMult/localAvg - 1);
+
+  Double_t correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->Poisson(TMath::Abs(deltaM));
+
+  return correctedNacc;
+}
 
 //_____________________________________________________________________________
 Int_t AliDielectronHelper::GetNacc(const AliVEvent */*ev*/){
@@ -291,4 +337,51 @@ void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t a
   kfParticle->Z() = kfParticle->GetZ() + dz;
   
 }
+
+//_____________________________________________________________________________
+Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, Int_t pdgMother, Int_t pdgDaughter, Int_t prim){
+  // counting number of mother particles generated in given eta range and 2 particle decay
+  if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
+  
+  AliStack *stack = ((AliMCEvent*)ev)->Stack();
+  
+  if (!stack) return -1;
+  
+  Int_t nParticles = stack->GetNtrack();
+  Int_t nMothers   = 0;
+  
+  // count..
+  for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
+    
+    TParticle* particle = stack->Particle(iMc);
+    if (!particle) continue;
+    if (particle->GetPdgCode() != pdgMother)               continue;
+    if (TMath::Abs(particle->Eta()) > TMath::Abs(etaRange)) continue;
+
+    if (particle->GetNDaughters() != 2)                 continue;
+    // 1st daugther
+    if (particle->GetFirstDaughter()>=nParticles ||
+	particle->GetFirstDaughter()<0             ) continue;
+    
+    TParticle* dau1 = stack->Particle(particle->GetFirstDaughter());
+    if (TMath::Abs(dau1->GetPdgCode()) != pdgDaughter)     continue;
+    if (TMath::Abs(dau1->Eta()) > TMath::Abs(etaRange)) continue;
+    
+    // 2nd daughter
+    if (particle->GetLastDaughter()>=nParticles ||
+	particle->GetLastDaughter()<0             ) continue;
+
+    TParticle* dau2 = stack->Particle(particle->GetLastDaughter());
+    if (TMath::Abs(dau2->GetPdgCode()) != pdgDaughter)     continue;
+    if (TMath::Abs(dau2->Eta()) > TMath::Abs(etaRange)) continue;
+    
+    // primary
+    if (prim != -1) {
+      if(particle->IsPrimary() != prim) continue;
+    }
+    nMothers++;
+  }
+  return nMothers;
+}
+
 

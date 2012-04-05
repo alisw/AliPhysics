@@ -42,6 +42,7 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fHistDataPM(0),
   fHistDataPP(0),
   fHistDataMM(0),
+  fHistDataME(0),
   fValues(6),
   fErrors(6),
   fIntMin(0),
@@ -68,6 +69,7 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fHistDataPM(0),
   fHistDataPP(0),
   fHistDataMM(0),
+  fHistDataME(0),
   fValues(6),
   fErrors(6),
   fIntMin(0),
@@ -97,6 +99,7 @@ AliDielectronSignalBase::~AliDielectronSignalBase()
   if (fHistDataPP) delete fHistDataPP;
   if (fHistDataPM) delete fHistDataPM;
   if (fHistDataMM) delete fHistDataMM;
+  if (fHistDataME) delete fHistDataME;
   
 }
 

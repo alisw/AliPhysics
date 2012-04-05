@@ -24,6 +24,7 @@
 
 #include "AliDielectronHistos.h"
 
+class AliEventplane;
 class AliVEvent;
 class AliMCEvent;
 class THashList;
@@ -32,10 +33,13 @@ class AliDielectronDebugTree;
 class AliDielectronTrackRotator;
 class AliDielectronPair;
 class AliDielectronSignalMC;
+class AliDielectronMixingHandler;
 
 //________________________________________________________________
 class AliDielectron : public TNamed {
-  
+
+  friend class AliDielectronMixingHandler; //mixing as friend class
+
 public:
   enum EPairType { kEv1PP=0, kEv1PM, kEv1MM,
       kEv1PEv2P, kEv1MEv2P, kEv2PP,
@@ -60,7 +64,9 @@ public:
   AliAnalysisFilter& GetPairFilter()        { return fPairFilter;        }
   AliAnalysisFilter& GetPairPreFilter()     { return fPairPreFilter;     }
   AliAnalysisFilter& GetPairPreFilterLegs() { return fPairPreFilterLegs; }
-  
+  AliAnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
+  AliAnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
+
   void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
   void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
   Int_t GetMotherPdg() const { return fPdgMother; }
@@ -69,7 +75,7 @@ public:
 
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
-  const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<10)?
+  const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<11)?
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
 
   TObjArray** GetPairArraysPointer() { return &fPairCandidates; }
@@ -83,17 +89,25 @@ public:
     return (GetPairArray(0)&&GetPairArray(2)) ? (GetPairArray(0)->GetEntriesFast()>0 || GetPairArray(2)->GetEntriesFast()>0) : 0;
   }
   
+  Bool_t HasCandidatesTR() const {return GetPairArray(10)?GetPairArray(10)->GetEntriesFast()>0:0;} 
   void SetCFManagerPair(AliDielectronCF * const cf) { fCfManagerPair=cf; }
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
 
+  void SetPreFilterEventPlane(Bool_t setValue=kTRUE){fPreFilterEventPlane=setValue;};
+  void SetLikeSignSubEvents(Bool_t setValue=kTRUE){fLikeSignSubEvents=setValue;};
   void SetPreFilterUnlikeOnly(Bool_t setValue=kTRUE){fPreFilterUnlikeOnly=setValue;};
   void SetPreFilterAllSigns(Bool_t setValue=kTRUE){fPreFilterAllSigns=setValue;};
 
   void SetTrackRotator(AliDielectronTrackRotator * const rot) { fTrackRotator=rot; }
   AliDielectronTrackRotator* GetTrackRotator() const { return fTrackRotator; }
 
+  void SetMixingHandler(AliDielectronMixingHandler *mix) { fMixing=mix; }
+  AliDielectronMixingHandler* GetMixingHandler() const { return fMixing; }
+
   void SetHasMC(Bool_t hasMC) { fHasMC = hasMC; }
   Bool_t GetHasMC() const     { return fHasMC;  }
+
+  void SetStoreRotatedPairs(Bool_t storeTR) {fStoreRotatedPairs = storeTR;}
 
   void AddSignalMC(AliDielectronSignalMC* signal);  
 
@@ -103,17 +117,22 @@ public:
   static const char* TrackClassName(Int_t i) { return (i>=0&&i<4)?fgkTrackClassNames[i]:""; }
   static const char* PairClassName(Int_t i)  { return (i>=0&&i<11)?fgkPairClassNames[i]:""; }
 
-  void SaveDebugTree();
-  
-private:
+  void SetEstimatorFilename(const Char_t* filename) {fEstimatorFilename = filename;}
+  void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
 
+
+  void SaveDebugTree();
+
+private:
   
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
   AliAnalysisFilter fPairPreFilterLegs; // Leg filter after the pair prefilter cuts
   AliAnalysisFilter fPairFilter;     // pair cuts
-  
+  AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts  
+  AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter  
+
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
   Int_t fPdgLeg2;       // pdg code leg2
@@ -138,12 +157,17 @@ private:
   AliDielectronCF *fCfManagerPair;//Correction Framework Manager for the Pair
   AliDielectronTrackRotator *fTrackRotator; //Track rotator
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
+  AliDielectronMixingHandler *fMixing; // handler for event mixing
 
+  Bool_t fPreFilterEventPlane;  //Filter for the Eventplane determination in TPC
+  Bool_t fLikeSignSubEvents;    //Option for dividing into subevents, sub1 ++ sub2 --
   Bool_t fPreFilterUnlikeOnly;  //Apply PreFilter either in +- or to ++/--/+- individually
-  Bool_t fPreFilterAllSigns;  //Apply PreFilter find in  ++/--/+- and remove from all
+  Bool_t fPreFilterAllSigns;    //Apply PreFilter find in  ++/--/+- and remove from all
   Bool_t fHasMC;                //If we run with MC, at the moment only needed in AOD
-  
+  Bool_t fStoreRotatedPairs;    //It the rotated pairs should be stored in the pair array 
+ 
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
+  void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev, AliEventplane *cevplane);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);
   void FillPairArrays(Int_t arr1, Int_t arr2);
   void FillPairArrayTR();
@@ -158,15 +182,18 @@ private:
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays
 
-  void ProcessMC();
+  TString fEstimatorFilename;                // name for the pp multiplicity estimators filename
+  TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
+
+  void ProcessMC(AliVEvent *ev1);
   
-  void  FillHistograms(const AliVEvent *ev);
-  void  FillHistogramsMC(const AliMCEvent *ev);
+  void  FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly=kFALSE);
+  void  FillHistogramsMC(const AliMCEvent *ev,  AliVEvent *ev1);
   void  FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);
 
   void  FillDebugTree();
-  
+
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
@@ -179,7 +206,7 @@ inline void AliDielectron::InitPairCandidateArrays()
   // initialise all pair candidate arrays
   //
   fPairCandidates->SetOwner();
-  for (Int_t i=0;i<10;++i){
+  for (Int_t i=0;i<11;++i){
     TObjArray *arr=new TObjArray;
     fPairCandidates->AddAt(arr,i);
     arr->SetOwner();
@@ -202,8 +229,8 @@ inline void AliDielectron::ClearArrays()
   for (Int_t i=0;i<4;++i){
     fTracks[i].Clear();
   }
-  for (Int_t i=0;i<10;++i){
-    PairArray(i)->Delete();
+  for (Int_t i=0;i<11;++i){
+    if (PairArray(i)) PairArray(i)->Delete();
   }
 }
 

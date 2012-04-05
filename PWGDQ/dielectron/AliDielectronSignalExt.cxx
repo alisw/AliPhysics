@@ -149,7 +149,12 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
     fHistBackground->SetBinError(ibin, ebackground);
   }
   //scale histograms to match integral between fScaleMin and fScaleMax
+  // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
   if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+  else if (fScaleMin>0.){
+    fScaleFactor=fScaleMin;
+    fHistBackground->Scale(fScaleFactor);
+  }
 
   //subract background
   fHistSignal->Add(fHistBackground,-1);
@@ -161,6 +166,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
 						 fHistBackground->FindBin(fIntMax), 
 						 fErrors(1));
+  printf("%f  %f\n",fValues(0),fValues(1));
   // S/B and significance
   SetSignificanceAndSOB();
 
@@ -171,10 +177,63 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
 {
   //
-  // event mixing. not implemented yet.
+  // event mixing
   //
-  printf("event mixing method is not implemented yet. Like-sign method will be used.\n");
-  ProcessLS(arrhist);
+  fHistDataPM = (TH1*)(arrhist->At(0))->Clone("histPMSE");  // +-    SE
+  fHistDataME = (TH1*)(arrhist->At(1))->Clone("histPMME");  // +-    ME
+  fHistDataPM->Sumw2();
+  fHistDataME->Sumw2();
+  fHistDataPM->SetDirectory(0);
+  fHistDataME->SetDirectory(0);
+
+  // rebin the histograms
+  if (fRebin>1) {
+    fHistDataPM->Rebin(fRebin); 
+    fHistDataME->Rebin(fRebin);
+  }
+
+  fHistSignal = new TH1D("HistSignal", "Mixed events background substracted signal",
+			 fHistDataPM->GetXaxis()->GetNbins(),
+		   fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistSignal->SetDirectory(0);
+  fHistBackground = new TH1D("HistBackground", "background contribution from mixed events",
+			     fHistDataPM->GetXaxis()->GetNbins(),
+			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistBackground->SetDirectory(0);
+
+  // fill out background and subtracted histogram
+  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    Float_t pm = fHistDataPM->GetBinContent(ibin);
+    Float_t epm = fHistDataPM->GetBinError(ibin);
+    Float_t background = fHistDataME->GetBinContent(ibin);
+    Float_t ebackground = fHistDataME->GetBinError(ibin);
+
+    fHistSignal->SetBinContent(ibin, pm); 
+    fHistSignal->SetBinError(ibin, epm);
+    fHistBackground->SetBinContent(ibin, background);
+    fHistBackground->SetBinError(ibin, ebackground); 
+  }
+
+  if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+  else if (fScaleMin>0.){    
+    fScaleFactor=fScaleMin;
+    fHistBackground->Scale(fScaleFactor);
+  }
+
+  //subract background  
+  fHistSignal->Add(fHistBackground,-1);
+
+  // signal  
+  fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
+	  			             fHistSignal->FindBin(fIntMax), fErrors(0));
+  // background
+  fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
+						 fHistBackground->FindBin(fIntMax), 
+						 fErrors(1));
+  // S/B and significance
+  SetSignificanceAndSOB();
+
+  fProcessed = kTRUE;
 }
 
 //______________________________________________
@@ -206,8 +265,13 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
   }
 
   //scale histograms to match integral between fScaleMin and fScaleMax
+  // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
   if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
-  
+  else if (fScaleMin>0.){
+    fScaleFactor=fScaleMin;
+    fHistBackground->Scale(fScaleFactor);
+  }
+
   fHistSignal=(TH1*)fHistDataPM->Clone("histSignal");
   fHistSignal->Add(fHistBackground,-1.);
 

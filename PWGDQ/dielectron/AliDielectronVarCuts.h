@@ -45,7 +45,6 @@ public:
   // getters
   Bool_t  GetCutOnMCtruth() const { return fCutOnMCtruth; }
   CutType GetCutType()      const { return fCutType;      }
-
   
   //
   //Analysis cuts interface
@@ -62,6 +61,7 @@ public:
   virtual UInt_t GetSelectedCutsMask() const { return fSelectedCutsMask; }
 
   virtual void Print(const Option_t* option = "") const;
+
   
 private:
 

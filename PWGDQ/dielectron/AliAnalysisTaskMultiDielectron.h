@@ -31,7 +31,9 @@ class AliAnalysisTaskMultiDielectron : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskMultiDielectron();
   AliAnalysisTaskMultiDielectron(const char *name);
-  virtual ~AliAnalysisTaskMultiDielectron(){  }
+  virtual ~AliAnalysisTaskMultiDielectron();
+
+  enum ETriggerLogig {kAny, kExact};
 
   virtual void UserExec(Option_t *option);
   virtual void UserCreateOutputObjects();
@@ -40,8 +42,12 @@ public:
 //   virtual void NotifyRun(){AliDielectronPID::SetCorrVal((Double_t)fCurrentRunNumber);}
   
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
-  void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
+  void SetTriggerMask(ULong64_t mask) {fTriggerMask=mask;}
   UInt_t GetTriggerMask() const { return fTriggerMask; }
+  void SetExcludeTriggerMask(ULong64_t mask) {fExcludeTriggerMask=mask;}
+  UInt_t GetExcludeTriggerMask() const { return fExcludeTriggerMask; }
+  void SetTriggerLogic(ETriggerLogig log) {fTriggerLogic=log;}
+  ETriggerLogig GetTriggerLogic() const {return fTriggerLogic;}
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   void SetTriggerOnV0AND(Bool_t v0and=kTRUE)    { fTriggerOnV0AND=v0and;    }
@@ -56,8 +62,11 @@ protected:
 
   Bool_t fSelectPhysics;             // Whether to use physics selection
   UInt_t fTriggerMask;               // Event trigger mask
+  UInt_t fExcludeTriggerMask;        // Triggers to exclude from the analysis
   Bool_t fTriggerOnV0AND;            // if to trigger on V0and
   Bool_t fRejectPileup;              // pileup rejection wanted
+
+  ETriggerLogig fTriggerLogic;       // trigger logic: any or all bits need to be matching
   
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
 
@@ -68,6 +77,6 @@ protected:
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);
   AliAnalysisTaskMultiDielectron& operator= (const AliAnalysisTaskMultiDielectron &c);
   
-  ClassDef(AliAnalysisTaskMultiDielectron, 1); //Analysis Task handling multiple instances of AliDielectron
+  ClassDef(AliAnalysisTaskMultiDielectron, 2); //Analysis Task handling multiple instances of AliDielectron
 };
 #endif

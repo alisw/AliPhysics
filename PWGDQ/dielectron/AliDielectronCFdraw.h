@@ -55,6 +55,7 @@ public:
   void UnsetRangeUser(const char* varname, const char* slices="");
 
   virtual void Draw(const Option_t* varnames = "") { Draw(varnames,"");}
+  virtual void Print(const Option_t*) const { if (fCfContainer) fCfContainer->Print(""); }
   //Draw Projections
   void Draw(const Option_t* varnames, const char* opt, const char* slices="");
   void Draw(Int_t var, const char* opt="", const char* slices="");

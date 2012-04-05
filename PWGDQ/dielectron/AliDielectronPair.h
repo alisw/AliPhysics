@@ -92,8 +92,8 @@ public:
   // Dummy
   Int_t PdgCode() const {return 0;}
   //
-  Double_t GetLXY(const AliVVertex * const vtx) const;
-  Double_t GetPseudoProperTime(const AliVVertex * const vtx) const;
+  // Double_t GetLXY(const AliVVertex * const vtx) const;
+  // Double_t GetPseudoProperTime(const AliVVertex * const vtx) const;
 
 
   UChar_t GetType() const { return fType; }
@@ -104,6 +104,8 @@ public:
   void SetProductionVertex(const AliKFParticle &Vtx) { fPair.SetProductionVertex(Vtx); }
   
   //inter leg information
+  Double_t GetKFChi2()            const { return fPair.GetChi2();                               }
+  Int_t    GetKFNdf()             const { return fPair.GetNDF();                                }
   Double_t OpeningAngle()         const { return fD1.GetAngle(fD2);                             }
   Double_t DistanceDaughters()    const { return fD1.GetDistanceFromParticle(fD2);              }
   Double_t DistanceDaughtersXY()  const { return fD1.GetDistanceFromParticleXY(fD2);            }

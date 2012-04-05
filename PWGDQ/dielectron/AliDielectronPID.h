@@ -20,22 +20,19 @@
 //#############################################################
 
 #include <AliPID.h>
-#include <AliAODTrack.h>
-#include <AliAODPid.h>
-
 #include <AliAnalysisCuts.h>
 
 class TF1;
 class TList;
 class AliVTrack;
 class TGraph;
-class AliESDpid;
-class AliAODpidUtil;
+class AliPIDResponse;
+class AliDielectronVarManager;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
-  enum DetType {kITS, kTPC, kTRD, kTOF};
-  enum PIDbitTupe {kIgnore=0, kRequire, kIfAvailable};
+  enum DetType {kITS, kTPC, kTRD, kTRDeleEff, kTOF, kEMCAL};
+  enum PIDbitType {kIgnore=0, kRequire, kIfAvailable};
   
   AliDielectronPID();
   AliDielectronPID(const char*name, const char* title);
@@ -43,16 +40,20 @@ public:
   virtual ~AliDielectronPID();
 
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp=-99999.,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
+              Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire, 
+	      Int_t var=-1);
 
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, TF1 * const funUp,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
+              Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire, 
+	      Int_t var=-1);
 
   void AddCut(DetType det, AliPID::EParticleType type, TF1 * const funLow, Double_t nSigmaUp,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
+              Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire, 
+	      Int_t var=-1);
 
   void AddCut(DetType det, AliPID::EParticleType type, TF1 * const funLow, TF1 * const funUp,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
+              Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire, 
+	      Int_t var=-1);
   
   void SetDefaults(Int_t def);
 
@@ -66,33 +67,41 @@ public:
   static void SetCorrVal(Double_t run);
   static Double_t GetCorrVal()   { return fgCorr; }
   static TGraph *GetCorrGraph()  { return fgFitCorr; }
-  
+
+  static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
+  static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
+
+  static Double_t GetEtaCorr(AliVTrack *track);
+
 private:
   enum {kNmaxPID=10};
-  
+
   DetType  fDetType[kNmaxPID];    //detector type of nsigma cut
   AliPID::EParticleType fPartType[kNmaxPID]; //particle type
   Float_t  fNsigmaLow[kNmaxPID];  //lower nsigma bound
   Float_t  fNsigmaUp[kNmaxPID];   //upper nsigma bound
-  Double_t fPmin[kNmaxPID];       //lower momentum
-  Double_t fPmax[kNmaxPID];       //upper momentum
+  Double_t fmin[kNmaxPID];        //lower cut limit
+  Double_t fmax[kNmaxPID];        //upper cut limit
   Bool_t   fExclude[kNmaxPID];    //use as exclusion band
   TF1     *fFunUpperCut[kNmaxPID];//use function as upper cut
   TF1     *fFunLowerCut[kNmaxPID];//use function as lower cut
   UChar_t  fNcuts;                //number of cuts
   UChar_t  fRequirePIDbit[kNmaxPID]; //How to make use of the pid bit (see)
+  UShort_t fActiveCuts[kNmaxPID]; // list of activated cuts
 
-  AliESDpid *fESDpid;             //! esd pid object
-  AliAODpidUtil *fAODpidUtil;     //! AOD pid object
+  AliPIDResponse *fPIDResponse;   //! pid response object
   
   static TGraph *fgFitCorr;       //spline fit object to correct the nsigma deviation in the TPC electron band
   static Double_t fgCorr;         //!correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
+  static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
   
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedEMCAL(AliVTrack * const part, Int_t icut);
 
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);

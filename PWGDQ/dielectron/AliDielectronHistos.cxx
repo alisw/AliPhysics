@@ -19,12 +19,16 @@
 //
 // Authors: 
 //   Jens Wiechula <Jens.Wiechula@cern.ch> 
+//   Julian Book   <Julian.Book@cern.ch> 
 // 
 
 #include <TH1.h>
 #include <TH1F.h>
 #include <TH2.h>
 #include <TH3.h>
+#include <TProfile.h>
+#include <TProfile2D.h>
+#include <TProfile3D.h>
 #include <TCollection.h>
 #include <THashList.h>
 #include <TString.h>
@@ -89,9 +93,10 @@ AliDielectronHistos::~AliDielectronHistos()
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
-                                        Int_t nbinsX, Double_t xmin, Double_t xmax,
-                                        UInt_t valTypeX, Bool_t logBinX)
+void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
+				      UInt_t valTypeP,
+				      Int_t nbinsX, Double_t xmin, Double_t xmax,
+				      UInt_t valTypeX, Bool_t logBinX)
 {
   //
   // Default histogram creation 1D case
@@ -104,16 +109,16 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   } else {
     binLimX=AliDielectronHelper::MakeLinBinning(nbinsX, xmin, xmax);
   }
-
-  UserHistogram(histClass,name,title,binLimX,valTypeX);
+  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX);
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
-                                        Int_t nbinsX, Double_t xmin, Double_t xmax,
-                                        Int_t nbinsY, Double_t ymin, Double_t ymax,
-                                        UInt_t valTypeX, UInt_t valTypeY,
-                                        Bool_t logBinX, Bool_t logBinY)
+void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
+				      UInt_t valTypeP,
+				      Int_t nbinsX, Double_t xmin, Double_t xmax,
+				      Int_t nbinsY, Double_t ymin, Double_t ymax,
+				      UInt_t valTypeX, UInt_t valTypeY,
+				      Bool_t logBinX, Bool_t logBinY)
 {
   //
   // Default histogram creation 2D case
@@ -133,18 +138,18 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   } else {
     binLimY=AliDielectronHelper::MakeLinBinning(nbinsY, ymin, ymax);
   }
-  
-  UserHistogram(histClass,name,title,binLimX,binLimY,valTypeX,valTypeY);
+  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,valTypeX,valTypeY);
 }
 
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
-                                        Int_t nbinsX, Double_t xmin, Double_t xmax,
-                                        Int_t nbinsY, Double_t ymin, Double_t ymax,
-                                        Int_t nbinsZ, Double_t zmin, Double_t zmax,
-                                        UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
-                                        Bool_t logBinX, Bool_t logBinY, Bool_t logBinZ)
+void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
+				      UInt_t valTypeP,
+				      Int_t nbinsX, Double_t xmin, Double_t xmax,
+				      Int_t nbinsY, Double_t ymin, Double_t ymax,
+				      Int_t nbinsZ, Double_t zmin, Double_t zmax,
+				      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
+				      Bool_t logBinX, Bool_t logBinY, Bool_t logBinZ)
 {
   //
   // Default histogram creation 3D case
@@ -173,26 +178,28 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
     binLimZ=AliDielectronHelper::MakeLinBinning(nbinsZ, zmin, zmax);
   }
 
-  UserHistogram(histClass,name,title,binLimX,binLimY,binLimZ,valTypeX,valTypeY,valTypeZ);
+  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,binLimZ,valTypeX,valTypeY,valTypeZ);
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
-                                        const char* binning,
-                                        UInt_t valTypeX)
+void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
+				      UInt_t valTypeP,
+				      const char* binning,
+				      UInt_t valTypeX)
 {
   //
   // Histogram creation 1D case with arbitraty binning
   //
 
   TVectorD *binLimX=AliDielectronHelper::MakeArbitraryBinning(binning);
-  UserHistogram(histClass,name,title,binLimX,valTypeX);
+  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX);
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
-                                        const TVectorD * const binsX,
-                                        UInt_t valTypeX/*=kNoAutoFill*/)
+void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
+				      UInt_t valTypeP,
+				      const TVectorD * const binsX,
+				      UInt_t valTypeX/*=kNoAutoFill*/)
 {
   //
   // Histogram creation 1D case with arbitraty binning X
@@ -202,27 +209,38 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   Bool_t isOk=kTRUE;
   isOk&=IsHistogramOk(histClass,name);
   isOk&=(binsX!=0x0);
-
-  if (isOk){
-    TH1* hist=new TH1F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
+  TH1 *hist=0x0;
   
+  if (isOk){
+    if(valTypeP==999)
+      hist=new TH1F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
+    else {
+      hist=new TProfile(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
+    }
+
+    // store var for profile in fBits
+    StoreVarForProfile(hist,valTypeP);
+
     Bool_t isReserved=fReservedWords->Contains(histClass);
+    UInt_t uniqueID = valTypeX;
+    if(valTypeP!=999) uniqueID |= 0x80000000; // set last bit to 1 (for profiles only)
     if (isReserved)
-      UserHistogramReservedWords(histClass, hist, valTypeX);
+      UserHistogramReservedWords(histClass, hist, uniqueID);
     else
-      UserHistogram(histClass, hist, valTypeX);
+      UserHistogram(histClass, hist, uniqueID);
   }
   
   delete binsX;
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
-                                        const TVectorD * const binsX, const TVectorD * const binsY,
-                                        UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/)
+void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
+				      UInt_t valTypeP,
+				      const TVectorD * const binsX, const TVectorD * const binsY,
+				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/)
 {
   //
-  // Histogram creation 1D case with arbitraty binning X
+  // Histogram creation 2D case with arbitraty binning X
   // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
   //
 
@@ -230,17 +248,31 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   isOk&=IsHistogramOk(histClass,name);
   isOk&=(binsX!=0x0);
   isOk&=(binsY!=0x0);
+  TH1 *hist=0x0;
 
   if (isOk){
-    TH1* hist=new TH2F(name,title,
-                       binsX->GetNrows()-1,binsX->GetMatrixArray(),
-                       binsY->GetNrows()-1,binsY->GetMatrixArray());
-  
+    if(valTypeP==999) {
+      hist=new TH2F(name,title,
+                    binsX->GetNrows()-1,binsX->GetMatrixArray(),
+                    binsY->GetNrows()-1,binsY->GetMatrixArray()); 
+    }
+    else 
+      hist=new TProfile2D(name,title,
+                          binsX->GetNrows()-1,binsX->GetMatrixArray(),
+                          binsY->GetNrows()-1,binsY->GetMatrixArray());
+    
+    // store var for profile in fBits
+    StoreVarForProfile(hist,valTypeP);
+
     Bool_t isReserved=fReservedWords->Contains(histClass);
+    // switched from 2 digits encoding to 3 digits
+    UInt_t uniqueID = valTypeX+1000*valTypeY;
+    if(valTypeP!=999) uniqueID |= 0x80000000; // set last bit to 1 (for profiles only)
+
     if (isReserved)
-      UserHistogramReservedWords(histClass, hist, valTypeX+100*valTypeY);
+      UserHistogramReservedWords(histClass, hist, uniqueID);
     else
-      UserHistogram(histClass, hist, valTypeX+100*valTypeY);
+      UserHistogram(histClass, hist, uniqueID);
   }
   
   delete binsX;
@@ -249,12 +281,13 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, const char* title,
-                                        const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-                                        UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, UInt_t valTypeZ/*=0*/)
+void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
+				      UInt_t valTypeP,
+				      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
+				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, UInt_t valTypeZ/*=0*/)
 {
   //
-  // Histogram creation 1D case with arbitraty binning X
+  // Histogram creation 3D case with arbitraty binning X
   // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
   //
 
@@ -263,18 +296,32 @@ void AliDielectronHistos::UserHistogram(const char* histClass,const char *name, 
   isOk&=(binsX!=0x0);
   isOk&=(binsY!=0x0);
   isOk&=(binsZ!=0x0);
+  TH1 *hist=0x0;
   
   if (isOk){
-    TH1* hist=new TH3F(name,title,
-                       binsX->GetNrows()-1,binsX->GetMatrixArray(),
-                       binsY->GetNrows()-1,binsY->GetMatrixArray(),
-                       binsZ->GetNrows()-1,binsZ->GetMatrixArray());
-  
-    Bool_t isReserved=fReservedWords->Contains(histClass);
-    if (isReserved)
-      UserHistogramReservedWords(histClass, hist, valTypeX+100*valTypeY+10000*valTypeZ);
+    if(valTypeP==999)
+      hist=new TH3F(name,title,
+		    binsX->GetNrows()-1,binsX->GetMatrixArray(),
+		    binsY->GetNrows()-1,binsY->GetMatrixArray(),
+		    binsZ->GetNrows()-1,binsZ->GetMatrixArray());
     else
-      UserHistogram(histClass, hist, valTypeX+100*valTypeY+10000*valTypeZ);
+      hist=new TProfile3D(name,title,
+			  binsX->GetNrows()-1,binsX->GetMatrixArray(),
+			  binsY->GetNrows()-1,binsY->GetMatrixArray(),
+			  binsZ->GetNrows()-1,binsZ->GetMatrixArray());
+    
+    // store var for profile in fBits
+    StoreVarForProfile(hist,valTypeP);
+    
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    // switched from 2 digits encoding to 3 digits
+    UInt_t uniqueID = valTypeX+1000*valTypeY+1000000*valTypeZ;
+    if(valTypeP!=999) uniqueID |= 0x80000000; // set last bit to 1 (for profiles only)
+
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, uniqueID);
+    else
+      UserHistogram(histClass, hist, uniqueID);
   }
   
   delete binsX;
@@ -301,6 +348,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, TH1* hist, UInt_t
   THashList *classTable=(THashList*)fHistoList.FindObject(histClass);
   hist->SetDirectory(0);
   hist->SetUniqueID(valTypes);
+
   classTable->Add(hist);
 }
 
@@ -382,7 +430,7 @@ void AliDielectronHistos::FillClass(const char* histClass, Int_t nValues, const 
 {
   //
   // Fill class 'histClass' (by name)
-  //
+  //  
   
   THashList *classTable=(THashList*)fHistoList.FindObject(histClass);
   if (!classTable){
@@ -393,24 +441,30 @@ void AliDielectronHistos::FillClass(const char* histClass, Int_t nValues, const 
   TIter nextHist(classTable);
   TH1 *hist=0;
   while ( (hist=(TH1*)nextHist()) ){
-    UInt_t valueTypes=hist->GetUniqueID();
+    UInt_t value4=hist->TestBits(0x00ffffff)>>14;     // get profile var stored in fBits
+    UInt_t valueTypes=hist->GetUniqueID()&0x7fffffff; // ignore "boolean" bit for profiles
+    
     if (valueTypes==(UInt_t)kNoAutoFill) continue;
-    UInt_t value1=valueTypes%100;        //last two digits
-    UInt_t value2=valueTypes/100%100;    //second last two digits
-    UInt_t value3=valueTypes/10000%100;  //third last two digits
-    if (value1>=(UInt_t)nValues||value2>=(UInt_t)nValues||value3>=(UInt_t)nValues) {
-      Warning("FillClass","One of the values is out of range. Not filling histogram '%s/%s'.", histClass, hist->GetName());
+    UInt_t value1=valueTypes%1000;          //last three digits
+    UInt_t value2=valueTypes/1000%1000;     //second last three digits
+    UInt_t value3=valueTypes/1000000%1000;  //third last three digits
+    
+    if (value1>=(UInt_t)nValues||value2>=(UInt_t)nValues||value3>=(UInt_t)nValues||(value4>=(UInt_t)nValues && value4!=999)) {
+      Warning("FillClass","One of the values is out of range. Not filling Histogram '%s/%s'.", histClass, hist->GetName());
       continue;
     }
     switch (hist->GetDimension()){
     case 1:
-      hist->Fill(values[value1]);
+      if(value4==999) hist->Fill(values[value1]);                    // histograms
+      else ((TProfile*)hist)->Fill(values[value1],values[value4]);   // profiles
       break;
     case 2:
-      ((TH2*)hist)->Fill(values[value1],values[value2]);
+      if(value4==999) ((TH2*)hist)->Fill(values[value1],values[value2]);
+      else ((TProfile2D*)hist)->Fill(values[value1],values[value2],values[value4]);
       break;
     case 3:
-      ((TH3*)hist)->Fill(values[value1],values[value2],values[value3]);
+      if(value4==999) ((TH3*)hist)->Fill(values[value1],values[value2],values[value3]);
+      else ((TProfile3D*)hist)->Fill(values[value1],values[value2],values[value3],values[value4]);
       break;
     }
   }
@@ -441,6 +495,7 @@ void AliDielectronHistos::UserHistogramReservedWords(const char* histClass, cons
       TH1 *h=static_cast<TH1*>(hist->Clone());
       h->SetDirectory(0);
       h->SetTitle(Form("%s %s",title.Data(),l->GetName()));
+
       UserHistogram(l->GetName(),h,valTypes);
     }
   }
@@ -781,3 +836,21 @@ void AliDielectronHistos::SetReservedWords(const char* words)
   
   (*fReservedWords)=words;
 }
+
+//_____________________________________________________________________________
+void AliDielectronHistos::StoreVarForProfile(TObject *obj, UInt_t valType)
+{
+  //
+  // store var for TProfiles in TObject::fBits [14-23]
+  //
+  
+  for(UInt_t i=14; i < sizeof(UInt_t)*8; i++) {
+    if(TESTBIT(valType,i-14)) {
+      obj->SetBit(1<<i,kTRUE);
+    }
+  }
+
+  return;
+}
+
+

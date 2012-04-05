@@ -25,6 +25,7 @@ Detailed description
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+
 #include <AliTriggerAnalysis.h>
 #include <AliESDVertex.h>
 #include <AliESDEvent.h>
@@ -102,6 +103,7 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
   }
 
   fkVertex=0x0;
+
   switch(fVtxType){
   case kVtxTracks:
   case kVtxTracksOrSPD:

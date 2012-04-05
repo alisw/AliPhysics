@@ -12,14 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <TFormula.h>
-#include <TF1.h>
-#include <TCanvas.h>
-#include <TMath.h>
-
-#include <AliLog.h>
-
+#include "AliLog.h"
 #include "AliDielectronBtoJPSItoEleCDFfitFCN.h"
+#include "TFormula.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TMath.h"
 
 //_________________________________________________________________________
 //                        Class AliDielectronBtoJPSItoEleCDFfitFCN
@@ -51,9 +49,9 @@ ClassImp(AliDielectronBtoJPSItoEleCDFfitFCN)
 	SetCrystalBallFunction(kFALSE);
 	SetMassWndHigh(0.2);
 	SetMassWndLow(0.5);
-	for(Int_t iPar = 0; iPar < 20; iPar++) fParameters[iPar] = 0.;
-	fParameters[9] = 1.;fParameters[11] = 1.;fParameters[12] = 1.;
-	for(Int_t index=0; index<4; index++) fResolutionConstants[index] = 0.;
+        fWeightType[0] = 1.; fWeightType[1] = 1.; fWeightType[2] = 1.;
+        for(Int_t iPar = 0; iPar < 45; iPar++) fParameters[iPar] = 0.;
+        fParameters[9] = 1.;fParameters[11] = 1.;fParameters[12] = 1.;
 	AliInfo("Instance of AliDielectronBtoJPSItoEleCDFfitFCN-class created");
 }
 //_________________________________________________________________________________________________
@@ -67,13 +65,13 @@ AliDielectronBtoJPSItoEleCDFfitFCN::AliDielectronBtoJPSItoEleCDFfitFCN(const Ali
 	fhCsiMC(source.fhCsiMC),
 	fMassWndHigh(source.fMassWndHigh),
 	fMassWndLow(source.fMassWndLow),
-	fCrystalBallParam(source.fCrystalBallParam)
+	fCrystalBallParam(source.fCrystalBallParam) 
 {
 	//
 	// Copy constructor
 	//
-	for(Int_t iPar = 0; iPar < 20; iPar++) fParameters[iPar] = source.fParameters[iPar];
-	for(Int_t index=0; index<4; index++) fResolutionConstants[index] = source.fResolutionConstants[index];
+	for(Int_t iPar = 0; iPar < 45; iPar++) fParameters[iPar] = source.fParameters[iPar];
+        for(Int_t iW=0; iW<2; iW++) fWeightType[iW] = source.fWeightType[iW]; 
 }
 //_________________________________________________________________________________________________
 AliDielectronBtoJPSItoEleCDFfitFCN& AliDielectronBtoJPSItoEleCDFfitFCN::operator=(const AliDielectronBtoJPSItoEleCDFfitFCN& source) 
@@ -90,9 +88,7 @@ AliDielectronBtoJPSItoEleCDFfitFCN& AliDielectronBtoJPSItoEleCDFfitFCN::operator
 	fhCsiMC = source.fhCsiMC;
 	fCrystalBallParam = source.fCrystalBallParam;
 
-	for(Int_t iPar = 0; iPar < 20; iPar++) fParameters[iPar] = source.fParameters[iPar];
-	for(Int_t index=0; index<4; index++) fResolutionConstants[index] = source.fResolutionConstants[index];
-
+     	for(Int_t iPar = 0; iPar < 45; iPar++) fParameters[iPar] = source.fParameters[iPar];
 	return *this;
 }  
 //_________________________________________________________________________________________________
@@ -103,12 +99,11 @@ AliDielectronBtoJPSItoEleCDFfitFCN::~AliDielectronBtoJPSItoEleCDFfitFCN()
 	//
 
 	delete fhCsiMC;
-	for(Int_t iPar = 0; iPar < 20; iPar++) fParameters[iPar] = 0.;
-	for(Int_t index=0; index<4; index++) fResolutionConstants[index] = 0.;
+	for(Int_t iPar = 0; iPar < 45; iPar++) fParameters[iPar] = 0.;
 }
 //_________________________________________________________________________________________________
 Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateLikelihood(const Double_t* pseudoproperdecaytime,
-		const Double_t* invariantmass, const Int_t ncand) const
+		const Double_t* invariantmass, const Int_t *type, const Int_t ncand) const
 {
 	//
 	// This function evaluates the Likelihood fnction
@@ -118,11 +113,11 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateLikelihood(const Double_t* 
 	Double_t ret = 0.;
 
 	for(Int_t i=0; i < ncand; i++) {
-		f = EvaluateCDFfuncNorm(pseudoproperdecaytime[i],invariantmass[i]);
+		f = EvaluateCDFfuncNorm(pseudoproperdecaytime[i],invariantmass[i],type[i]);
 		if(f <= 0.) continue;  
-		ret += -1*TMath::Log(f);  
+                ret += -1*TMath::Log(f);  
 	}
-	return ret;
+        return ret;
 }
 //_________________________________________________________________________________________________
 void AliDielectronBtoJPSItoEleCDFfitFCN::SetAllParameters(const Double_t* parameters)
@@ -130,7 +125,7 @@ void AliDielectronBtoJPSItoEleCDFfitFCN::SetAllParameters(const Double_t* parame
 	//
 	// Sets array of FCN parameters
 	//
-	for(Int_t index = 0; index < 20; index++) fParameters[index] = parameters[index];
+	for(Int_t index = 0; index < 45; index++) fParameters[index] = parameters[index];
 }
 //_________________________________________________________________________________________________
 void AliDielectronBtoJPSItoEleCDFfitFCN::ComputeMassIntegral() 
@@ -167,7 +162,8 @@ void AliDielectronBtoJPSItoEleCDFfitFCN::ComputeMassIntegral()
 		summMassBkg += EvaluateCDFInvMassBkgDistr(mx);
 	}
 	intmMassBkg = summMassBkg*stepm;
-	SetIntegralMassBkg(intmMassBkg);
+	if(intmMassBkg < 1.e-05) intmMassBkg = 1.;
+        SetIntegralMassBkg(intmMassBkg);
 }
 //_________________________________________________________________________________________________
 void AliDielectronBtoJPSItoEleCDFfitFCN::PrintStatus()
@@ -205,11 +201,43 @@ void AliDielectronBtoJPSItoEleCDFfitFCN::PrintStatus()
 	printf("actual value of meanBkg ----------------------------------------->> | %f \n", GetBkgInvMassMean());
 	printf("actual value of slopeBkg ---------------------------------------->> | %f \n", GetBkgInvMassSlope());
 	printf("actual value of constBkg ---------------------------------------->> | %f \n", GetBkgInvMassConst());
-	// resolution func
-	printf("actual value of norm1Gauss -------------------------------------->> | %f \n",GetNormGaus1ResFunc());
-	printf("actual value of norm2Gauss -------------------------------------->> | %f \n",GetNormGaus2ResFunc());
+	// resolution func (First-First)
+	printf("actual value of norm1Gauss (FF) --------------------------------->> | %f \n", GetNormGaus1ResFunc(2));
+	printf("actual value of norm2Gauss (FF) --------------------------------->> | %f \n", GetNormGaus2ResFunc(2));
+        printf("actual value of fMean1Res (FF) ---------------------------------->> | %f \n", GetResMean1(2));
+        printf("actual value of fSigma1Res (FF) --------------------------------->> | %f \n", GetResSigma1(2));
+        printf("actual value of fMean2Res (FF) ---------------------------------->> | %f \n", GetResMean2(2));
+        printf("actual value of fSigma2Res (FF) --------------------------------->> | %f \n", GetResSigma2(2));
+        
+        printf("actual value of alfaRes (FF) ------------------------------------>> | %f \n", GetResAlfa(2));
+        printf("actual value of lambdaRes (FF) ---------------------------------->> | %f \n", GetResLambda(2)); 
+        printf("actual value of normExpRes (FF) --------------------------------->> | %f \n", GetResNormExp(2)); 
+       
+        // resolution func (First-Second)
+        printf("actual value of norm1Gauss (FS) --------------------------------->> | %f \n", GetNormGaus1ResFunc(1));
+        printf("actual value of norm2Gauss (FS) --------------------------------->> | %f \n", GetNormGaus2ResFunc(1));
+        printf("actual value of fMean1Res (FS) ---------------------------------->> | %f \n", GetResMean1(1));
+        printf("actual value of fSigma1Res (FS) --------------------------------->> | %f \n", GetResSigma1(1));
+        printf("actual value of fMean2Res (FS) ---------------------------------->> | %f \n", GetResMean2(1));
+        printf("actual value of fSigma2Res (FS) --------------------------------->> | %f \n", GetResSigma2(1));
+        
+        printf("actual value of alfaRes (FS) ------------------------------------>> | %f \n", GetResAlfa(1));
+        printf("actual value of lambdaRes (FS) ---------------------------------->> | %f \n", GetResLambda(1));    
+        printf("actual value of normExpRes (FS) --------------------------------->> | %f \n", GetResNormExp(1));    
+        
+        // resolution func (Second-Second) 
+        printf("actual value of norm1Gauss (SS) --------------------------------->> | %f \n", GetNormGaus1ResFunc(0));
+        printf("actual value of norm2Gauss (SS) --------------------------------->> | %f \n", GetNormGaus2ResFunc(0));
+        printf("actual value of fMean1Res (SS) ---------------------------------->> | %f \n", GetResMean1(0));
+        printf("actual value of fSigma1Res (SS) --------------------------------->> | %f \n", GetResSigma1(0));
+        printf("actual value of fMean2Res (SS) ---------------------------------->> | %f \n", GetResMean2(0));
+        printf("actual value of fSigma2Res (SS) --------------------------------->> | %f \n", GetResSigma2(0));
+        
+        printf("actual value of alfaRes (SS) ------------------------------------>> | %f \n", GetResAlfa(0));
+        printf("actual value of lambdaRes (SS) ---------------------------------->> | %f \n", GetResLambda(0));    
+        printf("actual value of normExpRes (SS) --------------------------------->> | %f \n", GetResNormExp(0));    
 
-	printf("\n");
+        printf("\n");
 	// integrals constants
 	printf("Actual value of normalization integral for MassSig ---------------->> | %f \n", GetIntegralMassSig());
 	printf("Actual value of normalization integral for MassBkg ---------------->> | %f \n", GetIntegralMassBkg());
@@ -217,45 +245,56 @@ void AliDielectronBtoJPSItoEleCDFfitFCN::PrintStatus()
 	printf("\n");
 }
 //_________________________________________________________________________________________________
-void AliDielectronBtoJPSItoEleCDFfitFCN::SetResolutionConstants(Double_t* resolutionConst)
+void AliDielectronBtoJPSItoEleCDFfitFCN::SetResolutionConstants(Double_t* resolutionConst, Int_t type) 
 {
 	//
 	// Resolution function is parametrized as the sum of two gaussian
 	//
-	fResolutionConstants[0]  = resolutionConst[0]; // mean 1
-	fResolutionConstants[1]  = resolutionConst[1]; // sigma 1
-	fResolutionConstants[2]  = resolutionConst[2]; // mean 2
-	fResolutionConstants[3]  = resolutionConst[3]; // sigma 2
+        Int_t index = (2-type)*9; 
+        fParameters[20+index]=resolutionConst[1]; //mean1
+        fParameters[22+index]=resolutionConst[4]; //mean2
+        fParameters[18+index]=resolutionConst[0]; //norm1
+        fParameters[21+index]=resolutionConst[2]; //sigma1
+        fParameters[23+index]=resolutionConst[5]; //sigma2
+        fParameters[19+index]=resolutionConst[3]; //norm2
+
+        //exp values
+        fParameters[24+index]=resolutionConst[6]; //alfa
+        fParameters[25+index]=resolutionConst[7]; //lambda
+        fParameters[26+index]=resolutionConst[8]; //norm3
+        return;
 }
 
-//_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfunc(Double_t x, Double_t m) const 
+//________________________________________________________________________________________________
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfunc(Double_t x, Double_t m, Int_t type) const 
 {
-	return fParameters[8]*EvaluateCDFfuncSignalPart(x,m) + (1. - fParameters[8])*EvaluateCDFfuncBkgPart(x,m);
+        // evaluate likelihood function
+	return fParameters[8]*EvaluateCDFfuncSignalPart(x,m,type) + (1. - fParameters[8])*EvaluateCDFfuncBkgPart(x,m,type);
 }
 
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfuncNorm(Double_t x, Double_t m) const
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfuncNorm(Double_t x, Double_t m, Int_t type) const
 {
-	return EvaluateCDFfunc(x,m);
+        // evaluate likelihood function
+	return EvaluateCDFfunc(x,m,type);
 }
 
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfuncSignalPart(Double_t x, Double_t m) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfuncSignalPart(Double_t x, Double_t m, Int_t type) const 
 {
-	return EvaluateCDFDecayTimeSigDistr(x)*(EvaluateCDFInvMassSigDistr(m)/fintmMassSig); 
+  // evaluate psproper signal	
+  return EvaluateCDFDecayTimeSigDistr(x,type)*(EvaluateCDFInvMassSigDistr(m)/fintmMassSig); 
 }
 
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeSigDistr(Double_t x) const
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeSigDistr(Double_t x, Int_t type) const
 {
 	//
 	// Implementation of the Background part of the Likelyhood function
 	// 
-
 	Double_t retvalue = 0.;
-	Double_t funBnorm = FunB(x);
-	Double_t funPnorm = ResolutionFunc(x);
+	Double_t funBnorm = FunB(x,type);
+	Double_t funPnorm = ResolutionFunc(x,type);
 	retvalue = fParameters[7]*funBnorm + (1. - fParameters[7])*funPnorm;
 	return retvalue;
 }
@@ -267,13 +306,11 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFInvMassSigDistr(Double_t
 	// Parametrization of signal part invariant mass distribution
 	// It can be either Crystal Ball function or sum of two Landau
 	//
-
 	Double_t fitval = 0.;
 
 	if(fCrystalBallParam){
 		Double_t t = (m-fParameters[9])/fParameters[11]; ;
 		if (fParameters[12] < 0) t = -t;
-
 		Double_t absAlpha = TMath::Abs((Double_t)fParameters[12]);
 
 		if (t >= -absAlpha) {
@@ -294,7 +331,7 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFInvMassSigDistr(Double_t
 	}
 }
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunB(Double_t x) const  
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunB(Double_t x, Int_t type) const  
 {
 	//  
 	// Parameterisation of the fit function for the x part of the Background
@@ -318,19 +355,19 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunB(Double_t x) const
 		xprime = xlow + (i-.5) * step;
 		csiMCxprime = CsiMC(xprime);
 		xdiff = xprime - x;
-		resolutionxdiff = ResolutionFunc(xdiff); // normalized value
+		resolutionxdiff = ResolutionFunc(xdiff, type); // normalized value
 		sum += csiMCxprime * resolutionxdiff;
 	}
 
 	return step * sum ;
 }
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunP(Double_t x) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunP(Double_t x, Int_t type) const 
 {
 	//
 	//  Parameterisation of the Prompt part for the x distribution
 	//
-	return ResolutionFunc(x);
+	return ResolutionFunc(x,type);
 }
 
 
@@ -344,28 +381,28 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::CsiMC(Double_t x) const
 	Double_t returnvalue = 0.;
 
 	if((fhCsiMC->FindBin(x) > 0) && (fhCsiMC->FindBin(x) < fhCsiMC->GetNbinsX()+1))  
-		returnvalue = fhCsiMC->Interpolate(x);
+	returnvalue = fhCsiMC->Interpolate(x);
 
 	return returnvalue;
 }
 
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfuncBkgPart(Double_t x,Double_t m) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFfuncBkgPart(Double_t x,Double_t m, Int_t type) const 
 {
 	//
 	// Return the part of the likelihood function for the background hypothesis
 	//
-	return EvaluateCDFDecayTimeBkgDistr(x)*(EvaluateCDFInvMassBkgDistr(m)/fintmMassBkg);
+	return EvaluateCDFDecayTimeBkgDistr(x,type)*(EvaluateCDFInvMassBkgDistr(m)/fintmMassBkg);
 }  
 
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeBkgDistr(Double_t x) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeBkgDistr(Double_t x, Int_t type) const 
 {
 	//
 	// it returns the value of the probability to have a given x for the background 
 	//
 
-	Double_t ret = fParameters[0]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*ResolutionFunc(x) + fParameters[1]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*FunBkgPos(x) +  fParameters[2]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*FunBkgNeg(x) + fParameters[3]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*FunBkgSym(x);
+	Double_t ret = fParameters[0]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*ResolutionFunc(x,type) + fParameters[1]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*FunBkgPos(x,type) +  fParameters[2]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*FunBkgNeg(x,type) + fParameters[3]/(fParameters[0]+fParameters[1]+fParameters[2]+fParameters[3])*FunBkgSym(x,type);
 	return ret;
 }
 
@@ -380,12 +417,11 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFInvMassBkgDistr(Double_t
 	return value;
 }
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgPos(Double_t x) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgPos(Double_t x,Int_t type) const 
 {
 	//
 	// exponential with positive slopes for the background part (x)
 	//
-
 	Double_t np = 1000.0;
 	Double_t sc = 10.;      
 	Double_t sigma3 = 1000.; // valore usato nella macro 
@@ -400,15 +436,15 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgPos(Double_t x) const
 
 	for(i=1.0; i<=np/2; i++) {
 		xprime = xlow + (i-.5) * step;
-		if (xprime > 0) {sum += fParameters[4] * TMath::Exp(-1*xprime*fParameters[4])*(ResolutionFunc(xprime-x));}
+		if (xprime > 0) {sum += fParameters[4] * TMath::Exp(-1*xprime*fParameters[4])*(ResolutionFunc(xprime-x,type));}
 		xprime = xupp - (i-.5) * step;
-		if (xprime > 0) {sum += fParameters[4] * TMath::Exp(-1*xprime*fParameters[4])*(ResolutionFunc(xprime-x));}
+		if (xprime > 0) {sum += fParameters[4] * TMath::Exp(-1*xprime*fParameters[4])*(ResolutionFunc(xprime-x,type));}
 	}
 
 	return step * sum ;
 }
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgNeg(Double_t x) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgNeg(Double_t x, Int_t type) const 
 {
 	//
 	// exponential with negative slopes for the background part (x)
@@ -428,16 +464,16 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgNeg(Double_t x) const
 	for(i=1.0; i<=np/2; i++) {
 
 		xprime = xlow + (i-.5) * step;
-		if (xprime < 0) {sum += fParameters[5] * TMath::Exp(xprime*fParameters[5]) * (ResolutionFunc(xprime-x));}
+		if (xprime < 0) {sum += fParameters[5] * TMath::Exp(xprime*fParameters[5]) * (ResolutionFunc(xprime-x,type));}
 
 		xprime = xupp - (i-.5) * step;
-		if (xprime < 0) {sum += fParameters[5] * TMath::Exp(xprime*fParameters[5]) * (ResolutionFunc(xprime-x));}
+		if (xprime < 0) {sum += fParameters[5] * TMath::Exp(xprime*fParameters[5]) * (ResolutionFunc(xprime-x,type));}
 	}
 
 	return step * sum ;
 }
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgSym(Double_t x) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgSym(Double_t x, Int_t type) const 
 {
 	//
 	// exponential with both positive and negative slopes for the background part (x)
@@ -458,64 +494,198 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCN::FunBkgSym(Double_t x) const
 	for(i=1.0; i<=np/2; i++) {
 
 		xprime = xlow + (i-.5) * step;
-		if (xprime > 0) {sum1 += 0.5 * fParameters[6]*TMath::Exp(-1*xprime*fParameters[6]) * (ResolutionFunc(xprime-x));}
-		if (xprime < 0) {sum2 += 0.5 * fParameters[6]*TMath::Exp(xprime*fParameters[6]) * (ResolutionFunc(xprime-x));}
+		if (xprime > 0) {sum1 += 0.5 * fParameters[6]*TMath::Exp(-1*xprime*fParameters[6]) * (ResolutionFunc(xprime-x,type));}
+		if (xprime < 0) {sum2 += 0.5 * fParameters[6]*TMath::Exp(xprime*fParameters[6]) * (ResolutionFunc(xprime-x,type));}
 
 		xprime = xupp - (i-.5) * step;
-		if (xprime > 0) {sum1 += 0.5 * fParameters[6]*TMath::Exp(-1*xprime*fParameters[6]) * (ResolutionFunc(xprime-x));} 
-		if (xprime < 0) {sum2 += 0.5 * fParameters[6]*TMath::Exp(xprime*fParameters[6]) * (ResolutionFunc(xprime-x));}
+		if (xprime > 0) {sum1 += 0.5 * fParameters[6]*TMath::Exp(-1*xprime*fParameters[6]) * (ResolutionFunc(xprime-x,type));} 
+		if (xprime < 0) {sum2 += 0.5 * fParameters[6]*TMath::Exp(xprime*fParameters[6]) * (ResolutionFunc(xprime-x,type));}
 	}
 
 	return step*(sum1 + sum2) ;
 }
 //_________________________________________________________________________________________________
-Double_t AliDielectronBtoJPSItoEleCDFfitFCN::ResolutionFunc(Double_t x) const 
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::ResolutionFunc(Double_t x, Int_t type) const  
 {
 	//
 	// parametrization with 2 gaus
 	//
-	Double_t ret = 0.;
-	Double_t mean1 = fResolutionConstants[0]; 
-	Double_t mean2 = fResolutionConstants[2];
-	Double_t norm1 = fParameters[18];
-	Double_t sigma1 = fResolutionConstants[1];
-	Double_t sigma2 = fResolutionConstants[3]; 
-	Double_t norm2 = fParameters[19];
+        Int_t index = (2-type)*9;
+        Double_t mean1 = fParameters[20+index];
+        Double_t mean2 = fParameters[22+index];
+        Double_t norm1 = fParameters[18+index];
+	Double_t sigma1 = fParameters[21+index];
+	Double_t sigma2 = fParameters[23+index];
+        Double_t norm2 = fParameters[19+index];
+        //exp values
+        Double_t alfa = fParameters[24+index];
+        Double_t lambda = fParameters[25+index];
+        Double_t norm3 = fParameters[26+index];
+ 
+        Double_t ret = 0.; Double_t fitval = 0; 
+        if(TMath::Abs(x)<=alfa) fitval = (lambda-1)/(2*alfa*lambda);
+        else  fitval = ((lambda-1)/(2*alfa*lambda))*TMath::Power(alfa,lambda)*(TMath::Power(TMath::Abs(x),-1*lambda));
 
-	ret = (norm1/(norm1+norm2))*((1/(sigma1*TMath::Sqrt(2*TMath::Pi())))*TMath::Exp(-0.5*((x-mean1)/sigma1)*((x-mean1)/sigma1)))+(norm2/(norm1+norm2))*((1/(sigma2*TMath::Sqrt(2*TMath::Pi())))*TMath::Exp(-0.5*((x-mean2)/sigma2)*((x-mean2)/sigma2))); 
+        ret = (norm1/(norm1+norm2+norm3))*((1/(sigma1*TMath::Sqrt(2*TMath::Pi())))*TMath::Exp(-0.5*((x-mean1)/sigma1)*((x-mean1)/sigma1))) + (norm2/(norm1+norm2+norm3))*((1/(sigma2*TMath::Sqrt(2*TMath::Pi())))*TMath::Exp(-0.5*((x-mean2)/sigma2)*((x-mean2)/sigma2))) + (norm3/(norm1+norm2+norm3))*fitval;
 
-	return ret;
-}
+        return ret;
+}     
 
 //_________________________________________________________________________________________________
-TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetCsiMC(Double_t xmin, Double_t xmax) 
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetCsiMC(Double_t xmin, Double_t xmax, Double_t normalization) 
 {
 	// return the pointer to the templateMC function 
-	TF1* templateMC = new TF1("MCtemplate",this,&AliDielectronBtoJPSItoEleCDFfitFCN::CsiMCfunc,xmin,xmax,0);
-	templateMC->SetNpx(5000);
+	TF1* templateMC = new TF1("MCtemplate",this,&AliDielectronBtoJPSItoEleCDFfitFCN::CsiMCfunc,xmin,xmax,1);
+	templateMC->SetParameter(0,normalization);
+        templateMC->SetNpx(5000);
         return (TF1*)templateMC->Clone();
 }
 
 //__________________________________________________________________________________________________
-TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetResolutionFunc(Double_t xmin, Double_t xmax){
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetResolutionFunc(Double_t xmin, Double_t xmax, Double_t normalization, Double_t type){
 	// return the pointer to the resolution function
-	TF1* resFunc = new TF1("resolutionFunc",this,&AliDielectronBtoJPSItoEleCDFfitFCN::ResolutionFuncf,xmin,xmax,0);
+	TF1* resFunc = new TF1(Form("resolutionFunc_%f",type),this,&AliDielectronBtoJPSItoEleCDFfitFCN::ResolutionFuncf,xmin,xmax,2);
+        resFunc->SetParameter(0,normalization);
+        resFunc->SetParameter(1,type);
 	resFunc->SetNpx(5000);
         return (TF1*)resFunc->Clone();
 }
 
+//__________________________________________________________________________________________________
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetResolutionFuncAllTypes(Double_t xmin, Double_t xmax, Double_t normalization){
+        // return the pointer to the resolution function
+        TF1* resFunc = new TF1(Form("resolutionFunc"),this,&AliDielectronBtoJPSItoEleCDFfitFCN::ResolutionFuncAllTypes,xmin,xmax,1);
+        resFunc->SetParameter(0,normalization);
+        resFunc->SetNpx(5000);
+        return (TF1*)resFunc->Clone();
+}
+
 //___________________________________________________________________________________________________
-TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFDecayTimeBkgDistr(Double_t xmin, Double_t xmax){
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFDecayTimeBkgDistr(Double_t xmin, Double_t xmax, Double_t normalization, Double_t type){
 	// return the pointer to the background x distribution function
-	TF1 *backFunc = new TF1("backFunc",this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeBkgDistrFunc,xmin,xmax,0);
+	TF1 *backFunc = new TF1(Form("backFunc_%f",type),this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeBkgDistrFunc,xmin,xmax,2);
+        backFunc->SetParameter(0,normalization);
+        backFunc->SetParameter(1,type);
 	backFunc->SetNpx(5000);
         return (TF1*)backFunc->Clone();
 }
 
+//___________________________________________________________________________________________________
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFDecayTimeBkgDistrAllTypes(Double_t xmin, Double_t xmax, Double_t normalization){
+        // return the pointer to the background x distribution function
+        TF1 *backFunc = new TF1(Form("backFunc"),this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeBkgDistrFuncAllTypes,xmin,xmax,1);
+        backFunc->SetParameter(0,normalization);
+        backFunc->SetNpx(5000);
+        return (TF1*)backFunc->Clone();
+}
+
 //__________________________________________________________________________________________________
-TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFDecayTimeSigDistr(Double_t xmin, Double_t xmax){
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFDecayTimeSigDistr(Double_t xmin, Double_t xmax, Double_t normalization, Double_t type){
 	// return the pointer to the signal x distribution function
-	TF1 *signFunc = new TF1("signalFunc",this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeSigDistrFunc,xmin,xmax,0);
+	TF1 *signFunc = new TF1("signalFunc",this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeSigDistrFunc,xmin,xmax,2);
+        signFunc->SetParameter(0,normalization);
+        signFunc->SetParameter(1,type); 
         signFunc->SetNpx(5000);
 	return (TF1*)signFunc->Clone();
 }
+
+//____________________________________________________________________________________________________
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFInvMassBkgDistr(Double_t mMin, Double_t mMax, Double_t normalization){
+  // return the pointer to the invariant mass distribution for the background 
+  TF1 * invMassBkg = new TF1("invMassBkg",this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFInvMassBkgDistrFunc,mMin,mMax,1);
+  invMassBkg->SetParameter(0,normalization);
+  invMassBkg->SetNpx(5000);
+  return (TF1*)invMassBkg->Clone();
+}
+
+
+//____________________________________________________________________________________________________
+TF1* AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFInvMassSigDistr(Double_t mMin, Double_t mMax, Double_t normalization){
+  // return the pointer to the invariant mass distribution for the signal
+  TF1 * invMassSig = new TF1("invMassSig",this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFInvMassSigDistrFunc,mMin,mMax,1);
+  invMassSig->SetParameter(0,normalization);
+  invMassSig->SetNpx(5000);
+  return (TF1*)invMassSig->Clone();
+}
+
+//____________________________________________________________________________________________________
+TF1 *AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFInvMassTotalDistr(Double_t mMin, Double_t mMax, Double_t normalization){
+  // return the pointer to the invariant mass distribution
+  TF1 * invMassTot = new TF1("invMassTot",this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFInvMassTotalDistr,mMin,mMax,1);
+  invMassTot->SetParameter(0,normalization);
+  invMassTot->SetNpx(5000);
+  return (TF1*)invMassTot->Clone();
+}
+
+//____________________________________________________________________________________________________
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFInvMassTotalDistr(const Double_t* x, const Double_t *par) const
+{
+  // evaluate invariant mass total distribution
+  Double_t value = 0;
+  Double_t xx = x[0];
+  value = ((EvaluateCDFInvMassSigDistr(xx)/fintmMassSig)*fParameters[8] + (1-fParameters[8])*(EvaluateCDFInvMassBkgDistr(xx)/fintmMassBkg))*par[0];
+  return value;  
+}
+
+//____________________________________________________________________________________________________
+TF1 *AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFDecayTimeTotalDistr(Double_t xMin, Double_t xMax, Double_t normalization,Double_t type){
+ // return the pointer to the pseudoproper distribution for the background
+ TF1 *decayTimeTot = new TF1(Form("decayTimeTot_%f",type),this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeTotalDistr,xMin,xMax,2);
+ decayTimeTot->SetParameter(0,normalization);
+ decayTimeTot->SetParameter(1,type);
+ decayTimeTot->SetNpx(5000);
+ return (TF1*)decayTimeTot->Clone();
+}
+
+//____________________________________________________________________________________________________
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeTotalDistr(const Double_t* x, const Double_t *par) const
+{
+ // evaluate the total pseudoproper distribution for a given candidate's type. par[1] should be the candidate's type.
+ Double_t value = 0;
+ Double_t xx = x[0];
+ value = (fParameters[8]*EvaluateCDFDecayTimeSigDistr(xx,(Int_t)par[1]) + (1-fParameters[8])*EvaluateCDFDecayTimeBkgDistr(xx,(Int_t)par[1]))*par[0];
+ return value;
+}
+
+//____________________________________________________________________________________________________
+Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeTotalDistrAllTypes(const Double_t* x, const Double_t *par) const
+{
+ // evaluate the total pseudoproper distribution considering all candidate's types
+ Double_t value = 0;
+ Double_t xx = x[0];
+
+ value = (fParameters[8]*(fWeightType[2]*EvaluateCDFDecayTimeSigDistr(xx,2)+fWeightType[1]*EvaluateCDFDecayTimeSigDistr(xx,1)+fWeightType[0]*EvaluateCDFDecayTimeSigDistr(xx,0)))+((1-fParameters[8])*(fWeightType[2]*EvaluateCDFDecayTimeBkgDistr(xx,2) + fWeightType[1]*EvaluateCDFDecayTimeBkgDistr(xx,1)+fWeightType[0]*EvaluateCDFDecayTimeBkgDistr(xx,0))); 
+
+ return value*par[0];
+}
+
+//____________________________________________________________________________________________________
+TF1 *AliDielectronBtoJPSItoEleCDFfitFCN::GetEvaluateCDFDecayTimeTotalDistrAllTypes(Double_t xMin, Double_t xMax, Double_t normalization){
+ // return the pointer to the pseudoproper function for the background considering all candidate's types
+ TF1 *decayTimeTot = new TF1(Form("decayTimeTot"),this,&AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateCDFDecayTimeTotalDistrAllTypes,xMin,xMax,1);
+ decayTimeTot->SetParameter(0,normalization);
+ decayTimeTot->SetNpx(5000);
+ return (TF1*)decayTimeTot->Clone();
+}
+
+
+//____________________________________________________________________________________________________
+TF1 * AliDielectronBtoJPSItoEleCDFfitFCN::GetFunB(Double_t xmin, Double_t xmax, Double_t normalization, Double_t type){
+ // return the pointer to the function that describe secondary jpsi pseudoproper distribution for a given candidate's type
+ TF1* funb = new TF1(Form("secondaryJpsiConvolution_%f",type),this,&AliDielectronBtoJPSItoEleCDFfitFCN::FunBfunc,xmin,xmax,2);
+ funb->SetParameter(0,normalization);
+ funb->SetParameter(1,type);
+ funb->SetNpx(5000);
+ return (TF1*)funb->Clone();
+ }
+
+//____________________________________________________________________________________________________
+TF1 * AliDielectronBtoJPSItoEleCDFfitFCN::GetFunBAllTypes(Double_t xmin, Double_t xmax, Double_t normalization){
+// return the pointer to the function that describe secondary jpsi pseudoproper distribution for all types
+ TF1* funb = new TF1(Form("secondaryJpsiConvolution"),this,&AliDielectronBtoJPSItoEleCDFfitFCN::FunBfuncAllTypes,xmin,xmax,1);
+ funb->SetParameter(0,normalization);
+ funb->SetNpx(5000);
+ return (TF1*)funb->Clone();
+ }
+
+

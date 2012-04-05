@@ -48,6 +48,7 @@ public:
   void SetStepsForCutsIncreasing(Bool_t steps=kTRUE)   { fStepsForCutsIncreasing=steps;   }
   void SetStepsForSignal(Bool_t steps=kTRUE)           { fStepsForSignal=steps;           }
   void SetStepsForBackground(Bool_t steps=kTRUE)       { fStepsForBackground=steps;       }
+  void SetStepsForMCtruthOnly(Bool_t steps=kTRUE)      { fStepsForMCtruthOnly=steps;       }
   
   void SetPdgMother(Int_t pdg) { fPdgMother=pdg; }
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
@@ -60,7 +61,13 @@ public:
   void AddVariable(AliDielectronVarManager::ValueTypes type, TVectorD *binLimits, Bool_t leg=kFALSE);
   
   void InitialiseContainer(const AliAnalysisFilter& filter);
-  
+
+  Int_t GetNvarsPair()     const {return fNVars;}
+  Int_t GetNvarsLeg()      const {return fNVarsLeg;}
+
+  UInt_t GetVariablePair(UInt_t var) const {return (var>(UInt_t)AliDielectronVarManager::kNMaxValues)? (UInt_t)AliDielectronVarManager::kNMaxValues+1:fVariables[var];}
+  UInt_t GetVariableLeg(UInt_t var) const {return (var>(UInt_t)AliDielectronVarManager::kNMaxValues)? (UInt_t)AliDielectronVarManager::kNMaxValues+1:fVariablesLeg[var];}
+
 //   void Fill(UInt_t mask, const TObject *particle);
   void Fill(UInt_t mask, const AliDielectronPair *particle);
   void FillMC(const TObject *particle);
@@ -93,6 +100,7 @@ private:
                                         //e.g. cut1&cut2, cut1&cut2&cut3 ...
   Bool_t fStepsForSignal;               //steps for pure signal
   Bool_t fStepsForBackground;           //steps for pure background
+  Bool_t fStepsForMCtruthOnly;          //Switch off all pair steps, allow only MC truth Class
   
   UInt_t fStepMasks[kNmaxAddSteps];      //steps for additional cut combinatons
   UInt_t fNStepMasks;                    //number of configured step masks

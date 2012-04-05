@@ -24,7 +24,6 @@
 
 #include <AliCFContainer.h>
 #include <AliInputEventHandler.h>
-#include <AliESDInputHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliVEvent.h>
 
@@ -119,23 +118,16 @@ void AliAnalysisTaskDielectronME::UserExec(Option_t *)
   if (fListHistos.IsEmpty()&&fListCF.IsEmpty()) return;
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliESDInputHandler *esdHandler=0x0;
-  if ( (esdHandler=dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler())) && esdHandler->GetESDpid() ){
-    AliDielectronVarManager::SetESDpid(esdHandler->GetESDpid());
-  } else {
-    //load esd pid bethe bloch parameters depending on the existance of the MC handler
-    // yes: MC parameters
-    // no:  data parameters
-    if (!AliDielectronVarManager::GetESDpid()){
-      if (AliDielectronMC::Instance()->HasMC()) {
-        AliDielectronVarManager::InitESDpid();
-      } else {
-        AliDielectronVarManager::InitESDpid(1);
-      }
-    }
-  } 
-  // Was event selected ?
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  if (!inputHandler) return;
+
+  if ( inputHandler->GetPIDResponse() ){
+    AliDielectronVarManager::SetPIDResponse( inputHandler->GetPIDResponse() );
+  } else {
+    AliFatal("This task needs the PID response attached to the input event handler!");
+  }
+
+  // Was event selected ?
   UInt_t isSelected = AliVEvent::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
