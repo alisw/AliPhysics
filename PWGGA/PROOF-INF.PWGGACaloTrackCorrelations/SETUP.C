@@ -7,7 +7,8 @@ void SETUP()
    gSystem->Load(ocwd+"/libPWGGACaloTrackCorrelations.so");
 
    // Set the Include paths
-   gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGGACaloTrackCorrelations");
+   gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGCaloTrackCorrBase  -IPWGGACaloTrackCorrelations");
+   gROOT->ProcessLine(".include PWGCaloTrackCorrBase/CaloTrackCorrBase");
    gROOT->ProcessLine(".include PWGGACaloTrackCorrelations/CaloTrackCorrelations");
 
    // Set our location, so that other packages can find us

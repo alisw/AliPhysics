@@ -53,6 +53,20 @@ ifneq ($(PWGflowTasks_INCLUDE),)
   ALICEINC += -I../$(PWGflowTasks_INCLUDE)
 endif
 
+ifneq ($(PHOSUtils_INCLUDE),)
+  ALICEINC += -I../$(PHOSUtils_INCLUDE)
+  CXXFLAGS+=-D__PHOSUTIL__
+endif
+
+ifneq ($(EMCALUtils_INCLUDE),)
+  ALICEINC += -I../$(EMCALUtils_INCLUDE)
+  CXXFLAGS+=-D__EMCALUTIL__
+endif
+
+ifneq ($(PWGCaloTrackCorrBase_INCLUDE),)
+  ALICEINC += -I../$(PWGCaloTrackCorrBase_INCLUDE)
+endif
+
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
@@ -60,6 +74,8 @@ endif
     ALICEINC += -I$(ALICE_ROOT)/ANALYSIS
     ALICEINC += -I$(ALICE_ROOT)/PWG/FLOW/Base
     ALICEINC += -I$(ALICE_ROOT)/MUON
+    ALICEINC += -I$(ALICE_ROOT)/EMCAL
+    ALICEINC += -I$(ALICE_ROOT)/PHOS
   endif
 #endif
 

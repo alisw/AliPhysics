@@ -37,9 +37,7 @@ set ( SRCS
     CaloTrackCorrelations/AliAnaPi0.cxx 
     CaloTrackCorrelations/AliAnaPi0EbE.cxx 
     CaloTrackCorrelations/AliAnaChargedParticles.cxx 
-    CaloTrackCorrelations/AliAnaCalorimeterQA.cxx 
-    CaloTrackCorrelations/AliAnaShowerParameter.cxx 
-    CaloTrackCorrelations/AliAnalysisTaskTaggedPhotons.cxx 
+    CaloTrackCorrelations/AliAnaCalorimeterQA.cxx  
     CaloTrackCorrelations/AliAnaOmegaToPi0Gamma.cxx 
     CaloTrackCorrelations/AliAnaPhotonConvInCalo.cxx 
     CaloTrackCorrelations/AliAnaInsideClusterInvariantMass.cxx
