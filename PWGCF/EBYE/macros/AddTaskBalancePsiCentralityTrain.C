@@ -86,8 +86,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
 
   // for local changed BF configuration
-  gROOT->LoadMacro("./configBalanceFunctionPsiAnalysis.C");
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
+  //gROOT->LoadMacro("./configBalanceFunctionPsiAnalysis.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
   AliBalancePsi *bf  = 0;  // Balance Function object
   AliBalancePsi *bfs = 0;  // shuffled Balance function object
 
