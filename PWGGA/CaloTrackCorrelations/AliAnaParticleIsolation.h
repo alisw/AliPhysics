@@ -62,6 +62,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
   Float_t      GetConeSizes(Int_t i)           const { return fConeSizes[i]      ; }
   Float_t      GetPtThresholds(Int_t i)        const { return fPtThresholds[i]   ; }
+  Float_t      GetSumPtThresholds(Int_t i)     const { return fSumPtThresholds[i]; }
   Float_t      GetPtFractions(Int_t i)         const { return fPtFractions[i]    ; }
   
   void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
@@ -70,6 +71,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
   void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
   void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
+  void 	SetSumPtThresholds(Int_t i, Float_t pt)  { fSumPtThresholds[i]=pt;}
+  
   
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
@@ -115,11 +118,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Float_t  fConeSizes[5] ;                        //! Array with cones to test
   Float_t  fPtThresholds[5] ;                     //! Array with pt thresholds to test
-  Float_t  fPtFractions[5] ;                      //! Array with pt thresholds to test
-  
-  TH1F*    fhPtThresIsolated[5][5] ;              //! Isolated particle with pt threshold 
-  TH1F*    fhPtFracIsolated[5][5] ;               //! Isolated particle with pt threshold 
-  TH2F*    fhPtSumIsolated[5] ;                   //! Isolated particle with threshold on cone pt sum
+  Float_t  fPtFractions[5] ;                      //! Array with pt thresholds to test frac
+  Float_t  fSumPtThresholds[5] ;                  //! Array with pt thresholds to test frac
   
   //Histograms  
   
@@ -138,7 +138,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtInCone ;                           //! Particle Pt in the cone
   TH2F *   fhFRConeSumPt ;                        //! Sum Pt in the forward region cone (phi +90)
   TH2F *   fhPtInFRCone ;                         //! Particle Pt in the forward region cone (phi +90 ) 
-  
   
   //MC
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
@@ -193,7 +192,25 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtNoIsoConversion;                   //! Number of not isolated leading conversion gamma 
   TH1F *   fhPtNoIsoFragmentation;                //! Number of not isolated leading fragmentation gamma 
   TH1F *   fhPtNoIsoUnknown;                      //! Number of not isolated leading hadrons 
-
+  
+  TH1F *   fhPtThresIsolated[5][5] ;              //! Isolated particle with pt threshold 
+  TH1F *   fhPtFracIsolated[5][5] ;               //! Isolated particle with pt threshold frac
+  TH1F *   fhPtSumIsolated[5][5] ;                //! Isolated particle with threshold on cone pt sum
+  
+  TH2F *   fhEtaPhiPtThresIso[5][5] ;             //! eta vs phi of isolated particles with pt threshold
+  TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;        //! eta vs phi of isolated particles with pt threshold
+  TH1F *   fhPtPtThresDecayIso[5][5] ;            //! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold   
+  
+  TH2F *   fhEtaPhiPtFracIso[5][5] ;              //! eta vs phi of isolated particles with pt frac
+  TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;         //! eta vs phi of isolated particles with pt frac
+  TH1F *   fhPtPtFracDecayIso[5][5] ;             //! Number of isolated Pi0 decay particles (invariant mass tag) with pt fra
+  TH2F *   fhEtaPhiPtSumIso[5][5] ;               //! eta vs phi of isolated particles with pt sum
+  TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;          //! eta vs phi of isolated particles with pt sum
+  TH1F *   fhPtPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  
+  TH1F *   fhPtSumDensityIso[5][5];               //! Isolated particle with threshold on cone sum density
+  TH1F *   fhPtSumDensityDecayIso[5][5];          //! Isolated decay particle with threshold on cone sum density
+  
   // Track matching studies
   TH2F *   fhTrackMatchedDEta     ;               //! Eta distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDPhi     ;               //! Phi distance between track and cluster vs cluster E
@@ -209,13 +226,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda1TRD;                         //! Shower shape of isolated photons, SM behind TRD
   
   // Local maxima
-  TH2F * fhNLocMax;                               //! number of maxima in selected clusters
-  TH2F * fhELambda0LocMax1 ;                      //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
-  TH2F * fhELambda1LocMax1 ;                      //! E vs lambda1 of selected cluster, 1 local maxima in cluster 
-  TH2F * fhELambda0LocMax2 ;                      //! E vs lambda0 of selected cluster, 2 local maxima in cluster 
-  TH2F * fhELambda1LocMax2 ;                      //! E vs lambda1 of selected cluster, 2 local maxima in cluster
-  TH2F * fhELambda0LocMaxN ;                      //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
-  TH2F * fhELambda1LocMaxN ;                      //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
+  TH2F *   fhNLocMax;                             //! number of maxima in selected clusters
+  TH2F *   fhELambda0LocMax1 ;                    //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
+  TH2F *   fhELambda1LocMax1 ;                    //! E vs lambda1 of selected cluster, 1 local maxima in cluster 
+  TH2F *   fhELambda0LocMax2 ;                    //! E vs lambda0 of selected cluster, 2 local maxima in cluster 
+  TH2F *   fhELambda1LocMax2 ;                    //! E vs lambda1 of selected cluster, 2 local maxima in cluster
+  TH2F *   fhELambda0LocMaxN ;                    //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
+  TH2F *   fhELambda1LocMaxN ;                    //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
   
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
