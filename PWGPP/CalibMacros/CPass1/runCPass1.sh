@@ -71,7 +71,7 @@ mv syswatch.log syswatch_calib.log
 
 if [ -f QAtrain.C ]; then
     echo ">>>>>>> Running the QA train..."
-    time aliroot -b -q QAtrain.C\($runstripped\) 2>&1 | tee qa.log
+    time aliroot -b -q QAtrain.C\($runNum\) 2>&1 | tee qa.log
 
     for file in *.stat; do
         mv $file $file.qa
