@@ -175,7 +175,7 @@ private:
 
   void     UpdateClusters();
 
-  AliEMCALGeometry      *fEMCALGeo;               //! EMCAL geometry
+  AliEMCALGeometry      *fEMCALGeo;               // EMCAL geometry
   TString                fEMCALGeoName;           //  name of geometry to use.
   AliEMCALRecoUtils     *fEMCALRecoUtils;         //  pointer to EMCAL utilities for clusterization
   TString                fConfigName;             //  name of analysis configuration file
@@ -218,7 +218,7 @@ private:
   AliEMCALAfterBurnerUF *fUnfolder;               //! unfolding procedure
   TClonesArray          *fDigitsArr;              //! digits array
   TObjArray             *fClusterArr;             //! recpoints array
-  Int_t                  fMisalignSurvey;         //! misalignment matrix survey  
+  Int_t                  fMisalignSurvey;         // misalignment matrix survey  
   Float_t                fExoticCellFraction;     // Good cell if fraction < 1-ecross/ecell
   Float_t                fExoticCellDiffTime;     // If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // Check for exotic only if amplitud is larger than this value
@@ -228,7 +228,7 @@ private:
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 9); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 10); // EMCAL tender task
 };
 
 #endif
