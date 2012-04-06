@@ -66,7 +66,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 // T0 part
   AliT0PreprocessorOffline procesT0;
   // Make  calibration of channels offset
-  procesT0.setDArun(175000);
+  procesT0.setDArun(179000);
   procesT0.Process("CalibObjects.root",runNumber, runNumber, ocdbStorage);
 
 
