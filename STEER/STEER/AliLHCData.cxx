@@ -355,8 +355,8 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
     AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
     //
-    AliLHCDipValF* curValF = new AliLHCDipValF(dim,tstamp);  // start new period
-    (*curValF)[0] = ExtractDouble(dcsVal,0);     // value
+    AliLHCDipValD* curValD = new AliLHCDipValD(dim,tstamp);  // start new period
+    (*curValD)[0] = ExtractDouble(dcsVal,0);     // value
     //
     if (recErr) {
       double errVal = -1;
@@ -365,18 +365,18 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
         double tstampE = dcsValE->GetTimeStamp();
         int tdif = TimeDifference(tstamp,tstampE);
         if (!tdif) { // error matches to value
-          errVal = ExtractDouble(dcsValE,0);
+	  errVal = ExtractDouble(dcsVal,0);     // value
 	  iFirstE++; 
 	  break;
 	}
         else if (tdif>0) iFirstE++; // error time lags behind, read the next one
         else break;                 // error time is ahead of value, no error associated
       }
-      (*curValF)[dim-1] = errVal;   // error
-      curValF->SetLastSpecial();    // lable the last entry as an error
+      (*curValD)[dim-1] = errVal;   // error
+      curValD->SetLastSpecial();    // lable the last entry as an error
     }
     //
-    fData.Add(curValF);
+    fData.Add(curValD);
     refs[kNStor]++;
     // if (last) break;
   }
@@ -531,16 +531,16 @@ Int_t AliLHCData::FillBunchInfo(int refs[2],const char* rec, int ibm, Bool_t inR
       continue;
     }
     double* dcsArr = dcsVal->GetDouble();
-    AliLHCDipValF* curValF = new AliLHCDipValF(nbunch,tstamp);
+    AliLHCDipValD* curValD = new AliLHCDipValD(nbunch,tstamp);
     for (int i=nbunch;i--;) {
       int ind = inRealSlots ? (*bconf)[i]/10 : i;
       if (ind>nSlots) {
 	AliError(Form("Bunch %d refers to wrong slot %d, set to -1",i,(*bconf)[i]));
-	(*curValF)[i] = -1;
+	(*curValD)[i] = -1;
       }
-      else (*curValF)[i] = dcsArr[ind];
+      else (*curValD)[i] = dcsArr[ind];
     }
-    fData.Add(curValF);
+    fData.Add(curValD);
     refs[kNStor]++;
   }
   if (fkFile2Process) delete arr;
@@ -597,7 +597,7 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
       arrE=GetDCSEntry(recErr,iFirstE,iLastE,fTMin,fTMax);
       dim += 1;
     }
-    AliLHCDipValF* curValF = new AliLHCDipValF(dim,tstamp);
+    AliLHCDipValD* curValD = new AliLHCDipValD(dim,tstamp);
     int cnt = 0;
     for (int i=0;i<nbunch;i++) {
       int slot = (*bconf)[i];
@@ -606,9 +606,9 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
       int ind = TMath::Abs(slot)/10;
       if (ind>nSlots) {
 	AliError(Form("Bunch %d refers to wrong slot %d, set to -1",cnt,slot));
-	(*curValF)[cnt] = -1;
+	(*curValD)[cnt] = -1;
       }
-      else (*curValF)[cnt] = dcsArr[ind];
+      else (*curValD)[cnt] = dcsArr[ind];
       cnt++;
     }
     //
@@ -626,11 +626,11 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
 	else if (tdif>0) iFirstE++; // error time lags behind, read the next one
 	else break;                 // error time is ahead of value, no error associated
       }
-      (*curValF)[dim-1] = errVal;   // error
-      curValF->SetLastSpecial();    // lable the last entry as an error
+      (*curValD)[dim-1] = errVal;   // error
+      curValD->SetLastSpecial();    // lable the last entry as an error
     }
     //
-    fData.Add(curValF);
+    fData.Add(curValD);
     refs[kNStor]++;
   }
   if (fkFile2Process) {
@@ -971,7 +971,7 @@ Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &no
   //
   for (int irec=0;irec<nrec;irec++) {
     //
-    AliLHCDipValF* rInt = GetIntensityPerBunch(beamID,irec);
+    AliLHCDipValD* rInt = GetIntensityPerBunch(beamID,irec);
     for (int ib=0;ib<nb;ib++) {
       double val = rInt->GetValue(ib);
       if (val<0) continue;
