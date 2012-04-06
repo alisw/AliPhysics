@@ -83,7 +83,7 @@ class AliESDVZEROfriend: public TObject {
     void              SetBBFlag(Int_t channel, Int_t event, Bool_t flag)
       { fIsBB[channel][event] = flag; }
     void              SetBGFlag(Int_t channel, Int_t event, Bool_t flag)
-      { fIsBB[channel][event] = flag; }
+      { fIsBG[channel][event] = flag; }
     void              SetTime(Int_t channel, Float_t time)
       { fTime[channel] = time; }
     void              SetWidth(Int_t channel, Float_t width)
