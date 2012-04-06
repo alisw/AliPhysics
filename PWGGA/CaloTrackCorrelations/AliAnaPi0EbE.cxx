@@ -1056,121 +1056,125 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhMassPairMCEta->SetYTitle("Mass (MeV/c^{2})");
       fhMassPairMCEta->SetXTitle("E_{pair} (GeV)");
       outputContainer->Add(fhMassPairMCEta) ; 
-
-      for(Int_t i = 0; i < 6; i++)
-      { 
-        fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
-                                    Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}",ptype[i].Data()),
-                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEMCLambda0[i]->SetYTitle("#lambda_{0}^{2}");
-        fhEMCLambda0[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCLambda0[i]) ; 
-        
-        fhEMCLambda1[i]  = new TH2F(Form("hELambda1_MC%s",pname[i].Data()),
-                                    Form("Selected pair, cluster from %s : E vs #lambda_{1}^{2}",ptype[i].Data()),
-                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEMCLambda1[i]->SetYTitle("#lambda_{1}^{2}");
-        fhEMCLambda1[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCLambda1[i]) ; 
-        
-        fhEMCDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pname[i].Data()),
-                                       Form("Selected pair, cluster from %s : E vs dispersion^{2}",ptype[i].Data()),
-                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEMCDispersion[i]->SetYTitle("D^{2}");
-        fhEMCDispersion[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCDispersion[i]) ; 
-                
-        if(fCalorimeter=="EMCAL"){
-          fhEMCLambda0NoTRD[i]  = new TH2F(Form("hELambda0NoTRD_MC%s",pname[i].Data()),
-                                           Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}, NoTRD",ptype[i].Data()),
-                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-          fhEMCLambda0NoTRD[i]->SetYTitle("#lambda_{0}^{2}");
-          fhEMCLambda0NoTRD[i]->SetXTitle("E (GeV)");
-          outputContainer->Add(fhEMCLambda0NoTRD[i]) ; 
+      
+      if( fFillSelectClHisto )
+      {
+        for(Int_t i = 0; i < 6; i++)
+        { 
+          fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
+                                      Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}",ptype[i].Data()),
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhEMCLambda0[i]->SetYTitle("#lambda_{0}^{2}");
+          fhEMCLambda0[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCLambda0[i]) ; 
           
+          fhEMCLambda1[i]  = new TH2F(Form("hELambda1_MC%s",pname[i].Data()),
+                                      Form("Selected pair, cluster from %s : E vs #lambda_{1}^{2}",ptype[i].Data()),
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhEMCLambda1[i]->SetYTitle("#lambda_{1}^{2}");
+          fhEMCLambda1[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCLambda1[i]) ; 
           
-          fhMCEDispEta[i]  = new TH2F (Form("hEDispEtaE_MC%s",pname[i].Data()),
-                                       Form("cluster from %s : #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",ptype[i].Data()),
-                                       nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
-          fhMCEDispEta[i]->SetXTitle("E (GeV)");
-          fhMCEDispEta[i]->SetYTitle("#sigma^{2}_{#eta #eta}");
-          outputContainer->Add(fhMCEDispEta[i]);     
+          fhEMCDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pname[i].Data()),
+                                         Form("Selected pair, cluster from %s : E vs dispersion^{2}",ptype[i].Data()),
+                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhEMCDispersion[i]->SetYTitle("D^{2}");
+          fhEMCDispersion[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCDispersion[i]) ; 
           
-          fhMCEDispPhi[i]  = new TH2F (Form("hEDispPhiE_MC%s",pname[i].Data()),
-                                       Form("cluster from %s : #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i} - <#phi>)^{2} / #Sigma w_{i} vs E",ptype[i].Data()),
-                                       nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
-          fhMCEDispPhi[i]->SetXTitle("E (GeV)");
-          fhMCEDispPhi[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
-          outputContainer->Add(fhMCEDispPhi[i]);  
-          
-          fhMCESumEtaPhi[i]  = new TH2F (Form("hESumEtaPhiE_MC%s",pname[i].Data()),
-                                         Form("cluster from %s : #sigma'^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",ptype[i].Data()),  
-                                         nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
-          fhMCESumEtaPhi[i]->SetXTitle("E (GeV)");
-          fhMCESumEtaPhi[i]->SetYTitle("#sigma'^{2}_{#eta #phi}");
-          outputContainer->Add(fhMCESumEtaPhi[i]);
-          
-          fhMCEDispEtaPhiDiff[i]  = new TH2F (Form("hEDispEtaPhiDiffE_MC%s",pname[i].Data()),
-                                              Form("cluster from %s : #sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta} vs E",ptype[i].Data()),  
-                                              nptbins,ptmin,ptmax,200,-10,10); 
-          fhMCEDispEtaPhiDiff[i]->SetXTitle("E (GeV)");
-          fhMCEDispEtaPhiDiff[i]->SetYTitle("#sigma^{2}_{#phi #phi}-#sigma^{2}_{#eta #eta}");
-          outputContainer->Add(fhMCEDispEtaPhiDiff[i]);    
-          
-          fhMCESphericity[i]  = new TH2F (Form("hESphericity_MC%s",pname[i].Data()),
-                                          Form("cluster from %s : (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi}) vs E",ptype[i].Data()),  
-                                          nptbins,ptmin,ptmax, 200,-1,1); 
-          fhMCESphericity[i]->SetXTitle("E (GeV)");
-          fhMCESphericity[i]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
-          outputContainer->Add(fhMCESphericity[i]);
-          
-          for(Int_t ie = 0; ie < 7; ie++)
+          if(fCalorimeter=="EMCAL")
           {
-            fhMCDispEtaDispPhi[ie][i] = new TH2F (Form("hMCDispEtaDispPhi_EBin%d_MC%s",ie,pname[i].Data()),
-                                                      Form("cluster from %s : #sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
-                                                      ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
-            fhMCDispEtaDispPhi[ie][i]->SetXTitle("#sigma^{2}_{#eta #eta}");
-            fhMCDispEtaDispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
-            outputContainer->Add(fhMCDispEtaDispPhi[ie][i]); 
+            fhEMCLambda0NoTRD[i]  = new TH2F(Form("hELambda0NoTRD_MC%s",pname[i].Data()),
+                                             Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}, NoTRD",ptype[i].Data()),
+                                             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+            fhEMCLambda0NoTRD[i]->SetYTitle("#lambda_{0}^{2}");
+            fhEMCLambda0NoTRD[i]->SetXTitle("E (GeV)");
+            outputContainer->Add(fhEMCLambda0NoTRD[i]) ; 
             
-            fhMCLambda0DispEta[ie][i] = new TH2F (Form("hMCLambda0DispEta_EBin%d_MC%s",ie,pname[i].Data()),
-                                              Form("cluster from %s : #lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
-                                             ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
-            fhMCLambda0DispEta[ie][i]->SetXTitle("#lambda^{2}_{0}");
-            fhMCLambda0DispEta[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
-            outputContainer->Add(fhMCLambda0DispEta[ie][i]);       
             
-            fhMCLambda0DispPhi[ie][i] = new TH2F (Form("hMCLambda0DispPhi_EBin%d_MC%s",ie,pname[i].Data()),
-                                               Form("cluster from %s :#lambda^{2}_{0} vs #sigma^{2}_{#phi #phi} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
-                                             ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
-            fhMCLambda0DispPhi[ie][i]->SetXTitle("#lambda^{2}_{0}");
-            fhMCLambda0DispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
-            outputContainer->Add(fhMCLambda0DispPhi[ie][i]); 
+            fhMCEDispEta[i]  = new TH2F (Form("hEDispEtaE_MC%s",pname[i].Data()),
+                                         Form("cluster from %s : #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",ptype[i].Data()),
+                                         nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
+            fhMCEDispEta[i]->SetXTitle("E (GeV)");
+            fhMCEDispEta[i]->SetYTitle("#sigma^{2}_{#eta #eta}");
+            outputContainer->Add(fhMCEDispEta[i]);     
             
-          }            
-        }
-        
-        fhEMCLambda0FracMaxCellCut[i]  = new TH2F(Form("hELambda0FracMaxCellCut_MC%s",pname[i].Data()),
-                                                  Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}, Max cell fraction of energy < 0.5 ",ptype[i].Data()),
-                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEMCLambda0FracMaxCellCut[i]->SetYTitle("#lambda_{0}^{2}");
-        fhEMCLambda0FracMaxCellCut[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCLambda0FracMaxCellCut[i]) ; 
-        
-        fhEMCFracMaxCell[i]  = new TH2F(Form("hEFracMaxCell_MC%s",pname[i].Data()),
-                                        Form("Selected pair, cluster from %s : E vs Max cell fraction of energy",ptype[i].Data()),
-                                        nptbins,ptmin,ptmax,100,0,1); 
-        fhEMCFracMaxCell[i]->SetYTitle("Fraction");
-        fhEMCFracMaxCell[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCFracMaxCell[i]) ;           
-                
-      }//
+            fhMCEDispPhi[i]  = new TH2F (Form("hEDispPhiE_MC%s",pname[i].Data()),
+                                         Form("cluster from %s : #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i} - <#phi>)^{2} / #Sigma w_{i} vs E",ptype[i].Data()),
+                                         nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
+            fhMCEDispPhi[i]->SetXTitle("E (GeV)");
+            fhMCEDispPhi[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+            outputContainer->Add(fhMCEDispPhi[i]);  
+            
+            fhMCESumEtaPhi[i]  = new TH2F (Form("hESumEtaPhiE_MC%s",pname[i].Data()),
+                                           Form("cluster from %s : #sigma'^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",ptype[i].Data()),  
+                                           nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
+            fhMCESumEtaPhi[i]->SetXTitle("E (GeV)");
+            fhMCESumEtaPhi[i]->SetYTitle("#sigma'^{2}_{#eta #phi}");
+            outputContainer->Add(fhMCESumEtaPhi[i]);
+            
+            fhMCEDispEtaPhiDiff[i]  = new TH2F (Form("hEDispEtaPhiDiffE_MC%s",pname[i].Data()),
+                                                Form("cluster from %s : #sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta} vs E",ptype[i].Data()),  
+                                                nptbins,ptmin,ptmax,200,-10,10); 
+            fhMCEDispEtaPhiDiff[i]->SetXTitle("E (GeV)");
+            fhMCEDispEtaPhiDiff[i]->SetYTitle("#sigma^{2}_{#phi #phi}-#sigma^{2}_{#eta #eta}");
+            outputContainer->Add(fhMCEDispEtaPhiDiff[i]);    
+            
+            fhMCESphericity[i]  = new TH2F (Form("hESphericity_MC%s",pname[i].Data()),
+                                            Form("cluster from %s : (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi}) vs E",ptype[i].Data()),  
+                                            nptbins,ptmin,ptmax, 200,-1,1); 
+            fhMCESphericity[i]->SetXTitle("E (GeV)");
+            fhMCESphericity[i]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
+            outputContainer->Add(fhMCESphericity[i]);
+            
+            for(Int_t ie = 0; ie < 7; ie++)
+            {
+              fhMCDispEtaDispPhi[ie][i] = new TH2F (Form("hMCDispEtaDispPhi_EBin%d_MC%s",ie,pname[i].Data()),
+                                                    Form("cluster from %s : #sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
+                                                    ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+              fhMCDispEtaDispPhi[ie][i]->SetXTitle("#sigma^{2}_{#eta #eta}");
+              fhMCDispEtaDispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+              outputContainer->Add(fhMCDispEtaDispPhi[ie][i]); 
+              
+              fhMCLambda0DispEta[ie][i] = new TH2F (Form("hMCLambda0DispEta_EBin%d_MC%s",ie,pname[i].Data()),
+                                                    Form("cluster from %s : #lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
+                                                    ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+              fhMCLambda0DispEta[ie][i]->SetXTitle("#lambda^{2}_{0}");
+              fhMCLambda0DispEta[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+              outputContainer->Add(fhMCLambda0DispEta[ie][i]);       
+              
+              fhMCLambda0DispPhi[ie][i] = new TH2F (Form("hMCLambda0DispPhi_EBin%d_MC%s",ie,pname[i].Data()),
+                                                    Form("cluster from %s :#lambda^{2}_{0} vs #sigma^{2}_{#phi #phi} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
+                                                    ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+              fhMCLambda0DispPhi[ie][i]->SetXTitle("#lambda^{2}_{0}");
+              fhMCLambda0DispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+              outputContainer->Add(fhMCLambda0DispPhi[ie][i]); 
+              
+            }            
+          }
+          
+          fhEMCLambda0FracMaxCellCut[i]  = new TH2F(Form("hELambda0FracMaxCellCut_MC%s",pname[i].Data()),
+                                                    Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}, Max cell fraction of energy < 0.5 ",ptype[i].Data()),
+                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhEMCLambda0FracMaxCellCut[i]->SetYTitle("#lambda_{0}^{2}");
+          fhEMCLambda0FracMaxCellCut[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCLambda0FracMaxCellCut[i]) ; 
+          
+          fhEMCFracMaxCell[i]  = new TH2F(Form("hEFracMaxCell_MC%s",pname[i].Data()),
+                                          Form("Selected pair, cluster from %s : E vs Max cell fraction of energy",ptype[i].Data()),
+                                          nptbins,ptmin,ptmax,100,0,1); 
+          fhEMCFracMaxCell[i]->SetYTitle("Fraction");
+          fhEMCFracMaxCell[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCFracMaxCell[i]) ;           
+          
+        }//
+      } // shower shape histo
       
     } //Not MC reader
   }//Histos with MC
   
   
-  if(fAnaType==kSSCalo)
+  if(fAnaType==kSSCalo && fFillSelectClHisto )
   {
     
     fhAsymmetryE  = new TH2F ("hAsymmetryE","A = ( E1 - E2 ) / ( E1 + E2 ) vs E",  
@@ -1249,22 +1253,21 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
           fhMCAsymmetryDispPhi[ie][i]->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
           outputContainer->Add(fhMCAsymmetryDispPhi[ie][i]);     
         }        
-        
       }
     }
-    
   }
   
   //Keep neutral meson selection histograms if requiered
   //Setting done in AliNeutralMesonSelection
   
-  if(fAnaType!=kSSCalo && GetNeutralMesonSelection()){
-    
+  if(fAnaType!=kSSCalo && GetNeutralMesonSelection())
+  {
     TList * nmsHistos = GetNeutralMesonSelection()->GetCreateOutputObjects() ;
+    
     if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
       for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
+    
     delete nmsHistos;
-	  
   }
   
   return outputContainer ;
