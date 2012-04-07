@@ -697,7 +697,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
@@ -1672,7 +1672,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 
 	// Get the CTP counters information
 	//              +
-	// Get the CTP counters information
+	// Get the CTP aliases information
 
 	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
 		Log("STANDALONE partition for current run, using Trigger Scalers and Trigger Aliases dummy values");
