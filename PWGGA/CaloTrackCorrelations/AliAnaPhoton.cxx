@@ -1309,21 +1309,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhDispPhiE->SetYTitle("#sigma^{2}_{#phi #phi}");
       outputContainer->Add(fhDispPhiE);  
       
-      fhSumEtaE  = new TH2F ("hSumEtaE","#sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i})^{2} / #Sigma w_{i} - <#eta>^{2} vs E",  nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
+      fhSumEtaE  = new TH2F ("hSumEtaE","#delta^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i})^{2} / #Sigma w_{i} - <#eta>^{2} vs E",  nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
       fhSumEtaE->SetXTitle("E (GeV)");
-      fhSumEtaE->SetYTitle("#sigma'^{2}_{#eta #eta}");
+      fhSumEtaE->SetYTitle("#delta^{2}_{#eta #eta}");
       outputContainer->Add(fhSumEtaE);     
       
-      fhSumPhiE  = new TH2F ("hSumPhiE","#sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i})^{2}/ #Sigma w_{i} - <#phi>^{2} vs E",  
+      fhSumPhiE  = new TH2F ("hSumPhiE","#delta^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i})^{2}/ #Sigma w_{i} - <#phi>^{2} vs E",  
                              nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
       fhSumPhiE->SetXTitle("E (GeV)");
-      fhSumPhiE->SetYTitle("#sigma'^{2}_{#phi #phi}");
+      fhSumPhiE->SetYTitle("#delta^{2}_{#phi #phi}");
       outputContainer->Add(fhSumPhiE);  
       
-      fhSumEtaPhiE  = new TH2F ("hSumEtaPhiE","#sigma'^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",  
+      fhSumEtaPhiE  = new TH2F ("hSumEtaPhiE","#delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",  
                                 nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
       fhSumEtaPhiE->SetXTitle("E (GeV)");
-      fhSumEtaPhiE->SetYTitle("#sigma'^{2}_{#eta #phi}");
+      fhSumEtaPhiE->SetYTitle("#delta^{2}_{#eta #phi}");
       outputContainer->Add(fhSumEtaPhiE);
       
       fhDispEtaPhiDiffE  = new TH2F ("hDispEtaPhiDiffE","#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta} vs E", 
@@ -1338,14 +1338,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhSphericityE->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
       outputContainer->Add(fhSphericityE);
       
-      fhDispSumEtaDiffE  = new TH2F ("hDispSumEtaDiffE","#sigma^{2}_{#eta #eta} - #sigma'^{2}_{#eta #eta} / average vs E",  nptbins,ptmin,ptmax, 200,-0.01,0.01); 
+      fhDispSumEtaDiffE  = new TH2F ("hDispSumEtaDiffE","#sigma^{2}_{#eta #eta} - #delta^{2}_{#eta #eta} / average vs E",  nptbins,ptmin,ptmax, 200,-0.01,0.01); 
       fhDispSumEtaDiffE->SetXTitle("E (GeV)");
-      fhDispSumEtaDiffE->SetYTitle("#sigma^{2}_{#eta #eta} - #sigma'^{2}_{#eta #eta} / average");
+      fhDispSumEtaDiffE->SetYTitle("#sigma^{2}_{#eta #eta} - #delta^{2}_{#eta #eta} / average");
       outputContainer->Add(fhDispSumEtaDiffE);     
       
-      fhDispSumPhiDiffE  = new TH2F ("hDispSumPhiDiffE","#sigma^{2}_{#phi #phi} - #sigma'^{2}_{#phi #phi} / average vs E",  nptbins,ptmin,ptmax, 200,-0.01,0.01); 
+      fhDispSumPhiDiffE  = new TH2F ("hDispSumPhiDiffE","#sigma^{2}_{#phi #phi} - #delta^{2}_{#phi #phi} / average vs E",  nptbins,ptmin,ptmax, 200,-0.01,0.01); 
       fhDispSumPhiDiffE->SetXTitle("E (GeV)");
-      fhDispSumPhiDiffE->SetYTitle("#sigma^{2}_{#phi #phi} - #sigma'^{2}_{#phi #phi} / average");
+      fhDispSumPhiDiffE->SetYTitle("#sigma^{2}_{#phi #phi} - #delta^{2}_{#phi #phi} / average");
       outputContainer->Add(fhDispSumPhiDiffE);  
       
       for(Int_t i = 0; i < 7; i++)
@@ -1359,7 +1359,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLambda0DispEta[i] = new TH2F (Form("hLambda0DispEta_EBin%d",i),Form("#lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",bin[i],bin[i+1]), 
                                         ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
         fhLambda0DispEta[i]->SetXTitle("#lambda^{2}_{0}");
-        fhLambda0DispEta[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+        fhLambda0DispEta[i]->SetYTitle("#sigma^{2}_{#eta #eta}");
         outputContainer->Add(fhLambda0DispEta[i]);       
         
         fhLambda0DispPhi[i] = new TH2F (Form("hLambda0DispPhi_EBin%d",i),Form("#lambda^{2}_{0}} vs #sigma^{2}_{#phi #phi} for %d < E < %d GeV",bin[i],bin[i+1]), 
@@ -1877,10 +1877,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           outputContainer->Add(fhMCEDispPhi[i]);  
           
           fhMCESumEtaPhi[i]  = new TH2F (Form("hESumEtaPhiE_MC%s",pnamess[i].Data()),
-                                         Form("cluster from %s : #sigma'^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",ptypess[i].Data()),  
+                                         Form("cluster from %s : #delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",ptypess[i].Data()),  
                                          nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
           fhMCESumEtaPhi[i]->SetXTitle("E (GeV)");
-          fhMCESumEtaPhi[i]->SetYTitle("#sigma'^{2}_{#eta #phi}");
+          fhMCESumEtaPhi[i]->SetYTitle("#delta^{2}_{#eta #phi}");
           outputContainer->Add(fhMCESumEtaPhi[i]);
           
           fhMCEDispEtaPhiDiff[i]  = new TH2F (Form("hEDispEtaPhiDiffE_MC%s",pnamess[i].Data()),
@@ -1905,16 +1905,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
             fhMCDispEtaDispPhi[ie][i]->SetXTitle("#sigma^{2}_{#eta #eta}");
             fhMCDispEtaDispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
             outputContainer->Add(fhMCDispEtaDispPhi[ie][i]); 
-            
-            fhMCLambda0DispEta[ie][i] = new TH2F (Form("hMCLambda0DispEta_EBin%d_MC%s",ie,pname[i].Data()),
-                                                  Form("cluster from %s : #lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
+                        
+            fhMCLambda0DispEta[ie][i] = new TH2F (Form("hMCLambda0DispEta_EBin%d_MC%s",ie,pnamess[i].Data()),
+                                                  Form("cluster from %s : #lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]), 
                                                   ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
             fhMCLambda0DispEta[ie][i]->SetXTitle("#lambda^{2}_{0}");
             fhMCLambda0DispEta[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
             outputContainer->Add(fhMCLambda0DispEta[ie][i]);       
-            
-            fhMCLambda0DispPhi[ie][i] = new TH2F (Form("hMCLambda0DispPhi_EBin%d_MC%s",ie,pname[i].Data()),
-                                                  Form("cluster from %s :#lambda^{2}_{0} vs #sigma^{2}_{#phi #phi} for %d < E < %d GeV",pname[i].Data(),bin[ie],bin[ie+1]), 
+                        
+            fhMCLambda0DispPhi[ie][i] = new TH2F (Form("hMCLambda0DispPhi_EBin%d_MC%s",ie,pnamess[i].Data()),
+                                                  Form("cluster from %s :#lambda^{2}_{0} vs #sigma^{2}_{#phi #phi} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]), 
                                                   ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
             fhMCLambda0DispPhi[ie][i]->SetXTitle("#lambda^{2}_{0}");
             fhMCLambda0DispPhi[ie][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
