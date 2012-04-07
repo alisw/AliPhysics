@@ -166,12 +166,12 @@ class AliLHCData : public TObject
   virtual void          Clear(const Option_t *opt="");
   void                  PrintAux(Bool_t full,const Int_t refs[2],const Option_t *opt="") const;
   TObjArray*            GetDCSEntry(const char* key,int &entry,int &last,double tmin,double tmax) const;
-  Int_t                 FillScalarRecord(  int refs[2], const char* rec, const char* recErr=0);
+  Int_t                 FillScalarRecord(  int refs[2], const char* rec, const char* recErr=0, Double_t maxAbsVal=1.e30);
   Int_t                 FillBunchConfig(   int refs[2], const char* rec);
   Int_t                 FillStringRecord(  int refs[2], const char* rec);
   Int_t                 FillAcqMode(       int refs[2], const char* rec);
-  Int_t                 FillBunchInfo(     int refs[2], const char* rec,int ibm, Bool_t inRealSlots);
-  Int_t                 FillBCLuminosities(int refs[2], const char* rec, const char* recErr, Int_t useBeam);
+  Int_t                 FillBunchInfo(     int refs[2], const char* rec,int ibm, Bool_t inRealSlots, Double_t maxAbsVal=1.e30);
+  Int_t                 FillBCLuminosities(int refs[2], const char* rec, const char* recErr, Int_t useBeam, Double_t maxAbsVal=1.e30);
   //
   Int_t                 ExtractInt(AliDCSArray* dcsArray,Int_t el)    const;
   Double_t              ExtractDouble(AliDCSArray* dcsArray,Int_t el) const;
