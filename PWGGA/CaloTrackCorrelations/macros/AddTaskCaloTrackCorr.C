@@ -377,6 +377,10 @@ AliCaloTrackReader * ConfigureReader()
   
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
+  // For mixing with AliAnaParticleHadronCorrelation switch it off
+  reader->SwitchOnEventTriggerAtSE();
+  reader->SetEventTriggerMaks(AliVEvent::kEMC7); // Only for mixing and SwitchOffEventTriggerAtSE();
+  
   reader->SetZvertexCut(10.);                // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
 
@@ -1019,6 +1023,21 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
   ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
+  // Mixing with own pool
+  ana->SwitchOffOwnMix();
+  ana->SetNCentrBin(9);
+  ana->SetNZvertBin(10);
+  if(kCollisions=="pp")
+  {
+    ana->SetNMaxEvMix(10);    
+    ana->SwitchOnTrackMultBins();
+  }
+  else 
+  {
+    ana->SetNMaxEvMix(2);    
+    ana->SwitchOffTrackMultBins();
+  }
+
   //Avoid borders of EMCal, same as for isolation
   if(kCalorimeter=="EMCAL")
     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
