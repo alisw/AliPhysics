@@ -26,8 +26,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
  public: 
   
-  AliAnaParticleHadronCorrelation() ; // default ctor
-  virtual ~AliAnaParticleHadronCorrelation() {;} //virtual dtor
+  AliAnaParticleHadronCorrelation() ;          // default ctor
+  virtual ~AliAnaParticleHadronCorrelation() ; // virtual dtor
   
   // General methods
       
@@ -53,12 +53,16 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle);
   
+  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle);
+  
   // Filling histogram methods
   
   void         FillChargedAngularCorrelationHistograms  (const Float_t ptAssoc,  const Float_t ptTrig,   const Int_t   assocBin,
                                                          const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
                                                          const Float_t etaAssoc, const Float_t etaTrig,  
                                                          const Bool_t  decay,    const Float_t hmpidSignal,const Int_t nTracks);
+  
+  void         FillChargedEventMixPool();
   
   Bool_t       FillChargedMCCorrelationHistograms       (const Float_t mcAssocPt,      Float_t mcAssocPhi, const Float_t mcAssocEta,
                                                          const Float_t mcTrigPt, const Float_t mcTrigPhi,  const Float_t mcTrigEta  );
@@ -92,6 +96,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          const Float_t xE,       const Float_t hbpXE, 
                                                          const Float_t zT,       const Float_t hbpZT, 
                                                          const Float_t deltaPhi);  
+  
   
   // Parameter setter and getter
   
@@ -159,6 +164,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetNAssocPtBins(Int_t n) ;     
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
+  
+  void         SwitchOnOwnMix()                  { fDoOwnMix            = kTRUE  ; }
+  void         SwitchOffOwnMix()                 { fDoOwnMix            = kFALSE ; }
+
+  void         SwitchOnTrackMultBins()           { fUseTrackMultBins    = kTRUE  ; }
+  void         SwitchOffTrackMultBins()          { fUseTrackMultBins    = kFALSE ; }
                 
  private:
   Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
@@ -181,6 +192,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillBradHisto ;                // DPhi histograms calculated differently
   Int_t        fNAssocPtBins ;                 // Number of associated pT bins under study
   Float_t      fAssocPtBinLimit[10] ;          // Associated pT under study
+  
+  Bool_t       fDoOwnMix;                      // Do combinatorial background not the one provided by the frame
+  Bool_t       fUseTrackMultBins;              // Use track multiplicity and not centrality bins
+  TList **     fListMixEvents ;                //![GetNCentrBin()*GetNZvertBin()] Containers for photons in stored events for mixing
   
   //Histograms
 
@@ -301,10 +316,20 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhMCPtTrigPout ;                //! MC pure particles charged trigger primary pt vs pOut
   TH2F *       fhMCPtAssocDeltaPhi  ;          //! MC pure particles charged associated primary pt vs delta phi (associated-trigger) 
 
+  // Mixing
+  TH1I *       fhNEventsTrigger;               //! number of analyzed triggered events
+  TH1F *       fhNtracksAll;                   //! total number of tracks 
+  TH1F *       fhNtracksTrigger;               //! total number of tracks in triggered events 
+  TH1F *       fhNtracksINT;                   //! total number of tracks in MB events
+  TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
+  TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
+  TH2F **      fhMixDeltaPhiChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins
+  TH2F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi  as function eta difference, for different associated bins
+
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,12)
+  ClassDef(AliAnaParticleHadronCorrelation,13)
 } ;
  
 

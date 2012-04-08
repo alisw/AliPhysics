@@ -208,6 +208,14 @@ public:
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses() ;               
   
+  UInt_t           GetEventTriggerMask()                 const { return fEventTriggerMask        ; }
+  void             SetEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAny) 
+                                                           { fEventTriggerMask = evtTrig     ; }
+  
+  Bool_t           IsEventTriggerAtSEOn()           const { return fEventTriggerAtSE         ; }
+  void             SwitchOnEventTriggerAtSE()             { fEventTriggerAtSE       = kTRUE  ; }
+  void             SwitchOffEventTriggerAtSE()            { fEventTriggerAtSE       = kFALSE ; }
+  
   void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
   void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
   Bool_t           IsEventSelectionDone()            const { return fDoEventSelection        ; } 
@@ -390,6 +398,9 @@ public:
   TString          fDeltaAODFileName   ; // Delta AOD file name
   TString          fFiredTriggerClassName; // Name of trigger event type used to do the analysis
 
+  UInt_t           fEventTriggerMask ;   // select this triggerered event
+  Bool_t           fEventTriggerAtSE;    // select triggered event at SE base task or here
+  
   Bool_t           fAnaLED;              // Analyze LED data only.
 
   TString          fTaskName;            // Name of task that executes the analysis
@@ -430,7 +441,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,36)
+  ClassDef(AliCaloTrackReader,37)
   
 } ;
 
