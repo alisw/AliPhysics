@@ -43,6 +43,7 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fHistDataPP(0),
   fHistDataMM(0),
   fHistDataME(0),
+  fHistRfactor(0),
   fValues(6),
   fErrors(6),
   fIntMin(0),
@@ -54,6 +55,7 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fScaleMin(0.),
   fScaleMax(0.),
   fScaleFactor(1.),
+  fMixingCorr(kFALSE),
   fProcessed(kFALSE)
 {
   //
@@ -70,6 +72,7 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fHistDataPP(0),
   fHistDataMM(0),
   fHistDataME(0),
+  fHistRfactor(0),
   fValues(6),
   fErrors(6),
   fIntMin(0),
@@ -81,6 +84,7 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fScaleMin(0.),
   fScaleMax(0.),
   fScaleFactor(1.),
+  fMixingCorr(kFALSE),
   fProcessed(kFALSE)
 {
   //
@@ -100,7 +104,7 @@ AliDielectronSignalBase::~AliDielectronSignalBase()
   if (fHistDataPM) delete fHistDataPM;
   if (fHistDataMM) delete fHistDataMM;
   if (fHistDataME) delete fHistDataME;
-  
+  if (fHistRfactor)delete fHistRfactor;  
 }
 
 //______________________________________________

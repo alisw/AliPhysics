@@ -64,6 +64,7 @@ public:
 
   TObjArray* CollectHistosProj(const Option_t* varnames, const char* slices);
   TObjArray* CollectHistosProj(const Int_t vars[3], const char* slices);
+  TObjArray* CollectMinvProj(const char* slice="0");
   TH1* Project(const Int_t vars[3], Int_t slice);
   TH1* Project(const Option_t* var, Int_t slice);
   

@@ -59,6 +59,7 @@ AliDielectronCF::AliDielectronCF() :
   fVarBinLimitsLeg(0x0),
   fNCuts(0),
   fValues(0x0),
+  fIsMCTruth(0x0),
   fStepForMCtruth(kFALSE),
   fStepForNoCutsMCmotherPid(kFALSE),
   fStepForAfterAllCuts(kTRUE),
@@ -98,6 +99,7 @@ AliDielectronCF::AliDielectronCF(const char* name, const char* title) :
   fVarBinLimitsLeg(0x0),
   fNCuts(0),
   fValues(0x0),
+  fIsMCTruth(0x0),
   fStepForMCtruth(kFALSE),
   fStepForNoCutsMCmotherPid(kFALSE),
   fStepForAfterAllCuts(kTRUE),
@@ -134,6 +136,7 @@ AliDielectronCF::~AliDielectronCF()
   // Destructor
   //
   if (fValues) delete [] fValues;
+  if (fIsMCTruth) delete [] fIsMCTruth;
   if (fVarBinLimits) delete fVarBinLimits;
   if (fVarBinLimitsLeg) delete fVarBinLimitsLeg;
 }
@@ -290,7 +293,9 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
 
   // array for storing values
   fValues = new Double_t[fNVars+2*fNVarsLeg];
-  
+
+  // array for storing MC info
+  if (fHasMC && fSignalsMC && fSignalsMC->GetEntries()>0) fIsMCTruth=new Bool_t[fSignalsMC->GetEntries()];
   //=================//
   // Set step titles //
   //=================//
@@ -427,10 +432,8 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   //
 
   // Check the MC truths
-  Bool_t* isMCTruth=0x0;
-  if(fHasMC && fSignalsMC && fSignalsMC->GetEntries()>0) {
-    isMCTruth=new Bool_t[fSignalsMC->GetEntries()]; 
-    for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) isMCTruth[i]=kFALSE;
+  if(fIsMCTruth) {
+    for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) fIsMCTruth[i]=kFALSE;
   }
 
   //TODO: for the moment don't fill truth information for mixed event paris. No valid MC info is available
@@ -438,10 +441,10 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   Bool_t isMixedPair=(particle->GetType()>2&&particle->GetType()<10);
   
   Bool_t isBackground = kFALSE;
-  if(fHasMC && isMCTruth && !isMixedPair) {
+  if(fIsMCTruth && !isMixedPair) {
     for(Int_t i=0; i<fSignalsMC->GetEntries(); ++i) { 
-      isMCTruth[i] = AliDielectronMC::Instance()->IsMCTruth(particle, (AliDielectronSignalMC*)fSignalsMC->At(i));
-      isBackground = (isBackground || isMCTruth[i]);
+      fIsMCTruth[i] = AliDielectronMC::Instance()->IsMCTruth(particle, (AliDielectronSignalMC*)fSignalsMC->At(i));
+      isBackground = (isBackground || fIsMCTruth[i]);
     }
     // background is considered that pair which does not fulfill any of the signals
     isBackground = !isBackground;
@@ -475,12 +478,12 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   //============//
   // Pure MC steps are handled in FillMC
   Int_t step=0;
-  if (fStepForMCtruth && isMCTruth) step+=fSignalsMC->GetEntries();
+  if (fStepForMCtruth && fIsMCTruth) step+=fSignalsMC->GetEntries();
   
   //No cuts (MC truth)
-  if (fStepForNoCutsMCmotherPid && isMCTruth){
+  if (fStepForNoCutsMCmotherPid && fIsMCTruth){
     for(Int_t i=0; i<fSignalsMC->GetEntries(); ++i) {
-      if(isMCTruth[i]) {
+      if(fIsMCTruth[i]) {
         fCfContainer->Fill(fValues,step);
       }
       ++step;
@@ -497,9 +500,9 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
           ++step;
         }
         if (fHasMC){
-          if ( fStepsForSignal && isMCTruth){
+          if ( fStepsForSignal && fIsMCTruth){
             for(Int_t i=0; i<fSignalsMC->GetEntries(); ++i) {
-              if(isMCTruth[i]) {
+              if(fIsMCTruth[i]) {
                 fCfContainer->Fill(fValues,step);
               }
               ++step;
@@ -528,9 +531,9 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
         }
 
         if (fHasMC){
-          if ( fStepsForSignal && isMCTruth){
+          if ( fStepsForSignal && fIsMCTruth){
             for(Int_t i=0; i<fSignalsMC->GetEntries(); ++i) {
-              if(isMCTruth[i]) {
+              if(fIsMCTruth[i]) {
                 fCfContainer->Fill(fValues,step);
               }
               ++step;
@@ -556,9 +559,9 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
         ++step;
       }
       if (fHasMC){
-        if ( fStepsForSignal && isMCTruth){
+        if ( fStepsForSignal && fIsMCTruth){
           for(Int_t i=0; i<fSignalsMC->GetEntries(); ++i) {
-            if(isMCTruth[i]) {
+            if(fIsMCTruth[i]) {
               fCfContainer->Fill(fValues,step);
             }
             ++step;
@@ -583,9 +586,9 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
       }
 
       if (fHasMC){
-        if ( fStepsForSignal && isMCTruth){
+        if ( fStepsForSignal && fIsMCTruth){
           for(Int_t i=0; i<fSignalsMC->GetEntries(); ++i) {
-            if(isMCTruth[i]) {
+            if(fIsMCTruth[i]) {
               fCfContainer->Fill(fValues,step);
             }
             ++step;
@@ -609,9 +612,9 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
         ++step;
       }
       if (fHasMC){
-        if ( fStepsForSignal && isMCTruth){
+        if ( fStepsForSignal && fIsMCTruth){
           for(Int_t i=0; i<fSignalsMC->GetEntries(); ++i) {
-            if(isMCTruth[i]) {
+            if(fIsMCTruth[i]) {
               fCfContainer->Fill(fValues,step);
             }
             ++step;
@@ -631,7 +634,6 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   if (step!=fNSteps) {
     AliError("Something went wrong in the step filling!!!");
   }
-  if(isMCTruth) delete [] isMCTruth;
 }
 
 //________________________________________________________________

@@ -65,8 +65,8 @@ public:
   Int_t GetNvarsPair()     const {return fNVars;}
   Int_t GetNvarsLeg()      const {return fNVarsLeg;}
 
-  UInt_t GetVariablePair(UInt_t var) const {return (var>(UInt_t)AliDielectronVarManager::kNMaxValues)? (UInt_t)AliDielectronVarManager::kNMaxValues+1:fVariables[var];}
-  UInt_t GetVariableLeg(UInt_t var) const {return (var>(UInt_t)AliDielectronVarManager::kNMaxValues)? (UInt_t)AliDielectronVarManager::kNMaxValues+1:fVariablesLeg[var];}
+  UInt_t GetVariablePair(UInt_t var) const {return (var>=(UInt_t)AliDielectronVarManager::kNMaxValues)? (UInt_t)AliDielectronVarManager::kNMaxValues+1:fVariables[var];}
+  UInt_t GetVariableLeg(UInt_t var) const {return (var>=(UInt_t)AliDielectronVarManager::kNMaxValues)? (UInt_t)AliDielectronVarManager::kNMaxValues+1:fVariablesLeg[var];}
 
 //   void Fill(UInt_t mask, const TObject *particle);
   void Fill(UInt_t mask, const AliDielectronPair *particle);
@@ -87,9 +87,10 @@ private:
   Int_t           fNVarsLeg;                   // number of variables for the legs
   TObjArray      *fVarBinLimitsLeg;            //  array of bin limits of the legs
   
-  Int_t           fNCuts;                         // Number of cuts in the filter concerned
+  Int_t           fNCuts;                      // Number of cuts in the filter concerned
 
-  Double_t        *fValues;                       //! Value array for filling the container
+  Double_t        *fValues;                    //! Value array for filling the container
+  Bool_t          *fIsMCTruth;                 //! Buffer array for MC truth information
   
   Bool_t fStepForMCtruth;               //create a step for the MC truth
   Bool_t fStepForNoCutsMCmotherPid;     //create a step for before cuts, but with MC truth of the mother

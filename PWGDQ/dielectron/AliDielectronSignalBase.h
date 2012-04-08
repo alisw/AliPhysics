@@ -33,7 +33,7 @@ class AliDielectronSignalBase : public TNamed {
 public:
   enum EBackgroundMethod {
     kFittedMC = 0,
-	kFitted,
+    kFitted,
     kLikeSign,
     kLikeSignArithm,
     kEventMixing,
@@ -71,9 +71,12 @@ public:
   TH1* GetSignalHistogram()      const {return fHistSignal;}
   TH1* GetBackgroundHistogram()  const {return fHistBackground;}
   TH1* GetUnlikeSignHistogram()  const {return fHistDataPM;}
-
+  TH1* GetRfactorHistogram()     const {return fHistRfactor;}
+  
   void SetScaleRawToBackground(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
   Double_t GetScaleFactor() const { return fScaleFactor; }
+
+  void SetMixingCorrection(Bool_t mixcorr=kTRUE) { fMixingCorr=mixcorr; }
   
   static Double_t ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax);
   
@@ -97,7 +100,8 @@ protected:
   TH1 *fHistDataPP;                  // histogram of selected ++ pair candidates
   TH1 *fHistDataMM;                  // histogram of selected -- pair candidates
   TH1 *fHistDataME;                  // histogram of selected +- pair candidates from mixed event
-
+  TH1 *fHistRfactor;                 // histogram of R factors
+  
   TVectorD fValues;                  // values
   TVectorD fErrors;                  // value errors
 
@@ -111,6 +115,7 @@ protected:
   Double_t fScaleMin;                // min for scaling of raw and background histogram
   Double_t fScaleMax;                // max for scaling of raw and background histogram
   Double_t fScaleFactor;             // scale factor of raw to background histogram scaling
+  Bool_t fMixingCorr;                // switch for bin by bin correction with R factor
   
   Bool_t fProcessed;                 // flag
   

@@ -62,6 +62,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler()
 	//
 	// default constructor
 	//
+	for (Int_t i=0; i<45; ++i) fParamStartValues[i]=0;
 }
 //_________________________________________________________________________________________________
 AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(Double_t* decaytime, 
@@ -82,6 +83,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(D
 	//
 	// constructor
 	//
+        for (Int_t i=0; i<45; ++i) fParamStartValues[i]=0;
 	AliInfo("\n+++\n+++ Minimization object AliDielectronBtoJPSItoEleCDFfitHandler created\n+++\n");
 	fLikely = new AliDielectronBtoJPSItoEleCDFfitFCN();
 	AliInfo("\n+++\n+++ CDF fit function object AliDielectronBtoJPSItoEleCDFfitFCN created\n+++\n");
@@ -174,6 +176,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(c
 	//
 	// Copy Constructor
 	//
+        for (Int_t i=0; i<45; ++i) fParamStartValues[i]=c.fParamStartValues[i];
 }
 //_______________________________________________________________________________________
 AliDielectronBtoJPSItoEleCDFfitHandler::~AliDielectronBtoJPSItoEleCDFfitHandler()
