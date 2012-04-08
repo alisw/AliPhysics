@@ -1012,6 +1012,12 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SetMinimumTriggerPt(4);
   ana->SetAssociatedPtRange(0.2,200); 
+  ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
+
+  ana->SelectIsolated(bIsolated); // do correlation with isolated photons
+  
+  ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
+  ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
   //Avoid borders of EMCal, same as for isolation
   if(kCalorimeter=="EMCAL")
@@ -1031,25 +1037,34 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetInputAODName(Form("%s%s",particle.Data(),kName.Data()));
   ana->SetAODObjArrayName(Form("%sHadronCorrIso%dTM%d",particle.Data(),bIsolated,kTM)); 
   
-  ana->SelectIsolated(bIsolated); // do correlation with isolated photons
+  // Fill extra plots on tagged decay photons
+  // If trigger is pi0/eta found with invariant mass, get the decays
+  // If trigger is photon, check if it was tagged as decay previously
+  if(particle=="Pi0" || particle =="Eta") 
+  {
+    if(!particle.Contains("SS")) ana->SwitchOnPi0TriggerDecayCorr();
+    else                         ana->SwitchOffPi0TriggerDecayCorr();
+    ana->SwitchOffDecayTriggerDecayCorr();
+  }
+  else
+  {
+    ana->SwitchOffPi0TriggerDecayCorr();
+    ana->SwitchOnDecayTriggerDecayCorr(); // Make sure pi0 decay tagging runs before this task
+  }
   
-  if(particle=="Pi0" || particle =="Eta") ana->SwitchOnDecayCorr();
-  else                                    ana->SwitchOffDecayCorr();
-  ana->SetMultiBin(1);
-  ana->SwitchOffNeutralCorr();
-  ana->SwitchOffEventSelection();
-  ana->SetDeltaPhiCutRange(1.5,4.5);
+  // if triggering on PHOS and EMCAL is on
+  //if(kCalorimeter=="PHOS") ana->SwitchOnNeutralCorr();
+  ana->SwitchOffNeutralCorr(); // Do only correlation with TPC
   
-  ana->SwitchOnAbsoluteLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
+  ana->SwitchOffHMPIDCorrelation();
   
+  ana->SwitchOffFillBradHistograms();
+  
+  // Underlying event
+  ana->SwitchOnEventSelection();
   ana->SwitchOnSeveralUECalculation();
   ana->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
-  
-  //if(kCalorimeter=="PHOS"){
-  //Correlate with particles in EMCAL
-  //ana->SwitchOnCaloPID();
-  //ana->SwitchOnCaloPIDRecalculation(); 
-  //}
+  ana->SetMultiBin(1);
   
   //Set Histograms name tag, bins and ranges
   
