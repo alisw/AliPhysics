@@ -648,21 +648,21 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
                                          Form("%s: #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i})^{2} / #Sigma w_{i} - <#eta>^{2} vs E",pidParticle[pidIndex].Data()),  
                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
         fhSumEtaE[pidIndex]->SetXTitle("E (GeV)");
-        fhSumEtaE[pidIndex]->SetYTitle("#sigma'^{2}_{#eta #eta}");
+        fhSumEtaE[pidIndex]->SetYTitle("#delta^{2}_{#eta #eta}");
         outputContainer->Add(fhSumEtaE[pidIndex]);     
         
         fhSumPhiE[pidIndex]  = new TH2F (Form("h%sSumPhiE",pidParticle[pidIndex].Data()),
                                          Form("%s: #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i})^{2}/ #Sigma w_{i} - <#phi>^{2} vs E",pidParticle[pidIndex].Data()),  
                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
         fhSumPhiE[pidIndex]->SetXTitle("E (GeV)");
-        fhSumPhiE[pidIndex]->SetYTitle("#sigma'^{2}_{#phi #phi}");
+        fhSumPhiE[pidIndex]->SetYTitle("#delta^{2}_{#phi #phi}");
         outputContainer->Add(fhSumPhiE[pidIndex]);  
         
         fhSumEtaPhiE[pidIndex]  = new TH2F (Form("h%sSumEtaPhiE",pidParticle[pidIndex].Data()),
-                                            Form("%s: #sigma'^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",pidParticle[pidIndex].Data()),  
+                                            Form("%s: #delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",pidParticle[pidIndex].Data()),  
                                             nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
         fhSumEtaPhiE[pidIndex]->SetXTitle("E (GeV)");
-        fhSumEtaPhiE[pidIndex]->SetYTitle("#sigma'^{2}_{#eta #phi}");
+        fhSumEtaPhiE[pidIndex]->SetYTitle("#delta^{2}_{#eta #phi}");
         outputContainer->Add(fhSumEtaPhiE[pidIndex]);
         
         fhDispEtaPhiDiffE[pidIndex]  = new TH2F (Form("h%sDispEtaPhiDiffE",pidParticle[pidIndex].Data()),
@@ -728,10 +728,10 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
             outputContainer->Add(fhMCEDispPhi[pidIndex][i]);  
             
             fhMCESumEtaPhi[pidIndex][i]  = new TH2F (Form("h%sESumEtaPhiE_MC%s",pidParticle[pidIndex].Data(),pnamess[i].Data()),
-                                                     Form("cluster from %s : %s like, #sigma'^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",ptypess[i].Data(),pidParticle[pidIndex].Data()),  
+                                                     Form("cluster from %s : %s like, #delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",ptypess[i].Data(),pidParticle[pidIndex].Data()),  
                                                      nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
             fhMCESumEtaPhi[pidIndex][i]->SetXTitle("E (GeV)");
-            fhMCESumEtaPhi[pidIndex][i]->SetYTitle("#sigma'^{2}_{#eta #phi}");
+            fhMCESumEtaPhi[pidIndex][i]->SetYTitle("#delta^{2}_{#eta #phi}");
             outputContainer->Add(fhMCESumEtaPhi[pidIndex][i]);
             
             fhMCEDispEtaPhiDiff[pidIndex][i]  = new TH2F (Form("h%sEDispEtaPhiDiffE_MC%s",pidParticle[pidIndex].Data(),pnamess[i].Data()),
