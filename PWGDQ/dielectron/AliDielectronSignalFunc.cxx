@@ -360,7 +360,8 @@ Double_t AliDielectronSignalFunc::PeakFun(const Double_t *x, const Double_t *par
   
   TH1F *hPeak = fgHistSimPM;
   if (!hPeak) {
-    printf("F-AliDielectronSignalFunc::PeakFun: No histogram for peak fit defined!\n");
+    printf("E-AliDielectronSignalFunc::PeakFun: No histogram for peak fit defined!\n");
+    return 0.0;
   }
   
   Int_t idx = hPeak->FindBin(xx);

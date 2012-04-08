@@ -40,6 +40,7 @@ can be used.
 #include <AliLog.h>
 
 #include "AliDielectronSignalExt.h"
+#include "AliDielectron.h"
 
 ClassImp(AliDielectronSignalExt)
 
@@ -99,9 +100,9 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   //
   // signal subtraction 
   //
-  fHistDataPP = (TH1*)(arrhist->At(0))->Clone("histPP");  // ++    SE
-  fHistDataPM = (TH1*)(arrhist->At(1))->Clone("histPM");  // +-    SE
-  fHistDataMM = (TH1*)(arrhist->At(2))->Clone("histMM");  // --    SE
+  fHistDataPP = (TH1*)(arrhist->At(AliDielectron::kEv1PP))->Clone("histPP");  // ++    SE
+  fHistDataPM = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPM");  // +-    SE
+  fHistDataMM = (TH1*)(arrhist->At(AliDielectron::kEv1MM))->Clone("histMM");  // --    SE
   fHistDataPP->Sumw2();
   fHistDataPM->Sumw2();
   fHistDataMM->Sumw2();
@@ -116,6 +117,12 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
     fHistDataMM->Rebin(fRebin);
   }       
 
+  fHistRfactor = new TH1D("HistRfactor", "Rfactor;;N^{mix}_{+-}/2#sqrt{N^{mix}_{++} N^{mix}_{--}}",
+                          fHistDataPM->GetXaxis()->GetNbins(),
+                          fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistRfactor->Sumw2();
+  fHistRfactor->SetDirectory(0);
+  
   fHistSignal = new TH1D("HistSignal", "Like-Sign substracted signal",
 			 fHistDataPM->GetXaxis()->GetNbins(),
 			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
@@ -125,12 +132,10 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
   fHistBackground->SetDirectory(0);
   
-  // fill out background and subtracted histogram
+  // fill out background histogram
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
-    Float_t pm = fHistDataPM->GetBinContent(ibin);
     Float_t pp = fHistDataPP->GetBinContent(ibin);
     Float_t mm = fHistDataMM->GetBinContent(ibin);
-    Float_t epm = fHistDataPM->GetBinError(ibin);
 
     Float_t background = 2*TMath::Sqrt(pp*mm);
     Float_t ebackground = TMath::Sqrt(mm+pp);
@@ -140,14 +145,65 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
       ebackground=TMath::Sqrt(pp+mm);
       if (TMath::Abs(ebackground)<1e-30) ebackground=1;
     }
-//     Float_t signal = pm - background;
-//     Float_t error = TMath::Sqrt(epm*epm+mm+pp);
 
-    fHistSignal->SetBinContent(ibin, pm);
-    fHistSignal->SetBinError(ibin, epm);
     fHistBackground->SetBinContent(ibin, background);
     fHistBackground->SetBinError(ibin, ebackground);
   }
+
+  //correct LS spectrum bin-by-bin with R factor obtained in mixed events
+  if(fMixingCorr) {
+    
+    TH1* histMixPP = (TH1*)(arrhist->At(AliDielectron::kEv1PEv2P))->Clone("mixPP");  // ++    ME
+    TH1* histMixMM = (TH1*)(arrhist->At(AliDielectron::kEv1MEv2M))->Clone("mixMM");  // --    ME
+    TH1* histMixPM = (TH1*)(arrhist->At(AliDielectron::kEv1PEv2M))->Clone("mixPM");  // +-    ME
+    histMixPM->Sumw2();
+    histMixPM->Add((TH1*)arrhist->At(AliDielectron::kEv1MEv2P));               // -+    ME
+    
+    // rebin the histograms
+    if (fRebin>1) { 
+      histMixPP->Rebin(fRebin);
+      histMixMM->Rebin(fRebin);
+      histMixPM->Rebin(fRebin);
+    }       
+    
+    // fill out rfactor histogram
+    for(Int_t ibin=1; ibin<=histMixPM->GetXaxis()->GetNbins(); ibin++) {
+      Float_t pp  = histMixPP->GetBinContent(ibin);
+      Float_t ppe = histMixPP->GetBinError(ibin);
+      Float_t mm  = histMixMM->GetBinContent(ibin);
+      Float_t mme = histMixMM->GetBinError(ibin);
+      Float_t pm  = histMixPM->GetBinContent(ibin);
+      Float_t pme = histMixPM->GetBinError(ibin);
+      
+      Float_t background = 2*TMath::Sqrt(pp*mm);
+      // do not use it since ME could be weighted err!=sqrt(entries)
+      //      Float_t ebackground = TMath::Sqrt(mm+pp); 
+      Float_t ebackground = TMath::Sqrt(mm/pp*ppe*ppe + pp/mm*mme*mme);
+      if (fMethod==kLikeSignArithm){
+        //Arithmetic mean instead of geometric
+        background=(pp+mm);
+        ebackground=TMath::Sqrt(ppe*ppe+mme*mme);
+        if (TMath::Abs(ebackground)<1e-30) ebackground=1;
+      }
+      
+      Float_t rcon = 1.0;
+      Float_t rerr = 0.0;
+      if(background>0.0) {
+        rcon = pm/background;
+        rerr = TMath::Sqrt((1./background)*(1./background) * pme*pme +
+                           (pm/(background*background))*(pm/(background*background)) * ebackground*ebackground);
+      }
+      fHistRfactor->SetBinContent(ibin, rcon);
+      fHistRfactor->SetBinError(ibin, rerr);
+    }
+    
+    fHistBackground->Multiply(fHistRfactor);
+    
+    if (histMixPP) delete histMixPP;
+    if (histMixMM) delete histMixMM;
+    if (histMixPM) delete histMixPM;
+  }
+  
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
   if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
@@ -157,6 +213,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   }
 
   //subract background
+  fHistSignal->Add(fHistDataPM);
   fHistSignal->Add(fHistBackground,-1);
   
   // signal
@@ -166,7 +223,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
 						 fHistBackground->FindBin(fIntMax), 
 						 fErrors(1));
-  printf("%f  %f\n",fValues(0),fValues(1));
+  //printf("%f  %f\n",fValues(0),fValues(1));
   // S/B and significance
   SetSignificanceAndSOB();
 
@@ -177,14 +234,16 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
 {
   //
-  // event mixing
+  // event mixing of +- and -+
   //
-  fHistDataPM = (TH1*)(arrhist->At(0))->Clone("histPMSE");  // +-    SE
-  fHistDataME = (TH1*)(arrhist->At(1))->Clone("histPMME");  // +-    ME
+  fHistDataPM   = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPMSE");  // +-    SE
+  fHistDataME   = (TH1*)(arrhist->At(AliDielectron::kEv1MEv2P))->Clone("histMPME");  // -+    ME
   fHistDataPM->Sumw2();
   fHistDataME->Sumw2();
   fHistDataPM->SetDirectory(0);
   fHistDataME->SetDirectory(0);
+	
+	fHistDataME->Add((TH1*)arrhist->At(AliDielectron::kEv1PEv2M));  // +-    ME  
 
   // rebin the histograms
   if (fRebin>1) {
@@ -242,14 +301,14 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
   //
   // signal subtraction
   //
-  fHistDataPM = (TH1*)(arrhist->At(1))->Clone("histPM");  // +-    SE
+  fHistDataPM = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPM");  // +-    SE
   if (!fHistDataPM){
     AliError("Unlike sign histogram not available. Cannot extract the signal.");
     return;
   }
   fHistDataPM->Sumw2();
 
-  fHistBackground=(TH1*)arrhist->At(10)->Clone("histRotation");
+  fHistBackground = (TH1*)(arrhist->At(AliDielectron::kEv1PMRot))->Clone("histRotation");
   if (!fHistBackground){
     AliError("Histgram from rotation not available. Cannot extract the signal.");
     delete fHistDataPM;

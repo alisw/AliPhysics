@@ -53,6 +53,7 @@
 #include <AliLog.h>
 
 #include "AliDielectronCFdraw.h"
+#include "AliDielectron.h"
 
 ClassImp(AliDielectronCFdraw)
 
@@ -372,6 +373,23 @@ TObjArray* AliDielectronCFdraw::CollectHistosProj(const Int_t vars[3], const cha
   delete arr;
 
   return arrHists;
+}
+
+//________________________________________________________________
+TObjArray* AliDielectronCFdraw::CollectMinvProj(const char* slice)
+{
+  //
+  // Collect invariant mass spectra of slice 'slice' for all pair types
+  //
+  
+  TObjArray *arr = new TObjArray();
+  arr->SetOwner();
+  for (Int_t iType = 0; iType <= AliDielectron::kEv1PMRot; iType++) {
+    fCfContainer->SetRangeUser(fCfContainer->GetVar("PairType"),iType,iType,fCfContainer->GetStep(slice));
+    arr->AddAt(fCfContainer->Project(fCfContainer->GetVar("M"),fCfContainer->GetStep(slice)),iType);
+  }
+  
+  return arr;
 }
 
 //________________________________________________________________

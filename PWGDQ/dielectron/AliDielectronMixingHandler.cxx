@@ -294,7 +294,7 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
   //
 
   //Check if there was any processed data and it is requested to mix incomplete bins
-  if (!diele->PairArray(0) || !fMixIncomplete ) return;
+  if (!diele || !diele->PairArray(0) || !fMixIncomplete ) return;
 
 
   for (Int_t ipool=0; ipool<fArrPools.GetSize(); ++ipool){
@@ -305,10 +305,9 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
     diele->ClearArrays();
     DoMixing(*poolp,diele);
 
-    diele->FillHistograms(0x0, kTRUE);
-
     // increase counter for incomplete bins
     if (diele->fHistos) {
+      diele->FillHistograms(0x0, kTRUE);
       diele->fHistos->Fill("Mixing","Stats",1);
       diele->fHistos->Fill("Mixing","InCompletePools",ipool);
       diele->fHistos->Fill("Mixing","Entries_InCompletePools",poolp->GetEntriesFast());

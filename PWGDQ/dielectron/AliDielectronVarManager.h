@@ -1528,6 +1528,9 @@ inline Double_t AliDielectronVarManager::GetTRDpidEfficiency(Int_t runNo, Double
       }
     }
   }
+  //TODO: chek logick
+  if (centIdx<0) return 1;
+  
   TH3D* effH = fgTRDpidEff[centIdx][(isBplus ? 1 : 0)];
   if(!effH) {effErr=0x0; return 1.0;}
   Int_t etaBin = effH->GetXaxis()->FindBin(eta);

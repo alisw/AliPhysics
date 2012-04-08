@@ -287,7 +287,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if (fHistos) FillHistograms(ev1);
 
   // clear arrays
-//   ClearArrays();
+  ClearArrays();
   AliDielectronVarManager::SetTPCEventPlane(0x0);
   delete cevplane;
 }
