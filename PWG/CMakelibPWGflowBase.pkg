@@ -59,7 +59,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR PWGflowBaseLinkDef.h)
 
-set ( EXPORT )
+set ( EXPORT ${HDRS} )
 
 set ( EINCLUDE  PWG/FLOW/Base)
 
