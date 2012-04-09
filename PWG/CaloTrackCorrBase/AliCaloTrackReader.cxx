@@ -73,7 +73,8 @@ fInputEvent(0x0),            fOutputEvent(0x0),fMC(0x0),
 fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0), 
 fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
-fTrackStatus(0),             fTrackFilterMask(0),             fESDtrackCuts(0), 
+fTrackStatus(0),             fTrackFilterMask(0),             
+fESDtrackCuts(0),            fSelectHybridTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.8),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),      
@@ -412,7 +413,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("Track filter mask (AODs) =  %d\n", (Int_t) fTrackFilterMask) ;
+  printf("AODs Track filter mask  =  %d or hybrid %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d\n",    fRecalculateClusters) ;
@@ -859,10 +860,25 @@ void AliCaloTrackReader::FillInputCTS()
       AliAODTrack *aodtrack = dynamic_cast <AliAODTrack*>(track);
       if(aodtrack)
       {
-        if(fDebug > 2 ) 
-          printf("AliCaloTrackReader::FillInputCTS():AOD track type: %c \n", aodtrack->GetType());
-        if (fDataType!=kMC && aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue;
-        if (aodtrack->GetType()!=AliAODTrack::kPrimary)                          continue;
+       if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS():AOD track type: %d (primary %d), hybrid? %d \n",
+                              aodtrack->GetType(),AliAODTrack::kPrimary,
+                              aodtrack->IsHybridGlobalConstrainedGlobal());
+        
+        if(fDataType!=kMC)
+        {
+          if(fSelectHybridTracks)
+          {
+            if (!aodtrack->IsHybridGlobalConstrainedGlobal())       continue ;
+          }
+          else 
+          {
+            if ( aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue ;
+          }
+          
+          if (aodtrack->GetType()!= AliAODTrack::kPrimary)          continue ;
+          
+          if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
+        }
       }
     }
     
