@@ -1197,7 +1197,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   // Check isolation only of clusters in fiducial region
   if(IsFiducialCutOn())
   {
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodinput->Momentum(),fCalorimeter) ;
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodinput->Momentum(),aodinput->GetDetector()) ;
     if(! in ) return ;
   }
   
@@ -1246,7 +1246,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     // Check isolation only of clusters in fiducial region
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(*aod->Momentum(),fCalorimeter) ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(*aod->Momentum(),aod->GetDetector()) ;
       if(! in ) continue ;
     }
     
