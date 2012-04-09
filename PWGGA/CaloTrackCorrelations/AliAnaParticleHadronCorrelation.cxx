@@ -686,7 +686,6 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   // Create histograms to be saved in output file and 
   // store them in fOutputContainer
   
-  
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("CorrelationHistos") ; 
   
@@ -843,14 +842,14 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhDeltaEtaCharged) ;
     outputContainer->Add(fhDeltaPhiChargedPt) ;
     outputContainer->Add(fhDeltaPhiUeChargedPt) ;
-    
+
     outputContainer->Add(fhXECharged) ;
     outputContainer->Add(fhXEPosCharged) ;
     outputContainer->Add(fhXENegCharged) ;
     outputContainer->Add(fhXEUeCharged) ;
     outputContainer->Add(fhPtHbpXECharged) ;
     outputContainer->Add(fhPtHbpXEUeCharged) ;
-    
+
     outputContainer->Add(fhZTCharged) ;
     outputContainer->Add(fhZTPosCharged) ;
     outputContainer->Add(fhZTNegCharged) ;
@@ -943,7 +942,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhZTDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins] ;
       fhDeltaPhiDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins] ;
     }
-    
+
     if(fHMPIDCorrelation)
     {
       fhDeltaPhiAssocPtBinHMPID   = new TH2F*[fNAssocPtBins] ;
@@ -1039,6 +1038,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
          nptbins,ptmin,ptmax, 100,0.,2.); 
         fhPtPi0DecayRatio->SetXTitle("p_{T}^{#pi^{0}} (GeV/c)");
         fhPtPi0DecayRatio->SetYTitle("p_{T}^{Decay}/p_{T}^{#pi^{0}}");
+        outputContainer->Add(fhPtPi0DecayRatio) ; 
       }
       
       fhDeltaPhiDecayCharged  = new TH2F
@@ -1059,7 +1059,6 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhZTDecayCharged->SetYTitle("z_{decay h^{#pm}}");
       fhZTDecayCharged->SetXTitle("p_{T decay}");      
       
-      outputContainer->Add(fhPtPi0DecayRatio) ; 
       outputContainer->Add(fhDeltaPhiDecayCharged) ; 
       outputContainer->Add(fhXEDecayCharged) ;
       outputContainer->Add(fhZTDecayCharged) ;
@@ -1139,7 +1138,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
     }  
   }  //Correlation with charged hadrons
-  
+
   //Correlation with neutral hadrons
   if(fNeutralCorr)
   {
@@ -1501,10 +1500,9 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       outputContainer->Add(fhMixDeltaPhiChargedAssocPtBin[i]);
       outputContainer->Add(fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i]);
       
-    }      
-    
+    }          
   }
-  
+
   return outputContainer;
   
 }
@@ -1579,17 +1577,17 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMakeAbsoluteLeading  = kTRUE;
   fMakeNearSideLeading  = kFALSE;
 
-  fNAssocPtBins         = 7  ;
-  fAssocPtBinLimit[0]   = 1.5  ; 
-  fAssocPtBinLimit[1]   = 3.  ; 
-  fAssocPtBinLimit[2]   = 5.  ; 
-  fAssocPtBinLimit[3]   = 7.  ; 
-  fAssocPtBinLimit[4]   = 9. ; 
-  fAssocPtBinLimit[5]   = 12. ; 
-  fAssocPtBinLimit[6]   = 15. ;
-  fAssocPtBinLimit[7]   = 20. ;
-  fAssocPtBinLimit[8]   = 100.;
-  fAssocPtBinLimit[9]   = 200.;
+  fNAssocPtBins         = 9   ;
+  fAssocPtBinLimit[0]   = 0.2 ; 
+  fAssocPtBinLimit[1]   = 2.0 ; 
+  fAssocPtBinLimit[2]   = 4.0 ; 
+  fAssocPtBinLimit[3]   = 6.0 ; 
+  fAssocPtBinLimit[4]   = 8.0 ; 
+  fAssocPtBinLimit[5]   = 10. ; 
+  fAssocPtBinLimit[6]   = 12. ;
+  fAssocPtBinLimit[7]   = 15. ;
+  fAssocPtBinLimit[8]   = 25. ;
+  fAssocPtBinLimit[9]   = 50. ;
   
 }
 
