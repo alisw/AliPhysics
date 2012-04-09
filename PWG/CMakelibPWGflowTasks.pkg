@@ -54,12 +54,13 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskVnV0.cxx
     FLOW/Tasks/AliFlowVZEROResults.cxx
     FLOW/Tasks/AliFlowVZEROQA.cxx
+    FLOW/Tasks/AliAnalysisTaskFlowEPCascade.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR PWGflowTasksLinkDef.h)
 
-set ( EXPORT )
+set ( EXPORT ${HDRS} )
 
 set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase)
