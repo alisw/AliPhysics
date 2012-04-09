@@ -268,15 +268,17 @@ void AliESDVertex::Print(Option_t* /*option*/) const {
   // Print out information on all data members
   //
   printf("ESD vertex position:\n");
-  printf("   x = %f +- %f\n",fPosition[0],TMath::Sqrt(fCovXX));
-  printf("   y = %f +- %f\n",fPosition[1],TMath::Sqrt(fCovYY));
-  printf("   z = %f +- %f\n",fPosition[2],TMath::Sqrt(fCovZZ));
+  printf("   x = %f +- %f\n",fPosition[0], fCovXX>0 ? TMath::Sqrt(fCovXX) : 0.);
+  printf("   y = %f +- %f\n",fPosition[1], fCovYY>0 ? TMath::Sqrt(fCovYY) : 0.);
+  printf("   z = %f +- %f\n",fPosition[2], fCovZZ>0 ? TMath::Sqrt(fCovZZ) : 0.);
   printf(" Covariance matrix:\n");
   printf(" %12.10f  %12.10f  %12.10f\n %12.10f  %12.10f  %12.10f\n %12.10f  %12.10f  %12.10f\n",fCovXX,fCovXY,fCovXZ,fCovXY,fCovYY,fCovYZ,fCovXZ,fCovYZ,fCovZZ);
   printf(" S/N = (%f, %f, %f)\n",fSNR[0],fSNR[1],fSNR[2]);
   printf(" chi2 = %f\n",fChi2);
   printf(" # tracks (or tracklets) = %d BCID=%d\n",fNContributors,int(fBCID));
-
+  //
+  if (fCovXX<0 || fCovYY<0 || fCovZZ<0) {AliError("Attention: negative diagonal element");}
+  //
   return;
 }
 
