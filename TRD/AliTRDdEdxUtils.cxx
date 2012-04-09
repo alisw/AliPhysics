@@ -464,13 +464,26 @@ Int_t AliTRDdEdxUtils::GetPHQIterator(const Bool_t kinvq, const Double_t mag, co
   return kinvq*4 + (mag>0)*2 + (charge>0); 
 }
 
+TObjArray * AliTRDdEdxUtils::GetObjPHQ()
+{
+  //
+  //return fgObjPHQ, initialized if null
+  //
+
+  if(!fgObjPHQ){
+    fgObjPHQ = new TObjArray(8);
+  }
+
+  return fgObjPHQ;
+}
+
 TObjArray * AliTRDdEdxUtils::GetObjPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge)
 {
   //
   //return calib obj
   //
   if(!fgObjPHQ){
-    printf("AliTRDdEdxUtils::GetObjPHQ error fgObjPHQ null!!\n"); exit(1);
+    printf("AliTRDdEdxUtils::GetObjPHQ(kinvq, mag, charge) error fgObjPHQ null!!\n"); exit(1);
   }
 
   return (TObjArray*) fgObjPHQ->At(GetPHQIterator(kinvq, mag, charge));
@@ -1087,7 +1100,7 @@ Double_t AliTRDdEdxUtils::GetSignal(const Int_t nch, const Int_t ncls, const Dou
   //
   //signal = nch*1e6 + ncls*1e3 + (qq>=1e3? 999 : qq)
   //
-  if(ncls>1e3){
+  if(ncls>=1e3){
     printf("AliTRDdEdxUtils::GetSignal error ncls>1e3! %d\n", ncls); exit(1);
   }
 

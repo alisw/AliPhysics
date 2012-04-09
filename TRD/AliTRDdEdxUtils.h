@@ -87,7 +87,7 @@ class AliTRDdEdxUtils
   static void IniCalibHist(TList *list, const Bool_t kPHQonly=kFALSE);
   static Bool_t ReadCalibHist(const TString filename, const TString listname);
 
-  static TObjArray * GetObjPHQ(){return fgObjPHQ;}
+  static TObjArray * GetObjPHQ();
   static TObjArray * GetHistPHQ(){return fgHistPHQ;}
   static TObjArray * GetObjPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge);
   static THnSparseD * GetHistPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge);
