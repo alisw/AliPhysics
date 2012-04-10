@@ -196,7 +196,7 @@ void AliZDCQADataMakerRec::InitRaws()
   TH2F *hZNArawCentr  = new TH2F("hZNArawCentr", "ZNA centroid;X (cm);Y(cm)", 100,-3.5,3.5,100,-3.5,3.5);
   Add2RawsList(hZNArawCentr, 21, expert, image);
   
-  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;(ZNC-ZNA) (ns);(ZNC+ZNA) (ns)", 120,-100.,-460.,120,-60.,60.);
+  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;(ZNC-ZNA) (ns);(ZNC+ZNA) (ns)", 120,-100.,-40.,120,-30.,30.);
   Add2RawsList(hTimeZDC, 22, !expert, image);
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
