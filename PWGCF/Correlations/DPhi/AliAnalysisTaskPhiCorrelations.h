@@ -89,6 +89,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
     void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
     void   SetFillpT(Bool_t flag) { fFillpT = flag; }
+    void   SetStepsFillSkip(Bool_t step0, Bool_t step6) { fFillOnlyStep0 = step0; fSkipStep6 = step6; }
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -149,10 +150,12 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fEtaOrdering;           // eta ordering, see AliUEHistograms.h for documentation
     Bool_t fCutConversions;        // cut on conversions (inv mass)
     Bool_t fCutResonances;         // cut on resonances (inv mass)
+    Bool_t fFillOnlyStep0; 	   // fill only step 0
+    Bool_t fSkipStep6;		   // skip step 6 when filling
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 7); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 8); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
