@@ -9,6 +9,7 @@
 //  EMCAL tender, apply corrections to EMCAl clusters                 //
 //  and do track matching.                                            //
 //  Author: Deepa Thomas (Utrecht University)                         //
+//  Later mods/rewrite: Jiri Kral (University of Jyvaskyla)           //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -153,7 +154,7 @@ private:
 
   Bool_t   InitClusterization();
 
-  void     InitRecParam();
+  Int_t   InitRecParam();
 
   Bool_t   InitMisalignMatrix();
 
@@ -222,6 +223,7 @@ private:
   Float_t                fExoticCellFraction;     // Good cell if fraction < 1-ecross/ecell
   Float_t                fExoticCellDiffTime;     // If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // Check for exotic only if amplitud is larger than this value
+  Bool_t                 fRecoParamsOCDBLoaded;   // flag if reco params were loaded from OCDB
 
 
 

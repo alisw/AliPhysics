@@ -19,6 +19,7 @@
 //  EMCAL tender, apply corrections to EMCAL clusters                        //
 //  and do track matching.                                                   //
 //  Author: Deepa Thomas (Utrecht University)                                // 
+//  Later mods/rewrite: Jiri Kral (University of Jyvaskyla)                  //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -102,6 +103,7 @@ AliTenderSupply()
 ,fExoticCellFraction(-1)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
+,fRecoParamsOCDBLoaded(kFALSE)
 {
   // Default constructor.
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
@@ -157,6 +159,7 @@ AliTenderSupply(name,tender)
 ,fExoticCellFraction(-1)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
+,fRecoParamsOCDBLoaded(kFALSE)
 {
   // Named constructor
   
@@ -228,6 +231,7 @@ void AliEMCALTenderSupply::Init()
     fExoticCellFraction     = tender->fExoticCellFraction;
     fExoticCellDiffTime     = tender->fExoticCellDiffTime;
     fExoticCellMinAmplitude = tender->fExoticCellMinAmplitude;
+    fRecoParamsOCDBLoaded   = tender->fRecoParamsOCDBLoaded;
 
     for(Int_t i = 0; i < 10; i++) 
       fEMCALMatrix[i] = tender->fEMCALMatrix[i] ;
@@ -334,100 +338,80 @@ void AliEMCALTenderSupply::ProcessEvent()
   
   // Initialising parameters once per run number
   if (fTender->RunChanged()){ 
-
-    // initiate default reco params if not supplied by user
-    if (!fRecParam)
-      InitRecParam();
+    
+    AliWarning( "Run changed, initializing parameters" );
 
     // get pass
     GetPass();
 
     // define what recalib parameters are needed for various switches
     // this is based on implementation in AliEMCALRecoUtils
+    Bool_t needRecoParam   = fReClusterize;
     Bool_t needBadChannels = fBadCellRemove   | fClusterBadChannelCheck | fRecalDistToBadChannels | fReClusterize;
     Bool_t needRecalib     = fCalibrateEnergy | fReClusterize;
     Bool_t needTimecalib   = fCalibrateTime   | fReClusterize;
     Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
     Bool_t needClusterizer = fReClusterize;
 
+    // initiate reco params from OCDB or load some defaults on OCDB failure
+    // will not overwrive, if those have been provided by user
+    if( needRecoParam ){
+      Int_t initRC = InitRecParam();
+      
+      if( initRC == 0 )
+        AliError("Reco params load from OCDB failed! Defaults loaded.");
+      if( initRC == 1 )
+        AliWarning("Reco params loaded from OCDB.");
+      if( initRC > 1 )
+        AliWarning("Reco params not loaded from OCDB (user defined or previously failed to load).");
+    }
+
     // Init bad channels
-    if( needBadChannels )
-    {
+    if( needBadChannels ){
       Int_t fInitBC = InitBadChannels();
       if (fInitBC==0)
-      {
         AliError("InitBadChannels returned false, returning");
-        return;
-      }
       if (fInitBC==1)
-      {
         AliWarning("InitBadChannels OK");
-      }
       if (fInitBC>1)
-      {
         AliWarning(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
-      }
     }
 
     // init recalibration factors
-    if( needRecalib ) 
-    { 
+    if( needRecalib ) { 
       Int_t fInitRecalib = InitRecalib();
       if (fInitRecalib==0)
-      {
         AliError("InitRecalib returned false, returning");
-        return;
-      }
       if (fInitRecalib==1)
-      {
         AliWarning("InitRecalib OK");
-      }
       if (fInitRecalib>1)
-      {
         AliWarning(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
         fReCalibCluster = kFALSE;
-      }
     }
     
     // init time calibration
-    if( needTimecalib )
-    {
+    if( needTimecalib ){
       Int_t initTC = InitTimeCalibration();
       if ( !initTC ) 
-      {
         AliError("InitTimeCalibration returned false, returning");
-        return;
-      }
       if (initTC==1)
-      {
         AliWarning("InitTimeCalib OK");
-      }
       if( initTC > 1 )
-      {
         AliWarning(Form("No external time calibration set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
-      }
     }
 
     // init misalignment matrix
-    if( needMisalign ) 
-    { 
-      if (!InitMisalignMatrix()) {
-        
+    if( needMisalign ) { 
+      if (!InitMisalignMatrix())
         AliError("InitMisalignmentMatrix returned false, returning");
-        return;
-      }
       else
         AliWarning("InitMisalignMatrix OK");
     }
     
     // init clusterizer
-    if( needClusterizer ) 
-    {
+    if( needClusterizer ) {
       if (!InitClusterization()) 
-      {
         AliError("InitClusterization returned false, returning");
-        return;
-      }
       else
         AliWarning("InitClusterization OK");
     }
@@ -443,8 +427,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     
   // clusterizer does cluster energy recalibration, position recomputation
   // and shower shape
-  if( fReClusterize )
-  {
+  if( fReClusterize ){
     fReCalibCluster   = kFALSE;
     fRecalClusPos     = kFALSE;
     fRecalShowerShape = kFALSE;
@@ -1046,29 +1029,95 @@ void AliEMCALTenderSupply::UpdateCells()
 }
 
 //_____________________________________________________
-void AliEMCALTenderSupply::InitRecParam()
+Int_t AliEMCALTenderSupply::InitRecParam()
 {
-  // Initalize the reconstructor parameters
-  // Depending on the data type, different type of clusterizer
+  // Initalize the reconstructor parameters from OCDB
+  // load some default on OCDB failure
+  
+  Int_t runNum;
+  AliCDBManager *man;
+  TObjArray *arr;
+  AliEMCALRecParam *pars;
+  const AliESDRun *run;
+  TString beamType;
+  
+  // clean the previous reco params, if those came from OCDB
+  // we do not want to erase user provided params, do we
+  if( fRecoParamsOCDBLoaded ){
+    if( fRecParam != 0 ){
+      delete fRecParam;
+      fRecParam = 0;
+    }
+    // zero the OCDB loaded flag
+    fRecoParamsOCDBLoaded = kFALSE;
+  }
+  
+  // exit if reco params exist (probably shipped by the user already)
+  if( fRecParam != 0 )
+    return 2;
   
   if (fDebugLevel>0) 
     AliInfo("Initialize the recParam");
 
-  fRecParam = new AliEMCALRecParam;
-  const AliESDRun *run = fTender->GetEvent()->GetESDRun();
-  TString bt(run->GetBeamType());
-  if (bt=="A-A") 
-  {
-    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
-    fRecParam->SetClusteringThreshold(0.100);
-    fRecParam->SetMinECut(0.050);
-  } 
-  else 
-  {
-    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
-    fRecParam->SetClusteringThreshold(0.100);
-    fRecParam->SetMinECut(0.050);
+  // get run details
+  run = fTender->GetEvent()->GetESDRun();
+  beamType = run->GetBeamType();
+  runNum = fTender->GetEvent()->GetRunNumber();
+
+  // OCDB manager should already exist
+  // and have a default storage defined (done by AliTender)
+  man = AliCDBManager::Instance();
+
+  // load the file data
+  arr = (TObjArray*)(man->Get("EMCAL/Calib/RecoParam", runNum)->GetObject());
+  
+  if( arr ){
+    // load given parameters based on beam type
+    if( beamType == "A-A" ){
+      if( fDebugLevel > 0 )
+        AliInfo( "Initializing A-A reco params." );
+      pars = (AliEMCALRecParam*)arr->FindObject( "High Flux - Pb+Pb" );
+    }
+    else{
+      if( fDebugLevel > 0 )
+        AliInfo( "Initializing p-p reco params." );
+      pars = (AliEMCALRecParam*)arr->FindObject( "Low Flux - p+p" );
+    }
+    
+    // set the parameters, if found    
+    if( pars ){
+      if( fDebugLevel > 0 )
+        AliInfo( "OCDB reco params set." );
+      
+      fRecParam = pars;
+      fRecoParamsOCDBLoaded = kTRUE;
+    }
+    
+    arr->Clear();
+    delete arr;
   }
+
+  // set some defaults if OCDB did not succede
+  if( !fRecoParamsOCDBLoaded ){
+    fRecParam = new AliEMCALRecParam();
+    
+    if ( beamType == "A-A"){
+      fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
+      fRecParam->SetClusteringThreshold(0.100);
+      fRecParam->SetMinECut(0.050);
+    } 
+    else 
+    {
+      fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
+      fRecParam->SetClusteringThreshold(0.100);
+      fRecParam->SetMinECut(0.050);
+    }
+  }
+  
+  if( fRecoParamsOCDBLoaded )
+    return 1;
+  else
+    return 0;
 }
 
 //_____________________________________________________
