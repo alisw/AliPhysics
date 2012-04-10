@@ -1300,7 +1300,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
     
     TH1* contamination = corrections->GetTrackingContamination(1);
     
-    if (1)
+    if (0)
     {
       Printf("Applying contamination enhancement");
       
@@ -1318,7 +1318,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
     
     // correct for additional contamination due to trigger particle around phi ~ 0
     TH2* correlatedContamination = corrections->GetCorrelatedContamination();
-    if (1)
+    if (0)
     {
       Printf("Applying contamination enhancement");
       
@@ -1333,8 +1333,8 @@ void AliUEHist::Correct(AliUEHist* corrections)
     }
     
     new TCanvas; correlatedContamination->DrawCopy("COLZ");
-    CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
-//     Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
+//     CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
+    Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
     
     delete correlatedContamination;
     
@@ -1347,6 +1347,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
     
     // in bins of pT and centrality
     TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrectionCentrality();
+    new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
     // use kCFStepAnaTopology as a temporary step 
     CorrectTracks(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, efficiencyCorrection, 1, 3);
     delete efficiencyCorrection;
