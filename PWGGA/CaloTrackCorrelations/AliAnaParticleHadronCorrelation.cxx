@@ -544,6 +544,8 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
   AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
+  if(!inputHandler) return ;
+  
   if(inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask())
   {
     fhNtracksTrigger->Fill(nTracks);

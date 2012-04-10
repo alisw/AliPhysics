@@ -659,6 +659,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
     
+    if(!inputHandler) return kFALSE ;  // to content coverity
+    
     UInt_t isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
     UInt_t isINT     = inputHandler->IsEventSelected() & AliVEvent::kAnyINT;
     
