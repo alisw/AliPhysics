@@ -35,6 +35,7 @@ public:
   AliFemtoV0TrackPairCut();
   AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut& cut);
   virtual ~AliFemtoV0TrackPairCut();
+  AliFemtoV0TrackPairCut& operator=(const AliFemtoV0TrackPairCut& c);
   
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
