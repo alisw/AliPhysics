@@ -60,6 +60,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   void SetCentralityLowLim           (Float_t centrlowlim               = 0.   ) { fCentrLowLim                 = centrlowlim;                }  
   void SetCentralityUpLim            (Float_t centruplim                = 100. ) { fCentrUpLim                  = centruplim;                 }
   void SetCentralityEst              (TString   centrest                = "V0M") { fCentrEstimator              = centrest;                   }
+  void SetUseCleaning                (Bool_t   usecleaning              = kTRUE) { fkUseCleaning                = usecleaning;                }
   void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                    = vtxrange;                   }
 
  private:
@@ -83,6 +84,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         Float_t         fCentrLowLim;                   // Lower limit for centrality percentile selection
         Float_t         fCentrUpLim;                    // Upper limit for centrality percentile selection
         TString         fCentrEstimator;                // string for the centrality estimator
+        Bool_t          fkUseCleaning;                  // Boolean : kTRUE = uses all the cleaning criteria of centrality selections (vertex cut + outliers) otherwise only outliers
         Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
 
        
@@ -236,7 +238,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadePbPb(const AliAnalysisTaskCheckCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckCascadePbPb& operator=(const AliAnalysisTaskCheckCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadePbPb, 4);
+  ClassDef(AliAnalysisTaskCheckCascadePbPb, 5);
 };
 
 #endif

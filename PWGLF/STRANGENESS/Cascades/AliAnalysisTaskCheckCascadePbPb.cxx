@@ -106,6 +106,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
     fCentrLowLim                (0),
     fCentrUpLim                 (0),
     fCentrEstimator             (0),
+    fkUseCleaning               (0),
     fVtxRange                   (0),
 
 
@@ -196,6 +197,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
     fCentrLowLim                (0),
     fCentrUpLim                 (0),
     fCentrEstimator             (0),
+    fkUseCleaning               (0),
     fVtxRange                   (0),
      
     	// - Cascade part initialisation
@@ -1290,7 +1292,16 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
   fHistCascadeMultiplicityBeforeEvSel->Fill (ncascades);
  
   //  Printf("Centrality percentile V0M for this event %f)\n",  centrality->GetCentralityPercentile("V0M"));
-  Float_t lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
+  Float_t lcentrality = 0.;
+
+  if (fkUseCleaning) lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
+  else {
+    lcentrality = centrality->GetCentralityPercentileUnchecked(fCentrEstimator.Data());
+    if (centrality->GetQuality()>1) {
+      PostData(1, fListHistCascade);
+      return;
+    }
+  }
   if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim) { 
     PostData(1, fListHistCascade);
     return;

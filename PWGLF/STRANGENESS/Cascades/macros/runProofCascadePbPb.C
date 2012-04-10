@@ -11,6 +11,7 @@ void runProofCascadePbPb(
                      Float_t  centrlowlim       = 0., 
                      Float_t  centruplim        = 90., 
                      TString  centrest          = "V0M",
+                     Bool_t   kusecleaning      = kTRUE,
                      Float_t  vtxlim            = 10., 
                      Int_t    minnTPCcls        = 70,     
                      Bool_t   kextrasel         = kFALSE,
@@ -49,7 +50,7 @@ void runProofCascadePbPb(
 
   Analysis(dataset.Data(), outFileMC, outFileData, 
            useMC, nEvents, nEventsSkip,
-           minnTPCcls, centrlowlim, centruplim, centrest, 
+           minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning,
            vtxlim, kextrasel,
            runperformancetask, kacccut, krelaunchvertexers);
 
@@ -58,7 +59,7 @@ void runProofCascadePbPb(
 //________________________________________________________________________
 void Analysis(TString dataset, TString outFileMC, TString outFileData, 
               Bool_t useMC, Int_t nEvents, Int_t nEventsSkip, 
-              Int_t minnTPCcls, Float_t centrlowlim, Float_t centruplim, TString centrest,
+              Int_t minnTPCcls, Float_t centrlowlim, Float_t centruplim, TString centrest, Bool_t kusecleaning,
               Float_t vtxlim, 
               Bool_t kextrasel, Bool_t runperformancetask, Bool_t kacccut, Bool_t krelaunchvertexers) {
 
@@ -101,12 +102,12 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
   if (runperformancetask) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
-    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest,vtxlim,kextrasel ,kacccut ,krelaunchvertexers);
+    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,kacccut ,krelaunchvertexers);
   
   } else {
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
-    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest,vtxlim,kextrasel ,krelaunchvertexers);
+    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,krelaunchvertexers);
 
   }
 
