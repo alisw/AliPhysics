@@ -923,13 +923,17 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Int_t  pdg  = -1;
     if(IsDataMC() && nLabel > 0 && labels) 
       mcOK = ClusterMCHistograms(mom, matched, labels, nLabel, pdg);
-    
+
     // Matched clusters with tracks, also do some MC comparison, needs input from ClusterMCHistograms
     if( matched &&  fFillAllTMHisto)
       ClusterMatchedWithTrackHistograms(clus,mom,mcOK,pdg);	        
     
     // Invariant mass
-    if(fFillAllPi0Histo && nCaloClusters > 1 && nCaloCellsPerCluster > 1) 
+    // Try to reduce background with a mild shower shape cut and no more than 1 maxima 
+    // in cluster and remove low energy clusters
+    if(fFillAllPi0Histo && nCaloClusters > 1 && nCaloCellsPerCluster > 1 && 
+       GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells) == 1 && 
+       clus->GetM02() < 0.5 && clus->E() > 0.3) 
       InvariantMassHistograms(iclus, mom, nModule, caloClusters,cells);
     
   }//cluster loop
@@ -949,7 +953,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
   
 }
 
-//_____________________________________________________________________________________________
+//______________________________________________________________________________________________________
 Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const Bool_t matched,
                                                 const Int_t * labels, const Int_t nLabels, Int_t & pdg )
 {
@@ -980,7 +984,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
   
   if(label < 0) 
   {
-    if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** bad label ***:  label %d \n", label);
+    if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterMCHistograms() *** bad label ***:  label %d \n", label);
     return kFALSE;
   }
   
@@ -992,10 +996,13 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
   //Check the origin.
   Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabels, GetReader(),0);
   
-  if(GetReader()->ReadStack() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){ //it MC stack and known tag
+  if     ( GetReader()->ReadStack() && 
+          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
+  { //it MC stack and known tag
     
-    if( label >= GetMCStack()->GetNtrack()) {
-      if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** large label ***:  label %d, n tracks %d \n", label, GetMCStack()->GetNtrack());
+    if( label >= GetMCStack()->GetNtrack()) 
+    {
+      if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterMCHistograms() *** large label ***:  label %d, n tracks %d \n", label, GetMCStack()->GetNtrack());
       return kFALSE;
     }
     
@@ -1008,27 +1015,50 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
     vyMC    = primary->Vy();
     iParent = primary->GetFirstMother();
     
-    if(GetDebug() > 1 ) {
-      printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
+    if(GetDebug() > 1 ) 
+    {
+      printf("AliAnaCalorimeterQA::ClusterMCHistograms() - Cluster most contributing mother: \n");
       printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg0, primary->GetName(),status, iParent);
     }
     
     //Get final particle, no conversion products
-    if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
+    if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
+    {
       //Get the parent
       primary = GetMCStack()->Particle(iParent);
       pdg = TMath::Abs(primary->GetPdgCode());
-      if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
-      while((pdg == 22 || pdg == 11) && status != 1){
+      
+      if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterMCHistograms() - Converted cluster!. Find before conversion: \n");
+
+      while((pdg == 22 || pdg == 11) && status != 1)
+      {
+        Int_t iMotherOrg = iMother;
         iMother = iParent;
         primary = GetMCStack()->Particle(iMother);
         status  = primary->GetStatusCode();
-        iParent = primary->GetFirstMother();
         pdg     = TMath::Abs(primary->GetPdgCode());
+        iParent = primary->GetFirstMother();
+        
+        // If gone too back and non stable, assign the decay photon/electron
+        // there are other possible decays, ignore them for the moment
+        if(pdg==111 || pdg==221)
+        {
+          primary = GetMCStack()->Particle(iMotherOrg);
+          break;
+        }
+        
+        if( iParent < 0 )
+        {
+          iParent = iMother;
+          printf("break\n");
+          break;
+        }
+        
         if(GetDebug() > 1 )printf("\t pdg %d, index %d, %s, status %d \n",pdg, iMother,  primary->GetName(),status);	
       }	
-      
-      if(GetDebug() > 1 ) {
+
+      if(GetDebug() > 1 ) 
+      {
         printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
         printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg, primary->GetName(), status, iParent);
       }
@@ -1037,21 +1067,30 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
     
     //Overlapped pi0 (or eta, there will be very few), get the meson
     if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
-       GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
+       GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta))
+    {
       if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: \n");
-      while(pdg != 111 && pdg != 221){
+
+      while(pdg != 111 && pdg != 221)
+      {     
+        //printf("iMother %d, pdg %d, iParent %d, pdg %d\n",iMother,pdg,iParent,GetMCStack()->Particle(iParent)->GetPdgCode());
         iMother = iParent;
         primary = GetMCStack()->Particle(iMother);
         status  = primary->GetStatusCode();
-        iParent = primary->GetFirstMother();
         pdg     = TMath::Abs(primary->GetPdgCode());
+        iParent = primary->GetFirstMother();
+
+        if( iParent < 0 )break;
+        
         if(GetDebug() > 1 ) printf("\t pdg %d, %s, index %d\n",pdg,  primary->GetName(),iMother);
-        if(iMother==-1) {
+        
+        if(iMother==-1) 
+        {
           printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
           //break;
         }
       }
-      
+
       if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
                                  primary->GetName(),iMother);
     }
@@ -1064,7 +1103,9 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
     charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
     
   }
-  else if(GetReader()->ReadAODMCParticles() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){//it MC AOD and known tag
+  else if( GetReader()->ReadAODMCParticles() && 
+          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
+  {//it MC AOD and known tag
     //Get the list of MC particles
     if(!GetReader()->GetAODMCParticles(0)) 
       AliFatal("MCParticles not available!");
@@ -1078,31 +1119,51 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
     vyMC    = aodprimary->Yv();
     iParent = aodprimary->GetMother();
     
-    if(GetDebug() > 1 ) {
+    if(GetDebug() > 1 ) 
+    {
       printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
       printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d, parent %d \n",
              iMother, pdg0, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), iParent);
     }
     
     //Get final particle, no conversion products
-    if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
+    if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
+    {
       if(GetDebug() > 1 ) 
         printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
       //Get the parent
       aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iParent);
       pdg = TMath::Abs(aodprimary->GetPdgCode());
-      while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) {
+      while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) 
+      {
+        Int_t iMotherOrg = iMother;
         iMother    = iParent;
         aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
         status     = aodprimary->IsPrimary();
         iParent    = aodprimary->GetMother();
         pdg        = TMath::Abs(aodprimary->GetPdgCode());
+
+        // If gone too back and non stable, assign the decay photon/electron
+        // there are other possible decays, ignore them for the moment
+        if(pdg==111 || pdg==221)
+        {
+          aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMotherOrg);
+          break;
+        }        
+        
+        if(iParent < 0 ) 
+        {
+          iParent = iMother;
+          break;
+        }
+        
         if(GetDebug() > 1 )
           printf("\t pdg %d, index %d, Primary? %d, Physical Primary? %d \n",
                  pdg, iMother, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());	
       }	
       
-      if(GetDebug() > 1 ) {
+      if(GetDebug() > 1 ) 
+      {
         printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
         printf("\t Mother label %d, pdg %d, parent %d, Primary? %d, Physical Primary? %d \n",
                iMother, pdg, iParent, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());
@@ -1115,13 +1176,15 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
        GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta))
     {
       if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: PDG %d, mom %d \n",pdg, iMother);
-      while(pdg != 111 && pdg != 221){
-        
+      while(pdg != 111 && pdg != 221)
+      {
         iMother    = iParent;
         aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
         status     = aodprimary->IsPrimary();
         iParent    = aodprimary->GetMother();
         pdg        = TMath::Abs(aodprimary->GetPdgCode());
+
+        if(iParent < 0 ) break;
         
         if(GetDebug() > 1 ) printf("\t pdg %d, index %d\n",pdg, iMother);
         
@@ -1179,17 +1242,20 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
     fhRecoMCDeltaPhi[kmcEta][(matched)]->Fill(e,phiMC-phi);
     fhRecoMCDeltaEta[kmcEta][(matched)]->Fill(e,etaMC-eta);
   }//Overlapped eta decay
-  else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton))
+  else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
+          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
   {
     fhRecoMCE  [kmcPhoton][(matched)]     ->Fill(e,eMC);	
     if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcPhoton][(matched)]->Fill(eta,etaMC);	
     if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcPhoton][(matched)]->Fill(phi,phiMC);
     if(eMC > 0) fhRecoMCRatioE  [kmcPhoton][(matched)]->Fill(e,e/eMC);
+    
     fhRecoMCDeltaE  [kmcPhoton][(matched)]->Fill(e,eMC-e);
     fhRecoMCDeltaPhi[kmcPhoton][(matched)]->Fill(e,phiMC-phi);
     fhRecoMCDeltaEta[kmcPhoton][(matched)]->Fill(e,etaMC-eta);      
   }//photon
-  else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron))
+  else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron) && 
+          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
   {
     fhRecoMCE  [kmcElectron][(matched)]     ->Fill(e,eMC);	
     if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcElectron][(matched)]->Fill(eta,etaMC);	
@@ -2649,13 +2715,18 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(const Int_t iclus,   const TLo
   TLorentzVector mom2 ;
   Int_t nCaloClusters = caloClusters->GetEntriesFast();
   
-  for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
+  for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) 
+  {
     AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
 
     Float_t maxCellFraction = 0.;
     Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2,maxCellFraction);
     
-    if( clus2->GetNCells() <= 1 || !IsGoodCluster(absIdMax,cells)) continue;
+    // Try to rediuce background with a mild shower shape cut and no more than 1 maxima 
+    // in cluster and remove low energy clusters
+    if( clus2->GetNCells() <= 1 || !IsGoodCluster(absIdMax,cells) || 
+       GetCaloUtils()->GetNumberOfLocalMaxima(clus2,cells) > 1 || 
+       clus2->GetM02() > 0.5 || clus2->E() < 0.3) continue;
     
     //Get cluster kinematics
     clus2->GetMomentum(mom2,v);
@@ -2674,9 +2745,9 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(const Int_t iclus,   const TLo
     fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
 
     //Single module
-    if(nModule == nModule2 && nModule >=0 && nModule < fNModules){
+    if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
       fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
-    }
+    
     
     //Asymetry histograms
     fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
