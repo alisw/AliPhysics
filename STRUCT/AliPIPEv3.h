@@ -31,6 +31,7 @@ class AliPIPEv3 : public AliPIPE {
   virtual void   CreateMaterials();
   virtual Int_t  IsVersion() const {return 0;}
   virtual void   SetBeamBackgroundSimulation() {fBeamBackground = kTRUE;}
+  virtual void   AddAlignableVolumes() const;
 	  
  private:
   virtual TGeoPcon*   MakeMotherFromTemplate(const TGeoPcon* shape, Int_t imin = -1, Int_t imax = -1, Float_t r0 = 0., Int_t nz =-1);
