@@ -27,6 +27,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
+    AliAnalysisTaskAj.cxx
     AliAnalysisTaskFragmentationFunction.cxx
     AliAnalysisTaskJetChem.cxx 
     AliAnalysisTaskJetCore.cxx 	

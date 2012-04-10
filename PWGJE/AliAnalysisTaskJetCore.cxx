@@ -666,7 +666,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	       AliVParticle *partback = (AliVParticle*)ParticleList.At(point);                            
                if(!partback) continue; 
         	   fh3spectriggered->Fill(centValue,ptcorr,partback->Pt());
-		   if(partback->Pt()<6.) continue;
+		   //if(partback->Pt()<6.) continue;
                        AliAODTrack* leadtrack; 
                        Int_t ippt=0;
                        Double_t ppt=-10;   
@@ -1165,9 +1165,9 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
    case 2:
       label = "track pT";
      
-         nbins = 10;
+         nbins = 9;
          xmin = 0.;
-         xmax = 150;
+         xmax = 150.;
          break;
       
       
@@ -1182,13 +1182,13 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
 
    case 4:
       label = "deltaEta";
-      nbins = 15;
-      xmin = -1.5;
-      xmax = 1.5;
+      nbins = 8;
+      xmin = -1.6;
+      xmax = 1.6;
       break;
 
 
-  case 5:
+    case 5:
       label = "deltaPhi";
       nbins = 90;
       xmin = -0.5*pi;
@@ -1199,7 +1199,7 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
         
     case 6:
       label = "leading track";
-      nbins = 14;
+      nbins = 13;
       xmin = 0;
       xmax = 50;
       break;
