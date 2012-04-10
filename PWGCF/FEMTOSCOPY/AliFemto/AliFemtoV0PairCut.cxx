@@ -43,6 +43,21 @@ AliFemtoV0PairCut::~AliFemtoV0PairCut(){
   /* no-op */
 }
 //__________________
+AliFemtoV0PairCut& AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut& cut) 
+{
+  if (this != &cut) {
+    
+    AliFemtoPairCut::operator=(cut);
+    fNPairsPassed = 0;
+    fNPairsFailed = 0;
+    fV0Max = 1.0;
+    fShareFractionMax = 1.0;
+    fRemoveSameLabel = 0;
+  }
+  
+  return *this;
+}
+//__________________
 bool AliFemtoV0PairCut::Pass(const AliFemtoPair* pair){
   // Check for pairs that are possibly shared/double reconstruction
 

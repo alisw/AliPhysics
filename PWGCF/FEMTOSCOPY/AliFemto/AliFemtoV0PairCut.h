@@ -35,6 +35,7 @@ public:
   AliFemtoV0PairCut();
   AliFemtoV0PairCut(const AliFemtoV0PairCut& cut);
   virtual ~AliFemtoV0PairCut();
+  AliFemtoV0PairCut& operator=(const AliFemtoV0PairCut& cut) ;
   
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();

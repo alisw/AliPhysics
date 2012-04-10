@@ -45,6 +45,24 @@ AliFemtoV0TrackPairCut::~AliFemtoV0TrackPairCut(){
   /* no-op */
 }
 //__________________
+AliFemtoV0TrackPairCut& AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackPairCut& cut) 
+{
+  if (this != &cut) {
+   
+    AliFemtoPairCut::operator=(cut);
+    fNPairsPassed = 0;
+    fNPairsFailed =0;
+    fV0Max = 1.0;
+    fShareQualityMax = 1.0;
+    fShareFractionMax = 1.0;
+    fRemoveSameLabel = 0;
+    fTrackTPCOnly =0;
+  }
+
+  return *this;
+}
+
+//__________________
 bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair* pair){
   // Check for pairs that are possibly shared/double reconstruction
 
