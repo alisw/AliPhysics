@@ -261,8 +261,8 @@ bool AliFemtoV0TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 
 bool AliFemtoV0TrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
-  mom = 1; //because of warning in the compilation
-  nsigmaTOFPi = 1;
+  //  mom = 1; //because of warning in the compilation
+  //  nsigmaTOFPi = 1;
   // cout<<" AliFemtoV0TrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
 
   //TOF signal
@@ -279,6 +279,8 @@ bool AliFemtoV0TrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigma
   //      }
 
   if( TMath::Abs(nsigmaTPCPi)<3.0) return true;
+  
+  if (mom == nsigmaTOFPi) { };
 
   return false;
 }
@@ -286,8 +288,8 @@ bool AliFemtoV0TrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigma
 
 bool AliFemtoV0TrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
-  mom = 1; //because of warning in the compilation
-  nsigmaTOFP = 1;
+  //  mom = 1; //because of warning in the compilation
+  //  nsigmaTOFP = 1;
   // cout<<" AliFemtoV0TrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
 
       //TOF signal
@@ -302,6 +304,8 @@ bool AliFemtoV0TrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigm
   //  }
 
   if( TMath::Abs(nsigmaTPCP)<3.0) return true;
+
+  if (mom == nsigmaTOFP) { };
 
   return false;
 }
