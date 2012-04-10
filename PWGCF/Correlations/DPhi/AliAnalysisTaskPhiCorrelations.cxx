@@ -117,6 +117,8 @@ fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
 fCutConversions(kFALSE),
 fCutResonances(kFALSE),
+fFillOnlyStep0(kFALSE),
+fSkipStep6(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -352,6 +354,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (!inputEvent)
     inputEvent = fESD;
   
+  fHistos->SetRunNumber(inputEvent->GetRunNumber());
+
   TObject* mc = fArrayMC;
   if (!mc)
     mc = fMcEvent;
@@ -408,7 +412,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 //   Printf("trigger: %d", ((AliInputEventHandler*)fInputHandler)->IsEventSelected());
   
   // Trigger selection ************************************************
-  if (fSkipTrigger || fAnalyseUE->TriggerSelection(fInputHandler))
+  if (!fFillOnlyStep0 && (fSkipTrigger || fAnalyseUE->TriggerSelection(fInputHandler)))
   {  
     // (MC-true all particles)
     // STEP 1
@@ -469,10 +473,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // (RECO all tracks)
       // STEP 6
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
+      if (!fSkipStep6)
+	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
       
       // mixed event
-      if (fFillMixed)
+      if (fFillMixed && !fSkipStep6)
       {
 	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
 	//pool2->PrintInfo();
@@ -646,7 +651,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0)
   {
-    fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight);
+    if (!fSkipStep6)
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight);
+    
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
     
     if (fTwoTrackEfficiencyCut)
@@ -657,7 +664,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (fCompareCentralities && centralityObj)
   {
     centrality = centralityObj->GetCentralityPercentile("CL1");
-    if (centrality >= 0)
+    if (centrality >= 0 && !fSkipStep6)
       fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight);
   }
   
@@ -704,7 +711,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       {
 	TObjArray* bgTracks = pool->GetEvent(jMix);
 	
-	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0));
+	if (!fSkipStep6)
+	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0));
 
 	if (fTwoTrackEfficiencyCut)
 	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign);
