@@ -1,3 +1,4 @@
+
 #!/bin/sh
 ##################################################
 validateout=`dirname $0`
@@ -25,7 +26,7 @@ cp stdout stdout.log
 cp stderr stderr.log
 
 ##################################################
-if [ -f rec.log ] && [ -f calib.log ] && [ -f AliESDs.root ] && [ -f AliESDfriends_v1.root ] && [ -f Run*.ESD.tag.root ] 
+if [ -f merge.log ] && [ -f CalibObjects.root ] 
 then 
 sv=`grep -i  "Segmentation violation" *.log`
 if [ "$sv" = "" ]
@@ -48,10 +49,18 @@ if [ "$sv" = "" ]
 		        bf=`grep -i "busy flag cleared" *.log`
 		        if [ "$bf" = "" ]
                             then
-			       echo "* ----------------   Job Validated  ------------------*" >> stdout;
-			       error="0";
-                            else
-                               echo "* #             Check Macro failed !                  #" >> stdout;
+#                               es=`grep -i "E-AliCDBGrid::PutEntry:" *.log`
+#                                if [ "$es" = "" ]
+#                                  then
+#                                   fg=`grep -i "F-AliCDBGrid::" *.log`
+#                                    if [ "$fg" = "" ]
+#                                      then
+			            echo "* ----------------   Job Validated  ------------------*" >> stdout;
+			            error="0";
+                                  else
+                                    echo "* #             Check Macro failed !                  #" >> stdout;
+#                               fi
+#                            fi
                         fi
 		    fi
 	        fi
@@ -60,7 +69,7 @@ if [ "$sv" = "" ]
     fi
 fi
 else
-    echo "* ########## Job not validated - no rec.log or calib.log or tag.log or AliESDs.root or ESD.tag.root && AliESDfriends.root ###" >> stdout;
+    echo "* ########## Job not validated - no merge.log or CalibObjects.root ###" >> stdout;
     echo "* ########## Removing all ROOT files from the local directory, leaving only the logs ###" >> stdout;
     rm -rf *.root
 fi

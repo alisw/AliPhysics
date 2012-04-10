@@ -4,10 +4,10 @@
 // AliReconstruction rec; rec.SetAnalysisMacro(thisMacroPath);
 
 void LoadLibraries();
-void AddAnalysisTasks(); 
+void AddAnalysisTasks(Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE); 
 
 
-void RecoQAtrain()
+void RecoQAtrain(Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE)
 {
   //
   TGrid::Connect("alien://");
@@ -31,7 +31,7 @@ void RecoQAtrain()
   mgr->SetInputEventHandler(esdHandler);
   //  
   // AnalysisTasks
-  AddAnalysisTasks();
+  AddAnalysisTasks(writeITSTP,useTPCcrv);
   //
   if (!mgr->InitAnalysis()) printf("Failed to initialize Reco Analysis");
 }
@@ -43,13 +43,13 @@ void LoadLibraries()
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
   gSystem->Load("libTENDER");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
+  //  gSystem->Load("libPWG0base.so");
+  //  gSystem->Load("libPWG0dep.so");
+  //  gSystem->Load("libPWG0selectors.so");
   gSystem->Load("libPWGPP.so");
 }
 
-void AddAnalysisTasks()
+void AddAnalysisTasks(Bool_t writeITSTP, Bool_t useTPCcrv)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->SetCommonFileName("RecoQAresults.root");
@@ -67,5 +67,15 @@ void AddAnalysisTasks()
   itsAlign->SetDoSSDResiduals(kFALSE);
   itsAlign->SetDoSDDDriftTime(kFALSE);
   itsAlign->SetMinMaxMult(20.,1070.);
+  itsAlign->SetUseTPCMomentum(useTPCcrv);
+  itsAlign->SetDoFillTPTree(writeITSTP);
+  //
+  if (writeITSTP) {
+    AliAnalysisDataContainer *coutputTP = mgr->CreateContainer("ITSSumTP",
+							       TTree::Class(),
+							       AliAnalysisManager::kOutputContainer,
+							       "AODtpITS.root" );
+    mgr->ConnectOutput(itsAlign, 2, coutputTP);
+  }
   //
 }
