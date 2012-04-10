@@ -854,22 +854,6 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
   double fPrimaryVtxPosition[3];
   tESDevent->GetPrimaryVertex()->GetXYZ(fPrimaryVtxPosition);
   tFemtoV0->SetdcaV0ToPrimVertex(tESDv0->GetD(fPrimaryVtxPosition[0],fPrimaryVtxPosition[1],fPrimaryVtxPosition[2]));
-  tFemtoV0->SetdcaPosToPrimVertex(TMath::Abs(pTrack->GetD(fPrimaryVtxPosition[0],fPrimaryVtxPosition[1],tESDevent->GetMagneticField())));
-  tFemtoV0->SetdcaNegToPrimVertex(TMath::Abs(pTrack->GetD(fPrimaryVtxPosition[0],fPrimaryVtxPosition[1],tESDevent->GetMagneticField())));
-  double MomPos[3];
-  pTrack->PxPyPz(MomPos);
-  tFemtoV0->SetmomPosX(MomPos[0]);
-  tFemtoV0->SetmomPosY(MomPos[1]);
-  tFemtoV0->SetmomPosZ(MomPos[2]);
-  AliFemtoThreeVector mompos(MomPos[0],MomPos[1],MomPos[2]);
-  tFemtoV0->SetmomPos(mompos);
-  double MomNeg[3];
-  nTrack->PxPyPz(MomNeg);
-  tFemtoV0->SetmomNegX(MomNeg[0]);
-  tFemtoV0->SetmomNegY(MomNeg[1]);
-  tFemtoV0->SetmomNegZ(MomNeg[2]);
-  AliFemtoThreeVector momneg(MomNeg[0],MomNeg[1],MomNeg[2]);
-  tFemtoV0->SetmomNeg(momneg);
 
   //jest cos takiego w AliFemtoV0.h czego nie ma w AliAODv0.h
   //void SettpcHitsPos(const int& i);      
@@ -900,16 +884,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
   
   tFemtoV0->SetptV0(tESDv0->Pt());
   tFemtoV0->SetptotV0(tESDv0->P());
-  tFemtoV0->SetptPos(pTrack->Pt());
-  tFemtoV0->SetptotPos(pTrack->P());
-  tFemtoV0->SetptNeg(nTrack->Pt());
-  tFemtoV0->SetptotNeg(nTrack->P());
   
-  tFemtoV0->SetidNeg(nTrack->GetID());
-  //cout<<"tESDv0->GetNegID(): "<<tESDv0->GetNegID()<<endl;
-  //cout<<"tFemtoV0->IdNeg(): "<<tFemtoV0->IdNeg()<<endl;
-  tFemtoV0->SetidPos(pTrack->GetID());
-
   tFemtoV0->SetEtaV0(tESDv0->Eta());
   tFemtoV0->SetPhiV0(tESDv0->Phi());
   tFemtoV0->SetCosPointingAngle(tESDv0->GetV0CosineOfPointingAngle(fPrimaryVtxPosition[0],fPrimaryVtxPosition[1], fPrimaryVtxPosition[2]));
@@ -922,14 +897,42 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
   //void SeterrdedxPos(float x);//Gael 04Fev2002
   //void SetlendedxPos(float x);//Gael 04Fev2002
 
-  tFemtoV0->SetEtaPos(pTrack->Eta());
-  tFemtoV0->SetEtaNeg(nTrack->Eta());
-
   //AliAODTrack *trackpos = (AliAODTrack*)tESDv0->GetDaughter(0);
   //AliAODTrack *trackneg = (AliAODTrack*)tESDv0->GetDaughter(1);
 
   if(pTrack && nTrack)
     {
+      tFemtoV0->SetdcaPosToPrimVertex(TMath::Abs(pTrack->GetD(fPrimaryVtxPosition[0],fPrimaryVtxPosition[1],tESDevent->GetMagneticField())));
+      tFemtoV0->SetdcaNegToPrimVertex(TMath::Abs(pTrack->GetD(fPrimaryVtxPosition[0],fPrimaryVtxPosition[1],tESDevent->GetMagneticField())));
+      double MomPos[3];
+      pTrack->PxPyPz(MomPos);
+      tFemtoV0->SetmomPosX(MomPos[0]);
+      tFemtoV0->SetmomPosY(MomPos[1]);
+      tFemtoV0->SetmomPosZ(MomPos[2]);
+      AliFemtoThreeVector mompos(MomPos[0],MomPos[1],MomPos[2]);
+      tFemtoV0->SetmomPos(mompos);
+
+      double MomNeg[3];
+      nTrack->PxPyPz(MomNeg);
+      tFemtoV0->SetmomNegX(MomNeg[0]);
+      tFemtoV0->SetmomNegY(MomNeg[1]);
+      tFemtoV0->SetmomNegZ(MomNeg[2]);
+      AliFemtoThreeVector momneg(MomNeg[0],MomNeg[1],MomNeg[2]);
+      tFemtoV0->SetmomNeg(momneg);
+
+      tFemtoV0->SetptPos(pTrack->Pt());
+      tFemtoV0->SetptotPos(pTrack->P());
+      tFemtoV0->SetptNeg(nTrack->Pt());
+      tFemtoV0->SetptotNeg(nTrack->P());
+      
+      tFemtoV0->SetidNeg(nTrack->GetID());
+      //cout<<"tESDv0->GetNegID(): "<<tESDv0->GetNegID()<<endl;
+      //cout<<"tFemtoV0->IdNeg(): "<<tFemtoV0->IdNeg()<<endl;
+      tFemtoV0->SetidPos(pTrack->GetID());
+      
+      tFemtoV0->SetEtaPos(pTrack->Eta());
+      tFemtoV0->SetEtaNeg(nTrack->Eta());
+
       tFemtoV0->SetEtaPos(pTrack->Eta()); //tESDv0->PseudoRapPos()
       tFemtoV0->SetEtaNeg(nTrack->Eta()); //tESDv0->PseudoRapNeg()
       tFemtoV0->SetTPCNclsPos(pTrack->GetTPCNcls());
