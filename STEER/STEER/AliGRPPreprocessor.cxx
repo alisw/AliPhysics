@@ -1799,8 +1799,8 @@ THashList* AliGRPPreprocessor::ProcessAliases(const char* aliasesFile)
 	//
 	// build the THashList of triggerclasses-to-triggeraliases from text file  
 	// each line of the file is supposed to be a string composed by
-	// a triggerclass+spaces+commaseparatedlistofcorrespondingaliases
-	// it will a TNamed("triggerclass","commaseparatedlistofcorrespondingaliases")
+	// triggerclass+spaces+commaseparatedlistofcorrespondingaliases\n
+	// it will add a TNamed("triggerclass","commaseparatedlistofcorrespondingaliases")
 	// to the hashlist
 	//
 
@@ -1823,7 +1823,9 @@ THashList* AliGRPPreprocessor::ProcessAliases(const char* aliasesFile)
 	TString strLine;
 	while (strLine.ReadLine(*file)) {
 
+	    // safety for null lines, tabs instead of whitespaces, trailing carriage return, leading or trailing spaces/tabs
 		if (strLine.IsNull()) continue;
+		strLine.ReplaceAll('\t',' ');
 		strLine.Remove(TString::kLeading,' ');
 		strLine.Remove(TString::kTrailing,'\r');
 		strLine.Remove(TString::kTrailing,' ');
