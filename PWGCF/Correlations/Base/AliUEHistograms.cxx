@@ -860,11 +860,11 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     lists[11]->Add(entry->fVertexContributors);
     lists[12]->Add(entry->fCentralityDistribution);
     lists[13]->Add(entry->fITSClusterMap);
-    if (fTwoTrackDistancePt[0])
+    if (entry->fTwoTrackDistancePt[0])
       lists[14]->Add(entry->fTwoTrackDistancePt[0]);
-    if (fTwoTrackDistancePt[1])
+    if (entry->fTwoTrackDistancePt[1])
       lists[15]->Add(entry->fTwoTrackDistancePt[1]);
-    if (fCentralityCorrelation)
+    if (entry->fCentralityCorrelation)
       lists[16]->Add(entry->fCentralityCorrelation);
     count++;
   }
