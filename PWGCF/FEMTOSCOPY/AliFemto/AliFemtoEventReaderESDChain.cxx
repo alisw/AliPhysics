@@ -478,19 +478,19 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
         nsigmaTPCK = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kKaon);
         nsigmaTPCPi = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kPion);
         nsigmaTPCP = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kProton);
-
+	
       }
       trackCopy->SetNSigmaTPCPi(nsigmaTPCPi);
       trackCopy->SetNSigmaTPCK(nsigmaTPCK);
       trackCopy->SetNSigmaTPCP(nsigmaTPCP);
-
+      
       ///// TOF ///////////////////////////////////////////////
-
+	
 	float vp=-1000.;
 	float nsigmaTOFPi=-1000.;
 	float nsigmaTOFK=-1000.;
 	float nsigmaTOFP=-1000.;
-
+	
 	if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
 	    (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
 	    (esdtrack->GetStatus()&AliESDtrack::kTIME) &&
@@ -946,13 +946,22 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
       tFemtoV0->SetStatusPos(pTrack->GetStatus());
       tFemtoV0->SetStatusNeg(nTrack->GetStatus());
 
-      tFemtoV0->SetPosNSigmaTPCK(fESDpid->NumberOfSigmasTPC(pTrack,AliPID::kKaon));
-      tFemtoV0->SetNegNSigmaTPCK(fESDpid->NumberOfSigmasTPC(nTrack,AliPID::kKaon));
-      tFemtoV0->SetPosNSigmaTPCP(fESDpid->NumberOfSigmasTPC(pTrack,AliPID::kProton));
-      tFemtoV0->SetNegNSigmaTPCP(fESDpid->NumberOfSigmasTPC(nTrack,AliPID::kProton));
-      tFemtoV0->SetPosNSigmaTPCPi(fESDpid->NumberOfSigmasTPC(pTrack,AliPID::kPion));
-      tFemtoV0->SetNegNSigmaTPCPi(fESDpid->NumberOfSigmasTPC(nTrack,AliPID::kPion));
-
+      if (fESDpid) {
+	tFemtoV0->SetPosNSigmaTPCK(fESDpid->NumberOfSigmasTPC(pTrack,AliPID::kKaon));
+	tFemtoV0->SetNegNSigmaTPCK(fESDpid->NumberOfSigmasTPC(nTrack,AliPID::kKaon));
+	tFemtoV0->SetPosNSigmaTPCP(fESDpid->NumberOfSigmasTPC(pTrack,AliPID::kProton));
+	tFemtoV0->SetNegNSigmaTPCP(fESDpid->NumberOfSigmasTPC(nTrack,AliPID::kProton));
+	tFemtoV0->SetPosNSigmaTPCPi(fESDpid->NumberOfSigmasTPC(pTrack,AliPID::kPion));
+	tFemtoV0->SetNegNSigmaTPCPi(fESDpid->NumberOfSigmasTPC(nTrack,AliPID::kPion));
+      }
+      else {
+	tFemtoV0->SetPosNSigmaTPCK(-9999);
+	tFemtoV0->SetNegNSigmaTPCK(-9999);
+	tFemtoV0->SetPosNSigmaTPCP(-9999);
+	tFemtoV0->SetNegNSigmaTPCP(-9999);
+	tFemtoV0->SetPosNSigmaTPCPi(-9999);
+	tFemtoV0->SetNegNSigmaTPCPi(-9999);
+      }
 
       if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFmismatch)>0)
 	{
@@ -968,12 +977,22 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
 	}
       else
 	{
-	  tFemtoV0->SetPosNSigmaTOFK(fESDpid->NumberOfSigmasTOF(pTrack,AliPID::kKaon));
-	  tFemtoV0->SetNegNSigmaTOFK(fESDpid->NumberOfSigmasTOF(nTrack,AliPID::kKaon));
-	  tFemtoV0->SetPosNSigmaTOFP(fESDpid->NumberOfSigmasTOF(pTrack,AliPID::kProton));
-	  tFemtoV0->SetNegNSigmaTOFP(fESDpid->NumberOfSigmasTOF(nTrack,AliPID::kProton));
-	  tFemtoV0->SetPosNSigmaTOFPi(fESDpid->NumberOfSigmasTOF(pTrack,AliPID::kPion));
-	  tFemtoV0->SetNegNSigmaTOFPi(fESDpid->NumberOfSigmasTOF(nTrack,AliPID::kPion));
+	  if (fESDpid) {
+	    tFemtoV0->SetPosNSigmaTOFK(fESDpid->NumberOfSigmasTOF(pTrack,AliPID::kKaon));
+	    tFemtoV0->SetNegNSigmaTOFK(fESDpid->NumberOfSigmasTOF(nTrack,AliPID::kKaon));
+	    tFemtoV0->SetPosNSigmaTOFP(fESDpid->NumberOfSigmasTOF(pTrack,AliPID::kProton));
+	    tFemtoV0->SetNegNSigmaTOFP(fESDpid->NumberOfSigmasTOF(nTrack,AliPID::kProton));
+	    tFemtoV0->SetPosNSigmaTOFPi(fESDpid->NumberOfSigmasTOF(pTrack,AliPID::kPion));
+	    tFemtoV0->SetNegNSigmaTOFPi(fESDpid->NumberOfSigmasTOF(nTrack,AliPID::kPion));
+	  }
+	  else {
+	    tFemtoV0->SetPosNSigmaTOFK(-9999);
+	    tFemtoV0->SetNegNSigmaTOFK(-9999);
+	    tFemtoV0->SetPosNSigmaTOFP(-9999);
+	    tFemtoV0->SetNegNSigmaTOFP(-9999);
+	    tFemtoV0->SetPosNSigmaTOFPi(-9999);
+	    tFemtoV0->SetNegNSigmaTOFPi(-9999);
+	  }
 	}
     }
   else
