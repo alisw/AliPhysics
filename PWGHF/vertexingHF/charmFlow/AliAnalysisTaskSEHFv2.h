@@ -35,6 +35,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
 
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC}; //Event plane to be calculated in the task
+  enum SubEvents{kFullTPC,kPosTPC,kNegTPC,kSingleV0Side}; //Sub-events for V0 EP
 
   AliAnalysisTaskSEHFv2();
   AliAnalysisTaskSEHFv2(const char *name, AliRDHFCuts *rdCuts, Int_t decaychannel);
@@ -58,6 +59,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetVZEROCEP(){SetEventPlaneMethod(kVZEROC);}
   void SetTPCEP(){SetEventPlaneMethod(kTPCVZERO);}
   void SetEventPlanesCompatibility(Float_t comp) {fEventPlanesComp=comp;}
+  void SetSubEvents(Int_t subev){if(subev>=kFullTPC&&subev<=kSingleV0Side)fSubEvents=subev;}
 
   Int_t GetEventPlaneMethod()const {return fEventPlaneMeth;}
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
@@ -105,8 +107,9 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Int_t fMinCentr;              //minimum centrality
   Int_t fMaxCentr;              //maximum centrality
   Bool_t fEtaGap;               // Eta gap feature for Eventplane from tracks; be careful that you do the correct settings in AddTaskEventPlane.C !!!!
+  Int_t fSubEvents;             //Sub-events definition for V0 EP
 
-  ClassDef(AliAnalysisTaskSEHFv2,1); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFv2,2); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
