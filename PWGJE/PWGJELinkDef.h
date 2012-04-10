@@ -11,6 +11,7 @@
 #pragma link C++ class AliPWG4HighPtSpectra+;
 #pragma link C++ class AliPWG4CosmicCandidates+;
 #pragma link C++ class AliPWG4HighPtTrackQA+;
+#pragma link C++ class AliAnalysisTaskAj+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncHistos+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos+;
@@ -28,4 +29,5 @@
 #pragma link C++ class AliAnalysisTaskJetProperties+;
 #pragma link C++ class AliAnalysisTaskJetResponseV2+;
 #pragma link C++ class AliAnalysisTaskPartonDisc+;
+
 #endif
