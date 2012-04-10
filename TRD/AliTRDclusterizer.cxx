@@ -897,7 +897,10 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration object with the pad status
   fCalPadStatusROC       = calibration->GetPadStatusROC(fDet);
   // Calibration object of the online gain
-  fCalOnGainROC          = calibration->GetOnlineGainTableROC(fDet);
+  fCalOnGainROC          = 0x0;  
+  if (calibration->HasOnlineFilterGain()) {
+    fCalOnGainROC        = calibration->GetOnlineGainTableROC(fDet);
+  }
 
   firstClusterROC = -1;
   fClusterROC     =  0;
