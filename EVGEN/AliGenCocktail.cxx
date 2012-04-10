@@ -231,8 +231,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 		ntimes = nsig;
 	      }
 	    }
-
-	  gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	  gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
 	  
 	  for (Int_t i = 0; i < ntimes; i++) gen->Generate();
 	  entry->SetLast(partArray->GetEntriesFast());
@@ -252,7 +251,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	entry = (AliGenCocktailEntry*) fEntries->At(i);
 	entry->SetFirst(0);
 	gen = entry->Generator();
-	gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
 	gen->Generate();
 	entry->SetLast(partArray->GetEntriesFast());
     } 

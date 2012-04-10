@@ -60,8 +60,8 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetVertexSmear(VertexSmear_t smear) {fVertexSmear = smear;}
     virtual void SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
     virtual void SetVertexSource(VertexSource_t source = kInternal) {fVertexSource = source;}
-    virtual void SetVertex(Float_t vx, Float_t vy, Float_t vz)
-	{fVertex[0] = vx; fVertex[1] = vy; fVertex[2] = vz;}
+    virtual void SetVertex(Float_t vx, Float_t vy, Float_t vz, Float_t t = 0)
+    {fVertex[0] = vx; fVertex[1] = vy; fVertex[2] = vz; fTime = t;}
     void SetVertexGenerator(AliVertexGenerator* vertexGenerator)
       {fVertexGenerator = vertexGenerator; fVertexSource = kExternal; fVertexSmear = kPerEvent;}
     void SetPileUpTimeWindow(Float_t pileUpTimeW) {fPileUpTimeWindow = pileUpTimeW;}
