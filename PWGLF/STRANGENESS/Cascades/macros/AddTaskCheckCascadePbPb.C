@@ -1,7 +1,8 @@
-AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls          = 70,
+AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls          = 80,
                                                           Float_t  centrlowlim         = 0.,
                                                           Float_t  centruplim          = 90.,
                                                           TString  centrest            = "V0M",
+                                                          Bool_t   kusecleaning        = kTRUE, 
                                                           Float_t  vtxlim              = 10.,
                                                           Bool_t   kextrasel           = kFALSE,
                                                           Bool_t   krelaunchvertexers  = kFALSE) {
@@ -36,6 +37,7 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls   
    taskcheckcascadepbpb->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
    taskcheckcascadepbpb->SetCentralityUpLim            (centruplim);
    taskcheckcascadepbpb->SetCentralityEst              (centrest);
+   taskcheckcascadepbpb->SetUseCleaning                (kusecleaning);
    taskcheckcascadepbpb->SetVertexRange                (vtxlim);
 
    taskcheckcascadepbpb->SelectCollisionCandidates();

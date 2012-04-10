@@ -92,7 +92,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fkQualityCutnTPCcls            (kTRUE),
     fMinnTPCcls                    (0), 
     fkExtraSelections              (0),
-    fCentrLowLim(0),    fCentrUpLim(0), fCentrEstimator(0),
+    fCentrLowLim(0),    fCentrUpLim(0), fCentrEstimator(0), fkUseCleaning(0),
     fVtxRange                      (0),
     fApplyAccCut                   (0),
 
@@ -328,7 +328,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fkQualityCutnTPCcls            (kTRUE),
     fMinnTPCcls                    (0),
     fkExtraSelections              (0),
-    fCentrLowLim(0), fCentrUpLim(0), fCentrEstimator(0),
+    fCentrLowLim(0), fCentrUpLim(0), fCentrEstimator(0), fkUseCleaning(0),
     fVtxRange                      (0),
     fApplyAccCut                   (0),
 
@@ -1924,7 +1924,16 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
       //  Printf("Centrality percentile V0M for this event %f)\n",  centrality->GetCentralityPercentile("V0M"));
 
 
-        Float_t lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
+        Float_t lcentrality = 0.;
+        
+        if (fkUseCleaning) lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
+        else {
+          lcentrality = centrality->GetCentralityPercentileUnchecked(fCentrEstimator.Data());
+          if (centrality->GetQuality()>1) {
+            PostData(1, fListHistCascade);
+            return;
+          } 
+        }
         if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim) {
           PostData(1, fListHistCascade);
           return;
