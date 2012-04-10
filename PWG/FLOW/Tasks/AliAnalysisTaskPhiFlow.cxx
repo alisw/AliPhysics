@@ -489,13 +489,6 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::EventCut(T* event)
 {
    // Impose event cuts
    if (!event) return kFALSE;
-   // miminum bias trigger for AOD's
-   if (fAODAnalysis) 
-   {
-       AliInputEventHandler* eh = dynamic_cast<AliInputEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-       if(!eh) return kFALSE;
-       if(!(eh->IsEventSelected() & AliVEvent::kMB)) return kFALSE;
-   }
    if (!CheckVertex(event)) return kFALSE;
    if (!CheckCentrality(event)) return kFALSE;
    PlotVZeroMultiplcities(event);
