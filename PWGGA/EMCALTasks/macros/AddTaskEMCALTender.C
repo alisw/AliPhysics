@@ -12,7 +12,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", const char
   
   // Create the task and configure it.
   //===========================================================================
-  AliTender* ana = new  AliTender("");
+  AliTender* ana = new  AliTender("AliTender");
 
   ana->SelectCollisionCandidates( AliVEvent::kEMC1 | AliVEvent::kMB | AliVEvent::kEMC7 | AliVEvent::kINT7);
 
@@ -39,7 +39,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", const char
   EMCALSupply->SwitchOffCellFiducialRegion(); //Does NOT remove edge clusters
   if (!ismc) {
     if (1){//datatype == "pp") {
-      ::Info("AddTaskEMCALTender", "USING pp data configuration...");
+      //::Info("AddTaskEMCALTender", "USING pp data configuration...");
       //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2); //Std for pbpb
       EMCALSupply->SwitchOnRecalDistBadChannel();
       EMCALSupply->SwitchOnReCalibrateCluster();
@@ -48,7 +48,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", const char
       //EMCALSupply->SwitchOnUpdateCell(); // will update cells and reclusterize
       //EMCALSupply->SwitchOnReclustering(); //SwitchOnReclustering if needed      
     } else {
-      ::Info("AddTaskEMCALTender", "USING PbPb data configuration...");
+      //::Info("AddTaskEMCALTender", "USING PbPb data configuration...");
       //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2); //Std for pbpb
       EMCALSupply->SwitchOnUpdateCell(); // will update cells and reclusterize
       //EMCALSupply->SwitchOnReclustering(); //SwitchOnReclustering if needed      

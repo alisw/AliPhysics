@@ -111,7 +111,7 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
         if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
           dEtaMin = etadiff;
           dPhiMin = phidiff;
-          imin = t;
+          imin = i;
         }
       }
       track->SetEMCALcluster(imin);

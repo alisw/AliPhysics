@@ -45,6 +45,7 @@ set ( SRCS
  EMCALTasks/AliStaObjects.cxx
  EMCALTasks/AliAnalysisTaskTrgContam.cxx
  EMCALTasks/AliAnalysisTaskEMCALPhoton.cxx
+ EMCALTasks/AliEmcalIsolatedPhotonsTask.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

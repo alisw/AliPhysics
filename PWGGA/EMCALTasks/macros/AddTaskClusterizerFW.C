@@ -1,6 +1,11 @@
 // $Id: $
 
-AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(Bool_t clusL0, Bool_t fOR) 
+AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
+							 const char* trigType = "L0",   // Trigger type: it can be "L0" (4x4, with 2x2 sliding inside SM), 
+							 //"L1GAMMA" (4x4, with 2x2 sliding through SMs), "L1JET" (40x40 with 4x4 sliding through SMs)
+							 const Bool_t fOR = 0,
+							 const TString & geomName = "EMCAL_COMPLETEV1"
+							 ) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -17,17 +22,26 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(Bool_t clusL0, Bool_t f
   TString nameout("Clusters");
   Int_t n, s;
   Float_t minE, minT, maxT;
+  Bool_t slidingTRU;
   
-  if (clusL0) {
-    name += "L0";
-    nameout += "L0";
+  name += trigType;
+  nameout += trigType;
+
+  if (!strcmp(trigType, "L0")) {
     n = 4;
     s = 2;
+    slidingTRU = 0;
+  } else if (!strcmp(trigType, "L1GAMMA")) {
+    n = 4;
+    s = 2;
+    slidingTRU = 1;
+  } else if (!strcmp(trigType, "L1GJET")) {
+    n = 40;
+    s = 4;
+    slidingTRU = 1;
   } else {
-    name += "L1";
-    nameout += "L1";
-    n = 32;
-    s = 8;
+    ::AliError("trigType not valid, returning...");
+    return 0;
   }
   
   if (fOR) {
@@ -44,14 +58,13 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(Bool_t clusL0, Bool_t f
     maxT = +1.;
   }
   
-  
   AliAnalysisTaskEMCALClusterizeFast *task = new AliAnalysisTaskEMCALClusterizeFast(name);
   AliEMCALRecParam *recparam = task->GetRecParam();
   recparam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerFW);
   recparam->SetMinECut(minE);
   recparam->SetTimeMax(maxT);
   recparam->SetTimeMin(minT);
-  task->SetGeometryName(AliEMCALGeometry::GetDefaultGeometryName());
+  task->SetGeometryName(geomName);
   task->SetAttachClusters(kTRUE);
   task->SetOverwrite(kFALSE);
   task->SetNewClusterArrayName(nameout);
@@ -59,7 +72,7 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(Bool_t clusL0, Bool_t f
   task->SetnEta(n);
   task->SetShiftPhi(s);
   task->SetShiftEta(s);
-  task->SetTRUShift(clusL0);
+  task->SetTRUShift(!slidingTRU);
   task->SetClusterizeFastORs(fOR);
   task->SetLoadPed(kFALSE);
   task->SetLoadCalib(kFALSE);

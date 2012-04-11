@@ -14,7 +14,7 @@ ClassImp(AliEmcalTrackPropagatorTask)
 
 //________________________________________________________________________
 AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask() : 
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskSE("AliEmcalTrackPropagatorTask"),
   fRecoUtils(0),
   fTracksName(),
   fDist(430),
@@ -27,7 +27,7 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask() :
 
 //________________________________________________________________________
 AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask(const char *name) : 
-  AliAnalysisTaskSE(name),
+  AliAnalysisTaskSE("AliEmcalTrackPropagatorTask"),
   fRecoUtils(0),
   fTracksName("TpcSpdVertexConstrainedTracks"),
   fDist(430),
@@ -36,6 +36,12 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask(const char *name) :
   fTracks(0)
 {
   // Constructor.
+
+  if (!name)
+    return;
+
+  SetName(name);
+
   fBranchNames = "ESD:AliESDHeader.,Tracks";
 }
 

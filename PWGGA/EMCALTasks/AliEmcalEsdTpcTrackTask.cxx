@@ -16,7 +16,7 @@ ClassImp(AliEmcalEsdTpcTrackTask)
 
 //________________________________________________________________________
 AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() : 
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskSE("TpcSpdVertexConstrainedTracks"),
   fEsdTrackCuts(0),
   fDoSpdVtxCon(0),
   fHybridTrackCuts(0),
@@ -38,6 +38,12 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) :
   fTracks(0)
 {
   // Constructor.
+
+  if (!name)
+    return;
+
+  SetName(name);
+
   fBranchNames = "ESD:AliESDHeader.,AliESDRun.,SPDVertex.,Tracks";
 }
 
