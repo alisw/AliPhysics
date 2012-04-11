@@ -11,14 +11,14 @@ AddTaskEmcalPhysicsSelelection(Bool_t exFOnly, Bool_t rejectBG=kTRUE, Bool_t com
     ::Error("AddTask1PhysSel", "No analysis manager found.");
     return 0;
   }
-  isMC = (mgr->GetMCtruthEventHandler()) ? kTRUE:kFALSE; 
+  Bool_t isMC = (mgr->GetMCtruthEventHandler()) ? kTRUE:kFALSE; 
 
   AliEmcalPhysicsSelectionTask *pseltask = new AliEmcalPhysicsSelectionTask("PhysSel");
   //pseltask->SetDoWriteHistos(kFALSE);
   AliEmcalPhysicsSelection *physSel = pseltask->GetPhysicsSelection();
-  physSel->SetExcludeFastOnly(exFOnly);
-  if (rejectBG) 
-    physSel->AddBackgroundIdentification(new AliBackgroundSelection());
+  physSel->SetSkipFastOnly(exFOnly);
+  //if (rejectBG) 
+  //physSel->AddBackgroundIdentification(new AliBackgroundSelection());
   if (computeBG)
     physSel->SetComputeBG(computeBG);
   if (isMC)      
@@ -35,5 +35,5 @@ AddTaskEmcalPhysicsSelelection(Bool_t exFOnly, Bool_t rejectBG=kTRUE, Bool_t com
                          oname);
   mgr->ConnectOutput(pseltask,1,co1);
   cout << " *** AliEmcalPhysicsTask configured *** " << endl;
-  return task;
+  return pseltask;
 }   

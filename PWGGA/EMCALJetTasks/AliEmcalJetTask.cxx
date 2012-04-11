@@ -56,8 +56,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   SetName(name);
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 
-  DefineInput(0,TChain::Class());
-  DefineOutput(1,TList::Class());
+  //DefineInput(0,TChain::Class());
+  //DefineOutput(1,TList::Class());
 }
 
 //________________________________________________________________________

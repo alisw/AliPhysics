@@ -1,8 +1,8 @@
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
+						       TString & arrayName,
                                                        const Int_t   bMC        = kFALSE,
                                                        const Bool_t  exotic     = kTRUE,
                                                        const TString name       = "V1Unfold", 
-                                                       TString & arrayName,
                                                        const TString trigger    = "", 
                                                        const Bool_t  tm         = kTRUE, 
                                                        const Int_t   minEcell   = 50,
