@@ -177,7 +177,7 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   fOutput->SetOwner();
   //fOutput->SetName("output");
   
-  fhTDCZNSum = new TH1F("fhTDCZNSum","TDC_{ZNC}+TDC_{ZNA}",60,-30.,-30.);
+  fhTDCZNSum = new TH1F("fhTDCZNSum","TDC_{ZNC}+TDC_{ZNA}",60,-30.,30.);
   fhTDCZNSum->GetXaxis()->SetTitle("TDC_{ZNC}+TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNSum);      
   
@@ -242,7 +242,7 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
   AliESDEvent* esd = dynamic_cast<AliESDEvent*> (InputEvent());
   if(!esd) return;
   // Select PHYSICS events (type=7, for data)
-  if(!fIsMCInput && esd->GetEventType()!=7) return; 
+  //if(!fIsMCInput && esd->GetEventType()!=7) return; 
   
   // ********* MC INFO *********************************
   if(fIsMCInput){
