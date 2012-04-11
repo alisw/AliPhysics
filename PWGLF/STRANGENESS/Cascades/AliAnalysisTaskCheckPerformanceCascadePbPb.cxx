@@ -3577,7 +3577,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         // - Step 6 : Containers = Cascade cuts + PID
 	//-------------	
         // 6.3 - Filling the AliCFContainer (optimisation of topological selections + systematics)
-        Double_t lContainerCutVars[21] = {0.0};
+        Double_t lContainerCutVars[22] = {0.0};
 
         lContainerCutVars[0]  = lDcaXiDaughters;
         lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
