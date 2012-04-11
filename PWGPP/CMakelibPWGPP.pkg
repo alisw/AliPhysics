@@ -120,7 +120,6 @@ install ( FILES ZDC/AddTaskZDCQA.C
 install ( FILES PilotTrain/AddTaskMuonQA.C
   	  DESTINATION PWGPP/PilotTrain/ )
 
-
 #
 # EOF
 #
