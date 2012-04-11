@@ -388,6 +388,9 @@ Bool_t AliRsnListOutput::Fill(TObject *target, Int_t step)
       return kTRUE;
    } else if (obj->InheritsFrom(THnSparse::Class())) {
       THnSparseF *h = (THnSparseF *)obj;
+      for (Int_t iAxis = 0; iAxis<h->GetNdimensions(); iAxis++) {
+         if (fArray.At(iAxis)>h->GetAxis(iAxis)->GetXmax() || fArray.At(iAxis)<h->GetAxis(iAxis)->GetXmin()) return kFALSE;
+      }
       h->Fill(fArray.GetArray());
       return kTRUE;
    } else if (obj->InheritsFrom(AliCFContainer::Class())) {
@@ -454,6 +457,9 @@ Bool_t AliRsnListOutput::Fill(AliRsnEvent *ev, AliRsnDaughter *d)
       return kTRUE;
    } else if (obj->InheritsFrom(THnSparse::Class())) {
       THnSparseF *h = (THnSparseF *)obj;
+      for (Int_t iAxis = 0; iAxis<h->GetNdimensions(); iAxis++) {
+         if (values[iAxis]>h->GetAxis(iAxis)->GetXmax() || values[iAxis]<h->GetAxis(iAxis)->GetXmin()) return kFALSE;
+      }
       h->Fill(values);
       return kTRUE;
    } else {
