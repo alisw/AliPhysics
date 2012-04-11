@@ -369,9 +369,9 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
     itrackSel = matchTrig;
     UInt_t selection = fMuonTrackCuts->GetSelectionMask(track);
     Bool_t isSelected = ( ( selection & fMuonTrackCuts->GetFilterMask() ) == fMuonTrackCuts->GetFilterMask() );
-    if ( matchTrig == 1 && ( ( selection & AliMuonTrackCuts::kMuMatchSharpApt ) == 0 ) ) isSelected = kFALSE;
-    if ( matchTrig == 2 && ( ( selection & AliMuonTrackCuts::kMuMatchSharpLpt ) == 0 ) ) isSelected = kFALSE;
-    if ( matchTrig == 3 && ( ( selection & AliMuonTrackCuts::kMuMatchSharpHpt ) == 0 ) ) isSelected = kFALSE;
+    if ( matchTrig == 1 && ( ( selection & AliMuonTrackCuts::kMuMatchApt ) == 0 ) ) isSelected = kFALSE;
+    if ( matchTrig == 2 && ( ( selection & AliMuonTrackCuts::kMuMatchLpt ) == 0 ) ) isSelected = kFALSE;
+    if ( matchTrig == 3 && ( ( selection & AliMuonTrackCuts::kMuMatchHpt ) == 0 ) ) isSelected = kFALSE;
     if ( ! isSelected ) itrackSel = kNoSelCutApt;
 
     for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {

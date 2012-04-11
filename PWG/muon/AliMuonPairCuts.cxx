@@ -35,9 +35,9 @@ AliMuonPairCuts::AliMuonPairCuts() :
 }
 
 //________________________________________________________________________
-AliMuonPairCuts::AliMuonPairCuts(const char* name, const char* title, Bool_t isESD) :
-  AliAnalysisCuts(name, title),
-  fMuonTrackCuts("muonTrackCutInPair","muonTrackCutInPair", isESD)
+AliMuonPairCuts::AliMuonPairCuts(const char* name, const char* title) :
+AliAnalysisCuts(name, title),
+fMuonTrackCuts("muonTrackCutInPair","muonTrackCutInPair")
 {
   /// Constructor
   SetDefaultFilterMask();
@@ -52,7 +52,6 @@ fMuonTrackCuts(trackCuts)
   /// Test Constructor
   SetDefaultFilterMask();
 }
-
 
 
 //________________________________________________________________________

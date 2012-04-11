@@ -19,14 +19,12 @@ class AliMuonTrackCuts : public AliAnalysisCuts
     kMuMatchApt = BIT(3),
     kMuMatchLpt = BIT(4),
     kMuMatchHpt = BIT(5),
-    kMuTrackChiSquare = BIT(6),
-    kMuMatchSharpApt = BIT(7),
-    kMuMatchSharpLpt = BIT(8),
-    kMuMatchSharpHpt = BIT(9)
+    kMuTrackChiSquare = BIT(6)
   };
-
+  
   AliMuonTrackCuts();
-  AliMuonTrackCuts(const char* name, const char* title, Bool_t isESD);
+  AliMuonTrackCuts(const char* name, const char* title);
+  AliMuonTrackCuts(const char* name, const char* title, Bool_t isESD); // Obsolete
   AliMuonTrackCuts(const AliMuonTrackCuts& obj);
   AliMuonTrackCuts& operator=(const AliMuonTrackCuts& obj);
 
@@ -93,24 +91,29 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   void SetSlopeResolution ( Double_t slopeResolution );
   Double_t GetSlopeResolution () const;
   
-  void SetSharpPtCut ( Int_t trigPtCut, Double_t ptCutValue );
+  void SetSharpPtCut ( Double_t valueApt, Double_t valueLpt, Double_t valueHpt );
   Double_t GetSharpPtCut ( Int_t trigPtCut, Bool_t warn = kTRUE ) const;
 
   Bool_t StreamParameters ( Int_t runNumber, Int_t maxRun );
+  
+  /// Apply also sharp pt cut when matching with trigger
+  void ApplySharpPtCutInMatching ( Bool_t sharpPtCut = kTRUE ) { fSharpPtCut = sharpPtCut; }
 
  private:
   
   Int_t GetThetaAbsBin ( Double_t rAtAbsEnd ) const;
   Bool_t SetParameter ( Int_t iparam, Float_t value );
-  Bool_t RunMatchesRange ( Int_t runNumber, const Char_t* objName );
+  Bool_t RunMatchesRange ( Int_t runNumber, const Char_t* objName ) const;
+  Bool_t IsESDTrack ( const AliVParticle* track ) const;
 
   Bool_t fIsESD;            ///< Event is ESD
   Bool_t fIsMC;             ///< Monte Carlo analysis
   Bool_t fUseCustomParam;   ///< Use custom parameters (do not search in OADB)
+  Bool_t fSharpPtCut;       ///< Flag to apply sharp pt cut in track-trigger matching
 
   TArrayD fParameters;      ///< List of parameters
 
-  ClassDef(AliMuonTrackCuts, 1); // Class for muon track filters
+  ClassDef(AliMuonTrackCuts, 2); // Class for muon track filters
 };
  
 #endif

@@ -28,7 +28,7 @@ class AliMuonPairCuts : public AliAnalysisCuts
   };
 
   AliMuonPairCuts();
-  AliMuonPairCuts(const char* name, const char* title, Bool_t isESD);
+  AliMuonPairCuts(const char* name, const char* title);
   AliMuonPairCuts(const char* name, const char* title, const AliMuonTrackCuts& trackCuts);
   AliMuonPairCuts(const AliMuonPairCuts& obj);
   AliMuonPairCuts& operator=(const AliMuonPairCuts& obj);
@@ -49,6 +49,9 @@ class AliMuonPairCuts : public AliAnalysisCuts
   void Print ( Option_t* option = "" ) const;
   
   Double_t MuonMass2() const;
+  
+  /// Apply also sharp pt cut when matching with trigger
+  void ApplySharpPtCutInMatching ( Bool_t sharpPtCut = kTRUE ) { fMuonTrackCuts.ApplySharpPtCutInMatching(sharpPtCut); }
 
  private:
   
