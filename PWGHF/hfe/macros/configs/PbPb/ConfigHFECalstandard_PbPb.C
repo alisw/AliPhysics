@@ -1,11 +1,14 @@
-AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC){
+AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC, int TPCclust){
   //
   // HFE standard task configuration
   //
 
+  cout << "==== TPC cluster cut" << TPCclust << endl;
+
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCuts","HFE Standard Cuts for EMCal");
   hfecuts->CreateStandardCuts();
-  hfecuts->SetMinNClustersTPC(120);
+  //hfecuts->SetMinNClustersTPC(120);
+  hfecuts->SetMinNClustersTPC(TPCclust);
   hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
 
@@ -116,7 +119,8 @@ AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC){
   // V0 tagged tracks
   AliHFEcuts *v0trackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
   v0trackCuts->CreateStandardCuts();
-  v0trackCuts->SetMinNClustersTPC(120);
+  //v0trackCuts->SetMinNClustersTPC(120);
+  v0trackCuts->SetMinNClustersTPC(TPCclust);
   v0trackCuts->SetMinRatioTPCclusters(0.6);
   v0trackCuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   v0trackCuts->SetMinNClustersITS(1);
