@@ -433,10 +433,10 @@ void AliTOFTrigger::Trigger() {
 		      }	
 		      
 		      if(nchonTot >= 2 && nchonTot <= 6){
-			if(DeSlots >= mindeltaro && DeSlots <= maxdeltaro){
+			if(DeSlots >= 15 && DeSlots <= 18){
 			  SetInput("0OMU");
 			}
-			else if(AntiDeSlots >= mindeltaro && AntiDeSlots <= maxdeltaro){
+			else if(AntiDeSlots >= 15 && AntiDeSlots <= 18){
 			  SetInput("0OMU");
 			}	
 		      }		      
