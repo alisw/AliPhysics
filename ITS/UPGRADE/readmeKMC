@@ -1,0 +1,44 @@
+Here are some instructions for running:
+Once the KMCDetector object is initialized (similar to FER, see "Detector, tracking initialization"
+part of the testDetKMC.C macro) one should define for each kinematic bin to test a TObjArray with
+KMCTrackSummary objects (done in the testDetKMC.C by the CreateTrackConditions routine):
+this object is basically a set of standard histos (with DCA, pt_rec - pt_gen distibutions etc + stat. of generated
+and found tracks) which are filled provided the reco track satisfies to user defined conditions, like the number of
+hits (one can specify correct or fake hits, specific layers pattern etc). For instance:
+
+sm = new KMCTrackSummary("corr4hdGoodPatt","corr4hdGoodPatt",nlr); // create a summary object with this name
+
+sm->SetMinMaxClITS(4);             // require at least 4 cluster in the track (the upper limit here is default 999 - no limit)
+
+sm->SetMinMaxClITSFake(0,0); // set min number of fake clusters required (used for fakes studies) and their max number tolerated
+
+sm->SetNamePrefix(nm);          // this histo names will be prefixed by nm
+
+sm->AddPatternITSCorr( sm->Bits(1,1));    // require that the innermost 2 double layers must contribute at least 1 correct cluster
+
+sm->AddPatternITSCorr( sm->Bits(0,0,1));  // require the 3d layer cluster to be correct
+
+sm->AddPatternITSCorr( sm->Bits(0,0,0,1,1)); // measurement in the middle: ask at leas 1 correct cluster in 2 middle layers
+
+sm->AddPatternITSCorr( sm->Bits(0,0,0, 0,0, 1,1)); // same for outer 2 layers
+
+One can define and put in the TObjArray many such objects with different conditions, they will be filled independently.
+The simulation for single kinem. bin is done via call:
+
+its.SolveSingleTrack(mass, pt, eta, trSum, nevR);
+This will generate nevR tracks of given mass, pt, eta, propagate them, reconstruct under imposed bg, sensor err. conditions
+and fill the KMCTrackSummary objects provided via trSum TObjArray (i.e. histos of each object are filled if given reco track
+satisfies the criteria defined for this object).
+
+In the testDetKMC trSum arrays for each pt bin are added to another TObjArray (e.g. summary) which is then stored in
+the sumOut file.
+
+I also attach the PrepSummaryKMC.C macro to fill/return from this output file the TObjArray of TGraphErrors corresponding
+to given id of KMCTrackSummary. The call
+PrepSummaryKMC(const char* sumf, int cls, const char* pref=0, const char* outF=0);
+will open sumf output of the testDetKMC, and  for all pt bins (indexing the entries of the final "summary" TObjArray
+of testDetKMC) it will extract the array of KMCTrackSummary objects defined in the CreateTrackConditions
+for this bin, then extract from it the cls-th KMCTrackSummary object and put the performance values for this pt bin
+(resolutions, eff ) as an entry in the graph.
+
+prepPlotsKMC1.C is just an example of preparing the graphs from the testDetKMC.C output objects.
