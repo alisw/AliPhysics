@@ -835,7 +835,7 @@ void AliAnalysisTaskAj::Terminate(const Option_t *)
 Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
 
     Int_t iCount = 0;
- 
+    if(!fAOD)return iCount;
     
     for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
       AliAODTrack *tr = fAOD->GetTrack(it);
