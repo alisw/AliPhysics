@@ -32,7 +32,7 @@ public:
   void HandleMenu(Int_t i);
 
   /// Return the version number of the mchview application
-  static const char* Version() { return "1.10"; }
+  static const char* Version() { return "1.11"; }
   
   /// Return the SVN revision  and version number of the mchview application
   static const char* FullVersion() { return Form("mchview Version %s ($Id$)",Version()); }
@@ -46,6 +46,7 @@ private:
   AliMUONMchViewApplication& operator=(const AliMUONMchViewApplication& rhs);
   
   void CompareData();  
+  void CompareAlignments();
   void CreateMenuBar(UInt_t w);
   void Save();
   void Save(const char* filename);
@@ -66,6 +67,7 @@ private:
   static const Int_t fgkFILEPRINTAS; ///< File/Print As... menu
   static const Int_t fgkABOUT; ///< About menu
   static const Int_t fgkCOMPAREDATA; ///< Tools/Compare Data menu
+  static const Int_t fgkCOMPAREALIGNMENTS; ///< Tools/Compare Alignments menu
   
   static const char* fgkFileTypes[]; ///< For the open menu
   

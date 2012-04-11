@@ -20,6 +20,7 @@
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
+#include "AliMUONAlignmentCompareDialog.h"
 #include "AliMUONChamberPainter.h"
 #include "AliMUONDEPainter.h"
 #include "AliMUONPainterDataRegistry.h"
@@ -66,6 +67,7 @@ const Int_t AliMUONMchViewApplication::fgkFILEEXIT(3);
 const Int_t AliMUONMchViewApplication::fgkFILEPRINTAS(4);
 const Int_t AliMUONMchViewApplication::fgkABOUT(5);
 const Int_t AliMUONMchViewApplication::fgkCOMPAREDATA(6);
+const Int_t AliMUONMchViewApplication::fgkCOMPAREALIGNMENTS(7);
 
 const char* AliMUONMchViewApplication::fgkFileTypes[] = { 
   "ROOT files",    "*.root", 
@@ -250,6 +252,28 @@ AliMUONMchViewApplication::GenerateStartupMatrix()
 
 //______________________________________________________________________________
 void
+AliMUONMchViewApplication::CompareAlignments()
+{
+  /// Launch compare data dialog
+  TGTransientFrame* t = new AliMUONAlignmentCompareDialog(gClient->GetRoot(),
+                                                          gClient->GetRoot(),
+                                                          400,400);
+  
+  t->MapSubwindows();
+  t->Resize();
+  t->MapWindow();
+  t->CenterOnParent();
+  
+  // set names
+  
+  t->SetWindowName("mchview compare alignments tool");
+  t->SetIconName("mchview compare alignments tool");
+  
+  t->MapRaised();  
+}
+
+//______________________________________________________________________________
+void
 AliMUONMchViewApplication::CompareData()
 {
   /// Launch compare data dialog
@@ -287,6 +311,7 @@ AliMUONMchViewApplication::CreateMenuBar(UInt_t w)
   
   TGPopupMenu* tools = new TGPopupMenu(gClient->GetRoot());
   tools->AddEntry("&Compare data",fgkCOMPAREDATA);
+  tools->AddEntry("&Compare alignments",fgkCOMPAREALIGNMENTS);
   
   TGPopupMenu* about = new TGPopupMenu(gClient->GetRoot());  
   about->AddEntry(FullVersion(),fgkABOUT);
@@ -330,7 +355,10 @@ AliMUONMchViewApplication::HandleMenu(Int_t i)
     case fgkCOMPAREDATA:
       CompareData();
       break;
-    default:
+    case fgkCOMPAREALIGNMENTS:
+      CompareAlignments();
+      break;
+      default:
       break;
     }
 }
@@ -467,6 +495,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.11");
+  rn->AddLine("");
+  rn->AddLine("Adding [Compare alignments] in the Tools menu + make default OCDB be 2012's version");
+  rn->AddLine("");
+  
   rn->AddLine("1.10");
   rn->AddLine("");
   rn->AddLine("Make the raw OCDB more obvious in the data source tab");

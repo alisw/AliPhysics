@@ -47,6 +47,7 @@
 #pragma link C++ class AliMUONPointWithRef+;
 #pragma link C++ class AliMUONContourMakerTest+;
 #pragma link C++ class AliMUONContourHandler+;
+#pragma link C++ class AliMUONAlignmentCompareDialog+;
 
 
 #endif
