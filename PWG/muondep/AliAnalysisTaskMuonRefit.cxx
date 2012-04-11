@@ -122,6 +122,9 @@ void AliAnalysisTaskMuonRefit::UserExec(Option_t *)
   newGhosts.SetOwner(kFALSE);
   UInt_t firstGhostId = 0xFFFFFFFF - 1;
   
+  TList esdTracksToRemove;
+  esdTracksToRemove.SetOwner(kFALSE);
+  
   // load the current event
   fESDInterface->LoadEvent(*esd, kFALSE);
   
@@ -186,8 +189,9 @@ void AliAnalysisTaskMuonRefit::UserExec(Option_t *)
       // keep the trigger part if any
       if (locTrg) newGhosts.AddLast(locTrg);
       
-      // remove the track
-      esdTracks->Remove(esdTrack);
+      // remember to remove that track (cannot remove it now as it will create an hole which
+      // will eventually produce a crash in parallel track loop (AliESDEvent::MoveMuonObjects()))
+      esdTracksToRemove.AddLast(esdTrack);
       
     }
     
@@ -196,7 +200,10 @@ void AliAnalysisTaskMuonRefit::UserExec(Option_t *)
   // free memory
   delete newTrackStore;
   
-  // compress the array of ESD tracks
+  // remove tracks to remove and compress the array of ESD tracks
+  TIter nextTrackToRemove(&esdTracksToRemove);
+  AliESDMuonTrack* esdTrack = 0x0;
+  while ((esdTrack = static_cast<AliESDMuonTrack*>(nextTrackToRemove()))) esdTracks->Remove(esdTrack);
   esdTracks->Compress();
   
   // add new ghosts if not already there
@@ -205,7 +212,7 @@ void AliAnalysisTaskMuonRefit::UserExec(Option_t *)
   while ((locTrg = static_cast<AliMUONLocalTrigger*>(nextGhost()))) {
     Bool_t alreadyThere = kFALSE;
     for (Int_t iTrack = 0; iTrack < esdTracks->GetEntriesFast(); iTrack++) {
-      AliESDMuonTrack* esdTrack = (AliESDMuonTrack*) esdTracks->UncheckedAt(iTrack);
+      esdTrack = (AliESDMuonTrack*) esdTracks->UncheckedAt(iTrack);
       alreadyThere = (esdTrack->LoCircuit() == locTrg->LoCircuit());
       if (alreadyThere) break;
     }
