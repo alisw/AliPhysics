@@ -198,7 +198,7 @@ Int_t AliRsnDaughter::SpeciesPDG(ESpecies species)
       case kPion:     return 211;
       case kKaon:     return 321;
       case kProton:   return 2212;
-      case kKaon0:    return 310;
+      case kKaon0:    return 311;
       case kLambda:   return 3122;
       case kXi:       return 3312;
       case kOmega:    return 3334;
