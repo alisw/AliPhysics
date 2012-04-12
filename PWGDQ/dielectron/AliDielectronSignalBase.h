@@ -36,6 +36,8 @@ public:
     kFitted,
     kLikeSign,
     kLikeSignArithm,
+    kLikeSignRcorr,
+    kLikeSignArithmRcorr,
     kEventMixing,
     kRotation
   };
@@ -49,6 +51,7 @@ public:
   void SetFitRange(Double_t min, Double_t max) {fFitMin=min; fFitMax=max;}
   void SetRebin(Int_t factor) {fRebin = factor;}
   void SetMethod(EBackgroundMethod method) {fMethod = method;}
+  Int_t GetMethod() const { return (Int_t)fMethod; }
 
   const TVectorD& GetValues() const {return fValues;}
   const TVectorD& GetErrors() const {return fErrors;}

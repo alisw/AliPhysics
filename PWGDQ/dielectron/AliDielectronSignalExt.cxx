@@ -78,6 +78,8 @@ void AliDielectronSignalExt::Process(TObjArray* const arrhist)
   switch ( fMethod ){
     case kLikeSign :
     case kLikeSignArithm :
+    case kLikeSignRcorr:
+    case kLikeSignArithmRcorr:
       ProcessLS(arrhist);    // process like-sign subtraction method
       break;
 
@@ -139,7 +141,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 
     Float_t background = 2*TMath::Sqrt(pp*mm);
     Float_t ebackground = TMath::Sqrt(mm+pp);
-    if (fMethod==kLikeSignArithm){
+    if (fMethod==kLikeSignArithm || fMethod==kLikeSignArithmRcorr ){
       //Arithmetic mean instead of geometric
       background=(pp+mm);
       ebackground=TMath::Sqrt(pp+mm);
@@ -151,13 +153,23 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   }
 
   //correct LS spectrum bin-by-bin with R factor obtained in mixed events
-  if(fMixingCorr) {
+  if(fMixingCorr || fMethod==kLikeSignRcorr || fMethod==kLikeSignArithmRcorr) {
     
     TH1* histMixPP = (TH1*)(arrhist->At(AliDielectron::kEv1PEv2P))->Clone("mixPP");  // ++    ME
     TH1* histMixMM = (TH1*)(arrhist->At(AliDielectron::kEv1MEv2M))->Clone("mixMM");  // --    ME
-    TH1* histMixPM = (TH1*)(arrhist->At(AliDielectron::kEv1PEv2M))->Clone("mixPM");  // +-    ME
+
+    TH1* histMixPM = 0x0;
+    if (arrhist->At(AliDielectron::kEv1MEv2P)){
+      histMixPM   = (TH1*)(arrhist->At(AliDielectron::kEv1MEv2P))->Clone("mixPM");  // -+    ME
+    }
+
+    if (arrhist->At(AliDielectron::kEv1PEv2M)){
+      TH1 *htmp=(TH1*)(arrhist->At(AliDielectron::kEv1PEv2M));
+      if (!histMixPM) fHistDataME   = (TH1*)htmp->Clone("mixPM");                   // +-    ME
+      else histMixPM->Add(htmp);
+    }
+
     histMixPM->Sumw2();
-    histMixPM->Add((TH1*)arrhist->At(AliDielectron::kEv1MEv2P));               // -+    ME
     
     // rebin the histograms
     if (fRebin>1) { 
@@ -236,59 +248,59 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
   //
   // event mixing of +- and -+
   //
-  fHistDataPM   = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPMSE");  // +-    SE
-  fHistDataME   = (TH1*)(arrhist->At(AliDielectron::kEv1MEv2P))->Clone("histMPME");  // -+    ME
+
+  if (!arrhist->At(AliDielectron::kEv1PM) || !(arrhist->At(AliDielectron::kEv1MEv2P) || arrhist->At(AliDielectron::kEv1PEv2M)) ){
+    AliError("Either OS or mixed histogram missing");
+    return;
+  }
+
+  delete fHistDataPM; fHistDataPM=0x0;
+  delete fHistDataME; fHistDataME=0x0;
+  delete fHistBackground; fHistBackground=0x0;
+  
+  fHistDataPM = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPM");  // +-    SE
   fHistDataPM->Sumw2();
-  fHistDataME->Sumw2();
-  fHistDataPM->SetDirectory(0);
-  fHistDataME->SetDirectory(0);
-	
-	fHistDataME->Add((TH1*)arrhist->At(AliDielectron::kEv1PEv2M));  // +-    ME  
+  fHistDataPM->SetDirectory(0x0);
+
+  if (arrhist->At(AliDielectron::kEv1MEv2P)){
+    fHistDataME   = (TH1*)(arrhist->At(AliDielectron::kEv1MEv2P))->Clone("histMPME");  // -+    ME
+  }
+  
+  if (arrhist->At(AliDielectron::kEv1PEv2M)){
+    TH1 *htmp=(TH1*)(arrhist->At(AliDielectron::kEv1PEv2M));
+    if (!fHistDataME) fHistDataME   = (TH1*)htmp->Clone("histMPME");  // -+    ME
+    else fHistDataME->Add(htmp);
+  }
+
+  fHistBackground = (TH1*)fHistDataME->Clone("ME_Background");
+  fHistBackground->SetDirectory(0x0);
+  fHistBackground->Sumw2();
 
   // rebin the histograms
   if (fRebin>1) {
-    fHistDataPM->Rebin(fRebin); 
+    fHistDataPM->Rebin(fRebin);
     fHistDataME->Rebin(fRebin);
+    fHistBackground->Rebin(fRebin);
   }
 
-  fHistSignal = new TH1D("HistSignal", "Mixed events background substracted signal",
-			 fHistDataPM->GetXaxis()->GetNbins(),
-		   fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
-  fHistSignal->SetDirectory(0);
-  fHistBackground = new TH1D("HistBackground", "background contribution from mixed events",
-			     fHistDataPM->GetXaxis()->GetNbins(),
-			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
-  fHistBackground->SetDirectory(0);
-
-  // fill out background and subtracted histogram
-  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
-    Float_t pm = fHistDataPM->GetBinContent(ibin);
-    Float_t epm = fHistDataPM->GetBinError(ibin);
-    Float_t background = fHistDataME->GetBinContent(ibin);
-    Float_t ebackground = fHistDataME->GetBinError(ibin);
-
-    fHistSignal->SetBinContent(ibin, pm); 
-    fHistSignal->SetBinError(ibin, epm);
-    fHistBackground->SetBinContent(ibin, background);
-    fHistBackground->SetBinError(ibin, ebackground); 
-  }
-
+  //scale histograms to match integral between fScaleMin and fScaleMax
+  // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
   if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
-  else if (fScaleMin>0.){    
+  else if (fScaleMin>0.){
     fScaleFactor=fScaleMin;
     fHistBackground->Scale(fScaleFactor);
   }
 
-  //subract background  
-  fHistSignal->Add(fHistBackground,-1);
+  fHistSignal=(TH1*)fHistDataPM->Clone("Signal");
+  fHistSignal->Add(fHistBackground,-1.);
 
-  // signal  
+    // signal
   fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
-	  			             fHistSignal->FindBin(fIntMax), fErrors(0));
+                                             fHistSignal->FindBin(fIntMax), fErrors(0));
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
-						 fHistBackground->FindBin(fIntMax), 
-						 fErrors(1));
+                                                 fHistBackground->FindBin(fIntMax),
+                                                 fErrors(1));
   // S/B and significance
   SetSignificanceAndSOB();
 
