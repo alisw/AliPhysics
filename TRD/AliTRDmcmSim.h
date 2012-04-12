@@ -63,6 +63,9 @@ class AliTRDmcmSim : public TObject {
   // different baseline but it will not change the baseline
   // of the output.
 
+  static  void      SetStoreClusters(Bool_t storeClusters) { fgStoreClusters = storeClusters; }
+  static  Bool_t    GetStoreClusters(Bool_t storeClusters) { return fgStoreClusters; }
+
           Int_t     GetDetector() const  { return fDetector;  };     // Returns Chamber ID (0-539)
           Int_t     GetRobPos() const { return fRobPos; };           // Returns ROB position (0-7)
           Int_t     GetMcmPos() const { return fMcmPos; };           // Returns MCM position (0-17) (16,17 are mergers)
@@ -245,6 +248,8 @@ class AliTRDmcmSim : public TObject {
   static Bool_t fgApplyCut;               // apply cut on deflection length
 
   static Int_t fgAddBaseline;             // add baseline to the ADC values
+
+  static Bool_t fgStoreClusters;          // whether to store all clusters in the tracklets
 
   ClassDef(AliTRDmcmSim,6)
 };

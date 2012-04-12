@@ -54,6 +54,7 @@ ClassImp(AliTRDmcmSim)
 
 Bool_t AliTRDmcmSim::fgApplyCut = kTRUE;
 Int_t  AliTRDmcmSim::fgAddBaseline = 0;
+Bool_t AliTRDmcmSim::fgStoreClusters = kFALSE;
 
 const Int_t AliTRDmcmSim::fgkFormatIndex = std::ios_base::xalloc();
 
@@ -1225,23 +1226,29 @@ void AliTRDmcmSim::CalcFitreg()
   UShort_t qTotal[19+1]; // the last is dummy
   UShort_t marked[6], qMarked[6], worse1, worse2;
 
-  // find first timebin to be looked at
-  timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS, fDetector, fRobPos, fMcmPos);
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos)
-      < timebin1)
-    timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos);
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos)
-      < timebin1)
-    timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos);
+  if (fgStoreClusters) {
+    timebin1 = 0;
+    timebin2 = fNTimeBin - 1;
+  }
+  else {
+    // find first timebin to be looked at
+    timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS, fDetector, fRobPos, fMcmPos);
+    if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos)
+	< timebin1)
+      timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos);
+    if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos)
+	< timebin1)
+      timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos);
 
-  // find last timebin to be looked at
-  timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE, fDetector, fRobPos, fMcmPos);
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos)
-      > timebin2)
-    timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos);
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos)
-      > timebin2)
-    timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos);
+    // find last timebin to be looked at
+    timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE, fDetector, fRobPos, fMcmPos);
+    if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos)
+	> timebin2)
+      timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos);
+    if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos)
+	> timebin2)
+      timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos);
+  }
 
   // reset the fit registers
   fNHits = 0;
@@ -1744,26 +1751,31 @@ void AliTRDmcmSim::FitTracklet()
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetOffset(fitOffset);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetError(TMath::Sqrt(TMath::Abs(fitError)/nHits));
 
-//	// cluster information
-//	Float_t *res = new Float_t[nHits];
-//	Float_t *qtot = new Float_t[nHits];
-//	Int_t nCls = 0;
-//	for (Int_t iHit = 0; iHit < fNHits; iHit++) {
-//	  // check if hit contributes
-//	  if (fHits[iHit].fChannel == fFitPtr[cpu]) {
-//	    res[nCls] = fHits[iHit].fYpos - (fitSlope * fHits[iHit].fTimebin + fitOffset);
-//	    qtot[nCls] = fHits[iHit].fQtot;
-//	    nCls++;
-//	  }
-//	  else if (fHits[iHit].fChannel == fFitPtr[cpu] + 1) {
-//	    res[nCls] = fHits[iHit].fYpos + 256 - (fitSlope * fHits[iHit].fTimebin + fitOffset);
-//	    qtot[nCls] = fHits[iHit].fQtot;
-//	    nCls++;
-//	  }
-//	}
-//        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetClusters(res, qtot, nCls);
-//	delete [] res;
-//	delete [] qtot;
+	// store cluster information (if requested)
+	if (fgStoreClusters) {
+	  Float_t *res = new Float_t[fNTimeBin];
+	  Float_t *qtot = new Float_t[fNTimeBin];
+	  for (Int_t iTimebin = 0; iTimebin < fNTimeBin; ++iTimebin) {
+	    res[iTimebin] = 0;
+	    qtot[iTimebin] = 0;
+	  }
+	  for (Int_t iHit = 0; iHit < fNHits; iHit++) {
+	    Int_t timebin = fHits[iHit].fTimebin;
+
+	    // check if hit contributes
+	    if (fHits[iHit].fChannel == fFitPtr[cpu]) {
+	      res[timebin] = fHits[iHit].fYpos - (fitSlope * timebin + fitOffset);
+	      qtot[timebin] = fHits[iHit].fQtot;
+	    }
+	    else if (fHits[iHit].fChannel == fFitPtr[cpu] + 1) {
+	      res[timebin] = fHits[iHit].fYpos + 256 - (fitSlope * timebin + fitOffset);
+	      qtot[timebin] = fHits[iHit].fQtot;
+	    }
+	  }
+	  ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetClusters(res, qtot, fNTimeBin);
+	  delete [] res;
+	  delete [] qtot;
+	}
 
 	if (fitError < 0)
 	  AliError(Form("Strange fit error: %f from Sx: %i, Sy: %i, Sxy: %i, Sx2: %i, Sy2: %i, nHits: %i",
