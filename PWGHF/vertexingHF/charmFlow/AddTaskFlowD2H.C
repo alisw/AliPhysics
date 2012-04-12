@@ -209,16 +209,18 @@ void AddQCmethod(char *name, char *fileName, char *thecuts,
 
 int MassBands( int nDmeson, bool bOldApproach=false ) {
   switch (nDmeson) {
+  case ( AliRDHFCuts::kDplusCuts ):
   case ( AliRDHFCuts::kD0toKpiCuts ):
     if(bOldApproach) return 5;
     else return 26;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 15;
+    return 20;
   }
 }
 
 double MassBandLowEdge( int nDmeson, int mb, bool bOldApproach=false ) {
   switch (nDmeson) {
+  case ( AliRDHFCuts::kDplusCuts ):
   case ( AliRDHFCuts::kD0toKpiCuts ): // 2 + 20 + 4
     double lowEdgeMinimal[5+1] = {1.75,1.80,1.83,1.90,1.93,2.03};
     double lowEdge[26+1] = { 1.66, 1.71, 1.76, 1.77, 1.78, 1.79, 1.80, 1.81, 1.82, 1.83,
@@ -227,14 +229,15 @@ double MassBandLowEdge( int nDmeson, int mb, bool bOldApproach=false ) {
     if(bOldApproach) return lowEdgeMinimal[mb];
     else return lowEdge[mb];
   case ( AliRDHFCuts::kDstarCuts ): // 2 + 10 + 3
-    double lowEdge[15+1] = { 0.138, 0.140, 0.142, 0.143, 0.144, 0.145, 0.146, 0.147, 1.148, 0.149,
-			     0.150, 0.151, 0.152, 0.154, 0.156, 0.158 };
+    double lowEdge[20+1] = {0.1380, 0.1396, 0.1412, 0.1420, 0.1428, 0.1436, 0.1444, 0.1452, 0.1460, 0.1468, 0.1476, 0.1484, 0.1492, 0.1500,
+			    0.1508, 0.1516, 0.1524, 0.1532, 0.1548, 0.1564, 0.1580};
     return lowEdge[mb];
   }
 }
 
 double MinMass( int nDmeson ) {
   switch (nDmeson) {
+  case ( AliRDHFCuts::kDplusCuts ):
   case ( AliRDHFCuts::kD0toKpiCuts ):
     return 1.66;
   case ( AliRDHFCuts::kDstarCuts ):
@@ -244,6 +247,7 @@ double MinMass( int nDmeson ) {
 
 double MaxMass( int nDmeson ) {
   switch (nDmeson) {
+  case ( AliRDHFCuts::kDplusCuts ):
   case ( AliRDHFCuts::kD0toKpiCuts ):
     return 2.16;
   case ( AliRDHFCuts::kDstarCuts ):
@@ -253,16 +257,19 @@ double MaxMass( int nDmeson ) {
 
 int MassBins( int nDmeson ) {
   switch (nDmeson) {
+  case ( AliRDHFCuts::kDplusCuts ):
   case ( AliRDHFCuts::kD0toKpiCuts ):
     return 50;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 20;
+    return 25;
   }
 }
 
 TString DMesonName( int nDmeson ) {
   TString toReturn;
   switch (nDmeson) {
+  case ( AliRDHFCuts::kDplusCuts ):
+    toReturn = "DPlus"; break;
   case ( AliRDHFCuts::kD0toKpiCuts ):
     toReturn = "D0"; break;
   case ( AliRDHFCuts::kDstarCuts ):
