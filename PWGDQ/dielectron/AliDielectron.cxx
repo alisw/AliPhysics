@@ -568,7 +568,6 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
       AliESDtrack *track=static_cast<AliESDtrack*>(particle);
       track->SetESDEvent(static_cast<AliESDEvent*>(ev)); //only in trunk...
     }
-    
     //apply track cuts
     if (fTrackFilter.IsSelected(particle)!=selectedMask) continue;
 
@@ -588,24 +587,34 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
   // remove contribution of all tracks to the Q-vector that are in invariant mass window 
   //
   AliEventplane *evplane = const_cast<AliVEvent *>(ev)->GetEventplane();
+//   AliEventplane *evplane = ev->GetEventplane();
   if(!evplane) return;
   
   // do not change these vectors qref
-  TVector2 *qref  = evplane->GetQVector();
+  TVector2 * const qref  = evplane->GetQVector();
   if(!qref) return;
   // random subevents
   TVector2 *qrsub1 = evplane->GetQsub1();
   TVector2 *qrsub2 = evplane->GetQsub2();
 
   // copy references
-  TVector2 *qstd   = dynamic_cast<TVector2 *>(qref->Clone());
-  TVector2 *qssub1 = dynamic_cast<TVector2 *>(qrsub1->Clone());
-  TVector2 *qssub2 = dynamic_cast<TVector2 *>(qrsub2->Clone());
+  TVector2 *qcorr  = new TVector2(*qref);
+  TVector2 *qcsub1 = 0x0;
+  TVector2 *qcsub2 = 0x0;
+  //  printf("qrsub1 %p %f \n",qrsub1,qrsub1->X());
 
-  // subevents by charge separation sub1+ sub2-
-  if(fLikeSignSubEvents) {
-    qssub1 = dynamic_cast<TVector2 *>(qstd->Clone());
-    qssub2 = dynamic_cast<TVector2 *>(qstd->Clone());
+
+  // eta gap ?
+  Bool_t etagap = kFALSE;
+  for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
+    TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
+    if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
+  }
+
+  // subevent separation
+  if(fLikeSignSubEvents || etagap) {
+    qcsub1 = new TVector2(*qcorr);
+    qcsub2 = new TVector2(*qcorr);
 
     Int_t ntracks=ev->GetNumberOfTracks();
     
@@ -618,38 +627,24 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       Double_t cQX     = evplane->GetQContributionX(track);
       Double_t cQY     = evplane->GetQContributionY(track);
       
-      Short_t charge=track->Charge();
-      if (charge<0) qssub1->Set(qssub1->X()-cQX, qssub1->Y()-cQY);
-      if (charge>0) qssub2->Set(qssub2->X()-cQX, qssub2->Y()-cQY);
-    }
-  }
-
-  // subevents eta division sub1+ sub2-
-  Bool_t etagap = kFALSE;
-  for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
-    TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
-    if(cutName.Contains("eta") || cutName.Contains("Eta")) {
-      etagap=kTRUE;
-
-      qssub1 = dynamic_cast<TVector2 *>(qstd->Clone());
-      qssub2 = dynamic_cast<TVector2 *>(qstd->Clone());
-      
-      Int_t ntracks=ev->GetNumberOfTracks();
-      
-      // track removals
-      for (Int_t itrack=0; itrack<ntracks; ++itrack){
-	AliVParticle *particle=ev->GetTrack(itrack);
-	AliVTrack *track= static_cast<AliVTrack*>(particle);
-	if (!track) continue;
-	
-	Double_t cQX     = evplane->GetQContributionX(track);
-	Double_t cQY     = evplane->GetQContributionY(track);
-      
+      // by charge sub1+ sub2-
+      if(fLikeSignSubEvents) {
+	Short_t charge=track->Charge();
+	if (charge<0) qcsub1->Set(qcsub1->X()-cQX, qcsub1->Y()-cQY);
+	if (charge>0) qcsub2->Set(qcsub2->X()-cQX, qcsub2->Y()-cQY);
+      }
+      // by eta sub1+ sub2-
+      if(etagap) {
 	Double_t eta=track->Eta();
-	if (eta<0.0) qssub1->Set(qssub1->X()-cQX, qssub1->Y()-cQY);
-	if (eta>0.0) qssub2->Set(qssub2->X()-cQX, qssub2->Y()-cQY);
+	if (eta<0.0) qcsub1->Set(qcsub1->X()-cQX, qcsub1->Y()-cQY);
+	if (eta>0.0) qcsub2->Set(qcsub2->X()-cQX, qcsub2->Y()-cQY);
       }
     }
+  }
+  else {
+    // by a random
+    qcsub1 = new TVector2(*qrsub1);
+    qcsub2 = new TVector2(*qrsub2);
   }
   
   // apply cuts, e.g. etagap 
@@ -678,18 +673,11 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       Double_t cQYsub2 = evplane->GetQContributionYsub2(track);      
 
       // update Q vectors
-      qstd->Set(qstd->X()-cQX, qstd->Y()-cQY);
-      qssub1->Set(qssub1->X()-cQXsub1, qssub1->Y()-cQYsub1);
-      qssub2->Set(qssub2->X()-cQXsub2, qssub2->Y()-cQYsub2);
+      qcorr->Set(qcorr->X()-cQX, qcorr->Y()-cQY);
+      qcsub1->Set(qcsub1->X()-cQXsub1, qcsub1->Y()-cQYsub1);
+      qcsub2->Set(qcsub2->X()-cQXsub2, qcsub2->Y()-cQYsub2);
     }
   }
-
-  if(!qstd || !qssub1 || !qssub2) return;
-
-  TVector2 *qcorr  = dynamic_cast<TVector2 *>(qstd->Clone());
-  TVector2 *qcsub1 = dynamic_cast<TVector2 *>(qssub1->Clone());
-  TVector2 *qcsub2 = dynamic_cast<TVector2 *>(qssub2->Clone());
-
 
   // POI (particle of interest) rejection
   Int_t pairIndex=GetPairIndex(arr1,arr2);
@@ -769,6 +757,7 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
     qcsub2->Set(qcsub2->X()-cQXsub2, qcsub2->Y()-cQYsub2);
   }
 
+  //  printf("qrsub1 %p %f \t qcsub1 %p %f \n",qrsub1,qrsub1->X(),qcsub1,qcsub1->X());
   // set AliEventplane with corrected values
   cevplane->SetQVector(qcorr);
   cevplane->SetQsub(qcsub1, qcsub2);
