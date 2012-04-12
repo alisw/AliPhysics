@@ -57,7 +57,8 @@ ClassImp(AliAnalysisTaskJetCore)
 AliAnalysisTaskJetCore::AliAnalysisTaskJetCore() :
 AliAnalysisTaskSE(),
 fESD(0x0),
-fAOD(0x0),
+fAODIn(0x0),
+fAODOut(0x0),
 fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
@@ -120,21 +121,16 @@ fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),
-fh2JetsumHT1R2(0x0),
-fh2JetsumHT4R2(0x0),
-fh2JetsumHT8R2(0x0),
-fh2JetsumHT1R4(0x0),
-fh2JetsumHT4R4(0x0),
-fh2JetsumHT8R4(0x0),
-fh2JetsumHT1R6(0x0),
-fh2JetsumHT4R6(0x0),
-fh2JetsumHT8R6(0x0),
-fh2JetsumHT1R8(0x0),
-fh2JetsumHT4R8(0x0),
-fh2JetsumHT8R8(0x0),
-fh2JetsumHT1R10(0x0),
-fh2JetsumHT4R10(0x0),
-fh2JetsumHT8R10(0x0),
+fh2JetsumHT3R2(0x0),
+fh2JetsumHT3R2gap(0x0),
+fh2JetsumHT3R4(0x0),
+fh2JetsumHT3R4gap(0x0),
+fh2JetsumHT3R6(0x0),
+fh2JetsumHT3R6gap(0x0),
+fh2JetsumHT3R8(0x0),
+fh2JetsumHT3R8gap(0x0),
+fh2JetsumHT3R10(0x0),
+fh2JetsumHT3R10gap(0x0),
 fh3spectriggered(0x0),
 fh3specbiased(0x0),
 fh3spectot(0x0),
@@ -165,7 +161,8 @@ fh3spectotb(0x0)
 AliAnalysisTaskJetCore::AliAnalysisTaskJetCore(const char *name) :
 AliAnalysisTaskSE(name),
 fESD(0x0),
-fAOD(0x0),
+fAODIn(0x0),
+fAODOut(0x0),
 fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
@@ -228,21 +225,16 @@ fh2AngStructpt1C60(0x0),
 fh2AngStructpt2C60(0x0),
 fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),    
-fh2JetsumHT1R2(0x0),
-fh2JetsumHT4R2(0x0),
-fh2JetsumHT8R2(0x0),
-fh2JetsumHT1R4(0x0),
-fh2JetsumHT4R4(0x0),
-fh2JetsumHT8R4(0x0),
-fh2JetsumHT1R6(0x0),
-fh2JetsumHT4R6(0x0),
-fh2JetsumHT8R6(0x0),
-fh2JetsumHT1R8(0x0),
-fh2JetsumHT4R8(0x0),
-fh2JetsumHT8R8(0x0),
-fh2JetsumHT1R10(0x0),
-fh2JetsumHT4R10(0x0),
-fh2JetsumHT8R10(0x0),
+fh2JetsumHT3R2(0x0),
+fh2JetsumHT3R2gap(0x0),
+fh2JetsumHT3R4(0x0),
+fh2JetsumHT3R4gap(0x0),
+fh2JetsumHT3R6(0x0),
+fh2JetsumHT3R6gap(0x0),
+fh2JetsumHT3R8(0x0),
+fh2JetsumHT3R8gap(0x0),
+fh2JetsumHT3R10(0x0),
+fh2JetsumHT3R10gap(0x0),
 fh3spectriggered(0x0),
 fh3specbiased(0x0),
 fh3spectot(0x0),
@@ -378,21 +370,16 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2AngStructpt3C60 = new TH2F("Ang struct pt3 C60","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt4C60 = new TH2F("Ang struct pt4 C60","",15,0.,1.5,150,0.,10.); }
 
-    fh2JetsumHT1R2 = new TH2F("Pt sum R02 HT1","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT4R2 = new TH2F("Pt sum R02 HT4","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT8R2 = new TH2F("Pt sum R02 HT8","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT1R4 = new TH2F("Pt sum R04 HT1","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT4R4 = new TH2F("Pt sum R04 HT4","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT8R4 = new TH2F("Pt sum R04 HT8","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT1R6 = new TH2F("Pt sum R06 HT1","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT4R6 = new TH2F("Pt sum R06 HT4","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT8R6 = new TH2F("Pt sum R06 HT8","",20,0.,200.,100,0.,10.); 
-    fh2JetsumHT1R8 = new TH2F("Pt sum R08 HT1","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT4R8 = new TH2F("Pt sum R08 HT4","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT8R8 = new TH2F("Pt sum R08 HT8","",20,0.,200.,100,0.,10.); 
-    fh2JetsumHT1R10 = new TH2F("Pt sum R10 HT1","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT4R10 = new TH2F("Pt sum R10 HT4","",20,0.,200.,100,0.,10.);
-    fh2JetsumHT8R10 = new TH2F("Pt sum R10 HT8","",20,0.,200.,100,0.,10.);  
+    fh2JetsumHT3R2 = new TH2F("Pt sum R02 HT3","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R2gap = new TH2F("Pt sum R02 HT3 gap","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R4 = new TH2F("Pt sum R04 HT3","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R4gap = new TH2F("Pt sum R04 HT3 gap","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R6 = new TH2F("Pt sum R06 HT3","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R6gap = new TH2F("Pt sum R06 HT3 gap","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R8 = new TH2F("Pt sum R08 HT3","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R8gap = new TH2F("Pt sum R08 HT3 gap","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R10 = new TH2F("Pt sum R10 HT3","",20,0.,200.,100,0.,10.);
+    fh2JetsumHT3R10gap = new TH2F("Pt sum R10 HT3 gap","",20,0.,200.,100,0.,10.);  
     fh3spectriggered = new TH3F("Triggered spectrum","",10,0,100,50,0.,200,50,0.,50.);
     fh3specbiased = new TH3F("Biased spectrum","",10,0,100,50,0.,200.,50,0.,50.);
     fh3spectot = new TH3F("Total spectrum 0-10","",50,0.,200.,50,0.,50.,50,0.,50.);
@@ -439,25 +426,25 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
        fOutputList->Add(fh2AngStructpt4C60);}  
 
 
-	fOutputList->Add(fh2JetsumHT1R2);
-        fOutputList->Add(fh2JetsumHT4R2);
-       	fOutputList->Add(fh2JetsumHT8R2);
+	fOutputList->Add(fh2JetsumHT3R2);
+        fOutputList->Add(fh2JetsumHT3R2gap);
 
-       	fOutputList->Add(fh2JetsumHT1R4);
-        fOutputList->Add(fh2JetsumHT4R4);
-       	fOutputList->Add(fh2JetsumHT8R4);
 
-        fOutputList->Add(fh2JetsumHT1R6);
-        fOutputList->Add(fh2JetsumHT4R6);
-       	fOutputList->Add(fh2JetsumHT8R6);
+       	fOutputList->Add(fh2JetsumHT3R4);
+        fOutputList->Add(fh2JetsumHT3R4gap);
 
-       	fOutputList->Add(fh2JetsumHT1R8);
-        fOutputList->Add(fh2JetsumHT4R8);
-       	fOutputList->Add(fh2JetsumHT8R8);
 
-        fOutputList->Add(fh2JetsumHT1R10);
-        fOutputList->Add(fh2JetsumHT4R10);
-       	fOutputList->Add(fh2JetsumHT8R10); 
+        fOutputList->Add(fh2JetsumHT3R6);
+        fOutputList->Add(fh2JetsumHT3R6gap);
+
+
+       	fOutputList->Add(fh2JetsumHT3R8);
+        fOutputList->Add(fh2JetsumHT3R8gap);
+
+
+        fOutputList->Add(fh2JetsumHT3R10);
+        fOutputList->Add(fh2JetsumHT3R10gap);
+
 
        fOutputList->Add(fh3spectriggered);
        fOutputList->Add(fh3specbiased);
@@ -492,10 +479,17 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    fESD=dynamic_cast<AliESDEvent*>(InputEvent());
    if (!fESD) {
       AliError("ESD not available");
-      fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-   } else {
-      fAOD = dynamic_cast<AliAODEvent*>(AODEvent());
-   }
+      fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
+   } 
+      fAODOut = dynamic_cast<AliAODEvent*>(AODEvent());
+
+       static AliAODEvent* aod = 0;
+       // take all other information from the aod we take the tracks from
+       if(!aod){
+       if(!fESD)aod = fAODIn;
+       else aod = fAODOut;}
+
+   
  
     if(fNonStdFile.Length()!=0){
     // case that we have an AOD extension we need can fetch the jets from the extended output
@@ -524,12 +518,12 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    }
 
    // vertex selection
-   if(!fAOD){
+   if(!aod){
      if(fDebug) Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
      fHistEvtSelection->Fill(3);
       PostData(1, fOutputList);
    }
-   AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
+   AliAODVertex* primVtx = aod->GetPrimaryVertex();
 
    if(!primVtx){
      if(fDebug) Printf("%s:%d No primVtx",(char*)__FILE__,__LINE__);
@@ -562,7 +556,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Double_t centValue = 0.; 
    if(fESD) {cent = fESD->GetCentrality();
      if(cent) centValue = cent->GetCentralityPercentile("V0M");}
-   else     centValue=fAOD->GetHeader()->GetCentrality();
+   else     centValue=aod->GetHeader()->GetCentrality();
    
    if(fDebug) printf("centrality: %f\n", centValue);
    if (centValue < fCentMin || centValue > fCentMax){
@@ -578,14 +572,19 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
   
    // get background
    AliAODJetEventBackground* externalBackground = 0;
-   if(fAOD&&!externalBackground&&fBackgroundBranch.Length()){
-      externalBackground =  (AliAODJetEventBackground*)(fAOD->FindListObject(fBackgroundBranch.Data()));
+   if(fAODOut&&!externalBackground&&fBackgroundBranch.Length()){
+      externalBackground =  (AliAODJetEventBackground*)(fAODOut->FindListObject(fBackgroundBranch.Data()));
       if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
    }
    if(fAODExtension&&!externalBackground&&fBackgroundBranch.Length()){
      externalBackground =  (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
       if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
    }
+
+    if(fAODIn&&!externalBackground&&fBackgroundBranch.Length()){
+      externalBackground =  (AliAODJetEventBackground*)(fAODIn->FindListObject(fBackgroundBranch.Data()));
+      if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
+    }
    
    Float_t rho = 0;
    if(externalBackground)rho = externalBackground->GetBackground(0);
@@ -594,12 +593,16 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    // fetch jets
    TClonesArray *aodJets[2];
    aodJets[0]=0;
-   if(fAOD&&!aodJets[0]){
-   aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); 
-   aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data()));  }
+   if(fAODOut&&!aodJets[0]){
+   aodJets[0] = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchName[0].Data())); 
+   aodJets[1] = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchName[1].Data()));  }
    if(fAODExtension && !aodJets[0]){ 
    aodJets[0] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[0].Data())); 
    aodJets[1] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[1].Data()));  }
+     if(fAODIn&&!aodJets[0]){
+   aodJets[0] = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fJetBranchName[0].Data())); 
+   aodJets[1] = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fJetBranchName[1].Data()));  } 
+
 
    //Double_t ptsub[aodJets[0]->GetEntriesFast()];
    //Int_t inord[aodJets[0]->GetEntriesFast()];
@@ -719,44 +722,39 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 		  if(centValue>60) fh2JetCoreMethod2C60->Fill(ptcorr,jetmethod2->Pt()/ptbig); }}  
 		  Double_t sumpt2a=0.;
                   Double_t sumpt2b=0.;
-                  Double_t sumpt2d=0.;
+                  
                   Double_t sumpt4a=0.;
                   Double_t sumpt4b=0.;
-                  Double_t sumpt4d=0.;
+                  
                   Double_t sumpt6a=0.;
                   Double_t sumpt6b=0.;
-                  Double_t sumpt6d=0.;
+                  
                   Double_t sumpt8a=0.;
                   Double_t sumpt8b=0.;
-                  Double_t sumpt8d=0.;  
+                  
                   Double_t sumpt10a=0.;
                   Double_t sumpt10b=0.;
-                  Double_t sumpt10d=0.;  
+                  
 
           for(int it = 0;it<nT;++it){
 	  AliVParticle *part = (AliVParticle*)ParticleList.At(it);
        	  Double_t deltaR = jetbig->DeltaR(part);
+           Double_t deltaEta = etabig-part->Eta();
           if(partback->Pt()>10.){
             if(centValue<10){
-
-                             if(deltaR<0.2){if(leadtrack->Pt()>1.) sumpt2a=sumpt2a+part->Pt();
-                                            if(leadtrack->Pt()>4.) sumpt2b=sumpt2b+part->Pt(); 
-                                            if(leadtrack->Pt()>8.) sumpt2d=sumpt2d+part->Pt();}    
-	       if(deltaR>=0.2 && deltaR<0.4){if(leadtrack->Pt()>1.) sumpt4a=sumpt4a+part->Pt();
-                                            if(leadtrack->Pt()>4.) sumpt4b=sumpt4b+part->Pt(); 
-                                            if(leadtrack->Pt()>8.) sumpt4d=sumpt4d+part->Pt();}                                                    if(deltaR>=0.4 && deltaR<0.6){if(leadtrack->Pt()>1.) sumpt6a=sumpt6a+part->Pt();
-                                            if(leadtrack->Pt()>4.) sumpt6b=sumpt6b+part->Pt(); 
-                                            if(leadtrack->Pt()>8.) sumpt6d=sumpt6d+part->Pt();}      
-               if(deltaR>=0.6 && deltaR<0.8){if(leadtrack->Pt()>1.) sumpt8a=sumpt8a+part->Pt();
-                                            if(leadtrack->Pt()>4.) sumpt8b=sumpt8b+part->Pt(); 
-                                            if(leadtrack->Pt()>8.) sumpt8d=sumpt8d+part->Pt();}      
  
-               if(deltaR>=0.8 && deltaR<1.2){if(leadtrack->Pt()>1.)sumpt10a=sumpt10a+part->Pt();
-                                            if(leadtrack->Pt()>4.) sumpt10b=sumpt10b+part->Pt(); 
-                                            if(leadtrack->Pt()>8.) sumpt10d=sumpt10d+part->Pt();}   }}
- 
+               if(deltaR<0.2){if(leadtrack->Pt()>3.){ sumpt2a=sumpt2a+part->Pt();
+	       if(TMath::Abs(deltaEta)>0.8) sumpt2b=sumpt2b+part->Pt();}}
+               if(deltaR>=0.2 && deltaR<0.4){if(leadtrack->Pt()>3.){ sumpt4a=sumpt4a+part->Pt();
+	       if(TMath::Abs(deltaEta)>0.8) sumpt4b=sumpt4b+part->Pt();}} 
+               if(deltaR>=0.4 && deltaR<0.6){if(leadtrack->Pt()>3.){ sumpt6a=sumpt6a+part->Pt();
+	       if(TMath::Abs(deltaEta)>0.8) sumpt6b=sumpt6b+part->Pt();}} 
+               if(deltaR>=0.6 && deltaR<0.8){if(leadtrack->Pt()>3.){ sumpt8a=sumpt8a+part->Pt();
+	       if(TMath::Abs(deltaEta)>0.8) sumpt8b=sumpt8b+part->Pt();}}                               
+               if(deltaR>=0.8 && deltaR<1.2){if(leadtrack->Pt()>3.){ sumpt10a=sumpt10a+part->Pt();
+		   if(TMath::Abs(deltaEta)>0.8) sumpt10b=sumpt10b+part->Pt();}}}}
 
-          Double_t deltaEta = etabig-part->Eta();
+
           Double_t deltaPhi=phibig-part->Phi();
           if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
           if(deltaPhi>3./2.*TMath::Pi()) deltaPhi-=2.*TMath::Pi();
@@ -771,26 +769,18 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
            
               
           if(rho!=0){
-         
-          fh2JetsumHT1R2->Fill(ptcorr,sumpt2a/rhoin2);
-          fh2JetsumHT4R2->Fill(ptcorr,sumpt2b/rhoin2);
-          fh2JetsumHT8R2->Fill(ptcorr,sumpt2d/rhoin2);
-         
-          fh2JetsumHT1R4->Fill(ptcorr,sumpt4a/rhoin4);
-          fh2JetsumHT4R4->Fill(ptcorr,sumpt4b/rhoin4);
-          fh2JetsumHT8R4->Fill(ptcorr,sumpt4d/rhoin4);
-         
-          fh2JetsumHT1R6->Fill(ptcorr,sumpt6a/rhoin6);
-          fh2JetsumHT4R6->Fill(ptcorr,sumpt6b/rhoin6);
-          fh2JetsumHT8R6->Fill(ptcorr,sumpt6d/rhoin6);
-         
-          fh2JetsumHT1R8->Fill(ptcorr,sumpt8a/rhoin8);
-          fh2JetsumHT4R8->Fill(ptcorr,sumpt8b/rhoin8);
-          fh2JetsumHT8R8->Fill(ptcorr,sumpt8d/rhoin8);
-         
-          fh2JetsumHT1R10->Fill(ptcorr,sumpt10a/rhoin10);
-          fh2JetsumHT4R10->Fill(ptcorr,sumpt10b/rhoin10);
-          fh2JetsumHT8R10->Fill(ptcorr,sumpt10d/rhoin10);}
+          if(partback->Pt()>10.){
+          fh2JetsumHT3R2->Fill(ptcorr,sumpt2a/rhoin2);
+          fh2JetsumHT3R2gap->Fill(ptcorr,sumpt2b/rhoin2);
+          fh2JetsumHT3R4->Fill(ptcorr,sumpt4a/rhoin4);
+          fh2JetsumHT3R4gap->Fill(ptcorr,sumpt4b/rhoin4);        
+          fh2JetsumHT3R6->Fill(ptcorr,sumpt6a/rhoin6);
+          fh2JetsumHT3R6gap->Fill(ptcorr,sumpt6b/rhoin6);
+          fh2JetsumHT3R8->Fill(ptcorr,sumpt8a/rhoin8);
+          fh2JetsumHT3R8gap->Fill(ptcorr,sumpt8b/rhoin8);
+          fh2JetsumHT3R10->Fill(ptcorr,sumpt10a/rhoin10);
+          fh2JetsumHT3R10gap->Fill(ptcorr,sumpt10b/rhoin10);
+	  }}
 
    }
           //end of jet loop
@@ -959,21 +949,18 @@ void AliAnalysisTaskJetCore::Terminate(const Option_t *)
 
 
 
-
-
-
-
-
-
+  
 
 
 Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
-    Int_t iCount = 0;
- 
+     Int_t iCount = 0;
+     AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
     
-    for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+    for(int it = 0;it < aod->GetNumberOfTracks();++it){
+      AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -988,15 +975,17 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 }
 
    Int_t  AliAnalysisTaskJetCore::GetHardestTrackBackToJet(AliAODJet *jetbig){
-
-   
+ 
+    AliAODEvent *aod = 0;
+    if(!fESD)aod = fAODIn;
+    else aod = fAODOut;     
     Int_t index=-1;
     Double_t ptmax=-10;
     Double_t dphi=0;
     Double_t dif=0;
     Int_t iCount=0;
-    for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+    for(int it = 0;it < aod->GetNumberOfTracks();++it){
+      AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -1022,10 +1011,12 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
  Int_t  AliAnalysisTaskJetCore::GetListOfTracksCloseToJet(TList *list,AliAODJet *jetbig){
 
     Int_t iCount = 0;
- 
+      AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
   
-    for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+    for(int it = 0;it < aod->GetNumberOfTracks();++it){
+      AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -1055,7 +1046,9 @@ Int_t AliAnalysisTaskJetCore::GetNInputTracks()
 {
 
    Int_t nInputTracks = 0;
-
+     AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
    TString jbname(fJetBranchName[1]);
    //needs complete event, use jets without background subtraction
    for(Int_t i=1; i<=3; ++i){
@@ -1066,7 +1059,7 @@ Int_t AliAnalysisTaskJetCore::GetNInputTracks()
    if(jbname.Contains("AODextra")) jbname.ReplaceAll("AODextra","AOD");
 
    if(fDebug) Printf("Multiplicity from jet branch %s", jbname.Data());
-   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(jbname.Data()));
+   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(aod->FindListObject(jbname.Data()));
    if(!tmpAODjets){
       Printf("Jet branch %s not found", jbname.Data());
       Printf("AliAnalysisTaskJetCore::GetNInputTracks FAILED");
@@ -1165,9 +1158,9 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
    case 2:
       label = "track pT";
      
-         nbins = 9;
+         nbins = 10;
          xmin = 0.;
-         xmax = 150.;
+         xmax = 150;
          break;
       
       
@@ -1182,13 +1175,13 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
 
    case 4:
       label = "deltaEta";
-      nbins = 8;
-      xmin = -1.6;
-      xmax = 1.6;
+      nbins = 15;
+      xmin = -1.5;
+      xmax = 1.5;
       break;
 
 
-    case 5:
+  case 5:
       label = "deltaPhi";
       nbins = 90;
       xmin = -0.5*pi;
@@ -1199,7 +1192,7 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
         
     case 6:
       label = "leading track";
-      nbins = 13;
+      nbins = 14;
       xmin = 0;
       xmax = 50;
       break;
