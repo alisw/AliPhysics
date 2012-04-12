@@ -1,6 +1,5 @@
-AliAnalysisTaskSE* AddTaskZDCPbPb(//Int_t analysisInput = 1,
-				  Float_t centrlowlim = 0.,
-                                  Float_t centruplim = 100.,
+AliAnalysisTaskSE* AddTaskZDCPbPb(Float_t centrlowlim = 0.,
+                                  Float_t centruplim = 90.,
                                   TString centrest = "V0M",
 				  Bool_t  isMC = kFALSE)
 {
