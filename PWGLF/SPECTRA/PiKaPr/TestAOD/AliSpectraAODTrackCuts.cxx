@@ -41,7 +41,7 @@ using namespace std;
 ClassImp(AliSpectraAODTrackCuts)
 
 
-AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fTrack(0)
+AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fTrack(0)
 
 {
    // Constructor
@@ -50,6 +50,7 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
    fDCACut = 100000.0; // default value of dca cut ~ no cut
    fPCut = 100000.0; // default value of p cut ~ no cut
    fPtCut = 100000.0; // default value of pt cut ~ no cut 
+   fPtCutTOFMatching=0.6; //default value fot matching with TOF
    fQvecCutMin = -100000.0; // default value of qvec cut ~ no cut 
    fQvecCutMax = 100000.0; // default value of qvec cut ~ no cut 
    
@@ -121,7 +122,10 @@ Bool_t AliSpectraAODTrackCuts::CheckTOFMatching()
   else{
     UInt_t status; 
     status=fTrack->GetStatus();
-    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0) return kFALSE; //tof matching and PID
+    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0){
+      fHistoCuts->Fill(kTOFMatching);
+      return kFALSE; //tof matching and PID
+    } 
     return kTRUE;
   }
 }
