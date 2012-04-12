@@ -58,7 +58,8 @@ ClassImp(AliAnalysisTaskAj)
 AliAnalysisTaskAj::AliAnalysisTaskAj() :
 AliAnalysisTaskSE(),
 fESD(0x0),
-fAOD(0x0),
+fAODIn(0x0),
+fAODOut(0x0),
 fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
@@ -132,7 +133,8 @@ fhnDeltaR(0x0)
 AliAnalysisTaskAj::AliAnalysisTaskAj(const char *name) :
 AliAnalysisTaskSE(name),
 fESD(0x0),
-fAOD(0x0),
+fAODIn(0x0),
+fAODOut(0x0),
 fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
@@ -398,10 +400,16 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
    fESD=dynamic_cast<AliESDEvent*>(InputEvent());
    if (!fESD) {
       AliError("ESD not available");
-      fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-   } else {
-      fAOD = dynamic_cast<AliAODEvent*>(AODEvent());
-   }
+      fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());}
+      fAODOut = dynamic_cast<AliAODEvent*>(AODEvent());
+
+      static AliAODEvent* aod = 0;
+       // take all other information from the aod we take the tracks from
+       if(!aod){
+       if(!fESD)aod = fAODIn;
+       else aod = fAODOut;}
+  
+
  
     if(fNonStdFile.Length()!=0){
     // case that we have an AOD extension we need can fetch the jets from the extended output
@@ -430,12 +438,12 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
    }
 
    // vertex selection
-   if(!fAOD){
+   if(!aod){
      if(fDebug) Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
      fHistEvtSelection->Fill(3);
       PostData(1, fOutputList);
    }
-   AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
+   AliAODVertex* primVtx = aod->GetPrimaryVertex();
 
    if(!primVtx){
      if(fDebug) Printf("%s:%d No primVtx",(char*)__FILE__,__LINE__);
@@ -468,7 +476,7 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
    Double_t centValue = 0.; 
    if(fESD) {cent = fESD->GetCentrality();
      if(cent) centValue = cent->GetCentralityPercentile("V0M");}
-   else     centValue=fAOD->GetHeader()->GetCentrality();
+   else     centValue=aod->GetHeader()->GetCentrality();
    
    if(fDebug) printf("centrality: %f\n", centValue);
    if (centValue < fCentMin || centValue > fCentMax){
@@ -484,8 +492,8 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
   
    // get background
    AliAODJetEventBackground* externalBackground = 0;
-   if(fAOD&&!externalBackground&&fBackgroundBranch.Length()){
-      externalBackground =  (AliAODJetEventBackground*)(fAOD->FindListObject(fBackgroundBranch.Data()));
+   if(fAODOut&&!externalBackground&&fBackgroundBranch.Length()){
+      externalBackground =  (AliAODJetEventBackground*)(fAODOut->FindListObject(fBackgroundBranch.Data()));
       if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
    }
    if(fAODExtension&&!externalBackground&&fBackgroundBranch.Length()){
@@ -493,19 +501,26 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
       if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
    }
    
-   Float_t rho = 0;
+    if(fAODIn&&!externalBackground&&fBackgroundBranch.Length()){
+      externalBackground =  (AliAODJetEventBackground*)(fAODIn->FindListObject(fBackgroundBranch.Data()));
+      if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
+    } 
+  Float_t rho = 0;
    if(externalBackground)rho = externalBackground->GetBackground(0);
 
 
    // fetch jets
    TClonesArray *aodJets[2];
    aodJets[0]=0;
-   if(fAOD&&!aodJets[0]){
-   aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); 
-   aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data()));  }
+   if(fAODOut&&!aodJets[0]){
+   aodJets[0] = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchName[0].Data())); 
+   aodJets[1] = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchName[1].Data()));  }
    if(fAODExtension && !aodJets[0]){ 
    aodJets[0] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[0].Data())); 
    aodJets[1] = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchName[1].Data()));  }
+   if(fAODIn&&!aodJets[0]){
+   aodJets[0] = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fJetBranchName[0].Data())); 
+   aodJets[1] = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fJetBranchName[1].Data())); }
 
    //Double_t ptsub[aodJets[0]->GetEntriesFast()];
    //Int_t inord[aodJets[0]->GetEntriesFast()];
@@ -835,10 +850,14 @@ void AliAnalysisTaskAj::Terminate(const Option_t *)
 Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
 
     Int_t iCount = 0;
-    if(!fAOD)return iCount;
+   
+     AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
+     if(!aod) return iCount;
     
-    for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+    for(int it = 0;it < aod->GetNumberOfTracks();++it){
+      AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -853,15 +872,20 @@ Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
 }
 
    Int_t  AliAnalysisTaskAj::GetHardestTrackBackToJet(AliAODJet *jetbig){
-
+       
+      Int_t index=-1;
+     AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
+     if(!aod) return index;
    
-    Int_t index=-1;
+   
     Double_t ptmax=-10;
     Double_t dphi=0;
     Double_t dif=0;
     Int_t iCount=0;
-    for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+    for(int it = 0;it < aod->GetNumberOfTracks();++it){
+      AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -887,10 +911,15 @@ Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
  Int_t  AliAnalysisTaskAj::GetListOfTracksCloseToJet(TList *list,AliAODJet *jetbig){
 
     Int_t iCount = 0;
+     AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
+     if(!aod) return iCount;
+        
  
   
-    for(int it = 0;it < fAOD->GetNumberOfTracks();++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+    for(int it = 0;it < aod->GetNumberOfTracks();++it){
+      AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -920,6 +949,11 @@ Int_t AliAnalysisTaskAj::GetNInputTracks()
 {
 
    Int_t nInputTracks = 0;
+      AliAODEvent *aod = 0;
+     if(!fESD)aod = fAODIn;
+     else aod = fAODOut;   
+     if(!aod) return nInputTracks;
+   
 
    TString jbname(fJetBranchName[1]);
    //needs complete event, use jets without background subtraction
@@ -931,7 +965,7 @@ Int_t AliAnalysisTaskAj::GetNInputTracks()
    if(jbname.Contains("AODextra")) jbname.ReplaceAll("AODextra","AOD");
 
    if(fDebug) Printf("Multiplicity from jet branch %s", jbname.Data());
-   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(jbname.Data()));
+   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(aod->FindListObject(jbname.Data()));
    if(!tmpAODjets){
       Printf("Jet branch %s not found", jbname.Data());
       Printf("AliAnalysisTaskAj::GetNInputTracks FAILED");

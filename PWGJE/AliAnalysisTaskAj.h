@@ -91,7 +91,8 @@ public:
 private:
    // ESD/AOD events
    AliESDEvent *fESD;    //! ESD object
-   AliAODEvent *fAOD;    //! AOD event
+   AliAODEvent *fAODIn;    //! AOD event
+    AliAODEvent *fAODOut;    //! AOD event
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
    Int_t   GetListOfTracks(TList *list);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);

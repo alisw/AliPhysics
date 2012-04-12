@@ -90,7 +90,8 @@ public:
 private:
    // ESD/AOD events
    AliESDEvent *fESD;    //! ESD object
-   AliAODEvent *fAOD;    //! AOD event
+   AliAODEvent *fAODIn;    //! AOD event for AOD input tracks
+    AliAODEvent *fAODOut;    //! AOD event 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
    Int_t   GetListOfTracks(TList *list);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
@@ -168,21 +169,21 @@ private:
      TH2F*      fh2AngStructpt2C60;         //C60 pt2
      TH2F*      fh2AngStructpt3C60;         //C60 pt3
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
-     TH2F*      fh2JetsumHT1R2;             //jet shape 02
-     TH2F*      fh2JetsumHT4R2;             //jet shape 02
-     TH2F*      fh2JetsumHT8R2;             //jet shape 02
-     TH2F*      fh2JetsumHT1R4;             //jet shape 02
-     TH2F*      fh2JetsumHT4R4;             //jet shape 02
-     TH2F*      fh2JetsumHT8R4;             //jet shape 02
-     TH2F*      fh2JetsumHT1R6;             //jet shape 02
-     TH2F*      fh2JetsumHT4R6;             //jet shape 02
-     TH2F*      fh2JetsumHT8R6;             //jet shape 02
-     TH2F*      fh2JetsumHT1R8;             //jet shape 02
-     TH2F*      fh2JetsumHT4R8;             //jet shape 02
-     TH2F*      fh2JetsumHT8R8;             //jet shape 02
-     TH2F*      fh2JetsumHT1R10;             //jet shape 12
-     TH2F*      fh2JetsumHT4R10;             //jet shape 12
-     TH2F*      fh2JetsumHT8R10;             //jet shape 12
+     TH2F*      fh2JetsumHT3R2;             //jet shape 02
+     TH2F*      fh2JetsumHT3R2gap;             //jet shape 02
+
+     TH2F*      fh2JetsumHT3R4;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4gap;             //jet shape 02
+
+     TH2F*      fh2JetsumHT3R6;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6gap;             //jet shape 02
+
+     TH2F*      fh2JetsumHT3R8;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8gap;             //jet shape 02
+
+     TH2F*      fh2JetsumHT3R10;             //jet shape 12
+     TH2F*      fh2JetsumHT3R10gap;             //jet shape 12
+
 
      TH3F*      fh3spectriggered;           //triggered spectra
      TH3F*      fh3specbiased;              //biased spectra
