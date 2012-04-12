@@ -304,6 +304,35 @@ Bool_t AliRDHFCutsDplustoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
 }
 
 //---------------------------------------------------------------------------
+Int_t AliRDHFCutsDplustoKpipi::GetPIDBitMask(AliAODRecoDecayHF *rd)
+{
+  //
+  // PID selection, returns 3 if accepted, 0 if not accepted
+  // 
+  if(!fUsePID || !rd) return 3;
+  //if(fUsePID)printf("i am inside the pid \n");
+  Int_t mask=0;
+  Int_t sign=rd->GetCharge(); 
+  for(Int_t daught=0;daught<3;daught++){
+    AliAODTrack *track=(AliAODTrack*)rd->GetDaughter(daught);
+
+    if(sign==track->Charge()){//pions
+      Int_t isPion=fPidHF->MakeRawPid(track,AliPID::kPion);
+      if(isPion==0)mask+=1;
+      else if(isPion>0)mask+=3;
+      mask=mask<<2;
+    }
+    else{//kaons
+      Int_t isKaon=fPidHF->MakeRawPid(track,AliPID::kKaon);
+      if(isKaon==0)mask+=1;
+      else if(isKaon>0)mask+=3;
+      mask=mask<<2;
+    }
+  }
+  mask=mask>>2;
+  return mask;   
+}
+//---------------------------------------------------------------------------
 Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
 {
   //

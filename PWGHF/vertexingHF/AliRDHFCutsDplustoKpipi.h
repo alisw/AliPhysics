@@ -46,6 +46,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   virtual void SetStandardCutsPbPb2010();
   virtual void SetStandardCutsPbPb2011();
 
+  Int_t GetPIDBitMask(AliAODRecoDecayHF *rd);
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
   void SetUseStrongPid(Int_t spid){fUseStrongPid=spid;}
