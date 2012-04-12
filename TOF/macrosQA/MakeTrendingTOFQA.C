@@ -5,7 +5,7 @@ fbellini@cern.ch, last update on 09/01/2012
 - new method to produce trending plots from list of trees
 */
 
-Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11h", char* pass="pass1", Int_t trainId=0, Bool_t displayAll=kFALSE){
+Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11h", char* pass="pass1",Bool_t isMC=kFALSE,Int_t trainId=0, Bool_t displayAll=kFALSE){
 	Int_t filesCounter=0;
   
 	if (!runlist) {
@@ -36,19 +36,22 @@ Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11h", 
 	  
 	  //get QAtrain output
 	  if (trainId==0){
-	    sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QAresults.root",year,period,runNumber,pass);
+	    if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QAresults.root",year,period,runNumber,pass);
+	    else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QAresults.root",year,period,runNumber);
 	  } else{
-	    sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults.root",year,period,runNumber,pass,trainId);
+	    if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults.root",year,period,runNumber,pass,trainId);
+	    else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QA%i/QAresults.root",year,period,runNumber,trainId);
 	  }
+
 	  Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
 	  
 	  //run post-analysis
-	  if (RunESDQApostAnalysis(infile,runNumber,kTRUE)==0){
+	  if (RunESDQApostAnalysis(infile,runNumber,isMC,kTRUE)==0){
 	    filesCounter++;
 	    sprintf(postFileName,"postQA_%i.root",runNumber);
 	    sprintf(treePostFileName,"treePostQA_%i.root",runNumber);
 	    
-	    if (MakePostQAtree(runNumber, postFileName, treePostFileName)==0){
+	    if (MakePostQAtree(runNumber, isMC, postFileName, treePostFileName)==0){
 	      chainTree->Add(treePostFileName); 
 	      Printf("Tree chain has now %d entries ",(Int_t)chainTree->GetEntries());
 	    } else {
@@ -465,7 +468,7 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 }
 
 //-------------------------------------------------------------------------
-Int_t MakePostQAtree(Int_t runNumber, char * postFileName="postQA.0.root",char * treePostFileName="treePostQA.0.root"){  
+Int_t MakePostQAtree(Int_t runNumber, Bool_t isMC=kFALSE, char * postFileName="postQA.0.root",char * treePostFileName="treePostQA.0.root"){  
   
        TFile *postfile=TFile::Open(postFileName);
        if (!postfile) {
@@ -519,7 +522,6 @@ Int_t MakePostQAtree(Int_t runNumber, char * postFileName="postQA.0.root",char *
 
 	ttree->Branch("avL",&avL,"avL/D"); //mean track length
 	ttree->Branch("negLratio",&negLratio,"negLratio/D");//ratio of tracks with track length <350 cm
-
 	ttree->Branch("effPt1",&effPt1,"effPt1/D");//matching eff at 1 GeV/c
 	ttree->Branch("effPt2",&effPt2,"effPt2/D"); //matching eff at 2 GeV/c
 	ttree->Branch("matchEffLinFit1Gev",&matchEffLinFit1Gev,"matchEffLinFit1Gev/D");//matching eff fit param 
@@ -587,13 +589,17 @@ Int_t MakePostQAtree(Int_t runNumber, char * postFileName="postQA.0.root",char *
 	TH1F * hRawTime = (TH1F*)postfile->Get("hTOFmatchedESDrawTime");
 	if ((hRawTime)&&(hRawTime->GetEntries()>0)){
 	  avRawTime=hRawTime->GetMean();
-	  hRawTime->Fit("landau","","",200.,250.);
-	  peakRawTime=(hRawTime->GetFunction("landau"))->GetParameter(1);
-	  spreadRawTime=(hRawTime->GetFunction("landau"))->GetParameter(2);
-	  peakRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(1);
-	  spreadRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(2);
-	  printf("Main peak raw time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
-	  printf("Main peak raw time (landau): spread = %f +- %f\n",spreadRawTime,spreadRawTimeErr );
+	  if (!isMC){
+	    hRawTime->Fit("landau","","",200.,250.);
+	    peakRawTime=(hRawTime->GetFunction("landau"))->GetParameter(1);
+	    spreadRawTime=(hRawTime->GetFunction("landau"))->GetParameter(2);
+	    peakRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(1);
+	    spreadRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(2);
+	    printf("Main peak raw time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
+	    printf("Main peak raw time (landau): spread = %f +- %f\n",spreadRawTime,spreadRawTimeErr );
+	  } else {
+	   printf("Reminder: Raw time not available in MC simulated data.");
+	   }
 	}
 	
 	printf("---------------------------------------------------------------- \n");
@@ -730,7 +736,7 @@ Int_t MakePostQAtree(Int_t runNumber, char * postFileName="postQA.0.root",char *
 
 //------------------------------------------------------------------------------------
 
-Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsOnGrid=kFALSE, Bool_t canvasE=kFALSE) {
+Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isMC=kFALSE, Bool_t IsOnGrid=kFALSE, Bool_t canvasE=kFALSE) {
   
 	Bool_t debug=kFALSE;
   
