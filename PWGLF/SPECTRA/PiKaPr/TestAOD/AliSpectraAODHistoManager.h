@@ -27,8 +27,17 @@ namespace AliSpectraNameSpace
      // Add histograms 2D DCA_xy (-3,3) vs pt (0, 3)
      // For Rec data/MC, Rec MC primaries, Rec MC secondaries weak decay, Rec MC secondaries material (x6, each particle hypothesis)
 
+      // 6 Pt Generated True Primary
+      kHistPtGenTruePrimaryProtonPlus=0,          // Pt histo for protons +, generated tracks, true ID, primary Event
+      kHistPtGenTruePrimaryKaonPlus,            // Pt histo for kaons +, generated tracks, true ID, primary Event
+      kHistPtGenTruePrimaryPionPlus,            // Pt histo for pions +, generated tracks, true ID, primary Event
+      kHistPtGenTruePrimaryProtonMinus,         // Pt histo for protons -, generated tracks, true ID, primary Event
+      kHistPtGenTruePrimaryKaonMinus,           // Pt histo for kaons -, generated tracks, true ID, primary Event
+      kHistPtGenTruePrimaryPionMinus,           // Pt histo for pions -, generated tracks, true ID, primary Event
+      kNPtGenHist = kHistPtGenTruePrimaryPionMinus,                    // Number of ptGen-likehistos histos
+      
       // 6 Pt Reconstructed Sigma
-      kHistPtRecSigmaProtonPlus = 0,            // Pt histo for protons +, reconstructed tracks, sigma ID
+      kHistPtRecSigmaProtonPlus,            // Pt histo for protons +, reconstructed tracks, sigma ID
       kHistPtRecSigmaKaonPlus,                  // Pt histo for kaons +, reconsructed tracks, sigma ID
       kHistPtRecSigmaPionPlus,                  // Pt histo for pions +, reconstructed tracks, sigma ID
       kHistPtRecSigmaProtonMinus,               // Pt histo for protons -, reconstructed tracks, sigma ID
@@ -51,23 +60,22 @@ namespace AliSpectraNameSpace
       kHistPtRecSigmaPrimaryKaonMinus,          // Pt histo for kaons -, reconstructed tracks, sigma ID, primary Event
       kHistPtRecSigmaPrimaryPionMinus,          // Pt histo for pions -, reconstructed tracks, sigma ID, primary Event
             
-      // 6 Pt Reconstructed Sigma Secondary
-      kHistPtRecSigmaSecondaryProtonPlus,       // Pt histo for protons +, reconstructed tracks, sigma ID, secondary Event
-      kHistPtRecSigmaSecondaryKaonPlus,         // Pt histo for kaons +, reconsructed tracks, sigma ID, secondary Event
-      kHistPtRecSigmaSecondaryPionPlus,         // Pt histo for pions +, reconstructed tracks, sigma ID, secondary Event
-      kHistPtRecSigmaSecondaryProtonMinus,      // Pt histo for protons -, reconstructed tracks, sigma ID, secondary Event
-      kHistPtRecSigmaSecondaryKaonMinus,        // Pt histo for kaons -, reconstructed tracks, sigma ID, secondary Event
-      kHistPtRecSigmaSecondaryPionMinus,        // Pt histo for pions -, reconstructed tracks, sigma ID, secondary Event
+      // 6 Pt Reconstructed Sigma Secondary Material
+      kHistPtRecSigmaSecondaryMaterialProtonPlus,       // Pt histo for protons +, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryMaterialKaonPlus,         // Pt histo for kaons +, reconsructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryMaterialPionPlus,         // Pt histo for pions +, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryMaterialProtonMinus,      // Pt histo for protons -, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryMaterialKaonMinus,        // Pt histo for kaons -, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryMaterialPionMinus,        // Pt histo for pions -, reconstructed tracks, sigma ID, secondary Event
 
-      // 6 Pt Generated True Primary
-      kHistPtGenTruePrimaryProtonPlus,          // Pt histo for protons +, generated tracks, true ID, primary Event
-      kHistPtGenTruePrimaryKaonPlus,            // Pt histo for kaons +, generated tracks, true ID, primary Event
-      kHistPtGenTruePrimaryPionPlus,            // Pt histo for pions +, generated tracks, true ID, primary Event
-      kHistPtGenTruePrimaryProtonMinus,         // Pt histo for protons -, generated tracks, true ID, primary Event
-      kHistPtGenTruePrimaryKaonMinus,           // Pt histo for kaons -, generated tracks, true ID, primary Event
-      kHistPtGenTruePrimaryPionMinus,           // Pt histo for pions -, generated tracks, true ID, primary Event
-      kNPtSpecies = kHistPtGenTruePrimaryPionMinus,
-      
+      // 6 Pt Reconstructed Sigma Secondary WeakDecay
+      kHistPtRecSigmaSecondaryWeakDecayProtonPlus,       // Pt histo for protons +, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryWeakDecayKaonPlus,         // Pt histo for kaons +, reconsructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryWeakDecayPionPlus,         // Pt histo for pions +, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryWeakDecayProtonMinus,      // Pt histo for protons -, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryWeakDecayKaonMinus,        // Pt histo for kaons -, reconstructed tracks, sigma ID, secondary Event
+      kHistPtRecSigmaSecondaryWeakDecayPionMinus,        // Pt histo for pions -, reconstructed tracks, sigma ID, secondary Event
+
       // 6 Pt Reconstructed True Primary
       kHistPtRecTruePrimaryProtonPlus,          // Pt histo for protons +, reconstructed tracks, true ID, primary event
       kHistPtRecTruePrimaryKaonPlus,            // Pt histo for kaons +, reconsructed tracks, true ID, primary event
@@ -79,14 +87,49 @@ namespace AliSpectraNameSpace
       // Rest
       kHistPtRec,                               // Pt histo for all particles, reconstructed tracks
       kHistPtGen,                               // Pt histo for all particles, generated tracks
-      kNPtHist = kHistPtGen,                    // Number of pt-likehistos histos
+      kNPtRecHist = kHistPtGen,                    // Number of ptRec-likehistos histos
+      
       kHistPIDTPC,                              // Particle Identification histo
-      kHistPIDTPCPt,
+      kHistPIDTOF,                              
+      kNHistPID =kHistPIDTOF,                           
+      
+      kHistNSigProtonTPC,                       // NSigma separation plot    
+      kHistNSigKaonTPC,                              
+      kHistNSigPionTPC,                              
+      kHistNSigProtonPtTPC,                              
+      kHistNSigKaonPtTPC,                              
+      kHistNSigPionPtTPC,                              
+      
+      kHistNSigProtonTOF,                              
+      kHistNSigKaonTOF,                              
+      kHistNSigPionTOF,                              
+      kHistNSigProtonPtTOF,                              
+      kHistNSigKaonPtTOF,                              
+      kHistNSigPionPtTOF,                              
+     
+      kHistNSigProtonTPCTOF,                             
+      kHistNSigKaonTPCTOF,                              
+      kHistNSigPionTPCTOF,                              
+      kHistNSigProtonPtTPCTOF,                              
+      kHistNSigKaonPtTPCTOF,                              
+      kHistNSigPionPtTPCTOF,
+      kNHistNSig=kHistNSigPionPtTPCTOF,                              
+      
+      kHistqVecPos,
+      kHistqVecNeg,
       kNHist,                                   // Total number of histos
    };  // Type of events plotted in Pt Histogram
 
    const char * kHistName[] =
    {
+      // 6 Pt Reconstructed Sigma Primary
+      "histPtGenTruePrimaryProtonPlus",         // Pt histo for protons +, generated tracks, sigma ID, primary Event
+      "histPtGenTruePrimaryKaonPlus",           // Pt histo for kaons +, generated tracks, sigma ID, primary Event
+      "histPtGenTruePrimaryPionPlus",           // Pt histo for pions +, generated tracks, sigma ID, primary Event
+      "histPtGenTruePrimaryProtonMinus",          // Pt histo for protons -, generated tracks, sigma ID, primary Event
+      "histPtGenTruePrimaryKaonMinus",            // Pt histo for kaons -, generated tracks, sigma ID, primary Event
+      "histPtGenTruePrimaryPionMinus",            // Pt histo for pions -, generated tracks, sigma ID, primary Event
+      
       // 6 Pt Reconstructed Sigma
       "histPtRecSigmaProtonPlus",               // Pt histo for protons +, reconstructed tracks, sigma ID
       "histPtRecSigmaKaonPlus",                 // Pt histo for kaons +, reconsructed tracks, sigma ID
@@ -112,21 +155,21 @@ namespace AliSpectraNameSpace
       "histPtRecSigmaPrimaryPionMinus",         // Pt histo for pions -, reconstructed tracks, sigma ID, primary Event
       
       // 6 Pt Reconstructed Sigma Seconday
-      "histPtRecSigmaSecondaryProtonPlus",      // Pt histo for protons +, reconstructed tracks, sigma ID, secondary Event
-      "histPtRecSigmaSecondaryKaonPlus",        // Pt histo for kaons +, reconsructed tracks, sigma ID, secondary Event
-      "histPtRecSigmaSecondaryPionPlus",        // Pt histo for pions +, reconstructed tracks, sigma ID, secondary Event
-      "histPtRecSigmaSecondaryProtonMinus",     // Pt histo for protons -, reconstructed tracks, sigma ID, secondary Event
-      "histPtRecSigmaSecondaryKaonMinus",       // Pt histo for kaons -, reconstructed tracks, sigma ID, secondary Event
-      "histPtRecSigmaSecondaryPionMinus",       // Pt histo for pions -, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryMaterialProtonPlus",      // Pt histo for protons +, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryMaterialKaonPlus",        // Pt histo for kaons +, reconsructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryMaterialPionPlus",        // Pt histo for pions +, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryMaterialProtonMinus",     // Pt histo for protons -, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryMaterialKaonMinus",       // Pt histo for kaons -, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryMaterialPionMinus",       // Pt histo for pions -, reconstructed tracks, sigma ID, secondary Event
       
-      // 6 Pt Reconstructed Sigma Primary
-      "histPtGenTruePrimaryProtonPlus",         // Pt histo for protons +, generated tracks, sigma ID, primary Event
-      "histPtGenTruePrimaryKaonPlus",           // Pt histo for kaons +, generated tracks, sigma ID, primary Event
-      "histPtGenTruePrimaryPionPlus",           // Pt histo for pions +, generated tracks, sigma ID, primary Event
-      "histPtGenTruePrimaryProtonMinus",          // Pt histo for protons -, generated tracks, sigma ID, primary Event
-      "histPtGenTruePrimaryKaonMinus",            // Pt histo for kaons -, generated tracks, sigma ID, primary Event
-      "histPtGenTruePrimaryPionMinus",            // Pt histo for pions -, generated tracks, sigma ID, primary Event
-
+      // 6 Pt Reconstructed Sigma Seconday
+      "histPtRecSigmaSecondaryWeakDecayProtonPlus",      // Pt histo for protons +, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryWeakDecayKaonPlus",        // Pt histo for kaons +, reconsructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryWeakDecayPionPlus",        // Pt histo for pions +, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryWeakDecayProtonMinus",     // Pt histo for protons -, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryWeakDecayKaonMinus",       // Pt histo for kaons -, reconstructed tracks, sigma ID, secondary Event
+      "histPtRecSigmaSecondaryWeakDecayPionMinus",       // Pt histo for pions -, reconstructed tracks, sigma ID, secondary Event
+        
       // 6 Pt Reconstructed True
       "histPtRecTruePrimaryProtonPlus",         // Pt histo for protons +, reconstructed tracks, true ID, primary event
       "histPtRecTruePrimaryKaonPlus",           // Pt histo for kaons +, reconsructed tracks, true ID, primary event
@@ -138,16 +181,41 @@ namespace AliSpectraNameSpace
       // Rest
       "histPtRec",                              // Pt histo for all particles, reconstructed tracks
       "histPtGen",                              // Pt histo for all particles, generated tracks
+     
       "histPIDTPC",                             // Particle Identification histo
-      "histPIDTPCPt",
+      "histPIDTOF",                             
+     
+      "histNSigProtonTPC",                      // NSigma Separation plot
+      "histNSigKaonTPC",
+      "histNSigPionTPC",
+      "histNSigProtonPtTPC",
+      "histNSigKaonPtTPC",
+      "histNSigPionPtTPC",
+      
+      "histNSigProtonTOF",
+      "histNSigKaonTOF",
+      "histNSigPionTOF",
+      "histNSigProtonPtTOF",
+      "histNSigKaonPtTOF",
+      "histNSigPionPtTOF",
+      
+      "histNSigProtonTPCTOF",
+      "histNSigKaonTPCTOF",
+      "histNSigPionTPCTOF",
+      "histNSigProtonPtTPCTOF",
+      "histNSigKaonPtTPCTOF",
+      "histNSigPionPtTPCTOF",
+      
+      "histqPos",                             // qVecVsCentrality
+      "histqNeg"
    };
-
+   
    enum AODParticleSpecies_t
    {
-       kProton = 0,
-       kKaon,
-       kPion,
-       kNSpecies = kPion,
+     kProton = 0,
+     kKaon,
+     kPion,
+     kNSpecies = kPion,
    }; // Particle species used in plotting
 
    const char * kParticleSpecies[] =
@@ -178,17 +246,29 @@ public:
    virtual  ~AliSpectraAODHistoManager() {}
 
 
-   TH1F*   BookPtHistogram(const char * name);
+   TH2F*   BookPtGenHistogram(const char * name);
+   TH2F*   BookPtRecHistogram(const char * name);
    TH2F*   BookPIDHistogram(const char * name);
-   TH1*     GetHistogram(UInt_t id)      {      return (TH1*) fOutputList->At(id);   }
-   TH1*     GetPtHistogram(UInt_t id)    {      return (TH1*) fOutputList->At(id);   }
-   TH1*     GetPtHistogram(const char * name)   {      return (TH1*) fOutputList->FindObject(name);   }
-   TH1*     GetPtHistogramByName(UInt_t id)     {      return (TH1*) fOutputList->FindObject(kHistName[id]); }  // Use this if you want to read a file saved with a different histo list   
+   TH2F*   BookNSigHistogram(const char * name);
+   TH2F*   BookqVecHistogram(const char * name);
+   TH1F*   GetPtHistogram1D(const char * name,Double_t minDCA,Double_t maxDCA);
+   TH1F*   GetDCAHistogram1D(const char * name,Double_t minPt,Double_t maxPt);
+   TH2*     GetHistogram(UInt_t id)      {      return (TH2*) fOutputList->At(id);   }
+   TH2*     GetPtHistogram(UInt_t id)    {      return (TH2*) fOutputList->At(id);   }
+   TH2*     GetPtHistogram(const char * name)   {      return (TH2*) fOutputList->FindObject(name);   }
+   TH2*     GetPtHistogramByName(UInt_t id)     {      return (TH2*) fOutputList->FindObject(kHistName[id]); }  // Use this if you want to read a file saved with a different histo list   
    TH2*     GetPIDHistogram(UInt_t id)   {      return (TH2*) fOutputList->At(id);   }
    TH2*     GetPIDHistogram(const char * name)  {      return (TH2*) fOutputList->FindObject(name);   }
    TH2*     GetPIDHistogramByName(UInt_t id)    {      return (TH2*) fOutputList->FindObject(kHistName[id]);  }// Use this if you want to read a file saved with a different histo list
-   TH1F*   GetTH1F(UInt_t id)            {      return (TH1F*) GetPtHistogram(id);   }
-   TH2F*   GetTH2F(UInt_t id)            {      return (TH2F*) GetPIDHistogram(id);   }
+   TH2*     GetNSigHistogram(UInt_t id)   {      return (TH2*) fOutputList->At(id);   }
+   TH2*     GetNSigHistogram(const char * name)  {      return (TH2*) fOutputList->FindObject(name);   }
+   TH2*     GetNSigHistogramByName(UInt_t id)    {      return (TH2*) fOutputList->FindObject(kHistName[id]);  }// Use this if you want to read a file saved with a different histo list
+   TH2*     GetqVecHistogram(UInt_t id)   {      return (TH2*) fOutputList->At(id);   }
+   TH2*     GetqVecHistogram(const char * name)  {      return (TH2*) fOutputList->FindObject(name);   }
+   TH2*     GetqVecHistogramByName(UInt_t id)    {      return (TH2*) fOutputList->FindObject(kHistName[id]);  }// Use this if you want to read a file saved with a different histo list
+  
+   //TH1F*   GetTH1F(UInt_t id)            {      return (TH1F*) GetPtHistogram(id);   }
+   //TH2F*   GetTH2F(UInt_t id)            {      return (TH2F*) GetPIDHistogram(id);   }
 
   TList * GetOutputList() {return fOutputList;}
 
