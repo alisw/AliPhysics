@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/,Float_t minC=20.,Float_t maxC=80.)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D 
@@ -68,6 +68,8 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",
   v2Task->SetEtaGapFeatureForEventplaneFromTracks(kFALSE);
   v2Task->SetNMassBins(104);
   v2Task->SetMassLimits(0.2,pdgmes);
+  v2Task->SetMinCentrality(minC);
+  v2Task->SetMaxCentrality(maxC);
   v2Task->SetDebugLevel(0);
   v2Task->SetV0EventPlaneOrder(2);
   if(flagep==0){
