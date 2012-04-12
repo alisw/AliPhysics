@@ -45,6 +45,7 @@
 \newcommand{\NA}{\N{\text{A}}{}}
 \newcommand{\Ngood}{{\ensuremath N_{\text{good}}}}
 \newcommand{\GeV}[1]{\unit[#1]{\AlwaysText{GeV}}}
+\newcommand{\TeV}[1]{\unit[#1]{\AlwaysText{TeV}}}
 \newcommand{\cm}[1]{\unit[#1]{\AlwaysText{cm}}}
 \newcommand{\secref}[1]{Section~\ref{#1}}
 \newcommand{\figref}[1]{Figure~\ref{#1}}
@@ -186,7 +187,7 @@ Each of these steps will be detailed in the following.
 \label{sec:sub:event_inspection}
 
 The first thing to do, is to inspect the event for triggers.  A number
-of trigger bits, like \INEL{}, \INELONE{}, \NSD{}, and so on is then
+of trigger bits, like \INEL{} (Minimum Bias for Pb+Pb), \INELONE{}, \NSD{}, and so on is then
 propagated to the \AOD{} output.  
 
 Just after the sharing filter (described below) but before any further
@@ -194,6 +195,12 @@ processing, the vertex information is queried.  If there is no vertex
 information, or if the vertex $z$ coordinate is outside the
 pre--defined range, then no further processing of that event takes place. 
 
+\subsubsection{Displaced Vertices}
+\label{sec:sub:sub:dispvtx}
+
+The analysis can be set up to run on the `displaced vertices' that
+occur during LHC Pb+Pb running. Details on the displaced vertices, and
+their selection can be found in the VZERO analysis note \cite{maxime}.
 \subsection{Sharing filter}
 \label{sec:sub:sharing_filter}
 
@@ -376,7 +383,7 @@ corrected\footnote{The sharing correction can be disabled, in which
 and calculates the inclusive (primary + secondary) charged particle
 density in pre--defined $\etaphi$ bins.
 
-\subsubsection{Inclusive number of charged particles} 
+\subsubsection{Inclusive number of charged particles: Energy Fits} 
 \label{sec:sub:sub:eloss_fits}
 
 The number charged particles in a strip $\mult[,t]$ is calculated
@@ -420,6 +427,50 @@ The fit procedure is stopped when one for $j+1$
 \end{itemize}
 $N_{max}$ is then set to $j$.  Examples of the result of these fits
 are given in \figref{fig:eloss_fits} in Appendix~\ref{app:eloss_fits}.
+\subsubsection{Inclusive number of charged particles: Poisson Approach} 
+\label{sec:sub:sub:poisson}
+Another approach to the calculation of the number of charged particles
+is using Poisson statistics. 
+Assume that in a region of the FMD % where
+$\mult$ 
+%is azimuthally uniform in $\eta$ intervals it 
+is
+distributed according to a Poisson distribution. This means that the
+probability of $\mult=n$ becomes:
+\begin{equation}
+P(n) = \frac{\mu^n e^{-\mu}}{n!} \label{eq:PoissonDef}
+\end{equation}
+In particular the measured occupancy, $\mu_{meas}$, is the probability
+of any number of hits, thus using \eqref{eq:PoissonDef} :
+\begin{equation}
+\mu_{meas} = 1 - P(0) = 1 - e^{-\mu } 
+%\Rightarrow \mu = \ln
+%(1 - \mu_{meas})^{-1} \label{eq:PoissonDef2}
+\end{equation}
+which implies:
+\begin{equation}
+\mu = \ln
+(1 - \mu_{meas})^{-1} \label{eq:PoissonDef2}
+\end{equation}
+The mean number of particles in a hit strip becomes:
+\begin{eqnarray}
+C &=& \frac{\sum_{n>0} n P(n>0)}{\sum_{n>0} P(n>0)} \nonumber \\
+  &=& \frac{e^{-\mu}}{1-e^{-\mu}} \mu  \sum \frac{\mu^n}{n!} 
+  \nonumber \\
+  &=& \frac{e^{-\mu}}{1-e^{-\mu}} \mu e^{\mu} \nonumber \\
+  &=& \frac{\mu}{1-e^{-\mu}}
+\end{eqnarray}
+%While $\mu$ can be calculated analytically for practical purposes we
+With $\mu$ defined in \eqref{eq:PoissonDef2} this calculation is
+carried out per event in
+regions of the FMD each containing 256 strips. %Defining
+%$\mu_{meas}^{region}$ to be the measured occupancy
+ In such a region,
+$\mult$ for a hit strip ($N_{hits} \equiv 1$) in that region becomes:
+\begin{equation}
+\mult = N_{hits} \times C = 1 \times C = C
+\end{equation}
+Where C is calculated using $\mu_{meas}^{region}$.
 
 \subsubsection{Azimuthal Acceptance}
 
@@ -724,9 +775,39 @@ $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$.
 \section{Some results}
 
 %% \figurename{}s \ref{fig:1} to \ref{fig:3} shows some results.
-Figures below show some examples.  Note these are not finalised
+Figures below show some examples \cite{hhd:2009}.  Note these are not finalised
 plots. 
+\begin{figure}[hbp]
+  \centering
+  \includegraphics[keepaspectratio,width=\textwidth]{%
+    results_ppdndeta}
+  \caption{$\dndeta$ for pp for \INEL{} events at
+    $\sqrt{s}=\GeV{900}$, $\sqrt{s}=\TeV{2.76}$, and $\sqrt{s}=\TeV{7}$
+    $\cm{-10}\le v_z\le\cm{10}$, rebinned by a factor 5 \cite{hhd:2009}. 
+% Middle panel
+%    shows the ratio of ALICE data to UA5, and the bottom panel shows
+%    the ratio of the right (positive) side to the left (negative) side
+%    of the forward $\dndeta$.
+}
+  \label{fig:1}
+\end{figure} 
+\begin{figure}[hbp]
+  \centering
+  \includegraphics[keepaspectratio,width=\textwidth]{%
+    results_PbPbdndeta}
+  \caption{$\dndeta$ for Pb+Pb for Minimum Bias events at
+    $\sqrt{s_{NN}}=\TeV{2.76}$ $\cm{-10}\le v_z\le\cm{10}$, rebinned by a
+    factor 5 in 10 centrality intervals \cite{hhd:2009}. 
+% Middle panel
+%    shows the ratio of ALICE data to UA5, and the bottom panel shows
+%    the ratio of the right (positive) side to the left (negative) side
+%    of the forward $\dndeta$.
+}
+  \label{fig:2}
+\end{figure} 
 
+
+\iffalse
 \begin{figure}[hbp]
   \centering
   \includegraphics[keepaspectratio,width=\textwidth]{%
@@ -739,7 +820,7 @@ plots.
   \label{fig:1}
 \end{figure} 
 
-\iffalse
+
 \begin{figure}[tbp]
   \centering
   \includegraphics[keepaspectratio,width=\textwidth]{%
@@ -946,6 +1027,12 @@ void Analyse(int mask=AliAODForwardMult::kInel,
     Multiplicity Detector --- From Design to Installation},
   Ph.D.~thesis, University of Copenhagen, 2009,
   \url{http://www.nbi.dk/~cholm/}. 
+\bibitem{maxime} Guilbaud, M. \textit{et al}, \textit{Measurement of the charged-particle
+multiplicity density at forward rapidity
+with ALICE VZERO detector in central
+Pb-Pb collision at $\sqrt{s_{NN}}=\TeV{2.76}$},
+  ALICE internal note, 2012,
+  \url{https://aliceinfo.cern.ch/Notes/node/17/}. 
 \bibitem{nim:b1:16} 
 %% \bibitem{Hancock:1983ry}
   S.~Hancock, F.~James, J.~Movchet {\it et al.},
@@ -958,6 +1045,10 @@ void Analyse(int mask=AliAODForwardMult::kInel,
   Energy Straggling Of Protons And Pions In The Momentum Range
   0.7-gev/c To 115-gev/c,'' Phys.\ Rev.\ \textbf{A28} (1983) 615,
   \url{http://cdsweb.cern.ch/record/145395/files/PhysRevA.28.615.pdf}. 
+\bibitem{hhd:2009} Dalsgaard, H.~H., \textit{Pseudorapidity Densities in p+p and Pb+Pb collisions at
+      LHC measured with the ALICE experiment},
+  Ph.D.~thesis, University of Copenhagen, 2011,
+  \url{http://www.nbi.dk/~canute/thesis.pdf}. 
 \end{thebibliography}
 \end{document}
 
