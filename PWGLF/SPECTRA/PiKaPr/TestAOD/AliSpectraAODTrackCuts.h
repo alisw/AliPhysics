@@ -21,7 +21,7 @@ class AliSpectraAODTrackCuts : public TNamed
 {
 public:
 
-   enum { kTrkBit = 0, kTrkEta, kTrkDCA, kTrkP, kTrkPt, kNTrkCuts};
+   enum { kTrkBit = 0, kTrkEta, kTrkDCA, kTrkP, kTrkPt, kTOFMatching, kNTrkCuts};
 
 
    AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fTrack(0) {}
