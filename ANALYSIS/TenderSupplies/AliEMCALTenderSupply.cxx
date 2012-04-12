@@ -1035,10 +1035,11 @@ Int_t AliEMCALTenderSupply::InitRecParam()
   // load some default on OCDB failure
   
   Int_t runNum = -1;
-  AliCDBManager    * man  = 0x0 ;
-  TObjArray        * arr  = 0x0 ;
-  AliEMCALRecParam * pars = 0x0 ;
-  const AliESDRun  * run  = 0x0 ;
+  AliCDBManager    * man   = 0x0 ;
+  TObjArray        * arr   = 0x0 ;
+  AliEMCALRecParam * pars  = 0x0 ;
+  AliCDBEntry      * entry = 0x0;
+  const AliESDRun  * run   = 0x0 ;
   TString beamType ;
   
   // clean the previous reco params, if those came from OCDB
@@ -1069,8 +1070,11 @@ Int_t AliEMCALTenderSupply::InitRecParam()
   man = AliCDBManager::Instance();
 
   // load the file data
-  if(man->Get("EMCAL/Calib/RecoParam", runNum))
-    arr = (TObjArray*)(man->Get("EMCAL/Calib/RecoParam", runNum)->GetObject());
+  if(man)
+    entry = man->Get("EMCAL/Calib/RecoParam", runNum);
+  
+  if( entry )
+    arr = (TObjArray*)(entry->GetObject());
   
   if( arr ){
     // load given parameters based on beam type
