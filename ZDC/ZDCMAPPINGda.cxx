@@ -158,7 +158,9 @@ int main(int argc, char **argv) {
     
     /* loop on events (infinite) */
     for(;;) {
-
+      
+      if(nphys > 50000) break;
+      
       struct eventHeaderStruct *event;
       eventTypeType eventT;
  
