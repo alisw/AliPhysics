@@ -958,7 +958,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[2]=d->Py();
 	tmp[3]=d->Pz();
 	tmp[4]=d->Pt();
-	tmp[5]=fRDCutsAnalysis->GetIsSelectedPID();	  
+	tmp[5]=fRDCutsAnalysis->GetPIDBitMask(d);	  
 	tmp[6]=d->PtProng(0);	  
 	tmp[7]=d->PtProng(1);	  
 	tmp[8]=d->PtProng(2);
