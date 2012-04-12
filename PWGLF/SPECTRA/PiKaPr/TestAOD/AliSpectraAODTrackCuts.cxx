@@ -41,7 +41,7 @@ using namespace std;
 ClassImp(AliSpectraAODTrackCuts)
 
 
-AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0), fHistoCuts(0), fTrack(0)
+AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fTrack(0)
 
 {
    // Constructor
@@ -50,6 +50,8 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
    fDCACut = 100000.0; // default value of dca cut ~ no cut
    fPCut = 100000.0; // default value of p cut ~ no cut
    fPtCut = 100000.0; // default value of pt cut ~ no cut 
+   fQvecCutMin = -100000.0; // default value of qvec cut ~ no cut 
+   fQvecCutMax = 100000.0; // default value of qvec cut ~ no cut 
    
 }
 
@@ -63,7 +65,7 @@ Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track)
       return kFALSE;
    }
    fTrack = track;
-   fIsSelected = (CheckTrackType() && CheckEtaCut() && CheckDCACut() && CheckPCut() && CheckPtCut());
+   fIsSelected = (CheckTrackType() && CheckEtaCut() && CheckDCACut() && CheckPCut() && CheckPtCut() && CheckTOFMatching());
    return fIsSelected ;
 }
 //_________________________________________________________
@@ -108,6 +110,21 @@ Bool_t AliSpectraAODTrackCuts::CheckPtCut()
     fHistoCuts->Fill(kTrkPt);
     return kFALSE;
 }
+
+//_______________________________________________________
+Bool_t AliSpectraAODTrackCuts::CheckTOFMatching()
+{
+  // check Pt cut
+  //    if ((fTrack->Pt() < fPtCut) && (fTrack->Pt() > 0.3 )) return kTRUE;
+  
+  if (fTrack->Pt() < fPtCutTOFMatching) return kTRUE;
+  else{
+    UInt_t status; 
+    status=fTrack->GetStatus();
+    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0) return kFALSE; //tof matching and PID
+    return kTRUE;
+  }
+}
 //_______________________________________________________
 void AliSpectraAODTrackCuts::PrintCuts() const
 {
@@ -118,6 +135,8 @@ void AliSpectraAODTrackCuts::PrintCuts() const
     cout << " > DCA cut\t" << fDCACut << endl;
     cout << " > P cut\t" << fPCut << endl;
     cout << " > Pt cut \t" << fPtCut << endl;
+    cout << " > Q vactor Min \t" << fQvecCutMin << endl;
+    cout << " > Q vactor Max \t" << fQvecCutMax << endl;
 }
 //_______________________________________________________
 void AliSpectraAODTrackCuts::SetTrackType(UInt_t bit)
