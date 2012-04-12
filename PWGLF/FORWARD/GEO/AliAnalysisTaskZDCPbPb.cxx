@@ -410,8 +410,8 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       Float_t energyZPC  = (Float_t) (esdZDC->GetZPCEnergy());
       Float_t energyZNA  = (Float_t) (esdZDC->GetZNAEnergy());
       Float_t energyZPA  = (Float_t) (esdZDC->GetZPAEnergy());
-      Float_t energyZEM1 = (Float_t) (esdZDC->GetZEM1Energy());
-      Float_t energyZEM2 = (Float_t) (esdZDC->GetZEM2Energy());
+      Float_t energyZEM1 = (Float_t) (esdZDC->GetZEM1Energy()/8.);
+      Float_t energyZEM2 = (Float_t) (esdZDC->GetZEM2Energy()/8.);
       
       const Double_t * towZNC = esdZDC->GetZNCTowerEnergy();
       const Double_t * towZPC = esdZDC->GetZPCTowerEnergy();
@@ -585,6 +585,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       fhVZEROvsZEM->Fill(energyZEM1+energyZEM2, multV0A+multV0C);     
       
       Double_t asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
+      fhAsymm->Fill(asymmetry);
       fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
       fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
     //}
