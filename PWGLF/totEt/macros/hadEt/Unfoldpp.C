@@ -23,8 +23,15 @@ TH1F *GetReconstructedEt(TF1 *inputfunc, int nevents, char *name, int lowbound, 
 TH1F *GetReconstructedEt(TH1F *input, int nevents, char *name, int lowbound, int highbound, int nbins);
 TH1F *GetTrueEt(TF1 *inputfunc, int nevents, char *name, int lowbound, int highbound, int nbins);
 Float_t GetChi2(TH1F *reconstructed, TH1F *simulated);
-
-void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="rootFiles/LHC11b10a/Et.ESD.new.sim.LHC11b10a.root", char *datainfilename="rootFiles/LHC11a/Et.ESD.new.sim.LHC11a.root", bool zerolowetbins = false, int minbin = 4, int trainingcase =0){
+//For both training and testing cases the code is:
+//0 = MC
+//1 = reweighted MC
+//2 = exponential
+//3 = flat distribution
+//4 = Straight line
+//5 = Half Gaussian
+//6 = double exponential
+void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="rootFiles/LHC11b10a/Et.ESD.new.sim.LHC11b10a.root", char *datainfilename="rootFiles/LHC11a/Et.ESD.new.sim.LHC11a.root", bool zerolowetbins = false, int minbin = 4, int trainingcase =2, int testcase = 0, int varymean=0,int niter = 3){
 
 #ifdef __CINT__
   gSystem->Load("~/alicework/RooUnfold-1.1.1/libRooUnfold");
@@ -149,8 +156,10 @@ void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="
   //TF1 *func = new TF1("func","([0])/[1]*exp(-x/[1])",0,100);
   func->FixParameter(0,1.0);
   func->SetParameter(0,1);
-  func->SetParameter(1,1.0/2.23876e-01);
+  //func->SetParameter(1,1.0/2.23876e-01);
+  func->SetParameter(1,(1.0+varymean*0.3)* hSim->GetMean());
   func->SetParameter(2,1);
+  func->SetLineColor(4);
 //   TF1 *funcLong = new TF1("funcLong","([0]+[1]*x+[2]*x*x+[3]*x*x*x+x^[4])/[5]*exp(-(x**[6])/[5])",lowrange,highrange);
 //   funcLong->SetParameter(0,1.00467e-01);
 //   funcLong->SetParameter(1,-2.82339e-01);
@@ -187,12 +196,13 @@ void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="
   TH1F *hMeasuredGaus = GetReconstructedEt(funcGaus,nevents,Form("testsmearedgaus%i",i),lowbound,highbound,hITS->GetNbinsX());
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~DOUBLE EXPONENT LINE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  TF1 *funcDoubleExponential = new TF1("funcDoubleExponential","[0]/[1]*exp(-x/[1])+[2]/[3]*exp(-x/[3])",0,100);//[1] is the mean x
-  //TF1 *funcDoubleExponential = new TF1("funcDoubleExponential","[0]/[1]*exp(-x/[1])",0,100);//[1] is the mean x
-  funcDoubleExponential->FixParameter(0,1.0);
-  funcDoubleExponential->SetParameter(1,4.0);
-  funcDoubleExponential->FixParameter(2,0.03);
-  funcDoubleExponential->FixParameter(3,0.25);
+  TF1 *funcDoubleExponential = new TF1("funcDoubleExponential","[0]/[1]*exp(-x/[1])+[2]/[3]*exp(-x/[3])",0,100);
+  //TF1 *funcDoubleExponential = new TF1("funcDoubleExponential","[0]/[1]*exp(-x/[1])",0,100);
+  funcDoubleExponential->SetParameter(0,1.0);
+  funcDoubleExponential->SetParameter(1,hSim->GetMean());
+  funcDoubleExponential->FixParameter(2,0.1);
+  funcDoubleExponential->FixParameter(3,1.0);
+  funcDoubleExponential->SetLineColor(5);
   TH1F *hSimDoubleExponential = GetTrueEt(funcDoubleExponential,nevents,Form("testtruedoubleexponent%i",i),lowbound,highbound,hITS->GetNbinsX());
   TH1F *hMeasuredDoubleExponential = GetReconstructedEt(funcDoubleExponential,nevents,Form("testsmeareddoubleexponent%i",i),lowbound,highbound,hITS->GetNbinsX());
 
@@ -309,17 +319,59 @@ void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="
   cout<<"integrals plain "<<hSimStraight->Integral("width")<<" "<<hMeasuredStraight->Integral("width")<<endl;
   cout<<"integrals plain "<<hSimGaus->Integral("width")<<" "<<hMeasuredGaus->Integral("width")<<endl;
   cout<<"integrals plain "<<hSimDoubleExponential->Integral("width")<<" "<<hMeasuredDoubleExponential->Integral("width")<<endl;
-  //================UNFOLDING MC========================
-  TH1F *hTruth = hSim;
+  //================SETTING TEST CASE========================
+
+  TH1F *hTruth;
   TH1F *hMeasured;
-  if(its) hMeasured = hITS;
-  else{hMeasured = hTPC;}
+  switch(testcase){
+  case 0:
+    cout<<"Test case is pure MC"<<endl;
+    hTruth = hSim;
+    if(its) hMeasured = hITS;
+    else{hMeasured = hTPC;}
+    break;
+  case 1:
+    cout<<"Test case is a reweighted MC"<<endl;
+    hTruth = hSimReweighted;
+    hMeasured = hMeasReweighted;
+    break;
+  case 2:
+    cout<<"Test case is a exponential"<<endl;
+    hTruth = hSimExponential;
+    hMeasured = hMeasuredExponential;
+    break;
+  case 3:
+    cout<<"Test case is a flat distribution"<<endl;
+    hTruth = hSimFlat       ;
+    hMeasured = hMeasuredFlat       ;
+    break;
+  case 4:
+    cout<<"Test case is a straight line distribution"<<endl;
+    hTruth = hSimStraight       ;
+    hMeasured = hMeasuredStraight    ;
+    break;
+  case 5:
+    cout<<"Test case is a half Gaussian distribution"<<endl;
+    hTruth = hSimGaus       ;
+    hMeasured = hMeasuredGaus    ;
+    break;
+  case 6:
+    cout<<"Test case is a double exponential"<<endl;
+    hTruth = hSimDoubleExponential;
+    hMeasured = hMeasuredDoubleExponential;
+    break;
+  }
+  cout<<"MC truth: "<<hTruth->GetMean()<<" Mean observed "<<hMeasured->GetMean()<<endl;
+  hTruth->GetXaxis()->SetTitle(hSim->GetTitle());
+  hMeasured->GetXaxis()->SetTitle(hSim->GetTitle());
+
+  //================UNFOLDING MC========================
   if(zerolowetbins){
     for(int i=0;i<minbin;i++){
       hMeasured->SetBinContent(i,0.0);
     }
   }
-  RooUnfoldBayes   unfold (&response, hMeasured, 3);    // OR
+  RooUnfoldBayes   unfold (&response, hMeasured, niter);    // OR
   unfold.SetSmoothing(true);
 
   //================PLOTTING===========================
@@ -340,6 +392,12 @@ void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="
   canvas1->SetLogy();
 
   TH1D* hReco1= (TH1D*) unfold.Hreco();
+  //rescale just in case
+//   float myscale = hTruth->Integral("width") / hReco1->Integral("width");
+//   cout<<"Rescaling result by "<<myscale<<endl;
+//   hReco1->Scale(myscale);
+  hReco1->Fit(func,"NI","",1.0,100.0);
+  hReco1->Fit(funcDoubleExponential,"NI","",1.0,100.0);
   hTruth->SetMarkerStyle(22);
   hReco1->SetMarkerStyle(30);
   hReco1->SetLineColor(2);
@@ -348,21 +406,27 @@ void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="
   hITS->SetLineColor(3);
   hTPC->SetMarkerColor(7);
   hTPC->SetLineColor(7);
+  hTruth->GetXaxis()->SetRange(0,hTruth->FindBin(10.0));
   hTruth->Draw();
   hReco1->Draw("same");
   //hITS->Draw("same");
   //hTPC->Draw("same");
-  cout<<" Means "<<hSim->GetMean()<<" "<<hReco1->GetMean()<<endl;
-  hSim->GetXaxis()->SetRange(minbin,hSim->GetNbinsX());
-  hReco1->GetXaxis()->SetRange(minbin,hReco1->GetNbinsX());
-  cout<<" Truncated Means "<<hSim->GetMean()<<" "<<hReco1->GetMean()<<endl;
+  func->Draw("same");
+  funcDoubleExponential->Draw("same");
+  hTruth->GetXaxis()->SetRange(0,hTruth->GetNbinsX());
+  cout<<" Means "<<hTruth->GetMean()<<" "<<hReco1->GetMean()<<endl;
+  hTruth->GetXaxis()->SetRange(hTruth->FindBin(1.),hTruth->GetNbinsX());
+  hReco1->GetXaxis()->SetRange(hTruth->FindBin(1.),hReco1->GetNbinsX());
+  cout<<" Truncated Means "<<hTruth->GetMean()<<" "<<hReco1->GetMean()<<endl;
 
-   TLegend *leg = new TLegend(0.645973,0.851399,0.746644,0.951049);
+  TLegend *leg = new TLegend(0.505034,0.744755,0.605705,0.952797);
   leg->SetFillStyle(0);
   leg->SetFillColor(0);
   leg->SetBorderSize(0);
   leg->AddEntry(hSim,"Simulated E_{T}");
   leg->AddEntry(hReco1,"Unfolded result");
+  leg->AddEntry(func,"Exponential");
+  leg->AddEntry(funcDoubleExponential,"Double exponential");
   hSim->SetLineColor(1);
   hSim->GetYaxis()->SetTitleOffset(1.3);
   hSim->GetYaxis()->SetTitle("1/N_{eve} dN/dE_{T}");
@@ -393,9 +457,9 @@ void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="
   //   canvas1->cd(3);
 
 //   hReco1->Draw("");
-  cout<<"Bin 1: true :"<< hSim->GetBinContent(1)<<"+/-"<<hSim->GetBinError(1)<<" reco:"<<hReco1->GetBinContent(1)<<"+/-"<<hSim->GetBinError(1)<<endl;
+  //cout<<"Bin 1: true :"<< hSim->GetBinContent(1)<<"+/-"<<hSim->GetBinError(1)<<" reco:"<<hReco1->GetBinContent(1)<<"+/-"<<hSim->GetBinError(1)<<endl;
 
-  unfold.PrintTable(cout,hSim);
+  //  unfold.PrintTable(cout,hSim);
 
 
 //   TCanvas *canvas2 = new TCanvas("canvas2","canvas2",1200,600);
@@ -451,6 +515,67 @@ void Unfoldpp(int had = 2, bool its = true, int difftype = 0, char *infilename="
 //   canvas5->SetFrameFillColor(0);
 //   canvas5->SetFrameBorderMode(0);
 
+//Calculating mean/mean error with covariant matrix
+  int nbins = hReco1->GetNbinsX();
+  TMatrixD cov = unfold.Ereco();
+  TVectorD result = unfold.Vreco();
+  TVectorD resultError = unfold.ErecoV();
+//   TMatrixD cov = unfold.GetMeasuredCov();
+//   TVectorD result = unfold.Vmeasured();
+//   TVectorD resultError = unfold.Emeasured();
+  int cutoffbin = hReco1->FindBin(1.01);//Get the bin at 1 GeV, with a little wiggle room to be sure it returns the bin I mean
+  float cutoff = hReco1->GetBinLowEdge(cutoffbin);
+  float binwidth = hReco1->GetBinWidth(1);
+  float mean = 0;
+  float meanerr = 0;//this is actually the error squared but I'm just trying a different way of calculating it
+  float meanvar = 0;
+  float total = 0;
+  //truncated values
+  float meantrunc = 0;
+  float meanerrtrunc = 0;//this is actually the error squared but I'm just trying a different way of calculating it
+  float meanvartrunc = 0;
+  float totaltrunc = 0;
+  for(int i=0;i<nbins;i++){
+    total += result(i)*binwidth;
+    float energyi = hReco1->GetBinCenter(i+1);
+    mean += result(i)*binwidth*energyi;
+    meanerr += resultError(i)*resultError(i)*binwidth*energyi*binwidth*energyi;
+    if(i>=cutoffbin){
+      totaltrunc += result(i)*binwidth;
+      meantrunc += result(i)*binwidth*energyi;
+      meanerrtrunc += resultError(i)*resultError(i)*binwidth*energyi*binwidth*energyi;
+    }
+    for(int j=0;j<nbins;j++){
+      float energyj = hReco1->GetBinCenter(j+1);
+      meanvar += energyi*binwidth  *  energyj*binwidth  * cov(i,j);
+      if(i>=cutoffbin && j>=cutoffbin){
+	meanvartrunc += energyi*binwidth  *  energyj*binwidth  * cov(i,j);
+      }
+//       if(i==j && i<40 && j<40 && cov(i,j)>0.0){
+// 	cout<<"i "<<i<<" bin center "<<hReco1->GetBinCenter(i+1)<<" j "<<j<<" cov "<<cov(i,j)<<" err "<< result(i)*binwidth*energyi  *  result(j)*binwidth*energyj  * cov(i,j);
+// 	if(i==j) cout<<" error "<<resultError(i)<<" rel. err "<< resultError(i)/result(i)*100.0<<"%";
+// 	cout<< endl;
+//       }
+    }
+//     cout<<"i "<<i;
+//     cout<<" result "<<result(i);
+//     cout<<" +/- "<<resultError(i);
+//     cout<<endl;
+  }
+  cout<<"Mean "<<mean<<" total "<<total<<" mean err "<<TMath::Sqrt(meanvar)<<" or "<<TMath::Sqrt(meanerr)<<endl;
+
+  TF1 *funcMean = new TF1("funcMean","x*([0])/[1]*exp(-x/[1])",0,100);
+  for(int i=0; i<2;i++){funcMean->SetParameter(i,func->GetParameter(i));}
+  float expoExtrap = funcMean->Integral(0.0,1.0);
+  float expoExtrapTotal = func->Integral(0.0,1.0);
+  TF1 *funcDoubleExponentialMean = new TF1("funcDoubleExponentialMean","x*[0]/[1]*exp(-x/[1])+x*[2]/[3]*exp(-x/[3])",0,100);
+  for(int i=0; i<2;i++){funcDoubleExponentialMean->SetParameter(i,funcDoubleExponential->GetParameter(i));}
+  float dblExpoExtrap = funcDoubleExponentialMean->Integral(0.0,1.0);
+  float dblExpoExtrapTotal = funcDoubleExponential->Integral(0.0,1.0);
+  cout<<"Truncated Mean "<<meantrunc<<" total "<<totaltrunc<<" mean err "<<TMath::Sqrt(meanvar)<<endl;
+  cout<<"Extrapolations:  exponential "<<expoExtrap<<" double exponential "<<dblExpoExtrap<<endl;
+  cout<<"Total: high "<<dblExpoExtrap+meantrunc<<" best "<<expoExtrap+meantrunc<<" low "<<mean<<endl;
+  cout<<"Total scaled: low "<<(dblExpoExtrap+meantrunc)/(totaltrunc+dblExpoExtrapTotal)<<" best "<<(expoExtrap+meantrunc)/(totaltrunc+expoExtrapTotal)<<" high "<<mean/total<<endl;
 
 }
 
@@ -488,6 +613,8 @@ TH1F *GetReconstructedEt(TH1F *input, int nevents, char *name, int lowbound, int
       hResult->Fill(etreco);
     }
   }
+  hResult->GetYaxis()->SetTitle("1/N_{eve} dN/dE_{T}");
+  hResult->GetXaxis()->SetTitle("E_{T}");
   //float binwidth = hResult->GetBinWidth(1);
   //hResult->Scale(1.0/nevents/binwidth);
   return hResult;
@@ -503,6 +630,8 @@ TH1F *GetTrueEt(TF1 *inputfunc, int nevents, char *name, int lowbound, int highb
   }
   float binwidth = hResult->GetBinWidth(1);
   //hResult->Scale(1.0/nevents/binwidth);
+  hResult->GetYaxis()->SetTitle("1/N_{eve} dN/dE_{T}");
+  hResult->GetXaxis()->SetTitle("E_{T}");
   return hResult;
 }
 
