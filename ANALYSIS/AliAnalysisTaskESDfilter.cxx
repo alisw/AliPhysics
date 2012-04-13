@@ -511,7 +511,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 //      vCascade->Print();
 //    }
     
-    if(esd.GetTOFHeader() && fIsPidOwner) fESDpid->SetTOFResponse(const_cast<AliESDEvent*>(&esd), (AliESDpid::EStartTimeType_t)fTimeZeroType); //in case of AOD production strating form LHC10e without Tender. 
+    if(esd.GetTOFHeader() && fIsPidOwner) fESDpid->SetTOFResponse(const_cast<AliESDEvent*>(&esd), (AliESDpid::EStartTimeType_t)fTimeZeroType); //in case of AOD production starting form LHC10e without Tender. 
 
 
     // 3 - Add the bachelor track from the cascade
@@ -2124,8 +2124,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
     for (Int_t i=0; i<10; i++) t0spread[i] = (TMath::Sqrt(esd->GetSigma2DiamondZ()))/0.03; //0.03 to convert from cm to ps
     fESDpid->GetTOFResponse().SetT0resolution(t0spread);
     fESDpid->GetTOFResponse().SetTimeResolution(intrinsicTOFres);
-    
     fESDpid->SetTOFResponse(esd, (AliESDpid::EStartTimeType_t)fTimeZeroType);    
+    AliTOFHeader tmpTOFHeader(0,t0spread[0],0,NULL,NULL,NULL,intrinsicTOFres,t0spread[0]);   
+    AODEvent()->SetTOFHeader(&tmpTOFHeader);         // write dummy TOF header in AOD
+  } else {
+    AODEvent()->SetTOFHeader(esd->GetTOFHeader());    // write TOF header in AOD
   }
   
   if(esd->GetTOFHeader() && fIsPidOwner) fESDpid->SetTOFResponse(esd, (AliESDpid::EStartTimeType_t)fTimeZeroType); //in case of AOD production strating form LHC10e without Tender. 
