@@ -542,16 +542,16 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutMinDCAToVertexZ = fCutMinDCAToVertexZ;
 
   target.fCutMaxDCAToVertexXYPtDep = fCutMaxDCAToVertexXYPtDep;
-  target.SetMaxDCAToVertexXYPtDep(fCutMaxDCAToVertexXYPtDep.Data());
+  if(fCutMaxDCAToVertexXYPtDep.Length()>0)target.SetMaxDCAToVertexXYPtDep(fCutMaxDCAToVertexXYPtDep.Data());
 
   target.fCutMaxDCAToVertexZPtDep = fCutMaxDCAToVertexZPtDep;
-  target.SetMaxDCAToVertexZPtDep(fCutMaxDCAToVertexZPtDep.Data());
+  if(fCutMaxDCAToVertexZPtDep.Length()>0)target.SetMaxDCAToVertexZPtDep(fCutMaxDCAToVertexZPtDep.Data());
 
   target.fCutMinDCAToVertexXYPtDep = fCutMinDCAToVertexXYPtDep;
-  target.SetMinDCAToVertexXYPtDep(fCutMinDCAToVertexXYPtDep.Data());
+  if(fCutMinDCAToVertexXYPtDep.Length()>0)target.SetMinDCAToVertexXYPtDep(fCutMinDCAToVertexXYPtDep.Data());
 
   target.fCutMinDCAToVertexZPtDep = fCutMinDCAToVertexZPtDep;
-  target.SetMinDCAToVertexZPtDep(fCutMinDCAToVertexZPtDep.Data());
+  if(fCutMinDCAToVertexZPtDep.Length()>0)target.SetMinDCAToVertexZPtDep(fCutMinDCAToVertexZPtDep.Data());
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
