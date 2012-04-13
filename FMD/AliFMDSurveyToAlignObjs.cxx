@@ -318,6 +318,8 @@ namespace {
   {
     static Double_t off = 0;
     return off;
+
+#if 0
     if (off != 0) return off;
     
     const char* lidN = "FMD1_lid_mat0";
@@ -333,6 +335,7 @@ namespace {
     off                  = lidZ-3.3;
     
     return off;
+#endif
   }
 }
 
@@ -670,8 +673,7 @@ AliFMDSurveyToAlignObjs::FillDefaultAlignObjs()
     const char* side   = sides;
     while (*side) { 
       TString path = TString::Format("FMD/FMD%d_%c", d, *side);
-      AliAlignObjParams* p = FindAlignObj(path);
-      if (!p) p = CreateDefaultAlignObj(path, 0);
+      if (!FindAlignObj(path)) CreateDefaultAlignObj(path, 0);
 
       const char halves[] = { 'I', d == 1 ? '\0' : 'O', 0 };
       const char*  half = halves;
