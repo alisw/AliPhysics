@@ -23,10 +23,8 @@
 #include "TNamed.h"
 #endif
 
-class TAxis;
 class TH1;
 class TH2;
-class TH3;
 class TF1;
 class TGraphErrors;
 class TObjArray;
@@ -95,6 +93,8 @@ public:
 
   AliTRDresolution();
   AliTRDresolution(char* name, Bool_t xchange=kTRUE);
+  AliTRDresolution(const AliTRDresolution&);
+  AliTRDresolution& operator=(const AliTRDresolution&);
   virtual ~AliTRDresolution();
   
   static Bool_t   FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
@@ -103,7 +103,6 @@ public:
 //  Float_t GetCorrectionX(Int_t det, Int_t tb) const {return fXcorr[det][tb];}
   static void     GetRangeZ(TH2 *h2, Float_t &m, Float_t &M);
   Float_t         GetDyRange() const {return fDyRange;}
-  static Float_t  GetMeanStat(TH1 *h, Float_t cut=0., Option_t *opt="");
   Float_t         GetPtThreshold() const {return fPtThreshold;}
   static Int_t    GetPtBin(Float_t pt);
   Bool_t          GetRefFigure(Int_t ifig);
@@ -143,9 +142,7 @@ public:
   void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
   void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
-  static void     SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
   void            SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
-  static void     SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
   void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
@@ -154,35 +151,6 @@ public:
 
   void            Terminate(Option_t * opt);
   static Bool_t   UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
-
-  class AliTRDresolutionProjection : public TNamed
-  {
-    friend class AliTRDresolution;  // Friend class
-  public:
-    AliTRDresolutionProjection();
-    virtual ~AliTRDresolutionProjection();
-    AliTRDresolutionProjection& operator+=(const AliTRDresolutionProjection& other);
-    AliTRDresolutionProjection& operator=(const AliTRDresolutionProjection& other);
-    void  Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[]);
-    void  Increment(Int_t bin[], Double_t v);
-    TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0, Bool_t del=kTRUE);
-    void  SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[]);
-    void  SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
-  private:
-    AliTRDresolutionProjection(const AliTRDresolutionProjection&);
-  protected:
-    TH3  *fH;          // data container
-    Int_t fAx[3];      // projection axes
-    Int_t fNrebin;     // no. of rebinning steps
-    Int_t *fRebinX;    //[fNrebin] rebinning of the X axis
-    Int_t *fRebinY;    //[fNrebin] rebinning of the Y axis
-    Float_t fRange[4]; //show range of the z processed
-
-    ClassDef(AliTRDresolutionProjection, 2)  // wrapper for a projection container THnSparse -> TH3
-  };
-
-  AliTRDresolution(const AliTRDresolution&);
-  AliTRDresolution& operator=(const AliTRDresolution&);
 
   void        AdjustF1(TH1 *h, TF1 *f);
   TObjArray*  BuildMonitorContainerCluster(const char* name, Bool_t expand=kFALSE, Float_t range=-1.);
@@ -212,7 +180,7 @@ protected:
   static Int_t const    fgkNbins[kNdim];  //! no of bins/projection
   static Double_t const fgkMin[kNdim];    //! low limits for projections
   static Double_t const fgkMax[kNdim];    //! high limits for projections
-  static Char_t const  *fgkTitle[kNdim];  //! title of projection 
+  static Char_t const  *fgkTitle[kNdim];  //! title of projection
   static Float_t        fgPtBin[25];      //! pt segmentation
   TObjArray            *fProj;            //! result holder - sigma values
   TDatabasePDG         *fDBPDG;           //! PDG database

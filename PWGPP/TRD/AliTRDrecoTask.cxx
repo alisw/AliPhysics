@@ -22,6 +22,8 @@
 #include "TList.h"
 #include "TMap.h"
 #include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
 #include "TF1.h"
 #include "TObjArray.h"
 #include "TDirectory.h"
@@ -357,7 +359,7 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
   }
   Float_t xmin(0.), xmax(0.);
   TBox *gdet = new TBox();
-  gdet->SetLineWidth(kBlack);gdet->SetFillColor(kBlack);
+  gdet->SetLineColor(kBlack);gdet->SetFillColor(kBlack);
   Int_t style[] = {0, 3003};
   for(Int_t idet(0); idet<540; idet++){
     if(idet%6 != ly) continue;
@@ -462,3 +464,244 @@ void AliTRDrecoTask::Adjust(TF1 *f, TH1 * const h)
   f->SetParLimits(5, 0., 1.e2);
   f->SetParameter(5, 2.e-1);
 }
+
+
+//________________________________________________________
+void AliTRDrecoTask::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, Int_t bymax, Float_t thr)
+{
+// Normalize histo content to the mean value in the range specified by bin ranges
+// [bxmin, bxmax] on the x axis and [bymin, bymax] on the y axis.
+// Optionally a threshold "thr" can be specified to disregard entries with no meaning
+
+  Float_t s = 0., c=0.; Int_t is(0);
+  for(Int_t ix(bxmin); ix<=(bxmax>0?bxmax:(h2->GetXaxis()->GetNbins())); ix++){
+    for(Int_t iy(bymin); iy<=(bymax>0?bymax:(h2->GetYaxis()->GetNbins())); iy++){
+      if((c = h2->GetBinContent(ix, iy))<thr) continue;
+      s += c; is++;
+    }
+  }
+  s/= is?is:1;
+  for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
+    for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
+      if((c = h2->GetBinContent(ix, iy))<thr) h2->SetBinContent(ix, iy, thr-100);
+      else h2->SetBinContent(ix, iy, 100.*(c/s-1.));
+    }
+  }
+}
+
+//________________________________________________________
+void AliTRDrecoTask::SetRangeZ(TH2 *h2, Float_t min, Float_t max, Float_t thr)
+{
+// Set range on Z axis such to avoid outliers
+
+  Float_t c(0.), dz(1.e-3*(max-min));
+  for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
+    for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
+      if((c = h2->GetBinContent(ix, iy))<thr) continue;
+      if(c<=min) h2->SetBinContent(ix, iy, min+dz);
+    }
+  }
+  h2->GetZaxis()->SetRangeUser(min, max);
+}
+
+//________________________________________________________
+Float_t AliTRDrecoTask::GetMeanStat(TH1 *h, Float_t cut, Option_t *opt)
+{
+// return mean number of entries/bin of histogram "h"
+// if option "opt" is given the following values are accepted:
+//   "<" : consider only entries less than "cut"
+//   ">" : consider only entries greater than "cut"
+
+  //Int_t dim(h->GetDimension());
+  Int_t nbx(h->GetNbinsX()), nby(h->GetNbinsY()), nbz(h->GetNbinsZ());
+  Double_t sum(0.); Int_t n(0);
+  for(Int_t ix(1); ix<=nbx; ix++)
+    for(Int_t iy(1); iy<=nby; iy++)
+      for(Int_t iz(1); iz<=nbz; iz++){
+        if(strcmp(opt, "")==0){sum += h->GetBinContent(ix, iy, iz); n++;}
+        else{
+          if(strcmp(opt, "<")==0) {
+            if(h->GetBinContent(ix, iy, iz)<cut) {sum += h->GetBinContent(ix, iy, iz); n++;}
+          } else if(strcmp(opt, ">")==0){
+            if(h->GetBinContent(ix, iy, iz)>cut) {sum += h->GetBinContent(ix, iy, iz); n++;}
+          } else {sum += h->GetBinContent(ix, iy, iz); n++;}
+        }
+      }
+  return n>0?sum/n:0.;
+}
+
+//________________________________________________________
+AliTRDrecoTask::AliTRDrecoProjection::AliTRDrecoProjection()
+  :TNamed()
+  ,fH(NULL)
+  ,fNrebin(0)
+  ,fRebinX(NULL)
+  ,fRebinY(NULL)
+{
+  // constructor
+  memset(fAx, 0, 3*sizeof(Int_t));
+  memset(fRange, 0, 4*sizeof(Float_t));
+}
+
+//________________________________________________________
+AliTRDrecoTask::AliTRDrecoProjection::~AliTRDrecoProjection()
+{
+  // destructor
+  if(fH) delete fH;
+}
+
+//________________________________________________________
+void AliTRDrecoTask::AliTRDrecoProjection::Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[])
+{
+// check and build (if neccessary) projection determined by axis "ix", "iy" and "iz"
+  if(!aa[ix] || !aa[iy] || !aa[iz]) return;
+  TAxis *ax(aa[ix]), *ay(aa[iy]), *az(aa[iz]);
+  // check ax definiton to protect against older versions of the data
+  if(ax->GetNbins()<=0 || (ax->GetXmax()-ax->GetXmin())<=0.){
+    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, ax->GetTitle(), ax->GetNbins(), ax->GetXmin(), ax->GetXmax()));
+    return;
+  }
+  if(ay->GetNbins()<=0 || (ay->GetXmax()-ay->GetXmin())<=0.){
+    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, ay->GetTitle(), ay->GetNbins(), ay->GetXmin(), ay->GetXmax()));
+    return;
+  }
+  if(az->GetNbins()<=0 || (az->GetXmax()-az->GetXmin())<=0.){
+    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, az->GetTitle(), az->GetNbins(), az->GetXmin(), az->GetXmax()));
+    return;
+  }
+  SetNameTitle(n,t);
+  fH = new TH3I(n, Form("%s;%s;%s;%s", t, ax->GetTitle(), ay->GetTitle(), az->GetTitle()),
+    ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
+    ay->GetNbins(), ay->GetXmin(), ay->GetXmax(),
+    az->GetNbins(), az->GetXmin(), az->GetXmax());
+  fAx[0] = ix; fAx[1] = iy; fAx[2] = iz;
+  fRange[0] = az->GetXmin()/3.; fRange[1] = az->GetXmax()/3.;
+  AliDebug(2, Form("H3(%s, %s) :: %s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]", n, t,
+    ax->GetTitle(), ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
+    ay->GetTitle(), ay->GetNbins(), ay->GetXmin(), ay->GetXmax(),
+    az->GetTitle(), az->GetNbins(), az->GetXmin(), az->GetXmax()));
+}
+
+//________________________________________________________
+AliTRDrecoTask::AliTRDrecoProjection& AliTRDrecoTask::AliTRDrecoProjection::operator=(const AliTRDrecoProjection& rhs)
+{
+// copy projections
+  if(this == &rhs) return *this;
+
+  TNamed::operator=(rhs);
+  if(fNrebin){fNrebin=0; delete [] fRebinX; delete [] fRebinY;}
+  if(rhs.fNrebin) SetRebinStrategy(rhs.fNrebin, rhs.fRebinX, rhs.fRebinY);
+  memcpy(fAx, rhs.fAx, 3*sizeof(Int_t));
+  memcpy(fRange, rhs.fRange, 4*sizeof(Float_t));
+  if(fH) delete fH;
+  if(rhs.fH) fH=(TH3I*)rhs.fH->Clone(Form("%s_CLONE", rhs.fH->GetName()));
+  return *this;
+}
+
+//________________________________________________________
+AliTRDrecoTask::AliTRDrecoProjection& AliTRDrecoTask::AliTRDrecoProjection::operator+=(const AliTRDrecoProjection& other)
+{
+// increment projections
+  if(!fH || !other.fH) return *this;
+  AliDebug(2, Form("%s+=%s [%s+=%s]", GetName(), other.GetName(), fH->GetName(), (other.fH)->GetName()));
+  fH->Add(other.fH);
+  return *this;
+}
+
+//________________________________________________________
+void AliTRDrecoTask::AliTRDrecoProjection::Increment(Int_t bin[], Double_t v)
+{
+// increment bin with value "v" pointed by general coord in "bin"
+  if(!fH) return;
+  AliDebug(4, Form("  %s[%2d]", fH->GetName(), Int_t(v)));
+  fH->AddBinContent(fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), Int_t(v));
+}
+
+//________________________________________________________
+TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid, Bool_t del)
+{
+// build the 2D projection and adjust binning
+
+  const Char_t *title[] = {"Mean", "#mu", "MPV"};
+  if(!fH) return NULL;
+  TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
+  TH2D *h2s(NULL), *hyx(NULL);
+  if(!(h2s = (TH2D*)fH->Project3D("yx"))) return NULL;
+  // save a copy of the original distribution
+  if(!del){
+    hyx = (TH2D*)h2s->Clone();
+    hyx->SetName(Form("%sEn", fH->GetName()));
+  }
+  Int_t irebin(0), dxBin(1), dyBin(1);
+  while(irebin<fNrebin && (AliTRDrecoTask::GetMeanStat(h2s, .5, ">")<nstat)){
+    h2s->Rebin2D(fRebinX[irebin], fRebinY[irebin]);
+    dxBin*=fRebinX[irebin];dyBin*=fRebinY[irebin];
+    irebin++;
+  }
+  Int_t nx(h2s->GetNbinsX()), ny(h2s->GetNbinsY());
+  delete h2s;
+  if(mid<0) return NULL;
+
+  // start projection
+  TH1 *h(NULL); Int_t n(0);
+  Float_t dz=(fRange[1]-fRange[1])/ncol;
+  TString titlez(az->GetTitle()); TObjArray *tokenTitle(titlez.Tokenize(" "));
+  Int_t nt(tokenTitle->GetEntriesFast());
+  TH2 *h2 = new TH2F(Form("%s_2D", fH->GetName()),
+            Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], nt>0?(*tokenTitle)[0]->GetName():"", nt>1?(*tokenTitle)[1]->GetName():""),
+            nx, ax->GetXmin(), ax->GetXmax(), ny, ay->GetXmin(), ay->GetXmax());
+  h2->SetContour(ncol);
+  h2->GetZaxis()->CenterTitle();
+  h2->GetZaxis()->SetTitleOffset(1.4);
+  h2->GetZaxis()->SetRangeUser(fRange[0], fRange[1]);
+  AliDebug(2, Form("%s[%s] nx[%d] ny[%d]", h2->GetName(), h2->GetTitle(), nx, ny));
+  for(Int_t iy(0); iy<ny; iy++){
+    for(Int_t ix(0); ix<nx; ix++){
+      h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin+1, iy*dyBin+1, (iy+1)*dyBin+1);
+      Int_t ne((Int_t)h->Integral());
+      if(ne<nstat/2){
+        h2->SetBinContent(ix+1, iy+1, -999);
+        h2->SetBinError(ix+1, iy+1, 1.);
+        n++;
+      }else{
+        Float_t v(h->GetMean()), ve(h->GetRMS());
+        if(mid==1){
+          TF1 fg("fg", "gaus", az->GetXmin(), az->GetXmax());
+          fg.SetParameter(0, Float_t(ne)); fg.SetParameter(1, v); fg.SetParameter(2, ve);
+          h->Fit(&fg, "WQ");
+          v = fg.GetParameter(1); ve = fg.GetParameter(2);
+        } else if (mid==2) {
+          TF1 fl("fl", "landau", az->GetXmin(), az->GetXmax());
+          fl.SetParameter(0, Float_t(ne)); fl.SetParameter(1, v); fl.SetParameter(2, ve);
+          h->Fit(&fl, "WQ");
+          v = fl.GetMaximumX(); ve = fl.GetParameter(2);
+/*          TF1 fgle("gle", "[0]*TMath::Landau(x, [1], [2], 1)*TMath::Exp(-[3]*x/[1])", az->GetXmin(), az->GetXmax());
+          fgle.SetParameter(0, fl.GetParameter(0));
+          fgle.SetParameter(1, fl.GetParameter(1));
+          fgle.SetParameter(2, fl.GetParameter(2));
+          fgle.SetParameter(3, 1.);fgle.SetParLimits(3, 0., 5.);
+          h->Fit(&fgle, "WQ");
+          v = fgle.GetMaximumX(); ve = fgle.GetParameter(2);*/
+        }
+        if(v<fRange[0]) h2->SetBinContent(ix+1, iy+1, fRange[0]+0.1*dz);
+        else h2->SetBinContent(ix+1, iy+1, v);
+        h2->SetBinError(ix+1, iy+1, ve);
+      }
+    }
+  }
+  if(h) delete h;
+  if(n==nx*ny){delete h2; h2=NULL;} // clean empty projections
+  return h2;
+}
+
+//________________________________________________________
+void AliTRDrecoTask::AliTRDrecoProjection::SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[])
+{
+// define rebinning strategy for this projection
+  fNrebin = n;
+  fRebinX = new Int_t[n]; memcpy(fRebinX, rebx, n*sizeof(Int_t));
+  fRebinY = new Int_t[n]; memcpy(fRebinY, reby, n*sizeof(Int_t));
+}
+
+
+

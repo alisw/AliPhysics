@@ -505,6 +505,11 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(esdTrack->GetStatus()&AliESDtrack::kTPCout) nTPC++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDout) nTRDout++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDin) nTRDin++;
+/*    printf("TRD[%c %c %c] N[%3d] label[%3d %3d]\n",
+      (esdTrack->GetStatus()&AliESDtrack::kTRDin)?'y':'n',
+      (esdTrack->GetStatus()&AliESDtrack::kTRDStop)?'y':'n',
+      (esdTrack->GetStatus()&AliESDtrack::kTRDout)?'y':'n',
+      esdTrack->GetTRDncls(), esdTrack->GetLabel(), esdTrack->GetTRDLabel());*/
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     Double_t xyz[3];
@@ -545,6 +550,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       fTrackInfo->SetPDG(fPdg);
       fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
       fTrackInfo->SetLabel(label);
+      fTrackInfo->SetTRDlabel(esdTrack->GetTRDLabel());
       Int_t jref = iref;//, kref = 0;
       while(jref<nRefs){
         ref = mcParticle->GetTrackReference(jref);
@@ -562,6 +568,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     fTrackInfo->SetESDpid(p);
     fTrackInfo->SetESDpidQuality(esdTrack->GetTRDntrackletsPID());
+    fTrackInfo->SetESDeta(esdTrack->Eta());
+    Double_t loc[3];
+    if(esdTrack->GetXYZAt(298., fESDev->GetMagneticField(), loc)) fTrackInfo->SetESDphi(TMath::ATan2(loc[1], loc[0]));
+    fTrackInfo->SetESDpt(esdTrack->Pt());
     if(!nSlices) nSlices = esdTrack->GetNumberOfTRDslices();
     memset(dedx, 0, 100*sizeof(Double32_t));
     Int_t in(0);
@@ -596,6 +606,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(esdFriendTrack){
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       fTrackInfo->SetITSoutParam(esdFriendTrack->GetITSOut());
+      const AliTrackPointArray *tps(NULL);
+      if((tps=esdFriendTrack->GetTrackPointArray()) && HasTrackPoints()) fTrackInfo->SetTrackPointArray(tps);
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack

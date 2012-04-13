@@ -15,6 +15,7 @@
 #include "AliTRDrecoTask.h"
 #endif
 
+class AliTRDtrackV1;
 class TObjArray;
 class TList;
 class TClonesArray;
@@ -24,20 +25,29 @@ class AliTRDefficiency : public AliTRDrecoTask
 public:
   AliTRDefficiency();
   AliTRDefficiency(char* name);
-  virtual ~AliTRDefficiency();
-  void    UserCreateOutputObjects();
-  void    UserExec(Option_t *);
-  Bool_t  GetRefFigure(Int_t ifig);
-  Bool_t  PostProcess();
+  virtual       ~AliTRDefficiency();
+//  void        UserCreateOutputObjects();
+  void          LocalUserExec(Option_t *);
+  Bool_t        GetRefFigure(Int_t ifig);
+  static Int_t  GetPtBin(Float_t pt);
+  static Int_t  GetPtBinSignificant(Float_t pt);
+  TObjArray*    Histos();
+  TH1*          PlotBasicEff(const AliTRDtrackV1 *t=NULL);
+//  TH1*          PlotMC(const AliTRDtrackV1 *t=NULL);
+  void          MakeSummary();
+  Bool_t        PostProcess();
+  TObjArray*    Results() const {return fProj;}
+protected:
+  Bool_t        MakeProjectionBasicEff();
 
 private:
   AliTRDefficiency(const AliTRDefficiency&);
   AliTRDefficiency& operator=(const AliTRDefficiency&);
 
-private:
-  TClonesArray     *fMissed;            // Missed ?
+  TClonesArray     *fMissed;          // Missed ?
+  TObjArray        *fProj;            //! result holder - sigma values
 
-  ClassDef(AliTRDefficiency, 1) // TRD tracking efficiency
+  ClassDef(AliTRDefficiency, 2) // TRD tracking efficiency
 };
 
 #endif

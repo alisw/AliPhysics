@@ -45,7 +45,7 @@
 
 ClassImp(AliTRDcheckTRK)
 
-UChar_t  AliTRDcheckTRK::fgSteer= 0;
+UChar_t AliTRDcheckTRK::fgSteer= 0;
 Float_t AliTRDcheckTRK::fgKalmanStep = 2.;
 //__________________________________________________________________________
 AliTRDcheckTRK::AliTRDcheckTRK()

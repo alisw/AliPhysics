@@ -96,12 +96,12 @@
 #pragma link C++ class  AliTRDpidInfo::AliTRDpidData+;
 #pragma link C++ class  AliTRDinfoGen+;
 #pragma link C++ class  AliTRDrecoTask+;
+#pragma link C++ class  AliTRDrecoTask::AliTRDrecoProjection+;
 #pragma link C++ class  AliTRDcheckESD+;
 #pragma link C++ class  AliTRDcheckDET+;
 #pragma link C++ class  AliTRDcheckPID+;
 #pragma link C++ class  AliTRDcheckTRK+;
 #pragma link C++ class  AliTRDresolution+;
-#pragma link C++ class  AliTRDresolution::AliTRDresolutionProjection+;
 #pragma link C++ class  AliTRDefficiency+;
 #pragma link C++ class  AliTRDefficiencyMC+;
 #pragma link C++ class  AliTRDv0Monitor+;
