@@ -21,7 +21,10 @@
 #include "info/AliTRDeventInfo.h"
 #endif
 
+class TAxis;
 class TH1;
+class TH2;
+class TH3;
 class TF1;
 class TList;
 class TObjArray;
@@ -32,12 +35,38 @@ class AliTRDrecoTask : public AliAnalysisTaskSE
 friend class AliEveTRDTrackList;
 public:
   enum AliTRDrecoSteeringBits{
-    kMCdata       = BIT(18)
+     kMCdata      = BIT(18)
     ,kFriends     = BIT(19)
     ,kPostProcess = BIT(20)
-    ,kHeavyIon     = BIT(21)
+    ,kHeavyIon    = BIT(21)
   };
   
+  class AliTRDrecoProjection : public TNamed
+  {
+  public:
+    AliTRDrecoProjection();
+    virtual ~AliTRDrecoProjection();
+    AliTRDrecoProjection& operator+=(const AliTRDrecoProjection& other);
+    AliTRDrecoProjection& operator=(const AliTRDrecoProjection& other);
+    void  Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[]);
+    void  Increment(Int_t bin[], Double_t v);
+    TH3*  H() const { return fH;}
+    TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0, Bool_t del=kTRUE);
+    void  SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[]);
+    void  SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
+  private:
+    AliTRDrecoProjection(const AliTRDrecoProjection&);
+  protected:
+    TH3  *fH;          // data container
+    Int_t fAx[3];      // projection axes
+    Int_t fNrebin;     // no. of rebinning steps
+    Int_t *fRebinX;    //[fNrebin] rebinning of the X axis
+    Int_t *fRebinY;    //[fNrebin] rebinning of the Y axis
+    Float_t fRange[4]; //show range of the z processed
+
+    ClassDef(AliTRDrecoProjection, 2)  // wrapper for a projection container THnSparse -> TH3
+  };
+
   AliTRDrecoTask();
   AliTRDrecoTask(const char *name, const char *title);
   virtual ~AliTRDrecoTask();
@@ -48,6 +77,7 @@ public:
   virtual void   SetDebugLevel(Int_t level);
   
     
+  static Float_t GetMeanStat(TH1 *h, Float_t cut=0., Option_t *opt="");
   Int_t          GetNRefFigures() const; 
   const Char_t*  GetNameId() const       { return fNameId;}
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
@@ -71,6 +101,8 @@ public:
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   virtual void   SetNameId(const Char_t *nid) {snprintf(fNameId, 10, "%s", nid);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
+  static void    SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
+  static void    SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
   void SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
   virtual void   Terminate(Option_t *);
 
@@ -79,6 +111,7 @@ protected:
   virtual void   InitFunctorList();
   void           Adjust(TF1 *f, TH1 * const h);
   Bool_t         HasFunctorList() const { return fPlotFuncList != NULL; }
+
   Char_t                fNameId[10];       // unique identifier of task particularity
   UChar_t               fNRefFigures;      // no of reference figures reported by task
   TObjArray             *fDets;            //! container to store detector position and status

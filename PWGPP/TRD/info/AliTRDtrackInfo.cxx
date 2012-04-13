@@ -30,6 +30,7 @@
 #include "TVectorT.h"
 
 #include "AliTrackReference.h"
+#include "AliTrackPointArray.h"
 #include "AliExternalTrackParam.h"
 
 #include "AliTRDseedV1.h"
@@ -72,16 +73,13 @@ AliTRDtrackInfo::AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo):
   //
 
   if(trdInfo.fMC) fMC = new AliMCinfo(*trdInfo.fMC);
-
-  if(trdInfo.fTRDtrack){ 
-    fTRDtrack = new AliTRDtrackV1(*trdInfo.fTRDtrack);
-    if(trdInfo.fTRDtrack->IsOwner()) fTRDtrack->SetOwner();
-  }
+  SetTrack(trdInfo.fTRDtrack);
 }
 
 //___________________________________________________
 AliTRDtrackInfo::AliMCinfo::AliMCinfo()
   :fLabel(0)
+  ,fTRDlabel(0)
   ,fPDG(0)
   ,fNTrackRefs(0)
 {
@@ -92,6 +90,7 @@ AliTRDtrackInfo::AliMCinfo::AliMCinfo()
 //___________________________________________________
 AliTRDtrackInfo::AliMCinfo::AliMCinfo(const AliMCinfo &mc)
   :fLabel(mc.fLabel)
+  ,fTRDlabel(mc.fTRDlabel)
   ,fPDG(mc.fPDG)
   ,fNTrackRefs(mc.fNTrackRefs)
 {
@@ -136,10 +135,14 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fTOFbc(0)
   ,fTRDpidQuality(0)
   ,fTRDnSlices(0)
+  ,fPt(0.)
+  ,fPhi(-999.)
+  ,fEta(-999.)
   ,fTRDslices(NULL)
   ,fOP(NULL)
   ,fTPCout(NULL)
   ,fITSout(NULL)
+  ,fTPArray(NULL)
 {
   //
   // Constructor
@@ -159,10 +162,14 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fTOFbc(esd.fTOFbc)
   ,fTRDpidQuality(esd.fTRDpidQuality)
   ,fTRDnSlices(esd.fTRDnSlices)
+  ,fPt(esd.fPt)
+  ,fPhi(esd.fPhi)
+  ,fEta(esd.fEta)
   ,fTRDslices(NULL)
   ,fOP(NULL)
   ,fTPCout(NULL)
   ,fITSout(NULL)
+  ,fTPArray(NULL)
 {
   //
   // Constructor
@@ -175,9 +182,10 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
     fTRDslices = new Double32_t[fTRDnSlices];
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
-  if(esd.fOP) fOP = new AliExternalTrackParam(*esd.fOP);
-  if(esd.fTPCout) fTPCout = new AliExternalTrackParam(*esd.fTPCout);
-  if(esd.fITSout) fITSout = new AliExternalTrackParam(*esd.fITSout);
+  SetOuterParam(esd.fOP);
+  SetTPCoutParam(esd.fTPCout);
+  SetITSoutParam(esd.fITSout);
+  SetTrackPointArray(esd.fTPArray);
 }
 
 
@@ -221,6 +229,7 @@ AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
   if(fOP) delete fOP; fOP = NULL;
   if(fTPCout) delete fTPCout; fTPCout = NULL;
   if(fITSout) delete fITSout; fITSout = NULL;
+  if(fTPArray) delete fTPArray;
 }
 
 //___________________________________________________
@@ -236,6 +245,7 @@ void AliTRDtrackInfo::AliESDinfo::Delete(const Option_t *){
   if(fOP) delete fOP; fOP = NULL;
   if(fTPCout) delete fTPCout; fTPCout = NULL;
   if(fITSout) delete fITSout; fITSout = NULL;
+  if(fTPArray) delete fTPArray; fTPArray = NULL;
 }
 
 
@@ -258,14 +268,7 @@ AliTRDtrackInfo& AliTRDtrackInfo::operator=(const AliTRDtrackInfo &trdInfo)
     }
   } else {if(fMC) delete fMC; fMC = NULL;}
 
-  if(trdInfo.fTRDtrack){
-    if(!fTRDtrack) fTRDtrack = new AliTRDtrackV1(*trdInfo.fTRDtrack);
-    else{
-      fTRDtrack->~AliTRDtrackV1();
-      new(fTRDtrack) AliTRDtrackV1(*trdInfo.fTRDtrack);
-    }
-    if(trdInfo.fTRDtrack->IsOwner()) fTRDtrack->SetOwner();
-  } else {if(fTRDtrack) delete fTRDtrack; fTRDtrack = NULL;}
+  SetTrack(trdInfo.fTRDtrack);
 
   return *this;
 }
@@ -279,12 +282,13 @@ AliTRDtrackInfo::AliMCinfo& AliTRDtrackInfo::AliMCinfo::operator=(const AliMCinf
 
   if(this == &mc) return *this;
   fLabel      = mc.fLabel;
+  fTRDlabel   = mc.fTRDlabel;
   fPDG        = mc.fPDG;
   fNTrackRefs = mc.fNTrackRefs;
 
   AliTrackReference **itr = &fTrackRefs[0];
   AliTrackReference* const *jtr = &mc.fTrackRefs[0];
-  for(Int_t ien = 0; ien < 12; ien++, itr++, jtr++){
+  for(Int_t ien = 0; ien < 2*AliTRDgeometry::kNlayer; ien++, itr++, jtr++){
     if((*jtr)){
       if(!(*itr)) (*itr) = new AliTrackReference(*(*jtr));
       else{
@@ -312,6 +316,9 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   fTOFbc       = esd.fTOFbc;
   fTRDpidQuality= esd.fTRDpidQuality;
   fTRDnSlices  = esd.fTRDnSlices;
+  fPt          = esd.fPt;
+  fPhi         = esd.fPhi;
+  fEta         = esd.fEta;
   
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
   memcpy(fTRDv0pid, esd.fTRDv0pid, AliPID::kSPECIES*sizeof(Int_t));
@@ -320,27 +327,10 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
     if(!fTRDslices) fTRDslices = new Double32_t[fTRDnSlices];
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
-  if(esd.fOP){
-    if(fOP){
-      fOP->~AliExternalTrackParam();
-      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
-      new(fOP) AliExternalTrackParam(*esd.fOP);
-    } else fOP = new AliExternalTrackParam(*esd.fOP);
-  } else {if(fOP) delete fOP; fOP = NULL;}
-  if(esd.fTPCout){
-    if(fTPCout){
-      fTPCout->~AliExternalTrackParam();
-      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
-      new(fTPCout) AliExternalTrackParam(*esd.fTPCout);
-    } else fTPCout = new AliExternalTrackParam(*esd.fTPCout);
-  } else { if(fTPCout) delete fTPCout; fTPCout = NULL;}
-  if(esd.fITSout){
-    if(fITSout){
-      fITSout->~AliExternalTrackParam();
-      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
-      new(fITSout) AliExternalTrackParam(*esd.fITSout);
-    } else fITSout = new AliExternalTrackParam(*esd.fITSout);
-  } else { if(fITSout) delete fITSout; fITSout = NULL;}
+  SetOuterParam(esd.fOP);
+  SetTPCoutParam(esd.fTPCout);
+  SetITSoutParam(esd.fITSout);
+  SetTrackPointArray(esd.fTPArray);
 
   return *this;
 }
@@ -366,13 +356,35 @@ void AliTRDtrackInfo::SetTrack(const AliTRDtrackV1 *track)
   // Set the TRD track
   //
 
-  if(!fTRDtrack) fTRDtrack = new AliTRDtrackV1(*track);
-  else{
-    fTRDtrack->~AliTRDtrackV1();
-    new(fTRDtrack) AliTRDtrackV1(*track);
+  if(track){
+    if(!fTRDtrack) fTRDtrack = new AliTRDtrackV1(*track);
+    else{
+      fTRDtrack->~AliTRDtrackV1();
+      new(fTRDtrack) AliTRDtrackV1(*track);
+    }
+    if(track->IsOwner()) fTRDtrack->SetOwner();
+  } else {
+    if(fTRDtrack) delete fTRDtrack; fTRDtrack = NULL;
   }
-  fTRDtrack->SetOwner();
-  // Make a copy for the object in order to avoid ownership problems
+}
+
+//___________________________________________________
+void AliTRDtrackInfo::AliESDinfo::SetTrackPointArray(const AliTrackPointArray *tps)
+{
+  //
+  // Set the track point array for alignment task
+  //
+
+
+  if(tps){
+    if(!fTPArray) fTPArray = new AliTrackPointArray(*tps);
+    else{
+      fTPArray->~AliTrackPointArray();
+      new(fTPArray) AliTrackPointArray(*tps);
+    }
+  } else {
+    if(fTPArray) delete fTPArray; fTPArray = NULL;
+  }
 }
 
 //___________________________________________________
@@ -382,7 +394,7 @@ void AliTRDtrackInfo::AddTrackRef(const AliTrackReference *tref)
   // Add track reference
   //
 
-  if(fMC->fNTrackRefs >= 12){ 
+  if(fMC->fNTrackRefs >= 2*AliTRDgeometry::kNlayer){ 
     SetCurved();
     return;
   }
@@ -427,7 +439,7 @@ Int_t AliTRDtrackInfo::GetNumberOfClusters() const
   if(!fTRDtrack) return 0;
   if(fTRDtrack->GetNumberOfTracklets() == 0) return n;
   AliTRDseedV1 *tracklet = NULL;
-  for(Int_t ip=0; ip<6; ip++){
+  for(Int_t ip=0; ip<AliTRDgeometry::kNlayer; ip++){
     if(!(tracklet = const_cast<AliTRDseedV1 *>(fTRDtrack->GetTracklet(ip)))) continue;
     n+=tracklet->GetN();
   }
@@ -436,45 +448,57 @@ Int_t AliTRDtrackInfo::GetNumberOfClusters() const
 
 
 //___________________________________________________
-void  AliTRDtrackInfo::SetOuterParam(const AliExternalTrackParam *op)
+void  AliTRDtrackInfo::AliESDinfo::SetOuterParam(const AliExternalTrackParam *op)
 {
   //
   // Set outer track parameters
   //
 
-  if(!op) return;
-  if(fESD.fOP){
-    fESD.fOP->~AliExternalTrackParam();
-    new(fESD.fOP) AliExternalTrackParam(*op);
-  } else fESD.fOP = new AliExternalTrackParam(*op);
+  if(op){
+    if(fOP){
+      fOP->~AliExternalTrackParam();
+      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
+      new(fOP) AliExternalTrackParam(*op);
+    } else fOP = new AliExternalTrackParam(*op);
+  } else {
+    if(fOP) delete fOP; fOP = NULL;
+  }
 }
 
 //___________________________________________________
-void  AliTRDtrackInfo::SetITSoutParam(const AliExternalTrackParam *op)
+void  AliTRDtrackInfo::AliESDinfo::SetITSoutParam(const AliExternalTrackParam *op)
 {
   //
   // Set TPCout track parameters
   //
 
-  if(!op) return;
-  if(fESD.fITSout){
-    fESD.fITSout->~AliExternalTrackParam();
-    new(fESD.fITSout) AliExternalTrackParam(*op);
-  } else fESD.fITSout = new AliExternalTrackParam(*op);
+  if(op){
+    if(fITSout){
+      fITSout->~AliExternalTrackParam();
+      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
+      new(fITSout) AliExternalTrackParam(*op);
+    } else fITSout = new AliExternalTrackParam(*op);
+  } else {
+    if(fITSout) delete fITSout; fITSout = NULL;
+  }
 }
 
 //___________________________________________________
-void  AliTRDtrackInfo::SetTPCoutParam(const AliExternalTrackParam *op)
+void  AliTRDtrackInfo::AliESDinfo::SetTPCoutParam(const AliExternalTrackParam *op)
 {
   //
   // Set TPCout track parameters
   //
 
-  if(!op) return;
-  if(fESD.fTPCout){
-    fESD.fTPCout->~AliExternalTrackParam();
-    new(fESD.fTPCout) AliExternalTrackParam(*op);
-  } else fESD.fTPCout = new AliExternalTrackParam(*op);
+  if(op){
+    if(fTPCout){
+      fTPCout->~AliExternalTrackParam();
+      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
+      new(fTPCout) AliExternalTrackParam(*op);
+    } else fTPCout = new AliExternalTrackParam(*op);
+  } else {
+    if(fTPCout) delete fTPCout; fTPCout = NULL;
+  }
 }
 
 //___________________________________________________

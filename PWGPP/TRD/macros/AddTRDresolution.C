@@ -75,6 +75,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     mgr->ConnectInput(taskAlign,  0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(taskAlign,  1, ci[0]);
     mgr->ConnectInput(taskAlign,  2, evInfoContainer);
+    mgr->ConnectInput(taskAlign,  3, ci[4]);                          // conect clusters container
     mgr->ConnectOutput(taskAlign, 1, mgr->CreateContainer(Form("h%s", taskAlign->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer));
     mgr->ConnectOutput(taskAlign, 2, mgr->CreateContainer(taskAlign->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Alignment",mgr->GetCommonFileName())));
   }
