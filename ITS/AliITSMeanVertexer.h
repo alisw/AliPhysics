@@ -55,7 +55,7 @@ class AliITSMeanVertexer : public TObject {
     Bool_t Filter(AliESDVertex *vert,UInt_t mult);
     void   AddToMean(AliESDVertex *vert);
     Bool_t ComputeMean(Bool_t killOutliers);
-    void Reset();
+    void Reset(Bool_t redefine2D,Bool_t complete);
     void ResetArray(){fAccEvents.ResetAllBits(kTRUE); fVertArray.Clear();
       fIndex=0; for(Int_t i=0;i<fgkMaxNumOfEvents;i++)fClu0[i]=0; }
 
@@ -93,6 +93,8 @@ class AliITSMeanVertexer : public TObject {
     TH1F *fMultHa;              //! debug hist: mult. on SPD0 after Filter
     TH1F *fErrXHa;              //! debug hist: error on X after Filter
     TH1F *fDistH;               //! debug hist: distance from peak
+    TH1F *fContrH;              //! debug hist: number of contributors
+    TH1F *fContrHa;             //! debug hist: number of contributors - after filter
 
     ClassDef(AliITSMeanVertexer,0)
 };

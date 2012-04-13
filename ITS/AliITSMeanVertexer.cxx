@@ -55,10 +55,12 @@ fMultH(NULL),
 fErrXH(NULL),
 fMultHa(NULL),
 fErrXHa(NULL),
-fDistH(NULL)
+fDistH(NULL),
+fContrH(NULL),
+fContrHa(NULL)
 {
   // Default Constructor
-  Reset();
+  Reset(kFALSE,kFALSE);
 
   // Histograms initialization
   const Float_t xLimit = 0.6, yLimit = 0.6, zLimit = 50.0;
@@ -79,16 +81,26 @@ fDistH(NULL)
   fMultHa = new TH1F("multha","mult on layer 1 - after Filter",2400,0.,7200.);
   fMultHa->SetLineColor(kRed);
   fDistH = new TH1F("disth","distance (mm)",100,0.,30.);
+  fContrH = new TH1F("contrib","Number of contributors - before cuts",300,0.5,300.5);
+  fContrHa = new TH1F("contriba","Number of contributors - after cuts",300,0.5,300.5);
+  fContrHa->SetLineColor(kRed);
+
   fClu0 = new UInt_t [fgkMaxNumOfEvents];
   for(Int_t i=0;i<fgkMaxNumOfEvents;i++)fClu0[i]=0;
   fAccEvents.ResetAllBits(kTRUE);
 }
 
 //______________________________________________________________________
-void AliITSMeanVertexer::Reset(){
+void AliITSMeanVertexer::Reset(Bool_t redefine2D,Bool_t complete){
   // Reset averages 
+  // Both arguments are kFALSE when the method is called by the constructor
+  // redefine2D is TRUE when the method is called by ComputeMean at the second
+  //            pass.
+  // redefine2D is FALSE and complete is TRUE when the method is called
+  //            after a failure cof ComputeMean(kTRUE)
+
   static Int_t counter = 0;
-  if(fVertexXY){
+  if(fVertexXY && redefine2D){
     counter++;
     Double_t rangeX=fVertexXY->GetXaxis()->GetXmax()-fVertexXY->GetXaxis()->GetXmin();
     Double_t rangeY=fVertexXY->GetYaxis()->GetXmax()-fVertexXY->GetYaxis()->GetXmin();
@@ -105,6 +117,21 @@ void AliITSMeanVertexer::Reset(){
     fVertexXY->SetOption("colz");
     fVertexXY->SetDirectory(0);
   }
+  else if(fVertexXY && !redefine2D){
+    fVertexXY->Reset();
+  }
+  if(fVertexZ){
+    fVertexZ->Reset();
+    fDistH->Reset();
+    if(complete){
+      fErrXH->Reset();
+      fMultH->Reset();
+      fErrXHa->Reset(); 
+      fMultHa->Reset();
+      fContrH->Reset();
+      fContrHa->Reset();
+    }
+  }
   for(Int_t i=0;i<3;i++){
     fWeighPosSum[i] = 0.;
     fWeighSigSum[i] = 0.;
@@ -116,7 +143,6 @@ void AliITSMeanVertexer::Reset(){
     for(Int_t j=0; j<3;j++)fAverPosSqSum[i][j] = 0.;
     fNoEventsContr=0;
     fTotContributors = 0.;
-    if(fVertexZ)fVertexZ->Reset();
   }
 }
 //______________________________________________________________________
@@ -174,6 +200,8 @@ AliITSMeanVertexer::~AliITSMeanVertexer() {
   delete fMultHa;
   delete fErrXHa;
   delete fDistH;
+  delete fContrH;
+  delete fContrHa;
   delete fVertexer;
 }
 
@@ -275,6 +303,8 @@ void AliITSMeanVertexer::WriteVertices(const char *filename){
   fMultHa->Write(fMultHa->GetName(),TObject::kOverwrite);
   fErrXHa->Write(fErrXHa->GetName(),TObject::kOverwrite);
   fDistH->Write(fDistH->GetName(),TObject::kOverwrite);
+  fContrH->Write(fContrH->GetName(),TObject::kOverwrite);
+  fContrHa->Write(fContrHa->GetName(),TObject::kOverwrite);
   fmv.Close();
 }
 
@@ -290,11 +320,13 @@ Bool_t AliITSMeanVertexer::Filter(AliESDVertex *vert,UInt_t mult){
   Double_t ex = vert->GetXRes();
   fMultH->Fill(mult);
   fErrXH->Fill(ex*1000.);
+  fContrH->Fill((Float_t)ncontr);
   if(ncontr>fFilterOnContributors && (mult>fLowSPD0 && mult<fHighSPD0) && 
      ((ex*1000.)<fErrXCut)) {
     status = kTRUE;
     fMultHa->Fill(mult);
     fErrXHa->Fill(ex*1000.);
+    fContrHa->Fill((Float_t)ncontr);
   }
   return status;
 }
@@ -332,18 +364,21 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
    // called once with killOutliers = kFALSE and then again with
    // killOutliers = kTRUE
 
-   static Bool_t firstime = kTRUE;
-   if(fNoEventsContr>2 && !killOutliers)return kTRUE;  //ComputeMean is
+   static Bool_t preliminary = kTRUE;
+   static Int_t oldnumbevt = 0;
+   if(!(preliminary || killOutliers))return kTRUE;  //ComputeMean is
                              // executed only once with argument kFALSE
    Double_t wpos[3];
    for(Int_t i=0;i<3;i++)wpos[i]=fWeighPos[i];
 
-   if(killOutliers && firstime){
-     firstime = kFALSE;
-     Reset();
+   Int_t istart = oldnumbevt;
+   if(killOutliers)istart = 0;
+   if(killOutliers && preliminary){
+     preliminary = kFALSE;
+     Reset(kTRUE,kFALSE);
    }
-
-   for(Int_t i=0;i<fVertArray.GetEntries();i++){
+   oldnumbevt = fVertArray.GetEntries();
+   for(Int_t i=istart;i<fVertArray.GetEntries();i++){
      AliESDVertex* vert = NULL;
 
      // second pass
@@ -360,7 +395,19 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
      vert=(AliESDVertex*)fVertArray[i];
      AddToMean(vert);
    }
-   if(fNoEventsContr < 2) return kFALSE;
+   Bool_t bad = ((!killOutliers) && fNoEventsContr < 5) || (killOutliers && fNoEventsContr <2);
+   if(bad) {
+     if(killOutliers){  
+// when the control reachs this point, the preliminary evaluation of the
+// diamond region has to be redone. So a general reset must be issued
+// if this occurs, it is likely that the cuts are badly defined
+       ResetArray();
+       Reset(kFALSE,kTRUE);
+       preliminary = kTRUE;
+       oldnumbevt = 0;
+     }
+     return kFALSE;
+   }
    Double_t nevents = fNoEventsContr;
    for(Int_t i=0;i<3;i++){
      fWeighPos[i] = fWeighPosSum[i]/fWeighSigSum[i]; 
