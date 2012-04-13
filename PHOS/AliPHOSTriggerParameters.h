@@ -79,7 +79,7 @@ protected:
   UShort_t fTORMaskArray[kNMods][kNTORs][3]; // TOR Mask Array
   UShort_t fTORReadoutMask[kNMods][kNTORs][2]; // TOR Readout Mask
   
-  ClassDef(AliPHOSTriggerParameters, 0) // PHOS Trigger Parameters
+  ClassDef(AliPHOSTriggerParameters, 1) // PHOS Trigger Parameters
 };
 
 #endif
