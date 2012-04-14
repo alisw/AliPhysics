@@ -231,8 +231,12 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==19){
+	      // Reference values must be inserted in the order:
+	      // ZNC, ZPC, ZNA, ZPA, ZEM1, ZEM2
 	      // Reference values from RUN 145456
-	      Double_t refTDCs[6] = {-322.5,-319.1,-320.9,-319.2,-319.7,-319.2};
+	      //Double_t refTDCs[6] = {-322.5,-319.1,-320.9,-319.2,-319.7,-319.2};
+	      // 2012 -> Reference values from RUN 177399
+	      Double_t refTDCs[6] = {-322.7,-321.4,-321.6,-321.7,-316.2,-315.4};
 	      Float_t resTDC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
 		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<3.){
