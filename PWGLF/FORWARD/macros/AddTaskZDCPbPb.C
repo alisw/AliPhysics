@@ -2,7 +2,7 @@ AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kFALSE,
 				  Float_t centrlowlim = 0.,
                                   Float_t centruplim = 100.,
                                   TString centrest = "V0M",
-				  TString outfname = "ZDCPbPb"
+				  TString outfname = "ZDCPbPb",
 				  Bool_t  isMC = kFALSE)
 {
   
@@ -39,11 +39,12 @@ AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kFALSE,
    }
    task->SetCentralityRange(centrlowlim, centruplim);
    task->SetCentralityEstimator(centrest);
-   
-   if(isMC==kTRUE) task->SetMCInput();
+
    
    // apply physics selection
    if(applyPS) task->SelectCollisionCandidates();
+   
+   if(isMC==kTRUE) task->SetMCInput();
 
    mgr->AddTask(task);
 
