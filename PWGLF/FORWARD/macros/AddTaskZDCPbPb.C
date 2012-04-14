@@ -1,6 +1,8 @@
-AliAnalysisTaskSE* AddTaskZDCPbPb(Float_t centrlowlim = 0.,
-                                  Float_t centruplim = 90.,
+AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kFALSE,
+				  Float_t centrlowlim = 0.,
+                                  Float_t centruplim = 100.,
                                   TString centrest = "V0M",
+				  TString outfname = "ZDCPbPb"
 				  Bool_t  isMC = kFALSE)
 {
   
@@ -41,17 +43,15 @@ AliAnalysisTaskSE* AddTaskZDCPbPb(Float_t centrlowlim = 0.,
    if(isMC==kTRUE) task->SetMCInput();
    
    // apply physics selection
-   //task->SelectCollisionCandidates();
+   if(applyPS) task->SelectCollisionCandidates();
 
    mgr->AddTask(task);
 
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   //outputFileName += ":outputZDCPbPb";
    
-   Printf("AddTaskZDCPbPb - Set OutputFileName : \n %s\n", outputFileName.Data() );
-
    AliAnalysisDataContainer *coutput  = mgr->CreateContainer("ZDChistos", TList::Class(),
-					AliAnalysisManager::kOutputContainer, 								Form("%s:ZDCPbPb", mgr->GetCommonFileName()));
+					AliAnalysisManager::kOutputContainer, 	
+					Form("%s:%s", mgr->GetCommonFileName(), outfname));
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 1, coutput);
