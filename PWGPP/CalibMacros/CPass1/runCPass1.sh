@@ -60,20 +60,57 @@ echo
 
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runNum..."
 
-aliroot -l -b -q recCPass1.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec.log
-mv syswatch.log syswatch_rec.log
+mkdir Barrel
+cp recCPass1.C Barrel
+cp runCalibTrain.C Barrel
+cp QAtrain.C Barrel
+mkdir OuterDet
+cp recCPass1_OuterDet.C OuterDet
+cp QAtrain.C OuterDet
+
+cd Barrel
+aliroot -l -b -q recCPass1.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec_Barrel.log
+mv syswatch.log syswatch_rec_Barrel.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
 aliroot -l -b -q runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log
-
-
+echo ">>>>>>> Doing ls -l"
+ls -l
 
 if [ -f QAtrain.C ]; then
     echo ">>>>>>> Running the QA train..."
-    time aliroot -b -q QAtrain.C\($runNum\) 2>&1 | tee qa.log
+    time aliroot -b -q QAtrain.C\($runNum\) 2>&1 | tee qa_Barrel.log
 
     for file in *.stat; do
         mv $file $file.qa
     done
 fi
+
+echo ">>>>>>>> Moving files to upper directory"
+mv AliESDs.root ../AliESDs_Barrel.root
+mv rec_Barrel.log ../rec_Barrel.log
+mv calib.log ../calib.log
+mv AliESDfriends_v1.root ../AliESDfriends_v1.root
+mv qa_Barrel.log ../qa_Barrel.out
+mv QAresults.root ../QAresults_Barrel.root
+if [ -f AODtpITS.root ] ; then
+ mv AODtpITS.root ../
+fi
+
+cd ../OuterDet
+aliroot -l -b -q recCPass1_OuterDet.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec_Outer.log
+mv syswatch.log syswatch_rec_Outer.log
+
+if [ -f QAtrain.C ]; then
+    echo ">>>>>>> Running the QA train..."
+    time aliroot -b -q QAtrain.C\($runNum\) 2>&1 | tee qa_Outer.log
+
+    for file in *.stat; do
+        mv $file $file.qa
+    done
+fi
+mv AliESDs.root ../AliESDs_Outer.root
+mv rec_Outer.log ../rec_Outer.log
+mv qa_Outer.log ../qa_Outer.out
+mv QAresults.root ../QAresults_Outer.root

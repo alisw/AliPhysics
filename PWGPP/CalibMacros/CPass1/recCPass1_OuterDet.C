@@ -9,7 +9,7 @@
    aliroot -b -q 'recCPass1.C("raw.root",100)'
 */
 
-void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://")
+void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://")
 {
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
@@ -27,17 +27,17 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
  // AliReconstruction settings - hardwired MB trigger for calibration
 
   TString newfilename = filename;
-newfilename += "?Trigger=kCalibBarrel";
+  newfilename += "?Trigger=kCalibOuter";
   rec.SetInput(newfilename.Data());
 
   // Set protection against too many events in a chunk (should not happen)
   if (nevents>0) rec.SetEventRange(0,nevents);
 
   // Remove recpoints after each event
-  rec.SetDeleteRecPoints("TPC TRD ITS");
+  rec.SetDeleteRecPoints("ITS MUON EMCAL PHOS");
 
   // Switch off the V0 finder - saves time!
-  rec.SetRunMultFinder(kTRUE);
+  rec.SetRunMultFinder(kFALSE);
   rec.SetRunV0Finder(kFALSE); 
 
   //
@@ -47,11 +47,11 @@ newfilename += "?Trigger=kCalibBarrel";
   rec.SetRunGlobalQA(kFALSE);
 
   // AliReconstruction settings
-  rec.SetWriteESDfriend(kTRUE);
+  rec.SetWriteESDfriend(kFALSE);
   rec.SetWriteAlignmentData();
   rec.SetUseTrackingErrorsForAlignment("ITS");
-  rec.SetRunReconstruction("ALL");
-  rec.SetFillESD("ALL");
+  rec.SetRunReconstruction("ITS MUON EMCAL PHOS");
+  rec.SetFillESD("ITS MUON EMCAL PHOS");
   rec.SetCleanESD(kFALSE);
 
   // Specific reco params for ZDC (why isn't this automatic?)
