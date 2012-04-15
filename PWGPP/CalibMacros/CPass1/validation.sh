@@ -25,7 +25,7 @@ cp stdout stdout.log
 cp stderr stderr.log
 
 ##################################################
-if [ -f rec.log ] && [ -f calib.log ] && [ -f AliESDs.root ] && [ -f AliESDfriends_v1.root ]  
+if [ -f rec_Barrel.log ] && [ -f rec_Outer.log ] && [ -f calib.log ] && [ -f AliESDs_Barrel.root ] && [ -f AliESDfriends_v1.root ]  
 then 
 sv=`grep -i  "Segmentation violation" *.log`
 if [ "$sv" = "" ]

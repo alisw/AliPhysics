@@ -47,7 +47,8 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   //
   AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to ESD", "Analysis Manager");
   // mgr->SetDebugLevel(3);
-  
+  mgr->SetNSysInfo(50);   
+
   // Input
   AliESDInputHandler* inpHandler = new AliESDInputHandler();
   inpHandler->SetReadFriends(1);

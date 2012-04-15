@@ -1,17 +1,16 @@
-Executable="runCPass1.sh";
+Executable="runCPass1_zampolli_ITS.sh";
 
-Packages= { "VO_ALICE@AliRoot::v5-02-Rev-04",
-	    "VO_ALICE@ROOT::v5-30-06-1",	
+Packages= { "VO_ALICE@AliRoot::v5-02-Rev-06",
+	    "VO_ALICE@ROOT::v5-33-02a",	
             "VO_ALICE@APISCONFIG::V1.1x"
 };
 
-Jobtag = { "Test CPass1 Calibration Train" };
+Jobtag = { "Test CPass1_176701_DoubleReco Calibration Train" };
 
 GUIDFILE="guid.txt";
 TTL = "28000";
-Price = 1;
 
-Validationcommand ="/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/validation.sh";
+Validationcommand ="/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/CalibMacros/validation.sh";
 
 Split="file";
 
@@ -19,21 +18,22 @@ JDLVariables={"Packages", "OutputDir"};
 GUIDFILE="guid.txt";
 
 
-SplitArguments = {"/alice/data/2011/LHC11a/$1/raw/#alienfilename#"};
+SplitArguments = {"/alice/data/2012/LHC12a/$1/raw/#alienfilename#"};
 Workdirectorysize={"6000MB"};
 
-InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/recCPass1.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/runCalibTrain.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/CalibMacros/QAtrain.C"
+InputFile={"LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/CalibMacros/recCPass1.C",
+           "LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/CalibMacros/runCalibTrain.C",
+           "LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/CalibMacros/QAtrain.C",
+           "LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/CalibMacros/recCPass1_OuterDet.C"
 };
 
-InputDataCollection="LF:/alice/data/2011/LHC11a/$1/collection,nodownload";
+InputDataCollection="LF:/alice/data/2012/LHC12a/$1/collection,nodownload";
 
-OutputDir="/alice/cern.ch/user/j/jotwinow/CPass1/output/$1/#alienfilename/.root//#";
+OutputDir="/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/output_ITS_QA/$1/#alienfilename/.root//#";
 
 
-OutputArchive={"log_archive:stderr.log,stdout.log,qa.log,sys*.log@disk=1",
-              "root_archive.zip:AliESDs.root,AliESDfriends.root,AliESDfriends_v1.root,Merged.QA.Data*.root,RecoQAresults.root,AODtpITS.root@disk=3",
-              "QA_archive.zip:QAresults.root,*.stat.qa@disk=2"
+OutputArchive={"log_archive:stderr.log,stdout.log,*.log,*.out,sys*.log@disk=1",
+              "root_archive.zip:AliESDs_Barrel.root,AliESDs_Outer.root,AliESDfriends_v1.root,Merged.QA.Data*.root,RecoQAresults.root,AODtpITS.root@disk=3",
+              "QA_archive.zip:QAresults_Barrel.root,QAresults_Outer.root,*.stat.qa@disk=2"
 };
 
