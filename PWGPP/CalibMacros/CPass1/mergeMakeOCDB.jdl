@@ -1,7 +1,7 @@
-Executable="mergeMakeOCDB.sh";
+Executable="mergeMakeOCDB_zampolli.sh";
 
-Packages= { "VO_ALICE@AliRoot::v5-02-Rev-04",
-            "VO_ALICE@ROOT::v5-30-06-1",
+Packages= { "VO_ALICE@AliRoot::v5-02-Rev-06",
+            "VO_ALICE@ROOT::v5-33-02a",
 	"VO_ALICE@APISCONFIG::V1.1x" };
 
 Jobtag = { "Merging Calibration Objects from calib train and make OCDB params" };
@@ -10,7 +10,7 @@ GUIDFILE="guid.txt";
 TTL = "28000";
 Price = 1;
 
-Validationcommand ="/alice/cern.ch/user/j/jotwinow/CPass1/MergeCalibration/validationMerging.sh";
+Validationcommand ="/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/MergeCalibration/validationMerging.sh";
 
 JDLVariables={"Packages", "OutputDir"};
 GUIDFILE="guid.txt";
@@ -19,11 +19,12 @@ Arguments = "$1 $2 $3";
 
 Workdirectorysize={"6000MB"}; 
 
-InputFile={"LF:/alice/cern.ch/user/j/jotwinow/CPass1/MergeCalibration/makeOCDB.C",
-           "LF:/alice/cern.ch/user/j/jotwinow/CPass1/MergeCalibration/merge.C"
+InputFile={"LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/MergeCalibration/makeOCDB.C",
+           "LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/MergeCalibration/merge.C",
+           "LF:/alice/data/2011/OCDB/TPC/Calib/Correction/Run0_999999999_v3_s0.root"
 };
 
-OutputDir="/alice/cern.ch/user/j/jotwinow/CPass1/output/$2/";
+OutputDir="/alice/cern.ch/user/a/alidaq/zampolli/CPass1_176701_DoubleReco/output/$2/";
 
 OutputArchive={"log_archive:*.log@disk=1",
               "root_archive.zip:CalibObjects.root,meanITSVertex.root,fitITSVertex.root@disk=1"};
