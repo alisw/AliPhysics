@@ -102,6 +102,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
    //
    Int_t trdStatus = procestrd.GetStatus();
    Int_t tofStatus = calibTask.GetStatus();
+   Int_t t0Status = procesT0.GetStatus();
    Int_t tpcStatus = ((procesTPC.ValidateTimeDrift() || procesTPC.ValidateTimeGain())==kFALSE);
    //
    printf("\n\n\n\n");
@@ -109,6 +110,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
    printf("TRD calibration status=%d\n",trdStatus);
    printf("TOF calibration status=%d\n",tofStatus);
    printf("TPC calibration status=%d\n",tpcStatus);
+   printf("T0  calibration status=%d\n",t0Status);
    PrintDetectorStatus();
    return;
 }
