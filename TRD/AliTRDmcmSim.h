@@ -64,7 +64,7 @@ class AliTRDmcmSim : public TObject {
   // of the output.
 
   static  void      SetStoreClusters(Bool_t storeClusters) { fgStoreClusters = storeClusters; }
-  static  Bool_t    GetStoreClusters(Bool_t storeClusters) { return fgStoreClusters; }
+  static  Bool_t    GetStoreClusters() { return fgStoreClusters; }
 
           Int_t     GetDetector() const  { return fDetector;  };     // Returns Chamber ID (0-539)
           Int_t     GetRobPos() const { return fRobPos; };           // Returns ROB position (0-7)
