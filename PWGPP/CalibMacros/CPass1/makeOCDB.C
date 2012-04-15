@@ -35,6 +35,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 //ocdbStorage+="?se=ALICE::CERN::SE";
 
   AliCDBManager::Instance()->SetSpecificStorage("*/*/*",ocdbStorage.Data());
+AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
 
   // set OCDB storage
   if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
@@ -66,9 +67,8 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 // T0 part
   AliT0PreprocessorOffline procesT0;
   // Make  calibration of channels offset
-  procesT0.setDArun(179000);
-  procesT0.Process("CalibObjects.root",runNumber, runNumber, ocdbStorage);
-
+   procesT0.setDArun(179000);
+   procesT0.Process("CalibObjects.root",runNumber, runNumber, ocdbStorage);
 
 
 
@@ -94,16 +94,17 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
    procestrd.Process("CalibObjects.root",runNumber,runNumber,ocdbStorage);
   
   
-   //Mean Vertex - not used for the CPass1
-   // AliMeanVertexPreprocessorOffline procesMeanVtx;
-   // procesMeanVtx.ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
+   //Mean Vertex
+   //AliMeanVertexPreprocessorOffline procesMeanVtx;
+   //procesMeanVtx.ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
 
    //
    // Print calibration status into the stdout
    //
    Int_t trdStatus = procestrd.GetStatus();
    Int_t tofStatus = calibTask.GetStatus();
-   Int_t tpcStatus = (procesTPC.ValidateTimeDrift() || procesTPC.ValidateTimeDrift());   //
+   Int_t tpcStatus = ((procesTPC.ValidateTimeDrift() || procesTPC.ValidateTimeGain()));
+   //
    printf("\n\n\n\n");
    printf("CPass1 calibration status\n");
    printf("TRD calibration status=%d\n",trdStatus);
