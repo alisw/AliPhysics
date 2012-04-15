@@ -24,7 +24,7 @@ class TH3F;
 class AliUEHistograms : public TNamed
 {
  public:
-  AliUEHistograms(const char* name = "AliUEHistograms", const char* histograms = "123");
+  AliUEHistograms(const char* name = "AliUEHistograms", const char* histograms = "");
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
@@ -35,6 +35,7 @@ class AliUEHistograms : public TNamed
   void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality = 0);
   
   void CopyReconstructedData(AliUEHistograms* from);
+  void DeepCopy(AliUEHistograms* from);
   
   AliUEHist* GetUEHist(Int_t id);
   

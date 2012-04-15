@@ -46,6 +46,7 @@ class AliUEHist : public TObject
   void SetTrackHistEfficiency(AliCFContainer* hist) { fTrackHistEfficiency = hist; }
   
   void CopyReconstructedData(AliUEHist* from);
+  void DeepCopy(AliUEHist* from);
   
   TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0, Bool_t etaNorm = kTRUE, Int_t* normEvents = 0);
   TH1* GetPtHist(CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Float_t phiMin, Float_t phiMax, Float_t etaMin, Float_t etaMax, Bool_t skipPhiNormalization = kFALSE);

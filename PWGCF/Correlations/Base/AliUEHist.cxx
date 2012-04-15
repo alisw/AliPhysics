@@ -65,6 +65,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
     
   if (strlen(reqHist) == 0)
     return;
+  
+  Printf("Creating AliUEHist with %s", reqHist);
     
   AliLog::SetClassDebugLevel("AliCFContainer", -1);
   AliLog::SetClassDebugLevel("AliCFGridSparse", -3);
@@ -86,13 +88,20 @@ AliUEHist::AliUEHist(const char* reqHist) :
   trackAxisTitle[0] = "#eta";
   
   // delta eta
-  const Int_t kNDeltaEtaBins = 40+4;
+  const Int_t kNDeltaEtaBins = 40;
   Double_t deltaEtaBins[kNDeltaEtaBins+1] = { -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
 					      -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 
-					      -0.05, -0.025, 0, 0.025, 0.05, 
+					      0, 
 					      0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
 					      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
   
+  const Int_t kNDeltaEtaBinsTTR = 40+4;
+  Double_t deltaEtaBinsTTR[kNDeltaEtaBinsTTR+1] = { -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
+						  -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 
+						  -0.05, -0.025, 0, 0.025, 0.05, 
+						  0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
+						  1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
+
   // pT
   iTrackBin[1] = 22;
   Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 15.0, 20.0};
@@ -111,18 +120,23 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
   // phi,lead; this binning starts at -pi/2 and is modulo 3
   const Int_t kNLeadingPhiSpacing = 72;
-  const Int_t kNLeadingPhiBins = kNLeadingPhiSpacing+4;
-  Double_t leadingPhiBins[kNLeadingPhiBins+4+1];
-  for (Int_t i=0; i<=17; i++)
+  const Int_t kNLeadingPhiBins = kNLeadingPhiSpacing;
+  Double_t leadingPhiBins[kNLeadingPhiBins+1];
+  for (Int_t i=0; i<=kNLeadingPhiSpacing; i++)
     leadingPhiBins[i] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
-  leadingPhiBins[18] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2;
-  leadingPhiBins[19] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 1.5;
-  leadingPhiBins[20] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2; // = 0
-  leadingPhiBins[21] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2.5;
-  leadingPhiBins[22] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 3;
+  
+  const Int_t kNLeadingPhiBinsTTR = kNLeadingPhiSpacing+4;
+  Double_t leadingPhiBinsTTR[kNLeadingPhiBinsTTR+1];
+  for (Int_t i=0; i<=17; i++)
+    leadingPhiBinsTTR[i] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
+  leadingPhiBinsTTR[18] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2;
+  leadingPhiBinsTTR[19] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 1.5;
+  leadingPhiBinsTTR[20] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2; // = 0
+  leadingPhiBinsTTR[21] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2.5;
+  leadingPhiBinsTTR[22] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 3;
   for (Int_t i=19; i<=kNLeadingPhiSpacing; i++)
-    leadingPhiBins[i+4] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
-    
+    leadingPhiBinsTTR[i+4] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
+
   // multiplicity
   const Int_t kNMultiplicityBins = 15;
   Double_t multiplicityBins[kNMultiplicityBins+1];
@@ -147,6 +161,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
   
   Bool_t useVtxAxis = kFALSE;
+  Bool_t useTTRBinning = kFALSE;
   
   // selection depending on requested histogram
   Int_t axis = -1; // 0 = pT,lead, 1 = phi,lead
@@ -160,14 +175,15 @@ AliUEHist::AliUEHist(const char* reqHist) :
     axis = 1;
     title = "d^{2}N_{ch}/d#varphid#eta";
   }
-  else if (strcmp(reqHist, "NumberDensityPhiCentrality") == 0 || strcmp(reqHist, "NumberDensityPhiCentralityVtx") == 0)
+  else if (TString(reqHist).BeginsWith("NumberDensityPhiCentrality"))
   {
-    if (strcmp(reqHist, "NumberDensityPhiCentralityVtx") == 0)
-    {
-      reqHist = "NumberDensityPhiCentrality";
-      fHistogramType = reqHist;
+    if (TString(reqHist).Contains("Vtx"))
       useVtxAxis = kTRUE;
-    }
+    if (TString(reqHist).Contains("TTR"))
+      useTTRBinning = kTRUE;
+    
+    reqHist = "NumberDensityPhiCentrality";
+    fHistogramType = reqHist;
     axis = 2;
     title = "d^{2}N_{ch}/d#varphid#eta";
   }
@@ -206,8 +222,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
     nTrackVars = 5;
     initRegions = 1;
   
-    iTrackBin[0] = kNDeltaEtaBins;
-    trackBins[0] = deltaEtaBins;
+    iTrackBin[0] = (useTTRBinning) ? kNDeltaEtaBinsTTR : kNDeltaEtaBins;
+    trackBins[0] = (useTTRBinning) ? deltaEtaBinsTTR : deltaEtaBins;
     trackAxisTitle[0] = "#Delta#eta";
   
     iTrackBin[2] = kNLeadingpTBins2;
@@ -218,8 +234,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
     iTrackBin[3] = kNCentralityBins;
     trackAxisTitle[3] = "centrality";
   
-    iTrackBin[4] = kNLeadingPhiBins;
-    trackBins[4] = leadingPhiBins;
+    iTrackBin[4] = (useTTRBinning) ? kNLeadingPhiBinsTTR : kNLeadingPhiBins;
+    trackBins[4] = (useTTRBinning) ? leadingPhiBinsTTR : leadingPhiBins;
     trackAxisTitle[4] = "#Delta#varphi (rad.)";
 
     if (useVtxAxis)
@@ -2076,6 +2092,38 @@ void AliUEHist::CopyReconstructedData(AliUEHist* from)
   fEventHist->SetGrid(AliUEHist::kCFStepReconstructed, from->fEventHist->GetGrid(AliUEHist::kCFStepReconstructed));
   //fEventHist->SetGrid(AliUEHist::kCFStepTrackedOnlyPrim, from->fEventHist->GetGrid(AliUEHist::kCFStepTrackedOnlyPrim));
   fEventHist->SetGrid(AliUEHist::kCFStepBiasStudy,     from->fEventHist->GetGrid(AliUEHist::kCFStepBiasStudy));
+}
+
+void AliUEHist::DeepCopy(AliUEHist* from)
+{
+  // copies the entries of this object's members from the object <from> to this object
+  // fills using the fill function and thus allows that the objects have different binning
+
+  for (Int_t region=0; region<4; region++)
+  {
+    if (!fTrackHist[region] || !from->fTrackHist[region])
+      continue;
+  
+    for (Int_t step=0; step<fTrackHist[region]->GetNStep(); step++)
+    {
+      Printf("Copying region %d step %d", region, step);
+      THnSparse* target = fTrackHist[region]->GetGrid(step)->GetGrid();
+      THnSparse* source = from->fTrackHist[region]->GetGrid(step)->GetGrid();
+      
+      target->Reset();
+      target->RebinnedAdd(source);
+    }
+  }
+  
+  for (Int_t step=0; step<fEventHist->GetNStep(); step++)
+  {
+    Printf("Copying step %d", step);
+    THnSparse* target = fEventHist->GetGrid(step)->GetGrid();
+    THnSparse* source = from->fEventHist->GetGrid(step)->GetGrid();
+
+    target->Reset();
+    target->RebinnedAdd(source);
+  }
 }
 
 //____________________________________________________________________
