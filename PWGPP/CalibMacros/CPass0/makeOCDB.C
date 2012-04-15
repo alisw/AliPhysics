@@ -35,6 +35,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 //ocdbStorage+="?se=ALICE::CERN::SE";
 
   AliCDBManager::Instance()->SetSpecificStorage("*/*/*",ocdbStorage.Data());
+AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
 
   // set OCDB storage
   if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
