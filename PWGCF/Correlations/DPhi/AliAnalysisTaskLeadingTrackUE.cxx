@@ -216,7 +216,7 @@ void  AliAnalysisTaskLeadingTrackUE::CreateOutputObjects()
   	}
 
   // Initialize class to handle histograms 
-  fHistosUE = new AliUEHistograms;
+  fHistosUE = new AliUEHistograms("AliUEHistograms", "123");
   
   // add histograms to list
   fListOfHistos->Add(fHistosUE);

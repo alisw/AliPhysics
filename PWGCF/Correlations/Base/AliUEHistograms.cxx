@@ -71,6 +71,9 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   //    3 = NumberDensityPhi
   //    4 = NumberDensityPhiCentrality (other multiplicity for Pb)
   
+  AliLog::SetClassDebugLevel("AliCFContainer", -1);
+  AliLog::SetClassDebugLevel("AliCFGridSparse", -3);
+
   fTwoTrackDistancePt[0] = 0;
   fTwoTrackDistancePt[1] = 0;
   
@@ -83,10 +86,14 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   
   if (histogramsStr.Contains("3"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhi");
-  else if (histogramsStr.Contains("4"))
+  else if (histogramsStr.Contains("4R"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality");
-  else if (histogramsStr.Contains("5"))
+  else if (histogramsStr.Contains("4"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityTTR");
+  else if (histogramsStr.Contains("5R"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx");
+  else if (histogramsStr.Contains("5"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtxTTR");
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -886,9 +893,9 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   fVertexContributors->Merge(lists[11]);
   fCentralityDistribution->Merge(lists[12]);
   fITSClusterMap->Merge(lists[13]);
-  if (fTwoTrackDistancePt[0])
+  if (fTwoTrackDistancePt[0] && lists[14]->GetEntries() > 0)
     fTwoTrackDistancePt[0]->Merge(lists[14]);
-  if (fTwoTrackDistancePt[1])
+  if (fTwoTrackDistancePt[1] && lists[15]->GetEntries() > 0)
     fTwoTrackDistancePt[1]->Merge(lists[15]);
   if (fCentralityCorrelation)
     fCentralityCorrelation->Merge(lists[16]);
@@ -906,6 +913,15 @@ void AliUEHistograms::CopyReconstructedData(AliUEHistograms* from)
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->CopyReconstructedData(from->GetUEHist(i));
+}
+
+void AliUEHistograms::DeepCopy(AliUEHistograms* from)
+{
+  // copies the entries of this object's members from the object <from> to this object
+
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i) && from->GetUEHist(i))
+      GetUEHist(i)->DeepCopy(from->GetUEHist(i));
 }
 
 void AliUEHistograms::ExtendTrackingEfficiency(Bool_t verbose)
