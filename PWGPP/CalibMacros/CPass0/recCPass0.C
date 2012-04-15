@@ -27,7 +27,7 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
  // AliReconstruction settings - hardwired MB trigger for calibration
 
   TString newfilename = filename;
-//  newfilename += "?Trigger=CPBI2_B1-B-NOPF-ALLNOTRD";
+  newfilename += "?Trigger=kCalibBarrel";
   rec.SetInput(newfilename.Data());
 
   // Set protection against too many events in a chunk (should not happen)
@@ -37,7 +37,7 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   rec.SetDeleteRecPoints("TPC TRD ITS");
 
   // Switch off the V0 finder - saves time!
-  rec.SetRunMultFinder(kFALSE);
+  //  rec.SetRunMultFinder(kFALSE);
   rec.SetRunV0Finder(kFALSE); 
 
   //
