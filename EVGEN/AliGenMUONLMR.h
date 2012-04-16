@@ -11,25 +11,27 @@
 class AliGenMUONLMR : public AliGenMC { 
  public:
   enum parttype_t {kPionLMR, kKaonLMR, kEtaLMR, kRhoLMR, kOmegaLMR, kPhiLMR, kEtaPrimeLMR};
-  AliGenMUONLMR(); 
+  AliGenMUONLMR(Double_t energy=7.0); 
+  AliGenMUONLMR(AliGenMUONLMR &gen); 
+  AliGenMUONLMR &operator=(const AliGenMUONLMR &gen);  
   ~AliGenMUONLMR(); 
-  static Double_t PtDistr(const Double_t *x, const Double_t *par); 
-  static Double_t YDistr(const Double_t *x, const Double_t *par); 
-  virtual void Decay2Body(const TParticle *mother);
-  virtual void DalitzDecay(const TParticle *mother);
+  static Double_t PtDistr(Double_t *x, Double_t *par); 
+  static Double_t YDistr(Double_t *x, Double_t *par); 
+  virtual void SetPtParams(Int_t iproc, Double_t p1, Double_t p2, Double_t p3) {fPt[iproc]->SetParameters(p1,p2,p3);}
+  virtual void SetYParams(Int_t iproc, Double_t p1, Double_t p2, Double_t p3) {fY[iproc]->SetParameters(p1,p2,p3);}
+  virtual void Decay2Body(TParticle *mother);
+  virtual void DalitzDecay(TParticle *mother);
   virtual void DecayPiK(TParticle *mother, Bool_t &hadDecayed);
   virtual Double_t FormFactor(Double_t q2, Int_t decay); 
   virtual void Generate(); 
   virtual TParticle* GetMuon(Int_t i) {return fMu[i];} 
-  virtual void SetNMuMin(Int_t nmin) {fNMuMin = nmin; }
+  virtual void SetNMuMin(Int_t nmin) {fNMuMin = nmin;}
   virtual void GenerateSingleProcess(Int_t whichproc) { fGenSingleProc = whichproc;}
   virtual void SetScaleMultiplicity(Int_t ipart, Double_t scale) { fScaleMult[ipart] = scale; } 
-  static Double_t RhoLineShapeNew(const Double_t *, const Double_t *); 
+  static Double_t RhoLineShapeNew(Double_t *, Double_t *); 
   virtual void FinishRun(); 
- private:
-  AliGenMUONLMR(const AliGenMUONLMR &lmr);
-  AliGenMUONLMR & operator=(const AliGenMUONLMR & rhs);
-
+  virtual TF1* GetRapidity(Int_t iproc) { return fY[iproc]; }
+  virtual TF1* GetPt(Int_t iproc) { return fPt[iproc]; }
  private: 
   static const Int_t fgkNpart = 7; // number of particles to be generated 
   Int_t fNMuMin;                   // min. number of muons to accept the event for writing
@@ -47,7 +49,7 @@ class AliGenMUONLMR : public AliGenMC {
   TParticle* fMu[2];               // fMu[0] = mu+    fMu[1] = mu-
   TH1D *fHMultMu;                  // muon multiplicity 
   TH1D *fHNProc;                   // number of events generated per process
-  ClassDef(AliGenMUONLMR, 1)  // example of analysis
+  ClassDef(AliGenMUONLMR, 1)       // low mass dimuons parametric generator
 }; 
 
 #endif
