@@ -956,9 +956,12 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
      Int_t iCount = 0;
      AliAODEvent *aod = 0;
-     if(!fESD)aod = fAODIn;
+     if(!fESD){
+       if(!fAODIn)return iCount;
+       aod = fAODIn;      
+     }
      else aod = fAODOut;   
-    
+
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = aod->GetTrack(it);
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
