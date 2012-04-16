@@ -546,7 +546,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	     yZNC = numYZNC/denZNC;
 	   } 
 	   else xZNC = yZNC = 999.;
-	   FillRawsData(20,xZNC, yZNC);
+	   FillRawsData(20, xZNC, yZNC, zncpmC);
   	 }
   	 if(isZPCFired && indZPC==5){
   	   FillRawsData(2,zpcSignal);
@@ -562,7 +562,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	     yZNA = numYZNA/denZNA;
 	   } 
 	   else xZNA = yZNA = 999.;
-	   FillRawsData(21,xZNA, yZNA);
+	   FillRawsData(21, xZNA, yZNA, znapmC);
          }
          if(isZPAFired && indZPA==5){ 
            FillRawsData(3,zpaSignal);
@@ -641,8 +641,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	      }
 	      if(zem2TDC!=0.){
 	        Float_t zem2 = zem2TDC-tdcGate;
-	        if(zem2TDC-tdcGate>-340. && zem2<-300.) 
-	          FillRawsData(17,6, zem2-tdcGate);
+	        if(zem2TDC-tdcGate>-340. && zem2<-300.) FillRawsData(17,6, zem2-tdcGate);
               }
 	      if(zncSumTDC!=0.){
 	         Float_t tdcC = zncSumTDC-l0;
