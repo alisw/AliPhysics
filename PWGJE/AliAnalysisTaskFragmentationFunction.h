@@ -47,7 +47,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     virtual ~AliFragFuncHistos();
     
     virtual void DefineHistos();
+    void CalcLogZBins(const Int_t nBinsXi,const Double_t xiMin,const Double_t xiMax,Double_t* binLims);
     virtual void FillFF(Float_t trackPt, Float_t jetPt,Bool_t incrementJetPt, Float_t norm = 0);
+
     virtual void AddToOutput(TList* list) const;
 
   private:
@@ -331,9 +333,11 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   Init();
   virtual void   LocalInit() {Init();}
+
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t* );
   virtual Bool_t Notify();
+
   virtual void   SetNonStdFile(char* c){fNonStdFile = c;} 
 
   virtual void   SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
@@ -499,6 +503,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 			  AliFragFuncHistos* ffbckghistoleading,AliFragFuncIntraJetHistos* ijbckghistocuts, 
 			  AliFragFuncIntraJetHistos* ijbckghistoleading,AliFragFuncQATrackHistos* qabckghistos);    
   AliAODJet* GetAODBckgSubJet(AliAODJet* jet, Int_t method);
+
 
   // Consts
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, 
