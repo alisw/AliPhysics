@@ -1,4 +1,4 @@
-AliEPSelectionTask *AddTaskEventplane()
+AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.)
 {
   // Macro to connect an event plane selection task to an existing analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -24,6 +24,11 @@ AliEPSelectionTask *AddTaskEventplane()
   eventplaneTask->SetUsePtWeight();
   eventplaneTask->SetUsePhiWeight();
   eventplaneTask->SetSaveTrackContribution();
+  if(useEtaGap){
+    eventplaneTask->SetSubeventsSplitMethod(AliEPSelectionTask::kEta); 
+    eventplaneTask->SetEtaGap(etaGap); 
+  }
+
   
   mgr->AddTask(eventplaneTask);
 
