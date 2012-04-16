@@ -611,12 +611,80 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
       cout<<gWMPS[i]->GetErrorY(k)<<"};"<<endl;
       cout<<endl;
       gWMPS[i]->Write();
-    } 
+    }
+    if(ginteg[i]){
+      cout<<"Double_t gIntegralEtaAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < ginteg[i]->GetN()-1;k++){
+	ginteg[i]->GetPoint(k,x,y);
+	cout<<y<<", ";      
+      }
+      ginteg[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;
+      cout<<endl;
 
-    if(ginteg[i]) ginteg[i]->Write();
-    if(gintegS[i]) gintegS[i]->Write();
-    if(gintegP[i]) gintegP[i]->Write();
-    if(gintegPS[i]) gintegPS[i]->Write();
+      cout<<"Double_t gIntegralErrorEtaAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < ginteg[i]->GetN()-1;k++){
+	cout<<ginteg[i]->GetErrorY(k)<<", ";      
+      }
+      cout<<ginteg[i]->GetErrorY(k)<<"};"<<endl;
+      cout<<endl;
+
+      ginteg[i]->Write();
+
+      cout<<"Double_t gIntegralPhiAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gintegP[i]->GetN()-1;k++){
+	gintegP[i]->GetPoint(k,x,y);
+	cout<<y<<", ";      
+      }
+      gintegP[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;
+      cout<<endl;
+
+      cout<<"Double_t gIntegralErrorPhiAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gintegP[i]->GetN()-1;k++){
+	cout<<gintegP[i]->GetErrorY(k)<<", ";      
+      }
+      cout<<gintegP[i]->GetErrorY(k)<<"};"<<endl;
+      cout<<endl;
+
+      gintegP[i]->Write();
+
+      cout<<"Double_t gIntegralEtaShuffledAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gintegS[i]->GetN()-1;k++){
+	gintegS[i]->GetPoint(k,x,y);
+	cout<<y<<", ";      
+      }
+      gintegS[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;
+      cout<<endl;
+
+      cout<<"Double_t gIntegralErrorEtaShuffledAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gintegS[i]->GetN()-1;k++){
+	cout<<gintegS[i]->GetErrorY(k)<<", ";      
+      }
+      cout<<gintegS[i]->GetErrorY(k)<<"};"<<endl;
+      cout<<endl;
+
+      gintegS[i]->Write();
+
+      cout<<"Double_t gIntegralPhiShuffledAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gintegPS[i]->GetN()-1;k++){
+	cout<<y<<", ";      
+      }
+      gintegPS[i]->GetPoint(k,x,y);
+      cout<<y<<"};"<<endl;
+      cout<<endl;
+
+      cout<<"Double_t gIntegralErrorPhiShuffledAlice[nCentralityBins] = {";
+      for(Int_t k = 0; k < gintegPS[i]->GetN()-1;k++){
+	cout<<gintegPS[i]->GetErrorY(k)<<", ";      
+      }
+      cout<<gintegPS[i]->GetErrorY(k)<<"};"<<endl;
+      cout<<endl;
+
+      gintegPS[i]->Write();
+
+    }
   }
   fOut->Close();
   f->Close();
