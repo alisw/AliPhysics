@@ -31,7 +31,7 @@ public:
 
   AliMFTDigitizer();
   AliMFTDigitizer(AliDigitizationInput *digInp);
-  virtual ~AliMFTDigitizer() { }
+  virtual ~AliMFTDigitizer() { delete fSegmentation; }
 
   void Digitize(Option_t *option);
   void SDigits2Digits(TClonesArray *pSDigitList, TObjArray *pDigitLst);

@@ -1,4 +1,4 @@
-enum {kNoOption, kOpenFlavor, kResonanceOnly};
+enum {kNoOption, kPionsKaons, kResonanceOnly};
 
 //================================================================================================================================
 

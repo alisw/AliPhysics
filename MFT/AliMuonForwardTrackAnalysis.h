@@ -31,7 +31,7 @@ class AliMuonForwardTrackAnalysis : public TObject {
 
 public:
 
-  enum {kNoOption, kOpenFlavor, kResonanceOnly};
+  enum {kNoOption, kPionsKaons, kResonanceOnly};
   
   AliMuonForwardTrackAnalysis();
   
@@ -90,17 +90,21 @@ private:
   TParticle *fMCRefTrack;                                                                            //!
 
   Int_t fEv, fFirstEvent, fLastEvent, fNTracksOfEvent, fNTracksAnalyzedOfEvent, fNTracksAnalyzed, fNPairsOfEvent, fNPairsAnalyzedOfEvent;
+  Int_t fNTracksAnalyzedOfEventAfterCut, fNPairsAnalyzedOfEventAfterCut;
   
   TH1D *fHistOffsetSingleMuonsX, *fHistOffsetSingleMuonsY, *fHistOffsetSingleMuons, *fHistWOffsetSingleMuons;      //!
   TH1D *fHistErrorSingleMuonsX, *fHistErrorSingleMuonsY;                                                           //!
-  TH2D *fHistSingleMuonsPtRapidity, *fHistSingleMuonsOffsetChi2;                                                   //!
-  TGraph *fGraphSingleMuonsOffsetChi2;                                                                             //!
+  TH1D *fHistZOriginSingleMuonsMC;
+  
+  TH2D *fHistZROriginSingleMuonsMC, *fHistSingleMuonsPtRapidityMC;                                                //! 
+  TH2D *fHistSingleMuonsOffsetChi2, *fHistSingleMuonsOffsetChi2_BeforeMFT, *fHistSingleMuonsOffsetChi2_AfterMFT;  //!
+  TGraph *fGraphSingleMuonsOffsetChi2;                                                                            //!
 
   TH1D *fHistWOffsetMuonPairs[fNMaxPtBinsDimuons+1];          //!
   TH1D *fHistMassMuonPairs[fNMaxPtBinsDimuons+1];             //!
   TH1D *fHistMassMuonPairsWithoutMFT[fNMaxPtBinsDimuons+1];   //!
   TH1D *fHistMassMuonPairsMC[fNMaxPtBinsDimuons+1];           //!
-  TH2D *fHistRapidityPtMuonPairsMC;                           //!
+  TH2D *fHistRapidityPtMuonPairs;                             //!
  
   Int_t fNMassBins, fNPtDimuBins;
   Double_t fMassMin, fMassMax, fPtDimuMin, fPtDimuMax;

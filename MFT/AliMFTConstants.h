@@ -24,8 +24,8 @@ public:
   static const Double_t fCutForAvailableDigits;   ///<
   static const Double_t fCutForAttachingDigits;   ///<
 
-  static const Int_t fNMaxMCTracksPerCluster = 30;   ///< max number of MC tracks sharing the same MFT cluster
-  static const Int_t fNMaxMCTracksPerDigit = 10;     ///< max number of MC tracks sharing the same MFT digit
+  static const Int_t fNMaxMCTracksPerCluster = 10;   ///< max number of MC tracks sharing the same MFT cluster
+  static const Int_t fNMaxMCTracksPerDigit = 3;      ///< max number of MC tracks sharing the same MFT digit
 
   static const Double_t fElossPerElectron;
 
