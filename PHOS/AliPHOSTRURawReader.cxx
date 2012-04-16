@@ -34,7 +34,10 @@ AliPHOSTRURawReader::AliPHOSTRURawReader()
     fSignals(),
     fFlags(),
     fActive(0),
-    fActiveTime()
+    fActiveTime(),
+    fHasSignal(false),
+    fHasSignalTime()
+
 {
   // default constructor
   
@@ -59,6 +62,7 @@ AliPHOSTRURawReader::AliPHOSTRURawReader()
   // fActiveTime Initialization
   for(Int_t timeBin = 0; timeBin < kNTimeBins; ++timeBin){
     fActiveTime[timeBin] = kFALSE;
+    fHasSignalTime[timeBin] = kFALSE;
   }
 }
 
@@ -116,6 +120,8 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
    */
 
   if( 16+112 == signalLength) {
+    fHasSignal = kTRUE;
+    fHasSignalTime[timeBin] = kTRUE;
     for (Int_t idx = 0; idx < 112; idx++)
       {
 	const Int_t xIdx = 7 - idx % 8;  // x index in TRU
@@ -149,7 +155,9 @@ void AliPHOSTRURawReader::Reset()
       } // xIdx
     }// end if fActiveTime
     fActiveTime[timeBin] = false;
+    fHasSignalTime[timeBin] = false;
   } // timeBin
 
   fActive = false;
+  fHasSignal = false;
 }

@@ -23,6 +23,8 @@ class AliPHOSTRURawReader : public TObject
   Bool_t GetTriggerFlag(Int_t xIdx, Int_t zIdx, Int_t timeBin) const {return fFlags[xIdx][zIdx][timeBin];}
   bool IsActive() {return fActive;}
   bool IsActive(Int_t timeBin) {return fActiveTime[timeBin];}
+  bool HasSignal() {return fHasSignal;}
+  bool HasSignal(Int_t timeBin) {return fHasSignalTime[timeBin];}
   
   void ReadFromStream(AliCaloRawStreamV3* );
   void Reset();
@@ -46,9 +48,11 @@ class AliPHOSTRURawReader : public TObject
   Bool_t  fFlags[kN4x4XPrTRURow][kN4x4ZPrBranch][kNTimeBins]; // 4x4 Trigger Flag, [x][z][t]
   
   Bool_t fActive; // Active
+  Bool_t fHasSignal; // Has Signal
   Bool_t fActiveTime[kNTimeBins]; // Active [t]
+  Bool_t fHasSignalTime[kNTimeBins]; // Has Signal [t]
   
-  ClassDef(AliPHOSTRURawReader, 0)
+  ClassDef(AliPHOSTRURawReader, 1)
 };
 
 #endif // ALIPHOSTRURAWREADER_H
