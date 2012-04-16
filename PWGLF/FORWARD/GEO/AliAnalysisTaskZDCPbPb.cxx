@@ -96,7 +96,10 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb():
      fhZPAPMlg[i] = 0x0;    
    }
    for(int i=0; i<2; i++) fhZEM[i] = 0x0;  
-   for(int i=0; i<6; i++) fhTDC[i] = 0x0;  
+   for(int i=0; i<6; i++){
+     fhTDCraw[i] = 0x0;  
+     fhTDC[i] = 0x0;  
+   }
    for(int i=0; i<4; i++) fhPMCvsPMQ[i] = 0x0;  
 }   
 
@@ -137,7 +140,10 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const char *name):
      fhZPAPMlg[i] = 0x0;    
    }
    for(int i=0; i<2; i++) fhZEM[i] = 0x0;  
-   for(int i=0; i<6; i++) fhTDC[i] = 0x0;  
+   for(int i=0; i<6; i++){
+     fhTDCraw[i] = 0x0;  
+     fhTDC[i] = 0x0;  
+   }
    for(int i=0; i<4; i++) fhPMCvsPMQ[i] = 0x0;  
   
   // Output slot #1 writes into a TList container
@@ -193,7 +199,10 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana
      fhZPAPMlg[i] = ana.fhZPAPMlg[i];	 
    }
    for(int i=0; i<2; i++) fhZEM[i] = ana.fhZEM[i];  
-   for(int i=0; i<6; i++) fhTDC[i] = ana.fhTDC[i];  
+   for(int i=0; i<6; i++){
+     fhTDCraw[i] = ana.fhTDCraw[i];  
+     fhTDC[i] = ana.fhTDC[i];  
+   }
    for(int i=0; i<4; i++) fhPMCvsPMQ[i] = ana.fhPMCvsPMQ[i];  
 }
  
@@ -253,6 +262,7 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
    for(int i=0; i<6; i++){
      if(i==0){
        fhZEM[i] = new TH1F("hZEM1","hZEM1",200,-50.,1150.);
+       fhTDCraw[i] = new TH1F("hTDCZEM1raw", "hTDCZEM1raw", 200, -200., 0.);
        fhTDC[i] = new TH1F("hTDCZEM1", "hTDCZEM1", 200, -150., 50.);
        fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZNC","hPMCvsPMQZNC",200,-10.,140000,200,-10.,140000);
        //
@@ -261,6 +271,7 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
      }
      else if(i==1){
        fhZEM[i] = new TH1F("hZEM2","hZEM2",200,-50.,1150.);
+       fhTDCraw[i] = new TH1F("hTDCZEM2raw", "hTDCZEM2raw", 200, -200., 0.);
        fhTDC[i] = new TH1F("hTDCZEM2", "hTDCZEM2", 200, -150., 50.);
        fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZPC","hPMCvsPMQZPC",200,-10.,50000,200,-10.,50000);
        //
@@ -268,19 +279,27 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
        fOutput->Add(fhPMCvsPMQ[i]);
      }
      else if(i==2){
+       fhTDCraw[i] = new TH1F("hTDCZNCraw", "hTDCZNCraw", 200, -200., 0.);
        fhTDC[i] = new TH1F("hTDCZNC", "hTDCZNC", 200, -150., 50.);
        fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZNA","hPMCvsPMQZNA",200,-10.,140000,200,-10.,140000);
        //
        fOutput->Add(fhPMCvsPMQ[i]);
      }
      else if(i==3){
+       fhTDCraw[i] = new TH1F("hTDCZPCraw", "hTDCZPCraw", 200, -200., 0.);
        fhTDC[i] = new TH1F("hTDCZPC", "hTDCZPC", 200, -150., 50.);
        fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZPA","hPMCvsPMQZPA",200,-10.,50000,200,-10.,50000);
        //
        fOutput->Add(fhPMCvsPMQ[i]);
      }
-     else if(i==4) fhTDC[i] = new TH1F("hTDCZNA", "hTDCZNA", 200, -150., 50.);
-     else if(i==5) fhTDC[i] = new TH1F("hTDCZPA", "hTDCZPA", 200, -150., 50.);
+     else if(i==4){
+       fhTDCraw[i] = new TH1F("hTDCZNAraw", "hTDCZNAraw", 200, -200., 0.);
+       fhTDC[i] = new TH1F("hTDCZNA", "hTDCZNA", 200, -150., 50.);
+     }
+     else if(i==5){
+       fhTDCraw[i] = new TH1F("hTDCZPAraw", "hTDCZPAraw", 200, -200., 0.);
+       fhTDC[i] = new TH1F("hTDCZPA", "hTDCZPA", 200, -150., 50.);
+     }
      //
      fOutput->Add(fhTDC[i]);
   }
@@ -392,9 +411,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	       fhTDC[itdc-8]->Fill(tdc[itdc][i]);
 	     }
 	     else if(itdc==15 && i==0){
-	       tdcSum = esdZDC->GetZNTDCSum(i);
-               tdcDiff = esdZDC->GetZNTDCDiff(i);
-	       fhDebunch->Fill(tdcDiff, tdcSum);
+	       for(int ich=8; ich<=13; ich++) fhTDCraw[ich-8]->Fill(esdZDC->GetZDCTDCData(ich, 0)-esdZDC->GetZDCTDCData(itdc, i));
 	     }
            }
 	 }
@@ -405,6 +422,11 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       Bool_t zpc  = tdcMult[3];
       Bool_t zna  = tdcMult[4];
       Bool_t zpa  = tdcMult[5];
+      if(znc && zna){
+	 tdcSum = esdZDC->GetZNTDCSum(0);
+         tdcDiff = esdZDC->GetZNTDCDiff(0);
+	 fhDebunch->Fill(tdcDiff, tdcSum);	   
+      }
       
       Float_t energyZNC  = (Float_t) (esdZDC->GetZNCEnergy());
       Float_t energyZPC  = (Float_t) (esdZDC->GetZPCEnergy());
