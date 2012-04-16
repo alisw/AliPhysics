@@ -315,6 +315,7 @@ int main(int argc, char **argv) {
       
         delete rawStreamZDC;
         rawStreamZDC = 0x0;	
+	delete reader;
 
       }//(if PHYSICS_EVENT) 
       else if(eventT==END_OF_RUN){
