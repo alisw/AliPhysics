@@ -1416,26 +1416,13 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::DefineHistos()
   fh2Xi      = new TH2F(Form("fh2FFXi%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsXi, fXiMin, fXiMax);
 
   if(!fLogZBins) fh2Z       = new TH2F(Form("fh2FFZ%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, fZMin, fZMax);
-  else{ // logartihmic z binning
+  else{ // logarithmic z binning
 
+    fNBinsZ = fNBinsXi;
     Double_t binLimsZ[fNBinsXi+1];	
-    
-    Int_t binZ = 0;
-    for(Int_t binXi = fh2Xi->GetYaxis()->GetNbins(); binXi>0; binXi--){
-      
-      Double_t xiLo = fh2Xi->GetYaxis()->GetBinLowEdge(binXi);
-      Double_t xiUp = fh2Xi->GetYaxis()->GetBinUpEdge(binXi);
-      
-      Double_t zUp = TMath::Exp(-1*xiLo);	
-      Double_t zLo = TMath::Exp(-1*xiUp);	
-      
-      if(binZ == 0) binLimsZ[binZ] = zLo;
-      binLimsZ[binZ+1] = zUp;
-      
-      binZ++;
-    }
-    
-    fNBinsZ = binZ;
+
+    CalcLogZBins(fNBinsXi,fXiMin,fXiMax,binLimsZ);
+
     fh2Z    = new TH2F(Form("fh2FFZ%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, binLimsZ);
   }
 
@@ -1443,6 +1430,32 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::DefineHistos()
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2TrackPt,"jet p_{T} [GeV/c]","p_{T} [GeV/c]","entries");
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2Xi,"jet p_{T} [GeV/c]","#xi", "entries");
   AliAnalysisTaskFragmentationFunction::SetProperties(fh2Z,"jet p_{T} [GeV/c]","z","entries");
+}
+
+//_______________________________________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::CalcLogZBins(const Int_t nBinsXi,const Double_t xiMin,const Double_t xiMax,Double_t* binLims){
+  
+  // calculate logarithmic binning corresponding to equidistant xi bins
+  // expect binLims vector of size nBinsXi+1
+
+  if(nBinsXi == 0){
+    Printf("%s:%d nBinsXi == 0",(char*)__FILE__,__LINE__); 
+    return;
+  }
+
+  Double_t step = (xiMax-xiMin)/nBinsXi;
+  
+  for(Int_t binZ = 0; binZ<nBinsXi; binZ++){
+   
+    Double_t xiUp = xiMax -  binZ*step;
+    Double_t xiLo = xiMax - (binZ+1)*step;
+      
+    Double_t zUp = TMath::Exp(-1*xiLo);
+    Double_t zLo = TMath::Exp(-1*xiUp);
+      
+    if(binZ == 0) binLims[0] = zLo;
+    binLims[binZ+1] = zUp;   
+  }
 }
 
 //_______________________________________________________________________________________________________________
@@ -2425,8 +2438,6 @@ Bool_t AliAnalysisTaskFragmentationFunction::Notify()
   return kTRUE;
 }
 
-
-
 //__________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 {
@@ -2805,14 +2816,37 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
      
       AliAnalysisTaskFragmentationFunction::SetProperties(fhnResponseJetTrackPt,3,labelsResponseJetTrackPt);
 
-      Int_t    nBinsResponseJetZ[3]     = {fFFNBinsJetPt, fFFNBinsZ,fFFNBinsZ};
-      Double_t binMinResponseJetZ[3]    = {fFFJetPtMin, fFFZMin, fFFZMin};
-      Double_t binMaxResponseJetZ[3]    = {fFFJetPtMax, fFFZMax, fFFZMax};
-      const char* labelsResponseJetZ[3] = { "jet p_{T} [GeV/c]","rec z","gen z"};
+      if(!fFFLogZBins){
 
-      fhnResponseJetZ  = new THnSparseF("fhnResponseJetZ","jet pt:track pt rec:track pt gen",3,
-					nBinsResponseJetZ,binMinResponseJetZ,binMaxResponseJetZ);
+	Int_t    nBinsResponseJetZ[3]     = {fFFNBinsJetPt, fFFNBinsZ,fFFNBinsZ};
+	Double_t binMinResponseJetZ[3]    = {fFFJetPtMin, fFFZMin, fFFZMin};
+	Double_t binMaxResponseJetZ[3]    = {fFFJetPtMax, fFFZMax, fFFZMax};
+
+	fhnResponseJetZ  = new THnSparseF("fhnResponseJetZ","jet pt:rec z rec:gen z",3,
+					  nBinsResponseJetZ,binMinResponseJetZ,binMaxResponseJetZ);
+      }
+      else{
+	
+	Double_t binLims[fFFNBinsXi+1];
+	fFFHistosRecEffGen->CalcLogZBins(fFFNBinsXi,fFFXiMin,fFFXiMax,binLims);
+	
+	Int_t binsZ   = fFFNBinsXi;
+	Double_t zMin = binLims[0];
+	Double_t zMax = binLims[fFFNBinsXi];
+	
+	Int_t    nBinsResponseJetZ[3]     = {fFFNBinsJetPt, binsZ, binsZ};
+	Double_t binMinResponseJetZ[3]    = {fFFJetPtMin,   zMin,  zMin};
+	Double_t binMaxResponseJetZ[3]    = {fFFJetPtMax,   zMax,  zMax};
+	//	const char* labelsResponseJetZ[3] = { "jet p_{T} [GeV/c]","rec z","gen z"};
+	
+	fhnResponseJetZ  = new THnSparseF("fhnResponseJetZ","jet pt:rec z rec:gen z",3,
+					  nBinsResponseJetZ,binMinResponseJetZ,binMaxResponseJetZ);
+	
+	fhnResponseJetZ->SetBinEdges(1,binLims);
+	fhnResponseJetZ->SetBinEdges(2,binLims);
+      }
       
+      const char* labelsResponseJetZ[3] = { "jet p_{T} [GeV/c]","rec z","gen z"};
       AliAnalysisTaskFragmentationFunction::SetProperties(fhnResponseJetZ,3,labelsResponseJetZ);
       
       Int_t    nBinsResponseJetXi[3]     = {fFFNBinsJetPt, fFFNBinsXi,fFFNBinsXi};
@@ -3217,13 +3251,11 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   fCommonHistList->Add(fh1VertexNContributors);
   fCommonHistList->Add(fh1VertexZ);    
   fCommonHistList->Add(fh1nRecJetsCuts);
-  if(genJets && genTracks){
-    fCommonHistList->Add(fh1Xsec);
-    fCommonHistList->Add(fh1Trials);
-    fCommonHistList->Add(fh1PtHard);
-    fCommonHistList->Add(fh1PtHardTrials);
-    if(genJets) fCommonHistList->Add(fh1nGenJets);
-  }
+  fCommonHistList->Add(fh1Xsec);
+  fCommonHistList->Add(fh1Trials);
+  fCommonHistList->Add(fh1PtHard);
+  fCommonHistList->Add(fh1PtHardTrials);
+  if(genJets) fCommonHistList->Add(fh1nGenJets);
 
   // FF histograms
   if(fFFMode){
@@ -3231,12 +3263,6 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
     fFFHistosRecLeading->AddToOutput(fCommonHistList);
     fFFHistosRecLeadingTrack->AddToOutput(fCommonHistList);
     if(genJets && genTracks){
-      fCommonHistList->Add(fh1Xsec);
-      fCommonHistList->Add(fh1Trials);
-      fCommonHistList->Add(fh1PtHard);
-      fCommonHistList->Add(fh1PtHardTrials);
-      if(genJets) fCommonHistList->Add(fh1nGenJets);
-
       fFFHistosGen->AddToOutput(fCommonHistList);
       fFFHistosGenLeading->AddToOutput(fCommonHistList);
       fFFHistosGenLeadingTrack->AddToOutput(fCommonHistList);
