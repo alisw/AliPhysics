@@ -69,6 +69,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   //calibTask->SetReject(kFALSE);
   //calibTask->SetDebug(2);
   calibTask->SetNbTimeBins(nbOfTimeBins);
+  calibTask->SetNumberBinCharge(100);
   //calibTask->SetMaxEvent(10);
   //calibTask->SetThresholdP(1.0);
   calibTask->SetRequirePrimaryVertex(kTRUE);
