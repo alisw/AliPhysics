@@ -19,6 +19,7 @@
 
 class AliESDtrack;
 class AliAODTrack;
+class AliESDtrackCuts;
 
 class AliRsnCutTrackQuality : public AliRsnCut {
 public:
@@ -46,12 +47,16 @@ public:
 
    void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
    void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
-
+   void      SetMaxChi2TPCConstrainedGlobal(Float_t max) {fCutMaxChi2TPCConstrainedVsGlobal = max; }
+  
    void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
 
    void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
 
    void      SetDefaults2010();
+   void      SetESDtrackCuts(AliESDtrackCuts* esdTrackCuts){fESDtrackCuts = esdTrackCuts;}
+   AliESDtrackCuts*  GetESDtrackCuts(){return fESDtrackCuts;}
+
 
    virtual Bool_t IsSelected(TObject *obj);
    virtual void   Print(const Option_t *option = "") const;
@@ -82,49 +87,10 @@ protected:
 
    Int_t      fTPCminNClusters;        // minimum number of required clusters in TPC
    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
+   Float_t    fCutMaxChi2TPCConstrainedVsGlobal;  // max chi2 TPC track constrained with vtx vs. global track
    Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
+   AliESDtrackCuts *fESDtrackCuts;     // pointer to AliESDtrackCuts object
 
-   ClassDef(AliRsnCutTrackQuality, 1)
+   ClassDef(AliRsnCutTrackQuality, 2)
 };
-
-//__________________________________________________________________________________________________
-inline const char *AliRsnCutTrackQuality::Binary(UInt_t number)
-{
-//
-// Convert an integer in binary
-//
-
-   static char b[50];
-   b[0] = '\0';
-
-   UInt_t z;
-   for (z = 512; z > 0; z >>= 1)
-      strncat(b, ((number & z) == z) ? "1" : "0", 1);
-
-   return b;
-}
-
-//__________________________________________________________________________________________________
-inline void AliRsnCutTrackQuality::SetDefaults2010()
-{
-//
-// Default settings for cuts used in 2010
-//
-
-   AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
-   AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
-   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
-   SetPtRange(0.15, 1E+20);
-   SetEtaRange(-0.8, 0.8);
-   SetDCARPtFormula("0.0182+0.0350/pt^1.01");
-   SetDCAZmax(2.0);
-   SetSPDminNClusters(1);
-   SetITSminNClusters(0);
-   SetITSmaxChi2(1E+20);
-   SetTPCminNClusters(70);
-   SetTPCmaxChi2(4.0);
-   SetRejectKinkDaughters();
-   SetAODTestFilterBit(5);
-}
-
 #endif

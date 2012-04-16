@@ -46,7 +46,8 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fITSmaxChi2(1E20),
    fTPCminNClusters(0),
    fTPCmaxChi2(1E20),
-   fAODTestFilterBit(-1)
+  fAODTestFilterBit(-1),
+  fESDtrackCuts(0x0)
 {
 //
 // Default constructor.
@@ -74,7 +75,8 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fITSmaxChi2(copy.fITSmaxChi2),
    fTPCminNClusters(copy.fTPCminNClusters),
    fTPCmaxChi2(copy.fTPCmaxChi2),
-   fAODTestFilterBit(copy.fAODTestFilterBit)
+   fAODTestFilterBit(copy.fAODTestFilterBit),
+   fESDtrackCuts(copy.fESDtrackCuts)
 {
 //
 // Copy constructor.
@@ -111,7 +113,7 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
    fAODTestFilterBit = copy.fAODTestFilterBit;
-
+   fESDtrackCuts = copy.fESDtrackCuts;
    SetPtRange(copy.fPt[0], copy.fPt[1]);
    SetEtaRange(copy.fEta[0], copy.fEta[1]);
 
@@ -140,7 +142,12 @@ void AliRsnCutTrackQuality::DisableAll()
    fTPCminNClusters = 0;
    fTPCmaxChi2 = 1E20;
    fAODTestFilterBit = -1;
-
+   if (fESDtrackCuts) {
+     const char *cutsName = fESDtrackCuts->GetName();
+     const char *cutsTitle = fESDtrackCuts->GetTitle();
+     delete fESDtrackCuts;
+     fESDtrackCuts = new AliESDtrackCuts(cutsName,cutsTitle);
+   }
    SetPtRange(0.0, 1E20);
    SetEtaRange(-1E20, 1E20);
 }
@@ -188,7 +195,10 @@ Bool_t AliRsnCutTrackQuality::IsSelected(TObject *object)
    AliAODTrack *aodTrack = fDaughter->Ref2AODtrack();
    if (esdTrack) {
       AliDebug(AliLog::kDebug + 2, "Checking an ESD track");
-      return CheckESD(esdTrack);
+      if (fESDtrackCuts) 
+	return fESDtrackCuts->IsSelected(esdTrack);
+      else 
+	return CheckESD(esdTrack);
    } else if (aodTrack) {
       AliDebug(AliLog::kDebug + 2, "Checking an AOD track");
       return CheckAOD(aodTrack);
@@ -233,10 +243,12 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
    cuts.SetMinNClustersTPC(fTPCminNClusters);
    cuts.SetMaxChi2PerClusterTPC(fTPCmaxChi2);
    cuts.SetAcceptKinkDaughters(!fRejectKinkDaughters);
-
+   cuts.SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal);
+   
    // ITS related cuts for TPC+ITS tracks
    if (fSPDminNClusters > 0)
-      cuts.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+     cuts.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+   cuts.SetMaxChi2PerClusterITS(fITSmaxChi2);
 
    // now that all is initialized, do the check
    return cuts.IsSelected(track);
@@ -280,6 +292,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       AliDebug(AliLog::kDebug + 2, "Not enough SPD clusters in this track. Rejected");
       return kFALSE;
    }
+
 
    // step #1: check number of clusters in TPC
    if (track->GetTPCNcls() < fTPCminNClusters) {
@@ -394,4 +407,43 @@ void AliRsnCutTrackQuality::Print(const Option_t *) const
    } else {
       AliInfo(Form("DCA z cut formula       : %s", fDCAZptFormula.Data()));
    }
+}
+//__________________________________________________________________________________________________
+void AliRsnCutTrackQuality::SetDefaults2010()
+{
+//
+// Default settings for cuts used in 2010
+//
+   AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
+   AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
+   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+   SetPtRange(0.15, 1E+20);
+   SetEtaRange(-0.8, 0.8);
+   SetDCARPtFormula("0.0182+0.0350/pt^1.01");
+   SetDCAZmax(2.0);
+   SetSPDminNClusters(1);
+   SetITSminNClusters(0);
+   SetITSmaxChi2(36);
+   SetMaxChi2TPCConstrainedGlobal(36);
+   SetTPCminNClusters(70);
+   SetTPCmaxChi2(4.0);
+   SetRejectKinkDaughters();
+   SetAODTestFilterBit(5);
+}
+
+//__________________________________________________________________________________________________
+const char *AliRsnCutTrackQuality::Binary(UInt_t number)
+{
+//
+// Convert an integer in binary
+//
+
+   static char b[50];
+   b[0] = '\0';
+
+   UInt_t z;
+   for (z = 512; z > 0; z >>= 1)
+      strncat(b, ((number & z) == z) ? "1" : "0", 1);
+
+   return b;
 }
