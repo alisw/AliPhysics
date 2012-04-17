@@ -1,4 +1,7 @@
-AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", Bool_t rmBadCells = kTRUE, Int_t run = 0){
+AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", 
+						      Bool_t rmBadCells = kTRUE, 
+						      Int_t run = 0, 
+						      const char * geoname = "EMCAL_COMPLETE12SMV1"){
   
   
   // Get the pointer to the existing analysis manager via the static access method.
@@ -17,6 +20,7 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", B
   }
     
   AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QATrigger");
+  qatrigger->SetGeometryName(geoname);
   
   if(rmBadCells){
     
