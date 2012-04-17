@@ -168,7 +168,11 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
       if (!histMixPM) fHistDataME   = (TH1*)htmp->Clone("mixPM");                   // +-    ME
       else histMixPM->Add(htmp);
     }
-
+    
+    if (!histMixPM){
+      AliError("For R-factor correction the mixed event histograms are requires. No +- histogram found");
+      return;
+    }
     histMixPM->Sumw2();
     
     // rebin the histograms
@@ -313,21 +317,19 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
   //
   // signal subtraction
   //
-  fHistDataPM = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPM");  // +-    SE
-  if (!fHistDataPM){
-    AliError("Unlike sign histogram not available. Cannot extract the signal.");
+
+  if (!arrhist->At(AliDielectron::kEv1PM) || !arrhist->At(AliDielectron::kEv1PMRot) ){
+    AliError("Either OS or rotation histogram missing");
     return;
   }
+  
+  fHistDataPM = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPM");  // +-    SE
   fHistDataPM->Sumw2();
+  fHistDataPM->SetDirectory(0x0);
 
   fHistBackground = (TH1*)(arrhist->At(AliDielectron::kEv1PMRot))->Clone("histRotation");
-  if (!fHistBackground){
-    AliError("Histgram from rotation not available. Cannot extract the signal.");
-    delete fHistDataPM;
-    fHistDataPM=0x0;
-    return;
-  }
   fHistBackground->Sumw2();
+  fHistBackground->SetDirectory(0x0);
 
   // rebin the histograms
   if (fRebin>1) {
@@ -345,6 +347,7 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
 
   fHistSignal=(TH1*)fHistDataPM->Clone("histSignal");
   fHistSignal->Add(fHistBackground,-1.);
+  fHistSignal->SetDirectory(0x0);
 
     // signal
   fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
