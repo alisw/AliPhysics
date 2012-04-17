@@ -471,12 +471,24 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hntrklvsPercentile";
     TH2F* hntrklvsPercentile=new TH2F(hname.Data(),"N tracklets vs Percentile;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
+    hname="hV0MultiplicityPercentile";
+    TH2F*hV0MultiplicityPercentile = new TH2F(hname.Data(),"V0 Multiplicity vs Percentile;V0 multiplicity;percentile",1000,-0.5,9999.5,120,-10.,110);
+
+    hname="hV0MultiplicityNtrackletsIn";
+    TH2F*hV0MultiplicityNtrackletsIn = new TH2F(hname.Data(),"V0 Multiplicity vs Number of tracklets in the CC;V0 multiplicity;percentile",1000,-0.5,9999.5,5000,-0.5,4999.5);
+
+    hname="hStdPercentileSPDPercentile";
+    TH2F* hStdPercentileSPDPercentile = new TH2F(hname.Data(),"Std estimator Percentile Vs SPD Percentile;Std estimator percentile;SPD percentile",120,-10.,110,120,-10.,110);
+
     fOutputCheckCentrality->Add(hNtrackletsIn);
     fOutputCheckCentrality->Add(hNtrackletsOut);
     fOutputCheckCentrality->Add(hMultIn);
     fOutputCheckCentrality->Add(hMultOut);
     fOutputCheckCentrality->Add(hMultvsPercentile);
     fOutputCheckCentrality->Add(hntrklvsPercentile);
+    fOutputCheckCentrality->Add(hV0MultiplicityPercentile);
+    fOutputCheckCentrality->Add(hV0MultiplicityNtrackletsIn);
+    fOutputCheckCentrality->Add(hStdPercentileSPDPercentile);
 
     PostData(6,fOutputCheckCentrality);
   
@@ -980,6 +992,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       Float_t secondCentf =fCuts->GetCentrality(aod,fEstimator);
       Int_t secondCent = (Int_t)(secondCentf+0.5);
       Int_t mincent=stdCent-stdCent%10;
+      AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
+      Float_t vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
+      AliCentrality *aodcent = aod->GetCentrality();
+      Float_t spdCentf = aodcent->GetCentralityPercentile("CL1");
       if(stdCentf==-1) {
 	mincent=-10; 
 	stdCent=-1;
@@ -1004,8 +1020,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(aod->GetHeader()->GetRefMultiplicity(),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile"))->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hV0MultiplicityPercentile"))->Fill(vzeroMult,stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hV0MultiplicityNtrackletsIn"))->Fill(vzeroMult,aod->GetTracklets()->GetNumberOfTracklets());
+      ((TH2F*)fOutputCheckCentrality->FindObject("hStdPercentileSPDPercentile"))->Fill(stdCentf,spdCentf);
 
       PostData(6,fOutputCheckCentrality);
+
+      delete vzeroAOD;
+      delete aodcent;
 
     } else{
       if(fOnOff[0]){
