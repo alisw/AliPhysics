@@ -1,4 +1,4 @@
-AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8,AliAnalysisTaskSESignificance::FeedDownEnum fromcb=AliAnalysisTaskSESignificance::kBoth)
+AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8,AliAnalysisTaskSESignificance::FeedDownEnum fromcb=AliAnalysisTaskSESignificance::kBoth, TString usercomment = "username", TString cutsobjname="loosecuts")
 {
   //
   // Test macro for the AliAnalysisTaskSE for D meson candidates
@@ -28,7 +28,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   if(fromcb==AliAnalysisTaskSESignificance::kCharmOnly) suffix2+="prompt";
   if(fromcb==AliAnalysisTaskSESignificance::kBeautyOnly) suffix2+="feeddown";
 
-  TString cutsobjname="loosercuts";
+
   //Analysis cuts
   switch (decCh){
   case 0:
@@ -40,7 +40,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
     suffix=Form("D0%s",suffix2.Data());
     break;
   case 2:
-    analysiscuts = (AliRDHFCutsDstartoKpipi*)filecuts->Get(cutsobjname);
+    analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsobjname);
     suffix=Form("Dstar%s",suffix2.Data());
     break;
   case 3:
@@ -133,12 +133,18 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   // Create containers for input/output
   AliAnalysisDataContainer *cinputSig = mgr->CreateContainer(contname.Data(),TChain::Class(),AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
+  usercomment = "_" + usercomment;
   TString outputhistos = outputfile += ":PWG3_D2H_Significance"; 
+  outputhistos += usercomment;
+
   contname=Form("coutputSig%s",suffix.Data());
+  contname += usercomment;
   AliAnalysisDataContainer *coutputSig = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   contname=Form("coutputmv%s",suffix.Data());
+  contname += usercomment;
   AliAnalysisDataContainer *coutputmv = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   contname=Form("cloosecuts%s",suffix.Data());
+  contname += usercomment;
   AliAnalysisDataContainer *coutputcuts = mgr->CreateContainer(contname.Data(),AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
 
@@ -152,4 +158,5 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
  
   return sigTask;
 }
+
 
