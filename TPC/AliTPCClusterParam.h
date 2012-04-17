@@ -78,7 +78,7 @@ class AliTPCClusterParam : public TObject {
   const THnBase *GetWaveCorrectionMap() const { return fWaveCorrectionMap; }
   const THnBase *GetResolutionYMap() const { return  fResolutionYMap; }
   Float_t GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ) const;
-  static Float_t SGetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ){return fgInstance->SGetWaveCorrection(Type,Z,QMax,Pad,angleY);}
+  static Float_t SGetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ){return (fgInstance) ? fgInstance->GetWaveCorrection(Type,Z,QMax,Pad,angleY):0;}
   //
   //
   //
