@@ -100,6 +100,9 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetMaxEvent(Int_t nbevents)                                     { fMaxEvent = nbevents; };
   void SetDebug(Int_t debug)                                           { fDebug = debug; };
 
+  Bool_t IsPHQon() const {return fPHQon;}
+  void SetPHQon(const Bool_t kphq){ fPHQon = kphq; }
+
  private:
   Bool_t SetVersionSubversion();
   Bool_t ParticleGood(int i) const;
@@ -200,6 +203,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
 
   Int_t       fMaxEvent;                         // max events
   Int_t       fCounter;                          // max events
+
+  Bool_t fPHQon;                                  //switch of phq
 
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 

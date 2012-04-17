@@ -158,7 +158,17 @@ class AliTRDdEdxUtils
 
   static TString GetRunType(const Int_t run);
 
-  static Bool_t IsExBOn(){return kTRUE;}
+  static void SetExBOn(const Bool_t kon){ fgExBOn = kon; }
+  static void SetQ0Frac(const Double_t q0){ fgQ0Frac = q0; }
+  static void SetQ1Frac(const Double_t q1){ fgQ1Frac = q1; }
+  static void SetTimeBinCountCut(const Double_t tbc){ fgTimeBinCountCut = tbc; }
+  static void SetCalibTPCnclsCut(const Int_t tpc){ fgCalibTPCnclsCut = tpc; }
+
+  static Bool_t IsExBOn(){return fgExBOn;}
+  static Double_t Q0Frac(){return fgQ0Frac;}
+  static Double_t Q1Frac(){return fgQ1Frac;}
+  static Double_t TimeBinCountCut(){return fgTimeBinCountCut;}
+  static Int_t CalibTPCnclsCut(){return fgCalibTPCnclsCut;}
 
   static void PrintControl();
   //===================================================================================
@@ -180,10 +190,6 @@ class AliTRDdEdxUtils
   static TString GetPHQName(const Bool_t kobj, const Int_t iter);
 
   //Detector, Data and Control Constant
-  static Double_t Q0Frac(){return 0.3;}
-  static Double_t Q1Frac(){return 0.5;}
-  static Double_t TimeBinCountCut(){return 0.0;}
-  static Int_t CalibTPCnclsCut(){return 70;}
 
   static THnSparseD *fgHistGain;//PH hist
   static THnSparseD *fgHistT0;//PH hist
@@ -202,6 +208,12 @@ class AliTRDdEdxUtils
   static Double_t fgChamberTmean[6]; //Q-weighted timebin \sum Q*T / \sum Q
 
   static Double_t fgTrackTmean; //mean timebin over track
+
+  static Bool_t   fgExBOn;    //exbon
+  static Double_t fgQ0Frac; //q0frac
+  static Double_t fgQ1Frac; //q1frac
+  static Double_t fgTimeBinCountCut; //tbcut
+  static Int_t    fgCalibTPCnclsCut; //tpccut
 };
 
 #endif

@@ -388,8 +388,13 @@ Bool_t AliTRDtrackV1::CookPID()
   }
   pidResponse->GetResponse(nslices, dEdx, trackletP, fPID);
 
+  static Int_t nprint = 0;
+  if(!nprint){
+    AliTRDdEdxUtils::PrintControl();
+    nprint++;
+  }
+
   //do truncated mean
-  //ncls needs to be included!! todo!!
   AliTRDdEdxUtils::SetObjPHQ(AliTRDcalibDB::Instance()->GetPHQ());
   const Double_t mag    = AliTRDdEdxUtils::IsExBOn() ? GetBz()  : -1;
   const Double_t charge = AliTRDdEdxUtils::IsExBOn() ? Charge() : -1;

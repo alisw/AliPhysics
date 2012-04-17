@@ -23,7 +23,6 @@ class TH1I;
 class TH2F;
 class TString;
 
-
 class AliTRDPreprocessorOffline:public TNamed { 
 public:
   enum{ kGain = 0,
@@ -193,8 +192,9 @@ public:
   Int_t    GetStatusPos() const                                      { return fStatusPos;              }
   Int_t    GetStatusNeg() const                                      { return fStatusNeg;              }
  
+  Bool_t IsPHQon() const { return fPHQon ;};
+  void SetPHQon(const Bool_t kphq){ fPHQon = kphq; }
 
-  
  private:
   Bool_t fMethodSecond;                      // Second Method for drift velocity   
   TString fNameList;                         // Name of the list
@@ -262,6 +262,9 @@ public:
 private:
   AliTRDPreprocessorOffline& operator=(const AliTRDPreprocessorOffline&); // not implemented
   AliTRDPreprocessorOffline(const AliTRDPreprocessorOffline&); // not implemented
+
+  Bool_t fPHQon;                 //switch of PHQ
+
   ClassDef(AliTRDPreprocessorOffline,3)
 };
 

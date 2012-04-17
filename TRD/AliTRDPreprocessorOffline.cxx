@@ -67,7 +67,6 @@
 #include "AliCDBEntry.h"
 #include "AliTRDdEdxUtils.h"
 
-
 ClassImp(AliTRDPreprocessorOffline)
 
   AliTRDPreprocessorOffline::AliTRDPreprocessorOffline():
@@ -125,7 +124,8 @@ ClassImp(AliTRDPreprocessorOffline)
   fMethodeGain(0),
   fOutliersFitChargeLow(0.03),
   fOutliersFitChargeHigh(0.7),
-  fBeginFitCharge(3.5)
+  fBeginFitCharge(3.5),
+  fPHQon(kTRUE)
 {
   //
   // default constructor
@@ -147,8 +147,12 @@ AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
   if(fPH2d) delete fPH2d;
   if(fPRF2d) delete fPRF2d;
   if(fSparse) delete fSparse;
-  AliTRDdEdxUtils::DeleteCalibHist();
-  AliTRDdEdxUtils::DeleteCalibObj();
+
+  if(IsPHQon()){
+    AliTRDdEdxUtils::DeleteCalibHist();
+    AliTRDdEdxUtils::DeleteCalibObj();
+  }
+
   if(fAliTRDCalibraVdriftLinearFit) delete fAliTRDCalibraVdriftLinearFit;
   if(fAliTRDCalibraExbAltFit) delete fAliTRDCalibraExbAltFit;
   if(fNEvents) delete fNEvents;
@@ -173,8 +177,15 @@ void AliTRDPreprocessorOffline::Process(const Char_t* file, Int_t startRunNumber
 
   }
 
-  CalibPHQ(file, startRunNumber, endRunNumber, ocdbStorage);
-  
+  if(IsPHQon()){
+    printf("\n                  AliTRDPreprocessorOffline PHQ on!!\n\n");
+    AliTRDdEdxUtils::PrintControl();
+    CalibPHQ(file, startRunNumber, endRunNumber, ocdbStorage);
+  }
+  else{
+    printf("\n                  AliTRDPreprocessorOffline PHQ off!!\n\n");
+  }
+
   PrintStatus();
   
 }
@@ -936,8 +947,6 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePHQ(Int_t startRunNumber)
   //
   //Produce PHQ calibration results
   //
-  AliTRDdEdxUtils::PrintControl();
-
   for(Int_t iter=0; iter<8; iter++){
     THnSparseD *hi = (THnSparseD*) AliTRDdEdxUtils::GetHistPHQ()->At(iter);
     TObjArray *obji = AliTRDdEdxUtils::GetCalibObj(hi, startRunNumber);

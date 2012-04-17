@@ -71,6 +71,12 @@ Double_t AliTRDdEdxUtils::fgChamberTmean[6];
 
 Double_t AliTRDdEdxUtils::fgTrackTmean = -999;
 
+Bool_t   AliTRDdEdxUtils::fgExBOn = kTRUE; 
+Double_t AliTRDdEdxUtils::fgQ0Frac = 0.3;
+Double_t AliTRDdEdxUtils::fgQ1Frac = 0.5;
+Double_t AliTRDdEdxUtils::fgTimeBinCountCut = 0.0; 
+Int_t    AliTRDdEdxUtils::fgCalibTPCnclsCut = 70;
+
 //===================================================================================
 //                                   Math and Histogram
 //===================================================================================
