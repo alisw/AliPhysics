@@ -513,6 +513,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   Int_t ndim(H->GetNdimensions()); //Bool_t debug(ndim>Int_t(kNdimCl));
   TAxis *aa[11], *al(NULL); memset(aa, 0, sizeof(TAxis*) * 11);
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
+  if(aa[3]->GetNbins()>3) SetDebugLevel(1);
   if(H->GetNdimensions() > 4) al = H->GetAxis(4);
   Int_t nlab=al?3:1;
 
@@ -558,7 +559,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
     prLab.H()->SetNameTitle(Form("HEffLb%d", ilab), Form("Efficiency :: #bf{%s} Propagated Tracks", lab[ilab]));
     if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", ilab, 4)))) continue;
     prLab+=(*pr1);
-    h2 = prLab.Projection2D(1, 10, -1, kFALSE);
+    prLab.Projection2D(1, 10, -1, kFALSE);
     if((hLab[ilab] = (TH2*)gDirectory->Get(Form("%sEn", prLab.H()->GetName())))) fProj->AddAt(hLab[ilab], jh++);
     if((hpLab[ilab] = prLab.H()->Project3D("z"))) fProj->AddAt(hpLab[ilab], jh++);
   }
@@ -570,7 +571,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
         (*pr0)+=(*pr1);
       }
       pr0->H()->SetNameTitle(Form("HEff%d", istat), Form("Efficiency :: Stat[#bf{%s}]", stat[istat]));
-      h2 = pr0->Projection2D(1, 10, -1, kFALSE);
+      pr0->Projection2D(1, 10, -1, kFALSE);
       if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName())))) fProj->AddAt(h2, jh++);
 
       if(istat>1 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff01"))) (*pr1)+=(*pr0);
@@ -582,21 +583,21 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   TH2 *hEff[3] = {0};TH1 *hpEff[3] = {0};
   if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", 0, 1)))) {
     pr0->H()->SetNameTitle("HEff", "Efficiency :: All Tracks");
-    h2 = pr0->Projection2D(1, 10, -1, kFALSE);
+    pr0->Projection2D(1, 10, -1, kFALSE);
     hEff[0] = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName()));
     hpEff[0]= pr0->H()->Project3D("z");
   }
   // Tracked tracks
   if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", 0, 2)))) {
     pr0->H()->SetNameTitle("H2EffT", "Efficiency :: Tracked Tracks");
-    h2 = pr0->Projection2D(1, 10, -1, kFALSE);
+    pr0->Projection2D(1, 10, -1, kFALSE);
     hEff[1] = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName()));
     hpEff[1]= pr0->H()->Project3D("z");
   }
   // Propagated tracks
   if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", 0, 3)))) {
     pr0->H()->SetNameTitle("HEffPrp", "Efficiency :: Propagated Tracks");
-    h2 = pr0->Projection2D(1, 10, -1, kFALSE);
+    pr0->Projection2D(1, 10, -1, kFALSE);
     hEff[2] = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName()));
     hpEff[2]= pr0->H()->Project3D("z");
   }
@@ -656,7 +657,7 @@ void AliTRDefficiency::MakeSummary()
   const Char_t cid[]={'T','P'};
   const Char_t *labEff[] = {"Propagated", "Stopped", "Missed"};
   const Char_t *labMC[] = {"TRD == ESD [good]", "TRD == -ESD [accept]", "TRD != ESD [bad]"};
-  Int_t nbins(20);
+  Int_t nbins(DebugLevel()==0?3:20);
   //calculate true pt bin
   Float_t ptBins[23]; ptBins[0] = 0.;
   if(nbins==3){ // significant bins
