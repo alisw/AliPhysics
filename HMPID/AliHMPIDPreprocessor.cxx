@@ -369,7 +369,7 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
   
   Double_t sEnergProb=0, sProb=0;
 
-  Double_t tRefCR5 = 19. ;                                      // mean temperature of CR5 where the system is in place
+ // Double_t tRefCR5 = 19. ;                                      // mean temperature of CR5 where the system is in place
 
   Double_t eMean = 0;
       
@@ -442,9 +442,9 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
  
    //evaluate correction factor to calculate trasparency (Ref. NIMA 486 (2002) 590-609)
     
-    Double_t aN1 = AliHMPIDParam::NIdxRad(photEn,tRefCR5);
-    Double_t aN2 = AliHMPIDParam::NMgF2Idx(photEn);
-    Double_t aN3 = 1;                              // Argon Idx
+    //Double_t aN1 = AliHMPIDParam::NIdxRad(photEn,tRefCR5);
+    //Double_t aN2 = AliHMPIDParam::NMgF2Idx(photEn);
+    //Double_t aN3 = 1;                              // Argon Idx
 
    // Double_t aR1               = ((aN1 - aN2)*(aN1 - aN2))/((aN1 + aN2)*(aN1 + aN2));
   //  Double_t aR2               = ((aN2 - aN3)*(aN2 - aN3))/((aN2 + aN3)*(aN2 + aN3));
