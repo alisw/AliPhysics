@@ -483,16 +483,24 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     for(int iPart = 1; iPart<(fMC->GetNumberOfPrimaries()); iPart++) {
       AliMCParticle *mcPart  = (AliMCParticle*)fMC->GetTrack(iPart);
       if(!mcPart) continue;
-      //fill the container
-      containerInputMC[0] = mcPart->Pt();
-      containerInputMC[1] = mcPart->Phi();      
-      containerInputMC[2] = mcPart->Eta();  
-      //      AliESDtrack *esdtrack = fESD->GetTrack(mcPart->GetLabel());
-      containerInputMC[3] = 159.;
 
-      if(fStack->IsPhysicalPrimary(iPart)) {
-	if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
-	if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+      Int_t pdg = mcPart->PdgCode();
+      
+      // select charged pions, protons, kaons , electrons, muons
+      if(TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) ==
+	 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13){
+
+	//fill the container
+	containerInputMC[0] = mcPart->Pt();
+	containerInputMC[1] = mcPart->Phi();      
+	containerInputMC[2] = mcPart->Eta();  
+	//      AliESDtrack *esdtrack = fESD->GetTrack(mcPart->GetLabel());
+	containerInputMC[3] = 159.;
+	
+	if(fStack->IsPhysicalPrimary(iPart)) {
+	  if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+	  if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+	}
       }
     }
   }
