@@ -61,31 +61,24 @@ echo
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runNum..."
 
 mkdir Barrel
-cp recCPass1.C Barrel
-cp runCalibTrain.C Barrel
-cp QAtrain.C Barrel
 mkdir OuterDet
-cp recCPass1_OuterDet.C OuterDet
-cp QAtrain.C OuterDet
 
 cd Barrel
-aliroot -l -b -q recCPass1.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec_Barrel.log
+time aliroot -l -b -q ../recCPass1.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec_Barrel.log
 mv syswatch.log syswatch_rec_Barrel.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
-aliroot -l -b -q runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
+time aliroot -l -b -q ../runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log
 echo ">>>>>>> Doing ls -l"
 ls -l
 
-if [ -f QAtrain.C ]; then
-    echo ">>>>>>> Running the QA train..."
-    time aliroot -b -q QAtrain.C\($runNum\) 2>&1 | tee qa_Barrel.log
+echo ">>>>>>> Running the QA train..."
+time aliroot -b -q ../QAtrain.C\($runNum\) 2>&1 | tee qa_Barrel.log
 
-    for file in *.stat; do
-        mv $file $file.qa
-    done
-fi
+for file in *.stat; do
+    mv $file $file.qa
+done
 
 echo ">>>>>>>> Moving files to upper directory"
 mv AliESDs.root ../AliESDs_Barrel.root
@@ -99,17 +92,16 @@ if [ -f AODtpITS.root ] ; then
 fi
 
 cd ../OuterDet
-aliroot -l -b -q recCPass1_OuterDet.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec_Outer.log
+time aliroot -l -b -q ../recCPass1_OuterDet.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec_Outer.log
 mv syswatch.log syswatch_rec_Outer.log
 
-if [ -f QAtrain.C ]; then
-    echo ">>>>>>> Running the QA train..."
-    time aliroot -b -q QAtrain.C\($runNum\) 2>&1 | tee qa_Outer.log
+echo ">>>>>>> Running the QA train..."
+time aliroot -b -q ../QAtrain.C\($runNum\) 2>&1 | tee qa_Outer.log
 
-    for file in *.stat; do
-        mv $file $file.qa
-    done
-fi
+for file in *.stat; do
+    mv $file $file.qa
+done
+
 mv AliESDs.root ../AliESDs_Outer.root
 mv rec_Outer.log ../rec_Outer.log
 mv qa_Outer.log ../qa_Outer.out
