@@ -129,8 +129,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fAccessOCDB;              // Need to access info from OCDB (not really)   
 
   //Temporal arrays
-  TClonesArray          *fDigitsArr;               //-> Digits array
-  TObjArray             *fClusterArr;              //-> Recpoints array
+  TClonesArray          *fDigitsArr;               //! Digits array
+  TObjArray             *fClusterArr;              //! Recpoints array
   TObjArray             *fCaloClusterArr;          //-> CaloClusters array
 
   //Clusterizers 
@@ -147,7 +147,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fFillAODHeader;           // Copy header to standard branch
   Bool_t                 fFillAODCaloCells;        // Copy calocells to standard branch
 
-  Int_t                  fRun;                     //!run number
+  Int_t                  fRun;                     // run number
   
   AliEMCALRecoUtils*     fRecoUtils;               // Access to factorized reconstruction algorithms
   TString                fConfigName;              // Name of analysis configuration file
