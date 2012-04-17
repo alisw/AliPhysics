@@ -34,6 +34,13 @@ endif
 
 
 
+ifeq ($(PLATFORM),macosx)
+ROOTLIBDIR     := $(shell $(RC) --libdir)
+ifeq ($(PACKAGE),OADB)
+   PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) $(ANALYSIS_LIBS) -L$(ROOTLIBDIR)  -lVMC -lMinuit -lEG -lGeom
+endif
+endif
+
 
 CXXFLAGS += $(ALICEINC) -g
 
@@ -43,7 +50,11 @@ OBJS          = $(SRCS:.cxx=.o)
 lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+ifeq ($(PLATFORM),macosx)
+	$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+else
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+endif
 	@chmod a+x $@
 	@echo "done"
 

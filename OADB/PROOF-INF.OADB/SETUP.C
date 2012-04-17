@@ -14,6 +14,10 @@ Int_t SETUP()
   if (!oadbPath || oadbPath[0] == '\0')
     gSystem->Setenv("OADB_PATH", "OADB");
 
+  // Set our lib coordinates, so that other packages can link to us
+  TString lib = TString::Format("-L%s -lOADB", gSystem->WorkingDirectory());
+  gSystem->Setenv("OADB_LIBS", lib.Data());
+
   // We're happy
   return 0;
 
