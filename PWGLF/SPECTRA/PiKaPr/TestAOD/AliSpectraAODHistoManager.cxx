@@ -118,7 +118,7 @@ TH2F* AliSpectraAODHistoManager::BookPIDHistogram(const char * name)
    // Return a pt histogram with predefined binning, set the ID and add it to the output list
    AliInfo(Form("Booking pt histogram %s", name));
 
-   TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 100, 0, 1.5, 2000, -1000, 1000);
+   TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 200, 0, 2.5, 2000, -1000, 1000);
    hist->GetXaxis()->SetTitle("(GeV / c)");
    hist->GetYaxis()->SetTitle("PID signal");
 //  hist->Sumw2();
@@ -134,7 +134,7 @@ TH2F* AliSpectraAODHistoManager::BookNSigHistogram(const char * name)
   // Return a pt histogram with predefined binning, set the ID and add it to the output list
   AliInfo(Form("Booking pt histogram %s", name));
   
-  TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 200, 0, 1.5, 4000,-40, 40);
+  TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 200, 0, 2.5, 2000,-40, 40);
   hist->GetXaxis()->SetTitle("P (GeV / c)");
   hist->GetYaxis()->SetTitle("TPC");
   //hist->Sumw2();
@@ -168,12 +168,12 @@ TH1F* AliSpectraAODHistoManager::GetPtHistogram1D(const char * name,Double_t min
   //   //if minDCA=-1 && maxDCA=-1 the projection is done using the full DCA range
   TH2F *hist=(TH2F*)fOutputList->FindObject(name);
   TH1F *outhist=0x0;
-  if(minDCA==-1 && maxDCA==-1)outhist=(TH1F*)hist->ProjectionX("",0,-1,"e");
+  if(minDCA==-1 && maxDCA==-1)outhist=(TH1F*)hist->ProjectionX("_px",0,-1,"e");
   else {
     Int_t firstbin=hist->GetYaxis()->FindBin(minDCA);
-    Int_t lastbin=hist->GetYaxis()->FindBin(maxDCA);
+    Int_t lastbin=hist->GetYaxis()->FindBin(maxDCA-0.00000001);
     Printf("firstbin: %d lastbin: %d",firstbin,lastbin);
-    outhist=(TH1F*)hist->ProjectionX("",firstbin,lastbin,"e");
+    outhist=(TH1F*)hist->ProjectionX("_px",firstbin,lastbin,"e");
   }
   Printf("Entries outhist: %.0f   Entries hist: %.0f",outhist->GetEntries(),hist->GetEntries());
   return outhist;
@@ -187,11 +187,12 @@ TH1F* AliSpectraAODHistoManager::GetDCAHistogram1D(const char * name,Double_t mi
   //   //if minPt=-1 && maxPt=-1 the projection is done using the full DCA range
   TH2F *hist=(TH2F*)fOutputList->FindObject(name);
   TH1F *outhist=0x0;
-  if(minPt==-1 && maxPt==-1)outhist=(TH1F*)hist->ProjectionY("",0,-1,"e");
+  if(minPt==-1 && maxPt==-1)outhist=(TH1F*)hist->ProjectionY("_py",0,-1,"e");
   else {
     Int_t firstbin=hist->GetXaxis()->FindBin(minPt);
-    Int_t lastbin=hist->GetXaxis()->FindBin(maxPt);
-    outhist=(TH1F*)hist->ProjectionY("",firstbin,lastbin,"e");
+    Int_t lastbin=hist->GetXaxis()->FindBin(maxPt-0.0000001);
+    outhist=(TH1F*)hist->ProjectionY("_py",firstbin,lastbin,"e");
+    Printf("GetDCAHistogram1D(%s) BinRange:%d  %d  Pt Range: %f %f",hist->GetName(),firstbin,lastbin,hist->GetXaxis()->GetBinLowEdge(firstbin),hist->GetXaxis()->GetBinLowEdge(firstbin)+hist->GetXaxis()->GetBinWidth(lastbin));
   }
   return outhist;
 }

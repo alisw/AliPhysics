@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=1, const char * proofMode = "full")
+void runAODProof(Int_t c=2, const char * proofMode = "full")
 {
 
    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
@@ -23,20 +23,20 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    //handler->SetROOTVersion("v5-33-02a");
    //handler->SetAliROOTVersion("v5-03-11-AN");
    handler->SetAliROOTVersion("v5-03-13-AN");
-
+   
    handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
-//   handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
-
+   //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
+   
    // Set handler for Real DATA:
    if (c == 1)
-   {
-     handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
- //     handler->SetProofDataSet("/alice/sim/LHC11a10a_000139107_AOD048#aodTree|alice/sim/LHC11a10a_000138653_AOD048#aodTree");
-   }
+     {
+       handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
+       //handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree|/alice/data/LHC10h_000138662_p2_AOD049#aodTree|/alice/data/LHC10h_000138666_p2_AOD049#aodTree|/alice/data/LHC10h_000138795_p2_AOD049#aodTree|/alice/data/LHC10h_000139107_p2_AOD049#aodTree|/alice/data/LHC10h_000139110_p2_AOD049#aodTree");
+     }
    if (c == 2)
-   {
-      handler->SetProofDataSet("/alice/sim/LHC11a10a_000139107_AOD048#aodTree|/alice/sim/LHC11a10a_000138653_AOD048#aodTree|/alice/sim/LHC11a10a_000139110_AOD048#aodTree|/alice/sim/LHC11a10a_000138662_AOD048#aodTree|/alice/sim/LHC11a10a_000138666_AOD048#aodTree|/alice/sim/LHC11a10a_000138795_AOD048#aodTree");      
-   }
+     {
+       handler->SetProofDataSet("/alice/sim/LHC11a10a_000138653_AOD048#aodTree|/alice/sim/LHC11a10a_000138662_AOD048#aodTree|/alice/sim/LHC11a10a_000138666_AOD048#aodTree|/alice/sim/LHC11a10a_000138795_AOD048#aodTree|/alice/sim/LHC11a10a_000139107_AOD048#aodTree|/alice/sim/LHC11a10a_000139110_AOD048#aodTree");      
+     }
    handler->SetNproofWorkersPerSlave(1);
    handler->SetAliRootMode("default");
    handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
@@ -69,7 +69,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    Double_t CentCutMax[4]={100,5,40,40};
    Double_t QvecCutMin[4]={0,0,0,3};
    Double_t QvecCutMax[4]={100,100,2,100};
-   for(Int_t iCut=0;iCut<4;iCut++){
+   for(Int_t iCut=1;iCut<2;iCut++){
      AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
      mgr->AddTask(task);
      //physics selection
@@ -80,7 +80,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
      tcuts->SetTrackType(5);
      tcuts->SetEta(.8);
      //tcuts->SetDCA(.1);
-     tcuts->SetPt(1.2);
+     tcuts->SetPt(2.5);
      tcuts->SetPtTOFMatching(0.6);   
      tcuts->SetQvecMin(QvecCutMin[iCut]);   
      tcuts->SetQvecMax(QvecCutMax[iCut]);    
@@ -88,7 +88,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
      vcuts->SetCentralityCutMin(CentCutMin[iCut]);
      task->SetEventCuts(vcuts);
      task->SetTrackCuts(tcuts);
-     task->SetNSigmaForIdentification(3.); // FIXME
+     task->SetNSigmaForIdentification(5.); // FIXME
      task->SetYCut(.5);
      vcuts->PrintCuts();
      tcuts->PrintCuts();

@@ -27,6 +27,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisTaskSpectraAOD.h"
@@ -202,7 +203,6 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),d[0]);  // PT histo
 	  //Response
 	  fHistMan->GetPIDHistogram(kHistPIDTPC)->Fill(track->GetTPCmomentum(), track->GetTPCsignal()*track->Charge()); // PID histo
-	  fHistMan->GetPIDHistogram(kHistPIDTOF)->Fill(track->P(),track->GetTOFsignal()); // PID histo
 	  
 	  AliVParticle *inEvHMain = dynamic_cast<AliVParticle *>(track);
 	  Double_t nsigmaTPCkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kProton));
@@ -210,6 +210,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  Double_t nsigmaTPCkPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kPion)); 
 	  Double_t nsigmaTOFkProton=0,nsigmaTOFkKaon=0,nsigmaTOFkPion=0;
 	  if(track->Pt()>fTrackCuts->GetPtTOFMatching()){
+	    fHistMan->GetPIDHistogram(kHistPIDTOF)->Fill(track->P(),(track->GetTOFsignal()/100)*track->Charge()); // PID histo
 	    nsigmaTOFkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton));
 	    nsigmaTOFkKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon)); 
 	    nsigmaTOFkPion = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion)); 
@@ -238,7 +239,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  fHistMan->GetPtHistogram(kHistNSigProtonTPCTOF)->Fill(track->P(),nsigmaTPCTOFkProton);
 	  fHistMan->GetPtHistogram(kHistNSigKaonTPCTOF)->Fill(track->P(),nsigmaTPCTOFkKaon);
 	  fHistMan->GetPtHistogram(kHistNSigPionTPCTOF)->Fill(track->P(),nsigmaTPCTOFkPion);
-	 fHistMan->GetPtHistogram(kHistNSigProtonPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkProton);
+	  fHistMan->GetPtHistogram(kHistNSigProtonPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkProton);
 	  fHistMan->GetPtHistogram(kHistNSigKaonPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkKaon);
 	  fHistMan->GetPtHistogram(kHistNSigPionPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkPion);
 	
@@ -303,15 +304,21 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	      // Distinguish weak decay and material
 	      //done quickly, code can be improved
 	      else {//to be added in a separate class
-		Int_t mfl=-999,uniqueID=-999;
+		Int_t mfl=-999,codemoth=-999;
 		Int_t indexMoth=partMC->GetMother(); // FIXME ignore fakes? TO BE CHECKED, on ESD is GetFirstMother()
 		if(indexMoth>=0){//is not fake
 		  AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
-		  Float_t codemoth = TMath::Abs(moth->GetPdgCode());
+		  codemoth = TMath::Abs(moth->GetPdgCode());
 		  mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
 		}
-		uniqueID = partMC->GetUniqueID();
-		//if(mfl==3 && uniqueID == kPDecay){//strangeness KPDecay not working on AOD, to be understood
+		//UInt_t flag; 
+		//flag=partMC->GetStatus();
+		//Printf("FLAG: %d",flag);
+		//if(mfl==3 && (flag&AliAODMCParticle::kPDecay)!=0){//strangeness KPDecay not working on AOD, to be understood
+		//Printf("\n\n\n STRANGENESS!!!!!");
+		//if(codemoth!=-999)Printf("mfl:%d    codemoth%d",mfl,codemoth);
+		//if(codemoth==310 || codemoth==130 || codemoth==321 || codemoth==3122 || codemoth==3112 ||
+		//codemoth==3222 || codemoth==3312 || codemoth==3322 || codemoth==3334){//K0_S, K0_L, K^+-,lambda, sigma0,sigma+,xi-,xi0, omega
 		if(mfl==3){//strangeness
 		  if( ( nsigmaTPCkKaon < nsigmaTPCkPion ) && ( nsigmaTPCkKaon < nsigmaTPCkProton ) ) { 
 		    if ( (nsigmaTPCkKaon > fNSigmaPID )  || (!CheckYCut(kKaon, track) ) ) continue;
