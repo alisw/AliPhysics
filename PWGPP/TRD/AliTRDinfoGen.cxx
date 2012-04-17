@@ -813,9 +813,8 @@ void AliTRDinfoGen::MakeChambers()
     return;
   }
 
-  TObjArray *chmb((TObjArray*)fContainer->At(kChmb));
   Double_t alpha(0.), cs(-2.), sn(0.);
-  TVectorF pos(5);
+  TVectorF pos(5*AliTRDgeometry::kNdet);
   for(Int_t isec(0); isec<AliTRDgeometry::kNsector; isec++){
     alpha = (0.5+isec)*AliTRDgeometry::GetAlpha();
     cs    = TMath::Cos(alpha);
@@ -824,6 +823,7 @@ void AliTRDinfoGen::MakeChambers()
     for(Int_t istk(0); istk<AliTRDgeometry::kNstack; istk++){
       for(Int_t ilyr(0); ilyr<AliTRDgeometry::kNlayer; ilyr++){
         Int_t idet(AliTRDgeometry::GetDetector(ilyr, istk, isec));
+        Int_t jdet = 5*idet;
         TGeoHMatrix *matrix(fgGeo->GetClusterMatrix(idet));
         if(!matrix){
           AliDebug(2, Form("Missing matrix for %03d [%02d_%d_%d]", idet, isec, istk, ilyr));
@@ -839,21 +839,21 @@ void AliTRDinfoGen::MakeChambers()
         Float_t phi = TMath::ATan2(glb[0]*sn + glb[1]*cs, glb[0]*cs - glb[1]*sn),
                 tgl = glb[2]/glb[0]/TMath::Sqrt(1.+glb[1]*glb[1]/glb[0]/glb[0]),
                 eta = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
-        pos[0] = eta; pos[1] = phi;
+        pos[jdet+0] = eta; pos[jdet+1] = phi;
         matrix->LocalToMaster(loc1, glb);
         phi = TMath::ATan2(glb[0]*sn + glb[1]*cs, glb[0]*cs - glb[1]*sn);
         tgl = glb[2]/glb[0]/TMath::Sqrt(1.+glb[1]*glb[1]/glb[0]/glb[0]);
         eta = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
-        pos[2] = eta; pos[3] = phi;
-        pos[4] = 0.;
+        pos[jdet+2] = eta; pos[jdet+3] = phi;
+        pos[jdet+4] = 0.;
         if(calib->IsChamberGood(idet)){
-          if(calib->IsHalfChamberNoData(idet, 0)) pos[4] += 2.;
-          if(calib->IsHalfChamberNoData(idet, 1)) pos[4] += 3.;
-        } else pos[4] = 1.;
-        chmb->AddAt(new TVectorF(pos), idet);
+          if(calib->IsHalfChamberNoData(idet, 0)) pos[jdet+4] += 2.;
+          if(calib->IsHalfChamberNoData(idet, 1)) pos[jdet+4] += 3.;
+        } else pos[jdet+4] = 1.;
       }
     }
   }
+  fContainer->AddAt(new TVectorF(pos), kChmb);
 }
 
 //____________________________________________________________________
