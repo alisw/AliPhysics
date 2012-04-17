@@ -29,5 +29,5 @@
 #pragma link C++ class AliAnalysisTaskJetProperties+;
 #pragma link C++ class AliAnalysisTaskJetResponseV2+;
 #pragma link C++ class AliAnalysisTaskPartonDisc+;
-
+#pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
 #endif
