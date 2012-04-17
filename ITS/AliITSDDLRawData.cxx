@@ -632,7 +632,7 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsdd){
+Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, const AliITSDDLModuleMapSDD* ddlsdd){
     //This method creates the Raw data files for SDD detectors
   const Int_t kSize=131072; //256*512
   UInt_t buf[kSize];      

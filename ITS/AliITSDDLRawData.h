@@ -1,3 +1,5 @@
+#ifndef AliITSDDLRAWDATA_H
+#define AliITSDDLRAWDATA_H
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -7,9 +9,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 /* $Id$ */
-
-#ifndef AliITSDDLRAWDATA_H
-#define AliITSDDLRAWDATA_H
 
 class TTree;
 class TBranch;
@@ -24,7 +23,7 @@ class AliITSDDLRawData:public TObject{
   AliITSDDLRawData& operator=(const AliITSDDLRawData &source); // ass. op.
   Int_t RawDataSPD(TBranch* branch, AliITSFOSignalsSPD* foSignals = NULL);
   // This method generates the files with the Silicon pixel detector data
-  Int_t RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsdd); 
+  Int_t RawDataSDD(TBranch* branch, const AliITSDDLModuleMapSDD* ddlsdd); 
   // This method generates the files with the Silicon drift detector data
   Int_t RawDataSSD(TBranch* branch);
   // This method generates the files with the Silicon pixel detector data
