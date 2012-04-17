@@ -7,7 +7,7 @@
 #    3 - OCDB output path
 
 # example:
-# mergeMakeOCDB.sh /alice/cern.ch/user/a/aliprod/CPass1/output/ 000120691 alien://folder=/alice/cern.ch/user/a/aliprod/CPass1/output
+# mergeMakeOCDB.sh /alice/cern.ch/user/a/aliprod/CPass1/output/ 000120691 alien://folder=/alice/cern.ch/user/a/aliprod/CPass0/output
 
 #ALIEN setting
 # $1 = directory where to perform the find 

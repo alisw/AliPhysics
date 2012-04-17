@@ -17,7 +17,7 @@
 
 #ALIEN setting
 # $1 = raw input filename
-runNum=`echo $1 | cut -d "/" -f 6`
+runNum=`echo $1 | cut -d "/" -f 6 | sed 's/^0*//'`
 if [ $# -eq 1 ] ; then
   # alien Setup
   nEvents=99999999
