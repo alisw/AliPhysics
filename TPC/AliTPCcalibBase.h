@@ -20,6 +20,7 @@ class TGraph;
 class TGraphErrors;
 class THnSparse;
 class TH1;
+class TAxis;
 
 class AliTPCcalibBase:public TNamed {
 public:
@@ -50,6 +51,7 @@ public:
   static TGraphErrors *        FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9, Bool_t useMedian=kFALSE, TTreeSRedirector *cstream=0, Int_t ival=1);
   static void            BinLogX(THnSparse *h, Int_t axisDim);
   static void            BinLogX(TH1 *h);
+  static void            BinLogX(TAxis * axis);
   void SetRun(Int_t run){ fRun=run;}
 protected: 
   TTreeSRedirector *fDebugStreamer;     //! debug streamer
@@ -71,7 +73,7 @@ protected:
 private:
   Int_t  fDebugLevel;                   //  debug level
 
-  ClassDef(AliTPCcalibBase,2)
+  ClassDef(AliTPCcalibBase,3)
 };
 
 #endif

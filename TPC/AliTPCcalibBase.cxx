@@ -397,3 +397,24 @@ void AliTPCcalibBase::BinLogX(TH1 *h) {
   delete [] new_bins;
 
 }
+
+void AliTPCcalibBase::BinLogX(TAxis *axis) {
+
+  // Method for the correct logarithmic binning of histograms
+
+  Int_t bins = axis->GetNbins();
+
+  Double_t from = axis->GetXmin();
+  Double_t to = axis->GetXmax();
+  if (from<0) return;
+  Double_t *new_bins = new Double_t[bins + 1];
+
+  new_bins[0] = from;
+  Double_t factor = pow(to/from, 1./bins);
+
+  for (int i = 1; i <= bins; i++) {
+   new_bins[i] = factor * new_bins[i-1];
+  }
+  axis->Set(bins, new_bins);
+  delete [] new_bins;
+}
