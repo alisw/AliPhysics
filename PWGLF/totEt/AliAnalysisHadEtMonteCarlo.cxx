@@ -1656,19 +1656,19 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     FillHisto1D("SimTotEt",fSimTotEt,1.0);
     FillHisto1D("SimHadEt",fSimHadEt,1.0);
     FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
-    if(AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
+    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
       FillHisto1D("SimHadEtND",fSimHadEt,1.0);
       FillHisto1D("SimTotEtND",fSimHadEt,1.0);
       FillHisto1D("NEventsND",0.5,1);
       FillHisto1D("SimPiKPEtND",fSimPiKPEt,1.0);
     }
-    if(AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
+    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
       FillHisto1D("SimHadEtSD",fSimHadEt,1.0);
       FillHisto1D("SimTotEtSD",fSimHadEt,1.0);
       FillHisto1D("NEventsSD",0.5,1);
       FillHisto1D("SimPiKPEtSD",fSimPiKPEt,1.0);
     }
-    if(AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
+    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
       FillHisto1D("SimHadEtDD",fSimHadEt,1.0);
       FillHisto1D("SimTotEtDD",fSimHadEt,1.0);
       FillHisto1D("NEventsDD",0.5,1);
