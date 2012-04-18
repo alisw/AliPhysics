@@ -117,24 +117,24 @@ void AliCDBMetaData::PrintMetaData() {
 
 	TString message;
 	if(fObjectClassName != "")
-		message += Form("\tObject's class name:	%s\n", fObjectClassName.Data());
+		message += TString::Format("\tObject's class name:	%s\n", fObjectClassName.Data());
 	if(fResponsible != "")
-		message += Form("\tResponsible:		%s\n", fResponsible.Data());
+		message += TString::Format("\tResponsible:		%s\n", fResponsible.Data());
 	if(fBeamPeriod != 0)
-		message += Form("\tBeam period:		%d\n", fBeamPeriod);
+		message += TString::Format("\tBeam period:		%d\n", fBeamPeriod);
 	if(fAliRootVersion != "")
-		message += Form("\tAliRoot version:	%s\n", fAliRootVersion.Data());
+		message += TString::Format("\tAliRoot version:	%s\n", fAliRootVersion.Data());
 	if(fComment != "")
-		message += Form("\tComment:		%s\n", fComment.Data());
+		message += TString::Format("\tComment:		%s\n", fComment.Data());
 	if(fProperties.GetEntries() > 0){
 		message += "\tProperties key names:";
 
 		TIter iter(fProperties.GetTable());
 		TPair* aPair;
 		while ((aPair = (TPair*) iter.Next())) {
-			message += Form("\t\t%s\n", ((TObjString* ) aPair->Key())->String().Data());
+			message += TString::Format("\t\t%s\n", ((TObjString* ) aPair->Key())->String().Data());
 		}
 	}
 	message += '\n';
-	AliInfo(Form("**** Object's MetaData parameters **** \n%s", message.Data()));
+	Printf(TString::Format("**** Object's MetaData parameters **** \n%s", message.Data()));
 }
