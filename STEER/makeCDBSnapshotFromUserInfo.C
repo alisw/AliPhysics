@@ -63,7 +63,7 @@ void makeCDBSnapshotFromUserInfo(const char* defaultStorage, const char* esdFile
 	Int_t version = printedId.Atoi();
 	AliCDBId id(path.Data(),firstRun,lastRun,version);
 	id.Print();
-	AliCDBEntry *e = cdb->Get(id);
+	AliCDBEntry *e = cdb->Get(id,kTRUE);
     }
 
     cdb->DumpToSnapshotFile(snapshotFile,kFALSE);

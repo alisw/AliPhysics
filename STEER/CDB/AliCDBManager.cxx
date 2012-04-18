@@ -812,7 +812,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path,
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
+AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
 // get an AliCDBEntry object from the database
 	
 	// check if query's path and runRange are valid
@@ -884,7 +884,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 
 	entry = aStorage->Get(query);
 
- 	if(entry && fCache && (query.GetFirstRun() == fRun)){
+ 	if(entry && fCache && (query.GetFirstRun()==fRun || forceCaching)){
 		CacheEntry(query.GetPath(), entry);
 	}
 
