@@ -18,6 +18,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliEmcalJet.h"
 #include "AliVEventHandler.h"
+#include "AliPicoTrack.h"
 
 #include "AliEmcalIsolatedPhotonsTask.h"
 
@@ -30,7 +31,6 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask() :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
-  fSkimmedESD(0),
   fESDTrackCuts(0),
   fFilterBit(16),
   fTracks(0),
@@ -64,7 +64,6 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
-  fSkimmedESD(0),
   fESDTrackCuts(0),
   fFilterBit(16),
   fTracks(0),
@@ -276,7 +275,18 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
 
     fHistTracksPt->Fill(track->Pt());
     
-    //fHisTrPhiEta->Fill(track->Phi(), track->Eta());
+    if(track->InheritsFrom("AliExternalTrackParam")) {
+      AliExternalTrackParam *trackparam = dynamic_cast<AliExternalTrackParam*>(track);
+      fHistTrPhiEta->Fill(trackparam->Eta(), trackparam->Phi());
+    }
+    else if (track->InheritsFrom("AliAODTrack")) {
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
+      fHistTrPhiEta->Fill(aodtrack->Eta(), aodtrack->Phi());
+    }
+    else if (track->InheritsFrom("AliPicoTrack")) {
+      AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack*>(track);
+      fHistTrPhiEta->Fill(picotrack->Eta(), picotrack->Phi());
+    }
 
     Int_t clId = track->GetEMCALcluster();
     if (clId > -1) {
@@ -301,14 +311,26 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
     fHistJetsEnergy->Fill(jet->E());
     fHistJetsNEF->Fill(jet->NEF());
     fHistJetsNE->Fill(jet->E() * jet->NEF());
+    //if (jet->E() <= 0)
+    //continue;
+    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
+      Int_t trackid = jet->TrackAt(it);
+      AliVTrack *track = GetTrack(trackid);
+      if (track)
+	fHistJetsZ->Fill(track->Pt() / jet->E());
+    }
+    for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
+      Int_t clusterid = jet->ClusterAt(ic);
+      AliVCluster *cluster = GetCaloCluster(clusterid);
+      if (cluster)
+	fHistJetsZ->Fill(cluster->E() / jet->E());
+    }
   } //jet loop 
 }
 
 //________________________________________________________________________
 Bool_t AliEmcalIsolatedPhotonsTask::AcceptTrack(AliVTrack *track)
 {
-  //if (fSkimmedESD) return 1;
-
   if (!strcmp(track->ClassName(), "AliESDTrack") && fESDTrackCuts) {
     AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track);
     if(esdtrack) {

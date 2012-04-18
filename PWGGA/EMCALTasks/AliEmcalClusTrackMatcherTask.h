@@ -4,7 +4,6 @@
 // $Id$
 
 class TClonesArray;
-class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 

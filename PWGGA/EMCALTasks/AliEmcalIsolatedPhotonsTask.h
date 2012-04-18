@@ -32,9 +32,6 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   virtual AliESDtrackCuts    *GetTrackCuts()                          const { return fESDTrackCuts        ; }
   virtual void                SetAODFilterBit(const Int_t b)                { fFilterBit = b              ; }
   virtual Int_t               GetAODFilterBit()                       const { return fFilterBit           ; }
-  virtual void                SetSkimmedESD(const Bool_t s)                 { fSkimmedESD = s             ; }
-  virtual Bool_t              GetSkimmedESD()                         const { return fSkimmedESD          ; }
-
 
  protected:
 
@@ -53,7 +50,6 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   TString                     fTracksName;             // name of track collection
   TString                     fCaloName;               // name of calo cluster collection
   TString                     fJetsName;               // name of jet collection
-  Bool_t                      fSkimmedESD;             // flag if skimmed ESD
   AliESDtrackCuts            *fESDTrackCuts;           // Track cuts
   Int_t                       fFilterBit;              // AOD filter bit
   TClonesArray               *fTracks;                 //!Tracks

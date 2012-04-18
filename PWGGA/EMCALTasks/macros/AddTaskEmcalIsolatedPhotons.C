@@ -2,8 +2,6 @@ AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
 						       const char *ntracks            = "Tracks",
 						       const char *nclusters          = "CaloClusters",
 						       const char *njets              = "Jets",
-						       const Bool_t skimmedESD        = 0,
-						       const Bool_t AODmode           = 0,
 						       const Int_t AODtrackFilterBit  = 256  // hybrid LHC11h tracks
                                                        )
 {  
@@ -32,10 +30,7 @@ AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
   phTask->SetTracksName(ntracks);
   phTask->SetClusName(nclusters);
   phTask->SetJetsName(njets);
-  phTask->SetSkimmedESD(skimmedESD);
-  if (AODmode) {
-    phTask->SetAODFilterBit(AODtrackFilterBit); // global hybrids for LHC11h
-  }
+  phTask->SetAODFilterBit(AODtrackFilterBit); // global hybrids for LHC11h
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -45,11 +40,13 @@ AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
-  
+
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosEMCALIsoPhoton_aiola", 
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (phTask, 0,  cinput1 );
-  mgr->ConnectOutput (phTask, 0, coutput1 );
-  
+  mgr->ConnectOutput (phTask, 1, coutput1 );
+
   return phTask;
   
 }
