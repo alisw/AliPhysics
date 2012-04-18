@@ -124,10 +124,16 @@ inline AliAnaConvCorrBase * AliAnalysisTaskdPhi::GetCorrObject(Int_t binz, Int_t
 	  return NULL;
 	}
 
-  TObjArray * arrayc = static_cast<TObjArray*>(array->At(binz));
-  AliAnaConvCorrBase * corrmaker = static_cast<AliAnaConvCorrBase*>(arrayc->At(binc));
-  return corrmaker;
+  if(array->GetEntriesFast() > binc) {
 
+	TObjArray * arrayc = static_cast<TObjArray*>(array->At(binc));
+	if(arrayc->GetEntriesFast() > binz) {
+	  AliAnaConvCorrBase * corrmaker = static_cast<AliAnaConvCorrBase*>(arrayc->At(binz));
+	  return corrmaker;
+	} else { cout << "balle"<<endl; }
+  } else { cout << "balle"<<endl; }
+
+  return NULL;
 }
 
 inline Int_t AliAnalysisTaskdPhi::GetBin(TAxis & axis, Double_t value) {
