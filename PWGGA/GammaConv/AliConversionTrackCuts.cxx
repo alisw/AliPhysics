@@ -111,7 +111,7 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   //Constructor
   fEta[0] = -0.8; fEta[1] = 0.8;
   fPt[0] = 1.0; fPt[1] = 999.9;
- }
+}
 
 
 //________________________________________________________________________________
