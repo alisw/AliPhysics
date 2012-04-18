@@ -175,6 +175,7 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
   else {
     Printf("Error: no track cuts!");
   }
+ PostData(1, fOutputList);
 
 }
 
