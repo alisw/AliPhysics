@@ -334,12 +334,16 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   }
 
   Double_t centrality = 0.0;
+  Double_t multiplicity = 0.0;
   Double_t eventPlane = 0.0;
   Double_t vertexz = fInputEvent->GetPrimaryVertex()->GetZ();
+  
   if(isAOD) {
     AliAODHeader * header = static_cast<AliAODHeader*>(fInputEvent->GetHeader());
 	centrality = header->GetCentrality();
 	eventPlane = header->GetEventplane();
+	multiplicity = header->GetRefMultiplicity();
+	if(centrality < 0) centrality = multiplicity;
   } else {
 	centrality = static_cast<AliESDEvent*>(fInputEvent)->GetCentrality()->GetCentralityPercentile("V0M");
 	eventPlane = fInputEvent->GetEventplane()->GetEventplane("Q");
@@ -354,6 +358,8 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	cout << "centrality: " << centrality <<  " " << GetBin(fAxisCent, centrality) << endl;
 	cout << "vertexz: " << vertexz <<  " " << GetBin(fAxisZ, vertexz) << endl;
 	cout << "eventPlane: " << eventPlane <<  " " << endl;
+	cout << "multiplicity: "<<  multiplicity << endl;
+
   }
 
 
@@ -401,16 +407,19 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   const Double_t etalim[2] = { fAxisEta.GetBinLowEdge(1), fAxisEta.GetBinUpEdge(fAxisEta.GetNbins())};
   for(Int_t iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); iTrack++) {
 
-	AliVTrack * track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
-	if(track->Pt() < fAxiscPt.GetBinLowEdge(1) ) continue;
-	if(track->Eta() < etalim[0] || track->Eta() > etalim[1]) continue;
-
-	
-	if(!fTrackCuts || fTrackCuts->IsSelected((track))) {
-	  tracks.Add(track);
-	}
+    AliVTrack * track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
+    if(track->Pt() < fAxiscPt.GetBinLowEdge(1) ) continue;
+    if(track->Eta() < etalim[0] || track->Eta() > etalim[1]) continue;
+    
+    
+    if(!fTrackCuts || fTrackCuts->IsSelected((track))) {
+      tracks.Add(track);
+      //cout <<"a"<<endl;
+    } // else {
+    //       cout <<"b"<<endl;
+    //     }
   }
-  
+
   Process(fGammas, &tracks, vertexBin, centBin);
 
   PostData(1, fHistograms);
