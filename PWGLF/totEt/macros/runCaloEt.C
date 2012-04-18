@@ -51,8 +51,8 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
-gROOT->ProcessLine(".L AliAnalysisEmEtMonteCarlo.cxx+g");
-gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEmEtMonteCarlo.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
 
   gInterpreter->GenerateDictionary("std::map<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;map")  ;
@@ -82,7 +82,8 @@ gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
   cout << " taskName " << taskName
        << " outputName " << outputName 
        << " outputDir (alien) " << outputDir << endl;
-
+  mgr->SetCommonFileName(outputName.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer, outputName);
   if (submit) {
     gROOT->LoadMacro("CreateAlienHandlerCaloEtSim.C");
     AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode);  
@@ -127,10 +128,28 @@ gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
     gSystem->Load("libTENDERSupplies.so"); 
     gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
     gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
-    //Tender Supplies
-    gROOT->LoadMacro("CreateEMCALTender.C");
-    AliAnalysisTaskSE *tender = CreateEMCALTender(kTRUE);
-    mgr->AddTask(tender); 
+//     //Tender Supplies
+//     gROOT->LoadMacro("CreateEMCALTender.C");
+//     AliAnalysisTaskSE *tender = CreateEMCALTender(kTRUE);
+//     mgr->AddTask(tender); 
+
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALTender.C");
+    AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0);
+    if(submit){
+      cout<<"Setting tender to run on grid"<<endl;
+      tender->SetDefaultCDBStorage("raw://"); //uncomment if you work on grid
+    }
+    else{
+      cout<<"Setting tender to run locally"<<endl;
+      tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB"); //uncomment if you work local
+    }
+    // one can sellect what collision candidates to use
+    // triggered sample only: L1 = AliVEvent::kEMCEGA, AliVEvent::kEMCEJE; L0 = AliVEvent::kEMC1, AliVEvent::kEMC7
+    tender->SelectCollisionCandidates( AliVEvent::kAny );
+
+    //AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosTrgContam", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    //mgr->ConnectOutput(tender,1,coutput3);
+    cout<<"Output container name "<<AliAnalysisManager::GetCommonFileName()<<endl;
   }
 
   if(isMc) cout<<"I am a MC"<<endl;
@@ -156,7 +175,6 @@ gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
   task1->SetMcData(isMc);//necessary to tell the task to basically accept all MC events.
   mgr->AddTask(task1);
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer, outputName);
   
   //____________________________________________//
   mgr->ConnectInput(task1,0,cinput1);
