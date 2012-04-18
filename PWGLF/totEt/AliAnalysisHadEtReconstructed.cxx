@@ -301,9 +301,15 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
       }
     delete list;
   }
-  Int_t nondiff = (Int_t) AliPWG0Helper::kND;
-  Int_t doublediff = (Int_t) AliPWG0Helper::kDD;
-  Int_t singlediff = (Int_t) AliPWG0Helper::kSD;
+
+  Int_t nondiff = 0;//(Int_t) AliPWG0Helper::kND;
+  Int_t doublediff = 0;//(Int_t) AliPWG0Helper::kDD;
+  Int_t singlediff = 0;//(Int_t) AliPWG0Helper::kSD;
+  if(fDataSet!=20100){
+    nondiff = (Int_t) AliPWG0Helper::kND;
+    doublediff = (Int_t) AliPWG0Helper::kDD;
+    singlediff = (Int_t) AliPWG0Helper::kSD;
+  }
   if(eventtype == nondiff && fGoodEvent){
     FillHisto1D("RecoHadEtFullAcceptanceTPCND",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceTPCND",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
@@ -430,7 +436,9 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceTPCNoPID += corrEtNoPID;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceTPCNoPID += corrEtNoPID;
   }
-  if(pt<AliAnalysisHadEt::fgPtTPCCutOff &&pt>=AliAnalysisHadEt::fgPtITSCutOff && !IsTPC){//ITS tracks
+  //if(pt<AliAnalysisHadEt::fgPtTPCCutOff &&pt>=AliAnalysisHadEt::fgPtITSCutOff && !IsTPC){//ITS tracks
+  //If we use standalone tracks - not pure standalone tracks - the only tracks we get are ones that were missed by the TPC+ITS tracking.  Therefore we don't need to add a momentum cut-off
+  if(pt<AliAnalysisHadEt::fgPtTPCCutOff && !IsTPC){//ITS tracks
     //adding to the raw Et
     fRawEtFullAcceptanceITS += rawEt;
     if(InPHOS)fRawEtPHOSAcceptanceITS += rawEt;
