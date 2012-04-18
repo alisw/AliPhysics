@@ -10,8 +10,8 @@
 #include <TParticle.h>
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDtrack.h"
+#include "AliVCluster.h"
+#include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliFJWrapper.h"
 
@@ -183,21 +183,31 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     vector<fastjet::PseudoJet> constituents = fjw.GetJetConstituents(ij);
     Double_t neutralE = 0;Double_t maxTrack = 0;Double_t maxCluster=0;
+    jet->SetNumberOfTracks(constituents.size());
+    jet->SetNumberOfClusters(constituents.size());
+    Int_t nt = 0;
+    Int_t nc = 0;
     for(UInt_t ic=0; ic<constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
       if (uid>=0){
+	jet->AddTrackAt(uid, nt);
         AliVTrack *t = static_cast<AliVTrack*>(tracks->At(uid));
         if (t->Pt()>maxTrack)
           maxTrack=t->Pt();
+	nt++;
       } else {
+	jet->AddClusterAt(-(uid+1),nc);
         AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(-(uid+1)));
         TLorentzVector nP;
         c->GetMomentum(nP, vertex);
         neutralE += nP.P();
         if (nP.P()>maxCluster)
           maxCluster=nP.P();
+	nc++;
       }
     }
+    jet->SetNumberOfTracks(nt);
+    jet->SetNumberOfClusters(nc);
     jet->SetMaxTrackPt(maxTrack);
     jet->SetMaxClusterPt(maxCluster);
     jet->SetNEF(neutralE/jet->E());

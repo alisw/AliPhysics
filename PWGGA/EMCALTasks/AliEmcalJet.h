@@ -6,12 +6,13 @@
 #include "AliVParticle.h"
 #include <TLorentzVector.h>
 #include <TMath.h>
+#include <TArrayI.h>
 
 class AliEmcalJet : public AliVParticle
 {
  public:
   AliEmcalJet() : AliVParticle(), fPt(0), fEta(0), fPhi(0), fM(0), fNEF(0), fArea(0), 
-                fNch(0), fNn(0), fMaxCPt(0), fMaxNPt(0) {;}
+    fNch(0), fNn(0), fMaxCPt(0), fMaxNPt(0), fClusterIDs(0), fTrackIDs(0) {;}
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
   AliEmcalJet(const AliEmcalJet &jet); 
@@ -52,6 +53,16 @@ class AliEmcalJet : public AliVParticle
   void        SetMaxTrackPt(Double32_t t)        { fMaxCPt = t;    }
   void        SetMaxClusterPt(Double32_t t)      { fMaxNPt = t;    }
 
+  void        SetNumberOfClusters(Int_t n)         { fClusterIDs->Set(n);           }
+  void        SetNumberOfTracks(Int_t n)           { fTrackIDs->Set(n);             }
+  void        AddClusterAt(Int_t clus, Int_t idx)  { fClusterIDs->AddAt(clus, idx); }
+  void        AddTrackAt(Int_t track, Int_t idx)   { fTrackIDs->AddAt(track, idx);  }
+
+  Int_t       GetNumberOfClusters()          const { return fClusterIDs->GetSize(); }
+  Int_t       GetNumberOfTracks()            const { return fTrackIDs->GetSize();   }
+  Int_t       ClusterAt(Int_t idx)           const { return fClusterIDs->At(idx);   }
+  Int_t       TrackAt(Int_t idx)             const { return fTrackIDs->At(idx);     }
+
  protected:
   Double32_t  fPt;           //[0,0,12]   pt 
   Double32_t  fEta;          //[-1,1,12]  eta
@@ -63,7 +74,9 @@ class AliEmcalJet : public AliVParticle
   UShort_t    fNn;           //           number of neutral constituents
   Double32_t  fMaxCPt;       //[0,0,12]   pt of maximum track
   Double32_t  fMaxNPt;       //[0,0,12]   pt of maximum cluster
+  TArrayI    *fClusterIDs;   //           array of cluster constituents  
+  TArrayI    *fTrackIDs;     //           array of track constituents    
 
-  ClassDef(AliEmcalJet,1) // ESD jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,2) // ESD jet class in cylindrical coordinates
 };
 #endif

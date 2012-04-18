@@ -1,20 +1,24 @@
 // $Id$
 
-#include "AliHadCorrTask.h"
 #include <TClonesArray.h>
 #include <TParticle.h>
+#include <TList.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TChain.h>
+#include <TLorentzVector.h>
+
+#include "AliCentrality.h"
 #include "AliEmcalJet.h"
 #include "AliAnalysisManager.h"
 #include "AliESDtrack.h"
 #include "AliFJWrapper.h"
 #include "AliESDCaloCluster.h"
-#include "TList.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TChain.h"
-#include <TLorentzVector.h>
-#include <AliCentrality.h>
+#include "AliAODCaloCluster.h"
 #include "AliPicoTrack.h"
+#include "AliVEventHandler.h"
+
+#include "AliHadCorrTask.h"
 
 ClassImp(AliHadCorrTask)
 
@@ -73,7 +77,24 @@ AliHadCorrTask::~AliHadCorrTask()
 void AliHadCorrTask::UserCreateOutputObjects()
 {
 
-  fOutClusters = new TClonesArray("AliESDCaloCluster");
+  AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  
+  if (!handler) {
+    AliError("Input handler not available!");
+    return;
+  }
+ 
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    fOutClusters = new TClonesArray("AliESDCaloCluster");
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    fOutClusters = new TClonesArray("AliAODCaloCluster");
+  }
+  else {
+    AliError("Input handler not recognized!");
+    return;
+  }
+
   fOutClusters->SetName(fOutCaloName);
  
   OpenFile(1);
@@ -226,7 +247,17 @@ void AliHadCorrTask::UserExec(Option_t *)
 
       }//end had correction if
       if (energy>0){//Output new corrected clusters
-	AliESDCaloCluster *oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*(dynamic_cast<AliESDCaloCluster*>(c)));
+	AliVCluster *oc;
+	if (c->InheritsFrom("AliESDCaloCluster")) {
+	  oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*(dynamic_cast<AliESDCaloCluster*>(c)));
+	}
+	else if (c->InheritsFrom("AliAODCaloCluster")) {
+	  oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*(dynamic_cast<AliAODCaloCluster*>(c)));
+	}
+	else {
+	  AliError("Cluster type not recognized (nor ESD neither AOD)!");
+	  continue;
+	}
 	oc->SetE(energy);
 	clusCount++;
       }

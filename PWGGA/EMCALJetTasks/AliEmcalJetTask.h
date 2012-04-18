@@ -4,7 +4,6 @@
 // $Id$
 
 class TClonesArray;
-class AliESDtrackCuts;
 class TList;
 class TH1;
 class TH2;

@@ -11,7 +11,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz)
     fEta(TMath::ASinH(pz/fPt)),
     fPhi(0), fM(0), fNEF(0), 
     fArea(0), fNch(0), fNn(0),
-    fMaxCPt(0), fMaxNPt(0)
+  fMaxCPt(0), fMaxNPt(0), fClusterIDs(new TArrayI()), fTrackIDs(new TArrayI())
 {    
   // Constructor.
 
@@ -28,7 +28,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fPt(pt), fEta(eta), fPhi(phi), 
   fM(m), fNEF(0), fArea(0), 
   fNch(0), fNn(0), 
-  fMaxCPt(0), fMaxNPt(0) 
+  fMaxCPt(0), fMaxNPt(0), fClusterIDs(new TArrayI()), fTrackIDs(new TArrayI())
 {
   // Constructor.
 
@@ -42,7 +42,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fPt(jet.fPt), fEta(jet.fEta), fPhi(jet.fPhi), 
   fM(jet.fM), fNEF(jet.fNEF), fArea(jet.fArea), 
   fNch(jet.fNch), fNn(jet.fNn),
-  fMaxCPt(jet.fMaxCPt), fMaxNPt(jet.fMaxNPt)
+  fMaxCPt(jet.fMaxCPt), fMaxNPt(jet.fMaxNPt), fClusterIDs(new TArrayI(*(jet.fClusterIDs))), fTrackIDs(new TArrayI(*(jet.fTrackIDs)))
 {
   // Constructor.
 }
