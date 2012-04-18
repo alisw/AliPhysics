@@ -46,8 +46,9 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fITSmaxChi2(1E20),
    fTPCminNClusters(0),
    fTPCmaxChi2(1E20),
-  fAODTestFilterBit(-1),
-  fESDtrackCuts(0x0)
+   fCutMaxChi2TPCConstrainedVsGlobal(1E20),
+   fAODTestFilterBit(-1),
+   fESDtrackCuts(0x0)
 {
 //
 // Default constructor.
@@ -75,6 +76,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fITSmaxChi2(copy.fITSmaxChi2),
    fTPCminNClusters(copy.fTPCminNClusters),
    fTPCmaxChi2(copy.fTPCmaxChi2),
+   fCutMaxChi2TPCConstrainedVsGlobal(copy.fCutMaxChi2TPCConstrainedVsGlobal),
    fAODTestFilterBit(copy.fAODTestFilterBit),
    fESDtrackCuts(copy.fESDtrackCuts)
 {
@@ -143,10 +145,10 @@ void AliRsnCutTrackQuality::DisableAll()
    fTPCmaxChi2 = 1E20;
    fAODTestFilterBit = -1;
    if (fESDtrackCuts) {
-     const char *cutsName = fESDtrackCuts->GetName();
-     const char *cutsTitle = fESDtrackCuts->GetTitle();
-     delete fESDtrackCuts;
-     fESDtrackCuts = new AliESDtrackCuts(cutsName,cutsTitle);
+      const char *cutsName = fESDtrackCuts->GetName();
+      const char *cutsTitle = fESDtrackCuts->GetTitle();
+      delete fESDtrackCuts;
+      fESDtrackCuts = new AliESDtrackCuts(cutsName,cutsTitle);
    }
    SetPtRange(0.0, 1E20);
    SetEtaRange(-1E20, 1E20);
@@ -195,10 +197,10 @@ Bool_t AliRsnCutTrackQuality::IsSelected(TObject *object)
    AliAODTrack *aodTrack = fDaughter->Ref2AODtrack();
    if (esdTrack) {
       AliDebug(AliLog::kDebug + 2, "Checking an ESD track");
-      if (fESDtrackCuts) 
-	return fESDtrackCuts->IsSelected(esdTrack);
-      else 
-	return CheckESD(esdTrack);
+      if (fESDtrackCuts)
+         return fESDtrackCuts->IsSelected(esdTrack);
+      else
+         return CheckESD(esdTrack);
    } else if (aodTrack) {
       AliDebug(AliLog::kDebug + 2, "Checking an AOD track");
       return CheckAOD(aodTrack);
@@ -244,10 +246,10 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
    cuts.SetMaxChi2PerClusterTPC(fTPCmaxChi2);
    cuts.SetAcceptKinkDaughters(!fRejectKinkDaughters);
    cuts.SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal);
-   
+
    // ITS related cuts for TPC+ITS tracks
    if (fSPDminNClusters > 0)
-     cuts.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+      cuts.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
    cuts.SetMaxChi2PerClusterITS(fITSmaxChi2);
 
    // now that all is initialized, do the check

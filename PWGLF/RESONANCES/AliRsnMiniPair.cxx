@@ -39,19 +39,19 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
 
    TLorentzVector &mother    = fSum[ID(useMC)];
    TLorentzVector &daughter0 = fP1[ID(useMC)];
-   TLorentzVector &daughter1 = fP2[ID(useMC)];
+//    TLorentzVector &daughter1 = fP2[ID(useMC)];
    TVector3 momentumM(mother.Vect());
    TVector3 normal(mother.Y() / momentumM.Mag(), -mother.X() / momentumM.Mag(), 0.0);
 
    // Computes first the invariant mass of the mother
-   Double_t mass0      = daughter0.M();
-   Double_t mass1      = daughter1.M();
-   Double_t p0         = daughter0.Vect().Mag();
-   Double_t p1         = daughter1.Vect().Mag();
-   Double_t E0         = TMath::Sqrt(mass0 * mass0 + p0 * p0);
-   Double_t E1         = TMath::Sqrt(mass1 * mass1 + p1 * p1);
-   Double_t MotherMass = TMath::Sqrt((E0 + E1) * (E0 + E1) - (p0 * p0 + 2.0 * daughter0.Vect().Dot(daughter1.Vect()) + p1 * p1));
-   MotherMass = mother.M();
+//    Double_t mass0      = daughter0.M();
+//    Double_t mass1      = daughter1.M();
+//    Double_t p0         = daughter0.Vect().Mag();
+//    Double_t p1         = daughter1.Vect().Mag();
+//    Double_t E0         = TMath::Sqrt(mass0 * mass0 + p0 * p0);
+//    Double_t E1         = TMath::Sqrt(mass1 * mass1 + p1 * p1);
+//    Double_t MotherMass = TMath::Sqrt((E0 + E1) * (E0 + E1) - (p0 * p0 + 2.0 * daughter0.Vect().Dot(daughter1.Vect()) + p1 * p1));
+//    MotherMass = mother.M();
 
    // Computes components of beta
    Double_t betaX = -mother.X() / mother.E();

@@ -32,6 +32,7 @@
 #include <TH3.h>
 #include <TNtuple.h>
 #include <THnSparse.h>
+#include <Rtypes.h>
 
 class AliCFContainer;
 class AliRsnValue;
@@ -58,9 +59,11 @@ public:
    Int_t           GetNValues()            {return (fNValues = fValues.GetEntries());}
    AliRsnValue    *GetValue(Int_t i) const {return (AliRsnValue *)fValues[i];}
    Int_t           GetIndex() const        {return  fIndex;}
+   Bool_t          GetFillHistogramOnlyInRange() { return fCheckHistRange; }
    void            SetType(EOut type)      {fType = type;}
    void            SetSteps(Int_t n)       {fSteps = n;}
    void            SetSkipFailed(Bool_t y) {fSkipFailed = y;}
+   void            SetFillHistogramOnlyInRange(Bool_t fillInRangeOnly) { fCheckHistRange = fillInRangeOnly; }
 
    void            AddValue(AliRsnValue *value);
 
@@ -82,10 +85,11 @@ private:
    Int_t            fNValues;       //! number of values (internal use)
    TList           *fList;          //! list containing the output
    Int_t            fIndex;         //  index of object in the list
+   Bool_t           fCheckHistRange;//  check if values is in histogram range
 
    TArrayD          fArray;         //! temp array of computed values
 
-   ClassDef(AliRsnListOutput, 1)    //  AliRsnListOutput class
+   ClassDef(AliRsnListOutput, 2)    //  AliRsnListOutput class
 };
 
 #endif

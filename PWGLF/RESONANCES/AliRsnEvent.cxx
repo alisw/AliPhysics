@@ -248,18 +248,18 @@ void AliRsnEvent::SetDaughterESDv0(AliRsnDaughter &out, Int_t i)
                TParticle *pp = mc->Stack()->Particle(lp);
                TParticle *pn = mc->Stack()->Particle(ln);
                if (pp && pn) {
-		 // if their first mothers are the same, the V0 is true
-		 // otherwise label remains '-1' --> fake V0
-		 if (pp->GetFirstMother() == pn->GetFirstMother() && pp->GetFirstMother() >= 0) {
-		   out.SetLabel(pp->GetFirstMother());
-		   //patch for k0s/k0l
-		   TParticle *mom = mc->Stack()->Particle(pn->GetFirstMother());
-		   if(mom->GetPdgCode() == 310) {
-		     //take the mother of the k0s which is a k0 (311)
-		     out.SetLabel(mom->GetFirstMother());
-		   }
-		   SetMCInfoESD(out);
-		 }
+                  // if their first mothers are the same, the V0 is true
+                  // otherwise label remains '-1' --> fake V0
+                  if (pp->GetFirstMother() == pn->GetFirstMother() && pp->GetFirstMother() >= 0) {
+                     out.SetLabel(pp->GetFirstMother());
+                     //patch for k0s/k0l
+                     TParticle *mom = mc->Stack()->Particle(pn->GetFirstMother());
+                     if(mom->GetPdgCode() == 310) {
+                        //take the mother of the k0s which is a k0 (311)
+                        out.SetLabel(mom->GetFirstMother());
+                     }
+                     SetMCInfoESD(out);
+                  }
                }
             }
          }
@@ -298,7 +298,7 @@ void AliRsnEvent::SetDaughterAODv0(AliRsnDaughter &out, Int_t i)
                   // otherwise label remains '-1' --> fake V0
                   if (pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0) {
                      out.SetLabel(pp->GetMother());
-		     SetMCInfoAOD(out);
+                     SetMCInfoAOD(out);
                   }
                }
             }
