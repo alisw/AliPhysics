@@ -5,8 +5,8 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
-#ifndef AliAnalysisTaskdPhi_cxx
-#define AliAnalysisTaskdPhi_cxx
+#ifndef AliAnalysisTaskdPhi_H
+#define AliAnalysisTaskdPhi_H
 
 #include "AliAnalysisTaskSE.h"
 
@@ -18,8 +18,10 @@
 #include <AliAnaConvCorrBase.h>
 #include <AliLog.h>
 #include <AliAnalysisCuts.h>
+#include "AliAODConversionPhoton.h"
 class AliAnaConvIsolation;
 class AliConversionCuts;
+
 class TList;
 class TH2I;
 //class THnSparseF;
@@ -49,6 +51,7 @@ public:
   void SetV0Filter(AliConversionCuts * filter) { fV0Filter = filter; }
   AliAnalysisCuts * GetTrackCuts() const { return fTrackCuts; }
   void SetTrackCuts( AliAnalysisCuts * cuts) { if (fTrackCuts) delete fTrackCuts; fTrackCuts = cuts; }
+  Bool_t VerifyAODGamma(AliAODConversionPhoton * photon);
   
   
 protected:
