@@ -92,8 +92,14 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Bool_t GetKeepD0fromBOnly() const { return fKeepD0fromBOnly;}
   void SetUseWeight(Bool_t useWeight){fUseWeight=useWeight;}
   Bool_t GetUseWeight() const {return fUseWeight;}
+  void SetUseFlatPtWeight(Bool_t useWeight){fUseFlatPtWeight=useWeight; fUseWeight=useWeight;}
+  Bool_t GetUseFlatPtWeight() const {return fUseFlatPtWeight;}
   Double_t GetWeight(Float_t pt);
+  void SetUseZWeight(Bool_t useWeight){fUseZWeight=useWeight;}
+  Bool_t GetUseZWeight() const {return fUseZWeight;}
+  Double_t GetZWeight(Float_t z, Int_t runnumber);
   Double_t DodNdptFit(Float_t pt, const Double_t* par) const;
+  Double_t DodzShape(Float_t z, const Double_t* par) const;
   void SetSign(Char_t isSign) {fSign = isSign;}
   Char_t GetSign() const {return fSign;}
 
@@ -120,11 +126,13 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Bool_t fKeepD0fromB;          // flag to consider also D0 coming from B
   Bool_t fKeepD0fromBOnly;      // flag to consider _only_ D0 coming from B
   AliRDHFCutsD0toKpi* fCuts;    // cuts
-  Bool_t fUseWeight;            // flag to decide whether to use weights != 1 when filling the container or not
+  Bool_t fUseWeight;            // flag to decide whether to use pt weights != 1 when filling the container or not
+  Bool_t fUseFlatPtWeight;
+  Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
   Double_t fWeight;             // weight used to fill the container
   Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,7); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,8); // class for HF corrections as a function of many variables
 };
 
 #endif

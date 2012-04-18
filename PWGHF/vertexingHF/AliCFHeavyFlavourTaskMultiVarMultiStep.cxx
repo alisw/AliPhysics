@@ -83,6 +83,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep()
 	fKeepD0fromBOnly(kFALSE),
 	fCuts(0),
 	fUseWeight(kFALSE),
+	fUseFlatPtWeight(kFALSE),
+	fUseZWeight(kFALSE),
 	fWeight(1.),
 	fSign(2)
 {
@@ -114,6 +116,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
         fKeepD0fromBOnly(kFALSE),
 	fCuts(cuts),
 	fUseWeight(kFALSE),
+	fUseFlatPtWeight(kFALSE),
+	fUseZWeight(kFALSE),
 	fWeight(1.),
 	fSign(2)
 {
@@ -173,6 +177,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
         fKeepD0fromBOnly(c.fKeepD0fromBOnly),
 	fCuts(c.fCuts),
 	fUseWeight(c.fUseWeight),
+	fUseFlatPtWeight(c.fUseFlatPtWeight),
+	fUseZWeight(c.fUseZWeight),
 	fWeight(c.fWeight),
 	fSign(c.fSign)
 {
@@ -200,6 +206,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Init(){
 	//
 
 	if(fDebug > 1) printf("AliCFHeavyFlavourTaskMultiVarMultiStep::Init() \n");
+
+	if(fUseWeight && fUseZWeight) AliFatal("Can not use at the same time pt and z-vtx weights, please choose");
 	
 	fMinITSClusters = fCuts->GetTrackCuts()->GetMinNClustersITS();
 	AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(*fCuts);
@@ -312,6 +320,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	}
 	Double_t zPrimVertex = vtx1->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
+	Int_t runnumber = aodEvent->GetRunNumber();
+	if(fUseZWeight) fWeight = GetZWeight(zMCVertex,runnumber);
 	Bool_t vtxFlag = kTRUE;
 	TString title=vtx1->GetTitle();
 	if(!title.Contains("VertexerTracks")) vtxFlag=kFALSE;
@@ -1526,6 +1536,7 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetWeight(Float_t pt){
 	Double_t func2[4] = {0.36609,1.94635,1.40463,2.5};
 
 	Double_t dndptFunc1 = DodNdptFit(pt,func1);
+	if(fUseFlatPtWeight) dndptFunc1 = 1./30.;
 	Double_t dndptFunc2 = DodNdptFit(pt,func2);
 	AliDebug(2,Form("pt = %f, FONLL = %f, Pythia = %f, ratio = %f",pt,dndptFunc1,dndptFunc2,dndptFunc1/dndptFunc2));
 	return dndptFunc1/dndptFunc2;
@@ -1542,4 +1553,31 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::DodNdptFit(Float_t pt, const Do
 	Double_t dNdpt = par[0]*pt/TMath::Power(1.+denom, par[2]);
 	
 	return dNdpt;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetZWeight(Float_t z, Int_t runnumber){
+  
+  if(runnumber>146824 || runnumber<146803) return 1.0;
+
+  Double_t func1[3] = {1.0, 0., 6.5 };
+  Double_t func2[3] = {1.0, 0., 5.5 };
+
+  Double_t dzFunc1 = DodzShape(z,func1);
+  Double_t dzFunc2 = DodzShape(z,func2);
+
+  return dzFunc1/dzFunc2;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::DodzShape(Float_t z, const Double_t* par) const{
+
+  //
+  // Gaussian z-vtx shape 
+  //
+  //gaussian = [0]/TMath::Sqrt(2.*TMath::Pi())/[2]*exp[-(x-[1])*(x-[1])/(2*[2]*[2])]
+
+  Double_t value =  par[0]/TMath::Sqrt(2.*TMath::Pi())/par[2]*TMath::Exp(-(z-par[1])*(z-par[1])/2./par[2]/par[2]);
+
+  return value;
 }

@@ -45,8 +45,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root",Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2)
-//AliCFContainer *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -86,7 +85,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	  return 0x0;
 	}
 
-	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCutsStandard");
+	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get(cutObjectName.Data());
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
@@ -544,7 +543,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetFillFromGenerated(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetDecayChannel(2);
-	task->SetUseWeight(kFALSE);
+	task->SetUseWeight(useWeight);
+	task->SetUseFlatPtWeight(useFlatPtWeight); 
+	task->SetUseZWeight(useZWeight);
 	task->SetSign(isSign);
 	task->SetCentralitySelection(kFALSE);
 	task->SetFakeSelection(0);
@@ -659,6 +660,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		output1name="CFHFchist0allD_CommonFramework";
 	}
 	output4name= "Cuts_CommonFramework";
+
+	outputfile += suffix;
+	output1name += suffix;
+	output2name += suffix;
+	output3name += suffix;
+	output4name += suffix;
 
 	//now comes user's output objects :
 	// output TH1I for event counting
