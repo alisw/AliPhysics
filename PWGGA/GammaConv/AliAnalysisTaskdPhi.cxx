@@ -91,9 +91,9 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   Double_t centbins[5] = {0, 10, 30, 60, 100.1};
   fAxisCent.Set(4, centbins);
 
-  Double_t mbins[7] = {0.1, 0.11, 0.12, 0.15, 0.16, 0.18, 0.2};
+  Double_t mbins[8] = {0.11, 0.12, 0.13, 0.132, 0.138, 0.14, 0.15, 0.16};
   fAxisPiM.SetNameTitle("InvMassPi0", "Invariant mass");
-  fAxisPiM.Set(6, mbins);
+  fAxisPiM.Set(7, mbins);
 
   fGammas = new TObjArray();
   fGammas->SetOwner(kFALSE);
@@ -359,7 +359,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 
   if(centBin < 0 || vertexBin < 0) {
 	AliError("bin out of range");
-	cout << "bad bin"<<endl;
+	//cout << "bad bin"<<endl;
 	return;
   }
 
@@ -373,19 +373,17 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	return;
   }
 
+
   if(DebugLevel() > 1) printf("Number of conversion gammas %d \n", aodGammas->GetEntriesFast());
   for(Int_t ig = 0; ig < aodGammas->GetEntriesFast(); ig++) {
-	cout << ig << endl;
-    AliAODConversionPhoton * photon = dynamic_cast<AliAODConversionPhoton*>(aodGammas->At(ig));
+   AliAODConversionPhoton * photon = dynamic_cast<AliAODConversionPhoton*>(aodGammas->At(ig));
     
     if(!photon) {
 	  cout << "can't get photon"<<endl;
 	  continue;
 	}
-	if(VerifyAODGamma(photon)) { 
-	  cout << "yes"<<endl;
-	} else {
-	  cout << "does not check out " << endl; 
+	if(!VerifyAODGamma(photon)) { 
+	  continue;
 	}
 
     if(!fV0Filter || fV0Filter->PhotonIsSelected(static_cast<AliConversionPhotonBase*>(photon), fInputEvent)) {
@@ -427,6 +425,7 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
   ///Process stuff
 
   if(DebugLevel() > 4) printf("Number of accepted gammas, tracks %d  %d \n", gammas->GetEntriesFast(), tracks->GetEntriesFast());
+
  
   AliAnaConvCorrBase * gCorr = GetCorrObject(vertexBin, centBin, fPhotonCorr);
   AliAnaConvCorrPion * piCorr = dynamic_cast<AliAnaConvCorrPion*>(GetCorrObject(vertexBin, centBin, fPionCorr));
@@ -461,6 +460,7 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 	
 		Int_t leadingpi = fIsoAna->IsLeading(static_cast<AliAODConversionParticle*>(pion), tracks, tIDs);
 		piCorr->FillTriggerCounters(pion, leadingpi);
+		
 		tIDs[2] = ph2->GetLabel(0);
 		tIDs[3] = ph2->GetLabel(1);
 		if(pion->Pt() > fAxistPt.GetBinLowEdge(1) && 
@@ -472,6 +472,7 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 	}
   }
 }
+
 
 //________________________________________________________________________
 void AliAnalysisTaskdPhi::Terminate(Option_t *) {
@@ -525,7 +526,7 @@ Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
 
   AliAODEvent * event = static_cast<AliAODEvent*>(fInputEvent);
 
-	  	cout << "label "<< gamma->GetV0Index() << endl;
+  //cout << "label "<< gamma->GetV0Index() << endl;
 
   AliAODv0 * v0 =  NULL;
 
@@ -543,7 +544,7 @@ Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
   }
 
   if(!v0) {
-	cout << "v0 not found"<<endl;
+	//cout << "v0 not found"<<endl;
 	return kFALSE;
   } 
 
@@ -564,7 +565,7 @@ Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
 	  t2 == g2) || 
 	 (t1 == g2 && 
 	  t2 == g1) ) {
-	cout <<"match"<< " " <<  gamma->Pt() << " " <<  d1->Pt() + d2->Pt() <<endl;
+	//cout <<"match"<< " " <<  gamma->Pt() << " " <<  d1->Pt() + d2->Pt() <<endl;
   }
 		 
   else {
