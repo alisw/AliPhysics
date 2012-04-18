@@ -502,6 +502,9 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   }
 
   PrintStatus();
+  // Done!!!
+  PostData(1, fOutput);
+  PostData(2, fQA);
 }
 
 //____________________________________________________________
