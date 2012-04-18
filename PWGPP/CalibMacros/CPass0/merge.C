@@ -28,7 +28,7 @@ void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
   Long_t id, size, flags, modtime;
   Bool_t outputDirFailure = gSystem->GetPathInfo(outputDir, &id, &size, &flags, &modtime);
   printf("st: %i, flags: %i, patt: %s\n",outputDirFailure,flags,patternStr.Data());
-  if (!outputDirFailure && (flags==0) && patternStr.IsNull()) 
+  if (!outputDirFailure && (flags==0)) 
   { 
     printf("### processing local fileList: %s\n",outputDir);
     listFileName=outputDir;
