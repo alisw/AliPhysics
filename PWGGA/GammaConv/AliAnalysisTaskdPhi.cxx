@@ -308,7 +308,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   ///User exec. 
 
   //if(! fV0Filter->EventIsSelected(fInputEvent)) return;
-  cout <<"a"<<endl;
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
@@ -334,7 +333,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	}
   }
 
-  cout <<"a"<<endl;
   Double_t centrality = 0.0;
   Double_t eventPlane = 0.0;
   Double_t vertexz = fInputEvent->GetPrimaryVertex()->GetZ();
@@ -347,7 +345,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	eventPlane = fInputEvent->GetEventplane()->GetEventplane("Q");
   }
 
-  cout <<"a"<<endl;
 
   const Int_t centBin = GetBin(fAxisCent, centrality);
   const Int_t vertexBin = GetBin(fAxisZ, vertexz);
@@ -359,7 +356,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	cout << "eventPlane: " << eventPlane <<  " " << endl;
   }
 
-  cout <<"a"<<endl;
 
   if(centBin < 0 || vertexBin < 0) {
 	AliError("bin out of range");
@@ -367,11 +363,11 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	return;
   }
 
-  cout <<"a"<<endl;
   fGammas->Clear();
   fPions->Clear();
 
   TClonesArray * aodGammas = GetConversionGammas(isAOD);
+
   if(!aodGammas) {
 	AliError("no aod gammas found!");
 	return;
@@ -379,9 +375,19 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 
   if(DebugLevel() > 1) printf("Number of conversion gammas %d \n", aodGammas->GetEntriesFast());
   for(Int_t ig = 0; ig < aodGammas->GetEntriesFast(); ig++) {
+	cout << ig << endl;
     AliAODConversionPhoton * photon = dynamic_cast<AliAODConversionPhoton*>(aodGammas->At(ig));
     
-    if(!photon) continue;
+    if(!photon) {
+	  cout << "can't get photon"<<endl;
+	  continue;
+	}
+	if(VerifyAODGamma(photon)) { 
+	  cout << "yes"<<endl;
+	} else {
+	  cout << "does not check out " << endl; 
+	}
+
     if(!fV0Filter || fV0Filter->PhotonIsSelected(static_cast<AliConversionPhotonBase*>(photon), fInputEvent)) {
       fGammas->Add(static_cast<TObject*>(photon));
     }
@@ -505,9 +511,79 @@ void AliAnalysisTaskdPhi::FindDeltaAODBranchName(AliVEvent * event){
 	if(name.BeginsWith("GammaConv")&&name.EndsWith("gamma")){
 	  fDeltaAODBranchName=name;
 	  AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));
+	  cout <<fDeltaAODBranchName << endl;
 	  return;
 	}
   }
 }
   
 
+
+
+///________________________________________________________________________
+Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
+
+  AliAODEvent * event = static_cast<AliAODEvent*>(fInputEvent);
+
+	  	cout << "label "<< gamma->GetV0Index() << endl;
+
+  AliAODv0 * v0 =  NULL;
+
+  //Int_t v0idx =  gamma->GetV0Index();
+  for(Int_t i = 0; i < event->GetNumberOfV0s(); i++) {
+	AliAODv0 * tv0 = event->GetV0(i);
+
+	//cout << i << " " << v0->GetID() << " " << v0->GetSecondaryVtx()->GetID() << " " << v0->GetLabel() << " " << v0->GetSecondaryVtx()->GetLabel() << endl;
+   
+	if(tv0->GetSecondaryVtx()->GetID() == gamma->GetV0Index() ) {
+	  v0 = tv0;
+	  //cout << "found it" << endl;
+	  break;
+	}	
+  }
+
+  if(!v0) {
+	cout << "v0 not found"<<endl;
+	return kFALSE;
+  } 
+
+
+  AliAODTrack * d1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
+  AliAODTrack * d2 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+
+  Int_t t1 = -1;
+  Int_t t2 = -2;
+
+  if(d1) t1 = d1->GetID();
+  if(d2) t2 = d2->GetID();
+
+  Int_t g1 = gamma->GetLabel(0);
+  Int_t g2 = gamma->GetLabel(1);
+
+  if((t1 == g1 && 
+	  t2 == g2) || 
+	 (t1 == g2 && 
+	  t2 == g1) ) {
+	cout <<"match"<< " " <<  gamma->Pt() << " " <<  d1->Pt() + d2->Pt() <<endl;
+  }
+		 
+  else {
+
+	cout << g1 << " " << g2 <<endl;
+	cout << t1 << " " << t2 <<endl;
+	
+	for(Int_t i = 0; i < event->GetNumberOfV0s(); i++) {
+	v0 = event->GetV0(i);
+	cout << i << " " << v0->GetSecondaryVtx()->GetID() << " " <<dynamic_cast<AliAODTrack*>(v0->GetDaughter(0))->GetID() << " " << dynamic_cast<AliAODTrack*>(v0->GetDaughter(1))->GetID() << endl; 
+	
+	}
+  }
+  
+  // Float_t sumdpt = d1->Pt() + d2->Pt();
+  // cout << "pt: " << sumdpt << " " << gamma->Pt() << endl;
+
+  return kTRUE;
+
+
+
+}
