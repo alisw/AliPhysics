@@ -14,7 +14,7 @@ void PrintDetectorStatus();
 
 
 
-void makeOCDB(TString runNumberString, TString  ocdbStorage="")
+void makeOCDB(TString runNumberString, TString  ocdbStorage="", TString defaultOCDBstorage="raw://")
 {
   //
   // extract TPC OCDB entries
@@ -28,7 +28,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   // config GRP
   Int_t runNumber = runNumberString.Atoi();
   printf("runNumber from runCalibTrain = %d\n",runNumber);
-  ConfigCalibTrain(runNumber, "raw://");
+  ConfigCalibTrain(runNumber, defaultOCDBstorage.Data());
 
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
