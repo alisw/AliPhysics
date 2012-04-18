@@ -229,25 +229,28 @@ AliGenMUONLMR::AliGenMUONLMR (AliGenMUONLMR &gen) : AliGenMC(),
 //-----------------------------------------------------------
 
 AliGenMUONLMR& AliGenMUONLMR::operator=(const AliGenMUONLMR &gen) {
-  fNMuMin = gen.fNMuMin; 
-  fGenSingleProc = gen.fGenSingleProc; 
-  fCosTheta = (TF1*) gen.fCosTheta->Clone();  
-  fRhoLineShape = (TF1*) gen.fRhoLineShape->Clone();
-  fHMultMu = (TH1D*) gen.fHMultMu->Clone();
-  fHNProc = (TH1D*) gen.fHNProc->Clone();  
-  
-  for (Int_t i=0; i < fgkNpart; i++) { 
-    fPDG[i] = gen.fPDG[i]; 
-    fScaleMult[i] = gen.fScaleMult[i]; 
-    fPt[i] = (TF1*) gen.fPt[i]->Clone(); 
-    fY[i] = (TF1*) gen.fY[i]->Clone();  
-    fMult[i] = (TF1*) gen.fMult[i]->Clone(); 
-    fParticle[i] = (TParticle*) gen.fParticle[i]->Clone(); 
+  // Assignment operator
+  if (this!=&gen) {
+    fNMuMin = gen.fNMuMin; 
+    fGenSingleProc = gen.fGenSingleProc; 
+    fCosTheta = (TF1*) gen.fCosTheta->Clone();  
+    fRhoLineShape = (TF1*) gen.fRhoLineShape->Clone();
+    fHMultMu = (TH1D*) gen.fHMultMu->Clone();
+    fHNProc = (TH1D*) gen.fHNProc->Clone();  
+    
+    for (Int_t i=0; i < fgkNpart; i++) { 
+      fPDG[i] = gen.fPDG[i]; 
+      fScaleMult[i] = gen.fScaleMult[i]; 
+      fPt[i] = (TF1*) gen.fPt[i]->Clone(); 
+      fY[i] = (TF1*) gen.fY[i]->Clone();  
+      fMult[i] = (TF1*) gen.fMult[i]->Clone(); 
+      fParticle[i] = (TParticle*) gen.fParticle[i]->Clone(); 
+    }
+    
+    for(Int_t i = 0; i<2; i++) fDecay[i] = (TF1*) gen.fDecay[i]->Clone(); 
+    for(Int_t i = 0; i<3; i++) fDalitz[i] = (TH1F*) gen.fDalitz[i]->Clone(); 
+    for(Int_t i = 0; i<2; i++) fMu[i] = (TParticle*) gen.fMu[i]->Clone(); 
   }
-  
-  for(Int_t i = 0; i<2; i++) fDecay[i] = (TF1*) gen.fDecay[i]->Clone(); 
-  for(Int_t i = 0; i<3; i++) fDalitz[i] = (TH1F*) gen.fDalitz[i]->Clone(); 
-  for(Int_t i = 0; i<2; i++) fMu[i] = (TParticle*) gen.fMu[i]->Clone(); 
   return *this; 
 }
 
@@ -539,7 +542,7 @@ void AliGenMUONLMR::DecayPiK(TParticle *mother, Bool_t &hasDecayed){
   if (mother->GetPdgCode()>0) fMu[0]->SetMomentum(v1.Px(),v1.Py(),v1.Pz(),v1.E());
   else fMu[1]->SetMomentum(v1.Px(),v1.Py(),v1.Pz(),v1.E());
 
-  Int_t idmother = -1; 
+  Int_t idmother = 0; 
   if (TMath::Abs(mother->GetPdgCode())== 211) idmother = 0; 
   if (TMath::Abs(mother->GetPdgCode())== 321) idmother = 1; 
   Double_t gammaRes = mother->Energy()/mres;
@@ -547,7 +550,6 @@ void AliGenMUONLMR::DecayPiK(TParticle *mother, Bool_t &hasDecayed){
   Double_t zResLab = gammaRes*zResCM;  
   if(zResLab > 0.938) hasDecayed = 0; // 0.938: distance from IP to absorber + lambda_i
   else hasDecayed = 1;
-
 } 
 
 //-------------------------------------------------------------------
@@ -561,7 +563,7 @@ void AliGenMUONLMR::DalitzDecay(TParticle *mother){
   Double_t mumass  = fMu[0]->GetMass(); 
   Double_t md3  = 0;  // unless differently specified, third particle is a photon 
   if (mother->GetPdgCode() == 223) md3 = 0.134977; // if mother is an omega, third particle is a pi0
-  Int_t index = -1; 
+  Int_t index = 0; 
   if (mother->GetPdgCode() == 221) index = 0;  // eta
   else if (mother->GetPdgCode() == 223) index = 1; // omega  
   else if (mother->GetPdgCode() == 331) index = 2; // etaPrime  
