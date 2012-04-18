@@ -45,6 +45,7 @@ AliRsnListOutput::AliRsnListOutput(const char *name, AliRsnListOutput::EOut type
    fNValues(0),
    fList(0x0),
    fIndex(-1),
+   fCheckHistRange(kTRUE),
    fArray(0)
 {
 //
@@ -64,6 +65,7 @@ AliRsnListOutput::AliRsnListOutput(const AliRsnListOutput &copy) :
    fNValues(copy.fNValues),
    fList(copy.fList),
    fIndex(copy.fIndex),
+   fCheckHistRange(copy.fCheckHistRange),
    fArray(0)
 {
 //
@@ -93,6 +95,7 @@ AliRsnListOutput &AliRsnListOutput::operator=(const AliRsnListOutput &copy)
    fNValues = copy.fNValues;
    fList = copy.fList;
    fIndex = copy.fIndex;
+   fCheckHistRange = copy.fCheckHistRange;
    fArray = copy.fArray;
 
    Reset();
@@ -388,8 +391,10 @@ Bool_t AliRsnListOutput::Fill(TObject *target, Int_t step)
       return kTRUE;
    } else if (obj->InheritsFrom(THnSparse::Class())) {
       THnSparseF *h = (THnSparseF *)obj;
-      for (Int_t iAxis = 0; iAxis<h->GetNdimensions(); iAxis++) {
-         if (fArray.At(iAxis)>h->GetAxis(iAxis)->GetXmax() || fArray.At(iAxis)<h->GetAxis(iAxis)->GetXmin()) return kFALSE;
+      if (fCheckHistRange) {
+         for (Int_t iAxis = 0; iAxis<h->GetNdimensions(); iAxis++) {
+            if (fArray.At(iAxis)>h->GetAxis(iAxis)->GetXmax() || fArray.At(iAxis)<h->GetAxis(iAxis)->GetXmin()) return kFALSE;
+         }
       }
       h->Fill(fArray.GetArray());
       return kTRUE;
@@ -457,8 +462,10 @@ Bool_t AliRsnListOutput::Fill(AliRsnEvent *ev, AliRsnDaughter *d)
       return kTRUE;
    } else if (obj->InheritsFrom(THnSparse::Class())) {
       THnSparseF *h = (THnSparseF *)obj;
-      for (Int_t iAxis = 0; iAxis<h->GetNdimensions(); iAxis++) {
-         if (values[iAxis]>h->GetAxis(iAxis)->GetXmax() || values[iAxis]<h->GetAxis(iAxis)->GetXmin()) return kFALSE;
+      if (fCheckHistRange) {
+         for (Int_t iAxis = 0; iAxis<h->GetNdimensions(); iAxis++) {
+            if (values[iAxis]>h->GetAxis(iAxis)->GetXmax() || values[iAxis]<h->GetAxis(iAxis)->GetXmin()) return kFALSE;
+         }
       }
       h->Fill(values);
       return kTRUE;

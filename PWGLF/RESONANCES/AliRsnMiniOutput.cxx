@@ -44,7 +44,8 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
    fPair(),
    fList(0x0),
    fSel1(0),
-   fSel2(0)
+   fSel2(0),
+   fCheckHistRange(kTRUE)
 {
 //
 // Constructor
@@ -69,7 +70,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
    fPair(),
    fList(0x0),
    fSel1(0),
-   fSel2(0)
+   fSel2(0),
+   fCheckHistRange(kTRUE)
 {
 //
 // Constructor
@@ -94,7 +96,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    fPair(),
    fList(0x0),
    fSel1(0),
-   fSel2(0)
+   fSel2(0),
+   fCheckHistRange(kTRUE)
 {
 //
 // Constructor, with a more user friendly implementation, where
@@ -165,7 +168,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    fPair(),
    fList(copy.fList),
    fSel1(0),
-   fSel2(0)
+   fSel2(0),
+   fCheckHistRange(copy.fCheckHistRange)
 {
 //
 // Copy constructor
@@ -206,6 +210,7 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
 
    fSel1.Set(0);
    fSel2.Set(0);
+   fCheckHistRange = copy.fCheckHistRange;
 
    return (*this);
 }
@@ -566,7 +571,13 @@ void AliRsnMiniOutput::FillHistogram()
    } else if (obj->InheritsFrom(TH3F::Class())) {
       ((TH3F *)obj)->Fill(fComputed[0], fComputed[1], fComputed[2]);
    } else if (obj->InheritsFrom(THnSparseF::Class())) {
-      ((THnSparseF *)obj)->Fill(fComputed.GetArray());
+      THnSparseF *h = (THnSparseF *)obj;
+      if (fCheckHistRange) {
+         for (Int_t iAxis = 0; iAxis<h->GetNdimensions(); iAxis++) {
+            if (fComputed.At(iAxis)>h->GetAxis(iAxis)->GetXmax() || fComputed.At(iAxis)<h->GetAxis(iAxis)->GetXmin()) return;
+         }
+      }
+      h->Fill(fComputed.GetArray());
    } else {
       AliError("No output initialized");
    }

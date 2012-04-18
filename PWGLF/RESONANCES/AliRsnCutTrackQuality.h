@@ -48,14 +48,14 @@ public:
    void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
    void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
    void      SetMaxChi2TPCConstrainedGlobal(Float_t max) {fCutMaxChi2TPCConstrainedVsGlobal = max; }
-  
+
    void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
 
    void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
 
    void      SetDefaults2010();
-   void      SetESDtrackCuts(AliESDtrackCuts* esdTrackCuts){fESDtrackCuts = esdTrackCuts;}
-   AliESDtrackCuts*  GetESDtrackCuts(){return fESDtrackCuts;}
+   void      SetESDtrackCuts(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;}
+   AliESDtrackCuts  *GetESDtrackCuts() {return fESDtrackCuts;}
 
 
    virtual Bool_t IsSelected(TObject *obj);

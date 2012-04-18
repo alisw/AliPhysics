@@ -75,7 +75,7 @@ inline void AliRsnCutV0::SetHypothesis(Int_t code)
    switch (fHypothesis) {
       case kLambda0:
          fMass = 1.11568;
-	 break;
+         break;
       case kLambda0Bar:
          fMass = 1.11568;
          break;

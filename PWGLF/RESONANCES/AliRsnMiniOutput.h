@@ -72,6 +72,7 @@ public:
    Int_t           GetCharge(Int_t i)   const {if (i <= 0) return fCharge[0]; else return fCharge[1];}
    Int_t           GetMotherPDG()       const {return fMotherPDG;}
    Double_t        GetMotherMass()      const {return fMotherMass;}
+   Bool_t          GetFillHistogramOnlyInRange() { return fCheckHistRange; }
 
    void            SetOutputType(EOutputType type)    {fOutputType = type;}
    void            SetComputation(EComputation src)   {fComputation = src;}
@@ -81,6 +82,7 @@ public:
    void            SetMotherPDG(Int_t pdg)            {fMotherPDG = pdg;}
    void            SetMotherMass(Double_t mass)       {fMotherMass = mass;}
    void            SetPairCuts(AliRsnCutSet *set)     {fPairCuts = set;}
+   void            SetFillHistogramOnlyInRange(Bool_t fillInRangeOnly) { fCheckHistRange = fillInRangeOnly; }
 
    void            AddAxis(Int_t id, Int_t nbins, Double_t min, Double_t max);
    void            AddAxis(Int_t id, Double_t min, Double_t max, Double_t step);
@@ -118,7 +120,9 @@ private:
    TArrayI          fSel1;             //! list of selected particles for definition 1
    TArrayI          fSel2;             //! list of selected particles for definition 2
 
-   ClassDef(AliRsnMiniOutput,1)  // AliRsnMiniOutput class
+   Bool_t           fCheckHistRange;   //  check if values is in histogram range
+
+   ClassDef(AliRsnMiniOutput,2)  // AliRsnMiniOutput class
 };
 
 #endif
