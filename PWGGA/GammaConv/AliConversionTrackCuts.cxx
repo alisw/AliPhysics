@@ -178,6 +178,8 @@ void AliConversionTrackCuts::FillHistograms(Int_t cutIndex, AliVTrack * track, B
 Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track) {
   //Check aod track
 
+
+
   fhdcaxyPt->Fill(track->Pt(), TMath::Sqrt(track->XAtDCA()*track->XAtDCA() + track->YAtDCA()*track->YAtDCA()));
   fhdcazPt->Fill(track->Pt(), TMath::Abs(track->ZAtDCA())); 
   
@@ -187,49 +189,54 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track) {
   
   FillHistograms(kPreCut, track);
 
-  if (track->GetTPCNcls() < fTPCminNClusters) return kFALSE;
-  FillHistograms(kCutNcls, track);
+  if(! track->TestFilterBit(128)) return kFALSE;
 
-  Double_t foundclusters = 0.0001;
-  if(track->GetTPCNclsF() > 0) foundclusters = ( (Double_t) track->GetTPCNcls() )/track->GetTPCNclsF();
-  if (foundclusters < fTPCClusOverFindable) return kFALSE;
-  FillHistograms(kCutNclsFrac, track);
-
-  if (track->Chi2perNDF() > fTPCmaxChi2) return kFALSE;
-  FillHistograms(kCutNDF, track);
-
-  AliAODVertex *vertex = track->GetProdVertex();
-  if (vertex && fRejectKinkDaughters) {
-	if (vertex->GetType() == AliAODVertex::kKink) {
-	  return kFALSE;
-	}
-  }
-  FillHistograms(kCutKinc, track);
-
-  if(TMath::Abs(track->ZAtDCA()) > fDCAZmax) {
-	return kFALSE;
-  }
-  FillHistograms(kCutDCAZ, track);
-
-
-  Float_t xatdca = track->XAtDCA();
-  Float_t yatdca = track->YAtDCA();
-  Float_t xy = xatdca*xatdca + yatdca*yatdca;
-  if(xy > fDCAXYmax) {
-	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
-	return kFALSE;
-  }
-  FillHistograms(kCutDCAXY, track);
-
-  ULong_t status = track->GetStatus();
-  if (fRequireTPCRefit && (status&AliESDtrack::kTPCrefit) == 0) {
-	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
-	return kFALSE;
-  }
-  FillHistograms(kCutTPCRefit, track);
   
-  FillHistograms(kNCuts, track, kTRUE);
-  return kTRUE;
+
+
+//   if (track->GetTPCNcls() < fTPCminNClusters) return kFALSE;
+//   FillHistograms(kCutNcls, track);
+
+//   Double_t foundclusters = 0.0001;
+//   if(track->GetTPCNclsF() > 0) foundclusters = ( (Double_t) track->GetTPCNcls() )/track->GetTPCNclsF();
+//   if (foundclusters < fTPCClusOverFindable) return kFALSE;
+//   FillHistograms(kCutNclsFrac, track);
+
+//   if (track->Chi2perNDF() > fTPCmaxChi2) return kFALSE;
+//   FillHistograms(kCutNDF, track);
+
+//   AliAODVertex *vertex = track->GetProdVertex();
+//   if (vertex && fRejectKinkDaughters) {
+// 	if (vertex->GetType() == AliAODVertex::kKink) {
+// 	  return kFALSE;
+// 	}
+//   }
+//   FillHistograms(kCutKinc, track);
+
+//   if(TMath::Abs(track->ZAtDCA()) > fDCAZmax) {
+// 	return kFALSE;
+//   }
+//   FillHistograms(kCutDCAZ, track);
+
+
+//   Float_t xatdca = track->XAtDCA();
+//   Float_t yatdca = track->YAtDCA();
+//   Float_t xy = xatdca*xatdca + yatdca*yatdca;
+//   if(xy > fDCAXYmax) {
+// 	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
+// 	return kFALSE;
+//   }
+//   FillHistograms(kCutDCAXY, track);
+
+//   ULong_t status = track->GetStatus();
+//   if (fRequireTPCRefit && (status&AliESDtrack::kTPCrefit) == 0) {
+// 	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
+// 	return kFALSE;
+//   }
+//   FillHistograms(kCutTPCRefit, track);
+  
+   FillHistograms(kNCuts, track, kTRUE);
+   return kTRUE;
 }
 
 // void AliConversionTrackCuts::SetUpAxes() {
