@@ -123,7 +123,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
   if(fRecAnalysis->DataSet()==20100){
@@ -175,21 +175,21 @@ Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the ph
 //if(res == 0 && cent){
 //if(cent){
   
+//cout<<"I am here "<<__LINE__<<" "<<__FILE__<<endl;
+
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
-  if(!fIsSim){
-    fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
-  }
-  else{
+  fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
+  if(fIsSim){
     AliMCEvent* mcEvent = MCEvent();
     if(!mcEvent){  
       AliFatal("ERROR: MC Event does not exist");
       return;
     }
-    eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(mcEvent->Header());
+    if(fRecAnalysis->DataSet()!=20100) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(mcEvent->Header());
     if (fESDEvent){
       ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
 
-    if(AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND || fRecAnalysis->DataSet()==20100){//either non-diffractive or Pb+Pb
+    if( fRecAnalysis->DataSet()==20100 || AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){//either non-diffractive or Pb+Pb
       if(fMCAnalysis->Full()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceITS( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITS() );
