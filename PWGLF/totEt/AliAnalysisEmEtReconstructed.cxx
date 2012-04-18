@@ -47,7 +47,7 @@ AliAnalysisEmEtReconstructed::AliAnalysisEmEtReconstructed():AliAnalysisEtRecons
 							    ,fTotalRectotETDep(0)
 
 							    ,fESD(0)
-							    ,fGeoUt(0)
+// 							    ,fGeoUt(0)
 
 							    ,fHistAllRecETDep(0) 
 							    ,fHistAllRec(0) 
@@ -101,7 +101,7 @@ AliAnalysisEmEtReconstructed::AliAnalysisEmEtReconstructed():AliAnalysisEtRecons
 // dtor
 AliAnalysisEmEtReconstructed::~AliAnalysisEmEtReconstructed() 
 {//Destructor 
-  delete fGeoUt;
+//   delete fGeoUt;
 
   delete fHistAllRecETDep;
   delete fHistAllRec;
@@ -159,23 +159,23 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	
   fESD = dynamic_cast<AliESDEvent*>(ev);
 
-  if(!fGeoUt){
-    fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
-    //fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
-    AliInfo("Creating new AliEMCALGeometry");
-  }
-  //fGeoUt = new AliEMCALGeometry("EMCAL_COMPLETE1","EMCAL");
-  if(!fGeoUt){
-    AliInfo("No fGeoUt!");
-  }
-  else{
-    if(!fESD->GetEMCALMatrix(0)){
-      AliInfo("No matrix!");
-    }
-    else{
-      fGeoUt->SetMisalMatrix(fESD->GetEMCALMatrix(0),0);
-    }
-  }
+//   if(!fGeoUt){
+//     fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
+//     //fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+//     AliInfo("Creating new AliEMCALGeometry");
+//   }
+//   //fGeoUt = new AliEMCALGeometry("EMCAL_COMPLETE1","EMCAL");
+//   if(!fGeoUt){
+//     AliInfo("No fGeoUt!");
+//   }
+//   else{
+//     if(!fESD->GetEMCALMatrix(0)){
+//       AliInfo("No matrix!");
+//     }
+//     else{
+//       fGeoUt->SetMisalMatrix(fESD->GetEMCALMatrix(0),0);
+//     }
+//   }
 	
   ResetEventValues();
 	
@@ -527,103 +527,6 @@ void AliAnalysisEmEtReconstructed::FillOutputList(TList *list)
   list->Add(fHistTotalRectotETDep); 
 	
   list->Add(fHistDeltaRZ);
-}
-
-//________________________________________________________________________
-//project to a EMCal radius
-Bool_t AliAnalysisEmEtReconstructed::GetTrackProjection(AliExternalTrackParam *trackParam, TVector3 &trackPos)
-{//Gets the projection of the track
-  Bool_t proj = kFALSE;
-  Double_t emcalR = fGeoUt->GetEMCGeometry()->GetIPDistance();
-	
-  if (trackParam) //it is constructed from TParticle
-    {
-      Double_t trkPos[3] = {0};
-		
-      //Assume the track is a pion with mass 0.139GeV/c^2
-      //Extrapolation step is 1cm
-      if(!AliTrackerBase::PropagateTrackToBxByBz(trackParam, emcalR, 0.139, 1, kTRUE, 0.8) ) return proj;
-		
-      trackParam->GetXYZ(trkPos);
-		
-      trackPos.SetXYZ(trkPos[0],trkPos[1],trkPos[2]);
-		
-      proj = kTRUE;               
-    }
-	
-  return proj;
-}
-
-//________________________________________________________________________
-//project to a cluster position
-Bool_t AliAnalysisEmEtReconstructed::GetTrackProjection(AliEMCALTrack* emcTrack, TVector3 &trackPos, TVector3 clusPos)
-{//project to a cluster position
-  Bool_t proj = kFALSE;
-	
-  if (emcTrack)
-    {	
-      Double_t trkPos[3] = {0};
-		
-      emcTrack->PropagateToGlobal(clusPos.X(),clusPos.Y(),clusPos.Z(),0.,0.);
-      emcTrack->GetXYZ(trkPos);
-		
-      trackPos.SetXYZ(trkPos[0],trkPos[1],trkPos[2]);
-		
-      proj = kTRUE;
-    }
-	
-  return proj;
-}
-
-//________________________________________________________________________	
-AliESDtrack* AliAnalysisEmEtReconstructed::FindMatch(const AliESDCaloCluster *caloCluster, Double_t& resMin)
-{//find a matched track
-  Double_t res=0;
-  resMin=999;
-	
-  TVector3 caloPos(0,0,0);
-  Float_t pos[3] = {0};
-  caloCluster->GetPosition(pos);		
-  caloPos.SetXYZ(pos[0],pos[1],pos[2]);
-	
-  // loop over tracks
-  TVector3 trackPos(0,0,0);
-  TVector3 trackMatchPos(0,0,0);
-  AliEMCALTrack *emcTrack = 0;	
-  AliESDtrack *trackMatch = 0;	
-	
-  TObjArray* list = fEsdtrackCutsITSTPC->GetAcceptedTracks(fESD);;
-  Int_t nGoodTracks = list->GetEntries();
-	
-  for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++) 
-    {
-      AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
-      if (!track)
-        {
-	  AliError(Form("ERROR: Could not get track %d", iTrack));
-	  continue;
-        }
-		
-      emcTrack = new AliEMCALTrack(*track);
-		
-      if (GetTrackProjection(emcTrack,trackPos,caloPos))
-	{
-	  res = sqrt(pow(trackPos.Phi()-caloPos.Phi(),2)+pow(trackPos.Eta()-caloPos.Eta(),2));
-			
-	  if (res < resMin)
-	    {
-	      resMin = res;
-	      trackMatch = track;
-	      trackMatchPos.SetXYZ(trackPos.X(),trackPos.Y(),trackPos.Z());
-	    }
-	}
-		
-      delete emcTrack;
-    }		
-	
-  fHistDeltaRZ->Fill(trackMatchPos.Phi()-caloPos.Phi(),trackMatchPos.Eta()-caloPos.Eta());
-
-  return trackMatch;
 }
 
 //________________________________________________________________________	

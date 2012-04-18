@@ -36,11 +36,8 @@ public:
 
 protected:
 	
-	AliESDtrack* FindMatch(const AliESDCaloCluster *caloCluster, Double_t& Res);
 	Double_t GetTrackPID(const AliESDtrack *track) const;
 	
-	virtual Bool_t GetTrackProjection(AliExternalTrackParam *trackParam, TVector3 &trackPos); // project to a radius
-	virtual Bool_t GetTrackProjection(AliEMCALTrack* emcTrack, TVector3 &trackPos, TVector3 clusPos); // project to a point
 
 protected:
 
@@ -55,7 +52,7 @@ protected:
 	Double_t fTotalRectotETDep;// total ET deposited
 	
 	AliESDEvent *fESD;// ESD object
-  	AliEMCALGeometry *fGeoUt;// EMCal geometry object
+/*   	AliEMCALGeometry *fGeoUt;// EMCal geometry object */
 
 	// *******************
 	// all ET
