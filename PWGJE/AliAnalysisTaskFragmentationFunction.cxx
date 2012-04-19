@@ -2837,7 +2837,6 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 	Int_t    nBinsResponseJetZ[3]     = {fFFNBinsJetPt, binsZ, binsZ};
 	Double_t binMinResponseJetZ[3]    = {fFFJetPtMin,   zMin,  zMin};
 	Double_t binMaxResponseJetZ[3]    = {fFFJetPtMax,   zMax,  zMax};
-	//	const char* labelsResponseJetZ[3] = { "jet p_{T} [GeV/c]","rec z","gen z"};
 	
 	fhnResponseJetZ  = new THnSparseF("fhnResponseJetZ","jet pt:rec z rec:gen z",3,
 					  nBinsResponseJetZ,binMinResponseJetZ,binMaxResponseJetZ);
@@ -5179,7 +5178,11 @@ void  AliAnalysisTaskFragmentationFunction::FillJetTrackHistosRecGen(TObject* hi
   Int_t nTracksJet = jetTrackList->GetSize(); // list with AODMC tracks
 
   if(!nTracksJet) return; 
-
+  if(jetPtGen<1e-03){ // check for 0 
+    if(fDebug>0) Printf("%s:%d gen jet pt 0 - return ",(char*)__FILE__,__LINE__);
+    return; 
+  }
+  
   Bool_t incrementJetPtGenFF = kTRUE; // needed in case we fill FFHistos
   Bool_t incrementJetPtRecFF = kTRUE; // needed in case we fill FFHistos
 
