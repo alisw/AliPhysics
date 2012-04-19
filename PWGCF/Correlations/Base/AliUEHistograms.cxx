@@ -61,6 +61,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
+  fOnlyOneEtaSide(0),
   fRunNumber(0)
 {
   // Constructor
@@ -108,7 +109,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   else
   {
     fCorrelationpT  = new TH2F("fCorrelationpT", ";Centrality;p_{T} (RECO)", 100, 0, 100.001, 200, 0, 50);
-    fCorrelationEta = new TH2F("fCorrelationEta", ";Centrality;#eta (RECO)", 100, 0, 100.001, 200, -1, 1);
+    fCorrelationEta = new TH2F("fCorrelationEta", ";Centrality;#eta (RECO)", 100, 0, 100.001, 200, -5, 5);
     fCorrelationPhi = new TH2F("fCorrelationPhi", ";Centrality;#varphi (RECO)", 100, 0, 100.001, 200, 0, TMath::TwoPi());
   }
   
@@ -169,6 +170,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
+  fOnlyOneEtaSide(0),
   fRunNumber(0)
 {
   //
@@ -468,7 +470,16 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
       
       // some optimization
       Float_t triggerEta = triggerParticle->Eta();
-        
+      
+      if (fTriggerRestrictEta > 0 && TMath::Abs(triggerEta) > fTriggerRestrictEta)
+	continue;
+
+      if (fOnlyOneEtaSide != 0)
+      {
+	if (fOnlyOneEtaSide * triggerEta < 0)
+	  continue;
+      }
+
       if (!mixed)
       {
         // QA
@@ -479,9 +490,6 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
       }
         
-      if (fTriggerRestrictEta > 0 && TMath::Abs(triggerEta) > fTriggerRestrictEta)
-	continue;
-      
       for (Int_t j=0; j<jMax; j++)
       {
         if (!mixed && i == j)
@@ -817,6 +825,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fEtaOrdering = fEtaOrdering;
   target.fCutConversions = fCutConversions;
   target.fCutResonances = fCutResonances;
+  target.fOnlyOneEtaSide = fOnlyOneEtaSide;
   target.fRunNumber = fRunNumber;
 }
 

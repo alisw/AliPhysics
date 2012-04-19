@@ -78,6 +78,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     // track cuts
     void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
+    void   SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
     
@@ -140,6 +141,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     // Track cuts
     Double_t      	fTrackEtaCut;          // Eta cut on particles
+    Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
     UInt_t         	fFilterBit;            // Select tracks from an specific track cut (default 0xFF all track selected)
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
@@ -155,7 +157,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 8); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 9); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

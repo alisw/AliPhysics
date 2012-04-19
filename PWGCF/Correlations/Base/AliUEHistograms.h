@@ -74,6 +74,7 @@ class AliUEHistograms : public TNamed
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
   void SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
+  void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
   
   void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   void Reset();
@@ -121,10 +122,11 @@ protected:
   Bool_t fEtaOrdering;           // activate eta ordering to prevent shape distortions. see FillCorrelation for the details
   Bool_t fCutConversions;        // cut on conversions (inv mass)
   Bool_t fCutResonances;         // cut on resonances (inv mass)
+  Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 13)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 14)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
