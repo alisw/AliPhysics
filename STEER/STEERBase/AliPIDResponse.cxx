@@ -869,7 +869,7 @@ void AliPIDResponse::SetEMCALPidResponseMaster()
     if(fEMCALPIDParamsPass) fEMCALPIDParams     = dynamic_cast<TObjArray *>(fEMCALPIDParamsPass->FindObject(Form("EMCALPIDParams_Particles")));
 
     if(!fEMCALPIDParams){
-      AliError(Form("EMCAL Params not found in run %d pass %d", fRun, fRecoPass));
+      AliInfo(Form("EMCAL Params not found in run %d pass %d", fRun, fRecoPass));
       AliInfo("Will take the standard LHC11d instead ...");
 
       fEMCALPIDParamsRun = dynamic_cast<TObjArray *>(contParams.GetObject(156477));
