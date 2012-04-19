@@ -96,6 +96,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fCuts(0),
 	fUseWeight(kFALSE),
 	fWeight(1.),
+	fUseFlatPtWeight(kFALSE),
+	fUseZWeight(kFALSE),
 	fNvar(0),
 	fPartName(""),
 	fDauNames(""),
@@ -136,6 +138,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fCuts(cuts), 
 	fUseWeight(kFALSE),
 	fWeight(1.),
+	fUseFlatPtWeight(kFALSE),
+	fUseZWeight(kFALSE),
 	fNvar(0),
 	fPartName(""),
 	fDauNames(""),
@@ -203,6 +207,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fCuts(c.fCuts),
 	fUseWeight(c.fUseWeight),
 	fWeight(c.fWeight),
+	fUseFlatPtWeight(c.fUseFlatPtWeight),
+	fUseZWeight(c.fUseZWeight),
 	fNvar(c.fNvar),
 	fPartName(c.fPartName),
 	fDauNames(c.fDauNames),
@@ -242,6 +248,7 @@ void AliCFTaskVertexingHF::Init()
 	//
 	
 	if (fDebug>1) printf("AliCFTaskVertexingHF::Init()");
+	if(fUseWeight && fUseZWeight) { AliFatal("Can not use at the same time pt and z-vtx weights, please choose"); return; }
 	AliRDHFCuts *copyfCuts = 0x0;
 	if (!fCuts){
 		AliFatal("No cuts defined - Exiting...");
@@ -515,6 +522,9 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	
 	Double_t zPrimVertex = aodVtx ->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
+	Int_t runnumber = aodEvent->GetRunNumber();
+	if(fUseZWeight) fWeight = GetZWeight(zMCVertex,runnumber);
+
 	if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
 	  AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
 	  delete[] containerInput;
@@ -1092,6 +1102,7 @@ Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
 	Double_t func2[4] = {0.36609,1.94635,1.40463,2.5};
 
 	Double_t dndpt_func1 = dNdptFit(pt,func1);
+	if(fUseFlatPtWeight) dndpt_func1 = 1./30.;
 	Double_t dndpt_func2 = dNdptFit(pt,func2);
 	AliDebug(2,Form("pt = %f, FONLL = %f, Pythia = %f, ratio = %f",pt,dndpt_func1,dndpt_func2,dndpt_func1/dndpt_func2));
 	return dndpt_func1/dndpt_func2;
@@ -1110,6 +1121,35 @@ Double_t AliCFTaskVertexingHF::dNdptFit(Float_t pt, Double_t* par)
 	return dNdpt;
 }
 
+//__________________________________________________________________________________________________
+Double_t AliCFTaskVertexingHF::GetZWeight(Float_t z, Int_t runnumber){
+  //
+  //  calculating the z-vtx weight for the given run range
+  //
+  
+  if(runnumber>146824 || runnumber<146803) return 1.0;
+
+  Double_t func1[3] = {1.0, -0.5, 6.5 };
+  Double_t func2[3] = {1.0, -0.5, 5.5 };
+
+  Double_t dzFunc1 = DodzFit(z,func1);
+  Double_t dzFunc2 = DodzFit(z,func2);
+
+  return dzFunc1/dzFunc2;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliCFTaskVertexingHF::DodzFit(Float_t z, Double_t* par) {
+
+  //
+  // Gaussian z-vtx shape 
+  //
+  //gaussian = [0]/TMath::Sqrt(2.*TMath::Pi())/[2]*exp[-(x-[1])*(x-[1])/(2*[2]*[2])]
+
+  Double_t value =  par[0]/TMath::Sqrt(2.*TMath::Pi())/par[2]*TMath::Exp(-(z-par[1])*(z-par[1])/2./par[2]/par[2]);
+
+  return value;
+}
 
 //__________________________________________________________________________________________________
 Bool_t AliCFTaskVertexingHF::ProcessDs(Int_t recoAnalysisCuts) const{
