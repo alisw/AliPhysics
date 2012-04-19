@@ -97,6 +97,13 @@ public:
 	Bool_t   GetUseWeight() const {return fUseWeight;}
 	Double_t GetWeight(Float_t pt);
 	Double_t dNdptFit(Float_t pt, Double_t* par);
+
+	void SetUseFlatPtWeight(Bool_t useWeight){fUseFlatPtWeight=useWeight; fUseWeight=useWeight;}
+	Bool_t GetUseFlatPtWeight() const {return fUseFlatPtWeight;}
+	void SetUseZWeight(Bool_t useWeight){fUseZWeight=useWeight;}
+	Bool_t GetUseZWeight() const {return fUseZWeight;}
+	Double_t GetZWeight(Float_t z, Int_t runnumber);
+	Double_t DodzFit(Float_t z, Double_t* par);
  	
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	UShort_t GetDselection (){return fOriginDselection;}
@@ -152,8 +159,10 @@ protected:
 	UShort_t fOriginDselection;      // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty
 	Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
 	AliRDHFCuts* fCuts;            // cuts
-	Bool_t fUseWeight;             //flag to decide whether to use weights != 1 when filling the container or not
+	Bool_t fUseWeight;             //flag to decide whether to use pt-weights != 1 when filling the container or not
 	Double_t fWeight;              //weight used to fill the container
+	Bool_t fUseFlatPtWeight;       // flag to decide to use a flat pt shape
+	Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
 	Int_t fNvar;                   // number of variables for the container
 	TString fPartName;    // D meson name
 	TString fDauNames;    // daughter in fin state
@@ -167,7 +176,7 @@ protected:
 	Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 	TF1* fFuncWeight;     // user-defined function to be used to calculate weights
 
-	ClassDef(AliCFTaskVertexingHF,10); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,11); // class for HF corrections as a function of many variables
 };
 
 #endif
