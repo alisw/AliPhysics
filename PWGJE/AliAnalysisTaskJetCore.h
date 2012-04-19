@@ -169,20 +169,68 @@ private:
      TH2F*      fh2AngStructpt2C60;         //C60 pt2
      TH2F*      fh2AngStructpt3C60;         //C60 pt3
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
-     TH2F*      fh2JetsumHT3R2;             //jet shape 02
-     TH2F*      fh2JetsumHT3R2gap;             //jet shape 02
-
-     TH2F*      fh2JetsumHT3R4;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4gap;             //jet shape 02
-
-     TH2F*      fh2JetsumHT3R6;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6gap;             //jet shape 02
-
-     TH2F*      fh2JetsumHT3R8;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8gap;             //jet shape 02
-
-     TH2F*      fh2JetsumHT3R10;             //jet shape 12
-     TH2F*      fh2JetsumHT3R10gap;             //jet shape 12
+  
+     TH2F*      fh2JetsumHT3R2a;             //jet shape 02
+     TH2F*      fh2JetsumHT3R2ap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4a;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4ap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6a;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6ap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8a;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8ap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R10a;             //jet shape 12
+     TH2F*      fh2JetsumHT3R10ap;             //jet shape 12
+     TH2F*      fh2JetsumHT3R2aa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R2aap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4aa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4aap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6aa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6aap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8aa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8aap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R10aa;             //jet shape 12
+     TH2F*      fh2JetsumHT3R10aap;             //jet shape 12
+     TH2F*      fh2JetsumHT3R2aaa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R2aaap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4aaa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4aaap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6aaa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6aaap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8aaa;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8aaap;             //jet shape 02
+     TH2F*      fh2JetsumHT3R10aaa;             //jet shape 12
+     TH2F*      fh2JetsumHT3R10aaap;             //jet shape 12
+     TH2F*      fh2JetsumHT3R2b;             //jet shape 02
+     TH2F*      fh2JetsumHT3R2bp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4b;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4bp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6b;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6bp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8b;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8bp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R10b;             //jet shape 12
+     TH2F*      fh2JetsumHT3R10bp;             //jet shape 12
+     TH2F*      fh2JetsumHT3R2bb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R2bbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4bb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4bbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6bb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6bbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8bb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8bbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R10bb;             //jet shape 12
+     TH2F*      fh2JetsumHT3R10bbp;             //jet shape 12
+     TH2F*      fh2JetsumHT3R2bbb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R2bbbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4bbb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R4bbbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6bbb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R6bbbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8bbb;             //jet shape 02
+     TH2F*      fh2JetsumHT3R8bbbp;             //jet shape 02
+     TH2F*      fh2JetsumHT3R10bbb;             //jet shape 12
+     TH2F*      fh2JetsumHT3R10bbbp;             //jet shape 12
+    
 
 
      TH3F*      fh3spectriggered;           //triggered spectra

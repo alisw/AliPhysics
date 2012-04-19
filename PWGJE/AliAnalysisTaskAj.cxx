@@ -479,11 +479,11 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
    else     centValue=aod->GetHeader()->GetCentrality();
    
    if(fDebug) printf("centrality: %f\n", centValue);
-   if (centValue < fCentMin || centValue > fCentMax){
-      fHistEvtSelection->Fill(4);
-      PostData(1, fOutputList);
-      return;
-   }
+   //  if (centValue < fCentMin || centValue > fCentMax){
+   //  fHistEvtSelection->Fill(4);
+   //  PostData(1, fOutputList);
+   //  return;
+   // }
   
 
    fHistEvtSelection->Fill(0); 
@@ -566,8 +566,8 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
 	   if(ptcorrj>ptmax){ptmax=ptcorrj;
 	                     selec=i;}}
    ///hardest jet selected
-      if(selec<0){PostData(1, fOutputList);
-			  return;} 
+    if(selec<0){PostData(1, fOutputList);
+	       return;} 
     AliAODJet* jet1 = (AliAODJet*)(fListJets[0]->At(selec));
     //What is the hardest constituent track?
                        AliAODTrack* leadtrack1; 
@@ -777,14 +777,13 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
 	  Float_t ppjY = pPerp.Dot(ppJ3);
        	  TVector2 vr(ppjX, ppjY) ;
           //and this is the angle between the particle and the TM axis. 
-	  //	  Float_t phistr = evec.DeltaPhi(vr);
+	  Float_t phistr = evec.DeltaPhi(vr);
 
-          Double_t phistr=vr.Phi()-evec.Phi();
+          //Double_t phistr=vr.Phi()-evec.Phi();
 
 	  if(centValue<10.) fh3LocalCoordinates->Fill(ppjX,ppjY,ptcorr2); 
           Double_t deltaEta = eta2-track->Eta();
-          if(phistr<-0.5*TMath::Pi()) phistr+=2.*TMath::Pi();
-          if(phistr>3./2.*TMath::Pi()) phistr-=2.*TMath::Pi();
+         
 
           if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
           if(deltaPhi>3./2.*TMath::Pi()) deltaPhi-=2.*TMath::Pi();
@@ -1104,8 +1103,8 @@ void AliAnalysisTaskAj::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins,
       case 7:
       label = "deltaPhiTM";
       nbins = 60;
-      xmin = -0.5*pi;
-      xmax = 1.5*pi;
+      xmin = 0.;
+      xmax = 1.3*pi;
       break;   
 
      
