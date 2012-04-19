@@ -108,6 +108,7 @@ fZVertex(7.),
 fCentralityMethod("V0M"),
 // track cuts
 fTrackEtaCut(0.8),
+fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fFilterBit(0xFF),
 fSelectBit(0),
@@ -217,6 +218,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetTriggerRestrictEta(fTriggerRestrictEta);
   fHistosMixed->SetTriggerRestrictEta(fTriggerRestrictEta);
   
+  fHistos->SetOnlyOneEtaSide(fOnlyOneEtaSide);
+  fHistosMixed->SetOnlyOneEtaSide(fOnlyOneEtaSide);
+  
   fHistos->SetEtaOrdering(fEtaOrdering);
   fHistosMixed->SetEtaOrdering(fEtaOrdering);
 
@@ -301,6 +305,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fZVertex", &fZVertex,"ZVertex/D");
   //settingsTree->Branch("fCentralityMethod", fCentralityMethod.Data(),"CentralityMethod/C");
   settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
+  settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
