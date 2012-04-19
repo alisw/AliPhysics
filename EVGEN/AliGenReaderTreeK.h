@@ -29,7 +29,8 @@ class AliGenReaderTreeK : public AliGenReader
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
     virtual void RewindEvent();
-    virtual void SetOnlyPrimaries(Bool_t flag){fOnlyPrimaries = flag;}
+    virtual void SetFirstEvent(Int_t evt)    {fNcurrent  = evt;};
+    virtual void SetOnlyPrimaries(Bool_t flag) {fOnlyPrimaries = flag;}
     AliGenReaderTreeK & operator=(const AliGenReaderTreeK & rhs);
     void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
     void AddDir(const char* dirname);
