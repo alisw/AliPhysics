@@ -75,13 +75,18 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb():
     fhZNvsVZERO(0x0),    
     fhZDCvsVZERO(0x0),
     fhZDCvsTracklets(0x0),   
+    fhZDCvsNclu1(0x0),
     fhVZEROvsZEM(0x0),   
     fhDebunch(0x0),      
     fhZNCcentroid(0x0),  
     fhZNAcentroid(0x0),
     fhAsymm(0x0),
     fhZNAvsAsymm(0x0),
-    fhZNCvsAsymm(0x0)
+    fhZNCvsAsymm(0x0),
+    fhZNCvscentrality(0x0),
+    fhZNAvscentrality(0x0),
+    fhZPCvscentrality(0x0),
+    fhZPAvscentrality(0x0)
     
 {   
    // Default constructor
@@ -120,13 +125,19 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const char *name):
     fhZNvsVZERO(0x0),    
     fhZDCvsVZERO(0x0),
     fhZDCvsTracklets(0x0),   
+    fhZDCvsNclu1(0x0),
     fhVZEROvsZEM(0x0),   
     fhDebunch(0x0),      
     fhZNCcentroid(0x0),  
     fhZNAcentroid(0x0),
     fhAsymm(0x0),
     fhZNAvsAsymm(0x0),
-    fhZNCvsAsymm(0x0)
+    fhZNCvsAsymm(0x0),
+    fhZNCvscentrality(0x0),
+    fhZNAvscentrality(0x0),
+    fhZPCvscentrality(0x0),
+    fhZPAvscentrality(0x0)
+
 {
 
    for(int i=0; i<5; i++){
@@ -176,14 +187,20 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana
     fhZDCvsZEM(ana.fhZDCvsZEM),     
     fhZNvsVZERO(ana.fhZNvsVZERO),    
     fhZDCvsVZERO(ana.fhZDCvsVZERO),
-    fhZDCvsTracklets(ana.fhZDCvsTracklets),   
+    fhZDCvsTracklets(ana.fhZDCvsTracklets), 
+    fhZDCvsNclu1(ana.fhZDCvsNclu1),  
     fhVZEROvsZEM(ana.fhVZEROvsZEM),   
     fhDebunch(ana.fhDebunch),      
     fhZNCcentroid(ana.fhZNCcentroid),  
     fhZNAcentroid(ana.fhZNAcentroid),
     fhAsymm(ana.fhAsymm),
     fhZNAvsAsymm(ana.fhZNAvsAsymm),
-    fhZNCvsAsymm(ana.fhZNCvsAsymm)
+    fhZNCvsAsymm(ana.fhZNCvsAsymm),
+    fhZNCvscentrality(ana.fhZNCvscentrality),
+    fhZNAvscentrality(ana.fhZNAvscentrality),
+    fhZPCvscentrality(ana.fhZPCvscentrality),
+    fhZPAvscentrality(ana.fhZPAvscentrality)
+
 {
   //
   // Copy Constructor	
@@ -321,6 +338,8 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fOutput->Add(fhZDCvsVZERO);
   fhZDCvsTracklets = new TH2F("hZDCvsTracklets","hZDCvsTracklets",100,0.,5000.,100,0.,250000.);
   fOutput->Add(fhZDCvsTracklets);
+  fhZDCvsNclu1 = new TH2F("hZDCvsNclu1", "hZDCvsNclu1", 100, 0.,4000.,100,0.,200000.);
+  fOutput->Add(fhZDCvsNclu1);
   fhVZEROvsZEM = new TH2F("hVZEROvsZEM","hVZEROvsZEM",250,0.,2500.,250,0.,25000.);	
   fOutput->Add(fhVZEROvsZEM);
   fhDebunch = new TH2F("hDebunch","hDebunch",240,-30.,30.,240,-30.,30.);	
@@ -336,6 +355,15 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fOutput->Add(fhZNAvsAsymm);
   fhZNCvsAsymm = new TH2F("hZNCvsAsymm","ZNC vs. asymm.",200,-1.,1.,200,0.,80.);
   fOutput->Add(fhZNCvsAsymm);
+  
+  fhZNCvscentrality = new TH2F("hZNCvscentrality","ZNC vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZNCvscentrality);
+  fhZNAvscentrality = new TH2F("hZNAvscentrality","ZNA vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZNAvscentrality);
+  fhZPCvscentrality = new TH2F("hZPCvscentrality","ZPC vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZPCvscentrality);
+  fhZPAvscentrality = new TH2F("hZPAvscentrality","ZPA vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZPAvscentrality);
   
   PostData(1, fOutput);
 }
@@ -391,9 +419,9 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
           
       const AliMultiplicity *mult = esd->GetMultiplicity();
       Int_t nTracklets = mult->GetNumberOfTracklets();
-      
       //for(Int_t ilay=0; ilay<6; ilay++) fNClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
-
+      Int_t nClusterslay1 = mult->GetNumberOfITSClusters(1);
+      
       AliESDVZERO *vzeroAOD = esd->GetVZEROData();
       Float_t multV0A = vzeroAOD->GetMTotV0A();
       Float_t multV0C = vzeroAOD->GetMTotV0C();
@@ -498,11 +526,18 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);	
 	fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);	
 	fhZDCvsTracklets->Fill((Float_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
+	fhZDCvsNclu1->Fill((Float_t) (nClusterslay1), energyZNA+energyZPA+energyZNC+energyZPC);
 	fhVZEROvsZEM->Fill(energyZEM1+energyZEM2, multV0A+multV0C);	
         
 	Double_t asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
         fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
         fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
+	
+	fhZNCvscentrality->Fill(centrperc, energyZNC/1000.);
+	fhZNAvscentrality->Fill(centrperc, energyZNA/1000.);
+	fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
+	fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
+	
       }
 //    } // PHYSICS SELECTION
       
@@ -610,6 +645,11 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       fhAsymm->Fill(asymmetry);
       fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
       fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
+
+      fhZNCvscentrality->Fill(centrperc, energyZNC/1000.);
+      fhZNAvscentrality->Fill(centrperc, energyZNA/1000.);
+      fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
+      fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
     //}
   }
   
