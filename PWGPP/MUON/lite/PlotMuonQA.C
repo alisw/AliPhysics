@@ -449,8 +449,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     for(k = 0; k < triggersB->GetEntriesFast(); k++){
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
-      //skip some triggers
-      if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
 
       canvasName = "PhysSel_trigger";
       canvasName += ( (TObjString*) triggersShortName->At(k) )->GetString();
@@ -480,8 +478,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     for(k = 0; k < triggersB->GetEntriesFast(); k++){
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
-      //skip some triggers
-      if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
  			
       canvasName = "CentralityCheck_trigger";
       canvasName +=( (TObjString*) triggersShortName->At(k) )->GetString();
@@ -521,8 +517,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     for(k = 0; k < triggersB->GetEntriesFast(); k++){
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
-      //skip some triggers
-      //if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
 
       ( (TDirectoryFile*) dirCent->At( k*centBinMaxLoop+centBin ) )->cd();
 
@@ -574,8 +568,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     for(k = 0; k < triggersB->GetEntriesFast(); k++){
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
-      //skip some triggers
-      //if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
 
       ( (TDirectoryFile*) dirCent->At( k*centBinMaxLoop+centBin ) )->cd();
  
@@ -602,8 +594,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   for(k = 0; k < triggersB->GetEntriesFast(); k++){
     //skip sum of all triggers
     if(k == (triggersB->GetEntriesFast()-1)) continue;
-    //skip some triggers
-    //if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
 
     ( (TDirectoryFile*) dirTrigger->At(k) )->cd();
  
@@ -636,8 +626,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     for(k = 0; k < triggersB->GetEntriesFast(); k++){
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
-      //skip some triggers
-      //if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
 	
       ( (TDirectoryFile*) dirCent->At( k*centBinMaxLoop+centBin ) )->cd();
 
