@@ -84,25 +84,23 @@ void alieve_init_import_macros()
   {
     char* filename;
     TPMERegexp re("\\.C$");
-    std::list<string> names; // This form understood by cint (fails with std::string).
+    TObjArray names;
     while ((filename = gSystem->GetDirEntry(dirhandle)) != 0)
     {
-      std::string sFilename(filename);
       if (re.Match(filename))
-	names.push_back(sFilename);
+	names.AddLast(new TObjString(filename));
     }
-    names.sort();
+    names.Sort();
 
-    for (std::list<string>::iterator si=names.begin(); si!=names.end(); ++si)
+    for (Int_t ii=0; ii<names.GetEntries(); ++ii)
     {
-      f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), si->c_str())));
+      TObjString * si = (TObjString*) names.At(ii);
+       f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), (si->GetString()).Data())));
     }
   }
   gSystem->FreeDirectory(dirhandle);
 
-  gROOT->GetListOfBrowsables()->Add
-    // (new TSystemDirectory("alice-macros", macdir.Data())); // !!!! this spits blood, but then works
-    (new TSystemDirectory(macdir.Data(), macdir.Data()));
+  gROOT->GetListOfBrowsables()->Add(new TSystemDirectory(macdir.Data(), macdir.Data()));
 
   {
     TEveBrowser   *br = gEve->GetBrowser();
