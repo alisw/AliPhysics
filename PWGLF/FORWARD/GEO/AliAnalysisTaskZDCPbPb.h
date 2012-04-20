@@ -74,6 +74,7 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH2F *fhZNvsVZERO;		//! ZN vs VZERO;
   TH2F *fhZDCvsVZERO;		//! ZDC vs VZERO;
   TH2F *fhZDCvsTracklets;	//! ZDC vs N_tracklets;
+  TH2F *fhZDCvsNclu1;		//! ZDC vs N_cluster layer 1;
   TH2F *fhVZEROvsZEM;		//! VZERO vs ZEM;
   TH2F *fhDebunch;		//! Debunch;
   TH2F *fhZNCcentroid;		//! ZNC centroid
@@ -83,8 +84,13 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH1F *fhAsymm;		//! ZN asymmetry
   TH2F *fhZNAvsAsymm;		//! ZNA vs asymmetry
   TH2F *fhZNCvsAsymm;		//! ZNC vs asymmetry
+  //
+  TH2F *fhZNCvscentrality;	//! ZNC vs. centrality
+  TH2F *fhZNAvscentrality;	//! ZNA vs. centrality
+  TH2F *fhZPCvscentrality;	//! ZPC vs. centrality
+  TH2F *fhZPAvscentrality;	//! ZPA vs. centrality
  
-  ClassDef(AliAnalysisTaskZDCPbPb,1); 
+  ClassDef(AliAnalysisTaskZDCPbPb,2); 
 
 };
 
