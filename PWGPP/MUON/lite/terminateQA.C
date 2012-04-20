@@ -86,13 +86,12 @@ AliAnalysisAlien* CreateAlienHandler()
   plugin->SetRunMode("terminate");
 
   // Declare all libraries
-  plugin->SetAdditionalLibs("libCORRFW.so libPWGHFbase.so libPWGmuon.so");
+  plugin->SetAdditionalLibs("libCORRFW.so libPWGHFbase.so libPWGmuon.so libPWGPPMUONlite.so");
 
   plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so libProofPlayer.so");
 
   plugin->AddIncludePath("-I.");
-  plugin->AddIncludePath("-I$ALICE_ROOT/PWG3/base");
-  plugin->AddIncludePath("-I$ALICE_ROOT/PWG3/muon");
+  plugin->AddIncludePath("-I$ALICE_ROOT/PWGPP/MUON/lite");
   
   return plugin;
 }
@@ -110,7 +109,7 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE)
   gSystem->Load("libPhysics");
   gSystem->Load("libProof");
 
-  TString libsList = "libANALYSIS.so libOADB.so libANALYSISalice.so libCORRFW.so libPWGHFbase.so libPWGmuon.so";
+  TString libsList = "libANALYSIS.so libOADB.so libANALYSISalice.so libCORRFW.so libPWGHFbase.so libPWGmuon.so libPWGPPMUONlite.so";
 
   TObjArray* libsArray = libsList.Tokenize(" ");
   libsArray->SetOwner();
@@ -132,11 +131,10 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE)
   mgr->SetInputEventHandler(esdH); 
 
  #ifndef COMPILEMACRO
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddTaskMuonQA.C");
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
   AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
-  AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency();
 #endif
 
   // Check if terminate was already performed
