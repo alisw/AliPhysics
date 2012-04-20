@@ -338,7 +338,7 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fOutput->Add(fhZDCvsVZERO);
   fhZDCvsTracklets = new TH2F("hZDCvsTracklets","hZDCvsTracklets",100,0.,5000.,100,0.,250000.);
   fOutput->Add(fhZDCvsTracklets);
-  fhZDCvsNclu1 = new TH2F("hZDCvsNclu1", "hZDCvsNclu1", 100, 0.,4000.,100,0.,200000.);
+  fhZDCvsNclu1 = new TH2F("hZDCvsNclu1", "hZDCvsNclu1", 100, 0.,6000.,100,0.,200000.);
   fOutput->Add(fhZDCvsNclu1);
   fhVZEROvsZEM = new TH2F("hVZEROvsZEM","hVZEROvsZEM",250,0.,2500.,250,0.,25000.);	
   fOutput->Add(fhVZEROvsZEM);
