@@ -98,7 +98,7 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair){
 
   bool tempTPCEntrance = true;
  
-  if(fDataType==kAOD)
+  if(fDataType==kESD)
     {
       double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
       double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
