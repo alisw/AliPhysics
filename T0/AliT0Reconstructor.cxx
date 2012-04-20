@@ -122,7 +122,7 @@ ClassImp(AliT0Reconstructor)
   //here real Z position
   fdZonC = TMath::Abs(fParam->GetZPosition("T0/C/PMT1"));
   fdZonA = TMath::Abs(fParam->GetZPosition("T0/A/PMT15"));
-  //  printf(" !!!! fdZonC %f fdZonA %f \n", fdZonC/29.9792458, fdZonA/29.9792458);
+
   fCalib = new AliT0Calibrator();
   fESDTZEROfriend = new AliESDTZEROfriend();
   fESDTZERO  = new AliESDTZERO();
@@ -193,7 +193,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ) {
-      Float_t timefull = 0.001*( timeCFD->At(ipmt) - 513 - timeDelayCFD[ipmt])  * channelWidth;
+      Float_t timefull = 0.001*( timeCFD->At(ipmt) - 511 - timeDelayCFD[ipmt])  * channelWidth;
       frecpoints.SetTimeFull(ipmt, 0 ,timefull) ;
       if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
 	adc[ipmt] = chargeQT1->At(ipmt) - chargeQT0->At(ipmt);
@@ -201,7 +201,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 	adc[ipmt] = 0;
       
       time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, Int_t(adc[ipmt]),  timeCFD->At(ipmt)) ;
-      time[ipmt] =   time[ipmt] - 513;   
+      time[ipmt] =   time[ipmt] - 511;   
       Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
       AliDebug(5,Form(" ipmt %i QTC  %i , time in chann %i (led-cfd) %i ",
@@ -250,13 +250,13 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   if( besttimeA < 999999 && besttimeA!=0) {
     frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  );
-    frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c ) );
+    frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c) );
     tr[1]=true;
   }
   
   if( besttimeC < 999999 && besttimeC!=0) {
     frecpoints.SetTimeBestC((besttimeC_best * channelWidth  - fdZonC/c) );
-    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c ) );
+    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c) );
     tr[2]=true;
   }
   
@@ -308,8 +308,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t meanOrC = fTime0vertex[0] + 678;
   Float_t meanTVDC = fTime0vertex[0] + 2564;
   Int_t timeDelayCFD[24]; 
-  
-
+  Int_t corridor = GetRecoParam() -> GetCorridor();  
+  //  printf("!!!! corrior %i \n",corridor);
   Int_t badpmt[24];
   //Bad channel
   for (Int_t i=0; i<24; i++) {
@@ -335,11 +335,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t meanVertex = 0;
   Int_t pedestal[24];
   for (Int_t i0=0; i0<24; i0++) {
-    low[i0] = Int_t(fTime0vertex[i0]) - 50;
-    high[i0] = Int_t(fTime0vertex[i0]) + 50;
-    time2zero[i0] = 999999;
-    pedestal[i0]=GetRecoParam()->GetLow(i0+100);
-    //   printf("pmt %i pedestal %i\n", i0,pedestal[i0]);
+    low[i0] = Int_t(fTime0vertex[i0]) - corridor;
+    high[i0] = Int_t(fTime0vertex[i0]) + corridor;
+    time2zero[i0] = 99999;
+    pedestal[i0]=Int_t (GetRecoParam()->GetLow(100+i0) );
+    //    printf("pmt %i pedestal %f\n", i0,pedestal[i0]);
+
   }
   
   for (Int_t i0=0; i0<110; i0++)
@@ -347,7 +348,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
   Float_t highAmpThreshold =  GetRecoParam()->GetAmpHighThreshold(); 
-  //  printf( "AliT0Reconstructor::Reconstruct::: RecoParam amplitude %f %f \n",lowAmpThreshold, highAmpThreshold);
+  printf( "AliT0Reconstructor::Reconstruct::: RecoParam amplitude %f %f \n",lowAmpThreshold, highAmpThreshold);
  
   Double32_t besttimeA=9999999;  Double32_t besttimeA_best=9999999;
   Double32_t besttimeC=9999999;  Double32_t besttimeC_best=9999999;
@@ -375,6 +376,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
      Int_t fBCID=Int_t (rawReader->GetBCID());
       Int_t trmbunch= myrawreader.GetTRMBunchID();
       AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
+      if( (trmbunch-fBCID)!=37) {
+	AliDebug(0,Form("wrong :::: CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
+	type = -1;
+      }
  
       if(type == 7  ) {  //only physics 
 	for (Int_t i=0; i<107; i++) {
@@ -432,9 +437,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	
 	Double32_t time[24], adc[24], adcmip[24], noncalibtime[24];
 	for (Int_t ipmt=0; ipmt<24; ipmt++) {
-	  if(timeCFD[ipmt] >  0 &&( chargeQT0[ipmt] - chargeQT1[ipmt])>pedestal[ipmt] /* && badpmt[ipmt]==0*/ ) {
+	  //	  if(timeCFD[ipmt] >  0 && (chargeQT0[ipmt] - chargeQT1[ipmt])>pedestal[ipmt]  ){
+	  if(timeCFD[ipmt] >  0 && (chargeQT0[ipmt] - chargeQT1[ipmt])> 0 ){
+	   //for simulated data
 	     //for physics  data
-	   if(( chargeQT0[ipmt] - chargeQT1[ipmt])>pedestal[ipmt])  {
+	    if(( chargeQT0[ipmt] - chargeQT1[ipmt])>pedestal[ipmt])  {
 	     adc[ipmt] = chargeQT0[ipmt] - chargeQT1[ipmt];
 	   }
 	   else
@@ -453,18 +460,17 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   TGraph * qtGraph = (TGraph*)fQTC.At(ipmt);
 	   if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
 	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
-	   if( qtMip>lowAmpThreshold && qtMip<highAmpThreshold )
+	   // if( qtMip>lowAmpThreshold && qtMip<highAmpThreshold )
 	     {
 	       if( equalize  ==0 ) 
 		 frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
-	   else 
-	     frecpoints.SetTime(ipmt, Float_t(time[ipmt] + fTime0vertex[ipmt]) );
+	       else 
+		 frecpoints.SetTime(ipmt, Float_t(time[ipmt] + fTime0vertex[ipmt]) );
 	       // frecpoints.SetTime(ipmt, Float_t(time[ipmt] ) );
-	     
+	     }
 	   frecpoints.SetAmp(ipmt, Double32_t( qtMip)); 
 	   adcmip[ipmt]=qtMip;
-	   frecpoints.SetAmpLED(ipmt, Double32_t(ampMip));
-	     }	     
+	   frecpoints.SetAmpLED(ipmt, Double32_t(ampMip));	     
 	   noncalibtime[ipmt]= Double32_t (timeCFD[ipmt]);
 	 }
 	 else {
@@ -490,8 +496,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 {
 	   if(time[ipmt] != 0 &&  time[ipmt] > -9000 
 	      /* && badpmt[ipmt]==0*/ 
-	      && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<40)
-	     //	      && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
+	      && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
 	     {
 	       if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
 	       if(TMath::Abs(time[ipmt] ) < TMath::Abs(besttimeA_best)) 

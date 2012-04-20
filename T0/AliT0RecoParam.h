@@ -51,7 +51,9 @@ class AliT0RecoParam : public AliDetectorRecoParam
   void      SetLatencyHPTDC(Float_t lat) {fLatencyHPTDC = lat;}
   Float_t   GetVertexShift() const {return fVertexShift;}
   void      SetVertexShift(Float_t sh) {fVertexShift = sh;}
-  
+  Int_t     GetCorridor() const {return fLow[300]; }
+  void      SetCorridor(Int_t cor)  { fLow[300] = cor;}
+
   //new staff
   Int_t  GetBadChannels(Int_t i) const {return fBadChannels[i];}
   void SetBadChannels(Int_t i, Int_t value) {fBadChannels[i] = value;}
