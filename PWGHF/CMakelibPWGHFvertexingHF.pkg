@@ -62,7 +62,6 @@ set ( SRCS
     vertexingHF/AliCFVertexingHF3Prong.cxx 
     vertexingHF/AliCFVertexingHFCascade.cxx 
     vertexingHF/AliCFTaskVertexingHF.cxx 
-    vertexingHF/AliCFHeavyFlavourTaskMultiVarMultiStep.cxx 
     vertexingHF/AliCFTaskForDStarAnalysis.cxx 
     vertexingHF/AliAnalysisTaskSEDStarJets.cxx 
     vertexingHF/AliAnalysisTaskSEDStarSpectra.cxx 
