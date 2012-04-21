@@ -4,23 +4,23 @@ AliAnalysisEtMonteCarlo * ConfigEtMonteCarlo(Bool_t EMCAL = true, Bool_t DETAIL 
   if(EMCAL){
     if(DETAIL){
       AliAnalysisEmEtMonteCarlo *totEtMC = new AliAnalysisEmEtMonteCarlo();
-      //Look at the 2010 p+p data...
-      totEtMC->SetDataSet(2010);
+      //Look at the 2010 Pb+Pb data...
+      totEtMC->SetDataSet(20100);
       totEtMC->Init();
       return totEtMC;
     }
     else{
       AliAnalysisEtMonteCarloEmcal *totEtMC = new AliAnalysisEtMonteCarloEmcal();
-      //Look at the 2010 p+p data...
-      totEtMC->SetDataSet(2010);
+      //Look at the 2010 Pb+Pb data...
+      totEtMC->SetDataSet(20100);
       totEtMC->Init();
       return totEtMC;
     }
   }
   else{
     AliAnalysisEtMonteCarloPhos *totEtMC = new AliAnalysisEtMonteCarloPhos();
-    //Look at the 2010 p+p data...
-    totEtMC->SetDataSet(2010);
+    //Look at the 2010 Pb+Pb data...
+    totEtMC->SetDataSet(20100);
     totEtMC->Init();
     return totEtMC;
   }

@@ -11,7 +11,7 @@ AliAnalysisEtReconstructed * ConfigEtReconstructed(Bool_t EMCAL = true, Bool_t D
   if(EMCAL){
     if(DETAIL){
       AliAnalysisEmEtReconstructed *totEtReco = new AliAnalysisEmEtReconstructed();
-      totEtReco->SetDataSet(2010);
+      totEtReco->SetDataSet(20100);
       //Set corrections...
       totEtReco->SetCorrections(corrections);    
       totEtReco->Init();
@@ -19,7 +19,7 @@ AliAnalysisEtReconstructed * ConfigEtReconstructed(Bool_t EMCAL = true, Bool_t D
     }
     else{
       AliAnalysisEtReconstructedEmcal *totEtReco = new AliAnalysisEtReconstructedEmcal();
-      totEtReco->SetDataSet(2010);
+      totEtReco->SetDataSet(20100);
       //Set corrections...
       totEtReco->SetCorrections(corrections);    
       totEtReco->Init();
@@ -28,7 +28,7 @@ AliAnalysisEtReconstructed * ConfigEtReconstructed(Bool_t EMCAL = true, Bool_t D
   }
   else{
     AliAnalysisEtReconstructedPhos *totEtReco = new AliAnalysisEtReconstructedPhos();
-    totEtReco->SetDataSet(2010);
+    totEtReco->SetDataSet(20100);
     //Set corrections...
     totEtReco->SetCorrections(corrections);    
     totEtReco->Init();
