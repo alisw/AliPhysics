@@ -3,6 +3,8 @@
 //Uses the output of AliAnalysisTaskHadEt
 //This is not actually what gets used in the correction class AliAnalysisHadEtCorrections - that is done in the macro GetCorrections.C - but this is useful for making plots and playing around with different options
 
+TFile *file;// = new TFile(filename);
+
 //this function calculates the efficiency propagating errors properly
 TH1D* bayneseffdiv(TH1D* numerator, TH1D* denominator,Char_t* name) 
 {
@@ -47,15 +49,17 @@ TH1D* bayneseffdiv(TH1D* numerator, TH1D* denominator,Char_t* name)
 
 
 //This is a somewhat messy function that gets the efficiency for different particles
-TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, int marker,bool TPC, bool ITS, bool PbPb, int cb, int cblast){
+TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, int marker,bool TPC, bool ITS, bool PbPb, int cb, int cblast, char *filename){
   //TFile *file = new TFile("Et.ESD.new.sim.merged.root");
-  TFile *file = new TFile("rootFiles/LHC11a4_bis/Et.ESD.new.sim.LHC11a4_bis.root");
+  //TFile *file = new TFile("rootFiles/LHC11a4_bis/Et.ESD.new.sim.LHC11a4_bis.root");
+  file->cd();
   //TFile *file = new TFile("rootFiles/LHC10d7/Et.ESD.new.sim.LHC10d7.root");
   TList *list = file->FindObject("out2");
   char *myname = "ITS";
-  if(TPC&&!ITS) myname = "TPC";
-  if(TPC&&ITS) myname = "TPCITS";
-  cout<<"Using tracks from "<<myname<<" for efficiency"<<endl;
+  if(TPC&&!ITS){ delete myname; myname = "TPC";}
+  if(TPC&&ITS) {delete myname; myname = "TPCITS";}
+  char *mynamealt = "TPCITS";
+  //cout<<"Using tracks from "<<myname<<" for efficiency"<<endl;
   TH2F *numeratorParent; 
   switch(mycase){
   case 0:
@@ -68,6 +72,14 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
 	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"KPlus",i)));
 	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"Proton",i)));
 	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"AntiProton",i)));
+	if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"PiPlus",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"PiMinus",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"KMinus",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"KPlus",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"Proton",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"AntiProton",i)));
+	}
       }
     }
     else{
@@ -77,6 +89,14 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
       numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"KPlus")));
       numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"Proton")));
       numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"AntiProton")));
+      if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"PiPlus")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"PiMinus")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"KMinus")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"KPlus")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"Proton")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"AntiProton")));
+      }
     }
     break;
   case 1://pion
@@ -85,11 +105,19 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
 	if(i==cb) numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"PiPlus",i)))->Clone("RecoPion");
 	else{numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"PiPlus",i)));}
 	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"PiMinus",i)));
+	if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"PiMinus",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"PiPlus",i)));
+	}
       }
     }
     else{
       numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"PiPlus")))->Clone("RecoPion");
       numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"PiMinus")));
+      if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"PiPlus")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"PiMinus")));
+      }
     }
     break;
   case 2://kaon
@@ -98,13 +126,21 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
 	if(i==cb) numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"KPlus",i)))->Clone("RecoKaon");
 	else{numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"KPlus",i)));}
 	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"KMinus",i)));
+	if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"KPlus",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"KMinus",i)));
+	}
       }
     }
     else{
-      cout<<"I am kaoning here !"<<endl;
+      // cout<<"I am kaoning here !"<<endl;
       numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"KPlus")))->Clone("RecoKaon");
       numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"KMinus")));
-      cout<<"Numerator "<<numeratorParent->GetEntries()<<endl;
+      if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"KPlus")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"KMinus")));
+      }
+      //cout<<"Numerator "<<numeratorParent->GetEntries()<<endl;
     }
     break;
   case 3://proton
@@ -113,18 +149,30 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
 	if(i==cb) numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"Proton",i)))->Clone("RecoProton");
 	else{numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"Proton",i)));}
 	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",myname,"AntiProton",i)));
+	if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"Proton",i)));
+	  numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%sCB%i",mynamealt,"AntiProton",i)));
+	}
       }
     }
     else{
-      cout<<"I am protoning here !"<<endl;
+      //cout<<"I am protoning here !"<<endl;
       numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"Proton")))->Clone("RecoProton");
       numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",myname,"AntiProton")));
-      cout<<"Numerator "<<numeratorParent->GetEntries()<<endl;
+      if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"Proton")));
+	numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s",mynamealt,"AntiProton")));
+      }
+      //cout<<"Numerator "<<numeratorParent->GetEntries()<<endl;
     }
     break;
   case 4://electron
     numeratorParent = (TH2F*)((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s%s",myname,"EPlus",cbname)))->Clone("RecoElectron");
     numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s%s",myname,"EMinus",cbname)));
+    if(!TPC&&ITS){//ITS Standalone tracks - from leftover hits, don't want to double count
+      numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s%s",mynamealt,"EPlus",cbname)));
+      numeratorParent->Add((TH2F*) out2->FindObject(Form("EtNReconstructed%s%s%s",mynamealt,"EMinus",cbname)));
+    }
     break;
   }
   TH2F *denominatorParent; 
@@ -164,10 +212,10 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
       }
     }
     else{
-      cout<<"I am here kaoning"<<endl;
+      //cout<<"I am here kaoning"<<endl;
       denominatorParent = (TH2F*)((TH2F*) out2->FindObject("EtNSimulatedKPlus"))->Clone("RecoKaon");
       denominatorParent->Add((TH2F*) out2->FindObject("EtNSimulatedKMinus"));
-      cout<<"Denominator "<<denominatorParent->GetEntries()<<endl;
+      //cout<<"Denominator "<<denominatorParent->GetEntries()<<endl;
     }
     break;
   case 3://proton
@@ -179,10 +227,10 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
       }
     }
     else{
-      cout<<"I am here protoning"<<endl;
+      //cout<<"I am here protoning"<<endl;
       denominatorParent = (TH2F*)((TH2F*) out2->FindObject("EtNSimulatedProton"))->Clone("RecoProton");
       denominatorParent->Add((TH2F*) out2->FindObject("EtNSimulatedAntiProton"));
-      cout<<"Denominator "<<denominatorParent->GetEntries()<<endl;
+      //cout<<"Denominator "<<denominatorParent->GetEntries()<<endl;
     }
     break;
   case 4://electron
@@ -190,8 +238,8 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
     denominatorParent->Add((TH2F*) out2->FindObject("EtNSimulatedEMinus"));
     break;
   }
-      cout<<"Numerator "<<numeratorParent->GetEntries()<<endl;
-      cout<<"Denominator "<<denominatorParent->GetEntries()<<endl;
+  //cout<<"Numerator "<<numeratorParent->GetEntries()<<endl;
+  // cout<<"Denominator "<<denominatorParent->GetEntries()<<endl;
   numeratorParent->Sumw2();
   denominatorParent->Sumw2();
   TH1D *denominator;
@@ -199,14 +247,14 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
   if(eta){
     int lowbin = numeratorParent->GetYaxis()->FindBin(-cut+.001);//make sure we don't accv0entally get the wrong bin
     int highbin = numeratorParent->GetYaxis()->FindBin(cut-.001);
-    cout<<"Projecting from "<<numeratorParent->GetYaxis()->GetBinLowEdge(lowbin)<<" to "<<numeratorParent->GetYaxis()->GetBinLowEdge(highbin+1)<<endl;
+    //cout<<"Projecting from "<<numeratorParent->GetYaxis()->GetBinLowEdge(lowbin)<<" to "<<numeratorParent->GetYaxis()->GetBinLowEdge(highbin+1)<<endl;
     denominator = denominatorParent->ProjectionX(Form("garbage%s",name),lowbin,highbin);
     numerator = numeratorParent->ProjectionX(name,lowbin,highbin);
   }
   else{
     int lowbin = denominatorParent->GetXaxis()->FindBin(cut);//make sure we don't accidentally get the wrong bin
     int highbin = denominatorParent->GetXaxis()->GetNbins();
-    cout<<"Here Projecting from "<<denominatorParent->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<denominatorParent->GetXaxis()->GetBinLowEdge(highbin+1)<<endl;
+    // cout<<"Here Projecting from "<<denominatorParent->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<denominatorParent->GetXaxis()->GetBinLowEdge(highbin+1)<<endl;
     numerator = numeratorParent->ProjectionY(name,lowbin,highbin);
     denominator = denominatorParent->ProjectionY(Form("denominator%s",name),lowbin,highbin);
   }
@@ -227,14 +275,20 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
   result->SetLineColor(color);
   result->SetMarkerStyle(marker);
   //result->Draw("e");
+  //file->Close();
+  //delete file;
+  delete numerator;
+  delete denominator;
+  result->SetName(name);
   return result;
 
 }
 
 
 //this is a method that makes pretty plots
-void CorrEfficiency(char *shortprodname= "LHC11a4_bis", char *prodname = "LHC11a4_bis HIJING 2.76 TeV Pb+Pb", bool TPC = true,bool ITS = true, bool eta = true, bool PbPb = true, int cb = 0, int cblast = -1){
+void CorrEfficiency(char *prodname = "LHC11a4_bis HIJING 2.76 TeV Pb+Pb",char *shortprodname= "LHC11a4_bis", char *filename = "rootFiles/LHC11a4_bis/Et.ESD.new.sim.LHC11a4_bis.root", bool TPC = false,bool ITS = true, bool eta = true, bool PbPb = true, int cb = 0, int cblast = -1){
 
+  file = new TFile(filename);
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -263,10 +317,10 @@ void CorrEfficiency(char *shortprodname= "LHC11a4_bis", char *prodname = "LHC11a
     phoscut = 0.1;
     emcalcut = 0.15;
   }
-  TH1D *PHOStotal = GetHisto(phoscut,"PHOStotal",0,eta,colortotal,phosmarker,TPC,ITS,PbPb,cb,cblast);
-  TH1D *PHOSpi = GetHisto(phoscut,"PHOSpi",1,eta,colorpi,phosmarker,TPC,ITS,PbPb,cb,cblast);
-  TH1D *PHOSp = GetHisto(phoscut,"PHOSp",3,eta,colork,phosmarker,TPC,ITS,PbPb,cb,cblast);
-  TH1D *PHOSk = GetHisto(phoscut,"PHOSk",2,eta,colorp,phosmarker,TPC,ITS,PbPb,cb,cblast);
+  TH1D *PHOStotal = GetHisto(phoscut,"PHOStotal",0,eta,colortotal,phosmarker,TPC,ITS,PbPb,cb,cblast,filename);
+  TH1D *PHOSpi = GetHisto(phoscut,"PHOSpi",1,eta,colorpi,phosmarker,TPC,ITS,PbPb,cb,cblast,filename);
+  TH1D *PHOSp = GetHisto(phoscut,"PHOSp",3,eta,colork,phosmarker,TPC,ITS,PbPb,cb,cblast,filename);
+  TH1D *PHOSk = GetHisto(phoscut,"PHOSk",2,eta,colorp,phosmarker,TPC,ITS,PbPb,cb,cblast,filename);
   if(eta) PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.05),PHOStotal->GetXaxis()->FindBin(1.0));
 //if(ITS&&!TPC){PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.05),PHOStotal->GetXaxis()->FindBin(1.0));}
 //else{PHOStotal->GetXaxis()->SetRange(PHOStotal->GetXaxis()->FindBin(0.0),PHOStotal->GetXaxis()->FindBin(3.0));}
@@ -283,14 +337,14 @@ void CorrEfficiency(char *shortprodname= "LHC11a4_bis", char *prodname = "LHC11a
   PHOSpi->Draw("same");
   PHOSp->Draw("same");
   PHOSk->Draw("same");
-  cout<<"Hadrons"<<endl;
-  TH1D *EMCALtotal = GetHisto(emcalcut,"EMCALtotal",0,eta,colortotal,emcalmarker,TPC,ITS,PbPb,cb,cblast);
-  cout<<endl<<endl<<"=================================PIONS================================="<<endl;
-  TH1D *EMCALpi = GetHisto(emcalcut,"EMCALpi",1,eta,colorpi,emcalmarker,TPC,ITS,PbPb,cb,cblast);
-  cout<<endl<<endl<<"=================================PROTONS================================="<<endl;
-  TH1D *EMCALp = GetHisto(emcalcut,"EMCALp",3,eta,colork,emcalmarker,TPC,ITS,PbPb,cb,cblast);
-  cout<<endl<<endl<<"=================================KAONS================================="<<endl;
-  TH1D *EMCALk = GetHisto(emcalcut,"EMCALk",2,eta,colorp,emcalmarker,TPC,ITS,PbPb,cb,cblast);
+  //cout<<"Hadrons"<<endl;
+  TH1D *EMCALtotal = GetHisto(emcalcut,"EMCALtotal",0,eta,colortotal,emcalmarker,TPC,ITS,PbPb,cb,cblast,filename);
+  //cout<<endl<<endl<<"=================================PIONS================================="<<endl;
+  TH1D *EMCALpi = GetHisto(emcalcut,"EMCALpi",1,eta,colorpi,emcalmarker,TPC,ITS,PbPb,cb,cblast,filename);
+  //cout<<endl<<endl<<"=================================PROTONS================================="<<endl;
+  TH1D *EMCALp = GetHisto(emcalcut,"EMCALp",3,eta,colork,emcalmarker,TPC,ITS,PbPb,cb,cblast,filename);
+  //cout<<endl<<endl<<"=================================KAONS================================="<<endl;
+  TH1D *EMCALk = GetHisto(emcalcut,"EMCALk",2,eta,colorp,emcalmarker,TPC,ITS,PbPb,cb,cblast,filename);
   EMCALtotal->Draw("same");
   EMCALpi->Draw("same");
   EMCALp->Draw("same");
@@ -339,12 +393,12 @@ void CorrEfficiency(char *shortprodname= "LHC11a4_bis", char *prodname = "LHC11a
     tex5->Draw();
   }
   if(!TPC){
-    c->SaveAs("pics/CorrEfficiency.eps");
-    c->SaveAs("pics/CorrEfficiency.png");
+    c->SaveAs(Form("pics/%s/CorrEfficiency.eps",shortprodname));
+    c->SaveAs(Form("pics/%s/CorrEfficiency.png",shortprodname));
   }
   else{
-    c->SaveAs("pics/CorrEfficiencyTPCITS.eps");
-    c->SaveAs("pics/CorrEfficiencyTPCITS.png");
+    c->SaveAs(Form("pics/%s/CorrEfficiencyTPCITS.eps",shortprodname));
+    c->SaveAs(Form("pics/%s/CorrEfficiencyTPCITS.png",shortprodname));
   }
 
   if(PbPb){//make one more plot
@@ -352,41 +406,84 @@ void CorrEfficiency(char *shortprodname= "LHC11a4_bis", char *prodname = "LHC11a
     //three centrality bins for efficiency 0-25%, 25-50%, 50-90%
     //use same for unidentified hadrons
     //kaons & protons - centrality dependence is more significant but I don't think I can do better on the binning
-    int pid = 0;//h=0,pi=1,p=3,k=2
-  TCanvas *c2 = new TCanvas("c2","c2",600,400);
-  c2->SetTopMargin(0.02);
-  c2->SetRightMargin(0.02);
-  c2->SetBorderSize(0);
-  c2->SetFillColor(0);
-  c2->SetFillColor(0);
-  c2->SetBorderMode(0);
-  c2->SetFrameFillColor(0);
-  c2->SetFrameBorderMode(0);
-  cout<<endl<<endl;
+    //int pid = 2;//h=0,pi=1,p=3,k=2
+    int maxid = 3;
+    if(!TPC) maxid=0;
+    for(int pid=0;pid<=maxid;pid++){
+      TCanvas *c2 = new TCanvas("c2","c2",600,400);
+      c2->SetTopMargin(0.02);
+      c2->SetRightMargin(0.02);
+      c2->SetBorderSize(0);
+      c2->SetFillColor(0);
+      c2->SetFillColor(0);
+      c2->SetBorderMode(0);
+      c2->SetFrameFillColor(0);
+      c2->SetFrameBorderMode(0);
+      //cout<<endl<<endl;
 
-  TH1D *cb0 = GetHisto(phoscut,"cb0",pid,eta,1,20,TPC,ITS,PbPb,0,4);
-  TH1D *cb4 = GetHisto(phoscut,"cb5",pid,eta,4,20,TPC,ITS,PbPb,5,9);
-  //TH1D *cb9 = GetHisto(phoscut,"cb9",pid,eta,TColor::kGreen+4,20,TPC,ITS,PbPb,10,14);
-  TH1D *cb14 = GetHisto(phoscut,"cb14",pid,eta,2,20,TPC,ITS,PbPb,10,18);
-  cb0->GetXaxis()->SetRange(cb0->GetXaxis()->FindBin(0.05),cb0->GetXaxis()->FindBin(1.0));
-  cb0->SetMaximum(1.0);
-  cb0->Draw();
-  cb4->Draw("same");
-  // cb9->Draw("same");
-  cb14->Draw("same");
-  TLegend *leg = new TLegend(0.124161,0.747312,0.318792,0.959677);//(left,bottom,right,top)
-   leg->SetTextSize(0.0537634);
-   leg->SetBorderSize(0);
-   leg->SetLineColor(0);
-   leg->SetLineStyle(0);
-   leg->SetLineWidth(0);
-   leg->SetFillColor(0);
-   leg->SetFillStyle(0);
-   leg->AddEntry(cb0,"0-25%");
-   leg->AddEntry(cb4,"25-50%");
-   //leg->AddEntry(cb9,"45-50%");
-   leg->AddEntry(cb14,"50-90%");
-   leg->Draw();
-   c2->SaveAs(Form("pics/CorrEfficiency%i.png",pid));
+      TH1D *cb0 = GetHisto(phoscut,"cb0",pid,eta,1,20,TPC,ITS,PbPb,0,4,filename);
+      TH1D *cb4 = GetHisto(phoscut,"cb5",pid,eta,4,20,TPC,ITS,PbPb,5,9,filename);
+      //TH1D *cb9 = GetHisto(phoscut,"cb9",pid,eta,TColor::kGreen+4,20,TPC,ITS,PbPb,10,14);
+      TH1D *cb14 = GetHisto(phoscut,"cb14",pid,eta,2,20,TPC,ITS,PbPb,10,18,filename);
+      cb0->GetXaxis()->SetRange(cb0->GetXaxis()->FindBin(0.05),cb0->GetXaxis()->FindBin(5.0));
+      cb0->SetMaximum(1.0);
+      cb0->Draw();
+      cb4->Draw("same");
+      // cb9->Draw("same");
+      cb14->Draw("same");
+      TLegend *leg = new TLegend(0.124161,0.747312,0.318792,0.959677);//(left,bottom,right,top)
+      leg->SetTextSize(0.0537634);
+      leg->SetBorderSize(0);
+      leg->SetLineColor(0);
+      leg->SetLineStyle(0);
+      leg->SetLineWidth(0);
+      leg->SetFillColor(0);
+      leg->SetFillStyle(0);
+      leg->AddEntry(cb0,"0-25%");
+      leg->AddEntry(cb4,"25-50%");
+      //leg->AddEntry(cb9,"45-50%");
+      leg->AddEntry(cb14,"50-90%");
+      leg->Draw();
+      TString particle;
+      TString unidentified = "h";
+      TString proton = "p";
+      TString pion = "#pi";
+      TString kaon = "K";
+      switch(pid){
+      case 0:
+	particle = unidentified;
+	break;
+      case 1:
+	particle = pion;
+	break;
+      case 2:
+	particle = kaon;
+	break;
+      case 3:
+	particle = proton;
+	break;
+      }
+      TLatex *texpid = new TLatex(0.25237,0.589541,particle.Data());
+      texpid->SetTextSize(0.0806452);
+      texpid->Draw();
+      switch(pid){
+      case 0:
+	if(!TPC){c2->SaveAs(Form("pics/%s/CorrEfficiencyITSUnidentified.eps",shortprodname,pid));}
+	else{c2->SaveAs(Form("pics/%s/CorrEfficiencyTPCITSUnidentified.eps",shortprodname,pid));}
+	break;
+      case 1:
+	if(!TPC){c2->SaveAs(Form("pics/%s/CorrEfficiencyITSPion.eps",shortprodname,pid));}
+	else{c2->SaveAs(Form("pics/%s/CorrEfficiencyTPCITSPion.eps",shortprodname,pid));}
+	break;
+      case 3:
+	if(!TPC){c2->SaveAs(Form("pics/%s/CorrEfficiencyITSProton.eps",shortprodname,pid));}
+	else{c2->SaveAs(Form("pics/%s/CorrEfficiencyTPCITSProton.eps",shortprodname,pid));}
+	break;
+      case 2:
+	if(!TPC){c2->SaveAs(Form("pics/%s/CorrEfficiencyITSKaon.eps",shortprodname,pid));}
+	else{c2->SaveAs(Form("pics/%s/CorrEfficiencyTPCITSKaon.eps",shortprodname,pid));}
+	break;
+      }
+    }
   }
 }
