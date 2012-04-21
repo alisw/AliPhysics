@@ -39,7 +39,7 @@ class AliAnalysisTaskCheckSingleTrackJetRejection : public AliAnalysisTaskSE
 		virtual void    UserExec(Option_t *option);
 		virtual void    Terminate(Option_t *);
 		virtual void    SetDebug(Int_t debug = 0) {fDebug = debug;}
-		virtual void    SetAlgorithm(const char *jf="ANTIKT"){JFAlg=jf;}
+		virtual void    SetAlgorithm(TString jf="ANTIKT"){JFAlg=jf;}
 		virtual void    SetRadius(Float_t radius=0.4){Radius=radius;}
 		virtual void    SetFilterMask(UInt_t filter=256){Filtermask=filter;}
 		virtual void    SetBackSubMode(Int_t backM=0){BackM=backM;}
@@ -75,16 +75,16 @@ class AliAnalysisTaskCheckSingleTrackJetRejection : public AliAnalysisTaskSE
 		TString       fNonStdFile;
 		TString       fJetBranch;   // jet branch to read
 
-		AliAODEvent   *fAODIn;      // AOD event
-		AliAODEvent   *fAODOut;      // AOD event
+		AliAODEvent     *fAODIn;      // AOD event
+		AliAODEvent     *fAODOut;      // AOD event
 		AliAODExtension *fAODExtension;
-		TString JFAlg;
-		Float_t Radius;
-		UInt_t Filtermask;
-		Int_t BackM;
-		Float_t TrackPtcut;
-		Int_t SkipCone;
-		Bool_t        IsMC;
+		TString         JFAlg;
+		Float_t         Radius;
+		UInt_t          Filtermask;
+		Int_t           BackM;
+		Float_t         TrackPtcut;
+		Int_t           SkipCone;
+		Bool_t          IsMC;
 
 		TList        *fHistList; // Output list
 		Float_t       fxsec;

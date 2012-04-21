@@ -4,7 +4,6 @@
 #include <string>
 
 #include "TTree.h"
-#include "TString.h"
 #include "TCanvas.h"
 #include "AliAnalysisTask.h"
 #include "AliInputEventHandler.h"
@@ -79,15 +78,26 @@ ClassImp(AliAnalysisTaskCheckSingleTrackJetRejection)
 								fAODIn(0x0),
 								fAODOut(0x0),
 								fAODExtension(0x0),
+								JFAlg("ANTIKT"),
+								Radius(0.4),
+								Filtermask(256),
+								BackM(0),
+								TrackPtcut(0.15),
+								SkipCone(0),
+								IsMC(kTRUE),
 								fHistList(0x0),
 								fxsec(0.),
 								ftrial(1.),
+								fJetRecEtaWindow(0.5),
+								fMinJetPt(0.15),
 								fH1Xsec(0x0),
-								fH1Trials(0x0)
-{
+								fH1Trials(0x0),
+								fH1Events(0x0),
 
-				fH2jetMCAKT04_Jetpt_maxpt   =0;
-				fH2jetAKT04_Jetpt_maxpt     =0;
+								fH2jetMCAKT04_Jetpt_maxpt(0x0),
+								fH2jetAKT04_Jetpt_maxpt  (0x0)
+
+{
 				for(int j=0;j<6;j++){
 								fH1jetMCAKT04_pt         [j]=0;
 								fH1jetAKT04_pt           [j]=0;
@@ -109,16 +119,26 @@ AliAnalysisTaskCheckSingleTrackJetRejection::AliAnalysisTaskCheckSingleTrackJetR
 				fAODIn(0x0), 
 				fAODOut(0x0), 
 				fAODExtension(0x0),
+				JFAlg("ANTIKT"),
+				Radius(0.4),
+				Filtermask(256),
+				BackM(0),
+				TrackPtcut(0.15),
+				SkipCone(0),
+				IsMC(kTRUE),
 				fHistList(0x0),
 				fxsec(0.),
 				ftrial(1.),
+				fJetRecEtaWindow(0.5),
+				fMinJetPt(0.15),
 				fH1Xsec(0x0),
-				fH1Trials(0x0)
+				fH1Trials(0x0),
+				fH1Events(0x0),
+				fH2jetMCAKT04_Jetpt_maxpt(0x0),
+				fH2jetAKT04_Jetpt_maxpt  (0x0)
 
 {
 
-				fH2jetMCAKT04_Jetpt_maxpt=0;
-				fH2jetAKT04_Jetpt_maxpt  =0;
 				for(int j=0;j<6;j++){
 								fH1jetMCAKT04_pt         [j]=0;
 								fH1jetAKT04_pt           [j]=0;
