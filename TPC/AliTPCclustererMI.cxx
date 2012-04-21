@@ -269,11 +269,25 @@ void AliTPCclustererMI::MakeCluster(Int_t k,Int_t max,Float_t *bins, UInt_t /*m*
 AliTPCclusterMI &c) 
 {
   //
+  //  Make cluster: characterized by position ( mean-  COG) , shape (RMS) a charge, QMax and Q tot
+  //  Additional correction:
+  //  a) To correct for charge below threshold, in the +1 neghborhood to the max charge charge 
+  //       is extrapolated using gaussian approximation assuming given cluster width.. 
+  //       Additional empirical factor is used to account for the charge fluctuation (kVirtualChargeFactor). 
+  //       Actual value of the  kVirtualChargeFactor should obtained minimimizing residuals between the cluster
+  //       and track interpolation.
+  //  b.) For space points with extended shape (in comparison with expected using parameterization) clusters are 
+  //      unfoded     
+  //  
+  //  NOTE. Actual/Empirical  values for correction are hardwired in the code.
+  //
+  // Input paramters for function:
   //  k    - Make cluster at position k  
   //  bins - 2 D array of signals mapped to 1 dimensional array - 
   //  max  - the number of time bins er one dimension
-  //  c    - refernce to cluster to be filled
+  //  c    - reference to cluster to be filled
   //
+  Double_t kVirtualChargeFactor=0.5;
   Int_t i0=k/max;  //central pad
   Int_t j0=k%max;  //central time bin
 
@@ -299,7 +313,7 @@ AliTPCclusterMI &c)
 	Float_t ratio = TMath::Exp(-1.2*TMath::Abs(di)/sigmay2)*TMath::Exp(-1.2*TMath::Abs(dj)/sigmaz2);
 	amp = ((matrix[2][0]-2)*(matrix[2][0]-2)/(matrix[-di+2][-dj]+2))*ratio;
 	if (amp>2) amp = 2;
-	vmatrix[2+di][2+dj]=amp;
+	vmatrix[2+di][2+dj]= kVirtualChargeFactor*amp;
 	vmatrix[2+2*di][2+2*dj]=0;
 	if ( (di*dj)!=0){       
 	  //DIAGONAL ELEMENTS
