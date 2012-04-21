@@ -171,7 +171,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
  
    //Here we're going to do a bit of a cheat.  We want the efficiency for ITS standalone tracks + TPC+ITS tracks.  This is returned by the function for the efficiency function if I ask for ITS only efficiency.  Had I known how this worked I probably would have written the code differently...  but...
    //anyhow I left a switch for changing it back.
-   bool useITSStandalone = true;
+   bool useITSStandalone = false;
    TH1D *efficiencyPionTPC = GetHistoEfficiency(etacut,"hEfficiencyPionTPC",1,1,20,useITSStandalone,true);
    hadCorrectionEMCAL->SetEfficiencyPionTPC(efficiencyPionTPC);
    TH1D *efficiencyKaonTPC = GetHistoEfficiency(etacut,"hEfficiencyKaonTPC",2,1,20,useITSStandalone,true);
