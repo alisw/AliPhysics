@@ -2,7 +2,7 @@
 
 # Script to run:
 #    1. reconstruction
-#    2. calibration and friend track filtering
+#    2. calibration 
 #
 # Files assumed to be in working directory:
 # recCPass0.C          - reconstruction macro
@@ -11,9 +11,10 @@
 #    1  - raw data file name
 #    2  - number of events to be processed
 #    3  - run number 
-
+#    4  - OCDBPath
+#    5  - optional trigger mask
 # example:
-# runCPass0.sh raw.root  50  104892
+# runCPass0.sh raw.root  50  104892 raw://
 
 #ALIEN setting
 # $1 = raw input filename
@@ -23,13 +24,20 @@ if [ $# -eq 1 ] ; then
   nEvents=99999999
   fileName="alien://"$1
   ocdbPath="raw://"
+  triggerOption="?Trigger=kCalibBarrel"
 fi;
-if [ $# -eq 4 ] ; then
+if [ $# -ge 4 ] ; then
   # local setup
+  fileName=$1
   nEvents=$2
   runNum=$3
-  fileName=$1
   ocdbPath=$4
+  triggerOption="?Trigger=kCalibBarrel"
+fi
+if [ $# -eq 5 ] ; then
+  # local setup in case we provide the trigger mask
+  # the trigger mask is first stripped of quotation characters
+  triggerOption=${5//\"/}
 fi
 
 echo xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -38,6 +46,7 @@ echo fileName=$fileName
 echo nEvents=$nEvents
 echo runNum=$runNum
 echo ocdbPath=$ocdbPath
+echo triggerOption=$triggerOption
 echo xxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 if [ -f Run0_999999999_v3_s0.root ]; then
@@ -60,7 +69,7 @@ echo
 
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runNum..."
 
-aliroot -l -b -q recCPass0.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec.log
+aliroot -l -b -q "recCPass0.C(\"$fileName\", $nEvents, \"$ocdbPath\", \"$triggerOption\")" 2>&1 | tee rec.log
 mv syswatch.log syswatch_rec.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."

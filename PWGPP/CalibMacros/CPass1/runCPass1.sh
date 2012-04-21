@@ -2,7 +2,7 @@
 
 # Script to run:
 #    1. reconstruction
-#    2. calibration and friend track filtering
+#    2. calibration 
 #
 # Files assumed to be in working directory:
 # recCPass1.C          - reconstruction macro
@@ -11,9 +11,10 @@
 #    1  - raw data file name
 #    2  - number of events to be processed
 #    3  - run number 
-
+#    4  - OCDBPath
+#    5  - optional trigger mask
 # example:
-# runCPass1.sh raw.root  50  104892
+# runCPass1.sh raw.root  50  104892 raw://
 
 #ALIEN setting
 # $1 = raw input filename
@@ -24,12 +25,18 @@ if [ $# -eq 1 ] ; then
   fileName="alien://"$1
   ocdbPath="raw://"
 fi;
-if [ $# -eq 4 ] ; then
+if [ $# -ge 4 ] ; then
   # local setup
+  fileName=$1
   nEvents=$2
   runNum=$3
-  fileName=$1
   ocdbPath=$4
+  triggerOptions="?Trigger=kCalibBarrel"
+fi
+if [ $# -eq 5 ] ; then
+  # local setup in case we specify the trigger mask
+  triggerOptions=$5
+
 fi
 
 echo xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -64,7 +71,7 @@ mkdir Barrel
 mkdir OuterDet
 
 cd Barrel
-time aliroot -l -b -q ../recCPass1.C\(\""$fileName\", $nEvents, \"$ocdbPath"\"\) 2>&1 | tee rec_Barrel.log
+time aliroot -l -b -q "../recCPass1.C(\"$fileName\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" 2>&1 | tee rec_Barrel.log
 mv syswatch.log syswatch_rec_Barrel.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
