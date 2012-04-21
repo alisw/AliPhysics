@@ -1,4 +1,4 @@
-AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test, Int_t material, Bool_t altV0Scale = kFALSE)
+AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test, Int_t material, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE)
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -15,13 +15,15 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
   else{
     plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
   }
+  //needed for local testing?
+  //plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
   // Set versions of used packages 
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-30-06");
-   plugin->SetAliROOTVersion("v5-02-20-AN");
+   plugin->SetROOTVersion("v5-33-02a");
+   plugin->SetAliROOTVersion("v5-03-15-AN");
   // Declare input data to be processed.
 
-plugin->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
+   plugin->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
   // Method 1: Create automatically XML collections using alien 'find' command.
   // Define production directory LFN
   //   plugin->SetGridDataDir("/alice/sim/LHC10a18");
@@ -216,7 +218,9 @@ plugin->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
   //plugin->SetAnalysisSource("AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisTaskTotEt.cxx");
   //TString sourcefiles = "AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx";
   //plugin->SetAnalysisSource(sourcefiles.Data());
-  plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx");
+  if(!runCompiledVersion){
+    plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx");
+  }
    
   //cout<<"Setting source files "<<sourcefiles<<endl;
   // Declare all libraries (other than the default ones for the framework. These will be
@@ -224,7 +228,12 @@ plugin->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
   //TString additionallibs = "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h corrections.root ConfigHadEtAnalysis.C ConfigHadEtMonteCarlo.C ConfigHadEtReconstructed.C physicsSelections.root";
   //TString additionallibs = "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root";
   //plugin->SetAdditionalLibs(additionallibs.Data());
-  plugin->SetAdditionalLibs( "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so");
+  if(!runCompiledVersion){
+    plugin->SetAdditionalLibs( "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so");
+  }
+  else{
+    plugin->SetAdditionalLibs( "physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so libPWGLFtotEt.so");
+  }
   // No need for output file names. Procedure is automatic. <-- not true
   //plugin->SetDefaultOutputs(kFALSE);
   //plugin->SetOutputFiles("Et.ESD.new.sim.root");

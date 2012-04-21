@@ -4,12 +4,13 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Bool_t test = kFALSE, Int_t material = 0, Bool_t altV0Scale = kFALSE) {
+void runHadEt(bool submit = false, bool data = true, Int_t dataset = 20111, Bool_t test = kTRUE, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
     gSystem->Load("libGeom.so");
     gSystem->Load("libVMC.so");
+    gSystem->Load("libPhysics.so");
     gSystem->Load("libXMLIO.so");
 
     gSystem->Load("libSTEERBase.so");
@@ -17,22 +18,27 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
     gSystem->Load("libAOD.so");
 
     gSystem->Load("libANALYSIS");
+    gSystem->Load("libOADB.so");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libPWGUDbase.so");
 
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     gSystem->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
-   gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisHadEt.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarlo.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisHadEtReconstructed.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
-   gROOT->ProcessLine(".L AliAnalysisTaskHadEt.cxx+g");
-
+    if(runCompiledVersion){
+      gSystem->Load("libPWGLFtotEt.so");
+    }
+    else{
+      gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisHadEt.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarlo.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisHadEtReconstructed.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
+      gROOT->ProcessLine(".L AliAnalysisTaskHadEt.cxx+g");
+    }
 
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
@@ -62,7 +68,9 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
   } 
   else{
     if(data){
-      chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
+      cout<<"Yes I am analyzing the correct file"<<endl;
+      //chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
+      chain->Add("/data/LHC11a/11000146856042.90/AliESDs.root");//data
     }
     else{
       chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation p+p
@@ -74,7 +82,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
   if(submit){
 
     gROOT->LoadMacro("CreateAlienHandlerHadEt.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material,altV0Scale);//integer dataset, boolean isData, bool submit-in-test-mode, bool use alternatve V0 scaling
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material,altV0Scale,runCompiledVersion);//integer dataset, boolean isData, bool submit-in-test-mode, bool use alternatve V0 scaling
       if (!alienHandler) return;
       mgr->SetGridHandler(alienHandler);
   }
@@ -87,10 +95,15 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
     mgr->SetMCtruthEventHandler(handler);
   }
 
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  if(data) AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
+  //if(data)  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
+  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(0);
+  if(!physSelTask) { Printf("no physSelTask"); return; }
+  AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();
+  physSel->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL");// #3119 #769");
+
+
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
 
   AliCentralitySelectionTask *centTask;
@@ -136,8 +149,14 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Boo
    }
    AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt",!data);//,recoFile,mcFile);
    if(!data) task2->SetMcData();
+   //Add thing here to select collision type!!
+   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
    mgr->AddTask(task2);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
+//    mgr->ConnectInput(task2,0,cinput1);
+//    mgr->ConnectOutput(task2,1,coutput2);
    mgr->ConnectInput(task2,0,cinput1);
    mgr->ConnectOutput(task2,1,coutput2);
    
