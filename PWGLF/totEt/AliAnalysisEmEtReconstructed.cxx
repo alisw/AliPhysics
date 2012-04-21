@@ -28,6 +28,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTrackerBase.h"
 #include "TGeoManager.h"
+#include "AliCentrality.h"
 
   using namespace std;
 
@@ -176,6 +177,13 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 //       fGeoUt->SetMisalMatrix(fESD->GetEMCALMatrix(0),0);
 //     }
 //   }
+
+  fCentBin= -1;
+  if(fDataSet==20100){//If this is Pb+Pb
+    AliCentrality *centrality = ev->GetCentrality();
+    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
+    else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+  }
 	
   ResetEventValues();
 	
