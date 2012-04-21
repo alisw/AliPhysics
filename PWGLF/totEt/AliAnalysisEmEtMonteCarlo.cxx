@@ -30,6 +30,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTrackerBase.h"
 #include "TGeoManager.h"
+#include "AliCentrality.h"
 
   using namespace std;
 
@@ -1453,7 +1454,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     Printf("ERROR: Event generation header does not exist");   
     return 0;
   }
-    	
+
   // Let's play with the stack!
   AliStack *stack = event->Stack();
 
@@ -2288,6 +2289,13 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	
   AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
   AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev2);
+    	
+  fCentBin= -1;
+  if(fDataSet==20100){//If this is Pb+Pb
+    AliCentrality *centrality = realEvent->GetCentrality();
+    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
+    else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+  }
 
   if(!fGeoUt){
     fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
