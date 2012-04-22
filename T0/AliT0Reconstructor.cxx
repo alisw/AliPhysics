@@ -309,7 +309,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t meanTVDC = fTime0vertex[0] + 2564;
   Int_t timeDelayCFD[24]; 
   Int_t corridor = GetRecoParam() -> GetCorridor();  
-  //  printf("!!!! corrior %i \n",corridor);
+  printf("!!!! corrior %i \n",corridor);
   Int_t badpmt[24];
   //Bad channel
   for (Int_t i=0; i<24; i++) {
@@ -397,13 +397,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		   allData[in+1][iHit] < high[in])
 		  {
 		    timeCFD[in] = allData[in+1][iHit] ; 
-		    break;
+ 		    break;
 		  }
 	      }
 	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
-		if(allData[in+1+56][iHit] > low[in] && 
-		   allData[in+1+56][iHit] < high[in])
+		if(allData[in+1+56][iHit] > low[in+12] && 
+		   allData[in+1+56][iHit] < high[in+12])
 		  {
 		    timeCFD[in+12] = allData[in+56+1][iHit] ;
 		    break;
@@ -420,17 +420,26 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	
 	for (Int_t in=0; in<12;  in++)
 	  {
-	    chargeQT0[in]=allData[2*in+25][0];
-	    chargeQT1[in]=allData[2*in+26][0];
-	    AliDebug(25, Form(" readed Raw %i %i %i",
-			      in, chargeQT0[in],chargeQT1[in]));
+	    if(allData[2*in+26][0] > 4700 && 
+	       allData[2*in+26][0] < 5700)
+		  {
+
+		    chargeQT0[in]=allData[2*in+25][0];
+		    chargeQT1[in]=allData[2*in+26][0];
+		    AliDebug(25, Form(" readed Raw %i %i %i",
+				      in, chargeQT0[in],chargeQT1[in]));
+		  }
 	  }	
 	for (Int_t in=12; in<24;  in++)
 	  {
-	    chargeQT0[in]=allData[2*in+57][0];
-	    chargeQT1[in]=allData[2*in+58][0];
-	    AliDebug(25, Form(" readed Raw %i %i %i",
-			      in, chargeQT0[in],chargeQT1[in]));
+	    if(allData[2*in+58][0] > 4700 && 
+	       allData[2*in+58][0] < 5700)
+	    {
+	      chargeQT0[in]=allData[2*in+57][0];
+	      chargeQT1[in]=allData[2*in+58][0];
+	      AliDebug(25, Form(" readed Raw %i %i %i",
+				in, chargeQT0[in],chargeQT1[in]));
+	    }
 	  }
 	
 	onlineMean = allData[49][0];
