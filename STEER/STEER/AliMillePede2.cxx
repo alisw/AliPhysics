@@ -48,6 +48,7 @@ Int_t    AliMillePede2::fgNKrylovV       = 240;        // default number of Kryl
 AliMillePede2::AliMillePede2() 
 : fNLocPar(0),
   fNGloPar(0),
+  fNGloParIni(0),
   fNGloSize(0),
 //
   fNLocEquations(0),
@@ -109,12 +110,13 @@ AliMillePede2::AliMillePede2()
   fSelFirst(1),
   fSelLast(-1),
   fRejRunList(0),
-  fAccRunList(0)
+  fAccRunList(0),
+  fkReGroup(0)
 {}
 
 //_____________________________________________________________________________________________
 AliMillePede2::AliMillePede2(const AliMillePede2& src) : 
-  TObject(src),fNLocPar(0),fNGloPar(0),fNGloSize(0),fNLocEquations(0),fIter(0),
+  TObject(src),fNLocPar(0),fNGloPar(0),fNGloParIni(0),fNGloSize(0),fNLocEquations(0),fIter(0),
   fMaxIter(10),fNStdDev(3),fNGloConstraints(0),fNLagrangeConstraints(0),
   fNLocFits(0),fNLocFitsRejected(0),
   fNGloFix(0),fGloSolveStatus(0),fChi2CutFactor(0),fChi2CutRef(0),fResCutInit(0),
@@ -128,7 +130,8 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
   fSelFirst(1),
   fSelLast(-1),
   fRejRunList(0),
-  fAccRunList(0)
+  fAccRunList(0),
+  fkReGroup(0)
 {printf("Dummy\n");}
 
 //_____________________________________________________________________________________________
@@ -162,9 +165,20 @@ AliMillePede2::~AliMillePede2()
 } 
 
 //_____________________________________________________________________________________________
-Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, double lResCutInit)
+Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, double lResCutInit, const Int_t* regroup)
 {
   // init all
+  //
+  fNGloParIni = nGlo;
+  if (regroup) { // regrouping is requested
+    fkReGroup = regroup;
+    int ng = 0; // recalculate N globals
+    int maxPID = -1;
+    for (int i=0;i<nGlo;i++) if (regroup[i]>=0) {ng++; if (regroup[i]>maxPID) maxPID = regroup[i];} 
+    AliInfo(Form("Gegrouping is requested: from %d raw to %d free globals, max global ID=%d",nGlo,ng,maxPID));
+    if (ng != maxPID-1) AliFatal("Wrong regrouping requested");
+    nGlo = ng;
+  }
   if (nLoc>0)        fNLocPar = nLoc;
   if (nGlo>0)        fNGloPar = nGlo;
   if (lResCutInit>0) fResCutInit = lResCutInit; 
@@ -396,7 +410,7 @@ void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas,
   // write data of single measurement
   if (lSigma<=0.0) { // If parameter is fixed, then no equation
     for (int i=fNLocPar; i--;) derlc[i] = 0.0;
-    for (int i=fNGloPar; i--;) dergb[i] = 0.0;
+    for (int i=fNGloParIni; i--;) dergb[i] = 0.0;
     return;
   }
   //
@@ -408,9 +422,10 @@ void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas,
   fRecord->AddWeight( 1.0/lSigma/lSigma );
   //
   // Idem for global parameters
-  for (int i=0;i<fNGloPar;i++) if (!IsZero(dergb[i])) {
+  for (int i=0;i<fNGloParIni;i++) if (!IsZero(dergb[i])) {
     fRecord->AddIndexValue(i,dergb[i]); dergb[i] = 0.0;
-    fRecord->MarkGroup(fParamGrID[i]);
+    int idrg = GetRGId(i);
+    fRecord->MarkGroup(idrg<0 ? -1 : fParamGrID[i]);
   }
   //  fRecord->Print();
   //
@@ -420,7 +435,7 @@ void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas,
 void AliMillePede2::SetLocalEquation(int *indgb, double *dergb, int ngb, int *indlc,
 				     double *derlc,int nlc,double lMeas,double lSigma)
 {	
-  // write data of single measurement
+  // write data of single measurement. Note: the records ignore regrouping, store direct parameters
   if (lSigma<=0.0) { // If parameter is fixed, then no equation
     for (int i=nlc;i--;)  derlc[i] = 0.0;
     for (int i=ngb;i--;)  dergb[i] = 0.0;
@@ -451,7 +466,7 @@ void AliMillePede2::SetGlobalConstraint(const double *dergb, double val, double 
   fRecord->Reset();
   fRecord->AddResidual(val);
   fRecord->AddWeight(sigma);
-  for (int i=0; i<fNGloPar; i++) if (!IsZero(dergb[i]))  fRecord->AddIndexValue(i,dergb[i]);
+  for (int i=0; i<fNGloParIni; i++) if (!IsZero(dergb[i])) fRecord->AddIndexValue(i,dergb[i]);
   fNGloConstraints++;
   if (IsZero(sigma)) fNLagrangeConstraints++;
   //  printf("NewConstraint:\n"); fRecord->Print(); //RRR
@@ -536,8 +551,15 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     int    *indGlo = fRecord->GetIndex()+refGlo[ip];
     //
     for (int i=nrefGlo[ip];i--;) {      // suppress the global part (only relevant with iterations)
+      //
+      // if regrouping was requested, do it here
+      if (fkReGroup) {
+	int idtmp = fkReGroup[ indGlo[i] ];
+	if (idtmp == kFixParID) indGlo[i] = kFixParID; // fixed param in regrouping 
+      }
+      //
       int iID = indGlo[i];              // Global param indice
-      if (fSigmaPar[iID]<=0.) continue;                                    // fixed parameter RRRCheck
+      if (iID<0 || fSigmaPar[iID]<=0.) continue;                              // fixed parameter RRRCheck
       if (fIsLinear[iID]) resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]);  // linear parameter
       else                resid -= derGlo[i]*fDeltaPar[iID];                  // nonlinear parameter
     }
@@ -592,7 +614,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     //
     for (int i=nrefGlo[ip];i--;) {                                             // global part
       int iID = indGlo[i];
-      if ( fSigmaPar[iID] <= 0.) continue;                                     // fixed parameter RRRCheck
+      if ( iID<0 || fSigmaPar[iID] <= 0.) continue;                            // fixed parameter RRRCheck
       if (fIsLinear[iID]) resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]);   // linear parameter
       else                resid -= derGlo[i]*fDeltaPar[iID];                   // nonlinear parameter
     }
@@ -642,16 +664,16 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     int    *indLoc = fRecord->GetIndex()+refLoc[ip];
     int    *indGlo = fRecord->GetIndex()+refGlo[ip];
     //
-    for (int i=nrefGlo[ip];i--;) {    // suppress the global part
+    for (int i=nrefGlo[ip];i--;) {   // suppress the global part
       int iID = indGlo[i];           // Global param indice
-      if ( fSigmaPar[iID] <= 0.) continue;                                         // fixed parameter RRRCheck
+      if ( iID<0 || fSigmaPar[iID] <= 0.) continue;                                // fixed parameter RRRCheck
       if (fIsLinear[iID])  resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]);      // linear parameter
       else                 resid -= derGlo[i]*fDeltaPar[iID];                      // nonlinear parameter
     }
     //
     for (int ig=nrefGlo[ip];ig--;) {
       int iIDg = indGlo[ig];   // Global param indice (the matrix line)          
-      if ( fSigmaPar[iIDg] <= 0.) continue;                                    // fixed parameter RRRCheck
+      if ( iIDg<0 || fSigmaPar[iIDg] <= 0.) continue;                              // fixed parameter RRRCheck
       if (fLocFitAdd) fVecBGlo[ iIDg ] += weight*resid*derGlo[ig]; //!!!
       else            fVecBGlo[ iIDg ] -= weight*resid*derGlo[ig]; //!!!
       //
@@ -659,7 +681,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
       int nfill = 0;
       for (int jg=ig+1;jg--;) {	// matCGlo is symmetric by construction  
 	int jIDg = indGlo[jg];
-	if ( fSigmaPar[jIDg] <= 0.) continue;                                    // fixed parameter RRRCheck
+	if ( jIDg<0 || fSigmaPar[jIDg] <= 0.) continue;                            // fixed parameter RRRCheck
 	if ( !IsZero(vl = weight*derGlo[ig]*derGlo[jg]) ) {
 	  fFillIndex[nfill]   = jIDg;
 	  fFillValue[nfill++] = fLocFitAdd ? vl:-vl;
@@ -772,12 +794,11 @@ Int_t AliMillePede2::GlobalFit(Double_t *par, Double_t *error, Double_t *pull)
   AliInfo(Form("Global fit %s, CPU time: %.1f",res ? "Converged":"Failed",sw.CpuTime()));  
   if (!res) return 0;
   //
-  if (par) for (int i=fNGloPar;i--;) par[i] = fInitPar[i]+fDeltaPar[i]; 
+  if (par) for (int i=fNGloParIni;i--;) par[i] = GetFinalParam(i);
   //
   if (fGloSolveStatus==kInvert) { // errors on params are available
-    if (error) for (int i=fNGloPar;i--;) error[i] = fProcPnt[i]>0 ? TMath::Sqrt(TMath::Abs(fMatCGlo->QueryDiag(i))) : 0.;
-    if (pull)  for (int i=fNGloPar;i--;) pull[i]  = fProcPnt[i]>0 && (fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QueryDiag(i))>0. && fSigmaPar[i]>0 
-					   ? fDeltaPar[i]/TMath::Sqrt(fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QueryDiag(i)) : 0;
+    if (error) for (int i=fNGloParIni;i--;) error[i] = GetFinalError(i);
+    if (pull)  for (int i=fNGloParIni;i--;) pull[i]  = GetPull(i);
   }
   //
   return 1;
@@ -956,6 +977,13 @@ Int_t AliMillePede2::GlobalFitIteration()
     double *der  = fRecord->GetValue()+2;
     int    csize = fRecord->GetSize()-2;
     //
+    if (fkReGroup) {
+      for (int jp=csize;jp--;) {
+	int idp = indV[jp];
+	if (fkReGroup[idp]<0) AliFatal(Form("Constain is requested for suppressed parameter #%d",indV[jp]));
+	indV[jp] = idp;
+      }
+    }
     // check if after suppression of fixed variables there are non-0 derivatives
     // and determine the max statistics of involved params
     int nSuppressed = 0;
@@ -1153,10 +1181,26 @@ Double_t AliMillePede2::GetParError(int iPar) const
 {
   // return error for parameter iPar
   if (fGloSolveStatus==kInvert) {
+    if (fkReGroup) iPar = fkReGroup[iPar];
+    if (iPar<0) {AliInfo(Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
     double res = fMatCGlo->QueryDiag(iPar);
     if (res>=0) return TMath::Sqrt(res);
   } 
-  return -1.;
+  return 0.;
+}
+
+//_____________________________________________________________________________________________
+Double_t AliMillePede2::GetPull(int iPar) const
+{
+  // return pull for parameter iPar
+  if (fGloSolveStatus==kInvert) {
+    if (fkReGroup) iPar = fkReGroup[iPar];
+    if (iPar<0) {AliInfo(Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
+    //
+    return fProcPnt[iPar]>0 && (fSigmaPar[iPar]*fSigmaPar[iPar]-fMatCGlo->QueryDiag(iPar))>0. && fSigmaPar[iPar]>0 
+      ? fDeltaPar[iPar]/TMath::Sqrt(fSigmaPar[iPar]*fSigmaPar[iPar]-fMatCGlo->QueryDiag(iPar)) : 0;
+  } 
+  return 0.;
 }
 
 
@@ -1173,7 +1217,8 @@ Int_t AliMillePede2::PrintGlobalParameters() const
   AliInfo("    I       initial       final       differ        lastcor        error       gcor       Npnt");
   AliInfo("----------------------------------------------------------------------------------------------");
   //
-  for (int i=0; i<fNGloPar; i++) {
+  for (int i0=0; i0<fNGloParIni; i0++) {
+    int i = GetRGId(i0); if (i<0) continue;
     lError = GetParError(i);
     lGlobalCor = 0.0;
     //		
@@ -1241,3 +1286,41 @@ void AliMillePede2::SetAccRunList(const UInt_t *runs, Int_t nruns)
   fAccRunList = new TArrayL(nruns);
   for (int i=0;i<nruns;i++) (*fAccRunList)[i] = runs[i];
 }
+
+//_____________________________________________________________________________________________
+void AliMillePede2::SetInitPars(const Double_t* par) 
+{
+  // initialize parameters, account for eventual grouping
+  for (int i=0;i<fNGloParIni;i++) {
+    int id = GetRGId(i); if (id<0) continue;
+    fInitPar[id] = par[i];
+  }
+}
+
+//_____________________________________________________________________________________________
+void AliMillePede2::SetSigmaPars(const Double_t* par) 
+{
+  // initialize sigmas, account for eventual grouping
+  for (int i=0;i<fNGloParIni;i++) {
+    int id = GetRGId(i); if (id<0) continue;
+    fSigmaPar[id] = par[i];
+  }
+}
+
+//_____________________________________________________________________________________________
+void AliMillePede2::SetInitPar(Int_t i,Double_t par)
+{
+  // initialize param, account for eventual grouping
+  int id = GetRGId(i); if (id<0) return;
+  fInitPar[id] = par;
+}
+
+//_____________________________________________________________________________________________
+void AliMillePede2::SetSigmaPar(Int_t i,Double_t par)
+{
+  // initialize sigma, account for eventual grouping
+  int id = GetRGId(i); if (id<0) return;
+  fSigmaPar[id] = par;
+}
+
+

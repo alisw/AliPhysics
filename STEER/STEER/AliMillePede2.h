@@ -30,15 +30,18 @@ class AliMillePede2: public TObject
  public:
   //
   enum {kFailed,kInvert,kNoInversion};    // used global matrix solution methods
+  enum {kFixParID=-1};                    // dummy id for fixed param
   //
   AliMillePede2();
   AliMillePede2(const AliMillePede2& src);
   virtual ~AliMillePede2();
   AliMillePede2& operator=(const AliMillePede2& )             {printf("Dummy\n"); return *this;}
   //
-  Int_t                InitMille(int nGlo, int nLoc, Int_t lNStdDev=-1,double lResCut=-1., double lResCutInit=-1.);
+  Int_t                InitMille(int nGlo, int nLoc, Int_t lNStdDev=-1,double lResCut=-1., double lResCutInit=-1., const Int_t* regroup=0);
   //
   Int_t                GetNGloPar()                     const {return fNGloPar;}
+  Int_t                GetNGloParIni()                  const {return fNGloParIni;}
+  const Int_t*         GetRegrouping()                  const {return fkReGroup;}
   Int_t                GetNLocPar()                     const {return fNLocPar;}
   Long_t               GetNLocalEquations()             const {return fNLocEquations;}
   Int_t                GetCurrentIteration()            const {return fIter;}
@@ -55,9 +58,10 @@ class AliMillePede2: public TObject
   Float_t              GetResCurInit()                  const {return fResCutInit;}
   Float_t              GetResCut()                      const {return fResCut;}
   Int_t                GetMinPntValid()                 const {return fMinPntValid;}
-  Int_t                GetProcessedPoints(Int_t i)      const {return fProcPnt[i];}
+  Int_t                GetRGId(Int_t i)                 const {return fkReGroup ? (fkReGroup[i]<0 ? -1:fkReGroup[i]) : i;}       
+  Int_t                GetProcessedPoints(Int_t i)      const {int ir=GetRGId(i); return ir<=0 ? 0:fProcPnt[ir];}
   Int_t*               GetProcessedPoints()             const {return fProcPnt;}
-  Int_t                GetParamGrID(Int_t i)            const {return fParamGrID[i];}
+  Int_t                GetParamGrID(Int_t i)            const {int ir=GetRGId(i); return ir<=0 ? 0:fParamGrID[ir];}
   //
   AliMatrixSq*         GetGlobalMatrix()                const {return fMatCGlo;}
   AliSymMatrix*        GetLocalMatrix()                 const {return fMatCLoc;}
@@ -66,17 +70,18 @@ class AliMillePede2: public TObject
   Double_t*            GetInitPars()                    const {return fInitPar;}
   Double_t*            GetSigmaPars()                   const {return fSigmaPar;}
   Bool_t*              GetIsLinear()                    const {return fIsLinear;}
-  Double_t             GetFinalParam(int i)             const {return fDeltaPar[i]+fInitPar[i];}
+  Double_t             GetFinalParam(int i)             const {int ir=GetRGId(i); return ir<0 ? 0:fDeltaPar[ir]+fInitPar[ir];}
   Double_t             GetFinalError(int i)             const {return GetParError(i);}
+  Double_t             GetPull(int i)                   const;
   //
-  Double_t             GetGlobal(Int_t i)               const {return fVecBGlo[i];}
-  Double_t             GetInitPar(Int_t i)              const {return fInitPar[i];}
-  Double_t             GetSigmaPar(Int_t i)             const {return fSigmaPar[i];}
-  Bool_t               GetIsLinear(Int_t i)             const {return fIsLinear[i];}
+  Double_t             GetGlobal(Int_t i)               const {int ir=GetRGId(i); return ir<0 ? 0:fVecBGlo[ir];}
+  Double_t             GetInitPar(Int_t i)              const {int ir=GetRGId(i); return ir<0 ? 0:fInitPar[ir];}
+  Double_t             GetSigmaPar(Int_t i)             const {int ir=GetRGId(i); return ir<0 ? 0:fSigmaPar[ir];}
+  Bool_t               GetIsLinear(Int_t i)             const {int ir=GetRGId(i); return ir<0 ? 0:fIsLinear[ir];}
   static Bool_t        IsGlobalMatSparse()                    {return fgIsMatGloSparse;}
   static Bool_t        IsWeightSigma()                        {return fgWeightSigma;}
   //
-  void                 SetParamGrID(Int_t grID,Int_t i)       {fParamGrID[i] = grID; if(fNGroupsSet<grID)fNGroupsSet=grID;}
+  void                 SetParamGrID(Int_t grID,Int_t i)       {int ir=GetRGId(i); if(ir<0) return; fParamGrID[ir] = grID; if(fNGroupsSet<grID)fNGroupsSet=grID;}
   void                 SetNGloPar(Int_t n)                    {fNGloPar = n;}
   void                 SetNLocPar(Int_t n)                    {fNLocPar = n;}
   void                 SetNMaxIterations(Int_t n=10)          {fMaxIter = n;}
@@ -89,10 +94,10 @@ class AliMillePede2: public TObject
   static void          SetGlobalMatSparse(Bool_t v=kTRUE)     {fgIsMatGloSparse = v;}
   static void          SetWeightSigma(Bool_t v=kTRUE)         {fgWeightSigma = v;}
   //
-  void                 SetInitPars(const Double_t* par)       {memcpy(fInitPar,par,fNGloPar*sizeof(Double_t));}
-  void                 SetSigmaPars(const Double_t* par)      {memcpy(fSigmaPar,par,fNGloPar*sizeof(Double_t));}
-  void                 SetInitPar(Int_t i,Double_t par)       {fInitPar[i] = par;;}
-  void                 SetSigmaPar(Int_t i,Double_t par)      {fSigmaPar[i] = par;}
+  void                 SetInitPars(const Double_t* par);
+  void                 SetSigmaPars(const Double_t* par);
+  void                 SetInitPar(Int_t i,Double_t par);
+  void                 SetSigmaPar(Int_t i,Double_t par);
   //
   Int_t                GlobalFit(Double_t *par=0, Double_t *error=0, Double_t *pull=0);
   Int_t                GlobalFitIteration();
@@ -170,7 +175,7 @@ class AliMillePede2: public TObject
   // aliases for compatibility with millipede1
   void                 SetParSigma(Int_t i,Double_t par)      {SetSigmaPar(i,par);}
   void                 SetGlobalParameters(Double_t *par)     {SetInitPars(par);}
-  void                 SetNonLinear(int index, Bool_t v=kTRUE) {fIsLinear[index] = !v;}
+  void                 SetNonLinear(int index, Bool_t v=kTRUE) {int id = GetRGId(index); if (id<0) return; fIsLinear[id] = !v;}
   //
  protected:
   //
@@ -181,6 +186,7 @@ class AliMillePede2: public TObject
   //
   Int_t                 fNLocPar;                        // number of local parameters
   Int_t                 fNGloPar;                        // number of global parameters
+  Int_t                 fNGloParIni;                     // number of global parameters before grouping
   Int_t                 fNGloSize;                       // final size of the global matrix (NGloPar+NConstraints)
   //
   Long_t                fNLocEquations;                  // Number of local equations 
@@ -246,6 +252,7 @@ class AliMillePede2: public TObject
   Int_t                 fSelLast;                        // event selection end
   TArrayL*              fRejRunList;                     // list of runs to reject (if any)
   TArrayL*              fAccRunList;                     // list of runs to select (if any)
+  const Int_t*          fkReGroup;                       // optional regrouping of parameters wrt ID's from the records
   //
   static Bool_t         fgInvChol;                       // Invert global matrix in Cholesky solver
   static Bool_t         fgWeightSigma;                   // weight parameter constraint by statistics
