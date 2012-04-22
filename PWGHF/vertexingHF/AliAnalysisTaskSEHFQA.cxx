@@ -1026,9 +1026,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
       PostData(6,fOutputCheckCentrality);
 
-      delete vzeroAOD;
-      delete aodcent;
-
     } else{
       if(fOnOff[0]){
 	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
