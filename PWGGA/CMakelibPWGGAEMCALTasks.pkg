@@ -46,7 +46,8 @@ set ( SRCS
  EMCALTasks/AliAnalysisTaskTrgContam.cxx
  EMCALTasks/AliAnalysisTaskEMCALPhoton.cxx
  EMCALTasks/AliEmcalIsolatedPhotonsTask.cxx
- EMCALTasks/AliEmcalAodTrackFilterTask.cxx	
+ EMCALTasks/AliEmcalPicoTrackMaker.cxx
+ EMCALTasks/AliEmcalTenderTask.cxx	
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -55,4 +56,4 @@ set ( DHDR  PWGGAEMCALTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE PWGGA/EMCALTasks EMCAL OADB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE PWGGA/EMCALTasks EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)

@@ -15,6 +15,7 @@
 #include "AliEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliAODTrack.h"
+#include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEmcalJet.h"
 #include "AliVEventHandler.h"
@@ -31,11 +32,13 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask() :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
+  fTrgClusName("ClustersL1GAMMAFEE"),
   fESDTrackCuts(0),
   fFilterBit(16),
   fTracks(0),
   fCaloClusters(0),
   fJets(0),
+  fTrgClusters(0),
   fHistTracksPt(0),
   fHistClustersEnergy(0),
   fHistEPcorrelation(0),
@@ -46,6 +49,7 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask() :
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
   fHistJetPhiEta(0),
+  fHistMaxTrgCluster(0),
   Ptbins(100),
   Ptlow(0),
   Ptup(50),
@@ -64,11 +68,13 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
+  fTrgClusName("ClustersL1GAMMAFEE"),
   fESDTrackCuts(0),
   fFilterBit(16),
   fTracks(0),
   fCaloClusters(0),
   fJets(0),
+  fTrgClusters(0),
   fHistTracksPt(0),
   fHistClustersEnergy(0),
   fHistEPcorrelation(0),
@@ -79,6 +85,7 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) :
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
   fHistJetPhiEta(0),
+  fHistMaxTrgCluster(0),
   Ptbins(100),
   Ptlow(0),
   Ptup(50),
@@ -115,7 +122,7 @@ void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
   
   AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   
-  if( handler && handler->InheritsFrom("AliESDInputHandler") ) {
+  if (handler && handler->InheritsFrom("AliESDInputHandler")) {
 
     if (!fESDTrackCuts) fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     
@@ -128,13 +135,6 @@ void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
       fOutput->Add(fESDTrackCuts);
     }
   }
-
-  /*
-  fGeom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
-  if (!fGeom) {
-    AliFatal("Unable to get the EMCAL_COMPLETEV1 geom");
-  }
-  */
     
   fHistTracksPt = new TH1F("fHistTracksPt","P_{T} spectrum of reconstructed tracks", Ptbins, Ptlow, Ptup);
   fHistTracksPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
@@ -185,7 +185,33 @@ void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
   fHistJetPhiEta->GetXaxis()->SetTitle("Eta");
   fHistJetPhiEta->GetYaxis()->SetTitle("Phi");
   fOutput->Add(fHistJetPhiEta);
-	
+
+  fHistMaxTrgCluster = new TH1F("fHistMaxTrgCluster","Energy distribution of max trigger clusters", Ebins, Elow, Eup);
+  fHistMaxTrgCluster->GetXaxis()->SetTitle("E [GeV]");
+  fHistMaxTrgCluster->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistMaxTrgCluster);
+
+  for (Int_t i = 0; i < 3; i++) {
+    TString histnamephi("fHistTrackPhi_");
+    histnamephi += i;
+    fHistTrackPhi[i] = new TH1F(histnamephi.Data(),histnamephi.Data(), 32, 0, 6.4);
+    fHistTrackPhi[i]->GetXaxis()->SetTitle("Phi");
+    fOutput->Add(fHistTrackPhi[i]);
+
+    TString histnameeta("fHistTrackEta_");
+    histnameeta += i;
+    fHistTrackEta[i] = new TH1F(histnameeta.Data(),histnameeta.Data(), 40, -2, 2);
+    fHistTrackEta[i]->GetXaxis()->SetTitle("Eta");
+    fOutput->Add(fHistTrackEta[i]);
+  }
+
+  fHistTrackPhi[0]->SetLineColor(kRed);
+  fHistTrackEta[0]->SetLineColor(kRed);
+  fHistTrackPhi[1]->SetLineColor(kBlue);
+  fHistTrackEta[1]->SetLineColor(kBlue);
+  fHistTrackPhi[2]->SetLineColor(kGreen);
+  fHistTrackEta[2]->SetLineColor(kGreen);
+
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
@@ -194,46 +220,84 @@ void AliEmcalIsolatedPhotonsTask::RetrieveEventObjects()
   fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
   fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
   fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
+  fTrgClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrgClusName));
 
   if (!fTracks) {
-    AliError(Form("ERROR: Could not retrieve tracks!")); 
+    AliWarning(Form("Could not retrieve tracks!")); 
   }
   if (!fCaloClusters) {
-    AliError(Form("ERROR: Could not retrieve clusters!")); 
+    AliWarning(Form("Could not retrieve clusters!")); 
   }
   if (!fJets) {
-    AliError(Form("ERROR: Could not retrieve jets!")); 
+    AliWarning(Form("Could not retrieve jets!")); 
+  }
+  if (!fTrgClusters) {
+    AliWarning(Form("Could not retrieve trigger clusters!")); 
   }
 }
 
 AliVTrack* AliEmcalIsolatedPhotonsTask::GetTrack(const Int_t i) const
 {
-  return dynamic_cast<AliVTrack*>(fTracks->At(i));
+  if (fTracks)
+    return dynamic_cast<AliVTrack*>(fTracks->At(i));
+  else
+    return 0;
 }
 
 Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfTracks() const
 {
-  return fTracks->GetEntriesFast();
+  if (fTracks)
+    return fTracks->GetEntriesFast();
+  else
+    return 0;
 }
 
 AliVCluster* AliEmcalIsolatedPhotonsTask::GetCaloCluster(const Int_t i) const
-{
-  return dynamic_cast<AliVCluster*>(fCaloClusters->At(i));
+{ 
+  if (fCaloClusters)
+    return dynamic_cast<AliVCluster*>(fCaloClusters->At(i));
+  else
+    return 0;
 }
 
 Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfCaloClusters() const
-{
-  return fCaloClusters->GetEntriesFast();
+{ 
+  if (fCaloClusters)
+    return fCaloClusters->GetEntriesFast();
+  else
+    return 0;
 }
 
 AliEmcalJet* AliEmcalIsolatedPhotonsTask::GetJet(const Int_t i) const
 {
-  return dynamic_cast<AliEmcalJet*>(fJets->At(i));
+  if (fJets)
+    return dynamic_cast<AliEmcalJet*>(fJets->At(i));
+  else
+    return 0;
 }
 
 Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfJets() const
 {
-  return fJets->GetEntriesFast();
+  if (fJets)
+    return fJets->GetEntriesFast();
+  else
+    return 0;
+}
+
+AliVCluster* AliEmcalIsolatedPhotonsTask::GetTrgCluster(const Int_t i) const
+{
+  if (fTrgClusters)
+    return dynamic_cast<AliVCluster*>(fTrgClusters->At(i));
+  else
+    return 0;
+}
+
+Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfTrgClusters() const
+{
+  if (fTrgClusters)
+    return fTrgClusters->GetEntriesFast();
+  else
+    return 0;
 }
 
 void AliEmcalIsolatedPhotonsTask::FillHistograms()
@@ -274,19 +338,6 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
     if (!AcceptTrack(track)) continue;
 
     fHistTracksPt->Fill(track->Pt());
-    
-    if(track->InheritsFrom("AliExternalTrackParam")) {
-      AliExternalTrackParam *trackparam = dynamic_cast<AliExternalTrackParam*>(track);
-      fHistTrPhiEta->Fill(trackparam->Eta(), trackparam->Phi());
-    }
-    else if (track->InheritsFrom("AliAODTrack")) {
-      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
-      fHistTrPhiEta->Fill(aodtrack->Eta(), aodtrack->Phi());
-    }
-    else if (track->InheritsFrom("AliPicoTrack")) {
-      AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack*>(track);
-      fHistTrPhiEta->Fill(picotrack->Eta(), picotrack->Phi());
-    }
 
     Int_t clId = track->GetEMCALcluster();
     if (clId > -1) {
@@ -294,7 +345,42 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
       if (cluster)
 	fHistEPcorrelation->Fill(track->P(),cluster->E());
     } 
-    
+
+    Float_t eta,phi;
+    Int_t label;
+
+    if(track->InheritsFrom("AliESDtrack")) {
+      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track);
+      eta = esdtrack->Eta();
+      phi = esdtrack->Phi();
+      label = esdtrack->GetLabel();
+    }
+    else if (track->InheritsFrom("AliAODTrack")) {
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
+      eta = aodtrack->Eta();
+      phi = aodtrack->Phi();
+      label = aodtrack->GetLabel();
+    }
+    else if (track->InheritsFrom("AliPicoTrack")) {
+      AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack*>(track);
+      eta = picotrack->Eta();
+      phi = picotrack->Phi();
+      label = picotrack->GetLabel();
+    }
+    else {
+      AliWarning("Track type not recognized! Will not plot phi\eta distributions!");
+      continue;
+    }
+
+    fHistTrPhiEta->Fill(eta, phi);
+
+    if (label >= 0 && label < 3) {
+      fHistTrackEta[label]->Fill(eta);
+      fHistTrackPhi[label]->Fill(phi);
+    }
+    else {
+      AliWarning(Form("Track label %d not recognized!",label));
+    }
   }
 
   // Jet loop
@@ -326,6 +412,25 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
 	fHistJetsZ->Fill(cluster->E() / jet->E());
     }
   } //jet loop 
+
+  Int_t ntrgclusters =  GetNumberOfTrgClusters();
+  Float_t maxe = 0;
+  //cout << ntrgclusters << " clusters" << endl;
+  for (Int_t iClusters = 0; iClusters < ntrgclusters; iClusters++) {
+    AliVCluster* cluster = GetTrgCluster(iClusters);
+    if (!cluster) {
+      printf("ERROR: Could not receive cluster %d\n", iClusters);
+      continue;
+    }  
+    
+    if (!(cluster->IsEMCAL())) continue;
+
+    if (cluster->E() > maxe)
+      maxe = cluster->E();
+
+  } //cluster loop 
+  fHistMaxTrgCluster->Fill(maxe);
+  
 }
 
 //________________________________________________________________________
