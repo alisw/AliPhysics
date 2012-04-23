@@ -53,6 +53,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fOutput(0), 
   fHistNEvents(0),
   fPtVsMass(0),
+  fPtVsMassPhi(0),
+  fPtVsMassK0st(0),
   fYVsPt(0),
   fYVsPtSig(0),
   fNtupleDs(0),
@@ -109,6 +111,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fOutput(0),
   fHistNEvents(0),
   fPtVsMass(0),
+  fPtVsMassPhi(0),
+  fPtVsMassK0st(0),
   fYVsPt(0),
   fYVsPtSig(0),
   fNtupleDs(0),
@@ -226,6 +230,8 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
   }
 
   delete fPtVsMass;
+  delete fPtVsMassPhi;
+  delete fPtVsMassK0st;
   delete fYVsPt;
   delete fYVsPtSig;
   delete fNtupleDs;
@@ -392,10 +398,14 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fHistNEvents);
 
   fPtVsMass=new TH2F("hPtVsMass","PtVsMass (prod. cuts)",nInvMassBins,minMass,maxMass,40,0.,20.);
+  fPtVsMassPhi=new TH2F("hPtVsMassPhi","PtVsMass (phi selection)",nInvMassBins,minMass,maxMass,200,0.,20.);
+  fPtVsMassK0st=new TH2F("hPtVsMassK0st","PtVsMass (K0* selection)",nInvMassBins,minMass,maxMass,200,0.,20.);
   fYVsPt=new TH2F("hYVsPt","YvsPt (prod. cuts)",40,0.,20.,80,-2.,2.);
   fYVsPtSig=new TH2F("hYVsPtSig","YvsPt (MC, only sig., prod. cuts)",40,0.,20.,80,-2.,2.);
 
   fOutput->Add(fPtVsMass);
+  fOutput->Add(fPtVsMassPhi);
+  fOutput->Add(fPtVsMassK0st);
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSig);
 
@@ -606,8 +616,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       Double_t invMass=d->InvMassDsKKpi();
       fMassHist[index]->Fill(invMass);
       fPtVsMass->Fill(invMass,ptCand);
-      if(isPhiKKpi) fMassHistPhi[index]->Fill(invMass); 
-      if(isK0starKKpi) fMassHistK0st[index]->Fill(invMass);
+      if(isPhiKKpi){
+	fMassHistPhi[index]->Fill(invMass); 
+	fPtVsMassPhi->Fill(invMass,ptCand);
+      }
+      if(isK0starKKpi){
+	fMassHistK0st[index]->Fill(invMass);
+	fPtVsMassK0st->Fill(invMass,ptCand);
+      }
       if(fReadMC  && indexMCKKpi!=-1){
 	fMassHist[indexMCKKpi]->Fill(invMass);
 	if(isPhiKKpi) fMassHistPhi[indexMCKKpi]->Fill(invMass);
@@ -618,8 +634,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       Double_t invMass=d->InvMassDspiKK();
       fMassHist[index]->Fill(invMass);
       fPtVsMass->Fill(invMass,ptCand);
-      if(isPhipiKK) fMassHistPhi[index]->Fill(invMass);
-      if(isK0starpiKK) fMassHistK0st[index]->Fill(invMass);
+      if(isPhipiKK){ 
+	fMassHistPhi[index]->Fill(invMass);
+	fPtVsMassPhi->Fill(invMass,ptCand);
+      }
+      if(isK0starpiKK){
+	fMassHistK0st[index]->Fill(invMass);
+	fPtVsMassK0st->Fill(invMass,ptCand);
+      }
       if(fReadMC  && indexMCpiKK!=-1){
 	fMassHist[indexMCpiKK]->Fill(invMass);
 	if(isPhipiKK) fMassHistPhi[indexMCpiKK]->Fill(invMass);
