@@ -358,7 +358,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	cout << "centrality: " << centrality <<  " " << GetBin(fAxisCent, centrality) << endl;
 	cout << "vertexz: " << vertexz <<  " " << GetBin(fAxisZ, vertexz) << endl;
 	cout << "eventPlane: " << eventPlane <<  " " << endl;
-	cout << "multiplicity: "<<  multiplicity << endl;
+	cout << "multiplicity: "<<  multiplicity << " " << fInputEvent->GetNumberOfTracks() << endl;
 
   }
 
@@ -575,6 +575,7 @@ Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
 	 (t1 == g2 && 
 	  t2 == g1) ) {
 	//cout <<"match"<< " " <<  gamma->Pt() << " " <<  d1->Pt() + d2->Pt() <<endl;
+	return kTRUE;
   }
 		 
   else {
@@ -584,7 +585,7 @@ Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
 	
 	for(Int_t i = 0; i < event->GetNumberOfV0s(); i++) {
 	v0 = event->GetV0(i);
-	cout << i << " " << v0->GetSecondaryVtx()->GetID() << " " <<dynamic_cast<AliAODTrack*>(v0->GetDaughter(0))->GetID() << " " << dynamic_cast<AliAODTrack*>(v0->GetDaughter(1))->GetID() << endl; 
+	//cout << i << " " << v0->GetSecondaryVtx()->GetID() << " " <<dynamic_cast<AliAODTrack*>(v0->GetDaughter(0))->GetID() << " " << dynamic_cast<AliAODTrack*>(v0->GetDaughter(1))->GetID() << endl; 
 	
 	}
   }
