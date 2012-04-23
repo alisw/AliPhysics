@@ -70,7 +70,9 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH2F *fhZPCvsZPA;		//! ZPC vs ZPA;
   TH2F *fhZDCCvsZDCCA;		//! ZDCC vs ZDCCA
   TH2F *fhZNvsZEM;		//! ZN vs ZEM;
+  TH2F *fhZNvsZEMwV0M;		//! ZN vs ZEM weighted with V0M centr. perc.;
   TH2F *fhZDCvsZEM;		//! ZDC vs ZEM;
+  TH2F *fhZDCvsZEMwV0M;		//! ZDC vs ZEM weighted with V0M centr. perc.;
   TH2F *fhZNvsVZERO;		//! ZN vs VZERO;
   TH2F *fhZDCvsVZERO;		//! ZDC vs VZERO;
   TH2F *fhZDCvsTracklets;	//! ZDC vs N_tracklets;
