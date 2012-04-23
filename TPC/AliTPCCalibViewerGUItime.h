@@ -71,8 +71,8 @@ public:
   void SetCacheDir(const char* cachedir) {fOutputCacheDir=cachedir;}
   void SetConfigFileName(const char* file) {fConfigFile=file;}
   
-  const char* GetDrawString();
-  const char* GetDrawOptionString();
+  const TString GetDrawString();
+  const TString GetDrawOptionString();
   const char* GetCustomDrawString() const {return fComboCustomDraw->GetTextEntry()?fComboCustomDraw->GetTextEntry()->GetText():"";}
   void GetCutString(TString &cutStr);
   TChain* GetChain() const {return fTree;}
@@ -178,7 +178,7 @@ public:
   void CheckDrawGraph();
   Bool_t CheckChain();
   void UpdateValueArrays(Bool_t withGraph, const Double_t *xArr);
-  const char* SubstituteUnderscores(const char* in);
+  void SubstituteUnderscores(TString &s);
   void GetHistogramTitle(TString &title);
   void AdjustYRange();
 private:

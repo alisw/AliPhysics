@@ -225,6 +225,7 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   fContDrawOpt->AddFrame(fComboAddDrawOpt, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
 //   fComboAddDrawOpt->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral(=14)");
 //   fComboAddDrawOpt->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+  fComboAddDrawOpt->GetTextEntry()->SetText("",kFALSE);
   
   // draw selection group
   fContDrawSel = new TGGroupFrame(fContLeft, "Draw selection", kVerticalFrame | kFitWidth | kFitHeight);
@@ -410,7 +411,7 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   fContCustom->AddFrame(fComboCustomDraw, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
   fComboCustomDraw->Connect("ReturnPressed()", "AliTPCCalibViewerGUItime", this, "DoCustomDraw()");
   fComboCustomDraw->Connect("Selected(Int_t)", "AliTPCCalibViewerGUItime", this, "DoCustomDraw()");
-  
+  fComboCustomDraw->GetTextEntry()->SetText("",kFALSE);
   
       // additional cuts container
   fContCustomCuts = new TGCompositeFrame(fContTopBottom, 200, 200, kHorizontalFrame | kFitWidth | kFitHeight);
@@ -428,7 +429,8 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   fContCustomCuts->AddFrame(fComboCustomCuts, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
   fComboCustomCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUItime", this, "DoCustomCutsDraw()");
   fComboCustomCuts->Connect("Selected(Int_t)", "AliTPCCalibViewerGUItime", this, "DoCustomCutsDraw()");
-
+  fComboCustomCuts->GetTextEntry()->SetText("",kFALSE);
+  
   SetWindowName("AliTPCCalibViewer GUI - Time");
   MapSubwindows();
   Resize(GetDefaultSize());
@@ -548,14 +550,14 @@ void AliTPCCalibViewerGUItime::FillCalibTypes()
     if (type.IsNull()) type="UNSPECIFIED";
 //     printf("CalibType: '%s'\n",type.Data());
     if (!fListCalibType->FindEntry(type.Data())) {
-      fListCalibType->AddEntry(type,id);
+      fListCalibType->AddEntry(type.Data(),id);
       fListCalibType->Select(id++);
     }
   }
   //add type for unspecified calibration type
   type="UNSPECIFIED";
   if (!fListCalibType->FindEntry(type.Data())) {
-    fListCalibType->AddEntry(SubstituteUnderscores(type.Data()),id);
+    fListCalibType->AddEntry(type.Data(),id);
     fListCalibType->Select(id++);
   }
 }
@@ -650,7 +652,7 @@ void AliTPCCalibViewerGUItime::AddReferenceTree(const char* treeFileName, const 
 
 }
 //______________________________________________________________________________
-const char* AliTPCCalibViewerGUItime::GetDrawString(){
+const TString AliTPCCalibViewerGUItime::GetDrawString(){
   //
   // create draw string for ttree by combining the user requestsa
   //
@@ -676,10 +678,10 @@ const char* AliTPCCalibViewerGUItime::GetDrawString(){
 //   if (fRadioXtime->GetState()==kButtonDown)
 //     selectedVariable.Append(":time");
   
-  return branchName.Data();
+  return branchName;
 }
 //______________________________________________________________________________
-const char* AliTPCCalibViewerGUItime::GetDrawOptionString(){
+const TString AliTPCCalibViewerGUItime::GetDrawOptionString(){
   //
   // get user selected draw options
   //
@@ -687,7 +689,7 @@ const char* AliTPCCalibViewerGUItime::GetDrawOptionString(){
   if (fComboAddDrawOpt->GetSelectedEntry()) drawOpt=fComboAddDrawOpt->GetSelectedEntry()->GetTitle();
   if (fChkDrawOptSame->GetState()==kButtonDown && !drawOpt.Contains("same",TString::kIgnoreCase))
     drawOpt+="same";
-  return drawOpt.Data();
+  return drawOpt;
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::GetCutString(TString &cutStr){
@@ -782,7 +784,8 @@ void AliTPCCalibViewerGUItime::GetHistogramTitle(TString &title)
             }
           }
         }
-        varName=SubstituteUnderscores(branchTitle.Data());
+        varName=branchTitle;
+        SubstituteUnderscores(varName);
       }
     }
     title+=varName;
@@ -857,6 +860,7 @@ void AliTPCCalibViewerGUItime::DoDraw() {
     fCurrentGraph=0x0;
     fCurrentHist=0x0;
   }
+//   printf("%s (%s) [%s]\n",drawString.Data(), cutString.Data(), optString.Data());
   //select data
   fTree->Draw(drawString.Data(),cutString.Data(),optString.Data());
   if (fTree->GetSelectedRows()==-1) return;
@@ -1252,16 +1256,14 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
   fCalibViewerGUI->Reload();
 }
 //______________________________________________________________________________
-const char* AliTPCCalibViewerGUItime::SubstituteUnderscores(const char* in)
+void AliTPCCalibViewerGUItime::SubstituteUnderscores(TString &s)
 {
   //
   //
   //
-  TString s(in);
   s.ReplaceAll("_{","|{");
   s.ReplaceAll("_"," ");
   s.ReplaceAll("|{","_{");
-  return s.Data();
 }
 
 //______________________________________________________________________________

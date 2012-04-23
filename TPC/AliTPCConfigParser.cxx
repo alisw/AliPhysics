@@ -143,7 +143,7 @@ Int_t AliTPCConfigParser::ParseConfigFileTxt(const char* cfgfile)
     TObjArray  *objArr=0x0;
     if (nentries==2){
       TObject *objVal=arrValues->At(1);
-      const TString &str=((TObjString*)objVal)->GetString();
+      const TString str=objVal->GetName();
       if (str.Contains(","))
         objArr=str.Tokenize(",");
       else{
@@ -183,7 +183,7 @@ const char* AliTPCConfigParser::GetData(const char *key, UInt_t position)
   if (position>=(UInt_t)(arr->GetEntries())) return "";
   TObject *val=arr->At(position);
   if ( !val ) return "";
-  return (((TObjString*)val)->GetString()).Data();
+  return val->GetName();
 }
 //_____________________________________________________________________
 Float_t AliTPCConfigParser::GetValue(const TObject *key, UInt_t position)
@@ -206,7 +206,7 @@ const char* AliTPCConfigParser::GetData(const TObject *key, UInt_t position)
   if (position>=((UInt_t)arr->GetEntries())) return "";
   TObject *val=arr->At(position);
   if ( !val ) return "";
-  return (((TObjString*)val)->GetString()).Data();
+  return val->GetName();
 }
 //_____________________________________________________________________
 Int_t AliTPCConfigParser::GetNumberOfValues(const char* key) const
