@@ -48,6 +48,13 @@ class AliTRDcalibDB : public TObject {
        , kNsector =  18
        , kNdet    = 540 };
   
+  enum { kFltrSet = 1
+       , kReadout
+       , kTimebin
+       , kTrkMode
+       , kTrigSet
+       , kAddOpti };
+
   static AliTRDcalibDB               *Instance();
   static void                         Terminate();
 
@@ -90,6 +97,7 @@ class AliTRDcalibDB : public TObject {
   void                                GetFilterType(TString &filterType);
   void                                GetGlobalConfiguration(TString &config);
   void                                GetGlobalConfigurationVersion(TString &version);
+  void                                GetDCSConfigParOption(Int_t cfgType, Int_t option, TString &cfgo);
 
   Int_t                               GetOnlineGainTableID();
 

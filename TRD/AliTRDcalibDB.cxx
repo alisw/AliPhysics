@@ -987,44 +987,7 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
   // Returns the filter type
   //
 
-  const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
-  if(!dcsArr){
-    filterType = "";
-    return;
-  }
-
-  Int_t esor   = 0; // Take SOR
-  Int_t calver = 0; // Check CalDCS version
-  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
-  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
-
-  if      (calver == 1) {
-
-    // DCS object
-    const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
-    if(!calDCS){
-      filterType = "";
-      return;
-    } 
-    filterType = calDCS->GetGlobalFilterType();
-
-  } 
-  else if (calver == 2) {
-
-    // DCSv2 object
-    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
-    if(!calDCSv2){
-      filterType = "";
-      return;
-    } 
-    filterType = calDCSv2->GetGlobalFilterType();
-
-  } 
-  else {
-
-    AliError("NO DCS/DCSv2 OCDB entry found!");
-
-  }
+  GetDCSConfigParOption(kFltrSet, 0, filterType);
 
 }
 
@@ -1209,20 +1172,76 @@ void AliTRDcalibDB::GetGlobalConfigurationVersion(TString &version)
 }
 
 //_____________________________________________________________________________
+void AliTRDcalibDB::GetDCSConfigParOption(Int_t cfgType, Int_t option, TString &cfgo)
+{
+  //
+  // Get a configuration (see enum in header file) or the options of a configuration
+  // option == 0 returns the configuration itself
+  // option >  0 returns the optional parameter Nr. (option) of the configuration (cfgType)
+  //
+
+  // define the delimiters
+  TString cdelim = "_";
+  TString odelim = "-";
+
+  // get the full configuration name
+  TString cname;
+  GetGlobalConfiguration(cname);
+  TObjArray *carr = cname.Tokenize(cdelim);
+  Int_t nconfig = carr->GetEntries();
+
+  // protect
+  if (nconfig == 0) {
+    AliError("Bad DCS configuration name!");
+    cfgo = "";
+    return;
+  } else if ((nconfig-1) < cfgType) {
+    AliError("Not enough DCS configuration parameters!");
+    cfgo = "";
+    return;
+  }
+
+  TString fullcfg = ((TObjString*)carr->At(cfgType))->GetString();
+
+  if (fullcfg.Contains(odelim)) {
+
+    TObjArray *oarr = fullcfg.Tokenize(odelim);
+    Int_t noptions = oarr->GetEntries();
+
+    // protect
+    if ((noptions-1) < option) {
+      AliError("Not enough DCS configuration options defined!");
+      cfgo = "";
+      return;
+    }
+
+    cfgo = ((TObjString*)oarr->At(option))->GetString();
+    return;
+
+  }
+  else {
+
+    if (option != 0) {
+      AliError("Not enough DCS configuration options defined!");
+      cfgo = "";
+      return;
+    }
+    cfgo = fullcfg;
+    return;
+
+  }
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDcalibDB::HasOnlineFilterPedestal()
 {
   //
   // Checks whether pedestal filter was applied online
   //
 
-  TString cname;
-
-  // Temporary: Get the filter config from the configuration name
-  GetGlobalConfiguration(cname);
-  TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
-
-  // TString filterconfig;
-  //GetFilterType(filterconfig);
+  TString filterconfig;
+  GetFilterType(filterconfig);
 
   return filterconfig.Contains("p");
 
@@ -1235,14 +1254,8 @@ Bool_t AliTRDcalibDB::HasOnlineFilterGain()
   // Checks whether online gain filter was applied
   //
 
-  TString cname;
-
-  // Temporary: Get the filter config from the configuration name
-  GetGlobalConfiguration(cname);
-  TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
-
-  //TString filterconfig;
-  //GetFilterType(filterconfig);
+  TString filterconfig;
+  GetFilterType(filterconfig);
 
   return filterconfig.Contains("g");
 
@@ -1255,14 +1268,8 @@ Bool_t AliTRDcalibDB::HasOnlineTailCancellation()
   // Checks whether online tail cancellation was applied
   //
 
-  TString cname;
-
-  // Temporary: Get the filter config from the configuration name
-  GetGlobalConfiguration(cname);
-  TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
-
-  //TString filterconfig;
-  //GetFilterType(filterconfig);
+  TString filterconfig;
+  GetFilterType(filterconfig);
 
   return filterconfig.Contains("t");
 

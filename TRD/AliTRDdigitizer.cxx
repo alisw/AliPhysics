@@ -1235,9 +1235,10 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
   }
 
   // The gain factor calibration objects
-  const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
-  AliTRDCalROC       *calGainFactorROC      = 0x0;
-  Float_t             calGainFactorDetValue = 0.0;
+  const AliTRDCalDet          *calGainFactorDet      = calibration->GetGainFactorDet();  
+  AliTRDCalROC                *calGainFactorROC      = 0x0;
+  Float_t                      calGainFactorDetValue = 0.0;
+  AliTRDCalOnlineGainTableROC *onlineGainFactorROC   = 0x0;
 
   AliTRDarrayADC     *digits = 0x0;
 
@@ -1271,8 +1272,9 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
   calGainFactorDetValue = calGainFactorDet->GetValue(det);
 
   // Get the online gain factors
-  //AliTRDCalOnlineGainTableROC *onlineGainFactorROC 
-  //  = calibration->GetOnlineGainTableROC(det);
+  if (calibration->HasOnlineFilterGain()) {
+    onlineGainFactorROC = calibration->GetOnlineGainTableROC(det);
+  }
 
   // Create the digits for this chamber
   for (row  = 0; row  <  nRowMax; row++ ) {
@@ -1286,11 +1288,16 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
       }
 
       // The gain factors
-      Float_t padgain = calGainFactorDetValue 
-                      * calGainFactorROC->GetValue(col,row);
+      Float_t padgain    = calGainFactorDetValue 
+                         * calGainFactorROC->GetValue(col,row);
       if (padgain <= 0) {
         AliError(Form("Not a valid gain %f, %d %d %d",padgain,det,col,row));
       }
+
+      // The online gain correction
+      Float_t onlinegain = onlineGainFactorROC 
+                         ? onlineGainFactorROC->GetGainCorrectionFactor(row,col) 
+                         : 1.0;
 
       for (time = 0; time < nTimeTotal; time++) {
 
@@ -1300,6 +1307,7 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
         signalAmp *= coupling;
 	// Gain factors
 	signalAmp *= padgain;
+        signalAmp /= onlinegain;
 
         // Add the noise, starting from minus ADC baseline in electrons
         signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,simParam->GetNoise())
@@ -1426,6 +1434,7 @@ Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager * const manDig
   //                      / convert;
 
   // The gainfactor calibration objects
+  // Not used since these digits are supposed to be from real raw data
   //const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
   //AliTRDCalROC       *calGainFactorROC      = 0;
   //Float_t             calGainFactorDetValue = 0.0;
