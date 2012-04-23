@@ -78,6 +78,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F*   fDalitzPhi[4*kMaxPtBins];   //! dalitz plot via phi (sig,bkg,tot)
   TH2F*   fDalitzK0st[4*kMaxPtBins];   //! dalitz plot via K0* (sig,bkg,tot)
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
+  TH2F *fPtVsMassPhi;    //! hist. of pt vs. mass (phi selection)
+  TH2F *fPtVsMassK0st;   //! hist. of pt vs. mass (K0* selection)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
   TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
   TNtuple *fNtupleDs; //! output ntuple
@@ -99,7 +101,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,10);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,11);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif
