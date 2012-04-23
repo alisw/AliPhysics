@@ -341,6 +341,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 								if(algorithm==1)fJetBranch   = Branchname_rec.Data();
 
 								TClonesArray* jets = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
+								if(!jets)continue;
 								Int_t nj = jets->GetEntriesFast();
 								if (fDebug) printf("There are %5d jets in the event \n", nj);
 
