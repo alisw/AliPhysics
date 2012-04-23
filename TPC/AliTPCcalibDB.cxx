@@ -493,6 +493,9 @@ void AliTPCcalibDB::Update(){
     fTransform->SetCurrentRun(AliCDBManager::Instance()->GetRun());
   }
 
+  // Create Dead Channel Map
+  InitDeadMap();
+
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
 }
@@ -620,7 +623,15 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
    }
 }
 
+Int_t AliTPCcalibDB::InitDeadMap() {
+  // Initialize DeadChannel Map 
+  // Source of information:
+  // -  HV < HVnominal -delta
+  // -  Altro disabled channels. Noisy channels.
+  // -  DDL list
 
+  return 0;
+}
 
 void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {
   //

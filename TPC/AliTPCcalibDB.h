@@ -173,6 +173,8 @@ class AliTPCcalibDB : public TObject
 protected:
   
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
+  Int_t        InitDeadMap();
+
   Long64_t        fRun;         // current run number
   AliTPCTransform *fTransform;      // object responsible for spacial corrections
   AliTPCExB *fExB;              // ExB correction factor
