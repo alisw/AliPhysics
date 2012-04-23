@@ -838,6 +838,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   AnalyzeAttachment(startRunNumber,endRunNumber);
   AnalyzePadRegionGain();
   AnalyzeGainMultiplicity();
+  AnalyzeGainChamberByChamber();
   //
   // 3. Make control plots
   //
@@ -1143,6 +1144,26 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
 
 }
 
+Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
+  //
+  // get chamber by chamber gain
+  //
+  TGraphErrors *grShort  = fGainMult->GetGainPerChamber(0);
+  TGraphErrors *grMedium = fGainMult->GetGainPerChamber(1);
+  TGraphErrors *grLong   = fGainMult->GetGainPerChamber(2);
+  if (grShort==0x0 || grMedium==0x0 || grLong==0x0) {
+    delete grShort;
+    delete grMedium;
+    delete grLong;
+    return kFALSE;
+  }
+
+  fGainArray->AddLast(grShort);
+  fGainArray->AddLast(grMedium);
+  fGainArray->AddLast(grLong);
+
+  return kTRUE;
+}
 
 void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
   //

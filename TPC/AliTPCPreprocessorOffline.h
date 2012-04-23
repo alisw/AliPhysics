@@ -50,6 +50,7 @@ public:
   Bool_t AnalyzeAttachment(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesFit = 2000);
   Bool_t AnalyzePadRegionGain();
   Bool_t AnalyzeGainMultiplicity();
+  Bool_t AnalyzeGainChamberByChamber();
   void SetTimeGainRange(Double_t minGain=2.0, Double_t maxGain = 3.0) 
        {fMinGain = minGain; fMaxGain = maxGain;};
   Bool_t ValidateTimeGain();

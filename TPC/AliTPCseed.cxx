@@ -1143,6 +1143,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t corrTimeGain = 1;
   TObjArray * timeGainSplines = 0x0;
   TGraphErrors * grPadEqual = 0x0;
+  TGraphErrors*  grChamberGain[3]={0x0,0x0,0x0};
   //
   AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
   const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
@@ -1165,8 +1166,11 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 	//
 	if (type==1) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
 	if (type==0) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
+        const char* names[3]={"SHORT","MEDIUM","LONG"};
+        for (Int_t iPadRegion=0; iPadRegion<3; ++iPadRegion)
+          grChamberGain[iPadRegion]=(TGraphErrors*)timeGainSplines->FindObject(Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[iPadRegion]));
       }
-  }   
+  }
   
   const Float_t kClusterShapeCut = 1.5; // IMPPRTANT TO DO: move value to AliTPCRecoParam
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
@@ -1258,13 +1262,19 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     // pad region equalization outside of cluster param
     //
     Float_t gainEqualPadRegion = 1;
-    if (grPadEqual) gainEqualPadRegion = grPadEqual->Eval(ipad);
+    if (grPadEqual && recoParam->GetUseGainCorrectionTime()>0) gainEqualPadRegion = grPadEqual->Eval(ipad);
+    //
+    // chamber-by-chamber equalization outside gain map
+    //
+    Float_t gainChamber = 1;
+    if (grChamberGain[ipad] && recoParam->GetUseGainCorrectionTime()>0) gainChamber = grChamberGain[ipad]->Eval(cluster->GetDetector());
     //
     amp[ncl]=charge;
     amp[ncl]/=gainGG;
     amp[ncl]/=gainPad;
     amp[ncl]/=corrPos;
     amp[ncl]/=gainEqualPadRegion;
+    amp[ncl]/=gainChamber;
     //
     ncl++;
   }

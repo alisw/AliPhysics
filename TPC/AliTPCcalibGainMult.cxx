@@ -25,6 +25,7 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 
 
 #include "Riostream.h"
+#include "TROOT.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -36,6 +37,7 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 #include "TF1.h"
 #include "TVectorF.h"
 #include "TProfile.h"
+#include "TGraphErrors.h"
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCclusterMI.h"
@@ -65,7 +67,6 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 #include "AliTracker.h"
 #include "AliTPCTransform.h"
 #include "AliTPCROC.h"
-#include "TROOT.h"
 
 ClassImp(AliTPCcalibGainMult)
 
@@ -276,8 +277,8 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     return;
   }
   //
-  //ProcessV0s(event);   // 
-  //ProcessTOF(event);   //
+  ProcessV0s(event);   // 
+  ProcessTOF(event);   //
   //ProcessKinks(event); // not relyable
   DumpHPT(event);      // 
   UInt_t runNumber = event->GetRunNumber();
@@ -991,7 +992,7 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
   if (isKaon||isProton||isPion||isElectron||isMIP||isMuon) isSelected=kTRUE;
   isHighPt = kFALSE;
   if (!isSelected) isHighPt = ((TMath::Power(1/track->Pt(),4)*gRandom->Rndm())<0.005);  
-  if (counter>kMax && ((1/track->Pt()*gRandom->Rndm())>kMax/counter)) return; 
+  //if (counter>kMax && ((1/track->Pt()*gRandom->Rndm())>kMax/counter)) return; 
   isSelected|=isHighPt;
   //
   //
@@ -1083,10 +1084,10 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
       "pout="<<pout<<
       "tgl="<<tgl<<
       "track.="<<track<<
-      "trackIn.="<<trackIn<<
-      "trackOut.="<<trackOut<<
-      "tpcOut.="<<tpcOut<<
-      "seed.="<<seed<<
+      //"trackIn.="<<trackIn<<
+      //"trackOut.="<<trackOut<<
+      //"tpcOut.="<<tpcOut<<
+      //"seed.="<<seed<<
       "medianMIP0="<<medianMIP0<<    // median MIP position as estimated from the array of (not only) "MIPS"
       //dedx 
       "truncUp.="<<&truncUp<<
@@ -1780,6 +1781,103 @@ void AliTPCcalibGainMult::ProcessTOF(const AliESDEvent * event){
 
 }
 
+
+TGraphErrors* AliTPCcalibGainMult::GetGainPerChamber(Int_t padRegion/*=1*/, Bool_t plotQA/*=kFALSE*/)
+{
+  //
+  // Extract gain variations per chamger for 'padRegion'
+  //
+
+  if (padRegion<0||padRegion>2) return 0x0;
+  
+  fHistGainSector->GetAxis(2)->SetRangeUser(padRegion,padRegion);
+  TH2D * histGainSec = fHistGainSector->Projection(0,1);
+//   TH1D* proj=fHistGainSector->Projection(0);
+//   Double_t max=proj->GetBinCenter(proj->GetMaximumBin());
+//   delete proj;
+  //
+  TObjArray arr;
+//   TF1 fg("gaus","gaus",histGainSec->GetYaxis()->GetXmin()+1,histGainSec->GetYaxis()->GetXmax()-1);
+//   histGainSec->FitSlicesY(&fg, 0, -1, 0, "QNR", &arr);
+  histGainSec->FitSlicesY(0, 0, -1, 0, "QNR", &arr);
+  TH1D * meanGainSec = (TH1D*)arr.At(1);
+  Double_t gainsIROC[36]={0.};
+  Double_t gainsOROC[36]={0.};
+  Double_t gains[72]={0.};
+  Double_t gainsErr[72]={0.};
+  TGraphErrors *gr=new TGraphErrors(36);
+  //
+  for(Int_t isec = 1; isec < meanGainSec->GetNbinsX() + 1; isec++) {
+    TH1D *slice=histGainSec->ProjectionY("_py",isec,isec);
+    Double_t max=slice->GetBinCenter(slice->GetMaximumBin());
+    TF1 fg("gaus","gaus",max-30,max+30);
+    slice->Fit(&fg,"QNR");
+    meanGainSec->SetBinContent(isec,fg.GetParameter(1));
+    meanGainSec->SetBinError(isec,fg.GetParError(1));
+    
+//     cout << isec << " " << meanGainSec->GetXaxis()->GetBinCenter(isec) << " " <<meanGainSec->GetBinContent(isec) << endl;
+    gains[isec-1] = meanGainSec->GetBinContent(isec);
+    if (isec < 37) {
+      gainsIROC[isec-1] = meanGainSec->GetBinContent(isec);
+    } else {
+      gainsOROC[isec - 36 -1] = meanGainSec->GetBinContent(isec);
+    }
+    gainsErr[isec-1]=meanGainSec->GetBinError(isec);
+    delete slice;
+  }
+  Double_t meanIroc = TMath::Median(36, gainsIROC);
+  Double_t meanOroc = TMath::Median(36, gainsOROC);
+  if (TMath::Abs(meanIroc)<1e-30) meanIroc=1.;
+  if (TMath::Abs(meanOroc)<1e-30) meanOroc=1.;
+  for(Int_t i = 0; i < 36; i++) {
+    gains[i] /= meanIroc;
+    gainsErr[i] /= meanIroc;
+  }
+  
+  for(Int_t i = 36; i < 72; i++){
+    gains[i] /= meanOroc;
+    gainsErr[i] /= meanOroc;
+  }
+  //
+  Int_t ipoint=0;
+  for(Int_t i = 0; i < 72; i++) {
+    if (padRegion==0 && i>35) continue;
+    if ( (padRegion==1 || padRegion==2) && i<36) continue;
+
+    if (gains[i]<1e-20 || gainsErr[i]/gains[i]>.2){
+      AliWarning(Form("Invalid chamber gain in ROC/region: %d / %d", i, padRegion));
+      gains[i]=1;
+      gainsErr[i]=1;
+    }
+    
+    gr->SetPoint(ipoint,i,gains[i]);
+    gr->SetPointError(ipoint,0,gainsErr[i]);
+    ++ipoint;
+  }
+
+  const char* names[3]={"SHORT","MEDIUM","LONG"};
+  gr->SetNameTitle(Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[padRegion]),Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[padRegion]));
+
+
+  //=====================================
+  // Do QA plotting if requested
+  if (plotQA){
+    TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("cQA");
+    if (!c) c=new TCanvas("cQA","cQA");
+    c->Clear();
+    c->Divide(1,2);
+    c->cd(1);
+    histGainSec->DrawCopy("colz");
+    meanGainSec->DrawCopy("same");
+    gr->SetMarkerStyle(20);
+    gr->SetMarkerSize(.5);
+    c->cd(2);
+    gr->Draw("alp");
+  }
+  
+  delete histGainSec;
+  return gr;
+}
 
 // void AliTPCcalibGainMult::Terminate(){
 //   //
