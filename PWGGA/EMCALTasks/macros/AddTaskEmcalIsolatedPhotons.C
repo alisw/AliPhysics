@@ -2,6 +2,7 @@ AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
 						       const char *ntracks            = "Tracks",
 						       const char *nclusters          = "CaloClusters",
 						       const char *njets              = "Jets",
+						       const char *ntrgclusters       = "ClustersL1GAMMAFEE",
 						       const Int_t AODtrackFilterBit  = 256  // hybrid LHC11h tracks
                                                        )
 {  
@@ -30,6 +31,7 @@ AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
   phTask->SetTracksName(ntracks);
   phTask->SetClusName(nclusters);
   phTask->SetJetsName(njets);
+  phTask->SetTrgClusName(ntrgclusters);
   phTask->SetAODFilterBit(AODtrackFilterBit); // global hybrids for LHC11h
 
   //-------------------------------------------------------
