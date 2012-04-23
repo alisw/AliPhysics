@@ -89,7 +89,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fCalNoiseROC(NULL)
   ,fCalNoiseDetValue(0)
   ,fCalPadStatusROC(NULL)
-  ,fCalOnGainROC(NULL)
+  ,fCalOnlGainROC(NULL)
   ,fClusterROC(0)
   ,firstClusterROC(0)
   ,fNoOfClusters(0)
@@ -151,7 +151,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name
   ,fCalNoiseROC(NULL)
   ,fCalNoiseDetValue(0)
   ,fCalPadStatusROC(NULL)
-  ,fCalOnGainROC(NULL)
+  ,fCalOnlGainROC(NULL)
   ,fClusterROC(0)
   ,firstClusterROC(0)
   ,fNoOfClusters(0)
@@ -206,7 +206,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fCalNoiseROC(NULL)
   ,fCalNoiseDetValue(0)
   ,fCalPadStatusROC(NULL)
-  ,fCalOnGainROC(NULL)
+  ,fCalOnlGainROC(NULL)
   ,fClusterROC(0)
   ,firstClusterROC(0)
   ,fNoOfClusters(0)
@@ -897,9 +897,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration object with the pad status
   fCalPadStatusROC       = calibration->GetPadStatusROC(fDet);
   // Calibration object of the online gain
-  fCalOnGainROC          = 0x0;  
+  fCalOnlGainROC          = 0x0;  
   if (calibration->HasOnlineFilterGain()) {
-    fCalOnGainROC        = calibration->GetOnlineGainTableROC(fDet);
+    fCalOnlGainROC        = calibration->GetOnlineGainTableROC(fDet);
   }
 
   firstClusterROC = -1;
@@ -964,8 +964,8 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Fl
   //
 
   Float_t gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col,Max.row);
-  Float_t ongain = fCalOnGainROC ? fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col) : 1;
-  Signals[1] = (fDigits->GetData(Max.row, Max.col, Max.time) - fBaseline) * ongain / gain + 0.5f;
+  Float_t onlcf = fCalOnlGainROC ? fCalOnlGainROC->GetGainCorrectionFactor(Max.row,Max.col) : 1;
+  Signals[1] = (fDigits->GetData(Max.row, Max.col, Max.time) - fBaseline) /(onlcf * gain) + 0.5f;
   if(Signals[1] <= fMaxThresh) return kFALSE;
 
   if(Max.col < 1 || Max.col + 1 >= fColMax) return kFALSE;
@@ -982,13 +982,13 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Fl
   Short_t signal(0);
   if((signal = fDigits->GetData(Max.row, Max.col-1, Max.time))){
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-1,Max.row);
-    ongain = fCalOnGainROC ? fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col-1) : 1;
-    Signals[0] = (signal - fBaseline) * ongain / gain + 0.5f;
+    onlcf = fCalOnlGainROC ? fCalOnlGainROC->GetGainCorrectionFactor(Max.row,Max.col-1) : 1;
+    Signals[0] = (signal - fBaseline) /( onlcf * gain) + 0.5f;
   } else Signals[0] = 0.;
   if((signal = fDigits->GetData(Max.row, Max.col+1, Max.time))){
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col+1,Max.row);
-    ongain = fCalOnGainROC ? fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col+1) : 1;
-    Signals[2] = (signal - fBaseline) * ongain / gain + 0.5f;
+    onlcf = fCalOnlGainROC ? fCalOnlGainROC->GetGainCorrectionFactor(Max.row,Max.col+1) : 1;
+    Signals[2] = (signal - fBaseline) /( onlcf *  gain) + 0.5f;
   } else Signals[2] = 0.;
 
   if(!(status[0] | status[1] | status[2])) {//all pads are good
@@ -1035,14 +1035,17 @@ Bool_t AliTRDclusterizer::FivePadCluster(MaxStruct &ThisMax, MaxStruct &Neighbou
   
   if (ThisMax.col >= fColMax - 3) return kFALSE;
   Float_t gain;
+  Float_t onlcf;
   if (ThisMax.col < fColMax - 5){
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(ThisMax.col+4,ThisMax.row);
-    if (fDigits->GetData(ThisMax.row, ThisMax.col+4, ThisMax.time) - fBaseline >= fSigThresh * gain)
+    onlcf = fCalOnlGainROC ? fCalOnlGainROC->GetGainCorrectionFactor(ThisMax.row,ThisMax.col+4) : 1;
+    if (fDigits->GetData(ThisMax.row, ThisMax.col+4, ThisMax.time) - fBaseline >= fSigThresh * gain * onlcf)
       return kFALSE;
   }
   if (ThisMax.col > 1) {
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(ThisMax.col-2,ThisMax.row);
-    if (fDigits->GetData(ThisMax.row, ThisMax.col-2, ThisMax.time) - fBaseline >= fSigThresh * gain)
+    onlcf = fCalOnlGainROC ? fCalOnlGainROC->GetGainCorrectionFactor(ThisMax.row,ThisMax.col-2) : 1;
+    if (fDigits->GetData(ThisMax.row, ThisMax.col-2, ThisMax.time) - fBaseline >= fSigThresh * gain * onlcf)
       return kFALSE;
   }
   
@@ -1125,7 +1128,7 @@ void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const 
 // ADC signals at position 0, 1, 5 and 6
 
   Float_t tmp(0.), kMaxShortVal(32767.); // protect against data overflow due to wrong gain calibration
-  Float_t gain(1.); Short_t signal(0);
+  Float_t gain(1.); Float_t onlcf(1.); Short_t signal(0);
   // Store the amplitudes of the pads in the cluster for later analysis
   // and check whether one of these pads is masked in the database
   signals[3]=Max.signals[1];
@@ -1134,7 +1137,8 @@ void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const 
   while((jpad = Max.col-ipad)){
     if(!(signal = fDigits->GetData(Max.row, jpad, Max.time))) break; // empty digit !
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(jpad, Max.row);
-    tmp = (signal - fBaseline) / gain + 0.5f;
+    onlcf = fCalOnlGainROC ? fCalOnlGainROC->GetGainCorrectionFactor(Max.row,jpad) : 1;
+    tmp = (signal - fBaseline) / (onlcf * gain) + 0.5f;
     signal = (Short_t)TMath::Min(tmp, kMaxShortVal);
     if(signal<fSigThresh) break; // signal under threshold
     nPadCount++;
@@ -1146,7 +1150,8 @@ void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const 
   while((jpad = Max.col+ipad)<fColMax){
     if(!(signal = fDigits->GetData(Max.row, jpad, Max.time))) break; // empty digit !
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(jpad, Max.row);
-    tmp = (signal - fBaseline) / gain + 0.5f;
+    onlcf = fCalOnlGainROC ? fCalOnlGainROC->GetGainCorrectionFactor(Max.row,jpad) : 1;
+    tmp = (signal - fBaseline) / (onlcf * gain) + 0.5f;
     signal = (Short_t)TMath::Min(tmp, kMaxShortVal);
     if(signal<fSigThresh) break; // signal under threshold
     nPadCount++;

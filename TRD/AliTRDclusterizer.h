@@ -175,7 +175,7 @@ protected:
   AliTRDCalROC        *fCalNoiseROC;              // Calibration object with pad wise values for the noise
   Float_t              fCalNoiseDetValue;         // Calibration value for chamber wise noise
   AliTRDCalSingleChamberStatus *fCalPadStatusROC; // Calibration object with the pad status
-  AliTRDCalOnlineGainTableROC *fCalOnGainROC;     // Calibration table of online gain factors
+  AliTRDCalOnlineGainTableROC *fCalOnlGainROC;     // Calibration table of online gain factors
   Int_t                fClusterROC;               // The index to the first cluster of a given ROC
   Int_t                firstClusterROC;           // The number of cluster in a given ROC
   Int_t                fNoOfClusters;             // Number of Clusters already processed and still owned by the clusterizer

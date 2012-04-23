@@ -1235,12 +1235,11 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
   }
 
   // The gain factor calibration objects
-  const AliTRDCalDet          *calGainFactorDet      = calibration->GetGainFactorDet();  
-  AliTRDCalROC                *calGainFactorROC      = 0x0;
-  Float_t                      calGainFactorDetValue = 0.0;
-  AliTRDCalOnlineGainTableROC *onlineGainFactorROC   = 0x0;
+  const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
+  AliTRDCalROC       *calGainFactorROC      = 0x0;
+  Float_t             calGainFactorDetValue = 0.0;
 
-  AliTRDarrayADC     *digits = 0x0;
+  AliTRDarrayADC     *digits                = 0x0;
 
   if (!signals) {
     AliError(Form("Signals array for detector %d does not exist\n",det));
@@ -1271,11 +1270,6 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
   calGainFactorROC      = calibration->GetGainFactorROC(det);
   calGainFactorDetValue = calGainFactorDet->GetValue(det);
 
-  // Get the online gain factors
-  if (calibration->HasOnlineFilterGain()) {
-    onlineGainFactorROC = calibration->GetOnlineGainTableROC(det);
-  }
-
   // Create the digits for this chamber
   for (row  = 0; row  <  nRowMax; row++ ) {
     for (col  = 0; col  <  nColMax; col++ ) {
@@ -1294,11 +1288,6 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
         AliError(Form("Not a valid gain %f, %d %d %d",padgain,det,col,row));
       }
 
-      // The online gain correction
-      Float_t onlinegain = onlineGainFactorROC 
-                         ? onlineGainFactorROC->GetGainCorrectionFactor(row,col) 
-                         : 1.0;
-
       for (time = 0; time < nTimeTotal; time++) {
 
 	// Get the signal amplitude
@@ -1307,7 +1296,6 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
         signalAmp *= coupling;
 	// Gain factors
 	signalAmp *= padgain;
-        signalAmp /= onlinegain;
 
         // Add the noise, starting from minus ADC baseline in electrons
         signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,simParam->GetNoise())
