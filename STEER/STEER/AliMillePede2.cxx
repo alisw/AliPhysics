@@ -175,8 +175,8 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
     int ng = 0; // recalculate N globals
     int maxPID = -1;
     for (int i=0;i<nGlo;i++) if (regroup[i]>=0) {ng++; if (regroup[i]>maxPID) maxPID = regroup[i];} 
-    AliInfo(Form("Gegrouping is requested: from %d raw to %d free globals, max global ID=%d",nGlo,ng,maxPID));
-    if (ng != maxPID-1) AliFatal("Wrong regrouping requested");
+    AliInfo(Form("Regrouping is requested: from %d raw to %d free globals, max global ID=%d",nGlo,ng,maxPID));
+    if (ng != maxPID+1) AliFatal("Wrong regrouping requested");
     nGlo = ng;
   }
   if (nLoc>0)        fNLocPar = nLoc;
@@ -556,6 +556,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
       if (fkReGroup) {
 	int idtmp = fkReGroup[ indGlo[i] ];
 	if (idtmp == kFixParID) indGlo[i] = kFixParID; // fixed param in regrouping 
+	else                    indGlo[i] = idtmp;
       }
       //
       int iID = indGlo[i];              // Global param indice
@@ -1044,7 +1045,7 @@ Int_t AliMillePede2::GlobalFitIteration()
 
   /*
   printf("Solving:\n");
-  matCGlo.Print();
+  matCGlo.Print("l");
   for (int i=0;i<fNGloSize;i++) printf("b%2d : %+e\n",i,fVecBGlo[i]);
   */
   fGloSolveStatus = SolveGlobalMatEq();                     // obtain solution for this step
@@ -1057,6 +1058,12 @@ Int_t AliMillePede2::GlobalFitIteration()
   //
   for (int i=fNGloPar;i--;) fDeltaPar[i] += fVecBGlo[i];    // Update global parameters values (for iterations)
   //
+  /*
+  printf("Solved:\n");
+  matCGlo.Print("l");
+  for (int i=0;i<fNGloSize;i++) printf("b%2d : %+e (->%+e)\n",i,fVecBGlo[i], fDeltaPar[i]);
+  */
+
   //  PrintGlobalParameters();
   return 1;
 }
@@ -1069,7 +1076,7 @@ Int_t AliMillePede2::SolveGlobalMatEq()
   //
   /*
   printf("GlobalMatrix\n");
-  fMatCGlo->Print();
+  fMatCGlo->Print("l");
   printf("RHS\n");
   for (int i=0;i<fNGloPar;i++) printf("%d %+e\n",i,fVecBGlo[i]);
   */
@@ -1182,7 +1189,7 @@ Double_t AliMillePede2::GetParError(int iPar) const
   // return error for parameter iPar
   if (fGloSolveStatus==kInvert) {
     if (fkReGroup) iPar = fkReGroup[iPar];
-    if (iPar<0) {AliInfo(Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
+    if (iPar<0) {AliDebug(2,Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
     double res = fMatCGlo->QueryDiag(iPar);
     if (res>=0) return TMath::Sqrt(res);
   } 
@@ -1195,7 +1202,7 @@ Double_t AliMillePede2::GetPull(int iPar) const
   // return pull for parameter iPar
   if (fGloSolveStatus==kInvert) {
     if (fkReGroup) iPar = fkReGroup[iPar];
-    if (iPar<0) {AliInfo(Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
+    if (iPar<0) {AliDebug(2,Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
     //
     return fProcPnt[iPar]>0 && (fSigmaPar[iPar]*fSigmaPar[iPar]-fMatCGlo->QueryDiag(iPar))>0. && fSigmaPar[iPar]>0 
       ? fDeltaPar[iPar]/TMath::Sqrt(fSigmaPar[iPar]*fSigmaPar[iPar]-fMatCGlo->QueryDiag(iPar)) : 0;
