@@ -30,8 +30,10 @@ set ( SRCS
     EBYE/BalanceFunctions/AliAnalysisTaskToyModel.cxx 
     EBYE/BalanceFunctions/AliAnalysisTaskBF.cxx 
     EBYE/BalanceFunctions/AliAnalysisTaskBFPsi.cxx 
+    EBYE/BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx 
     EBYE/BalanceFunctions/AliBalance.cxx 
     EBYE/BalanceFunctions/AliBalancePsi.cxx 
+    EBYE/BalanceFunctions/AliBalanceEventMixing.cxx 
     EBYE/LRC/AliLRCBase.cxx
     EBYE/LRC/AliAnalysisTaskLRC.cxx 
     EBYE/LRC/AliLRCAnalysis.cxx 
