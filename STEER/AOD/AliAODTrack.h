@@ -21,6 +21,7 @@
 
 class AliVVertex;
 class AliTPCdEdxInfo;
+class AliAODEvent;
 
 class AliAODTrack : public AliVTrack {
 
@@ -283,7 +284,9 @@ class AliAODTrack : public AliVTrack {
   UChar_t   GetTRDntrackletsPID() const;
   void      GetHMPIDpid(Double_t *p) const { if (fDetPid) fDetPid->GetHMPIDprobs(p); }
 
-  
+  const AliAODEvent* GetAODEvent(){return fAODEvent;}
+  void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
+
   AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
@@ -408,7 +411,9 @@ class AliAODTrack : public AliVTrack {
   Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm
   Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm
 
-  ClassDef(AliAODTrack, 16);
+  const AliAODEvent* fAODEvent;     //! 
+
+  ClassDef(AliAODTrack, 17);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

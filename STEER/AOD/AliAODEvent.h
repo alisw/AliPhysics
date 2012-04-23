@@ -139,7 +139,7 @@ class AliAODEvent : public AliVEvent {
   TClonesArray *GetTracks()              const { return fTracks; }
   Int_t         GetNTracks()             const { return fTracks? fTracks->GetEntriesFast() : 0; }
   Int_t         GetNumberOfTracks()      const { return GetNTracks(); }
-  AliAODTrack  *GetTrack(Int_t nTrack)   const { return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
+  AliAODTrack  *GetTrack(Int_t nTrack)   const { if(fTracks && fTracks->UncheckedAt(nTrack)) ((AliAODTrack*)fTracks->UncheckedAt(nTrack))->SetAODEvent(this);return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
   Int_t         AddTrack(const AliAODTrack* trk)
     {new((*fTracks)[fTracks->GetEntriesFast()]) AliAODTrack(*trk); return fTracks->GetEntriesFast()-1;}
   Int_t         GetMuonTracks(TRefArray *muonTracks) const;

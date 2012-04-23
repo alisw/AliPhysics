@@ -26,6 +26,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
 #include "AliAODTrack.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliAODTrack)
 
@@ -53,7 +54,8 @@ AliAODTrack::AliAODTrack() :
   fDetPid(NULL),
   fProdVertex(NULL),
   fTrackPhiOnEMCal(-999),
-  fTrackEtaOnEMCal(-999)
+  fTrackEtaOnEMCal(-999),
+  fAODEvent(NULL)
 {
   // default constructor
 
@@ -103,7 +105,8 @@ AliAODTrack::AliAODTrack(Short_t id,
   fDetPid(NULL),
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
-  fTrackEtaOnEMCal(-999)
+  fTrackEtaOnEMCal(-999),
+  fAODEvent(NULL)
 {
   // constructor
  
@@ -157,7 +160,8 @@ AliAODTrack::AliAODTrack(Short_t id,
   fDetPid(NULL),
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
-  fTrackEtaOnEMCal(-999)
+  fTrackEtaOnEMCal(-999),
+  fAODEvent(NULL)
 {
   // constructor
  
@@ -205,7 +209,8 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fDetPid(NULL),
   fProdVertex(trk.fProdVertex),
   fTrackPhiOnEMCal(trk.fTrackPhiOnEMCal),
-  fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal)
+  fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal),
+  fAODEvent(trk.fAODEvent)
 {
   // Copy constructor
 
