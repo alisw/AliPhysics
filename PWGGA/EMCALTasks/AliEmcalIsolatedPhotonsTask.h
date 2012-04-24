@@ -71,8 +71,8 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
   TH2F                       *fHistJetPhiEta;          // Phi-Eta distribution of jets
   TH1F                       *fHistMaxTrgCluster;      // Energy distribution of max trigger clusters
-  TH1F                       *fHistTrackPhi[3];        // Phi distribution of hybrid tracks
-  TH1F                       *fHistTrackEta[3];        // Eta distribution of hybrid tracks
+  TH1F                       *fHistTrackPhi[4];        // Phi distribution of hybrid tracks
+  TH1F                       *fHistTrackEta[4];        // Eta distribution of hybrid tracks
 
   Int_t                       Ptbins;                  // No. of pt bins
   Float_t                     Ptlow;                   // Min pt

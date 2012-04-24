@@ -191,7 +191,7 @@ void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
   fHistMaxTrgCluster->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMaxTrgCluster);
 
-  for (Int_t i = 0; i < 3; i++) {
+  for (Int_t i = 0; i < 4; i++) {
     TString histnamephi("fHistTrackPhi_");
     histnamephi += i;
     fHistTrackPhi[i] = new TH1F(histnamephi.Data(),histnamephi.Data(), 32, 0, 6.4);
@@ -211,6 +211,8 @@ void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
   fHistTrackEta[1]->SetLineColor(kBlue);
   fHistTrackPhi[2]->SetLineColor(kGreen);
   fHistTrackEta[2]->SetLineColor(kGreen);
+  fHistTrackPhi[3]->SetLineColor(kBlack);
+  fHistTrackEta[3]->SetLineColor(kBlack);
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
@@ -373,6 +375,8 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
     }
 
     fHistTrPhiEta->Fill(eta, phi);
+    fHistTrackEta[3]->Fill(eta);
+    fHistTrackPhi[3]->Fill(phi);
 
     if (label >= 0 && label < 3) {
       fHistTrackEta[label]->Fill(eta);
