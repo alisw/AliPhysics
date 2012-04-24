@@ -68,6 +68,7 @@ class AliESDInputHandler : public AliInputEventHandler {
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  
+    void                 ConnectFriends();
  protected:
     // ESD event
     AliESDEvent    *fEvent;         //! Pointer to the event

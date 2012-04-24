@@ -100,9 +100,9 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     if (!fEvent) fEvent = new AliESDEvent();
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
+    if (fReadFriends) ConnectFriends();
 
     if (fMixingHandler) fMixingHandler->Init(tree,  opt);
-
     return kTRUE;
 }
 
@@ -155,7 +155,35 @@ void AliESDInputHandler::CheckSelectionMask()
    if (!fEventCuts || !IsUserCallSelectionMask()) return;
    fIsSelectedResult = fEventCuts->GetSelectionMask((AliESDEvent*)fEvent);
 }
-   
+
+//______________________________________________________________________________
+void AliESDInputHandler::ConnectFriends()
+{
+// Connect the friends tree as soon as available.
+  //
+  // Handle the friends first
+  //
+  if (!fTree->FindBranch("ESDfriend.")) {
+    // Try to add ESDfriend. branch as friend
+      TString esdFriendTreeFName;
+      esdFriendTreeFName = (fTree->GetCurrentFile())->GetName();
+    
+
+    if(esdFriendTreeFName.Contains("AliESDs.root")) {
+      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
+    } else if(esdFriendTreeFName.Contains("AliESDs_wSDD.root")) {
+      esdFriendTreeFName.ReplaceAll("AliESDs_wSDD.root", fFriendFileName.Data());
+    }
+
+    TTree* cTree = fTree->GetTree();
+    if (!cTree) cTree = fTree;      
+    cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
+    cTree->SetBranchStatus("ESDfriend.", 1);
+    fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
+    if (fFriend) cTree->SetBranchAddress("ESDfriend.", &fFriend);
+  }
+}
+
 //______________________________________________________________________________
 Bool_t  AliESDInputHandler::FinishEvent()
 {
@@ -174,25 +202,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
   //
   // Handle the friends first
   //
-  if (!fTree->FindBranch("ESDfriend.") && fReadFriends) {
-    // Try to add ESDfriend. branch as friend
-      TString esdFriendTreeFName;
-      esdFriendTreeFName = (fTree->GetCurrentFile())->GetName();
-    
-
-    if(esdFriendTreeFName.Contains("AliESDs.root")) {
-      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
-    } else if(esdFriendTreeFName.Contains("AliESDs_wSDD.root")) {
-      esdFriendTreeFName.ReplaceAll("AliESDs_wSDD.root", fFriendFileName.Data());
-    }
-
-    TTree* cTree = fTree->GetTree();
-    if (!cTree) cTree = fTree;      
-    cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
-    cTree->SetBranchStatus("ESDfriend.", 1);
-    fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
-    if (fFriend) cTree->SetBranchAddress("ESDfriend.", &fFriend);
-  } 
+  if (fReadFriends) ConnectFriends();
   //
   //
   SwitchOffBranches();
