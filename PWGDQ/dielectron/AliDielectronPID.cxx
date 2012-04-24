@@ -44,7 +44,9 @@ ClassImp(AliDielectronPID)
 
 TGraph *AliDielectronPID::fgFitCorr=0x0;
 Double_t AliDielectronPID::fgCorr=0.0;
+Double_t AliDielectronPID::fgCorrdEdx=1.0;
 TF1 *AliDielectronPID::fgFunEtaCorr=0x0;
+TGraph *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
@@ -204,7 +206,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   if( (part->IsA() == AliESDtrack::Class()) && fgFunEtaCorr ){
     esdTrack=static_cast<AliESDtrack*>(part);
     origdEdx=esdTrack->GetTPCsignal();
-    esdTrack->SetTPCsignal(origdEdx/GetEtaCorr(esdTrack),esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
+    esdTrack->SetTPCsignal(origdEdx/GetEtaCorr(esdTrack)/fgCorrdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
   }
 
   
@@ -484,12 +486,20 @@ void AliDielectronPID::SetCorrVal(Double_t run)
   //
   // set correction value for run
   //
-  fgCorr=0;
-  if (!fgFitCorr) return;
-  fgCorr=fgFitCorr->Eval(run);
-  if (run<fgFitCorr->GetX()[0]) fgCorr=fgFitCorr->GetY()[0];
-  if (run>fgFitCorr->GetX()[fgFitCorr->GetN()-1]) fgCorr=fgFitCorr->GetY()[fgFitCorr->GetN()-1];
-//   printf("Corr: %f\n",fgCorr);
+  fgCorr=0.;
+  fgCorrdEdx=1.;
+  
+  if (fgFitCorr){
+    fgCorr=fgFitCorr->Eval(run);
+    if (run<fgFitCorr->GetX()[0]) fgCorr=fgFitCorr->GetY()[0];
+    if (run>fgFitCorr->GetX()[fgFitCorr->GetN()-1]) fgCorr=fgFitCorr->GetY()[fgFitCorr->GetN()-1];
+  }
+
+  if (fgdEdxRunCorr){
+    fgCorrdEdx=fgdEdxRunCorr->Eval(run);
+    if (run<fgdEdxRunCorr->GetX()[0]) fgCorrdEdx=fgdEdxRunCorr->GetY()[0];
+    if (run>fgdEdxRunCorr->GetX()[fgFitCorr->GetN()-1]) fgCorrdEdx=fgdEdxRunCorr->GetY()[fgdEdxRunCorr->GetN()-1];
+  }
 }
 
 //______________________________________________

@@ -39,7 +39,7 @@ public:
   AliDielectronCFdraw(AliCFContainer *cont);
   AliDielectronCFdraw(const char* filename);
   
-  virtual ~AliDielectronCFdraw() {;}
+  virtual ~AliDielectronCFdraw();
   
   void SetCFContainer(AliCFContainer * const container) {fCfContainer=container;}
   void SetCFContainers(const TSeqCollection *arr);
@@ -64,7 +64,7 @@ public:
 
   TObjArray* CollectHistosProj(const Option_t* varnames, const char* slices);
   TObjArray* CollectHistosProj(const Int_t vars[3], const char* slices);
-  TObjArray* CollectMinvProj(const char* slice="0");
+  TObjArray* CollectMinvProj(Int_t slice);
   TH1* Project(const Int_t vars[3], Int_t slice);
   TH1* Project(const Option_t* var, Int_t slice);
   
@@ -96,15 +96,5 @@ private:
 //
 // Inline functions
 //
-inline void AliDielectronCFdraw::SetRangeUser(const char* varname, Double_t min, Double_t max, const char* slices)
-{
-  SetRangeUser(fCfContainer->GetVar(varname),min,max,slices);
-}
-
-//________________________________________________________________
-inline void AliDielectronCFdraw::UnsetRangeUser(const char* varname, const char* slices)
-{
-  UnsetRangeUser(fCfContainer->GetVar(varname),slices);
-}
 #endif
 

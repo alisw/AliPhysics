@@ -246,7 +246,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "Nch10",                  // Number of charged MC tracks in |eta|<1.0
   "Centrality",
   "Nevents",
-  "RunNumber"
+  "RunNumber",
+  "MixingBin"
 };
 
 AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;

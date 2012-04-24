@@ -28,7 +28,9 @@ Detailed description
 
 #include <AliTriggerAnalysis.h>
 #include <AliESDVertex.h>
+#include <AliAODVertex.h>
 #include <AliESDEvent.h>
+#include <AliAODEvent.h>
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
 
@@ -48,7 +50,8 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fVtxType(kVtxTracks),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
-  fkVertex(0x0)
+  fkVertex(0x0),
+  fkVertexAOD(0x0)
 {
   //
   // Default Constructor
@@ -69,7 +72,8 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fVtxType(kVtxTracks),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
-  fkVertex(0x0)
+  fkVertex(0x0),
+  fkVertexAOD(0x0)
 {
   //
   // Named Constructor
@@ -87,6 +91,17 @@ AliDielectronEventCuts::~AliDielectronEventCuts()
 
 //______________________________________________
 Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
+{
+  //
+  // check the cuts
+  //
+  
+  if(event->IsA() == AliESDEvent::Class()) return IsSelectedESD(event);
+  else if(event->IsA() == AliAODEvent::Class()) return IsSelectedAOD(event);
+  else return kFALSE;
+}
+//____________________________________________________________________
+Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
 {
   //
   // check the cuts
@@ -160,6 +175,88 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
       return kFALSE;
   }
 
+  
+  return kTRUE;
+}
+//______________________________________________
+Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
+{
+  //
+  // check the cuts
+  //
+  
+  AliAODEvent *ev=dynamic_cast<AliAODEvent*>(event);
+  if (!ev) return kFALSE;
+
+  if (fCentMin<fCentMax){
+    AliCentrality *centrality=ev->GetCentrality();
+    Double_t centralityF=-1;
+    if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+    if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
+  }
+
+  fkVertexAOD=0x0;
+
+  switch(fVtxType){
+  case kVtxTracks:
+    fkVertexAOD=ev->GetVertex(AliAODVertex::kPrimary);
+  case kVtxTPC:   //  not stored 
+    fkVertexAOD=0x0;
+    break;
+  case kVtxSPD:
+  case kVtxTracksOrSPD:    fkVertexAOD=ev->GetPrimaryVertexSPD(); // == AliAODVertex::kMainSPD
+    break;
+  case kVtxAny:    fkVertexAOD=ev->GetPrimaryVertex(); // == AliAODVertex::kUndef);
+    break;
+  }
+
+  if ((fRequireVtx||fVtxZmin<fVtxZmax||fMinVtxContributors>0)&&!fkVertexAOD) return kFALSE;
+  
+  if (fMinVtxContributors>0){
+    Int_t nCtrb = fkVertexAOD->GetNContributors();
+    if (nCtrb<fMinVtxContributors){
+      if (fVtxType==kVtxTracksOrSPD){
+        fkVertexAOD=ev->GetVertex(AliAODVertex::kPrimary);
+        nCtrb = fkVertexAOD->GetNContributors();
+        if (nCtrb<fMinVtxContributors) return kFALSE;
+      } else {
+        return kFALSE;
+      }
+    }
+  }
+
+
+  if (fVtxZmin<fVtxZmax){
+    Double_t zvtx=fkVertexAOD->GetZ();
+    if (zvtx<fVtxZmin||zvtx>fVtxZmax) return kFALSE;
+  }
+  /*
+  if (fRequireV0and){
+    //    if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
+    Bool_t v0AND = kFALSE;
+    if (fRequireV0and==1){
+      Bool_t v0A       = fTriggerAnalysis->IsOfflineTriggerFired(ev, AliTriggerAnalysis::kV0A);
+      Bool_t v0A       = header->GetOfflineTrigger(); //TODO
+      Bool_t v0C       = fTriggerAnalysis->IsOfflineTriggerFired(ev, AliTriggerAnalysis::kV0C);
+      v0AND = v0A && v0C;
+    }
+
+    if (fRequireV0and==2){
+      Bool_t v0AHW     = (fTriggerAnalysis->V0Trigger(ev, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);
+      Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(ev, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);
+      v0AND = v0AHW && v0CHW;
+    }
+
+    if (!v0AND) return kFALSE;
+  }
+  */
+  /*  if (fMultITSTPC){
+    const AliESDVertex *vtxESDTPC=ev->GetPrimaryVertexTPC();
+    const AliMultiplicity *multESD = ev->GetMultiplicity();
+    if ( vtxESDTPC && multESD && vtxESDTPC->GetNContributors() < (-10.+0.25*multESD->GetNumberOfITSClusters(0)) )
+      return kFALSE;
+  }
+  */
   
   return kTRUE;
 }

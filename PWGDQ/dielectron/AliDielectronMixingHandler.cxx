@@ -138,11 +138,14 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
   if (diele->GetTrackArray(0)->GetEntriesFast()==0 && diele->GetTrackArray(1)->GetEntriesFast()==0) return;
   
   //find mixing bin
-  Double_t values[AliDielectronVarManager::kNMaxValues];
+  Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::Fill(ev,values);
 
   TString dim;
   Int_t bin=FindBin(values,&dim);
+
+  //add mixing bin to event data
+  values[AliDielectronVarManager::kMixingBin] = bin;
 
   if (bin<0){
     AliDebug(5,Form("Bin outside range: %s",dim.Data()));
@@ -299,7 +302,7 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
 
   for (Int_t ipool=0; ipool<fArrPools.GetSize(); ++ipool){
     TClonesArray *poolp=static_cast<TClonesArray*>(fArrPools.At(ipool));
-    if (!poolp) continue;
+    if (!poolp || !poolp->GetEntriesFast() || !poolp->At(0)) continue;
     //clear the arrays before the final processing"
     AliDebug(10,Form("Incomplete: Bin %d (%d)\n",ipool,poolp->GetEntriesFast()));
     diele->ClearArrays();
@@ -307,10 +310,23 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
 
     // increase counter for incomplete bins
     if (diele->fHistos) {
+      //buffer event data and set event data using the first event in this pool
+      Double_t values[AliDielectronVarManager::kNMaxValues]={0};
+      for (Int_t i=AliDielectronVarManager::kPairMax; i<AliDielectronVarManager::kNMaxValues; ++i)
+        values[i]=AliDielectronVarManager::GetValue((AliDielectronVarManager::ValueTypes)i);
+      
+      AliDielectronEvent *ev1=static_cast<AliDielectronEvent*>(poolp->At(0));
+      //use event data from the first event all events are in the same mixing bin anyhow...
+      AliDielectronVarManager::SetEventData(ev1->GetEventData());
+      
+      // fill the histograms
       diele->FillHistograms(0x0, kTRUE);
       diele->fHistos->Fill("Mixing","Stats",1);
       diele->fHistos->Fill("Mixing","InCompletePools",ipool);
       diele->fHistos->Fill("Mixing","Entries_InCompletePools",poolp->GetEntriesFast());
+      
+      //set back global event values
+      AliDielectronVarManager::SetEventData(values);
     }
     
   }
@@ -324,9 +340,7 @@ void AliDielectronMixingHandler::Init(const AliDielectron *diele)
   // initialise event buffers
   //
 
-  Int_t size=1;
-  for (Int_t i=0; i<fAxes.GetEntriesFast(); ++i)
-    size*=((static_cast<TVectorD*>(fAxes.At(i)))->GetNrows()-1);
+  Int_t size=GetNumberOfBins();
 
   AliDebug(10,Form("Creating a pool array with size %d \n",size));
 
@@ -356,6 +370,18 @@ void AliDielectronMixingHandler::Init(const AliDielectron *diele)
   }
 
   AliDebug(10,values.Data());
+}
+
+//______________________________________________
+Int_t AliDielectronMixingHandler::GetNumberOfBins() const
+{
+  //
+  // return the number of bins this mixing handler has
+  //
+  Int_t size=1;
+  for (Int_t i=0; i<fAxes.GetEntriesFast(); ++i)
+    size*=((static_cast<TVectorD*>(fAxes.At(i)))->GetNrows()-1);
+  return size;
 }
 
 //______________________________________________

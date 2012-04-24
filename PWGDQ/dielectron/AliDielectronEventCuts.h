@@ -23,6 +23,7 @@
 
 class AliTriggerAnalysis;
 class AliESDVertex;
+class AliAODVertex;
 
 class AliDielectronEventCuts : public AliAnalysisCuts {
 public:
@@ -45,6 +46,8 @@ public:
   //Analysis cuts interface
   //
   virtual Bool_t IsSelected(TObject* event);
+  Bool_t IsSelectedESD(TObject* event);
+  Bool_t IsSelectedAOD(TObject* event);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
   
 
@@ -63,6 +66,7 @@ private:
 
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
   const AliESDVertex *fkVertex;         //! current vertex
+  const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
   AliDielectronEventCuts(const AliDielectronEventCuts &c);
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);

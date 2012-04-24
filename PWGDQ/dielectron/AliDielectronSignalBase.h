@@ -77,6 +77,9 @@ public:
   TH1* GetRfactorHistogram()     const {return fHistRfactor;}
   
   void SetScaleRawToBackground(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
+  Double_t GetScaleMin() const { return fScaleMin; }
+  Double_t GetScaleMax() const { return fScaleMax; }
+
   Double_t GetScaleFactor() const { return fScaleFactor; }
 
   void SetMixingCorrection(Bool_t mixcorr=kTRUE) { fMixingCorr=mixcorr; }

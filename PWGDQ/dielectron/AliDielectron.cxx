@@ -215,6 +215,11 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     return;
   }
   AliDielectronVarManager::SetEvent(ev1);
+  if (fMixing){
+    //set mixing bin to event data
+    Int_t bin=fMixing->FindBin(AliDielectronVarManager::GetData());
+    AliDielectronVarManager::SetValue(AliDielectronVarManager::kMixingBin,bin);
+  }
 
   //in case we have MC load the MC event and process the MC particles
   if (AliDielectronMC::Instance()->HasMC()) {
@@ -239,7 +244,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     if ((ev1&&fEventFilter.IsSelected(ev1)!=selectedMask) ||
         (ev2&&fEventFilter.IsSelected(ev2)!=selectedMask)) return;
   
-  AliDielectronVarManager::SetEvent(ev1);
+//   AliDielectronVarManager::SetEvent(ev1); // why a second time???
 
   //fill track arrays for the first event
   if (ev1){
@@ -447,10 +452,17 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
   TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   //Fill event information
-  if (ev){
-    AliDielectronVarManager::Fill(ev, values);
+  if (ev){  //TODO: Why not use GetData() ??? See below event plane stuff!!!
+    AliDielectronVarManager::Fill(ev, values); //data should already be stored in AliDielectronVarManager from SetEvent, does EV plane correction rely on this???
+      if (fMixing){
+    //set mixing bin to event data
+    Int_t bin=fMixing->FindBin(values);
+    values[AliDielectronVarManager::kMixingBin]=bin;
+  }
+
     if (fHistos->GetHistogramList()->FindObject("Event"))
-      fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, values);
+//       fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
+      fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, values); //check event plane stuff and replace with above...
   }
   
   //Fill track information, separately for the track array candidates
