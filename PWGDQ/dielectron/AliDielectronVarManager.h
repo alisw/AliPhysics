@@ -296,6 +296,7 @@ public:
     kCentrality,             // event centrality fraction
     kNevents,                // event counter
     kRunNumber,              // run number
+    kMixingBin,
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
   };
@@ -328,7 +329,9 @@ public:
 
   static const Double_t* GetData() {return fgData;}
 
-  static Double_t GetValue(ValueTypes val) {return fgData[val];}
+  static Double_t GetValue(ValueTypes var) {return fgData[var];}
+  static void SetValue(ValueTypes var, Double_t val) { fgData[var]=val; }
+  
 private:
 
   static const char* fgkParticleNames[kNMaxValues];  //variable names
@@ -432,10 +435,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   Double_t origdEdx=particle->GetTPCsignal();
   
   // apply ETa correction, remove once this is in the tender
-  if( AliDielectronPID::GetEtaCorrFunction() ){
-    esdTrack=const_cast<AliESDtrack*>(particle);
-    esdTrack->SetTPCsignal(origdEdx/AliDielectronPID::GetEtaCorr(esdTrack),esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
-  }
+  esdTrack=const_cast<AliESDtrack*>(particle);
+  esdTrack->SetTPCsignal(origdEdx/AliDielectronPID::GetEtaCorr(esdTrack)/AliDielectronPID::GetCorrValdEdx(),esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
   
   Double_t pidProbs[AliPID::kSPECIES];
   // Fill AliESDtrack interface specific information
@@ -1240,7 +1241,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   
   values[AliDielectronVarManager::kv0Av0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] - 
 								     values[AliDielectronVarManager::kv0CrpH2]) ); 
-  
+
+  values[AliDielectronVarManager::kMixingBin]=0;
 }
 
 inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, Double_t * const values)
@@ -1312,6 +1314,14 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   FillVarVEvent(event, values);
 
   // Fill AliAODEvent interface specific information
+  AliAODHeader *header = event->GetHeader();
+  
+  Double_t centralityF=-1;
+  AliCentrality *aodCentrality = header->GetCentralityP();
+  if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
+  values[AliDielectronVarManager::kCentrality] = centralityF;
+  
+  //const AliAODVertex *primVtx = event->GetPrimaryVertex();
 }
   
 inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Double_t * const values)

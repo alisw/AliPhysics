@@ -52,6 +52,7 @@ public:
   void SetMoveToSameVertex(Bool_t move) { fMoveToSameVertex=move; }
   Bool_t GetMoveToSameVertex() const { return fMoveToSameVertex; }
 
+  Int_t GetNumberOfBins() const;
   Int_t FindBin(const Double_t values[], TString *dim=0x0);
   void Fill(const AliVEvent *ev, AliDielectron *diele);
 

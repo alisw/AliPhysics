@@ -108,12 +108,24 @@ AliDielectronCFdraw::AliDielectronCFdraw(const char* filename) :
 }
 
 //________________________________________________________________
+AliDielectronCFdraw::~AliDielectronCFdraw()
+{
+  //
+  // dtor
+  //
+  delete fCfContainer;
+  delete fEffGrid;
+}
+
+//________________________________________________________________
 void AliDielectronCFdraw::SetCFContainers(const TSeqCollection *arr)
 {
   //
   // Merge CF Container out of several containers
   //
 
+  delete fCfContainer; fCfContainer=0x0;
+  delete fEffGrid; fEffGrid=0x0;
   TIter next(arr);
   TObject *o=0x0;
 
@@ -195,6 +207,34 @@ void AliDielectronCFdraw::SetRangeUser(Int_t ivar, Double_t min, Double_t max, c
     }
   }
   delete arr;
+}
+
+//________________________________________________________________
+void AliDielectronCFdraw::SetRangeUser(const char* varname, Double_t min, Double_t max, const char* slices)
+{
+  //
+  // Set range from variable name
+  //
+  Int_t ivar=fCfContainer->GetVar(varname);
+  if (ivar==-1){
+    AliFatal(Form("Variable '%s' not found",varname));
+    return;
+  }
+  SetRangeUser(ivar,min,max,slices);
+}
+
+//________________________________________________________________
+void AliDielectronCFdraw::UnsetRangeUser(const char* varname, const char* slices)
+{
+  //
+  // Unset range from variable name
+  //
+  Int_t ivar=fCfContainer->GetVar(varname);
+  if (ivar==-1){
+    AliFatal(Form("Variable '%s' not found",varname));
+    return;
+  }
+  UnsetRangeUser(ivar,slices);
 }
 
 //________________________________________________________________
@@ -376,7 +416,7 @@ TObjArray* AliDielectronCFdraw::CollectHistosProj(const Int_t vars[3], const cha
 }
 
 //________________________________________________________________
-TObjArray* AliDielectronCFdraw::CollectMinvProj(const char* slice)
+TObjArray* AliDielectronCFdraw::CollectMinvProj(Int_t slice)
 {
   //
   // Collect invariant mass spectra of slice 'slice' for all pair types
@@ -385,8 +425,8 @@ TObjArray* AliDielectronCFdraw::CollectMinvProj(const char* slice)
   TObjArray *arr = new TObjArray();
   arr->SetOwner();
   for (Int_t iType = 0; iType <= AliDielectron::kEv1PMRot; iType++) {
-    fCfContainer->SetRangeUser(fCfContainer->GetVar("PairType"),iType,iType,fCfContainer->GetStep(slice));
-    arr->AddAt(fCfContainer->Project(fCfContainer->GetVar("M"),fCfContainer->GetStep(slice)),iType);
+    fCfContainer->SetRangeUser(fCfContainer->GetVar("PairType"),iType,iType,slice);
+    arr->AddAt(fCfContainer->Project(fCfContainer->GetVar("M"),slice),iType);
   }
   
   return arr;

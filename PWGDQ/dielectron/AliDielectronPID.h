@@ -64,9 +64,14 @@ public:
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
   static void SetCorrGraph(TGraph * const gr) { fgFitCorr=gr; }
+  static TGraph *GetCorrGraph()  { return fgFitCorr; }
+  
   static void SetCorrVal(Double_t run);
   static Double_t GetCorrVal()   { return fgCorr; }
-  static TGraph *GetCorrGraph()  { return fgFitCorr; }
+  static Double_t GetCorrValdEdx()   { return fgCorrdEdx; }
+  
+  static void SetCorrGraphdEdx(TGraph * const gr) { fgdEdxRunCorr=gr; }
+  static TGraph *GetCorrGraphdEdx()  { return fgdEdxRunCorr; }
 
   static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
   static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
@@ -94,7 +99,10 @@ private:
   static TGraph *fgFitCorr;       //spline fit object to correct the nsigma deviation in the TPC electron band
   static Double_t fgCorr;         //!correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
+  static Double_t fgCorrdEdx;     //!dEdx correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
+                                  // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
+  static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
   
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
