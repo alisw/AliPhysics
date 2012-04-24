@@ -10,6 +10,7 @@
 //  and do track matching.                                            //
 //  Author: Deepa Thomas (Utrecht University)                         //
 //  Later mods/rewrite: Jiri Kral (University of Jyvaskyla)           //
+//  S. Aiola, C. Loizides : Make it work for AODs                     //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -28,12 +29,15 @@ class TString;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
 class AliEMCALRecParam;
+class AliAnalysisTaskSE;
+class AliVEvent;
 
 class AliEMCALTenderSupply: public AliTenderSupply {
   
 public:
   AliEMCALTenderSupply();
   AliEMCALTenderSupply(const char *name, const AliTender *tender=NULL);
+  AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *task);
   virtual ~AliEMCALTenderSupply();
 
   enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5};
@@ -41,7 +45,9 @@ public:
 
   virtual void Init();
   virtual void ProcessEvent();
-  
+
+  void     SetTask(AliAnalysisTaskSE *task)               { fTask = task                     ;}
+
   void     SetEMCALGeometryName(const char *name)         { fEMCALGeoName = name             ;}
   TString  EMCALGeometryName()                      const { return fEMCALGeoName             ;}
 
@@ -66,8 +72,8 @@ public:
   void     SwitchOnRecalculateClusPos()                   { fRecalClusPos = kTRUE            ;}
   void     SwitchOffRecalculateClusPos()                  { fRecalClusPos = kFALSE           ;}
 
-  void      SetMisalignmentMatrixSurvey(Int_t misalignSurvey) { fMisalignSurvey = misalignSurvey ;}
-  Int_t     GetMisalignmentMatrixSurvey() const               { return fMisalignSurvey           ;}    
+  void     SetMisalignmentMatrixSurvey(Int_t misalignSurvey) { fMisalignSurvey = misalignSurvey ;}
+  Int_t    GetMisalignmentMatrixSurvey() const               { return fMisalignSurvey           ;}    
 
   void     SwitchOnCellFiducialRegion()                   { fFiducial = kTRUE                ;}
   void     SwitchOffCellFiducialRegion()                  { fFiducial = kFALSE               ;}
@@ -150,32 +156,40 @@ public:
  
 private:
 
-  Int_t    InitBadChannels();
+  AliVEvent* GetEvent();
 
-  Bool_t   InitClusterization();
+  TString    GetBeamType();
 
-  Int_t   InitRecParam();
+  Bool_t     RunChanged() const;
 
-  Bool_t   InitMisalignMatrix();
+  Int_t      InitBadChannels();
 
-  Int_t    InitRecalib();
+  Bool_t     InitClusterization();
+
+  Int_t      InitRecParam();
+
+  Bool_t     InitMisalignMatrix();
+
+  Int_t      InitRecalib();
   
-  Int_t    InitTimeCalibration();
+  Int_t      InitTimeCalibration();
 
-  void     Clusterize();
+  void       Clusterize();
 
-  void     FillDigitsArray();
+  void       FillDigitsArray();
 
-  void     GetPass();
+  void       GetPass();
 
-  void     RecPoints2Clusters(TClonesArray *clus);
+  void       RecPoints2Clusters(TClonesArray *clus);
 
-  void     RecalibrateCells();
+  void       RecalibrateCells();
 
-  void     UpdateCells();
+  void       UpdateCells();
 
-  void     UpdateClusters();
+  void       UpdateClusters();
 
+  AliAnalysisTaskSE     *fTask;                   // Analysis task
+  Int_t                  fRun;                    // Current run number
   AliEMCALGeometry      *fEMCALGeo;               // EMCAL geometry
   TString                fEMCALGeoName;           //  name of geometry to use.
   AliEMCALRecoUtils     *fEMCALRecoUtils;         //  pointer to EMCAL utilities for clusterization
@@ -223,14 +237,12 @@ private:
   Float_t                fExoticCellFraction;     // Good cell if fraction < 1-ecross/ecell
   Float_t                fExoticCellDiffTime;     // If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // Check for exotic only if amplitud is larger than this value
-  Bool_t                 fRecoParamsOCDBLoaded;   // flag if reco params were loaded from OCDB
-
 
 
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 10); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 11); // EMCAL tender task
 };
 
 #endif

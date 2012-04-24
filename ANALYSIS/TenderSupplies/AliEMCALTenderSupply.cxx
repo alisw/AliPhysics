@@ -16,10 +16,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  EMCAL tender, apply corrections to EMCAL clusters                        //
-//  and do track matching.                                                   //
+//  EMCAL tender, apply corrections to EMCAL clusters and do track matching. //
+//                                                                           //
 //  Author: Deepa Thomas (Utrecht University)                                // 
 //  Later mods/rewrite: Jiri Kral (University of Jyvaskyla)                  //
+//  S. Aiola, C. Loizides : Make it work for AODs                            //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -30,33 +31,33 @@
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
-#include <AliLog.h>
-#include <AliESDEvent.h>
-#include <AliAnalysisManager.h>
-#include <AliTender.h>
-#include "AliOADBContainer.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
-#include "AliCDBEntry.h"
-#include "AliMagF.h"
-#include "AliESDCaloCluster.h"
-#include "AliEMCALTenderSupply.h"
-#include "AliEMCALGeometry.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliEMCALClusterizer.h"
-#include "AliEMCALRecParam.h"
-#include "AliEMCALRecPoint.h"
 #include "AliEMCALAfterBurnerUF.h"
+#include "AliEMCALClusterizer.h"
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
 #include "AliEMCALDigit.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALRecParam.h"
+#include "AliEMCALRecParam.h"
+#include "AliEMCALRecPoint.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliEMCALTenderSupply.h"
+#include "AliESDCaloCluster.h"
+#include "AliMagF.h"
+#include "AliOADBContainer.h"
+#include "AliAODEvent.h"
+#include "AliAnalysisManager.h"
+#include "AliESDEvent.h"
+#include "AliLog.h"
+#include "AliTender.h"
 
 ClassImp(AliEMCALTenderSupply)
 
 AliEMCALTenderSupply::AliEMCALTenderSupply() :
 AliTenderSupply()
+,fTask(0)
+,fRun(0)
 ,fEMCALGeo(0x0)
 ,fEMCALGeoName("EMCAL_COMPLETEV1")
 ,fEMCALRecoUtils(0)
@@ -103,7 +104,6 @@ AliTenderSupply()
 ,fExoticCellFraction(-1)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
-,fRecoParamsOCDBLoaded(kFALSE)
 {
   // Default constructor.
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
@@ -113,6 +113,8 @@ AliTenderSupply()
 //_____________________________________________________
 AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *tender) :
 AliTenderSupply(name,tender)
+,fTask(0)
+,fRun(0)
 ,fEMCALGeo(0x0)
 ,fEMCALGeoName("EMCAL_COMPLETEV1")
 ,fEMCALRecoUtils(0)
@@ -159,7 +161,64 @@ AliTenderSupply(name,tender)
 ,fExoticCellFraction(-1)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
-,fRecoParamsOCDBLoaded(kFALSE)
+{
+  // Named constructor
+  
+  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
+  fEMCALRecoUtils  = new AliEMCALRecoUtils;
+}
+
+//_____________________________________________________
+AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *task) :
+AliTenderSupply(name)
+,fTask(task)
+,fRun(0)
+,fEMCALGeo(0x0)
+,fEMCALGeoName("EMCAL_COMPLETEV1")
+,fEMCALRecoUtils(0)
+,fConfigName("")
+,fDebugLevel(0)
+,fNonLinearFunc(-1) 
+,fNonLinearThreshold(-1)        
+,fReCalibCluster(kFALSE)  
+,fUpdateCell(kFALSE)  
+,fCalibrateEnergy(kFALSE)
+,fCalibrateTime(kFALSE)
+,fDoNonLinearity(kFALSE)
+,fBadCellRemove(kFALSE)
+,fRejectExoticCells(kFALSE)
+,fRejectExoticClusters(kFALSE)
+,fClusterBadChannelCheck(kFALSE)
+,fRecalClusPos(kFALSE)
+,fFiducial(kFALSE) 
+,fNCellsFromEMCALBorder(-1)  
+,fRecalDistToBadChannels(kFALSE)  
+,fRecalShowerShape(kFALSE)
+,fInputTree(0)  
+,fInputFile(0)
+,fFilepass(0) 
+,fMass(-1)
+,fStep(-1)
+,fCutEtaPhiSum(kTRUE)
+,fCutEtaPhiSeparate(kFALSE)
+,fRcut(-1)  
+,fEtacut(-1)  
+,fPhicut(-1)  
+,fBasePath("")
+,fReClusterize(kFALSE)
+,fClusterizer(0)
+,fGeomMatrixSet(kFALSE)
+,fLoadGeomMatrices(kFALSE)
+,fRecParam(0x0)
+,fDoTrackMatch(kFALSE)
+,fDoUpdateOnly(kFALSE)
+,fUnfolder(0)
+,fDigitsArr(0)
+,fClusterArr(0)
+,fMisalignSurvey(kdefault)  
+,fExoticCellFraction(-1)
+,fExoticCellDiffTime(-1)
+,fExoticCellMinAmplitude(-1)
 {
   // Named constructor
   
@@ -182,6 +241,13 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
     delete fClusterizer;
     fDigitsArr = 0;
   }
+}
+
+//_____________________________________________________
+Bool_t AliEMCALTenderSupply::RunChanged() const
+{
+  // Get run number
+  return (fTender && fTender->RunChanged()) || (fTask && fRun != fTask->InputEvent()->GetRunNumber()); 
 }
 
 //_____________________________________________________
@@ -231,7 +297,6 @@ void AliEMCALTenderSupply::Init()
     fExoticCellFraction     = tender->fExoticCellFraction;
     fExoticCellDiffTime     = tender->fExoticCellDiffTime;
     fExoticCellMinAmplitude = tender->fExoticCellMinAmplitude;
-    fRecoParamsOCDBLoaded   = tender->fRecoParamsOCDBLoaded;
 
     for(Int_t i = 0; i < 10; i++) 
       fEMCALMatrix[i] = tender->fEMCALMatrix[i] ;
@@ -326,19 +391,38 @@ void AliEMCALTenderSupply::Init()
 }
 
 //_____________________________________________________
+AliVEvent* AliEMCALTenderSupply::GetEvent()
+{
+  // return the event pointer
+  
+  if (fTender) {
+    return fTender->GetEvent();
+  }
+  else if (fTask) {
+    return fTask->InputEvent();
+  }
+  
+  return 0;
+  
+}
+
+//_____________________________________________________
 void AliEMCALTenderSupply::ProcessEvent()
 {
   // Event loop.
+
+  AliVEvent *event = GetEvent();
   
-  AliESDEvent *event = fTender->GetEvent();
   if (!event) {
-    AliError("ESD event ptr = 0, returning");
+    AliError("Event ptr = 0, returning");
     return;
   }
   
   // Initialising parameters once per run number
-  if (fTender->RunChanged()){ 
-    
+  if (RunChanged()) { 
+
+    fRun = event->GetRunNumber();
+
     AliWarning( "Run changed, initializing parameters" );
 
     // get pass
@@ -353,20 +437,18 @@ void AliEMCALTenderSupply::ProcessEvent()
     Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
     Bool_t needClusterizer = fReClusterize;
 
-    // initiate reco params from OCDB or load some defaults on OCDB failure
-    // will not overwrive, if those have been provided by user
+    // initiate reco params with some defaults 
+    // will not overwrite, if those have been provided by user
     if( needRecoParam ){
       Int_t initRC = InitRecParam();
       
       if( initRC == 0 )
-        AliError("Reco params load from OCDB failed! Defaults loaded.");
-      if( initRC == 1 )
-        AliWarning("Reco params loaded from OCDB.");
+        AliInfo("Defaults reco params loaded.");
       if( initRC > 1 )
-        AliWarning("Reco params not loaded from OCDB (user defined or previously failed to load).");
+        AliWarning("User defined reco params.");
     }
 
-    // Init bad channels
+    // init bad channels
     if( needBadChannels ){
       Int_t fInitBC = InitBadChannels();
       if (fInitBC==0)
@@ -477,7 +559,7 @@ void AliEMCALTenderSupply::ProcessEvent()
 
   // START PROCESSING ---------------------------------------------------------
   // Test if cells present
-  AliESDCaloCells *cells= event->GetEMCALCells();
+  AliVCaloCells *cells= event->GetEMCALCells();
   if (cells->GetNumberOfCells()<=0) 
   {
     if(fDebugLevel>1) 
@@ -577,7 +659,7 @@ void AliEMCALTenderSupply::ProcessEvent()
       fEMCALRecoUtils->SwitchOnRejectExoticCell();
 
       // get bunch crossing
-      Int_t bunchCrossNo = fTender->GetEvent()->GetBunchCrossNumber();
+      Int_t bunchCrossNo = event->GetBunchCrossNumber();
 
       Bool_t exResult = fEMCALRecoUtils->IsExoticCluster(clust, cells, bunchCrossNo );
 
@@ -637,11 +719,19 @@ void AliEMCALTenderSupply::ProcessEvent()
     return;
 
   // TRACK MATCHING -----------------------------------------------------------
-  if (!TGeoGlobalMagField::Instance()->GetField()) 
-  {
-    event->InitMagneticField();
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+    if (esd)
+      esd->InitMagneticField();
+    else {
+      AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
+      Double_t curSol = 30000*aod->GetMagneticField()/5.00668;
+      Double_t curDip = 6000 *aod->GetMuonMagFieldScale();
+      AliMagF *field  = AliMagF::CreateFieldMap(curSol,curDip);
+      TGeoGlobalMagField::Instance()->SetField(field);
+    }
   }
-  
+
   fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo);
   fEMCALRecoUtils->SetClusterMatchedToTrack(event);
   fEMCALRecoUtils->SetTracksMatchedToCluster(event);
@@ -651,8 +741,8 @@ void AliEMCALTenderSupply::ProcessEvent()
 Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 {
   // Initialising misalignment matrices
+  AliVEvent *event = GetEvent();
   
-  AliESDEvent *event = fTender->GetEvent();
   if (!event) 
     return kFALSE;
   
@@ -738,7 +828,9 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 Int_t AliEMCALTenderSupply::InitBadChannels()
 {
   // Initialising bad channel maps
-  AliESDEvent *event = fTender->GetEvent();
+
+  AliVEvent *event = GetEvent();
+
   if (!event) 
     return 0;
   
@@ -789,15 +881,6 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     AliError(Form("No external hot channel set for run number: %d", runBC));
     return 2; 
   }
-  
-  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); // Here, it looks for a specific pass
-  if (!arrayBCpass)
-  {
-    AliError(Form("No external hot channel set for: %d -%s", runBC,fFilepass.Data()));
-    return 2; 
-  }
-
-  if (fDebugLevel>0) arrayBCpass->Print();
 
   Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
   for (Int_t i=0; i<sms; ++i) 
@@ -805,7 +888,7 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     TH2I *h = fEMCALRecoUtils->GetEMCALChannelStatusMap(i);
     if (h)
       delete h;
-    h=(TH2I*)arrayBCpass->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+    h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
 
     if (!h) 
     {
@@ -823,7 +906,8 @@ Int_t AliEMCALTenderSupply::InitRecalib()
 {
   // Initialising recalibration factors.
   
-  AliESDEvent *event = fTender->GetEvent();
+  AliVEvent *event = GetEvent();
+
   if (!event) 
     return 0;
   
@@ -868,7 +952,7 @@ Int_t AliEMCALTenderSupply::InitRecalib()
       contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");     
     }
 
-  TObjArray *recal=(TObjArray*)contRF->GetObject(runRC); //GetObject(int runnumber)
+  TObjArray *recal=(TObjArray*)contRF->GetObject(runRC);
   if (!recal)
   {
     AliError(Form("No Objects for run: %d",runRC));
@@ -913,7 +997,8 @@ Int_t AliEMCALTenderSupply::InitRecalib()
 Int_t AliEMCALTenderSupply::InitTimeCalibration()
 {
   // Initialising bad channel maps
-  AliESDEvent *event = fTender->GetEvent();
+  AliVEvent *event = GetEvent();
+
   if (!event) 
     return 0;
   
@@ -965,7 +1050,8 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
     return 2; 
   }
   
-  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); // Here, it looks for a specific pass
+  // Here, it looks for a specific pass
+  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); 
   if (!arrayBCpass)
   {
     AliError(Form("No external time calibration set for: %d -%s", runBC,fFilepass.Data()));
@@ -1000,8 +1086,10 @@ void AliEMCALTenderSupply::UpdateCells()
   //Recalibrate energy and time cells 
   //This is required for later reclusterization
 
-  AliESDCaloCells *cells = fTender->GetEvent()->GetEMCALCells();
-  Int_t bunchCrossNo = fTender->GetEvent()->GetBunchCrossNumber();
+  AliVEvent *event = GetEvent();
+
+  AliVCaloCells *cells = event->GetEMCALCells();
+  Int_t bunchCrossNo = event->GetBunchCrossNumber();
 
   fEMCALRecoUtils->RecalibrateCells(cells, bunchCrossNo); 
   
@@ -1029,100 +1117,66 @@ void AliEMCALTenderSupply::UpdateCells()
 }
 
 //_____________________________________________________
+TString AliEMCALTenderSupply::GetBeamType()
+{
+  
+  // Get beam type : pp-AA-pA
+  // ESDs have it directly, AODs we hardcode it
+  
+  AliVEvent *event = GetEvent();
+
+  if (!event) { 
+    AliError("Couldn't retrieve event!");
+    return "";
+  }
+
+  TString beamType;
+
+  if (event->InheritsFrom("AliESDEvent")) {
+    AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+    const AliESDRun *run = esd->GetESDRun();
+    beamType = run->GetBeamType();
+  }
+  else if (event->InheritsFrom("AliAODEvent")) {
+    Int_t runNumber = event->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517)  // LHC10h
+	|| (runNumber >= 166529 && runNumber <= 170593))  // LHC11h
+      {
+	beamType = "A-A";
+      }
+    else 
+      {
+	beamType = "p-p";
+      }
+  }
+
+  return beamType;    
+}
+
+//_____________________________________________________
 Int_t AliEMCALTenderSupply::InitRecParam()
 {
-  // Initalize the reconstructor parameters from OCDB
-  // load some default on OCDB failure
-  
-  Int_t runNum = -1;
-  AliCDBManager    * man   = 0x0 ;
-  TObjArray        * arr   = 0x0 ;
-  AliEMCALRecParam * pars  = 0x0 ;
-  AliCDBEntry      * entry = 0x0;
-  const AliESDRun  * run   = 0x0 ;
-  TString beamType ;
-  
-  // clean the previous reco params, if those came from OCDB
-  // we do not want to erase user provided params, do we
-  if( fRecoParamsOCDBLoaded ){
-    if( fRecParam != 0 ){
-      delete fRecParam;
-      fRecParam = 0;
-    }
-    // zero the OCDB loaded flag
-    fRecoParamsOCDBLoaded = kFALSE;
-  }
-  
   // exit if reco params exist (probably shipped by the user already)
   if( fRecParam != 0 )
     return 2;
-  
-  if (fDebugLevel>0) 
-    AliInfo("Initialize the recParam");
 
-  // get run details
-  run      = fTender->GetEvent()->GetESDRun();
-  beamType = run->GetBeamType();
-  runNum   = fTender->GetEvent()->GetRunNumber();
+  TString beamType = GetBeamType();
 
-  // OCDB manager should already exist
-  // and have a default storage defined (done by AliTender)
-  man = AliCDBManager::Instance();
-
-  // load the file data
-  if(man)
-    entry = man->Get("EMCAL/Calib/RecoParam", runNum);
-  
-  if( entry )
-    arr = (TObjArray*)(entry->GetObject());
-  
-  if( arr ){
-    // load given parameters based on beam type
-    if( beamType == "A-A" ){
-      if( fDebugLevel > 0 )
-        AliInfo( "Initializing A-A reco params." );
-      pars = (AliEMCALRecParam*)arr->FindObject( "High Flux - Pb+Pb" );
-    }
-    else{
-      if( fDebugLevel > 0 )
-        AliInfo( "Initializing p-p reco params." );
-      pars = (AliEMCALRecParam*)arr->FindObject( "Low Flux - p+p" );
-    }
-    
-    // set the parameters, if found    
-    if( pars ){
-      if( fDebugLevel > 0 )
-        AliInfo( "OCDB reco params set." );
-      
-      fRecParam = pars;
-      fRecoParamsOCDBLoaded = kTRUE;
-    }
-    
-    arr->Clear();
-    delete arr;
+  // set some default reco params
+  fRecParam = new AliEMCALRecParam();
+  fRecParam->SetClusteringThreshold(0.100);
+  fRecParam->SetMinECut(0.050);
+  fRecParam->SetTimeCut(250);
+  fRecParam->SetTimeMin(425);
+  fRecParam->SetTimeMax(825);
+  if ( beamType == "A-A") {
+    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
+  } 
+  else {
+    fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   }
 
-  // set some defaults if OCDB did not succede
-  if( !fRecoParamsOCDBLoaded ){
-    fRecParam = new AliEMCALRecParam();
-    
-    if ( beamType == "A-A"){
-      fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
-      fRecParam->SetClusteringThreshold(0.100);
-      fRecParam->SetMinECut(0.050);
-    } 
-    else 
-    {
-      fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
-      fRecParam->SetClusteringThreshold(0.100);
-      fRecParam->SetMinECut(0.050);
-    }
-  }
-  
-  if( fRecoParamsOCDBLoaded )
-    return 1;
-  else
-    return 0;
+  return 0;
 }
 
 //_____________________________________________________
@@ -1130,7 +1184,8 @@ Bool_t AliEMCALTenderSupply::InitClusterization()
 {
   // Initialing clusterization/unfolding algorithm and set all the needed parameters.
   
-  AliESDEvent *event = fTender->GetEvent();
+  AliVEvent *event = GetEvent();
+
   if (!event) 
     return kFALSE;
   
@@ -1194,12 +1249,13 @@ void AliEMCALTenderSupply::FillDigitsArray()
 {
   // Fill digits from cells to a TClonesArray.
   
-  AliESDEvent *event = fTender->GetEvent();
+  AliVEvent *event = GetEvent();
+
   if (!event)
     return;
   
   fDigitsArr->Clear("C");
-  AliESDCaloCells *cells = event->GetEMCALCells();
+  AliVCaloCells *cells = event->GetEMCALCells();
   Int_t ncells = cells->GetNumberOfCells();
   for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) 
   {
@@ -1241,7 +1297,8 @@ void AliEMCALTenderSupply::UpdateClusters()
 {
   // Update ESD cluster list.
   
-  AliESDEvent *event = fTender->GetEvent();
+  AliVEvent *event = GetEvent();
+
   if (!event)
     return;
   
@@ -1276,7 +1333,8 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
   // Convert AliEMCALRecoPoints to AliESDCaloClusters.
   // Cluster energy, global position, cells and their amplitude fractions are restored.
   
-  AliESDEvent *event = fTender->GetEvent();
+  AliVEvent *event = GetEvent();
+
   if (!event)
     return;
 
@@ -1364,4 +1422,3 @@ void AliEMCALTenderSupply::GetPass()
     return;            
   }
 }
-
