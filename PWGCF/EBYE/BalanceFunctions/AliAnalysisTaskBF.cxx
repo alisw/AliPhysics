@@ -733,7 +733,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    }
 
       		    // Extra DCA cuts (for systematic studies [!= -1])
-      		    if( fDCAxyCut != -1 && fDCAxyCut != -1){
+      		    if( fDCAxyCut != -1 && fDCAzCut != -1){
       		      if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
       			continue;  // 2D cut
       		      }
