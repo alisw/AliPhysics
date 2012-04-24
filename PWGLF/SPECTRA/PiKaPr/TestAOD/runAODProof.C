@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=2, const char * proofMode = "full")
+void runAODProof(Int_t c=1, const char * proofMode = "full")
 {
 
    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
@@ -69,6 +69,10 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
    Double_t CentCutMax[4]={100,5,40,40};
    Double_t QvecCutMin[4]={0,0,0,3};
    Double_t QvecCutMax[4]={100,100,2,100};
+   // Double_t CentCutMin[4]={5,10,20,30};
+   // Double_t CentCutMax[4]={10,20,30,40};
+   // Double_t QvecCutMin[4]={0,0,0,0};
+   // Double_t QvecCutMax[4]={100,100,100,100};
    for(Int_t iCut=1;iCut<2;iCut++){
      AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
      mgr->AddTask(task);
@@ -80,7 +84,7 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
      tcuts->SetTrackType(5);
      tcuts->SetEta(.8);
      //tcuts->SetDCA(.1);
-     tcuts->SetPt(2.5);
+     tcuts->SetPt(5);
      tcuts->SetPtTOFMatching(0.6);   
      tcuts->SetQvecMin(QvecCutMin[iCut]);   
      tcuts->SetQvecMax(QvecCutMax[iCut]);    
