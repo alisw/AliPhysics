@@ -58,6 +58,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 //
 // Created:         ???          ???
 // Updated:      11 Dec 2007  Mario Sitta
+// Updated:      20 Mar 2011  Mario Sitta  Reimplemented with simpler shapes
 //
 // Technical data are taken from:  ALICE-Thermal Screen "Cone transition"
 // (thermal-screen1_a3.ps), "Cylinder" (thermal-screen2_a3.ps), "Half
@@ -370,10 +371,11 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   endcapair6shape->DefineSection(1, kHalfLengthEndCap);
 
   // The cone half shield is more complex since there is no basic
-  // TGeo shape to describe it correctly. So it is made of a series
-  // of TGeoArb8 shapes filled with air, which all together make up the
-  // the cone AND its internal insert. Part of the following code is
-  // adapted from SPDThermalSheald method.
+  // TGeo shape to describe it correctly. So it is a Composite Shape
+  // of a series of TGeoArb8 shapes, in which TGeoArb8 shapes filled
+  // with air are placed, which all together make up the cone AND
+  // its internal insert. Part of the following code is adapted from
+  // old SPDThermalSheald method.
 
   // sCn : Filled portions, sChn : Air holes
   TGeoArb8 *sC1  = new TGeoArb8(kHalfLengthCone);
@@ -701,41 +703,10 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   sCh11->SetVertex(6,-xomega[15], yomega[15]);
   sCh11->SetVertex(7,-xomega[14], yomega[14]);
 
-/*
-  for(Int_t i=0; i<4; i++){
-    InsidePoint(sC1->GetVertices()[((i+3)%4)*2+0],
-		sC1->GetVertices()[((i+3)%4)*2+1],
-		sC1->GetVertices()[i*2+0],
-		sC1->GetVertices()[i*2+1],
-		sC1->GetVertices()[((i+1)%4)*2+0],
-		sC1->GetVertices()[((i+1)%4)*2+1],-kThicknessCone,x,y);
-    sCh1->SetVertex(i,x,y);
+  // Now the actual carbon fiber cone: a CompositeShape
+  TGeoCompositeShape *sCone = new TGeoCompositeShape("sCone",
+			    "sC1+sC2+sC3+sC4+sC5+sC6+sC7+sC8+sC9+sC10+sC11");
 
-    InsidePoint(sC1->GetVertices()[((i+3)%4 +4)*2+0],
-		sC1->GetVertices()[((i+3)%4 +4)*2+1],
-		sC1->GetVertices()[(i+4)*2+0],
-		sC1->GetVertices()[(i+4)*2+1],
-		sC1->GetVertices()[((i+1)%4 +4)*2+0],
-		sC1->GetVertices()[((i+1)%4 +4)*2+1],-kThicknessCone,x,y);
-    sCh1->SetVertex(i+4,x,y);
-
-    InsidePoint(sC2->GetVertices()[((i+3)%4)*2+0],
-		sC2->GetVertices()[((i+3)%4)*2+1],
-		sC2->GetVertices()[i*2+0],
-		sC2->GetVertices()[i*2+1],
-		sC2->GetVertices()[((i+1)%4)*2+0],
-		sC2->GetVertices()[((i+1)%4)*2+1],-kThicknessCone,x,y);
-    sCh2->SetVertex(i,x,y);
-
-    InsidePoint(sC2->GetVertices()[((i+3)%4 +4)*2+0],
-		sC2->GetVertices()[((i+3)%4 +4)*2+1],
-		sC2->GetVertices()[(i+4)*2+0],
-		sC2->GetVertices()[(i+4)*2+1],
-		sC2->GetVertices()[((i+1)%4 +4)*2+0],
-		sC2->GetVertices()[((i+1)%4 +4)*2+1],-kThicknessCone,x,y);
-    sCh2->SetVertex(i+4,x,y);
-  }
-*/
   // Finally the carbon fiber Ring with its Wings and their
   // stesalite inserts. They are Tube and TubeSeg shapes
 
@@ -898,12 +869,12 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   endcapshield->AddNode(endcapair6,1,0);
   endcapshield->AddNode(endcapair6,2,new TGeoRotation("",90,180,-90));
 
-  TGeoVolume *vC1 = new TGeoVolume("SPDconeshieldV1",sC1,medSPDcf);
-  vC1->SetVisibility(kTRUE);
-  vC1->SetLineColor(7);
-  vC1->SetLineWidth(1);
-  vC1->SetFillColor(vC1->GetLineColor());
-  vC1->SetFillStyle(4090); // 90% transparent
+  TGeoVolume *vCone = new TGeoVolume("SPDconeshield",sCone,medSPDcf);
+  vCone->SetVisibility(kTRUE);
+  vCone->SetLineColor(7);
+  vCone->SetLineWidth(1);
+  vCone->SetFillColor(vCone->GetLineColor());
+  vCone->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh1 = new TGeoVolume("SPDconeshieldH1",sCh1,medSPDair);
   vCh1->SetVisibility(kTRUE);
@@ -912,30 +883,12 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vCh1->SetFillColor(vCh1->GetLineColor());
   vCh1->SetFillStyle(4090); // 90% transparent
 
-  vC1->AddNode(vCh1,1,0);
-
-  TGeoVolume *vC2 = new TGeoVolume("SPDconeshieldV2",sC2,medSPDcf);
-  vC2->SetVisibility(kTRUE);
-  vC2->SetLineColor(7);
-  vC2->SetLineWidth(1);
-  vC2->SetFillColor(vC2->GetLineColor());
-  vC2->SetFillStyle(4090); // 90% transparent
-
   TGeoVolume *vCh2 = new TGeoVolume("SPDconeshieldH2",sCh2,medSPDair);
   vCh2->SetVisibility(kTRUE);
   vCh2->SetLineColor(5); // Yellow
   vCh2->SetLineWidth(1);
   vCh2->SetFillColor(vCh2->GetLineColor());
   vCh2->SetFillStyle(4090); // 90% transparent
-
-  vC2->AddNode(vCh2,1,0);
-
-  TGeoVolume *vC3 = new TGeoVolume("SPDconeshieldV3",sC3,medSPDcf);
-  vC3->SetVisibility(kTRUE);
-  vC3->SetLineColor(7);
-  vC3->SetLineWidth(1);
-  vC3->SetFillColor(vC3->GetLineColor());
-  vC3->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh3 = new TGeoVolume("SPDconeshieldH3",sCh3,medSPDair);
   vCh3->SetVisibility(kTRUE);
@@ -944,30 +897,12 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vCh3->SetFillColor(vCh3->GetLineColor());
   vCh3->SetFillStyle(4090); // 90% transparent
 
-  vC3->AddNode(vCh3,1,0);
-
-  TGeoVolume *vC4 = new TGeoVolume("SPDconeshieldV4",sC4,medSPDcf);
-  vC4->SetVisibility(kTRUE);
-  vC4->SetLineColor(7);
-  vC4->SetLineWidth(1);
-  vC4->SetFillColor(vC4->GetLineColor());
-  vC4->SetFillStyle(4090); // 90% transparent
-
   TGeoVolume *vCh4 = new TGeoVolume("SPDconeshieldH4",sCh4,medSPDair);
   vCh4->SetVisibility(kTRUE);
   vCh4->SetLineColor(5); // Yellow
   vCh4->SetLineWidth(1);
   vCh4->SetFillColor(vCh4->GetLineColor());
   vCh4->SetFillStyle(4090); // 90% transparent
-
-  vC4->AddNode(vCh4,1,0);
-
-  TGeoVolume *vC5 = new TGeoVolume("SPDconeshieldV5",sC5,medSPDcf);
-  vC5->SetVisibility(kTRUE);
-  vC5->SetLineColor(7);
-  vC5->SetLineWidth(1);
-  vC5->SetFillColor(vC5->GetLineColor());
-  vC5->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh5 = new TGeoVolume("SPDconeshieldH5",sCh5,medSPDair);
   vCh5->SetVisibility(kTRUE);
@@ -976,30 +911,12 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vCh5->SetFillColor(vCh5->GetLineColor());
   vCh5->SetFillStyle(4090); // 90% transparent
 
-  vC5->AddNode(vCh5,1,0);
-
-  TGeoVolume *vC6 = new TGeoVolume("SPDconeshieldV6",sC6,medSPDcf);
-  vC6->SetVisibility(kTRUE);
-  vC6->SetLineColor(7);
-  vC6->SetLineWidth(1);
-  vC6->SetFillColor(vC6->GetLineColor());
-  vC6->SetFillStyle(4090); // 90% transparent
-
   TGeoVolume *vCh6 = new TGeoVolume("SPDconeshieldH6",sCh6,medSPDair);
   vCh6->SetVisibility(kTRUE);
   vCh6->SetLineColor(5); // Yellow
   vCh6->SetLineWidth(1);
   vCh6->SetFillColor(vCh6->GetLineColor());
   vCh6->SetFillStyle(4090); // 90% transparent
-
-  vC6->AddNode(vCh6,1,0);
-
-  TGeoVolume *vC7 = new TGeoVolume("SPDconeshieldV7",sC7,medSPDcf);
-  vC7->SetVisibility(kTRUE);
-  vC7->SetLineColor(7);
-  vC7->SetLineWidth(1);
-  vC7->SetFillColor(vC7->GetLineColor());
-  vC7->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh7 = new TGeoVolume("SPDconeshieldH7",sCh7,medSPDair);
   vCh7->SetVisibility(kTRUE);
@@ -1008,30 +925,12 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vCh7->SetFillColor(vCh7->GetLineColor());
   vCh7->SetFillStyle(4090); // 90% transparent
 
-  vC7->AddNode(vCh7,1,0);
-
-  TGeoVolume *vC8 = new TGeoVolume("SPDconeshieldV8",sC8,medSPDcf);
-  vC8->SetVisibility(kTRUE);
-  vC8->SetLineColor(7);
-  vC8->SetLineWidth(1);
-  vC8->SetFillColor(vC8->GetLineColor());
-  vC8->SetFillStyle(4090); // 90% transparent
-
   TGeoVolume *vCh8 = new TGeoVolume("SPDconeshieldH8",sCh8,medSPDair);
   vCh8->SetVisibility(kTRUE);
   vCh8->SetLineColor(5); // Yellow
   vCh8->SetLineWidth(1);
   vCh8->SetFillColor(vCh8->GetLineColor());
   vCh8->SetFillStyle(4090); // 90% transparent
-
-  vC8->AddNode(vCh8,1,0);
-
-  TGeoVolume *vC9 = new TGeoVolume("SPDconeshieldV9",sC9,medSPDcf);
-  vC9->SetVisibility(kTRUE);
-  vC9->SetLineColor(7);
-  vC9->SetLineWidth(1);
-  vC9->SetFillColor(vC9->GetLineColor());
-  vC9->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh9 = new TGeoVolume("SPDconeshieldH9",sCh9,medSPDair);
   vCh9->SetVisibility(kTRUE);
@@ -1040,30 +939,12 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vCh9->SetFillColor(vCh9->GetLineColor());
   vCh9->SetFillStyle(4090); // 90% transparent
 
-  vC9->AddNode(vCh9,1,0);
-
-  TGeoVolume *vC10 = new TGeoVolume("SPDconeshieldV10",sC10,medSPDcf);
-  vC10->SetVisibility(kTRUE);
-  vC10->SetLineColor(7);
-  vC10->SetLineWidth(1);
-  vC10->SetFillColor(vC10->GetLineColor());
-  vC10->SetFillStyle(4090); // 90% transparent
-
   TGeoVolume *vCh10 = new TGeoVolume("SPDconeshieldH10",sCh10,medSPDair);
   vCh10->SetVisibility(kTRUE);
   vCh10->SetLineColor(5); // Yellow
   vCh10->SetLineWidth(1);
   vCh10->SetFillColor(vCh10->GetLineColor());
   vCh10->SetFillStyle(4090); // 90% transparent
-
-  vC10->AddNode(vCh10,1,0);
-
-  TGeoVolume *vC11 = new TGeoVolume("SPDconeshieldV11",sC11,medSPDcf);
-  vC11->SetVisibility(kTRUE);
-  vC11->SetLineColor(7);
-  vC11->SetLineWidth(1);
-  vC11->SetFillColor(vC11->GetLineColor());
-  vC11->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *vCh11 = new TGeoVolume("SPDconeshieldH11",sCh11,medSPDair);
   vCh11->SetVisibility(kTRUE);
@@ -1072,7 +953,17 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vCh11->SetFillColor(vCh11->GetLineColor());
   vCh11->SetFillStyle(4090); // 90% transparent
 
-  vC11->AddNode(vCh11,1,0);
+  vCone->AddNode(vCh1 ,1,0);
+  vCone->AddNode(vCh2 ,1,0);
+  vCone->AddNode(vCh3 ,1,0);
+  vCone->AddNode(vCh4 ,1,0);
+  vCone->AddNode(vCh5 ,1,0);
+  vCone->AddNode(vCh6 ,1,0);
+  vCone->AddNode(vCh7 ,1,0);
+  vCone->AddNode(vCh8 ,1,0);
+  vCone->AddNode(vCh9 ,1,0);
+  vCone->AddNode(vCh10,1,0);
+  vCone->AddNode(vCh11,1,0);
 
   TGeoVolume *ring = new TGeoVolume("SPDshieldring",ringshape,medSPDcf);
   ring->SetVisibility(kTRUE);
@@ -1094,7 +985,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   wing->SetLineColor(7);
   wing->SetLineWidth(1);
 
-  TGeoVolume *winginsert = new TGeoVolume("SPDshieldringinsert",
+  TGeoVolume *winginsert = new TGeoVolume("SPDshieldwinginsert",
 					  winginsertshape,medSPDste);
   winginsert->SetVisibility(kTRUE);
   winginsert->SetLineColor(3); // Green
@@ -1122,85 +1013,15 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
               0, 0,-zpos-kLittleZTrans, new TGeoRotation("",180,0,0) ) );
 
   zpos = kHalfLengthCentral+2*kHalfLengthEndCap+kHalfLengthCone;
-  vM->AddNode(vC1 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC2 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC3 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC4 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC5 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC6 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC7 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC8 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC9 ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC10,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
-  vM->AddNode(vC11,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
+  vM->AddNode(vCone ,1, new TGeoTranslation(0, 0,  zpos-kLittleZTrans));
 
-  vM->AddNode(vC1 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC2 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC3 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC4 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC5 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC6 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC7 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC8 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC9 ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC10,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 0, 180)   ));
-  vM->AddNode(vC11,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
+  vM->AddNode(vCone ,2, new TGeoCombiTrans(0, 0,  zpos-kLittleZTrans,
 				new TGeoRotation("", 0, 0, 180)   ));
 
-  vM->AddNode(vC1 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC2 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC3 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC4 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC5 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC6 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC7 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC8 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC9 ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC10,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 0)   ));
-  vM->AddNode(vC11,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+  vM->AddNode(vCone ,3, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
 				new TGeoRotation("", 0, 180, 0)   ));
 
-  vM->AddNode(vC1 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC2 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC3 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC4 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC5 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC6 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC7 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC8 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC9 ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC10,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
-				new TGeoRotation("", 0, 180, 180)   ));
-  vM->AddNode(vC11,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
+  vM->AddNode(vCone ,4, new TGeoCombiTrans(0, 0, -zpos-kLittleZTrans,
 				new TGeoRotation("", 0, 180, 180)   ));
 
   zpos = kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
