@@ -71,7 +71,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
   void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
   void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
-  void 	SetSumPtThresholds(Int_t i, Float_t pt)  { fSumPtThresholds[i]=pt;}
+  void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
   
   
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
@@ -204,13 +204,21 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiPtFracIso[5][5] ;              //! eta vs phi of isolated particles with pt frac
   TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;         //! eta vs phi of isolated particles with pt frac
   TH1F *   fhPtPtFracDecayIso[5][5] ;             //! Number of isolated Pi0 decay particles (invariant mass tag) with pt fra
+
   TH2F *   fhEtaPhiPtSumIso[5][5] ;               //! eta vs phi of isolated particles with pt sum
   TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;          //! eta vs phi of isolated particles with pt sum
   TH1F *   fhPtPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
   
+  TH2F *   fhEtaPhiSumDensityIso[5][5];               //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];               //! Isolated particle with threshold on cone sum density
   TH1F *   fhPtSumDensityIso[5][5];               //! Isolated particle with threshold on cone sum density
   TH1F *   fhPtSumDensityDecayIso[5][5];          //! Isolated decay particle with threshold on cone sum density
   
+  TH1F *   fhPtFracPtSumIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH1F *   fhPtFracPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH2F *   fhEtaPhiFracPtSumIso[5][5];               //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];               //! Isolated particle with threshold on cone sum density
+ 
   // Track matching studies
   TH2F *   fhTrackMatchedDEta     ;               //! Eta distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDPhi     ;               //! Phi distance between track and cluster vs cluster E
@@ -245,7 +253,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,12)
+  ClassDef(AliAnaParticleIsolation,13)
 } ;
 
 
