@@ -1258,7 +1258,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
                                       GetReader(), GetCaloPID(),
                                       kTRUE, aodinput, GetAODObjArrayName(), 
                                       n,nfrac,coneptsum, isolated);
-  aodinput->SetIsolated(isolated);
+  
+  if(!fMakeSeveralIC) aodinput->SetIsolated(isolated);
   
   if(GetDebug() > 1) 
   {
@@ -1282,7 +1283,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
   
   //Get vertex for photon momentum calculation
-  Double_t vertex[]={0,0,0} ; //vertex ;
+  Double_t vertex[] = {0,0,0} ; //vertex ;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
   {
     GetReader()->GetVertex(vertex);
