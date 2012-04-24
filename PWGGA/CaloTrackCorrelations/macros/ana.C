@@ -23,14 +23,13 @@ enum anaModes {mLocal=0, mPROOF=1, mPlugin=2, mGRID=3};
 
 char * kInDir   = "/user/data/files/"; 
 char * kPattern = ""; // Data are in files kInDir/kPattern+i 
-Int_t  kFile    = 3; 
+Int_t  kFile    = 2; 
 
 //---------------------------------------------------------------------------
 // Dataset for proof analysis, mode=mPROOF
 // char * kDataset = "/alice/vernet/PbPb_LHC10h_ESD";
 
 char *  kDatasetPROOF     = "/alice/vernet/LHC11b_149646";
-//char *  kDatasetPROOF     = "/alice/vernet/LHC11b10a_AOD046";//LHC11d_AOD076
 Int_t   kDatasetNMaxFiles = 20;
 TString ccin2p3UserName   = "arbor" ;
 TString alienUserName     = "narbor" ;
@@ -45,7 +44,6 @@ char * kXML = "collection.xml";
 //Put name of file containing xsection 
 //Put number of events per ESD file
 //This is an specific case for normalization of Pythia files.
-const Bool_t kGetXSectionFromFileAndScale = kFALSE ;
 const char * kXSFileName = "pyxsec.root";
 
 //---------------------------------------------------------------------------
@@ -95,6 +93,23 @@ void ana(Int_t mode=mGRID)
   TChain * chain   = new TChain(kTreeName) ;
   TChain * chainxs = new TChain("Xsection") ;
   CreateChain(mode, chain, chainxs); 
+  
+  Double_t scale = -1;
+  printf("===== kMC %d, chainxs %p\n",kMC,chainxs);
+  if(kMC && chainxs && chainxs->GetEntries() > 0)
+  {
+    Int_t nfiles = chainxs->GetEntries();
+    
+    //Get the cross section
+    Double_t xsection = 0; 
+    Float_t ntrials   = 0;
+    
+    GetAverageXsection(chainxs, xsection, ntrials);
+    
+    scale = xsection/ntrials/chain->GetEntries();
+    
+    printf("Get Cross section , nfiles =  %d, nevents %d, ntrials %d, xs %2.3e, scale factor %e\n",nfiles,chain->GetEntries(),ntrials,xsection,scale);
+  } 
   
   printf("*********************************************\n");
   printf("number of entries # %lld, skipped %d\n", chain->GetEntries()) ; 	
@@ -197,6 +212,7 @@ void ana(Int_t mode=mGRID)
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   }
   
+  
   // Simple event counting tasks
   AddTaskCounter("");   // All
   //AddTaskCounter("MB"); // Min Bias
@@ -245,14 +261,14 @@ void ana(Int_t mode=mGRID)
   gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros  
   
- // gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
- // AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
+  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
+  //AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
   
   // Calibration, bad map ...
   
   Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use ir or not in any case
   Bool_t calibTT = kTRUE; // It is set automatically, but here we force to use ir or not in any case
-  if(kRun < 122195 || (kRun > 126437 && kRun < 136851)) calibTT=kFALSE ; // Recalibration parameters not available for LHC10a,b,c,e,f,g
+  if(kRun < 122195 || (kRun > 126437 && kRun < 136851) || kMC) calibTT=kFALSE ; // Recalibration parameters not available for LHC10a,b,c,e,f,g
   Bool_t badMap  = kTRUE; // It is set automatically, but here we force to use ir or not in any case  
   
   if(kCollision=="pp")
@@ -269,19 +285,19 @@ void ana(Int_t mode=mGRID)
     Int_t   minEcell  = 50;     // 50  MeV (10 MeV used in reconstruction)
     Int_t   minEseed  = 100;    // 100 MeV
     Int_t   dTime     = 0;      // default, 250 ns
-    Int_t   wTime     = 0;      // default 425 < T < 825 ns, careful if time calibration is on
+    Int_t   wTime     = 30;     // default 425 < T < 825 ns, careful if time calibration is on
     Int_t   unfMinE   = 15;     // Remove cells with less than 15 MeV from cluster after unfolding
     Int_t   unfFrac   = 1;      // Remove cells with less than 1% of cluster energy after unfolding
 
-    
     //Trigger
-    TString clTrigger   = "EMC7";   
+    TString clTrigger   = "";   
     TString anTrigger   = "EMC7";  
-    TString anTriggerPH = "PHS";   
+    TString anTriggerPH = "PHS";
+    
     if(kMC) 
     {
-      clTrigger = "";
-      anTrigger = "";
+      clTrigger   = "";
+      anTrigger   = "";
       anTriggerPH = ""; 
     }
     
@@ -292,37 +308,51 @@ void ana(Int_t mode=mGRID)
     //Analysis with clusterizer V1
     
     TString arrayNameV1 = "";
+    
     AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);    
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
     
-    AliAnalysisTaskCaloTrackCorrelation *anav1   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                        kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM, 
-                                                                        -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+    if(!kMC)
+    {
+      
+      AliAnalysisTaskCaloTrackCorrelation *anav1trig   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                              kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
+                                                                              -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
+    }
+    
+    AliAnalysisTaskCaloTrackCorrelation *anav1mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                            kYear,kCollision,"AnyINT",arrayNameV1,reTM,anTM,
+                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
+    
+    
     
     //Analysis with clusterizer V2
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
-                                                                   minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
+                                                                   minEcell,minEseed,dTime,wTime,
                                                                    calibEE,badMap,calibTT,annonlin);    
-
+    
     printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
     
     hadron = kFALSE;
-    AliAnalysisTaskCaloTrackCorrelation *anav2   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                        kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM, 
-                                                                        -1,-1,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-
-  // PHOS  
-
-  //AliAnalysisTaskCaloTrackCorrelation *anaPH   = AddTaskCaloTrackCorr(kInputData, "PHOS", kMC, selectEvents, kFALSE, kFALSE, outputFile.Data(),  
-  //                                                                      kYear,kCollision,anTriggerPH,"",kFALSE,kFALSE,  
-  //                                                                      -1,-1, qa, kFALSE,kFALSE,kFALSE,kFALSE,deltaAOD,kPrint); 
-
+    if(!kMC)
+    {
+      
+      
+      AliAnalysisTaskCaloTrackCorrelation *anav2tr   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                            kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM, 
+                                                                            -1,-1,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
+    }
+    
+    
+    AliAnalysisTaskCaloTrackCorrelation *anav2mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                            kYear,kCollision,"AnyINT",arrayNameV2,reTM,anTM,
+                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
   }
-
+  
   if(kCollision=="PbPb")
   {
     printf("====================================== \n");
@@ -340,9 +370,9 @@ void ana(Int_t mode=mGRID)
     Int_t   wTime     = 0;      // default 425 < T < 825 ns
     Int_t   unfMinE   = 15;     // Remove cells with less than 15 MeV from cluster after unfolding
     Int_t   unfFrac   = 1;      // Remove cells with less than 1% of cluster energy after unfolding
-
+    
     // Trigger
-    TString clTrigger = "EMCGA"; 
+    TString clTrigger = ""; 
     TString anTrigger = "EMCGA";  
     if(kMC) 
     {
@@ -361,21 +391,23 @@ void ana(Int_t mode=mGRID)
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);    
     
-    
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
     
-    AliAnalysisTaskCaloTrackCorrelation *anav1c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                         kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM, 
-                                                                         0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-    AliAnalysisTaskCaloTrackCorrelation *anav1m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                        kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
-                                                                         20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-    AliAnalysisTaskCaloTrackCorrelation *anav1p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC,  selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                        kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
-                                                                         60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-  
+//    if(!kMC)
+//    {
+//      AliAnalysisTaskCaloTrackCorrelation *anav1c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+//                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM, 
+//                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+//      AliAnalysisTaskCaloTrackCorrelation *anav1m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+//                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
+//                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+//      AliAnalysisTaskCaloTrackCorrelation *anav1p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC,  selectEvents, exo, annonlin, outputFile.Data(), 
+//                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
+//                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+//    }
+    
     //Analysis with clusterizer V2
-
+    
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
@@ -385,16 +417,34 @@ void ana(Int_t mode=mGRID)
     
     hadron = kFALSE;
     
-    AliAnalysisTaskCaloTrackCorrelation *anav2c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                         kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM, 
-                                                                         0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-    AliAnalysisTaskCaloTrackCorrelation *anav2m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                         kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM,
-                                                                         20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-    AliAnalysisTaskCaloTrackCorrelation *anav2p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-                                                                         kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM,
-                                                                         60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+    if(!kMC)
+    {
+      
+      AliAnalysisTaskCaloTrackCorrelation *anav2cT   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                            kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM, 
+                                                                            0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+      AliAnalysisTaskCaloTrackCorrelation *anav2mT   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                            kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM,
+                                                                            20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+      AliAnalysisTaskCaloTrackCorrelation *anav2pT   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                            kYear,kCollision,anTrigger,arrayNameV2,reTM,anTM,
+                                                                            60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+    }
+    
+    AliAnalysisTaskCaloTrackCorrelation *anav2cMB   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                           kYear,kCollision,"AnyINT",arrayNameV2,reTM,anTM, 
+                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+    AliAnalysisTaskCaloTrackCorrelation *anav2mMB   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                           kYear,kCollision,"AnyINT",arrayNameV2,reTM,anTM,
+                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+    AliAnalysisTaskCaloTrackCorrelation *anav2pMB   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                           kYear,kCollision,"AnyINT",arrayNameV2,reTM,anTM,
+                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+    
+    
   }
+  
+
   
   //-----------------------
   // Run the analysis
@@ -1056,7 +1106,7 @@ void AddTaskCounter(const TString trigger = "MB")
   
   AliAnalysisTaskCounter * counter =  new AliAnalysisTaskCounter(Form("Counter%s",trigger.Data()));
   if(kRun > 140000 && kRun < 146900) counter ->RejectFastCluster();
-  if     (kCollision=="pp"  )   counter->SetZVertexCut(50.);  //Open cut
+  if     (kCollision=="pp"  )   counter->SetZVertexCut(10.);  //Open cut
   else if(kCollision=="PbPb")   counter->SetZVertexCut(10.);  //Centrality defined in this range.
   
   if(trigger=="EMC7")
@@ -1134,6 +1184,46 @@ void AddTaskCounter(const TString trigger = "MB")
 }
 
 
+//_________________________________________________________________
+void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
+{
+  // Read the PYTHIA statistics from the file pyxsec.root created by
+  // the function WriteXsection():
+  // integrated cross section (xsection) and
+  // the  number of Pyevent() calls (ntrials)
+  // and calculate the weight per one event xsection/ntrials
+  // The spectrum calculated by a user should be
+  // multiplied by this weight, something like this:
+  // TH1F *userSpectrum ... // book and fill the spectrum
+  // userSpectrum->Scale(weight)
+  //
+  // Yuri Kharlov 19 June 2007
+  // Gustavo Conesa 15 April 2008
+  Double_t xsection = 0;
+  UInt_t    ntrials = 0;
+  xs = 0;
+  ntr = 0;
+  
+  Int_t nfiles =  tree->GetEntries()  ;
+  if (tree && nfiles > 0) {
+    tree->SetBranchAddress("xsection",&xsection);
+    tree->SetBranchAddress("ntrials" ,&ntrials );
+    for(Int_t i = 0; i < nfiles; i++){
+      tree->GetEntry(i);
+      xs  += xsection ;
+      ntr += ntrials ;
+      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl; 
+    }
+    
+    xs =   xs /  nfiles;
+    ntr =  ntr / nfiles;
+    cout << "-----------------------------------------------------------------"<<endl;
+    cout << "Average of "<< nfiles<<" files: xsection " <<xs<<" ntrials "<<ntr<<endl; 
+    cout << "-----------------------------------------------------------------"<<endl;
+  } 
+  else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
+  
+}
 
 
 
