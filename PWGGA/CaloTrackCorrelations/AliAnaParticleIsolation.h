@@ -209,15 +209,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;          //! eta vs phi of isolated particles with pt sum
   TH1F *   fhPtPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
   
-  TH2F *   fhEtaPhiSumDensityIso[5][5];               //! Isolated particle with threshold on cone sum density
-  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];               //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiSumDensityIso[5][5];           //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];      //! Isolated particle with threshold on cone sum density
   TH1F *   fhPtSumDensityIso[5][5];               //! Isolated particle with threshold on cone sum density
   TH1F *   fhPtSumDensityDecayIso[5][5];          //! Isolated decay particle with threshold on cone sum density
   
-  TH1F *   fhPtFracPtSumIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
-  TH1F *   fhPtFracPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
-  TH2F *   fhEtaPhiFracPtSumIso[5][5];               //! Isolated particle with threshold on cone sum density
-  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];               //! Isolated particle with threshold on cone sum density
+  TH1F *   fhPtFracPtSumIso[5][5] ;               //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH1F *   fhPtFracPtSumDecayIso[5][5] ;          //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH2F *   fhEtaPhiFracPtSumIso[5][5];            //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];       //! Isolated particle with threshold on cone sum density
  
   // Track matching studies
   TH2F *   fhTrackMatchedDEta     ;               //! Eta distance between track and cluster vs cluster E
