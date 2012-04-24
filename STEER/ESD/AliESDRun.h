@@ -106,7 +106,7 @@ public:
   void       SetT0spread(Int_t i, Float_t t);
   void       SetT0spread(Float_t *t);
 	
-  void       SetCaloTriggerType(const Int_t* in) {for (int i = 0; i < 8; i++) fCaloTriggerType[i] = in[i];}
+  void       SetCaloTriggerType(const Int_t* in) {for (int i = 0; i < 15; i++) fCaloTriggerType[i] = in[i];}
   Int_t*     GetCaloTriggerType() {return fCaloTriggerType;}
 
   void           SetVZEROEqFactors(Float_t factors[64]) {for (Int_t i = 0; i < 64; ++i) fVZEROEqFactors[i] = factors[i];}
@@ -134,10 +134,10 @@ private:
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
   Float_t         fT0spread[kT0spreadSize];     // spread of time distributions on T0A, T0C, (T0A+T0C)/2, (T0A-T0C)/2
-  Int_t           fCaloTriggerType[8]; // Calorimeter trigger type
+  Int_t           fCaloTriggerType[15]; // Calorimeter trigger type
   Float_t         fVZEROEqFactors[64]; // V0 channel equalization factors for event-plane reconstruction
 	
-  ClassDef(AliESDRun,13)
+  ClassDef(AliESDRun,14)
 };
 
 #endif 

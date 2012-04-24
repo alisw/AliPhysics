@@ -1548,7 +1548,7 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
 		{
 			Int_t *type = esd.GetCaloTriggerType();
 							
-			for (Int_t i = 0; i < 8; i++) 
+			for (Int_t i = 0; i < 15; i++) 
 			{
 				aodTree->GetUserInfo()->Add(new TParameter<int>(Form("EMCALCaloTrigger%d",i), type[i]));
 			}
@@ -1582,8 +1582,7 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
 		aodTrigger.Add(px, py, a, t, times, nTimes, ts, b);
 	}
 							
-	aodTrigger.SetL1Threshold(0, esdTrigger.GetL1Threshold(0));
-	aodTrigger.SetL1Threshold(1, esdTrigger.GetL1Threshold(1));
+	for (int i = 0; i < 4; i++) aodTrigger.SetL1Threshold(i, esdTrigger.GetL1Threshold(i));
 							
 	Int_t v0[2] = 
 	{

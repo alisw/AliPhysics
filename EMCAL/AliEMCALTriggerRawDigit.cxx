@@ -161,7 +161,9 @@ void AliEMCALTriggerRawDigit::Print(const Option_t* /*opt*/) const
 		if (GetL0Time(i, time)) printf("| %d ",time);
 	}
 	printf("\n");
-	printf("| L1: g (%d,%d) j (%d,%d) / Time sum: %d\n",
-		   GetTriggerBit(kL1Gamma,1),GetTriggerBit(kL1Gamma,0),GetTriggerBit(kL1Jet,1),GetTriggerBit(kL1Jet,0),fL1TimeSum);
+	printf("| L1: g high (%d,%d) g low (%d,%d) j high (%d,%d) j low (%d,%d) / Time sum: %d\n",
+		   GetTriggerBit(kL1GammaHigh,1),GetTriggerBit(kL1GammaHigh,0),GetTriggerBit(kL1GammaLow,1),GetTriggerBit(kL1GammaLow,0),
+		   GetTriggerBit(kL1JetHigh,1),  GetTriggerBit(kL1JetHigh,0),  GetTriggerBit(kL1JetLow,1),  GetTriggerBit(kL1JetLow,0),
+		   fL1TimeSum);
 }
 

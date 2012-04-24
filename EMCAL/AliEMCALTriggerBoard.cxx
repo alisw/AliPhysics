@@ -124,32 +124,24 @@ void AliEMCALTriggerBoard::ZeroRegion()
 }
 
 //_______________
-void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t /*type*/, Int_t thres, Int_t time)
+void AliEMCALTriggerBoard::SlidingWindow(Int_t thres)
 {
-	// Sliding window
-	
-	Int_t ipatch = 0;
-	
-	for (Int_t i=0; i<=int(fRegionSize->X()-fPatchSize->X()*fSubRegionSize->X()); i+=int(fSubRegionSize->X()))
-	{
-		for (Int_t j=0; j<=int(fRegionSize->Y()-fPatchSize->Y()*fSubRegionSize->Y()); j+=int(fSubRegionSize->Y()))
-		{
-			ipatch++;
+	// Sliding window	
+	for (int i = 0; i <= int(fRegionSize->X() - fPatchSize->X() * fSubRegionSize->X()); i += int(fSubRegionSize->X())) {
+		for (int j = 0; j <= int(fRegionSize->Y() - fPatchSize->Y() * fSubRegionSize->Y()); j += int(fSubRegionSize->Y())) {
+			//
+			int sum = 0;
 			
-			Int_t sum = 0;
-			
-			for (Int_t k=0; k<int(fPatchSize->X()*fSubRegionSize->X()); k++)
-			{
-				for (Int_t l=0; l<int(fPatchSize->Y()*fSubRegionSize->Y()); l++)
-				{
-					sum += fRegion[i+k][j+l];
+			for (int k = 0; k < int(fPatchSize->X() * fSubRegionSize->X()); k++) {
+				for (int l = 0; l < int(fPatchSize->Y() * fSubRegionSize->Y()); l++) {
+					//
+					sum += fRegion[i + k][j + l];
 				}
 			}
-
-			if ( sum > thres ) 
-			{
-				new((*fPatches)[fPatches->GetLast()+1]) 
-						AliEMCALTriggerPatch(int(i/fSubRegionSize->X()), int(j/fSubRegionSize->Y()), int(sum), time);
+			
+			if (sum > thres) {
+				AliDebug(999, Form("Adding new patch at (%2d,%2d)", i, j));
+				new((*fPatches)[fPatches->GetEntriesFast()]) AliEMCALTriggerPatch(i, j, sum);
 			}
 		}
 	}

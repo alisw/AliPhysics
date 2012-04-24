@@ -27,6 +27,7 @@ public:
 	void    SetGTHRL0( UInt_t lg)              { fGTHRL0 = lg;        }
 	void    SetMaskReg(UInt_t msk, Int_t pos)  { fMaskReg[pos] = msk; }
 	void    SetRLBKSTU(UInt_t rb)              { fRLBKSTU = rb;       }
+	void    SetFw(     UInt_t fw)              { fFw = fw;            }
 			
 	UInt_t   GetSELPF()                       const { return fSELPF;        }
 	UInt_t   GetL0SEL()                       const { return fL0SEL;        }
@@ -34,7 +35,8 @@ public:
 	UInt_t   GetGTHRL0()                      const { return fGTHRL0;       }
 	UInt_t   GetMaskReg(Int_t pos)            const { return fMaskReg[pos]; }
 	UInt_t   GetRLBKSTU()                     const { return fRLBKSTU;      }
-			
+	UInt_t   GetFw()                          const { return fFw;           }
+	
 	Int_t    GetSegmentation();
 	
 protected:
@@ -50,6 +52,7 @@ private:
 	UInt_t   fGTHRL0;                        // 4x4
 	UInt_t   fMaskReg[6];                    // 6*16 = 96 mask bits per TRU
 	UInt_t   fRLBKSTU;                       // TRU circular buffer rollback
+	UInt_t   fFw;                            // TRU fw version
 	
 	ClassDef(AliEMCALTriggerTRUDCSConfig,3)  //
 };

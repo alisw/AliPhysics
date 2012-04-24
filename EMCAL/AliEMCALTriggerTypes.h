@@ -9,6 +9,6 @@
  Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
  */
 
-typedef enum {kL0 = 0, kL1Gamma, kL1Jet, kTriggerTypeEnd} TriggerType_t;
+typedef enum {kL0 = 0, kL1GammaHigh, kL1GammaLow, kL1JetHigh, kL1JetLow, kTriggerTypeEnd} TriggerType_t;
 
 #endif

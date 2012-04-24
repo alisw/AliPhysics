@@ -28,11 +28,12 @@ ClassImp(AliEMCALTriggerTRUDCSConfig)
   
 //_____________________________________________________________________________
 AliEMCALTriggerTRUDCSConfig::AliEMCALTriggerTRUDCSConfig() : TObject()
-,fSELPF(0)
-,fL0SEL(0)
+,fSELPF(0x1e1f)
+,fL0SEL(0x1)
 ,fL0COSM(0)
 ,fGTHRL0(0)
 ,fRLBKSTU(0)
+,fFw(0x21)
 {
 	//
 	// AliEMCALTriggerTRUDCSConfig default constructor

@@ -9,7 +9,6 @@ run the sliding window algorithm
 Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
-#include "AliEMCALTriggerTypes.h"
 #include "TVector2.h"
 
 class TClonesArray;
@@ -22,7 +21,7 @@ public:
 	         AliEMCALTriggerBoard(const TVector2& RegionSize);
 	virtual ~AliEMCALTriggerBoard();
 	
-	virtual void SlidingWindow(TriggerType_t type, Int_t Threshold, Int_t time = -1);
+	virtual void SlidingWindow(Int_t Threshold);
 
 	virtual void ZeroRegion();
 	

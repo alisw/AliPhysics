@@ -654,6 +654,35 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
 }
 
 //_____________________________________________________________________
+void AliEMCALDigitizer::DecalibrateEnergy(Double_t& energy, const Int_t absId)
+{ 
+	// Load Geometry
+	const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+	
+	if (geom==0){
+		AliFatal("Did not get geometry from EMCALLoader");
+		return;
+	}
+	
+	Int_t iSupMod = -1;
+	Int_t nModule = -1;
+	Int_t nIphi   = -1;
+	Int_t nIeta   = -1;
+	Int_t iphi    = -1;
+	Int_t ieta    = -1;
+	Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
+	if(!bCell)
+		Error("DigitizeEnergyTime","Wrong cell id number : absId %i ", absId) ;
+	geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
+	
+	if(fCalibData) {
+		fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
+	}
+
+	energy /= fADCchannelEC/0.0162;
+}
+
+//_____________________________________________________________________
 void AliEMCALDigitizer::CalibrateADCTime(Float_t & adc, Float_t & time, const Int_t absId)
 { 
   // Returns the energy in a cell absId with a given adc value
@@ -825,8 +854,10 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       // build FOR from simulated digits
       // and xfer to the corresponding TRU input (mapping)
       
-      TClonesArray* digits = emcalLoader->Digits();
+      TClonesArray* digits = emcalLoader->SDigits();
       
+	  AliDebug(999,Form("=== %d SDigits to trigger digits ===",digits->GetEntriesFast()));
+		
       TIter NextDigit(digits);
       while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
       {
@@ -854,6 +885,11 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       
       if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
       
+	  TF1 g4noiseF("g4noise","[0]*exp(-0.5*((x-[1])/[2])**4)",-10,10);
+	  g4noiseF.SetParameter( 0,   1 );  //
+	  g4noiseF.SetParameter( 1,   0 );  // 
+	  g4noiseF.SetParameter( 2,  .2 );  // 
+		
       Int_t    nSamples = 32;
       Int_t *timeSamples = new Int_t[nSamples];
       
@@ -873,6 +909,10 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
           // FIXME: Check digit time!
           if (depositedEnergy)
           {
+//			depositedEnergy += depositedEnergy * g4noiseF.GetRandom();
+			  
+		    DecalibrateEnergy(depositedEnergy, id);  
+			  
             DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
             
             for (Int_t j=0;j<nSamples;j++) 
@@ -881,6 +921,8 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
             }
             
             new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
+			  
+			if (AliDebugLevel()) ((AliEMCALRawDigit*)digitsTRG->At(digitsTRG->GetEntriesFast() - 1))->Print("");
           }
         }
       }
@@ -899,14 +941,15 @@ void AliEMCALDigitizer::DigitalFastOR( Double_t time, Double_t dE, Int_t timeSam
 	// id: 0..95
 	const Int_t    reso = 11;      // 11-bit resolution ADC
 	const Double_t vFSR = 1;       // Full scale input voltage range
-	const Double_t dNe   = 125;     // signal of the APD per MeV of energy deposit in a tower: 125 photo-e-/MeV @ M=30
+// 	const Double_t dNe  = 125;     // signal of the APD per MeV of energy deposit in a tower: 125 photo-e-/MeV @ M=30
+	const Double_t dNe  = 125/1.3; // F-ALTRO max V. FEE: factor 4 
 	const Double_t vA   = .136e-6; // CSP output range: 0.136uV/e-
-	const Double_t rise = 40e-9;   // rise time (10-90%) of the FastOR signal before shaping
+	const Double_t rise = 50e-9;   // rise time (10-90%) of the FastOR signal before shaping
 	
 	const Double_t kTimeBinWidth = 25E-9; // sampling frequency (40MHz)
 	
 	Double_t vV = 1000. * dE * dNe * vA; // GeV 2 MeV
-	
+		
 	TF1 signalF("signal", AnalogFastORFunction, 0, nSamples * kTimeBinWidth, 3);
 	signalF.SetParameter( 0,   vV ); 
 	signalF.SetParameter( 1, time ); // FIXME: when does the signal arrive? Might account for cable lengths

@@ -22,7 +22,7 @@ public:
 	
 	virtual ~AliEMCALTriggerRawDigit();
 	
-	void    SetTriggerBit(const TriggerType_t type, const Int_t mode) {fTriggerBits = (fTriggerBits | (1 << (type + kTriggerTypeEnd * mode)));}
+	void    SetTriggerBit(const int type, const Int_t mode) {fTriggerBits = (fTriggerBits | (1 << (type + kTriggerTypeEnd * mode)));}
 	
 	Bool_t  SetL0Time(   Int_t i);
 	

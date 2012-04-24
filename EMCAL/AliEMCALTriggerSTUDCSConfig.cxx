@@ -28,20 +28,20 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 ClassImp(AliEMCALTriggerSTUDCSConfig)
   
 //_____________________________________________________________________________
-AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject()
-  ,fGA(0)
-  ,fGB(1)
-  ,fGC(0)
-  ,fJA(0)
-  ,fJB(1)
-  ,fJC(0)
-  ,fGetRawData(1)
-  ,fRegion(0xFFFFFFFF)
-  ,fFw(0x2A012)
+AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject(),
+fGetRawData(1),
+fRegion(0xFFFFFFFF),
+fFw(0x2A012)
 {
-  //
-  // AliEMCALTriggerSTUDCSConfig default constructor
-  //
+	//
+	// AliEMCALTriggerSTUDCSConfig default constructor
+	//
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 2; j++) {
+			fG[i][j] = 0;
+			fJ[i][j] = 0;
+		}	
+	}
 }
 
 //_____________________________________________________________________________

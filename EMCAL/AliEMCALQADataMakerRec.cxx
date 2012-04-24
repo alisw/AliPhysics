@@ -1180,9 +1180,9 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 			
       //L1 Gamma patches
       Int_t iTRUSTU, x, y;
-      for (Int_t i = 0; i < inSTU->GetNL1GammaPatch(); i++)
+      for (Int_t i = 0; i < inSTU->GetNL1GammaPatch(0); i++)
 	{
-	  if (inSTU->GetL1GammaPatch(i, iTRUSTU, x, y)) // col (0..23), row (0..3)
+	  if (inSTU->GetL1GammaPatch(i, 0, iTRUSTU, x, y)) // col (0..23), row (0..3)
 	    {
 	      Int_t iTRU;
 	      iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU);
@@ -1213,9 +1213,9 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	}
 		
       //L1 Jet patches
-      for (Int_t i = 0; i < inSTU->GetNL1JetPatch(); i++)
+      for (Int_t i = 0; i < inSTU->GetNL1JetPatch(0); i++)
 	{
-	  if (inSTU->GetL1JetPatch(i, x, y)) // col (0,15), row (0,11)
+	  if (inSTU->GetL1JetPatch(i, 0, x, y)) // col (0,15), row (0,11)
 	    {
 	      
 	      Int_t etaJ = sizeL1jsubr * (11-y-sizeL1jpatch + 1);

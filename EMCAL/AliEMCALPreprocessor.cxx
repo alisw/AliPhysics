@@ -39,6 +39,7 @@
 #include "AliDCSValue.h"
 #include "AliCDBMetaData.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
+#include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliCaloCalibSignal.h"
@@ -333,7 +334,10 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   AliDCSValue *dcsVal;
   TObjArray *arrL0ALGSEL, *arrPEAKFINDER, *arrGLOBALTHRESH, *arrCOSMTHRESH;
   TObjArray *arrMASK[6];
-
+	
+  TObjArray *arrSTUG[3][2], *arrSTUJ[3][2];
+  TObjArray *arrSTUD, *arrSTUR, *arrSTUF;
+	
   // overall object to hold STU and DCS config info
   // DS comment: for now only holds TRU info, i.e. only partially filled
   // (STU info only in raw data header; unfortunately not also picked up via DCS DPs)
@@ -345,6 +349,8 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   }
   trigConfig->SetTRUArr(truArr);
 
+  AliEMCALTriggerSTUDCSConfig *stuConfig = new AliEMCALTriggerSTUDCSConfig();
+	
   // loop through all TRUs
   bool debug = true; // debug flag for AliInfo printouts for each TRU
   for( iTRU = 0; iTRU < kNTRU; iTRU++){
@@ -456,6 +462,94 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
     
   } // TRUs
   AliInfo(Form("TRU info retrieved.\n"));
+		
+  // STU
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 2; j++) {
+			arrSTUG[i][j] = (TObjArray*)dcsAliasMap->GetValue(Form("EMC_STU_G%c%d", i + 65, j));
+			arrSTUJ[i][j] = (TObjArray*)dcsAliasMap->GetValue(Form("EMC_STU_J%c%d", i + 65, j));	
+			
+			if (!arrSTUG[i][j]) {
+				AliWarning(Form("EMC_STU_G%c%d alias not found!", i + 65, j));
+			} else {
+				if (debug) AliInfo( Form("EMC_STU_G%c%d has %d entries", i + 65, j, arrSTUG[i][j]->GetEntries()));
+				if (arrSTUG[i][j]->GetEntries() > 0) {
+					dcsVal = (AliDCSValue*)arrSTUG[i][j]->At(arrSTUG[i][j]->GetEntries() - 1);
+					if (dcsVal) {
+						stuConfig->SetG(i, j, dcsVal->GetInt());
+						if (debug) AliInfo(Form("saving value: %u", dcsVal->GetInt()));
+					}
+				} else
+					AliWarning(Form("EMC_STU_G%c%d has no entry!", i + 65, j));
+			}
+			
+			if (!arrSTUJ[i][j]) {
+				AliWarning(Form("EMC_STU_J%c%d alias not found!", i + 65, j));
+			} else {
+				if (debug) AliInfo( Form("EMC_STU_J%c%d has %d entries", i + 65, j, arrSTUJ[i][j]->GetEntries()));
+				if (arrSTUJ[i][j]->GetEntries() > 0) {
+					dcsVal = (AliDCSValue*)arrSTUJ[i][j]->At(arrSTUJ[i][j]->GetEntries() - 1);
+					if (dcsVal) {
+						stuConfig->SetJ(i, j, dcsVal->GetInt());
+						if (debug) AliInfo(Form("saving value: %u", dcsVal->GetInt()));
+					}
+				} else
+					AliWarning(Form("EMC_STU_J%c%d has no entry!", i + 65, j));
+			}
+		}
+	}
+	
+	arrSTUD = (TObjArray*)dcsAliasMap->GetValue("EMC_STU_GETRAW");
+	arrSTUR = (TObjArray*)dcsAliasMap->GetValue("EMC_STU_REGION");	
+	arrSTUF = (TObjArray*)dcsAliasMap->GetValue("EMC_STU_FWVERS");	
+
+	if (!arrSTUD) {
+		AliWarning("EMC_STU_GETRAW alias not found!");
+	} else {
+		if (debug) AliInfo(Form("EMC_STU_GETRAW has %d entries", arrSTUD->GetEntries()));
+		if (arrSTUD->GetEntries() > 0) {
+			dcsVal = (AliDCSValue*)arrSTUD->At(arrSTUD->GetEntries() - 1);
+			if (dcsVal) {
+				stuConfig->SetRawData(dcsVal->GetInt());
+				if (debug) AliInfo(Form("saving value: %u", dcsVal->GetInt()));
+			}
+		} else
+			AliWarning("EMC_STU_GETRAW has no entry!");
+	}
+	
+	if (!arrSTUR) {
+		AliWarning("EMC_STU_REGION");
+	} else {
+		if (debug) AliInfo( Form("EMC_STU_REGION has %d entries", arrSTUR->GetEntries()));
+		if (arrSTUR->GetEntries() > 0) {
+			dcsVal = (AliDCSValue*)arrSTUR->At(arrSTUR->GetEntries() - 1);
+			if (dcsVal) {
+				stuConfig->SetRegion(dcsVal->GetInt());
+				if (debug) AliInfo(Form("saving value: %u", dcsVal->GetInt()));
+			}
+		} else
+			AliWarning("EMC_STU_REGION has no entry!");
+	}
+	
+	if (!arrSTUF) {
+		AliWarning("EMC_STU_FWVERS");
+	} else {
+		if (debug) AliInfo(Form("EMC_STU_FWVERS has %d entries", arrSTUF->GetEntries()));
+		if (arrSTUF->GetEntries() > 0) {
+			dcsVal = (AliDCSValue*)arrSTUF->At(arrSTUF->GetEntries() - 1);
+			if (dcsVal) {
+				stuConfig->SetFw(dcsVal->GetInt());
+				if (debug) AliInfo(Form("saving value: %u", dcsVal->GetInt()));
+			}
+		} else
+			AliWarning("EMC_STU_FWVERS has no entry!");
+	}
+	
+	trigConfig->SetSTUObj(stuConfig);
+	
+	AliInfo(Form("STU info retrieved."));
+
+	
   // save the objects
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);

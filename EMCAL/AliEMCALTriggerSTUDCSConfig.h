@@ -21,25 +21,17 @@ class AliEMCALTriggerSTUDCSConfig : public TObject
   AliEMCALTriggerSTUDCSConfig();
   virtual ~AliEMCALTriggerSTUDCSConfig() {};
 	  
-  void    SetGA(Int_t ga)        { fGA         = ga; }
-  void    SetGB(Int_t gb)        { fGB         = gb; }
-  void    SetGC(Int_t gc)        { fGC         = gc; }
-  void    SetJA(Int_t ja)        { fJA         = ja; }
-  void    SetJB(Int_t jb)        { fJB         = jb; }
-  void    SetJC(Int_t jc)        { fJC         = jc; }
-  void    SetRawData(Int_t rd)   { fGetRawData = rd; }
-  void    SetRegion(Int_t rg)    { fRegion     = rg; }
-  void    SetFw(Int_t fv)        { fFw         = fv; }
+  void    SetG(Int_t i, Int_t j, Int_t gv) { fG[i][j]    = gv; }
+  void    SetJ(Int_t i, Int_t j, Int_t jv) { fJ[i][j]    = jv; }
+  void    SetRawData(Int_t rd)             { fGetRawData = rd; }
+  void    SetRegion(Int_t rg)              { fRegion     = rg; }
+  void    SetFw(Int_t fv)                  { fFw         = fv; }
 	
-  Int_t   GetGA()        const { return fGA;         }
-  Int_t   GetGB()        const { return fGB;         }
-  Int_t   GetGC()        const { return fGC;         }
-  Int_t   GetJA()        const { return fJA;         }
-  Int_t   GetJB()        const { return fJB;         }
-  Int_t   GetJC()        const { return fJC;         }
-  Int_t   GetRawData()   const { return fGetRawData; }
-  Int_t   GetRegion()    const { return fRegion;     }
-  Int_t   GetFw()        const { return fFw;         }
+  Int_t   GetG(int i, int j) const { return fG[i][j];    }
+  Int_t   GetJ(int i, int j) const { return fJ[i][j];    }
+  Int_t   GetRawData()       const { return fGetRawData; }
+  Int_t   GetRegion()        const { return fRegion;     }
+  Int_t   GetFw()            const { return fFw;         }
 
   void    GetSegmentation(TVector2& v1, TVector2& v2, TVector2& v3, TVector2& v4) const;
 	
@@ -50,17 +42,13 @@ protected:
 
 private:
 	
-  Int_t   fGA;         // GA
-  Int_t   fGB;         // GB
-  Int_t   fGC;         // GC
-  Int_t   fJA;         // JA
-  Int_t   fJB;         // JB
-  Int_t   fJC;         // JC
-  Int_t   fGetRawData; // GetRawData
-  Int_t   fRegion;     // Region
-  Int_t   fFw;         // Fw
+  Int_t   fG[3][2];       // GA,B,C
+  Int_t   fJ[3][2];       // JA,B,C
+  Int_t   fGetRawData;    // GetRawData
+  Int_t   fRegion;        // Region
+  Int_t   fFw;            // Fw
   
-  ClassDef(AliEMCALTriggerSTUDCSConfig,1) //
+  ClassDef(AliEMCALTriggerSTUDCSConfig,2) //
 };
 #endif
 

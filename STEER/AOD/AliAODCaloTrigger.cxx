@@ -47,7 +47,7 @@ fL1V0(),
 fL1FrameMask(0)
 {
 	//
-	fL1Threshold[0] = fL1Threshold[1] = 0;
+	for (int i = 0; i < 4; i++) fL1Threshold[i] = 0;
 	fL1V0[0] = fL1V0[1] = 0;
 }
 
@@ -299,6 +299,7 @@ void AliAODCaloTrigger::Print(const Option_t* /*opt*/) const
 	printf(")\n");
 	printf("--L1:\n");
 	printf("\tTIME SUM: %4d\n", fL1TimeSum[fCurrent]);
-	printf("\tTHRESHOLDS (GAMMA: %4d, JET: %4d)\n", fL1Threshold[0], fL1Threshold[1]);
+	printf("\tHIGH THRESHOLDS (GAMMA: %4d, JET: %4d)\n", fL1Threshold[0], fL1Threshold[1]);
+	printf("\tLOW THRESHOLDS (GAMMA: %4d, JET: %4d)\n", fL1Threshold[2], fL1Threshold[3]);
 	printf("--TRIGGER BITS: 0x%x\n", fTriggerBits[fCurrent]);
 }	

@@ -135,8 +135,8 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   //Init temporary list of digits
   fgDigitsArr     = new TClonesArray("AliEMCALDigit",1000);
   fgClustersArr   = new TObjArray(1000);
-  fgTriggerDigits = new TClonesArray("AliEMCALTriggerRawDigit",1000);	
-
+  fgTriggerDigits = new TClonesArray("AliEMCALTriggerRawDigit", 32 * 96);	
+	
   //Track matching
   fMatches = new TList();
   fMatches->SetOwner(kTRUE);
@@ -362,7 +362,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       AliWarning("No V0 ESD! Run trigger processor w/ null V0 charges");
     }
   
-  if (fgTriggerDigits) fgTriggerDigits->Clear();
+  if (fgTriggerDigits && fgTriggerDigits->GetEntriesFast()) fgTriggerDigits->Delete();
   
   TBranch *branchtrg = digitsTree->GetBranch("EMTRG");
   
@@ -388,7 +388,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++)
 	{	  
 	  AliEMCALTriggerRawDigit* rdig = (AliEMCALTriggerRawDigit*)fgTriggerDigits->At(i);
-	  
+	  if (AliDebugLevel() > 999) rdig->Print("");
+		
 	  Int_t px, py;
 	  if (fGeom->GetPositionInEMCALFromAbsFastORIndex(rdig->GetId(), px, py))
 	    {
@@ -396,14 +397,15 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 	      
 	      rdig->GetMaximum(a, t);
 	      rdig->GetL0Times(times);
-	      
+			
 	      trgESD->Add(px, py, a, t, times, rdig->GetNL0Times(), rdig->GetL1TimeSum(), rdig->GetTriggerBits());
 	    }
 	}
       
-      trgESD->SetL1Threshold(0, fTriggerData->GetL1GammaThreshold());
-      
-      trgESD->SetL1Threshold(1, fTriggerData->GetL1JetThreshold()  );
+		for (int i = 0; i < 2; i++) {
+			trgESD->SetL1Threshold(2 * i    , fTriggerData->GetL1JetThreshold(  i));
+			trgESD->SetL1Threshold(2 * i + 1, fTriggerData->GetL1GammaThreshold(i));
+		}
       
       Int_t v0[2];
       fTriggerData->GetL1V0(v0);
@@ -413,7 +415,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       
       if (!saveOnce && fTriggerData->GetL1DataDecoded()) 
 	{
-	  int type[8] = {0};
+	  int type[15] = {0};
 	  fTriggerData->GetL1TriggerType(type);
 	  
 	  esd->SetCaloTriggerType(type);

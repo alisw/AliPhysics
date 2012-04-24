@@ -24,6 +24,8 @@ public:
 	virtual       ~AliEMCALTriggerTRU();
 	
 	virtual Int_t  L0();
+	virtual Int_t  L0v0(int mask, int pattern);
+	virtual Int_t  L0v1(int mask, int pattern);
 	virtual void   SetADC(Int_t channel, Int_t bin, Int_t sig );
 	virtual void   SaveRegionADC(Int_t iTRU, Int_t iEvent);
 	virtual void   Reset();

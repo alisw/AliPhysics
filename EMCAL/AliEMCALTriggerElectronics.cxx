@@ -42,7 +42,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 namespace
 {
-	const Int_t kNTRU = 30;
+	const Int_t kNTRU = 32;
 }
 
 ClassImp(AliEMCALTriggerElectronics)
@@ -131,7 +131,14 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			Int_t time, amp;
 			Bool_t isOK2 = digit->GetTimeSample(j, time, amp);
 			
-			if (isOK1 && isOK2 && amp) (static_cast<AliEMCALTriggerTRU*>(fTRU->At(iTRU)))->SetADC(iADC, time, amp);
+			if (isOK1 && isOK2 && amp) {
+				AliDebug(999, Form("=== TRU# %2d ADC# %2d time# %2d signal %d ===", iTRU, iADC, time, amp));
+				
+				if (data->GetMode())
+					(static_cast<AliEMCALTriggerTRU*>(fTRU->At(iTRU)))->SetADC(iADC, time, 4 * amp);
+				else
+					(static_cast<AliEMCALTriggerTRU*>(fTRU->At(iTRU)))->SetADC(iADC, time,     amp);
+			}
 		}
 		
 		if (geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) posMap[px][py] = i;
@@ -143,7 +150,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 	
 	for (Int_t i=0; i<kNTRU; i++) 
 	{
-		AliDebug(999, Form("===========< TRU %2d >============\n", i));
+		AliDebug(999, Form("===========< TRU %2d >============", i));
 		
 		AliEMCALTriggerTRU* iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
 		
@@ -163,7 +170,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			data->SetL0Trigger(0, i, 0);
 	}
 
-	AliDebug(999, Form("=== %2d TRU (out of %2d) has issued a L0 / Min L0 time: %d\n", iL0, kNTRU, timeL0min));
+	AliDebug(999, Form("=== %2d TRU (out of %2d) has issued a L0 / Min L0 time: %d", iL0, kNTRU, timeL0min));
 	
 	AliEMCALTriggerRawDigit* dig = 0x0;
 	
@@ -184,24 +191,29 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 				for (int k = 0; k < iTRU->RegionSize()->Y(); k++)
 				{
 					if (reg[j][k]
-							&& 
-							geom->GetAbsFastORIndexFromPositionInTRU(i, j, k, id)
-							&&
-							geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py))
+						&& 
+						geom->GetAbsFastORIndexFromPositionInTRU(i, j, k, id)
+						&&
+						geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py))
 					{
 						pos = posMap[px][py];
 									
 						if (pos == -1)
 						{
 							// Add a new digit
+							posMap[px][py] = digits->GetEntriesFast();
+
 							new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
 										
-							dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+							dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);							
 						}
 						else
 						{
 							dig = (AliEMCALTriggerRawDigit*)digits->At(pos);
 						}
+						
+						// 14b to 12b STU time sums
+						reg[j][k] >>= 2; 
 						
 						dig->SetL1TimeSum(reg[j][k]);
 					}
@@ -212,23 +224,26 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
 	if (iL0 && !data->GetMode())
 	{
-			// transform local to global 
-		
 		for (Int_t i = 0; i < kNTRU; i++)
 		{
 			AliEMCALTriggerTRU* iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
+			
+			AliDebug(999, Form("=== TRU# %2d found %d patches", i, (iTRU->Patches()).GetEntriesFast()));
 			
 			TIter next(&iTRU->Patches());
 			while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)next())
 			{
 				p->Position(px, py);
 			
-			// Local 2 Global	
-				if (geom->GetAbsFastORIndexFromPositionInTRU(i, px, py, id) && 
-								geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) p->SetPosition(px, py);
+				// Local 2 Global
+				if (geom->GetAbsFastORIndexFromPositionInTRU(i, px, py, id) 
+					&& 
+					geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) p->SetPosition(px, py);
+				
+				if (AliDebugLevel()) p->Print("");
 				
 				Int_t peaks = p->Peaks();
-				
+								
 				Int_t sizeX = (Int_t) ((iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X());
 				Int_t sizeY = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
 					
@@ -238,30 +253,31 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 					{
 						pos = posMap[px + j % sizeX][py + j / sizeX];
 							
-						if (pos == -1)
-						{
-								// Add a new digit
+						if (pos == -1) {
+							// Add a new digit
+							posMap[px + j % sizeX][py + j / sizeX] = digits->GetEntriesFast();
+
 							new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
 								
-							dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
-						}
-						else
-						{
+							dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);							
+						} else {
 							dig = (AliEMCALTriggerRawDigit*)digits->At(pos);
 						}
 							
-						dig->SetL0Time(timeL0min);
+						dig->SetL0Time(p->Time());
 					}
 				}
 					
 				pos = posMap[px][py];
 					
-				if (pos == -1)
-				{
-						// Add a new digit
+				if (pos == -1) {
+					// Add a new digit
+					posMap[px][py] = digits->GetEntriesFast();
+
 					new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
 						
 					dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+					
 				}
 				else
 				{
@@ -273,17 +289,14 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		}
 	}
 	
-	//
 	// Prepare STU for L1 calculation
-	
-	for (int i = 0; i < (fSTU->RegionSize())->X(); i++)
-	{
-		for (int j = 0; j < (fSTU->RegionSize())->Y(); j++)
-		{
+	for (int i = 0; i < (fSTU->RegionSize())->X(); i++) {
+		for (int j = 0; j < (fSTU->RegionSize())->Y(); j++) {
+			
 			pos = posMap[i][j];
 		
-			if (pos >= 0) 
-			{
+			if (pos >= 0) {
+				
 				AliEMCALTriggerRawDigit *digit = (AliEMCALTriggerRawDigit*)digits->At(pos);
 		
 				if (digit->GetL1TimeSum() > -1) region[i][j] = digit->GetL1TimeSum();
@@ -291,82 +304,111 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		}
 	}
 	
+	AliDebug(999,"==================== STU  ====================");
+	if (AliDebugLevel() >= 999) fSTU->Scan();
+	AliDebug(999,"==============================================");
+	
 	fSTU->SetRegion(region);
 	
 	if (data->GetMode()) 
 	{
-		fSTU->SetThreshold(kL1Gamma, data->GetL1GammaThreshold());
-		fSTU->SetThreshold(kL1Jet,   data->GetL1JetThreshold()  );
+		for (int ithr = 0; ithr < 2; ithr++) {
+			AliDebug(999, Form(" THR %d / EGA %d / EJE %d", ithr, data->GetL1GammaThreshold(ithr), data->GetL1JetThreshold(ithr)));
+							   
+			fSTU->SetThreshold(kL1GammaHigh + ithr, data->GetL1GammaThreshold(ithr));
+			fSTU->SetThreshold(kL1JetHigh + ithr, data->GetL1JetThreshold(  ithr));
+		}
 	}
 	else
 	{
-		fSTU->ComputeThFromV0(kL1Gamma, V0M); 
-		data->SetL1GammaThreshold( fSTU->GetThreshold(kL1Gamma));
-		fSTU->ComputeThFromV0(kL1Jet,   V0M);
-		data->SetL1JetThreshold(   fSTU->GetThreshold(kL1Jet)  );
-	}
-
-	fSTU->L1(kL1Gamma);
-		
-	TIterator* nP = 0x0;
-		
-	nP = (fSTU->Patches()).MakeIterator();
-	
-	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
-	{			
-		p->Position(px, py);
+		for (int ithr = 0; ithr < 2; ithr++) {
+			//
+			fSTU->ComputeThFromV0(kL1GammaHigh + ithr, V0M); 
+			data->SetL1GammaThreshold(ithr, fSTU->GetThreshold(kL1GammaHigh + ithr));
 			
-		if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
-		{
-			if (posMap[px][py] == -1)
-			{
-					// Add a new digit
-				new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
-					
-				dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
-			} 
-			else
-			{
-				dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);								
-			}
-				
-			dig->SetTriggerBit(kL1Gamma,0);
+			fSTU->ComputeThFromV0(kL1JetHigh + ithr,   V0M);
+			data->SetL1JetThreshold(ithr, fSTU->GetThreshold(kL1JetHigh + ithr)  );
+			
+			AliDebug(999, Form("STU THR %d EGA %d EJE %d", ithr, fSTU->GetThreshold(kL1GammaHigh + ithr), fSTU->GetThreshold(kL1JetHigh + ithr)));
 		}
 	}
 
-	fSTU->Reset();
-
-	fSTU->L1(kL1Jet);
+	for (int ithr = 0; ithr < 2; ithr++) {
+		//
+		fSTU->Reset();
 		
-	nP = (fSTU->Patches()).MakeIterator();
+		fSTU->L1(kL1GammaHigh + ithr);
+		
+		TIterator* nP = 0x0;
+		
+		nP = (fSTU->Patches()).MakeIterator();
+		
+		AliDebug(999, Form("=== STU found %d gamma patches", (fSTU->Patches()).GetEntriesFast()));
+		
+		while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
+		{			
+			p->Position(px, py);
 			
-	while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
-	{			
-		p->Position(px, py);
-
-		px *= (Int_t)((fSTU->SubRegionSize())->X());
-
-		py *= (Int_t)((fSTU->SubRegionSize())->Y());
+			if (AliDebugLevel()) p->Print("");
 			
-		if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
-		{
-			if (posMap[px][py] == -1)
+			if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
 			{
-					// Add a new digit
-				new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
+				if (posMap[px][py] == -1)
+				{
+					posMap[px][py] = digits->GetEntriesFast();
 					
-				dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
-			} 
-			else
-			{
-				dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);
-			}
+					// Add a new digit
+					new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
+					
+					dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+				} 
+				else
+				{
+					dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);								
+				}
 				
-			dig->SetTriggerBit(kL1Jet, 0);
+				if (AliDebugLevel()) dig->Print("");
+				
+				dig->SetTriggerBit(kL1GammaHigh + ithr, 0);
+			}
+		}
+		
+		fSTU->Reset();
+		
+		fSTU->L1(kL1JetHigh + ithr);
+		
+		nP = (fSTU->Patches()).MakeIterator();
+		
+		AliDebug(999, Form("=== STU found %d jet patches", (fSTU->Patches()).GetEntriesFast()));
+		
+		while (AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)nP->Next()) 
+		{			
+			p->Position(px, py);
+			
+			if (AliDebugLevel()) p->Print("");
+			
+			if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
+			{
+				if (posMap[px][py] == -1)
+				{
+					posMap[px][py] = digits->GetEntriesFast();
+					
+					// Add a new digit
+					new((*digits)[digits->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, 0x0, 0);
+					
+					dig = (AliEMCALTriggerRawDigit*)digits->At(digits->GetEntriesFast() - 1);
+				} 
+				else
+				{
+					dig = (AliEMCALTriggerRawDigit*)digits->At(posMap[px][py]);
+				}
+				
+				if (AliDebugLevel()) dig->Print("");
+				
+				dig->SetTriggerBit(kL1JetHigh + ithr, 0);
+			}
 		}
 	}
-
-	if (AliDebugLevel() >= 999) data->Scan();
 	
 	// Now reset the electronics for a fresh start with next event
 	Reset();

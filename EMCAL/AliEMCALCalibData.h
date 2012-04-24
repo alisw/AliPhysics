@@ -32,6 +32,8 @@ class AliEMCALCalibData: public TNamed {
   Float_t GetADCpedestal     (Int_t module, Int_t column, Int_t row) const;
   Float_t GetTimeChannel     (Int_t module, Int_t column, Int_t row) const;
   Float_t GetTimeChannelDecal(Int_t module, Int_t column, Int_t row) const;
+	
+  Float_t GetADCchannelRef   () {return fADCchannelRef;}
 
   //
   void SetADCchannel      (Int_t module, Int_t column, Int_t row, Float_t value);
@@ -39,6 +41,8 @@ class AliEMCALCalibData: public TNamed {
   void SetADCpedestal     (Int_t module, Int_t column, Int_t row, Float_t value);
   void SetTimeChannel     (Int_t module, Int_t column, Int_t row, Float_t value);
   void SetTimeChannelDecal(Int_t module, Int_t column, Int_t row, Float_t value);
+
+  void SetADCchannelRef   (Float_t value) {fADCchannelRef = value;}
 
   // Fill for (relative) recalibration (undo 1, apply 2)
   void Fill(const AliEMCALCalibData *cd1, const AliEMCALCalibData *cd2, Bool_t print=0);
@@ -50,8 +54,10 @@ class AliEMCALCalibData: public TNamed {
   Float_t  fTimeChannel     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // time width of one ADC channel ([mod][col][row])
   Float_t  fTimeChannelDecal[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // time width of one ADC channel ([mod][col][row])
 
+  Float_t  fADCchannelRef;
+
   //
-  ClassDef(AliEMCALCalibData,2)    // EMCAL Calibration data
+  ClassDef(AliEMCALCalibData,3)    // EMCAL Calibration data
 };
 
 #endif

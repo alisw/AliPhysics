@@ -1315,7 +1315,7 @@ Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, 
 
 	if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 63 ) 
 	{
-		AliError("Out of range!");
+		AliError(Form("Out of range! eta: %2d phi: %2d", iEta, iPhi));
 		return kFALSE;
 	}
 	

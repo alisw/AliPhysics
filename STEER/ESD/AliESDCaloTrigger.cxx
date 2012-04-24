@@ -47,7 +47,7 @@ fL1V0(),
 fL1FrameMask(0)
 {
 	//
-	fL1Threshold[0] = fL1Threshold[1] = 0;
+	for (int i = 0; i < 4; i++) fL1Threshold[i] = 0;
 	fL1V0[0] = fL1V0[1] = 0;	
 }
 
@@ -127,8 +127,8 @@ void AliESDCaloTrigger::Copy(TObject &obj) const
 		dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], fTriggerBits[i]);
 	}	
 
-	dest.SetL1Threshold(0, fL1Threshold[0]);
-	dest.SetL1Threshold(1, fL1Threshold[1]);
+	for (int i = 0; i < 4; i++) dest.SetL1Threshold(i, fL1Threshold[i]);
+	
 	dest.SetL1V0(fL1V0);
 	dest.SetL1FrameMask(fL1FrameMask);
 }
@@ -288,6 +288,7 @@ void AliESDCaloTrigger::Print(const Option_t* /*opt*/) const
 	printf(")\n");
 	printf("--L1:\n");
 	printf("\tTIME SUM: %4d\n", fL1TimeSum[fCurrent]);
-	printf("\tTHRESHOLDS (GAMMA: %4d, JET: %4d)\n", fL1Threshold[0], fL1Threshold[1]);
+	printf("\tHIGH THRESHOLDS (GAMMA: %4d, JET: %4d)\n", fL1Threshold[0], fL1Threshold[1]);
+	printf("\tLOW THRESHOLDS (GAMMA: %4d, JET: %4d)\n", fL1Threshold[2], fL1Threshold[3]);
 	printf("--TRIGGER BITS: 0x%x\n", fTriggerBits[fCurrent]);
 }	

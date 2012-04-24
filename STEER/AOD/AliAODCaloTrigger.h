@@ -73,12 +73,12 @@ private:
 	Int_t*   fL1TimeSum;      // [fNEntries]
 	Int_t*   fTriggerBits;    // [fNEntries]
 	
-	Int_t    fL1Threshold[2]; // L1 thresholds from raw data
+	Int_t    fL1Threshold[4]; // L1 thresholds from raw data
 	Int_t    fL1V0[2];        // L1 threshold components
 	Int_t    fL1FrameMask;    // Validation flag for L1 data
 	
 	
-	ClassDef(AliAODCaloTrigger, 1)
+	ClassDef(AliAODCaloTrigger, 2)
 };
 #endif
 

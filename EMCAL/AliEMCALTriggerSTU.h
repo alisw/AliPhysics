@@ -9,6 +9,7 @@
 Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
+#include <AliEMCALTriggerTypes.h>
 #include <AliEMCALTriggerBoard.h>
 
 class TTree;
@@ -23,15 +24,12 @@ public:
 	virtual      ~AliEMCALTriggerSTU();
 	
 	virtual void  Build(TString& str, Int_t i, Int_t** Map, const TVector2* rSize);
-	virtual void  PrintADC(TriggerType_t type, TVector2& pos, TVector2& idx);
-	virtual void  L1(TriggerType_t type);
-	virtual void  PatchGenerator(const TClonesArray* lpos, Int_t val);
+	virtual void  L1(int type);
 	
-	virtual void  ComputeThFromV0(TriggerType_t type, const Int_t M[]);
+	virtual void  ComputeThFromV0(int type, const Int_t M[]);
 	
-	virtual void  SetThreshold(TriggerType_t type, Int_t v);
-	
-	virtual Int_t GetThreshold(TriggerType_t type);
+	virtual void  SetThreshold(int type, Int_t v);
+	virtual Int_t GetThreshold(int type);
 
 	virtual void  Reset();
 	
@@ -44,12 +42,12 @@ protected:
 
 private:
 	
-		  Int_t   fGammaTh; // Gamma threshold
-		  Int_t   fJetTh;   // Jet threshold
+		  Int_t   fGammaTh[2]; // Gamma threshold
+		  Int_t   fJetTh[2];   // Jet threshold
 	
-	AliEMCALTriggerSTUDCSConfig* fDCSConfig; // DCS config
+	AliEMCALTriggerSTUDCSConfig *fDCSConfig; // DCS config
 
-	ClassDef(AliEMCALTriggerSTU,1)
+	ClassDef(AliEMCALTriggerSTU, 2)
 };
  
 #endif

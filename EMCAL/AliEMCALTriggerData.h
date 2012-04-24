@@ -25,16 +25,12 @@ public:
 	virtual void SetMode(Int_t i) {fMode = i;}
 	
 	virtual void SetL0Trigger(      Int_t i, Int_t j, Int_t k) { fL0Trigger[i][j] = k; }
-	virtual void SetL0Region(       Int_t i, const Int_t**& region);
-	virtual void SetL1Region(       Int_t i,       Int_t**& region);
 	
-	virtual void SetPatches(TriggerType_t type, Int_t i, const TClonesArray& patches);
-	
-	virtual void SetL1GammaThreshold(Int_t  v) {fL1GammaThreshold = v;}
-	virtual void SetL1JetThreshold(  Int_t  v) {  fL1JetThreshold = v;}
+	virtual void SetL1GammaThreshold(int i, int  v) {fL1GammaThreshold[i] = v;}
+	virtual void SetL1JetThreshold(  int i, int  v) {  fL1JetThreshold[i] = v;}
 	virtual void SetL1V0(            Int_t* v) {for (int i = 0; i < 2; i++) fL1V0[i] = v[i];}
 	virtual void SetL1FrameMask(     Int_t  v) {     fL1FrameMask = v;}            
-	virtual void SetL1TriggerType(   Int_t* v) {for (int i = 0; i < 8; i++) fL1TriggerType[i] = v[i];}
+	virtual void SetL1TriggerType(   Int_t* v) {for (int i = 0; i < 15; i++) fL1TriggerType[i] = v[i];}
 
 	virtual void SetL1DataDecoded(   Int_t  v) {   fL1DataDecoded = v;} 
 	virtual void SetL1RawData(       Int_t  v) {       fL1RawData = v;}
@@ -42,16 +38,11 @@ public:
 	virtual void          GetL0Trigger(  Int_t i, Int_t j, Int_t& k  ) const {   k = fL0Trigger[i][j];}
 	virtual Int_t         GetL0Trigger(  Int_t i, Int_t j            ) const {return fL0Trigger[i][j];}
 	
-	virtual void          GetPatches(TriggerType_t type, Int_t i, TClonesArray& patches) const;
-	virtual TClonesArray* GetPatches(TriggerType_t type, Int_t i                       ) const;
-
-	virtual void          GetL1Region( Int_t i, Int_t arr[][64]             ) const;
-	
-	virtual Int_t         GetL1GammaThreshold()           const {return fL1GammaThreshold;}
-	virtual Int_t         GetL1JetThreshold()             const {return   fL1JetThreshold;}
+	virtual Int_t         GetL1GammaThreshold(int i)           const {return fL1GammaThreshold[i];}
+	virtual Int_t         GetL1JetThreshold(  int i)           const {return   fL1JetThreshold[i];}
 	virtual void          GetL1V0(            Int_t  v[]) const {for (int i = 0; i < 2; i++) v[i] = fL1V0[i];}
 	virtual Int_t         GetL1FrameMask(               ) const {return fL1FrameMask;}            
-	virtual void          GetL1TriggerType(   Int_t  v[]) const {for (int i = 0; i < 8; i++) v[i] = fL1TriggerType[i];}
+	virtual void          GetL1TriggerType(   Int_t  v[]) const {for (int i = 0; i < 15; i++) v[i] = fL1TriggerType[i];}
 	
 	virtual Int_t         GetL1DataDecoded(             ) const {return fL1DataDecoded;}
 	virtual Int_t             GetL1RawData(             ) const {return     fL1RawData;}
@@ -69,22 +60,13 @@ private:
 	Int_t                      fMode;           // Simulation/Raw
 	
 	Int_t               fL0Trigger[2][32];      // Triggering TRU
-	
-	TClonesArray*       fL0Patches[2];          // array of patches  
-	
-	Int_t               fL0Region[32][24][4];   // from F-ALTRO data only
-	
-	TClonesArray*  fL1GammaPatches[2];          // array of patches  
-	TClonesArray*    fL1JetPatches[2];          // array of patches
-	
-	Int_t                fL1Region[2][48][64];  // STU FastOR
 
-	Int_t        fL1GammaThreshold;             // L1-g threshold
-	Int_t          fL1JetThreshold;             // L1-j threshold
+	Int_t        fL1GammaThreshold[2];          // L1-g threshold
+	Int_t          fL1JetThreshold[2];          // L1-j threshold
 	
 	Int_t                    fL1V0[2];          // V0 charges
 	Int_t             fL1FrameMask;             // Frame mask
-	Int_t           fL1TriggerType[8];          // Trigger type
+	Int_t           fL1TriggerType[15];         // Trigger type
 	
 	Int_t           fL1DataDecoded;             // Raw data decoded
 	Int_t               fL1RawData;             // Raw data
