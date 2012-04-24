@@ -41,7 +41,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", const char
     if (1){//datatype == "pp") {
       //::Info("AddTaskEMCALTender", "USING pp data configuration...");
       //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2); //Std for pbpb
-      EMCALSupply->SwitchOnRecalDistBadChannel();
+      EMCALSupply->SwitchOffRecalDistBadChannel();
       EMCALSupply->SwitchOnReCalibrateCluster();
       EMCALSupply->SwitchOnRecalculateClusPos();
       //EMCALSupply->SetNonLinearityFunction(AliEMCALTenderSupply::kBeamTestCorrected);

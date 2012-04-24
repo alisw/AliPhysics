@@ -116,7 +116,6 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
   }
 }
 
-
 //________________________________________________________________________
 Bool_t AliEmcalPicoTrackMaker::AcceptTrack(AliVTrack *track)
 {
@@ -127,8 +126,8 @@ Bool_t AliEmcalPicoTrackMaker::AcceptTrack(AliVTrack *track)
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
     if (aodtrack) {
       //cout << "filter bit = " << fFilterBit << ", filter map = " << aodtrack->GetFilterMap() << endl;
-      return aodtrack->TestFilterBit(fAODfilterBits[0]+fAODfilterBits[1]+fAODfilterBits[2]);
-      //return aodtrack->IsHybridGlobalConstrainedGlobal();
+      //return aodtrack->TestFilterBit(fAODfilterBits[0]+fAODfilterBits[1]+fAODfilterBits[2]);
+      return aodtrack->IsHybridGlobalConstrainedGlobal();
     }
     else {
       AliError("Could not cast AOD track!");

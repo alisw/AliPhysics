@@ -20,6 +20,7 @@
 #pragma link C++ class AliEmcalTrackPropagatorTask+;
 #pragma link C++ class AliEmcalIsolatedPhotonsTask+;
 #pragma link C++ class AliEmcalPicoTrackMaker+;
+#pragma link C++ class AliEmcalTenderTask+;
 #pragma link C++ class AliEsdSkimTask+;
 #pragma link C++ class AliEsdTrackExt+;
 #pragma link C++ class AliPicoTrack+;
