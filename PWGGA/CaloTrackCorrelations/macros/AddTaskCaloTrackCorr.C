@@ -25,28 +25,29 @@ Bool_t  kCalibE        = kTRUE;
 Bool_t  kCalibT        = kTRUE;
 Bool_t  kBadMap        = kTRUE;
 
-AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data          = "AOD",
-                                                          const TString calorimeter   = "EMCAL", 
-                                                          const Bool_t  simulation    = kFALSE,
-                                                          const Bool_t  eventsel      = kFALSE,
-                                                          const Bool_t  exotic        = kTRUE,
-                                                          const Bool_t  nonlin        = kFALSE,
-                                                          TString       outputfile    = "",
-                                                          const Int_t   year          = 2010,
-                                                          const TString col           = "pp", 
-                                                          const TString trigger       = "MB", 
-                                                          const TString clustersArray = "V1",
-                                                          const Bool_t  recaltm       = kTRUE,
-                                                          const Bool_t  tm            = kTRUE,
-                                                          const Int_t   minCen        = -1,
-                                                          const Int_t   maxCen        = -1,
-                                                          const Bool_t  qaan          = kFALSE,
-                                                          const Bool_t  hadronan      = kFALSE,
-                                                          const Bool_t  calibE        = kTRUE,
-                                                          const Bool_t  badmap        = kTRUE,
-                                                          const Bool_t  calibT        = kTRUE,
-                                                          const Bool_t  outputAOD     = kFALSE, 
-                                                          const Bool_t  printSettings = kFALSE
+AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data          = "AOD",
+                                                          const TString  calorimeter   = "EMCAL", 
+                                                          const Bool_t   simulation    = kFALSE,
+                                                          const Bool_t   eventsel      = kFALSE,
+                                                          const Bool_t   exotic        = kTRUE,
+                                                          const Bool_t   nonlin        = kFALSE,
+                                                          TString        outputfile    = "",
+                                                          const Int_t    year          = 2010,
+                                                          const TString  col           = "pp", 
+                                                          const TString  trigger       = "MB", 
+                                                          const TString  clustersArray = "V1",
+                                                          const Bool_t   recaltm       = kTRUE,
+                                                          const Bool_t   tm            = kTRUE,
+                                                          const Int_t    minCen        = -1,
+                                                          const Int_t    maxCen        = -1,
+                                                          const Bool_t   qaan          = kFALSE,
+                                                          const Bool_t   hadronan      = kFALSE,
+                                                          const Bool_t   calibE        = kTRUE,
+                                                          const Bool_t   badmap        = kTRUE,
+                                                          const Bool_t   calibT        = kTRUE,
+                                                          const Bool_t   outputAOD     = kFALSE, 
+                                                          const Bool_t   printSettings = kFALSE,
+                                                          const Double_t scaleFactor   = -1
                                                           )
 {
   // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
@@ -123,48 +124,56 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
 
   // Isolation settings
   Int_t partInCone = AliIsolationCut::kNeutralAndCharged; // kOnlyCharged;
-  Int_t thresType  = AliIsolationCut::kPtThresIC;// PbPb
-  //if(kCollisions=="pp") thresType = AliIsolationCut::kSumPtFracIC ; 
+  Int_t thresType  = AliIsolationCut::kPtThresIC;//  AliIsolationCut::kSumPtFracIC ; 
   
+  // Photon analysis
   
- 
   maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay    
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, and photon tagging from decay
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo), n++); // Pi0 event by event selection, and photon tagging from decay    
-  
   maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType), n++); // Photon isolation   
-  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0", partInCone,thresType), n++);    // Pi0 isolation   
-  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", partInCone,thresType), n++);    // Pi0 isolation   
-  
-  //maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType,kTRUE), n++); // Photon multi isolation   
-  //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0",    partInCone,thresType,kTRUE), n++); // Pi0 multi isolation   
-  
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kFALSE), n++); // Gamma hadron correlation
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kTRUE) , n++); // Isolated gamma hadron correlation
+  //maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType,kTRUE), n++); // Photon multi isolation, leave it the last   
+
+  // Split cluster analysis
+  if(kCalorimeter == "EMCAL")
+  {
+    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo), n++); // Pi0 event by event selection, cluster splitting   
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", partInCone,thresType), n++);       // Pi0 isolation, cluster splits   
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kFALSE), n++); // Pi0 hadron correlation
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kTRUE) , n++); // Isolated pi0 hadron correlation
+    //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS",  partInCone,thresType,kTRUE), n++); // Pi0 multi isolation, split cluster  
+    //maker->AddAnalysis(ConfigureInClusterIMAnalysis(0.5,3), n++); 
+  }
+  
+  // Invariant mass analysis
+  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, invariant mass and photon tagging from decay    
+  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0SideBand", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay    
+  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, invariant mass and photon tagging from decay
+  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0", partInCone,thresType), n++);         // Pi0 isolation, invariant mass   
+  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SideBand", partInCone,thresType), n++); // Pi0 isolation, side band   
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kFALSE), n++); // Pi0 hadron correlation
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kTRUE) , n++); // Isolated pi0 hadron correlation
-  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kFALSE), n++); // Pi0 hadron correlation
-  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kTRUE) , n++); // Isolated pi0 hadron correlation
-  
+  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SideBand" ,kFALSE), n++); // Pi0 hadron correlation
+  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SideBand" ,kTRUE) , n++); // Isolated pi0 hadron correlation
+  //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0",    partInCone,thresType,kTRUE), n++); // Pi0 multi isolation, invariant mass, leave it the last   
+
   if(kHadronAN)
   {
     maker->AddAnalysis(ConfigureChargedAnalysis(), n++);                                // track selection
     maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",AliIsolationCut::kOnlyCharged,thresType), n++); // track isolation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kFALSE), n++);       // track-track correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kTRUE) , n++);       // Isolated track-track correlation
-    //  maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",partInCone,thresType,kTRUE), n++);
+    //maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",partInCone,thresType,kTRUE), n++);// Hadron multi isolation  
   }
   
   // Analysis with ghost triggers, only for Min Bias like events
-  if(kTrig.Contains("INT") || kTrig.Contains("Central") || kTrig.Contains("MB")  )
+  if( kTrig.Contains("INT") || kTrig.Contains("Central") || kTrig.Contains("MB")  )
   {
     maker->AddAnalysis(ConfigureRandomTriggerAnalysis(), n++); 
     maker->AddAnalysis(ConfigureIsolationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType), n++); // Ghost trigger isolation   
-    maker->AddAnalysis(ConfigureIsolationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,kTRUE), n++); // Ghost multi isolation   
-
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()),kFALSE), n++); // Ghost trigger hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()),kTRUE) , n++); // Isolated ghost hadron correlation
+    //maker->AddAnalysis(ConfigureIsolationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,kTRUE), n++); // Ghost multi isolation   
     
     if(kHadronAN)
     {
@@ -172,11 +181,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
       maker->AddAnalysis(ConfigureIsolationAnalysis("RandomTriggerCTS",AliIsolationCut::kOnlyCharged,thresType), n++); // track isolation
       maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("RandomTriggerCTS",kFALSE), n++);       // track-track correlation
       maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("RandomTriggerCTS",kTRUE) , n++);       // Isolated track-track correlation
+      //maker->AddAnalysis(ConfigureIsolationAnalysis("RandomTriggerCTS",AliIsolationCut::kOnlyCharged,thresType,kTRUE), n++); // Ghost multi isolation   
+
     }
   }
   
-  if(kQA)                  maker->AddAnalysis(ConfigureQAAnalysis(),n++);
-  //if(kCalorimeter=="EMCAL")maker->AddAnalysis(ConfigureInClusterIMAnalysis(0.5,3), n++); 
+  if(kQA)  maker->AddAnalysis(ConfigureQAAnalysis(),n++);
   
   maker->SetAnaDebug(kDebug)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -283,6 +293,28 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString data    
     task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   }
   
+  //------------------------------------------------ 
+  // Scaling task, for MC in different pT hard bins
+  //-----------------------------------------------
+  if(scaleFactor > 0)
+  {
+    
+    AliAnaScale * scale = new AliAnaScale("scale") ;
+    scale->Set(scaleFactor) ;
+    scale->MakeSumw2(kTRUE);//If you want histograms with error bars set to kTRUE
+    scale->SetDebugLevel(2);
+    mgr->AddTask(scale);
+    
+    AliAnalysisDataContainer *cout_XS = mgr->CreateContainer(Form("scaled%s",kName.Data()), 
+                                                             TList::Class(), 
+                                                             AliAnalysisManager::kOutputContainer, 
+                                                             Form("scaled%s.root",kName.Data()));
+    mgr->ConnectInput  (scale,     0, cout_pc);
+    mgr->ConnectOutput (scale,     0, cout_XS);
+    
+  }
+  
+  
   return task;
 }
 
@@ -342,7 +374,8 @@ AliCaloTrackReader * ConfigureReader()
   }
   else if(kInputDataType=="AOD")
   {
-    reader->SetTrackFilterMask(128); // Filter bit, not mask
+    reader->SwitchOnAODHybridTrackSelection();
+    reader->SetTrackFilterMask(128); // Filter bit, not mask, use if off hybrid
   }
   
   // Calorimeter
@@ -565,8 +598,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
   // Number of particle type MC histograms
-  ana->FillNOriginHistograms(8);
-  ana->FillNPrimaryHistograms(4);
+  ana->FillNOriginHistograms(20);
+  ana->FillNPrimaryHistograms(20);
   
   ConfigureMC(ana);
   
@@ -956,7 +989,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   {
     ic->SetPtThreshold(0.5);
     ic->SetConeSize(0.4);
-
   }
   if(kCollisions=="PbPb")
   {
@@ -980,13 +1012,16 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
     ic->SetConeSize(1.);    // Take all for first iteration
     ic->SetPtThreshold(100);// Take all for first iteration
     ana->SwitchOnSeveralIsolation() ;
-    ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),kTM));
     ana->SetAODObjArrayName(Form("MultiIC%sTM%d",particle.Data(),kTM));
-    ana->SetNCones(2);
-    ana->SetNPtThresFrac(4);   
-    ana->SetConeSizes(0,0.3);       ana->SetConeSizes(1,0.4);   
-    ana->SetPtThresholds(0, 0.5);   ana->SetPtThresholds(1, 1);  ana->SetPtThresholds(2, 2);     ana->SetPtThresholds(3, 3);
-    ana->SetPtFractions (0, 0.05) ; ana->SetPtFractions (1, 0.1);ana->SetPtFractions (2, 0.2) ;  ana->SetPtFractions (3, 0.3) ;
+     
+    ana->SetNCones(4);
+    ana->SetNPtThresFrac(4);
+    ana->SetConeSizes(0,0.3);       ana->SetConeSizes(1,0.4);
+    ana->SetConeSizes(2,0.5);       ana->SetConeSizes(3,0.6);
+    ana->SetPtThresholds(0, 0.5);   ana->SetPtThresholds(1, 1);     ana->SetPtThresholds(2, 2);
+    ana->SetPtFractions (0, 0.05) ; ana->SetPtFractions (1, 0.1);   ana->SetPtFractions (2, 0.2) ;  ana->SetPtFractions (3, 0.3) ;
+    ana->SetSumPtThresholds(0, 1) ; ana->SetSumPtThresholds(1, 3) ; ana->SetSumPtThresholds(2, 5);  ana->SetSumPtThresholds(3, 7)  ;
+    
     ana->SwitchOffTMHistoFill();
     ana->SwitchOffSSHistoFill();
   }
@@ -999,7 +1034,9 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   
   //Set Histograms name tag, bins and ranges
   
-  ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),kTM));
+  if(!multi)ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),kTM));
+  else      ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),kTM));
+
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
   ana->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
@@ -1260,5 +1297,4 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
   
 }
-
 
