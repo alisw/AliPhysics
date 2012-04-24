@@ -205,7 +205,7 @@ Bool_t AliAODExtension::Init(Option_t *option)
     
     TString test(o->ClassName());
     test.ToUpper();
-    if (test.Contains("HEADER"))
+    if (test.BeginsWith("HEADER"))
     {
       // do not allow to drop header branch
       mustKeep=kTRUE;
