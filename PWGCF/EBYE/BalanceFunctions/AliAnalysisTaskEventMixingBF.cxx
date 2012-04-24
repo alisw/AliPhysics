@@ -119,7 +119,10 @@ AliAnalysisTaskEventMixingBF::AliAnalysisTaskEventMixingBF(const char *name)
   fUseFlowAfterBurner(kFALSE),
   fExcludeResonancesInMC(kFALSE),
   fUseMCPdgCode(kFALSE),
-  fPDGCodeToBeAnalyzed(-1) {
+  fPDGCodeToBeAnalyzed(-1),
+  fMainEvent(0x0),
+  fMixEvent(0x0)
+{
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -387,11 +390,8 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
-  TObjArray *array               = new TObjArray();
-
   AliMixInputEventHandler *mixIEH = SetupEventsForMixing();
 
-  Int_t gNumberOfAcceptedTracks = 0;
   Float_t fCentrality           = 0.;
   
   // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
@@ -427,8 +427,8 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   	return;
       }
       
-      AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();
-      AliAODHeader *aodHeaderMix  = aodEventMix->GetHeader();    
+     //AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();
+     //AliAODHeader *aodHeaderMix  = aodEventMix->GetHeader();    
   
 
       // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
@@ -521,8 +521,8 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   		      v_pt     = aodTrackMain->Pt();
   		      aodTrackMain->PxPyPz(v_p);
 		      
-  		      Float_t DCAxy = aodTrackMain->DCA();      // this is the DCA from global track (not exactly what is cut on)
-  		      Float_t DCAz  = aodTrackMain->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+  		      Float_t DCAxyMain = aodTrackMain->DCA();      // this is the DCA from global track (not exactly what is cut on)
+  		      Float_t DCAzMain  = aodTrackMain->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
 		      
 		      
   		      // Kinematics cuts from ESD track cuts
@@ -530,8 +530,8 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   		      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
 		      
   		      // Extra DCA cuts (for systematic studies [!= -1])
-  		      if( fDCAxyCut != -1 && fDCAxyCut != -1){
-  			if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+  		      if( fDCAxyCut != -1 && fDCAzCut != -1){
+  			if(TMath::Sqrt((DCAxyMain*DCAxyMain)/(fDCAxyCut*fDCAxyCut)+(DCAzMain*DCAzMain)/(fDCAzCut*fDCAzCut)) > 1 ){
   			  continue;  // 2D cut
   			}
   		      }
@@ -546,7 +546,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 		      
   		      // fill QA histograms
   		      fHistClus->Fill(aodTrackMain->GetITSNcls(),aodTrackMain->GetTPCNcls());
-  		      fHistDCA->Fill(DCAz,DCAxy);
+  		      fHistDCA->Fill(DCAzMain,DCAxyMain);
   		      fHistChi2->Fill(aodTrackMain->Chi2perNDF());
   		      fHistPt->Fill(v_pt);
   		      fHistEta->Fill(v_eta);
@@ -588,8 +588,8 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   			v_pt     = aodTrackMix->Pt();
   			aodTrackMix->PxPyPz(v_p);
 		      
-  			Float_t DCAxy = aodTrackMix->DCA();      // this is the DCA from global track (not exactly what is cut on)
-  			Float_t DCAz  = aodTrackMix->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+  			Float_t DCAxyMix = aodTrackMix->DCA();      // this is the DCA from global track (not exactly what is cut on)
+  			Float_t DCAzMix  = aodTrackMix->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
 			
 			
   			// Kinematics cuts from ESD track cuts
@@ -598,7 +598,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 			
   			// Extra DCA cuts (for systematic studies [!= -1])
   			if( fDCAxyCut != -1 && fDCAxyCut != -1){
-  			  if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+  			  if(TMath::Sqrt((DCAxyMix*DCAxyMix)/(fDCAxyCut*fDCAxyCut)+(DCAzMix*DCAzMix)/(fDCAzCut*fDCAzCut)) > 1 ){
   			    continue;  // 2D cut
   			  }
   			}
@@ -613,7 +613,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 			
   			// fill QA histograms
   			fHistClus->Fill(aodTrackMix->GetITSNcls(),aodTrackMix->GetTPCNcls());
-  			fHistDCA->Fill(DCAz,DCAxy);
+  			fHistDCA->Fill(DCAzMix,DCAxyMix);
   			fHistChi2->Fill(aodTrackMix->Chi2perNDF());
   			fHistPt->Fill(v_pt);
   			fHistEta->Fill(v_eta);
@@ -636,7 +636,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 
   		      // calculate balance function for each track in main event
 		      iMainTrackUsed++; // is needed to do no double counting in Balance Function calculation   
-		      if(iMainTrackUsed >= chargeVector[0]->size()) break; //do not allow more tracks than in mixed event!
+		      if(iMainTrackUsed >= (Int_t)chargeVector[0]->size()) break; //do not allow more tracks than in mixed event!
 		      fBalance->CalculateBalance(fCentrality,chargeVector,iMainTrackUsed);
   		      // clean charge vector afterwards
   		      for(Int_t i = 0; i < 9; i++){		       
