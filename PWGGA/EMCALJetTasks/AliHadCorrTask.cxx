@@ -27,14 +27,16 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   AliAnalysisTaskSE("AliHadCorrTask"),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
+  fHadCorr(0),
+  fJets(0),
   fMinPt(0.15),
+  fOutCaloName("CaloClustersOut"),
+  fOutClusters(0),
   fOutputList(0),
-  fHistEbefore(0),
-  fHistEafter(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
-  fOutCaloName("CaloClustersOut"),
-  fOutClusters(0)
+  fHistEbefore(0),
+  fHistEafter(0)
 {
 
   for(Int_t i=0; i<4; i++){
@@ -59,7 +61,16 @@ AliHadCorrTask::AliHadCorrTask() :
   AliAnalysisTaskSE("AliHadCorrTask"),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
-  fOutClusters(0)
+  fHadCorr(0),
+  fJets(0),
+  fMinPt(0.15),
+  fOutCaloName("CaloClustersOut"),
+  fOutClusters(0),
+  fOutputList(0),
+  fHistNclusvsCent(0),
+  fHistNclusMatchvsCent(0),
+  fHistEbefore(0),
+  fHistEafter(0)
 {
   // Standard constructor.
 
@@ -181,7 +192,7 @@ void AliHadCorrTask::UserExec(Option_t *)
     Double_t vertex[3] = {0, 0, 0};
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     const Int_t Nclus = clus->GetEntries();
-    for (Int_t iClus = 0, iN = 0, clusCount=0; iClus < Nclus; ++iClus) {
+    for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
       AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
       if (!c)
         continue;
@@ -215,8 +226,8 @@ void AliHadCorrTask::UserExec(Option_t *)
       Double_t energy = nPart.P();
       if(energy<fMinPt) continue;
       if (imin>=0) {
-	Double_t dPhiMin = c->GetTrackDx();
-	Double_t dEtaMin = c->GetTrackDz();
+	dPhiMin = c->GetTrackDx();
+	dEtaMin = c->GetTrackDz();
 	fHistMatchEtaPhi[centbin]->Fill(dEtaMin,dPhiMin);
       }
 
@@ -224,8 +235,8 @@ void AliHadCorrTask::UserExec(Option_t *)
     
       if (fHadCorr>0) {
 	if (imin>=0) {
-	  Double_t dPhiMin = c->GetTrackDx();
-	  Double_t dEtaMin = c->GetTrackDz();
+	  dPhiMin = c->GetTrackDx();
+	  dEtaMin = c->GetTrackDz();
 	  Double_t dR=TMath::Sqrt(dEtaMin*dEtaMin+dPhiMin*dPhiMin);
 	      
 	  AliVTrack *t = dynamic_cast<AliVTrack*>(tracks->At(imin));
