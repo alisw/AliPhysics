@@ -71,7 +71,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   Float_t fMaxPStrongPidK;//Maximum P of track to apply strong Pid on K
   Float_t fMaxPStrongPidpi;//Maximum P of track to apply strong Pid on pi
 
-  ClassDef(AliRDHFCutsDstoKKpi,2);  // class for cuts on AOD reconstructed Ds->KKpi
+  ClassDef(AliRDHFCutsDstoKKpi,3);  // class for cuts on AOD reconstructed Ds->KKpi
 };
 
 #endif
