@@ -75,6 +75,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F* fHistoNcharmed;   //! histo of D mesons vs. dN/dy
   TH2F* fHistoNbVsNc;     //! histo of n. b quarks vs. n c. quarks
 
+  TH2F*  fHistYPtPromptAllD[5];   //! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc, no selection on decay channel
   TH2F*  fHistYPtPrompt[5];   //! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc
   TH2F*  fHistYPtFeeddown[5]; //! histo of y vs. pt from feeddown D0, D+, D*, Ds, Lc
   TH2F* fHistYPtD0byDecChannel[2]; //! histo of y vs. pt for D0->Kpi and D0->Kpipipi
@@ -84,7 +85,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   Bool_t fPbPb;
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,1);  
+  ClassDef(AliAnalysisTaskCheckHFMCProd,2);  
 };
 
 

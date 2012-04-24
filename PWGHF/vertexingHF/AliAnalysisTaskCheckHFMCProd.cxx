@@ -147,6 +147,12 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistoNbVsNc->Sumw2();
   fOutput->Add(fHistoNbVsNc);
 
+  fHistYPtPromptAllD[0] = new TH2F("hyptd0promptAllD","D0 - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllD[1] = new TH2F("hyptdpluspromptAllD","Dplus - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllD[2] = new TH2F("hyptdstarpromptAllD","Dstar - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllD[3] = new TH2F("hyptdspromptAllD","Ds - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllD[4] = new TH2F("hyptlcpromptAllD","Lc - Prompt",20,0.,20.,40,-2.,2.);
+
   fHistYPtPrompt[0] = new TH2F("hyptd0prompt","D0 - Prompt",20,0.,20.,20,-2.,2.);
   fHistYPtPrompt[1] = new TH2F("hyptdplusprompt","Dplus - Prompt",20,0.,20.,20,-2.,2.);
   fHistYPtPrompt[2] = new TH2F("hyptdstarprompt","Dstar - Prompt",20,0.,20.,20,-2.,2.);
@@ -160,6 +166,9 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistYPtFeeddown[4] = new TH2F("hyptlcfeedown","Lc - Feeddown",20,0.,20.,20,-2.,2.);
 
   for(Int_t ih=0; ih<5; ih++){
+    fHistYPtPromptAllD[ih]->Sumw2();
+    fHistYPtPromptAllD[ih]->SetMinimum(0);
+    fOutput->Add(fHistYPtPromptAllD[ih]);
     fHistYPtPrompt[ih]->Sumw2();
     fHistYPtPrompt[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtPrompt[ih]);
@@ -274,36 +283,41 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	Double_t eta=part->Eta();
 	if(TMath::Abs(eta)<0.5) dNchdy+=0.6666;   // 2/3 for the ratio charged/all    
       }
+      Float_t rapid=-999.;
+      if (part->Energy() != TMath::Abs(part->Pz())){
+	rapid=0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
+      }
       
       Int_t iPart=-1;
       Int_t iType=0;
       if(absPdg==421){  
+	fHistYPtPromptAllD[0]->Fill(part->Pt(),rapid);
 	iType=CheckD0Decay(i,stack);
 	if(iType>=0) iPart=0;	
       }
       else if(absPdg==411){
+	fHistYPtPromptAllD[1]->Fill(part->Pt(),rapid);
 	iType=CheckDplusDecay(i,stack);
 	if(iType>=0) iPart=1;
       }
       else if(absPdg==413){
+	fHistYPtPromptAllD[2]->Fill(part->Pt(),rapid);
 	iType=CheckDstarDecay(i,stack);
 	if(iType>=0) iPart=2;
       }
       else if(absPdg==431){
+	fHistYPtPromptAllD[3]->Fill(part->Pt(),rapid);
 	iType=CheckDsDecay(i,stack);
 	if(iType==0 || iType==1) iPart=3;
       }
       else if(absPdg==4122){
+	fHistYPtPromptAllD[4]->Fill(part->Pt(),rapid);
 	iType=CheckLcDecay(i,stack);
 	if(iType>=0) iPart=4;
       }
       if(iPart<0) continue;
       if(iType<0) continue;
       nCharmed++;
-      Float_t rapid=-999.;
-      if (part->Energy() != TMath::Abs(part->Pz())){
-	rapid=0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
-      }
       if(iPart==0 && iType<=1){
 	fHistYPtD0byDecChannel[iType]->Fill(part->Pt(),rapid);
       }else if(iPart==1 && iType<=1){
