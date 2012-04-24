@@ -2302,14 +2302,14 @@ void AliEMCALRecoUtils::InitTrackCuts()
 
 
 //________________________________________________________________________
-void AliEMCALRecoUtils::SetClusterMatchedToTrack(const AliESDEvent *event)
+void AliEMCALRecoUtils::SetClusterMatchedToTrack(const AliVEvent *event)
 {
   // Checks if tracks are matched to EMC clusters and set the matched EMCAL cluster index to ESD track. 
-  
+
   Int_t nTracks = event->GetNumberOfTracks();
   for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) 
   {
-    AliESDtrack* track = event->GetTrack(iTrack);
+    AliVTrack* track = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
     if (!track) 
     {
       AliWarning(Form("Could not receive track %d", iTrack));
@@ -2318,23 +2318,34 @@ void AliEMCALRecoUtils::SetClusterMatchedToTrack(const AliESDEvent *event)
     
     Int_t matchClusIndex = GetMatchedClusterIndex(iTrack);		   
     track->SetEMCALcluster(matchClusIndex); //sets -1 if track not matched within residual
-    if(matchClusIndex != -1) 
-      track->SetStatus(AliESDtrack::kEMCALmatch);
-    else
-      track->ResetStatus(AliESDtrack::kEMCALmatch);
+    /*the following can be done better if AliVTrack::SetStatus will be there. Patch pending with Andreas/Peter*/
+    AliESDtrack* esdtrack = dynamic_cast<AliESDtrack*>(track);
+    if (esdtrack) { 
+      if(matchClusIndex != -1) 
+        esdtrack->SetStatus(AliESDtrack::kEMCALmatch);
+      else
+        esdtrack->ResetStatus(AliESDtrack::kEMCALmatch);
+    } else {
+      AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(track);
+      if(matchClusIndex != -1) 
+        aodtrack->SetStatus(AliESDtrack::kEMCALmatch);
+      else
+        aodtrack->ResetStatus(AliESDtrack::kEMCALmatch);
+    }
+
   }
   AliDebug(2,"Track matched to closest cluster");	
 }
 
 //_________________________________________________________________________
-void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliESDEvent *event)
+void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
 {
   // Checks if EMC clusters are matched to ESD track.
   // Adds track indexes of all the tracks matched to a cluster withing residuals in ESDCalocluster.
   
   for (Int_t iClus=0; iClus < event->GetNumberOfCaloClusters(); ++iClus) 
   {
-    AliESDCaloCluster *cluster = event->GetCaloCluster(iClus);
+    AliVCluster *cluster = event->GetCaloCluster(iClus);
     if (!cluster->IsEMCAL()) 
       continue;
     
@@ -2353,7 +2364,7 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliESDEvent *event)
     // Get all other tracks matched to the cluster
     for(Int_t iTrk=0; iTrk<nTracks; ++iTrk) 
     {
-      AliESDtrack* track = event->GetTrack(iTrk);
+      AliVTrack* track = dynamic_cast<AliVTrack*>(event->GetTrack(iTrk));
       if(iTrk == matchTrackIndex) continue;
       if(track->GetEMCALcluster() == iClus)
       {
@@ -2365,7 +2376,14 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliESDEvent *event)
     //printf("Tender::SetTracksMatchedToCluster - cluster E %f, N matches %d, first match %d\n",cluster->E(),nMatched,arrayTrackMatched[0]);
     
     arrayTrackMatched.Set(nMatched);
-    cluster->AddTracksMatched(arrayTrackMatched);
+    AliESDCaloCluster *esdcluster = dynamic_cast<AliESDCaloCluster*>(cluster);
+    if (esdcluster) 
+      esdcluster->AddTracksMatched(arrayTrackMatched);
+    else if (nMatched>0) {
+      AliAODCaloCluster *aodcluster = dynamic_cast<AliAODCaloCluster*>(cluster);
+      if (aodcluster)
+        aodcluster->AddTrackMatched(event->GetTrack(arrayTrackMatched.At(0)));
+    }
     
     Float_t eta= -999, phi = -999;
     if (matchTrackIndex != -1) 

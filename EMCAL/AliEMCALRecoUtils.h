@@ -27,7 +27,6 @@ class TH2F;
 class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
-class AliESDEvent;
 #include "AliLog.h"
 
 // EMCAL includes
@@ -287,9 +286,8 @@ public:
   Bool_t   IsClusterMatched(const Int_t clsIndex)         const;
   Bool_t   IsTrackMatched  (const Int_t trkIndex)         const;
 
-  void     SetClusterMatchedToTrack (const AliESDEvent *event);
-  
-  void     SetTracksMatchedToCluster(const AliESDEvent *event);  
+  void     SetClusterMatchedToTrack (const AliVEvent *event);
+  void     SetTracksMatchedToCluster(const AliVEvent *event);  
 
   void     SwitchOnCutEtaPhiSum()                     { fCutEtaPhiSum      = kTRUE    ; 
                                                         fCutEtaPhiSeparate = kFALSE   ; }
