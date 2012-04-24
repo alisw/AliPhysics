@@ -111,7 +111,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 //     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
 //   }
   if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111||fRecAnalysis->DataSet()==2009){
-    AliAnalysisTaskSE::	SelectCollisionCandidates(AliVEvent::kINT7 ) ;
+    // AliAnalysisTaskSE::	SelectCollisionCandidates(AliVEvent::kINT7 ) ;
     if(fRecAnalysis->DataSet()==2010)cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
     else{
       if(fRecAnalysis->DataSet()==2009){cout<<"Setting track cuts for the 2010 p+p collisions at 900 GeV"<<endl;}
@@ -175,7 +175,6 @@ Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the ph
 //if(res == 0 && cent){
 //if(cent){
   
-//cout<<"I am here "<<__LINE__<<" "<<__FILE__<<endl;
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
   fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
