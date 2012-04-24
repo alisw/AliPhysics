@@ -11,7 +11,7 @@ TObjArray *arrNamesDieleData=namesDieleData.Tokenize("; ");
 
 const Int_t nDie=arrNamesDieleData->GetEntries();
 
-AliDielectron* ConfigJpsi2ee(Int_t cutDefinition, Bool_t isAOD=kFALSE)
+AliDielectron* ConfigJpsi2ee(Int_t cutDefinition, Bool_t isAOD=kFALSE) 
 {
   //
   // Setup the instance of AliDielectron
