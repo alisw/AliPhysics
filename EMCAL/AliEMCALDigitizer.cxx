@@ -487,7 +487,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
           
 	// add the noise now, no need for embedded events with real data
 	if(!embed)
-	  energy += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
+	  energy += gRandom->Gaus(0., fPinNoise) ;
           
 
 	// JLK 26-June-2008
