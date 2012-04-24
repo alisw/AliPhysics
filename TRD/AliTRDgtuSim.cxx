@@ -168,7 +168,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
   return kTRUE;
 }
 
-Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
+Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd, Int_t label)
 {
   // run the GTU on tracklets taken from the loader
   // if specified the GTU tracks are written to the ESD event
@@ -186,7 +186,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
     }
   }
   else {
-    LoadTracklets(esd);
+    LoadTracklets(esd, label);
   }
 
     AliDebug(1, Form("running on %i tracklets", fTrackletArray->GetEntriesFast()));
@@ -250,7 +250,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
     return kTRUE;
 }
 
-Bool_t AliTRDgtuSim::LoadTracklets(const AliESDEvent *const esd)
+Bool_t AliTRDgtuSim::LoadTracklets(const AliESDEvent *const esd, Int_t label)
 {
   AliDebug(1,"Loading tracklets from ESD event ...");
 
@@ -259,7 +259,13 @@ Bool_t AliTRDgtuSim::LoadTracklets(const AliESDEvent *const esd)
 
   for (Int_t iTracklet = 0; iTracklet < esd->GetNumberOfTrdTracklets(); iTracklet++) {
     AliESDTrdTracklet *trkl = esd->GetTrdTracklet(iTracklet);
-    new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletGTU(trkl);
+    if (label < -1) {
+      if (trkl->GetLabel() == label)
+	new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletGTU(trkl);
+    }
+    else
+      if (trkl->GetLabel() >= -1)
+	new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletGTU(trkl);
   }
 
   return kTRUE;
@@ -398,8 +404,6 @@ Bool_t AliTRDgtuSim::WriteTracksToESD(const TList * const listOfTracks, AliESDEv
 	TIter next(listOfTracks);
 	while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) next()) {
 	    AliESDTrdTrack *trdtrack = trk->CreateTrdTrack();
-	    if (trdtrack->GetLabel() < 0)
-	      trdtrack->SetLabel(-2);
 	    esd->AddTrdTrack(trdtrack);
 	    delete trdtrack;
 	}

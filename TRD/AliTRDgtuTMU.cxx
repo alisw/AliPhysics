@@ -213,13 +213,15 @@ Bool_t AliTRDgtuTMU::RunTMU(TList *ListOfTracks, AliESDEvent *esd)
     return kFALSE;
   }
 
-  if (esd) {
-      TIter next(ListOfTracks);
-      while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) next()) {
-	  AliESDTrdTrack *trdtrack = trk->CreateTrdTrack();
-	  esd->AddTrdTrack(trdtrack);
-	  delete trdtrack;
-      }
+  // ----- label calculation and ESD storage -----
+  TIter next(ListOfTracks);
+  while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) next()) {
+    trk->CookLabel();
+    if (esd) {
+      AliESDTrdTrack *trdtrack = trk->CreateTrdTrack();
+      esd->AddTrdTrack(trdtrack);
+      delete trdtrack;
+    }
   }
 
   return kTRUE;

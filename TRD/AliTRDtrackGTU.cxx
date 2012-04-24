@@ -26,6 +26,7 @@
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TClass.h"
+#include "TMath.h"
 #include "TH1F.h"
 
 #include "AliESDTrdTrack.h"
@@ -201,8 +202,7 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
   trk->SetB((Int_t) fB);
   trk->SetStack(fStack);
   trk->SetSector(fSector);
-  if (fLabel >= 0)
-    trk->SetLabel(fLabel);
+  trk->SetLabel(fLabel);
 
   for (Int_t iLayer = 0; iLayer < AliTRDgtuParam::GetNLayers(); iLayer++) {
     AliTRDtrackletGTU *trklGTU = GetTracklet(iLayer);
@@ -219,16 +219,37 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
 
 Bool_t AliTRDtrackGTU::CookLabel()
 {
-    TH1F *h = new TH1F("trkref", "trkref", 100000, 0, 100000);
-    for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++) {
-      if (!IsTrackletInLayer(iTracklet))
-        continue;
-	h->Fill( ((AliTRDtrackletGTU*) (*fTracklets)[iTracklet])->GetLabel());
+  // assign label from tracklets according to frequency
+
+  Int_t nLabels = 0;
+  Int_t label[6];
+  Int_t count[6];
+
+  for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++) {
+    if (!IsTrackletInLayer(iTracklet))
+      continue;
+
+    Int_t currLabel = GetTracklet(iTracklet)->GetLabel();
+
+    Bool_t assigned = kFALSE;
+    for (Int_t iLabel = 0; iLabel < nLabels; iLabel++) {
+      if (currLabel == label[iLabel]) {
+	count[iLabel]++;
+	assigned = kTRUE;
+	break;
+      }
     }
-    if (h->GetEntries() > 0)
-	fLabel = h->GetMaximumBin() - 1;
-    else
-	fLabel = -1;
-    delete h;
-    return (fLabel >= 0);
+
+    if (!assigned) {
+      label[nLabels] = currLabel;
+      count[nLabels] = 1;
+      nLabels++;
+    }
+  }
+
+  Int_t index[12];
+  TMath::Sort(12, count, index);
+  fLabel = label[0];
+
+  return kTRUE;
 }
