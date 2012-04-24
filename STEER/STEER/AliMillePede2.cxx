@@ -175,9 +175,9 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
     int ng = 0; // recalculate N globals
     int maxPID = -1;
     for (int i=0;i<nGlo;i++) if (regroup[i]>=0) {ng++; if (regroup[i]>maxPID) maxPID = regroup[i];} 
-    AliInfo(Form("Regrouping is requested: from %d raw to %d free globals, max global ID=%d",nGlo,ng,maxPID));
-    if (ng != maxPID+1) AliFatal("Wrong regrouping requested");
-    nGlo = ng;
+    maxPID++;
+    AliInfo(Form("Regrouping is requested: from %d raw to %d formal globals grouped to %d real globals",nGlo,ng,maxPID));
+    nGlo = maxPID;
   }
   if (nLoc>0)        fNLocPar = nLoc;
   if (nGlo>0)        fNGloPar = nGlo;
@@ -1189,7 +1189,10 @@ Double_t AliMillePede2::GetParError(int iPar) const
   // return error for parameter iPar
   if (fGloSolveStatus==kInvert) {
     if (fkReGroup) iPar = fkReGroup[iPar];
-    if (iPar<0) {AliDebug(2,Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
+    if (iPar<0) {
+      //  AliDebug(2,Form("Parameter %d was suppressed in the regrouping",iPar)); 
+      return 0;
+    }
     double res = fMatCGlo->QueryDiag(iPar);
     if (res>=0) return TMath::Sqrt(res);
   } 
@@ -1202,7 +1205,10 @@ Double_t AliMillePede2::GetPull(int iPar) const
   // return pull for parameter iPar
   if (fGloSolveStatus==kInvert) {
     if (fkReGroup) iPar = fkReGroup[iPar];
-    if (iPar<0) {AliDebug(2,Form("Parameter %d was suppressed in the regrouping",iPar)); return 0;}
+    if (iPar<0) {
+      //  AliDebug(2,Form("Parameter %d was suppressed in the regrouping",iPar)); 
+      return 0;
+    }
     //
     return fProcPnt[iPar]>0 && (fSigmaPar[iPar]*fSigmaPar[iPar]-fMatCGlo->QueryDiag(iPar))>0. && fSigmaPar[iPar]>0 
       ? fDeltaPar[iPar]/TMath::Sqrt(fSigmaPar[iPar]*fSigmaPar[iPar]-fMatCGlo->QueryDiag(iPar)) : 0;
@@ -1218,26 +1224,29 @@ Int_t AliMillePede2::PrintGlobalParameters() const
   double lError = 0.;
   double lGlobalCor =0.;
 	
-  AliInfo("");
-  AliInfo("   Result of fit for global parameters");
-  AliInfo("   ===================================");
-  AliInfo("    I       initial       final       differ        lastcor        error       gcor       Npnt");
-  AliInfo("----------------------------------------------------------------------------------------------");
+  printf("\nMillePede2 output\n");
+  printf("   Result of fit for global parameters\n");
+  printf("   ===================================\n");
+  printf("    I       initial       final       differ        lastcor        error       gcor       Npnt\n");
+  printf("----------------------------------------------------------------------------------------------\n");
   //
+  int lastPrintedId = -1;
   for (int i0=0; i0<fNGloParIni; i0++) {
     int i = GetRGId(i0); if (i<0) continue;
-    lError = GetParError(i);
+    if (i!=i0 && lastPrintedId>=0 && i<=lastPrintedId) continue; // grouped param
+    lastPrintedId = i;
+    lError = GetParError(i0);
     lGlobalCor = 0.0;
     //		
     double dg;
     if (fGloSolveStatus==kInvert && TMath::Abs( (dg=fMatCGlo->QueryDiag(i)) *fDiagCGlo[i]) > 0) {    
       lGlobalCor = TMath::Sqrt(TMath::Abs(1.0-1.0/(dg*fDiagCGlo[i])));
-      AliInfo(Form("%d\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %6d",
-		   i,fInitPar[i],fInitPar[i]+fDeltaPar[i],fDeltaPar[i],fVecBGlo[i],lError,lGlobalCor,fProcPnt[i]));
+      printf("%4d(%4d)\t %+.6f\t %+.6f\t %+.6f\t %.6f\t %.6f\t %.6f\t %6d\n",
+	     i,i0,fInitPar[i],fInitPar[i]+fDeltaPar[i],fDeltaPar[i],fVecBGlo[i],lError,lGlobalCor,fProcPnt[i]);
     }
     else {    
-      AliInfo(Form("%d\t %.6f\t %.6f\t %.6f\t %.6f\t OFF\t OFF\t %6d",i,fInitPar[i],fInitPar[i]+fDeltaPar[i],
-		   fDeltaPar[i],fVecBGlo[i],fProcPnt[i]));
+      printf("%4d (%4d)\t %+.6f\t %+.6f\t %+.6f\t %.6f\t OFF\t OFF\t %6d\n",i,i0,fInitPar[i],fInitPar[i]+fDeltaPar[i],
+	     fDeltaPar[i],fVecBGlo[i],fProcPnt[i]);
     }
   }
   return 1;
