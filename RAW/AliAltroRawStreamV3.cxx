@@ -215,7 +215,7 @@ Bool_t AliAltroRawStreamV3::NextDDL()
   fChannelPayloadSize = -1;
   fChannelStartPos = -1;
 
-  fFormatVersion = fRawReader->GetBlockAttributes();
+  fFormatVersion = (fRawReader->GetBlockAttributes() & 0xF);
 
   if (fFormatVersion < 2) {
     // old altro format data
