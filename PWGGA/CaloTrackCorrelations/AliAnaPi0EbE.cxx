@@ -1669,7 +1669,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     }
 	  
     //If too small or big pt, skip it
-    if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
+    if(mom.E() < GetMinEnergy() || mom.E() > GetMaxEnergy() ) continue ; 
     
     //Check acceptance selection
     if(IsFiducialCutOn())
