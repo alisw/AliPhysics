@@ -1196,7 +1196,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       totSTU += ts;
       
       //L1-Gamma
-      if (bit >> 4 & 0x1) 
+      if (bit >> 6 & 0x1) 
       {
         nL1Patch ++;
         emcalPatchL1G[posY][posX] += 1.;
@@ -1208,7 +1208,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       }
       
       //L1-Jet
-      if (bit >> 5 & 0x1) 
+      if (bit >> 8 & 0x1) 
       {
         nL1Patch ++;
         emcalPatchL1J[posY][posX] += 1.;
