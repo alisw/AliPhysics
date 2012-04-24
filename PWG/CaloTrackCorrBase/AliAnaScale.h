@@ -17,24 +17,31 @@ class AliAnaScale : public AliAnalysisTask {
 public:
   AliAnaScale() ;
   AliAnaScale(const char *name) ;
-  virtual ~AliAnaScale() ;
+  virtual ~AliAnaScale() { ; }
    
   virtual void ConnectInputData(Option_t * = "");
+  
   virtual void CreateOutputObjects(); 
+  
   virtual void Init() ; 	
+  
   virtual void LocalInit()                { Init()         ; }
+  
   virtual void Exec(Option_t * opt = "") ;
+  
   void         Set(const Double_t val)    { fScale = val   ; }
+  
   void         SetDebugLevel(Int_t level) { fDebug = level ; }
 
   void         MakeSumw2(Bool_t sum)      { fSumw2 = sum   ; }
 
 private:
+  
   AliAnaScale(           const AliAnaScale&); // Not implemented
   AliAnaScale& operator=(const AliAnaScale&); // Not implemented
 
   // input and output
-  Int_t     fDebug ;         // Debug flag
+  Int_t     fDebug ;  // Debug flag
   // task parameters
   Float_t   fScale ;  // Scaling factor 
 
