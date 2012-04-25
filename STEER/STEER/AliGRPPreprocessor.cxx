@@ -1839,6 +1839,7 @@ THashList* AliGRPPreprocessor::ProcessAliases(const char* aliasesFile)
 		TObjString *osTAlist = (TObjString*) arr->At(1);
 		TNamed *ctoa = new TNamed(osTC->GetName(),osTAlist->GetName());
 		hList->Add(ctoa);
+		delete arr;
 	}
 
 	file->close();
