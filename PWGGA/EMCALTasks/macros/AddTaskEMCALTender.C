@@ -41,7 +41,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", const char
     if (1){//datatype == "pp") {
       //::Info("AddTaskEMCALTender", "USING pp data configuration...");
       //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2); //Std for pbpb
-      EMCALSupply->SwitchOffRecalDistBadChannel();
+      EMCALSupply->SwitchOnRecalDistBadChannel();
       EMCALSupply->SwitchOnReCalibrateCluster();
       EMCALSupply->SwitchOnRecalculateClusPos();
       //EMCALSupply->SetNonLinearityFunction(AliEMCALTenderSupply::kBeamTestCorrected);
@@ -50,6 +50,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", const char
     } else {
       //::Info("AddTaskEMCALTender", "USING PbPb data configuration...");
       //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2); //Std for pbpb
+      EMCALSupply->SwitchOnCalibrateTime(); // 
       EMCALSupply->SwitchOnUpdateCell(); // will update cells and reclusterize
       //EMCALSupply->SwitchOnReclustering(); //SwitchOnReclustering if needed      
     }
