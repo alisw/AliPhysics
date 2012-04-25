@@ -35,6 +35,7 @@
 #include "TCanvas.h"
 #include "TF1.h"
 #include "AliTHn.h"
+#include "THn.h"
 
 ClassImp(AliUEHist)
 
@@ -56,6 +57,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fCache(0),
+  fGetMultCacheOn(kFALSE),
+  fGetMultCache(0),
   fHistogramType(reqHist)
 {
   // Constructor
@@ -324,6 +327,8 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fCache(0),
+  fGetMultCacheOn(kFALSE),
+  fGetMultCache(0),
   fHistogramType()
 {
   //
@@ -474,26 +479,42 @@ Long64_t AliUEHist::Merge(TCollection* list)
 }
 
 //____________________________________________________________________
-void AliUEHist::SetBinLimits(AliCFGridSparse* grid)
+void AliUEHist::SetBinLimits(THnBase* grid)
 {
   // sets the bin limits in eta and pT defined by fEtaMin/Max, fPtMin/Max
   
   if (fEtaMax > fEtaMin)
-    grid->SetRangeUser(0, fEtaMin, fEtaMax);
+    grid->GetAxis(0)->SetRangeUser(fEtaMin, fEtaMax);
   if (fPtMax > fPtMin)
-    grid->SetRangeUser(1, fPtMin, fPtMax);
+    grid->GetAxis(1)->SetRangeUser(fPtMin, fPtMax);
 }  
+
+//____________________________________________________________________
+void AliUEHist::SetBinLimits(AliCFGridSparse* grid)
+{
+  // sets the bin limits in eta and pT defined by fEtaMin/Max, fPtMin/Max
+  
+  SetBinLimits(grid->GetGrid());
+}
+
+//____________________________________________________________________
+void AliUEHist::ResetBinLimits(THnBase* grid)
+{
+  // resets all bin limits 
+
+  for (Int_t i=0; i<grid->GetNdimensions(); i++)
+    if (grid->GetAxis(i)->TestBit(TAxis::kAxisRange))
+      grid->GetAxis(i)->SetRangeUser(0, -1);
+}
 
 //____________________________________________________________________
 void AliUEHist::ResetBinLimits(AliCFGridSparse* grid)
 {
   // resets all bin limits 
   
-  for (Int_t i=0; i<grid->GetNVar(); i++)
-    if (grid->GetGrid()->GetAxis(i)->TestBit(TAxis::kAxisRange))
-      grid->SetRangeUser(i, 0, -1);
+  ResetBinLimits(grid->GetGrid());
 }
-  
+
 //____________________________________________________________________
 void AliUEHist::CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax)
 {
@@ -759,11 +780,56 @@ void AliUEHist::GetHistsZVtx(AliUEHist::CFStep step, AliUEHist::Region region, F
 }
 
 //____________________________________________________________________
+void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, THnBase** trackHist, TH2** eventHist)
+{
+  // Calculates a 4d histogram with deltaphi, deltaeta, zvtx, multiplicity on track level and 
+  // a 2d histogram on event level (as fct of zvtx, multiplicity)
+  // Histograms has to be deleted by the caller of the function
+  
+  if (!fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(5))
+    AliFatal("Histogram without vertex axis provided");
+
+  THnBase* sparse = fTrackHist[region]->GetGrid(step)->GetGrid();
+  if (fGetMultCacheOn)
+  {
+    if (!fGetMultCache)
+    {
+      fGetMultCache = ChangeToThn(sparse);
+      // should work but causes SEGV in ProjectionND below 
+//       delete sparse;
+    }
+    sparse = fGetMultCache;
+  }
+  
+  // unzoom all axes
+  ResetBinLimits(sparse);
+  ResetBinLimits(fEventHist->GetGrid(step));
+  
+  SetBinLimits(sparse);
+  
+  Int_t firstBin = sparse->GetAxis(2)->FindBin(ptLeadMin);
+  Int_t lastBin = sparse->GetAxis(2)->FindBin(ptLeadMax);
+  Printf("Using leading pT range %d --> %d", firstBin, lastBin);
+  sparse->GetAxis(2)->SetRange(firstBin, lastBin);
+  fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->SetRange(firstBin, lastBin);
+    
+  Int_t dimensions[] = { 4, 0, 5, 3 };
+  THnBase* tmpTrackHist = sparse->ProjectionND(4, dimensions, "E");
+  *eventHist = (TH2*) fEventHist->GetGrid(step)->Project(2, 1);
+  
+  ResetBinLimits(sparse);
+  ResetBinLimits(fEventHist->GetGrid(step));
+
+  // convert to THn 
+  *trackHist = ChangeToThn(tmpTrackHist);
+}
+
+//____________________________________________________________________
 TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd)
 {
-  // Calls GetUEHist(...) for *each* vertex bin and performs a sum of ratios:
+  // Calls GetUEHist(...) for *each* vertex bin and multiplicity bin and performs a sum of ratios:
   // 1_N [ (same/mixed)_1 + (same/mixed)_2 + (same/mixed)_3 + ... ]
-  // where N is the total number of events/trigger particles and the subscript is the vertex bin
+  // where N is the total number of events/trigger particles and the subscript is the vertex/multiplicity bin
   // where mixed is normalized such that the information about the number of pairs in same is kept
   //
   // returns a 2D histogram: deltaphi, deltaeta
@@ -772,69 +838,112 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   //   mixed: AliUEHist containing mixed event corresponding to this object
   //   <other parameters> : check documentation of AliUEHist::GetUEHist
   
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   TH2* totalTracks = 0;
   
-  TH3* trackSameAll = 0;
-  TH3* trackMixedAll = 0;
-  TH1* eventSameAll = 0;
-  TH1* eventMixedAll = 0;
+  THnBase* trackSameAll = 0;
+  THnBase* trackMixedAll = 0;
+  TH2* eventSameAll = 0;
+  TH2* eventMixedAll = 0;
   
   Int_t totalEvents = 0;
   
-  GetHistsZVtx(step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, &trackSameAll, &eventSameAll);
-  mixed->GetHistsZVtx(step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, &trackMixedAll, &eventMixedAll);
+  GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackSameAll, &eventSameAll);
+  mixed->GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackMixedAll, &eventMixedAll);
   
-  TAxis* vertexAxis = trackSameAll->GetZaxis();
-  for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
+//   TH1* normParameters = new TH1F("normParameters", "", 100, 0, 2);
+  
+//   trackSameAll->Dump();
+  
+  TAxis* multAxis = trackSameAll->GetAxis(3);
+  for (Int_t multBin = TMath::Max(1, multBinBegin); multBin <= TMath::Min(multAxis->GetNbins(), multBinEnd); multBin++)
   {
-    trackSameAll->GetZaxis()->SetRange(vertexBin, vertexBin);
-    trackMixedAll->GetZaxis()->SetRange(vertexBin, vertexBin);
+    trackSameAll->GetAxis(3)->SetRange(multBin, multBin);
+    trackMixedAll->GetAxis(3)->SetRange(multBin, multBin);
 
-    TH2* tracksSame = (TH2*) trackSameAll->Project3D("yx1");
-    TH2* tracksMixed = (TH2*) trackMixedAll->Project3D("yx2");
+    // get mixed normalization correction factor: is independent of vertex bin if scaled with number of triggers
+    trackMixedAll->GetAxis(2)->SetRange(0, -1);
+    TH2* tracksMixed = trackMixedAll->Projection(1, 0, "E");
     
-    // asssume flat in dphi, gain in statistics
-//     TH1* histMixedproj = mixedTwoD->ProjectionY();
-//     histMixedproj->Scale(1.0 / mixedTwoD->GetNbinsX());
-//     
-//     for (Int_t x=1; x<=mixedTwoD->GetNbinsX(); x++)
-//       for (Int_t y=1; y<=mixedTwoD->GetNbinsY(); y++)
-// 	mixedTwoD->SetBinContent(x, y, histMixedproj->GetBinContent(y));
+    // get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi)
+    Double_t mixedNormError = 0;
+    Double_t mixedNorm = tracksMixed->IntegralAndError(1, tracksMixed->GetNbinsX(), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
+    Int_t nBinsMixedNorm = (tracksMixed->GetNbinsX()) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+/*    Double_t mixedNorm = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
+    Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);*/
+    mixedNorm /= nBinsMixedNorm;
+    mixedNormError /= nBinsMixedNorm;
 
-//       delete histMixedproj;
-
-    // get mixed event normalization by assuming full acceptance at deta of 0
-    Double_t mixedNorm = tracksMixed->Integral(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01));
-    mixedNorm /= (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+    Float_t triggers = eventMixedAll->Integral(1, eventMixedAll->GetNbinsX(), multBin, multBin);
+//     Printf("%f +- %f | %f | %f", mixedNorm, mixedNormError, triggers, mixedNorm / triggers);
+    
+    mixedNorm /= triggers;
+    mixedNormError /= triggers;
+    
+    delete tracksMixed;
+    
     if (mixedNorm <= 0)
     {
-      Printf("ERROR: Skipping vertex bin %d because mixed event is empty at (0,0)", vertexBin);
+      Printf("ERROR: Skipping multiplicity %d because mixed event is empty at (0,0)", multBin);
+      continue;
     }
-    else
-    {
-      tracksMixed->Scale(1.0 / mixedNorm);
 
-  //     tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
+//     normParameters->Fill(mixedNorm);
       
-      tracksSame->Divide(tracksMixed);
+    TAxis* vertexAxis = trackSameAll->GetAxis(2);
+    for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
+    {
+      trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
+      trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
+
+      TH2* tracksSame = trackSameAll->Projection(1, 0, "E");
+      tracksMixed = trackMixedAll->Projection(1, 0, "E");
       
-      // code to draw contributions
-      /*
-      TH1* proj = tracksSame->ProjectionX("projx", tracksSame->GetYaxis()->FindBin(-1.59), tracksSame->GetYaxis()->FindBin(1.59));
-      proj->SetTitle(Form("Bin %d", vertexBin));
-      proj->SetLineColor(vertexBin);
-      proj->DrawCopy((vertexBin > 1) ? "SAME" : "");
-      */
+      // asssume flat in dphi, gain in statistics
+      //     TH1* histMixedproj = mixedTwoD->ProjectionY();
+      //     histMixedproj->Scale(1.0 / mixedTwoD->GetNbinsX());
+      //     
+      //     for (Int_t x=1; x<=mixedTwoD->GetNbinsX(); x++)
+      //       for (Int_t y=1; y<=mixedTwoD->GetNbinsY(); y++)
+      // 	mixedTwoD->SetBinContent(x, y, histMixedproj->GetBinContent(y));
+
+      //       delete histMixedproj;
       
-      if (!totalTracks)
-	totalTracks = (TH2*) tracksSame->Clone("totalTracks");
+      Float_t triggers2 = eventMixedAll->Integral(vertexBin, vertexBin, multBin, multBin);
+      if (triggers2 <= 0)
+      {
+	Printf("ERROR: Skipping multiplicity %d vertex bin %d because mixed event is empty", multBin, vertexBin);
+      }
       else
-	totalTracks->Add(tracksSame);
+      {
+	tracksMixed->Scale(1.0 / triggers2 / mixedNorm);
+	// tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
+	  
+	tracksSame->Divide(tracksMixed);
+	  
+	// code to draw contributions
+	/*
+	TH1* proj = tracksSame->ProjectionX("projx", tracksSame->GetYaxis()->FindBin(-1.59), tracksSame->GetYaxis()->FindBin(1.59));
+	proj->SetTitle(Form("Bin %d", vertexBin));
+	proj->SetLineColor(vertexBin);
+	proj->DrawCopy((vertexBin > 1) ? "SAME" : "");
+	*/
+	
+	if (!totalTracks)
+	  totalTracks = (TH2*) tracksSame->Clone("totalTracks");
+	else
+	  totalTracks->Add(tracksSame);
+
+	totalEvents += eventSameAll->GetBinContent(vertexBin, multBin);
+	
+// 	new TCanvas; tracksMixed->DrawCopy("SURF1");
+      }
 
       delete tracksSame;
       delete tracksMixed;
-      
-      totalEvents += eventSameAll->GetBinContent(vertexBin);
     }
   }
 
@@ -852,6 +961,10 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   delete trackMixedAll;
   delete eventSameAll;
   delete eventMixedAll;
+  
+//   new TCanvas; normParameters->Draw();
+  
+  TH1::AddDirectory(oldStatus);
   
   return totalTracks;
 }
@@ -2321,4 +2434,26 @@ void AliUEHist::Reset()
     
   for (Int_t step=0; step<fTrackHistEfficiency->GetNStep(); step++)
     fTrackHistEfficiency->GetGrid(step)->GetGrid()->Reset();
+}
+
+THnBase* AliUEHist::ChangeToThn(THnBase* sparse)
+{
+  // change the object to THn for faster processing
+  
+	// convert to THn (SEGV's for some strange reason...) 
+	// x = THn::CreateHn("a", "a", sparse);
+	
+  // own implementation
+  Int_t nBins[10];
+  for (Int_t i=0; i<sparse->GetNdimensions(); i++)
+    nBins[i] = sparse->GetAxis(i)->GetNbins();
+  THn* tmpTHn = new THnF(Form("%s_thn", sparse->GetName()), sparse->GetTitle(), sparse->GetNdimensions(), nBins, 0, 0);
+  for (Int_t i=0; i<sparse->GetNdimensions(); i++)
+  {
+    tmpTHn->SetBinEdges(i, sparse->GetAxis(i)->GetXbins()->GetArray());
+    tmpTHn->GetAxis(i)->SetTitle(sparse->GetAxis(i)->GetTitle());
+  }
+  tmpTHn->RebinnedAdd(sparse);
+  
+  return tmpTHn;
 }

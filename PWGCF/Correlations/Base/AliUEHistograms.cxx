@@ -432,7 +432,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign, Float_t twoTrackEfficiencyCutValue)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -561,13 +561,13 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  Float_t deta = triggerEta - eta[j];
 	      
 	  // optimization
-	  if (TMath::Abs(deta) < 0.05)
+	  if (TMath::Abs(deta) < twoTrackEfficiencyCutValue * 2.5)
 	  {
 	    // check first boundaries to see if is worth to loop and find the minimum
 	    Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
 	    Float_t dphistar2 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 2.5, bSign);
 	    
-	    const Float_t kLimit = 0.06;
+	    const Float_t kLimit = twoTrackEfficiencyCutValue * 3;
 
 	    Float_t dphistarminabs = 1e5;
 	    Float_t dphistarmin = 1e5;
@@ -588,7 +588,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	      
 	      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));
 	      
-	      if (dphistarminabs < 0.02 && TMath::Abs(deta) < 0.02)
+	      if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEfficiencyCutValue)
 	      {
 // 		Printf("Removed track pair %d %d with %f %f %f %f %f %f %f %f %f", i, j, deta, dphistarminabs, phi1, pt1, charge1, phi2, pt2, charge2, bSign);
 		continue;
