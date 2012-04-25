@@ -464,7 +464,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   AliInfo(Form("TRU info retrieved.\n"));
 		
   // STU
-	for (int i = 0; i < 3; i++) {
+  for (i = 0; i < 3; i++) {
 		for (int j = 0; j < 2; j++) {
 			arrSTUG[i][j] = (TObjArray*)dcsAliasMap->GetValue(Form("EMC_STU_G%c%d", i + 65, j));
 			arrSTUJ[i][j] = (TObjArray*)dcsAliasMap->GetValue(Form("EMC_STU_J%c%d", i + 65, j));	
