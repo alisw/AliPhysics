@@ -34,17 +34,17 @@ template<class Element> class AliLHCDipValT : public TObject
   AliLHCDipValT(const AliLHCDipValT<Element> &src);
   virtual ~AliLHCDipValT() {delete[] fArray;}
   AliLHCDipValT& operator=(const AliLHCDipValT<Element> &src);
-  Element&       operator[](Int_t i);
-  Element        operator[](Int_t i)                          const;
+  virtual Element&       operator[](Int_t i);
+  virtual Element        operator[](Int_t i)                          const;
   //
-  void                SetSize(Int_t size);
-  void                SetValue(Int_t i,Element v);
-  void                SetValues(const Element *v, Int_t n);
+  virtual void        SetSize(Int_t size);
+  virtual void        SetValue(Int_t i,Element v);
+  virtual void        SetValues(const Element *v, Int_t n);
   void                SetTimeStamp(Double_t v)                      {fTimeStamp = v;}
   // 
   Int_t               GetSizeTotal()                          const {return fSizeTot;}
-  Element             GetValue(Int_t i=0)                     const;
-  Element*            GetValues()                             const {return (Element*)fArray;}
+  virtual Element     GetValue(Int_t i=0)                     const;
+  virtual Element*    GetValues()                             const {return (Element*)fArray;}
   Double_t            GetTimeStamp()                          const {return fTimeStamp;}
   Char_t*             GetTimeAsString(Bool_t utc=kTRUE)       const {return TimeAsString(fTimeStamp,utc);}
   //
@@ -152,7 +152,7 @@ Element& AliLHCDipValT<Element>::operator[](Int_t i)
     AliError(Form("Index %d is out of range 0:%d",i,GetSizeTotal()-1));
     return fArray[0];
   }
-  return fArray[i];
+  return (Element&)fArray[i];
 }
 
 //__________________________________________________________________________
@@ -164,7 +164,7 @@ Element AliLHCDipValT<Element>::operator[](Int_t i) const
     AliError(Form("Index %d is out of range 0:%d",i,GetSizeTotal()-1));
     return 0;
   }
-  return fArray[i];
+  return (Element)fArray[i];
 }
 
 //__________________________________________________________________________
@@ -176,7 +176,7 @@ Element AliLHCDipValT<Element>::GetValue(Int_t i) const
     AliError(Form("Index %d is out of range 0:%d",i,GetSizeTotal()-1));
     return 0;
   }
-  return fArray[i];
+  return (Element)fArray[i];
 }
 
 //__________________________________________________________________________
@@ -228,15 +228,15 @@ void AliLHCDipValT<Element>::Print(const Option_t *opt) const
 	}
 
       }
-      else if (tp == typeid(Double_t*).name() || tp == typeid(Float_t*).name()) printf(" %+.3e |",(Float_t)fArray[i]);
+      else if (tp == typeid(Double_t*).name() || tp == typeid(Float_t*).name()) printf(" %+.3e |",(Double_t)fArray[i]);
       else printf(" ");
       eolOK = kFALSE;
       if ( (i+1)%5 == 0) {printf("\n"); eolOK = kTRUE;}
     }
     if (IsLastSpecial()) {
       if (sz>1 && !eolOK) {printf("\n"); eolOK = kTRUE;}
-      if (tp == typeid(Double_t*).name() || tp == typeid(Float_t*).name()) {
-	printf(" Error: %+e\n",(Float_t)fArray[sz]);
+      if (tp == typeid(Double_t*).name() || tp == typeid(Double_t*).name()) {
+	printf(" Error: %+e\n",(Double_t)fArray[sz]);
 	eolOK = kTRUE;
       }
     }

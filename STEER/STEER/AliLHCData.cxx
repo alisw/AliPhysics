@@ -258,9 +258,9 @@ TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,int &last,double t
   if (!found) {
     entry = -1;
     TString str;
-    str += AliLHCDipValD::TimeAsString(tmin);
+    str += AliLHCDipValF::TimeAsString(tmin);
     str += " : ";
-    str += AliLHCDipValD::TimeAsString(tmax);
+    str += AliLHCDipValF::TimeAsString(tmax);
     AliWarning(Form("All entries for %s are outside the requested range:\n%s",key,str.Data()));
     if (fkMap2Process) delete arr; // created on demand
     return 0;
@@ -355,7 +355,7 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
     AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
     //
-    AliLHCDipValD* curValD = new AliLHCDipValD(dim,tstamp);  // start new period
+    AliLHCDipValF* curValD = new AliLHCDipValF(dim,tstamp);  // start new period
     double vcheck = ExtractDouble(dcsVal,0);     // value
     if (TMath::Abs(vcheck) > maxAbsVal) {
       AliError(Form("ANOMALOUS VALUE %e for slot %d of %s: exceeds %e",vcheck, 0, rec, maxAbsVal));
@@ -540,7 +540,7 @@ Int_t AliLHCData::FillBunchInfo(int refs[2],const char* rec, int ibm, Bool_t inR
       continue;
     }
     double* dcsArr = dcsVal->GetDouble();
-    AliLHCDipValD* curValD = new AliLHCDipValD(nbunch,tstamp);
+    AliLHCDipValF* curValD = new AliLHCDipValF(nbunch,tstamp);
     for (int i=nbunch;i--;) {
       int ind = inRealSlots ? (*bconf)[i]/10 : i;
       if (ind>nSlots) {
@@ -613,7 +613,7 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
       arrE=GetDCSEntry(recErr,iFirstE,iLastE,fTMin,fTMax);
       dim += 1;
     }
-    AliLHCDipValD* curValD = new AliLHCDipValD(dim,tstamp);
+    AliLHCDipValF* curValD = new AliLHCDipValF(dim,tstamp);
     int cnt = 0;
     for (int i=0;i<nbunch;i++) {
       int slot = (*bconf)[i];
@@ -998,9 +998,12 @@ Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &no
   //
   for (int irec=0;irec<nrec;irec++) {
     //
-    AliLHCDipValD* rInt = GetIntensityPerBunch(beamID,irec);
+    AliLHCDipValD* rIntD = 0;
+    AliLHCDipValF* rIntF = GetIntensityPerBunch(beamID,irec);
+    // for BWD compatibility of some periods
+    if (rIntF->IsA() == AliLHCDipValD::Class()) {rIntD=(AliLHCDipValD*)rIntF; rIntF=0;}
     for (int ib=0;ib<nb;ib++) {
-      double val = rInt->GetValue(ib);
+      double val = rIntF ? rIntF->GetValue(ib) : rIntD->GetValue(ib);
       if (val<0) continue;
       int bID = conf->GetValue(ib);
       // check if this is a triggered bunch
