@@ -81,7 +81,8 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   Bool_t writeITSTP = kTRUE;
   if (!okTPC) useTPCcrv = kFALSE;
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv);
-  if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE); 
+  if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE);
+  if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001); 
   //
   // Run the analysis
   if (!mgr->InitAnalysis()) {

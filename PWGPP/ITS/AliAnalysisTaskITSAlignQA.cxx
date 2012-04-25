@@ -3,6 +3,8 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliITSRecPoint.h"
 #include "AliESDEvent.h"
+#include "AliESDRun.h"
+#include "AliDAQ.h"
 #include "AliTrackPointArray.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSTPArrayFit.h"
@@ -318,6 +320,24 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
   if(!ESDfriend()) {
     printf("AliAnalysisTaskITSAlignQA::Exec(): bad ESDfriend\n");
     return;
+  }
+  //
+  static Bool_t firstCheck = kTRUE;
+  if (firstCheck) {
+    //    
+    if (TMath::Abs(esd->GetCurrentL3())<300) { // no field
+      SetMinPt(0.005);
+      AliInfo("No magnetic field: eliminating pt cut");
+    }
+    const AliESDRun *esdrn = esd->GetESDRun();
+    if (!esdrn) return;
+    Int_t activeDetectors = esdrn->GetDetectorsInReco();
+    if ( !(activeDetectors & AliDAQ::kTPC) ) {
+      AliInfo("No TPC, suppress TPC points request");
+      SetUseITSstandaloneTracks(kTRUE);
+      SetUseTPCMomentum(kFALSE);
+    }
+    firstCheck = kFALSE;
   }
   //
   if (!AcceptCentrality(esd)) return;
