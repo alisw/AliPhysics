@@ -222,8 +222,8 @@ Bool_t AliTRDtrackGTU::CookLabel()
   // assign label from tracklets according to frequency
 
   Int_t nLabels = 0;
-  Int_t label[6];
-  Int_t count[6];
+  Int_t label[6] = { 0 };
+  Int_t count[6] = { 0 };
 
   for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++) {
     if (!IsTrackletInLayer(iTracklet))
@@ -248,8 +248,8 @@ Bool_t AliTRDtrackGTU::CookLabel()
   }
 
   Int_t index[12];
-  TMath::Sort(12, count, index);
-  fLabel = label[0];
+  TMath::Sort(6, count, index);
+  fLabel = label[index[0]];
 
   return kTRUE;
 }
