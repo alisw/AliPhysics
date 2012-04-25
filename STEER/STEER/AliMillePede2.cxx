@@ -17,6 +17,7 @@
 #include <TMath.h>
 #include <TVectorD.h>
 #include <TArrayL.h>
+#include <TArrayF.h>
 #include <TSystem.h>
 #include "AliMatrixSq.h"
 #include "AliSymMatrix.h"
@@ -111,6 +112,8 @@ AliMillePede2::AliMillePede2()
   fSelLast(-1),
   fRejRunList(0),
   fAccRunList(0),
+  fAccRunListWgh(0),
+  fRunWgh(1),
   fkReGroup(0)
 {}
 
@@ -131,6 +134,8 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
   fSelLast(-1),
   fRejRunList(0),
   fAccRunList(0),
+  fAccRunListWgh(0),
+  fRunWgh(1),
   fkReGroup(0)
 {printf("Dummy\n");}
 
@@ -162,6 +167,7 @@ AliMillePede2::~AliMillePede2()
   delete fMatCGloLoc;
   delete fRejRunList;
   delete fAccRunList;
+  delete fAccRunListWgh;
 } 
 
 //_____________________________________________________________________________________________
@@ -539,7 +545,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   }
   double vl;
   //
-  double gloWgh = fRecord->GetWeight(); // global weight for this set
+  double gloWgh = fRecord->GetWeight()*fRunWgh; // global weight for this set
   Int_t maxLocUsed = 0;
   //
   for (int ip=nPoints;ip--;) {  // Transfer the measurement records to matrices
@@ -1253,7 +1259,7 @@ Int_t AliMillePede2::PrintGlobalParameters() const
 }
 
 //_____________________________________________________________________________________________
-Bool_t AliMillePede2::IsRecordAcceptable() const
+Bool_t AliMillePede2::IsRecordAcceptable()
 {
   // validate record according run lists set by the user
   static Long_t prevRunID = kMaxInt;
@@ -1261,6 +1267,7 @@ Bool_t AliMillePede2::IsRecordAcceptable() const
   Long_t runID = fRecord->GetRunID();
   if (runID!=prevRunID) {
     int n = 0;
+    fRunWgh = 1.;
     prevRunID = runID;
     // is run to be rejected?
     if (fRejRunList && (n=fRejRunList->GetSize())) {
@@ -1273,7 +1280,7 @@ Bool_t AliMillePede2::IsRecordAcceptable() const
     }
     else if (fAccRunList && (n=fAccRunList->GetSize())) {     // is run specifically selected
       prevAns = kFALSE;
-      for (int i=n;i--;) if (runID == (*fAccRunList)[i]) {prevAns = kTRUE; break;}
+      for (int i=n;i--;) if (runID == (*fAccRunList)[i]) {prevAns = kTRUE; fRunWgh = (*fAccRunListWgh)[i]; break;}
     }
   }
   //
@@ -1293,14 +1300,19 @@ void AliMillePede2::SetRejRunList(const UInt_t *runs, Int_t nruns)
 }
 
 //_____________________________________________________________________________________________
-void AliMillePede2::SetAccRunList(const UInt_t *runs, Int_t nruns)
+void AliMillePede2::SetAccRunList(const UInt_t *runs, Int_t nruns, const Float_t* wghList)
 {
   // set the list of runs to be selected
   if (fAccRunList) delete fAccRunList;
+  if (fAccRunListWgh) delete fAccRunListWgh;
   fAccRunList = 0;
   if (nruns<1 || !runs) return;
   fAccRunList = new TArrayL(nruns);
-  for (int i=0;i<nruns;i++) (*fAccRunList)[i] = runs[i];
+  fAccRunListWgh = new TArrayF(nruns);
+  for (int i=0;i<nruns;i++) {
+    (*fAccRunList)[i] = runs[i];
+    (*fAccRunListWgh)[i] =wghList ? wghList[i] : 1.0;
+  }
 }
 
 //_____________________________________________________________________________________________

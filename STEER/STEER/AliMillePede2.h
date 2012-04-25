@@ -23,6 +23,7 @@ class AliMatrixSparse;
 class AliLog;
 class TStopwatch;
 class TArrayL;
+class TArrayF;
 
 
 class AliMillePede2: public TObject
@@ -119,8 +120,8 @@ class AliMillePede2: public TObject
   Double_t             GetParError(int iPar)           const;
   Int_t                PrintGlobalParameters()         const;
   void                 SetRejRunList(const UInt_t *runs, Int_t nruns);
-  void                 SetAccRunList(const UInt_t *runs, Int_t nruns);
-  Bool_t               IsRecordAcceptable() const;
+  void                 SetAccRunList(const UInt_t *runs, Int_t nruns, const Float_t* wghList=0);
+  Bool_t               IsRecordAcceptable();
   //
   //
   Int_t                SetIterations(double lChi2CutFac);
@@ -252,6 +253,8 @@ class AliMillePede2: public TObject
   Int_t                 fSelLast;                        // event selection end
   TArrayL*              fRejRunList;                     // list of runs to reject (if any)
   TArrayL*              fAccRunList;                     // list of runs to select (if any)
+  TArrayF*              fAccRunListWgh;                  // optional weights for data of accepted runs (if any)
+  Double_t              fRunWgh;                         // run weight
   const Int_t*          fkReGroup;                       // optional regrouping of parameters wrt ID's from the records
   //
   static Bool_t         fgInvChol;                       // Invert global matrix in Cholesky solver
