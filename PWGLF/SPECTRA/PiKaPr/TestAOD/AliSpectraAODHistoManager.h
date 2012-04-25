@@ -34,10 +34,11 @@ namespace AliSpectraNameSpace
       kHistPtGenTruePrimaryProtonMinus,         // Pt histo for protons -, generated tracks, true ID, primary Event
       kHistPtGenTruePrimaryKaonMinus,           // Pt histo for kaons -, generated tracks, true ID, primary Event
       kHistPtGenTruePrimaryPionMinus,           // Pt histo for pions -, generated tracks, true ID, primary Event
-      kNPtGenHist = kHistPtGenTruePrimaryPionMinus,                    // Number of ptGen-likehistos histos
+      kHistPtGen,                               // Pt histo for all particles, generated tracks
+      kNPtGenHist = kHistPtGen,                    // Number of ptGen-likehistos histos
       
       // 6 Pt Reconstructed Sigma
-      kHistPtRecSigmaProtonPlus,            // Pt histo for protons +, reconstructed tracks, sigma ID
+      kHistPtRecSigmaProtonPlus,                // Pt histo for protons +, reconstructed tracks, sigma ID
       kHistPtRecSigmaKaonPlus,                  // Pt histo for kaons +, reconsructed tracks, sigma ID
       kHistPtRecSigmaPionPlus,                  // Pt histo for pions +, reconstructed tracks, sigma ID
       kHistPtRecSigmaProtonMinus,               // Pt histo for protons -, reconstructed tracks, sigma ID
@@ -51,6 +52,8 @@ namespace AliSpectraNameSpace
       kHistPtRecTrueProtonMinus,                // Pt histo for protons -, reconstructed tracks, true ID
       kHistPtRecTrueKaonMinus,                  // Pt histo for kaons -, reconstructed tracks, true ID
       kHistPtRecTruePionMinus,                  // Pt histo for pions -, reconstructed tracks, true ID
+      kHistPtRecTrueMuonPlus,                   // Pt histo for muons +, reconstructed tracks, true ID,
+      kHistPtRecTrueMuonMinus,                  // Pt histo for muons +, reconstructed tracks, true ID,
             
       // 6 Pt Reconstructed Sigma Primary
       kHistPtRecSigmaPrimaryProtonPlus,         // Pt histo for protons +, reconstructed tracks, sigma ID, primary Event
@@ -83,11 +86,13 @@ namespace AliSpectraNameSpace
       kHistPtRecTruePrimaryProtonMinus,         // Pt histo for protons -, reconstructed tracks, true ID, primary event
       kHistPtRecTruePrimaryKaonMinus,           // Pt histo for kaons -, reconstructed tracks, true ID, primary event
       kHistPtRecTruePrimaryPionMinus,           // Pt histo for pions -, reconstructed tracks, true ID, primary event
+      kHistPtRecTruePrimaryMuonPlus,            // Pt histo for muons +, reconstructed tracks, true ID, primary event
+      kHistPtRecTruePrimaryMuonMinus,            // Pt histo for muons +, reconstructed tracks, true ID, primary event
       
       // Rest
       kHistPtRec,                               // Pt histo for all particles, reconstructed tracks
-      kHistPtGen,                               // Pt histo for all particles, generated tracks
-      kNPtRecHist = kHistPtGen,                    // Number of ptRec-likehistos histos
+      kHistPtRecPrimary,                               // Pt histo for all particles, reconstructed tracks
+      kNPtRecHist = kHistPtRecPrimary,                    // Number of ptRec-likehistos histos
       
       kHistPIDTPC,                              // Particle Identification histo
       kHistPIDTOF,                              
@@ -129,7 +134,8 @@ namespace AliSpectraNameSpace
       "histPtGenTruePrimaryProtonMinus",          // Pt histo for protons -, generated tracks, sigma ID, primary Event
       "histPtGenTruePrimaryKaonMinus",            // Pt histo for kaons -, generated tracks, sigma ID, primary Event
       "histPtGenTruePrimaryPionMinus",            // Pt histo for pions -, generated tracks, sigma ID, primary Event
-      
+      "histPtGen",                              // Pt histo for all particles, generated tracks
+     
       // 6 Pt Reconstructed Sigma
       "histPtRecSigmaProtonPlus",               // Pt histo for protons +, reconstructed tracks, sigma ID
       "histPtRecSigmaKaonPlus",                 // Pt histo for kaons +, reconsructed tracks, sigma ID
@@ -145,7 +151,9 @@ namespace AliSpectraNameSpace
       "histPtRecTrueProtonMinus",               // Pt histo for protons -, reconstructed tracks, true ID
       "histPtRecTrueKaonMinus",                 // Pt histo for kaons -, reconstructed tracks, true ID
       "histPtRecTruePionMinus",                 // Pt histo for pions -, reconstructed tracks, true ID
-
+      "histPtRecTrueMuonPlus",                  // Pt histo for muons +, reconstructed tracks, true ID
+      "histPtRecTrueMuonMinus",                 // Pt histo for muons -, reconstructed tracks, true ID
+      
       // 6 Pt Reconstructed Sigma Primary
       "histPtRecSigmaPrimaryProtonPlus",        // Pt histo for protons +, reconstructed tracks, sigma ID, primary Event
       "histPtRecSigmaPrimaryKaonPlus",          // Pt histo for kaons +, reconsructed tracks, sigma ID, primary Event
@@ -177,11 +185,13 @@ namespace AliSpectraNameSpace
       "histPtRecTruePrimaryProtonMinus",        // Pt histo for protons -, reconstructed tracks, true ID, primary event
       "histPtRecTruePrimaryKaonMinus",          // Pt histo for kaons -, reconstructed tracks, true ID, primary event
       "histPtRecTruePrimaryPionMinus",          // Pt histo for pions -, reconstructed tracks, true ID, primary event
+      "histPtRecTruePrimaryMuonPlus",           // Pt histo for muons +, reconstructed tracks, true ID, primary event
+      "histPtRecTruePrimaryMuonMinus",          // Pt histo for muons -, reconstructed tracks, true ID, primary event
       
       // Rest
       "histPtRec",                              // Pt histo for all particles, reconstructed tracks
-      "histPtGen",                              // Pt histo for all particles, generated tracks
-     
+      "histPtRecPrimary",                              // Pt histo for all particles, reconstructed tracks
+      
       "histPIDTPC",                             // Particle Identification histo
       "histPIDTOF",                             
      

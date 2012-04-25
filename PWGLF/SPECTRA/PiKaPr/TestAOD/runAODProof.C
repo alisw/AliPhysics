@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=1, const char * proofMode = "full")
+void runAODProof(Int_t c=2, const char * proofMode = "full")
 {
 
    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
