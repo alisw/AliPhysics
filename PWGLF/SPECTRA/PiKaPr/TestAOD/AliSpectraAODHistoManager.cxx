@@ -168,10 +168,13 @@ TH1F* AliSpectraAODHistoManager::GetPtHistogram1D(const char * name,Double_t min
   //   //if minDCA=-1 && maxDCA=-1 the projection is done using the full DCA range
   TH2F *hist=(TH2F*)fOutputList->FindObject(name);
   TH1F *outhist=0x0;
-  if(minDCA==-1 && maxDCA==-1)outhist=(TH1F*)hist->ProjectionX("_px",0,-1,"e");
-  else {
+  Printf("--- Projecting %s on Xaxis[%f,%f]:",name,minDCA,maxDCA);
+  if(minDCA==-1 && maxDCA==-1){
+    outhist=(TH1F*)hist->ProjectionX("_px",0,-1,"e");
+    Printf("Full Range");
+  }else {
     Int_t firstbin=hist->GetYaxis()->FindBin(minDCA);
-    Int_t lastbin=hist->GetYaxis()->FindBin(maxDCA-0.00000001);
+    Int_t lastbin=hist->GetYaxis()->FindBin(maxDCA);
     Printf("firstbin: %d lastbin: %d",firstbin,lastbin);
     outhist=(TH1F*)hist->ProjectionX("_px",firstbin,lastbin,"e");
   }
@@ -187,13 +190,18 @@ TH1F* AliSpectraAODHistoManager::GetDCAHistogram1D(const char * name,Double_t mi
   //   //if minPt=-1 && maxPt=-1 the projection is done using the full DCA range
   TH2F *hist=(TH2F*)fOutputList->FindObject(name);
   TH1F *outhist=0x0;
-  if(minPt==-1 && maxPt==-1)outhist=(TH1F*)hist->ProjectionY("_py",0,-1,"e");
-  else {
+  Printf("--- Projecting %s on Yaxis[%f,%f]:",name,minPt,maxPt);
+  if(minPt==-1 && maxPt==-1){
+    outhist=(TH1F*)hist->ProjectionY("_py",0,-1,"e");
+    Printf("Full Range");
+  }else {
     Int_t firstbin=hist->GetXaxis()->FindBin(minPt);
-    Int_t lastbin=hist->GetXaxis()->FindBin(maxPt-0.0000001);
+    Int_t lastbin=hist->GetXaxis()->FindBin(maxPt);
+    Printf("firstbin: %d lastbin: %d",firstbin,lastbin);
     outhist=(TH1F*)hist->ProjectionY("_py",firstbin,lastbin,"e");
     Printf("GetDCAHistogram1D(%s) BinRange:%d  %d  Pt Range: %f %f",hist->GetName(),firstbin,lastbin,hist->GetXaxis()->GetBinLowEdge(firstbin),hist->GetXaxis()->GetBinLowEdge(firstbin)+hist->GetXaxis()->GetBinWidth(lastbin));
   }
+  Printf("Entries outhist: %.0f   Entries hist: %.0f",outhist->GetEntries(),hist->GetEntries());
   return outhist;
 }
 

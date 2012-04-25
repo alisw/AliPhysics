@@ -20,8 +20,8 @@ Double_t proju[3]={10,40,90};
 
 
 void MainAnalysis() {
-  TString fold="5SigmaPIDFilterBit6";
-  //TString fold="5SigmaPID";
+  //TString fold="5SigmaPIDFilterBit6";
+  TString fold="5SigmaPID";
   Int_t ibinToCompare=-1;
   
   //TString sname="Cent0to100_QVec0.0to100.0";
@@ -38,17 +38,25 @@ void MainAnalysis() {
   TString dataFile = Form("outputAOD%s/Pt.AOD.1._data_ptcut_%s.root",fold.Data(),sname.Data());
   TString mcFile =Form("outputAOD%s/Pt.AOD.1._MC_%s.root",fold.Data(),sname.Data());
   
-  gSystem->Load("libTree.so");
+  gSystem->Load("libCore.so");  
   gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
   gSystem->Load("libPhysics.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libTree");
+  gSystem->Load("libProof");
+  gSystem->Load("libMatrix");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libOADB");
   gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libCORRFW");
+  //gSystem->Load("libPWG0base");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGLFSPECTRA");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gStyle->SetPalette(1);
   
@@ -196,9 +204,10 @@ void MainAnalysis() {
   for(Int_t icharge=0;icharge<2;icharge++){
     for(Int_t ipart=0;ipart<3;ipart++){
       Int_t index=ipart+3*icharge;
-      TString hname=Form("histPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+      //TString hname=Form("histPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data());
       //TString hname=Form("histPtRecTrue%s%s",Particle[ipart].Data(),Sign[icharge].Data());
       //TString hname=Form("histPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+      TString hname=Form("histPtRecTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
       Printf("Getting %s",hname.Data());
       CorrFact[index]=(TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone();
       CorrFact[index]->SetName(Form("CorrFact_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
@@ -213,6 +222,9 @@ void MainAnalysis() {
       else CorrFact[index]->DrawClone("same");
     }
   } 
+  TFile *fESD=new TFile("EffAlex/pionEffPbPb.root");
+  TH1F *hEffESD=(TH1F*)fESD->Get("effMapPionTpcOnlyNeg0");
+  hEffESD->DrawClone("same");
   gPad->BuildLegend();
 
   //Normalization
@@ -220,7 +232,6 @@ void MainAnalysis() {
   AliSpectraAODEventCuts* ecuts_data = (AliSpectraAODEventCuts*) _data->Get("Event Cuts");
   Double_t events_data =  ecuts_data->NumberOfEvents();
   Printf(": accepted events: %.0f",events_data);
-  
   
   //divide RAW for Correction Factor
   Printf("\n\n-> Using MC correction factor to correct RAW spectra");
@@ -237,11 +248,16 @@ void MainAnalysis() {
       Spectra[index]->SetMarkerColor(Color[ipart]);
       Spectra[index]->SetLineColor(Color[ipart]);
       Printf("... and divide it by %s",hname.Data());
-      Spectra[index]->Divide(CorrFact[index]);
+      Spectra[index]->Divide(CorrFact[index]);//////////////////////////////////////////////////////////////////////////////////////////FIXME
+      // if(index!=3)Spectra[index]->Divide(CorrFact[index]);
+      // else{
+      // 	Spectra[index]=AliPWGHistoTools::MyDivideHistosDifferentBins(Spectra[index],hEffESD);
+      // }
       Spectra[index]->Scale(1./events_data,"width");//NORMALIZATION
     }
   } 
   
+    
   //Geant/Fluka Correction
   Printf("\nGF correction for Kaons");
   TString fnameGeanFlukaK="GFCorrection/correctionForCrossSection.321.root";
@@ -364,7 +380,6 @@ void MainAnalysis() {
     
   
   //if Bin 0-5% with no cut ratio with combined analysis
-  
   if(ibinToCompare!=-1){
     TCanvas *CratioComb=new TCanvas("CratioComb","CratioComb",700,500);
     CratioComb->Divide(3,2);
@@ -393,6 +408,98 @@ void MainAnalysis() {
       }
     }
   }	
+
+  //comparison with charged hadron
+  Printf("\n\n-> ChargedHadron comparison");
+  TCanvas *cAllCh=new TCanvas("cAllCh","cAllCh",700,500);
+  cAllCh->Divide(1,4);
+  TH1F *hChHad_data=(TH1F*)((TH1F*)hman_data->GetPtHistogram1D("histPtRec",-1,-1))->Clone();
+  hChHad_data->Scale(1./events_data,"width");//NORMALIZATION
+  //fraction of sec in MC
+  TH1F *hSecAllMC=(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("histPtGen",0,0))->Clone();
+  TH1F *hAllMC=(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("histPtGen",0,1))->Clone();
+  hSecAllMC->Divide(hAllMC);
+  cAllCh->cd(1);
+  hSecAllMC->DrawClone();
+  cAllCh->cd(2);
+  hChHad_data->DrawClone();
+  for(Int_t ibin=1;ibin<=hChHad_data->GetNbinsX();ibin++){
+    Double_t en=hChHad_data->GetBinContent(ibin);
+    Double_t sec=hSecAllMC->GetBinContent(ibin);
+    hChHad_data->SetBinContent(ibin,en-(en*sec*0.2));
+    //Printf("%f %f %d",en,sec,ibin);
+    //Printf("%f",hChHad_data->GetBinContent(ibin));
+  }
+  hChHad_data->DrawClone("lhistsame");
+  //efficiency for primaries
+  TH1F *hEff_mc=(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("histPtRec",-1,-1))->Clone();
+  hEff_mc->Divide((TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("histPtGen",0.5,1.5))->Clone());
+  cAllCh->cd(3);
+  hEff_mc->DrawClone();
+  hChHad_data->Divide(hEff_mc);
+  cAllCh->cd(4);
+  hChHad_data->Draw();
+  
+  //Comparison of efficiency with TPCTOF ESD analysis
+  Printf("\n\n-> Calculating Efficiency to be compared with ESD analysis");
+  TH1F *EffTRUEPions;
+  TH1F *EffSIGMAPions;
+  TCanvas *cEffESD=new TCanvas("cEffESD","cEffESD",700,500);
+  cEffESD->Divide(1,2);
+  Int_t icharge=1;
+  Int_t ipart=0;
+  //using MC truth
+  //TString hname=Form("histPtRecTrue%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+  TString hname=Form("histPtRecTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+  Printf("Getting %s",hname.Data());
+  EffTRUEPions=(TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone();
+  EffTRUEPions->SetName(Form("Eff TRUE_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
+  EffTRUEPions->SetTitle(Form("Eff TRUE %s%s",Particle[ipart].Data(),Sign[icharge].Data()));
+  EffTRUEPions->SetMarkerStyle(Marker[icharge]);
+  EffTRUEPions->SetMarkerColor(Color[ipart]);
+  EffTRUEPions->SetLineColor(Color[ipart]);
+  hname=Form("histPtGenTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+  Printf("... and divide it by %s",hname.Data());
+  EffTRUEPions->Divide(EffTRUEPions,(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D(hname.Data(),1,1))->Clone(),1,1,"B");//binomial error
+  //using NSigma
+  //hname=Form("histPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+  hname=Form("histPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+  Printf("Getting %s",hname.Data());
+  EffSIGMAPions=(TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone();
+  EffSIGMAPions->SetName(Form("Eff SIGMA_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
+  EffSIGMAPions->SetTitle(Form("Eff SIGMA %s%s",Particle[ipart].Data(),Sign[icharge].Data()));
+  EffSIGMAPions->SetMarkerStyle(Marker[icharge]);
+  EffSIGMAPions->SetMarkerColor(Color[ipart+1]);
+  EffSIGMAPions->SetLineColor(Color[ipart+1]);
+  hname=Form("histPtGenTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
+  Printf("... and divide it by %s",hname.Data());
+  EffSIGMAPions->Divide(EffSIGMAPions,(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D(hname.Data(),1,1))->Clone(),1,1,"B");//binomial error
+  cEffESD->cd(1);
+  //if(icharge==0)EffTRUEPions->DrawClone();
+  //else EffTRUEPions->DrawClone("same");
+  EffTRUEPions->DrawClone("lhist");
+  EffSIGMAPions->DrawClone("lhistsame");
+  hEffESD->Draw("lhistsame");
+  gPad->BuildLegend();
+  cEffESD->cd(2);
+  TH1F *hRatioTRUE=AliPWGHistoTools::MyDivideHistosDifferentBins(EffTRUEPions,hEffESD);
+  hRatioTRUE->Draw("lhist");
+  TH1F *hRatioSIGMA=AliPWGHistoTools::MyDivideHistosDifferentBins(EffSIGMAPions,hEffESD);
+  hRatioSIGMA->Draw("lhistsame");
+
+
+  //Muon over Pion Ratio
+  TCanvas *cMu=new TCanvas("cMu","cMu");
+  TH1F *hMuOverPi[2];
+  for(Int_t icharge=0;icharge<2;icharge++){
+    TString hname=Form("histPtRecTruePrimaryMuon%s",Sign[icharge].Data());
+    hMuOverPi[icharge]=(TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone();
+    hname=Form("histPtRecTruePrimaryPion%s",Sign[icharge].Data());
+    hMuOverPi[icharge]->Divide((TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone());
+    if(icharge==0)hMuOverPi[icharge]->DrawClone();
+    else hMuOverPi[icharge]->DrawClone("same");
+  }
+  
 }
 
 
@@ -514,7 +621,7 @@ void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpec
       
       }
       Spectra[index]->Multiply(hcorrection[0]);//multiply for data
-      Spectra[index]->Divide(hcorrection[1]); //divide by Monte Carlo
+      //Spectra[index]->Divide(hcorrection[1]); //divide by Monte Carlo
     }
   }
   ccorrection->cd(1);

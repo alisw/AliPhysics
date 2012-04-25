@@ -165,9 +165,9 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	for (Int_t iMC = 0; iMC < nMC; iMC++)
 	  {
 	    AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
-	    fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
-	    
 	    if(TMath::Abs(partMC->Eta()) > fTrackCuts->GetEta()) continue;
+	    
+	    fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
 	    // check for true PID + and fill P_t histos 
 	    //if (partMC->IsPhysicalPrimary() && CheckYCut(partMC) ) {// only primary vertices and y cut satisfied
 	    if (CheckYCut(partMC) ){// only primary vertices and y cut satisfied
@@ -199,7 +199,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  Bool_t isDCA = track_clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),9999.,d,covd);
 	  delete track_clone;
 	  if(!isDCA)d[0]=-999;
-
+	  
 	  fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),d[0]);  // PT histo
 	  //Response
 	  fHistMan->GetPIDHistogram(kHistPIDTPC)->Fill(track->GetTPCmomentum(), track->GetTPCsignal()*track->Charge()); // PID histo
@@ -267,20 +267,37 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	    if (!partMC) { 
 	      AliError("Cannot get MC particle");
 	      continue; }
-	    if (CheckYCut(partMC)) {
+	    if (partMC->IsPhysicalPrimary())fHistMan->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),d[0]);  // PT histo
+	    if (CheckYCut(partMC)){
 	      // primaries, true pid
-	      if ( partMC->PdgCode() == 2212) { fHistMan->GetPtHistogram(kHistPtRecTrueProtonPlus)->Fill(track->Pt(),d[0]); 
+	      //25th Apr - nsigma cut added in addition to the PDG code
+	      if ( partMC->PdgCode() == 2212 && nsigmaTPCTOFkProton < fNSigmaPID) { fHistMan->GetPtHistogram(kHistPtRecTrueProtonPlus)->Fill(track->Pt(),d[0]); 
 		if (partMC->IsPhysicalPrimary()) {fHistMan->GetPtHistogram(kHistPtRecTruePrimaryProtonPlus)->Fill(track->Pt(),d[0]); }}
-	      if ( partMC->PdgCode() == -2212) { fHistMan->GetPtHistogram(kHistPtRecTrueProtonMinus)->Fill(track->Pt(),d[0]); 
+	      if ( partMC->PdgCode() == -2212 && nsigmaTPCTOFkProton < fNSigmaPID) { fHistMan->GetPtHistogram(kHistPtRecTrueProtonMinus)->Fill(track->Pt(),d[0]); 
 		if (partMC->IsPhysicalPrimary()) {fHistMan->GetPtHistogram(kHistPtRecTruePrimaryProtonMinus)->Fill(track->Pt(),d[0]); }}
-	      if ( partMC->PdgCode() == 321) { fHistMan->GetPtHistogram(kHistPtRecTrueKaonPlus)->Fill(track->Pt(),d[0]); 
+	      if ( partMC->PdgCode() == 321 && nsigmaTPCTOFkKaon < fNSigmaPID) { fHistMan->GetPtHistogram(kHistPtRecTrueKaonPlus)->Fill(track->Pt(),d[0]); 
 		if (partMC->IsPhysicalPrimary()) {fHistMan->GetPtHistogram(kHistPtRecTruePrimaryKaonPlus)->Fill(track->Pt(),d[0]); }}
-	      if ( partMC->PdgCode() == -321) { fHistMan->GetPtHistogram(kHistPtRecTrueKaonMinus)->Fill(track->Pt(),d[0]); 
+	      if ( partMC->PdgCode() == -321 && nsigmaTPCTOFkKaon < fNSigmaPID) { fHistMan->GetPtHistogram(kHistPtRecTrueKaonMinus)->Fill(track->Pt(),d[0]); 
 		if (partMC->IsPhysicalPrimary()) {fHistMan->GetPtHistogram(kHistPtRecTruePrimaryKaonMinus)->Fill(track->Pt(),d[0]); }}
-	      if ( partMC->PdgCode() == 211) { fHistMan->GetPtHistogram(kHistPtRecTruePionPlus)->Fill(track->Pt(),d[0]); 
+	      if ( partMC->PdgCode() == 211 && nsigmaTPCTOFkPion < fNSigmaPID) { fHistMan->GetPtHistogram(kHistPtRecTruePionPlus)->Fill(track->Pt(),d[0]); 
 		if (partMC->IsPhysicalPrimary()) {fHistMan->GetPtHistogram(kHistPtRecTruePrimaryPionPlus)->Fill(track->Pt(),d[0]); }}
-	      if ( partMC->PdgCode() == -211) { fHistMan->GetPtHistogram(kHistPtRecTruePionMinus)->Fill(track->Pt(),d[0]);  
+	      if ( partMC->PdgCode() == -211 && nsigmaTPCTOFkPion < fNSigmaPID) { fHistMan->GetPtHistogram(kHistPtRecTruePionMinus)->Fill(track->Pt(),d[0]);  
 		if (partMC->IsPhysicalPrimary()) {fHistMan->GetPtHistogram(kHistPtRecTruePrimaryPionMinus)->Fill(track->Pt(),d[0]); }}
+	      //25th Apr - Muons are added to Pions
+	      if ( partMC->PdgCode() == 13 && nsigmaTPCTOFkPion < fNSigmaPID) { 
+		fHistMan->GetPtHistogram(kHistPtRecTruePionPlus)->Fill(track->Pt(),d[0]); 
+		fHistMan->GetPtHistogram(kHistPtRecTruePrimaryPionPlus)->Fill(track->Pt(),d[0]);///////////////////FIXME 
+		fHistMan->GetPtHistogram(kHistPtRecTrueMuonPlus)->Fill(track->Pt(),d[0]); 
+		if (partMC->IsPhysicalPrimary()) {
+		  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonPlus)->Fill(track->Pt(),d[0]); 
+		}}
+	      if ( partMC->PdgCode() == -13 && nsigmaTPCTOFkPion < fNSigmaPID) { 
+		fHistMan->GetPtHistogram(kHistPtRecTruePionMinus)->Fill(track->Pt(),d[0]); 
+		fHistMan->GetPtHistogram(kHistPtRecTruePrimaryPionMinus)->Fill(track->Pt(),d[0]);//////////////FIXME 
+		fHistMan->GetPtHistogram(kHistPtRecTrueMuonMinus)->Fill(track->Pt(),d[0]); 
+		if (partMC->IsPhysicalPrimary()) {
+		  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonMinus)->Fill(track->Pt(),d[0]); 
+		}}
 	      
 	      // primaries, sigma pid 
 	      if (partMC->IsPhysicalPrimary()) { 
