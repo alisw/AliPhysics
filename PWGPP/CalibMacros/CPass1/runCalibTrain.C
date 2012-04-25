@@ -43,6 +43,14 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   ConfigCalibTrain(runNumber, ocdb);
   
   //
+  // check the presence of the detectors
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject()); 
+  if (!grpData) {printf("Failed to get GRP data for run",runNumber); return;}
+  Int_t activeDetectors = grpData->GetDetectorMask(); 
+  TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+  printf("Detectors in the data:\n%s\n",detStr.Data());
+
   // setup analysis
   //
   AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to ESD", "Analysis Manager");
@@ -68,10 +76,14 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   AliAnalysisTask* tT0 = AddTaskT0Calib(runNumber);
   //AliMeanVertexCalibTask *tMeanVtx = AddTaskMeanVertexCalib();
   //
+  Bool_t okTPC = detStr.Contains("TPC");
   Bool_t useTPCcrv=kFALSE;
   Bool_t writeITSTP = kTRUE;
+  if (!okTPC) useTPCcrv = kFALSE;
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv);
-
+  if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE);
+  if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001); 
+  //
   // Run the analysis
   if (!mgr->InitAnalysis()) {
     printf("Analysis cannot be started, returning\n");
