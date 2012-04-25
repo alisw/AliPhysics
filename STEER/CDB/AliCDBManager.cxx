@@ -845,23 +845,23 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
 		return entry;
 	}
 
-  	// if snapshot flag is set, try getting from the snapshot
+	// if snapshot flag is set, try getting from the snapshot
 	// but in the case a specific storage is specified for this path
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
 	if(!aPar){
 	    if(fSnapshotMode && query.GetFirstRun() == fRun)
-		// entry = (AliCDBEntry*) fSnapshotCache->GetValue(query.GetPath()); // not possible,
-		// all the map would be charged in memory from the snapshot anyway.
+	    {
 		entry = GetEntryFromSnapshot(query.GetPath());
-	    if(entry) {
-		AliInfo(Form("Object \"%s\" retrieved from the snapshot.",query.GetPath().Data()));
-		if(query.GetFirstRun() == fRun) // no need to check fCache, fSnapshotMode not possible otherwise
-		    CacheEntry(query.GetPath(), entry);
+		if(entry) {
+		    AliInfo(Form("Object \"%s\" retrieved from the snapshot.",query.GetPath().Data()));
+		    if(query.GetFirstRun() == fRun) // no need to check fCache, fSnapshotMode not possible otherwise
+			CacheEntry(query.GetPath(), entry);
 
-		if(!fIds->Contains(&entry->GetId()))
-		    fIds->Add(entry->GetId().Clone());
+		    if(!fIds->Contains(&entry->GetId()))
+			fIds->Add(entry->GetId().Clone());
 
-		return entry;
+		    return entry;
+		}
 	    }
 	}
 
