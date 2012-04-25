@@ -359,9 +359,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (!inputEvent)
     inputEvent = fESD;
 
+  Float_t bSign = 0;
+  
   if (inputEvent)
+  {
     fHistos->SetRunNumber(inputEvent->GetRunNumber());
-
+    bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
+  }
+    
   TObject* mc = fArrayMC;
   if (!mc)
     mc = fMcEvent;
@@ -482,17 +487,28 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       if (!fSkipStep6)
 	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
       
+      // two track cut, STEP 8
+      if (fTwoTrackEfficiencyCut > 0)
+	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, 0, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
+
       // mixed event
       if (fFillMixed && !fSkipStep6)
       {
 	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
 	//pool2->PrintInfo();
 	if (pool2->IsReady() || pool2->NTracksInPool() > fMixingTracks / 10 || pool2->GetCurrentNEvents() >= 5) 
-	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) 
+	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
+	  {
+	    // STEP 6
 	    fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
+	    
+	    // two track cut, STEP 8
+	    if (fTwoTrackEfficiencyCut > 0)
+	      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
+	  }
 	pool2->UpdatePool(CloneAndReduceTrackList(tracks));
       }
-      
+
       if (0 && !fReduceMemoryFootprint)
       {
         // make list of secondaries (matched with MC)
