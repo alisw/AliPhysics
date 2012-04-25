@@ -42,7 +42,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 namespace
 {
-	const Int_t kNTRU = 32;
+	const Int_t kNTRU = 30;
 }
 
 ClassImp(AliEMCALTriggerElectronics)
