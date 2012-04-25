@@ -6547,24 +6547,24 @@ void ExampleDEtaDPhi(const char* fileNamePbPb, const char* fileNamePbPbMix)
   hist1->Draw("SURF1");
 }
 
-void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, const char* fileNamepp)
+void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, const char* fileNamepp, const char* outputFile = "dphi_corr.root")
 {
   loadlibs();
   
   if (!fileNamePbPbMix)
     fileNamePbPbMix = fileNamePbPb;
   
-  file = TFile::Open("dphi_corr.root", "RECREATE");
+  file = TFile::Open(outputFile, "RECREATE");
   file->Close();
   
   Int_t leadingPtOffset = 1;
     
-  Int_t maxLeadingPt = 3;
+  Int_t maxLeadingPt = 4;
   Int_t maxAssocPt = 7;
   if (1)
   {
 //     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
-    Float_t leadingPtArr[] = { 2.0, 4.0, 8.0, 15.0, 20.0 };
+    Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
   else
@@ -6580,6 +6580,9 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
   AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram(fileNamepp);
   hMixed2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, 0, kTRUE);
 
+//   h->GetUEHist(2)->SetGetMultCache();
+//   hMixed->GetUEHist(2)->SetGetMultCache();
+  
   if (0)
   {
     h->SetZVtxRange(-0.99, 0.99);
@@ -6589,7 +6592,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
   }
   
   for (Int_t i=0; i<maxLeadingPt; i++)
-    for (Int_t j=0; j<maxAssocPt; j++)
+    for (Int_t j=1; j<maxAssocPt; j++)
     {
       gpTMin = assocPtArr[j] + 0.01;
       gpTMax = assocPtArr[j+1] - 0.01;
@@ -6619,6 +6622,9 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       if (1)
       {
 	GetSumOfRatios(h, hMixed, &hist1,  step, 0,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	
+// 	new TCanvas; hist1->Draw("SURF1"); return;
+
 	GetSumOfRatios(h, hMixed, &hist5,  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist4,  step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist6,  step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
@@ -6634,11 +6640,11 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 	GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 	GetDistAndFlow(h, hMixed, &hist6,  0, step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 	GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  90, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
-	step = 6;
+// 	step = 6;
 	GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
       }
 
-      file = TFile::Open("dphi_corr.root", "UPDATE");
+      file = TFile::Open(outputFile, "UPDATE");
       
       if (hist1)
       {
@@ -10549,6 +10555,8 @@ void PlotQA(const char* fileName)
   
   h->SetPtRange(1.01, 3.99);
   dphi_corr = h->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed, 0, 4.01, 14.99, 1, 8);
+  if (dphi_corr->GetEntries() == 0)
+    dphi_corr = h->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed+2, 0, 4.01, 14.99, 1, 8);
   
   AliUEHistograms* hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);
   if (hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetNbins() == 0)
@@ -10559,6 +10567,8 @@ void PlotQA(const char* fileName)
 
   hMixed->SetPtRange(1.01, 3.99);
   dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed, 0, 4.01, 14.99, 1, 8);
+  if (dphi_corr_mixed->GetEntries() == 0)
+    dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed+2, 0, 4.01, 14.99, 1, 8);
   
   if (runNumber != 0 && runNumber != h->GetRunNumber())
     AliFatal("Run numbers inconsistent");

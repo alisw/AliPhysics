@@ -117,12 +117,17 @@ Double_t DeltaPhiWidth2DFitFunction(Double_t *x, Double_t *par)
 void SubtractEtaGap(TH2* hist, Float_t etaLimit, Float_t outerLimit, Bool_t scale, Bool_t drawEtaGapDist = kFALSE)
 {
   TString histName(hist->GetName());
+  Int_t etaBins = 0;
 
   TH1D* etaGap = hist->ProjectionX(histName + "_1", TMath::Max(1, hist->GetYaxis()->FindBin(-outerLimit + 0.01)), hist->GetYaxis()->FindBin(-etaLimit - 0.01));
-  Int_t etaBins = hist->GetYaxis()->FindBin(-etaLimit - 0.01) - TMath::Max(1, hist->GetYaxis()->FindBin(-outerLimit + 0.01)) + 1;
+  Printf("%f", etaGap->GetEntries());
+  if (etaGap->GetEntries() > 0)
+    etaBins += hist->GetYaxis()->FindBin(-etaLimit - 0.01) - TMath::Max(1, hist->GetYaxis()->FindBin(-outerLimit + 0.01)) + 1;
 
   TH1D* tracksTmp = hist->ProjectionX(histName + "_2", hist->GetYaxis()->FindBin(etaLimit + 0.01), TMath::Min(hist->GetYaxis()->GetNbins(), hist->GetYaxis()->FindBin(outerLimit - 0.01)));
-  etaBins += TMath::Min(hist->GetYaxis()->GetNbins(), hist->GetYaxis()->FindBin(outerLimit - 0.01)) - hist->GetYaxis()->FindBin(etaLimit + 0.01) + 1;
+  Printf("%f", tracksTmp->GetEntries());
+  if (tracksTmp->GetEntries() > 0)
+    etaBins += TMath::Min(hist->GetYaxis()->GetNbins(), hist->GetYaxis()->FindBin(outerLimit - 0.01)) - hist->GetYaxis()->FindBin(etaLimit + 0.01) + 1;
   
   etaGap->Add(tracksTmp);
 
@@ -1497,12 +1502,15 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
   c->SaveAs(Form("ex/%s.png", c->GetName()));
   c->SaveAs(Form("ex/%s.eps", c->GetName()));
 
-  c = new TCanvas(Form("ex_%d_%d_%d_a", i, j, histId), Form("ex_%d_%d_%d_a", i, j, histId), 400, 400);
-  hist->SetTitle("");
-  hist->DrawCopy("SURF1");
-  paveText->Draw();
-  c->SaveAs(Form("ex/%s.png", c->GetName()));
-  c->SaveAs(Form("ex/%s.eps", c->GetName()));
+  if (0)
+  {
+    c = new TCanvas(Form("ex_%d_%d_%d_a", i, j, histId), Form("ex_%d_%d_%d_a", i, j, histId), 400, 400);
+    hist->SetTitle("");
+    hist->DrawCopy("SURF1");
+    paveText->Draw();
+    c->SaveAs(Form("ex/%s.png", c->GetName()));
+    c->SaveAs(Form("ex/%s.eps", c->GetName()));
+  }
 }
 
 void DrawExampleAll(const char* histFileName)
@@ -1587,6 +1595,39 @@ void DrawExampleAll(const char* histFileName)
 
     c->SaveAs(Form("ex/%s.png", c->GetName()));
     c->SaveAs(Form("ex/%s.eps", c->GetName()));
+  }
+}
+
+void DrawDoubleHump(const char* histFileName)
+{
+  Float_t exampleI[] = { 0, 0, 0, 1, 1, 1};
+  Float_t exampleJ[] = { 0, 1, 2, 0, 1, 2};
+  
+  TH1* projectionsPhi[9];
+  TH1* projectionsEta[9];
+  
+  TCanvas* c = new TCanvas("DrawDoubleHump", "DrawDoubleHump", 1200, 800);
+  c->Divide(3, 2);
+  
+  TLegend* legend = new TLegend(0.15, 0.7, 0.88, 0.88);
+  legend->SetFillColor(0);
+  
+  for (Int_t i=0; i<6; i++)
+  {
+    DrawExample(histFileName, exampleI[i], exampleJ[i], 0, &projectionsPhi[i], &projectionsEta[i]);
+
+    c->cd(i+1);
+    TH1* clone = projectionsPhi[i]->DrawCopy("");
+    clone->SetLineColor(1);
+    clone->GetYaxis()->SetRangeUser(clone->GetMinimum(), clone->GetMaximum() * 1.2);
+//     clone->GetXaxis()->SetTitle(Form("%s / %s", clone->GetXaxis()->GetTitle(), "#Delta#eta"));
+    clone->GetXaxis()->SetTitle(Form("%s / %s", "#Delta#phi (rad.)", "#Delta#eta"));
+    
+    clone = projectionsEta[i]->DrawCopy("SAME");
+    clone->SetLineColor(2);
+
+    DrawLatex(0.3, 0.85, 1, Form("#Delta#phi projection in |#Delta#eta| < %.1f", 0.8), 0.04);
+    DrawLatex(0.3, 0.80, 2, Form("#Delta#eta projection in |#Delta#phi| < %.1f", 0.8), 0.04);
   }
 }
 
@@ -1857,7 +1898,7 @@ void TestTwoGaussian()
 void DrawEtaGapExample(const char* histFileName, Int_t i = 1, Int_t j = 2)
 {
   Float_t etaLimit = 1.0;
-  Float_t outerLimit = 1.79;
+  Float_t outerLimit = 1.59;
   Float_t projectLimit = 0.8;
 
   TFile::Open(histFileName);

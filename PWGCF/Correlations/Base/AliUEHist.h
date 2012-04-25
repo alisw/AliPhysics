@@ -21,6 +21,7 @@ class TH2D;
 class TCollection;
 class AliCFGridSparse;
 class THnSparse;
+class THnBase;
 
 class AliUEHist : public TObject
 {
@@ -53,6 +54,8 @@ class AliUEHist : public TObject
   TH2* GetSumOfRatios(AliUEHist* mixed, CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t etaNorm = kTRUE, Bool_t useVertexBins = kFALSE);
   
   void GetHistsZVtx(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, TH3** trackHist, TH1** eventHist);
+  void GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, THnBase** trackHist, TH2** eventHist);
+  
   TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd);
 
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1, Int_t axis3 = -1);
@@ -100,7 +103,12 @@ class AliUEHist : public TObject
   void AdditionalDPhiCorrection(Int_t step);
   
   void SetBinLimits(AliCFGridSparse* grid);
+  void SetBinLimits(THnBase* grid);
+
   void ResetBinLimits(AliCFGridSparse* grid);
+  void ResetBinLimits(THnBase* grid);
+  
+  void SetGetMultCache(Bool_t flag = kTRUE) { fGetMultCacheOn = flag; }
   
   AliUEHist(const AliUEHist &c);
   AliUEHist& operator=(const AliUEHist& corr);
@@ -109,6 +117,7 @@ class AliUEHist : public TObject
   virtual Long64_t Merge(TCollection* list);
   void Scale(Double_t factor);
   void Reset();
+  THnBase* ChangeToThn(THnBase* sparse);
   
 protected:
   void SetStepNames(AliCFContainer* container);
@@ -134,9 +143,12 @@ protected:
   
   AliCFContainer* fCache;             //! cache variable for GetTrackEfficiency
   
+  Bool_t fGetMultCacheOn;             //! cache for GetHistsZVtxMult function active
+  THnBase* fGetMultCache;             //! cache for GetHistsZVtxMult function
+  
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 8) // underlying event histogram container
+  ClassDef(AliUEHist, 9) // underlying event histogram container
 };
 
 #endif

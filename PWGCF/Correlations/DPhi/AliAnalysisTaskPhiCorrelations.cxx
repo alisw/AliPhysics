@@ -84,7 +84,7 @@ fFillMixed(kTRUE),
 fMixingTracks(50000),
 fCompareCentralities(kFALSE),
 fTwoTrackEfficiencyStudy(kFALSE),
-fTwoTrackEfficiencyCut(kFALSE),
+fTwoTrackEfficiencyCut(0),
 fUseVtxAxis(kFALSE),
 fSkipTrigger(kFALSE),
 // pointers to UE classes
@@ -244,7 +244,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   // event mixing
   Int_t trackDepth = fMixingTracks; 
-  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPool
+  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
    
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
@@ -358,8 +358,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   AliVEvent* inputEvent = fAOD;
   if (!inputEvent)
     inputEvent = fESD;
-  
-  fHistos->SetRunNumber(inputEvent->GetRunNumber());
+
+  if (inputEvent)
+    fHistos->SetRunNumber(inputEvent->GetRunNumber());
 
   TObject* mc = fArrayMC;
   if (!mc)
@@ -661,8 +662,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
     
-    if (fTwoTrackEfficiencyCut)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, 0, weight, kTRUE, kTRUE, bSign);
+    if (fTwoTrackEfficiencyCut > 0)
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, 0, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
   }
 
   // fill second time with SPD centrality
@@ -719,8 +720,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 	if (!fSkipStep6)
 	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0));
 
-	if (fTwoTrackEfficiencyCut)
-	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign);
+	if (fTwoTrackEfficiencyCut > 0)
+	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
       }
     }
     
