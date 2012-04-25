@@ -206,11 +206,7 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   // RS: Since there is no sense in cloning trigger scalers per trigger, I am (for the moment) forbidding their cloning
 
   AliCodeTimerAuto("",0);
-  
-  fDigitStoreFromRaw = new AliMUONDigitStoreV2R();
-  fTriggerStoreFromRaw = new AliMUONTriggerStoreV1();
-  fTriggerStoreReprocessRaw = new AliMUONTriggerStoreV1();
-  
+    
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
@@ -574,10 +570,13 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     //fTriggerInputGlobalDataHPt[reg][bit]=0;
     //}
     //}
-
-  fDigitStoreFromRaw->Clear();
-  fTriggerStoreFromRaw->Clear();
-  fTriggerStoreReprocessRaw->Clear();
+  
+  if ( fDigitStoreFromRaw ) fDigitStoreFromRaw->Clear();
+  else fDigitStoreFromRaw = new AliMUONDigitStoreV2R();
+  if ( fTriggerStoreFromRaw ) fTriggerStoreFromRaw->Clear();
+  else fTriggerStoreFromRaw =  new AliMUONTriggerStoreV1();
+  if ( fTriggerStoreReprocessRaw ) fTriggerStoreReprocessRaw->Clear();
+  else fTriggerStoreReprocessRaw = new AliMUONTriggerStoreV1();
 
     AliMUONGlobalTrigger inputGlobalTrigger;
 
