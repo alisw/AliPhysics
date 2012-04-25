@@ -73,6 +73,9 @@ public:
   virtual Bool_t IsPHOS()             const {return kFALSE;}
   
   //pid info
+  virtual void     SetStatus(ULong_t /*flags*/) {;}
+  virtual void     ResetStatus(ULong_t /*flags*/) {;}
+
   virtual Double_t  GetITSsignal()       const {return 0.;}
   virtual Double_t  GetTPCsignal()       const {return 0.;}
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
