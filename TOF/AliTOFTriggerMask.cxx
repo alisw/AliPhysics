@@ -92,4 +92,12 @@ AliTOFTriggerMask::SetTriggerMaskArray(UInt_t *array)
 
   for (Int_t iddl = 0; iddl < 72; iddl++) fTriggerMask[iddl] = array[iddl];
 }
+//_________________________________________________________
 
+Int_t AliTOFTriggerMask::GetNumberMaxiPadOn() {
+  Int_t n=0;
+  for(Int_t j=0;j<72;j++) 
+    for(Int_t i=23;i>=0;i--) 
+      n += (fTriggerMask[j]%Int_t(TMath::Power(2.,i+1.)))/Int_t(TMath::Power(2.,i+0.));
+  return n;
+};

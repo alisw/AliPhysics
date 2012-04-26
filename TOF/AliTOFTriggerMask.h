@@ -17,6 +17,7 @@
 // *
 
 #include "TObject.h"
+#include "TMath.h"
 
 class AliTOFTriggerMask :
 public TObject
@@ -33,6 +34,8 @@ public TObject
   UInt_t *GetTriggerMaskArray() {return fTriggerMask;}; // get trigger mask array
 
   void SetTriggerMaskArray(UInt_t *array); // set trigger mask array
+
+  Int_t GetNumberMaxiPadOn();
 
  private:
 
