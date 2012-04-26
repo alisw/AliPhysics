@@ -72,7 +72,8 @@ AliAnalysisTaskCaloTrackCorrelation::~AliAnalysisTaskCaloTrackCorrelation()
 {
   // Remove all pointers
   
-  if (fOutputContainer && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutputContainer && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
+  {
     fOutputContainer->Clear() ; 
     delete fOutputContainer ;
   }
@@ -88,15 +89,17 @@ void AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects()
   if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - Begin\n");
   
   //Get list of aod arrays, add each aod array to analysis frame 
-  TClonesArray *array = 0;
   TList * list = fAna->FillAndGetAODBranchList(); //Loop the analysis and create the list of branches
+  
   if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - n AOD branches %d\n",list->GetEntries());
   
   //Put the delta AODs in output file, std or delta
-  if((fAna->GetReader())->WriteDeltaAODToFile()){
+  if((fAna->GetReader())->WriteDeltaAODToFile())
+  {
     TString deltaAODName = (fAna->GetReader())->GetDeltaAODFileName();
-    for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++){
-      array = (TClonesArray*) list->At(iaod);
+    for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++)
+    {
+      TClonesArray * array = (TClonesArray*) list->At(iaod);
       if(deltaAODName!="") AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
       else AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
     } 
@@ -124,12 +127,6 @@ void AliAnalysisTaskCaloTrackCorrelation::LocalInit()
 	//Call the Init to initialize the configuration of the analysis
 	Init();
 	
-	// Create cuts/param objects and publish to slot
-	fCuts = fAna->GetListOfAnalysisCuts();
-	fCuts ->SetOwner(kTRUE);
-	// Post Data
-	PostData(2, fCuts);
-	
 }
 
 //______________________________________________
@@ -141,7 +138,8 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
   
   // Call configuration file if specified
   
-  if (fConfigName.Length()) {
+  if (fConfigName.Length()) 
+  {
     printf("AliAnalysisTaskCaloTrackCorrelation::Init() - ### Configuration file is %s.C ###\n", fConfigName.Data());
     gROOT->LoadMacro(fConfigName+".C");
     fAna = (AliAnaCaloTrackCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
@@ -181,7 +179,8 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
   //Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
-     datatype != AliCaloTrackReader::kMC){
+     datatype != AliCaloTrackReader::kMC)
+  {
     printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - Wrong type of data\n");
     return ;
   }
@@ -210,6 +209,12 @@ void AliAnalysisTaskCaloTrackCorrelation::Terminate(Option_t */*option*/)
   // Propagate histagrams to maker
   fAna->Terminate((TList*)GetOutputData(1));
 	
+  // Create cuts/param objects and publish to slot
+	fCuts = fAna->GetListOfAnalysisCuts();
+	fCuts ->SetOwner(kTRUE);
+	// Post Data
+	PostData(2, fCuts);
+  
 }
 
 //__________________________________________________________
