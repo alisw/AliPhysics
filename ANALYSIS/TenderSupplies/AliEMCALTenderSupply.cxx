@@ -1088,6 +1088,8 @@ void AliEMCALTenderSupply::UpdateCells()
 
   AliVEvent *event = GetEvent();
 
+  if(!event) return ;
+  
   AliVCaloCells *cells = event->GetEMCALCells();
   Int_t bunchCrossNo = event->GetBunchCrossNumber();
 
