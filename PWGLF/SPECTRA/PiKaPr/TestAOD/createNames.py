@@ -22,6 +22,7 @@ def main():
         output.append("     \"h"+col[0].strip()[1:]+"\",\n");
 
     output.append ("   };\n")
+    output.append ("}\n")
 
     # write file
     outfile = open("HistogramNames.h", "w")
