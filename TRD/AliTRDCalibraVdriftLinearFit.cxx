@@ -56,6 +56,7 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit() : /*FOLD00*/
   fLinearFitterPArray(540),
   fLinearFitterEArray(540),
   fRobustFit(kTRUE),
+  fMinNpointsFit(11),
   fDebugStreamer(0x0),
   fDebugLevel(0),
   fSeeDetector(0)
@@ -73,6 +74,7 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVd
   fLinearFitterPArray(540),
   fLinearFitterEArray(540),
   fRobustFit(kTRUE),
+  fMinNpointsFit(10),
   fDebugStreamer(0x0),
   fDebugLevel(0),
   fSeeDetector(0)
@@ -104,6 +106,7 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const TObjArray &obja
   fLinearFitterPArray(540),
   fLinearFitterEArray(540),
   fRobustFit(kTRUE),
+  fMinNpointsFit(10),
   fDebugStreamer(0x0),
   fDebugLevel(0),
   fSeeDetector(0)
@@ -428,7 +431,8 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray2()
       TGraphErrors *gg=DrawMS(fitterhisto,nEntries);
       if (!gg) continue;
       // Number of points of the TGraphErrors
-      if(gg->GetN() < 20) {
+      //printf("Number of points %d for detector %d\n",gg->GetN(),cb);
+      if(gg->GetN() <  fMinNpointsFit) {
 	if(gg) delete gg;
 	continue;	
       }
@@ -444,6 +448,7 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray2()
       (*par)[1] = f1->GetParameter(1);
       fLinearFitterPArray.AddAt(par,cb);
       fLinearFitterEArray.AddAt(parE,cb);
+      //printf("Value %f for detector %d\n",(*par)[1],cb);
             
       if(fDebugLevel==0) {
 	if(gg) delete gg;

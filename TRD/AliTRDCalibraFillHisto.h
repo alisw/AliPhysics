@@ -102,6 +102,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetLinearFitterOn(Bool_t linearfitteron = kTRUE)          { fLinearFitterOn      = linearfitteron;}
 	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
           void     SetExbAltFitOn(Bool_t fiton = kTRUE)                      { fExbAltFitOn      = fiton;}
+	  void     SetScaleWithTPCSignal(Bool_t scaleWithTPCSignal = kTRUE)  { fScaleWithTPCSignal = scaleWithTPCSignal;}
 	  void     SetFirstRunGain(Int_t firstRunGain)                       { fFirstRunGain = firstRunGain;   }
 	  void     SetVersionGainUsed(Int_t versionGainUsed)                 { fVersionGainUsed = versionGainUsed;   }
 	  void     SetSubVersionGainUsed(Int_t subVersionGainUsed)           { fSubVersionGainUsed = subVersionGainUsed;   }
@@ -207,7 +208,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Bool_t   fVector2d;               // Chose to fill vectors
 	  Bool_t   fLinearFitterOn;         // Method with linear fit for drift velocity
 	  Bool_t   fLinearFitterDebugOn;    // Method with linear fit for drift velocity
-          Bool_t   fExbAltFitOn;              // Enable parabolic fit for exb
+          Bool_t   fExbAltFitOn;            // Enable parabolic fit for exb
+	  Bool_t   fScaleWithTPCSignal;     // Scale the gain with TPC signal (If use then ask at least 70 TPC clusters)
 
   // How to fill the 2D
           Float_t  fRelativeScale;          // Scale of the deposited charge
@@ -344,7 +346,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   AliTRDCalibraFillHisto();
   virtual ~AliTRDCalibraFillHisto(); 
     
-  ClassDef(AliTRDCalibraFillHisto,5)                         // TRD Calibration class
+  ClassDef(AliTRDCalibraFillHisto,6)                         // TRD Calibration class
 
 };
   

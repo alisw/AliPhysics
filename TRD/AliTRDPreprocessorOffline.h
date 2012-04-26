@@ -67,7 +67,7 @@ public:
   void     SetMinStatsGain(Int_t minStatsGain)                       { fMinStatsGain = minStatsGain; }  
   void     SetMinStatsPRF(Int_t minStatsPRF)                         { fMinStatsPRF = minStatsPRF; }  
   void     SetMinStatsChamberStatus(Int_t minStatsChamberStatus)     { fMinStatsChamberStatus = minStatsChamberStatus; }
-	void     SetSingleMinStatsChamberStatus(Int_t minSingleStatsChamberStatus) { fMinSingleStatsChamberStatus = minSingleStatsChamberStatus; }
+  void     SetSingleMinStatsChamberStatus(Int_t minSingleStatsChamberStatus) { fMinSingleStatsChamberStatus = minSingleStatsChamberStatus; }
   void     SetLimitValidateNoData(Int_t nodatavalidate)              { fNoDataValidate = nodatavalidate; };
   void     SetLimitValidateBadCalib(Int_t badcalibvalidate)          { fBadCalibValidate = badcalibvalidate; };
   void     SetBackCorrectGain(Bool_t backCorrectGain)                { fBackCorrectGain = backCorrectGain; }
@@ -80,6 +80,7 @@ public:
   void     SetRobustFitDriftVelocity(Bool_t robustFitDriftVelocity)  { fRobustFitDriftVelocity = robustFitDriftVelocity;};
   void     SetRobustFitExbAlt(Bool_t robustFitExbAlt)                { fRobustFitExbAlt = robustFitExbAlt;};
   void     SetAlternativeDriftVelocityFit(Bool_t alt)                { fAlternativeVdrfitFit = alt;};
+  void     SetMinNbOfPointVdriftFit(Int_t minNbOfPointVdriftFit)     { fMinNbOfPointVdriftFit = minNbOfPointVdriftFit;};
   void     SetAlternativeExbAltFit(Bool_t alt)                       { fAlternativeExbAltFit = alt;};
   void     SetMethodeFitGain(Int_t methodeFitGain)                   { fMethodeGain = methodeFitGain;};
   void     SetOutliersFitChargeLow(Float_t outliersFitChargeLow)     { fOutliersFitChargeLow = outliersFitChargeLow; }
@@ -248,6 +249,7 @@ public:
   Bool_t   fRobustFitExbAlt;              // Robust fit for the exb alt 
   Bool_t   fAlternativeVdrfitFit;         // Alternative fitting method for vdrift calibration
   Bool_t   fAlternativeExbAltFit;         // Alternative fitting method for the alternative exb calibarion method
+  Int_t    fMinNbOfPointVdriftFit;        // Min number of points for the drift velocity calibration
   Int_t    fMethodeGain;                  // Methode Gain Fit
   Float_t  fOutliersFitChargeLow;         // The fit starts at fOutliersFitChargeLow procent number of entries
   Float_t  fOutliersFitChargeHigh;        // The fit starts at fOutliersFitChargeHigh procent number of entries
@@ -265,7 +267,7 @@ private:
 
   Bool_t fPHQon;                 //switch of PHQ
 
-  ClassDef(AliTRDPreprocessorOffline,3)
+  ClassDef(AliTRDPreprocessorOffline,4)
 };
 
 #endif

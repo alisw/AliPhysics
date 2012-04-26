@@ -49,11 +49,13 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   TH2S           *GetLinearFitterHistoNoForce(Int_t detector) const   { return (TH2S*)fLinearFitterHistoArray.UncheckedAt(detector);};
   Bool_t          GetParam(Int_t detector, TVectorD *param);
   Bool_t          GetError(Int_t detector, TVectorD *error);
+  Int_t           GetMinNumberOfPointsForFit() const         { return fMinNpointsFit;};
 
   TObjArray      *GetPArray()                    { return &fLinearFitterPArray;       };
   TObjArray      *GetEArray()                    { return &fLinearFitterEArray;       };
   TObjArray       GetHistoArray() const          { return fLinearFitterHistoArray;    };
   void            SetRobustFit(Bool_t robustFit) { fRobustFit = robustFit;            };
+  void            SetMinNumberOfPointsForFit(Int_t minNpointsFit) { fMinNpointsFit = minNpointsFit;};
 
   // Debug
   void     SetDebugLevel(Short_t level)          { fDebugLevel = level;               };
@@ -69,13 +71,14 @@ private:
   TObjArray       fLinearFitterPArray;      // Array of result parameters from linear fitters for the detectors
   TObjArray       fLinearFitterEArray;      // Array of result errors from linear fitters for the detectors
   Bool_t          fRobustFit;               // Robust fit or not
-  
+  Int_t           fMinNpointsFit;           // Min number of points for the fit  
+
  //For debugging
   TTreeSRedirector *fDebugStreamer;         //!Debug streamer
   Short_t           fDebugLevel;            // Flag for debugging
   Int_t             fSeeDetector;           // Detector to see
  
-  ClassDef(AliTRDCalibraVdriftLinearFit,3)  // Online Vdrift calibration
+  ClassDef(AliTRDCalibraVdriftLinearFit,4)  // Online Vdrift calibration
 
 };
 

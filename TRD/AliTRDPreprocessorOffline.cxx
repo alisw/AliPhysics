@@ -121,6 +121,7 @@ ClassImp(AliTRDPreprocessorOffline)
   fRobustFitExbAlt(kFALSE),
   fAlternativeVdrfitFit(kFALSE),
   fAlternativeExbAltFit(kFALSE),
+  fMinNbOfPointVdriftFit(11),
   fMethodeGain(0),
   fOutliersFitChargeLow(0.03),
   fOutliersFitChargeHigh(0.7),
@@ -767,8 +768,10 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetCalDetVdriftExB(fCalDetVdriftUsed,fCalDetExBUsed);
   calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
+  printf("The mean stat is by %d for VdriftLinear\n",fMinStatsVdriftLinear);
   //printf("Fill PE Array\n");
   fAliTRDCalibraVdriftLinearFit->SetRobustFit(fRobustFitDriftVelocity);
+  fAliTRDCalibraVdriftLinearFit->SetMinNumberOfPointsForFit(fMinNbOfPointVdriftFit);
   if(!fAlternativeVdrfitFit)
     fAliTRDCalibraVdriftLinearFit->FillPEArray();
   else

@@ -142,6 +142,7 @@ ClassImp(AliTRDCalibTask)
       fCutWithVdriftCalib(kFALSE),
       fMinNbTRDtracklets(0),
       fMinTRDMomentum(0),
+      fScaleGainWithTPCSignal(kFALSE),
       fLow(0),
       fHigh(30),
       fFillZero(kFALSE),
@@ -282,6 +283,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fTRDCalibraFillHisto->SetLinearFitterOn(fVdriftLinear); // Other possibility vdrift VDRIFT
     fTRDCalibraFillHisto->SetLinearFitterDebugOn(fVdriftLinear); // Other possibility vdrift
     fTRDCalibraFillHisto->SetExbAltFitOn(fExbAlt); // Alternative method for exb
+    fTRDCalibraFillHisto->SetScaleWithTPCSignal(fScaleGainWithTPCSignal); // Scale Gain with TPC signal
     for(Int_t k = 0; k < 3; k++){
       if(((fNz[k] != 10) && (fNrphi[k] != 10)) && ((fNz[k] != 100) && (fNrphi[k] != 100))) {
 	fTRDCalibraFillHisto->SetNz(k,fNz[k]);                                    // Mode calibration

@@ -142,6 +142,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fLinearFitterOn(kFALSE)
   ,fLinearFitterDebugOn(kFALSE)
   ,fExbAltFitOn(kFALSE)
+  ,fScaleWithTPCSignal(kFALSE)
   ,fRelativeScale(0)
   ,fThresholdClusterPRF2(15.0)
   ,fLimitChargeIntegration(kFALSE)
@@ -232,6 +233,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fLinearFitterOn(c.fLinearFitterOn)
   ,fLinearFitterDebugOn(c.fLinearFitterDebugOn)
   ,fExbAltFitOn(c.fExbAltFitOn)
+  ,fScaleWithTPCSignal(c.fScaleWithTPCSignal)
   ,fRelativeScale(c.fRelativeScale)
   ,fThresholdClusterPRF2(c.fThresholdClusterPRF2)
   ,fLimitChargeIntegration(c.fLimitChargeIntegration)
@@ -685,6 +687,9 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t,const A
   Int_t numberoftrdtracklets = t->GetNumberOfTracklets();
   if(numberoftrdtracklets < fMinNbTRDtracklets) return kFALSE;
 
+  Double_t tpcsignal = esdtrack->GetTPCsignal()/50.0;
+  if(fScaleWithTPCSignal && tpcsignal <0.00001) return kFALSE;
+
   //
   if (!fCalibDB) {
     AliInfo("Could not get calibDB");
@@ -750,7 +755,15 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t,const A
       // Add the charge if shared cluster
       cls = tracklet->GetClusters(jc+AliTRDseedV1::kNtb);
       //
-      chargeQ += StoreInfoCHPHtrack(cl, tracklet->GetQperTB(jc),group,row,col,cls); //tracklet->GetdQdl(jc)
+      //Scale with TPC signal or not
+      if(!fScaleWithTPCSignal) {
+	chargeQ += StoreInfoCHPHtrack(cl, tracklet->GetQperTB(jc),group,row,col,cls); //tracklet->GetdQdl(jc)
+	//printf("Do not scale now\n");
+      }
+      else {
+	chargeQ += StoreInfoCHPHtrack(cl, tracklet->GetQperTB(jc)/tpcsignal,group,row,col,cls); //tracklet->GetdQdl(jc)
+      }
+    
     }
     
     ////////////////////////////////////////
@@ -811,8 +824,8 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t,const A
 	Float_t dcaz = b[1];
 	Int_t tpcnbclusters = 0;
 	if(esdtrack) tpcnbclusters = esdtrack->GetTPCclusters(0);
-	Double_t tpcsignal = 0.0;
-	if(esdtrack) tpcsignal = esdtrack->GetTPCsignal();
+	Double_t ttpcsignal = 0.0;
+	if(esdtrack) ttpcsignal = esdtrack->GetTPCsignal();
         Int_t    cutvdriftlinear = 0;
 	if(!pass) cutvdriftlinear = 1;
 	
@@ -824,7 +837,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t,const A
 	  "dcaxy="<<dcaxy<<
 	  "dcaz="<<dcaz<<
 	  "nbtpccls="<<tpcnbclusters<<
-	  "tpcsignal="<<tpcsignal<<
+	  "tpcsignal="<<ttpcsignal<<
 	  "cutvdriftlinear="<<cutvdriftlinear<<
 	  "ptrd="<<momentum<<
 	  "nbtrdtracklet="<<numberoftrdtracklets<<

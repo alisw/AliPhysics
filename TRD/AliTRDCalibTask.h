@@ -78,7 +78,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetCutWithVdriftCalib(Bool_t cutWithVdriftCalib)                {fCutWithVdriftCalib = cutWithVdriftCalib;};
   void SetMinNbTRDtracklets(Int_t minNbTRDtracklets)                   {fMinNbTRDtracklets = minNbTRDtracklets;};
   void SetMinTRDMometum(Double_t minTRDMomentum)                       {fMinTRDMomentum = minTRDMomentum;};
- 
+  void SetScaleGainWithTPCSignal(Bool_t scaleGainWithTPCSignal)        {fScaleGainWithTPCSignal = scaleGainWithTPCSignal;}; 
+
   void SetVersionGainUsed(Int_t versionGainUsed)                       { fVersionGainUsed = versionGainUsed;   }
   void SetSubVersionGainUsed(Int_t subVersionGainUsed)                 { fSubVersionGainUsed = subVersionGainUsed;   }
   void SetVersionGainLocalUsed(Int_t versionGainLocalUsed)             { fVersionGainLocalUsed = versionGainLocalUsed;   }
@@ -175,6 +176,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Bool_t      fCutWithVdriftCalib;               // CutWithVdriftCalib for the gain and PH
   Int_t       fMinNbTRDtracklets;                // Min number of TRD tracklets
   Float_t     fMinTRDMomentum;                   // Min TRD momentum  
+  Bool_t      fScaleGainWithTPCSignal;           // Scale the TPC gain with the TPC signal
 
   Int_t       fLow;                              // lower limit of nb of TRD clusters per tracklet
   Int_t       fHigh;                             // higher limit of nb of TRD clusters per tracklet
@@ -209,7 +211,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 
 
-  ClassDef(AliTRDCalibTask, 2); 
+  ClassDef(AliTRDCalibTask, 3); 
 };
 
 #endif
