@@ -57,7 +57,7 @@ class AliSPDClustTask : public AliAnalysisTaskSE {
   //
   void       SetInput(const char *filename);
   Int_t      FindMotherParticle(AliStack* stack, Int_t i);
-  Double_t   PtWeight(Double_t pt);
+  Double_t   PtWeight(Double_t pt, Int_t pdgCode);
   //
  protected:
   void       InitMultReco();
@@ -98,7 +98,9 @@ class AliSPDClustTask : public AliAnalysisTaskSE {
   //
   Bool_t fDontMerge;                       // no merging requested
   //
-  TH1D*  fhPtIn; // Input histogram containing the pion spectra
+  TH1F*  fhPtPionIn; // Input histogram containing the pion spectra weight
+  TH1F*  fhPtKaonIn; // Input histogram containing the pion spectra weight
+  TH1F*  fhPtProtonIn; // Input histogram containing the pion spectra weight
  private:    
   AliSPDClustTask(const AliSPDClustTask&); // not implemented
   AliSPDClustTask& operator=(const AliSPDClustTask&); // not implemented 

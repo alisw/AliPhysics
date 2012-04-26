@@ -110,7 +110,9 @@ AliSPDClustTask::AliSPDClustTask(const char *name)
   fMCEvent(0),
   //
   fDontMerge(kFALSE),
-  fhPtIn(0)
+  fhPtPionIn(0),
+  fhPtKaonIn(0),
+  fhPtProtonIn(0)
 {
   // Constructor
 
@@ -141,7 +143,9 @@ AliSPDClustTask::~AliSPDClustTask()
   //
   delete fMultReco;
   delete fHistos;
-  if (fhPtIn) delete fhPtIn;
+  if (fhPtPionIn) delete fhPtPionIn;
+  if (fhPtKaonIn) delete fhPtKaonIn;
+  if (fhPtProtonIn) delete fhPtProtonIn;
   //
 }
 
@@ -351,7 +355,7 @@ TObjArray* AliSPDClustTask::BookHistos()
     }
   }
   if (fUseMC) {
-    TH1D *hPt = new TH1D("hPt","Pions Pt spectra (MC)",fhPtIn->GetXaxis()->GetNbins(),fhPtIn->GetXaxis()->GetXbins()->GetArray());
+    TH1D *hPt = new TH1D("hPt","Pions Pt spectra (MC)",fhPtPionIn->GetXaxis()->GetNbins(),fhPtPionIn->GetXaxis()->GetXbins()->GetArray());
     histos->AddAtAndExpand(hPt, kHPt);
   }
   //
@@ -416,6 +420,7 @@ void AliSPDClustTask::FillHistos(AliStack *stack)
 	h1d->Fill(z);
 	h1d = (TH1F*)fHistos->At(kHClusters+used*200+ilr*100 + kClEta);
 	h1d->Fill(eta);
+	Double_t weight = 1.;
 	if (stack) {
 	  for(Int_t iLabel = 0; iLabel < 3; ++iLabel) {
 	    Int_t clLabel = clus->GetLabel(iLabel);
@@ -423,8 +428,10 @@ void AliSPDClustTask::FillHistos(AliStack *stack)
 	    Int_t moLabel = FindMotherParticle(stack, clLabel);
 	    if (moLabel <= 0) continue;
 	    TParticle* p = stack->Particle(moLabel);
-	    if (TMath::Abs(p->GetPdgCode()) != 211) continue;
-	    Double_t weight = PtWeight(p->Pt());
+	    if ((TMath::Abs(p->GetPdgCode()) != 211) &&
+		(TMath::Abs(p->GetPdgCode()) != 321) &&
+		(TMath::Abs(p->GetPdgCode()) != 2212)) continue;
+	    weight = PtWeight(p->Pt(),p->GetPdgCode());
 	    h1d = (TH1F*)fHistos->At(kHClusters+used*200+ilr*100 + kClZPionsW);
 	    h1d->Fill(z,weight);
 	    h1d = (TH1F*)fHistos->At(kHClusters+used*200+ilr*100 + kClEtaPionsW);
@@ -450,11 +457,14 @@ void AliSPDClustTask::SetInput(const char *filename)
 
   AliInfo(Form("Reading input histograms from %s",filename));
   if (fUseMC) {
-    TFile *fPt = TFile::Open("spectraCombine.root");
+    TFile *fPt = TFile::Open("FitOutput.root");
     if (!fPt) {	AliError("Failed to open input file"); return; }
-    TList *lPt = (TList*)fPt->Get("output");
-    fhPtIn = (TH1D*)lPt->FindObject("PionsPos_MB_combine_sum")->Clone("fhPtIn");
-    fhPtIn->SetDirectory(0);
+    fhPtPionIn = (TH1F*)fPt->Get("pionPtWeight")->Clone("fhPtPionIn");
+    fhPtPionIn->SetDirectory(0);
+    fhPtKaonIn = (TH1F*)fPt->Get("kaonPtWeight")->Clone("fhPtKaonIn");
+    fhPtKaonIn->SetDirectory(0);
+    fhPtProtonIn = (TH1F*)fPt->Get("protPtWeight")->Clone("fhPtProtonIn");
+    fhPtProtonIn->SetDirectory(0);
     fPt->Close();
   }
 }
@@ -478,10 +488,16 @@ Int_t AliSPDClustTask::FindMotherParticle(AliStack* stack, Int_t i)
 }
 
 //________________________________________________________________________
-Double_t AliSPDClustTask::PtWeight(Double_t pt)
+Double_t AliSPDClustTask::PtWeight(Double_t pt, Int_t pdgCode)
 {
-  if (pt > 0.35)
+  switch (pdgCode) {
+  case 211:
+    return fhPtPionIn->GetBinContent(fhPtPionIn->FindBin(pt));
+  case 321:
+    return fhPtKaonIn->GetBinContent(fhPtKaonIn->FindBin(pt));
+  case 2212:
+    return fhPtProtonIn->GetBinContent(fhPtProtonIn->FindBin(pt));
+  default:
     return 1.;
-  else
-    return (1.71-0.71*pt/0.35);
+  }
 }
