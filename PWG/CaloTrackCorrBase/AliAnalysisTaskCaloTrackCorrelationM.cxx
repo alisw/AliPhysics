@@ -101,9 +101,11 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects()
   if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects() - n AOD branches %d\n",list->GetEntries());
   
   //Put the delta AODs in output file, std or delta
-  if((fAna->GetReader())->WriteDeltaAODToFile()){
+  if((fAna->GetReader())->WriteDeltaAODToFile())
+  {
     TString deltaAODName = (fAna->GetReader())->GetDeltaAODFileName();
-    for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++){
+    for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++)
+    {
       array = (TClonesArray*) list->At(iaod);
       if(deltaAODName!="") AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
       else AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
@@ -132,13 +134,6 @@ void AliAnalysisTaskCaloTrackCorrelationM::LocalInit()
 	//Call the Init to initialize the configuration of the analysis
 	Init();
 	
-	// Create cuts/param objects and publish to slot
-	fCuts = fAna->GetListOfAnalysisCuts();
-  fCuts ->SetOwner(kTRUE);
-  
-	// Post Data
-	PostData(2, fCuts);
-	
 }
 
 //_______________________________________________
@@ -152,13 +147,15 @@ void AliAnalysisTaskCaloTrackCorrelationM::Init()
   
   // Call configuration file if specified
   
-  if (fConfigName.Length()) {
+  if (fConfigName.Length())
+  {
     printf("AliAnalysisTaskCaloTrackCorrelationM::Init() - ### Configuration file is %s.C ###\n", fConfigName.Data());
     gROOT->LoadMacro(fConfigName+".C");
     fAna = (AliAnaCaloTrackCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
   }
   
-  if(!fAna) {
+  if(!fAna)
+  {
     printf("AliAnalysisTaskCaloTrackCorrelationM::Init() - Analysis maker pointer not initialized, no analysis specified, STOP !\n");
     abort();
   }
@@ -200,14 +197,18 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserExec(Option_t */*option*/)
   Int_t nev = fInputHandler->GetBufferSize();
   fInputEvent->Reset();
   
-  for (Int_t iev = 0; iev < nev; iev++) {
-    if (datatype == AliCaloTrackReader::kESD) {
+  for (Int_t iev = 0; iev < nev; iev++) 
+  {
+    if (datatype == AliCaloTrackReader::kESD) 
+    {
       AliESDEvent* esd = dynamic_cast<AliESDEvent*>(GetEvent(iev));
       fInputEvent->AddEvent(esd);
-    } else if (datatype == AliCaloTrackReader::kAOD) {
+    } else if (datatype == AliCaloTrackReader::kAOD) 
+    {
       AliAODEvent* aod = dynamic_cast<AliAODEvent*>(GetEvent(iev));
       fInputEvent->AddEvent(aod);
-    } else {
+    } else 
+    {
       AliFatal("need to implement mixed event for MC") ; 
     }
   }
@@ -240,6 +241,13 @@ void AliAnalysisTaskCaloTrackCorrelationM::Terminate(Option_t */*option*/)
   // Get merged histograms from the output container
   // Propagate histagrams to maker
   fAna->Terminate((TList*)GetOutputData(1));
-	
+
+  // Create cuts/param objects and publish to slot
+	fCuts = fAna->GetListOfAnalysisCuts();
+  fCuts ->SetOwner(kTRUE);
+  
+	// Post Data
+	PostData(2, fCuts);
+  
 }
 
