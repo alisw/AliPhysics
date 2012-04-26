@@ -165,11 +165,11 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	for (Int_t iMC = 0; iMC < nMC; iMC++)
 	  {
 	    AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+	    if(!partMC->Charge()) continue;//Skip neutrals
 	    if(TMath::Abs(partMC->Eta()) > fTrackCuts->GetEta()) continue;
 	    
 	    fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
 	    // check for true PID + and fill P_t histos 
-	    //if (partMC->IsPhysicalPrimary() && CheckYCut(partMC) ) {// only primary vertices and y cut satisfied
 	    if (CheckYCut(partMC) ){// only primary vertices and y cut satisfied
 	      if ( partMC->PdgCode() == 2212) { fHistMan->GetPtHistogram(kHistPtGenTruePrimaryProtonPlus)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary()); } 
 	      if ( partMC->PdgCode() == -2212) { fHistMan->GetPtHistogram(kHistPtGenTruePrimaryProtonMinus)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary()); } 
@@ -181,12 +181,9 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  }
       }
     
-    
-    
     //main loop on tracks
     for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++)
       {
-	
 	AliAODTrack* track = fAOD->GetTrack(iTracks);
 	if (!fTrackCuts->IsSelected(track)) continue;
 	
