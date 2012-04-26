@@ -296,6 +296,12 @@ AliAnalysisTaskCentrality::AliAnalysisTaskCentrality(const AliAnalysisTaskCentra
   fZPAEnergy(ana.fZPAEnergy),
   fZEM1Energy(ana.fZEM1Energy),
   fZEM2Energy(ana.fZEM2Energy),
+  fZNCtower(),
+  fZPCtower(),
+  fZNAtower(),
+  fZPAtower(),
+  fCentrZNC(),
+  fCentrZNA(),
   fNTracks(ana.fNTracks),
   fNPmdTracks(ana.fNPmdTracks),
   fMultV0A(ana.fMultV0A),
@@ -306,6 +312,17 @@ AliAnalysisTaskCentrality::AliAnalysisTaskCentrality(const AliAnalysisTaskCentra
   //
   // Copy Constructor	
   //
+
+  for (Int_t i=0; i<5; ++i) {
+    fZNCtower[i] = ana.fZNCtower[i];
+    fZPCtower[i] = ana.fZPCtower[i];
+    fZNAtower[i] = ana.fZNAtower[i];
+    fZPAtower[i] = ana.fZPAtower[i];
+  }
+  for (Int_t i=0; i<5; ++i) {
+    fCentrZNC[i] = ana.fCentrZNC[i];
+    fCentrZNA[i] = ana.fCentrZNA[i];
+  }
 }
  
 //________________________________________________________________________
