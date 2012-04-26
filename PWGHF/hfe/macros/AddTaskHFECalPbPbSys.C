@@ -33,7 +33,6 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, doub
   //RequestMemory(hfetask, 250*1024);
   if(trigtype==0)hfetask->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   if(trigtype==1)hfetask->SelectCollisionCandidates(AliVEvent::kCentral);
-  hfetask->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   mgr->AddTask(hfetask);
 
   int inSig = (int)(nSigMim*10.0);
