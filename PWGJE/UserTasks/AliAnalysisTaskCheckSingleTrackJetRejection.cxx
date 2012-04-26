@@ -400,12 +400,12 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 																for(int cut=0;cut<6;cut++){
 																				double min_R=10.;
 																				for(int njetAOD=0;njetAOD<Jet_n[1];njetAOD++){
-																								fJetBranch   = "clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00";
-																								jets = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
-																								if(jets)continue;
-																								jetsAOD = (AliAODJet*) (jets->At(njetAOD));
-																								TRefArray *reftracks = jetsAOD->GetRefTracks();
-																								int ntracks=reftracks->GetEntriesFast();
+																				  fJetBranch   = "clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00";
+																				  jets = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
+																				  if(!jets)continue;
+																				  jetsAOD = (AliAODJet*) (jets->At(njetAOD));
+																				  TRefArray *reftracks = jetsAOD->GetRefTracks();
+																				  int ntracks=reftracks->GetEntriesFast();
 																								if(cut==1){if(maxpt[1][njetAOD]>=40.)continue;}
 																								if(cut==2){if(ntracks==1)continue;}
 																								if(cut==3){if(ntracks<=2)continue;}
