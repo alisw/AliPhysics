@@ -490,7 +490,7 @@ Int_t AliSPDClustTask::FindMotherParticle(AliStack* stack, Int_t i)
 //________________________________________________________________________
 Double_t AliSPDClustTask::PtWeight(Double_t pt, Int_t pdgCode)
 {
-  switch (pdgCode) {
+  switch (TMath::Abs(pdgCode)) {
   case 211:
     return fhPtPionIn->GetBinContent(fhPtPionIn->FindBin(pt));
   case 321:
