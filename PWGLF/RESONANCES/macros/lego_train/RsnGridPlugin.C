@@ -3,7 +3,7 @@
 #include <TGrid.h>
 #include <TGridResult.h>
 #endif
-void RsnGridPlugin() {
+void RsnGridPlugin(TString analysisMode) {
 
    Bool_t valid = kTRUE;
    TString dsConfig = AliAnalysisManager::GetGlobalStr("rsnTrainDSConfig",valid);
@@ -26,7 +26,8 @@ void RsnGridPlugin() {
       TString s = r->GetKey(r->GetSize()-1,"lfn");
       s.ReplaceAll("/analysis.root","");
       s = gSystem->BaseName(s);
-      if (!s.IsNull()) idRsnTrain = s.Atoi()+1;
+      if (!s.IsNull()) idRsnTrain = s.Atoi();
+      if (!analysisMode.CompareTo("full")) idRsnTrain++;
    }
    rsnTrainName.Append(Form("/%03d",idRsnTrain));
 
