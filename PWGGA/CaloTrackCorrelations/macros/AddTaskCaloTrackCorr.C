@@ -115,6 +115,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
     
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
   
+  maker->SetScaleFactor(scaleFactor); // for MC, negative (not scaled) by default
+  
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader()   ); 
   maker->SetCaloUtils(ConfigureCaloUtils()); 
@@ -218,9 +220,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
                                                              AliAnalysisManager::kOutputContainer, 
                                                              Form("%s",outputfile.Data()));
 	
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Cuts_%s",kName.Data()), TList::Class(), 
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",kName.Data()), TList::Class(), 
                                                              AliAnalysisManager::kParamContainer, 
-                                                             Form("%s",outputfile.Data()));
+                                                             "AnalysisParameters.root");
   
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
@@ -292,28 +294,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
     printf("CaloTrackCorr trigger SemiCentral\n");
     task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   }
-  
-  //------------------------------------------------ 
-  // Scaling task, for MC in different pT hard bins
-  //-----------------------------------------------
-  if(scaleFactor > 0)
-  {
-    
-    AliAnaScale * scale = new AliAnaScale("scale") ;
-    scale->Set(scaleFactor) ;
-    scale->MakeSumw2(kTRUE);//If you want histograms with error bars set to kTRUE
-    scale->SetDebugLevel(2);
-    mgr->AddTask(scale);
-    
-    AliAnalysisDataContainer *cout_XS = mgr->CreateContainer(Form("scaled%s",kName.Data()), 
-                                                             TList::Class(), 
-                                                             AliAnalysisManager::kOutputContainer, 
-                                                             Form("scaled%s.root",kName.Data()));
-    mgr->ConnectInput  (scale,     0, cout_pc);
-    mgr->ConnectOutput (scale,     0, cout_XS);
-    
-  }
-  
   
   return task;
 }
@@ -988,7 +968,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   if(kCollisions=="pp") 
   {
     ic->SetPtThreshold(0.5);
-    ic->SetConeSize(0.4);
+    ic->SetConeSize(0.5);
   }
   if(kCollisions=="PbPb")
   {

@@ -106,9 +106,15 @@ void ana(Int_t mode=mGRID)
     
     GetAverageXsection(chainxs, xsection, ntrials);
     
-    scale = xsection/ntrials/chain->GetEntries();
+    Int_t    nEventsPerFile = chain->GetEntries() / nfiles;
     
-    printf("Get Cross section , nfiles =  %d, nevents %d, ntrials %d, xs %2.3e, scale factor %e\n",nfiles,chain->GetEntries(),ntrials,xsection,scale);
+    Double_t trials = ntrials / nEventsPerFile ;
+    
+    scale = xsection/trials;
+    
+    printf("Get Cross section : nfiles  %d, nevents %d, nevents per file %d \n",nfiles, chain->GetEntries(),nEventsPerFile);     
+    printf("                    ntrials %d, trials %2.2f, xs %2.2e, scale factor %2.2e\n", ntrials,trials,xsection,scale);
+    
   } 
   
   printf("*********************************************\n");
@@ -266,10 +272,10 @@ void ana(Int_t mode=mGRID)
   
   // Calibration, bad map ...
   
-  Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use ir or not in any case
-  Bool_t calibTT = kTRUE; // It is set automatically, but here we force to use ir or not in any case
+  Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use it or not in any case
+  Bool_t calibTT = kTRUE; // It is set automatically, but here we force to use it or not in any case
   if(kRun < 122195 || (kRun > 126437 && kRun < 136851) || kMC) calibTT=kFALSE ; // Recalibration parameters not available for LHC10a,b,c,e,f,g
-  Bool_t badMap  = kTRUE; // It is set automatically, but here we force to use ir or not in any case  
+  Bool_t badMap  = kTRUE; // It is set automatically, but here we force to use it or not in any case  
   
   if(kCollision=="pp")
   {
