@@ -298,13 +298,13 @@ void ana(Int_t mode=mGRID)
     //Trigger
     TString clTrigger   = "";   
     TString anTrigger   = "EMC7";  
-    TString anTriggerPH = "PHS";
     
     if(kMC) 
     {
       clTrigger   = "";
       anTrigger   = "";
-      anTriggerPH = ""; 
+      dTime       = 0;      
+      wTime       = 0;    
     }
     
     Bool_t  selectEvents = kFALSE; // Select events depending on V0, pile-up and vertex quality
@@ -384,6 +384,8 @@ void ana(Int_t mode=mGRID)
     {
       clTrigger = "";
       anTrigger = "";
+      dTime       = 0;      
+      wTime       = 0;    
     }
     
     Bool_t  selectEvents = kFALSE; // Select events depending on V0, pile-up and vertex quality
