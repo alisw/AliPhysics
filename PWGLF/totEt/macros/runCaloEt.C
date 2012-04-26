@@ -5,7 +5,7 @@
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
-	       const char *dataType="real", // "sim" or "real" etc.
+	       const char *dataType="realPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
 	       const char *det = "EMCalDetail") // "PHOS" or "EMCAL"
 {
@@ -128,13 +128,25 @@ void runCaloEt(bool submit = false, // true or false
     gSystem->Load("libTENDERSupplies.so"); 
     gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
     gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
-//     //Tender Supplies
-//     gROOT->LoadMacro("CreateEMCALTender.C");
-//     AliAnalysisTaskSE *tender = CreateEMCALTender(kTRUE);
-//     mgr->AddTask(tender); 
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALTender.C");
+    //this macro is downloaded from the EMCal tender supply twiki 
+    //hopefully it will be replaced by something checked in to aliroot
+    //I have added the function from GetOCDBRecParam.C in Jiri's example to this so that we don't add gobs of macros to the code
+    //I set the defaults to the golden run for PbPb because we are focusing on the golden run, however, this should be thought through!!
+    gROOT->LoadMacro("AddTaskEMCALTenderForEtAnalysis.C");
+    cout<<"WARNING: YOU ARE USING CALIBRATION FACTORS FROM PbPb RUN 137161!!"<<endl;
+//  	// get reco params from grid OCDB
+//    gROOT->LoadMacro("./GetOCDBRecParam.C");
+//  	// run num, data type pp/PbPb, from grid
+//Gets calibration factors from grid if jobs are to be submitted to the grid
+  	AliEMCALRecParam* pars = GetOCDBRecParam( 137161, "PbPb", submit);
+
     AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0);
+    //this also likely needs modification
+    tender->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kEMCEGA | AliVEvent::kEMC1 | AliVEvent::kEMC7 );
+    if(submit){tender->SetDefaultCDBStorage("raw://");} //uncomment if you work on grid
+    else{tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB");} //uncomment if you work local
+
     if(submit){
       cout<<"Setting tender to run on grid"<<endl;
       tender->SetDefaultCDBStorage("raw://"); //uncomment if you work on grid
@@ -146,6 +158,7 @@ void runCaloEt(bool submit = false, // true or false
     // one can sellect what collision candidates to use
     // triggered sample only: L1 = AliVEvent::kEMCEGA, AliVEvent::kEMCEJE; L0 = AliVEvent::kEMC1, AliVEvent::kEMC7
     tender->SelectCollisionCandidates( AliVEvent::kAny );
+    tender->SetDebugLevel(2);
 
     //AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosTrgContam", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     //mgr->ConnectOutput(tender,1,coutput3);
