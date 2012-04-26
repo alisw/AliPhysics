@@ -267,6 +267,8 @@ Bool_t AliAnalysisMuMuFromESD::TrackChi2(const AliESDMuonTrack& track) const
 Double_t AliAnalysisMuMuFromESD::CorrectedDCA(const AliESDMuonTrack& track) const
 {
   /// Get corrected DCA of the track
+
+  if (!fVertex) return -999.;
   
   TVector3 eventVertex(fVertex->GetX(),fVertex->GetY(),fVertex->GetZ());
   
