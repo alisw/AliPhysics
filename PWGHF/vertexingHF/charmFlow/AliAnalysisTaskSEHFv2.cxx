@@ -147,7 +147,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
     break;
   }
   fAfterBurner = new AliHFAfterBurner(fDecChannel);
-  if(pdg==413) SetMassLimits((Float_t)0.135,(Float_t)0.165);
+  if(pdg==413) SetMassLimits((Float_t)0.1,(Float_t)0.2);
   else SetMassLimits((Float_t)0.2,pdg); //check range
   fNPtBins=fRDCuts->GetNPtBins();
 
@@ -273,7 +273,9 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
       TH2F* hMc2phi=new TH2F(Form("hMc2phi_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
       fOutput->Add(hMc2phi);//for 2D analysis
       
-      TH2F* hMphi=new TH2F(Form("hMphi_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi %s;#Delta#phi;M (GeV/c^{2})",centrname.Data()),96,0,TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
+      Double_t maxphi = TMath::Pi();
+      if (fDecChannel == 2) maxphi = TMath::PiOver2();
+      TH2F* hMphi=new TH2F(Form("hMphi_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi %s;#Delta#phi;M (GeV/c^{2})",centrname.Data()),96,0,maxphi,fNMassBins,fLowmasslimit,fUpmasslimit);
       fOutput->Add(hMphi);//for phi bins analysis
       
       if (fReadMC){
@@ -747,8 +749,11 @@ void AliAnalysisTaskSEHFv2::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
     return;
   }
 
+  Float_t deltaphi1 = deltaphi;
+  if(deltaphi1 > TMath::PiOver2()) deltaphi1 = TMath::Pi() - deltaphi1; 
+
   ((TH2F*)fOutput->FindObject(Form("hMc2phi_pt%dcentr%d_%d",ptbin,icentr-5,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hMphi_pt%dcentr%d_%d",ptbin,icentr-5,icentr)))->Fill(deltaphi,masses[0]);
+  ((TH2F*)fOutput->FindObject(Form("hMphi_pt%dcentr%d_%d",ptbin,icentr-5,icentr)))->Fill(deltaphi1,masses[0]);
   ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentr-5,icentr)))->Fill(d->Pt(),masses[0]);
   Int_t pdgDgDStartoD0pi[2]={421,211};
   Int_t pdgDgD0toKpi[2]={321,211};
