@@ -73,18 +73,20 @@ set ( SRCS
   FORWARD/analysis2/AliForwardQATask.cxx
   FORWARD/analysis2/AliCopyHeaderTask.cxx
   FORWARD/analysis2/AliDisplacedVertexSelection.cxx
+  FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
 
-set ( EINCLUDE  ANALYSIS PWGLF/FORWARD/analysis2 PWG0 STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  ANALYSIS PWGLF/FORWARD/analysis2  PWGLF/FORWARD/GEO PWG0 STEER/ESD STEER/STEERBase)
 
 set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
              FORWARD/analysis2/AliAODCentralMult.h 
              FORWARD/analysis2/AliForwardUtil.h  
 	     FORWARD/analysis2/AliFMDEventInspector.h
-	     FORWARD/analysis2/AliFMDMCEventInspector.h)
+	     FORWARD/analysis2/AliFMDMCEventInspector.h
+	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h)
 
 set ( DHDR  PWGLFforward2LinkDef.h)
 

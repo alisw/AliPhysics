@@ -26,7 +26,6 @@ AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kFALSE,
   
    // Configure analysis
    //===========================================================================
-   gROOT->LoadMacro("AliAnalysisTaskZDCPbPb.cxx++g");   
    AliAnalysisTaskZDCPbPb* task = new AliAnalysisTaskZDCPbPb("taskZDCPbPb");
 
    if(inputDataType.CompareTo("ESD")==0){

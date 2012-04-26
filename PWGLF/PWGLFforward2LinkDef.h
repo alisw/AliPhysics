@@ -93,6 +93,10 @@
 #pragma link C++ class AliForwardQATask+;
 #pragma link C++ class AliCopyHeaderTask+;
 #pragma link C++ class AliDisplacedVertexSelection+;
+
+#pragma link C++ class AliAnalysisTaskZDCPbPb+;
+
+
 #else
 # error Not for compilation 
 #endif
