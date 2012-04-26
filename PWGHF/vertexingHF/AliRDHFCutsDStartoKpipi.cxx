@@ -44,7 +44,8 @@ ClassImp(AliRDHFCutsDStartoKpipi)
 //--------------------------------------------------------------------------
 AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) : 
   AliRDHFCuts(name),
-  fTrackCutsSoftPi(0)
+  fTrackCutsSoftPi(0),
+  fMaxPtPid(9999.)
 {
   //
   // Default Constructor
@@ -111,7 +112,8 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) :
 //--------------------------------------------------------------------------
 AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &source) :
   AliRDHFCuts(source),
-  fTrackCutsSoftPi(0)
+  fTrackCutsSoftPi(0),
+  fMaxPtPid(9999.)
 {
   //
   // Copy constructor
@@ -455,13 +457,14 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(AliAODRecoDecayHF* obj)
   // PID method, n signa approach default
   //
   
-  if(!fUsePID) return 3;
-  
   AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)obj;
   if(!dstar){
     cout<<"AliAODRecoCascadeHF null"<<endl;
     return 0;
-  }  
+  } 
+ 
+  if(!fUsePID || dstar->Pt() > fMaxPtPid) return 3;
+  
   AliAODRecoDecayHF2Prong* d0 = (AliAODRecoDecayHF2Prong*)dstar->Get2Prong();  
   if(!d0){
     cout<<"AliAODRecoDecayHF2Prong null"<<endl;
