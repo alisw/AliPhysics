@@ -606,7 +606,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi)
   Double_t runAvg = 0;
   Double_t max = 0;
   Int_t nInAvg = 0;
-  Int_t nBadBins = 0;
+  //  Int_t nBadBins = 0;
   Int_t nBins = (dNdetadphi.GetNbinsX() * 6) / (fCumuDiff->GetNbinsX() * 5);
   Int_t nInBin = 0;
   Int_t nCurBin = 0, nPrevBin = 0;
@@ -689,7 +689,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi)
 //      if (max > 2*runAvg) nBadBins++;
     }
     // If there are too many bad bins we throw the event away!
-    if (nBadBins > 3) return kFALSE;
+    //    if (nBadBins > 3) return kFALSE;
   }
   return kTRUE;
 }
