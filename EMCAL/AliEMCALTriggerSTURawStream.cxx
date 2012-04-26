@@ -282,8 +282,6 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			
 			break;
 		}
-		default:
-			AliError(Form("STU payload size not found! %d word32", iword));
 	}
 	
 //	jetSize += (fFwVersion >> 16);

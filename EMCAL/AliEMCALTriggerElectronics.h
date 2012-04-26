@@ -21,6 +21,7 @@ class AliEMCALTriggerSTU;
 class AliESDVZERO;
 class AliEMCALTriggerTRU;
 class TTree;
+class AliEMCALGeometry;
 
 class AliEMCALTriggerElectronics : public TObject 
 {
@@ -41,7 +42,8 @@ private:
 
 	TClonesArray*        fTRU; // 32 TRU
 	AliEMCALTriggerSTU*  fSTU; //  1 STU
-		
+	AliEMCALGeometry     *fGeometry; // EMCal geometry
+	
   ClassDef(AliEMCALTriggerElectronics,1)
 };
 

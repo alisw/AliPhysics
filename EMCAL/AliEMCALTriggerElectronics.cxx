@@ -42,7 +42,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 namespace
 {
-	const Int_t kNTRU = 30;
+	const Int_t kNTRU = 32;
 }
 
 ClassImp(AliEMCALTriggerElectronics)
@@ -50,19 +50,30 @@ ClassImp(AliEMCALTriggerElectronics)
 //__________________
 AliEMCALTriggerElectronics::AliEMCALTriggerElectronics(const AliEMCALTriggerDCSConfig *dcsConf) : TObject(),
 fTRU(new TClonesArray("AliEMCALTriggerTRU",32)),
-fSTU(0x0)
+fSTU(0x0),
+fGeometry(0)
 {
 	// Ctor
 	
 	TVector2 rSize;
 	
 	rSize.Set( 24.,  4. );
-
+	
+	AliRunLoader *rl = AliRunLoader::Instance();
+	if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
+		AliEMCAL *emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
+		if (emcal) fGeometry = emcal->GetGeometry();
+	}
+	
+	if (!fGeometry) {		
+		fGeometry =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+		AliError("Cannot access geometry, create a new default one!");
+	}
+	
 	// 32 TRUs
-	for (Int_t i=0;i<kNTRU;i++) 
-	{
-		AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(i);
-		new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, i % 2);
+	for (Int_t i = 0; i < kNTRU; i++) {
+		AliEMCALTriggerTRUDCSConfig *truConf = dcsConf->GetTRUDCSConfig(fGeometry->GetOnlineIndexFromTRUIndex(i));
+		if (truConf) new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, i % 2);
 	}
 	
 	rSize.Set( 48., 64. );
@@ -72,11 +83,16 @@ fSTU(0x0)
 	fSTU = new AliEMCALTriggerSTU(stuConf, rSize);
 	
 	TString str = "map";
-	for (Int_t i=0;i<kNTRU;i++) fSTU->Build(str,
-											i,
-											(static_cast<AliEMCALTriggerTRU*>(fTRU->At(i)))->Map(),
-											(static_cast<AliEMCALTriggerTRU*>(fTRU->At(i)))->RegionSize() 
-										    );
+	for (Int_t i = 0; i < kNTRU; i++) {
+		AliEMCALTriggerTRU *iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
+		if (!iTRU) continue;
+
+		fSTU->Build(str,
+					i,
+					iTRU->Map(),
+					iTRU->RegionSize() 
+					);
+	}
 }
 
 //________________
@@ -92,18 +108,6 @@ AliEMCALTriggerElectronics::~AliEMCALTriggerElectronics()
 void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_t V0M[], AliEMCALTriggerData* data)
 {
 	// Digits to trigger
-
-	AliEMCALGeometry* geom = 0x0;
-	
-	AliRunLoader *rl = AliRunLoader::Instance();
-	if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")){
-	  AliEMCAL* emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
-	  if(emcal)geom = emcal->GetGeometry();
-	}
-	
-	if(!geom) geom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
-	
-	if(!geom) AliError("Cannot access geometry!");
 	
 	Int_t pos, px, py, id; 
 	
@@ -122,9 +126,9 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		
 		Int_t iTRU, iADC;
 		
-		Bool_t isOK1 = geom->GetTRUFromAbsFastORIndex(id, iTRU, iADC);
+		Bool_t isOK1 = fGeometry->GetTRUFromAbsFastORIndex(id, iTRU, iADC);
 		
-		if ((isOK1 && iTRU >= kNTRU) || !isOK1) continue;
+		if (!isOK1) continue;
 
 		for (Int_t j = 0; j < digit->GetNSamples(); j++)
 		{
@@ -141,18 +145,19 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			}
 		}
 		
-		if (geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) posMap[px][py] = i;
+		if (fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) posMap[px][py] = i;
 	}
 
 	Int_t iL0 = 0;
 
 	Int_t timeL0[kNTRU] = {0}, timeL0min = 999;
 	
-	for (Int_t i=0; i<kNTRU; i++) 
+	for (Int_t i = 0; i < kNTRU; i++) 
 	{
-		AliDebug(999, Form("===========< TRU %2d >============", i));
+		AliEMCALTriggerTRU *iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
+		if (!iTRU) continue;
 		
-		AliEMCALTriggerTRU* iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
+		AliDebug(999, Form("===========< TRU %2d >============", i));
 		
 		if (iTRU->L0()) // L0 recomputation: *ALWAYS* done from FALTRO
 		{
@@ -170,7 +175,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			data->SetL0Trigger(0, i, 0);
 	}
 
-	AliDebug(999, Form("=== %2d TRU (out of %2d) has issued a L0 / Min L0 time: %d", iL0, kNTRU, timeL0min));
+	AliDebug(999, Form("=== %2d TRU (out of %2d) has issued a L0 / Min L0 time: %d", iL0, fTRU->GetEntriesFast(), timeL0min));
 	
 	AliEMCALTriggerRawDigit* dig = 0x0;
 	
@@ -180,7 +185,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		for (Int_t i = 0; i < kNTRU; i++)
 		{
 			AliEMCALTriggerTRU *iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
-
+			if (!iTRU) continue;
+			
 			Int_t reg[24][4];
 			for (int j = 0; j < 24; j++) for (int k = 0; k < 4; k++) reg[j][k] = 0;
 					
@@ -192,9 +198,9 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 				{
 					if (reg[j][k]
 						&& 
-						geom->GetAbsFastORIndexFromPositionInTRU(i, j, k, id)
+						fGeometry->GetAbsFastORIndexFromPositionInTRU(i, j, k, id)
 						&&
-						geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py))
+						fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, px, py))
 					{
 						pos = posMap[px][py];
 									
@@ -226,7 +232,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 	{
 		for (Int_t i = 0; i < kNTRU; i++)
 		{
-			AliEMCALTriggerTRU* iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
+			AliEMCALTriggerTRU *iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
+			if (!iTRU) continue;
 			
 			AliDebug(999, Form("=== TRU# %2d found %d patches", i, (iTRU->Patches()).GetEntriesFast()));
 			
@@ -236,9 +243,9 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 				p->Position(px, py);
 			
 				// Local 2 Global
-				if (geom->GetAbsFastORIndexFromPositionInTRU(i, px, py, id) 
+				if (fGeometry->GetAbsFastORIndexFromPositionInTRU(i, px, py, id) 
 					&& 
-					geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) p->SetPosition(px, py);
+					fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) p->SetPosition(px, py);
 				
 				if (AliDebugLevel()) p->Print("");
 				
@@ -351,7 +358,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			
 			if (AliDebugLevel()) p->Print("");
 			
-			if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
+			if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
 			{
 				if (posMap[px][py] == -1)
 				{
@@ -387,7 +394,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			
 			if (AliDebugLevel()) p->Print("");
 			
-			if (geom->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
+			if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(px, py, id))
 			{
 				if (posMap[px][py] == -1)
 				{
