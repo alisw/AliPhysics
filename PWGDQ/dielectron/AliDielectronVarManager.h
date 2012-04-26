@@ -436,6 +436,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   
   // apply ETa correction, remove once this is in the tender
   esdTrack=const_cast<AliESDtrack*>(particle);
+  if (!esdTrack) return;
   esdTrack->SetTPCsignal(origdEdx/AliDielectronPID::GetEtaCorr(esdTrack)/AliDielectronPID::GetCorrValdEdx(),esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
   
   Double_t pidProbs[AliPID::kSPECIES];
@@ -1150,7 +1151,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   //  values[AliDielectronVarManager::kNaccTrckltsCorr] = AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts], values[AliDielectronVarManager::kZvPrim]);
 
   // TPC event plane (corrected)
-  if(fgTPCEventPlane) FillVarTPCEventPlane(fgTPCEventPlane, values);
 
   // VZERO event plane quantities from the AliEPSelectionTask
   AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();

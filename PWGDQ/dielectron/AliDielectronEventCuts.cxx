@@ -200,6 +200,7 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   switch(fVtxType){
   case kVtxTracks:
     fkVertexAOD=ev->GetVertex(AliAODVertex::kPrimary);
+    break;
   case kVtxTPC:   //  not stored 
     fkVertexAOD=0x0;
     break;
