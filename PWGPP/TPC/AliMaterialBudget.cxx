@@ -693,6 +693,7 @@ void AliMaterialBudget::FindPairs(AliESDEvent * event) {
    if (!trackIn) continue;
    if (!trackOut) continue;
    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+   if (!friendTrack) continue;
    TObject *calibObject;
    AliTPCseed *seed = 0;
    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
