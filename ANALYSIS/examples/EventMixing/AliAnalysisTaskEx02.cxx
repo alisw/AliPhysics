@@ -32,7 +32,10 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliESDv0.h"
 #include "AliAODTrack.h"
+#include "AliAODv0.h"
 #include "AliAODEvent.h"
 
 #include "AliAnalysisTaskEx02.h"
@@ -48,7 +51,12 @@ AliAnalysisTaskEx02::AliAnalysisTaskEx02() // All data members should be initial
      fHistPt(0),
      fHistEta(0),
      fHistMultiDiff(0),
-     fHistZVertexDiff(0) // The last in the above list should not have a comma after it
+     fHistZVertexDiff(0),
+     fUseLoopInUserExecMix(kFALSE),
+     fUseLoopMixedEvent(kFALSE),
+     fUseLoopV0(kFALSE),
+     fMainInputHandler(0),
+     fMixingInputHandler(0) // The last in the above list should not have a comma after it
 {
    // Dummy constructor ALWAYS needed for I/O.
 }
@@ -60,7 +68,12 @@ AliAnalysisTaskEx02::AliAnalysisTaskEx02(const char *name) // All data members s
      fHistPt(0),
      fHistEta(0),
      fHistMultiDiff(0),
-     fHistZVertexDiff(0) // The last in the above list should not have a comma after it
+     fHistZVertexDiff(0),
+     fUseLoopInUserExecMix(kFALSE),
+     fUseLoopMixedEvent(kFALSE),
+     fUseLoopV0(kFALSE),
+     fMainInputHandler(0),
+     fMixingInputHandler(0) // The last in the above list should not have a comma after it
 {
    // Constructor
    // Define input and output slots here (never in the dummy constructor)
@@ -117,6 +130,13 @@ void AliAnalysisTaskEx02::UserCreateOutputObjects()
    fOutput->Add(fHistMultiDiff);
    fOutput->Add(fHistZVertexDiff);
    // NEW HISTO added to fOutput here
+
+
+   // sets helper pointers for Mixing
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   SetMainInputHandler(mgr);
+   if (fMainInputHandler) SetMixingInputHandler(fMainInputHandler);
+
    PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
@@ -124,68 +144,104 @@ void AliAnalysisTaskEx02::UserCreateOutputObjects()
 void AliAnalysisTaskEx02::UserExec(Option_t *)
 {
    // Main loop
-   // Called for each event
+   // Called for each eventn (Simply standard UserExec() like you would do without mixing)
+   // If you want to process events which are used for mixing,
+   // then you have to check for (multiplicity, Vz, ... ) ranges set in event pool.
+   // This action is up to user
+   //
 
 
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliMultiInputEventHandler *inEvHMainMulti = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-   if (inEvHMainMulti) {
-      AliInputEventHandler *inEvMain = dynamic_cast<AliInputEventHandler *>(inEvHMainMulti->GetFirstInputEventHandler());
-
-      AliESDEvent *esd = dynamic_cast<AliESDEvent *>(inEvMain->GetEvent());
-      if (esd) {
-         Loop(esd);
-      } else {
-         AliAODEvent *aod = dynamic_cast<AliAODEvent *>(inEvMain->GetEvent());
-         if (aod) Loop(aod);
+   AliESDEvent *esd = dynamic_cast<AliESDEvent *>(GetMainEvent());
+   if (esd) {
+      if (!fUseLoopInUserExecMix) {
+         if (fUseLoopV0)
+            LoopV0(esd);
+         else
+            Loop(esd);
+      }
+   } else {
+      AliAODEvent *aod = dynamic_cast<AliAODEvent *>(GetMainEvent());
+      if (aod) {
+         if (!fUseLoopInUserExecMix) {
+            if (fUseLoopV0)
+               LoopV0(aod);
+            else
+               Loop(aod);
+         }
       }
    }
 
    PostData(1, fOutput);
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskEx02::UserExecMix(Option_t *)
 {
+   //
+   // Running mixing function
+   //
 
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-   if (inEvHMain) {
+   if (!fMixingInputHandler) return;
 
-      AliMixInputEventHandler *mixEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
-      if (!mixEH) return;
-      if (mixEH->CurrentBinIndex() < 0) {
-         AliDebug(AliLog::kDebug + 1, "Current event mixEH->CurrentEntry() == -1");
-         return ;
-      }
-      AliDebug(AliLog::kDebug, Form("Mixing %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
-      AliInputEventHandler *ihMainCurrent = inEvHMain->GetFirstInputEventHandler();
-      AliMultiInputEventHandler *inEvHMixedCurrent = mixEH->GetFirstMultiInputHandler();
-      AliInputEventHandler *ihMixedCurrent = inEvHMixedCurrent->GetFirstInputEventHandler();
-      AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(ihMainCurrent->GetEvent());
-      if (esdEvent) {
-         AliESDEvent *esdEventMix = dynamic_cast<AliESDEvent *>(ihMixedCurrent->GetEvent());
+   Int_t bufferSize = fMixingInputHandler->BufferSize();
+   Int_t numberMixed = fMixingInputHandler->NumberMixed();
+   if (numberMixed == 1) {
+      // you may process Main Event here instead of UserExec()
+      // Here you will have events which are in range of bins in event pool
+      // but only in case when other N (bufferSize) events are found for mix
+   }
+
+   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(GetMainEvent());
+   if (esdEvent) {
+
+      for(Int_t iBuffer=0; iBuffer<bufferSize; iBuffer++) {
+         AliESDEvent *esdEventMix = dynamic_cast<AliESDEvent *>(GetMixedEvent(iBuffer));
          AliDebug(AliLog::kDebug, Form("Multi=%d MultiMix=%d", esdEvent->GetNumberOfTracks(), esdEventMix->GetNumberOfTracks()));
 //          AliDebug(AliLog::kDebug, Form("Mask=%lld MaskMix=%lld", esdEvent->GetTriggerMask(), esdEvent->GetTriggerMask()));
          fHistMultiDiff->Fill(TMath::Abs(esdEvent->GetNumberOfTracks() - esdEventMix->GetNumberOfTracks()));
 
-      } else {
-         AliAODEvent *aodEvent = dynamic_cast<AliAODEvent *>(ihMainCurrent->GetEvent());
-         if (aodEvent) {
-            AliAODEvent *aodEventMix = dynamic_cast<AliAODEvent *>(ihMixedCurrent->GetEvent());
+         // For tesing purpose only (no physics)
+         if (fUseLoopInUserExecMix) {
+            if (fUseLoopV0) {
+               if (fUseLoopMixedEvent) LoopV0(esdEventMix);
+               else LoopV0(esdEvent);
+            }
+            else {
+               if (fUseLoopMixedEvent) Loop(esdEventMix);
+               else Loop(esdEvent);
+            }
+         }
+
+      }
+   } else {
+      AliAODEvent *aodEvent = dynamic_cast<AliAODEvent *>(GetMainEvent());
+      if (aodEvent) {
+         for(Int_t iBuffer=0; iBuffer<bufferSize; iBuffer++) {
+            AliAODEvent *aodEventMix = dynamic_cast<AliAODEvent *>(GetMixedEvent(iBuffer));
             AliDebug(AliLog::kDebug, Form("Multi=%d MultiMix=%d", aodEvent->GetNumberOfTracks(), aodEventMix->GetNumberOfTracks()));
 //             AliDebug(AliLog::kDebug, Form("Mask=%lld MaskMix=%lld", aodEvent->GetTriggerMask(), aodEventMix->GetTriggerMask()));
             fHistMultiDiff->Fill(TMath::Abs(aodEvent->GetNumberOfTracks() - aodEventMix->GetNumberOfTracks()));
 
+            // For tesing purpose only (no physics)
+            if (fUseLoopInUserExecMix) {
+               if (fUseLoopV0) {
+                  if (fUseLoopMixedEvent) LoopV0(aodEventMix);
+                  else LoopV0(aodEvent);
+               }
+               else {
+                  if (fUseLoopMixedEvent) Loop(aodEventMix);
+                  else Loop(aodEvent);
+               }
+            }
             AliAODVertex *aodVertex = aodEvent->GetPrimaryVertex();
             AliAODVertex *aodVertexMix = aodEventMix->GetPrimaryVertex();
             if ( aodVertex && aodVertexMix) {
                AliDebug(AliLog::kDebug, Form("Vz=%f VzMix=%f", aodVertex->GetZ(), aodVertexMix->GetZ()));
                fHistZVertexDiff->Fill(TMath::Abs( aodVertex->GetZ()-aodVertexMix->GetZ()));
-            } else {
-               AliWarning("Wrong format: input is not ESD or AOD !!!");
             }
 
          }
+
       }
    }
 
@@ -231,6 +287,7 @@ void AliAnalysisTaskEx02::Terminate(Option_t *)
 
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskEx02::Loop(AliESDEvent *esd)
 {
    // Track loop for reconstructed event
@@ -245,13 +302,46 @@ void AliAnalysisTaskEx02::Loop(AliESDEvent *esd)
       fHistEta->Fill(esdtrack->Eta());
    }
 }
-void AliAnalysisTaskEx02::LoopESDMC()
+
+//________________________________________________________________________
+void AliAnalysisTaskEx02::LoopV0(AliESDEvent *esd)
 {
-   // TODO
+   //
+   // V0 loop for reconstructed event (ESD)
+   //
+
+   Int_t nv0 = esd->GetNumberOfV0s();
+   Int_t lIndexTrackPos;
+   AliESDtrack *myTrackPosTest;
+   for (Int_t i = 0; i < nv0; i++)
+   {
+      AliESDv0 *esdv0 = esd->GetV0(i);
+      if (!esdv0) {
+         AliError(Form("ERROR: Could not retrieve esdv0 %d", i));
+         continue;
+      }
+      lIndexTrackPos = TMath::Abs(esdv0->GetPindex());
+      myTrackPosTest = esd->GetTrack(lIndexTrackPos);
+      fHistPt->Fill(myTrackPosTest->Pt());
+      fHistEta->Fill(myTrackPosTest->Eta());
+   }
+
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskEx02::LoopESDMC()
+{
+   //
+   // TODO
+   //
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEx02::Loop(AliAODEvent *aod)
 {
+   //
+   // Loops over AOD event
+   //
 
    // Track loop for reconstructed event
    Int_t ntracks = aod->GetNumberOfTracks();
@@ -266,7 +356,104 @@ void AliAnalysisTaskEx02::Loop(AliAODEvent *aod)
       fHistEta->Fill(aodTrack->Eta());
    }
 }
+
+
+
+//________________________________________________________________________
+void AliAnalysisTaskEx02::LoopV0(AliAODEvent *aod)
+{
+   //
+   // V0 loop for reconstructed event (AOD)
+   //
+
+   Int_t nv0 = aod->GetNumberOfV0s();
+   AliAODTrack *postrackmix;
+   for (Int_t i = 0; i < nv0; i++)
+   {
+      AliAODv0 *aodv0 = dynamic_cast<AliAODv0 *>(aod->GetV0(i));
+      if (!aodv0) {
+         AliError(Form("ERROR: Could not retrieve aodv0 %d", i));
+         continue;
+      }
+      postrackmix = (AliAODTrack *)aodv0->GetDaughter(0);
+      fHistPt->Fill(postrackmix->Pt());
+      fHistEta->Fill(postrackmix->Eta());
+   }
+
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEx02::LoopAODMC()
 {
+   //
    // TODO
+   //
 }
+
+//________________________________________________________________________
+AliVEvent *AliAnalysisTaskEx02::GetMainEvent()
+{
+   //
+   // Access to MainEvent
+   //
+
+   AliMultiInputEventHandler *inEvHMainMulti = fMainInputHandler;
+   if (inEvHMainMulti) {
+      AliInputEventHandler *inEvMain = dynamic_cast<AliInputEventHandler *>(inEvHMainMulti->GetFirstInputEventHandler());
+      if (inEvMain) return inEvMain->GetEvent();
+   }
+
+   return 0;
+}
+
+//________________________________________________________________________
+AliVEvent *AliAnalysisTaskEx02::GetMixedEvent(Int_t buffId)
+{
+   //
+   // Access to Mixed event with buffer id
+   //
+
+   AliMultiInputEventHandler *inEvHMain = fMainInputHandler;
+   if (inEvHMain) {
+
+      AliMixInputEventHandler *mixIH = fMixingInputHandler;
+      if (!mixIH) return 0;
+      if (mixIH->CurrentBinIndex() < 0) {
+         AliDebug(AliLog::kDebug + 1, "Current event mixEH->CurrentEntry() == -1");
+         return 0;
+      }
+//       AliMultiInputEventHandler *inEvHMixedCurrent = mixEH->GetFirstMultiInputHandler();
+      AliMultiInputEventHandler *inEvHMixedCurrent = dynamic_cast<AliMultiInputEventHandler *>(mixIH->InputEventHandler(buffId));
+      if (!inEvHMixedCurrent) return 0;
+      AliInputEventHandler *ihMixedCurrent = inEvHMixedCurrent->GetFirstInputEventHandler();
+      if (ihMixedCurrent) return ihMixedCurrent->GetEvent();
+   }
+
+   return 0;
+}
+
+//________________________________________________________________________
+AliMultiInputEventHandler *AliAnalysisTaskEx02::SetMainInputHandler(AliAnalysisManager *mgr)
+{
+   //
+   // Sets main input handler
+   //
+
+   if (!fMainInputHandler) fMainInputHandler = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
+
+   return fMainInputHandler;
+}
+
+//________________________________________________________________________
+AliMixInputEventHandler *AliAnalysisTaskEx02::SetMixingInputHandler(AliMultiInputEventHandler *mainIH)
+{
+   //
+   // Sets mixing input handler
+   //
+
+   if (!fMixingInputHandler) fMixingInputHandler = dynamic_cast<AliMixInputEventHandler *>(mainIH->GetFirstMultiInputHandler());
+
+   return fMixingInputHandler;
+}
+
+
