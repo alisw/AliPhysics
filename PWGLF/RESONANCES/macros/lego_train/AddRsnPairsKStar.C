@@ -31,12 +31,20 @@ void AddPairOutputKStar(AliRsnLoopPair *pair)
 {
    Bool_t valid;
    Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
-
+   Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+   
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
-   AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
    axisIM     ->SetBins(900, 0.6, 1.5);
+
+   AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
    axisPt     ->SetBins(120, 0.0, 12.0);
+
+   AliRsnValuePair *axisEta = new AliRsnValuePair("ETA", AliRsnValuePair::kEta);
+   axisEta    ->SetBins(400, -0.5, 0.5);
+
+   AliRsnValueEvent *axisCentrality = 0;
+   if (!isPP) axisCentrality = new AliRsnValueEvent("MULTI",AliRsnValueEvent::kCentralityV0);
 
    // output: 2D histogram of inv. mass vs. pt
    AliRsnListOutput *outPair = 0;
@@ -47,6 +55,8 @@ void AddPairOutputKStar(AliRsnLoopPair *pair)
       outPair = new AliRsnListOutput("pair", AliRsnListOutput::kHistoSparse);
       outPair->AddValue(axisIM);
       outPair->AddValue(axisPt);
+      outPair->AddValue(axisEta);
+      if (axisCentrality) axisCentrality->SetBins(20,0,100);
    }
    // add outputs to loop
    pair->AddOutput(outPair);
@@ -57,11 +67,14 @@ void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,
    Bool_t valid;
    Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
    Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
+   Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+   
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
    /* invariant mass   */ Int_t imID   = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* IM resolution    */ Int_t resID  = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
    /* transv. momentum */ Int_t ptID   = taskRsnMini->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = taskRsnMini->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+   /* eta              */ Int_t etaID = taskRsnMini->CreateValue(AliRsnMiniValue::kEta, kFALSE);
 
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -112,8 +125,9 @@ void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,
       if (isFullOutput) {
          // axis Y: transverse momentum
          out->AddAxis(ptID, 100, 0.0, 10.0);
+         out->AddAxis(etaID, 400, -0.5, 0.5);
          // axis Z: centrality
-         out->AddAxis(centID, 100, 0.0, 100.0);
+         if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
       }
    }
 

@@ -1,5 +1,8 @@
 #ifndef __CINT__
-#include <RESONANCES/AliRsnValuePair.h>
+#include <AliRsnListOutput.h>
+#include <AliRsnValuePair.h>
+#include <AliRsnValueEvent.h>
+#include <AliRsnMiniAnalysisTask.h>
 #endif
 
 void AddRsnPairsPhi(AliAnalysisTaskSE *task,
@@ -35,14 +38,25 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
 {
    Bool_t valid;
    Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
+   Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+
+
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
    AliRsnValuePair *axisEta = new AliRsnValuePair("ETA", AliRsnValuePair::kEta);
+
+   AliRsnValueEvent *axisCentrality = 0;
+   if (!isPP) axisCentrality = new AliRsnValueEvent("MULTI",AliRsnValueEvent::kCentralityV0);
+
    axisIM     ->SetBins(300, 0.9, 1.2);
 //   axisIM     ->SetBins(1000, 0.9, 1.9);
    axisPt     ->SetBins(120, 0.0, 12.0);
-   axisEta    ->SetBins(400, -2.0, 2.0);
+//    axisEta    ->SetBins(400, -2.0, 2.0);
+   axisEta    ->SetBins(400, -0.5, 0.5);
+
+
+   if (axisCentrality) axisCentrality->SetBins(20,0,100);
 
    // output: 2D histogram of inv. mass vs. pt
    AliRsnListOutput *outPair = 0;
@@ -54,6 +68,7 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
       outPair->AddValue(axisIM);
       outPair->AddValue(axisPt);
       outPair->AddValue(axisEta);
+      if (axisCentrality) outPair->AddValue(axisCentrality);
    }
    // add outputs to loop
    pair->AddOutput(outPair);
@@ -67,6 +82,10 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
+
+   if (isPP) taskRsnMini->UseMultiplicity("QUALITY");
+   else taskRsnMini->UseCentrality("V0M");
+   
 
    /* invariant mass   */ Int_t imID   = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* IM resolution    */ Int_t resID  = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMassDiff, kTRUE);
@@ -91,10 +110,11 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    if (isFullOutput) outputType = "SPARSE";
 
    Int_t nIM   = 300; Double_t minIM   = 0.9, maxIM =  1.2;
-   Int_t nEta   = 400; Double_t minEta   = -2.0, maxEta =  2.0;
+//    Int_t nEta   = 400; Double_t minEta   = -2.0, maxEta =  2.0;
+   Int_t nEta   = 400; Double_t minEta   = -0.5, maxEta =  0.5;
 //   Int_t nIM   = 1000; Double_t minIM   = 0.9, maxIM =  1.9;
    Int_t nPt   = 120; Double_t minPt   = 0.0, maxPt = 12.0;
-   Int_t nCent = 100; Double_t minCent = 0.0, maxCent = 100.0;
+   Int_t nCent = 20; Double_t minCent = 0.0, maxCent = 100.0;
    Int_t nRes  = 200; Double_t maxRes  = 0.01;
 
    // retrieve mass from PDG database
