@@ -43,6 +43,7 @@
 #include "TObjArray.h"
 #include "TF1.h"
 #include "TStyle.h"
+#include "TArrayI.h"
 //#include "TMCProcess.h"
 
 // STEER includes
@@ -646,8 +647,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
   Float_t fracOfHeight = 0.35;
   Float_t rightMargin = 0.03;
   Int_t cutColors[14] = {kBlack, kRed, kBlue, kGreen, kCyan, kMagenta, kOrange, kViolet, kSpring, kGray, kSpring, kAzure, kPink, kYellow};
-  Int_t* orderCuts = 0x0;
-  Int_t nSigmaCuts = 0;
+  TArrayI orderCuts;
   Int_t checkHistos[2] = {kSigmaVsPt, kSigmaVsEta};
   Bool_t useCustomSigma = furtherOpt.Contains("CUSTOMSIGMA");
 
@@ -665,11 +665,11 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
           delete histo;
           continue;
         }
-        if ( ! orderCuts ) {
+        if ( orderCuts.GetSize() == 0 ) {
           // Re-order axis
           TAxis* axis = histo->GetYaxis();
-          nSigmaCuts = ( useCustomSigma ) ? fSigmaCuts.GetSize() : axis->GetNbins();
-          orderCuts = new Int_t[nSigmaCuts];
+          Int_t nSigmaCuts = ( useCustomSigma ) ? fSigmaCuts.GetSize() : axis->GetNbins();
+          orderCuts.Set(nSigmaCuts);
           Int_t countBin = 0;
           for ( Int_t isigma=0; isigma<axis->GetNbins(); ++isigma ) {
             TString currLabel = axis->GetBinLabel(isigma+1);
@@ -708,7 +708,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
 
         TH1* refCutHisto = 0x0;
         TString legTitle = "";
-        for ( Int_t isigma=0; isigma<nSigmaCuts; ++isigma ) {
+        for ( Int_t isigma=0; isigma<orderCuts.GetSize(); ++isigma ) {
           currName = histo->GetName();
           currName.Append(Form("_sigma%i", isigma));
           Int_t currBin = orderCuts[isigma];
@@ -797,15 +797,14 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
           projectHisto->Draw(drawOpt.Data());
           leg->AddEntry(projectHisto, fCentralityClasses->GetBinLabel(icent), "lp");
           Double_t keptEvents = projectHisto->GetBinContent(orderCuts[0]);
-          Double_t totalEvents = projectHisto->GetBinContent(orderCuts[nSigmaCuts-1]);
+          Double_t totalEvents = projectHisto->GetBinContent(orderCuts[orderCuts.GetSize()-1]);
           Double_t accepted = ( totalEvents > 0. ) ? keptEvents / totalEvents : 1.;
           Double_t acceptedErr = ( totalEvents > 0. ) ? TMath::Sqrt(accepted*(1.-accepted)/totalEvents) : 1.;
           printf("%12s %11s %6s (pt>%g) rejected evts : %6.2f +- %6.3f %%\n", fSrcKeys->At(isrc)->GetName(), fThetaAbsKeys->At(itheta)->GetName(), fCentralityClasses->GetBinLabel(icent), ptMin[iptmin], (1.-accepted)*100., acceptedErr*100.);
-          //printf("  rejected %g  total %g   (%s vs %s)\n",totalEvents-keptEvents,totalEvents,projectHisto->GetXaxis()->GetBinLabel(orderCuts[0]),projectHisto->GetXaxis()->GetBinLabel(orderCuts[nSigmaCuts-1]));
+          //printf("  rejected %g  total %g   (%s vs %s)\n",totalEvents-keptEvents,totalEvents,projectHisto->GetXaxis()->GetBinLabel(orderCuts[0]),projectHisto->GetXaxis()->GetBinLabel(orderCuts[orderCuts.GetSize()-1]));
         } // loop on centrality
         if ( leg ) leg->Draw("same");
       } // loop on theta abs
     } // loop on sources
   } // loop on pt min
-  delete [] orderCuts;
 }
