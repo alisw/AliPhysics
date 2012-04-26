@@ -21,7 +21,6 @@ TObjArray* findClassesForAlias(THashList &list, const char* aliasName)
 	    Int_t nAliases = arrAliases->GetEntries();
 	    for(Int_t i=0; i<nAliases; i++){
 		TObjString *alias = (TObjString*) arrAliases->At(i);
-		alias->Print(0);
 		if(alias->String()==TString(aliasName)){
 		    TObjString *trClass = new TObjString(n->GetName());
 		    matchingTrClasses->Add(trClass);
