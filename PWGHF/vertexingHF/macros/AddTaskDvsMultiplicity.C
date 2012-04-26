@@ -68,6 +68,11 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   dMultTask->SetDebugLevel(0);
   dMultTask->SetUseBit(kTRUE);
   dMultTask->SetDoImpactParameterHistos(kFALSE);
+
+  if(pdgMeson==421) { 
+    dMultTask->SetMassLimits(1.5648,2.1648);
+    dMultTask->SetMassBins(300);
+  }
   
   if(estimatorFilename.EqualTo("") ) {
     printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
