@@ -794,7 +794,10 @@ void AliEPSelectionTask::SetOADBandPeriod()
       fSparseDist = (THnSparse*) foadb->Get("Default");    
       if (!fSparseDist) AliFatal("Cannot fetch OADB container for EP selection");
       foadb->Close();
-      if(!fHruns) fHruns = (TH1F*)fSparseDist->Projection(0); //projection on run axis;
+      if(!fHruns){ 
+           fHruns = (TH1F*)fSparseDist->Projection(0); //projection on run axis;
+           fHruns->SetName("runsHisto");
+      }
       }	
      } 
 }

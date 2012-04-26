@@ -1,6 +1,12 @@
-AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.)
+AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.,Bool_t posTPCAOD=kFALSE,TString containername = "EPStat")
 {
   // Macro to connect an event plane selection task to an existing analysis manager.
+
+  if(useEtaGap && posTPCAOD){
+    ::Error("AddTaskEventplane", "eta-splitting of events and one side of TPC not possible at same time!");
+    return NULL;
+  }
+  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskEventplane", "No analysis manager to connect to.");
@@ -28,12 +34,16 @@ AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.)
     eventplaneTask->SetSubeventsSplitMethod(AliEPSelectionTask::kEta); 
     eventplaneTask->SetEtaGap(etaGap); 
   }
+  if(posTPCAOD){
+    eventplaneTask->SetPersonalAODtrackCuts(128,0.,0.8,0.15,20.);
+    eventplaneTask->SetSubeventsSplitMethod(AliEPSelectionTask::kRandom);
+  }
 
   
   mgr->AddTask(eventplaneTask);
 
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("EPStat",
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername,
                 TList::Class(), AliAnalysisManager::kOutputContainer,
                 "EventStat_temp.root");
   
