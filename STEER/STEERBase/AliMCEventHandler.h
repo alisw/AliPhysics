@@ -103,9 +103,9 @@ private:
     Bool_t                 fInitOk;             // Initialization ok
     TList                 *fSubsidiaryHandlers; //! List of subsidiary MC handlers (for example for Background)
     Int_t                  fEventsInContainer;  //! Number of events in container class
-    PreReadMode_t          fPreReadMode;        //! Pre reading mode
+    PreReadMode_t          fPreReadMode;        // Pre reading mode
     
-    ClassDef(AliMCEventHandler,1)  //MC Truth EventHandler class
+    ClassDef(AliMCEventHandler,2)  //MC Truth EventHandler class
 };
 #endif 
 
