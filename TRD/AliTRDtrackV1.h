@@ -130,7 +130,7 @@ public:
   void           SetOwner();
   void           SetPID(Short_t is, Double_t inPID){if (is >=0 && is < AliPID::kSPECIES) fPID[is]=inPID;};
   void           SetPIDquality(UChar_t /*inPIDquality*/) const {/*fPIDquality = inPIDquality*/;};
-  inline void    SetStatus(UChar_t stat, Int_t ly=-1);
+  inline void    SetErrStat(UChar_t stat, Int_t ly=-1);
   void           SetStopped(Bool_t stop) {SetBit(kStopped, stop);}
   void           SetTracklet(AliTRDseedV1 *const trklt,  Int_t index);
   void           SetTrackIn();
@@ -228,7 +228,7 @@ inline void AliTRDtrackV1::SetReconstructor(const AliTRDReconstructor *rec)
 }
 
 //____________________________________________________
-inline void AliTRDtrackV1::SetStatus(UChar_t status, Int_t ly)
+inline void AliTRDtrackV1::SetErrStat(UChar_t status, Int_t ly)
 {
   if(ly<kNplane) fStatus|=((status&0xf)<<((ly+1)*4));
   return;
