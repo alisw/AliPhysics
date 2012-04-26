@@ -185,6 +185,7 @@ void AliMixInfo::Draw(Option_t *option)
    AliMixEventPool *evPool = (AliMixEventPool *) GetEventPool("mixEventPool");
    if (evPool) {
       Int_t mixNum = evPool->GetMixNumber();
+      Int_t bufferSize = evPool->GetBufferSize();
 //         hOK = (TH1I *) hMain->Clone();
 //         hBad = (TH1I *) hMain->Clone();
       if (!hMixInfo2D) hMixInfo2D = new TH2I("hMixInfo2D", "hMixInfo2D", hMain->GetXaxis()->GetNbins() + 1, hMain->GetXaxis()->GetXmin() - 1, hMain->GetXaxis()->GetXmax(), 1, 0, 1);
@@ -193,7 +194,7 @@ void AliMixInfo::Draw(Option_t *option)
             hMixInfo2D->SetBinContent(iBin + 1, 1, 1);
          } else if (!hMain->GetBinContent(iBin) && !hMix->GetBinContent(iBin)) {
             hMixInfo2D->SetBinContent(iBin + 1, 1, 2);
-         } else if (hMix->GetBinContent(iBin) == mixNum * hMain->GetBinContent(iBin)) {
+         } else if (hMix->GetBinContent(iBin) == mixNum * bufferSize * hMain->GetBinContent(iBin)) {
             hMixInfo2D->SetBinContent(iBin + 1, 1, 4);
          } else {
             hMixInfo2D->SetBinContent(iBin + 1, 1, 3);

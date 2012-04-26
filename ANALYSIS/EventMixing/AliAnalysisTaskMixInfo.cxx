@@ -116,7 +116,15 @@ void AliAnalysisTaskMixInfo::UserExecMix(Option_t *)
    if (!fInputEHMix) return;
 
    // fills bin index (even when it is -1, so we know out of range combinations)
-   if (fMixInfo) fMixInfo->FillHistogram(AliMixInfo::kMixedEvents, fInputEHMix->CurrentBinIndex());
+   if (fMixInfo) {
+      if (fInputEHMix->CurrentBinIndex()==-1) {
+         fMixInfo->FillHistogram(AliMixInfo::kMixedEvents, fInputEHMix->CurrentBinIndex());
+      } else {
+         for(Int_t iBuff=0; iBuff<fInputEHMix->BufferSize(); iBuff++) {
+            fMixInfo->FillHistogram(AliMixInfo::kMixedEvents, fInputEHMix->CurrentBinIndex());
+         }
+      }
+   }
 
    // just test
    if (fInputEHMix->CurrentEntryMix() < 0) {

@@ -341,12 +341,16 @@ Bool_t AliMixInputEventHandler::MixBuffer()
       } else {
          AliDebug(AliLog::kDebug + 3, Form("Preparing InputEventHandler(%d)", counter));
          mihi->PrepareEntry(te, entryMix, (AliInputEventHandler *)InputEventHandler(counter), fAnalysisType);
-         // runs UserExecMix for all tasks
-         UserExecMixAllTasks(fEntryCounter, idEntryList, fEntryCounter, entryMixReal, counter);
          fNumberMixed++;
       }
       counter++;
    }
+
+   if (fNumberMixed == fBufferSize) {
+      // runs UserExecMix for all tasks
+      UserExecMixAllTasks(fEntryCounter, idEntryList, fEntryCounter, entryMixReal, counter);
+   }
+   
    AliDebug(AliLog::kDebug + 3, Form("fEntryCounter=%lld fMixEventNumber=%d", fEntryCounter, fNumberMixed));
    AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld +++++++++++++++++++", fEntryCounter));
    AliDebug(AliLog::kDebug + 5, Form("->"));
