@@ -181,8 +181,11 @@ AliAnalysisTaskZDCPbPb& AliAnalysisTaskZDCPbPb::operator=(const AliAnalysisTaskZ
 //________________________________________________________________________
 AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana):
   AliAnalysisTaskSE(ana),
-    fAnalysisInput(kESD),
-    fIsMCInput(kFALSE),
+    fAnalysisInput(ana.fAnalysisInput),
+    fIsMCInput(ana.fIsMCInput),
+    fCentrLowLim(ana.fCentrLowLim),
+    fCentrUpLim(ana.fCentrUpLim), 
+    fCentrEstimator(ana.fCentrEstimator),
     fOutput(ana.fOutput),
     fhZNCvsZNA(ana.fhZNCvsZNA),    
     fhZPCvsZPA(ana.fhZPCvsZPA), 
