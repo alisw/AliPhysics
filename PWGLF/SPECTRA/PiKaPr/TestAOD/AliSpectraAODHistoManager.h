@@ -27,27 +27,39 @@ namespace AliSpectraNameSpace
    
    enum AODParticleSpecies_t
    {
-     kProton = 0,
-     kKaon,
-     kPion,
-     kNSpecies = kPion,
+     kSpPion,
+     kSpKaon,
+     kSpProton,
+     kNSpecies,
    }; // Particle species used in plotting
 
    const char * kParticleSpecies[] =
    {
-       "ProtonPlus",
-       "ProtonMinus",
-       "KaonPlus",
-       "KaonMinus",
        "PionPlus",
+       "KaonPlus",
+       "ProtonPlus",
        "PionMinus",
+       "KaonMinus",
+       "ProtonMinus",
    };
+
    enum AODHistoType_t
    {
-       kHistSpectraRec = 0,
-       kHistSpectraGen,
-       kHNHistoTypes = kHistSpectraGen,
+     kHistPtGenTruePrimary,
+     kHistPtRecSigma,
+     kHistPtRecTruePrimary,
+     kHistPtRecSigmaPrimary,
+     kHistPtRecSigmaSecondaryMaterial,
+     kHistPtRecSigmaSecondaryWeakDecay,
+     kNHistoTypes
    }; // Types of histos
+
+   enum AODCharge_t
+   {
+       kChPos = 0,
+       kChNeg,
+       kNCharge
+   };
 
 }
 
@@ -69,6 +81,9 @@ public:
    TH1F*   GetPtHistogram1D(const char * name,Double_t minDCA,Double_t maxDCA);
    TH1F*   GetDCAHistogram1D(const char * name,Double_t minPt,Double_t maxPt);
    TH2*     GetHistogram(UInt_t id)      {      return (TH2*) fOutputList->At(id);   }
+  //   TH1*     GetHistogram(AODHistoType_t histoType, AODParticleSpecies_t particleType, UInt_t charge);
+   TH1*     GetHistogram1D(UInt_t histoType, UInt_t particleType, UInt_t charge);
+   TH2*     GetHistogram2D(UInt_t histoType, UInt_t particleType, UInt_t charge);
    TH2*     GetPtHistogram(UInt_t id)    {      return (TH2*) fOutputList->At(id);   }
    TH2*     GetPtHistogram(const char * name)   {      return (TH2*) fOutputList->FindObject(name);   }
    TH2*     GetPtHistogramByName(UInt_t id)     {      return (TH2*) fOutputList->FindObject(kHistName[id]); }  // Use this if you want to read a file saved with a different histo list   

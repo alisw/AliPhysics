@@ -70,9 +70,9 @@ Bool_t AliAnalysisTaskSpectraAOD::CheckYCut(AODParticleSpecies_t species, AliAOD
   // check if the rapidity is within the set range
   // note: masses are hardcoded for now. we could look them up in the pdg database, but that would mean accecing it 100k+ times per run ...
   Double_t y;
-  if (species == kProton) { y = track->Y(9.38271999999999995e-01); }
-  if ( species == kKaon ) { y = track->Y(4.93676999999999977e-01); }
-  if ( species == kPion)  { y = track->Y(1.39570000000000000e-01); }
+  if (species == kSpProton) { y = track->Y(9.38271999999999995e-01); }
+  if ( species == kSpKaon ) { y = track->Y(4.93676999999999977e-01); }
+  if ( species == kSpPion)  { y = track->Y(1.39570000000000000e-01); }
   if (TMath::Abs(y) > fYCut || y < -998.) return kFALSE;
   return kTRUE;
 }
@@ -242,17 +242,17 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	
 	  
 	  if( ( nsigmaTPCTOFkKaon < nsigmaTPCTOFkPion ) && ( nsigmaTPCTOFkKaon < nsigmaTPCTOFkProton )) { 
-	    if ((nsigmaTPCTOFkKaon > fNSigmaPID) || (!CheckYCut(kKaon, track) ) ) continue;
+	    if ((nsigmaTPCTOFkKaon > fNSigmaPID) || (!CheckYCut(kSpKaon, track) ) ) continue;
 	    if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaKaonPlus)->Fill(track->Pt(),d[0]); } 
 	    else { fHistMan->GetPtHistogram(kHistPtRecSigmaKaonMinus)->Fill(track->Pt(),d[0]); } 
 	  }
 	  if( ( nsigmaTPCTOFkProton < nsigmaTPCTOFkKaon ) && ( nsigmaTPCTOFkProton < nsigmaTPCTOFkPion ) ) {
-	    if ( nsigmaTPCTOFkProton > fNSigmaPID || (!CheckYCut(kProton, track) ) )  continue;
+	    if ( nsigmaTPCTOFkProton > fNSigmaPID || (!CheckYCut(kSpProton, track) ) )  continue;
 	    if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaProtonPlus)->Fill(track->Pt(),d[0]); }
 	    else { fHistMan->GetPtHistogram(kHistPtRecSigmaProtonMinus)->Fill(track->Pt(),d[0]); }
 	  }
 	  if( (nsigmaTPCTOFkPion < nsigmaTPCTOFkProton ) && ( nsigmaTPCTOFkPion < nsigmaTPCTOFkKaon ) ) {
-	    if (nsigmaTPCTOFkPion > fNSigmaPID || (!CheckYCut(kPion, track) ) ) continue;
+	    if (nsigmaTPCTOFkPion > fNSigmaPID || (!CheckYCut(kSpPion, track) ) ) continue;
 	    if ( track->Charge() > 0 )  { fHistMan->GetPtHistogram(kHistPtRecSigmaPionPlus)->Fill(track->Pt(),d[0]); }
 	    else  { fHistMan->GetPtHistogram(kHistPtRecSigmaPionMinus)->Fill(track->Pt(),d[0]); }
 	  }
@@ -299,17 +299,17 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	      // primaries, sigma pid 
 	      if (partMC->IsPhysicalPrimary()) { 
 		if( ( nsigmaTPCTOFkKaon < nsigmaTPCTOFkPion ) && ( nsigmaTPCTOFkKaon < nsigmaTPCTOFkProton ) ) {
-		  if ( (nsigmaTPCTOFkKaon > fNSigmaPID ) || (!CheckYCut(kKaon, track) ) ) continue; 
+		  if ( (nsigmaTPCTOFkKaon > fNSigmaPID ) || (!CheckYCut(kSpKaon, track) ) ) continue; 
 		  if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaPrimaryKaonPlus)->Fill(track->Pt(),d[0]); } 
 		  else { fHistMan->GetPtHistogram(kHistPtRecSigmaPrimaryKaonMinus)->Fill(track->Pt(),d[0]); } 
 		}
 		if( ( nsigmaTPCTOFkProton < nsigmaTPCTOFkKaon ) && ( nsigmaTPCTOFkProton < nsigmaTPCTOFkPion ) ) {
-		  if ( (nsigmaTPCTOFkProton > fNSigmaPID ) || (!CheckYCut(kProton, track) ) ) continue;
+		  if ( (nsigmaTPCTOFkProton > fNSigmaPID ) || (!CheckYCut(kSpProton, track) ) ) continue;
 		  if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaPrimaryProtonPlus)->Fill(track->Pt(),d[0]); }
 		  else { fHistMan->GetPtHistogram(kHistPtRecSigmaPrimaryProtonMinus)->Fill(track->Pt(),d[0]); }
 		}
 		if( (nsigmaTPCTOFkPion < nsigmaTPCTOFkProton ) && ( nsigmaTPCTOFkPion < nsigmaTPCTOFkKaon ) ) {
-		  if ( ( nsigmaTPCTOFkPion > fNSigmaPID )  || (!CheckYCut(kPion, track) ) ) continue;
+		  if ( ( nsigmaTPCTOFkPion > fNSigmaPID )  || (!CheckYCut(kSpPion, track) ) ) continue;
 		  if ( track->Charge() > 0 )  { fHistMan->GetPtHistogram(kHistPtRecSigmaPrimaryPionPlus)->Fill(track->Pt(),d[0]); }
 		  else  { fHistMan->GetPtHistogram(kHistPtRecSigmaPrimaryPionMinus)->Fill(track->Pt(),d[0]); }
 		}
@@ -335,34 +335,34 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 		//codemoth==3222 || codemoth==3312 || codemoth==3322 || codemoth==3334){//K0_S, K0_L, K^+-,lambda, sigma0,sigma+,xi-,xi0, omega
 		if(mfl==3){//strangeness
 		  if( ( nsigmaTPCkKaon < nsigmaTPCkPion ) && ( nsigmaTPCkKaon < nsigmaTPCkProton ) ) { 
-		    if ( (nsigmaTPCkKaon > fNSigmaPID )  || (!CheckYCut(kKaon, track) ) ) continue;
+		    if ( (nsigmaTPCkKaon > fNSigmaPID )  || (!CheckYCut(kSpKaon, track) ) ) continue;
 		    if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryWeakDecayKaonPlus)->Fill(track->Pt(),d[0]); } 
 		    else { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryWeakDecayKaonMinus)->Fill(track->Pt(),d[0]); } 
 		  }
 		  if( ( nsigmaTPCkProton < nsigmaTPCkKaon ) && ( nsigmaTPCkProton < nsigmaTPCkPion ) ) {
-		    if ( (nsigmaTPCkProton > fNSigmaPID )  || (!CheckYCut(kProton, track) ) ) continue;
+		    if ( (nsigmaTPCkProton > fNSigmaPID )  || (!CheckYCut(kSpProton, track) ) ) continue;
 		    if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryWeakDecayProtonPlus)->Fill(track->Pt(),d[0]); }
 		    else { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryWeakDecayProtonMinus)->Fill(track->Pt(),d[0]); }
 		  }
 		  if( (nsigmaTPCkPion < nsigmaTPCkProton ) && ( nsigmaTPCkPion < nsigmaTPCkKaon ) ) {
-		    if ( ( nsigmaTPCkPion > fNSigmaPID )  || (!CheckYCut(kPion, track) ) ) continue;
+		    if ( ( nsigmaTPCkPion > fNSigmaPID )  || (!CheckYCut(kSpPion, track) ) ) continue;
 		    if ( track->Charge() > 0 )  { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryWeakDecayPionPlus)->Fill(track->Pt(),d[0]); }
 		    else  { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryWeakDecayPionMinus)->Fill(track->Pt(),d[0]); }
 		  }
 		}//end if strangeness
 		else{//material
 		  if( ( nsigmaTPCkKaon < nsigmaTPCkPion ) && ( nsigmaTPCkKaon < nsigmaTPCkProton ) ) { 
-		    if ( (nsigmaTPCkKaon > fNSigmaPID )  || (!CheckYCut(kKaon, track) ) ) continue;
+		    if ( (nsigmaTPCkKaon > fNSigmaPID )  || (!CheckYCut(kSpKaon, track) ) ) continue;
 		    if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryMaterialKaonPlus)->Fill(track->Pt(),d[0]); } 
 		    else { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryMaterialKaonMinus)->Fill(track->Pt(),d[0]); } 
 		  }
 		  if( ( nsigmaTPCkProton < nsigmaTPCkKaon ) && ( nsigmaTPCkProton < nsigmaTPCkPion ) ) {
-		    if ( (nsigmaTPCkProton > fNSigmaPID )  || (!CheckYCut(kProton, track) ) ) continue;
+		    if ( (nsigmaTPCkProton > fNSigmaPID )  || (!CheckYCut(kSpProton, track) ) ) continue;
 		    if ( track->Charge() > 0 ) { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryMaterialProtonPlus)->Fill(track->Pt(),d[0]); }
 		    else { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryMaterialProtonMinus)->Fill(track->Pt(),d[0]); }
 		  }
 		  if( (nsigmaTPCkPion < nsigmaTPCkProton ) && ( nsigmaTPCkPion < nsigmaTPCkKaon ) ) {
-		    if ( ( nsigmaTPCkPion > fNSigmaPID )  || (!CheckYCut(kPion, track) ) ) continue;
+		    if ( ( nsigmaTPCkPion > fNSigmaPID )  || (!CheckYCut(kSpPion, track) ) ) continue;
 		    if ( track->Charge() > 0 )  { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryMaterialPionPlus)->Fill(track->Pt(),d[0]); }
 		    else  { fHistMan->GetPtHistogram(kHistPtRecSigmaSecondaryMaterialPionMinus)->Fill(track->Pt(),d[0]); }
 		  }
