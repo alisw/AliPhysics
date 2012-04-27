@@ -245,3 +245,46 @@ Long64_t AliSpectraAODHistoManager::Merge(TCollection* list)
   return count+1;
 }
 
+
+TH1* AliSpectraAODHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particleType, UInt_t charge) {
+  // GetHistogram using particle ID and histogram type
+  Int_t baseId = -1;
+
+  switch(histoType) {
+  case kHistPtGenTruePrimary:
+    baseId = kHistPtGenTruePrimaryPionPlus;
+    break;
+  case kHistPtRecSigma:
+    baseId = kHistPtRecSigmaPionPlus;
+    break;
+  case kHistPtRecTruePrimary:
+    baseId = kHistPtRecTruePrimaryPionPlus;
+    break;
+  case kHistPtRecSigmaPrimary:
+    baseId = kHistPtRecSigmaPrimaryPionPlus;
+    break;
+  case kHistPtRecSigmaSecondaryMaterial:
+    baseId = kHistPtRecSigmaSecondaryMaterialPionPlus;
+    break;
+  case kHistPtRecSigmaSecondaryWeakDecay:
+    baseId = kHistPtRecSigmaSecondaryWeakDecayPionPlus;
+    break;
+  default:
+    baseId = -1;
+  }
+  
+  if (baseId < 0)
+    AliFatal("Wrong histogram type");
+
+  baseId = baseId + particleType + 3*(charge);
+  //  cout << "ID " << baseId << endl;
+
+  return GetHistogram(baseId);
+}
+
+TH2* AliSpectraAODHistoManager::GetHistogram2D(UInt_t histoType, UInt_t particleType, UInt_t charge){
+  // returns histo based on ids, casting it to TH2*
+  return (TH2*) GetHistogram1D(histoType,particleType,charge);
+
+
+}
