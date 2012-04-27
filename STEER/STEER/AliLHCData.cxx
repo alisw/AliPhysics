@@ -1002,8 +1002,14 @@ Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &no
     AliLHCDipValF* rIntF = GetIntensityPerBunch(beamID,irec);
     // for BWD compatibility of some periods
     if (rIntF->IsA() == AliLHCDipValD::Class()) {rIntD=(AliLHCDipValD*)rIntF; rIntF=0;}
+    if (!rIntF && !rIntD) {
+      AliError(Form("Failed to get GetIntensityPerBunch(%d,%d)",beamID,irec));
+      continue;
+    }
     for (int ib=0;ib<nb;ib++) {
-      double val = rIntF ? rIntF->GetValue(ib) : rIntD->GetValue(ib);
+      double val = 0;
+      if (rIntF) val = rIntF->GetValue(ib);
+      else if (rIntD) val = rIntD->GetValue(ib);
       if (val<0) continue;
       int bID = conf->GetValue(ib);
       // check if this is a triggered bunch
