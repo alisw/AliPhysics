@@ -44,6 +44,7 @@ set ( SRCS
     AliPWG4HighPtSpectra.cxx 
     AliPWG4HighPtTrackQA.cxx 
     UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx 
+    UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx			      
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

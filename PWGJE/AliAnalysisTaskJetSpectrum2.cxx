@@ -499,7 +499,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     const Double_t binArrayLeadingTrackPt[nBinsLeadingTrackPt+1] = {xmin1[7],1.,2.,3.,4.,5.,6.,8.,10.,12.,xmax1[7]}; //store pT of leading track in jet
 
-    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger",nBinsSparse1,nBins1,xmin1,xmax1);
+    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger:leading track p_{T}",nBinsSparse1,nBins1,xmin1,xmax1);
     fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
     fHistList->Add(fhnJetPt[ij]);
     
