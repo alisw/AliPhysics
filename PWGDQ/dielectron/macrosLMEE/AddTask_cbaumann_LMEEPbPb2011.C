@@ -7,7 +7,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(){
   }
 
   //set config file name
-  TString configFile("ConfigLMEEPbPb2011.C");
+  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/ConfigLMEEPbPb2011.C");
 
   //AOD Usage not yet testes/avialable-------------------------------------
 
@@ -28,7 +28,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(){
 
 //  create task and add it to the manager
 
-	gROOT->LoadMacro("LMEECutLib.C");
+	gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/LMEECutLib.C");
 	gROOT->LoadMacro(configFile.Data());
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
