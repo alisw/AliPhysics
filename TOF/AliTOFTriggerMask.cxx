@@ -97,7 +97,16 @@ AliTOFTriggerMask::SetTriggerMaskArray(UInt_t *array)
 Int_t AliTOFTriggerMask::GetNumberMaxiPadOn() {
   Int_t n=0;
   for(Int_t j=0;j<72;j++) 
-    for(Int_t i=23;i>0;i--) 
+    for(Int_t i=22;i>=0;i--) 
       n += (fTriggerMask[j]%Int_t(TMath::Power(2.,i+1.)))/Int_t(TMath::Power(2.,i+0.));
   return n;
+};
+//_________________________________________________________
+
+TH2F *AliTOFTriggerMask::GetHistoMask() {
+  TH2F *h = new TH2F("hTOFTriggerMask","TOF trigger mask;crate;MaxiPad",72,0,72,23,0,23);
+  for(Int_t j=0;j<72;j++) 
+    for(Int_t i=22;i>=0;i--) 
+      h->SetBinContent(j+1,i+1,(fTriggerMask[j]%Int_t(TMath::Power(2.,i+1.)))/Int_t(TMath::Power(2.,i+0.)));
+  return h;
 };

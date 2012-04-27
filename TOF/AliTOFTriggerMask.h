@@ -18,6 +18,7 @@
 
 #include "TObject.h"
 #include "TMath.h"
+#include "TH2F.h"
 
 class AliTOFTriggerMask :
 public TObject
@@ -35,7 +36,8 @@ public TObject
 
   void SetTriggerMaskArray(UInt_t *array); // set trigger mask array
 
-  Int_t GetNumberMaxiPadOn();
+  Int_t GetNumberMaxiPadOn(); // return number of active MP
+  TH2F *GetHistoMask(); // return active MP map
 
  private:
 
