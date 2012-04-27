@@ -397,8 +397,8 @@ void AliAnalysisEt::CreateHistograms()
       Int_t binsHist[stsize]   = {  1001,    7, 200000, 10000, 10000, 100,   11};
       Double_t minHist[stsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5, -0.5};
       Double_t maxHist[stsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 10.5};
-      fSparseTracks = new Double_t[stsize];
       fSparseHistTracks = new THnSparseF(histname.Data(), "pid:charge:mass:et:pt:rap:cent", stsize, binsHist, minHist, maxHist);
+      fSparseTracks = new Double_t[stsize];
     
       fSparseHistTracks->GetAxis(0)->SetTitle("pid");
       fSparseHistTracks->GetAxis(1)->SetTitle("charge");
@@ -660,7 +660,8 @@ void AliAnalysisEt::FillHistograms()
       }
     }
     
-    fSparseHistEt->Fill(fSparseEt);
+    
+    if(fMakeSparse){fSparseHistEt->Fill(fSparseEt);}
 }
 
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)

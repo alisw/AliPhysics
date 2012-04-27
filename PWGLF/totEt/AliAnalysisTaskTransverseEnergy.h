@@ -31,17 +31,11 @@ public:
     AliESDtrackCuts* GetTPCOnlyTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsTPCOnly");}
     AliESDtrackCuts* GetITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsITS");}
 
-    Int_t LoadPhysicsSelection(TString name);
     
     void SetMcData(Bool_t isMc = true) { fIsMc = isMc; }
 
 protected:
 
-    /** Check if the physics selection is still valid, if not load new */
-    Int_t CheckPhysicsSelection(Int_t runNumber); // check if the current physics selection is valid, if not load new
-    
-    /** Check if the event is a physics event */
-    Bool_t IsPhysicsSelected() const;
     
     /** Get the centrality object */
     AliCentrality* GetCentralityObject();
@@ -73,7 +67,6 @@ private:
 
     Int_t fCurrentRunNum; // The current run number
     
-    AliAnalysisEtSelectionHandler* fSelectionHandler; //! Taking care of loading the correct selections
     AliAnalysisTaskTransverseEnergy();
   //Declare it private to avoid compilation warning
     AliAnalysisTaskTransverseEnergy & operator = (const AliAnalysisTaskTransverseEnergy &);//assignment

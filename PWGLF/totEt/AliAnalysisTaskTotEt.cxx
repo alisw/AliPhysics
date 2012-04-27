@@ -196,24 +196,21 @@ void AliAnalysisTaskTotEt::UserExec(Option_t *)
 	
   //if (res == 0 && cent)
   //{
-  if (IsPhysicsSelected())
-    {
-      fRecAnalysis->SetCentralityObject(cent);
-      fRecAnalysis->AnalyseEvent(fESDEvent);
+  fRecAnalysis->SetCentralityObject(cent);
+  fRecAnalysis->AnalyseEvent(fESDEvent);
 		
-      AliMCEvent* mcEvent = MCEvent();
-      if (mcEvent)
-	{
-	  fMCAnalysis->SetCentralityObject(cent);
-	  fMCAnalysis->AnalyseEvent(mcEvent, fESDEvent);
-	  //fMCAnalysis->AnalyseEvent(mcEvent);
-	}
-      if(fMCAnalysis)
-	{
-	  fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEtAcc(), fMCAnalysis->GetTotNeutralEtAcc());
-	  if(fMCAnalysis->GetTotNeutralEtAcc()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEtAcc(), cent->GetCentralityClass10("V0M"));
-	  if(fMCAnalysis->GetTotNeutralEtAcc()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());
-	}
+  AliMCEvent* mcEvent = MCEvent();
+  if (mcEvent)
+    {
+      fMCAnalysis->SetCentralityObject(cent);
+      fMCAnalysis->AnalyseEvent(mcEvent, fESDEvent);
+      //fMCAnalysis->AnalyseEvent(mcEvent);
+    }
+  if(fMCAnalysis)
+    {
+      fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEtAcc(), fMCAnalysis->GetTotNeutralEtAcc());
+      if(fMCAnalysis->GetTotNeutralEtAcc()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEtAcc(), cent->GetCentralityClass10("V0M"));
+      if(fMCAnalysis->GetTotNeutralEtAcc()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());
     }
   //}
   // Post output data.
