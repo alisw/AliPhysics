@@ -46,7 +46,7 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
     if(data){//185 jobs
       cout<<"Running over data"<<endl;
       plugin->SetGridDataDir("/alice/data/2010/LHC10h");//PbPb data
-      plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
+      plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
       plugin->SetRunPrefix("000");   // real data
     }
     else{
@@ -113,13 +113,13 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
     if(dataset==20111){//pp 2.76 TeV 
       if(data){//257 jobs
 	cout<<"Running over data"<<endl;
-	plugin->SetGridDataDir("/alice/data/2011/LHC11a");//PbPb data
-	plugin->SetDataPattern("*ESDs/pass2_with_SDD/*ESDs.root");
+	plugin->SetGridDataDir("/alice/data/2011/LHC11a");//
+	plugin->SetDataPattern("*ESDs/pass3_with_SDD/*ESDs.root");
 	plugin->SetRunPrefix("000");   // real data
       }
       else{//sim - 332 jobs
 	cout<<"Running over MC"<<endl;
-	plugin->SetGridDataDir("/alice/sim/LHC11b10a");//PbPb simulation
+	plugin->SetGridDataDir("/alice/sim/LHC11b10a");//
 	plugin->SetDataPattern("*ESDs.root");
       }
       plugin->AddRunNumber(146860);
@@ -219,7 +219,7 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
   //TString sourcefiles = "AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx";
   //plugin->SetAnalysisSource(sourcefiles.Data());
   if(!runCompiledVersion){
-    plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx");
+    plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskHadEt.cxx");
   }
    
   //cout<<"Setting source files "<<sourcefiles<<endl;
@@ -229,10 +229,10 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
   //TString additionallibs = "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root";
   //plugin->SetAdditionalLibs(additionallibs.Data());
   if(!runCompiledVersion){
-    plugin->SetAdditionalLibs( "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so");
+    plugin->SetAdditionalLibs( "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h AliAnalysisTaskTransverseEnergy.h ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so");
   }
   else{
-    plugin->SetAdditionalLibs( "physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so libPWGLFtotEt.so");
+    plugin->SetAdditionalLibs( "ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so libPWGLFtotEt.so");
   }
   // No need for output file names. Procedure is automatic. <-- not true
   //plugin->SetDefaultOutputs(kFALSE);

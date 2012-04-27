@@ -168,7 +168,7 @@ if (!fESDEvent) {
  }
 //cout<<"AliAnalysisTaskHadEt 165"<<endl;
 
-Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the physics selection is valid for this run
+//Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the physics selection is valid for this run
 
 //AliCentrality *cent = GetCentralityObject();
 

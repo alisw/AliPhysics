@@ -151,15 +151,16 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         }
 
         Double_t et = track->E() * TMath::Sin(track->Theta()) + massPart;
-
-        fSparseTracks[0] = maxpid;
-        fSparseTracks[1] = track->Charge();
-        fSparseTracks[2] = track->M();
-        fSparseTracks[3] = et;
-        fSparseTracks[4] = track->Pt();
-        fSparseTracks[5] = track->Eta();
-        fSparseTracks[6] = cent;
-        fSparseHistTracks->Fill(fSparseTracks);
+	if(fMakeSparse){
+	  fSparseTracks[0] = maxpid;
+	  fSparseTracks[1] = track->Charge();
+	  fSparseTracks[2] = track->M();
+	  fSparseTracks[3] = et;
+	  fSparseTracks[4] = track->Pt();
+	  fSparseTracks[5] = track->Eta();
+	  fSparseTracks[6] = cent;
+	  fSparseHistTracks->Fill(fSparseTracks);
+	}
         //printf("Rec track: iTrack %03d eta %4.3f phi %4.3f nITSCl %d nTPCCl %d\n", iTrack, track->Eta(), track->Phi(), nItsClusters, nTPCClusters); // tmp/debug printout
 
         if (TMath::Abs(track->Eta()) < fCuts->GetCommonEtaCut() && CheckGoodVertex(track) && nItsClusters > fCuts->GetReconstructedNItsClustersCut() && nTPCClusters > fCuts->GetReconstructedNTpcClustersCut() )
@@ -257,6 +258,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             distance = CalcTrackClusterDistance(pos, &trackMatchedIndex, event);
         }
 
+	if(fMakeSparse){
         fSparseClusters[0] = 0;
         fSparseClusters[1] = 0;
         fSparseClusters[2] = 0;
@@ -265,7 +267,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         fSparseClusters[8] = 0;
         fSparseClusters[9] = cent;
         fSparseClusters[10] = 0;
-
+	}
 
         if (cluster->GetNTracksMatched() > 0 && trackMatchedIndex > -1)
         {
@@ -296,15 +298,18 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                     massPart = -protonMass*tmptrack->Charge();
                 }
             }
+	if(fMakeSparse){
             fSparseClusters[0] = maxpid;
             fSparseClusters[1] = tmptrack->Charge();
             fSparseClusters[2] = tmptrack->M();
             fSparseClusters[6] = tmptrack->E() * TMath::Sin(tmptrack->Theta()) + massPart;;
             fSparseClusters[7] = tmptrack->Pt();
             fSparseClusters[8] = tmptrack->Eta();
+	}
         }
 
-        fSparseClusters[10] = distance;
+        
+	if(fMakeSparse){fSparseClusters[10] = distance;}
 
         fHistTMDeltaR->Fill(distance);
         fHistTMDxDz->Fill(cluster->GetTrackDx(), cluster->GetTrackDz());
@@ -400,8 +405,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         } // distance
         else
         {
-            fSparseClusters[0] = AliPID::kPhoton;
-            fSparseClusters[1] = 0;
+	if(fMakeSparse){
+	  fSparseClusters[0] = AliPID::kPhoton;
+	  fSparseClusters[1] = 0;
+	}
 
             if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
             if (cluster->E() < fClusterEnergyCut) continue;
@@ -424,11 +431,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         float dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
         float theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
         float eta = TMath::Log(TMath::Abs( TMath::Tan( 0.5 * theta ) ) );
-        fSparseClusters[3] = cluster->E() * TMath::Sin(theta);
-        fSparseClusters[4] = cluster->E();
-        fSparseClusters[5] = eta;
-
-        fSparseHistClusters->Fill(fSparseClusters);
+	if(fMakeSparse){
+	  fSparseClusters[3] = cluster->E() * TMath::Sin(theta);
+	  fSparseClusters[4] = cluster->E();
+	  fSparseClusters[5] = eta;
+	  
+	  fSparseHistClusters->Fill(fSparseClusters);
+	}
 
         fMultiplicity++;
     }
@@ -439,13 +448,15 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fTotNeutralEtAcc = fTotNeutralEt/fGeomCorrection;
     fTotEt = fTotChargedEt + fTotNeutralEt;
     fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;
-    fSparseEt[0] = fTotEt;
-    fSparseEt[1] = fTotNeutralEt;
-    fSparseEt[2] = fTotChargedEtAcc;
-    fSparseEt[3] = fMultiplicity;
-    fSparseEt[4] = fNeutralMultiplicity;
-    fSparseEt[5] = fChargedMultiplicity;
-    fSparseEt[6] = cent;
+	if(fMakeSparse){
+	  fSparseEt[0] = fTotEt;
+	  fSparseEt[1] = fTotNeutralEt;
+	  fSparseEt[2] = fTotChargedEtAcc;
+	  fSparseEt[3] = fMultiplicity;
+	  fSparseEt[4] = fNeutralMultiplicity;
+	  fSparseEt[5] = fChargedMultiplicity;
+	  fSparseEt[6] = cent;
+	}
     // Fill the histograms...
     FillHistograms();
 

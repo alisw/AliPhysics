@@ -15,8 +15,6 @@
 #pragma link C++ class AliAnalysisEtReconstructedPhos+;
 #pragma link C++ class AliAnalysisTaskTotEt+;
 #pragma link C++ class AliAnalysisTaskTransverseEnergy+;
-#pragma link C++ class AliAnalysisEtSelectionHandler+;
-#pragma link C++ class AliAnalysisEtSelectionContainer+;
 
 
 #pragma link C++ class AliAnalysisHadEt+;
