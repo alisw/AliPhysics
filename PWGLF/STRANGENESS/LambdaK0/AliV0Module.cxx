@@ -371,7 +371,7 @@ Double_t AliV0Module::MyGeant3FlukaCorrectionForAntiProtons(const Double_t *x, c
         return 1 - par[0]*TMath::Exp(par[1]*x[0]) + par[2] + par[3]*1/TMath::Power(x[0], 0.2)*TMath::Log(x[0]);       
 }
 
-Double_t AliV0Module::myLevyPtXi(const Double_t *pt, const Double_t *par)
+Double_t AliV0Module::MyLevyPtXi(const Double_t *pt, const Double_t *par)
 {
   //Levy Fit Function
   Double_t lMass  = 1.32171; //Xi Mass
@@ -1606,7 +1606,7 @@ void AliV0Module::DoAnalysis(){
 
     Double_t lProducedXi[100]; 
     
-	  TF1 *lLevyFitXiFeedDown = new TF1("LevyFitXiFeedDown",this ,&AliV0Module::myLevyPtXi, 0.0,15,3, "AliV0Module","myLevyPXi");
+	  TF1 *lLevyFitXiFeedDown = new TF1("LevyFitXiFeedDown",this ,&AliV0Module::MyLevyPtXi, 0.0,15,3, "AliV0Module","MyLevyPtXi");
     
     //Set Parameters Adequately, as in paper
     //FIXME: These are the 7TeV Xi- parameters!!! 
