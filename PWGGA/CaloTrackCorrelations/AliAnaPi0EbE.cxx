@@ -1036,26 +1036,29 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhAnglePairMCPi0->SetXTitle("E_{pair} (GeV)");
       outputContainer->Add(fhAnglePairMCPi0) ; 
 
-      fhAnglePairMCEta  = new TH2F
-      ("AnglePairMCEta",
-       "Angle between decay #gamma pair vs E_{pair}, origin #eta",nptbins,ptmin,ptmax,250,0,0.5); 
-      fhAnglePairMCEta->SetYTitle("#alpha (rad)");
-      fhAnglePairMCEta->SetXTitle("E_{pair} (GeV)");
-      outputContainer->Add(fhAnglePairMCEta) ; 
-
-      fhMassPairMCPi0  = new TH2F
-      ("MassPairMCPi0",
-       "Mass for decay #gamma pair vs E_{pair}, origin #pi^{0}",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-      fhMassPairMCPi0->SetYTitle("Mass (MeV/c^{2})");
-      fhMassPairMCPi0->SetXTitle("E_{pair} (GeV)");
-      outputContainer->Add(fhMassPairMCPi0) ; 
-
-      fhMassPairMCEta  = new TH2F
-      ("MassPairMCEta",
-       "Mass for decay #gamma pair vs E_{pair}, origin #eta",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
-      fhMassPairMCEta->SetYTitle("Mass (MeV/c^{2})");
-      fhMassPairMCEta->SetXTitle("E_{pair} (GeV)");
-      outputContainer->Add(fhMassPairMCEta) ; 
+      if (fAnaType!= kSSCalo)
+      {
+        fhAnglePairMCEta  = new TH2F
+        ("AnglePairMCEta",
+         "Angle between decay #gamma pair vs E_{pair}, origin #eta",nptbins,ptmin,ptmax,250,0,0.5); 
+        fhAnglePairMCEta->SetYTitle("#alpha (rad)");
+        fhAnglePairMCEta->SetXTitle("E_{pair} (GeV)");
+        outputContainer->Add(fhAnglePairMCEta) ; 
+        
+        fhMassPairMCPi0  = new TH2F
+        ("MassPairMCPi0",
+         "Mass for decay #gamma pair vs E_{pair}, origin #pi^{0}",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+        fhMassPairMCPi0->SetYTitle("Mass (MeV/c^{2})");
+        fhMassPairMCPi0->SetXTitle("E_{pair} (GeV)");
+        outputContainer->Add(fhMassPairMCPi0) ; 
+        
+        fhMassPairMCEta  = new TH2F
+        ("MassPairMCEta",
+         "Mass for decay #gamma pair vs E_{pair}, origin #eta",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+        fhMassPairMCEta->SetYTitle("Mass (MeV/c^{2})");
+        fhMassPairMCEta->SetXTitle("E_{pair} (GeV)");
+        outputContainer->Add(fhMassPairMCEta) ; 
+      }
       
       if( fFillSelectClHisto )
       {
@@ -1798,20 +1801,18 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 
     if(IsDataMC())
     {
-      if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
-         GetReader()->GetDataType() != AliCaloTrackReader::kMC){
-        if(GetMCAnalysisUtils()->CheckTagBit(pi0->GetTag(), AliMCAnalysisUtils::kMCPi0))
-        {
-          fhPtMC  ->Fill(pt);
-          fhPhiMC ->Fill(pt,phi);
-          fhEtaMC ->Fill(pt,eta);
-        }
-        else
-        {
-          fhPtMCNo  ->Fill(pt);
-          fhPhiMCNo ->Fill(pt,phi);
-          fhEtaMCNo ->Fill(pt,eta);
-        }
+      if(GetMCAnalysisUtils()->CheckTagBit(pi0->GetTag(), AliMCAnalysisUtils::kMCPi0))
+      {
+        fhPtMC  ->Fill(pt);
+        fhPhiMC ->Fill(pt,phi);
+        fhEtaMC ->Fill(pt,eta);
+      }
+      else
+      {
+        fhPtMCNo  ->Fill(pt);
+        fhPhiMCNo ->Fill(pt,phi);
+        fhEtaMCNo ->Fill(pt,eta);
+        
       }
     }//Histograms with MC
     
