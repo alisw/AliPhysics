@@ -177,6 +177,7 @@ Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the ph
   
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
+  if(fIsSim && fRecAnalysis->DataSet()!=20100) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());
   fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
   if(fIsSim){
     AliMCEvent* mcEvent = MCEvent();
@@ -184,7 +185,6 @@ Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the ph
       AliFatal("ERROR: MC Event does not exist");
       return;
     }
-    if(fRecAnalysis->DataSet()!=20100) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(mcEvent->Header());
     if (fESDEvent){
       ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
 
