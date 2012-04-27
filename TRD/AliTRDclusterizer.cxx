@@ -1098,10 +1098,18 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   // Store raw signals in cluster. This MUST be called after position reconstruction !
   // Xianguo Lu and Alex Bercuci 19.03.2012
   if(TestBit(kRawSignal) && fDigitsRaw){
-    Short_t rawSignal[7] = {0, 0, 0, fDigitsRaw->GetData(Max.row, Max.col, Max.time), 0, 0, 0};
-    for(Int_t ipad(1); ipad<=3; ipad++){
-      rawSignal[3 - ipad] = (Max.col-ipad>=0)?fDigitsRaw->GetData(Max.row, Max.col-ipad, Max.time):0; // Look to the left
-      rawSignal[3 + ipad] = (Max.col+ipad<fColMax)?fDigitsRaw->GetData(Max.row, Max.col+ipad, Max.time):0; // Look to the right
+    Float_t tmp(0.), kMaxShortVal(32767.); // protect against data overflow due to wrong gain calibration
+    Short_t rawSignal[7] = {0};
+    for(Int_t ipad(Max.col-3), iRawId(0); ipad<=Max.col+3; ipad++, iRawId++){
+      if(ipad<0 || ipad>=fColMax) continue;
+      if(!fCalOnlGainROC){
+        rawSignal[iRawId] = fDigitsRaw->GetData(Max.row, ipad, Max.time);
+        continue;
+      }
+      // Deconvolute online gain calibration when available
+      // Alex Bercuci 27.04.2012
+      tmp = (fDigitsRaw->GetData(Max.row, ipad, Max.time) - fBaseline)/fCalOnlGainROC->GetGainCorrectionFactor(Max.row, ipad) + 0.5f;
+      rawSignal[iRawId] = (Short_t)TMath::Min(tmp, kMaxShortVal);
     }
     cluster.SetSignals(rawSignal, kTRUE);
   }
