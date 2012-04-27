@@ -116,7 +116,7 @@ TH2F* AliSpectraAODHistoManager::BookPtRecHistogram(const char * name)
 TH2F* AliSpectraAODHistoManager::BookPIDHistogram(const char * name)
 {
    // Return a pt histogram with predefined binning, set the ID and add it to the output list
-   AliInfo(Form("Booking pt histogram %s", name));
+   AliInfo(Form("Booking PID histogram %s", name));
 
    TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 200, 0, 2.5, 2000, -1000, 1000);
    hist->GetXaxis()->SetTitle("(GeV / c)");
@@ -132,7 +132,7 @@ TH2F* AliSpectraAODHistoManager::BookPIDHistogram(const char * name)
 TH2F* AliSpectraAODHistoManager::BookNSigHistogram(const char * name)
 {
   // Return a pt histogram with predefined binning, set the ID and add it to the output list
-  AliInfo(Form("Booking pt histogram %s", name));
+  AliInfo(Form("Booking NSigma histogram %s", name));
   
   TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 200, 0, 2.5, 2000,-40, 40);
   hist->GetXaxis()->SetTitle("P (GeV / c)");

@@ -104,7 +104,7 @@ namespace AliSpectraNameSpace
       kHistNSigPionPtTPCTOF,
       kHistNSigKaonPtTPCTOF,                              
       kHistNSigProtonPtTPCTOF,                              
-      kNHistNSig=kHistNSigPionPtTPCTOF,                              
+      kNHistNSig=kHistNSigProtonPtTPCTOF,                              
       
       kHistqVecPos,
       kHistqVecNeg,
