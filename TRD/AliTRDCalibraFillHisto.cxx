@@ -687,10 +687,8 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t,const A
   Int_t numberoftrdtracklets = t->GetNumberOfTracklets();
   if(numberoftrdtracklets < fMinNbTRDtracklets) return kFALSE;
 
-  Double_t tpcsignal = 0.0;
-  if (esdtrack) {
-    tpcsignal = esdtrack->GetTPCsignal()/50.0;
-  }
+  Double_t tpcsignal = 1.0;
+  if(esdtrack) tpcsignal = esdtrack->GetTPCsignal()/50.0;
   if(fScaleWithTPCSignal && tpcsignal <0.00001) return kFALSE;
 
   //
