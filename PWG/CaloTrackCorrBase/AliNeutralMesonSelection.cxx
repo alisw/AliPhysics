@@ -271,10 +271,16 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
   //Cut on the invariant mass of the pair
   
   Float_t invmassmaxcut = fInvMassMaxCut;
+  Float_t invmassRightBandMinCut = fRightBandMinCut;
+  Float_t invmassRightBandMixCut = fRightBandMaxCut;
+
   if(calo=="EMCAL" && e > 6.)
   { // for EMCAL, pi0s, mass depends strongly with energy for e > 6, loose max cut
   
     invmassmaxcut = (fInvMassMaxCutParam[0]+fInvMassMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
+    invmassRightBandMinCut = (fInvMassMaxCutParam[0]+fRightBandMinCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
+    invmassRightBandMixCut = (fInvMassMaxCutParam[0]+fRightBandMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
+
     //printf("e %f, max cut %f, p00 %f,p0 %f,p1 %f,p2 %f\n",
     //       e,invmassmaxcut,fInvMassMaxCut,fInvMassMaxCutParam[0],fInvMassMaxCutParam[1],fInvMassMaxCutParam[2]);
   }
@@ -304,7 +310,7 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
   else // select a band around pi0/eta
   {
     if((invmass > fLeftBandMinCut  && invmass < fLeftBandMaxCut ) ||  
-       (invmass > fRightBandMinCut && invmass < fRightBandMaxCut)   )
+       (invmass > invmassRightBandMinCut && invmass < invmassRightBandMixCut))
     { 
       if(fKeepNeutralMesonHistos)
       {
