@@ -319,7 +319,7 @@ AliAnalysisTaskCentrality::AliAnalysisTaskCentrality(const AliAnalysisTaskCentra
     fZNAtower[i] = ana.fZNAtower[i];
     fZPAtower[i] = ana.fZPAtower[i];
   }
-  for (Int_t i=0; i<5; ++i) {
+  for (Int_t i=0; i<2; ++i) {
     fCentrZNC[i] = ana.fCentrZNC[i];
     fCentrZNA[i] = ana.fCentrZNA[i];
   }
