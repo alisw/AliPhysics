@@ -141,10 +141,14 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSISalice");
     // Use AliRoot includes to compile our task                                   
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
-    if(mode==mLocal || mode==mGrid)
+    if(mode==mLocal || mode==mGrid){
+      gSystem->Load("libEventMixing.so");
       gSystem->Load("libPWGCFebye");
-    if(mode==mGridPAR)
+    }
+    if(mode==mGridPAR){
+      SetupPar("EventMixing");
       SetupPar("PWGCFebye");
+    }
   }
   
   else if (mode == mLocalPAR) {

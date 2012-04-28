@@ -63,6 +63,7 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10,
   gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libEventMixing.so");
   gSystem->Load("libPWGCFebye.so");
   
   //configure the bf objects

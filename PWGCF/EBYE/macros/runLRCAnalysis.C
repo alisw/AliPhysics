@@ -45,8 +45,10 @@ void LoadAnalysisLibs(Bool_t LoadTaskLocal=kFALSE)
   gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  if(!LoadTaskLocal)gSystem->Load("libPWGCFebye.so");
-
+  if(!LoadTaskLocal){
+	gSystem->Load("libEventMixing.so");
+	gSystem->Load("libPWGCFebye.so");
+  }
   
   //___________Compile analysis task using AClic____________//
  

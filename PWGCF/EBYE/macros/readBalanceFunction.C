@@ -16,6 +16,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
   gSystem->Load("libProofPlayer.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libEventMixing.so");
   gSystem->Load("libPWGCFebye.so");
 
   //Draw BF       

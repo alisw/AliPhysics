@@ -139,6 +139,7 @@ void LoadLibraries(const analysisModes mode) {
     gSystem->Load("libAOD.so");
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libEventMixing.so");
     gSystem->Load("libPWGCFebye.so");
     // Use AliRoot includes to compile our task
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
