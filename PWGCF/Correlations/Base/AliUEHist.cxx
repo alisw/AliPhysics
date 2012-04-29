@@ -857,8 +857,15 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 //   TH1* normParameters = new TH1F("normParameters", "", 100, 0, 2);
   
 //   trackSameAll->Dump();
-  
+
   TAxis* multAxis = trackSameAll->GetAxis(3);
+
+  if (multBinEnd < multBinBegin)
+  {
+    multBinBegin = 1;
+    multBinEnd = multAxis->GetNbins();
+  }
+  
   for (Int_t multBin = TMath::Max(1, multBinBegin); multBin <= TMath::Min(multAxis->GetNbins(), multBinEnd); multBin++)
   {
     trackSameAll->GetAxis(3)->SetRange(multBin, multBin);
@@ -877,13 +884,18 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     mixedNorm /= nBinsMixedNorm;
     mixedNormError /= nBinsMixedNorm;
 
+    delete tracksMixed;
+    
     Float_t triggers = eventMixedAll->Integral(1, eventMixedAll->GetNbinsX(), multBin, multBin);
 //     Printf("%f +- %f | %f | %f", mixedNorm, mixedNormError, triggers, mixedNorm / triggers);
+    if (triggers <= 0)
+    {
+      Printf("ERROR: Skipping multiplicity %d because mixed event is empty", multBin);
+      continue;
+    }
     
     mixedNorm /= triggers;
     mixedNormError /= triggers;
-    
-    delete tracksMixed;
     
     if (mixedNorm <= 0)
     {
@@ -895,6 +907,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
     for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
+//     for (Int_t vertexBin = 3; vertexBin <= 5; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
@@ -1173,7 +1186,8 @@ void AliUEHist::MultiplyHistograms(THnSparse* grid, THnSparse* target, TH1* hist
   // if <histogram> is 0, just copies content from step1 to step2
   
   // clear target histogram
-  target->Reset();
+  if (grid != target)
+    target->Reset();
   
   if (histogram != 0)
   {
@@ -1240,9 +1254,11 @@ void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* tra
   THnSparse* grid = fTrackHist[region]->GetGrid(step1)->GetGrid();
   THnSparse* target = fTrackHist[region]->GetGrid(step2)->GetGrid();
   
+  Float_t entriesBefore = grid->GetEntries();
+  
   MultiplyHistograms(grid, target, trackCorrection, var1, var2);
   
-  Printf("AliUEHist::CorrectTracks: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", grid->GetEntries(), target->GetEntries(), (trackCorrection) ? trackCorrection->GetEntries() : -1.0, (trackCorrection) ? trackCorrection->Integral() : -1.0); 
+  Printf("AliUEHist::CorrectTracks: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", entriesBefore, target->GetEntries(), (trackCorrection) ? trackCorrection->GetEntries() : -1.0, (trackCorrection) ? trackCorrection->Integral() : -1.0); 
 }
 
 //____________________________________________________________________
@@ -1256,9 +1272,11 @@ void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, 
   AliCFGridSparse* grid = fEventHist->GetGrid(step1);
   AliCFGridSparse* target = fEventHist->GetGrid(step2);
   
+  Float_t entriesBefore = grid->GetEntries();
+
   MultiplyHistograms(grid->GetGrid(), target->GetGrid(), eventCorrection, var1, var2);
 
-  Printf("AliUEHist::CorrectEvents: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", grid->GetEntries(), target->GetEntries(), (eventCorrection) ? eventCorrection->GetEntries() : -1.0, (eventCorrection) ? eventCorrection->Integral() : -1.0); 
+  Printf("AliUEHist::CorrectEvents: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", entriesBefore, target->GetEntries(), (eventCorrection) ? eventCorrection->GetEntries() : -1.0, (eventCorrection) ? eventCorrection->Integral() : -1.0); 
 }
 
 //____________________________________________________________________
@@ -1418,79 +1436,156 @@ void AliUEHist::Correct(AliUEHist* corrections)
   }
   else if (strcmp(fHistogramType, "NumberDensityPhiCentrality") == 0)
   {
-    // copy 
-    CorrectTracks(kCFStepReconstructed, kCFStepTracked, 0, -1);
-    CorrectEvents(kCFStepReconstructed, kCFStepTracked, 0, -1);
-    
-    // Dont use eta in the following, because it is a Delta-eta axis
-    
-    // contamination correction
-    // correct single-particle contamination for associated particles
-    
-    TH1* contamination = corrections->GetTrackingContamination(1);
-    
-    if (0)
+    if (fTrackHist[0]->GetNVar() <= 5)
     {
-      Printf("Applying contamination enhancement");
+      // do corrections copying between steps
       
-      for (Int_t bin = 1; bin <= contamination->GetNbinsX(); bin++)
+      // copy 
+      CorrectTracks(kCFStepReconstructed, kCFStepTracked, 0, -1);
+      CorrectEvents(kCFStepReconstructed, kCFStepTracked, 0, -1);
+      
+      // Dont use eta in the following, because it is a Delta-eta axis
+      
+      // contamination correction
+      // correct single-particle contamination for associated particles
+      
+      TH1* contamination = corrections->GetTrackingContamination(1);
+      
+      if (0)
       {
-        printf("%f", contamination->GetBinContent(bin));
-        if (contamination->GetBinContent(bin) > 0)
-          contamination->SetBinContent(bin, 1.0 + 1.1 * (contamination->GetBinContent(bin) - 1.0));
-        printf(" --> %f\n", contamination->GetBinContent(bin));
+	Printf("Applying contamination enhancement");
+	
+	for (Int_t bin = 1; bin <= contamination->GetNbinsX(); bin++)
+	{
+	  printf("%f", contamination->GetBinContent(bin));
+	  if (contamination->GetBinContent(bin) > 0)
+	    contamination->SetBinContent(bin, 1.0 + 1.1 * (contamination->GetBinContent(bin) - 1.0));
+	  printf(" --> %f\n", contamination->GetBinContent(bin));
+	}
       }
-    }
+	
+      CorrectTracks(kCFStepTracked, kCFStepTrackedOnlyPrim, contamination, 1);
+      delete contamination;    
       
-    CorrectTracks(kCFStepTracked, kCFStepTrackedOnlyPrim, contamination, 1);
-    delete contamination;    
-    
-    // correct for additional contamination due to trigger particle around phi ~ 0
-    TH2* correlatedContamination = corrections->GetCorrelatedContamination();
-    if (0)
+      // correct for additional contamination due to trigger particle around phi ~ 0
+      TH2* correlatedContamination = corrections->GetCorrelatedContamination();
+      if (0)
+      {
+	Printf("Applying contamination enhancement");
+	
+	for (Int_t bin = 1; bin <= correlatedContamination->GetNbinsX(); bin++)
+	  for (Int_t bin2 = 1; bin2 <= correlatedContamination->GetNbinsY(); bin2++)
+	  {
+	    printf("%f", correlatedContamination->GetBinContent(bin, bin2));
+	    if (correlatedContamination->GetBinContent(bin, bin2) > 0)
+	      correlatedContamination->SetBinContent(bin, bin2, 1.0 + 1.1 * (correlatedContamination->GetBinContent(bin, bin2) - 1.0));
+	    printf(" --> %f\n", correlatedContamination->GetBinContent(bin, bin2));
+	  }
+      }
+      
+      new TCanvas; correlatedContamination->DrawCopy("COLZ");
+  //     CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
+      Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
+      
+      delete correlatedContamination;
+      
+      // TODO correct for contamination of trigger particles (for tracks AND events)
+      CorrectEvents(kCFStepTracked, kCFStepTrackedOnlyPrim, 0, 0);
+      
+      // --- efficiency correction ---
+      // correct single-particle efficiency for associated particles
+      // in addition correct for efficiency on trigger particles (tracks AND events)
+      
+      // in bins of pT and centrality
+      TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrectionCentrality();
+      new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
+      // use kCFStepAnaTopology as a temporary step 
+      CorrectTracks(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, efficiencyCorrection, 1, 3);
+      delete efficiencyCorrection;
+      
+      // correct pT,T in bins of pT and centrality
+      efficiencyCorrection = corrections->GetTrackEfficiency(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, 1, 3, 2);
+      CorrectEvents(kCFStepTrackedOnlyPrim, kCFStepVertex, efficiencyCorrection, 0, 1);
+      CorrectTracks(kCFStepAnaTopology, kCFStepVertex, efficiencyCorrection, 2, 3);
+      delete efficiencyCorrection;
+      
+      // no correction for vertex finding efficiency and trigger efficiency needed in PbPb
+      // copy 
+      CorrectTracks(kCFStepVertex, kCFStepAll, 0, -1);
+      CorrectEvents(kCFStepVertex, kCFStepAll, 0, -1);
+    }
+    else
     {
-      Printf("Applying contamination enhancement");
+      // with 6 axes there is not enough memory, do the corrections in-place
+      Printf("Applying corrections in place to reduce memory consumption");
+      CFStep step = kCFStepBiasStudy;
+//       CFStep step = kCFStepReconstructed;
+     
+      // Dont use eta in the following, because it is a Delta-eta axis
       
-      for (Int_t bin = 1; bin <= correlatedContamination->GetNbinsX(); bin++)
-        for (Int_t bin2 = 1; bin2 <= correlatedContamination->GetNbinsY(); bin2++)
-        {
-          printf("%f", correlatedContamination->GetBinContent(bin, bin2));
-          if (correlatedContamination->GetBinContent(bin, bin2) > 0)
-            correlatedContamination->SetBinContent(bin, bin2, 1.0 + 1.1 * (correlatedContamination->GetBinContent(bin, bin2) - 1.0));
-          printf(" --> %f\n", correlatedContamination->GetBinContent(bin, bin2));
-        }
+      // contamination correction
+      // correct single-particle contamination for associated particles
+      
+      TH1* contamination = corrections->GetTrackingContamination(1);
+      
+      if (0)
+      {
+	Printf("Applying contamination enhancement");
+	
+	for (Int_t bin = 1; bin <= contamination->GetNbinsX(); bin++)
+	{
+	  printf("%f", contamination->GetBinContent(bin));
+	  if (contamination->GetBinContent(bin) > 0)
+	    contamination->SetBinContent(bin, 1.0 + 1.1 * (contamination->GetBinContent(bin) - 1.0));
+	  printf(" --> %f\n", contamination->GetBinContent(bin));
+	}
+      }
+	
+      CorrectTracks(step, step, contamination, 1);
+      delete contamination;    
+      
+      // correct for additional contamination due to trigger particle around phi ~ 0
+      TH2* correlatedContamination = corrections->GetCorrelatedContamination();
+      if (0)
+      {
+	Printf("Applying contamination enhancement");
+	
+	for (Int_t bin = 1; bin <= correlatedContamination->GetNbinsX(); bin++)
+	  for (Int_t bin2 = 1; bin2 <= correlatedContamination->GetNbinsY(); bin2++)
+	  {
+	    printf("%f", correlatedContamination->GetBinContent(bin, bin2));
+	    if (correlatedContamination->GetBinContent(bin, bin2) > 0)
+	      correlatedContamination->SetBinContent(bin, bin2, 1.0 + 1.1 * (correlatedContamination->GetBinContent(bin, bin2) - 1.0));
+	    printf(" --> %f\n", correlatedContamination->GetBinContent(bin, bin2));
+	  }
+      }
+      
+//       new TCanvas; correlatedContamination->DrawCopy("COLZ");
+  //     CorrectCorrelatedContamination(step, 0, correlatedContamination);
+      Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
+      
+      delete correlatedContamination;
+      
+      // TODO correct for contamination of trigger particles (for tracks AND events)
+      //CorrectEvents(kCFStepTracked, kCFStepTrackedOnlyPrim, 0, 0);
+      
+      // --- efficiency correction ---
+      // correct single-particle efficiency for associated particles
+      // in addition correct for efficiency on trigger particles (tracks AND events)
+      
+      // in bins of pT and centrality
+      TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrectionCentrality();
+//       new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
+      // use kCFStepAnaTopology as a temporary step 
+      CorrectTracks(step, step, efficiencyCorrection, 1, 3);
+      delete efficiencyCorrection;
+      
+      // correct pT,T in bins of pT and centrality
+      efficiencyCorrection = corrections->GetTrackEfficiency(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, 1, 3, 2);
+      CorrectEvents(step, step, efficiencyCorrection, 0, 1);
+      CorrectTracks(step, step, efficiencyCorrection, 2, 3);
+      delete efficiencyCorrection;
     }
-    
-    new TCanvas; correlatedContamination->DrawCopy("COLZ");
-//     CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
-    Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
-    
-    delete correlatedContamination;
-    
-    // TODO correct for contamination of trigger particles (for tracks AND events)
-    CorrectEvents(kCFStepTracked, kCFStepTrackedOnlyPrim, 0, 0);
-    
-    // --- efficiency correction ---
-    // correct single-particle efficiency for associated particles
-    // in addition correct for efficiency on trigger particles (tracks AND events)
-    
-    // in bins of pT and centrality
-    TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrectionCentrality();
-    new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
-    // use kCFStepAnaTopology as a temporary step 
-    CorrectTracks(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, efficiencyCorrection, 1, 3);
-    delete efficiencyCorrection;
-    
-    // correct pT,T in bins of pT and centrality
-    efficiencyCorrection = corrections->GetTrackEfficiency(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, 1, 3, 2);
-    CorrectEvents(kCFStepTrackedOnlyPrim, kCFStepVertex, efficiencyCorrection, 0, 1);
-    CorrectTracks(kCFStepAnaTopology, kCFStepVertex, efficiencyCorrection, 2, 3);
-    delete efficiencyCorrection;
-    
-    // no correction for vertex finding efficiency and trigger efficiency needed in PbPb
-    // copy 
-    CorrectTracks(kCFStepVertex, kCFStepAll, 0, -1);
-    CorrectEvents(kCFStepVertex, kCFStepAll, 0, -1);
   }
   else
     AliFatal(Form("Unknown histogram for correction: %s", GetTitle()));

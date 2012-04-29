@@ -120,6 +120,7 @@ fCutConversions(kFALSE),
 fCutResonances(kFALSE),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
+fRejectCentralityOutliers(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -319,6 +320,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
+  settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
   
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
@@ -578,10 +580,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
   ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(0);
 
-  // skip not selected events here (the AOD is not updated for those)
   if (!fInputHandler)
     return;
     
+  // skip not selected events here (the AOD is not updated for those)
   if (!(fInputHandler->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kUserDefined)))
     return;
 
@@ -652,6 +654,34 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
 
   TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+  
+  // check for outlier in centrality vs number of tracks (rough constants extracted from correlation histgram)
+  Bool_t reject = kFALSE;
+  if (fRejectCentralityOutliers)
+  {
+    if (centrality > 40 && centrality <= 50 && tracks->GetEntriesFast() > 1160)
+      reject = kTRUE;
+    if (centrality > 50 && centrality <= 60 && tracks->GetEntriesFast() > 650)
+      reject = kTRUE;
+    if (centrality > 60 && centrality <= 70 && tracks->GetEntriesFast() > 370)
+      reject = kTRUE;
+    if (centrality > 70 && centrality <= 80 && tracks->GetEntriesFast() > 220)
+      reject = kTRUE;
+    if (centrality > 80 && centrality <= 90 && tracks->GetEntriesFast() > 130)
+      reject = kTRUE;
+    if (centrality > 90 && tracks->GetEntriesFast() > 75)
+      reject = kTRUE;
+  }
+  
+  if (reject)
+  {
+    AliInfo(Form("Rejecting event due to centrality vs tracks correlation: %f %d", centrality, tracks->GetEntriesFast()));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    delete tracks;
+    return;
+  }
+
+  
   // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
   TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
   delete tracks;
