@@ -105,6 +105,7 @@ protected:
   TH2F* fCorrelationR;          // R = sqrt(delta eta^2 + delta phi^2) (true vs reco) vs pT,lead,MC
   TH2F* fCorrelationLeading2Phi;// delta phi (true vs reco) vs pT,lead,MC
   TH2F* fCorrelationMultiplicity; // number of mc particls vs reco particles (for pT > 0.5 GeV/c)
+  TH3F* fYields;                // centrality vs pT vs eta
   
   TH2F* fEventCount;            // event count as function of step, (for pp: event type (plus additional step -1 for all events without vertex range even in MC)) (for PbPb: centrality)
   TH3F* fEventCountDifferential;// event count as function of leading pT, step, event type
@@ -126,7 +127,7 @@ protected:
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 14)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 15)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

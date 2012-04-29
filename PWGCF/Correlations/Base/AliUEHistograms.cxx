@@ -50,6 +50,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCorrelationR(0),
   fCorrelationLeading2Phi(0),
   fCorrelationMultiplicity(0),
+  fYields(0),
   fEventCount(0),
   fEventCountDifferential(0),
   fVertexContributors(0),
@@ -116,7 +117,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCorrelationR =   new TH2F("fCorrelationR", ";R;p_{T,lead} (MC)", 200, 0, 2, 200, 0, 50);
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #varphi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  
+  fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 40, 0, 20, 20, -1, 1);
+
   if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5"))
   {
     fEventCount = new TH2F("fEventCount", ";step;event type;count", AliUEHist::fgkCFSteps+2, -2.5, -0.5 + AliUEHist::fgkCFSteps, 3, -0.5, 2.5);
@@ -139,7 +141,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   if (fNumberDensityPhi)
   {
     fCentralityDistribution = new TH1F("fCentralityDistribution", ";centrality;count", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray());
-    fCentralityCorrelation = new TH2F("fCentralityCorrelation", ";centrality;multiplicity", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray(), 200, 0, 4000);
+    fCentralityCorrelation = new TH2F("fCentralityCorrelation", ";centrality;multiplicity", 101, 0, 101, 200, 0, 4000);
   }
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
@@ -159,6 +161,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCorrelationR(0),
   fCorrelationLeading2Phi(0),
   fCorrelationMultiplicity(0),
+  fYields(0),
   fEventCount(0),
   fEventCountDifferential(0),
   fVertexContributors(0),
@@ -245,6 +248,12 @@ void AliUEHistograms::DeleteContainers()
   {
     delete fCorrelationMultiplicity;
     fCorrelationMultiplicity = 0;
+  }
+  
+  if (fYields)
+  {
+    delete fYields;
+    fYields = 0;
   }
   
   if (fEventCount)
@@ -447,8 +456,14 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   
   if (twoTrackEfficiencyCut && !fTwoTrackDistancePt[0])
   {
+    // do not add this hists to the directory
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+
     fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 100, -0.05, 0.05, 20, 0, 10);
     fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
+
+    TH1::AddDirectory(oldStatus);
   }
 
   // Eta() is extremely time consuming, therefore cache it for the inner loop here:
@@ -486,6 +501,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         fCorrelationpT->Fill(centrality, triggerParticle->Pt());
         fCorrelationEta->Fill(centrality, triggerEta);
         fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
+	fYields->Fill(centrality, triggerParticle->Pt(), triggerEta);
 /*        if (dynamic_cast<AliAODTrack*>(triggerParticle))
           fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
       }
@@ -798,6 +814,9 @@ void AliUEHistograms::Copy(TObject& c) const
   if (fCorrelationMultiplicity)
     target.fCorrelationMultiplicity = dynamic_cast<TH2F*> (fCorrelationMultiplicity->Clone());
   
+  if (fYields)
+    target.fYields = dynamic_cast<TH3F*> (fYields->Clone());
+  
   if (fEventCount)
     target.fEventCount = dynamic_cast<TH2F*> (fEventCount->Clone());
 
@@ -846,7 +865,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = 17;
+  const Int_t kMaxLists = 18;
   TList* lists[kMaxLists];
   
   for (Int_t i=0; i<kMaxLists; i++)
@@ -882,6 +901,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
       lists[15]->Add(entry->fTwoTrackDistancePt[1]);
     if (entry->fCentralityCorrelation)
       lists[16]->Add(entry->fCentralityCorrelation);
+    if (entry->fYields)
+      lists[17]->Add(entry->fYields);
     count++;
   }
     
@@ -908,6 +929,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     fTwoTrackDistancePt[1]->Merge(lists[15]);
   if (fCentralityCorrelation)
     fCentralityCorrelation->Merge(lists[16]);
+  if (fYields && lists[17]->GetEntries() > 0)
+    fYields->Merge(lists[17]);
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -957,6 +980,7 @@ void AliUEHistograms::Scale(Double_t factor)
   list.Add(fCorrelationR);
   list.Add(fCorrelationLeading2Phi);
   list.Add(fCorrelationMultiplicity);
+  list.Add(fYields);
   list.Add(fEventCount);
   list.Add(fEventCountDifferential);
   list.Add(fVertexContributors);

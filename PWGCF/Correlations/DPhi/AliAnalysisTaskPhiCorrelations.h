@@ -91,6 +91,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
     void   SetFillpT(Bool_t flag) { fFillpT = flag; }
     void   SetStepsFillSkip(Bool_t step0, Bool_t step6) { fFillOnlyStep0 = step0; fSkipStep6 = step6; }
+    void   SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -154,10 +155,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fCutResonances;         // cut on resonances (inv mass)
     Bool_t fFillOnlyStep0; 	   // fill only step 0
     Bool_t fSkipStep6;		   // skip step 6 when filling
+    Bool_t fRejectCentralityOutliers;  // enable rejection of outliers in centrality vs no track correlation
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 10); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 11); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
