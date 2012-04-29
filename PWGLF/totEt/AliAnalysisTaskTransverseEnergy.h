@@ -61,7 +61,7 @@ protected:
     
     Bool_t fIsMc; // Are we analysing MC data
 
-    Bool_t fUsingDefaultSelection; // Are we using the default physics selection
+    //Bool_t fUsingDefaultSelection; // Are we using the default physics selection
 
 private:
 
