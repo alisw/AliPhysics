@@ -645,6 +645,8 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												}
 												fJetBranch = "tracks";
 												TClonesArray* tracks = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
+								
+												if(!tracks)continue;
 												Int_t nt = tracks->GetEntriesFast();
 												AliAODTrack* trackAOD;
 												Track_n = nt;
