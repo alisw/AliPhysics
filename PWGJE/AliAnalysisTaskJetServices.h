@@ -157,8 +157,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH1F*         fh1EventCutInfoESD;  //! Masks that satisfy fSelectionInfo
     TH1F*         fh1CentralityESD;    //! centrality 
     TH1F*         fh1Centrality;       //! centrality 
-    TH1F*         fh1ReducedTrigger;   //! reduced trigger count 
     TH1F*         fh1RP;               //! RP distribution
+    TH2F*         fh2ReducedTrigger;   //! reduced trigger count 
     TH2F*         fh2CentralityTriggerESD;    //! centrality 
     TH2F*         fh2CentralityTrigger;       //! centrality 
     TH2F*         fh2TriggerCount;     //! number of fire triggers in each case
