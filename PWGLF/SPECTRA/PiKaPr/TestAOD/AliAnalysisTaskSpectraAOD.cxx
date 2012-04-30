@@ -116,7 +116,6 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     AliError("Cannot get pid response");
     return;
   }
-  
   //Selection on QVector, before ANY other selection on the event
   //Spectra MUST be normalized wrt events AFTER the selection on Qvector
   // Can we include this in fEventCuts
@@ -137,15 +136,18 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
       Qy2EtaNeg += TMath::Sin(2*aodTrack->Phi());
     }
   } 
-  Double_t qPos = TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
-  Double_t qNeg = TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
+  Double_t qPos=-999;
+  if(multPos!=0)qPos= TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
+  Double_t qNeg=-999;
+  if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
+  
   if((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax()) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax())){
     
     //check on centrality distribution
     fHistMan->GetPtHistogram("CentCheck")->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"),fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentileUnchecked("V0M"));
     
-    if (!fEventCuts->IsSelected(fAOD)) return;
-    
+    if(fEventCuts->IsSelected(fAOD))return;//event selection
+      
     //fill q distributions vs centrality, after all event selection
     fHistMan->GetqVecHistogram(kHistqVecPos)->Fill(qPos,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution
     fHistMan->GetqVecHistogram(kHistqVecNeg)->Fill(qNeg,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution
@@ -239,7 +241,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  fHistMan->GetPtHistogram(kHistNSigProtonPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkProton);
 	  fHistMan->GetPtHistogram(kHistNSigKaonPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkKaon);
 	  fHistMan->GetPtHistogram(kHistNSigPionPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkPion);
-	
+	  
 	  
 	  if( ( nsigmaTPCTOFkKaon < nsigmaTPCTOFkPion ) && ( nsigmaTPCTOFkKaon < nsigmaTPCTOFkProton )) { 
 	    if ((nsigmaTPCTOFkKaon > fNSigmaPID) || (!CheckYCut(kSpKaon, track) ) ) continue;
@@ -282,15 +284,11 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 		if (partMC->IsPhysicalPrimary()) {fHistMan->GetPtHistogram(kHistPtRecTruePrimaryPionMinus)->Fill(track->Pt(),d[0]); }}
 	      //25th Apr - Muons are added to Pions
 	      if ( partMC->PdgCode() == 13 && nsigmaTPCTOFkPion < fNSigmaPID) { 
-		fHistMan->GetPtHistogram(kHistPtRecTruePionPlus)->Fill(track->Pt(),d[0]); 
-		fHistMan->GetPtHistogram(kHistPtRecTruePrimaryPionPlus)->Fill(track->Pt(),d[0]);///////////////////FIXME 
 		fHistMan->GetPtHistogram(kHistPtRecTrueMuonPlus)->Fill(track->Pt(),d[0]); 
 		if (partMC->IsPhysicalPrimary()) {
 		  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonPlus)->Fill(track->Pt(),d[0]); 
 		}}
 	      if ( partMC->PdgCode() == -13 && nsigmaTPCTOFkPion < fNSigmaPID) { 
-		fHistMan->GetPtHistogram(kHistPtRecTruePionMinus)->Fill(track->Pt(),d[0]); 
-		fHistMan->GetPtHistogram(kHistPtRecTruePrimaryPionMinus)->Fill(track->Pt(),d[0]);//////////////FIXME 
 		fHistMan->GetPtHistogram(kHistPtRecTrueMuonMinus)->Fill(track->Pt(),d[0]); 
 		if (partMC->IsPhysicalPrimary()) {
 		  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonMinus)->Fill(track->Pt(),d[0]); 
