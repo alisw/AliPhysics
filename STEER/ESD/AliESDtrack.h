@@ -245,6 +245,8 @@ public:
   
   void    SetTRDpid(const Double_t *p);
   void    SetTRDsignal(Double_t sig) {fTRDsignal = sig;}
+  void    SetTRDNchamberdEdx(UChar_t nch) {fTRDNchamberdEdx = nch;}
+  void    SetTRDNclusterdEdx(UChar_t ncls){fTRDNclusterdEdx = ncls;}
 	  
 // A.Bercuci
   void    SetTRDntracklets(UChar_t q){fTRDntracklets = q;}
@@ -273,7 +275,8 @@ public:
   void    SetTRDTimBin(Int_t timbin, Int_t i) {fTRDTimBin[i]=timbin;}
   void    GetTRDpid(Double_t *p) const;
   Double_t GetTRDsignal() const {return fTRDsignal;}
-
+  UChar_t GetTRDNchamberdEdx() const {return fTRDNchamberdEdx;}
+  UChar_t GetTRDNclusterdEdx() const {return fTRDNclusterdEdx;}
   Char_t   GetTRDTimBin(Int_t i) const {return fTRDTimBin[i];}
   Double_t GetTRDchi2() const {return fTRDchi2;}
   UChar_t   GetTRDclusters(Int_t *idx) const;
@@ -512,6 +515,8 @@ protected:
   UChar_t fTRDncls;        // number of clusters assigned in the TRD
   UChar_t fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   UChar_t fTRDntracklets;  // number of TRD tracklets used for tracking/PID
+  UChar_t fTRDNchamberdEdx;   // number of chambers used to calculated the TRD truncated mean
+  UChar_t fTRDNclusterdEdx;   // number of clusters used to calculated the TRD truncated mean
 
   Int_t fTRDnSlices;     // number of slices used for PID in the TRD
   Double32_t *fTRDslices;  //[fTRDnSlices] 
@@ -531,7 +536,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,64)  //ESDtrack 
+  ClassDef(AliESDtrack,65)  //ESDtrack 
 };
 
 

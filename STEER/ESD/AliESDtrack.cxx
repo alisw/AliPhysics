@@ -229,6 +229,8 @@ AliESDtrack::AliESDtrack() :
   fTRDncls(0),
   fTRDncls0(0),
   fTRDntracklets(0),
+  fTRDNchamberdEdx(0),
+  fTRDNclusterdEdx(0),
   fTRDnSlices(0),
   fTRDslices(0x0),
   fVertexID(-2),// -2 means an orphan track 
@@ -341,6 +343,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDncls(track.fTRDncls),
   fTRDncls0(track.fTRDncls0),
   fTRDntracklets(track.fTRDntracklets),
+  fTRDNchamberdEdx(track.fTRDNchamberdEdx),
+  fTRDNclusterdEdx(track.fTRDNclusterdEdx),
   fTRDnSlices(track.fTRDnSlices),
   fTRDslices(0x0),
   fVertexID(track.fVertexID),
@@ -465,6 +469,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDncls(0),
   fTRDncls0(0),
   fTRDntracklets(0),
+  fTRDNchamberdEdx(0),
+  fTRDNclusterdEdx(0),
   fTRDnSlices(0),
   fTRDslices(0x0),
   fVertexID(-2),  // -2 means an orphan track
@@ -609,6 +615,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDncls(0),
   fTRDncls0(0),
   fTRDntracklets(0),
+  fTRDNchamberdEdx(0),
+  fTRDNclusterdEdx(0),
   fTRDnSlices(0),
   fTRDslices(0x0),
   fVertexID(-2),  // -2 means an orphan track
@@ -913,6 +921,8 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     fTPCPoints[i] = source.fTPCPoints[i];  
   }
   fTRDsignal = source.fTRDsignal;
+  fTRDNchamberdEdx = source.fTRDNchamberdEdx;
+  fTRDNclusterdEdx = source.fTRDNclusterdEdx;
 
   for(int i = 0;i < kTRDnPlanes;++i){
     fTRDTimBin[i] = source.fTRDTimBin[i];   
@@ -1147,6 +1157,9 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTRDncls = 0;       
   fTRDncls0 = 0;       
   fTRDsignal = 0;      
+  fTRDNchamberdEdx = 0;
+  fTRDNclusterdEdx = 0;
+
   for (Int_t i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]  = 0;
   }
@@ -1413,7 +1426,8 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
       delete [] indexTRD;
     }    
     
-    fTRDsignal=t->GetPIDsignal();
+    //commented out by Xianguo
+    //fTRDsignal=t->GetPIDsignal();
     }
     break;
   case kTRDbackup:
@@ -2415,6 +2429,8 @@ void AliESDtrack::Print(Option_t *) const {
     for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
       printf("\n           signal = %f\n", GetTRDsignal()) ;
+      printf("\n           NchamberdEdx = %d\n", GetTRDNchamberdEdx()) ;
+      printf("\n           NclusterdEdx = %d\n", GetTRDNclusterdEdx()) ;
   }
   if( IsOn(kTOFpid) ){
     printf("From TOF: ") ; 
