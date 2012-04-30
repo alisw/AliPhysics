@@ -460,7 +460,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
 
-    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 100, -0.05, 0.05, 20, 0, 10);
+    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.15, 0.15, 100, -0.05, 0.05, 20, 0, 10);
     fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
 
     TH1::AddDirectory(oldStatus);
@@ -577,7 +577,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  Float_t deta = triggerEta - eta[j];
 	      
 	  // optimization
-	  if (TMath::Abs(deta) < twoTrackEfficiencyCutValue * 2.5)
+	  if (TMath::Abs(deta) < twoTrackEfficiencyCutValue * 2.5 * 3)
 	  {
 	    // check first boundaries to see if is worth to loop and find the minimum
 	    Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
