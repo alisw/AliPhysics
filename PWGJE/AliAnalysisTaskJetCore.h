@@ -233,7 +233,9 @@ private:
     
 
 
-     TH3F*      fh3spectriggered;           //triggered spectra
+     TH3F*      fh3spectriggeredC10;           //triggered spectra
+     TH3F*      fh3spectriggeredC20;           //triggered spectra
+     TH3F*      fh3spectriggeredC3060;           //triggered spectra
      TH3F*      fh3specbiased;              //biased spectra
      TH3F*      fh3spectot;                 //the two combined  
      TH3F*      fh3spectotb;                 //the two combined    
