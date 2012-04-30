@@ -141,7 +141,7 @@ class AliBalanceEventMixing : public TObject {
 
   AliBalanceEventMixing & operator=(const AliBalanceEventMixing & ) {return *this;}
 
-  ClassDef(AliBalanceEventMixing, 3)
+  ClassDef(AliBalanceEventMixing, 1)
 };
 
 #endif
