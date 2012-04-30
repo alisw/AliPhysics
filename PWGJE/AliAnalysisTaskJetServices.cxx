@@ -114,8 +114,8 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fh1EventCutInfoESD(0),
   fh1CentralityESD(0),
   fh1Centrality(0),
-  fh1ReducedTrigger(0),
   fh1RP(0),
+  fh2ReducedTrigger(0),
   fh2CentralityTriggerESD(0),
   fh2CentralityTrigger(0),
   fh2TriggerCount(0x0),
@@ -187,8 +187,8 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh1EventCutInfoESD(0),
   fh1CentralityESD(0),
   fh1Centrality(0),
-  fh1ReducedTrigger(0),
   fh1RP(0),
+  fh2ReducedTrigger(0),
   fh2CentralityTriggerESD(0),
   fh2CentralityTrigger(0),
   fh2TriggerCount(0x0),
@@ -300,8 +300,8 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fh1RP = new TH1F("fh1RP","RP;#Psi",440, -1.*TMath::Pi(), 2.*TMath::Pi());
   fHistList->Add(fh1RP);
 
-  fh1ReducedTrigger = new TH1F("fh1ReducedTrigger","red trigger;red trigger",1<<fNTrigger,-0.5,(1<<fNTrigger)-0.5);
-  fHistList->Add(fh1ReducedTrigger);
+  fh2ReducedTrigger = new TH2F("fh2ReducedTrigger","red trigger;red trigger;centrality",1<<fNTrigger,-0.5,(1<<fNTrigger)-0.5,100,-0.5,99.5);
+  fHistList->Add(fh2ReducedTrigger);
 
   fh2CentralityTriggerESD = new TH2F("fh2CentralityTriggerESD",";cent;trigger no",103,-1,102,fNTrigger,-0.5,fNTrigger-0.5);
   fHistList->Add(fh2CentralityTriggerESD);
@@ -599,7 +599,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	    ir |= (1<<it);
 	  }
 	}
-	fh1ReducedTrigger->Fill(ir);
+	fh2ReducedTrigger->Fill(ir,cent);
       }
     }
   }
