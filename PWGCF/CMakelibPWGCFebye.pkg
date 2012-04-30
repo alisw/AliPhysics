@@ -31,9 +31,11 @@ set ( SRCS
     EBYE/BalanceFunctions/AliAnalysisTaskBF.cxx 
     EBYE/BalanceFunctions/AliAnalysisTaskBFPsi.cxx 
     EBYE/BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx 
+    EBYE/BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx 
     EBYE/BalanceFunctions/AliBalance.cxx 
     EBYE/BalanceFunctions/AliBalancePsi.cxx 
     EBYE/BalanceFunctions/AliBalanceEventMixing.cxx 
+    EBYE/BalanceFunctions/AliBalanceTriggered.cxx 
     EBYE/LRC/AliLRCBase.cxx
     EBYE/LRC/AliAnalysisTaskLRC.cxx 
     EBYE/LRC/AliLRCAnalysis.cxx 
@@ -54,4 +56,4 @@ set ( DHDR PWGCFebyeLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/PIDFluctuation/task STEER/STEERBase)
+set ( EINCLUDE ANALYSIS/EventMixing PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/PIDFluctuation/task STEER/STEERBase)
