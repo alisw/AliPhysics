@@ -181,7 +181,9 @@ fh2JetsumHT3R8bbb(0x0),
 fh2JetsumHT3R8bbbp(0x0),
 fh2JetsumHT3R10bbb(0x0),
 fh2JetsumHT3R10bbbp(0x0),
-fh3spectriggered(0x0),
+fh3spectriggeredC10(0x0),
+fh3spectriggeredC20(0x0),
+fh3spectriggeredC3060(0x0),
 fh3specbiased(0x0),
 fh3spectot(0x0),
 fh3spectotb(0x0)
@@ -335,7 +337,9 @@ fh2JetsumHT3R8bbb(0x0),
 fh2JetsumHT3R8bbbp(0x0),
 fh2JetsumHT3R10bbb(0x0),
 fh2JetsumHT3R10bbbp(0x0),
-fh3spectriggered(0x0),
+fh3spectriggeredC10(0x0),
+fh3spectriggeredC20(0x0),
+fh3spectriggeredC3060(0x0),
 fh3specbiased(0x0),
 fh3spectot(0x0),
 fh3spectotb(0x0)
@@ -539,7 +543,10 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
 
 
-    fh3spectriggered = new TH3F("Triggered spectrum","",10,0,100,50,0.,200,50,0.,50.);
+     fh3spectriggeredC10 = new TH3F("Triggered spectrumC10","",10,0.,1.,100,-200.,200.,50,0.,50.);
+     fh3spectriggeredC20 = new TH3F("Triggered spectrumC20","",10,0.,1.,100,-200.,200.,50,0.,50.);
+     fh3spectriggeredC3060 = new TH3F("Triggered spectrumC3060","",10,0.,1.,100,-200.,200.,50,0.,50.);
+
     fh3specbiased = new TH3F("Biased spectrum","",10,0,100,50,0.,200.,50,0.,50.);
     fh3spectot = new TH3F("Total spectrum 0-10","",50,0.,200.,50,0.,50.,50,0.,50.);
     fh3spectotb = new TH3F("Total spectrum 30-60","",50,0.,200.,50,0.,50.,50,0.,50.);    
@@ -649,7 +656,10 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
  
 
-       fOutputList->Add(fh3spectriggered);
+       fOutputList->Add(fh3spectriggeredC10);
+       fOutputList->Add(fh3spectriggeredC20); 
+       fOutputList->Add(fh3spectriggeredC3060);   
+
        fOutputList->Add(fh3specbiased);
        fOutputList->Add(fh3spectot);
        fOutputList->Add(fh3spectotb); 
@@ -762,11 +772,11 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    else     centValue=aod->GetHeader()->GetCentrality();
    
    if(fDebug) printf("centrality: %f\n", centValue);
-   //   if (centValue < fCentMin || centValue > fCentMax){
-   //   fHistEvtSelection->Fill(4);
-   //   PostData(1, fOutputList);
-   //   return;
-   // }
+      if (centValue < fCentMin || centValue > fCentMax){
+      fHistEvtSelection->Fill(4);
+      PostData(1, fOutputList);
+      return;
+    }
 
 
    fHistEvtSelection->Fill(0); 
@@ -861,17 +871,21 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
            if(ptbig==0) continue; 
            areabig = jetbig->EffectiveAreaCharged();
            Double_t ptcorr=ptbig-rho*areabig;
-           if(ptcorr<=0) continue;
+       
       	   if((etabig<fJetEtaMin)||(etabig>fJetEtaMax)) continue;
                    Double_t dismin=100.;
                    Double_t ptmax=-10.; 
                    Int_t index1=-1;
                    Int_t index2=-1;
                   
-               Int_t point=GetHardestTrackBackToJet(jetbig);    
-	       AliVParticle *partback = (AliVParticle*)ParticleList.At(point);                            
-               if(!partback) continue; 
-        	   fh3spectriggered->Fill(centValue,ptcorr,partback->Pt());
+           Int_t point=GetHardestTrackBackToJet(jetbig);    
+	   AliVParticle *partback = (AliVParticle*)ParticleList.At(point);                            
+           if(!partback) continue; 
+	   if(centValue<10.)  fh3spectriggeredC10->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
+           if(centValue<20.)  fh3spectriggeredC20->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
+           if(centValue>30. && centValue<60.)  fh3spectriggeredC3060->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
+
+                   if(ptcorr<=0) continue;
 		   //if(partback->Pt()<6.) continue;
                        AliAODTrack* leadtrack; 
                        Int_t ippt=0;
