@@ -153,7 +153,6 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=0,Int_t sub=0,T
     {
       plugin->SetGridDataDir("/alice/sim/LHC11a10a");
       plugin->SetDataPattern("AOD048/*AliAOD.root");
-      plugin->SetFriendChainName("./AliAOD.root");
       plugin->SetRunPrefix(""); 
       plugin->SetAnalysisMacro(Form("TaskAODPbPbMC%d.C",sub));
       plugin->SetExecutable(Form("TaskAODPbPbMC%d.sh",sub));
@@ -165,11 +164,10 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=0,Int_t sub=0,T
     {
       plugin->SetGridDataDir("/alice/data/2010/LHC10h");
       plugin->SetDataPattern("ESDs/pass2/AOD049/*AliAOD.root");
-      plugin->SetFriendChainName("./AliAOD.root");
       plugin->SetRunPrefix("000"); 
-      plugin->SetAnalysisMacro(Form("TaskAODPbPbMC%d.C",sub));
-      plugin->SetExecutable(Form("TaskAODPbPbMC%d.sh",sub));
-      plugin->SetJDLName(Form("TaskAODPbPb%d.jdl",sub));
+      plugin->SetAnalysisMacro(Form("TaskAODPbPbdata%d.C",sub));
+      plugin->SetExecutable(Form("TaskAODPbPbdata%d.sh",sub));
+      plugin->SetJDLName(Form("TaskAODPbPbdata%d.jdl",sub));
       //plugin->SetSplitMaxInputFileNumber(500);
       plugin->SetGridWorkingDir(Form("%s/data%d/",fname.Data(),sub));
     }  
