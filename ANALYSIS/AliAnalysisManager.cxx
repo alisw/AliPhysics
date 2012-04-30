@@ -82,6 +82,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fInputs(NULL),
                     fOutputs(NULL),
                     fParamCont(NULL),
+                    fDebugOptions(NULL),
                     fCommonInput(NULL),
                     fCommonOutput(NULL),
                     fSelector(NULL),
@@ -136,6 +137,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fInputs(NULL),
                     fOutputs(NULL),
                     fParamCont(NULL),
+                    fDebugOptions(NULL),
                     fCommonInput(NULL),
                     fCommonOutput(NULL),
                     fSelector(NULL),
@@ -187,6 +189,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fInputs     = new TObjArray(*other.fInputs);
       fOutputs    = new TObjArray(*other.fOutputs);
       fParamCont  = new TObjArray(*other.fParamCont);
+      fDebugOptions = NULL;
       fCommonInput = NULL;
       fCommonOutput = NULL;
       fSelector   = NULL;
@@ -218,6 +221,7 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fInputs) delete fInputs;
    if (fOutputs) delete fOutputs;
    if (fParamCont) delete fParamCont;
+   if (fDebugOptions) delete fDebugOptions;
    if (fGridHandler) delete fGridHandler;
    if (fInputEventHandler) delete fInputEventHandler;
    if (fOutputEventHandler) delete fOutputEventHandler;
@@ -355,6 +359,10 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
    if (fDebug > 1) printf("->AliAnalysisManager::SlaveBegin()\n");
+
+   // Apply debug options
+   ApplyDebugOptions();
+   
    if (!CheckTasks()) Fatal("SlaveBegin", "Not all needed libraries were loaded");
    static Bool_t isCalled = kFALSE;
    Bool_t init = kFALSE;
@@ -2551,3 +2559,50 @@ Double_t AliAnalysisManager::GetGlobalDbl(const char *key, Bool_t &valid)
    TString s = value->GetName();
    return s.Atof();
 }
+
+//______________________________________________________________________________
+void AliAnalysisManager::AddClassDebug(const char *className, Int_t debugLevel)
+{
+// Sets Class debug level
+
+   if (!fDebugOptions) {
+      fDebugOptions = new TObjArray();
+      fDebugOptions->SetOwner(kTRUE);
+   }
+
+   // substracting DebugOffset, beacuse of AliLog::SetClassDebugLevel()
+   debugLevel -= AliLog::kDebug-1;
+
+   TNamed *debugOpt = (TNamed*)fDebugOptions->FindObject(className);
+   if (!debugOpt) {
+     AliInfo(TString::Format("Adding debug level %d for class %s",debugLevel+AliLog::kDebug-1,className).Data());
+     fDebugOptions->Add(new TNamed(className,TString::Format("%d",debugLevel).Data()));
+   } else {
+      TString oldDebugStr = debugOpt->GetTitle();
+      Int_t oldDebug = oldDebugStr.Atoi();
+      if (debugLevel > oldDebug) {
+         AliWarning(TString::Format("Overwriting debug level to %d class %s, because it is higher then previously set (%d).",debugLevel+AliLog::kDebug-1,className,oldDebug+AliLog::kDebug-1).Data());
+         debugOpt->SetTitle(TString::Format("%d",debugLevel).Data());
+      } else {
+         AliWarning(TString::Format("Ignoring debug level to %d class %s, because it is smaller then previously set (%d).",debugLevel+AliLog::kDebug-1,className,oldDebug+AliLog::kDebug-1).Data());
+      }
+   }
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::ApplyDebugOptions()
+{
+// Apply debug options
+
+   if (!fDebugOptions) return;
+   
+   TIter next(fDebugOptions);
+   TNamed *debug;
+   TString debugLevel;
+   while ((debug=dynamic_cast<TNamed*>(next()))) {
+      debugLevel = debug->GetTitle();
+      AliInfo(TString::Format("ApplyDebugOptions : Class=%s debulLevel=%d",debug->GetName(),debugLevel.Atoi()+AliLog::kDebug-1).Data());
+      AliLog::SetClassDebugLevel(debug->GetName(), debugLevel.Atoi());
+   }
+}
+

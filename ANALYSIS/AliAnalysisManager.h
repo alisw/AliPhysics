@@ -204,6 +204,9 @@ enum EAliAnalysisFlags {
    
    static const char*   GetOADBPath();
 
+   void                 ApplyDebugOptions();
+   void                 AddClassDebug(const char *className, Int_t debugLevel);
+
 protected:
    void                 ImportWrappers(TList *source);
    void                 SetEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kEventLoop,flag);}
@@ -230,6 +233,7 @@ private:
    TObjArray              *fInputs;              // List of containers with input data
    TObjArray              *fOutputs;             // List of containers with results
    TObjArray              *fParamCont;           // List of containers with results
+   TObjArray              *fDebugOptions;        // List of debug options
    AliAnalysisDataContainer *fCommonInput;       // Common input container
    AliAnalysisDataContainer *fCommonOutput;      // Common output container
    AliAnalysisSelector    *fSelector;            //! Current selector
@@ -247,6 +251,6 @@ private:
    TMap                   *fGlobals;             // Map with global variables
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,15)  // Analysis manager class
+   ClassDef(AliAnalysisManager,16)  // Analysis manager class
 };   
 #endif
