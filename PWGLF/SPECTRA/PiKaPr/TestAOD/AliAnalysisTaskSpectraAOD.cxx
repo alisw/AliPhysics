@@ -146,7 +146,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     //check on centrality distribution
     fHistMan->GetPtHistogram("CentCheck")->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"),fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentileUnchecked("V0M"));
     
-    if(fEventCuts->IsSelected(fAOD))return;//event selection
+    if(!fEventCuts->IsSelected(fAOD))return;//event selection
       
     //fill q distributions vs centrality, after all event selection
     fHistMan->GetqVecHistogram(kHistqVecPos)->Fill(qPos,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution
