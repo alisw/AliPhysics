@@ -378,7 +378,14 @@ Long64_t AliAnalysisTaskCfg::ExecuteConfigMacro()
       Error("ExecuteConfigMacro", "Cannot load requested libraries: %s", fLibs.Data());
       return -1;
    }
-   return fConfigDeps->Exec();
+   Int_t error = 0;
+   Long64_t retval = fConfigDeps->Exec("", &error);
+   if (error != TInterpreter::kNoError)
+   {
+      Error("ExecuteMacro", "Macro interpretation failed");
+      return -1;
+   }
+   return retval;
 }
 
 //______________________________________________________________________________
