@@ -1263,6 +1263,134 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
 }
 
 
+void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
+  //
+  // STANDARD CUTS USED FOR 2011 pp analysis at 2.76TeV
+  //
+  
+  SetName("D0toKpiCutsStandard");
+  SetTitle("Standard Cuts for D0 analysis in pp2011 at 2.76TeV run");
+
+  //
+  // Track cuts
+  //
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //default
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny); 
+ // default is kBoth, otherwise kAny
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+
+  esdTrackCuts->SetMaxDCAToVertexXY(1.);
+  esdTrackCuts->SetMaxDCAToVertexZ(1.);
+  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0075*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+
+  AddTrackCuts(esdTrackCuts);
+
+
+  const Int_t nvars=11;
+  const Int_t nptbins=13;
+  Float_t* ptbins;
+  ptbins=new Float_t[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=0.5;
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.;
+  ptbins[7]=6.;
+  ptbins[8]=8.;
+  ptbins[9]=12.;
+  ptbins[10]=16.;
+  ptbins[11]=20.;
+  ptbins[12]=24.;
+  ptbins[13]=9999.;
+
+  SetPtBins(nptbins+1,ptbins);
+
+  Float_t** rdcutsvalmine;
+  rdcutsvalmine=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++){
+    rdcutsvalmine[iv]=new Float_t[nptbins];
+  }
+	
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,0.04,0.75,0.3,0.3,1000.*1E-4,1000.*1E-4,0.,0.85,0.,0.},/* pt<0.5*/
+						  {0.400,0.04,0.75,0.3,0.3,1000.*1E-4,1000.*1E-4,0.,0.85,0.,0.},/* 0.5<pt<1*/
+						  {0.400,0.03,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-25000.*1E-8,0.8,0.,0.},/* 1<pt<2 */
+						  {0.400,0.03,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.0003,0.9,0.,0.},/* 2<pt<3 */
+						  {0.400,0.03,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.0002,0.9,0.,0.},/* 3<pt<4 */
+						  {0.400,0.03,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00015,0.9,0.,0.},/* 4<pt<5 */
+						  {0.400,0.03,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.0001,0.9,0.,0.},/* 5<pt<6 */
+						  {0.400,0.09,0.85,0.7,0.7,1000.*1E-4,1000.*1E-4,0.,0.85,0.,0.},/* 6<pt<8 */
+						  {0.400,0.06,0.85,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00001,0.85,0.,0.},/* 8<pt<12 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.},/* 12<pt<16 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.},/* 16<pt<20 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.},/* 20<pt<24 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.}};/* pt>24 */
+    
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+  for (Int_t ibin=0;ibin<nptbins;ibin++){
+    for (Int_t ivar = 0; ivar<nvars; ivar++){
+      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];
+    }
+  }
+  SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+
+
+  //pid settings
+  AliAODPidHF* pidObj=new AliAODPidHF();
+  Int_t mode=1;
+  const Int_t nlims=2;
+  Double_t plims[nlims]={0.6,0.8}; //TPC limits in momentum [GeV/c]
+  Bool_t compat=kTRUE; //effective only for this mode
+  Bool_t asym=kTRUE;
+  Double_t sigmas[5]={2.,1.,0.,3.,0.}; //to be checked and to be modified with new implementation of setters by Rossella
+  pidObj->SetAsym(asym);// if you want to use the asymmetric bands in TPC
+  pidObj->SetMatch(mode);
+  pidObj->SetPLimit(plims,nlims);
+  pidObj->SetSigma(sigmas);
+  pidObj->SetCompat(compat);
+  pidObj->SetTPC(kTRUE);
+  pidObj->SetTOF(kTRUE);
+  SetPidHF(pidObj);
+
+  SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
+
+  SetUsePID(kTRUE);
+
+  //activate pileup rejection (for pp)
+  SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
+  //Do recalculate the vertex
+  SetRemoveDaughtersFromPrim(kTRUE);
+
+  // Cut on the zvtx
+  SetMaxVtxZ(10.);
+  
+  // Use the kFirst selection for tracks with candidate D with pt<2
+  SetSelectCandTrackSPDFirst(kTRUE,2.);
+
+  // Use special cuts for D candidates with pt<2
+  SetUseSpecialCuts(kTRUE);
+  SetMaximumPtSpecialCuts(2.);
+
+  PrintAll();
+
+  delete pidObj;
+  pidObj=NULL;
+
+  return;
+}
+
+
 void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   //
   // Final CUTS USED FOR 2010 PbPb analysis of central events
