@@ -30,6 +30,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void         SetType(Int_t t)                 { fType          = t;  }
 
  protected:
+  void         FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t /*cent*/);
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
