@@ -1,4 +1,4 @@
-/* $Id:  $ */
+// $Id$
 //--------------------------------------------------
 // Example macro to do Calorimeters filtering
 // copy ESDs into AODs
