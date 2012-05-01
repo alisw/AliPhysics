@@ -123,6 +123,7 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
       continue;
     eTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
+    eTrack->SetTrackPhiEtaOnEMCal(phiout, etaout);
     eTrack->SetStatus(AliVTrack::kEMCALmatch);
   }
 }
