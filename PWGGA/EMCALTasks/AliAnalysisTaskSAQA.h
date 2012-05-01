@@ -1,7 +1,7 @@
-#ifndef ALIEMCALISOLATEDPHOTONSTASK_H
-#define ALIEMCALISOLATEDPHOTONSTASK_H
+#ifndef ALIANALYSISTASKSAQA_H
+#define ALIANALYSISTASKSAQA_H
 
-// $Id: AliEmcalIsolatedPhotonsTask.h $
+// $Id$
 
 class TClonesArray;
 class TString;
@@ -14,11 +14,11 @@ class AliEmcalJet;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
+class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
  public:
-  AliEmcalIsolatedPhotonsTask();
-  AliEmcalIsolatedPhotonsTask(const char *name);
-  virtual ~AliEmcalIsolatedPhotonsTask();
+  AliAnalysisTaskSAQA();
+  AliAnalysisTaskSAQA(const char *name);
+  virtual ~AliAnalysisTaskSAQA();
 
   void                        UserCreateOutputObjects();
   void                        UserExec(Option_t *option);
@@ -55,15 +55,19 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   TClonesArray               *fTrgClusters;            //!Trg Clusters
   AliCentrality              *fCent;                   // Event centrality
   TH1F                       *fHistCentrality;         // Event centrality distribution
-  TH1F                       *fHistJetsE[4];           // Jet energy spectrum
-  TH1F                       *fHistJetsNE[4];          // Jet neutral energy spectrum
-  TH1F                       *fHistJetsNEF[4];         // Jet neutral energy fraction
-  TH1F                       *fHistJetsZ[4];           // Constituent Pt over Jet E ratio
-  TH1F                       *fHistLeadingJetE[4];     // Leading jet energy spectrum
-  TH1F                       *fHistTracksPtLJ[4];      // Pt spectrum of tracks
-  TH1F                       *fHistClusELJ[4];         // Energy spectrum of clusters
-  TH1F                       *fHistTracksPtBkg[4];     // Pt spectrum of tracks
-  TH1F                       *fHistClusEBkg[4];        // Energy spectrum of clusters
+  TH2F                       *fHistTracksCent;         // Number of tracks vs. centrality
+  TH2F                       *fHistClusCent;           // Number of clusters vs. centrality
+  TH1F                       *fHistTracksPt;           // Pt spectrum of tracks
+  TH1F                       *fHistClustersEnergy;     // Energy spectrum of clusters
+  TH2F                       *fHistEPcorrelation;      // Energy-momentum correlation
+  TH1F                       *fHistJetsEnergy;         // Energy spectrum of jets
+  TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks
+  TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
+  TH2F                       *fHistJetPhiEta;          // Phi-Eta distribution of jets
+  TH1F                       *fHistMaxTrgCluster;      // Energy distribution of max trigger clusters
+  TH1F                       *fHistTrackPhi[5];        // Phi distribution of hybrid tracks
+  TH1F                       *fHistTrackEta[5];        // Eta distribution of hybrid tracks
+
   Int_t                       Ptbins;                  // No. of pt bins
   Float_t                     Ptlow;                   // Min pt
   Float_t                     Ptup;                    // Max pt
@@ -72,9 +76,9 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   Float_t                     Eup;                     // Max e
 
  private:
-  AliEmcalIsolatedPhotonsTask(const AliEmcalIsolatedPhotonsTask&);            // not implemented
-  AliEmcalIsolatedPhotonsTask &operator=(const AliEmcalIsolatedPhotonsTask&); // not implemented
+  AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
+  AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliEmcalIsolatedPhotonsTask, 1) // Isolated photons task
+  ClassDef(AliAnalysisTaskSAQA, 1) // Quality task for Emcal analysis
 };
 #endif
