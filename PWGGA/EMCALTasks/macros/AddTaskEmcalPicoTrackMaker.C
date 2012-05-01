@@ -1,9 +1,11 @@
+// $Id$
+
 AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
-						       const char *name       = "PicoTracks",
-						       const char *inname     = "tracks",
-						       const char *runPeriod  = "LHC11h",
-						       AliESDtrackCuts *cuts  = 0
-                                                       )
+  const char *name       = "PicoTracks",
+  const char *inname     = "tracks",
+  const char *runPeriod  = "LHC11h",
+  AliESDtrackCuts *cuts  = 0
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -26,13 +28,11 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  // Add aod track filter task.
-
   AliEmcalPicoTrackMaker *eTask = new AliEmcalPicoTrackMaker();
   eTask->SetTracksOutName(name);
   eTask->SetTracksInName(inname);
   if (!strcmp(runPeriod, "LHC11h")) {
-    eTask->SetAODfilterBits(256,512,1024); // hybrid tracks for LHC11h
+    eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
   }
   else {
     AliWarning(Form("Run period %s not known. AOD filter bit not set.", renPeriod));
@@ -42,14 +42,11 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-
   mgr->AddTask(eTask);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-  
   mgr->ConnectInput  (eTask, 0,  cinput1 );
   
   return eTask;
-  
 }
