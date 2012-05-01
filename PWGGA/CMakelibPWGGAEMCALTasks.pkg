@@ -27,27 +27,28 @@
 set ( SRCS 
  EMCALTasks/AliAnalysisTaskEMCALClusterize.cxx 
  EMCALTasks/AliAnalysisTaskEMCALClusterizeFast.cxx
+ EMCALTasks/AliAnalysisTaskEMCALPhoton.cxx
  EMCALTasks/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
  EMCALTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
  EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
  EMCALTasks/AliAnalysisTaskESDfilterEMCALEventSelect.cxx
+ EMCALTasks/AliAnalysisTaskTrgContam.cxx
  EMCALTasks/AliEmcalClusTrackMatcherTask.cxx
  EMCALTasks/AliEmcalCompatTask.cxx
  EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
+ EMCALTasks/AliEmcalIsolatedPhotonsTask.cxx
  EMCALTasks/AliEmcalJet.cxx
  EMCALTasks/AliEmcalPhysicsSelection.cxx
  EMCALTasks/AliEmcalPhysicsSelectionTask.cxx
+ EMCALTasks/AliEmcalPicoTrackMaker.cxx
+ EMCALTasks/AliEmcalQATask.cxx
  EMCALTasks/AliEmcalSetupTask.cxx
+ EMCALTasks/AliEmcalTenderTask.cxx
  EMCALTasks/AliEmcalTrackPropagatorTask.cxx
  EMCALTasks/AliEsdSkimTask.cxx
  EMCALTasks/AliEsdTrackExt.cxx
  EMCALTasks/AliPicoTrack.cxx
  EMCALTasks/AliStaObjects.cxx
- EMCALTasks/AliAnalysisTaskTrgContam.cxx
- EMCALTasks/AliAnalysisTaskEMCALPhoton.cxx
- EMCALTasks/AliEmcalIsolatedPhotonsTask.cxx
- EMCALTasks/AliEmcalPicoTrackMaker.cxx
- EMCALTasks/AliEmcalTenderTask.cxx	
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
