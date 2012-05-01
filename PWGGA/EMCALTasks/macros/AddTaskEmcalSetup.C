@@ -1,3 +1,5 @@
+// $Id$
+
 AliEmcalSetupTask* AddTaskEmcalSetup()
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -20,9 +22,6 @@ AliEmcalSetupTask* AddTaskEmcalSetup()
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-
-  // Add emcal setup task.
-
   AliEmcalSetupTask *eTask = new AliEmcalSetupTask("EmcalSetupTask");
 
   //-------------------------------------------------------
@@ -33,9 +32,6 @@ AliEmcalSetupTask* AddTaskEmcalSetup()
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-  
   mgr->ConnectInput  (eTask, 0,  cinput1 );
-
   return eTask;
-  
 }
