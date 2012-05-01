@@ -4,7 +4,6 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   const char *taskname           = "AliAnalysisTaskSAQA",
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
-  const char *njets              = "Jets",
   const char *ntrgclusters       = "ClustersL1GAMMAFEE"
 )
 {  
@@ -31,7 +30,6 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(taskname);
   qaTask->SetTracksName(ntracks);
   qaTask->SetClusName(nclusters);
-  qaTask->SetJetsName(njets);
   qaTask->SetTrgClusName(ntrgclusters);
 
   //-------------------------------------------------------
@@ -41,15 +39,15 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   mgr->AddTask(qaTask);
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
 
   TString contName(taskname);
   contName += "_histos";
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(contName.Data(), 
-                                                           TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                           Form("%s", AliAnalysisManager::GetCommonFileName()));
-  mgr->ConnectInput (qaTask, 0, cinput);
-  mgr->ConnectOutput(qaTask, 1, coutput);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), 
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (qaTask, 0,  cinput1 );
+  mgr->ConnectOutput (qaTask, 1, coutput1 );
 
   return qaTask;
 }
