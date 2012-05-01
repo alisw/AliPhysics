@@ -154,7 +154,8 @@ void AliMixedEvent::Init()
 
       Int_t ncells = event->GetPHOSCells()->GetNumberOfCells() ;
       for (Int_t icell = 0; icell < ncells; icell++) {
-          fPHOSCells->SetCell(phosPos++, phosCells->GetCellNumber(icell), phosCells->GetAmplitude(icell), phosCells->GetTime(icell)) ; 
+          fPHOSCells->SetCell(phosPos++, phosCells->GetCellNumber(icell), phosCells->GetAmplitude(icell), 
+                              phosCells->GetTime(icell),phosCells->GetMCLabel(icell),phosCells->GetEFraction(icell)) ; 
       }
      
     }// phos cells
@@ -175,7 +176,8 @@ void AliMixedEvent::Init()
       
       Int_t ncells = emcalCells->GetNumberOfCells() ;
       for (Int_t icell = 0; icell < ncells; icell++) {
-          fEMCALCells->SetCell(emcalPos++, emcalCells->GetCellNumber(icell), emcalCells->GetAmplitude(icell), emcalCells->GetTime(icell)) ; 
+          fEMCALCells->SetCell(emcalPos++, emcalCells->GetCellNumber(icell), emcalCells->GetAmplitude(icell), 
+                               emcalCells->GetTime(icell),emcalCells->GetMCLabel(icell),emcalCells->GetEFraction(icell)) ; 
       }
     }//EMCAL cells
   }//while event

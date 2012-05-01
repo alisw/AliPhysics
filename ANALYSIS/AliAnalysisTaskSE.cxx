@@ -519,125 +519,200 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
 		// EMCAL cells
 		//*fgAODEmcalCells =  *(aod->GetEMCALCells()); // This will be valid after 10.Mar.2011.
-		if(aodH->GetMergeEMCALCells()) {
+		if(aodH->GetMergeEMCALCells()) 
+		  {
 		    AliAODCaloCells* copycells = aod->GetEMCALCells();
 		    fgAODEmcalCells->CreateContainer(copycells->GetNumberOfCells());
 		    nc  = copycells->GetNumberOfCells();
-		    while( nc-- ){ fgAODEmcalCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
-
+		    
+		    while( nc-- ){ fgAODEmcalCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc),
+							    copycells->GetTime(nc),copycells->GetMCLabel(nc),copycells->GetEFraction(nc)); }
+		    
 		    AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
-		    if( cellsA ){
+		    if( cellsA )
+		      {
 			Int_t ncells  = cellsA->GetNumberOfCells();
 			nc = fgAODEmcalCells->GetNumberOfCells();
-			for (Int_t i  = 0; i < ncells; i++) {
+			
+			for (Int_t i  = 0; i < ncells; i++) 
+			  {
 			    Int_t cn  = cellsA->GetCellNumber(i);
 			    Int_t pos = fgAODEmcalCells->GetCellPosition(cn);
-			    if (pos >= 0) {
+			    
+			    if (pos >= 0) 
+			      {
 				Double_t amp = cellsA->GetAmplitude(i) + fgAODEmcalCells->GetAmplitude(pos);
-				fgAODEmcalCells->SetCell(pos, cn, amp);
-			    } else {
+				
+				//Check if it is MC, depending on that assing the mc lable, time and e fraction
+				Double_t time    = 0;
+				Int_t    mclabel =-1;
+				Int_t    efrac   = 0;
+				if(cellsA->GetMCLabel(i) >= 0 && fgAODEmcalCells->GetMCLabel(i) < 0)
+				  {
+				    mclabel = cellsA->GetMCLabel(i) ;
+				    time    = fgAODEmcalCells->GetTime(i) ; // Time from data
+				    if(amp > 0) efrac = cellsA->GetAmplitude(i) / amp;
+				  }
+				else if(fgAODEmcalCells->GetMCLabel(i) >= 0 &&  cellsA->GetMCLabel(i) < 0)
+				  {
+				    mclabel = fgAODEmcalCells->GetMCLabel(i) ;
+				    time    = cellsA->GetTime(i) ; // Time from data
+				    if(amp > 0) efrac = fgAODEmcalCells->GetAmplitude(i) / amp;              
+				  }
+				else 
+				  { // take all from input
+				    mclabel = cellsA->GetMCLabel(i) ;
+				    time    = cellsA->GetTime(i) ; 
+				    if(amp > 0) efrac = cellsA->GetAmplitude(i) / amp;  
+				  }
+				
+				fgAODEmcalCells->SetCell(pos, cn, amp,cellsA->GetTime(i),mclabel,efrac);
+				
+			      } else 
+			      {
 				AliAODCaloCells* copycells1 = new AliAODCaloCells(*fgAODEmcalCells);
 				fgAODEmcalCells->CreateContainer(nc+1);
 				Int_t nn = copycells1->GetNumberOfCells();
-				while( nn-- ){ fgAODEmcalCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn)); }
-				fgAODEmcalCells->SetCell(nc++,cn,cellsA->GetAmplitude(i));
+				
+				while( nn-- ){ fgAODEmcalCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn),
+									copycells1->GetTime(nn),copycells1->GetMCLabel(nn),0.); }
+				
+				fgAODEmcalCells->SetCell(nc++,cn,cellsA->GetAmplitude(i),cellsA->GetTime(i), cellsA->GetMCLabel(i),0.);
+				
 				delete copycells1;
-			    }
-			}
+			      }
+			  }
 			fgAODEmcalCells->Sort();
-		    }
-		} // merge emcal cells
+		      }
+		  } // merge emcal cells
 		
 		
 		// PHOS cells
 		//*fgAODPhosCells =  *(aod->GetPHOSCells()); // This will be valid after 10.Mar.2011.
-		if(aodH->GetMergePHOSCells()) {
+		if(aodH->GetMergePHOSCells()) 
+		  {
 		    AliAODCaloCells* copycells = aod->GetPHOSCells();
 		    fgAODPhosCells->CreateContainer(copycells->GetNumberOfCells());
 		    nc  = copycells->GetNumberOfCells();
-		    while( nc-- ){ fgAODPhosCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
+		    
+		    while( nc-- ){ fgAODPhosCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc),
+							   copycells->GetTime(nc),copycells->GetMCLabel(nc),copycells->GetEFraction(nc)); }
+		    
 		    AliAODCaloCells* cellsP = aodH->GetEventToMerge()->GetPHOSCells();
-		    if( cellsP ){
+		    if( cellsP )
+		      {
 			Int_t ncellsP  = cellsP->GetNumberOfCells();
 			nc = fgAODPhosCells->GetNumberOfCells();
 			
-			for (Int_t i  = 0; i < ncellsP; i++) {
+			for (Int_t i  = 0; i < ncellsP; i++) 
+			  {
 			    Int_t cn  = cellsP->GetCellNumber(i);
 			    Int_t pos = fgAODPhosCells->GetCellPosition(cn);
-			    if (pos >= 0) {
+			    
+			    if (pos >= 0) 
+			      {
 				Double_t amp = cellsP->GetAmplitude(i) + fgAODPhosCells->GetAmplitude(pos);
-				fgAODPhosCells->SetCell(pos, cn, amp);
-			    } else {
+				
+				//Check if it is MC, depending on that assing the mc lable, time and e fraction
+				Double_t time    = 0;
+				Int_t    mclabel =-1;
+				Int_t    efrac   = 0;
+				if(cellsP->GetMCLabel(i) >= 0 && fgAODPhosCells->GetMCLabel(i) < 0)
+				  {
+				    mclabel = cellsP->GetMCLabel(i) ;
+				    time    = fgAODPhosCells->GetTime(i) ; // Time from data
+				    if(amp > 0) efrac = cellsP->GetAmplitude(i) / amp;
+				  }
+				else if(fgAODPhosCells->GetMCLabel(i) >= 0 &&  cellsP->GetMCLabel(i) < 0)
+				  {
+				    mclabel = fgAODPhosCells->GetMCLabel(i) ;
+				    time    = cellsP->GetTime(i) ; // Time from data
+				    if(amp > 0) efrac = fgAODPhosCells->GetAmplitude(i) / amp;              
+				  }
+				else 
+				  { // take all from input
+				    mclabel = cellsP->GetMCLabel(i) ;
+				    time    = cellsP->GetTime(i) ; 
+				    if(amp > 0) efrac = cellsP->GetAmplitude(i) / amp;  
+				  }
+				
+				fgAODPhosCells->SetCell(pos, cn, amp,cellsP->GetTime(i),mclabel,efrac);                
+				
+			      } else 
+			      {
 				AliAODCaloCells* copycells1 = new AliAODCaloCells(*fgAODPhosCells);
 				fgAODPhosCells->CreateContainer(nc+1);
 				Int_t nn = copycells1->GetNumberOfCells();
-				while( nn-- ){ fgAODPhosCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn)); }
-				fgAODPhosCells->SetCell(nc++,cn,cellsP->GetAmplitude(i));
+				
+				while( nn-- ){ fgAODPhosCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn), 
+								       copycells1->GetTime(nn),copycells1->GetMCLabel(nn),0.); }
+				
+				fgAODPhosCells->SetCell(nc++,cn,cellsP->GetAmplitude(i),cellsP->GetTime(i), cellsP->GetMCLabel(i),0.);
+				
 				delete copycells1;
-			    }
-			}
+			      }
+			  }
 			fgAODPhosCells->Sort();
-		    }
-		} // Merge PHOS Cells
+		      }
+		  } // Merge PHOS Cells
 		
-		if (aodH->GetMergeEMCALTrigger()) 
+		if (aodH->GetMergeEMCALTrigger() && aod->GetCaloTrigger("EMCAL")) 
 		{
-			Int_t   EMCALts[48][64], px, py, ts;
-			Float_t EMCALfo[48][64], am;
+			Int_t   tsEMCAL[48][64], px, py, ts;
+			Float_t foEMCAL[48][64], am;
 			
 			for (Int_t i = 0; i < 48; i++) for (Int_t j = 0; j < 64; j++) 
 			{
-				EMCALts[i][j] = 0;
-				EMCALfo[i][j] = 0.;
+				tsEMCAL[i][j] = 0;
+				foEMCAL[i][j] = 0.;
 			}
-			
-			AliAODCaloTrigger& trg0 = *(aod->GetCaloTrigger("EMCAL"));
-			
-			trg0.Reset();
-			while (trg0.Next())
-			{
-				trg0.GetPosition(px, py);
-				
-				if (px > -1 && py > -1) 
-				{
-					trg0.GetL1TimeSum(ts);
-					if (ts > -1) EMCALts[px][py] += ts;
-					
-					trg0.GetAmplitude(am);
-					if (am > -1) EMCALfo[px][py] += am;
-				}
-			}
-			
-			AliAODCaloTrigger& trg1 = *((aodH->GetEventToMerge())->GetCaloTrigger("EMCAL"));
-			
-			trg1.Reset();
-			while (trg1.Next())
-			{
-				trg1.GetPosition(px, py);
-				
-				if (px > -1 && py > -1) 
-				{
-					trg1.GetL1TimeSum(ts);
-					if (ts > -1) EMCALts[px][py] += ts;
-					
-					trg1.GetAmplitude(am);
-					if (am > -1) EMCALfo[px][py] += am;
-				}
-			}
-			
-			int nEntries = 0;
-			for (Int_t i = 0; i < 48; i++) 
-				for (Int_t j = 0; j < 64; j++) 
-					if (EMCALts[i][j] || EMCALfo[i][j]) nEntries++;
-		
-			fgAODEMCALTrigger->Allocate(nEntries);
-			Int_t L0times[10]; for (int i = 0; i < 10; i++) L0times[i] = -1;
-		
-			for (Int_t i = 0; i < 48; i++) 
-				for (Int_t j = 0; j < 64; j++) 
-					if (EMCALts[i][j] || EMCALfo[i][j]) 
-						fgAODEMCALTrigger->Add(i, j, EMCALfo[i][j], -1., L0times, 0, EMCALts[i][j], 0);
-		}
+      
+      AliAODCaloTrigger& trg0 = *(aod->GetCaloTrigger("EMCAL"));
+      trg0.Reset();
+      while (trg0.Next())
+      {
+        trg0.GetPosition(px, py);
+        
+        if (px > -1 && py > -1) 
+        {
+          trg0.GetL1TimeSum(ts);
+          if (ts > -1) tsEMCAL[px][py] += ts;
+          
+          trg0.GetAmplitude(am);
+          if (am > -1) foEMCAL[px][py] += am;
+        }
+      }
+      
+      AliAODCaloTrigger& trg1 = *((aodH->GetEventToMerge())->GetCaloTrigger("EMCAL"));
+      
+      trg1.Reset();
+      while (trg1.Next())
+      {
+        trg1.GetPosition(px, py);
+        
+        if (px > -1 && py > -1) 
+        {
+          trg1.GetL1TimeSum(ts);
+          if (ts > -1) tsEMCAL[px][py] += ts;
+          
+          trg1.GetAmplitude(am);
+          if (am > -1) foEMCAL[px][py] += am;
+        }
+      }
+      
+      int nEntries = 0;
+      for (Int_t i = 0; i < 48; i++) 
+        for (Int_t j = 0; j < 64; j++) 
+          if (tsEMCAL[i][j] || foEMCAL[i][j]) nEntries++;
+      
+      fgAODEMCALTrigger->Allocate(nEntries);
+      Int_t timesL0[10]; for (int i = 0; i < 10; i++) timesL0[i] = -1;
+      
+      for (Int_t i = 0; i < 48; i++) 
+        for (Int_t j = 0; j < 64; j++) 
+          if (tsEMCAL[i][j] || foEMCAL[i][j]) 
+            fgAODEMCALTrigger->Add(i, j, foEMCAL[i][j], -1., timesL0, 0, tsEMCAL[i][j], 0);
+    }
 		
 		if (aodH->GetMergePHOSTrigger()) 
 		{

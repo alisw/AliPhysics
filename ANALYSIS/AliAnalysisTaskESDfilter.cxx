@@ -1608,7 +1608,8 @@ void AliAnalysisTaskESDfilter::ConvertEMCALCells(const AliESDEvent& esd)
     aodEMcells.CreateContainer(nEMcell);
     aodEMcells.SetType(AliAODCaloCells::kEMCALCell);
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
-      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
+      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell),
+                         esdEMcells.GetTime(iCell), esdEMcells.GetMCLabel(iCell), esdEMcells.GetEFraction(iCell));
     }
     aodEMcells.Sort();
   }
@@ -1628,7 +1629,8 @@ void AliAnalysisTaskESDfilter::ConvertPHOSCells(const AliESDEvent& esd)
     aodPHcells.CreateContainer(nPHcell);
     aodPHcells.SetType(AliAODCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
+      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell),
+                         esdPHcells.GetTime(iCell), esdPHcells.GetMCLabel(iCell), esdPHcells.GetEFraction(iCell));
     }
     aodPHcells.Sort();
   }

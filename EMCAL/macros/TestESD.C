@@ -25,7 +25,7 @@
 //Change the bool depending on what information you want to print
 // when all FALSE, prints minimum cluster information.
 Bool_t kPrintKine         = kFALSE; //Do not use for raw data.
-Bool_t kPrintCaloCells    = kFALSE;
+Bool_t kPrintCaloCells    = kTRUE;
 Bool_t kPrintCaloTrigger  = kFALSE;
 Bool_t kPrintTrackMatches = kFALSE;
 Bool_t kPrintClusterCells = kFALSE;
@@ -66,7 +66,7 @@ void TestESD() {
   TTree* esdTree = (TTree*)f->Get("esdTree");
   AliESDEvent* esd = new AliESDEvent();
   esd->ReadFromTree(esdTree);
-
+  
   //Init geometry and array that will contain the clusters
   TRefArray* caloClusters = new TRefArray();
   AliEMCALGeometry *geom =  AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEAR") ;  	
@@ -105,20 +105,20 @@ void TestESD() {
     //Get Cells Array, all cells in event, print cells info 
     //------------------------------------------------------ 
     AliVCaloCells &cells= *(esd->GetEMCALCells());
-    //AliESDCaloCells &cells= *(esd->GetEMCALCells());
-
+    
     if(kPrintCaloCells){  
       Int_t nTotalCells = cells.GetNumberOfCells() ;  
       //Int_t type        = cells.GetType();
       for (Int_t icell=  0; icell <  nTotalCells; icell++) {
-	cout<<"Cell   : "<<icell<<"/"<<nTotalCells<<" ID: "<<cells.GetCellNumber(icell)<<" Amplitude: "<<cells.GetAmplitude(icell)<<" Time: "<<cells.GetTime(icell)*1e9<<endl;	  
-      }// cell loop
+        cout<<"Cell   : "<<icell<<"/"<<nTotalCells<<" - ID: "<<cells.GetCellNumber(icell)<<"; Amplitude: "<<cells.GetAmplitude(icell)<<"; Time: "<<cells.GetTime(icell)*1e9;
+        cout << "; MC label "<<cells.GetMCLabel(icell)<<"; Embeded E fraction "<<cells.GetEFraction(icell);
+        cout<<endl;	       }// cell loop
     }
     
     //------------------------------------------------------
     // Calo Trigger 
     //------------------------------------------------------
-	
+    
 	  if(kPrintCaloTrigger)
 	  {  
 		  AliESDCaloTrigger& trg = *(esd->GetCaloTrigger("EMCAL"));
@@ -138,13 +138,12 @@ void TestESD() {
 			  }
 		  }
 	  }
-
+    
     //------------------------------------------------------
     // Calo Clusters 
     //------------------------------------------------------
     
     //Get CaloClusters Array
-    caloClusters->Clear();
     esd->GetEMCALClusters(caloClusters);
     
     //loop over clusters
@@ -152,7 +151,6 @@ void TestESD() {
     for (Int_t icl = 0; icl < nclus; icl++) {
       
       AliVCluster* clus = (AliVCluster*)caloClusters->At(icl);
-      //AliESDCluster* clus = (AliESDCluster*)caloClusters->At(icl);
       Float_t energy = clus->E();
       clus->GetPosition(pos);
       TVector3 vpos(pos[0],pos[1],pos[2]);
@@ -170,7 +168,7 @@ void TestESD() {
       Int_t nLabels    = clus->GetNLabels();
       Int_t labelIndex = clus->GetLabel();
       Int_t nCells     = clus->GetNCells();
-		
+      
       //Fill some histograms
       hEta->Fill(ceta);
       hPhi->Fill(cphi*TMath::RadToDeg());
@@ -179,103 +177,103 @@ void TestESD() {
       
       //Print basic cluster information
       cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: " 
-	   << cphi*TMath::RadToDeg() << "; Eta: " << ceta << "; NCells: " << nCells << " ;#Matches: " << nMatched 
-	   << "; Index: " << trackIndex << "; #Labels: " << nLabels << " Index: " 
-	   << labelIndex << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
+      << cphi*TMath::RadToDeg() << "; Eta: " << ceta << "; NCells: " << nCells << " ;#Matches: " << nMatched 
+      << "; Index: " << trackIndex << "; #Labels: " << nLabels << " Index: " 
+      << labelIndex << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
       
       //Print primary info
       if(stack && kPrintKine) {
-	if(labelIndex >= 0 && labelIndex < stack->GetNtrack()){
-	  TParticle * particle = stack->Particle(labelIndex);
-	  //Fill histograms with primary info
-	  hMCEta->Fill(particle->Eta());
-	  hMCPhi->Fill(particle->Phi()*TMath::RadToDeg());
-	  hMCE  ->Fill(particle->Energy());
-	  hDEta ->Fill(ceta-particle->Eta());
-	  hDPhi ->Fill(cphi*TMath::RadToDeg()-particle->Phi()*TMath::RadToDeg());
-	  hDE   ->Fill(energy-particle->Energy());
-	  //Print primary values
-	  cout<<"         More  contributing primary: "<<particle->GetName()<<"; with kinematics: "<<endl;
-	  cout<<" \t     Energy: "<<particle->Energy()<<"; Phi: "<<particle->Phi()*TMath::RadToDeg()<<"; Eta: "<<particle->Eta()<<endl;   
-	  for(Int_t i = 1; i < nLabels; i++){
-	    //particle = stack->Particle((((AliESDCaloCluster*)clus)->GetLabelsArray())->At(i));
-	    particle = stack->Particle((clus->GetLabels())[i]);
-	    //or Int_t *labels = clus->GetLabels();
-	    //particle = stack->Particle(labels[i]);
-	    cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<endl;
-	  }
-	}
-	else if( labelIndex >= stack->GetNtrack()) cout <<"PROBLEM, label is too large : "<<labelIndex<<" >= particles in stack "<< stack->GetNtrack() <<endl;
-		  else cout<<"Negative label!!!  : "<<labelIndex<<endl;
+        if(labelIndex >= 0 && labelIndex < stack->GetNtrack()){
+          TParticle * particle = stack->Particle(labelIndex);
+          //Fill histograms with primary info
+          hMCEta->Fill(particle->Eta());
+          hMCPhi->Fill(particle->Phi()*TMath::RadToDeg());
+          hMCE  ->Fill(particle->Energy());
+          hDEta ->Fill(ceta-particle->Eta());
+          hDPhi ->Fill(cphi*TMath::RadToDeg()-particle->Phi()*TMath::RadToDeg());
+          hDE   ->Fill(energy-particle->Energy());
+          //Print primary values
+          cout<<"         More  contributing primary: "<<particle->GetName()<<"; with kinematics: "<<endl;
+          cout<<" \t     Energy: "<<particle->Energy()<<"; Phi: "<<particle->Phi()*TMath::RadToDeg()<<"; Eta: "<<particle->Eta()<<endl;   
+          for(Int_t i = 1; i < nLabels; i++){
+            //particle = stack->Particle((((AliESDCaloCluster*)clus)->GetLabelsArray())->At(i));
+            particle = stack->Particle((clus->GetLabels())[i]);
+            //or Int_t *labels = clus->GetLabels();
+            //particle = stack->Particle(labels[i]);
+            cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<endl;
+          }
+        }
+        else if( labelIndex >= stack->GetNtrack()) cout <<"PROBLEM, label is too large : "<<labelIndex<<" >= particles in stack "<< stack->GetNtrack() <<endl;
+        else cout<<"Negative label!!!  : "<<labelIndex<<endl;
       } // play with stack
       
       // Matching results
       if(kPrintTrackMatches && trackIndex >= 0) {
-	AliESDtrack* track = esd->GetTrack(trackIndex);
-	Double_t tphi = track->GetOuterParam()->Phi();
-	Double_t teta = track->GetOuterParam()->Eta();
-	Double_t tmom = track->GetOuterParam()->P();
-	cout << "\t Track Momentum: " << tmom << " phi: " << tphi << " eta: " << teta << endl;
-	
-	Double_t deta = teta - ceta;
-	Double_t dphi = tphi - cphi;
-	if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-	if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-	Double_t dR = sqrt(dphi*dphi + deta*deta);
-	
-	Double_t pOverE = tmom/energy;
-	
-	if(dR < 0.02 && pOverE < 1.8 && nCells > 1) {
-	  cout << "\n\t Excellent MATCH! dR = " << dR << " p/E = " << pOverE << " nCells = " << nCells << endl;
-	}
+        AliESDtrack* track = esd->GetTrack(trackIndex);
+        Double_t tphi = track->GetOuterParam()->Phi();
+        Double_t teta = track->GetOuterParam()->Eta();
+        Double_t tmom = track->GetOuterParam()->P();
+        cout << "\t Track Momentum: " << tmom << " phi: " << tphi << " eta: " << teta << endl;
+        
+        Double_t deta = teta - ceta;
+        Double_t dphi = tphi - cphi;
+        if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+        if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+        Double_t dR = sqrt(dphi*dphi + deta*deta);
+        
+        Double_t pOverE = tmom/energy;
+        
+        if(dR < 0.02 && pOverE < 1.8 && nCells > 1) {
+          cout << "\n\t Excellent MATCH! dR = " << dR << " p/E = " << pOverE << " nCells = " << nCells << endl;
+        }
       }// matching
       
       //Get PID weights and print them
       if(kPrintClusterPID){
-	const Double_t *pid = clus->GetPID();
-	printf("PID weights: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
-	       pid[AliVCluster::kPhoton],   pid[AliVCluster::kPi0],
-	       pid[AliVCluster::kElectron], pid[AliVCluster::kEleCon],
-	       pid[AliVCluster::kPion],     pid[AliVCluster::kKaon],   pid[AliVCluster::kProton],
-	       pid[AliVCluster::kNeutron],  pid[AliVCluster::kKaon0]);
+        const Double_t *pid = clus->GetPID();
+        printf("PID weights: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
+               pid[AliVCluster::kPhoton],   pid[AliVCluster::kPi0],
+               pid[AliVCluster::kElectron], pid[AliVCluster::kEleCon],
+               pid[AliVCluster::kPion],     pid[AliVCluster::kKaon],   pid[AliVCluster::kProton],
+               pid[AliVCluster::kNeutron],  pid[AliVCluster::kKaon0]);
       }//PID
       
       //Get CaloCells of cluster and print their info, position.
       if(kPrintClusterCells){	
-	UShort_t * index    = clus->GetCellsAbsId() ;
-	Double_t * fraction = clus->GetCellsAmplitudeFraction() ;
-	Int_t sm = -1;
-	for(Int_t i = 0; i < nCells ; i++){
-	  Int_t absId       =   index[i]; // or clus->GetCellNumber(i) ;
-	  Double_t ampFract =  fraction[i];
-	  Float_t amp       = cells.GetCellAmplitude(absId) ;
-	  Double_t time     = cells.GetCellTime(absId);
-	  cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time*1e9<<endl;
-	  //Geometry methods  
-	  Int_t iSupMod =  0 ;
-	  Int_t iTower  =  0 ;
-	  Int_t iIphi   =  0 ;
-	  Int_t iIeta   =  0 ;
-	  Int_t iphi    =  0 ;
-	  Int_t ieta    =  0 ;
-	  if(geom){
-	    geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
-	    //Gives SuperModule and Tower numbers
-	    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
-					      iIphi, iIeta,iphi,ieta);
-	    //Gives label of cell in eta-phi position per each supermodule
-	    Float_t cellPhi = 0;
-	    Float_t cellEta = 0;
-	    geom->EtaPhiFromIndex(absId,cellEta,cellPhi);
-	    cout<< "                SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
-		<<"; Phi "<<iIphi<<"; Index: Cell Eta "<<ieta<<"; Cell Phi "<<iphi
-		<<"; Global: Cell Eta "<<cellEta<<"; Cell Phi "<<cellPhi*TMath::RadToDeg()<<endl;
-	    if(i==0) sm = iSupMod;
-	    else{
-	      if(sm!=iSupMod) printf("******CLUSTER SHARED BY 2 SuperModules!!!!\n");
-	    }	
-	  }// geometry on
-	}// cluster cell loop
+        UShort_t * index    = clus->GetCellsAbsId() ;
+        Double_t * fraction = clus->GetCellsAmplitudeFraction() ;
+        Int_t sm = -1;
+        for(Int_t i = 0; i < nCells ; i++){
+          Int_t absId       =   index[i]; // or clus->GetCellNumber(i) ;
+          Double_t ampFract =  fraction[i];
+          Float_t amp       = cells.GetCellAmplitude(absId) ;
+          Double_t time     = cells.GetCellTime(absId);
+          cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time*1e9<<endl;
+          //Geometry methods  
+          Int_t iSupMod =  0 ;
+          Int_t iTower  =  0 ;
+          Int_t iIphi   =  0 ;
+          Int_t iIeta   =  0 ;
+          Int_t iphi    =  0 ;
+          Int_t ieta    =  0 ;
+          if(geom){
+            geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
+            //Gives SuperModule and Tower numbers
+            geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+                                              iIphi, iIeta,iphi,ieta);
+            //Gives label of cell in eta-phi position per each supermodule
+            Float_t cellPhi = 0;
+            Float_t cellEta = 0;
+            geom->EtaPhiFromIndex(absId,cellEta,cellPhi);
+            cout<< "                SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
+            <<"; Phi "<<iIphi<<"; Index: Cell Eta "<<ieta<<"; Cell Phi "<<iphi
+            <<"; Global: Cell Eta "<<cellEta<<"; Cell Phi "<<cellPhi*TMath::RadToDeg()<<endl;
+            if(i==0) sm = iSupMod;
+            else{
+              if(sm!=iSupMod) printf("******CLUSTER SHARED BY 2 SuperModules!!!!\n");
+            }	
+          }// geometry on
+        }// cluster cell loop
       }// print cell clusters
     } //cluster loop
   } // event loop

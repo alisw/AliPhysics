@@ -25,59 +25,79 @@
 
 ClassImp(AliESDCaloCells)
 
-//_______________________________________________________________________
+//_____________________________________________________
 AliESDCaloCells::AliESDCaloCells() : 
-  AliVCaloCells(), fNCells(0), fCellNumber(0), fAmplitude(0), fTime(0), fIsSorted(kTRUE), fType(kUndef)
+  AliVCaloCells(), fNCells(0), fCellNumber(0), 
+  fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
+  fIsSorted(kTRUE), fType(kUndef)
 {
   // default constructor
 }
-//_______________________________________________________________________
+//______________________________________________________________________________________
  AliESDCaloCells::AliESDCaloCells(const char* name, const char* title, VCells_t ttype) : 
-   AliVCaloCells(name, title), fNCells(0), fCellNumber(0), fAmplitude(0),  fTime(0), fIsSorted(kTRUE), fType(ttype)
+   AliVCaloCells(name, title), fNCells(0), fCellNumber(0), 
+   fAmplitude(0),  fTime(0), fEFraction(0), fMCLabel(0),
+   fIsSorted(kTRUE), fType(ttype)
 {
    // AliVCaloCells constructor
  }
 
-//_______________________________________________________________________
+//__________________________________________________________
 AliESDCaloCells::AliESDCaloCells(const AliESDCaloCells& c) : 
-  AliVCaloCells(c), fNCells(c.fNCells),  fCellNumber(0), fAmplitude(0), fTime(0), fIsSorted(c.fIsSorted), fType(c.fType)
+  AliVCaloCells(c), fNCells(c.fNCells),  fCellNumber(0), 
+  fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
+  fIsSorted(c.fIsSorted), fType(c.fType)
 {
   // copy constructor
 
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells];
   fTime       = new Double32_t[fNCells];
-  
-  for(Int_t i = 0; i < fNCells; i++){
+  fMCLabel    = new Short_t[fNCells];
+  fEFraction  = new Double32_t[fNCells];
+
+  for(Int_t i = 0; i < fNCells; i++)
+  {
     fCellNumber[i]    = c.fCellNumber[i];
     fAmplitude[i]     = c.fAmplitude[i];
     fTime[i]          = c.fTime[i];
-    fAmplitude[i]     = c.fAmplitude[i];
-
+    if(c.fMCLabel)  fMCLabel[i]   = c.fMCLabel[i];
+    if(c.fEFraction)fEFraction[i] = c.fEFraction[i];
   }
 }
 
-//_______________________________________________________________________
+//__________________________________________________________________________
 AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)  
 {
   // assignment operator
 
-  if(this != &source) {
+  if(this != &source)
+  {
     AliVCaloCells::operator=(source);
     
-    if(fNCells != source.fNCells) {
+    if(fNCells != source.fNCells) 
+    {
       delete [] fCellNumber;
       delete [] fAmplitude;
       delete [] fTime;
+      delete [] fMCLabel;
+      delete [] fEFraction;
+      
       fNCells = source.fNCells;
+      
       fCellNumber = new Short_t[fNCells];
-      fAmplitude = new Double32_t[fNCells];
-      fTime = new Double32_t[fNCells];
+      fAmplitude  = new Double32_t[fNCells];
+      fTime       = new Double32_t[fNCells];
+      fMCLabel    = new Short_t[fNCells];
+      fTime       = new Double32_t[fNCells];
     }
-    memcpy(fCellNumber,source.fCellNumber,fNCells*sizeof(Short_t));
-    memcpy(fAmplitude,source.fAmplitude,fNCells*sizeof(Double32_t));
-    memcpy(fTime,source.fTime,fNCells*sizeof(Double32_t));
     
+    memcpy(fCellNumber,source.fCellNumber,fNCells*sizeof(Short_t));
+    memcpy(fAmplitude, source.fAmplitude, fNCells*sizeof(Double32_t));
+    memcpy(fTime,      source.fTime,      fNCells*sizeof(Double32_t));
+    if(source.fMCLabel   && fMCLabel)   memcpy(fMCLabel,   source.fMCLabel,   fNCells*sizeof(Short_t));
+    if(source.fEFraction && fEFraction) memcpy(fEFraction, source.fEFraction, fNCells*sizeof(Double32_t));
+
     fIsSorted = source.fIsSorted;
     fType = source.fType;
     
@@ -86,9 +106,9 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
   return *this;
 }
 
-//_______________________________________________________________________
-void AliESDCaloCells::Copy(TObject &obj) const {
-  
+//____________________________________________
+void AliESDCaloCells::Copy(TObject &obj) const 
+{
   // this overwrites the virtual TOBject::Copy()
   // to allow run time copying without casting
   // in AliESDEvent
@@ -100,9 +120,9 @@ void AliESDCaloCells::Copy(TObject &obj) const {
 
 }
 
-//_______________________________________________________________________
-AliVCaloCells* AliESDCaloCells::CopyCaloCells(Bool_t all = kTRUE) const {
-  
+//______________________________________________________________________
+AliVCaloCells* AliESDCaloCells::CopyCaloCells(Bool_t all = kTRUE) const
+{  
   // copy the calo cells into a new object. If option all=FALSE, just the object type, 
   // for mixing
   
@@ -115,14 +135,22 @@ AliVCaloCells* AliESDCaloCells::CopyCaloCells(Bool_t all = kTRUE) const {
     
     obj->SetNumberOfCells(fNCells);
     for (Short_t i = 0; i < fNCells; i++) 
-      obj->SetCell(i,fCellNumber[i],fAmplitude[i],fTime[i]);
+    {
+      Int_t mclabel = -1;
+      if(fMCLabel) mclabel = fMCLabel[i];
+      
+      Float_t efrac = 0.;
+      if(fEFraction) efrac = fEFraction[i];
+      
+      obj->SetCell(i,fCellNumber[i],fAmplitude[i],fTime[i],mclabel,efrac);
+    }
   }
 
   return obj;
 }
 
 
-//_______________________________________________________________________
+//_________________________________
 AliESDCaloCells::~AliESDCaloCells()
 {
   // destructor
@@ -130,7 +158,7 @@ AliESDCaloCells::~AliESDCaloCells()
   DeleteContainer();
 }
 
-//_______________________________________________________________________
+//__________________________________________
 void AliESDCaloCells::Clear(const Option_t*)
 {
   // clear
@@ -139,7 +167,7 @@ void AliESDCaloCells::Clear(const Option_t*)
 }
 
 
-//_______________________________________________________________________
+//___________________________________________________
 void AliESDCaloCells::CreateContainer(Short_t nCells)
 {
   // function that creates container to store calorimeter cell data
@@ -156,14 +184,18 @@ void AliESDCaloCells::CreateContainer(Short_t nCells)
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells];
   fTime       = new Double32_t[fNCells];
-  
-    // set to zero
-  for(int i = 0;i<fNCells;++i){
-    fAmplitude[i] = fCellNumber[i] = 0 ;
+  fMCLabel    = new Short_t[fNCells];
+  fEFraction  = new Double32_t[fNCells];
+
+  // set to zero
+  for(int i = 0;i<fNCells;++i)
+  {
+    fAmplitude[i] = fCellNumber[i] = fEFraction[i] = 0 ;
+    fTime[i] = fMCLabel[i] = -1 ;
   }
 }
 
-//_______________________________________________________________________
+//_____________________________________
 void AliESDCaloCells::DeleteContainer()
 {
   // deletes allocated memory
@@ -186,11 +218,24 @@ void AliESDCaloCells::DeleteContainer()
     fTime = NULL;
   }
   
+  if (fMCLabel)
+  {
+    delete[] fMCLabel;
+    fMCLabel = NULL;
+  }
+  
+  if (fEFraction)
+  {
+    delete[] fEFraction;
+    fEFraction = NULL;
+  }
+  
   fNCells = 0;
   fIsSorted = kFALSE;
+  
 }
 
-//_______________________________________________________________________
+//__________________________
 void AliESDCaloCells::Sort() 
 {
   // sort the cell array by cell number
@@ -198,39 +243,60 @@ void AliESDCaloCells::Sort()
   Int_t *idxArray = new Int_t[fNCells];
   TMath::Sort(fNCells,fCellNumber,idxArray,kFALSE);
   
-  Short_t *newIndex        = new Short_t[fNCells];
+  Short_t    *newIndex     = new Short_t[fNCells];
   Double32_t *newAmplitude = new Double32_t[fNCells];
   Double32_t *newTime      = new Double32_t[fNCells];
-  for (Int_t i=0; i < fNCells; i++) {
+  Short_t    *newMCLabel   = new Short_t[fNCells];
+  Double32_t *newEFraction = new Double32_t[fNCells];
+    
+  for (Int_t i=0; i < fNCells; i++) 
+  {
     newIndex[i]     = fCellNumber[idxArray[i]];
-    newAmplitude[i] = fAmplitude[idxArray[i]];
-    newTime[i]      = fTime[idxArray[i]];
+    newAmplitude[i] = fAmplitude [idxArray[i]];
+    newTime[i]      = fTime      [idxArray[i]];
+    if(fMCLabel)   newMCLabel[i]   = fMCLabel  [idxArray[i]];
+    if(fEFraction) newEFraction[i] = fEFraction[idxArray[i]];
   }
+  
   delete [] fCellNumber;
   delete [] fAmplitude;
   delete [] fTime;
+  delete [] fMCLabel;
+  delete [] fEFraction;
 
   fCellNumber = newIndex;
   fAmplitude  = newAmplitude;
   fTime       = newTime;
+  if(fMCLabel)   fMCLabel    = newMCLabel;
+  if(fEFraction) fEFraction  = newEFraction;
 
   delete [] idxArray;
   
   fIsSorted = kTRUE;
 } 
 
-//_______________________________________________________________________
-Bool_t AliESDCaloCells::SetCell(Short_t pos, Short_t cellNumber, Double32_t amplitude, Double32_t  time)
+//________________________________________________________________________________________
+Bool_t AliESDCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t amplitude,  
+                                Double32_t time, Short_t mclabel,    Double32_t efrac)
 {
   // Sets a cell at the given position
 
-  if (pos>=0 && pos < fNCells) {
+  if (pos>=0 && pos < fNCells) 
+  {
     fCellNumber[pos] = cellNumber;
     fAmplitude[pos]  = amplitude;
     fTime[pos]       = time;
+    
+    if(!fMCLabel)   fMCLabel   = new Short_t[fNCells];
+    if(!fEFraction) fEFraction = new Double32_t[fNCells];
 
+    fMCLabel[pos]    = mclabel;
+    fEFraction[pos]  = efrac;
+    
     fIsSorted = kFALSE;
+    
     return kTRUE;
+    
   } else {
     return kFALSE;
   }

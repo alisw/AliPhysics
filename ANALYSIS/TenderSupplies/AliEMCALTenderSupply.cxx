@@ -1261,10 +1261,10 @@ void AliEMCALTenderSupply::FillDigitsArray()
   Int_t ncells = cells->GetNumberOfCells();
   for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) 
   {
-    Double_t cellAmplitude=0, cellTime=0;
-    Short_t  cellNumber=0;
+    Double_t cellAmplitude=0, cellTime=0, efrac = 0;
+    Short_t  cellNumber=0, mcLabel=-1;
 
-    if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
+    if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, mcLabel, efrac) != kTRUE)
       break;
 
     // Do not add if already too low (some cells set to 0 if bad channels)
