@@ -2,9 +2,9 @@
 
 AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelelection(
   Bool_t exFOnly, 
-  UInt_t computeBG = 0
+  UInt_t computeBG = 0,
   Bool_t wHistos = kTRUE
-) 
+)
 {
   // Add EMCAL physics selection task.
 
