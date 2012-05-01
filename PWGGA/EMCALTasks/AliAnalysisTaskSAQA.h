@@ -10,7 +10,6 @@ class AliVCluster;
 class TList;
 class TH1F;
 class TH2F;
-class AliEmcalJet;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -25,7 +24,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   void                        Terminate(Option_t *option);
 
   void                        SetClusName(const char *n)                    { fCaloName      = n          ; }
-  void                        SetJetsName(const char *n)                    { fJetsName      = n          ; }
   void                        SetTracksName(const char *n)                  { fTracksName    = n          ; }
   void                        SetTrgClusName(const char *n)                 { fTrgClusName   = n          ; }
 
@@ -35,8 +33,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   Int_t                       GetNumberOfTracks()              const;
   AliVCluster                *GetCaloCluster(const Int_t i)    const;
   Int_t                       GetNumberOfCaloClusters()        const;
-  AliEmcalJet                *GetJet(const Int_t i)            const;
-  Int_t                       GetNumberOfJets()                const;
   AliVCluster                *GetTrgCluster(const Int_t i)     const;
   Int_t                       GetNumberOfTrgClusters()         const;
   void                        FillHistograms()                      ;
@@ -47,7 +43,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
 
   TString                     fTracksName;             // name of track collection
   TString                     fCaloName;               // name of calo cluster collection
-  TString                     fJetsName;               // name of jet collection
   TString                     fTrgClusName;            // name of trg clus name
   TClonesArray               *fTracks;                 //!Tracks
   TClonesArray               *fCaloClusters;           //!Clusters
@@ -60,10 +55,8 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   TH1F                       *fHistTracksPt;           // Pt spectrum of tracks
   TH1F                       *fHistClustersEnergy;     // Energy spectrum of clusters
   TH2F                       *fHistEPcorrelation;      // Energy-momentum correlation
-  TH1F                       *fHistJetsEnergy;         // Energy spectrum of jets
   TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks
   TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
-  TH2F                       *fHistJetPhiEta;          // Phi-Eta distribution of jets
   TH1F                       *fHistMaxTrgCluster;      // Energy distribution of max trigger clusters
   TH1F                       *fHistTrackPhi[5];        // Phi distribution of hybrid tracks
   TH1F                       *fHistTrackEta[5];        // Eta distribution of hybrid tracks
