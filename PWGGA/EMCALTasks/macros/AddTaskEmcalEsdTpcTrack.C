@@ -1,6 +1,8 @@
+// $Id$
+
 AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
-						       const char *name       = "TpcSpdVertexConstrainedTracks"
-                                                       )
+  const char *name       = "TpcSpdVertexConstrainedTracks"
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -22,8 +24,6 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-
-  // Add tpc track task.
 
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
   /*hybrid tracks*/
@@ -65,16 +65,11 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-
   mgr->AddTask(eTask);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  //AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
-  
   mgr->ConnectInput  (eTask, 0,  cinput1 );
-  //mgr->ConnectOutput (eTask, 0, coutput1 );
   
   return eTask;
-  
 }

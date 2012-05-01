@@ -1,4 +1,9 @@
-AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(Double_t clusTh=2, TString period="LHC11d" )
+// $Id$
+
+AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(
+  Double_t clusTh=2, 
+  TString period="LHC11d" 
+)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -15,7 +20,6 @@ AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(Double_t clusTh=2, TString period
   ana->SelectCollisionCandidates( AliVEvent::kEMC1 | AliVEvent::kMB | AliVEvent::kEMC7 | AliVEvent::kINT7);
   
   Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
-
 
   ana->SetClusThreshold(clusTh);
   ana->SetTrainMode(kTRUE);
