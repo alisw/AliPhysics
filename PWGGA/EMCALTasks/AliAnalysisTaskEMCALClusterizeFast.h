@@ -46,6 +46,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Int_t                  GetShiftEta()                                const   { return fShiftEta                     ; }
   Bool_t                 GetTRUShift()                                const   { return fTRUShift                     ; }
   Bool_t                 GetClusterizeFastORs()                       const   { return fClusterizeFastORs            ; }
+  Bool_t                 GetCutL0Times()                              const   { return fCutL0Times                   ; }
   void                   JustUnfold(Bool_t yesno)                             { fJustUnfold                  = yesno ; }
   void                   LoadOwnGeometryMatrices(Bool_t b)                    { fLoadGeomMatrices            = b     ; }
   void                   SetAODBranchName(const char *name)                   { fOutputAODBrName             = name  ; }
@@ -70,6 +71,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetTRUShift(Bool_t yes)                              { fTRUShift                    = yes   ; }
   void                   SetClusterizeFastORs(Bool_t yes)                     { fClusterizeFastORs           = yes   ; }
   void                   SetTrackName(const char *n)                          { fTrackName                   = n     ; }
+  void                   SetCutL0Times(Bool_t yes)                            { fCutL0Times                  = yes   ; }
 
  protected:
   virtual void           Clusterize();
@@ -102,8 +104,8 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fRecalibOnly;                    // only recalibrate cells if true (def=off)
   Bool_t                 fSubBackground;                  // subtract background if true (def=off)
   Bool_t                 fCreatePattern;                  // removes all cells and creates a cell pattern before running the clusterizer (for debug purposes)
-  Bool_t                 fOverwrite;                      // Overwrite existing clusters
-  TString                fNewClusterArrayName;            // If not overwriting, name of the new cluster array
+  Bool_t                 fOverwrite;                      // overwrite existing clusters
+  TString                fNewClusterArrayName;            // if not overwriting, name of the new cluster array
   Int_t                  fNPhi;                           // nPhi (for FixedWindowsClusterizer)
   Int_t                  fNEta;                           // nEta (for FixedWinoswsClusterizer)
   Int_t                  fShiftPhi;                       // shift in phi (for FixedWindowsClusterizer)
@@ -111,11 +113,12 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fTRUShift;                       // shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
   Bool_t                 fClusterizeFastORs;              // if true, clusterize FastORs instead of cells
   TString                fTrackName;                      // if not null use track collection for track/cluster matching
+  Bool_t                 fCutL0Times;                     // true to enable cut on L0 times when clusterizing FastORs (for FixedWindowsClusterizer)
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
   AliAnalysisTaskEMCALClusterizeFast &operator=(const AliAnalysisTaskEMCALClusterizeFast&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 6);
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 7);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
