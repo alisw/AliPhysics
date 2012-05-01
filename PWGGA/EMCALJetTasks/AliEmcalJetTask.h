@@ -23,14 +23,13 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void         SetAlgo(Int_t a)                 { fAlgo          = a;  }
   void         SetClusName(const char *n)       { fCaloName      = n;  }
   void         SetJetsName(const char *n)       { fJetsName      = n;  }
-  void         SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min;}
   void         SetMinJetClusPt(Double_t min)    { fMinJetClusPt  = min;}
+  void         SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min;}
   void         SetRadius(Double_t r)            { fRadius        = r;  }
   void         SetTracksName(const char *n)     { fTracksName    = n;  }
   void         SetType(Int_t t)                 { fType          = t;  }
 
  protected:
-  void FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t cent);
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
