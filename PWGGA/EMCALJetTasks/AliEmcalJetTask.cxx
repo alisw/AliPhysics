@@ -14,10 +14,10 @@
 #include <TParticle.h>
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliFJWrapper.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
-#include "AliFJWrapper.h"
 
 ClassImp(AliEmcalJetTask)
 
@@ -35,13 +35,11 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJets(0)
 {
   // Default constructor.
-
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 }
 
 //________________________________________________________________________
 AliEmcalJetTask::AliEmcalJetTask(const char *name) : 
-  AliAnalysisTaskSE("AliEmcalJetTask"),
+  AliAnalysisTaskSE(name),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
@@ -54,14 +52,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
 {
   // Standard constructor.
 
-  if (!name)
-    return;
-
-  SetName(name);
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
-
-  //DefineInput(0,TChain::Class());
-  //DefineOutput(1,TList::Class());
 }
 
 //________________________________________________________________________
@@ -83,25 +74,20 @@ void AliEmcalJetTask::UserCreateOutputObjects()
 void AliEmcalJetTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-  // Add jets to event if not yet there
 
+  // add jets to event if not yet there
   if (!(InputEvent()->FindListObject(fJetsName)))
     InputEvent()->AddObject(fJets);
-  else {
-    // IMPORTANT: if it is not an AliESDEvent, non-std TClonesArray will not be cleared automatically!
-    if (!(InputEvent()->InheritsFrom("AliESDEvent")))
-      fJets->Delete();
-  }
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  // delete jet output
+  fJets->Delete();
+
+
+  // get input collections
   TClonesArray *tracks = 0;
   TClonesArray *clus   = 0;
   TList *l = InputEvent()->GetList();
-
-  Float_t cent=100; 
-  AliCentrality *centrality = dynamic_cast<AliCentrality*>(l->FindObject("Centrality"));
-  if(centrality)
-    cent = centrality->GetCentralityPercentile("V0M");
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
 
   if ((fType==0)||(fType==1)) {
     if (fTracksName == "Tracks")
@@ -120,6 +106,18 @@ void AliEmcalJetTask::UserExec(Option_t *)
       AliError(Form("Pointer to clus %s == 0", fCaloName.Data() ));
       return;
     }
+  }
+
+  // get centrality
+  Float_t cent = -1; 
+  AliCentrality *centrality = InputEvent()->GetCentrality() ;
+  if (centrality)
+    cent = centrality->GetCentralityPercentile("V0M");
+  else
+    cent=99; // probably pp data
+  if (cent<0) {
+    AliError(Form("Centrality negative: %f", cent));
+    return;
   }
       
   FindJets(tracks, clus, fAlgo, fRadius, cent);
@@ -171,10 +169,10 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
         continue;
       TLorentzVector nPart;
       c->GetMomentum(nPart, vertex);
-      Double_t energy = nPart.P();
-      if (energy<fMinJetClusPt) 
+      Double_t et = nPart.Pt();
+      if (et<fMinJetClusPt) 
         continue;
-      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), energy, -iClus-1);
+      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus-1);
     }
   }
 
@@ -210,8 +208,8 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
         TLorentzVector nP;
         c->GetMomentum(nP, vertex);
         neutralE += nP.P();
-        if (nP.P()>maxCluster)
-          maxCluster=nP.P();
+        if (nP.Pt()>maxCluster)
+          maxCluster=nP.Pt();
 	nc++;
       }
     }
