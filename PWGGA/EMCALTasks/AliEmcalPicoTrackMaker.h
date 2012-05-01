@@ -1,7 +1,7 @@
 #ifndef ALIEMCALPICOTRACKMAKER_H
 #define ALIEMCALPICOTRACKMAKER_H
 
-// $Id: AliEmcalPicoTrackMaker.h 54003 2012-01-19 16:40:42Z loizides $
+// $Id$
 
 class TClonesArray;
 class AliVEvent;

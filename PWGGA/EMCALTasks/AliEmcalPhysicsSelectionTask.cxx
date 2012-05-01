@@ -1,6 +1,6 @@
 // $Id$
 //
-// Physics selection task.
+// Emcal physics selection task.
 //
 //
 

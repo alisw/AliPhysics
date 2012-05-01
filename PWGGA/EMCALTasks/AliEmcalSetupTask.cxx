@@ -1,6 +1,6 @@
 // $Id$
 //
-// Task to setup emcal related global objects
+// Task to setup emcal related global objects.
 //
 //
 
