@@ -63,6 +63,8 @@ class AliEmcalJet : public AliVParticle
   Int_t       ClusterAt(Int_t idx)           const { return fClusterIDs->At(idx);   }
   Int_t       TrackAt(Int_t idx)             const { return fTrackIDs->At(idx);     }
 
+  void        SortConstituents();
+
  protected:
   Double32_t  fPt;           //[0,0,12]   pt 
   Double32_t  fEta;          //[-1,1,12]  eta

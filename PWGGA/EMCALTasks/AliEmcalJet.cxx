@@ -1,5 +1,7 @@
 // $Id$
 
+#include <cmath>
+
 #include "AliEmcalJet.h"
 
 ClassImp(AliEmcalJet)
@@ -84,4 +86,11 @@ void AliEmcalJet::Print(Option_t* /*option*/) const
   // Print jet information.
 
   printf("Jet pt=%.2f, eta=%.2f, phi=%.2f, area=%.2f, NEF=%.2f\n", fPt, fEta, fPhi, fArea, fNEF);
+}
+
+//__________________________________________________________________________________________________
+void AliEmcalJet::SortConstituents()
+{
+  std::sort(fClusterIDs->GetArray(), fClusterIDs->GetArray() + fClusterIDs->GetSize());
+  std::sort(fTrackIDs->GetArray(), fTrackIDs->GetArray() + fTrackIDs->GetSize());
 }
