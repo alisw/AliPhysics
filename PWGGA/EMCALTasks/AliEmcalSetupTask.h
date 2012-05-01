@@ -25,14 +25,13 @@ class AliEmcalSetupTask : public AliAnalysisTaskSE {
   TString            fOcdbPath;        // path to ocdb (def=none)
   TString            fOadbPath;        // path to oadb
   TString            fGeoPath;         // path to geometry
-  AliESDEvent       *fEsdEv;           //!esd event
   Bool_t             fIsInit;          //!=true then already initialized 
 
  private:
   AliEmcalSetupTask(const AliEmcalSetupTask&);            // not implemented
   AliEmcalSetupTask &operator=(const AliEmcalSetupTask&); // not implemented
 
-  ClassDef(AliEmcalSetupTask, 1); // Class to setup geometry for emcal
+  ClassDef(AliEmcalSetupTask, 2); // Class to setup geometry for EMCal
 };
 
 #endif

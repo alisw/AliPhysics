@@ -5,14 +5,16 @@
 //
 
 #include <TClonesArray.h>
-#include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
+#include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCDBManager.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
 #include "AliEmcalSetupTask.h"
 #include "AliGeomManager.h"
+#include "AliMagF.h"
 #include "AliOADBContainer.h"
 
 ClassImp(AliEmcalSetupTask)
@@ -23,7 +25,6 @@ AliEmcalSetupTask::AliEmcalSetupTask() :
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
   fGeoPath("."),
-  fEsdEv(0),
   fIsInit(kFALSE)
 {
   // Constructor.
@@ -35,7 +36,6 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
   fGeoPath("."),
-  fEsdEv(0),
   fIsInit(kFALSE)
 {
   // Constructor.
@@ -56,12 +56,6 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   if (fIsInit)
     return;
 
-  fEsdEv = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fEsdEv) {
-    AliError("Task works only on ESD events, returning");
-    return;
-  }
-
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   if (!am) {
     AliError("Manager zero, returning");
@@ -70,15 +64,16 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   am->LoadBranch("AliESDRun.");
   am->LoadBranch("AliESDHeader.");
 
-  Int_t runno = fEsdEv->GetRunNumber();
+  Int_t runno = InputEvent()->GetRunNumber();
   TString geoname("EMCAL_FIRSTYEARV1");
   Int_t year = 2010;
   if (runno>139517) {
     year = 2011;
     geoname = "EMCAL_COMPLETEV1";
-  } if (runno>170593) {
+  } 
+  if (runno>170593) {
     year = 2012;
-    geoname = "EMCAL_COMPLETE12SM";
+    geoname = "EMCAL_COMPLETE12SMV1";
   }
 
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
@@ -113,8 +108,17 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   }
 
   if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
-    AliInfo("Constructing field map from ESD run info");
-    fEsdEv->InitMagneticField();
+    AliESDEvent *esdEv = dynamic_cast<AliESDEvent*>(InputEvent());
+    if (esdEv) {
+      AliInfo("Constructing field map from ESD run info");
+      esdEv->InitMagneticField();
+    } else {
+      AliAODEvent *aodEv = dynamic_cast<AliAODEvent*>(InputEvent());
+      Double_t curSol = 30000*aodEv->GetMagneticField()/5.00668;
+      Double_t curDip = 6000 *aodEv->GetMuonMagFieldScale();
+      AliMagF *field  = AliMagF::CreateFieldMap(curSol,curDip);
+      TGeoGlobalMagField::Instance()->SetField(field);
+    }
   }
 
   if (fOadbPath.Length()>0) {
