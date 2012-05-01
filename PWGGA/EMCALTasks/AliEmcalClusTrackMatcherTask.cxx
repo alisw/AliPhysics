@@ -77,6 +77,7 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
       c->SetTrackDistance(999,999);
       Double_t dEtaMin  = 1e9;
       Double_t dPhiMin  = 1e9;
+      Double_t dRMin    = 1e9;
       Int_t    imin     = -1;
       for(Int_t t = 0; t<Ntrks; ++t) {
         AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
@@ -88,11 +89,10 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
         Double_t phidiff=999;
         AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
         Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-        if(dR > 25) 
-          continue;
-        if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
+	if(dR<dRmin) {
           dEtaMin = etadiff;
           dPhiMin = phidiff;
+	  dRmin=dR;
           imin = t;
         }
       }
@@ -110,6 +110,7 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
         continue;
       Double_t dEtaMin  = 1e9;
       Double_t dPhiMin  = 1e9;
+      Double_t dRMin    = 1e9;
       Int_t    imin     = -1;
       for(Int_t i=0; i < Ncls; ++i) {
         AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
@@ -119,11 +120,10 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
         Double_t phidiff=999;
         AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
         Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-        if(dR > 25) 
-          continue;
-        if (TMath::Abs(etadiff)<TMath::Abs(dEtaMin) && TMath::Abs(phidiff)<TMath::Abs(dPhiMin)) {
+	if(dR<dRmin){
           dEtaMin = etadiff;
           dPhiMin = phidiff;
+	  dRMin   = dR;
           imin = i;
         }
       }
