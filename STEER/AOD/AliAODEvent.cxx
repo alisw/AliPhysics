@@ -864,6 +864,45 @@ Bool_t AliAODEvent::IsPileupFromSPDInMultBins() const {
     else return IsPileupFromSPD(5,0.8);
 }
 
+void AliAODEvent::Reset()
+{
+  // Handle the cases
+  // Std content + Non std content
+
+  ClearStd();
+
+  if(fAODObjects->GetSize()>kAODListN){
+    // we have non std content
+    // this also covers aodfriends
+    for(int i = kAODListN;i < fAODObjects->GetSize();++i){
+      TObject *pObject = fAODObjects->At(i);
+      // TClonesArrays
+      if(pObject->InheritsFrom(TClonesArray::Class())){
+       ((TClonesArray*)pObject)->Delete();
+      }
+      else if(!pObject->InheritsFrom(TCollection::Class())){
+       TClass *pClass = TClass::GetClass(pObject->ClassName());
+       if (pClass && pClass->GetListOfMethods()->FindObject("Clear")) {
+         AliDebug(1, Form("Clear for object %s class %s", pObject->GetName(), pObject->ClassName()));
+         pObject->Clear();
+       }
+       else {
+         AliDebug(1, Form("ResetWithPlacementNew for object %s class %s", pObject->GetName(), pObject->ClassName()));
+          Long_t dtoronly = TObject::GetDtorOnly();
+          TObject::SetDtorOnly(pObject);
+          delete pObject;
+          pClass->New(pObject);
+          TObject::SetDtorOnly((void*)dtoronly);
+       }
+      }
+      else{
+       AliWarning(Form("No reset for %s \n",
+                       pObject->ClassName()));
+      }
+    }
+  }
+}
+
 Float_t AliAODEvent::GetVZEROEqMultiplicity(Int_t i) const
 {
   // Get VZERO Multiplicity for channel i
@@ -901,3 +940,4 @@ void  AliAODEvent::SetTOFHeader(const AliTOFHeader *header)
   }
 
 }
+

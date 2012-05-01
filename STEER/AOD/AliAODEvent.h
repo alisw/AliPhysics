@@ -251,7 +251,7 @@ class AliAODEvent : public AliVEvent {
 		   Int_t dimuonArrsize =0
 		   );
   void    ClearStd();
-  void    Reset() {ClearStd();} 
+  void    Reset(); 
   void    ReadFromTree(TTree *tree, Option_t* opt = "");
   void    WriteToTree(TTree* tree) const {tree->Branch(fAODObjects);}
 
