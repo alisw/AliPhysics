@@ -608,8 +608,6 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
   Double_t cellAmplitude = 0;
   Double_t cellTime      = 0;
   Short_t  cellNumber    = 0;
-  Short_t  cellMCLabel   = 0;
-  Double_t cellEFrac     = 0;
   Int_t    nClustersOrg  = 0;
   
   // Fill the array with the EMCAL clusters, copy them
@@ -632,7 +630,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
         //CalibrateCells
         for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
         {
-          if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
+          if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
             break;
           
           Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -707,12 +705,11 @@ void AliAnalysisTaskEMCALClusterize::FillAODCaloCells()
     
     if(!fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
     { //Channel is not declared as bad
-      aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor,
-                         eventEMcells.GetTime(iCell),eventEMcells.GetMCLabel(iCell),eventEMcells.GetEFraction(iCell));
+      aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor);
     }
     else 
     {
-      aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),0,-1,-1,0);
+      aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),0);
     }
   }
   aodEMcells.Sort();
