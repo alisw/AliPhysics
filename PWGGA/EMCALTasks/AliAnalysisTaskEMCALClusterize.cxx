@@ -194,13 +194,6 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     if(arrayBC)
     {
-      TObjArray * arrayBCpass = 0x0; 
-      if(pass!="")arrayBCpass = (TObjArray*)arrayBC->FindObject(pass);
-      // There are no passes for simulation, in order to get the bad map put pass1
-      else        arrayBCpass = (TObjArray*)arrayBC->FindObject("pass1");
-      
-      if(arrayBCpass)
-      {
         fRecoUtils->SwitchOnDistToBadChannelRecalculation();
         printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Remove EMCAL bad cells \n");
         
@@ -211,7 +204,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
           if (hbm)
             delete hbm;
           
-          hbm=(TH2I*)arrayBCpass->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+          hbm=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
           
           if (!hbm) 
           {
@@ -223,8 +216,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
           fRecoUtils->SetEMCALChannelStatusMap(i,hbm);
           
         } // loop
-      } else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT remove EMCAL bad channels 1\n"); // pass array
-    } else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT remove EMCAL bad channels 2\n"); // run array
+    } else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT remove EMCAL bad channels\n"); // run array
   }  // Remove bad
   
   // Energy Recalibration
@@ -266,9 +258,9 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
             
             fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
           } // SM loop
-        }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL 1\n"); // array ok
-      }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL 2\n"); // array pass ok
-    }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL 3\n");  // run number array ok
+        }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL, no params object array \n"); // array ok
+      }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL, no params for pass\n"); // array pass ok
+    }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL, no params for run\n");  // run number array ok
     
     // once set, apply run dependent corrections if requested
     fRecoUtils->SetRunDependentCorrections(runnumber);
@@ -311,8 +303,8 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
           
           fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
         } // bunch crossing loop
-      }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate time EMCAL 1\n"); // array pass ok
-    }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate time EMCAL 2\n");  // run number array ok
+      }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate time EMCAL, no params for pass\n"); // array pass ok
+    }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate time EMCAL, no params for run\n");  // run number array ok
     
   } // Time recalibration on    
   
