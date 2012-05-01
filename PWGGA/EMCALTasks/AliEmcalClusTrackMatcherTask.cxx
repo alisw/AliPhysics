@@ -31,7 +31,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) :
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::~AliEmcalClusTrackMatcherTask()
 {
-  // Destructor
+  // Destructor.
 }
 
 //________________________________________________________________________
@@ -76,6 +76,10 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
       Int_t    imin     = -1;
       for(Int_t t = 0; t<Ntrks; ++t) {
         AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+      if (!track)
+        continue;
+      if (!track->IsEMCAL())
+          continue;
         Double_t etadiff=999;
         Double_t phidiff=999;
         AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
@@ -97,6 +101,8 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
     for(Int_t t = 0; t<Ntrks; ++t) {
       AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
       if (!track)
+        continue;
+      if (!track->IsEMCAL())
         continue;
       Double_t dEtaMin  = 1e9;
       Double_t dPhiMin  = 1e9;
@@ -126,5 +132,4 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
 void AliEmcalClusTrackMatcherTask::Terminate(Option_t *) 
 {
   // Called once at the end of the analysis.
-
 }
