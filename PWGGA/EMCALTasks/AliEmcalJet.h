@@ -42,26 +42,28 @@ class AliEmcalJet : public AliVParticle
   void        GetMom(TLorentzVector &vec)  const;
   void        Print(Option_t* option = "") const;
 
-  Double_t    Area()                       const { return fArea;                 }
-  Short_t     ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);   }
-  UShort_t    GetNumberOfClusters()        const { return Nn();                  }
-  UShort_t    GetNumberOfTracks()          const { return Nch();                 }
-  Double_t    MaxClusterPt()               const { return fMaxNPt;               }
-  Double_t    MaxTrackPt()                 const { return fMaxCPt;               }
-  Double_t    NEF()                        const { return fNEF;                  }
-  UShort_t    Nn()                         const { return fClusterIDs.GetSize(); }
-  UShort_t    Nch()                        const { return fTrackIDs.GetSize();   }
-  UShort_t    N()                          const { return Nch()+Nn();            }
-  Short_t     TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);     }
-  void        AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx); }
-  void        AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);  }
-  void        SetArea(Double_t a)                { fArea   = a;                  }
-  void        SetMaxClusterPt(Double32_t t)      { fMaxNPt = t;                  }
-  void        SetMaxTrackPt(Double32_t t)        { fMaxCPt = t;                  }
-  void        SetNEF(Double_t nef)               { fNEF    = nef;                }
-  void        SetNumberOfClusters(Int_t n)       { fClusterIDs.Set(n);           }
-  void        SetNumberOfTracks(Int_t n)         { fTrackIDs.Set(n);             }
+  Double_t    Area()                       const { return fArea;                     }
+  Short_t     ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);       }
+  UShort_t    GetNumberOfClusters()        const { return Nn();                      }
+  UShort_t    GetNumberOfTracks()          const { return Nch();                     }
+  Double_t    MaxClusterPt()               const { return fMaxNPt;                   }
+  Double_t    MaxTrackPt()                 const { return fMaxCPt;                   }
+  Double_t    NEF()                        const { return fNEF;                      }
+  UShort_t    Nn()                         const { return fClusterIDs.GetSize();     }
+  UShort_t    Nch()                        const { return fTrackIDs.GetSize();       }
+  UShort_t    N()                          const { return Nch()+Nn();                }
+  Short_t     TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
 
+  void        AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
+  void        AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
+  void        Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); 
+                                                   fTrackIDs.Set(0);                 }
+  void        SetArea(Double_t a)                { fArea   = a;                      }
+  void        SetMaxClusterPt(Double32_t t)      { fMaxNPt = t;                      }
+  void        SetMaxTrackPt(Double32_t t)        { fMaxCPt = t;                      }
+  void        SetNEF(Double_t nef)               { fNEF    = nef;                    }
+  void        SetNumberOfClusters(Int_t n)       { fClusterIDs.Set(n);               }
+  void        SetNumberOfTracks(Int_t n)         { fTrackIDs.Set(n);                 }
   void        SortConstituents();
 
  protected:
