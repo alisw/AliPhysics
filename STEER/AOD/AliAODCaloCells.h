@@ -186,7 +186,7 @@ Short_t AliAODCaloCells::GetMCLabel(Short_t pos) const
   if (pos>=0 && pos<fNCells && fMCLabel) {
     return fMCLabel[pos];
   } else {
-    return 0.;
+    return 0;
   }
 }
 
@@ -212,7 +212,7 @@ Short_t AliAODCaloCells::GetCellMCLabel(Short_t cellNumber)
   if (pos>=0 && fCellNumber[pos] == cellNumber) {
     return fMCLabel[pos];
   } else {
-    return 0.;
+    return 0;
   }
 }
 
