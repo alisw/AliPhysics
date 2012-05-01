@@ -1,4 +1,4 @@
-/* $Id:  $ */
+// $Id$
 //--------------------------------------------------
 // Example macro to do EMCAL calibration analysis
 // Can be executed with Root and AliRoot
