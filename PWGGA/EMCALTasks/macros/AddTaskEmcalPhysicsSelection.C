@@ -1,24 +1,30 @@
 // $Id$
 
-AliEmcalPhysicsSelectionTask* 
-AddTaskEmcalPhysicsSelelection(Bool_t exFOnly, Bool_t rejectBG=kTRUE, Bool_t computeBG=kTRUE)
+AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelelection(
+  Bool_t exFOnly, 
+  UInt_t computeBG = 0
+  Bool_t wHistos = kTRUE
+) 
 {
   // Add EMCAL physics selection task.
 
-  //get the current analysis manager  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTask1PhysSel", "No analysis manager found.");
+    ::Error("AddTaskEmcalPhysicsSelection", "No analysis manager found.");
     return 0;
   }
-  Bool_t isMC = (mgr->GetMCtruthEventHandler()) ? kTRUE:kFALSE; 
 
-  AliEmcalPhysicsSelectionTask *pseltask = new AliEmcalPhysicsSelectionTask("PhysSel");
-  //pseltask->SetDoWriteHistos(kFALSE);
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskEmcalPhysicsSelection", "This task requires an input event handler");
+    return NULL;
+  }
+
+  Bool_t isMC = (mgr->GetMCtruthEventHandler()) ? kTRUE:kFALSE; 
+  AliEmcalPhysicsSelectionTask *pseltask = new AliEmcalPhysicsSelectionTask("EmcalPSel");
+  pseltask->SetDoWriteHistos(wHistos);
+
   AliEmcalPhysicsSelection *physSel = pseltask->GetPhysicsSelection();
   physSel->SetSkipFastOnly(exFOnly);
-  //if (rejectBG) 
-  //physSel->AddBackgroundIdentification(new AliBackgroundSelection());
   if (computeBG)
     physSel->SetComputeBG(computeBG);
   if (isMC)      
@@ -26,14 +32,13 @@ AddTaskEmcalPhysicsSelelection(Bool_t exFOnly, Bool_t rejectBG=kTRUE, Bool_t com
   mgr->AddTask(pseltask);
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  mgr->ConnectInput(pseltask, 0, cinput);
-  TString oname("EventStat.root");
-  AliAnalysisDataContainer *co1 = 
-    mgr->CreateContainer("PhysSel",
-                         TList::Class(),
-                         AliAnalysisManager::kOutputContainer,
-                         oname);
-  mgr->ConnectOutput(pseltask,1,co1);
-  cout << " *** AliEmcalPhysicsTask configured *** " << endl;
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("cstatsout",
+                TList::Class(),
+                AliAnalysisManager::kOutputContainer,
+                "EventStat_temp.root");
+		
+  mgr->ConnectInput(pseltask,  0, cinput);
+  mgr->ConnectOutput(pseltask, 1, coutput);
+
   return pseltask;
 }   
