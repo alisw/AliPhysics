@@ -5,6 +5,7 @@
 //
 
 #include "AliEmcalPhysicsSelection.h"
+#include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
 
@@ -30,8 +31,22 @@ AliEmcalPhysicsSelection::AliEmcalPhysicsSelection() :
 //__________________________________________________________________________________________________
 UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj) 
 { 
-  const AliESDEvent *ev = static_cast<const AliESDEvent*>(obj);
-  UInt_t res = IsCollisionCandidate(ev); 
+  // Calculate selection mask.
+  
+  const AliVEvent *ev   = dynamic_cast<const AliVEvent*>(obj);
+  if (!ev) {
+    return 0;
+  }
+
+  UInt_t res = 0;
+  const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(obj);
+  const AliAODEvent *aev = 0;
+  if (eev) {
+    res = IsCollisionCandidate(eev); 
+  } else {
+    aev = dynamic_cast<const AliAODEvent*>(obj);
+    res = aev->GetHeader()->GetOfflineTrigger();
+  }
 
   fIsFastOnly  = kFALSE;
   fIsGoodEvent = kFALSE;
@@ -41,14 +56,16 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
 
   if ((res & AliVEvent::kAnyINT) || 
       (res & AliVEvent::kEMC1)   || 
-      (res & AliVEvent::kEMC7))
+      (res & AliVEvent::kEMC7)   || 
+      (res & AliVEvent::kEMCEJE) || 
+      (res & AliVEvent::kEMCEGA))
     fIsGoodEvent = kTRUE;
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   am->LoadBranch("EMCALCells.");
   am->LoadBranch("CaloClusters");
 
-  AliESDCaloCells *cells = ev->GetEMCALCells();
+  AliVCaloCells *cells = ev->GetEMCALCells();
   const Short_t nCells   = cells->GetNumberOfCells();
     
   // mark LHC11a fast only partition if requested 
@@ -76,7 +93,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
   
   const Int_t nCaloClusters = ev->GetNumberOfCaloClusters();
   for(Int_t iClus = 0; iClus<nCaloClusters; ++iClus) {
-    AliESDCaloCluster *cl = ev->GetCaloCluster(iClus);
+    AliVCluster *cl = ev->GetCaloCluster(iClus);
     if (!cl->IsEMCAL()) 
       continue;
     Double_t e = cl->E();
