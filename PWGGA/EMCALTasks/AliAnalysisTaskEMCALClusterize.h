@@ -101,10 +101,10 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   TString        GetPass()    ;
   
-  void           SwitchOnEMCALOADB()                            { fAccessOCDB         = kTRUE   ; }
-  void           SwitchOffEMCALOADB()                           { fAccessOCDB         = kFALSE  ; }
+  void           SwitchOnEMCALOADB()                            { fAccessOADB        = kTRUE   ; }
+  void           SwitchOffEMCALOADB()                           { fAccessOADB        = kFALSE  ; }
     
-  void           SetOADBFilePath(TString path)                  { fOADBFilePath  = path    ; }
+  void           SetOADBFilePath(TString path)                  { fOADBFilePath      = path    ; }
   
  private:
     
