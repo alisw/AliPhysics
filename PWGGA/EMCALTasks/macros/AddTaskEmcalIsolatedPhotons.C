@@ -1,10 +1,11 @@
+// $Id$
+
 AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
-						       const char *ntracks            = "Tracks",
-						       const char *nclusters          = "CaloClusters",
-						       const char *njets              = "Jets",
-						       const char *ntrgclusters       = "ClustersL1GAMMAFEE",
-						       const Int_t AODtrackFilterBit  = 256  // hybrid LHC11h tracks
-                                                       )
+  const char *ntracks            = "Tracks",
+  const char *nclusters          = "CaloClusters",
+  const char *njets              = "Jets",
+  const char *ntrgclusters       = "ClustersL1GAMMAFEE"
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -32,7 +33,6 @@ AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
   phTask->SetClusName(nclusters);
   phTask->SetJetsName(njets);
   phTask->SetTrgClusName(ntrgclusters);
-  phTask->SetAODFilterBit(AODtrackFilterBit); // global hybrids for LHC11h
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -50,5 +50,4 @@ AliEmcalIsolatedPhotonsTask* AddTaskEmcalIsolatedPhotons(
   mgr->ConnectOutput (phTask, 1, coutput1 );
 
   return phTask;
-  
 }
