@@ -81,7 +81,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fShiftEta(2),
     fTRUShift(0),
     fClusterizeFastORs(0),
-    fTrackName()
+    fTrackName(),
+    fCutL0Times(kTRUE)
 { 
   // Constructor
 
@@ -122,7 +123,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fShiftEta(2),
     fTRUShift(0),
     fClusterizeFastORs(0),
-    fTrackName()
+    fTrackName(),
+    fCutL0Times(kTRUE)
 { 
   // Constructor
 
@@ -293,12 +295,13 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       Int_t triggerTime = 0;
       Int_t ntimes = 0;
       triggers->GetNL0Times(ntimes);
-      if (ntimes > 0) {
-        Int_t trgtimes[25];
-        triggers->GetL0Times(trgtimes);
-        triggerTime = trgtimes[0];
-      }
-      
+      if (!(ntimes > 0) && fCutL0Times)
+	continue;
+
+      Int_t trgtimes[25];
+      triggers->GetL0Times(trgtimes);
+      triggerTime = trgtimes[0];
+     
       Int_t triggerCol = 0, triggerRow = 0;
       triggers->GetPosition(triggerCol, triggerRow);
       
