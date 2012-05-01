@@ -1,4 +1,8 @@
 // $Id$
+//
+// Emcal jet finder task.
+//
+//
 
 #include "AliEmcalJetTask.h"
 #include <TChain.h>
