@@ -5,16 +5,14 @@
 //
 
 #include <TClonesArray.h>
-
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
-#include "AliPicoTrack.h"
-#include "AliVTrack.h"
+#include "AliAODEvent.h"
 #include "AliAODTrack.h"
+#include "AliAnalysisManager.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliLog.h"
-
+#include "AliPicoTrack.h"
+#include "AliVTrack.h"
 #include "AliEmcalPicoTrackMaker.h"
 
 ClassImp(AliEmcalPicoTrackMaker)
@@ -33,7 +31,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
 
 //________________________________________________________________________
 AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) : 
-  AliAnalysisTaskSE("AliEmcalPicoTrackMaker"),
+  AliAnalysisTaskSE(name),
   fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
@@ -42,25 +40,19 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
 {
   // Constructor.
 
-  if (!name)
-    return;
-
-  SetName(name);
-
   fBranchNames = "ESD:AliESDHeader.,AliESDRun.,SPDVertex.,Tracks";
 }
 
 //________________________________________________________________________
 AliEmcalPicoTrackMaker::~AliEmcalPicoTrackMaker()
 {
-  //Destructor
-
+  // Destructor.
 }
 
 //________________________________________________________________________
 void AliEmcalPicoTrackMaker::UserCreateOutputObjects()
 {
-  // Create histograms.
+  // Create my user objects.
 
   fTracksOut = new TClonesArray("AliPicoTrack");
   fTracksOut->SetName(fTracksOutName);
@@ -77,113 +69,61 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     return;
   }
 
-  // Add tracks to event if not yet there
+  // retrieve tracks from input.
+  fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
+  if (!fTracksIn) {
+    AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data())); 
+    return;
+  }
+
+  // add tracks to event if not yet there
   if (!(InputEvent()->FindListObject(fTracksOutName))) {
     InputEvent()->AddObject(fTracksOut);
   }
-  else {
-    // IMPORTANT: if it is not an AliESDEvent, non-std TClonesArray will not be cleared automatically!
-    if (!(InputEvent()->InheritsFrom("AliESDEvent")))
-      fTracksOut->Delete();
-  }
 
-  RetrieveEventObjects();
+  // clear container (normally a null operation as the event should clean it already)
+  fTracksOut->Clear();
 
-  Int_t Ntracks = GetNumberOfTracks();
+  // test if we are in ESD or AOD mode
+  Bool_t esdMode = kTRUE;
+  if (dynamic_cast<AliAODEvent*>(InputEvent())!=0)
+    esdMode = kFALSE;
+ 
+  // loop over tracks
+  const Int_t Ntracks = fTracksIn->GetEntriesFast();
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
-    AliVTrack *track = GetTrack(iTracks);
-    
-    if (!AcceptTrack(track))
+    AliVTrack *track = dynamic_cast<AliVTrack*>(fTracksIn->At(iTracks));
+    if (!track)
       continue;
-
     Int_t label = -1;
-
-    if (track->InheritsFrom("AliAODTrack")) {
-      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
+    if (esdMode) {
+      if (fESDtrackCuts) {
+        AliESDtrack *esdtrack = static_cast<AliESDtrack*>(track);
+        if (!fESDtrackCuts->AcceptTrack(esdtrack))
+          continue;
+      }
+      label = track->GetLabel();
+    } else {
+      AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
       if (aodtrack->TestFilterBit(fAODfilterBits[0]))
 	label = 0;
-      else //if (aodtrack->TestFilterBit(fAODfilterBits[1]))
+      else if (aodtrack->TestFilterBit(fAODfilterBits[1]))
 	label = 3;
-    }
-    else {
-      label = track->GetLabel();
+      else /*not a good track*/
+        continue;
     }
 
-    AliPicoTrack *picotrack = new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), track->Eta(), track->Phi(), 
-					   track->Charge(), label, 
-					   track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->IsEMCAL());
+    AliPicoTrack *picotrack = new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
+                                                                     track->Eta(), 
+                                                                     track->Phi(), 
+                                                                     track->Charge(), 
+                                                                     label, 
+                                                                     track->GetTrackEtaOnEMCal(), 
+                                                                     track->GetTrackPhiOnEMCal(), 
+                                                                     track->IsEMCAL());
     if (track->IsEMCAL()) {
       picotrack->SetEMCALcluster(track->GetEMCALcluster());
     }
-    //cout << iTracks << " - is emcal = " << track->IsEMCAL() << ", phiemc = " << track->GetTrackPhiOnEMCal() << ", etaemc = " << track->GetTrackEtaOnEMCal() << ", emcid = " << track->GetEMCALcluster() << endl;
     ++nacc;
   }
-}
-
-//________________________________________________________________________
-Bool_t AliEmcalPicoTrackMaker::AcceptTrack(AliVTrack *track)
-{
-  if (!track)
-    return kFALSE;
-
-  if (track->InheritsFrom("AliAODTrack")) {
-    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
-    if (aodtrack) {
-      //cout << "filter bit = " << fFilterBit << ", filter map = " << aodtrack->GetFilterMap() << endl;
-      //cout << fAODfilterBits[0]+fAODfilterBits[1] << endl;
-      return aodtrack->TestFilterBit(fAODfilterBits[0] | fAODfilterBits[1]);
-      //return aodtrack->IsHybridGlobalConstrainedGlobal();
-    }
-    else {
-      AliError("Could not cast AOD track!");
-      return kFALSE;
-    }
-  }
-  else if (track->InheritsFrom("AliESDtrack")) { 
-    if (fESDtrackCuts) {
-      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track);
-      if (esdtrack) {
-	return fESDtrackCuts->AcceptTrack(esdtrack);
-      }
-      else {
-	AliError("Could not cast ESD track!");
-	return kFALSE;
-      }
-    }
-    else {
-      return kTRUE;
-    }
-  }
-  else {
-    AliWarning("Track type not recognized: nothing to filter!");
-    return kTRUE;
-  }
-}
-
-//________________________________________________________________________
-void AliEmcalPicoTrackMaker::RetrieveEventObjects()
-{
-  fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
-
-  if (!fTracksIn) {
-    AliError(Form("ERROR: Could not retrieve tracks %s!", fTracksInName.Data())); 
-  }
-}
-
-//________________________________________________________________________
-AliVTrack* AliEmcalPicoTrackMaker::GetTrack(const Int_t i) const
-{
-  if (fTracksIn)
-    return dynamic_cast<AliVTrack*>(fTracksIn->At(i));
-  else
-    return 0;
-}
-
-//________________________________________________________________________
-Int_t AliEmcalPicoTrackMaker::GetNumberOfTracks() const
-{
-  if (fTracksIn)
-    return fTracksIn->GetEntriesFast();
-  else
-    return 0;
 }
