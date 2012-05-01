@@ -83,6 +83,11 @@ void AliEmcalJetTask::UserExec(Option_t *)
 
   if (!(InputEvent()->FindListObject(fJetsName)))
     InputEvent()->AddObject(fJets);
+  else {
+    // IMPORTANT: if it is not an AliESDEvent, non-std TClonesArray will not be cleared automatically!
+    if (!(InputEvent()->InheritsFrom("AliESDEvent")))
+      fJets->Delete();
+  }
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   TClonesArray *tracks = 0;
