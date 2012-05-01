@@ -5,7 +5,6 @@
 
 class TClonesArray;
 class TString;
-class AliESDtrackCuts;
 class AliVTrack;
 class AliVCluster;
 class TList;
@@ -29,10 +28,6 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   void                        SetJetsName(const char *n)                    { fJetsName      = n          ; }
   void                        SetTracksName(const char *n)                  { fTracksName    = n          ; }
   void                        SetTrgClusName(const char *n)                 { fTrgClusName   = n          ; }
-  virtual void                SetTrackCuts(AliESDtrackCuts *cuts)           { fESDTrackCuts = cuts        ; }
-  virtual AliESDtrackCuts    *GetTrackCuts()                          const { return fESDTrackCuts        ; }
-  virtual void                SetAODFilterBit(const Int_t b)                { fFilterBit = b              ; }
-  virtual Int_t               GetAODFilterBit()                       const { return fFilterBit           ; }
 
  protected:
 
@@ -46,7 +41,7 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   Int_t                       GetNumberOfTrgClusters()         const;
   void                        FillHistograms()                      ;
   void                        RetrieveEventObjects()                ;
-  Bool_t                      AcceptTrack(AliVTrack *track)         ;
+  Bool_t                      AcceptTrack(AliVTrack* /*track*/)     ;
 
   TList                      *fOutput;                 // Output list
 
@@ -54,26 +49,21 @@ class AliEmcalIsolatedPhotonsTask : public AliAnalysisTaskSE {
   TString                     fCaloName;               // name of calo cluster collection
   TString                     fJetsName;               // name of jet collection
   TString                     fTrgClusName;            // name of trg clus name
-  AliESDtrackCuts            *fESDTrackCuts;           // Track cuts
-  Int_t                       fFilterBit;              // AOD filter bit
   TClonesArray               *fTracks;                 //!Tracks
   TClonesArray               *fCaloClusters;           //!Clusters
   TClonesArray               *fJets;                   //!Jets
   TClonesArray               *fTrgClusters;            //!Trg Clusters
-  TH1F                       *fHistTracksPt;           // Pt spectrum of tracks
-  TH1F                       *fHistClustersEnergy;     // Energy spectrum of clusters
-  TH2F                       *fHistEPcorrelation;      // Energy-momentum correlation
-  TH1F                       *fHistJetsEnergy;         // Energy spectrum of jets
-  TH1F                       *fHistJetsNE;             // Jet neutral energy spectrum
-  TH1F                       *fHistJetsNEF;            // Jet neutral energy fraction
-  TH1F                       *fHistJetsZ;              // Constituent Pt over Jet E ratio
-  TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks
-  TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
-  TH2F                       *fHistJetPhiEta;          // Phi-Eta distribution of jets
-  TH1F                       *fHistMaxTrgCluster;      // Energy distribution of max trigger clusters
-  TH1F                       *fHistTrackPhi[4];        // Phi distribution of hybrid tracks
-  TH1F                       *fHistTrackEta[4];        // Eta distribution of hybrid tracks
-
+  AliCentrality              *fCent;                   // Event centrality
+  TH1F                       *fHistCentrality;         // Event centrality distribution
+  TH1F                       *fHistJetsE[4];           // Jet energy spectrum
+  TH1F                       *fHistJetsNE[4];          // Jet neutral energy spectrum
+  TH1F                       *fHistJetsNEF[4];         // Jet neutral energy fraction
+  TH1F                       *fHistJetsZ[4];           // Constituent Pt over Jet E ratio
+  TH1F                       *fHistLeadingJetE[4];     // Leading jet energy spectrum
+  TH1F                       *fHistTracksPtLJ[4];      // Pt spectrum of tracks
+  TH1F                       *fHistClusELJ[4];         // Energy spectrum of clusters
+  TH1F                       *fHistTracksPtBkg[4];     // Pt spectrum of tracks
+  TH1F                       *fHistClusEBkg[4];        // Energy spectrum of clusters
   Int_t                       Ptbins;                  // No. of pt bins
   Float_t                     Ptlow;                   // Min pt
   Float_t                     Ptup;                    // Max pt
