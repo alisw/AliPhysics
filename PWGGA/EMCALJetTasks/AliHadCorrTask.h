@@ -39,7 +39,7 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   TString                fOutCaloName;            //name of output clusters
   TClonesArray          *fOutClusters;           //output cluster collection
 
-  TH2                   *fHistMatchEtaPhi[4];
+  TH2                   *fHistMatchEtaPhi[4][5];
   TList                 *fOutputList;
   TH2                   *fHistMatchEvsP[4];
   TH2                   *fHistMatchdRvsEP[4];
@@ -47,8 +47,8 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   TH1                   *fHistNclusMatchvsCent;
   TH1                   *fHistEbefore;
   TH1                   *fHistEafter;
-
-
+  TH2                   *fHistEoPCent;
+  TH2                   *fHistNMatchCent;
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented

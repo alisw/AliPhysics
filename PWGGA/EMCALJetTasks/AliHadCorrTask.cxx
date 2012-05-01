@@ -1,5 +1,3 @@
-// $Id$
-
 #include <TClonesArray.h>
 #include <TParticle.h>
 #include <TList.h>
@@ -9,7 +7,6 @@
 #include <TLorentzVector.h>
 
 #include "AliCentrality.h"
-#include "AliEmcalJet.h"
 #include "AliAnalysisManager.h"
 #include "AliESDtrack.h"
 #include "AliFJWrapper.h"
@@ -36,17 +33,20 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
   fHistEbefore(0),
-  fHistEafter(0)
+  fHistEafter(0),
+  fHistEoPCent(0),
+  fHistNMatchCent(0)
 {
 
-  for(Int_t i=0; i<4; i++){
-    fHistMatchEtaPhi[i]=0x0;
+ for(Int_t i=0; i<4; i++){
+    for(Int_t j=0; j<5; j++){
+      fHistMatchEtaPhi[i][j]=0x0;
+    }
     fHistMatchEvsP[i]=0x0;
     fHistMatchdRvsEP[i]=0x0;
   }
 
   // Standard constructor.
-  cout << "Constructor for HadCorrTask " << name <<endl;
   if (!name)
     return;
 
@@ -70,7 +70,9 @@ AliHadCorrTask::AliHadCorrTask() :
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
   fHistEbefore(0),
-  fHistEafter(0)
+  fHistEafter(0),
+  fHistEoPCent(0),
+  fHistNMatchCent(0)
 {
   // Standard constructor.
 
@@ -114,29 +116,36 @@ void AliHadCorrTask::UserCreateOutputObjects()
 
   char name[200];
 
-  for(int icent=0; icent<4; icent++){
-    sprintf(name,"fHistMatchEtaPhi_%i",icent);
-    fHistMatchEtaPhi[icent] = new TH2F(name,name,400,-0.2,0.2,1600,-0.8,0.8);
+   for(int icent=0; icent<4; icent++){
+    for(int ipt=0; ipt<5; ipt++){
+      sprintf(name,"fHistMatchEtaPhi_%i_%i",icent,ipt);
+      fHistMatchEtaPhi[icent][ipt] = new TH2F(name,name,400,-0.2,0.2,1600,-0.8,0.8);
+      fOutputList->Add(fHistMatchEtaPhi[icent][ipt]);
+    }
+
     sprintf(name,"fHistMatchEvsP_%i",icent);
     fHistMatchEvsP[icent]=new TH2F(name,name,400,0.,200.,1000,0.,10.);
     sprintf(name,"fHistMatchdRvsEP_%i",icent);
     fHistMatchdRvsEP[icent]=new TH2F(name,name,1000,0.,1.,1000,0.,10.);
-
     
-  fOutputList->Add(fHistMatchEtaPhi[icent]);
-  fOutputList->Add(fHistMatchEvsP[icent]);
-  fOutputList->Add(fHistMatchdRvsEP[icent]);
+    fOutputList->Add(fHistMatchEvsP[icent]);
+    fOutputList->Add(fHistMatchdRvsEP[icent]);
+   }
 
-  }
+
   fHistNclusvsCent=new TH1F("Nclusvscent","NclusVsCent",100,0,100);
   fHistNclusMatchvsCent=new TH1F("NclusMatchvscent","NclusMatchVsCent",100,0,100);
   fHistEbefore=new TH1F("Ebefore","Ebefore",100,0,100);
   fHistEafter=new TH1F("Eafter","Eafter",100,0,100);
+  fHistEoPCent = new TH2F("EoPCent","EoPCent",100,0.0,100.,1000,0.0,10.);
+  fHistNMatchCent = new TH2F("NMatchesCent","NMatchesCent",100,0.0,100.,101,-0.5,100.5);
 
   fOutputList->Add(fHistNclusMatchvsCent);
   fOutputList->Add(fHistNclusvsCent);
   fOutputList->Add(fHistEbefore);
   fOutputList->Add(fHistEafter);
+  fOutputList->Add(fHistEoPCent);
+  fOutputList->Add(fHistNMatchCent);
 
   PostData(1, fOutputList);
 }
@@ -186,7 +195,7 @@ void AliHadCorrTask::UserExec(Option_t *)
   if(fCent>=0 && fCent<10) centbin=0;
   else if(fCent>=10 && fCent<30) centbin=1;
   else if(fCent>=30 && fCent<50) centbin=2;
-  else if(fCent>=50 && fCent<100) centbin=3;
+  else if(fCent>=50 && fCent<=100) centbin=3;
  
   if (clus) {
     Double_t vertex[3] = {0, 0, 0};
@@ -202,11 +211,18 @@ void AliHadCorrTask::UserExec(Option_t *)
 
       c->SetEmcCpvDistance(-1);
       c->SetTrackDistance(999,999);
+      c->GetMomentum(nPart, vertex);
       Double_t dEtaMin  = 1e9;
       Double_t dPhiMin  = 1e9;
       Int_t    imin     = -1;
+      Double_t totaltrkpt =0.0;
+      Int_t Nmatches = 0;
+      Double_t energy = nPart.P();
+      if(energy<fMinPt) continue;
       for(Int_t t = 0; t<Ntrks; ++t) {
         AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+	if (! track)
+	  continue;
         Double_t etadiff=999;
         Double_t phidiff=999;
         AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
@@ -218,45 +234,84 @@ void AliHadCorrTask::UserExec(Option_t *)
           dEtaMin = etadiff;
           dPhiMin = phidiff;
           imin = t;
-        }
+	}
+	  if(fHadCorr>1) {
+	    Double_t fpt=track->P();
+	    Int_t ptbin=-1;
+	    if(fpt>=0 && fpt<0.5) ptbin=0;
+	    else if(fpt>=0.5 && fpt<2.) ptbin=1;
+	    else if(fpt>=2. && fpt<3.) ptbin=2;
+	    else if(fpt>=3. && fpt<5.) ptbin=3;
+	    else if(fpt>=5.) ptbin=4;
+	    if(fpt>0) fHistMatchEtaPhi[centbin][ptbin]->Fill(etadiff,phidiff);
+	    if(track->P()>0) fHistMatchdRvsEP[centbin]->Fill(dR,energy/track->P());
+	  }
+
+	  if (TMath::Abs(phidiff)<0.05 && TMath::Abs(etadiff)<0.025) { // pp cuts!!!
+	    Nmatches++;
+	    totaltrkpt=totaltrkpt+track->P();
+	  }
+        
       }
+      fHistNMatchCent->Fill(fCent,Nmatches);
       c->SetEmcCpvDistance(imin);
       c->SetTrackDistance(dPhiMin, dEtaMin);
-      c->GetMomentum(nPart, vertex);
-      Double_t energy = nPart.P();
-      if(energy<fMinPt) continue;
-      if (imin>=0) {
-	dPhiMin = c->GetTrackDx();
-	dEtaMin = c->GetTrackDz();
-	fHistMatchEtaPhi[centbin]->Fill(dEtaMin,dPhiMin);
-      }
 
       fHistNclusvsCent->Fill(fCent);
-    
+      if(Nmatches>0) fHistNclusMatchvsCent->Fill(fCent);
+      fHistEbefore->Fill(fCent,energy);
       if (fHadCorr>0) {
-	if (imin>=0) {
-	  dPhiMin = c->GetTrackDx();
-	  dEtaMin = c->GetTrackDz();
-	  Double_t dR=TMath::Sqrt(dEtaMin*dEtaMin+dPhiMin*dPhiMin);
+	//to subtract only the closest track set fHadCor to a %
+	//to subtract all tracks within the cut set fHadCor to %+1
+	if(fHadCorr>1){
+	  if (totaltrkpt>0){
+	    double EoP=energy/totaltrkpt;
+	    fHistEoPCent->Fill(fCent,EoP);
+	    fHistMatchEvsP[centbin]->Fill(energy,EoP);
+	  }
+	  energy -= (fHadCorr-1)*totaltrkpt;
+	  if (energy<0)
+	    continue;
+	}
+	else{
+	  if (imin>=0) {
+	    dPhiMin = c->GetTrackDx();
+	    dEtaMin = c->GetTrackDz();
+	    Double_t dR=TMath::Sqrt(dEtaMin*dEtaMin+dPhiMin*dPhiMin);
+	    
+	    AliVTrack *t = dynamic_cast<AliVTrack*>(tracks->At(imin));
+	    if (t) {
+	      if (t->Pt()<fMinPt)
+		continue;
+		
+	      Double_t fpt=t->P();
+	      Int_t ptbin=-1;
+	      if(fpt>=0 && fpt<1.) ptbin=0;
+	      else if(fpt>=1. && fpt<2.) ptbin=1;
+	      else if(fpt>=2. && fpt<3.) ptbin=2;
+	      else if(fpt>=3. && fpt<5.) ptbin=3;
+	      else if(fpt>=5.) ptbin=4;
 	      
-	  AliVTrack *t = dynamic_cast<AliVTrack*>(tracks->At(imin));
-	  if (t) {
-	    if (t->Pt()<fMinPt)
-	      continue;
-	    if (t->P()>0) fHistMatchEvsP[centbin]->Fill(energy,energy/t->P());
-	    if (t->P()>0) fHistMatchdRvsEP[centbin]->Fill(dR,energy/t->P());
-	    fHistEbefore->Fill(fCent,energy);
-	    if (dPhiMin<0.05 && dEtaMin<0.025) { // pp cuts!!!
-              energy -= fHadCorr*t->P();
-	      fHistNclusMatchvsCent->Fill(fCent);
+	      fHistMatchEtaPhi[centbin][ptbin]->Fill(dEtaMin,dPhiMin);
+	      
+
+	      if (t->P()>0){
+		fHistMatchEvsP[centbin]->Fill(energy,energy/t->P());
+		fHistEoPCent->Fill(fCent,energy/t->P());
+		fHistMatchdRvsEP[centbin]->Fill(dR,energy/t->P());
+	      }
+	      if (TMath::Abs(dPhiMin)<0.05 && TMath::Abs(dEtaMin)<0.025) { // pp cuts!!!
+		energy -= fHadCorr*t->P();
+	      }
+	      if (energy<0)
+		continue;
 	    }
-	    if (energy<0)
-	      continue;
 	  }
 	}
 	fHistEafter->Fill(fCent,energy);
 
       }//end had correction if
+
       if (energy>0){//Output new corrected clusters
 	AliVCluster *oc;
 	if (c->InheritsFrom("AliESDCaloCluster")) {
@@ -273,16 +328,14 @@ void AliHadCorrTask::UserExec(Option_t *)
 	clusCount++;
       }
     }
-
-
   }
 }
- 
+
 
 //________________________________________________________________________
 void AliHadCorrTask::Terminate(Option_t *) 
 {
-
+  
 }
 
 //________________________________________________________________________
