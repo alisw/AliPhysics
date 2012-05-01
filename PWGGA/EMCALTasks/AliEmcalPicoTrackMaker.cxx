@@ -77,11 +77,17 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     return;
   }
 
-  RetrieveEventObjects();
-
-  // add tracks to event if not yet there
-  if (!(InputEvent()->FindListObject(fTracksOutName)))
+  // Add tracks to event if not yet there
+  if (!(InputEvent()->FindListObject(fTracksOutName))) {
     InputEvent()->AddObject(fTracksOut);
+  }
+  else {
+    // IMPORTANT: if it is not an AliESDEvent, non-std TClonesArray will not be cleared automatically!
+    if (!(InputEvent()->InheritsFrom("AliESDEvent")))
+      fTracksOut->Delete();
+  }
+
+  RetrieveEventObjects();
 
   Int_t Ntracks = GetNumberOfTracks();
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
@@ -90,16 +96,14 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     if (!AcceptTrack(track))
       continue;
 
-    Int_t label = 0;
+    Int_t label = -1;
 
     if (track->InheritsFrom("AliAODTrack")) {
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
       if (aodtrack->TestFilterBit(fAODfilterBits[0]))
 	label = 0;
-      else if (aodtrack->TestFilterBit(fAODfilterBits[1]))
-	label = 1;
-      else //if (aodtrack->TestFilterBit(fAODfilterBits[2]))
-	label = 2;
+      else //if (aodtrack->TestFilterBit(fAODfilterBits[1]))
+	label = 3;
     }
     else {
       label = track->GetLabel();
@@ -126,8 +130,9 @@ Bool_t AliEmcalPicoTrackMaker::AcceptTrack(AliVTrack *track)
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
     if (aodtrack) {
       //cout << "filter bit = " << fFilterBit << ", filter map = " << aodtrack->GetFilterMap() << endl;
-      //return aodtrack->TestFilterBit(fAODfilterBits[0]+fAODfilterBits[1]+fAODfilterBits[2]);
-      return aodtrack->IsHybridGlobalConstrainedGlobal();
+      //cout << fAODfilterBits[0]+fAODfilterBits[1] << endl;
+      return aodtrack->TestFilterBit(fAODfilterBits[0] | fAODfilterBits[1]);
+      //return aodtrack->IsHybridGlobalConstrainedGlobal();
     }
     else {
       AliError("Could not cast AOD track!");
@@ -149,8 +154,8 @@ Bool_t AliEmcalPicoTrackMaker::AcceptTrack(AliVTrack *track)
       return kTRUE;
     }
   }
-  else if (track->InheritsFrom("PicoTrack")) {
-    AliWarning("PicoTrack: nothing to filter!");
+  else {
+    AliWarning("Track type not recognized: nothing to filter!");
     return kTRUE;
   }
 }
