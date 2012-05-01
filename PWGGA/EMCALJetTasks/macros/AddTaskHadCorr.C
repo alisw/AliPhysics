@@ -1,10 +1,13 @@
+// $Id: $
+
 AliHadCorrTask* AddTaskHadCorr(
-						       const char *ntracks        = "Tracks",
-						       const char *nclusters      = "CaloClusters",
-						       const char *outclusname    = "CaloClustersOut",
-						       const Double_t hadcorr     = 1,
-						       const Double_t minPt       = 0.15
-                                                       )
+  const char *ntracks        = "Tracks",
+  const char *nclusters      = "CaloClusters",
+  const char *outclusname    = "CaloClustersCorr",
+  const Double_t hadcorr     = 1,
+  const Double_t minPt       = 0.15,
+  const char *outputname     = "HadCorrOutput.root"
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -27,12 +30,13 @@ AliHadCorrTask* AddTaskHadCorr(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliHadCorrTask *hcor = new AliHadCorrTask("hcor");
+  TString name(Form("HadronicCorrection_%s", outclusname));
+  AliHadCorrTask *hcor = new AliHadCorrTask(name);
   hcor->SetTracksName(ntracks);
-  hcor->SetHadCorr(hadcorr);
   hcor->SetClusName(nclusters);
-  hcor->SetMinPt(minPt);
   hcor->SetOutClusName(outclusname);  
+  hcor->SetHadCorr(hadcorr);
+  hcor->SetMinPt(minPt);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -42,10 +46,10 @@ AliHadCorrTask* AddTaskHadCorr(
     
   // Create containers for input/output
   mgr->ConnectInput (hcor, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer *cohcor = mgr->CreateContainer(Form("MatchQAktchemhcorr2"),TList::Class(),AliAnalysisManager::kOutputContainer,Form("Rosi.rho.root"));
-  mgr->ConnectOutput(hcor,0,mgr->GetCommonOutputContainer());
+  AliAnalysisDataContainer *cohcor = mgr->CreateContainer(name,
+                                                          TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                          outputname);
   mgr->ConnectOutput(hcor,1,cohcor);
     
   return hcor;
-  
 }
