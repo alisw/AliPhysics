@@ -1,4 +1,4 @@
-// $Id: AliEmcalIsolatedPhotonsTask.cxx  $
+// $Id$
 
 #include <TChain.h>
 #include <TClonesArray.h>
@@ -18,13 +18,13 @@
 #include "AliVEventHandler.h"
 #include "AliPicoTrack.h"
 
-#include "AliEmcalIsolatedPhotonsTask.h"
+#include "AliAnalysisTaskSAJF.h"
 
-ClassImp(AliEmcalIsolatedPhotonsTask)
+ClassImp(AliAnalysisTaskSAJF)
 
 //________________________________________________________________________
-AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask() : 
-  AliAnalysisTaskSE("AliEmcalIsolatedPhotonsTask"),
+AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
+  AliAnalysisTaskSE("AliAnalysisTaskSAJF"),
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -60,8 +60,8 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask() :
 }
 
 //________________________________________________________________________
-AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) : 
-  AliAnalysisTaskSE("AliEmcalIsolatedPhotonsTask"),
+AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
+  AliAnalysisTaskSE(name),
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -82,10 +82,6 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) :
 {
   // Standard constructor.
 
-  if (!name)
-    return;
-
-  SetName(name);
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 
   for (Int_t i = 0; i < 4; i++) {
@@ -99,19 +95,16 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) :
     fHistTracksPtBkg[i] = 0;
     fHistClusEBkg[i] = 0;
   }
-
-  DefineInput(0,TChain::Class());
-  DefineOutput(1,TList::Class());
 }
 
 //________________________________________________________________________
-AliEmcalIsolatedPhotonsTask::~AliEmcalIsolatedPhotonsTask()
+AliAnalysisTaskSAJF::~AliAnalysisTaskSAJF()
 {
   // Destructor
 }
 
 //________________________________________________________________________
-void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
+void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 {
   // Create histograms
   
@@ -193,7 +186,7 @@ void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
-void AliEmcalIsolatedPhotonsTask::RetrieveEventObjects()
+void AliAnalysisTaskSAJF::RetrieveEventObjects()
 {
   fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
   if (!fCaloClusters) {
@@ -220,7 +213,7 @@ void AliEmcalIsolatedPhotonsTask::RetrieveEventObjects()
   fCent = InputEvent()->GetCentrality();
 }
 
-AliVTrack* AliEmcalIsolatedPhotonsTask::GetTrack(const Int_t i) const
+AliVTrack* AliAnalysisTaskSAJF::GetTrack(const Int_t i) const
 {
   if (fTracks)
     return dynamic_cast<AliVTrack*>(fTracks->At(i));
@@ -228,7 +221,7 @@ AliVTrack* AliEmcalIsolatedPhotonsTask::GetTrack(const Int_t i) const
     return 0;
 }
 
-Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfTracks() const
+Int_t AliAnalysisTaskSAJF::GetNumberOfTracks() const
 {
   if (fTracks)
     return fTracks->GetEntriesFast();
@@ -236,7 +229,7 @@ Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfTracks() const
     return 0;
 }
 
-AliVCluster* AliEmcalIsolatedPhotonsTask::GetCaloCluster(const Int_t i) const
+AliVCluster* AliAnalysisTaskSAJF::GetCaloCluster(const Int_t i) const
 { 
   if (fCaloClusters)
     return dynamic_cast<AliVCluster*>(fCaloClusters->At(i));
@@ -244,7 +237,7 @@ AliVCluster* AliEmcalIsolatedPhotonsTask::GetCaloCluster(const Int_t i) const
     return 0;
 }
 
-Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfCaloClusters() const
+Int_t AliAnalysisTaskSAJF::GetNumberOfCaloClusters() const
 { 
   if (fCaloClusters)
     return fCaloClusters->GetEntriesFast();
@@ -252,7 +245,7 @@ Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfCaloClusters() const
     return 0;
 }
 
-AliEmcalJet* AliEmcalIsolatedPhotonsTask::GetJet(const Int_t i) const
+AliEmcalJet* AliAnalysisTaskSAJF::GetJet(const Int_t i) const
 {
   if (fJets)
     return dynamic_cast<AliEmcalJet*>(fJets->At(i));
@@ -260,7 +253,7 @@ AliEmcalJet* AliEmcalIsolatedPhotonsTask::GetJet(const Int_t i) const
     return 0;
 }
 
-Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfJets() const
+Int_t AliAnalysisTaskSAJF::GetNumberOfJets() const
 {
   if (fJets)
     return fJets->GetEntriesFast();
@@ -268,7 +261,7 @@ Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfJets() const
     return 0;
 }
 
-AliVCluster* AliEmcalIsolatedPhotonsTask::GetTrgCluster(const Int_t i) const
+AliVCluster* AliAnalysisTaskSAJF::GetTrgCluster(const Int_t i) const
 {
   if (fTrgClusters)
     return dynamic_cast<AliVCluster*>(fTrgClusters->At(i));
@@ -276,7 +269,7 @@ AliVCluster* AliEmcalIsolatedPhotonsTask::GetTrgCluster(const Int_t i) const
     return 0;
 }
 
-Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfTrgClusters() const
+Int_t AliAnalysisTaskSAJF::GetNumberOfTrgClusters() const
 {
   if (fTrgClusters)
     return fTrgClusters->GetEntriesFast();
@@ -284,7 +277,7 @@ Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfTrgClusters() const
     return 0;
 }
 
-void AliEmcalIsolatedPhotonsTask::FillHistograms()
+void AliAnalysisTaskSAJF::FillHistograms()
 {
   Float_t cent = fCent->GetCentralityPercentile("V0M");
 
@@ -416,13 +409,13 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
 
 
 //________________________________________________________________________
-Bool_t AliEmcalIsolatedPhotonsTask::AcceptTrack(AliVTrack* /*track*/)
+Bool_t AliAnalysisTaskSAJF::AcceptTrack(AliVTrack* /*track*/)
 {
   return kTRUE;
 }
 
 //________________________________________________________________________
-void AliEmcalIsolatedPhotonsTask::UserExec(Option_t *) 
+void AliAnalysisTaskSAJF::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
   // Add jets to event if not yet there
@@ -436,7 +429,7 @@ void AliEmcalIsolatedPhotonsTask::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliEmcalIsolatedPhotonsTask::Terminate(Option_t *) 
+void AliAnalysisTaskSAJF::Terminate(Option_t *) 
 {
   // Called once at the end of the analysis.
 }
