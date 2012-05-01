@@ -1,4 +1,4 @@
-// $Id: AliEmcalPicoTrackMaker.cxx  $
+// $Id$
 //
 // Class to make PicoTracks in AOD/ESD events.
 //

@@ -1,6 +1,6 @@
 // $Id$
 //
-// Emcal physics selection class
+// Emcal physics selection class.
 //
 //
 

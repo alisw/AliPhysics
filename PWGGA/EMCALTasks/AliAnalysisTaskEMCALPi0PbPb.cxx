@@ -1,6 +1,6 @@
 // $Id$
 //
-// Analysis task for neutral pions (into two gammas)
+// Analysis task for neutral pions (into two gammas).
 //
 //
 

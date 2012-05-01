@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliEmcalTenderTask.cxx 48689 2011-03-23 21:35:50Z agheata $ */
+/* $Id$ */
 
 #include <TChain.h>
 #include <TFile.h>

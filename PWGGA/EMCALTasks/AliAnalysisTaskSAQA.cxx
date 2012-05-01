@@ -1,6 +1,6 @@
 // $Id$
 //
-// General QA task (S.Aiola)
+// General QA task (S.Aiola).
 //
 //
 

@@ -1,7 +1,7 @@
 #ifndef ALIEMCALTENDERTASK_H
 #define ALIEMCAKTENDERTASK_H
 
-// $Id: $
+// $Id$
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"

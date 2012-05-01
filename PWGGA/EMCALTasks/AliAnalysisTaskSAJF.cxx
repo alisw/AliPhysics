@@ -1,6 +1,6 @@
 // $Id$
 //
-// Jet finder analysis task (S.Aiola)
+// Jet finder analysis task (S.Aiola).
 //
 //
 

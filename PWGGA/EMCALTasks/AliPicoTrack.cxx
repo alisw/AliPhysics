@@ -1,7 +1,7 @@
 // $Id$
 //
 // Track class with minimal number of information 
-// (targets at selection of primary tracks)
+// (targets at selection of primary tracks).
 //
 
 #include "AliPicoTrack.h"
