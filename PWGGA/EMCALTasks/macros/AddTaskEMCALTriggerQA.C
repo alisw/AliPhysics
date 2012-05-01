@@ -1,9 +1,10 @@
-AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", 
-						      Bool_t rmBadCells = kTRUE, 
-						      Int_t run = 0, 
-						      const char * geoname = "EMCAL_COMPLETE12SMV1"){
-  
-  
+// $Id$
+AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(
+  TString outputFile = "", 
+  Bool_t rmBadCells = kTRUE, 
+  Int_t run = 0, 
+  const char * geoname = "EMCAL_COMPLETE12SMV1")
+{
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -60,7 +61,6 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "",
   if(outputFile.Length()==0)outputFile = AliAnalysisManager::GetCommonFileName(); 
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-
   AliAnalysisDataContainer *coutput = 0;
   if(outputFile.Length()==0)
     coutput = mgr->CreateContainer("EMCALQATrigger", TList::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:EMCALQATrigger",outputFile.Data()));
@@ -72,5 +72,4 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "",
   mgr->ConnectOutput (qatrigger, 1, coutput);
   
   return qatrigger;
-  
 }
