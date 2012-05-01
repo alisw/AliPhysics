@@ -100,16 +100,18 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   TString outname = "coutput";
   TString cutsname = "coutputCuts";
   TString normname = "coutputNorm";
+  TString profname = "coutputProf";
   
   inname += Name.Data();
   outname += Name.Data();
   cutsname += Name.Data();
   normname += Name.Data();
+  profname += Name.Data();
   inname += finDirname.Data();
   outname += finDirname.Data();
   cutsname += finDirname.Data();
   normname += finDirname.Data();
-
+  profname += finDirname.Data();
 
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
 
@@ -121,6 +123,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   
   mgr->ConnectInput(dMultTask,0,mgr->GetCommonInputContainer());
   
@@ -129,6 +132,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   mgr->ConnectOutput(dMultTask,2,coutputCuts);
 
   mgr->ConnectOutput(dMultTask,3,coutputNorm);  
- 
+
+  mgr->ConnectOutput(dMultTask,4,coutputProf);
+
   return dMultTask;
 }

@@ -56,6 +56,7 @@ AliAnalysisTaskSE(),
   fOutput(0),
   fListCuts(0),
   fOutputCounters(0),
+  fListProfiles(0),
   fHistNEvents(0),
   fHistNtrEta16vsNtrEta1(0),
   fHistNtrCorrEta1vsNtrRawEta1(0),
@@ -96,6 +97,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fOutput(0),
   fListCuts(0),
   fOutputCounters(0),
+  fListProfiles(0),
   fHistNEvents(0),
   fHistNtrEta16vsNtrEta1(0),
   fHistNtrCorrEta1vsNtrRawEta1(0),
@@ -144,6 +146,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   DefineOutput(2,TList::Class());
   // Output slot #3 writes cut to private output
   DefineOutput(3,TList::Class()); 
+  // Output slot #4 writes cut to private output
+  DefineOutput(4,TList::Class()); 
 }
 //________________________________________________________________________
 AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
@@ -154,6 +158,7 @@ AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
   delete fOutput;
   delete fHistNEvents;
   delete fListCuts;
+  delete fListProfiles;
   delete fRDCutsAnalysis;
   delete fCounter;
   delete fCounterU;
@@ -203,6 +208,18 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   }
   PostData(2,fListCuts);
   
+  fListProfiles = new TList();
+  fListProfiles->SetOwner();
+  TString period[4]={"LHC10b","LHC10c","LHC10d","LHC10e"};
+  for(Int_t i=0; i<4; i++){
+    if(fMultEstimatorAvg[i]){
+      TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
+      hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
+      fListProfiles->Add(hprof);
+    }
+  }
+  PostData(4,fListProfiles);
+
   return;
 }
 
@@ -292,6 +309,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   PostData(1,fOutput); 
   PostData(2,fListCuts);
   PostData(3,fOutputCounters);
+  PostData(4,fListProfiles);
+
+  
 
   return;
 }
@@ -542,8 +562,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   PostData(1,fOutput); 
   PostData(2,fListCuts);
   PostData(3,fOutputCounters);
-  
-  
+    
   return;
 }
 //________________________________________________________________________

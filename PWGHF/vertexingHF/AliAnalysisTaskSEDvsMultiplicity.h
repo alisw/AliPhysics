@@ -98,6 +98,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TList  *fOutput; //! list send on output slot 1
   TList  *fListCuts; //list of cuts
   TList  *fOutputCounters; //! list send on output slot 3
+  TList  *fListProfiles; //list of profile histos for z-vtx correction
 
   TH1F *fHistNEvents;     //!hist. for No. of events
 
@@ -140,7 +141,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fPdgMeson;   // pdg code of analyzed meson
 
   
-   ClassDef(AliAnalysisTaskSEDvsMultiplicity,1); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+   ClassDef(AliAnalysisTaskSEDvsMultiplicity,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
