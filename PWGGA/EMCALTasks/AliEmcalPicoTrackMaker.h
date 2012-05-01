@@ -19,7 +19,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   void UserCreateOutputObjects();
   void UserExec(Option_t *option);
 
-  void SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0, Int_t b2 = 0)      { fAODfilterBits[0] = b0; fAODfilterBits[1] = b1; fAODfilterBits[2] = b2; }
+  void SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)                    { fAODfilterBits[0] = b0; fAODfilterBits[1] = b1; }
   void SetTracksOutName(const char *name)                              { fTracksOutName    = name; }
   void SetTracksInName(const char *name)                               { fTracksInName     = name; }
   void SetESDtrackCuts(AliESDtrackCuts *cuts)                          { fESDtrackCuts     = cuts; }
@@ -30,7 +30,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   AliVTrack*         GetTrack(const Int_t i)         const;
   Int_t              GetNumberOfTracks()             const;
 
-  Int_t              fAODfilterBits[3];     // AOD track filter bit map
+  Int_t              fAODfilterBits[2];     // AOD track filter bit map
   AliESDtrackCuts   *fESDtrackCuts;         // ESD track cuts
   TString            fTracksOutName;        // Name of output track array
   TString            fTracksInName;         // Name of input track array
