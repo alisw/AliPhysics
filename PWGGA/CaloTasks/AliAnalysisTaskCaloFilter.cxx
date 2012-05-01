@@ -516,11 +516,12 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       }
       
       if(!fEMCALRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi)){ //Channel is not declared as bad
-        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor);
+        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor,
+                           eventEMcells.GetTime(iCell),eventEMcells.GetMCLabel(iCell),eventEMcells.GetEFraction(iCell));
         //printf("GOOD channel\n");
       }
       else {
-        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),0);
+        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),0,-1,-1,0);
         //printf("BAD channel\n");
       }
     }
@@ -536,7 +537,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     aodPHcells.CreateContainer(nPHcell);
     aodPHcells.SetType(AliVCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      aodPHcells.SetCell(iCell,eventPHcells.GetCellNumber(iCell),eventPHcells.GetAmplitude(iCell));
+      aodPHcells.SetCell(iCell,eventPHcells.GetCellNumber(iCell),eventPHcells.GetAmplitude(iCell),
+                         eventPHcells.GetTime(iCell),eventPHcells.GetMCLabel(iCell),eventPHcells.GetEFraction(iCell));
     }
     aodPHcells.Sort();
   }
