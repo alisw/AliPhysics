@@ -1,3 +1,5 @@
+// $Id$
+
 AliAnalysisTaskEMCALClusterize* ConfigEMCALClusterize()
 {
     
@@ -15,7 +17,6 @@ AliAnalysisTaskEMCALClusterize* ConfigEMCALClusterize()
   params->SetTimeCut(1e6);//Open this cut for AODs
   params->SetTimeMin(-1); //Open this cut for AODs
   params->SetTimeMax(1e6);//Open this cut for AODs    
-  
   
   //Allignment matrices  
   clusterize->SwitchOnLoadOwnGeometryMatrices();
