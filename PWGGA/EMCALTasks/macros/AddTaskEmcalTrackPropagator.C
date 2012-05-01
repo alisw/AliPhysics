@@ -1,8 +1,10 @@
+// $Id$
+
 AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
-						       const char *name         = "Tracks",
-                                                       const Double_t d         = -1,
-                                                       const Double_t pt        = -1
-                                                       )
+  const char *name         = "Tracks",
+  const Double_t d         = -1,
+  const Double_t pt        = -1
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -24,7 +26,6 @@ AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-
   AliEmcalTrackPropagatorTask* propagator = new AliEmcalTrackPropagatorTask();
   propagator->SetTracksName(name);
   if (d > -1) propagator->SetDist(d);
@@ -33,16 +34,11 @@ AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-
   mgr->AddTask(propagator);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  //AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
-  
   mgr->ConnectInput  (propagator, 0,  cinput1 );
-  //mgr->ConnectOutput (propagator, 0, coutput1 );
   
   return propagator;
-  
 }

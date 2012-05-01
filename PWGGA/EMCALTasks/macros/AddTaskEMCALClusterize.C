@@ -1,23 +1,25 @@
+// $Id$
+
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
-                                                       const Int_t   bMC        = kFALSE,
-                                                       const Bool_t  exotic     = kTRUE,
-                                                       const TString name       = "V1Unfold", 
-                                                       TString & arrayName,
-                                                       const TString trigger    = "", 
-                                                       const Bool_t  tm         = kTRUE, 
-                                                       const Int_t   minEcell   = 50,
-                                                       const Int_t   minEseed   = 100,
-                                                       const Int_t   maxDeltaT  = 250,
-                                                       const Int_t   timeWindow = 1000,
-                                                       const Int_t   minEUnf    = 15, 
-                                                       const Int_t   minFrac    = 1,
-                                                       const Bool_t  bRecalE    = kTRUE,
-                                                       const Bool_t  bBad       = kTRUE,
-                                                       const Bool_t  bRecalT    = kTRUE,
-                                                       const Bool_t  bNonLine   = kFALSE,
-                                                       const Int_t   nRowDiff   = 1,
-                                                       const Int_t   nColDiff   = 1
-                                                       )
+  const Int_t   bMC        = kFALSE,
+  const Bool_t  exotic     = kTRUE,
+  const TString name       = "V1Unfold", 
+  TString & arrayName,
+  const TString trigger    = "", 
+  const Bool_t  tm         = kTRUE, 
+  const Int_t   minEcell   = 50,
+  const Int_t   minEseed   = 100,
+  const Int_t   maxDeltaT  = 250,
+  const Int_t   timeWindow = 1000,
+  const Int_t   minEUnf    = 15, 
+  const Int_t   minFrac    = 1,
+  const Bool_t  bRecalE    = kTRUE,
+  const Bool_t  bBad       = kTRUE,
+  const Bool_t  bRecalT    = kTRUE,
+  const Bool_t  bNonLine   = kFALSE,
+  const Int_t   nRowDiff   = 1,
+  const Int_t   nColDiff   = 1
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -46,7 +48,6 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
 
   AliAnalysisTaskEMCALClusterize* clusterize = new AliAnalysisTaskEMCALClusterize(Form("EMCALClusterize%s_Ecell%d_Eseed%d_DT%d_WT%d",
                                                                                        name.Data(),minEcell,minEseed,maxDeltaT,timeWindow));
-
 
   //clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
 
@@ -252,5 +253,4 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   mgr->ConnectOutput (clusterize, 0, coutput1 );
   
   return clusterize;
-  
 }

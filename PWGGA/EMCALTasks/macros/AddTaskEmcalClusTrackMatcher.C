@@ -1,9 +1,11 @@
+// $Id$
+
 AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
-						       const char *ntracks        = "Tracks",
-						       const char *nclusters      = "CaloClusters",
-                                                       const Bool_t DoClusTrack   = 1,
-                                                       const Bool_t DoTrackClus   = 0
-                                                       )
+  const char *ntracks        = "Tracks",
+  const char *nclusters      = "CaloClusters",
+  const Bool_t doClusTrack   = kTRUE,
+  const Bool_t doTrackClus   = kFALSE
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -25,12 +27,11 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-
   AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask();
   matcher->SetTracksName(ntracks);
   matcher->SetClusName(nclusters);
-  matcher->SetDoClusTrackMatching(DoClusTrack);
-  matcher->SetDoTrackClusMatching(DoTrackClus);
+  matcher->SetDoClusTrackMatching(doClusTrack);
+  matcher->SetDoTrackClusMatching(doTrackClus);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -41,10 +42,8 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
-  
   mgr->ConnectInput  (matcher, 0,  cinput1 );
   mgr->ConnectOutput (matcher, 0, coutput1 );
-  
+
   return matcher;
-  
 }

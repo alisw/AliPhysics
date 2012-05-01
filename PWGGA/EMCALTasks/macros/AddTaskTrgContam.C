@@ -1,4 +1,9 @@
-AliAnalysisTaskTrgContam *AddTaskTrgContam(Double_t trgThresh=4.8, Double_t exoticCut=0.97)
+// $Id$
+
+AliAnalysisTaskTrgContam *AddTaskTrgContam(
+  Double_t trgThresh=4.8, 
+  Double_t exoticCut=0.97
+)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================

@@ -1,8 +1,8 @@
+// $Id$
 
 Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t enableTPCOnlyAODTracksLocalFlag=kFALSE;
-
 
 AliAnalysisTaskESDfilter *AddTaskESDFilterEMCALEventSelect(Float_t energyCut = 10,     // EMCAL
                                                            Int_t   ncellsCut = 2,      // EMCAL
@@ -143,11 +143,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterEMCALEventSelect(Float_t energyCut = 1
   return esdfilter;
 }
 
-
-
-
-Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
-  
+Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter)
+{
   Printf("%s%d: Creating Track Cuts for LH10h",(char*)__FILE__,__LINE__);
   
   // Cuts on primary tracks
@@ -202,7 +199,6 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   AliESDtrackCuts* esdTrackCutsHG0 = jetCuts1006->Clone("JetCuts10001006");
   esdTrackCutsHG0->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
   
-  
   // throw out tracks with too low number of clusters in
   // the first pass (be consistent with TPC only tracks)
   // N.B. the number off crossed rows still acts on the tracks after
@@ -210,7 +206,6 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   // and chi2 TPC cuts act on track after the first iteration
   //   esdTrackCutsH0->SetRequireTPCStandAlone(kTRUE);
   //   esdTrackCutsH0->SetMinNClustersTPC(80); // <--- first pass
-  
   
   // the complement to the one with SPD requirement
   //  AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWGJE(10011006);
@@ -222,7 +217,6 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   //  AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWGJE(10021006);
   AliESDtrackCuts* esdTrackCutsHG2 = jetCuts1006->Clone("JetCuts10021006");
   esdTrackCutsHG2->SetMaxChi2PerClusterITS(1E10);
-  
   
   // standard cuts also used in R_AA analysis
   //   "Global track RAA analysis QM2011 + Chi2ITS<36";
@@ -237,12 +231,9 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   esdTrackCutsH2->SetEtaRange(-0.9,0.9);
   esdTrackCutsH2->SetPtRange(0.15, 1e10);
   
-  
   //  AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWGJE(10041006);
   AliESDtrackCuts* esdTrackCutsGCOnly = jetCuts1006->Clone("JetCuts10041006");
   esdTrackCutsGCOnly->SetRequireITSRefit(kFALSE);
-  
-  
   
   // TPC only tracks
   AliESDtrackCuts* esdTrackCutsTPCCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -286,14 +277,10 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   
   esdfilter->SetTrackFilter(trackFilter);
   return kTRUE;
-  
 }
 
-
-
-Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
-  
-  
+Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter)
+{
   Printf("%s%d: Creating Track Cuts LHC11h",(char*)__FILE__,__LINE__);
   
   // Cuts on primary tracks
@@ -385,5 +372,4 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
   esdfilter->SetTrackFilter(trackFilter);
   
   return kTRUE;
-  
 }
