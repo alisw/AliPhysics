@@ -1,10 +1,7 @@
 #ifndef ALIEMCALTENDERTASK_H
 #define ALIEMCAKTENDERTASK_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
-/* $Id: AliEmcalTenderTask.h  $ */
-
+// $Id: $
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -28,11 +25,10 @@ public:
 
   void                      SetEMCALTenderSupply(AliEMCALTenderSupply *supply);
 
-  // Run control
   virtual void              ConnectInputData(Option_t *option);
   virtual void              UserCreateOutputObjects();
-  virtual void              UserExec(Option_t *option);
+  virtual void              UserExec(Option_t*);
     
-  ClassDef(AliEmcalTenderTask,1) 
+  ClassDef(AliEmcalTenderTask,1) // Wrapper class to hold tender supply for AOD usage
 };
 #endif
