@@ -1,4 +1,8 @@
 // $Id$
+//
+// General QA task (S.Aiola)
+//
+//
 
 #include <TChain.h>
 #include <TClonesArray.h>
@@ -15,7 +19,6 @@
 #include "AliEmcalJet.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-#include "AliEmcalJet.h"
 #include "AliVEventHandler.h"
 #include "AliPicoTrack.h"
 
@@ -29,7 +32,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
-  fJetsName("Jets"),
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTracks(0),
   fCaloClusters(0),
@@ -42,10 +44,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistTracksPt(0),
   fHistClustersEnergy(0),
   fHistEPcorrelation(0),
-  fHistJetsEnergy(0),
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
-  fHistJetPhiEta(0),
   fHistMaxTrgCluster(0),
   Ptbins(100),
   Ptlow(0),
@@ -61,8 +61,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
     fHistTrackEta[i] = 0;
   }
 
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
-
+  // Output slot #1 writes into a TH1 container
+  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
@@ -71,7 +71,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
-  fJetsName("Jets"),
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTracks(0),
   fCaloClusters(0),
@@ -84,10 +83,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistTracksPt(0),
   fHistClustersEnergy(0),
   fHistEPcorrelation(0),
-  fHistJetsEnergy(0),
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
-  fHistJetPhiEta(0),
   fHistMaxTrgCluster(0),
   Ptbins(100),
   Ptlow(0),
@@ -103,7 +100,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
     fHistTrackEta[i] = 0;
   }
 
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
+  // Output slot #1 writes into a TH1 container
+  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
@@ -149,11 +147,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistEPcorrelation->GetXaxis()->SetTitle("P [GeV/c]");
   fHistEPcorrelation->GetYaxis()->SetTitle("E [GeV]");
   fOutput->Add(fHistEPcorrelation);
-  
-  fHistJetsEnergy = new TH1F("fHistJetsEnergy","Energy spectrum of jets", Ebins, Elow, Eup);
-  fHistJetsEnergy->GetXaxis()->SetTitle("E [GeV]");
-  fHistJetsEnergy->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsEnergy);
 
   fHistTrPhiEta = new TH2F("fHistTrPhiEta","Phi-Eta distribution of tracks", 20, -2, 2, 32, 0, 6.4);
   fHistTrPhiEta->GetXaxis()->SetTitle("Eta");
@@ -164,11 +157,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistClusPhiEta->GetXaxis()->SetTitle("Eta");
   fHistClusPhiEta->GetYaxis()->SetTitle("Phi");
   fOutput->Add(fHistClusPhiEta);
-
-  fHistJetPhiEta = new TH2F("fHistJetPhiEta","Phi-Eta distribution of jets", 20, -2, 2, 32, 0, 6.4);
-  fHistJetPhiEta->GetXaxis()->SetTitle("Eta");
-  fHistJetPhiEta->GetYaxis()->SetTitle("Phi");
-  fOutput->Add(fHistJetPhiEta);
 
   fHistMaxTrgCluster = new TH1F("fHistMaxTrgCluster","Energy distribution of max trigger clusters", Ebins, Elow, Eup);
   fHistMaxTrgCluster->GetXaxis()->SetTitle("E [GeV]");
@@ -215,11 +203,6 @@ void AliAnalysisTaskSAQA::RetrieveEventObjects()
     AliWarning(Form("Could not retrieve tracks!")); 
   }
 
-  fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
-  if (!fJets) {
-    AliWarning(Form("Could not retrieve jets!")); 
-  }
-
   if (strcmp(fTrgClusName,"")) {
     fTrgClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrgClusName));
     if (!fTrgClusters) {
@@ -262,22 +245,6 @@ Int_t AliAnalysisTaskSAQA::GetNumberOfCaloClusters() const
     return 0;
 }
 
-AliEmcalJet* AliAnalysisTaskSAQA::GetJet(const Int_t i) const
-{
-  if (fJets)
-    return dynamic_cast<AliEmcalJet*>(fJets->At(i));
-  else
-    return 0;
-}
-
-Int_t AliAnalysisTaskSAQA::GetNumberOfJets() const
-{
-  if (fJets)
-    return fJets->GetEntriesFast();
-  else
-    return 0;
-}
-
 AliVCluster* AliAnalysisTaskSAQA::GetTrgCluster(const Int_t i) const
 {
   if (fTrgClusters)
@@ -296,10 +263,16 @@ Int_t AliAnalysisTaskSAQA::GetNumberOfTrgClusters() const
 
 void AliAnalysisTaskSAQA::FillHistograms()
 {
+  Float_t cent = 100;
   
-  fHistCentrality->Fill(fCent->GetCentralityPercentile("V0M"));
-  fHistTracksCent->Fill(fCent->GetCentralityPercentile("V0M"), GetNumberOfTracks());
-  fHistClusCent->Fill(fCent->GetCentralityPercentile("V0M"), GetNumberOfCaloClusters());
+  if (fCent)
+    cent = fCent->GetCentralityPercentile("V0M");
+  else
+    AliWarning("Centrality not available!");
+
+  fHistCentrality->Fill(cent);
+  fHistTracksCent->Fill(cent, GetNumberOfTracks());
+  fHistClusCent->Fill(cent, GetNumberOfCaloClusters());
 
   // Cluster loop
   Int_t nclusters =  GetNumberOfCaloClusters();
@@ -384,23 +357,6 @@ void AliAnalysisTaskSAQA::FillHistograms()
     }
    
   }
-
-  // Jet loop
-  Int_t njets =  GetNumberOfJets();
-  //cout << njets << " jets" << endl;
-  for (Int_t ij = 0; ij < njets; ij++) {
-    AliEmcalJet* jet = GetJet(ij);
-    if (!jet) {
-      printf("ERROR: Could not receive jet %d\n", ij);
-      continue;
-    }  
-
-    if (jet->E() <= 0)
-      continue;
-
-    fHistJetPhiEta->Fill(jet->Eta(), jet->Phi());
-    fHistJetsEnergy->Fill(jet->E());
-  } //jet loop 
 
   Int_t ntrgclusters =  GetNumberOfTrgClusters();
   Float_t maxe = 0;

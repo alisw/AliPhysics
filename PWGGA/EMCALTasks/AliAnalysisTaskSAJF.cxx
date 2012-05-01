@@ -1,4 +1,8 @@
 // $Id$
+//
+// Jet finder analysis task (S.Aiola)
+//
+//
 
 #include <TChain.h>
 #include <TClonesArray.h>
@@ -25,6 +29,7 @@ ClassImp(AliAnalysisTaskSAJF)
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskSE("AliAnalysisTaskSAJF"),
+  fAnaType(kEMCAL),
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -36,6 +41,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fTrgClusters(0),
   fCent(0),
   fHistCentrality(0),
+  fHistJetPhiEta(0),
   Ptbins(400),
   Ptlow(0),
   Ptup(200),
@@ -44,7 +50,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   Eup(200)
 {
   // Default constructor.
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 
   for (Int_t i = 0; i < 4; i++) {
     fHistJetsE[i] = 0;
@@ -57,11 +62,15 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistTracksPtBkg[i] = 0;
     fHistClusEBkg[i] = 0;
   }
+
+  // Output slot #1 writes into a TH1 container
+  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskSE(name),
+  fAnaType(kEMCAL),
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -73,6 +82,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fTrgClusters(0),
   fCent(0),
   fHistCentrality(0),
+  fHistJetPhiEta(0),
   Ptbins(400),
   Ptlow(0),
   Ptup(200),
@@ -82,8 +92,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
 {
   // Standard constructor.
 
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
-
   for (Int_t i = 0; i < 4; i++) {
     fHistJetsE[i] = 0;
     fHistJetsNE[i] = 0;
@@ -95,6 +103,9 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistTracksPtBkg[i] = 0;
     fHistClusEBkg[i] = 0;
   }
+
+  // Output slot #1 writes into a TH1 container
+  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
@@ -115,6 +126,11 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
   fHistCentrality->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistCentrality);
+
+  fHistJetPhiEta = new TH2F("fHistJetPhiEta","Phi-Eta distribution of jets", 20, -2, 2, 32, 0, 6.4);
+  fHistJetPhiEta->GetXaxis()->SetTitle("Eta");
+  fHistJetPhiEta->GetYaxis()->SetTitle("Phi");
+  fOutput->Add(fHistJetPhiEta);
 
   TString histname;
 
@@ -279,7 +295,12 @@ Int_t AliAnalysisTaskSAJF::GetNumberOfTrgClusters() const
 
 void AliAnalysisTaskSAJF::FillHistograms()
 {
-  Float_t cent = fCent->GetCentralityPercentile("V0M");
+  Float_t cent = 100;
+  
+  if (fCent)
+    cent = fCent->GetCentralityPercentile("V0M");
+  else
+    AliWarning("Centrality not available!");
 
   fHistCentrality->Fill(cent);
 
@@ -305,6 +326,11 @@ void AliAnalysisTaskSAJF::FillHistograms()
     
     if (jet->E() <= 0)
       continue;
+
+    if (!AcceptJet(jet))
+      continue;
+
+    fHistJetPhiEta->Fill(jet->Eta(), jet->Phi());
 
     fHistJetsE[centbin]->Fill(jet->E());
     fHistJetsNEF[centbin]->Fill(jet->NEF());
@@ -407,6 +433,23 @@ void AliAnalysisTaskSAJF::FillHistograms()
   }
 }
 
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSAJF::AcceptJet(AliEmcalJet* jet)
+{
+  if (fAnaType == kFullAcceptance) {
+    return kTRUE;
+  }
+  else if (fAnaType == kEMCAL) {
+    return (Bool_t)(TMath::Abs(jet->Eta()) < 0.7 && jet->Phi() * TMath::RadToDeg() > 80 && jet->Phi() * TMath::RadToDeg() < 180);
+  }
+  else if (fAnaType == kEMCALFiducial) {
+    return (Bool_t)(TMath::Abs(jet->Eta()) < 0.7 && jet->Phi() * TMath::RadToDeg() > 80 && jet->Phi() * TMath::RadToDeg() < 180);
+  }
+  else {
+    AliWarning("Analysis type not recognized! Assuming kFullAcceptance...");
+    return kTRUE;
+  }
+}
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSAJF::AcceptTrack(AliVTrack* /*track*/)

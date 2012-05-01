@@ -16,6 +16,13 @@ class AliEmcalJet;
 
 class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
  public:
+  
+  enum SAJFAnaType {
+    kFullAcceptance  = 0,     // Full acceptance
+    kEMCAL           = 1,     // EMCal acceptance only
+    kEMCALFiducial   = 2      // EMCal fiduacial region only
+  };
+
   AliAnalysisTaskSAJF();
   AliAnalysisTaskSAJF(const char *name);
   virtual ~AliAnalysisTaskSAJF();
@@ -28,6 +35,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        SetJetsName(const char *n)                    { fJetsName      = n          ; }
   void                        SetTracksName(const char *n)                  { fTracksName    = n          ; }
   void                        SetTrgClusName(const char *n)                 { fTrgClusName   = n          ; }
+  void                        SetAnaType(SAJFAnaType type)                  { fAnaType       = type       ; }
 
  protected:
 
@@ -42,9 +50,10 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        FillHistograms()                      ;
   void                        RetrieveEventObjects()                ;
   Bool_t                      AcceptTrack(AliVTrack* /*track*/)     ;
+  Bool_t                      AcceptJet(AliEmcalJet* jet)           ;
 
+  SAJFAnaType                 fAnaType;                // analysis type
   TList                      *fOutput;                 // Output list
-
   TString                     fTracksName;             // name of track collection
   TString                     fCaloName;               // name of calo cluster collection
   TString                     fJetsName;               // name of jet collection
@@ -55,6 +64,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TClonesArray               *fTrgClusters;            //!Trg Clusters
   AliCentrality              *fCent;                   // Event centrality
   TH1F                       *fHistCentrality;         // Event centrality distribution
+  TH2F                       *fHistJetPhiEta;          // Phi-Eta distribution of jets
   TH1F                       *fHistJetsE[4];           // Jet energy spectrum
   TH1F                       *fHistJetsNE[4];          // Jet neutral energy spectrum
   TH1F                       *fHistJetsNEF[4];         // Jet neutral energy fraction
