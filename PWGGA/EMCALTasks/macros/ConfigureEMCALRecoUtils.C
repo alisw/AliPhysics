@@ -1,3 +1,4 @@
+// $Id$
 
 void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bMC    = kFALSE,
@@ -58,7 +59,4 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
     if(!kSimulation) reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
     else             reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
   }
-  
 }
-
-
