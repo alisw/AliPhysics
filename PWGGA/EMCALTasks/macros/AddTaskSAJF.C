@@ -5,7 +5,8 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
-  const char *ntrgclusters       = "ClustersL1GAMMAFEE"
+  const char *ntrgclusters       = "ClustersL1GAMMAFEE",
+  UInt_t type                    = AliAnalysisTaskSAJF::kEMCAL
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -30,6 +31,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   //-------------------------------------------------------
 
   AliAnalysisTaskSAJF* phTask = new AliAnalysisTaskSAJF(taskname);
+  phTask->SetAnaType(type);
   phTask->SetTracksName(ntracks);
   phTask->SetClusName(nclusters);
   phTask->SetJetsName(njets);
@@ -42,14 +44,14 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   mgr->AddTask(phTask);
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   TString contname(taskname);
   contname += "_histos";
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(contname.Data(), 
-                                                           TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                           Form("%s", AliAnalysisManager::GetCommonFileName()));
-  mgr->ConnectInput  (phTask, 0, cinput);
-  mgr->ConnectOutput (phTask, 1, coutput);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (phTask, 0,  cinput1 );
+  mgr->ConnectOutput (phTask, 1, coutput1 );
 
   return phTask;
 }
