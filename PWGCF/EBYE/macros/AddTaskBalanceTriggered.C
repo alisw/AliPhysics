@@ -139,7 +139,7 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  outputFileName += ":PWGCFEbyE.outputBalanceFunctionAnalysis";
+  outputFileName += ":PWGCFEbyE.outputBalanceFunctionTriggeredAnalysis";
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutTriggeredBF = mgr->CreateContainer(Form("listTriggeredBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunShuffling) AliAnalysisDataContainer *coutTriggeredBFS = mgr->CreateContainer(Form("listTriggeredBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());

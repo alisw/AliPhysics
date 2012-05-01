@@ -24,6 +24,7 @@
 #include <TMath.h>
 #include <TAxis.h>
 #include <TH1D.h>
+#include <TH2D.h>
 
 
 #include <AliTHn.h>
@@ -273,11 +274,10 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,vector<Double_t> **cha
     if(charge > 0)  fHistP->Fill(trackVarsSingle,0,1.); 
     else            fHistN->Fill(trackVarsSingle,0,1.); 
 
-    // 2nd particle loop
-    for(Int_t j = 0; j < i; j++) {
+    // 2nd particle loop (now over all particles except the same!)
+    for(Int_t j = 0; j < gNtrack; j++) {
 
-      // need check for single particle region!!!???
-      //
+      if( j == i ) continue;  
       
       Short_t charge2 = (Short_t) chargeVector[0]->at(j);
       trackVarsPair[0]    =  chargeVector[2]->at(i) - chargeVector[2]->at(j) ;  //delta eta
@@ -285,19 +285,19 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,vector<Double_t> **cha
       trackVarsPair[2]    =  chargeVector[7]->at(j);  //pt
       trackVarsPair[3]    =  chargeVector[7]->at(i);  //pt trigger
       trackVarsPair[4]    =  fCentrality;             //centrality (really as variable here????)
-
-    if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVarsPair,0,1.); 
-    else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVarsPair,0,1.); 
-    else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVarsPair,0,1.); 
-    else if( charge < 0 && charge2 < 0)  fHistNN->Fill(trackVarsPair,0,1.); 
-    else AliWarning("Wrong charge combination!");
-
+      
+      if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVarsPair,0,1.); 
+      else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVarsPair,0,1.); 
+      else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVarsPair,0,1.); 
+      else if( charge < 0 && charge2 < 0)  fHistNN->Fill(trackVarsPair,0,1.); 
+      else AliWarning("Wrong charge combination!");
+      
     }//end of 2nd particle loop
   }//end of 1st particle loop
 }  
 
 
-TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
+TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
 
   // check which variable should be analyzed
   // 0 = Delta eta
@@ -314,12 +314,12 @@ TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTM
   // for Pair Histograms (PN,NP,NN,PP): 2 = pT; 3 = pT,trigger; 4 = centrality
 
   // pT trigger
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMin,pTMax); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMin,pTMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMin,pTMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMin,pTMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMin,pTMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMin,pTMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
 
   // pT
   fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(pTMin,pTMax); 
@@ -344,27 +344,93 @@ TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTM
   TH1D* hTemp5 = (TH1D*)fHistP->Project(0,var);
   TH1D* hTemp6 = (TH1D*)fHistN->Project(0,var);
 
-  TH1D* gHistBalanceFunctionHistogram = (TH1D*)hTemp1->Clone();
-  gHistBalanceFunctionHistogram->Reset();
-  
+  TH1D* gHistBalanceFunctionHistogram = NULL;
+
   // Calculate BF
-  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)) {
-    hTemp1->Sumw2();
-    hTemp2->Sumw2();
-    hTemp3->Sumw2();
-    hTemp4->Sumw2();
+  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
+    
+    gHistBalanceFunctionHistogram = (TH1D*)hTemp1->Clone();
+    gHistBalanceFunctionHistogram->Reset();
+
+    // Calculate BF
     hTemp1->Add(hTemp3,-1.);
     hTemp1->Scale(1./hTemp5->GetEntries());
     hTemp2->Add(hTemp4,-1.);
     hTemp2->Scale(1./hTemp6->GetEntries());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
-    gHistBalanceFunctionHistogram->Scale(0.5/1.);
   }
 
   return gHistBalanceFunctionHistogram;
 }
 
-TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
+TH2D* AliBalanceTriggered::GetBalanceFunctionHistogram2D(Int_t var1, Int_t var2, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
+
+  // check which variable should be analyzed
+  // 0 = Delta eta
+  // 1 = Delta phi
+
+  if( var1 < 0 || var1 > 1 || var2 < 0 || var2 > 1){
+    AliError("Only Variable 0 (= Delta eta) or 1 (= Delta phi) allowed");
+    return NULL;
+  }
+
+
+  // Choose region to analyze 
+  // for Single Histograms (P,N):       2 = pT,trigger; 3 = centrality
+  // for Pair Histograms (PN,NP,NN,PP): 2 = pT; 3 = pT,trigger; 4 = centrality
+
+  // pT trigger
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+
+  // pT
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(pTMin,pTMax); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(pTMin,pTMax); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(pTMin,pTMax); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(pTMin,pTMax); 
+
+  // centrality
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(centrMin,centrMax); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(centrMin,centrMax); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
+  
+
+  // Project into the wanted space (1st: analysis step, 2nd: axis1, 3rd: axis2)
+  TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,var1,var2);
+  TH2D* hTemp2 = (TH2D*)fHistNP->Project(0,var1,var2);
+  TH2D* hTemp3 = (TH2D*)fHistPP->Project(0,var1,var2);
+  TH2D* hTemp4 = (TH2D*)fHistNN->Project(0,var1,var2);
+  TH2D* hTemp5 = (TH2D*)fHistP->Project(0,var1,var2);
+  TH2D* hTemp6 = (TH2D*)fHistN->Project(0,var1,var2);
+
+  TH2D* gHistBalanceFunctionHistogram = NULL;
+
+  // Calculate BF
+  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
+    
+    gHistBalanceFunctionHistogram = (TH2D*)hTemp1->Clone();
+    gHistBalanceFunctionHistogram->Reset();
+    
+    // Calculate BF
+    hTemp1->Add(hTemp3,-1.);
+    hTemp1->Scale(1./hTemp5->GetEntries());
+    hTemp2->Add(hTemp4,-1.);
+    hTemp2->Scale(1./hTemp6->GetEntries());
+    gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
+  }
+
+  return gHistBalanceFunctionHistogram;
+}
+
+
+TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
 
   // check which variable should be analyzed
   //
@@ -422,10 +488,7 @@ TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMin
   case 5:
     gTHn = fHistNN;
     break;
-
-  default:
-    break;
-
+    
   }
 
   if(!gTHn){
@@ -438,7 +501,7 @@ TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMin
   // for Pair Histograms (PN,NP,NN,PP): 2 = pT; 3 = pT,trigger; 4 = centrality
 
   // pT trigger
-  gTHn->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMin,pTMax); 
+  gTHn->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
  
   // pT
   if(histo > 1) gTHn->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(pTMin,pTMax); 
@@ -450,6 +513,94 @@ TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMin
 
   // Project into the wanted space (1st: analysis step, 2nd: axis)
   TH1D* gHisto = (TH1D*)gTHn->Project(0,var);
+
+  return gHisto;
+}
+
+
+TH2D* AliBalanceTriggered::GetHistogram2D(Int_t histo, Int_t var1, Int_t var2, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
+
+  // check which variable should be analyzed
+  //
+  // pair histograms:
+  // 0 = Delta eta 
+  // 1 = Delta phi
+  // 2 = pT, trigger
+  // 3 = centrality
+  //
+  // pair histograms:
+  // 0 = Delta eta 
+  // 1 = Delta phi
+  // 2 = pT
+  // 3 = pT, trigger
+  // 4 = centrality
+
+  if(histo < 0 || histo > 5){
+    AliError("Only 6 histograms available: 0(P), 1(N), 2(PN), 3(NP), 4(PP), 5(NN)");
+    return NULL;
+  }
+
+  if( histo > 1 && (var1 < 0 || var1 > 5 || var2 < 0 || var2 > 5)){
+    AliError("Only Variable 0 to 4 allowed for pair histograms (histo > 1)");
+    return NULL;
+  }
+  if( histo < 2 && (var1 < 0 || var1 > 4 || var2 < 0 || var2 > 4)){
+    AliError("Only Variable 0 to 3 allowed for single histograms (histo < 2)");
+    return NULL;
+  }
+
+  // get the histogram
+  AliTHn *gTHn = NULL;
+  switch(histo){
+ 
+  case 0:
+    gTHn = fHistP;
+    break;
+
+  case 1:
+    gTHn = fHistN;
+    break;
+
+  case 2:
+    gTHn = fHistPN;
+    break;
+
+  case 3:
+    gTHn = fHistNP;
+    break;
+
+  case 4:
+    gTHn = fHistPP;
+    break;
+
+  case 5:
+    gTHn = fHistNN;
+    break;
+    
+  }
+
+  if(!gTHn){
+    AliError(Form("AliTHn number %d = NULL",histo));
+    return NULL;
+  }
+
+  // Choose region to analyze 
+  // for Single Histograms (P,N):       2 = pT,trigger; 3 = centrality
+  // for Pair Histograms (PN,NP,NN,PP): 2 = pT; 3 = pT,trigger; 4 = centrality
+
+  // pT trigger
+  gTHn->GetGrid(0)->GetGrid()->GetAxis(2)->SetRange(pTMinTrigger,pTMaxTrigger); 
+ 
+  // pT
+  if(histo > 1) gTHn->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(pTMin,pTMax); 
+ 
+  // centrality
+  if(histo < 2) gTHn->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(centrMin,centrMax); 
+  else          gTHn->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
+ 
+
+  // Project into the wanted space (1st: analysis step, 2nd: axis)
+  TH2D* gHisto = (TH2D*)gTHn->Project(0,var1,var2);
 
   return gHisto;
 }
