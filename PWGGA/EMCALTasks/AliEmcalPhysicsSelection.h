@@ -11,7 +11,7 @@ class AliEmcalPhysicsSelection: public AliPhysicsSelection
   enum EOfflineEmcalTypes { 
     kEmcalHC = BIT(28), //=true when EMCAL cell above given Et found
     kEmcalHT = BIT(29), //=true when EMCAL cluster above given Et found
-    kEmcalOk = BIT(31), //=false when EMCAL good event criteria are not met
+    kEmcalOk = BIT(31), //=true when EMCAL good event criteria are found
   };
 
   AliEmcalPhysicsSelection();
