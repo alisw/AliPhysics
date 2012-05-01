@@ -4,7 +4,6 @@
 //
 //
 
-
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -70,16 +69,16 @@ void AliEmcalPhysicsSelectionTask::UserCreateOutputObjects()
   fHAcc = new TH1D("hEvCount",";0=rej/1=acc;#",2,-0.5,1.5);
   fOutput->Add(fHAcc);
   fHEvtTypes = new TH1D("hEvtTypes",";#",10,-0.5,9.5);
-  fHEvtTypes->GetXaxis()->SetBinLabel(1,"All");
-  fHEvtTypes->GetXaxis()->SetBinLabel(2,"MB");
-  fHEvtTypes->GetXaxis()->SetBinLabel(3,"FO");
-  fHEvtTypes->GetXaxis()->SetBinLabel(4,"EMC");
-  fHEvtTypes->GetXaxis()->SetBinLabel(5,"EJE");
-  fHEvtTypes->GetXaxis()->SetBinLabel(6,"EGA");
-  fHEvtTypes->GetXaxis()->SetBinLabel(7,"Good");
-  fHEvtTypes->GetXaxis()->SetBinLabel(8,"HC");
-  fHEvtTypes->GetXaxis()->SetBinLabel(9,"HT");
-  fHEvtTypes->GetXaxis()->SetBinLabel(10,"LED");
+  fHEvtTypes->GetXaxis()->SetBinLabel(1,  "All");
+  fHEvtTypes->GetXaxis()->SetBinLabel(2,  "MB");
+  fHEvtTypes->GetXaxis()->SetBinLabel(3,  "FO");
+  fHEvtTypes->GetXaxis()->SetBinLabel(4,  "EMC");
+  fHEvtTypes->GetXaxis()->SetBinLabel(5,  "EJE");
+  fHEvtTypes->GetXaxis()->SetBinLabel(6,  "EGA");
+  fHEvtTypes->GetXaxis()->SetBinLabel(7,  "Good");
+  fHEvtTypes->GetXaxis()->SetBinLabel(8,  "HC");
+  fHEvtTypes->GetXaxis()->SetBinLabel(9,  "HT");
+  fHEvtTypes->GetXaxis()->SetBinLabel(10, "LED");
   fOutput->Add(fHEvtTypes);
   if (!fDoWriteHistos) {
     fOutput->Remove(fPhysicsSelection);
@@ -90,12 +89,6 @@ void AliEmcalPhysicsSelectionTask::UserCreateOutputObjects()
 void AliEmcalPhysicsSelectionTask::UserExec(const Option_t *opt)
 {
   // User exec.
-
-  AliESDEvent *esdEv = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!esdEv) {
-    AliError("Task works only on ESD events, returning");
-    return;
-  }
 
   AliPhysicsSelectionTask::UserExec(opt);
 
@@ -111,7 +104,7 @@ void AliEmcalPhysicsSelectionTask::UserExec(const Option_t *opt)
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   am->LoadBranch("AliESDHeader.");
-  AliESDHeader *header = esdEv->GetHeader();
+  AliVHeader *header = InputEvent()->GetHeader();
   TString title(header->GetTitle());
   if (title.Length()>0) {
     UInt_t offline = header->GetUniqueID();
