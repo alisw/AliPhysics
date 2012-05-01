@@ -10,13 +10,10 @@
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
-#include "AliESDCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliESDtrack.h"
 #include "AliEmcalJet.h"
-#include "AliFJWrapper.h"
 #include "AliAODTrack.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
 #include "AliEmcalJet.h"
 #include "AliVEventHandler.h"
 #include "AliPicoTrack.h"
@@ -33,32 +30,33 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask() :
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
   fTrgClusName("ClustersL1GAMMAFEE"),
-  fESDTrackCuts(0),
-  fFilterBit(16),
   fTracks(0),
   fCaloClusters(0),
   fJets(0),
   fTrgClusters(0),
-  fHistTracksPt(0),
-  fHistClustersEnergy(0),
-  fHistEPcorrelation(0),
-  fHistJetsEnergy(0),
-  fHistJetsNE(0),
-  fHistJetsNEF(0),
-  fHistJetsZ(0),
-  fHistTrPhiEta(0),
-  fHistClusPhiEta(0),
-  fHistJetPhiEta(0),
-  fHistMaxTrgCluster(0),
-  Ptbins(100),
+  fCent(0),
+  fHistCentrality(0),
+  Ptbins(400),
   Ptlow(0),
-  Ptup(50),
-  Ebins(100),
+  Ptup(200),
+  Ebins(400),
   Elow(0),
-  Eup(50)
+  Eup(200)
 {
   // Default constructor.
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
+
+  for (Int_t i = 0; i < 4; i++) {
+    fHistJetsE[i] = 0;
+    fHistJetsNE[i] = 0;
+    fHistJetsNEF[i] = 0;
+    fHistJetsZ[i] = 0;
+    fHistLeadingJetE[i] = 0;
+    fHistTracksPtLJ[i] = 0;
+    fHistClusELJ[i] = 0;
+    fHistTracksPtBkg[i] = 0;
+    fHistClusEBkg[i] = 0;
+  }
 }
 
 //________________________________________________________________________
@@ -69,29 +67,18 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) :
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
   fTrgClusName("ClustersL1GAMMAFEE"),
-  fESDTrackCuts(0),
-  fFilterBit(16),
   fTracks(0),
   fCaloClusters(0),
   fJets(0),
   fTrgClusters(0),
-  fHistTracksPt(0),
-  fHistClustersEnergy(0),
-  fHistEPcorrelation(0),
-  fHistJetsEnergy(0),
-  fHistJetsNE(0),
-  fHistJetsNEF(0),
-  fHistJetsZ(0),
-  fHistTrPhiEta(0),
-  fHistClusPhiEta(0),
-  fHistJetPhiEta(0),
-  fHistMaxTrgCluster(0),
-  Ptbins(100),
+  fCent(0),
+  fHistCentrality(0),
+  Ptbins(400),
   Ptlow(0),
-  Ptup(50),
-  Ebins(100),
+  Ptup(200),
+  Ebins(400),
   Elow(0),
-  Eup(50)
+  Eup(200)
 {
   // Standard constructor.
 
@@ -100,6 +87,18 @@ AliEmcalIsolatedPhotonsTask::AliEmcalIsolatedPhotonsTask(const char *name) :
 
   SetName(name);
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
+
+  for (Int_t i = 0; i < 4; i++) {
+    fHistJetsE[i] = 0;
+    fHistJetsNE[i] = 0;
+    fHistJetsNEF[i] = 0;
+    fHistJetsZ[i] = 0;
+    fHistLeadingJetE[i] = 0;
+    fHistTracksPtLJ[i] = 0;
+    fHistClusELJ[i] = 0;
+    fHistTracksPtBkg[i] = 0;
+    fHistClusEBkg[i] = 0;
+  }
 
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
@@ -114,105 +113,82 @@ AliEmcalIsolatedPhotonsTask::~AliEmcalIsolatedPhotonsTask()
 //________________________________________________________________________
 void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
 {
-   // Create histograms
-  // Called once (on the worker node)
+  // Create histograms
   
   fOutput = new TList();
   fOutput->SetOwner();  // IMPORTANT!
   
-  AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  
-  if (handler && handler->InheritsFrom("AliESDInputHandler")) {
+  fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", Ebins, 0, 100);
+  fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
+  fHistCentrality->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistCentrality);
 
-    if (!fESDTrackCuts) fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    
-    if (!fESDTrackCuts) {
-      AliFatal("Invalid pointer to ESDtrackCuts");
-    }
-    
-    if (fESDTrackCuts) {
-      fESDTrackCuts->DefineHistograms(kRed);
-      fOutput->Add(fESDTrackCuts);
-    }
-  }
-    
-  fHistTracksPt = new TH1F("fHistTracksPt","P_{T} spectrum of reconstructed tracks", Ptbins, Ptlow, Ptup);
-  fHistTracksPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
-  fHistTracksPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistTracksPt);
-	
-  fHistClustersEnergy = new TH1F("fHistClustersEnergy","Energy spectrum of clusters", Ebins, Elow, Eup);
-  fHistClustersEnergy->GetXaxis()->SetTitle("E [GeV]");
-  fHistClustersEnergy->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistClustersEnergy);
-
-  fHistEPcorrelation = new TH2F("fHistEPcorrelation","Energy-momentum correlation", Ptbins, Ptlow, Ptup, Ebins, Elow, Eup);
-  fHistEPcorrelation->GetXaxis()->SetTitle("P [GeV/c]");
-  fHistEPcorrelation->GetYaxis()->SetTitle("E [GeV]");
-  fOutput->Add(fHistEPcorrelation);
-  
-  fHistJetsEnergy = new TH1F("fHistJetsEnergy","Energy spectrum of jets", Ebins, Elow, Eup);
-  fHistJetsEnergy->GetXaxis()->SetTitle("E [GeV]");
-  fHistJetsEnergy->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsEnergy);
-  
-  fHistJetsNE = new TH1F("fHistJetsNE","Neutral energy spectrum of jets", Ebins, Elow, Eup);
-  fHistJetsNE->GetXaxis()->SetTitle("E [GeV]");
-  fHistJetsNE->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsNE);
-  
-  fHistJetsNEF = new TH1F("fHistJetsNEF","Jets neutral energy fraction", Ebins, 0, 1.2);
-  fHistJetsNEF->GetXaxis()->SetTitle("E [GeV]");
-  fHistJetsNEF->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsNEF);
-
-  fHistJetsZ = new TH1F("fHistJetsZ","Z of jet constituents", Ebins, 0, 1.2);
-  fHistJetsZ->GetXaxis()->SetTitle("Z");
-  fHistJetsZ->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsZ);
-
-  fHistTrPhiEta = new TH2F("fHistTrPhiEta","Phi-Eta distribution of tracks", 20, -2, 2, 32, 0, 6.4);
-  fHistTrPhiEta->GetXaxis()->SetTitle("Eta");
-  fHistTrPhiEta->GetYaxis()->SetTitle("Phi");
-  fOutput->Add(fHistTrPhiEta);
-
-  fHistClusPhiEta = new TH2F("fHistClusPhiEta","Phi-Eta distribution of clusters", 20, -2, 2, 32, 0, 6.4);
-  fHistClusPhiEta->GetXaxis()->SetTitle("Eta");
-  fHistClusPhiEta->GetYaxis()->SetTitle("Phi");
-  fOutput->Add(fHistClusPhiEta);
-
-  fHistJetPhiEta = new TH2F("fHistJetPhiEta","Phi-Eta distribution of jets", 20, -2, 2, 32, 0, 6.4);
-  fHistJetPhiEta->GetXaxis()->SetTitle("Eta");
-  fHistJetPhiEta->GetYaxis()->SetTitle("Phi");
-  fOutput->Add(fHistJetPhiEta);
-
-  fHistMaxTrgCluster = new TH1F("fHistMaxTrgCluster","Energy distribution of max trigger clusters", Ebins, Elow, Eup);
-  fHistMaxTrgCluster->GetXaxis()->SetTitle("E [GeV]");
-  fHistMaxTrgCluster->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMaxTrgCluster);
+  TString histname;
 
   for (Int_t i = 0; i < 4; i++) {
-    TString histnamephi("fHistTrackPhi_");
-    histnamephi += i;
-    fHistTrackPhi[i] = new TH1F(histnamephi.Data(),histnamephi.Data(), 32, 0, 6.4);
-    fHistTrackPhi[i]->GetXaxis()->SetTitle("Phi");
-    fOutput->Add(fHistTrackPhi[i]);
+    histname = "fHistJetsE_";
+    histname += i;
+    fHistJetsE[i] = new TH1F(histname.Data(), histname.Data(), Ebins, Elow, Eup);
+    fHistJetsE[i]->GetXaxis()->SetTitle("E [GeV]");
+    fHistJetsE[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsE[i]);
+    
+    histname = "fHistJetsNE_";
+    histname += i;
+    fHistJetsNE[i] = new TH1F(histname.Data(), histname.Data(), Ebins, Elow, Eup);
+    fHistJetsNE[i]->GetXaxis()->SetTitle("E [GeV]");
+    fHistJetsNE[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsNE[i]);
+    
+    histname = "fHistJetsNEF_";
+    histname += i;
+    fHistJetsNEF[i] = new TH1F(histname.Data(), histname.Data(), Ebins, 0, 1.2);
+    fHistJetsNEF[i]->GetXaxis()->SetTitle("NEF");
+    fHistJetsNEF[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsNEF[i]);
 
-    TString histnameeta("fHistTrackEta_");
-    histnameeta += i;
-    fHistTrackEta[i] = new TH1F(histnameeta.Data(),histnameeta.Data(), 40, -2, 2);
-    fHistTrackEta[i]->GetXaxis()->SetTitle("Eta");
-    fOutput->Add(fHistTrackEta[i]);
+    histname = "fHistJetsZ_";
+    histname += i;
+    fHistJetsZ[i] = new TH1F(histname.Data(), histname.Data(), Ebins, 0, 1.2);
+    fHistJetsZ[i]->GetXaxis()->SetTitle("Z");
+    fHistJetsZ[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsZ[i]);
+
+    histname = "fHistLeadingJetE_";
+    histname += i;
+    fHistLeadingJetE[i] = new TH1F(histname.Data(), histname.Data(), Ebins, Elow, Eup);
+    fHistLeadingJetE[i]->GetXaxis()->SetTitle("E [GeV]");
+    fHistLeadingJetE[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistLeadingJetE[i]);
+    
+    histname = "fHistTracksPtLJ_";
+    histname += i;
+    fHistTracksPtLJ[i] = new TH1F(histname.Data(), histname.Data(), Ptbins, Ptlow, Ptup);
+    fHistTracksPtLJ[i]->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+    fHistTracksPtLJ[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistTracksPtLJ[i]);
+    
+    histname = "fHistClusELJ_";
+    histname += i;
+    fHistClusELJ[i] = new TH1F(histname.Data(), histname.Data(), Ebins, Elow, Eup);
+    fHistClusELJ[i]->GetXaxis()->SetTitle("E [GeV]");
+    fHistClusELJ[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistClusELJ[i]);
+
+    histname = "fHistTracksPtBkg_";
+    histname += i;
+    fHistTracksPtBkg[i] = new TH1F(histname.Data(), histname.Data(), Ptbins, Ptlow, Ptup);
+    fHistTracksPtBkg[i]->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+    fHistTracksPtBkg[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistTracksPtBkg[i]);
+    
+    histname = "fHistClusEBkg_";
+    histname += i;
+    fHistClusEBkg[i] = new TH1F(histname.Data(), histname.Data(), Ebins, Elow, Eup);
+    fHistClusEBkg[i]->GetXaxis()->SetTitle("E [GeV]");
+    fHistClusEBkg[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistClusEBkg[i]);
   }
-
-  fHistTrackPhi[0]->SetLineColor(kRed);
-  fHistTrackEta[0]->SetLineColor(kRed);
-  fHistTrackPhi[1]->SetLineColor(kBlue);
-  fHistTrackEta[1]->SetLineColor(kBlue);
-  fHistTrackPhi[2]->SetLineColor(kGreen);
-  fHistTrackEta[2]->SetLineColor(kGreen);
-  fHistTrackPhi[3]->SetLineColor(kBlack);
-  fHistTrackEta[3]->SetLineColor(kBlack);
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
@@ -220,22 +196,28 @@ void AliEmcalIsolatedPhotonsTask::UserCreateOutputObjects()
 void AliEmcalIsolatedPhotonsTask::RetrieveEventObjects()
 {
   fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
-  fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-  fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
-  fTrgClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrgClusName));
-
-  if (!fTracks) {
-    AliWarning(Form("Could not retrieve tracks!")); 
-  }
   if (!fCaloClusters) {
     AliWarning(Form("Could not retrieve clusters!")); 
   }
+
+  fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+  if (!fTracks) {
+    AliWarning(Form("Could not retrieve tracks!")); 
+  }
+
+  fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
   if (!fJets) {
     AliWarning(Form("Could not retrieve jets!")); 
   }
-  if (!fTrgClusters) {
-    AliWarning(Form("Could not retrieve trigger clusters!")); 
+
+  if (strcmp(fTrgClusName,"")) {
+    fTrgClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrgClusName));
+    if (!fTrgClusters) {
+      AliWarning(Form("Could not retrieve trigger clusters!")); 
+    }
   }
+
+  fCent = InputEvent()->GetCentrality();
 }
 
 AliVTrack* AliEmcalIsolatedPhotonsTask::GetTrack(const Int_t i) const
@@ -304,10 +286,75 @@ Int_t AliEmcalIsolatedPhotonsTask::GetNumberOfTrgClusters() const
 
 void AliEmcalIsolatedPhotonsTask::FillHistograms()
 {
+  Float_t cent = fCent->GetCentralityPercentile("V0M");
+
+  fHistCentrality->Fill(cent);
+
+  Int_t centbin=-1;
+  if(cent>=0 && cent<10) centbin=0;
+  else if(cent>=10 && cent<30) centbin=1;
+  else if(cent>=30 && cent<50) centbin=2;
+  else if(cent>=50 && cent<=100) centbin=3;
+
+  // Jet loop
+  Int_t njets =  GetNumberOfJets();
+  //cout << njets << " jets" << endl;
+  Float_t maxJetEnergy = 0;
+  Int_t maxJetIndex = -1;
+  for (Int_t ij = 0; ij < njets; ij++) {
+
+    AliEmcalJet* jet = GetJet(ij);
+
+    if (!jet) {
+      printf("ERROR: Could not receive jet %d\n", ij);
+      continue;
+    }  
+    
+    if (jet->E() <= 0)
+      continue;
+
+    fHistJetsE[centbin]->Fill(jet->E());
+    fHistJetsNEF[centbin]->Fill(jet->NEF());
+    fHistJetsNE[centbin]->Fill(jet->E() * jet->NEF());
+
+    //cout << "****** jet id = " << ij << " ******" << endl;
+
+    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
+      Int_t trackid = jet->TrackAt(it);
+      AliVTrack *track = GetTrack(trackid);
+      //cout << "track id = " << trackid << endl;
+      if (track)
+	fHistJetsZ[centbin]->Fill(track->Pt() / jet->E());
+    }
+    for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
+      Int_t clusterid = jet->ClusterAt(ic);
+      //cout << "cluster id = " << clusterid << endl;
+      AliVCluster *cluster = GetCaloCluster(clusterid);
+      if (cluster)
+	fHistJetsZ[centbin]->Fill(cluster->E() / jet->E());
+    }
+
+    if (maxJetEnergy < jet->E()) {
+      maxJetEnergy = jet->E();
+      maxJetIndex = ij;
+    }
+  } //jet loop 
+
+  
+  if (!(maxJetEnergy > 0) || maxJetIndex < 0) 
+    return;
+
+  fHistLeadingJetE[centbin]->Fill(maxJetEnergy);
+  
+  AliEmcalJet* jet = GetJet(maxJetIndex);
+  if (!jet)
+    return;
+  
+  jet->SortConstituents();
   
   // Cluster loop
+  Int_t clusJetId = 0;
   Int_t nclusters =  GetNumberOfCaloClusters();
-  //cout << nclusters << " clusters" << endl;
   for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
     AliVCluster* cluster = GetCaloCluster(iClusters);
     if (!cluster) {
@@ -316,148 +363,62 @@ void AliEmcalIsolatedPhotonsTask::FillHistograms()
     }  
     
     if (!(cluster->IsEMCAL())) continue;
-
-    fHistClustersEnergy->Fill(cluster->E());
-
-    Float_t pos[3];
-    cluster->GetPosition(pos);
-    TVector3 clusVec(pos);
-    fHistClusPhiEta->Fill(clusVec.Eta(), clusVec.Phi());
+    
+    if (jet->GetNumberOfClusters() > 0) {
+      if (jet->ClusterAt(clusJetId) < iClusters) {
+	if (clusJetId < jet->GetNumberOfClusters() - 1)
+	  clusJetId++;
+      }
+      
+      if (jet->ClusterAt(clusJetId) == iClusters) {
+	fHistClusELJ[centbin]->Fill(cluster->E());
+      }
+      else {
+	fHistClusEBkg[centbin]->Fill(cluster->E());
+      }
+    }
+    else {
+      fHistClusEBkg[centbin]->Fill(cluster->E());
+    }
   } //cluster loop 
   
-
+  
   // Track loop 
+  Int_t trackJetId = 0;
   Int_t ntracks = GetNumberOfTracks();
-  //cout << ntracks << " tracks" << endl;
-  for(Int_t i = 0; i < ntracks; i++) {
-    //cout << "track n. " << i << endl;
-    AliVTrack* track = GetTrack(i); // pointer to reconstructed to track          
+  for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
+    AliVTrack* track = GetTrack(iTracks);         
     if(!track) {
-      AliError(Form("ERROR: Could not retrieve esdtrack %d",i)); 
+      AliError(Form("ERROR: Could not retrieve track %d",iTracks)); 
       continue; 
     }
     
     if (!AcceptTrack(track)) continue;
-
-    fHistTracksPt->Fill(track->Pt());
-
-    Int_t clId = track->GetEMCALcluster();
-    if (clId > -1) {
-      AliVCluster* cluster = GetCaloCluster(clId);
-      if (cluster)
-	fHistEPcorrelation->Fill(track->P(),cluster->E());
-    } 
-
-    Float_t eta,phi;
-    Int_t label;
-
-    if(track->InheritsFrom("AliESDtrack")) {
-      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track);
-      eta = esdtrack->Eta();
-      phi = esdtrack->Phi();
-      label = esdtrack->GetLabel();
-    }
-    else if (track->InheritsFrom("AliAODTrack")) {
-      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
-      eta = aodtrack->Eta();
-      phi = aodtrack->Phi();
-      label = aodtrack->GetLabel();
-    }
-    else if (track->InheritsFrom("AliPicoTrack")) {
-      AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack*>(track);
-      eta = picotrack->Eta();
-      phi = picotrack->Phi();
-      label = picotrack->GetLabel();
+    
+    if (jet->GetNumberOfTracks() > 0) {
+      if (jet->TrackAt(trackJetId) < iTracks) {
+	if (trackJetId < jet->GetNumberOfTracks() - 1)
+	  trackJetId++;
+      }
+      
+      if (jet->TrackAt(trackJetId) == iTracks) {
+	fHistTracksPtLJ[centbin]->Fill(track->Pt());
+      }
+      else {
+	fHistTracksPtBkg[centbin]->Fill(track->Pt());
+      }
     }
     else {
-      AliWarning("Track type not recognized! Will not plot phi\eta distributions!");
-      continue;
-    }
-
-    fHistTrPhiEta->Fill(eta, phi);
-    fHistTrackEta[3]->Fill(eta);
-    fHistTrackPhi[3]->Fill(phi);
-
-    if (label >= 0 && label < 3) {
-      fHistTrackEta[label]->Fill(eta);
-      fHistTrackPhi[label]->Fill(phi);
-    }
-    else {
-      AliWarning(Form("Track label %d not recognized!",label));
+      fHistTracksPtBkg[centbin]->Fill(track->Pt());
     }
   }
-
-  // Jet loop
-  Int_t njets =  GetNumberOfJets();
-  //cout << njets << " jets" << endl;
-  for (Int_t ij = 0; ij < njets; ij++) {
-    AliEmcalJet* jet = GetJet(ij);
-    if (!jet) {
-      printf("ERROR: Could not receive jet %d\n", ij);
-      continue;
-    }  
-    
-    fHistJetPhiEta->Fill(jet->Eta(), jet->Phi());
-    fHistJetsEnergy->Fill(jet->E());
-    fHistJetsNEF->Fill(jet->NEF());
-    fHistJetsNE->Fill(jet->E() * jet->NEF());
-    //if (jet->E() <= 0)
-    //continue;
-    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
-      Int_t trackid = jet->TrackAt(it);
-      AliVTrack *track = GetTrack(trackid);
-      if (track)
-	fHistJetsZ->Fill(track->Pt() / jet->E());
-    }
-    for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
-      Int_t clusterid = jet->ClusterAt(ic);
-      AliVCluster *cluster = GetCaloCluster(clusterid);
-      if (cluster)
-	fHistJetsZ->Fill(cluster->E() / jet->E());
-    }
-  } //jet loop 
-
-  Int_t ntrgclusters =  GetNumberOfTrgClusters();
-  Float_t maxe = 0;
-  //cout << ntrgclusters << " clusters" << endl;
-  for (Int_t iClusters = 0; iClusters < ntrgclusters; iClusters++) {
-    AliVCluster* cluster = GetTrgCluster(iClusters);
-    if (!cluster) {
-      printf("ERROR: Could not receive cluster %d\n", iClusters);
-      continue;
-    }  
-    
-    if (!(cluster->IsEMCAL())) continue;
-
-    if (cluster->E() > maxe)
-      maxe = cluster->E();
-
-  } //cluster loop 
-  fHistMaxTrgCluster->Fill(maxe);
-  
 }
 
+
 //________________________________________________________________________
-Bool_t AliEmcalIsolatedPhotonsTask::AcceptTrack(AliVTrack *track)
+Bool_t AliEmcalIsolatedPhotonsTask::AcceptTrack(AliVTrack* /*track*/)
 {
-  if (!strcmp(track->ClassName(), "AliESDTrack") && fESDTrackCuts) {
-    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track);
-    if(esdtrack) {
-      return fESDTrackCuts->AcceptTrack(esdtrack);
-    }
-    //else {
-    //cout << "no esdtrack!" << endl;
-    //}
-  }
-  else if (!strcmp(track->ClassName(), "AliAODTrack")) {
-    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
-    if (aodtrack) {
-      //cout << "filter bit = " << fFilterBit << ", filter map = " << aodtrack->GetFilterMap() << endl;
-      return aodtrack->TestFilterBit(fFilterBit);
-      
-    }
-  }
-  return 1;
+  return kTRUE;
 }
 
 //________________________________________________________________________
