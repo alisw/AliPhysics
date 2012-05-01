@@ -268,7 +268,7 @@ void AliHadCorrTask::UserExec(Option_t *)
     Int_t    imin       = -1;
     Double_t dEtaMin    = 1e9;
     Double_t dPhiMin    = 1e9;
-    Double_t dRmin      = TMath::Sqrt(dEtaMin*dEtaMin+dPhiMin*dPhiMin);
+    Double_t dRmin      = 1e9;
     Double_t totalTrkP  = 0.0; // count total track momentum
     Int_t    Nmatches   = 0;   // count total number of matches
     for (Int_t t = 0; t<Ntrks; ++t) {
