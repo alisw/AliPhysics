@@ -1,13 +1,15 @@
+// $Id$ 
+
 AliEmcalJetTask* AddTaskEmcalJet(
-						       const char *ntracks        = "Tracks",
-						       const char *nclusters      = "CaloClusters",
-						       const char *njets          = "Jets",
-						       const Int_t a              = 1,
-						       const Double_t r           = 0.4,
-						       const Int_t t              = 0,
-						       const Double_t minTrPt     = 0.15,
-						       const Double_t minClPt     = 0.15
-                                                       )
+  const char *nTracks        = "Tracks",
+  const char *nClusters      = "CaloClusters",
+  const char *nJets          = "Jets",
+  const Int_t algo           = 1,
+  const Double_t radius      = 0.4,
+  const Int_t type           = 0,
+  const Double_t minTrPt     = 0.15,
+  const Double_t minClPt     = 0.15
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -30,15 +32,16 @@ AliEmcalJetTask* AddTaskEmcalJet(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliEmcalJetTask* jetTask = new AliEmcalJetTask();
-  jetTask->SetTracksName(ntracks);
-  jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
-  jetTask->SetAlgo(a);
+  TString name(Form("JetTask_%s", nJets));
+  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
+  jetTask->SetTracksName(nTracks);
+  jetTask->SetClusName(nClusters);
+  jetTask->SetJetsName(nJets);
+  jetTask->SetAlgo(algo);
   jetTask->SetMinJetTrackPt(minTrPt);
   jetTask->SetMinJetClusPt(minClPt);
-  jetTask->SetRadius(r);
-  jetTask->SetType(t);
+  jetTask->SetRadius(radius);
+  jetTask->SetType(type);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -47,12 +50,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   mgr->AddTask(jetTask);
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
-  
-  mgr->ConnectInput  (jetTask, 0,  cinput1 );
-  mgr->ConnectOutput (jetTask, 0, coutput1 );
-  
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
+  mgr->ConnectInput  (jetTask, 0, cinput);
+
   return jetTask;
-  
 }
