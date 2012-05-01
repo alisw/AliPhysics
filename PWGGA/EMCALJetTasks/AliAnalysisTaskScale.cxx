@@ -1,34 +1,47 @@
 // $Id$
+//
+// Scale task.
+//
+//
 
-#include "TChain.h"
-#include "TTree.h"
-#include "TList.h"
-#include "TH1.h"
-#include "TH2.h"
+#include <TChain.h>
 #include <TClonesArray.h>
-#include <TParticle.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TList.h>
 #include <TLorentzVector.h>
-
-#include "AliAnalysisTask.h"
+#include <TParticle.h>
+#include <TTree.h>
 #include "AliAnalysisManager.h"
-#include "AliVCluster.h"
-
+#include "AliAnalysisTask.h"
+#include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
-#include "AliCentrality.h"
-
+#include "AliVCluster.h"
 #include "AliAnalysisTaskScale.h"
 
 ClassImp(AliAnalysisTaskScale)
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0), fOutputList(0), fHistCentrality(0), fHistPtTPCvsCent(0), fHistPtEMCALvsCent(0), fHistEtvsCent(0),  fHistScalevsCent(0),  fHistDeltaScalevsCent(0), fHistPtTPCvsNtrack(0), fHistPtEMCALvsNtrack(0), fHistEtvsNtrack(0),  fHistScalevsNtrack(0),  fHistDeltaScalevsNtrack(0),
+  : AliAnalysisTaskSE(name), 
     fTracksName("tracks"),
-    fClustersName("clusters")
-
+    fClustersName("clusters"),
+    fESD(0), 
+    fOutputList(0), 
+    fHistCentrality(0), 
+    fHistPtTPCvsCent(0), 
+    fHistPtEMCALvsCent(0), 
+    fHistEtvsCent(0),  
+    fHistScalevsCent(0),  
+    fHistDeltaScalevsCent(0), 
+    fHistPtTPCvsNtrack(0), 
+    fHistPtEMCALvsNtrack(0), 
+    fHistEtvsNtrack(0),  
+    fHistScalevsNtrack(0),  
+    fHistDeltaScalevsNtrack(0)
 {
-  // Constructor
+  // Constructor.
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -37,6 +50,8 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name)
 //________________________________________________________________________
 void AliAnalysisTaskScale::UserCreateOutputObjects()
 {
+  // Create my user objects.
+
   OpenFile(1);
   fOutputList = new TList();
   fOutputList->SetOwner();
@@ -48,7 +63,6 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistEtvsCent = new TH2F("fHistEtvsCent","rho vs cent",101,-1,100,500,0,1000);
   fHistScalevsCent = new TH2F("fHistScalevsCent","rho vs cent",101,-1,100,400,0,4.0);
   fHistDeltaScalevsCent = new TH2F("fHistDeltaScalevsCent","rho vs cent",101,-1,100,400,-2.0,2.0);
-  
   
   fHistPtTPCvsNtrack = new TH2F("fHistPtTPCvsNtrack","rho vs cent",500,0,2500,500,0,1000);
   fHistPtEMCALvsNtrack = new TH2F("fHistPtEMCALvsNtrack","rho vs cent",500,0,2500,500,0,1000);
@@ -67,7 +81,6 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fOutputList->Add(fHistEtvsNtrack);
   fOutputList->Add(fHistScalevsNtrack);
   fOutputList->Add(fHistDeltaScalevsNtrack);
-  
 
   PostData(1, fOutputList);
 }
@@ -75,13 +88,14 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskScale::UserExec(Option_t *) 
 {
+  // Execute on each event.
+
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     printf("ERROR: fESD not available\n");
     return;
   }
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   TClonesArray *tracks = 0;
   TClonesArray *clusters = 0;
   AliCentrality *centrality = 0;
@@ -98,7 +112,6 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
     AliError(Form("Pointer to clusters %s == 0", fClustersName.Data() ));
     return;
   }
-  
 
   centrality = dynamic_cast<AliCentrality*>(l->FindObject("Centrality"));
   float fCent = centrality->GetCentralityPercentile("V0M");
@@ -124,7 +137,7 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
   float Et = 0;
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   const Int_t Nclus = clusters->GetEntries();
-  for (Int_t iClus = 0, iN = 0; iClus < Nclus; ++iClus) {
+  for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
     
     AliVCluster *c = dynamic_cast<AliVCluster*>(clusters->At(iClus));
     if (!c->IsEMCAL())
@@ -152,8 +165,6 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
 
 //________________________________________________________________________
 void AliAnalysisTaskScale::Terminate(Option_t *) 
-{}
-
-
-
-
+{
+  // Nothing to be done for the moment.
+}
