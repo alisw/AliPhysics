@@ -339,7 +339,8 @@ void AliPHOSEmbedding::ConvertPHOSCells(const AliESDEvent& esd)
     aodPHcells.CreateContainer(nPHcell);
     aodPHcells.SetType(AliAODCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
+      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell),
+                         esdPHcells.GetTime(iCell),esdPHcells.GetMCLabel(iCell),0);
     }
     aodPHcells.Sort();
   }
@@ -357,7 +358,8 @@ void AliPHOSEmbedding::ConvertEMCALCells(const AliESDEvent& esd)
     aodEMcells.CreateContainer(nEMcell);
     aodEMcells.SetType(AliAODCaloCells::kEMCALCell);
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
-      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
+      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell),
+                         esdEMcells.GetTime(iCell),esdEMcells.GetMCLabel(iCell),0);
     }
     aodEMcells.Sort();
   }
@@ -499,7 +501,8 @@ void AliPHOSEmbedding::ConvertEmbeddedClusters(const AliESDEvent* esd)
     fEmbeddedCells->CreateContainer(nPHcell);
     fEmbeddedCells->SetType(AliAODCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      fEmbeddedCells->SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
+      fEmbeddedCells->SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell),
+                              esdPHcells.GetTime(iCell),esdPHcells.GetMCLabel(iCell),0);
     }
     fEmbeddedCells->Sort();
   }
@@ -701,9 +704,9 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   //First copy data digits
   Int_t ndigit=0 ;
   for (Short_t icell = 0; icell < fCellsPHOS->GetNumberOfCells(); icell++) {
-    Short_t id=0;
-    Double_t time=0., amp=0. ;
-    if (fCellsPHOS->GetCell(icell, id, amp, time) != kTRUE)
+    Short_t id=0, mcLabel=-1;
+    Double_t time=0., amp=0., efrac = 0. ;
+    if (fCellsPHOS->GetCell(icell, id, amp, time,mcLabel,efrac) != kTRUE)
       break;
         
     new((*fDigitsArr)[ndigit]) AliPHOSDigit(-1,id,float(amp),float(time),ndigit);
@@ -751,9 +754,9 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
     
       for(Int_t ic=0; ic < clus->GetNCells(); ic++ ){
         for (Int_t icell = 0; icell < cellsS->GetNumberOfCells(); icell++){
-	   Short_t cellNumber;
-	   Double_t cellAmplitude=0., cellTime=0. ;
-	   cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime) ;
+	   Short_t cellNumber, mcLabel = -1;
+	   Double_t cellAmplitude=0., cellTime=0., efrac = 0 ;
+	   cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mcLabel,efrac) ;
 	   if(cellNumber==index[ic]){
 	      cellLabels[icell]=label;
               cellSecondLabels[icell]=label2;
@@ -765,9 +768,9 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
 // printf("================End Signal==================\n") ;
 
     for (Int_t icell = 0; icell < cellsS->GetNumberOfCells(); icell++) {
-      Short_t cellNumber;
-      Double_t cellAmplitude=0., cellTime=0. ;
-      if (cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
+      Short_t cellNumber, mcLabel = -1;
+      Double_t cellAmplitude=0., cellTime=0., efrac ;
+      if (cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime, mcLabel, efrac) != kTRUE)
         break;
       //Add only digits related to the cluster, no noisy digits...
       if(cellLabels[icell]==-1)
