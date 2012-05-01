@@ -1,4 +1,8 @@
 // $Id$
+//
+// Emcal jet class.
+//
+//
 
 #include "AliEmcalJet.h"
 
