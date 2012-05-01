@@ -1,7 +1,5 @@
 // $Id$
 
-#include <cmath>
-
 #include "AliEmcalJet.h"
 
 ClassImp(AliEmcalJet)
@@ -11,9 +9,14 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz)
   : AliVParticle(), 
     fPt(TMath::Sqrt(px*px+py*py)), 
     fEta(TMath::ASinH(pz/fPt)),
-    fPhi(0), fM(0), fNEF(0), 
-    fArea(0), fNch(0), fNn(0),
-  fMaxCPt(0), fMaxNPt(0), fClusterIDs(new TArrayI()), fTrackIDs(new TArrayI())
+    fPhi(0), 
+    fM(0), 
+    fNEF(0), 
+    fArea(0), 
+    fMaxCPt(0), 
+    fMaxNPt(0), 
+    fClusterIDs(), 
+    fTrackIDs()
 {    
   // Constructor.
 
@@ -27,10 +30,16 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz)
 //_________________________________________________________________________________________________
 AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   AliVParticle(), 
-  fPt(pt), fEta(eta), fPhi(phi), 
-  fM(m), fNEF(0), fArea(0), 
-  fNch(0), fNn(0), 
-  fMaxCPt(0), fMaxNPt(0), fClusterIDs(new TArrayI()), fTrackIDs(new TArrayI())
+  fPt(pt), 
+  fEta(eta), 
+  fPhi(phi), 
+  fM(m), 
+  fNEF(0), 
+  fArea(0), 
+  fMaxCPt(0), 
+  fMaxNPt(0), 
+  fClusterIDs(), 
+  fTrackIDs()
 {
   // Constructor.
 
@@ -41,10 +50,16 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
 //_________________________________________________________________________________________________
 AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   AliVParticle(jet),
-  fPt(jet.fPt), fEta(jet.fEta), fPhi(jet.fPhi), 
-  fM(jet.fM), fNEF(jet.fNEF), fArea(jet.fArea), 
-  fNch(jet.fNch), fNn(jet.fNn),
-  fMaxCPt(jet.fMaxCPt), fMaxNPt(jet.fMaxNPt), fClusterIDs(new TArrayI(*(jet.fClusterIDs))), fTrackIDs(new TArrayI(*(jet.fTrackIDs)))
+  fPt(jet.fPt), 
+  fEta(jet.fEta), 
+  fPhi(jet.fPhi), 
+  fM(jet.fM), 
+  fNEF(jet.fNEF), 
+  fArea(jet.fArea), 
+  fMaxCPt(jet.fMaxCPt), 
+  fMaxNPt(jet.fMaxNPt), 
+  fClusterIDs(jet.fClusterIDs), 
+  fTrackIDs(jet.fTrackIDs)
 {
   // Constructor.
 }
@@ -56,16 +71,16 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
 
   if (this!=&jet) {
     AliVParticle::operator=(jet);
-    fPt     = jet.fPt;
-    fEta    = jet.fEta;
-    fPhi    = jet.fPhi;
-    fM      = jet.fM; 
-    fNEF    = jet.fNEF;
-    fArea   = jet.fArea; 
-    fNch    = jet.fNch; 
-    fNn     = jet.fNn;
-    fMaxCPt = jet.fMaxCPt; 
-    fMaxNPt = jet.fMaxNPt;
+    fPt         = jet.fPt;
+    fEta        = jet.fEta;
+    fPhi        = jet.fPhi;
+    fM          = jet.fM; 
+    fNEF        = jet.fNEF;
+    fArea       = jet.fArea; 
+    fMaxCPt     = jet.fMaxCPt; 
+    fMaxNPt     = jet.fMaxNPt;
+    fClusterIDs = jet.fClusterIDs;
+    fTrackIDs   = jet.fTrackIDs;
   }
 
   return *this;
@@ -91,6 +106,8 @@ void AliEmcalJet::Print(Option_t* /*option*/) const
 //__________________________________________________________________________________________________
 void AliEmcalJet::SortConstituents()
 {
-  std::sort(fClusterIDs->GetArray(), fClusterIDs->GetArray() + fClusterIDs->GetSize());
-  std::sort(fTrackIDs->GetArray(), fTrackIDs->GetArray() + fTrackIDs->GetSize());
+  // Sort constituent by index (increasing).
+
+  std::sort(fClusterIDs.GetArray(), fClusterIDs.GetArray() + fClusterIDs.GetSize());
+  std::sort(fTrackIDs.GetArray(), fTrackIDs.GetArray() + fTrackIDs.GetSize());
 }

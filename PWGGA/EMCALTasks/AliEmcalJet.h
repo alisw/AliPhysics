@@ -3,16 +3,16 @@
 
 // $Id$
 
-#include "AliVParticle.h"
+#include <TArrayS.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include <TArrayI.h>
+#include "AliVParticle.h"
 
 class AliEmcalJet : public AliVParticle
 {
  public:
   AliEmcalJet() : AliVParticle(), fPt(0), fEta(0), fPhi(0), fM(0), fNEF(0), fArea(0), 
-    fNch(0), fNn(0), fMaxCPt(0), fMaxNPt(0), fClusterIDs(0), fTrackIDs(0) {;}
+                  fMaxCPt(0), fMaxNPt(0), fClusterIDs(), fTrackIDs() {;}
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
   AliEmcalJet(const AliEmcalJet &jet); 
@@ -42,26 +42,25 @@ class AliEmcalJet : public AliVParticle
   void        GetMom(TLorentzVector &vec)  const;
   void        Print(Option_t* option = "") const;
 
-  Double_t    Area()                       const { return fArea;   }
-  Double_t    NEF()                        const { return fNEF;    }
-  UShort_t    N()                          const { return fNch+fNn;}
-  Double32_t  MaxTrackPt()                 const { return fMaxCPt; }
-  Double32_t  MaxClusterPt()               const { return fMaxNPt; }
-
-  void        SetArea(Double_t a)                { fArea   = a;    }
-  void        SetNEF(Double_t nef)               { fNEF    = nef;  }
-  void        SetMaxTrackPt(Double32_t t)        { fMaxCPt = t;    }
-  void        SetMaxClusterPt(Double32_t t)      { fMaxNPt = t;    }
-
-  void        SetNumberOfClusters(Int_t n)         { fClusterIDs->Set(n);           }
-  void        SetNumberOfTracks(Int_t n)           { fTrackIDs->Set(n);             }
-  void        AddClusterAt(Int_t clus, Int_t idx)  { fClusterIDs->AddAt(clus, idx); }
-  void        AddTrackAt(Int_t track, Int_t idx)   { fTrackIDs->AddAt(track, idx);  }
-
-  Int_t       GetNumberOfClusters()          const { return fClusterIDs->GetSize(); }
-  Int_t       GetNumberOfTracks()            const { return fTrackIDs->GetSize();   }
-  Int_t       ClusterAt(Int_t idx)           const { return fClusterIDs->At(idx);   }
-  Int_t       TrackAt(Int_t idx)             const { return fTrackIDs->At(idx);     }
+  Double_t    Area()                       const { return fArea;                 }
+  Short_t     ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);   }
+  UShort_t    GetNumberOfClusters()        const { return Nn();                  }
+  UShort_t    GetNumberOfTracks()          const { return Nch();                 }
+  Double_t    MaxClusterPt()               const { return fMaxNPt;               }
+  Double_t    MaxTrackPt()                 const { return fMaxCPt;               }
+  Double_t    NEF()                        const { return fNEF;                  }
+  UShort_t    Nn()                         const { return fClusterIDs.GetSize(); }
+  UShort_t    Nch()                        const { return fTrackIDs.GetSize();   }
+  UShort_t    N()                          const { return Nch()+Nn();            }
+  Short_t     TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);     }
+  void        AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx); }
+  void        AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);  }
+  void        SetArea(Double_t a)                { fArea   = a;                  }
+  void        SetMaxClusterPt(Double32_t t)      { fMaxNPt = t;                  }
+  void        SetMaxTrackPt(Double32_t t)        { fMaxCPt = t;                  }
+  void        SetNEF(Double_t nef)               { fNEF    = nef;                }
+  void        SetNumberOfClusters(Int_t n)       { fClusterIDs.Set(n);           }
+  void        SetNumberOfTracks(Int_t n)         { fTrackIDs.Set(n);             }
 
   void        SortConstituents();
 
@@ -72,12 +71,10 @@ class AliEmcalJet : public AliVParticle
   Double32_t  fM;            //[0,0,8]    mass
   Double32_t  fNEF;          //[0,1,8]    neutral energy fraction
   Double32_t  fArea;         //[0,0,12]   area
-  UShort_t    fNch;          //           number of charged constituents
-  UShort_t    fNn;           //           number of neutral constituents
   Double32_t  fMaxCPt;       //[0,0,12]   pt of maximum track
   Double32_t  fMaxNPt;       //[0,0,12]   pt of maximum cluster
-  TArrayI    *fClusterIDs;   //           array of cluster constituents  
-  TArrayI    *fTrackIDs;     //           array of track constituents    
+  TArrayS     fClusterIDs;   //           array of cluster constituents  
+  TArrayS     fTrackIDs;     //           array of track constituents    
 
   ClassDef(AliEmcalJet,2) // ESD jet class in cylindrical coordinates
 };
