@@ -17,35 +17,33 @@
 
 #include <TChain.h>
 #include <TFile.h>
-
-#include "TenderSupplies/AliEMCALTenderSupply.h"
 #include "AliAnalysisManager.h"
-
+#include "TenderSupplies/AliEMCALTenderSupply.h"
 #include "AliEmcalTenderTask.h"
 
 ClassImp(AliEmcalTenderTask)
 
 //______________________________________________________________________________
 AliEmcalTenderTask::AliEmcalTenderTask():
-           AliAnalysisTaskSE(),
-           fEMCALTender(NULL)
+  AliAnalysisTaskSE(),
+  fEMCALTender(NULL)
 {
-// Dummy constructor
+  // Default constructor.
 }
 
 //______________________________________________________________________________
 AliEmcalTenderTask::AliEmcalTenderTask(const char* name):
-           AliAnalysisTaskSE(name),
-           fEMCALTender(NULL)
+  AliAnalysisTaskSE(name),
+  fEMCALTender(NULL)
 {
-// Default constructor
-  //DefineOutput(1,  AliESDEvent::Class());
+  // Constructor.
 }
 
 //______________________________________________________________________________
 AliEmcalTenderTask::~AliEmcalTenderTask()
 {
-// Destructor
+  // Destructor
+
   if (fEMCALTender)
     fEMCALTender->Delete();
 }
@@ -53,6 +51,8 @@ AliEmcalTenderTask::~AliEmcalTenderTask()
 //______________________________________________________________________________
 void AliEmcalTenderTask::SetEMCALTenderSupply(AliEMCALTenderSupply *supply)
 {
+  // Set tender supply.
+
   fEMCALTender = supply;
   supply->SetTask(this);
 }
@@ -60,6 +60,8 @@ void AliEmcalTenderTask::SetEMCALTenderSupply(AliEMCALTenderSupply *supply)
 //______________________________________________________________________________
 void AliEmcalTenderTask::ConnectInputData(Option_t *option)
 {
+  // Connect input data.
+
   AliAnalysisTaskSE::ConnectInputData(option);
   fEMCALTender->Init();
 }
@@ -67,12 +69,13 @@ void AliEmcalTenderTask::ConnectInputData(Option_t *option)
 //______________________________________________________________________________
 void AliEmcalTenderTask::UserCreateOutputObjects()
 {
-// Nothing for the moment, but we may need ESD/AOD event replication here.
- 
+  // Nothing to be done.
 }
 
 //______________________________________________________________________________
-void AliEmcalTenderTask::UserExec(Option_t* option)
+void AliEmcalTenderTask::UserExec(Option_t*)
 {
+  // Process the event.
+
   fEMCALTender->ProcessEvent();
 }
