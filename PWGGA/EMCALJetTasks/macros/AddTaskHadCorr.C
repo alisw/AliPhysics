@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 
 AliHadCorrTask* AddTaskHadCorr(
   const char *ntracks        = "Tracks",
