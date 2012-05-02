@@ -5,6 +5,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
+  const char *nktjets            = "KtJets",
   const char *ntrgclusters       = "ClustersL1GAMMAFEE",
   UInt_t type                    = AliAnalysisTaskSAJF::kEMCAL
 )
@@ -35,6 +36,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   phTask->SetTracksName(ntracks);
   phTask->SetClusName(nclusters);
   phTask->SetJetsName(njets);
+  phTask->SetKtJetsName(nktjets);
   phTask->SetTrgClusName(ntrgclusters);
 
   //-------------------------------------------------------
