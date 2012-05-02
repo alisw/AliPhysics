@@ -1222,15 +1222,17 @@ Double_t AliTRDdEdxUtils::GetRNDClusterQ(AliTRDcluster *cl)
 
   Double_t rndqsum = 0;
   for(Int_t ii=0; ii<7; ii++){
-    const Int_t icol = pad3col+(ii-3);
-
-    const Double_t padgain = IsPadGainOn()? GetPadGain(det, icol, padrow) : 1;
-    if(padgain<0){//indices out of range
-      //printf("testout %d %d\n\n", pad3col, ii);
+    if(cl->GetSignals()[ii] < EPSILON){//bad pad marked by electronics
       continue;
     }
 
-    const Double_t rndsignal = (cl->GetSignals()[ii] - baseline)/padgain;
+    const Int_t icol = pad3col+(ii-3);
+    const Double_t padgain = GetPadGain(det, icol, padrow);
+    if(padgain<0){//indices out of range, pad3col near boundary case
+      continue;
+    }
+
+    const Double_t rndsignal = (cl->GetSignals()[ii] - baseline)/(IsPadGainOn()? padgain : 1);
 
     //sum it anyway even if signal below baseline, as long as the total is positive
     rndqsum += rndsignal;
@@ -1247,7 +1249,7 @@ Double_t AliTRDdEdxUtils::GetClusterQ(const Bool_t kinvq, const AliTRDseedV1 * s
   Double_t dq = 0;
   AliTRDcluster *cl = 0x0;
       
-  //GetRNDClusterQ(cl)>0 ensures that the total sum of q is above baseline*7. 
+  //GetRNDClusterQ(cl)>0 ensures that the total sum of q is above baseline*NsignalPhysical. 
   cl = seed->GetClusters(itb);                    if(cl && GetRNDClusterQ(cl)>0 ) dq+= GetRNDClusterQ(cl);//cl->GetRawQ();
   cl = seed->GetClusters(itb+AliTRDseedV1::kNtb); if(cl && GetRNDClusterQ(cl)>0 ) dq+= GetRNDClusterQ(cl);//cl->GetRawQ();
 
