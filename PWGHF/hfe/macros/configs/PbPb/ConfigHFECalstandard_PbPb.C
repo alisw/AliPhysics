@@ -19,8 +19,7 @@ AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC, int TPCclust){
 
   //hfecuts->UnsetVertexRequirement();
   hfecuts->SetMaxImpactParam(3.,3.);
-  hfecuts->SetMaxImpactParam(3.,3.);
-  hfecuts->SetPtRange(0.5,60.0);
+  hfecuts->SetPtRange(2.0,60.0);
 
   hfecuts->SetVertexRange(10.);
   //hfecuts->SetMaxChi2perClusterITS(36);
