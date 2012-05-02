@@ -24,7 +24,15 @@ class AliESDTrackCuts;
 
 class AliSPDClustTask : public AliAnalysisTaskSE {
  public:
-  enum {kHTracklets=0, kHPt = 50, kHClusters=100, kClTypevsEta=0, kClZ=1, kClEta=2, kClZPions=3, kClEtaPions=4, kClZPionsW=5, kClEtaPionsW=6}; // to facilitated access to histos, see BookHistos
+  enum {kHTracklets=0,
+	kHPtPion=50,kHPtKaon=51,kHPtProton=52,kHPtK0=53,kHPtLambda0=54,
+	kHClusters=100,
+	kClTypevsEta=0,kClZ=1,kClEta=2,kClTypevsEtaW=3,kClZW=4,kClEtaW=5,
+	kClZPions=6, kClEtaPions=7, kClZPionsW=8, kClEtaPionsW=9,
+	kClZKaons=10,kClEtaKaons=11,kClZKaonsW=12,kClEtaKaonsW=13,
+	kClZProtons=14,kClEtaProtons=15,kClZProtonsW=16,kClEtaProtonsW=17,
+	kClZK0s=18,kClEtaK0s=19,kClZK0sW=20,kClEtaK0sW=21,
+	kClZLambda0s=22,kClEtaLambda0s=23,kClZLambda0sW=24,kClEtaLambda0sW=25}; // to facilitated access to histos, see BookHistos
   //
   AliSPDClustTask(const char *name = "AliSPDClustTask");
   virtual ~AliSPDClustTask(); 
