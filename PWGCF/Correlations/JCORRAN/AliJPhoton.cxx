@@ -37,6 +37,7 @@ AliJPhoton::AliJPhoton() :
   fSuperModuleId(-999),
   fCellsAbsId(0x0),
   fCellsAmpFraction(0x0)
+//  fCellsAmp(0x0)
 
 {
   // default constructor
@@ -66,12 +67,14 @@ AliJPhoton::AliJPhoton(const AliJPhoton& a) :
   fSuperModuleId(a.fSuperModuleId),
   fCellsAbsId(NULL),
   fCellsAmpFraction(NULL)
+//  fCellsAmp(NULL)
 
 {
   //copy constructor
   for(Int_t i=0;i<kUnknownAli+1;i++) fCaloPID[i] = a.fCaloPID[i];
   SetCellsAbsId( a.fCellsAbsId );
   SetCellsAmplitudeFraction( a.fCellsAmpFraction );
+//  SetCellsAmplitude( a.fCellsAmp );
 }
 
 //_____________________________________________________________________________
@@ -100,6 +103,7 @@ AliJPhoton& AliJPhoton::operator=(const AliJPhoton& photon){
     fSuperModuleId =  photon.fSuperModuleId;
     SetCellsAbsId( photon.fCellsAbsId );
     SetCellsAmplitudeFraction( photon.fCellsAmpFraction );
+//    SetCellsAmplitude( photon.fCellsAmp );
 
   }
 
@@ -127,8 +131,19 @@ void  AliJPhoton::SetCellsAmplitudeFraction(const Double32_t *array)
     }
 }
 
+// //_______________________________________________________________________
+// void  AliJPhoton::SetCellsAmplitude(const Double32_t *array)
+// {
+//     //  Set the array of cell amplitude fraction
+//     if (fNCells) {
+// 	if(fCellsAmp){ delete [] fCellsAmp; fCellsAmp = NULL;}
+// 	fCellsAmp = new  Double_t[fNCells];
+// 	for (Int_t i = 0; i < fNCells; i++) fCellsAmp[i] = array[i];
+//     }
+// }
+
 //______________________________________________________________________________
-void  AliJPhoton::SetPID(const Double_t *pid) {
+void  AliJPhoton::SetPID(const Double32_t *pid) {
    //set pid
     if(pid){
        for(Int_t i=0; i<kUnknownAli+1; ++i) fCaloPID[i]=pid[i];

@@ -52,7 +52,9 @@ const char* const kParticleProtoType[kNumberOfExperiments][kNumberOfParticleType
 
 //=======================JCorran trigger table definition===========================
 //internal JCorran trigger mask  TBit=0 is MinBias, TBit=1 HighMultiplicityTrigger
-enum TriggerBitJCorran   {kMinBiasTriggerBitJCorran, kHighMultTriggerBitJCorran};  
+enum TriggerBitJCorran   {kMinBiasTriggerBitJCorran, kHighMultTriggerBitJCorran,
+                          kEmc0TriggerBitJCorran,
+                          kEmc1GammaTriggerBitJCorran, kEmc1JetTriggerBitJCorran};  
 const int kRangeTriggerTableAlice   = 50;
 const int kRangeTriggerTableJCorran = 16;
 
