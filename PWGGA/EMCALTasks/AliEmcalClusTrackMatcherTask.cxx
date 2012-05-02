@@ -1,8 +1,8 @@
 // $Id$
 //
-// Track/cluster matcher.
-//
-//
+// Track/cluster matcher
+// 
+// Author: C.Loizides
 
 #include <TClonesArray.h>
 #include <TString.h>

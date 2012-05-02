@@ -2,7 +2,7 @@
 //
 // Emcal jet class.
 //
-//
+// Author: C.Loizides
 
 #include "AliEmcalJet.h"
 

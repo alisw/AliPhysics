@@ -13,7 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+//_________________________________________________________________________
+// This analysis provides a new list of clusters to be used in other analysis
+//
+// Author: Constantin Loizides, Salvatore Aiola
+//         Adapted from analysis class from Deepa Thomas
+//
+// $Id$
+//_________________________________________________________________________
 
 // --- Root ---
 #include <TClonesArray.h>

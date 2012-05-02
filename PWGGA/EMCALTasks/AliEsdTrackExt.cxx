@@ -2,7 +2,7 @@
 //
 // Modified track class to be able to store cached quantities.
 //
-//
+// Author: C.Loizides
 
 #include "AliEsdTrackExt.h"
 #include <TVector3.h>

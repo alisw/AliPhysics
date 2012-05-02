@@ -2,7 +2,7 @@
 //
 // Class to make PicoTracks in AOD/ESD events.
 //
-//
+// Author: S.Aiola, C.Loizides
 
 #include <TClonesArray.h>
 #include "AliAODEvent.h"

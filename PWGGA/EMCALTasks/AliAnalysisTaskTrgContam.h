@@ -1,6 +1,8 @@
 #ifndef AliAnalysisTaskTrgContam_cxx
 #define AliAnalysisTaskTrgContam_cxx
 
+// $Id$
+
 class TH1;
 class TH2;
 class TObjArray;

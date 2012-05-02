@@ -18,8 +18,8 @@
 //  Author: Nicolas Arbor (LPSC-Grenoble), Rachid Guernane (LPSC-Grenoble)//
 //          Gustavo Conesa Balbastre  (LPSC-Grenoble)                     //
 //                                                                        //
+//  $Id$                                                                //
 //------------------------------------------------------------------------//
-
 
 #include <TList.h>
 #include <TH2F.h>

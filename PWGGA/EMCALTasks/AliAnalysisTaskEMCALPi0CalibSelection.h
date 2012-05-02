@@ -1,13 +1,7 @@
 #ifndef ALIANALYSISTASKEMCALPI0CALIBSELECTION_H
 #define ALIANALYSISTASKEMCALPI0CALIBSELECTION_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-//---------------------------------------------------------------------------// 
-// Fill histograms with two-cluster invariant mass                           //
-// using calibration coefficients of the previous iteration.                 //
-//---------------------------------------------------------------------------//
+// $Id$
 
 // Root includes
 class TH1F;
