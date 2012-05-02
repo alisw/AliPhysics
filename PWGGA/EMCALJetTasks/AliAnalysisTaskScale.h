@@ -13,7 +13,7 @@ class AliESDEvent;
 
 class AliAnalysisTaskScale : public AliAnalysisTaskSE {
  public:
-    AliAnalysisTaskScale() : AliAnalysisTaskSE(), fTracksName("tracks"), fClustersName("clusters"), fESD(0),
+    AliAnalysisTaskScale() : AliAnalysisTaskSE(), fTracksName(), fClustersName(),
       fOutputList(0), fHistCentrality(0), fHistPtTPCvsCent(0), fHistPtEMCALvsCent(0), fHistEtvsCent(0),  
       fHistScalevsCent(0),  fHistDeltaScalevsCent(0), fHistPtTPCvsNtrack(0), fHistPtEMCALvsNtrack(0), 
       fHistEtvsNtrack(0), fHistScalevsNtrack(0), fHistDeltaScalevsNtrack(0) {}
@@ -29,23 +29,22 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
  private:
   TString                fTracksName;             // name of track collection
   TString                fClustersName;           // name of clusters collection
-  AliESDEvent           *fESD;                    //!ESD object
-  TList                 *fOutputList;             //!Output list
-  TH1F                  *fHistCentrality;         //!
-  TH2F                  *fHistPtTPCvsCent;        //!
-  TH2F                  *fHistPtEMCALvsCent;      //!
-  TH2F                  *fHistEtvsCent;           //!
-  TH2F                  *fHistScalevsCent;        //!
-  TH2F                  *fHistDeltaScalevsCent;   //!
-  TH2F                  *fHistPtTPCvsNtrack;      //!
-  TH2F                  *fHistPtEMCALvsNtrack;    //!
-  TH2F                  *fHistEtvsNtrack;         //!
-  TH2F                  *fHistScalevsNtrack;      //!
-  TH2F                  *fHistDeltaScalevsNtrack; //!
+  TList                 *fOutputList;             //!output list
+  TH1F                  *fHistCentrality;         //!output histogram
+  TH2F                  *fHistPtTPCvsCent;        //!output histogram
+  TH2F                  *fHistPtEMCALvsCent;      //!output histogram
+  TH2F                  *fHistEtvsCent;           //!output histogram
+  TH2F                  *fHistScalevsCent;        //!output histogram
+  TH2F                  *fHistDeltaScalevsCent;   //!output histogram
+  TH2F                  *fHistPtTPCvsNtrack;      //!output histogram
+  TH2F                  *fHistPtEMCALvsNtrack;    //!output histogram
+  TH2F                  *fHistEtvsNtrack;         //!output histogram
+  TH2F                  *fHistScalevsNtrack;      //!output histogram
+  TH2F                  *fHistDeltaScalevsNtrack; //!output histogram
 
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 1); // example of analysis
+  ClassDef(AliAnalysisTaskScale, 2); // example of analysis
 };
 #endif
