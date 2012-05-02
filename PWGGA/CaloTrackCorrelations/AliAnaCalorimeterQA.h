@@ -344,7 +344,7 @@ public:
 	
   //Histograms for MC track-matching
   TH2F *   fh1pOverE;                         //! p/E for track-cluster matches
-  TH1F *   fh1dR;                             //! distance between projected track and cluster
+  TH2F *   fh2dR;                             //! distance between projected track and cluster (eta-phi units)
   TH2F *   fh2EledEdx;                        //! dE/dx vs. momentum for electron candidates
   TH2F *   fh2MatchdEdx;                      //! dE/dx vs. momentum for all matches
 	
