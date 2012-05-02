@@ -260,8 +260,21 @@ void AliSPDClustTask::UserExec(Option_t *)
       if (!stack->IsPhysicalPrimary(iPart)) continue;
       TParticle* p = stack->Particle(iPart);
       if (TMath::Abs(p->Y()) > 0.5) continue;
-      if (TMath::Abs(p->GetPdgCode()) != 211) continue;
-      TH1D *hPt = (TH1D*)fHistos->At(kHPt);
+      TH1D *hPt = NULL;
+      switch (TMath::Abs(p->GetPdgCode())) {
+      case 211:
+	hPt = (TH1D*)fHistos->At(kHPtPion);
+      case 321:
+	hPt = (TH1D*)fHistos->At(kHPtKaon);
+      case 2212:
+	hPt = (TH1D*)fHistos->At(kHPtProton);
+      case 310:
+	hPt = (TH1D*)fHistos->At(kHPtK0);
+      case 3122:
+	hPt = (TH1D*)fHistos->At(kHPtLambda0);
+      default:
+	continue;
+      }
       hPt->Fill(p->Pt());
     }
   }
@@ -335,6 +348,15 @@ TObjArray* AliSPDClustTask::BookHistos()
 			    nEtaBins, fEtaMin,fEtaMax);
       histos->AddAtAndExpand(hEta, kHClusters+iused*200+spd*100 + kClEta);
 
+      hZ = new TH1F(Form("clZ_weighted_SPD%d_%s",spd,iused ? "used":"free"),
+		    Form("clZ weighted SPD%d %s",spd,iused ? "used":"free"),
+		    200, -15, 15);
+      histos->AddAtAndExpand(hZ, kHClusters+iused*200+spd*100 + kClZW);
+      hEta = new TH1F(Form("clEta_weighted_SPD%d_%s",spd,iused ? "used":"free"),
+		      Form("clEta weighted SPD%d %s",spd,iused ? "used":"free"),
+		      nEtaBins, fEtaMin,fEtaMax);
+      histos->AddAtAndExpand(hEta, kHClusters+iused*200+spd*100 + kClEtaW);
+
       hZ = new TH1F(Form("clZ_pions_weighted_SPD%d_%s",spd,iused ? "used":"free"),
 		    Form("clZ pions weighted SPD%d %s",spd,iused ? "used":"free"),
 		    200, -15, 15);
@@ -355,8 +377,12 @@ TObjArray* AliSPDClustTask::BookHistos()
     }
   }
   if (fUseMC) {
-    TH1D *hPt = new TH1D("hPt","Pions Pt spectra (MC)",fhPtPionIn->GetXaxis()->GetNbins(),fhPtPionIn->GetXaxis()->GetXbins()->GetArray());
-    histos->AddAtAndExpand(hPt, kHPt);
+    TH1D *hPtPion = new TH1D("hPtPion","Pions Pt spectra (MC)",fhPtPionIn->GetXaxis()->GetNbins(),fhPtPionIn->GetXaxis()->GetXbins()->GetArray());
+    histos->AddAtAndExpand(hPtPion, kHPtPion);
+    TH1D *hPtKaon = new TH1D("hPtKaon","Kaons Pt spectra (MC)",fhPtKaonIn->GetXaxis()->GetNbins(),fhPtKaonIn->GetXaxis()->GetXbins()->GetArray());
+    histos->AddAtAndExpand(hPtKaon, kHPtKaon);
+    TH1D *hPtProton = new TH1D("hPtProton","Protons Pt spectra (MC)",fhPtProtonIn->GetXaxis()->GetNbins(),fhPtProtonIn->GetXaxis()->GetXbins()->GetArray());
+    histos->AddAtAndExpand(hPtProton, kHPtProton);
   }
   //
   return histos;
@@ -430,7 +456,10 @@ void AliSPDClustTask::FillHistos(AliStack *stack)
 	    TParticle* p = stack->Particle(moLabel);
 	    if ((TMath::Abs(p->GetPdgCode()) != 211) &&
 		(TMath::Abs(p->GetPdgCode()) != 321) &&
-		(TMath::Abs(p->GetPdgCode()) != 2212)) continue;
+		(TMath::Abs(p->GetPdgCode()) != 2212) &&
+		(TMath::Abs(p->GetPdgCode()) != 111) &&
+		(TMath::Abs(p->GetPdgCode()) != 310) &&
+		(TMath::Abs(p->GetPdgCode()) != 3122)) continue;
 	    weight = PtWeight(p->Pt(),p->GetPdgCode());
 	    h1d = (TH1F*)fHistos->At(kHClusters+used*200+ilr*100 + kClZPionsW);
 	    h1d->Fill(z,weight);
@@ -442,6 +471,10 @@ void AliSPDClustTask::FillHistos(AliStack *stack)
 	    h1d->Fill(eta);
 	    break;
 	  }
+	  h1d = (TH1F*)fHistos->At(kHClusters+used*200+ilr*100 + kClZW);
+	  h1d->Fill(z,weight);
+	  h1d = (TH1F*)fHistos->At(kHClusters+used*200+ilr*100 + kClEtaW);
+	  h1d->Fill(eta,weight);
 	}
       }
     } // loop on clusters of layer
@@ -461,10 +494,13 @@ void AliSPDClustTask::SetInput(const char *filename)
     if (!fPt) {	AliError("Failed to open input file"); return; }
     fhPtPionIn = (TH1F*)fPt->Get("pionPtWeight")->Clone("fhPtPionIn");
     fhPtPionIn->SetDirectory(0);
+    fhPtPionIn->SetBinContent(fhPtPionIn->GetNbinsX()+1,fhPtPionIn->GetBinContent(fhPtPionIn->GetNbinsX()));
     fhPtKaonIn = (TH1F*)fPt->Get("kaonPtWeight")->Clone("fhPtKaonIn");
     fhPtKaonIn->SetDirectory(0);
+    fhPtKaonIn->SetBinContent(fhPtKaonIn->GetNbinsX()+1,fhPtKaonIn->GetBinContent(fhPtKaonIn->GetNbinsX()));
     fhPtProtonIn = (TH1F*)fPt->Get("protPtWeight")->Clone("fhPtProtonIn");
     fhPtProtonIn->SetDirectory(0);
+    fhPtProtonIn->SetBinContent(fhPtProtonIn->GetNbinsX()+1,fhPtProtonIn->GetBinContent(fhPtProtonIn->GetNbinsX()));
     fPt->Close();
   }
 }
@@ -497,6 +533,12 @@ Double_t AliSPDClustTask::PtWeight(Double_t pt, Int_t pdgCode)
     return fhPtKaonIn->GetBinContent(fhPtKaonIn->FindBin(pt));
   case 2212:
     return fhPtProtonIn->GetBinContent(fhPtProtonIn->FindBin(pt));
+  case 111:
+    return fhPtPionIn->GetBinContent(fhPtPionIn->FindBin(pt));
+  case 310:
+    return 3.;
+  case 3122:
+    return 3.;
   default:
     return 1.;
   }
