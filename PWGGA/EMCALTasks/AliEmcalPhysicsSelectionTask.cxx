@@ -2,7 +2,7 @@
 //
 // Emcal physics selection task.
 //
-//
+// Author: C.Loizides
 
 #include <TFile.h>
 #include <TH1F.h>

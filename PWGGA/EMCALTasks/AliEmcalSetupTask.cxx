@@ -2,7 +2,7 @@
 //
 // Task to setup emcal related global objects.
 //
-//
+// Author: C.Loizides
 
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>

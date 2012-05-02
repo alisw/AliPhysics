@@ -2,7 +2,7 @@
 //
 // Task to propagate tracks to EMCAL surface.
 //
-//
+// Author: C.Loizides
 
 #include <TClonesArray.h>
 #include "AliAnalysisManager.h"

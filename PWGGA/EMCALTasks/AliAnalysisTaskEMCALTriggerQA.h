@@ -1,15 +1,7 @@
 #ifndef ALIANALYSISTASKEMCALTRIGGERQA_H
 #define ALIANALYSISTASKEMCALTRIGGERQA_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-//-------------------------------------------------------------------------// 
-//  Fill histograms with basic QA information for EMCAL offline trigger    //
-//  Author: Nicolas Arbor (LPSC-Grenoble), Rachid Guernane (LPSC-Grenoble) //
-//          Gustavo Conesa Balbastre  (LPSC-Grenoble)                      //
-//                                                                         //
-//-------------------------------------------------------------------------//
+// $Id$
 
 //--- Root ---
 class TList;

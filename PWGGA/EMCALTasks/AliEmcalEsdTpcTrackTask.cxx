@@ -2,7 +2,7 @@
 //
 // Task to constrain TPC tracks to SPD vertex.
 //
-//
+// Author: C.Loizides
 
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>

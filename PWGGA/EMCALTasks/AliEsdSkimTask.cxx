@@ -2,7 +2,7 @@
 //
 // Task to skim ESD files.
 //
-//
+// Author: C.Loizides
 
 #include "AliEsdSkimTask.h"
 #include <TClonesArray.h>

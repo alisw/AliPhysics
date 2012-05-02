@@ -1,9 +1,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: Boris Polishchuk                                               *
- * Adapted to AOD reading by Gustavo Conesa                               *
- *                                                                        *
+
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
@@ -19,6 +16,12 @@
 // using calibration coefficients of the previous iteration.                 //
 // Histogram for a given cell is filled if the most energy of one cluster    //
 // is deposited in this cell and the other cluster could be anywherein EMCAL.//
+//                                                                           //
+//                                                                           //
+// Author: Boris Polishchuk                                                  //
+// Adapted to AOD reading by Gustavo Conesa                                  //
+//                                                                           //
+// $Id$                                                                    //
 //                                                                           //
 //---------------------------------------------------------------------------//
 

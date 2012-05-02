@@ -3,6 +3,7 @@
 // Track class with minimal number of information 
 // (targets at selection of primary tracks).
 //
+// Author: C.Loizides
 
 #include "AliPicoTrack.h"
 #include "AliExternalTrackParam.h"

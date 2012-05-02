@@ -20,6 +20,9 @@
 // cluster of high energy
 //
 // Author: Gustavo Conesa Balbastre (LPSC - Grenoble)
+//
+// $Id$
+//
 //////////////////////////////////////////////////////////
 
 #include "AliESDCaloCluster.h"

@@ -2,7 +2,7 @@
 //
 // Emcal physics selection class.
 //
-//
+// Author: C.Loizides
 
 #include "AliEmcalPhysicsSelection.h"
 #include "AliAODEvent.h"

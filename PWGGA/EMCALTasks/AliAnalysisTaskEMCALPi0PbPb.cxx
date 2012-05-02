@@ -2,7 +2,7 @@
 //
 // Analysis task for neutral pions (into two gammas).
 //
-//
+// Author: C.Loizides, E.Braidot
 
 #include "AliAnalysisTaskEMCALPi0PbPb.h"
 #include <TAxis.h>
