@@ -3,7 +3,7 @@
 AliAnalysisTaskScale* AddTaskScale(
   const char *nTracks        = "Tracks",
   const char *nClusters      = "CaloClustersCorr",
-  const char *outfilename    = "AnalysisOutput.root"
+  const char *outfilename    = "AnalysisResults.root"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.

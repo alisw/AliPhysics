@@ -6,7 +6,7 @@ AliHadCorrTask* AddTaskHadCorr(
   const char *outClusName    = "CaloClustersCorr",
   const Double_t hadcorr     = 1,
   const Double_t minPt       = 0.15,
-  const char *outputname     = "AnalysisOutput.root"
+  const char *outputname     = "AnalysisResults.root"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
