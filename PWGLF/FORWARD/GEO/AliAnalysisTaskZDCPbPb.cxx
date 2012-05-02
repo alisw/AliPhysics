@@ -287,7 +287,7 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
    }
    for(int i=0; i<6; i++){
      if(i==0){
-       fhZEM[i] = new TH1F("hZEM1","hZEM1",200,-50.,1150.);
+       fhZEM[i] = new TH1F("hZEM1","hZEM1",200,-10.,1190.);
        fhTDCraw[i] = new TH1F("hTDCZEM1raw", "hTDCZEM1raw", 200, -200., 0.);
        fhTDC[i] = new TH1F("hTDCZEM1", "hTDCZEM1", 200, -150., 50.);
        fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZNC","hPMCvsPMQZNC",200,-10.,140000,200,-10.,140000);
@@ -296,7 +296,7 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
        fOutput->Add(fhPMCvsPMQ[i]);
      }
      else if(i==1){
-       fhZEM[i] = new TH1F("hZEM2","hZEM2",200,-50.,1150.);
+       fhZEM[i] = new TH1F("hZEM2","hZEM2",200,-10.,1190.);
        fhTDCraw[i] = new TH1F("hTDCZEM2raw", "hTDCZEM2raw", 200, -200., 0.);
        fhTDC[i] = new TH1F("hTDCZEM2", "hTDCZEM2", 200, -150., 50.);
        fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZPC","hPMCvsPMQZPC",200,-10.,50000,200,-10.,50000);
@@ -335,27 +335,27 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fOutput->Add(fhZNCvsZNA);
   fhZPCvsZPA = new TH2F("hZPCvsZPA","hZPCvsZPA",200,-50.,50000,200,-50.,50000);	
   fOutput->Add(fhZPCvsZPA);
-  fhZDCCvsZDCCA = new TH2F("hZDCCvsZDCCA","hZDCCvsZDCCA",200,0.,200000.,200,0.,200000.);	
+  fhZDCCvsZDCCA = new TH2F("hZDCCvsZDCCA","hZDCCvsZDCCA",200,0.,180000.,200,0.,180000.);	
   fOutput->Add(fhZDCCvsZDCCA);
   fhZNvsZEM = new TH2F("hZNvsZEM","hZNvsZEM",200,0.,2500.,200,0.,200000.);	
   fOutput->Add(fhZNvsZEM);
   fhZNvsZEMwV0M = new TH2F("hZNvsZEMwV0M","hZNvsZEM wV0M",200,0.,2500.,200,0.,200000.);	
   fOutput->Add(fhZNvsZEMwV0M);
-  fhZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",200,0.,2500.,200,0.,200000.);	
+  fhZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",200,0.,2500.,250,0.,250000.);	
   fOutput->Add(fhZDCvsZEM);
-  fhZDCvsZEMwV0M = new TH2F("hZDCvsZEMwV0M","hZDCvsZEM wV0M",200,0.,2500.,200,0.,200000.);	
+  fhZDCvsZEMwV0M = new TH2F("hZDCvsZEMwV0M","hZDCvsZEM wV0M",200,0.,2500.,250,0.,250000.);	
   fOutput->Add(fhZDCvsZEMwV0M);
-  fhZNvsVZERO = new TH2F("hZNvsVZERO","hZNvsVZERO",250,0.,25000.,250,0.,200000.);	
+  fhZNvsVZERO = new TH2F("hZNvsVZERO","hZNvsVZERO",250,0.,25000.,200,0.,200000.);	
   fOutput->Add(fhZNvsVZERO);
-  fhZDCvsVZERO = new TH2F("hZDCvsVZERO","hZDCvsVZERO",250,0.,25000.,250,0.,200000.);	
+  fhZDCvsVZERO = new TH2F("hZDCvsVZERO","hZDCvsVZERO",250,0.,25000.,250,0.,250000.);	
   fOutput->Add(fhZDCvsVZERO);
-  fhZDCvsTracklets = new TH2F("hZDCvsTracklets","hZDCvsTracklets",100,0.,5000.,100,0.,250000.);
+  fhZDCvsTracklets = new TH2F("hZDCvsTracklets","hZDCvsTracklets",200,0.,4000.,250,0.,250000.);
   fOutput->Add(fhZDCvsTracklets);
-  fhZDCvsNclu1 = new TH2F("hZDCvsNclu1", "hZDCvsNclu1", 100, 0.,6000.,100,0.,200000.);
+  fhZDCvsNclu1 = new TH2F("hZDCvsNclu1", "hZDCvsNclu1", 200, 0.,8000.,200,0.,250000.);
   fOutput->Add(fhZDCvsNclu1);
   fhVZEROvsZEM = new TH2F("hVZEROvsZEM","hVZEROvsZEM",250,0.,2500.,250,0.,25000.);	
   fOutput->Add(fhVZEROvsZEM);
-  fhDebunch = new TH2F("hDebunch","hDebunch",240,-30.,30.,240,-30.,30.);	
+  fhDebunch = new TH2F("hDebunch","hDebunch",240,-100.,-40.,240,-30.,30.);	
   fOutput->Add(fhDebunch);
   fhZNCcentroid = new TH2F("hZNCcentroid","hZNCcentroid",100,-3.5,3.5,100,-3.5,3.5);	
   fOutput->Add(fhZNCcentroid);
