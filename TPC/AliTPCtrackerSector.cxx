@@ -79,6 +79,10 @@ AliTPCtrackerRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index) {
   //-----------------------------------------------------------------------
   // Insert a cluster into this pad row in accordence with its y-coordinate
   //-----------------------------------------------------------------------
+  if (!c) {
+    AliError("Inserting Zerro cluster pointer");
+    return;
+  }
   if (fN==kMaxClusterPerRow) {
     //AliInfo("AliTPCtrackerRow::InsertCluster(): Too many clusters"); 
     return;

@@ -660,6 +660,7 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
   // mean chi^2 for all tracklet fits in Y and in Z direction: 
   csigmaY = TMath::Sqrt(TMath::Abs(csigmaY) / (nTrackletsAll+0.1));
   csigmaZ = TMath::Sqrt(TMath::Abs(csigmaZ) / (nTrackletsAll+0.1));
+  if (csigmaY<=TMath::KUncertainty() || csigmaZ<= TMath::KUncertainty()) return;
   // ---------------------------------------------------------------------
   //
   //
@@ -741,8 +742,8 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
 					       riemanFitAngle.GetDYat(currentCluster->GetX())
 					       );	
       }
-     riemanFit.AddPoint(currentCluster->GetX(), currentCluster->GetY()-dY,currentCluster->GetZ(), csigmaY,csigmaZ);
-      riemanFitW.AddPoint(currentCluster->GetX(), currentCluster->GetY()-dY,currentCluster->GetZ(), csigmaY*TMath::Sqrt(1+TMath::Abs(idelta)),csigmaZ*TMath::Sqrt(1+TMath::Abs(idelta)));
+      riemanFit.AddPoint(currentCluster->GetX(), currentCluster->GetY()-dY,currentCluster->GetZ(), csigmaY,csigmaZ);
+      riemanFitW.AddPoint(currentCluster->GetX(), currentCluster->GetY()-dY,currentCluster->GetZ(), TMath::Abs(csigmaY*TMath::Sqrt(1+TMath::Abs(idelta))),TMath::Abs(csigmaZ*TMath::Sqrt(1+TMath::Abs(idelta))));
     }  // loop over neighbourhood for fitter filling 
     if (nclFound < kDelta * kMinRatio) fRejectedTracksHisto->Fill(10);
     if (nclFound < kDelta * kMinRatio) fClusterCutHisto->Fill(1, irow);
