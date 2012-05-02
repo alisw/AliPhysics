@@ -81,6 +81,7 @@
 #include "AliJTrack.h"
 #include "AliJMCTrack.h"
 #include "AliJPhoton.h"
+#include "AliJCaloCell.h"
 #include "AliJEventHeader.h"
 #include "AliJRunHeader.h"
 
@@ -96,12 +97,13 @@ AliJCORRANTask::AliJCORRANTask() :
     fStoreEventPlaneSource(false), 
     fStoreTPCTrack(false), 
     fOADBPath(),
+    fCaloClustersArr(0),
     fTrackList(0),
     fMCTrackList(0x0),
     fPhotonList(0x0),
+    fCaloCellList(0x0),
     fHeaderList(0x0),
     fRunInfoList(0x0),
-    fPIDesd(0x0),
     fPIDResponse(0x0),
     fPIDCombined(0x0),
     fVZEROData(0x0), 
@@ -109,7 +111,8 @@ AliJCORRANTask::AliJCORRANTask() :
     //fFMDData(0x0), 
     fZDCData(0x0), 
     fAliRunHeader(0x0),
-    fEMCALGeoUtils(0x0),    
+    fEMCALGeometry(0x0),    
+    fEMCALRecoUtils(0x0),    
     fPHOSGeom(0x0)
 {
   //Default constructor
@@ -120,9 +123,8 @@ AliJCORRANTask::AliJCORRANTask() :
   fIsRealOrMC[0]=0;
 
   DefineInput (0, TChain::Class());
-  DefineInput (1, TList::Class());
+  DefineOutput (0, TTree::Class());
   DefineOutput (1, TList::Class());
-  //  DefineOutput (2, TList::Class());
 }
 
 //______________________________________________________________________________
@@ -137,12 +139,13 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
     fStoreEventPlaneSource(false), 
     fStoreTPCTrack(false), 
     fOADBPath(),
+    fCaloClustersArr(0),
     fTrackList(0),
     fMCTrackList(0x0),
     fPhotonList(0x0),
+    fCaloCellList(0x0),
     fHeaderList(0x0),
     fRunInfoList(0x0),
-    fPIDesd(0x0),
     fPIDResponse(0x0),
     fPIDCombined(0x0),
     fVZEROData(0x0), 
@@ -150,7 +153,8 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
     //fFMDData(0x0), 
     fZDCData(0x0), 
     fAliRunHeader(0x0),
-    fEMCALGeoUtils(0x0),    
+    fEMCALGeometry(0x0),    
+    fEMCALRecoUtils(0x0),    
     fPHOSGeom(0x0)
 {
   // Constructor
@@ -164,9 +168,8 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
   fIsRealOrMC[0]=0;
 
   DefineInput (0, TChain::Class());
-  //  DefineInput (1, TList::Class());
+  DefineOutput (0, TTree::Class());
   DefineOutput (1, TList::Class());
-  //  DefineOutput (2, TList::Class());
 }
 
 //____________________________________________________________________________
@@ -181,12 +184,13 @@ AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
     fStoreEventPlaneSource(ap.fStoreEventPlaneSource), 
     fStoreTPCTrack(ap.fStoreTPCTrack), 
     fOADBPath(ap.fOADBPath),
+    fCaloClustersArr(ap.fCaloClustersArr),
     fTrackList(ap.fTrackList),
     fMCTrackList(ap.fMCTrackList),
     fPhotonList(ap.fPhotonList),
+    fCaloCellList(ap.fCaloCellList),
     fHeaderList(ap.fHeaderList),
     fRunInfoList(ap.fRunInfoList),
-    fPIDesd(ap.fPIDesd),
     fPIDResponse(ap.fPIDResponse),
     fPIDCombined(ap.fPIDCombined),
     fVZEROData(ap.fVZEROData), 
@@ -194,7 +198,8 @@ AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
     //fFMDData(ap.fFMDData), 
     fZDCData(ap.fZDCData), 
     fAliRunHeader(ap.fAliRunHeader),
-    fEMCALGeoUtils(ap.fEMCALGeoUtils),    
+    fEMCALGeometry(ap.fEMCALGeometry),    
+    fEMCALRecoUtils(ap.fEMCALRecoUtils),    
     fPHOSGeom(ap.fPHOSGeom)
 { 
   // cpy ctor
@@ -227,14 +232,15 @@ AliJCORRANTask::~AliJCORRANTask()
   delete fTrackList;
   delete fMCTrackList;
   delete fPhotonList;
+  delete fCaloCellList;
   delete fHeaderList;
   delete fAliRunHeader;
   delete fRunInfoList;
-  delete fPIDesd;
   delete fOADBPath;
   delete fPIDResponse;
   delete fPIDCombined;
-  delete fEMCALGeoUtils;
+  delete fEMCALRecoUtils;
+  delete fEMCALGeometry;
   delete fPHOSGeom;
   delete fVZEROData;
   delete fTZEROData;
@@ -260,20 +266,23 @@ void AliJCORRANTask::UserCreateOutputObjects()
   man->RegisterExtraFile(fAODName.Data());
 
   //=== Other Objects
-  fEMCALGeoUtils = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE");
+  fCaloClustersArr = new TRefArray();
+  fEMCALGeometry = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+  fEMCALRecoUtils = new AliEMCALRecoUtils();
   fPHOSGeom = new AliPHOSGeoUtils();
 
   //=== Set Tree and TClonesArray
   //== TRACKS
   AddListAODBranch("AliJTrackList", "AliJTrack", &fTrackList, 1000);
   AddListAODBranch("AliJPhotonList", "AliJPhoton", &fPhotonList, 1000);
+  AddListAODBranch("AliJCaloCell", "AliJCaloCell", &fCaloCellList, 1000);
   if((bool)fIsRealOrMC[0]) 
     AddListAODBranch("AliJTMCrackList", "AliJMCTrack", &fMCTrackList, 1000);
   //== Event Header
   AddListAODBranch("AliJEventHeaderList", "AliJEventHeader", &fHeaderList, 1000);
   //== RUN HEADER
   fAliRunHeader = new AliJRunHeader();
-  fRunInfoList	= new TList();
+  fRunInfoList  = new TList();
   fRunInfoList->SetName("RunInfoList");
   fRunInfoList->SetOwner();
   fRunInfoList->Clear();
@@ -288,7 +297,6 @@ void AliJCORRANTask::UserCreateOutputObjects()
     AddAODBranch("AliESDZDC",   &fZDCData,    fAODName.Data());
   }
   //== PID
-  fPIDesd = new AliESDpid;
   fPIDCombined = new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
@@ -313,6 +321,7 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
   fTrackList->Clear();
   if((bool)fIsRealOrMC[0]) fMCTrackList->Clear();
   fPhotonList->Clear();
+  fCaloCellList->Clear();
   fHeaderList->Clear();
 
   //=== COMMON for ESD and AOD
@@ -332,8 +341,6 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
     //=========== Fill Run header object ===============
     fAliRunHeader->SetRunNumber(runId);
     fAliRunHeader->SetActiveTriggersJCorran(fTriggerTableJCorran,kRangeTriggerTableJCorran);
-    SetAliceTriggerDef(fAliRunHeader);//TODO for AOD
-    SetAliceFilterMapDef(fAliRunHeader);// TODO for AOD
     //FOR ESD
     if(fInputFormat=="ESD"){
       AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
@@ -358,7 +365,8 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
     if(!esd) return;
     ReadESDHeader(esd);
     ReadESDTracks(esd);
-    //ReadESDCaloClusters(esd);
+    ReadESDCaloClusters(esd);
+    ReadESDCaloCells(esd);
     if((bool)fIsRealOrMC[0]) ReadMCTracks(mcEvent);
   }else if( fInputFormat == "AOD") {
     if(fDebug > 5) cout << "\t------- Start AOD "<<endl;
@@ -366,7 +374,8 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
     if(!aod) return;
     ReadAODHeader(aod);
     ReadAODTracks(aod);
-    //ReadAODCaloClusters(aod);
+    //BS ReadAODCaloClusters(aod);
+    //BS ReadAODCaloCells(aod);
   }else{
     cout << "Error: Not correct InputDataFormat especified " << endl;
     return;
@@ -509,7 +518,7 @@ void AliJCORRANTask::ReadESDPID(AliESDtrack *track, AliJTrack *ctrack)
   if(track->P() > minP && track->GetTPCsignal() > minTPCsignal && (track->GetStatus() & AliESDtrack::kTOFout) 
      && (track->GetStatus() & AliESDtrack::kTIME) && (track->GetIntegratedLength() > minTOFLength)&& track->GetTOFsignal() > minTOFsignal) {
     Double_t consCal = 33.3564095198152043; 
-    beta = track->GetIntegratedLength() / (track->GetTOFsignal() - fPIDesd->GetTOFResponse().GetStartTime(track->P())) * consCal;
+    beta = track->GetIntegratedLength() / (track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(track->P())) * consCal;
     for(int i=0; i<10; i++) {
       betaTh[i] = track->GetIntegratedLength() / ( inttimes[i] ) * consCal;
     }
@@ -522,7 +531,7 @@ void AliJCORRANTask::ReadESDPID(AliESDtrack *track, AliJTrack *ctrack)
   for(int ip=0; ip < (AliJTrack::kNAliJTrkPID); ip++) {
     ctrack->SetExpectedTOFbeta(AliJTrack::AliJTrkPID(ip), betaTh[ip]);
     // expected dEdx
-    dEdxTh[ip] = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc, AliPID::EParticleType(ip));
+    dEdxTh[ip] = fPIDResponse->GetTPCResponse().GetExpectedSignal(momtpc, AliPID::EParticleType(ip));
     ctrack->SetExpectedTPCdEdx(AliJTrack::AliJTrkPID(ip), dEdxTh[ip]);
   }
 
@@ -547,6 +556,7 @@ void AliJCORRANTask::ReadAODTracks(const AliAODEvent * aod)
     //FK//if(track->GetType() != AliAODTrack::kPrimary) continue; // only primaries 
 
     AliJTrack * ctrack = new( (*fTrackList)[fTrackList->GetEntriesFast()] ) AliJTrack;
+    ctrack->SetID( track->GetID() );
     ctrack->SetPxPyPzE(track->Px(), track->Py(), track->Pz(), 0 );
     //TODO if( fStoreTPCTrack )
     ctrack->SetParticleType(kNone);
@@ -557,7 +567,9 @@ void AliJCORRANTask::ReadAODTracks(const AliAODEvent * aod)
     //FilterMap
     UInt_t filterMap=0;
     for( unsigned int i=0;i<sizeof(filterMap)*8;i++ ){
-      filterMap |= track->TestFilterBit( 1UL<<i ); 
+      if( track->TestFilterBit( BIT(i) )){
+        SETBIT( filterMap ,  i);
+      }
     }
     ctrack->SetFilterMap( filterMap );
 
@@ -586,42 +598,30 @@ void AliJCORRANTask::ReadAODTracks(const AliAODEvent * aod)
 //______________________________________________________________________________
 void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
 {
+  Double_t v[3];
+  //  Double_t *amps;
+
   //AliVEvent * event = InputEvent();
   AliVEvent * event = (AliVEvent*)esd;
-  TRefArray *caloClustersArr=new TRefArray();
-  event->GetEMCALClusters(caloClustersArr);
-  Double_t v[3];
+
+  // get the clusters
+  event->GetEMCALClusters(fCaloClustersArr);
+  // get vertex
   event->GetPrimaryVertex()->GetXYZ(v);
 
-  AliEMCALRecoUtils * fRecoUtils = new AliEMCALRecoUtils;
-
-  //const Int_t kNumberOfEMCALClusters =caloClustersArr->GetEntries();
-  Int_t numberOfCaloClusters = caloClustersArr->GetEntries() ;
+  Int_t numberOfCaloClusters = fCaloClustersArr->GetEntries() ;
   if(fDebug > 5) cout << "ESD::number of ESD caloclusters " << numberOfCaloClusters << endl;
 
-  AliVCaloCells *emCells =event->GetEMCALCells();
+  AliVCaloCells *emCells = event->GetEMCALCells();
+  AliVCaloCells *phoCells = event->GetPHOSCells();
 
   int nPhotons = 0;
   for(Int_t icluster=0; icluster<numberOfCaloClusters; icluster++){
-    AliVCluster *c1 = (AliVCluster*) caloClustersArr->At(icluster);
+    AliVCluster *c1 = (AliVCluster*) fCaloClustersArr->At(icluster);
     if( !c1 ) continue;
-    //== remove bad channels
-    if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeoUtils, c1->GetCellsAbsId(), c1->GetNCells())) continue;
-    //== check energy and position
-    if(fRecoUtils->IsRecalibrationOn()){
-      fRecoUtils->RecalibrateClusterEnergy(fEMCALGeoUtils, c1, emCells);
-      fRecoUtils->RecalculateClusterShowerShapeParameters(fEMCALGeoUtils, emCells, c1);
-      fRecoUtils->RecalculateClusterPID(c1);
-    }
-    //== correct non linearity
-    c1->SetE(fRecoUtils->CorrectClusterEnergyLinearity(c1));
-
-    //== corrected clusters
-    if(c1->E() < 0.8 || c1->E() > 30) continue; //TODO
-    //fRecoUtils->GetMaxEnergyCell(fEMCALGeo, emCells, c1, absID1, iSM, ieta1, iphi1, shared); 
 
     AliJPhoton *pht = new( (*fPhotonList)[nPhotons++] ) AliJPhoton;
-    pht->SetParticleType(kNone);//kPhoton);
+    pht->SetParticleType(kPhoton);
     pht->SetChi2(c1->Chi2());
     pht->SetPID(c1->GetPID());
     Float_t pos[3];
@@ -646,19 +646,182 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
     pht->SetNCells(c1->GetNCells());
     pht->SetCellsAmplitudeFraction( c1->GetCellsAmplitudeFraction() );
     pht->SetCellsAbsId(c1->GetCellsAbsId());
-    Int_t imoduleID = GetSuperModuleNumber(c1->IsEMCAL(), c1->GetCellAbsId(0));
-    pht->SetSuperModuleID(imoduleID);
+    if(( emCells && c1->IsEMCAL() )||( phoCells && c1->IsPHOS() )){
+      Int_t imoduleID = GetSuperModuleNumber(c1->IsEMCAL(), c1, emCells,  c1->GetCellAbsId(0) );
+      pht->SetSuperModuleID(imoduleID);
+
+      //      // get cluster cell apmlitude
+      //      amps = GetCellsAmplitude( c1->IsEMCAL(), c1, emCells, phoCells );
+      //      pht->SetCellsAmplitude( amps );
+      //      delete [] amps;
+    }
+    else{
+      pht->SetSuperModuleID(-1);
+    }
+
   }
-  delete fRecoUtils;
-  delete caloClustersArr;
+
+}
+
+//______________________________________________________________________________
+void AliJCORRANTask::ReadESDCaloCells(const AliESDEvent* esd)
+{
+  Short_t cellAddr;
+  Double_t cellAmp, cellTime;
+  Int_t numberOfCaloCells;
+
+  AliVEvent * event = (AliVEvent*)esd;
+
+  // cell holders
+  AliVCaloCells *emCells = event->GetEMCALCells();
+  AliVCaloCells *phoCells = event->GetPHOSCells();
+
+  Int_t nCells = 0;
+
+  // go through EMCAL cells
+  if( emCells){
+    numberOfCaloCells = emCells->GetNumberOfCells();
+    for(Int_t icell=0; icell<numberOfCaloCells; icell++){
+      // get the cell info *fCal
+      emCells->GetCell( icell, cellAddr, cellAmp, cellTime );
+
+      AliJCaloCell *cell = new( (*fCaloCellList)[nCells++] ) AliJCaloCell;
+      cell->SetAbsId( cellAddr );
+      cell->SetAmplitude( cellAmp );
+      cell->SetTime( cellTime );
+      cell->SetCaloType( AliJCaloCell::kEMCALCalo );
+    }
+  }
+
+  // go through PHOS cells
+  if( phoCells ){
+    numberOfCaloCells = phoCells->GetNumberOfCells();
+    for(Int_t icell=0; icell<numberOfCaloCells; icell++){
+      // get the cell info *fCal
+      phoCells->GetCell( icell, cellAddr, cellAmp, cellTime );
+
+      AliJCaloCell *cell = new( (*fCaloCellList)[nCells++] ) AliJCaloCell;
+      cell->SetAbsId( cellAddr );
+      cell->SetAmplitude( cellAmp );
+      cell->SetTime( cellTime );
+      cell->SetCaloType( AliJCaloCell::kPHOSCalo );
+    }
+  }
 
 }
 
 //______________________________________________________________________________
 void AliJCORRANTask::ReadAODCaloClusters(const AliAODEvent* aod)
 {
-  if( !aod ) aod=0;
-  // Read the AliAODCaloClusters and fill the list of AliJPhoton containers
+  Double_t v[3];
+  //  Double_t *amps;
+
+  //AliVEvent * event = InputEvent();
+  AliVEvent * event = (AliVEvent*)aod;
+
+  // get the clusters
+  event->GetEMCALClusters(fCaloClustersArr);
+  // get vertex
+  event->GetPrimaryVertex()->GetXYZ(v);
+
+  Int_t numberOfCaloClusters = fCaloClustersArr->GetEntries() ;
+  if(fDebug > 5) cout << "AOD::number of AOD caloclusters " << numberOfCaloClusters << endl;
+
+  AliVCaloCells *emCells = event->GetEMCALCells();
+  AliVCaloCells *phoCells = event->GetPHOSCells();
+
+  int nPhotons = 0;
+  for(Int_t icluster=0; icluster<numberOfCaloClusters; icluster++){
+    AliVCluster *c1 = (AliVCluster*) fCaloClustersArr->At(icluster);
+    if( !c1 ) continue;
+
+    AliJPhoton *pht = new( (*fPhotonList)[nPhotons++] ) AliJPhoton;
+    pht->SetParticleType(kPhoton);
+    pht->SetChi2(-1);
+    pht->SetPID(c1->GetPID());
+    Float_t pos[3];
+    TLorentzVector p1;
+    c1->GetPosition(pos);
+    c1->GetMomentum(p1, v);
+    //TODO
+    pht->SetPositionX(pos[0]);
+    pht->SetPositionY(pos[1]);
+    pht->SetPositionZ(pos[2]);
+    pht->SetPxPyPzE( p1.Px(), p1.Py(), p1.Pz(), p1.E());
+    pht->SetTrackDx( c1->GetTrackDx() );
+    pht->SetTrackDz( c1->GetTrackDz() );
+    pht->SetCharge(0);
+    if(c1->IsEMCAL()) pht->SetCaloType(AliJPhoton::kEMCALCalo);
+    if(c1->IsPHOS())  pht->SetCaloType(AliJPhoton::kPHOSCalo);
+    pht->SetDistToBadChannel(c1->GetDistanceToBadChannel());
+    pht->SetDispersion(c1->GetDispersion());
+    pht->SetM20(c1->GetM20());
+    pht->SetM02(c1->GetM02());
+    pht->SetEmcCpvDist(c1->GetEmcCpvDistance());
+    pht->SetNCells(c1->GetNCells());
+    pht->SetCellsAmplitudeFraction( c1->GetCellsAmplitudeFraction() );
+    pht->SetCellsAbsId(c1->GetCellsAbsId());
+    if(( emCells && c1->IsEMCAL() )||( phoCells && c1->IsPHOS() )){
+      Int_t imoduleID = GetSuperModuleNumber(c1->IsEMCAL(), c1, emCells,  c1->GetCellAbsId(0) );
+      pht->SetSuperModuleID(imoduleID);
+
+      //       // get cluster cell apmlitude
+      //       amps = GetCellsAmplitude( c1->IsEMCAL(), c1, emCells, phoCells );
+      //       pht->SetCellsAmplitude( amps );
+      //       delete [] amps;
+    }
+    else{
+      pht->SetSuperModuleID(-1);
+    }
+
+  }
+}
+
+//______________________________________________________________________________
+void AliJCORRANTask::ReadAODCaloCells(const AliAODEvent* aod)
+{
+  Short_t cellAddr;
+  Double_t cellAmp, cellTime;
+  Int_t numberOfCaloCells;
+
+  AliVEvent * event = (AliVEvent*)aod;
+
+  // cell holders
+  AliVCaloCells *emCells = event->GetEMCALCells();
+  AliVCaloCells *phoCells = event->GetPHOSCells();
+
+  Int_t nCells = 0;
+
+  // go through EMCAL cells
+  if( emCells){
+    numberOfCaloCells = emCells->GetNumberOfCells();
+    for(Int_t icell=0; icell<numberOfCaloCells; icell++){
+      // get the cell info *fCal
+      emCells->GetCell( icell, cellAddr, cellAmp, cellTime );
+
+      AliJCaloCell *cell = new( (*fCaloCellList)[nCells++] ) AliJCaloCell;
+      cell->SetAbsId( cellAddr );
+      cell->SetAmplitude( cellAmp );
+      cell->SetTime( cellTime );
+      cell->SetCaloType( AliJCaloCell::kEMCALCalo );
+    }
+  }
+
+  // go through PHOS cells
+  if( phoCells ){
+    numberOfCaloCells = phoCells->GetNumberOfCells();
+    for(Int_t icell=0; icell<numberOfCaloCells; icell++){
+      // get the cell info *fCal
+      phoCells->GetCell( icell, cellAddr, cellAmp, cellTime );
+
+      AliJCaloCell *cell = new( (*fCaloCellList)[nCells++] ) AliJCaloCell;
+      cell->SetAbsId( cellAddr );
+      cell->SetAmplitude( cellAmp );
+      cell->SetTime( cellTime );
+      cell->SetCaloType( AliJCaloCell::kPHOSCalo );
+    }
+  }
+
 }
 
 //______________________________________________________________________________
@@ -738,16 +901,28 @@ void AliJCORRANTask::ReadAODHeader(AliAODEvent *aod)
   if(trackletsSPD){
     hdr->SetSPDTrackletMult(trackletsSPD->GetNumberOfTracklets());
   }
+
+  hdr->SetFiredTriggers( aod->GetFiredTriggerClasses() );
   //TODO hdr->SetEventID( esd->GetEventNumberInFile());
 }
 
 //______________________________________________________________________________
-Int_t AliJCORRANTask::GetSuperModuleNumber(bool isemcal, Int_t absId)
+Int_t AliJCORRANTask::GetSuperModuleNumber(bool isemcal, AliVCluster *cluster, AliVCaloCells *cells, Int_t absId)
 {
+
   //get super module number 
   if(isemcal){
-    //    return GetEMCALGeoUtils()->GetSuperModuleNumber(absId) ;
-    return fEMCALGeoUtils->GetSuperModuleNumber(absId) ;
+    Int_t absIdMax  = -1, iSM =-1, ieta = -1, iphi = -1;
+    Bool_t shared = kFALSE;
+    fEMCALRecoUtils->GetMaxEnergyCell(fEMCALGeometry, cells, cluster, absIdMax,  iSM, ieta, iphi, shared);
+
+    if(iSM < 0 || iphi < 0 || ieta < 0 ) 
+    {
+      AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
+                    iSM,ieta,iphi));
+    }
+
+    return iSM ;
 
   } else {
     Int_t    relId[4];
@@ -759,6 +934,33 @@ Int_t AliJCORRANTask::GetSuperModuleNumber(bool isemcal, Int_t absId)
   }//PHOS
 
   return -1;
+}
+
+//______________________________________________________________________________
+Double_t * AliJCORRANTask::GetCellsAmplitude( bool isemcal, AliVCluster *cluster, AliVCaloCells *emCells, AliVCaloCells *phoCells )
+{
+  Int_t iCell, nCell;
+  UShort_t *cellAddrs;
+  Double_t *amps;
+
+  // get cluster cells
+  nCell = cluster->GetNCells();
+
+  amps = new Double_t[nCell];
+
+  // get the cell addresses
+  cellAddrs = cluster->GetCellsAbsId();
+
+  // get the cell amplitudes
+  for( iCell = 0; iCell < nCell; iCell++ ){
+    if( isemcal )
+      amps[iCell] = emCells->GetCellAmplitude( cellAddrs[iCell] );
+    else
+      amps[iCell] = phoCells->GetCellAmplitude( cellAddrs[iCell] );
+
+  }
+
+  return amps;
 }
 
 //_____________________________________________________________________________
@@ -777,6 +979,26 @@ UInt_t AliJCORRANTask::ConvertTriggerMask(){
      ->IsEventSelected() & AliVEvent::kHighMult){
     //high multiplicity trigger TBit 1 
     triggerMaskJC += (1<<kHighMultTriggerBitJCorran);
+  }
+
+  if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+      ->IsEventSelected() & AliVEvent::kEMC1) ||
+     (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+      ->IsEventSelected() & AliVEvent::kEMC7 )){
+    //high multiplicity trigger TBit 1 
+    triggerMaskJC += (1<<kEmc0TriggerBitJCorran);
+  }
+
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kEMCEGA){
+    //high multiplicity trigger TBit 1 
+    triggerMaskJC += (1<<kEmc1GammaTriggerBitJCorran);
+  }
+
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kEMCEJE){
+    //high multiplicity trigger TBit 1 
+    triggerMaskJC += (1<<kEmc1JetTriggerBitJCorran);
   }
 
   return triggerMaskJC;
@@ -889,111 +1111,9 @@ bool AliJCORRANTask::AcceptAODTrack(AliAODTrack* aodTrack){
   return kTRUE; 
 }
 
-bool AliJCORRANTask::SetAliceTriggerDef(AliJRunHeader *RunInfo){
-  RunInfo->AddAliceTriggerDef( "kMB", AliVEvent::kMB );
-  if( fRunType == "LHC10h" )
-  {
-    RunInfo->AddAliceTriggerDef( "kINT7", AliVEvent::kINT7 );
-    RunInfo->AddAliceTriggerDef( "kMUON", AliVEvent::kMUON );
-    RunInfo->AddAliceTriggerDef( "kHighMult", AliVEvent::kHighMult );
-    RunInfo->AddAliceTriggerDef( "kEMC1", AliVEvent::kEMC1 );
-    RunInfo->AddAliceTriggerDef( "kCINT5", AliVEvent::kCINT5 );
-    RunInfo->AddAliceTriggerDef( "kCMUS5", AliVEvent::kCMUS5 );
-    RunInfo->AddAliceTriggerDef( "kMUSH7", AliVEvent::kMUSH7 );
-    RunInfo->AddAliceTriggerDef( "kMUL7", AliVEvent::kMUL7 );
-    RunInfo->AddAliceTriggerDef( "kMUU7", AliVEvent::kMUU7 );
-    RunInfo->AddAliceTriggerDef( "kEMC7", AliVEvent::kEMC7 );
-    RunInfo->AddAliceTriggerDef( "kMUS7", AliVEvent::kMUS7 );
-    RunInfo->AddAliceTriggerDef( "kPHI1", AliVEvent::kPHI1 );
-    RunInfo->AddAliceTriggerDef( "kPHI7", AliVEvent::kPHI7 );
-    RunInfo->AddAliceTriggerDef( "kUserDefined", AliVEvent::kUserDefined );
-    RunInfo->AddAliceTriggerDef( "kFastOnly", AliVEvent::kFastOnly );
-    RunInfo->AddAliceTriggerDef( "kAny", AliVEvent::kAny );
-    RunInfo->AddAliceTriggerDef( "kAnyINT", AliVEvent::kAnyINT );
-  }
-  else{
-    // Default
-    RunInfo->AddAliceTriggerDef( "kINT7", AliVEvent::kINT7 );
-    RunInfo->AddAliceTriggerDef( "kMUON", AliVEvent::kMUON );
-    RunInfo->AddAliceTriggerDef( "kHighMult", AliVEvent::kHighMult );
-    RunInfo->AddAliceTriggerDef( "kEMC1", AliVEvent::kEMC1 );
-    RunInfo->AddAliceTriggerDef( "kCINT5", AliVEvent::kCINT5 );
-    RunInfo->AddAliceTriggerDef( "kCMUS5", AliVEvent::kCMUS5 );
-    RunInfo->AddAliceTriggerDef( "kMUSH7", AliVEvent::kMUSH7 );
-    RunInfo->AddAliceTriggerDef( "kMUL7", AliVEvent::kMUL7 );
-    RunInfo->AddAliceTriggerDef( "kMUU7", AliVEvent::kMUU7 );
-    RunInfo->AddAliceTriggerDef( "kEMC7", AliVEvent::kEMC7 );
-    RunInfo->AddAliceTriggerDef( "kMUS7", AliVEvent::kMUS7 );
-    RunInfo->AddAliceTriggerDef( "kPHI1", AliVEvent::kPHI1 );
-    RunInfo->AddAliceTriggerDef( "kPHI7", AliVEvent::kPHI7 );
-    RunInfo->AddAliceTriggerDef( "kUserDefined", AliVEvent::kUserDefined );
-    RunInfo->AddAliceTriggerDef( "kFastOnly", AliVEvent::kFastOnly );
-    RunInfo->AddAliceTriggerDef( "kAny", AliVEvent::kAny );
-    RunInfo->AddAliceTriggerDef( "kAnyINT", AliVEvent::kAnyINT );
-  }
-  return true;
-}
-
-bool AliJCORRANTask::SetAliceFilterMapDef(AliJRunHeader *RunInfo) {
-  if( fRunType == "LHC10h" )
-  {
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsL",BIT(0));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsITsa",BIT(1));
-    RunInfo->AddAliceFilterMapDef("ItsStrong",BIT(2));
-    RunInfo->AddAliceFilterMapDef("ElectronID",BIT(3));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsH",BIT(4));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsH2",BIT(5));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsH3",BIT(6));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsTPCOnly",BIT(7));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsRaa",BIT(8));
-  }
-  else
-  {
-    // Default
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsL",BIT(0));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsITsa",BIT(1));
-    RunInfo->AddAliceFilterMapDef("ItsStrong",BIT(2));
-    RunInfo->AddAliceFilterMapDef("ElectronID",BIT(3));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsH",BIT(4));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsH2",BIT(5));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsH3",BIT(6));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsTPCOnly",BIT(7));
-    RunInfo->AddAliceFilterMapDef("EsdTrackCutsRaa",BIT(8));
-  }
-  return true;
-}
 
 void AliJCORRANTask::PrintOut() {
-  AliJRunHeader * RunInfo = fAliRunHeader;
-  cout << "===== TriggerDef =====" << endl;
-  cout << RunInfo->GetAliceTriggerDef("kMB") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kINT7") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kMUON") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kHighMult") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kEMC1") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kCINT5") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kCMUS5") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kMUSH7") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kMUL7") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kMUU7") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kEMC7") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kMUS7") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kPHI1") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kPHI7") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kUserDefined") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kFastOnly") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kAny") << endl;
-  cout << RunInfo->GetAliceTriggerDef("kAnyINT") << endl;
-  cout << "===== FilterMapDef =====" << endl;
-  cout << RunInfo->GetAliceFilterMapDef("EsdTrackCutsL") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("EsdTrackCutsITsa") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("ItsStrong") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("ElectronID") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("EsdTrackCutsH") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("EsdTrackCutsH2") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("EsdTrackCutsH3") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("EsdTrackCutsTPCOnly") << endl;
-  cout << RunInfo->GetAliceFilterMapDef("EsdTrackCutsRaa") << endl;
+  //AliJRunHeader * RunInfo = fAliRunHeader;
 }
 
 

@@ -50,21 +50,22 @@ class AliJPhoton : public AliJBaseTrack {
   virtual ~AliJPhoton(){		//destructor    
     if(fCellsAbsId)       delete [] fCellsAbsId; 
     if(fCellsAmpFraction) delete [] fCellsAmpFraction;
+//		if(fCellsAmp)         delete [] fCellsAmp;
   }
 
-  float  GetChi2() const {return fChi2;}
-  float  GetTof() const {return fTof;}                   
-  float  GetX() const {return fX;}            
-  float  GetY() const {return fY;}          
-  float  GetZ() const {return fZ;}
-  float  GetProbPhot() const {return fProbPhot;}
+  Double32_t  GetChi2() const {return fChi2;}
+  Double32_t  GetTof() const {return fTof;}                   
+  Double32_t  GetX() const {return fX;}            
+  Double32_t  GetY() const {return fY;}          
+  Double32_t  GetZ() const {return fZ;}
+  Double32_t  GetProbPhot() const {return fProbPhot;}
 
-  void  SetChi2(float chi2) {fChi2=chi2;}
-  void  SetTof(float tof) {fTof=tof;}
-  void  SetPositionX(float x) {fX=x;}
-  void  SetPositionY(float y) {fY=y;}
-  void  SetPositionZ(float z) {fZ=z;}
-  void  SetProbPhot(float prob) {fProbPhot=prob;}
+  void  SetChi2(Double32_t chi2) {fChi2=chi2;}
+  void  SetTof(Double32_t tof) {fTof=tof;}
+  void  SetPositionX(Double32_t x) {fX=x;}
+  void  SetPositionY(Double32_t y) {fY=y;}
+  void  SetPositionZ(Double32_t z) {fZ=z;}
+  void  SetProbPhot(Double32_t prob) {fProbPhot=prob;}
 
   AliJPhoton& operator=(const AliJPhoton& photon);
 
@@ -75,20 +76,24 @@ class AliJPhoton : public AliJBaseTrack {
   void GetPID(Double_t *pid) const {
     for(Int_t i=0; i<kUnknownAli+1; ++i) pid[i]=fCaloPID[i];
   }
-  Double_t  GetDistToBadChannel() const {return fDistToBadChannel;}
-  Double_t  GetDispersion()       const {return fDispersion;}
-  Double_t  GetM20()              const {return fM20;}
-  Double_t  GetM02()              const {return fM02;}
-  Double_t  GetEmcCpvDist()       const {return fEmcCpvDist;}
-  Double_t  GetNCells() const   { return fNCells;}
+  Double32_t  GetDistToBadChannel() const {return fDistToBadChannel;}
+  Double32_t  GetDispersion()       const {return fDispersion;}
+  Double32_t  GetM20()              const {return fM20;}
+  Double32_t  GetM02()              const {return fM02;}
+  Double32_t  GetEmcCpvDist()       const {return fEmcCpvDist;}
+  Int_t       GetNCells() const   { return fNCells;}
   UShort_t  *GetCellsAbsId() const {return  fCellsAbsId;}
   Int_t     GetCellAbsId(Int_t i) const {  
          if (fCellsAbsId && i >=0 && i < fNCells ) return fCellsAbsId[i];    
         else return -1;}
   Double32_t *GetCellsAmplitudeFraction() const {return  fCellsAmpFraction;}
-  Double_t    GetCellAmplitudeFraction(Int_t i) const {  
+  Double32_t  GetCellAmplitudeFraction(Int_t i) const {  
               if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
               else return -1;}
+//   Double32_t  *GetCellsAmplitude() const {return  fCellsAmp;}
+//   Double32_t   GetCellAmplitude(Int_t i) const {  
+//               if (fCellsAmp && i >=0 && i < fNCells ) return fCellsAmp[i];    
+//               else return -1;}
   particleType GetParticleType();
   Int_t    GetSuperModuleID() const { return fSuperModuleId; }
   void     SetSuperModuleID(Int_t id) { fSuperModuleId = id; }
@@ -97,17 +102,18 @@ class AliJPhoton : public AliJBaseTrack {
 
   //setters
   void  SetCaloType(AliJCaloType calo) {fCaloType = calo;}
-  void  SetDistToBadChannel(Double_t dist) {fDistToBadChannel = dist;}
-  void  SetDispersion(Double_t disp) {fDispersion = disp;}
-  void  SetM20(Double_t m20) {fM20 = m20;}
-  void  SetM02(Double_t m02) {fM02 = m02;}
-  void  SetEmcCpvDist(Double_t dist) {fEmcCpvDist = dist;} 
-  void  SetPID(const Double_t *pid);
+  void  SetDistToBadChannel(Double32_t dist) {fDistToBadChannel = dist;}
+  void  SetDispersion(Double32_t disp) {fDispersion = disp;}
+  void  SetM20(Double32_t m20) {fM20 = m20;}
+  void  SetM02(Double32_t m02) {fM02 = m02;}
+  void  SetEmcCpvDist(Double32_t dist) {fEmcCpvDist = dist;} 
+  void  SetPID(const Double32_t *pid);
   void  SetNCells(Int_t n) { fNCells = n;}
   void  SetCellsAbsId(const UShort_t *array);
   void  SetCellsAmplitudeFraction(const Double32_t *array);
-  void  SetTrackDx(Double_t trackDx) {fTrackDx = trackDx;}
-  void  SetTrackDz(Double_t trackDz) {fTrackDz = trackDz;}
+//   void  SetCellsAmplitude(const Double32_t *array);
+  void  SetTrackDx(Double32_t trackDx) {fTrackDx = trackDx;}
+  void  SetTrackDz(Double32_t trackDz) {fTrackDz = trackDz;}
 
  private:
 
@@ -119,17 +125,18 @@ class AliJPhoton : public AliJBaseTrack {
 
  //TODO
   AliJCaloType   fCaloType;              // PHOS or EMCAL photon
-  Double_t       fCaloPID[kUnknownAli+1];          // [0.,1.,8] pointer to PID object
-  Double_t       fDistToBadChannel;      // Distance to nearest bad channel
-  Double_t       fDispersion;            // cluster dispersion, for shape analysis
-  Double_t       fM20;                   // 2-nd moment along the main eigen axis
-  Double_t       fM02;                   // 2-nd moment along the second eigen axis
-  Double_t       fEmcCpvDist;            // the distance from PHOS EMC rec.point to the closest CPV rec.point
+  Double32_t     fCaloPID[kUnknownAli+1];          // [0.,1.,8] pointer to PID object
+  Double32_t     fDistToBadChannel;      // Distance to nearest bad channel
+  Double32_t     fDispersion;            // cluster dispersion, for shape analysis
+  Double32_t     fM20;                   // 2-nd moment along the main eigen axis
+  Double32_t     fM02;                   // 2-nd moment along the second eigen axis
+  Double32_t     fEmcCpvDist;            // the distance from PHOS EMC rec.point to the closest CPV rec.point
  
   Int_t          fNCells ;                 //number of cells
   Int_t          fSuperModuleId ;          //super module id
   UShort_t      *fCellsAbsId;            //[fNCells] array of cell absId numbers
-  Double32_t    *fCellsAmpFraction;    //[fNCells][0.,1.,16] array with cell amplitudes fraction.
+  Double32_t    *fCellsAmpFraction;    //[fNCells][0.,1.,16] array with cell amplitudes fraction (elements are 0 if unfolding off)
+//  Double32_t    *fCellsAmp;            //[fNCells] array amplitudes of cluster cells
 
   ClassDef(AliJPhoton,1)
 
