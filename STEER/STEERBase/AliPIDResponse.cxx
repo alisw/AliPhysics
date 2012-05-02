@@ -211,6 +211,48 @@ Float_t AliPIDResponse::NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EPar
   // Track matching
   nMatchClus = track->GetEMCALcluster();
   if(nMatchClus > -1){
+    
+    mom    = track->P();
+    pt     = track->Pt();
+    charge = track->Charge();
+    
+    matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
+    
+    if(matchedClus){
+      
+      // matched cluster is EMCAL
+      if(matchedClus->IsEMCAL()){
+	
+	fClsE       = matchedClus->E();
+	EovP        = fClsE/mom;
+	
+	
+	// NSigma value really meaningful only for electrons!
+	return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge); 
+      }
+    }
+  }
+  
+  return -999;
+  
+}
+
+//______________________________________________________________________________
+Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const {
+
+  AliVCluster *matchedClus = NULL;
+
+  Double_t mom     = -1.; 
+  Double_t pt      = -1.; 
+  Double_t EovP    = -1.;
+  Double_t fClsE   = -1.;
+  
+  Int_t nMatchClus = -1;
+  Int_t charge     = 0;
+  
+  // Track matching
+  nMatchClus = track->GetEMCALcluster();
+  if(nMatchClus > -1){
 
     mom    = track->P();
     pt     = track->Pt();
@@ -220,22 +262,27 @@ Float_t AliPIDResponse::NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EPar
     
     if(matchedClus){
       
-    // matched cluster is EMCAL
-    if(matchedClus->IsEMCAL()){
-      
-      fClsE       = matchedClus->E();
-      EovP        = fClsE/mom;
-      
-      
-      // NSigma value really meaningful only for electrons!
-      return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge); 
+      // matched cluster is EMCAL
+      if(matchedClus->IsEMCAL()){
+	
+	fClsE       = matchedClus->E();
+	EovP        = fClsE/mom;
+	
+	// fill used EMCAL variables here
+	eop            = EovP; // E/p
+	showershape[0] = matchedClus->GetNCells(); // number of cells in cluster
+	showershape[1] = matchedClus->GetM02(); // long axis
+	showershape[2] = matchedClus->GetM20(); // short axis
+	showershape[3] = matchedClus->GetDispersion(); // dispersion
+	
+	// NSigma value really meaningful only for electrons!
+	return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge); 
+      }
     }
   }
-  }
-
   return -999;
-  
 }
+
 
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePIDProbability  (EDetCode detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const

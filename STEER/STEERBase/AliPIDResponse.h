@@ -61,6 +61,7 @@ public:
   virtual Float_t NumberOfSigmasITS(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EParticleType type) const;
+  virtual Float_t NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const = 0;
   virtual Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel) const;
 
