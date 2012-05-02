@@ -46,7 +46,7 @@ fL1RawData(0)
 	fL1JetThreshold[0] = fL1JetThreshold[1] = 0;
 	
 	fL1V0[0] = fL1V0[1] = 0;
-	for (Int_t i = 0; i < 16; i++) fL1TriggerType[i] = 0;	
+	for (Int_t i = 0; i < 15; i++) fL1TriggerType[i] = 0;	
 }
 
 //_____________
