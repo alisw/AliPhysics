@@ -728,7 +728,7 @@ void AliAnalysisManager::PackOutput(TList *target)
          }      
       }
    } 
-   cdir->cd();
+   if (cdir) cdir->cd();
    if (fDebug > 1) printf("<-AliAnalysisManager::PackOutput: output list contains %d containers\n", target->GetSize());
 }
 
@@ -1100,7 +1100,7 @@ void AliAnalysisManager::Terminate()
       out.open("outputs_valid", ios::out);
       out.close();
    }
-   cdir->cd();      
+   if (cdir) cdir->cd();      
    if (fDebug > 1) printf("<-AliAnalysisManager::Terminate()\n");
 }
 //______________________________________________________________________________
@@ -1534,7 +1534,7 @@ void AliAnalysisManager::RunLocalInit()
       gROOT->cd();
       task->LocalInit();
    }
-   cdir->cd();
+   if (cdir) cdir->cd();
    TObject::SetBit(kTasksInitialized, kTRUE);
 }   
 
@@ -1562,7 +1562,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    gROOT->cd();
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
-      cdir->cd();
+      if (cdir) cdir->cd();
       return -1;
    }
    if (!CheckTasks()) Fatal("StartAnalysis", "Not all needed libraries were loaded");
@@ -1586,7 +1586,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          if (!fGridHandler) {
             Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
             Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
-            cdir->cd();
+            if (cdir) cdir->cd();
             return -1;
          }
          // Write analysis manager in the analysis file
@@ -1595,25 +1595,25 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          RunLocalInit();
          if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
             Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
-            cdir->cd();
+            if (cdir) cdir->cd();
             return -1;
          }   
 
          // Terminate grid analysis
-         if (fSelector && fSelector->GetStatus() == -1) {cdir->cd(); return -1;}
-         if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) {cdir->cd(); return 0;}
+         if (fSelector && fSelector->GetStatus() == -1) {if (cdir) cdir->cd(); return -1;}
+         if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) {if (cdir) cdir->cd(); return 0;}
          cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
          if (!fGridHandler->MergeOutputs()) {
             // Return if outputs could not be merged or if it alien handler
             // was configured for offline mode or local testing.
-            cdir->cd();
+            if (cdir) cdir->cd();
             return 0;
          }
       }   
       cout << "===== TERMINATING GRID ANALYSIS JOB: " << GetName() << endl;
       ImportWrappers(NULL);
       Terminate();
-      cdir->cd();
+      if (cdir) cdir->cd();
       return 0;
    }
    TString line;
@@ -1627,7 +1627,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       chain = (TChain*)tree;
       if (!chain || !chain->GetListOfFiles()->First()) {
          Error("StartAnalysis", "Cannot process null or empty chain...");
-         cdir->cd();
+         if (cdir) cdir->cd();
          return -1;
       }   
       ttype = "TChain";
@@ -1700,7 +1700,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          }
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
             Error("StartAnalysis", "No PROOF!!! Exiting.");
-            cdir->cd();
+            if (cdir) cdir->cd();
             return -1;
          }   
          line = Form("gProof->AddInput((TObject*)%p);", this);
@@ -1711,7 +1711,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             retv = chain->Process("AliAnalysisSelector", "", nentries, firstentry);
          } else {
             Error("StartAnalysis", "No chain!!! Exiting.");
-            cdir->cd();
+            if (cdir) cdir->cd();
             return -1;
          }      
          break;
@@ -1721,7 +1721,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             if (!fGridHandler) {
                Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
                Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
-               cdir->cd();
+               if (cdir) cdir->cd();
                return -1;
             }
             // Write analysis manager in the analysis file
@@ -1729,31 +1729,31 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             // Start the analysis via the handler
             if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
                Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
-               cdir->cd();
+               if (cdir) cdir->cd();
                return -1;
             }   
 
             // Terminate grid analysis
-            if (fSelector && fSelector->GetStatus() == -1) {cdir->cd(); return -1;}
-            if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) {cdir->cd(); return 0;}
+            if (fSelector && fSelector->GetStatus() == -1) {if (cdir) cdir->cd(); return -1;}
+            if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) {if (cdir) cdir->cd(); return 0;}
             cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
             if (!fGridHandler->MergeOutputs()) {
                // Return if outputs could not be merged or if it alien handler
                // was configured for offline mode or local testing.
-               cdir->cd();
+               if (cdir) cdir->cd();
                return 0;
             }
          }   
          cout << "===== TERMINATING GRID ANALYSIS JOB: " << GetName() << endl;
          ImportWrappers(NULL);
          Terminate();
-         cdir->cd();
+         if (cdir) cdir->cd();
          return 0;
       case kMixingAnalysis:   
          // Run event mixing analysis
          if (!fEventPool) {
             Error("StartAnalysis", "Cannot run event mixing without event pool");
-            cdir->cd();
+            if (cdir) cdir->cd();
             return -1;
          }
          cout << "===== RUNNING EVENT MIXING ANALYSIS " << GetName() << endl;
@@ -1766,14 +1766,14 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             retv = chain->Process(fSelector);
             if (retv < 0) {
                Error("StartAnalysis", "Mixing analysis failed");
-               cdir->cd();
+               if (cdir) cdir->cd();
                return retv;
             }   
          }
          PackOutput(fSelector->GetOutputList());
          Terminate();
    }
-   cdir->cd();
+   if (cdir) cdir->cd();
    return retv;
 }   
 
@@ -2013,7 +2013,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (getsysInfo && ((fNcalls%fNSysInfo)==0)) AliSysInfo::AddStamp("Exec_start", (Int_t)fNcalls);
    if (!fInitOK) {
       Error("ExecAnalysis", "Analysis manager was not initialized !");
-      cdir->cd();
+      if (cdir) cdir->cd();
       return;
    }
    fNcalls++;
@@ -2029,7 +2029,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (!cont) cont = (AliAnalysisDataContainer*)fInputs->At(0);
       if (!cont) {
 	      Error("ExecAnalysis","Cannot execute analysis in TSelector mode without at least one top container");
-         cdir->cd();
+         if (cdir) cdir->cd();
          return;
       }   
       cont->SetData(fTree); // This will notify all consumers
@@ -2065,7 +2065,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       // Gather system information if requested
       if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
          AliSysInfo::AddStamp("Handlers_FinishEvent",fNcalls, 1001, 1);
-      cdir->cd();   
+      if (cdir) cdir->cd();   
       return;
    }   
    // The event loop is not controlled by TSelector   
@@ -2093,7 +2093,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
    if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
       AliSysInfo::AddStamp("Handlers_FinishEvent",fNcalls, 1000, 1);
-   cdir->cd();   
+   if (cdir) cdir->cd();   
 }
 
 //______________________________________________________________________________
@@ -2247,14 +2247,14 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
       file = TFile::Open(filename);
       if (!file || file->IsZombie() || file->TestBit(TFile::kRecovered)) {
          Error("ValidateOutputs", "Output file <%s> was not created or invalid", filename.Data());
-         cdir->cd();
+         if (cdir) cdir->cd();
          return kFALSE;
       }
       file->Close();
       openedFiles += filename;
       openedFiles += " ";
    }
-   cdir->cd();
+   if (cdir) cdir->cd();
    return kTRUE;
 }   
 
