@@ -164,22 +164,19 @@ AliAnalysisTaskExtractV0::~AliAnalysisTaskExtractV0()
 //________________________________________________________________________
 void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 {
-   // Create histograms
 
-   fListHistV0 = new TList();
-   fListHistV0->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
-
+   //Create File-resident Tree, please.
+   OpenFile(2);
    // Called once
-   if( !fTree) { 
-      fTree = new TTree("fTree","V0Candidates");
+   fTree = new TTree("fTree","V0Candidates");
 
 //------------------------------------------------
 // fTree Branch definitions
 //------------------------------------------------
 
 //-----------BASIC-INFO---------------------------
-/* 1*/   fTree->Branch("fTreeVariableChi2V0",&fTreeVariableChi2V0,"fTreeVariableChi2V0/F");
-/* 2*/   fTree->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
+/* 1*/  fTree->Branch("fTreeVariableChi2V0",&fTreeVariableChi2V0,"fTreeVariableChi2V0/F");
+/* 2*/  fTree->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
 /* 3*/	fTree->Branch("fTreeVariableDcaPosToPrimVertex",&fTreeVariableDcaPosToPrimVertex,"fTreeVariableDcaPosToPrimVertex/F");
 /* 4*/	fTree->Branch("fTreeVariableDcaNegToPrimVertex",&fTreeVariableDcaNegToPrimVertex,"fTreeVariableDcaNegToPrimVertex/F");
 /* 5*/	fTree->Branch("fTreeVariableV0Radius",&fTreeVariableV0Radius,"fTreeVariableV0Radius/F");
@@ -205,11 +202,6 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 /*23*/	fTree->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
 /*24*/	fTree->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
 
-      //Do not add to list. Add as output container. 
-      //to be added directly to base directory (use disk caching!) 
-      //fListHistV0->Add(fTree);
-   }
-
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -223,6 +215,13 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 //------------------------------------------------
 // V0 Multiplicity Histograms
 //------------------------------------------------
+
+   // Create histograms
+   //Create File-resident Tree, please.
+   OpenFile(1);
+
+   fListHistV0 = new TList();
+   fListHistV0->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
 
    if(! fHistV0MultiplicityBeforeTrigSel) {
       fHistV0MultiplicityBeforeTrigSel = new TH1F("fHistV0MultiplicityBeforeTrigSel", 

@@ -207,14 +207,10 @@ AliAnalysisTaskExtractPerformanceV0::~AliAnalysisTaskExtractPerformanceV0()
 //________________________________________________________________________
 void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 {
-   // Create histograms
 
-   fListHistV0 = new TList();
-   fListHistV0->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
-	
+   OpenFile(2);	
    // Called once
-   if( !fTree) { 
-      fTree = new TTree("fTree","V0Candidates");
+   fTree = new TTree("fTree","V0Candidates");
 
 //------------------------------------------------
 // fTree Branch definitions
@@ -265,10 +261,6 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 /*37*/   fTree->Branch("fTreeVariableIndexStatus",&fTreeVariableIndexStatus,"fTreeVariableIndexStatus/I");
 /*38*/   fTree->Branch("fTreeVariableIndexStatusMother",&fTreeVariableIndexStatusMother,"fTreeVariableIndexStatusMother/I");
 
-      //It's alone...
-      //fListHistV0->Add(fTree);
-   }
-
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -280,6 +272,12 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 //------------------------------------------------
 // V0 Multiplicity Histograms
 //------------------------------------------------
+
+   // Create histograms
+   OpenFile(1);
+   fListHistV0 = new TList();
+   fListHistV0->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
+
 
    if(! fHistV0MultiplicityBeforeTrigSel) {
       fHistV0MultiplicityBeforeTrigSel = new TH1F("fHistV0MultiplicityBeforeTrigSel", 
