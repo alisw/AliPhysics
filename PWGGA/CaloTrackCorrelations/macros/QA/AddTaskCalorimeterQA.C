@@ -190,7 +190,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
-  //mgr->ConnectOutput (task, 2, cout_cuts);
+  mgr->ConnectOutput (task, 2, cout_cuts);
   
   return task;
 }
