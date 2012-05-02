@@ -856,7 +856,10 @@ void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t&
   histo.SetStats(kFALSE);
   
   TList* lst = histo.GetListOfFunctions();
-  if(lst){
+  if(!lst){
+    printf(" No list found\n");
+  } 
+  else {
      TObject *stats = lst->FindObject("stats");
      lst->Remove(stats);
      TObject *obj;
@@ -865,6 +868,6 @@ void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t&
        delete obj;
     }
     if(stats) lst->Add(stats);
-  lst->Add(text);
+    lst->Add(text);
   }   
 }

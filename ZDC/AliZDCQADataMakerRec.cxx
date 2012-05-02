@@ -641,7 +641,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	      }
 	      if(zem2TDC!=0.){
 	        Float_t zem2 = zem2TDC-tdcGate;
-	        if(zem2TDC-tdcGate>-340. && zem2<-300.) FillRawsData(17,6, zem2-tdcGate);
+	        if(zem2TDC>-340. && zem2<-300.) FillRawsData(17,6, zem2);
               }
 	      if(zncSumTDC!=0.){
 	         Float_t tdcC = zncSumTDC-l0;
