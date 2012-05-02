@@ -1611,6 +1611,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          }
       }   
       cout << "===== TERMINATING GRID ANALYSIS JOB: " << GetName() << endl;
+      if (cdir) cdir->cd();
       ImportWrappers(NULL);
       Terminate();
       if (cdir) cdir->cd();
