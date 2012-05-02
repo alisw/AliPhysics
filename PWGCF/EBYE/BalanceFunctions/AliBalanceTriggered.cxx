@@ -274,10 +274,12 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,vector<Double_t> **cha
     if(charge > 0)  fHistP->Fill(trackVarsSingle,0,1.); 
     else            fHistN->Fill(trackVarsSingle,0,1.); 
 
-    // 2nd particle loop (now over all particles except the same!)
-    for(Int_t j = 0; j < gNtrack; j++) {
+    // 2nd particle loop (only for j < i for non double counting in the same pT region)
+    // --> SAME pT region for trigger and assoc: NO double counting with this
+    // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
+    //                          --> can be handled afterwards by using assoc. as trigger as well ?!
 
-      if( j == i ) continue;  
+    for(Int_t j = 0; j < i; j++) {
       
       Short_t charge2 = (Short_t) chargeVector[0]->at(j);
       trackVarsPair[0]    =  chargeVector[2]->at(i) - chargeVector[2]->at(j) ;  //delta eta
@@ -358,6 +360,7 @@ TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTM
     hTemp2->Add(hTemp4,-1.);
     hTemp2->Scale(1./hTemp6->GetEntries());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
+    gHistBalanceFunctionHistogram->Scale(0.5/1.);
   }
 
   return gHistBalanceFunctionHistogram;
