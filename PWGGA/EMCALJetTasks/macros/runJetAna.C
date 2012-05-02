@@ -70,6 +70,10 @@ void runJetAna(const char     *datatype     = "aod",        // aod, esd, sesd
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask *jetTask = AddTaskEmcalJet("PicoTracks", "caloClustersCorr");
 
+  // Scale task
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskScale.C");
+  AliAnalysisTaskScale *scaleTask = AddTaskScale("PicoTracks", "caloClustersCorr");
+
   if (1) {
     UInt_t val = AliVEvent::kAny;
     val = AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral;

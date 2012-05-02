@@ -1,12 +1,12 @@
 // $Id$
 
 AliHadCorrTask* AddTaskHadCorr(
-  const char *ntracks        = "Tracks",
-  const char *nclusters      = "CaloClusters",
-  const char *outclusname    = "CaloClustersCorr",
+  const char *nTracks        = "Tracks",
+  const char *nClusters      = "CaloClusters",
+  const char *outClusName    = "CaloClustersCorr",
   const Double_t hadcorr     = 1,
   const Double_t minPt       = 0.15,
-  const char *outputname     = "HadCorrOutput.root"
+  const char *outputname     = "AnalysisOutput.root"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -30,11 +30,11 @@ AliHadCorrTask* AddTaskHadCorr(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("HadronicCorrection_%s", outclusname));
+  TString name(Form("HadCorr_%s", outClusName));
   AliHadCorrTask *hcor = new AliHadCorrTask(name);
-  hcor->SetTracksName(ntracks);
-  hcor->SetClusName(nclusters);
-  hcor->SetOutClusName(outclusname);  
+  hcor->SetTracksName(nTracks);
+  hcor->SetClusName(nClusters);
+  hcor->SetOutClusName(outClusName);  
   hcor->SetHadCorr(hadcorr);
   hcor->SetMinPt(minPt);
 
@@ -47,7 +47,8 @@ AliHadCorrTask* AddTaskHadCorr(
   // Create containers for input/output
   mgr->ConnectInput (hcor, 0, mgr->GetCommonInputContainer() );
   AliAnalysisDataContainer *cohcor = mgr->CreateContainer(name,
-                                                          TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                          TList::Class(),
+                                                          AliAnalysisManager::kOutputContainer,
                                                           outputname);
   mgr->ConnectOutput(hcor,1,cohcor);
     

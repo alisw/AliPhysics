@@ -1,8 +1,9 @@
 // $Id$
+
 AliAnalysisTaskScale* AddTaskScale(
-  const char *ntracks        = "Tracks",
-  const char *nclusters      = "CaloClustersOut",
-  const char *outfilename    = "AnalysisResults.root"
+  const char *nTracks        = "Tracks",
+  const char *nClusters      = "CaloClustersCorr",
+  const char *outfilename    = "AnalysisOutput.root"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -26,20 +27,24 @@ AliAnalysisTaskScale* AddTaskScale(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliAnalysisTaskScale *scale = new AliAnalysisTaskScale("scale");
-  scale->SetTracksName(ntracks);
-  scale->SetClustersName(nclusters);
+  TString name(Form("Scale_%s", nClusters));
+  AliAnalysisTaskScale *scaletask = new AliAnalysisTaskScale(name);
+  scaletask->SetTracksName(nTracks);
+  scaletask->SetClustersName(nClusters);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
 
-  mgr->AddTask(scale);
+  mgr->AddTask(scaletask);
 
   // Create containers for input/output
-  mgr->ConnectInput (scale, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer *coscale = mgr->CreateContainer(Form("scale_histos"),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s", outfilename));
-  mgr->ConnectOutput(scale,1,coscale);
+  mgr->ConnectInput (scaletask, 0, mgr->GetCommonInputContainer() );
+  AliAnalysisDataContainer *coscale = mgr->CreateContainer(name,
+                                                           TList::Class(),
+                                                           AliAnalysisManager::kOutputContainer,
+                                                           outfilename);
+  mgr->ConnectOutput(scaletask,1,coscale);
 
-  return scale;
+  return scaletask;
 }
