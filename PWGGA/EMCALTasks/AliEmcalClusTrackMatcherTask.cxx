@@ -89,10 +89,10 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
         Double_t phidiff=999;
         AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
         Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-	if(dR<dRmin) {
+	if(dR<dRMin) {
           dEtaMin = etadiff;
           dPhiMin = phidiff;
-	  dRmin=dR;
+	  dRMin=dR;
           imin = t;
         }
       }
@@ -120,7 +120,7 @@ void AliEmcalClusTrackMatcherTask::UserExec(Option_t *)
         Double_t phidiff=999;
         AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
         Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-	if(dR<dRmin){
+	if(dR<dRMin){
           dEtaMin = etadiff;
           dPhiMin = phidiff;
 	  dRMin   = dR;
