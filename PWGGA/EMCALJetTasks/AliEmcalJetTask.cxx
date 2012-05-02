@@ -134,6 +134,9 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
 {
   // Find jets.
 
+  if (!tracks && !clus)
+    return;
+
   TString name("kt");
   fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
   if (algo>=1) {
@@ -165,6 +168,8 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     const Int_t Nclus = clus->GetEntries();
     for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
       AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
+      if (!c)
+        continue;
       if (!c->IsEMCAL())
         continue;
       TLorentzVector nPart;
@@ -199,17 +204,21 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
       if (uid>=0){
 	jet->AddTrackAt(uid, nt);
         AliVTrack *t = static_cast<AliVTrack*>(tracks->At(uid));
-        if (t->Pt()>maxTrack)
-          maxTrack=t->Pt();
-	nt++;
+        if (t) {
+          if (t->Pt()>maxTrack)
+            maxTrack=t->Pt();
+          nt++;
+        }
       } else {
 	jet->AddClusterAt(-(uid+1),nc);
-        AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(-(uid+1)));
-        TLorentzVector nP;
-        c->GetMomentum(nP, vertex);
-        neutralE += nP.P();
-        if (nP.Pt()>maxCluster)
-          maxCluster=nP.Pt();
+        AliVCluster *c = static_cast<AliVCluster*>(clus->At(-(uid+1)));
+        if (c) {
+          TLorentzVector nP;
+          c->GetMomentum(nP, vertex);
+          neutralE += nP.P();
+          if (nP.Pt()>maxCluster)
+            maxCluster=nP.Pt();
+        }
 	nc++;
       }
     }

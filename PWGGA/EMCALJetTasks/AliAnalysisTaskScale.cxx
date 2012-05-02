@@ -137,6 +137,8 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
   const Int_t Nclus = clusters->GetEntries();
   for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
     AliVCluster *c = dynamic_cast<AliVCluster*>(clusters->At(iClus));
+    if (!c)
+      continue;
     if (!c->IsEMCAL())
       continue;
     TLorentzVector nPart;
