@@ -209,7 +209,7 @@ void AliHadCorrTask::UserExec(Option_t *)
     am->LoadBranch("Tracks");
 
   // get centrality 
-  Float_t cent = -1; 
+  Double_t cent = -1; 
   AliCentrality *centrality = InputEvent()->GetCentrality() ;
   if (centrality)
     cent = centrality->GetCentralityPercentile("V0M");
