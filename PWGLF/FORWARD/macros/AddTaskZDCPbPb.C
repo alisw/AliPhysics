@@ -51,7 +51,7 @@ AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kFALSE,
    
    AliAnalysisDataContainer *coutput  = mgr->CreateContainer("ZDChistos", TList::Class(),
 					AliAnalysisManager::kOutputContainer, 	
-					Form("%s:%s", mgr->GetCommonFileName(), outfname));
+					Form("%s:%s", mgr->GetCommonFileName(), outfname.Data()));
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 1, coutput);
