@@ -47,6 +47,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
   fHistMaxTrgCluster(0),
+  fHistClusPhiCorr(0),
+  fHistTracksPhiCorr(0),
   Ptbins(100),
   Ptlow(0),
   Ptup(50),
@@ -86,6 +88,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
   fHistMaxTrgCluster(0),
+  fHistClusPhiCorr(0),
+  fHistTracksPhiCorr(0),
   Ptbins(100),
   Ptlow(0),
   Ptup(50),
@@ -162,6 +166,16 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistMaxTrgCluster->GetXaxis()->SetTitle("E [GeV]");
   fHistMaxTrgCluster->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMaxTrgCluster);
+
+  fHistTracksPhiCorr = new TH1F("fHistTracksPhiCorr", "fHistTracksPhiCorr", 128, -1.6, 4.8);
+  fHistTracksPhiCorr->GetXaxis()->SetTitle("#Delta#phi");
+  fHistTracksPhiCorr->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistTracksPhiCorr);
+
+  fHistClusPhiCorr = new TH1F("fHistClusPhiCorr", "fHistClusPhiCorr", 128, -1.6, 4.8);
+  fHistClusPhiCorr->GetXaxis()->SetTitle("#Delta#phi");
+  fHistClusPhiCorr->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistClusPhiCorr);
  
   for (Int_t i = 0; i < 5; i++) {
     TString histnamephi("fHistTrackPhi_");
@@ -292,9 +306,27 @@ void AliAnalysisTaskSAQA::FillHistograms()
     cluster->GetPosition(pos);
     TVector3 clusVec(pos);
     fHistClusPhiEta->Fill(clusVec.Eta(), clusVec.Phi());
+
+    for(Int_t ic2 = iClusters+1; ic2 < nclusters; ic2++) {
+      AliVCluster* cluster2 = GetCaloCluster(ic2);
+      if (!cluster2) {
+	printf("ERROR: Could not receive cluster %d\n", ic2);
+	continue;
+      }  
+      
+      if (!(cluster2->IsEMCAL())) continue;
+      
+      Float_t pos2[3];
+      cluster2->GetPosition(pos2);
+      TVector3 clusVec2(pos2);
+      
+      Float_t dphi = clusVec.Phi() - clusVec2.Phi();
+      if (dphi < -1.6) dphi += TMath::Pi() * 2;
+      if (dphi > 4.8) dphi -= TMath::Pi() * 2;
+      fHistClusPhiCorr->Fill(dphi);
+    }
   } //cluster loop 
   
-
   // Track loop 
   Int_t ntracks = GetNumberOfTracks();
   //cout << ntracks << " tracks" << endl;
@@ -308,54 +340,44 @@ void AliAnalysisTaskSAQA::FillHistograms()
     
     if (!AcceptTrack(track)) continue;
 
+    for(Int_t it2 = i+1; it2 < ntracks; it2++) {
+      AliVTrack* track2 = GetTrack(it2);         
+      if(!track2) {
+	AliError(Form("ERROR: Could not retrieve track %d", it2)); 
+	continue; 
+      }
+      
+      if (!AcceptTrack(track2)) continue;
+      
+      Float_t dphi = track->Phi() - track2->Phi();
+      if (dphi < -1.6) dphi += TMath::Pi() * 2;
+	if (dphi > 4.8) dphi -= TMath::Pi() * 2;
+	fHistTracksPhiCorr->Fill(dphi);
+    } // second track loop
+    
     fHistTracksPt->Fill(track->Pt());
 
     Int_t clId = track->GetEMCALcluster();
-    if (clId > -1) {
+    if (clId > -1 && clId < nclusters) {
       AliVCluster* cluster = GetCaloCluster(clId);
       if (cluster)
 	fHistEPcorrelation->Fill(track->P(),cluster->E());
     } 
 
-    Float_t eta,phi;
-    Int_t label;
+    Int_t label = track->GetLabel();
 
-    if(track->InheritsFrom("AliESDtrack")) {
-      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track);
-      eta = esdtrack->Eta();
-      phi = esdtrack->Phi();
-      label = esdtrack->GetLabel();
-    }
-    else if (track->InheritsFrom("AliAODTrack")) {
-      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
-      eta = aodtrack->Eta();
-      phi = aodtrack->Phi();
-      label = aodtrack->GetLabel();
-    }
-    else if (track->InheritsFrom("AliPicoTrack")) {
-      AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack*>(track);
-      eta = picotrack->Eta();
-      phi = picotrack->Phi();
-      label = picotrack->GetLabel();
-    }
-    else {
-      AliWarning("Track type not recognized! Will not plot phi\eta distributions!");
-      continue;
-    }
-
-    fHistTrPhiEta->Fill(eta, phi);
+    fHistTrPhiEta->Fill(track->Eta(), track->Phi());
     
-    fHistTrackEta[4]->Fill(eta);
-    fHistTrackPhi[4]->Fill(phi);
+    fHistTrackEta[4]->Fill(track->Eta());
+    fHistTrackPhi[4]->Fill(track->Phi());
 
     if (label >= 0 && label < 4) {
-      fHistTrackEta[label]->Fill(eta);
-      fHistTrackPhi[label]->Fill(phi);
+      fHistTrackEta[label]->Fill(track->Eta());
+      fHistTrackPhi[label]->Fill(track->Phi());
     }
     else {
       AliWarning(Form("Track label %d not recognized!",label));
     }
-   
   }
 
   Int_t ntrgclusters =  GetNumberOfTrgClusters();

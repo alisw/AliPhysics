@@ -58,6 +58,8 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks
   TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
   TH1F                       *fHistMaxTrgCluster;      // Energy distribution of max trigger clusters
+  TH1F                       *fHistClusPhiCorr;        // Clusters phi correlations
+  TH1F                       *fHistTracksPhiCorr;      // Tracks phi correlations
   TH1F                       *fHistTrackPhi[5];        // Phi distribution of hybrid tracks
   TH1F                       *fHistTrackEta[5];        // Eta distribution of hybrid tracks
 
