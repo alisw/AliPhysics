@@ -500,9 +500,9 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   cout << "Occupancy limits are :" << endl;
   
-  cout << Form("%e <= Manu occupancy < %7.2f",ManuOccupancyLowLimit(),ManuOccupancyHighLimit()) << endl;
-  cout << Form("%e <= Buspatch occupancy < %7.2f",BuspatchOccupancyLowLimit(),BuspatchOccupancyHighLimit()) << endl;
-  cout << Form("%e <= DE occupancy < %7.2f",DEOccupancyLowLimit(),DEOccupancyHighLimit()) << endl;
+  cout << Form("%e <= Manu occupancy < %7.3f",ManuOccupancyLowLimit(),ManuOccupancyHighLimit()) << endl;
+  cout << Form("%e <= Buspatch occupancy < %7.3f",BuspatchOccupancyLowLimit(),BuspatchOccupancyHighLimit()) << endl;
+  cout << Form("%e <= DE occupancy < %7.3f",DEOccupancyLowLimit(),DEOccupancyHighLimit()) << endl;
   
   cout << "'QAChecker' limits" << endl;  
   cout << Form("FractionOfBuspatchOutsideOccupancyLimit = %5.2f %%",FractionOfBuspatchOutsideOccupancyLimit()*100.0) << endl;
@@ -691,10 +691,14 @@ AliMUONRecoParam::Create(const char* settings)
     param->SetSigmaCutForTrigger(6.);
     param->ImproveTracks(kTRUE, 6.);
     param->SetPedMeanLimits(20, 700);
-    param->SetManuOccupancyLimits(-1.,0.01);
-    param->SetBuspatchOccupancyLimits(-1.,0.01);  
+    param->SetManuOccupancyLimits(-1.,0.015);
+    param->SetBuspatchOccupancyLimits(-1.,0.05);  
     param->SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %
     param->SetEventSizeLimits(45., 65.);
+    param->SetHVLimit(0,1550);
+    param->SetHVLimit(1,1550);
+    param->SetHVLimit(2,1550);
+    param->SetHVLimit(3,1550);
     
     // specific parameters for p-p data or realistic p-p simu
     if ( stype == "ppreal" || stype == "pprealnofield" )
