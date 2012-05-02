@@ -31,6 +31,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Bool_t kUsePID = kFALSE,
 						 Int_t AODfilterBit = 128,
 						 Bool_t bCentralTrigger = kFALSE,
+						 Bool_t bHBTcut = kFALSE,
 						 TString fileNameBase="AnalysisResults") {
 
   // Creates a balance function analysis task and adds it to the analysis manager.
@@ -62,6 +63,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   centralityName+="_Bit";
   centralityName+=Form("%d",AODfilterBit);
   if(bCentralTrigger)   centralityName+="_withCentralTrigger";
+  if(bHBTcut)   centralityName+="_withHBTcut";
 
 
 
@@ -93,16 +95,16 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   AliBalance *bfs = 0;  // shuffled Balance function object
 
   if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE);
+    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut);
   }
   else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE);
+    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut);
   }
   else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE);
+    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut);
   }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");

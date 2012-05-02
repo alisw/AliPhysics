@@ -46,6 +46,7 @@ class AliBalance : public TObject {
   void SetAnalysisLevel(const char* analysisLevel) {
     fAnalysisLevel = analysisLevel;}
   void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
+  void SetHBTcut(Bool_t HBTcut) {bHBTcut = HBTcut;}
   void SetInterval(Int_t iAnalysisType, Double_t p1Start, Double_t p1Stop,
 		   Int_t ibins, Double_t p2Start, Double_t p2Stop);
   void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
@@ -110,7 +111,9 @@ class AliBalance : public TObject {
   void PrintResults(Int_t iAnalysisType, TH1D *gHist);
 
  private:
-  Bool_t bShuffle; //shuffled balance function object
+  Bool_t bShuffle; // shuffled balance function object
+  Bool_t bHBTcut;  // apply HBT like cuts
+
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
 
