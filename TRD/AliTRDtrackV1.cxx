@@ -962,7 +962,7 @@ Double_t  AliTRDtrackV1::CookTruncatedMean(const Bool_t kinvq, const Double_t ma
     (*Xs)=arrayX;
   }
 
-  printf("\ntest %.10f %d %d\n", tmean, nch, ncls);
+  //printf("\ntest %.10f %d %d\n", tmean, nch, ncls);
 
   return tmean;
 }
