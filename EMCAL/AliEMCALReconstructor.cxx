@@ -436,23 +436,51 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   Int_t nDigits = fgDigitsArr->GetEntries(), idignew = 0 ;
   AliDebug(1,Form("%d digits",nDigits));
+  
   AliESDCaloCells &emcCells = *(esd->GetEMCALCells());
   emcCells.CreateContainer(nDigits);
   emcCells.SetType(AliVCaloCells::kEMCALCell);
+  
   Float_t energy = 0;
   Float_t time   = 0;
-  for (Int_t idig = 0 ; idig < nDigits ; idig++) {
+  for (Int_t idig = 0 ; idig < nDigits ; idig++) 
+  {
     const AliEMCALDigit * dig = (const AliEMCALDigit*)fgDigitsArr->At(idig);
     time   = dig->GetTime();      // Time already calibrated in clusterizer
     energy = dig->GetAmplitude(); // energy calibrated in clusterizer
-    if(energy > 0 ){
+    
+    if(energy > 0 )
+    {
       fgClusterizer->Calibrate(energy,time,dig->GetId()); //Digits already calibrated in clusterizers
-      if(energy > 0){ //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them
-        emcCells.SetCell(idignew,dig->GetId(),energy, time);   
+      
+      if(energy > 0) //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them
+      { 
+        // Only for MC
+        // Get the label of the primary particle that generated the cell
+        // Assign the particle that deposited more energy
+        Int_t   nprimaries = dig->GetNprimary() ;
+        Int_t   digLabel   =-1 ;
+        Float_t edep       =-1.;
+        if ( nprimaries > 0 )
+        {
+          Int_t jndex ;
+          for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
+ 
+            if(edep < dig->GetDEParent(jndex+1))
+            {
+              digLabel = dig->GetIparent (jndex+1);
+              edep     = dig->GetDEParent(jndex+1);
+            }
+                   
+          } // all primaries in digit      
+        } // select primary label
+        
+        emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel);   
         idignew++;
       }
     }
   }
+  
   emcCells.SetNumberOfCells(idignew);
   emcCells.Sort();
   
