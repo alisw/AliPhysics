@@ -48,6 +48,8 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   ,fESDid(0)
   ,fDE(0.)
   ,fTruncatedMean(0)
+  ,fNchamberdEdx(0)
+  ,fNclusterdEdx(0)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -75,6 +77,8 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   ,fESDid(ref.fESDid)
   ,fDE(ref.fDE)
   ,fTruncatedMean(ref.fTruncatedMean)
+  ,fNchamberdEdx(ref.fNchamberdEdx)
+  ,fNclusterdEdx(ref.fNclusterdEdx)
   ,fkReconstructor(ref.fkReconstructor)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -106,6 +110,8 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   ,fESDid(0)
   ,fDE(0.)
   ,fTruncatedMean(0)
+  ,fNchamberdEdx(0)                                                 
+  ,fNclusterdEdx(0)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -160,6 +166,8 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], c
   ,fESDid(0)
   ,fDE(0.)
   ,fTruncatedMean(0)
+  ,fNchamberdEdx(0)                                                 
+  ,fNclusterdEdx(0)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -398,7 +406,7 @@ Bool_t AliTRDtrackV1::CookPID()
   AliTRDdEdxUtils::SetObjPHQ(AliTRDcalibDB::Instance()->GetPHQ());
   const Double_t mag    = AliTRDdEdxUtils::IsExBOn() ? GetBz()  : -1;
   const Double_t charge = AliTRDdEdxUtils::IsExBOn() ? Charge() : -1;
-  fTruncatedMean = CookTruncatedMean(0, mag, charge, kTRUE);
+  fTruncatedMean = CookTruncatedMean(0, mag, charge, kTRUE, fNchamberdEdx, fNclusterdEdx);
 
   return kTRUE;
 }
@@ -929,29 +937,33 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
 
   //store truncated mean
   track->SetTRDsignal(fTruncatedMean);
+  track->SetTRDNchamberdEdx(fNchamberdEdx);
+  track->SetTRDNclusterdEdx(fNclusterdEdx);
 }
 
 //_______________________________________________________________
-Double_t  AliTRDtrackV1::CookTruncatedMean(const Bool_t kinvq, const Double_t mag, const Int_t charge, const Int_t kcalib, TVectorD *Qs, TVectorD *Xs, Int_t timeBin0, Int_t timeBin1, Int_t tstep) const
+Double_t  AliTRDtrackV1::CookTruncatedMean(const Bool_t kinvq, const Double_t mag, const Int_t charge, const Int_t kcalib, Int_t &nch, Int_t &ncls, TVectorD *Qs, TVectorD *Xs, Int_t timeBin0, Int_t timeBin1, Int_t tstep) const
 {
   //
   //Origin: Xianguo Lu <xianguo.lu@cern.ch>, Marian Ivanov <marian.ivanov@cern.ch>
   //
 
   TVectorD arrayQ(200), arrayX(200);
-  Int_t ncls = AliTRDdEdxUtils::GetArrayClusterQ(kinvq, &arrayQ, &arrayX, this, timeBin0, timeBin1, tstep);
+  ncls = AliTRDdEdxUtils::GetArrayClusterQ(kinvq, &arrayQ, &arrayX, this, timeBin0, timeBin1, tstep);
 
   const TObjArray *cobj = kcalib ? AliTRDdEdxUtils::GetObjPHQ(kinvq, mag, charge) : NULL;
   
   const Double_t tmean = AliTRDdEdxUtils::ToyCook(kinvq, ncls, &arrayQ, &arrayX, cobj);
 
-  const Int_t nch = AliTRDdEdxUtils::UpdateArrayX(ncls, &arrayX);
+  nch = AliTRDdEdxUtils::UpdateArrayX(ncls, &arrayX);
 
   if(Qs && Xs){
     (*Qs)=arrayQ;
     (*Xs)=arrayX;
   }
 
-  return AliTRDdEdxUtils::GetSignal(nch, ncls, tmean);
+  printf("\ntest %.10f %d %d\n", tmean, nch, ncls);
+
+  return tmean;
 }
 

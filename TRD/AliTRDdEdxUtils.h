@@ -105,11 +105,6 @@ class AliTRDdEdxUtils
   //===================================================================================
   //                                   dEdx calculation
   //===================================================================================
-  static Double_t GetSignal(const Int_t nch, const Int_t ncls, const Double_t qq);
-  static Int_t GetNch(const Double_t signal);
-  static Int_t GetNcls(const Double_t signal);
-  static Double_t GetQ(const Double_t signal);
-
   static Double_t ToyCook(const Bool_t kinvq, Int_t &ncluster, TVectorD *arrayQ, TVectorD *arrayX, const TObjArray *cobj=0x0);
   static Double_t CombineddEdx(const Bool_t kinvq, Int_t &concls, TVectorD *coarrayQ, TVectorD *coarrayX, const Int_t tpcncls, const TVectorD *tpcarrayQ, const TVectorD *tpcarrayX, const Int_t trdncls, const TVectorD *trdarrayQ, const TVectorD *trdarrayX);
 
@@ -158,13 +153,17 @@ class AliTRDdEdxUtils
 
   static TString GetRunType(const Int_t run);
 
+  static void SetPadGainOn(const Bool_t kon){ fgPadGainOn = kon; }
   static void SetExBOn(const Bool_t kon){ fgExBOn = kon; }
+  static void SetQScale(const Double_t scale){ fgQScale = scale; }
   static void SetQ0Frac(const Double_t q0){ fgQ0Frac = q0; }
   static void SetQ1Frac(const Double_t q1){ fgQ1Frac = q1; }
   static void SetTimeBinCountCut(const Double_t tbc){ fgTimeBinCountCut = tbc; }
   static void SetCalibTPCnclsCut(const Int_t tpc){ fgCalibTPCnclsCut = tpc; }
 
+  static Bool_t IsPadGainOn(){return fgPadGainOn;}
   static Bool_t IsExBOn(){return fgExBOn;}
+  static Double_t QScale(){return fgQScale;}
   static Double_t Q0Frac(){return fgQ0Frac;}
   static Double_t Q1Frac(){return fgQ1Frac;}
   static Double_t TimeBinCountCut(){return fgTimeBinCountCut;}
@@ -178,6 +177,8 @@ class AliTRDdEdxUtils
 
   //dEdx Getter and Setter
   static Double_t GetAngularCorrection(const AliTRDseedV1 *seed);
+  static Double_t GetPadGain(const Int_t det, const Int_t icol, const Int_t irow);
+  static Double_t GetRNDClusterQ(AliTRDcluster *cl);
   static Double_t GetClusterQ(const Bool_t kinvq, const AliTRDseedV1 * seed, const Int_t itb);
   
   //dEdx Parameterization
@@ -190,7 +191,6 @@ class AliTRDdEdxUtils
   static TString GetPHQName(const Bool_t kobj, const Int_t iter);
 
   //Detector, Data and Control Constant
-
   static THnSparseD *fgHistGain;//PH hist
   static THnSparseD *fgHistT0;//PH hist
   static THnSparseD *fgHistVd;//PH hist
@@ -209,7 +209,9 @@ class AliTRDdEdxUtils
 
   static Double_t fgTrackTmean; //mean timebin over track
 
+  static Bool_t fgPadGainOn; //pad gain
   static Bool_t   fgExBOn;    //exbon
+  static Double_t fgQScale; //Qscale
   static Double_t fgQ0Frac; //q0frac
   static Double_t fgQ1Frac; //q1frac
   static Double_t fgTimeBinCountCut; //tbcut

@@ -78,7 +78,7 @@ public:
   virtual void   Copy(TObject &ref) const;
  
   Bool_t         CookPID();
-  Double_t       CookTruncatedMean(const Bool_t kinvq, const Double_t mag, const Int_t charge, const Int_t kcalib, TVectorD *Qs=NULL, TVectorD *Xs=NULL, Int_t timeBin0=-1, Int_t timeBin1=1000, Int_t tstep=1) const;
+  Double_t       CookTruncatedMean(const Bool_t kinvq, const Double_t mag, const Int_t charge, const Int_t kcalib, Int_t &nch, Int_t &ncls, TVectorD *Qs=NULL, TVectorD *Xs=NULL, Int_t timeBin0=-1, Int_t timeBin1=1000, Int_t tstep=1) const;
  
   Int_t          CookLabel(Float_t wrong, Int_t *labs=NULL, Float_t *freq=NULL);
   AliTRDtrackV1* GetBackupTrack() const {return fBackupTrack;}
@@ -150,6 +150,8 @@ private:
   Double32_t   fBudget[3];             //  Integrated material budget
   Double32_t   fDE;                    //  Integrated delta energy
   Double32_t   fTruncatedMean;         //  Truncated mean
+  Int_t        fNchamberdEdx;          //  number of chambers used in calculating truncated mean
+  Int_t        fNclusterdEdx;          //  number of clusters used in calculating truncated mean
 
   const AliTRDReconstructor *fkReconstructor;//! reconstructor link 
   AliTRDtrackV1 *fBackupTrack;         //! Backup track

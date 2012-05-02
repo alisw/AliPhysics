@@ -48,7 +48,10 @@
 #include "AliESDEvent.h"
 #include "AliESDfriendTrack.h"
 #include "AliESDtrack.h"
+#include "AliTRDcalibDB.h"
+#include "AliTRDCalROC.h"
 #include "AliTRDtrackV1.h"
+
 
 #include "AliTRDdEdxUtils.h"
 
@@ -71,7 +74,9 @@ Double_t AliTRDdEdxUtils::fgChamberTmean[6];
 
 Double_t AliTRDdEdxUtils::fgTrackTmean = -999;
 
+Bool_t   AliTRDdEdxUtils::fgPadGainOn = kTRUE;
 Bool_t   AliTRDdEdxUtils::fgExBOn = kTRUE; 
+Double_t AliTRDdEdxUtils::fgQScale = 45;
 Double_t AliTRDdEdxUtils::fgQ0Frac = 0.3;
 Double_t AliTRDdEdxUtils::fgQ1Frac = 0.5;
 Double_t AliTRDdEdxUtils::fgTimeBinCountCut = 0.0; 
@@ -1101,45 +1106,6 @@ TObjArray* AliTRDdEdxUtils::GetCalibObj(const THnSparseD *hh, Int_t run, TList *
 //===================================================================================
 //                                   dEdx calculation
 //===================================================================================
-Double_t AliTRDdEdxUtils::GetSignal(const Int_t nch, const Int_t ncls, const Double_t qq)
-{
-  //
-  //signal = nch*1e6 + ncls*1e3 + (qq>=1e3? 999 : qq)
-  //
-  if(ncls>=1e3){
-    printf("AliTRDdEdxUtils::GetSignal error ncls>1e3! %d\n", ncls); exit(1);
-  }
-
-  return nch*1e6 + ncls*1e3 + (qq>=1e3? 999 : qq);
-}
-
-Int_t AliTRDdEdxUtils::GetNch(const Double_t signal)
-{
-  //
-  //signal = nch*1e6 + ncls*1e3 + (qq>=1e3? 999 : qq)
-  //
-  return Int_t(signal/1e6);
-
-}
-
-Int_t AliTRDdEdxUtils::GetNcls(const Double_t signal)
-{
-  //
-  //signal = Nch*1e6 + Ncls*1e3 + (Q>=1e3? 999 : Q)
-  //
-
-  return Int_t ( (signal-GetNch(signal)*1e6)/1e3 ); 
-}
-
-Double_t AliTRDdEdxUtils::GetQ(const Double_t signal)
-{
-  //
-  //signal = nch*1e6 + ncls*1e3 + (qq>=1e3? 999 : qq)
-  //
-
-  return signal-GetNch(signal)*1e6 - GetNcls(signal)*1e3;
-}
-
 Double_t AliTRDdEdxUtils::ToyCook(const Bool_t kinvq, Int_t &ncluster, TVectorD *arrayQ, TVectorD *arrayX, const TObjArray *cobj)
 {
   //
@@ -1211,20 +1177,83 @@ Double_t AliTRDdEdxUtils::GetAngularCorrection(const AliTRDseedV1 *seed)
   return TMath::Sqrt(1+seed->GetYref(1)*seed->GetYref(1)+seed->GetZref(1)*seed->GetZref(1));
 }
 
+Double_t AliTRDdEdxUtils::GetPadGain(const Int_t det, const Int_t icol, const Int_t irow)
+{
+  //
+  //get pad calibration
+  //
+  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    printf("AliTRDdEdxUtils::GetPadCalib No AliTRDcalibDB instance available\n"); exit(1);
+  }
+  AliTRDCalROC * calGainFactorROC = calibration->GetGainFactorROC(det);
+  if(!calGainFactorROC){
+    printf("AliTRDdEdxUtils::GetPadCalib no calGainFactorROC!\n"); exit(1);
+  }
+
+  Double_t padgain = -999;
+  if( icol >= 0 && 
+      icol < calGainFactorROC->GetNcols() && 
+      irow >=0 && 
+      irow < calGainFactorROC->GetNrows()){
+    padgain = calGainFactorROC->GetValue(icol, irow);
+    if(padgain<EPSILON){
+      printf("AliTRDdEdxUtils::GetPadGain padgain 0! %f %f -- %d %d %d -- %d %d\n", padgain, EPSILON, det, icol, irow, calGainFactorROC->GetNcols(), calGainFactorROC->GetNrows()); exit(1);
+    }
+  }
+  else{
+    //printf("\nAliTRDdEdxUtils::GetPadGain warning!! indices out of range %d %d %d -- %d %d\n\n", det, icol, irow, calGainFactorROC->GetNcols(), calGainFactorROC->GetNrows() );  
+  }
+
+  return padgain;
+}
+
+Double_t AliTRDdEdxUtils::GetRNDClusterQ(AliTRDcluster *cl)
+{
+  //
+  //get cluter q from GetRawQ, apply baseline and Kr pad-calibration
+  //
+
+  const Int_t det     = cl->GetDetector();
+  const Int_t pad3col = cl->GetPadCol();
+  const Int_t padrow  = cl->GetPadRow();
+
+  const Double_t baseline = 10;
+
+  Double_t rndqsum = 0;
+  for(Int_t ii=0; ii<7; ii++){
+    const Int_t icol = pad3col+(ii-3);
+
+    const Double_t padgain = IsPadGainOn()? GetPadGain(det, icol, padrow) : 1;
+    if(padgain<0){//indices out of range
+      //printf("testout %d %d\n\n", pad3col, ii);
+      continue;
+    }
+
+    const Double_t rndsignal = (cl->GetSignals()[ii] - baseline)/padgain;
+
+    //sum it anyway even if signal below baseline, as long as the total is positive
+    rndqsum += rndsignal;
+  }
+
+  return rndqsum;
+}
+
 Double_t AliTRDdEdxUtils::GetClusterQ(const Bool_t kinvq, const AliTRDseedV1 * seed, const Int_t itb)
 {
   //
   //get cluster charge
   //
   Double_t dq = 0;
-  const AliTRDcluster *cl = 0x0;
+  AliTRDcluster *cl = 0x0;
       
-  cl = seed->GetClusters(itb);                    if(cl) dq+=cl->GetRawQ();
-  cl = seed->GetClusters(itb+AliTRDseedV1::kNtb); if(cl) dq+=cl->GetRawQ();
+  //GetRNDClusterQ(cl)>0 ensures that the total sum of q is above baseline*7. 
+  cl = seed->GetClusters(itb);                    if(cl && GetRNDClusterQ(cl)>0 ) dq+= GetRNDClusterQ(cl);//cl->GetRawQ();
+  cl = seed->GetClusters(itb+AliTRDseedV1::kNtb); if(cl && GetRNDClusterQ(cl)>0 ) dq+= GetRNDClusterQ(cl);//cl->GetRawQ();
 
   dq /= GetAngularCorrection(seed);
   
-  dq /= 45.;
+  dq /= QScale();
       
   if(kinvq){
     if(dq>EPSILON){
@@ -1709,7 +1738,7 @@ void AliTRDdEdxUtils::PrintControl()
   //
   //print out control variable
   //
-  printf("\nAliTRDdEdxUtils::PrintControl Q0Frac %.1f, Q1Frac %.1f, TimeBinCountCut %.2f, CalibTPCnclsCut %d, IsExBOn %d\n\n", Q0Frac(), Q1Frac(), TimeBinCountCut(), CalibTPCnclsCut(), IsExBOn());
+  printf("\nAliTRDdEdxUtils::PrintControl Q0Frac %.1f, Q1Frac %.1f, TimeBinCountCut %.2f, CalibTPCnclsCut %d, IsExBOn %d, IsPadGainOn %d, QScale %.2f\n\n", Q0Frac(), Q1Frac(), TimeBinCountCut(), CalibTPCnclsCut(), IsExBOn(), IsPadGainOn(), QScale());
 }
 //===================================================================================
 //===================================================================================
