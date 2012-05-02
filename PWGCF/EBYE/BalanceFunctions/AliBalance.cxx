@@ -43,6 +43,7 @@ ClassImp(AliBalance)
 AliBalance::AliBalance() :
   TObject(), 
   bShuffle(kFALSE),
+  bHBTcut(kFALSE),
   fAnalysisLevel("ESD"),
   fAnalyzedEvents(0) ,
   fCentralityId(0) ,
@@ -96,7 +97,9 @@ AliBalance::AliBalance() :
 
 //____________________________________________________________________//
 AliBalance::AliBalance(const AliBalance& balance):
-  TObject(balance), bShuffle(balance.bShuffle), 
+  TObject(balance), 
+  bShuffle(balance.bShuffle),
+  bHBTcut(balance.bHBTcut), 
   fAnalysisLevel(balance.fAnalysisLevel),
   fAnalyzedEvents(balance.fAnalyzedEvents), 
   fCentralityId(balance.fCentralityId),
@@ -387,6 +390,13 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	//phi
 	dphi = TMath::Abs(phi1 - phi2);
 	if(dphi>180) dphi = 360 - dphi;  //dphi should be between 0 and 180!
+
+	// HBT like cut
+	if(bHBTcut){
+	  if( dphi < 3 || deta < 0.01 ){
+	    continue;
+	  }
+	}
 
 	//0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
 	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
