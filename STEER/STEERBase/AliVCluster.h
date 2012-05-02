@@ -102,8 +102,9 @@ class AliVCluster : public TObject
   
   virtual void        SetNCells(Int_t)              { ; }
   virtual Int_t       GetNCells() const             {return 0 ; }
-  
+  virtual void        SetCellsAbsId(UShort_t */*array*/) {;}  
   virtual UShort_t   *GetCellsAbsId()               {return 0 ; }
+  virtual void        SetCellsAmplitudeFraction(Double32_t */*array*/) {;}
   virtual Double_t   *GetCellsAmplitudeFraction()   {return 0 ; }
   virtual Int_t       GetCellAbsId(Int_t) const     {return 0 ; }  
   virtual Double_t    GetCellAmplitudeFraction(Int_t) const {return 0. ; }
