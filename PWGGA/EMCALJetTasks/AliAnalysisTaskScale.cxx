@@ -2,7 +2,7 @@
 //
 // Scale task.
 //
-//
+// Author: R.Reed, M.Connors
 
 #include <TChain.h>
 #include <TClonesArray.h>

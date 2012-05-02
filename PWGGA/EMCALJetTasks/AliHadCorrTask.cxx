@@ -2,7 +2,7 @@
 //
 // Hadronic correction task.
 //
-//
+// Author: R.Reed, C.Loizides
 
 #include <TChain.h>
 #include <TClonesArray.h>

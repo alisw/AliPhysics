@@ -2,7 +2,7 @@
 //
 // Emcal jet finder task.
 //
-//
+// Author: C.Loizides
 
 #include "AliEmcalJetTask.h"
 #include <TChain.h>
