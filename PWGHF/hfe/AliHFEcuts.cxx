@@ -131,8 +131,10 @@ AliHFEcuts::AliHFEcuts():
   fTPCPIDCLEANUPStep(kFALSE),
   fUseMixedVertex(kTRUE),
   fIsIPSigmacut(kFALSE),
+  fIsIPAbs(kTRUE),
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
+  fAdditionalStatusRequirement(0),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -170,8 +172,10 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fTPCPIDCLEANUPStep(kFALSE),
   fUseMixedVertex(kTRUE),
   fIsIPSigmacut(kFALSE),
+  fIsIPAbs(kTRUE),
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
+  fAdditionalStatusRequirement(0),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -208,8 +212,10 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fTPCPIDCLEANUPStep(kFALSE),
   fUseMixedVertex(kTRUE),
   fIsIPSigmacut(kFALSE),
+  fIsIPAbs(kTRUE),
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
+  fAdditionalStatusRequirement(0),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -255,8 +261,10 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fTPCPIDCLEANUPStep = fTPCPIDCLEANUPStep;
   target.fUseMixedVertex = fUseMixedVertex;
   target.fIsIPSigmacut = fIsIPSigmacut;
+  target.fIsIPAbs = fIsIPAbs;
   target.fFractionOfSharedTPCClusters = fFractionOfSharedTPCClusters;
   target.fMaxImpactParameterRpar = fMaxImpactParameterRpar;
+  target.fAdditionalStatusRequirement = fAdditionalStatusRequirement;
   target.fDebugLevel = 0;
 
   memcpy(target.fProdVtx, fProdVtx, sizeof(Double_t) * 4);
@@ -548,17 +556,23 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   //  Momentum Range: 100MeV - 20GeV
   //  Eta: < 0.9 (TRD-TOF acceptance)
   //
+  const Long_t kStatusSelectionDefault(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
   AliDebug(2, "Called\n");
   AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts((Char_t *)"fCutsQualityRec", (Char_t *)"REC Track Quality Cuts");
-  trackQuality->SetMinNClusterITS(fMinClustersITS);
+  //trackQuality->SetMinNClusterITS(fMinClustersITS);
   trackQuality->SetMaxChi2PerClusterTPC(fMaxChi2clusterTPC);
   if(fMaxChi2clusterITS >= 0.) trackQuality->SetMaxChi2PerClusterITS(fMaxChi2clusterITS);
-  trackQuality->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
+  Long_t statusRequirement;
+  if(fAdditionalStatusRequirement)
+    statusRequirement = kStatusSelectionDefault | fAdditionalStatusRequirement;
+  else
+    statusRequirement = kStatusSelectionDefault;
+  trackQuality->SetStatus(statusRequirement);
   //trackQuality->SetMaxCovDiagonalElements(2., 2., 0.5, 0.5, 2); 
 
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPCRec","Extra cuts from the HFE group");
   hfecuts->SetDebugLevel(fDebugLevel);
-
+  hfecuts->SetMinNbITScls(fMinClustersITS);
   // Set the cut in the TPC number of clusters
   hfecuts->SetMinNClustersTPC(fMinClustersTPC, fTPCclusterDef);
   hfecuts->SetMinNClustersTPCPID(fMinClustersTPCPID);
@@ -610,13 +624,15 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsPrimaryCutsextra","Extra cuts from the HFE group");
   hfecuts->SetMaxImpactParameterRpar(fMaxImpactParameterRpar);
+  hfecuts->SetRejectKinkDaughter();
+  hfecuts->SetRejectKinkMother();
 
   TObjArray *primCuts = new TObjArray;
   primCuts->SetName("fPartPrimCuts");
   primCuts->AddLast(primaryCut);
-  if(fMaxImpactParameterRpar){
-    primCuts->AddLast(hfecuts);
-  }
+  //if(fMaxImpactParameterRpar){
+  primCuts->AddLast(hfecuts);
+  //}
   fCutList->AddLast(primCuts);
 }
 
@@ -701,7 +717,7 @@ void AliHFEcuts::SetHFElectronDcaCuts(){
   //
   AliDebug(2, "Called\n");
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupDCA","Extra cuts from the HFE group");
-  hfecuts->SetMinHFEImpactParamR(fIPCutParams,fIsIPSigmacut);
+  hfecuts->SetMinHFEImpactParamR(fIPCutParams,fIsIPSigmacut,fIsIPAbs);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
 

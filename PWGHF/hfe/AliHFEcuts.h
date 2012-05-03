@@ -143,7 +143,7 @@ class AliHFEcuts : public TNamed{
     void SetMaxChi2perClusterITS(Double_t chi2) { fMaxChi2clusterITS = chi2; };
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
-    inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma);
+    inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma, Bool_t isabs);
     void SetMinRatioTPCclusters(Double_t minRatioTPC) { fMinClusterRatioTPC = minRatioTPC; };
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
@@ -165,9 +165,11 @@ class AliHFEcuts : public TNamed{
     inline void CreateStandardCuts();
     
     // Requirements
+    void SetAdditionalStatusRequirement(Long_t requirement) {fAdditionalStatusRequirement = requirement;}
     void SetRequireDCAToVertex() { SETBIT(fRequirements, kDCAToVertex); CLRBIT(fRequirements, kSigmaToVertex); };
     void SetRequireIsPrimary() { SETBIT(fRequirements, kPrimary); };
     void SetRequireITSPixel() { SETBIT(fRequirements, kITSPixel); }
+    void UnsetRequireITSPixel() { CLRBIT(fRequirements, kITSPixel); }
     void SetRequireProdVertex() { SETBIT(fRequirements, kProductionVertex); };
     void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); CLRBIT(fRequirements, kDCAToVertex); };
     void UnsetVertexRequirement() { CLRBIT(fRequirements, kDCAToVertex); CLRBIT(fRequirements, kSigmaToVertex); }
@@ -231,10 +233,11 @@ class AliHFEcuts : public TNamed{
     Bool_t   fTPCPIDCLEANUPStep;      // TPC PIC cleanup step
     Bool_t   fUseMixedVertex;         // Use primary vertex from track only as before
     Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
-    Bool_t   fIsIPSigmacut;           // if abs IP cut or IP sigma cut 
+    Bool_t   fIsIPSigmacut;           // if IP cut or IP sigma cut 
+    Bool_t   fIsIPAbs;                // if abs IP sigma cut
     Double_t fFractionOfSharedTPCClusters; // Fraction of shared TPC clusters
     Bool_t   fMaxImpactParameterRpar;      // Max impact parameter
-
+    Long_t   fAdditionalStatusRequirement; // Additional status bit requirement 
 
     
     TList *fHistQA;		            //! QA Histograms
@@ -281,13 +284,14 @@ void AliHFEcuts::SetMaxImpactParam(Double_t radial, Double_t z){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma){
+void AliHFEcuts::SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma, Bool_t isabs){
   // Set parameters for impact parameter cut parametrization
   fIPCutParams[0] = p0;
   fIPCutParams[1] = p1;
   fIPCutParams[2] = p2;
   fIPCutParams[3] = p3;
   fIsIPSigmacut = isipsigma;
+  fIsIPAbs = isabs;
 }
 
 //__________________________________________________________________

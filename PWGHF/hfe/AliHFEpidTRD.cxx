@@ -351,20 +351,22 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track, Float_t truncati
   // Calculate mean over the last 2/3 slices
   //
   const Int_t kNSlices = 48;
-  const Int_t kSlicePerLayer = 7;
+  const Int_t kLastSlice = 6; // Slice 7 is taken out from the truncated mean calculation
   const Double_t kVerySmall = 1e-12;
   // Weight the slice to equalize the MPV of the dQ/dl-distribution per slice to the one in the first slice
   // Pions are used as reference for the equalization
   const Double_t kWeightSlice[8] = {1., 2.122, 1.8, 1.635, 1.595, 1.614, 1.16, 7.0};
+  const Double_t kWeightSliceNo0[8] = {1., 1., 1.271, 1.451, 1.531, 1.543, 1.553, 2.163};  // Weighting factors in case slice 0 stores the total charge
+  const Double_t *kWeightFactor = fTotalChargeInSlice0 ? kWeightSliceNo0 : kWeightSlice;
   AliDebug(3, Form("Number of Tracklets: %d\n", track->GetTRDntrackletsPID()));
   Double_t trdSlices[kNSlices], tmp[kNSlices];
   Int_t indices[48];
   Int_t icnt = 0;
   for(Int_t idet = 0; idet < 6; idet++)
-    for(Int_t islice = fTotalChargeInSlice0 ? 1 : 0 ; islice < kSlicePerLayer; islice++){
+    for(Int_t islice = fTotalChargeInSlice0 ? 1 : 0 ; islice <= kLastSlice; islice++){
       AliDebug(2, Form("Chamber[%d], Slice[%d]: TRDSlice = %f", idet, islice, track->GetTRDslice(idet, islice)));
       if(TMath::Abs(track->GetTRDslice(idet, islice)) < kVerySmall) continue;;
-      trdSlices[icnt++] = track->GetTRDslice(idet, islice) * kWeightSlice[islice];
+      trdSlices[icnt++] = track->GetTRDslice(idet, islice) * kWeightFactor[islice];
     }
   AliDebug(1, Form("Number of Slices: %d\n", icnt));
   if(icnt < 6) return 0.;   // We need at least 6 Slices for the truncated mean

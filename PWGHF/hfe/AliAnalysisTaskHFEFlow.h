@@ -86,7 +86,8 @@ public:
   Double_t GetPhiAfterAddV2(Double_t phi,Double_t reactionPlaneAngle) const;
   
 private:
-  TList       *fListHist;       //! TH list
+  TList     *fListHist;         //! TH list
+  Bool_t    fAODAnalysis;       // AOD analysis
 
   Bool_t    fVZEROEventPlane;  // Use Event Planes from VZERO
   Bool_t    fVZEROEventPlaneA; // Use Event Planes from VZERO A

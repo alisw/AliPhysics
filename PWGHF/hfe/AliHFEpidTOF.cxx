@@ -44,6 +44,8 @@ AliHFEpidTOF::AliHFEpidTOF():
   //
   // Constructor
   //
+  
+  memset(fSigmaBordersTOF, 0, sizeof(Float_t) * 2);
 } 
 
 //___________________________________________________________________
@@ -93,6 +95,7 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
   AliHFEpidTOF &target = dynamic_cast<AliHFEpidTOF &>(ref);
 
   target.fNsigmaTOF = fNsigmaTOF;
+  memcpy(target.fSigmaBordersTOF, fSigmaBordersTOF, sizeof(Float_t) * 2);
 
   AliHFEpidBase::Copy(ref);
 }
@@ -125,10 +128,15 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   Double_t sigEle = fkPIDResponse->NumberOfSigmasTOF(track->GetRecTrack(), AliPID::kElectron);
   AliDebug(2, Form("Number of sigmas in TOF: %f", sigEle));
   Int_t pdg = 0;
-  if(TMath::Abs(sigEle) < fNsigmaTOF){
-    pdg = 11;
-    if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTOFpid, AliHFEdetPIDqa::kAfterPID);
+  if(TestBit(kSigmaBand)){
+    // Lower and Upper cut separate
+    if(sigEle > fSigmaBordersTOF[0] && sigEle < fSigmaBordersTOF[1]) pdg = 11;
+  } else {
+    // Fixed nsigma cut
+    if(TMath::Abs(sigEle) < fNsigmaTOF) pdg = 11;
   }
+
+  if(pdg == 11 && pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTOFpid, AliHFEdetPIDqa::kAfterPID);
  
   return pdg;
 }

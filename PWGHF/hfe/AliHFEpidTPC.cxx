@@ -48,6 +48,7 @@ AliHFEpidTPC::AliHFEpidTPC() :
   // add a list here
   AliHFEpidBase()
   , fLineCrossingsEnabled(0)
+  , fkEtaCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
@@ -71,6 +72,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   // add a list here
   AliHFEpidBase(name)
   , fLineCrossingsEnabled(0)
+  , fkEtaCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
@@ -92,6 +94,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
 AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   AliHFEpidBase("")
   , fLineCrossingsEnabled(0)
+  , fkEtaCorrection(NULL)
   , fHasCutModel(ref.fHasCutModel)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
@@ -120,6 +123,7 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   //
   AliHFEpidTPC &target = dynamic_cast<AliHFEpidTPC &>(o);
 
+  target.fkEtaCorrection =fkEtaCorrection;
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
   target.fHasCutModel = fHasCutModel;
   target.fNsigmaTPC = fNsigmaTPC;
@@ -162,12 +166,40 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   //
 
   if(!fkPIDResponse) return 0;
-  
-  // QA before selection
-  if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTPCpid, AliHFEdetPIDqa::kBeforePID);
-  AliDebug(1, "Doing TPC PID based on n-Sigma cut approach");
+
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  Float_t nsigma = fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron);
+
+  // Make clone track in order to be able to apply correction
+  const AliVTrack *rectrack;
+  AliESDtrack esdtrack;
+  AliAODTrack aodtrack;
+  if(fkEtaCorrection){
+    // Correction available
+    // apply it on copy
+    if(track->IsESDanalysis()){
+      esdtrack.~AliESDtrack();
+      new(&esdtrack) AliESDtrack(*(static_cast<const AliESDtrack *>(track->GetRecTrack())));
+      ApplyEtaCorrection(&esdtrack, anatype);
+      rectrack = &esdtrack;
+    } else {
+      aodtrack.~AliAODTrack();
+      new(&aodtrack) AliAODTrack(*(static_cast<const AliAODTrack *>(track->GetRecTrack())));
+      ApplyEtaCorrection(&aodtrack, anatype);
+      rectrack = &aodtrack;
+    }
+  } else {
+    // Correction not available - no need to copy
+    rectrack = track->GetRecTrack();
+  }
+  AliHFEpidObject tpctrack(*track);
+  tpctrack.SetRecTrack(rectrack);
+  
+  // QA before selection (after correction)
+  if(pidqa) pidqa->ProcessTrack(&tpctrack, AliHFEpid::kTPCpid, AliHFEdetPIDqa::kBeforePID);
+  AliDebug(1, "Doing TPC PID based on n-Sigma cut approach");
+  
+  // make copy of the track in order to allow for applying the correction 
+  Float_t nsigma = fkPIDResponse->NumberOfSigmasTPC(rectrack, AliPID::kElectron);
   AliDebug(1, Form("TPC NSigma: %f", nsigma));
   // exclude crossing points:
   // Determine the bethe values for each particle species
@@ -175,7 +207,7 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   for(Int_t ispecies = 0; ispecies < AliPID::kSPECIES; ispecies++){
     if(ispecies == AliPID::kElectron) continue;
     if(!(fLineCrossingsEnabled & 1 << ispecies)) continue;
-    if(TMath::Abs(fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), (AliPID::EParticleType)ispecies)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
+    if(TMath::Abs(fkPIDResponse->NumberOfSigmasTPC(rectrack, (AliPID::EParticleType)ispecies)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
       // Point in a line crossing region, no PID possible, but !PID still possible ;-)
       isLineCrossing = kTRUE;      
       break;
@@ -185,24 +217,24 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
 
   // Check particle rejection
   if(HasParticleRejection()){
-    Int_t reject = Reject(track->GetRecTrack(), anatype);
+    Int_t reject = Reject(rectrack, anatype);
     if(reject != 0) return reject;
   }
 
   // Check if we have an asymmetric sigma model set
   Int_t pdg = 0;
   if(fHasCutModel){
-    pdg = CutSigmaModel(track) ? 11 : 0;
+    pdg = CutSigmaModel(&tpctrack) ? 11 : 0;
   } else { 
     // Perform Asymmetric n-sigma cut if required, else perform symmetric TPC sigma cut
     Float_t p = 0.;
-    if(HasAsymmetricSigmaCut() && (p = track->GetRecTrack()->P()) >= fPAsigCut[0] && p <= fPAsigCut[1]){ 
+    if(HasAsymmetricSigmaCut() && (p = rectrack->P()) >= fPAsigCut[0] && p <= fPAsigCut[1]){ 
       if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
     } else {
       if(TMath::Abs(nsigma) < fNsigmaTPC ) pdg = 11;
     }
   }
-  if(pidqa && pdg != 0) pidqa->ProcessTrack(track, AliHFEpid::kTPCpid, AliHFEdetPIDqa::kAfterPID);
+  if(pidqa && pdg != 0) pidqa->ProcessTrack(&tpctrack, AliHFEpid::kTPCpid, AliHFEdetPIDqa::kAfterPID);
   return pdg;
 
 }
@@ -240,6 +272,25 @@ Int_t AliHFEpidTPC::Reject(const AliVParticle *track, AliHFEpidObject::AnalysisT
     if(sigma >= fRejection[4*ispec+1] && sigma <= fRejection[4*ispec+3]) return pdc[ispec] * track->Charge();
   }
   return 0;
+}
+
+//___________________________________________________________________
+void AliHFEpidTPC::ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const{
+  //
+  // Apply correction for the eta dependence
+  // N.B. This correction has to be applied on a copy track
+  //
+  AliDebug(1, Form("Applying correction function %s\n", fkEtaCorrection->GetName()));
+  Double_t original = track->GetTPCsignal(),
+           eta = track->Eta();
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+    esdtrack->SetTPCsignal(original/fkEtaCorrection->Eval(eta), esdtrack->GetTPCsignalSigma(), esdtrack->GetTPCsignalN());
+  } else {
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
+    AliAODPid *pid = aodtrack->GetDetPid();
+    if(pid) pid->SetTPCsignal(original);
+  }
 }
 
 //___________________________________________________________________

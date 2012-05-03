@@ -1,13 +1,38 @@
+/**************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
+//
+//
+// VZERO event plane task for 2010
+// Gain equalization + Recentering 
+// Need a root file
+// 
+// Author:
+//   Raphaelle Bailhache <R.Bailhache@gsi.de>
+//
+//
+
 #include "AliHFEVZEROEventPlane.h"
 
 // AliRoot includes
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
+//#include "AliESDEvent.h"
 #include "AliCentrality.h"
-#include "AliESDVZERO.h"
+//#include "AliESDVZERO.h"
+#include "AliVVZERO.h"
 #include "TFile.h"
 #include "AliOADBContainer.h"
 #include "TH2F.h"
@@ -136,10 +161,10 @@ AliHFEVZEROEventPlane::AliHFEVZEROEventPlane(const char *name, const Char_t *tit
 	  namecontafter += "_after";	
 	}
 	//
-	fQBefore[k][iside][icoord] = new TH1F(((const char*)namecontbefore),"",800,-400.0,400.0);
+	fQBefore[k][iside][icoord] = new TH1F(((const char*)namecontbefore),"",1600,-800.0,800.0);
 	fQBefore[k][iside][icoord]->Sumw2();
 	fOutputList->Add(fQBefore[k][iside][icoord]);
-	fQAfter[k][iside][icoord] = new TH1F(((const char*)namecontafter),"",800,-400.0,400.0);
+	fQAfter[k][iside][icoord] = new TH1F(((const char*)namecontafter),"",1600,-800.0,800.0);
 	fQAfter[k][iside][icoord]->Sumw2();
 	fOutputList->Add(fQAfter[k][iside][icoord]);
 	//
@@ -207,7 +232,7 @@ AliHFEVZEROEventPlane::~AliHFEVZEROEventPlane(){
   
 }
 //______________________________________________________________________________
-void AliHFEVZEROEventPlane::ProcessEvent(AliESDEvent *event) 
+void AliHFEVZEROEventPlane::ProcessEvent(AliVEvent *event) 
 {
   //
   // Process the event
@@ -234,7 +259,7 @@ void AliHFEVZEROEventPlane::ProcessEvent(AliESDEvent *event)
 }
 
 //________________________________________________________________________
-void AliHFEVZEROEventPlane::Analyze(AliESDEvent* esdEvent)
+void AliHFEVZEROEventPlane::Analyze(AliVEvent* esdEvent)
 {  
   //
   // Do VZERO calibration + centering
@@ -271,7 +296,7 @@ void AliHFEVZEROEventPlane::Analyze(AliESDEvent* esdEvent)
     Double_t qxc2 = 0, qyc2 = 0;
     
     //V0 info    
-    AliESDVZERO* esdV0 = esdEvent->GetVZEROData();
+    AliVVZERO* esdV0 = esdEvent->GetVZEROData();
     
     for (Int_t iv0 = 0; iv0 < 64; iv0++) {
       Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);

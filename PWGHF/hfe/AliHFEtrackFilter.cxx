@@ -29,10 +29,10 @@
 #include "AliCFTrackKineCuts.h"
 #include "AliCFTrackIsPrimaryCuts.h"
 #include "AliCFTrackQualityCuts.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
 #include "AliMCEvent.h"
-#include "AliMCParticle.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
+#include "AliVParticle.h"
 
 #include "AliHFEcontainer.h"
 #include "AliHFEcutStep.h"
@@ -249,7 +249,7 @@ void AliHFEtrackFilter::InitCF(AliHFEcontainer *cont){
 }
 
 //__________________________________________________________________
-void AliHFEtrackFilter::FilterTracks(const AliESDEvent * const event){
+void AliHFEtrackFilter::FilterTracks(const AliVEvent * const event){
   //
   // Perform track filtering
   // Check each cut step one by one and select tracks which pass
@@ -257,8 +257,8 @@ void AliHFEtrackFilter::FilterTracks(const AliESDEvent * const event){
   // framework container will be filled for each cut step.
   //
   AliHFEcutStep *cutStep = NULL;
-  AliESDtrack *track = NULL;
-  AliMCParticle *mctrack = NULL;
+  AliVTrack *track = NULL;
+  AliVParticle *mctrack = NULL;
   Double_t cont[4] = {0., 0., 0., 0.}, contMC[4] = {0., 0., 0., 0.};
   Bool_t goodTrack = kTRUE, signal = kFALSE;
   Int_t nStep = fCutSteps->GetEntriesFast();
@@ -268,10 +268,10 @@ void AliHFEtrackFilter::FilterTracks(const AliESDEvent * const event){
   AliCFContainer *cSignalMC = dynamic_cast<AliCFContainer *>(fEfficiencyContainers->At(3));
   for(Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++){
     signal = kFALSE;
-    track = event->GetTrack(itrack);
+    track = static_cast<AliVTrack *>(event->GetTrack(itrack));
     // check Monte-Carlo Information if available 
     if(fMC){
-      mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(track->GetLabel())));
+      mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
       if(mctrack){
         //AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMC->GetTrack(mctrack->Particle()->GetFirstMother()));
         //AliInfo(Form("Label %d, Mother %d", track->GetLabel(), mother->Particle()->GetPdgCode()));
@@ -406,7 +406,7 @@ AliHFEcutStep *AliHFEtrackFilter::MakeCutStepRecKineITSTPC(){
   AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts((Char_t *)"QualityRec", (Char_t *)"REC Track Quality Cuts");
   trackQuality->SetMinNClusterTPC(80);
   trackQuality->SetMaxChi2PerClusterTPC(3.5);
-  trackQuality->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
+  trackQuality->SetStatus(AliVTrack::kTPCrefit | AliVTrack::kITSrefit);
   trackQuality->SetMaxCovDiagonalElements(2., 2., 0.5, 0.5, 2); 
   fCutStep->AddCut(trackQuality);
 

@@ -28,6 +28,8 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
+#include "AliAODEvent.h"
+#include "AliAODVertex.h"
 #include "AliHFEextraEventCuts.h"
 ClassImp(AliHFEextraEventCuts) 
 //____________________________________________________________________
@@ -172,61 +174,138 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
 
   //Check if the requested cuts are passed and return a bitmap
   for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE);
+
+
+
   AliESDEvent* esd = dynamic_cast<AliESDEvent *>(obj);
-  if ( !esd ) return;
-
-  //now start checking the cuts,
-  //first assume the event will be accepted: 
-  for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kTRUE);
+  AliAODEvent* aod = dynamic_cast<AliAODEvent *>(obj);
 
 
-  
-  if(fRequireVtxCuts){
-    const AliESDVertex* vtxESD = 0x0;
-    if      (fVtxMixed) {
-      vtxESD = esd->GetPrimaryVertexTracks() ;
-      if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) {
-	vtxESD = esd->GetPrimaryVertexSPD() ;
+  // ESD
+
+  if ( esd ) {
+    
+    //now start checking the cuts,
+    //first assume the event will be accepted: 
+    for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kTRUE);
+    
+    
+    
+    if(fRequireVtxCuts){
+      const AliESDVertex* vtxESD = 0x0;
+      if      (fVtxMixed) {
+	vtxESD = esd->GetPrimaryVertexTracks() ;
 	if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) {
-	  for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-	  AliWarning("Cannot get vertex, skipping event");
-	  return;
+	  vtxESD = esd->GetPrimaryVertexSPD() ;
+	  if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) {
+	    for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+	    AliWarning("Cannot get vertex, skipping event");
+	    return;
+	  }
 	}
       }
-    }
-    else {   
-      vtxESD = esd->GetPrimaryVertexTracks() ;
-    }
-
-    if(!vtxESD){
-      for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-      AliWarning("Cannot get vertex, skipping event");
-      return;
-    }
+      else {   
+	vtxESD = esd->GetPrimaryVertexTracks() ;
+      }
+      
+      if(!vtxESD){
+	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+	AliWarning("Cannot get vertex, skipping event");
+	return;
+      }
+      
+      // Pick up the position and uncertainties
+      vtxESD = esd->GetPrimaryVertex();
+      if(!vtxESD){
+	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+	AliWarning("Cannot get vertex, skipping event");
+	return;
+      }
+      Double_t vtxPos[3];
+      vtxPos[0] = vtxESD->GetXv();
+      vtxPos[1] = vtxESD->GetYv();
+      vtxPos[2] = vtxESD->GetZv();
+      
+      Int_t nCtrb = vtxESD->GetNContributors();
+      
+      // Apply the cut
+      
+      if (vtxPos[2]>fVtxZMax || vtxPos[2]<fVtxZMin)
+	fBitMap->SetBitNumber(0,kFALSE); 
+      if (nCtrb<fVtxNCtrbMin)
+	fBitMap->SetBitNumber(1,kFALSE);
+      
+    }  
+    return;
     
-    // Pick up the position and uncertainties
-    vtxESD = esd->GetPrimaryVertex();
-    if(!vtxESD){
-      for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-      AliWarning("Cannot get vertex, skipping event");
-      return;
-    }
-    Double_t vtxPos[3];
-    vtxPos[0] = vtxESD->GetXv();
-    vtxPos[1] = vtxESD->GetYv();
-    vtxPos[2] = vtxESD->GetZv();
     
-    Int_t nCtrb = vtxESD->GetNContributors();
+  }
 
-    // Apply the cut
+  //
+
+  // AOD
+
+  if ( aod ) {
     
-    if (vtxPos[2]>fVtxZMax || vtxPos[2]<fVtxZMin)
-      fBitMap->SetBitNumber(0,kFALSE); 
-    if (nCtrb<fVtxNCtrbMin)
-      fBitMap->SetBitNumber(1,kFALSE);
-
-  }  
+    //now start checking the cuts,
+    //first assume the event will be accepted: 
+    for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kTRUE);
+    
+    
+    
+    if(fRequireVtxCuts){
+      const AliAODVertex* vtxAOD = 0x0;
+      if      (fVtxMixed) {
+	vtxAOD = aod->GetPrimaryVertex();
+	if((!vtxAOD) || (vtxAOD->GetNContributors() <= 0)) {
+	  vtxAOD = aod->GetPrimaryVertexSPD() ;
+	  if((!vtxAOD) || (vtxAOD->GetNContributors() <= 0)) {
+	    for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+	    AliWarning("Cannot get vertex, skipping event");
+	    return;
+	  }
+	}
+      }
+      else {   
+	vtxAOD = aod->GetPrimaryVertex() ;
+      }
+      
+      if(!vtxAOD){
+	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+	AliWarning("Cannot get vertex, skipping event");
+	return;
+      }
+      
+      // Pick up the position and uncertainties
+      vtxAOD = aod->GetPrimaryVertex();
+      if(!vtxAOD){
+	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
+	AliWarning("Cannot get vertex, skipping event");
+	return;
+      }
+      Double_t vtxPos[3];
+      vtxPos[0] = vtxAOD->GetX();
+      vtxPos[1] = vtxAOD->GetY();
+      vtxPos[2] = vtxAOD->GetZ();
+      
+      Int_t nCtrb = vtxAOD->GetNContributors();
+      //printf("AliHFEextraCuts:: %d, %f, %f, %f\n",nCtrb,vtxPos[0],vtxPos[1],vtxPos[2]);
+      
+      // Apply the cut
+      
+      if (vtxPos[2]>fVtxZMax || vtxPos[2]<fVtxZMin)
+	fBitMap->SetBitNumber(0,kFALSE); 
+      if (nCtrb<fVtxNCtrbMin)
+	fBitMap->SetBitNumber(1,kFALSE);
+      
+    }  
+    return;
+    
+    
+  }
+  
   return;
+  
 }
 
 //_____________________________________________________________________________

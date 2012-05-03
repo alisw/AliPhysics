@@ -169,13 +169,51 @@ Bool_t AliHFEsignalCuts::IsNonHFElectron(const TObject * const o) const {
   // Check for MC if the electron is coming from NonHFE except for conversion
   //
   if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));  
+  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
   if(esources == AliHFEmcQA:: kPi0 || esources == AliHFEmcQA::kEta || esources == AliHFEmcQA::kOmega || esources == AliHFEmcQA::kPhi || esources == AliHFEmcQA::kEtaPrime || esources == AliHFEmcQA::kRho0)  // 4: conversion electrons
     return kTRUE;
   else
     return kFALSE;
 }
+
 //____________________________________________________________
+Bool_t AliHFEsignalCuts::IsJpsiElectron(const TObject * const o) const {
+  //
+  // Check if mother is coming from Charm
+  //
+  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
+  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  if(esources == AliHFEmcQA::kJpsi)  // 5: J/psi->ee
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________
+Bool_t AliHFEsignalCuts::IsB2JpsiElectron(const TObject * const o) const {
+  //
+  // Check if mother is coming from Charm
+  //
+  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
+  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  if(esources == AliHFEmcQA::kB2Jpsi)  // 6: B->Jpsi->ee
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________
+Bool_t AliHFEsignalCuts::IsKe3Electron(const TObject * const o) const {
+  //
+  // Check if mother is coming from Charm
+  //
+  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
+  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  if(esources == AliHFEmcQA::kKe3)  // 7: K->e
+    return kTRUE;
+  else
+    return kFALSE;
+}
 
 /*
 //____________________________________________________________

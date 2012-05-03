@@ -91,8 +91,8 @@ public:
 
       UInt_t GetVarCode() const { return fCode; }
       UInt_t GetNumberOfBins() const { return fNBins; }
-      const Double_t* GetBinning() const { return fBinning.GetArray(); }
-      Bool_t HasUserDefinedBinning() const { return fBinning.GetArray() != 0; }
+      Double_t* GetBinning();
+      Bool_t HasUserDefinedBinning() const { return fUserDefinedBinning; }
       Double_t GetMinimum() const { return fMin; }
       Double_t GetMaximum() const { return fMax; } 
       Int_t IsLogarithmic() const { return fIsLogarithmic; }
@@ -103,6 +103,7 @@ public:
       Double_t  fMax;               // Maximum
       TArrayD   fBinning;           // User defined binning
       Bool_t    fIsLogarithmic;     // Logarithmic binning
+      Bool_t    fUserDefinedBinning;// Has User defined binning
 
       ClassDef(AliHFEvarManager::AliHFEvariable, 1) // HFE variable definition
   };

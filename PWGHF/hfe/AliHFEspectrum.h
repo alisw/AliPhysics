@@ -89,7 +89,7 @@ class AliHFEspectrum : public TNamed{
     void SetEfficiencyFunction(TF1 *efficiencyFunction) { fEfficiencyFunction = efficiencyFunction; };
     void SetPbPbAnalysis(Bool_t isPbPb = kFALSE) { fBeamType=(Char_t) isPbPb; };
 
-    void SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, Int_t *dimensions);
+    void SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, AliCFContainer *containeresd, AliCFContainer *containeresdmb, Int_t *dimensions);
     
     void SetNumberOfEvents(Int_t nEvents,Int_t i = 0) { fNEvents[i] = nEvents; };
     void SetNumberOfMCEvents(Int_t nEvents) { fNMCEvents = nEvents; };
@@ -112,6 +112,7 @@ class AliHFEspectrum : public TNamed{
     void CallInputFileForBeauty2ndMethod();
     void SetInputFileForBeauty2ndMethod(const char *filenameb = "BSpectrum2ndmethod.root"){fkBeauty2ndMethodfilename = filenameb; };
     void SetBeautyAnalysis2ndMethod(Bool_t beauty2ndmethod) { fBeauty2ndMethod = beauty2ndmethod; }
+    void SetIPEffCombinedSamples(Bool_t ipEffCombinedSamples) { fIPEffCombinedSamples = ipEffCombinedSamples; }
     void SetHadronEffbyIPcut(THnSparseF* hsHadronEffbyIPcut) { fHadronEffbyIPcut = hsHadronEffbyIPcut;};
     void SetNonHFEsyst(Bool_t syst){ fNonHFEsyst = syst; };
 
@@ -162,6 +163,7 @@ class AliHFEspectrum : public TNamed{
     AliCFDataGrid *fBackground;   // Background Grid
     TF1 *fEfficiencyFunction;     // Efficiency Function
     TF1 *fEfficiencyTOFPIDD[kCentrality];       // TOF PID efficiency parameterized
+    TF1 *fEfficiencyesdTOFPIDD[kCentrality];    // TOF PID efficiency parameterized
     TF1 *fEfficiencyIPCharmD[kCentrality];      // IP efficiency parameterized for charm
     TF1 *fEfficiencyIPBeautyD[kCentrality];     // IP efficiency parameterized for beauty 
     TF1 *fEfficiencyIPConversionD[kCentrality]; // IP efficiency parameterized for conversion
@@ -186,6 +188,7 @@ class AliHFEspectrum : public TNamed{
     Bool_t fIPParameterizedEff;        // switch to use parameterized efficiency for ip analysis
     Bool_t fNonHFEsyst;            // choose NonHFE background level (upper, lower, central)
     Bool_t fBeauty2ndMethod;      // 2nd method to get beauty spectrum
+    Bool_t fIPEffCombinedSamples; // flag to combine two different samples
 
     Int_t fNbDimensions;          // Number of dimensions for the correction
     Int_t fNEvents[20];           // Number of Events
@@ -203,7 +206,7 @@ class AliHFEspectrum : public TNamed{
     Double_t fEtaRange[2];        // Eta range 
     Double_t fEtaRangeNorm[2];    // Eta range used in the normalization
 
-    Int_t fNCentralityBinAtTheEnd; // Number of centrality class at the end
+    Int_t fNCentralityBinAtTheEnd;// Number of centrality class at the end
     Int_t fLowBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
     Int_t fHighBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
 
@@ -212,8 +215,10 @@ class AliHFEspectrum : public TNamed{
     TH1D *fEfficiencyBeautySigD[kCentrality]; // beauty IP cut eff from signal enhanced MC
     TH1D *fConversionEff[kCentrality];     // conversion IP cut eff
     TH1D *fNonHFEEff[kCentrality];         // nonhfe IP cut eff
-    TH1D *fCharmEff[kCentrality];              // charm IP cut eff
-    TH1D *fBeautyEff[kCentrality];             // beauty IP cut eff
+    TH1D *fCharmEff[kCentrality];          // charm IP cut eff
+    TH1D *fBeautyEff[kCentrality];         // beauty IP cut eff
+    TH1D *fConversionEffbgc;      // conversion IP cut eff
+    TH1D *fNonHFEEffbgc;          // nonhfe IP cut eff
     TH1D *fBSpectrum2ndMethod;             // beauty spectrum for 2nd method
     const char *fkBeauty2ndMethodfilename;      // name of file, which contains beauty spectrum for 2ndmethod
     Char_t fBeamType;             // beamtype; default -1; pp =0; PbPb=1
