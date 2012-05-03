@@ -593,7 +593,7 @@ Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
   // Float_t sumdpt = d1->Pt() + d2->Pt();
   // cout << "pt: " << sumdpt << " " << gamma->Pt() << endl;
 
-  return kTRUE;
+  return kFALSE;
 
 
 
