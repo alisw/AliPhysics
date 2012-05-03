@@ -136,5 +136,5 @@ void AliCDBMetaData::PrintMetaData() {
 		}
 	}
 	message += '\n';
-	Printf(TString::Format("**** Object's MetaData parameters **** \n%s", message.Data()));
+	Printf("**** Object's MetaData parameters **** \n%s", message.Data());
 }
