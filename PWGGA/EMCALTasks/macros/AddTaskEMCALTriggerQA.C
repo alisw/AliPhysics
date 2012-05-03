@@ -1,9 +1,5 @@
 // $Id$
-AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(
-  TString outputFile = "", 
-  Bool_t rmBadCells = kTRUE, 
-  Int_t run = 0, 
-  const char * geoname = "EMCAL_COMPLETE12SMV1")
+AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -20,43 +16,7 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(
     return NULL;
   }
     
-  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QATrigger");
-  qatrigger->SetGeometryName(geoname);
-  
-  if(rmBadCells){
-    
-    AliEMCALRecoUtils * reco = qatrigger->GetRecoUtils();
-    reco->SwitchOnRejectExoticCluster();
-    
-    // Pass the bad channels, need to access run number
-    TString fileName="$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root";
-    AliOADBContainer *contBC=new AliOADBContainer("");
-    contBC->InitFromFile((char*)fileName.Data(),"AliEMCALBadChannels"); 
-    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(run); 
-    if(arrayBC){
-      TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject("pass1");
-      if(arrayBCpass){
-        
-        reco->SwitchOnBadChannelsRemoval();
-        printf("*** EMCAL trigger QA: REMOVE bad cells \n");
-        
-        for (Int_t i=0; i<12; ++i) {
-          TH2I *hbm = reco->GetEMCALChannelStatusMap(i);
-          if (hbm)
-            delete hbm;
-          hbm=(TH2I*)arrayBCpass->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
-          
-          if (!hbm) {
-            AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
-            continue;
-          }
-          
-          hbm->SetDirectory(0);
-          reco->SetEMCALChannelStatusMap(i,hbm);
-        }
-      } else printf("trigger AliEMCALRecoUtils ---Do NOT remove bad channels 1\n");
-    }  else  printf("trigger AliEMCALRecoUtils ---Do NOT remove bad channels 2\n");
-  }
+  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QATrigger");  
   
   if(outputFile.Length()==0)outputFile = AliAnalysisManager::GetCommonFileName(); 
 

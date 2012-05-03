@@ -37,6 +37,7 @@
 #include "AliESDCaloTrigger.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliOADBContainer.h"
 
 #include "AliAnalysisTaskEMCALTriggerQA.h"
 
@@ -46,7 +47,8 @@ ClassImp(AliAnalysisTaskEMCALTriggerQA)
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA() : 
 AliAnalysisTaskSE(), 
 fOutputList(0),            fRecoUtils(0x0),
-fGeometry(0),              fGeoName(""),         
+fGeoSet(0),                fGeometry(0),         fGeoName(""), 
+fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),           
 fhNEvents(0),              fhFORAmp(0),
 fhFORAmpL1G(0),            fhFORAmpL1J(0),
 fhL0Amp(0),                fhL0AmpL1G(0),        fhL0AmpL1J(0),
@@ -131,10 +133,7 @@ fNBinsClusterE   (500),    fMaxClusterE   (200)
 
 {
   // Constructor
-  
-  fGeoName   = "EMCAL_COMPLETEV1"; 
-  fRecoUtils = new AliEMCALRecoUtils;
-  
+    
   DefineOutput(1, TList::Class());
   
 }		      
@@ -143,7 +142,8 @@ fNBinsClusterE   (500),    fMaxClusterE   (200)
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA(const char *name) : 
 AliAnalysisTaskSE(name), 
 fOutputList(0),            fRecoUtils(0x0),
-fGeometry(0),              fGeoName(""),         
+fGeoSet(0),                fGeometry(0),         fGeoName(""),   
+fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),           
 fhNEvents(0),              fhFORAmp(0),
 fhFORAmpL1G(0),            fhFORAmpL1J(0),
 fhL0Amp(0),                fhL0AmpL1G(0),        fhL0AmpL1J(0),
@@ -228,11 +228,103 @@ fNBinsClusterE   (500),    fMaxClusterE   (200)
 
 {
   // Constructor
-  
-  fGeoName   = "EMCAL_COMPLETEV1"; 
-  fRecoUtils = new AliEMCALRecoUtils;
-  
+    
   DefineOutput(1, TList::Class());
+  
+}
+
+
+//______________________________________________
+void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
+{
+  // Set the AODB  bad channels at least once
+  
+  //Set it only once
+  if(fOADBSet) return ; 
+  
+  if(fOADBFilePath == "") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;          
+  
+  Int_t   runnumber = InputEvent()->GetRunNumber() ;
+  
+  if(DebugLevel() > 0)
+    printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Get AODB parameters from EMCAL in %s for run %d\n",fOADBFilePath.Data(),runnumber);
+  
+  Int_t nSM = fGeometry->GetNumberOfSuperModules();
+  
+  // Bad map
+  if(fRecoUtils->IsBadChannelsRemovalSwitchedOn())
+  {
+    AliOADBContainer *contBC=new AliOADBContainer("");
+    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePath.Data()),"AliEMCALBadChannels"); 
+    
+    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+    
+    if(arrayBC)
+    {      
+      if(DebugLevel() > 0)
+        printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Remove EMCAL bad cells \n");
+      
+      for (Int_t i=0; i<nSM; ++i) 
+      {
+        TH2I *hbm = fRecoUtils->GetEMCALChannelStatusMap(i);
+        
+        if (hbm)
+          delete hbm;
+        
+        hbm=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+        
+        if (!hbm) 
+        {
+          AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+          continue;
+        }
+        
+        hbm->SetDirectory(0);
+        fRecoUtils->SetEMCALChannelStatusMap(i,hbm);
+        
+      } // loop
+    } else if(DebugLevel() > 0)
+      printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT remove EMCAL bad channels\n"); // run array
+  }  // Remove bad
+}  
+
+//_________________________________________
+void AliAnalysisTaskEMCALTriggerQA::Init()
+{
+  //Init analysis parameters not set before
+  
+
+  if(!fRecoUtils) 
+  {
+    fRecoUtils    = new AliEMCALRecoUtils ;
+    fRecoUtils->SwitchOnBadChannelsRemoval();
+  }
+  
+}  
+
+//_________________________________________________
+void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
+{
+  // Init geometry and set the geometry matrix, for the first event, skip the rest
+  // Also set once the run dependent calibrations
+  
+  if(fGeoSet) return;
+  
+  Int_t runnumber = InputEvent()->GetRunNumber() ;
+  
+  if (!fGeometry)
+  {
+    if(fGeoName=="")
+    {
+      if     (runnumber < 140000) fGeoName = "EMCAL_FIRSTYEARV1";
+      else if(runnumber < 171000) fGeoName = "EMCAL_COMPLETEV1";
+      else                        fGeoName = "EMCAL_COMPLETE12SMV1";  
+      if(DebugLevel() > 0)
+        printf("AliAnalysisTaskEMCALTriggerQA::InitGeometry() - Set EMCAL geometry name to <%s> for run %d\n",fGeoName.Data(),runnumber);
+    }
+    
+		fGeometry = AliEMCALGeometry::GetInstance(fGeoName);
+	} 
   
 }
 
@@ -241,9 +333,7 @@ fNBinsClusterE   (500),    fMaxClusterE   (200)
 void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects() 
 {
   // Init histograms and geometry 
-  
-  fGeometry = AliEMCALGeometry::GetInstance(fGeoName);
-  
+    
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
@@ -1017,6 +1107,10 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     AliError("Work only with ESDs, not available, exit");
     return;
   }
+  
+  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
+  
+  if(fAccessOADB) AccessOADB(); // only once
   
   //trigger configuration
   TString triggerclasses = esdEvent->GetFiredTriggerClasses();

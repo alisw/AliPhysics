@@ -25,14 +25,29 @@ public:
   
   virtual ~AliAnalysisTaskEMCALTriggerQA() { ; }     // destructor
   
+  void   Init() ;
   
-  void   UserCreateOutputObjects();    // you should create your output objects in that function if possible
+  void   LocalInit()                     { Init()                       ; }
+
+  void   UserCreateOutputObjects();    
   
-  void   UserExec(Option_t *option);   // function called for each event
+  void   UserExec(Option_t *option);   
   
-  void   SetGeometryName(TString name)  { fGeoName = name ; } 
-    
-  AliEMCALRecoUtils* GetRecoUtils()     { return fRecoUtils ; }
+  AliEMCALRecoUtils* GetRecoUtils()      { if(!fRecoUtils) fRecoUtils = new AliEMCALRecoUtils ;
+                                           else return fRecoUtils       ; }
+  
+  // OADB and geometry settings
+  
+  void   InitGeometry();
+  
+  void   SetGeometryName(TString name)   { fGeoName           = name    ; }   
+  
+  void   AccessOADB() ;
+  
+  void   SwitchOnEMCALOADB()             { fAccessOADB        = kTRUE   ; }
+  void   SwitchOffEMCALOADB()            { fAccessOADB        = kFALSE  ; }
+  
+  void   SetOADBFilePath(TString path)   { fOADBFilePath      = path    ; }
   
   //Histogram setters
   
@@ -48,8 +63,13 @@ private:
   
   AliEMCALRecoUtils *fRecoUtils;      //  RecoUtils
 
+  Bool_t            fGeoSet  ;        //  Geometry already set
   AliEMCALGeometry *fGeometry;        //  Access to EMCAL geometry utils
   TString           fGeoName;         //  Name of geometry used
+  
+  Bool_t            fOADBSet ;        //  AODB parameters already set
+  Bool_t            fAccessOADB ;     //  Get calibration from OADB for EMCAL
+  TString           fOADBFilePath ;   //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
   
   TH1F             *fhNEvents;        //! Number of selected events
   TH2F             *fhFORAmp;         //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
@@ -109,18 +129,18 @@ private:
   TH2F             *fhClusCenMaxL1GOnly;    //! Maximum E Cluster  vs Centrality  per event distribution for L1G trigger and not L1J
   TH2F             *fhClusCenMaxL1JOnly;    //! Maximum E Cluster  vs Centrality  per event distribution for L1J trigger and not L1G  
   
-  TH2F             *fhClusV0MB;            //! Clusters Centrality vs E distribution for MB trigger
-  TH2F             *fhClusV0L0;            //! Clusters Centrality vs E distribution for L0 trigger	
-  TH2F             *fhClusV0L1G;           //! Clusters Centrality vs E distribution for L1G trigger
-  TH2F             *fhClusV0L1J;           //! Clusters Centrality vs E distribution for L1J trigger
-  TH2F             *fhClusV0L1GOnly;       //! Clusters Centrality vs E distribution for L1G trigger and not L1J
-  TH2F             *fhClusV0L1JOnly;       //! Clusters Centrality vs E distribution for L1J trigger and not L1G
-  TH2F             *fhClusV0MaxMB;         //! Maximum E Cluster  vs Centrality per event distribution for MB trigger
-  TH2F             *fhClusV0MaxL0;         //! Maximum E Cluster  vs Centrality  per event distribution for L0 trigger	
-  TH2F             *fhClusV0MaxL1G;        //! Maximum E Cluster  vs Centrality  per event distribution for L1G trigger
-  TH2F             *fhClusV0MaxL1J;        //! Maximum E Cluster  vs Centrality  per event distribution for L1J trigger
-  TH2F             *fhClusV0MaxL1GOnly;    //! Maximum E Cluster  vs Centrality  per event distribution for L1G trigger and not L1J
-  TH2F             *fhClusV0MaxL1JOnly;    //! Maximum E Cluster  vs Centrality  per event distribution for L1J trigger and not L1G 
+  TH2F             *fhClusV0MB;             //! Clusters Centrality vs E distribution for MB trigger
+  TH2F             *fhClusV0L0;             //! Clusters Centrality vs E distribution for L0 trigger	
+  TH2F             *fhClusV0L1G;            //! Clusters Centrality vs E distribution for L1G trigger
+  TH2F             *fhClusV0L1J;            //! Clusters Centrality vs E distribution for L1J trigger
+  TH2F             *fhClusV0L1GOnly;        //! Clusters Centrality vs E distribution for L1G trigger and not L1J
+  TH2F             *fhClusV0L1JOnly;        //! Clusters Centrality vs E distribution for L1J trigger and not L1G
+  TH2F             *fhClusV0MaxMB;          //! Maximum E Cluster  vs Centrality per event distribution for MB trigger
+  TH2F             *fhClusV0MaxL0;          //! Maximum E Cluster  vs Centrality  per event distribution for L0 trigger	
+  TH2F             *fhClusV0MaxL1G;         //! Maximum E Cluster  vs Centrality  per event distribution for L1G trigger
+  TH2F             *fhClusV0MaxL1J;         //! Maximum E Cluster  vs Centrality  per event distribution for L1J trigger
+  TH2F             *fhClusV0MaxL1GOnly;     //! Maximum E Cluster  vs Centrality  per event distribution for L1G trigger and not L1J
+  TH2F             *fhClusV0MaxL1JOnly;     //! Maximum E Cluster  vs Centrality  per event distribution for L1J trigger and not L1G 
   
   TH2F             *fhClusEtaMB;            //! Clusters eta vs E distribution for MB trigger
   TH2F             *fhClusEtaL0;            //! Clusters eta vs E distribution for L0 trigger	
@@ -174,31 +194,31 @@ private:
   TH2F             *fhClusEtaPhiHighCellMaxCluMaxL1GOnly; //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1G trigger and not L1J, energy above 10 GeV
   TH2F             *fhClusEtaPhiHighCellMaxCluMaxL1JOnly; //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1J trigger and not L1G, energy above 10 GeV
   
-  TH2F             *fhClusEtaPhiLowMB;            //! Clusters eta vs phi distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowL0;            //! Clusters eta vs phi distribution for L0 trigger, energy below 10 GeV	
-  TH2F             *fhClusEtaPhiLowL1G;           //! Clusters eta vs phi distribution for L1G trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowL1J;           //! Clusters eta vs phi distribution for L1J trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowL1GOnly;       //! Clusters eta vs phi distribution for L1G trigger and not L1J, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowL1JOnly;       //! Clusters eta vs phi distribution for L1J trigger and not L1G, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCluMaxMB;      //! Maximum E Cluster, Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCluMaxL0;      //! Maximum E Cluster, Phi vs Eta per event distribution for L0 trigger, energy below 10 GeV	
-  TH2F             *fhClusEtaPhiLowCluMaxL1G;     //! Maximum E Cluster, Phi vs Eta per event distribution for L1G trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCluMaxL1J;     //! Maximum E Cluster, Phi vs Eta per event distribution for L1J trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCluMaxL1GOnly; //! Maximum E Cluster, Phi vs Eta per event distribution for L1G trigger and not L1J, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCluMaxL1JOnly; //! Maximum E Cluster, Phi vs Eta per event distribution for L1J trigger and not L1G, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowMB;                    //! Clusters eta vs phi distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowL0;                    //! Clusters eta vs phi distribution for L0 trigger, energy below 10 GeV	
+  TH2F             *fhClusEtaPhiLowL1G;                   //! Clusters eta vs phi distribution for L1G trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowL1J;                   //! Clusters eta vs phi distribution for L1J trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowL1GOnly;               //! Clusters eta vs phi distribution for L1G trigger and not L1J, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowL1JOnly;               //! Clusters eta vs phi distribution for L1J trigger and not L1G, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCluMaxMB;              //! Maximum E Cluster, Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCluMaxL0;              //! Maximum E Cluster, Phi vs Eta per event distribution for L0 trigger, energy below 10 GeV	
+  TH2F             *fhClusEtaPhiLowCluMaxL1G;             //! Maximum E Cluster, Phi vs Eta per event distribution for L1G trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCluMaxL1J;             //! Maximum E Cluster, Phi vs Eta per event distribution for L1J trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCluMaxL1GOnly;         //! Maximum E Cluster, Phi vs Eta per event distribution for L1G trigger and not L1J, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCluMaxL1JOnly;         //! Maximum E Cluster, Phi vs Eta per event distribution for L1J trigger and not L1G, energy below 10 GeV
   
-  TH2F             *fhClusEtaPhiLowCellMaxMB;            //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxL0;            //! Clusters maximum energy cell index eta vs phi distribution for L0 trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxL1G;           //! Clusters maximum energy cell index eta vs phi distribution for L1G trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxL1J;           //! Clusters maximum energy cell index eta vs phi distribution for L1J trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxL1GOnly;       //! Clusters maximum energy cell index eta vs phi distribution for L1G trigger and not L1J, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxL1JOnly;       //! Clusters maximum energy cell index eta vs phi distribution for L1J trigger and not L1G, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxCluMaxMB;      //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL0;      //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L0 trigger, energy below 10 GeV	
-  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1G;     //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1G trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1J;     //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1J trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1GOnly; //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1G trigger and not L1J, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1JOnly; //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1J trigger and not L1G, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxMB;             //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxL0;             //! Clusters maximum energy cell index eta vs phi distribution for L0 trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxL1G;            //! Clusters maximum energy cell index eta vs phi distribution for L1G trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxL1J;            //! Clusters maximum energy cell index eta vs phi distribution for L1J trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxL1GOnly;        //! Clusters maximum energy cell index eta vs phi distribution for L1G trigger and not L1J, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxL1JOnly;        //! Clusters maximum energy cell index eta vs phi distribution for L1J trigger and not L1G, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxCluMaxMB;       //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL0;       //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L0 trigger, energy below 10 GeV	
+  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1G;      //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1G trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1J;      //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1J trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1GOnly;  //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1G trigger and not L1J, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxCluMaxL1JOnly;  //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for L1J trigger and not L1G, energy below 10 GeV
   
   
   
@@ -226,11 +246,11 @@ private:
   // (ALTRO channels in one SM times 2 SM divided by 2 per FALTRO)
   
   
-  AliAnalysisTaskEMCALTriggerQA(const AliAnalysisTaskEMCALTriggerQA&);            //not implemented
+  AliAnalysisTaskEMCALTriggerQA           (const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
-  AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); //not implemented
+  AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 9);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 10);   
 };
 
 #endif 
