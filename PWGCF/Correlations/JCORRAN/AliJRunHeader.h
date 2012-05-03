@@ -56,6 +56,26 @@ class AliJRunHeader : public TNamed {
   Short_t  GetL3MagnetFieldPolarity()  const { return fL3MagnetPolarity;}
   Double_t GetL3MagnetFieldIntensity() const { return fMagneticFieldL3;}
 
+  //--- Alice event trigger definition by BS like "kMB", "kHighMulti"
+  const std::map<TString, ULong64_t>& GetAliceTriggerDef() const { return fAliceTriggerDef; }
+  ULong64_t GetAliceTriggerDef( const TString name ) const { return GetBitMaskDef( fAliceTriggerDef, name); }
+  void AddAliceTriggerDef( const TString name, const ULong64_t mask){ fAliceTriggerDef[name]=mask; }
+  void RemoveAliceTriggerDef( const TString name){ fAliceTriggerDef.erase(name); }
+
+  //--- Alice track FilterMap by BS like "kEsdTrackCutsL" 
+  const std::map<TString, ULong64_t>& GetAliceFilterMapDef() const { return fAliceFilterMapDef; }
+  ULong64_t GetAliceFilterMapDef( const TString name ) const { return GetBitMaskDef( fAliceFilterMapDef, name); }
+  void AddAliceFilterMapDef( const TString name, const ULong64_t mask){ fAliceFilterMapDef[name]=mask; }
+  void RemoveAliceFilterMapDef( const TString name){ fAliceFilterMapDef.erase(name); }
+
+  //--- Common Method to handle BitMask Definition ( map<TString, ULong64_t> )
+  ULong64_t GetBitMaskDef( std::map<TString, ULong64_t> def, const TString name ) const{
+    std::map<TString, ULong64_t>::iterator _iter = def.find(name);
+    //iter = def.find(name);
+    if( _iter ==  def.end() ){ return 0; }
+    else{ return _iter->second; }
+  }
+
   //-- Alice trigger table -- by Filip. "Trigger Class" like "+CMBACS2-B-NOPF-ALL"
   void SetActiveTriggersAlice( const TString *triggers);
   Int_t GetActiveTriggerBitAlice(TString TriggerName);
@@ -82,15 +102,15 @@ class AliJRunHeader : public TNamed {
   Double32_t  fMagneticFieldL3;  //Solenoid Magnetic Field in kG   
   TObjArray   fActiveTriggersAlice;   //array maping between trigger bit and trigger names
 
-  // AOD
-  TString     fFiredTriggers;       // String with fired triggers
-  ULong64_t   fTriggerMask;         // Trigger Type (mask)
-  UChar_t     fTriggerCluster;      // Trigger cluster (mask)
-
-
   Int_t       fSizeOfTableJCorran;  //size of jcorran table
+//  std::map<TString,ULong64_t> fAliceTriggerDef;  //Alice event trigger definition by BS like "kMB", "kHighMulti"
+//  std::map<TString,ULong64_t> fAliceFilterMapDef;//Alice track FilterMap by BS like "kEsdTrackCutsL"     
+
   TObjArray   fActiveTriggersJCorran;   //array maping between trigger bit and trigger names
   //TBit 0 = MB 
+  std::map<TString,ULong64_t> fAliceTriggerDef;  //Alice event trigger definition by BS like "kMB", "kHighMulti"
+  std::map<TString,ULong64_t> fAliceFilterMapDef;//Alice track FilterMap by BS like "kEsdTrackCutsL"     
+  //std::map<TString, ULong64_t>::iterator iter;
   ClassDef(AliJRunHeader,2)
 
 };
