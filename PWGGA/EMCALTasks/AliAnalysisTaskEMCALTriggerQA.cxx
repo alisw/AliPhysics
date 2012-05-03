@@ -241,7 +241,7 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
   
   //Set it only once
   if(fOADBSet) return ; 
-  
+    
   if(fOADBFilePath == "") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;          
   
   Int_t   runnumber = InputEvent()->GetRunNumber() ;
@@ -286,6 +286,9 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
     } else if(DebugLevel() > 0)
       printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT remove EMCAL bad channels\n"); // run array
   }  // Remove bad
+  
+  fOADBSet = kTRUE;
+  
 }  
 
 //_________________________________________
@@ -326,6 +329,8 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
 		fGeometry = AliEMCALGeometry::GetInstance(fGeoName);
 	} 
   
+  fGeoSet = kTRUE;
+
 }
 
 
