@@ -29,7 +29,9 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 
+#include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
 
 #include "AliVEvent.h"
 #include "AliESDInputHandler.h"
@@ -41,6 +43,7 @@
 #include "AliESDUtils.h"
 #include "AliMCParticle.h"
 #include "AliVTrack.h"
+#include "AliAODTrack.h"
 
 #include "AliFlowCandidateTrack.h"
 #include "AliFlowEvent.h"
@@ -64,6 +67,9 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   AliAnalysisTaskSE(),
   fListHist(0x0), 
   fAODAnalysis(kFALSE),
+  fUseFlagAOD(kFALSE),
+  fApplyCut(kTRUE),
+  fFlags(1<<4),
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
@@ -125,7 +131,10 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
 AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   AliAnalysisTaskSE(name),
   fListHist(0x0),
-  fAODAnalysis(kFALSE), 
+  fAODAnalysis(kFALSE),
+  fUseFlagAOD(kFALSE),
+  fApplyCut(kTRUE),
+  fFlags(1<<4), 
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
@@ -204,6 +213,9 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   AliAnalysisTaskSE(ref),
   fListHist(0x0),
   fAODAnalysis(ref.fAODAnalysis), 
+  fUseFlagAOD(ref.fUseFlagAOD),
+  fApplyCut(ref.fApplyCut),
+  fFlags(ref.fFlags),
   fVZEROEventPlane(ref.fVZEROEventPlane),
   fVZEROEventPlaneA(ref.fVZEROEventPlaneA),
   fVZEROEventPlaneC(ref.fVZEROEventPlaneC),
@@ -277,6 +289,9 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   //
   AliAnalysisTaskHFEFlow &target = dynamic_cast<AliAnalysisTaskHFEFlow &>(o);
   target.fAODAnalysis = fAODAnalysis;
+  target.fUseFlagAOD = fUseFlagAOD;
+  target.fApplyCut = fApplyCut;
+  target.fFlags = fFlags;
   target.fVZEROEventPlane = fVZEROEventPlane;
   target.fVZEROEventPlaneA = fVZEROEventPlaneA;
   target.fVZEROEventPlaneC = fVZEROEventPlaneC;
@@ -363,6 +378,16 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   //kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
   //AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
   //AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
+ 
+  // AOD or ESD
+  AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
+    SetAODAnalysis(kTRUE);
+    //printf("Put AOD analysis on\n");
+  } else {
+    SetAODAnalysis(kFALSE);
+  }
+
 
   // RP TRACK CUTS:
   fcutsRP = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
@@ -692,6 +717,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
   //if(!esd) return;
   AliCentrality *centrality = fInputEvent->GetCentrality();
+  //printf("Got the centrality\n");
   if(!centrality) return;
   cntr = centrality->GetCentralityPercentile("V0M");
   if((0.0< cntr) && (cntr<5.0)) binct = 0.5;
@@ -754,6 +780,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //////////////////////
 
   Int_t runnumber = fInputEvent->GetRunNumber();
+  //printf("Run number %d\n",runnumber);
    
   if(!fPID->IsInitialized()){
     // Initialize PID with the given run number
@@ -779,6 +806,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   // Event cut
   //////////////////
   if(!fHFECuts->CheckEventCuts("fEvRecCuts", fInputEvent)) {
+    //printf("Do not pass the event cut\n");
     PostData(1, fListHist);
     return;
   }
@@ -905,7 +933,10 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //}
   //}
 
-  if((!standardQ) || (!qsub1a) || (!qsub2a)) return;
+  if((!standardQ) || (!qsub1a) || (!qsub2a)) {
+    //printf("No event plane\n");
+    return;
+  }
 
   ///////////////////////
   // AliFlowEvent  
@@ -996,16 +1027,34 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
     if(!track) continue;
 
-    Bool_t survived = kTRUE;
-    for(Int_t icut = AliHFEcuts::kStepRecKineITSTPC; icut <= AliHFEcuts::kStepHFEcutsTRD; icut++){
-      if(!fHFECuts->CheckParticleCuts(icut + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)){
-	survived = kFALSE;
-	break;
+    if(fAODAnalysis) {
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+      if(!aodtrack){
+	AliError("AOD track is not there");
+	return;
+      }  
+      //printf("Find AOD track on\n");
+      if(fUseFlagAOD){
+	if(aodtrack->GetFlags() != fFlags) continue;  // Only process AOD tracks where the HFE is set
+	//printf("Check flag on\n");
       }
-      //printf("Pass the cut %d\n",icut);
     }
     
-    if(!survived) continue;
+    if(fApplyCut) {
+      //printf("Apply cut\n");
+      Bool_t survived = kTRUE;
+      for(Int_t icut = AliHFEcuts::kStepRecKineITSTPC; icut <= AliHFEcuts::kStepHFEcutsTRD; icut++){
+	if(!fHFECuts->CheckParticleCuts(icut + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)){
+	  survived = kFALSE;
+	  //printf("Cut %d\n",icut);
+	  break;
+	}
+	//printf("Pass the cut %d\n",icut);
+      }
+      if(!survived) continue;
+    }
+
+    //printf("Survived\n");
 
     // Apply PID
     if(!fNoPID) {

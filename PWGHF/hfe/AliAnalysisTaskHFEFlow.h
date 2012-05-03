@@ -51,6 +51,11 @@ public:
   virtual void  UserExec(Option_t */*option*/);
   virtual void  UserCreateOutputObjects();
 
+  void SetAODAnalysis(Bool_t aodAnalysis) { fAODAnalysis = aodAnalysis; };
+  void SetUseFlagAOD(Bool_t useFlagAOD) { fUseFlagAOD = useFlagAOD; }
+  void SetApplyCut(Bool_t applyCut) { fApplyCut = applyCut; }
+  void SetFlags(ULong_t flags)          { fFlags = flags; }
+  
   AliHFEpid *GetPID() const { return fPID; }
   AliHFEpidQAmanager *GetPIDQAManager() const { return fPIDqa; }
 
@@ -88,7 +93,10 @@ public:
 private:
   TList     *fListHist;         //! TH list
   Bool_t    fAODAnalysis;       // AOD analysis
-
+  Bool_t    fUseFlagAOD;        // Use the preselected AOD track
+  Bool_t    fApplyCut;       // Apply the analysis cut for AOD tracks
+  ULong_t   fFlags;             // reconstruction AOD status flags 
+  
   Bool_t    fVZEROEventPlane;  // Use Event Planes from VZERO
   Bool_t    fVZEROEventPlaneA; // Use Event Planes from VZERO A
   Bool_t    fVZEROEventPlaneC; // Use Event Planes from VZERO C
