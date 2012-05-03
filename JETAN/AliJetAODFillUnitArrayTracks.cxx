@@ -516,8 +516,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 	      // For the moment I apply MIP correction if p >= 0.5 GeV/c
 	      // and only for tracks inside EMCal acceptance
 	      // End of if(fGrid==1) -> hadron correction for all tracks
+// Temporarily commented - will be updated removing the AliAODpid dependence
+/*
 	      if (fApplyMIPCorrection != 0 && p3.Mag() >= 0.5) 
-		{ 
+		{
 		  ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETEV1",1.);
 
 		  Double_t etaOut = 0.;
@@ -533,6 +535,7 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		      unitEnergy -= hCEnergy*TMath::Sin(2.0*TMath::ATan(TMath::Exp(-eta)));
 		    } 
 		} //end Hadron Correction loop
+*/
 
 	      if((unitEnergy + pt) > 0.) uArray->SetUnitEnergy(unitEnergy + pt);
 	      else uArray->SetUnitEnergy(0.);
