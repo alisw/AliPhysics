@@ -6,6 +6,8 @@ AliHadCorrTask* AddTaskHadCorr(
   const char *outClusName    = "CaloClustersCorr",
   const Double_t hadcorr     = 1,
   const Double_t minPt       = 0.15,
+  const Double_t phiMatch    = 0.050,
+  const Double_t etaMatch    = 0.025,
   const char *outputname     = "AnalysisResults.root"
 )
 {  
@@ -34,7 +36,9 @@ AliHadCorrTask* AddTaskHadCorr(
   AliHadCorrTask *hcor = new AliHadCorrTask(name);
   hcor->SetTracksName(nTracks);
   hcor->SetClusName(nClusters);
-  hcor->SetOutClusName(outClusName);  
+  hcor->SetOutClusName(outClusName);
+  hcor->SetPhiMatch(phiMatch);
+  hcor->SetEtaMatch(etaMatch);
   hcor->SetHadCorr(hadcorr);
   hcor->SetMinPt(minPt);
 
