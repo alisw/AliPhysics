@@ -310,7 +310,7 @@ void AliTRDptrgTLMU::GetInputBits() {
   // Gets TOF-to-TRD input bits from AliTOFTrigger as Bool_t array
 
   AliTOFTrigger *toftrig = new AliTOFTrigger(); // create AliTOFTrigger 
-  toftrig->CreateLTMMatrixFromDigits(); // Generate LTMMatrix from AliTOFdigits
+  toftrig->CreateLTMMatrix(); // Generate LTMMatrix from AliTOFdigits 
   
   // prepare map  
   Bool_t** map = 0x0;
