@@ -44,7 +44,9 @@ AliFMDHistCollector::AliFMDHistCollector()
     fSumRings(0),
     fCoverage(0),
     fMergeMethod(kStraightMean),
-    fFiducialMethod(kByCut)
+    fFiducialMethod(kByCut),
+    fSkipFMDRings(0),
+    fBgAndHitMaps(false)
 {}
 
 //____________________________________________________________________
@@ -59,7 +61,9 @@ AliFMDHistCollector::AliFMDHistCollector(const char* title)
     fSumRings(0),
     fCoverage(0),
     fMergeMethod(kStraightMean),
-    fFiducialMethod(kByCut)
+    fFiducialMethod(kByCut),
+    fSkipFMDRings(0),
+    fBgAndHitMaps(false)
 {
 }
 //____________________________________________________________________
@@ -74,7 +78,9 @@ AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
     fSumRings(o.fSumRings),
     fCoverage(o.fCoverage),
     fMergeMethod(o.fMergeMethod),
-    fFiducialMethod(o.fFiducialMethod)
+    fFiducialMethod(o.fFiducialMethod),
+    fSkipFMDRings(o.fSkipFMDRings),
+    fBgAndHitMaps(o.fBgAndHitMaps)
 {}
 
 //____________________________________________________________________
@@ -108,7 +114,9 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
   fCoverage       = o.fCoverage;
   fMergeMethod    = o.fMergeMethod;
   fFiducialMethod = o.fFiducialMethod;
-
+  fSkipFMDRings   = o.fSkipFMDRings;
+  fBgAndHitMaps   = o.fBgAndHitMaps;
+  
   return *this;
 }
 
@@ -154,14 +162,17 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
 
   // Find the eta bin ranges 
   for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
-    TList*   vtxList = new TList;
+    
     Double_t vMin    = vtxAxis.GetBinLowEdge(iVz);
     Double_t vMax    = vtxAxis.GetBinUpEdge(iVz);
-    vtxList->SetName(Form("%c%02d_%c%02d", 
-			  vMin < 0 ? 'm' : 'p', int(TMath::Abs(vMin)),
-			  vMax < 0 ? 'm' : 'p', int(TMath::Abs(vMax))));
-    fList->Add(vtxList);
-
+    TList*   vtxList=0;
+    if(fBgAndHitMaps) {
+      vtxList = new TList;
+      vtxList->SetName(Form("%c%02d_%c%02d", 
+			    vMin < 0 ? 'm' : 'p', int(TMath::Abs(vMin)),
+			    vMax < 0 ? 'm' : 'p', int(TMath::Abs(vMax))));
+      fList->Add(vtxList);
+    }
     // Find the first and last eta bin to use for each ring for 
     // each vertex bin.   This is instead of using the methods 
     // provided by AliFMDAnaParameters 
@@ -169,6 +180,13 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
       UShort_t d = 0;
       Char_t   r = 0;
       GetDetRing(iIdx, d, r);
+      
+      // Skipping selected FMD rings 
+      if(d==1 && r=='I' && (fSkipFMDRings & kFMD1I)) continue;
+      if(d==2 && r=='I' && (fSkipFMDRings & kFMD2I)) continue;
+      if(d==2 && r=='O' && (fSkipFMDRings & kFMD2O)) continue;
+      if(d==3 && r=='I' && (fSkipFMDRings & kFMD3I)) continue;
+      if(d==3 && r=='O' && (fSkipFMDRings & kFMD3O)) continue;
       
       // Get the background object 
       // TH2F* bg    = pars->GetBackgroundCorrection(d,r,iVz);
@@ -197,25 +215,29 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
       // Store the result for later use 
       fFirstBins[(iVz-1)*5+iIdx] = first;
       fLastBins[(iVz-1)*5+iIdx]  = last;
-      TH2D* obg = static_cast<TH2D*>(bg->Clone(Form("secMapFMD%d%c", d, r)));
-      obg->SetDirectory(0);
-      obg->Reset();
-      vtxList->Add(obg);
-      
-      TH2D* hitmap = static_cast<TH2D*>(bg->Clone(Form("hitMapFMD%d%c", d, r)));
-      if(r == 'O') hitmap->RebinY(2);
-      hitmap->SetDirectory(0);
-      hitmap->GetZaxis()->SetTitle("");
-      hitmap->Reset();
-      vtxList->Add(hitmap);
-
+      TH2D* obg=0;
+      if(fBgAndHitMaps) {
+	obg = static_cast<TH2D*>(bg->Clone(Form("secMapFMD%d%c", d, r)));
+	obg->SetDirectory(0);
+	obg->Reset();
+	vtxList->Add(obg);
+	
+	TH2D* hitmap = static_cast<TH2D*>(bg->Clone(Form("hitMapFMD%d%c", d, r)));
+	if(r == 'O') hitmap->RebinY(2);
+	hitmap->SetDirectory(0);
+	hitmap->GetZaxis()->SetTitle("");
+	hitmap->Reset();
+	vtxList->Add(hitmap);
+      }
       // Fill diagnostics histograms 
       for (Int_t ie = first+fNCutBins; ie <= last-fNCutBins; ie++) {
 	Double_t old = fCoverage->GetBinContent(ie, iVz);
 	fCoverage->SetBinContent(ie, iVz, old+1);
-	for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) {
-	  obg->SetBinContent(ie, ip, bg->GetBinContent(ie, ip));
-	  obg->SetBinError(ie, ip, bg->GetBinError(ie, ip));
+	if(fBgAndHitMaps) {
+	  for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) {
+	    obg->SetBinContent(ie, ip, bg->GetBinContent(ie, ip));
+	    obg->SetBinError(ie, ip, bg->GetBinError(ie, ip));
+	  }
 	}
       }
     } // for j 
@@ -568,7 +590,14 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
       TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
       Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
       TH2D*       o = sums.Get(d, r);
-
+      
+      // Skipping selected FMD rings 
+      if(d==1 && r=='I' && (fSkipFMDRings & kFMD1I)) { delete t; continue; }
+      if(d==2 && r=='I' && (fSkipFMDRings & kFMD2I)) { delete t; continue; }
+      if(d==2 && r=='O' && (fSkipFMDRings & kFMD2O)) { delete t; continue; }
+      if(d==3 && r=='I' && (fSkipFMDRings & kFMD3I)) { delete t; continue; }
+      if(d==3 && r=='O' && (fSkipFMDRings & kFMD3O)) { delete t; continue; }
+      
       // Get valid range 
       Int_t first = 0;
       Int_t last  = 0;
@@ -635,9 +664,11 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 	}
       }
       // Remove temporary histogram 
-      TH2D* hRingSumVtx 
-	= static_cast<TH2D*>(vtxList->FindObject(Form("hitMapFMD%d%c", d, r)));
-      hRingSumVtx->Add(t);
+      if(fBgAndHitMaps) {
+	TH2D* hRingSumVtx 
+	  = static_cast<TH2D*>(vtxList->FindObject(Form("hitMapFMD%d%c", d, r)));
+	hRingSumVtx->Add(t);
+      }
       delete t;
     } // for r
   } // for d 
