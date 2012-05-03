@@ -62,6 +62,12 @@ AliAnalysisTaskSE(),
   fHistNtrCorrEta1vsNtrRawEta1(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
+  fHistNtrVsNchMC(0),
+  fHistNtrCorrVsNchMC(0),
+  fHistNtrVsNchMCPrimary(0),
+  fHistNtrCorrVsNchMCPrimary(0),
+  fHistNtrVsNchMCPhysicalPrimary(0),
+  fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -103,6 +109,12 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistNtrCorrEta1vsNtrRawEta1(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
+  fHistNtrVsNchMC(0),
+  fHistNtrCorrVsNchMC(0),
+  fHistNtrVsNchMCPrimary(0),
+  fHistNtrCorrVsNchMCPrimary(0),
+  fHistNtrVsNchMCPhysicalPrimary(0),
+  fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -242,6 +254,15 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",200,-0.,200.,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
   fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
   fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
+
+  fHistNtrVsNchMC = new TH2F("hNtrVsNchMC","Ntracklet vs NchMC; Nch;N_{tracklet};",200,0,200,200,0,200.); // 
+  fHistNtrCorrVsNchMC = new TH2F("hNtrCorrVsNchMC","Ntracklet vs Nch; Nch;N_{tracklet};",200,0,200,200,0,200.); // 
+  
+  fHistNtrVsNchMCPrimary = new TH2F("hNtrVsNchMCPrimary","Ntracklet vs Nch (Primary); Nch (Primary);N_{tracklet};",200,0,200,200,0,200.); // 
+  fHistNtrCorrVsNchMCPrimary = new TH2F("hNtrCorrVsNchMCPrimary","Ntracklet vs Nch (Primary); Nch(Primary) ;N_{tracklet};",200,0,200,200,0,200.); // 
+
+  fHistNtrVsNchMCPhysicalPrimary = new TH2F("hNtrVsNchMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,0,200,200,0,200.); // 
+  fHistNtrCorrVsNchMCPhysicalPrimary = new TH2F("hNtrCorrVsMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,0,200,200,0,200.); // 
   
 
   fHistNtrCorrEvSel->Sumw2();
@@ -255,6 +276,13 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fOutput->Add(fHistNtrCorrEta1vsNtrRawEta1);
   fOutput->Add(fHistNtrVsZvtx);
   fOutput->Add(fHistNtrCorrVsZvtx);
+
+  fOutput->Add(fHistNtrVsNchMC);
+  fOutput->Add(fHistNtrCorrVsNchMC);
+  fOutput->Add(fHistNtrVsNchMCPrimary);
+  fOutput->Add(fHistNtrCorrVsNchMCPrimary);
+  fOutput->Add(fHistNtrVsNchMCPhysicalPrimary);
+  fOutput->Add(fHistNtrCorrVsNchMCPhysicalPrimary);
 
   
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
@@ -433,6 +461,21 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: MC header branch not found!\n");
       return;
      }
+  
+
+    Int_t nChargedMC=AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.0,1.0);
+    Int_t nChargedMCPrimary=AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.0,1.0);
+    Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.0,1.0);
+    
+    fHistNtrVsNchMC->Fill(nChargedMC,countTreta1);
+    fHistNtrCorrVsNchMC->Fill(nChargedMC,countTreta1corr);
+
+    fHistNtrVsNchMCPrimary->Fill(nChargedMCPrimary,countTreta1);
+    fHistNtrCorrVsNchMCPrimary->Fill(nChargedMCPrimary,countTreta1corr);
+
+    fHistNtrVsNchMCPhysicalPrimary->Fill(nChargedMCPhysicalPrimary,countTreta1);
+    fHistNtrCorrVsNchMCPhysicalPrimary->Fill(nChargedMCPhysicalPrimary,countTreta1corr);
+
   }
   
   Int_t nCand = arrayCand->GetEntriesFast(); 
@@ -669,4 +712,3 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
 
   return fMultEstimatorAvg[period];
 }
-

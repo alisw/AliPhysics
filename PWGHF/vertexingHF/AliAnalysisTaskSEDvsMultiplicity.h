@@ -107,6 +107,13 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
   TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
 
+  TH2F* fHistNtrVsNchMC; //!  hist of ntracklets vs Nch (Generated)
+  TH2F* fHistNtrCorrVsNchMC; //!  hist of ntracklets vs Nch (Generated)
+  TH2F* fHistNtrVsNchMCPrimary; //!  hist of ntracklets vs Nch (Primary)
+  TH2F* fHistNtrCorrVsNchMCPrimary; //!  hist of ntracklets vs Nch (Primary)
+  TH2F* fHistNtrVsNchMCPhysicalPrimary; //!  hist of ntracklets vs Nch (Physical Primary)
+  TH2F* fHistNtrCorrVsNchMCPhysicalPrimary; //!  hist of ntracklets vs Nch (Physical Primary)
+  
   TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
@@ -141,7 +148,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fPdgMeson;   // pdg code of analyzed meson
 
   
-   ClassDef(AliAnalysisTaskSEDvsMultiplicity,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,3); // D vs. mult task
 };
 
 #endif
