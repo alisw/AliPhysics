@@ -87,6 +87,9 @@ class AliUEHist : public TObject
   void CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, Int_t var1, Int_t var2 = -1);
   void CorrectCorrelatedContamination(CFStep step1, Int_t region, TH1* trackCorrection);
   
+  void CondenseBin(THnSparse* grid, THnSparse* target, Int_t axis, Float_t targetValue);
+  void CondenseBin(CFStep step, Int_t trackAxis, Int_t eventAxis, Float_t targetValue, CFStep tmpStep = AliUEHist::kCFStepBiasStudy2);
+  
   void SetCombineMinMax(Bool_t flag) { fCombineMinMax = flag; }
   
   void SetEtaRange(Float_t etaMin, Float_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; }
