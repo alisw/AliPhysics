@@ -80,11 +80,16 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
    // Double_t CentCutMax[4]={10,20,30,40};
    // Double_t QvecCutMin[4]={0,0,0,0};
    // Double_t QvecCutMax[4]={100,100,100,100};
+   AliSpectraAODPID * pid = new AliSpectraAODPID(AODPIDType_t::kNSigmaTPCTOF);
+   pid->SetNSigmaCut(5.);
+
    for(Int_t iCut=1;iCut<2;iCut++){
      AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
      mgr->AddTask(task);
      //physics selection
      task->SelectCollisionCandidates();     
+     // set pid object
+     task->SetPID(pid);
      // Set the cuts
      AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
      AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
@@ -100,7 +105,6 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
      vcuts->SetCentralityCutMin(CentCutMin[iCut]);
      task->SetEventCuts(vcuts);
      task->SetTrackCuts(tcuts);
-     task->SetNSigmaForIdentification(5.); // FIXME
      task->SetYCut(.5);
      vcuts->PrintCuts();
      tcuts->PrintCuts();
@@ -116,6 +120,8 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
 								     Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
 	 AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
 								     Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
+	 AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
+								     Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
        }
      if (c == 1 || c==3)
        {
@@ -126,12 +132,15 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
 								     Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
 	 AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
 								     Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
+	 AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
+								     Form("Pt.AOD.1._data_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
 	 
        }
      mgr->ConnectInput(task, 0, cinput);
      mgr->ConnectOutput(task, 1, coutputpt1);
      mgr->ConnectOutput(task, 2, coutputpt2);
      mgr->ConnectOutput(task, 3, coutputpt3);
+     mgr->ConnectOutput(task, 4, coutputpt4);
    }
    mgr->SetDebugLevel(2);
    

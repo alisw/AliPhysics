@@ -16,8 +16,11 @@
 class AliAODEvent;
 class TH1F;
 class TH2F;
-class TList;
+class TH1;
+class TH2;
+//class TList;
 #include "TNamed.h"
+#include "TList.h"
 #include "Histograms.h" // Change this file if you want to add an histogram
 #include "HistogramNames.h"
 
@@ -31,6 +34,7 @@ namespace AliSpectraNameSpace
      kSpKaon,
      kSpProton,
      kNSpecies,
+     kSpUndefined,
    }; // Particle species used in plotting
 
    const char * kParticleSpecies[] =
@@ -51,6 +55,9 @@ namespace AliSpectraNameSpace
      kHistPtRecSigmaPrimary,
      kHistPtRecSigmaSecondaryMaterial,
      kHistPtRecSigmaSecondaryWeakDecay,
+     kHistNSigTPC,
+     kHistNSigTOF,
+     kHistNSigTPCTOF,
      kNHistoTypes
    }; // Types of histos
 
