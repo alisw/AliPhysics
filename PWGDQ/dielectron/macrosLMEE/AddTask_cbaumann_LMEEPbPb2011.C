@@ -27,6 +27,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(){
 
 
 //  create task and add it to the manager
+//	gSystem->AddIncludePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE");
 
 	gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/LMEECutLib.C");
 	gROOT->LoadMacro(configFile.Data());
