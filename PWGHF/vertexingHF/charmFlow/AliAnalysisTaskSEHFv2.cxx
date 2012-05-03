@@ -548,7 +548,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     Bool_t isSelBit=kTRUE;
     if(fDecChannel==0) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
     if(fDecChannel==1) isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
-    if(fDecChannel==2) isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0fromDstarCuts);
+    if(fDecChannel==2) isSelBit=kTRUE;
     if(!isSelBit)continue;
     Int_t ptbin=fRDCuts->PtBin(d->Pt());
     if(ptbin<0) {
