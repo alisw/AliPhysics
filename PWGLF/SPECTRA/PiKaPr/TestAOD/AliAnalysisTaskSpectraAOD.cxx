@@ -213,10 +213,10 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     }//end if(arrayMC)
   } // end loop on tracks
   
-  PostData(1, fHistMan);
+  PostData(1, fHistMan  );
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);
-  PostData(4, fTrackCuts);
+  PostData(4, fPID      );
 }
 
 //_________________________________________________________________

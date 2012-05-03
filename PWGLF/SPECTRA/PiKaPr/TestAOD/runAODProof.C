@@ -1,4 +1,7 @@
-void runAODProof(Int_t c=2, const char * proofMode = "full")
+#include "AliSpectraAODPID.h" 
+
+
+void runAODProof(Int_t c=1, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
@@ -25,9 +28,9 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
    handler->SetProofReset(0);
    //handler->SetROOTVersion("v5-33-02a");
    //handler->SetAliROOTVersion("v5-03-11-AN");
-   handler->SetAliROOTVersion("v5-03-16-AN");
+   handler->SetAliROOTVersion("v5-03-17-AN");
    
-   //handler->SetNproofWorkers();
+   //handler->SetNproofWorkers(2);
    handler->SetNproofWorkersPerSlave(1);
    handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
    //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
@@ -47,9 +50,15 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
      handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138662_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree");      
    }
    
+   gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
+   gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
+   gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
+   gROOT->LoadMacro("AliSpectraAODPID.cxx+g");
+   gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
+   
    handler->SetAliRootMode("default");
-   handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
-   handler->SetAnalysisSource("AliSpectraAODHistoManager.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODTrackCuts.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
+   handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
+   handler->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
    handler->SetFileForTestMode("filelist.txt"); // list of local files for testing
    //  handler->SetAliRootMode("");
    handler->SetClearPackages();
@@ -58,11 +67,6 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
    mgr->SetGridHandler(handler);
    AliAODInputHandler* aodH = new AliAODInputHandler();
    mgr->SetInputEventHandler(aodH);
-   
-   gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
-   gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
-   gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
-   gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
    
    // Add PID task
    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -82,7 +86,7 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
    // Double_t QvecCutMax[4]={100,100,100,100};
    AliSpectraAODPID * pid = new AliSpectraAODPID(AODPIDType_t::kNSigmaTPCTOF);
    pid->SetNSigmaCut(5.);
-
+   
    for(Int_t iCut=1;iCut<2;iCut++){
      AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
      mgr->AddTask(task);
@@ -93,11 +97,13 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
      // Set the cuts
      AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
      AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
-     if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
+     //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
+     if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with tight DCA
      if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
      tcuts->SetEta(.8);
      //tcuts->SetDCA(.1);
      tcuts->SetPt(5);
+     tcuts->SetY(.5);
      tcuts->SetPtTOFMatching(0.6);   
      tcuts->SetQvecMin(QvecCutMin[iCut]);   
      tcuts->SetQvecMax(QvecCutMax[iCut]);    
@@ -105,7 +111,6 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
      vcuts->SetCentralityCutMin(CentCutMin[iCut]);
      task->SetEventCuts(vcuts);
      task->SetTrackCuts(tcuts);
-     task->SetYCut(.5);
      vcuts->PrintCuts();
      tcuts->PrintCuts();
      
