@@ -2,7 +2,7 @@
 // AliAnalysisTaskDiHadronPID.h
 // ----------------------------------------------------------------------------
 // Author: Misha Veldhoen (misha.veldhoen@cern.ch)
-// Last Rev.: Apr. 12th 2012. (v 8.00)
+// Last Rev.: May 2nd 2012. (v 8.00)
 // ----------------------------------------------------------------------------
 
 #ifndef ALIANALYSISTASKDIHADRONPID_H
@@ -20,6 +20,7 @@ class TH2F;
 class TH3F;
 class TList;
 class TObjArray;
+class TClonesArray;
 class TString;
 
 class AliAODTrack;
@@ -44,6 +45,7 @@ public:
     void SetVerbose(Int_t verbose) {fVerbose=verbose;}
     void SetPrintBufferSize(Bool_t printbuffersize=kTRUE) {fPrintBufferSize=printbuffersize;}
     void SetCalculateMixedEvents(Bool_t mixedevents=kTRUE) {fCalculateMixedEvents=mixedevents;}
+    void SetMC(Bool_t mc=kTRUE) {fMC = mc;}
     void SetBeamType(TString beamtype) {
 		if ((beamtype!="pp")&&(beamtype!="PbPb")) {
 			cout<<"SetBeamType -> Beamtype must be pp or PbPb"<<endl;
@@ -60,6 +62,8 @@ public:
         fMaxEta = maxeta;
 	}
     
+    void SetMaxRapidityInInclusiveSpectra(Double_t maxrap) {fMaxRap=maxrap;}
+        
     void SetMaxPlotEta(Double_t maxploteta) {
 		if (TMath::Abs(maxploteta)>1.0) {
 			cout<<"SetMaxPlotEta -> |eta| must be < 1.0"<<endl;
@@ -162,6 +166,7 @@ private:
     Int_t ClassifyTrack(AliAODTrack* track);
 
 	Double_t PhiRange(Double_t DPhi);
+    Int_t ConvertPdgCode(Int_t pdgcode);
 	
 private:
 	// PID object.
@@ -174,7 +179,8 @@ private:
 	
 	AliAODTrack			*fAODTrack;                 //! Current AOD Track.
 
-	TObjArray			*fGlobalTracks;              //! Partner Tracks.
+	TObjArray			*fGlobalTracks;             //! Partner Tracks.
+	TClonesArray		*fMCTracks;					//! MC tracks, indexed by their track label.
 	
 	// HISTOGRAMS.
 
@@ -200,7 +206,7 @@ private:
     TH1F                *fEtaSpectrumTrig;          //! eta spectrum of triggers (pT > 5.0 tracks, trigger track cuts.)
     TH2F                *fEtaSpectrumAssoc;         //! eta spectrum of associateds as a function of pT
     TH2F                *fPhiSpectrumAssoc;         //! phi spectrum of associateds as a function of pT
-
+    
 	// PID QA plots.
 	TH2F				*fTPCnSigmaProton;          //! TPC nSigma plot for Protons.
 	TH2F				*fTOFnSigmaProton;          //! TOF nSigma plot for Protons.
@@ -211,21 +217,43 @@ private:
 	
 	TH3F				*fTPCSignal;				//! TPC signal (pt,eta).
 	TH3F				*fTOFSignal;				//! TOF signal (pt,eta).
-    	
-	// Di-Hadron Correlations with TPC and TOF signals.
+    TH3F                *fInclusiveTPCTOF[3][10];   //! inclusive TPC-TOF histogram as a function of pT (and eta)
+    TH3F                *fInclusiveTPCTOFRap[3][10];//! inclusive TPC-TOF histogram as a function of pT and rapidity, with additional rapidity cut.
+    
+	// Efficiency Plots (Monte Carlo)
+	TH2F				*fPtEtaDistrDataPrim[6];	//! pT distribution of physical primaries [species: pi+,pi-,K+,K-,p,pbar].
+	TH2F				*fPtEtaDistrDataSec[6];		//! 
+
+	TH2F				*fPtRapDistrDataPrimRapCut[6];//! pT distribution of physical primaries [species: pi+,pi-,K+,K-,p,pbar].
+	TH2F				*fPtRapDistrDataSecRapCut[6];//! with an additional rapidity cut.
+	    
+	TH2F				*fPtEtaDistrMCPrim[6];		//! pT distribution of MCParticles. [species: pi+,pi-,K+,K-,p,pbar].
+	TH2F				*fPtEtaDistrMCSec[6];		//! 
+
+    TH2F				*fPtRapDistrMCPrimRapCut[6];//! pT distribution of MCParticles. [species: pi+,pi-,K+,K-,p,pbar].
+	TH2F				*fPtRapDistrMCSecRapCut[6];	//! with an additional rapidity cut.
+    
+	TH3F				*fDiHadronMC[6];			//! DPhiDEta Plot per species [species]
+	
+	// Di-Hadron Correlations.
+	TH3F				*fDiHadron;					//! regular di-hadron correlation, accepting all associateds.
 	THnSparseF			*fDiHadronTPCTOF[3][10];	//! Di-Hadron correlations with both TPC and TOF signal.
 
     // Mixed Events.
     TH3F				*fMixedEvents;              //! Mixed Events, associated track cuts.
-    
+    //TH3F 				*fMixedEventsTPCTOFCut[3];	//! For every species seperately we keep track of mixed events.
+	THnSparseF			*fMixedEventsTPCTOF[3][10];	//!
+	
 	// List of Histograms.
 	TList			    *fHistoList;                //! List of Histograms.
 	
 	// Analysis Task Configuration Variables.
     Bool_t              fCalculateMixedEvents;      // 
-	TString				fBeamType;					// pp or PbPb
+	TString				fBeamType;                  // pp or PbPb
+    Bool_t              fMC;                        // runs over MC.
 	Double_t			fMaxEta;                    // Q: Do we need to take extra care of the binning?
     Double_t            fMaxPlotEta;                //
+    Double_t            fMaxRap;                    // Max rapidity, applied to the inclusive spectra.
     Double_t            fMaxPt;                     //
     Int_t               fNEtaBins;                  // Number of bins in eta
     Int_t               fNPhiBins;                  // Number of bins in phi
