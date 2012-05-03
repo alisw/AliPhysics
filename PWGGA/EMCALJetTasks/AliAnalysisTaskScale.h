@@ -5,9 +5,7 @@
 
 class TList;
 class TH1F;
-class TH1I;
 class TH2F;
-class AliESDEvent;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -20,11 +18,11 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
   AliAnalysisTaskScale(const char *name);
   virtual ~AliAnalysisTaskScale() {}
   
-  virtual void   UserCreateOutputObjects();
-  virtual void   UserExec(Option_t *option);
-  virtual void   Terminate(Option_t *);
-  virtual void   SetTracksName(const char *n)    { fTracksName   = n; }
-  virtual void   SetClustersName(const char *n)  { fClustersName = n; }
+  virtual void           UserCreateOutputObjects();
+  virtual void           UserExec(Option_t *option);
+  virtual void           Terminate(Option_t *);
+  virtual void           SetTracksName(const char *n)    { fTracksName   = n; }
+  virtual void           SetClustersName(const char *n)  { fClustersName = n; }
   
  private:
   TString                fTracksName;             // name of track collection
