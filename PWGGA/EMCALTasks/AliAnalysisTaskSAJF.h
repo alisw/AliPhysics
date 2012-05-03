@@ -7,10 +7,10 @@ class TClonesArray;
 class TString;
 class AliVTrack;
 class AliVCluster;
+class AliEmcalJet;
 class TList;
 class TH1F;
 class TH2F;
-class AliEmcalJet;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -31,12 +31,13 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        UserExec(Option_t *option);
   void                        Terminate(Option_t *option);
 
-  void                        SetClusName(const char *n)                    { fCaloName      = n          ; }
-  void                        SetJetsName(const char *n)                    { fJetsName      = n          ; }
-  void                        SetKtJetsName(const char *n)                  { fKtJetsName    = n          ; }
-  void                        SetTracksName(const char *n)                  { fTracksName    = n          ; }
-  void                        SetTrgClusName(const char *n)                 { fTrgClusName   = n          ; }
-  void                        SetAnaType(SAJFAnaType type)                  { fAnaType       = type       ; }
+  void                        SetClusName(const char *n)                           { fCaloName      = n          ; }
+  void                        SetJetsName(const char *n)                           { fJetsName      = n          ; }
+  void                        SetKtJetsName(const char *n)                         { fKtJetsName    = n          ; }
+  void                        SetTracksName(const char *n)                         { fTracksName    = n          ; }
+  void                        SetTrgClusName(const char *n)                        { fTrgClusName   = n          ; }
+  void                        SetAnaType(SAJFAnaType type)                         { fAnaType       = type       ; }
+  void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinPt = min; fMaxPt = max; }
 
  protected:
 
@@ -57,47 +58,48 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)    const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)   const;
   Float_t                     GetArea()                        const;
+  void                        DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex);
+  Float_t                     DoKtJetLoop();
+  Float_t                     DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex);
+  Float_t                     DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex);
 
 
-  SAJFAnaType                 fAnaType;                // analysis type
-  TList                      *fOutput;                 // Output list
-  TString                     fTracksName;             // name of track collection
-  TString                     fCaloName;               // name of calo cluster collection
-  TString                     fJetsName;               // name of jet collection
-  TString                     fKtJetsName;             // name of kt jet collection
-  TString                     fTrgClusName;            // name of trg clus name
-  TClonesArray               *fTracks;                 //!Tracks
-  TClonesArray               *fCaloClusters;           //!Clusters
-  TClonesArray               *fJets;                   //!Jets
-  TClonesArray               *fKtJets;                 //!Kt Jets
-  TClonesArray               *fTrgClusters;            //!Trg Clusters
-  AliCentrality              *fCent;                   // Event centrality
-  TH1F                       *fHistCentrality;         // Event centrality distribution
-  TH2F                       *fHistJetPhiEta;          // Phi-Eta distribution of jets
-  TH2F                       *fHistRhoClusVSleadJetE;  // Background energy density of clusters vs. leading jet energy
-  TH2F                       *fHistRhoTracksVSleadJetE;// Background pt density of tracks vs. leading jet energy
-  TH1F                       *fHistJetsE[4];           // Jet energy spectrum
-  TH1F                       *fHistJetsNE[4];          // Jet neutral energy spectrum
-  TH1F                       *fHistJetsNEF[4];         // Jet neutral energy fraction
-  TH1F                       *fHistJetsZ[4];           // Constituent Pt over Jet E ratio
-  TH1F                       *fHistLeadingJetE[4];     // Leading jet energy spectrum
-  TH1F                       *fHist2LeadingJetE[4];    // Second leading jet energy spectrum
-  TH1F                       *fHistTracksPtLJ[4];      // Pt spectrum of tracks
-  TH1F                       *fHistClusELJ[4];         // Energy spectrum of clusters
-  TH1F                       *fHistTracksPtBkg[4];     // Pt spectrum of tracks
-  TH1F                       *fHistClusEBkg[4];        // Energy spectrum of clusters
-  TH1F                       *fHistBkgClusPhiCorr[4];  // Background clusters phi correlations
-  TH1F                       *fHistBkgTracksPhiCorr[4];// Background tracks phi correlations
-  TH1F                       *fHistBkgClusMeanRho[4];  // Background clusters mean energy density
-  TH1F                       *fHistBkgTracksMeanRho[4];// Background tracks mean pt density
-  TH1F                       *fHistBkg2JetPhiCorr[4];  // Background tracks/cluster phi correlation with leading jet
-  TH1F                       *fHistMedianEnergyKt[4];  // Median of the energy of kt jets, excluded the 2 most energetic
-  Int_t                       Ptbins;                  // No. of pt bins
-  Float_t                     Ptlow;                   // Min pt
-  Float_t                     Ptup;                    // Max pt
-  Int_t                       Ebins;                   // No. of e bins
-  Float_t                     Elow;                    // Min e
-  Float_t                     Eup;                     // Max e
+  SAJFAnaType                 fAnaType;                    // analysis type
+  TList                      *fOutput;                     // Output list
+  TString                     fTracksName;                 // name of track collection
+  TString                     fCaloName;                   // name of calo cluster collection
+  TString                     fJetsName;                   // name of jet collection
+  TString                     fKtJetsName;                 // name of kt jet collection
+  TString                     fTrgClusName;                // name of trg clus name
+  TClonesArray               *fTracks;                     //!Tracks
+  TClonesArray               *fCaloClusters;               //!Clusters
+  TClonesArray               *fJets;                       //!Jets
+  TClonesArray               *fKtJets;                     //!Kt Jets
+  TClonesArray               *fTrgClusters;                //!Trg Clusters
+  AliCentrality              *fCent;                       // Event centrality
+  Int_t                       fCentBin;                    // Event centrality bin
+  TH1F                       *fHistCentrality;             // Event centrality distribution
+  TH2F                       *fHistJetPhiEta;              // Phi-Eta distribution of jets
+  TH2F                       *fHistRhoPartVSleadJetPt;     // Background et density of particles (clusters+tracks) vs. leading jet pt
+  TH2F                       *fHistMedKtVSRhoPart;         // Median of the pt density of kt jets vs. background pt density of particles
+  TH1F                       *fHistJetsPt[4];              // Jet pt spectrum
+  TH1F                       *fHistJetsNEF[4];             // Jet neutral energy fraction
+  TH1F                       *fHistJetsZ[4];               // Constituent Pt over Jet Pt ratio
+  TH1F                       *fHistLeadingJetPt[4];        // Leading jet pt spectrum
+  TH1F                       *fHist2LeadingJetPt[4];       // Second leading jet pt spectrum
+  TH1F                       *fHistTracksPtLJ[4];          // Pt spectrum of tracks
+  TH1F                       *fHistClusEtLJ[4];            // Et spectrum of clusters
+  TH1F                       *fHistTracksPtBkg[4];         // Pt spectrum of tracks
+  TH1F                       *fHistClusEtBkg[4];           // Et spectrum of clusters
+  TH1F                       *fHistBkgClusPhiCorr[4];      // Background clusters phi correlations
+  TH1F                       *fHistBkgTracksPhiCorr[4];    // Background tracks phi correlations
+  TH1F                       *fHistBkgClusMeanRho[4];      // Background clusters mean et density
+  TH1F                       *fHistBkgTracksMeanRho[4];    // Background tracks mean pt density
+  TH1F                       *fHistBkgLJetPhiCorr[4];      // Background particles phi correlation with leading jet
+  TH1F                       *fHistMedianPtKtJet[4];       // Median of the pt density of kt jets, excluded the 2 most energetic
+  Int_t                       fNbins;                      // No. of pt bins
+  Float_t                     fMinPt;                      // Min pt
+  Float_t                     fMaxPt;                      // Max pt
 
  private:
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
