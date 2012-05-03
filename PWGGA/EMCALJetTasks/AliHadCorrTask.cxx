@@ -30,6 +30,8 @@ AliHadCorrTask::AliHadCorrTask() :
   fTracksName(),
   fCaloName(),
   fOutCaloName(),
+  fPhiMatch(0.05),
+  fEtaMatch(0.025),
   fHadCorr(0),
   fMinPt(0.15),
   fOutClusters(0),
@@ -43,12 +45,16 @@ AliHadCorrTask::AliHadCorrTask() :
 {
   // Default constructor.
 
-  for(Int_t i=0; i<4; ++i) {
-    fHistMatchEvsP[i]   = 0;
-    fHistMatchdRvsEP[i] = 0;
-    for(Int_t j=0; j<5; ++j) 
+  for(Int_t i=0; i<8; i++) {
+    if (i<4) {
+      fHistMatchEvsP[i]   = 0;
+      fHistMatchdRvsEP[i] = 0;
+      fHistEsubPch[i]     = 0;
+    }
+    for(Int_t j=0; j<5; j++) {
       fHistMatchEtaPhi[i][j] = 0;
-  }
+    }
+  } 
 }
 
 //________________________________________________________________________
@@ -57,6 +63,8 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fOutCaloName("CaloClustersCorr"),
+  fPhiMatch(0.05),
+  fEtaMatch(0.025),
   fHadCorr(0),
   fMinPt(0.15),
   fOutClusters(0),
@@ -70,12 +78,16 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
 {
   // Standard constructor.
 
-  for(Int_t i=0; i<4; ++i) {
-    fHistMatchEvsP[i]   = 0;
-    fHistMatchdRvsEP[i] = 0;
-    for(Int_t j=0; j<5; ++j) 
+   for(Int_t i=0; i<8; i++) {
+    if (i<4) {
+      fHistMatchEvsP[i]=0;
+      fHistMatchdRvsEP[i]=0;
+      fHistEsubPch[i]=0;
+    }
+    for(Int_t j=0; j<5; j++) {
       fHistMatchEtaPhi[i][j] = 0;
-  }
+    }
+  } 
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 
@@ -152,20 +164,26 @@ void AliHadCorrTask::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner();
 
-  for(Int_t icent=0; icent<4; ++icent) {
-    for(Int_t ipt=0; ipt<5; ++ipt){
+  for(Int_t icent=0; icent<8; ++icent) {
+    for(Int_t ipt=0; ipt<5; ++ipt) {
       TString name(Form("fHistMatchEtaPhi_%i_%i",icent,ipt));
       fHistMatchEtaPhi[icent][ipt] = new TH2F(name, name, 400, -0.2, 0.2, 1600, -0.8, 0.8);
       fOutputList->Add(fHistMatchEtaPhi[icent][ipt]);
     }
 
-    TString name(Form("fHistMatchEvsP_%i",icent));
-    fHistMatchEvsP[icent] = new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
-    fOutputList->Add(fHistMatchEvsP[icent]);
+    if(icent<4){
+      TString name(Form("fHistMatchEvsP_%i",icent));
+      fHistMatchEvsP[icent] = new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
+      fOutputList->Add(fHistMatchEvsP[icent]);
 
-    name = Form("fHistMatchdRvsEP_%i",icent);
-    fHistMatchdRvsEP[icent] = new TH2F(name, name, 1000, 0., 1., 1000, 0., 10.);
-    fOutputList->Add(fHistMatchdRvsEP[icent]);
+      name = Form("fHistMatchdRvsEP_%i",icent);
+      fHistMatchdRvsEP[icent] = new TH2F(name, name, 1000, 0., 1., 1000, 0., 10.);
+      fOutputList->Add(fHistMatchdRvsEP[icent]);
+
+      name = Form("fHistEsubPch_%i",icent);
+      fHistEsubPch[icent]=new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
+      fOutputList->Add(fHistEsubPch[icent]);
+    }
   }
 
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
@@ -225,6 +243,7 @@ void AliHadCorrTask::UserExec(Option_t *)
   TClonesArray *tracks = 0;
   TClonesArray *clus   = 0;
   TList *l = InputEvent()->GetList();
+ 
   tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
   if (!tracks) {
     AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
@@ -243,6 +262,7 @@ void AliHadCorrTask::UserExec(Option_t *)
   // loop over clusters and tracks
   const Int_t Nclus = clus->GetEntries();
   const Int_t Ntrks = tracks->GetEntries();
+ 
   for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
     AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
     if (!c)
@@ -279,7 +299,6 @@ void AliHadCorrTask::UserExec(Option_t *)
         continue;
       if (track->Pt()<fMinPt)
         continue;
-
       Double_t etadiff=999;
       Double_t phidiff=999;
       AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
@@ -290,15 +309,19 @@ void AliHadCorrTask::UserExec(Option_t *)
         dRmin = dR;
         imin = t;
       }
+ 
       if (fHadCorr>1) {
         Double_t mom = track->P();
         Int_t mombin = GetMomBin(mom);
+	Int_t centbinch = centbin;
+	if (track->Charge()==-1) 
+          centbinch += 4;
         if (mombin>-1) {
-          fHistMatchEtaPhi[centbin][mombin]->Fill(etadiff,phidiff);
-          fHistMatchdRvsEP[centbin]->Fill(dR,energyclus/mom);
+          fHistMatchEtaPhi[centbinch][mombin]->Fill(etadiff,phidiff);
+          fHistMatchdRvsEP[centbinch]->Fill(dR,energyclus/mom);
         }
       }
-      if (TMath::Abs(phidiff)<0.05 && TMath::Abs(etadiff)<0.025) { // pp cuts!!!
+      if (TMath::Abs(phidiff)<fPhiMatch && TMath::Abs(etadiff)<fEtaMatch) {
         ++Nmatches;
         totalTrkP += track->P();
       }
@@ -320,9 +343,13 @@ void AliHadCorrTask::UserExec(Option_t *)
       // to subtract all tracks within the cut set fHadCor to %+1
       if (fHadCorr>1) {
         if (totalTrkP>0) {
-          Double_t EoP = energyclus/totalTrkP;
+          Double_t EoP  = energyclus/totalTrkP;
+	  Double_t Esub = (fHadCorr-1)*totalTrkP;
+	  if (Esub>energyclus) 
+            Esub = energyclus;
           fHistEoPCent->Fill(cent,EoP);
           fHistMatchEvsP[centbin]->Fill(energyclus,EoP);
+	  fHistEsubPch[centbin]->Fill(totalTrkP,Esub/totalTrkP);
         }
         energyclus -= (fHadCorr-1)*totalTrkP;
       } else if (imin>=0) {
@@ -330,13 +357,16 @@ void AliHadCorrTask::UserExec(Option_t *)
         if (t) {
           Double_t mom = t->P();
           Int_t mombin = GetMomBin(mom);
-          fHistMatchEtaPhi[centbin][mombin]->Fill(dEtaMin,dPhiMin);
+          Int_t centbinch = centbin;
+          if (t->Charge()==-1) 
+            centbinch += 4;
+          fHistMatchEtaPhi[centbinch][mombin]->Fill(dEtaMin,dPhiMin);
           if (mom>0){
             fHistMatchEvsP[centbin]->Fill(energyclus,energyclus/mom);
             fHistEoPCent->Fill(cent,energyclus/mom);
             fHistMatchdRvsEP[centbin]->Fill(dRmin,energyclus/mom);
           }
-          if (TMath::Abs(dPhiMin)<0.05 && TMath::Abs(dEtaMin)<0.025) { // pp cuts!!!
+          if (TMath::Abs(dPhiMin)<fPhiMatch && TMath::Abs(dEtaMin)<fEtaMatch) {
             energyclus -= fHadCorr*t->P();
           }
         }
