@@ -41,7 +41,8 @@ using namespace std;
 ClassImp(AliSpectraAODTrackCuts)
 
 
-AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fTrack(0)
+AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
+ fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fTrack(0)
 
 {
    // Constructor
@@ -53,6 +54,7 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
    fPtCutTOFMatching=0.6; //default value fot matching with TOF
    fQvecCutMin = -100000.0; // default value of qvec cut ~ no cut 
    fQvecCutMax = 100000.0; // default value of qvec cut ~ no cut 
+   fYCut       = 100000.0; // default value of y cut ~ no cut 
    
 }
 
@@ -85,6 +87,17 @@ Bool_t AliSpectraAODTrackCuts::CheckEtaCut()
    if (fTrack->Eta() < fEtaCut && fTrack->Eta() > - fEtaCut) return kTRUE;
    fHistoCuts->Fill(kTrkEta);
    return kFALSE;
+}
+
+Bool_t AliSpectraAODTrackCuts::CheckYCut(AODParticleSpecies_t species) 
+{
+  // check if the rapidity is within the set range
+  Double_t y;
+  if (species == kSpProton) { y = fTrack->Y(9.38271999999999995e-01); }
+  if ( species == kSpKaon ) { y = fTrack->Y(4.93676999999999977e-01); }
+  if ( species == kSpPion)  { y = fTrack->Y(1.39570000000000000e-01); }
+  if (TMath::Abs(y) > fYCut || y < -998.) return kFALSE;
+  return kTRUE;
 }
 //_______________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckDCACut()

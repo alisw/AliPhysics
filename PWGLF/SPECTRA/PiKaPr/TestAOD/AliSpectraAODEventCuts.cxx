@@ -136,3 +136,34 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
   return count+1;
 }
 
+/// FIXME: Q vector
+  // //Selection on QVector, before ANY other selection on the event
+  // //Spectra MUST be normalized wrt events AFTER the selection on Qvector
+  // // Can we include this in fEventCuts
+  // Double_t Qx2EtaPos = 0, Qy2EtaPos = 0;
+  // Double_t Qx2EtaNeg = 0, Qy2EtaNeg = 0;
+  // Int_t multPos = 0;
+  // Int_t multNeg = 0;
+  // for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
+  //   AliAODTrack* aodTrack = fAOD->GetTrack(iT);
+  //   if (!fTrackCuts->IsSelected(aodTrack)) continue;
+  //   if (aodTrack->Eta() >= 0){
+  //     multPos++;
+  //     Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
+  //     Qy2EtaPos += TMath::Sin(2*aodTrack->Phi());
+  //   } else {
+  //     multNeg++;
+  //     Qx2EtaNeg += TMath::Cos(2*aodTrack->Phi()); 
+  //     Qy2EtaNeg += TMath::Sin(2*aodTrack->Phi());
+  //   }
+  // } 
+  // Double_t qPos=-999;
+  // if(multPos!=0)qPos= TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
+  // Double_t qNeg=-999;
+  // if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
+  
+  // if((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax()) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax())){
+
+  //fill q distributions vs centrality, after all event selection
+  // fHistMan->GetqVecHistogram(kHistqVecPos)->Fill(qPos,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution
+  // fHistMan->GetqVecHistogram(kHistqVecNeg)->Fill(qNeg,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution

@@ -3,6 +3,7 @@ void runAODProof(Int_t c, const char * proofMode = "full")
 
    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
 
+   gSystem->Load("libMinuit.so");
    gSystem->Load("libTree.so");
    gSystem->Load("libGeom.so");
    gSystem->Load("libVMC.so");
@@ -20,9 +21,10 @@ void runAODProof(Int_t c, const char * proofMode = "full")
    handler->SetOverwriteMode();
    handler->SetRunMode(proofMode);
    handler->SetProofReset(0);
-   handler->SetAliROOTVersion("v4-21-29-AN");
+   handler->SetAliROOTVersion("v5-02-20-AN");
 
-   handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
+   //   handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
+   handler->SetProofCluster("alice-caf.cern.ch");
 //   handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
 
    // Set handler for Real DATA:

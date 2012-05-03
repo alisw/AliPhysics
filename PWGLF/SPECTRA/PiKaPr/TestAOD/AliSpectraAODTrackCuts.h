@@ -14,8 +14,11 @@
 
 class AliAODEvent;
 class AliSpectraAODHistoManager;
-
+#include "AliAODMCParticle.h"
+#include "AliSpectraAODHistoManager.h"
 #include "TNamed.h"
+
+using namespace AliSpectraNameSpace;
 
 class AliSpectraAODTrackCuts : public TNamed
 {
@@ -29,11 +32,12 @@ public:
    AliSpectraAODTrackCuts(const char *name);
    virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
 
-   Bool_t IsSelected(AliAODTrack * track);
+  Bool_t IsSelected(AliAODTrack * track);
 
    void SetTrackType(UInt_t bit);
    Bool_t CheckTrackType();
    Bool_t CheckEtaCut();
+   Bool_t CheckYCut(AODParticleSpecies_t specie); // not included in standard cuts
    Bool_t CheckDCACut();
    Bool_t CheckPCut();
    Bool_t CheckPtCut();
@@ -46,10 +50,12 @@ public:
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
    void SetPt(Float_t pt)     { fPtCut = pt; }
+   void SetY(Float_t y) { fYCut = y;}
    void SetPtTOFMatching(Float_t pt)     { fPtCutTOFMatching = pt; }
    void SetQvecMin(Float_t qvecmin)     { fQvecCutMin = qvecmin; }
    void SetQvecMax(Float_t qvecmax)     { fQvecCutMax = qvecmax; }
    Float_t GetEta()       const    { return fEtaCut; }
+   Float_t GetY()         const    { return fYCut; }
    Float_t GetDCA()       const    { return fDCACut; }
    Float_t GetP()         const    { return fPCut; }
    Float_t GetPt()        const    { return fPtCut; }
@@ -62,18 +68,19 @@ public:
    
  private:
    
-   Bool_t         fIsSelected;      // True if cuts are selected
-   UInt_t         fTrackBits;       // Type of track to be used
-   Float_t        fEtaCut;          // Allowed absolute maximum value of Eta
-   Float_t        fDCACut;          // Maximum value of DCA
-   Float_t        fPCut;            // Maximum value of P
-   Float_t        fPtCut;           // Maximum value of Pt
-   Float_t        fPtCutTOFMatching;           // TOF Matching
-   Float_t        fQvecCutMin;           // Minimum value of Qvec, done in the analysis task
-   Float_t        fQvecCutMax;           // Minimum value of Qvec, done in the analysis task
-   
-   TH1I *         fHistoCuts;       // Cuts statistics
-   AliAODTrack *  fTrack;           //! Track pointer
+   Bool_t           fIsSelected;      // True if cuts are selected
+   UInt_t           fTrackBits;       // Type of track to be used
+   Float_t          fEtaCut;          // Allowed absolute maximum value of Eta
+   Float_t          fDCACut;          // Maximum value of DCA
+   Float_t          fPCut;            // Maximum value of P
+   Float_t          fPtCut;           // Maximum value of Pt
+   Float_t          fYCut;           // Maximum value of Y
+   Float_t          fPtCutTOFMatching;           // TOF Matching
+   Float_t          fQvecCutMin;           // Minimum value of Qvec
+   Float_t          fQvecCutMax;           // Minimum value of Qvec
+   AliPIDResponse   *fPIDResponse; // PID response  
+   TH1I             *fHistoCuts;       // Cuts statistics
+   AliAODTrack      *fTrack;           //! Track pointer
    
    AliSpectraAODTrackCuts(const AliSpectraAODTrackCuts&);
    AliSpectraAODTrackCuts& operator=(const AliSpectraAODTrackCuts&);

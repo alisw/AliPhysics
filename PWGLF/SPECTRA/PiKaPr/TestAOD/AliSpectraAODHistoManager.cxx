@@ -250,6 +250,11 @@ TH1* AliSpectraAODHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particle
   // GetHistogram using particle ID and histogram type
   Int_t baseId = -1;
 
+  if (particleType == kSpUndefined) {
+    AliError ("Trying to get histo for undefined particle");
+    return 0;
+  }
+
   switch(histoType) {
   case kHistPtGenTruePrimary:
     baseId = kHistPtGenTruePrimaryPionPlus;
@@ -268,6 +273,15 @@ TH1* AliSpectraAODHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particle
     break;
   case kHistPtRecSigmaSecondaryWeakDecay:
     baseId = kHistPtRecSigmaSecondaryWeakDecayPionPlus;
+    break;
+  case kHistNSigTPC:
+    baseId = kHistNSigPionTPC;
+    break;
+  case kHistNSigTOF:
+    baseId = kHistNSigPionTOF;
+    break;
+  case kHistNSigTPCTOF:
+    baseId = kHistNSigPionTPCTOF;
     break;
   default:
     baseId = -1;
