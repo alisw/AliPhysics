@@ -41,11 +41,11 @@ AliJRunHeader::AliJRunHeader():
     fL3MagnetPolarity(0),
     fMagneticFieldL3(0),
     fActiveTriggersAlice(),
-    fFiredTriggers(), 
-    fTriggerMask(0), 
-    fTriggerCluster(0), 
     fSizeOfTableJCorran(0),
-    fActiveTriggersJCorran()
+//    fAliceTriggerDef(), 
+    fActiveTriggersJCorran(), 
+    fAliceTriggerDef(), 
+    fAliceFilterMapDef()
 {                     //constructor
 
   for(Int_t i=0;i<kRangeTriggerTableAlice;i++){
@@ -70,11 +70,11 @@ AliJRunHeader::AliJRunHeader(const AliJRunHeader& ap):
     fL3MagnetPolarity(ap.fL3MagnetPolarity),
     fMagneticFieldL3(ap.fMagneticFieldL3),  
     fActiveTriggersAlice(ap.fActiveTriggersAlice),       
-    fFiredTriggers(ap.fFiredTriggers), 
-    fTriggerMask(ap.fTriggerMask), 
-    fTriggerCluster(ap.fTriggerCluster), 
     fSizeOfTableJCorran(ap.fSizeOfTableJCorran),
-    fActiveTriggersJCorran(ap.fActiveTriggersJCorran)
+//    fAliceTriggerDef(ap.fAliceTriggerDef), 
+    fActiveTriggersJCorran(ap.fActiveTriggersJCorran), 
+    fAliceTriggerDef(ap.fAliceTriggerDef), 
+    fAliceFilterMapDef(ap.fAliceFilterMapDef)
 {
   //cpy ctor
 }
@@ -142,11 +142,10 @@ AliJRunHeader& AliJRunHeader::operator=(const  AliJRunHeader& header){
     fL3MagnetPolarity = header.fL3MagnetPolarity;
     fMagneticFieldL3  = header.fMagneticFieldL3;
     fActiveTriggersAlice   = header.fActiveTriggersAlice;
-    fFiredTriggers    = header.fFiredTriggers;
-    fTriggerMask      = header.fTriggerMask;
-    fTriggerCluster   =  header.fTriggerCluster;
     fSizeOfTableJCorran    = header.fSizeOfTableJCorran;
     fActiveTriggersJCorran = header.fActiveTriggersJCorran;
+    fAliceTriggerDef       = header.fAliceTriggerDef; 
+    fAliceFilterMapDef     = header.fAliceFilterMapDef;
   }
   return *this;
 }

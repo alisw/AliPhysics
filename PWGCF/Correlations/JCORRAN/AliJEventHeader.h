@@ -68,9 +68,6 @@ class AliJEventHeader : public AliJBaseEventHeader {
   void SetVtxMult(Int_t m){ fVtxMult = m; };//FK// EFF
   void SetCentralityArray(UInt_t it, Float_t cen ){ if( it < kcNTYPE ) fCentralityArray[it]=cen; }
 
-  TString GetFiredTriggers(){ return fFiredTriggers; }
-  void SetFiredTriggers(TString s){ fFiredTriggers=s; }
-
   AliJEventHeader&  operator=(const AliJEventHeader& header);
 
  private:
@@ -80,7 +77,6 @@ class AliJEventHeader : public AliJBaseEventHeader {
   Int_t       fSPDTrackletMult;             //SPD tracklet multiplicity
   Double32_t   fV0Mult;                   // VZERO multiplicity
   UInt_t      fEventType;                 // Type of Event
-  TString     fFiredTriggers;       // String with fired triggers from AOD
   Int_t       fVtxMult;                   //FK// EFF number of vertex contributors 
   Double32_t  fCentralityArray[kcNTYPE];  //?//
 

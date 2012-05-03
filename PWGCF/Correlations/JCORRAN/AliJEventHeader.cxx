@@ -40,7 +40,6 @@ AliJEventHeader::AliJEventHeader():
     fSPDTrackletMult(-999),
     fV0Mult(-999),
     fEventType(0),
-    fFiredTriggers(), 
     fVtxMult(-9999)   //FK// EFF
 {
   // default constructor
@@ -59,7 +58,6 @@ AliJEventHeader::AliJEventHeader(int eventid, float cent, float vrtz, ULong64_t 
     fSPDTrackletMult(refmult),
     fV0Mult(v0mult),
     fEventType(eventType),
-    fFiredTriggers(), 
     fVtxMult(-9999)  //FK// EFF
 {
   //constructor
@@ -74,7 +72,6 @@ AliJEventHeader::AliJEventHeader(const AliJEventHeader& a):
     fSPDTrackletMult(a.fSPDTrackletMult),
     fV0Mult(a.fV0Mult),
     fEventType(a.fEventType),
-    fFiredTriggers(a.fFiredTriggers), 
     fVtxMult(a.fVtxMult)  //FK// EFF
 {
   //copy constructor
@@ -92,7 +89,6 @@ AliJEventHeader&  AliJEventHeader::operator=(const AliJEventHeader& header){
     fV0Mult = header.fV0Mult;
     fEventType       = header.fEventType;
     fVtxMult         = header.fVtxMult;  //FK// EFF
-    fFiredTriggers   = header.fFiredTriggers;
     for( int i=0;i<kcNTYPE;i++ ) fCentralityArray[i] = header.fCentralityArray[i];
   }
 

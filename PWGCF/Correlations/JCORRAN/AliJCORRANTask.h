@@ -33,7 +33,6 @@
 #include "AliJConst.h"
 #include "AliESDpid.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALRecoUtils.h"
 #include "AliPHOSGeoUtils.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
@@ -101,18 +100,15 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   // methods to read data from ESD
   void ReadESDTracks(AliESDEvent* esd);
   void ReadESDCaloClusters(const AliESDEvent* esd);
-  void ReadESDCaloCells(const AliESDEvent* esd);
   void ReadESDHeader(AliESDEvent* esd);
   void ReadESDPID(AliESDtrack* track, AliJTrack* ctrack);
   // methods to read data from AOD
   void ReadAODTracks(const AliAODEvent* aod);
   void ReadAODCaloClusters(const AliAODEvent* aod);
-  void ReadAODCaloCells(const AliAODEvent* aod);
   void ReadAODHeader(AliAODEvent* aod);
   void ReadFilter();
   void ReadMCTracks(AliMCEvent* fMC);
-  Int_t GetSuperModuleNumber(bool isemcal, AliVCluster *cluster, AliVCaloCells *cells, Int_t absId);
-  Double_t* GetCellsAmplitude( bool isemcal, AliVCluster *cluster, AliVCaloCells *emCells, AliVCaloCells *phoCells );
+  Int_t GetSuperModuleNumber(bool isemcal, Int_t absId);
 
   UInt_t ConvertTriggerMask();//Converts alice trigger mask to JCorran trigger mask
   //functions used for event selction:
@@ -121,6 +117,8 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   const char* GetOADBPath() const { return fOADBPath.Data(); }
 
   // method to fill jcorran
+  bool SetAliceTriggerDef(AliJRunHeader *runHeader);
+  bool SetAliceFilterMapDef(AliJRunHeader *runHeader); //TODO Check
   void PrintOut();
   
   // UTILS
@@ -138,16 +136,16 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   bool fStoreEventPlaneSource;
   bool fStoreTPCTrack;
   TString fOADBPath;
-  TRefArray *fCaloClustersArr;
+
   // jcorran output objects
 
   TClonesArray *    fTrackList;   // list of charged track objects
   TClonesArray *    fMCTrackList; // list of charged track objects
   TClonesArray *    fPhotonList;  // list of photons objects
-  TClonesArray *    fCaloCellList;  // list of calo cells
   TClonesArray *    fHeaderList;  // event details
   TList *  	    fRunInfoList; // run details
 
+  AliESDpid	      *fPIDesd;
   AliPIDResponse  *fPIDResponse; // PID response object
   AliPIDCombined  *fPIDCombined;
 
@@ -157,8 +155,7 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   AliESDZDC*          fZDCData;
 
   AliJRunHeader*      fAliRunHeader;//  run details (mg field, trigger mask,etc...)
-  AliEMCALGeometry * fEMCALGeometry;
-  AliEMCALRecoUtils * fEMCALRecoUtils;
+  AliEMCALGeometry * fEMCALGeoUtils; // no AliEMCALGeoUtils.h in trunk aliroot (111130)
   AliPHOSGeoUtils  * fPHOSGeom; //phos geometry matrix 
 
 
