@@ -793,19 +793,19 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   
   GetDistAndFlow(hMixed, 0, &hist1,  0, step, 0,  1, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
 
-//   ((TH2*) hist1)->Rebin2D(2, 2);
+  ((TH2*) hist1)->Rebin2D(2, 2);
   NormalizeToBinWidth(hist1);
 
-  for (Int_t j=1; j<=hist1->GetNbinsY(); ++j)
-  {
-    Float_t factor = 1.0 / (1.0 - TMath::Abs(hist1->GetYaxis()->GetBinCenter(j)) / 10.0);
-    Printf("%d %f", j, factor);
-    for (Int_t i=1; i<=hist1->GetNbinsX(); ++i)
-    {
-      hist1->SetBinContent(i, j, hist1->GetBinContent(i, j) * factor);
-      hist1->SetBinError(i, j, hist1->GetBinError(i, j) * factor);
-    }
-  }
+//   for (Int_t j=1; j<=hist1->GetNbinsY(); ++j)
+//   {
+//     Float_t factor = 1.0 / (1.0 - TMath::Abs(hist1->GetYaxis()->GetBinCenter(j)) / 6.0);
+//     Printf("%d %f", j, factor);
+//     for (Int_t i=1; i<=hist1->GetNbinsX(); ++i)
+//     {
+//       hist1->SetBinContent(i, j, hist1->GetBinContent(i, j) * factor);
+//       hist1->SetBinError(i, j, hist1->GetBinError(i, j) * factor);
+//     }
+//   }
 
   new TCanvas("c2", "c2", 800, 800);
   gPad->SetLeftMargin(0.15);
@@ -6645,15 +6645,27 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 	GetDistAndFlow(h, hMixed, &hist5,  0, step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 	GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 	GetDistAndFlow(h, hMixed, &hist6,  0, step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-	GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  70, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+	GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
 // 	step = 6;
 	GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
       }
-      else
+      else if (0)
       {
+	Int_t step = 8;
+ 
 	GetSumOfRatios(h, hMixed, &hist1,  step, 60,  70, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist2,  step, 70,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist3,  step, 80,  90, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+      }
+      else if (1)
+      {
+	Int_t step = 8;
+ 
+	GetSumOfRatios(h, hMixed, &hist1,  step, 0,  1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist2,  step, 1,  3, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist4,  step, 3,  5, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist5,  step, 5,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist6,  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
       }
 
       file = TFile::Open(outputFile, "UPDATE");
@@ -11966,6 +11978,31 @@ void RewriteObjects(const char* fileName)
   list = new TList;
   list->Add(hNew);
   list->Add(hMixedNew);
+
+  file3 = TFile::Open(newFileName, "RECREATE");
+  file3->mkdir("PWG4_PhiCorrelations");
+  file3->cd("PWG4_PhiCorrelations");
+  list->Write("histosPhiCorrelations", TObject::kSingleKey);
+  file3->Close();
+}
+
+void CondenseCentrality(const char* fileName, Float_t targetValue)
+{
+  loadlibs();
+
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  AliUEHistograms* hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);  
+  
+  h->GetUEHist(2)->CondenseBin(0, 3, 1, targetValue);
+  hMixed->GetUEHist(2)->CondenseBin(0, 3, 1, targetValue);
+  
+  TString newFileName(fileName);
+  newFileName.ReplaceAll(".root", "");
+  newFileName += "_condensed.root";
+
+  list = new TList;
+  list->Add(h);
+  list->Add(hMixed);
 
   file3 = TFile::Open(newFileName, "RECREATE");
   file3->mkdir("PWG4_PhiCorrelations");

@@ -907,7 +907,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
     for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
-//     for (Int_t vertexBin = 3; vertexBin <= 5; vertexBin++)
+//     for (Int_t vertexBin = 4; vertexBin <= 4; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
@@ -2551,4 +2551,75 @@ THnBase* AliUEHist::ChangeToThn(THnBase* sparse)
   tmpTHn->RebinnedAdd(sparse);
   
   return tmpTHn;
+}
+
+void AliUEHist::CondenseBin(THnSparse* grid, THnSparse* target, Int_t axis, Float_t targetValue)
+{
+  //
+  // loops through the histogram and moves all entries to a single point <targetValue> on the axis <axis>
+  //
+
+  if (grid->GetNdimensions() > 6)
+    AliFatal("Too many dimensions in THnSparse");
+  
+  Int_t targetBin = grid->GetAxis(axis)->FindBin(targetValue);
+  AliInfo(Form("Target bin on axis %d with value %f is %d", axis, targetValue, targetBin));
+  
+  Int_t bins[6];
+  for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
+  {
+    Double_t value = grid->GetBinContent(binIdx, bins);
+    Double_t error = grid->GetBinError(binIdx);
+    
+    bins[axis] = targetBin;
+
+    value += target->GetBinContent(bins);
+    error = TMath::Sqrt(error * error + target->GetBinError(bins) * target->GetBinError(bins));
+    
+    target->SetBinContent(bins, value);
+    target->SetBinError(bins, error);
+  }
+}
+
+void AliUEHist::CondenseBin(CFStep step, Int_t trackAxis, Int_t eventAxis, Float_t targetValue, CFStep tmpStep)
+{
+  // loops through the histogram at <step> and moves all entries to a single point <targetValue> on the axes 
+  // <trackAxis> and <eventAxis>. <tmpStep> is used to temporary store the data
+  // This is useful e.g. to move bin content around for MC productions where the centrality selection did
+  // not yield the desired result
+
+  // reset tmpStep
+  fEventHist->GetGrid(tmpStep)->GetGrid()->Reset();
+  for (UInt_t i=0; i<fkRegions; i++)
+    if (fTrackHist[i])
+      fTrackHist[i]->GetGrid(tmpStep)->GetGrid()->Reset();
+
+  // copy to tmpStep
+  CorrectTracks(step, tmpStep, 0, -1);
+  CorrectEvents(step, tmpStep, 0, -1);
+
+  // reset step
+  fEventHist->GetGrid(step)->GetGrid()->Reset();
+  for (UInt_t i=0; i<fkRegions; i++)
+    if (fTrackHist[i])
+      fTrackHist[i]->GetGrid(step)->GetGrid()->Reset();
+  
+  // rewriting
+  for (UInt_t i=0; i<fkRegions; i++)
+  {
+    if (!fTrackHist[i])
+      continue;
+    
+    THnSparse* grid = fTrackHist[i]->GetGrid(tmpStep)->GetGrid();
+    THnSparse* target = fTrackHist[i]->GetGrid(step)->GetGrid();
+    
+    CondenseBin(grid, target, trackAxis, targetValue);
+  }
+  CondenseBin(fEventHist->GetGrid(tmpStep)->GetGrid(), fEventHist->GetGrid(step)->GetGrid(), eventAxis, targetValue);
+  
+  // reset tmpStep
+  fEventHist->GetGrid(tmpStep)->GetGrid()->Reset();
+  for (UInt_t i=0; i<fkRegions; i++)
+    if (fTrackHist[i])
+      fTrackHist[i]->GetGrid(tmpStep)->GetGrid()->Reset();
 }
