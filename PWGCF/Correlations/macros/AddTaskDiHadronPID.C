@@ -1,15 +1,17 @@
 // AddTask Macro (v 8.00).
-// Updated: Apr 12th 2012.
+// Updated: May 2nd 2012.
 // Author: Misha Veldhoen (m.veldhoen@cern.ch)
 
 AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID(Int_t verbose = 1,
                                                Bool_t printbuffersize = kFALSE,
                                                Bool_t mixedevents = kTRUE,
+											   Bool_t setmc = kFALSE,
                                                TString beamtype = "PbPb",
                                                Double_t MaxEta = 0.8,
+											   Double_t maxrap = 0.5,
                                                Double_t MaxPlotEta = 0.8,
                                                Double_t MaxPt = 10.,
-                                               Int_t NEtaBins = 36,
+                                               Int_t NEtaBins = 32,
                                                Int_t NPhiBins = 36,
                                                Double_t VertexZMixedEvents = 2.,
                                                Bool_t zoomed = kFALSE,
@@ -18,7 +20,10 @@ AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID(Int_t verbose = 1,
                                                Bool_t DemandNoMismatch = kTRUE,
                                                Int_t trigbuffermaxsize=2500,
                                                Double_t centralitycutmax=0.,
-                                               Double_t centralitycutmin=10.)
+                                               Double_t centralitycutmin=10.,
+											   const char* outputFileName = 0,
+											   const char* containerName = "DiHadronPID", 
+											   const char* folderName = "PWGCF_DiHadronPID")
 
                                                
 
@@ -32,14 +37,16 @@ AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID(Int_t verbose = 1,
     }
     
     // Create an instance of the task.
-    AliAnalysisTaskDiHadronPID *task = new AliAnalysisTaskDiHadronPID("DiHadronPID");
+    AliAnalysisTaskDiHadronPID *task = new AliAnalysisTaskDiHadronPID(containerName);
     
     // Configure the task.
     task->SetVerbose(verbose);
     task->SetPrintBufferSize(printbuffersize);
     task->SetCalculateMixedEvents(mixedevents);
+	task->SetMC(setmc);
     task->SetBeamType(beamtype);
     task->SetMaxEta(MaxEta);
+	task->SetMaxRapidityInInclusiveSpectra(maxrap);
     task->SetMaxPlotEta(MaxPlotEta);
     task->SetMaxPt(MaxPt);
     task->SetNEtaBins(NEtaBins);
@@ -59,9 +66,12 @@ AliAnalysisTaskDiHadronPID *AddTaskDiHadronPID(Int_t verbose = 1,
 	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 	mgr->ConnectInput(task, 0, cinput); 
 	
+	if (!outputFileName)
+		outputFileName = AliAnalysisManager::GetCommonFileName();
+	
 	AliAnalysisDataContainer *coutput1 = 
-    mgr->CreateContainer("DiHadronPID", TList::Class(),
-                         AliAnalysisManager::kOutputContainer,"DiHadronPID.root");
+    mgr->CreateContainer(containerName, TList::Class(),
+                         AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
 	
 	mgr->ConnectOutput (task,  1, coutput1);
 	

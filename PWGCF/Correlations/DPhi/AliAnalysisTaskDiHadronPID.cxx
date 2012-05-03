@@ -2,19 +2,9 @@
 // This class makes di-hadron correlations, with TOF and TPC signals for
 // the associated particles.
 //
-//   Last Update:
-//     - Added a number of setters/getters.
-//     - Added spectra in pt, eta and phi as a function of performed cuts.
-//     - Added DCA histogram.
-//     - Added pp functionality.
-//     - Added the option to make a DCA cut and an ITS cut.
-//     - Variable centrality.
-//     - Variable maximum p_T for triggers.
-//     - Removed di-hadron correlations with one PID signal.
-//
 // ----------------------------------------------------------------------------
 // Author: Misha Veldhoen (misha.veldhoen@cern.ch)
-// Last edit: Apr 12th 2012. (v 8.00)
+// Last edit: May 2nd 2012. (v 8.00)
 // ----------------------------------------------------------------------------
 
 #include <iostream>
@@ -25,6 +15,7 @@
 #include "TH3F.h"
 #include "TCanvas.h"
 #include "TFile.h"
+#include "TClonesArray.h"
 
 #include "AliAODTrack.h"
 #include "AliAODEvent.h"
@@ -37,6 +28,9 @@
 #include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 //#include "AliTOFPIDResponse.h"
+
+// Includes for a MC run.
+#include "AliAODMCParticle.h"
 
 using namespace std;
 
@@ -53,6 +47,7 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fAODVertex(0x0),
 	fAODTrack(0x0),
 	fGlobalTracks(0x0),
+	fMCTracks(0x0),
 	fCentrality(0x0),
 	fVertexZ(0x0),
     fDCA(0x0),
@@ -77,14 +72,17 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fTOFnSigmaKaon(0x0),
 	fTPCSignal(0x0),
 	fTOFSignal(0x0),
+	fDiHadron(0x0),
     fMixedEvents(0x0),
 	fHistoList(0x0),
     fCalculateMixedEvents(kFALSE),
     fBeamType("PbPb"),
+    fMC(kFALSE),
     fMaxEta(0.8),
-    fMaxPlotEta(0.9),
+    fMaxPlotEta(0.8),
+    fMaxRap(0.5),
     fMaxPt(10.),
-    fNEtaBins(25),
+    fNEtaBins(32),
     fNPhiBins(36),
     fVertexZMixedEvents(2.),
     fCentralityCutMax(0.),
@@ -97,7 +95,7 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
     fPrintBufferSize(kFALSE),
 	fTrigBufferIndex(0),	
 	fTrigBufferSize(0),
-	fTrigBufferMaxSize(1000)
+	fTrigBufferMaxSize(100)
 
 {
     
@@ -114,8 +112,12 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	
     // The identified di-hadron correlations.
 	for (Int_t ii = 0; ii < 3; ii++) {
+		//fMixedEventsTPCTOFCut[ii]=0x0;
 		for (Int_t jj = 0; jj < 10; jj++) {
 			fDiHadronTPCTOF[ii][jj]=0x0;
+			fMixedEventsTPCTOF[ii][jj]=0x0;
+            fInclusiveTPCTOF[ii][jj]=0x0;
+            fInclusiveTPCTOFRap[ii][jj]=0x0;            
 		}
 	}
     
@@ -123,6 +125,23 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
     for (Int_t ii=0; ii<8; ii++) {
         fTrackCutLabelNumbers[ii]=ii+1;
     }
+
+	// Monte Carlo Efficiency Histograms.
+	for (Int_t iSpecies=0; iSpecies<6; iSpecies++) {
+        fPtEtaDistrDataPrim[iSpecies]=0x0;
+        fPtEtaDistrDataSec[iSpecies]=0x0;
+        fPtRapDistrDataPrimRapCut[iSpecies]=0x0;
+        fPtRapDistrDataSecRapCut[iSpecies]=0x0;
+        
+		fPtEtaDistrMCPrim[iSpecies]=0x0;
+		fPtEtaDistrMCSec[iSpecies]=0x0;
+		fPtRapDistrMCPrimRapCut[iSpecies]=0x0;
+		fPtRapDistrMCSecRapCut[iSpecies]=0x0;
+		
+		fDiHadronMC[iSpecies]=0x0;
+		
+	}
+
 }
 
 //_____________________________________________________________________________
@@ -134,6 +153,7 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char *name):
     fAODVertex(0x0),
     fAODTrack(0x0),
     fGlobalTracks(0x0),
+	fMCTracks(0x0),
     fCentrality(0x0),
     fVertexZ(0x0),
     fDCA(0x0),
@@ -158,14 +178,17 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char *name):
     fTOFnSigmaKaon(0x0),
     fTPCSignal(0x0),
     fTOFSignal(0x0),
+	fDiHadron(0x0),
     fMixedEvents(0x0),
     fHistoList(0x0),
     fCalculateMixedEvents(kFALSE),
     fBeamType("PbPb"),
+    fMC(kFALSE),
     fMaxEta(0.8),
-    fMaxPlotEta(0.9),
+    fMaxPlotEta(0.8),
+    fMaxRap(0.5),
     fMaxPt(10.),
-    fNEtaBins(25),
+    fNEtaBins(32),
     fNPhiBins(36),
     fVertexZMixedEvents(2.),
     fCentralityCutMax(0.),
@@ -178,7 +201,7 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char *name):
     fPrintBufferSize(kFALSE),
     fTrigBufferIndex(0),	
     fTrigBufferSize(0),
-	fTrigBufferMaxSize(1000)
+	fTrigBufferMaxSize(100)
 
 {
     
@@ -198,8 +221,12 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char *name):
 	
     // The identified di-hadron correlations.
 	for (Int_t ii = 0; ii < 3; ii++) {
+		//fMixedEventsTPCTOFCut[ii]=0x0;
 		for (Int_t jj = 0; jj < 10; jj++) {
 			fDiHadronTPCTOF[ii][jj]=0x0;
+			fMixedEventsTPCTOF[ii][jj]=0x0;
+            fInclusiveTPCTOF[ii][jj]=0x0;
+            fInclusiveTPCTOFRap[ii][jj]=0x0;
 		}
 	}
     
@@ -207,6 +234,23 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char *name):
     for (Int_t ii=0; ii<8; ii++) {
         fTrackCutLabelNumbers[ii]=ii+1;
     }
+
+	// Monte Carlo Efficiency Histograms.
+	for (Int_t iSpecies=0; iSpecies<6; iSpecies++) {
+        fPtEtaDistrDataPrim[iSpecies]=0x0;
+        fPtEtaDistrDataSec[iSpecies]=0x0;
+        fPtRapDistrDataPrimRapCut[iSpecies]=0x0;
+        fPtRapDistrDataSecRapCut[iSpecies]=0x0;
+        
+		fPtEtaDistrMCPrim[iSpecies]=0x0;
+		fPtEtaDistrMCSec[iSpecies]=0x0;
+		fPtRapDistrMCPrimRapCut[iSpecies]=0x0;
+		fPtRapDistrMCSecRapCut[iSpecies]=0x0;
+		
+		fDiHadronMC[iSpecies]=0x0;
+		
+	}
+
 }
 
 //_____________________________________________________________________________
@@ -218,9 +262,14 @@ AliAnalysisTaskDiHadronPID::~AliAnalysisTaskDiHadronPID() {
 	
     if(fGlobalTracks) {
         delete fGlobalTracks;
-        fGlobalTracks=0;
+        fGlobalTracks=0x0;
     }
-
+	/*
+	if (fMCTracks) {
+		delete fMCTracks;
+		fMCTracks=0x0;
+	}
+*/
 }
 
 //_____________________________________________________________________________
@@ -239,8 +288,10 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
     cout<<"Verbose Level: "<<fVerbose<<endl;
     cout<<"Mixed Events Calculated: "<<fCalculateMixedEvents<<endl;
     cout<<"Beam Type: "<<fBeamType<<endl;
+    cout<<"Run over MC: "<<fMC<<endl;
     cout<<Form("Max eta: %3.1f",fMaxEta)<<endl;
     cout<<Form("Max eta plotted: %3.1f",fMaxPlotEta)<<endl;
+    cout<<Form("Max rapidity in spectra: %3.1f",fMaxRap)<<endl;
     cout<<Form("Max p_T for the triggers: %3.1f GeV/c.",fMaxPt)<<endl;
     cout<<"Nbins in eta and delta eta: "<<fNEtaBins<<endl;
     cout<<"Nbins in phi and delta phi: "<<fNPhiBins<<endl;
@@ -252,7 +303,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
     cout<<"Maximum number of triggers stored: "<<fTrigBufferMaxSize<<endl;
     cout<<"-----------------------------------------------"<<endl;
     cout<<endl;
-    
+	
 	// Obtain a pointer to the analysis manager.
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
     if (!manager) {
@@ -408,10 +459,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
 	fTOFSignal = new TH3F("fTOFSignal","TOF Signal;#eta;p_{T} GeV/c;t",25,-fMaxEta,fMaxEta,100,0.,5.,150,10000.,25000.);
 	fHistoList->Add(fTOFSignal);
 			
-    // --- DI-HADRON CORRELATIONS WITH TPC AND TOF SIGNALS ---
-    
-	// Di Hadron Correlations with two PID signals, for each p_T bin and particle species separately. (i.e. 30 histo's) 
-	// Axes: {Dphi, Deta, TPC signal, TOF signal}
+    // --- DI-HADRON CORRELATIONS AND MIXED EVENTS WITH TPC AND TOF SIGNALS ---
     
     // Unzoomed pictures.
 	Int_t binsTPCnoZoom[3][10] = {{100,100,100,100,100,100,100,100,100,100},
@@ -459,13 +507,8 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
                                   { 1000., 1000.,  500.,  500.,  500.,  900.,  700.,  700.,  600.,  500.},
                                   { 1000., 1000., 1000.,  500.,  500.,  500.,  500.,  500.,  500.,  500.}};
     
-	TString basenameTPCTOF("fDiHadronTPCTOF");
-	TString basetitle("Di-Hadron correlation");
-	TString finalname, finaltitle;
-	TString species[3] = {"Pion","Kaon","Proton"};
-	TString ptbins[11] = {"0.0","0.5","1.0","1.5","2.0","2.5","3.0","3.5","4.0","4.5","5.0"};
-    
-	// Recall that AliPID::kPion = 2, AliPID::kKaon = 3, AliPID::kProton = 4.
+	const char* species[3] = {"Pion","Kaon","Proton"};
+
 	for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 				
 		for (Int_t iPtBin = 0; iPtBin < 10; iPtBin++) {
@@ -486,28 +529,110 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects()
                 maxHisto[3] = maxTOFnoZoom[iSpecies][iPtBin];
             }
 
-            // Make the di-hadron correlations with different pid signals.
-            // TODO: Rewrite this with Form().
-            finaltitle = basetitle;
-			(((((finaltitle += " (") += species[iSpecies]) += ") ") += ptbins[iPtBin]) += " < P_t < ") += ptbins[iPtBin+1];
-            finaltitle+=";#Delta#phi;#Delta#eta;dE/dx;t (ms)";
-            finalname = basenameTPCTOF;
-			(((finalname += "_") += species[iSpecies]) += "_") += iPtBin;
-            
-            fDiHadronTPCTOF[iSpecies][iPtBin] = new THnSparseF(finalname,finaltitle,4,binsHisto,minHisto,maxHisto);
+            // Di-Hadron Correlations
+            fDiHadronTPCTOF[iSpecies][iPtBin] = new THnSparseF(Form("fDiHadronTPCTOF_%s_%i",species[iSpecies],iPtBin),
+															   Form("Di-Hadron Correlation (%s) %3.1f < p_{T} < %3.1f;#Delta#phi;#Delta#eta;dE/dx;t (ms);",species[iSpecies],iPtBin*0.5,(iPtBin+1)*0.5),
+															   4,binsHisto,minHisto,maxHisto);
             fHistoList->Add(fDiHadronTPCTOF[iSpecies][iPtBin]);
+            
+            // Mixed Events.
+			fMixedEventsTPCTOF[iSpecies][iPtBin] = new THnSparseF(Form("fMixedEventsTPCTOF_%s_%i",species[iSpecies],iPtBin),
+																  Form("Mixed Events (%s) %3.1f < p_{T} < %3.1f;#Delta#phi;#Delta#eta;dE/dx;t (ms);",species[iSpecies],iPtBin*0.5,(iPtBin+1)*0.5),
+																  4,binsHisto,minHisto,maxHisto);
+			//fHistoList->Add(fMixedEventsTPCTOF[iSpecies][iPtBin]);
+            
+            // Inclusive spectra.
+            fInclusiveTPCTOF[iSpecies][iPtBin] = new TH3F(Form("fInclusiveTPCTOF_%s_%i",species[iSpecies],iPtBin),
+                                                          Form("Inclusive Spectrum (%s) %3.1f < p_{T} < %3.1f;dE/dx;t (ms);#eta",species[iSpecies],iPtBin*0.5,(iPtBin+1)*0.5),
+                                                          binsHisto[2],minHisto[2],maxHisto[2],binsHisto[3],minHisto[3],maxHisto[3],fNEtaBins,-fMaxEta,fMaxEta);
+            fHistoList->Add(fInclusiveTPCTOF[iSpecies][iPtBin]);
+			
+            // Inclusive spectra with additional rapidity cut.
+            fInclusiveTPCTOFRap[iSpecies][iPtBin] = new TH3F(Form("fInclusiveTPCTOFRap_%s_%i",species[iSpecies],iPtBin),
+                                                             Form("Inclusive Spectrum (%s) %3.1f < p_{T} < %3.1f |Y| < %3.1f;dE/dx;t (ms);Y",species[iSpecies],iPtBin*0.5,(iPtBin+1)*0.5,fMaxRap),
+                                                             binsHisto[2],minHisto[2],maxHisto[2],binsHisto[3],minHisto[3],maxHisto[3],20,-fMaxRap,fMaxRap);
+            fHistoList->Add(fInclusiveTPCTOFRap[iSpecies][iPtBin]);
+
             
 		}
 	}
+	
+	// Correlations without PID signals
+	fDiHadron = new TH3F("fDiHadron","Di-Hadron Correlations;#Delta#phi;#Delta#eta;p_{T_assoc}",binsHisto[0],minHisto[0],maxHisto[0],binsHisto[1],minHisto[1],maxHisto[1],10,0.,5.);
+    fDiHadron->Sumw2();
+	fHistoList->Add(fDiHadron);
+
+	fMixedEvents = new TH3F("fMixedEvents","Mixed Events;#Delta#phi;#Delta#eta;p_{T_assoc}",binsHisto[0],minHisto[0],maxHisto[0],binsHisto[1],minHisto[1],maxHisto[1],10,0.,5.);
+	fMixedEvents->Sumw2();
+	fHistoList->Add(fMixedEvents);
     
-    // --- MIXED EVENTS ---
-    
-    if (fCalculateMixedEvents) {
-        fMixedEvents = new TH3F("fMixedEvents","Mixed Events;#Delta#phi;#Delta#eta;p_{T_assoc}",binsHisto[0],minHisto[0],maxHisto[0],binsHisto[1],minHisto[1],maxHisto[1],10,0.,5.);
-        fMixedEvents->Sumw2();
-        fHistoList->Add(fMixedEvents);
-    }
-    
+	const char* MCSpeciesName[6] = {"piplus","pimin","Kplus","Kmin","p","pbar"};
+	const char* MCSpeciesTitle[6] = {"#pi^{+}","#pi^{-}","K^{+}","K^{-}","p","#bar{p}"};
+	//const char* Cuts[3] = {"nocut","DCAcut","PIDandDCAcut"};
+	
+	// Efficiency Plots (Monte Carlo)
+	if (fMC) {
+		
+		for (Int_t iSpecies=0; iSpecies<6; iSpecies++) {
+            
+            // Without rapidity cut.
+            fPtEtaDistrDataPrim[iSpecies]=new TH2F(Form("fPtEtaDistrDataPrim_%s",MCSpeciesName[iSpecies]),
+                                                       Form("p_{T}-#eta distribution Data Primaries (%s);p_{T};#eta;Count",MCSpeciesTitle[iSpecies]),
+                                                       20,0.0,5.0,fNEtaBins,-fMaxEta,fMaxEta);
+            fPtEtaDistrDataPrim[iSpecies]->Sumw2();
+			fHistoList->Add(fPtEtaDistrDataPrim[iSpecies]);
+			
+            fPtEtaDistrDataSec[iSpecies]=new TH2F(Form("fPtEtaDistrDataSec_%s",MCSpeciesName[iSpecies]),
+                                                      Form("p_{T}-#eta distribution Data Secondaries (%s);p_{T};#eta;Count",MCSpeciesTitle[iSpecies]),
+                                                      20,0.0,5.0,fNEtaBins,-fMaxEta,fMaxEta);
+            fPtEtaDistrDataSec[iSpecies]->Sumw2();
+			fHistoList->Add(fPtEtaDistrDataSec[iSpecies]);
+				
+			fPtEtaDistrMCPrim[iSpecies]=new TH2F(Form("fPtEtaDistrMCPrim_%s",MCSpeciesName[iSpecies]),
+											  Form("p_{T}-#eta distribution MC Primaries (%s);p_{T};#eta;Count",MCSpeciesTitle[iSpecies]),
+											  20,0.0,5.0,fNEtaBins,-fMaxEta,fMaxEta);
+			fPtEtaDistrMCPrim[iSpecies]->Sumw2();
+			fHistoList->Add(fPtEtaDistrMCPrim[iSpecies]);
+			
+			fPtEtaDistrMCSec[iSpecies]=new TH2F(Form("fPtEtaDistrMCSec_%s",MCSpeciesName[iSpecies]),
+											 Form("p_{T}-#eta distribution MC Secondaries (%s);p_{T};#eta;Count",MCSpeciesTitle[iSpecies]),
+											 20,0.0,5.0,fNEtaBins,-fMaxEta,fMaxEta);
+			fPtEtaDistrMCSec[iSpecies]->Sumw2();
+			fHistoList->Add(fPtEtaDistrMCSec[iSpecies]);
+			
+			//fDiHadronMC[iSpecies]=new TH3F(Form("fDiHadronMC_%s",MCSpeciesName[iSpecies]),
+			//							   Form("Di-Hadron Correlations MC (%s);#Delta#phi;#Delta#eta;p_{T_assoc}",MCSpeciesTitle[iSpecies]),
+			//							   binsHisto[0],minHisto[0],maxHisto[0],binsHisto[1],minHisto[1],maxHisto[1],10,0.,5.);
+			//fHistoList->Add(fDiHadronMC[iSpecies]);
+			
+            // With rapidity cut.
+            fPtRapDistrDataPrimRapCut[iSpecies]=new TH2F(Form("fPtRapDistrDataPrimRapCut_%s",MCSpeciesName[iSpecies]),
+                                                          Form("p_{T}-Y distribution Data Primaries (%s) |Y| < %3.1f;p_{T};Y;Count",MCSpeciesTitle[iSpecies],fMaxRap),
+                                                          20,0.0,5.0,20,-fMaxRap,fMaxRap);
+            fPtRapDistrDataPrimRapCut[iSpecies]->Sumw2();
+			fHistoList->Add(fPtRapDistrDataPrimRapCut[iSpecies]);
+			
+            fPtRapDistrDataSecRapCut[iSpecies]=new TH2F(Form("fPtRapDistrDataSecRapCut_%s",MCSpeciesName[iSpecies]),
+                                                      Form("p_{T}-Y distribution Data Secondaries (%s) |Y| < %3.1f;p_{T};Y;Count",MCSpeciesTitle[iSpecies],fMaxRap),
+                                                      20,0.0,5.0,20,-fMaxRap,fMaxRap);
+            fPtRapDistrDataSecRapCut[iSpecies]->Sumw2();
+			fHistoList->Add(fPtRapDistrDataSecRapCut[iSpecies]);
+            
+			fPtRapDistrMCPrimRapCut[iSpecies]=new TH2F(Form("fPtRapDistrMCPrimRapCut_%s",MCSpeciesName[iSpecies]),
+											  Form("p_{T}-Y distribution MC Primaries (%s) |Y| < %3.1f;p_{T};Y;Count",MCSpeciesTitle[iSpecies],fMaxRap),
+											  20,0.0,5.0,20,-fMaxRap,fMaxRap);
+			fPtRapDistrMCPrimRapCut[iSpecies]->Sumw2();
+			fHistoList->Add(fPtRapDistrMCPrimRapCut[iSpecies]);
+			
+			fPtRapDistrMCSecRapCut[iSpecies]=new TH2F(Form("fPtRapDistrMCSecRapCut_%s",MCSpeciesName[iSpecies]),
+											 Form("p_{T}-Y distribution MC Secondaries (%s) |Y| < %3.1f;p_{T};Y;Count",MCSpeciesTitle[iSpecies],fMaxRap),
+											 20,0.0,5.0,20,-fMaxRap,fMaxRap);
+			fPtRapDistrMCSecRapCut[iSpecies]->Sumw2();
+			fHistoList->Add(fPtRapDistrMCSecRapCut[iSpecies]);
+            
+		}
+	}
+	
 	PostData(1, fHistoList);
 	
 }
@@ -694,30 +819,7 @@ Int_t AliAnalysisTaskDiHadronPID::ClassifyTrack(AliAODTrack *track)
     }
     
     // All tracks which made it up to here are classified as associateds.
-    
-    // Fill the PID QA histograms.
-    Double_t mom, nSigma;
-    
-    mom = globaltrack->GetTPCmomentum();
-    nSigma = fPIDResponse->NumberOfSigmasTPC(globaltrack,AliPID::kProton);
-    fTPCnSigmaProton->Fill(mom,nSigma);
-    nSigma = fPIDResponse->NumberOfSigmasTPC(globaltrack,AliPID::kPion);
-    fTPCnSigmaPion->Fill(mom,nSigma);
-    nSigma = fPIDResponse->NumberOfSigmasTPC(globaltrack,AliPID::kKaon);
-    fTPCnSigmaKaon->Fill(mom,nSigma);
-    
-    fTPCSignal->Fill(eta,pt,globaltrack->GetTPCsignal());
-    
-    mom =globaltrack->P();
-    nSigma = fPIDResponse->NumberOfSigmasTOF(globaltrack,AliPID::kProton);
-    fTOFnSigmaProton->Fill(mom,nSigma);			
-    nSigma = fPIDResponse->NumberOfSigmasTOF(globaltrack,AliPID::kPion);
-    fTOFnSigmaPion->Fill(mom,nSigma);	
-    nSigma = fPIDResponse->NumberOfSigmasTOF(globaltrack,AliPID::kKaon);
-    fTOFnSigmaKaon->Fill(mom,nSigma);
-    
-    fTOFSignal->Fill(eta,pt,globaltrack->GetTOFsignal());
-    
+        
     // Return associated.
     return 1;
     
@@ -817,6 +919,24 @@ Double_t AliAnalysisTaskDiHadronPID::PhiRange(Double_t DPhi)
 }
 
 //_____________________________________________________________________________
+Int_t AliAnalysisTaskDiHadronPID::ConvertPdgCode(Int_t pdgcode) {
+
+    //
+    // Converts the pdg code to the bin number (0-5)
+    //
+
+    if (pdgcode==211) return 0; // Pi +
+    if (pdgcode==-211) return 1; // Pi - 
+    if (pdgcode==321) return 2; // K +
+    if (pdgcode==-321) return 3; // K -
+    if (pdgcode==2212) return 4; // p +
+    if (pdgcode==-2212) return 5; // p -
+    
+    return -999; // Any other particle.
+    
+}
+
+//_____________________________________________________________________________
 void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
 
 {
@@ -845,6 +965,19 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
 		return;
 	}
 
+    // Get the MC tracks if ran on MC.
+    if (fMC) {
+        fMCTracks = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (!fMCTracks) {
+            if (fVerbose>0) {
+                cout<<"AliAnalysisTaskDiHadronPID::UserExec -> ERROR: No MC particles found."<<endl;
+                return;
+            }
+        }
+    }
+    
+	AliTPCPIDResponse& TPCPIDResponse = fPIDResponse->GetTPCResponse();
+	
     // See if the event passes the event selection.
     if (!SelectEvent(fAODVertex)) return;
     
@@ -866,6 +999,29 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
 	TObjArray *triggers		= new TObjArray();
 	TObjArray *associateds	= new TObjArray();
 		    
+    // Loop over MC tracks to fill the spectra if ran on MC.
+    if (fMC) {
+        for (Int_t iTrack=0; iTrack<fMCTracks->GetEntriesFast(); iTrack++) {
+            
+            AliAODMCParticle* mcparticle = (AliAODMCParticle*)fMCTracks->At(iTrack);
+            Double_t mcPt = mcparticle->Pt();
+            Double_t mcEta = mcparticle->Eta();
+            //Double_t mcPhi = mcparticle->Phi();
+            Double_t mcY = mcparticle->Y();
+            Int_t mcPDG = mcparticle->PdgCode();
+            Int_t mcSpeciesBin = ConvertPdgCode(mcPDG);
+            if (mcSpeciesBin==-999) continue;
+            
+            if (mcparticle->IsPhysicalPrimary()) {
+                fPtEtaDistrMCPrim[mcSpeciesBin]->Fill(mcPt,mcEta);
+                if (TMath::Abs(mcY)<fMaxRap) fPtRapDistrMCPrimRapCut[mcSpeciesBin]->Fill(mcPt,mcY);
+            } else {
+                fPtEtaDistrMCSec[mcSpeciesBin]->Fill(mcPt,mcEta);
+                if (TMath::Abs(mcY)<fMaxRap) fPtRapDistrMCSecRapCut[mcSpeciesBin]->Fill(mcPt,mcY);
+            }
+        }
+    }
+    
     // In this loop the triggers and associateds will be identified, track QA and PID QA histograms will be filled.
 	for (Int_t iTrack = 0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++) {
         
@@ -876,6 +1032,8 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
             continue;
         }
         
+		//if (TMath::Abs(fAODTrack->Eta())>0.8&&fAODTrack->Pt()>0.5&&TMath::Abs(fAODTrack->Y(AliAODTrack::kProton))<0.5) cout<<"Eta: "<<fAODTrack->Eta()<<" Pt: "<<fAODTrack->Pt()<<" Ypion: "<<fAODTrack->Y(AliAODTrack::kPion)<<" Ykaon: "<<fAODTrack->Y(AliAODTrack::kKaon)<<" Yproton: "<<fAODTrack->Y(AliAODTrack::kProton)<<endl;
+
         // Find the track classification.
         Int_t tracktype = ClassifyTrack(fAODTrack);
 		
@@ -894,9 +1052,101 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
 			if (fVerbose>3) cout<<"Track added to trigger buffer."<<endl;
             triggers->AddLast(fAODTrack);
             fEtaSpectrumTrig->Fill(fAODTrack->Eta());
+            
         }
         
-        
+        if (tracktype==1) {
+            
+            // Fill the PID QA histograms for the associateds
+            AliAODTrack* globaltrack = GetGlobalTrack(fAODTrack);
+            Double_t mom, nSigma;
+            
+			Double_t pt = fAODTrack->Pt();
+			Double_t eta = fAODTrack->Eta();
+			const Int_t ptbin = (Int_t)(2*pt);
+				
+			//cout<<pt<<" "<<ptbin<<endl;
+			
+            mom = globaltrack->GetTPCmomentum();
+            nSigma = fPIDResponse->NumberOfSigmasTPC(globaltrack,AliPID::kProton);
+            fTPCnSigmaProton->Fill(mom,nSigma);
+            nSigma = fPIDResponse->NumberOfSigmasTPC(globaltrack,AliPID::kPion);
+            fTPCnSigmaPion->Fill(mom,nSigma);
+            nSigma = fPIDResponse->NumberOfSigmasTPC(globaltrack,AliPID::kKaon);
+            fTPCnSigmaKaon->Fill(mom,nSigma);
+            
+            fTPCSignal->Fill(eta,pt,globaltrack->GetTPCsignal());
+            
+            mom =globaltrack->P();
+            nSigma = fPIDResponse->NumberOfSigmasTOF(globaltrack,AliPID::kProton);
+            fTOFnSigmaProton->Fill(mom,nSigma);			
+            nSigma = fPIDResponse->NumberOfSigmasTOF(globaltrack,AliPID::kPion);
+            fTOFnSigmaPion->Fill(mom,nSigma);	
+            nSigma = fPIDResponse->NumberOfSigmasTOF(globaltrack,AliPID::kKaon);
+            fTOFnSigmaKaon->Fill(mom,nSigma);
+            
+            fTOFSignal->Fill(eta,pt,globaltrack->GetTOFsignal());
+
+			// Fill the inclusives.
+			Double_t TPCmom = globaltrack->GetTPCmomentum();
+			Double_t TPCsignal = globaltrack->GetTPCsignal();
+			Double_t expectedTPCsignalPion = TPCPIDResponse.GetExpectedSignal(TPCmom,AliPID::kPion);
+			Double_t expectedTPCsignalKaon = TPCPIDResponse.GetExpectedSignal(TPCmom,AliPID::kKaon);
+			Double_t expectedTPCsignalProton = TPCPIDResponse.GetExpectedSignal(TPCmom,AliPID::kProton);
+			
+			Double_t TOFsignal = globaltrack->GetTOFsignal();
+			Double_t times[AliPID::kSPECIES];
+			globaltrack->GetIntegratedTimes(times);
+			Double_t expectedTOFsignalPion = times[AliPID::kPion];
+			Double_t expectedTOFsignalKaon = times[AliPID::kKaon];
+			Double_t expectedTOFsignalProton = times[AliPID::kProton]; 
+			
+			Double_t TPCsignalSubtracted = TPCsignal - expectedTPCsignalPion;
+			Double_t TOFsignalSubtracted = TOFsignal - expectedTOFsignalPion;
+			fInclusiveTPCTOF[0][ptbin]->Fill(TPCsignalSubtracted,TOFsignalSubtracted,eta);
+			if (fAODTrack->Y(AliAODTrack::kPion)<fMaxRap) fInclusiveTPCTOFRap[0][ptbin]->Fill(TPCsignalSubtracted,TOFsignalSubtracted,fAODTrack->Y(AliAODTrack::kPion));
+			
+			TPCsignalSubtracted = TPCsignal - expectedTPCsignalKaon;
+			TOFsignalSubtracted = TOFsignal - expectedTOFsignalKaon;
+			fInclusiveTPCTOF[1][ptbin]->Fill(TPCsignalSubtracted,TOFsignalSubtracted,eta);
+			if (fAODTrack->Y(AliAODTrack::kKaon)<fMaxRap) fInclusiveTPCTOFRap[1][ptbin]->Fill(TPCsignalSubtracted,TOFsignalSubtracted,fAODTrack->Y(AliAODTrack::kKaon));
+			
+			TPCsignalSubtracted = TPCsignal - expectedTPCsignalProton;
+			TOFsignalSubtracted = TOFsignal - expectedTOFsignalProton;
+			fInclusiveTPCTOF[2][ptbin]->Fill(TPCsignalSubtracted,TOFsignalSubtracted,eta);
+			if (fAODTrack->Y(AliAODTrack::kProton)<fMaxRap) fInclusiveTPCTOFRap[2][ptbin]->Fill(TPCsignalSubtracted,TOFsignalSubtracted,fAODTrack->Y(AliAODTrack::kProton));
+			
+            // Fill the MC reconstructed spectra histograms.
+            if (fMC) {
+                
+                Int_t aodlabel = TMath::Abs(fAODTrack->GetLabel());
+                AliAODMCParticle* mcparticle = (AliAODMCParticle*)fMCTracks->At(aodlabel);
+                Int_t mcPDG = mcparticle->PdgCode();
+                Int_t mcSpeciesBin = ConvertPdgCode(mcPDG);
+            
+                // Only fill hisotos for pions, kaons and protons.
+                if (mcSpeciesBin!=-999) {
+                    Double_t dataPt = fAODTrack->Pt();
+                    Double_t dataY=-999;
+                    if (mcSpeciesBin==0||mcSpeciesBin==1) {dataY = fAODTrack->Y(AliAODTrack::kPion);}
+                    if (mcSpeciesBin==2||mcSpeciesBin==3) {dataY = fAODTrack->Y(AliAODTrack::kKaon);}
+                    if (mcSpeciesBin==4||mcSpeciesBin==5) {dataY = fAODTrack->Y(AliAODTrack::kProton);}
+
+					//if (TMath::Abs(fAODTrack->Eta())>0.8) cout<<"Eta: "<<fAODTrack->Eta()<<" Ypion: "<<fAODTrack->Y(AliAODTrack::kPion)<<" Ykaon: "<<fAODTrack->Y(AliAODTrack::kKaon)<<" Yproton: "<<fAODTrack->Y(AliAODTrack::kProton)<<endl;
+					
+                    if (mcparticle->IsPhysicalPrimary()) {
+                        fPtEtaDistrDataPrim[mcSpeciesBin]->Fill(dataPt,eta);
+                        if (TMath::Abs(dataY)<fMaxRap) fPtRapDistrDataPrimRapCut[mcSpeciesBin]->Fill(dataPt,dataY);
+                    } else {
+                        fPtEtaDistrDataSec[mcSpeciesBin]->Fill(dataPt,eta);
+                        if (TMath::Abs(dataY)<fMaxRap) fPtRapDistrDataSecRapCut[mcSpeciesBin]->Fill(dataPt,dataY);
+                    }
+                }
+            }
+			
+
+			
+        }
     }
     
     // In This Loop the di-hadron correlation will be made.
@@ -904,9 +1154,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
     AliAODTrack* currentTrigger = 0x0;
 	AliAODTrack* currentAssociated = 0x0;
 	AliAODTrack* currentAssociatedGlobal = 0x0;
-    
-    AliTPCPIDResponse& TPCPIDResponse = fPIDResponse->GetTPCResponse();
-    
+        
     for (Int_t iTrig = 0; iTrig < triggers->GetEntriesFast(); iTrig++){
         
 		currentTrigger = (AliAODTrack*)(triggers->At(iTrig));
@@ -922,6 +1170,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
 
 			// Is there a caveat here when Pt = 5.00000000?
 			const Int_t ptbin = (Int_t)(2*pt);
+			// cout<<"pt: "<<pt<<" ptbin: "<<ptbin<<endl; // Works OK!
 			
 			if (currentAssociatedGlobal) {
 				
@@ -952,6 +1201,8 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
                 histoFill[2] = TPCsignal - expectedTPCsignalProton;
                 histoFill[3] = TOFsignal - expectedTOFsignalProton;
                 fDiHadronTPCTOF[2][ptbin]->Fill(histoFill);
+				
+				fDiHadron->Fill(histoFill[0],histoFill[1],pt);
                 
 			}
 		}
@@ -985,11 +1236,78 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t *)
                     
                     if (currentAssociatedGlobal) {
                         
-                        Double_t DPhi = PhiRange(fTrigBuffer[iTrig][1] - currentAssociated->Phi());
-                        Double_t DEta = fTrigBuffer[iTrig][2] - currentAssociated->Eta();
-                        Double_t pt = currentAssociated->Pt();
-                        
-                        fMixedEvents->Fill(DPhi,DEta,pt);
+						Double_t pt = currentAssociated->Pt();
+                        histoFill[0] = PhiRange(fTrigBuffer[iTrig][1] - currentAssociated->Phi());
+                        histoFill[1] = fTrigBuffer[iTrig][2] - currentAssociated->Eta();
+						
+						//const Int_t ptbin = (Int_t)(2*pt);
+						
+						// Get TPC (expected) signals.
+						Double_t TPCmom = currentAssociatedGlobal->GetTPCmomentum();
+						Double_t TPCsignal = currentAssociatedGlobal->GetTPCsignal();
+						Double_t expectedTPCsignalPion = TPCPIDResponse.GetExpectedSignal(TPCmom,AliPID::kPion);
+						Double_t expectedTPCsignalKaon = TPCPIDResponse.GetExpectedSignal(TPCmom,AliPID::kKaon);
+						Double_t expectedTPCsignalProton = TPCPIDResponse.GetExpectedSignal(TPCmom,AliPID::kProton);
+						
+						// Get TOF (expected) signals.
+						Double_t TOFsignal = currentAssociatedGlobal->GetTOFsignal();
+						Double_t times[AliPID::kSPECIES];
+						currentAssociatedGlobal->GetIntegratedTimes(times);
+						Double_t expectedTOFsignalPion = times[AliPID::kPion];
+						Double_t expectedTOFsignalKaon = times[AliPID::kKaon];
+						Double_t expectedTOFsignalProton = times[AliPID::kProton]; 
+						
+						// Fill the histograms.
+						histoFill[2] = TPCsignal - expectedTPCsignalPion;
+						histoFill[3] = TOFsignal - expectedTOFsignalPion;
+						//if (ptbin==1) fMixedEventsTPCTOF[0][ptbin]->Fill(histoFill);
+						
+						histoFill[2] = TPCsignal - expectedTPCsignalKaon;
+						histoFill[3] = TOFsignal - expectedTOFsignalKaon;
+						//if (ptbin==1) fMixedEventsTPCTOF[1][ptbin]->Fill(histoFill);
+						
+						histoFill[2] = TPCsignal - expectedTPCsignalProton;
+						histoFill[3] = TOFsignal - expectedTOFsignalProton;
+						//if (ptbin==1) fMixedEventsTPCTOF[2][ptbin]->Fill(histoFill);
+						
+						fMixedEvents->Fill(histoFill[0],histoFill[1],pt);
+						
+						/*
+						Double_t PionFillTPC = TPCsignal - expectedTPCsignalPion;
+						Double_t PionFillTOF = TOFsignal - expectedTOFsignalPion;
+						
+						Int_t PionMinTPC = (fDiHadronTPCTOF[0][ptbin]->GetAxis(2))->GetXmin();
+						Int_t PionMaxTPC = (fDiHadronTPCTOF[0][ptbin]->GetAxis(2))->GetXmax();
+						Int_t PionMinTOF = (fDiHadronTPCTOF[0][ptbin]->GetAxis(3))->GetXmin();
+						Int_t PionMaxTOF = (fDiHadronTPCTOF[0][ptbin]->GetAxis(3))->GetXmax();
+						
+						//cout<<PionMinTPC<<"<"<<PionFillTPC<<"<"<<PionMaxTPC<<"? "<<PionMinTOF<<"<"<<PionFillTOF<<"<"<<PionMaxTOF<<"?"<<endl;
+						if (PionFillTPC<PionMaxTPC&&PionFillTPC>PionMinTPC&&PionFillTOF<PionMaxTOF&&PionFillTOF>PionMinTOF) {
+							fMixedEventsTPCTOFCut[0]->Fill(DPhi,DEta,pt);
+							//cout<<"Yes! Histogram will be filled."<<endl;
+						}
+						
+						Double_t KaonFillTPC = TPCsignal - expectedTPCsignalKaon;
+						Double_t KaonFillTOF = TOFsignal - expectedTOFsignalKaon;
+						
+						Int_t KaonMinTPC = (fDiHadronTPCTOF[1][ptbin]->GetAxis(2))->GetXmin();
+						Int_t KaonMaxTPC = (fDiHadronTPCTOF[1][ptbin]->GetAxis(2))->GetXmax();
+						Int_t KaonMinTOF = (fDiHadronTPCTOF[1][ptbin]->GetAxis(3))->GetXmin();
+						Int_t KaonMaxTOF = (fDiHadronTPCTOF[1][ptbin]->GetAxis(3))->GetXmax();
+						if (KaonFillTPC<KaonMaxTPC&&KaonFillTPC>KaonMinTPC&&KaonFillTOF<KaonMaxTOF&&KaonFillTOF>KaonMinTOF) {
+							fMixedEventsTPCTOFCut[1]->Fill(DPhi,DEta,pt);
+						}
+						
+						Double_t ProtonFillTPC = TPCsignal - expectedTPCsignalProton;
+						Double_t ProtonFillTOF = TOFsignal - expectedTOFsignalProton;
+						Int_t ProtonMinTPC = (fDiHadronTPCTOF[2][ptbin]->GetAxis(2))->GetXmin();
+						Int_t ProtonMaxTPC = (fDiHadronTPCTOF[2][ptbin]->GetAxis(2))->GetXmax();
+						Int_t ProtonMinTOF = (fDiHadronTPCTOF[2][ptbin]->GetAxis(3))->GetXmin();
+						Int_t ProtonMaxTOF = (fDiHadronTPCTOF[2][ptbin]->GetAxis(3))->GetXmax();
+						if (ProtonFillTPC<ProtonMaxTPC&&ProtonFillTPC>ProtonMinTPC&&ProtonFillTOF<ProtonMaxTOF&&ProtonFillTOF>ProtonMinTOF) {
+							fMixedEventsTPCTOFCut[2]->Fill(DPhi,DEta,pt);
+						}
+						*/
 			
                     }
                 }
