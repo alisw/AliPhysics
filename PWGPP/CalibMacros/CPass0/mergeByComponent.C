@@ -1,20 +1,24 @@
-//___________________________________________________________________
 
-void merge(TString component, const Char_t *inputstring)
+void mergeByComponent(TString component, const Char_t *fileList=0, const Char_t *apath=0, const Char_t * apattern=0  )
 {
 
   /* load libs */
+  printf("Executing MergeByComponent.C\n");
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   TH1::AddDirectory(0);
 
-  /* copy only */
+  /* copy only */ 
   if (component == "COPY") {
-    CopyCPass(inputstring, "AliESDfriends_v1.root");
+    if (!apath || ! apattern){
+      printf("Alien find path or pattern not specified");
+      exit(1);
+    }
+    CopyCPass(apath, apattern);
     return;
   }
   
   /* merge component */
-  MergeCPass(inputstring, component);
+  MergeCPass(fileList, component);
   
 }
 
