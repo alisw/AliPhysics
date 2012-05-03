@@ -318,7 +318,7 @@ void AliHadCorrTask::UserExec(Option_t *)
           centbinch += 4;
         if (mombin>-1) {
           fHistMatchEtaPhi[centbinch][mombin]->Fill(etadiff,phidiff);
-          fHistMatchdRvsEP[centbinch]->Fill(dR,energyclus/mom);
+          fHistMatchdRvsEP[centbin]->Fill(dR,energyclus/mom);
         }
       }
       if (TMath::Abs(phidiff)<fPhiMatch && TMath::Abs(etadiff)<fEtaMatch) {
@@ -362,8 +362,8 @@ void AliHadCorrTask::UserExec(Option_t *)
             centbinch += 4;
           fHistMatchEtaPhi[centbinch][mombin]->Fill(dEtaMin,dPhiMin);
           if (mom>0){
-            fHistMatchEvsP[centbin]->Fill(energyclus,energyclus/mom);
             fHistEoPCent->Fill(cent,energyclus/mom);
+            fHistMatchEvsP[centbin]->Fill(energyclus,energyclus/mom);
             fHistMatchdRvsEP[centbin]->Fill(dRmin,energyclus/mom);
           }
           if (TMath::Abs(dPhiMin)<fPhiMatch && TMath::Abs(dEtaMin)<fEtaMatch) {
