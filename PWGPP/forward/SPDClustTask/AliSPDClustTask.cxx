@@ -112,7 +112,9 @@ AliSPDClustTask::AliSPDClustTask(const char *name)
   fDontMerge(kFALSE),
   fhPtPionIn(0),
   fhPtKaonIn(0),
-  fhPtProtonIn(0)
+  fhPtProtonIn(0),
+  fhPtK0sIn(0),
+  fhPtLambdaIn(0)
 {
   // Constructor
 
@@ -146,6 +148,8 @@ AliSPDClustTask::~AliSPDClustTask()
   if (fhPtPionIn) delete fhPtPionIn;
   if (fhPtKaonIn) delete fhPtKaonIn;
   if (fhPtProtonIn) delete fhPtProtonIn;
+  if (fhPtK0sIn) delete fhPtK0sIn;
+  if (fhPtLambdaIn) delete fhPtLambdaIn;
   //
 }
 
@@ -223,6 +227,35 @@ void AliSPDClustTask::UserExec(Option_t *)
     if (!fMCEvent) { AliError("Could not retrieve MC event"); return; }
     fStack = fMCEvent->Stack();
     if (!fStack) { AliError("Stack not available"); return; }
+    for (Int_t iPart = 0; iPart < fStack->GetNtrack(); ++iPart) {
+      if (!fStack->IsPhysicalPrimary(iPart)) continue;
+      TParticle* p = fStack->Particle(iPart);
+      if (TMath::Abs(p->Y()) > 0.5) continue;
+      TH1D *hPt = NULL;
+      switch (TMath::Abs(p->GetPdgCode())) {
+      case 211:
+	hPt = (TH1D*)fHistos->At(kHPtPion);
+	break;
+      case 321:
+	hPt = (TH1D*)fHistos->At(kHPtKaon);
+	break;
+      case 2212:
+	hPt = (TH1D*)fHistos->At(kHPtProton);
+	break;
+      case 310:
+	hPt = (TH1D*)fHistos->At(kHPtK0S);
+	break;
+      case 130:
+	hPt = (TH1D*)fHistos->At(kHPtK0L);
+	break;
+      case 3122:
+	hPt = (TH1D*)fHistos->At(kHPtLambda);
+	break;
+      default:
+	continue;
+      }
+      hPt->Fill(p->Pt());
+    }
   }
   //
   const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
@@ -251,38 +284,10 @@ void AliSPDClustTask::UserExec(Option_t *)
   AliMagF* field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!field && !esd->InitMagneticField()) {printf("Failed to initialize the B field\n");return;}
   //
-  AliStack *stack = NULL;
-  if (fUseMC) {
-    if (!fMCEvent) { AliError("Could not retrieve MC event"); return; }
-    stack = fMCEvent->Stack();
-    if (!stack) { AliError("ERROR: Could not get stack"); return; }
-    for (Int_t iPart = 0; iPart < stack->GetNtrack(); ++iPart) {
-      if (!stack->IsPhysicalPrimary(iPart)) continue;
-      TParticle* p = stack->Particle(iPart);
-      if (TMath::Abs(p->Y()) > 0.5) continue;
-      TH1D *hPt = NULL;
-      switch (TMath::Abs(p->GetPdgCode())) {
-      case 211:
-	hPt = (TH1D*)fHistos->At(kHPtPion);
-      case 321:
-	hPt = (TH1D*)fHistos->At(kHPtKaon);
-      case 2212:
-	hPt = (TH1D*)fHistos->At(kHPtProton);
-      case 310:
-	hPt = (TH1D*)fHistos->At(kHPtK0);
-      case 3122:
-	hPt = (TH1D*)fHistos->At(kHPtLambda0);
-      default:
-	continue;
-      }
-      hPt->Fill(p->Pt());
-    }
-  }
-  //
   InitMultReco();
   fMultReco->Reconstruct(fRPTree, fVtx);
   //  AliMultiplicity* mlt = fMultReco->GetMultiplicity();
-  FillHistos(stack);
+  FillHistos(fStack);
   //
   delete fMultReco; 
   fMultReco = 0;
@@ -383,6 +388,12 @@ TObjArray* AliSPDClustTask::BookHistos()
     histos->AddAtAndExpand(hPtKaon, kHPtKaon);
     TH1D *hPtProton = new TH1D("hPtProton","Protons Pt spectra (MC)",fhPtProtonIn->GetXaxis()->GetNbins(),fhPtProtonIn->GetXaxis()->GetXbins()->GetArray());
     histos->AddAtAndExpand(hPtProton, kHPtProton);
+    TH1D *hPtK0S = new TH1D("hPtK0S","K0s Pt spectra (MC)",fhPtK0sIn->GetXaxis()->GetNbins(),fhPtK0sIn->GetXaxis()->GetXbins()->GetArray());
+    histos->AddAtAndExpand(hPtK0S, kHPtK0S);
+    TH1D *hPtK0L = new TH1D("hPtK0L","K0l Pt spectra (MC)",fhPtK0sIn->GetXaxis()->GetNbins(),fhPtK0sIn->GetXaxis()->GetXbins()->GetArray());
+    histos->AddAtAndExpand(hPtK0L, kHPtK0L);
+    TH1D *hPtLambda = new TH1D("hPtLambda","Lambda0 Pt spectra (MC)",fhPtLambdaIn->GetXaxis()->GetNbins(),fhPtLambdaIn->GetXaxis()->GetXbins()->GetArray());
+    histos->AddAtAndExpand(hPtLambda, kHPtLambda);
   }
   //
   return histos;
@@ -501,6 +512,13 @@ void AliSPDClustTask::SetInput(const char *filename)
     fhPtProtonIn = (TH1F*)fPt->Get("protPtWeight")->Clone("fhPtProtonIn");
     fhPtProtonIn->SetDirectory(0);
     fhPtProtonIn->SetBinContent(fhPtProtonIn->GetNbinsX()+1,fhPtProtonIn->GetBinContent(fhPtProtonIn->GetNbinsX()));
+    fhPtK0sIn = (TH1F*)fPt->Get("k0sPtWeight")->Clone("fhPtK0sIn");
+    fhPtK0sIn->SetDirectory(0);
+    fhPtK0sIn->SetBinContent(fhPtK0sIn->GetNbinsX()+1,fhPtK0sIn->GetBinContent(fhPtK0sIn->GetNbinsX()));
+    fhPtLambdaIn = (TH1F*)fPt->Get("lambdaPtWeight")->Clone("fhPtLambdaIn");
+    fhPtLambdaIn->SetDirectory(0);
+    fhPtLambdaIn->SetBinContent(fhPtLambdaIn->GetNbinsX()+1,fhPtLambdaIn->GetBinContent(fhPtLambdaIn->GetNbinsX()));
+    fhPtLambdaIn->SetBinContent(0,fhPtLambdaIn->GetBinContent(1));
     fPt->Close();
   }
 }
@@ -536,9 +554,11 @@ Double_t AliSPDClustTask::PtWeight(Double_t pt, Int_t pdgCode)
   case 111:
     return fhPtPionIn->GetBinContent(fhPtPionIn->FindBin(pt));
   case 310:
-    return 3.;
+    return fhPtK0sIn->GetBinContent(fhPtK0sIn->FindBin(pt));
+  case 130:
+    return fhPtK0sIn->GetBinContent(fhPtK0sIn->FindBin(pt));
   case 3122:
-    return 3.;
+    return fhPtLambdaIn->GetBinContent(fhPtLambdaIn->FindBin(pt));
   default:
     return 1.;
   }

@@ -25,7 +25,7 @@ class AliESDTrackCuts;
 class AliSPDClustTask : public AliAnalysisTaskSE {
  public:
   enum {kHTracklets=0,
-	kHPtPion=50,kHPtKaon=51,kHPtProton=52,kHPtK0=53,kHPtLambda0=54,
+	kHPtPion=50,kHPtKaon=51,kHPtProton=52,kHPtK0S=53,kHPtK0L=54,kHPtLambda=55,
 	kHClusters=100,
 	kClTypevsEta=0,kClZ=1,kClEta=2,kClTypevsEtaW=3,kClZW=4,kClEtaW=5,
 	kClZPions=6, kClEtaPions=7, kClZPionsW=8, kClEtaPionsW=9,
@@ -107,8 +107,10 @@ class AliSPDClustTask : public AliAnalysisTaskSE {
   Bool_t fDontMerge;                       // no merging requested
   //
   TH1F*  fhPtPionIn; // Input histogram containing the pion spectra weight
-  TH1F*  fhPtKaonIn; // Input histogram containing the pion spectra weight
-  TH1F*  fhPtProtonIn; // Input histogram containing the pion spectra weight
+  TH1F*  fhPtKaonIn; // Input histogram containing the kaon spectra weight
+  TH1F*  fhPtProtonIn; // Input histogram containing the proton spectra weight
+  TH1F*  fhPtK0sIn; // Input histogram containing the K0s spectra weight
+  TH1F*  fhPtLambdaIn; // Input histogram containing the Lambda0 spectra weight
  private:    
   AliSPDClustTask(const AliSPDClustTask&); // not implemented
   AliSPDClustTask& operator=(const AliSPDClustTask&); // not implemented 
