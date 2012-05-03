@@ -218,6 +218,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TProfile2D    *fp2MultRPPhiTrackPt[kJetTypes];         //! for mean pT vs RP   
     TProfile2D    *fp2CentRPPhiTrackPt[kJetTypes];         //! for mean pT vs RP   
     THnSparseF    *fhnJetPt[kJetTypes];                  //! jet pt information for analysis
+    THnSparseF    *fhnJetPtBest[kJetTypes];                  //! best jet for analysis
+    THnSparseF    *fhnJetPtRej[kJetTypes];                  //! Rej jet for analysis
     THnSparseF    *fhnJetPtQA[kJetTypes];                //! jet pt information for QA
     THnSparseF    *fhnTrackPt[kJetTypes];                //! track pt information for analysis
     THnSparseF    *fhnTrackPtQA[kJetTypes];              //! track pt information for analysis
@@ -234,7 +236,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 19); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 20); // Analysis task for standard jet analysis
 };
  
 #endif

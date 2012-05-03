@@ -147,6 +147,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
     fp2MultRPPhiTrackPt[ij] = 0;
     fp2CentRPPhiTrackPt[ij] = 0;
     fhnJetPt[ij] = 0;
+    fhnJetPtBest[ij] = 0;
+    fhnJetPtRej[ij] = 0;
     fhnJetPtQA[ij] = 0;
     fhnTrackPt[ij] = 0;
     fhnTrackPtQA[ij] = 0;
@@ -244,6 +246,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fp2MultRPPhiTrackPt[ij] = 0;
     fp2CentRPPhiTrackPt[ij] = 0;
     fhnJetPt[ij] = 0;
+    fhnJetPtBest[ij] = 0;
+    fhnJetPtRej[ij] = 0;
     fhnJetPtQA[ij] = 0;
     fhnTrackPt[ij] = 0;
     fhnTrackPtQA[ij] = 0;
@@ -489,19 +493,32 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger, leading track pT total bins = 4.5M
     const Int_t nBinsSparse1 = 8;
     const Int_t nBinsLeadingTrackPt = 10;
-    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 1,fNTrigger,nBinsLeadingTrackPt};
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  20,    fNRPBins, 5,fNTrigger,nBinsLeadingTrackPt};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
       nBins1[5] = 1;
     }
     const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5,0.};
-    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.};
+    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,4000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.};
     
     const Double_t binArrayLeadingTrackPt[nBinsLeadingTrackPt+1] = {xmin1[7],1.,2.,3.,4.,5.,6.,8.,10.,12.,xmax1[7]}; //store pT of leading track in jet
 
-    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger:leading track p_{T}",nBinsSparse1,nBins1,xmin1,xmax1);
+    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leading track p_{T}",nBinsSparse1,nBins1,xmin1,xmax1);
     fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
     fHistList->Add(fhnJetPt[ij]);
+
+
+    // Bins:  pTJet, cent, trigger, 
+    const Int_t nBinsSparse1b = 3;
+    Int_t nBins1b[nBinsSparse1b] = {120, 10,fNTrigger};
+    const Double_t xmin1b[nBinsSparse1b]  = {-50,  0,-0.5};
+    const Double_t xmax1b[nBinsSparse1b]  = {250,100,fNTrigger-0.5};
+
+    fhnJetPtBest[ij] = new THnSparseF(Form("fhnJetPtBest%s",cAdd.Data()),";p_{T,jet};cent;trigger",nBinsSparse1b,nBins1b,xmin1b,xmax1b);
+    fHistList->Add(fhnJetPtBest[ij]);
+
+    fhnJetPtRej[ij] = new THnSparseF(Form("fhnJetPtRej%s",cAdd.Data()),";p_{T,jet};cent;trigger",nBinsSparse1b,nBins1b,xmin1b,xmax1b);
+    fHistList->Add(fhnJetPtRej[ij]);
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
     const Int_t nBinsSparse2 = 7;
@@ -511,12 +528,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     }
     const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.,-0.5};
     const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 100, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5};
-    fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area",nBinsSparse2,nBins2,xmin2,xmax2);
+    fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area;trigger",nBinsSparse2,nBins2,xmin2,xmax2);
     fHistList->Add(fhnJetPtQA[ij]);
     
     // Bins:track number  pTtrack, cent, mult, RP.   total bins = 224 k
     const Int_t nBinsSparse3 = 6;
-    const Int_t nBins3[nBinsSparse3] = {       2,    100,     10,  20,    fNRPBins,fNTrigger};
+    const Int_t nBins3[nBinsSparse3] = {       2,    100,     10,   1,    fNRPBins,fNTrigger};
     const Double_t xmin3[nBinsSparse3]  = { -0.5,      0,   0,      0,        -0.5,-0.5};
     const Double_t xmax3[nBinsSparse3]  = { 1.5,     200, 100,   4000,fNRPBins-0.5,fNTrigger-0.5};  
     
@@ -527,19 +544,20 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       if(xPt3[i-1]<2)xPt3[i] = xPt3[i-1] + 0.05; // 1 - 40
       else if(xPt3[i-1]<4)xPt3[i] = xPt3[i-1] + 0.2; // 41 - 50
       else if(xPt3[i-1]<10)xPt3[i] = xPt3[i-1] + 0.5; // 50 - 62
-      else if(xPt3[i-1]<20)xPt3[i] = xPt3[i-1] +  1.; // 62 - 72
-	else if(xPt3[i-1]<30)xPt3[i] = xPt3[i-1] + 2.5; // 74 - 78
-	else xPt3[i] = xPt3[i-1] + 5.; // 78 - 100 = 140 
+      else if(xPt3[i-1]<15)xPt3[i] = xPt3[i-1] +  1.; // 62 - 67
+      else if(xPt3[i-1]<20)xPt3[i] = xPt3[i-1] + 2.; // 67 - 72
+      else if(xPt3[i-1]<60)xPt3[i] = xPt3[i-1] + 5; // 72 - 76
+      else xPt3[i] = xPt3[i-1] + 10; // 76 - 100 = 140 
     }
     
-      fhnTrackPt[ij] = new THnSparseF(Form("fhnTrackPt%s",cAdd.Data()),";track number;p_{T};cent;#tracks;RP",nBinsSparse3,nBins3,xmin3,xmax3);
+      fhnTrackPt[ij] = new THnSparseF(Form("fhnTrackPt%s",cAdd.Data()),";track number;p_{T};cent;#tracks;RP;trigger",nBinsSparse3,nBins3,xmin3,xmax3);
       fhnTrackPt[ij]->SetBinEdges(1,xPt3);
       fHistList->Add(fhnTrackPt[ij]);
       delete [] xPt3;
 
       // Track QA bins track nr, pTrack, cent, eta, phi bins 5.4 M
       const Int_t nBinsSparse4 = 5;
-      const Int_t nBins4[nBinsSparse4] =    {    2, 50,  10,  20, 360};
+      const Int_t nBins4[nBinsSparse4] =    {    2, 50,  10,  20, 180};
       const Double_t xmin4[nBinsSparse4]  = { -0.5,  0,   0, -1.0,   0.};
       const Double_t xmax4[nBinsSparse4]  = {  1.5,150, 100,  1.0,2.*TMath::Pi()};  
 
@@ -913,22 +931,42 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   Int_t ij1 = -1;
 
   Double_t var1[8] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leadingTrackPt
+  Double_t var1b[3] = {0,}; // p_{T,jet};cent;trigger;
 
   var1[2] = fCentrality; 
+  var1b[1] = fCentrality; 
   var1[3] = refMult;
 
-  Double_t var2[6] = {0,}; // jet number;p_{T,jet};cent;#eta;#phi;area
+  
+
+  Double_t var2[7] = {0,}; // jet number;p_{T,jet};cent;#eta;#phi;area;trigger
   var2[2] = fCentrality;
 
   for(int ij = 0;ij < nJets;ij++){
     AliAODJet *jet = (AliAODJet*)jetsList.At(ij);
     Float_t ptJet = jet->Pt();
+    
+    
     if(ptJet<0.150)ptJet = jet->GetPtSubtracted(0);
+
+    var1b[0] = ptJet;
     if(jet->Trigger()&fJetTriggerBestMask){
       fh1PtJetsInBest[iType]->Fill(ptJet);
+      for(int it = 0;it <fNTrigger;it++){
+	if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+	  var1b[2] = it;
+	  fhnJetPtBest[iType]->Fill(var1b);
+	}
+      }
     }
     if(jet->Trigger()&fJetTriggerExcludeMask){
       fh1PtJetsInRej[iType]->Fill(ptJet);
+      for(int it = 0;it <fNTrigger;it++){
+	if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+	  var1b[2] = it;
+	  fhnJetPtRej[iType]->Fill(var1b);
+	}
+      }
       continue;
     }
     fh1PtJetsIn[iType]->Fill(ptJet);
@@ -983,10 +1021,11 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 	for(int it = 0;it <fNTrigger;it++){
 	  if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
 	    var1[6] = it;
+	    var2[6] = it;
 	    fhnJetPt[iType]->Fill(var1);
+	    fhnJetPtQA[iType]->Fill(var2);
 	  }
 	}
-	fhnJetPtQA[iType]->Fill(var2);
       }
       var1[0] = kMaxJets;// fill for all jets
       var2[0] = kMaxJets;// fill for all jets
@@ -1080,7 +1119,7 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
   }
 
   // 
-  Double_t var3[5]; // track number;p_{T};cent;#tracks;RP
+  Double_t var3[6]; // track number;p_{T};cent;#tracks;RP
   var3[2] = fCentrality;
   var3[3] = refMult;
   Double_t var4[5]; // track number;p_{T};cent;#eta;#phi
@@ -1143,13 +1182,27 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
       var4[4] = tmpPhi;
 
 
-      fhnTrackPt[iType]->Fill(var3);
+      
+      for(int it = 0;it <fNTrigger;it++){
+	if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+	  var3[0] = 1;
+	  var3[5] = it;
+	  fhnTrackPt[iType]->Fill(var3);
+	  if(tmpTrack==leading){
+	    var3[0] = 0;	 
+	    fhnTrackPt[iType]->Fill(var3);   
+	  }
+	}
+      }
+
+
+
+
+
       fhnTrackPtQA[iType]->Fill(var4);
 
       if(tmpTrack==leading){
-	var3[0] = 0;
 	var4[0] = 0;
-	fhnTrackPt[iType]->Fill(var3);
 	fhnTrackPtQA[iType]->Fill(var4);
 	continue;
       }

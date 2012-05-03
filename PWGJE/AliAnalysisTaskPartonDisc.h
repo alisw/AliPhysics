@@ -101,6 +101,9 @@ class AliAnalysisTaskPartonDisc : public AliAnalysisTaskSE {
   virtual void  ForceSkipSingleTrackJets(const Bool_t flagForceSJ) {fForceSkipSJ = flagForceSJ;};
   Bool_t        IsEqualRel(Double_t vA, Double_t vB);
   virtual void  SetEnableJetEtaRestriction(Bool_t flagEnableJetEtaRes) {fIncreasingExcl = flagEnableJetEtaRes;}
+  virtual void  SetTrackRandomRejectionPerc(const Double_t perctrackrr) {fTTrackRandomRejection = perctrackrr;}
+  virtual void  SetTrackInJetRandomRejectionPerc(const Double_t perctrackijrr) {fJTrackRandomRejection = perctrackijrr;}
+  virtual void  SetMinPtCutGlobMult(const Double_t minptglobmult) {fMinPtInGlobMult = minptglobmult;}
 
  private:
   AliAODEvent *fAOD;         //! AOD object
@@ -277,11 +280,27 @@ class AliAnalysisTaskPartonDisc : public AliAnalysisTaskSE {
   TH2F        *fJetPtCentPbPbCorr;          //! Corrected pT spectrum of reco jets, centrality in PbPb
   Double_t     fJetAcceptance;              //  Acceptance cut on jets, for multiplicity in PbPb
   Bool_t       fIncreasingExcl;             //  Flag to indicate that the analyis increases exclusion beyond jet radius
+  TH3F        *fTotTracksCone;              //! total number of tracks in the jet cone, for jet pT (raw) ranges and centralities
+  Int_t        fTotTracksInCone;            //  Total number of tracks in the jet cone
+
+  Double_t     fTTrackRandomRejection;      //  Percentage of tracks from the event randomly rejected
+  Double_t     fJTrackRandomRejection;      //  Percentage of tracks from the jet randomly rejected
+  TH1F        *fJEtaMCMultOJ[8];            //! Eta distribution of jets as a function of jet pt (MC), for V0-like multiplicities in pp, 1 Jet
+  TH1F        *fJEtaMCMultSEOJ[8];          //! Eta distribution of jets as a function of jet pt (MC), for TPC-like multiplicities in pp, 1 Jet
+  TH1F        *fJEtaRDMultOJ[8];            //! Eta distribution of jets as a function of jet pt (Reco Data), for V0 multiplicities in pp, 1 Jet
+  TH1F        *fJEtaRDMultSEOJ[8];          //! Eta distribution of jets as a function of jet pt (Reco Data), for TPC-like multiplicities in pp, 1 Jet
+  TH1F        *fJetPtMCMultOJ[8];           //! Pt spectrum jets (MC), for V0-like multiplicities in pp, 1 jet
+  TH1F        *fJetPtMCMultSEOJ[8];         //! Pt spectrum jets (MC), for TPC-like multiplicities in pp, 1 jet
+  TH1F        *fJetPtRDMultOJ[8];           //! Pt spectrum jets (Reco Data), for V0 multiplicities in pp, 1 jet
+  TH1F        *fJetPtRDMultSEOJ[8];         //! Pt spectrum jets (Reco Data), for TPC multiplicities in pp, 1 jet
+  TH2F        *fEntriesQuark[8];            //! Quark NT90 in MC in the multiplicity bins
+  TH2F        *fEntriesGluon[8];            //! Gluon NT90 in MC in the multiplicity bins
+  Double_t     fMinPtInGlobMult;            //  Min pT used in the global multiplicity calculation
 
   AliAnalysisTaskPartonDisc(const AliAnalysisTaskPartonDisc&); // not implemented
   AliAnalysisTaskPartonDisc& operator=(const AliAnalysisTaskPartonDisc&); // not implemented
   
-  ClassDef(AliAnalysisTaskPartonDisc, 2); 
+  ClassDef(AliAnalysisTaskPartonDisc, 4); 
 };
 
 #endif

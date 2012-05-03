@@ -1235,11 +1235,11 @@
       kUseSysInfo = 1;
       kUseDebug = kTRUE;
       kTrainName             = Form("pwg4train_test_local");
-      kLocalDataList = "local_esd_lhc10d_pass2.txt";
+      kLocalDataList = "runlists/all/local_esd_lhc10h.txt";
       kUsePAR              = kFALSE; // cannot patch the macro for local test, need to laod FASTjet libs before loading FASTJETA.so
       kUseCPAR            = kFALSE;
       if(bRun==802){
-	kLocalDataList = "local_esd_lhc10h.txt";
+	kLocalDataList = "runlists/all/local_esd_lhc10h.txt";
 	if(iAODanalysis)	  kLocalDataList = "local_aod_lhc10h.txt";
       }
       else if (bRun == 5014){
