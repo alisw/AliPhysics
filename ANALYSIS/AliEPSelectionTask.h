@@ -49,7 +49,7 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   virtual void  SetDebugLevel(Int_t level)   {fDebug = level;}
   void SetInput(const char* input)           {fAnalysisInput = input;}
   void SetUseMCRP()			     {fUseMCRP = kTRUE;}
-  void SetUsePhiWeight()		     {fUsePhiWeight = kTRUE;}
+  void SetUsePhiWeight(Bool_t usephi = kTRUE){fUsePhiWeight = usephi;}
   void SetUsePtWeight()			     {fUsePtWeight = kTRUE;}
   void SetSaveTrackContribution()	     {fSaveTrackContribution = kTRUE;}
   void SetTrackType(TString tracktype);

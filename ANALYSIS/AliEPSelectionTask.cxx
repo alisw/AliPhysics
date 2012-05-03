@@ -635,7 +635,7 @@ Double_t AliEPSelectionTask::GetPhiWeight(TObject* track1)
 //__________________________________________________________________________
 void AliEPSelectionTask::SetPhiDist() 
 {
-  if(!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
+  if(!fUserphidist && (fPeriod.CompareTo("LHC10h") == 0 || fPeriod.CompareTo("LHC11h") == 0)) { // if it's already set and custom class is required, we use the one provided by the user
 
     if (fPeriod.CompareTo("LHC10h")==0)
        {
@@ -678,9 +678,7 @@ void AliEPSelectionTask::SetPhiDist()
     if (!fPhiDist[0]) AliFatal(Form("Cannot find OADB phi distribution for run %d", fRunNumber));
 
   } 
-  else {
-    AliInfo("Using Custom Phi Distribution");
-  }
+  
     
   if (fPeriod.CompareTo("LHC10h")==0 || fUserphidist){
      Bool_t emptybins;
@@ -705,6 +703,10 @@ void AliEPSelectionTask::SetPhiDist()
      if (emptybins) {
        AliError("After Maximum of rebinning still empty Phi-bins!!!");
      }
+  }
+  if (fPeriod.CompareTo("LHC10h") != 0 && fPeriod.CompareTo("LHC11h") != 0 && !fUserphidist){
+  AliInfo("No Phi-weights available. All Phi weights set to 1");
+  SetUsePhiWeight(kFALSE);
   }
 }
 
