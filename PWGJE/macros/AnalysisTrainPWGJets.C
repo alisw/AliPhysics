@@ -41,7 +41,7 @@ Int_t       iAODanalysis       = 1;      // Analysis on input AOD's
 Int_t       iFilterAnalysis       = 0;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iCentralitySelection  = 0;      // Use the centrality
-Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
+Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iPhysicsSelection  = 1;      // ESD to AOD filter (barrel + muon tracks)
 UInt_t      iPhysicsSelectionFlag = 1; // set by pyshics selection and passed to the task, kMB, kUserDefined etc
 Bool_t      useTender           = kFALSE; // use tender wagon 
@@ -463,9 +463,9 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    
    if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
-      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskESDFilterPWG4Train.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskESDFilterPWGJETrain.C");
       // switch on centrality make for PbPb
-      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilterPWG4Train(kUseKinefilter); // carefull, if physics selection is enabled you may get not primary vertex pointer later on...
+      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilterPWGJETrain(kUseKinefilter); // carefull, if physics selection is enabled you may get not primary vertex pointer later on...
       taskesdfilter->SetEnableFillAOD(!kFilterAOD);
       taskesdfilter->DisableV0s();
       taskesdfilter->DisableCascades();
@@ -958,7 +958,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    if(iPWG4JetServices){
      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJetServices.C");
      AliAnalysisTaskJetServices *taskjetServ = 0;
-     taskjetServ = AddTaskJetServices("/Users/kleinb/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_110818a.root");
+     taskjetServ = AddTaskJetServices();
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
      else taskjetServ->SetRunRange(110000,160000);
@@ -1813,7 +1813,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }
 
    if(iPWG4JetTasks){
-     if (!LoadLibrary("PWGBase", mode, kTRUE)) return kFALSE;
+     if (!LoadLibrary("PWGTools", mode, kTRUE)) return kFALSE;
      if (!LoadLibrary("PWGJE", mode, kTRUE)) return kFALSE;
    }
 
