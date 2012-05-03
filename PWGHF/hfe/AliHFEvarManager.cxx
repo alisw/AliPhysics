@@ -41,6 +41,7 @@
 
 #include "AliHFEcontainer.h"
 #include "AliHFEsignalCuts.h"
+#include "AliHFEtools.h"
 #include "AliHFEvarManager.h"
 
 ClassImp(AliHFEvarManager)
@@ -164,7 +165,7 @@ void AliHFEvarManager::AddVariable(TString name){
   else if(!name.CompareTo("charge"))
     fVariables->AddLast(new AliHFEvariable("charge", "charge", kCharge, 2, -1.1, 1.1));
   else if(!name.CompareTo("source"))
-    fVariables->AddLast(new AliHFEvariable("source", "source", kSource, 5, 0, 5));
+    fVariables->AddLast(new AliHFEvariable("source", "source", kSource, 8, 0, 8));
   else if(!name.CompareTo("centrality"))
     fVariables->AddLast(new AliHFEvariable("centrality", "centrality", kCentrality, 11, 0.0, 11.0));
   else if(!name.CompareTo("species"))
@@ -319,11 +320,14 @@ Double_t AliHFEvarManager::GetValue(AliVParticle *track, UInt_t code, Float_t ce
     }
     case kSource:{
       if(fSignal){
-	      if(fSignal->IsCharmElectron(track)) value = 0;
-	      else if(fSignal->IsBeautyElectron(track)) value = 1;
-	      else if(fSignal->IsGammaElectron(track)) value = 2;
+	if(fSignal->IsCharmElectron(track)) value = 0;
+	else if(fSignal->IsBeautyElectron(track)) value = 1;
+	else if(fSignal->IsGammaElectron(track)) value = 2;
         else if(fSignal->IsNonHFElectron(track)) value = 3;
-	      else value = 4;
+        else if(fSignal->IsJpsiElectron(track)) value = 4;
+        else if(fSignal->IsB2JpsiElectron(track)) value = 5;
+        else if(fSignal->IsKe3Electron(track)) value = 6;
+	else value = 7;
       }
       AliDebug(2, Form("source: %f", value));
       break;
@@ -455,6 +459,7 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable():
   , fMax(0)
   , fBinning()
   , fIsLogarithmic(kFALSE)
+  , fUserDefinedBinning(kFALSE)
 {
   // 
   // Dummy constructor
@@ -470,6 +475,7 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const Char_t *name, const Char_
   , fMax(0.)
   , fBinning()
   , fIsLogarithmic(kFALSE)
+  , fUserDefinedBinning(kTRUE)
 {
   // 
   // Default constructor
@@ -487,6 +493,7 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const Char_t *name, const Char_
   , fMax(max)
   , fBinning()
   , fIsLogarithmic(isLogarithmic)
+  , fUserDefinedBinning(kFALSE)
 {
   // 
   // Default constructor
@@ -502,6 +509,7 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const AliHFEvarManager::AliHFEv
   , fMax(ref.fMax)
   , fBinning(ref.fBinning)
   , fIsLogarithmic(ref.fIsLogarithmic)
+  , fUserDefinedBinning(ref.fUserDefinedBinning)
 {
   // 
   // Copy constructor
@@ -522,6 +530,7 @@ AliHFEvarManager::AliHFEvariable& AliHFEvarManager::AliHFEvariable::operator=(co
     fMax = ref.fMax;
     fMin = ref.fMin;
     fIsLogarithmic = ref.fIsLogarithmic;
+    fUserDefinedBinning = ref.fUserDefinedBinning;
   }
   return *this;
 }
@@ -531,5 +540,21 @@ AliHFEvarManager::AliHFEvariable::~AliHFEvariable(){
   //
   // Destruktor
   //
+}
+
+//_______________________________________________
+Double_t* AliHFEvarManager::AliHFEvariable::GetBinning() { 
+  if(fUserDefinedBinning) return fBinning.GetArray(); 
+
+  // No User defined Binning - create one and store in fBinning
+  if(fBinning.GetSize() != 0) return fBinning.GetArray();
+  else{
+    Double_t *binning;
+    if(fIsLogarithmic) binning = AliHFEtools::MakeLogarithmicBinning(fNBins, fMin, fMax);
+    else binning = AliHFEtools::MakeLogarithmicBinning(fNBins, fMin, fMax);
+    fBinning.Set(fNBins+1, binning);
+    delete binning;
+    return fBinning.GetArray();
+  }
 }
 

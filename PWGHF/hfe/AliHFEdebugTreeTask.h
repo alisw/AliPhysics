@@ -23,9 +23,11 @@
 
 class AliHFEcuts;
 class AliHFEsignalCuts;
+class AliTrackReference;
 class TString;
 class TTreeSRedirector;
 class AliHFEpidTRD;
+class AliHFEpidTPC;
 
 class AliHFEdebugTreeTask : public AliAnalysisTaskSE{
   public:
@@ -42,20 +44,32 @@ class AliHFEdebugTreeTask : public AliAnalysisTaskSE{
     void SetMinNclustersTPC(Int_t mincl) { fNclustersTPC = mincl; };
     void SetMinNclustersTPCPID(Int_t mincl) { fNclustersTPCPID = mincl; };
     void SetMinNclustersITS(Int_t mincl) { fNclustersITS = mincl; };
+    Int_t GetElecSourceMC(TParticle * const mcpart); // return electron source id
+    AliHFEpidTPC *GetTPCResponse() { return fTPCpid; }
     
   private:
     AliHFEdebugTreeTask(const AliHFEdebugTreeTask &);
     AliHFEdebugTreeTask &operator=(const AliHFEdebugTreeTask &);
+
+    AliTrackReference *FindTrackReference(AliMCParticle *track, Float_t minRadius, Float_t maxRadius, Int_t detectorID);
     
     AliHFEcuts *fTrackCuts;           // Track
     AliHFEsignalCuts *fSignalCuts;    // Signal Cuts
     AliHFEpidTRD *fTRDpid;            // TRD PID
+    AliHFEpidTPC *fTPCpid;            // TPC PID
+    AliHFEextraCuts *fExtraCuts;      // HFE IP info
     Int_t fNclustersTPC;              // Min Number of clusters in TPC
     Int_t fNclustersTPCPID;           // Min Number of clusters for TPC PID
     Int_t fNclustersITS;              // Min Number of clusters in ITS
     TString fFilename;                // file name for the debug tree
     TTreeSRedirector *fDebugTree;     // Debug Tree
-
+    Int_t fNparents; // number of heavy hadrons to be considered
+    Int_t fParentSelect[2][7]; // heavy hadron species
+    static const Int_t fgkGluon=21; // gluon pdg code
+    static const Int_t fgkMaxGener=10; // ancester level wanted to be checked 
+    static const Int_t fgkMaxIter=100; // number of iteration to find out matching particle 
+    static const Int_t fgkqType=7; // number of particle type to be checked
+    static const Int_t fgkEtaRanges=3; // cuts for different eta ranges
     ClassDef(AliHFEdebugTreeTask, 1)
 };
 #endif

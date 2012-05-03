@@ -214,6 +214,7 @@ void AliHFEtrdPIDqa::Init(){
   CreateHistoTruncatedMean();
 
   fTRDpid = new AliHFEpidTRD("QAtrdPID");
+  if(fTotalChargeInSlice0) fTRDpid->SetTotalChargeInSlice0();
 }
 
 //__________________________________________________________________

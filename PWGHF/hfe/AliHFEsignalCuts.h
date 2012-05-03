@@ -44,6 +44,9 @@ class AliHFEsignalCuts : public AliAnalysisCuts{
     Bool_t IsBeautyElectron(const TObject * const o) const;
     Bool_t IsGammaElectron(const TObject * const o) const;
     Bool_t IsNonHFElectron(const TObject * const o) const;
+    Bool_t IsJpsiElectron(const TObject * const o) const;
+    Bool_t IsB2JpsiElectron(const TObject * const o) const;
+    Bool_t IsKe3Electron(const TObject * const o) const;
 
     //void SetMCEvent(AliMCEvent *mc) { fMC = mc; }
     void SetMCEvent(AliMCEvent *mc);

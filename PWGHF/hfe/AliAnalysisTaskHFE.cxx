@@ -92,6 +92,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
+  , fUseFlagAOD(kTRUE)
+  , fApplyCutAOD(kFALSE)
+  , fFlags(1<<4)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -99,9 +102,11 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fPassTheEventCut(kFALSE)
   , fRejectKinkMother(kTRUE)
   , fisppMultiBin(kFALSE)
+  , fPbPbUserCentralityBinning(kFALSE)
   , fisNonHFEsystematics(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
+  , fCentralityPercent(-1)
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
@@ -138,6 +143,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   memset(fkBackGroundFactorArray, 0, sizeof(TF1 *) * 12);
   memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
   memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
+  memset(&fPbPbUserCentralityBinning, 0, sizeof(Float_t) * 12);
+
+
 }
 
 //____________________________________________________________
@@ -147,6 +155,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
+  , fUseFlagAOD(kTRUE)
+  , fApplyCutAOD(kFALSE)
+  , fFlags(1<<4)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -154,9 +165,11 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fPassTheEventCut(kFALSE)  
   , fRejectKinkMother(kTRUE)
   , fisppMultiBin(kFALSE)
+  , fPbPbUserCentralityBinning(kFALSE)
   , fisNonHFEsystematics(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
+  , fCentralityPercent(-1)
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
@@ -200,6 +213,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   memset(fkBackGroundFactorArray, 0, sizeof(TF1 *) * 12);
   memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
   memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
+  memset(&fPbPbUserCentralityBinning, 0, sizeof(Float_t) * 12);
+
 }
 
 //____________________________________________________________
@@ -209,6 +224,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fPlugins(0)
   , fFillSignalOnly(ref.fFillSignalOnly)
   , fFillNoCuts(ref.fFillNoCuts)
+  , fUseFlagAOD(ref.fUseFlagAOD)
+  , fApplyCutAOD(ref.fApplyCutAOD)
+  , fFlags(ref.fFlags) 
   , fBackGroundFactorApply(ref.fBackGroundFactorApply)
   , fRemovePileUp(ref.fRemovePileUp)
   , fIdentifiedAsPileUp(ref.fIdentifiedAsPileUp)
@@ -216,9 +234,11 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fPassTheEventCut(ref.fPassTheEventCut)
   , fRejectKinkMother(ref.fRejectKinkMother)
   , fisppMultiBin(ref.fisppMultiBin)
+  , fPbPbUserCentralityBinning(ref.fPbPbUserCentralityBinning)
   , fisNonHFEsystematics(ref.fisNonHFEsystematics)
   , fSpecialTrigger(ref.fSpecialTrigger)
   , fCentralityF(ref.fCentralityF)
+  , fCentralityPercent(ref.fCentralityPercent)
   , fContributors(ref.fContributors)
   , fWeightBackGround(ref.fWeightBackGround)
   , fVz(ref.fVz)
@@ -274,6 +294,9 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fPlugins = fPlugins;
   target.fFillSignalOnly = fFillSignalOnly;
   target.fFillNoCuts = fFillNoCuts;
+  target.fUseFlagAOD = fUseFlagAOD;
+  target.fApplyCutAOD = fApplyCutAOD;
+  target.fFlags = fFlags;
   target.fBackGroundFactorApply = fBackGroundFactorApply;
   target.fRemovePileUp = fRemovePileUp;
   target.fIdentifiedAsPileUp = fIdentifiedAsPileUp;
@@ -281,9 +304,11 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fPassTheEventCut = fPassTheEventCut;
   target.fRejectKinkMother = fRejectKinkMother;
   target.fisppMultiBin =   fisppMultiBin;
+  target.fPbPbUserCentralityBinning = fPbPbUserCentralityBinning;
   target.fisNonHFEsystematics = fisNonHFEsystematics;
   target.fSpecialTrigger = fSpecialTrigger;
   target.fCentralityF = fCentralityF;
+  target.fCentralityPercent = fCentralityPercent;
   target.fContributors = fContributors;
   target.fWeightBackGround = fWeightBackGround;
   target.fVz = fVz;
@@ -580,6 +605,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
 
   // Event loop
   if(IsAODanalysis()){
+    //printf("test\n");
     ProcessAOD();
   } else {
     const char *specialTrigger = GetSpecialTrigger(fInputEvent->GetRunNumber());
@@ -698,6 +724,7 @@ void AliAnalysisTaskHFE::ProcessMC(){
         fMCQA->SetMCEvent(fMCEvent);
         fMCQA->SetGenEventHeader(fMCEvent->GenEventHeader());
         fMCQA->SetCentrality(fCentralityF);
+        fMCQA->SetPercentrality(fCentralityPercent);
         if(IsPbPb()) { fMCQA->SetPbPb();}
         else
         {
@@ -825,7 +852,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
   memset(container, 0, sizeof(Double_t) * 10);
   // container for the output THnSparse
   Double_t dataE[6]; // [pT, eta, Phi, type, 'C' or 'B']
-  Double_t dataDca[7]; // [source, pT, dca, dcaSig, centrality]
+  Double_t dataDca[8]; // [source, pT, dca, dcaSig, centrality]
+  Double_t eDca[6]; // [source, pT, dca, dcaSig, centrality]
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
@@ -991,6 +1019,62 @@ void AliAnalysisTaskHFE::ProcessESD(){
            //}
         }
       }
+
+      // check if it is the proton from the lambda decay, and yes fill the dca info
+      Double_t hfeimpactR4p=0., hfeimpactnsigmaR4p=0.;
+      if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 211)){
+        if(track->Pt()>4.){
+          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4p, hfeimpactnsigmaR4p);
+          fQACollection->Fill("pionDcaSig",track->Pt(),hfeimpactnsigmaR4p);
+        }
+      }
+      else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 2212)){
+        fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4p, hfeimpactnsigmaR4p);
+        fQACollection->Fill("protonDcaSig",track->Pt(),hfeimpactnsigmaR4p);
+        Int_t glabel=TMath::Abs(mctrack->GetMother());
+        if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+          if(TMath::Abs(mctrackmother->Particle()->GetPdgCode())==3122){
+            fQACollection->Fill("secondaryprotonDcaSig",track->Pt(),hfeimpactnsigmaR4p);
+          }
+        }
+      }
+      else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 11)){ // to increas statistics for Martin
+        if(signal){
+          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4p, hfeimpactnsigmaR4p);
+          Int_t sourceDca =-1;
+          if(fSignalCuts->IsCharmElectron(track)){
+            sourceDca=1;
+          }
+          else if(fSignalCuts->IsBeautyElectron(track)){
+            sourceDca=2;
+          }
+          else if(fSignalCuts->IsGammaElectron(track)){
+            sourceDca=3;
+          }
+          else if(fSignalCuts->IsNonHFElectron(track)){
+            sourceDca=4;
+          }
+          else if(fSignalCuts->IsJpsiElectron(track)){
+            sourceDca=5;
+          }
+          else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
+            sourceDca=6;
+            fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
+            fQACollection->Fill("hadronsBeforeIPcutMC",mctrack->Pt());
+          }
+          else {
+            sourceDca=7;
+          }
+          eDca[0]=sourceDca;
+          eDca[1]=track->Pt();
+          eDca[2]=hfeimpactR4p;
+          eDca[3]=hfeimpactnsigmaR4p;
+          eDca[4]=fCentralityF;
+          eDca[5] = track->Charge()/3;
+
+          fQACollection->Fill("eDca", eDca);
+        }
+      }
     }
 
     if(TMath::Abs(track->Eta()) < 0.5){
@@ -1136,26 +1220,28 @@ void AliAnalysisTaskHFE::ProcessESD(){
       sourceDca=0;
       if(HasMCData())
       {
-        // minjung for IP QA(temporary ~ 2weeks)
-	  if(fSignalCuts->IsCharmElectron(track)){
-	      sourceDca=1;
+	if(fSignalCuts->IsCharmElectron(track)){
+	  sourceDca=1;
         }
-	  else if(fSignalCuts->IsBeautyElectron(track)){
-	      sourceDca=2;
+	else if(fSignalCuts->IsBeautyElectron(track)){
+	  sourceDca=2;
         }
-	  else if(fSignalCuts->IsGammaElectron(track)){
-	      sourceDca=3;
+	else if(fSignalCuts->IsGammaElectron(track)){
+	  sourceDca=3;
         }
-	  else if(fSignalCuts->IsNonHFElectron(track)){
-	      sourceDca=4;
+	else if(fSignalCuts->IsNonHFElectron(track)){
+	  sourceDca=4;
         }
-	  else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
-	      sourceDca=5;
+        else if(fSignalCuts->IsJpsiElectron(track)){
+          sourceDca=5;
+        }
+	else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
+	  sourceDca=6;
           fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
           fQACollection->Fill("hadronsBeforeIPcutMC",mctrack->Pt());
         }
-	  else {
-	      sourceDca=6;
+	else {
+	  sourceDca=7;
 	}
 
         if(fMCQA && signal) {
@@ -1214,6 +1300,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
         dataDca[5] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
       } 
       dataDca[6] = v0pid;
+      dataDca[7] = track->Charge()/3;
 
  //     printf("Entries dca: [%.3f|%.3f|%.3f|%f|%f]\n", dataDca[0],dataDca[1],dataDca[2],dataDca[3],dataDca[4]);
       if (!HasMCData()) fQACollection->Fill("Dca", dataDca);
@@ -1283,6 +1370,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   // Run Analysis in AOD Mode
   // Function is still in development
   //
+  //printf("Process AOD\n");
   AliDebug(3, "Processing AOD Event");
   Double_t eventContainer[4];
   if(HasMCData()) eventContainer[0] = fVz;
@@ -1293,15 +1381,18 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   eventContainer[2] = fCentralityF; 
   eventContainer[3] = fContributors; 
   
+  //printf("value event container %f, %f, %f, %f\n",eventContainer[0],eventContainer[1],eventContainer[2],eventContainer[3]);
+
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
   if(!fAOD){
     AliError("AOD Event required for AOD Analysis");
       return;
   }
   
+  //printf("Will fill\n");
   //
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoCut);
-
+  //printf("Fill\n");
   //
   if(fIdentifiedAsPileUp) return; 
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoPileUp);
@@ -1313,6 +1404,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   //
   if(!fPassTheEventCut) return;
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepReconstructed);
+  //printf("pass\n");
 
   fContainer->NewEvent();
  
@@ -1322,10 +1414,14 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   Int_t nElectronCandidates = 0;
   Int_t pid;
   Bool_t signal;
+  //printf("Number of track %d\n",(Int_t) fAOD->GetNumberOfTracks());
   for(Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); itrack++){
     track = fAOD->GetTrack(itrack); mctrack = NULL;
     if(!track) continue;
-    if(track->GetFlags() != 1<<4) continue;  // Only process AOD tracks where the HFE is set
+    if(fUseFlagAOD){
+      if(track->GetFlags() != fFlags) continue;  // Only process AOD tracks where the HFE is set
+    }
+    //printf("Pass the flag\n");
 
     signal = kTRUE;
     if(HasMCData()){
@@ -1336,27 +1432,70 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
     }
     fVarManager->NewTrack(track, mctrack, fCentralityF, -1, kTRUE);
+    
+    if(fFillNoCuts) {
+      if(signal || !fFillSignalOnly){
+        fVarManager->FillContainer(fContainer, "recTrackContReco", AliHFEcuts::kStepRecNoCut, kFALSE);
+        fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
+      }
+    }
+
+    if(fApplyCutAOD) {
+      // RecKine: ITSTPC cuts  
+      if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+      
+      // RecPrim
+      if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
+
+      // HFEcuts: ITS layers cuts
+      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+      
+      // HFE cuts: TOF PID and mismatch flag
+      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) continue;
+      
+      // HFE cuts: TPC PID cleanup
+      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+      
+      // HFEcuts: Nb of tracklets TRD0
+      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
+    }
+
+    // Fill correlation maps before PID
+    if(signal && fContainer->GetCorrelationMatrix("correlationstepbeforePID")) {
+      //printf("Fill correlation maps before PID\n");
+      fVarManager->FillCorrelationMatrix(fContainer->GetCorrelationMatrix("correlationstepbeforePID"));
+    }
+
+    //printf("Will process to PID\n");
+
     // track accepted, do PID
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
     hfetrack.SetRecTrack(track);
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
+    if(IsPbPb()) hfetrack.SetPbPb();
+    else hfetrack.SetPP();
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;    // we will do PID here as soon as possible
+
+    
     // Apply weight for background contamination
-    Double_t weightBackGround = 1.0;
-
-    // not correct treatment for pp
-    if(fBackGroundFactorApply==kTRUE) {
-            if(IsPbPb()) weightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
-      else weightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P()));
-
-      if(weightBackGround < 0.0) weightBackGround = 0.0;
-            else if(weightBackGround > 1.0) weightBackGround = 1.0;
-            fVarManager->FillContainer(fContainer, "hadronicBackground", 1, kFALSE, weightBackGround);
+    //Double_t weightBackGround = 1.0;
+    if(signal) {
+      // Apply weight for background contamination
+      if(fBackGroundFactorApply) {
+	if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
+	else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+	
+	if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+	else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+        // weightBackGround as special weight
+        fVarManager->FillContainer(fContainer, "hadronicBackground", 1, kFALSE, fWeightBackGround);
+      }
+      fVarManager->FillCorrelationMatrix(fContainer->GetCorrelationMatrix("correlationstepafterPID"));
     }
-
+    
     nElectronCandidates++;    
     if(HasMCData()){
       dataE[0] = track->Pt();
@@ -1662,10 +1801,12 @@ void AliAnalysisTaskHFE::InitContaminationQA(){
       const Double_t kDCAbound[2] = {-5., 5.};
       const Double_t kDCAsigbound[2] = {-50., 50.};
 
-      const Int_t nDimDca=7;
-      const Int_t nBinDca[nDimDca] = { 8, nBinPt, 2000, 2000, 12, 500, 6};
-      Double_t minimaDca[nDimDca]  = { -1., 0., kDCAbound[0], kDCAsigbound[0], -1., 0, -1};
-      Double_t maximaDca[nDimDca]  = { 7., 20., kDCAbound[1], kDCAsigbound[1], 11., 50, 5};
+      const Int_t nDimDca=8;
+      const Int_t nBinDca[nDimDca] = { 9, nBinPt, 2000, 2000, 12, 500, 6, 2};
+      const Int_t nDimeDca=6;
+      const Int_t nBineDca[nDimeDca] = { 9, nBinPt, 2000, 2000, 12, 2};
+      Double_t minimaDca[nDimDca]  = { -1., 0., kDCAbound[0], kDCAsigbound[0], -1., 0, -1, -1.1};
+      Double_t maximaDca[nDimDca]  = { 8., 20., kDCAbound[1], kDCAsigbound[1], 11., 50, 5, 1.1};
 
       Double_t *sourceBins = AliHFEtools::MakeLinearBinning(nBinDca[0], minimaDca[0], maximaDca[0]);
       Double_t *dcaBins = AliHFEtools::MakeLinearBinning(nBinDca[2], minimaDca[2], maximaDca[2]);
@@ -1673,8 +1814,9 @@ void AliAnalysisTaskHFE::InitContaminationQA(){
       Double_t *centralityBins = AliHFEtools::MakeLinearBinning(nBinDca[4], minimaDca[4], maximaDca[4]);
       Double_t *eProdRBins = AliHFEtools::MakeLinearBinning(nBinDca[5], minimaDca[5], maximaDca[5]);
       Double_t *v0PIDBins = AliHFEtools::MakeLinearBinning(nBinDca[6], minimaDca[6], maximaDca[6]);
+      Double_t *chargeBins = AliHFEtools::MakeLinearBinning(nBinDca[7], minimaDca[7], maximaDca[7]);
 
-      fQACollection->CreateTHnSparseNoLimits("Dca", "Dca; source (0-all, 1-charm,etc); pT [GeV/c]; dca; dcasig; centrality bin; eProdR; v0pid", nDimDca, nBinDca);
+      fQACollection->CreateTHnSparseNoLimits("Dca", "Dca; source (0-all, 1-charm,etc); pT [GeV/c]; dca; dcasig; centrality bin; eProdR; v0pid; charge", nDimDca, nBinDca);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(0, sourceBins);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(1, kPtRange);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(2, dcaBins);
@@ -1682,6 +1824,19 @@ void AliAnalysisTaskHFE::InitContaminationQA(){
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(4, centralityBins);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(5, eProdRBins);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(6, v0PIDBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(7, chargeBins);
+
+      fQACollection->CreateTHnSparseNoLimits("eDca", "eDca; source (0-all, 1-charm,etc); pT [GeV/c]; dca; dcasig; centrality bin; charge", nDimeDca, nBineDca);
+      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(0, sourceBins);
+      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(1, kPtRange);
+      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(2, dcaBins);
+      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(3, dcaSigBins);
+      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(4, centralityBins);
+      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(5, chargeBins);
+
+      fQACollection->CreateTH2Farray("secondaryprotonDcaSig", "secondary proton dca significance: dca sig ", nBinPt, kPtRange, 2000, kDCAsigbound[0], kDCAsigbound[1]);
+      fQACollection->CreateTH2Farray("protonDcaSig", "proton dca significance: dca sig ", nBinPt, kPtRange, 2000, kDCAsigbound[0], kDCAsigbound[1]);
+      fQACollection->CreateTH2Farray("pionDcaSig", "pion dca significance: dca sig ", nBinPt, kPtRange, 2000, kDCAsigbound[0], kDCAsigbound[1]);
 
       break;
     }  
@@ -1834,18 +1989,28 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   //
   // Recover the centrality of the event from ESD or AOD
   //
+  
+  Float_t fCentralityLimitstemp[12];
+  Float_t fCentralityLimitsdefault[12]= {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.};
+  if(!fPbPbUserCentralityBinning) memcpy(fCentralityLimitstemp,fCentralityLimitsdefault,sizeof(fCentralityLimitsdefault));
+  else memcpy(fCentralityLimitstemp,fCentralityLimits,sizeof(fCentralityLimitsdefault));
+  
+
   Int_t bin = -1;
   if(IsPbPb()) {
     // Centrality
     AliCentrality *centrality = fInputEvent->GetCentrality();
-    Float_t fCentralityFtemp = centrality->GetCentralityPercentile("V0M");
-    Float_t centralityLimits[12] = {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.};
+    fCentralityPercent = centrality->GetCentralityPercentile("V0M");
+    //printf("centrality %f\n",fCentralityPercent);
+
     for(Int_t ibin = 0; ibin < 11; ibin++){
-      if(fCentralityFtemp >= centralityLimits[ibin] && fCentralityFtemp < centralityLimits[ibin+1]){
-          bin = ibin;
+      if(fCentralityPercent >= fCentralityLimitstemp[ibin] && fCentralityPercent < fCentralityLimitstemp[ibin+1]){
+        bin = ibin;
+	//printf("test bin %f, low %f, high %f, %d\n",fCentralityPercent,fCentralityLimitstemp[ibin],fCentralityLimitstemp[ibin+1],ibin);
         break;
       }
-    } 
+    }
+    
     if(bin == -1) bin = 11; // Overflow
   } else {
     // PP: Tracklet multiplicity, use common definition
@@ -1861,6 +2026,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   }
   fCentralityF = bin;
   AliDebug(2, Form("Centrality class %d\n", fCentralityF));
+
  
   // contributors, to be outsourced
   const AliVVertex *vtx;
@@ -1887,6 +2053,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
     Int_t contributorstemp = vtx->GetNContributors();
     if( contributorstemp <=  0) fContributors =  0.5;
     else fContributors = 1.5;
+    //printf("Number of contributors %d\n",contributorstemp);
   }
   return kTRUE;
 }
@@ -1955,8 +2122,11 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
        return;
    }
    // PileUp
+   fIdentifiedAsPileUp = kFALSE;
    if(fRemovePileUp && fAOD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE; 
    // Z vertex
+   fIdentifiedAsOutInz = kFALSE;
+   //printf("Z vertex %f and out %f\n",fAOD->GetPrimaryVertex()->GetZ(),fCuts->GetVertexRange());
    if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
    // Event Cut
    fPassTheEventCut = kTRUE;

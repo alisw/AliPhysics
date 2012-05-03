@@ -31,6 +31,7 @@
 
 #include "AliAnalysisTaskSE.h"
 
+#include "AliVEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
 #include "AliESD.h"
@@ -39,6 +40,7 @@
 #include "AliESDVZERO.h"
 #include "AliESDUtils.h"
 #include "AliMCParticle.h"
+#include "AliVTrack.h"
 
 #include "AliFlowCandidateTrack.h"
 #include "AliFlowEvent.h"
@@ -61,14 +63,15 @@
 AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   AliAnalysisTaskSE(),
   fListHist(0x0), 
+  fAODAnalysis(kFALSE),
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
   fSubEtaGapTPC(kFALSE),
   fEtaGap(0.0),
   fNbBinsCentralityQCumulant(4),
-  fNbBinsPtQCumulant(15),
-  fMinPtQCumulant(0.0),
+  fNbBinsPtQCumulant(12),
+  fMinPtQCumulant(0.2),
   fMaxPtQCumulant(6.0),
   fAfterBurnerOn(kFALSE),
   fNonFlowNumberOfTrackClones(0),
@@ -121,7 +124,8 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
 //______________________________________________________________________________
 AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   AliAnalysisTaskSE(name),
-  fListHist(0x0), 
+  fListHist(0x0),
+  fAODAnalysis(kFALSE), 
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
@@ -198,7 +202,8 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
 //____________________________________________________________
 AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref):
   AliAnalysisTaskSE(ref),
-  fListHist(0x0), 
+  fListHist(0x0),
+  fAODAnalysis(ref.fAODAnalysis), 
   fVZEROEventPlane(ref.fVZEROEventPlane),
   fVZEROEventPlaneA(ref.fVZEROEventPlaneA),
   fVZEROEventPlaneC(ref.fVZEROEventPlaneC),
@@ -271,6 +276,7 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   // Copy into object o
   //
   AliAnalysisTaskHFEFlow &target = dynamic_cast<AliAnalysisTaskHFEFlow &>(o);
+  target.fAODAnalysis = fAODAnalysis;
   target.fVZEROEventPlane = fVZEROEventPlane;
   target.fVZEROEventPlaneA = fVZEROEventPlaneA;
   target.fVZEROEventPlaneC = fVZEROEventPlaneC;
@@ -363,8 +369,8 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fcutsRP->SetName("StandartTPC");
   fcutsRP->SetEtaRange(-0.9,0.9);
   fcutsRP->SetQA(kTRUE);
-  TList *qaCutsRP = fcutsRP->GetQA();
-  qaCutsRP->SetName("QA_StandartTPC_RP");
+  //TList *qaCutsRP = fcutsRP->GetQA();
+  //qaCutsRP->SetName("QA_StandartTPC_RP");
 
   //POI TRACK CUTS:
   fcutsPOI = new AliFlowTrackCuts("dummy");
@@ -398,7 +404,8 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fHFECuts->CreateStandardCuts();
   }
   fHFECuts->Initialize();
-  
+  if(fAODAnalysis) fHFECuts->SetAOD();  
+
   // PID HFE
   //fPID->SetHasMCData(HasMCData());
   if(!fPID->GetNumberOfPIDdetectors()) fPID->AddDetector("TPC", 0);
@@ -410,17 +417,17 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   // Bins for the THnSparse
   //**************************
 
-  Int_t nBinsPt = 25;
-  Double_t minPt = 0.001;
-  Double_t maxPt = 10.0;
+  Int_t nBinsPt = 44;
+  Double_t minPt = 0.1;
+  Double_t maxPt = 20.0;
   Double_t binLimLogPt[nBinsPt+1];
   Double_t binLimPt[nBinsPt+1];
   for(Int_t i=0; i<=nBinsPt; i++) binLimLogPt[i]=(Double_t)TMath::Log10(minPt) + (TMath::Log10(maxPt)-TMath::Log10(minPt))/nBinsPt*(Double_t)i ;
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
 
-  Int_t nBinsPtPlus = 15;
-  Double_t minPtPlus = 0.0;
-  Double_t maxPtPlus = 6.0;
+  Int_t nBinsPtPlus = fNbBinsPtQCumulant;
+  Double_t minPtPlus = fMinPtQCumulant;
+  Double_t maxPtPlus = fMaxPtQCumulant;
   Double_t binLimPtPlus[nBinsPtPlus+1];
   for(Int_t i=0; i<=nBinsPtPlus; i++) binLimPtPlus[i]=(Double_t)minPtPlus + (maxPtPlus-minPtPlus)/nBinsPtPlus*(Double_t)i ;
 
@@ -429,6 +436,10 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t maxEta = 0.8;
   Double_t binLimEta[nBinsEta+1];
   for(Int_t i=0; i<=nBinsEta; i++) binLimEta[i]=(Double_t)minEta + (maxEta-minEta)/nBinsEta*(Double_t)i ;
+
+  Int_t nBinsEtaLess = 2;
+  Double_t binLimEtaLess[nBinsEtaLess+1];
+  for(Int_t i=0; i<=nBinsEtaLess; i++) binLimEtaLess[i]=(Double_t)minEta + (maxEta-minEta)/nBinsEtaLess*(Double_t)i ;
  
   Int_t nBinsCos = 50;
   Double_t minCos = -1.0;
@@ -456,6 +467,12 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     binLimPhi[i]=(Double_t)minPhi + (maxPhi-minPhi)/nBinsPhi*(Double_t)i ;
     //printf("bin phi is %f for %d\n",binLimPhi[i],i);
   }
+
+  Int_t nBinsCharge = 2;
+  Double_t minCharge = -1.0;
+  Double_t maxCharge = 1.0;
+  Double_t binLimCharge[nBinsCharge+1];
+  for(Int_t i=0; i<=nBinsCharge; i++) binLimCharge[i]=(Double_t)minCharge + (maxCharge-minCharge)/nBinsCharge*(Double_t)i ;
   
   //******************
   // Histograms
@@ -575,25 +592,29 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fProfileCosRes->Sumw2();
   
   // Maps delta phi
-  const Int_t nDimg=3;
-  Int_t nBing[nDimg] = {nBinsPhi,nBinsC,nBinsPt};
+  const Int_t nDimg=5;
+  Int_t nBing[nDimg] = {nBinsPhi,nBinsC,nBinsPt, nBinsCharge,nBinsEtaLess};
   fDeltaPhiMaps = new THnSparseF("DeltaPhiMaps","DeltaPhiMaps",nDimg,nBing);
   fDeltaPhiMaps->SetBinEdges(0,binLimPhi);
   fDeltaPhiMaps->SetBinEdges(1,binLimC);
   fDeltaPhiMaps->SetBinEdges(2,binLimPt);
+  fDeltaPhiMaps->SetBinEdges(3,binLimCharge);
+  fDeltaPhiMaps->SetBinEdges(4,binLimEtaLess);
   fDeltaPhiMaps->Sumw2();  
 
   // Maps cos phi
-  const Int_t nDimh=3;
-  Int_t nBinh[nDimh] = {nBinsCos,nBinsC,nBinsPt};
+  const Int_t nDimh=5;
+  Int_t nBinh[nDimh] = {nBinsCos,nBinsC,nBinsPt,nBinsCharge,nBinsEtaLess};
   fCosPhiMaps = new THnSparseF("CosPhiMaps","CosPhiMaps",nDimh,nBinh);
   fCosPhiMaps->SetBinEdges(0,binLimCos);
   fCosPhiMaps->SetBinEdges(1,binLimC);
   fCosPhiMaps->SetBinEdges(2,binLimPt);
+  fCosPhiMaps->SetBinEdges(3,binLimCharge);
+  fCosPhiMaps->SetBinEdges(4,binLimEtaLess);
   fCosPhiMaps->Sumw2();
 
   // Profile Maps cos phi
-  fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",fNbBinsCentralityQCumulant,&fBinCentralityLess[0],nBinsPtPlus,binLimPtPlus);
+  fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",nBinsC,binLimC,nBinsPt,binLimPt);
   fProfileCosPhiMaps->Sumw2();
 
 
@@ -601,7 +622,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   // Add to the list
   //******************************
 
-  fListHist->Add(qaCutsRP);
+  //fListHist->Add(qaCutsRP);
   fListHist->Add(fPIDqa->MakeList("HFEpidQA"));
   fListHist->Add(fHistEV);
   fListHist->Add(fProfileCosRes);
@@ -657,8 +678,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   Double_t valuensparsefsin[2];
   Double_t valuensparsefbis[4];
   Double_t valuensparsefbissin[4];
-  Double_t valuensparseg[3];
-  Double_t valuensparseh[3];
+  Double_t valuensparseg[5];
+  Double_t valuensparseh[5];
   Double_t valuensparsehprofile[3];
 
   AliMCEvent *mcEvent = MCEvent();
@@ -668,9 +689,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   // centrality
   /////////////////
   
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if(!esd) return;
-  AliCentrality *centrality = esd->GetCentrality();
+  //AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  //if(!esd) return;
+  AliCentrality *centrality = fInputEvent->GetCentrality();
   if(!centrality) return;
   cntr = centrality->GetCentralityPercentile("V0M");
   if((0.0< cntr) && (cntr<5.0)) binct = 0.5;
@@ -725,14 +746,14 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   valuensparsefbissin[3] = binct;  
   valuensparseg[1] = binct;
   valuensparseh[1] = binct; 
-  valuensparsehprofile[1] = binctLess; 
+  valuensparsehprofile[1] = binct; 
   valuecossinephiep[2] = binctMore;
 
   //////////////////////
   // run number
   //////////////////////
 
-  Int_t runnumber = esd->GetRunNumber();
+  Int_t runnumber = fInputEvent->GetRunNumber();
    
   if(!fPID->IsInitialized()){
     // Initialize PID with the given run number
@@ -757,7 +778,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //////////////////
   // Event cut
   //////////////////
-  if(!fHFECuts->CheckEventCuts("fEvRecCuts", esd)) {
+  if(!fHFECuts->CheckEventCuts("fEvRecCuts", fInputEvent)) {
     PostData(1, fListHist);
     return;
   }
@@ -768,7 +789,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   // First method event plane
   ////////////////////////////////////
 
-  AliEventplane* esdEPa = esd->GetEventplane();
+  AliEventplane* vEPa = fInputEvent->GetEventplane();
   Float_t eventPlanea = 0.0;
   Float_t eventPlaneTPC = 0.0;
   Float_t eventPlaneV0A = 0.0;
@@ -780,9 +801,12 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
   // V0
 
-  if(fHFEVZEROEventPlane){
+  if(fHFEVZEROEventPlane && (!fAODAnalysis)){
+
+    //AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
+    //if(!esd) return;
     
-    fHFEVZEROEventPlane->ProcessEvent(esd);
+    fHFEVZEROEventPlane->ProcessEvent(fInputEvent);
     
     if(TMath::Abs(fHFEVZEROEventPlane->GetEventPlaneV0A()+100) < 0.0000001) eventPlaneV0A = -100.0;
     else {
@@ -805,18 +829,18 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   }
   else {
     
-    eventPlaneV0 = TVector2::Phi_0_2pi(esdEPa->GetEventplane("V0", esd,2));
+    eventPlaneV0 = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0", fInputEvent,2));
     if(eventPlaneV0 > TMath::Pi()) eventPlaneV0 = eventPlaneV0 - TMath::Pi();
-    eventPlaneV0A = TVector2::Phi_0_2pi(esdEPa->GetEventplane("V0A", esd,2));
+    eventPlaneV0A = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0A", fInputEvent,2));
     if(eventPlaneV0A > TMath::Pi()) eventPlaneV0A = eventPlaneV0A - TMath::Pi();
-    eventPlaneV0C = TVector2::Phi_0_2pi(esdEPa->GetEventplane("V0C", esd,2));
+    eventPlaneV0C = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0C", fInputEvent,2));
     if(eventPlaneV0C > TMath::Pi()) eventPlaneV0C = eventPlaneV0C - TMath::Pi();
   
   }
 
   // TPC
 
-  standardQ = esdEPa->GetQVector(); 
+  standardQ = vEPa->GetQVector(); 
   Double_t qx = -1.0;
   Double_t qy = -1.0;
   if(standardQ) {
@@ -858,8 +882,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   diffsubbsubcsin = TMath::Sin(2.*(eventPlaneV0C - eventPlaneTPC));
   //}
   //else {
-  qsub1a = esdEPa->GetQsub1();
-  qsub2a = esdEPa->GetQsub2();
+  qsub1a = vEPa->GetQsub1();
+  qsub2a = vEPa->GetQsub2();
   if(qsub1a) eventPlanesub1a = TVector2::Phi_0_2pi(qsub1a->Phi())/2.;
   if(qsub2a) eventPlanesub2a = TVector2::Phi_0_2pi(qsub2a->Phi())/2.;
   if(qsub1a && qsub2a) {
@@ -887,7 +911,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   // AliFlowEvent  
   //////////////////////
 
-  Int_t nbtracks = esd->GetNumberOfTracks();
+  Int_t nbtracks = fInputEvent->GetNumberOfTracks();
   //printf("Number of tracks %d\n",nbtracks);
 
   fcutsRP->SetEvent( InputEvent(), MCEvent());
@@ -933,7 +957,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     fEventPlane->Fill(&valuensparsea[0]);
 
     // Fill
-    fCosSin2phiep->Fill(&valuecossinephiep[0]);
+    if(fDebugLevel > 3) fCosSin2phiep->Fill(&valuecossinephiep[0]);
     
     if(!fVZEROEventPlane) {
       valuensparsef[0] = diffsub1sub2a;
@@ -969,7 +993,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
   for(Int_t k = 0; k < nbtracks; k++){
     
-    AliESDtrack *track = esd->GetTrack(k);
+    AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
     if(!track) continue;
 
     Bool_t survived = kTRUE;
@@ -988,12 +1012,13 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       // Apply PID for Data
       if(!fMCPID) {
 	AliHFEpidObject hfetrack;
-	hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+	if(!fAODAnalysis) hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+	else hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
 	hfetrack.SetRecTrack(track);
 	hfetrack.SetCentrality((Int_t)binct);
 	//printf("centrality %f and %d\n",binct,hfetrack.GetCentrality());
 	hfetrack.SetPbPb();
-	if(!fPID->IsSelected(&hfetrack,0x0,"",fPIDqa)) {
+	if(!fPID->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqa)) {
 	  continue;
 	}
       }
@@ -1040,8 +1065,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     //if(eventplanedefined && (!fVZEROEventPlane)) {
     if(!fVZEROEventPlane) {
       // Subtract the tracks from the event plane
-      Double_t qX = standardQ->X() - esdEPa->GetQContributionX(track);  //Modify the components: subtract the track you want to look at with your analysis
-      Double_t qY = standardQ->Y() - esdEPa->GetQContributionY(track);  //Modify the components: subtract the track you want to look at with your analysis
+      Double_t qX = standardQ->X() - vEPa->GetQContributionX(track);  //Modify the components: subtract the track you want to look at with your analysis
+      Double_t qY = standardQ->Y() - vEPa->GetQContributionY(track);  //Modify the components: subtract the track you want to look at with your analysis
       TVector2 newQVectorfortrack;
       newQVectorfortrack.Set(qX,qY);
       eventplanesubtracted = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
@@ -1057,6 +1082,18 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     valuensparseg[2] = track->Pt();
     valuensparseh[2] = track->Pt();
     valuensparsehprofile[2] = track->Pt();
+    if(track->Charge() > 0.0) {
+      valuensparseg[3] = 0.2;
+      valuensparseh[3] = 0.2;
+    }
+    else {
+      valuensparseg[3] = -0.2;
+      valuensparseh[3] = -0.2;
+    }
+    valuensparseh[4] = track->Eta();
+    valuensparseg[4] = track->Eta();
+
+    //printf("charge %d\n",(Int_t)track->Charge());
 
     Bool_t fillEventPlane = kTRUE;
     if(!fVZEROEventPlane){

@@ -29,7 +29,7 @@
 #endif
 
 class AliCFContainer;
-class AliESDEvent;
+class AliVEvent;
 class AliHFEcontainer;
 class AliHFEcutStep;
 class AliMCEvent;
@@ -49,7 +49,7 @@ class AliHFEtrackFilter : public TNamed{
     void SetRecEvent(const AliVEvent *rec);
     AliHFEcutStep *GetCutStep(Int_t istep);
     AliHFEcutStep *GetCutStep(const Char_t *name);
-    void FilterTracks(const AliESDEvent *const esd);
+    void FilterTracks(const AliVEvent *const esd);
     TObjArray *GetFilteredTracks() const { return fFilteredTracks; }
     void Flush();
 

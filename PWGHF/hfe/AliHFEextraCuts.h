@@ -66,7 +66,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     inline void SetMaxImpactParamR(Double_t impactParam);
     inline void SetMinImpactParamZ(Double_t impactParam);
     inline void SetMaxImpactParamZ(Double_t impactParam);
-    inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut);
+    inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut, Bool_t isabs);
     inline void SetMinTrackletsTRD(Int_t minTracklets, Bool_t exact = kFALSE);
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
     void SetMinNClustersTPCPID(Int_t minclusters) { SETBIT(fRequirements, kMinNClustersTPCPID); fMinNClustersTPCPID = minclusters; }
@@ -75,28 +75,34 @@ class AliHFEextraCuts: public AliCFCutBase{
     void SetTPCPIDCleanUp(Bool_t tpcPIDCleanUp) { tpcPIDCleanUp ? SETBIT(fRequirements, kTPCPIDCleanUp) : CLRBIT(fRequirements, kTPCPIDCleanUp); }
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { maxImpactParameterRpar ? SETBIT(fRequirements, kMaxImpactParameterRpar) : CLRBIT(fRequirements, kMaxImpactParameterRpar); }
     void SetFractionOfTPCSharedClusters(Double_t fractionShared) { fFractionTPCShared= fractionShared; SETBIT(fRequirements, kTPCfractionShared); }
-
+    void SetMinNbITScls(UChar_t minNbITScls) { fMinNbITScls = minNbITScls; SETBIT(fRequirements, kMinNbITScls); }
+    void SetRejectKinkDaughter() { SETBIT(fRequirements, kRejectKinkDaughter);}; 
+    void SetRejectKinkMother() { SETBIT(fRequirements, kRejectKinkMother);}; 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
 
     Bool_t GetCheckITSstatus() const { return fCheck; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
     void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
+    void GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2], Double_t covD[3]);
     Int_t GetITSstatus(AliVTrack *track, Int_t layer);
     Bool_t CheckITSstatus(Int_t itsStatus) const;
+
+    void UnSetRejectKinkDaughter() { CLRBIT(fRequirements, kRejectKinkDaughter);}; 
+    void UnSetRejectKinkMother() { CLRBIT(fRequirements, kRejectKinkMother);}; 
+
     
   protected:
     virtual void AddQAHistograms(TList *qaList);
     Bool_t CheckRecCuts(AliVTrack *track);
     Bool_t CheckMCCuts(AliVParticle * /*track*/) const;
     void FillQAhistosRec(AliVTrack *track, UInt_t when);
-//     void FillQAhistosMC(AliMCParticle *track, UInt_t when);
+    //void FillQAhistosMC(AliMCParticle *track, UInt_t when);
     void FillCutCorrelation(ULong64_t survivedCut);
     void PrintBitMap(Int_t bitmap);
     
     // Getter Functions for ESD/AOD compatible mode
     UInt_t GetTPCncls(AliVTrack *track);
-    UInt_t GetTPCnclusdEdx(AliVTrack *track);
     Bool_t GetTPCCountSharedMapBitsAboveThreshold(AliVTrack *track);
     Double_t GetTPCclusterRatio(AliVTrack *track);
     void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
@@ -104,6 +110,9 @@ class AliHFEextraCuts: public AliCFCutBase{
     void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
     void GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut);
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
+    Int_t GetITSNbOfcls(AliVTrack *track);
+    Bool_t IsKinkDaughter(AliVTrack *track);
+    Bool_t IsKinkMother(AliVTrack *track);
 
   private:
     typedef enum{
@@ -124,7 +133,10 @@ class AliHFEextraCuts: public AliCFCutBase{
       kTPCPIDCleanUp = 14,
       kEMCALmatch = 15,
       kMaxImpactParameterRpar = 16,
-      kNcuts = 17
+      kMinNbITScls = 17,
+      kRejectKinkDaughter = 18,
+      kRejectKinkMother = 19,
+      kNcuts = 20
     } Cut_t;
     enum{
       //
@@ -133,27 +145,29 @@ class AliHFEextraCuts: public AliCFCutBase{
       kBeforeCuts =0,
       kAfterCuts = 1
     };
-    static const Int_t fgkNQAhistos;    // Number of QA histos
+    static const Int_t fgkNQAhistos;   // Number of QA histos
     AliVEvent *fEvent;                //! working event
-    ULong64_t fCutCorrelation;		    // Cut Correlation
-    ULong64_t fRequirements;		      // Cut Requirements
-    Float_t fImpactParamCut[4];		    // Impact Parmameter Cut
-    Float_t fIPcutParam[4];		        // Parmameter of impact parameter cut parametrization
+    ULong64_t fCutCorrelation;	      // Cut Correlation
+    ULong64_t fRequirements;	      // Cut Requirements
+    Float_t fImpactParamCut[4];	      // Impact Parmameter Cut
+    Float_t fIPcutParam[4];	      // Parmameter of impact parameter cut parametrization
     UInt_t fMinNClustersTPC;          // Minimum TPC clusters cut
     UInt_t fMinNClustersTPCPID;       // Minimum TPC PID clusters cut
-    Float_t fClusterRatioTPC;		      // Ratio of findable vs. found clusters in TPC
-    UChar_t fMinTrackletsTRD;		      // Min. Number of Tracklets inside TRD
+    Float_t fClusterRatioTPC;	      // Ratio of findable vs. found clusters in TPC
+    UChar_t fMinTrackletsTRD;	      // Min. Number of Tracklets inside TRD
+    UChar_t fMinNbITScls;	      // Min. Number of ITS clusters
     Bool_t  fTRDtrackletsExact;       // Require exact number of tracklets
     UChar_t fPixelITS;                // Cut on ITS Pixels
     UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
     Double_t  fFractionTPCShared;     // Cut on fraction of shared clusters
+    Bool_t fAbsHFEImpactParamNsigmaR; // flag to use abs ip cut
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms
     Int_t   fDebugLevel;                // Debug Level
   
-  ClassDef(AliHFEextraCuts, 1)      // Additional cuts implemented by the ALICE HFE group
+    ClassDef(AliHFEextraCuts, 3)      // Additional cuts implemented by the ALICE HFE group
 };
 
 //__________________________________________________________
@@ -194,13 +208,14 @@ void AliHFEextraCuts::SetMaxImpactParamZ(Double_t impactParam){
 }
 
 //__________________________________________________________
-void AliHFEextraCuts::SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t isSigmacut){
+void AliHFEextraCuts::SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t isSigmacut, Bool_t isabs){
   if(isSigmacut) SETBIT(fRequirements, kMinHFEImpactParamNsigmaR);
   else SETBIT(fRequirements, kMinHFEImpactParamR);
   fIPcutParam[0]=ipcutParam[0];
   fIPcutParam[1]=ipcutParam[1];
   fIPcutParam[2]=ipcutParam[2];
   fIPcutParam[3]=ipcutParam[3];
+  fAbsHFEImpactParamNsigmaR = isabs;
 }
 
 //__________________________________________________________

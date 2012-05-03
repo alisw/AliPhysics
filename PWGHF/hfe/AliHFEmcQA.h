@@ -48,7 +48,7 @@ class AliHFEmcQA: public TObject {
   public: 
     enum heavyType {kCharm=4, kBeauty=5, kOthers=6, kElectronPDG=11};
     enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
-    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18};
+    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18, kJpsi=19, kB2Jpsi=20, kKe3=21};
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
@@ -83,8 +83,9 @@ class AliHFEmcQA: public TObject {
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
     Int_t GetSource(const TParticle * const mcpart); // return source id 
     Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
-    Int_t GetSource(const AliAODMCParticle * const mcpart); // return electron source id for AOD
+    Int_t GetSource(const AliVParticle * const mcpart); // return electron source id for AOD
     Double_t GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
+    Int_t GetWeightCentralityBin(const Float_t percentile) const; //translate the centrality percentile into the centrality bin of the reference weighting histograms for electron background
     void EnableDebugStreamer() { fIsDebugStreamerON = kTRUE;};
 
     void SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit);
@@ -94,6 +95,7 @@ class AliHFEmcQA: public TObject {
     void SetITSInfo(Double_t ilyrhit, Double_t ilyrstat) { fLyrhit = ilyrhit; fLyrstat = ilyrstat;};
 
     void SetCentrality(Int_t centrality) { fCentrality = centrality; };
+    void SetPercentrality(Int_t percentrality) { fPerCentrality = percentrality; };//centrality percentile
     void SetPbPb() { fIsPbPb = kTRUE; };
     void SetPP() { fIsPbPb = kFALSE; };
     void SetPPMultiBin() { fIsppMultiBin = kFALSE; };
@@ -102,6 +104,7 @@ class AliHFEmcQA: public TObject {
     Bool_t IsPPMultiBin() const { return fIsppMultiBin; };
 
   protected:
+    Int_t GetMother(const AliVParticle * const track);
     void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
     void HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
     void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
@@ -195,7 +198,7 @@ class AliHFEmcQA: public TObject {
       void FillList(TList *l) const;
     };
 
-    AliHists fHist[3][7][6]; // struct of histograms to store kinematics of given particles
+    AliHists fHist[3][7][6][11]; // struct of histograms to store kinematics of given particles
     AliHistsComm fHistComm[2][6]; // struct of additional histograms of given particles
     TH2F *fhD[9]; // D meson pt,Y spectra
 
@@ -211,6 +214,7 @@ class AliHFEmcQA: public TObject {
 
 private:
     Int_t              fCentrality;  // Centrality
+    Int_t              fPerCentrality; // Centrality percentile
     Bool_t             fIsPbPb;        // Analysis Type: pp or PbPb
     Bool_t             fIsppMultiBin;  // pp multiplicity bin analysis
     Int_t              fContainerStep; // step the weighting factor called

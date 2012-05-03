@@ -113,11 +113,16 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetFillSignalOnly(Bool_t signalOnly) { fFillSignalOnly = signalOnly; }
    
     void SetFillNoCuts(Bool_t fillNoCuts) { fFillNoCuts = fillNoCuts; }
+    void SetUseFlagAOD(Bool_t useFlagAOD) { fUseFlagAOD = useFlagAOD; }
+    void SetApplyCutAOD(Bool_t applyCutAOD) { fApplyCutAOD = applyCutAOD; }
+    void SetFlags(ULong_t flags)          { fFlags = flags; }
     void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     void SetPbPbAnalysis(Bool_t isPbPb = kFALSE) { SetBit(kBeamType, isPbPb); };
+    void SetPbPbUserCentralityLimit(Bool_t isPbPbUserBinning = kFALSE){fPbPbUserCentralityBinning = isPbPbUserBinning; };
+    void SetPbPbUserCentralityArray(Int_t icentr, Float_t valuecentr) {fCentralityLimits[icentr] = valuecentr;};
     void SetPPMultiBinAnalysis(Bool_t isppMultiBin) { fisppMultiBin = isppMultiBin; };
     void SetNonHFEsystematics(Bool_t isSystematics) {fisNonHFEsystematics = isSystematics; };
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
@@ -163,6 +168,9 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     UShort_t fPlugins;                    // Enabled Plugins
     Bool_t fFillSignalOnly;               // Fill container only with MC Signal Tracks
     Bool_t fFillNoCuts;                   // Fill container before any cut
+    Bool_t fUseFlagAOD;                   // Use the preselected AOD track
+    Bool_t fApplyCutAOD;                  // Apply the analysis cut for AOD tracks
+    ULong_t fFlags;                       // reconstruction AOD status flags 
     Bool_t fBackGroundFactorApply;        // Apply Background Function Subtraction,   MF: To be removed when transition to OADB container is finished
     Bool_t fRemovePileUp;                 // Remove Pile Up
     Bool_t fIdentifiedAsPileUp;           // Identified as pile-up
@@ -170,9 +178,11 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fPassTheEventCut;              // Pass The Event Cut
     Bool_t fRejectKinkMother;             // Reject Kink Mother
     Bool_t fisppMultiBin;                 // pp Multiplicity Bin analysis
-    Bool_t fisNonHFEsystematics;                // Non-HFE background systematics analysis
+    Bool_t fPbPbUserCentralityBinning;    // PbPb user centrality binning
+    Bool_t fisNonHFEsystematics;          // Non-HFE background systematics analysis
     AliOADBContainer *fSpecialTrigger;    // Special trigger selection
-    Int_t   fCentralityF;                 // Centrality
+    Int_t   fCentralityF;                 // Centrality bin
+    Float_t fCentralityPercent;           // Centrality percentile
     Float_t fContributors;                // Contributors
     Double_t fWeightBackGround;            // weight background function
     Double_t fVz;                         // z position of the primary vertex
@@ -180,6 +190,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     const TF1  *fkBackGroundFactorArray[12];   // Array of BackGround factors for each centrality bin, bin0 = min bias
     Double_t fElecBackgroundFactor[kBgLevels][kCentBins][kElecBgSpecies][kBgPtBins];     // Electron background factors
     Double_t fBinLimit[kBgPtBins+1];      // Electron pt bin edges
+    Float_t fCentralityLimits[12];        // Limits for centrality bins
     AliHFEcontainer *fContainer;          //! The HFE container
     AliHFEvarManager *fVarManager;        // The var manager as the backbone of the analysis
     AliHFEsignalCuts *fSignalCuts;        //! MC true signal (electron coming from certain source) 
