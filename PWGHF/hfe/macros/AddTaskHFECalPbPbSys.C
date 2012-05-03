@@ -33,6 +33,8 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, doub
   //RequestMemory(hfetask, 250*1024);
   if(trigtype==0)hfetask->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   if(trigtype==1)hfetask->SelectCollisionCandidates(AliVEvent::kCentral);
+  if(trigtype==2)hfetask->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  if(trigtype==3)hfetask->SelectCollisionCandidates(AliVEvent::kMB);
   mgr->AddTask(hfetask);
 
   int inSig = (int)(nSigMim*10.0);
@@ -44,6 +46,8 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, doub
   TString containerName = mgr->GetCommonFileName();
   TString appendix(TString::Format(":PWGHF_hfeCalPbPbEGATPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
   if(trigtype==1)appendix(TString::Format(":PWGHF_hfeCentTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
+  if(trigtype==2)appendix(TString::Format(":PWGHF_hfeSemiTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
+  if(trigtype==3)appendix(TString::Format(":PWGHF_hfekMBTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
   //containerName += ":PWGHF_hfeCalPbPbEGA";
   containerName += appendix;
   
