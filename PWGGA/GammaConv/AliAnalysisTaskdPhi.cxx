@@ -578,17 +578,17 @@ Bool_t AliAnalysisTaskdPhi::VerifyAODGamma(AliAODConversionPhoton * gamma) {
 	return kTRUE;
   }
 		 
-  else {
+  // else {
 
-	cout << g1 << " " << g2 <<endl;
-	cout << t1 << " " << t2 <<endl;
+  // 	cout << g1 << " " << g2 <<endl;
+  // 	cout << t1 << " " << t2 <<endl;
 	
-	for(Int_t i = 0; i < event->GetNumberOfV0s(); i++) {
-	v0 = event->GetV0(i);
-	//cout << i << " " << v0->GetSecondaryVtx()->GetID() << " " <<dynamic_cast<AliAODTrack*>(v0->GetDaughter(0))->GetID() << " " << dynamic_cast<AliAODTrack*>(v0->GetDaughter(1))->GetID() << endl; 
+  // 	for(Int_t i = 0; i < event->GetNumberOfV0s(); i++) {
+  // 	v0 = event->GetV0(i);
+  // 	//cout << i << " " << v0->GetSecondaryVtx()->GetID() << " " <<dynamic_cast<AliAODTrack*>(v0->GetDaughter(0))->GetID() << " " << dynamic_cast<AliAODTrack*>(v0->GetDaughter(1))->GetID() << endl; 
 	
-	}
-  }
+  // 	}
+  // }
   
   // Float_t sumdpt = d1->Pt() + d2->Pt();
   // cout << "pt: " << sumdpt << " " << gamma->Pt() << endl;
