@@ -33,9 +33,9 @@ AliPHOSTRURawReader::AliPHOSTRURawReader()
   : TObject(),
     fSignals(),
     fFlags(),
-    fActive(0),
-    fActiveTime(),
+    fActive(false),
     fHasSignal(false),
+    fActiveTime(),
     fHasSignalTime()
 
 {
