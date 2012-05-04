@@ -553,7 +553,7 @@ Double_t* AliHFEvarManager::AliHFEvariable::GetBinning() {
     if(fIsLogarithmic) binning = AliHFEtools::MakeLogarithmicBinning(fNBins, fMin, fMax);
     else binning = AliHFEtools::MakeLogarithmicBinning(fNBins, fMin, fMax);
     fBinning.Set(fNBins+1, binning);
-    delete binning;
+    delete []binning;
     return fBinning.GetArray();
   }
 }
