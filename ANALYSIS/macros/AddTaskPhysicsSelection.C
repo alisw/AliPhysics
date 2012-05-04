@@ -26,7 +26,7 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
     AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
     AliInputEventHandler *ih = multiInputHandler->GetFirstInputEventHandler();
     if (!ih) {
-      ::Error("AddTaskPhysicsSelection","ESD or AOD input handler is mixxing");
+      ::Error("AddTaskPhysicsSelection","ESD or AOD input handler is missing");
       return NULL;
     }
     ih->SetEventSelection(multiInputHandler->GetEventSelection());
