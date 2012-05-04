@@ -323,6 +323,8 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
       else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 11)) source = 4;
       else source = 5;
 
+      if(!mctrack) continue;
+
       // Kinematics
       mcpt  = mctrack->Pt();
       mcp   = mctrack->P();

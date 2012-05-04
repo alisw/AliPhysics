@@ -1345,7 +1345,7 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
 
   if(fBeamType==1)
   {
-      charmbgaftertofpid = (TH1D *) charmBackgroundGrid->Project(0);
+      //charmbgaftertofpid = (TH1D *) charmBackgroundGrid->Project(0);
       bins[0]=12;
       charmbgaftertofpid = (TH1D *) charmBackgroundGrid->Project(1);
       bins[1]=charmbgaftertofpid->GetNbinsX();
@@ -3035,9 +3035,11 @@ THnSparse* AliHFEspectrum::GetPIDxIPEff(Int_t source){
   Double_t weightErr[nCentralitybinning];
   Double_t contents[2];
 
-  for(Int_t a=0;a<11;a++)
+  for(Int_t a=0;a<nCentralitybinning;a++)
   {
       weight[a] = 1.0;
+      weightErr[a] = 1.0;
+      
   }
 
   Int_t looppt=nBin[0];
