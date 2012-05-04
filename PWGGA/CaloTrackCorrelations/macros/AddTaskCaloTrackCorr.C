@@ -351,6 +351,7 @@ AliCaloTrackReader * ConfigureReader()
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
     AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
     reader->SetTrackCuts(esdTrackCuts);
+    reader->SwitchOnConstrainTrackToVertex();
   }
   else if(kInputDataType=="AOD")
   {
@@ -1259,6 +1260,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   // track-cluster residuals
   histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.15,0.15,300);
   histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.15,0.15,300);
+  histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
   histoRanges->SetHistoPOverERangeAndNBins(0,10.,100);
@@ -1266,7 +1268,6 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   
   // QA
   histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  histoRanges->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
   histoRanges->SetHistoRatioRangeAndNBins(0.,2.,100);
   histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
   histoRanges->SetHistoNClusterCellRangeAndNBins(0,500,500);
