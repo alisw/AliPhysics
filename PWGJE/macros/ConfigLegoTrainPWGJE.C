@@ -57,6 +57,7 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
     AliAnalysisManager::SetGlobalDbl("kTrackEtaWindow",0.9);
     AliAnalysisManager::SetGlobalDbl("kVertexWindow",10);
     AliAnalysisManager::SetGlobalInt("kHighPtFilterMask",768);
+    AliAnalysisManager::SetGlobalInt("kHighPtFilterMaskBest",256);
 
   }
   else{

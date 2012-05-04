@@ -41,7 +41,7 @@ AliAnalysisTaskCheckSingleTrackJetRejection *AddTaskCheckSingleTrackJetRejection
 	 if(IsMC)Branch = Form("MC_clustersAOD_%s%s",jf,cAdd.Data());
 	 else    Branch = Form("Data_clustersAOD_%s%s",jf,cAdd.Data());
 
-   AliAnalysisDataContainer *cout_jetsqamc = mgr->CreateContainer("histlist", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_CheckSingleTrackJetRejection_%s",AliAnalysisManager::GetCommonFileName(),Branch.Data()));
+   AliAnalysisDataContainer *cout_jetsqamc = mgr->CreateContainer("histlistchecksingletrackrejection", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_CheckSingleTrackJetRejection_%s",AliAnalysisManager::GetCommonFileName(),Branch.Data()));
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
