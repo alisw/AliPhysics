@@ -641,7 +641,7 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
     fADCpedestalEC     = fCalibData->GetADCpedestal     (iSupMod,ieta,iphi);
     fADCchannelEC      = fCalibData->GetADCchannel      (iSupMod,ieta,iphi);
     fADCchannelECDecal = fCalibData->GetADCchannelDecal (iSupMod,ieta,iphi);
-    fTimeChannel       = fCalibData->GetTimeChannel     (iSupMod,ieta,iphi);
+    fTimeChannel       = fCalibData->GetTimeChannel     (iSupMod,ieta,iphi,0); // Assign bunch crossing number equal to 0 (has simulation different bunch crossings?)
     fTimeChannelDecal  = fCalibData->GetTimeChannelDecal(iSupMod,ieta,iphi);      
   }
   
@@ -715,7 +715,7 @@ void AliEMCALDigitizer::CalibrateADCTime(Float_t & adc, Float_t & time, const In
   if(fCalibData) {
     fADCpedestalEC = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
     fADCchannelEC  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
-    fTimeChannel   = fCalibData->GetTimeChannel(iSupMod,ieta,iphi);
+    fTimeChannel   = fCalibData->GetTimeChannel(iSupMod,ieta,iphi,0);// Assign bunch crossing number equal to 0 (has simulation different bunch crossings?)
   }
   
   adc   = adc * fADCchannelEC - fADCpedestalEC;

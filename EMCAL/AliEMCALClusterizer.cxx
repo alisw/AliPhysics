@@ -262,9 +262,11 @@ void AliEMCALClusterizer::Calibrate(Float_t & amp, Float_t & time, const Int_t a
     return ;
   }
 	  
+  Int_t bc = 0; // Get somehow the bunch crossing number
+
   fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
   fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
-  fTimeECA        = fCalibData->GetTimeChannel(iSupMod,ieta,iphi);
+  fTimeECA        = fCalibData->GetTimeChannel(iSupMod,ieta,iphi, bc);
   
   time -= fTimeECA ;
   amp   = amp * fADCchannelECA - fADCpedestalECA ;  
