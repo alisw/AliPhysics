@@ -78,7 +78,6 @@ public:
    Float_t          fPtCutTOFMatching;           // TOF Matching
    Float_t          fQvecCutMin;           // Minimum value of Qvec
    Float_t          fQvecCutMax;           // Minimum value of Qvec
-   AliPIDResponse   *fPIDResponse; // PID response  
    TH1I             *fHistoCuts;       // Cuts statistics
    AliAODTrack      *fTrack;           //! Track pointer
    

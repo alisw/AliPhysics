@@ -40,7 +40,7 @@ namespace AliSpectraNameSpace {
 
 using namespace AliSpectraNameSpace;
 
-class AliSpectraAODPID : public TObject
+class AliSpectraAODPID : public TNamed
 {
 public:
   AliSpectraAODPID() ;
@@ -53,6 +53,8 @@ public:
   Int_t GetParticleSpecie(AliAODTrack      * trk, AliSpectraAODTrackCuts * trackCuts);
   Int_t GetParticleSpecie(AliAODMCParticle * trk);
   
+  Long64_t Merge(TCollection* list);
+
 
 private:
 

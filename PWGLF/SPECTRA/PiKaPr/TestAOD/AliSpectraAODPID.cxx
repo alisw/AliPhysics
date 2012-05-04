@@ -12,11 +12,11 @@
 
 ClassImp(AliSpectraAODPID)
 
-AliSpectraAODPID::AliSpectraAODPID() : TObject(), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fPIDResponse(0) {
+AliSpectraAODPID::AliSpectraAODPID() : TNamed("PID", "PID object"), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fPIDResponse(0) {
 
 }
 
-AliSpectraAODPID::AliSpectraAODPID(AODPIDType_t pidType) : TObject(), fPIDType(pidType), fNSigmaPID(3), fPIDResponse(0) {
+AliSpectraAODPID::AliSpectraAODPID(AODPIDType_t pidType) : TNamed("PID", "PID object"), fPIDType(pidType), fNSigmaPID(3), fPIDResponse(0) {
 
 
 
@@ -168,3 +168,43 @@ Int_t AliSpectraAODPID::GetParticleSpecie(AliAODTrack      * trk, AliSpectraAODT
   return kSpUndefined;
 
 }
+
+Long64_t AliSpectraAODPID::Merge(TCollection* list)
+{
+  // Merging interface.
+  // Returns the number of merged objects (including this).
+
+  Printf("Merging");
+
+  if (!list)
+    return 0;
+
+  if (list->IsEmpty())
+    return 1;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj;
+
+  // Actually, we don't do anything here...
+  // collections of all histograms
+  //  TList collections;
+
+  Int_t count = 0;
+
+  while ((obj = iter->Next())) {
+    AliSpectraAODPID* entry = dynamic_cast<AliSpectraAODPID*> (obj);
+    if (entry == 0) 
+      continue;
+
+    // TH1I * histo = entry->GetHistoCuts();      
+    // collections.Add(histo);
+    count++;
+  }
+  
+  //  fHistoCuts->Merge(&collections);
+  
+  delete iter;
+  Printf("OK");
+  return count+1;
+}
+
