@@ -8,7 +8,19 @@ AliESDInputHandler* AddESDHandler()
   }
 
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdHandler);
+  
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+  if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
+    AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
+    multiInputHandler->AddInputEventHandler(esdHandler);
+  } else {
+    if (!inputHandler) {
+      mgr->SetInputEventHandler(esdHandler);
+    } else {
+      ::Error("AddESDHandler", "inputHandler is NOT null. ESD handler was NOT added !!!");
+      return NULL;
+    }
+  }
   
   return esdHandler;
 }

@@ -8,8 +8,15 @@ AliMCEventHandler* AddMCHandler(Bool_t readTrackRef = kFALSE)
   }
 
   AliMCEventHandler* handler = new AliMCEventHandler();
-  mgr->SetMCtruthEventHandler(handler);
   handler->SetReadTR(readTrackRef);
-
+  
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+  if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
+    AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
+    multiInputHandler->AddInputEventHandler(handler);
+  } else {
+    mgr->SetMCtruthEventHandler(handler);
+  }
+  
   return handler;
 }
