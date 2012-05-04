@@ -265,6 +265,9 @@ TH1* AliSpectraAODHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particle
   case kHistPtRecTruePrimary:
     baseId = kHistPtRecTruePrimaryPionPlus;
     break;
+  case kHistPtRecPrimary:
+    baseId = kHistPtRecPrimaryPionPlus;
+    break;
   case kHistPtRecSigmaPrimary:
     baseId = kHistPtRecSigmaPrimaryPionPlus;
     break;
@@ -288,7 +291,7 @@ TH1* AliSpectraAODHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particle
   }
   
   if (baseId < 0)
-    AliFatal("Wrong histogram type");
+    AliFatal(Form("Wrong histogram type %d", histoType));
 
   baseId = baseId + particleType + 3*(charge);
   //  cout << "ID " << baseId << endl;
