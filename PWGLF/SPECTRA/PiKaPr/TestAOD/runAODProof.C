@@ -1,6 +1,3 @@
-
-
-
 void runAODProof(Int_t c=1, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
@@ -29,14 +26,14 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    //handler->SetAliROOTVersion("v5-03-11-AN");
    handler->SetAliROOTVersion("v5-03-17-AN");
    
-   handler->SetNproofWorkers(10);
-   //     handler->SetNproofWorkersPerSlave(1);
+   //handler->SetNproofWorkers(28);
+   //handler->SetNproofWorkersPerSlave(1);
    handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
-   //   handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
+   //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
    // Set handler for Real DATA:
    if (c == 1){
-     handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
-     //handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree|/alice/data/LHC10h_000138662_p2_AOD049#aodTree|/alice/data/LHC10h_000138666_p2_AOD049#aodTree|/alice/data/LHC10h_000138795_p2_AOD049#aodTree|/alice/data/LHC10h_000139107_p2_AOD049#aodTree|/alice/data/LHC10h_000139110_p2_AOD049#aodTree");
+     //handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
+     handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree|/alice/data/LHC10h_000138662_p2_AOD049#aodTree|/alice/data/LHC10h_000138666_p2_AOD049#aodTree|/alice/data/LHC10h_000138795_p2_AOD049#aodTree|/alice/data/LHC10h_000139107_p2_AOD049#aodTree|/alice/data/LHC10h_000139110_p2_AOD049#aodTree");
    }
    if (c == 2){
      handler->SetProofDataSet("/alice/sim/LHC11a10a_000138653_AOD048#aodTree|/alice/sim/LHC11a10a_000138662_AOD048#aodTree|/alice/sim/LHC11a10a_000138666_AOD048#aodTree|/alice/sim/LHC11a10a_000138795_AOD048#aodTree|/alice/sim/LHC11a10a_000139107_AOD048#aodTree|/alice/sim/LHC11a10a_000139110_AOD048#aodTree");      
@@ -97,7 +94,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
      AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
      AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
      //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
-     if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with tight DCA
+     if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
      if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
      tcuts->SetEta(.8);
      //tcuts->SetDCA(.1);
