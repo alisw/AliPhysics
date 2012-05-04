@@ -18,46 +18,44 @@
 class AliEMCALCalibData: public TNamed {
 
  public:
+
   AliEMCALCalibData();
   AliEMCALCalibData(const char* name);
   AliEMCALCalibData(const AliEMCALCalibData &calibda);
   AliEMCALCalibData& operator= (const AliEMCALCalibData &calibda);
-  virtual ~AliEMCALCalibData();
-  void Reset();
-  virtual void Print(Option_t *option = "") const;
+  virtual ~AliEMCALCalibData() { ; }
+  
+  void    Reset();
+  void    Print(Option_t *option = "") const;
   
   // All indexes start from 0!
   Float_t GetADCchannel      (Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCchannelDecal (Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCpedestal     (Int_t module, Int_t column, Int_t row) const;
-  Float_t GetTimeChannel     (Int_t module, Int_t column, Int_t row) const;
   Float_t GetTimeChannelDecal(Int_t module, Int_t column, Int_t row) const;
+  Float_t GetTimeChannel     (Int_t module, Int_t column, Int_t row, Int_t bc) const;
 	
-  Float_t GetADCchannelRef   () {return fADCchannelRef;}
+  Float_t GetADCchannelRef   () { return fADCchannelRef ; }
 
-  //
-  void SetADCchannel      (Int_t module, Int_t column, Int_t row, Float_t value);
-  void SetADCchannelDecal (Int_t module, Int_t column, Int_t row, Float_t value);
-  void SetADCpedestal     (Int_t module, Int_t column, Int_t row, Float_t value);
-  void SetTimeChannel     (Int_t module, Int_t column, Int_t row, Float_t value);
-  void SetTimeChannelDecal(Int_t module, Int_t column, Int_t row, Float_t value);
+  void    SetADCchannel      (Int_t module, Int_t column, Int_t row, Float_t value);
+  void    SetADCchannelDecal (Int_t module, Int_t column, Int_t row, Float_t value);
+  void    SetADCpedestal     (Int_t module, Int_t column, Int_t row, Float_t value);
+  void    SetTimeChannelDecal(Int_t module, Int_t column, Int_t row, Float_t value);
+  void    SetTimeChannel     (Int_t module, Int_t column, Int_t row, Int_t bc, Float_t value);
 
-  void SetADCchannelRef   (Float_t value) {fADCchannelRef = value;}
-
-  // Fill for (relative) recalibration (undo 1, apply 2)
-  void Fill(const AliEMCALCalibData *cd1, const AliEMCALCalibData *cd2, Bool_t print=0);
+  void    SetADCchannelRef   (Float_t value) { fADCchannelRef = value ; }
 
  protected:
+
+  Float_t  fADCchannelRef ;  // base value of the ADC channel set from cosmics calibration
+
   Float_t  fADCchannel      [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // width of one ADC channel in GeV ([mod][col][row])
   Float_t  fADCchannelDecal [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // decalibrate width of one ADC channel in GeV ([mod][col][row])
-  Float_t  fADCpedestal     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // value of the  ADC pedestal ([mod][col][row])
-  Float_t  fTimeChannel     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // time width of one ADC channel ([mod][col][row])
-  Float_t  fTimeChannelDecal[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // time width of one ADC channel ([mod][col][row])
+  Float_t  fADCpedestal     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // value of the  ADC pedestal ([mod][col][row]), not used
+  Float_t  fTimeChannelDecal[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ;    // time shift of one ADC channel ([mod][col][row])
+  Float_t  fTimeChannel     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; // time shift of one ADC channel ([mod][col][row][bunch crossing number])
 
-  Float_t  fADCchannelRef;
-
-  //
-  ClassDef(AliEMCALCalibData,3)    // EMCAL Calibration data
+  ClassDef(AliEMCALCalibData,4)    // EMCAL Calibration data
 };
 
 #endif
