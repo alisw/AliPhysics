@@ -58,6 +58,25 @@ public:
   void    SetHistoPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoPhiBins        = n ; fHistoPhiMax        = max ; fHistoPhiMin        = min ; }
   
+ // Delta azymuthal angle
+  Int_t   GetHistoDeltaPhiBins()        const { return fHistoDeltaPhiBins    ; }
+  Float_t GetHistoDeltaPhiMin()         const { return fHistoDeltaPhiMin     ; }
+  Float_t GetHistoDeltaPhiMax()         const { return fHistoDeltaPhiMax     ; }
+  
+  void    SetHistoDeltaPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoDeltaPhiBins   = n ; fHistoDeltaPhiMax   = max ; fHistoDeltaPhiMin   = min ; }
+
+
+// Delta eta angle
+
+  Int_t   GetHistoDeltaEtaBins()        const { return fHistoDeltaEtaBins     ; }
+  Float_t GetHistoDeltaEtaMin()         const { return fHistoDeltaEtaMin      ; }
+  Float_t GetHistoDeltaEtaMax()         const { return fHistoDeltaEtaMax      ; }
+ 
+  void    SetHistoDeltaEtaRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoDeltaEtaBins  = n ; fHistoDeltaEtaMax   = max ; fHistoDeltaEtaMin   = min ; }
+
+
   //Pseudorapidity-rapidity
   
   Int_t   GetHistoEtaBins()             const { return fHistoEtaBins         ; }
@@ -273,6 +292,13 @@ private:
   Int_t    fHistoEtaBins  ;                   // Number of bins in eta axis
   Float_t  fHistoEtaMax   ;                   // Maximum value of eta histogram range
   Float_t  fHistoEtaMin   ;                   // Minimum value of eta histogram range
+  Int_t    fHistoDeltaPhiBins  ;              // Number of bins in delta phi axis
+  Float_t  fHistoDeltaPhiMax   ;              // Maximum value of delta phi histogram range
+  Float_t  fHistoDeltaPhiMin   ;              // Minimum value of delta phi histogram range
+  Int_t    fHistoDeltaEtaBins  ;              // Number of bins in delta eta axis
+  Float_t  fHistoDeltaEtaMax   ;              // Maximum value of delta eta histogram range
+  Float_t  fHistoDeltaEtaMin   ;              // Minimum value of delta eta histogram range
+
   Int_t    fHistoMassBins ;                   // Number of bins in mass axis
   Float_t  fHistoMassMax  ;                   // Maximum value of mass histogram range
   Float_t  fHistoMassMin  ;                   // Minimum value of mass histogram range
@@ -346,7 +372,7 @@ private:
   AliHistogramRanges(              const AliHistogramRanges & h) ; // cpy ctor
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; // cpy assignment
   
-  ClassDef(AliHistogramRanges,2)
+  ClassDef(AliHistogramRanges,3)
 } ;
 
 
