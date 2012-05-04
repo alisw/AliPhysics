@@ -220,7 +220,7 @@ void AliTOFTrigger::CreateInputs()
   // Do not create inputs again!!
   if( fInputs.GetEntriesFast() > 0 ) return;
 
-  LoadActiveMask();
+  //LoadActiveMask();
 
   fInputs.AddLast(new AliTriggerInput("TOF_Cosmic_MultiMuon_L0","TOF",0));
   fInputs.AddLast(new AliTriggerInput("0OIN","TOF",0)); // was "TOF_pp_MB_L0"
@@ -452,6 +452,7 @@ void AliTOFTrigger::CreateLTMMatrix() {
   //creating LTMMatrix
   //initialization
   CreateLTMMatrixFromDigits();
+  CreateCTTMMatrix();
 }
 
 //-------------------------------------------------------------------------
@@ -539,7 +540,6 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
 
   tofLoader->UnloadDigits();
   //   rl->UnloadgAlice();
-  CreateCTTMMatrix();
 
 }
 
@@ -985,6 +985,9 @@ void AliTOFTrigger::CreateCTTMMatrix() {
   //
   // Create CTTM bit map
   //
+
+  LoadActiveMask();
+
     Int_t fromTriggertoDCS[72] = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29,32,33,36,37,40,41,44,45,48,49,52,53,56,57,60,61,64,65,68,69,3,
 				  2,7,6,11,10,15,14,19,18,23,22,27,26,31,30,35,34,39,38,43,42,47,46,51,50,55,54,59,58,63,62,67,66,71,70};
 
