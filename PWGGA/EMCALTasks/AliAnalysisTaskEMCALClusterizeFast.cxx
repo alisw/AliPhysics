@@ -278,14 +278,8 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
   } else if (fClusterizeFastORs) { // Fill digits from FastORs
     
     AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-  
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-    if (!esd){
-      AliError("Cannot get the ESD event");
-      return;
-    } 
     
-    AliESDCaloTrigger *triggers = esd->GetCaloTrigger("EMCAL");
+    AliVCaloTrigger *triggers = InputEvent()->GetCaloTrigger("EMCAL");
     
     if (!triggers || !(triggers->GetEntries() > 0))
       return;
