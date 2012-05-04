@@ -507,12 +507,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   // Reject pure LED events?
   if( fFiredTriggerClassName  !="" && !fAnaLED)
   {
-    printf("Event type %d\n",eventType);
+    //printf("Event type %d\n",eventType);
     if(eventType!=7)
       return kFALSE; //Only physics event, do not use for simulated events!!!
-    //if(fDebug > 0) 
+    
+    if(fDebug > 0) 
       printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
              GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
+    
     if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
     else if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Accepted triggered event\n");
   }
