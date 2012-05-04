@@ -31,7 +31,7 @@ namespace AliSpectraNameSpace
       kHistPtRecSigmaKaonMinus,                 // Pt histo for kaons -, reconstructed tracks, sigma ID
       kHistPtRecSigmaProtonMinus,               // Pt histo for protons -, reconstructed tracks, sigma ID
       
-      // 6 Pt Reconstructed True
+      // 6 Pt Reconstructed True & identified with nsigma
       kHistPtRecTruePionPlus,                   // Pt histo for pions +, reconstructed tracks, true ID
       kHistPtRecTrueKaonPlus,                   // Pt histo for kaons +, reconsructed tracks, true ID
       kHistPtRecTrueProtonPlus,                 // Pt histo for protons +, reconstructed tracks, true ID
@@ -40,6 +40,16 @@ namespace AliSpectraNameSpace
       kHistPtRecTrueProtonMinus,                // Pt histo for protons -, reconstructed tracks, true ID
       kHistPtRecTrueMuonPlus,                   // Pt histo for muons +, reconstructed tracks, true ID,
       kHistPtRecTrueMuonMinus,                  // Pt histo for muons +, reconstructed tracks, true ID,
+
+      // 6 Pt Reconstructed True & (regardless of the offline nsigma identification)
+      kHistPtRecPrimaryPionPlus,                   // Pt histo for pions +, reconstructed tracks, true ID
+      kHistPtRecPrimaryKaonPlus,                   // Pt histo for kaons +, reconsructed tracks, true ID
+      kHistPtRecPrimaryProtonPlus,                 // Pt histo for protons +, reconstructed tracks, true ID
+      kHistPtRecPrimaryPionMinus,                  // Pt histo for pions -, reconstructed tracks, true ID
+      kHistPtRecPrimaryKaonMinus,                  // Pt histo for kaons -, reconstructed tracks, true ID
+      kHistPtRecPrimaryProtonMinus,                // Pt histo for protons -, reconstructed tracks, true ID
+      kHistPtRecPrimaryMuonPlus,                   // Pt histo for muons +, reconstructed tracks, true ID,
+      kHistPtRecPrimaryMuonMinus,                  // Pt histo for muons +, reconstructed tracks, true ID,
             
       // 6 Pt Reconstructed Sigma Primary
       kHistPtRecSigmaPrimaryPionPlus,           // Pt histo for pions +, reconstructed tracks, sigma ID, primary Event
