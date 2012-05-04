@@ -139,8 +139,8 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kZED,"+C1ZED-AC-NOPF-CENTNOTRD","AC", triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kZED,"+C1ZED-E-NOPF-CENTNOTRD", "E",  triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kZED,"+C1ZED-ACE-NOPF-CENTNOTRD","ACE",triggerCount);
-  oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"");
-  oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"(ZDCTDCA || kZDCTDCC) !V0ABG && !V0CBG && !TPCLaserWarmUp");
+  oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"1");
+  oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"(ZDCTDCA || ZDCTDCC) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
 
   triggerCount++;
   oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+CSHM7-B-NOPF-ALLNOTRD","B",    triggerCount);
