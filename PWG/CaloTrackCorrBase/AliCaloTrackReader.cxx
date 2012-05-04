@@ -74,7 +74,7 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0), 
 fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             
-fESDtrackCuts(0),            fSelectHybridTracks(0),
+fESDtrackCuts(0),            fConstrainTrack(kFALSE),          fSelectHybridTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.8),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),      
@@ -362,6 +362,8 @@ void AliCaloTrackReader::InitParameters()
   
   fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks 
   
+  fConstrainTrack = kFALSE ; // constrain tracks to vertex
+  
   fV0ADC[0] = 0;   fV0ADC[1] = 0; 
   fV0Mul[0] = 0;   fV0Mul[1] = 0; 
   
@@ -505,9 +507,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   // Reject pure LED events?
   if( fFiredTriggerClassName  !="" && !fAnaLED)
   {
+    printf("Event type %d\n",eventType);
     if(eventType!=7)
       return kFALSE; //Only physics event, do not use for simulated events!!!
-    if(fDebug > 0) 
+    //if(fDebug > 0) 
       printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
              GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
     if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
@@ -840,7 +843,7 @@ void AliCaloTrackReader::FillInputCTS()
   if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS()\n");
   
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
-  Double_t p[3];
+  Double_t pTrack[3];
   fTrackMult = 0;
   Int_t nstatus = 0;
   for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
@@ -853,13 +856,32 @@ void AliCaloTrackReader::FillInputCTS()
     
     nstatus++;
     
-    if     (fDataType==kESD && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track))
+    if     (fDataType==kESD)
     {
-      continue;
+      AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
+      
+      if(esdTrack && fESDtrackCuts->AcceptTrack(esdTrack))
+      {
+        track->GetPxPyPz(pTrack) ;
+
+        if(fConstrainTrack)
+        {
+          if(esdTrack->GetConstrainedParam())
+          {
+            const AliExternalTrackParam* constrainParam = esdTrack->GetConstrainedParam();
+            esdTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+            esdTrack->GetConstrainedPxPyPz(pTrack);
+          }
+          else continue;
+        } // use constrained tracks
+      }
+      else continue;
+      
     }
     else if(fDataType==kAOD)
     {
       AliAODTrack *aodtrack = dynamic_cast <AliAODTrack*>(track);
+      
       if(aodtrack)
       {
        if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS():AOD track type: %d (primary %d), hybrid? %d \n",
@@ -881,6 +903,8 @@ void AliCaloTrackReader::FillInputCTS()
           
           if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
         }
+        
+        track->GetPxPyPz(pTrack) ;
       }
     }
     
@@ -888,8 +912,7 @@ void AliCaloTrackReader::FillInputCTS()
     //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
     if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
     
-    track->GetPxPyPz(p) ;
-    TLorentzVector momentum(p[0],p[1],p[2],0);
+    TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
     
     if(fCTSPtMin < momentum.Pt() && fCTSPtMax > momentum.Pt())
     {
