@@ -1295,8 +1295,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
 
   const Int_t nvars=11;
   const Int_t nptbins=13;
-  Float_t* ptbins;
-  ptbins=new Float_t[nptbins+1];
+  Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=0.5;
   ptbins[2]=1.;
@@ -1314,11 +1313,6 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
 
   SetPtBins(nptbins+1,ptbins);
 
-  Float_t** rdcutsvalmine;
-  rdcutsvalmine=new Float_t*[nvars];
-  for(Int_t iv=0;iv<nvars;iv++){
-    rdcutsvalmine[iv]=new Float_t[nptbins];
-  }
 	
   Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,0.04,0.75,0.3,0.3,1000.*1E-4,1000.*1E-4,0.,0.85,0.,0.},/* pt<0.5*/
 						  {0.400,0.04,0.75,0.3,0.3,1000.*1E-4,1000.*1E-4,0.,0.85,0.,0.},/* 0.5<pt<1*/
@@ -1343,6 +1337,8 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
     }
   }
   SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
 
 
   //pid settings
