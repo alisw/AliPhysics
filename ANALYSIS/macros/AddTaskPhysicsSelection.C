@@ -12,14 +12,27 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
     ::Error("AddTaskPhysicsSelection", "This task requires an input event handler");
     return NULL;
   }
-  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   
+  TString inputDataType = inputHandler->GetDataType(); // can be "ESD" or "AOD"
+
   // Configure analysis
   //===========================================================================
-    
-    
-
   AliPhysicsSelectionTask *task = new AliPhysicsSelectionTask("");
+
+  // this makes physics selection to work using AliMultiInputEventHandler
+  if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
+    AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
+    AliInputEventHandler *ih = multiInputHandler->GetFirstInputEventHandler();
+    if (!ih) {
+      ::Error("AddTaskPhysicsSelection","ESD or AOD input handler is mixxing");
+      return NULL;
+    }
+    ih->SetEventSelection(multiInputHandler->GetEventSelection());
+    inputDataType = ih->GetDataType(); // can be "ESD" or "AOD"
+  }
+  
   mgr->AddTask(task);
   
   AliPhysicsSelection* physSel = task->GetPhysicsSelection();
