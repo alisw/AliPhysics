@@ -45,13 +45,11 @@ AliAODPid::AliAODPid():
   // default constructor
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]   = 0; 
     for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = 0.;
-    for(Int_t i=0; i<3; i++) fEMCALPosition[i]    = 0.;
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
     for(Int_t i=0; i<6; i++) {
       fTRDmomentum[i]      = 0.;
       fTRDncls[i]          = 0;
     }
-    for(Int_t i=0; i<3; i++) fEMCALMomentum[i]    = 0.;
     for(Int_t i=0; i<4; i++) fITSdEdxSamples[i]   = 0.;
 }
 
@@ -83,10 +81,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   SetTRDsignal(fTRDnSlices, pid.fTRDslices);
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
     for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
-    for(Int_t i=0; i<3; i++) {
-      fEMCALPosition[i]=pid.fEMCALPosition[i];
-      fEMCALMomentum[i]=pid.fEMCALMomentum[i];
-    }
+
     for(Int_t i=0; i<6; i++){ 
       fTRDmomentum[i]=pid.fTRDmomentum[i];
       fTRDncls[i] = 0;
@@ -139,11 +134,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     
     for(Int_t i = 0; i < 5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
     
-    for(Int_t i = 0; i < 3; i++) {
-	fEMCALPosition[i]=pid.fEMCALPosition[i];
-	fEMCALMomentum[i]=pid.fEMCALMomentum[i];
-    }
-    SetTPCdEdxInfo(pid.fTPCdEdxInfo);
+     SetTPCdEdxInfo(pid.fTPCdEdxInfo);
   }
 
   return *this;
@@ -159,30 +150,6 @@ void AliAODPid::SetIntegratedTimes(Double_t timeint[kSPECIES])
 {
  // Returns the array with integrated times for each particle hypothesis
 for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=timeint[i];
-}
-//_______________________________________________________________________________
-void AliAODPid::GetEMCALPosition(Double_t emcalpos[3]) const
-{
- // Returns the array with extrapolated track position at the EMCAL surface
-  for(Int_t i=0; i<3; i++) emcalpos[i]=fEMCALPosition[i];
-}
-//_______________________________________________________________________________
-void AliAODPid::SetEMCALPosition(Double_t emcpos[3])
-{
- // Sets the array with extrapolated track position at the EMCAL surface
-  for(Int_t i=0; i<3; i++) fEMCALPosition[i]=emcpos[i];
-}
-//_______________________________________________________________________________
-void AliAODPid::GetEMCALMomentum(Double_t emcalmom[3]) const
-{
- // Returns the array with extrapolated track momentum at the EMCAL surface
-  for(Int_t i=0; i<3; i++) emcalmom[i]=fEMCALMomentum[i];
-}
-//_______________________________________________________________________________
-void AliAODPid::SetEMCALMomentum(Double_t emcmom[3])
-{
- // Sets the array with extrapolated track momentum at the EMCAL surface
-  for(Int_t i=0; i<3; i++) fEMCALMomentum[i]=emcmom[i];
 }
 //______________________________________________________________________________
 void AliAODPid::SetTOFpidResolution(Double_t tofPIDres[5])

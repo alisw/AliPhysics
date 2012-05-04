@@ -40,8 +40,6 @@ class AliAODPid : public TObject {
   void      SetIntegratedTimes(Double_t timeint[5]);
   void      SetHMPIDsignal(Double_t hmpid)                     {fHMPIDsignal=hmpid;}
   void      SetHMPIDprobs(Double_t hmpPid[5]);
-  void      SetEMCALPosition(Double_t emcalpos[3]);
-  void      SetEMCALMomentum(Double_t emcalmom[3]);
 
   Double_t  GetITSsignal()       const {return  fITSsignal;}
   void      GetITSdEdxSamples(Double_t *s) const;
@@ -65,8 +63,6 @@ class AliAODPid : public TObject {
   void      GetHMPIDprobs(Double_t *p) const;
 
   void      GetIntegratedTimes(Double_t timeint[5])  const; 
-  void      GetEMCALPosition  (Double_t emcalpos[3]) const;
-  void      GetEMCALMomentum  (Double_t emcalmom[3]) const;
   void      GetTOFpidResolution (Double_t tofRes[5]) const;
 
  private :
@@ -85,13 +81,10 @@ class AliAODPid : public TObject {
   Double32_t  fIntTime[5];       // track time hypothesis
   Double32_t  fHMPIDsignal;      // detector raw signal
   Double32_t  fHMPIDprobs[5];    // detector pid probabilities
-  Double32_t  fEMCALPosition[3]; // global position of track
-				 // extrapolated to EMCAL surface
-  Double32_t  fEMCALMomentum[3]; // momentum of track
-				 // extrapolated to EMCAL surface
+ 
   AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
 
-  ClassDef(AliAODPid, 9);
+  ClassDef(AliAODPid, 10);
 };
 
 //_____________________________________________________________

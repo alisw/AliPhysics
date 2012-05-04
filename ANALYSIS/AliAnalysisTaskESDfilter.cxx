@@ -2282,27 +2282,6 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
 
   aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
 
- //Extrapolate track to EMCAL surface for AOD-level track-cluster matching
- Double_t emcpos[3] = {0.,0.,0.};
- Double_t emcmom[3] = {0.,0.,0.};
- aodpid->SetEMCALPosition(emcpos);
- aodpid->SetEMCALMomentum(emcmom);
-
- Double_t hmpPid[5] = {0};
- track->GetHMPIDpid(hmpPid);
- aodpid->SetHMPIDprobs(hmpPid);
-
- AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
- if(!outerparam) return;
-
- //To be replaced by call to AliEMCALGeoUtils when the class becomes available
- Bool_t okpos = outerparam->GetXYZ(emcpos);
- Bool_t okmom = outerparam->GetPxPyPz(emcmom);
- if(!(okpos && okmom)) return;
-
- aodpid->SetEMCALPosition(emcpos);
- aodpid->SetEMCALMomentum(emcmom);
-
 }
 
 Double_t  AliAnalysisTaskESDfilter::Chi2perNDF(AliESDtrack* track)
