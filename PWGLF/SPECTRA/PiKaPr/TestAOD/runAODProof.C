@@ -1,4 +1,4 @@
-#include "AliSpectraAODPID.h" 
+
 
 
 void runAODProof(Int_t c=1, const char * proofMode = "full")
@@ -7,10 +7,10 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
   //3 data AOD086
   //4 MC AOD090
   
-  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+  //  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   
   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
+  gSystem->Load("libGeom.so");
    gSystem->Load("libVMC.so");
    gSystem->Load("libPhysics.so");
    gSystem->Load("libSTEERBase.so");
@@ -21,7 +21,6 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    gSystem->Load("libANALYSISalice.so");
    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
-
    AliAnalysisAlien * handler = new AliAnalysisAlien("test");
    handler->SetOverwriteMode();
    handler->SetRunMode(proofMode);
@@ -30,11 +29,10 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    //handler->SetAliROOTVersion("v5-03-11-AN");
    handler->SetAliROOTVersion("v5-03-17-AN");
    
-   //handler->SetNproofWorkers(2);
-   handler->SetNproofWorkersPerSlave(1);
+   handler->SetNproofWorkers(10);
+   //     handler->SetNproofWorkersPerSlave(1);
    handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
-   //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
-   
+   //   handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
    // Set handler for Real DATA:
    if (c == 1){
      handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
@@ -55,11 +53,11 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
    gROOT->LoadMacro("AliSpectraAODPID.cxx+g");
    gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
-   
+
    handler->SetAliRootMode("default");
    handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
    handler->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
-   handler->SetFileForTestMode("filelist.txt"); // list of local files for testing
+   //   handler->SetFileForTestMode("filelist.txt"); // list of local files for testing
    //  handler->SetAliRootMode("");
    handler->SetClearPackages();
    
@@ -84,7 +82,8 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    // Double_t CentCutMax[4]={10,20,30,40};
    // Double_t QvecCutMin[4]={0,0,0,0};
    // Double_t QvecCutMax[4]={100,100,100,100};
-   AliSpectraAODPID * pid = new AliSpectraAODPID(AODPIDType_t::kNSigmaTPCTOF);
+   using namespace AliSpectraNameSpace;
+   AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
    pid->SetNSigmaCut(5.);
    
    for(Int_t iCut=1;iCut<2;iCut++){
@@ -138,7 +137,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
 	 AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
 								     Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
 	 AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
-								     Form("Pt.AOD.1._data_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
+								     Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));
 	 
        }
      mgr->ConnectInput(task, 0, cinput);
