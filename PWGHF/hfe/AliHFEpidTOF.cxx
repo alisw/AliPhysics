@@ -56,6 +56,9 @@ AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
   //
   // Constructor
   //
+
+  memset(fSigmaBordersTOF, 0, sizeof(Float_t) * 2);
+
 }
 
 //___________________________________________________________________
