@@ -501,6 +501,16 @@ void  AliEMCALGeometry::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, 
 Int_t  AliEMCALGeometry::GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const
 {
   // Transition from super module number(nSupMod) and cell indexes (ieta,iphi) to absId
+  
+  // Check if the indeces correspond to existing SM or tower indeces
+  if(iphi    < 0 || iphi    >= AliEMCALGeoParams::fgkEMCALRows || 
+     ieta    < 0 || ieta    >= AliEMCALGeoParams::fgkEMCALCols ||
+     nSupMod < 0 || nSupMod >= GetNumberOfSuperModules()         )
+  {
+    AliDebug(1,Form("Wrong cell indexes : SM %d, column (eta) %d, row (phi) %d", nSupMod,ieta,iphi));
+    return -1 ;
+  }
+  
   static Int_t ietam=-1, iphim=-1, nModule=-1;
   static Int_t nIeta=-1, nIphi=-1; // cell indexes in module
 
@@ -509,7 +519,7 @@ Int_t  AliEMCALGeometry::GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, 
   nIeta = ieta%fNETAdiv;
   nIeta = fNETAdiv - 1 - nIeta;
   nIphi = iphi%fNPHIdiv;
-
+  
   return GetAbsCellId(nSupMod, nModule, nIphi, nIeta);
 }
 
@@ -591,7 +601,6 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
    if(nSupMod%2 == 0)		  
       ieta = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
    
-  
     absId = GetAbsCellIdFromCellIndexes(nSupMod, iphi, ieta);
 
     return kTRUE;

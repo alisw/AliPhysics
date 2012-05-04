@@ -346,7 +346,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(const Int_t absID, const Int_t bc,
   }
   
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
-  
+
   // Do not include bad channels found in analysis,
   if( IsBadChannelsRemovalSwitchedOn() && GetEMCALChannelStatus(imod, ieta, iphi)) 
   {
@@ -499,30 +499,40 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
   
   //Get close cells index, energy and time, not in corners
+
+  Int_t absID1 = -1;
+  Int_t absID2 = -1;
   
-  Int_t absID1 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
-  Int_t absID2 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+  if( iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  if( iphi > 0 )                                absID2 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
   
   // In case of cell in eta = 0 border, depending on SM shift the cross cell index
+
   Int_t absID3 = -1;
   Int_t absID4 = -1;
   
-  if     ( ieta == AliEMCALGeoParams::fgkEMCALCols - 1 && !(imod%2) )
+  
+  if     ( ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2) )
   {
-    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, 0);
-    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
+    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod+1, iphi, 0);
+    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1); 
   }
   else if( ieta == 0 && imod%2 )
   {
-    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
-    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, AliEMCALGeoParams::fgkEMCALCols-1); 
+    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod,   iphi, ieta+1);
+    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1); 
   }
   else
   {
-    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
-    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
+    if( ieta < AliEMCALGeoParams::fgkEMCALCols-1 ) 
+      absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    if( ieta > 0 )                                 
+      absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
   }
 
+  //printf("IMOD %d, AbsId %d, a %d, b %d, c %d e %d \n",imod,absID,absID1,absID2,absID3,absID4);
+
+  
   Float_t  ecell  = 0, ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
   Double_t tcell  = 0, tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
   Bool_t   accept = 0, accept1 = 0, accept2 = 0, accept3 = 0, accept4 = 0;
