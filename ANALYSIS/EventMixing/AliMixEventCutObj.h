@@ -19,7 +19,8 @@ class AliAODEvent;
 class AliESDEvent;
 class AliMixEventCutObj : public TObject {
 public:
-   enum EEPAxis_t {kMultiplicity = 0, kZVertex = 1, kNumberV0s = 2, kNumberTracklets = 3, kCentrality = 4, kEventPlane = 5, kAllEventAxis = 6};
+   enum EEPAxis_t {kMultiplicity = 0, kZVertex = 1, kNumberV0s = 2, kNumberTracklets = 3, kCentrality = 4, kEventPlane = 5,
+   kEventPlaneV0A=6 , kEventPlaneV0C=7 , kAllEventAxis = 8};
 
    AliMixEventCutObj(AliMixEventCutObj::EEPAxis_t type = kMultiplicity, Float_t min = 0.0, Float_t max = 0.0, Float_t step = 1.0, const char *opt = "");
    AliMixEventCutObj(const AliMixEventCutObj &obj);
@@ -48,6 +49,8 @@ public:
 
    void        SetCurrentValueToIndex(Int_t index);
 
+   Bool_t      IsValid();
+
 private:
    Int_t       fCutType;       // cut type
    TString     fCutOpt;        // cut option string
@@ -58,7 +61,7 @@ private:
 
    Float_t     fCurrentVal;    // current value
 
-   ClassDef(AliMixEventCutObj, 2)
+   ClassDef(AliMixEventCutObj, 3)
 };
 
 #endif

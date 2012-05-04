@@ -79,7 +79,7 @@ void AliMixEventPool::AddCut(AliMixEventCutObj *cut)
    //
    // Adds cut
    //
-   if (cut) fListOfEventCuts.Add(new AliMixEventCutObj(*cut));
+   if (cut && cut->IsValid()) fListOfEventCuts.Add(new AliMixEventCutObj(*cut));
 }
 //_________________________________________________________________________________________________
 void AliMixEventPool::Print(const Option_t *option) const

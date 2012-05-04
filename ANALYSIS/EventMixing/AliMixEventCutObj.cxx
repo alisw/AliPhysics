@@ -197,16 +197,30 @@ Double_t AliMixEventCutObj::GetValue(AliESDEvent *ev)
       {
          AliCentrality *c = ev->GetCentrality();
          if (!c) AliFatal("esd->GetCentrality() is null");
-         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
          return c->GetCentralityPercentile(fCutOpt.Data());
       }
       case kEventPlane:
       {
-         AliEventplane *evtPlane = new AliEventplane();
-         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
-         if (!fCutOpt.IsDigit()) AliFatal("fCutOpt is not a digit string");
+         AliEventplane *evtPlane = ev->GetEventplane();
+         if (!evtPlane) evtPlane = new AliEventplane();
          Double_t val = evtPlane->GetEventplane("V0",ev,fCutOpt.Atoi());
-         delete evtPlane;
+         if (!ev->GetEventplane()) delete evtPlane;
+         return val;
+      }
+      case kEventPlaneV0A:
+      {
+         AliEventplane *evtPlane = ev->GetEventplane();
+         if (!evtPlane) evtPlane = new AliEventplane();
+         Double_t val = evtPlane->GetEventplane("V0A",ev,fCutOpt.Atoi());
+         if (!ev->GetEventplane()) delete evtPlane;
+         return val;
+      }
+      case kEventPlaneV0C:
+      {
+         AliEventplane *evtPlane = ev->GetEventplane();
+         if (!evtPlane) evtPlane = new AliEventplane();
+         Double_t val = evtPlane->GetEventplane("V0C",ev,fCutOpt.Atoi());
+         if (!ev->GetEventplane()) delete evtPlane;
          return val;
       }
    }
@@ -239,16 +253,30 @@ Double_t AliMixEventCutObj::GetValue(AliAODEvent *ev)
       {
          AliCentrality *c = ev->GetCentrality();
          if (!c) AliFatal("esd->GetCentrality() is null");
-         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
          return c->GetCentralityPercentile(fCutOpt.Data());
       }
       case kEventPlane:
       {
-         AliEventplane *evtPlane = new AliEventplane();
-         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
-         if (!fCutOpt.IsDigit()) AliFatal("fCutOpt is not a digit string");
-         Double_t val = evtPlane->GetEventplane("V0",ev,fCutOpt.Atoi());
-         delete evtPlane;
+         AliEventplane *evtPlane = ev->GetEventplane();
+         if (!evtPlane) evtPlane = new AliEventplane();
+         Double_t val = evtPlane->GetEventplane("V0A",ev,fCutOpt.Atoi());
+         if (!ev->GetEventplane()) delete evtPlane;
+         return val;
+      }
+      case kEventPlaneV0A:
+      {
+         AliEventplane *evtPlane = ev->GetEventplane();
+         if (!evtPlane) evtPlane = new AliEventplane();
+         Double_t val = evtPlane->GetEventplane("V0A",ev,fCutOpt.Atoi());
+         if (!ev->GetEventplane()) delete evtPlane;
+         return val;
+      }
+      case kEventPlaneV0C:
+      {
+         AliEventplane *evtPlane = ev->GetEventplane();
+         if (!evtPlane) evtPlane = new AliEventplane();
+         Double_t val = evtPlane->GetEventplane("V0C",ev,fCutOpt.Atoi());
+         if (!ev->GetEventplane()) delete evtPlane;
          return val;
       }
    }
@@ -278,6 +306,10 @@ const char *AliMixEventCutObj::GetCutName(Int_t index) const
          return Form("kCentrality[%s]", fCutOpt.Data());
       case kEventPlane:
          return Form("EventPlane[%s]", fCutOpt.Data());
+      case kEventPlaneV0A:
+         return Form("EventPlaneV0A[%s]", fCutOpt.Data());
+      case kEventPlaneV0C:
+         return Form("EventPlaneV0A[%s]", fCutOpt.Data());
    }
    return "";
 }
@@ -300,3 +332,62 @@ void AliMixEventCutObj::PrintValues(AliVEvent *main, AliVEvent *mix)
    AliInfo(Form("name=%s main=%f mix=%f", GetCutName(), GetValue(main), GetValue(mix)));
 }
 
+//_________________________________________________________________________________________________
+Bool_t AliMixEventCutObj::IsValid()
+{
+   //
+   // Check if cut is valid
+   //
+   switch (fCutType) {
+
+      case kCentrality:
+      {
+         if (fCutOpt.IsNull()) {
+            AliError("fCutOpt is null");
+            return kFALSE;
+         }
+         break;
+      }
+      case kEventPlane:
+      {
+         if (fCutOpt.IsNull()) {
+            AliError("fCutOpt is null");
+            return kFALSE;
+         }
+         if (!fCutOpt.IsDigit()) {
+            AliError("fCutOpt is not a digit string");
+            return kFALSE;
+         }
+         break;
+      }
+      case kEventPlaneV0A:
+      {
+         if (fCutOpt.IsNull()) {
+            AliError("fCutOpt is null");
+            return kFALSE;
+         }
+         if (!fCutOpt.IsDigit()) {
+            AliError("fCutOpt is not a digit string");
+            return kFALSE;
+         }
+         break;
+      }
+      case kEventPlaneV0C:
+      {
+         if (fCutOpt.IsNull()) {
+            AliError("fCutOpt is null");
+            return kFALSE;
+         }
+         if (!fCutOpt.IsDigit()) {
+            AliError("fCutOpt is not a digit string");
+            return kFALSE;
+         }
+         break;
+      }
+      default: {
+         break;
+      }
+   }
+
+   return kTRUE;
+}
