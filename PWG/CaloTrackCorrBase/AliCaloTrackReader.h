@@ -238,6 +238,9 @@ public:
   AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts      ; }
   void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
 
+  void             SwitchOnConstrainTrackToVertex()        { fConstrainTrack = kTRUE   ; } 
+  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack = kFALSE  ; }      
+  
   void             SwitchOnAODHybridTrackSelection()       { fSelectHybridTracks = kTRUE  ; } 
   void             SwitchOffAODHybridTrackSelection()      { fSelectHybridTracks = kFALSE ; }      
   
@@ -393,6 +396,7 @@ public:
   ULong_t          fTrackStatus        ;    // Track selection bit, select tracks refitted in TPC, ITS ...
   ULong_t          fTrackFilterMask    ;    // Track selection bit, for AODs (any difference with track status?)
   AliESDtrackCuts *fESDtrackCuts       ;    // Track cut 
+  Bool_t           fConstrainTrack     ;    // Constrain Track to vertex
   Bool_t           fSelectHybridTracks ;    // Select CTS tracks of type hybrid (only for AODs)
   Int_t            fTrackMult          ;    // Track multiplicity
   Float_t          fTrackMultEtaCut    ;    // Track multiplicity eta cut
@@ -445,7 +449,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,38)
+  ClassDef(AliCaloTrackReader,39)
   
 } ;
 
