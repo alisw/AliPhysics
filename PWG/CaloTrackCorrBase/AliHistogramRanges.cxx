@@ -34,6 +34,8 @@ TObject(),
 fHistoPtBins(0),              fHistoPtMax(0.),             fHistoPtMin(0.),
 fHistoPhiBins(0),             fHistoPhiMax(0.),            fHistoPhiMin(0.),
 fHistoEtaBins(0),             fHistoEtaMax(0.),            fHistoEtaMin(0.),
+fHistoDeltaPhiBins(0),        fHistoDeltaPhiMax(0.),       fHistoDeltaPhiMin(0.),
+fHistoDeltaEtaBins(0),        fHistoDeltaEtaMax(0.),       fHistoDeltaEtaMin(0.),
 fHistoMassBins(0),            fHistoMassMax(0.),           fHistoMassMin(0.),
 fHistoAsymBins(0),            fHistoAsymMax(0.),           fHistoAsymMin(0.),
 fHistoV0SBins(0),             fHistoV0SMax(0),             fHistoV0SMin(0),
@@ -73,6 +75,8 @@ void AliHistogramRanges::InitParameters()
   fHistoPtBins           = 240 ;  fHistoPtMax           = 120   ; fHistoPtMin           = 0.  ;
   fHistoPhiBins          = 120 ;  fHistoPhiMax          = TMath::TwoPi(); fHistoPhiMin  = 0.  ;
   fHistoEtaBins          = 100 ;  fHistoEtaMax          =  1    ; fHistoEtaMin          = -1  ;
+  fHistoDeltaPhiBins     = 140 ;  fHistoDeltaPhiMax     =  3* TMath::TwoPi()/2 ; fHistoDeltaPhiMin  = -  TMath::TwoPi()/2 ;
+  fHistoDeltaEtaBins     = 200 ;  fHistoDeltaEtaMax     = TMath::TwoPi()/2 ;     fHistoDeltaEtaMin  = - TMath::TwoPi()/2 ;
   fHistoMassBins         = 200 ;  fHistoMassMax         = 1.    ; fHistoMassMin         = 0.  ;
   fHistoAsymBins         = 10  ;  fHistoAsymMax         = 1.    ; fHistoAsymMin         = 0.  ;
   fHistoV0SBins          = 100 ;  fHistoV0SMax          = 10000 ; fHistoV0SMin          = 0   ;
@@ -107,6 +111,8 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %3.1f < pT  < %3.1f,  Nbin = %d\n"             , fHistoPtMin,          fHistoPtMax,          fHistoPtBins);
   printf("Histograms: %3.1f < phi < %3.1f, Nbin = %d\n"              , fHistoPhiMin,         fHistoPhiMax,         fHistoPhiBins);
   printf("Histograms: %3.1f < eta < %3.1f, Nbin = %d\n"              , fHistoEtaMin,         fHistoEtaMax,         fHistoEtaBins);
+  printf("Histograms: %3.1f < delta phi < %3.1f, Nbin = %d\n"        , fHistoDeltaPhiMin,    fHistoDeltaPhiMax,    fHistoDeltaPhiBins);
+  printf("Histograms: %3.1f < delta eta < %3.1f, Nbin = %d\n"        , fHistoDeltaEtaMin,    fHistoDeltaEtaMax,    fHistoDeltaEtaBins);
   printf("Histograms: %3.1f < mass < %3.1f, Nbin = %d\n"             , fHistoMassMin,        fHistoMassMax,        fHistoMassBins);
   printf("Histograms: %3.1f < asymmetry < %3.1f, Nbin = %d\n"        , fHistoAsymMin,        fHistoAsymMax,        fHistoAsymBins);
   printf("Histograms: %d < V0 Signal < %d, Nbin = %d\n"              , fHistoV0SMin,         fHistoV0SMax,         fHistoV0SBins);
