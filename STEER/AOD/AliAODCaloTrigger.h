@@ -11,11 +11,11 @@
 Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
-#include <TNamed.h>
+#include "AliVCaloTrigger.h"
 
 class TArrayI;
 
-class AliAODCaloTrigger : public TNamed 
+class AliAODCaloTrigger : public AliVCaloTrigger 
 {
 public:
 	         AliAODCaloTrigger();
@@ -78,7 +78,7 @@ private:
 	Int_t    fL1FrameMask;    // Validation flag for L1 data
 	
 	
-	ClassDef(AliAODCaloTrigger, 2)
+	ClassDef(AliAODCaloTrigger, 3)
 };
 #endif
 

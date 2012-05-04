@@ -21,6 +21,7 @@
 #include "AliVVertex.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
+#include "AliVCaloTrigger.h"
 #include "TRefArray.h"
 #include "AliTOFHeader.h"
 class AliCentrality;
@@ -148,6 +149,7 @@ public:
   virtual AliVCaloCells *GetPHOSCells()        const {return 0;}
   const TGeoHMatrix* GetPHOSMatrix(Int_t /*i*/)    const {return NULL;}
   const TGeoHMatrix* GetEMCALMatrix(Int_t /*i*/)   const {return NULL;}
+  virtual AliVCaloTrigger *GetCaloTrigger(TString /*calo*/) const {return NULL;} 
 
 	
   // Primary vertex

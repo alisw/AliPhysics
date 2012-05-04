@@ -31,7 +31,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 ClassImp(AliAODCaloTrigger)
 
 //_______________
-AliAODCaloTrigger::AliAODCaloTrigger() : TNamed(),
+AliAODCaloTrigger::AliAODCaloTrigger() : AliVCaloTrigger(),
 fNEntries(0),
 fCurrent(-1),
 fColumn(0x0),
@@ -52,7 +52,7 @@ fL1FrameMask(0)
 }
 
 //_______________
-AliAODCaloTrigger::AliAODCaloTrigger(const char* name, const char* title) : TNamed(name, title),
+AliAODCaloTrigger::AliAODCaloTrigger(const char* name, const char* title) : AliVCaloTrigger(name, title),
 	fNEntries(0),
 	fCurrent(-1),
 	fColumn(0x0),
@@ -73,7 +73,7 @@ AliAODCaloTrigger::AliAODCaloTrigger(const char* name, const char* title) : TNam
 }
 
 //_______________
-AliAODCaloTrigger::AliAODCaloTrigger(const AliAODCaloTrigger& src) : TNamed(src),
+AliAODCaloTrigger::AliAODCaloTrigger(const AliAODCaloTrigger& src) : AliVCaloTrigger(src),
 fNEntries(0),
 fCurrent(-1),
 fColumn(0x0),
@@ -132,7 +132,7 @@ AliAODCaloTrigger& AliAODCaloTrigger::operator=(const AliAODCaloTrigger& src)
 void AliAODCaloTrigger::Copy(TObject &obj) const 
 {	
 	//
-	TNamed::Copy(obj);
+	AliVCaloTrigger::Copy(obj);
 	
 	AliAODCaloTrigger& dest = static_cast<AliAODCaloTrigger&>(obj);
 

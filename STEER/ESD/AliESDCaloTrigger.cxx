@@ -31,7 +31,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 ClassImp(AliESDCaloTrigger)
 
 //_______________
-AliESDCaloTrigger::AliESDCaloTrigger() : TNamed(),
+AliESDCaloTrigger::AliESDCaloTrigger() : AliVCaloTrigger(),
 fNEntries(0),
 fCurrent(-1),
 fColumn(0x0),
@@ -52,7 +52,7 @@ fL1FrameMask(0)
 }
 
 //_______________
-AliESDCaloTrigger::AliESDCaloTrigger(const AliESDCaloTrigger& src) : TNamed(src),
+AliESDCaloTrigger::AliESDCaloTrigger(const AliESDCaloTrigger& src) : AliVCaloTrigger(src),
 fNEntries(0),
 fCurrent(-1),
 fColumn(0x0),
@@ -111,7 +111,7 @@ AliESDCaloTrigger& AliESDCaloTrigger::operator=(const AliESDCaloTrigger& src)
 void AliESDCaloTrigger::Copy(TObject &obj) const 
 {	
 	//
-	TNamed::Copy(obj);
+	AliVCaloTrigger::Copy(obj);
 	
 	AliESDCaloTrigger& dest = static_cast<AliESDCaloTrigger&>(obj);
 

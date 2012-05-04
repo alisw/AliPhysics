@@ -111,4 +111,6 @@
 #pragma link C++ class AliVMFT+;
 #pragma link C++ class AliCounterCollection+;
 
+#pragma link C++ class AliVCaloTrigger+;
+
 #endif
