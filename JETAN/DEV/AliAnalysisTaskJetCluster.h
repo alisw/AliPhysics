@@ -63,6 +63,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetCentralityCut(Float_t xLo,Float_t xUp){fCentCutLo = xLo; fCentCutUp = xUp;}
     virtual void SetFilterMask(UInt_t i,Int_t iType = 0){fFilterMask = i;
       fFilterType = iType;}
+    virtual void SetFilterMaskBestPt(UInt_t i){fFilterMaskBestPt = i;}
+
     virtual void SetJetTypes(UInt_t i){fJetTypes = i;}
     virtual void SetJetTriggerPtCut(Float_t x){fJetTriggerPtCut = x;}    
     virtual void SetVtxCuts(Float_t z,Float_t r = 1){fVtxZCut = z; fVtxR2Cut = r *r;}    
