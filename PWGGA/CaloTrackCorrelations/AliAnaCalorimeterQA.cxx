@@ -408,7 +408,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         
         //E cross for exotic cells
         if(amp > 0.01) fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
-        
+
         nCellsInModule[nModule]++ ;
 
         Int_t icols = icol;
@@ -2088,7 +2088,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   }
   
   //Calo cells
-  fhNCells  = new TH1F ("hNCells","# cells", ncebins,ncemin,ncemax); 
+  fhNCells  = new TH1F ("hNCells","# cells", ncebins,ncemin+0.5,ncemax); 
   fhNCells->SetXTitle("n cells");
   outputContainer->Add(fhNCells);
   
@@ -2259,12 +2259,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhTimeMod);
   }
   
-  fhNClustersMod  = new TH2F ("hNClusters_Mod","# clusters vs Module", nclbins,nclmin,nclmax,fNModules,0,fNModules); 
+  fhNClustersMod  = new TH2F ("hNClusters_Mod","# clusters vs Module", nclbins,nclmin+0.5,nclmax,fNModules,0,fNModules); 
   fhNClustersMod->SetXTitle("number of clusters");
   fhNClustersMod->SetYTitle("Module");
   outputContainer->Add(fhNClustersMod);
   
-  fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", ncebins,ncemin,ncemax,fNModules,0,fNModules); 
+  fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", ncebins,ncemin+0.5,ncemax,fNModules,0,fNModules); 
   fhNCellsMod->SetXTitle("n cells");
   fhNCellsMod->SetYTitle("Module");
   outputContainer->Add(fhNCellsMod);
@@ -2532,13 +2532,16 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
   
   Int_t icol =-1, irow=-1,iRCU = -1;   
   Int_t imod = GetModuleNumberCellIndexes(absID, fCalorimeter, icol, irow, iRCU);
-  
+    
   if(fCalorimeter=="EMCAL")
   {
     //Get close cells index, energy and time, not in corners
-    Int_t absID1 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow+1, icol);
-    Int_t absID2 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow-1, icol);
- 
+    
+    Int_t absID1 = -1;
+    Int_t absID2 = -1;
+    
+    if( irow < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = GetCaloUtils()->GetEMCALGeometry()->GetAbsCellIdFromCellIndexes(imod, irow+1, icol);
+    if( irow > 0 )                                absID2 = GetCaloUtils()->GetEMCALGeometry()->GetAbsCellIdFromCellIndexes(imod, irow-1, icol);
     
     // In case of cell in eta = 0 border, depending on SM shift the cross cell index
     Int_t absID3 = -1;
@@ -2546,18 +2549,20 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
     
     if     ( icol == AliEMCALGeoParams::fgkEMCALCols - 1 && !(imod%2) )
     {
-      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, 0);
-      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol-1); 
+      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod+1, irow, 0);
+      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod  , irow, icol-1); 
     }
     else if( icol == 0 && imod%2 )
     {
-      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol+1);
-      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, AliEMCALGeoParams::fgkEMCALCols-1); 
+      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod  , irow, icol+1);
+      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod-1, irow, AliEMCALGeoParams::fgkEMCALCols-1); 
     }
     else
     {
-      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol+1);
-      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol-1);
+      if( icol < AliEMCALGeoParams::fgkEMCALCols-1 )
+        absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol+1);
+      if( icol > 0 )    
+        absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol-1);
     }
     
     //Recalibrate cell energy if needed
