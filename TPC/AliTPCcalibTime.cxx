@@ -1150,22 +1150,22 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       }
 
     }
-    TObjArray* addArray=cal->GetHistoDrift();
-    if(!addArray) return 0;
-    TIterator* iterator = addArray->MakeIterator();
-    iterator->Reset();
-    THnSparse* addHist=NULL;
-    if ((fMemoryMode>1)) while((addHist=(THnSparseF*)iterator->Next())){
-      //      if(!addHist) continue;
-      addHist->Print();
-      THnSparse* localHist=(THnSparseF*)fArrayDz->FindObject(addHist->GetName());
-      if(!localHist){
-        localHist=new THnSparseF(addHist->GetName(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-        fArrayDz->AddLast(localHist);
-      }
-      localHist->Add(addHist);
-    }
-    delete iterator;
+//     TObjArray* addArray=cal->GetHistoDrift();
+//     if(!addArray) return 0;
+//     TIterator* iterator = addArray->MakeIterator();
+//     iterator->Reset();
+//     THnSparse* addHist=NULL;
+//     if ((fMemoryMode>1)) while((addHist=(THnSparseF*)iterator->Next())){
+//       //      if(!addHist) continue;
+//       addHist->Print();
+//       THnSparse* localHist=(THnSparseF*)fArrayDz->FindObject(addHist->GetName());
+//       if(!localHist){
+//         localHist=new THnSparseF(addHist->GetName(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+//         fArrayDz->AddLast(localHist);
+//       }
+//       localHist->Add(addHist);
+//     }
+//     delete iterator;
     for(Int_t i=0;i<10;i++) if (cal->GetCosmiMatchingHisto(i)) fCosmiMatchingHisto[i]->Add(cal->GetCosmiMatchingHisto(i));
     //
     // Merge alignment
@@ -1664,7 +1664,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   // 3. Update kalman filter
   //
   const Int_t    kMinTPC  = 80;    // minimal number of TPC cluster
-  const Int_t    kMinTRD  = 50;    // minimal number of TRD cluster
+  const Int_t    kMinTRD  = 60;    // minimal number of TRD cluster
   const Double_t kMinZ    = 20;    // maximal dz distance
   const Double_t kMaxDy   = 5.;    // maximal dy distance
   const Double_t kMaxAngle= 0.1;  // maximal angular distance
@@ -1673,7 +1673,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 3.0;   // outlyer cut in AliRelAlgnmentKalman
-  const Double_t kRefX    = 275;   // reference X
+  const Double_t kRefX    = 330;   // reference X
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
@@ -1683,8 +1683,8 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   Int_t dummycl[1000];
   if (track->GetTRDclusters(dummycl)<kMinTRD) return;  // minimal amount of clusters
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
-  if (!friendTrack->GetTRDIn()) return;  
-  if (!track->IsOn(AliESDtrack::kTRDrefit)) return;  
+  //  if (!friendTrack->GetTRDIn()) return;  
+  //  if (!track->IsOn(AliESDtrack::kTRDrefit)) return;   
   if (!track->IsOn(AliESDtrack::kTRDout)) return;  
   if (!track->GetInnerParam())   return;
   if (!friendTrack->GetTPCOut())   return;
@@ -1694,7 +1694,15 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   //
   AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(friendTrack->GetTPCOut()));
   AliTracker::PropagateTrackToBxByBz(&pTPC,kRefX,0.1,0.1,kFALSE);
-  AliExternalTrackParam pTRD(*(friendTrack->GetTRDIn()));
+  AliExternalTrackParam *pTRDtrack = 0; 
+  TObject *calibObject=0;
+  for (Int_t l=0;(calibObject=((AliESDfriendTrack*)friendTrack)->GetCalibObject(l));++l) {
+    if ((dynamic_cast< AliTPCseed*>(calibObject))) continue;
+    if ((pTRDtrack=dynamic_cast< AliExternalTrackParam*>(calibObject))) break;
+  }
+  if (!pTRDtrack) return;
+  //  AliExternalTrackParam pTRD(*(friendTrack->GetTRDIn()));
+  AliExternalTrackParam pTRD(*(pTRDtrack));
   pTRD.Rotate(pTPC.GetAlpha());
   //  pTRD.PropagateTo(pTPC.GetX(),fMagF);
   AliTracker::PropagateTrackToBxByBz(&pTRD,pTPC.GetX(),0.1,0.1,kFALSE);
@@ -2178,7 +2186,8 @@ void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
   const AliExternalTrackParam * pTPCIn = pTrack->GetInnerParam();
   AliExternalTrackParam pTPCvertex(*(pTrack->GetInnerParam()));
   //
-  AliExternalTrackParam lits(*pTrack);
+  if (!(pTrack->GetConstrainedParam())) return;
+  AliExternalTrackParam lits(*(pTrack->GetConstrainedParam()));
   if (TMath::Abs(pTrack->GetY())>3) return;  // beam pipe
   pTPCvertex.Rotate(lits.GetAlpha());
   //pTPCvertex.PropagateTo(pTPCvertex->GetX(),fMagF);
