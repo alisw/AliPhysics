@@ -1,4 +1,4 @@
-AliAnalysisTaskElecHadronCorrel2* ConfigHFEElecHadronCorl(Bool_t useMC){
+AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorl(Bool_t useMC){
   //
   // HFE standard task configuration
   //
@@ -25,7 +25,7 @@ AliAnalysisTaskElecHadronCorrel2* ConfigHFEElecHadronCorl(Bool_t useMC){
  hfecuts->SetPtRange(0, 30);
  hfecuts->SetMaxImpactParam(1,2);
 
-  AliAnalysisTaskElecHadronCorrel2 *task = new AliAnalysisTaskElecHadronCorrel2("HFE-hadron correlations");
+  AliAnalysisTaskElecHadronCorrel *task = new AliAnalysisTaskElecHadronCorrel("HFE-hadron correlations");
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
   task->SetInvariantMassCut(0.05);
