@@ -34,7 +34,7 @@ public:
   void   UserExec(Option_t *option);   
   
   AliEMCALRecoUtils* GetRecoUtils()      { if(!fRecoUtils) fRecoUtils = new AliEMCALRecoUtils ;
-                                           else return fRecoUtils       ; }
+                                           return fRecoUtils            ; }
   
   // OADB and geometry settings
   
