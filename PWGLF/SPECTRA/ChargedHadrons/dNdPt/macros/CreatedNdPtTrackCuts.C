@@ -1737,7 +1737,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     //
 
-    TString tag = "TPC+ITS refit required - for cut studies";
+    TString tag = "TPC+ITS refit and KinkRejection required - for cut studies";
   }
 
   // TPC+ITS refit  + TPC DCA rough cuts
@@ -1759,6 +1759,29 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     // ITS
     esdTrackCuts->SetRequireITSRefit(kTRUE);
   }
+
+  // Only TPC refit and KinksRemoval required
+  if (cutMode == 156) 
+  {
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kFALSE);
+    //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
+
+    TString tag = "TPC refit + Kink rejection required - for cut studies";
+  }
+
+
+
+
+
 
   // cuts for data without field
   if (!fieldOn)
