@@ -23,7 +23,7 @@ AliAnalysisTask AddTaskHFEElecHadronCorrl()
   }
 
   //analysis task 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/AliAnalysisTaskElecHadronCorrel.cxx++g");
+  //gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/AliAnalysisTaskElecHadronCorrel.cxx++g");
   //gROOT->LoadMacro("ConfigHFEemcalMod.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecHadronCorl.C");
   AliAnalysisTaskElecHadronCorrel *taskHFE = ConfigHFEElecHadronCorl(MCthere);
