@@ -106,6 +106,98 @@ void AliMillePedeRecord::Print(const Option_t *) const
 }
 
 //_____________________________________________________________________________________________
+Double_t AliMillePedeRecord::GetGloResWProd(Int_t indx) const
+{
+  // get sum of derivative over global variable indx * res. at point * weight
+  if (!fSize) {AliInfo("No data"); return 0;}
+  int cnt=0;
+  double prodsum = 0.0;
+  //  
+  while(cnt<fSize) {
+    //
+    Double_t resid = fValue[cnt++];
+    while(!IsWeight(cnt)) cnt++;
+    Double_t weight = GetValue(cnt++);
+    Double_t *derGlo = GetValue()+cnt;
+    int    *indGlo = GetIndex()+cnt;
+    int     nGlo = 0;
+    while(!IsResidual(cnt) && cnt<fSize) {nGlo++; cnt++;} 
+    for (int i=nGlo;i--;) if (indGlo[i]==indx) prodsum += resid*weight*derGlo[i];
+    //
+  }
+  return prodsum;
+}
+
+//_____________________________________________________________________________________________
+Double_t AliMillePedeRecord::GetGlobalDeriv(Int_t pnt, Int_t indx) const
+{
+  // get derivative over global variable indx at point pnt
+  if (!fSize) {AliError("No data"); return 0;}
+  int cnt=0,point=0;
+  //  
+  while(cnt<fSize) {
+    //
+    cnt++;
+    while(!IsWeight(cnt)) cnt++;
+    cnt++;
+    Double_t *derGlo = GetValue()+cnt;
+    int    *indGlo = GetIndex()+cnt;
+    int     nGlo = 0;
+    while(!IsResidual(cnt) && cnt<fSize) {nGlo++; cnt++;} 
+    //
+    if (pnt != point++) continue;
+    for (int i=nGlo;i--;) if (indGlo[i]==indx) return derGlo[i];
+    break;
+  }
+  return 0;
+  //
+}
+
+//_____________________________________________________________________________________________
+Double_t AliMillePedeRecord::GetLocalDeriv(Int_t pnt, Int_t indx) const
+{
+  // get derivative over local variable indx at point pnt
+  if (!fSize) {AliError("No data"); return 0;}
+  int cnt=0,point=0;
+  //  
+  while(cnt<fSize) {
+    //
+    cnt++;
+    Double_t *derLoc = GetValue()+cnt;
+    int    *indLoc = GetIndex()+cnt;
+    int     nLoc = 0;
+    while(!IsWeight(cnt)) {nLoc++;cnt++;}
+    cnt++;
+    while(!IsResidual(cnt) && cnt<fSize) cnt++;
+    if (pnt != point++) continue;
+    for (int i=nLoc;i--;) if (indLoc[i]==indx) return derLoc[i];
+    break;
+  }
+  return 0;
+  //
+}
+
+//_____________________________________________________________________________________________
+Double_t AliMillePedeRecord::GetResidual(Int_t pnt) const
+{
+  // get residual at point pnt
+  if (!fSize) {AliError("No data"); return 0;}
+  int cnt=0,point=0;
+  //  
+  while(cnt<fSize) {
+    //
+    Double_t resid = fValue[cnt++];
+    while(!IsWeight(cnt)) cnt++;
+    cnt++;
+    while(!IsResidual(cnt) && cnt<fSize) cnt++;
+    if (pnt != point++) continue;
+    return resid;
+  }
+  return 0;
+  //
+}
+
+//_____________________________________________________________________________________________
 void AliMillePedeRecord::ExpandDtBuffer(Int_t bfsize)
 {
   // add extra space for derivatives data

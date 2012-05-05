@@ -54,6 +54,12 @@ class AliMillePedeRecord : public TObject
   UInt_t     GetRunID()                                      const {return fRunID;}
   void       SetRunID(UInt_t run)                                  {fRunID = run;}  
   //
+  // Aux methods
+  Double_t   GetGlobalDeriv(Int_t pnt, Int_t indx)           const;
+  Double_t   GetLocalDeriv(Int_t pnt, Int_t indx)            const;
+  Double_t   GetResidual(Int_t pnt)                          const;
+  Double_t   GetGloResWProd(Int_t indx)                      const;
+  //
  protected:
   Int_t      GetDtBufferSize()                               const {return GetUniqueID()&0x0000ffff;}
   Int_t      GetGrBufferSize()                               const {return GetUniqueID()>>16;}
