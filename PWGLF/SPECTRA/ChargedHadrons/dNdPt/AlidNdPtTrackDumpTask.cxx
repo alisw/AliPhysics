@@ -73,6 +73,7 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
   , fOutput(0)
   , fPitList(0)
   , fUseMCInfo(kFALSE)
+  , fUseESDfriends(kFALSE)
   , fdNdPtEventCuts(0)
   , fdNdPtAcceptanceCuts(0)
   , fdNdPtRecAcceptanceCuts(0)
@@ -156,19 +157,29 @@ void AlidNdPtTrackDumpTask::UserExec(Option_t *)
     }
   }
 
-  fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
-  if(!fESDfriend) {
-    Printf("ERROR: ESD friends not available");
+  if(fUseESDfriends) {
+    fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+      if(!fESDfriend) {
+        Printf("ERROR: ESD friends not available");
+    }
   }
 
   //
   if(fProcessAll) { 
-    ProcessAll(fESD,fMC,fESDfriend);
+    ProcessAll(fESD,fMC,fESDfriend); // all track stages and MC
     ProcessV0(fESD,fMC,fESDfriend);
+    ProcessLaser(fESD,fMC,fESDfriend);
+    ProcessdEdx(fESD,fMC,fESDfriend);
+    if(IsUseMCInfo())
+      ProcessMCEff(fESD,fMC,fESDfriend);
   }
   else {
     Process(fESD,fMC,fESDfriend);
     ProcessV0(fESD,fMC,fESDfriend);
+    ProcessLaser(fESD,fMC,fESDfriend);
+    ProcessdEdx(fESD,fMC,fESDfriend);
+    if(IsUseMCInfo())
+      ProcessMCEff(fESD,fMC,fESDfriend);
   }
 
   // Post output data.
@@ -179,8 +190,7 @@ void AlidNdPtTrackDumpTask::UserExec(Option_t *)
 void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
 {
   //
-  // Process real and/or simulated events
-  // Only filtering
+  // Select real events with high-pT tracks 
   //
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
@@ -282,40 +292,6 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 
   } // end bUseMC
 
-  // laser events 
-  if(esdEvent)
-  {
-    const AliESDHeader* esdHeader = esdEvent->GetHeader();
-    if(esdHeader && esdHeader->GetEventSpecie()==AliRecoParam::kCalib) 
-    {
-      Int_t countLaserTracks = 0;
-      for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
-      {
-        AliESDtrack *track = esdEvent->GetTrack(iTrack);
-        if(!track) continue;
-
-        if(track->GetTPCInnerParam()) countLaserTracks++;
-      }
-       
-      if(countLaserTracks > 100) {      
-
-      Double_t runNumber = esdEvent->GetRunNumber();
-      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
-      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
-      if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"Laser"<<
-        "fileName.="<<&fileName<<
-        "runNumber="<<runNumber<<
-        "evtTimeStamp="<<evtTimeStamp<<
-        "evtNumberInFile="<<evtNumberInFile<<
-        "multTPCtracks="<<countLaserTracks<<
-        "\n";
-     }
-     }
-   }
-
-
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
   const AliESDVertex* vtxESD = 0; 
@@ -339,6 +315,16 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
+
+    //
+    // get IR information
+    //
+    AliESDHeader *esdHeader = 0;
+    esdHeader = esdEvent->GetHeader();
+    if(!esdHeader) return;
+    Int_t ir1 = esdHeader->GetTriggerIREntries(); //all ir-s
+    Int_t ir2 = esdHeader->GetTriggerIREntries(-1,1); // int2 set, 180 ms time interval
+
     //
     Double_t vert[3] = {0}; 
     vert[0] = vtxESD->GetXv();
@@ -366,6 +352,14 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       if(TMath::Exp(2*scalempt)<downscaleF) continue;
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
+      AliExternalTrackParam * tpcInner = (AliExternalTrackParam *)(track->GetTPCInnerParam());
+      if (!tpcInner) continue;
+      // transform to the track reference frame 
+      Bool_t isOK = kFALSE;
+      isOK = tpcInner->Rotate(track->GetAlpha());
+      isOK = tpcInner->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+      if(!isOK) continue;
+
       // Dump to the tree 
       // vertex
       // TPC-ITS tracks
@@ -380,54 +374,89 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 	"vertX="<<vert[0]<<
 	"vertY="<<vert[1]<<
 	"vertZ="<<vert[2]<<
+	"IRtot="<<ir1<<
+	"IRint2="<<ir2<<
         "mult="<<mult<<
         "esdTrack.="<<track<<
         "centralityF="<<centralityF<<
         "\n";
     }
-
-    // high dEdx
-    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
-    {
-      AliESDtrack *track = esdEvent->GetTrack(iTrack);
-      if(!track) continue;
-      if(track->Charge()==0) continue;
-      if(!esdTrackCuts->AcceptTrack(track)) continue;
-      if(!accCuts->AcceptTrack(track)) continue;
-
-      if(!IsHighDeDxParticle(track)) continue;
-      
-      if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"dEdx"<<
-        "fileName.="<<&fileName<<
-        "runNumber="<<runNumber<<
-        "evtTimeStamp="<<evtTimeStamp<<
-        "evtNumberInFile="<<evtNumberInFile<<
-        "Bz="<<bz<<
-	"vertX="<<vert[0]<<
-	"vertY="<<vert[1]<<
-	"vertZ="<<vert[2]<<
-        "mult="<<mult<<
-        "esdTrack.="<<track<<
-        "\n";
-      }
   }
   
   PostData(1, fOutput);
 }
 
 
+//_____________________________________________________________________________
+void AlidNdPtTrackDumpTask::ProcessLaser(AliESDEvent *const esdEvent, AliMCEvent * const /*mcEvent*/, AliESDfriend *const /*esdFriend*/)
+{
+  //
+  // Process laser events
+  //
+  if(!esdEvent) {
+    AliDebug(AliLog::kError, "esdEvent not available");
+    return;
+  }
 
+  // get file name
+  TTree *chain = (TChain*)GetInputData(0);
+  if(!chain) { 
+    Printf("ERROR: Could not receive input chain");
+    return;
+  }
+  TObjString fileName(chain->GetCurrentFile()->GetName());
 
+  // laser events 
+  const AliESDHeader* esdHeader = esdEvent->GetHeader();
+  if(esdHeader && esdHeader->GetEventSpecie()==AliRecoParam::kCalib) 
+  {
+    Int_t countLaserTracks = 0;
+    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+    {
+      AliESDtrack *track = esdEvent->GetTrack(iTrack);
+      if(!track) continue;
 
+      if(track->GetTPCInnerParam()) countLaserTracks++;
+    }
+       
+    if(countLaserTracks > 100) 
+    {      
+      Double_t runNumber = esdEvent->GetRunNumber();
+      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+      Double_t bz = esdEvent->GetMagneticField();
 
+      if(!fTreeSRedirector) return;
+      (*fTreeSRedirector)<<"Laser"<<
+        "fileName.="<<&fileName<<
+        "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
+        "Bz="<<bz<<
+        "multTPCtracks="<<countLaserTracks<<
+        "\n";
+    }
+  }
+}
 
 //_____________________________________________________________________________
 void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const esdFriend)
 {
   //
-  // Process real and/or simulated events
-  //
+  // Select real events with high-pT tracks
+  // Calculate and stor in the output tree:
+  //  TPC constrained tracks
+  //  InnerParams constrained tracks
+  //  TPC-ITS tracks
+  //  ITSout-InnerParams tracks
+  //  chi2 distance between TPC constrained and TPC-ITS tracks
+  //  chi2 distance between TPC refitted constrained and TPC-ITS tracks
+  //  chi2 distance between ITSout and InnerParams tracks
+  //  MC information: 
+  //   track references at ITSin, TPCin; InnerParam at first TPC track reference, 
+  //   particle ID, mother ID, production mechanism ...
+  // 
+
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
     return;
@@ -528,40 +557,6 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
 
   } // end bUseMC
 
-  // laser events 
-  if(esdEvent)
-  {
-    const AliESDHeader* esdHeader = esdEvent->GetHeader();
-    if(esdHeader && esdHeader->GetEventSpecie()==AliRecoParam::kCalib) 
-    {
-      Int_t countLaserTracks = 0;
-      for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
-      {
-        AliESDtrack *track = esdEvent->GetTrack(iTrack);
-        if(!track) continue;
-
-        if(track->GetTPCInnerParam()) countLaserTracks++;
-      }
-       
-      if(countLaserTracks > 100) {      
-
-      Double_t runNumber = esdEvent->GetRunNumber();
-      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
-      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
-      if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"Laser"<<
-        "fileName.="<<&fileName<<
-        "runNumber="<<runNumber<<
-        "evtTimeStamp="<<evtTimeStamp<<
-        "evtNumberInFile="<<evtNumberInFile<<
-        "multTPCtracks="<<countLaserTracks<<
-        "\n";
-     }
-     }
-   }
-
-
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
   const AliESDVertex* vtxESD = 0; 
@@ -585,6 +580,15 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
+    //
+    // get IR information
+    //
+    AliESDHeader *esdHeader = 0;
+    esdHeader = esdEvent->GetHeader();
+    if(!esdHeader) return;
+    Int_t ir1 = esdHeader->GetTriggerIREntries(); //all ir-s
+    Int_t ir2 = esdHeader->GetTriggerIREntries(-1,1); // int2 set, 180 ms time interval
+
     //
     Double_t vert[3] = {0}; 
     vert[0] = vtxESD->GetXv();
@@ -625,55 +629,41 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
       
       Double_t x[3]; track->GetXYZ(x);
       Double_t b[3]; AliTracker::GetBxByBz(x,b);
-      Bool_t isOK = kFALSE;
 
       //
-      // Constrain TPC-only tracks (TPCinner) to vertex
+      // Transform TPC inner params to track reference frame
       //
+      Bool_t isOKtpcInner = kFALSE;
       AliExternalTrackParam * tpcInner = (AliExternalTrackParam *)(track->GetTPCInnerParam());
-      if (!tpcInner) continue;
-      // transform to the track reference frame 
-      isOK = tpcInner->Rotate(track->GetAlpha());
-      isOK = tpcInner->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
-      if(!isOK) continue;
+      if (tpcInner) {
+        // transform to the track reference frame 
+        isOKtpcInner = tpcInner->Rotate(track->GetAlpha());
+        isOKtpcInner = tpcInner->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+      }
 
+      //
+      // Constrain TPC inner to vertex
       // clone TPCinner has to be deleted
+      //
+      Bool_t isOKtpcInnerC = kFALSE;
       AliExternalTrackParam * tpcInnerC = new AliExternalTrackParam(*(track->GetTPCInnerParam()));
-      if (!tpcInnerC) continue;
- 
-      // constrain TPCinner 
-      //isOK = ConstrainTPCInner(tpcInnerC,vtxESD,esdEvent->GetMagneticField());
-      isOK = ConstrainTPCInner(tpcInnerC,vtxESD,b);
-
-      // transform to the track reference frame 
-      isOK = tpcInnerC->Rotate(track->GetAlpha());
-      isOK = tpcInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
-
-      if(!isOK) {
-        if(tpcInnerC) delete tpcInnerC;
-	continue;
+      if (tpcInnerC) {
+        isOKtpcInnerC = ConstrainTPCInner(tpcInnerC,vtxESD,b);
+        isOKtpcInnerC = tpcInnerC->Rotate(track->GetAlpha());
+        isOKtpcInnerC = tpcInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
       }
 
-
       //
-      // Constrain TPC refitted tracks at inner TPC wall (InnerParams) 
-      // to vertex
+      // Constrain TPC refitted tracks at inner TPC wall (InnerParams) to vertex  
+      // Clone track InnerParams has to be deleted
       //
-      // clone track InnerParams has to be deleted
+      Bool_t isOKtrackInnerC = kFALSE;
       AliExternalTrackParam * trackInnerC =  new AliExternalTrackParam(*(track->GetInnerParam()));
-      if (!trackInnerC) continue;
- 
-      // constrain track InnerParams 
-      isOK = ConstrainTrackInner(trackInnerC,vtxESD,track->GetMass(),b);
-
-      // transform to the track reference frame 
-      isOK = trackInnerC->Rotate(track->GetAlpha());
-      isOK = trackInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
-
-      if(!isOK) {
-        if(trackInnerC) delete trackInnerC;
-	continue;
-      }
+      if (trackInnerC) {
+        isOKtrackInnerC = ConstrainTrackInner(trackInnerC,vtxESD,track->GetMass(),b);
+        isOKtrackInnerC = trackInnerC->Rotate(track->GetAlpha());
+        isOKtrackInnerC = trackInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+      } 
       
       //
       // calculate chi2 between vi and vj vectors
@@ -683,31 +673,37 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
       TMatrixD deltaT(5,1), deltaTtrackC(5,1);
       TMatrixD delta(1,5),  deltatrackC(1,5);
       TMatrixD covarM(5,5), covarMtrackC(5,5);
+      TMatrixD chi2(1,1);
+      TMatrixD chi2trackC(1,1);
 
-      for (Int_t ipar=0; ipar<5; ipar++) {
-        deltaT(ipar,0)=tpcInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
-	delta(0,ipar)=tpcInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
+      if(isOKtpcInnerC && isOKtrackInnerC) 
+      {
+        for (Int_t ipar=0; ipar<5; ipar++) {
+          deltaT(ipar,0)=tpcInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
+	  delta(0,ipar)=tpcInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
 
-        deltaTtrackC(ipar,0)=trackInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
-	deltatrackC(0,ipar)=trackInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
+          deltaTtrackC(ipar,0)=trackInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
+	  deltatrackC(0,ipar)=trackInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
 
-        for (Int_t jpar=0; jpar<5; jpar++) {
-	  Int_t index=track->GetIndex(ipar,jpar);
-	  covarM(ipar,jpar)=track->GetCovariance()[index]+tpcInnerC->GetCovariance()[index];
-	  covarMtrackC(ipar,jpar)=track->GetCovariance()[index]+trackInnerC->GetCovariance()[index];
+          for (Int_t jpar=0; jpar<5; jpar++) {
+	    Int_t index=track->GetIndex(ipar,jpar);
+	    covarM(ipar,jpar)=track->GetCovariance()[index]+tpcInnerC->GetCovariance()[index];
+	    covarMtrackC(ipar,jpar)=track->GetCovariance()[index]+trackInnerC->GetCovariance()[index];
+          }
         }
-      }
-      // chi2 distance TPC constrained and TPC+ITS
-      TMatrixD covarMInv = covarM.Invert();
-      TMatrixD mat2 = covarMInv*deltaT;
-      TMatrixD chi2 = delta*mat2; 
-      //chi2.Print();
 
-      // chi2 distance TPC refitted constrained and TPC+ITS
-      TMatrixD covarMInvtrackC = covarMtrackC.Invert();
-      TMatrixD mat2trackC = covarMInvtrackC*deltaTtrackC;
-      TMatrixD chi2trackC = deltatrackC*mat2trackC; 
-      //chi2trackC.Print();
+        // chi2 distance TPC constrained and TPC+ITS
+        TMatrixD covarMInv = covarM.Invert();
+        TMatrixD mat2 = covarMInv*deltaT;
+        chi2 = delta*mat2; 
+        //chi2.Print();
+
+        // chi2 distance TPC refitted constrained and TPC+ITS
+        TMatrixD covarMInvtrackC = covarMtrackC.Invert();
+        TMatrixD mat2trackC = covarMInvtrackC*deltaTtrackC;
+        chi2trackC = deltatrackC*mat2trackC; 
+        //chi2trackC.Print();
+      }
 
 
       //
@@ -718,19 +714,15 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
       const Double_t kStep=3; 
 
       // clone track InnerParams has to be deleted
+      Bool_t isOKtrackInnerC2 = kFALSE;
       AliExternalTrackParam *trackInnerC2 = new AliExternalTrackParam(*(track->GetInnerParam()));
-      if (!trackInnerC2) continue;
-      if(!AliTracker::PropagateTrackToBxByBz(trackInnerC2,kTPCRadius,track->GetMass(),kStep,kFALSE))
-      {
-	  if(trackInnerC2) delete trackInnerC2;
-	  continue;
+      if (trackInnerC2) {
+        isOKtrackInnerC2 = AliTracker::PropagateTrackToBxByBz(trackInnerC2,kTPCRadius,track->GetMass(),kStep,kFALSE);
       }
 
-      AliExternalTrackParam *outerITSc = new AliExternalTrackParam();
-      if(!outerITSc) continue;
-
+      Bool_t isOKouterITSc = kFALSE;
+      AliExternalTrackParam *outerITSc = NULL;
       TMatrixD chi2OuterITS(1,1);
-      chi2OuterITS(0,0) = 0;
 
       if(esdFriend && esdFriend->TestSkipBit()==kFALSE) 
       {
@@ -739,29 +731,22 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
 
         if(friendTrack) 
 	{
-          if( (outerITSc = new AliExternalTrackParam(*friendTrack->GetITSOut())) ) 
+          outerITSc = new AliExternalTrackParam(*friendTrack->GetITSOut());
+          if(outerITSc) 
 	  {
-	    if(AliTracker::PropagateTrackToBxByBz(outerITSc,kTPCRadius,track->GetMass(),kStep,kFALSE))
-	    {
-              // transform ITSout to the track InnerParams reference frame 
-	      isOK = kFALSE;
-              isOK = outerITSc->Rotate(trackInnerC2->GetAlpha());
-              isOK = outerITSc->PropagateTo(trackInnerC2->GetX(),esdEvent->GetMagneticField());
+            isOKouterITSc = AliTracker::PropagateTrackToBxByBz(outerITSc,kTPCRadius,track->GetMass(),kStep,kFALSE);
+            isOKouterITSc = outerITSc->Rotate(trackInnerC2->GetAlpha());
+            isOKouterITSc = outerITSc->PropagateTo(trackInnerC2->GetX(),esdEvent->GetMagneticField());
 
-              if(!isOK) {
-                if(outerITSc) delete outerITSc;
-	        if(trackInnerC2) delete trackInnerC2;
-		continue;
-              }
-              
-	      //
-              // calculate chi2 between outerITS and innerParams
-	      // cov without z-coordinate at the moment
-	      //
-              TMatrixD deltaTouterITS(4,1);
-              TMatrixD deltaouterITS(1,4);
-              TMatrixD covarMouterITS(4,4);
+	    //
+            // calculate chi2 between outerITS and innerParams
+	    // cov without z-coordinate at the moment
+	    //
+            TMatrixD deltaTouterITS(4,1);
+            TMatrixD deltaouterITS(1,4);
+            TMatrixD covarMouterITS(4,4);
 
+            if(isOKtrackInnerC2 && isOKouterITSc) {
 	      Int_t kipar = 0;
 	      Int_t kjpar = 0;
               for (Int_t ipar=0; ipar<5; ipar++) {
@@ -804,8 +789,9 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
 
       AliTrackReference *refTPCIn = NULL;
       AliTrackReference *refITS = NULL;
+
+      Bool_t isOKtrackInnerC3 = kFALSE;
       AliExternalTrackParam *trackInnerC3 = new AliExternalTrackParam(*(track->GetInnerParam()));
-      if(!trackInnerC3) continue;
 
       if(IsUseMCInfo()) 
       {
@@ -858,10 +844,6 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
 	  for (Int_t iref = 0; iref < nTrackRef; iref++) 
           {
             AliTrackReference *ref = (AliTrackReference *)trefs->At(iref);
-	    //printf("ref %p \n",ref);
-	    //if(ref) printf("ref->DetectorId() %d \n",ref->DetectorId());
-	    //printf("AliTrackReference::kTPC  %d \n",AliTrackReference::kTPC);
-
 
              // Ref. in the middle ITS 
             if(ref && ref->DetectorId()==AliTrackReference::kITS)
@@ -889,14 +871,8 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
           if(refTPCIn && trackInnerC3) 
 	  {
 	    Double_t kRefPhi = TMath::ATan2(refTPCIn->Y(),refTPCIn->X());
-	    isOK = kFALSE;
-            isOK = trackInnerC3->Rotate(kRefPhi);
-            isOK = AliTracker::PropagateTrackToBxByBz(trackInnerC3,refTPCIn->R(),track->GetMass(),kStep,kFALSE);
-
-            if(!isOK){
-	      if(trackInnerC3) delete trackInnerC3;
-	      if(refTPCIn) delete refTPCIn;
-            }
+            isOKtrackInnerC3 = trackInnerC3->Rotate(kRefPhi);
+            isOKtrackInnerC3 = AliTracker::PropagateTrackToBxByBz(trackInnerC3,refTPCIn->R(),track->GetMass(),kStep,kFALSE);
 	  }
         }
 
@@ -917,85 +893,319 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
       }
 
       //
-      if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"dNdPtTree"<<
-        "fileName.="<<&fileName<<
-        "runNumber="<<runNumber<<
-        "evtTimeStamp="<<evtTimeStamp<<
-        "evtNumberInFile="<<evtNumberInFile<<
-        "Bz="<<bz<<
-	"vertX="<<vert[0]<<
-	"vertY="<<vert[1]<<
-	"vertZ="<<vert[2]<<
-        "mult="<<mult<<
-        "esdTrack.="<<track<<
-        "extTPCInnerC.="<<tpcInnerC<<
-        "extInnerParamC.="<<trackInnerC<<
-        "extInnerParam.="<<trackInnerC2<<
-        "extOuterITS.="<<outerITSc<<
-        "extInnerParamRef.="<<trackInnerC3<<
-        "refTPCIn.="<<refTPCIn<<
-        "refITS.="<<refITS<<
-        "chi2TPCInnerC="<<chi2(0,0)<<
-        "chi2InnerC="<<chi2trackC(0,0)<<
-        "chi2OuterITS="<<chi2OuterITS(0,0)<<
-        "centralityF="<<centralityF<<
-        "particle.="<<particle<<
-       	"particleMother.="<<particleMother<<
-        "mech="<<mech<<
-        "isPrim="<<isPrim<<
-	"isFromStrangess="<<isFromStrangess<<
-	"isFromConversion="<<isFromConversion<<
-        "isFromMaterial="<<isFromMaterial<<
-        "particleTPC.="<<particleTPC<<
-       	"particleMotherTPC.="<<particleMotherTPC<<
-        "mechTPC="<<mechTPC<<
-        "isPrimTPC="<<isPrimTPC<<
-	"isFromStrangessTPC="<<isFromStrangessTPC<<
-	"isFromConversionTPC="<<isFromConversionTPC<<
-        "isFromMaterialTPC="<<isFromMaterialTPC<<
-        "particleITS.="<<particleITS<<
-       	"particleMotherITS.="<<particleMotherITS<<
-        "mechITS="<<mechITS<<
-        "isPrimITS="<<isPrimITS<<
-	"isFromStrangessITS="<<isFromStrangessITS<<
-	"isFromConversionITS="<<isFromConversionITS<<
-        "isFromMaterialITS="<<isFromMaterialITS<<
-        "\n";
+      Bool_t dumpToTree=kFALSE;
+      
+      if(isOKtpcInnerC  && isOKtrackInnerC) dumpToTree = kTRUE;
+      if(fUseESDfriends && isOKtrackInnerC2 && isOKouterITSc) dumpToTree = kTRUE;
+      if(fUseMCInfo     && isOKtrackInnerC3) dumpToTree = kTRUE;
 
+      //
+      if(fTreeSRedirector && dumpToTree) 
+      {
+        (*fTreeSRedirector)<<"dNdPtTree"<<
+          "fileName.="<<&fileName<<
+          "runNumber="<<runNumber<<
+          "evtTimeStamp="<<evtTimeStamp<<
+          "evtNumberInFile="<<evtNumberInFile<<
+          "Bz="<<bz<<
+	  "vertX="<<vert[0]<<
+	  "vertY="<<vert[1]<<
+	  "vertZ="<<vert[2]<<
+	  "IRtot="<<ir1<<
+	  "IRint2="<<ir2<<
+          "mult="<<mult<<
+          "esdTrack.="<<track<<
+          "extTPCInnerC.="<<tpcInnerC<<
+          "extInnerParamC.="<<trackInnerC<<
+          "extInnerParam.="<<trackInnerC2<<
+          "extOuterITS.="<<outerITSc<<
+          "extInnerParamRef.="<<trackInnerC3<<
+          "refTPCIn.="<<refTPCIn<<
+          "refITS.="<<refITS<<
+          "chi2TPCInnerC="<<chi2(0,0)<<
+          "chi2InnerC="<<chi2trackC(0,0)<<
+          "chi2OuterITS="<<chi2OuterITS(0,0)<<
+          "centralityF="<<centralityF<<
+          "particle.="<<particle<<
+       	  "particleMother.="<<particleMother<<
+          "mech="<<mech<<
+          "isPrim="<<isPrim<<
+	  "isFromStrangess="<<isFromStrangess<<
+	  "isFromConversion="<<isFromConversion<<
+          "isFromMaterial="<<isFromMaterial<<
+          "particleTPC.="<<particleTPC<<
+       	  "particleMotherTPC.="<<particleMotherTPC<<
+          "mechTPC="<<mechTPC<<
+          "isPrimTPC="<<isPrimTPC<<
+	  "isFromStrangessTPC="<<isFromStrangessTPC<<
+	  "isFromConversionTPC="<<isFromConversionTPC<<
+          "isFromMaterialTPC="<<isFromMaterialTPC<<
+          "particleITS.="<<particleITS<<
+       	  "particleMotherITS.="<<particleMotherITS<<
+          "mechITS="<<mechITS<<
+          "isPrimITS="<<isPrimITS<<
+	  "isFromStrangessITS="<<isFromStrangessITS<<
+	  "isFromConversionITS="<<isFromConversionITS<<
+          "isFromMaterialITS="<<isFromMaterialITS<<
+          "\n";
+        }
+      
 	if(tpcInnerC) delete tpcInnerC;
 	if(trackInnerC) delete trackInnerC;
 	if(trackInnerC2) delete trackInnerC2;
 	if(outerITSc) delete outerITSc;
-
 	if(trackInnerC3) delete trackInnerC3;
     }
+  }
+  
+  PostData(1, fOutput);
+}
 
-    // high dEdx
-    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+
+//_____________________________________________________________________________
+void AlidNdPtTrackDumpTask::ProcessMCEff(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
+{
+  //
+  // Fill tree for efficiency studies MC only
+
+  if(!esdEvent) {
+    AliDebug(AliLog::kError, "esdEvent not available");
+    return;
+  }
+
+   if(!mcEvent) {
+    AliDebug(AliLog::kError, "mcEvent not available");
+    return;
+  }
+
+  // get selection cuts
+  AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
+  AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
+  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
+
+  if(!evtCuts || !accCuts  || !esdTrackCuts) {
+    AliDebug(AliLog::kError, "cuts not available");
+    return;
+  }
+
+  // trigger selection
+  Bool_t isEventTriggered = kTRUE;
+  AliPhysicsSelection *physicsSelection = NULL;
+  AliTriggerAnalysis* triggerAnalysis = NULL;
+
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+   
+  // get file name
+  TTree *chain = (TChain*)GetInputData(0);
+  if(!chain) { 
+    Printf("ERROR: Could not receive input chain");
+    return;
+  }
+  TObjString fileName(chain->GetCurrentFile()->GetName());
+
+  // trigger
+  if(evtCuts->IsTriggerRequired())  
+  {
+    // always MB
+    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+
+    physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if(!physicsSelection) return;
+
+    if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
+      // set trigger (V0AND)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+      if(!triggerAnalysis) return;
+      isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
+    }
+  }
+
+  // centrality determination
+  Float_t centralityF = -1;
+  AliCentrality *esdCentrality = esdEvent->GetCentrality();
+  centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data());
+
+  // use MC information
+  AliHeader* header = 0;
+  AliGenEventHeader* genHeader = 0;
+  AliStack* stack = 0;
+  TArrayF vtxMC(3);
+
+  Int_t multMCTrueTracks = 0;
+  if(IsUseMCInfo())
+  {
+    //
+    if(!mcEvent) {
+      AliDebug(AliLog::kError, "mcEvent not available");
+      return;
+    }
+    // get MC event header
+    header = mcEvent->Header();
+    if (!header) {
+      AliDebug(AliLog::kError, "Header not available");
+      return;
+    }
+    // MC particle stack
+    stack = mcEvent->Stack();
+    if (!stack) {
+      AliDebug(AliLog::kError, "Stack not available");
+      return;
+    }
+
+    // get MC vertex
+    genHeader = header->GenEventHeader();
+    if (!genHeader) {
+      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      return;
+    }
+    genHeader->PrimaryVertex(vtxMC);
+
+    // multipliticy of all MC primary tracks
+    // in Zv, pt and eta ranges)
+    multMCTrueTracks = AlidNdPtHelper::GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
+
+  } // end bUseMC
+
+  // get reconstructed vertex  
+  //const AliESDVertex* vtxESD = 0; 
+  const AliESDVertex* vtxESD = 0; 
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
+        vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+     vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    	return;
+  }
+
+  if(!vtxESD) return;
+
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
+  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
+  //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
+
+  // check event cuts
+  if(isEventOK && isEventTriggered)
+  {
+    if(IsUseMCInfo()) 
     {
-      AliESDtrack *track = esdEvent->GetTrack(iTrack);
-      if(!track) continue;
-      if(track->Charge()==0) continue;
-      if(!esdTrackCuts->AcceptTrack(track)) continue;
-      if(!accCuts->AcceptTrack(track)) continue;
+      if(!stack) return;
 
-      if(!IsHighDeDxParticle(track)) continue;
-      
-      if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"dEdx"<<
-        "fileName.="<<&fileName<<
-        "runNumber="<<runNumber<<
-        "evtTimeStamp="<<evtTimeStamp<<
-        "evtNumberInFile="<<evtNumberInFile<<
-        "Bz="<<bz<<
-	"vertX="<<vert[0]<<
-	"vertY="<<vert[1]<<
-	"vertZ="<<vert[2]<<
-        "mult="<<mult<<
-        "esdTrack.="<<track<<
-        "\n";
+      //
+      // MC info
+      //
+      TParticle *particle=NULL;
+      TParticle *particleMother=NULL;
+      Int_t mech=-1;
+
+      // reco event info
+      Double_t vert[3] = {0}; 
+      vert[0] = vtxESD->GetXv();
+      vert[1] = vtxESD->GetYv();
+      vert[2] = vtxESD->GetZv();
+      Int_t mult = vtxESD->GetNContributors();
+      Double_t bz = esdEvent->GetMagneticField();
+      Double_t runNumber = esdEvent->GetRunNumber();
+      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+      Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+
+      // loop over MC stack
+      for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
+      {
+         particle = stack->Particle(iMc);
+         if (!particle)
+         continue;
+
+         // only charged particles
+         if(!particle->GetPDG()) continue;
+         Double_t charge = particle->GetPDG()->Charge()/3.;
+         if (TMath::Abs(charge) < 0.001)
+         continue;
+
+         // only primary particles
+         Bool_t prim = stack->IsPhysicalPrimary(iMc);
+         if(!prim) continue;
+
+         // downscale low-pT particles
+         Double_t scalempt= TMath::Min(particle->Pt(),10.);
+         Double_t downscaleF = gRandom->Rndm();
+         downscaleF *= fLowPtTrackDownscaligF;
+         if(TMath::Exp(2*scalempt)<downscaleF) continue;
+
+         // is particle in acceptance
+         if(!accCuts->AcceptTrack(particle)) continue;
+       
+         // check if particle reconstructed
+         Bool_t isRec = kFALSE;
+         Int_t  trackIndex = -1;
+         for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+         {
+           
+           AliESDtrack *track = esdEvent->GetTrack(iTrack);
+           if(!track) continue;
+           if(track->Charge()==0) continue;
+           if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
+           {
+             Int_t label =  TMath::Abs(track->GetLabel());
+             if(label == iMc) {
+               isRec = kTRUE;
+               trackIndex = iTrack;
+               break;
+             }
+           } 
+         }
+
+         // Store information in the output tree
+         AliESDtrack *recTrack = NULL; 
+         if(trackIndex>-1)  { 
+           recTrack = esdEvent->GetTrack(trackIndex); 
+         } else {
+           recTrack = new AliESDtrack(); 
+         } 
+
+	 particleMother = GetMother(particle,stack);
+         mech = particle->GetUniqueID();
+
+         //MC particle track length
+         Double_t tpcTrackLength = 0.;
+         AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(iMc);
+         if(mcParticle) {
+           Int_t counter;
+           tpcTrackLength = mcParticle->GetTPCTrackLength(bz,0.05,counter,3.0);
+         } 
+
+
+         //
+         if(fTreeSRedirector) {
+           (*fTreeSRedirector)<<"MCEffTree"<<
+           "fileName.="<<&fileName<<
+           "runNumber="<<runNumber<<
+           "evtTimeStamp="<<evtTimeStamp<<
+           "evtNumberInFile="<<evtNumberInFile<<
+           "Bz="<<bz<<
+	   "vertX="<<vert[0]<<
+	   "vertY="<<vert[1]<<
+	   "vertZ="<<vert[2]<<
+           "mult="<<mult<<
+           "esdTrack.="<<recTrack<<
+           "isRec="<<isRec<<
+           "tpcTrackLength="<<tpcTrackLength<<
+           "particle.="<<particle<<
+       	   "particleMother.="<<particleMother<<
+           "mech="<<mech<<
+           "\n";
+         }
+
+         if(trackIndex <0 && recTrack) delete recTrack; recTrack=0;
       }
+    }
   }
   
   PostData(1, fOutput);
@@ -1024,7 +1234,7 @@ Bool_t AlidNdPtTrackDumpTask::IsHighDeDxParticle(AliESDtrack * track) {
 void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
 {
   //
-  // Process real and/or simulated events
+  // Select real events with V0 (K0s and Lambda) high-pT candidates
   //
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
@@ -1115,8 +1325,7 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
   Int_t run = esdEvent->GetRunNumber();
   Int_t time= esdEvent->GetTimeStamp();
   Int_t evNr=esdEvent->GetEventNumberInFile();
-  
-
+  Double_t bz = esdEvent->GetMagneticField();
 
 
   for (Int_t iv0=0; iv0<nV0s; iv0++){
@@ -1140,6 +1349,7 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
     if(!fTreeSRedirector) return;
     (*fTreeSRedirector)<<"V0s"<<
       "isDownscaled="<<isDownscaled<<
+      "Bz="<<bz<<
       "fileName.="<<&fileName<<
       "runNumber="<<run<<
       "evtTimeStamp="<<time<<
@@ -1157,6 +1367,122 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
   PostData(1, fOutput);
 }
 
+//_____________________________________________________________________________
+void AlidNdPtTrackDumpTask::ProcessdEdx(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
+{
+  //
+  // Select real events with large TPC dEdx signal
+  //
+  if(!esdEvent) {
+    AliDebug(AliLog::kError, "esdEvent not available");
+    return;
+  }
+
+  // get selection cuts
+  AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
+  AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
+  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
+
+  if(!evtCuts || !accCuts  || !esdTrackCuts) {
+    AliDebug(AliLog::kError, "cuts not available");
+    return;
+  }
+
+  // get file name
+  TTree *chain = (TChain*)GetInputData(0);
+  if(!chain) { 
+    Printf("ERROR: Could not receive input chain");
+    return;
+  }
+  TObjString fileName(chain->GetCurrentFile()->GetName());
+
+  // trigger
+  Bool_t isEventTriggered = kTRUE;
+  AliPhysicsSelection *physicsSelection = NULL;
+  AliTriggerAnalysis* triggerAnalysis = NULL;
+
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+
+  if(evtCuts->IsTriggerRequired())  
+  {
+    // always MB
+    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+
+    physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if(!physicsSelection) return;
+
+    if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
+      // set trigger (V0AND)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+      if(!triggerAnalysis) return;
+      isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
+    }
+  }
+
+  // get reconstructed vertex  
+  const AliESDVertex* vtxESD = 0; 
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
+        vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+     vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    	return;
+  }
+  if(!vtxESD) return;
+
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
+  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
+  //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
+
+
+  // check event cuts
+  if(isEventOK && isEventTriggered)
+  {
+    Double_t vert[3] = {0}; 
+    vert[0] = vtxESD->GetXv();
+    vert[1] = vtxESD->GetYv();
+    vert[2] = vtxESD->GetZv();
+    Int_t mult = vtxESD->GetNContributors();
+    Double_t bz = esdEvent->GetMagneticField();
+    Double_t runNumber = esdEvent->GetRunNumber();
+    Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+
+    // large dEdx
+    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
+    {
+      AliESDtrack *track = esdEvent->GetTrack(iTrack);
+      if(!track) continue;
+      if(track->Charge()==0) continue;
+      if(!esdTrackCuts->AcceptTrack(track)) continue;
+      if(!accCuts->AcceptTrack(track)) continue;
+
+      if(!IsHighDeDxParticle(track)) continue;
+      
+      if(!fTreeSRedirector) return;
+      (*fTreeSRedirector)<<"dEdx"<<
+      "fileName.="<<&fileName<<
+      "runNumber="<<runNumber<<
+      "evtTimeStamp="<<evtTimeStamp<<
+      "evtNumberInFile="<<evtNumberInFile<<
+      "Bz="<<bz<<
+      "vertX="<<vert[0]<<
+      "vertY="<<vert[1]<<
+      "vertZ="<<vert[2]<<
+      "mult="<<mult<<
+      "esdTrack.="<<track<<
+      "\n";
+    }
+  }
+}
 
 //_____________________________________________________________________________
 Int_t   AlidNdPtTrackDumpTask::GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle)
@@ -1314,12 +1640,41 @@ Bool_t AlidNdPtTrackDumpTask::IsV0Downscaled(AliESDv0 *const v0)
 }
 
 
+//_____________________________________________________________________________
+/*
+Bool_t AlidNdPtTrackDumpTask::MakeTPCInnerC(AliESDtrack *const track, const AliESDVertex* vtx, Double_t b[3])
+{
+//
+// return TPC inner constrain object (must be deleted)
+//
 
+if(!track) return NULL;
+if(!vtx) return NULL;
+  
+  AliExternalTrackParam * tpcInnerC = NULL;
+  Bool_t isOK = kFALSE;
 
+  tpcInnerC = new AliExternalTrackParam(*(track->GetTPCInnerParam()));
+  if (!tpcInnerC) return NULL;
+  isOK = ConstrainTPCInner(tpcInnerC,vtx,b);
+  isOK = tpcInnerC->Rotate(track->GetAlpha());
+  isOK = tpcInnerC->PropagateTo(track->GetX(),b[2]);
+  if(!isOK) {
+    delete tpcInnerC;
+    return NULL;
+  }
 
+  if(fTreeSRedirector) {
+    (*fTreeSRedirector)<<"dNdPtTree"<<
+    (*fTreeSRedirector)<<"dNdPtTree"<<
+    "esdTrack.="<<track<<
+    "extTPCInnerC.="<<tpcInnerC<<
+    "chi2TPCInnerC="<<chi2TPCInnerC;
+  }
 
-
-
+return tpcInnerC;
+}
+*/
 
 //_____________________________________________________________________________
 Bool_t AlidNdPtTrackDumpTask::ConstrainTPCInner(AliExternalTrackParam *const tpcInnerC, const AliESDVertex* vtx, Double_t b[3])
@@ -1346,6 +1701,116 @@ Bool_t AlidNdPtTrackDumpTask::ConstrainTPCInner(AliExternalTrackParam *const tpc
 
   return kTRUE;
 }
+
+
+//_____________________________________________________________________________
+/*
+AliExternalTrackParam * AlidNdPtTrackDumpTask::CalculateChi2(AliESDtrack *const track, AliExternalTrackParam *const trackParam)
+{
+//
+// calculate chi2 between vi and vj vectors
+// with covi and covj covariance matrices
+// chi2ij = (vi-vj)^(T)*(covi+covj)^(-1)*(vi-vj)
+//
+
+if(!track) return 0;
+if(!trackParam) return 0;
+
+  TMatrixD deltaT(5,1);
+  TMatrixD delta(1,5);
+  TMatrixD covarM(5,5);
+
+  for (Int_t ipar=0; ipar<5; ipar++) {
+    deltaT(ipar,0)=trackParam->GetParameter()[ipar]-track->GetParameter()[ipar];
+    delta(0,ipar)=trackParam->GetParameter()[ipar]-track->GetParameter()[ipar];
+    for (Int_t jpar=0; jpar<5; jpar++) {
+      Int_t index=track->GetIndex(ipar,jpar);
+      covarM(ipar,jpar)=track->GetCovariance()[index]+trackParam->GetCovariance()[index];
+    }
+  }
+
+  // chi2 distance 
+  TMatrixD covarMInv = covarM.Invert();
+  TMatrixD mat2 = covarMInv*deltaT;
+  TMatrixD chi2 = delta*mat2; 
+  //chi2.Print();
+
+return ((Double_t)chi(0,0));
+}
+*/
+
+//_____________________________________________________________________________
+/*
+AliExternalTrackParam * AlidNdPtTrackDumpTask::CalculateChi2(AliExternalTrackParam *const trackParam1, AliExternalTrackParam *const trackParam2)
+{
+//
+// calculate chi2 between vi and vj vectors
+// with covi and covj covariance matrices
+// chi2ij = (vi-vj)^(T)*(covi+covj)^(-1)*(vi-vj)
+//
+
+if(!track) return 0;
+if(!trackParam) return 0;
+
+TMatrixD deltaT(5,1);
+TMatrixD delta(1,5);
+TMatrixD covarM(5,5);
+
+  for (Int_t ipar=0; ipar<5; ipar++) {
+    deltaT(ipar,0)=trackParam1->GetParameter()[ipar]-trackParam2->GetParameter()[ipar];
+    delta(0,ipar)=trackParam1->GetParameter()[ipar]-trackParam2->GetParameter()[ipar];
+    for (Int_t jpar=0; jpar<5; jpar++) {
+      Int_t index=track->GetIndex(ipar,jpar);
+      covarM(ipar,jpar)=trackParam1->GetCovariance()[index]+trackParam2->GetCovariance()[index];
+    }
+  }
+
+  // chi2 distance 
+  TMatrixD covarMInv = covarM.Invert();
+  TMatrixD mat2 = covarMInv*deltaT;
+  TMatrixD chi2 = delta*mat2; 
+  //chi2.Print();
+
+return ((Double_t)chi(0,0));
+}
+*/
+
+
+//_____________________________________________________________________________
+/*
+AliExternalTrackParam * AlidNdPtTrackDumpTask::MakeTrackInnerC(AliESDtrack *const track, const AliESDVertex* vtx, Double_t b[3])
+{
+//
+// Constrain TPC refitted tracks at inner TPC wall (InnerParams) 
+// to vertex
+//
+if(!track) return NULL;
+if(!vtx) return NULL;
+
+  // clone track InnerParams has to be deleted
+  AliExternalTrackParam * trackInnerC =  new AliExternalTrackParam(*(track->GetInnerParam()));
+  if (!trackInnerC) return NULL;
+  Bool_t isOK = ConstrainTrackInner(trackInnerC,vtx,track->GetMass(),b);
+  isOK = trackInnerC->Rotate(track->GetAlpha());
+  isOK = trackInnerC->PropagateTo(track->GetX(),b[2]);
+  if(!isOK) {
+    if(trackInnerC) delete trackInnerC;
+    return NULL;
+  }
+      
+       
+  // Dump to tree
+  if(fTreeSRedirector) 
+  {
+    (*fTreeSRedirector)<<"dNdPtTree"<<
+    "extInnerParamC.="<<trackInnerC<<
+    "chi2InnerC="<<chi2InnerC<<
+    "\n";
+  }
+
+return trackInnerC;
+}
+*/
 
 //_____________________________________________________________________________
 Bool_t AlidNdPtTrackDumpTask::ConstrainTrackInner(AliExternalTrackParam *const trackInnerC, const AliESDVertex* vtx, Double_t mass, Double_t b[3])
@@ -1379,6 +1844,301 @@ Bool_t AlidNdPtTrackDumpTask::ConstrainTrackInner(AliExternalTrackParam *const t
   return kTRUE;
 }
 
+//_____________________________________________________________________________
+/*
+AliExternalTrackParam * AlidNdPtTrackDumpTask::PropagateInnerParam(AliESDtrack *const track, Double_t radius, Double_t step)
+{
+//
+// Propagate InnerParams to inner wall 
+//
+if(!track) return NULL;
+
+  Bool_t isOK = kFALSE;
+
+  // clone track InnerParams has to be deleted
+  AliExternalTrackParam *trackInnerC2 = new AliExternalTrackParam(*(track->GetInnerParam()));
+  if (!trackInnerC2) return NULL; 
+  isOK = AliTracker::PropagateTrackToBxByBz(trackInnerC2,radius,track->GetMass(),step,kFALSE);
+  if(!isOK) {
+    delete trackInnerC2;
+    return NULL;
+  }
+
+return trackInnerC2;
+}
+*/
+
+
+//_____________________________________________________________________________
+/*
+AliExternalTrackParam * AlidNdPtTrackDumpTask::PropagateITSOut(Int_t iTrack, AliExternalTrackParam * trackParam, AliESDfriend *const esdFriend, Double_t b[3], Double_t radius, Double_t step)
+{
+//
+// Propagate ITSout to TPC inner wall 
+//
+
+if(!track) return NULL;
+if(!esdFriend) return NULL;
+
+  Bool_t isOK = kFALSE;
+  AliExternalTrackParam *outerITSc = 0;
+
+  if(esdFriend && esdFriend->TestSkipBit()==kFALSE) 
+  {
+    // propagate ITSout to TPC inner wall
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(iTrack);
+    if(friendTrack) 
+    {
+      if( (outerITSc = new AliExternalTrackParam(*friendTrack->GetITSOut())) ) 
+      {
+        if(AliTracker::PropagateTrackToBxByBz(outerITSc,radius,track->GetMass(),step,kFALSE))
+        {
+          // transform ITSout to the track InnerParams reference frame 
+          isOK = outerITSc->Rotate(trackInnerC2->GetAlpha());
+          isOK = outerITSc->PropagateTo(trackInnerC2->GetX(),b[2]);
+          if(!isOK) {
+	    if(trackInnerC2) delete trackInnerC2;
+            if(outerITSc) delete outerITSc;
+	    return kFALSE;
+          }
+              
+          //
+          // calculate chi2 between outerITS and innerParams
+	  // cov without z-coordinate at the moment
+	  // 
+          TMatrixD deltaTouterITS(4,1);
+          TMatrixD deltaouterITS(1,4);
+          TMatrixD covarMouterITS(4,4);
+
+	  Int_t kipar = 0;
+	  Int_t kjpar = 0;
+          for (Int_t ipar=0; ipar<5; ipar++) {
+	    if(ipar!=1) {
+              deltaTouterITS(kipar,0)=outerITSc->GetParameter()[ipar]-trackInnerC2->GetParameter()[ipar];
+	      deltaouterITS(0,kipar)=outerITSc->GetParameter()[ipar]-trackInnerC2->GetParameter()[ipar];
+	    }
+
+            kjpar=0;
+            for (Int_t jpar=0; jpar<5; jpar++) {
+	      Int_t index=outerITSc->GetIndex(ipar,jpar);
+	      if(ipar !=1 || jpar!=1) {
+	        covarMouterITS(kipar,kjpar)=outerITSc->GetCovariance()[index]+trackInnerC2->GetCovariance()[index];
+	      }
+              if(jpar!=1)  kjpar++;
+	    }
+	    if(ipar!=1) kipar++;
+	  }
+
+          // chi2 distance ITSout and InnerParams
+          TMatrixD covarMInvouterITS = covarMouterITS.Invert();
+          TMatrixD mat2outerITS = covarMInvouterITS*deltaTouterITS;
+          TMatrixD chi2OuterITS = deltaouterITS*mat2outerITS; 
+          //chi2OuterITS.Print();
+          chi2ITSout = chi2OuterITS(0,0);
+
+          // dump to the tree
+          if(fTreeSRedirector) 
+          {
+            (*fTreeSRedirector)<<"dNdPtTree"<<
+            "extInnerParam.="<<trackInnerC2<<
+            "extOuterITS.="<<outerITSc<<
+            "chi2OuterITS="<<chi2ITSout;
+          }
+        } 
+      }
+    }
+  }
+
+  if(trackInnerC2) delete trackInnerC2;
+  if(outerITSc) delete outerITSc;
+
+return kTRUE;
+}
+*/
+
+//_____________________________________________________________________________
+/*
+Bool_t AlidNdPtTrackDumpTask::UseMCInfoAndDump(AliMCEvent *const mcEvent,  AliESDtrack *const track, AliStack *const stack)
+{
+//
+// MC info
+//
+if(!mcEvent) return kFALSE;
+if(!track) return kFALSE;
+if(!stack) return kFALSE;
+
+
+  const Double_t kStep=3; 
+
+
+  TParticle *particle=NULL, *particleTPC=NULL, *particleITS=NULL;
+  TParticle *particleMother=NULL, *particleMotherTPC=NULL, *particleMotherITS=NULL;
+  static Int_t mech=-1, mechTPC=-1, mechITS=-1;
+  static Bool_t isPrim=kFALSE, isPrimTPC=kFALSE, isPrimITS=kFALSE;
+  static Bool_t isFromStrangess=kFALSE, isFromStrangessTPC=kFALSE, isFromStrangessITS=kFALSE;
+  static Bool_t isFromConversion=kFALSE, isFromConversionTPC=kFALSE, isFromConversionITS=kFALSE;
+  static Bool_t isFromMaterial=kFALSE, isFromMaterialTPC=kFALSE, isFromMaterialITS=kFALSE;
+
+  AliTrackReference *refTPCIn = NULL;
+  AliTrackReference *refITS = NULL;
+
+  AliExternalTrackParam *trackInnerC3 = new AliExternalTrackParam(*(track->GetInnerParam()));
+  if (!trackInnerC3) return kFALSE; 
+
+  //
+  // global track
+  //
+  Int_t label = TMath::Abs(track->GetLabel()); 
+  particle = stack->Particle(label);
+  if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0.) 
+  {
+     particleMother = GetMother(particle,stack);
+     mech = particle->GetUniqueID();
+     isPrim = stack->IsPhysicalPrimary(label);
+     isFromStrangess  = IsFromStrangeness(label,stack);
+     isFromConversion = IsFromConversion(label,stack);
+     isFromMaterial   = IsFromMaterial(label,stack);
+  }
+
+  //
+  // TPC track
+  //
+  Int_t labelTPC = TMath::Abs(track->GetTPCLabel()); 
+  particleTPC = stack->Particle(labelTPC);
+  if(particleTPC && particleTPC->GetPDG() && particleTPC->GetPDG()->Charge()!=0.)
+  {
+    particleMotherTPC = GetMother(particleTPC,stack);
+    mechTPC = particleTPC->GetUniqueID();
+    isPrimTPC = stack->IsPhysicalPrimary(labelTPC);
+    isFromStrangessTPC  = IsFromStrangeness(labelTPC,stack);
+    isFromConversionTPC = IsFromConversion(labelTPC,stack);
+    isFromMaterialTPC   = IsFromMaterial(labelTPC,stack);
+  }
+
+  //
+  // store first track reference
+  // for TPC track
+  //
+  TParticle *part=0;
+  TClonesArray *trefs=0;
+  Int_t status = mcEvent->GetParticleAndTR(track->GetTPCLabel(), part, trefs);
+
+  if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.) 
+  {
+    Int_t nTrackRef = trefs->GetEntries();
+    //printf("nTrackRef %d \n",nTrackRef);
+
+    Int_t countITS = 0;
+    for (Int_t iref = 0; iref < nTrackRef; iref++) 
+    {
+      AliTrackReference *ref = (AliTrackReference *)trefs->At(iref);
+      //printf("ref %p \n",ref);
+      //if(ref) printf("ref->DetectorId() %d \n",ref->DetectorId());
+      //printf("AliTrackReference::kTPC  %d \n",AliTrackReference::kTPC);
+
+      // Ref. in the middle ITS 
+      if(ref && ref->DetectorId()==AliTrackReference::kITS)
+      {
+        if(!refITS && countITS==2) {
+          refITS = ref;
+         //printf("refITS %p \n",refITS);
+        }
+        countITS++;
+      }
+
+      // TPC
+      if(ref && ref->DetectorId()==AliTrackReference::kTPC)
+      {
+        if(!refTPCIn) {
+          refTPCIn = ref;
+          //printf("refTPCIn %p \n",refTPCIn);
+          //break;
+        }
+      }
+    }
+
+    // transform inner params to TrackRef
+    // reference frame
+    if(refTPCIn && trackInnerC3) {
+      Double_t fRefPhi = TMath::ATan2(refTPCIn->Y(),refTPCIn->X());
+      Bool_t isOK = kFALSE;
+      isOK = trackInnerC3->Rotate(fRefPhi);
+      isOK = AliTracker::PropagateTrackToBxByBz(trackInnerC3,refTPCIn->R(),track->GetMass(),kStep,kFALSE);
+      if(!isOK){
+        delete trackInnerC3;
+        return kFALSE;
+      }
+    }
+  }
+
+  //
+  // ITS track
+  //
+  Int_t labelITS = TMath::Abs(track->GetITSLabel()); 
+  particleITS = stack->Particle(labelITS);
+  if(particleITS && particleITS->GetPDG() && particleITS->GetPDG()->Charge()!=0.)
+  {
+    particleMotherITS = GetMother(particleITS,stack);
+    mechITS = particleITS->GetUniqueID();
+    isPrimITS = stack->IsPhysicalPrimary(labelITS);
+    isFromStrangessITS  = IsFromStrangeness(labelITS,stack);
+    isFromConversionITS = IsFromConversion(labelITS,stack);
+    isFromMaterialITS   = IsFromMaterial(labelITS,stack);
+  }
+
+  // dump to tree
+  if(fTreeSRedirector) 
+  {
+    (*fTreeSRedirector)<<"dNdPtTree"<<
+    "extInnerParamRef.="<<trackInnerC3<<
+    "refTPCIn.="<<refTPCIn<<
+    "refITS.="<<refITS<<
+    "particle.="<<particle<<
+    "particleMother.="<<particleMother<<
+    "mech="<<mech<<
+    "isPrim="<<isPrim<<
+    "isFromStrangess="<<isFromStrangess<<
+    "isFromConversion="<<isFromConversion<<
+    "isFromMaterial="<<isFromMaterial<<
+    "particleTPC.="<<particleTPC<<
+    "particleMotherTPC.="<<particleMotherTPC<<
+    "mechTPC="<<mechTPC<<
+    "isPrimTPC="<<isPrimTPC<<
+    "isFromStrangessTPC="<<isFromStrangessTPC<<
+    "isFromConversionTPC="<<isFromConversionTPC<<
+    "isFromMaterialTPC="<<isFromMaterialTPC<<
+    "particleITS.="<<particleITS<<
+    "particleMotherITS.="<<particleMotherITS<<
+    "mechITS="<<mechITS<<
+    "isPrimITS="<<isPrimITS<<
+    "isFromStrangessITS="<<isFromStrangessITS<<
+    "isFromConversionITS="<<isFromConversionITS<<
+    "isFromMaterialITS="<<isFromMaterialITS<<
+    "\n";
+  }
+
+    if(trackInnerC3) delete trackInnerC3;
+
+return kTRUE;
+}
+*/
+
+//_____________________________________________________________________________
+/*
+Bool_t AlidNdPtTrackDumpTask::DumpEventInfo() 
+{
+//
+// Dump run and event information to tree
+// 
+      if(fTreeSRedirector) 
+      {
+        (*fTreeSRedirector)<<"dNdPtTree"<<
+        "\n";
+      }
+
+return kTRUE;
+}
+*/
 
 //_____________________________________________________________________________
 TParticle *AlidNdPtTrackDumpTask::GetMother(TParticle *const particle, AliStack *const stack) 
@@ -1497,6 +2257,7 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   TTree* tree2 = 0;
   TTree* tree3 = 0;
   TTree* tree4 = 0;
+  TTree* tree5 = 0;
   //
   chain = new TChain("dNdPtTree");
   if(chain) { 
@@ -1533,6 +2294,15 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   }
   if(tree4) tree4->Print();
 
+  //
+  chain = new TChain("MCEffTree");
+  if(chain) { 
+    chain->Add("jotwinow_Temp_Trees.root");
+    tree5 = chain->CopyTree("1");
+    delete chain; chain=0; 
+  }
+  if(tree5) tree5->Print();
+
 
   OpenFile(1);
 
@@ -1540,6 +2310,7 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   if(tree2) fOutput->Add(tree2);
   if(tree3) fOutput->Add(tree3);
   if(tree4) fOutput->Add(tree4);
+  if(tree5) fOutput->Add(tree5);
   
   // Post output data.
   PostData(1, fOutput);
