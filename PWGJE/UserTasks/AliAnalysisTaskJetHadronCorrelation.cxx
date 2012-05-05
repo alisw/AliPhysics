@@ -503,16 +503,15 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 				cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
 				cAdd += Form("_Skip%02d",SkipCone);
 				TString Branchname_gen,Branchname_gen2,Branchname_rec;
-				Branchname_gen  = Form("clustersMCKINE_%s%s",JFAlg.Data(),cAdd.Data());
-				Branchname_gen2 = Form("clustersMCKINE2_%s%s",JFAlg.Data(),cAdd.Data());
+				//Branchname_gen  = Form("clustersMCKINE_%s%s",JFAlg.Data(),cAdd.Data());
+				//Branchname_gen2 = Form("clustersMCKINE2_%s%s",JFAlg.Data(),cAdd.Data());
+				Branchname_gen  = Form("clustersAODMC_%s%s",JFAlg.Data(),cAdd.Data());
+				Branchname_gen2 = Form("clustersAODMC2_%s%s",JFAlg.Data(),cAdd.Data());
 				Branchname_rec  = Form("clustersAOD_%s%s",JFAlg.Data(),cAdd.Data());
 
 
 				for(int algorithm=0;algorithm<3;algorithm++){
 								//for LHC11a1  LHC11a2
-								//if(algorithm==0)fJetBranch   = "clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00";
-								//if(algorithm==1)fJetBranch   = "clustersMCKINE2_ANTIKT04_B0_Filter00256_Cut00150_Skip00";
-								//if(algorithm==2)fJetBranch   = "clustersMCKINE_ANTIKT04_B0_Filter00256_Cut00150_Skip00";
 								if(algorithm==0)fJetBranch   = Branchname_rec.Data();
 								if(algorithm==1)fJetBranch   = Branchname_gen2.Data();
 								if(algorithm==2)fJetBranch   = Branchname_gen.Data();
@@ -520,7 +519,10 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								if((!IsMC&&(algorithm==1||algorithm==2)))continue;
 
 								TClonesArray* jets = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
-								if(!jets)continue;
+								if(!jets){
+												printf(" Tere are no Branch named %s \n",fJetBranch.Data());
+												continue;
+								}
 								Int_t nj = jets->GetEntriesFast();
 								if (fDebug) printf("There are %5d jets in the event \n", nj);
 								AliAODJet* jetsAOD;
@@ -794,8 +796,6 @@ Float_t AliAnalysisTaskJetHadronCorrelation::GetTotalEvents(const char* currFile
 				Listname = Form("pwg4cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
 
 				TFile *feventstat = TFile::Open(Form("%s%s",file_es.Data(),"JetTasksOutput.root"));
-				//gROOT->Cd("PWG4_cluster_AOD__KT06_B0_Filter00256_Cut00150_Skip00");
-				//TList *templist     = (TList*)gROOT->FindObject("pwg4cluster_AOD__KT06_B0_Filter00256_Cut00150_Skip00");
 				gROOT->Cd(Dirname.Data());
 				TList *templist     = (TList*)gROOT->FindObject(Listname.Data());
 				TH1F* temphist = (TH1F*)templist->FindObject("fh1Trials");

@@ -325,7 +325,8 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 				cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
 				cAdd += Form("_Skip%02d",SkipCone);
 				TString Branchname_gen,Branchname_rec;
-				Branchname_gen = Form("clustersMCKINE2_%s%s",JFAlg.Data(),cAdd.Data());
+				//Branchname_gen = Form("clustersMCKINE2_%s%s",JFAlg.Data(),cAdd.Data());
+				Branchname_gen = Form("clustersAODMC2_%s%s",JFAlg.Data(),cAdd.Data());
 				Branchname_rec = Form("clustersAOD_%s%s",JFAlg.Data(),cAdd.Data());
 
 
@@ -341,7 +342,10 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 								if(algorithm==1)fJetBranch   = Branchname_rec.Data();
 
 								TClonesArray* jets = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
-								if(!jets)continue;
+								if(!jets){
+												printf(" Tere are no Branch named %s \n",fJetBranch.Data());
+												continue;
+								}
 								Int_t nj = jets->GetEntriesFast();
 								if (fDebug) printf("There are %5d jets in the event \n", nj);
 
@@ -400,7 +404,6 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 																for(int cut=0;cut<6;cut++){
 																				double min_R=10.;
 																				for(int njetAOD=0;njetAOD<Jet_n[1];njetAOD++){
-																				  fJetBranch   = "clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00";
 																				  jets = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
 																				  if(!jets)continue;
 																				  jetsAOD = (AliAODJet*) (jets->At(njetAOD));
@@ -586,8 +589,6 @@ Float_t AliAnalysisTaskCheckSingleTrackJetRejection::GetTotalEvents(const char* 
 				Listname = Form("pwg4cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
 
 				TFile *feventstat = TFile::Open(Form("%s%s",file_es.Data(),"JetTasksOutput.root"));
-				//gROOT->Cd("PWG4_cluster_AOD__KT06_B0_Filter00256_Cut00150_Skip00");
-				//TList *templist     = (TList*)gROOT->FindObject("pwg4cluster_AOD__KT06_B0_Filter00256_Cut00150_Skip00");
 				gROOT->Cd(Dirname.Data());
 				TList *templist     = (TList*)gROOT->FindObject(Listname.Data());
 				TH1F* temphist = (TH1F*)templist->FindObject("fh1Trials");
