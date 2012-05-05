@@ -844,10 +844,12 @@ void AliCaloTrackReader::FillInputCTS()
   
   if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS()\n");
   
-  Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
-  Double_t pTrack[3];
-  fTrackMult = 0;
+  Double_t pTrack[3] = {0,0,0};
+  
+  Int_t nTracks = fInputEvent->GetNumberOfTracks() ;
+  fTrackMult    = 0;
   Int_t nstatus = 0;
+  
   for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
   {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
@@ -875,11 +877,13 @@ void AliCaloTrackReader::FillInputCTS()
             esdTrack->GetConstrainedPxPyPz(pTrack);
           }
           else continue;
+          
         } // use constrained tracks
+        
       }
       else continue;
       
-    }
+    } // ESD
     else if(fDataType==kAOD)
     {
       AliAODTrack *aodtrack = dynamic_cast <AliAODTrack*>(track);
@@ -890,25 +894,26 @@ void AliCaloTrackReader::FillInputCTS()
                               aodtrack->GetType(),AliAODTrack::kPrimary,
                               aodtrack->IsHybridGlobalConstrainedGlobal());
         
-        if(fDataType!=kMC)
+        
+        if (fSelectHybridTracks)
         {
-          if(fSelectHybridTracks)
-          {
-            if (!aodtrack->IsHybridGlobalConstrainedGlobal())       continue ;
-          }
-          else 
-          {
-            if ( aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue ;
-          }
-          
-          if (aodtrack->GetType()!= AliAODTrack::kPrimary)          continue ;
-          
-          if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
+          if (!aodtrack->IsHybridGlobalConstrainedGlobal())       continue ;
+        }
+        else 
+        {
+          if ( aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue ;
         }
         
+        if (aodtrack->GetType()!= AliAODTrack::kPrimary)          continue ;
+        
+        if (fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
+        
         track->GetPxPyPz(pTrack) ;
-      }
-    }
+        
+      } // aod track exists
+      else continue ;
+      
+    } // AOD
     
     //Count the tracks in eta < 0.9
     //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
