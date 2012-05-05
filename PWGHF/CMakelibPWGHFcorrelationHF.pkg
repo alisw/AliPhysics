@@ -1,0 +1,68 @@
+#-*- Mode: Makefile -*-
+# $Id$
+#--------------------------------------------------------------------------------#
+# Package File for libPWGHFcorrelation                                           #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( CLASS_HDRS
+    AliDxHFEParticleSelection.h
+    AliDxHFEParticleSelectionD0.h
+    AliDxHFEParticleSelectionEl.h
+    AliDxHFECorrelation.h
+    AliAnalysisTaskDxHFEParticleSelection.h
+    AliAnalysisTaskDxHFECorrelation.h
+    )
+
+string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
+
+set ( MODULE_HDRS  	${CLASS_HDRS})
+
+set ( MODULE_DHDR )
+
+set ( EINCLUDE  PWGHF/vertexingHF PWGHF/hfe include)
+
+set ( ELIBS  
+#   PWGHFhfe            # likely to be linked later
+#   PWGHFvertexingHF    # likely to be linked later
+    ANALYSIS
+    ANALYSISalice
+    )
+
+if (MODULE_SRCS)
+ALICE_Format (SRCS "correlationHF/" "" "${MODULE_SRCS}")
+endif(MODULE_SRCS)
+if (CLASS_HDRS)
+ALICE_Format (CINTHDRS "correlationHF/" "" "${CLASS_HDRS}")
+endif(CLASS_HDRS)
+if (MODULE_HDRS)
+ALICE_Format (HDRS "correlationHF/" "" "${MODULE_HDRS}")
+endif(MODULE_HDRS)
+if (MODULE_DHDR)
+ALICE_Format (DHDR "correlationHF/" "" "${MODULE_DHDR}")
+endif(MODULE_DHDR)
+
+if(NOT DHDR)
+  set(CINTAUTOLINK 1)
+endif(NOT DHDR)
