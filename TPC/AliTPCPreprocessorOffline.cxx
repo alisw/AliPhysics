@@ -1277,7 +1277,7 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
   fstringFast+="dITS*FAlignRot1++";
   fstringFast+="dITS*FAlignRot2++";
   
-  TCut cutFit="entries>10&&abs(mean)>0.00001";
+  TCut cutFit="entries>10&&abs(mean)>0.00001&&rms>0";
   fAlignTree->SetAlias("err","rms");
 
   TString *strDeltaITS = TStatToolkit::FitPlaneConstrain(fAlignTree,"mean:err", fstringFast.Data(),cutFit, chi2,npoints,param,covar,-1,0, npointsMax, 1);
@@ -1321,7 +1321,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,5);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,3);
   }
   ihis=1;
   his = calibTime->GetResHistoTPCITS(ihis);
@@ -1329,7 +1329,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,5);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,3);
   }
   ihis=2;
   his = calibTime->GetResHistoTPCITS(ihis);
@@ -1337,7 +1337,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,5);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,3);
   }
   ihis=0;
   his = calibTime->GetResHistoTPCvertex(ihis);
@@ -1345,7 +1345,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,5);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,3);
   }
   ihis=2;
   his = calibTime->GetResHistoTPCvertex(ihis);
@@ -1353,7 +1353,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,5);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,3);
 
   }
   ihis=1;
@@ -1362,7 +1362,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,5);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,3);
 
   }
   ihis=0;
@@ -1371,7 +1371,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TOF%s",hname[ihis]),run,0.,ihis,10);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TOF%s",hname[ihis]),run,0.,ihis,3);
 
   }
   ihis=0;
@@ -1380,7 +1380,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
-    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TRD%s",hname[ihis]),run,0.,ihis,10);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TRD%s",hname[ihis]),run,0.,ihis,3);
 
   }
   delete pcstream;
@@ -1399,6 +1399,46 @@ Double_t AliTPCPreprocessorOffline::EvalAt(Double_t phi, Double_t refX, Double_t
   if (ptype==2) return (y245-y85)/(245.-85.);
   return 0;
 }
+
+
+Double_t AliTPCPreprocessorOffline::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
+  //
+  // Fit the distortion along the line with the parabolic model
+  // Parameters:
+  //  phi0 - phi at the entrance of the TPC
+  //  snp  - local inclination angle at the entrance of the TPC
+  //  refX - ref X where the distortion is evanluated
+  //  theta
+  //  
+  static TLinearFitter fitter(3,"pol2"); 
+  fitter.ClearPoints();
+  if (nsteps<3) nsteps=3;
+  Double_t deltaX=(245-85)/(nsteps);
+  for (Int_t istep=0; istep<(nsteps+1); istep++){
+    //
+    Double_t localX =85.+deltaX*istep;
+    Double_t localPhi=phi0+deltaX*snp*istep;
+    Double_t sector = 9*localPhi/TMath::Pi();
+    if (sector<0) sector+=18;
+    Double_t y=AliTPCCorrection::GetCorrSector(sector,localX,theta,1,corr);
+    Double_t dlocalX=AliTPCCorrection::GetCorrSector(sector,localX,theta,0,corr);
+    Double_t x[1]={localX-dlocalX};
+    fitter.AddPoint(x,y);
+  }
+  fitter.Eval();
+  Double_t par[3];
+  par[0]=fitter.GetParameter(0);
+  par[1]=fitter.GetParameter(1);
+  par[2]=fitter.GetParameter(2);
+
+  if (ptype==0) return par[0]+par[1]*refX+par[2]*refX*refX;
+  if (ptype==2) return par[1]+2*par[2]*refX;
+  if (ptype==4) return par[2];
+  return 0;
+}
+
+
+
 
 
 
@@ -1592,7 +1632,6 @@ void AliTPCPreprocessorOffline::CreateAlignTime(TString fstring, TVectorD paramC
   corrTime->Write("FitCorrectionTime");
   f->Close();
 }
-
 
 
 
