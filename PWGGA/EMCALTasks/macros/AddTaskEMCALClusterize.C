@@ -1,10 +1,11 @@
 // $Id$
 
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
+  TString & arrayName,
+  const Bool_t  bFillAOD   = kFALSE,                                                
   const Int_t   bMC        = kFALSE,
   const Bool_t  exotic     = kTRUE,
   const TString name       = "V1Unfold", 
-  TString & arrayName,
   const TString trigger    = "", 
   const Bool_t  tm         = kTRUE, 
   const Int_t   minEcell   = 50,
@@ -54,7 +55,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Some general settings to create AOD file in case we want to keep it
   clusterize->SwitchOffFillAODCaloCells();
   clusterize->SwitchOffFillAODHeader();
-  clusterize->FillAODFile(kFALSE); // fill aod.root with clusters?, not really needed for analysis.
+  clusterize->FillAODFile(bFillAOD); // fill aod.root with clusters?, not really needed for analysis.
 
   // Do track matching after clusterization
   if(tm) clusterize->SwitchOnTrackMatching();
@@ -247,10 +248,13 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
-  
   mgr->ConnectInput  (clusterize, 0,  cinput1 );
-  mgr->ConnectOutput (clusterize, 0, coutput1 );
   
+  if(bFillAOD)  
+  {
+    printf("AddTaskEMCALClusterize - Fill output AOD\n");
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
+    mgr->ConnectOutput (clusterize, 0, coutput1 );
+  }
   return clusterize;
 }
