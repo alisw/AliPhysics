@@ -54,7 +54,7 @@ Bool_t  kMC        = kFALSE; //With real data kMC = kFALSE
 TString kInputData = "ESD"; //ESD, AOD, MC, deltaAOD
 Int_t   kYear      = 2011;
 TString kCollision = "pp";
-Bool_t  outAOD     = kTRUE; //Some tasks doesnt need it.
+Bool_t  outAOD     = kFALSE; //Some tasks doesnt need it.
 TString kTreeName;
 TString kPass      = "";
 char    kTrigger[1024];
@@ -270,6 +270,9 @@ void ana(Int_t mode=mGRID)
   //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
   //AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
   
+  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALTriggerQA.C");  
+  //AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
+  
   // Calibration, bad map ...
   
   Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use it or not in any case
@@ -315,7 +318,7 @@ void ana(Int_t mode=mGRID)
     
     TString arrayNameV1 = "";
     
-    AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
+    AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(arrayNameV1,outAOD,kMC,exo,"V1",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);    
     
@@ -337,7 +340,7 @@ void ana(Int_t mode=mGRID)
     
     //Analysis with clusterizer V2
     TString arrayNameV2 = "";
-    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
+    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(arrayNameV2,outAOD,kMC,exo,"V2",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,
                                                                    calibEE,badMap,calibTT,annonlin);    
     
@@ -370,8 +373,8 @@ void ana(Int_t mode=mGRID)
     Bool_t  anTM      = kTRUE;  // Remove matched
     Bool_t  exo       = kTRUE;  // Remove exotic cells
     Bool_t  annonlin  = kFALSE; // Apply non linearity (analysis)
-    Int_t   minEcell  = 100;    // 50  MeV (10 MeV used in reconstruction)
-    Int_t   minEseed  = 200;    // 100 MeV
+    Int_t   minEcell  = 150;    // 50  MeV (10 MeV used in reconstruction)
+    Int_t   minEseed  = 300;    // 100 MeV
     Int_t   dTime     = 0;      // default, 250 ns
     Int_t   wTime     = 0;      // default 425 < T < 825 ns
     Int_t   unfMinE   = 15;     // Remove cells with less than 15 MeV from cluster after unfolding
@@ -395,29 +398,29 @@ void ana(Int_t mode=mGRID)
     //Analysis with clusterizer V1
     
     TString arrayNameV1 = "";
-    AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,exo,"V1",arrayNameV1,clTrigger, clTM,
+    AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(arrayNameV1,outAOD,kMC,exo,"V1",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);    
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
     
-//    if(!kMC)
-//    {
-//      AliAnalysisTaskCaloTrackCorrelation *anav1c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-//                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM, 
-//                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-//      AliAnalysisTaskCaloTrackCorrelation *anav1m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
-//                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
-//                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-//      AliAnalysisTaskCaloTrackCorrelation *anav1p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC,  selectEvents, exo, annonlin, outputFile.Data(), 
-//                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
-//                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
-//    }
+    if(!kMC)
+    {
+      AliAnalysisTaskCaloTrackCorrelation *anav1c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM, 
+                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+      AliAnalysisTaskCaloTrackCorrelation *anav1m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
+                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+      AliAnalysisTaskCaloTrackCorrelation *anav1p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC,  selectEvents, exo, annonlin, outputFile.Data(), 
+                                                                           kYear,kCollision,anTrigger,arrayNameV1,reTM,anTM,
+                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+    }
     
     //Analysis with clusterizer V2
     
     TString arrayNameV2 = "";
-    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,exo,"V2",arrayNameV2,clTrigger, clTM,
+    AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(arrayNameV2,outAOD,kMC,exo,"V2",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                                                                    calibEE,badMap,calibTT,annonlin);        
     
