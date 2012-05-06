@@ -2110,8 +2110,12 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   else 
   { // reclusterized
     TClonesArray * clusterList = 0;
-    if(GetReader()->GetOutputEvent())
+
+    if(GetReader()->GetInputEvent()->FindListObject(GetReader()->GetEMCALClusterListName()))
+      clusterList = dynamic_cast<TClonesArray*> (GetReader()->GetInputEvent()->FindListObject(GetReader()->GetEMCALClusterListName()));
+    else if(GetReader()->GetOutputEvent())
       clusterList = dynamic_cast<TClonesArray*> (GetReader()->GetOutputEvent()->FindListObject(GetReader()->GetEMCALClusterListName()));
+    
     if(clusterList)
     {
       Int_t nclusters = clusterList->GetEntriesFast();
