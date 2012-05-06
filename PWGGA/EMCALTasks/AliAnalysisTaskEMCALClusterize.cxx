@@ -73,8 +73,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fDigitsArr(0),          fClusterArr(0),             fCaloClusterArr(0)
 , fRecParam(0),           fClusterizer(0)
 , fUnfolder(0),           fJustUnfold(kFALSE) 
-, fOutputAODBranch(0),    fOutputAODBranchName("")
-, fFillAODFile(kTRUE),    fFillAODHeader(0)
+, fOutputAODBranch(0),    fOutputAODBranchName(""),   fOutputAODBranchSet(0)
+, fFillAODFile(kFALSE),   fFillAODHeader(0)
 , fFillAODCaloCells(0),   fRun(-1)
 , fRecoUtils(0),          fConfigName("")
 , fCellLabels(),          fCellSecondLabels(),        fCellTime()
@@ -111,8 +111,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fDigitsArr(0),            fClusterArr(0),             fCaloClusterArr(0)
 , fRecParam(0),             fClusterizer(0)
 , fUnfolder(0),             fJustUnfold(kFALSE) 
-, fOutputAODBranch(0),      fOutputAODBranchName("")
-, fFillAODFile(kTRUE),      fFillAODHeader(0)
+, fOutputAODBranch(0),      fOutputAODBranchName(""),   fOutputAODBranchSet(0)
+, fFillAODFile(kFALSE),     fFillAODHeader(0)
 , fFillAODCaloCells(0),     fRun(-1)
 , fRecoUtils(0),            fConfigName("")
 , fCellLabels(),            fCellSecondLabels(),        fCellTime()
@@ -450,8 +450,22 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   
   if( IsExoticEvent() )                            { fEvent = 0x0 ; return ; }
   
-  //Magic line to write events to AOD filem put after event rejection
-  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
+  //-------------------------------------------------------------------------------------
+  // Set the cluster array in the event (output or input)
+  //-------------------------------------------------------------------------------------
+  
+  if     ( fFillAODFile ) 
+  {
+    //Magic line to write events to AOD filem put after event rejection
+    AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+  }
+  else if( !fOutputAODBranchSet )
+  {
+    // Create array and put it in the input event, if output AOD not selected, only once
+    InputEvent()->AddObject(fOutputAODBranch);
+    fOutputAODBranchSet = kTRUE;
+    printf("AliAnalysisTaskEMCALClusterize::UserExec() - Add AOD branch <%s> to input event\n",fOutputAODBranchName.Data());
+  }
   
 }
 
@@ -1108,7 +1122,7 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
       if(!esd)
       {
         Error("InitGeometry"," - This event does not contain ESDs?");
-        AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
+        if(fFillAODFile) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
         return;
       }
       
@@ -1157,7 +1171,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsExoticEvent()
   //  else         triggerclasses = ((AliAODEvent*)event)->GetFiredTriggerClasses();
   //    //  
   //    printf("AliAnalysisTaskEMCALClusterize - reject event %d with cluster  - reject event with ncells in SM3 %d and SM4 %d\n",(Int_t)Entry(),ncellsSM3, ncellsSM4);
-  //    AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
+  //    if(fFillAODFile) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);;
   //    return;
   //  
   
@@ -1200,7 +1214,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsLEDEvent(const Int_t run)
   if( ncellsSM3 >= ncellcut || ncellsSM4 >= 100 )
   {
     printf("AliAnalysisTaksEMCALClusterize::IsLEDEvent() - reject event %d with ncells in SM3 %d and SM4 %d\n",(Int_t)Entry(),ncellsSM3, ncellsSM4);
-    AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
+    if(fFillAODFile) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);;
     return kTRUE;
   }
   
@@ -1388,16 +1402,25 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
 {
   // Init geometry, create list of output clusters
   
-  if(fOutputAODBranchName.Length()!=0)
+
+  fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
+
+  if(fOutputAODBranchName.Length()==0)
   {
-    fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
-    fOutputAODBranch->SetName(fOutputAODBranchName);
-    //fOutputAODBranch->SetOwner(kFALSE);
-    AddAODBranch("TClonesArray", &fOutputAODBranch);
+    fOutputAODBranchName = "newEMCALClustersArray";
+    printf("Cluster branch name not set, set it to newEMCALClustersArray \n");
   }
-  else
+  
+  fOutputAODBranch->SetName(fOutputAODBranchName);
+  
+  if( fFillAODFile )
   {
-    AliFatal("fOutputAODBranchName not set\n");
+    //fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
+
+    
+    //fOutputAODBranch->SetOwner(kFALSE);
+    
+    AddAODBranch("TClonesArray", &fOutputAODBranch);
   }
   
 }
@@ -1430,7 +1453,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     if(DebugLevel() > 0 ) printf("AliAnalysisTaksEMCALClusterize::UserExec() - Skip Event %d", (Int_t) Entry());
     return ;
   }
-  
+
   //Init pointers, geometry, clusterizer, ocdb, aodb
   
   InitGeometry(); // only once, must be done before OADB, geo OADB accessed here

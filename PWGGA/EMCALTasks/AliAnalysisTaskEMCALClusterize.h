@@ -142,6 +142,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   //AOD
   TClonesArray          *fOutputAODBranch;         //! AOD Branch with output clusters  
   TString                fOutputAODBranchName;     // New of output AOD branch
+  Bool_t                 fOutputAODBranchSet ;     // Set the AOD clusters branch in the input event once
   Bool_t                 fFillAODFile;             // Fill the output AOD file with the new clusters, 
                                                    // if not they will be only available for the event they were generated
   Bool_t                 fFillAODHeader;           // Copy header to standard branch
@@ -173,12 +174,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fOADBSet ;                //  AODB parameters already set
   Bool_t                 fAccessOADB ;             //  Get calibration from OADB for EMCAL
   TString                fOADBFilePath ;           //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
-  
-  
+    
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 20);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 21);
 
 };
 
