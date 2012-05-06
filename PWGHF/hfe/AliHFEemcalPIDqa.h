@@ -52,8 +52,7 @@ class AliHFEemcalPIDqa : public AliHFEdetPIDqa{
     TH1 *GetHistogram(const char *name); 
     AliHFEcollection *GetHistoCollection() const { return fHistos; }
 
-    TVector3 MomentumEnergyMatchV2(const AliESDtrack *esdtrack) const;
-    //TVector3 MomentumEnergyMatchV1(const AliESDtrack *esdtrack) const;
+    TVector3 MomentumEnergyMatchV2(const AliESDtrack *esdtrack, Double_t *shower) const;
 
 
   protected:
