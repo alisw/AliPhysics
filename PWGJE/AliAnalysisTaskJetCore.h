@@ -232,7 +232,9 @@ private:
      TH2F*      fh2JetsumHT3R10bbbp;             //jet shape 12
     
 
-
+     TH2F*      fh2Ntriggers;
+     TH2F*      fh2JetDensity;
+     TH2F*      fh2JetDensityA4;
      TH3F*      fh3spectriggeredC10;           //triggered spectra
      TH3F*      fh3spectriggeredC20;           //triggered spectra
      TH3F*      fh3spectriggeredC3060;           //triggered spectra
