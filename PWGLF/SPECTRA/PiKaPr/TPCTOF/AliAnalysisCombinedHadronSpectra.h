@@ -42,6 +42,9 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   void           SetUseHBTmultiplicity(Bool_t useHBTmultiplicity = kTRUE){fUseHBTmultiplicity = useHBTmultiplicity;};
   void		 SetUseTPConlyTracks(Bool_t useTPConlyTracks = kTRUE){fUseTPConlyTracks = useTPConlyTracks;};
   void           SetSaveMotherPDG(Bool_t saveMotherPDG =kTRUE){fSaveMotherPDG = saveMotherPDG;};
+  void           SetSmallTHnSparse(Bool_t smallTHnSparse = kFALSE) {fSmallTHnSparse = smallTHnSparse;};
+  void           SetTPCnSigmaCuts(Double_t nSigmaTPCLow = -3., Double_t nSigmaTPCHigh = 3.){fTPCnSigmaCutLow = nSigmaTPCLow; fTPCnSigmaCutHigh = nSigmaTPCHigh;};
+  void           SetRapidityCuts(Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2){fRapidityCutLow = rapidityLow; fRapidityCutHigh = rapidityHigh;};
   void           Initialize();
   //
   
@@ -61,7 +64,13 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   Bool_t        fUseHBTmultiplicity;   // flag if multiplicity determination should be done as in the HBT paper
   Bool_t	fUseTPConlyTracks;     // flag if TPConly-track should be used
   Bool_t        fSaveMotherPDG;        // flag if PDG of mother should be saved (weak decays)
+  Bool_t        fSmallTHnSparse;       // flag if to do cuts on TPC n-sigma and rapidity in task or not
+  Double_t      fTPCnSigmaCutLow;      // low border for TPC n-sigma cut
+  Double_t      fTPCnSigmaCutHigh;     // high border for TPC n-sigma cut
+  Double_t      fRapidityCutLow;       // low border for rapidity cut
+  Double_t      fRapidityCutHigh;      // high border for rapidity cut
   Double_t      fAlephParameters[5];   // Aleph Parameters for Bethe-Bloch
+
   //
   //
   //
