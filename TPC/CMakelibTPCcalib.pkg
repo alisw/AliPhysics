@@ -43,7 +43,7 @@ set ( SRCS
     AliTPCcalibCosmic.cxx 
     AliTPCcalibCalib.cxx 
     AliTPCcalibTime.cxx 
-    AliTPCcalibPID.cxx 
+#    AliTPCcalibPID.cxx 
     AliTPCcalibTimeGain.cxx 
     AliTPCMisAligner.cxx 
     AliTPCcalibTrigger.cxx 
