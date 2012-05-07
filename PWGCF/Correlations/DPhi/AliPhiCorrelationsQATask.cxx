@@ -23,6 +23,7 @@ AliPhiCorrelationsQATask::AliPhiCorrelationsQATask(const char* opt) :
   AliAnalysisTaskSE("AliPhiCorrelationsQATask"),
   fOutput(0),
   fOption(opt),
+  fTPCOnly(0),
   fEsdTrackCuts(0),
   fEsdTrackCuts2(0),
   fCheckITS(0),
@@ -70,21 +71,28 @@ void AliPhiCorrelationsQATask::UserCreateOutputObjects()
   fCentralityCorrelation = new TH2F("fCentralityCorrelation", ";v0 centr;spd centr", 100, 0, 100.001, 100, 0, 100.001);
   fOutput->Add(fCentralityCorrelation);
 
-  fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  fEsdTrackCuts->SetMinNClustersTPC(70);
-  // disable DCA cut
-  fEsdTrackCuts->SetMaxDCAToVertexZ();
-  fEsdTrackCuts->SetMaxDCAToVertexXY();
-  fEsdTrackCuts->SetDCAToVertex2D(kFALSE);
-  fEsdTrackCuts->SetName("cuts_quality_only");
-  fEsdTrackCuts->DefineHistograms();
-  fOutput->Add(fEsdTrackCuts);
-  
-  fEsdTrackCuts2 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  fEsdTrackCuts2->SetMinNClustersTPC(70);
-  fEsdTrackCuts2->SetName("cuts_quality_dca");
-  fEsdTrackCuts2->DefineHistograms();
-  fOutput->Add(fEsdTrackCuts2);
+   if (fEsdTrackCuts)
+     fOutput->Add(fEsdTrackCuts);
+   if (fEsdTrackCuts2)
+     fOutput->Add(fEsdTrackCuts2);
+     
+//   {
+//     fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+//     fEsdTrackCuts->SetMinNClustersTPC(70);
+//     // disable DCA cut
+//     fEsdTrackCuts->SetMaxDCAToVertexZ();
+//     fEsdTrackCuts->SetMaxDCAToVertexXY();
+//     fEsdTrackCuts->SetDCAToVertex2D(kFALSE);
+//     fEsdTrackCuts->SetName("cuts_quality_only");
+//     fEsdTrackCuts->DefineHistograms();
+//     fOutput->Add(fEsdTrackCuts);
+//   }
+//   
+//   fEsdTrackCuts2 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+//   fEsdTrackCuts2->SetMinNClustersTPC(70);
+//   fEsdTrackCuts2->SetName("cuts_quality_dca");
+//   fEsdTrackCuts2->DefineHistograms();
+//   fOutput->Add(fEsdTrackCuts2);
   
   fGlobalTracks = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   fGlobalTracks->SetName("global_cuts");
@@ -101,8 +109,12 @@ void AliPhiCorrelationsQATask::UserCreateOutputObjects()
   fCheckITS->DefineHistograms();
   fOutput->Add(fCheckITS);
   
-  fDCAPrimaries = new TH2F("fDCAPrimaries", ";dca_xy;dca_z", 1000, -5, 5, 1000, -5, 5);
-  fDCASecondaries = (TH2F*) fDCAPrimaries->Clone("fDCASecondaries");
+  Int_t nBins[] =   { 20, 10, 200, 100 };
+  Double_t xMin[] = { 0, 0, -5, -5 };
+  Double_t xMax[] = { 20, 100, 5, 5 };
+
+  fDCAPrimaries = new THnF("fDCAPrimaries", ";pT;centrality;dca_xy;dca_z", 4, nBins, xMin, xMax);
+  fDCASecondaries = (THnF*) fDCAPrimaries->Clone("fDCASecondaries");
   
   fOutput->Add(fDCAPrimaries);
   fOutput->Add(fDCASecondaries);
@@ -134,9 +146,9 @@ void AliPhiCorrelationsQATask::UserExec(Option_t*)
     return;
 
   AliCentrality *centralityObj = esd->GetCentrality();
+  Float_t v0Centrality = -1;
   if (centralityObj)
   {
-    Float_t v0Centrality = -1;
     Float_t spdCentrality = -1; 
       
     if (fUseUncheckedCentrality)
@@ -173,8 +185,37 @@ void AliPhiCorrelationsQATask::UserExec(Option_t*)
         continue;
     }
     
-    if (!fEsdTrackCuts->AcceptTrack(esdTrack))
+    Bool_t accept = kFALSE;
+    if (fEsdTrackCuts->AcceptTrack(esdTrack))
+      accept = kTRUE;
+    
+    if (fEsdTrackCuts2 && fEsdTrackCuts2->AcceptTrack(esdTrack))
+      accept = kTRUE;
+    
+    if (!accept)
       continue;
+    
+    if (fTPCOnly)
+    {
+      AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(esd, i);
+      if(!track) continue;
+
+      if(track->Pt()>0.){
+	// only constrain tracks above threshold
+	AliExternalTrackParam exParam;
+	// take the B-feild from the ESD, no 3D fieldMap available at this point
+	Bool_t relate = kFALSE;
+	relate = track->RelateToVertexTPC(vtxSPD,esd->GetMagneticField(),kVeryBig,&exParam);
+	if(!relate)
+	{
+//                 Printf("relating failed");
+	  delete track;
+	  continue;
+	}
+	track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+      }
+      esdTrack = track;
+    }
       
     count++;
     
@@ -189,20 +230,25 @@ void AliPhiCorrelationsQATask::UserExec(Option_t*)
     if (stack)
       primary = stack->IsPhysicalPrimary(TMath::Abs(esdTrack->GetLabel()));
     
+    Double_t fillArray[4] = { esdTrack->Pt(), v0Centrality, b[0], b[1] };
+    
     if (primary)
-      fDCAPrimaries->Fill(b[0], b[1]);
+      fDCAPrimaries->Fill(fillArray);
     else
-      fDCASecondaries->Fill(b[0], b[1]);
-      
+      fDCASecondaries->Fill(fillArray);
+    
+    if (fTPCOnly)
+      delete esdTrack;
+    
     // fill histograms of second object
-    if (!fEsdTrackCuts2->AcceptTrack(esdTrack))
-      continue;
-      
-    if (fCheckITS->AcceptTrack(esdTrack))
-    {
-      if (!fGlobalTracks->AcceptTrack(esdTrack))
-        continue;
-    }
+//     if (!fEsdTrackCuts2->AcceptTrack(esdTrack))
+//       continue;
+//       
+//     if (fCheckITS->AcceptTrack(esdTrack))
+//     {
+//       if (!fGlobalTracks->AcceptTrack(esdTrack))
+//         continue;
+//     }
     
     /*
     // create a tpc only track

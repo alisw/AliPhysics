@@ -791,7 +791,9 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");
   
-  GetDistAndFlow(hMixed, 0, &hist1,  0, step, 0,  1, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+  hist2 = hist1;
+  
+  GetDistAndFlow(hMixed, 0, &hist1,  0, step, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
 
   ((TH2*) hist1)->Rebin2D(2, 2);
   NormalizeToBinWidth(hist1);
@@ -815,6 +817,11 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   hist1->GetYaxis()->SetTitleOffset(2);
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");
+
+  new TCanvas("c3", "c3", 800, 800);
+  gPad->SetLeftMargin(0.15);
+  hist2->Divide(hist1);
+  hist2->DrawCopy("SURF1");
 }
 
 void DrawValidation2D(const char* fileName, const char* fileNamePbPbMix = 0)
@@ -6960,7 +6967,7 @@ void CheckWing(const char* fileName)
 //       gPad->SetTopMargin(0.01);
       gPad->SetRightMargin(0.01);
       
-      hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 2));
+      hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 0));
       
       if (!hist1)
 	continue;
@@ -12009,4 +12016,32 @@ void CondenseCentrality(const char* fileName, Float_t targetValue)
   file3->cd("PWG4_PhiCorrelations");
   list->Write("histosPhiCorrelations", TObject::kSingleKey);
   file3->Close();
+}
+
+void PtDistributions(Int_t step = 8, Float_t centralityBegin = 0, Float_t centralityEnd = 10)
+{
+  loadlibs();
+
+//   const char* fileNames[] = { "LHC10h_AOD086_120411_zvtx_rebinned_corrected.root", "LHC10h_AOD086_120411_hybrid_zvtx_rebinned_corrected.root", "LHC10h_AOD086_120430_raacuts_zvtx_rebinned_corrected.root" };
+  
+  const char* fileNames[] = { "LHC10h_AOD086_120411_zvtx_rebinned.root", "LHC10h_AOD086_120411_hybrid_zvtx_rebinned.root", "LHC10h_AOD086_120430_raacuts_zvtx_rebinned.root" };
+
+  Float_t eventCount[] = { 1098234., 1034306., 1369707. };
+
+  for (Int_t i=0; i<3; i++)
+  {
+    AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNames[i]);
+    
+    h->GetUEHist(2)->GetEventHist()->GetGrid(step)->GetGrid()->GetAxis(1)->SetRangeUser(0.01 + centralityBegin, -0.01 + centralityEnd);
+    ptDist = h->GetUEHist(2)->GetEventHist()->Project(step, 0);
+    
+/*    eventCount = h->GetEventCount();
+    Float_t events = eventCount->Integral(eventCount->GetXaxis()->FindBin(step), eventCount->GetXaxis()->FindBin(step), eventCount->GetYaxis()->FindBin(0.01 + centralityBegin), eventCount->GetYaxis()->FindBin(-0.01 + centralityEnd));*/
+    Float_t events = eventCount[i];
+    
+    ptDist->Scale(1.0 / events);
+    
+    ptDist->SetLineColor(i+1);
+    ptDist->DrawCopy((i == 0) ? "" : "SAME");
+  }
 }

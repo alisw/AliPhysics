@@ -8,6 +8,7 @@
 class AliESDtrackCuts;
 class TH1F;
 class TH2F;
+#include <THn.h>
 class TH3F;
 class AliESDEvent;
 class TH1D;
@@ -22,6 +23,8 @@ class AliPhiCorrelationsQATask : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t*);
     
     void SetUseUncheckedCentrality() { fUseUncheckedCentrality = kTRUE; }
+    void SetTrackCuts(AliESDtrackCuts* cuts, AliESDtrackCuts* cuts2 ) { fEsdTrackCuts = cuts; fEsdTrackCuts2 = cuts2; }
+    void SetTPCOnly(Bool_t flag) { fTPCOnly = flag; }
     
     void SetOption(const char* opt) { fOption = opt; }
 
@@ -30,14 +33,16 @@ class AliPhiCorrelationsQATask : public AliAnalysisTaskSE {
 
     TString fOption;                        // option string
     
+    Bool_t fTPCOnly;                        // tpc only track cuts
+    
     AliESDtrackCuts* fEsdTrackCuts;         // Object containing the parameters of the esd track cuts
     AliESDtrackCuts* fEsdTrackCuts2;        // Object containing the parameters of the esd track cuts
     AliESDtrackCuts* fCheckITS;             // Object containing the parameters of the esd track cuts
     AliESDtrackCuts* fGlobalTracks;         // Object containing the parameters of the esd track cuts
     
     TH2F* fCentralityCorrelation;           // correlation of SPD and V0 centrality estimators
-    TH2F* fDCAPrimaries;                    // DCA distribution of primaries
-    TH2F* fDCASecondaries;                  // DCA distribution of secondaries
+    THnF* fDCAPrimaries;                    // DCA distribution of primaries
+    THnF* fDCASecondaries;                  // DCA distribution of secondaries
     
     Bool_t fUseUncheckedCentrality;         // for MC!
 
