@@ -22,17 +22,18 @@ path=$1
 run=$2
 ocdb=$3
 isLocal=0
-[[ -f path ]] && isLocal=1
+[[ -f $path ]] && isLocal=1
 
 echo "***********************" 2>&1 | tee -a merge.log
-echo mergeMakeOCDB.sh started 2>&1 | tee -a merge.log
+echo mergeMakeOCDB.byComponent.sh started 2>&1 | tee -a merge.log
 echo path = $path 2>&1 | tee -a merge.log
 echo run  = $run 2>&1 | tee -a merge.log
 echo ocdb = $ocdb 2>&1 | tee -a merge.log
+echo isLocal = $isLocal 2>&1 | tee -a merge.log
 echo "***********************" 2>&1 | tee -a merge.log
 
 # setup components
-components="TOF MeanVertex T0 TRD TPC SDD"
+components="TOF MeanVertex T0 SDD TRD TPCCalib  TPCAlign TPCCluster"
 
 # copy
 if [ $isLocal -eq 0 ]; then
@@ -40,8 +41,10 @@ if [ $isLocal -eq 0 ]; then
     echo copying files for run $run 2>&1 | tee -a merge.log
     echo from $path 2>&1 | tee -a merge.log
     echo "***********************" 2>&1 | tee -a merge.log
-    aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C(\"COPY\",0,  \"$path\", \"$pattern\")" 2>&1 | tee -a merge.log
+    aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C(\"COPY\",0,  \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a merge.log
 #mv syswatch.log copy_syswatch.log
+else
+  cp $path calib.list
 fi;
 
 # process by component
