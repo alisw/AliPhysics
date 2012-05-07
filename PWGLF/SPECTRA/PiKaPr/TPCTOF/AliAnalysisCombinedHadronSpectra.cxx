@@ -71,6 +71,11 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra()
     fUseHBTmultiplicity(0),
     fUseTPConlyTracks(0),
     fSaveMotherPDG(0),
+  fSmallTHnSparse(0),
+  fTPCnSigmaCutLow(0),
+  fTPCnSigmaCutHigh(0),
+  fRapidityCutLow(0),
+  fRapidityCutHigh(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -95,13 +100,18 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
     fUseHBTmultiplicity(0),
     fUseTPConlyTracks(0),
     fSaveMotherPDG(0),
+  fSmallTHnSparse(0),
+  fTPCnSigmaCutLow(0),
+  fTPCnSigmaCutHigh(0),
+  fRapidityCutLow(0),
+  fRapidityCutHigh(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
     fHistPidQA(0),
     fHistMult(0),
     fHistCentrality(0)
-{
+    {
   //
   // standard constructur which should be used
   //
@@ -111,6 +121,12 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
   fOnlyQA = kFALSE;
   fUseHBTmultiplicity = kTRUE;
   fUseTPConlyTracks = kFALSE;
+
+  fSmallTHnSparse = kFALSE;
+  fTPCnSigmaCutLow = -3.;
+  fTPCnSigmaCutHigh = 3.;
+  fRapidityCutLow = -0.2;
+  fRapidityCutHigh = 0.2;
   /* real */
   fAlephParameters[0] = 0.0283086;
   fAlephParameters[1] = 2.63394e+01;
@@ -230,17 +246,34 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   // (8..) dca_xy
   // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident prim, 3-second weak, 4-second material, 5-misident sec, 6-sec. K0, 7-sec. lambda, 8-sec sigma+
   //
-  //                              0,           1,           2,  3,       4,   5,    6,   7,       8
-  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,      10,   50,    2,  80, kDcaBins};
-  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,    -0.5,   -5,- 0.5,  -8,       -3};
-  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,     0.5,    5,  1.5,   8,        3};
-  fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
+  
+  //dimensions of standard THnSparse
+  //                              0,           1,           2,  3,       4,    5,     6,   7,     8
+  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,       10,    50,    2,  80,    kDcaBins};
+  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,      -0.5,   -5, -0.5,  -8,       -3};
+  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,       0.5,    5,  1.5,   8,        3};
+
+  //dimensions of small THnSparse
+  //                              0,           1,           2,  3,                        4,   5,       6
+  Int_t    binsHistRealSm[7] = {   3,   kMultBins,     kPtBins,  2,  /*    10,   50,*/    2,  80, kDcaBins};
+  Double_t xminHistRealSm[7] = {-0.5,        -0.5,           0, -2,  /*  -0.5,   -5,*/ -0.5,  -8,       -3};
+  Double_t xmaxHistRealSm[7] = { 2.5,        10.5,           3,  2,  /*   0.5,    5,*/  1.5,   8,        3};
+
+  if (!fSmallTHnSparse) fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
+  else                  fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",7,binsHistRealSm,xminHistRealSm,xmaxHistRealSm);
   //
   fHistRealTracks->GetAxis(2)->Set(kPtBins, binsPt);
 
   //different DCAxy binning for TPConlyTracks
-  if (!fUseTPConlyTracks) fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDca);
-  else  fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
+
+  if (!fUseTPConlyTracks){
+    if (!fSmallTHnSparse) fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDca);
+    else                  fHistRealTracks->GetAxis(6)->Set(kDcaBins, binsDca);
+  }
+  else {
+    if (!fSmallTHnSparse) fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
+    else                  fHistRealTracks->GetAxis(6)->Set(kDcaBins, binsDcaTPConly);
+  }
   fListHist->Add(fHistRealTracks);
   //
   //                      0.ptot,1.tpcSig,2.hasTOF, 3. assumed part., 4. nclDedx, 5. nSigmaTPC (4x), 6. nSigmaTOF (4x), 7. centrality
@@ -248,23 +281,43 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   BinLogAxis(fHistPidQA);
   fListHist->Add(fHistPidQA);
   
-  //                            0,            1,           2,  3,      4,   5,    6,   7,        8,    9
+  // dimensions of standard THnSparse
+  //                            0,            1,           2,  3,      4,   5,    6,   7,       8.,    9.
   Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     10,  50,    2,  80, kDcaBins,    6};
-  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -0.5,  -5,- 0.5,  -8,       -3, -0.5};
+  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -0.5,  -5, -0.5,  -8,       -3, -0.5};
   Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    0.5,   5,  1.5,   8,        3,  5.5};
+
+  //dimensions of small THnSparse
+  //                              0,           1,           2,  3,                     4,   5,       6.,    7.
+  Int_t    binsHistMCSm[8] = {   3,    kMultBins,     kPtBins,  2,  /*   10,  50,*/    2,  80, kDcaBins,    6};
+  Double_t xminHistMCSm[8] = {-0.5,         -0.5,           0, -2,  /* -0.5,  -5,*/ -0.5,  -8,       -3, -0.5};
+  Double_t xmaxHistMCSm[8] = { 2.5,         10.5,           3,  2,  /*  0.5,   5,*/  1.5,   8,        3,  5.5};
 
   //different binning for CODE axis, if we want to save motherPDG
   if (fSaveMotherPDG) {
     binsHistMC[9] = 9;
     xmaxHistMC[9] = 8.5;
+    binsHistMCSm[7] = 9;
+    xmaxHistMCSm[7] = 8.5;
+
   }
 
-  fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",10,binsHistMC,xminHistMC,xmaxHistMC);
+  if (!fSmallTHnSparse) fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",10,binsHistMC,xminHistMC,xmaxHistMC);
+  else                  fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",8,binsHistMCSm,xminHistMCSm,xmaxHistMCSm);
+
+
   fHistMCparticles->GetAxis(2)->Set(kPtBins, binsPt);
 
   //different DCAxy binning for TPConlyTracks
-  if (!fUseTPConlyTracks) fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDca);
-  else fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
+  if (!fUseTPConlyTracks) {
+    if (!fSmallTHnSparse) fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDca);
+    else                  fHistMCparticles->GetAxis(6)->Set(kDcaBins, binsDca);
+  }
+  else {
+    if (!fSmallTHnSparse) fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
+    else                  fHistMCparticles->GetAxis(6)->Set(kDcaBins, binsDcaTPConly);
+  }
+
 
   fListHist->Add(fHistMCparticles);
   //
@@ -473,8 +526,17 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
       if (TMath::Abs(pdg) == 2212) iPart = 2; // select p+/p- only
       if (iPart == -1) continue;
       //
-      Double_t vecHistMC[10] = {iPart, centrality,  pT, sign, rap, 0, 1, 0, dxy, 0};
-      if (!fOnlyQA) fHistMCparticles->Fill(vecHistMC);
+
+      if (!fSmallTHnSparse){
+	Double_t vecHistMC[10] = {iPart, centrality,  pT, sign, rap, 0, 1, 0, dxy, 0};
+	if (!fOnlyQA) fHistMCparticles->Fill(vecHistMC);
+      }
+      else{
+	if (rap>fRapidityCutLow && rap<fRapidityCutHigh){
+	  Double_t vecHistMC[8] = {iPart, centrality,  pT, sign, 1, 0, dxy, 0};
+	  if (!fOnlyQA) fHistMCparticles->Fill(vecHistMC);
+	}
+      }
     }
   }
   //
@@ -513,7 +575,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
   for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
 	
 	AliESDtrack *track = 0;
-    AliESDtrack *trackForTOF = 0; //normal track for all TOF information needed when using tpconly-tracks
+	AliESDtrack *trackForTOF = 0; //normal track for all TOF information needed when using tpconly-tracks
 	
 	//normal tracks, if tpconly flag is set, use tpconlytracks
 	if (!fUseTPConlyTracks){
@@ -608,17 +670,17 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     //fESDpid->GetTOFResponse().SetTimeResolution(130.);
     Double_t pullsTOF[4] ={0.,0.,0.,0.};
     if (!fUseTPConlyTracks) {
-    			 pullsTOF[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0);
-			     pullsTOF[1] = fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0);
-			     pullsTOF[2] = fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0);
-			     pullsTOF[3] = 0; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!;
-	}
-	else {
-    			 pullsTOF[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kPion, time0);
-			     pullsTOF[1] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kKaon, time0);
-			     pullsTOF[2] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kProton, time0);
-			     pullsTOF[3] = 0; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!;
-	}
+      pullsTOF[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0);
+      pullsTOF[1] = fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0);
+      pullsTOF[2] = fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0);
+      pullsTOF[3] = 0; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!;
+    }
+    else {
+      pullsTOF[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kPion, time0);
+      pullsTOF[1] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kKaon, time0);
+      pullsTOF[2] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kProton, time0);
+      pullsTOF[3] = 0; // ASK FOR PUTTING THE DEUTERON TO AliPID !!!!!!!!!!!!!!;
+    }
 
     //
 //    Double_t tpcQA[4] = {fESDpid->NumberOfSigmasTPC(track,AliPID::kElectron),
@@ -628,24 +690,34 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 
     Double_t tofQA[4] = {0.,0.,0.,0.}; 
     if (!fUseTPConlyTracks) {
-    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kElectron, time0);
-			 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0);
-    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0);
-    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0);
-	}
-	else{
-    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kElectron, time0);
-			 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kPion, time0);
-    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kKaon, time0);
-    		 tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kProton, time0);
-	}
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kElectron, time0);
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kPion, time0);
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kKaon, time0);
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kProton, time0);
+    }
+    else{
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kElectron, time0);
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kPion, time0);
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kKaon, time0);
+      tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kProton, time0);
+    }
 
-    //
-    for(Int_t iPart = 0; iPart < 3; iPart++) { // loop over assumed particle type
-      //                              0,           1,    2,    3,           4,               5,      6,              7,     8
-      Double_t vecHistReal[9]  = {iPart,  centrality,   pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0]};
-      if (!fOnlyQA) fHistRealTracks->Fill(vecHistReal);
-      //
+
+    //save information for every particle type  // loop over assumed particle type
+    for(Int_t iPart = 0; iPart < 3; iPart++) {
+
+      if (!fSmallTHnSparse) {
+	Double_t vecHistReal[9]  = {iPart,  centrality,   pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0]};
+	if (!fOnlyQA) fHistRealTracks->Fill(vecHistReal);
+      }
+      else {
+	if (pullsTPC[iPart]>fTPCnSigmaCutLow && pullsTPC[iPart]<fTPCnSigmaCutHigh && rap[iPart]>fRapidityCutLow && rap[iPart]<fRapidityCutHigh) {
+	  Double_t vecHistReal[7]  = {iPart,  centrality,   pT, sign, hasTOF, pullsTOF[iPart], dca[0]};
+	  if (!fOnlyQA) fHistRealTracks->Fill(vecHistReal);
+	}
+      }
+
+
       // using MC truth for precise efficiencies...
       //
       if (fMCtrue && !fOnlyQA) {
@@ -689,13 +761,27 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	//
 	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!
 	//
-	//                              0,           1,   2,    3,           4,               5,      6,               7,      8,   9
-	Double_t vectorHistMC[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], code};
-	if (!fOnlyQA) { 
-	  fHistMCparticles->Fill(vectorHistMC);
-	  if (motherCode != -1 && fSaveMotherPDG) { //if mother of weak decay is K0, lambda or sigma+ add track again with this information
-	    Double_t vectorHistMCmother[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], motherCode};
-	    fHistMCparticles->Fill(vectorHistMCmother);
+	if (!fSmallTHnSparse){
+	  Double_t vectorHistMC[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], code};
+	  if (!fOnlyQA) { 
+	    fHistMCparticles->Fill(vectorHistMC);
+	    if (motherCode != -1 && fSaveMotherPDG) { //if mother of weak decay is K0, lambda or sigma+ add track again with this information
+	      Double_t vectorHistMCmother[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], motherCode};
+	      fHistMCparticles->Fill(vectorHistMCmother);
+	    }
+	  }
+	}
+	else{
+	  if (pullsTPC[iPart]>fTPCnSigmaCutLow && pullsTPC[iPart]<fTPCnSigmaCutHigh && rap[iPart]>fRapidityCutLow && rap[iPart]<fRapidityCutHigh) {
+	    //                              0,           1,   2,    3,           4,               5,      6,               7,      8,   9
+	    Double_t vectorHistMC[8] = {iPart,  centrality,  pT, sign, hasTOF, pullsTOF[iPart], dca[0], code};
+	    if (!fOnlyQA) { 
+	      fHistMCparticles->Fill(vectorHistMC);
+	      if (motherCode != -1 && fSaveMotherPDG) { //if mother of weak decay is K0, lambda or sigma+ add track again with this information
+		Double_t vectorHistMCmother[8] = {iPart,  centrality,  pT, sign, hasTOF, pullsTOF[iPart], dca[0], motherCode};
+		fHistMCparticles->Fill(vectorHistMCmother);
+	      }
+	    }
 	  }
 	}
       }
