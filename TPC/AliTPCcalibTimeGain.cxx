@@ -282,7 +282,12 @@ void AliTPCcalibTimeGain::Process(AliESDEvent *event) {
     Printf("ERROR: ESD not available");
     return;
   }
-  
+  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!ESDfriend) {
+   return;
+  }
+  if (ESDfriend->TestSkipBit()) return;
+
   if (fIsCosmic) { // this should be removed at some point based on trigger mask !?
     ProcessCosmicEvent(event);
   } else {

@@ -333,11 +333,6 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
     Printf("ERROR: ESD not available");
     return;
   }  
-  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!esdFriend) {
-   Printf("ERROR: esdFriend not available");
-   return;
-  }
    
   //
   //Int_t isOK=kTRUE;
@@ -349,11 +344,11 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
   //if (!isOK) return;
   // Work around
   FindCosmicPairs(event);
-  const AliMultiplicity *multiplicity = event->GetMultiplicity();
-  Int_t ntracklets = multiplicity->GetNumberOfTracklets();
-  if (ntracklets>6) return; // filter out "normal" event with high multiplicity
-  const TString &trigger = event->GetFiredTriggerClasses();
-  if (trigger.Contains("C0OB0")==0) return;
+  //const AliMultiplicity *multiplicity = event->GetMultiplicity();
+  //  Int_t ntracklets = multiplicity->GetNumberOfTracklets();
+  //if (ntracklets>6) return; // filter out "normal" event with high multiplicity
+  //const TString &trigger = event->GetFiredTriggerClasses();
+  //if (trigger.Contains("C0OB0")==0) return;
 
 
   FindPairs(event); // nearly everything takes place in find pairs...
@@ -1058,6 +1053,13 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliESDEvent * event) {
       if  (TMath::Abs(par0[3]+par1[3])>kMaxDelta[3]) isPair=kFALSE; //delta tgl opposite sign
       if  (TMath::Abs(AliTracker::GetBz())>1 && TMath::Abs(par0[4]+par1[4])>kMaxDelta[4]) isPair=kFALSE; //delta 1/pt opposite sign
       if (!isPair) continue;
+      TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+      Int_t eventNumber = event->GetEventNumberInFile(); 
+      Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(itrack0)!=0):0; 
+      Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
+      printf("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS);
+
+
       //      const AliExternalTrackParam * trackIn1 = track1->GetInnerParam();      
       //
       //       
@@ -1140,6 +1142,8 @@ void AliTPCcalibCosmic::AddTree(TTree* treeOutput, TTree * treeInput){
   // Add the content of tree: 
   // Notice automatic copy of tree in ROOT does not work for such complicated tree
   //  
+  return;
+  //if (TMath::Abs(fMagF)<0.1) return; // work around - otherwise crashes 
   AliESDtrack *track0=new AliESDtrack;
   AliESDtrack *track1=new AliESDtrack;
   AliESDfriendTrack *ftrack0=new AliESDfriendTrack;
@@ -1148,23 +1152,40 @@ void AliTPCcalibCosmic::AddTree(TTree* treeOutput, TTree * treeInput){
   treeInput->SetBranchAddress("t1.",&track1);
   treeInput->SetBranchAddress("ft0.",&ftrack0);	
   treeInput->SetBranchAddress("ft1.",&ftrack1);
-  if (treeOutput->GetEntries()==0){
-    //
-    treeOutput->SetDirectory(0);
-    treeOutput->Branch("t0.",&track0);
-    treeOutput->Branch("t1.",&track1);
-    treeOutput->Branch("ft0.",&ftrack0);
-    treeOutput->Branch("ft1.",&ftrack1);
-  }else{
-     treeOutput->SetBranchAddress("t0.",&track0);	
-     treeOutput->SetBranchAddress("t1.",&track1);
-     treeOutput->SetBranchAddress("ft0.",&ftrack0);	
-     treeOutput->SetBranchAddress("ft1.",&ftrack1);
-  }
+  treeOutput->SetDirectory(0);
+  //
   Int_t entries= treeInput->GetEntries();
-  for (Int_t i=0; i<entries; i++){
+  Int_t step=1+Int_t(TMath::Log(1+treeOutput->GetEntries()/10.));
+  for (Int_t i=0; i<entries; i+=step){
+    treeInput->SetBranchAddress("t0.",&track0);	
+    treeInput->SetBranchAddress("t1.",&track1);
+    treeInput->SetBranchAddress("ft0.",&ftrack0);	
+    treeInput->SetBranchAddress("ft1.",&ftrack1);
     treeInput->GetEntry(i);
+    if (!track0) continue;
+    if (!track1) continue;
+    if (!ftrack0) continue;
+    if (!ftrack1) continue;
+    if (track0->GetTPCncls()<=0) continue;
+    if (track1->GetTPCncls()<=0) continue;
+    if (!track0->GetInnerParam()) continue;
+    if (!track1->GetInnerParam()) continue;
+    if (!track0->GetTPCInnerParam()) continue;
+    if (!track1->GetTPCInnerParam()) continue;
+    //track0
+    treeOutput->SetBranchAddress("t0.",&track0);	
+    treeOutput->SetBranchAddress("t1.",&track1);
+    treeOutput->SetBranchAddress("ft0.",&ftrack0);	
+    treeOutput->SetBranchAddress("ft1.",&ftrack1);    
     treeOutput->Fill();
+    delete track0;
+    delete track1;
+    delete ftrack0;
+    delete ftrack1;
+    track0=0;
+    track1=0;
+    ftrack0=0;
+    ftrack1=0;
   }
 }
 
@@ -1584,3 +1605,4 @@ Double_t AliTPCcalibCosmic::GetDeltaTime(Double_t rmin0, Double_t rmax0, Double_
   }
   return deltaT;  
 }
+

@@ -140,7 +140,7 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
   if (!ESDfriend) {
    return;
   }
-  
+  if (ESDfriend->TestSkipBit()) return;
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
   Int_t ntracks=event->GetNumberOfTracks();   
   //AliTPCcalibDB::Instance()->SetExBField(fMagF);
