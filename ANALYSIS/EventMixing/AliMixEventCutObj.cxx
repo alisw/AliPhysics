@@ -117,7 +117,7 @@ void AliMixEventCutObj::PrintCurrentInterval()
    //
    // Prints current cut interval information
    //
-   AliDebug(AliLog::kDebug, Form("%s <%f,%f>", GetCutName(fCutType), GetMin(), GetMax()));
+   AliDebug(AliLog::kDebug, Form("%s <%f,%f>", GetCutName(fCutType), GetCurrentMin(), GetCurrentMax()));
 }
 
 //_________________________________________________________________________________________________
@@ -320,7 +320,9 @@ void AliMixEventCutObj::SetCurrentValueToIndex(Int_t index)
    //
    // Sets current value to index
    //
-   for (Int_t i = 0; i < index; i++) AddStep();
+   
+   fCurrentVal = fCutMin;
+   for (Int_t i = 0; i < index-1; i++) AddStep();
 }
 
 //_________________________________________________________________________________________________

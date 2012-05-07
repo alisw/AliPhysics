@@ -35,8 +35,10 @@ public:
    Bool_t      HasMore() const;
 
    Int_t       GetNumberOfBins() const;
-   Float_t     GetMin() const { return fCurrentVal; }
-   Float_t     GetMax() const { return fCurrentVal + fCutStep - fCutSmallVal; }
+   Float_t     GetCurrentMin() const { return fCurrentVal; }
+   Float_t     GetCurrentMax() const { return fCurrentVal + fCutStep - fCutSmallVal; }
+   Float_t     GetMin() const { return fCutMin; }
+   Float_t     GetMax() const { return fCutMax; }
    Float_t     GetStep() const { return fCutStep; }
    Short_t     GetType() const { return fCutType; }
    Int_t       GetBinNumber(Float_t num) const;

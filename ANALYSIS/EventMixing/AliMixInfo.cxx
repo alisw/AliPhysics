@@ -340,7 +340,7 @@ void AliMixInfo::DynamicExec(AliMixInfo *const mixInfo)
                TObjArrayIter next(eventCuts);
                AliMixEventCutObj *cut;
                while ((cut = (AliMixEventCutObj *) next())) {
-                  if (hist2DValue > 1) text->AddText(Form("%s <%.2f,%.2f)", cut->GetCutName(), cut->GetMin(), cut->GetMax()));
+                  if (hist2DValue > 1) text->AddText(Form("%s <%.2f,%.2f)", cut->GetCutName(), cut->GetCurrentMin(), cut->GetCurrentMax()));
                   else text->AddText(Form("%s <Out of Range>", cut->GetCutName()));
                }
             }
