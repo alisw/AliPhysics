@@ -32,7 +32,8 @@ public :
   AliTPCcalibV0();
   AliTPCcalibV0(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibV0();
-  virtual void     Process(AliESDEvent *event) {return ProcessESD(event,0);}
+  virtual void     Process(AliESDEvent *event) {return ProcessESD(event);}
+  void FilterV0s(AliESDEvent* event);
   Long64_t Merge(TCollection *const li);
   void AddTree(TTree * treeInput);
   void AddTreeHPT(TTree * treeInput);
@@ -42,16 +43,16 @@ public :
   //
   //
   //
-  void ProcessESD(AliESDEvent *esd, AliStack *stack=0);
+  void ProcessESD(AliESDEvent *esd);
   void DumpToTree(AliESDEvent *esd);
   void DumpToTreeHPT(AliESDEvent *esd);
   TTree * GetV0Tree(){return fV0Tree;}
   TTree * GetHPTTree(){return fHPTTree;}
   //  
-  void MakeMC();
-  void MakeV0s();
-  void ProcessV0(Int_t ftype);
-  void ProcessPI0();
+  //  void MakeMC();
+  //  void MakeV0s();
+  //void ProcessV0(Int_t ftype);
+  //void ProcessPI0();
   void BinLogX(TH2F * h);
   //
   //
