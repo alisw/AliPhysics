@@ -145,6 +145,7 @@ public:
 		 AliExternalTrackParam *tp2,
 		 Int_t s1,Int_t s2);
 
+  static void SetMergeEntriesCut(Double_t entriesCut){fgkMergeEntriesCut = entriesCut;}
 protected:
   THn     *fClusterDelta[2];  //clusters residuals
   THnSparse     *fTrackletDelta[4]; //track residuals
@@ -201,6 +202,7 @@ protected:
   Bool_t    fUseInnerOuter;         // flag- use Inner Outer sector for left righ alignment
   
   static AliTPCcalibAlign*   fgInstance; //! Instance of this class (singleton implementation)
+  static Double_t            fgkMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
 private:
   AliTPCcalibAlign&  operator=(const AliTPCcalibAlign&);// not implemented
 

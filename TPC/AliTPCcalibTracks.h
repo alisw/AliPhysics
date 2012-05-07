@@ -90,6 +90,8 @@ public :
   static int CreateWaveCorrection( const  THnBase *DeltaY, THnBase *&MeanY, THnBase *&SigmaY, THnBase *&EntrY,
 				   Bool_t MirrorZ=1, Bool_t MirrorPad=1, Bool_t MirrorAngle=1, Int_t MinStat=10 );
  
+  static void SetMergeEntriesCut(Double_t entriesCut){fgkMergeEntriesCut = entriesCut;}
+
 protected:         
   
 private:
@@ -126,7 +128,9 @@ private:
    TH2I      *fClusterCutHisto;     // histogram showing in which padRow the clusters were cutted by which criterium
    AliTPCCalPad *fCalPadClusterPerPad;    // AliTPCCalPad showing the number of clusters per Pad
    AliTPCCalPad *fCalPadClusterPerPadRaw; // AliTPCCalPad showing the number of clusters per Pad before cuts on clusters are applied
-   ClassDef(AliTPCcalibTracks,2)
+   static Double_t            fgkMergeEntriesCut;//maximal number of entries for merging  -can be modified via setter
+
+  ClassDef(AliTPCcalibTracks,2)
    
 };
 

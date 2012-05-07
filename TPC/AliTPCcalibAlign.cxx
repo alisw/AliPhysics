@@ -142,6 +142,7 @@
 using namespace std;
 
 AliTPCcalibAlign* AliTPCcalibAlign::fgInstance = 0;
+Double_t          AliTPCcalibAlign::fgkMergeEntriesCut=10000000.; //10**7 tracks
 ClassImp(AliTPCcalibAlign)
 
 
@@ -2161,6 +2162,7 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
       fClusterDelta[i]->Add(align->fClusterDelta[i]);
     }
   }
+
   
   for (Int_t i=0; i<4; i++){
     if (!fTrackletDelta[i] && align->fTrackletDelta[i]) {
@@ -2168,7 +2170,9 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
       continue;
     }
     if (align->fTrackletDelta[i]) {
-      fTrackletDelta[i]->Add(align->fTrackletDelta[i]);
+      if (fTrackletDelta[i]->GetEntries()<fgkMergeEntriesCut){
+	fTrackletDelta[i]->Add(align->fTrackletDelta[i]);
+      }
     }
   }
 

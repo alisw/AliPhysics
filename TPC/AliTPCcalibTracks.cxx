@@ -155,6 +155,7 @@ using namespace std;
 #include "TRandom.h"
 
 
+Double_t          AliTPCcalibTracks::fgkMergeEntriesCut=10000000.; //10**7 clusters
 
 ClassImp(AliTPCcalibTracks)
 
@@ -476,7 +477,7 @@ void AliTPCcalibTracks::Process(AliTPCseed *track){
    // 
   Double_t scalept= TMath::Min(1./TMath::Abs(track->GetParameter()[4]),2.)/0.5;
   Bool_t   isSelected = (TMath::Exp(scalept)>fPtDownscaleRatio*gRandom->Rndm());
-  if (isSelected) return;
+  if (!isSelected) return;
 
   if (GetDebugLevel() > 5) Info("Process","Starting to process the track...");
    Int_t accpetStatus = AcceptTrack(track);
@@ -868,9 +869,9 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
     //
     // Fill THN histograms
     //
-    Double_t scaleQ= TMath::Min(Double_t(cluster0->GetMax()),200.)/50.;
+    Double_t scaleQ= TMath::Min(Double_t(cluster0->GetMax()),200.)/30.;
     Bool_t   isSelected = (TMath::Exp(scaleQ)>fQDownscaleRatio*gRandom->Rndm());
-
+    if (!isSelected) continue;
     Double_t xvar[9];
     xvar[1]=padSize;   // pad type 
     xvar[2]=cluster0->GetZ();  // 
@@ -1556,6 +1557,8 @@ void    AliTPCcalibTracks::AddHistos(AliTPCcalibTracks* calib){
   //
   // Add histograms
   //
+  if (!calib->fHisDeltaY) return;
+  if (calib->fHisDeltaY->GetEntries()> fgkMergeEntriesCut) return; 
   if (calib->fHisDeltaY) fHisDeltaY->Add(calib->fHisDeltaY);
   if (calib->fHisDeltaZ) fHisDeltaZ->Add(calib->fHisDeltaZ);
   if (calib->fHisRMSY)   fHisRMSY->Add(calib->fHisRMSY);
