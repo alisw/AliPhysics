@@ -118,6 +118,7 @@
 #include "TH1D.h"
 #include "TH2F.h"
 #include "THnSparse.h"
+#include "THn.h"
 #include "TVectorD.h"
 #include "TTreeStream.h"
 #include "TFile.h"
@@ -136,6 +137,7 @@
 
 #include "TTreeStream.h"
 #include "Riostream.h"
+#include "TRandom.h"
 #include <sstream>
 using namespace std;
 
@@ -448,6 +450,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   //
   // Process pairs of cosmic tracks
   //
+  const Double_t kptDownscale=50; // downscale factor for the low pt particels
   if (!fClusterDelta[0])  MakeResidualHistos();
   if (!fTrackletDelta[0])  MakeResidualHistosTracklet();
   //
@@ -457,6 +460,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   const Int_t kminCl = 40;
   AliESDfriend *eESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   if (!eESDfriend) return;
+  if (eESDfriend->TestSkipBit()) return;
   Int_t ntracks=event->GetNumberOfTracks(); 
   Float_t dca0[2];
   Float_t dca1[2];
@@ -480,7 +484,9 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
     fCurrentFriendTrack=friendTrack;
     fCurrentSeed=seed0;
     fCurrentEvent=event;
-    ProcessSeed(seed0);
+    Double_t scalept= TMath::Min(1./TMath::Abs(track0->GetParameter()[4]),2.);
+    Bool_t   isSelected = (TMath::Exp(2*scalept)>kptDownscale*gRandom->Rndm());
+    if (isSelected) ProcessSeed(seed0);
   }
   //
   // process cosmic pairs
@@ -1605,8 +1611,8 @@ void AliTPCcalibAlign::MakeResidualHistos(){
   axisName[3]="kZ";      axisTitle[3]="dz/dx"; 
   binsTrack[3]=36;       xminTrack[3]=-1.8;        xmaxTrack[3]=1.8; 
   //
-  fClusterDelta[0] = new THnSparseS("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
-  fClusterDelta[1] = new THnSparseS("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  fClusterDelta[0] = new THnF("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  fClusterDelta[1] = new THnF("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   //
   //
   //
@@ -1638,10 +1644,10 @@ void AliTPCcalibAlign::MakeResidualHistosTracklet(){
   // 7 - z position  0
 
   axisName[0]="delta";   axisTitle[0]="#Delta (cm)"; 
-  binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
+  binsTrack[0]=60;       xminTrack[0]=-0.5;        xmaxTrack[0]=0.5; 
   //
   axisName[1]="phi";   axisTitle[1]="#phi"; 
-  binsTrack[1]=180;       xminTrack[1]=-TMath::Pi();        xmaxTrack[1]=TMath::Pi(); 
+  binsTrack[1]=90;       xminTrack[1]=-TMath::Pi();        xmaxTrack[1]=TMath::Pi(); 
   //
   axisName[2]="localX";   axisTitle[2]="x (cm)"; 
   binsTrack[2]=10;       xminTrack[2]=120.;        xmaxTrack[2]=200.; 
@@ -1650,7 +1656,7 @@ void AliTPCcalibAlign::MakeResidualHistosTracklet(){
   binsTrack[3]=10;       xminTrack[3]=-0.5;        xmaxTrack[3]=0.5; 
   //
   axisName[4]="kZ";      axisTitle[4]="dz/dx"; 
-  binsTrack[4]=22;       xminTrack[4]=-1.1;        xmaxTrack[4]=1.1; 
+  binsTrack[4]=11;       xminTrack[4]=-1.1;        xmaxTrack[4]=1.1; 
   //
   axisName[5]="is1";      axisTitle[5]="is1"; 
   binsTrack[5]=72;       xminTrack[5]=0;        xmaxTrack[5]=72;
@@ -2153,17 +2159,6 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
   for (Int_t i=0; i<2; i++){
     if (align->fClusterDelta[i]){
       fClusterDelta[i]->Add(align->fClusterDelta[i]);
-  //     align->fClusterDelta[i]->GetAxis(0)->SetRangeUser(-0.87,0.87);
-//       align->fClusterDelta[i]->GetAxis(3)->SetRangeUser(-0.87,0.87);
-//       fClusterDelta[i]->GetAxis(0)->SetRangeUser(-0.87,0.87);
-//       fClusterDelta[i]->GetAxis(3)->SetRangeUser(-0.87,0.87);
-//       Int_t idim[4]={0,1,2,3};
-//       THnSparse *htemp=align->fClusterDelta[i]->Projection(4,idim);
-//       THnSparse *htemp1=fClusterDelta[i]->Projection(4,idim);      
-//       htemp1->Add(htemp);
-//       delete fClusterDelta[i];
-//       fClusterDelta[i]=htemp1;      
-//       delete htemp;
     }
   }
   
@@ -2174,19 +2169,6 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
     }
     if (align->fTrackletDelta[i]) {
       fTrackletDelta[i]->Add(align->fTrackletDelta[i]);
-      //
-   //    align->fTrackletDelta[i]->GetAxis(3)->SetRangeUser(-0.36,0.36);
-//       align->fTrackletDelta[i]->GetAxis(4)->SetRangeUser(-0.87,0.87);
-//       fTrackletDelta[i]->GetAxis(3)->SetRangeUser(-0.36,0.36);
-//       fTrackletDelta[i]->GetAxis(4)->SetRangeUser(-0.87,0.87);
-//       //
-//       Int_t idim[9]={0,1,2,3,4,5,6,7,8};
-//       THnSparse *htemp=align->fTrackletDelta[i]->Projection(9,idim);
-//       THnSparse *htemp1=fTrackletDelta[i]->Projection(9,idim);
-//       htemp1->Add(htemp);
-//       delete fTrackletDelta[i];
-//       fTrackletDelta[i]=htemp1;
-//       delete htemp;
     }
   }
 
@@ -2603,6 +2585,8 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   // 3. Refit the track - out-in
   // 4. Combine In and Out track - - fil cluster residuals
   //
+  if (!fCurrentFriendTrack) return;
+  if (!fCurrentFriendTrack->GetTPCOut()) return;
   const Double_t kPtCut=1.0;    // pt
   const Double_t kSnpCut=0.2; // snp cut
   const Double_t kNclCut=120; //
@@ -2757,6 +2741,8 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     if (cl->GetX()<80) continue;
     if (detector<0) detector=cl->GetDetector()%36;
     if (cl->GetDetector()%36!=detector) continue;
+    if (fitIn[irow].GetX()<80) continue;
+    if (fitOut[irow].GetX()<80) continue;
     AliExternalTrackParam trackSmooth = fitIn[irow];
     AliTrackerBase::UpdateTrack(trackSmooth, fitOut[irow]);
     //
@@ -3807,4 +3793,5 @@ void AliTPCcalibAlign::MakeReportDyPhi(TFile */*output*/){
     
   }
 }
+
 
