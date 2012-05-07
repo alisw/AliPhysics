@@ -46,9 +46,11 @@ public:
   void SetCorrections(const TCollection *corrections) {fCorrections=(TCollection*)corrections;}
   CompositionType GetMode() const {return fMode;}
   void SetMode(CompositionType mode) {fMode=mode;}
-
+  
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
+  virtual  AliTPCCorrection * GetSubCorrection(Int_t ipos);
+  virtual  AliTPCCorrection * GetSubCorrection(const char * cname);
 
   virtual void Print(Option_t* option="") const;
 
@@ -67,5 +69,6 @@ private:
 
   ClassDef(AliTPCComposedCorrection,2);
 };
+
 
 #endif

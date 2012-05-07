@@ -104,6 +104,23 @@ AliTPCComposedCorrection::~AliTPCComposedCorrection() {
   if (fWeights) delete fWeights;
 }
 
+AliTPCCorrection * AliTPCComposedCorrection::GetSubCorrection(Int_t ipos){
+  //
+  //
+  //
+  TObjArray *arr = (TObjArray*)fCorrections;
+  return (AliTPCCorrection *)arr->At(ipos);
+}
+
+AliTPCCorrection * AliTPCComposedCorrection::GetSubCorrection(const char *cname){
+  //
+  //
+  //
+  TCollection *arr = fCorrections;
+  return (AliTPCCorrection *)arr->FindObject(cname);
+}
+
+
 
 void AliTPCComposedCorrection::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
   //
