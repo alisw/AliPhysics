@@ -31,6 +31,7 @@
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "THn.h"
 #include "THnSparse.h"
 #include "TMath.h"
 #include "TMatrixD.h"
@@ -57,9 +58,9 @@
 
 #define EPSILON 1e-12
 
-THnSparseD * AliTRDdEdxUtils::fgHistGain=0x0;
-THnSparseD * AliTRDdEdxUtils::fgHistT0=0x0;
-THnSparseD * AliTRDdEdxUtils::fgHistVd=0x0;
+THnF * AliTRDdEdxUtils::fgHistGain=0x0;
+THnF * AliTRDdEdxUtils::fgHistT0=0x0;
+THnF * AliTRDdEdxUtils::fgHistVd=0x0;
 TObjArray * AliTRDdEdxUtils::fgHistPHQ=new TObjArray(8);
 
 TString AliTRDdEdxUtils::fgCalibFile;
@@ -500,12 +501,12 @@ TObjArray * AliTRDdEdxUtils::GetObjPHQ(const Bool_t kinvq, const Double_t mag, c
   return (TObjArray*) fgObjPHQ->At(GetPHQIterator(kinvq, mag, charge));
 }
 
-THnSparseD * AliTRDdEdxUtils::GetHistPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge)
+THnF * AliTRDdEdxUtils::GetHistPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge)
 {
   //
   //return calib hist
   //
-  return (THnSparseD*) fgHistPHQ->At(GetPHQIterator(kinvq, mag, charge));
+  return (THnF*) fgHistPHQ->At(GetPHQIterator(kinvq, mag, charge));
 }
 
 TString AliTRDdEdxUtils::GetPHQName(const Bool_t kobj, const Int_t iter)
@@ -658,7 +659,7 @@ void AliTRDdEdxUtils::IniCalibHist(TList *list, const Bool_t kPHQonly)
   nbin[0]=NTRDtimebin(); nbin[1]= 11250; xmax[0]=nbin[0]; xmax[1]=20; 
   for(Int_t iter=0; iter<8; iter++){
     const TString hn = GetPHQName(0, iter);
-    THnSparseD *hi = new THnSparseD(hn, "", 2, nbin, xmin, xmax);
+    THnF *hi = new THnF(hn, "", 2, nbin, xmin, xmax);
     //fgHistPHQ owns the hists
     fgHistPHQ->AddAt(hi, iter);
     list->Add(hi);
@@ -667,9 +668,9 @@ void AliTRDdEdxUtils::IniCalibHist(TList *list, const Bool_t kPHQonly)
   if(kPHQonly)
     return;
 
-  nbin[0]=NTRDchamber(); nbin[1]= 11250; xmax[0]=nbin[0]; xmax[1]=20;                 fgHistGain = new THnSparseD("TRDCalibHistGain", "", 2, nbin, xmin, xmax);
-  nbin[0]=NTRDchamber(); nbin[1]= 11250; xmax[0]=nbin[0]; xmax[1]=AliTRDseedV1::kNtb; fgHistT0   = new THnSparseD("TRDCalibHistT0",   "", 2, nbin, xmin, xmax);
-  nbin[0]=NTRDchamber(); nbin[1]= 11250; xmax[0]=nbin[0]; xmax[1]=AliTRDseedV1::kNtb; fgHistVd   = new THnSparseD("TRDCalibHistVd",   "", 2, nbin, xmin, xmax);
+  nbin[0]=NTRDchamber(); nbin[1]= 11250; xmax[0]=nbin[0]; xmax[1]=20;                 fgHistGain = new THnF("TRDCalibHistGain", "", 2, nbin, xmin, xmax);
+  nbin[0]=NTRDchamber(); nbin[1]= 11250; xmax[0]=nbin[0]; xmax[1]=AliTRDseedV1::kNtb; fgHistT0   = new THnF("TRDCalibHistT0",   "", 2, nbin, xmin, xmax);
+  nbin[0]=NTRDchamber(); nbin[1]= 11250; xmax[0]=nbin[0]; xmax[1]=AliTRDseedV1::kNtb; fgHistVd   = new THnF("TRDCalibHistVd",   "", 2, nbin, xmin, xmax);
 
   list->Add(fgHistGain);
   list->Add(fgHistT0);
@@ -691,12 +692,12 @@ Bool_t AliTRDdEdxUtils::ReadCalibHist(const TString filename, const TString list
 
   for(Int_t iter=0; iter<8; iter++){
     const TString hn = GetPHQName(0, iter);
-    THnSparseD * tmph=0x0;
+    THnF * tmph=0x0;
     if(array){
-      tmph = (THnSparseD *) array->FindObject(hn);
+      tmph = (THnF *) array->FindObject(hn);
     }
     else{
-      tmph = (THnSparseD *) fcalib.Get(hn);
+      tmph = (THnF *) fcalib.Get(hn);
     }
     if(!tmph){
       printf("AliTRDdEdxUtils::ReadCalibHist warning calib hist not found! %s %s\n", filename.Data(), listname.Data());
@@ -706,14 +707,14 @@ Bool_t AliTRDdEdxUtils::ReadCalibHist(const TString filename, const TString list
       }
       return kFALSE;
     }
-    THnSparseD *hi = (THnSparseD*)tmph->Clone();
+    THnF *hi = (THnF*)tmph->Clone();
     fgHistPHQ->AddAt(hi, iter);
   }
 
   return kTRUE;
 }
 
-void AliTRDdEdxUtils::FillCalibHist(const Int_t ncls, const TVectorD *arrayQ, const TVectorD *arrayX, THnSparseD * hcalib, const Double_t scale)
+void AliTRDdEdxUtils::FillCalibHist(const Int_t ncls, const TVectorD *arrayQ, const TVectorD *arrayX, THnF * hcalib, const Double_t scale)
 {
   //
   //fill calibration hist
@@ -743,7 +744,7 @@ void AliTRDdEdxUtils::FillCalibHist(const AliTRDtrackV1 *trdv1, const Bool_t kin
   //get cluster Q and fill calib hist, if kinvq = kTRUE, 1/Q is filled
   //
 
-  THnSparseD * hcalib = AliTRDdEdxUtils::GetHistPHQ(kinvq, mag, charge);
+  THnF * hcalib = AliTRDdEdxUtils::GetHistPHQ(kinvq, mag, charge);
 
   TVectorD arrayQ(200), arrayX(200);
   const Int_t ncls = AliTRDdEdxUtils::GetArrayClusterQ(kinvq, &arrayQ, &arrayX, trdv1);
@@ -862,7 +863,7 @@ void AliTRDdEdxUtils::CalibOutput(const TList *lin, Int_t run)
     
   const Int_t nh=lin->GetEntries();
   for(Int_t ii=0; ii<nh; ii++){
-    const THnSparseD *hh=(THnSparseD*)lin->At(ii);
+    const THnF *hh=(THnF*)lin->At(ii);
     const TString hname = hh->GetName();
     if(!objnames.Contains(hname))
       continue;
@@ -912,7 +913,7 @@ void AliTRDdEdxUtils::CalibOutput(const TList *lin, Int_t run)
   delete lout;
 }
 
-TObjArray* AliTRDdEdxUtils::GetCalibObj(const THnSparseD *hh, Int_t run, TList *lout, TTreeSRedirector *calibStream)
+TObjArray* AliTRDdEdxUtils::GetCalibObj(const THnF *hh, Int_t run, TList *lout, TTreeSRedirector *calibStream)
 {
   //
   //produce calibration objects
@@ -1362,7 +1363,7 @@ Int_t AliTRDdEdxUtils::UpdateArrayX(const Int_t ncls, TVectorD* arrayX)
   return (Int_t) nch;
 }
 
-void AliTRDdEdxUtils::SetChamberQT(const AliTRDtrackV1 *trdtrack, const Int_t kcalib, THnSparseD * hgain, THnSparseD * ht0, THnSparseD * hvd)
+void AliTRDdEdxUtils::SetChamberQT(const AliTRDtrackV1 *trdtrack, const Int_t kcalib, THnF * hgain, THnF * ht0, THnF * hvd)
 {
   //
   //CookdEdx at TRD track level, use chamber info, related calibrations: chamber-gain; T0, Vd based on raw PH distribution

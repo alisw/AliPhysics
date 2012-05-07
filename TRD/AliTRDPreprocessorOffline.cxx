@@ -951,7 +951,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePHQ(Int_t startRunNumber)
   //Produce PHQ calibration results
   //
   for(Int_t iter=0; iter<8; iter++){
-    THnSparseD *hi = (THnSparseD*) AliTRDdEdxUtils::GetHistPHQ()->At(iter);
+    THnF *hi = (THnF*) AliTRDdEdxUtils::GetHistPHQ()->At(iter);
     TObjArray *obji = AliTRDdEdxUtils::GetCalibObj(hi, startRunNumber);
     //printf("test analyze %s\n", obji->GetName());
     AliTRDdEdxUtils::GetObjPHQ()->AddAt(obji, iter);

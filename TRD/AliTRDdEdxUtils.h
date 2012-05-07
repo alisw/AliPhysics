@@ -33,6 +33,7 @@ grep "(" AliTRDdEdxUtils.h | grep ";" | grep -v grep | grep -v ClassDef | grep -
 #endif
 
 #ifndef THNSPARSE_H
+#include "THn.h"
 #include "THnSparse.h"
 #endif
 
@@ -90,17 +91,17 @@ class AliTRDdEdxUtils
   static TObjArray * GetObjPHQ();
   static TObjArray * GetHistPHQ(){return fgHistPHQ;}
   static TObjArray * GetObjPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge);
-  static THnSparseD * GetHistPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge);
+  static THnF * GetHistPHQ(const Bool_t kinvq, const Double_t mag, const Int_t charge);
 
-  static void FillCalibHist(const Int_t ncls, const TVectorD *arrayQ, const TVectorD *arrayX, THnSparseD * hcalib, const Double_t scale);
+  static void FillCalibHist(const Int_t ncls, const TVectorD *arrayQ, const TVectorD *arrayX, THnF * hcalib, const Double_t scale);
   static void FillCalibHist(const AliTRDtrackV1 *trdv1, const Bool_t kinvq, const Double_t mag, const Int_t charge, const Double_t scale);
 
   static void CalibOutput(const TList *l0, Int_t run);
-  static TObjArray* GetCalibObj(const THnSparseD *hh, Int_t run=-999, TList *lout=0x0, TTreeSRedirector *calibStream=0x0);
+  static TObjArray* GetCalibObj(const THnF *hh, Int_t run=-999, TList *lout=0x0, TTreeSRedirector *calibStream=0x0);
 
-  static THnSparseD * GetHistGain(){return fgHistGain;}
-  static THnSparseD * GetHistT0(){return fgHistT0;}
-  static THnSparseD * GetHistVd(){return fgHistVd;}
+  static THnF * GetHistGain(){return fgHistGain;}
+  static THnF * GetHistT0(){return fgHistT0;}
+  static THnF * GetHistVd(){return fgHistVd;}
 
   //===================================================================================
   //                                   dEdx calculation
@@ -113,7 +114,7 @@ class AliTRDdEdxUtils
   //===================================================================================
   static Int_t GetArrayClusterQ(const Bool_t kinvq, TVectorD *arrayQ, TVectorD *arrayX, const AliTRDtrackV1 *trdtrack, Int_t timeBin0=-1, Int_t timeBin1=1000, Int_t tstep=1);
   static Int_t UpdateArrayX(const Int_t ncls, TVectorD* arrayX);
-  static void SetChamberQT(const AliTRDtrackV1 *trdtrack, const Int_t kcalib, THnSparseD * hgain=0x0, THnSparseD * ht0=0x0, THnSparseD * hvd=0x0);
+  static void SetChamberQT(const AliTRDtrackV1 *trdtrack, const Int_t kcalib, THnF * hgain=0x0, THnF * ht0=0x0, THnF * hvd=0x0);
 
   static Int_t GetNchamber() {return fgNchamber;}
   static Double_t GetChamberQ(const Int_t ich)  {return fgChamberQ[ich];}
@@ -191,10 +192,10 @@ class AliTRDdEdxUtils
   static TString GetPHQName(const Bool_t kobj, const Int_t iter);
 
   //Detector, Data and Control Constant
-  static THnSparseD *fgHistGain;//PH hist
-  static THnSparseD *fgHistT0;//PH hist
-  static THnSparseD *fgHistVd;//PH hist
-  static TObjArray * fgHistPHQ;//array containing 8 THnSparseD!
+  static THnF *fgHistGain;//PH hist
+  static THnF *fgHistT0;//PH hist
+  static THnF *fgHistVd;//PH hist
+  static TObjArray * fgHistPHQ;//array containing 8 THnF!
 
   static TString fgCalibFile; //private path for calibration object
 
