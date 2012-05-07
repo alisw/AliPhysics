@@ -12,7 +12,7 @@ echo ocdb = $ocdb 2>&1 | tee -a merge.log
 echo "***********************" 2>&1 | tee -a merge.log
 
 # setup components
-components="TOF MeanVertex T0 TRD TPC SDD"
+components="TOF MeanVertex T0 SDD TRD TPCCalib TPCAlign TPCCluster"
 
 # copy
 echo "***********************" 2>&1 | tee -a merge.log
