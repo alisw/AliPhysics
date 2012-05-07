@@ -54,6 +54,7 @@
 #include "TTree.h"
 #include "TTreeStream.h"
 #include "THnSparse.h"
+#include "THnBase.h"
 #include "TProfile.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -190,7 +191,7 @@ void AliTPCExBEffectiveSector::Print(const Option_t* option) const {
   }    
 }
 
-void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char *sname, Int_t ptype, Int_t dtype){
+void  AliTPCExBEffectiveSector::MakeResidualMap(THnBase * hisInput, const char *sname, Int_t ptype, Int_t dtype){
   //
   // Make cluster residual map from the n-dimensional histogram
   // hisInput supposed to have given format:
@@ -229,14 +230,14 @@ void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char
   for (Int_t ibin1=1; ibin1<nbins1; ibin1+=1){
     // phi- sector  range
     hisInput->GetAxis(1)->SetRange(ibin1-1,ibin1+1);
-    THnSparse *his1=hisInput->Projection(4,axis0); 
+    THnBase *his1=(THnBase *)hisInput->ProjectionND(4,axis0); 
     Double_t sector=hisInput->GetAxis(1)->GetBinCenter(ibin1);
     //
     for (Int_t ibin2=1; ibin2<nbins2; ibin2+=1){
       // local x range
       // kz fits
       his1->GetAxis(2)->SetRange(ibin2-1,ibin2+1);
-      THnSparse *his2=his1->Projection(4,axis1); 
+      THnBase *his2=(THnBase *)his1->ProjectionND(4,axis1); 
       Double_t localX=hisInput->GetAxis(2)->GetBinCenter(ibin2);
       //      
       //A side

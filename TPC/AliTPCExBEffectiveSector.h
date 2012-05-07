@@ -14,6 +14,7 @@
 #include "AliTPCCorrection.h"
 class TH3F;
 class THnSparse;
+class THnBase;
 
 class AliTPCExBEffectiveSector : public AliTPCCorrection {
 public:
@@ -31,7 +32,7 @@ public:
   Float_t GetC1() const {return fC1;}
   Float_t GetC0() const {return fC0;}
   void Print(const Option_t* option) const;
-  static void  MakeResidualMap(THnSparse * hisInput, const char *sname, Int_t ptype, Int_t dtype=0);
+  static void  MakeResidualMap(THnBase * hisInput, const char *sname, Int_t ptype, Int_t dtype=0);
 public:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 public:
