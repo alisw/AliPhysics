@@ -322,8 +322,12 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
     AliESDHeader *esdHeader = 0;
     esdHeader = esdEvent->GetHeader();
     if(!esdHeader) return;
-    Int_t ir1 = esdHeader->GetTriggerIREntries(); //all ir-s
-    Int_t ir2 = esdHeader->GetTriggerIREntries(-1,1); // int2 set, 180 ms time interval
+    //Int_t ir1 = esdHeader->GetTriggerIREntries(); //all ir-s
+    //Int_t ir2 = esdHeader->GetTriggerIREntries(-1,1); // int2 set, 180 ms time interval
+
+    // Use when Peter commit the changes in the header
+    Int_t ir1 = 0;
+    Int_t ir2 = 0;
 
     //
     Double_t vert[3] = {0}; 
@@ -586,8 +590,11 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
     AliESDHeader *esdHeader = 0;
     esdHeader = esdEvent->GetHeader();
     if(!esdHeader) return;
-    Int_t ir1 = esdHeader->GetTriggerIREntries(); //all ir-s
-    Int_t ir2 = esdHeader->GetTriggerIREntries(-1,1); // int2 set, 180 ms time interval
+    //Int_t ir1 = esdHeader->GetTriggerIREntries(); //all ir-s
+    //Int_t ir2 = esdHeader->GetTriggerIREntries(-1,1); // int2 set, 180 ms time interval
+    //
+    Int_t ir1 = 0;
+    Int_t ir2 = 0;
 
     //
     Double_t vert[3] = {0}; 
