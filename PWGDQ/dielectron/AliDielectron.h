@@ -119,7 +119,8 @@ public:
 
   void SetEstimatorFilename(const Char_t* filename) {fEstimatorFilename = filename;}
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
-
+  void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
+  void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
 
   void SaveDebugTree();
 
@@ -184,6 +185,8 @@ private:
 
   TString fEstimatorFilename;                // name for the pp multiplicity estimators filename
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
+  TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
+  TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
   

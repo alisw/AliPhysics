@@ -79,7 +79,7 @@ public:
   static Double_t GetEtaCorr(AliVTrack *track);
 
 private:
-  enum {kNmaxPID=10};
+  enum {kNmaxPID=30};
 
   DetType  fDetType[kNmaxPID];    //detector type of nsigma cut
   AliPID::EParticleType fPartType[kNmaxPID]; //particle type

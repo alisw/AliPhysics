@@ -45,6 +45,8 @@
 #include <AliMultiplicity.h>
 #include <AliStack.h>
 
+#include "AliDielectronVarCuts.h"
+#include "AliDielectronTrackCuts.h"
 #include "AliDielectronVarManager.h"
 #include "AliDielectronHelper.h"
 
@@ -230,37 +232,42 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
 }
 
 //_____________________________________________________________________________
-Int_t AliDielectronHelper::GetNacc(const AliVEvent */*ev*/){
+Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   // put a robust Nacc definition here
 
-  return -1;
-/*  
-  if (!ev || ev->IsA()!=AliESDEvent::Class()) return -1;
-  
-  // basic track cuts for the N_acc definition
-  AliESDtrackCuts esdTC;
-  esdTC.SetMaxDCAToVertexZ(3.0);
-  esdTC.SetMaxDCAToVertexXY(1.0);
-  esdTC.SetEtaRange( -0.9 , 0.9 );
-  esdTC.SetAcceptKinkDaughters(kFALSE);
-  esdTC.SetRequireITSRefit(kTRUE);
-  esdTC.SetRequireTPCRefit(kTRUE);
-  esdTC.SetMinNClustersTPC(70);
-  esdTC.SetMaxChi2PerClusterTPC(4);
-  esdTC.SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  if (!ev) return -1;
+
+  AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);   // not filled in AODs?
+  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
+  varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,1.5); //ITS(0-1) = SPDany
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,  -0.5,   0.5);   //noKinks
+    
+  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  trkCuts->SetRequireITSRefit(kTRUE);
+  trkCuts->SetRequireTPCRefit(kTRUE);
 
   Int_t nRecoTracks = ev->GetNumberOfTracks();
   Int_t nAcc = 0;
-
+  
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVParticle* candidate = ev->GetTrack(iTrack);
-    if (esdTC.IsSelected(candidate)) nAcc++;
+    AliVTrack *track        = static_cast<AliVTrack*>(candidate);
+    if (!track) continue;
+    if (varCuts->IsSelected(track) && trkCuts->IsSelected(track)) 
+      nAcc++;
   }
+  
+  delete varCuts;
+  delete trkCuts;
+
+  //  if(nRecoTracks==nAcc) printf(" all (%d) reco tracks are accepted tracks? \n",nAcc);
 
   return nAcc;
-*/
 }
-
 
 //_____________________________________________________________________________
 void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev){

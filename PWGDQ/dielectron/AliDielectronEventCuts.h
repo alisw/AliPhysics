@@ -68,6 +68,8 @@ private:
   const AliESDVertex *fkVertex;         //! current vertex
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
+  AliAODVertex* GetPrimaryVertexTPC(AliAODEvent *ev);
+
   AliDielectronEventCuts(const AliDielectronEventCuts &c);
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
@@ -75,6 +77,15 @@ private:
   ClassDef(AliDielectronEventCuts,1)         // Dielectron EventCuts
 };
 
-
+//______________________________________________________________________________
+inline AliAODVertex* GetPrimaryVertexTPC(AliAODEvent *ev){
+  // Get TPC primary vertex
+  Int_t nVertices=ev->GetNumberOfVertices();
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *v=ev->GetVertex(iVert);
+    if(v->GetType()==AliAODVertex::kMainSPD) return v;
+  }
+  return 0;
+}
 
 #endif

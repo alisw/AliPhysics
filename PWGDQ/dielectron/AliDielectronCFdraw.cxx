@@ -416,19 +416,44 @@ TObjArray* AliDielectronCFdraw::CollectHistosProj(const Int_t vars[3], const cha
 }
 
 //________________________________________________________________
-TObjArray* AliDielectronCFdraw::CollectMinvProj(Int_t slice)
+TObjArray* AliDielectronCFdraw::CollectMinvProj(Int_t slice, ECollectType collect, TString var)
 {
   //
-  // Collect invariant mass spectra of slice 'slice' for all pair types
+  // Collect invariant mass spectra of step 'slice' for pair types
   //
   
   TObjArray *arr = new TObjArray();
   arr->SetOwner();
   for (Int_t iType = 0; iType <= AliDielectron::kEv1PMRot; iType++) {
-    fCfContainer->SetRangeUser(fCfContainer->GetVar("PairType"),iType,iType,slice);
-    arr->AddAt(fCfContainer->Project(fCfContainer->GetVar("M"),slice),iType);
+
+    switch (iType) {
+      // same events
+      case AliDielectron::kEv1PP:
+      case AliDielectron::kEv1MM:
+        if(collect==kROT || collect==kME || collect==kMEOS) continue; break;
+        // mixed events
+      case AliDielectron::kEv1PEv2P:
+      case AliDielectron::kEv1MEv2M:
+        if(collect==kROT || collect==kSE || collect==kMEOS) continue; break;
+      case AliDielectron::kEv1MEv2P:
+      case AliDielectron::kEv1PEv2M:
+        if(collect==kROT || collect==kSE) continue; break;
+        // rotations
+      case AliDielectron::kEv1PMRot:
+        if(collect==kSE || collect==kME || collect==kMEOS) continue; break;
+        // unused
+      case AliDielectron::kEv2PP:
+      case AliDielectron::kEv2PM:
+      case AliDielectron::kEv2MM:
+        continue; break;
+    }
+    SetRangeUser("PairType",iType,iType,Form("%d",slice));
+    TH1 *hM=Project(var.Data(),slice);
+    hM->SetDirectory(0x0);
+    hM->SetNameTitle(Form("Minv_%d",iType),Form("M for type %d;M (GeV/c^{2})", iType));
+    arr->AddAt(hM,iType);
   }
-  
+  UnsetRangeUser("PairType",Form("%d",slice));
   return arr;
 }
 

@@ -114,6 +114,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "TOF_nSigma_Protons",
 
   "EMCAL_nSigma_Electrons",
+  "EMCAL_EoverP",
+  "EMCAL_NCells",
+  "EMCAL_M02",
+  "EMCAL_M20",
+  "EMCAL_Dispersion",
 
   "KinkIndex0",
   //
@@ -124,9 +129,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "ThetaHE",
   "PhiHE",
   "Cos2PhiHE",
+  "CosTilPhiHE",
   "ThetaCS",
   "PhiCS",
   "Cos2PhiCS",
+  "CosTilPhiCS",
   "DeltaPhiV0ArpH2",        
   "DeltaPhiV0CrpH2",        
   "DeltaPhiV0ACrpH2",       
@@ -218,6 +225,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   "NTrk",
   "Tracks",
+  "NVtxContrib",
   "Nacc",
   "NaccTrcklts",
   "NaccTrcklts0916",
@@ -241,10 +249,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "NaccItsPureEsd10Corr",
   "NaccItsPureEsd16Corr",  
     
-  "Nch",                    // Number of charged MC tracks in |eta|<1.6
-  "Nch05",                  // Number of charged MC tracks in |eta|<0.5
-  "Nch10",                  // Number of charged MC tracks in |eta|<1.0
+  "Nch",
+  "Nch05",
+  "Nch10",
   "Centrality",
+  "CentralitySPD",
   "Nevents",
   "RunNumber",
   "MixingBin"
@@ -257,7 +266,12 @@ AliKFVertex*    AliDielectronVarManager::fgKFVertex         = 0x0;
 TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[4][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
 Double_t        AliDielectronVarManager::fgTRDpidEffCentRanges[10][4] = {{0.0}};
-Double_t        AliDielectronVarManager::fgData[AliDielectronVarManager::kNMaxValues] = {};
+TString         AliDielectronVarManager::fgVZEROCalibrationFile = "";
+TString         AliDielectronVarManager::fgVZERORecenteringFile = "";
+TProfile2D*     AliDielectronVarManager::fgVZEROCalib[64] = {0x0};
+TProfile2D*     AliDielectronVarManager::fgVZERORecentering[2][2] = {{0x0,0x0},{0x0,0x0}};
+Int_t           AliDielectronVarManager::fgCurrentRun = -1;
+Double_t        AliDielectronVarManager::fgData[AliDielectronVarManager::kNMaxValues] = {0.};
 //________________________________________________________________
 AliDielectronVarManager::AliDielectronVarManager() :
   TNamed("AliDielectronVarManager","AliDielectronVarManager")
@@ -271,6 +285,10 @@ AliDielectronVarManager::AliDielectronVarManager() :
   for(Int_t i=0; i<10; ++i)
     for(Int_t j=0; j<4; ++j)
       fgTRDpidEff[i][j] = 0x0;
+  for(Int_t i=0; i<64; ++i) fgVZEROCalib[i] = 0x0;
+  for(Int_t i=0; i<2; ++i) {
+    for(Int_t j=0; j<2; ++j) fgVZERORecentering[i][j] = 0x0;
+  }
 }
 
 //________________________________________________________________
@@ -286,6 +304,10 @@ AliDielectronVarManager::AliDielectronVarManager(const char* name, const char* t
   for(Int_t i=0; i<10; ++i)
     for(Int_t j=0; j<4; ++j)
       fgTRDpidEff[i][j] = 0x0;  
+  for(Int_t i=0; i<64; ++i) fgVZEROCalib[i] = 0x0;
+  for(Int_t i=0; i<2; ++i)
+    for(Int_t j=0; j<2; ++j) 
+      fgVZERORecentering[i][j] = 0x0;
 }
 
 //________________________________________________________________
@@ -300,5 +322,10 @@ AliDielectronVarManager::~AliDielectronVarManager()
   for(Int_t i=0; i<10; ++i)
     for(Int_t j=0; j<4; ++j)
       if(fgTRDpidEff[i][j]) delete fgTRDpidEff[i][j];    
+  for(Int_t i=0; i<64; ++i) 
+    if(fgVZEROCalib[i]) delete fgVZEROCalib[i];
+  for(Int_t i=0; i<2; ++i)
+    for(Int_t j=0; j<2; ++j) 
+      if(fgVZERORecentering[i][j]) delete fgVZERORecentering[i][j]; 
 }
 

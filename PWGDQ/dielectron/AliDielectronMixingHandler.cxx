@@ -410,8 +410,8 @@ Int_t AliDielectronMixingHandler::FindBin(const Double_t values[], TString *dim)
 
     Int_t pos=TMath::BinarySearch(nRows,bins->GetMatrixArray(),val);
     bin+=sizeAdd*pos;
-    if (dim) (*dim)+=Form("%s: %f; ",AliDielectronVarManager::GetValueName(fEventCuts[i]),val);
-    sizeAdd*=nRows;
+    if (dim) (*dim)+=Form("%s: %f (%d); ",AliDielectronVarManager::GetValueName(fEventCuts[i]),val,pos);
+    sizeAdd*=(nRows-1);
   }
 
   return bin;

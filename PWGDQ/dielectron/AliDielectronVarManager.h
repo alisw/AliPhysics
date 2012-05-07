@@ -22,6 +22,7 @@
 
 #include <TNamed.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 #include <TH3D.h>
 #include <TFile.h>
 #include <TDatabasePDG.h>
@@ -157,6 +158,11 @@ public:
     kTOFnSigmaPro,           // number of sigmas to the proton line in the TOF
 
     kEMCALnSigmaEle,         // number of sigmas to the proton line in the TOF
+    kEMCALEoverP,            // E over P from EMCAL
+    kEMCALNCells,            // NCells from EMCAL
+    kEMCALM02,               // M02 showershape parameter
+    kEMCALM20,               // M20 showershape parameter
+    kEMCALDispersion,        // Dispersion paramter
     
     kKinkIndex0,             // kink index 0
       
@@ -171,11 +177,13 @@ public:
     kThetaHE,                // theta in mother's rest frame in the helicity picture 
     kPhiHE,                  // phi in mother's rest frame in the helicity picture
     kCos2PhiHE,              // Cosine of 2*phi in mother's rest frame in the helicity picture
+    kCosTilPhiHE,            // Sin(phi) +/- Cos(phi) in mother's rest frame in the helicity picture; Sign is sign(Cos(phi))
     // Collins-Soper picture: Z-axis is considered the direction of the vectorial difference between 
     // the 3-mom vectors of target and projectile beams
     kThetaCS,                // theta in mother's rest frame in Collins-Soper picture
     kPhiCS,                  // phi in mother's rest frame in Collins-Soper picture
     kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
+    kCosTilPhiCS,            // Sin(phi) +/- Cos(phi) in mother's rest frame in Collins-Soper picture; Sign is sign(Cos(phi))
     kDeltaPhiV0ArpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
     kDeltaPhiV0CrpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
     kDeltaPhiV0ACrpH2,       // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A + V0-C
@@ -265,6 +273,7 @@ public:
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
     kTracks,                 // ESD tracks TODO: ambiguous
+    kNVtxContrib,             // number of primary vertex contibutors
     kNacc,                   // Number of accepted tracks
     kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6        
     kNaccTrcklts0916,        // number of accepted SPD tracklets in 0.9<|eta|<1.6
@@ -294,6 +303,7 @@ public:
     kNch10,                  // MC true number of charged particles in |eta|<1.0
 
     kCentrality,             // event centrality fraction
+    kCentralitySPD,          // centrality using SPD
     kNevents,                // event counter
     kRunNumber,              // run number
     kMixingBin,
@@ -312,13 +322,16 @@ public:
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
   static void InitTRDpidEffHistograms(const Char_t* filename);
+  static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
+  
+  static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
   static void SetPIDResponse(AliPIDResponse *pidResponse) {fgPIDResponse=pidResponse;}
   static AliPIDResponse* GetPIDResponse() { return fgPIDResponse; }
   static void SetEvent(AliVEvent * const ev);
   static void SetEventData(const Double_t data[AliDielectronVarManager::kNMaxValues]);
   static Bool_t GetDCA(const AliAODTrack *track, Double_t d0z0[2]);
   static void SetTPCEventPlane(AliEventplane *const evplane);
-  static void GetVzeroRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);            // 0- V0A; 1- V0C; 2- V0A+V0C
+  static void GetVzeroRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
 
   static TProfile* GetEstimatorHistogram(Int_t period, Int_t type) {return fgMultEstimatorAvg[period][type];}
   static Double_t GetTRDpidEfficiency(Int_t runNo, Double_t centrality, Double_t eta, Double_t trdPhi, Double_t pout, Double_t& effErr);
@@ -350,6 +363,9 @@ private:
   static void FillVarMCEvent(const AliMCEvent *event,                Double_t * const values);
   static void FillVarTPCEventPlane(const AliEventplane *evplane,     Double_t * const values);
 
+  static void InitVZEROCalibrationHistograms(Int_t runNo);
+  static void InitVZERORecenteringHistograms(Int_t runNo);
+  
   static AliPIDResponse  *fgPIDResponse;        // PID response object
   static AliVEvent       *fgEvent;              // current event pointer
   static AliEventplane   *fgTPCEventPlane;      // current event plane pointer
@@ -357,7 +373,12 @@ private:
   static TProfile        *fgMultEstimatorAvg[4][9];  // multiplicity estimator averages (4 periods x 9 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
-
+  static TString          fgVZEROCalibrationFile;  // file with VZERO channel-by-channel calibrations
+  static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
+  static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
+  static TProfile2D      *fgVZERORecentering[2][2];   // 2 VZERO sides x 2 Q-vector components
+  static Int_t            fgCurrentRun;
+  
   static Double_t fgData[kNMaxValues];        //! data
   
   AliDielectronVarManager(const AliDielectronVarManager &c);
@@ -597,8 +618,18 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
   values[AliDielectronVarManager::kTOFnSigmaPro]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton);
 
-  values[AliDielectronVarManager::kEMCALnSigmaEle]=fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron);
-
+  //EMCAL PID information
+  Double_t eop=0;
+  Double_t showershape[4]={0.,0.,0.,0.};
+//   values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron);
+  values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron,eop,showershape);
+  values[AliDielectronVarManager::kEMCALEoverP]     = eop;
+  values[AliDielectronVarManager::kEMCALNCells]     = showershape[0];
+  values[AliDielectronVarManager::kEMCALM02]        = showershape[1];
+  values[AliDielectronVarManager::kEMCALM20]        = showershape[2];
+  values[AliDielectronVarManager::kEMCALDispersion] = showershape[3];
+  
+  
   //restore TPC signal if it was changed
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 }
@@ -644,6 +675,9 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   
   // Fill AliAODTrack interface information
   //
+
+  values[AliDielectronVarManager::kKinkIndex0]    = particle->GetProdVertex()->GetType()==AliAODVertex::kKink ? 1 : 0;
+
   Double_t d0z0[2];
   GetDCA(particle, d0z0);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
@@ -701,6 +735,17 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTOFnSigmaPro]=tofNsigmaPro;
     
   }
+
+  //EMCAL PID information
+  Double_t eop=0;
+  Double_t showershape[4]={0.,0.,0.,0.};
+//   values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron);
+  values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron,eop,showershape);
+  values[AliDielectronVarManager::kEMCALEoverP]     = eop;
+  values[AliDielectronVarManager::kEMCALNCells]     = showershape[0];
+  values[AliDielectronVarManager::kEMCALM02]        = showershape[1];
+  values[AliDielectronVarManager::kEMCALM20]        = showershape[2];
+  values[AliDielectronVarManager::kEMCALDispersion] = showershape[3];
 
   values[AliDielectronVarManager::kPdgCode]=-1;
   values[AliDielectronVarManager::kPdgCodeMother]=-1;
@@ -875,12 +920,15 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
 
     if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
   }
+
   values[AliDielectronVarManager::kThetaHE]   = AliDielectronPair::ThetaPhiCM(p1,p2,kTRUE,  kTRUE);
   values[AliDielectronVarManager::kPhiHE]     = AliDielectronPair::ThetaPhiCM(p1,p2,kTRUE,  kFALSE);
   values[AliDielectronVarManager::kCos2PhiHE] = TMath::Cos(2*values[AliDielectronVarManager::kPhiHE]);
   values[AliDielectronVarManager::kThetaCS]   = AliDielectronPair::ThetaPhiCM(p1,p2,kFALSE, kTRUE);
   values[AliDielectronVarManager::kPhiCS]     = AliDielectronPair::ThetaPhiCM(p1,p2,kFALSE, kFALSE);
   values[AliDielectronVarManager::kCos2PhiCS] = TMath::Cos(2*values[AliDielectronVarManager::kPhiCS]);
+  values[AliDielectronVarManager::kCosTilPhiHE]  = (TMath::Cos(values[AliDielectronVarManager::kPhiHE])>0)?(TMath::Cos(values[AliDielectronVarManager::kPhiHE]-TMath::Pi()/4.)):(TMath::Cos(values[AliDielectronVarManager::kPhiHE]-3*TMath::Pi()/4.));
+  values[AliDielectronVarManager::kCosTilPhiCS]  = (TMath::Cos(values[AliDielectronVarManager::kPhiCS])>0)?(TMath::Cos(values[AliDielectronVarManager::kPhiCS]-TMath::Pi()/4.)):(TMath::Cos(values[AliDielectronVarManager::kPhiCS]-3*TMath::Pi()/4.));
 }
 
 
@@ -975,9 +1023,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kThetaHE]      = thetaHE;
   values[AliDielectronVarManager::kPhiHE]        = phiHE;
   values[AliDielectronVarManager::kCos2PhiHE]    = TMath::Cos(2.0*phiHE);
+  values[AliDielectronVarManager::kCosTilPhiHE]  = (TMath::Cos(phiHE)>0)?(TMath::Cos(phiHE-TMath::Pi()/4.)):(TMath::Cos(phiHE-3*TMath::Pi()/4.));
   values[AliDielectronVarManager::kThetaCS]      = thetaCS;
   values[AliDielectronVarManager::kPhiCS]        = phiCS;
   values[AliDielectronVarManager::kCos2PhiCS]    = TMath::Cos(2.0*phiCS);
+  values[AliDielectronVarManager::kCosTilPhiCS]  = (TMath::Cos(phiCS)>0)?(TMath::Cos(phiCS-TMath::Pi()/4.)):(TMath::Cos(phiCS-3*TMath::Pi()/4.));
   values[AliDielectronVarManager::kLegDist]      = pair->DistanceDaughters();
   values[AliDielectronVarManager::kLegDistXY]    = pair->DistanceDaughtersXY();
   values[AliDielectronVarManager::kDeltaEta]     = pair->DeltaEta();
@@ -1122,6 +1172,11 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   // Fill event information available for histogramming into an array
   //
   values[AliDielectronVarManager::kRunNumber]    = event->GetRunNumber();
+  if(fgCurrentRun!=event->GetRunNumber()) {
+    if(fgVZEROCalibrationFile.Contains(".root")) InitVZEROCalibrationHistograms(event->GetRunNumber());
+    if(fgVZERORecenteringFile.Contains(".root")) InitVZERORecenteringHistograms(event->GetRunNumber());
+    fgCurrentRun=event->GetRunNumber();
+  }
   const AliVVertex *primVtx = event->GetPrimaryVertex();
   
   values[AliDielectronVarManager::kXvPrim]       = 0;
@@ -1130,6 +1185,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 //   values[AliDielectronVarManager::kChi2NDF]      = 0; //This is the pair value!!!
 
   values[AliDielectronVarManager::kNTrk]         = 0;
+  values[AliDielectronVarManager::kNVtxContrib]   = 0;
   values[AliDielectronVarManager::kNacc]         = 0;
   values[AliDielectronVarManager::kNaccTrcklts]  = 0;
   values[AliDielectronVarManager::kNaccTrcklts0916] = 0;
@@ -1143,6 +1199,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 //   values[AliDielectronVarManager::kChi2NDF]      = primVtx->GetChi2perNDF(); //this is the pair value
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
+  values[AliDielectronVarManager::kNVtxContrib]     = primVtx->GetNContributors();
   values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
   values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event);      // etaRange = 1.6 (default)
   values[AliDielectronVarManager::kNaccTrcklts0916] = AliDielectronHelper::GetNaccTrcklts(event,1.6)-AliDielectronHelper::GetNaccTrcklts(event,.9);
@@ -1165,10 +1222,10 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kAdcV0A]  = 0.0;
   values[AliDielectronVarManager::kAdcV0C]  = 0.0;
   for(Int_t i=0; i<32; ++i) {
-    //values[AliDielectronVarManager::kVZEROchMult+i] = vzeroData->GetMultiplicity(i);
-    //values[AliDielectronVarManager::kVZEROchMult+32+i] = vzeroData->GetMultiplicity(i+32);
-    values[AliDielectronVarManager::kVZEROchMult+i] = event->GetVZEROEqMultiplicity(i);
-    values[AliDielectronVarManager::kVZEROchMult+32+i] = event->GetVZEROEqMultiplicity(i+32);
+    values[AliDielectronVarManager::kVZEROchMult+i] = vzeroData->GetMultiplicity(i);
+    values[AliDielectronVarManager::kVZEROchMult+32+i] = vzeroData->GetMultiplicity(i+32);
+    //values[AliDielectronVarManager::kVZEROchMult+i] = event->GetVZEROEqMultiplicity(i);
+    //values[AliDielectronVarManager::kVZEROchMult+32+i] = event->GetVZEROEqMultiplicity(i+32);
     values[AliDielectronVarManager::kMultV0A] += vzeroData->GetMultiplicityV0A(i);
     values[AliDielectronVarManager::kMultV0C] += vzeroData->GetMultiplicityV0C(i);
     //values[AliDielectronVarManager::kAdcV0A] += vzeroData->GetAdcV0A(i);
@@ -1254,9 +1311,10 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   // Fill common AliVEvent interface information
   FillVarVEvent(event, values);
 
-  Double_t centralityF=-1;
+  Double_t centralityF=-1; Double_t centralitySPD=-1;
   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
   if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
+  if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
   
   // Fill AliESDEvent interface specific information
   const AliESDVertex *primVtx = event->GetPrimaryVertex();
@@ -1264,6 +1322,7 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kYRes]       = primVtx->GetYRes();
   values[AliDielectronVarManager::kZRes]       = primVtx->GetZRes();
   values[AliDielectronVarManager::kCentrality] = centralityF;
+  values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
   
   // Event multiplicity estimators
   Int_t nTrSPD05=0; Int_t nTrITSTPC05=0; Int_t nTrITSSA05=0;
@@ -1316,10 +1375,12 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   // Fill AliAODEvent interface specific information
   AliAODHeader *header = event->GetHeader();
   
-  Double_t centralityF=-1;
+  Double_t centralityF=-1; Double_t centralitySPD=-1;
   AliCentrality *aodCentrality = header->GetCentralityP();
   if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
+  if (aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
   values[AliDielectronVarManager::kCentrality] = centralityF;
+  values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
   
   //const AliAODVertex *primVtx = event->GetPrimaryVertex();
 }
@@ -1375,6 +1436,7 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
 									values[AliDielectronVarManager::kTPCsub2rpH2]) );
 }
   
+
 inline void AliDielectronVarManager::InitESDpid(Int_t type)
 {
   //
@@ -1512,6 +1574,60 @@ inline void AliDielectronVarManager::InitTRDpidEffHistograms(const Char_t* filen
 }
 
 
+inline void AliDielectronVarManager::InitVZEROCalibrationHistograms(Int_t runNo) {
+  //
+  // Initialize the VZERO channel-by-channel calibration histograms
+  //
+
+  //initialize only once
+  if(fgVZEROCalib[0]) return;
+  
+  for(Int_t i=0; i<64; ++i) 
+    if(fgVZEROCalib[i]) {
+      delete fgVZEROCalib[i];
+      fgVZEROCalib[i] = 0x0;
+    }
+  
+  TFile file(fgVZEROCalibrationFile.Data());
+  
+  for(Int_t i=0; i<64; ++i){
+    fgVZEROCalib[i] = (TProfile2D*)(file.Get(Form("RUN%d_ch%d_VtxCent", runNo, i)));
+    if (fgVZEROCalib[i]) fgVZEROCalib[i]->SetDirectory(0x0);
+  }
+}
+
+
+inline void AliDielectronVarManager::InitVZERORecenteringHistograms(Int_t runNo) {
+  //
+  // Initialize the VZERO event plane recentering histograms
+  //
+
+  //initialize only once
+  if(fgVZERORecentering[0][0]) return;
+  
+  for(Int_t i=0; i<2; ++i)
+    for(Int_t j=0; j<2; ++j)
+      if(fgVZERORecentering[i][j]) {
+        delete fgVZERORecentering[i][j];
+        fgVZERORecentering[i][j] = 0x0;
+      }
+  
+  TFile file(fgVZERORecenteringFile.Data());
+  if (!file.IsOpen()) return;
+  
+  fgVZERORecentering[0][0] = (TProfile2D*)(file.Get(Form("RUN%d_QxA_CentVtx", runNo)));
+  fgVZERORecentering[0][1] = (TProfile2D*)(file.Get(Form("RUN%d_QyA_CentVtx", runNo)));
+  fgVZERORecentering[1][0] = (TProfile2D*)(file.Get(Form("RUN%d_QxC_CentVtx", runNo)));
+  fgVZERORecentering[1][1] = (TProfile2D*)(file.Get(Form("RUN%d_QyC_CentVtx", runNo)));
+
+  if (fgVZERORecentering[0][0]) fgVZERORecentering[0][0]->SetDirectory(0x0);
+  if (fgVZERORecentering[0][1]) fgVZERORecentering[0][1]->SetDirectory(0x0);
+  if (fgVZERORecentering[1][0]) fgVZERORecentering[1][0]->SetDirectory(0x0);
+  if (fgVZERORecentering[1][1]) fgVZERORecentering[1][1]->SetDirectory(0x0);
+  
+}
+
+
 inline Double_t AliDielectronVarManager::GetTRDpidEfficiency(Int_t runNo, Double_t centrality, 
  				                             Double_t eta, Double_t trdPhi, Double_t pout,
  				                             Double_t& effErr) {
@@ -1631,19 +1747,73 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   const Double_t kY[8] = {0.38268, 0.92388, 0.92388, 0.38268, -0.38268, -0.92388, -0.92388, -0.38268};    // sines     -- " --
   Int_t phi;
   Float_t mult;
-
-//  AliVVZERO* vzero = event->GetVZEROData();
   
+  // get centrality and vertex for this event
+  Double_t centralitySPD = -1; Double_t vtxZ = -999.;
+  if(event->IsA() == AliESDEvent::Class()) {
+    const AliESDEvent* esdEv = static_cast<const AliESDEvent*>(event);
+    AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
+    if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+  }
+  if(event->IsA() == AliAODEvent::Class()) {
+    const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);
+    AliAODHeader *header = aodEv->GetHeader();
+    AliCentrality *aodCentrality = header->GetCentralityP();
+    if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
+  }
+  const AliVVertex *primVtx = event->GetPrimaryVertex();
+  if(!primVtx) return;
+  vtxZ = primVtx->GetZ();
+  if(TMath::Abs(vtxZ)>10.) return;
+  if(centralitySPD<0. || centralitySPD>80.) return;
+  
+  Int_t binCent = -1; Int_t binVtx = -1;
+  if(fgVZEROCalib[0]) {
+    binVtx = fgVZEROCalib[0]->GetXaxis()->FindBin(vtxZ);
+    binCent = fgVZEROCalib[0]->GetYaxis()->FindBin(centralitySPD);
+  }
+  
+  AliVVZERO* vzero = event->GetVZEROData();
+  Double_t average = 0.0;
   for(Int_t iChannel=0; iChannel<64; ++iChannel) {
     if(iChannel<32 && sideOption==0) continue;
     if(iChannel>=32 && sideOption==1) continue;
     phi=iChannel%8;
-    //mult = vzero->GetMultiplicity(iChannel);
-    mult = event->GetVZEROEqMultiplicity(iChannel);
+    mult = vzero->GetMultiplicity(iChannel);
+    if(fgVZEROCalib[iChannel])
+      average = fgVZEROCalib[iChannel]->GetBinContent(binVtx, binCent);
+    if(average>1.0e-10 && mult>0.5) 
+      mult /= average;
+    else
+      mult = 0.0;
     //  2nd harmonic
     qvec[0] += mult*(2.0*TMath::Power(kX[phi],2.0)-1);
     qvec[1] += mult*(2.0*kX[phi]*kY[phi]);
   }    // end loop over channels 
+  
+  // do recentering
+  if(fgVZERORecentering[0][0]) {
+//     printf("vzero: %p\n",fgVZERORecentering[0][0]);
+    Int_t binCentRecenter = -1; Int_t binVtxRecenter = -1;
+    binCentRecenter = fgVZERORecentering[0][0]->GetXaxis()->FindBin(centralitySPD);
+    binVtxRecenter = fgVZERORecentering[0][0]->GetYaxis()->FindBin(vtxZ);
+    if(sideOption==0) {  // side A
+      qvec[0] -= fgVZERORecentering[0][0]->GetBinContent(binCentRecenter, binVtxRecenter);
+      qvec[1] -= fgVZERORecentering[0][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+    }
+    if(sideOption==1) {  // side C
+      qvec[0] -= fgVZERORecentering[1][0]->GetBinContent(binCentRecenter, binVtxRecenter);
+      qvec[1] -= fgVZERORecentering[1][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+    }
+    if(sideOption==2) {  // side A and C together
+      qvec[0] -= fgVZERORecentering[0][0]->GetBinContent(binCentRecenter, binVtxRecenter);
+      qvec[0] -= fgVZERORecentering[1][0]->GetBinContent(binCentRecenter, binVtxRecenter);
+      qvec[1] -= fgVZERORecentering[0][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+      qvec[1] -= fgVZERORecentering[1][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+    }
+  }
+  
+  // calculate the reaction plane
   if(TMath::Abs(qvec[0])>1.0e-10)
     qvec[2] = TMath::ATan2(qvec[1],qvec[0])/2.0;
 }

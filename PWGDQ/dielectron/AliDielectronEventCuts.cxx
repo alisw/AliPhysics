@@ -199,15 +199,14 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
 
   switch(fVtxType){
   case kVtxTracks:
-    fkVertexAOD=ev->GetVertex(AliAODVertex::kPrimary);
-    break;
-  case kVtxTPC:   //  not stored 
     fkVertexAOD=0x0;
     break;
-  case kVtxSPD:
-  case kVtxTracksOrSPD:    fkVertexAOD=ev->GetPrimaryVertexSPD(); // == AliAODVertex::kMainSPD
+  case kVtxTPC:            fkVertexAOD=GetPrimaryVertexTPC(ev); 
     break;
-  case kVtxAny:    fkVertexAOD=ev->GetPrimaryVertex(); // == AliAODVertex::kUndef);
+  case kVtxSPD:
+  case kVtxTracksOrSPD:    fkVertexAOD=ev->GetPrimaryVertexSPD();
+    break;
+  case kVtxAny:            fkVertexAOD=ev->GetPrimaryVertex();
     break;
   }
 
@@ -216,21 +215,22 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   if (fMinVtxContributors>0){
     Int_t nCtrb = fkVertexAOD->GetNContributors();
     if (nCtrb<fMinVtxContributors){
-      if (fVtxType==kVtxTracksOrSPD){
-        fkVertexAOD=ev->GetVertex(AliAODVertex::kPrimary);
-        nCtrb = fkVertexAOD->GetNContributors();
-        if (nCtrb<fMinVtxContributors) return kFALSE;
-      } else {
-        return kFALSE;
-      }
+      // if (fVtxType==kVtxTracksOrSPD){
+      //   fkVertexAOD=ev->GetVertex(AliAODVertex::kPrimary);
+      //   nCtrb = fkVertexAOD->GetNContributors();
+      //   if (nCtrb<fMinVtxContributors) return kFALSE;
+      //      } else {
+      return kFALSE;
+      //}
     }
   }
-
+  
 
   if (fVtxZmin<fVtxZmax){
     Double_t zvtx=fkVertexAOD->GetZ();
     if (zvtx<fVtxZmin||zvtx>fVtxZmax) return kFALSE;
   }
+
   /*
   if (fRequireV0and){
     //    if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
