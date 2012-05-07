@@ -84,13 +84,14 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     return;
   }
   fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+  Int_t n=fESD->GetNumberOfTracks();
+  Process(fESD);
   if (!fESDfriend) {
     //Printf("ERROR: fESDfriend not available");
     return;
   }
   if (fESDfriend->TestSkipBit()) return;
-  Int_t n=fESD->GetNumberOfTracks();
-  Process(fESD);
+  //
   Int_t run = fESD->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
