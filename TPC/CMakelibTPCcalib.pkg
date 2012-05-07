@@ -27,6 +27,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
+#    AliTPCCorrectionFit.cxx 
     AliTPCcalibTracksCuts.cxx 
     AliTPCcalibTracks.cxx 
     AliTPCcalibTracksGain.cxx 
@@ -46,7 +47,7 @@ set ( SRCS
     AliTPCcalibTimeGain.cxx 
     AliTPCMisAligner.cxx 
     AliTPCcalibTrigger.cxx 
-    AliTPCcalibMaterial.cxx 
+#    AliTPCcalibMaterial.cxx 
     AliTPCPreprocessorOffline.cxx 
     AliTPCkalmanAlign.cxx 
     AliTPCcalibSummary.cxx 
