@@ -19,6 +19,7 @@ AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC, int TPCclust){
 
   //hfecuts->UnsetVertexRequirement();
   hfecuts->SetMaxImpactParam(3.,3.);
+  //hfecuts->SetPtRange(2.0,60.0);
   hfecuts->SetPtRange(2.0,60.0);
 
   hfecuts->SetVertexRange(10.);
@@ -140,7 +141,7 @@ AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC, int TPCclust){
   // change E/p cuts
   AliHFEpidEMCAL *emcpid = pid->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);
   emcpid->SetEoPMax(1.2);
-  emcpid->SetEoPMim(0.85);
+  emcpid->SetEoPMim(0.9);
 
   // QA
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
