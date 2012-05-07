@@ -152,6 +152,7 @@ using namespace std;
 #include "TCut.h"
 #include "THnSparse.h"
 #include "AliRieman.h"
+#include "TRandom.h"
 
 
 
@@ -168,6 +169,8 @@ AliTPCcalibTracks::AliTPCcalibTracks():
   fHisRMSZ(0),      // THnSparse - rms Z 
   fHisQmax(0),      // THnSparse - qmax 
   fHisQtot(0),      // THnSparse - qtot 
+  fPtDownscaleRatio(20),       // pt downscaling ratio (use subsample of data)
+  fQDownscaleRatio(20),        // Q downscaling ratio (use subsample of dta)
   fArrayQDY(0), 
   fArrayQDZ(0), 
   fArrayQRMSY(0),
@@ -200,6 +203,8 @@ AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
   fHisRMSZ(0),      // THnSparse - rms Z 
   fHisQmax(0),      // THnSparse - qmax 
   fHisQtot(0),      // THnSparse - qtot 
+  fPtDownscaleRatio(20),       // pt downscaling ratio (use subsample of data)
+  fQDownscaleRatio(20),        // Q downscaling ratio (use subsample of dta)
   fArrayQDY(0), 
   fArrayQDZ(0), 
   fArrayQRMSY(0),
@@ -284,6 +289,8 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
   fHisRMSZ(0),      // THnSparse - rms Z 
   fHisQmax(0),      // THnSparse - qmax 
   fHisQtot(0),      // THnSparse - qtot 
+  fPtDownscaleRatio(20),       // pt downscaling ratio (use subsample of data)
+  fQDownscaleRatio(20),        // Q downscaling ratio (use subsample of dta)
   fArrayQDY(0), 
   fArrayQDZ(0), 
   fArrayQRMSY(0),
@@ -467,6 +474,10 @@ void AliTPCcalibTracks::Process(AliTPCseed *track){
    // FillResolutionHistoLocal(track)
 
    // 
+  Double_t scalept= TMath::Min(1./TMath::Abs(track->GetParameter()[4]),2.)/0.5;
+  Bool_t   isSelected = (TMath::Exp(scalept)>fPtDownscaleRatio*gRandom->Rndm());
+  if (isSelected) return;
+
   if (GetDebugLevel() > 5) Info("Process","Starting to process the track...");
    Int_t accpetStatus = AcceptTrack(track);
    if (accpetStatus == 0) {
@@ -857,6 +868,9 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
     //
     // Fill THN histograms
     //
+    Double_t scaleQ= TMath::Min(Double_t(cluster0->GetMax()),200.)/50.;
+    Bool_t   isSelected = (TMath::Exp(scaleQ)>fQDownscaleRatio*gRandom->Rndm());
+
     Double_t xvar[9];
     xvar[1]=padSize;   // pad type 
     xvar[2]=cluster0->GetZ();  // 

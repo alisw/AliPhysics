@@ -109,6 +109,9 @@ public:
   THnSparse  *fHisQtot;      // THnSparse - qtot 
 
 private:
+  Double_t fPtDownscaleRatio;       // pt downscaling ratio (use subsample of data)
+  Double_t fQDownscaleRatio;        // Q downscaling ratio (use subsample of dta)
+
    TObjArray *fArrayQDY;    // q binned delta Y histograms
    TObjArray *fArrayQDZ;    // q binned delta Z histograms 
    TObjArray *fArrayQRMSY;  // q binned delta Y histograms
