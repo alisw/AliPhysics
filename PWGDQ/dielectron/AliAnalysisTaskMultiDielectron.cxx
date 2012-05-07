@@ -222,6 +222,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   AliDielectron *die=0;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0};
   Double_t valuesMC[AliDielectronVarManager::kNMaxValues]={0};
+  AliDielectronVarManager::SetEvent(InputEvent());
   AliDielectronVarManager::Fill(InputEvent(),values);
   AliDielectronVarManager::Fill(InputEvent(),valuesMC);
   Bool_t hasMC=AliDielectronMC::Instance()->HasMC();

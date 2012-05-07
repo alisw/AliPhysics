@@ -34,6 +34,8 @@ class AliCFContainer;
 
 class AliDielectronCFdraw : public TNamed {
 public:
+  enum ECollectType { kSE=0, kME, kMEOS, kROT, kAll };
+  
   AliDielectronCFdraw();
   AliDielectronCFdraw(const char* name, const char* title);
   AliDielectronCFdraw(AliCFContainer *cont);
@@ -64,7 +66,7 @@ public:
 
   TObjArray* CollectHistosProj(const Option_t* varnames, const char* slices);
   TObjArray* CollectHistosProj(const Int_t vars[3], const char* slices);
-  TObjArray* CollectMinvProj(Int_t slice);
+  TObjArray* CollectMinvProj(Int_t slice, ECollectType collect=kAll, TString var="M");
   TH1* Project(const Int_t vars[3], Int_t slice);
   TH1* Project(const Option_t* var, Int_t slice);
   

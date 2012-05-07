@@ -118,7 +118,9 @@ AliDielectron::AliDielectron() :
   fHasMC(kFALSE),
   fStoreRotatedPairs(kFALSE),
   fEstimatorFilename(""),
-  fTRDpidCorrectionFilename("")
+  fTRDpidCorrectionFilename(""),
+  fVZEROCalibrationFilename(""),
+  fVZERORecenteringFilename("")
 {
   //
   // Default constructor
@@ -154,7 +156,9 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fHasMC(kFALSE),
   fStoreRotatedPairs(kFALSE),
   fEstimatorFilename(""),
-  fTRDpidCorrectionFilename("")
+  fTRDpidCorrectionFilename(""),
+  fVZEROCalibrationFilename(""),
+  fVZERORecenteringFilename("")
 {
   //
   // Named constructor
@@ -198,7 +202,9 @@ void AliDielectron::Init()
   if (fDebugTree) fDebugTree->SetDielectron(this);
   if(fEstimatorFilename.Contains(".root")) AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
-
+  if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
+  if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
+  
   if (fMixing) fMixing->Init(this);
 } 
 
