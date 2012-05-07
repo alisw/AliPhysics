@@ -58,6 +58,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCentralityCorrelation(0),
   fITSClusterMap(0),
   fSelectCharge(0),
+  fTriggerSelectCharge(0),
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
@@ -169,6 +170,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCentralityCorrelation(0),
   fITSClusterMap(0),
   fSelectCharge(0),
+  fTriggerSelectCharge(0),
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
   fCutConversions(kFALSE),
@@ -494,6 +496,10 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	if (fOnlyOneEtaSide * triggerEta < 0)
 	  continue;
       }
+      
+      if (fTriggerSelectCharge != 0)
+	if (triggerParticle->Charge() * fTriggerSelectCharge < 0)
+	  continue;
 
       if (!mixed)
       {
@@ -840,6 +846,7 @@ void AliUEHistograms::Copy(TObject& c) const
       target.fTwoTrackDistancePt[i] = dynamic_cast<TH3F*> (fTwoTrackDistancePt[i]->Clone());
 
   target.fSelectCharge = fSelectCharge;
+  target.fTriggerSelectCharge = fTriggerSelectCharge;
   target.fTriggerRestrictEta = fTriggerRestrictEta;
   target.fEtaOrdering = fEtaOrdering;
   target.fCutConversions = fCutConversions;

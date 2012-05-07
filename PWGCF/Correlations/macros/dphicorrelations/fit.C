@@ -14,6 +14,8 @@
 #include "TPaveText.h"
 #include "TRandom.h"
 #include "TSystem.h"
+#include "TASImage.h"
+#include "TObjString.h"
 
 void AddPoint(TGraphErrors* graph, Float_t x, Float_t y, Float_t xe, Float_t ye)
 {
@@ -37,6 +39,10 @@ void DrawLatex(Float_t x, Float_t y, Int_t color, const char* text, Float_t text
 const Int_t NGraphs = 32;
 const Int_t NHists = 6*4; // pt index
 TGraphErrors*** graphs = 0;
+const char* kCorrFuncTitle = "1/N_{trig} dN_{assoc}/d#Delta#etad#Delta#varphi (1/rad.)";
+const char* kProjYieldTitlePhi = "1/N_{trig} dN_{assoc}/d#Delta#varphi (1/rad.)";
+const char* kProjYieldTitleEta = "1/N_{trig} dN_{assoc}/d#Delta#eta";
+const char* kProjYieldTitlePhiOrEta = "1/N_{trig} dN_{assoc}/d#Delta#varphi (1/rad.) / dN_{assoc}/d#Delta#eta";
 
 void CreateGraphStructure()
 {
@@ -178,6 +184,25 @@ Double_t DeltaPhiWidth2DFitFunction(Double_t *x, Double_t *par)
   return par[3+phiBin]+par[0]*TMath::Exp(-0.5*((x[0]/par[1])*(x[0]/par[1])+(x[1]/par[2])*(x[1]/par[2])));
 }*/
 
+void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2, Bool_t debug = kFALSE)
+{
+  // correct for aspect ratio of figure plus aspect ratio of pad (coordinates are NDC!)
+  x2 = x1 + (y2 - y1) * 0.891 * gPad->GetCanvas()->GetWindowHeight() / gPad->GetCanvas()->GetWindowWidth();
+  
+  TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo", x1, y1, x2, y2);
+  if (debug)
+    myPadLogo->SetFillColor(2); // color to first figure out where is the pad then comment !
+  myPadLogo->SetLeftMargin(0);
+  myPadLogo->SetTopMargin(0);
+  myPadLogo->SetRightMargin(0);
+  myPadLogo->SetBottomMargin(0);
+  myPadLogo->Draw();
+  myPadLogo->cd();
+//   TASImage *myAliceLogo = new TASImage("~/alice_logo_transparent.png");
+  TASImage *myAliceLogo = new TASImage((prel) ? "~/alice_logo_preliminary.eps" : "~/alice_logo_performance.eps");
+  myAliceLogo->Draw();
+}
+
 const Double_t k1OverSqrtTwoPi = 1.0 / TMath::Sqrt(TMath::TwoPi());
 
 Double_t DeltaPhiWidth2DFitFunction(Double_t *x, Double_t *par)
@@ -208,12 +233,12 @@ void SubtractEtaGap(TH2* hist, Float_t etaLimit, Float_t outerLimit, Bool_t scal
   Int_t etaBins = 0;
 
   TH1D* etaGap = hist->ProjectionX(histName + "_1", TMath::Max(1, hist->GetYaxis()->FindBin(-outerLimit + 0.01)), hist->GetYaxis()->FindBin(-etaLimit - 0.01));
-  Printf("%f", etaGap->GetEntries());
+//   Printf("%f", etaGap->GetEntries());
   if (etaGap->GetEntries() > 0)
     etaBins += hist->GetYaxis()->FindBin(-etaLimit - 0.01) - TMath::Max(1, hist->GetYaxis()->FindBin(-outerLimit + 0.01)) + 1;
 
   TH1D* tracksTmp = hist->ProjectionX(histName + "_2", hist->GetYaxis()->FindBin(etaLimit + 0.01), TMath::Min(hist->GetYaxis()->GetNbins(), hist->GetYaxis()->FindBin(outerLimit - 0.01)));
-  Printf("%f", tracksTmp->GetEntries());
+//   Printf("%f", tracksTmp->GetEntries());
   if (tracksTmp->GetEntries() > 0)
     etaBins += TMath::Min(hist->GetYaxis()->GetNbins(), hist->GetYaxis()->FindBin(outerLimit - 0.01)) - hist->GetYaxis()->FindBin(etaLimit + 0.01) + 1;
   
@@ -229,10 +254,23 @@ void SubtractEtaGap(TH2* hist, Float_t etaLimit, Float_t outerLimit, Bool_t scal
     centralRegion->Scale(1.0 / (hist->GetYaxis()->FindBin(etaLimit - 0.01) - hist->GetYaxis()->FindBin(-etaLimit + 0.01) + 1));
 
     TCanvas* c = new TCanvas("SubtractEtaGap", "SubtractEtaGap", 800, 800);
+    gPad->SetLeftMargin(0.13);
     centralRegion->SetStats(0);
     centralRegion->Draw();
-    etaGap->DrawCopy("SAME")->SetLineColor(2);
-    c->SaveAs("etagap_proj.eps");
+    centralRegion->GetYaxis()->SetTitle(kProjYieldTitlePhi);
+    centralRegion->GetYaxis()->SetTitleOffset(1.6);
+    TH1* copy = etaGap->DrawCopy("SAME");
+    copy->SetLineColor(2);
+    TLegend* legend = new TLegend(0.41, 0.73, 0.65, 0.85);
+    legend->SetFillColor(0);
+    legend->AddEntry(centralRegion, Form("|#eta| < %.1f", etaLimit), "L");
+    legend->AddEntry(copy, Form("%.1f < |#eta| < %.1f", etaLimit, outerLimit), "L");
+    legend->Draw();
+    
+    DrawALICELogo(kFALSE, 0.7, 0.65, 0.9, 0.85);
+    
+    c->SaveAs("note/etagap_proj.eps");
+    c->SaveAs("note/etagap_proj.png");
   }
   
 //   new TCanvas; etaGap->DrawCopy();
@@ -1145,6 +1183,21 @@ Bool_t SkipGraph(Int_t i)
   return (i == 1 || i == 7 || i == 9 || i == 13 || i == 17 || i == 18 || i == 19 || i == 20);
 }
 
+void FixGraph(TGraphErrors* graph, Float_t shift)
+{
+  if (graph->GetN() > 4 && graph->GetX()[4] == 75)
+  {
+    graph->GetX()[4] = 65;
+    graph->GetEX()[4] = 5;
+  }
+  
+  for (Int_t i=0; i<graph->GetN(); i++)
+  {
+    graph->GetX()[i] += shift;
+    // TODO asymm errors needed graph[i]->GetX()[i] += shift;
+  }
+}
+
 void PrepareGraphs(Int_t nHists, TGraphErrors** graph, TGraphErrors** systematicA, TGraphErrors** systematicB, TMultiGraph** multiGraph, TMultiGraph** multiGraphSyst, Int_t uncertaintyID)
 {
   Int_t colors[11] =  { 1, 2, 3, 4, 6, 7, 8, 9, 10, 11 };
@@ -1157,20 +1210,25 @@ void PrepareGraphs(Int_t nHists, TGraphErrors** graph, TGraphErrors** systematic
   if (*multiGraphSyst == 0)
     *multiGraphSyst = new TMultiGraph;
   
+  Float_t shift = -2;
   for (Int_t i=0; i<nHists; i++)
   {
     if (SkipGraph(i))
       continue;
     
     TGraphErrors* graphcentrality = (TGraphErrors*) graph[i]->Clone();
-    graphcentrality->Sort();
     if (graphcentrality->GetN() <= 0)
       continue;
+
+    shift += 0.5;
+    graphcentrality->Sort();
+    FixGraph(graphcentrality, shift);
 
     if (systematicA)
     {
       TGraphErrors* graphsystematicsA = (TGraphErrors*) systematicA[i]->Clone();
       graphsystematicsA->Sort();
+      FixGraph(graphsystematicsA, shift);
       
       if (graphcentrality->GetN() != graphsystematicsA->GetN())
       {
@@ -1183,6 +1241,7 @@ void PrepareGraphs(Int_t nHists, TGraphErrors** graph, TGraphErrors** systematic
       {
 	graphsystematicsB = (TGraphErrors*) systematicB[i]->Clone();
 	graphsystematicsB->Sort();
+	FixGraph(graphsystematicsB, shift);
       
 	if (graphcentrality->GetN() != graphsystematicsB->GetN())
 	{
@@ -1253,6 +1312,8 @@ void PrepareGraphs(Int_t nHists, TGraphErrors** graph, TGraphErrors** systematic
   }
 }
 
+Bool_t drawLogo = kFALSE;
+
 void DrawCentrality(const char* canvasName, Int_t nHists, TGraphErrors** graph, Float_t min = 0, Float_t max = 0, const char* yLabel = "", TGraphErrors** systematicA = 0, TGraphErrors** systematicB = 0, TGraphErrors** graph2 = 0, TGraphErrors** systematic2 = 0, TGraphErrors** graph3 = 0, Int_t uncertaintyID = -1)
 {
   Bool_t found = kTRUE;
@@ -1287,14 +1348,17 @@ void DrawCentrality(const char* canvasName, Int_t nHists, TGraphErrors** graph, 
     if (graph3)
     {
       PrepareGraphs(nHists, graph3, 0, 0, &multiGraph3, &multiGraphSyst, uncertaintyID);
-      for (Int_t i=0; i<multiGraph3->GetListOfGraphs()->GetEntries(); i++)
+      if (multiGraph3->GetListOfGraphs())
       {
-	((TGraph*)multiGraph3->GetListOfGraphs()->At(i))->SetLineWidth(2);
-	((TGraph*)multiGraph3->GetListOfGraphs()->At(i))->SetLineStyle(2);
+	for (Int_t i=0; i<multiGraph3->GetListOfGraphs()->GetEntries(); i++)
+	{
+	  ((TGraph*)multiGraph3->GetListOfGraphs()->At(i))->SetLineWidth(2);
+	  ((TGraph*)multiGraph3->GetListOfGraphs()->At(i))->SetLineStyle(2);
+	}
+	
+	while (multiGraph3->GetListOfGraphs()->GetEntries() > multiGraph->GetListOfGraphs()->GetEntries())
+	  multiGraph3->GetListOfGraphs()->RemoveAt(multiGraph->GetListOfGraphs()->GetEntries());
       }
-      
-      while (multiGraph3->GetListOfGraphs()->GetEntries() > multiGraph->GetListOfGraphs()->GetEntries())
-	multiGraph3->GetListOfGraphs()->RemoveAt(multiGraph->GetListOfGraphs()->GetEntries());
     }
       
     multiGraphSyst->Add(multiGraph2, "LX");
@@ -1316,8 +1380,12 @@ void DrawCentrality(const char* canvasName, Int_t nHists, TGraphErrors** graph, 
   
   gPad->SetGridx();
   gPad->SetGridy();
-//   c1->SaveAs(Form("results/%s.png", canvasName));
-//   c1->SaveAs(Form("%s.eps", canvasName));
+
+  if (drawLogo)
+    DrawALICELogo(kTRUE, 0.4, 0.75, 0.65, 0.95);
+  
+  c1->SaveAs(Form("results/%s.png", canvasName));
+  c1->SaveAs(Form("results/%s.eps", canvasName));
 }
 
 void CalculateRMSSigma(TGraphErrors*** graphsTmp = 0)
@@ -1360,7 +1428,7 @@ void CalculateRMSSigma(TGraphErrors*** graphsTmp = 0)
 // 
 // }
 
-void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fileNameWingRemoved = 0)
+void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fileNameWingRemoved = 0, Int_t offset = 0)
 {
   TGraphErrors*** graphsWingRemoved = 0;
   if (fileNameWingRemoved)
@@ -1371,7 +1439,52 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
   
   ReadGraphs(fileName);
   
-  Int_t nHists = NHists;
+  Int_t nHists = 13; //NHists;
+  
+  if (1)
+  {
+    DrawCentrality("norm", nHists, graphs[0], 0, 0.2, "N (a.u.)", (graphsWingRemoved) ? graphsWingRemoved[0] : 0);
+    
+//     return;
+    
+    DrawCentrality("width_phi1_centrality", nHists, graphs[1], 0, 0.8, "#sigma_{#phi, 1} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[1] : 0);
+//     return;
+    DrawCentrality("width_phi2_centrality", nHists, graphs[4], 0, 0.8, "#sigma_{#phi, 2} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[4] : 0);
+    DrawCentrality("width_eta1_centrality", nHists, graphs[2], 0, 0.8, "#sigma_{#eta, 1} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[2] : 0);
+    DrawCentrality("width_eta2_centrality", nHists, graphs[5], 0, 0.8, "#sigma_{#eta, 2} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[5] : 0);
+    
+    CalculateRMSSigma();
+    if (graphsWingRemoved)
+      CalculateRMSSigma(graphsWingRemoved);
+
+    DrawCentrality("phi_rms_centrality", nHists, graphs[1], 0, 0.8, "#sigma_{#phi} (fit) (rad.)", (graphsWingRemoved) ? graphsWingRemoved[1] : 0, 0, 0, 0, 0, 1);
+
+    DrawCentrality("eta_rms_centrality", nHists, graphs[2], 0, 0.8, "#sigma_{#eta} (fit)", (graphsWingRemoved) ? graphsWingRemoved[2] : 0, 0, 0, 0, 0, 1);
+
+    DrawCentrality("chi2_1", nHists, graphs[6], 0.5, 2.5, "#chi^{2}/ndf (full region)");
+    DrawCentrality("chi2_2", nHists, graphs[7], 0.5, 2.5, "#chi^{2}/ndf (peak region)");
+    
+    DrawCentrality("sigma_phi", nHists, graphs[8], 0.1, 0.5, "#sigma_{#phi} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[8] : 0, 0, 0, 0, 0, 1);
+    DrawCentrality("sigma_eta", nHists, graphs[9], 0.1, 0.5, "#sigma_{#eta}", (graphsWingRemoved) ? graphsWingRemoved[9] : 0, 0, 0, 0, 0, 1);
+  }
+  
+  DrawCentrality("kurtosisphi_centrality", 12, graphs[14], -2, 2, "Kurtosis #phi", (graphsWingRemoved) ? graphsWingRemoved[14] : 0, 0, 0, 0, 0, 2);
+  DrawCentrality("kurtosiseta_centrality", 12, graphs[15], -2, 2, "Kurtosis #eta", (graphsWingRemoved) ? graphsWingRemoved[15] : 0, 0, 0, 0, 0, 2);
+}
+
+/*
+void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fileNameWingRemoved = 0, Int_t offset = 0)
+{
+  TGraphErrors*** graphsWingRemoved = 0;
+  if (fileNameWingRemoved)
+  {
+    ReadGraphs(fileNameWingRemoved);
+    graphsWingRemoved = graphs;
+  }
+  
+  ReadGraphs(fileName);
+  
+  Int_t nHists = 13; //NHists;
   
   if (1)
   {
@@ -1390,20 +1503,22 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
       CalculateRMSSigma(graphsWingRemoved);
 
     DrawCentrality("phi_rms_centrality", nHists, graphs[1], 0, 0.8, "#sigma_{#phi} (fit) (rad.)", graphs[1+16], (graphsWingRemoved) ? graphsWingRemoved[1] : 0, 0, 0, 0, 1);
+
     DrawCentrality("eta_rms_centrality", nHists, graphs[2], 0, 0.8, "#sigma_{#eta} (fit)", graphs[2+16], (graphsWingRemoved) ? graphsWingRemoved[2] : 0, 0, 0, 0, 1);
 
     DrawCentrality("chi2_1", nHists, graphs[6], 0.5, 2.5, "#chi^{2}/ndf (full region)");
     DrawCentrality("chi2_2", nHists, graphs[7], 0.5, 2.5, "#chi^{2}/ndf (peak region)");
     
-    DrawCentrality("sigma_phi", nHists, graphs[8], 0, 0.8, "#sigma_{#phi} (rad.)", graphs[8+16], (graphsWingRemoved) ? graphsWingRemoved[8] : 0, 0, 0, 0, 1);
-    DrawCentrality("sigma_eta", nHists, graphs[9], 0, 0.8, "#sigma_{#eta}", graphs[9+16], (graphsWingRemoved) ? graphsWingRemoved[9] : 0, 0, 0, 0, 1);
+    DrawCentrality("sigma_phi", nHists, graphs[8], 0.1, 0.5, "#sigma_{#phi} (rad.)", graphs[8+16], (graphsWingRemoved) ? graphsWingRemoved[8] : 0, 0, 0, 0, 1);
+    DrawCentrality("sigma_eta", nHists, graphs[9], 0.1, 0.5, "#sigma_{#eta}", graphs[9+16], (graphsWingRemoved) ? graphsWingRemoved[9] : 0, 0, 0, 0, 1);
   }
   
-  DrawCentrality("kurtosisphi_centrality", 12, graphs[14], -2, 4, "Kurtosis #phi", graphs[14+16], (graphsWingRemoved) ? graphsWingRemoved[14] : 0, 0, 0, 0, 2);
-  DrawCentrality("kurtosiseta_centrality", 12, graphs[15], -2, 4, "Kurtosis #eta", graphs[15+16], (graphsWingRemoved) ? graphsWingRemoved[15] : 0, 0, 0, 0, 2);
+  DrawCentrality("kurtosisphi_centrality", 12, graphs[14], -2, 2, "Kurtosis #phi", graphs[14+16], (graphsWingRemoved) ? graphsWingRemoved[14] : 0, 0, 0, 0, 2);
+  DrawCentrality("kurtosiseta_centrality", 12, graphs[15], -2, 2, "Kurtosis #eta", graphs[15+16], (graphsWingRemoved) ? graphsWingRemoved[15] : 0, 0, 0, 0, 2);
 }
+*/
 
-void MCComparison(const char* fileNameData, const char* fileNameWingRemoved, const char* fileNameHijing, const char* fileNameAMPT)
+void MCComparison(const char* fileNameData, const char* fileNameWingRemoved, const char* fileNameHijing, const char* fileNameAMPT, Int_t offset = 0)
 {
   Int_t nHists = 12; //NHists;
 
@@ -1415,21 +1530,35 @@ void MCComparison(const char* fileNameData, const char* fileNameWingRemoved, con
   CalculateRMSSigma();
   TGraphErrors*** graphs1 = graphs;
 
-  ReadGraphs(fileNameAMPT);
-  CalculateRMSSigma();
+  CreateGraphStructure();
   TGraphErrors*** graphs2 = graphs;
+  if (fileNameAMPT)
+  {
+    ReadGraphs(fileNameAMPT);
+    CalculateRMSSigma();
+    graphs2 = graphs;
+  }
 
   ReadGraphs(fileNameData);
   CalculateRMSSigma();
   
-  DrawCentrality("phi_rms_centrality_mc", nHists, graphs[1], 0, 0.8, "#sigma_{#phi} (fit) (rad.)", graphs[1+16], graphsWingRemoved[1],  graphs1[1], 0, graphs2[1], 1);
+  DrawCentrality("phi_rms_centrality_mc", nHists, graphs[1+offset], 0, 0.8, "#sigma_{#phi} (fit) (rad.)", graphsWingRemoved[1+offset], 0, graphs1[1+offset], 0, graphs2[1+offset], 1);
+  DrawCentrality("eta_rms_centrality_mc", nHists, graphs[2+offset], 0, 0.8, "#sigma_{#eta} (fit)", graphsWingRemoved[2+offset], 0, graphs1[2+offset], 0, graphs2[2+offset], 1);
+  
+  DrawCentrality("sigma_phi_mc", nHists, graphs[8+offset], 0.1, 0.5, "#sigma_{#phi} (rad.)", graphsWingRemoved[8+offset], 0, graphs1[8+offset], 0, graphs2[8+offset], 1);
+  DrawCentrality("sigma_eta_mc", nHists, graphs[9+offset], 0.1, 0.5, "#sigma_{#eta}", graphsWingRemoved[9+offset], 0, graphs1[9+offset], 0, graphs2[9+offset], 1);
+
+  DrawCentrality("kurtosisphi_centrality_mc", nHists, graphs[14+offset], -2, 2, "Kurtosis #phi", graphsWingRemoved[14+offset], 0, graphs1[14+offset], 0, graphs2[14+offset], 2);
+  DrawCentrality("kurtosiseta_centrality_mc", nHists, graphs[15+offset], -2, 2, "Kurtosis #eta", graphsWingRemoved[15+offset], 0, graphs1[15+offset], 0, graphs2[15+offset], 2);
+
+/*  DrawCentrality("phi_rms_centrality_mc", nHists, graphs[1], 0, 0.8, "#sigma_{#phi} (fit) (rad.)", graphs[1+16], graphsWingRemoved[1],  graphs1[1], 0, graphs2[1], 1);
   DrawCentrality("eta_rms_centrality_mc", nHists, graphs[2], 0, 0.8, "#sigma_{#eta} (fit)", graphs[2+16], graphsWingRemoved[2], graphs1[2], 0, graphs2[2], 1);
 
-  DrawCentrality("sigma_phi", nHists, graphs[8], 0, 0.8, "#sigma_{#phi} (rad.)", graphs[8+16], graphsWingRemoved[8], graphs1[8], 0, graphs2[8], 1);
-  DrawCentrality("sigma_eta", nHists, graphs[9], 0, 0.8, "#sigma_{#eta}", graphs[9+16], graphsWingRemoved[9], graphs1[9], 0, graphs2[9], 1);
+  DrawCentrality("sigma_phi", nHists, graphs[8], 0.1, 0.5, "#sigma_{#phi} (rad.)", graphs[8+16], graphsWingRemoved[8], graphs1[8], 0, graphs2[8], 1);
+  DrawCentrality("sigma_eta", nHists, graphs[9], 0.1, 0.5, "#sigma_{#eta}", graphs[9+16], graphsWingRemoved[9], graphs1[9], 0, graphs2[9], 1);
 
-  DrawCentrality("kurtosisphi_centrality_mc", nHists, graphs[14], -2, 4, "Kurtosis #phi", graphs[14+16], graphsWingRemoved[14], graphs1[14], 0, graphs2[14], 2);
-  DrawCentrality("kurtosiseta_centrality_mc", nHists, graphs[15], -2, 4, "Kurtosis #eta", graphs[15+16], graphsWingRemoved[15], graphs1[15], 0, graphs2[15], 2);
+  DrawCentrality("kurtosisphi_centrality_mc", nHists, graphs[14], -2, 2, "Kurtosis #phi", graphs[14+16], graphsWingRemoved[14], graphs1[14], 0, graphs2[14], 2);
+  DrawCentrality("kurtosiseta_centrality_mc", nHists, graphs[15], -2, 2, "Kurtosis #eta", graphs[15+16], graphsWingRemoved[15], graphs1[15], 0, graphs2[15], 2);*/
 }
 
 void ShowWingEffect(const char* fileNameData, const char* fileNameWingRemoved)
@@ -1567,6 +1696,8 @@ Float_t** ExtractSystematics(const char* baseFile, const char* systFile)
 	break;
     }
     
+    c->SaveAs(Form("syst/%s_%d.eps", systFile, i));
+    
     new TCanvas;
     hist->Draw();
     hist->Sumw2();
@@ -1602,41 +1733,147 @@ Float_t** ExtractSystematics(const char* baseFile, const char* systFile)
   return results;
 }
 
+void GetProjections(TH2* hist, TH1** projPhi, TH1** projEta, Int_t k)
+{
+  Float_t projectLimit = 0.8;
+
+  *projPhi = hist->ProjectionX(Form("%s_proj1%d", hist->GetName(), k), hist->GetYaxis()->FindBin(-projectLimit+0.01), hist->GetYaxis()->FindBin(projectLimit-0.01));
+    
+  *projEta = hist->ProjectionY(Form("%s_proj2_%d", hist->GetName(), k), hist->GetXaxis()->FindBin(-projectLimit+0.01), hist->GetXaxis()->FindBin(projectLimit-0.01));
+}
+
+// uncorrected ones
+const char* systBaseFile = "dphi_corr_2d_120429.root";
+const char* systTrackCuts1 = "dphi_corr_120425_hybrid.root";
+const char* systTrackCuts2 = "dphi_corr_120430_raa.root";
+const char* systVertex = "dphi_corr_2d_120425_vertex.root";
+const char* systResonances = "dphi_corr_120502_resonances.root";
+const char* systTTR = "dphi_corr_2d_120430_widettr.root";
+
+// corrected ones
+// const char* systBaseFile = "dphi_corr_2d_120507.root";
+// const char* systTrackCuts1 = "dphi_corr_120507_hybrid.root";
+// const char* systTrackCuts2 = "dphi_corr_120430_raa.root";
+// const char* systVertex = "dphi_corr_2d_120425_vertex.root";
+// const char* systResonances = "dphi_corr_120502_resonances.root";
+// const char* systTTR = "dphi_corr_2d_120430_widettr.root";
+
+void ExtractSystematicsProjections()
+{
+  Int_t maxLeadingPt = 4;
+  Int_t maxAssocPt = 6;
+
+  TFile* file1 = TFile::Open(systBaseFile);
+  
+  const Int_t NEffects = 3;
+  const char* systFiles[5] = { systVertex, systResonances, systTTR, systTrackCuts1, systTrackCuts2 };
+  
+  Int_t count = 0;
+  for (Int_t i=1; i<maxLeadingPt-1; i++)
+  {
+    for (Int_t j=2; j<maxAssocPt-1; j++)
+    {
+      for (Int_t histId = 0; histId < NHists; histId++)
+      {
+	TH2* hist1 = (TH2*) file1->Get(Form("dphi_%d_%d_%d", i, j+1, histId));
+	if (!hist1)
+	  continue;
+	
+	if (hist1->GetEntries() < 1e4)
+	{
+	  Printf("Only %f entries. Skipping...", hist1->GetEntries());
+	  continue;
+	}
+	
+	TH1* proj1[2];
+	TH1* proj2[NEffects][2];
+	
+	SubtractEtaGap(hist1, kEtaLimit, kOuterLimit, kFALSE);
+	GetProjections(hist1, &proj1[0], &proj1[1], count++);
+
+	TCanvas* c = new TCanvas(Form("c_%d", count), Form("c_%d", count), 1000, 1000);
+	c->Divide(2, 2);
+	  
+	for (Int_t k=0; k<2; k++)
+	{
+	  c->cd(1+k*2);
+	  proj1[k]->SetStats(0);
+	  proj1[k]->GetXaxis()->SetRangeUser(-1.5, 1.5);
+	  proj1[k]->DrawCopy();
+	}
+	
+	for (Int_t n=0; n<NEffects; n++)
+	{
+// 	  Printf("%d %s", n, systFiles[n]);
+	  TFile* file2 = TFile::Open(systFiles[n]);
+	  hist1 = (TH2*) file2->Get(Form("dphi_%d_%d_%d", i, j+1, histId));
+	  if (!hist1)
+	    continue;
+	  SubtractEtaGap(hist1, kEtaLimit, kOuterLimit, kFALSE);
+	  GetProjections(hist1, &proj2[n][0], &proj2[n][1], count++);
+	  
+	  for (Int_t k=0; k<2; k++)
+	  {
+	    c->cd(1+k*2);
+	    proj2[n][k]->SetLineColor(n+2);
+	    proj2[n][k]->DrawCopy("SAME");
+	    
+	    c->cd(2+k*2);
+	    gPad->SetGridx();
+	    gPad->SetGridy();
+	    proj2[n][k]->SetStats(0);
+	    proj2[n][k]->Divide(proj1[k]);
+	    proj2[n][k]->GetXaxis()->SetRangeUser(-1.5, 1.5);
+	    proj2[n][k]->GetYaxis()->SetRangeUser(0.5, 1.5);
+	    proj2[n][k]->Fit("pol0", "0", "", -1, 1);
+	    proj2[n][k]->DrawCopy((n == 0) ? "" : "SAME");
+	  }
+	  
+	  delete file2;
+	}
+	
+	return;
+      }
+    }
+  }
+}
+
 void BuildSystematicFiles()
 {
   Printf("Hope you know what you are doing... 5 seconds to abort...");
   gSystem->Sleep(5000);
 
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_2d_120429.root", "syst_base.root");
+  AnalyzeDeltaPhiEtaGap2D(systBaseFile, "syst_base.root");
 
   kEtaLimit = 0.8;
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_2d_120429.root", "syst_eta08.root");
+  AnalyzeDeltaPhiEtaGap2D(systBaseFile, "syst_eta08.root");
   
   kEtaLimit = 1.2;
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_2d_120429.root", "syst_eta12.root");
+  AnalyzeDeltaPhiEtaGap2D(systBaseFile, "syst_eta12.root");
   kEtaLimit = 1.0;
   
   kOuterLimit = 1.39;
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_2d_120429.root", "syst_outer14.root");
+  AnalyzeDeltaPhiEtaGap2D(systBaseFile, "syst_outer14.root");
   kOuterLimit = 1.59;
   
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_120425_hybrid.root", "syst_hybrid.root");
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_120430_raa.root", "syst_raa.root");
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_2d_120425_vertex.root", "syst_vertex.root");
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_120502_resonances.root", "syst_resonances.root");
-  AnalyzeDeltaPhiEtaGap2D("dphi_corr_2d_120430_widettr.root", "syst_widettr.root");
+  AnalyzeDeltaPhiEtaGap2D(systTrackCuts1, "syst_hybrid.root");
+  AnalyzeDeltaPhiEtaGap2D(systTrackCuts2, "syst_raa.root");
+  AnalyzeDeltaPhiEtaGap2D(systVertex, "syst_vertex.root");
+  AnalyzeDeltaPhiEtaGap2D(systResonances, "syst_resonances.root");
+  AnalyzeDeltaPhiEtaGap2D(systTTR, "syst_widettr.root");
 }
 
 void ExtractSystematicsAll()
 {
   gROOT->SetBatch(kTRUE);
   
-  const Int_t NEffects = 8;
+  const Int_t NEffects = 9;
   
 //   const char* defaultFile = "graphs_120425.root";
 //   const char* systFiles[] = { "graphs_120425_eta08.root", "graphs_120425_eta12.root", "graphs_120425_outer14.root", "graphs_hybrid_120427.root", "graphs_120430_raa.root", "graphs_120425_vertex.root", "graphs_120502_resonances.root", "graphs_120502_widettr.root", "graphs_120425_wingremoved.root" };
   const char* defaultFile = "syst_base.root";
-  const char* systFiles[] = { "syst_eta08.root", "syst_eta12.root", "syst_outer14.root", "syst_hybrid.root", "syst_raa.root", "syst_vertex.root", "syst_resonances.root", "syst_widettr.root", "graphs_120425_wingremoved.root" };
+  const char* systFiles[] = { "syst_eta08.root", "syst_eta12.root", "syst_outer14.root", "syst_hybrid.root", "syst_raa.root", "syst_vertex.root", "syst_resonances.root", "syst_widettr.root", "graphs_120429_wingremoved.root" };
+  const char* effectIdString[] = { "1a", "1b", "1c", "2a", "2b", "3", "4", "5", "6" };
 
   Float_t** results[NEffects+3];
   
@@ -1747,6 +1984,19 @@ void ExtractSystematicsAll()
 	printf("& ");
     }
     Printf("\\\\");
+  }
+  
+  // generate LaTeX code
+  for (Int_t i=0; i<NEffects; i++)
+  {
+    for (Int_t j=0; j<NParameters; j++)
+    {
+      Printf("\\bfig[ht]");
+      Printf("  \\includegraphics[width=\\linewidth]{syst/%s_%d.eps}", systFiles[i], j);
+      Printf("  \\caption{Systematic effect (%s) - Parameter %s}", effectIdString[i], names[j]);
+      Printf("\\efig");
+    }
+    Printf("\\clearpage");
   }
 }
 
@@ -1894,10 +2144,12 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
 
   TFile::Open(histFileName);
   
-  TCanvas* c = new TCanvas(Form("ex_%d_%d_%d", i, j, histId), Form("ex_%d_%d_%d", i, j, histId), 1200, 400);
+  TCanvas* c = new TCanvas(Form("ex_%d_%d_%d", i, j, histId), Form("ex_%d_%d_%d", i, j, histId), 1800, 600);
   c->Divide(3, 1);
 
   TH2* hist = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j+1, histId));
+  hist->GetZaxis()->SetTitle(kCorrFuncTitle);
+  hist->GetZaxis()->SetTitleOffset(1.8);
   if (!hist)
     return;
   
@@ -1937,14 +2189,19 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
   proj->SetStats(0);
   proj->SetTitle("c) Projections");
   proj->GetXaxis()->SetRangeUser(-1.49, 1.49);
+  proj->GetYaxis()->SetTitle(kProjYieldTitlePhi);
+  proj->GetYaxis()->SetTitleOffset(1.2);
   proj->GetXaxis()->SetTitleOffset(1);
   proj->GetYaxis()->SetRangeUser(proj->GetMinimum(), proj->GetMaximum() * 1.4);
   TH1* copy = proj->DrawCopy();
   copy->GetXaxis()->SetTitle(Form("%s / %s", proj->GetXaxis()->GetTitle(), proj2->GetXaxis()->GetTitle()));
+  copy->GetYaxis()->SetTitle(kProjYieldTitlePhiOrEta);
   DrawLatex(0.3, 0.85, 1, Form("#Delta#phi projection in |#Delta#eta| < %.1f", projectLimit), 0.04);
     
   proj2->SetLineColor(2);
   proj2->SetStats(0);
+  proj2->GetYaxis()->SetTitle(kProjYieldTitleEta);
+  proj2->GetYaxis()->SetTitleOffset(1.2);
   proj2->GetXaxis()->SetTitleOffset(1);
   proj2->GetYaxis()->SetRangeUser(proj2->GetMinimum(), proj2->GetMaximum() * 1.6);
   proj2->DrawCopy("SAME");
@@ -1959,12 +2216,14 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
   c->SaveAs(Form("ex/%s.png", c->GetName()));
   c->SaveAs(Form("ex/%s.eps", c->GetName()));
 
-  if (0)
+  if (1)
   {
-    c = new TCanvas(Form("ex_%d_%d_%d_a", i, j, histId), Form("ex_%d_%d_%d_a", i, j, histId), 400, 400);
+    c = new TCanvas(Form("ex_%d_%d_%d_a", i, j, histId), Form("ex_%d_%d_%d_a", i, j, histId), 800, 800);
+    gPad->SetLeftMargin(0.15);
     hist->SetTitle("");
     hist->DrawCopy("SURF1");
     paveText->Draw();
+    DrawALICELogo(kTRUE, 0.2, 0.75, 0.4, 0.95);
     c->SaveAs(Form("ex/%s.png", c->GetName()));
     c->SaveAs(Form("ex/%s.eps", c->GetName()));
   }
@@ -1974,7 +2233,7 @@ void DrawExampleAll(const char* histFileName)
 {
   Int_t colors[] = { 1, 2, 4 };
   
-  Float_t exampleI[] = { 0, 1, 2 };
+  Float_t exampleI[] = { 0, 2, 3 };
   Float_t exampleJ[] = { 1, 2, 3 };
   
   TH1* projectionsPhi[9];
@@ -1989,7 +2248,7 @@ void DrawExampleAll(const char* histFileName)
       count++;
     }
     
-    TCanvas* c = new TCanvas(Form("centralities_%d", i), Form("centralities_%d", i), 800, 400);
+    TCanvas* c = new TCanvas(Form("centralities_%d", i), Form("centralities_%d", i), 1200, 600);
     c->Divide(2, 1);
     
     TLegend* legend = new TLegend(0.62, 0.7, 0.88, 0.88);
@@ -2011,6 +2270,8 @@ void DrawExampleAll(const char* histFileName)
       clone = projectionsEta[count-3+histId]->DrawCopy((histId > 0) ? "SAME" : "");
       clone->SetTitle(Form("%s-%s", objArray->At(0)->GetName(), objArray->At(1)->GetName()));
       clone->SetLineColor(colors[histId]);
+      
+      DrawALICELogo(kTRUE, 0.65, 0.65, 0.85, 0.85);
     }
     
     c->cd(1);
@@ -2021,7 +2282,7 @@ void DrawExampleAll(const char* histFileName)
   
   for (Int_t histId = 0; histId<3; histId++)
   {
-    TCanvas* c = new TCanvas(Form("pt_%d", histId), Form("pt_%d", histId), 800, 400);
+    TCanvas* c = new TCanvas(Form("pt_%d", histId), Form("pt_%d", histId), 1200, 600);
     c->Divide(2, 1);
     
     TLegend* legend = new TLegend(0.15, 0.7, 0.88, 0.88);
@@ -2045,6 +2306,8 @@ void DrawExampleAll(const char* histFileName)
       clone->SetTitle((objArray->GetEntries() == 4) ? Form("%s-%s", objArray->At(2)->GetName(), objArray->At(3)->GetName()) : objArray->At(2)->GetName());
       clone->SetLineColor(colors[i]);
 //       clone->GetYaxis()->SetRangeUser(clone->GetMinimum(), clone->GetMaximum() * 1.2);
+
+      DrawALICELogo(kTRUE, 0.65, 0.65, 0.85, 0.85);
     }
     
     c->cd(1);
@@ -2139,12 +2402,8 @@ void DrawFullCentralityDependence(const char* histFileName)
   c->SaveAs(Form("ex/%s.eps", c->GetName()));
 }
 
-void CompareExamples(const char* histFileName1, const char* histFileName2, Int_t i, Int_t j, Int_t histId, Bool_t twoTrack = kFALSE)
+void CompareExamples(const char* histFileName1, const char* histFileName2, Int_t i, Int_t j, Int_t histId)
 {
-  Float_t etaLimit = 1.0;
-  Float_t outerLimit = 1.79;
-  Float_t projectLimit = 0.8;
-
   Int_t exColors[] = { 1, 2, 4, 6 };
   
   TCanvas* c = new TCanvas(Form("c_%d", i), Form("c_%d", i), 1000, 600);
@@ -2171,55 +2430,53 @@ void CompareExamples(const char* histFileName1, const char* histFileName2, Int_t
 
 //     new TCanvas; hist->DrawCopy("COLZ"); return;
 
-    SubtractEtaGap(hist, etaLimit, outerLimit, kFALSE);
     
-  //     new TCanvas; hist->DrawCopy("COLZ");
+    SubtractEtaGap(hist, kEtaLimit, kOuterLimit, kFALSE);
+    
+    // new TCanvas; hist->DrawCopy("COLZ");
 
-    // remove bins potentially affected by two-track effects
-    if (twoTrack)
-    {
-      Printf("NOTE : Skipping bins at (0, 0)");
-      for (Int_t binx = hist->GetXaxis()->FindBin(-0.25); binx <= hist->GetXaxis()->FindBin(0.25); binx++)
-	for (Int_t biny = hist->GetYaxis()->FindBin(-0.01); biny <= hist->GetYaxis()->FindBin(0.01); biny++)
-	{
-	  hist->SetBinContent(binx, biny,  0);
-	  hist->SetBinError(binx, biny, 0);
-	}
-    }
-  
+    TH1* proj1 = 0;
+    TH1* proj2 = 0;
+    GetProjections(hist, &proj1, &proj2, k);
+    
     c->cd(1);
-    TH1* proj = hist->ProjectionX(Form("%s_proj1%d", hist->GetName(), k), hist->GetYaxis()->FindBin(-projectLimit+0.01), hist->GetYaxis()->FindBin(projectLimit-0.01));
-    proj->SetLineColor(exColors[k]);
-    proj->GetXaxis()->SetRangeUser(-1.49, 1.49);
-    proj->GetYaxis()->SetRangeUser(proj->GetMinimum() * 1.2, proj->GetMaximum() * 1.5);
-    proj->DrawCopy((k == 0) ? "" : "SAME");
+    proj1->SetLineColor(exColors[k]);
+    proj1->GetXaxis()->SetRangeUser(-1.49, 1.49);
+    proj1->GetYaxis()->SetRangeUser(proj1->GetMinimum() * 1.2, proj1->GetMaximum() * 1.5);
+    proj1->DrawCopy((k == 0) ? "" : "SAME");
   
     if (k == 1)
     {
       c2->cd(1);
-      proj->Divide(projFirst[0]);
-      proj->Draw();
-      proj->GetYaxis()->SetRangeUser(0.5, 1.5);
+      proj1->Divide(projFirst[0]);
+      proj1->Draw();
+      proj1->GetYaxis()->SetRangeUser(0.5, 1.5);
     }
     else
-      projFirst[0] = proj;
+      projFirst[0] = proj1;
 
     c->cd(2);
-    proj = hist->ProjectionY(Form("%s_proj2_%d", hist->GetName(), k), hist->GetXaxis()->FindBin(-projectLimit+0.01), hist->GetXaxis()->FindBin(projectLimit-0.01));
-    proj->SetLineColor(exColors[k]);
-    proj->GetXaxis()->SetRangeUser(-1.49, 1.49);
-    proj->GetYaxis()->SetRangeUser(proj->GetMinimum() * 1.2, proj->GetMaximum() * 2);
-    proj->DrawCopy((k == 0) ? "" : "SAME");
+    proj2->SetLineColor(exColors[k]);
+    proj2->GetXaxis()->SetRangeUser(-1.49, 1.49);
+    proj2->GetYaxis()->SetRangeUser(proj2->GetMinimum() * 1.2, proj2->GetMaximum() * 2);
+    
+    if (0 && k == 1)
+    {
+      Printf("Scaling!");
+      proj2->Scale(projFirst[1]->Integral(projFirst[1]->FindBin(-0.5), projFirst[1]->FindBin(0.5)) / proj2->Integral(projFirst[1]->FindBin(-0.5), projFirst[1]->FindBin(0.5)));
+    }
+    
+    proj2->DrawCopy((k == 0) ? "" : "SAME");
 
     if (k == 1)
     {
       c2->cd(2);
-      proj->Divide(projFirst[1]);
-      proj->Draw();
-      proj->GetYaxis()->SetRangeUser(0.5, 1.5);
+      proj2->Divide(projFirst[1]);
+      proj2->Draw();
+      proj2->GetYaxis()->SetRangeUser(0.5, 1.5);
     }
     else
-      projFirst[1] = proj;
+      projFirst[1] = proj2;
   }
 }
 
@@ -2338,7 +2595,7 @@ void TestTwoGaussian()
   }
 }
 
-void DrawEtaGapExample(const char* histFileName, Int_t i = 1, Int_t j = 2, Int_t histId = 0)
+void DrawEtaGapExample(const char* histFileName, Int_t i = 2, Int_t j = 2, Int_t histId = 0)
 {
   Float_t etaLimit = 1.0;
   Float_t outerLimit = 1.59;
@@ -2347,6 +2604,8 @@ void DrawEtaGapExample(const char* histFileName, Int_t i = 1, Int_t j = 2, Int_t
   TFile::Open(histFileName);
 
   TH2* hist = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, histId));
+  hist->GetZaxis()->SetTitle(kCorrFuncTitle);
+  hist->GetZaxis()->SetTitleOffset(1.8);
   if (!hist)
     return;
   
@@ -2354,20 +2613,27 @@ void DrawEtaGapExample(const char* histFileName, Int_t i = 1, Int_t j = 2, Int_t
   gPad->SetLeftMargin(0.15);
   TH2* clone = (TH2*) hist->DrawCopy("SURF1");
   clone->SetTitle("");
-  clone->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  clone->GetYaxis()->SetRangeUser(-1.59, 1.59);
   clone->GetXaxis()->SetTitleOffset(1.5);
   clone->GetYaxis()->SetTitleOffset(2);
   clone->SetStats(kFALSE);
-  c->SaveAs("etagap_raw.eps");
+//   clone->Rebin2D(2, 2);
+//   clone->Scale(0.25);
+  DrawALICELogo(kFALSE, 0.7, 0.7, 0.9, 0.9);
+  c->SaveAs("note/etagap_raw.eps");
+  c->SaveAs("note/etagap_raw.png");
   
   SubtractEtaGap(hist, etaLimit, outerLimit, kFALSE, kTRUE);
   
   c = new TCanvas("c3", "c3", 800, 800);
+  gPad->SetLeftMargin(0.13);
   TH1* proj = hist->ProjectionX(Form("%s_proj1%d", hist->GetName(), 0), hist->GetYaxis()->FindBin(-projectLimit+0.01), hist->GetYaxis()->FindBin(projectLimit-0.01));
   proj->GetXaxis()->SetRangeUser(-1.49, 1.49);
   proj->SetStats(0);
   proj->GetXaxis()->SetTitle(Form("%s / %s", proj->GetXaxis()->GetTitle(), "#Delta#eta"));
   proj->GetYaxis()->SetRangeUser(proj->GetMinimum() * 1.2, proj->GetMaximum() * 1.5);
+  proj->GetYaxis()->SetTitle(kProjYieldTitlePhiOrEta);
+  proj->GetYaxis()->SetTitleOffset(1.6);
   proj->Draw("");
 
   proj = hist->ProjectionY(Form("%s_proj2_%d", hist->GetName(), 0), hist->GetXaxis()->FindBin(-projectLimit+0.01), hist->GetXaxis()->FindBin(projectLimit-0.01));
@@ -2375,17 +2641,25 @@ void DrawEtaGapExample(const char* histFileName, Int_t i = 1, Int_t j = 2, Int_t
   proj->GetYaxis()->SetRangeUser(proj->GetMinimum() * 1.2, proj->GetMaximum() * 2);
   proj->SetLineColor(2);
   proj->Draw("SAME");
-  c->SaveAs("etagap_subtracted_proj.eps");
+  DrawLatex(0.2, 0.85, 1, Form("#Delta#phi projection in |#Delta#eta| < %.1f", projectLimit), 0.04);
+  DrawLatex(0.2, 0.80, 2, Form("#Delta#eta projection in |#Delta#phi| < %.1f", projectLimit), 0.04);
+  DrawALICELogo(kTRUE, 0.7, 0.65, 0.9, 0.85);
+  c->SaveAs("note/etagap_subtracted_proj.eps");
+  c->SaveAs("note/etagap_subtracted_proj.eps");
 
   c = new TCanvas("c2", "c2", 800, 800);
   gPad->SetLeftMargin(0.15);
   hist->SetTitle("");
-  hist->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist->GetYaxis()->SetRangeUser(-1.59, 1.59);
   hist->GetXaxis()->SetTitleOffset(1.5);
   hist->GetYaxis()->SetTitleOffset(2);
   hist->SetStats(kFALSE);
+//   hist->Rebin2D(2, 2);
+//   hist->Scale(0.25);
   hist->Draw("SURF1");
-  c->SaveAs("etagap_subtracted.eps");
+  DrawALICELogo(kFALSE, 0.7, 0.7, 0.9, 0.9);
+  c->SaveAs("note/etagap_subtracted.eps");
+  c->SaveAs("note/etagap_subtracted.png");
 }
 
 void WingToy(Float_t centralityBegin, Float_t centralityEnd, Float_t trigBegin, Float_t trigEnd, Float_t assocBegin, Float_t assocEnd)

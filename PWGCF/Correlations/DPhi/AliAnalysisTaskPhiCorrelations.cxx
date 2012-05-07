@@ -114,6 +114,7 @@ fFilterBit(0xFF),
 fSelectBit(0),
 fUseChargeHadrons(kFALSE),
 fSelectCharge(0),
+fTriggerSelectCharge(0),
 fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
 fCutConversions(kFALSE),
@@ -216,6 +217,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetSelectCharge(fSelectCharge);
   fHistosMixed->SetSelectCharge(fSelectCharge);
   
+  fHistos->SetSelectCharge(fTriggerSelectCharge);
+  fHistosMixed->SetSelectCharge(fTriggerSelectCharge);
+
   fHistos->SetTriggerRestrictEta(fTriggerRestrictEta);
   fHistosMixed->SetTriggerRestrictEta(fTriggerRestrictEta);
   
@@ -312,6 +316,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
+  settingsTree->Branch("fTriggerSelectCharge", &fTriggerSelectCharge,"TriggerSelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
   settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
