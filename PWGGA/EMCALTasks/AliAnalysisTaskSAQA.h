@@ -23,27 +23,34 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   void                        UserExec(Option_t *option);
   void                        Terminate(Option_t *option);
 
-  void                        SetClusName(const char *n)                    { fCaloName      = n          ; }
-  void                        SetTracksName(const char *n)                  { fTracksName    = n          ; }
-  void                        SetTrgClusName(const char *n)                 { fTrgClusName   = n          ; }
+  void                        SetClusName(const char *n)                           { fCaloName      = n          ; }
+  void                        SetTracksName(const char *n)                         { fTracksName    = n          ; }
+  void                        SetTrgClusName(const char *n)                        { fTrgClusName   = n          ; }
+  void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinPt = min; fMaxPt = max; }
+  void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut = cut        ; }
 
  protected:
 
-  AliVTrack                  *GetTrack(const Int_t i)          const;
-  Int_t                       GetNumberOfTracks()              const;
-  AliVCluster                *GetCaloCluster(const Int_t i)    const;
-  Int_t                       GetNumberOfCaloClusters()        const;
-  AliVCluster                *GetTrgCluster(const Int_t i)     const;
-  Int_t                       GetNumberOfTrgClusters()         const;
-  void                        FillHistograms()                      ;
-  void                        RetrieveEventObjects()                ;
-  Bool_t                      AcceptTrack(AliVTrack* /*track*/)     ;
+  AliVTrack                  *GetTrack(const Int_t i)                      const;
+  Int_t                       GetNumberOfTracks()                          const;
+  AliVCluster                *GetCaloCluster(const Int_t i)                const;
+  Int_t                       GetNumberOfCaloClusters()                    const;
+  AliVCluster                *GetTrgCluster(const Int_t i)                 const;
+  Int_t                       GetNumberOfTrgClusters()                     const;
+  Bool_t                      AcceptTrack(AliVTrack* /*track*/)            const;
+  void                        FillHistograms()                                  ;
+  void                        RetrieveEventObjects()                            ;
+  void                        DoCellLoop(Float_t &sum, Float_t &sum_cut)        ;
+  Float_t                     DoTriggerPrimitives()                             ;
+  Float_t                     DoTriggerClusLoop()                               ;
+  Float_t                     DoTrackLoop()                                     ;
+  Float_t                     DoClusterLoop()                                   ;
 
   TList                      *fOutput;                 // Output list
-
-  TString                     fTracksName;             // name of track collection
-  TString                     fCaloName;               // name of calo cluster collection
-  TString                     fTrgClusName;            // name of trg clus name
+  Float_t                     fCellEnergyCut;          // Energy cell cut
+  TString                     fTracksName;             // Name of track collection
+  TString                     fCaloName;               // Name of calo cluster collection
+  TString                     fTrgClusName;            // Name of trg clus name
   TClonesArray               *fTracks;                 //!Tracks
   TClonesArray               *fCaloClusters;           //!Clusters
   TClonesArray               *fJets;                   //!Jets
@@ -52,23 +59,25 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   TH1F                       *fHistCentrality;         // Event centrality distribution
   TH2F                       *fHistTracksCent;         // Number of tracks vs. centrality
   TH2F                       *fHistClusCent;           // Number of clusters vs. centrality
+  TH2F                       *fHistMaxL1Cent;          // Maximum L1 time sum amplitude vs. centrality
   TH1F                       *fHistTracksPt;           // Pt spectrum of tracks
   TH1F                       *fHistClustersEnergy;     // Energy spectrum of clusters
-  TH2F                       *fHistEPcorrelation;      // Energy-momentum correlation
+  TH2F                       *fHistEoverP;             // E/P vs. E
   TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks
   TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
   TH1F                       *fHistMaxTrgCluster;      // Energy distribution of max trigger clusters
+  TH2F                       *fHistMaxTrgClusVSMaxL1;  // Max trigger cluster vs. max L1 time sum amplitude
   TH1F                       *fHistClusPhiCorr;        // Clusters phi correlations
   TH1F                       *fHistTracksPhiCorr;      // Tracks phi correlations
+  TH2F                       *fHistChVSneCells;        // Charged vs. neutral (cells) energy
+  TH2F                       *fHistChVSneClus;         // Charged vs. neutral (clusters) energy
+  TH2F                       *fHistChVSneCorrCells;    // Charged vs. neutral (corrected cells) energy
   TH1F                       *fHistTrackPhi[5];        // Phi distribution of hybrid tracks
   TH1F                       *fHistTrackEta[5];        // Eta distribution of hybrid tracks
 
-  Int_t                       Ptbins;                  // No. of pt bins
-  Float_t                     Ptlow;                   // Min pt
-  Float_t                     Ptup;                    // Max pt
-  Int_t                       Ebins;                   // No. of e bins
-  Float_t                     Elow;                    // Min e
-  Float_t                     Eup;                     // Max e
+  Int_t                       fNbins;                  // No. of pt bins
+  Float_t                     fMinPt;                  // Min pt
+  Float_t                     fMaxPt;                  // Max pt
 
  private:
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented

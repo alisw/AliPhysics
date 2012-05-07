@@ -23,6 +23,7 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
   Int_t n, s;
   Float_t minE, minT, maxT;
   Bool_t slidingTRU;
+  Bool_t cutL0time;
   
   name += trigType;
   nameout += trigType;
@@ -31,16 +32,19 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
     n = 4;
     s = 2;
     slidingTRU = 0;
+    cutL0time = kTRUE;
   } else if (!strcmp(trigType, "L1GAMMA")) {
     n = 4;
     s = 2;
     slidingTRU = 1;
-  } else if (!strcmp(trigType, "L1GJET")) {
-    n = 40;
+    cutL0time = kFALSE;
+  } else if (!strcmp(trigType, "L1JET")) {
+    n = 32;
     s = 4;
     slidingTRU = 1;
+    cutL0time = kFALSE;
   } else {
-    ::AliError("trigType not valid, returning...");
+    printf("trigType not valid, returning...");
     return 0;
   }
   
@@ -48,7 +52,7 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
     name += "FOR";
     nameout += "FOR";
     minE = 3;
-    minT = 0;
+    minT = -20;
     maxT = 20;
   } else {
     name += "FEE";
@@ -77,6 +81,7 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
   task->SetLoadPed(kFALSE);
   task->SetLoadCalib(kFALSE);
   task->SetRecalibrateCellsOnly(kFALSE);
+  task->SetCutL0Times(cutL0time);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

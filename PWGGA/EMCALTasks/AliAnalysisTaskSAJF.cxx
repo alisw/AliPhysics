@@ -11,6 +11,7 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TParticle.h>
+#include <TRandom3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -28,6 +29,11 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskSE("AliAnalysisTaskSAJF"),
   fAnaType(kEMCAL),
+  fMinEta(-1),
+  fMaxEta(1),
+  fMinPhi(0),
+  fMaxPhi(2 * TMath::Pi()),
+  fJetRadius(0.4),
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -45,6 +51,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fHistJetPhiEta(0),
   fHistRhoPartVSleadJetPt(0),
   fHistMedKtVSRhoPart(0),
+  fHistRCPtVSRhoPart(0),
   fNbins(500),
   fMinPt(0),
   fMaxPt(250)
@@ -67,6 +74,10 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistBkgTracksMeanRho[i] = 0;
     fHistBkgLJetPhiCorr[i] = 0;
     fHistMedianPtKtJet[i] = 0;
+    fHistDeltaPtRC[i] = 0;
+    fHistDeltaPtRCExLJ[i] = 0;
+    fHistRCPt[i] = 0;
+    fHistRCPtExLJ[i] = 0;
   }
 
   // Output slot #1 writes into a TH1 container
@@ -77,6 +88,11 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskSE(name),
   fAnaType(kEMCAL),
+  fMinEta(-1),
+  fMaxEta(1),
+  fMinPhi(0),
+  fMaxPhi(2 * TMath::Pi()),
+  fJetRadius(0.4),
   fOutput(0),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -94,6 +110,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fHistJetPhiEta(0),
   fHistRhoPartVSleadJetPt(0),
   fHistMedKtVSRhoPart(0),
+  fHistRCPtVSRhoPart(0),
   fNbins(500),
   fMinPt(0),
   fMaxPt(250)
@@ -116,6 +133,10 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistBkgTracksMeanRho[i] = 0;
     fHistBkgLJetPhiCorr[i] = 0;
     fHistMedianPtKtJet[i] = 0;
+    fHistDeltaPtRC[i] = 0;
+    fHistDeltaPtRCExLJ[i] = 0;
+    fHistRCPt[i] = 0;
+    fHistRCPtExLJ[i] = 0;
   }
 
   // Output slot #1 writes into a TH1 container
@@ -155,6 +176,11 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fHistMedKtVSRhoPart->GetXaxis()->SetTitle("median kt P_{T} [GeV]");
   fHistMedKtVSRhoPart->GetYaxis()->SetTitle("#rho [GeV]");
   fOutput->Add(fHistMedKtVSRhoPart);
+  
+  fHistRCPtVSRhoPart = new TH2F("fHistRCPtVSRhoPart","fHistRCPtVSRhoPart", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistRCPtVSRhoPart->GetXaxis()->SetTitle("rigid cone P_{T} [GeV]");
+  fHistRCPtVSRhoPart->GetYaxis()->SetTitle("#rho [GeV]");
+  fOutput->Add(fHistRCPtVSRhoPart);
 
   TString histname;
 
@@ -256,6 +282,34 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistMedianPtKtJet[i]->GetXaxis()->SetTitle("P_{T} [GeV/c]");
     fHistMedianPtKtJet[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistMedianPtKtJet[i]);
+
+    histname = "fHistDeltaPtRC_";
+    histname += i;
+    fHistDeltaPtRC[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinPt - fMaxPt / 2, fMaxPt / 2);
+    fHistDeltaPtRC[i]->GetXaxis()->SetTitle("#deltaP_{T} [GeV/c]");
+    fHistDeltaPtRC[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaPtRC[i]);
+
+    histname = "fHistDeltaPtRCExLJ_";
+    histname += i;
+    fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinPt - fMaxPt / 2, fMaxPt / 2);
+    fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#deltaP_{T} [GeV/c]");
+    fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaPtRCExLJ[i]);
+
+    histname = "fHistRCPt_";
+    histname += i;
+    fHistRCPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinPt, fMaxPt);
+    fHistRCPt[i]->GetXaxis()->SetTitle("rigid cone P_{T} [GeV/c]");
+    fHistRCPt[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistRCPt[i]);
+
+    histname = "fHistRCPtExLJ_";
+    histname += i;
+    fHistRCPtExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinPt, fMaxPt);
+    fHistRCPtExLJ[i]->GetXaxis()->SetTitle("rigid cone P_{T} [GeV/c]");
+    fHistRCPtExLJ[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistRCPtExLJ[i]);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -301,7 +355,7 @@ void AliAnalysisTaskSAJF::RetrieveEventObjects()
     else if (cent >= 30 && cent <   50) fCentBin = 2;
     else if (cent >= 50 && cent <= 100) fCentBin = 3; 
     else {
-      AliWarning(Form("Negative centrality: %d. Assuming 99", cent));
+      AliWarning(Form("Negative centrality: %f. Assuming 99", cent));
       fCentBin = 3;
     }
   }
@@ -404,6 +458,8 @@ Int_t AliAnalysisTaskSAJF::GetNumberOfTrgClusters() const
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::FillHistograms()
 {
+  Float_t A = fJetRadius * fJetRadius * TMath::Pi();
+
   Float_t cent = 100;
 
   if (fCent)
@@ -447,9 +503,23 @@ void AliAnalysisTaskSAJF::FillHistograms()
   
   fHistBkgClusMeanRho[fCentBin]->Fill(rhoClus);
 
-  fHistRhoPartVSleadJetPt->Fill(rhoClus + rhoTracks, jet->Pt());
+  fHistRhoPartVSleadJetPt->Fill(A * (rhoClus + rhoTracks), jet->Pt());
 
   fHistMedKtVSRhoPart->Fill(rhoKt, rhoClus + rhoTracks);
+  
+  Int_t nRCs = GetArea() / A - 1;
+
+  for (Int_t i = 0; i < nRCs; i++) {
+    Float_t RCpt = GetRigidConePt(0);
+    Float_t RCptExLJ = GetRigidConePt(jet);
+    
+    fHistDeltaPtRC[fCentBin]->Fill(RCpt - A * rhoKt);
+    fHistDeltaPtRCExLJ[fCentBin]->Fill(RCptExLJ - A * rhoKt);
+
+    fHistRCPt[fCentBin]->Fill(RCpt / A);
+    fHistRCPtExLJ[fCentBin]->Fill(RCptExLJ / A);
+    fHistRCPtVSRhoPart->Fill(RCptExLJ / A, rhoClus + rhoTracks);
+  }
 }
 
 //________________________________________________________________________
@@ -468,7 +538,7 @@ void AliAnalysisTaskSAJF::DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)
     AliEmcalJet* jet = GetJet(ij);
 
     if (!jet) {
-      printf("ERROR: Could not receive jet %d\n", ij);
+      AliError(Form("Could not receive jet %d", ij));
       continue;
     }  
     
@@ -483,14 +553,13 @@ void AliAnalysisTaskSAJF::DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)
     fHistJetsNEF[fCentBin]->Fill(jet->NEF());
 
     for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
-      Int_t trackid = jet->TrackAt(it);
-      AliVTrack *track = GetTrack(trackid);
+      AliVTrack *track = jet->TrackAt(it, fTracks);
       if (track)
 	fHistJetsZ[fCentBin]->Fill(track->Pt() / jet->Pt());
     }
+
     for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
-      Int_t clusterid = jet->ClusterAt(ic);
-      AliVCluster *cluster = GetCaloCluster(clusterid);
+      AliVCluster *cluster = jet->ClusterAt(ic, fCaloClusters);
 
       if (cluster) {
 	TLorentzVector nPart;
@@ -529,7 +598,7 @@ Float_t AliAnalysisTaskSAJF::DoKtJetLoop()
       AliEmcalJet* jet = GetKtJet(ij);
       
       if (!jet) {
-	printf("ERROR: Could not receive jet %d\n", ij);
+	AliError(Form("Could not receive jet %d", ij));
 	continue;
       } 
       
@@ -637,7 +706,7 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
   for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
     AliVCluster* cluster = GetCaloCluster(iClusters);
     if (!cluster) {
-      printf("ERROR: Could not receive cluster %d\n", iClusters);
+      AliError(Form("Could not receive cluster %d", iClusters));
       continue;
     }  
     
@@ -665,7 +734,7 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
       for(Int_t ic2 = iClusters+1; ic2 < nclusters; ic2++) {
 	AliVCluster* cluster2 = GetCaloCluster(ic2);
 	if (!cluster2) {
-	  printf("ERROR: Could not receive cluster %d\n", ic2);
+	  AliError(Form("Could not receive cluster %d", ic2));
 	  continue;
 	}  
 	
@@ -691,21 +760,111 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAJF::GetArea() const
+void AliAnalysisTaskSAJF::Init()
 {
   if (fAnaType == kFullAcceptance) {
-    return 2 * TMath::Pi() * 2;
+    fMinEta = -1;
+    fMaxEta = 1;
+    fMinPhi = 0;
+    fMaxPhi = 2 * TMath::Pi();
   }
-  else if (fAnaType == kEMCAL) {
-    return 1.4 * 100 * TMath::DegToRad();
-  }
-  else if (fAnaType == kEMCAL) {
-    return 1.4 * 100 * TMath::DegToRad();
+  else if (fAnaType == kEMCAL || fAnaType == kEMCALFiducial) {
+    fMinEta = -0.7;
+    fMaxEta = 0.7;
+    fMinPhi = 80 * TMath::DegToRad();
+    fMaxPhi = 180 * TMath::DegToRad();
   }
   else {
     AliWarning("Analysis type not recognized! Assuming kFullAcceptance...");
-    return 2 * TMath::Pi() * 2;
+    fMinEta = -1;
+    fMaxEta = 1;
+    fMinPhi = 0;
+    fMaxPhi = 2 * TMath::Pi();
   }
+}
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskSAJF::GetRigidConePt(AliEmcalJet *jet, Float_t minD)
+{
+  static TRandom3 random;
+
+  Double_t vertex[3] = {0, 0, 0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
+  Float_t eta = 0;
+  Float_t phi = 0;
+
+  Float_t LJeta = 999;
+  Float_t LJphi = 999;
+
+  if (jet) {
+    LJeta = jet->Eta();
+    LJphi = jet->Phi();
+  }
+
+  Float_t dLJ = 0;
+  do {
+    eta = random.Rndm() * (fMaxEta - fMinEta) + fMinEta;
+    phi = random.Rndm() * (fMaxPhi - fMinPhi) + fMinPhi;
+    dLJ = TMath::Sqrt((LJeta - eta) * (LJeta - eta) + (LJphi - phi) * (LJphi - phi));
+  } while (dLJ < minD && !AcceptJet(eta, phi));
+  
+  Float_t pt = 0;
+
+  Int_t nclusters =  GetNumberOfCaloClusters();
+  for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
+    AliVCluster* cluster = GetCaloCluster(iClusters);
+    if (!cluster) {
+      AliError(Form("Could not receive cluster %d", iClusters));
+      continue;
+    }  
+    
+    if (!(cluster->IsEMCAL())) continue;
+    
+    TLorentzVector nPart;
+    cluster->GetMomentum(nPart, vertex);
+
+    Float_t pos[3];
+    cluster->GetPosition(pos);
+    TVector3 clusVec(pos);
+
+    Float_t d = TMath::Sqrt((clusVec.Eta() - eta) * (clusVec.Eta() - eta) + (clusVec.Phi() - phi) * (clusVec.Phi() - phi));
+
+    if (d <= fJetRadius)
+      pt += nPart.Pt();
+  }
+
+  Int_t ntracks = GetNumberOfTracks();
+  for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
+    AliVTrack* track = GetTrack(iTracks);         
+    if(!track) {
+      AliError(Form("ERROR: Could not retrieve track %d",iTracks)); 
+      continue; 
+    }
+    
+    if (!AcceptTrack(track)) continue;
+
+    Float_t tracketa = track->Eta();
+    Float_t trackphi = track->Phi();
+    
+    if (TMath::Abs(trackphi - phi) > TMath::Abs(trackphi - phi + 2 * TMath::Pi()))
+      trackphi += 2 * TMath::Pi();
+    if (TMath::Abs(trackphi - phi) > TMath::Abs(trackphi - phi - 2 * TMath::Pi()))
+      trackphi -= 2 * TMath::Pi();
+
+    Float_t d = TMath::Sqrt((tracketa - eta) * (tracketa - eta) + (trackphi - phi) * (trackphi - phi));
+
+    if (d <= fJetRadius)
+      pt += track->Pt();
+  }
+
+  return pt;
+}
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskSAJF::GetArea() const
+{
+  return (fMaxEta - fMinEta) * (fMaxPhi - fMinPhi);
 }
 
 //________________________________________________________________________
@@ -735,16 +894,16 @@ Bool_t AliAnalysisTaskSAJF::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t s
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskSAJF::AcceptJet(AliEmcalJet* jet) const
+Bool_t AliAnalysisTaskSAJF::AcceptJet(Float_t eta, Float_t phi) const
 {
   if (fAnaType == kFullAcceptance) {
     return kTRUE;
   }
   else if (fAnaType == kEMCAL) {
-    return (Bool_t)(TMath::Abs(jet->Eta()) < 0.7 && jet->Phi() * TMath::RadToDeg() > 80 && jet->Phi() * TMath::RadToDeg() < 180);
+    return (Bool_t)(eta > fMinEta && eta < fMaxEta && phi > fMinPhi && phi < fMaxPhi);
   }
   else if (fAnaType == kEMCALFiducial) {
-    return (Bool_t)(TMath::Abs(jet->Eta()) < 0.7 && jet->Phi() * TMath::RadToDeg() > 80 && jet->Phi() * TMath::RadToDeg() < 180);
+    return (Bool_t)(eta > fMinEta + fJetRadius && eta < fMaxEta - fJetRadius && phi > fMinPhi + fJetRadius && phi < fMaxPhi - fJetRadius);
   }
   else {
     AliWarning("Analysis type not recognized! Assuming kFullAcceptance...");
@@ -753,16 +912,19 @@ Bool_t AliAnalysisTaskSAJF::AcceptJet(AliEmcalJet* jet) const
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskSAJF::AcceptJet(AliEmcalJet* jet) const
+{
+  return AcceptJet(jet->Eta(), jet->Phi());
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskSAJF::AcceptTrack(AliVTrack* track) const
 {
   if (fAnaType == kFullAcceptance) {
     return kTRUE;
   }
-  else if (fAnaType == kEMCAL) {
-    return (Bool_t)(TMath::Abs(track->Eta()) < 0.7 && track->Phi() * TMath::RadToDeg() > 80 && track->Phi() * TMath::RadToDeg() < 180);
-  }
-  else if (fAnaType == kEMCALFiducial) {
-    return (Bool_t)(TMath::Abs(track->Eta()) < 0.7 && track->Phi() * TMath::RadToDeg() > 80 && track->Phi() * TMath::RadToDeg() < 180);
+  else if (fAnaType == kEMCAL || fAnaType == kEMCALFiducial) {
+    return (Bool_t)(track->Eta() > fMinEta && track->Eta() < fMaxEta && track->Phi() > fMinPhi && track->Phi() < fMaxPhi);
   }
   else {
     AliWarning("Analysis type not recognized! Assuming kFullAcceptance...");
@@ -773,8 +935,7 @@ Bool_t AliAnalysisTaskSAJF::AcceptTrack(AliVTrack* track) const
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::UserExec(Option_t *) 
 {
-  // Main loop, called for each event.
-  // Add jets to event if not yet there
+  Init();
 
   RetrieveEventObjects();
 

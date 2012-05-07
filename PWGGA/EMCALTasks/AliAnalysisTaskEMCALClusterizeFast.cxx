@@ -382,10 +382,6 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
 {
   // Cluster energy, global position, cells and their amplitude fractions are restored.
 
-  Bool_t esdobjects = 0;
-  if (strcmp(clus->GetClass()->GetName(),"AliESDCaloCluster")==0)
-    esdobjects = 1;
-
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(fGeomName);
   AliVEvent *event = InputEvent();
@@ -438,16 +434,9 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetE(recpoint->GetEnergy());
     c->SetPosition(g);
     c->SetNCells(ncells_true);
-    if (esdobjects) {
-      AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
-      cesd->SetCellsAbsId(absIds);
-      cesd->SetCellsAmplitudeFraction(ratios);
-      cesd->SetID(recpoint->GetUniqueID());
-    } else {
-      AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
-      caod->SetCellsAbsId(absIds);
-      caod->SetCellsAmplitudeFraction(ratios);
-    }
+    c->SetCellsAbsId(absIds);
+    c->SetCellsAmplitudeFraction(ratios);
+    c->SetID(recpoint->GetUniqueID());
     c->SetDispersion(recpoint->GetDispersion());
     c->SetEmcCpvDistance(-1);
     c->SetChi2(-1);
