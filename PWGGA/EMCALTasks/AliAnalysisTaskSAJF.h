@@ -30,6 +30,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        UserCreateOutputObjects();
   void                        UserExec(Option_t *option);
   void                        Terminate(Option_t *option);
+  void                        Init();
 
   void                        SetClusName(const char *n)                           { fCaloName      = n          ; }
   void                        SetJetsName(const char *n)                           { fJetsName      = n          ; }
@@ -37,24 +38,26 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        SetTracksName(const char *n)                         { fTracksName    = n          ; }
   void                        SetTrgClusName(const char *n)                        { fTrgClusName   = n          ; }
   void                        SetAnaType(SAJFAnaType type)                         { fAnaType       = type       ; }
+  void                        SetJetRadius(Float_t r)                              { fJetRadius     = r          ; } 
   void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinPt = min; fMaxPt = max; }
 
  protected:
 
-  AliVTrack                  *GetTrack(const Int_t i)          const;
-  Int_t                       GetNumberOfTracks()              const;
-  AliVCluster                *GetCaloCluster(const Int_t i)    const;
-  Int_t                       GetNumberOfCaloClusters()        const;
-  AliEmcalJet                *GetJet(const Int_t i)            const;
-  Int_t                       GetNumberOfJets()                const;
-  AliEmcalJet                *GetKtJet(const Int_t i)          const;
-  Int_t                       GetNumberOfKtJets()              const;
-  AliVCluster                *GetTrgCluster(const Int_t i)     const;
-  Int_t                       GetNumberOfTrgClusters()         const;
-  void                        FillHistograms()                      ;
-  void                        RetrieveEventObjects()                ;
-  Bool_t                      AcceptTrack(AliVTrack* track)    const;
-  Bool_t                      AcceptJet(AliEmcalJet* jet)      const;
+  AliVTrack                  *GetTrack(const Int_t i)               const;
+  Int_t                       GetNumberOfTracks()                   const;
+  AliVCluster                *GetCaloCluster(const Int_t i)         const;
+  Int_t                       GetNumberOfCaloClusters()             const;
+  AliEmcalJet                *GetJet(const Int_t i)                 const;
+  Int_t                       GetNumberOfJets()                     const;
+  AliEmcalJet                *GetKtJet(const Int_t i)               const;
+  Int_t                       GetNumberOfKtJets()                   const;
+  AliVCluster                *GetTrgCluster(const Int_t i)          const;
+  Int_t                       GetNumberOfTrgClusters()              const;
+  void                        FillHistograms()                           ;
+  void                        RetrieveEventObjects()                     ;
+  Bool_t                      AcceptTrack(AliVTrack* track)         const;
+  Bool_t                      AcceptJet(AliEmcalJet* jet)           const;
+  Bool_t                      AcceptJet(Float_t eta, Float_t phi)   const;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)    const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)   const;
   Float_t                     GetArea()                        const;
@@ -62,9 +65,15 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   Float_t                     DoKtJetLoop();
   Float_t                     DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex);
   Float_t                     DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex);
+  Float_t                     GetRigidConePt(AliEmcalJet *jet = 0,  Float_t minD = 0.8);
 
 
   SAJFAnaType                 fAnaType;                    // analysis type
+  Float_t                     fMinEta;                     // minimum eta accepatance
+  Float_t                     fMaxEta;                     // maximum eta accepatance
+  Float_t                     fMinPhi;                     // minimum phi accepatance
+  Float_t                     fMaxPhi;                     // maximum phi accepatance  
+  Float_t                     fJetRadius;                  // jet radius
   TList                      *fOutput;                     // Output list
   TString                     fTracksName;                 // name of track collection
   TString                     fCaloName;                   // name of calo cluster collection
@@ -82,6 +91,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TH2F                       *fHistJetPhiEta;              // Phi-Eta distribution of jets
   TH2F                       *fHistRhoPartVSleadJetPt;     // Background et density of particles (clusters+tracks) vs. leading jet pt
   TH2F                       *fHistMedKtVSRhoPart;         // Median of the pt density of kt jets vs. background pt density of particles
+  TH2F                       *fHistRCPtVSRhoPart;          // Random cone Pt vs. background pt density of particles
   TH1F                       *fHistJetsPt[4];              // Jet pt spectrum
   TH1F                       *fHistJetsNEF[4];             // Jet neutral energy fraction
   TH1F                       *fHistJetsZ[4];               // Constituent Pt over Jet Pt ratio
@@ -97,6 +107,10 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TH1F                       *fHistBkgTracksMeanRho[4];    // Background tracks mean pt density
   TH1F                       *fHistBkgLJetPhiCorr[4];      // Background particles phi correlation with leading jet
   TH1F                       *fHistMedianPtKtJet[4];       // Median of the pt density of kt jets, excluded the 2 most energetic
+  TH1F                       *fHistDeltaPtRC[4];           // deltaPt = Pt(RC) - A * rhoKt
+  TH1F                       *fHistDeltaPtRCExLJ[4];       // deltaPt = Pt(RC) - A * rhoKt, imposing min distance from leading jet
+  TH1F                       *fHistRCPt[4];                // Random cone pt
+  TH1F                       *fHistRCPtExLJ[4];            // Random cone pt, imposing min distance from leading jet
   Int_t                       fNbins;                      // No. of pt bins
   Float_t                     fMinPt;                      // Min pt
   Float_t                     fMaxPt;                      // Max pt

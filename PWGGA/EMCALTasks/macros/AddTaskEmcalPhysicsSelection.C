@@ -1,6 +1,6 @@
 // $Id$
 
-AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelelection(
+AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Bool_t exFOnly, 
   UInt_t computeBG = 0,
   Bool_t wHistos = kTRUE

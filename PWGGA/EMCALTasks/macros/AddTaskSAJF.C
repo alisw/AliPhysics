@@ -6,6 +6,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
   const char *nktjets            = "KtJets",
+  Float_t jetradius              = 0.4,
   const char *ntrgclusters       = "ClustersL1GAMMAFEE",
   UInt_t type                    = AliAnalysisTaskSAJF::kEMCAL
 )
@@ -38,6 +39,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   phTask->SetJetsName(njets);
   phTask->SetKtJetsName(nktjets);
   phTask->SetTrgClusName(ntrgclusters);
+  phTask->SetJetRadius(jetradius);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
