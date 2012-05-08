@@ -401,8 +401,8 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
 	
 	//phi
 	dphi = phi2 - phi1;
-	if(dphi < -180.) dphi = 360. + dphi;  //dphi should be between -180 and 180!
-	else if(dphi > 180.) dphi = -360. + dphi;  //dphi should be between -180 and 180!
+	if(dphi < -180.) dphi = -360. - dphi;  //dphi should be between -180 and 180!
+	else if(dphi > 180.) dphi = 360. - dphi;  //dphi should be between -180 and 180!
 
 	//0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
 	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
