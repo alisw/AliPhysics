@@ -138,27 +138,27 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TList *fListBFS; //fList object
   TList *fHistListPIDQA;  //! list of histograms
 
-  TH1F *fHistEventStats; //event stats
+  TH2F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
   TH1F *fHistTriggerStats; //trigger stats
   TH1F *fHistTrackStats; //Track filter bit stats
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
-  TH1F *fHistVz; //z coordinate of the primary vertex
+  TH2F *fHistVz; //z coordinate of the primary vertex
 
-  TH1F *fHistEventPlane; //event plane distribution
+  TH2F *fHistEventPlane; //event plane distribution
 
   TH2F *fHistClus;//
   TH2F *fHistDCA;//
-  TH1F *fHistChi2;//
-  TH1F *fHistPt;//
-  TH1F *fHistEta;//
-  TH1F *fHistRapidity;//
-  TH1F *fHistPhi;//
-  TH1F *fHistPhiBefore;//
-  TH1F *fHistPhiAfter;//
-  TH1F *fHistPhiPos;//
-  TH1F *fHistPhiNeg;//
+  TH2F *fHistChi2;//
+  TH2F *fHistPt;//
+  TH2F *fHistEta;//
+  TH2F *fHistRapidity;//
+  TH2F *fHistPhi;//
+  TH2F *fHistPhiBefore;//
+  TH2F *fHistPhiAfter;//
+  TH2F *fHistPhiPos;//
+  TH2F *fHistPhiNeg;//
   TH2F *fHistV0M;//
   TH2F *fHistRefTracks;//
 
@@ -203,7 +203,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseMultiplicity;//use the multiplicity cuts
   Int_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   Int_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
-  TH1F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
+  TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
 

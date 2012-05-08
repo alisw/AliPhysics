@@ -205,9 +205,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   //Event stats.
   TString gCutName[4] = {"Total","Offline trigger",
                          "Vertex","Analyzed"};
-  fHistEventStats = new TH1F("fHistEventStats",
-                             "Event statistics;;N_{events}",
-                             4,0.5,4.5);
+  fHistEventStats = new TH2F("fHistEventStats",
+                             "Event statistics;;Centrality percentile;N_{events}",
+                             4,0.5,4.5,220,-5,105);
   for(Int_t i = 1; i <= 4; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
@@ -226,7 +226,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TrackFilterBit;N_{events}",130,0,130);
   fList->Add(fHistTrackStats);
 
-  fHistNumberOfAcceptedTracks = new TH1F("fHistNumberOfAcceptedTracks",";N_{acc.};Entries",4001,-0.5,4000.5);
+  fHistNumberOfAcceptedTracks = new TH2F("fHistNumberOfAcceptedTracks",";N_{acc.};Centrality percentile;Entries",4001,-0.5,4000.5,220,-5,105);
   fList->Add(fHistNumberOfAcceptedTracks);
 
   // Vertex distributions
@@ -234,35 +234,35 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistVx);
   fHistVy = new TH1F("fHistVy","Primary vertex distribution - y coordinate;V_{y} (cm);Entries",100,-0.5,0.5);
   fList->Add(fHistVy);
-  fHistVz = new TH1F("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm);Entries",100,-20.,20.);
+  fHistVz = new TH2F("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm);Centrality percentile;Entries",100,-20.,20.,220,-5,105);
   fList->Add(fHistVz);
 
   //Event plane
-  fHistEventPlane = new TH1F("fHistEventPlane",";#Psi_{2} [deg.];Counts",100,0,360.);
+  fHistEventPlane = new TH2F("fHistEventPlane",";#Psi_{2} [deg.];Centrality percentile;Counts",100,0,360.,220,-5,105);
   fList->Add(fHistEventPlane);
 
   // QA histograms
   fHistClus = new TH2F("fHistClus","# Cluster (TPC vs. ITS)",10,0,10,200,0,200);
   fList->Add(fHistClus);
-  fHistChi2 = new TH1F("fHistChi2","Chi2/NDF distribution",200,0,10);
+  fHistChi2 = new TH2F("fHistChi2","Chi2/NDF distribution;#chi^{2}/ndf;Centrality percentile",200,0,10,220,-5,105);
   fList->Add(fHistChi2);
   fHistDCA  = new TH2F("fHistDCA","DCA (xy vs. z)",400,-5,5,400,-5,5); 
   fList->Add(fHistDCA);
-  fHistPt   = new TH1F("fHistPt","p_{T} distribution",200,0,10);
+  fHistPt   = new TH2F("fHistPt","p_{T} distribution;p_{T} (GeV/c);Centrality percentile",200,0,10,220,-5,105);
   fList->Add(fHistPt);
-  fHistEta  = new TH1F("fHistEta","#eta distribution",200,-2,2);
+  fHistEta  = new TH2F("fHistEta","#eta distribution;#eta;Centrality percentile",200,-2,2,220,-5,105);
   fList->Add(fHistEta);
-  fHistRapidity  = new TH1F("fHistRapidity","y distribution",200,-2,2);
+  fHistRapidity  = new TH2F("fHistRapidity","y distribution;y;Centrality percentile",200,-2,2,220,-5,105);
   fList->Add(fHistRapidity);
-  fHistPhi  = new TH1F("fHistPhi","#phi distribution",200,-20,380);
+  fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi;Centrality percentile",200,-20,380,220,-5,105);
   fList->Add(fHistPhi);
-  fHistPhiBefore  = new TH1F("fHistPhiBefore","#phi distribution",200,0.,2*TMath::Pi());
+  fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
-  fHistPhiAfter  = new TH1F("fHistPhiAfter","#phi distribution",200,0.,2*TMath::Pi());
+  fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiAfter);
-  fHistPhiPos  = new TH1F("fHistPhiPos","#phi distribution for positive particles",200,-20,380);
+  fHistPhiPos  = new TH2F("fHistPhiPos","#phi distribution for positive particles;#phi;Centrality percentile",200,-20,380,220,-5,105);
   fList->Add(fHistPhiPos);
-  fHistPhiNeg  = new TH1F("fHistPhiNeg","#phi distribution for negative particles",200,-20,380);
+  fHistPhiNeg  = new TH2F("fHistPhiNeg","#phi distribution for negative particles;#phi;Centrality percentile",200,-20,380,220,-5,105);
   fList->Add(fHistPhiNeg);
   fHistV0M  = new TH2F("fHistV0M","V0 Multiplicity C vs. A",500, 0, 20000, 500, 0, 20000);
   fList->Add(fHistV0M);
@@ -409,12 +409,12 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
 
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1); //all events
+    fHistEventStats->Fill(1,fCentrality); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
       isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
-      fHistEventStats->Fill(2); //triggered events
+      fHistEventStats->Fill(2,fCentrality); //triggered events
 
       if(fUseCentrality) {
 	//Centrality stuff
@@ -436,14 +436,14 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       if(vertex) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
-	    fHistEventStats->Fill(3); //events with a proper vertex
+	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
 	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
 	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
-		  fHistEventStats->Fill(4); //analayzed events
+		  fHistEventStats->Fill(4,fCentrality); //analayzed events
 		  fHistVx->Fill(vertex->GetXv());
 		  fHistVy->Fill(vertex->GetYv());
-		  fHistVz->Fill(vertex->GetZv());
+		  fHistVz->Fill(vertex->GetZv(),fCentrality);
 		  
 		  //========Get the VZERO event plane========//
 		  Double_t gVZEROEventPlane = -10.0;
@@ -453,7 +453,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gESD,10,2,qxTot,qyTot);
 		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
 		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
-		  fHistEventPlane->Fill(gReactionPlane);
+		  fHistEventPlane->Fill(gReactionPlane,fCentrality);
 		  //========Get the VZERO event plane========//
 
 		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
@@ -600,13 +600,13 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 		    track_TPC->PxPyPz(v_p);
 		    fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
 		    fHistDCA->Fill(b[1],b[0]);
-		    fHistChi2->Fill(chi2PerClusterTPC);
-		    fHistPt->Fill(v_pt);
-		    fHistEta->Fill(v_eta);
-		    fHistPhi->Fill(v_phi);
-		    fHistRapidity->Fill(v_y);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
+		    fHistChi2->Fill(chi2PerClusterTPC,fCentrality);
+		    fHistPt->Fill(v_pt,fCentrality);
+		    fHistEta->Fill(v_eta,fCentrality);
+		    fHistPhi->Fill(v_phi,fCentrality);
+		    fHistRapidity->Fill(v_y,fCentrality);
+		    if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
+		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
 
 		    // fill charge vector
 		    chargeVector[0]->push_back(v_charge);
@@ -657,12 +657,12 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());
     
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1); //all events
+    fHistEventStats->Fill(1,fCentrality); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
       isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
-      fHistEventStats->Fill(2); //triggered events
+      fHistEventStats->Fill(2,fCentrality); //triggered events
 		  
       //Centrality stuff (centrality in AOD header)
       if(fUseCentrality) {
@@ -706,14 +706,14 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	
       	if(vertex->GetNContributors() > 0) {
       	  if(fCov[5] != 0) {
-      	    fHistEventStats->Fill(3); //events with a proper vertex
+      	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
       	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
       	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
       		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-      		  fHistEventStats->Fill(4); //analyzed events
+      		  fHistEventStats->Fill(4,fCentrality); //analyzed events
       		  fHistVx->Fill(vertex->GetX());
       		  fHistVy->Fill(vertex->GetY());
-      		  fHistVz->Fill(vertex->GetZ());
+      		  fHistVz->Fill(vertex->GetZ(),fCentrality);
 	
 		  //========Get the VZERO event plane========//
 		  Double_t gVZEROEventPlane = -10.0;
@@ -780,13 +780,13 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       		    // fill QA histograms
       		    fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       		    fHistDCA->Fill(DCAz,DCAxy);
-      		    fHistChi2->Fill(aodTrack->Chi2perNDF());
-      		    fHistPt->Fill(v_pt);
-      		    fHistEta->Fill(v_eta);
-      		    fHistPhi->Fill(v_phi);
-		    fHistRapidity->Fill(v_y);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
+      		    fHistChi2->Fill(aodTrack->Chi2perNDF(),fCentrality);
+      		    fHistPt->Fill(v_pt,fCentrality);
+      		    fHistEta->Fill(v_eta,fCentrality);
+      		    fHistPhi->Fill(v_phi,fCentrality);
+		    fHistRapidity->Fill(v_y,fCentrality);
+		    if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
+		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
 
       		    // fill charge vector
       		    chargeVector[0]->push_back(v_charge);
@@ -841,12 +841,12 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
 
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1); //all events
+    fHistEventStats->Fill(1,fCentrality); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
       isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
-      fHistEventStats->Fill(2); //triggered events
+      fHistEventStats->Fill(2,fCentrality); //triggered events
 
       if(fUseCentrality) {
 	//Centrality stuff
@@ -868,14 +868,14 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       if(vertex) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
-	    fHistEventStats->Fill(3); //events with a proper vertex
+	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
 	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
 	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
-		  fHistEventStats->Fill(4); //analayzed events
+		  fHistEventStats->Fill(4,fCentrality); //analayzed events
 		  fHistVx->Fill(vertex->GetXv());
 		  fHistVy->Fill(vertex->GetYv());
-		  fHistVz->Fill(vertex->GetZv());
+		  fHistVz->Fill(vertex->GetZv(),fCentrality);
 		  
 		  //========Get the VZERO event plane========//
 		  Double_t gVZEROEventPlane = -10.0;
@@ -885,7 +885,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gESD,10,2,qxTot,qyTot);
 		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
 		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
-		  fHistEventPlane->Fill(gReactionPlane);
+		  fHistEventPlane->Fill(gReactionPlane,fCentrality);
 		  //========Get the VZERO event plane========//
 
 		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
@@ -939,13 +939,13 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
 		    fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
 		    fHistDCA->Fill(b[1],b[0]);
-		    fHistChi2->Fill(chi2PerClusterTPC);
-		    fHistPt->Fill(v_pt);
-		    fHistEta->Fill(v_eta);
-		    fHistPhi->Fill(v_phi);
-		    fHistRapidity->Fill(v_y);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
+		    fHistChi2->Fill(chi2PerClusterTPC,fCentrality);
+		    fHistPt->Fill(v_pt,fCentrality);
+		    fHistEta->Fill(v_eta,fCentrality);
+		    fHistPhi->Fill(v_phi,fCentrality);
+		    fHistRapidity->Fill(v_y,fCentrality);
+		    if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
+		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
 
 		    // fill charge vector
 		    chargeVector[0]->push_back(v_charge);
@@ -990,8 +990,8 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       Printf("ERROR: mcEvent not available");
       return;
     }
-    fHistEventStats->Fill(1); //total events
-    fHistEventStats->Fill(2); //offline trigger
+    fHistEventStats->Fill(1,fCentrality); //total events
+    fHistEventStats->Fill(2,fCentrality); //offline trigger
 
     Double_t gImpactParameter = 0.;
     if(fUseCentrality) {
@@ -1007,7 +1007,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	fCentrality = gImpactParameter;
       }
       fCentrality = gImpactParameter;
-      fHistEventPlane->Fill(gReactionPlane*TMath::RadToDeg());
+      fHistEventPlane->Fill(gReactionPlane*TMath::RadToDeg(),fCentrality);
 
       // take only events inside centrality class (DIDN'T CHANGE THIS UP TO NOW)
       if((fImpactParameterMin > gImpactParameter) || (fImpactParameterMax < gImpactParameter))
@@ -1023,14 +1023,14 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     //gVertexArray.At(0),
     //gVertexArray.At(1),
     //gVertexArray.At(2));
-    fHistEventStats->Fill(3); //events with a proper vertex
+    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
     if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
       if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
 	if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
-	  fHistEventStats->Fill(4); //analayzed events
+	  fHistEventStats->Fill(4,fCentrality); //analayzed events
 	  fHistVx->Fill(gVertexArray.At(0));
 	  fHistVy->Fill(gVertexArray.At(1));
-	  fHistVz->Fill(gVertexArray.At(2));
+	  fHistVz->Fill(gVertexArray.At(2),fCentrality);
 	  
 	  Printf("There are %d tracks in this event", mcEvent->GetNumberOfPrimaries());
 	  for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfPrimaries(); iTracks++) {
@@ -1104,12 +1104,12 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	    track->PxPyPz(v_p);
 	    //Printf("phi (before): %lf",v_phi);
 
-	    fHistPt->Fill(v_pt);
-	    fHistEta->Fill(v_eta);
-	    fHistPhi->Fill(v_phi*TMath::RadToDeg());
-	    fHistRapidity->Fill(v_y);
-	    if(v_charge > 0) fHistPhiPos->Fill(v_phi*TMath::RadToDeg());
-	    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi*TMath::RadToDeg());
+	    fHistPt->Fill(v_pt,fCentrality);
+	    fHistEta->Fill(v_eta,fCentrality);
+	    fHistPhi->Fill(v_phi*TMath::RadToDeg(),fCentrality);
+	    fHistRapidity->Fill(v_y,fCentrality);
+	    if(v_charge > 0) fHistPhiPos->Fill(v_phi*TMath::RadToDeg(),fCentrality);
+	    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi*TMath::RadToDeg(),fCentrality);
 
 	    //Flow after burner
 	    if(fUseFlowAfterBurner) {
@@ -1129,11 +1129,11 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	      //Printf("phi (after): %lf\n",v_phi);
 	      	      Double_t v_DeltaphiBefore = phi0 - gReactionPlane;
 	      if(v_DeltaphiBefore < 0) v_DeltaphiBefore += 2*TMath::Pi();
-	      fHistPhiBefore->Fill(v_DeltaphiBefore);
+	      fHistPhiBefore->Fill(v_DeltaphiBefore,fCentrality);
 
 	      Double_t v_DeltaphiAfter = v_phi - gReactionPlane;
 	      if(v_DeltaphiAfter < 0) v_DeltaphiAfter += 2*TMath::Pi();
-	      fHistPhiAfter->Fill(v_DeltaphiAfter);
+	      fHistPhiAfter->Fill(v_DeltaphiAfter,fCentrality);
 	    }
 	    
 	    v_phi *= TMath::RadToDeg();
@@ -1174,7 +1174,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax))
       return;
   }
-  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
+  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,fCentrality);
   
   // calculate balance function
   if(fUseMultiplicity) 
