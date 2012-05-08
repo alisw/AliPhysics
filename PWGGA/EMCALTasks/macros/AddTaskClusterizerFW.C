@@ -3,7 +3,7 @@
 AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
   const char* trigType = "L0",   // Trigger type: it can be "L0" (4x4, with 2x2 sliding inside SM), 
                                  //"L1GAMMA" (4x4, with 2x2 sliding through SMs), "L1JET" (40x40 with 4x4 sliding through SMs)
-  const Bool_t fOR = 0,
+  const Bool_t fOR = kFALSE,
   const TString & geomName = "EMCAL_COMPLETEV1"
 ) 
 {
@@ -24,6 +24,7 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
   Float_t minE, minT, maxT;
   Bool_t slidingTRU;
   Bool_t cutL0time;
+  UInt_t inputCellType = AliAnalysisTaskEMCALClusterizeFast::kFEEData;
   
   name += trigType;
   nameout += trigType;
@@ -32,17 +33,17 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
     n = 4;
     s = 2;
     slidingTRU = 0;
-    cutL0time = kTRUE;
+    if (fOR) inputCellType = AliAnalysisTaskEMCALClusterizeFast::kL0FastORsTC;
   } else if (!strcmp(trigType, "L1GAMMA")) {
     n = 4;
     s = 2;
     slidingTRU = 1;
-    cutL0time = kFALSE;
+    if (fOR) inputCellType = AliAnalysisTaskEMCALClusterizeFast::kL1FastORs;
   } else if (!strcmp(trigType, "L1JET")) {
     n = 32;
     s = 4;
     slidingTRU = 1;
-    cutL0time = kFALSE;
+    if (fOR) inputCellType = AliAnalysisTaskEMCALClusterizeFast::kL1FastORs;
   } else {
     printf("trigType not valid, returning...");
     return 0;
@@ -77,11 +78,10 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
   task->SetShiftPhi(s);
   task->SetShiftEta(s);
   task->SetTRUShift(!slidingTRU);
-  task->SetClusterizeFastORs(fOR);
+  task->SetInputCellType(inputCellType);
   task->SetLoadPed(kFALSE);
   task->SetLoadCalib(kFALSE);
   task->SetRecalibrateCellsOnly(kFALSE);
-  task->SetCutL0Times(cutL0time);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
