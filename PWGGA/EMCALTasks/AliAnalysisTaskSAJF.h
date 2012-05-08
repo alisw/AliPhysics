@@ -66,7 +66,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        RetrieveEventObjects()                                                    ;
   void                        FillHistograms()                                                          ;
   void                        DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)                        ;
-  Float_t                     DoKtJetLoop()                                                             ;
+  Float_t                     DoKtJetLoop(Int_t nLJs = 2)                                                             ;
   Bool_t                      DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt)                       ;
   Float_t                     DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)                        ;
   Float_t                     DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex)                      ;

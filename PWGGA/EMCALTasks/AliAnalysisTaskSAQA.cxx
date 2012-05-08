@@ -42,14 +42,14 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistCentrality(0),
   fHistTracksCent(0),
   fHistClusCent(0),
-  fHistMaxL1Cent(0),
+  fHistMaxL1FastORCent(0),
+  fHistMaxL1ClusCent(0),
+  fHistMaxL1ThrCent(0),
   fHistTracksPt(0),
   fHistClustersEnergy(0),
   fHistEoverP(0),
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
-  fHistMaxTrgCluster(0),
-  fHistMaxTrgClusVSMaxL1(0),
   fHistClusPhiCorr(0),
   fHistTracksPhiCorr(0),
   fHistChVSneCells(0),
@@ -86,14 +86,14 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistCentrality(0),
   fHistTracksCent(0),
   fHistClusCent(0),
-  fHistMaxL1Cent(0),
+  fHistMaxL1FastORCent(0),
+  fHistMaxL1ClusCent(0),
+  fHistMaxL1ThrCent(0),
   fHistTracksPt(0),
   fHistClustersEnergy(0),
   fHistEoverP(0),
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
-  fHistMaxTrgCluster(0),
-  fHistMaxTrgClusVSMaxL1(0),
   fHistClusPhiCorr(0),
   fHistTracksPhiCorr(0),
   fHistChVSneCells(0),
@@ -143,10 +143,20 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistClusCent->GetYaxis()->SetTitle("No. of clusters");
   fOutput->Add(fHistClusCent);
 
-  fHistMaxL1Cent = new TH2F("fHistMaxL1Cent","L1 Time Sum Amplitude vs. centrality", 100, 0, 100, 250, 0, 250);
-  fHistMaxL1Cent->GetXaxis()->SetTitle("Centrality [%]");
-  fHistMaxL1Cent->GetYaxis()->SetTitle("Maximum L1 Time Sum Amplitude");
-  fOutput->Add(fHistMaxL1Cent);
+  fHistMaxL1FastORCent = new TH2F("fHistMaxL1FastORCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
+  fHistMaxL1FastORCent->GetXaxis()->SetTitle("Centrality [%]");
+  fHistMaxL1FastORCent->GetYaxis()->SetTitle("Maximum L1 FastOR");
+  fOutput->Add(fHistMaxL1FastORCent);
+
+  fHistMaxL1ClusCent = new TH2F("fHistMaxL1ClusCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
+  fHistMaxL1ClusCent->GetXaxis()->SetTitle("Centrality [%]");
+  fHistMaxL1ClusCent->GetYaxis()->SetTitle("Maximum L1 trigger cluster");
+  fOutput->Add(fHistMaxL1ClusCent);
+
+  fHistMaxL1ThrCent = new TH2F("fHistMaxL1ThrCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
+  fHistMaxL1ThrCent->GetXaxis()->SetTitle("Centrality [%]");
+  fHistMaxL1ThrCent->GetYaxis()->SetTitle("Maximum L1 threshold");
+  fOutput->Add(fHistMaxL1ThrCent);
     
   fHistTracksPt = new TH1F("fHistTracksPt","P_{T} spectrum of reconstructed tracks", fNbins, fMinPt, fMaxPt);
   fHistTracksPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
@@ -172,16 +182,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistClusPhiEta->GetXaxis()->SetTitle("Eta");
   fHistClusPhiEta->GetYaxis()->SetTitle("Phi");
   fOutput->Add(fHistClusPhiEta);
-
-  fHistMaxTrgCluster = new TH1F("fHistMaxTrgCluster","Energy distribution of max trigger clusters", fNbins, fMinPt, fMaxPt);
-  fHistMaxTrgCluster->GetXaxis()->SetTitle("E [GeV]");
-  fHistMaxTrgCluster->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMaxTrgCluster);
-
-  fHistMaxTrgClusVSMaxL1 = new TH2F("fHistMaxTrgClusVSMaxL1","Max trigger cluster energy vs. L1 Time Sum Amplitude", 250, 0, 250, fNbins, fMinPt, fMaxPt);
-  fHistMaxTrgClusVSMaxL1->GetXaxis()->SetTitle("Maximum L1 Time Sum Amplitude");
-  fHistMaxTrgClusVSMaxL1->GetYaxis()->SetTitle("Maximum trigger cluster energy [GeV]");
-  fOutput->Add(fHistMaxTrgClusVSMaxL1);
 
   fHistTracksPhiCorr = new TH1F("fHistTracksPhiCorr", "fHistTracksPhiCorr", 128, -1.6, 4.8);
   fHistTracksPhiCorr->GetXaxis()->SetTitle("#Delta#phi");
@@ -331,14 +331,18 @@ void AliAnalysisTaskSAQA::FillHistograms()
   fHistChVSneCorrCells->Fill(cellCutSum, trackSum);
 
   Float_t maxTrgClus = DoTriggerClusLoop();
-  fHistMaxTrgCluster->Fill(maxTrgClus);
+  fHistMaxL1ClusCent->Fill(cent, maxTrgClus);
   
-  Float_t maxL1amp = DoTriggerPrimitives();
+  Int_t maxL1amp = -1;
+  Int_t maxL1thr = -1;
 
-  if (maxL1amp > -1) {
-    fHistMaxL1Cent->Fill(cent, maxL1amp);
-    fHistMaxTrgClusVSMaxL1->Fill(maxL1amp, maxTrgClus);
-  }
+  DoTriggerPrimitives(maxL1amp, maxL1thr);
+
+  if (maxL1amp > -1) 
+    fHistMaxL1FastORCent->Fill(cent, maxL1amp);
+
+  if (maxL1thr > -1) 
+    fHistMaxL1ThrCent->Fill(cent, maxL1thr);
 }
 
 //________________________________________________________________________
@@ -508,20 +512,20 @@ Float_t AliAnalysisTaskSAQA::DoTriggerClusLoop()
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAQA::DoTriggerPrimitives()
+void AliAnalysisTaskSAQA::DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)
 {
   AliVCaloTrigger *triggers = InputEvent()->GetCaloTrigger("EMCAL");
 
   if (!triggers || triggers->GetEntries() == 0)
-    return -1;
+    return;
     
   triggers->Reset();
-  Float_t L0FastORamp = 0;
+  //Float_t L0FastORamp = 0;
   Int_t L1amp = 0;
-  Int_t maxL1amp = -1;
-  
+  Int_t L1thr = 0;
+
   while (triggers->Next()) {
-    
+    /*
     triggers->GetAmplitude(L0FastORamp);
     
     if (L0FastORamp < 0)
@@ -549,25 +553,27 @@ Float_t AliAnalysisTaskSAQA::DoTriggerPrimitives()
     Int_t gCol = 0, gRow = 0;
     triggers->GetPosition(gCol, gRow);
     
-    //Int_t find = -1;
-    //fGeom->GetAbsFastORIndexFromPositionInEMCAL(gCol, gRow, find);
+    Int_t find = -1;
+    fGeom->GetAbsFastORIndexFromPositionInEMCAL(gCol, gRow, find);
       
-    //if (find < 0)
-    //continue;
+    if (find < 0)
+      continue;
     
-    //Int_t cidx[4] = {-1};
-    //Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
+    Int_t cidx[4] = {-1};
+    Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
     
-    //if (!ret)
-    //continue;
-    
+    if (!ret)
+      continue;
+    */
+
     triggers->GetL1TimeSum(L1amp);
-    
     if (maxL1amp < L1amp) 
       maxL1amp = L1amp;
-  }
 
-  return maxL1amp;
+    triggers->GetL1Threshold(L1thr);
+    if (maxL1thr < L1thr) 
+      maxL1thr = L1thr;
+  }
 }
 
 //________________________________________________________________________

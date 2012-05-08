@@ -31,20 +31,20 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
 
  protected:
 
-  AliVTrack                  *GetTrack(const Int_t i)                      const;
-  Int_t                       GetNumberOfTracks()                          const;
-  AliVCluster                *GetCaloCluster(const Int_t i)                const;
-  Int_t                       GetNumberOfCaloClusters()                    const;
-  AliVCluster                *GetTrgCluster(const Int_t i)                 const;
-  Int_t                       GetNumberOfTrgClusters()                     const;
-  Bool_t                      AcceptTrack(AliVTrack* /*track*/)            const;
-  void                        FillHistograms()                                  ;
-  void                        RetrieveEventObjects()                            ;
-  void                        DoCellLoop(Float_t &sum, Float_t &sum_cut)        ;
-  Float_t                     DoTriggerPrimitives()                             ;
-  Float_t                     DoTriggerClusLoop()                               ;
-  Float_t                     DoTrackLoop()                                     ;
-  Float_t                     DoClusterLoop()                                   ;
+  AliVTrack                  *GetTrack(const Int_t i)                              const;
+  Int_t                       GetNumberOfTracks()                                  const;
+  AliVCluster                *GetCaloCluster(const Int_t i)                        const;
+  Int_t                       GetNumberOfCaloClusters()                            const;
+  AliVCluster                *GetTrgCluster(const Int_t i)                         const;
+  Int_t                       GetNumberOfTrgClusters()                             const;
+  Bool_t                      AcceptTrack(AliVTrack* /*track*/)                    const;
+  void                        FillHistograms()                                          ;
+  void                        RetrieveEventObjects()                                    ;
+  void                        DoCellLoop(Float_t &sum, Float_t &sum_cut)                ;
+  void                        DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)     ;
+  Float_t                     DoTriggerClusLoop()                                       ;
+  Float_t                     DoTrackLoop()                                             ;
+  Float_t                     DoClusterLoop()                                           ;
 
   TList                      *fOutput;                 // Output list
   Float_t                     fCellEnergyCut;          // Energy cell cut
@@ -56,22 +56,28 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   TClonesArray               *fJets;                   //!Jets
   TClonesArray               *fTrgClusters;            //!Trg Clusters
   AliCentrality              *fCent;                   // Event centrality
+
   TH1F                       *fHistCentrality;         // Event centrality distribution
   TH2F                       *fHistTracksCent;         // Number of tracks vs. centrality
   TH2F                       *fHistClusCent;           // Number of clusters vs. centrality
-  TH2F                       *fHistMaxL1Cent;          // Maximum L1 time sum amplitude vs. centrality
+
+  TH2F                       *fHistMaxL1FastORCent;    // Maximum L1 trigger FastOR amplitude vs. centrality
+  TH2F                       *fHistMaxL1ClusCent;      // Maximum L1 trigger cluster amplitude vs. centrality
+  TH2F                       *fHistMaxL1ThrCent;       // Maximum L1 trigger threshold vs. centrality
+ 
   TH1F                       *fHistTracksPt;           // Pt spectrum of tracks
   TH1F                       *fHistClustersEnergy;     // Energy spectrum of clusters
   TH2F                       *fHistEoverP;             // E/P vs. E
   TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks
   TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
-  TH1F                       *fHistMaxTrgCluster;      // Energy distribution of max trigger clusters
-  TH2F                       *fHistMaxTrgClusVSMaxL1;  // Max trigger cluster vs. max L1 time sum amplitude
+
   TH1F                       *fHistClusPhiCorr;        // Clusters phi correlations
   TH1F                       *fHistTracksPhiCorr;      // Tracks phi correlations
+
   TH2F                       *fHistChVSneCells;        // Charged vs. neutral (cells) energy
   TH2F                       *fHistChVSneClus;         // Charged vs. neutral (clusters) energy
   TH2F                       *fHistChVSneCorrCells;    // Charged vs. neutral (corrected cells) energy
+
   TH1F                       *fHistTrackPhi[5];        // Phi distribution of hybrid tracks
   TH1F                       *fHistTrackEta[5];        // Eta distribution of hybrid tracks
 
