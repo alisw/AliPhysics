@@ -79,7 +79,6 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fAttachClusters(1),
     fRecalibOnly(0),
     fSubBackground(0),
-    fCreatePattern(0),
     fOverwrite(0),
     fNewClusterArrayName("newCaloClusters"),
     fNPhi(4),
@@ -87,9 +86,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0),
-    fTrackName(),
-    fCutL0Times(kTRUE)
+    fInputCellType(kFEEData),
+    fTrackName()
 { 
   // Constructor
 
@@ -121,7 +119,6 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fAttachClusters(1),
     fRecalibOnly(0),
     fSubBackground(0),
-    fCreatePattern(0),
     fOverwrite(0),
     fNewClusterArrayName("newCaloClusters"),
     fNPhi(4),
@@ -129,9 +126,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0),
-    fTrackName(),
-    fCutL0Times(kTRUE)
+    fInputCellType(kFEEData),
+    fTrackName()
 { 
   // Constructor
 
@@ -259,112 +255,46 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 {
   // Fill digits array
 
+  AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+
   fDigitsArr->Clear("C");
-  
-  if (fCreatePattern) {  // Fill digits from a pattern
-    AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-    Int_t maxd = fGeom->GetNCells() / 4;
-    for (Int_t idigit = 0; idigit < maxd; idigit++){
-      if (idigit % 24 == 12) idigit += 12;
-      AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
-      digit->SetId(idigit * 4);
-      digit->SetTime(600);
-      digit->SetTimeR(600);
-      digit->SetIndexInList(idigit);
-      digit->SetType(AliEMCALDigit::kHG);
-      digit->SetAmplitude(0.1);
-    }
 
-  } else if (fClusterizeFastORs) { // Fill digits from FastORs
-    
-    AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-    
-    AliVCaloTrigger *triggers = InputEvent()->GetCaloTrigger("EMCAL");
-    
-    if (!triggers || !(triggers->GetEntries() > 0))
-      return;
-  
-    Int_t idigit = 0;
-    triggers->Reset();
-    
-    while ((triggers->Next())) {
-      Float_t triggerAmplitude = 0;
-      triggers->GetAmplitude(triggerAmplitude);
-      if (triggerAmplitude <= 0)
-        continue;
-      
-      Int_t triggerTime = 0;
-      Int_t ntimes = 0;
-      triggers->GetNL0Times(ntimes);
-      if (!(ntimes > 0) && fCutL0Times)
-	continue;
+  switch (fInputCellType) {
 
-      Int_t trgtimes[25];
-      triggers->GetL0Times(trgtimes);
-      triggerTime = trgtimes[0];
-     
-      Int_t triggerCol = 0, triggerRow = 0;
-      triggers->GetPosition(triggerCol, triggerRow);
-      
-      Int_t find = -1;
-      fGeom->GetAbsFastORIndexFromPositionInEMCAL(triggerCol, triggerRow, find);
-      
-      if (find<0)
-        continue;
-      
-      Int_t cidx[4] = {-1};
-      Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
-      
-      if (!ret)
-        continue;
-      
-      for (Int_t idxpos = 0; idxpos < 4; idxpos++) {
-        Int_t triggerNumber = cidx[idxpos];
-        AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
-        digit->SetId(triggerNumber);
-        digit->SetTime(triggerTime);
-        digit->SetTimeR(triggerTime);
-        digit->SetIndexInList(idigit);
-        digit->SetType(AliEMCALDigit::kHG);
-        digit->SetAmplitude(triggerAmplitude);
-        idigit++;
-      }
-    }
-
-  } else { // Fill digits from cells.
-    
-    AliVCaloCells *cells = InputEvent()->GetEMCALCells();
-    Double_t avgE        = 0; // for background subtraction
-    const Int_t ncells   = cells->GetNumberOfCells();
-    for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
-      Double_t cellAmplitude=0, cellTime=0, cellEFrac = 0;
-      Short_t  cellNumber=0, cellMCLabel=-1;
-      if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
+  case kFEEData :
+    {
+      AliVCaloCells *cells = InputEvent()->GetEMCALCells();
+      Double_t avgE        = 0; // for background subtraction
+      const Int_t ncells   = cells->GetNumberOfCells();
+      for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
+	Double_t cellAmplitude=0, cellTime=0, cellEFrac = 0;
+	Short_t  cellNumber=0, cellMCLabel=-1;
+	if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
         break;
-      AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
-      digit->SetId(cellNumber);
-      digit->SetTime(cellTime);
-      digit->SetTimeR(cellTime);
-      digit->SetIndexInList(idigit);
-      digit->SetType(AliEMCALDigit::kHG);
-      if (fRecalibOnly||fSubBackground) {
-        Float_t energy = cellAmplitude;
-        Float_t time   = cellTime;
-        fClusterizer->Calibrate(energy,time,cellNumber);
-        digit->SetAmplitude(energy);
+	AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
+	digit->SetId(cellNumber);
+	digit->SetTime(cellTime);
+	digit->SetTimeR(cellTime);
+	digit->SetIndexInList(idigit);
+	digit->SetType(AliEMCALDigit::kHG);
+	if (fRecalibOnly||fSubBackground) {
+	  Float_t energy = cellAmplitude;
+	  Float_t time   = cellTime;
+	  fClusterizer->Calibrate(energy,time,cellNumber);
+	  digit->SetAmplitude(energy);
         avgE += energy;
-      } else {
-        digit->SetAmplitude(cellAmplitude);
+	} else {
+	  digit->SetAmplitude(cellAmplitude);
+	}
+	idigit++;
       }
-      idigit++;
-    }
-    
-    fDigitsArr->Sort();
+      
+      fDigitsArr->Sort();
 
-    if (fSubBackground) {
-      avgE /= AliEMCALGeometry::GetInstance(fGeomName)->GetNumberOfSuperModules()*48*24;
-      Int_t ndigis = fDigitsArr->GetEntries();
-      for (Int_t i = 0; i < ndigis; ++i) {
+      if (fSubBackground) {
+	avgE /= fGeom->GetNumberOfSuperModules()*48*24;
+	Int_t ndigis = fDigitsArr->GetEntries();
+	for (Int_t i = 0; i < ndigis; ++i) {
         AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(i));
         Double_t energy = digit->GetAmplitude() - avgE;
         if (energy<=0.001) {
@@ -372,8 +302,106 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
         } else {
           digit->SetAmplitude(energy);
         }
+	}
       }
     }
+    break;
+    
+  case kPattern :    
+    {
+      // Fill digits from a pattern
+      Int_t maxd = fGeom->GetNCells() / 4;
+      for (Int_t idigit = 0; idigit < maxd; idigit++){
+	if (idigit % 24 == 12) idigit += 12;
+	AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
+	digit->SetId(idigit * 4);
+	digit->SetTime(600);
+	digit->SetTimeR(600);
+	digit->SetIndexInList(idigit);
+	digit->SetType(AliEMCALDigit::kHG);
+	digit->SetAmplitude(0.1);	
+      }
+    }
+    break;
+
+  case kL0FastORs    : 
+  case kL0FastORsTC  :
+  case kL1FastORs    :
+    {
+      // Fill digits from FastORs
+      
+      AliVCaloTrigger *triggers = InputEvent()->GetCaloTrigger("EMCAL");
+      
+      if (!triggers || !(triggers->GetEntries() > 0))
+	return;
+      
+      Int_t idigit = 0;
+      triggers->Reset();
+      
+      while ((triggers->Next())) {
+	Float_t L0Amplitude = 0;
+	triggers->GetAmplitude(L0Amplitude);
+	
+	if (L0Amplitude <= 0 && fInputCellType != kL1FastORs)
+	  continue;
+
+	Int_t L1Amplitude = 0;
+	triggers->GetL1TimeSum(L1Amplitude);
+	
+	if (L1Amplitude <= 0 && fInputCellType == kL1FastORs)
+	  continue;
+      
+	Int_t triggerTime = 0;
+	Int_t ntimes = 0;
+	triggers->GetNL0Times(ntimes);
+	
+	if (ntimes < 1 && fInputCellType == kL0FastORsTC) 
+	  continue;
+	
+	if (ntimes > 0) {
+	  Int_t trgtimes[25];
+	  triggers->GetL0Times(trgtimes);
+	  triggerTime = trgtimes[0];
+	}
+
+	Int_t triggerCol = 0, triggerRow = 0;
+	triggers->GetPosition(triggerCol, triggerRow);
+	
+	Int_t find = -1;
+	fGeom->GetAbsFastORIndexFromPositionInEMCAL(triggerCol, triggerRow, find);
+	
+	if (find < 0)
+	  continue;
+      
+	Int_t cidx[4] = {-1};
+	Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
+	
+	if (!ret)
+	  continue;
+
+	Float_t triggerAmplitude = 0;
+	
+	if (fInputCellType == kL1FastORs) {
+	  triggerAmplitude = 0.25 * L1Amplitude;  // it will add 4 cells for 1 amplitude
+	}
+	else {
+	  triggerAmplitude = L0Amplitude;      // 10 bit truncated, so it is already divided by 4
+	}
+	
+	for (Int_t idxpos = 0; idxpos < 4; idxpos++) {
+	  Int_t triggerNumber = cidx[idxpos];
+	  AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
+	  digit->SetId(triggerNumber);
+	  digit->SetTime(triggerTime);
+	  digit->SetTimeR(triggerTime);
+	  digit->SetIndexInList(idigit);
+	  digit->SetType(AliEMCALDigit::kHG);
+	  digit->SetAmplitude(triggerAmplitude);
+	  idigit++;
+	} 
+      }
+    }
+    break;
   }
 }
 

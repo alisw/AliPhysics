@@ -18,6 +18,15 @@ class AliEMCALRecoUtils;
 
 class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
  public:
+  enum InputCellType {
+    kFEEData = 0,
+    kPattern,
+    kL0FastORs,
+    kL0FastORsTC,
+    kL1FastORs
+  };
+  
+
   AliAnalysisTaskEMCALClusterizeFast();
   AliAnalysisTaskEMCALClusterizeFast(const char *name);
   virtual ~AliAnalysisTaskEMCALClusterizeFast();
@@ -37,7 +46,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   AliEMCALCalibData     *GetCalibData()                               const   { return fCalibData                    ; }
   AliCaloCalibPedestal  *GetPedData()                                 const   { return fPedestalData                 ; }
   TGeoHMatrix           *GetGeometryMatrix(Int_t i)                   const   { return fGeomMatrix[i]                ; }
-  Bool_t                 GetCreatePattern()                           const   { return fCreatePattern                ; }
   Bool_t                 GetOverwrite()                               const   { return fOverwrite                    ; }
   const TString         &GetNewClusterArrayName()                     const   { return fNewClusterArrayName          ; }
   Int_t                  GetnPhi()                                    const   { return fNPhi                         ; }
@@ -45,8 +53,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Int_t                  GetShiftPhi()                                const   { return fShiftPhi                     ; }
   Int_t                  GetShiftEta()                                const   { return fShiftEta                     ; }
   Bool_t                 GetTRUShift()                                const   { return fTRUShift                     ; }
-  Bool_t                 GetClusterizeFastORs()                       const   { return fClusterizeFastORs            ; }
-  Bool_t                 GetCutL0Times()                              const   { return fCutL0Times                   ; }
+  InputCellType          GetInputCellType()                           const   { return fInputCellType                ; }
   void                   JustUnfold(Bool_t yesno)                             { fJustUnfold                  = yesno ; }
   void                   LoadOwnGeometryMatrices(Bool_t b)                    { fLoadGeomMatrices            = b     ; }
   void                   SetAODBranchName(const char *name)                   { fOutputAODBrName             = name  ; }
@@ -61,7 +68,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetPedestalData(AliCaloCalibPedestal *d)             { fPedestalData                = d     ; }
   void                   SetRecalibrateCellsOnly(Bool_t b)                    { fRecalibOnly                 = b     ; }
   void                   SetSubBackground(Bool_t b)                           { fSubBackground               = b     ; }
-  void                   SetCreatePattern(Bool_t yes)                         { fCreatePattern               = yes   ; }
   void                   SetOverwrite(Bool_t yes)                             { fOverwrite                   = yes   ; }
   void                   SetNewClusterArrayName(const char *name)             { fNewClusterArrayName         = name  ; }
   void                   SetnPhi(Int_t n)                                     { fNPhi                        = n     ; }
@@ -69,9 +75,8 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetShiftPhi(Int_t n)                                 { fShiftPhi                    = n     ; }
   void                   SetShiftEta(Int_t n)                                 { fShiftEta                    = n     ; }
   void                   SetTRUShift(Bool_t yes)                              { fTRUShift                    = yes   ; }
-  void                   SetClusterizeFastORs(Bool_t yes)                     { fClusterizeFastORs           = yes   ; }
+  void                   SetInputCellType(InputCellType ic)                   { fInputCellType               = ic    ; }
   void                   SetTrackName(const char *n)                          { fTrackName                   = n     ; }
-  void                   SetCutL0Times(Bool_t yes)                            { fCutL0Times                  = yes   ; }
 
  protected:
   virtual void           Clusterize();
@@ -103,7 +108,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fAttachClusters;                 // attach clusters to input event (AOD or ESD)
   Bool_t                 fRecalibOnly;                    // only recalibrate cells if true (def=off)
   Bool_t                 fSubBackground;                  // subtract background if true (def=off)
-  Bool_t                 fCreatePattern;                  // removes all cells and creates a cell pattern before running the clusterizer (for debug purposes)
   Bool_t                 fOverwrite;                      // overwrite existing clusters
   TString                fNewClusterArrayName;            // if not overwriting, name of the new cluster array
   Int_t                  fNPhi;                           // nPhi (for FixedWindowsClusterizer)
@@ -111,9 +115,9 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Int_t                  fShiftPhi;                       // shift in phi (for FixedWindowsClusterizer)
   Int_t                  fShiftEta;                       // shift in eta (for FixedWindowsClusterizer)
   Bool_t                 fTRUShift;                       // shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
-  Bool_t                 fClusterizeFastORs;              // if true, clusterize FastORs instead of cells
+  InputCellType          fInputCellType;                  // input cells type to make clusters
   TString                fTrackName;                      // if not null use track collection for track/cluster matching
-  Bool_t                 fCutL0Times;                     // true to enable cut on L0 times when clusterizing FastORs (for FixedWindowsClusterizer)
+
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
