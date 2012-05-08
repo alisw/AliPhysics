@@ -13,7 +13,7 @@
 void mergeInChunksTXT(const char* mlist, const char* dest, int maxFiles=700);
 
 
-void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
+void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE, const char* outputFileName="CalibObjects.root")
 {
   //
   // load libraries
@@ -41,7 +41,7 @@ void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
 
   //
   // local
-  mergeInChunksTXT(listFileName.Data(),"CalibObjects.root");
+  mergeInChunksTXT(listFileName.Data(),outputFileName);
   //  AliFileMerger merger;
   //  merger.AddReject("esdFriend"); // do not merge
   //  merger.SetMaxFilesOpen(700);
