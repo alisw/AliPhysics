@@ -29,8 +29,8 @@ AliAnalysisTask *AddTaskCombinedHadronSpectra(Int_t identifier = 0, Bool_t isMC 
   if (saveMotherPDG) task->SetSaveMotherPDG(saveMotherPDG);
   if (smallTHnSparse){
     task->SetSmallTHnSparse(kTRUE);
-    task->SetTPCnSigmaCuts(-3.,3.);
-    task->SetRapidityCuts(-0.2,0.2);
+    task->SetTPCnSigmaCuts(nSigmaTPCLow,nSigmaTPCHigh);
+    task->SetRapidityCuts(rapidityLow,rapidityHigh);
   }
 
   //initialize task
