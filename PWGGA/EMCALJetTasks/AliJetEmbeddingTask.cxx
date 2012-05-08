@@ -144,17 +144,17 @@ void AliJetEmbeddingTask::Init()
     }
   }
 
-    if (!fGeom) {
-      if (fGeomName.Length()>0) {
-        fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-        if (!fGeom)
-          AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
-      } else {
-        fGeom = AliEMCALGeometry::GetInstance();
-        if (!fGeom) 
-          AliError("Could not get default geometry!");
-      }
+  if (!fGeom) {
+    if (fGeomName.Length()>0) {
+      fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+      if (!fGeom)
+        AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
+    } else {
+      fGeom = AliEMCALGeometry::GetInstance();
+      if (!fGeom) 
+        AliError("Could not get default geometry!");
     }
+  }
 }
 
 //________________________________________________________________________
@@ -176,6 +176,13 @@ void AliJetEmbeddingTask::Embed()
       
       Int_t absId = 0;
       fGeom->GetAbsCellIdFromEtaPhi(eta, phi, absId);
+
+      if (absId == -1) {
+	AliWarning(Form("Unable to embed cluster in eta = %f, phi = %f!"
+                        " Maybe the eta-phi range is not inside the EMCal acceptance (eta = [%f, %f], phi = [%f, %f])", 
+			eta, phi, fEtaMin, fEtaMax, fPhiMin, fPhiMax));
+	continue;
+      }
       
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(digits.New(0));
       digit->SetId(absId);
@@ -183,7 +190,7 @@ void AliJetEmbeddingTask::Embed()
       digit->SetType(AliEMCALDigit::kHG);
       digit->SetAmplitude(e);
       
-      AliEMCALRecPoint recPoint;
+      AliEMCALRecPoint recPoint("");
       recPoint.AddDigit(*digit, e, kFALSE);
       recPoint.EvalGlobalPosition(0, &digits);
 
@@ -199,7 +206,8 @@ void AliJetEmbeddingTask::Embed()
       cluster->SetNCells(1);
       UShort_t shortAbsId = absId;
       cluster->SetCellsAbsId(&shortAbsId);
-      cluster->SetCellsAmplitudeFraction(NULL);
+      Double32_t fract = 1;
+      cluster->SetCellsAmplitudeFraction(&fract);
       cluster->SetID(nClusters + i);
       cluster->SetEmcCpvDistance(-1);
       cluster->SetChi2(100); // MC flag!
