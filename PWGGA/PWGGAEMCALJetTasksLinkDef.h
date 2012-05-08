@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJetTask+;
+#pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliHadCorrTask+;
 
 #endif
