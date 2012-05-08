@@ -396,7 +396,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
     }else{
       nNegTrks++;
     }
-    fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+    fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
     Int_t passTightCuts=fRDCutsAnalysis->GetIsSelectedCuts();
     if(passTightCuts>0){
       Float_t invMass = d->InvMassDplus();
@@ -868,7 +868,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
       AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
       if(fUseBit && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){
-	if(fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod))nOS++;
+	if(fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod))nOS++;
       }
     }
   }else{//Standard analysis
@@ -888,7 +888,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	unsetvtx=kTRUE;
       }
     
-      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
       if(!fRDCutsAnalysis->GetIsSelectedCuts())continue;//filling loose cuts histos with no-pid informations
 
       Double_t ptCand = d->Pt();

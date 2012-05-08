@@ -543,7 +543,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     
     Double_t ptCand = d->Pt();
     Int_t iPtBin=TMath::BinarySearch(fNPtBins,fPtLimits,(Float_t)ptCand);
-    Int_t retCodeAnalysisCuts=fAnalysisCuts->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+    Int_t retCodeAnalysisCuts=fAnalysisCuts->IsSelected(d,AliRDHFCuts::kAll,aod);
     Double_t rapid=d->YDs(); 
     fYVsPt->Fill(ptCand,rapid);
 

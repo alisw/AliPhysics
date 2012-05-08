@@ -557,7 +557,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     }
     Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(absPdgMom));
     if(!isFidAcc)continue;    
-    Int_t isSelected= fRDCuts->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+    Int_t isSelected= fRDCuts->IsSelected(d,AliRDHFCuts::kAll,aod);
     if(!isSelected)continue;
 
     fhEventsInfo->Fill(2); // candidate selected
