@@ -652,7 +652,7 @@ void AliAnalysisTaskSAJF::DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAJF::DoKtJetLoop()
+Float_t AliAnalysisTaskSAJF::DoKtJetLoop(Int_t nLJs)
 {
   Float_t ktJetsMedian = 0;
   Int_t nktjets =  GetNumberOfKtJets();
@@ -689,11 +689,15 @@ Float_t AliAnalysisTaskSAJF::DoKtJetLoop()
     } //kt jet loop 
 
     nktjets -= NoOfZeroJets;
+    
+    if (nktjets < 1) return 0;
+
     memmove(ktJets.GetArray(), ktJets.GetArray() + NoOfZeroJets, nktjets * sizeof(Float_t));
 
-    if (nktjets < 3) return 0;
+    nktjets -= nLJs;
 
-    nktjets -= 2;
+    if (nktjets < 1) return 0;
+
     if (nktjets % 2)
       ktJetsMedian = ktJets[nktjets / 2];
     else
@@ -784,7 +788,10 @@ Bool_t AliAnalysisTaskSAJF::DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt)
 //________________________________________________________________________
 Float_t AliAnalysisTaskSAJF::DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)
 { 
-  AliEmcalJet* jet = GetJet(maxJetIndex);
+  AliEmcalJet* jet = 0;
+  if (max2JetIndex >= 0)
+    jet = GetJet(maxJetIndex);
+
   AliEmcalJet* jet2 = 0;
   if (max2JetIndex >= 0)
     jet2 = GetJet(max2JetIndex);
@@ -795,34 +802,36 @@ Float_t AliAnalysisTaskSAJF::DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)
   for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliVTrack* track = GetTrack(iTracks);         
     if(!track) {
-      AliError(Form("ERROR: Could not retrieve track %d",iTracks)); 
+      AliError(Form("Could not retrieve track %d",iTracks)); 
       continue; 
     }
     
     if (!AcceptTrack(track)) continue;
     
-    if (IsJetTrack(jet, iTracks)) {
+    if (jet && IsJetTrack(jet, iTracks)) {
       fHistTracksPtLJ[fCentBin]->Fill(track->Pt());
     }
     else if (!jet2 || !IsJetTrack(jet2, iTracks)) {
       fHistTracksPtBkg[fCentBin]->Fill(track->Pt());
       rhoTracks += track->Pt();
       
-      Float_t dphijet = jet->Phi() - track->Phi();
-      if (dphijet < -1.6) dphijet += TMath::Pi() * 2;
-      if (dphijet > 4.8) dphijet -= TMath::Pi() * 2;
-      fHistBkgLJetPhiCorr[fCentBin]->Fill(dphijet);
+      if (jet) {
+	Float_t dphijet = jet->Phi() - track->Phi();
+	if (dphijet < -1.6) dphijet += TMath::Pi() * 2;
+	if (dphijet > 4.8) dphijet -= TMath::Pi() * 2;
+	fHistBkgLJetPhiCorr[fCentBin]->Fill(dphijet);
+      }
 
       for(Int_t it2 = iTracks+1; it2 < ntracks; it2++) {
 	AliVTrack* track2 = GetTrack(it2);         
 	if(!track2) {
-	  AliError(Form("ERROR: Could not retrieve track %d", it2)); 
+	  AliError(Form("Could not retrieve track %d", it2)); 
 	  continue; 
 	}
 	
 	if (!AcceptTrack(track2)) continue;
 	
-	if (IsJetTrack(jet, it2)) continue;
+	if (jet && IsJetTrack(jet, it2)) continue;
 
 	if (jet2 && IsJetTrack(jet2, it2)) continue;
 	
@@ -843,7 +852,10 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
   Double_t vertex[3] = {0, 0, 0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-  AliEmcalJet* jet = GetJet(maxJetIndex);
+  AliEmcalJet* jet = 0;
+  if (max2JetIndex >= 0)
+    jet = GetJet(maxJetIndex);
+
   AliEmcalJet* jet2 = 0;
   if (max2JetIndex >= 0)
     jet2 = GetJet(max2JetIndex);
@@ -864,7 +876,7 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
     TLorentzVector nPart;
     cluster->GetMomentum(nPart, vertex);
 
-    if (IsJetCluster(jet, iClusters)) {
+    if (jet && IsJetCluster(jet, iClusters)) {
       fHistClusEtLJ[fCentBin]->Fill(nPart.Et());
     }
     else if (!jet2 || !IsJetCluster(jet2, iClusters)) {
@@ -875,10 +887,12 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
       cluster->GetPosition(pos1);
       TVector3 clusVec1(pos1);
 
-      Float_t dphijet = jet->Phi() - clusVec1.Phi();
-      if (dphijet < -1.6) dphijet += TMath::Pi() * 2;
-      if (dphijet > 4.8) dphijet -= TMath::Pi() * 2;
-      fHistBkgLJetPhiCorr[fCentBin]->Fill(dphijet);
+      if (jet) {
+	Float_t dphijet = jet->Phi() - clusVec1.Phi();
+	if (dphijet < -1.6) dphijet += TMath::Pi() * 2;
+	if (dphijet > 4.8) dphijet -= TMath::Pi() * 2;
+	fHistBkgLJetPhiCorr[fCentBin]->Fill(dphijet);
+      }
 
       for(Int_t ic2 = iClusters+1; ic2 < nclusters; ic2++) {
 	AliVCluster* cluster2 = GetCaloCluster(ic2);
@@ -891,7 +905,7 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
 
 	if (!AcceptCluster(cluster)) continue;
 	
-	if (IsJetCluster(jet, ic2)) continue;
+	if (jet && IsJetCluster(jet, ic2)) continue;
 	
 	if (jet2 && IsJetCluster(jet2, ic2)) continue;
 
@@ -991,7 +1005,7 @@ Float_t AliAnalysisTaskSAJF::GetRigidConePt(AliEmcalJet *jet, Float_t minD)
   for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliVTrack* track = GetTrack(iTracks);         
     if(!track) {
-      AliError(Form("ERROR: Could not retrieve track %d",iTracks)); 
+      AliError(Form("Could not retrieve track %d",iTracks)); 
       continue; 
     }
     
