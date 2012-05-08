@@ -3,12 +3,13 @@
 AliJetEmbedding* AddTaskJetEmbedding(
   const char     *tracksName   = "Tracks",
   const char     *clusName     = "CaloClustersCorr",
-  const Float_t   minPt        = 50,
-  const Float_t   maxPt        = 60,
-  const Float_t   minEta       = -1,
-  const Float_t   maxEta       = 1,
-  const Float_t   minPhi       = 0,
-  const Float_t   maxPhi       = TMath::Pi() * 2,
+  const char     *taskName     = "JetEmbeddingTask",
+  const Double_t  minPt        = 10,
+  const Double_t  maxPt        = 10,
+  const Double_t  minEta       = -1,
+  const Double_t  maxEta       = 1,
+  const Double_t  minPhi       = 0,
+  const Double_t  maxPhi       = TMath::Pi() * 2,
   const Int_t     nTracks      = 1,
   const Int_t     nClus        = 0,
   const Bool_t    copyArray    = kFALSE
@@ -35,7 +36,7 @@ AliJetEmbedding* AddTaskJetEmbedding(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliJetEmbedding *jetEmb = new AliJetEmbedding("AliJetEmbedding");
+  AliJetEmbeddingTask *jetEmb = new AliJetEmbedding(taskName);
   jetEmb->SetTracksName(tracksName);
   jetEmb->SetClusName(clusName);
   jetEmb->SetEtaRange(minEta, maxEta);
