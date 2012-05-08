@@ -50,6 +50,26 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
 
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,0,coutput1);
+
+  AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+  SetupCalibTaskTrainAlign(taskAlign);
+  mgr->AddTask(taskAlign);
+
+  AliAnalysisDataContainer *cinputAlign = mgr->GetCommonInputContainer();
+  if (!cinputAlign) cinputAlign = mgr->CreateContainer("cchain",TChain::Class(), 
+                                      AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutputAlign = mgr->CreateContainer("TPCAlign",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
+
+  mgr->ConnectInput(taskAlign,0,cinputAlign);
+  mgr->ConnectOutput(taskAlign,0,coutputAlign);
+
+  AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+  SetupCalibTaskTrainCluster(taskCluster);
+  mgr->AddTask(taskCluster);
+  AliAnalysisDataContainer *coutputAlign = mgr->CreateContainer("TPCCluster",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
+  mgr->ConnectInput(taskCluster,0,cinput1);
+  mgr->ConnectOutput(taskCluster,0,coutputAlign);
+
   return task1;
 }
 
@@ -166,8 +186,8 @@ void AddCalibTime(TObject* task){
   calibTime->SetStreamLevel(0);
   calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
 
-  // max 600 tracks per event
-  calibTime->SetCutTracks(600);
+  // max 5000 tracks per event
+  calibTime->SetCutTracks(5000);
 
   myTask->AddJob(calibTime);
 }
@@ -192,16 +212,63 @@ void AddCalibTracks(TObject* task){
 }
 
 
+void AddCalibAlign(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  //
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task; 
+  AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors");
+  calibAlign->SetDebugLevel(debugLevel);
+  calibAlign->SetStreamLevel(streamLevel);
+  calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
+  myTask->AddJob(calibAlign);
+}
+
+
+void AddCalibLaser(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  //
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
+  calibLaser->SetDebugLevel(debugLevel);
+  calibLaser->SetStreamLevel(streamLevel);
+  calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything
+  myTask->AddJob(calibLaser);
+}
+
+
+
+
 //_____________________________________________________________________________
 void SetupCalibTaskTrain1(TObject* task){
   //
   // Setup tasks for calibration train
   //
-  AddCalibCalib(task);
+  // AddCalibCalib(task); - disable refitting
   AddCalibTimeGain(task);
   AddCalibTime(task);
-  //AddCalibTracks(task);
 }
+
+
+void SetupCalibTaskTrainAlign(TObject* task){
+  //
+  // Setup tasks for calibration train
+  //
+  AddCalibAlign(task);
+  AddCalibLaser(task);
+}
+
+
+void SetupCalibTaskTrainCluster(TObject* task){
+  //
+  // Setup tasks for calibration train
+  //
+  AddCalibTracks(task);
+}
+
 
 //_____________________________________________________________________________
 void ConfigOCDB(Int_t run){
@@ -238,23 +305,24 @@ void ConfigOCDB(Int_t run){
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(1);
 
   transform->SetCurrentRecoParam(tpcRecoParam);
-  tpcRecoParam->SetUseGainCorrectionTime(0);
-  tpcRecoParam->SetUseRPHICorrection(kFALSE); 
-  tpcRecoParam->SetUseTOFCorrection(kFALSE);
-  //
-  tpcRecoParam->SetUseDriftCorrectionTime(0);
-  tpcRecoParam->SetUseDriftCorrectionGY(0);
-  //
-  tpcRecoParam->SetUseRadialCorrection(kFALSE);
-  tpcRecoParam->SetUseQuadrantAlignment(kFALSE);
-  //
-  tpcRecoParam->SetUseSectorAlignment(kFALSE);
-  tpcRecoParam->SetUseFieldCorrection(kFALSE);
-  tpcRecoParam->SetUseExBCorrection(kFALSE);
-  //
-  tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
-  tpcRecoParam->SetUseAlignmentTime(kFALSE);
-  tpcRecoParam->SetUseComposedCorrection(kTRUE);
+  // in CPass1 use a default setting
+//   tpcRecoParam->SetUseGainCorrectionTime(0);
+//   tpcRecoParam->SetUseRPHICorrection(kFALSE); 
+//   tpcRecoParam->SetUseTOFCorrection(kFALSE);
+//   //
+//   tpcRecoParam->SetUseDriftCorrectionTime(0);
+//   tpcRecoParam->SetUseDriftCorrectionGY(0);
+//   //
+//   tpcRecoParam->SetUseRadialCorrection(kFALSE);
+//   tpcRecoParam->SetUseQuadrantAlignment(kFALSE);
+//   //
+//   tpcRecoParam->SetUseSectorAlignment(kFALSE);
+//   tpcRecoParam->SetUseFieldCorrection(kFALSE);
+//   tpcRecoParam->SetUseExBCorrection(kFALSE);
+//   //
+//   tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
+//   tpcRecoParam->SetUseAlignmentTime(kFALSE);
+//   tpcRecoParam->SetUseComposedCorrection(kTRUE);
 
   AliTPCcalibDB::Instance()->SetRun(run); 
 }
