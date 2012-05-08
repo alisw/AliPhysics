@@ -1,22 +1,22 @@
 // $Id$
 
-void runJetAna(const char     *datatype     = "aod",        // aod, esd, sesd
-               const char     *runtype      = "local",      // local or grid
-               const char     *gridmode     = "test",       // run mode (can be "full", "test", "offline", "submit" or "terminate")
-               const char     *txtfile      = "ifiles.txt", // text file with input files for local mode
-               const char     *taskname     = "JetAna")     // name of grid generated macros
+void runJetAna(
+  const char     *datatype     = "aod",        // aod, esd, sesd
+  const char     *runtype      = "local",      // local or grid (when local gridmode specifies input txt file)
+  const char     *gridmode     = "test",       // grid mode (can be "full", "test", "offline", "submit" or "terminate")
+  const char     *taskname     = "JetAna")     // name of grid generated macros
 {
 
   enum eDataType { kAod, kEsd, kSesd };
   enum eRunType  { kLocal, kGrid };
 
   eRunType rType = kLocal;
-  if (!strcmp(runtype, "grid")) 
+  if (strcmp(runtype, "grid")==0) 
     rType = kGrid;
   eDataType dType = kAod;
-  if (!strcmp(runtype, "esd"))
+  if (strcmp(datatype, "esd")==0)
     dType = kEsd;
-  else if (!strcmp(runtype, "sesd"))
+  else if (strcmp(datatype, "sesd")==0)
     dType = kSesd;
 
   // load the libraries
@@ -40,7 +40,17 @@ void runJetAna(const char     *datatype     = "aod",        // aod, esd, sesd
 
   // PSel task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPhysicsSelection.C");
-  AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelelection(kTRUE);
+  AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE);
+
+  // Setup task
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalSetup.C");
+  AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
+
+  // Compatibility task (for skimmed ESD)
+  if (dType == kSesd) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalCompat.C");
+    AliEmcalCompatTask *comptask = AddTaskEmcalCompat();
+  }
 
   // Centrality task
   if (dType == kEsd) {
@@ -48,31 +58,50 @@ void runJetAna(const char     *datatype     = "aod",        // aod, esd, sesd
     AliCentralitySelectionTask *centralityTask = AddTaskCentrality();
   }
 
-  // Setup task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalSetup.C");
-  AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
+  TString inputTracks("tracks");
+  if (dType == kEsd) {
+    inputTracks = "HybridTracks";
 
-  // Track maker
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPicoTrackMaker.C");
-  AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker("PicoTracks", "tracks", "LHC11h");
+    // Hybrid tracks maker for ESD
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalEsdTpcTrack.C");
+    AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(inputTracks);
 
-  // Cluster-track matcher
-  if (0) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalClusTrackMatcher.C");
-    AliEmcalClusTrackMatcherTask *matcherTask = AddTaskEmcalClusTrackMatcher("PicoTracks", "caloClusters");
+    // Track propagator
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalTrackPropagator.C");
+    AliEmcalTrackPropagatorTask *propTask = AddTaskEmcalTrackPropagator(inputTracks);
+  }
+  else if (dType == kSesd) {
+    inputTracks = "Tracks";
   }
 
+  // PicoTracks maker
+  TString tracksName("PicoTracks");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPicoTrackMaker.C");
+  AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(tracksName, inputTracks, "LHC11h");
+
+  // Cluster-track matcher
+  TString clusName("CaloClusters");
+  if (dType == kAod)
+    clusName = "caloClusters";
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalClusTrackMatcher.C");
+  AliEmcalClusTrackMatcherTask *matcherTask = AddTaskEmcalClusTrackMatcher(tracksName, clusName);
+
   // Hadronic correction task
+  TString clusNameCorr(Form("%sCorr",clusName.Data()));
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskHadCorr.C");
-  AliHadCorrTask *hcorr = AddTaskHadCorr("PicoTracks", "caloClusters", "caloClustersCorr");
-  
+  AliHadCorrTask *hcorr = AddTaskHadCorr(tracksName, clusName, clusNameCorr);
+
+  // Embedding task
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
+  AliJetEmbeddingTask* jemb = AddTaskJetEmbedding(tracksName, clusNameCorr, "JetEmbeddingTask", 10, 10, -0.9, 0.9);
+
   // Jet finder
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  AliEmcalJetTask *jetTask = AddTaskEmcalJet("PicoTracks", "caloClustersCorr");
+  AliEmcalJetTask *jetTask = AddTaskEmcalJet(tracksName, clusNameCorr);
 
   // Scale task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskScale.C");
-  AliAnalysisTaskScale *scaleTask = AddTaskScale("PicoTracks", "caloClustersCorr");
+  AliAnalysisTaskScale *scaleTask = AddTaskScale(tracksName, clusNameCorr);
 
   if (1) {
     UInt_t val = AliVEvent::kAny;
@@ -103,65 +132,19 @@ void runJetAna(const char     *datatype     = "aod",        // aod, esd, sesd
   if (rType == kGrid) {
     mgr->StartAnalysis(gridmode);
   } else {
+    const char *txtfile = gridmode;
     if (dType == kAod) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/CreateAODChain.C");
-      chain = CreateAODChain("files_aod95.txt", 50);
+      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/CreateAODChain.C");
+      chain = CreateAODChain(txtfile, 5);
     } else {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGUD/macros/CreateESDChain.C");
-      TChain* chain = CreateESDChain(ifiles.txt, 50);
+      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/CreateESDChain.C");
+      TChain* chain = CreateESDChain(txtfile, 5);
     }
     mgr->StartAnalysis("local", chain);
   }
 
   return;
 }
-
-/*
-  //Tracks maker
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalAodTrackFilter.C");
-  //AliEmcalAodTrackFilterTask *eTask = AddTaskEmcalAodTrackFilter(tracksName, "tracks", "LHC11h");
-
-  //Tender Supplies
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalAodTender.C");
-  //geometry EMCAL_COMPLETEV1 or EMCAL_FIRSTYEARV1; data pp or PbPb
-  AliEmcalTenderTask *tender = AddTaskEmcalAodTender("EMCAL_COMPLETEV1", "PbPb");
-  /*
-  if (runtype == "grid") {
-    tender->SetDefaultCDBStorage("raw://"); //uncomment if you work on grid
-  }
-  else if (runtype == "local") {
-    tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB"); //uncomment if you work local
-  }
-  */
-  /*
-  //V1unfold Clusterizer
-  TString AODbranchName;
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C");
-  AliAnalysisTaskEMCALClusterize *v1UnfoldClusTask = AddTaskEMCALClusterize(AODbranchName);
-  
-  //L0-L1 Clusterizer
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskClusterizerFW.C");
-  //AliAnalysisTaskEMCALClusterizeFast *L0ClusTask = AddTaskClusterizerFW("L0");
-  AliAnalysisTaskEMCALClusterizeFast *L0ClusTask = AddTaskClusterizerFW("L1GAMMA");
-  //Hadronic correction task
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskHadCorr.C");
-  //AliHadCorrTask *hcorr = AddTaskHadCorr(tracksName, clustersName, corrClusName);
-  
-  //Cluster Track matcher
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalClusTrackMatcher.C");
-  //AliEmcalClusTrackMatcherTask *matcherTask = AddTaskEmcalClusTrackMatcher(tracksName, corrClusName, 1, 1);
-
-  //Jet finder
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  //AliEmcalJetTask *jetTask = AddTaskEmcalJet(tracksName, corrClusName);
-	
-  // create task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalIsolatedPhotons.C");
-  //AliEmcalIsolatedPhotonsTask *task = AddTaskEmcalIsolatedPhotons(tracksName, corrClusName, jetsName);
-  //task->SelectCollisionCandidates(AliVEvent::kAnyINT);  // Any MB trigger
-  //task->SelectCollisionCandidates(AliVEvent::kEMCEGA);  // Gamma trigger
-  //task->SelectCollisionCandidates(AliVEvent::kEMCEJE);  // Jet trigger
-  */
 
 void LoadLibs()
 {
