@@ -56,7 +56,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   
   if( bNonLin ) 
   { 
-    if(!kSimulation) reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
-    else             reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
+    if(!kMC) reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+    else     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
   }
 }
