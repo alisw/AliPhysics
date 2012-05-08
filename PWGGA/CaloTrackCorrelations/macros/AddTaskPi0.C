@@ -10,7 +10,7 @@ Int_t   kYears         = 2011;
 TString kCollisions    = "pp";
 TString kTrig          = "EMC7" ;
 TString kClusterArray  = "";
-TString kData          = "ESD";
+TString kData          = ""; // MC or deltaAOD
 TString kInputDataType = "ESD";
 TString kCalorimeter   = "EMCAL";
 Bool_t  kTM            = kTRUE;
@@ -19,14 +19,20 @@ Int_t   kMinCen        = -1;
 Int_t   kMaxCen        = -1;
 TString kName          = "";
 Int_t   kDebug         = -1; 
-AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = "AOD",
+Float_t kVzCut         = 10.;
+Bool_t  kPrimaryVertex = kTRUE;
+Bool_t  kUseOADB       = kTRUE;
+AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = "",
                                                 const TString calorimeter   = "EMCAL", 
                                                 const Bool_t  simulation    = kFALSE,
                                                 const Bool_t  eventsel      = kFALSE,
+                                                const Float_t vzcut         = 10,
+                                                const Bool_t  primver       = kTRUE,
+                                                const Bool_t  oadb          = kTRUE,
                                                 const Bool_t  exotic        = kTRUE,
                                                 const Bool_t  nonlin        = kFALSE,
                                                 TString       outputfile    = "",
-                                                const Int_t   year          = 2010,
+                                                const Int_t   year          = 2012,
                                                 const TString col           = "pp", 
                                                 const TString trigger       = "MB", 
                                                 const TString clustersArray = "V1",
@@ -58,6 +64,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = "A
   kMinCen        = minCen;
   kMaxCen        = maxCen;
   kEventSelection= eventsel;
+  kVzCut         = vzcut;
+  kPrimaryVertex = primver;
+  kUseOADB       = oadb;
   
   // Get the pointer to the existing analysis manager via the static access method.
   
@@ -145,9 +154,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = "A
                                                              AliAnalysisManager::kOutputContainer, 
                                                              Form("%s",outputfile.Data()));
 	
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Cuts_%s",kName.Data()), TList::Class(), 
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",kName.Data()), TList::Class(), 
                                                              AliAnalysisManager::kParamContainer, 
-                                                             Form("%s",outputfile.Data()));
+                                                             "AnalysisParameters.root");
   
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
@@ -222,10 +231,15 @@ AliCaloTrackReader * ConfigureReader()
 {
   
   AliCaloTrackReader * reader = 0;
-  if     (kData.Contains("AOD"))   reader = new AliCaloTrackAODReader();
-  else if(kData=="ESD")            reader = new AliCaloTrackESDReader();
-  else if(kData=="MC" && 
-          kInputDataType == "ESD") reader = new AliCaloTrackMCReader();
+  if     (kInputDataType == "ESD"&& kData=="MC" ) 
+    reader = new AliCaloTrackMCReader();
+  else if(kInputDataType=="AOD" || kData.Contains("AOD"))   
+    reader = new AliCaloTrackAODReader();
+  else if(kInputDataType=="ESD")            
+    reader = new AliCaloTrackESDReader();
+  else 
+    printf("AliCaloTrackReader::ConfigureReader() - Data combination not known kData=%s, kInputData=%s\n",kData.Data(),kInputDataType.Data());
+  
   
   reader->SetDebug(kDebug);//10 for lots of messages
   
@@ -261,17 +275,17 @@ AliCaloTrackReader * ConfigureReader()
   reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
 
   // Tracks
-  reader->SwitchOnCTS();
-  if(kInputDataType=="ESD")
-  {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
-    reader->SetTrackCuts(esdTrackCuts);
-  }
-  else if(kInputDataType=="AOD")
-  {
-    reader->SetTrackFilterMask(128); // Filter bit, not mask
-  }
+  reader->SwitchOffCTS();
+//  if(kInputDataType=="ESD")
+//  {
+//    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+//    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
+//    reader->SetTrackCuts(esdTrackCuts);
+//  }
+//  else if(kInputDataType=="AOD")
+//  {
+//    reader->SetTrackFilterMask(128); // Filter bit, not mask
+//  }
   
   // Calorimeter
   
@@ -309,21 +323,22 @@ AliCaloTrackReader * ConfigureReader()
   // Event selection
   //-----------------
   
-  //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
+  if(!kUseKinematics && kTrig.BeginsWith("C")) reader->SetFiredTriggerClassName(kTrig); 
   
-  reader->SetZvertexCut(10.);                // Open cut
+  // vertex event selection
+  reader->SetZvertexCut(kVzCut);               
+  if(kPrimaryVertex)reader->SwitchOnPrimaryVertexSelection(); 
+  else              reader->SwitchOffPrimaryVertexSelection(); 
   
   if(kEventSelection)
   {
     reader->SwitchOnEventSelection();         // remove pileup by default
     reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
-    reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
   }
   else 
   {
     reader->SwitchOffEventSelection();         // remove pileup by default
     reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
-    reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex    
   }
     
   if(kCollisions=="PbPb") 
@@ -373,7 +388,6 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   if(kRecalTM) cu->SwitchOnRecalculateClusterTrackMatching(); // Done in clusterization
   else         cu->SwitchOffRecalculateClusterTrackMatching();
   
-  cu->SwitchOnBadChannelsRemoval() ;
   
   //EMCAL settings
 
@@ -382,18 +396,40 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   
   AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   
-  Bool_t bCalib = kTRUE;
-  Bool_t bBadMap= kTRUE;
-  cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
+  Bool_t bCalibE = kTRUE;
+  Bool_t bCalibT = kTRUE;
+  Bool_t bBadMap = kTRUE;
   
+  if(kUseOADB)
+  {
+    cu->SwitchOnRecalibration(); 
+    cu->SwitchOnBadChannelsRemoval() ;
+    cu->SwitchOnEMCALOADB();
+  }
+  else
+  {
+    cu->SwitchOffRecalibration(); 
+    cu->SwitchOffBadChannelsRemoval() ;
+    cu->SwitchOffEMCALOADB();
+    bCalibE = kFALSE;
+    bBadMap = kFALSE;
+    bCalibT = kFALSE;
+  }
   
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           kSimulation,                             
                           kExotic,
                           kNonLinearity,
-                          bCalib, 
-                          bBadMap);   
+                          bCalibE, 
+                          bBadMap,
+                          bCalibT);   
+  
+
+  printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
+  printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
+  
+ 
   
   if( kNonLinearity ) 
   { 
@@ -402,10 +438,6 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   }
   
   
-  printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
-  printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
-  
-    
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
     
@@ -479,7 +511,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   //PHOS
   caloPID->SetPHOSDispersionCut(2.5);
   caloPID->SetPHOSRCut(2.);
-  if(kData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
+  if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
     
   //caloPID->SetTOFCut(10000000); // Not used, only to set PID bits
   
