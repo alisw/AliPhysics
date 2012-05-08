@@ -6,9 +6,10 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
   const char *nktjets            = "KtJets",
-  Float_t jetradius              = 0.4,
+  const char *nembjets           = "EmbJets",
+  Double_t    jetradius          = 0.4,
   const char *ntrgclusters       = "ClustersL1GAMMAFEE",
-  UInt_t type                    = AliAnalysisTaskSAJF::kEMCAL
+  UInt_t      type               = AliAnalysisTaskSAJF::kEMCAL
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -38,6 +39,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   phTask->SetClusName(nclusters);
   phTask->SetJetsName(njets);
   phTask->SetKtJetsName(nktjets);
+  phTask->SetEmbJetsName(nembjets);
   phTask->SetTrgClusName(ntrgclusters);
   phTask->SetJetRadius(jetradius);
 
