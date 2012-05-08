@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  EMCAL tender, apply corrections to EMCAL clusters and do track matching. //
@@ -59,7 +58,7 @@ AliTenderSupply()
 ,fTask(0)
 ,fRun(0)
 ,fEMCALGeo(0x0)
-,fEMCALGeoName("EMCAL_COMPLETEV1")
+,fEMCALGeoName("")
 ,fEMCALRecoUtils(0)
 ,fConfigName("")
 ,fDebugLevel(0)
@@ -106,8 +105,8 @@ AliTenderSupply()
 ,fExoticCellMinAmplitude(-1)
 {
   // Default constructor.
-  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
-  fEMCALRecoUtils  = new AliEMCALRecoUtils;
+
+  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
 }
 
 //_____________________________________________________
@@ -116,7 +115,7 @@ AliTenderSupply(name,tender)
 ,fTask(0)
 ,fRun(0)
 ,fEMCALGeo(0x0)
-,fEMCALGeoName("EMCAL_COMPLETEV1")
+,fEMCALGeoName("")
 ,fEMCALRecoUtils(0)
 ,fConfigName("")
 ,fDebugLevel(0)
@@ -164,8 +163,7 @@ AliTenderSupply(name,tender)
 {
   // Named constructor
   
-  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
-  fEMCALRecoUtils  = new AliEMCALRecoUtils;
+  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
 }
 
 //_____________________________________________________
@@ -174,7 +172,7 @@ AliTenderSupply(name)
 ,fTask(task)
 ,fRun(0)
 ,fEMCALGeo(0x0)
-,fEMCALGeoName("EMCAL_COMPLETEV1")
+,fEMCALGeoName("")
 ,fEMCALRecoUtils(0)
 ,fConfigName("")
 ,fDebugLevel(0)
@@ -220,10 +218,9 @@ AliTenderSupply(name)
 ,fExoticCellDiffTime(-1)
 ,fExoticCellMinAmplitude(-1)
 {
-  // Named constructor
+  // Named constructor.
   
-  for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
-  fEMCALRecoUtils  = new AliEMCALRecoUtils;
+  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
 }
 
 //_____________________________________________________
@@ -244,9 +241,26 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
 }
 
 //_____________________________________________________
+void AliEMCALTenderSupply::SetDefaults()
+{
+  // Set default settings.
+
+  SwitchOnBadCellRemove();
+  SwitchOnExoticCellRemove();
+  SwitchOnCalibrateEnergy();
+  SwitchOnCalibrateTime();
+  SwitchOnUpdateCell();
+  SwitchOnReclustering();
+  SwitchOnClusterBadChannelCheck();
+  SwitchOnClusterExoticChannelCheck();
+  SwitchOnTrackMatch();
+}
+
+//_____________________________________________________
 Bool_t AliEMCALTenderSupply::RunChanged() const
 {
-  // Get run number
+  // Get run number.
+
   return (fTender && fTender->RunChanged()) || (fTask && fRun != fTask->InputEvent()->GetRunNumber()); 
 }
 
@@ -298,7 +312,7 @@ void AliEMCALTenderSupply::Init()
     fExoticCellDiffTime     = tender->fExoticCellDiffTime;
     fExoticCellMinAmplitude = tender->fExoticCellMinAmplitude;
 
-    for(Int_t i = 0; i < 10; i++) 
+    for(Int_t i = 0; i < 12; i++) 
       fEMCALMatrix[i] = tender->fEMCALMatrix[i] ;
   }
   
@@ -341,13 +355,17 @@ void AliEMCALTenderSupply::Init()
     AliInfo( "=============================================================" ); 
   }
 
-  // Init geometry  
-  fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
+  // init reco utils
+  fEMCALRecoUtils  = new AliEMCALRecoUtils;
+
+  // init geometry if requested
+  if (fEMCALGeoName.Length()>0) 
+    fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
 
   // digits array
   fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
 
-  // Initialising non-linearity parameters
+  // initialising non-linearity parameters
   if( fNonLinearThreshold != -1 )
     fEMCALRecoUtils->SetNonLinearityThreshold(fNonLinearThreshold);
   if( fNonLinearFunc != -1 )
@@ -370,7 +388,7 @@ void AliEMCALTenderSupply::Init()
   if( fExoticCellMinAmplitude != -1 )
     fEMCALRecoUtils->SetExoticCellMinAmplitudeCut( fExoticCellMinAmplitude );
 
-  // Setting track matching parameters ... mass, step size and residual cut
+  // setting track matching parameters ... mass, step size and residual cut
   if( fMass != -1 )
     fEMCALRecoUtils->SetMass(fMass);
   if( fStep != -1 )
@@ -393,7 +411,7 @@ void AliEMCALTenderSupply::Init()
 //_____________________________________________________
 AliVEvent* AliEMCALTenderSupply::GetEvent()
 {
-  // return the event pointer
+  // Return the event pointer.
   
   if (fTender) {
     return fTender->GetEvent();
@@ -403,7 +421,6 @@ AliVEvent* AliEMCALTenderSupply::GetEvent()
   }
   
   return 0;
-  
 }
 
 //_____________________________________________________
@@ -421,9 +438,24 @@ void AliEMCALTenderSupply::ProcessEvent()
   // Initialising parameters once per run number
   if (RunChanged()) { 
 
+    AliWarning( "Run changed, initializing parameters" );
     fRun = event->GetRunNumber();
 
-    AliWarning( "Run changed, initializing parameters" );
+    // init geometry if not already done
+    if (fEMCALGeoName.Length()==0) {
+      fEMCALGeoName = "EMCAL_FIRSTYEARV1";
+      if (fRun>139517) {
+        fEMCALGeoName = "EMCAL_COMPLETEV1";
+      } 
+      if (fRun>170593) {
+        fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
+      }
+      fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
+      if (!fEMCALGeo) {
+        AliFatal(Form("Can not create geometry: %s", fEMCALGeoName.Data()));
+        return;
+      }
+    } 
 
     // get pass
     GetPass();
@@ -693,7 +725,7 @@ void AliEMCALTenderSupply::ProcessEvent()
 
     // CLUSTER POSITION -------------------------------------------
     // does process local cell energy recalibration, if enabled and cells
-    // not calibratied yet
+    // not calibrated yet
     if( fRecalClusPos ) 
       fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, cells, clust);
     
@@ -741,6 +773,7 @@ void AliEMCALTenderSupply::ProcessEvent()
 Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 {
   // Initialising misalignment matrices
+
   AliVEvent *event = GetEvent();
   
   if (!event) 
@@ -771,42 +804,42 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   Int_t runGM = event->GetRunNumber();
   TObjArray *mobj = 0;
 
- if(fMisalignSurvey == kdefault)
- { //take default alignment corresponding to run no
+  if(fMisalignSurvey == kdefault)
+  { //take default alignment corresponding to run no
     AliOADBContainer emcalgeoCont(Form("emcal"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(runGM,"EmcalMatrices");
- }
-
- if(fMisalignSurvey == kSurveybyS)
- { //take alignment at sector level
-  if (runGM <= 140000) { //2010 data
-    AliOADBContainer emcalgeoCont(Form("emcal2010"));
-    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
-    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
-    
-  } else if (runGM>140000)
-  { // 2011 LHC11a pass1 data
-    AliOADBContainer emcalgeoCont(Form("emcal2011"));
-    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
-    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");      
   }
- }
-
- if(fMisalignSurvey == kSurveybyM)
- { //take alignment at module level
-  if (runGM <= 140000) { //2010 data
-    AliOADBContainer emcalgeoCont(Form("emcal2010"));
-    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
-    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
-    
-  } else if (runGM>140000) 
-  { // 2011 LHC11a pass1 data
-    AliOADBContainer emcalgeoCont(Form("emcal2011"));
-    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
-    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byM");      
+  
+  if(fMisalignSurvey == kSurveybyS)
+  { //take alignment at sector level
+    if (runGM <= 140000) { //2010 data
+      AliOADBContainer emcalgeoCont(Form("emcal2010"));
+      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
+    } 
+    else if (runGM>140000)
+    { // 2011 LHC11a pass1 data
+      AliOADBContainer emcalgeoCont(Form("emcal2011"));
+      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");      
+    }
   }
- }
+
+  if(fMisalignSurvey == kSurveybyM)
+  { //take alignment at module level
+    if (runGM <= 140000) { //2010 data
+      AliOADBContainer emcalgeoCont(Form("emcal2010"));
+      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
+    } 
+    else if (runGM>140000) 
+    { // 2011 LHC11a pass1 data
+      AliOADBContainer emcalgeoCont(Form("emcal2011"));
+      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byM");      
+    }
+  }
 
   if(!mobj)
   {
@@ -814,12 +847,12 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
     return kFALSE;
   }
   
- for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
- {
-   fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
-   fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
-   fEMCALMatrix[mod]->Print();
- }
+  for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+  {
+    fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
+    fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
+    fEMCALMatrix[mod]->Print();
+  }
   
   return kTRUE;
 }
@@ -936,21 +969,21 @@ Int_t AliEMCALTenderSupply::InitRecalib()
     
     contRF->InitFromFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"AliEMCALRecalib");
   }
-    else
-    { // Else choose the one in the $ALICE_ROOT directory
-      if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
-      
-      TFile *fRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","read");
-      if (!fRecalib || fRecalib->IsZombie()) 
-      {
-        AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root was not found");
-        return 0;
-      }
-      
-      if (fRecalib) delete fRecalib;
-      
-      contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");     
+  else
+  { // Else choose the one in the $ALICE_ROOT directory
+    if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
+    
+    TFile *fRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","read");
+    if (!fRecalib || fRecalib->IsZombie()) 
+    {
+      AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root was not found");
+      return 0;
     }
+    
+    if (fRecalib) delete fRecalib;
+      
+    contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");     
+  }
 
   TObjArray *recal=(TObjArray*)contRF->GetObject(runRC);
   if (!recal)
@@ -1006,7 +1039,7 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
     AliInfo("Initialising time calibration map");
   
   // init default maps first
-  if( !fEMCALRecoUtils->GetEMCALTimeRecalibrationFactorsArray() )
+  if ( !fEMCALRecoUtils->GetEMCALTimeRecalibrationFactorsArray() )
     fEMCALRecoUtils->InitEMCALTimeRecalibrationFactors() ;
 
   Int_t runBC = event->GetRunNumber();
@@ -1121,9 +1154,8 @@ void AliEMCALTenderSupply::UpdateCells()
 //_____________________________________________________
 TString AliEMCALTenderSupply::GetBeamType()
 {
-  
   // Get beam type : pp-AA-pA
-  // ESDs have it directly, AODs we hardcode it
+  // ESDs have it directly, AODs get it from hardcoded run number ranges
   
   AliVEvent *event = GetEvent();
 
@@ -1134,22 +1166,23 @@ TString AliEMCALTenderSupply::GetBeamType()
 
   TString beamType;
 
-  if (event->InheritsFrom("AliESDEvent")) {
-    AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+  if (esd) {
     const AliESDRun *run = esd->GetESDRun();
     beamType = run->GetBeamType();
   }
-  else if (event->InheritsFrom("AliAODEvent")) {
+  else
+  {
     Int_t runNumber = event->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517)  // LHC10h
 	|| (runNumber >= 166529 && runNumber <= 170593))  // LHC11h
-      {
-	beamType = "A-A";
-      }
+    {
+      beamType = "A-A";
+    }
     else 
-      {
-	beamType = "p-p";
-      }
+    {
+      beamType = "p-p";
+    }
   }
 
   return beamType;    
@@ -1158,7 +1191,8 @@ TString AliEMCALTenderSupply::GetBeamType()
 //_____________________________________________________
 Int_t AliEMCALTenderSupply::InitRecParam()
 {
-  // exit if reco params exist (probably shipped by the user already)
+  // Init reco params if not yet exist (probably shipped by the user already)
+
   if( fRecParam != 0 )
     return 2;
 
@@ -1316,7 +1350,7 @@ void AliEMCALTenderSupply::UpdateClusters()
   Int_t nents = clus->GetEntriesFast();
   for (Int_t i=0; i < nents; ++i) 
   {
-    AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->At(i));
+    AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
     if (!c)
       continue;
     if (c->IsEMCAL())
@@ -1326,13 +1360,12 @@ void AliEMCALTenderSupply::UpdateClusters()
   clus->Compress();
   
   RecPoints2Clusters(clus);
-  
 }
 
 //_____________________________________________________
 void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
 {
-  // Convert AliEMCALRecoPoints to AliESDCaloClusters.
+  // Convert AliEMCALRecoPoints to AliESDCaloClusters/AliAODCaloClusters.
   // Cluster energy, global position, cells and their amplitude fractions are restored.
   
   AliVEvent *event = GetEvent();
@@ -1373,7 +1406,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     Float_t g[3];
     gpos.GetXYZ(g);
     
-    AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->New(nout++));
+    AliVCluster *c = static_cast<AliVCluster*>(clus->New(nout++));
     c->SetID(nout-1); 
     c->SetType(AliVCluster::kEMCALClusterv1);
     c->SetE(recpoint->GetEnergy());
@@ -1388,9 +1421,8 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     recpoint->GetElipsAxis(elipAxis);
     c->SetM02(elipAxis[0]*elipAxis[0]) ;
     c->SetM20(elipAxis[1]*elipAxis[1]) ;
-    AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
-    cesd->SetCellsAbsId(absIds);
-    cesd->SetCellsAmplitudeFraction(ratios);
+    c->SetCellsAbsId(absIds);
+    c->SetCellsAmplitudeFraction(ratios);
   }
 }
 

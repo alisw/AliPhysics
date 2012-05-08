@@ -47,6 +47,7 @@ public:
   virtual void ProcessEvent();
 
   void     SetTask(AliAnalysisTaskSE *task)               { fTask = task                     ;}
+  void     SetDefaults();
 
   void     SetEMCALGeometryName(const char *name)         { fEMCALGeoName = name             ;}
   TString  EMCALGeometryName()                      const { return fEMCALGeoName             ;}
@@ -126,7 +127,6 @@ public:
  
   AliEMCALRecoUtils  *GetRecoUtils() const                { return fEMCALRecoUtils           ;}
 
-  //Will update cell list by removing bad channels and recalibration + reclusterize  
   void     SwitchOnUpdateCell()                           { fUpdateCell = kTRUE              ;} 
   void     SwitchOffUpdateCell()                          { fUpdateCell = kFALSE             ;}  
 
@@ -157,92 +157,75 @@ public:
 private:
 
   AliVEvent* GetEvent();
-
   TString    GetBeamType();
-
   Bool_t     RunChanged() const;
-
   Int_t      InitBadChannels();
-
   Bool_t     InitClusterization();
-
   Int_t      InitRecParam();
-
   Bool_t     InitMisalignMatrix();
-
   Int_t      InitRecalib();
-  
   Int_t      InitTimeCalibration();
-
   void       Clusterize();
-
   void       FillDigitsArray();
-
   void       GetPass();
-
   void       RecPoints2Clusters(TClonesArray *clus);
-
   void       RecalibrateCells();
-
   void       UpdateCells();
-
   void       UpdateClusters();
 
-  AliAnalysisTaskSE     *fTask;                   // Analysis task
-  Int_t                  fRun;                    // Current run number
+  AliAnalysisTaskSE     *fTask;                   // analysis task
+  Int_t                  fRun;                    // current run number
   AliEMCALGeometry      *fEMCALGeo;               // EMCAL geometry
-  TString                fEMCALGeoName;           //  name of geometry to use.
-  AliEMCALRecoUtils     *fEMCALRecoUtils;         //  pointer to EMCAL utilities for clusterization
-  TString                fConfigName;             //  name of analysis configuration file
-  Int_t                  fDebugLevel;             //  debug level
-  Int_t                  fNonLinearFunc;          //  non linearity function 
-  Int_t                  fNonLinearThreshold;     //  non linearity threshold value for kBeamTesh non linearity function   
-  Bool_t                 fReCalibCluster;         //  switch for Recalibrate clusters
-  Bool_t                 fUpdateCell;             //  Flag cell update
-  Bool_t                 fCalibrateEnergy;        //  Flag cell energy clibration
-  Bool_t                 fCalibrateTime;          //  Flag cell time clSibration
-  Bool_t                 fDoNonLinearity;         //  Non linearity correction flag
-  Bool_t                 fBadCellRemove;          // Zero bad cells
+  TString                fEMCALGeoName;           // name of geometry to use.
+  AliEMCALRecoUtils     *fEMCALRecoUtils;         // pointer to EMCAL utilities for clusterization
+  TString                fConfigName;             // name of analysis configuration file
+  Int_t                  fDebugLevel;             // debug level
+  Int_t                  fNonLinearFunc;          // non linearity function 
+  Int_t                  fNonLinearThreshold;     // non linearity threshold value for kBeamTesh non linearity function   
+  Bool_t                 fReCalibCluster;         // switch for Recalibrate clusters
+  Bool_t                 fUpdateCell;             // flag cell update
+  Bool_t                 fCalibrateEnergy;        // flag cell energy clibration
+  Bool_t                 fCalibrateTime;          // flag cell time clSibration
+  Bool_t                 fDoNonLinearity;         // nNon linearity correction flag
+  Bool_t                 fBadCellRemove;          // zero bad cells
   Bool_t                 fRejectExoticCells;      // reject exotic cells
   Bool_t                 fRejectExoticClusters;   // recect clusters with exotic cells
-  Bool_t                 fClusterBadChannelCheck; // Check clusters for bad channels
-  TGeoHMatrix           *fEMCALMatrix[10];        //  geometry matrices with misalignments
-  Bool_t                 fRecalClusPos;           //  switch for applying missalignment
-  Bool_t                 fFiducial;               //  switch for checking cells in the fiducial region
-  Int_t                  fNCellsFromEMCALBorder;  //  number os cells from EMCAL border  
-  Bool_t                 fRecalDistToBadChannels; //  switch for recalculation cluster position from bad channel    
-  Bool_t                 fRecalShowerShape;       //  switch for recalculation of the shower shape
-  TTree                 *fInputTree;              //! input data tree
-  TFile                 *fInputFile;              //! input data file 
-  TString                fFilepass;               //! input data pass number
-  Double_t               fMass;                   //  mass for track matching
-  Double_t               fStep;                   //  step size during track matching
-  Bool_t                 fCutEtaPhiSum;           //  swicth to apply residual cut together
-  Bool_t                 fCutEtaPhiSeparate;      //  swicth to apply residual cut separately
-  Float_t                fRcut;                   //  residual cut for track matching  
-  Float_t                fEtacut;                 //  eta cut for track matching  
-  Float_t                fPhicut;                 //  phi cut for track matching  
-  TString                fBasePath;               //  base folder path to get root files 
-  Bool_t                 fReClusterize;           //  switch for reclustering
-  AliEMCALClusterizer   *fClusterizer;            //! clusterizer 
-  Bool_t                 fGeomMatrixSet;          //  set geometry matrices only once, for the first event.         
-  Bool_t                 fLoadGeomMatrices;       //  matrices set from configuration, not get from geometry.root or from ESDs/AODs
-  AliEMCALRecParam      *fRecParam;               //  reconstruction parameters container
-  Bool_t                 fDoTrackMatch;           //  do track matching
-  Bool_t                 fDoUpdateOnly;           //  do only update of cells
-  AliEMCALAfterBurnerUF *fUnfolder;               //! unfolding procedure
-  TClonesArray          *fDigitsArr;              //! digits array
-  TObjArray             *fClusterArr;             //! recpoints array
+  Bool_t                 fClusterBadChannelCheck; // check clusters for bad channels
+  TGeoHMatrix           *fEMCALMatrix[12];        // geometry matrices with misalignments
+  Bool_t                 fRecalClusPos;           // switch for applying missalignment
+  Bool_t                 fFiducial;               // switch for checking cells in the fiducial region
+  Int_t                  fNCellsFromEMCALBorder;  // number os cells from EMCAL border  
+  Bool_t                 fRecalDistToBadChannels; // switch for recalculation cluster position from bad channel    
+  Bool_t                 fRecalShowerShape;       // switch for recalculation of the shower shape
+  TTree                 *fInputTree;              //!input data tree
+  TFile                 *fInputFile;              //!input data file 
+  TString                fFilepass;               //!input data pass number
+  Double_t               fMass;                   // mass for track matching
+  Double_t               fStep;                   // step size during track matching
+  Bool_t                 fCutEtaPhiSum;           // swicth to apply residual cut together
+  Bool_t                 fCutEtaPhiSeparate;      // swicth to apply residual cut separately
+  Float_t                fRcut;                   // residual cut for track matching  
+  Float_t                fEtacut;                 // eta cut for track matching  
+  Float_t                fPhicut;                 // phi cut for track matching  
+  TString                fBasePath;               // base folder path to get root files 
+  Bool_t                 fReClusterize;           // switch for reclustering
+  AliEMCALClusterizer   *fClusterizer;            //!clusterizer 
+  Bool_t                 fGeomMatrixSet;          // set geometry matrices only once, for the first event.         
+  Bool_t                 fLoadGeomMatrices;       // matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  AliEMCALRecParam      *fRecParam;               // reconstruction parameters container
+  Bool_t                 fDoTrackMatch;           // do track matching
+  Bool_t                 fDoUpdateOnly;           // do only update of cells
+  AliEMCALAfterBurnerUF *fUnfolder;               //!unfolding procedure
+  TClonesArray          *fDigitsArr;              //!digits array
+  TObjArray             *fClusterArr;             //!recpoints array
   Int_t                  fMisalignSurvey;         // misalignment matrix survey  
-  Float_t                fExoticCellFraction;     // Good cell if fraction < 1-ecross/ecell
-  Float_t                fExoticCellDiffTime;     // If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
-  Float_t                fExoticCellMinAmplitude; // Check for exotic only if amplitud is larger than this value
-
+  Float_t                fExoticCellFraction;     // good cell if fraction < 1-ecross/ecell
+  Float_t                fExoticCellDiffTime;     // if time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
+  Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
 
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 11); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 12); // EMCAL tender task
 };
-
 #endif

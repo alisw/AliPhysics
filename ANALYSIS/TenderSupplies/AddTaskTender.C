@@ -4,8 +4,10 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
                                Bool_t useTRD=kTRUE,
                                Bool_t usePID=kTRUE,
                                Bool_t useVTX=kTRUE,
-                               Bool_t useT0=kTRUE){
-  if (!(useV0 | useTPC | useTOF | useTRD | usePID | useVTX)) {
+                               Bool_t useT0=kTRUE,
+                               Bool_t useEmc=kFALSE)
+{
+  if (!(useV0 | useTPC | useTOF | useTRD | usePID | useVTX | useEmc)) {
      ::Error("AddTaskTender", "No supply added to tender, so tender not created");
      return 0;
   }   
@@ -21,7 +23,6 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
     ::Error("AddTask_tender_Tender","The analysis tender only works with ESD input!");
     return 0;
   }
-
   
   //========= Add tender to the ANALYSIS manager and set default storage =====
   AliTender *tender=new AliTender("AnalysisTender");
@@ -103,6 +104,13 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
   //========= Attach Primary Vertex supply ======
   if (useVTX) {
     tender->AddSupply(new AliVtxTenderSupply("PriVtxtender"));
+  }  
+
+  //========= Attach EMCAL supply ======
+  if (useEmc) {
+    AliEMCALTenderSupply *emcSupply = new AliEMCALTenderSupply("EmcTender");
+    emcSupply->SetDefaults();
+    tender->AddSupply(emcSupply);
   }  
 
   //================================================
