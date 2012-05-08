@@ -10,7 +10,7 @@ Int_t   kYears         = 2011;
 TString kCollisions    = "pp";
 TString kTrig          = "EMC7" ;
 TString kClusterArray  = "";
-TString kData          = "ESD";
+TString kData          = ""; // MC or deltaAOD
 TString kInputDataType = "ESD";
 TString kCalorimeter   = "EMCAL";
 Bool_t  kTM            = kTRUE;
@@ -25,7 +25,7 @@ Bool_t  kCalibE        = kTRUE;
 Bool_t  kCalibT        = kTRUE;
 Bool_t  kBadMap        = kTRUE;
 
-AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data          = "AOD",
+AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data          = "",
                                                           const TString  calorimeter   = "EMCAL", 
                                                           const Bool_t   simulation    = kFALSE,
                                                           const Bool_t   eventsel      = kFALSE,
@@ -303,10 +303,14 @@ AliCaloTrackReader * ConfigureReader()
 {
   
   AliCaloTrackReader * reader = 0;
-  if     (kData.Contains("AOD"))   reader = new AliCaloTrackAODReader();
-  else if(kData=="ESD")            reader = new AliCaloTrackESDReader();
-  else if(kData=="MC" && 
-          kInputDataType == "ESD") reader = new AliCaloTrackMCReader();
+  if     (kInputDataType == "ESD"&& kData=="MC" ) 
+    reader = new AliCaloTrackMCReader();
+  else if(kInputDataType=="AOD" || kData.Contains("AOD"))   
+    reader = new AliCaloTrackAODReader();
+  else if(kInputDataType=="ESD")            
+    reader = new AliCaloTrackESDReader();
+  else 
+    printf("AliCaloTrackReader::ConfigureReader() - Data combination not known kData=%s, kInputData=%s\n",kData.Data(),kInputDataType.Data());
   
   reader->SetDebug(kDebug);//10 for lots of messages
   
@@ -559,7 +563,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   //PHOS
   caloPID->SetPHOSDispersionCut(2.5);
   caloPID->SetPHOSRCut(2.);
-  if(kData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
+  if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
       
   ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
   
