@@ -325,6 +325,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    if(correctOverflow){
      recESD = new AliTriggerScalersRecordESD();
      recESD->SetTimeStamp(scalers2->GetTimeStamp());
+     recESD->SetTimeGroup(scalers2->GetTimeGroup());
    }
    for( Int_t ic=0; ic<fnClasses; ++ic ){
       TObjArray* scalersArray2 = (TObjArray*)scalers2->GetTriggerScalers();
@@ -394,6 +395,7 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
  // add 0
  AliTriggerScalersRecord* scalers = (AliTriggerScalersRecord*)fScalersRecord.At(0);
  recESD->SetTimeStamp(scalers->GetTimeStamp());
+ recESD->SetTimeGroup(scalers->GetTimeGroup());
  for( Int_t ic=0; ic<fnClasses; ++ic ){
     TObjArray* scalersArray = (TObjArray*)scalers->GetTriggerScalers();
     AliTriggerScalers* counters = (AliTriggerScalers*)scalersArray->At(ic);
