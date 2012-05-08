@@ -25,8 +25,8 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   // Init the task and do settings
   //-------------------------------------------------------
 
+  /* hybrid track cuts*/
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
-  /*hybrid tracks*/
   // TPC
   TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
   cutsp->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
