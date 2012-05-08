@@ -163,11 +163,9 @@ void AliJetEmbeddingTask::Embed()
   // Embed particles.
 
   if (fNEmbClusters > 0 && fOutClusters) {
-
     const Int_t nClusters = fOutClusters->GetEntriesFast();
     TClonesArray digits("AliEMCALDigit", 1);
-    
-    for (Int_t i = 0; i < fNEmbClusters; i++) {
+    for (Int_t i = 0; i < fNEmbClusters; ++i) {
       Double_t pt  = gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
       Double_t eta = gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
       Double_t phi = gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
@@ -185,18 +183,18 @@ void AliJetEmbeddingTask::Embed()
       digit->SetType(AliEMCALDigit::kHG);
       digit->SetAmplitude(e);
       
-      AliEMCALRecPoint *recPoint = new AliEMCALRecPoint();
-      recPoint->AddDigit(*digit, e, kFALSE);
-      recPoint->EvalGlobalPosition(0, &digits);
+      AliEMCALRecPoint recPoint;
+      recPoint.AddDigit(*digit, e, kFALSE);
+      recPoint.EvalGlobalPosition(0, &digits);
 
       TVector3 gpos;
-      recPoint->GetGlobalPosition(gpos);
+      recPoint.GetGlobalPosition(gpos);
       Float_t g[3];
       gpos.GetXYZ(g);
       
       AliVCluster *cluster = static_cast<AliVCluster*>(fOutClusters->New(nClusters + i));
       cluster->SetType(AliVCluster::kEMCALClusterv1);
-      cluster->SetE(recPoint->GetEnergy());
+      cluster->SetE(recPoint.GetEnergy());
       cluster->SetPosition(g);
       cluster->SetNCells(1);
       UShort_t shortAbsId = absId;
@@ -210,8 +208,7 @@ void AliJetEmbeddingTask::Embed()
  
   if (fNEmbTracks > 0 && fOutTracks) {
     Int_t nTracks = fOutTracks->GetEntriesFast();
-    
-    for (Int_t i = 0; i < fNEmbTracks; i++) {
+    for (Int_t i = 0; i < fNEmbTracks; ++i) {
       Double_t pt  = gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
       Double_t eta = gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
       Double_t phi = gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
