@@ -48,6 +48,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <TFile.h>
 #include <TSystem.h>
 #include <TStyle.h>
 #include <TROOT.h>
@@ -497,7 +498,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
 
     val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fkTrack->Charge();// fSpecies;
-    val[kPt]  = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fTracklet->GetMomentum());
+    val[kPt]  = GetPtBinSignificant(fPt); //fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fTracklet->GetMomentum());
     Double_t dyt(fTracklet->GetYfit(0) - fTracklet->GetYref(0)),
              dzt(fTracklet->GetZfit(0) - fTracklet->GetZref(0)),
              dydx(fTracklet->GetYfit(1)),
@@ -624,7 +625,6 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
     return H->Projection(kYrez);
   }
-//  printf("USE y[%+f] dydx[%+f]\n", fTracklet->GetYfit(0), fTracklet->GetYfit(1));
 
   Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
   const Double_t *parR(tin->GetParameter());
@@ -652,7 +652,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   val[kZrez]        = fTracklet->IsRowCross()?dz:(fTracklet->GetdQdl()*5.e-4 - 2.5);
   val[kPrez]        = dphi*TMath::RadToDeg();
   val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies; //printf("val[%d] = %4.2f\n", kSpeciesChgRC, val[kSpeciesChgRC]);
-  val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
+  val[kPt]          = GetPtBinSignificant(fPt); //fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
   val[kNdim]        = GetPtBin(fTracklet->GetMomentum());
   val[kNdim+1]      = dx;
   val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
@@ -1515,6 +1515,19 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     }
     for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
+  if(HasDump3DFor(kCluster)){
+    TDirectory *cwd = gDirectory;
+    TFile::Open(Form("ResDump_%s.root", H->GetName()), "RECREATE");
+    for(Int_t ip(0); ip<php.GetEntriesFast(); ip++){
+      if(!(pr0 = (AliTRDrecoProjection*)php.At(ip))) continue;
+      if(!pr0->H()) continue;
+      TH3 *h3=(TH3*)pr0->H()->Clone();
+      h3->Write();
+    }
+    gFile->Close();
+    cwd->cd();
+  }
+
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kClNproj), cidx);
 
@@ -1536,7 +1549,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
         /*!dy*/
         if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
           pr0->H()->SetNameTitle(Form("H%sClY%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
@@ -1546,7 +1559,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
         /*!Q*/
         if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
           pr0->H()->SetNameTitle(Form("H%sClQ%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: Q Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
@@ -1559,7 +1572,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
         /*!YXTC*/
         if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
           pr0->H()->SetNameTitle(Form("H%sClYXTC%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,TC) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
@@ -1569,7 +1582,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
         /*!YXPh*/
         if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
           pr0->H()->SetNameTitle(Form("H%sClYXPh%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,#Phi) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
@@ -1780,6 +1793,19 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     }
     for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
+  if(HasDump3DFor(kTracklet)){
+    TDirectory *cwd = gDirectory;
+    TFile::Open(Form("ResDump_%s.root", H->GetName()), "RECREATE");
+    for(Int_t ip(0); ip<php.GetEntriesFast(); ip++){
+      if(!(pr0 = (AliTRDrecoProjection*)php.At(ip))) continue;
+      if(!pr0->H()) continue;
+      TH3 *h3=(TH3*)pr0->H()->Clone();
+      h3->Write();
+    }
+    gFile->Close();
+    cwd->cd();
+  }
+
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkltNproj), cidx);
 
@@ -1987,13 +2013,13 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   if(ndim > Int_t(kNdim)+1)       ax = H->GetAxis(kNdim+1);
   if(ndim > Int_t(kNdim)+2)      abf = H->GetAxis(kNdim+2);
   //AliInfo(Form("Using : Species[%c] Pt[%c] BunchFill[%c]", as?'y':'n', ap?'y':'n', abf?'y':'n'));
-  const Int_t nPt(ndim>Int_t(kNdimTrkIn)?Int_t(kNpt):1);
+  const Int_t nPt(ndim>Int_t(kNdimTrkIn)?Int_t(kNpt+2):1);
 
   // build list of projections
-  const Int_t nsel(kNpt*(AliPID::kSPECIES*kNcharge + 1));
+  const Int_t nsel((kNpt+2)*(AliPID::kSPECIES*kNcharge + 1));
   const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
-  const Char_t ptName[kNpt] = {'l', 'i', 'h'};
-  const Char_t *ptCut[kNpt] = {"p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "p_{t}[GeV/c]>=1.5"};
+  const Char_t ptName[kNpt+2] = {'L', 'l', 'i', 'h', 'H'};
+  const Char_t *ptCut[kNpt+2] = {"p_{t}[GeV/c]<0.5", "0.5<=p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "1.5<=p_{t}[GeV/c]<5.0", "p_{t}[GeV/c]>=5.0"};
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   AliTRDrecoProjection hp[kMCTrkInNproj]; TObjArray php(kMCTrkInNproj+2);
@@ -2072,7 +2098,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     }
     // pt selection
     pt = 0; // low pt
-    if(ap) pt = TMath::Min(coord[kPt]-1, Int_t(kNpt)-1);
+    if(ap) pt = TMath::Min(coord[kPt], Int_t(kNpt)+1);
     // global selection
     isel = pt*(AliPID::kSPECIES*kNcharge+1); isel+=sp<0?(AliPID::kSPECIES*kNcharge):(sp*kNcharge+ch);
     ioff = isel*(ax?4:3);
@@ -2097,6 +2123,19 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     }
     for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
+  if(HasDump3DFor(kTrackIn)){
+    TDirectory *cwd = gDirectory;
+    TFile::Open(Form("ResDump_%s.root", H->GetName()), "RECREATE");
+    for(Int_t ip(0); ip<php.GetEntriesFast(); ip++){
+      if(!(pr0 = (AliTRDrecoProjection*)php.At(ip))) continue;
+      if(!pr0->H()) continue;
+      TH3 *h3=(TH3*)pr0->H()->Clone();
+      h3->Write();
+    }
+    gFile->Close();
+    cwd->cd();
+  }
+
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(mc?kMCTrkInNproj:kTrkInNproj), cidx);
 
@@ -2534,34 +2573,34 @@ Bool_t AliTRDresolution::PostProcess()
 
   //PROCESS EXPERIMENTAL DISTRIBUTIONS
   // Clusters detector
-  if(HasProcessDetector() && !MakeProjectionDetector()) return kFALSE;
+  if(HasProcess(kDetector)) if(!MakeProjectionDetector()) return kFALSE;
   // Clusters residuals
-  if(HasProcessCluster() && !MakeProjectionCluster()) return kFALSE;
+  if(HasProcess(kCluster)) if(!MakeProjectionCluster()) return kFALSE;
   fNRefFigures = 3;
   // Tracklet residual/pulls
-  if(HasProcessTrklt() && !MakeProjectionTracklet()) return kFALSE;
+  if(HasProcess(kTracklet)) if(!MakeProjectionTracklet()) return kFALSE;
   fNRefFigures = 7;
   // TRDin residual/pulls
-  if(HasProcessTrkIn() && !MakeProjectionTrackIn()) return kFALSE;
+  if(HasProcess(kTrackIn)) if(!MakeProjectionTrackIn()) return kFALSE;
   fNRefFigures = 11;
 
   if(!HasMCdata()) return kTRUE;
   //PROCESS MC RESIDUAL DISTRIBUTIONS
 
   // CLUSTER Y RESOLUTION/PULLS
-  if(!MakeProjectionCluster(kTRUE)) return kFALSE;
+  if(HasProcess(kCluster)) if(!MakeProjectionCluster(kTRUE)) return kFALSE;
   fNRefFigures = 17;
 
   // TRACKLET RESOLUTION/PULLS
-  if(!MakeProjectionTracklet(kTRUE)) return kFALSE;
+  if(HasProcess(kTracklet)) if(!MakeProjectionTracklet(kTRUE)) return kFALSE;
   fNRefFigures = 21;
 
   // TRACK RESOLUTION/PULLS
-  if(!MakeProjectionTrack()) return kFALSE;
+  if(HasProcess(kTracklet)) if(!MakeProjectionTrack()) return kFALSE;
   fNRefFigures+=16;
 
   // TRACK TRDin RESOLUTION/PULLS
-  if(!MakeProjectionTrackIn(kTRUE)) return kFALSE;
+  if(HasProcess(kTrackIn)) if(!MakeProjectionTrackIn(kTRUE)) return kFALSE;
   fNRefFigures+=8;
 
   return kTRUE;
@@ -3180,5 +3219,16 @@ void AliTRDresolution::SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t 
   if(cl)  SETBIT(fSteer, kCluster); else CLRBIT(fSteer, kCluster);
   if(trklt) SETBIT(fSteer, kTracklet); else CLRBIT(fSteer, kTracklet);
   if(trkin) SETBIT(fSteer, kTrackIn); else CLRBIT(fSteer, kTrackIn);
+}
+
+
+//________________________________________________________
+void AliTRDresolution::SetDump3D(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin)
+{
+// steer processes
+  if(det) SETBIT(fSteer, 4+kDetector); else CLRBIT(fSteer, 4+kDetector);
+  if(cl)  SETBIT(fSteer, 4+kCluster); else CLRBIT(fSteer, 4+kCluster);
+  if(trklt) SETBIT(fSteer, 4+kTracklet); else CLRBIT(fSteer, 4+kTracklet);
+  if(trkin) SETBIT(fSteer, 4+kTrackIn); else CLRBIT(fSteer, 4+kTrackIn);
 }
 

@@ -44,6 +44,7 @@
 
 ClassImp(AliTRDrecoTask)
 
+Float_t AliTRDrecoTask::fgPt0[AliTRDrecoTask::fgNPt0] = {0.5, 0.8, 1.5, 5};
 TList* AliTRDrecoTask::fgTrendPoint(NULL);
 TTreeSRedirector* AliTRDrecoTask::fgDebugStream(NULL);
 //_______________________________________________________
@@ -51,6 +52,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   : AliAnalysisTaskSE()
   ,fNRefFigures(0)
   ,fDets(NULL)
+  ,fDetsV(NULL)
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
@@ -76,6 +78,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   : AliAnalysisTaskSE(name)
   ,fNRefFigures(0)
   ,fDets(NULL)
+  ,fDetsV(NULL)
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
@@ -130,6 +133,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
     delete fDets;
     fDets = NULL;
   }
+  if(fDetsV) delete fDetsV; fDetsV=NULL;
 
   if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
     if(fContainer->IsOwner()) fContainer->Delete();
@@ -152,6 +156,19 @@ Int_t AliTRDrecoTask::GetNRefFigures() const
   if(!fNRefFigures) AliWarning("No reference plots available.");
   return fNRefFigures; 
 } 
+
+//____________________________________________________________________
+Int_t AliTRDrecoTask::GetPtBinSignificant(Float_t pt)
+{
+// Get significant (very low, low, medium, high, very high) pt bin
+
+  Int_t ipt(0);
+  while(ipt<fgNPt0){
+    if(pt<fgPt0[ipt]) break;
+    ipt++;
+  }
+  return ipt-1;
+}
 
 //_______________________________________________________
 void AliTRDrecoTask::UserCreateOutputObjects()
@@ -305,11 +322,12 @@ Bool_t AliTRDrecoTask::LoadDetectorMap(const Char_t *file, const Char_t *dir)
   }
   TObjArray *dets = (TObjArray*)info->FindObject("Chambers");
   if(!dets){
-    AliWarning("Missing detector map from TRDinfoGen results.");
-    info->ls();
-    return kFALSE;
-  }
-  fDets = (TObjArray*)dets->Clone("Chambers");
+    TVector *vdets = (TVector*)info->At(4);
+    if(!vdets){
+      AliWarning("Missing detector map from TRDinfoGen results.");
+      return kFALSE;
+    } else fDetsV = (TVector*)vdets->Clone();
+  } else fDets = (TObjArray*)dets->Clone("Chambers");
   gFile->Close();
   return kTRUE;
 }
@@ -354,7 +372,8 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
 // based on info collected by AliTRDinfoGen
 
   if(!fDets){
-    AliWarning("Detector map and status not available.");
+    AliWarning("OLD Detector map and status not available. Try NEW");
+    MakeDetectorPlotNEW(ly, opt);
     return;
   }
   Float_t xmin(0.), xmax(0.);
@@ -385,6 +404,52 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
       } else if(iopt==3){
         gdet->SetFillStyle(style[1]);gdet->SetFillColor(kRed);
         gdet->DrawBox(xmin, 0.5*((*det)[3]+(*det)[1]), xmax, (*det)[3]);
+      } else if(iopt!=0) AliError(Form("Wrong chmb. status[%d] for det[%03d]", iopt, idet));
+    }
+  }
+  Float_t dsm = TMath::TwoPi()/AliTRDgeometry::kNsector;
+  xmin=0.;
+  if(strcmp(opt, "pad")==0) xmin=38.;
+  TLatex *sm = new TLatex(); sm->SetTextAlign(22);sm->SetTextColor(0); sm->SetTextFont(32);sm->SetTextSize(0.03);
+  for(Int_t is(0); is<AliTRDgeometry::kNsector; is++) sm->DrawLatex(xmin, -TMath::Pi()+(is+0.5)*dsm, Form("%02d", is>=9?(is-9):(is+9)));
+}
+
+//_______________________________________________________
+void AliTRDrecoTask::MakeDetectorPlotNEW(Int_t ly, const Option_t *opt)
+{
+// Draw chamber boundaries in eta/phi plots with misalignments
+// based on info collected by AliTRDinfoGen NEW data storage
+
+  if(!fDetsV){
+    AliWarning("NEW Detector map and status not available.");
+    return;
+  }
+  Float_t xmin(0.), xmax(0.);
+  TBox *gdet = new TBox();
+  gdet->SetLineColor(kBlack);gdet->SetFillColor(kBlack);
+  Int_t style[] = {0, 3003};
+  for(Int_t idet(0), jdet(0); idet<AliTRDgeometry::kNdet; idet++, jdet+=5){
+    if(idet%6 != ly) continue;
+    Int_t iopt = Int_t((*fDetsV)[jdet+4]);
+    if(strcmp(opt, "eta")==0){
+      xmin=(*fDetsV)[jdet+0]; xmax=(*fDetsV)[jdet+2];
+    } else if(strcmp(opt, "pad")==0){
+      Int_t stk(AliTRDgeometry::GetStack(idet));
+      xmin=-0.6+16*(4-stk)-(stk<2?4:0); xmax=xmin+(stk==2?12:16)-0.2;
+    } else continue;
+    AliDebug(2, Form("det[%03d] 0[%+4.1f(%+4.1f) %+4.1f] 1[%+4.1f(%+4.1f) %+4.1f] opt[%d]", idet, xmin, (*fDetsV)[jdet+0], (*fDetsV)[jdet+1], xmax, (*fDetsV)[jdet+2], (*fDetsV)[jdet+3], iopt));
+    if(iopt==1){
+      gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlack);
+      gdet->DrawBox(xmin, (*fDetsV)[jdet+1], xmax, (*fDetsV)[jdet+3]);
+    } else {
+      gdet->SetFillStyle(style[0]);
+      gdet->DrawBox(xmin, (*fDetsV)[jdet+1], xmax, (*fDetsV)[jdet+3]);
+      if(iopt==2){
+        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kGreen);
+        gdet->DrawBox(xmin, (*fDetsV)[jdet+1], xmax, 0.5*((*fDetsV)[jdet+3]+(*fDetsV)[jdet+1]));
+      } else if(iopt==3){
+        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kRed);
+        gdet->DrawBox(xmin, 0.5*((*fDetsV)[jdet+3]+(*fDetsV)[jdet+1]), xmax, (*fDetsV)[jdet+3]);
       } else if(iopt!=0) AliError(Form("Wrong chmb. status[%d] for det[%03d]", iopt, idet));
     }
   }
@@ -657,23 +722,24 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
   AliDebug(2, Form("%s[%s] nx[%d] ny[%d]", h2->GetName(), h2->GetTitle(), nx, ny));
   for(Int_t iy(0); iy<ny; iy++){
     for(Int_t ix(0); ix<nx; ix++){
-      h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin+1, iy*dyBin+1, (iy+1)*dyBin+1);
+      h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, ix*dxBin+1, iy*dyBin+1, iy*dyBin+1);
       Int_t ne((Int_t)h->Integral());
       if(ne<nstat/2){
         h2->SetBinContent(ix+1, iy+1, -999);
         h2->SetBinError(ix+1, iy+1, 1.);
         n++;
       }else{
+        h = fH->ProjectionZ(Form("%s_z", h2->GetName()), (ix-1)*dxBin+1, (ix+1)*dxBin+1, (iy-1)*dyBin+1, (iy+1)*dyBin+1);
         Float_t v(h->GetMean()), ve(h->GetRMS());
         if(mid==1){
           TF1 fg("fg", "gaus", az->GetXmin(), az->GetXmax());
           fg.SetParameter(0, Float_t(ne)); fg.SetParameter(1, v); fg.SetParameter(2, ve);
-          h->Fit(&fg, "WQ");
+          h->Fit(&fg, "WQ0");
           v = fg.GetParameter(1); ve = fg.GetParameter(2);
         } else if (mid==2) {
           TF1 fl("fl", "landau", az->GetXmin(), az->GetXmax());
           fl.SetParameter(0, Float_t(ne)); fl.SetParameter(1, v); fl.SetParameter(2, ve);
-          h->Fit(&fl, "WQ");
+          h->Fit(&fl, "WQ0");
           v = fl.GetMaximumX(); ve = fl.GetParameter(2);
 /*          TF1 fgle("gle", "[0]*TMath::Landau(x, [1], [2], 1)*TMath::Exp(-[3]*x/[1])", az->GetXmin(), az->GetXmax());
           fgle.SetParameter(0, fl.GetParameter(0));
