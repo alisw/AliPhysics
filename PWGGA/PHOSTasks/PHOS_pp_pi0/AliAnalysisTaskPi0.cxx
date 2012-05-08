@@ -143,8 +143,15 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   Int_t nPt      = 400;
   Double_t ptMin = 0;
   Double_t ptMax = 40;
-  fOutputContainer->Add(new TH2F("hAsymPtPi0","(A,p_{T})_{#gamma#gamma} #pi^{0}"     ,50,0.,1.,    nPt,ptMin,ptMax));
-  fOutputContainer->Add(new TH2F("hAsymPtEta","(A,p_{T})_{#gamma#gamma} #eta"        ,50,0.,1.,    nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hAsymPtPi0","(A,p_{T})_{#gamma#gamma} #pi^{0}"     ,20,0.,1.,    40,0.,20.));
+  fOutputContainer->Add(new TH2F("hAsymPtEta","(A,p_{T})_{#gamma#gamma} #eta"        ,20,0.,1.,    40,0.,20.));
+
+  fOutputContainer->Add(new TH2F("hAsymPtPi0M1" ,"(A,p_{T})_{#gamma#gamma} #pi^{0}. M1"  ,20,0.,1.,    40,0.,20.));
+  fOutputContainer->Add(new TH2F("hAsymPtPi0M2" ,"(A,p_{T})_{#gamma#gamma} #pi^{0}. M2"  ,20,0.,1.,    40,0.,20.));
+  fOutputContainer->Add(new TH2F("hAsymPtPi0M3" ,"(A,p_{T})_{#gamma#gamma} #pi^{0}. M3"  ,20,0.,1.,    40,0.,20.));
+  fOutputContainer->Add(new TH2F("hAsymPtPi0M12","(A,p_{T})_{#gamma#gamma} #pi^{0}. M12" ,20,0.,1.,    40,0.,20.));
+  fOutputContainer->Add(new TH2F("hAsymPtPi0M23","(A,p_{T})_{#gamma#gamma} #pi^{0}. M23" ,20,0.,1.,    40,0.,20.));
+
 
   fOutputContainer->Add(new TH2F("hMassPtA10" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA08" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.8"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
@@ -160,8 +167,8 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hMassPtA10V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA07V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
 
-  fOutputContainer->Add(new TH2F("hMassPtA10V0PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
-  fOutputContainer->Add(new TH2F("hMassPtA07V0PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMassPtA10PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMassPtA07PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
 
   fOutputContainer->Add(new TH2F("hMassPtvA10","(M,p_{T})_{#gamma#gamma}, 0<A<1.0, ESD vertex",nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtvA07","(M,p_{T})_{#gamma#gamma}, 0<A<0.7, ESD vertex",nM,mMin,mMax,nPt,ptMin,ptMax));
@@ -212,8 +219,8 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hMiMassPtA10V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMiMassPtA07V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
 
-  fOutputContainer->Add(new TH2F("hMiMassPtA10V0PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
-  fOutputContainer->Add(new TH2F("hMiMassPtA07V0PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMiMassPtA10PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMiMassPtA07PU" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, pileup",nM,mMin,mMax,nPt,ptMin,ptMax));
 
   fOutputContainer->Add(new TH2F("hMiMassPtvA10","(M,p_{T})_{#gamma#gamma}, 0<A<1.0, ESD vertex",nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMiMassPtvA07","(M,p_{T})_{#gamma#gamma}, 0<A<0.7, ESD vertex",nM,mMin,mMax,nPt,ptMin,ptMax));
@@ -473,7 +480,7 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
     mod1   = relId[0];
     energy = clu1->E();
-    
+
     multPHOSClust[0]++;
     FillHistogram("hClusterEnergy",energy);
     FillHistogram("hClusterEvsN",energy,digMult);
@@ -509,6 +516,7 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
       Double_t pT   = p1.Pt();
       Double_t pX   = p1.Px();
       Double_t pY   = p1.Py();
+      if (pAbs<1.e-10) break;
       Double_t kappa = pAbs - TMath::Power(0.135,2)/4./pAbs;
       
       FillHistogram("hPhotonKappa",kappa);
@@ -536,8 +544,14 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     cellZ = relId[3] ;
     if ( !IsGoodChannel("PHOS",mod1,cellX,cellZ) ) continue ;
 
+    if (mod1 < 1 || mod1 > 5) {
+      AliError(Form("Wrong module number %d",mod1));
+      return;
+    }
+
     clu1 ->GetMomentum(p1 ,vtx0);
     clu1 ->GetMomentum(pv1,vtx5);
+
     digMult   = clu1->GetNCells();
     new((*fPHOSEvent)[inPHOS]) AliCaloPhoton(p1.X(),p1.Py(),p1.Z(),p1.E()) ;
     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(inPHOS) ;
@@ -634,13 +648,28 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
 	if (TMath::Abs(ma12-0.547)<0.09)
 	  FillHistogram("hAsymPtEta",asym   ,pt12);
 
-        if (ph1->Module()==1 && ph2->Module()==1) FillHistogram("hMassPtM1",ma12 ,pt12 );
-        if (ph1->Module()==2 && ph2->Module()==2) FillHistogram("hMassPtM2",ma12 ,pt12 );
-        if (ph1->Module()==3 && ph2->Module()==3) FillHistogram("hMassPtM3",ma12 ,pt12 );
+        if (ph1->Module()==1 && ph2->Module()==1) {
+	  FillHistogram("hMassPtM1",ma12 ,pt12 );
+	  if (TMath::Abs(ma12-0.135)<0.03) FillHistogram("hAsymPtPi0M1",asym   ,pt12);
+	}
+        if (ph1->Module()==2 && ph2->Module()==2) {
+	  FillHistogram("hMassPtM2",ma12 ,pt12 );
+	  if (TMath::Abs(ma12-0.135)<0.03) FillHistogram("hAsymPtPi0M2",asym   ,pt12);
+	}
+        if (ph1->Module()==3 && ph2->Module()==3) {
+	  FillHistogram("hMassPtM3",ma12 ,pt12 );
+	  if (TMath::Abs(ma12-0.135)<0.03) FillHistogram("hAsymPtPi0M3",asym   ,pt12);
+	}
         if ((ph1->Module()==1 && ph2->Module()==2) ||
-	    (ph1->Module()==2 && ph2->Module()==1)) FillHistogram("hMassPtM12",ma12 ,pt12 );
+	    (ph1->Module()==2 && ph2->Module()==1)) {
+	  FillHistogram("hMassPtM12",ma12 ,pt12 );
+	  if (TMath::Abs(ma12-0.135)<0.03) FillHistogram("hAsymPtPi0M12",asym   ,pt12);
+	}
         if ((ph1->Module()==2 && ph2->Module()==3) ||
-	    (ph1->Module()==3 && ph2->Module()==2)) FillHistogram("hMassPtM23",ma12 ,pt12 );
+	    (ph1->Module()==3 && ph2->Module()==2)) {
+	  FillHistogram("hMassPtM23",ma12 ,pt12 );
+	  if (TMath::Abs(ma12-0.135)<0.03) FillHistogram("hAsymPtPi0M23",asym   ,pt12);
+	}
         if ((ph1->Module()==1 && ph2->Module()==3) ||
 	    (ph1->Module()==3 && ph2->Module()==1)) FillHistogram("hMassPtM13",ma12 ,pt12 );
 
