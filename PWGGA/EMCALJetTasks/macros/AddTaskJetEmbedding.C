@@ -1,6 +1,6 @@
 // $Id$
 
-AliJetEmbedding* AddTaskJetEmbedding(
+AliJetEmbeddingTask* AddTaskJetEmbedding(
   const char     *tracksName   = "Tracks",
   const char     *clusName     = "CaloClustersCorr",
   const char     *taskName     = "JetEmbeddingTask",
@@ -36,7 +36,7 @@ AliJetEmbedding* AddTaskJetEmbedding(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliJetEmbeddingTask *jetEmb = new AliJetEmbedding(taskName);
+  AliJetEmbeddingTask *jetEmb = new AliJetEmbeddingTask(taskName);
   jetEmb->SetTracksName(tracksName);
   jetEmb->SetClusName(clusName);
   jetEmb->SetEtaRange(minEta, maxEta);
