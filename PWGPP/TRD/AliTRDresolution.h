@@ -67,7 +67,7 @@ public:
     kDetNproj=460      // detector projections
     ,kClNproj=2800     // cluster projections
     ,kTrkltNproj=8000  // tracklet projections
-    ,kTrkInNproj=245   // trackIn projections
+    ,kTrkInNproj=300   // trackIn projections
     ,kTrkNproj=2500    // track projections
     ,kMCTrkInNproj=260 // trackIn projections
   };
@@ -116,10 +116,6 @@ public:
   TObjArray*      Results(ETRDresolutionClass c) const  { if(!fProj) return NULL; return (TObjArray*)fProj->At(c);}
   void            UserExec(Option_t * opt);
   void            InitExchangeContainers();
-  Bool_t          HasProcessDetector() const            { return TESTBIT(fSteer, kDetector);}
-  Bool_t          HasProcessCluster() const             { return TESTBIT(fSteer, kCluster);}
-  Bool_t          HasProcessTrklt() const               { return TESTBIT(fSteer, kTracklet);}
-  Bool_t          HasProcessTrkIn() const               { return TESTBIT(fSteer, kTrackIn);}
   Bool_t          HasTrackRefit() const                 { return TestBit(kTrackRefit);}
   Bool_t          HasTrackSelection() const             { return TestBit(kTrackSelect);}
   Bool_t          IsVerbose() const                     { return TestBit(kVerbose);}
@@ -143,6 +139,7 @@ public:
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
   void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
   void            SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
+  void            SetDump3D(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
   void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
@@ -161,6 +158,8 @@ public:
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 
 protected:
+  Bool_t      HasDump3DFor(ETRDresolutionClass cls) const { return TESTBIT(fSteer, 4+cls);}
+  Bool_t      HasProcess(ETRDresolutionClass cls) const   { return TESTBIT(fSteer, cls);}
   Bool_t      MakeProjectionDetector();
   Bool_t      MakeProjectionCluster(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTracklet(Bool_t mc=kFALSE);
@@ -170,6 +169,8 @@ protected:
   Bool_t      Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt) const;
 
   UShort_t              fSteer;           // bit map to steer internal behaviour of class
+                                          // MakeProjection [kTrackIn kTracklet kCluster kDetector]
+                                          // Dump3D [4+kTrackIn 4+kTracklet 4+kCluster 4+kDetector]
   UShort_t              fIdxFrame;        // frame counter (internal)
   Float_t               fPtThreshold;     // pt threshold for some performance plots
   Float_t               fDyRange;         // min/max dy

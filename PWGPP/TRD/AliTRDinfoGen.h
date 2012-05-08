@@ -43,6 +43,7 @@ public:
     ,kTracksMC
     ,kV0
     ,kTPC
+    ,kITS
     ,kTRDin
     ,kTRDout
     ,kBarrel

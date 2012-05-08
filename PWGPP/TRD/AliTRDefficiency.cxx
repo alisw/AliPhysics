@@ -371,20 +371,6 @@ Int_t AliTRDefficiency::GetPtBin(Float_t pt)
 }
 
 //____________________________________________________________________
-Int_t AliTRDefficiency::GetPtBinSignificant(Float_t pt)
-{
-// Get significant (very low, low, medium, high, very high) pt bin
-
-  Float_t pt0[] = {0.5, 0.8, 1.5, 5};
-  Int_t ipt(0);
-  while(ipt<4){
-    if(pt<pt0[ipt]) break;
-    ipt++;
-  }
-  return ipt-1;
-}
-
-//____________________________________________________________________
 Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
 {
 // Steer reference figures
@@ -654,9 +640,6 @@ void AliTRDefficiency::MakeSummary()
   TH2 *h2(NULL);
   gStyle->SetPalette(1);
 
-  const Char_t cid[]={'T','P'};
-  const Char_t *labEff[] = {"Propagated", "Stopped", "Missed"};
-  const Char_t *labMC[] = {"TRD == ESD [good]", "TRD == -ESD [accept]", "TRD != ESD [bad]"};
   Int_t nbins(DebugLevel()==0?3:20);
   //calculate true pt bin
   Float_t ptBins[23]; ptBins[0] = 0.;
@@ -676,6 +659,7 @@ void AliTRDefficiency::MakeSummary()
     return;// kFALSE;
   }
 
+  const Char_t cid[]={'T','P'};
   cOut = new TCanvas(Form("%s_Eff", GetName()), "TRD Efficiency", 1536, 1536); cOut->Divide(2,2,1.e-5,1.e-5);
   // tracking eff :: eta-phi dependence
   for(Int_t it(0); it<2; it++){
@@ -683,18 +667,18 @@ void AliTRDefficiency::MakeSummary()
       AliError(Form("Missing \"H2Eff%c\".", cid[it]));
       continue;
     }
-    h2->SetContour(10); h2->Scale(1.e2); SetRangeZ(h2, 80, 100, 30);
+    h2->SetContour(10); h2->Scale(1.e2); SetRangeZ(h2, 80, 100, 5);
     h2->GetZaxis()->SetTitle("Efficiency [%]"); h2->GetZaxis()->CenterTitle();
     p=cOut->cd(it+1);p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
     h2->Draw("colz");
-    //MakeDetectorPlot();
+    MakeDetectorPlot();
   }
   if(!(h2 = (TH2*)fProj->FindObject("HEff0En"))) {
     AliError("Missing \"HEff0En\".");
     return;
   }
   p=cOut->cd(3);p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
-  h2->Draw("colz");
+  h2->Draw("colz"); MakeDetectorPlot();
   // tracking eff :: pt dependence
   TH1 *h[2] = {0};
   if(!(h[0] = (TH1*)fProj->FindObject("H2EffP_z"))){
@@ -719,6 +703,7 @@ void AliTRDefficiency::MakeSummary()
     h1[1]->SetBinContent(ip+1, 1.e2*(h[1]->GetBinContent(ip) - h[0]->GetBinContent(ip))); // stopped
     h1[2]->SetBinContent(ip+1, 1.e2*(1 - h[1]->GetBinContent(ip))); // missed
   }
+  const Char_t *labEff[] = {"Propagated", "Stopped", "Missed"};
   THStack *hs = new THStack("hEff","Tracking Efficiency;p_{t} [GeV/c];Efficiency [%]");
   TLegend *leg = new TLegend(0.671371,0.1313559,0.9576613,0.2923729,NULL,"brNDC");
   leg->SetBorderSize(0); leg->SetFillColor(kWhite); leg->SetFillStyle(1001);
@@ -738,19 +723,22 @@ void AliTRDefficiency::MakeSummary()
     p=cOut->cd(ipad+1);p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
     if(!(h2 = (TH2*)fProj->FindObject(Form("HEffLb%dEn", ipad)))) continue;
     h2->SetContour(10);
-    h2->Scale(1.e2); SetRangeZ(h2, ipad==1?80:0., ipad==1?100.:10, ipad==1?30:0.01);
+    h2->Scale(1.e2); SetRangeZ(h2, ipad==1?80:0., ipad==1?100.:10., ipad==1?30:0.01);
     h2->GetZaxis()->SetTitle("Efficiency [%]"); h2->GetZaxis()->CenterTitle();
     h2->Draw("colz");
+    MakeDetectorPlot();
   }
+  color[0] = kRed; color[1] = kGreen; color[2] = kBlue;
   for(Int_t il=0;il<3;il++){
     if(!(h[il] = (TH1D*)fProj->FindObject(Form("HEffLb%d_z", il)))) continue;
     h1[il]=new TH1F(Form("h1Lab%d", il), "", nbins+2, ptBins);
     for(Int_t ip(0);ip<=(nbins+1);ip++) h1[il]->SetBinContent(ip+1, 1.e2*h[il]->GetBinContent(ip));
-    h1[il]->SetFillColor(il+2);
+    h1[il]->SetFillColor(color[il]);
     h1[il]->SetFillStyle(il==2?3002:1001);
-    h1[il]->SetLineColor(il+2);
+    h1[il]->SetLineColor(color[il]);
     h1[il]->SetLineWidth(1);
   }
+  const Char_t *labMC[] = {"TRD != ESD [bad]", "TRD == ESD [good]", "TRD == -ESD [accept]"};
   leg = new TLegend(0.671371,0.1313559,0.9576613,0.2923729,NULL,"brNDC");
   leg->SetBorderSize(0); leg->SetFillColor(kWhite); leg->SetFillStyle(1001);
   hs = new THStack("hLab","TRD Label;p_{t} [GeV/c];Efficiency [%]");

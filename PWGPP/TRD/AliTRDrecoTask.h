@@ -30,6 +30,8 @@ class TList;
 class TObjArray;
 class TTreeSRedirector;
 class AliTRDtrackV1;
+template <typename Value> class TVectorT;
+typedef class TVectorT<Float_t> TVector;
 class AliTRDrecoTask : public AliAnalysisTaskSE 
 {
 friend class AliEveTRDTrackList;
@@ -81,9 +83,11 @@ public:
   Int_t          GetNRefFigures() const; 
   const Char_t*  GetNameId() const       { return fNameId;}
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
+  static Int_t   GetPtBinSignificant(Float_t pt);
   virtual Bool_t GetRefFigure(Int_t ifig);
   virtual void   MakeSummary();
   void           MakeDetectorPlot(Int_t ly=0, const Option_t *opt="eta");
+  void           MakeDetectorPlotNEW(Int_t ly=0, const Option_t *opt="eta");
   Bool_t         IsHeavyIon() const      { return TestBit(kHeavyIon);};
   Bool_t         IsPP() const            { return !TestBit(kHeavyIon);};
   Bool_t         HasFriends() const      { return TestBit(kFriends);};
@@ -114,7 +118,8 @@ protected:
 
   Char_t                fNameId[10];       // unique identifier of task particularity
   UChar_t               fNRefFigures;      // no of reference figures reported by task
-  TObjArray             *fDets;            //! container to store detector position and status
+  TObjArray             *fDets;            //! OLD container to store detector position and status support should be discontinued 
+  TVector               *fDetsV;           //! NEW container to store detector position and status
   TObjArray             *fContainer;       //! container to store results
   AliTRDeventInfo       *fEvent;           //! Event Info
   TObjArray             *fTracks;          //! Array of tracks
@@ -137,6 +142,8 @@ private:
   Bool_t            fRunTerminate;         // Switch for Terminate Function
   static TList      *fgTrendPoint;         //! trend point
   static TTreeSRedirector *fgDebugStream;  //! Debug stream
+  static const Int_t fgNPt0 = 4;           // No of significant pt bins 
+  static Float_t fgPt0[fgNPt0];            // Array with limits for significant pt bins 
 
   ClassDef(AliTRDrecoTask, 5) // base TRD reconstruction task
 };

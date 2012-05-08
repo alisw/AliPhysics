@@ -31,7 +31,9 @@
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
 // gSystem->Load("libTENDER.so");
+// gSystem->Load("libCORRFW.so");
 // gSystem->Load("libPWGPP.so");
+// gSystem->Load("libPWGmuon.so");
 // gSystem->Load("libNetx.so") ;
 // gSystem->Load("libRAliEn.so");
 //
@@ -47,6 +49,7 @@
 #include "TMemStat.h"
 #include "TMemStatViewerGUI.h"
 
+#include "TGrid.h"
 #include "TROOT.h"
 #include "TClass.h"
 #include "TSystem.h"
@@ -181,7 +184,6 @@ TChain* MakeChainLST(const char* filename)
 {
   // Create the chain
   TChain* chain = new TChain("esdTree");
-
   if(!filename){
     chain->Add(Form("%s/AliESDs.root", gSystem->pwd()));
     return chain;
@@ -189,16 +191,22 @@ TChain* MakeChainLST(const char* filename)
 
 
   // read ESD files from the input list.
-  ifstream in;
-  in.open(filename);
-  TString esdfile;
-  while(in.good()) {
-    in >> esdfile;
-    if (!esdfile.Contains("root")) continue; // protection
-    chain->Add(esdfile.Data());
+  FILE *fp(NULL);
+  if(!(fp = fopen(filename, "rt"))){
+    Error("run::MakeChainLST()", Form("Input list \"%s\" not readable", filename));
+    return NULL;
   }
-
-  in.close();
+  TString esdFile;
+  while(esdFile.Gets(fp)){
+    if (!esdFile.Contains("root")) continue; // protection
+    if(esdFile.BeginsWith("alien://") && !gGrid){
+      if(gSystem->Load("libNetx.so")<0) return NULL;
+      if(gSystem->Load("libRAliEn.so")<0) return NULL;
+      TGrid::Connect("alien://");
+    }
+    chain->Add(esdFile.Data());
+  }
+  fclose(fp);
 
   return chain;
 }
