@@ -282,12 +282,17 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,vector<Double_t> **cha
     for(Int_t j = 0; j < i; j++) {
       
       Short_t charge2 = (Short_t) chargeVector[0]->at(j);
-      trackVarsPair[0]    =  chargeVector[2]->at(i) - chargeVector[2]->at(j) ;  //delta eta
-      trackVarsPair[1]    =  chargeVector[3]->at(i) - chargeVector[3]->at(j);  //delta phi
-      trackVarsPair[2]    =  chargeVector[7]->at(j);  //pt
-      trackVarsPair[3]    =  chargeVector[7]->at(i);  //pt trigger
-      trackVarsPair[4]    =  fCentrality;             //centrality (really as variable here????)
-      
+      trackVarsPair[0]    =  chargeVector[2]->at(i) - chargeVector[2]->at(j) ;  // delta eta
+      trackVarsPair[1]    =  chargeVector[3]->at(i) - chargeVector[3]->at(j);   // delta phi
+      if (trackVarsPair[1] > 180)   // delta phi between -180 and 180 
+	trackVarsPair[1] -= 360;
+      if (trackVarsPair[1] <  - 180) 
+	trackVarsPair[1] += 360;
+ 
+      trackVarsPair[2]    =  chargeVector[7]->at(j);  // pt
+      trackVarsPair[3]    =  chargeVector[7]->at(i);  // pt trigger
+      trackVarsPair[4]    =  fCentrality;             // centrality
+
       if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVarsPair,0,1.); 
       else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVarsPair,0,1.); 
       else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVarsPair,0,1.); 
