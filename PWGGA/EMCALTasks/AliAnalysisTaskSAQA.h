@@ -89,6 +89,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 1) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 2) // Quality task for Emcal analysis
 };
 #endif
