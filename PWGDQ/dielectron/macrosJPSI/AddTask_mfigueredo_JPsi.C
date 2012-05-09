@@ -13,8 +13,8 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(Bool_t hasMC_aod = kFALSE){
   //Do we have an MC handler?
   Bool_t hasMC=(mgr->GetMCtruthEventHandler()!=0x0);
   
-  TString configFile("ConfigJpsi_mf_pp.C");
-  if (hasMC) configFile="../PWGDQ/dielectron/macros/ConfigJpsi2eeEff.C";
+  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_pp.C");
+  if (hasMC) configFile="$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi2eeEff.C";
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //create task and add it to the manager
