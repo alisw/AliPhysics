@@ -10,7 +10,7 @@ void MakePipeMisalignment(Int_t inputRun=0,
   // the exception of the beam pipe where only the translations are
   // used ignoring the rotation matrix.
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage(ocdbPath);
+  cdb->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
   cdb->SetRun(inputRun);
 
 
