@@ -25,7 +25,9 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
+ EMCALJetTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
+ EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliHadCorrTask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
