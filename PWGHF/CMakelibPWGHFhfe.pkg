@@ -78,6 +78,7 @@ set (SRCS
     hfe/AliHFEpidBayes.cxx
     hfe/AliHFEpidObject.cxx
     hfe/AliAnalysisTaskElecHadronCorrel.cxx
+    hfe/AliAnalysisTaskElecV2.cxx
     hfe/AliHFEdebugTreeTask.cxx
     hfe/AliHFEVZEROEventPlane.cxx
     hfe/AliAnalysisTaskHFEFlow.cxx

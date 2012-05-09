@@ -67,6 +67,8 @@
 
 #pragma link C++ class  AliHFEpidObject+;
 #pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
+#pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
+#pragma link C++ class  AliAnalysisTaskElecV2+;
 
 #pragma link C++ class  AliHFEdebugTreeTask+;
 
