@@ -1826,9 +1826,9 @@ void AliTPCClusterParam::SetWaveCorrectionMap( THnBase *Map)
   if( Map ){
     fWaveCorrectionMap = dynamic_cast<THnBase*>( Map->Clone(Map->GetName()));
     if( fWaveCorrectionMap ){
-      fWaveCorrectionMirroredPad = ( fWaveCorrectionMap->GetAxis(3)->GetXmin()>0.01 );        // cog axis is mirrored at 0.5
-      fWaveCorrectionMirroredZ = ( fWaveCorrectionMap->GetAxis(1)->GetXmin() > -200.00 ); // Z axis is mirrored at 0
-      fWaveCorrectionMirroredAngle = ( fWaveCorrectionMap->GetAxis(4)->GetXmin() > -0.5 );// Angle axis is mirrored at 0
+      fWaveCorrectionMirroredPad   = ( fWaveCorrectionMap->GetAxis(3)->FindFixBin(0.5)<=1 );   // Pad axis is mirrored at 0.5
+      fWaveCorrectionMirroredZ     = ( fWaveCorrectionMap->GetAxis(1)->FindFixBin(0)<=1); // Z axis is mirrored at 0
+      fWaveCorrectionMirroredAngle = ( fWaveCorrectionMap->GetAxis(4)->FindFixBin(0.0)<=1 );   // Angle axis is mirrored at 0
     }
   }
 }
@@ -1844,7 +1844,6 @@ void AliTPCClusterParam::SetResolutionYMap( THnBase *Map)
     fResolutionYMap = dynamic_cast<THnBase*>( Map->Clone(Map->GetName()));
   }
 }
-
 
 Float_t AliTPCClusterParam::GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ) const
 {
@@ -1869,10 +1868,10 @@ Float_t AliTPCClusterParam::GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax,
     swapY = !swapY;
     Z = -Z;
   }
+  
   if( fWaveCorrectionMirroredAngle && (angleY<0) ){ // Angle axis is mirrored at 0
     angleY = -angleY;
-  }
-
+  }  
   double var[5] = { Type, Z, QMax, Pad, angleY };
   Long64_t bin = fWaveCorrectionMap->GetBin(var, kFALSE );
   if( bin<0 ) return 0;
