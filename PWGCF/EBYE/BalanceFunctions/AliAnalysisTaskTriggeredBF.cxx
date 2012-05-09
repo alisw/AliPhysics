@@ -253,8 +253,11 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
   
   // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
   vector<Double_t> *chargeVector[9];          // original charge
+  vector<Double_t> *chargeVectorShuffled[9];  // shuffled charge
+
   for(Int_t i = 0; i < 9; i++){
-    chargeVector[i]        = new vector<Double_t>;
+    chargeVector[i]         = new vector<Double_t>;
+    chargeVectorShuffled[i] = new vector<Double_t>;
   }
   
   Double_t v_charge;
@@ -403,14 +406,34 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
 		    chargeVector[6]->push_back(v_p[2]);
 		    chargeVector[7]->push_back(v_pt);
 		    chargeVector[8]->push_back(v_E);
+
+		    if(fRunShuffling) {
+		      chargeVectorShuffled[0]->push_back(v_charge);
+		      chargeVectorShuffled[1]->push_back(v_y);
+		      chargeVectorShuffled[2]->push_back(v_eta);
+		      chargeVectorShuffled[3]->push_back(v_phi);
+		      chargeVectorShuffled[4]->push_back(v_p[0]);
+		      chargeVectorShuffled[5]->push_back(v_p[1]);
+		      chargeVectorShuffled[6]->push_back(v_p[2]);
+		      chargeVectorShuffled[7]->push_back(v_pt);
+		      chargeVectorShuffled[8]->push_back(v_E);
+		    }
 		    
 		  } //track loop
 		  
-		    // calculate balance function
+		  // calculate balance function
 		  fBalance->FillBalance(fCentrality,chargeVector);
+		  
+		  // calculate shuffled balance function
+		  if(fRunShuffling) {
+		    random_shuffle(chargeVectorShuffled[0]->begin(), chargeVectorShuffled[0]->end());
+		    fShuffledBalance->FillBalance(fCentrality,chargeVectorShuffled);
+		  }
+
 		  // clean charge vector afterwards
 		  for(Int_t i = 0; i < 9; i++){		       
 		    chargeVector[i]->clear();
+		    chargeVectorShuffled[i]->clear();
 		  }
 
 		}//Vz cut
