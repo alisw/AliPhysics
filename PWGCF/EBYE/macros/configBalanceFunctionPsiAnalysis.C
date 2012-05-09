@@ -13,19 +13,19 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 
   //Set all analyses separately
   //Rapidity
-  gBalance->SetInterval(AliBalance::kRapidity,-0.8,0.8,32,-1.6,1.6,15.);  
+  //gBalance->SetInterval(AliBalance::kRapidity,-0.8,0.8,32,-1.6,1.6,15.);  
   //Eta
-  gBalance->SetInterval(AliBalance::kEta,-0.8,0.8,32,-1.6,1.6,15);
+  //gBalance->SetInterval(AliBalance::kEta,-0.8,0.8,32,-1.6,1.6,15);
   //Qlong
-  gBalance->SetInterval(AliBalance::kQlong,-1,1,200,0.0,4.0,15);
+  //gBalance->SetInterval(AliBalance::kQlong,-1,1,200,0.0,4.0,15);
   //Qout
-  gBalance->SetInterval(AliBalance::kQout,-1,1,200,0.0,4.0,15);
+  //gBalance->SetInterval(AliBalance::kQout,-1,1,200,0.0,4.0,15);
   //Qside
-  gBalance->SetInterval(AliBalance::kQside,-1,1,200,0.0,4.0,15);
+  //gBalance->SetInterval(AliBalance::kQside,-1,1,200,0.0,4.0,15);
   //Qinv
-  gBalance->SetInterval(AliBalance::kQinv,-1,1,200,0.0,4.0,15);
+  //gBalance->SetInterval(AliBalance::kQinv,-1,1,200,0.0,4.0,15);
   //Phi
-  gBalance->SetInterval(AliBalance::kPhi,0.,360.,90,-180.,180.0,15);
+  //gBalance->SetInterval(AliBalance::kPhi,0.,360.,90,-180.,180.0,15);
 
   //Init the histograms
   gBalance->InitHistograms();

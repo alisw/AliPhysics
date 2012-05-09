@@ -27,6 +27,7 @@
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventplane.h"
+#include "AliTHn.h"              
 
 #include "AliPID.h"                
 #include "AliPIDResponse.h"        
@@ -168,14 +169,14 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fBalance = new AliBalancePsi();
     fBalance->SetAnalysisLevel("ESD");
     //fBalance->SetNumberOfBins(-1,16);
-    fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6,15.);
+    //fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6,15.);
   }
   if(fRunShuffling) {
     if(!fShuffledBalance) {
       fShuffledBalance = new AliBalancePsi();
       fShuffledBalance->SetAnalysisLevel("ESD");
       //fShuffledBalance->SetNumberOfBins(-1,16);
-      fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6,15.);
+      //fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6,15.);
     }
   }
 
@@ -274,37 +275,37 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 
   // Balance function histograms
   // Initialize histograms if not done yet
-  if(!fBalance->GetHistNp(0)){
+  if(!fBalance->GetHistNp()){
     AliWarning("Histograms not yet initialized! --> Will be done now");
     AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
     fBalance->InitHistograms();
   }
 
   if(fRunShuffling) {
-    if(!fShuffledBalance->GetHistNp(0)) {
+    if(!fShuffledBalance->GetHistNp()) {
       AliWarning("Histograms (shuffling) not yet initialized! --> Will be done now");
       AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
       fShuffledBalance->InitHistograms();
     }
   }
 
-  for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
-    fListBF->Add(fBalance->GetHistNp(a));
-    fListBF->Add(fBalance->GetHistNn(a));
-    fListBF->Add(fBalance->GetHistNpn(a));
-    fListBF->Add(fBalance->GetHistNnn(a));
-    fListBF->Add(fBalance->GetHistNpp(a));
-    fListBF->Add(fBalance->GetHistNnp(a));
+  //for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
+  fListBF->Add(fBalance->GetHistNp());
+  fListBF->Add(fBalance->GetHistNn());
+  fListBF->Add(fBalance->GetHistNpn());
+  fListBF->Add(fBalance->GetHistNnn());
+  fListBF->Add(fBalance->GetHistNpp());
+  fListBF->Add(fBalance->GetHistNnp());
 
-    if(fRunShuffling) {
-      fListBFS->Add(fShuffledBalance->GetHistNp(a));
-      fListBFS->Add(fShuffledBalance->GetHistNn(a));
-      fListBFS->Add(fShuffledBalance->GetHistNpn(a));
-      fListBFS->Add(fShuffledBalance->GetHistNnn(a));
-      fListBFS->Add(fShuffledBalance->GetHistNpp(a));
-      fListBFS->Add(fShuffledBalance->GetHistNnp(a));
-    }  
-  }
+  if(fRunShuffling) {
+    fListBFS->Add(fShuffledBalance->GetHistNp());
+    fListBFS->Add(fShuffledBalance->GetHistNn());
+    fListBFS->Add(fShuffledBalance->GetHistNpn());
+    fListBFS->Add(fShuffledBalance->GetHistNnn());
+    fListBFS->Add(fShuffledBalance->GetHistNpp());
+    fListBFS->Add(fShuffledBalance->GetHistNnp());
+  }  
+  //}
 
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 

@@ -62,6 +62,8 @@ void runBalanceFunctionPsi(
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
     gSystem->Load("libEventMixing.so");
+    gSystem->Load("libCORRFW.so");
+    gSystem->Load("libPWGTools.so");
     gSystem->Load("libPWGCFebye.so");
 
     // additional
@@ -89,7 +91,7 @@ void runBalanceFunctionPsi(
       TChain* chain = 0x0;
       if((!bAOD)&&(!bMCtruth)) {
 	chain = new TChain("esdTree");
-	for(Int_t i = 0; i < 8; i++) {
+	for(Int_t i = 0; i < 4; i++) {
 	  filename = "/data/alice2/pchrist/HeavyIons/Data/2011/Set";
 	  filename += i; filename += "/AliESDs.root";
 	  chain->Add(filename.Data());
@@ -97,8 +99,8 @@ void runBalanceFunctionPsi(
       }
       else if((bAOD)&&(!bMCtruth)) {
 	chain = new TChain("aodTree");
-	for(Int_t i = 0; i < 8; i++) {
-	  filename = "/data/alice2/pchrist/HeavyIons/Data/2011/Set";
+	for(Int_t i = 0; i < 4; i++) {
+	  filename = "/project/alice/pchrist/Data/2011/Set";
 	  filename += i; filename += "/AliAOD.root";
 	  chain->Add(filename.Data());
 	}
