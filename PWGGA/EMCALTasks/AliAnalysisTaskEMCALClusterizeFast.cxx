@@ -105,7 +105,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fClusterizer(0),
     fUnfolder(0),
     fJustUnfold(kFALSE),
-    fGeomName("EMCAL_FIRSTYEARV1"),
+    fGeomName(""),
     fGeomMatrixSet(kFALSE), 
     fLoadGeomMatrices(kFALSE),
     fOCDBpath(),
@@ -255,7 +255,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 {
   // Fill digits array
 
-  AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
 
   fDigitsArr->Clear("C");
 
@@ -292,7 +292,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       fDigitsArr->Sort();
 
       if (fSubBackground) {
-	avgE /= fGeom->GetNumberOfSuperModules()*48*24;
+	avgE /= geom->GetNumberOfSuperModules()*48*24;
 	Int_t ndigis = fDigitsArr->GetEntries();
 	for (Int_t i = 0; i < ndigis; ++i) {
         AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(i));
@@ -310,7 +310,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
   case kPattern :    
     {
       // Fill digits from a pattern
-      Int_t maxd = fGeom->GetNCells() / 4;
+      Int_t maxd = geom->GetNCells() / 4;
       for (Int_t idigit = 0; idigit < maxd; idigit++){
 	if (idigit % 24 == 12) idigit += 12;
 	AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
@@ -368,13 +368,13 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	triggers->GetPosition(triggerCol, triggerRow);
 	
 	Int_t find = -1;
-	fGeom->GetAbsFastORIndexFromPositionInEMCAL(triggerCol, triggerRow, find);
+	geom->GetAbsFastORIndexFromPositionInEMCAL(triggerCol, triggerRow, find);
 	
 	if (find < 0)
 	  continue;
       
 	Int_t cidx[4] = {-1};
-	Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
+	Bool_t ret = geom->GetCellIndexFromFastORIndex(find, cidx);
 	
 	if (!ret)
 	  continue;
@@ -411,7 +411,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
   // Cluster energy, global position, cells and their amplitude fractions are restored.
 
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
-  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(fGeomName);
+  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
   AliVEvent *event = InputEvent();
   if (!event) {
     AliError("Cannot get the event");
@@ -597,7 +597,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
 //________________________________________________________________________________________
 void AliAnalysisTaskEMCALClusterizeFast::Init()
 {
-  //Select clusterization/unfolding algorithm and set all the needed parameters
+  // Select clusterization/unfolding algorithm and set all the needed parameters.
 
   AliVEvent * event = InputEvent();
   if (!event) {
@@ -616,7 +616,11 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     return;
   }
 
-  AliEMCALGeometry *geometry = AliEMCALGeometry::GetInstance(fGeomName);
+  AliEMCALGeometry *geometry = 0;
+  if (fGeomName.Length()>0) 
+    geometry = AliEMCALGeometry::GetInstance(fGeomName);
+  else
+    geometry = AliEMCALGeometry::GetInstance();
   if (!geometry) {
     AliFatal("Geometry not available!!!");
     return;

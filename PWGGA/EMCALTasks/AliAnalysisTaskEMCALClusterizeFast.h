@@ -123,6 +123,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
   AliAnalysisTaskEMCALClusterizeFast &operator=(const AliAnalysisTaskEMCALClusterizeFast&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 7);
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 8);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
