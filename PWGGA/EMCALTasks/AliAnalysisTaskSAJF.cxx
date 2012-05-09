@@ -563,7 +563,7 @@ void AliAnalysisTaskSAJF::FillHistograms()
 
   fHistMedKtVSRhoPart->Fill(rhoKt, rhoClus + rhoTracks);
   
-  Int_t nRCs = GetArea() / A - 1;
+  Int_t nRCs = (Int_t)(GetArea() / A - 1);
 
   for (Int_t i = 0; i < nRCs; i++) {
     Float_t RCpt = GetRigidConePt(0);
