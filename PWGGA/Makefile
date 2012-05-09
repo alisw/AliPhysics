@@ -57,6 +57,10 @@ ifneq ($(PWGGAEMCALTasks_INCLUDE),)
   ALICEINC += -I../$(PWGGAEMCALTasks_INCLUDE)
 endif
 
+ifneq ($(PWGGAEMCALJetTasks_INCLUDE),)
+  ALICEINC += -I../$(PWGGAEMCALJetTasks_INCLUDE)
+endif
+
 ifneq ($(PWGGAGammaConv_INCLUDE),)
   ALICEINC += -I../$(PWGGAGammaConv_INCLUDE)
 endif
@@ -69,6 +73,7 @@ endif
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
+    ALICEINC += -I$(ALICE_ROOT)/JETAN/fastjet
     ALICEINC += -I$(ALICE_ROOT)/ANALYSIS
     ALICEINC += -I$(ALICE_ROOT)/PWG
     ALICEINC += -I$(ALICE_ROOT)/PHOS
