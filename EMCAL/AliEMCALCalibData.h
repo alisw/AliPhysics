@@ -35,7 +35,7 @@ class AliEMCALCalibData: public TNamed {
   Float_t GetTimeChannelDecal(Int_t module, Int_t column, Int_t row) const;
   Float_t GetTimeChannel     (Int_t module, Int_t column, Int_t row, Int_t bc) const;
 	
-  Float_t GetADCchannelRef   () { return fADCchannelRef ; }
+  Float_t GetADCchannelRef   () const { return fADCchannelRef ; }
 
   void    SetADCchannel      (Int_t module, Int_t column, Int_t row, Float_t value);
   void    SetADCchannelDecal (Int_t module, Int_t column, Int_t row, Float_t value);

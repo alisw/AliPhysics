@@ -100,7 +100,7 @@ AliEMCALCalibData &AliEMCALCalibData::operator =(const AliEMCALCalibData& calibd
   SetTitle(calibda.GetName());
   Reset();
   
-  fADCchannelRef = calibda.fADCchannelRef ;
+  fADCchannelRef = calibda.GetADCchannelRef() ;
   
   Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
