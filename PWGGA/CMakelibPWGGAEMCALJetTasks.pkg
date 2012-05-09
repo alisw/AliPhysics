@@ -31,13 +31,15 @@ set ( SRCS
  EMCALJetTasks/AliJetEmbeddingTask.cxx
 )
 
-string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
-
 set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( SRCS ${SRCS}  EMCALJetTasks/AliFJWrapper.cxx )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h )
 
 set ( FASTJET_ROOT $ENV{FASTJET_ROOT} )
 
