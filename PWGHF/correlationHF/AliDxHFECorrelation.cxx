@@ -110,7 +110,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* candidatesD0, const TObjArray* ca
     // loop over trigger D0 particle
     ctrigger++;
     AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
-    if (!ptrigger) continue;
+    //    if (!ptrigger) continue;
     ((TH1D*)fHistograms->At(khD0pT)) ->Fill(ptrigger->Pt());
     ((TH1D*)fHistograms->At(khD0Phi))->Fill(ptrigger->Phi());
     ((TH1D*)fHistograms->At(khD0Eta))->Fill(ptrigger->Eta());
@@ -124,7 +124,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* candidatesD0, const TObjArray* ca
       // loop over electrons
       cElectron++;
       AliVParticle* pElectron=reinterpret_cast<AliVParticle*>(oElectron);
-      if (!pElectron) continue;
+      //      if (!pElectron) continue;
       ((TH1D*)fHistograms->At(khElectronpT)) ->Fill(pElectron->Pt());
       ((TH1D*)fHistograms->At(khElectronPhi))->Fill(pElectron->Phi());
       ((TH1D*)fHistograms->At(khElectronEta))->Fill(pElectron->Eta());
