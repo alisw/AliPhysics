@@ -143,7 +143,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   memset(fkBackGroundFactorArray, 0, sizeof(TF1 *) * 12);
   memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
   memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
-  memset(&fPbPbUserCentralityBinning, 0, sizeof(Float_t) * 12);
+  memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
 
 
 }
@@ -213,7 +213,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   memset(fkBackGroundFactorArray, 0, sizeof(TF1 *) * 12);
   memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
   memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
-  memset(&fPbPbUserCentralityBinning, 0, sizeof(Float_t) * 12);
+  memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
 
 }
 
