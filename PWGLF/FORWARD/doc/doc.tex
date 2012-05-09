@@ -1,4 +1,6 @@
 \documentclass[11pt]{article}
+\renewcommand{\rmdefault}{ptm}
+\usepackage{mathptmx}
 \usepackage[margin=2cm,twoside,a4paper]{geometry}
 \usepackage{amstext}
 \usepackage{amsmath}
@@ -57,13 +59,40 @@
 \newcommand{\SecMap}{\ensuremath S_v\etaphi}
 \setlength{\parskip}{1ex}
 \setlength{\parindent}{0em}
-\title{Analysing the FMD data for $\dndeta$}
+\title{%
+  {\LARGE EUROPEAN ORGANIZATION FOR NUCLEAR RESEARCH}\\%
+  {\Large European Organization for Particle Physics}\\[2ex]%
+  {\normalsize%
+    \begin{tabular}[t]{@{}p{.25\textwidth}@{\hspace{.05\textwidth}}%
+        p{.4\textwidth}@{\hspace{.05\textwidth}}%
+        p{.25\textwidth}@{}}%
+      % \vfil%
+      \vfil
+      \includegraphics[keepaspectratio,width=.12\textwidth]{alice_logo_v3}%
+      \vfil%
+      &% 
+      \vfil
+      \begin{center}%
+        {\LARGE\bf Analysing the FMD data for $\dndeta$}%
+      \end{center}%
+      \vfil
+      &%
+      % \vfil%
+      \vfil
+      \begin{tabular}[t]{@{}p{.25\textwidth}@{}}
+        \hfill\includegraphics[keepaspectratio,width=.12\textwidth]{%
+          cernlogo}\\
+        \hfill ALICE-INT-2012-040 v1\\
+        \hfill \today
+      \end{tabular}%
+      \vfil%
+    \end{tabular}}}
 \author{Christian Holm
   Christensen\thanks{\texttt{$\langle$cholm@nbi.dk$\rangle$}}\quad\&\quad
   Hans Hjersing Dalsgaard\thanks{\texttt{$\langle$canute@nbi.dk$\rangle$}}\\ 
   Niels Bohr Institute\\
   University of Copenhagen}
-\date{\today}
+\date{}
 \begin{document}
 \pdfbookmark{Analysing the FMD data for dN/deta}{top}
 \maketitle 
@@ -1054,6 +1083,7 @@ Pb-Pb collision at $\sqrt{s_{NN}}=\TeV{2.76}$},
 
 % Local Variables:
 %   ispell-local-dictionary: "british"
+%   TeX-PDF-mode: t
 % End:
 %
 % LocalWords:  tracklet diffractive IsTriggerBits AliAODForwardMult ProjectionX
