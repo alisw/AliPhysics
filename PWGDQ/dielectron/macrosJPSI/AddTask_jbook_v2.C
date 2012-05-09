@@ -1,8 +1,8 @@
-AliAnalysisTask *AddTask_jbook_JPsi(){
+AliAnalysisTask *AddTask_jbook_v2(){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_jbook_JPsi", "No analysis manager found.");
+    Error("AddTask_jbook_v2", "No analysis manager found.");
     return 0;
   }
 
@@ -29,7 +29,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(){
     gROOT->LoadMacro(configFile.Data());
 
   //add dielectron analysis with different cuts to the task
-  for (Int_t i=0; i<5; ++i){ //nDie defined in config file
+  for (Int_t i=16; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i);
     if (jpsi ) task->AddDielectron(jpsi);
     if (jpsi ) printf("add: %s\n",jpsi->GetName());
@@ -47,28 +47,28 @@ AliAnalysisTask *AddTask_jbook_JPsi(){
   
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("jbook_tree",
+    mgr->CreateContainer("jbook_v2_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "jbook_default");
+                         "jbook_v2_default");
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("jbook_QA",
+    mgr->CreateContainer("jbook_v2_QA",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jbook.root");
+                         "jbookv2.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("jbook_CF",
+    mgr->CreateContainer("jbook_v2_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jbook.root");
+                         "jbookv2.root");
   
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("jbook_EventStat",
+    mgr->CreateContainer("jbook_v2_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jbook.root");
+                         "jbookv2.root");
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );

@@ -8,8 +8,6 @@ void AddMCSignals(AliDielectron *die);
 void SetEtaCorrection();
 TVectorD *GetRunNumbers();
 
-AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
-
 TString names=("TPC;TOF;TRD;rec;TOFTRD;TOFTRD2;ITScls;ITSamy;dca;chi2;Gam0;Gam01;Gam05;Gam10;Gam15;Gam20;EtaGap01;EtaGap02;EtaGap03;EtaGap04;EtaGap05;SubLS;SubRndm");
 enum { kTPC=0, kTOF, kTRD, krec, kTOFTRD, kTOFTRD2, kITScls, kITSamy, kDCA, kChi, kGam0, kGam01, kGam05, kGam10, kGam15, kGam20, kEtaGap01, kEtaGap02, kEtaGap03, kEtaGap04, kEtaGap05, kSubLS, kSubRndm };
 
@@ -78,7 +76,7 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition)
     // trd tables
     TString pidTab="$TRAIN_ROOT/util/dielectron/dielectron/TRDpidEff_eleProb07_TRDntr4_6.root";
     TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-    if (trainRoot.IsNull()) pidTab="../PWGDQ/dielectron/files/TRDpidEff_eleProb07_TRDntr4_6.root";
+    if (trainRoot.IsNull()) pidTab="$ALICE_ROOT/PWGDQ/dielectron/files/TRDpidEff_eleProb07_TRDntr4_6.root";
 
     if (gSystem->AccessPathName(gSystem->ExpandPathName(pidTab.Data())))
       Error("ConfigPbPb","PID table not found: %s",pidTab.Data());
@@ -134,13 +132,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition)
     }
     
     AliDielectronVarCuts *poi = new AliDielectronVarCuts("PoI","PoI");
-    poi->AddCut(AliDielectronVarManager::kM,2.92,3.16);     // particles of interest, jpsi mass window
+    poi->AddCut(AliDielectronVarManager::kM,2.92,3.20);     // particles of interest, jpsi mass window
     die->GetEventPlanePOIPreFilter().AddCuts(poi); 
     
-    AliDielectronVarCuts *poiTrk = new AliDielectronVarCuts("PoItracks","PoItracks");
-    poiTrk->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
-    die->GetEventPlanePreFilter().AddCuts(poiTrk);
-
     if(cutDefinition >= kEtaGap01 && 
        cutDefinition <  kSubLS     ) {
       AliDielectronVarCuts *etaGap = new AliDielectronVarCuts(AliDielectronVarManager::GetValueName(AliDielectronVarManager::kEta),"etaGap");
@@ -161,6 +155,13 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition)
   // setup eta correction
   if(isESD) SetEtaCorrection();
   
+  // VZERO calibration
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  if (!trainRoot.IsNull()) {
+    die->SetVZEROCalibrationFilename("$TRAIN_ROOT/util/dielectron/dielectron/VzeroCalibrationLHC10h.root");
+    die->SetVZERORecenteringFilename("$TRAIN_ROOT/util/dielectron/dielectron/VzeroRecenteringLHC10h.root");
+  }
+  
   return die;
 }
 
@@ -176,21 +177,21 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   die->GetTrackFilter().AddCuts(cuts);
   
   //Pt cut, should make execution a bit faster
-  AliDielectronVarCuts *pt = new AliDielectronVarCuts("Pt>.8","Pt>.8");
-  pt->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
+  AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
+  if(cutDefinition >= kEtaGap01 )   
+    pt->AddCut(AliDielectronVarManager::kPt,1.1,1e30);
+  else   
+    pt->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
   cuts->AddCut(pt);
   
-  //ESD track cuts
-  Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
-  if(isESD) cuts->AddCut(SetupESDtrackCuts(cutDefinition));
-  
-  // track cuts ESD and AOD
+	// track cuts ESD and AOD
   AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
   switch(cutDefinition) {
     case kTOFTRD2: varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
       break;
@@ -212,9 +213,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   
   ////////////////////////////////// DATA
   if(!hasMC) {
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);   // merge with below ones vv
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
-    //if((cutDefinition!=kTOF && cutDefinition<kTOFTRD) || cutDefinition>=kGam0) 
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
     
     if(cutDefinition==kTRD || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2) 
@@ -226,7 +225,6 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   if(hasMC) {
     
     // electron
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);   //merge with data only ^^
     Double_t nSigmaPi = 3.5; Double_t nSigmaP = 3.5;
     Double_t resolution=0.0549;
     Double_t BBpro[5] = {0};
@@ -285,7 +283,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
       TString list=gSystem->Getenv("LIST");
       
       //LHC11a10b
-      if (list.Contains("LHC11a10b")) {
+      if (list.Contains("LHC11a10b") || list.IsNull()) {
         printf("LHC11a10b parameters\n");
         ffPro->SetParameters(BBpro[0],BBpro[1],BBpro[2],BBpro[3],BBpro[4]);
         ffPio->SetParameters(BBpio[0],BBpio[1],BBpio[2],BBpio[3],BBpio[4]);
@@ -302,7 +300,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     // shifts for the nSigma electrons
     TGraph* nSigmaCorrection = new TGraph();
     // LHC11a10b
-    if (list.Contains("LHC11a10b")) {
+    if (list.Contains("LHC11a10b") || list.IsNull()) {
       nSigmaCorrection->SetPoint(0, 137161., -0.50-(0.28));
       nSigmaCorrection->SetPoint(1, 139510., -0.50-(0.28));
       pid->SetCorrGraph(nSigmaCorrection);
@@ -311,7 +309,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   } //hasMC
   
   ////////////////////////////////// DATA + MC
-  // pid cuts TOF & TRD
+  // pid cuts TPC + TOF & TRD
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);
   if(cutDefinition==kTOF || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2) 
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
   
@@ -360,49 +359,6 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
 }
 
 //______________________________________________________________________________________
-AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition)
-{
-  //
-  // Setup default AliESDtrackCuts
-  //
-  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts;
-  // reconstruction cuts
-  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-
-  /*
-   // basic track quality cuts  (basicQ)
-   esdTrackCuts->SetMaxDCAToVertexZ(3.0);
-   esdTrackCuts->SetMaxDCAToVertexXY(1.0);
-   
-   // acceptance cuts
-   esdTrackCuts->SetEtaRange( -0.9 , 0.9 );
-   //esdTrackCuts->SetPtRange( 0.8, 1e30 );
-
-   // reconstruction cuts
-   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCuts->SetRequireITSRefit(kTRUE);
-   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-   
-   esdTrackCuts->SetMinNClustersTPC(70);
-   //  if(cutDefinition<=kChi || cutDefinition>=kEtaGap01) 
-   //  else esdTrackCuts->SetMinNClustersTPC(120);
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   //  if(cutDefinition!=kITSamy) esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);   //  SPD first
-   // esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-   
-   switch(cutDefinition) {
-   case kTOFTRD2:     
-   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);  // SPDfirst
-   break;
-   default:
-   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);  // SPDany
-   break;
-   }
-   */
-  return esdTrackCuts;
-}
-
-//______________________________________________________________________________________
 void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 {
   //
@@ -441,7 +397,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   
   
   ////// FLOW //////
-  if(0) {
   if(cutDefinition == kTOFTRD || cutDefinition >= kEtaGap01) {
     histos->UserHistogram("Event","TPCxH2","TPC Qx component;TPCxH2",
                           100,-1500.,1500.,
@@ -583,7 +538,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0Av0CDiffH2);
     
   }
-  }
   
   ////// MONTE CARLO //////
   /*
@@ -681,7 +635,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   }
   
   //// FLOW results use tprofiles
-  if(0) {
   if(cutDefinition == kTOFTRD || cutDefinition == kTOFTRD2 || cutDefinition >= kEtaGap01) {
     
     histos->UserProfile("Pair","M_Cent_Pt_V0ACrpH2FlowV2",
@@ -720,7 +673,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         125,0.,125*.04,
                         AliDielectronVarManager::kM);
   }  
-  }
   
   die->SetHistogramManager(histos);
 }
@@ -860,7 +812,7 @@ void SetEtaCorrection()
 
   TString etaMap="$TRAIN_ROOT/jpsi_JPSI/EtaCorrMaps.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-  if (trainRoot.IsNull()) etaMap="../PWGDQ/dielectron/files/EtaCorrMaps.root";
+  if (trainRoot.IsNull()) etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigPbPb","Eta map not found: %s",etaMap.Data());
     return;
