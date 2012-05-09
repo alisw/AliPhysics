@@ -20,6 +20,7 @@ class AliTPCExB;
 #include "AliTPCCalPad.h"
 #include "TString.h"
 #include "AliSplineFit.h"
+#include "TMap.h"
 
 class AliTPCSensorTempArray;
 class AliDCSSensorArray;
@@ -33,7 +34,6 @@ class AliTPCCalibVdrift;
 class AliGRPObject;
 class AliTPCCalibRaw;
 class AliTPCdataQA;
-class TMap;
 class AliMagF;
 class AliTPCcalibDButil;
 class AliCTPTimeParams;
@@ -61,7 +61,9 @@ class AliTPCcalibDB : public TObject
   void          SetExBField(Float_t bz);
   void          SetExBField( const AliMagF*   bmap);
   static AliTPCExB*    GetExB(Float_t bz,Bool_t bdelete);
-  AliTPCCalPad* GetPadGainFactor() const {return fPadGainFactor;}
+  AliTPCCalPad* GetPadGainFactorOld() const {return fPadGainFactor;}
+  AliTPCCalPad* GetPadGainFactor() const {return fActiveChannelMap;}
+  AliTPCCalPad* GetActiveChannelMap() const { return fActiveChannelMap; }
   AliTPCCalPad* GetDedxGainFactor() const {return fDedxGainFactor;}
   AliTPCCalPad* GetPadTime0() const {return fPadTime0;}
   AliTPCCalPad* GetDistortionMap(Int_t i) const;
@@ -81,6 +83,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetALTROFPED()     const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("FPED")):0;}
   AliTPCCalPad* GetALTROAcqStop()  const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("AcqStop")):0;}
   AliTPCCalPad* GetALTROMasked()   const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("Masked")):0;}
+  TMap* GetDDLMap()   const {return fALTROConfigData?static_cast<TMap*>(fALTROConfigData->FindObject("DDLArray")):0;}
   TMap* GetRCUconfig() const {return fALTROConfigData?(TMap*)(fALTROConfigData->FindObject("RCUconfig")):0;}
   Int_t GetRCUTriggerConfig() const;
   Bool_t IsTrgL0();
@@ -161,7 +164,7 @@ class AliTPCcalibDB : public TObject
   static void RegisterExB(Int_t index, Float_t bz, Bool_t bdelete);
   //
   //
-  
+  //
   AliTPCCalPad* MakeDeadMap(Double_t notInMap=1, const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root" );
   AliGRPObject * MakeGRPObjectFromMap(TMap *map);
   AliCTPTimeParams* GetCTPTimeParams() const {return fCTPTimeParams;}
@@ -183,6 +186,7 @@ protected:
   // calibration parameters per pad
   //
   AliTPCCalPad* fPadGainFactor;   // Gain calibration entry
+  AliTPCCalPad* fActiveChannelMap; // Map of active channels calculated on the fly
   AliTPCCalPad* fDedxGainFactor;   // Gain calibration entry - for dEdx
   AliTPCCalPad* fPadTime0;        // Time0 calibration entry
   TObjArray   *fDistortionMap;    // distortion map
@@ -195,7 +199,6 @@ protected:
   TObjArray *fALTROConfigData;    // ALTRO configuration data
   TObjArray *fPulserData;         // Calibration Pulser data
   TObjArray *fCEData;             // CE data
-  //
   //
   //
   //

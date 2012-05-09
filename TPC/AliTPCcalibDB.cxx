@@ -141,7 +141,7 @@ AliTPCcalibDB* AliTPCcalibDB::Instance()
 {
   //
   // Singleton implementation
-  // Returns an instance of this class, it is created if neccessary
+  // Returns an instance of this class, it is created if necessary
   //
   
   if (fgTerminated != kFALSE)
@@ -177,6 +177,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fTransform(0),
   fExB(0),
   fPadGainFactor(0),
+  fActiveChannelMap(0),
   fDedxGainFactor(0),
   fPadTime0(0),
   fDistortionMap(0),
@@ -222,6 +223,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fTransform(0),
   fExB(0),
   fPadGainFactor(0),
+  fActiveChannelMap(0),
   fDedxGainFactor(0),
   fPadTime0(0),
   fDistortionMap(0),
@@ -277,6 +279,7 @@ AliTPCcalibDB::~AliTPCcalibDB()
   // destructor
   //
   
+  delete fActiveChannelMap;
 }
 AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
   //
@@ -440,7 +443,7 @@ void AliTPCcalibDB::Update(){
   }
   //RAW calibration data
  //  entry          = GetCDBEntry("TPC/Calib/Raw");
-  
+
   entry          = GetCDBEntry("TPC/Calib/Mapping");
   if (entry){
     //if (fPadNoise) delete fPadNoise;
@@ -520,7 +523,7 @@ void AliTPCcalibDB::UpdateNonRec(){
     fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
   }
   // High voltage
-  if (fRun>=0){
+  if (fRun>=0 && !fVoltageArray.At(fRun)){
     entry = AliCDBManager::Instance()->Get("TPC/Calib/HighVoltage",fRun);
     if (entry)  {
       fVoltageArray.AddAt(entry->GetObject(),fRun);
@@ -630,7 +633,145 @@ Int_t AliTPCcalibDB::InitDeadMap() {
   // -  Altro disabled channels. Noisy channels.
   // -  DDL list
 
-  return 0;
+  // check necessary information
+  Int_t run=AliCDBManager::Instance()->GetRun();
+  if (run<0){
+    AliError("run not set in CDB manager. Cannot create active channel map");
+    return 0;
+  }
+  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
+  AliTPCCalPad*          altroMap = GetALTROMasked();
+  TMap*                    mapddl = GetDDLMap();
+
+  if (!voltageArray && !altroMap && !mapddl) {
+    AliError("All necessary information to create the activate channel are map missing.");
+    return 0;
+  }
+  
+  if (!fActiveChannelMap) fActiveChannelMap=new AliTPCCalPad("ActiveChannelMap","ActiveChannelMap");
+  
+  //=============================================================
+  //get map of bad ROCs from VOLTAGE deviations
+  //
+  Bool_t badVoltage[AliTPCCalPad::kNsec]={kFALSE};
+  Double_t maxVdiff=100.;
+
+  if (voltageArray){
+    //1. get median of median of all chambers
+    Double_t chamberMedian[AliTPCCalPad::kNsec]={0.};
+    for (Int_t iROC=0;iROC<AliTPCCalPad::kNsec;++iROC){
+      TString sensorName="";
+      Char_t sideName='A';
+      if ((iROC/18)%2==1) sideName='C';
+      if (iROC<36) sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,iROC%18);
+      else         sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,iROC%18);
+
+      AliDCSSensor *sensor = voltageArray->GetSensor(sensorName);
+      if (!sensor) continue;
+
+      chamberMedian[iROC]=0;
+      TGraph *gr=sensor->GetGraph();
+      AliSplineFit *fit=sensor->GetFit();
+      if ( gr && gr->GetN()>0 ){
+        chamberMedian[iROC]=TMath::Median(gr->GetN(),gr->GetY());
+      } else if (fit && fit->GetKnots()>0) {
+        chamberMedian[iROC]=TMath::Median(fit->GetKnots(), fit->GetY0());
+      }
+    }
+    Double_t medianIROC=TMath::Median( 36, chamberMedian );
+    Double_t medianOROC=TMath::Median( 36, chamberMedian+36 );
+
+    //2. check if 90% of the knots (points) are out of a given threshold
+    for (Int_t iROC=0;iROC<AliTPCCalPad::kNsec;++iROC){
+      badVoltage[iROC]=kFALSE;
+      TString sensorName="";
+      Char_t sideName='A';
+      Double_t median=medianIROC;
+      if ((iROC/18)%2==1) sideName='C';
+      if (iROC<36) sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,iROC%18);
+      else           {sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,iROC%18); median=medianOROC; }
+
+      AliDCSSensor *sensor = voltageArray->GetSensor(sensorName);
+      if (!sensor) continue;
+
+      chamberMedian[iROC]=0;
+      TGraph *gr=sensor->GetGraph();
+      AliSplineFit *fit=sensor->GetFit();
+      Int_t nmax=0;
+      Int_t nout=0;
+      if ( gr && gr->GetN()>0 ){
+        nmax=gr->GetN();
+        for (Int_t i=0; i<gr->GetN(); ++i)
+          if ( TMath::Abs( gr->GetY()[i]-median ) > maxVdiff ) ++nout;
+      } else if (fit && fit->GetKnots()>0) {
+        nmax=fit->GetKnots();
+        for (Int_t i=0; i<fit->GetKnots(); ++i)
+          if ( TMath::Abs( fit->GetY0()[i]-median ) > maxVdiff ) ++nout;
+      }
+      if ( (Double_t)nout/(Double_t)nmax > 0.9 ) badVoltage[iROC]=kTRUE;
+      //     printf("%d, %d, %d, %f\n",iROC, nout, nmax, median);
+    }
+
+  } else {
+    AliError("Voltage Array missing. ActiveChannelMap can only be created with parts of the information.");
+  }
+  // Voltage map is done
+  //=============================================================
+
+  //=============================================================
+  // Setup DDL map
+
+  Bool_t ddlMap[216]={0};
+  for (Int_t iddl=0; iddl<216; ++iddl) ddlMap[iddl]=1;
+  if (mapddl){
+    TObjString *s = (TObjString*)mapddl->GetValue("DDLArray");
+    if (s){
+      for (Int_t iddl=0; iddl<216; ++iddl) ddlMap[iddl]=TString(s->GetString()(iddl))!="0";
+    }
+  } else {
+    AliError("DDL map missing. ActiveChannelMap can only be created with parts of the information.");
+  }
+  // Setup DDL map done
+  // ============================================================
+
+  //=============================================================
+  // Setup active chnnel map
+  //
+
+  AliTPCmapper map(gSystem->ExpandPathName("$ALICE_ROOT/TPC/mapping/"));
+
+  if (!altroMap) AliError("ALTRO dead channel map missing. ActiveChannelMap can only be created with parts of the information.");
+  
+  for (Int_t iROC=0;iROC<AliTPCCalPad::kNsec;++iROC){
+    AliTPCCalROC *roc=fActiveChannelMap->GetCalROC(iROC);
+    if (!roc){
+      AliError(Form("No ROC %d in active channel map",iROC));
+      continue;
+    }
+    
+    // check for bad voltage
+    if (badVoltage[iROC]){
+      roc->Multiply(0.);
+      continue;
+    }
+    
+    AliTPCCalROC *masked=0x0;
+    if (altroMap) masked=altroMap->GetCalROC(iROC);
+    
+    for (UInt_t irow=0; irow<roc->GetNrows(); ++irow){
+      for (UInt_t ipad=0; ipad<roc->GetNPads(irow); ++ipad){
+        //per default the channel is on
+        roc->SetValue(irow,ipad,1);
+        // apply altro dead channel mask (inverse logik, it is not active, but inactive channles)
+        if (masked && masked->GetValue(irow, ipad)) roc->SetValue(irow, ipad ,0);
+        // mask channels if a DDL is inactive
+        Int_t ddlId=map.GetEquipmentID(iROC, irow, ipad)-768;
+        if (ddlId>=0 && !ddlMap[ddlId]) roc->SetValue(irow, ipad ,0);
+      }
+    }
+  }
+  
+  return 1;
 }
 
 void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {
@@ -934,8 +1075,6 @@ void  AliTPCcalibDB::SetExBField(const AliMagF*   bmap){
 
 
 
-
-
 void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   //
   // - > Don't use it for reconstruction - Only for Calibration studies
@@ -1013,6 +1152,13 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   if (entry)  {
     fTemperatureArray.AddAt(entry->GetObject(),run);
   }
+
+  // High voltage
+  entry = AliCDBManager::Instance()->Get("TPC/Calib/HighVoltage",run);
+  if (!fVoltageArray.At(run) && entry)  {
+    fVoltageArray.AddAt(entry->GetObject(),run);
+  }
+
   //apply fDButil filters
 
   fDButil->UpdateFromCalibDB();
@@ -1375,11 +1521,11 @@ Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t time
     if (sector<36){
       //IROC
       sensorName=Form("TPC_ANODE_I_%c%02d_IMEAS",sideName,sector%18);
-  }else{
+    }else{
       //OROC
       sensorName=Form("TPC_ANODE_O_%c%02d_0_IMEAS",sideName,sector%18);
     }
-
+    
   }
   if (timeStamp==-1){
     val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);
