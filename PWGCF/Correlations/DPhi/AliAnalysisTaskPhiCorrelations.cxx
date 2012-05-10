@@ -412,6 +412,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(fMcEvent->GetTrack(i)->PdgCode());
   }
   
+  if (fFillOnlyStep0)
+    zVtx = 0;
+  
   // (MC-true all particles)
   // STEP 0
   fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, 0, weight);
