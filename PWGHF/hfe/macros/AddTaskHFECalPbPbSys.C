@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, double nSigMim, double Mimeop, double Maxeop, int PIDorder){
+AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, double nSigMim, double Mimeop, double Maxeop, int PIDorder, int sysID){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -35,6 +35,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, doub
   if(trigtype==1)hfetask->SelectCollisionCandidates(AliVEvent::kCentral);
   if(trigtype==2)hfetask->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   if(trigtype==3)hfetask->SelectCollisionCandidates(AliVEvent::kMB);
+  if(trigtype==4)hfetask->SelectCollisionCandidates(AliVEvent::kEMCEJE);
   mgr->AddTask(hfetask);
 
   int inSig = (int)(nSigMim*10.0);
@@ -44,18 +45,28 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, doub
   //find input container
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   TString containerName = mgr->GetCommonFileName();
-  TString appendix(TString::Format(":PWGHF_hfeCalPbPbEGATPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
-  if(trigtype==1)appendix(TString::Format(":PWGHF_hfeCentTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
-  if(trigtype==2)appendix(TString::Format(":PWGHF_hfeSemiTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
-  if(trigtype==3)appendix(TString::Format(":PWGHF_hfekMBTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
+  TString appendix(TString::Format(":PWGHF_hfeCalPbPbTrig%dTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",trigtype,TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
+  //if(trigtype==1)appendix(TString::Format(":PWGHF_hfeCentTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
+  //if(trigtype==2)appendix(TString::Format(":PWGHF_hfeSemiTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
+  //if(trigtype==3)appendix(TString::Format(":PWGHF_hfekMBTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
   //containerName += ":PWGHF_hfeCalPbPbEGA";
   containerName += appendix;
   
+
+  TString Output1(TString::Format("HFE_Results_EMCALSys_SysID%d",sysID));
+  TString Output2(TString::Format("HFE_QA_EMCALSYS_SysID%d",sysID));
+
+  hfetask->ConnectOutput(1, mgr->CreateContainer(Output1, TList::Class(),
+						 AliAnalysisManager::kOutputContainer, containerName.Data()));
+  hfetask->ConnectOutput(2, mgr->CreateContainer(Output2, TList::Class(),
+					         AliAnalysisManager::kOutputContainer, containerName.Data()));
+
+  /*
   hfetask->ConnectOutput(1, mgr->CreateContainer("HFE_Results_EMCALSys", TList::Class(),
 						 AliAnalysisManager::kOutputContainer, containerName.Data()));
   hfetask->ConnectOutput(2, mgr->CreateContainer("HFE_QA_EMCALSys", TList::Class(),
 					      AliAnalysisManager::kOutputContainer, containerName.Data()));
-
+  */
   mgr->ConnectInput  (hfetask,  0, cinput );
   
   /*
