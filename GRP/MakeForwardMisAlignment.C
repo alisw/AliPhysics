@@ -38,6 +38,8 @@ void MakeForwardMisAlignment(Int_t inputRun){
 
   new((*array)[18]) AliAlignObjParams("CP1",dvoluid,inputTrans[0],inputTrans[1],0.,0.,0.,0.,kTRUE);
   array->At(18)->Print();
+  new((*array)[19]) AliAlignObjParams("CP3",dvoluid,inputTrans[0],inputTrans[1],0.,0.,0.,0.,kTRUE);
+  array->At(19)->Print();
   printf("\n\n\n");
 
   // FMD
@@ -80,9 +82,7 @@ void MakeForwardMisAlignment(Int_t inputRun){
     md->SetComment("Misalignment for FRAME and beam pipe");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("GRP/Align/Data",0,AliCDBRunRange::Infinity());
-    // The following line is commented as the pipe alignment is done
-    // in a separate macro
-    //    storage->Put(array,id,md);
+    storage->Put(array,id,md);
     AliCDBMetaData* mdFMD = new AliCDBMetaData();
     mdFMD->SetResponsible("FMD Experts");
     mdFMD->SetComment("Misalignment for FMD using ITS object");

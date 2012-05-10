@@ -2997,8 +2997,8 @@ void AliPIPEv3::AddAlignableVolumes() const
     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",
 		  symname.Data(),volpath.Data()));
 
-  TString symname2("CPSUPC");
-  TString volpath2("/ALIC_1/CP_1/Cp3_1/CpSupC_3");
+  TString symname2("CP3");
+  TString volpath2("/ALIC_1/CP_1/Cp3_1");
   if(!gGeoManager->SetAlignableEntry(symname2.Data(),volpath2.Data()))
     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",
 		  symname2.Data(),volpath2.Data()));
