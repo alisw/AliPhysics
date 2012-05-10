@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=95, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpcdedx0=0.0, Double_t tpcdedx1=0.0, Double_t tpcdedx2=0.0, Double_t tpcdedx3=0.0, Double_t tpcdedx4=0.0, Int_t vzero=3, Int_t debuglevel=2){
+AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=95, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpcdedx0=0.0, Double_t tpcdedx1=0.0, Double_t tpcdedx2=0.0, Double_t tpcdedx3=0.0, Double_t tpcdedx4=0.0, Int_t vzero=3, Int_t debuglevel=3){
 
   
   //set config file name
@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   task->SetBinCentralityLess(5,60.0);
   //task->SetBinCentralityLess(7,80.0);
 
-  TString appendixx(TString::Format("TPC%dTPCr%dTPCpid%dTPCShared%dITScl%dChi2perITS%dPixelLayer%dDCAr%dz%dTOFsig%dTPCmindedx0%dTPCmindedx1%dTPCmindedx2%dTPCmindedx3%dTPCmindedx4%dVZERO%dDebugLevel%decorr%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpcdedx0,(Int_t)tpcdedx1,(Int_t)tpcdedx2,(Int_t)tpcdedx3,(Int_t)tpcdedx4,vzero,debuglevel));
+  TString appendixx(TString::Format("TPC%dTPCr%dTPCpid%dTPCShared%dITScl%dChi2perITS%dPixelLayer%dDCAr%dz%dTOFsig%dTPCmindedx0%dTPCmindedx1%dTPCmindedx2%dTPCmindedx3%dTPCmindedx4%dVZERO%dDebugLevel%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpcdedx0,(Int_t)tpcdedx1,(Int_t)tpcdedx2,(Int_t)tpcdedx3,(Int_t)tpcdedx4,vzero,debuglevel));
   printf("appendixx %s\n", appendixx.Data());
   
   task->SetHFEVZEROEventPlane(0x0);
