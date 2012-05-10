@@ -33,6 +33,8 @@
 
 using namespace std;
 
+//#define _DUMPEQ_BEFORE_
+//#define _DUMPEQ_AFTER_ 
 
 ClassImp(AliMillePede2)
 
@@ -108,6 +110,8 @@ AliMillePede2::AliMillePede2()
   fCurrRecDataID(0),
   fCurrRecConstrID(0),
   fLocFitAdd(kTRUE),
+  fUseRecordWeight(kTRUE),
+  fMinRecordLength(1),
   fSelFirst(1),
   fSelLast(-1),
   fRejRunList(0),
@@ -130,6 +134,8 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
   fDataRecFName(0),fRecord(0),fDataRecFile(0),
   fTreeData(0),fRecFileStatus(0),fConstrRecFName(0),fTreeConstr(0),fConsRecFile(0),fCurrRecDataID(0),
   fCurrRecConstrID(0),fLocFitAdd(kTRUE),
+  fUseRecordWeight(kTRUE),
+  fMinRecordLength(1),
   fSelFirst(1),
   fSelLast(-1),
   fRejRunList(0),
@@ -230,6 +236,8 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
     fParamGrID[i] = -1;
   }
   //
+  fWghScl[0] = -1; 
+  fWghScl[1] = -1;
   return 1;
 }
 
@@ -543,14 +551,19 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     //
     nPoints++;
   }
+  if (fMinRecordLength>0 && nPoints < fMinRecordLength) return 0; // ignore
+  //
   double vl;
   //
-  double gloWgh = fRecord->GetWeight()*fRunWgh; // global weight for this set
+  double gloWgh = fRunWgh;
+  if (fUseRecordWeight) gloWgh *= fRecord->GetWeight(); // global weight for this set
   Int_t maxLocUsed = 0;
   //
   for (int ip=nPoints;ip--;) {  // Transfer the measurement records to matrices
     double  resid  = fRecord->GetValue( refLoc[ip]-1 );
-    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;    
+    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;
+    int odd = (ip&0x1);
+    if (fWghScl[odd]>0) weight *= fWghScl[odd];
     double *derLoc = fRecord->GetValue()+refLoc[ip];
     double *derGlo = fRecord->GetValue()+refGlo[ip];
     int    *indLoc = fRecord->GetIndex()+refLoc[ip];
@@ -610,7 +623,9 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   for (int ip=nPoints;ip--;) {  // Calculate residuals
     double  resid  = fRecord->GetValue( refLoc[ip]-1 );
-    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;    
+    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;
+    int odd = (ip&0x1);
+    if (fWghScl[odd]>0) weight *= fWghScl[odd];
     double *derLoc = fRecord->GetValue()+refLoc[ip];
     double *derGlo = fRecord->GetValue()+refGlo[ip];
     int    *indLoc = fRecord->GetIndex()+refLoc[ip];
@@ -665,7 +680,9 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   for (int ip=nPoints;ip--;) {  // Update matrices
     double  resid  = fRecord->GetValue( refLoc[ip]-1 );
-    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;    
+    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;
+    int odd = (ip&0x1);
+    if (fWghScl[odd]>0) weight *= fWghScl[odd];
     double *derLoc = fRecord->GetValue()+refLoc[ip];
     double *derGlo = fRecord->GetValue()+refGlo[ip];
     int    *indLoc = fRecord->GetIndex()+refLoc[ip];
@@ -1054,7 +1071,37 @@ Int_t AliMillePede2::GlobalFitIteration()
   matCGlo.Print("l");
   for (int i=0;i<fNGloSize;i++) printf("b%2d : %+e\n",i,fVecBGlo[i]);
   */
+#ifdef _DUMPEQ_BEFORE_  
+  const char* faildumpB = Form("mp2eq_before%d.dat",fIter);
+  int defoutB = dup(1);
+  int slvDumpB = open(faildumpB, O_RDWR|O_CREAT, 0666);
+  dup2(slvDumpB,1);
+  //
+  printf("#Equation before step %d\n",fIter);
+  fMatCGlo->Print("10");
+  printf("#RHS/STAT : NGlo:%d NGloSize:%d\n",fNGloPar,fNGloSize);
+  for (int i=0;i<fNGloSize;i++) printf("%d %+.10f %d\n",i,fVecBGlo[i],fProcPnt[i]);
+  //
+  dup2(defoutB,1);
+  close(slvDumpB);
+#endif
+  //
   fGloSolveStatus = SolveGlobalMatEq();                     // obtain solution for this step
+#ifdef _DUMPEQ_AFTER_  
+  const char* faildumpA = Form("mp2eq_after%d.dat",fIter);
+  int defoutA = dup(1);
+  int slvDumpA = open(faildumpA, O_RDWR|O_CREAT, 0666);
+  dup2(slvDumpA,1);
+  //
+  printf("#Matrix after step %d\n",fIter);
+  fMatCGlo->Print("10");
+  printf("#RHS/STAT : NGlo:%d NGloSize:%d\n",fNGloPar,fNGloSize);
+  for (int i=0;i<fNGloSize;i++) printf("%d %+.10f %d\n",i,fVecBGlo[i],fProcPnt[i]);
+  //
+  dup2(defoutA,1);
+  close(slvDumpA);
+#endif
+  //
   sws.Stop();
   printf("Solve %d |",fIter); sws.Print();
   //
@@ -1070,7 +1117,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   for (int i=0;i<fNGloSize;i++) printf("b%2d : %+e (->%+e)\n",i,fVecBGlo[i], fDeltaPar[i]);
   */
 
-  //  PrintGlobalParameters();
+  PrintGlobalParameters();
   return 1;
 }
 
@@ -1138,6 +1185,7 @@ Int_t AliMillePede2::SolveGlobalMatEq()
     return kFailed;
   }
   for (int i=fNGloSize;i--;) fVecBGlo[i] = sol[i];
+  //
   return kNoInversion;
   //
 }

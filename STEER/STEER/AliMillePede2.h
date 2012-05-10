@@ -81,6 +81,11 @@ class AliMillePede2: public TObject
   Bool_t               GetIsLinear(Int_t i)             const {int ir=GetRGId(i); return ir<0 ? 0:fIsLinear[ir];}
   static Bool_t        IsGlobalMatSparse()                    {return fgIsMatGloSparse;}
   static Bool_t        IsWeightSigma()                        {return fgWeightSigma;}
+  void                 SetWghScale(Double_t wOdd=1,Double_t wEven=1)    {fWghScl[0] = wOdd; fWghScl[1] = wEven;}
+  void                 SetUseRecordWeight(Bool_t v=kTRUE)     {fUseRecordWeight=v;}
+  Bool_t               GetUseRecordWeight()             const {return fUseRecordWeight;}
+  void                 SetMinRecordLength(Int_t v=1)          {fMinRecordLength = v;}
+  Int_t                GetMinRecordLength()             const {return fMinRecordLength;}
   //
   void                 SetParamGrID(Int_t grID,Int_t i)       {int ir=GetRGId(i); if(ir<0) return; fParamGrID[ir] = grID; if(fNGroupsSet<grID)fNGroupsSet=grID;}
   void                 SetNGloPar(Int_t n)                    {fNGloPar = n;}
@@ -249,12 +254,15 @@ class AliMillePede2: public TObject
   Long_t                fCurrRecDataID;                  // ID of the current data record
   Long_t                fCurrRecConstrID;                // ID of the current constraint record
   Bool_t                fLocFitAdd;                      // Add contribution of carrent track (and not eliminate it)
+  Bool_t                fUseRecordWeight;                // force or ignore the record weight
+  Int_t                 fMinRecordLength;                // ignore shorter records
   Int_t                 fSelFirst;                       // event selection start
   Int_t                 fSelLast;                        // event selection end
   TArrayL*              fRejRunList;                     // list of runs to reject (if any)
   TArrayL*              fAccRunList;                     // list of runs to select (if any)
   TArrayF*              fAccRunListWgh;                  // optional weights for data of accepted runs (if any)
   Double_t              fRunWgh;                         // run weight
+  Double_t              fWghScl[2];                      // optional rescaling for odd/even residual weights (see its usage in LocalFit)
   const Int_t*          fkReGroup;                       // optional regrouping of parameters wrt ID's from the records
   //
   static Bool_t         fgInvChol;                       // Invert global matrix in Cholesky solver
