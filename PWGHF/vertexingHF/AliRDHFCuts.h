@@ -100,8 +100,9 @@ class AliRDHFCuts : public AliAnalysisCuts
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kTRUE;
   }
-
+  void SetRemoveTrackletOutliers(Bool_t opt) {fRemoveTrackletOutliers=opt;}
   void SetTriggerClass(TString trclass) {fTriggerClass=trclass;} 
+  void ApplySPDDeadPbPb2011(){fApplySPDDeadPbPb2011=kTRUE;}
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
   void SetGlobalIndex(){fGlobalIndex=fnVars*fnPtBins;}
   void SetGlobalIndex(Int_t nVars,Int_t nptBins){fnVars=nVars; fnPtBins=nptBins; SetGlobalIndex();}
@@ -293,8 +294,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
   Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
+  Bool_t fApplySPDDeadPbPb2011;  // flag to apply SPD dead module map of PbPb2011
+  Bool_t fRemoveTrackletOutliers; // flag to apply cut on tracklets vs. centrality for 2011 data
 
-  ClassDef(AliRDHFCuts,22);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,23);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
