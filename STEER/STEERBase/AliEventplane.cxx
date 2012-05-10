@@ -59,7 +59,7 @@ AliEventplane::AliEventplane() : TNamed("Eventplane", "Eventplane"),
 }
 
 AliEventplane::AliEventplane(const AliEventplane& ep) : 
-  TNamed(),
+  TNamed(ep),
   fQVector(0),
   fQContributionX(0),
   fQContributionY(0),
@@ -79,30 +79,125 @@ AliEventplane::AliEventplane(const AliEventplane& ep) :
 AliEventplane& AliEventplane::operator=(const AliEventplane& ep)
 {
   /// Assignment operator
-  if (this!=&ep)
+  if (this!=&ep){
+    TNamed::operator=(ep);
     ((AliEventplane &) ep).CopyEP(*this);
-
+  }
   return *this;
 }
 
-void AliEventplane::CopyEP(AliEventplane& ep) const
+void AliEventplane::CopyEP(AliEventplane& ep) const 
 { // copy function
 
   AliEventplane& target = (AliEventplane &) ep;
-  if (fQContributionX)
-      target.fQContributionX = fQContributionX;
-  if (fQContributionY)
-      target.fQContributionY = fQContributionY;
-  if (fQContributionXsub1)
-      target.fQContributionXsub1 = fQContributionXsub1;
-  if (fQContributionYsub1)
-      target.fQContributionYsub1 = fQContributionYsub1;
-  if (fQContributionXsub2)
-      target.fQContributionXsub2 = fQContributionXsub2;
-  if (fQContributionYsub2)
-      target.fQContributionYsub2 = fQContributionYsub2;
+  
+  if(fQContributionX)
+  {
+    if(ep.fQContributionX)
+    { 
+      *(ep.fQContributionX) = *fQContributionX;
+    }
+    else 
+    {
+      ep.fQContributionX = new TArrayF(*fQContributionX);
+    }
+  }
+  else
+  {
+    if(ep.fQContributionX) delete ep.fQContributionX;
+    ep.fQContributionX = 0;
+  }
+  
+  if(fQContributionY)
+  {
+    if(ep.fQContributionY)
+    { 
+      *(ep.fQContributionY) = *fQContributionY;
+    }
+    else 
+    {
+      ep.fQContributionY = new TArrayF(*fQContributionY);
+    }
+  }
+  else
+  {
+    if(ep.fQContributionY) delete ep.fQContributionY;
+    ep.fQContributionY = 0;
+  }
+
+  
+  if(fQContributionXsub1)
+  {
+    if(ep.fQContributionXsub1)
+    { 
+      *(ep.fQContributionXsub1) = *fQContributionXsub1;
+    }
+    else 
+    {
+      ep.fQContributionXsub1 = new TArrayF(*fQContributionXsub1);
+    }
+  }
+  else
+  {
+    if(ep.fQContributionXsub1) delete ep.fQContributionXsub1;
+    ep.fQContributionXsub1 = 0;
+  }
+  
+  if(fQContributionYsub1)
+  {
+    if(ep.fQContributionYsub1)
+    { 
+      *(ep.fQContributionYsub1) = *fQContributionYsub1;
+    }
+    else 
+    {
+      ep.fQContributionYsub1 = new TArrayF(*fQContributionYsub1);
+    }
+  }
+  else
+  {
+    if(ep.fQContributionYsub1) delete ep.fQContributionYsub1;
+    ep.fQContributionYsub1 = 0;
+  }
+  
+  
+  if(fQContributionXsub2)
+  {
+    if(ep.fQContributionXsub2)
+    { 
+      *(ep.fQContributionXsub2) = *fQContributionXsub2;
+    }
+    else 
+    {
+      ep.fQContributionXsub2 = new TArrayF(*fQContributionXsub2);
+    }
+  }
+  else
+  {
+    if(ep.fQContributionXsub2) delete ep.fQContributionXsub2;
+    ep.fQContributionXsub2 = 0;
+  }
+  
+  if(fQContributionYsub2)
+  {
+    if(ep.fQContributionYsub2)
+    { 
+      *(ep.fQContributionYsub2) = *fQContributionYsub2;
+    }
+    else 
+    {
+      ep.fQContributionYsub2 = new TArrayF(*fQContributionYsub2);
+    }
+  }
+  else
+  {
+    if(ep.fQContributionYsub2) delete ep.fQContributionYsub2;
+    ep.fQContributionYsub2 = 0;
+  }
+  
   if (fEventplaneQ)
       target.fEventplaneQ = fEventplaneQ;
+  
   if (fQVector)
       target.fQVector = dynamic_cast<TVector2*> (fQVector->Clone());
   if (fQsub1)
