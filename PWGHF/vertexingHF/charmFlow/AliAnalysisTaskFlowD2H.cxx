@@ -63,7 +63,7 @@ ClassImp(AliAnalysisTaskFlowD2H)
 AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H() :
   AliAnalysisTaskSE(), fTPCEvent(NULL), fVZEEvent(NULL), 
   fCutsTPC(NULL), fCutsVZE(NULL), fNoPOIs(NULL), fCutsPOI(NULL),
-  fSource(0), fDebugV2(kFALSE), fMassBins(0), fMinMass(0.),
+  fSource(0), fDebugV2(kFALSE), fSwap(kFALSE), fMassBins(0), fMinMass(0.),
   fMaxMass(0.), fPtBinWidth(0), fHList(NULL), fEvent(NULL), 
   fCC(NULL), fRFPMTPC(NULL), fRFPPhiTPC(NULL), fCandidates(NULL)
 {
@@ -78,7 +78,7 @@ AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H(const char *name,
 					       Int_t specie) :
   AliAnalysisTaskSE(name), fTPCEvent(NULL), fVZEEvent(NULL), 
   fCutsTPC(cutsTPC), fCutsVZE(cutsVZE), fNoPOIs(NULL), fCutsPOI(cutsPOIs),
-  fSource(specie), fDebugV2(kFALSE), fMassBins(0), fMinMass(0.),
+  fSource(specie), fDebugV2(kFALSE), fSwap(kFALSE), fMassBins(0), fMinMass(0.),
   fMaxMass(0.), fPtBinWidth(0), fHList(NULL), fEvent(NULL),
   fCC(NULL), fRFPMTPC(NULL), fRFPPhiTPC(NULL), fCandidates(NULL)
 {
@@ -234,6 +234,7 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
 void AliAnalysisTaskFlowD2H::FillD0toKpi(const AliAODEvent *theAOD)
 {
   // Fill D0->Kpi histos
+  fSwap = kTRUE;
   TList *listHF = (TList*) theAOD->GetList();
   if(!listHF) return;
   TClonesArray *listDzero = (TClonesArray*) listHF->FindObject("D0toKpi");
@@ -254,6 +255,10 @@ void AliAnalysisTaskFlowD2H::FillD0toKpi(const AliAODEvent *theAOD)
     Int_t topCut = fCutsD0toKpi->IsSelected( d0cand, AliRDHFCuts::kAll, NULL );
     if(!topCut) continue;
     Double_t massD0=topCut>1?d0cand->InvMassD0bar():d0cand->InvMassD0();
+    if((fSwap)&&(topCut==3)) {
+      massD0=d0cand->InvMassD0();
+    }
+
     // TO HANDLE AUTOCORRELATIONS
     nIDs[0] = ( (AliAODTrack*)d0cand->GetDaughter(0) )->GetID();
     nIDs[1] = ( (AliAODTrack*)d0cand->GetDaughter(1) )->GetID();
