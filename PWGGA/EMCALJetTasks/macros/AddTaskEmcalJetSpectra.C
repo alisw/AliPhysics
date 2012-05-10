@@ -35,7 +35,7 @@ AliAnalysisTaskRho* AddTaskEmcalJetSpectra(
   //-------------------------------------------------------
 
   TString name(Form("Spectra_%s", nJets));
-  AliAnalysisTaskEmcalJetSpectra *spectratask = new AliAnalysisTaskEmcalSpectra(name);
+  AliAnalysisTaskEmcalJetSpectra *spectratask = new AliAnalysisTaskEmcalJetSpectra(name);
   spectratask->SetJetsName(nJets);
   spectratask->SetRhos1Name(nRhosChEm);
   spectratask->SetRhos2Name(nRhosCh);
