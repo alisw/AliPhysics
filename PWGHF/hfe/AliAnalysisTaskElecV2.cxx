@@ -353,7 +353,22 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     
     Double_t corrV2[6]={cent,pt,EovP,GetCos2DeltaPhi(phi,evPlaneTPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
     fChargPartV2->Fill(corrV2); 
-            
+
+    if(fTPCnSigma >= -0.5){
+      	Double_t qX = standardQ->X() - esdTPCep->GetQContributionX(track); 
+	Double_t qY = standardQ->Y() - esdTPCep->GetQContributionY(track); 
+	TVector2 newQVectorfortrack;
+	newQVectorfortrack.Set(qX,qY);
+	Double_t corrV2TPC = -999.;
+	corrV2TPC = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
+
+	Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,corrV2TPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
+
+	feTPCV2->Fill(correctedV2);
+    }
+    
+    if(pidpassed==0) continue;
+    
     Double_t qX = standardQ->X() - esdTPCep->GetQContributionX(track); 
     Double_t qY = standardQ->Y() - esdTPCep->GetQContributionY(track); 
     TVector2 newQVectorfortrack;
@@ -362,10 +377,6 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     corrV2TPC = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
         
     Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,corrV2TPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
-    
-    if(fTPCnSigma >= -0.5) feTPCV2->Fill(correctedV2);
-    
-    if(pidpassed==0) continue;
     
     feV2->Fill(correctedV2);
     
