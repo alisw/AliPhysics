@@ -93,8 +93,6 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
   const Int_t nMinPhotAcc = 3;                      // Minimum number of photons required to perform the pattern recognition
   
   Int_t nClusTot = pCluLst->GetEntries();
-  if(nClusTot>fParam->MultCut()) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
-  else                           fIsWEIGHT = kFALSE;
 
   InitVars(nClusTot);
   
@@ -143,7 +141,9 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
   fMipPos.Set(mipX,mipY);
     
 //PATTERN RECOGNITION STARTED: 
-  
+  if(fPhotCnt>fParam->MultCut()) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
+  else                           fIsWEIGHT = kFALSE;
+    
   Int_t iNrec=FlagPhot(HoughResponse(),pCluLst,pTrk);                                                      //flag photons according to individual theta ckov with respect to most probable
   
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNrec);                                                    //store mip info 

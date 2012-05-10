@@ -106,7 +106,7 @@ public:
   //
   Float_t    DistCut                 ()const {return 1.0;}       //<--TEMPORAR--> to be removed in future. Cut for MIP-TRACK residual 
   Float_t    QCut                    ()const {return 100;}       //<--TEMPORAR--> to be removed in future. Separation PHOTON-MIP charge 
-  Float_t    MultCut                 ()const {return 200;}       //<--TEMPORAR--> to be removed in future. Multiplicity cut to activate WEIGHT procedure 
+  Float_t    MultCut                 ()const {return 30;}       //<--TEMPORAR--> to be removed in future. Multiplicity cut to activate WEIGHT procedure 
 
   Double_t   RadThick                ()const {return 1.5;}       //<--TEMPORAR--> to be removed in future. Radiator thickness
   Double_t   WinThick                ()const {return 0.5;}       //<--TEMPORAR--> to be removed in future. Window thickness
