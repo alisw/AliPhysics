@@ -180,6 +180,7 @@ void AliGenMC::Init()
     case kNoDecayHeavy:
     case kNoDecayBeauty:
     case kNeutralPion:
+    case kLambdaBLambda:  
 	break;
     }
 

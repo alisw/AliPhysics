@@ -233,6 +233,7 @@ void AliDecayerEvtGen::ForceDecay()
      case kNoDecayHeavy:
      case kNeutralPion:
      case kBPsiPrimeDiElectron:
+     case kLambdaBLambda:
      AliWarning(Form("Warning: case %s not implemented for this class!",(Char_t)decay));
      break;
      }
