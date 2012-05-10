@@ -32,6 +32,7 @@ AliHadCorrTask::AliHadCorrTask() :
   fOutCaloName(),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
+  fDoTrackClus(0),
   fHadCorr(0),
   fMinPt(0.15),
   fOutClusters(0),
@@ -41,7 +42,9 @@ AliHadCorrTask::AliHadCorrTask() :
   fHistEbefore(0),
   fHistEafter(0),
   fHistEoPCent(0),
-  fHistNMatchCent(0)
+  fHistNMatchCent(0),
+  fHistNMatchCent_trk(0),
+  fHistCentrality(0)
 {
   // Default constructor.
 
@@ -65,6 +68,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   fOutCaloName("CaloClustersCorr"),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
+  fDoTrackClus(0),
   fHadCorr(0),
   fMinPt(0.15),
   fOutClusters(0),
@@ -74,7 +78,10 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   fHistEbefore(0),
   fHistEafter(0),
   fHistEoPCent(0),
-  fHistNMatchCent(0)
+  fHistNMatchCent(0),
+  fHistNMatchCent_trk(0),
+  fHistCentrality(0)
+
 {
   // Standard constructor.
 
@@ -186,18 +193,23 @@ void AliHadCorrTask::UserCreateOutputObjects()
     }
   }
 
+  fHistCentrality       = new TH1F("fHistCentrality",  "Centrality",       100, 0, 100);
+
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
   fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
   fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
   fHistEafter           = new TH1F("Eafter",           "Eafter",           100, 0, 100);
   fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, 1000, 0,   10);
   fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 101, -0.5, 100.5);
+  fHistNMatchCent_trk   = new TH2F("NMatchesCent_trk", "NMatchesCent_trk", 100, 0, 100, 101, -0.5, 100.5);
   fOutputList->Add(fHistNclusMatchvsCent);
   fOutputList->Add(fHistNclusvsCent);
   fOutputList->Add(fHistEbefore);
   fOutputList->Add(fHistEafter);
   fOutputList->Add(fHistEoPCent);
   fOutputList->Add(fHistNMatchCent);
+  fOutputList->Add(fHistNMatchCent_trk);
+  fOutputList->Add(fHistCentrality);
 
   PostData(1, fOutputList);
 }
@@ -225,24 +237,33 @@ void AliHadCorrTask::UserExec(Option_t *)
     am->LoadBranch("CaloClusters");
   if (fTracksName == "Tracks")
     am->LoadBranch("Tracks");
-
+  am->LoadBranch("Centrality");      
+  
+  TList *l = InputEvent()->GetList();
+  
   // get centrality 
   Double_t cent = -1; 
+ 
   AliCentrality *centrality = InputEvent()->GetCentrality() ;
+
   if (centrality)
     cent = centrality->GetCentralityPercentile("V0M");
   else
     cent=99; // probably pp data
+  
   if (cent<0) {
     AliError(Form("Centrality negative: %f", cent));
     return;
   }
+  
   Int_t centbin = GetCentBin(cent);
+
+  fHistCentrality->Fill(cent);
+
 
   // get input collections
   TClonesArray *tracks = 0;
   TClonesArray *clus   = 0;
-  TList *l = InputEvent()->GetList();
  
   tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
   if (!tracks) {
@@ -263,6 +284,42 @@ void AliHadCorrTask::UserExec(Option_t *)
   const Int_t Nclus = clus->GetEntries();
   const Int_t Ntrks = tracks->GetEntries();
  
+  if (fDoTrackClus) {
+    for(Int_t t = 0; t<Ntrks; ++t) {
+      AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+      if (!track)
+        continue;
+      Int_t Nmatches = 0;
+      Double_t dEtaMin  = 1e9;
+      Double_t dPhiMin  = 1e9;
+      Int_t    imin     = -1;
+      for(Int_t i=0; i < Nclus; ++i) {
+        AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
+        if (!c)
+          continue;
+        Double_t etadiff=999;
+        Double_t phidiff=999;
+        AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
+        Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
+        Double_t dRmin = TMath::Sqrt(dEtaMin*dEtaMin+dPhiMin*dPhiMin);
+        if(dR > 25) 
+          continue;
+	if(dR<dRmin){
+          dEtaMin = etadiff;
+          dPhiMin = phidiff;
+          imin = i;
+        }
+	if (TMath::Abs(phidiff)<0.05 && TMath::Abs(etadiff)<0.025) { // pp cuts!!!
+	  Nmatches++;
+	}
+      }
+      fHistNMatchCent_trk->Fill(cent,Nmatches);
+
+      track->SetEMCALcluster(imin);
+    }
+         
+  }
+
   for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
     AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
     if (!c)
@@ -314,7 +371,7 @@ void AliHadCorrTask::UserExec(Option_t *)
         Double_t mom = track->P();
         Int_t mombin = GetMomBin(mom);
 	Int_t centbinch = centbin;
-	if (track->Charge()==-1) 
+	if (track->Charge()==-1 || track->Charge()==255) 
           centbinch += 4;
         if (mombin>-1) {
           fHistMatchEtaPhi[centbinch][mombin]->Fill(etadiff,phidiff);
@@ -322,8 +379,10 @@ void AliHadCorrTask::UserExec(Option_t *)
         }
       }
       if (TMath::Abs(phidiff)<fPhiMatch && TMath::Abs(etadiff)<fEtaMatch) {
-        ++Nmatches;
-        totalTrkP += track->P();
+	if((fDoTrackClus && (track->GetEMCALcluster())==iClus) || !fDoTrackClus){
+	  ++Nmatches;
+	  totalTrkP += track->P();
+	}
       }
     }
 
@@ -336,7 +395,7 @@ void AliHadCorrTask::UserExec(Option_t *)
     fHistNMatchCent->Fill(cent,Nmatches);
     if(Nmatches>0) 
       fHistNclusMatchvsCent->Fill(cent);
-
+  
     // apply correction / subtraction
     if (fHadCorr>0) {
       // to subtract only the closest track set fHadCor to a %
@@ -358,16 +417,18 @@ void AliHadCorrTask::UserExec(Option_t *)
           Double_t mom = t->P();
           Int_t mombin = GetMomBin(mom);
           Int_t centbinch = centbin;
-          if (t->Charge()==-1) 
+          if (t->Charge()==-1 || t->Charge()==255) 
             centbinch += 4;
           fHistMatchEtaPhi[centbinch][mombin]->Fill(dEtaMin,dPhiMin);
           if (mom>0){
-            fHistEoPCent->Fill(cent,energyclus/mom);
             fHistMatchEvsP[centbin]->Fill(energyclus,energyclus/mom);
+            fHistEoPCent->Fill(cent,energyclus/mom);
             fHistMatchdRvsEP[centbin]->Fill(dRmin,energyclus/mom);
           }
           if (TMath::Abs(dPhiMin)<fPhiMatch && TMath::Abs(dEtaMin)<fEtaMatch) {
-            energyclus -= fHadCorr*t->P();
+	    if((fDoTrackClus && (t->GetEMCALcluster())==iClus) || !fDoTrackClus){
+	      energyclus -= fHadCorr*t->P();
+	    }
           }
         }
       }

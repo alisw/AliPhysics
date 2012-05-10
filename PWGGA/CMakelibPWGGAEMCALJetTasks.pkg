@@ -31,6 +31,8 @@ set ( SRCS
  EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliHadCorrTask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
+ EMCALJetTasks/AliAnalysisTaskEmcalJetSpectra.cxx
+ EMCALJetTasks/AliAnalysisTaskRho.cxx
 )
 
 set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)

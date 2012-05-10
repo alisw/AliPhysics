@@ -52,8 +52,10 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fHistCentrality(0),
   fHistJetPhiEta(0),
   fHistRhoPartVSleadJetPt(0),
+  fHistMedKtVSRhoPartExLJ(0),
   fHistMedKtVSRhoPart(0),
   fHistRCPtVSRhoPart(0),
+  fHistMedKtVSEmbBkg(0),
   fNbins(500),
   fMinPt(0),
   fMaxPt(250)
@@ -116,8 +118,10 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fHistCentrality(0),
   fHistJetPhiEta(0),
   fHistRhoPartVSleadJetPt(0),
+  fHistMedKtVSRhoPartExLJ(0),
   fHistMedKtVSRhoPart(0),
   fHistRCPtVSRhoPart(0),
+  fHistMedKtVSEmbBkg(0),
   fNbins(500),
   fMinPt(0),
   fMaxPt(250)
@@ -178,19 +182,29 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fOutput->Add(fHistJetPhiEta);
 
   fHistRhoPartVSleadJetPt = new TH2F("fHistRhoPartVSleadJetPt","fHistRhoPartVSleadJetPt", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
-  fHistRhoPartVSleadJetPt->GetXaxis()->SetTitle("#rho [GeV]");
-  fHistRhoPartVSleadJetPt->GetYaxis()->SetTitle("Leading jet energy [GeV]");
+  fHistRhoPartVSleadJetPt->GetXaxis()->SetTitle("#rho [GeV/c]");
+  fHistRhoPartVSleadJetPt->GetYaxis()->SetTitle("Leading jet P_{T} [GeV/c]");
   fOutput->Add(fHistRhoPartVSleadJetPt);
 
+  fHistMedKtVSRhoPartExLJ = new TH2F("fHistMedKtVSRhoPartExLJ","fHistMedKtVSRhoPartExLJ", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistMedKtVSRhoPartExLJ->GetXaxis()->SetTitle("median kt P_{T} [GeV/c]");
+  fHistMedKtVSRhoPartExLJ->GetYaxis()->SetTitle("#rho [GeV/c]");
+  fOutput->Add(fHistMedKtVSRhoPartExLJ);
+
   fHistMedKtVSRhoPart = new TH2F("fHistMedKtVSRhoPart","fHistMedKtVSRhoPart", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
-  fHistMedKtVSRhoPart->GetXaxis()->SetTitle("median kt P_{T} [GeV]");
-  fHistMedKtVSRhoPart->GetYaxis()->SetTitle("#rho [GeV]");
+  fHistMedKtVSRhoPart->GetXaxis()->SetTitle("median kt P_{T} [GeV/c]");
+  fHistMedKtVSRhoPart->GetYaxis()->SetTitle("#rho [GeV/c]");
   fOutput->Add(fHistMedKtVSRhoPart);
   
   fHistRCPtVSRhoPart = new TH2F("fHistRCPtVSRhoPart","fHistRCPtVSRhoPart", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
-  fHistRCPtVSRhoPart->GetXaxis()->SetTitle("rigid cone P_{T} [GeV]");
-  fHistRCPtVSRhoPart->GetYaxis()->SetTitle("#rho [GeV]");
+  fHistRCPtVSRhoPart->GetXaxis()->SetTitle("rigid cone P_{T} [GeV/c]");
+  fHistRCPtVSRhoPart->GetYaxis()->SetTitle("#rho [GeV/c]");
   fOutput->Add(fHistRCPtVSRhoPart);
+
+  fHistMedKtVSEmbBkg = new TH2F("fHistMedKtVSEmbBkg","fHistMedKtVSEmbBkg", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistMedKtVSEmbBkg->GetXaxis()->SetTitle("median kt P_{T} [GeV/c]");
+  fHistMedKtVSEmbBkg->GetYaxis()->SetTitle("background of embedded track P_{T} [GeV]");
+  fOutput->Add(fHistMedKtVSEmbBkg);
 
   TString histname;
 
@@ -542,26 +556,33 @@ void AliAnalysisTaskSAJF::FillHistograms()
   if (max2JetIndex >= 0)
     jet2 = GetJet(max2JetIndex);
 
-  if (jet2) {
-    //fHistLeadingJetPt[fCentBin]->Fill(jet2->Pt());
+  if (jet2) 
     jet2->SortConstituents();
-  }
 
-  Float_t rhoKt = DoKtJetLoop();
-  fHistMedianPtKtJet[fCentBin]->Fill(rhoKt);
+  Float_t rhoKtLJex = 0;
+  Float_t rhoKt = 0;
+  DoKtJetLoop(rhoKtLJex, rhoKt);
+  fHistMedianPtKtJet[fCentBin]->Fill(rhoKtLJex);
   
-  Float_t rhoTracks = DoTrackLoop(maxJetIndex, max2JetIndex);
-  fHistBkgTracksMeanRho[fCentBin]->Fill(rhoTracks);
+  Float_t rhoTracksLJex = 0;
+  Float_t rhoTracks = 0;
+  DoTrackLoop(rhoTracksLJex, rhoTracks, maxJetIndex, max2JetIndex);
+  fHistBkgTracksMeanRho[fCentBin]->Fill(rhoTracksLJex);
 
+  Float_t rhoClusLJex = 0;
   Float_t rhoClus = 0;
-  if (fAnaType == kEMCAL || fAnaType == kEMCALFiducial) 
-    rhoClus = DoClusterLoop(maxJetIndex, max2JetIndex);
-  
-  fHistBkgClusMeanRho[fCentBin]->Fill(rhoClus);
+  if (fAnaType == kEMCAL || fAnaType == kEMCALFiducial)
+    DoClusterLoop(rhoClusLJex, rhoClus, maxJetIndex, max2JetIndex);
 
-  fHistRhoPartVSleadJetPt->Fill(A * (rhoClus + rhoTracks), jet->Pt());
+  Float_t rhoPartLJex = rhoTracksLJex + rhoClusLJex;
+  Float_t rhoPart = rhoTracks + rhoClus;
+ 
+  fHistBkgClusMeanRho[fCentBin]->Fill(rhoClusLJex);
 
-  fHistMedKtVSRhoPart->Fill(rhoKt, rhoClus + rhoTracks);
+  fHistRhoPartVSleadJetPt->Fill(jet->Area() * rhoPartLJex, jet->Pt());
+
+  fHistMedKtVSRhoPartExLJ->Fill(rhoKtLJex, rhoPartLJex);
+  fHistMedKtVSRhoPart->Fill(rhoKt, rhoPart);
   
   Int_t nRCs = (Int_t)(GetArea() / A - 1);
 
@@ -570,22 +591,24 @@ void AliAnalysisTaskSAJF::FillHistograms()
     Float_t RCptExLJ = GetRigidConePt(jet);
     
     fHistDeltaPtRC[fCentBin]->Fill(RCpt - A * rhoKt);
-    fHistDeltaPtRCExLJ[fCentBin]->Fill(RCptExLJ - A * rhoKt);
+    fHistDeltaPtRCExLJ[fCentBin]->Fill(RCptExLJ - A * rhoKtLJex);
 
     fHistRCPt[fCentBin]->Fill(RCpt / A);
     fHistRCPtExLJ[fCentBin]->Fill(RCptExLJ / A);
-    fHistRCPtVSRhoPart->Fill(RCptExLJ / A, rhoClus + rhoTracks);
+    fHistRCPtVSRhoPart->Fill(RCptExLJ / A, rhoPartLJex);
   }
 
   Float_t maxEmbJetPt = 0;
   Float_t maxEmbPartPt = 0;
+  Float_t maxJetArea = 0;
 
-  Bool_t embOK = DoEmbJetLoop(maxEmbJetPt, maxEmbPartPt);
+  Bool_t embOK = DoEmbJetLoop(maxEmbJetPt, maxEmbPartPt, maxJetArea);
 
   if (embOK) {
     fHistEmbJets[fCentBin]->Fill(maxEmbJetPt);
     fHistEmbPart[fCentBin]->Fill(maxEmbPartPt);
-    fHistDeltaPtMedKtEmb[fCentBin]->Fill(maxEmbJetPt - A * rhoKt - maxEmbPartPt);
+    fHistDeltaPtMedKtEmb[fCentBin]->Fill(maxEmbJetPt - maxJetArea * rhoKtLJex - maxEmbPartPt);
+    fHistMedKtVSEmbBkg->Fill(maxJetArea * rhoKtLJex, maxEmbJetPt - maxEmbPartPt);
   }
   else {
     if (maxEmbPartPt != 0)
@@ -652,9 +675,11 @@ void AliAnalysisTaskSAJF::DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAJF::DoKtJetLoop(Int_t nLJs)
+void AliAnalysisTaskSAJF::DoKtJetLoop(Float_t &rhoKtLJex, Float_t &rhoKt, Int_t nLJs)
 {
-  Float_t ktJetsMedian = 0;
+  rhoKtLJex = 0;
+  rhoKt = 0;
+
   Int_t nktjets =  GetNumberOfKtJets();
 
   Int_t NoOfZeroJets = 0;
@@ -690,25 +715,28 @@ Float_t AliAnalysisTaskSAJF::DoKtJetLoop(Int_t nLJs)
 
     nktjets -= NoOfZeroJets;
     
-    if (nktjets < 1) return 0;
+    if (nktjets < 1) return;
 
     memmove(ktJets.GetArray(), ktJets.GetArray() + NoOfZeroJets, nktjets * sizeof(Float_t));
 
+    if (nktjets % 2)
+      rhoKt = ktJets[nktjets / 2];
+    else
+      rhoKt = (ktJets[nktjets / 2] + ktJets[nktjets / 2 - 1]) / 2;
+
     nktjets -= nLJs;
 
-    if (nktjets < 1) return 0;
+    if (nktjets < 1) return;
 
     if (nktjets % 2)
-      ktJetsMedian = ktJets[nktjets / 2];
+      rhoKtLJex = ktJets[nktjets / 2];
     else
-      ktJetsMedian = (ktJets[nktjets / 2] + ktJets[nktjets / 2 - 1]) / 2;
+      rhoKtLJex = (ktJets[nktjets / 2] + ktJets[nktjets / 2 - 1]) / 2;
   }
-
-  return ktJetsMedian;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskSAJF::DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt)
+Bool_t AliAnalysisTaskSAJF::DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt, Float_t &maxJetArea)
 {
   Double_t vertex[3] = {0, 0, 0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -740,6 +768,7 @@ Bool_t AliAnalysisTaskSAJF::DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt)
     if (jet->Pt() > maxJetPt) {
       maxJetPt = jet->Pt();
       maxJetIdx = ij;
+      maxJetArea = jet->Area();
     }
   }
 
@@ -786,7 +815,7 @@ Bool_t AliAnalysisTaskSAJF::DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt)
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAJF::DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)
+void AliAnalysisTaskSAJF::DoTrackLoop(Float_t &rhoTracksLJex, Float_t &rhoTracks, Int_t maxJetIndex, Int_t max2JetIndex)
 { 
   AliEmcalJet* jet = 0;
   if (max2JetIndex >= 0)
@@ -796,8 +825,10 @@ Float_t AliAnalysisTaskSAJF::DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)
   if (max2JetIndex >= 0)
     jet2 = GetJet(max2JetIndex);
 
-  Float_t rhoTracks = 0;
   Int_t ntracks = GetNumberOfTracks();
+
+  rhoTracksLJex = 0;
+  rhoTracks = 0;
 
   for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliVTrack* track = GetTrack(iTracks);         
@@ -808,12 +839,14 @@ Float_t AliAnalysisTaskSAJF::DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)
     
     if (!AcceptTrack(track)) continue;
     
+    rhoTracks += track->Pt();
+
     if (jet && IsJetTrack(jet, iTracks)) {
       fHistTracksPtLJ[fCentBin]->Fill(track->Pt());
     }
     else if (!jet2 || !IsJetTrack(jet2, iTracks)) {
       fHistTracksPtBkg[fCentBin]->Fill(track->Pt());
-      rhoTracks += track->Pt();
+      rhoTracksLJex += track->Pt();
       
       if (jet) {
 	Float_t dphijet = jet->Phi() - track->Phi();
@@ -842,12 +875,12 @@ Float_t AliAnalysisTaskSAJF::DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)
       } // second track loop
     }
   }
+  rhoTracksLJex /= GetArea();
   rhoTracks /= GetArea();
-  return rhoTracks;
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex)
+void AliAnalysisTaskSAJF::DoClusterLoop(Float_t &rhoClusLJex, Float_t &rhoClus, Int_t maxJetIndex, Int_t max2JetIndex)
 {
   Double_t vertex[3] = {0, 0, 0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -860,7 +893,9 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
   if (max2JetIndex >= 0)
     jet2 = GetJet(max2JetIndex);
 
-  Float_t rhoClus = 0;
+  rhoClusLJex = 0;
+  rhoClus = 0;
+
   Int_t nclusters =  GetNumberOfCaloClusters();
   for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
     AliVCluster* cluster = GetCaloCluster(iClusters);
@@ -876,12 +911,14 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
     TLorentzVector nPart;
     cluster->GetMomentum(nPart, vertex);
 
+    rhoClus += nPart.Et();
+
     if (jet && IsJetCluster(jet, iClusters)) {
       fHistClusEtLJ[fCentBin]->Fill(nPart.Et());
     }
     else if (!jet2 || !IsJetCluster(jet2, iClusters)) {
       fHistClusEtBkg[fCentBin]->Fill(nPart.Et());
-      rhoClus += nPart.Et();
+      rhoClusLJex += nPart.Et();
 
       Float_t pos1[3];
       cluster->GetPosition(pos1);
@@ -920,8 +957,8 @@ Float_t AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex
       }
     }
   } //cluster loop 
+  rhoClusLJex /= GetArea();
   rhoClus /= GetArea();
-  return rhoClus;
 }
 
 //________________________________________________________________________

@@ -27,6 +27,7 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   void         SetOutClusName(const char *n)         { fOutCaloName = n;   }
   void         SetPhiMatch(Double_t phi)             { fPhiMatch    = phi; }
   void         SetTracksName(const char *n)          { fTracksName  = n;   }
+  void         SetTrackClus(Int_t c)                 { fDoTrackClus    = c; }
 
  protected:
   Int_t        GetCentBin(Double_t cent) const;
@@ -37,6 +38,7 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   TString                fOutCaloName;            // name of output clusters
   Double_t               fPhiMatch;               // phi match value (pp=0.050)
   Double_t               fEtaMatch;               // eta match value (pp=0.025)
+  Int_t                  fDoTrackClus;            //loop over tracks first
   Double_t               fHadCorr;                // hadronic correction (fraction)
   Double_t               fMinPt;                  // minimum pt (on tracks and clusters)
   TClonesArray          *fOutClusters;            //!output cluster collection
@@ -50,12 +52,14 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   TH1                   *fHistEafter;             //!output histograms
   TH2                   *fHistEoPCent;            //!output histograms
   TH2                   *fHistNMatchCent;         //!output histograms
+  TH2                   *fHistNMatchCent_trk;     //!output histograms
   TH2                   *fHistEsubPch[4];         //!output histograms
+  TH1                   *fHistCentrality;         //!output histograms
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 3) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 4) // Hadronic correction task
 };
 #endif

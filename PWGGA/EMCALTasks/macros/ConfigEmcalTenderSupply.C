@@ -1,7 +1,6 @@
 // $Id$
 
 AliEMCALTenderSupply* ConfigEmcalTenderSupply(
-  const char* geoname  = "EMCAL_COMPLETEV1",
   Bool_t timeCut       = kTRUE,
   Bool_t distBC        = kTRUE, 
   Bool_t recalibClus   = kTRUE, 
@@ -23,8 +22,6 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     params->SetTimeMax(1e6);//Open this cut for AODs
   }
   EMCALSupply->SetRecParam(params);
-
-  EMCALSupply->SetEMCALGeometryName(geoname);  
 
   if (distBC)
     EMCALSupply->SwitchOnRecalDistBadChannel();
