@@ -7,20 +7,18 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <TObjArray.h>
-#include <TTree.h>
-#include <TEveManager.h>
-#include <TEveElement.h>
-#include <TEvePointSet.h>
-
-#include <AliCluster.h>
-#include <AliRunLoader.h>
-#include <AliTRDcluster.h>
-#include <AliEveEventManager.h>
-#else
+#ifdef __CINT__
 class TEvePointSet;
 class TEveElement;
+#else
+#include <TEveManager.h>
+#include <TEvePointSet.h>
+#include <TTree.h>
+#include <EveBase/AliEveEventManager.h>
+
+#include "AliRunLoader.h"
+#include "AliCluster.h"
+#include "TRD/AliTRDcluster.h"
 #endif
 
 TEvePointSet* trd_clusters(TEveElement *cont = 0)
@@ -42,7 +40,6 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0)
   TEvePointSet *clusters = new TEvePointSet(kMaxClusters);
   clusters->SetOwnIds(kTRUE);
 
-
   Int_t nentr=(Int_t)recPoints->GetEntries();
   for (Int_t i=0; i<nentr; i++) {
     if (!recPoints->GetEvent(i)) continue;
@@ -51,9 +48,21 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0)
 
     while (ncl--) {
       AliTRDcluster *c = (AliTRDcluster*)TRDcluster->UncheckedAt(ncl);
-      Float_t g[3]; //global coordinates
-      c->GetGlobalXYZ(g);
-      clusters->SetNextPoint(g[0], g[1], g[2]);
+      //Float_t g[3]; //global coordinates
+      //c->GetGlobalXYZ(g);
+      
+      Int_t fVolumeId = c->GetVolumeId();
+      const TGeoHMatrix *mt =AliGeomManager::GetTracking2LocalMatrix(fVolumeId);;
+      Double_t txyz[3] = {c->GetX(), c->GetY(), c->GetZ()};
+      Double_t lxyz[3] = {0, 0, 0};
+      mt->LocalToMaster(txyz,lxyz);
+   
+      TGeoHMatrix *mlIdeal = AliGeomManager::GetOrigGlobalMatrix(fVolumeId);
+      Double_t gxyzIdeal[3] = {0, 0, 0};
+      mlIdeal->LocalToMaster(lxyz,gxyzIdeal);
+      
+      clusters->SetNextPoint(gxyzIdeal[0], gxyzIdeal[1], gxyzIdeal[2]);
+      
       AliCluster *atp = new AliCluster(*c);
       clusters->SetPointId(atp);
     }
