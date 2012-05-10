@@ -36,5 +36,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   mgr->ConnectOutput(task,1, mgr->CreateContainer(Form("bailhach_HFEv2EP_%s", appendixx.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data()));
   mgr->ConnectInput(task,0, cinput );    
 
+  return task;
+
   
 }
