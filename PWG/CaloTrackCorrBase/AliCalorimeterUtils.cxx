@@ -526,10 +526,9 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
       for(Int_t i = 0; i < cluster->GetNCells() ; i++){
         Int_t absId = cluster->GetCellAbsId(i) ;
         for (Int_t j = startCell; j < endCell ;  j++) {
-          Short_t cellNumber; 
-          Double_t amp ; 
-          Double_t time; 
-          cells->GetCell(j, cellNumber, amp, time) ; 
+          Short_t cellNumber, mclabel; 
+          Double_t amp, time, efrac; 
+          cells->GetCell(j, cellNumber, amp, time,mclabel,efrac) ; 
           if (absId == cellNumber) {
             if(amp > ampMax){
               ampMax   = amp;

@@ -333,9 +333,9 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
     Double_t avgE        = 0; // for background subtraction
     const Int_t ncells   = cells->GetNumberOfCells();
     for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
-      Double_t cellAmplitude=0, cellTime=0;
-      Short_t cellNumber=0;
-      if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
+      Double_t cellAmplitude=0, cellTime=0, cellEFrac = 0;
+      Short_t  cellNumber=0, cellMCLabel=-1;
+      if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
         break;
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
       digit->SetId(cellNumber);

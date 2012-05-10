@@ -1126,9 +1126,10 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     {
       nCells ++;
       
-      Double_t amp =0., time = 0.;
+      Double_t amp =0., time = 0., efrac = 0;
+      Short_t mclabel = -1;
       
-      cells.GetCell(icell, absId, amp, time);	
+      cells.GetCell(icell, absId, amp, time,mclabel,efrac);	
       
       fGeometry->GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
       fGeometry->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta); 
