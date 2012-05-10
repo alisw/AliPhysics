@@ -89,7 +89,7 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
       fAmplitude  = new Double32_t[fNCells];
       fTime       = new Double32_t[fNCells];
       fMCLabel    = new Short_t[fNCells];
-      fTime       = new Double32_t[fNCells];
+      fEFraction  = new Double32_t[fNCells];
     }
     
     memcpy(fCellNumber,source.fCellNumber,fNCells*sizeof(Short_t));
@@ -174,7 +174,8 @@ void AliESDCaloCells::CreateContainer(Short_t nCells)
 
   DeleteContainer();
   
-  if (nCells <= 0) {
+  if (nCells <= 0) 
+  {
     fNCells = 0;
     return;
   }
@@ -190,8 +191,11 @@ void AliESDCaloCells::CreateContainer(Short_t nCells)
   // set to zero
   for(int i = 0;i<fNCells;++i)
   {
-    fAmplitude[i] = fCellNumber[i] = fEFraction[i] = 0 ;
-    fTime[i] = fMCLabel[i] = -1 ;
+    fAmplitude [i] =  0.; 
+    fCellNumber[i] = -1 ; 
+    fEFraction [i] =  0.;
+    fTime      [i] = -1.;
+    fMCLabel   [i] = -1 ;
   }
 }
 
@@ -246,8 +250,11 @@ void AliESDCaloCells::Sort()
   Short_t    *newIndex     = new Short_t[fNCells];
   Double32_t *newAmplitude = new Double32_t[fNCells];
   Double32_t *newTime      = new Double32_t[fNCells];
-  Short_t    *newMCLabel   = new Short_t[fNCells];
-  Double32_t *newEFraction = new Double32_t[fNCells];
+  
+  Short_t    *newMCLabel   = 0 ;
+  Double32_t *newEFraction = 0 ; 
+  if(fMCLabel)   newMCLabel   = new Short_t[fNCells];
+  if(fEFraction) newEFraction = new Double32_t[fNCells];
     
   for (Int_t i=0; i < fNCells; i++) 
   {

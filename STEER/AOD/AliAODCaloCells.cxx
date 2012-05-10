@@ -173,7 +173,8 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
 
   DeleteContainer();
   
-  if (nCells <= 0) {
+  if (nCells <= 0) 
+  {
     fNCells = 0;
     return;
   }
@@ -187,8 +188,13 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
   fEFraction  = new Double32_t[fNCells];
 
   // set to zero
-  for(int i = 0;i<fNCells;++i){
-    fAmplitude[i] = fCellNumber[i] = fTime[i] =fMCLabel[i] = fEFraction[i] = 0 ;
+  for(int i = 0;i<fNCells;++i)
+  {
+    fAmplitude [i] =  0.; 
+    fCellNumber[i] = -1 ; 
+    fEFraction [i] =  0.;
+    fTime      [i] = -1.;
+    fMCLabel   [i] = -1 ;
   }
 }
 
@@ -242,10 +248,14 @@ void AliAODCaloCells::Sort()
   
   Short_t    *newIndex     = new Short_t[fNCells];
   Double32_t *newAmplitude = new Double32_t[fNCells];
-  Double32_t *newTime      = new Double32_t[fNCells];
-  Short_t    *newMCLabel   = new Short_t[fNCells];
-  Double32_t *newEFraction = new Double32_t[fNCells];
-
+  
+  Double32_t *newTime      = 0; 
+  Short_t    *newMCLabel   = 0 ;
+  Double32_t *newEFraction = 0 ; 
+  if(fTime)      newTime      = new Double32_t[fNCells];
+  if(fMCLabel)   newMCLabel   = new Short_t[fNCells];
+  if(fEFraction) newEFraction = new Double32_t[fNCells];
+  
   for (Int_t i=0; i < fNCells; i++) 
   {
     newIndex[i]     = fCellNumber[idxArray[i]];
@@ -261,7 +271,6 @@ void AliAODCaloCells::Sort()
   delete [] fMCLabel;
   delete [] fEFraction;
 
-  
   fCellNumber = newIndex;
   fAmplitude  = newAmplitude;
   if(fTime)      fTime       = newTime;
