@@ -63,14 +63,15 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)    const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)   const;
   Float_t                     GetArea()                                                            const;
-  void                        RetrieveEventObjects()                                                    ;
-  void                        FillHistograms()                                                          ;
-  void                        DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)                        ;
-  Float_t                     DoKtJetLoop(Int_t nLJs = 2)                                                             ;
-  Bool_t                      DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt)                       ;
-  Float_t                     DoTrackLoop(Int_t maxJetIndex, Int_t max2JetIndex)                        ;
-  Float_t                     DoClusterLoop(Int_t maxJetIndex, Int_t max2JetIndex)                      ;
-  Float_t                     GetRigidConePt(AliEmcalJet *jet = 0,  Float_t minD = 0.8)                 ;
+
+  void                        RetrieveEventObjects()                                                                             ;
+  void                        FillHistograms()                                                                                   ;
+  void                        DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)                                                 ;
+  void                        DoKtJetLoop(Float_t &rhoKtLJex, Float_t &rhoKt, Int_t nLJs = 2)                                    ;
+  Bool_t                      DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt, Float_t &maxJetArea)                           ;
+  void                        DoTrackLoop(Float_t &rhoTracksLJex, Float_t &rhoTracks, Int_t maxJetIndex, Int_t max2JetIndex)     ;
+  void                        DoClusterLoop(Float_t &rhoClusLJex, Float_t &rhoClus,Int_t maxJetIndex, Int_t max2JetIndex)        ;
+  Float_t                     GetRigidConePt(AliEmcalJet *jet = 0,  Float_t minD = 0.8)                                          ;
 
 
   SAJFAnaType                 fAnaType;                    // Analysis type
@@ -97,8 +98,10 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TH1F                       *fHistCentrality;             // Event centrality distribution
   TH2F                       *fHistJetPhiEta;              // Phi-Eta distribution of jets
   TH2F                       *fHistRhoPartVSleadJetPt;     // Background et density of particles (clusters+tracks) vs. leading jet pt
+  TH2F                       *fHistMedKtVSRhoPartExLJ;     // Median of the pt density of kt jets vs. bkg pt density of particles, excluding the 2 most energetic jets
   TH2F                       *fHistMedKtVSRhoPart;         // Median of the pt density of kt jets vs. background pt density of particles
   TH2F                       *fHistRCPtVSRhoPart;          // Random cone Pt vs. background pt density of particles
+  TH2F                       *fHistMedKtVSEmbBkg;          // Area(embjet) * rhoKt vs. Pt(embjet) - Pt(embtrack)
   TH1F                       *fHistJetsPt[4];              // Jet pt spectrum
   TH1F                       *fHistJetsNEF[4];             // Jet neutral energy fraction
   TH1F                       *fHistJetsZ[4];               // Constituent Pt over Jet Pt ratio
@@ -120,7 +123,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TH1F                       *fHistRCPtExLJ[4];            // Random cone pt, imposing min distance from leading jet
   TH1F                       *fHistEmbJets[4];             // Pt distribution of embedded jets
   TH1F                       *fHistEmbPart[4];             // Pt distribution of embedded particle
-  TH1F                       *fHistDeltaPtMedKtEmb[4];     // deltaPt = Pt(embjet) - A * rhoKt - Pt(embtrack)
+  TH1F                       *fHistDeltaPtMedKtEmb[4];     // deltaPt = Pt(embjet) - Area(embjet) * rhoKt - Pt(embtrack)
   Int_t                       fNbins;                      // No. of pt bins
   Float_t                     fMinPt;                      // Min pt
   Float_t                     fMaxPt;                      // Max pt

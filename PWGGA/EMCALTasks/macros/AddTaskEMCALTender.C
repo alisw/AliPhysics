@@ -1,33 +1,25 @@
 // $Id$
 
-AliTender *AddTaskEMCALTender(
-  const char *geoname="EMCAL_COMPLETEV1", 
-  const char* datatype="pp")
-{
-  // Parameters: geoname = "EMCAL_FIRSTYEARV1" or "EMCAL_COMPLETEV1" or ""
+AliTender *AddTaskEMCALTender()
 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskTrgContam", "No analysis manager to connect to.");
+    ::Error("AddTaskEMCALTender", "No analysis manager to connect to.");
     return NULL;
   }  
   
   // Create the task and configure it.
   //===========================================================================
   AliTender* ana = new  AliTender("AliTender");
-
-  ana->SelectCollisionCandidates( AliVEvent::kEMC1 | AliVEvent::kMB | AliVEvent::kEMC7 | AliVEvent::kINT7);
-
   
   Bool_t ismc = (mgr->GetMCtruthEventHandler() != NULL);
 
-  
   mgr->AddTask(ana);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigEmcalTenderSupply.C");
-  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(geoname, kTRUE);
+  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(kTRUE);
  
   ana->AddSupply(EMCALSupply);
 
