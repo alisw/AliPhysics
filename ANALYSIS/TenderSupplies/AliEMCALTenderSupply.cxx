@@ -427,7 +427,7 @@ AliVEvent* AliEMCALTenderSupply::GetEvent()
 void AliEMCALTenderSupply::ProcessEvent()
 {
   // Event loop.
-
+  
   AliVEvent *event = GetEvent();
   
   if (!event) {
@@ -435,7 +435,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     return;
   }
   
-  // Initialising parameters once per run number
+ // Initialising parameters once per run number
   if (RunChanged()) { 
 
     AliWarning( "Run changed, initializing parameters" );
@@ -607,7 +607,7 @@ void AliEMCALTenderSupply::ProcessEvent()
   if( fCalibrateEnergy || fCalibrateTime || fBadCellRemove )
     fEMCALRecoUtils->ResetCellsCalibrated();
   
-  // CELL RECALIBRATION -------------------------------------------------------
+ // CELL RECALIBRATION -------------------------------------------------------
   // cell objects will be updated
   // the cell calibrations are also processed locally any time those are needed
   // in case that the cell objects are not to be updated here for later use
@@ -635,7 +635,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     Clusterize();
     UpdateClusters();
   }
-  
+
   // Store good clusters
   TClonesArray *clusArr = dynamic_cast<TClonesArray*>(event->FindListObject("caloClusters"));
   if (!clusArr) 
@@ -1132,19 +1132,23 @@ void AliEMCALTenderSupply::UpdateCells()
   // just like with bad cell rejection in reco utils (inside RecalibrateCells)
   if( fRejectExoticCells )
   {
-    Int_t    absId  =-1;
+    Short_t  absId  =-1;
+    Double_t ecell = 0;
+    Double_t tcell = 0;
+    Double_t efrac = 0;
+    Short_t  mclabel = -1;
     Bool_t   isExot = kFALSE;
   
     // loop through cells
     Int_t nEMcell  = cells->GetNumberOfCells() ;  
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) 
     { 
-      absId  = cells->GetCellNumber(iCell);
+      cells->GetCell( iCell, absId, ecell, tcell, mclabel, efrac );
     
       isExot = fEMCALRecoUtils->IsExoticCell( absId, cells, bunchCrossNo ); 
       // zero if exotic
       if( isExot )
-        cells->SetCell( iCell, absId, 0.0, 0.0 );
+        cells->SetCell( iCell, absId, 0.0, -1.0, mclabel, efrac );
     } // cell loop
   } // reject exotic cells
 
@@ -1175,7 +1179,7 @@ TString AliEMCALTenderSupply::GetBeamType()
   {
     Int_t runNumber = event->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517)  // LHC10h
-	|| (runNumber >= 166529 && runNumber <= 170593))  // LHC11h
+  || (runNumber >= 166529 && runNumber <= 170593))  // LHC11h
     {
       beamType = "A-A";
     }
@@ -1287,7 +1291,7 @@ void AliEMCALTenderSupply::FillDigitsArray()
   
   AliVEvent *event = GetEvent();
 
-  if (!event)
+ if (!event)
     return;
   
   fDigitsArr->Clear("C");
@@ -1311,11 +1315,11 @@ void AliEMCALTenderSupply::FillDigitsArray()
         
     AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
     digit->SetId(cellNumber);
-    digit->SetTime(cellTime);
-    digit->SetTimeR(cellTime);
+    digit->SetTime((Float_t)cellTime);
+    digit->SetTimeR((Float_t)cellTime);
     digit->SetIndexInList(idigit);
     digit->SetType(AliEMCALDigit::kHG);
-    digit->SetAmplitude(cellAmplitude);
+    digit->SetAmplitude((Float_t)cellAmplitude);
     idigit++;
   }
 }
