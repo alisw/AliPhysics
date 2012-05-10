@@ -30,6 +30,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   virtual ~AliAnaCaloTrackCorrMaker() ; // virtual dtor
   AliAnaCaloTrackCorrMaker(const AliAnaCaloTrackCorrMaker & maker) ; // cpy ctor
 	
+  // Setters and Getters
+  
   void    AddAnalysis(TObject* ana, Int_t n) ;
 
   TList * GetListOfAnalysisCuts();
@@ -57,6 +59,11 @@ class AliAnaCaloTrackCorrMaker : public TObject {
                                                                         return fCaloUtils      ; }
   void                  SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
 	
+  void                  SetScaleFactor(Double_t scale)                { fScaleFactor = scale   ; } 
+
+  
+  // Main general methods
+  
   void    Init();
   
   void    InitParameters();
@@ -67,28 +74,33 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   void    Terminate(TList * outputList);
 
+  
  private:
   
   //General Data members
   
-  AliCaloTrackReader  *  fReader ;     //  Pointer to reader 
-  AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
+  AliCaloTrackReader  *  fReader ;    //  Pointer to reader 
+  AliCalorimeterUtils *  fCaloUtils ; //  Pointer to CalorimeterUtils
   
-  TList * fOutputContainer ;   //! Output histograms container
-  TList * fAnalysisContainer ; //  List with analysis pointers
-  Bool_t  fMakeHisto ;         //  If true makes final analysis with histograms as output
-  Bool_t  fMakeAOD ;           //  If true makes analysis generating AODs
-  Int_t   fAnaDebug;           //  Debugging info.
-  TList * fCuts ;	             //! List with analysis cuts
-  
+  TList *  fOutputContainer ;   //! Output histograms container
+  TList *  fAnalysisContainer ; //  List with analysis pointers
+  Bool_t   fMakeHisto ;         //  If true makes final analysis with histograms as output
+  Bool_t   fMakeAOD ;           //  If true makes analysis generating AODs
+  Int_t    fAnaDebug;           //  Debugging info.
+  TList *  fCuts ;	            //! List with analysis cuts
+  Double_t fScaleFactor ;       //  Scaling factor needed for normalization
+
   // Control histograms
-  TH1I  * fhNEvents;           //! Number of events counter histogram
-  TH1I  * fhTrackMult;         //! Number of tracks per event histogram
-  TH1F  * fhCentrality;        //! Histogram with centrality bins
+  TH1I *   fhNEvents;           //! Number of events counter histogram
+  TH1F *   fhZVertex;           //! Vertex of accepted event
+  TH1I *   fhTrackMult;         //! Number of tracks per event histogram
+  TH1F *   fhCentrality;        //! Histogram with centrality bins
+  TH1I *   fhNMergedFiles;      //! Number of files merged
+  TH1F *   fhScaleFactor;       //! Factor to scale histograms
 
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,9)
+  ClassDef(AliAnaCaloTrackCorrMaker,11)
 } ;
  
 

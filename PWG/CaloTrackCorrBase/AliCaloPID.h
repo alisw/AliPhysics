@@ -78,7 +78,8 @@ class AliCaloPID : public TObject {
   Int_t     GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster * cluster, AliVCaloCells* cells, 
                                                           AliCalorimeterUtils * caloutils,
                                                           Double_t vertex[3], 
-                                                          Int_t & nLocMax, Double_t & mass, Double_t & angle) ;
+                                                          Int_t & nLocMax, Double_t & mass, Double_t & angle,
+                                                          Double_t & e1  , Double_t & e2                     ) ;
   
   Int_t     GetIdentifiedParticleType(const AliVCluster * cluster) ;
   
@@ -262,7 +263,7 @@ private:
   AliCaloPID & operator = (const AliCaloPID & g) ; // cpy assignment
   AliCaloPID(              const AliCaloPID & g) ; // cpy ctor
   
-  ClassDef(AliCaloPID,12)
+  ClassDef(AliCaloPID,13)
   
 } ;
 

@@ -153,7 +153,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLam0ETMTRD;                    //! cluster lambda0 vs  E, SM covered by TRD, cut on Track Matching residual
   TH2F * fhLam1ETMTRD;                    //! cluster lambda1 vs  E, SM covered by TRD, cut on Track Matching residual 
   
-  
   TH2F * fhNCellsLam0LowE;                //! number of cells in cluster vs lambda0
   TH2F * fhNCellsLam1LowE;                //! number of cells in cluster vs lambda1
   TH2F * fhNCellsDispLowE;                //! number of cells in cluster vs dispersion
@@ -172,6 +171,19 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhDispLam1LowE;                  //! cluster disp vs lambda1, E<2
   TH2F * fhDispLam1HighE;                 //! cluster disp vs lambda1, E>2
     
+  TH2F * fhDispEtaE ;                     //! shower dispersion in eta direction
+  TH2F * fhDispPhiE ;                     //! shower dispersion in phi direction
+  TH2F * fhSumEtaE ;                      //! shower dispersion in eta direction
+  TH2F * fhSumPhiE ;                      //! shower dispersion in phi direction
+  TH2F * fhSumEtaPhiE ;                   //! shower dispersion in eta and phi direction
+  TH2F * fhDispEtaPhiDiffE ;              //! shower dispersion eta - phi
+  TH2F * fhSphericityE ;                  //! shower sphericity in eta vs phi
+  TH2F * fhDispSumEtaDiffE ;              //! difference of 2 eta dispersions
+  TH2F * fhDispSumPhiDiffE ;              //! difference of 2 phi dispersions
+  TH2F * fhDispEtaDispPhi[7] ;            //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F * fhLambda0DispEta[7] ;            //! shower shape correlation l0 vs disp eta
+  TH2F * fhLambda0DispPhi[7] ;            //! shower shape correlation l0 vs disp phi
+  
   //Fill MC dependent histograms, Origin of this cluster is ...
 
   TH2F * fhMCDeltaE[14]  ;                      //! MC-Reco E distribution coming from MC particle     
@@ -213,6 +225,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCNCellsE[6];                        //! NCells per cluster vs energy
   TH2F * fhMCMaxCellDiffClusterE[6];            //! Fraction of energy carried by cell with maximum energy
 
+  TH2F * fhMCEDispEta[6] ;                      //! shower dispersion in eta direction
+  TH2F * fhMCEDispPhi[6] ;                      //! shower dispersion in phi direction
+  TH2F * fhMCESumEtaPhi[6] ;                    //! shower dispersion in eta vs phi direction
+  TH2F * fhMCEDispEtaPhiDiff[6] ;               //! shower dispersion in eta -phi direction
+  TH2F * fhMCESphericity[6] ;                   //! shower sphericity, eta vs phi
+  TH2F * fhMCDispEtaDispPhi[7][6] ;             //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F * fhMCLambda0DispEta[7][6] ;             //! shower shape correlation l0 vs disp eta
+  TH2F * fhMCLambda0DispPhi[7][6] ;             //! shower shape correlation l0 vs disp phi
+
   //Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;       //! Fraction of photon energy of embedded signal vs cluster energy
   
@@ -249,7 +270,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,23)
+  ClassDef(AliAnaPhoton,25)
 
 } ;
  

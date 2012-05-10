@@ -128,9 +128,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   
   emcalQA->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 1, 400) ;
   emcalQA->GetHistogramRanges()->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
-  emcalQA->GetHistogramRanges()->SetHistoPOverERangeAndNBins(0,10.,100);
+  emcalQA->GetHistogramRanges()->SetHistoPOverERangeAndNBins(0,3.,90);
   emcalQA->GetHistogramRanges()->SetHistodEdxRangeAndNBins(0.,200.,200);
-  emcalQA->GetHistogramRanges()->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
+  emcalQA->GetHistogramRanges()->SetHistodRRangeAndNBins(0.,0.15,150);
   emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins(300.,900,300);
   emcalQA->GetHistogramRanges()->SetHistoRatioRangeAndNBins(0.,2.,100);
   emcalQA->GetHistogramRanges()->SetHistoVertexDistRangeAndNBins(0.,500.,500);
@@ -183,6 +183,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(cname, TList::Class(), 
                                                              AliAnalysisManager::kParamContainer, 
                                                              Form("%s:%s",outputFile.Data(),cname.Data()));
+  
 	//Form("%s:PartCorrCuts",outputfile.Data()));	
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below

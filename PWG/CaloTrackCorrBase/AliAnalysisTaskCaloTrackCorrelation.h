@@ -26,11 +26,13 @@ class AliAODEvent;
 class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
 {
  public:
+  
   AliAnalysisTaskCaloTrackCorrelation();
   AliAnalysisTaskCaloTrackCorrelation(const char* name);
   virtual ~AliAnalysisTaskCaloTrackCorrelation() ; // virtual dtor
   
   // Implementation of interface methods
+  
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() ;
@@ -38,11 +40,14 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
   virtual void FinishTaskOutput();
   
-  void         SetConfigFileName(TString & name ) { fConfigName = name ; }
-  TString      GetConfigFileName()          const { return fConfigName ; }
-	
-  void         SetAnalysisMaker(AliAnaCaloTrackCorrMaker * const maker) { fAna = maker ; } 
+  // Setters
   
+  void         SetAnalysisMaker(AliAnaCaloTrackCorrMaker * const maker) 
+                                                  { fAna = maker         ; } 
+  
+  void         SetConfigFileName(TString & name ) { fConfigName = name   ; }
+  TString      GetConfigFileName()          const { return fConfigName   ; }
+	  
  private:
   AliAnalysisTaskCaloTrackCorrelation           (const AliAnalysisTaskCaloTrackCorrelation&); // Not implemented
   AliAnalysisTaskCaloTrackCorrelation& operator=(const AliAnalysisTaskCaloTrackCorrelation&); // Not implemented
@@ -51,7 +56,7 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   TList * fOutputContainer ;       //! Histogram container
   TString fConfigName ;            //  Configuration file name
   TList * fCuts ;                  //! List with analysis cuts
-	
+  
   ClassDef(AliAnalysisTaskCaloTrackCorrelation, 3); // Analysis task for standard gamma correlation analysis
 };
 

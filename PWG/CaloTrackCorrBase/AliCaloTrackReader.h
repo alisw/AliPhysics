@@ -118,7 +118,11 @@ public:
   void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
   
-  
+  Double_t         GetEMCALTimeCutMin()             const { return fEMCALTimeCutMin        ; }
+  Double_t         GetEMCALTimeCutMax()             const { return fEMCALTimeCutMax        ; }	
+
+  void             SetEMCALTimeCut(Double_t a, Double_t b) { fEMCALTimeCutMin = a; 
+                                                             fEMCALTimeCutMax = b          ; } // ns
   // Fidutial cuts  
   virtual AliFiducialCut * GetFiducialCut()                { 
                     if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
@@ -353,7 +357,9 @@ public:
   Float_t          fCTSPtMax;       // pT Threshold on charged particles 
   Float_t          fEMCALPtMax;     // pT Threshold on emcal clusters
   Float_t          fPHOSPtMax;      // pT Threshold on phos clusters
-  
+  Double_t         fEMCALTimeCutMin;// Remove clusters/cells with time smaller than this value, in ns
+  Double_t         fEMCALTimeCutMax;// Remove clusters/cells with time larger than this value, in ns
+
   TList          * fAODBranchList ; //-> List with AOD branches created and needed in analysis  
   TObjArray      * fCTSTracks ;     //-> temporal array with tracks
   TObjArray      * fEMCALClusters ; //-> temporal array with EMCAL CaloClusters
@@ -424,7 +430,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,35)
+  ClassDef(AliCaloTrackReader,36)
   
 } ;
 

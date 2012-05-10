@@ -22,16 +22,10 @@
 
 
 // --- ROOT system ---
-//#include "Riostream.h"
-#include "TObjArray.h"
-#include "TParticle.h"
-#include "TDatabasePDG.h"
-#include "TCanvas.h"
-#include "TPad.h"
-#include "TROOT.h"
-#include "TH3F.h"
-#include "TH2F.h"
-#include "TLegend.h"
+#include <TObjArray.h>
+#include <TParticle.h>
+#include <TDatabasePDG.h>
+#include <TH3F.h>
 #include <TObjString.h>
 
 //---- AliRoot system ----
@@ -40,15 +34,12 @@
 #include "AliStack.h"
 #include "AliVCaloCells.h"
 #include "AliFiducialCut.h"
-#include "AliAODTrack.h"
 #include "AliVCluster.h"
+#include "AliVTrack.h"
 #include "AliVEvent.h"
 #include "AliVEventHandler.h"
-#include "AliAnalysisManager.h"
 #include "AliAODMCParticle.h"
 #include "AliMCAnalysisUtils.h"
-#include "AliAODPid.h"
-#include "AliExternalTrackParam.h"
 
 // --- Detectors --- 
 #include "AliPHOSGeoUtils.h"
@@ -155,12 +146,12 @@ fhGenMCAccE(),                         fhGenMCAccEtaPhi(),
 //matched MC
 fhEMVxyz(0),                           fhEMR(0),                   
 fhHaVxyz(0),                           fhHaR(0),
-fh1pOverE(0),                          fh1dR(0),                   
+fh1EOverP(0),                          fh2dR(0),                   
 fh2EledEdx(0),                         fh2MatchdEdx(0),
-fhMCEle1pOverE(0),                     fhMCEle1dR(0),                          fhMCEle2MatchdEdx(0),
-fhMCChHad1pOverE(0),                   fhMCChHad1dR(0),                        fhMCChHad2MatchdEdx(0),
-fhMCNeutral1pOverE(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0), fh1pOverER02(0),           
-fhMCEle1pOverER02(0),                  fhMCChHad1pOverER02(0),                 fhMCNeutral1pOverER02(0)
+fhMCEle1EOverP(0),                     fhMCEle1dR(0),                          fhMCEle2MatchdEdx(0),
+fhMCChHad1EOverP(0),                   fhMCChHad1dR(0),                        fhMCChHad2MatchdEdx(0),
+fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      fhMCNeutral2MatchdEdx(0), fh1EOverPR02(0),           
+fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 fhMCNeutral1EOverPR02(0)
 {
   //Default Ctor
   
@@ -394,7 +385,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       time *= 1.0e9;
  
       // Remove noisy channels, only possible in ESDs
-      if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
+      if(GetReader()->GetDataType() == AliCaloTrackReader::kESD)
+      {
         if(time < fTimeCutMin || time > fTimeCutMax){
           if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cell with Time %f\n",time);
           continue;
@@ -416,7 +408,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         
         //E cross for exotic cells
         if(amp > 0.01) fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
-        
+
         nCellsInModule[nModule]++ ;
 
         Int_t icols = icol;
@@ -438,7 +430,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         fhGridCells ->Fill(icols,irows);
         fhGridCellsE->Fill(icols,irows,amp);
         
-        if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
+        if(GetReader()->GetDataType() == AliCaloTrackReader::kESD)
+        {
           //printf("%s: time %g\n",fCalorimeter.Data(), time);
           
           Double_t v[3] = {0,0,0}; //vertex ;
@@ -704,7 +697,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *c
     
     if(clus->GetID()==clus2->GetID()) continue;
     
-    if(clus->GetM02() > 0.01 && clus2->GetM02() > 0.01) {
+    if(clus->GetM02() > 0.01 && clus2->GetM02() > 0.01) 
+    {
       Double_t tof2   = clus2->GetTOF()*1.e9;          
       fhClusterPairDiffTimeE  ->Fill(clus->E(), tof-tof2);
     }
@@ -717,7 +711,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *c
     
     // check time of cells respect to max energy cell
     
-    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+    {
       fhClusterMaxCellDiffAverageTime      ->Fill(clus->E(),tmax-timeAverages[0]);
       fhClusterMaxCellDiffWeightedTime     ->Fill(clus->E(),tmax-timeAverages[1]);
     }
@@ -1322,120 +1317,59 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
   AliVTrack *track = GetCaloUtils()->GetMatchedTrack(clus, GetReader()->GetInputEvent());
   
   if(!track) return ;
-
-  Double_t emcpos[3] = {0.,0.,0.};
-  Double_t emcmom[3] = {0.,0.,0.};
-  Double_t radius    = 441.0; //[cm] EMCAL radius +13cm
-  Double_t bfield    = 0.;
-  Double_t tphi      = 0;
-  Double_t teta      = 0;
-  Double_t tmom      = 0;
-  Double_t tpt       = 0;
-  Double_t tmom2     = 0;
-  Double_t tpcSignal = 0;
-  Bool_t okpos = kFALSE;
-  Bool_t okmom = kFALSE;
-  Bool_t okout = kFALSE;
-  Int_t nITS   = 0;
-  Int_t nTPC   = 0;
+    
+  Double_t tpt   = track->Pt();
+  Double_t tmom  = track->P();
+  Double_t dedx  = track->GetTPCsignal();
+  Int_t    nITS  = track->GetNcls(0);
+  Int_t    nTPC  = track->GetNcls(1);
   
-  //In case of ESDs get the parameters in this way
-  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
-  {
-    if (track->GetOuterParam() ) 
+  // Residuals
+  Float_t deta  = clus->GetTrackDz();
+  Float_t dphi  = clus->GetTrackDx();
+  Double_t  dR  = TMath::Sqrt(dphi*dphi + deta*deta);
+  
+  Double_t eOverP = e/tmom;
+  
+  fh1EOverP->Fill(tpt, eOverP);
+  if(dR < 0.02) fh1EOverPR02->Fill(tpt,eOverP);
+  
+  fh2dR->Fill(e,dR);
+  fh2MatchdEdx->Fill(tmom,dedx);
+  
+  if(IsDataMC() && okPrimary)
+  { 
+    Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+    
+    if(TMath::Abs(pdg) == 11)
     {
-      okout = kTRUE;
-      
-      bfield = GetReader()->GetInputEvent()->GetMagneticField();
-      okpos = track->GetOuterParam()->GetXYZAt(radius,bfield,emcpos);
-      okmom = track->GetOuterParam()->GetPxPyPzAt(radius,bfield,emcmom);
-      if(!(okpos && okmom)) return;
-      
-      TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
-      TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
-      tphi = position.Phi();
-      teta = position.Eta();
-      tmom = momentum.Mag();
-      
-      tpt       = track->Pt();
-      tmom2     = track->P();
-      tpcSignal = track->GetTPCsignal();
-      
-      nITS = track->GetNcls(0);
-      nTPC = track->GetNcls(1);
-    }//Outer param available 
-  }// ESDs
-  else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) 
-  {
-    AliAODPid* pid = (AliAODPid*) ((AliAODTrack *) track)->GetDetPid();
-    if (pid) {
-      okout = kTRUE;
-      pid->GetEMCALPosition(emcpos);
-      pid->GetEMCALMomentum(emcmom);	
-      
-      TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
-      TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
-      tphi = position.Phi();
-      teta = position.Eta();
-      tmom = momentum.Mag();
-      
-      tpt       = track->Pt();
-      tmom2     = track->P();
-      tpcSignal = pid->GetTPCsignal();
-      
-    }//pid 
-  }//AODs
-  
-  if(okout)
-  {
-    //printf("okout\n");
-    Double_t deta = teta - eta;
-    Double_t dphi = tphi - phi;
-    if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-    if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-    Double_t dR = sqrt(dphi*dphi + deta*deta);
-    
-    Double_t pOverE = tmom/e;
-    
-    fh1pOverE->Fill(tpt, pOverE);
-    if(dR < 0.02) fh1pOverER02->Fill(tpt,pOverE);
-    
-    fh1dR->Fill(dR);
-    fh2MatchdEdx->Fill(tmom2,tpcSignal);
-    
-    if(IsDataMC() && okPrimary){ 
-      Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-      
-      if(TMath::Abs(pdg) == 11){
-        fhMCEle1pOverE->Fill(tpt,pOverE);
-        fhMCEle1dR->Fill(dR);
-        fhMCEle2MatchdEdx->Fill(tmom2,tpcSignal);		
-        if(dR < 0.02) fhMCEle1pOverER02->Fill(tpt,pOverE);
-      }
-      else if(charge!=0){
-        fhMCChHad1pOverE->Fill(tpt,pOverE);
-        fhMCChHad1dR->Fill(dR);
-        fhMCChHad2MatchdEdx->Fill(tmom2,tpcSignal);	
-        if(dR < 0.02) fhMCChHad1pOverER02->Fill(tpt,pOverE);
-      }
-      else if(charge == 0){
-        fhMCNeutral1pOverE->Fill(tpt,pOverE);
-        fhMCNeutral1dR->Fill(dR);
-        fhMCNeutral2MatchdEdx->Fill(tmom2,tpcSignal);	
-        if(dR < 0.02) fhMCNeutral1pOverER02->Fill(tpt,pOverE);
-      }
-    }//DataMC
-    
-    if(dR < 0.02 && pOverE > 0.5 && pOverE < 1.5
-       && clus->GetNCells() > 1 && nITS > 3 && nTPC > 20) {
-      fh2EledEdx->Fill(tmom2,tpcSignal);
+      fhMCEle1EOverP->Fill(tpt,eOverP);
+      fhMCEle1dR->Fill(dR);
+      fhMCEle2MatchdEdx->Fill(tmom,dedx);		
+      if(dR < 0.02) fhMCEle1EOverPR02->Fill(tpt,eOverP);
     }
+    else if(charge!=0)
+    {
+      fhMCChHad1EOverP->Fill(tpt,eOverP);
+      fhMCChHad1dR->Fill(dR);
+      fhMCChHad2MatchdEdx->Fill(tmom,dedx);	
+      if(dR < 0.02) fhMCChHad1EOverPR02->Fill(tpt,eOverP);
+    }
+    else if(charge == 0)
+    {
+      fhMCNeutral1EOverP->Fill(tpt,eOverP);
+      fhMCNeutral1dR->Fill(dR);
+      fhMCNeutral2MatchdEdx->Fill(tmom,dedx);	
+      if(dR < 0.02) fhMCNeutral1EOverPR02->Fill(tpt,eOverP);
+    }
+  }//DataMC
+  
+  if(dR < 0.02 && eOverP > 0.6 && eOverP< 1.2
+     && clus->GetNCells() > 1 && nITS > 3 && nTPC > 20) 
+  {
+    fh2EledEdx->Fill(tmom,dedx);
   }
-  else{//no ESD external param or AODPid
-    
-    if(GetDebug() >= 0) printf("No ESD external param or AliAODPid \n");
-    
-  }//No out params  
+  
 }
 
 //___________________________________
@@ -1571,7 +1505,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   Int_t netabins    = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax    = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin    = GetHistogramRanges()->GetHistoEtaMin();	
   Int_t nmassbins   = GetHistogramRanges()->GetHistoMassBins();         Float_t massmax   = GetHistogramRanges()->GetHistoMassMax(); 	       Float_t massmin   = GetHistogramRanges()->GetHistoMassMin();
   Int_t nasymbins   = GetHistogramRanges()->GetHistoAsymmetryBins();    Float_t asymmax   = GetHistogramRanges()->GetHistoAsymmetryMax();    Float_t asymmin   = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t pOverEmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t pOverEmin = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t EOverPmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t EOverPmin = GetHistogramRanges()->GetHistoPOverEMin();
   Int_t ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         Float_t dedxmax   = GetHistogramRanges()->GetHistodEdxMax();         Float_t dedxmin   = GetHistogramRanges()->GetHistodEdxMin();
   Int_t ndRbins     = GetHistogramRanges()->GetHistodRBins();           Float_t dRmax     = GetHistogramRanges()->GetHistodRMax();           Float_t dRmin     = GetHistogramRanges()->GetHistodRMin();
   Int_t ntimebins   = GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin   = GetHistogramRanges()->GetHistoTimeMin();       
@@ -1966,14 +1900,15 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhEtaPhiECharged);	
     }
     
-    fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fh1pOverE->SetYTitle("p/E");
-    fh1pOverE->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fh1pOverE);
+    fh1EOverP = new TH2F("h1EOverP","TRACK matches E/p",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fh1EOverP->SetYTitle("E/p");
+    fh1EOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fh1EOverP);
     
-    fh1dR = new TH1F("h1dR","TRACK matches dR",ndRbins,dRmin,dRmax);
-    fh1dR->SetXTitle("#Delta R (rad)");
-    outputContainer->Add(fh1dR) ;
+    fh2dR = new TH2F("h2dR","TRACK matches dR",nptbins,ptmin,ptmax,ndRbins,dRmin,dRmax);
+    fh2dR->SetXTitle("#Delta R (rad)");
+    fh2dR->SetXTitle("E cluster (GeV)");
+    outputContainer->Add(fh2dR) ;
     
     fh2MatchdEdx = new TH2F("h2MatchdEdx","dE/dx vs. p for all matches",nptbins,ptmin,ptmax,ndedxbins,dedxmin,dedxmax);
     fh2MatchdEdx->SetXTitle("p (GeV/c)");
@@ -1985,10 +1920,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fh2EledEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fh2EledEdx) ;
     
-    fh1pOverER02 = new TH2F("h1pOverER02","TRACK matches p/E, all",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fh1pOverER02->SetYTitle("p/E");
-    fh1pOverER02->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fh1pOverER02);	
+    fh1EOverPR02 = new TH2F("h1EOverPR02","TRACK matches E/p, all",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fh1EOverPR02->SetYTitle("E/p");
+    fh1EOverPR02->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fh1EOverPR02);	
   }
   
   if(fFillAllPi0Histo){
@@ -2153,7 +2088,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   }
   
   //Calo cells
-  fhNCells  = new TH1F ("hNCells","# cells", ncebins,ncemin,ncemax); 
+  fhNCells  = new TH1F ("hNCells","# cells", ncebins,ncemin+0.5,ncemax); 
   fhNCells->SetXTitle("n cells");
   outputContainer->Add(fhNCells);
   
@@ -2324,12 +2259,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhTimeMod);
   }
   
-  fhNClustersMod  = new TH2F ("hNClusters_Mod","# clusters vs Module", nclbins,nclmin,nclmax,fNModules,0,fNModules); 
+  fhNClustersMod  = new TH2F ("hNClusters_Mod","# clusters vs Module", nclbins,nclmin+0.5,nclmax,fNModules,0,fNModules); 
   fhNClustersMod->SetXTitle("number of clusters");
   fhNClustersMod->SetYTitle("Module");
   outputContainer->Add(fhNClustersMod);
   
-  fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", ncebins,ncemin,ncemax,fNModules,0,fNModules); 
+  fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", ncebins,ncemin+0.5,ncemax,fNModules,0,fNModules); 
   fhNCellsMod->SetXTitle("n cells");
   fhNCellsMod->SetYTitle("Module");
   outputContainer->Add(fhNCellsMod);
@@ -2526,10 +2461,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     //Track Matching 
     
-    fhMCEle1pOverE = new TH2F("hMCEle1pOverE","TRACK matches p/E, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fhMCEle1pOverE->SetYTitle("p/E");
-    fhMCEle1pOverE->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCEle1pOverE);
+    fhMCEle1EOverP = new TH2F("hMCEle1EOverP","TRACK matches E/p, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCEle1EOverP->SetYTitle("E/p");
+    fhMCEle1EOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCEle1EOverP);
     
     fhMCEle1dR = new TH1F("hMCEle1dR","TRACK matches dR, MC electrons",ndRbins,dRmin,dRmax);
     fhMCEle1dR->SetXTitle("#Delta R (rad)");
@@ -2540,10 +2475,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCEle2MatchdEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fhMCEle2MatchdEdx);
     
-    fhMCChHad1pOverE = new TH2F("hMCChHad1pOverE","TRACK matches p/E, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fhMCChHad1pOverE->SetYTitle("p/E");
-    fhMCChHad1pOverE->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCChHad1pOverE);
+    fhMCChHad1EOverP = new TH2F("hMCChHad1EOverP","TRACK matches E/p, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCChHad1EOverP->SetYTitle("E/p");
+    fhMCChHad1EOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCChHad1EOverP);
     
     fhMCChHad1dR = new TH1F("hMCChHad1dR","TRACK matches dR, MC charged hadrons",ndRbins,dRmin,dRmax);
     fhMCChHad1dR->SetXTitle("#Delta R (rad)");
@@ -2554,10 +2489,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCChHad2MatchdEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fhMCChHad2MatchdEdx);
     
-    fhMCNeutral1pOverE = new TH2F("hMCNeutral1pOverE","TRACK matches p/E, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fhMCNeutral1pOverE->SetYTitle("p/E");
-    fhMCNeutral1pOverE->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCNeutral1pOverE);
+    fhMCNeutral1EOverP = new TH2F("hMCNeutral1EOverP","TRACK matches E/p, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCNeutral1EOverP->SetYTitle("E/p");
+    fhMCNeutral1EOverP->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCNeutral1EOverP);
     
     fhMCNeutral1dR = new TH1F("hMCNeutral1dR","TRACK matches dR, MC neutrals",ndRbins,dRmin,dRmax);
     fhMCNeutral1dR->SetXTitle("#Delta R (rad)");
@@ -2568,20 +2503,20 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCNeutral2MatchdEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fhMCNeutral2MatchdEdx);
     
-    fhMCEle1pOverER02 = new TH2F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fhMCEle1pOverER02->SetYTitle("p/E");
-    fhMCEle1pOverER02->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCEle1pOverER02);
+    fhMCEle1EOverPR02 = new TH2F("hMCEle1EOverPR02","TRACK matches E/p, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCEle1EOverPR02->SetYTitle("E/p");
+    fhMCEle1EOverPR02->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCEle1EOverPR02);
     
-    fhMCChHad1pOverER02 = new TH2F("hMCChHad1pOverER02","TRACK matches p/E, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fhMCChHad1pOverER02->SetYTitle("p/E");
-    fhMCChHad1pOverER02->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCChHad1pOverER02);
+    fhMCChHad1EOverPR02 = new TH2F("hMCChHad1EOverPR02","TRACK matches E/p, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCChHad1EOverPR02->SetYTitle("E/p");
+    fhMCChHad1EOverPR02->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCChHad1EOverPR02);
     
-    fhMCNeutral1pOverER02 = new TH2F("hMCNeutral1pOverER02","TRACK matches p/E, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
-    fhMCNeutral1pOverER02->SetYTitle("p/E");
-    fhMCNeutral1pOverER02->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCNeutral1pOverER02);
+    fhMCNeutral1EOverPR02 = new TH2F("hMCNeutral1EOverPR02","TRACK matches E/p, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCNeutral1EOverPR02->SetYTitle("E/p");
+    fhMCNeutral1EOverPR02->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCNeutral1EOverPR02);
   }
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
@@ -2597,13 +2532,16 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
   
   Int_t icol =-1, irow=-1,iRCU = -1;   
   Int_t imod = GetModuleNumberCellIndexes(absID, fCalorimeter, icol, irow, iRCU);
-  
+    
   if(fCalorimeter=="EMCAL")
   {
     //Get close cells index, energy and time, not in corners
-    Int_t absID1 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow+1, icol);
-    Int_t absID2 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow-1, icol);
- 
+    
+    Int_t absID1 = -1;
+    Int_t absID2 = -1;
+    
+    if( irow < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = GetCaloUtils()->GetEMCALGeometry()->GetAbsCellIdFromCellIndexes(imod, irow+1, icol);
+    if( irow > 0 )                                absID2 = GetCaloUtils()->GetEMCALGeometry()->GetAbsCellIdFromCellIndexes(imod, irow-1, icol);
     
     // In case of cell in eta = 0 border, depending on SM shift the cross cell index
     Int_t absID3 = -1;
@@ -2611,18 +2549,20 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
     
     if     ( icol == AliEMCALGeoParams::fgkEMCALCols - 1 && !(imod%2) )
     {
-      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, 0);
-      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol-1); 
+      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod+1, irow, 0);
+      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod  , irow, icol-1); 
     }
     else if( icol == 0 && imod%2 )
     {
-      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol+1);
-      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, AliEMCALGeoParams::fgkEMCALCols-1); 
+      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod  , irow, icol+1);
+      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod-1, irow, AliEMCALGeoParams::fgkEMCALCols-1); 
     }
     else
     {
-      absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol+1);
-      absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol-1);
+      if( icol < AliEMCALGeoParams::fgkEMCALCols-1 )
+        absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol+1);
+      if( icol > 0 )    
+        absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol-1);
     }
     
     //Recalibrate cell energy if needed

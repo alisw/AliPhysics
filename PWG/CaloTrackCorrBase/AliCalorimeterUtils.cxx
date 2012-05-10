@@ -221,7 +221,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     {
       AliOADBContainer *contTRF=new AliOADBContainer("");
       
-      contTRF->InitFromFile(Form("%s/EMCALTimeRecalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeRecalib");
+      contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeCalib");
       
       TObjArray *trecal=(TObjArray*)contTRF->GetObject(runnumber); 
       
@@ -231,33 +231,28 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         
         if(trecalpass)
         {
-          TObjArray *trecalib=(TObjArray*)trecalpass->FindObject("TimeRecalib");
-          
-          if(trecalib)
+          printf("AliCalorimeterUtils::SetOADBParameters() - Time Recalibrate EMCAL \n");
+          for (Int_t ibc = 0; ibc < 4; ++ibc) 
           {
-            printf("AliCalorimeterUtils::SetOADBParameters() - Time Recalibrate EMCAL \n");
-            for (Int_t ibc = 0; ibc < 4; ++ibc) 
+            TH1F *h = GetEMCALChannelTimeRecalibrationFactors(ibc);
+            
+            if (h)
+              delete h;
+            
+            h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+            
+            if (!h) 
             {
-              TH1F *h = GetEMCALChannelTimeRecalibrationFactors(ibc);
-              
-              if (h)
-                delete h;
-              
-              h = (TH1F*)trecalib->FindObject(Form("hAllTimeAvBC%d",ibc));
-              
-              if (!h) 
-              {
-                AliError(Form("Could not load hAllTimeAvBC%d",ibc));
-                continue;
-              }
-              
-              h->SetDirectory(0);
-              
-              SetEMCALChannelTimeRecalibrationFactors(ibc,h);
-            } // bunch crossing loop
-          }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 1\n"); // array ok
-        }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 2\n"); // array pass ok
-      }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 3\n");  // run number array ok
+              AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+              continue;
+            }
+            
+            h->SetDirectory(0);
+            
+            SetEMCALChannelTimeRecalibrationFactors(ibc,h);
+          } // bunch crossing loop
+        }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 1\n"); // array pass ok
+      }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate time EMCAL 2\n");  // run number array ok
       
     } // Recalibration on    
     

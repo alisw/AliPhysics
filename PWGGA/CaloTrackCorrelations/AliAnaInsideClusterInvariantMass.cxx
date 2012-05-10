@@ -87,8 +87,16 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       
       fhMassM02NLocMax1[i][j]= 0;
       fhMassM02NLocMax2[i][j]= 0;
-      fhMassM02NLocMaxN[i][j]= 0;      
-      
+      fhMassM02NLocMaxN[i][j]= 0;   
+      fhMassDispEtaNLocMax1[i][j]= 0;
+      fhMassDispEtaNLocMax2[i][j]= 0;
+      fhMassDispEtaNLocMaxN[i][j]= 0;      
+      fhMassDispPhiNLocMax1[i][j]= 0;
+      fhMassDispPhiNLocMax2[i][j]= 0;
+      fhMassDispPhiNLocMaxN[i][j]= 0;      
+      fhMassDispAsyNLocMax1[i][j]= 0;
+      fhMassDispAsyNLocMax2[i][j]= 0;
+      fhMassDispAsyNLocMaxN[i][j]= 0;      
     }
     
     fhTrackMatchedDEtaLocMax1[i] = 0; 
@@ -115,6 +123,19 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     fhMassM02NLocMax1Ebin[i] = 0 ;
     fhMassM02NLocMax2Ebin[i] = 0 ;
     fhMassM02NLocMaxNEbin[i] = 0 ;
+    
+    fhMassDispEtaNLocMax1Ebin[i] = 0 ;
+    fhMassDispEtaNLocMax2Ebin[i] = 0 ;
+    fhMassDispEtaNLocMaxNEbin[i] = 0 ;
+    
+    fhMassDispPhiNLocMax1Ebin[i] = 0 ;
+    fhMassDispPhiNLocMax2Ebin[i] = 0 ;
+    fhMassDispPhiNLocMaxNEbin[i] = 0 ;    
+    
+    fhMassDispAsyNLocMax1Ebin[i] = 0 ;
+    fhMassDispAsyNLocMax2Ebin[i] = 0 ;
+    fhMassDispAsyNLocMaxNEbin[i] = 0 ;    
+    
   }
   
   InitParameters();
@@ -227,6 +248,70 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhMassM02NLocMaxN[i][j]->SetYTitle("M (GeV/c^{2})");
       fhMassM02NLocMaxN[i][j]->SetXTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhMassM02NLocMaxN[i][j]) ;   
+      
+      
+      fhMassDispEtaNLocMax1[i][j]  = new TH2F(Form("hMassDispEtaNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                          Form("Invariant mass of 2 highest energy cells #sigma_{#eta #eta}^{2}, E > 7 GeV,%s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassDispEtaNLocMax1[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispEtaNLocMax1[i][j]->SetXTitle("#sigma_{#eta #eta}^{2}");
+      outputContainer->Add(fhMassDispEtaNLocMax1[i][j]) ;   
+      
+      fhMassDispEtaNLocMax2[i][j]  = new TH2F(Form("hMassDispEtaNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                          Form("Invariant mass of 2 local maxima cells #sigma_{#eta #eta}^{2}, E > 7 GeV, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassDispEtaNLocMax2[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispEtaNLocMax2[i][j]->SetXTitle("#sigma_{#eta #eta}^{2}");
+      outputContainer->Add(fhMassDispEtaNLocMax2[i][j]) ;   
+      
+      fhMassDispEtaNLocMaxN[i][j]  = new TH2F(Form("hMassDispEtaNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                          Form("Invariant mass of N>2 local maxima cells vs #sigma_{#eta #eta}^{2}, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassDispEtaNLocMaxN[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispEtaNLocMaxN[i][j]->SetXTitle("#sigma_{#eta #eta}^{2}");
+      outputContainer->Add(fhMassDispEtaNLocMaxN[i][j]) ;   
+      
+      fhMassDispPhiNLocMax1[i][j]  = new TH2F(Form("hMassDispPhiNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                           Form("Invariant mass of 2 highest energy cells #sigma_{#phi #phi}^{2}, E > 7 GeV,%s %s",ptype[i].Data(),sMatched[j].Data()),
+                                           ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassDispPhiNLocMax1[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispPhiNLocMax1[i][j]->SetXTitle("#sigma_{#phi #phi}^{2}");
+      outputContainer->Add(fhMassDispPhiNLocMax1[i][j]) ;   
+      
+      fhMassDispPhiNLocMax2[i][j]  = new TH2F(Form("hMassDispPhiNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                           Form("Invariant mass of 2 local maxima cells #sigma_{#phi #phi}^{2}, E > 7 GeV, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                           ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassDispPhiNLocMax2[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispPhiNLocMax2[i][j]->SetXTitle("#sigma_{#phi #phi}^{2}");
+      outputContainer->Add(fhMassDispPhiNLocMax2[i][j]) ;   
+      
+      fhMassDispPhiNLocMaxN[i][j]  = new TH2F(Form("hMassDispPhiNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                           Form("Invariant mass of N>2 local maxima cells vs #sigma_{#phi #phi}^{2}, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                           ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+      fhMassDispPhiNLocMaxN[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispPhiNLocMaxN[i][j]->SetXTitle("#sigma_{#phi #phi}^{2}");
+      outputContainer->Add(fhMassDispPhiNLocMaxN[i][j]) ;   
+
+      fhMassDispAsyNLocMax1[i][j]  = new TH2F(Form("hMassDispAsyNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                           Form("Invariant mass of 2 highest energy cells A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2}), E > 7 GeV,%s %s",ptype[i].Data(),sMatched[j].Data()),
+                                           200,-1,1,mbins,mmin,mmax); 
+      fhMassDispAsyNLocMax1[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispAsyNLocMax1[i][j]->SetXTitle("A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2})");
+      outputContainer->Add(fhMassDispAsyNLocMax1[i][j]) ;   
+      
+      fhMassDispAsyNLocMax2[i][j]  = new TH2F(Form("hMassDispAsyNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                           Form("Invariant mass of 2 local maxima cells A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2}), E > 7 GeV, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                           200,-1,1,mbins,mmin,mmax); 
+      fhMassDispAsyNLocMax2[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispAsyNLocMax2[i][j]->SetXTitle("A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2})");
+      outputContainer->Add(fhMassDispAsyNLocMax2[i][j]) ;   
+      
+      fhMassDispAsyNLocMaxN[i][j]  = new TH2F(Form("hMassDispAsyNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                           Form("Invariant mass of N>2 local maxima cells vsA = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2}), %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                           200,-1,1,mbins,mmin,mmax); 
+      fhMassDispAsyNLocMaxN[i][j]->SetYTitle("M (GeV/c^{2})");
+      fhMassDispAsyNLocMaxN[i][j]->SetXTitle("A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2})");
+      outputContainer->Add(fhMassDispAsyNLocMaxN[i][j]) ;   
       
       
       fhNLocMax[i][j]     = new TH2F(Form("hNLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
@@ -388,7 +473,71 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
                                         ssbins,ssmin,ssmax,mbins,mmin,mmax); 
     fhMassM02NLocMaxNEbin[i]->SetYTitle("M (GeV/c^{2})");
     fhMassM02NLocMaxNEbin[i]->SetXTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhMassM02NLocMaxNEbin[i]) ;   
+    outputContainer->Add(fhMassM02NLocMaxNEbin[i]) ; 
+    
+    
+    fhMassDispEtaNLocMax1Ebin[i]  = new TH2F(Form("hMassDispEtaNLocMax1Ebin%d",i),
+                                         Form("Invariant mass of 2 highest energy cells #sigma_{#eta #eta}^{2}, E bin %d",i),
+                                         ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassDispEtaNLocMax1Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispEtaNLocMax1Ebin[i]->SetXTitle("#sigma_{#eta #eta}^{2}");
+    outputContainer->Add(fhMassDispEtaNLocMax1Ebin[i]) ;   
+    
+    fhMassDispEtaNLocMax2Ebin[i]  = new TH2F(Form("hMassDispEtaNLocMax2Ebin%d",i),
+                                         Form("Invariant mass of 2 local maxima cells #sigma_{#eta #eta}^{2}, E bin %d",i),
+                                         ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassDispEtaNLocMax2Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispEtaNLocMax2Ebin[i]->SetXTitle("#sigma_{#eta #eta}^{2}");
+    outputContainer->Add(fhMassDispEtaNLocMax2Ebin[i]) ;   
+    
+    fhMassDispEtaNLocMaxNEbin[i]  = new TH2F(Form("hMassDispEtaNLocMaxNEbin%d",i),
+                                         Form("Invariant mass of N>2 local maxima cells vs #sigma_{#eta #eta}^{2}, E bin %d",i),
+                                         ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassDispEtaNLocMaxNEbin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispEtaNLocMaxNEbin[i]->SetXTitle("#sigma_{#eta #eta}^{2}");
+    outputContainer->Add(fhMassDispEtaNLocMaxNEbin[i]) ;   
+    
+    fhMassDispPhiNLocMax1Ebin[i]  = new TH2F(Form("hMassDispPhiNLocMax1Ebin%d",i),
+                                          Form("Invariant mass of 2 highest energy cells #sigma_{#phi #phi}^{2}, E bin %d",i),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassDispPhiNLocMax1Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispPhiNLocMax1Ebin[i]->SetXTitle("#sigma_{#phi #phi}^{2}");
+    outputContainer->Add(fhMassDispPhiNLocMax1Ebin[i]) ;   
+    
+    fhMassDispPhiNLocMax2Ebin[i]  = new TH2F(Form("hMassDispPhiNLocMax2Ebin%d",i),
+                                          Form("Invariant mass of 2 local maxima cells #sigma_{#phi #phi}^{2}, E bin %d",i),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassDispPhiNLocMax2Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispPhiNLocMax2Ebin[i]->SetXTitle("#sigma_{#phi #phi}^{2}");
+    outputContainer->Add(fhMassDispPhiNLocMax2Ebin[i]) ;   
+    
+    fhMassDispPhiNLocMaxNEbin[i]  = new TH2F(Form("hMassDispPhiNLocMaxNEbin%d",i),
+                                          Form("Invariant mass of N>2 local maxima cells vs #sigma_{#phi #phi}^{2}, E bin %d",i),
+                                          ssbins,ssmin,ssmax,mbins,mmin,mmax); 
+    fhMassDispPhiNLocMaxNEbin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispPhiNLocMaxNEbin[i]->SetXTitle("#sigma_{#phi #phi}^{2}");
+    outputContainer->Add(fhMassDispPhiNLocMaxNEbin[i]) ;   
+    
+    fhMassDispAsyNLocMax1Ebin[i]  = new TH2F(Form("hMassDispAsyNLocMax1Ebin%d",i),
+                                          Form("Invariant mass of 2 highest energy cells A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2}), E bin %d",i),
+                                          200,-1,1,mbins,mmin,mmax); 
+    fhMassDispAsyNLocMax1Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispAsyNLocMax1Ebin[i]->SetXTitle("A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2})");
+    outputContainer->Add(fhMassDispAsyNLocMax1Ebin[i]) ;   
+    
+    fhMassDispAsyNLocMax2Ebin[i]  = new TH2F(Form("hMassDispAsyNLocMax2Ebin%d",i),
+                                          Form("Invariant mass of 2 local maxima cells A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2}), E bin %d",i),
+                                          200,-1,1,mbins,mmin,mmax); 
+    fhMassDispAsyNLocMax2Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispAsyNLocMax2Ebin[i]->SetXTitle("A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2})");
+    outputContainer->Add(fhMassDispAsyNLocMax2Ebin[i]) ;   
+    
+    fhMassDispAsyNLocMaxNEbin[i]  = new TH2F(Form("hMassDispAsyNLocMaxNEbin%d",i),
+                                          Form("Invariant mass of N>2 local maxima cells vs A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2}), E bin %d",i),
+                                          200,-1,1,mbins,mmin,mmax); 
+    fhMassDispAsyNLocMaxNEbin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassDispAsyNLocMaxNEbin[i]->SetXTitle("A = (#sigma_{#phi #phi}^{2} - #sigma_{#eta #eta}^{2}) / (#sigma_{#phi #phi}^{2} + #sigma_{#eta #eta}^{2})");
+    outputContainer->Add(fhMassDispAsyNLocMaxNEbin[i]) ;   
   }  
   
   for(Int_t i = 0; i < n; i++)
@@ -577,18 +726,29 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     Int_t   nc = cluster->GetNCells();
     Float_t bd = cluster->GetDistanceToBadChannel() ; 
 
+    
     //If too small or big E or low number of cells, or close to a bad channel skip it
     if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells || bd < fMinBadDist) continue ; 
     
     //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
     //       en,GetMinEnergy(), GetMaxEnergy(), nc, fMinNCells, bd, fMinBadDist);
     
+    // Get more Shower Shape parameters
+    Float_t ll0  = 0., ll1  = 0.;
+    Float_t disp= 0., dispEta = 0., dispPhi    = 0.; 
+    Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;  
    
+    GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), GetReader()->GetInputEvent()->GetEMCALCells(), cluster,
+                                                                                 ll0, ll1, disp, dispEta, dispPhi, sEta, sPhi, sEtaPhi);
+    
+    Float_t dispAsy = -1;
+    if(dispEta+dispPhi >0 ) dispAsy = (dispPhi-dispEta) / (dispPhi+dispEta);
+    
     Int_t    nMax = 0;
-    Double_t mass = 0;
-    Double_t angle= 0;
+    Double_t mass = 0., angle = 0.;
+    Double_t e1   = 0., e2    = 0.;
     Int_t pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(cluster,cells,GetCaloUtils(),
-                                                                               GetVertex(0), nMax, mass, angle);
+                                                                               GetVertex(0), nMax, mass, angle,e1,e2);
                                                                     
     if (nMax <= 0) 
     {
@@ -653,57 +813,90 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         else if( nMax >= 3  ) { fhTrackMatchedDEtaLocMaxN[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiLocMaxN[mcindex]->Fill(en,dR); }
       }
       
-    }  
-
+    } 
+    
+    Int_t ebin = -1;
+    if(en > 6  && en <= 10) ebin = 0; 
+    if(en > 10 && en <= 15) ebin = 1;
+    if(en > 15 && en <= 20) ebin = 2;
+    if(en > 20)             ebin = 3; 
+    
     if     (nMax==1) 
     { 
       if( en > 7 ) 
       {      
-        fhMassM02NLocMax1[0]  [matched]->Fill(l0,  mass ); 
+        fhMassM02NLocMax1    [0][matched]->Fill(l0     ,  mass ); 
+        fhMassDispEtaNLocMax1[0][matched]->Fill(dispEta,  mass ); 
+        fhMassDispPhiNLocMax1[0][matched]->Fill(dispPhi,  mass ); 
+        fhMassDispAsyNLocMax1[0][matched]->Fill(dispAsy,  mass ); 
+
         if(IsDataMC()) 
-          fhMassM02NLocMax1[mcindex][matched]->Fill(l0,  mass ); 
+        {
+          fhMassM02NLocMax1    [mcindex][matched]->Fill(l0     ,  mass ); 
+          fhMassDispEtaNLocMax1[mcindex][matched]->Fill(dispEta,  mass ); 
+          fhMassDispPhiNLocMax1[mcindex][matched]->Fill(dispPhi,  mass ); 
+          fhMassDispAsyNLocMax1[mcindex][matched]->Fill(dispAsy,  mass ); 
+        }
       }
       
-      if(!matched)
+      if(!matched && ebin >= 0)
       {
-        if(en > 6  && en <= 10) fhMassM02NLocMax1Ebin[0]->Fill(l0,  mass ); 
-        if(en > 10 && en <= 15) fhMassM02NLocMax1Ebin[1]->Fill(l0,  mass ); 
-        if(en > 15 && en <= 20) fhMassM02NLocMax1Ebin[2]->Fill(l0,  mass ); 
-        if(en > 20)             fhMassM02NLocMax1Ebin[3]->Fill(l0,  mass ); 
+        fhMassM02NLocMax1Ebin    [ebin]->Fill(l0     ,  mass );
+        fhMassDispEtaNLocMax1Ebin[ebin]->Fill(dispEta,  mass );
+        fhMassDispPhiNLocMax1Ebin[ebin]->Fill(dispPhi,  mass );
+        fhMassDispAsyNLocMax1Ebin[ebin]->Fill(dispAsy,  mass );
       }
     }  
     else if(nMax==2) 
     {
-      if( en > 7 )
-      {
-        fhMassM02NLocMax2[0][matched]  ->Fill(l0,  mass ); 
+      if( en > 7 ) 
+      {      
+        fhMassM02NLocMax2    [0][matched]->Fill(l0     ,  mass ); 
+        fhMassDispEtaNLocMax2[0][matched]->Fill(dispEta,  mass ); 
+        fhMassDispPhiNLocMax2[0][matched]->Fill(dispPhi,  mass ); 
+        fhMassDispAsyNLocMax2[0][matched]->Fill(dispAsy,  mass ); 
+        
         if(IsDataMC()) 
-          fhMassM02NLocMax2[mcindex][matched]->Fill(l0,  mass ); 
+        {
+          fhMassM02NLocMax2    [mcindex][matched]->Fill(l0     ,  mass ); 
+          fhMassDispEtaNLocMax2[mcindex][matched]->Fill(dispEta,  mass ); 
+          fhMassDispPhiNLocMax2[mcindex][matched]->Fill(dispPhi,  mass ); 
+          fhMassDispAsyNLocMax2[mcindex][matched]->Fill(dispAsy,  mass ); 
+        }
       }
       
-      if(!matched)
+      if(!matched && ebin >= 0)
       {
-        if(en > 6  && en <= 10) fhMassM02NLocMax2Ebin[0]->Fill(l0,  mass ); 
-        if(en > 10 && en <= 15) fhMassM02NLocMax2Ebin[1]->Fill(l0,  mass ); 
-        if(en > 15 && en <= 20) fhMassM02NLocMax2Ebin[2]->Fill(l0,  mass ); 
-        if(en > 20)             fhMassM02NLocMax2Ebin[3]->Fill(l0,  mass );       
-      }
+        fhMassM02NLocMax2Ebin    [ebin]->Fill(l0     ,  mass );
+        fhMassDispEtaNLocMax2Ebin[ebin]->Fill(dispEta,  mass );
+        fhMassDispPhiNLocMax2Ebin[ebin]->Fill(dispPhi,  mass );
+        fhMassDispAsyNLocMax2Ebin[ebin]->Fill(dispAsy,  mass );
+      }   
     }
     else if(nMax >2) 
     {
       if( en > 7 ) 
       {      
-        fhMassM02NLocMaxN[0]  [matched]->Fill(l0  ,mass );
+        fhMassM02NLocMaxN    [0][matched]->Fill(l0     ,  mass ); 
+        fhMassDispEtaNLocMaxN[0][matched]->Fill(dispEta,  mass ); 
+        fhMassDispPhiNLocMaxN[0][matched]->Fill(dispPhi,  mass ); 
+        fhMassDispAsyNLocMaxN[0][matched]->Fill(dispAsy,  mass ); 
+        
         if(IsDataMC()) 
-          fhMassM02NLocMaxN[mcindex][matched]->Fill(l0,  mass ); 
+        {
+          fhMassM02NLocMaxN    [mcindex][matched]->Fill(l0     ,  mass ); 
+          fhMassDispEtaNLocMaxN[mcindex][matched]->Fill(dispEta,  mass ); 
+          fhMassDispPhiNLocMaxN[mcindex][matched]->Fill(dispPhi,  mass ); 
+          fhMassDispAsyNLocMaxN[mcindex][matched]->Fill(dispAsy,  mass ); 
+        }
       }
       
-      if(!matched)
+      if(!matched && ebin >= 0)
       {
-        if(en > 6  && en <= 10) fhMassM02NLocMaxNEbin[0]->Fill(l0,  mass ); 
-        if(en > 10 && en <= 15) fhMassM02NLocMaxNEbin[1]->Fill(l0,  mass ); 
-        if(en > 15 && en <= 20) fhMassM02NLocMaxNEbin[2]->Fill(l0,  mass ); 
-        if(en > 20)             fhMassM02NLocMaxNEbin[3]->Fill(l0,  mass );
+        fhMassM02NLocMaxNEbin    [ebin]->Fill(l0     ,  mass );
+        fhMassDispEtaNLocMaxNEbin[ebin]->Fill(dispEta,  mass );
+        fhMassDispPhiNLocMaxNEbin[ebin]->Fill(dispPhi,  mass );
+        fhMassDispAsyNLocMaxNEbin[ebin]->Fill(dispAsy,  mass );
       }
     }
     
