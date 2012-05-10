@@ -107,7 +107,13 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb():
      fhTDCraw[i] = 0x0;  
      fhTDC[i] = 0x0;  
    }
-   for(int i=0; i<4; i++) fhPMCvsPMQ[i] = 0x0;  
+   for(int i=0; i<4; i++){
+     fhZNCPMQiPMC[i] = 0x0;
+     fhZNAPMQiPMC[i] = 0x0;
+     fhZPCPMQiPMC[i] = 0x0;
+     fhZPAPMQiPMC[i] = 0x0;
+     fhPMCvsPMQ[i] = 0x0;
+   }  
 }   
 
 //________________________________________________________________________
@@ -159,7 +165,13 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const char *name):
      fhTDCraw[i] = 0x0;  
      fhTDC[i] = 0x0;  
    }
-   for(int i=0; i<4; i++) fhPMCvsPMQ[i] = 0x0;  
+   for(int i=0; i<4; i++){
+     fhZNCPMQiPMC[i] = 0x0;
+     fhZNAPMQiPMC[i] = 0x0;
+     fhZPCPMQiPMC[i] = 0x0;
+     fhZPAPMQiPMC[i] = 0x0;
+     fhPMCvsPMQ[i] = 0x0;
+   }  
   
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class()); 
@@ -230,6 +242,13 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana
      fhTDC[i] = ana.fhTDC[i];  
    }
    for(int i=0; i<4; i++) fhPMCvsPMQ[i] = ana.fhPMCvsPMQ[i];  
+   for(int i=0; i<4; i++){
+     fhZNCPMQiPMC[i] = ana.fhZNCPMQiPMC[i];
+     fhZNAPMQiPMC[i] = ana.fhZNAPMQiPMC[i];
+     fhZPCPMQiPMC[i] = ana.fhZPCPMQiPMC[i];
+     fhZPAPMQiPMC[i] = ana.fhZPAPMQiPMC[i];
+     fhPMCvsPMQ[i] = ana.fhPMCvsPMQ[i];
+   }  
 }
  
 //________________________________________________________________________
@@ -284,6 +303,29 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
      sprintf(hname,"hZPAPMlg%d",i);
      fhZPAPMlg[i] = new TH1F(hname, hname, 200., -50., 50000);	 
      fOutput->Add(fhZPAPMlg[i]);
+     //
+     if(i<4){
+       //
+       char hnamenc[20];
+       sprintf(hnamenc, "hZNCPMQ%dPMC",i+1);
+       fhZNCPMQiPMC[i] = new TH1F(hnamenc, hnamenc, 100, 0., 1.);
+       fOutput->Add(fhZNCPMQiPMC[i]);
+       //
+       char hnamena[20];
+       sprintf(hnamena, "hZNAPMQ%dPMC",i+1);
+       fhZNAPMQiPMC[i] = new TH1F(hnamena, hnamena, 100, 0., 1.);
+       fOutput->Add(fhZNAPMQiPMC[i]);
+       //
+       char hnamepc[20];
+       sprintf(hnamepc, "hZPCPMQ%dPMC",i+1);
+       fhZPCPMQiPMC[i] = new TH1F(hnamepc, hnamepc, 100, 0., 1.);
+       fOutput->Add(fhZPCPMQiPMC[i]);
+       //
+       char hnamepa[20];
+       sprintf(hnamepa, "hZPAPMQ%dPMC",i+1);
+       fhZPAPMQiPMC[i] = new TH1F(hnamepa, hnamepa, 100, 0., 1.);
+       fOutput->Add(fhZPAPMQiPMC[i]);
+     }
    }
    for(int i=0; i<6; i++){
      if(i==0){
@@ -503,6 +545,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
         for(int i=0; i<5; i++){
 	   fhZNCPM[i]->Fill(towZNC[i]);
 	   fhZNCPMlg[i]->Fill(towZNClg[i]);
+	   if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
 	}
 	fhPMCvsPMQ[0]->Fill(towZNC[1]+towZNC[2]+towZNC[3]+towZNC[4], towZNC[0]);
       }
@@ -510,6 +553,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
         for(int i=0; i<5; i++){
 	   fhZPCPM[i]->Fill(towZPC[i]);
 	   fhZPCPMlg[i]->Fill(towZPClg[i]);
+	   if(((i<4) && towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
 	}
 	fhPMCvsPMQ[1]->Fill(towZPC[1]+towZPC[2]+towZPC[3]+towZPC[4], towZPC[0]);
       }
@@ -517,6 +561,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
         for(int i=0; i<5; i++){
 	   fhZNAPM[i]->Fill(towZNA[i]);
 	   fhZNAPMlg[i]->Fill(towZNAlg[i]);
+	   if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
 	}
 	fhPMCvsPMQ[2]->Fill(towZNA[1]+towZNA[2]+towZNA[3]+towZNA[4], towZNA[0]);
       }
@@ -524,6 +569,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
         for(int i=0; i<5; i++){
 	   fhZPAPM[i]->Fill(towZPA[i]);
 	   fhZPAPMlg[i]->Fill(towZPAlg[i]);
+	   if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
 	}
 	fhPMCvsPMQ[3]->Fill(towZPA[1]+towZPA[2]+towZPA[3]+towZPA[4], towZPA[0]);
       }
@@ -627,21 +673,25 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       for(int i=0; i<5; i++){
          fhZNCPM[i]->Fill(towZNC[i]);
          fhZNCPMlg[i]->Fill(towZNClg[i]);
+	 if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
       }
       fhPMCvsPMQ[0]->Fill(towZNC[1]+towZNC[2]+towZNC[3]+towZNC[4], towZNC[0]);
       for(int i=0; i<5; i++){
          fhZPCPM[i]->Fill(towZPC[i]);
          fhZPCPMlg[i]->Fill(towZPClg[i]);
+	 if(((i<4) && towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
       }
       fhPMCvsPMQ[1]->Fill(towZPC[1]+towZPC[2]+towZPC[3]+towZPC[4], towZPC[0]);
       for(int i=0; i<5; i++){
          fhZNAPM[i]->Fill(towZNA[i]);
          fhZNAPMlg[i]->Fill(towZNAlg[i]);
+	 if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
       }
       fhPMCvsPMQ[2]->Fill(towZNA[1]+towZNA[2]+towZNA[3]+towZNA[4], towZNA[0]);
       for(int i=0; i<5; i++){
          fhZPAPM[i]->Fill(towZPA[i]);
          fhZPAPMlg[i]->Fill(towZPAlg[i]);
+	 if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
       }
       fhPMCvsPMQ[3]->Fill(towZPA[1]+towZPA[2]+towZPA[3]+towZPA[4], towZPA[0]);
       fhZEM[0]->Fill(energyZEM1);
