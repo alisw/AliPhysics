@@ -36,6 +36,7 @@
 #include <AliAnalysisDataContainer.h>
 #include "AliAnalysisManager.h"
 #include "AliESDtrack.h"
+#include "AliESDVertex.h"
 #include "AliVertexerTracks.h"
 #include "AliPID.h"
 #include "AliTPCPIDResponse.h"
@@ -388,9 +389,20 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH1F* hptGoodTr=new TH1F(hname.Data(),"Pt distribution of 'good' tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
     hptGoodTr->SetTitleOffset(1.3,"Y");
 
+    if(!fSimpleMode){
+      hname="hptGoodTrFromDaugh";
+      TH1F* hptGoodTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of 'good' candidate's daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+      hptGoodTrFromDaugh->SetTitleOffset(1.3,"Y");
+      fOutputTrack->Add(hptGoodTrFromDaugh);
+    }
+
     hname="hdistrGoodTr";
-    TH1F* hdistrGoodTr=new TH1F(hname.Data(),"Distribution of number of 'good' tracks per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
+    TH1F* hdistrGoodTr=new TH1F(hname.Data(),"Distribution of number of 'good' candidate's daughters per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
     hdistrGoodTr->SetTitleOffset(1.3,"Y");
+
+    hname="hdistrSelTr";
+    TH1F* hdistrSelTr=new TH1F(hname.Data(),"Distribution of number of Selected tracks per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
+    hdistrSelTr->SetTitleOffset(1.3,"Y");
 
     hname="hd0";
     TH1F* hd0=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of 'good' tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
@@ -406,13 +418,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(hnClsSPD);
     fOutputTrack->Add(hptGoodTr);
     fOutputTrack->Add(hdistrGoodTr);
+    fOutputTrack->Add(hdistrSelTr);
     fOutputTrack->Add(hd0);
     fOutputTrack->Add(hd0z);
 
     if(fReadMC){
       hname="hdistrFakeTr";
       TH1F* hdistrFakeTr=new TH1F(hname.Data(),"Distribution of number of fake tracks per event;no.fake-tracks/ev;Entries",4000,-0.5,3999.5);
-      hdistrGoodTr->SetTitleOffset(1.3,"Y");
+      hdistrFakeTr->SetTitleOffset(1.3,"Y");
 
       hname="hd0f";
       TH1F* hd0f=new TH1F(hname.Data(),"Impact parameter distribution of fake tracks;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
@@ -420,6 +433,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       hname="hptFakeTr";
       TH1F* hptFakeTr=new TH1F(hname.Data(),"Pt distribution of fake tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
       hptFakeTr->SetTitleOffset(1.3,"Y");
+      if(!fSimpleMode){
+	hname="hptFakeTrFromDaugh";
+	TH1F* hptFakeTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of fake tracks from daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+	hptFakeTrFromDaugh->SetTitleOffset(1.3,"Y");
+	fOutputTrack->Add(hptFakeTrFromDaugh);
+      }
 
       fOutputTrack->Add(hptFakeTr);
       fOutputTrack->Add(hdistrFakeTr);
@@ -946,6 +965,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   //count events with good vertex
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+
+  Double_t pos[3],cov[6];
+  vtx1->GetXYZ(pos);
+  vtx1->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+
   TString primTitle = vtx1->GetTitle();
   if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fNEntries->Fill(4);
 
@@ -1063,7 +1088,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   Int_t ntracks=0;
-  Int_t isGoodTrack=0, isFakeTrack=0;
+  Int_t isGoodTrack=0, isFakeTrack=0, isSelTrack=0;
 
   if(aod) ntracks=aod->GetNTracks();
 
@@ -1178,24 +1203,25 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  else fNEntries->Fill(9); 
 	}
 
-	if(isSimpleMode){
 
-	  if (track->Pt()>0.3 &&
-	      track->GetStatus()&AliESDtrack::kTPCrefit &&
-	      track->GetStatus()&AliESDtrack::kITSrefit &&
-	      /*nclsTot>3 &&*/
-	      nclsSPD>0) {//count good tracks
+	if (track->Pt()>0.3 &&
+	    track->GetStatus()&AliESDtrack::kTPCrefit &&
+	    track->GetStatus()&AliESDtrack::kITSrefit &&
+	    /*nclsTot>3 &&*/
+	    nclsSPD>0) {//count good tracks
 
 	    
-	    if(fReadMC && label<0) {
-	      ((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
-	      isFakeTrack++;	
-	    } else {
-	      ((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
-	      isGoodTrack++;
-	    }
+	  if(fReadMC && label<0) {
+	    ((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
+	    isFakeTrack++;	
+	  } else {
+	    ((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
+	    isGoodTrack++;
 	  }
-	} //simple mode: no IsSelected on tracks: use "manual" cuts   
+	}
+	if(fCuts->IsDaughterSelected(track,&vESD,fCuts->GetTrackCuts())){
+	  isSelTrack++;
+	}//select tracks for our analyses
       } //fill track histos
     } //end loop on tracks
 
@@ -1203,6 +1229,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(fOnOff[0]){
       if (fReadMC) ((TH1F*)fOutputTrack->FindObject("hdistrFakeTr"))->Fill(isFakeTrack);
       ((TH1F*)fOutputTrack->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
+      ((TH1F*)fOutputTrack->FindObject("hdistrSelTr"))->Fill(isSelTrack);
     }
 
     if(!isSimpleMode){
@@ -1253,12 +1280,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      
 	      if(fReadMC && label<0) {
 		isFakeTrack++;
-		((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
+		((TH1F*)fOutputTrack->FindObject("hptFakeTrFromDaugh"))->Fill(track->Pt());
 	   
 		((TH1F*)fOutputTrack->FindObject("hd0f"))->Fill(d->Getd0Prong(id));
 	      } else {
-		isGoodTrack++;
-		((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
+		((TH1F*)fOutputTrack->FindObject("hptGoodTrFromDaugh"))->Fill(track->Pt());
 		((TH1F*)fOutputTrack->FindObject("hd0"))->Fill(d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
 		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
@@ -1278,10 +1304,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  } //end acceptance and track cuts
 	} //end loop on tracks in the candidate
       } //end loop on candidates
-      if(fOnOff[0]){
-	if(fReadMC) ((TH1F*)fOutputTrack->FindObject("hdistrFakeTr"))->Fill(isFakeTrack);
-	((TH1F*)fOutputTrack->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
-      }
+      
     }
   } //end if on pid or track histograms
 
