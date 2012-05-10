@@ -47,6 +47,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   virtual void SetStandardCutsPbPb2011();
 
   Int_t GetPIDBitMask(AliAODRecoDecayHF *rd);
+  UInt_t GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
   void SetUseStrongPid(Int_t spid){fUseStrongPid=spid;}
@@ -64,6 +65,12 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
     return fUseImpParProdCorrCut;
   }
   
+  enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
+                   kTPCKaonLess1,kTPCKaonMore1Less2,kTPCKaonMore2Less3,kTPCKaonMore3,
+                   kTPCProtonLess1,kTPCProtonMore1Less2,kTPCProtonMore2Less3,kTPCProtonMore3,
+                   kTOFPionLess1,kTOFPionMore1Less2,kTOFPionMore2Less3,kTOFPionMore3,
+                   kTOFKaonLess1,kTOFKaonMore1Less2,kTOFKaonMore2Less3,kTOFKaonMore3,
+                   kTOFProtonLess1,kTOFProtonMore1Less2,kTOFProtonMore2Less3,kTOFProtonMore3};
  protected:
 
  private:
