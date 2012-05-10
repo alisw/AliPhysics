@@ -546,7 +546,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 				//Check if it is MC, depending on that assing the mc lable, time and e fraction
 				Double_t time    = 0;
 				Int_t    mclabel =-1;
-				Int_t    efrac   = 0;
+			        Double_t efrac   = 0;
 				if(cellsA->GetMCLabel(i) >= 0 && fgAODEmcalCells->GetMCLabel(i) < 0)
 				  {
 				    mclabel = cellsA->GetMCLabel(i) ;
@@ -616,7 +616,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 				//Check if it is MC, depending on that assing the mc lable, time and e fraction
 				Double_t time    = 0;
 				Int_t    mclabel =-1;
-				Int_t    efrac   = 0;
+				Double_t    efrac   = 0;
 				if(cellsP->GetMCLabel(i) >= 0 && fgAODPhosCells->GetMCLabel(i) < 0)
 				  {
 				    mclabel = cellsP->GetMCLabel(i) ;
