@@ -90,7 +90,9 @@ fMinPtCand(-1.),
 fMaxPtCand(100000.),
 fKeepSignalMC(kFALSE),
 fIsCandTrackSPDFirst(kFALSE),
-fMaxPtCandTrackSPDFirst(0.)
+fMaxPtCandTrackSPDFirst(0.),
+fApplySPDDeadPbPb2011(kFALSE),
+fRemoveTrackletOutliers(kFALSE)
 {
   //
   // Default Constructor
@@ -140,7 +142,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxPtCand(source.fMaxPtCand),
   fKeepSignalMC(source.fKeepSignalMC),
   fIsCandTrackSPDFirst(source.fIsCandTrackSPDFirst),
-  fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst)
+  fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst),
+  fApplySPDDeadPbPb2011(source.fApplySPDDeadPbPb2011),
+  fRemoveTrackletOutliers(source.fRemoveTrackletOutliers)
 {
   //
   // Copy constructor
@@ -202,6 +206,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fKeepSignalMC=source.fKeepSignalMC;
   fIsCandTrackSPDFirst=source.fIsCandTrackSPDFirst;
   fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
+  fApplySPDDeadPbPb2011=source.fApplySPDDeadPbPb2011;
+  fRemoveTrackletOutliers=source.fRemoveTrackletOutliers;
 
   if(source.GetTrackCuts()) {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*(source.GetTrackCuts()));}
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -391,6 +397,17 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
+  if(fRemoveTrackletOutliers){
+    Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
+    Double_t ntracklets=((AliAODEvent*)event)->GetTracklets()->GetNumberOfTracklets();
+    Double_t cutval=60.-0.08*ntracklets+1./50000.*ntracklets*ntracklets;
+    if(v0cent<cutval){
+      if(accept) fWhyRejection=2;      
+      fEvRejectionBits+=1<<kOutsideCentrality;
+      accept=kFALSE;
+    }
+  }
+
   return accept;
 }
 //---------------------------------------------------------------------------
@@ -450,6 +467,94 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     // we need either to have here the AOD Event, 
     // or to have the pileup vertex object
   }
+
+  if(fApplySPDDeadPbPb2011){
+    Bool_t deadSPDLay1PbPb2011[20][4]={
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE}
+    };
+    Bool_t deadSPDLay2PbPb2011[40][4]={
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kTRUE,kTRUE,kFALSE,kFALSE},
+      {kTRUE,kTRUE,kTRUE,kTRUE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE},
+      {kFALSE,kFALSE,kFALSE,kFALSE}     
+    };
+    Double_t xyz1[3],xyz2[3];
+    esdTrack.GetXYZAt(3.9,0.,xyz1);
+    esdTrack.GetXYZAt(7.6,0.,xyz2);
+    Double_t phi1=TMath::ATan2(xyz1[1],xyz1[0]);
+    if(phi1<0) phi1+=2*TMath::Pi();
+    Int_t lad1=phi1/(2.*TMath::Pi()/20.);
+    Double_t phi2=TMath::ATan2(xyz2[1],xyz2[0]);
+    if(phi2<0) phi2+=2*TMath::Pi();
+    Int_t lad2=phi2/(2.*TMath::Pi()/40.);
+    Int_t mod1=(xyz1[2]+14)/7.;
+    Int_t mod2=(xyz2[2]+14)/7.;
+    Bool_t lay1ok=kFALSE;
+    if(mod1>=0 && mod1<4 && lad1<20){
+      lay1ok=deadSPDLay1PbPb2011[lad1][mod1];
+    }
+    Bool_t lay2ok=kFALSE;
+    if(mod2>=0 && mod2<4 && lad2<40){
+      lay2ok=deadSPDLay2PbPb2011[lad2][mod2];
+    }
+    if(!lay1ok && !lay2ok) retval=kFALSE;
+  }
+
   return retval; 
 }
 //---------------------------------------------------------------------------

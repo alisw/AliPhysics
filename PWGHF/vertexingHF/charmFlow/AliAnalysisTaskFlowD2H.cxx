@@ -253,12 +253,18 @@ void AliAnalysisTaskFlowD2H::FillD0toKpi(const AliAODEvent *theAOD)
     if( !fCutsD0toKpi->IsInFiducialAcceptance(d0cand->Pt(),d0cand->Y(421)) )continue;
     Int_t topCut = fCutsD0toKpi->IsSelected( d0cand, AliRDHFCuts::kAll, NULL );
     if(!topCut) continue;
-    Double_t massD0=topCut>1?d0cand->InvMassD0bar():d0cand->InvMassD0();
     // TO HANDLE AUTOCORRELATIONS
     nIDs[0] = ( (AliAODTrack*)d0cand->GetDaughter(0) )->GetID();
     nIDs[1] = ( (AliAODTrack*)d0cand->GetDaughter(1) )->GetID();
-    // ADDING TRACK
-    MakeTrack(massD0, d0cand->Pt(), d0cand->Phi(), d0cand->Eta(), 2, nIDs);
+    if(topCut&1){
+      Double_t massD0=d0cand->InvMassD0();
+      MakeTrack(massD0, d0cand->Pt(), d0cand->Phi(), d0cand->Eta(), 2, nIDs);
+      if(fDebugV2) printf("   ᶫInjecting D0 candidate\n");
+    }
+    if(topCut&2){
+      Double_t massD0=d0cand->InvMassD0bar();
+      MakeTrack(massD0, d0cand->Pt(), d0cand->Phi(), d0cand->Eta(), 2, nIDs);
+    }
     if(fDebugV2) printf("   ᶫInjecting D0 candidate\n");
   }
 }
