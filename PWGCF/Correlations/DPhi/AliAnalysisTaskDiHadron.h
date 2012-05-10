@@ -20,7 +20,7 @@
 #ifndef ALIANALYSISTASKDIHADRON_H
 #define ALIANALYSISTASKDIHADRON_H
 
-class TF1;
+class TH1;
 class TH1F;
 class TH2F;
 class TH3F;
@@ -55,7 +55,7 @@ class AliAnalysisTaskDiHadron : public AliAnalysisTaskSE{
   void SetBins(Int_t nBinPhi, Int_t nBinEta, Int_t nBinPhiEtaPhi, Int_t nBinPhiEtaEta, Int_t nBinPhi3, Int_t nBinEta3, Float_t dPhiMin, Float_t dPhiMax, Int_t NTPtBins, Int_t NMixBins, Int_t NCentBins,Int_t fCentPercent, Int_t NAPtBins, Int_t NAPt3Bins, Int_t NVertexBins, Int_t NXEBin,Float_t *PtTrigArray, Float_t *PtAssocArray, Float_t *PtAssoc3Array1, Float_t *PtAssoc3Array2, Int_t *CentArrayMin, Int_t *CentArrayMax, Float_t *XEArray);
   void SetOptions(Int_t fAODData, Int_t fEfficiencyCorr, Int_t fDEBUG,Int_t fMCHistos);
   void SetCuts(Int_t MinClutersTPC, Float_t MinClusterRatio, Float_t MaxTPCchi2, Int_t MinClustersITS, Float_t EtaCut, Float_t TrigEtaCut, Float_t NearPhiCut, Float_t XECut, Float_t MaxDCA, Float_t MaxDCAXY, Float_t MaxDCAZ, Int_t DCA2D, Int_t TPCRefit, Int_t ITSRefit, Int_t SPDCut, Float_t MinPtAssoc, Float_t MaxPtAssoc, Float_t VzCut, Int_t NIDs, const char *TrigIDArray);
-  void SetSimulation(Int_t Simulate,Float_t SimNBgPart,Float_t SimNJetPart,Float_t SimNJet,Int_t SimNEvents);
+  void SetSimulation(Int_t Simulate,Float_t SimNBgPart,Float_t SimNJetPart,Float_t SimNJet,Int_t SimNEvents, Int_t SimAwayDeflected);
   Int_t CheckVertex(const AliESDEvent *rESD);
   Int_t CheckVertexAOD(const AliAODEvent *rAOD);
   Int_t CheckTrigger(const AliESDEvent *rESD);
@@ -64,7 +64,7 @@ class AliAnalysisTaskDiHadron : public AliAnalysisTaskSE{
   Int_t TrackCutsAOD(const AliAODEvent *rAOD, Float_t *rPt, Float_t *rEta, Float_t *rPhi, Short_t *rCharge, Float_t *rEff, Float_t *rV2, Float_t *rV3, Float_t *rV4, Int_t **rPtAssoc3, Int_t *rNPtAssoc3, Int_t *rGoodTracks);
   Int_t TrackCutsMC(AliMCEvent *rMC, Float_t *rPt, Float_t *rEta, Float_t *rPhi, Short_t *rCharge, Float_t *rEff, Float_t *rV2, Float_t *rV3, Float_t *rV4, Int_t **rPtAssoc3, Int_t *rNPtAssoc3, Int_t *rGoodTracks);
   Int_t TrackCutsSim(Float_t *rPt, Float_t *rEta, Float_t *rPhi, Short_t *rCharge, Float_t *rEff, Float_t *rV2, Float_t *rV3, Float_t *rV4, Int_t **rPtAssoc3, Int_t *rNPtAssoc3, Int_t *rGoodTracks);
-
+  void CalcFlow(Float_t *rPt, Float_t *rEta, Float_t *rPhi, Int_t *rGoodTracks, Int_t LeadPart);
   
  private:
 
@@ -169,11 +169,17 @@ class AliAnalysisTaskDiHadron : public AliAnalysisTaskSE{
   Float_t *fXEArray;//XE bin array
   char *fTrigIDArray;//array of trigger ids (such as CINT1B)
 
+  //Simulations
   Int_t fSimulate;//if 1 run a simulation
   Float_t fSimNBgPart;//Number of background particles in simulation
   Float_t fSimNJetPart;//Number of particles in 1 of the jet peaks in simulation
   Float_t fSimNJet;//Average Number of Jets per event.
   Int_t fSimNEvents;//Number of events to simulate
+  Int_t fSimAwayDeflected;//Set away side for defected jets in sim
+  Float_t fSimPsi2;//reaction plane 2 for sim
+  Float_t fSimPsi3;//reaction plane 3 for sim
+  Float_t fSimPsi4;// reaction plane 4 for sim
+  Int_t fSimFlowMark;//event to use from flow array
   
   
   Float_t fVertexArray[(kNumberOfVertexBins+1)];//array for dividing z vertex into bins for event mixing
