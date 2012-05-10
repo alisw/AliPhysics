@@ -35,6 +35,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
 			    AliRDHFCuts *cutsPOIs, 
 			    Int_t specie );
     void SetDebug() {fDebugV2 = true;}
+    void SetSwapAsumption() {fSwap = true;}
     virtual ~AliAnalysisTaskFlowD2H();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
@@ -65,6 +66,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     AliRDHFCuts *fCutsPOI; // cuts for POIs
     Int_t  fSource; // AliRDHFCuts::ESele
     Bool_t fDebugV2; // fully talkative task
+    Bool_t fSwap;   // swap assumption (for neutral)
 
     Int_t fMassBins; // configures mass bins for the analysis
     Double_t fMinMass; // configures mass range for the analysis
@@ -79,7 +81,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
 
     TObjArray *fCandidates; // Array of selected candidates
 
-  ClassDef(AliAnalysisTaskFlowD2H, 3);
+  ClassDef(AliAnalysisTaskFlowD2H, 4);
 };
 
 #endif
