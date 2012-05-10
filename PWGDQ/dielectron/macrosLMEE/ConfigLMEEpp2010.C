@@ -1,10 +1,9 @@
-#include "../PWGDQ/dielectron/macrosLMEE/LMEECutLib.C"
 
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFnoRej;TPCTOF");
+TString names=("noPairing;TPCandTOFnoRej;TPCorTOF");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 

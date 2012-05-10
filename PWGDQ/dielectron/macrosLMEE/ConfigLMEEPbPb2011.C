@@ -4,7 +4,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;;TPCTOFSemiCent;TPCTOFPeri");
+TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -44,38 +44,32 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 	//not yet implemented
   }
   else if (cutDefinition==1) {
-   //TPCTOFCentnoRej =>
 	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==2) {
-	//TPCTOFCentnoRej =>
 	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==3) {
-	//TPCTOFCentnoRej =>
 	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==4) {
-	//TPCTOFCentnoRej =>
-	selectedPID = LMEECutLib::kPbPb2011TPCorTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kTRUE;
   }
   else if (cutDefinition==5) {
-	//TPCTOFCentnoRej =>
-	selectedPID = LMEECutLib::kPbPb2011TPCorTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
 	rejectionStep = kTRUE;
   }
   else if (cutDefinition==6) {
-	//TPCTOFCentnoRej =>
-	selectedPID = LMEECutLib::kPbPb2011TPCorTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
 	rejectionStep = kTRUE;
   }

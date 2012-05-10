@@ -2,7 +2,7 @@ class LMEECutLib {
 
   public:
 	static  enum LMMECutSet {
-	  kPbPb2011TPCandTOF,
+   		kPbPb2011TPCandTOF,
 		kPbPb2011TPCorTOF,
 		kpp2010TPCandTOF,
 		kpp2010TPCorTOF,
@@ -48,7 +48,6 @@ class LMEECutLib {
 		  eventCuts->SetRequireVertex();
 		  eventCuts->SetMinVtxContributors(1);
 		  eventCuts->SetVertexZ(-10.,10.);
-		  //   eventCuts->SetCentralityRange(0.,10.);
 		  break;
 		default: cout << "No Event Cut defined" << endl;
 	  }
@@ -142,8 +141,8 @@ class LMEECutLib {
 	  }
 
 	  //---------------------------------------------
-	  AliDielectronPID *pidTPCTOFeOnly = new AliDielectronPID("TPC-TOF-HFE","TPC-TOF-HFE");
-	  pidTPCTOFeOnly->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,lowerCut,3.,0.0,100.,kFALSE);
+	  AliDielectronPID *pidTPCTOFeOnly = new AliDielectronPID("TPC-TOF","TPC-TOF");
+	  pidTPCTOFeOnly->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3,3.,0.0,100.,kFALSE);
 	  pidTPCTOFeOnly->AddCut(AliDielectronPID::kTOF ,AliPID::kElectron , -3. , 3. , 0.0 , 100., kFALSE );
 
 	  AliDielectronPID *pidTPChardTOF = new AliDielectronPID("TPC-TOF-HFE","TPC-TOF-HFE");
@@ -153,8 +152,9 @@ class LMEECutLib {
 	  pidTPChardTOF->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,-3.,3.,0.,100.,kTRUE);
 	  pidTPChardTOF->AddCut(AliDielectronPID::kTOF ,AliPID::kElectron , -3. , 3. , 0.0 , 100., kFALSE );
 	  //___________________________________________
-	  AliDielectronPID *pidTT = new AliDielectronPID("TPC-TOF-HFE","TPC-TOF-HFE");
-	  pidTT->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,lowerCut,3.,0.0,100.,kFALSE);
+	  AliDielectronPID *pidTT = new AliDielectronPID("TPC-TOF","TPC-TOF");
+	  pidTT->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-1.5,3.,0.2,0.4,kFALSE);
+	  pidTT->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3,3.,0.4,100.,kFALSE);
 	  pidTT->AddCut(AliDielectronPID::kTOF ,AliPID::kElectron , -3. , 3. , 0.4 , 100., kFALSE );
 
 	  pidTT->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3,3.,0.,100.,kTRUE);
@@ -241,13 +241,16 @@ class LMEECutLib {
 	AliAnalysisCuts* GetPairCuts(Int_t cutSet)  {  
 	  AliDielectronVarCuts* pairCuts=0x0;
 	  switch (cutSet) {
-		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPCorTOF  :
 		case kpp2010TPCandTOF :
-		case kpp2010TPCorTOF  :
 		  pairCuts = new AliDielectronVarCuts("InvMass","InvMass > 150 MeV");
 		  pairCuts->AddCut(AliDielectronVarManager::kM,0.15,100.,kTRUE);
 		  break;
+		case kPbPb2011TPCandTOF :
+		case kpp2010TPCorTOF  :
+		pairCuts =new AliDielectronVarCuts("OpeningAngle","Opening angle > .035rad");
+		pairCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0. , 0.035);
+		break;
 		default: cout << "No Pair Cuts defined " << endl;
 	  } 
 	  return pairCuts;
@@ -276,7 +279,7 @@ class LMEECutLib {
 		  trackCuts->SetMinNCrossedRowsTPC(110);
 		  trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
 		  trackCuts->SetMaxChi2PerClusterTPC(3.5);
-		  trackCuts->SetMaxChi2PerClusterITS(6);
+		  //trackCuts->SetMaxChi2PerClusterITS(6);
 		  break;
 		default: cout << "No Analysis Track Cut defined " << endl;
 	  }

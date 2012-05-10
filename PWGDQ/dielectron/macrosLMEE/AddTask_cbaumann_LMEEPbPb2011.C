@@ -41,10 +41,11 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(){
   //load dielectron configuration file
 
   //add dielectron analysis with different cuts to the task
+/*
   AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC);
   task->AddDielectron(lowmass1);
   printf("add: %s\n",lowmass1->GetName());
-/*
+
   AliDielectron *lowmass2=ConfigLMEEPbPb2011(2,hasMC);
   task->AddDielectron(lowmass2);
   printf("add: %s\n",lowmass2->GetName());
@@ -54,6 +55,13 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(){
   task->AddDielectron(lowmass3);
   printf("add: %s\n",lowmass3->GetName());
 */
+  AliDielectron *lowmass4=ConfigLMEEPbPb2011(4,hasMC);
+  task->AddDielectron(lowmass4);
+  printf("add: %s\n",lowmass4->GetName());
+
+  AliDielectron *lowmass5=ConfigLMEEPbPb2011(5,hasMC);
+  task->AddDielectron(lowmass5);
+  printf("add: %s\n",lowmass5->GetName());
 
 
   mgr->AddTask(task);
