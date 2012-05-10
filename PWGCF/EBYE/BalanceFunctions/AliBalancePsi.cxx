@@ -117,10 +117,10 @@ void AliBalancePsi::InitHistograms() {
   axisTitlePair[0]  = "Centrality percentile [%]"; 
 
   //Psi_2
-  const Int_t kNPsi2Bins = 48;
+  const Int_t kNPsi2Bins = 24;
   Double_t psi2Bins[kNPsi2Bins+1];
   for(Int_t i = 0; i < kNPsi2Bins+1; i++)
-    psi2Bins[i] = -15.0 + i * 7.5;
+    psi2Bins[i] = 0.0 + i * 7.5;
   iBinSingle[1]       = kNPsi2Bins;
   dBinsSingle[1]      = psi2Bins;
   axisTitleSingle[1]  = "#phi - #Psi_{2} (#circ)";
@@ -364,8 +364,9 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
     pz1     = chargeVector[6]->at(i);
     pt1     = chargeVector[7]->at(i);
     energy1 = chargeVector[8]->at(i);
-    gPsiMinusPhi   = phi1 - gReactionPlane;
-    if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhi = 360. + gPsiMinusPhi;
+    gPsiMinusPhi   = TMath::Abs(phi1 - gReactionPlane);
+    if(gPsiMinusPhi > 180.) gPsiMinusPhi = 360. - gPsiMinusPhi;
+    //if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhi = 360. + gPsiMinusPhi;
     
     trackVarsSingle[0]    =  fCentrality;
     trackVarsSingle[1]    =  gPsiMinusPhi;

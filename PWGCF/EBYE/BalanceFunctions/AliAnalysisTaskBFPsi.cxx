@@ -724,7 +724,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gAOD,10,2,qxTot,qyTot);
 		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
 		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
-		  fHistEventPlane->Fill(gReactionPlane);
+		  fHistEventPlane->Fill(gReactionPlane,fCentrality);
 		  //========Get the VZERO event plane========//
 
       		  //Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
