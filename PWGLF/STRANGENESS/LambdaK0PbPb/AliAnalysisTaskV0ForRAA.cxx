@@ -135,6 +135,7 @@ ClassImp(AliAnalysisTaskV0ForRAA)
        fCPAPtCutK0(0),
        fCPAPtCutL(0),
        fOpengAngleDaughters(0),
+       fOpAngPtCut(0),
        fDecayLengthMax(0),
        fDecayLengthMin(0),
        fCtauK0s(0),
@@ -217,7 +218,8 @@ ClassImp(AliAnalysisTaskV0ForRAA)
    fCPAPtCutK0 = 1000.0;
    fCPAPtCutL =1000.0;
    fOpengAngleDaughters = -1.0;
-   
+   fOpAngPtCut = -1.0;
+      
    fCtauK0s=10000.0;
    fCtauL=10000.0;
    fCtauPtCutK0=1000.0;
@@ -238,12 +240,12 @@ ClassImp(AliAnalysisTaskV0ForRAA)
       fHistPiPiMass[j]=NULL;
       fHistPiPiMassVSPt[j]=NULL;
       fHistPiPiMassVSPtMCTruth[j]=NULL;
-      fHistPiPiMassVSAlpha[j]=NULL;
+      // fHistPiPiMassVSAlpha[j]=NULL;
       fHistPiPiRadiusXY[j]=NULL;
       fHistPiPiCosPointAng[j]=NULL;
       fHistPiPiDecayLengthVsPt[j]=NULL;
       fHistPiPiDCADaughterPosToPrimVtxVSMass[j]=NULL;
-      fHistPiPiMassVSPtK0L[j]=NULL;
+      // fHistPiPiMassVSPtK0L[j]=NULL;
       fHistPiPiDCADaughters[j]=NULL; 
       fHistPiPiPtDaughters[j]=NULL;
       fHistPiPiPtVSY[j]=NULL;
@@ -295,14 +297,6 @@ ClassImp(AliAnalysisTaskV0ForRAA)
       fHistDedxSecAProt[j]=NULL;
       fHistDedxSecPiMinus[j]=NULL;
       fHistDedxSecPiPlus[j]=NULL;
-      fHistNclsITSPos[j]=NULL;
-      fHistNclsITSNeg[j]=NULL;
-      fHistNclsTPCPos[j]=NULL;
-      fHistNclsTPCNeg[j]=NULL;
-      fHistChi2PerNclsITSPos[j]=NULL;
-      fHistChi2PerNclsITSNeg[j]=NULL;
-      fHistNCRowsTPCPos[j]=NULL;
-      fHistNCRowsTPCNeg[j]=NULL;
       fHistNclsITSPosK0[j]=NULL;
       fHistNclsITSNegK0[j]=NULL;
       fHistNclsTPCPosK0[j]=NULL;
@@ -315,14 +309,20 @@ ClassImp(AliAnalysisTaskV0ForRAA)
       fHistNclsTPCNegL[j]=NULL;
       fHistChi2PerNclsITSPosL[j]=NULL;
       fHistChi2PerNclsITSNegL[j]=NULL;
-
-      fHistPiPiEtaDMC[j] = NULL;
+      fHistNclsITSPos[j]=NULL;
+      fHistNclsITSNeg[j]=NULL;
+      fHistNclsTPCPos[j]=NULL;
+      fHistNclsTPCNeg[j]=NULL;
+      fHistChi2PerNclsITSPos[j]=NULL;
+      fHistChi2PerNclsITSNeg[j]=NULL;
+      fHistNclsITS[j]=NULL;
+      fHistNclsTPC[j]=NULL;
+      fHistNCRowsTPCPos[j]=NULL;
+      fHistNCRowsTPCNeg[j]=NULL;
+      
       fHistPiPiEtaDMC[j] = NULL;
       fHistPiPiEtaDReco[j] = NULL;
-      fHistPiPiEtaDReco[j] = NULL;
       fHistPiPEtaDMC[j] = NULL;
-      fHistPiPEtaDMC[j] = NULL;
-      fHistPiPEtaDReco[j] = NULL;
       fHistPiPEtaDReco[j] = NULL;
    }
    
@@ -378,28 +378,30 @@ AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
     
       //K0
       if(fHistPiPiMass[j]) delete fHistPiPiMass[j];fHistPiPiMass[j]=0;
+      if(fHistPiPiPtVSY[j]) delete fHistPiPiPtVSY[j];fHistPiPiPtVSY[j]=0;
       if(fHistPiPiMassVSPt[j]) delete fHistPiPiMassVSPt[j]; fHistPiPiMassVSPt[j]=0;
       if(fHistPiPiMassVSPtMCTruth[j]) delete fHistPiPiMassVSPtMCTruth[j]; fHistPiPiMassVSPtMCTruth[j]=0;
-      if(fHistPiPiMassVSAlpha[j])delete fHistPiPiMassVSAlpha[j];fHistPiPiMassVSAlpha[j]=0;
+      //  if(fHistPiPiMassVSAlpha[j])delete fHistPiPiMassVSAlpha[j];fHistPiPiMassVSAlpha[j]=0;
       if(fHistPiPiRadiusXY[j]) delete fHistPiPiRadiusXY[j];fHistPiPiRadiusXY[j]=0;
       if(fHistPiPiCosPointAng[j])  delete fHistPiPiCosPointAng[j];fHistPiPiCosPointAng[j]=0;
-      if(fHistPiPiDecayLengthVsPt[j]) delete  fHistPiPiDecayLengthVsPt[j]; fHistPiPiDecayLengthVsPt[j]=0;
       if(fHistPiPiDCADaughterPosToPrimVtxVSMass[j]) delete fHistPiPiDCADaughterPosToPrimVtxVSMass[j];fHistPiPiDCADaughterPosToPrimVtxVSMass[j]=0;
-      if(fHistPiPiMassVSPtK0L[j]) delete fHistPiPiMassVSPtK0L[j];fHistPiPiMassVSPtK0L[j]=0;
+      if(fHistPiPiDecayLengthVsPt[j]) delete  fHistPiPiDecayLengthVsPt[j]; fHistPiPiDecayLengthVsPt[j]=0;
+      if(fHistPiPiDecayLengthVsMass[j]) delete  fHistPiPiDecayLengthVsMass[j]; fHistPiPiDecayLengthVsMass[j]=0;
+      //if(fHistPiPiMassVSPtK0L[j]) delete fHistPiPiMassVSPtK0L[j];fHistPiPiMassVSPtK0L[j]=0;
       if(fHistPiPiDCADaughters[j]) delete fHistPiPiDCADaughters[j];fHistPiPiDCADaughters[j]=0; 
       if(fHistPiPiPtDaughters[j]) delete fHistPiPiPtDaughters[j];fHistPiPiPtDaughters[j]=0;
-      if(fHistPiPiPtVSY[j]) delete fHistPiPiPtVSY[j];fHistPiPiPtVSY[j]=0;
       if(fHistPiPiDCAVSMass[j]) delete fHistPiPiDCAVSMass[j]; fHistPiPiDCAVSMass[j]=0;
       if(fHistPiPiMonitorCuts[j]) delete fHistPiPiMonitorCuts[j];fHistPiPiMonitorCuts[j]=0;
     
       //lambda 
       if(fHistPiPMass[j]) delete fHistPiPMass[j];fHistPiPMass[j]=0;
       if(fHistPiPMassVSPt[j]) delete fHistPiPMassVSPt[j];fHistPiPMassVSPt[j]=0;
-      if(fHistPiPMassVSPt[j]) delete fHistPiPMassVSPt[j]; fHistPiPMassVSPt[j]=0;
+      if(fHistPiPMassVSPtMCTruth[j]) delete fHistPiPMassVSPtMCTruth[j]; fHistPiPMassVSPtMCTruth[j]=0;
       if(fHistPiPRadiusXY[j])  delete fHistPiPRadiusXY[j];fHistPiPRadiusXY[j]=0;
       if(fHistPiPCosPointAng[j]) delete fHistPiPCosPointAng[j];fHistPiPCosPointAng[j]=0;
-      if(fHistPiPDecayLengthVsPt[j]) delete  fHistPiPDecayLengthVsPt[j]; fHistPiPDecayLengthVsPt[j]=0;
       if(fHistPiPDCADaughterPosToPrimVtxVSMass[j]) delete fHistPiPDCADaughterPosToPrimVtxVSMass[j];fHistPiPDCADaughterPosToPrimVtxVSMass[j]=0;
+      if(fHistPiPDecayLengthVsPt[j]) delete  fHistPiPDecayLengthVsPt[j]; fHistPiPDecayLengthVsPt[j]=0;
+      if(fHistPiPDecayLengthVsMass[j]) delete  fHistPiPDecayLengthVsMass[j]; fHistPiPDecayLengthVsMass[j]=0;
       if(fHistPiPDCADaughters[j]) delete fHistPiPDCADaughters[j];fHistPiPDCADaughters[j]=0; 
       if(fHistPiPPtDaughters[j]) delete fHistPiPPtDaughters[j];fHistPiPPtDaughters[j]=0;
       if(fHistPiPPtVSY[j]) delete fHistPiPPtVSY[j];fHistPiPPtVSY[j]=0;
@@ -408,15 +410,16 @@ AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
     
       //alambda 
       if(fHistPiAPMass[j])delete fHistPiAPMass[j];fHistPiAPMass[j] =0;
+      if(fHistPiAPPtVSY[j]) delete fHistPiAPPtVSY[j];fHistPiAPPtVSY[j]=0;
       if(fHistPiAPMassVSPt[j]) delete fHistPiAPMassVSPt[j]; fHistPiAPMassVSPt[j]=0;
-      if(fHistPiAPMassVSPt[j]) delete fHistPiAPMassVSPt[j]; fHistPiAPMassVSPt[j]=0;
+      if(fHistPiAPMassVSPtMCTruth[j]) delete fHistPiAPMassVSPtMCTruth[j]; fHistPiAPMassVSPtMCTruth[j]=0;
       if(fHistPiAPRadiusXY[j])  delete  fHistPiAPRadiusXY[j];fHistPiAPRadiusXY[j]=0;;
       if(fHistPiAPCosPointAng[j]) delete fHistPiAPCosPointAng[j];fHistPiAPCosPointAng[j]=0;
-      if(fHistPiAPDecayLengthVsPt[j]) delete  fHistPiAPDecayLengthVsPt[j]; fHistPiAPDecayLengthVsPt[j]=0;
       if(fHistPiAPDCADaughterPosToPrimVtxVSMass[j]) delete fHistPiAPDCADaughterPosToPrimVtxVSMass[j];fHistPiAPDCADaughterPosToPrimVtxVSMass[j]=0;
+      if(fHistPiAPDecayLengthVsPt[j]) delete  fHistPiAPDecayLengthVsPt[j]; fHistPiAPDecayLengthVsPt[j]=0;
+      if(fHistPiAPDecayLengthVsMass[j]) delete  fHistPiAPDecayLengthVsMass[j]; fHistPiAPDecayLengthVsMass[j]=0;
       if(fHistPiAPDCADaughters[j]) delete fHistPiAPDCADaughters[j];fHistPiAPDCADaughters[j]=0; 
       if(fHistPiAPPtDaughters[j]) delete fHistPiAPPtDaughters[j];fHistPiAPPtDaughters[j]=0;
-      if(fHistPiAPPtVSY[j]) delete fHistPiAPPtVSY[j];fHistPiAPPtVSY[j]=0;
       if(fHistPiAPDCAVSMass[j]) delete fHistPiAPDCAVSMass[j]; fHistPiAPDCAVSMass[j]=0;
       if(fHistPiAPMonitorCuts[j]) delete fHistPiAPMonitorCuts[j];fHistPiAPMonitorCuts[j]=0;
     
@@ -457,14 +460,12 @@ AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
       if(fHistChi2PerNclsITSNeg[j]) delete fHistChi2PerNclsITSNeg[j];fHistChi2PerNclsITSNeg[j]=0;
       if(fHistNCRowsTPCNeg[j]) delete fHistNCRowsTPCNeg[j];fHistNCRowsTPCNeg[j]=0;
       if(fHistNCRowsTPCPos[j]) delete fHistNCRowsTPCPos[j];fHistNCRowsTPCPos[j]=0;
-    
-      if(fHistPiPiEtaDMC[j]) delete fHistPiPiEtaDMC[j];fHistPiPiEtaDMC[j]=0;
+      if(fHistNclsITS[j]) delete fHistNclsITS[j];fHistNclsITS[j]=0;
+      if(fHistNclsTPC[j]) delete fHistNclsTPC[j];fHistNclsTPC[j]=0;
+      
       if(fHistPiPiEtaDMC[j]) delete fHistPiPiEtaDMC[j];fHistPiPiEtaDMC[j]=0;
       if(fHistPiPEtaDMC[j]) delete fHistPiPEtaDMC[j];fHistPiPEtaDMC[j]=0;
-      if(fHistPiPEtaDMC[j]) delete fHistPiPEtaDMC[j];fHistPiPEtaDMC[j]=0;
       if(fHistPiPiEtaDReco[j]) delete fHistPiPiEtaDReco[j];fHistPiPiEtaDReco[j]=0;
-      if(fHistPiPiEtaDReco[j]) delete fHistPiPiEtaDReco[j];fHistPiPiEtaDReco[j]=0;
-      if(fHistPiPEtaDReco[j]) delete fHistPiPEtaDReco[j];fHistPiPEtaDReco[j]=0;
       if(fHistPiPEtaDReco[j]) delete fHistPiPEtaDReco[j];fHistPiPEtaDReco[j]=0;     
    }
 }
@@ -481,11 +482,11 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    fHistPrimVtxZESDVSNContributors = new TH2F("fHistPrimVtxZESDVSNContributors","prim vtx pos z ESD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
    fHistPrimVtxZESDTPCVSNContributors = new TH2F("fHistPrimVtxZESDTPCVSNContributors","prim vtx pos z TPC vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
    fHistPrimVtxZESDSPDVSNContributors = new TH2F("fHistPrimVtxZESDSPDVSNContributors","prim vtx pos z SPD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
-  
+   
    fHistPrimVtxZESDVSNContributorsMC = new TH2F("fHistPrimVtxZESDVSNContributorsMC","prim vtx pos z ESD vs no. of contributers MC",250,-50,50,500,0.0,500.0);
    fHistPrimVtxZESDTPCVSNContributorsMC = new TH2F("fHistPrimVtxZESDTPCVSNContributorsMC","prim vtx pos z TPC vs no. of contributers MC",250,-50,50,500,0.0,500.0);
    fHistPrimVtxZESDSPDVSNContributorsMC = new TH2F("fHistPrimVtxZESDSPDVSNContributorsMC","prim vtx pos z SPD vs no. of contributers MC",250,-50,50,500,0.0,500.0);
-  
+   
    fHistPrimVtxZESD = new TH1F("fHistPrimVtxZESD","z vertex pos ESD",250,-50,50);
    fHistPrimVtxZESDTPC = new TH1F("fHistPrimVtxZESDTPC","z vertex pos TPC",250,-50,50);
    fHistPrimVtxZESDSPD = new TH1F("fHistPrimVtxZESDSPD","z vertex pos SPD",250,-50,50);
@@ -525,8 +526,8 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    fHistPiPiPtVSY[0] = new TH2F("fHistPiPiPtVSY","p{t} vs y",100,-1,1,100,0.0,20);
    fHistPiPiPtVSY[1] = new TH2F("fHistPiPiPtVSYSec","p{t} vs y secondaries",200,-1,1,100,0.0,20);
    
-   fHistPiPiMassVSAlpha[0] = new TH2F("fHistPiPiMassVSAlpha"," alpha armenteros vs pi+pi- InvMass distribution",nbMass,0.25,0.75,500,-1.,1.);
-   fHistPiPiMassVSAlpha[1] = new TH2F("fHistPiPiMassVSAlphaSec"," alpha armenteros vs pi+pi- InvMass distribution secondary",nbMass,0.25,0.75,500,-1.,1.);
+   // fHistPiPiMassVSAlpha[0] = new TH2F("fHistPiPiMassVSAlpha"," alpha armenteros vs pi+pi- InvMass distribution",nbMass,0.25,0.75,500,-1.,1.);
+   //fHistPiPiMassVSAlpha[1] = new TH2F("fHistPiPiMassVSAlphaSec"," alpha armenteros vs pi+pi- InvMass distribution secondary",nbMass,0.25,0.75,500,-1.,1.);
    
    fHistPiPiRadiusXY[0] = new TH2F("fHistPiPiRadiusXY","pi+pi- opening angle vs mass",nbMass,0.25,0.75,200,0.0,4.0);
    fHistPiPiRadiusXY[1] = new TH2F("fHistPiPiRadiusXYSec","pi+pi- opening angle vs mass for secondary",nbMass,0.25,0.75,200,0.0,4.0);
@@ -542,11 +543,11 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    
    fHistPiPiDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vsinvmass",nbMass,0.25,0.75,250,0.0,25.0);
    fHistPiPiDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMassSec","pi+ DCA  daughter to prim vtx vs invmass for secondaries",nbMass,0.25,0.75,250,0.0,25.0);
-
+   
    fHistPiPiPDGCode = new TH1F("fHistPiPiPDGCode","PDG code of K0s mothers",3500,0,3500);
-
-   fHistPiPiMassVSPtK0L[0] = new TH2F("fHistPiPiMassVSPtK0LMC","K0s from K0l pt vs mass MC truth",nbMass,0.25,0.75,100,0.,20.);
-   fHistPiPiMassVSPtK0L[1] = new TH2F("fHistPiPiMassVSPtK0L","K0s from K0l pt vs mass reco",nbMass,0.25,0.75,100,0.,20.);
+   
+   // fHistPiPiMassVSPtK0L[0] = new TH2F("fHistPiPiMassVSPtK0LMC","K0s from K0l pt vs mass MC truth",nbMass,0.25,0.75,100,0.,20.);
+   // fHistPiPiMassVSPtK0L[1] = new TH2F("fHistPiPiMassVSPtK0L","K0s from K0l pt vs mass reco",nbMass,0.25,0.75,100,0.,20.);
 
 
    fHistPiPMassVSPt[0] = new TH2F("fHistPiPMassVSPt","p+pi- InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
@@ -577,7 +578,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 
    fHistPiPPtVSY[0] = new TH2F("fHistPiPPtVSY","p{t} vs y",100,-1,1,100,0.0,20);
    fHistPiPPtVSY[1] = new TH2F("fHistPiPPtVSYSec","p{t} vs y secondaries",100,-1,1,100,0.0,20);   
-
+   
    fHistPiPMassVSPtSecSigma[0] = new TH2F("fHistPiPMassVSPtSecSigmaMC"," pi-p+ InvMass distribution secondaries from sigma MC",nbMass,1.05,1.25,200,0.,20);
    fHistPiPMassVSPtSecSigma[1] = new TH2F("fHistPiPMassVSPtSecSigma"," pi-p+ InvMass distribution secondaries from Sigma reco",nbMass,1.05,1.25,200,0.,20);
    
@@ -594,7 +595,9 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    fHistPiPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiPXiMinusPtVSLambdaPt","pt xi- truth vs pt lambda reco",200,0.0,20.0,200,0.0,20.0);
 
    fHistPiPCosPointAngXiVsPt= new TH2F("fHistPiPCosPointAngXiVsPt","pi-p cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.99,1.00);
-    
+
+   fHistPiPPDGCode = new TH1F("fHistPiPPDGCode","PDG code of #Lambda  mothers",3500,0,3500);
+      
    fHistPiPRadiusXY[0] = new TH2F("fHistPiPRadiusXY","pi-p+ opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
    fHistPiPRadiusXY[1] = new TH2F("fHistPiPRadiusXYSec","pi-p+ opening angle vs mass for secondary",nbMass,1.05,1.25,200,0.0,4.0);
 
@@ -609,10 +612,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    fHistPiPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMass","p DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
    fHistPiPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMassSec","p DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
 	
-   fHistPiPPDGCode = new TH1F("fHistPiPPDGCode","PDG code of #Lambda  mothers",3500,0,3500);
-
-
-
+  
    fHistPiPDCAVSMass[0] = new TH2F("fHistPiPDCAVSMass","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
    fHistPiPDCAVSMass[1] = new TH2F("fHistPiPDCAVSMassSec","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
 
@@ -641,6 +641,15 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    
    fHistPiAPRadiusXY[0] = new TH2F("fHistPiAPRadiusXY","pi+p- opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
    fHistPiAPRadiusXY[1] = new TH2F("fHistPiAPRadiusXYSec","pi+p- opening angle vs mass for secondary",nbMass,1.05,1.25,200,0.0,4.0);
+      
+   fHistPiAPCosPointAng [0] = new TH2F("fHistPiAPCosPointAng","#bar{#Lambda} cosine of pointing angle vs dcs to prim vtx",200,0.0,10.0,250,0.99,1.00);
+   fHistPiAPCosPointAng[1]  = new TH2F("fHistPiAPCosPointAngSec","#bar{#Lambda} cosine of pointing angle vs dca to prim vtx for secondaries",200,0.0,10.0,250,0.99,1.00);
+
+   fHistPiAPDecayLengthVsPt[0] = new TH2F("fHistPiAPDecayLengthVsPt","#bar{#Lambda} decay length vs pt",200,0.0,20.0,200,0.0,100.0);
+   fHistPiAPDecayLengthVsPt[1] = new TH2F("fHistPiAPDecayLengthVsPtSec","#bar{#Lambda} decay length vs pt secondaries",200,0.0,20.0,200,0.0,100.0);
+
+   fHistPiAPDecayLengthVsMass[0] = new TH2F("fHistPiAPDecayLengthVsMass","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
+   fHistPiAPDecayLengthVsMass[1] = new TH2F("fHistPiAPDecayLengthVsMassSec","#bar{#Lambda} decay length vs mass secondaries",nbMass,1.05,1.25,200,0.0,100.0);
 
    fHistPiAPCosPointAngXiVsPt= new TH2F("fHistPiAPCosPointAngXiVsPt","pi+p- cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.98,1.00);	
 
@@ -653,26 +662,18 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    fHistPiAPMassVSYSecXi[0] = new TH2F("fHistPiAPMassVSYSecXiMC"," pi+p- InvMass distribution secondaries from  xi MC",nbMass,1.05,1.25,100,-2,2);
    fHistPiAPMassVSYSecXi[1] = new TH2F("fHistPiAPMassVSYSecXi"," pi+p- InvMass distribution secondaries from xi reco",nbMass,1.05,1.25,100,-2.,2);
 
-   fHistPiAPCosPointAng [0] = new TH2F("fHistPiAPCosPointAng","#bar{#Lambda} cosine of pointing angle vs dcs to prim vtx",200,0.0,10.0,250,0.99,1.00);
-   fHistPiAPCosPointAng[1]  = new TH2F("fHistPiAPCosPointAngSec","#bar{#Lambda} cosine of pointing angle vs dca to prim vtx for secondaries",200,0.0,10.0,250,0.99,1.00);
-
-   fHistPiAPDecayLengthVsPt[0] = new TH2F("fHistPiAPDecayLengthVsPt","#bar{#Lambda} decay length vs pt",200,0.0,20.0,200,0.0,100.0);
-   fHistPiAPDecayLengthVsPt[1] = new TH2F("fHistPiAPDecayLengthVsPtSec","#bar{#Lambda} decay length vs pt secondaries",200,0.0,20.0,200,0.0,100.0);
-
-   fHistPiAPDecayLengthVsMass[0] = new TH2F("fHistPiAPDecayLengthVsMass","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
-   fHistPiAPDecayLengthVsMass[1] = new TH2F("fHistPiAPDecayLengthVsMassSec","#bar{#Lambda} decay length vs mass secondaries",nbMass,1.05,1.25,200,0.0,100.0);
-
    fHistPiAPXi0PtVSLambdaPt[0]= new TH2F("fHistPiAPXi0PtVSLambdaPtMC"," pt xi 0 vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
    fHistPiAPXi0PtVSLambdaPt[1]= new TH2F("fHistPiAPXi0PtVSLambdaPt"," pt xi 0 truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
 
    fHistPiAPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiAPXiMinusPtVSLambdaPtMC","pt xi- vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
    fHistPiAPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiAPXiMinusPtVSLambdaPt","pt xi- truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
-   	  
+
+   fHistPiAPPDGCode = new TH1F("fHistPiAPPDGCode","PDG code of #bar{#Lambda} mothers",3500,0,3500);
+      
    fHistPiAPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
    fHistPiAPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMassSec","pi+ DCA daughter to prim vtx vs invmass secondaries",nbMass,1.05,1.25,250,0.0,25.0);
 	
-   fHistPiAPPDGCode = new TH1F("fHistPiAPPDGCode","PDG code of #bar{#Lambda} mothers",3500,0,3500);
-
+  
    fHistPiAPDCAVSMass[0] = new TH2F("fHistPiAPDCAVSMass","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
    fHistPiAPDCAVSMass[1] = new TH2F("fHistPiAPDCAVSMassSec","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
 
@@ -773,16 +774,16 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    //***************************************** eta ******************************************************//
 	fHistPiPiEtaDMC[0] = new TH2F("fHistPiPiEtaDMCRaw","K0s daughters etaMC raw",300,-6,6,100,0,20);//
    fHistPiPiEtaDMC[1] = new TH2F("fHistPiPiEtaDMC","K0s daughters etaMC after rap V0 cut",300,-6,6,100,0,20);
-
+   
    fHistPiPEtaDMC[0] = new TH2F("fHistPiPEtaDMCRaw","#Lambda daughters etaMC raw",300,-6,6,100,0,20);
    fHistPiPEtaDMC[1] = new TH2F("fHistPiPEtaDMC","#Lambda daughters etaMC after rap V0 cut",300,-6,6,100,0,20);
-
+   
    fHistPiPiEtaDReco[0] = new TH2F("fHistPiPiEtaDRecoRaw","K0s daughters eta raw",300,-6,6,100,0,20);
    fHistPiPiEtaDReco[1] = new TH2F("fHistPiPiEtaDReco","K0s daughters eta after rap V0 cut pos",300,-3,3,300,-3.00,3.0);
-
+   
    fHistPiPEtaDReco[0] = new TH2F("fHistPiPEtaDRecoRaw","#Lambda daughters eta raw",300,-6,6,100,0,20);
    fHistPiPEtaDReco[1] = new TH2F("fHistPiPEtaDReco","#Lambda daughters eta after rap V0 cut neg",300,-3,3,300,-3.00,3.0);
-
+   
    /*    
    //shift q/pt
    fHistUserPtShift = new TH1F("fHistUserPtShift","user defined shift in 1/pt",100,-0.5,1.5);
@@ -1132,6 +1133,7 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
 	 fHistNEvents->Fill(2);
 	 fHistESDVertexZ->Fill(vtxZ);
 	 if(fabs(vtxESD->GetZv()) < fVertexZCut){
+	    nContr = vtxESD->GetNContributors();
 	    fHistMuliplicityRaw->Fill(multV0);
 	    fHistNEvents->Fill(3);
 	    fHistNPrim->Fill(nContr);
@@ -1161,6 +1163,7 @@ void AliAnalysisTaskV0ForRAA::Process(){
    Int_t count = 0;
 
    //-- count number of tracks --//
+   
    if(!(!fMCMode && fMCTruthMode)){
       for(Int_t i=0;i<ntracks;i++){
 	 AliESDtrack *track = (AliESDtrack*)fESD->GetTrack(i);
@@ -1974,7 +1977,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
       else  fHistPiPiMonitorCuts[isSecd]->Fill(19);  
 	
       // if(chi2K0C > fChiCutKf) cutOKK0s = kFALSE;
-      if(opAng < fOpengAngleDaughters)  cutOKK0s = kFALSE;
+      if(opAng < fOpengAngleDaughters && fabs(ptK0s) < fOpAngPtCut )  cutOKK0s = kFALSE;
       else  fHistPiPiMonitorCuts[isSecd]->Fill(20);
 
       Bool_t ptbinokK0s=kFALSE;

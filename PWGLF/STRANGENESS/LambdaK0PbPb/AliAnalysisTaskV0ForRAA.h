@@ -75,7 +75,7 @@ public:
    void SetDecayRadiusXYMinMax(Double_t decMin,Double_t decMax){fDecayRadXYMin = decMin;fDecayRadXYMax = decMax; Printf("AliAnalysisTaskV0ForRAA::min xy decay radius %2.3f max %2.3f",decMin,decMax);}
    void SetCosOfPointingAngleL(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngL=pointAng;fCPAPtCutL = ptMaxCut;Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleL %1.5f and pt max %2.2f",pointAng,ptMaxCut);} 
    void SetCosOfPointingAngleK(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngK=pointAng;fCPAPtCutK0 = ptMaxCut; Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleK  %1.5f and pt max %2.2f",pointAng,ptMaxCut);}
-   void SetOpeningAngleCut(Double_t opang)                     {fOpengAngleDaughters=opang; Printf("AliAnalysisTaskV0ForRAA::cut on opening angle %1.3f",opang);}
+   void SetOpeningAngleCut(Double_t opang, Double_t maxpt)     {fOpengAngleDaughters=opang; fOpAngPtCut=maxpt,Printf("AliAnalysisTaskV0::cut on opening angle %1.3f up to pt= %2.2f",opang,maxpt);}
 
    void SetMaxDecayLength(Double_t decLength)                  {fDecayLengthMax = decLength; Printf("AliAnalysisTaskV0ForRAA::SetMaxDecayLength %2.3f",decLength);}
    void SetMinDecayLength(Double_t decLength)                  {fDecayLengthMin = decLength; Printf("AliAnalysisTaskV0ForRAA::SetMinDecayLength %2.3f",decLength);}
@@ -88,7 +88,7 @@ public:
    void SetArmenterosCutAlpha(Double_t alfaMin)                {fAlfaCut=alfaMin;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut a=%1.3f",alfaMin);}
    void SetArmenterosCutQt(Double_t qtmax,Bool_t k0s,Bool_t la){fQtCut = qtmax; fArmCutK0=k0s;fArmCutL=la;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut qt=%1.3f K0s? %i La? %i",qtmax,k0s,la);}
    void SetCtauCut(Double_t ctK0s, Double_t ctL,Double_t ptK0=100.0,Double_t ptL=100.0) {fCtauK0s = ctK0s*2.6842; fCtauL = ctL*7.89;fCtauPtCutK0=ptK0; fCtauPtCutL=ptL;
-      Printf("AliAnalysisTaskV0ForRAA::SetCtauCutt ctK=%2.2f, ctL = %2.2f for ptK= %5.2f ptL=%5.2f",ctK0s,ctL,ptK0,ptL);}
+      Printf("AliAnalysisTaskV0ForRAA::SetCtauCut ctK=%2.2f, ctL = %2.2f for ptK= %5.2f ptL=%5.2f",ctK0s,ctL,ptK0,ptL);}
    void SetDoEtaOfMCDaughtersCut(Bool_t doCut,Double_t eta=5.0){fEtaCutMCDaughters =doCut; fEtaCutMCDaughtersVal=eta; Printf("AliAnalysisTaskV0ForRAA::eta cut on V0 (MC truth ? %i) daughters %1.3f !",doCut,eta);}
   
    
@@ -164,20 +164,19 @@ private:
    TH2F   *fHistPiPiPtVSY[2];                        // pi+pi- InvMass spectrum vs rapidity
    TH2F   *fHistPiPiMassVSPt[2];                     // pi+pi- InvMass spectrum vs pt
    TH2F   *fHistPiPiMassVSPtMCTruth[2];              // pi+pi- InvMass spectrum vs pt MC truth
-   TH2F   *fHistPiPiMassVSAlpha[2];                  // pi+pi- InvMass spectrum vs armenteros alpha
+   // TH2F   *fHistPiPiMassVSAlpha[2];                  // pi+pi- InvMass spectrum vs armenteros alpha
    TH2F   *fHistPiPiRadiusXY[2];                     // pi+pi- opening angle vs mass
    TH2F   *fHistPiPiCosPointAng[2];                  // pi+pi- cosine of pointing angle vs pt or dca to vertex
    TH2F   *fHistPiPiDCADaughterPosToPrimVtxVSMass[2];// dca of pos. K0s daughter to prim vtx vs mass
    TH2F   *fHistPiPiDecayLengthVsPt[2];              // pi+pi- decay lenght vs pt
    TH2F   *fHistPiPiDecayLengthVsMass[2];            // pi+pi- decay lenght vs pt
-   TH2F   *fHistPiPiMassVSPtK0L[2];                  // K0L InvMass vs pt distribution
+   //TH2F   *fHistPiPiMassVSPtK0L[2];                  // K0L InvMass vs pt distribution
    TH2F   *fHistPiPiDCADaughters[2];                 // pi+pi- dca between daughters
    TH2F   *fHistPiPiPtDaughters[2];                  // pi+pi- daughters pt pos vs pt neg 
    TH2F   *fHistPiPiDCAVSMass[2];                    // pi+pi- dca to prim vtx vs mass
    TH1F   *fHistPiPiMonitorCuts[2];                  // pi+pi- cut monitor
 
    //-- lambda --//
-
    TH1F   *fHistPiPMass[2];                         // p+pi- InvMass spectrum
    TH2F   *fHistPiPPtVSY[2];                        // p+pi- InvMass spectrum vs rapidity
    TH2F   *fHistPiPMassVSPt[2];                     // p+pi- InvMass spectrum vs pt
@@ -197,10 +196,8 @@ private:
    TH2F   *fHistPiPXi0PtVSLambdaPt[2] ;             // pt of xi0 vs pt lambda truth(0) reco(1)
    TH2F   *fHistPiPXiMinusPtVSLambdaPt[2];          // pt of ximinus vs pt lambda truth(0) reco(1)
  
-
    
    //-- antilambda --//
-   
    TH1F   *fHistPiAPMass[2];                         // pi+p- InvMass spectrum
    TH2F   *fHistPiAPPtVSY[2];                        // pi+p- InvMass spectrum vs rapidity
    TH2F   *fHistPiAPMassVSPt[2];                     // pi+p- InvMass spectrum vs pt
@@ -333,8 +330,9 @@ private:
    Double_t  fCosPointAngK;          // cosine of pointing angle cut value for K0s
    Double_t  fCPAPtCutK0;            // pt max for cosine of pointing angle cut K0s
    Double_t  fCPAPtCutL;             // pt max for cosine of pointing angle cut Lambda
-   Double_t  fOpengAngleDaughters;    // cut on opening angle between V0 daughters
-   
+   Double_t  fOpengAngleDaughters;   // cut on opening angle between V0 daughters
+   Double_t  fOpAngPtCut;            // max pt for using the  opening angle between V0 daughters cut
+    
    Double_t  fDecayLengthMax;        // maximal decay length in x-y-z cut value
    Double_t  fDecayLengthMin;        // minimal decay length in x-y-z cut value
 
