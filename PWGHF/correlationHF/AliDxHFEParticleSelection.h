@@ -14,11 +14,13 @@
 #ifndef ALIDXHFEPARTICLESELECTION_H
 #define ALIDXHFEPARTICLESELECTION_H
 
-#include "TObject.h"
+#include "TNamed.h"
 #include "TString.h"
 class AliVEvent;
 class AliVParticle;
 class TObjArray;
+class TH1;
+class THnSparse;
 
 /**
  * @class AliDxHFEParticleSelection
@@ -33,10 +35,10 @@ class TObjArray;
  * Might be that there is already something similar, then this class
  * can be merged with some other class.
  */
-class AliDxHFEParticleSelection : public TObject {
+class AliDxHFEParticleSelection : public TNamed {
   public:
   /// constructor
-  AliDxHFEParticleSelection(const char* opt="");
+  AliDxHFEParticleSelection(const char* name=NULL, const char* opt="");
   /// destructor
   virtual ~AliDxHFEParticleSelection();
 
@@ -44,6 +46,9 @@ class AliDxHFEParticleSelection : public TObject {
   void SetOption(const char* opt) { fOption = opt; }
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
+
+  /// init the control objects
+  virtual int InitControlObjects();
 
   /// create selection, array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
@@ -67,8 +72,19 @@ class AliDxHFEParticleSelection : public TObject {
   virtual void Print(Option_t *option="") const;
   /// inherited from TObject: safe selection criteria
   virtual void SaveAs(const char *filename="",Option_t *option="") const;
+  /// inherited from TObject: draw content
+  virtual void Draw(Option_t *option="");
+  /// inherited from TObject: find object by name
+  virtual TObject* FindObject(const char *name) const;
+  /// inherited from TObject: find object by pointer
+  virtual TObject* FindObject(const TObject *obj) const;
 
  protected:
+  /// add control object to list, the base class becomes owner of the object
+  int AddControlObject(TObject* pObj);
+
+  /// histogram particle properties
+  virtual int HistogramParticleProperties(AliVParticle* p, bool selected=true);
 
  private:
   /// copy contructor prohibited
@@ -78,6 +94,11 @@ class AliDxHFEParticleSelection : public TObject {
 
   TString fOption; // option
   TObjArray* fSelectedTracks; //! array of selected tracks
+
+  // control histograms, note: only the list is saved, pointers only used for fast access
+  TList* fControlObjects; // list of control objects
+  TH1* fhEventControl; //! event control histogram
+  TH1* fhTrackControl; //! track control histogram
 
   ClassDef(AliDxHFEParticleSelection, 1);
 };
