@@ -522,12 +522,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
     const Int_t nBinsSparse2 = 7;
-    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   5,  18,             180, 10,fNTrigger};
+    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   8,  18,             180, 10,fNTrigger};
     if(cJetBranch.Contains("RandomCone")){
       nBins2[5] = 1;
     }
     const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.,-0.5};
-    const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 100, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5};
+    const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 80, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5};
     fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area;trigger",nBinsSparse2,nBins2,xmin2,xmax2);
     fHistList->Add(fhnJetPtQA[ij]);
     
