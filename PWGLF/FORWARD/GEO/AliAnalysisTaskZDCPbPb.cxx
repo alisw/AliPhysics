@@ -70,6 +70,9 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb():
     fhZNCvsZNA(0x0),    
     fhZPCvsZPA(0x0), 
     fhZDCCvsZDCCA(0x0),  
+    fhZNCvsZPC(0x0),
+    fhZNAvsZPA(0x0),
+    fhZNvsZP(0x0),
     fhZNvsZEM(0x0),      
     fhZNvsZEMwV0M(0x0),      
     fhZDCvsZEM(0x0), 
@@ -128,6 +131,9 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const char *name):
     fhZNCvsZNA(0x0),    
     fhZPCvsZPA(0x0), 
     fhZDCCvsZDCCA(0x0),  
+    fhZNCvsZPC(0x0),
+    fhZNAvsZPA(0x0),
+    fhZNvsZP(0x0),
     fhZNvsZEM(0x0),      
     fhZNvsZEMwV0M(0x0),      
     fhZDCvsZEM(0x0),     
@@ -202,6 +208,9 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana
     fhZNCvsZNA(ana.fhZNCvsZNA),    
     fhZPCvsZPA(ana.fhZPCvsZPA), 
     fhZDCCvsZDCCA(ana.fhZDCCvsZDCCA),  
+    fhZNCvsZPC(ana.fhZNCvsZPC),
+    fhZNAvsZPA(ana.fhZNAvsZPA),
+    fhZNvsZP(ana.fhZNvsZP),
     fhZNvsZEM(ana.fhZNvsZEM),      
     fhZNvsZEMwV0M(ana.fhZNvsZEM),      
     fhZDCvsZEM(ana.fhZDCvsZEM),     
@@ -377,8 +386,14 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fOutput->Add(fhZNCvsZNA);
   fhZPCvsZPA = new TH2F("hZPCvsZPA","hZPCvsZPA",200,-50.,50000,200,-50.,50000);	
   fOutput->Add(fhZPCvsZPA);
-  fhZDCCvsZDCCA = new TH2F("hZDCCvsZDCCA","hZDCCvsZDCCA",200,0.,180000.,200,0.,180000.);	
+  fhZDCCvsZDCCA = new TH2F("hZDCCvsZDCCA","hZDCCvsZDCCA",200,0.,180000.,200,0.,200000.);	
   fOutput->Add(fhZDCCvsZDCCA);
+  fhZNCvsZPC = new TH2F("hZNCvsZPC","hZNCvsZPC",200,-50.,50000,200,-50.,140000);
+  fOutput->Add(fhZNCvsZPC);
+  fhZNAvsZPA = new TH2F("hZNAvsZPA","hZNAvsZPA",200,-50.,50000,200,-50.,140000);	
+  fOutput->Add(fhZNAvsZPA);
+  fhZNvsZP = new TH2F("hZNvsZP","hZNvsZP",200,-50.,80000,200,-50.,200000);	
+  fOutput->Add(fhZNvsZP);
   fhZNvsZEM = new TH2F("hZNvsZEM","hZNvsZEM",200,0.,2500.,200,0.,200000.);	
   fOutput->Add(fhZNvsZEM);
   fhZNvsZEMwV0M = new TH2F("hZNvsZEMwV0M","hZNvsZEM wV0M",200,0.,2500.,200,0.,200000.);	
@@ -442,20 +457,20 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       if(!fIsMCInput && esd->GetEventType()!=7) return; 
 
       // ********* MC INFO *********************************
-      if(fIsMCInput){
+      /*if(fIsMCInput){
         AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-        if (!eventHandler) {
+        if(!eventHandler){
           printf("ERROR: Could not retrieve MC event handler");
           return;
         }
    
         AliMCEvent* mcEvent = eventHandler->MCEvent();
-        if (!mcEvent) {
+        if(!mcEvent){
           printf("ERROR: Could not retrieve MC event");
           return;
         }
-     }
-     // ****************************************************
+      }*/
+      // ****************************************************
      
      //AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
      // use response of AliPhysicsSelection
@@ -464,7 +479,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       AliCentrality *centrality = esd->GetCentrality();
       Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
       if(centrperc<fCentrLowLim || centrperc>fCentrUpLim) { 
-         return;
+//         return;
       }
 
       
@@ -580,6 +595,9 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
         fhZNCvsZNA->Fill(energyZNA, energyZNC);
 	fhZPCvsZPA->Fill(energyZPA, energyZPC);
 	fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
+        fhZNCvsZPC->Fill(energyZPC, energyZNC);
+	fhZNAvsZPA->Fill(energyZPA, energyZNA);
+	fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
 	fhZNvsZEM->Fill(energyZEM1+energyZEM2, energyZNC+energyZNA);	
 	fhZNvsZEMwV0M->Fill(energyZEM1+energyZEM2, energyZNC+energyZNA, centrperc);	
 	fhZDCvsZEM->Fill(energyZEM1+energyZEM2, energyZNA+energyZPA+energyZNC+energyZPC);	
@@ -700,6 +718,9 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       fhZNCvsZNA->Fill(energyZNA, energyZNC);
       fhZPCvsZPA->Fill(energyZPA, energyZPC);
       fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
+      fhZNCvsZPC->Fill(energyZPC, energyZNC);
+      fhZNAvsZPA->Fill(energyZPA, energyZNA);
+      fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
       fhZNvsZEM->Fill(energyZEM1+energyZEM2, energyZNC+energyZNA);    
       fhZDCvsZEM->Fill(energyZEM1+energyZEM2, energyZNA+energyZPA+energyZNC+energyZPC);   
       fhZDCvsZEMwV0M->Fill(energyZEM1+energyZEM2, energyZNA+energyZPA+energyZNC+energyZPC, centrperc);	
