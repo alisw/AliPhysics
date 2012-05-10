@@ -84,6 +84,7 @@ set ( SRCS
   AliGenReaderSL.cxx 
   AliGenMUONLMR.cxx
   AliGenLcLib.cxx
+  AliGenITSULib.cxx
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

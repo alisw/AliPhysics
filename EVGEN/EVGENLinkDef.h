@@ -68,4 +68,5 @@
 #pragma link C++ class  AliGenReaderSL+;
 #pragma link C++ class  AliGenMUONLMR+;
 #pragma link C++ class  AliGenLcLib+;
+#pragma link C++ class  AliGenITSULib;
 #endif
