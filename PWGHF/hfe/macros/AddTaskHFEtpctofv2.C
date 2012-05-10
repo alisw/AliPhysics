@@ -1,6 +1,12 @@
 AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=95, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpcdedx0=0.0, Double_t tpcdedx1=0.0, Double_t tpcdedx2=0.0, Double_t tpcdedx3=0.0, Double_t tpcdedx4=0.0, Int_t vzero=3, Int_t debuglevel=3){
 
-  
+  // libraries in case
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libPWGflowBase.so");
+  gSystem->Load("libPWGflowTasks.so");
+
+
   //set config file name
   TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
   TString checkconfig="ConfigHFE_FLOW_TOFTPC";
@@ -36,7 +42,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   mgr->ConnectOutput(task,1, mgr->CreateContainer(Form("bailhach_HFEv2EP_%s", appendixx.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data()));
   mgr->ConnectInput(task,0, cinput );    
 
-  return task;
+  return NULL;
 
   
 }
