@@ -43,7 +43,7 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double
   hfecuts->SetTOFPIDStep(kTRUE);
 
   // Name
-  TString appendix(TString::Format("TPC%dTPCr%dTPCpid%dTPCShared%dITScl%dChi2perITS%dPixelLayer%dDCAr%dz%dTOFsig%dTPCmindedx0%dTPCmindedx1%dTPCmindedx2%dTPCmindedx3%dTPCmindedx4%dVZERO%dDebugLevel%decorr%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t)dcaxy,(Int_t)dcaz,(Int_t)tofsig,(Int_t)tpcdedx0,(Int_t)tpcdedx1,(Int_t)tpcdedx2,(Int_t)tpcdedx3,(Int_t)tpcdedx4,vzero,debuglevel,(Int_t)withetacorrection));
+  TString appendix(TString::Format("TPC%dTPCr%dTPCpid%dTPCShared%dITScl%dChi2perITS%dPixelLayer%dDCAr%dz%dTOFsig%dTPCmindedx0%dTPCmindedx1%dTPCmindedx2%dTPCmindedx3%dTPCmindedx4%dVZERO%dDebugLevel%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t)dcaxy,(Int_t)dcaz,(Int_t)tofsig,(Int_t)tpcdedx0,(Int_t)tpcdedx1,(Int_t)tpcdedx2,(Int_t)tpcdedx3,(Int_t)tpcdedx4,vzero,debuglevel));
   printf("appendix %s\n", appendix.Data());
   
   // The task
