@@ -66,6 +66,11 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH1F *fhTDCraw[6];		//! raw TDC histos
   TH1F *fhTDC[6];		//! corrected TDC histos
   //
+  TH1F *fhZNCPMQiPMC[4];	//! PMQi/PMC for ZNC
+  TH1F *fhZNAPMQiPMC[4];	//! PMQi/PMC for ZNA
+  TH1F *fhZPCPMQiPMC[4];	//! PMQi/PMC for ZPC
+  TH1F *fhZPAPMQiPMC[4];	//! PMQi/PMC for ZPA
+  //
   TH2F *fhZNCvsZNA;		//! ZNC vs ZNA;
   TH2F *fhZPCvsZPA;		//! ZPC vs ZPA;
   TH2F *fhZDCCvsZDCCA;		//! ZDCC vs ZDCCA
