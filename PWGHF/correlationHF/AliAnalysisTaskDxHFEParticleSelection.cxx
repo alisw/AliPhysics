@@ -25,12 +25,14 @@
 
 #include "AliAnalysisTaskDxHFEParticleSelection.h"
 #include "AliDxHFEParticleSelection.h"
+#include "AliDxHFEParticleSelectionD0.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliESDInputHandler.h"
 #include "TChain.h"
 #include "TSystem.h"
 #include "TFile.h"
+#include <memory>
 
 /// ROOT macro for the implementation of ROOT specific class methods
 ClassImp(AliAnalysisTaskDxHFEParticleSelection)
@@ -83,6 +85,10 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
 
   fOutput = new TList;
   fOutput->SetOwner();
+
+  fSelector=new AliDxHFEParticleSelectionD0;
+  fSelector->InitControlObjects();
+  fOutput->Add(fSelector);
   
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
@@ -103,6 +109,17 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
   if(!pEvent){
     AliError(Form("input of wrong class type %s, expecting AliVEvent", pInput->ClassName()));
     return;
+  }
+
+  std::auto_ptr<TObjArray> selectedTracks(fSelector->Select(pEvent));
+  // TODO: use the array of selected track for something, right now
+  // only the control histograms of the selection class are filled
+  // note: the pointer is deleted automatically once the scope is left
+  // if the array should be published, the auto pointer must be released
+  // first, however some other cleanup will be necessary in that case
+  // probably a clone with a reduced AliVParticle implementation is
+  // appropriate.
+  if (selectedTracks.get()) {
   }
 
   PostData(1, fOutput);
