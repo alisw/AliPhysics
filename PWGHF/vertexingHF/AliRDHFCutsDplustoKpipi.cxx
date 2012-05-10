@@ -306,10 +306,7 @@ Bool_t AliRDHFCutsDplustoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsDplustoKpipi::GetPIDBitMask(AliAODRecoDecayHF *rd)
 {
-  //
-  // PID selection, returns 3 if accepted, 0 if not accepted
-  // 
-  if(!fUsePID || !rd) return 3;
+  if(!fUsePID || !rd) return -1;
   //if(fUsePID)printf("i am inside the pid \n");
   Int_t mask=0;
   Int_t sign=rd->GetCharge(); 
@@ -800,3 +797,94 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2011() {
   EnableSemiCentralTrigger();
 
 } 
+//--------------------------------------------------------------------------
+
+UInt_t AliRDHFCutsDplustoKpipi::GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const{
+
+  UInt_t bitmap=0;
+
+  Double_t sigmaTPCPionHyp=-999.;
+  Double_t sigmaTPCKaonHyp=-999.;
+  Double_t sigmaTPCProtonHyp=-999.;
+  Double_t sigmaTOFPionHyp=-999.;
+  Double_t sigmaTOFKaonHyp=-999.;
+  Double_t sigmaTOFProtonHyp=-999.;
+  
+  Int_t oksigmaTPCPionHyp=fPidHF->GetnSigmaTPC(track,2,sigmaTPCPionHyp);
+  Int_t oksigmaTPCKaonHyp=fPidHF->GetnSigmaTPC(track,3,sigmaTPCKaonHyp);
+  Int_t oksigmaTPCProtonHyp=fPidHF->GetnSigmaTPC(track,4,sigmaTPCProtonHyp);
+  Int_t oksigmaTOFPionHyp=fPidHF->GetnSigmaTOF(track,2,sigmaTOFPionHyp);
+  Int_t oksigmaTOFKaonHyp=fPidHF->GetnSigmaTOF(track,3,sigmaTOFKaonHyp);
+  Int_t oksigmaTOFProtonHyp=fPidHF->GetnSigmaTOF(track,4,sigmaTOFProtonHyp);
+  
+  if (oksigmaTPCPionHyp && sigmaTPCPionHyp>0.){
+    if (sigmaTPCPionHyp<1.) bitmap+=1<<kTPCPionLess1;
+    else{
+      if (sigmaTPCPionHyp<2.) bitmap+=1<<kTPCPionMore1Less2;
+      else { 
+        if (sigmaTPCPionHyp<3.) bitmap+=1<<kTPCPionMore2Less3; 
+        else bitmap+=1<<kTPCPionMore3;
+      }
+    }
+  }
+  
+  if (oksigmaTPCKaonHyp && sigmaTPCKaonHyp>0.){
+    if (sigmaTPCKaonHyp<1.) bitmap+=1<<kTPCKaonLess1;
+    else{
+      if (sigmaTPCKaonHyp<2.) bitmap+=1<<kTPCKaonMore1Less2;
+      else { 
+        if (sigmaTPCKaonHyp<3.) bitmap+=1<<kTPCKaonMore2Less3; 
+        else bitmap+=1<<kTPCKaonMore3;
+      }
+    }
+  }
+  
+  if (oksigmaTPCProtonHyp && sigmaTPCProtonHyp>0.){
+    if (sigmaTPCProtonHyp<1.) bitmap+=1<<kTPCProtonLess1;
+    else{
+      if (sigmaTPCProtonHyp<2.) bitmap+=1<<kTPCProtonMore1Less2;
+      else { 
+        if (sigmaTPCProtonHyp<3.) bitmap+=1<<kTPCProtonMore2Less3; 
+        else bitmap+=1<<kTPCProtonMore3;
+      }
+    }
+  }
+  
+  if (oksigmaTOFPionHyp && sigmaTOFPionHyp>0.){
+    if (sigmaTOFPionHyp<1.) bitmap+=1<<kTOFPionLess1;
+    else{
+      if (sigmaTOFPionHyp<2.) bitmap+=1<<kTOFPionMore1Less2;
+      else { 
+        if (sigmaTOFPionHyp<3.) bitmap+=1<<kTOFPionMore2Less3; 
+        else bitmap+=1<<kTOFPionMore3;
+      }
+    }
+  }
+  
+  if (oksigmaTOFKaonHyp && sigmaTOFKaonHyp>0.){
+    if (sigmaTOFKaonHyp<1.) bitmap+=1<<kTOFKaonLess1;
+    else{
+      if (sigmaTOFKaonHyp<2.) bitmap+=1<<kTOFKaonMore1Less2;
+      else { 
+        if (sigmaTOFKaonHyp<3.) bitmap+=1<<kTOFKaonMore2Less3; 
+        else bitmap+=1<<kTOFKaonMore3;
+      }
+    }
+  }
+  
+  if (oksigmaTOFProtonHyp && sigmaTOFProtonHyp>0.){
+    if (sigmaTOFProtonHyp<1.) bitmap+=1<<kTOFProtonLess1;
+    else{
+      if (sigmaTOFProtonHyp<2.) bitmap+=1<<kTOFProtonMore1Less2;
+      else { 
+        if (sigmaTOFProtonHyp<3.) bitmap+=1<<kTOFProtonMore2Less3; 
+        else bitmap+=1<<kTOFProtonMore3;
+      }
+    }
+  }
+  
+  
+  
+  return bitmap;
+
+}
