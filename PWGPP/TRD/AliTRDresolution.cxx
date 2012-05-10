@@ -1088,11 +1088,11 @@ void AliTRDresolution::MakeSummary()
       for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
         p=cOut->cd(icen*AliTRDgeometry::kNlayer+ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d%dEn", ily, icen)))) continue;
-        SetNormZ(h2, 1, 11, 1, -1, 10.);
-        SetRangeZ(h2, 0., 150, -25.);
+        SetNormZ(h2, 1, -1, 1, -1, 10.);
+        SetRangeZ(h2, -90., 90, -200.);
         h2->GetZaxis()->SetTitle("Rel. Det. Occup. [%]");
         h2->GetZaxis()->CenterTitle();
-        h2->Draw("colz");
+        h2->SetContour(9); h2->Draw("colz");
         MakeDetectorPlot(ily, "pad");
       }
     }
@@ -1102,8 +1102,8 @@ void AliTRDresolution::MakeSummary()
     for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
       p=cOut->cd(ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
       if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d_2D", ily)))) continue;
-      SetNormZ(h2, 1, 11, 1, -1, 10.);
-      SetRangeZ(h2, 0., 45., -15.);
+      SetNormZ(h2, 1, -1, 1, -1, 10.);
+      SetRangeZ(h2, -30., 30., -80.);
       h2->GetZaxis()->SetTitle("Rel. Mean(q) [%]");
       h2->GetZaxis()->CenterTitle();
       h2->Draw("colz");
@@ -1666,19 +1666,19 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   if(ndim > Int_t(kNdim))         ac = H->GetAxis(kNdim);         // init centrality selection
   // calculate size depending on debug level
   const Int_t nCen(debug?Int_t(AliTRDeventInfo::kCentralityClasses):1);
-  const Int_t nPt(debug?Int_t(kNpt):1);
+  const Int_t nPt(debug?Int_t(kNpt+2):1);
   const Int_t nSpc(1);//ndim>kNdimTrklt?fgkNbins[kSpeciesChgRC]:1);
   const Int_t nCh(debug?Int_t(kNcharge):1);
 
   // build list of projections
-  const Int_t nsel(AliTRDeventInfo::kCentralityClasses*AliTRDgeometry::kNlayer*kNpt*(AliPID::kSPECIES*kNcharge + 1));
+  const Int_t nsel(AliTRDeventInfo::kCentralityClasses*AliTRDgeometry::kNlayer*(kNpt+2)*(AliPID::kSPECIES*kNcharge + 1));
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   AliTRDrecoProjection hp[kTrkltNproj]; TObjArray php(kTrkltNproj);
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
-  const Char_t ptName[kNpt] = {'l', 'i', 'h'};
-  const Char_t *ptCut[kNpt] = {"p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "p_{t}[GeV/c]>=1.5"};
+  const Char_t ptName[kNpt+2] = {'L', 'l', 'i', 'h', 'H'};
+  const Char_t *ptCut[kNpt+2] = {"p_{t}[GeV/c]<0.5", "0.5<=p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "1.5<=p_{t}[GeV/c]<5.0", "p_{t}[GeV/c]>=5.0"};
 //  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
   const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"2800-inf", "2100-2799", "1400-2099", "700-1399", "0-699"};
   for(Int_t icen(0); icen<nCen; icen++){
@@ -1760,7 +1760,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     }
     // pt selection
     pt = 0; // low pt
-    if(ap) pt = TMath::Min(coord[kPt]-1, Int_t(kNpt)-1);
+    if(ap) pt = TMath::Min(coord[kPt], Int_t(kNpt)+1);
     // centrality selection
     cen = 0; // default
     if(ac) cen = coord[kNdim]-1;
@@ -2257,10 +2257,10 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
       if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
     /*!dy high pt*/
-    if(ich && (pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[2], 0)))){
-      if((pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[2], 0)))){
+    if(ich && (pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[3], 0)))){
+      if((pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[3], 0)))){
         (*pr0)+=(*pr1);
-        pr0->H()->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", ptName[2]), Form("TrackIn :: #Deltay{%s}", ptCut[2]));
+        pr0->H()->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", ptName[3]), Form("TrackIn :: #Deltay{%s}", ptCut[3]));
         pr0->SetShowRange(-0.3, 0.3);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
       }
@@ -2281,10 +2281,10 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
       if(ich==1 && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
     /*!dx low pt*/
-    if(ich && (pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[0], 5)))){
-      if((pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 5)))){
+    if(ich && (pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[1], 5)))){
+      if((pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[1], 5)))){
         (*pr0)+=(*pr1);
-        pr0->H()->SetNameTitle(Form("H%sTrkInX%c", mc?"MC":"", ptName[0]), Form("TrackIn :: #Deltax{%s}", ptCut[0]));
+        pr0->H()->SetNameTitle(Form("H%sTrkInX%c", mc?"MC":"", ptName[1]), Form("TrackIn :: #Deltax{%s}", ptCut[1]));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
       }
     }

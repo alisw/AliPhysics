@@ -545,10 +545,10 @@ void AliTRDrecoTask::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, In
       s += c; is++;
     }
   }
-  s/= is?is:1;
+  s/= (is?is:1);
   for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
     for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
-      if((c = h2->GetBinContent(ix, iy))<thr) h2->SetBinContent(ix, iy, thr-100);
+      if((c = h2->GetBinContent(ix, iy))<thr) h2->SetBinContent(ix, iy, thr-1000);
       else h2->SetBinContent(ix, iy, 100.*(c/s-1.));
     }
   }
@@ -688,10 +688,16 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
 // build the 2D projection and adjust binning
 
   const Char_t *title[] = {"Mean", "#mu", "MPV"};
-  if(!fH) return NULL;
+  if(!fH){
+    AliDebug(1, Form("Missing 3D in %s", GetName()));
+    return NULL;
+  }
   TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
   TH2D *h2s(NULL), *hyx(NULL);
-  if(!(h2s = (TH2D*)fH->Project3D("yx"))) return NULL;
+  if(!(h2s = (TH2D*)fH->Project3D("yx"))){
+    AliDebug(1, Form("Failed Project3D(\"yx\") in %s", GetName()));
+    return NULL;
+  }
   // save a copy of the original distribution
   if(!del){
     hyx = (TH2D*)h2s->Clone();
@@ -722,14 +728,16 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
   AliDebug(2, Form("%s[%s] nx[%d] ny[%d]", h2->GetName(), h2->GetTitle(), nx, ny));
   for(Int_t iy(0); iy<ny; iy++){
     for(Int_t ix(0); ix<nx; ix++){
-      h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, ix*dxBin+1, iy*dyBin+1, iy*dyBin+1);
+      h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin, iy*dyBin+1, (iy+1)*dyBin);
       Int_t ne((Int_t)h->Integral());
+      //printf("  x[%2d %2d] y[%2d %2d] ne[%4d]\n", ix*dxBin+1, (ix+1)*dxBin, iy*dyBin+1, (iy+1)*dyBin, ne);
       if(ne<nstat/2){
         h2->SetBinContent(ix+1, iy+1, -999);
         h2->SetBinError(ix+1, iy+1, 1.);
         n++;
       }else{
-        h = fH->ProjectionZ(Form("%s_z", h2->GetName()), (ix-1)*dxBin+1, (ix+1)*dxBin+1, (iy-1)*dyBin+1, (iy+1)*dyBin+1);
+        // redo the projection by adding 1 bin @ left and 1 bin @ right for smoothing
+        h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin, (ix+1)*dxBin+1, iy*dyBin, (iy+1)*dyBin+1);
         Float_t v(h->GetMean()), ve(h->GetRMS());
         if(mid==1){
           TF1 fg("fg", "gaus", az->GetXmin(), az->GetXmax());
@@ -756,7 +764,10 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
     }
   }
   if(h) delete h;
-  if(n==nx*ny){delete h2; h2=NULL;} // clean empty projections
+  if(n==nx*ny){  // clean empty projections
+    AliDebug(1, Form("Empty projection in %s", GetName()));
+    delete h2; h2=NULL;
+  }
   return h2;
 }
 
