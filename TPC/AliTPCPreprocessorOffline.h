@@ -82,7 +82,6 @@ public:
   void SwitchOnValidation(Bool_t val = kTRUE) {fSwitchOnValidation = val;} 
   Bool_t IsSwitchOnValidation() { return fSwitchOnValidation; } 
 
-
 private:
   Int_t fMinEntries;                      // minimal number of entries for fit
   Int_t startRun;                         // start Run - used to make fast selection in THnSparse

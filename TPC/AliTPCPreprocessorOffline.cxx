@@ -75,6 +75,7 @@
 #include "AliTPCParamSR.h"
 #include "AliTPCcalibTimeGain.h"
 #include "AliTPCcalibGainMult.h"
+#include "AliTPCcalibAlign.h"
 #include "AliSplineFit.h"
 #include "AliTPCComposedCorrection.h"
 #include "AliTPCExBTwist.h"
@@ -83,8 +84,9 @@
 #include "TChain.h"
 #include "TCut.h"
 #include "AliTrackerBase.h"
+#include "AliTracker.h"
 #include "AliTPCPreprocessorOffline.h"
-
+#include "AliTPCCorrectionFit.h"
 
 ClassImp(AliTPCPreprocessorOffline)
 
@@ -1238,7 +1240,7 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
 
 void AliTPCPreprocessorOffline::MakeFitTime(){
   //
-  // mak aligment fit - store results in the file
+  // make aligment fit - store results in the file
   //
   const Int_t kMinEntries=1000;
   MakeChainTime();
@@ -1300,7 +1302,10 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
 
 void AliTPCPreprocessorOffline::MakeChainTime(){
   //
+  //
+  //
   TFile f("CalibObjects.root");
+  
   //  const char *cdtype[7]={"ITS","TRD","Vertex","TOF","TPC","TPC0","TPC1"};
   //const char *cptype[5]={"dy","dz","dsnp","dtheta","d1pt"}; 
   const char * hname[5]={"dy","dz","dsnp","dtheta","d1pt"};
@@ -1313,6 +1318,7 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     calibTime = (AliTPCcalibTime*)f.Get("calibTime");
   }
   if (!calibTime) return;
+  AliTPCCorrectionFit::CreateAlignMaps(AliTracker::GetBz(), run);
   TTreeSRedirector *pcstream = new TTreeSRedirector("meanITSVertex.root");
   //
   Int_t ihis=0;
@@ -1632,6 +1638,4 @@ void AliTPCPreprocessorOffline::CreateAlignTime(TString fstring, TVectorD paramC
   corrTime->Write("FitCorrectionTime");
   f->Close();
 }
-
-
 
