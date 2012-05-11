@@ -697,7 +697,7 @@ Int_t AliTPCcalibDB::InitDeadMap() {
       chamberMedian[iROC]=0;
       TGraph *gr=sensor->GetGraph();
       AliSplineFit *fit=sensor->GetFit();
-      Int_t nmax=0;
+      Int_t nmax=1;
       Int_t nout=0;
       if ( gr && gr->GetN()>0 ){
         nmax=gr->GetN();
