@@ -27,7 +27,10 @@
 #include "AliTRDReconstructor.h"
 #include "AliTRDPIDResponse.h"
 #include "AliTRDrecoParam.h"
-#include "AliTRDdEdxUtils.h"
+#include "AliTRDdEdxBaseUtils.h"
+#include "AliTRDdEdxCalibHistArray.h"
+#include "AliTRDdEdxCalibUtils.h"
+#include "AliTRDdEdxReconUtils.h"
 
 ClassImp(AliTRDtrackV1)
 
@@ -398,14 +401,14 @@ Bool_t AliTRDtrackV1::CookPID()
 
   static Int_t nprint = 0;
   if(!nprint){
-    AliTRDdEdxUtils::PrintControl();
+    AliTRDdEdxBaseUtils::PrintControl();
     nprint++;
   }
 
   //do truncated mean
-  AliTRDdEdxUtils::SetObjPHQ(AliTRDcalibDB::Instance()->GetPHQ());
-  const Double_t mag    = AliTRDdEdxUtils::IsExBOn() ? GetBz()  : -1;
-  const Double_t charge = AliTRDdEdxUtils::IsExBOn() ? Charge() : -1;
+  AliTRDdEdxCalibUtils::SetObjArray(AliTRDcalibDB::Instance()->GetPHQ());
+  const Double_t mag    = AliTRDdEdxBaseUtils::IsExBOn() ? GetBz()  : -1;
+  const Double_t charge = AliTRDdEdxBaseUtils::IsExBOn() ? Charge() : -1;
   fTruncatedMean = CookTruncatedMean(0, mag, charge, kTRUE, fNchamberdEdx, fNclusterdEdx);
 
   return kTRUE;
@@ -949,13 +952,13 @@ Double_t  AliTRDtrackV1::CookTruncatedMean(const Bool_t kinvq, const Double_t ma
   //
 
   TVectorD arrayQ(200), arrayX(200);
-  ncls = AliTRDdEdxUtils::GetArrayClusterQ(kinvq, &arrayQ, &arrayX, this, timeBin0, timeBin1, tstep);
+  ncls = AliTRDdEdxReconUtils::GetArrayClusterQ(kinvq, &arrayQ, &arrayX, this, timeBin0, timeBin1, tstep);
 
-  const TObjArray *cobj = kcalib ? AliTRDdEdxUtils::GetObjPHQ(kinvq, mag, charge) : NULL;
+  const TObjArray *cobj = kcalib ? AliTRDdEdxCalibUtils::GetObj(kinvq, mag, charge) : NULL;
   
-  const Double_t tmean = AliTRDdEdxUtils::ToyCook(kinvq, ncls, &arrayQ, &arrayX, cobj);
+  const Double_t tmean = AliTRDdEdxReconUtils::ToyCook(kinvq, ncls, &arrayQ, &arrayX, cobj);
 
-  nch = AliTRDdEdxUtils::UpdateArrayX(ncls, &arrayX);
+  nch = AliTRDdEdxReconUtils::UpdateArrayX(ncls, &arrayX);
 
   if(Qs && Xs){
     (*Qs)=arrayQ;

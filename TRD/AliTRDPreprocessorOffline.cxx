@@ -65,7 +65,9 @@
 #include "AliTRDCommonParam.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
-#include "AliTRDdEdxUtils.h"
+#include "AliTRDdEdxBaseUtils.h"
+#include "AliTRDdEdxCalibHistArray.h"
+#include "AliTRDdEdxCalibUtils.h"
 
 ClassImp(AliTRDPreprocessorOffline)
 
@@ -150,8 +152,8 @@ AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
   if(fSparse) delete fSparse;
 
   if(IsPHQon()){
-    AliTRDdEdxUtils::DeleteCalibHist();
-    AliTRDdEdxUtils::DeleteCalibObj();
+    AliTRDdEdxCalibUtils::DeleteHistArray();
+    AliTRDdEdxCalibUtils::DeleteObjArray();
   }
 
   if(fAliTRDCalibraVdriftLinearFit) delete fAliTRDCalibraVdriftLinearFit;
@@ -180,7 +182,7 @@ void AliTRDPreprocessorOffline::Process(const Char_t* file, Int_t startRunNumber
 
   if(IsPHQon()){
     printf("\n                  AliTRDPreprocessorOffline PHQ on!!\n\n");
-    AliTRDdEdxUtils::PrintControl();
+    AliTRDdEdxBaseUtils::PrintControl();
     CalibPHQ(file, startRunNumber, endRunNumber, ocdbStorage);
   }
   else{
@@ -493,7 +495,7 @@ Bool_t AliTRDPreprocessorOffline::ReadPHQGlobal(const Char_t* fileName)
   // read calibration entries from file
   //
 
-  return AliTRDdEdxUtils::ReadCalibHist(fileName, fNameList);
+  return AliTRDdEdxCalibUtils::ReadHistArray(fileName, fNameList);
 }
 
 //___________________________________________________________________________________________________________________
@@ -950,14 +952,14 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePHQ(Int_t startRunNumber)
   //
   //Produce PHQ calibration results
   //
-  for(Int_t iter=0; iter<8; iter++){
-    THnF *hi = (THnF*) AliTRDdEdxUtils::GetHistPHQ()->At(iter);
-    TObjArray *obji = AliTRDdEdxUtils::GetCalibObj(hi, startRunNumber);
+  for(Int_t iter=0; iter<AliTRDdEdxCalibUtils::GetHistArray()->GetSize(); iter++){
+    THnBase *hi = (THnBase*) AliTRDdEdxCalibUtils::GetHistAt(iter);
+    TObjArray *obji = AliTRDdEdxCalibUtils::HistToObj(hi, startRunNumber);
     //printf("test analyze %s\n", obji->GetName());
-    AliTRDdEdxUtils::GetObjPHQ()->AddAt(obji, iter);
+    AliTRDdEdxCalibUtils::GetObjArray()->AddAt(obji, iter);
   }
 
-  fCalibObjects->AddAt(AliTRDdEdxUtils::GetObjPHQ(), kPHQ);
+  fCalibObjects->AddAt(AliTRDdEdxCalibUtils::GetObjArray(), kPHQ);
   return kTRUE;
 }
 
