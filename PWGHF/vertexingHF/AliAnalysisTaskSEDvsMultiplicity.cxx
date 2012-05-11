@@ -496,7 +496,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Double_t rapid=d->Y(fPdgMeson);
     Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
     if(!isFidAcc) continue;
-    Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+    Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
     Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
     if(passTopolCuts==0) continue;
     nSelectedNoPID++;
