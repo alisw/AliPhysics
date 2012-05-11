@@ -1690,7 +1690,6 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   if (!friendTrack->GetTPCOut())   return;
   // exclude crossing track
   if (friendTrack->GetTPCOut()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
-  if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ)   return;
   //
   AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(friendTrack->GetTPCOut()));
   AliTracker::PropagateTrackToBxByBz(&pTPC,kRefX,0.1,0.1,kFALSE);
