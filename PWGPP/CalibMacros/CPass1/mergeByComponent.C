@@ -18,8 +18,8 @@ void mergeByComponent(TString       component,
   //   to connect in case alien_xx utilities are not available 
   //   liek on the alien nodes
   /* load libs */
-  printf("Executing mergeByComponent.C\n");
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
+  printf("Executing MergeByComponent.C\n");
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   TH1::AddDirectory(0);
 
   Int_t fileDownloadTimeOut=10;
