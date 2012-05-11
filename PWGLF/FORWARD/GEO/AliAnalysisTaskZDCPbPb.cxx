@@ -91,7 +91,11 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb():
     fhZNCvscentrality(0x0),
     fhZNAvscentrality(0x0),
     fhZPCvscentrality(0x0),
-    fhZPAvscentrality(0x0)
+    fhZPAvscentrality(0x0),
+    fhZNCpmcvscentr(0x0),
+    fhZNApmcvscentr(0x0),
+    fhZPCpmcvscentr(0x0),
+    fhZPApmcvscentr(0x0)
     
 {   
    // Default constructor
@@ -152,7 +156,11 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const char *name):
     fhZNCvscentrality(0x0),
     fhZNAvscentrality(0x0),
     fhZPCvscentrality(0x0),
-    fhZPAvscentrality(0x0)
+    fhZPAvscentrality(0x0),
+    fhZNCpmcvscentr(0x0),
+    fhZNApmcvscentr(0x0),
+    fhZPCpmcvscentr(0x0),
+    fhZPApmcvscentr(0x0)
 
 {
 
@@ -229,7 +237,11 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana
     fhZNCvscentrality(ana.fhZNCvscentrality),
     fhZNAvscentrality(ana.fhZNAvscentrality),
     fhZPCvscentrality(ana.fhZPCvscentrality),
-    fhZPAvscentrality(ana.fhZPAvscentrality)
+    fhZPAvscentrality(ana.fhZPAvscentrality),
+    fhZNCpmcvscentr(ana.fhZNCpmcvscentr),
+    fhZNApmcvscentr(ana.fhZNApmcvscentr),
+    fhZPCpmcvscentr(ana.fhZPCpmcvscentr),
+    fhZPApmcvscentr(ana.fhZPApmcvscentr)
 
 {
   //
@@ -435,6 +447,15 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fhZPAvscentrality = new TH2F("hZPAvscentrality","ZPA vs. centrality",100,0.,100.,100,0.,100.);
   fOutput->Add(fhZPAvscentrality);
   
+  fhZNCpmcvscentr = new TH2F("hZNCpmcvscentr","ZNC PMC vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZNCpmcvscentr);
+  fhZNApmcvscentr = new TH2F("hZNApmcvscentr","ZNA PMC vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZNApmcvscentr);
+  fhZPCpmcvscentr = new TH2F("hZPCpmcvscentr","ZPC PMC vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZPCpmcvscentr);
+  fhZPApmcvscentr = new TH2F("hZPApmcvscentr","ZPA PMC vs. centrality",100,0.,100.,100,0.,100.);
+  fOutput->Add(fhZPApmcvscentr);
+  
   PostData(1, fOutput);
 }
 
@@ -618,6 +639,11 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
 	fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
 	
+	fhZNCpmcvscentr->Fill(centrperc, towZNC[0]/1000.);
+	fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1000.);
+	fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1000.);
+	fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1000.);
+	
       }
 //    } // PHYSICS SELECTION
       
@@ -738,6 +764,11 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       fhZNAvscentrality->Fill(centrperc, energyZNA/1000.);
       fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
       fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
+	
+      fhZNCpmcvscentr->Fill(centrperc, towZNC[0]/1000.);
+      fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1000.);
+      fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1000.);
+      fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1000.);
     //}
   }
   
