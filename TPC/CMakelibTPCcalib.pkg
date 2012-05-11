@@ -27,7 +27,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-#    AliTPCCorrectionFit.cxx 
+    AliTPCCorrectionFit.cxx 
     AliTPCcalibTracksCuts.cxx 
     AliTPCcalibTracks.cxx 
     AliTPCcalibTracksGain.cxx 

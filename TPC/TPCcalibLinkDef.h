@@ -35,7 +35,7 @@
 #pragma link C++ class AliTPCcalibGainMult+;
 #pragma link C++ class AliTPCkalmanAlign+;
 #pragma link C++ class AliTPCcalibSummary;
-//#pragma link C++ class AliTPCCorrectionFit;
+#pragma link C++ class AliTPCCorrectionFit;
 
 
 #endif
