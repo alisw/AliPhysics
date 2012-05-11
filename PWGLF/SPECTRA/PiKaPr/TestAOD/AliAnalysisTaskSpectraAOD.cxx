@@ -115,7 +115,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  if(!partMC->Charge()) continue;//Skip neutrals
 	  if(TMath::Abs(partMC->Eta()) > fTrackCuts->GetEta()) continue;
 	  fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
-
+	  
 	  if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    
 	  // check for true PID + and fill P_t histos 
 	  Int_t charge = partMC->Charge() > 0 ? kChPos : kChNeg ;
@@ -125,37 +125,37 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  }
 	}
     }
-    
+  
   //main loop on tracks
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
     if (!fTrackCuts->IsSelected(track)) continue;
     
     fPID->FillQAHistos(fHistMan, track, fTrackCuts);
-
+    
     // //cut on q vectors track-by-track FIXME
     // if ((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax() && track->Eta()<0) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax() && track->Eta()>=0)){
-	  
+    
     //calculate DCA for AOD track
     Double_t d[2], covd[3];
     AliAODTrack* track_clone=(AliAODTrack*)track->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
     Bool_t isDCA = track_clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),9999.,d,covd);
     delete track_clone;
     if(!isDCA)d[0]=-999;
-	  
+    
     fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),d[0]);  // PT histo
-	  
+    
     // get identity and charge
     Int_t idRec  = fPID->GetParticleSpecie(track, fTrackCuts);
     if(idRec == kSpUndefined) continue;
     Int_t charge = track->Charge() > 0 ? kChPos : kChNeg;
-
+    
     // rapidity cut
     if(!fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec)) continue;
-
+    
     // Fill histograms
     fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),d[0]);
-	  
+    
     /* MC Part */
     if (arrayMC) {
       AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
@@ -178,18 +178,20 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	if(mfl==3) isSecondaryWeak     = kTRUE; // add if(partMC->GetStatus() & kPDecay)? FIXME
 	else       isSecondaryMaterial = kTRUE;
       }
-
-
+      
+     
       // Get true ID
-      Bool_t idGen     = fPID->GetParticleSpecie(partMC);
-      //	    if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    // FIXME: do we need a rapidity cut on the generated?
-
+      Int_t idGen     = fPID->GetParticleSpecie(partMC);
+      //if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    // FIXME: do we need a rapidity cut on the generated?
+      
       // Fill histograms for primaries
+      //if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),d[0]); 
+
       if (isPrimary) {
-	fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),d[0]);  // PT histo
+	//fHistMan                    ->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),d[0]);  // PT histo
+	fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),d[0]);
 	if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),d[0]); 
 	fHistMan                    ->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),d[0]); 
-	      
       }
       //25th Apr - Muons are added to Pions -- FIXME
       if ( partMC->PdgCode() == 13 && idRec == kSpPion) { 
@@ -203,7 +205,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonMinus)->Fill(track->Pt(),d[0]); 
 	}
       }
-
+      
       ///..... END FIXME
 
       // Fill secondaries
