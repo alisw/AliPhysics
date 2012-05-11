@@ -399,7 +399,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     weight = -1;
     
   // Get MC primaries
-  TObjArray* tracksMC = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+  TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
+  delete tmpList;
   
   if (fAOD)
   {
