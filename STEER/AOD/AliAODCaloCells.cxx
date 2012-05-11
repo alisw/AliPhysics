@@ -58,7 +58,7 @@ AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
   for (Int_t i = 0; i < fNCells; i++) {
     fCellNumber[i]    = cells.fCellNumber[i];
     fAmplitude[i]     = cells.fAmplitude[i];
-    if(cells.fMCLabel)  fTime[i]      = cells.fTime[i];
+    if(cells.fTime)  fTime[i]      = cells.fTime[i];
     if(cells.fMCLabel)  fMCLabel[i]   = cells.fMCLabel[i];
     if(cells.fEFraction)fEFraction[i] = cells.fEFraction[i];    
   }
@@ -293,9 +293,26 @@ Bool_t AliAODCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t 
     fCellNumber[pos] = cellNumber;
     fAmplitude[pos]  = amplitude;
     
-    if(!fTime)      fTime      = new Double_t[fNCells];
-    if(!fMCLabel)   fMCLabel   = new Short_t[fNCells];
-    if(!fEFraction) fEFraction = new Double32_t[fNCells];
+    // note: initialize (can't use memset for non-0 values)
+    //       plus sizeof(Double32_t) is 0
+    if(!fTime){
+      fTime  = new Double32_t[fNCells];
+      
+      for( Int_t i = 0; i < fNCells; i++ )
+        fTime[i] = -1;
+    }
+    if(!fMCLabel){
+      fMCLabel = new Short_t[fNCells];
+      
+      for( Int_t i = 0; i < fNCells; i++ )
+        fMCLabel[i] = -1;
+    }
+    if(!fEFraction){
+      fEFraction = new Double32_t[fNCells];
+      
+      for( Int_t i = 0; i < fNCells; i++ )
+        fEFraction[i] = 0;
+    }
     
     fTime[pos]       = time;
     fMCLabel[pos]    = mclabel;

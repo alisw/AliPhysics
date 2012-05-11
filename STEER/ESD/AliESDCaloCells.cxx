@@ -294,8 +294,20 @@ Bool_t AliESDCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t 
     fAmplitude[pos]  = amplitude;
     fTime[pos]       = time;
     
-    if(!fMCLabel)   fMCLabel   = new Short_t[fNCells];
-    if(!fEFraction) fEFraction = new Double32_t[fNCells];
+    // note: initialize (can't use memset for non-0 values)
+    //       plus sizeof(Double32_t) is 0
+    if(!fMCLabel){
+      fMCLabel   = new Short_t[fNCells];
+
+      for( Int_t i = 0; i < fNCells; i++ )
+        fMCLabel[i] = -1;
+    }
+    if(!fEFraction){
+      fEFraction = new Double32_t[fNCells];
+
+      for( Int_t i = 0; i < fNCells; i++ )
+        fEFraction[i] = 0;
+    }
 
     fMCLabel[pos]    = mclabel;
     fEFraction[pos]  = efrac;
