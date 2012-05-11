@@ -185,16 +185,19 @@ void AliMUONRecoCheck::ResetStores()
 //_____________________________________________________________________________
 Bool_t AliMUONRecoCheck::InitCircuit()
 {
-
+  
   if ( fTriggerCircuit ) return kTRUE;
   
   if ( ! InitGeometryTransformer() ) return kFALSE;
   
-  fTriggerCircuit = new AliMUONTriggerCircuit(fGeometryTransformer);
-
   // reset tracker for local trigger to trigger track conversion
-  if ( ! AliMUONESDInterface::GetTracker() )
-    AliMUONESDInterface::ResetTracker();
+  if ( ! AliMUONESDInterface::GetTracker() ) {
+    AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+    if (!recoParam) return kFALSE;
+    AliMUONESDInterface::ResetTracker(recoParam);
+  }
+  
+  fTriggerCircuit = new AliMUONTriggerCircuit(fGeometryTransformer);
   
   return kTRUE;
 }
@@ -599,11 +602,12 @@ void AliMUONRecoCheck::MakeTriggerableTracks()
         
           if ( cath == AliMp::kCath0 ) nboard = pad.GetLocalBoardId(0);
         
-          AliMUONDigit* digit = new AliMUONDigit(detElemId,nboard,
-                                                 pad.GetLocalBoardChannel(0),cath);
-          digit->SetPadXY(ix,iy);
-          digit->SetCharge(1.);
-          digitStore.Add(*digit,AliMUONVDigitStore::kDeny);
+          AliMUONVDigit* digit = digitStore.Add(detElemId, nboard, pad.GetLocalBoardChannel(0),
+						cath, AliMUONVDigitStore::kDeny);
+          if (digit) {
+	    digit->SetPadXY(ix,iy);
+	    digit->SetCharge(1.);
+	  }
         }
       }
     
