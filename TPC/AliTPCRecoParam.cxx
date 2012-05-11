@@ -27,10 +27,6 @@
   1. if (not 0) from OCDB  - AliTPCcalibDB::GetRecoParam(eventtype)
   2. if (not 0 or 1) default parameter - High flux enevironment used  
 
-  FIXME:
-  In the future  reconstruction parameters should be changed on event basis
-  But for the moment, event types are still not defined 
-
 
   // Setting for systematic errors addition
   [0] - systematic RMSY
@@ -90,7 +86,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fLastSeedRowSec(120),
   fSeedGapPrim(6),
   fSeedGapSec(6),
-  fUseFieldCorrection(2),      // use field correction
+  fUseFieldCorrection(0),      // use field correction
   fUseComposedCorrection(kFALSE),      // use field correction
   fUseRPHICorrection(0),      // use rphi correction
   fUseRadialCorrection(0),    // use radial correction
