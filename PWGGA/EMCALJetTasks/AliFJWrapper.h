@@ -3,23 +3,24 @@
 
 // $Id$
 
-#if !defined(__CINT__) && !defined(__MAKECINT__)
+#if !defined(__CINT__) 
 
 #include <vector>
-#include <TNamed.h>
+#include <TString.h>
 #include "AliLog.h"
 #include "FJ_includes.h"
 
-class AliFJWrapper : public TNamed
+class AliFJWrapper
 {
  public:
   AliFJWrapper(const char *name, const char *title);
   virtual ~AliFJWrapper();
-  
+
   virtual void  AddInputVector (Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index = -99999);
   virtual void  AddInputVector (const fastjet::PseudoJet& vec,                Int_t index = -99999);
   virtual void  AddInputVectors(const std::vector<fastjet::PseudoJet>& vecs,  Int_t offsetIndex = -99999);
-  virtual void  Clear(const Option_t* opt = "");
+  virtual const char *ClassName()                            const { return "AliFJWrapper";              }
+  virtual void  Clear(const Option_t* /*opt*/ = "");
   virtual void  CopySettingsFrom (const AliFJWrapper& wrapper);
   virtual void  GetMedianAndSigma(Double_t& median, Double_t& sigma, Int_t remove = 0) const;
   fastjet::ClusterSequenceArea*         GetClusterSequence() const { return fClustSeq;                   }
@@ -27,6 +28,8 @@ class AliFJWrapper : public TNamed
   const std::vector<fastjet::PseudoJet> GetInclusiveJets()   const { return fInclusiveJets;              }
   std::vector<fastjet::PseudoJet>       GetJetConstituents(UInt_t idx) const;
   Double_t                              GetMedianUsedForBgSubtraction() const { return fMedUsedForBgSub; }
+  const char*                           GetName()            const { return fName;                       }
+  const char*                           GetTitle()           const { return fTitle;                      }
   Double_t                              GetJetArea         (UInt_t idx) const;
   Double_t                              GetJetSubtractedPt (UInt_t idx) const;
   virtual std::vector<double>           GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
@@ -52,6 +55,8 @@ class AliFJWrapper : public TNamed
   void SetupStrategyfromOpt(const char *option);
 
  protected:
+  TString                         fName;             //!
+  TString                         fTitle;            //!
   std::vector<fastjet::PseudoJet> fInputVectors;     //!
   std::vector<fastjet::PseudoJet> fInclusiveJets;    //!
   std::vector<double>             fSubtractedJetsPt; //!
@@ -100,7 +105,9 @@ namespace fj = fastjet;
 
 //_________________________________________________________________________________________________
 AliFJWrapper::AliFJWrapper(const char *name, const char *title)
-  : TNamed(name, title)
+  : 
+    fName              (name)
+  , fTitle             (title)
   , fInputVectors      ( )
   , fInclusiveJets     ( )
   , fSubtractedJetsPt  ( )
@@ -166,7 +173,7 @@ void AliFJWrapper::CopySettingsFrom(const AliFJWrapper& wrapper)
 }
 
 //_________________________________________________________________________________________________
-void AliFJWrapper::Clear(const Option_t *opt)
+void AliFJWrapper::Clear(const Option_t */*opt*/)
 {
   // Simply clear the input vectors.
   // Make sure done on every event if the instance is reused
@@ -183,8 +190,6 @@ void AliFJWrapper::Clear(const Option_t *opt)
   delete fPlugin;          fPlugin          = 0;
   delete fRange;           fRange           = 0;
   delete fClustSeq;        fClustSeq        = 0;
-
-  TNamed::Clear(opt);
 }
 
 //_________________________________________________________________________________________________
