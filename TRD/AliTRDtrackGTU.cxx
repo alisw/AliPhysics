@@ -247,7 +247,7 @@ Bool_t AliTRDtrackGTU::CookLabel()
     }
   }
 
-  Int_t index[16];
+  Int_t index[32];
   TMath::Sort(6, count, index);
   fLabel = label[index[0]];
 
