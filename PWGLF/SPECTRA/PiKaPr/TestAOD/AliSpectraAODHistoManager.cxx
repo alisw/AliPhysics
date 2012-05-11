@@ -262,6 +262,9 @@ TH1* AliSpectraAODHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particle
   case kHistPtRecSigma:
     baseId = kHistPtRecSigmaPionPlus;
     break;
+  case kHistPtRecTrue:
+    baseId = kHistPtRecTruePionPlus;
+    break;
   case kHistPtRecTruePrimary:
     baseId = kHistPtRecTruePrimaryPionPlus;
     break;

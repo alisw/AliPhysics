@@ -51,6 +51,7 @@ namespace AliSpectraNameSpace
    {
      kHistPtGenTruePrimary,
      kHistPtRecSigma,
+     kHistPtRecTrue,
      kHistPtRecTruePrimary,
      kHistPtRecSigmaPrimary,
      kHistPtRecSigmaSecondaryMaterial,
