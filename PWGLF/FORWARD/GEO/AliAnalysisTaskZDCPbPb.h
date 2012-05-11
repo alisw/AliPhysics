@@ -99,6 +99,11 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH2F *fhZNAvscentrality;	//! ZNA vs. centrality
   TH2F *fhZPCvscentrality;	//! ZPC vs. centrality
   TH2F *fhZPAvscentrality;	//! ZPA vs. centrality
+  //
+  TH2F *fhZNCpmcvscentr;	//! ZNC vs. centrality
+  TH2F *fhZNApmcvscentr;   //! ZNA vs. centrality
+  TH2F *fhZPCpmcvscentr;   //! ZPC vs. centrality
+  TH2F *fhZPApmcvscentr;   //! ZPA vs. centrality
  
   ClassDef(AliAnalysisTaskZDCPbPb,2); 
 
