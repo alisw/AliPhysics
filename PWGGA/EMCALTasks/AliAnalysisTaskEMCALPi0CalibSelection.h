@@ -20,31 +20,29 @@ public:
 
   AliAnalysisTaskEMCALPi0CalibSelection(const char* name);
   virtual ~AliAnalysisTaskEMCALPi0CalibSelection();
-
-private:
-  
-  AliAnalysisTaskEMCALPi0CalibSelection(const AliAnalysisTaskEMCALPi0CalibSelection&); 
-  AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&); 
-  
-public:
   
   // Implementation of interface methods
   void    UserCreateOutputObjects();
   
   void    UserExec(Option_t * opt);
-  
-  void    LocalInit() ;
-  
+    
   void    PrintInfo();
 
+  void    Terminate(Option_t* opt);
+  
   void    GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
   
   // Analysis parameter setting
   
   void    SetPairDTimeCut(Float_t t)                     { fDTimeCut    = t          ; }
+  void    SetClusterMinTime(Float_t tmin)                { fTimeMin     = tmin       ; }
+  void    SetClusterMaxTime(Float_t tmax)                { fTimeMax     = tmax       ; }
+
   void    SetAsymmetryCut(Float_t asy)                   { fAsyCut      = asy        ; }
+  
   void    SetClusterMinEnergy(Float_t emin)              { fEmin        = emin       ; }
   void    SetClusterMaxEnergy(Float_t emax)              { fEmax        = emax       ; }
+  
   void    SetClusterLambda0Cuts(Float_t min, Float_t max){ fL0max       = max        ;
                                                            fL0min       = min        ; }
   void    SetClusterMinNCells(Int_t n)                   { fMinNCells   = n          ; }
@@ -87,8 +85,10 @@ public:
   void    SetNMaskCellColumns(Int_t n) {
     if(n > fNMaskCellColumns){ delete [] fMaskCellColumns ; fMaskCellColumns = new Int_t[n] ; }
     fNMaskCellColumns = n ; }
+  
   void    SetMaskCellColumn(Int_t ipos, Int_t icol) { if(ipos < fNMaskCellColumns) fMaskCellColumns[ipos] = icol            ;
                                                       else printf("Not set, position larger than allocated set size first") ; }
+  
   Bool_t  MaskFrameCluster(const Int_t iSM, const Int_t ieta) const;
   
 private:
@@ -101,6 +101,9 @@ private:
   Float_t fL0max;              // max. cluster L0
 
   Float_t fDTimeCut;           // Maximum difference between time of cluster pairs (ns)
+  Float_t fTimeMax;            // Maximum cluster time (ns)
+  Float_t fTimeMin;            // Minimum cluster time (ns)
+
   Float_t fAsyCut;             // Asymmetry cut
   Int_t   fMinNCells;          // min. ncells in cluster
   Int_t   fGroupNCells;        // group n cells
@@ -183,7 +186,10 @@ private:
   TH2F*   fhClusterPairDiffTimeSameSector[AliEMCALGeoParams::fgkEMCALModules/2]; //! Diference in time of clusters same sector
   TH2F*   fhClusterPairDiffTimeSameSide[AliEMCALGeoParams::fgkEMCALModules-2];   //! Diference in time of clusters same side
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,17);
+  AliAnalysisTaskEMCALPi0CalibSelection(           const AliAnalysisTaskEMCALPi0CalibSelection&); 
+  AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&); 
+  
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,18);
 
 };
 
