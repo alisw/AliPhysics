@@ -1269,7 +1269,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     TClonesArray& dum = *fModA[module];
     fDetTypeSim->GetSimuParam()->SPDThresholds(module,thr,sigma);
     thr += 1.;
-    int label = -1;
+    int label = kMaxLabel;
     if (rawID2clusID) { // RS If the raw->cluster ID is set (filled by cluster finder) store cluster ID's in SDigits
       if (rawID2clusID->GetSize()<=countRW) {AliError(Form("The buffer of rawSPD to clusSPD ID's is shorter than current rawSPD ID=%d",countRW));}
       else label = (*rawID2clusID)[countRW];
@@ -1316,7 +1316,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
       if (module >= size) continue;
       last = fModA[module]->GetEntries();
       TClonesArray& dum = *fModA[module];
-      int label = -1;
+      int label = kMaxLabel;
       if (rawID2clusID) { // RS If the raw->cluster ID is set (filled by cluster finder) store cluster ID's in SDigits
 	if (rawID2clusID->GetSize()<=countRW) {AliError(Form("The buffer of rawSDD to clusSDD ID's is shorter than current rawSDD ID=%d",countRW));}
 	else label = (*rawID2clusID)[countRW];
@@ -1352,7 +1352,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 	
     last = fModA[module]->GetEntries();
     TClonesArray& dum = *fModA[module];
-    int label = -1;
+    int label = kMaxLabel;
     if (rawID2clusID) { // RS If the raw->cluster ID is set (filled by cluster finder) store cluster ID's in SDigits
       if (rawID2clusID->GetSize()<=countRW) {AliError(Form("The buffer of rawSSD to clusSSD ID's is shorter than current rawSSD ID=%d",countRW));}
       else label = (*rawID2clusID)[countRW];
@@ -1416,3 +1416,5 @@ void AliITS::WriteFOSignals(){
   fDetTypeSim->ProcessNoiseForFastOr();
   fDetTypeSim->WriteFOSignals();
 }
+
+

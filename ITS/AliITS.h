@@ -34,6 +34,8 @@ class AliITS : public AliDetector {
 
  public:
   enum {kSPD,kSDD,kSSD};
+  enum {kMaxLabel=3141593};  // default track label assigned to digits/clusters
+
     //================= Standard Classes ===============================
     AliITS();  // Default creator.
     AliITS(const Char_t *title); // standard Creator
