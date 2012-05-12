@@ -14,7 +14,7 @@ void PrintDetectorStatus();
 
 
 
-void makeOCDB(TString runNumberString, TString  ocdbStorage="", TString defaultOCDBstorage="raw://")
+void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstorage="raw://")
 {
   //
   // extract TPC OCDB entries
@@ -26,7 +26,6 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="", TString defaultO
   AliLog::SetClassDebugLevel("AliESDEvent",0);
 
   // config GRP
-  Int_t runNumber = runNumberString.Atoi();
   printf("runNumber from runCalibTrain = %d\n",runNumber);
   ConfigCalibTrain(runNumber, defaultOCDBstorage.Data());
 
@@ -35,8 +34,9 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="", TString defaultO
 //ocdbStorage+="?se=ALICE::CERN::SE";
 
   AliCDBManager::Instance()->SetSpecificStorage("*/*/*",ocdbStorage.Data());
-AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
-
+  if (gSystem->AccessPathName("TPC", kFileExists)==0) {  
+    AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
+  }
   // set OCDB storage
   if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
 

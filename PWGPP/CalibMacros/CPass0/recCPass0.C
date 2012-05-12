@@ -34,7 +34,11 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   if (nevents>0) rec.SetEventRange(0,nevents);
 
   // Remove recpoints after each event
-  rec.SetDeleteRecPoints("TPC TRD ITS");
+  rec.SetDeleteRecPoints("TPC TRD ITS"); 
+  //
+  //switch of TRD Kr pad-gain
+  AliTRDdEdxUtils::SetPadGainOn(kTRUE);
+
 
   // Switch off the V0 finder - saves time!
   //  rec.SetRunMultFinder(kFALSE);
@@ -52,6 +56,8 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   rec.SetUseTrackingErrorsForAlignment("ITS");
   rec.SetRunReconstruction("ALL");
   rec.SetFillESD("ALL");
+  rec.SetRunReconstruction("ITS TPC TRD TOF EMCAL PHOS HMPID T0");
+  rec.SetFillESD("ITS TPC TRD TOF EMCAL PHOS HMPID T0");
   rec.SetCleanESD(kFALSE);
 
   // Specific reco params for ZDC (why isn't this automatic?)

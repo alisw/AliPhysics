@@ -15,12 +15,19 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdb);
+  
   // Reconstruction settings
   AliReconstruction rec;
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
     rec.SetFromCDBSnapshot("OCDB.root");
   }
+
+  if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
+    gROOT->LoadMacro("localOCDBaccessConfig.C");
+    localOCDBaccessConfig();
+  }
+
   // All friends
   rec.SetFractionFriends(1.0);
 
@@ -35,6 +42,9 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
 
   // Remove recpoints after each event
   rec.SetDeleteRecPoints("TPC TRD ITS");
+ //switch of TRD Kr pad-gain
+  AliTRDdEdxUtils::SetPadGainOn(kTRUE);
+
 
   // Switch off the V0 finder - saves time!
   rec.SetRunMultFinder(kTRUE);
@@ -50,8 +60,11 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();
   rec.SetUseTrackingErrorsForAlignment("ITS");
-  rec.SetRunReconstruction("ALL");
-  rec.SetFillESD("ALL");
+  //rec.SetRunReconstruction("ALL");
+  //rec.SetFillESD("ALL");
+  rec.SetRunReconstruction("ITS TPC TRD TOF EMCAL PHOS HMPID T0");
+  rec.SetFillESD("ITS TPC TRD TOF EMCAL PHOS HMPID T0");
+
   rec.SetCleanESD(kFALSE);
 
   // Specific reco params for ZDC (why isn't this automatic?)

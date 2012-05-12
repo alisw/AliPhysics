@@ -75,3 +75,6 @@ mv syswatch.log syswatch_rec.log
 echo ">>>>>>> Running AliRoot to make calibration..."
 aliroot -l -b -q runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log
+
+echo ">>>>>>> Extracting system information..."
+aliroot -b -q $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeSyswatchCPass0.C\(\"AliESDfriends_v1.root\"\)
