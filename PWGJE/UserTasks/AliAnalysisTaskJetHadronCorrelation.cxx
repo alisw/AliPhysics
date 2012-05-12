@@ -420,11 +420,8 @@ Bool_t AliAnalysisTaskJetHadronCorrelation::Notify()
 												//cout<<" Xsec "<<fxsec<<" trial "<<ftrial<<endl;
 												fH1Xsec  ->Fill(0.,fxsec);
 												fH1Trials->Fill(0.,ftrial);
-								}else{
-												Float_t totalEvent;
-												totalEvent = GetTotalEvents(curfile->GetName());
-												fH1Events->Fill(0.,totalEvent);
 								}
+								//else    fH1Events->Fill(0.,ftrial);
 
 				}
 
@@ -444,6 +441,13 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 
 				// Main loop (called each event)
 				// Execute analysis for current event
+				AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+								((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+				if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
+								if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
+								return;
+				}
+				if(!IsMC)fH1Events->Fill(0);
 
 				// start jet analysis
 
@@ -772,38 +776,38 @@ Double_t AliAnalysisTaskJetHadronCorrelation::DeltaPhi(Double_t phi1,Double_t ph
 				return dphi;
 }
 
-Float_t AliAnalysisTaskJetHadronCorrelation::GetTotalEvents(const char* currFile){
-				Float_t totalevent;
-				TString file_es(currFile);
-				if(file_es.Contains("root_archive.zip#")){
-								Ssiz_t pos1 = file_es.Index("root_archive",12,TString::kExact);
-								Ssiz_t pos = file_es.Index("#",1,pos1,TString::kExact);
-								file_es.Replace(pos+1,20,"");
-				}
-				else {
-								// not an archive take the basename....
-								file_es.ReplaceAll(gSystem->BaseName(file_es.Data()),"");
-				}
-
-				TString cAdd = "";
-				cAdd += Form("%02d_",(int)((Radius+0.01)*10.));
-				cAdd += Form("B%d",(int)BackM);
-				cAdd += Form("_Filter%05d",Filtermask);
-				cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
-				cAdd += Form("_Skip%02d",SkipCone);
-				TString Dirname,Listname;
-				Dirname  = Form("PWG4_cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
-				Listname = Form("pwg4cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
-
-				TFile *feventstat = TFile::Open(Form("%s%s",file_es.Data(),"JetTasksOutput.root"));
-				gROOT->Cd(Dirname.Data());
-				TList *templist     = (TList*)gROOT->FindObject(Listname.Data());
-				TH1F* temphist = (TH1F*)templist->FindObject("fh1Trials");
-				totalevent = temphist->Integral();
-				//cout<<temphist->Integral()<<endl;
-				delete feventstat;
-				return totalevent;
-
-}
+//Float_t AliAnalysisTaskJetHadronCorrelation::GetTotalEvents(const char* currFile){
+//				Float_t totalevent;
+//				//TString file_es(currFile);
+//				//if(file_es.Contains("root_archive.zip#")){
+//				//				Ssiz_t pos1 = file_es.Index("root_archive",12,TString::kExact);
+//				//				Ssiz_t pos = file_es.Index("#",1,pos1,TString::kExact);
+//				//				file_es.Replace(pos+1,20,"");
+//				//}
+//				//else {
+//				//				// not an archive take the basename....
+//				//				file_es.ReplaceAll(gSystem->BaseName(file_es.Data()),"");
+//				//}
+//
+//				//TString cAdd = "";
+//				//cAdd += Form("%02d_",(int)((Radius+0.01)*10.));
+//				//cAdd += Form("B%d",(int)BackM);
+//				//cAdd += Form("_Filter%05d",Filtermask);
+//				//cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
+//				//cAdd += Form("_Skip%02d",SkipCone);
+//				//TString Dirname,Listname;
+//				//Dirname  = Form("PWG4_cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
+//				//Listname = Form("pwg4cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
+//
+//				//TFile *feventstat = TFile::Open(Form("%s%s",file_es.Data(),"JetTasksOutput.root"));
+//				//gROOT->Cd(Dirname.Data());
+//				//TList *templist     = (TList*)gROOT->FindObject(Listname.Data());
+//				//TH1F* temphist = (TH1F*)templist->FindObject("fh1Trials");
+//				//totalevent = temphist->Integral();
+//				////cout<<temphist->Integral()<<endl;
+//				//delete feventstat;
+//				return totalevent;
+//
+//}
 
 
