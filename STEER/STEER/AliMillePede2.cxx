@@ -31,6 +31,10 @@
 #include <fcntl.h>
 #include <fstream>
 
+#define _DUMP_EQ_BEFORE_
+#define _DUMP_EQ_AFTER_
+
+
 using namespace std;
 
 //#define _DUMPEQ_BEFORE_
@@ -119,7 +123,9 @@ AliMillePede2::AliMillePede2()
   fAccRunListWgh(0),
   fRunWgh(1),
   fkReGroup(0)
-{}
+{
+  fWghScl[0] = fWghScl[1] = -1;
+}
 
 //_____________________________________________________________________________________________
 AliMillePede2::AliMillePede2(const AliMillePede2& src) : 
@@ -143,7 +149,11 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
   fAccRunListWgh(0),
   fRunWgh(1),
   fkReGroup(0)
-{printf("Dummy\n");}
+{
+  fWghScl[0] = src.fWghScl[0];
+  fWghScl[1] = src.fWghScl[1];
+  printf("Dummy\n");
+}
 
 //_____________________________________________________________________________________________
 AliMillePede2::~AliMillePede2() 
@@ -1066,6 +1076,20 @@ Int_t AliMillePede2::GlobalFitIteration()
   //
   sws.Start();
 
+#ifdef _DUMP_EQ_BEFORE_
+  const char* faildumpB = Form("mp2eq_before%d.dat",fIter);
+  int defoutB = dup(1);
+  if (defoutB<0) AliFatal("Failed on dup");
+  int slvDumpB = open(faildumpB, O_RDWR|O_CREAT, 0666);
+  if (slvDumpB>=0) {
+    dup2(slvDumpB,1);
+    printf("Solving%d for %d params\n",fIter,fNGloSize);
+    matCGlo.Print("10");
+    for (int i=0;i<fNGloSize;i++) printf("b%2d : %+.10f\n",i,fVecBGlo[i]);
+  }
+  dup2(defoutB,1);
+  close(slvDumpB);
+#endif
   /*
   printf("Solving:\n");
   matCGlo.Print("l");
@@ -1110,6 +1134,21 @@ Int_t AliMillePede2::GlobalFitIteration()
   if (fGloSolveStatus==kFailed) return 0;
   //
   for (int i=fNGloPar;i--;) fDeltaPar[i] += fVecBGlo[i];    // Update global parameters values (for iterations)
+
+#ifdef _DUMP_EQ_AFTER_
+  const char* faildumpA = Form("mp2eq_after%d.dat",fIter);
+  int defoutA = dup(1);
+  if (defoutA<0) AliFatal("Failed on dup");
+  int slvDumpA = open(faildumpA, O_RDWR|O_CREAT, 0666);
+  if (slvDumpA>=0) {
+    dup2(slvDumpA,1);
+    printf("Solving%d for %d params\n",fIter,fNGloSize);
+    matCGlo.Print("10");
+    for (int i=0;i<fNGloSize;i++) printf("b%2d : %+.10f\n",i,fVecBGlo[i]);
+  }
+  dup2(defoutA,1);
+  close(slvDumpA);
+#endif
   //
   /*
   printf("Solved:\n");
