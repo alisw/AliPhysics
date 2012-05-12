@@ -14,7 +14,7 @@ void PrintDetectorStatus();
 
 
 
-void makeOCDB(TString runNumberString, TString  ocdbStorage="")
+void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstorage="raw://")
 {
   //
   // extract TPC OCDB entries
@@ -26,20 +26,20 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   AliLog::SetClassDebugLevel("AliESDEvent",0);
 
   // config GRP
-  Int_t runNumber = runNumberString.Atoi();
   printf("runNumber from runCalibTrain = %d\n",runNumber);
-  ConfigCalibTrain(runNumber, "raw://");
+  ConfigCalibTrain(runNumber, defaultOCDBstorage.Data());
 
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
 //ocdbStorage+="?se=ALICE::CERN::SE";
-
+  
   AliCDBManager::Instance()->SetSpecificStorage("*/*/*",ocdbStorage.Data());
-AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
-
+  if (gSystem->AccessPathName("TPC", kFileExists)==0) {  
+    AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
+  }
   // set OCDB storage
   if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-
+  TString ocdbLocal = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
   // TPC part
   TFile fcalib("CalibObjects.root");
   AliTPCPreprocessorOffline procesTPC;
@@ -50,11 +50,11 @@ AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://")
 
   // Make timegain calibration
   //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
-  procesTPC.CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbStorage);
+  procesTPC.CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbLocal);
 
   // Make vdrift calibration
   //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
-  procesTPC.CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbStorage);
+  procesTPC.CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbLocal);
   //
   // TOF part
   //
@@ -67,7 +67,7 @@ AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://")
 // T0 part
   AliT0PreprocessorOffline procesT0;
   // Make  calibration of channels offset
-   procesT0.setDArun(177000);
+   procesT0.setDArun(179000);
    procesT0.Process("CalibObjects.root",runNumber, runNumber, ocdbStorage);
 
 
@@ -95,21 +95,23 @@ AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://")
   
   
    //Mean Vertex
-   //AliMeanVertexPreprocessorOffline procesMeanVtx;
-   //procesMeanVtx.ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
+   AliMeanVertexPreprocessorOffline procesMeanVtx;
+   procesMeanVtx.ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
 
    //
    // Print calibration status into the stdout
    //
    Int_t trdStatus = procestrd.GetStatus();
    Int_t tofStatus = calibTask.GetStatus();
-   Int_t tpcStatus = ((procesTPC.ValidateTimeDrift() || procesTPC.ValidateTimeGain()));
+   Int_t t0Status = procesT0.GetStatus();
+   Int_t tpcStatus = ((procesTPC.ValidateTimeDrift() || procesTPC.ValidateTimeGain())==kFALSE);
    //
    printf("\n\n\n\n");
    printf("CPass1 calibration status\n");
    printf("TRD calibration status=%d\n",trdStatus);
    printf("TOF calibration status=%d\n",tofStatus);
    printf("TPC calibration status=%d\n",tpcStatus);
+   printf("T0  calibration status=%d\n",t0Status);
    PrintDetectorStatus();
    return;
 }

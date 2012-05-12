@@ -35,9 +35,9 @@ Bool_t doITS          = 1;
 Bool_t doITSsaTracks  = 1; 
 Bool_t doITSalign     = 1;  
 Bool_t doCALO         = 1;
-Bool_t doMUONTrig     = 1;
+Bool_t doMUONTrig     = 0;
 Bool_t doImpParRes    = 1;
-Bool_t doMUON         = 1;
+Bool_t doMUON         = 0;
 Bool_t doTOF          = 1;
 Bool_t doHMPID        = 1;
 Bool_t doT0           = 1;
@@ -53,17 +53,24 @@ Bool_t doFBFqa        = 1; // new - not ported yet to revision
 Int_t       debug_level        = 1;        // Debugging
 Int_t       run_number = 0;
 
+TString ocdbStorage("raw://");
+
 void QAtrain(Int_t run = 0, 
              const char *xmlfile   = "wn.xml",
-             Int_t  stage          = 0) /*0 = QA train, 1...n - merging stage*/
+             Int_t  stage          = 0, /*0 = QA train, 1...n - merging stage*/
+             const char* ocdb      = "raw://" )
 {
   run_number = run;
+  ocdbStorage = ocdb;
 
-  TGrid::Connect("alien://");
-  if (!gGrid || !gGrid->IsConnected()) {
-    ::Error("QAtrain", "No grid connection");
-    return;
-  }   
+  if (ocdbStorage.EqualTo("raw://"))
+  {
+    TGrid::Connect("alien://");
+    if (!gGrid || !gGrid->IsConnected()) {
+      ::Error("QAtrain", "No grid connection");
+      return;
+    }   
+  }
   // Set temporary merging directory to current one
   gSystem->Setenv("TMPDIR", gSystem->pwd());
   // Set temporary compilation directory to current one
@@ -139,14 +146,17 @@ void AddAnalysisTasks()
   //
   // CDB connection
   //
-  if (doCDBconnect) {
+  if (doCDBconnect && ocdbStorage.EqualTo("raw://")) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
     AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
     if (!taskCDB) return;
     AliCDBManager *cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage("raw://");
     taskCDB->SetRunNumber(run_number);
-  }    
+  } else {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
+    ConfigCalibTrain(run_number, ocdbStorage);
+  }
   
   //
   // Event Statistics (Jan Fiete)

@@ -243,6 +243,22 @@ void AddCalibLaser(TObject* task){
 }
 
 
+void AddCalibCosmic(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  // Histogram residuals and pulls of the track parameters in bins of track parameters
+  // Dump cosmic tracks to the tree
+  //
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
+  calibCosmic->SetDebugLevel(debugLevel);
+  calibCosmic->SetStreamLevel(1);
+  calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
+  myTask->AddJob(calibCosmic);
+}
+
+
 
 //_____________________________________________________________________________
 void SetupCalibTaskTrain1(TObject* task){
@@ -260,6 +276,7 @@ void SetupCalibTaskTrainAlign(TObject* task){
   //
   AddCalibAlign(task);
   AddCalibLaser(task);
+  //AddCalibCosmic(task);
 }
 
 void SetupCalibTaskTrainCluster(TObject* task){

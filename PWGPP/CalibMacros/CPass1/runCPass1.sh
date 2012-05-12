@@ -70,6 +70,9 @@ echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runNum..."
 mkdir Barrel
 mkdir OuterDet
 
+[[ -f localOCDBaccessConfig.C ]] && cp localOCDBaccessConfig.C Barrel
+[[ -f localOCDBaccessConfig.C ]] && cp localOCDBaccessConfig.C OuterDet
+
 cd Barrel
 time aliroot -l -b -q "../recCPass1.C(\"$fileName\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" 2>&1 | tee rec_Barrel.log
 mv syswatch.log syswatch_rec_Barrel.log
@@ -81,7 +84,7 @@ echo ">>>>>>> Doing ls -l"
 ls -l
 
 echo ">>>>>>> Running the QA train..."
-time aliroot -b -q ../QAtrain.C\($runNum\) 2>&1 | tee qa_Barrel.log
+time aliroot -b -q "../QAtrain.C($runNum,\"\",0,\"$ocdbPath\")" 2>&1 | tee qa_Barrel.log
 
 for file in *.stat; do
     mv $file $file.qa
@@ -103,7 +106,7 @@ time aliroot -l -b -q ../recCPass1_OuterDet.C\(\""$fileName\", $nEvents, \"$ocdb
 mv syswatch.log syswatch_rec_Outer.log
 
 echo ">>>>>>> Running the QA train..."
-time aliroot -b -q ../QAtrain.C\($runNum\) 2>&1 | tee qa_Outer.log
+time aliroot -b -q "../QAtrain.C($runNum,\"\",0,\"$ocdbPath\")" 2>&1 | tee qa_Outer.log
 
 for file in *.stat; do
     mv $file $file.qa
@@ -113,3 +116,7 @@ mv AliESDs.root ../AliESDs_Outer.root
 mv rec_Outer.log ../rec_Outer.log
 mv qa_Outer.log ../qa_Outer.out
 mv QAresults.root ../QAresults_Outer.root
+
+
+echo ">>>>>>> Extracting system information..."
+aliroot -b -q $ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C\(\"AliESDfriends_v1.root\"\)

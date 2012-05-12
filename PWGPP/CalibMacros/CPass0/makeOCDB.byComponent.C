@@ -12,14 +12,14 @@
 
 //__________________________________________________________________
 
-void makeOCDB(TString runNumberString, TString ocdbStorage = "")
+void makeOCDB(Int_t runNumber, TString ocdbStorage = "")
 {
-  makeOCDB("CalibObjects.root", "ALL", runNumberString, ocdbStorage);
+  makeOCDB("CalibObjects.root", "ALL", runNumber, ocdbStorage);
 }
 
 //___________________________________________________________________
 
-void makeOCDB(const Char_t *filename, TString component, TString runNumberString, TString ocdbStorage = "")
+void makeOCDB(const Char_t *filename, TString component, Int_t runNumber, TString ocdbStorage = "")
 {
   //
   // extract TPC OCDB entries
@@ -31,7 +31,6 @@ void makeOCDB(const Char_t *filename, TString component, TString runNumberString
   AliLog::SetClassDebugLevel("AliESDEvent",0);
 
   // config GRP
-  Int_t runNumber = runNumberString.Atoi();
   printf("runNumber from runCalibTrain = %d\n",runNumber);
 
   /* configCalibTrain only if needed */

@@ -42,6 +42,10 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   printf("ocdb from runCalibTrain = %s\n",ocdb);
   ConfigCalibTrain(runNumber, ocdb);
   
+  if (gROOT->LoadMacro("localOCDBaccessConfig.C")==0) {
+    localOCDBaccessConfig();
+  }
+  
   //
   // check the presence of the detectors
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
