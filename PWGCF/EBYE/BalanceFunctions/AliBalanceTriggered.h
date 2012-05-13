@@ -31,11 +31,9 @@ class AliBalanceTriggered : public TObject {
   // analysis setters
   void SetAnalysisLevel(const char* analysisLevel) {
     fAnalysisLevel = analysisLevel;}
-  void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
 
   // analysis getters
   const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
-  Bool_t GetShuffle() {return bShuffle;}
 
   // initialize histograms
   void InitHistograms(void);
@@ -57,7 +55,7 @@ class AliBalanceTriggered : public TObject {
   AliTHn *GetHistNnn() { return fHistNN;}
 
   // Fill balance function histograms
-  void FillBalance(Float_t fCentrality,vector<Double_t> **chargeVector);
+  void FillBalance(Float_t fCentrality,TObjArray* particles);
  
   // Get the balance function histogram 
   TH1D *GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax);
@@ -72,7 +70,6 @@ class AliBalanceTriggered : public TObject {
   TH2D* GetHistogram2D(Int_t histo, Int_t var1, Int_t var2, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax);
 
  private:
-  Bool_t bShuffle; //shuffled balance function object
   TString fAnalysisLevel; // ESD, AOD or MC
 
   AliTHn *fHistP;  //N+

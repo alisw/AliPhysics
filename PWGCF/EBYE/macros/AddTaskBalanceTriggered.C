@@ -10,6 +10,7 @@ Double_t gMinAcceptedProbability = 0.7;
 AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
 						 Double_t centrMax=100.,
 						 Bool_t gRunShuffling=kFALSE,
+						 Bool_t gRunMixing=kFALSE,
 						 TString centralityEstimator="V0M",
 						 Double_t vertexZ=10.,
 						 Double_t DCAxy=-1,
@@ -79,19 +80,23 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   // setup the balance function objects
   AliBalanceTriggered *bf  = 0;  // Balance Function object
   AliBalanceTriggered *bfs = 0;  // shuffled Balance function object
+  AliBalanceTriggered *bfm = 0;  // mixing Balance function object
   
   if (analysisType=="AOD"){
     
     bf = new AliBalanceTriggered();
     bf->SetAnalysisLevel(analysisType);
-    bf->SetShuffle(kFALSE);
     bf->InitHistograms();
     
     if(gRunShuffling){
       bfs = new AliBalanceTriggered();
       bfs->SetAnalysisLevel(analysisType);
-      bfs->SetShuffle(kTRUE);
       bfs->InitHistograms();
+    }
+    if(gRunMixing){
+      bfm = new AliBalanceTriggered();
+      bfm->SetAnalysisLevel(analysisType);
+      bfm->InitHistograms();
     }
   }
   else{
@@ -104,6 +109,7 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   AliAnalysisTaskTriggeredBF *taskTriggeredBF = new AliAnalysisTaskTriggeredBF("TaskTriggeredBF");
   taskTriggeredBF->SetAnalysisObject(bf);
   if(gRunShuffling) taskTriggeredBF->SetShufflingObject(bfs);
+  if(gRunMixing) taskTriggeredBF->SetMixingObject(bfm);
 
   taskTriggeredBF->SetCentralityPercentileRange(centrMin,centrMax);
   if(analysisType == "AOD") {

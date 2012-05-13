@@ -4,12 +4,14 @@ AliBalance *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 				     Double_t centrMin = 0.,
 				     Double_t centrMax = 100.,
 				     Bool_t bShuffle = kFALSE,
-				     Bool_t bHBTcut = kFALSE) {
+				     Bool_t bHBTcut = kFALSE,
+				     Bool_t bConversionCut = kFALSE) {
   //Function to setup the AliBalance object and return it
   AliBalance *gBalance = new AliBalance();
   gBalance->SetAnalysisLevel(analysisLevel);
   gBalance->SetShuffle(bShuffle);
   gBalance->SetHBTcut(bHBTcut);
+  gBalance->SetConversionCut(bConversionCut);
   if(centralityName) gBalance->SetCentralityIdentifier(centralityName);
   gBalance->SetCentralityInterval(centrMin,centrMax);
 
