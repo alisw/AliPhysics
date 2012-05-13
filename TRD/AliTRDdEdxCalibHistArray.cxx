@@ -48,7 +48,7 @@ AliTRDdEdxCalibHistArray::AliTRDdEdxCalibHistArray(const Bool_t kNoInv):
   const Double_t xmax[2]={nbin[0], 20};
 
   for(Int_t iter=0; iter<GetSize(); iter++){
-    THnBase *hi = new THnSparseS(GetNameAt(iter), "", 2, nbin, xmin, xmax);
+    THnBase *hi = new THnSparseF(GetNameAt(iter), "", 2, nbin, xmin, xmax);
     AddAt(hi, iter);
   }
 }
