@@ -425,6 +425,9 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     else if(fileName.Contains("AliESDs_wSDD.root")){
 	fileName.ReplaceAll("AliESDs_wSDD.root", "");
     }
+    else if(fileName.Contains("AliESDs_nob.root")){
+	fileName.ReplaceAll("AliESDs_nob.root", "");
+    }
     else if(fileName.Contains("AliAOD.root")){
 	fileName.ReplaceAll("AliAOD.root", "");
     }
