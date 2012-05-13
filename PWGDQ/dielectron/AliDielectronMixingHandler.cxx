@@ -441,11 +441,14 @@ void AliDielectronMixingHandler::MoveToSameVertex(AliVTrack * const vtrack, cons
     //translation
     Double_t vt[3] = {vMix[0]-vFirst[0],vMix[1]-vFirst[1],vMix[2]-vFirst[2]};
     //rotate to the track frame
-    track->Global2LocalPosition(vt,track->GetAlpha());
+//     track->Global2LocalPosition(vt,track->GetAlpha());
 
     //add to track position
-    x        = x       -vt[0];
-    param[0] = param[0]-vt[1];
+//     x        = x       -vt[0];
+//     param[0] = param[0]-vt[1];
+//     param[1] = param[1]-vt[2];
+    x        = x;
+    param[0] = param[0];
     param[1] = param[1]-vt[2];
     
     //set updated track information

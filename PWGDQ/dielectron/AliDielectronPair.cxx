@@ -24,6 +24,7 @@
 #include <AliVTrack.h>
 #include <AliVVertex.h>
 #include <AliPID.h>
+#include <AliExternalTrackParam.h>
 
 #include "AliDielectronPair.h"
 
@@ -212,6 +213,70 @@ void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double
     phiHE   = TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxisHE));
     phiCS   = TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxisCS));
   }
+}
+
+//______________________________________________
+Double_t AliDielectronPair::PsiPair(Double_t MagField) const
+{
+  //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
+  //to ID conversions. Adapted from AliTRDv0Info class
+  Double_t x, y, z;
+  x = fPair.GetX();
+  y = fPair.GetY();
+  z = fPair.GetZ();
+
+  Double_t m1[3] = {0,0,0};
+  Double_t m2[3] = {0,0,0};
+
+  m1[0] = fD1.GetPx();
+  m1[1] = fD1.GetPy();
+  m1[2] = fD1.GetPz();  
+
+  m2[0] = fD2.GetPx();
+  m2[1] = fD2.GetPy();
+  m2[2] = fD2.GetPz();
+
+  Double_t deltat = 1.;
+  deltat = TMath::ATan(m2[2]/(TMath::Sqrt(m2[0]*m2[0] + m2[1]*m2[1])+1.e-13))-
+	TMath::ATan(m1[2]/(TMath::Sqrt(m1[0]*m1[0] + m1[1]*m1[1])+1.e-13));//difference of angles of the two daughter tracks with z-axis
+
+  Double_t radiussum = TMath::Sqrt(x*x + y*y) + 50;//radius to which tracks shall be propagated
+
+  Double_t mom1Prop[3];
+  Double_t mom2Prop[3];
+
+  AliExternalTrackParam *d1 = static_cast<AliExternalTrackParam*>(fRefD1.GetObject());
+  AliExternalTrackParam *d2 = static_cast<AliExternalTrackParam*>(fRefD2.GetObject());
+
+  AliExternalTrackParam nt(*d1), pt(*d2);
+  //AliExternalTrackParam nt(), pt();
+  nt.CopyFromVTrack(d1);
+  pt.CopyFromVTrack(d2);
+
+  Double_t fPsiPair = 4.;
+  if(nt.PropagateTo(radiussum,MagField) == 0)//propagate tracks to the outside
+	fPsiPair =  -5.;
+  if(pt.PropagateTo(radiussum,MagField) == 0)
+	fPsiPair = -5.;
+  pt.GetPxPyPz(mom1Prop);//Get momentum vectors of tracks after propagation
+  nt.GetPxPyPz(mom2Prop);
+
+
+
+  Double_t pEle =
+	TMath::Sqrt(mom2Prop[0]*mom2Prop[0]+mom2Prop[1]*mom2Prop[1]+mom2Prop[2]*mom2Prop[2]);//absolute momentum val
+  Double_t pPos =
+	TMath::Sqrt(mom1Prop[0]*mom1Prop[0]+mom1Prop[1]*mom1Prop[1]+mom1Prop[2]*mom1Prop[2]);//absolute momentum val
+
+  Double_t scalarproduct =
+	mom1Prop[0]*mom2Prop[0]+mom1Prop[1]*mom2Prop[1]+mom1Prop[2]*mom2Prop[2];//scalar product of propagated posit
+
+  Double_t chipair = TMath::ACos(scalarproduct/(pEle*pPos));//Angle between propagated daughter tracks
+
+  fPsiPair =  TMath::Abs(TMath::ASin(deltat/chipair));
+
+  return fPsiPair;
+
 }
 
 //______________________________________________

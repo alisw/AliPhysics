@@ -132,6 +132,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "CosTilPhiHE",
   "ThetaCS",
   "PhiCS",
+  "PsiPair",
   "Cos2PhiCS",
   "CosTilPhiCS",
   "DeltaPhiV0ArpH2",        
