@@ -97,6 +97,7 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
       bfm = new AliBalanceTriggered();
       bfm->SetAnalysisLevel(analysisType);
       bfm->InitHistograms();
+      bfm->SetMixingTracks(50000)
     }
   }
   else{
@@ -149,11 +150,13 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutTriggeredBF = mgr->CreateContainer(Form("listTriggeredBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunShuffling) AliAnalysisDataContainer *coutTriggeredBFS = mgr->CreateContainer(Form("listTriggeredBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunMixing) AliAnalysisDataContainer *coutTriggeredBFM = mgr->CreateContainer(Form("listTriggeredBFMixed_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskTriggeredBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskTriggeredBF, 1, coutQA);
   mgr->ConnectOutput(taskTriggeredBF, 2, coutTriggeredBF);
   if(gRunShuffling) mgr->ConnectOutput(taskTriggeredBF, 3, coutTriggeredBFS);
+  if(gRunMixing) mgr->ConnectOutput(taskTriggeredBF, 4, coutTriggeredBFM);
 
   return taskTriggeredBF;
 }
