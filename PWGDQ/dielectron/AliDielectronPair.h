@@ -120,6 +120,8 @@ public:
   Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
   static Double_t ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
 			                       const Bool_t isHE, const Bool_t isTheta);
+
+  Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }
   const AliKFParticle& GetKFFirstDaughter()  const { return fD1;   }

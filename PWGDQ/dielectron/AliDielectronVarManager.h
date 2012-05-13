@@ -182,6 +182,7 @@ public:
     // the 3-mom vectors of target and projectile beams
     kThetaCS,                // theta in mother's rest frame in Collins-Soper picture
     kPhiCS,                  // phi in mother's rest frame in Collins-Soper picture
+    kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
     kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Sin(phi) +/- Cos(phi) in mother's rest frame in Collins-Soper picture; Sign is sign(Cos(phi))
     kDeltaPhiV0ArpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
@@ -1036,6 +1037,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPairType]     = pair->GetType();
 
   Double_t errPseudoProperTime2 = -1;
+  values[AliDielectronVarManager::kPsiPair]      = pair->PsiPair(fgEvent->GetMagneticField());
   values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetKFParticle().GetPseudoProperDecayTime(*(fgEvent->GetPrimaryVertex()), TDatabasePDG::Instance()->GetParticle(443)->Mass(), &errPseudoProperTime2 ) : -1e10;
   // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
 
