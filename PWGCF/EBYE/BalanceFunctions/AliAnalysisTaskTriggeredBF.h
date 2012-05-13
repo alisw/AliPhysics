@@ -13,6 +13,7 @@ class TH1F;
 class TH2F;
 
 class AliBalanceTriggered;
+class AliEventPoolManager;
 
 
 class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
@@ -38,6 +39,8 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
     fRunMixing = kTRUE;
     fMixedBalance = analysisMixed;
   }
+  void SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
+
  
   void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
     fVxMax = vx;
@@ -100,7 +103,11 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   Bool_t fRunShuffling;//run shuffling or not
   AliBalanceTriggered *fShuffledBalance; //TriggeredBF object (shuffled)
   Bool_t fRunMixing;//run mixing or not
+  Int_t  fMixingTracks;
   AliBalanceTriggered *fMixedBalance; //TriggeredBF object (mixed)
+  AliEventPoolManager*     fPoolMgr;         //! event pool manager
+    
+
   TList *fList; //fList object
   TList *fListTriggeredBF; //fList object
   TList *fListTriggeredBFS; //fList object (shuffling)

@@ -28,7 +28,9 @@
 #include "AliStack.h"
 
 #include "TH2D.h"    
-#include "AliTHn.h"              
+#include "AliTHn.h"             
+
+#include "AliEventPoolManager.h" 
 
 #include "AliAnalysisTaskTriggeredBF.h"
 #include "AliBalanceTriggered.h"
@@ -46,6 +48,7 @@ AliAnalysisTaskTriggeredBF::AliAnalysisTaskTriggeredBF(const char *name)
   fRunShuffling(kFALSE),
   fShuffledBalance(0),
   fRunMixing(kFALSE),
+  fMixingTracks(50000),
   fMixedBalance(0),
   fList(0),
   fListTriggeredBF(0),
@@ -264,25 +267,22 @@ void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
   }  
 
 
-  //  // event mixing
-  // Int_t trackDepth = fMixingTracks; 
-  // Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+  // Event Mixing
+  Int_t trackDepth = fMixingTracks; 
+  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
    
-  // Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
-  // Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
+  Double_t centralityBins[] = {0,1,2,3,4,5,6,7,8,9,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,90,100}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+  Double_t* centbins = centralityBins;
+  Int_t nCentralityBins  = 26;
+
   
-  // Int_t nZvtxBins  = 7+1+7;
-  // // bins for second buffer are shifted by 100 cm
-  // Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7, 93, 95, 97, 99, 101, 103, 105, 107 };
-  // Double_t* zvtxbin = vertexBins;
+  // bins for second buffer are shifted by 100 cm
+  Double_t vertexBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+  Double_t* vtxbins = vertexBins;
+  Int_t nVertexBins  = 9;
 
-  // if (fHistos->GetUEHist(2)->GetEventHist()->GetNVar() > 2)
-  // {
-  //   nZvtxBins = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(2);
-  //   zvtxbin = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(2, 0)->GetXbins()->GetArray();
-  // }
+  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
 
-  // fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
 
   // Post output data.
   PostData(1, fList);
@@ -322,57 +322,52 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
       tracksShuffled = GetShuffledTracks(tracksMain);
     }
     
-    //   if (fFillMixed)
-    //   {
-    //     // event mixing
-    
-    //     // 1. First get an event pool corresponding in mult (cent) and
-    //     //    zvertex to the current event. Once initialized, the pool
-    //     //    should contain nMix (reduced) events. This routine does not
-    //     //    pre-scan the chain. The first several events of every chain
-    //     //    will be skipped until the needed pools are filled to the
-    //     //    specified depth. If the pool categories are not too rare, this
-    //     //    should not be a problem. If they are rare, you could lose
-//     //    statistics.
-
-//     // 2. Collect the whole pool's content of tracks into one TObjArray
-//     //    (bgTracks), which is effectively a single background super-event.
-
-//     // 3. The reduced and bgTracks arrays must both be passed into
-//     //    FillCorrelations(). Also nMix should be passed in, so a weight
-//     //    of 1./nMix can be applied.
-
-//     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
-    
-//     if (!pool)
-//       AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
-    
-//     //pool->SetDebug(1);
-     
-//     if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
-//     {
-      
-//       Int_t nMix = pool->GetCurrentNEvents();
-// //       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
-      
-//       ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
-//       ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-//       if (pool->IsReady())
-// 	((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
-    
-//       // Fill mixed-event histos here  
-//       for (Int_t jMix=0; jMix<nMix; jMix++) 
-//       {
-// 	TObjArray* bgTracks = pool->GetEvent(jMix);
+    // Event mixing --> UPDATE POOL IS MISSING!!!
+    if (fRunMixing)
+      {
+        // 1. First get an event pool corresponding in mult (cent) and
+        //    zvertex to the current event. Once initialized, the pool
+        //    should contain nMix (reduced) events. This routine does not
+        //    pre-scan the chain. The first several events of every chain
+        //    will be skipped until the needed pools are filled to the
+        //    specified depth. If the pool categories are not too rare, this
+        //    should not be a problem. If they are rare, you could lose`
+	//    statistics.
 	
-// 	if (!fSkipStep6)
-// 	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0));
-
-// 	if (fTwoTrackEfficiencyCut > 0)
-// 	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
-//       }
-//     }
-
+	// 2. Collect the whole pool's content of tracks into one TObjArray
+	//    (bgTracks), which is effectively a single background super-event.
+	
+	// 3. The reduced and bgTracks arrays must both be passed into
+	//    FillCorrelations(). Also nMix should be passed in, so a weight
+	//    of 1./nMix can be applied.
+	
+	AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, eventMain->GetPrimaryVertex()->GetZ());
+	
+	if (!pool)
+	  AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, eventMain->GetPrimaryVertex()->GetZ()));
+	
+	//pool->SetDebug(1);
+	
+	if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
+	  {
+	    
+	    Int_t nMix = pool->GetCurrentNEvents();
+	    cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+	    
+	    //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+	    //((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+	    //if (pool->IsReady())
+	    //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
+	    
+	    // Fill mixed-event histos here  
+	    for (Int_t jMix=0; jMix<nMix; jMix++) 
+	      {
+		TObjArray* tracksMixed = pool->GetEvent(jMix);
+		fMixedBalance->FillBalance(fCentrality,tracksMixed); //NOW ONLY THE MIXED EVENT ITSELF IS FILLED --> DO ONE TRACK OF MAIN AND ONE OF MIXED (LIKE UEHISTOGRAMS!!!!)
+	      }
+	  }
+      }
+    
     // calculate balance function
     fBalance->FillBalance(fCentrality,tracksMain);//,chargeVectorMixed); // here comes the mixing... in some time
     
@@ -380,7 +375,6 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
     if(fRunShuffling && tracksShuffled != NULL) {
        fShuffledBalance->FillBalance(fCentrality,tracksShuffled);
     }
-    
     
   }//AOD analysis
   else{
