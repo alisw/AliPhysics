@@ -368,6 +368,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   Int_t gNumberOfAcceptedTracks = 0;
   Float_t fCentrality           = 0.;
 
+  // for HBT like cuts need magnetic field sign
+  Float_t bSign = 0; // only used in AOD so far
+
   // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
   vector<Double_t> *chargeVectorShuffle[9];   // this will be shuffled
   vector<Double_t> *chargeVector[9];          // original charge
@@ -631,6 +634,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       Printf("ERROR: gAOD not available");
       return;
     }
+
+    // for HBT like cuts need magnetic field sign
+    bSign = (gAOD->GetMagneticField() > 0) ? 1 : -1;
 
     AliAODHeader *aodHeader = gAOD->GetHeader();
 
@@ -1132,20 +1138,20 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       return;
   }
   fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
-  
+
   // calculate balance function
   if(fUseMultiplicity) 
-    fBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVector);
+    fBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVector,bSign);
   else                 
-    fBalance->CalculateBalance(fCentrality,chargeVector);
+    fBalance->CalculateBalance(fCentrality,chargeVector,bSign);
 
   if(fRunShuffling) {
     // shuffle charges
     random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
     if(fUseMultiplicity) 
-      fShuffledBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVectorShuffle);
+      fShuffledBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVectorShuffle,bSign);
     else                 
-      fShuffledBalance->CalculateBalance(fCentrality,chargeVectorShuffle);
+      fShuffledBalance->CalculateBalance(fCentrality,chargeVectorShuffle,bSign);
   }
 }      
 

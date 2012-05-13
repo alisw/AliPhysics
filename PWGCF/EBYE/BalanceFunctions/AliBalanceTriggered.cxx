@@ -45,7 +45,6 @@ ClassImp(AliBalanceTriggered)
 //____________________________________________________________________//
 AliBalanceTriggered::AliBalanceTriggered() :
   TObject(), 
-  bShuffle(kFALSE),
   fAnalysisLevel("AOD"),
   fHistP(0x0),
   fHistN(0x0),
@@ -61,7 +60,7 @@ AliBalanceTriggered::AliBalanceTriggered() :
 
 //____________________________________________________________________//
 AliBalanceTriggered::AliBalanceTriggered(const AliBalanceTriggered& balance):
-  TObject(balance), bShuffle(balance.bShuffle), 
+  TObject(balance), 
   fAnalysisLevel(balance.fAnalysisLevel),
   fHistP(balance.fHistP),
   fHistN(balance.fHistN),
@@ -246,7 +245,7 @@ void AliBalanceTriggered::InitHistograms() {
 }
 
 //____________________________________________________________________//
-void AliBalanceTriggered::FillBalance(Float_t fCentrality,vector<Double_t> **chargeVector) {
+void AliBalanceTriggered::FillBalance(Float_t fCentrality,TObjArray *particles) {
   // Calculates the balance function
 
  
@@ -257,19 +256,21 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,vector<Double_t> **cha
     InitHistograms();
   }
 
-  Int_t gNtrack = chargeVector[0]->size();
+  Int_t gNtrack = particles->GetEntriesFast();
   Double_t trackVarsSingle[nTrackVarsSingle];
   Double_t trackVarsPair[nTrackVarsPair];
 
   // 1st particle loop
   for(Int_t i = 0; i < gNtrack;i++){
 
-    Short_t  charge = (Short_t) chargeVector[0]->at(i);
-    trackVarsSingle[0]    =  chargeVector[2]->at(i);  //eta
-    trackVarsSingle[1]    =  chargeVector[3]->at(i);  //phi
-    trackVarsSingle[2]    =  chargeVector[7]->at(i);  //pt trigger
-    trackVarsSingle[3]    =  fCentrality;             //centrality (really as variable here????)
+    AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
 
+    Short_t  charge = (Short_t) firstParticle->Charge();
+    trackVarsSingle[0]    =  firstParticle->Eta(); //eta
+    trackVarsSingle[1]    =  firstParticle->Phi(); //phi
+    trackVarsSingle[2]    =  firstParticle->Pt();  //pt trigger
+    trackVarsSingle[3]    =  fCentrality;          //centrality (really as variable here????)
+    
     //fill single particle histograms
     if(charge > 0)  fHistP->Fill(trackVarsSingle,0,1.); 
     else            fHistN->Fill(trackVarsSingle,0,1.); 
@@ -280,17 +281,19 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,vector<Double_t> **cha
     //                          --> can be handled afterwards by using assoc. as trigger as well ?!
 
     for(Int_t j = 0; j < i; j++) {
+
+      AliVParticle* secondParticle = (AliVParticle*) particles->At(j);
       
-      Short_t charge2 = (Short_t) chargeVector[0]->at(j);
-      trackVarsPair[0]    =  chargeVector[2]->at(i) - chargeVector[2]->at(j) ;  // delta eta
-      trackVarsPair[1]    =  chargeVector[3]->at(i) - chargeVector[3]->at(j);   // delta phi
+      Short_t charge2 = (Short_t) secondParticle->Charge();
+      trackVarsPair[0]    =  firstParticle->Eta() - secondParticle->Eta();  // delta eta
+      trackVarsPair[1]    =  firstParticle->Phi() - secondParticle->Phi();  // delta phi
       if (trackVarsPair[1] > 180)   // delta phi between -180 and 180 
 	trackVarsPair[1] -= 360;
       if (trackVarsPair[1] <  - 180) 
 	trackVarsPair[1] += 360;
  
-      trackVarsPair[2]    =  chargeVector[7]->at(j);  // pt
-      trackVarsPair[3]    =  chargeVector[7]->at(i);  // pt trigger
+      trackVarsPair[2]    =  firstParticle->Pt();  // pt
+      trackVarsPair[3]    =  secondParticle->Pt();  // pt trigger
       trackVarsPair[4]    =  fCentrality;             // centrality
 
       if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVarsPair,0,1.); 

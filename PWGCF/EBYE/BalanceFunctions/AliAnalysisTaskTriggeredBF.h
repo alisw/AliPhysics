@@ -4,18 +4,16 @@
 // Analysis task for the TriggeredBF code
 // Authors: Panos Cristakoglou@cern.ch, m.weber@cern.ch
 
-class TList;
-class TH1F;
-class TH2F;
-class TF1;
-
-class AliBalanceTriggered;
-class AliESDtrackCuts;
-
+#include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliBalanceTriggered.h"
 
- 
+class TList;
+class TH1F;
+class TH2F;
+
+class AliBalanceTriggered;
+
 
 class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
  public:
@@ -35,6 +33,10 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   void SetShufflingObject(AliBalanceTriggered *const analysisShuffled) {
     fRunShuffling = kTRUE;
     fShuffledBalance = analysisShuffled;
+  }
+  void SetMixingObject(AliBalanceTriggered *const analysisMixed) {
+    fRunMixing = kTRUE;
+    fMixedBalance = analysisMixed;
   }
  
   void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
@@ -90,12 +92,19 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   
 
  private:
+  Float_t    IsEventAccepted(AliVEvent* event);
+  TObjArray* GetAcceptedTracks(AliVEvent* event);
+  TObjArray* GetShuffledTracks(TObjArray* tracks);
+
   AliBalanceTriggered *fBalance; //TriggeredBF object
   Bool_t fRunShuffling;//run shuffling or not
   AliBalanceTriggered *fShuffledBalance; //TriggeredBF object (shuffled)
+  Bool_t fRunMixing;//run mixing or not
+  AliBalanceTriggered *fMixedBalance; //TriggeredBF object (mixed)
   TList *fList; //fList object
   TList *fListTriggeredBF; //fList object
-  TList *fListTriggeredBFS; //fList object
+  TList *fListTriggeredBFS; //fList object (shuffling)
+  TList *fListTriggeredBFM; //fList object (mixing)
   TList *fHistListPIDQA;  //! list of histograms
 
   TH1F *fHistEventStats; //event stats
@@ -154,6 +163,56 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   AliAnalysisTaskTriggeredBF& operator=(const AliAnalysisTaskTriggeredBF&); // not implemented
   
   ClassDef(AliAnalysisTaskTriggeredBF, 1); // example of analysis
+};
+
+// class used for io with AliBalance (taken from AliAnalysisTaskPhiCorrelations)
+class AliBFBasicParticle : public AliVParticle
+{ 
+  public:
+    AliBFBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    {
+    }
+    ~AliBFBasicParticle() {}
+    
+    // kinematics
+    virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pt() const { return fpT; }
+    virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
+
+
+    virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Short_t Charge()      const { return fCharge; }
+    virtual Short_t SetCharge(Short_t charge)   { fCharge = charge; }
+    virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
+    // PID
+    virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }      
+    virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+    
+  private:
+    Float_t fEta;      // eta
+    Float_t fPhi;      // phi
+    Float_t fpT;       // pT
+    Short_t fCharge;   // charge
+    
+    ClassDef( AliBFBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
 #endif

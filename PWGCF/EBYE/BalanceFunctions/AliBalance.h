@@ -47,6 +47,7 @@ class AliBalance : public TObject {
     fAnalysisLevel = analysisLevel;}
   void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
   void SetHBTcut(Bool_t HBTcut) {bHBTcut = HBTcut;}
+  void SetConversionCut(Bool_t ConversionCut) {bConversionCut = ConversionCut;}
   void SetInterval(Int_t iAnalysisType, Double_t p1Start, Double_t p1Stop,
 		   Int_t ibins, Double_t p2Start, Double_t p2Stop);
   void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
@@ -79,7 +80,7 @@ class AliBalance : public TObject {
   Double_t GetNnp(Int_t analysisType, Int_t p2) const { 
     return 1.0*fNnp[analysisType][p2]; }
 
-  void CalculateBalance(Float_t fCentrality, vector<Double_t> **chargeVector);
+  void CalculateBalance(Float_t fCentrality, vector<Double_t> **chargeVector,Float_t bSign = 0.);
   
   Double_t GetBalance(Int_t a, Int_t p2);
   Double_t GetError(Int_t a, Int_t p2);
@@ -111,8 +112,11 @@ class AliBalance : public TObject {
   void PrintResults(Int_t iAnalysisType, TH1D *gHist);
 
  private:
+  inline Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+
   Bool_t bShuffle; // shuffled balance function object
   Bool_t bHBTcut;  // apply HBT like cuts
+  Bool_t bConversionCut;  // apply conversion cuts
 
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
@@ -145,9 +149,37 @@ class AliBalance : public TObject {
   TH2D *fHistPP[ANALYSIS_TYPES]; //N++
   TH2D *fHistNN[ANALYSIS_TYPES]; //N--
 
+
+
   AliBalance & operator=(const AliBalance & ) {return *this;}
 
   ClassDef(AliBalance, 3)
 };
+
+Float_t AliBalance::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
+{ 
+  //
+  // calculates dphistar
+  //
+  
+  Float_t dphistar = phi1 - phi2 - charge1 * bSign * TMath::ASin(0.075 * radius / pt1) + charge2 * bSign * TMath::ASin(0.075 * radius / pt2);
+  
+  static const Double_t kPi = TMath::Pi();
+  
+  // circularity
+//   if (dphistar > 2 * kPi)
+//     dphistar -= 2 * kPi;
+//   if (dphistar < -2 * kPi)
+//     dphistar += 2 * kPi;
+  
+  if (dphistar > kPi)
+    dphistar = kPi * 2 - dphistar;
+  if (dphistar < -kPi)
+    dphistar = -kPi * 2 - dphistar;
+  if (dphistar > kPi) // might look funny but is needed
+    dphistar = kPi * 2 - dphistar;
+  
+  return dphistar;
+}
 
 #endif
