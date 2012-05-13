@@ -36,8 +36,6 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   // Remove recpoints after each event
   rec.SetDeleteRecPoints("TPC TRD ITS"); 
   //
-  //switch of TRD Kr pad-gain
-  AliTRDdEdxUtils::SetPadGainOn(kTRUE);
 
 
   // Switch off the V0 finder - saves time!
