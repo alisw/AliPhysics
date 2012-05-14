@@ -15,7 +15,7 @@ AliAnalysisTaskElecV2* ConfigHFEElecV2(Bool_t useMC){
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetVertexRange(10.);
   hfecuts->SetTOFPIDStep(kFALSE);
-  hfecuts->SetPtRange(1, 30);
+  hfecuts->SetPtRange(2, 50);
   hfecuts->SetMaxImpactParam(1,2);
   
   AliAnalysisTaskElecV2 *task = new AliAnalysisTaskElecV2("HFE v2");
