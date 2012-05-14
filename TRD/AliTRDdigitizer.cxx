@@ -625,6 +625,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
   }
   else {
     // Save the values for the raw data headers
+    if (calibration->GetNumberOfTimeBinsDCS() == -1) {
+      AliFatal("No useful DCS information available for this run!");
+    }
     fDigitsManager->GetDigitsParam()->SetNTimeBinsAll(calibration->GetNumberOfTimeBinsDCS());
   }
 
