@@ -1079,7 +1079,7 @@ Int_t AliMillePede2::GlobalFitIteration()
 #ifdef _DUMP_EQ_BEFORE_
   const char* faildumpB = Form("mp2eq_before%d.dat",fIter);
   int defoutB = dup(1);
-  if (defoutB<0) AliFatal("Failed on dup");
+  if (defoutB<0) {AliFatal("Failed on dup"); exit(1);}
   int slvDumpB = open(faildumpB, O_RDWR|O_CREAT, 0666);
   if (slvDumpB>=0) {
     dup2(slvDumpB,1);
@@ -1089,6 +1089,8 @@ Int_t AliMillePede2::GlobalFitIteration()
   }
   dup2(defoutB,1);
   close(slvDumpB);
+  close(defoutB);
+
 #endif
   /*
   printf("Solving:\n");
@@ -1108,6 +1110,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   //
   dup2(defoutB,1);
   close(slvDumpB);
+  close(defoutB);
 #endif
   //
   fGloSolveStatus = SolveGlobalMatEq();                     // obtain solution for this step
@@ -1124,6 +1127,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   //
   dup2(defoutA,1);
   close(slvDumpA);
+  close(defoutA);
 #endif
   //
   sws.Stop();
@@ -1138,7 +1142,7 @@ Int_t AliMillePede2::GlobalFitIteration()
 #ifdef _DUMP_EQ_AFTER_
   const char* faildumpA = Form("mp2eq_after%d.dat",fIter);
   int defoutA = dup(1);
-  if (defoutA<0) AliFatal("Failed on dup");
+  if (defoutA<0) {AliFatal("Failed on dup"); exit(1);}
   int slvDumpA = open(faildumpA, O_RDWR|O_CREAT, 0666);
   if (slvDumpA>=0) {
     dup2(slvDumpA,1);
@@ -1148,6 +1152,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   }
   dup2(defoutA,1);
   close(slvDumpA);
+  close(defoutA);
 #endif
   //
   /*
@@ -1217,6 +1222,7 @@ Int_t AliMillePede2::SolveGlobalMatEq()
       //
       dup2(defout,1);
       close(slvDump);
+      close(defout);
       printf("#Dumped failed matrix and RHS to %s\n",faildump);
     }
     else AliInfo("Failed on file open for matrix dumping");
