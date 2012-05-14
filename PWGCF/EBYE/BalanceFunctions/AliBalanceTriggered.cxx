@@ -245,7 +245,7 @@ void AliBalanceTriggered::InitHistograms() {
 }
 
 //____________________________________________________________________//
-void AliBalanceTriggered::FillBalance(Float_t fCentrality,TObjArray *particles) {
+void AliBalanceTriggered::FillBalance(Float_t fCentrality,TObjArray *particles, TObjArray *particlesMixed) {
   // Calculates the balance function
 
  
@@ -256,54 +256,87 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,TObjArray *particles) 
     InitHistograms();
   }
 
-  Int_t gNtrack = particles->GetEntriesFast();
   Double_t trackVarsSingle[nTrackVarsSingle];
   Double_t trackVarsPair[nTrackVarsPair];
 
+  if (!particles){
+    AliWarning("particles TObjArray is NULL pointer --> return");
+    return;
+  }
+  
+  // define end of particle loops
+  Int_t iMax = particles->GetEntriesFast();
+  Int_t jMax = iMax;
+  if (particlesMixed)
+    jMax = particlesMixed->GetEntriesFast();
+
+  // Eta() is extremely time consuming, therefore cache it for the inner loop here:
+  TObjArray* particlesSecond = (particlesMixed) ? particlesMixed : particles;
+
+  TArrayF secondEta(jMax);
+  TArrayF secondPhi(jMax);
+  TArrayF secondPt(jMax);
+
+  for (Int_t i=0; i<jMax; i++){
+    secondEta[i] = ((AliVParticle*) particlesSecond->At(i))->Eta();
+    secondPhi[i] = ((AliVParticle*) particlesSecond->At(i))->Phi();
+    secondPt[i]  = ((AliVParticle*) particlesSecond->At(i))->Pt();
+  }
+  
   // 1st particle loop
-  for(Int_t i = 0; i < gNtrack;i++){
-
-    AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
-
-    Short_t  charge = (Short_t) firstParticle->Charge();
-    trackVarsSingle[0]    =  firstParticle->Eta(); //eta
-    trackVarsSingle[1]    =  firstParticle->Phi(); //phi
-    trackVarsSingle[2]    =  firstParticle->Pt();  //pt trigger
-    trackVarsSingle[3]    =  fCentrality;          //centrality (really as variable here????)
-    
-    //fill single particle histograms
-    if(charge > 0)  fHistP->Fill(trackVarsSingle,0,1.); 
-    else            fHistN->Fill(trackVarsSingle,0,1.); 
-
-    // 2nd particle loop (only for j < i for non double counting in the same pT region)
-    // --> SAME pT region for trigger and assoc: NO double counting with this
-    // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
-    //                          --> can be handled afterwards by using assoc. as trigger as well ?!
-
-    for(Int_t j = 0; j < i; j++) {
-
-      AliVParticle* secondParticle = (AliVParticle*) particles->At(j);
+  for (Int_t i=0; i<iMax; i++)
+    {
       
-      Short_t charge2 = (Short_t) secondParticle->Charge();
-      trackVarsPair[0]    =  firstParticle->Eta() - secondParticle->Eta();  // delta eta
-      trackVarsPair[1]    =  firstParticle->Phi() - secondParticle->Phi();  // delta phi
-      if (trackVarsPair[1] > 180)   // delta phi between -180 and 180 
-	trackVarsPair[1] -= 360;
-      if (trackVarsPair[1] <  - 180) 
-	trackVarsPair[1] += 360;
- 
-      trackVarsPair[2]    =  firstParticle->Pt();  // pt
-      trackVarsPair[3]    =  secondParticle->Pt();  // pt trigger
-      trackVarsPair[4]    =  fCentrality;             // centrality
+      AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
 
-      if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVarsPair,0,1.); 
-      else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVarsPair,0,1.); 
-      else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVarsPair,0,1.); 
-      else if( charge < 0 && charge2 < 0)  fHistNN->Fill(trackVarsPair,0,1.); 
-      else AliWarning("Wrong charge combination!");
+      // some optimization
+      Float_t firstEta = firstParticle->Eta();
+      Float_t firstPhi = firstParticle->Phi();
+      Float_t firstPt  = firstParticle->Pt();
+
       
-    }//end of 2nd particle loop
-  }//end of 1st particle loop
+      Short_t  charge = (Short_t) firstParticle->Charge();
+      trackVarsSingle[0]    =  firstEta;    //eta
+      trackVarsSingle[1]    =  firstPhi;    //phi
+      trackVarsSingle[2]    =  firstPt;     //pt trigger
+      trackVarsSingle[3]    =  fCentrality; //centrality 
+      
+      //fill single particle histograms
+      if(charge > 0)  fHistP->Fill(trackVarsSingle,0,1.); 
+      else            fHistN->Fill(trackVarsSingle,0,1.);  
+
+      
+      // 2nd particle loop (only for j < i for non double counting in the same pT region)
+      // --> SAME pT region for trigger and assoc: NO double counting with this
+      // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
+      //                          --> can be handled afterwards by using assoc. as trigger as well ?!     
+      for(Int_t j = 0; j < i; j++) {   // or go to full here (everything prepared)?
+	
+	if (particlesMixed && jMax < i)  // if the mixed track number is smaller than the main event one (could be done better if one loops over all tracks)
+	  break;
+
+	AliVParticle* secondParticle = (AliVParticle*) particlesSecond->At(j);
+
+	Short_t charge2 = (Short_t) secondParticle->Charge();
+	trackVarsPair[0]    =  firstEta - secondEta[j];  // delta eta
+	trackVarsPair[1]    =  firstPhi = secondPhi[j];  // delta phi
+	if (trackVarsPair[1] > 180)   // delta phi between -180 and 180 
+	  trackVarsPair[1] -= 360;
+	if (trackVarsPair[1] <  - 180) 
+	  trackVarsPair[1] += 360;
+	
+	trackVarsPair[2]    =  firstPt;      // pt trigger
+	trackVarsPair[3]    =  secondPt[j];  // pt
+	trackVarsPair[4]    =  fCentrality;  // centrality
+	
+	if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVarsPair,0,1.); 
+	else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVarsPair,0,1.); 
+	else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVarsPair,0,1.); 
+	else if( charge < 0 && charge2 < 0)  fHistNN->Fill(trackVarsPair,0,1.); 
+	else AliWarning("Wrong charge combination!");
+	
+      }//end of 2nd particle loop
+    }//end of 1st particle loop
 }  
 
 

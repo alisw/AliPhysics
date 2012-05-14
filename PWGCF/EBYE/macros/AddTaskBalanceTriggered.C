@@ -8,7 +8,7 @@ Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
 AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
-						 Double_t centrMax=100.,
+						 Double_t centrMax=80.,
 						 Bool_t gRunShuffling=kFALSE,
 						 Bool_t gRunMixing=kFALSE,
 						 TString centralityEstimator="V0M",
@@ -97,7 +97,6 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
       bfm = new AliBalanceTriggered();
       bfm->SetAnalysisLevel(analysisType);
       bfm->InitHistograms();
-      bfm->SetMixingTracks(50000)
     }
   }
   else{
@@ -110,7 +109,10 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   AliAnalysisTaskTriggeredBF *taskTriggeredBF = new AliAnalysisTaskTriggeredBF("TaskTriggeredBF");
   taskTriggeredBF->SetAnalysisObject(bf);
   if(gRunShuffling) taskTriggeredBF->SetShufflingObject(bfs);
-  if(gRunMixing) taskTriggeredBF->SetMixingObject(bfm);
+  if(gRunMixing){
+    taskTriggeredBF->SetMixingObject(bfm);
+    taskTriggeredBF->SetMixingTracks(50000);
+  }
 
   taskTriggeredBF->SetCentralityPercentileRange(centrMin,centrMax);
   if(analysisType == "AOD") {

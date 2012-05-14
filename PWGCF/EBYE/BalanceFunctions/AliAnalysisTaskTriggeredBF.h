@@ -207,7 +207,6 @@ class AliBFBasicParticle : public AliVParticle
     virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
     
     virtual Short_t Charge()      const { return fCharge; }
-    virtual Short_t SetCharge(Short_t charge)   { fCharge = charge; }
     virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
     // PID
     virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }      
