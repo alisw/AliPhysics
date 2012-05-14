@@ -93,6 +93,9 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   TH2F			*fTPCnsigma;		//! TPC n sigma vs p	
   
   TH1F			*fCent;			//! centrality
+  TH1F			*fevPlaneV0A;		//! V0A event plane distribution
+  TH1F			*fevPlaneV0C;		//! V0C event plane distribution
+  TH1F			*fevPlaneTPC;		//! TPC event plane distribution
   TH2F			*fTPCsubEPres;		//! TPC event plane resolution
   THnSparse		*fEPres;		//! event plane resolution
   THnSparse		*fCorr;			//! correlations
