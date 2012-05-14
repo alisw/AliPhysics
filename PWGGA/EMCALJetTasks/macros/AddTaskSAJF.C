@@ -9,7 +9,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nembjets           = "EmbJets",
   Double_t    jetradius          = 0.4,
   const char *ntrgclusters       = "ClustersL1GAMMAFEE",
-  UInt_t      type               = AliAnalysisTaskSAJF::kEMCAL
+  UInt_t      type               = AliAnalysisTaskSAJF::kTPC
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
