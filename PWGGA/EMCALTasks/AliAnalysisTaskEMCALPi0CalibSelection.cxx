@@ -10,7 +10,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id$                                                                    //
+// $Id$  
 
 //---------------------------------------------------------------------------// 
 //                                                                           //
@@ -41,6 +41,7 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliOADBContainer.h"
 
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 
@@ -54,7 +55,8 @@ fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
 fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
 fLogWeight(4.5),          fSameSM(kFALSE),          fFilteredInput(kFALSE),
 fCorrectClusters(kFALSE), fEMCALGeoName("EMCAL_COMPLETE12SMV1"), 
-fTriggerName("EMC"),      fRecoUtils(new AliEMCALRecoUtils), 
+fTriggerName("EMC"),      fOADBFilePath(""),
+fRecoUtils(new AliEMCALRecoUtils), 
 fCuts(0x0),               fLoadMatrices(0),
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
@@ -65,7 +67,6 @@ fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
 fHmgg(0x0),               fHmggDifferentSM(0x0), 
 fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0), 
 fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
-fHIncidentAngle(0x0),     fHIncidentAngleDifferentSM(0x0),
 fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
 fhNEvents(0x0),
 fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
@@ -114,8 +115,6 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fHOpeningAnglePairSM[iSM]        = 0;
     fHAsymmetrySM[iSM]               = 0;
     fHAsymmetryPairSM[iSM]           = 0;
-    fHIncidentAngleSM[iSM]           = 0;
-    fHIncidentAnglePairSM[iSM]       = 0;
     fhTowerDecayPhotonHit[iSM]       = 0;
     fhTowerDecayPhotonEnergy[iSM]    = 0;
     fhTowerDecayPhotonAsymmetry[iSM] = 0;
@@ -147,6 +146,81 @@ AliAnalysisTaskEMCALPi0CalibSelection::~AliAnalysisTaskEMCALPi0CalibSelection()
   
 }
 
+
+//________________________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
+{
+  // Init geometry and set the geometry matrix, for the first event, skip the rest
+  // Also set once the run dependent calibrations
+  
+  if(fhNEvents->GetEntries()!=1) return;
+    
+  Int_t runnumber = InputEvent()->GetRunNumber() ;
+  
+  if(fLoadMatrices)
+  {
+    printf("AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices() - Load user defined EMCAL geometry matrices\n");
+    
+    // OADB if available
+    AliOADBContainer emcGeoMat("AliEMCALgeo");
+    if(fOADBFilePath=="") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;
+    emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
+    TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+    
+    
+    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+    {
+      
+      if (!fMatrix[mod]) // Get it from OADB
+      {
+        if(fDebug > 1 ) 
+          printf("AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices() - EMCAL matrices SM %d, %p\n",
+                 mod,((TGeoHMatrix*) matEMCAL->At(mod)));
+        //((TGeoHMatrix*) matEMCAL->At(mod))->Print();
+        
+        fMatrix[mod] = (TGeoHMatrix*) matEMCAL->At(mod) ;
+      }        
+      
+      if(fMatrix[mod])
+      {
+        if(DebugLevel() > 1) 
+          fMatrix[mod]->Print();
+        
+        fEMCALGeo->SetMisalMatrix(fMatrix[mod],mod) ;  
+      }
+            
+    }//SM loop
+  }//Load matrices
+  else if(!gGeoManager)
+  {
+    printf("AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices() - Get geo matrices from data");
+    //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
+    if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) 
+    {
+      if(DebugLevel() > 1) 
+        Warning("UserExec","Use ideal geometry, values geometry matrix not kept in AODs.");
+    }//AOD
+    else 
+    {	
+      if(DebugLevel() > 1) 
+        printf("AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices() - AliAnalysisTaskEMCALClusterize Load Misaligned matrices.");
+      
+      AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
+      
+      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+      {
+        if(DebugLevel() > 1) 
+          esd->GetEMCALMatrix(mod)->Print();
+        
+        if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+        
+      } 
+            
+    }//ESD
+  }//Load matrices from Data 
+  
+}
+
 //___________________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
 {
@@ -159,26 +233,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   const Int_t buffersize = 255;
   char hname[buffersize], htitl[buffersize];
   
-  for(Int_t iMod=0; iMod < nSM; iMod++) {
-    for(Int_t iRow=0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
-      for(Int_t iCol=0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
-        snprintf(hname,buffersize, "%d_%d_%d",iMod,iCol,iRow);
-        snprintf(htitl,buffersize, "Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
-        fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
-        fHmpi0[iMod][iCol][iRow]->SetXTitle("mass (MeV/c^{2})");
-        fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
-      }
-    }
-  }
-  
-  Int_t nchannels = nSM*AliEMCALGeoParams::fgkEMCALRows*AliEMCALGeoParams::fgkEMCALCols;
-  for(Int_t ibc = 0; ibc < 4; ibc++){
-    fHTpi0[ibc] = new TH2F(Form("hTime_BC%d",ibc),Form("Time of cell clusters under pi0 peak, bunch crossing %d",ibc),
-                           nchannels,0,nchannels, fNTimeBins,fMinTimeBin,fMaxTimeBin);
-    fOutputContainer->Add(fHTpi0[ibc]);       
-    fHTpi0[ibc]->SetYTitle("time (ns)");
-    fHTpi0[ibc]->SetXTitle("abs. Id. ");
-  }
+  fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
+  fOutputContainer->Add(fhNEvents);
   
   fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
   fHmgg->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
@@ -199,17 +255,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fHOpeningAngleDifferentSM->SetXTitle("#alpha_{#gamma #gamma}");
   fHOpeningAngleDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
   fOutputContainer->Add(fHOpeningAngleDifferentSM);
-  
-  fHIncidentAngle = new TH2F("hinang","#gamma incident angle in SM",100,0.,20.,100,0,10);
-  fHIncidentAngle->SetXTitle("#alpha_{#gamma SM center}");
-  fHIncidentAngle->SetYTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fHIncidentAngle);
-  
-  fHIncidentAngleDifferentSM = new TH2F("hinangDifferentSM","#gamma incident angle in SM, different SM pair",100,0,20.,100,0,10);
-  fHIncidentAngleDifferentSM->SetXTitle("#alpha_{#gamma - SM center}");
-  fHIncidentAngleDifferentSM->SetYTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fHIncidentAngleDifferentSM);
-  
+   
   fHAsymmetry = new TH2F("hasym","2-cluster opening angle",100,0.,1.,100,0,10);
   fHAsymmetry->SetXTitle("a");
   fHAsymmetry->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
@@ -235,8 +281,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fOutputContainer->Add(fHmggDifferentSMMaskFrame);
   
   
-  for(Int_t iSM = 0; iSM < nSM; iSM++) {
-    
+  for(Int_t iSM = 0; iSM < nSM; iSM++) 
+  {
     snprintf(hname, buffersize, "hmgg_SM%d",iSM);
     snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d",iSM);
     fHmggSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
@@ -252,7 +298,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fOutputContainer->Add(fHmggSMMaskFrame[iSM]);
     
     
-    if(iSM < nSM/2){
+    if(iSM < nSM/2)
+    {
       snprintf(hname,buffersize, "hmgg_PairSameSectorSM%d",iSM);
       snprintf(htitl,buffersize, "Two-gamma inv. mass for SM pair Sector: %d",iSM);
       fHmggPairSameSectorSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
@@ -277,7 +324,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
       
     }
     
-    if(iSM < nSM-2){
+    if(iSM < nSM-2)
+    {
       snprintf(hname,buffersize, "hmgg_PairSameSideSM%d",iSM);
       snprintf(htitl,buffersize, "Two-gamma inv. mass for SM pair Sector: %d",iSM);
       fHmggPairSameSideSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
@@ -314,20 +362,6 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fHOpeningAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
     fHOpeningAnglePairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
     fOutputContainer->Add(fHOpeningAnglePairSM[iSM]);    
-    
-    snprintf(hname, buffersize, "hinang_SM%d",iSM);
-    snprintf(htitl, buffersize, "Incident angle for super mod %d",iSM);
-    fHIncidentAngleSM[iSM] = new TH2F(hname,htitl,100,0.,20.,100,0,10);
-    fHIncidentAngleSM[iSM]->SetXTitle("#alpha_{#gamma - SM center} (deg)");
-    fHIncidentAngleSM[iSM]->SetYTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fHIncidentAngleSM[iSM]);
-    
-    snprintf(hname,buffersize, "hinang_PairSM%d",iSM);
-    snprintf(htitl,buffersize, "Incident angle for SM pair: %d",iSM);
-    fHIncidentAnglePairSM[iSM] = new TH2F(hname,htitl,100,0.,20.,100,0,10);
-    fHIncidentAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma - SM center} (deg)");
-    fHIncidentAnglePairSM[iSM]->SetYTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fHIncidentAnglePairSM[iSM]);   
     
     snprintf(hname, buffersize, "hasym_SM%d",iSM);
     snprintf(htitl, buffersize, "Asymmetry for super mod %d",iSM);
@@ -387,6 +421,17 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     
   }  
   
+  Int_t nchannels = nSM*AliEMCALGeoParams::fgkEMCALRows*AliEMCALGeoParams::fgkEMCALCols;
+  for(Int_t ibc = 0; ibc < 4; ibc++)
+  {
+    fHTpi0[ibc] = new TH2F(Form("hTime_BC%d",ibc),Form("Time of cell clusters under pi0 peak, bunch crossing %d",ibc),
+                           nchannels,0,nchannels, fNTimeBins,fMinTimeBin,fMaxTimeBin);
+    fOutputContainer->Add(fHTpi0[ibc]);       
+    fHTpi0[ibc]->SetYTitle("time (ns)");
+    fHTpi0[ibc]->SetXTitle("abs. Id. ");
+  }
+  
+  
   fhClusterTime = new TH2F("hClusterTime","cluster time vs E",100,0,10, 100,0,1000);
   fhClusterTime->SetXTitle("E (GeV)");
   fhClusterTime->SetYTitle("t (ns)");
@@ -397,14 +442,23 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fhClusterPairDiffTime->SetYTitle("#Delta t (ns)");
   fOutputContainer->Add(fhClusterPairDiffTime);
   
-  
-  fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
-  fOutputContainer->Add(fhNEvents);
+  for(Int_t iMod=0; iMod < nSM; iMod++)
+  {
+    for(Int_t iRow=0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) 
+    {
+      for(Int_t iCol=0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) 
+      {
+        snprintf(hname,buffersize, "%d_%d_%d",iMod,iCol,iRow);
+        snprintf(htitl,buffersize, "Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
+        fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
+        fHmpi0[iMod][iCol][iRow]->SetXTitle("mass (MeV/c^{2})");
+        fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
+      }
+    }
+  }
   
   fOutputContainer->SetOwner(kTRUE);
-  
-  //  fCalibData = new AliEMCALCalibData();
-  
+    
   PostData(1,fOutputContainer);
   
   // cuts container, set in terminate but init and post here
@@ -448,10 +502,20 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     abort();
   }
   
-  if(fTriggerName!="" && !(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Contains(fTriggerName)) 
+  if(fTriggerName!="")
   {
-    //printf("Reject Event %d, FiredClass %s\n",(Int_t)Entry(),(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Data());
-    return;
+    AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (InputEvent());
+    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (InputEvent());
+    
+    TString triggerClass = ""; 
+    if     (esdevent) triggerClass = esdevent->GetFiredTriggerClasses();
+    else if(aodevent) triggerClass = aodevent->GetFiredTriggerClasses();
+    
+    if(triggerClass.Contains(fTriggerName)) 
+    {
+      //printf("Reject Event %d, FiredClass %s\n",(Int_t)Entry(),(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Data());
+      return;
+    }
   }
   
   fhNEvents->Fill(0); //Event analyzed
@@ -479,57 +543,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //Int_t runNum = aod->GetRunNumber();
   //if(DebugLevel() > 1) printf("Run number: %d\n",runNum);
   
-  Int_t nSM = (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules();
+  InitGeometryMatrices();
   
-  //Get the matrix with geometry information
-  if(fhNEvents->GetEntries()==1)
-  {
-    if(fLoadMatrices)
-    {
-      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Load user defined geometry matrices\n");
-      for(Int_t mod=0; mod < nSM ; mod++)
-      {
-        if(fMatrix[mod])
-        {
-          if(DebugLevel() > 1) 
-            fMatrix[mod]->Print();
-          
-          fEMCALGeo->SetMisalMatrix(fMatrix[mod],mod) ;   
-        }
-      }//SM loop
-    }//Load matrices
-    else if(!gGeoManager)
-    {
-      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Get geo matrices from data\n");
-      
-      //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
-      if(!strcmp(event->GetName(),"AliAODEvent")) 
-      {
-        if(DebugLevel() > 1) 
-          printf("AliAnalysisTaskEMCALPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
-      }//AOD
-      else 
-      {	
-        if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
-        
-        AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event) ;
-        
-        if(!esd) 
-        {
-          printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain ESDs?");
-          return;
-        }
-        
-        for(Int_t mod=0; mod < nSM; mod++)
-        {
-          if(DebugLevel() > 1) 
-            esd->GetEMCALMatrix(mod)->Print();
-          
-          if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
-        } 
-      }//ESD
-    }//Load matrices from Data 
-  }//first event
+  Int_t nSM = (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules();
   
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
   Int_t absId1   = -1;
@@ -789,80 +805,41 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
             Float_t opangle = p1.Angle(p2.Vect())*TMath::RadToDeg();
             //printf("*******>>>>>>>> In PEAK pt %f, angle %f \n",p12.Pt(),opangle);
             
-            //Incident angle of each photon
-            Float_t inangle1 =0., inangle2=0.;
-            if(gGeoManager)
-            {
-              Float_t posSM1cen[3]={0.,0.,0.};
-              
-              Float_t depth = fRecoUtils->GetDepth(p1.Energy(),fRecoUtils->GetParticleType(),iSupMod1);
-              
-              fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod1, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM1cen); 
-              
-              Float_t posSM2cen[3]={0.,0.,0.}; 
-              
-              depth = fRecoUtils->GetDepth(p2.Energy(),fRecoUtils->GetParticleType(),iSupMod2);
-              
-              fEMCALGeo->RecalculateTowerPosition(11.5, 23.5, iSupMod2, depth, fRecoUtils->GetMisalTransShiftArray(),fRecoUtils->GetMisalRotShiftArray(),posSM2cen); 
-              //printf("SM1 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod1,posSM1cen[0],posSM1cen[1],posSM1cen[2]);
-              //printf("SM2 %d pos (%2.3f,%2.3f,%2.3f) \n",iSupMod2,posSM2cen[0],posSM2cen[1],posSM2cen[2]);
-              
-              TVector3 vecSM1cen(posSM1cen[0]-v[0],posSM1cen[1]-v[1],posSM1cen[2]-v[2]); 
-              TVector3 vecSM2cen(posSM2cen[0]-v[0],posSM2cen[1]-v[1],posSM2cen[2]-v[2]); 
-              
-              inangle1 = p1.Angle(vecSM1cen)*TMath::RadToDeg();
-              inangle2 = p2.Angle(vecSM2cen)*TMath::RadToDeg();
-              //printf("Incident angle: cluster 1 %2.3f; cluster 2 %2.3f\n",inangle1,inangle2);
-            }
             
             fHOpeningAngle ->Fill(opangle,p12.Pt()); 
-            fHIncidentAngle->Fill(inangle1,p1.Pt()); 
-            fHIncidentAngle->Fill(inangle2,p2.Pt()); 
             fHAsymmetry    ->Fill(asym,p12.Pt()); 
             
             if(iSupMod1==iSupMod2) 
             {
               fHOpeningAngleSM[iSupMod1] ->Fill(opangle,p12.Pt());
-              fHIncidentAngleSM[iSupMod1]->Fill(inangle1,p1.Pt());
-              fHIncidentAngleSM[iSupMod1]->Fill(inangle2,p2.Pt());
               fHAsymmetrySM[iSupMod1]    ->Fill(asym,p12.Pt());
             }
             else
             {      
               fHOpeningAngleDifferentSM  ->Fill(opangle,p12.Pt());
-              fHIncidentAngleDifferentSM ->Fill(inangle1,p1.Pt());
-              fHIncidentAngleDifferentSM ->Fill(inangle2,p2.Pt());
               fHAsymmetryDifferentSM     ->Fill(asym,p12.Pt());
             }
             
             if((iSupMod1==0 && iSupMod2==2) || (iSupMod1==2 && iSupMod2==0)) 
             {
               fHOpeningAnglePairSM[0] ->Fill(opangle,p12.Pt()); 
-              fHIncidentAnglePairSM[0]->Fill(inangle1,p1.Pt());
-              fHIncidentAnglePairSM[0]->Fill(inangle2,p2.Pt());
               fHAsymmetryPairSM[0]    ->Fill(asym,p12.Pt());
               
             } 
             if((iSupMod1==1 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==1)) 
             {
               fHOpeningAnglePairSM[1] ->Fill(opangle,p12.Pt()); 
-              fHIncidentAnglePairSM[1]->Fill(inangle1,p1.Pt());
-              fHIncidentAnglePairSM[1]->Fill(inangle2,p2.Pt());
               fHAsymmetryPairSM[1]    ->Fill(asym,p12.Pt());
             }
             
             if((iSupMod1==0 && iSupMod2==1) || (iSupMod1==1 && iSupMod2==0)) 
             {
               fHOpeningAnglePairSM[2] ->Fill(opangle,p12.Pt()); 
-              fHIncidentAnglePairSM[2]->Fill(inangle1,p1.Pt());
-              fHIncidentAnglePairSM[2]->Fill(inangle2,p2.Pt());
               fHAsymmetryPairSM[2]    ->Fill(asym,p12.Pt());
             }
             if((iSupMod1==2 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==2)) 
             {
               fHOpeningAnglePairSM[3] ->Fill(opangle,p12.Pt()); 
-              fHIncidentAnglePairSM[3]->Fill(inangle1,p1.Pt());
-              fHIncidentAnglePairSM[3]->Fill(inangle2,p2.Pt());
               fHAsymmetryPairSM[3]    ->Fill(asym,p12.Pt());
             }
             
@@ -954,7 +931,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo()
          fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fSameSM) ;
   
   printf("EMCAL Geometry name: < %s >, Load Matrices %d\n",fEMCALGeoName.Data(), fLoadMatrices) ;
-  if(fLoadMatrices) {for(Int_t ism = 0; ism < AliEMCALGeoParams::fgkEMCALModules; ism++) fMatrix[ism]->Print() ; }
+  if(fLoadMatrices) {for(Int_t ism = 0; ism < AliEMCALGeoParams::fgkEMCALModules; ism++) if(fMatrix[ism]) fMatrix[ism]->Print() ; }
   
   
 }

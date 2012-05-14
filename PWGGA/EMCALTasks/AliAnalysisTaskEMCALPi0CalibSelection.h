@@ -20,8 +20,9 @@ public:
 
   AliAnalysisTaskEMCALPi0CalibSelection(const char* name);
   virtual ~AliAnalysisTaskEMCALPi0CalibSelection();
+    
+  void    InitGeometryMatrices();
   
-  // Implementation of interface methods
   void    UserCreateOutputObjects();
   
   void    UserExec(Option_t * opt);
@@ -68,6 +69,8 @@ public:
   void    SwitchOffLoadOwnGeometryMatrices()             { fLoadMatrices = kFALSE    ; }
   void    SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fMatrix[i]    = m         ; }
 
+  void    SetOADBFilePath(TString path)                  { fOADBFilePath      = path ; }
+  
   // Cluster recalculation
   void    SwitchOnClusterCorrection()                    { fCorrectClusters = kTRUE  ; }
   void    SwitchOffClusterCorrection()                   { fCorrectClusters = kFALSE ; }
@@ -115,6 +118,8 @@ private:
   TString fEMCALGeoName;       // Name of geometry to use.
   TString fTriggerName;        // Trigger name must contain this name
  
+  TString fOADBFilePath ;      //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
+
   AliEMCALRecoUtils * fRecoUtils; // Access to reconstruction utilities
   
   TList * fCuts ;              //! List with analysis cuts
@@ -160,11 +165,6 @@ private:
   TH2F*   fHOpeningAngleSM[AliEMCALGeoParams::fgkEMCALModules];                  //! two-cluster opening angle vs pt per SM,with mass close to pi0
   TH2F*   fHOpeningAnglePairSM[AliEMCALGeoParams::fgkEMCALModules];              //! two-cluster opening angle vs pt per Pair,with mass close to pi0
 
-  TH2F*   fHIncidentAngle;                                                       //! cluster incident angle vs pt of pair, with mass close to pi0
-  TH2F*   fHIncidentAngleDifferentSM;                                            //! cluster incident angle vs pt of pair, each cluster in different SM, with mass close to pi0
-  TH2F*   fHIncidentAngleSM[AliEMCALGeoParams::fgkEMCALModules];                 //! cluster incident angle vs pt per SM,with mass close to pi0
-  TH2F*   fHIncidentAnglePairSM[AliEMCALGeoParams::fgkEMCALModules];             //! cluster incident angle vs pt per Pair,with mass close to pi0
-  
   TH2F*   fHAsymmetry;                                                           //! two-cluster asymmetry vs pt of pair, with mass close to pi0
   TH2F*   fHAsymmetryDifferentSM;                                                //! two-cluster asymmetry vs pt of pair, each cluster in different SM, with mass close to pi0
   TH2F*   fHAsymmetrySM[AliEMCALGeoParams::fgkEMCALModules];                     //! two-cluster asymmetry vs pt per SM,with mass close to pi0
@@ -189,7 +189,7 @@ private:
   AliAnalysisTaskEMCALPi0CalibSelection(           const AliAnalysisTaskEMCALPi0CalibSelection&); 
   AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&); 
   
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,18);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,19);
 
 };
 
