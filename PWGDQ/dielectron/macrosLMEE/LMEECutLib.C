@@ -97,20 +97,26 @@ class LMEECutLib {
 	AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet) {
 	  AliDielectronMixingHandler* mixingHandler = 0x0;
 	  switch (cutSet) {
-		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPCorTOF  :
 		  mixingHandler = new AliDielectronMixingHandler;
 		  mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
 		  mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80");
-		  //mixingHandler->SetDepth(50);
 		  mixingHandler->SetDepth(25);
+		  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+		case kPbPb2011TPCandTOF :
+		  mixingHandler = new AliDielectronMixingHandler;
+		  mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
+		  mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80");
+		   mixingHandler->AddVariable(AliDielectronVarManager::kv0ACrpH2,"-6*(TMath::Pi()/6),-5*(TMath::Pi()/6),-4*(TMath::Pi()/6),-3*(TMath::Pi()/6),-2*(TMath::Pi()/6),-1*(TMath::Pi()/6),0,1*(TMath::Pi()/6),2*(TMath::Pi()/6),3*(TMath::Pi()/6),4*(TMath::Pi()/6),5*(TMath::Pi()/6),6*(TMath::Pi()/6)");
+		  //mixingHandler->SetDepth(50);
+		  mixingHandler->SetDepth(20);
 		  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
 		  break;
 		case kpp2010TPCandTOF :
 		case kpp2010TPCorTOF  :
 		  mixingHandler = new AliDielectronMixingHandler;
 		  mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-		  //mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
+		  mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
 		  //might want to add multiplicity?
 		  mixingHandler->SetDepth(50);
 		  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
