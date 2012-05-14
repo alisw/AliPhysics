@@ -95,8 +95,8 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
   //check on centrality distribution
   fHistMan->GetPtHistogram("CentCheck")->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"),fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentileUnchecked("V0M"));
   
-  if(!fEventCuts->IsSelected(fAOD))return;//event selection
-        
+  if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
+  
   //AliCentrality fAliCentral*;
   //   if ((fAOD->GetCentrality())->GetCentralityPercentile("V0M") > 5.) return;
   
@@ -113,7 +113,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
-	  if(TMath::Abs(partMC->Eta()) > fTrackCuts->GetEta()) continue;
+	  //if(TMath::Abs(partMC->Eta()) > fTrackCuts->GetEta()) continue; FIXME eta cut should not be there!!!! we want the generated in y<0.5
 	  fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
 	  
 	  if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    
@@ -183,15 +183,17 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
       // Get true ID
       Int_t idGen     = fPID->GetParticleSpecie(partMC);
       //if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    // FIXME: do we need a rapidity cut on the generated?
-      
       // Fill histograms for primaries
-      //if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),d[0]); 
-
-      if (isPrimary) {
-	//fHistMan                    ->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),d[0]);  // PT histo
-	fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),d[0]);
-	if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),d[0]); 
-	fHistMan                    ->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),d[0]); 
+      if(idGen != kSpUndefined) {
+	
+	if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),d[0]); 
+	
+	if (isPrimary) {
+	  fHistMan                    ->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),d[0]);  // PT histo
+   	  fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),d[0]);
+	  if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),d[0]); 
+	  fHistMan                    ->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),d[0]); 
+	}
       }
       //25th Apr - Muons are added to Pions -- FIXME
       if ( partMC->PdgCode() == 13 && idRec == kSpPion) { 
@@ -207,11 +209,11 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
       }
       
       ///..... END FIXME
-
+      
       // Fill secondaries
       if(isSecondaryWeak    )  fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryWeakDecay, idRec, charge)->Fill(track->Pt(),d[0]);
       if(isSecondaryMaterial)  fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryMaterial , idRec, charge)->Fill(track->Pt(),d[0]);
-	    
+      
     }//end if(arrayMC)
   } // end loop on tracks
   

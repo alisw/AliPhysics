@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=1, const char * proofMode = "full")
+void runAODProof(Int_t c=2, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
@@ -26,10 +26,10 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    //handler->SetAliROOTVersion("v5-03-11-AN");
    handler->SetAliROOTVersion("v5-03-17-AN");
    
-   //handler->SetNproofWorkers(28);
-   //handler->SetNproofWorkersPerSlave(1);
-   handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
-   //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
+   //handler->SetNproofWorkers(5);
+   //handler->SetNproofWorkersPerSlave(5);
+   //handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
+   handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
    // Set handler for Real DATA:
    if (c == 1){
      //handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
@@ -52,8 +52,8 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
 
    handler->SetAliRootMode("default");
-   handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
-   handler->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
+   handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
+   handler->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
    //   handler->SetFileForTestMode("filelist.txt"); // list of local files for testing
    //  handler->SetAliRootMode("");
    handler->SetClearPackages();
@@ -81,7 +81,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    // Double_t QvecCutMax[4]={100,100,100,100};
    using namespace AliSpectraNameSpace;
    AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
-   pid->SetNSigmaCut(5.);
+   pid->SetNSigmaCut(3.);
    
    for(Int_t iCut=1;iCut<2;iCut++){
      AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");

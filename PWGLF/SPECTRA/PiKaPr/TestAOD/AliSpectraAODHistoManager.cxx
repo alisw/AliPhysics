@@ -82,7 +82,7 @@ TH2F* AliSpectraAODHistoManager::BookPtGenHistogram(const char * name)
    
    TH2F * hist = new TH2F(name,Form("P_{T} distribution (%s)", name),nbinsTempl,templBins,2,-0.5,1.5);//need to be at least 1 becuase the generated are filled with (pt,IsPhysPrim)
    hist->GetXaxis()->SetTitle("generated P_{T} (GeV / c)");
-   hist->GetYaxis()->SetTitle("DCA xy");
+   hist->GetYaxis()->SetTitle("IsPhysicalPrimary()");
    hist->SetMarkerStyle(kFullCircle);
    hist->Sumw2();
    fOutputList->Add(hist);
