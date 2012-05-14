@@ -33,6 +33,7 @@
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliSpectraAODEventCuts.h"
+#include "AliSpectraAODTrackCuts.h"
 #include "AliSpectraAODHistoManager.h"
 #include <iostream>
 
@@ -42,60 +43,79 @@ ClassImp(AliSpectraAODEventCuts)
 
 AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0)
 {
-   // Constructor
-   fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
-   fCentralityCutMin = 0.0;      // default value of centrality cut minimum, 0 ~ no cut
-   fCentralityCutMax = 10000.0;  // default value of centrality cut maximum,  ~ no cut
+  // Constructor
+  fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
+  fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",500,-15,15);
+  fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",500,-15,15);
+  fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
+  fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
+  fCentralityCutMin = 0.0;      // default value of centrality cut minimum, 0 ~ no cut
+  fCentralityCutMax = 10000.0;  // default value of centrality cut maximum,  ~ no cut
 
 }
 
 //______________________________________________________
-Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod)
+Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCuts     *trackcuts)
 {
-// Returns true if Event Cuts are selected and applied
-   fAOD = aod;
-   fIsSelected = (CheckVtxRange() && CheckCentralityCut());
-   if(fIsSelected)  fHistoCuts->Fill(kAcceptedEvents);
-   return fIsSelected;
+  // Returns true if Event Cuts are selected and applied
+  fAOD = aod;
+  fTrackCuts = trackcuts;
+  fHistoCuts->Fill(kProcessedEvents);
+  //loop on tracks, before event selection, filling QA histos
+  AliAODVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated
+  if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
+  fIsSelected = (CheckVtxRange() && CheckCentralityCut());
+  if(fIsSelected){
+    fHistoCuts->Fill(kAcceptedEvents);
+    if(vertex)fHistoVtxAftSel->Fill(vertex->GetZ());
+  }
+  for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
+    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    if (!fTrackCuts->IsSelected(track)) continue;
+    fHistoEtaBefSel->Fill(track->Eta());
+    if(fIsSelected) fHistoEtaAftSel->Fill(track->Eta());
+  }
+  return fIsSelected;
 }
 
 //______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckVtxRange()
 {
   // reject events outside of range
-   AliAODVertex * vertex = fAOD->GetPrimaryVertex();
-   if (!vertex)
-   {
+  AliAODVertex * vertex = fAOD->GetPrimaryVertex();
+  if (!vertex)
+    {
       fHistoCuts->Fill(kVtxNoEvent);
       return kFALSE;
-   }
-   if (TMath::Abs(vertex->GetZ()) < 10)
-   {
+    }
+  if (TMath::Abs(vertex->GetZ()) < 10)
+    {
       return kTRUE;
-   }
-   fHistoCuts->Fill(kVtxRange);
-   return kFALSE;
+    }
+  fHistoCuts->Fill(kVtxRange);
+  return kFALSE;
 }
 
 //______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 {
-   // Check centrality cut
-   if ( (fAOD->GetCentrality()->GetCentralityPercentile("V0M") <= fCentralityCutMax)  &&  (fAOD->GetCentrality()->GetCentralityPercentile("V0M") >= fCentralityCutMin) )  return kTRUE;   
-   fHistoCuts->Fill(kVtxCentral);
-   return kFALSE;
+  // Check centrality cut
+  if ( (fAOD->GetCentrality()->GetCentralityPercentile("V0M") <= fCentralityCutMax)  &&  (fAOD->GetCentrality()->GetCentralityPercentile("V0M") >= fCentralityCutMin) )  return kTRUE;   
+  fHistoCuts->Fill(kVtxCentral);
+  return kFALSE;
 }
 
 //______________________________________________________
 void AliSpectraAODEventCuts::PrintCuts()
 {
-    // print info about event cuts
-    cout << "Event Stats" << endl;
-    cout << " > Number of accepted events: " << fHistoCuts->GetBinContent(kAcceptedEvents + 1) << endl;
-    cout << " > Vertex out of range: " << fHistoCuts->GetBinContent(kVtxRange + 1) << endl;
-    cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
-    cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
-    }
+  // print info about event cuts
+  cout << "Event Stats" << endl;
+  cout << " > Number of accepted events: " << fHistoCuts->GetBinContent(kAcceptedEvents + 1) << endl;
+  cout << " > Number of processed events: " << fHistoCuts->GetBinContent(kProcessedEvents + 1) << endl;
+  cout << " > Vertex out of range: " << fHistoCuts->GetBinContent(kVtxRange + 1) << endl;
+  cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
+  cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
+}
 //______________________________________________________
 
 Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
@@ -137,33 +157,33 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
 }
 
 /// FIXME: Q vector
-  // //Selection on QVector, before ANY other selection on the event
-  // //Spectra MUST be normalized wrt events AFTER the selection on Qvector
-  // // Can we include this in fEventCuts
-  // Double_t Qx2EtaPos = 0, Qy2EtaPos = 0;
-  // Double_t Qx2EtaNeg = 0, Qy2EtaNeg = 0;
-  // Int_t multPos = 0;
-  // Int_t multNeg = 0;
-  // for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
-  //   AliAODTrack* aodTrack = fAOD->GetTrack(iT);
-  //   if (!fTrackCuts->IsSelected(aodTrack)) continue;
-  //   if (aodTrack->Eta() >= 0){
-  //     multPos++;
-  //     Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
-  //     Qy2EtaPos += TMath::Sin(2*aodTrack->Phi());
-  //   } else {
-  //     multNeg++;
-  //     Qx2EtaNeg += TMath::Cos(2*aodTrack->Phi()); 
-  //     Qy2EtaNeg += TMath::Sin(2*aodTrack->Phi());
-  //   }
-  // } 
-  // Double_t qPos=-999;
-  // if(multPos!=0)qPos= TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
-  // Double_t qNeg=-999;
-  // if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
+// //Selection on QVector, before ANY other selection on the event
+// //Spectra MUST be normalized wrt events AFTER the selection on Qvector
+// // Can we include this in fEventCuts
+// Double_t Qx2EtaPos = 0, Qy2EtaPos = 0;
+// Double_t Qx2EtaNeg = 0, Qy2EtaNeg = 0;
+// Int_t multPos = 0;
+// Int_t multNeg = 0;
+// for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
+//   AliAODTrack* aodTrack = fAOD->GetTrack(iT);
+//   if (!fTrackCuts->IsSelected(aodTrack)) continue;
+//   if (aodTrack->Eta() >= 0){
+//     multPos++;
+//     Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
+//     Qy2EtaPos += TMath::Sin(2*aodTrack->Phi());
+//   } else {
+//     multNeg++;
+//     Qx2EtaNeg += TMath::Cos(2*aodTrack->Phi()); 
+//     Qy2EtaNeg += TMath::Sin(2*aodTrack->Phi());
+//   }
+// } 
+// Double_t qPos=-999;
+// if(multPos!=0)qPos= TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
+// Double_t qNeg=-999;
+// if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
   
-  // if((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax()) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax())){
+// if((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax()) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax())){
 
-  //fill q distributions vs centrality, after all event selection
-  // fHistMan->GetqVecHistogram(kHistqVecPos)->Fill(qPos,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution
-  // fHistMan->GetqVecHistogram(kHistqVecNeg)->Fill(qNeg,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution
+//fill q distributions vs centrality, after all event selection
+// fHistMan->GetqVecHistogram(kHistqVecPos)->Fill(qPos,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution
+// fHistMan->GetqVecHistogram(kHistqVecNeg)->Fill(qNeg,fAOD->GetCentrality()->GetCentralityPercentile("V0M"));  // qVector distribution

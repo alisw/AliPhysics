@@ -244,8 +244,6 @@ void MainAnalysis()  {
   
   //comparison with charged hadron
   Printf("\n\n-> ChargedHadron comparison");
-  TCanvas *cAllCh=new TCanvas("cAllCh","cAllCh",700,500);
-  cAllCh->Divide(1,2);
   TH1F *hChHad_data=(TH1F*)((TH1F*)hman_data->GetPtHistogram1D("hHistPtRec",-1,-1))->Clone();
   //fraction of sec in MC
   TH1F *hPrimRec_mc=(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("hHistPtRecPrimary",-1,-1))->Clone();
@@ -255,17 +253,33 @@ void MainAnalysis()  {
     Double_t en_mc=hAllRec_mc->GetBinContent(ibin);
     Double_t prim_mc=hPrimRec_mc->GetBinContent(ibin);
     if(en_mc!=0)hChHad_data->SetBinContent(ibin,en_data-(en_data*(en_mc-prim_mc)*1.1/en_mc));
-    Printf("Before: %.0f After: %.0f  fraction: %.1f",en_data,hChHad_data->GetBinContent(ibin),hChHad_data->GetBinContent(ibin)/en_data);
+    //Printf("Before: %.0f After: %.0f  fraction: %.1f",en_data,hChHad_data->GetBinContent(ibin),hChHad_data->GetBinContent(ibin)/en_data);
   }
   hPrimRec_mc->Divide(hAllRec_mc);
   //efficiency for primaries
   TH1F *hEff_mc=(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("hHistPtRecPrimary",-1,-1))->Clone();
   hEff_mc->Divide((TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("hHistPtGen",1,1))->Clone());
+  TCanvas *cAllChFactors=new TCanvas("cAllChFactors","cAllChFactors",700,500);
+  cAllChFactors->Divide(1,2);
+  cAllChFactors->cd(1);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  hPrimRec_mc->SetTitle("Prim/All, charged hadron pure MC");
+  hPrimRec_mc->DrawClone("lhist");
+  gPad->BuildLegend();
+  cAllChFactors->cd(2);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  hEff_mc->SetTitle("Efficiency for Primaries, charged hadron pure MC");
+  hEff_mc->DrawClone("lhist");
+  gPad->BuildLegend();
   //Printf("--------%f ",((TH1F*)hman_mc->GetPtHistogram1D("hHistPtGen",1,1))->GetEntries()/1.6/ecuts_mc->NumberOfEvents());
   hChHad_data->Scale(1./events_data,"width");//NORMALIZATION
   hChHad_data->Divide(hEff_mc);//Efficiency
   hChHad_data->Scale(1./(2*tcuts_data->GetEta()));
   hChHad_data->SetTitle("All Ch from AOD");
+  TCanvas *cAllCh=new TCanvas("cAllCh","cAllCh",700,500);
+  cAllCh->Divide(1,2);
   cAllCh->cd(1);
   gPad->SetGridy();
   gPad->SetGridx();
