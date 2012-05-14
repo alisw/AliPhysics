@@ -14,5 +14,6 @@
 #pragma link C++ class AliAnalysisTaskLukeAOD+;
 #pragma link C++ class AliAnalysisTaskLukeV0+;
 #pragma link C++ class AliAnalysisTaskPerformanceStrange+;
+#pragma link C++ class AliAnalysisTaskV0ForRAA+;
 
 #endif
