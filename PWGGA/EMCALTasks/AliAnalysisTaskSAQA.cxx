@@ -50,8 +50,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistEoverP(0),
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
-  fHistClusPhiCorr(0),
-  fHistTracksPhiCorr(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
   fHistChVSneCorrCells(0),
@@ -94,8 +92,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistEoverP(0),
   fHistTrPhiEta(0),
   fHistClusPhiEta(0),
-  fHistClusPhiCorr(0),
-  fHistTracksPhiCorr(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
   fHistChVSneCorrCells(0),
@@ -153,7 +149,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistMaxL1ClusCent->GetYaxis()->SetTitle("Maximum L1 trigger cluster");
   fOutput->Add(fHistMaxL1ClusCent);
 
-  fHistMaxL1ThrCent = new TH2F("fHistMaxL1ThrCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
+  fHistMaxL1ThrCent = new TH2F("fHistMaxL1ThrCent","fHistMaxL1ThrCent", 100, 0, 100, 250, 0, 250);
   fHistMaxL1ThrCent->GetXaxis()->SetTitle("Centrality [%]");
   fHistMaxL1ThrCent->GetYaxis()->SetTitle("Maximum L1 threshold");
   fOutput->Add(fHistMaxL1ThrCent);
@@ -183,27 +179,17 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistClusPhiEta->GetYaxis()->SetTitle("Phi");
   fOutput->Add(fHistClusPhiEta);
 
-  fHistTracksPhiCorr = new TH1F("fHistTracksPhiCorr", "fHistTracksPhiCorr", 128, -1.6, 4.8);
-  fHistTracksPhiCorr->GetXaxis()->SetTitle("#Delta#phi");
-  fHistTracksPhiCorr->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistTracksPhiCorr);
-
-  fHistClusPhiCorr = new TH1F("fHistClusPhiCorr", "fHistClusPhiCorr", 128, -1.6, 4.8);
-  fHistClusPhiCorr->GetXaxis()->SetTitle("#Delta#phi");
-  fHistClusPhiCorr->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistClusPhiCorr);
-
-  fHistChVSneCells = new TH2F("fHistChVSneCells","Charged energy vs. neutral (cells) energy", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistChVSneCells = new TH2F("fHistChVSneCells","Charged energy vs. neutral (cells) energy", fNbins, fMinPt * 10, fMaxPt * 10, fNbins, fMinPt * 10, fMaxPt * 10);
   fHistChVSneCells->GetXaxis()->SetTitle("E [GeV]");
   fHistChVSneCells->GetYaxis()->SetTitle("P [GeV/c]");
   fOutput->Add(fHistChVSneCells);
 
-  fHistChVSneClus = new TH2F("fHistChVSneClus","Charged energy vs. neutral (clusters) energy", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistChVSneClus = new TH2F("fHistChVSneClus","Charged energy vs. neutral (clusters) energy", fNbins, fMinPt * 10, fMaxPt * 10, fNbins, fMinPt * 10, fMaxPt * 10);
   fHistChVSneClus->GetXaxis()->SetTitle("E [GeV]");
   fHistChVSneClus->GetYaxis()->SetTitle("P [GeV/c]");
   fOutput->Add(fHistChVSneClus);
 
-  fHistChVSneCorrCells = new TH2F("fHistChVSneCorrCells","Charged energy vs. neutral (corrected cells) energy", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistChVSneCorrCells = new TH2F("fHistChVSneCorrCells","Charged energy vs. neutral (corrected cells) energy", fNbins, fMinPt * 10, fMaxPt * 10, fNbins, fMinPt * 10, fMaxPt * 10);
   fHistChVSneCorrCells->GetXaxis()->SetTitle("E [GeV]");
   fHistChVSneCorrCells->GetYaxis()->SetTitle("P [GeV/c]");
   fOutput->Add(fHistChVSneCorrCells);
@@ -306,6 +292,25 @@ Int_t AliAnalysisTaskSAQA::GetNumberOfTrgClusters() const
     return 0;
 }
 
+//________________________________________________________________________
+Float_t AliAnalysisTaskSAQA::GetAcceptanceNormFactor() const
+{
+  const Float_t EmcalEtaMin = -0.7;
+  const Float_t EmcalEtaMax = 0.7;
+  const Float_t EmcalPhiMin = 80 * TMath::DegToRad();
+  const Float_t EmcalPhiMax = 180 * TMath::DegToRad();
+
+  const Float_t TpcEtaMin = -0.9;
+  const Float_t TpcEtaMax = 0.9;
+  const Float_t TpcPhiMin = 0;
+  const Float_t TpcPhiMax = 2 * TMath::Pi();
+
+  Float_t emcalArea = (EmcalEtaMax - EmcalEtaMin) * (EmcalPhiMax - EmcalPhiMin);
+  Float_t tpcArea   = (TpcEtaMax - TpcEtaMin) * (TpcPhiMax - TpcPhiMin);
+
+  return emcalArea / tpcArea;
+}
+
 void AliAnalysisTaskSAQA::FillHistograms()
 {
   Float_t cent = 100;
@@ -322,6 +327,9 @@ void AliAnalysisTaskSAQA::FillHistograms()
   Float_t clusSum = DoClusterLoop();
   
   Float_t trackSum = DoTrackLoop();
+
+  //Normalization to EMCal acceptance
+  trackSum *= GetAcceptanceNormFactor();
 
   Float_t cellSum = 0, cellCutSum = 0;
   DoCellLoop(cellSum, cellCutSum);
@@ -401,24 +409,6 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
     TVector3 clusVec(pos);
     fHistClusPhiEta->Fill(clusVec.Eta(), clusVec.Phi());
 
-    for(Int_t ic2 = iClusters+1; ic2 < nclusters; ic2++) {
-      AliVCluster* cluster2 = GetCaloCluster(ic2);
-      if (!cluster2) {
-	AliError(Form("Could not receive cluster %d", ic2));
-	continue;
-      }  
-      
-      if (!(cluster2->IsEMCAL())) continue;
-      
-      Float_t pos2[3];
-      cluster2->GetPosition(pos2);
-      TVector3 clusVec2(pos2);
-      
-      Float_t dphi = clusVec.Phi() - clusVec2.Phi();
-      if (dphi < -1.6) dphi += TMath::Pi() * 2;
-      if (dphi > 4.8) dphi -= TMath::Pi() * 2;
-      fHistClusPhiCorr->Fill(dphi);
-    }
   } //cluster loop 
 
   return sum;
@@ -443,21 +433,6 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     
     if (!AcceptTrack(track)) continue;
 
-    for(Int_t it2 = i+1; it2 < ntracks; it2++) {
-      AliVTrack* track2 = GetTrack(it2);         
-      if(!track2) {
-	AliError(Form("Could not retrieve track %d", it2)); 
-	continue; 
-      }
-      
-      if (!AcceptTrack(track2)) continue;
-      
-      Float_t dphi = track->Phi() - track2->Phi();
-      if (dphi < -1.6) dphi += TMath::Pi() * 2;
-	if (dphi > 4.8) dphi -= TMath::Pi() * 2;
-	fHistTracksPhiCorr->Fill(dphi);
-    } // second track loop
-    
     fHistTracksPt->Fill(track->Pt());
 
     sum += track->P();
@@ -523,6 +498,8 @@ void AliAnalysisTaskSAQA::DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)
   //Float_t L0FastORamp = 0;
   Int_t L1amp = 0;
   Int_t L1thr = 0;
+  maxL1amp = -1;
+  maxL1thr = -1;
 
   while (triggers->Next()) {
     /*
