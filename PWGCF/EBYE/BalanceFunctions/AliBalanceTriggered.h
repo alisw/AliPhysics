@@ -55,7 +55,7 @@ class AliBalanceTriggered : public TObject {
   AliTHn *GetHistNnn() { return fHistNN;}
 
   // Fill balance function histograms
-  void FillBalance(Float_t fCentrality,TObjArray* particles);
+  void FillBalance(Float_t fCentrality,TObjArray* particles,TObjArray* particlesMixed);
  
   // Get the balance function histogram 
   TH1D *GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax);

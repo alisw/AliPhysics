@@ -50,9 +50,11 @@ AliAnalysisTaskTriggeredBF::AliAnalysisTaskTriggeredBF(const char *name)
   fRunMixing(kFALSE),
   fMixingTracks(50000),
   fMixedBalance(0),
+  fPoolMgr(0),
   fList(0),
   fListTriggeredBF(0),
   fListTriggeredBFS(0),
+  fListTriggeredBFM(0),
   fHistListPIDQA(0),
   fHistEventStats(0),
   fHistCentStats(0),
@@ -103,6 +105,7 @@ AliAnalysisTaskTriggeredBF::AliAnalysisTaskTriggeredBF(const char *name)
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
 }
 
 //________________________________________________________________________
@@ -271,15 +274,15 @@ void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
   Int_t trackDepth = fMixingTracks; 
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
    
-  Double_t centralityBins[] = {0,1,2,3,4,5,6,7,8,9,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,90,100}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-  Double_t* centbins = centralityBins;
-  Int_t nCentralityBins  = 26;
-
+  Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+  Double_t* centbins        = centralityBins;
+  Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
   
   // bins for second buffer are shifted by 100 cm
-  Double_t vertexBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-  Double_t* vtxbins = vertexBins;
-  Int_t nVertexBins  = 9;
+  Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+  Double_t* vtxbins     = vertexBins;
+  Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
+  cout<<nCentralityBins<<" "<<nVertexBins<<endl;
 
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
 
@@ -352,7 +355,7 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
 	  {
 	    
 	    Int_t nMix = pool->GetCurrentNEvents();
-	    cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+	    //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
 	    
 	    //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
 	    //((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
@@ -363,17 +366,22 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
 	    for (Int_t jMix=0; jMix<nMix; jMix++) 
 	      {
 		TObjArray* tracksMixed = pool->GetEvent(jMix);
-		fMixedBalance->FillBalance(fCentrality,tracksMixed); //NOW ONLY THE MIXED EVENT ITSELF IS FILLED --> DO ONE TRACK OF MAIN AND ONE OF MIXED (LIKE UEHISTOGRAMS!!!!)
+		fMixedBalance->FillBalance(fCentrality,tracksMain,tracksMixed); 
 	      }
 	  }
-      }
+
+	// Update the Event pool
+	pool->UpdatePool(tracksMain);
+	//pool->PrintInfo();
+	
+      }//run mixing
     
     // calculate balance function
-    fBalance->FillBalance(fCentrality,tracksMain);//,chargeVectorMixed); // here comes the mixing... in some time
+    fBalance->FillBalance(fCentrality,tracksMain,NULL);
     
     // calculate shuffled balance function
     if(fRunShuffling && tracksShuffled != NULL) {
-       fShuffledBalance->FillBalance(fCentrality,tracksShuffled);
+      fShuffledBalance->FillBalance(fCentrality,tracksShuffled,NULL);
     }
     
   }//AOD analysis
