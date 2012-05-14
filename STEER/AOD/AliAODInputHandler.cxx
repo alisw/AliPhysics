@@ -133,7 +133,10 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
     // entry gives the events in the current file
     if (fTreeToMerge) fTreeToMerge->GetEntry(GetReadEntry() + fMergeOffset);
   
-    fIsSelectedResult = fEvent->GetHeader()->GetOfflineTrigger();
+    if (fEventCuts)
+      fIsSelectedResult = fEventCuts->GetSelectionMask(fEvent);
+    else
+      fIsSelectedResult = fEvent->GetHeader()->GetOfflineTrigger();
 
     if (fMixingHandler) fMixingHandler->BeginEvent(entry);
     
