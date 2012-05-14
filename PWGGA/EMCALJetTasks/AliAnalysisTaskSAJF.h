@@ -18,9 +18,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
  public:
   
   enum SAJFAnaType {
-    kFullAcceptance  = 0,     // Full acceptance
-    kEMCAL           = 1,     // EMCal acceptance only
-    kEMCALFiducial   = 2      // EMCal fiduacial region only
+    kTPC       = 0,     // TPC only analysis
+    kEMCAL     = 1,     // EMCal + TPC analysis
   };
 
   AliAnalysisTaskSAJF();
@@ -67,11 +66,11 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        RetrieveEventObjects()                                                                             ;
   void                        FillHistograms()                                                                                   ;
   void                        DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)                                                 ;
-  void                        DoKtJetLoop(Float_t &rhoKtLJex, Float_t &rhoKt, Int_t nLJs = 2)                                    ;
-  Bool_t                      DoEmbJetLoop(Float_t &maxJetPt, Float_t &maxPartPt, Float_t &maxJetArea)                           ;
+  void                        DoKtJetLoop(Float_t &rhoKt, Int_t nLJs = 2)                                                        ;
+  Bool_t                      DoEmbJetLoop(AliEmcalJet* &maxJet, TObject* &maxPart)                                              ;
   void                        DoTrackLoop(Float_t &rhoTracksLJex, Float_t &rhoTracks, Int_t maxJetIndex, Int_t max2JetIndex)     ;
   void                        DoClusterLoop(Float_t &rhoClusLJex, Float_t &rhoClus,Int_t maxJetIndex, Int_t max2JetIndex)        ;
-  Float_t                     GetRigidConePt(AliEmcalJet *jet = 0,  Float_t minD = 0.8)                                          ;
+  Bool_t                      GetRigidConePt(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet *jet = 0,  Float_t minD = 1.0) ;
 
 
   SAJFAnaType                 fAnaType;                    // Analysis type
@@ -97,25 +96,27 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   Int_t                       fCentBin;                    // Event centrality bin
   TH1F                       *fHistCentrality;             // Event centrality distribution
   TH2F                       *fHistJetPhiEta;              // Phi-Eta distribution of jets
+  TH2F                       *fHistEmbJetPhiEta;           // Phi-Eta distribution of embedded jets
+  TH2F                       *fHistEmbPartPhiEta;          // Phi-Eta distribution of embedded particles
   TH2F                       *fHistRhoPartVSleadJetPt;     // Background et density of particles (clusters+tracks) vs. leading jet pt
-  TH2F                       *fHistMedKtVSRhoPartExLJ;     // Median of the pt density of kt jets vs. bkg pt density of particles, excluding the 2 most energetic jets
-  TH2F                       *fHistMedKtVSRhoPart;         // Median of the pt density of kt jets vs. background pt density of particles
+  TH2F                       *fHistMedKtVSRhoPart;         // Median of the pt density of kt jets vs. bkg pt density of particles, excluding the 2 most energetic jets
   TH2F                       *fHistRCPtVSRhoPart;          // Random cone Pt vs. background pt density of particles
   TH2F                       *fHistMedKtVSEmbBkg;          // Area(embjet) * rhoKt vs. Pt(embjet) - Pt(embtrack)
+  TH2F                       *fHistMedKtVSRCPt;            // Area(RC) * rhoKt vs. Pt(RC)
+  TH2F                       *fHistRCPtExLJVSDPhiLJ;       // Random cone pt, imposing min distance from leading jet, vs deltaPhi leading jet
+  TH2F                       *fHistRCPhiEta;           // Phi-Eta distribution of embedded jets
   TH1F                       *fHistJetsPt[4];              // Jet pt spectrum
   TH1F                       *fHistJetsNEF[4];             // Jet neutral energy fraction
   TH1F                       *fHistJetsZ[4];               // Constituent Pt over Jet Pt ratio
   TH1F                       *fHistLeadingJetPt[4];        // Leading jet pt spectrum
+  TH1F                       *fHistCorrLeadingJetPt[4];    // Leading jet pt spectrum
   TH1F                       *fHist2LeadingJetPt[4];       // Second leading jet pt spectrum
   TH1F                       *fHistTracksPtLJ[4];          // Pt spectrum of tracks
   TH1F                       *fHistClusEtLJ[4];            // Et spectrum of clusters
   TH1F                       *fHistTracksPtBkg[4];         // Pt spectrum of tracks
   TH1F                       *fHistClusEtBkg[4];           // Et spectrum of clusters
-  TH1F                       *fHistBkgClusPhiCorr[4];      // Background clusters phi correlations
-  TH1F                       *fHistBkgTracksPhiCorr[4];    // Background tracks phi correlations
   TH1F                       *fHistBkgClusMeanRho[4];      // Background clusters mean et density
   TH1F                       *fHistBkgTracksMeanRho[4];    // Background tracks mean pt density
-  TH1F                       *fHistBkgLJetPhiCorr[4];      // Background particles phi correlation with leading jet
   TH1F                       *fHistMedianPtKtJet[4];       // Median of the pt density of kt jets, excluded the 2 most energetic
   TH1F                       *fHistDeltaPtRC[4];           // deltaPt = Pt(RC) - A * rhoKt
   TH1F                       *fHistDeltaPtRCExLJ[4];       // deltaPt = Pt(RC) - A * rhoKt, imposing min distance from leading jet
@@ -132,6 +133,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 2) // jet finder task
+  ClassDef(AliAnalysisTaskSAJF, 3) // jet finder task
 };
 #endif
