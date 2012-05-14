@@ -9,14 +9,21 @@
 #ifndef ALIANALYSISTASKV0FORRAA_H
 #define ALIANALYSISTASKV0FORRAA_H
 
-class TH1;
+class TH1F;
+class TH2F;
 class Tlist;
 class AliESDv0;
+class AliESDtrack;
 class AliESDtrackCuts;
 class AliESDpid;
 class AliESDEvent;
 class AliMCEvent;
-class AliAnalysisTaskSE;
+class AliPIDResponse;
+
+#ifndef ALIANALYSISTASKSE_H
+#include "AliAnalysisTaskSE.h"
+#endif
+
 
 class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
 public:
