@@ -36,7 +36,8 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
 
   AliFastJetHeaderV1 *header = new AliFastJetHeaderV1;
   header->SetBGMode(0);
-  header->SetRadius(0.4);
+  //  header->SetRadius(0.4);
+  header->SetRparam(0.4); 
   //header->SetGhostEtaMax(2);
   //header->SetGhostArea(0.05);
   header->SetAlgorithm(2); // antikt_algorithm = 2, kt = 0 (see fastjet/fastjet/JetDefinition.hh
