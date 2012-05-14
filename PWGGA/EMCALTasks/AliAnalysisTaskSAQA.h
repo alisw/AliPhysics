@@ -45,6 +45,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   Float_t                     DoTriggerClusLoop()                                       ;
   Float_t                     DoTrackLoop()                                             ;
   Float_t                     DoClusterLoop()                                           ;
+  Float_t                     GetAcceptanceNormFactor()                            const;
 
   TList                      *fOutput;                 // Output list
   Float_t                     fCellEnergyCut;          // Energy cell cut
@@ -71,9 +72,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks
   TH2F                       *fHistClusPhiEta;         // Phi-Eta distribution of clusters
 
-  TH1F                       *fHistClusPhiCorr;        // Clusters phi correlations
-  TH1F                       *fHistTracksPhiCorr;      // Tracks phi correlations
-
   TH2F                       *fHistChVSneCells;        // Charged vs. neutral (cells) energy
   TH2F                       *fHistChVSneClus;         // Charged vs. neutral (clusters) energy
   TH2F                       *fHistChVSneCorrCells;    // Charged vs. neutral (corrected cells) energy
@@ -89,6 +87,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 2) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 3) // Quality task for Emcal analysis
 };
 #endif
