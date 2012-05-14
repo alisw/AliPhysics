@@ -17,6 +17,7 @@
 #ifndef __CINT__
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 #include <TAlienCollection.h>
 #include <TArrayI.h>
@@ -496,7 +497,17 @@ struct TrainSetup
     Int_t   idx = base.Last('.');
     if (idx != kNPOS) base.Remove(idx);
     Bool_t retval = true;
-    Info("MakeScriptPAR", "script=%s, base=%s", script, base.Data());
+    // Info("MakeScriptPAR", "script=%s, base=%s", script, base.Data());
+
+    TString tmpdir(gSystem->TempDirectory());
+    int   ltempl = tmpdir.Length() + 1 + 5 + 6 + 1;
+    char* templ  = new char[ltempl];
+    snprintf(templ, ltempl, "%s/trainXXXXXX", tmpdir.Data());
+    if (!mkdtemp(templ)) {
+      Error("MakeScriptPAR", "Failed to generate temporary directory from template %s", 
+	    templ);
+      return false;
+    }
 
     try {
       // Check name of script file 
@@ -512,20 +523,18 @@ struct TrainSetup
       if (!loc) throw TString::Format("Script %s not found in %s", 
 				      scr.Data(), path.Data());
       TString full(loc);
-
       
+      TString dir = TString::Format("%s/%s", templ, base.Data());
       // Set-up directories 
-      if (gSystem->MakeDirectory(base) < 0) {
-	base = "";
+      if (gSystem->MakeDirectory(dir) < 0) 
 	throw TString::Format("Could not make directory '%s'", base.Data());
-      }
       
-      if (gSystem->MakeDirectory(Form("%s/PROOF-INF", base.Data()))) 
+      if (gSystem->MakeDirectory(Form("%s/PROOF-INF", dir.Data()))) 
 	throw TString::Format("Could not make directory %s/PROOF-INF", 
 			      base.Data());
       
       // Copy the script to the setup directory 
-      TString dest = TString::Format("%s/%s.%s", base.Data(),
+      TString dest = TString::Format("%s/%s.%s", dir.Data(),
 				     base.Data(), ext.Data());
       Int_t ret = gSystem->CopyFile(full, dest, true);
       switch (ret) { 
@@ -535,7 +544,7 @@ struct TrainSetup
       }
       
       // Make our build file 
-      std::ofstream build(Form("%s/PROOF-INF/BUILD.sh", base.Data()));
+      std::ofstream build(Form("%s/PROOF-INF/BUILD.sh", dir.Data()));
       if (!build) 
 	throw TString::Format("Failed to open build shell script");
       build << "#!/bin/sh\n"
@@ -544,11 +553,11 @@ struct TrainSetup
 	    << "echo BUILD.sh@`hostname`: done: $?\n"
 	    << std::endl;
       build.close();
-      if (gSystem->Chmod(Form("%s/PROOF-INF/BUILD.sh", base.Data()), 0755) != 0)
+      if (gSystem->Chmod(Form("%s/PROOF-INF/BUILD.sh", dir.Data()), 0755) != 0)
 	throw TString::Format("Failed to set exectuable flags on "
-			      "%s/PROOF-INF/BUILD.sh", base.Data());
+			      "%s/PROOF-INF/BUILD.sh", dir.Data());
       
-      std::ofstream util(Form("%s/PROOF-INF/UTIL.C", base.Data()));
+      std::ofstream util(Form("%s/PROOF-INF/UTIL.C", dir.Data()));
       if (!util) 
 	throw TString::Format("Failed to open utility script");
       util << "void LoadROOTLibs() {\n"
@@ -581,7 +590,7 @@ struct TrainSetup
 	   << "}\n"
 	   << std::endl;
 	          
-      std::ofstream cbuild(Form("%s/PROOF-INF/BUILD.C", base.Data()));
+      std::ofstream cbuild(Form("%s/PROOF-INF/BUILD.C", dir.Data()));
       if (!cbuild) 
 	throw TString::Format("Failed to open build script");
       cbuild << "void BUILD() {\n"
@@ -605,7 +614,7 @@ struct TrainSetup
       cbuild.close();
       
       // Make our set-up script 
-      std::ofstream setup(Form("%s/PROOF-INF/SETUP.C", base.Data()));
+      std::ofstream setup(Form("%s/PROOF-INF/SETUP.C", dir.Data()));
       if (!build) 
 	throw TString::Format("Failed to open setup script");
       setup << "void SETUP() {\n"
@@ -616,9 +625,9 @@ struct TrainSetup
       dep = 0;
       while ((dep = next())) 
 	setup << "  LoadDep(\"" << dep->GetName() << "\");\n";
-      setup << "  gDebug = 5;\n"
+      setup << "  // gDebug = 5;\n"
 	    << "  gSystem->Load(\"" << base << "_" << ext << ".so\");\n"
-	    << "  gDebug = 0;\n"
+	    << "  // gDebug = 0;\n"
 	    << "  gROOT->ProcessLine(\".include " << base << "\");\n"
 	    << "  gSystem->Setenv(\"" << base << "_INCLUDE\",\"" 
 	    << base << "\");\n"
@@ -627,16 +636,22 @@ struct TrainSetup
 	    << std::endl;
       setup.close();
 
-      ret = gSystem->Exec(Form("tar -czvf %s.par %s", base.Data(),base.Data()));
+      ret = gSystem->Exec(Form("(cd %s && tar -czvf %s.par %s)", 
+			       templ, base.Data(),base.Data()));
       if (ret != 0) 
-	throw TString::Format("Failed to create PAR file %s.PAR", base.Data());
+	throw TString::Format("Failed to create PAR file %s.PAR from %s", 
+			      base.Data(), dir.Data());
+      ret = gSystem->Exec(Form("mv -vf %s/%s.par %s.par", templ, base.Data(), 
+			       base.Data()));
+      if (ret != 0) 
+	throw TString::Format("Failed to rename %s/%s.par to %s.par: %s", templ, base.Data(),
+			      base.Data(), gSystem->GetError());
     }
     catch (TString& e) { 
-      Error("MakeScriptPAR", e.Data()); 
+      Error("MakeScriptPAR", "%s", e.Data()); 
       retval = false;
     }
-    if (!base.IsNull())
-      gSystem->Exec(Form("rm -vrf %s", base.Data()));
+    gSystem->Exec(Form("rm -vrf %s", templ));
     return retval;
   }
   //__________________________________________________________________
@@ -1285,7 +1300,8 @@ protected:
 
       // --- Possibly debug slave sessions with GDB ------------------
       if (fUseGDB) { 
-	TString gdbCmd("\"gdb --batch -ex run -ex bt --args\"");
+	TString gdbCmd("/usr/bin/gdb --batch -ex run -ex bt --args");
+	// TString gdbCmd("\"gdb --batch -ex run -ex bt --args\"");
 	Info("Connect", "Using GDB to wrap slaves: %s", gdbCmd.Data());
 	TProof::AddEnvVar("PROOF_WRAPPERCMD", gdbCmd);
       }
