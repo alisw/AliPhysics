@@ -1255,6 +1255,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   AliESDCaloTrigger& trg= * (esdEvent->GetCaloTrigger("EMCAL"));
   
+  int kBitEGA = 4, kBitEJE = 5;	
+
+  if (trg.IsA()->GetClassVersion() >= 5) {
+	  kBitEGA = 6;
+	  kBitEJE = 8;
+  }
+	
   Int_t    nL0Patch = 0 ;
   Int_t    nL1Patch = 0 ;
   Double_t totSTU   = 0.;
@@ -1296,7 +1303,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       totSTU += ts;
       
       //L1-Gamma
-      if (bit >> 6 & 0x1) 
+      if (bit >> kBitEGA & 0x1) 
       {
         nL1Patch ++;
         emcalPatchL1G[posY][posX] += 1.;
@@ -1308,7 +1315,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       }
       
       //L1-Jet
-      if (bit >> 8 & 0x1) 
+      if (bit >> kBitEJE & 0x1) 
       {
         nL1Patch ++;
         emcalPatchL1J[posY][posX] += 1.;
