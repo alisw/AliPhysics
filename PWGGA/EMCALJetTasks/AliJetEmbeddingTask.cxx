@@ -85,6 +85,21 @@ void AliJetEmbeddingTask::Init()
 {
   // Init task.
 
+  if (fPtMax < fPtMin) {
+    AliWarning (Form("PtMax (%f) < PtMin (%f), setting PtMax = PtMin = %f", fPtMax, fPtMin, fPtMin));
+    fPtMax = fPtMin;
+  }
+
+  if (fEtaMax < fEtaMin) {
+    AliWarning (Form("EtaMax (%f) < EtaMin (%f), setting EtaMax = EtaMin = %f", fEtaMax, fEtaMin, fEtaMin));
+    fEtaMax = fEtaMin;
+  }
+
+  if (fPhiMax < fPhiMin) {
+    AliWarning (Form("PhiMax (%f) < PhiMin (%f), setting PhiMax = PhiMin = %f", fPhiMax, fPhiMin, fPhiMin));
+    fPhiMax = fPhiMin;
+  }
+
   if (fNEmbTracks > 0) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
 
@@ -161,22 +176,57 @@ void AliJetEmbeddingTask::Init()
 void AliJetEmbeddingTask::Embed() 
 {
   // Embed particles.
-
+  
   if (fNEmbClusters > 0 && fOutClusters) {
+    Float_t emEtaMax = fEtaMax;
+    Float_t emEtaMin = fEtaMin;
+    Float_t emPhiMax = fPhiMax;
+    Float_t emPhiMin = fPhiMin;
+
+    // hard-coded Emcal boundaries
+    const Float_t EmcalEtaMin = -0.7;
+    const Float_t EmcalEtaMax = 0.7;
+    const Float_t EmcalPhiMin = 80 * TMath::DegToRad();
+    const Float_t EmcalPhiMax = 180 * TMath::DegToRad();
+
+    if (emEtaMax > EmcalEtaMax) emEtaMax = EmcalEtaMax;
+    if (emEtaMax < EmcalEtaMin) emEtaMax = EmcalEtaMin;
+    if (emEtaMin > EmcalEtaMax) emEtaMin = EmcalEtaMax;
+    if (emEtaMin < EmcalEtaMin) emEtaMin = EmcalEtaMin;
+
+    if (emPhiMax > EmcalPhiMax) emPhiMax = EmcalPhiMax;
+    if (emPhiMax < EmcalPhiMin) emPhiMax = EmcalPhiMin;
+    if (emPhiMin > EmcalPhiMax) emPhiMin = EmcalPhiMax;
+    if (emPhiMin < EmcalPhiMin) emPhiMin = EmcalPhiMin;
+
     const Int_t nClusters = fOutClusters->GetEntriesFast();
     TClonesArray digits("AliEMCALDigit", 1);
     for (Int_t i = 0; i < fNEmbClusters; ++i) {
+
+      Double_t eta = 0;
+      Double_t phi = 0;
+      Int_t absId = 0;
+
+      Int_t repeats = 0;
+      do {
+	eta = gRandom->Rndm() * (emEtaMax - emEtaMin) + emEtaMin;
+	phi = gRandom->Rndm() * (emPhiMax - emPhiMin) + emPhiMin;
+	fGeom->GetAbsCellIdFromEtaPhi(eta, phi, absId);  
+	repeats++;
+      } while (absId == -1 && repeats < 100);
+
+      if (!(absId > -1)) {
+	AliWarning(Form("Could not embed cluster! Random eta-phi extracted more than 100 times!\n"
+			"eta [%f, %f], phi [%f, %f]\n", emEtaMin, emEtaMax, emPhiMin, emPhiMax));
+	continue;
+      }
+
       Double_t pt  = gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
-      Double_t eta = gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
-      Double_t phi = gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
-    
+
       TLorentzVector nPart;
       nPart.SetPtEtaPhiM(pt, eta, phi, 0);
       Double_t e = nPart.E();
       
-      Int_t absId = 0;
-      fGeom->GetAbsCellIdFromEtaPhi(eta, phi, absId);
-
       if (absId == -1) {
 	AliWarning(Form("Unable to embed cluster in eta = %f, phi = %f!"
                         " Maybe the eta-phi range is not inside the EMCal acceptance (eta = [%f, %f], phi = [%f, %f])", 
