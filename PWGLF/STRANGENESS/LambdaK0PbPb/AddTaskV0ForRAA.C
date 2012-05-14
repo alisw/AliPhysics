@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t onFly=kTRUE,Bool_t usePID=kFALSE){
+AliAnalysisTask *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t onFly=kTRUE,Bool_t usePID=kFALSE,Double_t etaCut,Bool_t mcEtaCut){
    
   
   
@@ -26,17 +26,6 @@ AliAnalysisTask *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet
       if(!hasMC) return NULL;
    }
    
-   //============= Set Task Name ===================
-   TString taskName=("AliAnalysisTaskV0ForRAA.cxx+");
-   //===============================================
-   //            Load the task
-   gROOT->LoadMacro(taskName.Data());
-   if (gProof){
-      TString taskSO=gSystem->pwd();
-      taskSO+="/";
-      taskSO+=taskName(0,taskName.First('.'))+"_cxx.so";
-      gProof->Exec(Form("gSystem->Load(\"%s\")",taskSO.Data()),kTRUE);
-   }
   
    //========= Add task to the ANALYSIS manager =====
    TString cutsname = "AliESDtrackCutsV0ForRAA";
@@ -69,9 +58,7 @@ AliAnalysisTask *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet
       outname  += cent; 
    }
 
-   TString outputname;
-   outputname  = outname;
-   outputname += ".root";
+   
    
    AliAnalysisTaskV0ForRAA *task = new AliAnalysisTaskV0ForRAA(taskname);
 
@@ -105,8 +92,7 @@ AliAnalysisTask *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet
    task->SetCosOfPointingAngleK(0.99,1000.0);
    task->SetCosOfPointingAngleL(0.99,1000.0);
    task->SetRapidityCutMother(kTRUE,0.6);
-   task->SetDoEtaOfMCDaughtersCut(kFALSE,0.9);
-   task->SetCtauCut(5.0,3.8,0.5,1.5);
+   task->SetDoEtaOfMCDaughtersCut(mcEtaCut,etaCut);
    
    //--- centrality ---//
    task->SetUseCentrality(centDet);     // 0=off, 1=VZERO, 2=SPD
@@ -126,8 +112,8 @@ AliAnalysisTask *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet
    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
    AliAnalysisDataContainer *coutput1 = 
-     mgr->CreateContainer(outname, TList::Class(),
-			  AliAnalysisManager::kOutputContainer,outputname);
+      mgr->CreateContainer(outname, TList::Class(),
+			   AliAnalysisManager::kOutputContainer,Form("%s:foldername", AliAnalysisManager::GetCommonFileName()));
    
    //--- connect containers ---//
    mgr->ConnectInput  (task,  0, cinput );
