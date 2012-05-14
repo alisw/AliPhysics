@@ -1037,7 +1037,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPairType]     = pair->GetType();
 
   Double_t errPseudoProperTime2 = -1;
-  values[AliDielectronVarManager::kPsiPair]      = pair->PsiPair(fgEvent->GetMagneticField());
+  values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
   values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetKFParticle().GetPseudoProperDecayTime(*(fgEvent->GetPrimaryVertex()), TDatabasePDG::Instance()->GetParticle(443)->Mass(), &errPseudoProperTime2 ) : -1e10;
   // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
 

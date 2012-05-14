@@ -249,9 +249,6 @@ Double_t AliDielectronPair::PsiPair(Double_t MagField) const
   AliExternalTrackParam *d2 = static_cast<AliExternalTrackParam*>(fRefD2.GetObject());
 
   AliExternalTrackParam nt(*d1), pt(*d2);
-  //AliExternalTrackParam nt(), pt();
-  nt.CopyFromVTrack(d1);
-  pt.CopyFromVTrack(d2);
 
   Double_t fPsiPair = 4.;
   if(nt.PropagateTo(radiussum,MagField) == 0)//propagate tracks to the outside
