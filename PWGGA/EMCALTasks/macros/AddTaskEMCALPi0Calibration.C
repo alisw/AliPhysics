@@ -30,7 +30,6 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   
   AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection ("EMCALPi0Calibration");
-  pi0calib->SelectCollisionCandidates(); 
   //pi0calib->SetDebugLevel(10); 
   //pi0calib->UseFilteredEventAsInput();
   pi0calib->SetClusterMinEnergy(0.3);
@@ -63,12 +62,9 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
                           rmBad,
                           recalT);   
   
-  reco->SetNumberOfCellsFromEMCALBorder(1);
+  reco->SetNumberOfCellsFromEMCALBorder(0); // Do not remove clusters in borders!
 
   //reco->Print("");
-  
-  //cu->SwitchOnEMCALOADB();
-
   
   //---------------------
   // Geometry alignment
@@ -77,7 +73,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   //pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1");
   pi0calib->SetGeometryName("EMCAL_COMPLETEV1");
 
-  pi0calib->SwitchOffLoadOwnGeometryMatrices();
+  pi0calib->SwitchOnLoadOwnGeometryMatrices();
   
   
   //---------------------
