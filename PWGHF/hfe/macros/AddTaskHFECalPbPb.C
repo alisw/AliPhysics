@@ -10,10 +10,12 @@ AliAnalysisTask *AddTaskHFECalPbPb(int TPCclust){
     return NULL;
   }  
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  /*
   if (type=="AOD"){
     ::Error("AddTaskHFE", "The tasks exits because AODs are in input");
     return NULL;
-  }
+   }
+  */
   Bool_t MCthere=kFALSE;
   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
   if(!mcH){
