@@ -21,12 +21,20 @@
 
 
 #define AliAnalysisTaskV0ForRAA_cxx
+
+#include "AliAnalysisTaskV0ForRAA.h"
+
 #include "Riostream.h"
 
 #include "TROOT.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TLorentzVector.h"
+
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
+#include "AliMCEventHandler.h"
 
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
@@ -40,13 +48,6 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliESDInputHandler.h"
-#include "AliMCEventHandler.h"
-
-#include "AliAnalysisManager.h"
-#include "AliAnalysisTaskSE.h"
-
-#include "AliAnalysisTaskV0ForRAA.h"
 
 
 
