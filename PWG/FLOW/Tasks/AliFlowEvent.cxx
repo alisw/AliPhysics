@@ -119,6 +119,12 @@ void AliFlowEvent::SetMCReactionPlaneAngle(const AliMCEvent* mcEvent)
     AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
     if (headerH) AliFlowEventSimple::SetMCReactionPlaneAngle( headerH->ReactionPlaneAngle() );
   }
+  //AMPT
+  else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Ampt"))   //returns 0 if matches
+  {
+    AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
+    if (headerH) AliFlowEventSimple::SetMCReactionPlaneAngle( headerH->ReactionPlaneAngle() );
+  }
   //EPOS
   else if (!strcmp(mcEvent->GenEventHeader()->GetName(),"EPOS"))
   {
