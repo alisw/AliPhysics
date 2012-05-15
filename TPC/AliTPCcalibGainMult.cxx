@@ -1790,6 +1790,8 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamber(Int_t padRegion/*=1*/, Bool
 
   if (padRegion<0||padRegion>2) return 0x0;
   
+  if (!fHistGainSector) return NULL;
+  if (!fHistGainSector->GetAxis(2)) return NULL;
   fHistGainSector->GetAxis(2)->SetRangeUser(padRegion,padRegion);
   TH2D * histGainSec = fHistGainSector->Projection(0,1);
 //   TH1D* proj=fHistGainSector->Projection(0);
