@@ -296,7 +296,7 @@ void DrawPeriod(double run1, double run2, double ymin, double ymax, const char* 
 void DrawEvolution(const char* file, bool normalized=true)
 {
 
-  TFile* f = TFile::Open(file);
+  TFile* f = TFile::Open(gSystem->ExpandPathName(file));
   
   if (!f) return;
   
@@ -314,6 +314,8 @@ void DrawEvolution(const char* file, bool normalized=true)
   
   int runmin = TMath::Nint(g->GetX()[0]);
   int runmax = TMath::Nint(g->GetX()[g->GetN()-1]);
+  
+  cout << Form("Run range found in file %s = %d - %d",file,runmin,runmax) << endl;
   
   double ymax(0.4);
   
@@ -350,8 +352,14 @@ void DrawEvolution(const char* file, bool normalized=true)
 
   DrawPeriod(160677,162717,0,ymax,"11e");
 
-  DrawPeriod(167703,170207,0,ymax,"11h");
-             
+  DrawPeriod(162933,165744,0,ymax,"11f");
+
+  DrawPeriod(167703,170593,0,ymax,"11h");
+
+  DrawPeriod(176661,177295,0,ymax,"12a");
+
+  DrawPeriod(177384,178053,0,ymax,"12b");
+
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
   Draw(f,"nbadocc",l,normalized);
@@ -392,10 +400,12 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
     return;    
   }
   
-  int year(2011);
+  int year(2012);
   
   if ( runs[0] <= 139699 ) year=2010;
   
+  if ( runs[0] <= 176000 ) year=2011;
+      
   AliCDBManager::Instance()->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year));
   
   TList glist;
