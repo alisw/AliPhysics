@@ -198,6 +198,26 @@ Double_t AliMillePedeRecord::GetResidual(Int_t pnt) const
 }
 
 //_____________________________________________________________________________________________
+Double_t AliMillePedeRecord::GetWeight(Int_t pnt) const
+{
+  // get weight of point pnt
+  if (!fSize) {AliError("No data"); return 0;}
+  int cnt=0,point=0;
+  //  
+  while(cnt<fSize) {
+    //
+    Double_t resid = fValue[cnt++];
+    while(!IsWeight(cnt)) cnt++;
+    if (point==pnt) return GetValue(cnt);;
+    cnt++;
+    while(!IsResidual(cnt) && cnt<fSize) cnt++;
+    point++;
+  }
+  return -1;
+  //
+}
+
+//_____________________________________________________________________________________________
 void AliMillePedeRecord::ExpandDtBuffer(Int_t bfsize)
 {
   // add extra space for derivatives data

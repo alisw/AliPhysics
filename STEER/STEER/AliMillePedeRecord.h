@@ -59,6 +59,7 @@ class AliMillePedeRecord : public TObject
   Double_t   GetLocalDeriv(Int_t pnt, Int_t indx)            const;
   Double_t   GetResidual(Int_t pnt)                          const;
   Double_t   GetGloResWProd(Int_t indx)                      const;
+  Double_t   GetWeight(Int_t indx)                           const;
   //
  protected:
   Int_t      GetDtBufferSize()                               const {return GetUniqueID()&0x0000ffff;}
