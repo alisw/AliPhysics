@@ -163,10 +163,12 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
     
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
-    if(fOADBFilePath=="") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;
-    emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
-    TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
     
+    if(fOADBFilePath=="") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;
+    
+    emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
+    
+    TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
     
     for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
     {
@@ -205,14 +207,12 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
       if(DebugLevel() > 1) 
         printf("AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices() - AliAnalysisTaskEMCALClusterize Load Misaligned matrices.");
       
-      AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
-      
       for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
       {
         if(DebugLevel() > 1) 
-          esd->GetEMCALMatrix(mod)->Print();
+          InputEvent()->GetEMCALMatrix(mod)->Print();
         
-        if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+        if(InputEvent()->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(InputEvent()->GetEMCALMatrix(mod),mod) ;
         
       } 
             
