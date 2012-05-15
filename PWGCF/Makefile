@@ -34,6 +34,14 @@ ifneq ($(PWGCFunicor_INCLUDE),)
    ALICEINC += -I../$(PWGCFunicor_INCLUDE)
 endif
 
+ifneq ($(PWGCFCorrelationsBase_INCLUDE),)
+   ALICEINC += -I../$(PWGCFCorrelationsBase_INCLUDE)
+endif
+
+ifneq ($(PWGCFCorrelationsDPhi_INCLUDE),)
+   ALICEINC += -I../$(PWGCFCorrelationsDPhi_INCLUDE)
+endif
+
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
