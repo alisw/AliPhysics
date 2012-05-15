@@ -1,11 +1,11 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 
-void runGrid(TString mode="test",Int_t mc=0,Int_t sub=0,Int_t hi=1,TString fname="AODAnalysis") 
+void runGrid(TString mode="test",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname="AODAnalysis_newTask/AOD048Filter6") 
 {
   AliLog::SetGlobalDebugLevel(100);
   // Load common libraries
-   gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom.so");
@@ -18,9 +18,11 @@ void runGrid(TString mode="test",Int_t mc=0,Int_t sub=0,Int_t hi=1,TString fname
   gSystem->Load("libOADB.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+
   gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
   gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
   gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
+  gROOT->LoadMacro("AliSpectraAODPID.cxx+g");
   gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
   // Use AliRoot includes to compile our task
   // Create and configure the alien handler plugin
@@ -34,16 +36,9 @@ void runGrid(TString mode="test",Int_t mc=0,Int_t sub=0,Int_t hi=1,TString fname
   AliAODInputHandler* aodH = new AliAODInputHandler();
   mgr->SetInputEventHandler(aodH);
   
-  gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
-  gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
-
   // Physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  //  AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kTRUE,0);
   AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(mc,kTRUE,0);
-  //  AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kFALSE,0);
   if(!physicsSelectionTask ) { Printf("no physSelTask"); return; }
   
   // Add PID task
@@ -52,52 +47,46 @@ void runGrid(TString mode="test",Int_t mc=0,Int_t sub=0,Int_t hi=1,TString fname
   AliAnalysisTask * taskPID = AddTaskPIDResponse(mc);
   mgr->AddTask(taskPID);
   
-  // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  // AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-  // if(hi)
-  //   {
-  //     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-  //     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-  //   }	
-  // if(mc)
-  //   {
-  //     AliMCEventHandler *mch = new AliMCEventHandler();
-  //     mch->Init("");
-  //     mgr->SetMCtruthEventHandler(mch);
-  //     //     //physSelTask->GetPhysicsSelection()->SetAnalyzeMC(); 
-  //     //     //taskCentrality->SetMCInput(); 
-  //   }
-  // AliAODInputHandler *inputHandler = new AliAODInputHandler("handler","handler for D2H");
-  // inputHandler->AddFriend("./AliAOD.root");
-  // mgr->SetInputEventHandler(inputHandler);
-
   //setting the analysis
   Int_t iCut=0;
-  Double_t CentCut[2]={0,5};
+  //Double_t CentCut[2]={0,100};
+  Double_t CentCut[2]={0,100};
   Double_t qVecCut[2]={0,100};
+   
+  //PID object
+  using namespace AliSpectraNameSpace;
+  AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
+  pid->SetNSigmaCut(3.);
   
   AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
   mgr->AddTask(task);
   //physics selection
   task->SelectCollisionCandidates();     
+  
   // Set the cuts
   AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
   AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
-  //tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
-  tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
+  if(sub==0){
+    //tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cuts with loose DCA
+    tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cuts with tight DCA
+  }
+  if(sub==1)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cuts
+  
+  // set pid object
+  task->SetPID(pid);
   tcuts->SetEta(.8);
   tcuts->SetPt(5);
+  tcuts->SetY(.5);
   tcuts->SetPtTOFMatching(0.6);   
   tcuts->SetQvecMin(qVecCut[0]);   
   tcuts->SetQvecMax(qVecCut[1]);    
-  vcuts->SetCentralityCutMax(CentCut[0]);  
-  vcuts->SetCentralityCutMin(CentCut[1]);
+  vcuts->SetCentralityCutMin(CentCut[0]);
+  vcuts->SetCentralityCutMax(CentCut[1]);  
   task->SetEventCuts(vcuts);
   task->SetTrackCuts(tcuts);
-  task->SetNSigmaForIdentification(5.); // FIXME
-  task->SetYCut(.5);
   vcuts->PrintCuts();
   tcuts->PrintCuts();
+  
   if (mc)
     {
       task->SetIsMC(kTRUE);
@@ -124,12 +113,6 @@ void runGrid(TString mode="test",Int_t mc=0,Int_t sub=0,Int_t hi=1,TString fname
   
   mgr->SetDebugLevel(2);
   
-  
-  
-
-
-  
-
   //mgr->Init();
   if (!mgr->InitAnalysis())return;
   mgr->PrintStatus();
@@ -149,14 +132,15 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=0,Int_t sub=0,T
   plugin->SetROOTVersion("v5-33-02b");
   plugin->SetAliROOTVersion("v5-03-18-AN");
   // Declare input data to be processed.
+  if(sub==0){
   if(mc)
     {
       plugin->SetGridDataDir("/alice/sim/LHC11a10a");
       plugin->SetDataPattern("AOD048/*AliAOD.root");
       plugin->SetRunPrefix(""); 
-      plugin->SetAnalysisMacro(Form("TaskAODPbPbMC%d.C",sub));
-      plugin->SetExecutable(Form("TaskAODPbPbMC%d.sh",sub));
-      plugin->SetJDLName(Form("TaskAODPbPbMC%d.jdl",sub));
+      plugin->SetAnalysisMacro(Form("TaskAOD046PbPbMC%d.C",sub));
+      plugin->SetExecutable(Form("TaskAOD046PbPbMC%d.sh",sub));
+      plugin->SetJDLName(Form("TaskAOD046PbPbMC%d.jdl",sub));
       //plugin->SetSplitMaxInputFileNumber(500);
       plugin->SetGridWorkingDir(Form("%s/mc%d/",fname.Data(),sub));
     }  
@@ -165,25 +149,50 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=0,Int_t sub=0,T
       plugin->SetGridDataDir("/alice/data/2010/LHC10h");
       plugin->SetDataPattern("ESDs/pass2/AOD049/*AliAOD.root");
       plugin->SetRunPrefix("000"); 
-      plugin->SetAnalysisMacro(Form("TaskAODPbPbdata%d.C",sub));
-      plugin->SetExecutable(Form("TaskAODPbPbdata%d.sh",sub));
-      plugin->SetJDLName(Form("TaskAODPbPbdata%d.jdl",sub));
+      plugin->SetAnalysisMacro(Form("TaskAOD046PbPbdata%d.C",sub));
+      plugin->SetExecutable(Form("TaskAOD046PbPbdata%d.sh",sub));
+      plugin->SetJDLName(Form("TaskAOD046PbPbdata%d.jdl",sub));
       //plugin->SetSplitMaxInputFileNumber(500);
       plugin->SetGridWorkingDir(Form("%s/data%d/",fname.Data(),sub));
     }  
-  
+  FILE* listruns=fopen("RunListGrid-AOD046.txt","r");
+  }
+  if(sub==1){
+    if(mc)
+      {
+	plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");
+	plugin->SetDataPattern("AOD090/*AliAOD.root");
+	plugin->SetRunPrefix(""); 
+	plugin->SetAnalysisMacro(Form("TaskAOD086PbPbMC%d.C",sub));
+	plugin->SetExecutable(Form("TaskAOD086PbPbMC%d.sh",sub));
+	plugin->SetJDLName(Form("TaskAOD086PbPbMC%d.jdl",sub));
+	//plugin->SetSplitMaxInputFileNumber(500);
+	plugin->SetGridWorkingDir(Form("%s/mc%d/",fname.Data(),sub));
+      }  
+    else
+      {
+	plugin->SetGridDataDir("/alice/data/2010/LHC10h");
+	plugin->SetDataPattern("ESDs/pass2/AOD086/*AliAOD.root");
+	plugin->SetRunPrefix("000"); 
+	plugin->SetAnalysisMacro(Form("TaskAOD086PbPbdata%d.C",sub));
+	plugin->SetExecutable(Form("TaskAOD086PbPbdata%d.sh",sub));
+	plugin->SetJDLName(Form("TaskAOD086PbPbdata%d.jdl",sub));
+	//plugin->SetSplitMaxInputFileNumber(500);
+	plugin->SetGridWorkingDir(Form("%s/data%d/",fname.Data(),sub));
+      }  
+    FILE* listruns=fopen("RunListGrid-AOD086.txt","r");
+  }
   Int_t irun;
-  FILE* listruns=fopen("RunListGrid.txt","r");
   while(!feof(listruns)){
     fscanf(listruns,"%d\n",&irun);
     plugin->AddRunNumber(irun);
   }
   // Declare alien output directory. Relative to working directory.
-  plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
+  plugin->SetGridOutputDir("/alice/cern.ch/user/l/lmilano/AODAnalysis/AOD086TrackBit10/mc1/output/000/Stage_1"); // In this case will be $HOME/work/output
   plugin->SetNrunsPerMaster(60); // 
   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF");
-  plugin->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODTrackCuts.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
-  plugin->SetAdditionalLibs("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
+  plugin->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
+  plugin->SetAdditionalLibs("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
   // Declare the output file names separated by blancs.
   // (can be like: file.root or file.root@ALICE::Niham::File)
   //plugin->SetDefaultOutputs(0);
