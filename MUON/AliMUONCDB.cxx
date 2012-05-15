@@ -1534,6 +1534,12 @@ AliMUONCDB::ShowConfig(Bool_t withStatusMap)
 
     AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
   
+    if (!recoParam)
+    {
+      AliErrorGeneral("AliMUONCDB::ShowConfig","Cannot get recoParams from OCDB !");
+      return;
+    }
+    
     statusMaker->SetLimits(*recoParam);
   
     UInt_t mask = recoParam->PadGoodnessMask();
