@@ -192,6 +192,7 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
     ext->FilterBranch("vertices",murep);  
     ext->FilterBranch("dimuons",murep);
     ext->FilterBranch("AliAODVZERO",murep);
+    ext->FilterBranch("AliAODTZERO",murep);
     
     if ( fMCMode > 0 ) 
     {
