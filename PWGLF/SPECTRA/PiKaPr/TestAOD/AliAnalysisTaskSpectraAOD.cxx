@@ -113,9 +113,10 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
-	  //if(TMath::Abs(partMC->Eta()) > fTrackCuts->GetEta()) continue; FIXME eta cut should not be there!!!! we want the generated in y<0.5
-	  fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
-	  
+	  if(TMath::Abs(partMC->Eta()) > fTrackCuts->GetEta()){//charged hadron are filled inside the eta acceptance
+	    fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
+	  }
+	  //rapidity cut
 	  if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    
 	  // check for true PID + and fill P_t histos 
 	  Int_t charge = partMC->Charge() > 0 ? kChPos : kChNeg ;
@@ -147,14 +148,12 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     
     // get identity and charge
     Int_t idRec  = fPID->GetParticleSpecie(track, fTrackCuts);
-    if(idRec == kSpUndefined) continue;
+    
     Int_t charge = track->Charge() > 0 ? kChPos : kChNeg;
     
-    // rapidity cut
-    if(!fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec)) continue;
-    
-    // Fill histograms
-    fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),d[0]);
+    // Fill histograms, only if inside y and nsigma acceptance
+    if(idRec != kSpUndefined && fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec))fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),d[0]);
+    //can't put a continue because we still have to fill allcharged primaries, done later
     
     /* MC Part */
     if (arrayMC) {
@@ -179,20 +178,26 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	else       isSecondaryMaterial = kTRUE;
       }
       
-     
+      if (isPrimary)fHistMan->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),d[0]);  // PT histo of primaries
+      
+      //nsigma cut (reconstructed nsigma)
+      if(idRec == kSpUndefined) continue;
+      
+      // rapidity cut (reconstructed pt and identity)
+      if(!fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec)) continue;
+      
       // Get true ID
       Int_t idGen     = fPID->GetParticleSpecie(partMC);
       //if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    // FIXME: do we need a rapidity cut on the generated?
       // Fill histograms for primaries
-      if(idGen != kSpUndefined) {
-	
-	if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),d[0]); 
-	
-	if (isPrimary) {
-	  fHistMan                    ->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),d[0]);  // PT histo
-   	  fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),d[0]);
+      
+      if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),d[0]); 
+      
+      if (isPrimary) {
+	fHistMan                    ->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),d[0]); 
+	if(idGen != kSpUndefined) {
+	  fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),d[0]);
 	  if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),d[0]); 
-	  fHistMan                    ->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),d[0]); 
 	}
       }
       //25th Apr - Muons are added to Pions -- FIXME
