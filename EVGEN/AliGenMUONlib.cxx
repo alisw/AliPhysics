@@ -23,7 +23,9 @@
 //
 // andreas.morsch@cern.ch
 //
+//Modified to take into account x-sections of Upsilon 1S, 2S and 3S in pp collisions at 7 TeV from LHCb paper CERN-PH-EP-2012-051 (Loic Manceau, 14/05/12)
 
+ 
 #include "TMath.h"
 #include "TRandom.h"
 #include "TDatabasePDG.h"
@@ -2334,10 +2336,16 @@ Int_t AliGenMUONlib::IpUpsilonFamily(TRandom *)
 // y composition
   Int_t ip;
   Float_t r = gRandom->Rndm();
-  
-  if (r < 0.712) {
+
+  //tunning according to LHCb results in pp collisons at 7 TeV 
+  //ref.: CERN-PH-EP-2012-051 
+  //sigma_U(1S)/sigma_U(2S)=4.07 and sigma_U(1S)/sigma_U(3S)=8.09
+
+  if (r < 0.73029) {
+    //if (r < 0.712) {
     ip = 553;
-  } else if (r < 0.896) {
+  } else if (r < 0.90973) {
+    // } else if (r < 0.896) {
     ip = 100553;
   } else {
     ip = 200553;
