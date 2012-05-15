@@ -12,6 +12,8 @@
 #include "TObject.h"
 #include "AliPID.h"
 
+class AliTOFPIDParams;
+
 class AliTOFPIDResponse : public TObject {
 public:
 

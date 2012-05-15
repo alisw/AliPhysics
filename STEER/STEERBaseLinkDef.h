@@ -113,4 +113,6 @@
 
 #pragma link C++ class AliVCaloTrigger+;
 
+#pragma link C++ class AliTOFPIDParams+;
+
 #endif

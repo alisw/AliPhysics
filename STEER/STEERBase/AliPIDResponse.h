@@ -17,6 +17,7 @@
 #include "AliTOFPIDResponse.h"
 #include "AliEMCALPIDResponse.h"
 
+
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 
@@ -133,9 +134,8 @@ private:
   AliTRDPIDReference *fTRDPIDReference; //! TRD PID References
   UInt_t fTRDslicesForPID[2];           //! TRD PID slices
 
-  Int_t   fTOFTimeZeroType;            //! default start time type for tof (ESD)
-  Float_t fTOFres;                     //! TOF resolution
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
+  AliTOFPIDParams *fTOFPIDParams;      //! TOF PID Params - period depending (OADB loaded)
 
   TObjArray *fEMCALPIDParams;             //! EMCAL PID Params
 
@@ -162,6 +162,8 @@ private:
   void InitializeTRDResponse();
 
   //TOF
+  void SetTOFPidResponseMaster();
+  void InitializeTOFResponse();
 
   //EMCAL
   void SetEMCALPidResponseMaster();
@@ -170,7 +172,7 @@ private:
   //
   void SetRecoInfo();
   
-  ClassDef(AliPIDResponse,5);  //PID response handling
+  ClassDef(AliPIDResponse,6);  //PID response handling
 };
 
 inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const {

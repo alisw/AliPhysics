@@ -10,11 +10,14 @@
 //                    for the AOD class
 //   Origin: Rosa Romita, GSI, r.romita@gsi.de 
 //   Modified: Jens Wiechula, Uni Tuebingen, jens.wiechula@cern.ch
+//   Modified: Pietro Antonioli, INFN BO, pietro.antonioli@bo.infn.it
 //-------------------------------------------------------
 #include <Rtypes.h>
 #include <TMatrixD.h>
+#include "AliAODEvent.h" // Needed for inline functions
 #include "AliAODTrack.h" // Needed for inline functions
 #include "AliAODPid.h" // Needed for inline functions
+#include "AliTOFHeader.h" //Needed for inline functions
 //#include "HMPID/AliHMPID.h"
 
 #include "AliPIDResponse.h"
@@ -48,10 +51,19 @@ inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliP
   Double_t sigmaTOFPid[AliPID::kSPECIES];
   AliAODPid *pidObj = track->GetDetPid();
   if (!pidObj) return -999.;
+  Double_t tofTime=pidObj->GetTOFsignal();
   pidObj->GetIntegratedTimes(times);
   pidObj->GetTOFpidResolution(sigmaTOFPid);
-  if (sigmaTOFPid[type]>0) return (pidObj->GetTOFsignal() - times[type])/sigmaTOFPid[type];
-  else return (pidObj->GetTOFsignal() - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
+  AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
+  if (event) {
+    AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+    if (tofH) { 
+      sigmaTOFPid[type]=fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type)); //fTOFResponse is set in InitialiseEvent
+      tofTime -= fTOFResponse.GetStartTime(vtrack->P());
+    } 
+  }
+  if (sigmaTOFPid[type]>0) return (tofTime - times[type])/sigmaTOFPid[type];
+  else return (tofTime - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
 }
 
 #endif

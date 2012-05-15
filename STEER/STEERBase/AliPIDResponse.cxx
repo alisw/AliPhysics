@@ -37,6 +37,7 @@
 #include <AliOADBContainer.h>
 #include <AliTRDPIDParams.h>
 #include <AliTRDPIDReference.h>
+#include <AliTOFPIDParams.h>
 
 #include "AliPIDResponse.h"
 
@@ -68,9 +69,8 @@ fArrPidResponseMaster(0x0),
 fResolutionCorrection(0x0),
 fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
-fTOFTimeZeroType(kBest_T0),
-fTOFres(100.),
 fTOFtail(1.1),
+fTOFPIDParams(0x0),
 fEMCALPIDParams(0x0),
 fCurrentEvent(0x0),
 fCurrCentrality(0.0)
@@ -94,6 +94,7 @@ AliPIDResponse::~AliPIDResponse()
   delete fArrPidResponseMaster;
   delete fTRDPIDParams;
   delete fTRDPIDReference;
+  if (fTOFPIDParams) delete fTOFPIDParams;
 }
 
 //______________________________________________________________________________
@@ -121,9 +122,8 @@ fArrPidResponseMaster(0x0),
 fResolutionCorrection(0x0),
 fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
-fTOFTimeZeroType(AliPIDResponse::kBest_T0),
-fTOFres(100.),
 fTOFtail(1.1),
+fTOFPIDParams(0x0),
 fEMCALPIDParams(0x0),
 fCurrentEvent(0x0),
 fCurrCentrality(0.0)
@@ -167,9 +167,8 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fTRDPIDReference=0x0;
     fEMCALPIDParams=0x0;
     memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
-    fTOFTimeZeroType=AliPIDResponse::kBest_T0;
-    fTOFres=100.;
     fTOFtail=1.1;
+    fTOFPIDParams=0x0;
     fCurrentEvent=other.fCurrentEvent;
   }
   return *this;
@@ -592,7 +591,8 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass)
   }
   
   //TOF resolution
-  SetTOFResponse(event, (AliPIDResponse::EStartTimeType_t)fTOFTimeZeroType);
+  SetTOFResponse(event, (AliPIDResponse::EStartTimeType_t)fTOFPIDParams->GetStartTimeMethod());
+
 
   // Get and set centrality
   AliCentrality *centrality = event->GetCentrality();
@@ -623,7 +623,8 @@ void AliPIDResponse::ExecNewRun()
   SetEMCALPidResponseMaster(); 
   InitializeEMCALResponse();
   
-  fTOFResponse.SetTimeResolution(fTOFres);
+  SetTOFPidResponseMaster();
+  InitializeTOFResponse();
 }
 
 //_____________________________________________________
@@ -869,6 +870,41 @@ void AliPIDResponse::InitializeTRDResponse(){
     fTRDslicesForPID[1] = 7;
   }
 }
+
+//______________________________________________________________________________
+void AliPIDResponse::SetTOFPidResponseMaster()
+{
+  //
+  // Load the TOF pid params from the OADB
+  //
+  TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/TOFPIDParams.root",fOADBPath.Data()));
+  if (oadbf->IsOpen()) {
+    AliInfo(Form("Loading TOF Params from %s/COMMON/PID/data/TOFPIDParams.root", fOADBPath.Data()));
+    AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("TOFoadb");
+    if (fTOFPIDParams) delete fTOFPIDParams;
+    fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(fRun));
+    oadbf->Close();
+    delete oadbc;
+  } else {
+    AliError(Form("TOFPIDParams.root not found in %s/COMMON/PID/data !!",fOADBPath.Data()));
+  }
+  delete oadbf;
+
+  }
+
+//______________________________________________________________________________
+void AliPIDResponse::InitializeTOFResponse(){
+  //
+  // Set PID Params to the TOF PID response
+  // 
+  TString stMethod[4]={"kFILL_T0","kTOF_T0","kT0_T0","kBest_T0"};
+  for (Int_t i=0;i<4;i++) {
+    fTOFResponse.SetTrackParameter(i,fTOFPIDParams->GetSigParams(i));
+  }
+  fTOFResponse.SetTimeResolution(fTOFPIDParams->GetTOFresolution());
+
+}
+
 
 //_________________________________________________________________________
 Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel) const {
