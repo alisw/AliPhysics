@@ -346,13 +346,15 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
 	
 	AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, eventMain->GetPrimaryVertex()->GetZ());
 	
-	if (!pool)
+	if (!pool){
 	  AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, eventMain->GetPrimaryVertex()->GetZ()));
-	
+	}
+	else{
+
 	//pool->SetDebug(1);
 	
-	if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
-	  {
+	  if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5){ 
+	    
 	    
 	    Int_t nMix = pool->GetCurrentNEvents();
 	    //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
@@ -369,11 +371,12 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
 		fMixedBalance->FillBalance(fCentrality,tracksMain,tracksMixed); 
 	      }
 	  }
-
-	// Update the Event pool
-	pool->UpdatePool(tracksMain);
-	//pool->PrintInfo();
-	
+	  
+	  // Update the Event pool
+	  pool->UpdatePool(tracksMain);
+	  //pool->PrintInfo();
+	  
+	}//pool NULL check  
       }//run mixing
     
     // calculate balance function
@@ -567,6 +570,8 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetShuffledTracks(TObjArray *tracks){
     AliVParticle* track = (AliVParticle*) tracks->At(i);
     tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i)));
   }
+
+  delete chargeVector;
    
   return tracksShuffled;
 }
