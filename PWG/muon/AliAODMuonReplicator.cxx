@@ -19,9 +19,9 @@
 // Implementation of a branch replicator 
 // to produce slim muon and dimuon aods.
 //
-// This replicator is in charge of replicating the tracks,vertices and dimuons
-// branches of the standard AOD into muon AODs (AliAOD.Muons.root and
-// AliAOD.Dimuons.root)
+// This replicator is in charge of replicating the tracks,vertices,dimuons
+// (and vzero and tzero) branches of the standard AOD into muon AODs 
+// (AliAOD.Muons.root and AliAOD.Dimuons.root)
 // 
 // The tracks are filtered so that only muon tracks (and only muon tracks
 // that pass the trackCut if present) make it to the output aods
@@ -36,12 +36,15 @@
 // Author: L. Aphecetche (Subatech)
 
 #include "AliAODMuonReplicator.h"
-#include "AliAnalysisCuts.h"
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
+
 #include "AliAODDimuon.h"
+#include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
+#include "AliAODTZERO.h"
+#include "AliAODTrack.h"
+#include "AliAODVZERO.h"
+#include "AliAnalysisCuts.h"
 #include <cassert>
 
 ClassImp(AliAODMuonReplicator)
@@ -56,6 +59,7 @@ fTrackCut(trackCut), fTracks(0x0),
 fVertexCut(vertexCut), fVertices(0x0), 
 fDimuons(0x0),
 fVZERO(0x0),
+fTZERO(0x0),
 fList(0x0),
 fMCParticles(0x0),
 fMCHeader(0x0),
@@ -320,6 +324,8 @@ TList* AliAODMuonReplicator::GetList() const
     
     fVZERO = new AliAODVZERO;
     
+    fTZERO = new AliAODTZERO;
+    
     fList = new TList;
     fList->SetOwner(kTRUE);
     
@@ -327,6 +333,7 @@ TList* AliAODMuonReplicator::GetList() const
     fList->Add(fVertices);
     fList->Add(fDimuons);
     fList->Add(fVZERO);
+    fList->Add(fTZERO);
     
     if ( fMCMode > 0 )
     {
@@ -348,7 +355,9 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   assert(fTracks!=0x0);
   
   *fVZERO = *(source.GetVZEROData());
-  
+
+  *fTZERO = *(source.GetTZEROData());
+
   fTracks->Clear("C");
   TIter next(source.GetTracks());
   AliAODTrack* t;
