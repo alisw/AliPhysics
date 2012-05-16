@@ -138,10 +138,13 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			if (isOK1 && isOK2 && amp) {
 				AliDebug(999, Form("=== TRU# %2d ADC# %2d time# %2d signal %d ===", iTRU, iADC, time, amp));
 				
-				if (data->GetMode())
-					(static_cast<AliEMCALTriggerTRU*>(fTRU->At(iTRU)))->SetADC(iADC, time, 4 * amp);
-				else
-					(static_cast<AliEMCALTriggerTRU*>(fTRU->At(iTRU)))->SetADC(iADC, time,     amp);
+				AliEMCALTriggerTRU * etr = (static_cast<AliEMCALTriggerTRU*>(fTRU->At(iTRU)));
+				if (etr) {
+				  if (data->GetMode())
+				    etr->SetADC(iADC, time, 4 * amp);
+				  else
+				    etr->SetADC(iADC, time,     amp);
+				}
 			}
 		}
 		
