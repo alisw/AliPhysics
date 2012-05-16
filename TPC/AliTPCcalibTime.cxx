@@ -1665,7 +1665,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   //
   const Int_t    kMinTPC  = 80;    // minimal number of TPC cluster
   const Int_t    kMinTRD  = 60;    // minimal number of TRD cluster
-  const Double_t kMinZ    = 20;    // maximal dz distance
+  //  const Double_t kMinZ    = 20;    // maximal dz distance
   const Double_t kMaxDy   = 5.;    // maximal dy distance
   const Double_t kMaxAngle= 0.1;  // maximal angular distance
   const Double_t kSigmaCut= 10;     // maximal sigma distance to median
