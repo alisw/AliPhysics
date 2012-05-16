@@ -1666,10 +1666,12 @@ void AliAnalysisTaskJetSpectrum2::SetAcceptance(Int_t i,Float_t phiMin,Float_t p
   //
 
   if(i<fNAcceptance){
-      fAcceptancePhiMin[i] = phiMin; 
-      fAcceptancePhiMax[i] = phiMax;
-      fAcceptanceEtaMin[i] = etaMin;
-      fAcceptanceEtaMax[i] = etaMax;
+    Printf("%s:%d Setting acceptance %d phi %3.3f-%3.3f eta %3.3f-%3.3f",(char*)__FILE__,__LINE__,i,phiMin,phiMax,etaMin,etaMax); 
+
+    fAcceptancePhiMin[i] = phiMin; 
+    fAcceptancePhiMax[i] = phiMax;
+    fAcceptanceEtaMin[i] = etaMin;
+    fAcceptanceEtaMax[i] = etaMax;
   }
   else{
     fNTrigger = 0;
@@ -1683,8 +1685,7 @@ Int_t AliAnalysisTaskJetSpectrum2::CheckAcceptance(Float_t phi,Float_t eta){
   // return aceptnace bin do no use ovelapping bins
   //
 
-  for(int i = 0;i<fNAcceptance;i++){
-    
+  for(int i = 0;i<fNAcceptance;i++){    
     if(phi<fAcceptancePhiMin[i])continue;
     if(phi>fAcceptancePhiMax[i])continue;
     if(eta<fAcceptanceEtaMin[i])continue;
