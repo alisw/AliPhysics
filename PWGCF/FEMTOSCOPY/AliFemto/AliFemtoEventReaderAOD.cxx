@@ -694,19 +694,21 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   float covmat[6];
   tAodTrack->GetCovMatrix(covmat);  
 
-  double impact[2];
-  double covimpact[3];
+        // ! DCA information is done in CopyPIDtoFemtoTrack()
   
-  if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    //cout << "sth went wrong with dca propagation" << endl;
-    tFemtoTrack->SetImpactD(-1000.0);
-    tFemtoTrack->SetImpactZ(-1000.0);
+	// double impact[2];
+	// double covimpact[3];
 
-  } 
-  else {
-    tFemtoTrack->SetImpactD(impact[0]);
-    tFemtoTrack->SetImpactZ(impact[1]+fV1[2]);
-  }
+	// if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+	//   //cout << "sth went wrong with dca propagation" << endl;
+	//   tFemtoTrack->SetImpactD(-1000.0);
+	//   tFemtoTrack->SetImpactZ(-1000.0);
+
+	// }
+	// else {
+	//   tFemtoTrack->SetImpactD(impact[0]);
+	//   tFemtoTrack->SetImpactZ(impact[1]+fV1[2]);
+	// }
 
   //   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
   //     tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv())*(tAodTrack->Xv()/TMath::Abs(tAodTrack->Xv())));
@@ -979,6 +981,23 @@ AliAODMCParticle* AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
 void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, 
 						 AliFemtoTrack *tFemtoTrack)
 {
+
+	// copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
+
+	double impact[2];
+	double covimpact[3];
+
+	if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+		//cout << "sth went wrong with dca propagation" << endl;
+		tFemtoTrack->SetImpactD(-1000.0);
+		tFemtoTrack->SetImpactZ(-1000.0);
+
+	}
+	else {
+		tFemtoTrack->SetImpactD(impact[0]);
+		tFemtoTrack->SetImpactZ(impact[1]+fV1[2]);
+	}
+
   double aodpid[10];
   tAodTrack->GetPID(aodpid);
   tFemtoTrack->SetPidProbElectron(aodpid[0]);
