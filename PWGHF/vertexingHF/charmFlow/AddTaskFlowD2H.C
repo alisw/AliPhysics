@@ -8,7 +8,7 @@ class AliRDHFCutsDStartoKpipi;
 void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int_t myHarmonic, 
 		    Bool_t bDoQC, Bool_t bDoSPTPC, Bool_t bDoSPVZERO, Bool_t bDoEPTPC, Bool_t bDoEPVZERO, 
 		    Int_t ptBinWidth, Double_t gapTPC, Double_t etaVZERO1, Double_t etaVZERO2, Double_t etaVZERO3, Double_t etaVZERO4,
-		    Bool_t bOldApproach=kFALSE, Bool_t shrinkSP=kFALSE ) {
+		    Bool_t bOldApproach=kFALSE, Bool_t shrinkSP=kFALSE, Bool_t swapAssumption=kFALSE ) {
   TFile *filecuts = TFile::Open( fileNameCuts.Data() );
   if( (!filecuts) || ( filecuts && !filecuts->IsOpen()) ){
     AliFatal("Could not open cuts file.");
@@ -99,6 +99,8 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
     break;
   }
   taskSel->SetCommonConstants( MassBins(nDmeson), MinMass(nDmeson), MaxMass(nDmeson), ptBinWidth );
+  if (swapAssumption)
+    taskSel->SetSwapAsumption();
 
   //taskSel->SelectCollisionCandidates(trigger);
   //taskSel->SetDebug();

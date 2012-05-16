@@ -234,7 +234,6 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
 void AliAnalysisTaskFlowD2H::FillD0toKpi(const AliAODEvent *theAOD)
 {
   // Fill D0->Kpi histos
-  fSwap = kTRUE;
   TList *listHF = (TList*) theAOD->GetList();
   if(!listHF) return;
   TClonesArray *listDzero = (TClonesArray*) listHF->FindObject("D0toKpi");
