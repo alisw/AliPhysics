@@ -181,6 +181,23 @@ Bool_t ConfigWithFlagsJetSpectrum2(){
      Printf("%s%d: kNTrigger not defined",(char*)__FILE__,__LINE__); return kFALSE; 
    }
 
+
+  Int_t nAcceptance = AliAnalysisManager::GetGlobalInt("kNAcceptanceSpec",bGood1);
+  
+  if(bGood1){
+    jetspec->SetNAcceptance(nAcceptance);
+    for(int ia = 0;ia < nAcceptance;ia++){
+      jetspec->SetAcceptance(ia,
+			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptancePhiMinSpec%d",ia),bGood1),
+			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptancePhiMaxSpec0%d",ia),bGood2),
+			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptanceEtaMinSpec%d",ia),bGood1),
+			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptanceEtaMaxSpec0%d",ia),bGood2));
+    }
+   }
+   else {
+     Printf("%s%d: kNAcceptance not defined",(char*)__FILE__,__LINE__); 
+   }
+
      
    AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",bGood1);if(bGood1){
      jetspec->SelectCollisionCandidates(AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",bGood1));

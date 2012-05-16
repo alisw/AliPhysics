@@ -50,6 +50,27 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
     AliAnalysisManager::SetGlobalStr("kTriggerName3","kSemiCentral");    
     AliAnalysisManager::SetGlobalStr("kTriggerName4","kEMCEJE");    
 
+
+    // aceptance windows for Spectrum task
+
+    Float_t fid = 0.2;
+    Float_t fEMCPhiLo = 2.17 - 1.87/2. + fid; // some fiducial region
+    Float_t fEMCPhiUp = 2.17 + 1.87/2. - fid; // some fiducial region
+    Float_t fEMCEtaLo = - 0.7 + fid;
+    Float_t fEMCEtaUp =   0.7 - fid;
+    AliAnalysisManager::SetGlobalInt("kNAcceptanceSpec",2);    
+    AliAnalysisManager::SetGlobalDbl("kAcceptancePhiMinSpec0",fEMCPhiLo);
+    AliAnalysisManager::SetGlobalDbl("kAcceptancePhiMaxSpec0",fEMCPhiUp);
+    AliAnalysisManager::SetGlobalDbl("kAcceptanceEtaMinSpec0",fEMCEtaLo);
+    AliAnalysisManager::SetGlobalDbl("kAcceptanceEtaMaxSpec0",fEMCEtaUp);
+
+    // iroc 13 
+    AliAnalysisManager::SetGlobalDbl("kAcceptancePhiMinSpec1",4.7-0.4);
+    AliAnalysisManager::SetGlobalDbl("kAcceptancePhiMaxSpec1",4.7+0.4);
+    AliAnalysisManager::SetGlobalDbl("kAcceptanceEtaMinSpec1",-0.9);
+    AliAnalysisManager::SetGlobalDbl("kAcceptanceEtaMaxSpec1",0);
+
+
     // jet selection
     AliAnalysisManager::SetGlobalDbl("kJetEtaWindow",0.5);
 

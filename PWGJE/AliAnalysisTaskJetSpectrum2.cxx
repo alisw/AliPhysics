@@ -112,6 +112,10 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fMinJetPt(0),
   fMinTrackPt(0.15),
   fDeltaPhiWindow(90./180.*TMath::Pi()),
+  fAcceptancePhiMin(0x0),
+  fAcceptancePhiMax(0x0),
+  fAcceptanceEtaMin(0x0),
+  fAcceptanceEtaMax(0x0),
   fCentrality(100),
   fRPAngle(0),
   fMultRec(0),
@@ -212,6 +216,10 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fMinJetPt(0),
   fMinTrackPt(0.15),
   fDeltaPhiWindow(90./180.*TMath::Pi()),
+  fAcceptancePhiMin(0x0),
+  fAcceptancePhiMax(0x0),
+  fAcceptanceEtaMin(0x0),
+  fAcceptanceEtaMax(0x0),
   fCentrality(100),
   fRPAngle(0),
   fMultRec(0),
@@ -1017,7 +1025,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       var2[3] = etaJet;
       var2[4] = phiJet;
       var2[5] = jet->EffectiveAreaCharged();
-      var2[7] = var2[8];
+      var2[7] = var1[8];
       if(ij<kMaxJets){
 	if(leadTrack)fh2LTrackPtJetPt[iType][ij]->Fill(leadTrack->Pt(),ptJet);
 	var1[0] = ij;
