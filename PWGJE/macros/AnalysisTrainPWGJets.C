@@ -339,7 +339,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    }   
 
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/ConfigLegoTrainPWGJE.C");
-   ConfigLegoTrainPWGJE(1013);
+   ConfigLegoTrainPWGJE(1108);
    // Create input handler (input container created automatically)
    if (iAODanalysis) {
    // AOD input handler
