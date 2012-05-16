@@ -229,10 +229,22 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   Float_t fracgm4=(Float_t)(176.-badModCounter4)/176.;
   Float_t fracgh3=(Float_t)(84.*2.-badHybridCounter3)/84./2.;
   Float_t fracgh4=(Float_t)(176.*2-badHybridCounter4)/176./2.;
-  Float_t fraccgm3=1.-(Float_t)(badAnodeCounterGoodModAndChip3+badChipCounter3*64)/(512.*(Float_t)(84.-badModCounter3));
-  Float_t fraccgm4=1.-(Float_t)(badAnodeCounterGoodModAndChip4+badChipCounter4*64)/(512.*(Float_t)(176.-badModCounter4));
-  Float_t fraccgh3=1.-(Float_t)badAnodeCounterGoodHybrid3/(256.*(84.*2.-badHybridCounter3));
-  Float_t fraccgh4=1.-(Float_t)badAnodeCounterGoodHybrid4/(256.*(176.*2.-badHybridCounter4));
+  Float_t fraccgm3=0.;
+  if(badModCounter3!=84){
+    fraccgm3=1.-(Float_t)(badAnodeCounterGoodModAndChip3+badChipCounter3*64)/(512.*(Float_t)(84.-badModCounter3));
+  }
+  Float_t fraccgm4=0.;
+  if(badModCounter4!=176){
+    fraccgm4=1.-(Float_t)(badAnodeCounterGoodModAndChip4+badChipCounter4*64)/(512.*(Float_t)(176.-badModCounter4));
+  }
+  Float_t fraccgh3=0.;
+  if(badHybridCounter3!=(84*2)){
+    fraccgh3=1.-(Float_t)badAnodeCounterGoodHybrid3/(256.*(84.*2.-badHybridCounter3));
+  }
+  Float_t fraccgh4=0.;
+  if(badHybridCounter4!=(176*2)){
+    fraccgh4=1.-(Float_t)badAnodeCounterGoodHybrid4/(256.*(176.*2.-badHybridCounter4));
+  }
   Int_t totbad4=badModCounter4*512+badChipCounter4*64+badAnodeCounterGoodModAndChip4;
   Int_t tot4=8*22*512;
   Float_t fracbad4=(Float_t)totbad4/(Float_t)tot4;
