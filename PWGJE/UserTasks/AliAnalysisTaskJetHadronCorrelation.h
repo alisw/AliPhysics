@@ -47,7 +47,7 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		virtual void   SetSkipCone(Int_t skipCone=0){SkipCone=skipCone;}
 		virtual void   SetMC(Bool_t ismc=true){IsMC=ismc;}
 		virtual void   FinishTaskOutput();
-		virtual Float_t GetTotalEvents(const char* currFile);
+		//		virtual Float_t GetTotalEvents(const char* currFile);
 		virtual Double_t DeltaPhi(Double_t phi1,Double_t phi2);
 
 

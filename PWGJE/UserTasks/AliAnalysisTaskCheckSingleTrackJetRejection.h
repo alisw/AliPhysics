@@ -48,7 +48,7 @@ class AliAnalysisTaskCheckSingleTrackJetRejection : public AliAnalysisTaskSE
 		virtual void    SetMC(Bool_t ismc=kFALSE){IsMC=ismc;}
     virtual void    FinishTaskOutput();
     virtual Bool_t  PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);
-    virtual Float_t GetTotalEvents(const char* currFile);
+    //    virtual Float_t GetTotalEvents(const char* currFile);
     virtual Double_t DeltaPhi(Double_t phi1,Double_t phi2);
     virtual Double_t DeltaR(Double_t phi1,Double_t phi2,Double_t eta1,Double_t eta2);
 

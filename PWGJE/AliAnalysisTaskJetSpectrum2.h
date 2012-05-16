@@ -86,6 +86,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrigger(Int_t i,UInt_t it,const char* c = "");
 
 
+    virtual void SetNAcceptance(Int_t n);
+    virtual void SetAcceptance(Int_t i,Float_t phiMin,Float_t phiMax,Float_t etaMin,Float_t etaMax);// non overlapping regions
+    virtual Int_t CheckAcceptance(Float_t phi,Float_t eta);
     // Helper
     //
 
@@ -164,6 +167,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     UInt_t        fEventSelectionMask;    // Selection information used to filter events
     Int_t         fNTrigger;              // number of triggers for selection
     UInt_t        *fTriggerBit;            //[fNTrigger] trigger bits 
+    Int_t         fNAcceptance;            // number of triggers for selection
     Int_t         fAnalysisType;          // Analysis type 
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
@@ -177,6 +181,10 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fMinJetPt;              // limits the jet p_T in addition to what already is done in the jet finder, this is important for jet matching for JF with lo threshold
     Float_t       fMinTrackPt;            // limits the track p_T 
     Float_t       fDeltaPhiWindow;        // minium angle between dijets
+    Float_t       *fAcceptancePhiMin;     //[fNAcceptance] minimum phi 
+    Float_t       *fAcceptancePhiMax;     //[fNAcceptance] maximum phi
+    Float_t       *fAcceptanceEtaMin;     //[fNAcceptance] minimum eta 
+    Float_t       *fAcceptanceEtaMax;     //[fNAcceptance] maximum eta
     Float_t       fCentrality;            // ! centrality
     Float_t       fRPAngle;               // ! RP angle of the reaction plane
     Int_t         fMultRec;               // ! reconstructed track multiplicity
@@ -236,7 +244,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 20); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 21); // Analysis task for standard jet analysis
 };
  
 #endif

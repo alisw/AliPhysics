@@ -99,6 +99,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fEventSelectionMask(0),
   fNTrigger(0),
   fTriggerBit(0x0),
+  fNAcceptance(0),
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -198,6 +199,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fEventSelectionMask(0),
   fNTrigger(0),
   fTriggerBit(0x0),
+  fNAcceptance(0),
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -491,19 +493,19 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fp2CentRPPhiTrackPt[ij]);    
 
     // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger, leading track pT total bins = 4.5M
-    const Int_t nBinsSparse1 = 8;
+    const Int_t nBinsSparse1 = 9;
     const Int_t nBinsLeadingTrackPt = 10;
-    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  20,    fNRPBins, 5,fNTrigger,nBinsLeadingTrackPt};
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  20,    fNRPBins, 5,fNTrigger,nBinsLeadingTrackPt,fNAcceptance+1};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
       nBins1[5] = 1;
     }
-    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5,0.};
-    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,4000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.};
+    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5,0.,-0.5,};
+    const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,4000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.,fNAcceptance+0.5};
     
     const Double_t binArrayLeadingTrackPt[nBinsLeadingTrackPt+1] = {xmin1[7],1.,2.,3.,4.,5.,6.,8.,10.,12.,xmax1[7]}; //store pT of leading track in jet
 
-    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leading track p_{T}",nBinsSparse1,nBins1,xmin1,xmax1);
+    fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leading track p_{T};acceptance bin",nBinsSparse1,nBins1,xmin1,xmax1);
     fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
     fHistList->Add(fhnJetPt[ij]);
 
@@ -521,14 +523,14 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fhnJetPtRej[ij]);
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
-    const Int_t nBinsSparse2 = 7;
-    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   8,  18,             180, 10,fNTrigger};
+    const Int_t nBinsSparse2 = 8;
+    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   8,  18,             180, 10,fNTrigger,fNAcceptance+0.5};
     if(cJetBranch.Contains("RandomCone")){
       nBins2[5] = 1;
     }
-    const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.,-0.5};
-    const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 80, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5};
-    fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area;trigger",nBinsSparse2,nBins2,xmin2,xmax2);
+    const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.,-0.5,-0.5};
+    const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 80, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5,fNAcceptance+0.5};
+    fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area;trigger;acceptance bin",nBinsSparse2,nBins2,xmin2,xmax2);
     fHistList->Add(fhnJetPtQA[ij]);
     
     // Bins:track number  pTtrack, cent, mult, RP.   total bins = 224 k
@@ -930,7 +932,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   Int_t ij0 = -1;
   Int_t ij1 = -1;
 
-  Double_t var1[8] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leadingTrackPt
+  Double_t var1[9] = {0,}; // jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leadingTrackPt
   Double_t var1b[3] = {0,}; // p_{T,jet};cent;trigger;
 
   var1[2] = fCentrality; 
@@ -939,7 +941,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 
   
 
-  Double_t var2[7] = {0,}; // jet number;p_{T,jet};cent;#eta;#phi;area;trigger
+  Double_t var2[8] = {0,}; // jet number;p_{T,jet};cent;#eta;#phi;area;trigger
   var2[2] = fCentrality;
 
   for(int ij = 0;ij < nJets;ij++){
@@ -1009,11 +1011,13 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       var1[4] = phiBin;
       var1[5] = jet->EffectiveAreaCharged();
       var1[7] = (leadTrack?leadTrack->Pt():0);//pT of leading jet
+      var1[8] = CheckAcceptance(phiJet,etaJet);
 
       var2[1] = ptJet;
       var2[3] = etaJet;
       var2[4] = phiJet;
       var2[5] = jet->EffectiveAreaCharged();
+      var2[7] = var2[8];
       if(ij<kMaxJets){
 	if(leadTrack)fh2LTrackPtJetPt[iType][ij]->Fill(leadTrack->Pt(),ptJet);
 	var1[0] = ij;
@@ -1599,6 +1603,9 @@ Int_t AliAnalysisTaskJetSpectrum2::GetPhiBin(Double_t phi)
 }
 
 void AliAnalysisTaskJetSpectrum2::SetNTrigger(Int_t n){
+  //
+  // set number of trigger bins
+  //
   if(n>0){
       fNTrigger = n;
       delete [] fTriggerName;
@@ -1611,15 +1618,89 @@ void AliAnalysisTaskJetSpectrum2::SetNTrigger(Int_t n){
   }
 }
 
+
 void AliAnalysisTaskJetSpectrum2::SetTrigger(Int_t i,UInt_t it,const char* c){
+  //
+  // set trigger bin
+  //
   if(i<fNTrigger){
     fTriggerBit[i] = it;
     fTriggerName[i] =  c;     
   } 
 }
 
+
+void AliAnalysisTaskJetSpectrum2::SetNAcceptance(Int_t n){
+  //
+  // Set number of acceptance bins
+  //
+
+  if(n>0){
+      fNAcceptance = n;
+      delete [] fAcceptancePhiMin; 
+      delete [] fAcceptancePhiMax;
+      delete [] fAcceptanceEtaMin;
+      delete [] fAcceptanceEtaMax;
+
+      fAcceptancePhiMin = new Float_t[fNAcceptance];
+      fAcceptancePhiMax = new Float_t[fNAcceptance];
+      fAcceptanceEtaMin = new Float_t[fNAcceptance];
+      fAcceptanceEtaMax = new Float_t[fNAcceptance];
+  }
+  else{
+    fNTrigger = 0;
+  }
+}
+
+void AliAnalysisTaskJetSpectrum2::SetAcceptance(Int_t i,Float_t phiMin,Float_t phiMax,Float_t etaMin,Float_t etaMax){
+  //
+  // Set acceptance bins
+  //
+
+  if(i<fNAcceptance){
+      fAcceptancePhiMin[i] = phiMin; 
+      fAcceptancePhiMax[i] = phiMax;
+      fAcceptanceEtaMin[i] = etaMin;
+      fAcceptanceEtaMax[i] = etaMax;
+  }
+  else{
+    fNTrigger = 0;
+  }
+}
+
+
+Int_t AliAnalysisTaskJetSpectrum2::CheckAcceptance(Float_t phi,Float_t eta){
+
+  //
+  // return aceptnace bin do no use ovelapping bins
+  //
+
+  for(int i = 0;i<fNAcceptance;i++){
+    
+    if(phi<fAcceptancePhiMin[i])continue;
+    if(phi>fAcceptancePhiMax[i])continue;
+    if(eta<fAcceptanceEtaMin[i])continue;
+    if(eta>fAcceptanceEtaMax[i])continue;
+    return i;
+  }
+  // catch the rest
+  return fNAcceptance;
+}
+
+
+
+
+
 AliAnalysisTaskJetSpectrum2::~AliAnalysisTaskJetSpectrum2(){
   // 
   delete [] fTriggerBit;
   delete [] fTriggerName;
+
+  delete [] fAcceptancePhiMin; 
+  delete [] fAcceptancePhiMax;
+  delete [] fAcceptanceEtaMin;
+  delete [] fAcceptanceEtaMax;
+
+
+
 }
