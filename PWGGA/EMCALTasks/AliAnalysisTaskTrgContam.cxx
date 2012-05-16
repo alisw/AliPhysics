@@ -1,25 +1,24 @@
-// $Id$
-//
-//
-//
-//
-
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
+
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
 #include "AliESDUtils.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
 #include "AliKFParticle.h"
+
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+
+
 #include "AliESDtrackCuts.h"
 #include "AliESDv0.h"
 #include "AliV0vertexer.h"
@@ -29,8 +28,11 @@
 #include "AliEMCALRecoUtils.h"
 #include "TLorentzVector.h"
 #include "AliVCluster.h"
+
+
 #include "AliAnalysisTaskTrgContam.h"
 #include "TFile.h"
+
 
 ClassImp(AliAnalysisTaskTrgContam)
 
@@ -38,16 +40,20 @@ ClassImp(AliAnalysisTaskTrgContam)
 AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name) 
   : AliAnalysisTaskSE(name), 
   fCaloClusters(0),
-  fEMCalCells(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fPeriod("LHC11c"),
   fIsTrain(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
+
+  
   fESD(0),
+  
   fOutputList(0),
+  
   fEvtSel(0),
+
   fClusEt(0),
   fClusEtTM(0),
   fClusEtLead(0),
@@ -57,10 +63,14 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name)
   fClusEtExotic(0),
   fClusEtExoticTM(0), 
   fClusEtSingleExotic(0),
+  fCellEnergy(0),
   fM02Et(0),
   fM02EtTM(0),
   fM02EtExot(0),
   fM02EtExotTM(0)
+
+
+  
 {
   // Constructor
 
@@ -71,7 +81,6 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name)
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
 }
-
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::UserCreateOutputObjects()
 {
@@ -115,6 +124,9 @@ void AliAnalysisTaskTrgContam::UserCreateOutputObjects()
   
   fClusEtSingleExotic = new TH1F("hClusEtSingleExotic","Exotic trigger clusters (only this above thrs.)  E_{T} ;E_{T} ;dN/dE_{T}",400,0,200);
   fOutputList->Add(fClusEtSingleExotic);
+
+  fCellEnergy = new TH1F("hCellE","cell energy spectrum;E_{cell} (GeV);entries",200,0,20);
+  fOutputList->Add(fCellEnergy);
   
   fM02Et = new TH2F("hM02Et","#lambda_{0}^{2} vs. E_{T} for trigger clusters ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
   fOutputList->Add(fM02Et);
@@ -139,47 +151,50 @@ void AliAnalysisTaskTrgContam::UserExec(Option_t *)
   if(fPeriod.Contains("11a"))
     isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
   else
-    isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
+    isSelected =  ((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) ||
+		   (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral));
   if(!isSelected )
-        return; 
+    return; 
   // Main loop
   // Called for each event
 
   // Post output data.
+
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fESD) {
+if (!fESD) {
     printf("ERROR: fESD not available\n");
     return;
   }
+
+fEvtSel->Fill(0);
   
-  fEvtSel->Fill(0);
-  
-  AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
+  /* AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
   if(!pv) 
     return;
   if(TMath::Abs(pv->GetZ())>15)
-    return;
+    return;*/
 
-  fEvtSel->Fill(1);
+fEvtSel->Fill(1);
 
 
-  if(!fIsTrain){
-    for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-      if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
-        break;
-      fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
-    }
+if(!fIsTrain){
+  for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+    if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
+      break;
+    fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
   }
-  fESD->GetEMCALClusters(fCaloClusters);
-  fEMCalCells = fESD->GetEMCALCells();
-  
-    
-  FillClusHists(); 
+ }
+fESD->GetEMCALClusters(fCaloClusters);
+fEMCalCells = fESD->GetEMCALCells();
+for(int i=0;i<fEMCalCells->GetNumberOfCells();i++){
+  Double_t e = fEMCalCells->GetCellAmplitude(TMath::Abs(fEMCalCells->GetAmplitude(i)));
+  fCellEnergy->Fill(e);
+}
+FillClusHists(); 
 
-  fCaloClusters->Clear();
-  PostData(1, fOutputList);
+fCaloClusters->Clear();
+PostData(1, fOutputList);
 }      
-
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::FillClusHists()
 {
@@ -188,10 +203,10 @@ void AliAnalysisTaskTrgContam::FillClusHists()
   const Int_t nclus = fCaloClusters->GetEntries();
   if(nclus==0)
     return;
-  Double_t EtArray[nclus]; memset(EtArray,0,nclus*sizeof(Double_t));
-  Bool_t isTM[nclus]; memset(isTM,0,nclus*sizeof(Bool_t));
-  Bool_t isEx[nclus]; memset(isEx,0,nclus*sizeof(Bool_t));
-  Int_t index[nclus]; memset(index,0,nclus*sizeof(Int_t));
+  Double_t EtArray[nclus];
+  Bool_t isTM[nclus];
+  Bool_t isEx[nclus];
+  Int_t index[nclus];
   Int_t nthresholds = 0;
   for(Int_t ic=0;ic<nclus;ic++){
     EtArray[ic]=0;
@@ -246,7 +261,6 @@ void AliAnalysisTaskTrgContam::FillClusHists()
   if(nclus>1)if(isTM[index[1]] && EtArray[index[1]]>0)
     fClusEtSubLeadTM->Fill(EtArray[index[1]]);
 } 
-
 //________________________________________________________________________
 Double_t AliAnalysisTaskTrgContam::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
 {
@@ -295,6 +309,8 @@ Double_t AliAnalysisTaskTrgContam::GetCrossEnergy(const AliVCluster *cluster, Sh
   return crossEnergy;
 }
 
+
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskTrgContam ::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
 {
@@ -318,10 +334,10 @@ Double_t AliAnalysisTaskTrgContam ::GetMaxCellEnergy(const AliVCluster *cluster,
   }
   return maxe;
 }
-
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::Terminate(Option_t *) 
 {
   // Draw result to the screen
   // Called once at the end of the query
+
 }
