@@ -276,7 +276,9 @@ Bool_t AliMuonForwardTrackPair::IsResonance() {
   AliDebug(1, Form("Muons' mothers: (%d, %d)", labelMC[0], labelMC[1]));
 
   if (labelMC[0]==labelMC[1] && codePDG[0]==codePDG[1] && (codePDG[0]==   113 ||
+							   codePDG[0]==   221 ||
 							   codePDG[0]==   223 ||
+							   codePDG[0]==   331 ||
 							   codePDG[0]==   333 ||
 							   codePDG[0]==   443 ||
 							   codePDG[0]==100443 ||
