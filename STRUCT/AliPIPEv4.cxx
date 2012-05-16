@@ -53,7 +53,7 @@ AliPIPEv4::AliPIPEv4():
   fRmax(1.98),            // outer radius of Be beam pipe
   fBe(0.08),              // width of Be beam pipe
   fZ1(50.),               // beginning of beam pipe z location (A side)
-  fZ2(-49),               // end of Be beam pipe z location (C side)
+  fZ2(-57.25),               // end of Be beam pipe z location (C side)
   fZ3(-82.)               // end of beam pipe z location (C side)
 {
   // Constructor
@@ -65,7 +65,7 @@ AliPIPEv4::AliPIPEv4(const char *name, const char *title)
     fRmax(1.98),            // outer radius of Be beam pipe
     fBe(0.08),              // width of Be beam pipe
     fZ1(50.),               // beginning of beam pipe z location (A side)
-    fZ2(-49.),              // end of Be beam pipe z location (C side)
+    fZ2(-57.25),              // end of Be beam pipe z location (C side)
     fZ3(-82.)               // end of Steel beam pipe z location (C side)
 {
   // Constructor
@@ -78,7 +78,7 @@ AliPIPEv4::AliPIPEv4(const char *name, const char *title, const Float_t rmax, co
     fRmax(rmax),             // outer radius of Be beam pipe 
     fBe(width),              // width of Be beam pipe 
     fZ1(50.),                // beginning of beam pipe z location (A side)
-    fZ2(-49.),               // end of Be beam pipe z location (C side)
+    fZ2(-57.25),               // end of Be beam pipe z location (C side)
     fZ3(-82.)                // end of Steel beam pipe z location (C side)
 {
   // Constructor
@@ -236,12 +236,13 @@ void AliPIPEv4::CreateGeometry()
   TGeoVolume* voadaptatorVide = new TGeoVolume("voadaptatorVide",adaptatorVide,kMedVac);
   voadaptatorVide->SetVisibility(0);
   top->AddNode(voadaptatorVide,1,new TGeoTranslation(0., 0., 0.)); 
+
   // -------------- End Vaccum ------------
   
   // -------------- Bellows --------------
   Float_t plieradius = (3.8 + (2. *  7 - 2.) * 0.03) / (4. * 7);  // radius of bellows "plis"
   Float_t dzbellow1=2.0;  // distance between the start of the aluminium beam pipe and the first bellows 
-  Float_t dzbellow2=2.0;  // distance between the 2 bellows
+  Float_t dzbellow2=4.0;  // distance between the 2 bellows
   //--------------------------------------
 
   //---------------- First Al tube ------------------
@@ -251,11 +252,13 @@ void AliPIPEv4::CreateGeometry()
   TGeoVolume* votube1 = new TGeoVolume("votube1",tube1,kMedAlu2219);
   votube1->SetLineColor(kBlue);
   top->AddNode(votube1,1,new TGeoTranslation(0., 0., 0.));
+
   //-------------------------------------------------
 
   // ------------------ Bellows 1  ----------------------- 
   TGeoVolume* vobellows1 = MakeBellow("bellows1", 7, 2.0, 2.665, 3.8, plieradius ,0.03);
   top->AddNode(vobellows1, 1, new TGeoTranslation(0., 0., fZ2-dzbellow1-(3.8)/2.));
+
   //------------------------------------------------------
     
   //------------- Second Al tube --------------
@@ -265,11 +268,13 @@ void AliPIPEv4::CreateGeometry()
   TGeoVolume* votube2 = new TGeoVolume("votube2",tube2,kMedAlu2219);
   votube2->SetLineColor(kBlue);
   top->AddNode(votube2,1,new TGeoTranslation(0., 0., 0.));
+
   //-------------------------------------------
 
   // ------------------ Bellows 2 ----------------------- 
   TGeoVolume* vobellows2 = MakeBellow("bellows2", 7, 2.0, 2.665, 3.8, plieradius ,0.03);
   top->AddNode(vobellows2, 1, new TGeoTranslation(0., 0., fZ2-dzbellow1-3.8-dzbellow2-3.8/2.));
+
   //-----------------------------------------------------
 
   //------------- Conical adaptator -------------
@@ -283,6 +288,7 @@ void AliPIPEv4::CreateGeometry()
   TGeoVolume* voadaptator = new TGeoVolume("voadaptator",adaptator,kMedAlu2219);
   voadaptator->SetLineColor(kBlue);    
   top->AddNode(voadaptator,1,new TGeoTranslation(0., 0., 0.));
+
   //---------------------------------------------
 
   TGeoPcon* flange = new TGeoPcon(0., 360., 2);
