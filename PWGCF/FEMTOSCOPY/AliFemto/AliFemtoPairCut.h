@@ -22,6 +22,8 @@ class AliFemtoPairCut : public AliFemtoCutMonitorHandler {
   friend class AliFemtoAnalysis;
 
 public:
+  enum DataType {kESD=0, kAOD=1, kKine=2};
+  typedef enum DataType AliFemtoDataType;
 
   AliFemtoPairCut();   // default constructor. - Users should write their own
   AliFemtoPairCut(const AliFemtoPairCut& c); // copy constructor

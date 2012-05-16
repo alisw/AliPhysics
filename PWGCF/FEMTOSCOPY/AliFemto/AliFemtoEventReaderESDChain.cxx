@@ -946,6 +946,24 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
       tFemtoV0->SetStatusPos(pTrack->GetStatus());
       tFemtoV0->SetStatusNeg(nTrack->GetStatus());
 
+      double fV1[3];
+      fEvent->GetPrimaryVertexTPC()->GetXYZ(fV1);
+      double xtpc[3]; AliFemtoThreeVector tmpVec;
+      pTrack->GetInnerXYZ(xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcEntrancePointPos(tmpVec);
+      nTrack->GetInnerXYZ(xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcEntrancePointNeg(tmpVec);
+
+      pTrack->GetOuterXYZ(xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcExitPointPos(tmpVec);
+      nTrack->GetOuterXYZ(xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
+
+
       if (fESDpid) {
 	tFemtoV0->SetPosNSigmaTPCK(fESDpid->NumberOfSigmasTPC(pTrack,AliPID::kKaon));
 	tFemtoV0->SetNegNSigmaTPCK(fESDpid->NumberOfSigmasTPC(nTrack,AliPID::kKaon));

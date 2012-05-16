@@ -44,6 +44,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetCentralityPreSelection(double min, double max);
   void SetNoCentrality(bool anocent);
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
+  void SetMagneticFieldSign(int s);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
@@ -78,6 +79,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   string         fFileName;         // name of current AOD file
   TChain*        fTree;             // AOD tree
   TFile*         fAodFile;          // AOD file 
+  int            fMagFieldSign;     // Magnetic field sign
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderAOD, 11)

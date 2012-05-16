@@ -57,7 +57,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
-  fAodFile(0x0)
+  fAodFile(0x0),
+  fMagFieldSign(1)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -83,7 +84,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
-  fAodFile(0x0)
+  fAodFile(0x0),
+  fMagFieldSign(1)
 {
   // copy constructor
   fReadMC = aReader.fReadMC;
@@ -331,7 +333,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
   }
 
-  //  int tNormMult = 0;
+  int tNormMult = 0;
   for (int i=0;i<nofTracks;i++)
     {
       AliFemtoTrack* trackCopy = new AliFemtoTrack();	
@@ -463,7 +465,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 	//	const AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
 	AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
-
+	
 	if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 	
 	if (!aodtrack->TestFilterBit(fFilterBit)) {
@@ -471,11 +473,31 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	  continue;
 	}
 	
+	//counting particles to set multiplicity
+	double impact[2];
+	double covimpact[3];
+	if (aodtrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+	  if(impact[0]<2.4 && TMath::Abs(impact[1]+fV1[2])<3.2)
+	    if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
+	      if (aodtrack->Chi2perNDF() < 4.0) 
+		if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20) 
+		  if (aodtrack->GetTPCNcls() > 50)
+		    if (aodtrack->Eta() < 0.8)
+		      tNormMult++;
+
+	} 
+
 	CopyAODtoFemtoTrack(aodtrack, trackCopy);
 
 	// copying PID information from the correspondent track
 	//	const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
-	AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
+
+
+	AliAODTrack *aodtrackpid;
+	if(fFilterBit ==  (1 << (7))) //for TPC Only tracks we have to copy PID information from corresponding global tracks
+	  aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
+	else
+	  aodtrackpid = fEvent->GetTrack(i);
 	CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 	
 	if (mcP) {
@@ -610,6 +632,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
     }
   }
+  else {
+    tEvent->SetNormalizedMult(tNormMult); //particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
+  }
 
   if (mcP) delete [] motherids;
 
@@ -738,9 +763,14 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
   
-  double xtpc[3] = {0,0,0};
+  double xtpc[3];
+  tAodTrack->GetXYZAt(84.6,5*fMagFieldSign,xtpc);
+  xtpc[2] -= fV1[2];
   tFemtoTrack->SetNominalTPCEntrancePoint(xtpc);
+  tAodTrack->GetXYZAt(246.6,5*fMagFieldSign,xtpc);
+  xtpc[2] -= fV1[2];
   tFemtoTrack->SetNominalTPCExitPoint(xtpc);
+
   //   }
   
   //   //  cout << "Track has " << TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv()) << "  " << tAodTrack->Zv() << "  " << tAodTrack->GetTPCNcls() << endl;
@@ -855,6 +885,19 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
       tFemtoV0->SetPosNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackpos,AliPID::kPion));
       tFemtoV0->SetNegNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackneg,AliPID::kPion));
 
+      double xtpc[3]; AliFemtoThreeVector tmpVec;
+      trackpos->GetXYZAt(84.6,5,xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcEntrancePointPos(tmpVec);
+      trackneg->GetXYZAt(84.6,5,xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcEntrancePointNeg(tmpVec);
+      trackpos->GetXYZAt(246.6,5,xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcExitPointPos(tmpVec);
+      trackneg->GetXYZAt(246.6,5,xtpc); xtpc[2] -= fV1[2];
+      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+      tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
 
       if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFmismatch)>0)
 	{
@@ -1038,6 +1081,16 @@ void AliFemtoEventReaderAOD::SetAODpidUtil(AliAODpidUtil *aAODpidUtil)
   //  printf("fAODpidUtil: %x\n",fAODpidUtil);
 }
 
+
+void AliFemtoEventReaderAOD::SetMagneticFieldSign(int s)
+{
+  if(s>0)
+    fMagFieldSign = 1;
+  else if(s<0)
+    fMagFieldSign = -1;
+  else
+    fMagFieldSign = 0;
+}
 
 
 

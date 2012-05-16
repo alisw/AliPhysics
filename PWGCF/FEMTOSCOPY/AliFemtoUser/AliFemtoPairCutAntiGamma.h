@@ -30,9 +30,6 @@
 
 class AliFemtoPairCutAntiGamma : public AliFemtoShareQualityPairCut{
 public:
-  enum DataType {kESD=0, kAOD=1, kKine=2};
-  typedef enum DataType AliFemtoDataType;
-
   AliFemtoPairCutAntiGamma();
   AliFemtoPairCutAntiGamma(const AliFemtoPairCutAntiGamma& c);
   virtual ~AliFemtoPairCutAntiGamma();
@@ -45,6 +42,7 @@ public:
   void SetMaxEEMinv(Double_t maxeeminv);
   void SetMaxThetaDiff(Double_t maxdtheta);
   void SetTPCEntranceSepMinimum(double dtpc);
+  void SetTPCExitSepMinimum(double dtpc);
   void SetDataType(AliFemtoDataType type);
   
  protected:
