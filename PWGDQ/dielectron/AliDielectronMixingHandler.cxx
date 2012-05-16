@@ -447,8 +447,6 @@ void AliDielectronMixingHandler::MoveToSameVertex(AliVTrack * const vtrack, cons
 //     x        = x       -vt[0];
 //     param[0] = param[0]-vt[1];
 //     param[1] = param[1]-vt[2];
-    x        = x;
-    param[0] = param[0];
     param[1] = param[1]-vt[2];
     
     //set updated track information
