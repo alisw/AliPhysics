@@ -200,10 +200,10 @@ Bool_t AliMFTPlane::Init(Int_t    planeNumber,
   fZCenterActiveFront = fZCenter - 0.5*fThicknessSupport - 0.5*fThicknessActive;
   fZCenterActiveBack  = fZCenter + 0.5*fThicknessSupport + 0.5*fThicknessActive;
 
-  if (fRMinSupport <= fRadiusMin) fRMinSupport = fRadiusMin;
-  else {
-    fRMinSupport = fRadiusMin + (fHeightActive-fActiveSuperposition) * Int_t((fRMinSupport-fRadiusMin)/(fHeightActive-fActiveSuperposition));
-  }
+//   if (fRMinSupport <= fRadiusMin) fRMinSupport = fRadiusMin;
+//   else {
+//     fRMinSupport = fRadiusMin + (fHeightActive-fActiveSuperposition) * Int_t((fRMinSupport-fRadiusMin)/(fHeightActive-fActiveSuperposition));
+//   }
   
   if (fRMax < fRMinSupport+fHeightActive) fRMax = fRMinSupport + fHeightActive;
   

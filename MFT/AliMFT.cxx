@@ -53,17 +53,17 @@ AliMFT::AliMFT():
   AliDetector(),
   fVersion(1),
   fNPlanes(0),
-  fNSlices(0),
+  fNSlices(1),
   fSDigitsPerPlane(0),
   fDigitsPerPlane(0),
   fRecPointsPerPlane(0),
   fSideDigits(0),
   fSegmentation(0),
   fNameGeomFile(0),
-  fChargeDispersion(0),
+  fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
-  fNStepForChargeDispersion(0),
-  fDensitySupportOverSi(0.1)
+  fNStepForChargeDispersion(4),
+  fDensitySupportOverSi(0.15)
 {
 
   // default constructor
@@ -76,17 +76,17 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title):
   AliDetector(name, title),
   fVersion(1),
   fNPlanes(0),
-  fNSlices(0),
+  fNSlices(1),
   fSDigitsPerPlane(0),
   fDigitsPerPlane(0),
   fRecPointsPerPlane(0),
   fSideDigits(0),
   fSegmentation(0),
   fNameGeomFile(0),
-  fChargeDispersion(0),
+  fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
-  fNStepForChargeDispersion(0),
-  fDensitySupportOverSi(0.1)
+  fNStepForChargeDispersion(4),
+  fDensitySupportOverSi(0.15)
 {
 
   fNameGeomFile = "AliMFTGeometry.root";
@@ -103,17 +103,17 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title, Char_t *nameGeomFile):
   AliDetector(name, title),
   fVersion(1),
   fNPlanes(0),
-  fNSlices(0),
+  fNSlices(1),
   fSDigitsPerPlane(0),
   fDigitsPerPlane(0),
   fRecPointsPerPlane(0),
   fSideDigits(0),
   fSegmentation(0),
   fNameGeomFile(0),
-  fChargeDispersion(0),
+  fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
-  fNStepForChargeDispersion(0),
-  fDensitySupportOverSi(0.1)
+  fNStepForChargeDispersion(4),
+  fDensitySupportOverSi(0.15)
 {
 
   fNameGeomFile = nameGeomFile;
@@ -416,7 +416,7 @@ void AliMFT::Hits2SDigitsLocal(TClonesArray *hits, const TObjArray *pSDig, Int_t
 
   //  Add sdigits of these hits to the list
   
-  AliDebug(1, "Start Hits2SDigitsLocal");
+  AliDebug(1, "Entering Hits2SDigitsLocal");
   
   if (!fSegmentation) CreateGeometry();
   
@@ -432,131 +432,155 @@ void AliMFT::Hits2SDigitsLocal(TClonesArray *hits, const TObjArray *pSDig, Int_t
 
     AliMFTHit *hit = (AliMFTHit*) hits->At(iHit);
 
-    AliMFTDigit sDigit;
-    sDigit.SetEloss(hit->GetEloss());
-    sDigit.SetDetElemID(hit->GetDetElemID());
-    sDigit.SetPlane(hit->GetPlane());
-    sDigit.AddMCLabel(hit->GetTrack()); 
+    // Creating "main digit"
+
+    AliMFTDigit *mainSDigit = new AliMFTDigit();
+    mainSDigit->SetEloss(hit->GetEloss());
+    mainSDigit->SetDetElemID(hit->GetDetElemID());
+    mainSDigit->SetPlane(hit->GetPlane());
+    mainSDigit->AddMCLabel(hit->GetTrack()); 
 
     Int_t xPixel = -1;
     Int_t yPixel = -1;
-    if (fSegmentation->Hit2PixelID(hit->X(), hit->Y(), sDigit.GetDetElemID(), xPixel, yPixel)) {
-      sDigit.SetPixID(xPixel, yPixel, 0);
-      sDigit.SetPixWidth(fSegmentation->GetPixelSizeX(sDigit.GetDetElemID()), 
-			 fSegmentation->GetPixelSizeY(sDigit.GetDetElemID()),
-			 fSegmentation->GetPixelSizeZ(sDigit.GetDetElemID()));  
-      sDigit.SetPixCenter(fSegmentation->GetPixelCenterX(sDigit.GetDetElemID(), xPixel), 
-			  fSegmentation->GetPixelCenterY(sDigit.GetDetElemID(), yPixel),
-			  fSegmentation->GetPixelCenterZ(sDigit.GetDetElemID(), 0));  
-      new ((*pSDigList[sDigit.GetPlane()])[pSDigList[sDigit.GetPlane()]->GetEntries()]) AliMFTDigit(sDigit);
+    if (fSegmentation->Hit2PixelID(hit->X(), hit->Y(), mainSDigit->GetDetElemID(), xPixel, yPixel)) {
+      mainSDigit->SetPixID(xPixel, yPixel, 0);
+      mainSDigit->SetPixWidth(fSegmentation->GetPixelSizeX(mainSDigit->GetDetElemID()), 
+			  fSegmentation->GetPixelSizeY(mainSDigit->GetDetElemID()),
+			  fSegmentation->GetPixelSizeZ(mainSDigit->GetDetElemID()));  
+      mainSDigit->SetPixCenter(fSegmentation->GetPixelCenterX(mainSDigit->GetDetElemID(), xPixel), 
+			   fSegmentation->GetPixelCenterY(mainSDigit->GetDetElemID(), yPixel),
+			   fSegmentation->GetPixelCenterZ(mainSDigit->GetDetElemID(), 0));
+      new ((*fSideDigits)[fSideDigits->GetEntries()]) AliMFTDigit(*mainSDigit);
       AliDebug(1, Form("Created new sdigit (%f, %f, %f) from hit (%f, %f, %f)",
-		       sDigit.GetPixelCenterX(), sDigit.GetPixelCenterY(), sDigit.GetPixelCenterZ(), hit->X(), hit->Y(), hit->Z()));
-//       AliDebug(1, Form("Created new sdigit from hit: residual is (%f, %f, %f)",
-// 		       sDigit.GetPixelCenterX()-hit->X(), sDigit.GetPixelCenterY()-hit->Y(), sDigit.GetPixelCenterZ()-hit->Z()));
+       		       mainSDigit->GetPixelCenterX(), mainSDigit->GetPixelCenterY(), mainSDigit->GetPixelCenterZ(), hit->X(), hit->Y(), hit->Z()));
     }
 
-    // creating "side hits" to simulate the effect of charge dispersion
+    // creating "side digits" to simulate the effect of charge dispersion
 
-    Int_t xPixelNew = -1;
-    Int_t yPixelNew = -1;
-    Double_t x0 = hit->X();
-    Double_t y0 = hit->Y();
     Double_t pi4 = TMath::Pi()/4.;
     for (Int_t iStep=0; iStep<fNStepForChargeDispersion; iStep++) {
       Double_t shift = (iStep+1) * fSingleStepForChargeDispersion;
       for (Int_t iAngle=0; iAngle<8; iAngle++) {
 	Double_t shiftX = shift*TMath::Cos(iAngle*pi4);
 	Double_t shiftY = shift*TMath::Sin(iAngle*pi4);
-	if (fSegmentation->Hit2PixelID(x0+shiftX, y0+shiftY, hit->GetDetElemID(), xPixelNew, yPixelNew)) {
+	if (fSegmentation->Hit2PixelID(hit->X()+shiftX, hit->Y()+shiftY, hit->GetDetElemID(), xPixel, yPixel)) {
 	  Bool_t digitExists = kFALSE;
-	  if (xPixelNew==xPixel && yPixelNew==yPixel) digitExists = kTRUE;
-	  if (!digitExists) {
-	    for (Int_t iSideDigit=0; iSideDigit<fSideDigits->GetEntries(); iSideDigit++) {
-	      if (xPixelNew==((AliMFTDigit*) fSideDigits->At(iSideDigit))->GetPixelX() && 
-		  yPixelNew==((AliMFTDigit*) fSideDigits->At(iSideDigit))->GetPixelY()) {
-		digitExists = kTRUE;
-		break;
-	      }
+	  for (Int_t iSideDigit=0; iSideDigit<fSideDigits->GetEntries(); iSideDigit++) {
+	    if (xPixel==((AliMFTDigit*) fSideDigits->At(iSideDigit))->GetPixelX() && 
+		yPixel==((AliMFTDigit*) fSideDigits->At(iSideDigit))->GetPixelY()) {
+	      digitExists = kTRUE;
+	      break;
 	    }
 	  }
 	  if (!digitExists) {
-	    AliMFTDigit newSDigit;
-	    newSDigit.SetEloss(0.);
-	    newSDigit.SetDetElemID(hit->GetDetElemID());
-	    newSDigit.SetPlane(hit->GetPlane());
-	    newSDigit.AddMCLabel(hit->GetTrack());
-	    newSDigit.SetPixID(xPixelNew, yPixelNew, 0);
-	    newSDigit.SetPixWidth(fSegmentation->GetPixelSizeX(sDigit.GetDetElemID()), 
-				  fSegmentation->GetPixelSizeY(sDigit.GetDetElemID()),
-				  fSegmentation->GetPixelSizeZ(sDigit.GetDetElemID()));  
-	    newSDigit.SetPixCenter(fSegmentation->GetPixelCenterX(sDigit.GetDetElemID(), xPixelNew), 
-				   fSegmentation->GetPixelCenterY(sDigit.GetDetElemID(), yPixelNew),
-				   fSegmentation->GetPixelCenterZ(sDigit.GetDetElemID(), 0)); 
-	    new ((*fSideDigits)[fSideDigits->GetEntries()]) AliMFTDigit(newSDigit);
+	    AliMFTDigit *sideSDigit = new AliMFTDigit();
+	    sideSDigit->SetEloss(0.);
+	    sideSDigit->SetDetElemID(hit->GetDetElemID());
+	    sideSDigit->SetPlane(hit->GetPlane());
+	    sideSDigit->AddMCLabel(hit->GetTrack());
+	    sideSDigit->SetPixID(xPixel, yPixel, 0);
+	    sideSDigit->SetPixWidth(fSegmentation->GetPixelSizeX(sideSDigit->GetDetElemID()), 
+				    fSegmentation->GetPixelSizeY(sideSDigit->GetDetElemID()),
+				    fSegmentation->GetPixelSizeZ(sideSDigit->GetDetElemID()));  
+	    sideSDigit->SetPixCenter(fSegmentation->GetPixelCenterX(sideSDigit->GetDetElemID(), xPixel), 
+				     fSegmentation->GetPixelCenterY(sideSDigit->GetDetElemID(), yPixel),
+				     fSegmentation->GetPixelCenterZ(sideSDigit->GetDetElemID(), 0)); 
+	    new ((*fSideDigits)[fSideDigits->GetEntries()]) AliMFTDigit(*sideSDigit);
 	  }
 	}
       }
     }
-
-    for (Int_t iSideDigit=0; iSideDigit<fSideDigits->GetEntries(); iSideDigit++) {
-      AliMFTDigit *newSDigit = (AliMFTDigit*) fSideDigits->At(iSideDigit);
-      new ((*pSDigList[sDigit.GetPlane()])[pSDigList[sDigit.GetPlane()]->GetEntries()]) AliMFTDigit(*newSDigit);
-    }
-
-    fSideDigits->Delete();  
-
-  }
-
-  // ------------ In case we should simulate a rectangular pattern of pixel...
-  
-  for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) { 
-    if (fSegmentation->GetPlane(iPlane)->HasPixelRectangularPatternAlongY()) {
-      Int_t nSDigits = pSDigList[iPlane]->GetEntries();
-      for (Int_t iSDigit=0; iSDigit<nSDigits; iSDigit++) {
-	AliMFTDigit *mySDig = (AliMFTDigit*) (pSDigList[iPlane]->At(iSDigit));
+    
+    // ------------ In case we should simulate a rectangular pattern of pixel...
+    
+    if (fSegmentation->GetPlane(mainSDigit->GetPlane())->HasPixelRectangularPatternAlongY()) {
+      for (Int_t iSDigit=0; iSDigit<fSideDigits->GetEntries(); iSDigit++) {
+	AliMFTDigit *mySDig = (AliMFTDigit*) (fSideDigits->At(iSDigit));
 	if (mySDig->GetPixelX()%2 == mySDig->GetPixelY()%2) {   // both pair or both odd
-	  Int_t xPixelNew = mySDig->GetPixelX();
-	  Int_t yPixelNew = mySDig->GetPixelY()+1;
-	  if (fSegmentation->DoesPixelExist(mySDig->GetDetElemID(), xPixelNew, yPixelNew)) {
-	    AliMFTDigit newSDigit;
-	    newSDigit.SetEloss(0.);
-	    newSDigit.SetDetElemID(mySDig->GetDetElemID());
-	    newSDigit.SetPlane(iPlane);
-	    newSDigit.SetPixID(xPixelNew, yPixelNew, 0);
-	    newSDigit.SetPixWidth(fSegmentation->GetPixelSizeX(newSDigit.GetDetElemID()), 
-				  fSegmentation->GetPixelSizeY(newSDigit.GetDetElemID()),
-				  fSegmentation->GetPixelSizeZ(newSDigit.GetDetElemID()));  
-	    newSDigit.SetPixCenter(fSegmentation->GetPixelCenterX(newSDigit.GetDetElemID(), xPixelNew), 
-				   fSegmentation->GetPixelCenterY(newSDigit.GetDetElemID(), yPixelNew),
-				   fSegmentation->GetPixelCenterZ(newSDigit.GetDetElemID(), 0)); 
-	    new ((*pSDigList[iPlane])[pSDigList[iPlane]->GetEntries()]) AliMFTDigit(newSDigit);
+	  xPixel = mySDig->GetPixelX();
+	  yPixel = mySDig->GetPixelY()+1;
+	  if (fSegmentation->DoesPixelExist(mySDig->GetDetElemID(), xPixel, yPixel)) {
+	    AliMFTDigit *newSDigit = new AliMFTDigit();
+	    newSDigit->SetEloss(0.);
+	    newSDigit->SetDetElemID(mySDig->GetDetElemID());
+	    newSDigit->SetPlane(mySDig->GetDetElemID());
+	    newSDigit->SetPixID(xPixel, yPixel, 0);
+	    newSDigit->SetPixWidth(fSegmentation->GetPixelSizeX(newSDigit->GetDetElemID()), 
+				   fSegmentation->GetPixelSizeY(newSDigit->GetDetElemID()),
+				   fSegmentation->GetPixelSizeZ(newSDigit->GetDetElemID()));  
+	    newSDigit->SetPixCenter(fSegmentation->GetPixelCenterX(newSDigit->GetDetElemID(), xPixel), 
+				    fSegmentation->GetPixelCenterY(newSDigit->GetDetElemID(), yPixel),
+				    fSegmentation->GetPixelCenterZ(newSDigit->GetDetElemID(), 0)); 
+	    new ((*fSideDigits)[fSideDigits->GetEntries()]) AliMFTDigit(*newSDigit);
 	  }
 	}
 	else {   // pair-odd
-	  Int_t xPixelNew = mySDig->GetPixelX();
-	  Int_t yPixelNew = mySDig->GetPixelY()-1;
-	  if (fSegmentation->DoesPixelExist(mySDig->GetDetElemID(), xPixelNew, yPixelNew)) {
-	    AliMFTDigit newSDigit;
-	    newSDigit.SetEloss(0.);
-	    newSDigit.SetDetElemID(mySDig->GetDetElemID());
-	    newSDigit.SetPlane(iPlane);
-	    newSDigit.SetPixID(xPixelNew, yPixelNew, 0);
-	    newSDigit.SetPixWidth(fSegmentation->GetPixelSizeX(newSDigit.GetDetElemID()), 
-				  fSegmentation->GetPixelSizeY(newSDigit.GetDetElemID()),
-				  fSegmentation->GetPixelSizeZ(newSDigit.GetDetElemID()));  
-	    newSDigit.SetPixCenter(fSegmentation->GetPixelCenterX(newSDigit.GetDetElemID(), xPixelNew), 
-				   fSegmentation->GetPixelCenterY(newSDigit.GetDetElemID(), yPixelNew),
-				   fSegmentation->GetPixelCenterZ(newSDigit.GetDetElemID(), 0)); 
-	    new ((*pSDigList[iPlane])[pSDigList[iPlane]->GetEntries()]) AliMFTDigit(newSDigit);
+	  xPixel = mySDig->GetPixelX();
+	  yPixel = mySDig->GetPixelY()-1;
+	  if (fSegmentation->DoesPixelExist(mySDig->GetDetElemID(), xPixel, yPixel)) {
+	    AliMFTDigit *newSDigit = new AliMFTDigit();
+	    newSDigit->SetEloss(0.);
+	    newSDigit->SetDetElemID(mySDig->GetDetElemID());
+	    newSDigit->SetPlane(mySDig->GetPlane());
+	    newSDigit->SetPixID(xPixel, yPixel, 0);
+	    newSDigit->SetPixWidth(fSegmentation->GetPixelSizeX(newSDigit->GetDetElemID()), 
+				   fSegmentation->GetPixelSizeY(newSDigit->GetDetElemID()),
+				   fSegmentation->GetPixelSizeZ(newSDigit->GetDetElemID()));  
+	    newSDigit->SetPixCenter(fSegmentation->GetPixelCenterX(newSDigit->GetDetElemID(), xPixel), 
+				    fSegmentation->GetPixelCenterY(newSDigit->GetDetElemID(), yPixel),
+				    fSegmentation->GetPixelCenterZ(newSDigit->GetDetElemID(), 0)); 
+	    new ((*fSideDigits)[fSideDigits->GetEntries()]) AliMFTDigit(*newSDigit);
 	  }
 	}
       }
     }
+
+    // -------- checking which pixels switched on have their diode actually within the charge dispersion radius
+
+    for (Int_t iSDigit=0; iSDigit<fSideDigits->GetEntries(); iSDigit++) {
+      AliMFTDigit *mySDig = (AliMFTDigit*) (fSideDigits->At(iSDigit));
+      Double_t distance = TMath::Sqrt(TMath::Power(mySDig->GetPixelCenterX()-hit->X(),2) + TMath::Power(mySDig->GetPixelCenterY()-hit->Y(),2));
+      if (fSegmentation->GetPlane(mySDig->GetPlane())->HasPixelRectangularPatternAlongY()) {
+	if (mySDig->GetPixelX()%2 == mySDig->GetPixelY()%2) {  // both pair or both odd
+	  if (distance<fChargeDispersion) {
+	    AliDebug(1, Form("Created new sdigit (%f, %f, %f) from hit (%f, %f, %f)",
+			     mySDig->GetPixelCenterX(), mySDig->GetPixelCenterY(), mySDig->GetPixelCenterZ(), hit->X(), hit->Y(), hit->Z()));
+	    new ((*pSDigList[mySDig->GetPlane()])[pSDigList[mySDig->GetPlane()]->GetEntries()]) AliMFTDigit(*mySDig);
+	    xPixel = mySDig->GetPixelX();
+	    yPixel = mySDig->GetPixelY()+1;
+	    if (fSegmentation->DoesPixelExist(mySDig->GetDetElemID(), xPixel, yPixel)) {
+	      AliMFTDigit *newSDigit = new AliMFTDigit();
+	      newSDigit->SetEloss(0.);
+	      newSDigit->SetDetElemID(mySDig->GetDetElemID());
+	      newSDigit->SetPlane(mySDig->GetPlane());
+	      newSDigit->SetPixID(xPixel, yPixel, 0);
+	      newSDigit->SetPixWidth(fSegmentation->GetPixelSizeX(newSDigit->GetDetElemID()), 
+				     fSegmentation->GetPixelSizeY(newSDigit->GetDetElemID()),
+				     fSegmentation->GetPixelSizeZ(newSDigit->GetDetElemID()));  
+	      newSDigit->SetPixCenter(fSegmentation->GetPixelCenterX(newSDigit->GetDetElemID(), xPixel), 
+				      fSegmentation->GetPixelCenterY(newSDigit->GetDetElemID(), yPixel),
+				      fSegmentation->GetPixelCenterZ(newSDigit->GetDetElemID(), 0));
+	      AliDebug(1, Form("Created new sdigit (%f, %f, %f) from hit (%f, %f, %f)",
+			       newSDigit->GetPixelCenterX(), newSDigit->GetPixelCenterY(), newSDigit->GetPixelCenterZ(), hit->X(), hit->Y(), hit->Z()));
+	      new ((*pSDigList[newSDigit->GetPlane()])[pSDigList[newSDigit->GetPlane()]->GetEntries()]) AliMFTDigit(*newSDigit);
+	    }
+	  }
+	}
+      }
+      else {
+	if (distance<fChargeDispersion) {
+	  AliDebug(1, Form("Created new sdigit (%f, %f, %f) from hit (%f, %f, %f)",
+			   mySDig->GetPixelCenterX(), mySDig->GetPixelCenterY(), mySDig->GetPixelCenterZ(), hit->X(), hit->Y(), hit->Z()));
+	  new ((*pSDigList[mySDig->GetPlane()])[pSDigList[mySDig->GetPlane()]->GetEntries()]) AliMFTDigit(*mySDig);
+	}
+      }
+    }
+
+    fSideDigits->Delete(); 
+
   }
 
-  //------------------------------------------------------------------------
-  
-  AliDebug(1,"Stop Hits2SDigitsLocal");
+  AliDebug(1,"Exiting Hits2SDigitsLocal");
 
 }
 

@@ -31,7 +31,7 @@ const Double_t AliMFTConstants::fCutForAttachingDigits = 1.;
 
 const Double_t AliMFTConstants::fElossPerElectron = 3.62e-09;
 
-const Double_t AliMFTConstants::fRadiusMin = 2.225;
+const Double_t AliMFTConstants::fRadiusMin = 2.5;
 
 const Double_t AliMFTConstants::fActiveSuperposition = 0.05;
                                  

@@ -422,11 +422,20 @@ Bool_t AliMuonForwardTrackFinder::LoadNextEvent() {
   
   AliInfo(Form(" **** analyzing event # %d  \n", fEv));
   
-  fTrackStore    = fMuonRecoCheck->ReconstructedTracks(fEv);
-  if (fTrackStore->IsEmpty()) return kFALSE;
+  fTrackStore = fMuonRecoCheck->ReconstructedTracks(fEv);
+  if (fTrackStore->IsEmpty()) {
+    AliInfo("fTrackStore Is Empty: exiting NOW!");
+    return kFALSE;
+  }
+  AliInfo("fTrackStore contains tracks!");
+
+  AliDebug(2, Form("Getting fMuonRecoCheck->ReconstructibleTracks(%d)", fEv));
   fTrackRefStore = fMuonRecoCheck->ReconstructibleTracks(fEv);
   
+  AliDebug(2, Form("Getting fRunLoader->GetEvent(%d)", fEv));
   fRunLoader->GetEvent(fEv);
+
+  AliDebug(2, Form("fMFTLoader->TreeR() = %p",fMFTLoader->TreeR()));
   if (!fMFTLoader->TreeR()->GetEvent()) return kFALSE;
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
     AliDebug(1, Form("plane %02d: nClusters = %d\n", iPlane, (fMFT->GetRecPointsList(iPlane))->GetEntries()));
