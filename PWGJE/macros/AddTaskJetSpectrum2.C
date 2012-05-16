@@ -189,9 +189,9 @@ Bool_t ConfigWithFlagsJetSpectrum2(){
     for(int ia = 0;ia < nAcceptance;ia++){
       jetspec->SetAcceptance(ia,
 			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptancePhiMinSpec%d",ia),bGood1),
-			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptancePhiMaxSpec0%d",ia),bGood2),
+			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptancePhiMaxSpec%d",ia),bGood1),
 			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptanceEtaMinSpec%d",ia),bGood1),
-			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptanceEtaMaxSpec0%d",ia),bGood2));
+			     AliAnalysisManager::GetGlobalDbl(Form("kAcceptanceEtaMaxSpec%d",ia),bGood1));
     }
    }
    else {
