@@ -35,7 +35,10 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
   fShareQualityMax(1.0),
   fShareFractionMax(1.0),
   fRemoveSameLabel(0),
-  fTrackTPCOnly(0)
+  fTrackTPCOnly(0),
+  fDataType(kAOD),
+  fDTPCMin(0),
+  fDTPCExitMin(0)
 {
   // Default constructor
   // Nothing to do
@@ -44,8 +47,7 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
 AliFemtoV0TrackPairCut::~AliFemtoV0TrackPairCut(){
   /* no-op */
 }
-//__________________
-AliFemtoV0TrackPairCut& AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackPairCut& cut) 
+AliFemtoV0TrackPairCut& AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackPairCut& cut)
 {
   if (this != &cut) {
    
@@ -56,12 +58,14 @@ AliFemtoV0TrackPairCut& AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackP
     fShareQualityMax = 1.0;
     fShareFractionMax = 1.0;
     fRemoveSameLabel = 0;
-    fTrackTPCOnly =0;
+    fTrackTPCOnly = 0;
+    fDataType = kAOD;
+    fDTPCMin = 0;
+    fDTPCExitMin = 0;
   }
 
   return *this;
 }
-
 //__________________
 bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair* pair){
   // Check for pairs that are possibly shared/double reconstruction
@@ -69,14 +73,6 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair* pair){
   bool temp = true;
   //Track1 - V0
   //Track2 - track
-
-  //!!!!!USUN MNIE!!!!
-  /*if(pair->KStar()>0.15)
-    {
-      return false;
-      }*/
-  //!!!!!!!!
-
 
   if(!(pair->Track1()->V0() && pair->Track2()->Track()))
     {
@@ -97,7 +93,39 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair* pair){
 	}
     }
   
+  bool tempTPCEntrancePos = true;
+  bool tempTPCEntranceNeg = true;
+  bool tempTPCExitPos = true;
+  bool tempTPCExitNeg = true;
+  if(fDataType==kESD || fDataType==kAOD)
+    {
+      double distx = pair->Track1()->V0()->NominalTpcEntrancePointPos().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
+      double disty = pair->Track1()->V0()->NominalTpcEntrancePointPos().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
+      double distz = pair->Track1()->V0()->NominalTpcEntrancePointPos().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
+      double distPos = sqrt(distx*distx + disty*disty + distz*distz);
 
+      distx = pair->Track1()->V0()->NominalTpcEntrancePointNeg().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
+      disty = pair->Track1()->V0()->NominalTpcEntrancePointNeg().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
+      distz = pair->Track1()->V0()->NominalTpcEntrancePointNeg().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
+      double distNeg = sqrt(distx*distx + disty*disty + distz*distz);
+
+      double distExitX = pair->Track1()->V0()->NominalTpcExitPointPos().x() - pair->Track2()->Track()->NominalTpcExitPoint().x();
+      double distExitY = pair->Track1()->V0()->NominalTpcExitPointPos().y() - pair->Track2()->Track()->NominalTpcExitPoint().y();
+      double distExitZ = pair->Track1()->V0()->NominalTpcExitPointPos().z() - pair->Track2()->Track()->NominalTpcExitPoint().z();
+      double distExitPos = sqrt(distExitX*distExitX + distExitY*distExitY + distExitZ*distExitZ);
+
+      distExitX = pair->Track1()->V0()->NominalTpcExitPointNeg().x() - pair->Track2()->Track()->NominalTpcExitPoint().x();
+      distExitY = pair->Track1()->V0()->NominalTpcExitPointNeg().y() - pair->Track2()->Track()->NominalTpcExitPoint().y();
+      distExitZ = pair->Track1()->V0()->NominalTpcExitPointNeg().z() - pair->Track2()->Track()->NominalTpcExitPoint().z();
+      double distExitNeg = sqrt(distExitX*distExitX + distExitY*distExitY + distExitZ*distExitZ);
+
+      tempTPCEntrancePos = distPos > fDTPCMin;
+      tempTPCEntranceNeg = distNeg > fDTPCMin;
+      tempTPCExitPos = distExitPos > fDTPCExitMin;
+      tempTPCExitNeg = distExitNeg > fDTPCExitMin;
+    }
+ 
+  if(!tempTPCEntrancePos || !tempTPCEntranceNeg || !tempTPCExitPos || !tempTPCExitNeg) return false;
 
   //reject merged trakcs in TPC
   
@@ -279,4 +307,19 @@ void AliFemtoV0TrackPairCut::SetShareQualityMax(Double_t aShareQualityMax) {
 
 void AliFemtoV0TrackPairCut::SetShareFractionMax(Double_t aShareFractionMax) {
   fShareFractionMax = aShareFractionMax;
+}
+
+void AliFemtoV0TrackPairCut::SetDataType(AliFemtoDataType type)
+{
+  fDataType = type;
+}
+
+void AliFemtoV0TrackPairCut::SetTPCEntranceSepMinimum(double dtpc)
+{
+  fDTPCMin = dtpc;
+}
+
+void AliFemtoV0TrackPairCut::SetTPCExitSepMinimum(double dtpc)
+{
+  fDTPCExitMin = dtpc;
 }

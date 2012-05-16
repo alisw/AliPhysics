@@ -35,7 +35,7 @@ public:
   AliFemtoV0TrackPairCut();
   AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut& cut);
   virtual ~AliFemtoV0TrackPairCut();
-  AliFemtoV0TrackPairCut& operator=(const AliFemtoV0TrackPairCut& c);
+  AliFemtoV0TrackPairCut& operator=(const AliFemtoV0TrackPairCut& cut);
   
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
@@ -47,7 +47,10 @@ public:
   void SetTPCOnly(Bool_t tpconly);
   void SetShareQualityMax(Double_t aShareQualityMax);
   void SetShareFractionMax(Double_t aShareFractionMax);
-  
+  void SetTPCEntranceSepMinimum(double dtpc);
+  void SetTPCExitSepMinimum(double dtpc);
+  void SetDataType(AliFemtoDataType type);
+
  protected:
   long fNPairsPassed;          // Number of pairs consideered that passed the cut 
   long fNPairsFailed;          // Number of pairs consideered that failed the cut
@@ -58,6 +61,11 @@ public:
   Double_t fShareFractionMax;  // Maximum allowed share fraction
   Bool_t   fRemoveSameLabel;   // If 1 pairs with two tracks with the same label will be removed
   Bool_t fTrackTPCOnly;
+
+  AliFemtoDataType fDataType; //Use ESD / AOD / Kinematics.
+  Double_t fDTPCMin;          // Minimum allowed pair nominal separation at the entrance to the TPC
+  Double_t fDTPCExitMin;          // Minimum allowed pair nominal separation at the exit of the TPC
+ 
 
 
 #ifdef __ROOT__
@@ -73,7 +81,10 @@ inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairC
   fShareQualityMax(1.0),
   fShareFractionMax(1.0),
   fRemoveSameLabel(0),
-  fTrackTPCOnly(0)
+  fTrackTPCOnly(0),
+  fDataType(kAOD),
+  fDTPCMin(0),
+  fDTPCExitMin(0)
 { /* no-op */ }
 
 inline AliFemtoPairCut* AliFemtoV0TrackPairCut::Clone() { AliFemtoV0TrackPairCut* c = new AliFemtoV0TrackPairCut(*this); return c;}

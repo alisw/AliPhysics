@@ -33,7 +33,10 @@ AliFemtoV0PairCut::AliFemtoV0PairCut():
   fNPairsFailed(0),
   fV0Max(1.0),
   fShareFractionMax(1.0),
-  fRemoveSameLabel(0)
+  fRemoveSameLabel(0),
+  fDataType(kAOD),
+  fDTPCMin(0),
+  fDTPCExitMin(0)
 {
   // Default constructor
   // Nothing to do
@@ -42,21 +45,26 @@ AliFemtoV0PairCut::AliFemtoV0PairCut():
 AliFemtoV0PairCut::~AliFemtoV0PairCut(){
   /* no-op */
 }
-//__________________
+
 AliFemtoV0PairCut& AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut& cut) 
 {
   if (this != &cut) {
-    
+   
     AliFemtoPairCut::operator=(cut);
     fNPairsPassed = 0;
-    fNPairsFailed = 0;
+    fNPairsFailed =0;
     fV0Max = 1.0;
     fShareFractionMax = 1.0;
     fRemoveSameLabel = 0;
+    fDataType = kAOD;
+    fDTPCMin = 0;
+    fDTPCExitMin = 0;
   }
-  
+
   return *this;
 }
+
+
 //__________________
 bool AliFemtoV0PairCut::Pass(const AliFemtoPair* pair){
   // Check for pairs that are possibly shared/double reconstruction
@@ -71,6 +79,42 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair* pair){
   cout<<"pair->Track2()->V0()->IdNeg(): "<<pair->Track2()->V0()->IdNeg()<<endl;
   cout<<"pair->Track1()->V0()->IdPos(): "<<pair->Track1()->V0()->IdPos()<<endl;
   cout<<"pair->Track2()->V0()->IdPos(): "<<pair->Track2()->V0()->IdPos()<<endl;*/
+
+  bool tempTPCEntrancePos = true;
+  bool tempTPCEntranceNeg = true;
+  bool tempTPCExitPos = true;
+  bool tempTPCExitNeg = true;
+  if(fDataType==kESD || fDataType==kAOD)
+    {
+      double distx = pair->Track1()->V0()->NominalTpcEntrancePointPos().x() - pair->Track2()->V0()->NominalTpcEntrancePointPos().x();
+      double disty = pair->Track1()->V0()->NominalTpcEntrancePointPos().y() - pair->Track2()->V0()->NominalTpcEntrancePointPos().y();
+      double distz = pair->Track1()->V0()->NominalTpcEntrancePointPos().z() - pair->Track2()->V0()->NominalTpcEntrancePointPos().z();
+      double distPos = sqrt(distx*distx + disty*disty + distz*distz);
+
+      distx = pair->Track1()->V0()->NominalTpcEntrancePointNeg().x() - pair->Track2()->V0()->NominalTpcEntrancePointNeg().x();
+      disty = pair->Track1()->V0()->NominalTpcEntrancePointNeg().y() - pair->Track2()->V0()->NominalTpcEntrancePointNeg().y();
+      distz = pair->Track1()->V0()->NominalTpcEntrancePointNeg().z() - pair->Track2()->V0()->NominalTpcEntrancePointNeg().z();
+      double distNeg = sqrt(distx*distx + disty*disty + distz*distz);
+
+      double distExitX = pair->Track1()->V0()->NominalTpcExitPointPos().x() - pair->Track2()->V0()->NominalTpcExitPointPos().x();
+      double distExitY = pair->Track1()->V0()->NominalTpcExitPointPos().y() - pair->Track2()->V0()->NominalTpcExitPointPos().y();
+      double distExitZ = pair->Track1()->V0()->NominalTpcExitPointPos().z() - pair->Track2()->V0()->NominalTpcExitPointPos().z();
+      double distExitPos = sqrt(distExitX*distExitX + distExitY*distExitY + distExitZ*distExitZ);
+
+      distExitX = pair->Track1()->V0()->NominalTpcExitPointNeg().x() - pair->Track2()->V0()->NominalTpcExitPointNeg().x();
+      distExitY = pair->Track1()->V0()->NominalTpcExitPointNeg().y() - pair->Track2()->V0()->NominalTpcExitPointNeg().y();
+      distExitZ = pair->Track1()->V0()->NominalTpcExitPointNeg().z() - pair->Track2()->V0()->NominalTpcExitPointNeg().z();
+      double distExitNeg = sqrt(distExitX*distExitX + distExitY*distExitY + distExitZ*distExitZ);
+
+      tempTPCEntrancePos = distPos > fDTPCMin;
+      tempTPCEntranceNeg = distNeg > fDTPCMin;
+
+      tempTPCExitPos = distExitPos > fDTPCExitMin;
+      tempTPCExitNeg = distExitNeg > fDTPCExitMin;
+    }
+ 
+  if(!tempTPCEntrancePos || !tempTPCEntranceNeg || !tempTPCExitPos || !tempTPCExitNeg) return false;
+
 
   if(!(pair->Track1()->V0() && pair->Track2()->V0()))
     {
@@ -119,4 +163,19 @@ TList *AliFemtoV0PairCut::ListSettings()
 void     AliFemtoV0PairCut::SetRemoveSameLabel(Bool_t aRemove)
 {
   fRemoveSameLabel = aRemove;
+}
+
+void AliFemtoV0PairCut::SetDataType(AliFemtoDataType type)
+{
+  fDataType = type;
+}
+
+void AliFemtoV0PairCut::SetTPCEntranceSepMinimum(double dtpc)
+{
+  fDTPCMin = dtpc;
+}
+
+void AliFemtoV0PairCut::SetTPCExitSepMinimum(double dtpc)
+{
+  fDTPCExitMin = dtpc;
 }
