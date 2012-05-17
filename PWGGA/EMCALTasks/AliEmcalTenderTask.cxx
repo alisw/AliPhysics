@@ -6,8 +6,11 @@
 
 #include <TChain.h>
 #include <TFile.h>
+
 #include "AliAnalysisManager.h"
 #include "TenderSupplies/AliEMCALTenderSupply.h"
+#include "AliAODEvent.h"
+
 #include "AliEmcalTenderTask.h"
 
 ClassImp(AliEmcalTenderTask)
@@ -26,6 +29,7 @@ AliEmcalTenderTask::AliEmcalTenderTask(const char* name):
   fEMCALTender(NULL)
 {
   // Constructor.
+  DefineOutput(1,  AliAODEvent::Class());
 }
 
 //______________________________________________________________________________
