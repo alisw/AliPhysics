@@ -718,7 +718,9 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
   Float_t dz=(fRange[1]-fRange[1])/ncol;
   TString titlez(az->GetTitle()); TObjArray *tokenTitle(titlez.Tokenize(" "));
   Int_t nt(tokenTitle->GetEntriesFast());
-  TH2 *h2 = new TH2F(Form("%s_2D", fH->GetName()),
+  TH2 *h2(NULL);
+  if((h2 = (TH2*)gDirectory->Get(Form("%s_2D", fH->GetName())))) delete h2; // avoid ROOT warning messages
+  h2 = new TH2F(Form("%s_2D", fH->GetName()),
             Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], nt>0?(*tokenTitle)[0]->GetName():"", nt>1?(*tokenTitle)[1]->GetName():""),
             nx, ax->GetXmin(), ax->GetXmax(), ny, ay->GetXmin(), ay->GetXmax());
   h2->SetContour(ncol);
