@@ -56,7 +56,6 @@ fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
 fTriggerMask(AliVEvent::kAnyINT),
 fUseOnlyOneTrigger(kFALSE),
-fTriggerClass("CINT1"),
 fTrackCuts(0),
 fnPtBins(1),
 fnPtBinLimits(1),
@@ -97,6 +96,7 @@ fRemoveTrackletOutliers(kFALSE)
   //
   // Default Constructor
   //
+  fTriggerClass[0]="CINT1"; fTriggerClass[1]="";
 }
 //--------------------------------------------------------------------------
 AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
@@ -108,7 +108,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
   fTriggerMask(source.fTriggerMask),
   fUseOnlyOneTrigger(source.fUseOnlyOneTrigger),
-  fTriggerClass(source.fTriggerClass),
+  fTriggerClass(),
   fTrackCuts(0),
   fnPtBins(source.fnPtBins),
   fnPtBinLimits(source.fnPtBinLimits),
@@ -150,6 +150,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   // Copy constructor
   //
   cout<<"Copy constructor"<<endl;
+  fTriggerClass[0] = source.fTriggerClass[0]; 
+  fTriggerClass[1] = source.fTriggerClass[1];
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
   if(source.fVarNames) SetVarNames(source.fnVars,source.fVarNames,source.fIsUpperCut);
@@ -176,7 +178,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
   fTriggerMask=source.fTriggerMask;
   fUseOnlyOneTrigger=source.fUseOnlyOneTrigger;
-  fTriggerClass=source.fTriggerClass;
+  fTriggerClass[0]=source.fTriggerClass[0];
+  fTriggerClass[1]=source.fTriggerClass[1];
   fnPtBins=source.fnPtBins;
   fnPtBinLimits=source.fnPtBinLimits;
   fnVars=source.fnVars;
@@ -312,7 +315,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   TString firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();
   // don't do for MC and for PbPb 2010 data
   if(!isMC && (event->GetRunNumber()<136851 || event->GetRunNumber()>139517)) {
-    if(!firedTriggerClasses.Contains(fTriggerClass.Data())) {
+    if(!firedTriggerClasses.Contains(fTriggerClass[0].Data()) && 
+       (fTriggerClass[1].CompareTo("")==0 || !firedTriggerClasses.Contains(fTriggerClass[1].Data())) ) {
       fWhyRejection=5;
       fEvRejectionBits+=1<<kNotSelTrigger;
       accept=kFALSE;

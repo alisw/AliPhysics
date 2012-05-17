@@ -101,7 +101,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     fUseOnlyOneTrigger=kTRUE;
   }
   void SetRemoveTrackletOutliers(Bool_t opt) {fRemoveTrackletOutliers=opt;}
-  void SetTriggerClass(TString trclass) {fTriggerClass=trclass;} 
+  void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;} 
   void ApplySPDDeadPbPb2011(){fApplySPDDeadPbPb2011=kTRUE;}
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
   void SetGlobalIndex(){fGlobalIndex=fnVars*fnPtBins;}
@@ -253,7 +253,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fMinSPDMultiplicity; // SPD multiplicity
   ULong64_t fTriggerMask; // trigger mask
   Bool_t fUseOnlyOneTrigger; // flag to select one trigger only
-  TString  fTriggerClass; // trigger class
+  TString  fTriggerClass[2]; // trigger class
   // quality cuts on the daughter tracks
   AliESDtrackCuts *fTrackCuts; // tracks for daughter tracks (AOD converted to ESD on the flight!)
   // cuts on the candidate
