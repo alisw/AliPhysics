@@ -261,12 +261,40 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL, no params object array \n"); // array ok
       }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL, no params for pass\n"); // array pass ok
     }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL, no params for run\n");  // run number array ok
-    
-    // once set, apply run dependent corrections if requested
-    fRecoUtils->SetRunDependentCorrections(runnumber);
-    
+        
   } // Recalibration on
   
+  // Energy Recalibration, apply on top of previous calibration factors
+  if(fRecoUtils->IsRunDepRecalibrationOn())
+  {
+    AliOADBContainer *contRFTD=new AliOADBContainer("");
+    
+    contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
+    
+    TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 
+    
+    if(htd)
+    {
+      printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Recalibrate (Temperature) EMCAL \n");
+      
+      for (Int_t ism=0; ism<nSM; ++ism) 
+      {        
+        for (Int_t icol=0; icol<48; ++icol) 
+        {        
+          for (Int_t irow=0; irow<24; ++irow) 
+          {
+            Float_t factor = fRecoUtils->GetEMCALChannelRecalibrationFactor(ism,icol,irow);
+            
+            Int_t absID = fGeom->GetAbsCellIdFromCellIndexes(ism, irow, icol); // original calibration factor
+            factor *= htd->GetBinContent(absID) / 10000. ; // correction dependent on T
+            //printf("\t ism %d, icol %d, irow %d,absID %d, corrA %2.3f, corrB %2.3f, corrAB %2.3f\n",ism, icol, irow, absID, 
+            //      GetEMCALChannelRecalibrationFactor(ism,icol,irow) , htd->GetBinContent(absID) / 10000., factor);
+            fRecoUtils->SetEMCALChannelRecalibrationFactor(ism,icol,irow,factor);
+          } // columns
+        } // rows 
+      } // SM loop
+    }else printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT recalibrate EMCAL with T variations, no params TH1 \n"); 
+  } // Run by Run T calibration
   
   // Time Recalibration
   if(fRecoUtils->IsTimeRecalibrationOn())

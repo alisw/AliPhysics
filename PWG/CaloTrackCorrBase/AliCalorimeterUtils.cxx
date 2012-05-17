@@ -61,7 +61,7 @@ ClassImp(AliCalorimeterUtils)
     fRemoveBadChannels(kFALSE),       fPHOSBadChannelMap(0x0), 
     fNCellsFromPHOSBorder(0),
     fNMaskCellColumns(0),             fMaskCellColumns(0x0),
-    fRecalibration(kFALSE),           fPHOSRecalibrationFactors(),
+    fRecalibration(kFALSE),           fRunDependentCorrection(kFALSE), fPHOSRecalibrationFactors(),
     fEMCALRecoUtils(new AliEMCALRecoUtils),
     fRecalculatePosition(kFALSE),     fCorrectELinearity(kFALSE),
     fRecalculateMatching(kFALSE),
@@ -202,10 +202,41 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate EMCAL, no params for run\n");  // run number array ok
       
       // once set, apply run dependent corrections if requested
-      fEMCALRecoUtils->SetRunDependentCorrections(runnumber);
-      
+      //fEMCALRecoUtils->SetRunDependentCorrections(runnumber);
+            
     } // Recalibration on
     
+    // Energy Recalibration, apply on top of previous calibration factors
+    if(fRunDependentCorrection)
+    {
+      AliOADBContainer *contRFTD=new AliOADBContainer("");
+      
+      contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRunDepTempCalibCorrections");
+      
+      TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 
+      
+      if(htd)
+      {
+        printf("AliCalorimeterUtils::SetOADBParameters() - Recalibrate (Temperature) EMCAL \n");
+        
+        for (Int_t ism=0; ism<nSM; ++ism) 
+        {        
+          for (Int_t icol=0; icol<48; ++icol) 
+          {        
+            for (Int_t irow=0; irow<24; ++irow) 
+            {
+              Float_t factor = GetEMCALChannelRecalibrationFactor(ism,icol,irow);
+              
+              Int_t absID = fEMCALGeo->GetAbsCellIdFromCellIndexes(ism, irow, icol); // original calibration factor
+              factor *= htd->GetBinContent(absID) / 10000. ; // correction dependent on T
+              //printf("\t ism %d, icol %d, irow %d,absID %d, corrA %2.3f, corrB %2.3f, corrAB %2.3f\n",ism, icol, irow, absID, 
+              //      GetEMCALChannelRecalibrationFactor(ism,icol,irow) , htd->GetBinContent(absID) / 10000., factor);
+              SetEMCALChannelRecalibrationFactor(ism,icol,irow,factor);
+            } // columns
+          } // rows 
+        } // SM loop
+      }else printf("AliCalorimeterUtils::SetOADBParameters() - Do NOT recalibrate EMCAL with T variations, no params TH1 \n"); 
+    } // Run by Run T calibration    
     
     // Time Recalibration
     if(fEMCALRecoUtils->IsTimeRecalibrationOn())
@@ -1279,7 +1310,7 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("Remove Clusters with max cell at less than %d cells from EMCAL border and %d cells from PHOS border\n",
          fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder(), fNCellsFromPHOSBorder);
   if(fEMCALRecoUtils->IsEMCALNoBorderAtEta0()) printf("Do not remove EMCAL clusters at Eta = 0\n");
-  printf("Recalibrate Clusters? %d\n",fRecalibration);
+  printf("Recalibrate Clusters? %d, run by run  %d\n",fRecalibration,fRunDependentCorrection);
   printf("Recalculate Clusters Position? %d\n",fRecalculatePosition);
   printf("Recalculate Clusters Energy? %d\n",fCorrectELinearity);
   printf("Matching criteria: dR < %2.2f[cm], dZ < %2.2f[cm]\n",fCutR,fCutZ);

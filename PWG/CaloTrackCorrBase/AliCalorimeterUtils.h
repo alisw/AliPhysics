@@ -198,8 +198,8 @@ class AliCalorimeterUtils : public TObject {
 
   // Run dependent energy calibrations (EMCAL)
   
-  void          SwitchOffRunDepCorrection()                              { fEMCALRecoUtils->SwitchOffRunDepCorrection()    ; }
-  void          SwitchOnRunDepCorrection()                               { fEMCALRecoUtils->SwitchOnRunDepCorrection()     ; }
+  void          SwitchOffRunDepCorrection()                              {  fRunDependentCorrection = kFALSE  ; }
+  void          SwitchOnRunDepCorrection()                               {  fRunDependentCorrection = kTRUE   ; }
   
   // Time Recalibration (EMCAL)
   
@@ -303,6 +303,7 @@ class AliCalorimeterUtils : public TObject {
   Int_t              fNMaskCellColumns;      //  Number of masked columns
   Int_t*             fMaskCellColumns;       //[fNMaskCellColumns] list of masked cell collumn
   Bool_t             fRecalibration;         //  Switch on or off the recalibration
+  Bool_t             fRunDependentCorrection;//  Switch on or off the recalibration dependent on T
   TObjArray        * fPHOSRecalibrationFactors;  // Array of histograms with map of recalibration factors, PHOS
   AliEMCALRecoUtils* fEMCALRecoUtils;        //  EMCAL utils for cluster rereconstruction
   Bool_t             fRecalculatePosition;   //  Recalculate cluster position
@@ -324,7 +325,7 @@ class AliCalorimeterUtils : public TObject {
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,13)
+  ClassDef(AliCalorimeterUtils,14)
 } ;
 
 
