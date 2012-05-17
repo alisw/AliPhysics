@@ -62,9 +62,9 @@ void AliSpectraAODPID::FillQAHistos(AliSpectraAODHistoManager * hman, AliAODTrac
     hman->GetPtHistogram(kHistNSigPionPtTOF)->Fill(track->Pt(),fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion));
   }
   
-  Double_t nsigmaTPCTOFkProton = TMath::Sqrt(nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton);
-  Double_t nsigmaTPCTOFkKaon = TMath::Sqrt(nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon);
-  Double_t nsigmaTPCTOFkPion = TMath::Sqrt(nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion);
+  Double_t nsigmaTPCTOFkProton = TMath::Sqrt((nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton)/2);
+  Double_t nsigmaTPCTOFkKaon = TMath::Sqrt((nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon)/2);
+  Double_t nsigmaTPCTOFkPion = TMath::Sqrt((nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion)/2);
   
   //TPC
   hman->GetPtHistogram(kHistNSigProtonTPC)->Fill(track->P(),fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kProton));
