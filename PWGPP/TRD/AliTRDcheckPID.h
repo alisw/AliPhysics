@@ -53,7 +53,7 @@ public:
   virtual Bool_t  GetRefFigure(Int_t ifig);
   virtual void    UserExec(Option_t *opt);
   virtual Bool_t  PostProcess();
-
+  void            MakeSummary();
   TH1 *PlotLQ(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotNN(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotESD(const AliTRDtrackV1 *track = 0x0);
