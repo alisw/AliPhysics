@@ -271,13 +271,12 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
   AliEventplane* esdTPCep = fESD->GetEventplane();
   TVector2 *standardQ = 0x0;
   Double_t qx = -999., qy = -999.;
-  
   standardQ = esdTPCep->GetQVector(); 
-  if(standardQ)
-  {
-	  qx = standardQ->X();
-	  qy = standardQ->Y();
-  }
+  if(!standardQ)return;
+ 
+  qx = standardQ->X();
+  qy = standardQ->Y();
+  
   TVector2 qVectorfortrack;
   qVectorfortrack.Set(qx,qy);
   Float_t evPlaneTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
