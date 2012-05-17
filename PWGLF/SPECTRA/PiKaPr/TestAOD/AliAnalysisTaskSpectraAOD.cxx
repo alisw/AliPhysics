@@ -43,6 +43,8 @@
 #include "AliPIDResponse.h"
 #include "AliStack.h"
 #include "AliSpectraAODPID.h"
+#include <TMCProcess.h>
+
 #include <iostream>
 
 
@@ -138,13 +140,14 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     // if ((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax() && track->Eta()<0) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax() && track->Eta()>=0)){
     
     //calculate DCA for AOD track
-    Double_t d[2], covd[3];
-    AliAODTrack* track_clone=(AliAODTrack*)track->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
-    Bool_t isDCA = track_clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),9999.,d,covd);
-    delete track_clone;
-    if(!isDCA)d[0]=-999;
+    //Double_t d[2], covd[3];
+    // AliAODTrack* track_clone=(AliAODTrack*)track->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
+    // Bool_t isDCA = track_clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),9999.,d,covd);
+    // delete track_clone;
+    // if(!isDCA)d[0]=-999;
+    Double_t dca=track->DCA();
     
-    fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),d[0]);  // PT histo
+    fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),dca);  // PT histo
     
     // get identity and charge
     Int_t idRec  = fPID->GetParticleSpecie(track, fTrackCuts);
@@ -152,7 +155,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     Int_t charge = track->Charge() > 0 ? kChPos : kChNeg;
     
     // Fill histograms, only if inside y and nsigma acceptance
-    if(idRec != kSpUndefined && fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec))fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),d[0]);
+    if(idRec != kSpUndefined && fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec))fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),dca);
     //can't put a continue because we still have to fill allcharged primaries, done later
     
     /* MC Part */
@@ -174,11 +177,15 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  codemoth = TMath::Abs(moth->GetPdgCode());
 	  mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
 	}
+	// Int_t uniqueID = partMC->GetUniqueID();
+	// cout<<"uniqueID: "<<partMC->GetUniqueID()<<"       "<<kPDecay<<endl;
+	// cout<<"status: "<<partMC->GetStatus()<<"       "<<kPDecay<<endl;
+	// if(uniqueID == kPDecay)Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	if(mfl==3) isSecondaryWeak     = kTRUE; // add if(partMC->GetStatus() & kPDecay)? FIXME
 	else       isSecondaryMaterial = kTRUE;
       }
       
-      if (isPrimary)fHistMan->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),d[0]);  // PT histo of primaries
+      if (isPrimary)fHistMan->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),dca);  // PT histo of primaries
       
       //nsigma cut (reconstructed nsigma)
       if(idRec == kSpUndefined) continue;
@@ -191,33 +198,33 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
       //if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    // FIXME: do we need a rapidity cut on the generated?
       // Fill histograms for primaries
       
-      if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),d[0]); 
+      if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),dca); 
       
       if (isPrimary) {
-	fHistMan                    ->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),d[0]); 
+	fHistMan                    ->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),dca); 
 	if(idGen != kSpUndefined) {
-	  fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),d[0]);
-	  if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),d[0]); 
+	  fHistMan                    ->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),dca);
+	  if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),dca); 
 	}
       }
       //25th Apr - Muons are added to Pions -- FIXME
       if ( partMC->PdgCode() == 13 && idRec == kSpPion) { 
-	fHistMan->GetPtHistogram(kHistPtRecTrueMuonPlus)->Fill(track->Pt(),d[0]); 
+	fHistMan->GetPtHistogram(kHistPtRecTrueMuonPlus)->Fill(track->Pt(),dca); 
 	if(isPrimary)
-	  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonPlus)->Fill(track->Pt(),d[0]); 
+	  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonPlus)->Fill(track->Pt(),dca); 
       }
       if ( partMC->PdgCode() == -13 && idRec == kSpPion) { 
-	fHistMan->GetPtHistogram(kHistPtRecTrueMuonMinus)->Fill(track->Pt(),d[0]); 
+	fHistMan->GetPtHistogram(kHistPtRecTrueMuonMinus)->Fill(track->Pt(),dca); 
 	if (isPrimary) {
-	  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonMinus)->Fill(track->Pt(),d[0]); 
+	  fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonMinus)->Fill(track->Pt(),dca); 
 	}
       }
       
       ///..... END FIXME
       
       // Fill secondaries
-      if(isSecondaryWeak    )  fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryWeakDecay, idRec, charge)->Fill(track->Pt(),d[0]);
-      if(isSecondaryMaterial)  fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryMaterial , idRec, charge)->Fill(track->Pt(),d[0]);
+      if(isSecondaryWeak    )  fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryWeakDecay, idRec, charge)->Fill(track->Pt(),dca);
+      if(isSecondaryMaterial)  fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryMaterial , idRec, charge)->Fill(track->Pt(),dca);
       
     }//end if(arrayMC)
   } // end loop on tracks
