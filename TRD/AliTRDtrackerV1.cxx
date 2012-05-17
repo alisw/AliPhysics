@@ -570,7 +570,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
       }
 
       // Prolongate to TPC
-      if (PropagateToX(track, xTPC, AliTRDReconstructor::GetMaxStep())) { //  -with update
+      if (PropagateToX(track, xToGo, AliTRDReconstructor::GetMaxStep())) { //  -with update
         seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
         found++;
         kUPDATE = kTRUE;
@@ -580,7 +580,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
     // Prolongate to TPC without update
     if(!kUPDATE) {
       AliTRDtrackV1 tt(*seed);
-      if (PropagateToX(tt, xTPC, AliTRDReconstructor::GetMaxStep())) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDbackup);
+      if (PropagateToX(tt, xToGo, AliTRDReconstructor::GetMaxStep())) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDbackup);
     }
   }
   AliInfo(Form("Number of seeds: TRDout[%d]", nseed));
