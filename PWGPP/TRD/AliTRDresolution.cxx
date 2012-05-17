@@ -1088,8 +1088,9 @@ void AliTRDresolution::MakeSummary()
       for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
         p=cOut->cd(icen*AliTRDgeometry::kNlayer+ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d%dEn", ily, icen)))) continue;
-        SetNormZ(h2, 1, -1, 1, -1, 10.);
+        SetNormZ(h2, 1, -1, 1, -1, 10.);  // cut all bins with < 10 entries
         SetRangeZ(h2, -90., 90, -200.);
+        //h2->GetXaxis()->SetNdivisions(1010);
         h2->GetZaxis()->SetTitle("Rel. Det. Occup. [%]");
         h2->GetZaxis()->CenterTitle();
         h2->SetContour(9); h2->Draw("colz");
@@ -1102,8 +1103,9 @@ void AliTRDresolution::MakeSummary()
     for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
       p=cOut->cd(ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
       if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d_2D", ily)))) continue;
-      SetNormZ(h2, 1, -1, 1, -1, 10.);
-      SetRangeZ(h2, -30., 30., -80.);
+      SetNormZ(h2, 1, -1, 1, -1, 10.); // cut all <q> < 10
+      SetRangeZ(h2, -30., 30., -200.);
+      //h2->GetXaxis()->SetNdivisions(1010);
       h2->GetZaxis()->SetTitle("Rel. Mean(q) [%]");
       h2->GetZaxis()->CenterTitle();
       h2->Draw("colz");
@@ -1201,6 +1203,27 @@ void AliTRDresolution::MakeSummary()
       }
       if(nplot==15) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
       else delete cOut;
+
+      const char *chQ[] = {"Q", "QS"};
+      for(Int_t iq(0); iq<2; iq++){
+        cOut = new TCanvas(Form("%s_%sTrkIn%s", GetName(), typName[ityp], chQ[iq]), "Track IN PID", Int_t(1.5*nx), Int_t(1.5*ny));
+        cOut->Divide(5,3, 1.e-5, 1.e-5);
+        nplot=0;
+        for(Int_t ich(0), ipad(1); ich<3; ich++){
+          for(Int_t ispec(0); ispec<AliPID::kSPECIES; ispec++){
+            p=cOut->cd(ipad++); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
+            if(!(h2 = (TH2*)arr->FindObject(Form("H%sTrkIn%s%s%d_2D", typName[ityp], chQ[iq], chName[ich], ispec)))) {
+              AliInfo(Form("Missing H%sTrkIn%s%s%d_2D", typName[ityp], chQ[iq], chName[ich], ispec));
+              continue;
+            }
+            nplot++;
+            h2->Draw("colz");
+            MakeDetectorPlot(0);
+          }
+        }
+        if(nplot==15) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+        else delete cOut;
+      }
     }
   }
   // track MC systematic
@@ -2197,7 +2220,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         php.AddLast(&specQ[idx]);
         if((h2 = specQ[idx].Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
         specQ[idx].H()->SetName(Form("H%sTrkInQS%c%d", mc?"MC":"", chName[ich], isp));
-        specQ[idx].SetShowRange(-1.75, -1.25);
+        specQ[idx].SetShowRange(-1.85, -1.4);
         if((h2 = specQ[idx].Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specQ[idx];
       }
@@ -2310,7 +2333,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
       pr0->SetShowRange(-2.2, -1.75);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
       pr0->H()->SetName(Form("H%sTrkInQS%d", mc?"MC":"", isp));
-      pr0->SetShowRange(-1.7, -1.25);
+      pr0->SetShowRange(-1.85, -1.4);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
     }
   } // end PID processing
