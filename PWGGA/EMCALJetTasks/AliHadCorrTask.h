@@ -43,7 +43,7 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   Double_t               fMinPt;                  // minimum pt (on tracks and clusters)
   TClonesArray          *fOutClusters;            //!output cluster collection
   TList                 *fOutputList;             //!output list
-  TH2                   *fHistMatchEtaPhi[8][5];  //!output histograms
+  TH2                   *fHistMatchEtaPhi[8][9];  //!output histograms
   TH2                   *fHistMatchEvsP[4];       //!output histograms
   TH2                   *fHistMatchdRvsEP[4];     //!output histograms
   TH1                   *fHistNclusvsCent;        //!output histograms
@@ -53,13 +53,14 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   TH2                   *fHistEoPCent;            //!output histograms
   TH2                   *fHistNMatchCent;         //!output histograms
   TH2                   *fHistNMatchCent_trk;     //!output histograms
-  TH2                   *fHistEsubPch[4];         //!output histograms
+  TH1                   *fHistEsubPch[4][3];      //!output histograms
+  TH2                   *fHistEsubPchRat[4][3];   //!output histograms
   TH1                   *fHistCentrality;         //!output histograms
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 4) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 5) // Hadronic correction task
 };
 #endif
