@@ -1,13 +1,13 @@
-#include "TChain.h"
-#include "TTree.h"
-#include "TList.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TCanvas.h"
+#include <TChain.h>
+#include <TTree.h>
+#include <TList.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TCanvas.h>
 #include <TClonesArray.h>
 #include <TParticle.h>
 #include <TLorentzVector.h>
-#include "TVector3.h"
+#include <TParameter.h>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -29,16 +29,19 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra()
     fTracksName("tracks"),
     fJetsName("jets"),
     fClustersName("clusters"),
-    fRhos1Name("fArrRhos"),
-    fRhos2Name("fArrRhos"),
-    cSwitch(0), fArrRhos1(0), fArrRhos2(0)
+    fRhos1Name("RhoChNe"),
+    fRhos2Name("RhoCh_Scaled"),
+  fRhos3Name("Rho"),
+    phimin(-10), phimax(10),
+    etamin(-0.9), etamax(0.9),
+    areacut(0.0)
  {
   // Constructor
 
    for (Int_t i = 0;i<6;++i){
      fHistRawJetPt[i]       = 0;
      fHistAreavsRawPt[i]    = 0;
-     for (Int_t j = 0;j<3;++j){
+     for (Int_t j = 0;j<4;++j){
        fHistNEFvsPt[i][j]   = 0;
        fHistZvsPt[i][j]     = 0;
        fHistZchvsPt[i][j]   = 0;
@@ -58,16 +61,19 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name)
     fTracksName("tracks"),
     fJetsName("jets"),
     fClustersName("clusters"),
-    fRhos1Name("fArrRhos"),
-    fRhos2Name("fArrRhos"),
-    cSwitch(0), fArrRhos1(0),fArrRhos2(0)
+    fRhos1Name("RhoChNe"),
+    fRhos2Name("RhoCh_Scaled"),
+  fRhos3Name("Rho"),
+    phimin(-10), phimax(10),
+    etamin(-0.9), etamax(0.9),
+    areacut(0.0)
 {
   // Constructor
-   for (Int_t i = 0;i<6;++i){
-     fHistRawJetPt[i]       = 0;
-     fHistAreavsRawPt[i]    = 0;
-     for (Int_t j = 0;j<3;++j){
-       fHistNEFvsPt[i][j]   = 0;
+  for (Int_t i = 0;i<6;++i){
+    fHistRawJetPt[i]       = 0;
+    fHistAreavsRawPt[i]    = 0;
+    for (Int_t j = 0;j<4;++j){
+      fHistNEFvsPt[i][j]   = 0;
        fHistZvsPt[i][j]     = 0;
        fHistZchvsPt[i][j]   = 0;
        fHistZemvsPt[i][j]   = 0;
@@ -90,12 +96,6 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
     AliError("Input handler not available!");
     return;
   }
-
-  fArrRhos1 = new TClonesArray("TVector3");
-  fArrRhos1->SetName(fRhos1Name);
-
-  fArrRhos2 = new TClonesArray("TVector3");
-  fArrRhos2->SetName(fRhos2Name);
 
   OpenFile(1);
   fOutputList = new TList();
@@ -132,24 +132,24 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
 
 
   for (Int_t i = 0;i<6;++i){
-      TString name0(Form("fHistRawJetPt_%i",i));
-      fHistRawJetPt[i] = new TH1F(name0,name0,250,0,500);
+      TString name00(Form("fHistRawJetPt_%i",i));
+      fHistRawJetPt[i] = new TH1F(name00,name00,250,0,500);
       fOutputList->Add(fHistRawJetPt[i]);
-      TString name1(Form("fHistAreavsRawPt_%i",i));
-      fHistAreavsRawPt[i] = new TH2F(name1,name1,250,0,500,100,0,1);
+      TString name01(Form("fHistAreavsRawPt_%i",i));
+      fHistAreavsRawPt[i] = new TH2F(name01,name01,250,0,500,100,0,1);
       fOutputList->Add(fHistAreavsRawPt[i]);
-      for (Int_t j = 0;j<3;j++){
+      for (Int_t j = 0;j<4;j++){
 	TString name0(Form("fHistNEFvsPt_%i_%i",i,j));
-	fHistNEFvsPt[i][j] = new TH2F(name0,name0,250,-250,250,100,0,1);
+	fHistNEFvsPt[i][j] = new TH2F(name0,name0,250,-250,250,200,0,2);
 	fOutputList->Add(fHistNEFvsPt[i][j]);
 	TString name1(Form("fHistZvsPt_%i_%i",i,j));
-	fHistZvsPt[i][j] = new TH2F(name1,name1,250,-250,250,100,0,1);
+	fHistZvsPt[i][j] = new TH2F(name1,name1,250,-250,250,200,0,2);
 	fOutputList->Add(fHistZvsPt[i][j]);
 	TString name2(Form("fHistZchvsPt_%i_%i",i,j));
-	fHistZchvsPt[i][j] = new TH2F(name2,name2,250,-250,250,100,0,1);
+	fHistZchvsPt[i][j] = new TH2F(name2,name2,250,-250,250,200,0,2);
 	fOutputList->Add(fHistZchvsPt[i][j]);
 	TString name3(Form("fHistZemvsPt_%i_%i",i,j));
-	fHistZemvsPt[i][j] = new TH2F(name3,name3,250,-250,250,100,0,1);
+	fHistZemvsPt[i][j] = new TH2F(name3,name3,250,-250,250,200,0,2);
 	fOutputList->Add(fHistZemvsPt[i][j]);
 	TString name4(Form("fHistAreavsPt_%i_%i",i,j));
 	fHistAreavsPt[i][j] = new TH2F(name4,name4,250,-250,250,100,0,1);
@@ -158,7 +158,7 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
 	fHistJetPt[i][j] = new TH1F(name5,name5,250,-250,250);
 	fOutputList->Add(fHistJetPt[i][j]);
 	TString name6(Form("fHistNconsvsPt_%i_%i",i,j));
-	fHistNconsvsPt[i][j] = new TH2F(name6,name6,250,-250,250,100,0,100);
+	fHistNconsvsPt[i][j] = new TH2F(name6,name6,250,-250,250,500,0,500);
 	fOutputList->Add(fHistNconsvsPt[i][j]);
       }
   }
@@ -247,8 +247,6 @@ void AliAnalysisTaskEmcalJetSpectra::UserExec(Option_t *)
 
   TClonesArray *jets = 0;
   TClonesArray *tracks = 0;
-  TClonesArray *rhosArr1 = 0;
-  TClonesArray *rhosArr2 = 0;
 
   tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
   if (!tracks) {
@@ -262,29 +260,27 @@ void AliAnalysisTaskEmcalJetSpectra::UserExec(Option_t *)
     return;
   }
 
-  rhosArr1 = dynamic_cast<TClonesArray*>(l->FindObject(fRhos1Name));
-  if (! rhosArr1){
-    AliError(Form("Pointer to Rho Array1 %s == 0", fRhos1Name.Data() ));
+  TParameter<Double_t>* rhoPar1 = dynamic_cast<TParameter<Double_t>*>(l->FindObject(fRhos1Name));
+  if (! rhoPar1){
+    AliError(Form("Pointer to Rho 1 %s == 0", fRhos1Name.Data() ));
     return;
   }
 
-  rhosArr2 = dynamic_cast<TClonesArray*>(l->FindObject(fRhos2Name));
-  if (! rhosArr2){
-    AliError(Form("Pointer to Rho Array2 %s == 0", fRhos2Name.Data() ));
+  TParameter<Double_t>* rhoPar2 = dynamic_cast<TParameter<Double_t>*>(l->FindObject(fRhos2Name));
+  if (! rhoPar2){
+    AliError(Form("Pointer to Rho 2 %s == 0", fRhos2Name.Data() ));
+    return;
+  }
+
+  TParameter<Double_t>* rhoPar3 = dynamic_cast<TParameter<Double_t>*>(l->FindObject(fRhos3Name));
+  if (! rhoPar3){
+    AliError(Form("Pointer to Rho 3 %s == 0", fRhos3Name.Data() ));
     return;
   }
   
-  TVector3* rhos1 = static_cast<TVector3*>(rhosArr1->At(0));
-  TVector3* rhos2 = static_cast<TVector3*>(rhosArr2->At(0));
-
-  Double_t rho1 = -1;
-  if (rhos1)
-    rho1 = rhos1->X();
-  Double_t rho2 = -1;
-  Double_t rho3 = -1;
-  if (rhos2){
-    rho2 = rhos2->Y(); 
-    rho3 = rhos2->Z();}
+  Double_t rho1 = rhoPar1->GetVal();
+  Double_t rho2 = rhoPar2->GetVal();
+  Double_t rho3 = rhoPar3->GetVal();
 
  if (rho1>0)
     fHistRho1vsCent->Fill(fCent,rho1);
@@ -365,29 +361,37 @@ void AliAnalysisTaskEmcalJetSpectra::UserExec(Option_t *)
     fHistJetZvsCent->Fill(fCent,Z);
     fHistJetZvsNtrack->Fill(Ntracks,Z);
   
-    fHistNEFvsPt[centbin][0]->Fill(jetPt1,jet->NEF());
-    fHistZvsPt[centbin][0]->Fill(jetPt1,Z);
-    fHistZchvsPt[centbin][0]->Fill(jetPt1,jet->MaxTrackPt());
-    fHistZemvsPt[centbin][0]->Fill(jetPt1,jet->MaxClusterPt());
-    fHistAreavsPt[centbin][0]->Fill(jetPt1,jet->Area());
-    fHistJetPt[centbin][0]->Fill(jetPt1);
-    fHistNconsvsPt[centbin][0]->Fill(jetPt1,jet->N());
+    fHistNEFvsPt[centbin][0]->Fill(jet->Pt(),jet->NEF());
+    fHistZvsPt[centbin][0]->Fill(jet->Pt(),Z);
+    fHistZchvsPt[centbin][0]->Fill(jet->Pt(),jet->MaxTrackPt());
+    fHistZemvsPt[centbin][0]->Fill(jet->Pt(),jet->MaxClusterPt());
+    fHistAreavsPt[centbin][0]->Fill(jet->Pt(),jet->Area());
+    fHistJetPt[centbin][0]->Fill(jet->Pt());
+    fHistNconsvsPt[centbin][0]->Fill(jet->Pt(),jet->N());
 
-    fHistNEFvsPt[centbin][1]->Fill(jetPt2,jet->NEF());
-    fHistZvsPt[centbin][1]->Fill(jetPt2,Z);
-    fHistZchvsPt[centbin][1]->Fill(jetPt2,jet->MaxTrackPt());
-    fHistZemvsPt[centbin][1]->Fill(jetPt2,jet->MaxClusterPt());
-    fHistAreavsPt[centbin][1]->Fill(jetPt2,jet->Area());
-    fHistJetPt[centbin][1]->Fill(jetPt2);
-    fHistNconsvsPt[centbin][1]->Fill(jetPt2,jet->N());
+    fHistNEFvsPt[centbin][1]->Fill(jetPt1,jet->NEF());
+    fHistZvsPt[centbin][1]->Fill(jetPt1,Z);
+    fHistZchvsPt[centbin][1]->Fill(jetPt1,jet->MaxTrackPt());
+    fHistZemvsPt[centbin][1]->Fill(jetPt1,jet->MaxClusterPt());
+    fHistAreavsPt[centbin][1]->Fill(jetPt1,jet->Area());
+    fHistJetPt[centbin][1]->Fill(jetPt1);
+    fHistNconsvsPt[centbin][1]->Fill(jetPt1,jet->N());
 
-    fHistNEFvsPt[centbin][2]->Fill(jetPt3,jet->NEF());
-    fHistZvsPt[centbin][2]->Fill(jetPt3,Z);
-    fHistZchvsPt[centbin][2]->Fill(jetPt3,jet->MaxTrackPt());
-    fHistZemvsPt[centbin][2]->Fill(jetPt3,jet->MaxClusterPt());
-    fHistAreavsPt[centbin][2]->Fill(jetPt3,jet->Area());
-    fHistJetPt[centbin][2]->Fill(jetPt3);
-    fHistNconsvsPt[centbin][2]->Fill(jetPt3,jet->N());
+    fHistNEFvsPt[centbin][2]->Fill(jetPt2,jet->NEF());
+    fHistZvsPt[centbin][2]->Fill(jetPt2,Z);
+    fHistZchvsPt[centbin][2]->Fill(jetPt2,jet->MaxTrackPt());
+    fHistZemvsPt[centbin][2]->Fill(jetPt2,jet->MaxClusterPt());
+    fHistAreavsPt[centbin][2]->Fill(jetPt2,jet->Area());
+    fHistJetPt[centbin][2]->Fill(jetPt2);
+    fHistNconsvsPt[centbin][2]->Fill(jetPt2,jet->N());
+
+    fHistNEFvsPt[centbin][3]->Fill(jetPt3,jet->NEF());
+    fHistZvsPt[centbin][3]->Fill(jetPt3,Z);
+    fHistZchvsPt[centbin][3]->Fill(jetPt3,jet->MaxTrackPt());
+    fHistZemvsPt[centbin][3]->Fill(jetPt3,jet->MaxClusterPt());
+    fHistAreavsPt[centbin][3]->Fill(jetPt3,jet->Area());
+    fHistJetPt[centbin][3]->Fill(jetPt3);
+    fHistNconsvsPt[centbin][3]->Fill(jetPt3,jet->N());
     
     fHistJetNEFvsCent->Fill(fCent,jet->NEF());
     fHistJetPtvsNtrack->Fill(Ntracks,jetPt2);
