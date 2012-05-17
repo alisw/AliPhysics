@@ -1,11 +1,11 @@
 // $Id$
 
 AliAnalysisTaskRho* AddTaskRho(
-   const char *outfilename    = "AnalysisOutput.root",
+   const char *outfilename    = "AnalysisResults.root",
    const char *nJets          = "Jets",
-   const char *nRhos          = "rho",
-   const Double_t minPhi      = 1.8,
-   const Double_t maxPhi      = 2.74,
+   const char *nRho           = "Rho",
+   const Double_t minPhi      = 0,
+   const Double_t maxPhi      = 2 * TMath::Pi(),
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
    const Double_t minArea     = 0.0
@@ -35,7 +35,7 @@ AliAnalysisTaskRho* AddTaskRho(
   TString name(Form("Rho_%s", nJets));
   AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name);
   rhotask->SetJetsName(nJets);
-  rhotask->SetRhosName(nRhos);
+  rhotask->SetRhoName(nRho);
   rhotask->SetJetPhi(minPhi,maxPhi);
   rhotask->SetJetEta(minEta,maxEta);
   rhotask->SetAreaCut(minArea);
