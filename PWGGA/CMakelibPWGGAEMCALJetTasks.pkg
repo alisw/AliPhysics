@@ -30,7 +30,9 @@ set ( SRCS
  EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliHadCorrTask.cxx
+ EMCALJetTasks/AliJetModelBaseTask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
+ EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
  EMCALJetTasks/AliAnalysisTaskRho.cxx

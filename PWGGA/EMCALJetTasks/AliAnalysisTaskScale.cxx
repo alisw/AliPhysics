@@ -80,7 +80,7 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fOutputList->Add(fHistEtvsNtrack);
   fOutputList->Add(fHistScalevsNtrack);
   fOutputList->Add(fHistDeltaScalevsNtrack);
-  fOutputList->Add(fNewScaleFunction);
+  //fOutputList->Add(fNewScaleFunction);
 
   PostData(1, fOutputList);
 }
@@ -192,6 +192,8 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskScale::Terminate(Option_t *) 
 {
+  /*
   fHistScalevsCent->Fit(fNewScaleFunction, "NO");
   PostData(1, fOutputList);
+  */
 }

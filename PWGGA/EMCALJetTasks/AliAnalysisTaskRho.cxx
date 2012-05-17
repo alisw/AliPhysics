@@ -143,7 +143,7 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
   fOutputList->Add(fHistJetAreavsNtrack);
   fOutputList->Add(fHistNjetvsNtrack);
 
-  fOutputList->Add(fNewRhoFunction);
+  //fOutputList->Add(fNewRhoFunction);
   
   PostData(1, fOutputList);
   
@@ -303,6 +303,8 @@ Double_t AliAnalysisTaskRho::GetMedian(vector<Double_t> v, Int_t c)
 //________________________________________________________________________
 void AliAnalysisTaskRho::Terminate(Option_t *) 
 {
+  /*
   fHistRhovsCent->Fit(fNewRhoFunction, "NO");
   PostData(1, fOutputList);
+  */
 }
