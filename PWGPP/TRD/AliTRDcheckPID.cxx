@@ -188,7 +188,7 @@ TObjArray * AliTRDcheckPID::Histos(){
   if(!(h = (TH2F*)gROOT->FindObject("dEdx"))){
     h = new TH2F("dEdx", "", 
       xBins, -0.5, xBins - 0.5,
-      200, 0, 15);
+      100, 100, 5100);
 //       200, 0, 10000);
   } else h->Reset();
   fContainer->AddAt(h, kdEdx);
@@ -196,8 +196,8 @@ TObjArray * AliTRDcheckPID::Histos(){
   // histos of the dE/dx slices for all 5 particle species and 11 momenta 
   if(!(h = (TH2F*)gROOT->FindObject("dEdxSlice"))){
     h = new TH2F("dEdxSlice", "", 
-      xBins*AliTRDpidUtil::kLQslices, -0.5, xBins*AliTRDpidUtil::kLQslices - 0.5,
-      200, 0, 5000);
+      xBins*AliTRDpidUtil::kNNslices, -0.5, xBins*AliTRDpidUtil::kNNslices - 0.5,
+      100, 100, 4100);
   } else h->Reset();
   fContainer->AddAt(h, kdEdxSlice);
 
@@ -578,24 +578,24 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
   Int_t s(AliTRDpidUtil::Pdg2Pid(pdg));
   AliTRDpidInfo *pid = new AliTRDpidInfo(s);
 
-  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork(kTRUE);
+  //(const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork(kTRUE);
 
-  Float_t sumdEdx(0.);
+//  Float_t sumdEdx(0.);
   Int_t iBin = FindBin(s, momentum);
   AliTRDseedV1 *tracklet = NULL;
   for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
     tracklet = cTrack.GetTracklet(ily);
     if(!tracklet) continue;
-    tracklet -> CookdEdx(AliTRDpidUtil::kNNslices);
+    //tracklet -> CookdEdx(AliTRDpidUtil::kNNslices);
 
     // fill exchange container
     pid->PushBack(tracklet->GetPlane(), 
                   AliTRDpidUtil::GetMomentumBin(tracklet->GetMomentum()), tracklet->GetdEdx());
 
-    sumdEdx = 0.;
+/*    sumdEdx = 0.;
     for(Int_t i = AliTRDpidUtil::kNNslices; i--;) sumdEdx += tracklet->GetdEdx()[i];
-    sumdEdx /= AliTRDCalPIDNN::kMLPscale;
-    hdEdx -> Fill(iBin, sumdEdx);
+    sumdEdx /= AliTRDCalPIDNN::kMLPscale;*/
+    hdEdx -> Fill(iBin, tracklet->GetdQdl());
   }
   fPID->Add(pid);
 
@@ -619,7 +619,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   if(!CheckTrackQuality(fkTrack)) return NULL;
   
   TH2F *hdEdxSlice;
-  if(!(hdEdxSlice = dynamic_cast<TH2F *>(fContainer->At(kdEdxSlice)))){
+  if(!(hdEdxSlice = dynamic_cast<TH2F*>(fContainer->At(kdEdxSlice)))){
     AliWarning("No Histogram defined.");
     return NULL;
   }
@@ -638,20 +638,33 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return NULL;
 
-  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
-  Int_t iMomBin = fMomentumAxis->FindBin(momentum);
+//  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
+  Int_t iMomBin(-1);/* = fMomentumAxis->FindBin(momentum);*/
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
-  Float_t *fdEdx;
-  AliTRDseedV1 *tracklet = NULL;
-  for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-    tracklet = cTrack.GetTracklet(iChamb);
-    if(!tracklet) continue;
-    tracklet -> CookdEdx(AliTRDpidUtil::kLQslices);
-    fdEdx = const_cast<Float_t *>(tracklet->GetdEdx());
-    for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kLQslices; iSlice++){
-      hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kLQslices + (iMomBin-1) * AliTRDpidUtil::kLQslices + iSlice, fdEdx[iSlice]);
+  Double32_t *dedxIter = fkESD->GetSliceIter(), *momIter = &dedxIter[AliTRDpidUtil::kNNslices*AliTRDgeometry::kNlayer];
+
+/*  Int_t islice(0);
+  while(islice<fkESD->GetNSlices()){
+    printf("  slice[%2d] = %f\n", islice, dedxIter[islice]);
+    islice++;
+  }*/
+  for(Int_t ily(0); ily < AliTRDgeometry::kNlayer; ily++){
+    iMomBin = fMomentumAxis->FindBin(momIter[ily]);
+    for(Int_t islice(0); islice < AliTRDpidUtil::kNNslices; islice++){
+      hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kNNslices + (iMomBin-1) * AliTRDpidUtil::kNNslices + islice, dedxIter[AliTRDpidUtil::kNNslices*ily+islice]);
     }
-  }  
+  }
+//   Float_t *fdEdx;
+//   AliTRDseedV1 *tracklet = NULL;
+//   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
+//     tracklet = cTrack.GetTracklet(iChamb);
+//     if(!tracklet) continue;
+// //    tracklet -> CookdEdx(AliTRDpidUtil::kNNslices);
+//     fdEdx = const_cast<Float_t *>(tracklet->GetdEdx());
+//     for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kNNslices; iSlice++){
+//       hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kNNslices + (iMomBin-1) * AliTRDpidUtil::kNNslices + iSlice, fdEdx[iSlice]);
+//     }
+//   }  
 
   return hdEdxSlice;
 }
@@ -929,11 +942,11 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   TList *content = NULL;
   switch(ifig){
   case kEfficiency:{
-    gPad->Divide(2, 1, 1.e-5, 1.e-5);
+/*    gPad->Divide(2, 1, 1.e-5, 1.e-5);
     TList *l=gPad->GetListOfPrimitives();
     TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
     pad->SetMargin(0.1, 0.01, 0.1, 0.01);
-
+*/
     TLegend *legEff = new TLegend(.64, .84, .98, .98);
     legEff->SetBorderSize(1);legEff->SetTextSize(0.03255879);
     legEff->SetFillColor(0);
@@ -962,7 +975,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     gPad->SetLogx();
     gPad->SetGridy();
     gPad->SetGridx();
-
+/*
 
     pad = ((TVirtualPad*)l->At(1));pad->cd();
     pad->SetMargin(0.1, 0.01, 0.1, 0.01);
@@ -985,7 +998,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     g->Draw("p");
     gPad->SetLogx();
     gPad->SetGridy();
-    gPad->SetGridx();
+    gPad->SetGridx();*/
     return kTRUE;
   }
   case kEfficiencyKa:{
@@ -1075,18 +1088,18 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   case kdEdxSlice:
     break;
   case kPH:{
-    gPad->Divide(2, 1, 1.e-5, 1.e-5);
+/*    gPad->Divide(2, 1, 1.e-5, 1.e-5);
     TList *l=gPad->GetListOfPrimitives();
-
+*/
     // save 2.0 GeV projection as reference
-    TLegend *legPH = new TLegend(.4, .7, .68, .98);
+    TLegend *legPH = new TLegend(0.6865278,0.6882035,0.9655359,0.9688384,NULL,"brNDC");
     legPH->SetBorderSize(1);legPH->SetFillColor(0);
     legPH->SetHeader("Particle Species");
     if(!(arr = (TObjArray*)(fContainer->At(kPH)))) break;
     if(!(h2 = (TProfile2D*)(arr->At(0)))) break;
 
-    TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
-    pad->SetMargin(0.1, 0.01, 0.1, 0.01);
+/*    TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
+    pad->SetMargin(0.1, 0.01, 0.1, 0.01);*/
     kFIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
@@ -1097,31 +1110,32 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       if(kFIRST){
         h1->GetXaxis()->SetTitle("t_{drift} [100*ns]");
-        h1->GetYaxis()->SetTitle("<dQ/dt> [a.u.]");
+        h1->GetYaxis()->SetTitle("<dQ/dt> @ 2GeV/c [a.u.]");
+        h1->GetYaxis()->CenterTitle();h1->GetYaxis()->SetTitleOffset(1.2);
       }
       h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
       legPH->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       kFIRST = kFALSE;
     }
 
-    pad = ((TVirtualPad*)l->At(1));pad->cd();
-    pad->SetMargin(0.1, 0.01, 0.1, 0.01);
-    if(!(h2 = (TProfile2D*)(arr->At(1)))) break;
-    kFIRST = kTRUE;
-    for(Int_t is=0; is<AliPID::kSPECIES; is++){
-      Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY(Form("pyx%d", is), bin, bin);
-      if(!h1->GetEntries()) continue;
-      h1->SetMarkerStyle(24);
-      h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
-      h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      if(kFIRST){
-        h1->GetXaxis()->SetTitle("x_{drift} [cm]");
-        h1->GetYaxis()->SetTitle("<dQ/dl> [a.u./cm]");
-      }
-      h1->DrawClone(kFIRST ? "c" : "samec");
-      kFIRST = kFALSE;
-    }
+//     pad = ((TVirtualPad*)l->At(1));pad->cd();
+//     pad->SetMargin(0.1, 0.01, 0.1, 0.01);
+//     if(!(h2 = (TProfile2D*)(arr->At(1)))) break;
+//     kFIRST = kTRUE;
+//     for(Int_t is=0; is<AliPID::kSPECIES; is++){
+//       Int_t bin = FindBin(is, 2.);
+//       h1 = h2->ProjectionY(Form("pyx%d", is), bin, bin);
+//       if(!h1->GetEntries()) continue;
+//       h1->SetMarkerStyle(24);
+//       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
+//       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
+//       if(kFIRST){
+//         h1->GetXaxis()->SetTitle("x_{drift} [cm]");
+//         h1->GetYaxis()->SetTitle("<dQ/dl> [a.u./cm]");
+//       }
+//       h1->DrawClone(kFIRST ? "c" : "samec");
+//       kFIRST = kFALSE;
+//     }
 
     if(kFIRST) break;
     legPH->Draw();
@@ -1133,13 +1147,13 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   }
   case kNClus:{
     // save 2.0 GeV projection as reference
-    TLegend *legNClus = new TLegend(.13, .7, .4, .98);
-    legNClus->SetBorderSize(1);
-    legNClus->SetFillColor(0);
+//     TLegend *legNClus = new TLegend(.13, .7, .4, .98);
+//     legNClus->SetBorderSize(1);
+//     legNClus->SetFillColor(0);
 
     kFIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kNClus)))) break;
-    legNClus->SetHeader("Particle Species");
+//    legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY(Form("pyNClus%d", is), bin, bin);
@@ -1149,18 +1163,19 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       if(kFIRST){ 
-        h1->GetXaxis()->SetTitle("N^{cl}/tracklet");
-        h1->GetYaxis()->SetTitle("Prob. [%]");
+        h1->GetXaxis()->SetTitle("N^{cl}/tracklet @ 2GeV/c");
+        h1->GetYaxis()->SetTitle("Probability [%]");
+        h1->GetYaxis()->CenterTitle();h1->GetYaxis()->SetTitleOffset(1.2);
         h = (TH1F*)h1->DrawClone("c");
         h->SetMaximum(20.);
         h->GetXaxis()->SetRangeUser(0., 35.);
         kFIRST = kFALSE;
       } else h = (TH1F*)h1->DrawClone("samec");
 
-      legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
+//      legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
     }
     if(kFIRST) break;
-    legNClus->Draw();
+//    legNClus->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
     gPad->SetGridy();
@@ -1171,11 +1186,11 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   case kMomentumBin:
     break; 
   case kNTracklets:{
-    TLegend *legNClus = new TLegend(.4, .7, .68, .98);
-    legNClus->SetBorderSize(1);
+/*    TLegend *legNClus = new TLegend(.4, .7, .68, .98);
+    legNClus->SetBorderSize(1);*/
     kFIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kNTracklets)))) break;
-    legNClus->SetHeader("Particle Species");
+//    legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY(Form("pyNTracklets%d", is), bin, bin);
@@ -1185,16 +1200,18 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       if(kFIRST){ 
-        h1->GetXaxis()->SetTitle("N^{trklt}/track");
+        h1->GetXaxis()->SetTitle("N^{trklt}/track @ 2GeV/c");
         h1->GetXaxis()->SetRangeUser(1.,6.);
-        h1->GetYaxis()->SetTitle("Prob. [%]");
+        h1->GetYaxis()->SetTitle("Probability [%]");
+        h1->GetYaxis()->CenterTitle();h1->GetYaxis()->SetTitleOffset(1.2);
+        h1->GetYaxis()->SetRangeUser(0.,40.);
       }
       h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
-      legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
+      //legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       kFIRST = kFALSE;
     }
     if(kFIRST) break;
-    legNClus->Draw();
+    //legNClus->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
     gPad->SetGridy();
@@ -1204,6 +1221,30 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   }
   AliInfo(Form("Reference plot [%d] missing result", ifig));
   return kFALSE;
+}
+
+//________________________________________________________________________
+void AliTRDcheckPID::MakeSummary()
+{
+// Put all representative pictures here
+  if(!fGraph || !fContainer){
+    AliError("Missing results");
+    return;
+  }
+  TVirtualPad *p(NULL); TCanvas *cOut(NULL);
+
+  const Int_t /*nx(2048),*/ ny(1536);
+  cOut = new TCanvas(GetName(), "TRD PID", ny, ny);
+  cOut->Divide(2,2, 1.e-5, 1.e-5);
+  p=cOut->cd(1); p->SetRightMargin(0.01882353);p->SetTopMargin(0.01785714);
+  GetRefFigure(0);
+  p=cOut->cd(2); p->SetRightMargin(0.01882353);p->SetTopMargin(0.01785714);
+  GetRefFigure(kNClus);
+  p=cOut->cd(3); p->SetRightMargin(0.01882353);p->SetTopMargin(0.01785714);
+  GetRefFigure(kPH);
+  p=cOut->cd(4); p->SetRightMargin(0.01882353);p->SetTopMargin(0.01785714);
+  GetRefFigure(kNTracklets);
+  cOut->SaveAs(Form("%s.gif", cOut->GetName()));
 }
 
 //________________________________________________________________________
@@ -1282,7 +1323,7 @@ void AliTRDcheckPID::EvaluateEfficiency(const TObjArray * const histoContainer, 
     Int_t binEl(fMomentumAxis->GetNbins() * AliPID::kElectron + iMom + 1), 
 	        binXX(fMomentumAxis->GetNbins() * species + iMom + 1);
 
-    for(Int_t iMethod = 0; iMethod < kNmethodsPID; iMethod++){
+    for(Int_t iMethod = 2; iMethod < kNmethodsPID; iMethod++){
       // Calculate the Species Efficiency at electronEfficiency% electron efficiency for each Method
   
       TH1D *histo1 = hPtr[iMethod] -> ProjectionY(Form("%s_el", fgMethod[iMethod]), binEl, binEl);
@@ -1293,7 +1334,7 @@ void AliTRDcheckPID::EvaluateEfficiency(const TObjArray * const histoContainer, 
       g=(TGraphErrors*)eff->At(iMethod);
       g->SetPoint(iMom, mom, 1.e2*fUtil->GetPionEfficiency());
       g->SetPointError(iMom, 0., 1.e2*fUtil->GetError());
-      AliDebug(2, Form("%s Efficiency for %s is : %f +/- %f", AliTRDCalPID::GetPartName(species), fgMethod[iMethod], fUtil->GetPionEfficiency(), fUtil->GetError()));
+      AliDebug(2, Form("%s Efficiency for %s[p=%6.2fGeV/c] = %f +/- %f", fgMethod[iMethod], AliTRDCalPID::GetPartName(species), mom, fUtil->GetPionEfficiency(), fUtil->GetError()));
 
       if(!thres) continue;
       g=(TGraphErrors*)thres->At(iMethod);
