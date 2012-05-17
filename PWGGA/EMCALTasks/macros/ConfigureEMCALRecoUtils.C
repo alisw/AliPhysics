@@ -31,6 +31,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   if(bRecalE && ! bMC)
   {
     reco->SwitchOnRecalibration();
+    reco->SwitchOnRunDepCorrection();    
   } 
 
   // Remove EMCAL hot channels 

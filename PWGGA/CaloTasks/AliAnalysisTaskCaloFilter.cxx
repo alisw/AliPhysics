@@ -340,12 +340,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
           fGeoMatrixSet=kTRUE;
         }//ESD
       }//Load matrices from Data 
-      
-      //Recover time dependent corrections, put then in recalibration histograms. Do it once
-      fEMCALRecoUtils->SetRunDependentCorrections(InputEvent()->GetRunNumber());
 
     }//first event
-    
     
     //Cluster Loop
     for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
