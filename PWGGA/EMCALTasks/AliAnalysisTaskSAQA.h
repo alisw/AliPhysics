@@ -67,6 +67,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskSE {
   TH2F                       *fHistMaxL1ThrCent;       // Maximum L1 trigger threshold vs. centrality
  
   TH1F                       *fHistTracksPt;           // Pt spectrum of tracks
+  TH1F                       *fHistCellsEnergy;        // Energy spectrum of cells
   TH1F                       *fHistClustersEnergy;     // Energy spectrum of clusters
   TH2F                       *fHistEoverP;             // E/P vs. E
   TH2F                       *fHistTrPhiEta;           // Phi-Eta distribution of tracks

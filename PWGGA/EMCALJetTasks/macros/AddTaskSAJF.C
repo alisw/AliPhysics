@@ -7,8 +7,10 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *njets              = "Jets",
   const char *nktjets            = "KtJets",
   const char *nembjets           = "EmbJets",
+  const char *nrho               = "Rho",
   Double_t    jetradius          = 0.4,
-  const char *ntrgclusters       = "ClustersL1GAMMAFEE",
+  Double_t    ptcut              = 0.15,
+  Double_t    jetpartcut         = 10,
   UInt_t      type               = AliAnalysisTaskSAJF::kTPC
 )
 {  
@@ -40,9 +42,10 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   phTask->SetJetsName(njets);
   phTask->SetKtJetsName(nktjets);
   phTask->SetEmbJetsName(nembjets);
-  phTask->SetTrgClusName(ntrgclusters);
+  phTask->SetRhoName(nrho);
+  phTask->SetPtCut(ptcut);
   phTask->SetJetRadius(jetradius);
-
+  phTask->SetPtCutJetPart(jetpartcut);
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

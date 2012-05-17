@@ -46,6 +46,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistMaxL1ClusCent(0),
   fHistMaxL1ThrCent(0),
   fHistTracksPt(0),
+  fHistCellsEnergy(0),
   fHistClustersEnergy(0),
   fHistEoverP(0),
   fHistTrPhiEta(0),
@@ -88,6 +89,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistMaxL1ClusCent(0),
   fHistMaxL1ThrCent(0),
   fHistTracksPt(0),
+  fHistCellsEnergy(0),
   fHistClustersEnergy(0),
   fHistEoverP(0),
   fHistTrPhiEta(0),
@@ -158,6 +160,11 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTracksPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
   fHistTracksPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistTracksPt);
+
+  fHistCellsEnergy = new TH1F("fHistCellsEnergy","Energy spectrum of cells", fNbins, fMinPt, fMaxPt);
+  fHistCellsEnergy->GetXaxis()->SetTitle("E [GeV]");
+  fHistCellsEnergy->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistCellsEnergy);
 	
   fHistClustersEnergy = new TH1F("fHistClustersEnergy","Energy spectrum of clusters", fNbins, fMinPt, fMaxPt);
   fHistClustersEnergy->GetXaxis()->SetTitle("E [GeV]");
@@ -366,6 +373,8 @@ void AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
   for (Int_t pos = 0; pos < ncells; pos++) {
 
     Float_t amp = cells->GetAmplitude(pos);
+
+    fHistCellsEnergy->Fill(amp);
 
     sum += amp;
 
