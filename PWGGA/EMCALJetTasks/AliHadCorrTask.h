@@ -32,6 +32,9 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
  protected:
   Int_t        GetCentBin(Double_t cent) const;
   Int_t        GetMomBin(Double_t pt)    const;
+  Double_t     GetEtaSigma(Int_t pbin)    const;
+  Double_t     GetPhiMean(Int_t pbin, Int_t centbin)    const;
+  Double_t     GetPhiSigma(Int_t pbin, Int_t centbin)    const;
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
@@ -61,6 +64,6 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 5) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 6) // Hadronic correction task
 };
 #endif
