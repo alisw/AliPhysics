@@ -56,7 +56,6 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliTrackerBase.h"
-#include "AliEMCALCalibTimeDepCorrection.h" // Run dependent
 #include "AliEMCALPIDUtils.h"
 
 
@@ -68,8 +67,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
-  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),
-  fUseRunCorrectionFactors(kFALSE),       fRunCorrectionFactorsSet(kFALSE),
+  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
@@ -113,7 +111,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(reco.fEMCALTimeRecalibrationFactors),
-  fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   fRunCorrectionFactorsSet(reco.fRunCorrectionFactorsSet),
+  fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
   fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),       fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
@@ -175,7 +173,6 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fEMCALTimeRecalibrationFactors = reco.fEMCALTimeRecalibrationFactors;
 
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
-  fRunCorrectionFactorsSet   = reco.fRunCorrectionFactorsSet;
   
   fRemoveBadChannels         = reco.fRemoveBadChannels;
   fRecalDistToBadChannels    = reco.fRecalDistToBadChannels;
@@ -2408,7 +2405,6 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
   AliDebug(2,"Cluster matched to tracks");  
 }
 
-
 //___________________________________________________
 void AliEMCALRecoUtils::Print(const Option_t *) const 
 {
@@ -2454,40 +2450,3 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
   printf("DCSToVertex2D = %d, MaxDCAToVertexXY = %2.2f, MaxDCAToVertexZ = %2.2f\n",fCutDCAToVertex2D,fCutMaxDCAToVertexXY,fCutMaxDCAToVertexZ);
 }
 
-//_________________________________________________________________
-void AliEMCALRecoUtils::SetRunDependentCorrections(Int_t runnumber)
-{
-  //Get EMCAL time dependent corrections from file and put them in the recalibration histograms
-  //Do it only once and only if it is requested
-  
-  if(!fUseRunCorrectionFactors) return;
-  if(fRunCorrectionFactorsSet)  return;
-  
-  AliInfo(Form("AliEMCALRecoUtils::GetRunDependentCorrections() - Get Correction Factors for Run number %d\n",runnumber));
- 
-  AliEMCALCalibTimeDepCorrection  *corr =  new AliEMCALCalibTimeDepCorrection();
-  corr->ReadRootInfo(Form("CorrectionFiles/Run%d_Correction.root",runnumber));
-  
-  SwitchOnRecalibration();
-  
-  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
-  
-  for(Int_t ism = 0; ism < geom->GetNumberOfSuperModules(); ism++)
-  {
-    for(Int_t icol = 0; icol < 48; icol++)
-    {
-      for(Int_t irow = 0; irow < 24; irow++)
-      {
-        Float_t orgRecalFactor = GetEMCALChannelRecalibrationFactors(ism)->GetBinContent(icol,irow);
-        Float_t newRecalFactor = orgRecalFactor*corr->GetCorrection(ism, icol,irow,0);
-        GetEMCALChannelRecalibrationFactors(ism)->SetBinContent(icol,irow,newRecalFactor);
-        //printf("ism %d, icol %d, irow %d, corrections : org %f, time dep %f, final %f (org*time %f)\n",ism, icol, irow, 
-        //        orgRecalFactor, corr->GetCorrection(ism, icol,irow,0),
-        //       (GetEMCALChannelRecalibrationFactors(ism))->GetBinContent(icol,irow),newRecalFactor);
-      }
-    }
-  }
-  
-  fRunCorrectionFactorsSet = kTRUE;
-  
-}

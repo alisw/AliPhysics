@@ -162,11 +162,11 @@ public:
     ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
   
   //Recalibrate channels energy with run dependent corrections
+  Bool_t   IsRunDepRecalibrationOn()               const { return fUseRunCorrectionFactors ; }
+
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
-                                                           SwitchOnRecalibration()           ; }
-  void     SetRunDependentCorrections(Int_t runnumber);
-      
+                                                           SwitchOnRecalibration()           ; }      
   // Time Recalibration  
   void     RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & time) const;
   
@@ -395,7 +395,6 @@ private:
   
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   // Use Run Dependent Correction
-  Bool_t     fRunCorrectionFactorsSet;   // Run Correction set at leat once
     
   // Bad Channels
   Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels

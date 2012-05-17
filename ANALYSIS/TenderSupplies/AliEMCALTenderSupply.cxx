@@ -492,7 +492,8 @@ void AliEMCALTenderSupply::ProcessEvent()
     }
 
     // init recalibration factors
-    if( needRecalib ) { 
+    if( needRecalib ) 
+    { 
       Int_t fInitRecalib = InitRecalib();
       if (fInitRecalib==0)
         AliError("InitRecalib returned false, returning");
@@ -500,8 +501,20 @@ void AliEMCALTenderSupply::ProcessEvent()
         AliWarning("InitRecalib OK");
       if (fInitRecalib>1)
         AliWarning(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
-        fReCalibCluster = kFALSE;
+      
+      Int_t fInitRunDepRecalib = InitRunDepRecalib();
+      if (fInitRunDepRecalib==0)
+        AliError("InitrunDepRecalib returned false, returning");
+      if (fInitRunDepRecalib==1)
+        AliWarning("InitRecalib OK");
+      if (fInitRunDepRecalib>1)
+        AliWarning(Form("No Temperature recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+      
+      fReCalibCluster = kFALSE;
+      
     }
+    
+    
     
     // init time calibration
     if( needTimecalib ){
@@ -1025,6 +1038,89 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   }
   return 1;
 }
+
+//_____________________________________________________
+Int_t AliEMCALTenderSupply::InitRunDepRecalib()
+{
+  // Initialising recalibration factors.
+  
+  AliVEvent *event = GetEvent();
+  
+  if (!event) 
+    return 0;
+  
+  if (fDebugLevel>0) 
+    AliInfo("Initialising recalibration factors");
+  
+  // init default maps first
+  if( !fEMCALRecoUtils->GetEMCALRecalibrationFactorsArray() )
+    fEMCALRecoUtils->InitEMCALRecalibrationFactors() ;
+  
+  Int_t runRC = event->GetRunNumber();
+  
+  AliOADBContainer *contRF=new AliOADBContainer("");
+  if (fBasePath!="") 
+  { //if fBasePath specified in the ->SetBasePath()
+    if (fDebugLevel>0)  AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
+    
+    TFile *fRunDepRecalib= new TFile(Form("%s/EMCALTemperatureCorrCalib.root",fBasePath.Data()),"read");
+    if (!fRunDepRecalib || fRunDepRecalib->IsZombie()) 
+    {
+      AliFatal(Form("EMCALTemperatureCorrCalib.root not found in %s",fBasePath.Data()));
+      return 0;
+    }
+    
+    if (fRunDepRecalib) delete fRunDepRecalib;
+    
+    contRF->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fBasePath.Data()),"AliEMCALRunDepTempCalibCorrections");
+  }
+  else
+  { // Else choose the one in the $ALICE_ROOT directory
+    if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
+    
+    TFile *fRunDepRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALTemperatureCorrCalib.root","read");
+    if (!fRunDepRecalib || fRunDepRecalib->IsZombie()) 
+    {
+      AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALTemperatureCorrCalib.root was not found");
+      return 0;
+    }
+    
+    if (fRunDepRecalib) delete fRunDepRecalib;
+    
+    contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALTemperatureCorrCalib.root","AliEMCALRunDepTempCalibCorrections");     
+  }
+  
+  TH1S *rundeprecal=(TH1S*)contRF->GetObject(runRC);
+  if (!rundeprecal)
+  {
+    AliError(Form("No Objects for run: %d",runRC));
+    return 2;
+  } 
+  
+  if (fDebugLevel>0) rundeprecal->Print();
+  
+  Int_t nSM = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
+  
+  for (Int_t ism=0; ism<nSM; ++ism) 
+  {        
+    for (Int_t icol=0; icol<48; ++icol) 
+    {        
+      for (Int_t irow=0; irow<24; ++irow) 
+      {
+        Float_t factor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(ism,icol,irow);
+        
+        Int_t absID = fEMCALGeo->GetAbsCellIdFromCellIndexes(ism, irow, icol); // original calibration factor
+        factor *= rundeprecal->GetBinContent(absID) / 10000. ; // correction dependent on T
+        //printf("\t ism %d, icol %d, irow %d,absID %d, corrA %2.3f, corrB %2.3f, corrAB %2.3f\n",ism, icol, irow, absID, 
+        //      GetEMCALChannelRecalibrationFactor(ism,icol,irow) , rundeprecal->GetBinContent(absID) / 10000., factor);
+        fEMCALRecoUtils->SetEMCALChannelRecalibrationFactor(ism,icol,irow,factor);
+      } // columns
+    } // rows 
+  } // SM loop
+  
+  return 1;
+}
+
 
 //_____________________________________________________
 Int_t AliEMCALTenderSupply::InitTimeCalibration()

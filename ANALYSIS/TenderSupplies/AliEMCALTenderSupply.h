@@ -164,6 +164,7 @@ private:
   Int_t      InitRecParam();
   Bool_t     InitMisalignMatrix();
   Int_t      InitRecalib();
+  Int_t      InitRunDepRecalib();
   Int_t      InitTimeCalibration();
   void       Clusterize();
   void       FillDigitsArray();
