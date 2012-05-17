@@ -56,6 +56,7 @@ class AliTRDdEdxBaseUtils
   //===================================================================================
   //                                   Math and Histogram
   //===================================================================================
+  static void BinLogX(TAxis *axis);
   static void GetCDFCuts(const TH1D *hh, const Int_t ncut, Double_t cuts[], const Double_t cdfs[], const Double_t thres);
   static Double_t GetMeanRMS(const Double_t nn, const Double_t sum, const Double_t w2s, Double_t * grms=0x0, Double_t * gerr=0x0);
   static Double_t TruncatedMean(const Int_t nx, const Double_t xdata[], const Double_t lowfrac, const Double_t highfrac, Double_t * grms=0x0, Double_t * gerr=0x0, Double_t *wws=0x0);

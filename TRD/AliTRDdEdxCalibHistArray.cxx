@@ -26,7 +26,7 @@
 //  
 //
 #include "THnBase.h"
-#include "THnSparse.h"
+#include "THn.h"
 #include "TCollection.h"
 
 #include "AliTRDdEdxBaseUtils.h"
@@ -43,12 +43,20 @@ AliTRDdEdxCalibHistArray::AliTRDdEdxCalibHistArray(const Bool_t kNoInv):
   SetName(GetArrayName());
   SetOwner(kTRUE);
 
-  const Int_t    nbin[2]={AliTRDdEdxBaseUtils::NTRDtimebin(), 11250};
-  const Double_t xmin[2]={0,       0};
+  const Int_t    nbin[2]={AliTRDdEdxBaseUtils::NTRDtimebin(), 100};
+  const Double_t xmin[2]={0,       0.1};
   const Double_t xmax[2]={nbin[0], 20};
+  const TString aname[2]={"globalTimeBin", "trdqovertpc"};
+  const TString atitle[2]={"det * AliTRDseedV1::kNtb + itb", "TRD-Cluster-Q / TPC-Signal"};
 
   for(Int_t iter=0; iter<GetSize(); iter++){
-    THnBase *hi = new THnSparseF(GetNameAt(iter), "", 2, nbin, xmin, xmax);
+    THnBase *hi = new THnF(GetNameAt(iter), "", 2, nbin, xmin, xmax);
+    for(Int_t iaxis=0; iaxis<2; iaxis++){
+      TAxis *xi = hi->GetAxis(iaxis);
+      xi->SetName(aname[iaxis]);
+      xi->SetTitle(atitle[iaxis]);
+      AliTRDdEdxBaseUtils::BinLogX(xi);
+    }
     AddAt(hi, iter);
   }
 }

@@ -218,10 +218,16 @@ void AliTRDdEdxCalibUtils::FillHist(const Int_t ncls, const TVectorD *arrayQ, co
   if(!hcalib){printf("AliTRDdEdxCalibUtils::FillCalibHist errro hcalib null!!\n"); exit(1);}
 
   for(Int_t ii=0; ii<ncls; ii++){
-    const Double_t dq = (*arrayQ)[ii];
-    const Double_t xx = (*arrayX)[ii];
-
+    Double_t dq = (*arrayQ)[ii]/scale;
+    const Double_t qmin = hcalib->GetAxis(1)->GetXmin() +0.5 * hcalib->GetAxis(1)->GetBinWidth(1);
     const Double_t qmax = hcalib->GetAxis(1)->GetXmax() -0.5 * hcalib->GetAxis(1)->GetBinWidth(1);
+
+    if(dq<qmin)
+      dq = qmin;
+    if(dq>qmax)
+      dq = qmax;
+
+    const Double_t xx = (*arrayX)[ii];
     const Double_t xmin = hcalib->GetAxis(0)->GetXmin();
     const Double_t xmax = hcalib->GetAxis(0)->GetXmax();
 
@@ -229,7 +235,7 @@ void AliTRDdEdxCalibUtils::FillHist(const Int_t ncls, const TVectorD *arrayQ, co
       printf("AliTRDdEdxCalibUtils::FillCalibHist error x overflow or underflow! %s %15f %15f %15f\n", hcalib->GetName(),  xx, xmin, xmax); exit(1);
     }
 
-    const Double_t var[]={xx, TMath::Min(dq, qmax)/scale};
+    const Double_t var[]={xx, dq};
     hcalib->Fill(var);
   }
 }
