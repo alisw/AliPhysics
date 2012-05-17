@@ -206,7 +206,7 @@ Double_t AliMillePedeRecord::GetWeight(Int_t pnt) const
   //  
   while(cnt<fSize) {
     //
-    Double_t resid = fValue[cnt++];
+    cnt++;
     while(!IsWeight(cnt)) cnt++;
     if (point==pnt) return GetValue(cnt);;
     cnt++;
