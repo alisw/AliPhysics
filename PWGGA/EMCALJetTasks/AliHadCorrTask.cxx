@@ -307,7 +307,7 @@ void AliHadCorrTask::UserExec(Option_t *)
  
   if (fDoTrackClus) {
     for(Int_t t = 0; t<Ntrks; ++t) {
-      AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+      AliVTrack *track = static_cast<AliVTrack*>(tracks->At(t));
       if (!track)
         continue;
       if (!track->IsEMCAL())
@@ -319,7 +319,7 @@ void AliHadCorrTask::UserExec(Option_t *)
       Double_t dPhiMin  = 1e9;
       Int_t    imin     = -1;
       for(Int_t i=0; i < Nclus; ++i) {
-        AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
+        AliVCluster *c = static_cast<AliVCluster*>(clus->At(i));
         if (!c)
           continue;
 
@@ -353,7 +353,7 @@ void AliHadCorrTask::UserExec(Option_t *)
   }
 
   for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
-    AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
+    AliVCluster *c = static_cast<AliVCluster*>(clus->At(iClus));
     if (!c)
       continue;
     if (!c->IsEMCAL())
@@ -381,7 +381,7 @@ void AliHadCorrTask::UserExec(Option_t *)
     Double_t totalTrkP  = 0.0; // count total track momentum
     Int_t    Nmatches   = 0;   // count total number of matches
     for (Int_t t = 0; t<Ntrks; ++t) {
-      AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+      AliVTrack *track = static_cast<AliVTrack*>(tracks->At(t));
       if (!track)
         continue;
       if (!track->IsEMCAL())
@@ -453,7 +453,7 @@ void AliHadCorrTask::UserExec(Option_t *)
         }
         energyclus -= (fHadCorr-1)*totalTrkP;
       } else if (imin>=0) {
-        AliVTrack *t = dynamic_cast<AliVTrack*>(tracks->At(imin));
+        AliVTrack *t = static_cast<AliVTrack*>(tracks->At(imin));
         if (t) {
           Double_t mom = t->P();
           Int_t mombin = GetMomBin(mom);
