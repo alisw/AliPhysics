@@ -141,13 +141,13 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   for(int is =0; is<AliPID::kSPECIES; is++) fPID[is] = pid;
 
   const AliExternalTrackParam *par = &t;
-  if (t.GetStatus() & AliESDtrack::kTRDbackup) { 
+/*  if (t.GetStatus() & AliESDtrack::kTRDbackup) { 
     par = t.GetOuterParam();
     if (!par) {
       AliError("No backup info!"); 
       par = &t;
     }
-  }
+  }*/
   Set(par->GetX() 
      ,par->GetAlpha()
      ,par->GetParameter()

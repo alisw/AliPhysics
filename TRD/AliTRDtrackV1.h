@@ -44,7 +44,8 @@ public:
     kOwner     = BIT(14)
    ,kStopped   = BIT(15) 
    ,kKink      = BIT(16) 
-   ,kPrimary   = BIT(17) 
+   ,kPrimary   = BIT(17)
+   ,kSeeder    = BIT(18)   // if set other than TPC (ITS, TRD)
   };
 
   // propagation/update error codes (up to 4 bits)
@@ -112,6 +113,7 @@ public:
   Bool_t         IsPrimary() const   { return TestBit(kPrimary);};
   Bool_t         IsStopped() const { return TestBit(kStopped);};
   Bool_t         IsElectron() const;
+  Bool_t         IsTPCseeded() const { return !TestBit(kSeeder);};
   inline static Bool_t IsTrackError(ETRDtrackError error, UInt_t status);
   inline static Bool_t IsLayerError(ETRDlayerError error, Int_t layer, UInt_t status);
 
@@ -126,6 +128,7 @@ public:
   void           SetESDid(Int_t id) {fESDid = id;}
   void           SetKink(Bool_t k)        { SetBit(kKink, k);}
   void           SetPrimary(Bool_t k)     { SetBit(kPrimary, k);}
+  void           SetNonTPCseeded(Bool_t k){ SetBit(kSeeder, k);}
   void           SetNumberOfClusters();
   void           SetOwner();
   void           SetPID(Short_t is, Double_t inPID){if (is >=0 && is < AliPID::kSPECIES) fPID[is]=inPID;};
