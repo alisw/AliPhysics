@@ -140,13 +140,15 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     // if ((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax() && track->Eta()<0) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax() && track->Eta()>=0)){
     
     //calculate DCA for AOD track
-    //Double_t d[2], covd[3];
-    // AliAODTrack* track_clone=(AliAODTrack*)track->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
-    // Bool_t isDCA = track_clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),9999.,d,covd);
-    // delete track_clone;
-    // if(!isDCA)d[0]=-999;
     Double_t dca=track->DCA();
-    
+    if(dca==-999.){// track->DCA() does not work in old AOD production
+      Double_t d[2], covd[3];
+      AliAODTrack* track_clone=(AliAODTrack*)track->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
+      Bool_t isDCA = track_clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),9999.,d,covd);
+      delete track_clone;
+      if(!isDCA)d[0]=-999.;
+      dca=d[0];
+    }
     fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),dca);  // PT histo
     
     // get identity and charge
