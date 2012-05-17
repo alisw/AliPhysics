@@ -4,45 +4,45 @@
 //
 // Author: R.Reed, M.Connors
 
-#include <TChain.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
+#include <TF1.h>
 #include <TLorentzVector.h>
-#include <TParticle.h>
-#include <TTree.h>
+
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
 #include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliVCluster.h"
+
 #include "AliAnalysisTaskScale.h"
 
 ClassImp(AliAnalysisTaskScale)
 
 //________________________________________________________________________
-AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) 
-  : AliAnalysisTaskSE(name), 
-    fTracksName("Tracks"),
-    fClustersName("CaloClusters"),
-    fOutputList(0), 
-    fHistCentrality(0), 
-    fHistPtTPCvsCent(0), 
-    fHistPtEMCALvsCent(0), 
-    fHistEtvsCent(0),  
-    fHistScalevsCent(0),  
-    fHistDeltaScalevsCent(0), 
-    fHistPtTPCvsNtrack(0), 
-    fHistPtEMCALvsNtrack(0), 
-    fHistEtvsNtrack(0),  
-    fHistScalevsNtrack(0),  
-    fHistDeltaScalevsNtrack(0)
+AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
+  AliAnalysisTaskSE(name), 
+  fTracksName("Tracks"),
+  fClustersName("CaloClusters"),
+  fScaleFunction(0),
+  fOutputList(0), 
+  fHistCentrality(0), 
+  fHistPtTPCvsCent(0), 
+  fHistPtEMCALvsCent(0), 
+  fHistEtvsCent(0),  
+  fHistScalevsCent(0),  
+  fHistDeltaScalevsCent(0), 
+  fHistPtTPCvsNtrack(0), 
+  fHistPtEMCALvsNtrack(0), 
+  fHistEtvsNtrack(0),  
+  fHistScalevsNtrack(0),  
+  fHistDeltaScalevsNtrack(0)
 {
   // Constructor.
 
-  DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -66,6 +66,8 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistEtvsNtrack         = new TH2F("fHistEtvsNtrack","rho vs cent",        500,  0, 2500, 500,  0, 1000);
   fHistScalevsNtrack      = new TH2F("fHistScalevsNtrack","rho vs cent",     500,  0, 2500, 400,  0, 4);
   fHistDeltaScalevsNtrack = new TH2F("fHistDeltaScalevsNtrack","rho vs cent",500,  0, 2500, 400, -2, 2);
+
+  fNewScaleFunction       = new TF1("sfunc","pol2", -1, 100);
     
   fOutputList->Add(fHistCentrality);
   fOutputList->Add(fHistPtTPCvsCent);
@@ -78,8 +80,18 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fOutputList->Add(fHistEtvsNtrack);
   fOutputList->Add(fHistScalevsNtrack);
   fOutputList->Add(fHistDeltaScalevsNtrack);
+  fOutputList->Add(fNewScaleFunction);
 
   PostData(1, fOutputList);
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskScale::GetScaleFactor(Double_t cent)
+{
+  Double_t scale = -1;
+  if (fScaleFunction)
+    scale = fScaleFunction->Eval(cent);
+  return scale;
 }
 
 //________________________________________________________________________
@@ -107,7 +119,7 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
   AliCentrality *centrality = InputEvent()->GetCentrality();
   if (centrality)
     cent = centrality->GetCentralityPercentile("V0M");
-  if (cent<0) {
+  if (cent < 0) {
     AliError(Form("Centrality negative: %f", cent));
     return;
   }
@@ -117,26 +129,39 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
   Double_t vertex[3] = {0, 0, 0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-  Double_t scale   = 0.000066*cent*cent-0.0015*cent+1.5; //march 25th fit
+  // hardcoded geometrical parameters
+  const Double_t EmcalMinPhi = 80 * TMath::DegToRad();
+  const Double_t EmcalMaxPhi = 180 * TMath::DegToRad();
+  const Double_t TpcMinPhi   = 0;
+  const Double_t TpcMaxPhi   = 2 * TMath::Pi();
+  const Double_t MaxEta      = 0.7;
+  const Double_t TpcArea     = (TpcMaxPhi - TpcMinPhi) * (MaxEta * 2);
+  const Double_t EmcalArea   = (EmcalMaxPhi - EmcalMinPhi) * (MaxEta * 2);
+
   Double_t ptTPC   = 0;
   Double_t ptEMCAL = 0;
+
   const Int_t Ntracks = tracks->GetEntries();
   for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
     AliVTrack *track = static_cast<AliVTrack*>(tracks->At(iTracks));
+
     if (!track)
       continue;
-    if (TMath::Abs(track->Eta())>0.7)
+
+    if (TMath::Abs(track->Eta()) > 0.7)   // only accept tracks in the EMCal eta range
       continue;
-    ptTPC+=track->Pt();
-    if ((track->Phi()>3.14)||(track->Phi()<1.4))
+
+    ptTPC += track->Pt();
+    if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi))
       continue;
-    ptEMCAL+=track->Pt();
+
+    ptEMCAL += track->Pt();
   }
   
   Double_t Et = 0;
   const Int_t Nclus = clusters->GetEntries();
   for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
-    AliVCluster *c = dynamic_cast<AliVCluster*>(clusters->At(iClus));
+    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(iClus));
     if (!c)
       continue;
     if (!c->IsEMCAL())
@@ -146,17 +171,20 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
     Et += nPart.Pt();
   }
   
-  const Double_t scalecalc = ((Et+ptEMCAL)/2.44)*(8.8/ptTPC); //2.44 = EMCAL Acc, 8.8 = TPC Acc
-  fHistPtTPCvsCent->Fill(cent,ptTPC);
-  fHistPtEMCALvsCent->Fill(cent,ptEMCAL);
-  fHistEtvsCent->Fill(cent,Et);
-  fHistScalevsCent->Fill(cent,scalecalc);
-  fHistDeltaScalevsCent->Fill(cent,scalecalc-scale);
-  fHistPtTPCvsNtrack->Fill(Ntracks,ptTPC);
-  fHistPtEMCALvsNtrack->Fill(Ntracks,ptEMCAL);
-  fHistEtvsNtrack->Fill(Ntracks,Et);
-  fHistScalevsNtrack->Fill(Ntracks,scalecalc);
-  fHistDeltaScalevsNtrack->Fill(Ntracks,scalecalc-scale);
+  const Double_t scalecalc = ((Et + ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
+
+  const Double_t scale     = GetScaleFactor(cent);
+
+  fHistPtTPCvsCent->Fill(cent, ptTPC);
+  fHistPtEMCALvsCent->Fill(cent, ptEMCAL);
+  fHistEtvsCent->Fill(cent, Et);
+  fHistScalevsCent->Fill(cent, scalecalc);
+  fHistDeltaScalevsCent->Fill(cent, scalecalc - scale);
+  fHistPtTPCvsNtrack->Fill(Ntracks, ptTPC);
+  fHistPtEMCALvsNtrack->Fill(Ntracks, ptEMCAL);
+  fHistEtvsNtrack->Fill(Ntracks, Et);
+  fHistScalevsNtrack->Fill(Ntracks, scalecalc);
+  fHistDeltaScalevsNtrack->Fill(Ntracks, scalecalc - scale);
 
   PostData(1, fOutputList);
 }      
@@ -164,5 +192,6 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskScale::Terminate(Option_t *) 
 {
-  // Nothing to be done for the moment.
+  fHistScalevsCent->Fit(fNewScaleFunction, "NO");
+  PostData(1, fOutputList);
 }
