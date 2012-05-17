@@ -11,6 +11,7 @@
 #pragma link C++ class AliHadCorrTask+;
 #pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
+#pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
 
 #endif
