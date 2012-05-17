@@ -110,6 +110,8 @@ GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
    case kLb:                                                 return id=IpLb;
    case -kLb:                                                return id=IpLbBar;
    case kXi_c:                                               return id=IpXic;
+   case kB:                                                  return id=IpBPlus;
+   case -kB:                                                 return id=IpBMinus;
    default  : AliFatal(Form("Unknown particle type: %i",iPID));  id=0;
   }
 

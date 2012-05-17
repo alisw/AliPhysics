@@ -32,6 +32,8 @@ class AliGenITSULib :public AliGenLib {
   static Int_t IpLb(TRandom * /*ran*/)      {return   (int)kLb;}
   static Int_t IpLbBar(TRandom * /*ran*/)   {return  -(int)kLb;}
   static Int_t IpXic(TRandom * /*ran*/)     {return (int)kXi_c;}
+  static Int_t IpBPlus(TRandom * /*ran*/)   {return    (int)kB;}
+  static Int_t IpBMinus(TRandom * /*ran*/)  {return   -(int)kB;}
 
   static Double_t PtFlat(const Double_t * /*px*/, const Double_t * /*dummy*/) {return 1;}
   static Double_t YFlat (const Double_t * /*py*/, const Double_t * /*dummy*/) {return 1;}
