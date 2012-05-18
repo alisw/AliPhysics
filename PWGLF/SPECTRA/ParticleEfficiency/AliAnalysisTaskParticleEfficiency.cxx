@@ -90,7 +90,7 @@ AliAnalysisTaskParticleEfficiency::UserCreateOutputObjects()
 //_______________________________________________________
 
 void
-AliAnalysisTaskParticleEfficiency::UserExec(Option_t *option)
+AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
 {
 
   /* 
