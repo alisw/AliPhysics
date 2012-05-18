@@ -113,7 +113,6 @@ public:
 protected:
   static TTreeSRedirector* DebugStream() { return fgDebugStream;}
   virtual void   InitFunctorList();
-  void           Adjust(TF1 *f, TH1 * const h);
   Bool_t         HasFunctorList() const { return fPlotFuncList != NULL; }
 
   Char_t                fNameId[10];       // unique identifier of task particularity

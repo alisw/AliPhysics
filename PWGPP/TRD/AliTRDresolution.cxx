@@ -1166,8 +1166,10 @@ void AliTRDresolution::MakeSummary()
             continue;
           }
           nplot++;
-          if(vTrkInOpt[iview]==0) h2->Draw("colz");
-          else DrawSigma(h2, ttt[iplot], min[iplot], max[iplot]);
+          if(vTrkInOpt[iview]==0){
+            h2->Draw("colz");
+            PutTrendValue(vTrkInName[iview][iplot], GetMeanStat(h2, -10., ">"));
+          } else DrawSigma(h2, ttt[iplot], min[iplot], max[iplot]);
           MakeDetectorPlot(0);
         }
         if(nplot==6) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
@@ -1218,6 +1220,7 @@ void AliTRDresolution::MakeSummary()
             }
             nplot++;
             h2->Draw("colz");
+            PutTrendValue(Form("TrkIn%s%s%d", chQ[iq], chName[ich], ispec), GetMeanStat(h2, -10., ">"));
             MakeDetectorPlot(0);
           }
         }
