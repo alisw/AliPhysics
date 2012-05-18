@@ -539,6 +539,8 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if(fmd)              ntrig += 1;
       if(ssdClusters>1)    ntrig += 1;*/
 
+      // // EMCAL offline trigger validation
+      // Bool_t emcCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kEMCAL));
       
       // <---
 

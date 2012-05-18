@@ -34,6 +34,7 @@
 #include <AliTriggerAnalysis.h>
 
 #include <AliLog.h>
+#include <AliAnalysisManager.h>
 
 #include <AliESDEvent.h>
 
@@ -258,6 +259,7 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kZDCTime : str = "ZDC Time Cut"; break;
     case kCentral : str = "V0 Central"; break;
     case kSemiCentral : str = "V0 Semi-central"; break;
+    case kEMCAL : str = "EMCAL"; break;
     default: str = ""; break;
   }
    
@@ -535,6 +537,14 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
       }
       break;
     }
+  case kEMCAL:
+    {
+      if(!offline) 
+	AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (EMCALCellsTrigger(aEsd)) 
+	decision = kTRUE;
+      break;
+    }
     default:
     {
       AliFatal(Form("Trigger type %d not implemented", triggerNoFlags));
@@ -712,8 +722,14 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
         
       break;
     }
-    default:
+  case kEMCAL:
     {
+      if (EMCALCellsTrigger(aEsd))
+	decision = kTRUE;
+      break;
+    }
+  default:
+      {
       AliFatal(Form("Trigger type %d not implemented", triggerNoFlags));
     }
   }
@@ -1685,4 +1701,57 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliESDEvent* 
     if( esdT0->GetT0zVertex()>-12.3 && esdT0->GetT0zVertex() < 10.3) return kT0BB; 
  
   return kT0Empty;
+}
+
+//----------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::EMCALCellsTrigger(const AliESDEvent *aEsd)
+{
+  //
+  // Returns the EMCAL trigger decision
+  // so far only implemented for LHC11a data
+  // see http://alisoft.cern.ch/viewvc/trunk/PWGGA/EMCALTasks/AliEmcalPhysicsSelection.cxx?view=markup&root=AliRoot Revision 56136
+  //
+
+  Bool_t isFired = kTRUE;
+  const Int_t runNumber = aEsd->GetRunNumber();
+
+  /*
+  // Load EMCAL branches from the manager
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  am->LoadBranch("EMCALCells.");
+  am->LoadBranch("CaloClusters");
+  */
+
+  // Get EMCAL cells
+  AliVCaloCells *cells = aEsd->GetEMCALCells();
+  const Short_t nCells = cells->GetNumberOfCells();
+
+  // count cells above threshold per sm
+  Int_t nCellCount[10] = {0,0,0,0,0,0,0,0,0,0};
+  for(Int_t iCell=0; iCell<nCells; ++iCell) {
+    Short_t cellId = cells->GetCellNumber(iCell);
+    Double_t cellE = cells->GetCellAmplitude(cellId);
+    Int_t sm       = cellId / (24*48);
+    if (cellE>0.1)
+      ++nCellCount[sm];
+  }
+
+  // Trigger decision for LHC11a
+  Bool_t isLedEvent = kFALSE;
+  if ((runNumber>=144871) && (runNumber<=146860)) {
+    if (nCellCount[4] > 100)
+      isLedEvent = kTRUE;
+    else {
+      if ((runNumber>=146858) && (runNumber<=146860)) {
+	if (nCellCount[3]>=35)
+	  isLedEvent = kTRUE;
+      }
+    }
+  }
+  
+  if (isLedEvent) {
+    isFired = kFALSE;
+  }
+
+  return isFired;
 }

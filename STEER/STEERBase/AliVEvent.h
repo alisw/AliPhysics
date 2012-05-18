@@ -59,12 +59,17 @@ public:
       kSemiCentral  = BIT(17), // PbPb semicentral collision trigger
       kDG5          = BIT(18), // Double gap diffractive
       kZED          = BIT(19), // ZDC electromagnetic dissociation
-      kSPI          = BIT(20), // Power interaction trigger
+      kSPI7         = BIT(20), // Power interaction trigger
+      kINT8                 = BIT(21), // CINT8 trigger: 0TVX (T0 vertex) triger
+      kMuonSingleLowPt8     = BIT(22), // Muon trigger : single muon, low pt, T0 selection, CINT8 suite
+      kMuonSingleHighPt8    = BIT(23), // Muon trigger : single muon, high pt, T0 selection, CINT8 suite
+      kMuonLikeLowPt8       = BIT(24), // Muon trigger : like sign muon, low pt, T0 selection, CINT8 suite
+      kMuonUnlikeLowPt8     = BIT(25), // Muon trigger : unlike sign muon, low pt, T0 selection, CINT8 suite
       kUserDefined  = BIT(27), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
       // Bits 28 and above are reserved for FLAGS
       kFastOnly     = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
       kAny          = 0xffffffff, // to accept any trigger
-      kAnyINT       = kMB | kINT7 | kCINT5 | kSPI // to accept any interaction (aka minimum bias) trigger
+      kAnyINT       = kMB | kINT7 | kCINT5 | kINT8 | kSPI7 // to accept any interaction (aka minimum bias) trigger
   };
 
   AliVEvent() { }
