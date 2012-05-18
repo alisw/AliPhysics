@@ -222,11 +222,15 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     if (fileName.IsNull()) return kFALSE;
     AliInfo(Form("Directory change %s \n", path));
 
+    TString esdname = gSystem->BaseName(fileName);
+    Int_t index = esdname.Index("#")+1;
+    if (index) esdname.Remove(0,index);
+
     if(fileName.Contains("#")){
     // If this is an archive it will contain a # 
       fIsArchive = kTRUE;
-    } else  if(fileName.Contains("AliESDs.root")){
-      fileName.ReplaceAll("AliESDs.root", "");
+    } else  if(fileName.Contains(esdname)){
+      fileName.ReplaceAll(esdname, "");
     }
 
     //
@@ -243,7 +247,8 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
       TFile* file = TFile::Open(fPathName->Data());
       TArchiveFile* arch = file->GetArchive();
       members = arch->GetMembers();
-      fPathName->ReplaceAll("#AliESDs.root", "");
+      fPathName->ReplaceAll("#", "");
+      fPathName->ReplaceAll("esdname", "");
     } else {
 	// Directory or alien archive
       if (fileName.BeginsWith("alien:")) {

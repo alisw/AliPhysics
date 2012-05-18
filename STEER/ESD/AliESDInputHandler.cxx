@@ -166,14 +166,14 @@ void AliESDInputHandler::ConnectFriends()
   if (!fTree->FindBranch("ESDfriend.")) {
     // Try to add ESDfriend. branch as friend
       TString esdFriendTreeFName;
-      esdFriendTreeFName = (fTree->GetCurrentFile())->GetName();
-    
-
-    if(esdFriendTreeFName.Contains("AliESDs.root")) {
-      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
-    } else if(esdFriendTreeFName.Contains("AliESDs_wSDD.root")) {
-      esdFriendTreeFName.ReplaceAll("AliESDs_wSDD.root", fFriendFileName.Data());
-    }
+      esdFriendTreeFName = (fTree->GetCurrentFile())->GetName();    
+      TString basename = gSystem->BaseName(esdFriendTreeFName);
+      Int_t index = basename.Index("#")+1;
+      basename.Remove(index);
+      basename += fFriendFileName;
+      TString dirname = gSystem->DirName(esdFriendTreeFName);
+      dirname += "/";
+      esdFriendTreeFName = dirname + basename;
 
     TTree* cTree = fTree->GetTree();
     if (!cTree) cTree = fTree;      
